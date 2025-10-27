@@ -5,21 +5,22 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000)  # Adjust as needed, or use None
 #--------------------------------------- GEMINI - 2005
-def load_spss_file(file_path):
+def load_spss_file(file_path, selected_columns=None):
     print(f"Reading file: {file_path}...")
-    df, meta = pyreadstat.read_sav(file_path)
+
+    if selected_columns is not None:
+        df, meta = pyreadstat.read_sav(file_path, usecols=selected_columns)
+    else:
+        df, meta = pyreadstat.read_sav(file_path)
+    print("Loaded shape:", df.shape)
     return df, meta
 #--------------------------------------- GEMINI - 2010
-def load_dat_with_sps_layout(dat_file_path, sps_file_path):
+def load_dat_with_sps_layout(dat_file_path, sps_file_path, selected_columns=None):
     """
-    Parses an SPSS syntax file with '00001 - 00005' format
-    and loads the matching data file (.DAT).
+    Reads a fixed-width .DAT file using SPSS .sps layout (DATA LIST),
+    with optional column filtering via `selected_columns`.
     """
-
-    # Regex for lines like: / VARNAME 00001 - 00005
-    var_regex = re.compile(
-        r"^\s*/?\s*([a-zA-Z0-9_]+)\s+(\d+)\s+-\s+(\d+)"
-    )
+    var_regex = re.compile(r"^\s*/?\s*([a-zA-Z0-9_]+)\s+(\d+)\s+-\s+(\d+)")
 
     column_names = []
     col_specs = []
@@ -28,34 +29,36 @@ def load_dat_with_sps_layout(dat_file_path, sps_file_path):
 
     with open(sps_file_path, 'r', encoding='utf-8', errors='ignore') as f:
         for line in f:
-            # Stop parsing when we hit the variable labels
             if line.strip().upper().startswith('VARIABLE LABELS'):
-                break
+                break  # Stop at label section
 
             match = var_regex.match(line)
             if match:
-                column_names.append(match.group(1))
-                # Convert 1-based SPSS index to 0-based pandas index
+                name = match.group(1)
                 start_pos = int(match.group(2))
                 end_pos = int(match.group(3))
-                col_specs.append((start_pos - 1, end_pos))
 
-    print(f"Parsing complete. Found {len(column_names)} variables.")
+                # Append only if selection is not active OR name is in selection
+                if selected_columns is None or name in selected_columns:
+                    column_names.append(name)
+                    col_specs.append((start_pos - 1, end_pos))
+
+    print(f"Parsing complete. Loading {len(column_names)} column(s).")
 
     if not column_names:
-        print("Error: No variables were extracted. Check the regex in the code.")
+        print("Error: No matching columns found. Check column names.")
         return None
 
-    # Load the .DAT file
     print(f"Loading data from: {dat_file_path}")
     df = pd.read_fwf(
         dat_file_path,
         colspecs=col_specs,
         names=column_names,
-        dtype='str'  # <-- THIS IS THE NEW LINE
+        dtype="str"
     )
     print("Data loaded successfully.")
     return df
+
 #--------------------------------------- Claude - 2015
 def parse_spss_syntax_selective(syntax_file, columns_to_keep=None):
     """
@@ -239,7 +242,6 @@ def read_gss_data_numpy_selective(data_file, syntax_file, columns_to_keep=None):
         df = df[final_columns]
 
     return df
-
 #--------------------------------------- GEMINI - 2022
 def load_sas_filtered_by_chunk(sas_file_path, columns_to_keep, chunk_size=100000):
     """
@@ -292,23 +294,19 @@ def load_sas_filtered_by_chunk(sas_file_path, columns_to_keep, chunk_size=100000
         print(f"❌ Error loading or processing SAS file in chunks: {e}")
         return None
 
-# --- Define your desired columns ---
-# Copied from your list (ensure these names exactly match the SAS file)
-cols_i_want = [
-    'PUMFID', 'INSTANCE', 'WGHT_EPI', 'ACTIVITY', 'DUR_03', 'DURATION',
-    'ENDMIN', 'ENDTIME', 'LOCATION', 'STARTIME', 'STARTMIN', 'TUI_01',
-    'TUI_03', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E',
-    'TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I', 'TUI_06J', 'TUI_07',
-    'TUI_15'
-]
 #--------------------------------------- EXTRAS
-def print_unique_counts(df):
-    print("--- Calculating Unique Value Counts for Each Column ---")
-    # Store original pandas display setting
-    pd.set_option('display.max_rows', None)
-    unique_counts = df.nunique()
-    print(unique_counts)
+def describe_unique_values(df, exclude_cols=None):
+    if exclude_cols is None:
+        exclude_cols = []
 
+    for col in df.columns:
+        if col in exclude_cols:
+            continue
+
+        uniques = df[col].unique()
+        print(f"\n--- Column: {col} ---")
+        print(f"Unique count: {len(uniques)}")
+        print("Unique values:", uniques)
 
 if __name__ == '__main__':
     """
@@ -325,33 +323,42 @@ if __name__ == '__main__':
     sps_syntax_2015 = "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Data Sources/Canada_2015/c29_2015/Syntax_Syntaxe/Episode/SPSS/c29pumfe_e.sps"
 
     GSS_2022_SPSS_episode = "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Data Sources/Canada_2022/Data_Données/TU_ET_2022_Episode_PUMF.sas7bdat"
+
     #2005
-    #df_2005_episode, meta = load_spss_file(GSS_2005_SPSS_episode)
+    columns_to_load_2005 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "DURATION", "PLACE",
+        "ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"]
+
+    #df_2005_episode, meta = load_spss_file(GSS_2005_SPSS_episode, selected_columns=columns_to_load_2005)
     #print("df_2005_episode", df_2005_episode.head(10))
-    #print_unique_counts(df_2005_episode)
+    #describe_unique_values(df_2005_episode, exclude_cols=["RECID", "PUMFID", "WGHT_PER"])
 
     #2010 - gemini
-    #df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010)
+    columns_to_load_2010 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "DURATION", "PLACE",
+        "ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"]
+    #df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010, selected_columns=columns_to_load_2010)
     #print("df_2010_episode", df_2010_episode.head(10))
-    #print_unique_counts(df_2010_episode)
+    #describe_unique_values(df_2010_episode, exclude_cols=["RECID"])
 
     # 2015 - Claude
     # Specify only the columns you need
-    columns_needed = ['PUMFID', 'EPINO', 'WGHT_EPI', 'DDAY', 'TOTEPISO', 'TUI_01',
-                      'STARTIME', 'ENDTIME', 'STARTMIN', 'ENDMIN', 'DURATION',
-                      'LOCATION', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D',
-                      'TUI_06E', 'TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I',
-                      'TUI_06J', 'TUI_03A', 'TUI_03B', 'TUI_07', 'TECHFLAG', 'TUI_10']
+    columns_needed = ['PUMFID', 'EPINO', 'WGHT_EPI', 'TOTEPISO', 'TUI_01', 'STARTIME', 'ENDTIME', 'DURATION',
+                      'LOCATION', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E', 'TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I',
+                      'TUI_06J']
 
     # Method 1: Chunked reading (recommended for large files)
     #df_2015_episode = read_gss_data_selective(GSS_2015_SPSS_episode, sps_syntax_2015, columns_to_keep=columns_needed, chunksize=10000)
-    #print_unique_counts(df_2015_episode)
+    #print(df_2015_episode.head(10))
+    #describe_unique_values(df_2015_episode, exclude_cols=["PUMFID"])
 
     #2022 - gemini
+    # --- Define your desired columns ---
+    # Copied from your list (ensure these names exactly match the SAS file)
+    cols_i_want = ['PUMFID', 'INSTANCE', 'WGHT_EPI', 'DUR_03', 'DURATION', 'ENDTIME', 'LOCATION', 'STARTIME', 'TUI_01',
+        'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E','TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I', 'TUI_06J',]
     # Load the episode data
-    df_episode_2022 = load_sas_filtered_by_chunk(GSS_2022_SPSS_episode, cols_i_want,
-                                                          chunk_size=100000)  # Adjust chunk_size if needed    #print(df_episode_2022.head(10))
-    print_unique_counts(df_episode_2022)
+    df_episode_2022 = load_sas_filtered_by_chunk(GSS_2022_SPSS_episode, cols_i_want, chunk_size=100000)
+    print(df_episode_2022.head(10))
+    #describe_unique_values(df_episode_2022, exclude_cols=["PUMFID"])
 
 
 
