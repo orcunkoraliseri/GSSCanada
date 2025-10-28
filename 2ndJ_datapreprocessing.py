@@ -307,6 +307,21 @@ def describe_unique_values(df, exclude_cols=None):
         print(f"\n--- Column: {col} ---")
         print(f"Unique count: {len(uniques)}")
         print("Unique values:", uniques)
+def save_df_to_csv(df, csv_file_path, num_rows=None):
+    print(f"Attempting to save data to: {csv_file_path}")
+
+    if num_rows is not None and isinstance(num_rows, int) and num_rows > 0:
+        # Save only the first 'num_rows'
+        rows_to_save = df.head(num_rows)
+        rows_to_save.to_csv(csv_file_path, index=False)
+        print(f"✅ Successfully saved the first {len(rows_to_save)} rows to CSV.")
+    elif num_rows is None:
+        # Save the entire DataFrame
+        df.to_csv(csv_file_path, index=False)
+        print(f"✅ Successfully saved all {len(df)} rows to CSV.")
+    else:
+         print("❌ Error: 'num_rows' must be a positive integer or None.")
+         return
 
 if __name__ == '__main__':
     """
@@ -325,15 +340,16 @@ if __name__ == '__main__':
     GSS_2022_SPSS_episode = "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Data Sources/Canada_2022/Data_Données/TU_ET_2022_Episode_PUMF.sas7bdat"
 
     #2005
-    columns_to_load_2005 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "DURATION", "PLACE",
+    columns_to_load_2005 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE",
         "ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"]
 
-    #df_2005_episode, meta = load_spss_file(GSS_2005_SPSS_episode, selected_columns=columns_to_load_2005)
-    #print("df_2005_episode", df_2005_episode.head(10))
+    df_2005_episode, meta = load_spss_file(GSS_2005_SPSS_episode, selected_columns=columns_to_load_2005)
+    #print("df_2005_episode", df_2005_episode.head(50))
     #describe_unique_values(df_2005_episode, exclude_cols=["RECID", "PUMFID", "WGHT_PER"])
+    save_df_to_csv(df_2005_episode, "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/sample_2005.csv", num_rows=100)
 
     #2010 - gemini
-    columns_to_load_2010 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "DURATION", "PLACE",
+    columns_to_load_2010 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE",
         "ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"]
     #df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010, selected_columns=columns_to_load_2010)
     #print("df_2010_episode", df_2010_episode.head(10))
@@ -341,7 +357,7 @@ if __name__ == '__main__':
 
     # 2015 - Claude
     # Specify only the columns you need
-    columns_needed = ['PUMFID', 'EPINO', 'WGHT_EPI', 'TOTEPISO', 'TUI_01', 'STARTIME', 'ENDTIME', 'DURATION',
+    columns_needed = ['PUMFID', 'EPINO', 'WGHT_EPI', 'TOTEPISO', 'TUI_01', 'STARTIME', 'ENDTIME',
                       'LOCATION', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E', 'TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I',
                       'TUI_06J']
 
@@ -353,11 +369,11 @@ if __name__ == '__main__':
     #2022 - gemini
     # --- Define your desired columns ---
     # Copied from your list (ensure these names exactly match the SAS file)
-    cols_i_want = ['PUMFID', 'INSTANCE', 'WGHT_EPI', 'DUR_03', 'DURATION', 'ENDTIME', 'LOCATION', 'STARTIME', 'TUI_01',
+    cols_i_want = ['PUMFID', 'INSTANCE', 'WGHT_EPI', 'ENDTIME', 'LOCATION', 'STARTIME', 'TUI_01',
         'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E','TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I', 'TUI_06J',]
     # Load the episode data
     df_episode_2022 = load_sas_filtered_by_chunk(GSS_2022_SPSS_episode, cols_i_want, chunk_size=100000)
-    print(df_episode_2022.head(10))
+    #print(df_episode_2022.head(10))
     #describe_unique_values(df_episode_2022, exclude_cols=["PUMFID"])
 
 
