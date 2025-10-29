@@ -58,7 +58,6 @@ def load_dat_with_sps_layout(dat_file_path, sps_file_path, selected_columns=None
     )
     print("Data loaded successfully.")
     return df
-
 #--------------------------------------- Claude - 2015
 def parse_spss_syntax_selective(syntax_file, columns_to_keep=None):
     """
@@ -293,7 +292,6 @@ def load_sas_filtered_by_chunk(sas_file_path, columns_to_keep, chunk_size=100000
     except Exception as e:
         print(f"❌ Error loading or processing SAS file in chunks: {e}")
         return None
-
 #--------------------------------------- EXTRAS
 def describe_unique_values(df, exclude_cols=None):
     if exclude_cols is None:
@@ -322,6 +320,166 @@ def save_df_to_csv(df, csv_file_path, num_rows=None):
     else:
          print("❌ Error: 'num_rows' must be a positive integer or None.")
          return
+def load_csv_to_dataframe(csv_file_path):
+  """
+  Reads a CSV file into a pandas DataFrame.
+
+  Args:
+      csv_file_path (str): The full path to the .csv file.
+
+  Returns:
+      pandas.DataFrame: The loaded DataFrame, or None if an error occurs.
+  """
+  print(f"Reading file: {csv_file_path}...")
+  if not os.path.exists(csv_file_path):
+    print(f"❌ Error: File not found at {csv_file_path}")
+    return None
+
+  try:
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_file_path)
+    print("✅ File loaded successfully.")
+    return df
+  except Exception as e:
+    print(f"❌ Error reading CSV file: {e}")
+    return None
+def print_nan_counts(csv_file_path):
+    """
+    Reads a CSV file into a pandas DataFrame, checks for NaN (missing)
+    values, and prints the count of NaNs for each column that has them.
+
+    Args:
+        csv_file_path (str): The full path to the .csv file.
+
+    Returns:
+        pandas.DataFrame: The loaded DataFrame, or None if an error occurs.
+    """
+
+    # --- 1. Read the CSV File ---
+    print(f"Reading file: {csv_file_path}...")
+    if not os.path.exists(csv_file_path):
+        print(f"❌ Error: File not found at {csv_file_path}")
+        return None
+
+    try:
+        # Read the CSV. Using dtype='str' is safer for mixed-type
+        # data and avoids many parsing errors.
+        df = pd.read_csv(csv_file_path, dtype='str')
+        print("✅ File loaded successfully.")
+    except Exception as e:
+        print(f"❌ Error reading CSV file: {e}")
+        return None
+
+    # --- 2. Calculate NaN (Missing) Counts ---
+
+    # Get the sum of nulls for every column
+    nan_counts_all = df.isnull().sum()
+
+    # Filter this list to get only columns that *have* missing values
+    nan_counts_filtered = nan_counts_all[nan_counts_all > 0]
+
+    # --- 3. Print the Results ---
+    print("\n--- NaN (Missing) Value Counts ---")
+
+    if nan_counts_filtered.empty:
+        print("✅ No missing (NaN) values found in any column.")
+    else:
+        # Ensure pandas prints all columns/rows if the list is long
+        original_max_rows = pd.get_option('display.max_rows')
+        try:
+            pd.set_option('display.max_rows', None)  # Temporarily allow unlimited rows
+            print(nan_counts_filtered)
+        finally:
+            pd.set_option('display.max_rows', original_max_rows)  # Reset to default
+
+    return df
+#--------------------------------------- EDITING
+def load_map_and_save(csv_file_path, column_to_map, activity_mapping, output_csv_path):
+    """
+    Reads a CSV, converts a specific column based on a mapping dictionary,
+    saves the result to a new CSV, prints unmapped values, and returns
+    the modified DataFrame.
+    """
+
+    # --- 1. Read the CSV ---
+    print(f"Reading file: {csv_file_path}")
+    if not os.path.exists(csv_file_path):
+        print(f"❌ Error: File not found at {csv_file_path}")
+        return None
+
+    try:
+        df = pd.read_csv(csv_file_path, dtype='str')
+    except Exception as e:
+        print(f"❌ Error reading CSV: {e}")
+        return None
+
+    # --- 2. Check if column exists ---
+    if column_to_map not in df.columns:
+        print(f"❌ Error: Column '{column_to_map}' not found in the CSV.")
+        print(f"Available columns are: {df.columns.tolist()}")
+        return None
+
+    # --- 3. Store original values & Invert the mapping dictionary ---
+    print("Inverting activity mapping dictionary...")
+
+    # *** NEW: Store a copy of the original string values for comparison ***
+    original_values_str = df[column_to_map].copy()
+
+    try:
+        inverted_map = {
+            old_val: new_val
+            for new_val, old_val_list in activity_mapping.items()
+            for old_val in old_val_list
+        }
+    except Exception as e:
+        print(f"❌ Error processing the mapping dictionary: {e}")
+        return None
+
+    # --- 4. Convert target column and map values ---
+    print(f"Mapping values in column: {column_to_map}...")
+
+    # Convert original column to numeric to match the map's keys
+    # Note: This will turn non-numeric strings (like "Not Stated") into NaN
+    df[column_to_map] = pd.to_numeric(df[column_to_map], errors='coerce')
+
+    # Apply the map. Values not in the map will also become NaN.
+    df[column_to_map] = df[column_to_map].map(inverted_map)
+
+    # *** NEW: Get a mask of all rows that are now NaN ***
+    nan_mask = df[column_to_map].isnull()
+
+    print("✅ Mapping complete.")
+
+    # --- 5. Save the modified DataFrame to a new CSV ---
+    print(f"Attempting to save modified data to: {output_csv_path}")
+    try:
+        output_dir = os.path.dirname(output_csv_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        df.to_csv(output_csv_path, index=False)
+        print(f"✅ Successfully saved modified file to: {output_csv_path}")
+    except Exception as e:
+        print(f"❌ Error saving new CSV: {e}")
+        return None
+
+    # --- 6. *** NEW: Report on Unmapped Values *** ---
+    print("\n--- Unmapped Values Report ---")
+
+    # Use the nan_mask to find the *original string values* that are now NaN
+    unmapped_original_values = original_values_str[nan_mask].unique()
+
+    if len(unmapped_original_values) > 0:
+        print(
+            f"❌ Found {len(unmapped_original_values)} original values in '{column_to_map}' that were not in the mapping and became NaN:")
+        # We print these *original* values so you can see what they were
+        print(list(unmapped_original_values))
+        print("Note: These might include 'Not Stated', 'Refused', or other codes you need to add to your map.")
+    else:
+        print("✅ All values were successfully mapped or were already blank.")
+
+    # --- 7. Return the DataFrame for further use ---
+    return df
 
 if __name__ == '__main__':
     """
@@ -343,17 +501,74 @@ if __name__ == '__main__':
     columns_to_load_2005 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE",
         "ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"]
 
-    df_2005_episode, meta = load_spss_file(GSS_2005_SPSS_episode, selected_columns=columns_to_load_2005)
+    # READING
+    #df_2005_episode, meta = load_spss_file(GSS_2005_SPSS_episode, selected_columns=columns_to_load_2005)
     #print("df_2005_episode", df_2005_episode.head(50))
     #describe_unique_values(df_2005_episode, exclude_cols=["RECID", "PUMFID", "WGHT_PER"])
-    save_df_to_csv(df_2005_episode, "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/sample_2005.csv", num_rows=100)
+    df_2005_episode_filtered =  "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/full_2005.csv"
+    #save_df_to_csv(df_2005_episode, df_2005_episode_filtered, num_rows=None)
+
+    # EDITING
+    # 1. Your mapping dictionary
+    mapping_2005 = {
+        1: [2, 11, 12, 21, 22, 23, 40, 50, 60, 70, 80, 600, 832, 842],
+        13: [30, 90, 190, 291, 292, 390, 491, 492, 590, 674, 691, 692, 791, 792, 793, 871, 872, 873, 891, 892, 893, 894, 990],
+        2: [101, 102, 110, 120, 130, 140, 151, 152, 161, 162, 163, 164, 171, 172, 173, 181, 182, 183, 184, 185, 186],
+        3: [200, 211, 212, 213, 220, 230, 240, 250, 260, 271, 272, 281, 282, 671, 672, 673, 675, 676, 677, 678],
+        4: [301, 302, 303, 304, 310, 320, 331, 332, 340, 350, 361, 362, 370, 380],
+        7: [400, 410, 411, 480],
+        6: [430, 431],
+        9: [440, 751, 752, 753, 754, 760, 770, 780],
+        5: [450, 460, 470],
+        8: [500, 511, 512, 520, 530, 540, 550, 560, 580],
+        12: [610, 620, 630, 640, 642, 651, 652, 660, 661, 680, 800],
+        10: [701, 702, 711, 712, 713, 720, 730, 741, 742, 743, 831, 841, 850, 861, 862, 863, 864, 865, 866, 867, 880, 900, 911, 912, 913, 914, 920, 931, 932, 940, 950, 951, 961, 962, 980, 995],
+        11: [801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 821, 822]}
+    csv_2005_episode_converted =  "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/full_2005_converted.csv"
+    #modified_df_2005 = load_map_and_save(df_2005_episode_filtered, "ACTCODE", mapping_2005, csv_2005_episode_converted)
+    #df_2005_episode_converted = load_csv_to_dataframe(csv_2005_episode_converted)
+    #print_nan_counts(csv_2005_episode_converted)
+    #print("df_2005_episode", df_2005_episode_converted.head(50))
+    csv_2005_episode_converted_sample = "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/sample_2005_converted.csv"
+    #save_df_to_csv(df_2005_episode_converted, csv_2005_episode_converted_sample, num_rows=100)
+
+    ####################################################################################################################
 
     #2010 - gemini
     columns_to_load_2010 = ["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE",
         "ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"]
-    #df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010, selected_columns=columns_to_load_2010)
+    df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010, selected_columns=columns_to_load_2010)
     #print("df_2010_episode", df_2010_episode.head(10))
     #describe_unique_values(df_2010_episode, exclude_cols=["RECID"])
+    df_2010_episode_filtered =  "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/full_2010.csv"
+    save_df_to_csv(df_2010_episode, df_2010_episode_filtered, num_rows=None)
+
+    # EDITING
+    # 1. Your mapping dictionary
+    mapping_2010 = {
+        1: ["11", "12", "21", "22", "23", "40", "50", "60", "70", "80.1", "80.2", "80.3", "600", "832", "842"],
+        13: ["30", "90", "190", "291", "292", "390", "491", "492", "590", "674", "691", "692", "791", "792", "793", "871", "872", "873", "891", "892", "893", "894", "990"],
+        2: ["101", "102", "110", "120", "130", "140", "151", "152", "161", "162", "163", "164", "171.1", "171.2", "172", "173", "181.1", "181.2", "181.3", "182", "183", "184", "185", "186", "671.2"],
+        3: ["200.1", "200.2", "200.3", "211", "212", "213", "220", "230.1", "230.2", "240", "250.1", "250.2", "260.1", "271.1", "271.2", "271.3", "272.1", "272.2", "281.4", "281.5", "281.8", "281.9", "282.1", "282.2", "282.9", "671.1", "672", "673.1", "673.2", "673.3", "673.4", "673.5", "673.9", "675.1", "675.2", "675.3", "675.4", "675.9", "676", "677", "678"],
+        4: ["301", "302.1", "302.2", "302.3", "302.4", "302.9", "303", "304", "310.1", "310.2", "310.3", "320", "331", "332.1", "332.2", "340.1", "340.2", "350.1", "350.2", "350.3", "350.9", "361", "362", "370", "380.1", "380.2", "380.3", "380.4", "380.9"],
+        7: ["400", "410.1", "410.2", "410.3", "411", "480"],
+        6: ["430", "431"],
+        9: ["440", "751", "752", "753", "754", "760", "770", "780.2"],
+        5: ["450", "460", "470"],
+        8: ["500", "511", "512", "520", "530.1", "530.2", "540", "550", "560.1", "560.2", "580.1", "580.9"],
+        12: ["610", "620", "630", "640", "642", "651", "652", "660.1", "660.2", "660.3", "660.4", "660.5", "660.9", "661", "680.1", "680.2", "800"],
+        10: ["701", "702", "711", "720", "730", "741", "742", "743", "831", "841", "850.1", "850.2", "861", "862", "862.2", "863", "864", "865", "866", "867.1", "867.9", "880", "900.1", "900.2", "911", "912", "913", "914.1", "914.9", "920", "931", "932.1", "932.2", "940.1", "940.2", "950", "951", "951.1", "951.3", "961", "962", "980.1", "980.9", "995"],
+        11: ["801.1", "801.2", "801.4", "801.5", "801.6", "801.7", "801.8", "802.1", "802.2", "803.1", "803.2", "804.1", "804.2", "805.1", "805.2", "805.3", "806.1", "806.2", "807.1", "807.2", "807.3", "807.4", "808", "809", "810", "810.9", "811", "812", "813", "814", "815", "816", "821.1", "821.2", "821.3", "822"]}
+
+    csv_2010_episode_converted =  "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/full_2010_converted.csv"
+    modified_df_2010 = load_map_and_save(df_2010_episode_filtered, "ACTCODE", mapping_2010, csv_2010_episode_converted)
+    df_2010_episode_converted = load_csv_to_dataframe(csv_2010_episode_converted)
+    print_nan_counts(csv_2010_episode_converted)
+    #print("df_2010_episode", df_2010_episode_converted.head(50))
+    #df_2010_episode_converted_sample = "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/sample_2010_converted.csv"
+    #save_df_to_csv(df_2010_episode_converted, df_2010_episode_converted_sample, num_rows=100)
+
+    ####################################################################################################################
 
     # 2015 - Claude
     # Specify only the columns you need
@@ -372,7 +587,7 @@ if __name__ == '__main__':
     cols_i_want = ['PUMFID', 'INSTANCE', 'WGHT_EPI', 'ENDTIME', 'LOCATION', 'STARTIME', 'TUI_01',
         'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E','TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I', 'TUI_06J',]
     # Load the episode data
-    df_episode_2022 = load_sas_filtered_by_chunk(GSS_2022_SPSS_episode, cols_i_want, chunk_size=100000)
+    #df_episode_2022 = load_sas_filtered_by_chunk(GSS_2022_SPSS_episode, cols_i_want, chunk_size=100000)
     #print(df_episode_2022.head(10))
     #describe_unique_values(df_episode_2022, exclude_cols=["PUMFID"])
 
