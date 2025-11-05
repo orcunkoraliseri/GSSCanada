@@ -6,20 +6,24 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 1000)  # Adjust as needed, or use None
 #--------------------------------------- GEMINI - 2005
-def load_spss_file(file_path, selected_columns=None, output_csv=None):
+def load_spss_file(file_path, selected_columns=None, output_csv=None, printNan=False):
     print(f"Reading file: {file_path}...")
 
     if selected_columns is not None:
         df, meta = pyreadstat.read_sav(file_path, usecols=selected_columns)
     else:
         df, meta = pyreadstat.read_sav(file_path)
-    print("Loaded shape:", df.shape)
-    print("df_2005_episode", df.head(50))
-    describe_unique_values(df, exclude_cols=["RECID", "PUMFID", "WGHT_PER"])
+    # BALANCE - CHECK
+    if printNan:
+        print("Loaded shape:", df.shape)
+        print("df_2005_episode", df.head(50))
+        describe_unique_values(df, exclude_cols=["RECID", "PUMFID", "WGHT_PER"])
+    else:
+        pass
     save_df_to_csv(df, output_csv, num_rows=None)
     return df
 #--------------------------------------- GEMINI - 2010
-def load_dat_with_sps_layout(dat_file_path, sps_file_path, selected_columns=None, output_csv=None):
+def load_dat_with_sps_layout(dat_file_path, sps_file_path, selected_columns=None, output_csv=None, printNan=False):
     """
     Reads a fixed-width .DAT file using SPSS .sps layout (DATA LIST),
     with optional column filtering via `selected_columns`.
@@ -60,8 +64,13 @@ def load_dat_with_sps_layout(dat_file_path, sps_file_path, selected_columns=None
         names=column_names,
         dtype="str"
     )
-    print("Data loaded successfully.")
-    describe_unique_values(df, exclude_cols=["RECID"])
+    # BALANCE - CHECK
+    if printNan:
+        print("Data loaded successfully.")
+        describe_unique_values(df, exclude_cols=["RECID"])
+    else:
+        pass
+
     save_df_to_csv(df, output_csv, num_rows=None)
     return df
 #--------------------------------------- Claude - 2015
@@ -119,7 +128,7 @@ def parse_spss_syntax_selective(syntax_file, columns_to_keep=None):
         variables.append((var_name, start_pos, end_pos, width, dtype))
 
     return variables
-def read_gss_data_selective(data_file, syntax_file, columns_to_keep=None, chunksize=10000,output_csv=None):
+def read_gss_data_selective(data_file, syntax_file, columns_to_keep=None, chunksize=10000,output_csv=None, printNan=False):
     # Parse syntax file for selected columns only
     variables = parse_spss_syntax_selective(syntax_file, columns_to_keep)
 
@@ -166,21 +175,22 @@ def read_gss_data_selective(data_file, syntax_file, columns_to_keep=None, chunks
         final_columns = [col for col in columns_to_keep if col in df.columns]
         df = df[final_columns]
 
-    describe_unique_values(df, exclude_cols=["PUMFID"])
+    # BALANCE - CHECK
+    if printNan:
+        print("Data loaded successfully.")
+        describe_unique_values(df, exclude_cols=["PUMFID"])
+    else:
+        pass
     save_df_to_csv(df, output_csv, num_rows=None)
 
     return df
 #--------------------------------------- GEMINI - 2022
-def read_SAS(sas_file_path, columns_to_keep, chunk_size=100000, encoding='utf-8', output_csv=None):
+def read_SAS(sas_file_path, columns_to_keep, chunk_size=100000, encoding='utf-8', output_csv=None, printNan=False):
     print(f"Reading SAS file in chunks: {sas_file_path}...")
     if not os.path.exists(sas_file_path):
         print(f"❌ Error: File not found at {sas_file_path}")
         return None
 
-    filtered_chunks = []
-
-    # --- Helper function to process the iterator ---
-    # This avoids duplicating the loop code in the try/except blocks
     def process_reader(reader, columns_to_keep):
         chunks = []
         print(f"Processing chunks and keeping only {len(columns_to_keep)} columns...")
@@ -239,12 +249,17 @@ def read_SAS(sas_file_path, columns_to_keep, chunk_size=100000, encoding='utf-8'
     full_df = pd.concat(filtered_chunks, ignore_index=True)
     print("✅ Data loaded and filtered successfully.")
 
-    print(full_df.head(10))
-    describe_unique_values(full_df, exclude_cols=["PUMFID"])
+    # BALANCE - CHECK
+    if printNan:
+        print(full_df.head(10))
+        describe_unique_values(full_df, exclude_cols=["PUMFID"])
+    else:
+        pass
+
     save_df_to_csv(full_df, output_csv, num_rows=None)
-    return full_df#--------------------------------------- EXTRAS
+    return full_df
 #--------------------------------------- EDITING
-def load_map_and_save(df, columns_to_map, mapping, output_csv_path=None):
+def load_map_and_save(df, columns_to_map, mapping, output_csv_path=None, printNan=False):
 
     # --- 2. Normalize and Check Columns ---
     # Convert input to a list, whether it's a string or a list
@@ -303,7 +318,10 @@ def load_map_and_save(df, columns_to_map, mapping, output_csv_path=None):
     print(f"✅ Successfully saved modified file to: {output_csv_path}")
 
     # BALANCE - CHECK
-    print_nan_counts(df)
+    if printNan:
+        print_nan_counts(df)
+    else:
+        pass
 
     # --- 6. Return the DataFrame for further use ---
     return df
@@ -406,16 +424,11 @@ def save_df_to_csv(df, csv_file_path, num_rows=None):
          print("❌ Error: 'num_rows' must be a positive integer or None.")
          return
 def print_nan_counts(df):
-    # --- 2. Calculate NaN (Missing) Counts ---
-    # Get the sum of nulls for every column
     nan_counts_all = df.isnull().sum()
-
     # Filter this list to get only columns that *have* missing values
     nan_counts_filtered = nan_counts_all[nan_counts_all > 0]
-
     # --- 3. Print the Results ---
     print("\n--- NaN (Missing) Value Counts ---")
-
     if nan_counts_filtered.empty:
         print("✅ No missing (NaN) values found in any column.")
     else:
@@ -426,7 +439,6 @@ def print_nan_counts(df):
             print(nan_counts_filtered)
         finally:
             pd.set_option('display.max_rows', original_max_rows)  # Reset to default
-
     print("converted_dataframe")
     print(df.head(50))
 
@@ -454,7 +466,8 @@ if __name__ == '__main__':
     # READING
     df_2005_episode = load_spss_file(GSS_2005_SPSS_episode,
                                      selected_columns=["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE", "ALONE",
-                                                       "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"])
+                                                       "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"],
+                                     printNan=False)
 
     # EDITING - OCCUPANT ACTIVITY
     modified_df_2005 = load_map_and_save(df_2005_episode,
@@ -465,26 +478,30 @@ if __name__ == '__main__':
                                         4: [301, 302, 303, 304, 310, 320, 331, 332, 340, 350, 361, 362, 370, 380], 7: [400, 410, 411, 480], 6: [430, 431], 9: [440, 751, 752, 753, 754, 760, 770, 780], 5: [450, 460, 470],
                                         8: [500, 511, 512, 520, 530, 540, 550, 560, 580], 12: [610, 620, 630, 640, 642, 651, 652, 660, 661, 680, 800],
                                         10: [701, 702, 711, 712, 713, 720, 730, 741, 742, 743, 831, 841, 850, 861, 862, 863, 864, 865, 866, 867, 880, 900, 911, 912, 913, 914, 920, 931, 932, 940, 950, 951, 961, 962, 980, 995],
-                                        11: [801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 821, 822]})
+                                        11: [801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 821, 822]},
+                                         printNan=False)
 
     #----------------
     # EDITING - PRESENCE
     df05EP_ACT_PRE_convert = load_map_and_save(modified_df_2005,
                                                columns_to_map="PLACE",
-                                               mapping={1: ["1"], 2: ["2", "8"], 3: ["3"], 4: ["9"], 5: ["6", "7"], 6: ["10"], 7: ["4"], 8: ["5"], 9: ["11"], 10: ["12"], 11: ["13"],12: ["14"], 13: ["15", "16", "18"], 14: ["20"], 15: ["17"], 16: ["19"], 17: ["21"], 18: ["97", "98", "99"]}, )
+                                               mapping={1: ["1"], 2: ["2", "8"], 3: ["3"], 4: ["9"], 5: ["6", "7"], 6: ["10"], 7: ["4"], 8: ["5"], 9: ["11"], 10: ["12"], 11: ["13"],12: ["14"], 13: ["15", "16", "18"], 14: ["20"], 15: ["17"], 16: ["19"], 17: ["21"], 18: ["97", "98", "99"]},
+                                               printNan=False)
 
     # ----------------
     # EDITING - CO-PRESENCE
     # CONVERSION
     df05EP_ACT_PRE_coPRE_convert = load_map_and_save(df05EP_ACT_PRE_convert,
                                                      columns_to_map=["ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"],
-                                                     mapping={1:[1], 2:[2], 9: [7,8,9]})
+                                                     mapping={1:[1], 2:[2], 9: [7,8,9]},
+                                                     printNan=False)
 
     # MERGING
     df05EP_ACT_PRE_coPRE_complete = merge_coPresence(df05EP_ACT_PRE_coPRE_convert,
                                                      merge_map={"otherHHs": ["OTHFAM", "NHSDCL15", "NHSDC15P"],"parents": ["PARHSD", "NHSDPAR"]},
                                                      output_csv_path="/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/out05EP_ACT_PRE_coPRE.csv",
-                                                     rename_map={"ALONE": "Alone","SPOUSE": "Spouse","CHILDHSD": "Children","MEMBHSD": "otherInFAMs", "FRIENDS": "Friends", "OTHERS": "Others"})
+                                                     rename_map={"RECID":"occID", "ACTCODE":"occACT", "STARTIME":"start", "ENDTIME":"end", "PLACE":"occPRE",
+                                                                 "ALONE": "Alone","SPOUSE": "Spouse","CHILDHSD": "Children","MEMBHSD": "otherInFAMs", "FRIENDS": "Friends", "OTHERS": "Others"})
 
     ####################################################################################################################
     #2010 - gemini
@@ -492,7 +509,8 @@ if __name__ == '__main__':
     # READING
     df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010,
                                                selected_columns=["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE", "ALONE", "SPOUSE", "CHILDHSD",
-                                                                 "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"],)
+                                                                 "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"],
+                                               printNan=False)
     # ----------------
     # EDITING - OCC ACTIVITY
     modified_df_2010 = load_map_and_save(df_2010_episode,
@@ -504,25 +522,29 @@ if __name__ == '__main__':
                                             7: ["400", "410.1", "410.2", "410.3", "411", "480"], 6: ["430", "431"], 9: ["440", "751", "752", "753", "754", "760", "770", "780.1", "780.2"], 5: ["450", "460", "470"],
                                             8: ["500", "511", "512", "520", "530.1", "530.2", "540", "550", "560.1", "560.2", "580.1", "580.9"], 12: ["610", "620", "630", "640", "642", "651", "652", "660.1", "660.2", "660.3", "660.4", "660.5", "660.9", "661", "680.1", "680.2", "800"],
                                             10: ["701", "702", "711", "712", "713",  "720", "730", "741", "742", "743", "831", "841", "850.1", "850.2", "861", "862", "862.1", "862.2", "863", "864", "865", "866", "867.1", "867.9", "880", "900.1", "900.2", "911", "912", "913", "914.1", "914.9", "920", "931", "932.1", "932.2", "940.1", "940.2", "950", "951", "951.1",  "951.2", "951.3", "961", "962", "980.1", "980.9", "995"],
-                                            11: ["801.1", "801.2", "801.3", "801.4", "801.5", "801.6", "801.7", "801.8", "802.1", "802.2", "803.1", "803.2", "804.1", "804.2", "805.1", "805.2", "805.3", "806.1", "806.2", "807.1", "807.2", "807.3", "807.4", "808", "809", "810", "810.9",'810.1', "811", "812", "813", "814", "815", "816", "821.1", "821.2", "821.3", "822"]})
+                                            11: ["801.1", "801.2", "801.3", "801.4", "801.5", "801.6", "801.7", "801.8", "802.1", "802.2", "803.1", "803.2", "804.1", "804.2", "805.1", "805.2", "805.3", "806.1", "806.2", "807.1", "807.2", "807.3", "807.4", "808", "809", "810", "810.9",'810.1', "811", "812", "813", "814", "815", "816", "821.1", "821.2", "821.3", "822"]},
+                                         printNan=False)
     # ----------------
     # EDITING - PRESENCE
     df10EP_ACT_PRE_convert = load_map_and_save(modified_df_2010,
                                                columns_to_map="PLACE",
                                                mapping={1: ["1"], 2: ["2", "8"], 3: ["3"], 4: ["9"], 5: ["6", "7"], 6: ["10"], 7: ["4"], 8: ["5"], 9: ["11"], 10: ["12"],
-                                                        11: ["13"], 12: ["14"], 13: ["15", "16", "18"], 14: ["20"], 15: ["17"], 16: ["19"], 17: ["21"], 18: ["97", "98", "99"]})
+                                                        11: ["13"], 12: ["14"], 13: ["15", "16", "18"], 14: ["20"], 15: ["17"], 16: ["19"], 17: ["21"], 18: ["97", "98", "99"]},
+                                               printNan=False)
     # ----------------
     # EDITING - CO-PRESENCE
     # CONVERSION
     df10EP_ACT_PRE_coPRE_convert = load_map_and_save(df10EP_ACT_PRE_convert,
                                                      columns_to_map=["ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"],
-                                                     mapping={1:[1], 2:[2], 9: [7,8,9]})
+                                                     mapping={1:[1], 2:[2], 9: [7,8,9]},
+                                                     printNan=False)
 
     # MERGING
     df10EP_ACT_PRE_coPRE_complete = merge_coPresence(df10EP_ACT_PRE_coPRE_convert,
                                                      merge_map={"otherHHs": ["OTHFAM", "NHSDCL15", "NHSDC15P"],"parents": ["PARHSD", "NHSDPAR"]},
                                                      output_csv_path="/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/out10EP_ACT_PRE_coPRE.csv",
-                                                     rename_map={"ALONE": "Alone","SPOUSE": "Spouse","CHILDHSD": "Children","MEMBHSD": "otherInFAMs", "FRIENDS": "Friends", "OTHERS": "Others"})
+                                                     rename_map={"RECID":"occID", "ACTCODE":"occACT", "STARTIME":"start", "ENDTIME":"end", "PLACE":"occPRE",
+                                                         "ALONE": "Alone","SPOUSE": "Spouse","CHILDHSD": "Children","MEMBHSD": "otherInFAMs", "FRIENDS": "Friends", "OTHERS": "Others"})
 
     ####################################################################################################################
     # 2015 - Claude
@@ -530,39 +552,45 @@ if __name__ == '__main__':
     # READING
     df_2015_episode = read_gss_data_selective(GSS_2015_SPSS_episode, sps_syntax_2015,
                                               columns_to_keep=['PUMFID', 'EPINO', 'WGHT_EPI', 'TOTEPISO', 'TUI_01', 'STARTIME', 'ENDTIME', 'LOCATION', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E', 'TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I','TUI_06J'],
-                                              chunksize=10000)
+                                              chunksize=10000,
+                                              printNan=False)
     # ----------------
     # EDITING - OCCUPANT ACTIVITY
     modified_df_2015 = load_map_and_save(df_2015_episode,
                                          columns_to_map="TUI_01",
                                          mapping= { 5: ["1"], 7: ["2", "3", "4"], 2: ["5", "18", "19", "20", "21", "22", "23", "24", "25", "26"], 6: ["6"], 13: ["7"], 1: ["8", "9", "10", "11", "12", "40"], 8: ["13", "14", "15", "16", "17"],
                                                     3: ["27", "28", "29", "30", "31", "32", "33", "34", "35", "36"], 4: ["37", "38", "39"], 9: ["41", "42"], 12: ["43", "44", "45", "46", "52"], 11: ["47", "48", "49", "50", "51"],
-                                                    10: ["53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"], 14: ["95"]})
+                                                    10: ["53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"], 14: ["95"]},
+                                         printNan=False)
     # ----------------
     # EDITING - PRESENCE
     df15EP_ACT_PRE_convert = load_map_and_save(modified_df_2015,
                                                columns_to_map="LOCATION",
                                                mapping={1: ["300"], 2: ["301", "302"], 3: ["303"], 4: ["305", "304"], 5: ["306"], 6: ["307"], 7: ["309"], 8: ["310"], 9: ["312", "308", "311"], 10: ["313"], 11: ["314"], 12: ["315"], 13: ["316", "320"], 14: ["317"], 15: ["318"],
-                                                        16: ["319"], 17: ["321"], 18: ["996", "997", "998", "999"]})
+                                                        16: ["319"], 17: ["321"], 18: ["996", "997", "998", "999"]},
+                                               printNan=False)
     # ----------------
     # EDITING - CO-PRESENCE
     # CONVERSION
     df15EP_ACT_PRE_coPRE_convert = load_map_and_save(df15EP_ACT_PRE_convert,
                                                      columns_to_map=["TUI_06A", "TUI_06B", "TUI_06C", "TUI_06H", "TUI_06I", "TUI_06G", "TUI_06J", "TUI_06E", "TUI_06D", "TUI_06F"],
-                                                     mapping={1:[1], 2:[2], 9: [9]},)
+                                                     mapping={1:[1], 2:[2], 9: [9]},
+                                                     printNan=False)
 
     # MERGING
     df15EP_ACT_PRE_coPRE_complete = merge_coPresence(df15EP_ACT_PRE_coPRE_convert,
                                                      merge_map={"otherInFAMs": ["TUI_06D", "TUI_06F"], "friends": ["TUI_06H", "TUI_06I"]},
                                                      output_csv_path="/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/out15EP_ACT_PRE_coPRE.csv",
-                                                     rename_map={"TUI_06A": "Alone", "TUI_06B": "Spouse", "TUI_06C": "Children", "TUI_06G": "otherHHs", "TUI_06J":"others", "TUI_06E":"parents"})
+                                                     rename_map={"PUMFID":"occID", "TUI_01":"occACT", "STARTIME":"start", "ENDTIME":"end", "LOCATION":"occPRE",
+                                                         "TUI_06A": "Alone", "TUI_06B": "Spouse", "TUI_06C": "Children", "TUI_06G": "otherHHs", "TUI_06J":"others", "TUI_06E":"parents"})
 
     ####################################################################################################################
     # 2022 - gemini
     """"""
     # READING
     df_2022_episode = read_SAS(GSS_2022_SPSS_episode, columns_to_keep= ['PUMFID', 'INSTANCE', 'WGHT_EPI', 'ENDTIME', 'LOCATION', 'STARTIME', 'TUI_01', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E','TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I', 'TUI_06J'],
-                                 chunk_size=100000)
+                                 chunk_size=100000,
+                               printNan=False)
 
     # ----------------
     # EDITING - OCCUPANT ACTIVITY
@@ -572,26 +600,30 @@ if __name__ == '__main__':
                                         3: ["301", "302", "303", "304", "305", "306", "307", "399", "351", "352", "359"], 4: ["261", "262", "263", "264", "269"], 5: ["101", "102", "103", "104", "109"], 6: ["151", "152", "159"], 7: ["126", "127", "128", "129", "130", "199"],
                                         8: ["154", "601", "602", "603", "604", "699"], 9: ["701", "702", "799"], 10: ["1101", "1102", "1103", "1104", "1199", "1201", "1202", "1203", "1204", "1299"], 11: ["1001", "1002", "1003", "1004", "1005", "1105", "1099", "1106"],
                                         12: ["801", "802", "803", "804", "805", "806", "807", "808", "899", "901", "902", "903", "999"], 13: ["401", "402", "403", "404", "405", "406", "407", "408", "409", "410", "411", "412", "413", "414", "415", "416", "499"],
-                                        14: ["1301", "1302", "1303", "1304", "9999"]})
+                                        14: ["1301", "1302", "1303", "1304", "9999"]},
+                                         printNan=False)
     # ----------------
     # EDITING - PRESENCE
     df22EP_ACT_PRE_convert = load_map_and_save(modified_df_2022,
                                                columns_to_map="LOCATION",
                                                mapping={1: ["3300"], 2: ["3301", "3302"], 3: ["3303"], 4: ["3305", "3304"], 5: ["3306"], 6: ["3307"], 7: ["3309"], 8: ["3310"],
                                                 9: ["3312", "3308", "3311"], 10: ["3313"], 11: ["3314"], 12: ["3315"], 13: ["3316"], 14: ["3317"], 15: ["3318"],
-                                                16: ["3320"], 17: ["3323", "3399", "3319"], 18: ["9996", "9997", "9998", "9999"]})
+                                                16: ["3320"], 17: ["3323", "3399", "3319"], 18: ["9996", "9997", "9998", "9999"]},
+                                               printNan=False)
 
     # ----------------
     # EDITING - CO-PRESENCE
     # CONVERSION
     df22EP_ACT_PRE_coPRE_convert = load_map_and_save(df22EP_ACT_PRE_convert,
                                                      columns_to_map= ["TUI_06A", "TUI_06B", "TUI_06C", "TUI_06H", "TUI_06I", "TUI_06G", "TUI_06J", "TUI_06E", "TUI_06D", "TUI_06F"],
-                                                     mapping={1:[1], 2:[2], 9: [9]})
+                                                     mapping={1:[1], 2:[2], 9: [9]},
+                                                     printNan=False)
 
     # MERGING
     df22EP_ACT_PRE_coPRE_complete = merge_coPresence(df22EP_ACT_PRE_coPRE_convert, merge_map={"otherInFAMs": ["TUI_06D", "TUI_06F"], "friends": ["TUI_06H", "TUI_06I"]},
                                                      output_csv_path="/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/out22EP_ACT_PRE_coPRE.csv",
-                                                     rename_map={"TUI_06A": "Alone", "TUI_06B": "Spouse", "TUI_06C": "Children", "TUI_06G": "otherHHs", "TUI_06J":"others", "TUI_06E":"parents"})
+                                                     rename_map={"PUMFID":"occID", "TUI_01":"occACT", "STARTIME":"start", "ENDTIME":"end", "LOCATION":"occPRE", "INSTANCE": "EPINO",
+                                                     "TUI_06A": "Alone", "TUI_06B": "Spouse", "TUI_06C": "Children", "TUI_06G": "otherHHs", "TUI_06J":"others", "TUI_06E":"parents"})
 
     # ----------------
     # EDITING - OTHER COLUMNS
