@@ -56,18 +56,14 @@ def read_select_and_save(dat_file_path, sps_file_path, columns_to_select, output
     print("Data loaded. Filtering columns...")
 
     # --- 2. CASE-INSENSITIVE FILTERING ---
-    # Create a mapping of {UPPERCASE_NAME: Original-Case-Name}
-    # e.g., {'AGEGRP': 'AGEGRP', 'HH_ID': 'HH_ID'}
     sps_name_map = {name.upper(): name for name in all_sps_col_names}
 
     final_columns_to_keep = []
     missing_cols = []
 
-    # Loop through user's list and find the correct original-case name
     for col in columns_to_select:
         col_upper = col.upper()
         if col_upper in sps_name_map:
-            # Add the correctly cased name from the file (e.g., 'AGEGRP')
             final_columns_to_keep.append(sps_name_map[col_upper])
         else:
             missing_cols.append(col)
@@ -75,40 +71,24 @@ def read_select_and_save(dat_file_path, sps_file_path, columns_to_select, output
     if missing_cols:
         print(f"Warning: The following requested columns were not found in the .sps file: {missing_cols}")
 
-    # Select the columns
     df_filtered = df[final_columns_to_keep]
 
-    # --- 3. SAVE TO CSV ---
+    # --- 3. CONVERT COLUMNS TO UPPERCASE (NEW STEP) ---
+    print("Converting final column headers to uppercase.")
+    df_filtered.columns = df_filtered.columns.str.upper()
+
+    # --- 4. SAVE TO CSV ---
     print(f"Saving {len(final_columns_to_keep)} columns to {output_csv_path}...")
     df_filtered.to_csv(output_csv_path, index=False)
 
     print("Save complete.")
     print(df_filtered.head())
     return df_filtered
-
-
 def filter_and_save(csv_file_path: str,
-                        values_to_remove_dict: Dict[str, Any],
-                        output_csv_path: str,
-                        value_replace_dict: Dict[str, Dict] = None,
-                        recategorize_dict: Dict[str, Dict] = None,
-                        column_rename_dict: Dict[str, str] = None):
-    """
-    Reads a CSV, removes rows, replaces values, re-categorizes values,
-    renames columns, and saves the cleaned data to a new CSV.
-
-    Args:
-        csv_file_path (str): Path to the input CSV file.
-        values_to_remove_dict (dict): Dict of values to remove.
-        output_csv_path (str): Path to save the filtered output CSV file.
-        value_replace_dict (dict, optional): Nested dict for 1-to-1
-            replacements, e.g., {'COL_A': {1: 2, 0: 1}}.
-        recategorize_dict (dict, optional): Nested dict for many-to-one
-            replacements, e.g., {'COL_B': {'NewVal_A': [1, 2, 3],
-                                           'NewVal_B': [4, 5, 6]}}.
-        column_rename_dict (dict, optional): A dictionary to rename
-            columns, e.g., {'OldName': 'NewName'}.
-    """
+                    values_to_remove_dict: Dict[str, Any],
+                    output_csv_path: str, value_replace_dict: Dict[str, Dict] = None,
+                    recategorize_dict: Dict[str, Dict] = None,
+                    column_rename_dict: Dict[str, str] = None):
     # 1. Read the CSV (as strings for safe filtering).
     df = pd.read_csv(csv_file_path, dtype=str)
     initial_rows = len(df)
@@ -142,6 +122,14 @@ def filter_and_save(csv_file_path: str,
             df[col_name] = df[col_name].replace(replace_map_str)
             print(f"  - 1-to-1 values replaced in column '{col_name}'.")
 
+    # --- 6. Rename columns ---
+    if column_rename_dict:
+        missing_keys = list(set(column_rename_dict.keys()) - set(df.columns))
+        if missing_keys:
+            print(f"  - Warning: Original columns not found for renaming: {missing_keys}")
+        df = df.rename(columns=column_rename_dict)
+        print("Column renaming step complete.")
+
     # --- 5. NEW STEP: Re-categorize (many-to-one) values ---
     if recategorize_dict:
         print("Starting value re-categorization...")
@@ -165,15 +153,6 @@ def filter_and_save(csv_file_path: str,
             df[col_name] = df[col_name].replace(final_replace_map)
             print(f"  - Values re-categorized in column '{col_name}'.")
 
-    # --- 6. Rename columns ---
-    if column_rename_dict:
-        missing_keys = list(set(column_rename_dict.keys()) - set(df.columns))
-        if missing_keys:
-            print(f"  - Warning: Original columns not found for renaming: {missing_keys}")
-
-        df = df.rename(columns=column_rename_dict)
-        print("Column renaming step complete.")
-
     # --- 7. Save the final filtered DataFrame ---
     rows_removed = initial_rows - len(df)
     print(f"\nRemoved {rows_removed} rows in total.")
@@ -186,28 +165,25 @@ def filter_and_save(csv_file_path: str,
     print(df)
 
     return df
-
-def add_household_size_to_csv(csv_file_path: str):
-    """
-    Reads a CSV file, adds an 'HHSIZE' column based on 'HH_ID'
-    counts, and saves back to the same file.
-
-    Note: This function has no error handling.
-    """
+def feature_engineering(csv_file_path: str):
     # 1. Read the CSV file
     df = pd.read_csv(csv_file_path)
 
     # 2. Calculate HHSIZE
     # This will raise a KeyError if 'HH_ID' is not in df.columns
     hh_size_series = df.groupby('HH_ID')['HH_ID'].transform('count')
+    ef_size_series = df.groupby('EF_ID')['EF_ID'].transform('count')
+    cf_size_series = df.groupby('CF_ID')['CF_ID'].transform('count')
 
-    # 3. Add or update the 'HHSIZE' column
+    # 3. Add or update the columns
     df['HHSIZE'] = hh_size_series
+    df['EFSIZE'] = ef_size_series
+    df['CFSIZE'] = cf_size_series
 
     # 4. Save the modified DataFrame back to the same file
     df.to_csv(csv_file_path, index=False)
 
-    print(f"Successfully added 'HHSIZE' and saved to {csv_file_path}")
+    print(f"Successfully added 'HHSIZE', 'EFSIZE', 'CFSIZE' and saved to {csv_file_path}")
 
 # BALANCE & CHECK
 def print_column_info(csv_file_path):
@@ -237,10 +213,18 @@ def print_column_info(csv_file_path):
     # 4. Print the head of the resulting DataFrame
     print("\n--- Head of the final, filtered data ---")
     print(df)
-
 # VISUALIZATION
 def plot_value_counts(csv_file_path, columns_to_exclude: list, output_image_path: str):
-    # 1. Ensure output directory exists (by checking the file's parent)
+    """
+    Reads a CSV and generates one image with subplots for all columns,
+    *except* for those specified in the exclusion list.
+
+    - Plots columns with < 50 unique values as a bar chart.
+    - Plots columns with > 50 unique values as a histogram,
+      using the 1st to 99th percentile as the range to
+      prevent outliers from skewing the view.
+    """
+    # 1. Ensure output directory exists
     output_file = pathlib.Path(output_image_path)
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -249,19 +233,9 @@ def plot_value_counts(csv_file_path, columns_to_exclude: list, output_image_path
 
     # 3. Determine which columns to plot
     all_columns = df.columns.tolist()
-
-    # Filter out excluded columns
-    columns_to_plot_prelim = [
+    columns_to_plot = [
         col for col in all_columns if col not in columns_to_exclude
     ]
-
-    # Filter out columns with too many unique values (guardrail)
-    columns_to_plot = []
-    for col in columns_to_plot_prelim:
-        if df[col].nunique() > 50:
-            print(f"Info: Column '{col}' has > 50 unique values. Skipping plot.")
-        else:
-            columns_to_plot.append(col)
 
     if not columns_to_plot:
         print("No columns to plot. Aborting.")
@@ -269,49 +243,88 @@ def plot_value_counts(csv_file_path, columns_to_exclude: list, output_image_path
 
     # 4. Calculate subplot grid size
     n_plots = len(columns_to_plot)
-    ncols = 5  # Let's fix at 2 columns for better readability
+    ncols = 5
     nrows = int(math.ceil(n_plots / ncols))
 
     # 5. Create the subplots
-    # We create a figure 'fig' and an array of axes 'axes'
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(15, 3.5 * nrows))
-
-    # Flatten the 2D 'axes' array into a 1D list for easy iteration
-    axes_flat = axes.flatten()
+    if n_plots == 1:
+        axes_flat = [axes]
+    else:
+        axes_flat = axes.flatten()
 
     print(f"--- Generating {n_plots} subplots in one image ---")
 
-    # 6. Loop through each column and its assigned subplot axis
+    # 6. Loop through each column
     for i, col in enumerate(columns_to_plot):
-        ax = axes_flat[i]  # Get the current axis
+        ax = axes_flat[i]
+        n_unique = df[col].nunique()
 
-        # Get the value counts and sort by the index (the category)
-        counts = df[col].value_counts().sort_index()
+        if n_unique > 50:
+            # --- PLOT AS HISTOGRAM (UPDATED LOGIC) ---
+            print(f"Info: Column '{col}' has {n_unique} values. Plotting as histogram.")
 
-        # Plot *directly onto the axis* (ax)
-        counts.plot(kind='bar', ax=ax)
+            data_numeric = pd.to_numeric(df[col], errors='coerce').dropna()
 
-        # Set titles and labels *on the axis*
-        ax.set_title(f"Value Counts for Column: {col}")
-        ax.set_xlabel(col)
-        ax.set_ylabel("Frequency / Count")
-        ax.tick_params(axis='x', rotation=45)
+            if data_numeric.empty:
+                print(f"  - Warning: '{col}' is non-numeric. Skipping plot.")
+                ax.set_title(f"'{col}' is non-numeric")
+                ax.axis('off')
+                continue
+
+            # --- FIX IS HERE: Calculate percentile range ---
+            # This clips extreme outliers for a better view.
+            q01 = data_numeric.quantile(0.01)
+            q99 = data_numeric.quantile(0.99)
+
+            plot_range = None
+            if q01 < q99:
+                plot_range = (q01, q99)
+            # --- END FIX ---
+
+            # Plot the histogram with the new range
+            data_numeric.plot(
+                kind='hist',
+                ax=ax,
+                bins=30,
+                range=plot_range  # Apply the sensible range
+            )
+            ax.set_title(f"Histogram for Column: {col}")
+            ax.set_xlabel(f"{col} (1st-99th percentile)")
+            ax.set_ylabel("Frequency / Count")
+
+        else:
+            # --- PLOT AS BAR CHART (Original logic) ---
+            counts = df[col].value_counts()
+
+            try:
+                counts.index = pd.to_numeric(counts.index)
+                counts = counts.sort_index()
+            except ValueError:
+                counts = counts.sort_index()
+
+            counts.plot(kind='bar', ax=ax)
+            ax.set_title(f"Value Counts for Column: {col}")
+            ax.set_xlabel(col)
+            ax.set_ylabel("Frequency / Count")
+            ax.tick_params(axis='x', rotation=45)
 
     # 7. Turn off any unused subplots
-    # (e.g., if we have 5 plots in a 3x2 grid, turn off the 6th)
     for j in range(n_plots, len(axes_flat)):
         axes_flat[j].axis('off')
 
     # 8. Adjust layout and save the *entire figure*
     fig.tight_layout()
     fig.savefig(output_image_path)
-    plt.close(fig)  # Close the figure to free memory
+    plt.close(fig)
 
     print(f"Successfully saved combined chart to: {output_image_path}")
-
-def plot_comparison_by_column(csv_files_dict: Dict[str, str],
-                              columns_to_exclude: List[str],
-                              output_dir: str):
+def plot_comparison_by_column(csv_files_dict: Dict[str, str], columns_to_exclude: List[str], output_dir: str):
+    """
+    Creates one .png file per column, each containing subplots
+    comparing that column's data across multiple CSVs.
+    All subplots in a figure share the same y-axis range.
+    """
     # 1. Ensure output directory exists
     output_path = pathlib.Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -327,7 +340,7 @@ def plot_comparison_by_column(csv_files_dict: Dict[str, str],
 
     print(f"--- Starting Comparison Plots (excluding {columns_to_exclude}) ---")
 
-    # 3. Loop through each COLUMN we want to compare (e.g., 'AGEGRP')
+    # 3. Loop through each COLUMN we want to compare
     for col in columns_to_plot:
 
         # Guardrail: Check for too many unique values
@@ -338,49 +351,71 @@ def plot_comparison_by_column(csv_files_dict: Dict[str, str],
 
         print(f"Processing column: {col}")
 
+        # --- FIX IS HERE: First pass to get max y-value ---
+        global_y_max = 0
+        counts_data = {}  # Store calculated counts
+
+        for year, file_path in csv_files_dict.items():
+            df = pd.read_csv(file_path, dtype=str, usecols=[col])
+
+            if col not in df.columns:
+                counts_data[year] = None  # Mark as missing
+                continue
+
+            counts = df[col].value_counts()
+
+            # Try to sort the index numerically
+            try:
+                counts.index = pd.to_numeric(counts.index)
+                counts = counts.sort_index()
+            except ValueError:
+                counts = counts.sort_index()
+
+            counts_data[year] = counts  # Store for plotting
+
+            # Update the global max
+            if not counts.empty and counts.max() > global_y_max:
+                global_y_max = counts.max()
+
+        # Set a buffer for the top limit
+        y_axis_limit = global_y_max * 1.1
+        # --- END FIX ---
+
         # 4. Create a new figure with 4 subplots (2x2 grid)
-        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(15, 12))
+        fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(30, 12))
         axes_flat = axes.flatten()
         fig.suptitle(f"Comparison of Column: {col} (2006-2021)", fontsize=16)
 
-        # 5. Loop through the CSV files dictionary
+        # 5. Second pass to plot the data
         plot_num = 0
-        for year, file_path in csv_files_dict.items():
+        for year, counts in counts_data.items():
             if plot_num >= 4:
                 break
 
             ax = axes_flat[plot_num]
-            df = pd.read_csv(file_path, dtype=str, usecols=[col])
 
-            # 6. Plot the data for this year/file
-            counts = df[col].value_counts()
+            if counts is None:
+                ax.set_title(f"'{col}' not found for {year}")
+                ax.axis('off')
+            else:
+                # Plot the pre-calculated counts
+                counts.plot(kind='bar', ax=ax)
 
-            # --- FIX FOR SORTING IS HERE ---
-            # Try to convert the index (categories) to numeric
-            # This allows sorting 1, 2, ... 10, 11 instead of 1, 10, 11, 2
-            try:
-                # Convert index to numeric and sort
-                counts.index = pd.to_numeric(counts.index)
-                counts = counts.sort_index()
-            except ValueError:
-                # If conversion fails (e.g., 'M', 'F'), just sort alphabetically
-                counts = counts.sort_index()
-            # --- END FIX ---
+                # Apply the shared y-axis limit
+                ax.set_ylim(0, y_axis_limit)
 
-            counts.plot(kind='bar', ax=ax)
-
-            ax.set_title(f"Year: {year}")
-            ax.set_xlabel(None)
-            ax.set_ylabel("Frequency / Count")
-            ax.tick_params(axis='x', rotation=45)
+                ax.set_title(f"Year: {year}")
+                ax.set_xlabel(None)
+                ax.set_ylabel("Frequency / Count")
+                ax.tick_params(axis='x', rotation=45)
 
             plot_num += 1
 
-        # 7. Turn off any unused subplots
+        # 6. Turn off any unused subplots
         for i in range(plot_num, 4):
             axes_flat[i].axis('off')
 
-        # 8. Save the combined figure
+        # 7. Save the combined figure
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         save_path = output_path / f"{col}_comparison.png"
         fig.savefig(save_path)
@@ -389,10 +424,11 @@ def plot_comparison_by_column(csv_files_dict: Dict[str, str],
         print(f"  -> Saved comparison plot to: {save_path}")
 
 if __name__ == '__main__':
-    BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
+    #BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
+    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal")
 
-    DATA_DIR = BASE_DIR / "DataSources"
-    OUTPUT_DIR = BASE_DIR / "Outputs"
+    DATA_DIR = BASE_DIR / "DataSources_CENSUS"
+    OUTPUT_DIR = BASE_DIR / "Outputs_CENSUS"
 
     # --- 2006 Files ---
     cen06 = DATA_DIR / "cen06.dat"
@@ -417,56 +453,57 @@ if __name__ == '__main__':
     cen21_sps = DATA_DIR / "cen21.sps"
     cen21_filtered = OUTPUT_DIR / "cen21_filtered.csv"
     cen21_filtered2 = OUTPUT_DIR / "cen21_filtered2.csv"
-
     """
     #CENSUS2006
-    #read_select_and_save(cen06, cen06_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AgeGrp", "SEX", "KOL", "AttSch", "CIP", "NOCS", "EmpIn", "TotInc", "BROOMH", "Room", "DType"], cen06_filtered)
-    #filter_and_save(csv_file_path=cen06_filtered,
-    #                values_to_remove_dict={'AGEGRP': [88],  'ATTSCH': '9', 'CIP': [12, 88, 99],'NOCS': [88, 99]},
-    #                output_csv_path=cen06_filtered2,
-    #                column_rename_dict={"BROOMH": "BEDRM"},
-    #                recategorize_dict={"DTYPE": {1: [1],  2: [4, 5, 6],   3: [2, 3, 7, 8] }})
-    #add_household_size_to_csv(csv_file_path=cen06_filtered2)
-    #print_column_info(cen06_filtered2) # unique values, total row count, empty rows
-    #plot_value_counts(csv_file_path=cen06_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot06.png")
-
+    read_select_and_save(cen06, cen06_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AgeGrp", "SEX", "KOL", "AttSch", "CIP", "NOCS", "EmpIn", "TotInc", "BROOMH", "Room", "DType", "MarSt", "CFStat"], cen06_filtered)
+    filter_and_save(csv_file_path=cen06_filtered, values_to_remove_dict={'AGEGRP': [88],  'ATTSCH': '9', 'CIP': [12, 88, 99],'NOCS': [88, 99], "CFSTAT":[99]},
+                    output_csv_path=cen06_filtered2,
+                    column_rename_dict={"BROOMH": "BEDRM", "MARST": "MARSTH"},
+                    recategorize_dict={"DTYPE": {1: [1], 2: [4, 5, 6], 3: [2, 3, 7, 8]}, "ROOM": {1: [1,2,3], 2: [4, 5], 3: [6,7], 4:[8, 9, 10, 11]},
+                                       "BEDRM": {1: [0, 1,], 2: [2,3], 3: [4,5]}, "MARSTH": {3: [1,3,5], 2: [2], 1:[4]},
+                                       "CFSTAT": {1: [1, 2, 3, 4], 2: [5, 6], 3: [7, 8], 4: [9, 10], 5: [12], 6: [13], 7: [11]}})
+    feature_engineering(csv_file_path=cen06_filtered2)
+    print_column_info(cen06_filtered2) # unique values, total row count, empty rows
+    plot_value_counts(csv_file_path=cen06_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot06.png")
+    
     #CENSUS2011
-    #read_select_and_save(cen11, cen11_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH", "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE"], cen11_filtered)
-    #filter_and_save(csv_file_path=cen11_filtered,
-    #                values_to_remove_dict={'AGEGRP': [88],  'ATTSCH': '9', 'CIP2011': [12, 88, 99],'NOCS': [88, 99], "BEDRM": [8], "ROOM": [88]},
-    #                output_csv_path=cen11_filtered2,
-    #                column_rename_dict={"CIP2011": "CIP"},
-    #                recategorize_dict={"DTYPE": {1: [1],  2: [4, 5, 6],   3: [2, 3, 7, 8] }})
-    #add_household_size_to_csv(csv_file_path=cen11_filtered2)
-    #print_column_info(cen11_filtered2) # unique values, total row count, empty rows
+    read_select_and_save(cen11, cen11_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH", "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE","MARSTH","CFSTAT"], cen11_filtered)
+    filter_and_save(csv_file_path=cen11_filtered,
+                    values_to_remove_dict={'AGEGRP': [88],  'ATTSCH': '9', 'CIP2011': [12, 88, 99],'NOCS': [88, 99], "BEDRM": [8], "ROOM": [88]},
+                    output_csv_path=cen11_filtered2,
+                    column_rename_dict={"CIP2011": "CIP"},
+                    recategorize_dict={"DTYPE": {1: [1],  2: [4, 5, 6],   3: [2, 3, 7, 8]}, "ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]},
+                                       "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]}, "MARSTH": {1: [1, 3], 2: [2], 3:[4, 5, 6]},
+                                       "CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]}})
+    feature_engineering(csv_file_path=cen11_filtered2)
+    print_column_info(cen11_filtered2) # unique values, total row count, empty rows
     plot_value_counts(csv_file_path=cen11_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot11.png")
     """
     """
     #CENSUS2016
-    #read_select_and_save(cen16, cen16_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH", "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE"], cen16_filtered)
-    #filter_and_save(csv_file_path=cen16_filtered,
-    #                values_to_remove_dict={'AGEGRP': [88], 'ATTSCH': '9', "BEDRM": [8], 'CIP2011': [88, 99], "DTYPE": [8],"KOL": [8], 'NOCS': [88, 99], "ROOM": [88], "SEX": [8]},
-    #                output_csv_path=cen16_filtered2,
-    #                column_rename_dict={"CIP2011": "CIP"})
-    #add_household_size_to_csv(csv_file_path=cen16_filtered2)
-    #print_column_info(cen16_filtered2) # unique values, total row count, empty rows
+    read_select_and_save(cen16, cen16_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH", "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE", "MarStH","CFSTAT"], cen16_filtered)
+    filter_and_save(csv_file_path=cen16_filtered,
+                    values_to_remove_dict={'AGEGRP': [88], 'ATTSCH': '9', "BEDRM": [8], 'CIP2011': [88, 99], "DTYPE": [8],"KOL": [8], 'NOCS': [88, 99], "ROOM": [88], "SEX": [8], "EMPIN": [99999999], "TOTINC": [99999999], "MARSTH": [8], "CFSTAT":[88]},
+                    output_csv_path=cen16_filtered2, column_rename_dict={"CIP2011": "CIP"},
+                    recategorize_dict= {"ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]}, "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]}, "MARSTH": {1: [1, 3], 2: [2], 3:[4]},"CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]}})
+    feature_engineering(csv_file_path=cen16_filtered2)
+    print_column_info(cen16_filtered2) # unique values, total row count, empty rows
     plot_value_counts(csv_file_path=cen16_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot16.png")
-
-   
+    
     #CENSUS2021
-    #read_select_and_save(cen21, cen21_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "GENDER", "KOL", "ATTSCH", "CIP2021", "NOC21", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE"], cen21_filtered)
-    #filter_and_save(csv_file_path=cen21_filtered,
-    #                values_to_remove_dict={'AGEGRP': [88], 'ATTSCH': [8], "BEDRM": [8], 'CIP2021': [12, 88, 99], "DTYPE": [8], "GENDER": [8], "KOL": [8], 'NOC21': [88, 99], "ROOM": [88], "SEX": [8]},
-    #                output_csv_path=cen21_filtered2, column_rename_dict={"NOC21": "NOCS", "CIP2021": "CIP", "GENDER": "SEX"},
-    #                value_replace_dict= {"ATTSCH": {0: 1, 1: 2}})
-    #add_household_size_to_csv(csv_file_path=cen21_filtered2)
-    #print_column_info(cen21_filtered2) # unique values, total row count, empty rows
+    read_select_and_save(cen21, cen21_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "GENDER", "KOL", "ATTSCH", "CIP2021", "NOC21", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE", "MarStH","CFSTAT"], cen21_filtered)
+    filter_and_save(csv_file_path=cen21_filtered, values_to_remove_dict={'AGEGRP': [88], 'ATTSCH': [8], "BEDRM": [8], 'CIP2021': [12, 88, 99], "DTYPE": [8], "GENDER": [8], "KOL": [8], 'NOC21': [88, 99], "ROOM": [88], "SEX": [8], "EMPIN": [99999999], "TOTINC": [99999999],"MARSTH": [8],"CFSTAT":[88]},
+                    output_csv_path=cen21_filtered2, column_rename_dict={"NOC21": "NOCS", "CIP2021": "CIP", "GENDER": "SEX"}, value_replace_dict= {"ATTSCH": {0: 1, 1: 2}},
+                    recategorize_dict= {"ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]}, "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]},"MARSTH": {1: [1,3], 2: [2], 3:[4]},"CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]}})
+    feature_engineering(csv_file_path=cen21_filtered2)
+    print_column_info(cen21_filtered2) # unique values, total row count, empty rows
     plot_value_counts(csv_file_path=cen21_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot21.png")
     """
-
+    """"""
     # 2. Define your inputs
     csv_paths = {'2006': cen06_filtered2, '2011': cen11_filtered2, '2016': cen16_filtered2, '2021': cen21_filtered2}
     # Define which columns you want to *skip*
-    cols_to_exclude = ["HH_ID", "EF_ID", "CF_ID", "PP_ID",]
+    cols_to_exclude = ["HH_ID", "EF_ID", "CF_ID", "PP_ID"]
     # 3. Run the function
     plot_comparison_by_column(csv_paths, cols_to_exclude, OUTPUT_DIR)
+
