@@ -1,12 +1,20 @@
 import pathlib
-import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder
 from typing import List, Tuple, Dict, Any
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.multioutput import MultiOutputClassifier
 from lightgbm import LGBMClassifier
-def prepare_data_for_ml(train_file_paths: List[str], test_file_path: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+import pandas as pd
+from sklearn.preprocessing import OrdinalEncoder
+
+def prepare_data_for_ml(
+        train_file_paths: List[str],
+        test_file_path: str
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Loads, preprocesses, and splits data into training and testing
+    sets for a multi-output classification model.
+    """
     print("--- 1. Loading and Concatenating Training Data ---")
     train_dfs = []
     for f in train_file_paths:
@@ -21,33 +29,48 @@ def prepare_data_for_ml(train_file_paths: List[str], test_file_path: str) -> Tup
     print("--- 2. Loading Test Data ---")
     test_df = pd.read_csv(test_file_path, dtype=str)
 
-    # --- 3. Define Column Lists ---
-    target_cols = ['DTYPE', 'ROOM', 'BEDRM']
+    # Example of editing:
+    columns_to_use = ['HH_ID', 'EF_ID', 'CF_ID', 'PP_ID',
+                      'MARSTH', 'EMPIN', 'TOTINC', 'EFSIZE', 'CFSIZE', 'KOL', 'ATTSCH', 'CIP', 'NOCS', "GENSTAT",
+                      "CITIZEN", "LFTAG", "CF_RP", "COW",
+                      'CMA', 'AGEGRP', 'SEX', 'CFSTAT', 'BEDRM', 'ROOM', 'DTYPE', 'HHSIZE', "BUILT", "TENUR", "CONDO"]
+
+    # Filter both dataframes to only use these columns
+    # (Also ensures test_df doesn't have extra cols)
+    train_df = train_df[columns_to_use]
+    test_df = test_df[columns_to_use]
+    print(f"Using {len(columns_to_use)} manually selected columns.")
+    # --- END OF NEW SECTION ---
+
+    # --- 4. Define Column Lists ---
+    target_cols = ['BEDRM','ROOM', 'DTYPE', "BUILT"]
     id_cols = ['HH_ID', 'EF_ID', 'CF_ID', 'PP_ID']
 
+    # This logic now automatically uses your filtered 'columns_to_use' list
     feature_cols = [
         col for col in train_df.columns
         if col not in target_cols and col not in id_cols
     ]
 
     continuous_cols = ['EMPIN', 'TOTINC']
-
     categorical_cols = [col for col in feature_cols if col not in continuous_cols]
 
-    print(f"Identified {len(feature_cols)} features.")
+    print(f"Identified {len(feature_cols)} features (e.g., DTYPE, ROOM, EMPIN...).")
+    print(f"Identified {len(target_cols)} targets (AGEGRP, SEX...).")
 
-    # --- 4. Separate X and y (using .copy() to avoid warnings) ---
+    # --- 5. Separate X and y (using .copy() to avoid warnings) ---
     X_train = train_df[feature_cols].copy()
     y_train = train_df[target_cols].copy()
     X_test = test_df[feature_cols].copy()
     y_test = test_df[target_cols].copy()
 
-    # --- 5. Convert Continuous Columns ---
+    # --- 6. Convert Continuous Columns ---
     for col in continuous_cols:
-        X_train[col] = pd.to_numeric(X_train[col], errors='coerce')
-        X_test[col] = pd.to_numeric(X_test[col], errors='coerce')
+        if col in X_train.columns:
+            X_train[col] = pd.to_numeric(X_train[col], errors='coerce')
+        if col in X_test.columns:
+            X_test[col] = pd.to_numeric(X_test[col], errors='coerce')
 
-    # Fill any missing numeric values with 0
     X_train[continuous_cols] = X_train[continuous_cols].fillna(0)
     X_test[continuous_cols] = X_test[continuous_cols].fillna(0)
 
@@ -55,20 +78,14 @@ def prepare_data_for_ml(train_file_paths: List[str], test_file_path: str) -> Tup
     X_train[categorical_cols] = X_train[categorical_cols].fillna('Missing')
     X_test[categorical_cols] = X_test[categorical_cols].fillna('Missing')
 
-    print("--- 6. Ordinal (Integer) Encoding Categorical Features ---")
+    print("--- 7. Ordinal (Integer) Encoding Categorical Features ---")
 
-    # Initialize encoder. This handles categories not seen in the
-    # training set by assigning them the unknown_value.
-    encoder = OrdinalEncoder( handle_unknown='use_encoded_value', unknown_value=-1)
-
-    # Fit *only* on the training data
+    encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
     encoder.fit(X_train[categorical_cols])
 
-    # Transform both train and test data
     X_train[categorical_cols] = encoder.transform(X_train[categorical_cols])
     X_test[categorical_cols] = encoder.transform(X_test[categorical_cols])
 
-    # The .align() step is no longer needed!
     print(f"Preprocessing complete. Final feature count: {len(X_train.columns)}")
 
     return X_train, y_train, X_test, y_test
@@ -80,14 +97,6 @@ def train_classification_model(
         model_type: str = 'random_forest',
         use_class_weight: bool = True
 ) -> Any:
-    """
-    Trains a classifier for multi-output targets and prints reports.
-
-    Args:
-        X_train, y_train, X_test, y_test: Preprocessed data.
-        model_type (str): 'random_forest' or 'lgbm'.
-        use_class_weight (bool): Whether to apply class balancing.
-    """
 
     if model_type == 'random_forest':
         print("\n--- 1. Initializing the RandomForestClassifier ---")
