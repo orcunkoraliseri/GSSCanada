@@ -205,8 +205,8 @@ def print_column_info(csv_file_path):
         unique_values = df[column].unique()
 
         # Check if number of unique values is large
-        if len(unique_values) > 100:
-            print(f"Column '{column}': (Too many unique values to display > 100)")
+        if len(unique_values) > 500:
+            print(f"Column '{column}': (Too many unique values to display > 500)")
         else:
             print(f"Column '{column}': {unique_values}")
 
@@ -345,7 +345,7 @@ def plot_comparison_by_column(csv_files_dict: Dict[str, str], columns_to_exclude
 
         # Guardrail: Check for too many unique values
         df_proxy = pd.read_csv(first_file_path, dtype=str, usecols=[col])
-        if df_proxy[col].nunique() > 50:
+        if df_proxy[col].nunique() > 500:
             print(f"Info: Column '{col}' has > 50 unique values. Skipping plot.")
             continue
 
@@ -458,19 +458,24 @@ if __name__ == '__main__':
     read_select_and_save(cen06, cen06_sps,
                          ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AgeGrp", "SEX", "KOL", "AttSch", "CIP", "NOCS",
                           "EmpIn", "TotInc", "BROOMH", "Room", "DType", "MarSt", "CFStat", "BuiltH", "Tenur", "CONDO",
-                          "GENSTAT", "CITIZEN", "LFACT", "CF_RP", "COW"], cen06_filtered)
+                          "GENSTAT", "CITIZEN", "LFACT", "CF_RP", "COW", "POWST", "INCTAX","REGION", "VALUE", "REPAIR",
+                          "HRSWRK","MODE"], cen06_filtered)
     filter_and_save(csv_file_path=cen06_filtered,
                     values_to_remove_dict={'AGEGRP': [88],  'ATTSCH': '9', 'CIP': [12, 88, 99],'NOCS': [88, 99], "CFSTAT":[99],
-                                           "BUILTH":[88], "TENUR":[8], "CONDO":[8,9], "GENSTAT":[8,9],"CITIZEN":[8], "LFACT":[99],
-                                        "COW":[8,9]},
+                                           "BUILTH":[88], "TENUR":[8], "CONDO":[8,9], "GENSTAT":[8,9],"CITIZEN":[8],
+                                           "LFACT":[99], "COW":[8,9], "POWST":[8,9], "HRSWRK":[999], "MODE":[9], "VALUE": [99999999,9999999, 999999]},
                     output_csv_path=cen06_filtered2,
-                    column_rename_dict={"BROOMH": "BEDRM", "MARST": "MARSTH", "BUILTH": "BUILT", "LFACT":"LFTAG"},
+                    column_rename_dict={"BROOMH": "BEDRM", "MARST": "MARSTH", "BUILTH": "BUILT", "LFACT":"LFTAG", "REGION":"PR"},
                     recategorize_dict={"DTYPE": {1: [1], 2: [4, 5, 6], 3: [2, 3, 7, 8]}, "ROOM": {1: [1,2,3], 2: [4, 5], 3: [6,7], 4:[8, 9, 10, 11]},
                                        "BEDRM": {1: [0, 1,], 2: [2,3], 3: [4,5]}, "MARSTH": {3: [1,3,5], 2: [2], 1:[4]},
                                        "CFSTAT": {1: [1, 2, 3, 4], 2: [5, 6], 3: [7, 8], 4: [9, 10], 5: [12], 6: [13], 7: [11]},
                                        "BUILT": {1: [1,2,3], 2: [4,5], 3:[6,7,8,9], 4:[10]},
                                        "CF_RP": {3: [0], 1: [1], 2:[2]},
-                                       "COW": {1: [4], 2: [2, 5], 3: [3, 6], 4: [1]}})
+                                       "COW": {1: [4], 2: [2, 5], 3: [3, 6], 4: [1]},
+                                       "PR":{1:[1],2:[24],3:[35],4:[46,47,48],5:[59],6:[63]},
+                                       "MODE": {4:[6], 6:[7], 7:[8]},
+                                       "HRSWRK": {0:[0],1:list(range(1,10)),2:list(range(10,20)),3:list(range(20,30)),4:list(range(30,38)),5:list(range(38,41)),6:list(range(41,50)),7:list(range(50,60)),8:list(range(60,70)),9:list(range(70,80)),10:list(range(80,101))}
+                                       })
     feature_engineering(csv_file_path=cen06_filtered2)
     print_column_info(cen06_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen06_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot06.png")
@@ -479,61 +484,70 @@ if __name__ == '__main__':
     read_select_and_save(cen11, cen11_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH",
                                             "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE","MARSTH",
                                             "CFSTAT", "BUILT", "TENUR", "CONDO", "GENSTAT", "CITIZEN","LFTAG", "CF_RP",
-                                            "COW"], cen11_filtered)
+                                            "COW", "POWST", "INCTAX","PR", "VALUE", "REPAIR", "HRSWRK","MODE"], cen11_filtered)
     filter_and_save(csv_file_path=cen11_filtered,
                     values_to_remove_dict={'AGEGRP': [88],  'ATTSCH': '9', 'CIP2011': [12, 88, 99],'NOCS': [88, 99],
                                            "BEDRM": [8], "ROOM": [88],"TENUR":[8],"CONDO":[8], "GENSTAT":[8,9],"CITIZEN":[8],
-                                           "LFTAG":[99],"COW":[8,9]},
+                                           "LFTAG":[99],"COW":[8,9], "POWST":[8,9], "HRSWRK":[99], "MODE":[8, 9], "VALUE": [99999999,9999999, 999999]},
                     output_csv_path=cen11_filtered2,
                     column_rename_dict={"CIP2011": "CIP"},
                     recategorize_dict={"DTYPE": {1: [1],  2: [4, 5, 6],   3: [2, 3, 7, 8]}, "ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]},
                                        "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]}, "MARSTH": {1: [1, 3], 2: [2], 3:[4, 5, 6]},
                                        "CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]},
                                        "BUILT": {1: [1,2,3], 2: [4,5], 3:[6,7,8], 4:[9, 10]},
-                                       "COW": {1: [1], 2: [3, 5], 3: [4, 6], 4: [2]}})
+                                       "COW": {1: [1], 2: [3, 5], 3: [4, 6], 4: [2]},
+                                       "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[63,70]}})
     feature_engineering(csv_file_path=cen11_filtered2)
+    """
     print_column_info(cen11_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen11_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot11.png")
-
+    """
     #CENSUS2016
     read_select_and_save(cen16, cen16_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH",
                                             "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE", "MarStH",
                                             "CFSTAT", "BUILT", "TENUR", "CONDO", "GENSTAT", "CITIZEN", "LFTAG", "CF_RP",
-                                            "COW"], cen16_filtered)
+                                            "COW", "POWST", "INCTAX", "PR", "VALUE", "REPAIR","HRSWRK","MODE"], cen16_filtered)
     filter_and_save(csv_file_path=cen16_filtered,
                     values_to_remove_dict={'AGEGRP': [88], 'ATTSCH': '9', "BEDRM": [8], 'CIP2011': [88, 99], "DTYPE": [8],
                                            "KOL": [8], 'NOCS': [88, 99], "ROOM": [88], "SEX": [8], "EMPIN": [99999999],
                                            "TOTINC": [99999999], "MARSTH": [8], "CFSTAT":[88], "BUILT": [88],"TENUR":[8],
-                                           "CONDO":[8], "GENSTAT":[8,9],"CITIZEN":[8],"LFTAG":[99],"COW":[8,9]},
+                                           "CONDO":[8], "GENSTAT":[8,9],"CITIZEN":[8],"LFTAG":[99],"COW":[8,9], "POWST":[8,9],
+                                           "HRSWRK":[99], "MODE":[9], "VALUE": [99999999,9999999, 999999]},
                     output_csv_path=cen16_filtered2, column_rename_dict={"CIP2011": "CIP"},
                     recategorize_dict= {"ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]},
                                         "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]},
                                         "MARSTH": {1: [1, 3], 2: [2], 3:[4]},
                                         "CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]},
-                                        "BUILT": {1: [1, 2, 3], 2: [4, 5], 3: [6, 7, 8], 4: [9, 10,11]}})
+                                        "BUILT": {1: [1, 2, 3], 2: [4, 5], 3: [6, 7, 8], 4: [9, 10,11]},
+                                        "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[63,70]}})
     feature_engineering(csv_file_path=cen16_filtered2)
     print_column_info(cen16_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen16_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot16.png")
-
+    
     #CENSUS2021
     read_select_and_save(cen21, cen21_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "GENDER", "KOL", "ATTSCH",
                                             "CIP2021", "NOC21", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE", "MarStH",
                                             "CFSTAT", "BUILT", "TENUR", "CONDO", "GENSTAT", "CITIZEN", "LFACT", "CF_RP",
-                                            "COW"], cen21_filtered)
+                                            "COW", "POWST", "INCTAX", "PR", "VALUE", "REPAIR","HRSWRK","MODE"], cen21_filtered)
     filter_and_save(csv_file_path=cen21_filtered,
                     values_to_remove_dict={'AGEGRP': [88], 'ATTSCH': [8], "BEDRM": [8], 'CIP2021': [12, 88, 99], "DTYPE": [8],
                                            "GENDER": [8], "KOL": [8], 'NOC21': [88, 99], "ROOM": [88], "SEX": [8], "EMPIN": [99999999],
-                                           "TOTINC": [99999999],"MARSTH": [8],"CFSTAT":[88], "BUILT": [88],"TENUR":[8],
-                                           "CONDO":[8], "GENSTAT":[8,9],"CITIZEN":[8], "LFACT":[99],"COW":[8,9]},
+                                           "TOTINC": [99999999], "MARSTH": [8],"CFSTAT":[88], "BUILT": [88], "TENUR":[8],
+                                           "CONDO":[8], "GENSTAT":[8,9], "CITIZEN":[8], "LFACT":[99], "COW":[8,9],
+                                           "POWST":[8,9], "HRSWRK":[99], "MODE":[9], "VALUE": [99999999,9999999, 999999]},
                     output_csv_path=cen21_filtered2, column_rename_dict={"NOC21": "NOCS", "CIP2021": "CIP", "GENDER": "SEX", "LFACT":"LFTAG"},
                     value_replace_dict= {"ATTSCH": {0: 1, 1: 2}},
-                    recategorize_dict= {"ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]}, "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]},"MARSTH": {1: [1,3], 2: [2], 3:[4]},
+                    recategorize_dict= {"ROOM": {1: [1,2,3], 2: [4, 5], 3: [6,7], 4:[8,9,10,11]},
+                                        "BEDRM": {1: [0, 1,], 2: [2,3], 3: [4,5]}, "MARSTH": {1: [1,3], 2: [2], 3:[4]},
                                         "CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]},
-                                        "BUILT": {1: [1, 2], 2: [3,4], 3: [5, 6, 7], 4: [8, 9, 10,11]}})
+                                        "BUILT": {1: [1, 2], 2: [3,4], 3: [5, 6, 7], 4: [8, 9, 10,11]},
+                                        "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[70]}})
     feature_engineering(csv_file_path=cen21_filtered2)
+    
     print_column_info(cen21_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen21_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot21.png")
-
+    """"""
+    """"""
     #-------------------------------------------------------------------------------------------------------------------
     # 2. Define your inputs
     csv_paths = {'2006': cen06_filtered2, '2011': cen11_filtered2, '2016': cen16_filtered2, '2021': cen21_filtered2}
