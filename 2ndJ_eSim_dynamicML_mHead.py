@@ -1,11 +1,13 @@
+from typing import List, Dict, Tuple, Any
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import pathlib
 import tensorflow as tf
-import matplotlib.pyplot as plt
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-from typing import List, Dict, Tuple, Any
-import numpy as np  # <-- Make sure to import numpy
+from tensorflow import keras
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler
 
 keras = tf.keras
 layers = tf.keras.layers
@@ -102,7 +104,7 @@ def prepare_data_for_generative_model(file_paths_dict: Dict[int, str], sample_fr
     # BUILDINGS (Inputs/Conditions the model uses to predict)
     # VALUE is here because it is a property of the building stock
     BUILDING_FEATURES = [
-        'BUILTH', 'TENUR', 'CONDO', 'BEDRM', 'ROOM', 'DTYPE', 'REPAIR', 'VALUE'
+        'BUILTH', 'CONDO', 'BEDRM', 'ROOM', 'DTYPE', 'REPAIR', 'VALUE'
     ]
 
     # CONTINUOUS (To be scaled 0-1)
@@ -326,7 +328,7 @@ class MultiHeadCVAE(keras.Model):
             "kl_loss": self.kl_loss_tracker.result(),
         }
 # TRAINING -------------------------------------------------------------------------------------------------------------
-def train_cvae(df_processed, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], latent_dim=48, epochs=100, batch_size=4096):
+def train_cvae(df_processed, demo_cols, bldg_cols, continuous_cols=None, latent_dim=48, epochs=100, batch_size=4096):
     print("--- Preparing data for TensorFlow ---")
 
     feature_meta = get_feature_metadata(demo_cols, continuous_cols)
@@ -363,6 +365,7 @@ def train_cvae(df_processed, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TO
     return encoder, decoder, cvae, history
 #FORECASTING -------------------------------------------------------------------------------------------------------
 # --- 3. Temporal Modeling Function ---
+#FORECASTING -----------------------------------------------------------------------------------------------------------
 def train_temporal_model(encoder, df_processed, demo_cols, bldg_cols):
     print("--- Starting Step 3: Temporal Modeling ---")
 
@@ -437,39 +440,42 @@ def generate_future_population(decoder, temporal_model, last_avg_log_var, df_pro
     print("--- Generation Complete ---")
     return generated_raw_matrix, bldg_future_samples
 # --- 5. Post-Processing Function ---
-def post_process_generated_data(generated_raw_data, demo_cols,generated_bldg_data, bldg_cols,scalers):
+def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_data, bldg_cols, scalers):
     """
     Converts the raw generated data (probabilities) back into a
     human-readable, decoded DataFrame.
     """
     print("--- Starting Post-Processing ---")
 
-    # 1. Create DataFrames
-    # generated_raw_data is now a matrix, so this works directly
     df_gen_demo = pd.DataFrame(generated_raw_data, columns=demo_cols)
     df_gen_bldg = pd.DataFrame(generated_bldg_data, columns=bldg_cols)
     df_final = pd.DataFrame()
 
-    # 2. Inverse-scale the continuous columns
+    # 1. Inverse-scale the continuous columns
     for col_name, scaler in scalers.items():
         if col_name in df_gen_demo.columns:
+            # Reshape to (N, 1) for the scaler
             col_data = df_gen_demo[col_name].values.reshape(-1, 1)
-            df_final[col_name] = scaler.inverse_transform(col_data)
 
-    # 3. Decode the One-Hot Encoded demographic columns
+            # --- FIX IS HERE ---
+            # Inverse transform returns (N, 1), but pandas needs (N,).
+            # We use .flatten() to convert it to a 1D array.
+            df_final[col_name] = scaler.inverse_transform(col_data).flatten()
+            # --- END FIX ---
+
+    # 2. Decode the One-Hot Encoded demographic columns
     all_prefixes = set()
     for col in demo_cols:
-        if '_' in col and col not in scalers:  # Exclude continuous cols
+        if '_' in col and col not in scalers:
             all_prefixes.add(col.rsplit('_', 1)[0])
 
     for prefix in all_prefixes:
         cat_cols = [col for col in demo_cols if col.startswith(f"{prefix}_")]
         if cat_cols:
-            # For multi-head softmax, finding the max is the correct way to decode
             predicted_col = df_gen_demo[cat_cols].idxmax(axis=1)
             df_final[prefix] = predicted_col.str.replace(f"{prefix}_", "")
 
-    # 4. Decode the One-Hot Encoded building columns
+    # 3. Decode the One-Hot Encoded building columns
     bldg_prefixes = set()
     for col in bldg_cols:
         if '_' in col and col not in scalers:
@@ -483,6 +489,131 @@ def post_process_generated_data(generated_raw_data, demo_cols,generated_bldg_dat
 
     print("--- Post-Processing Complete ---")
     return df_final
+#VALIDATION OF FORECASTING -----------------------------------------------------------------------------------------
+def generate_validation_report(encoder, decoder, df_processed, demo_cols, bldg_cols, scalers,output_folder=None):
+    """
+    Performs hindcasting for 2021 (training drift on 06-16)
+    and generates comparison plots for EVERY column.
+    """
+    save_dir = pathlib.Path(output_folder)
+    save_dir.mkdir(parents=True, exist_ok=True)
+    print(f"--- Starting Comprehensive Validation (Saving to {save_dir}) ---")
+
+    # 1. Train Temporal Model on 2006-2016 ONLY
+    print("   Training Temporal Model on 2006, 2011, 2016...")
+    years_train = [2006, 2011, 2016]
+    target_year = 2021
+
+    X_temporal = []
+    y_temporal = []
+    last_avg_log_var = None
+
+    for year in years_train:
+        col_name = f"YEAR_{year}"
+        # Handle year columns
+        if col_name not in df_processed.columns:
+            print(f"Skipping {year} (Column not found)")
+            continue
+
+        year_df = df_processed[df_processed[col_name] == 1]
+        demo_data = year_df[demo_cols].values.astype(np.float32)
+        bldg_data = year_df[bldg_cols].values.astype(np.float32)
+
+        z_mean, z_log_var, z = encoder.predict([demo_data, bldg_data], verbose=0)
+
+        X_temporal.append([year])
+        y_temporal.append(np.mean(z_mean, axis=0))
+        if year == 2016: last_avg_log_var = np.mean(z_log_var, axis=0)
+
+    temporal_model = LinearRegression()
+    temporal_model.fit(X_temporal, y_temporal)
+
+    # 2. Generate Synthetic 2021
+    print("   Generating Synthetic 2021 Population...")
+    real_2021_df = df_processed[df_processed[f"YEAR_{target_year}"] == 1]
+    bldg_conditions = real_2021_df[bldg_cols].values.astype(np.float32)
+
+    pred_z_mean = temporal_model.predict([[target_year]])
+    latent_dim = len(pred_z_mean[0])
+    z_std_dev = np.exp(0.5 * last_avg_log_var)
+
+    # Match size of real data for fair comparison
+    n_samples = len(real_2021_df)
+    z_new = np.random.normal(loc=pred_z_mean, scale=z_std_dev, size=(n_samples, latent_dim))
+
+    gen_list = decoder.predict([z_new, bldg_conditions], verbose=0)
+    gen_matrix = np.concatenate(gen_list, axis=1)
+
+    # 3. Create DataFrames for Comparison
+    df_real_decoded = pd.DataFrame()
+    df_gen_decoded = pd.DataFrame()
+
+    # Helper to decode continuous
+    print("   Decoding and Plotting...")
+
+    # --- A) CONTINUOUS COLUMNS ---
+    for col_name in scalers.keys():
+        if col_name in demo_cols:
+            idx = demo_cols.index(col_name)
+
+            # Inverse Scale Real
+            real_val = real_2021_df[col_name].values.reshape(-1, 1)
+            real_val = scalers[col_name].inverse_transform(real_val).flatten()
+
+            # Inverse Scale Gen
+            gen_val = gen_matrix[:, idx].reshape(-1, 1)
+            gen_val = scalers[col_name].inverse_transform(gen_val).flatten()
+
+            # Plot
+            plt.figure(figsize=(10, 6))
+            sns.kdeplot(real_val, label='Real 2021', fill=True, color='skyblue')
+            sns.kdeplot(gen_val, label='Forecast 2021', fill=True, color='orange')
+            plt.title(f"Validation: {col_name}")
+            plt.legend()
+            plt.savefig(save_dir / f"Continuous_{col_name}.png")
+            plt.close()
+
+    # --- B) CATEGORICAL COLUMNS ---
+    # Find prefixes
+    all_prefixes = set()
+    for col in demo_cols:
+        if '_' in col and col not in scalers:
+            all_prefixes.add(col.rsplit('_', 1)[0])
+
+    for prefix in sorted(list(all_prefixes)):
+        if prefix == 'YEAR': continue  # Skip Year
+
+        # Get columns for this feature
+        cat_cols = [c for c in demo_cols if c.startswith(f"{prefix}_")]
+        indices = [demo_cols.index(c) for c in cat_cols]
+
+        # 1. Calculate Distribution for Real Data
+        # (Sum the one-hot values)
+        real_counts = real_2021_df[cat_cols].sum().values
+        real_dist = real_counts / real_counts.sum()
+
+        # 2. Calculate Distribution for Generated Data
+        # (Sum the probabilities)
+        gen_probs = gen_matrix[:, indices]
+        gen_dist = gen_probs.sum(axis=0) / gen_probs.sum()
+
+        # 3. Plot Side-by-Side Bar Chart
+        labels = [c.replace(f"{prefix}_", "") for c in cat_cols]
+        x = np.arange(len(labels))
+        width = 0.35
+
+        plt.figure(figsize=(12, 6))
+        plt.bar(x - width / 2, real_dist, width, label='Real 2021', color='skyblue')
+        plt.bar(x + width / 2, gen_dist, width, label='Forecast 2021', color='orange')
+
+        plt.xticks(x, labels, rotation=45)
+        plt.title(f"Validation: {prefix}")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(save_dir / f"Categorical_{prefix}.png")
+        plt.close()
+
+    print(f"--- Validation Complete. Check folder: {save_dir} ---")
 # VISUALIZATION & TESTING ----------------------------------------------------------------------------------------------
 def plot_training_history(history):
     """
@@ -647,6 +778,9 @@ if __name__ == '__main__':
     cen16_filtered2 = OUTPUT_DIR / "cen16_filtered2.csv"
     cen21_filtered2 = OUTPUT_DIR / "cen21_filtered2.csv"
 
+    # VALIDATION
+    VALIDATION_DIR = OUTPUT_DIR / "Validation_Report_2021"
+
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
     processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths,sample_frac=1)
     """
@@ -678,14 +812,14 @@ if __name__ == '__main__':
     #check_reconstruction_quality_expanded(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=5)
 
     #FORECASTING -------------------------------------------------------------------------------------------------------
-    """"""
+    """
     # 3. Train Temporal Drift
     print("\n=== Step 3: Modeling Temporal Drift ===")
-    temporal_model, last_variance = train_temporal_model( encoder,processed_data, demo_cols, bldg_cols)
+    temporal_model, last_variance = train_temporal_model(encoder,processed_data, demo_cols, bldg_cols)
 
     # 4. Generate Forecasts
     TARGET_YEARS = [2025, 2030]
-    N_SAMPLES = 10000
+    N_SAMPLES = 1000
 
     for year in TARGET_YEARS:
         print(f"\n=== Step 4: Forecasting for {year} ===")
@@ -700,3 +834,9 @@ if __name__ == '__main__':
         df_forecast.to_csv(save_path, index=False)
         print(f"✅ Saved {year} forecast to: {save_path}")
         print(df_forecast.head())
+    """
+
+    #VALIDATION OF FORECASTING -----------------------------------------------------------------------------------------
+    # --- Execute (Assuming models/data loaded) ---
+    generate_validation_report(encoder, decoder, processed_data, demo_cols, bldg_cols, data_scalers, output_folder=VALIDATION_DIR)
+
