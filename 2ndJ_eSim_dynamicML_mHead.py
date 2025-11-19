@@ -1,13 +1,14 @@
 from typing import List, Dict, Tuple, Any
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pathlib
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 keras = tf.keras
 layers = tf.keras.layers
@@ -489,7 +490,7 @@ def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_da
 
     print("--- Post-Processing Complete ---")
     return df_final
-#VALIDATION OF FORECASTING -----------------------------------------------------------------------------------------
+#VALIDATION OF FORECASTING ---------------------------------------------------------------------------------------------
 def generate_validation_report(encoder, decoder, df_processed, demo_cols, bldg_cols, scalers,output_folder=None):
     """
     Performs hindcasting for 2021 (training drift on 06-16)
@@ -614,6 +615,65 @@ def generate_validation_report(encoder, decoder, df_processed, demo_cols, bldg_c
         plt.close()
 
     print(f"--- Validation Complete. Check folder: {save_dir} ---")
+#VISUALIZATION FOR FORECASTING -----------------------------------------------------------------------------------------
+def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bldg_cols):
+    print("--- Generating Latent Space Trajectory Plot ---")
+
+    # 1. Get Historical Means (2006-2021)
+    years = [2006, 2011, 2016, 2021]
+    history_vectors = []
+
+    for year in years:
+        col_name = f"YEAR_{year}"
+        if col_name in df_processed.columns:
+            year_df = df_processed[df_processed[col_name] == 1]
+            demo_data = year_df[demo_cols].values.astype(np.float32)
+            bldg_data = year_df[bldg_cols].values.astype(np.float32)
+
+            # Get latent positions
+            z_mean, _, _ = encoder.predict([demo_data, bldg_data], verbose=0)
+
+            # Calculate average center
+            history_vectors.append(np.mean(z_mean, axis=0))
+
+    # 2. Get Forecasted Means (2025, 2030)
+    future_years = [2025, 2030]
+    future_vectors = []
+    for year in future_years:
+        pred_z = temporal_model.predict([[year]])[0]
+        future_vectors.append(pred_z)
+
+    # 3. Fit PCA on History + Future to find the best 2D plane
+    all_vectors = np.array(history_vectors + future_vectors)
+    pca = PCA(n_components=2)
+    pca_result = pca.fit_transform(all_vectors)
+
+    # 4. Plot
+    plt.figure(figsize=(10, 8))
+
+    # Plot History (Blue line)
+    plt.plot(pca_result[:4, 0], pca_result[:4, 1], 'o-', label='Historical (06-21)', color='blue', markersize=8)
+
+    # Plot Future (Red dashed line)
+    # Connect 2021 to 2025
+    plt.plot(pca_result[3:, 0], pca_result[3:, 1], 'o--', label='Forecast (25-30)', color='red', markersize=8)
+
+    # Annotate points
+    labels = years + future_years
+    for i, txt in enumerate(labels):
+        plt.annotate(txt, (pca_result[i, 0], pca_result[i, 1]), xytext=(5, 5), textcoords='offset points')
+
+    plt.title(
+        f"Demographic Drift in Latent Space (PCA Projection)\nExplained Variance: {np.sum(pca.explained_variance_ratio_):.2%}")
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Principal Component 2")
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+
+    save_path = OUTPUT_DIR / "Latent_Trajectory_Plot.png"
+    plt.savefig(save_path)
+    print(f"   Plot saved to {save_path}")
+
 # VISUALIZATION & TESTING ----------------------------------------------------------------------------------------------
 def plot_training_history(history):
     """
@@ -683,11 +743,20 @@ def check_reconstruction_quality(encoder, decoder, df_processed, demo_cols, bldg
     print("\n--- RECONSTRUCTED ---")
     # Show the same 10 features from the reconstructed data
     print(reconstructed_df.iloc[0][original_df.iloc[0].nlargest(10).index])
-def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_cols, bldg_cols, continuous_cols, n_samples=5):
+
+
+def check_reconstruction_quality_expanded(
+        encoder, decoder,
+        df_processed,
+        demo_cols,
+        bldg_cols,
+        continuous_cols,
+        output_dir,  # <-- NEW: Directory to save the CSV
+        n_samples=5
+):
     """
-    Expanded evaluation: Checks multiple samples, groups one-hot columns
-    back into features, and compares Original vs. Reconstructed values
-    with Pass/Fail indicators.
+    Expanded evaluation: Checks samples, compares Original vs. Reconstructed,
+    prints to console, AND saves the detailed report to a CSV file.
     """
     print(f"\n{'=' * 60}")
     print(f"  EXPANDED RECONSTRUCTION CHECK ({n_samples} Samples)")
@@ -711,16 +780,17 @@ def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_c
     df_orig = pd.DataFrame(demo_data, columns=demo_cols)
     df_recon = pd.DataFrame(reconstructed_matrix, columns=demo_cols)
 
-    # 5. Identify Feature Groups (group 'AGEGRP_1', 'AGEGRP_2' -> 'AGEGRP')
-    # We exclude continuous cols from this grouping
+    # 5. Identify Feature Groups
     categorical_prefixes = set()
     for col in demo_cols:
         if col not in continuous_cols:
-            # Split 'AGEGRP_1' into 'AGEGRP'
             prefix = col.rsplit('_', 1)[0]
             categorical_prefixes.add(prefix)
 
     sorted_prefixes = sorted(list(categorical_prefixes))
+
+    # --- LIST TO STORE RESULTS FOR CSV ---
+    results_list = []
 
     # 6. Loop through each sample
     for i in range(n_samples):
@@ -730,23 +800,32 @@ def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_c
 
         # A) Check Categorical Features
         for prefix in sorted_prefixes:
-            # Get all columns for this feature
             cols = [c for c in demo_cols if c.startswith(prefix + '_')]
 
-            # Find the column name with the max value (The "Winner")
             # Original
             orig_row = df_orig.iloc[i][cols]
-            orig_cat = orig_row.idxmax().replace(f"{prefix}_", "")  # e.g. "1"
+            orig_cat = orig_row.idxmax().replace(f"{prefix}_", "")
 
             # Reconstructed
             recon_row = df_recon.iloc[i][cols]
-            pred_cat = recon_row.idxmax().replace(f"{prefix}_", "")  # e.g. "1"
+            pred_cat = recon_row.idxmax().replace(f"{prefix}_", "")
             confidence = recon_row.max()
 
-            # Status Check
-            status = "✅" if orig_cat == pred_cat else "❌"
+            status = "Pass" if orig_cat == pred_cat else "Fail"
+            status_icon = "✅" if status == "Pass" else "❌"
 
-            print(f"{prefix:<15} | {orig_cat:<15} | {pred_cat:<15} | {confidence:.4f}     | {status}")
+            print(f"{prefix:<15} | {orig_cat:<15} | {pred_cat:<15} | {confidence:.4f}     | {status_icon}")
+
+            # Add to results list
+            results_list.append({
+                "Sample_ID": i + 1,
+                "Feature": prefix,
+                "Type": "Categorical",
+                "Original": orig_cat,
+                "Predicted": pred_cat,
+                "Confidence/Diff": confidence,
+                "Status": status
+            })
 
         # B) Check Continuous Features
         for col in continuous_cols:
@@ -755,10 +834,28 @@ def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_c
                 val_pred = df_recon.iloc[i][col]
                 diff = abs(val_orig - val_pred)
 
-                # For continuous, we consider it "Good" if error is low (e.g., < 0.05 in scaled space)
-                status = "✅" if diff < 0.05 else "⚠️"
+                status = "Pass" if diff < 0.05 else "Fail"  # Threshold can be adjusted
+                status_icon = "✅" if status == "Pass" else "⚠️"
 
-                print(f"{col:<15} | {val_orig:.4f}          | {val_pred:.4f}          | Diff: {diff:.3f}  | {status}")
+                print(
+                    f"{col:<15} | {val_orig:.4f}          | {val_pred:.4f}          | Diff: {diff:.3f}  | {status_icon}")
+
+                # Add to results list
+                results_list.append({
+                    "Sample_ID": i + 1,
+                    "Feature": col,
+                    "Type": "Continuous",
+                    "Original": val_orig,
+                    "Predicted": val_pred,
+                    "Confidence/Diff": diff,  # Storing Diff here for continuous
+                    "Status": status
+                })
+
+    # --- 7. Save to CSV ---
+    output_path = pathlib.Path(output_dir) / "reconstruction_check_results.csv"
+    df_results = pd.DataFrame(results_list)
+    df_results.to_csv(output_path, index=False)
+    print(f"\n✅ Detailed reconstruction report saved to: {output_path}")
 
 if __name__ == '__main__':
     #DIRECTORIES -------------------------------------------------------------------------------------------------------
@@ -786,8 +883,9 @@ if __name__ == '__main__':
     """
     #TRAINING ----------------------------------------------------------------------------------------------------------
     encoder, decoder, cvae_model, training_history = train_cvae(df_processed=processed_data, demo_cols=demo_cols, bldg_cols=bldg_cols,
-        latent_dim=128,  epochs=200, batch_size=4096)
-
+                                                                continuous_cols= ['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'],
+                                                                latent_dim=128,  epochs=100, batch_size=4096)
+  
     # --- 3. THIS IS THE NEW PART: Save your models ---
     print("--- Training complete. Saving models to disk... ---")
 
@@ -809,13 +907,16 @@ if __name__ == '__main__':
     encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
     decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
     print("--- Models loaded successfully! ---")
-    #check_reconstruction_quality_expanded(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=5)
+    check_reconstruction_quality_expanded(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
 
     #FORECASTING -------------------------------------------------------------------------------------------------------
     """
     # 3. Train Temporal Drift
     print("\n=== Step 3: Modeling Temporal Drift ===")
     temporal_model, last_variance = train_temporal_model(encoder,processed_data, demo_cols, bldg_cols)
+    
+    # --- NEW: Plot the Trajectory ---
+    plot_latent_trajectory(encoder, temporal_model, processed_data, demo_cols, bldg_cols)
 
     # 4. Generate Forecasts
     TARGET_YEARS = [2025, 2030]
@@ -834,9 +935,9 @@ if __name__ == '__main__':
         df_forecast.to_csv(save_path, index=False)
         print(f"✅ Saved {year} forecast to: {save_path}")
         print(df_forecast.head())
-    """
 
     #VALIDATION OF FORECASTING -----------------------------------------------------------------------------------------
     # --- Execute (Assuming models/data loaded) ---
     generate_validation_report(encoder, decoder, processed_data, demo_cols, bldg_cols, data_scalers, output_folder=VALIDATION_DIR)
+    """
 

@@ -1,10 +1,12 @@
 import math
-import pathlib
-import matplotlib.pyplot as plt
-import pandas as pd
 import re
 from typing import Dict, Any, List, Union
 from matplotlib import rcParams
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import pathlib
+
 rcParams.update({'figure.autolayout': True})
 def read_select_and_save(dat_file_path, sps_file_path, columns_to_select, output_csv_path):
     with open(sps_file_path, 'r', encoding='latin-1') as f:
@@ -84,12 +86,9 @@ def read_select_and_save(dat_file_path, sps_file_path, columns_to_select, output
     print("Save complete.")
     print(df_filtered.head())
     return df_filtered
-def filter_and_save(csv_file_path: str,
-                    values_to_remove_dict: Dict[str, Any],
-                    output_csv_path: str, value_replace_dict: Dict[str, Dict] = None,
-                    recategorize_dict: Dict[str, Dict] = None,
-                    column_rename_dict: Dict[str, str] = None,
-                    cols_to_zero_negatives: List[str] = None):
+def filter_and_save(csv_file_path: str, values_to_remove_dict: Dict[str, Any], output_csv_path: str,
+                    value_replace_dict: Dict[str, Dict] = None, recategorize_dict: Dict[str, Dict] = None,
+                    column_rename_dict: Dict[str, str] = None, cols_to_zero_negatives: List[str] = None):
     # 1. Read the CSV (as strings for safe filtering).
     df = pd.read_csv(csv_file_path, dtype=str)
     initial_rows = len(df)
@@ -325,107 +324,142 @@ def plot_value_counts(csv_file_path, columns_to_exclude: list, output_image_path
     print(f"Successfully saved combined chart to: {output_image_path}")
 def plot_comparison_by_column(csv_files_dict: Dict[str, str], columns_to_exclude: List[str], output_dir: str):
     """
-    Creates one .png file per column, each containing subplots
-    comparing that column's data across multiple CSVs.
-    All subplots in a figure share the same y-axis range.
+    Creates one .png file per column.
+    - Categorical: Bar Chart.
+    - Continuous: Histogram with SHARED X-Axis, Y-Axis, and Bins.
     """
-    # 1. Ensure output directory exists
     output_path = pathlib.Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    # 2. Get columns to plot
     first_file_path = list(csv_files_dict.values())[0]
     df_temp = pd.read_csv(first_file_path, dtype=str, nrows=0)
     all_columns = df_temp.columns.tolist()
-
-    columns_to_plot = [
-        col for col in all_columns if col not in columns_to_exclude
-    ]
+    columns_to_plot = [col for col in all_columns if col not in columns_to_exclude]
 
     print(f"--- Starting Comparison Plots (excluding {columns_to_exclude}) ---")
 
-    # 3. Loop through each COLUMN we want to compare
     for col in columns_to_plot:
-
-        # Guardrail: Check for too many unique values
         df_proxy = pd.read_csv(first_file_path, dtype=str, usecols=[col])
-        if df_proxy[col].nunique() > 500:
-            print(f"Info: Column '{col}' has > 50 unique values. Skipping plot.")
+        n_unique = df_proxy[col].nunique()
+
+        if n_unique > 500:
+            print(f"Skipping '{col}' (>500 unique values)")
             continue
 
-        print(f"Processing column: {col}")
+        is_continuous = n_unique > 20
+        plot_type = "hist (shared axes)" if is_continuous else "bar"
 
-        # --- FIX IS HERE: First pass to get max y-value ---
+        print(f"Processing {col} ({plot_type})")
+
+        # 1. Load Data & Find Global Limits (X and Y)
+        data_storage = {}
         global_y_max = 0
-        counts_data = {}  # Store calculated counts
+
+        # --- NEW: Track Global X Limits for Continuous Vars ---
+        global_x_min = float('inf')
+        global_x_max = float('-inf')
 
         for year, file_path in csv_files_dict.items():
-            df = pd.read_csv(file_path, dtype=str, usecols=[col])
-
-            if col not in df.columns:
-                counts_data[year] = None  # Mark as missing
+            if col not in pd.read_csv(file_path, nrows=0).columns:
+                data_storage[year] = None
                 continue
 
-            counts = df[col].value_counts()
+            df = pd.read_csv(file_path, dtype=str, usecols=[col])
 
-            # Try to sort the index numerically
-            try:
-                counts.index = pd.to_numeric(counts.index)
-                counts = counts.sort_index()
-            except ValueError:
-                counts = counts.sort_index()
+            if is_continuous:
+                values = pd.to_numeric(df[col], errors='coerce').dropna()
+                data_storage[year] = values
 
-            counts_data[year] = counts  # Store for plotting
+                # Update Global X Limits
+                if not values.empty:
+                    v_min = values.min()
+                    v_max = values.max()
+                    if v_min < global_x_min: global_x_min = v_min
+                    if v_max > global_x_max: global_x_max = v_max
 
-            # Update the global max
-            if not counts.empty and counts.max() > global_y_max:
-                global_y_max = counts.max()
+            else:
+                counts = df[col].value_counts()
+                try:
+                    counts.index = pd.to_numeric(counts.index)
+                    counts = counts.sort_index()
+                except ValueError:
+                    counts = counts.sort_index()
 
-        # Set a buffer for the top limit
+                current_max = counts.max() if not counts.empty else 0
+                if current_max > global_y_max: global_y_max = current_max
+                data_storage[year] = counts
+
+        # --- NEW: Calculate Common Bins for Histograms ---
+        common_bins = None
+        if is_continuous and global_x_max > float('-inf'):
+            # Create 30 bins spanning the full global range
+            common_bins = np.linspace(global_x_min, global_x_max, 31)
+
+            # Pre-calculate histograms with these FIXED bins to find Y-Max
+            for year, values in data_storage.items():
+                if values is not None and not values.empty:
+                    counts, _ = np.histogram(values, bins=common_bins)
+                    if counts.max() > global_y_max:
+                        global_y_max = counts.max()
+
         y_axis_limit = global_y_max * 1.1
-        # --- END FIX ---
 
-        # 4. Create a new figure with 4 subplots (2x2 grid)
-        fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(30, 12))
+        # 2. Plotting
+        fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(30, 8))
         axes_flat = axes.flatten()
-        fig.suptitle(f"Comparison of Column: {col} (2006-2021)", fontsize=16)
+        fig.suptitle(f"Comparison of Column: {col} (2006-2021)", fontsize=22)
 
-        # 5. Second pass to plot the data
         plot_num = 0
-        for year, counts in counts_data.items():
-            if plot_num >= 4:
-                break
-
+        for year, data in data_storage.items():
+            if plot_num >= 4: break
             ax = axes_flat[plot_num]
 
-            if counts is None:
-                ax.set_title(f"'{col}' not found for {year}")
+            if data is None or len(data) == 0:
+                ax.set_title(f"{year} (No Data)")
                 ax.axis('off')
             else:
-                # Plot the pre-calculated counts
-                counts.plot(kind='bar', ax=ax)
+                if is_continuous:
+                    # --- CONTINUOUS PLOT (Shared Bins & Axes) ---
+                    # Use the common_bins we calculated earlier
+                    ax.hist(data, bins=common_bins, color='steelblue', edgecolor='white', alpha=0.7)
+                    ax.set_ylabel("Frequency")
 
-                # Apply the shared y-axis limit
+                    # Explicitly set X-Axis to match global range
+                    ax.set_xlim(global_x_min, global_x_max)
+
+                    stats_text = (
+                        f"Min:  {data.min():.2f}\n"
+                        f"Max:  {data.max():.2f}\n"
+                        f"Mean: {data.mean():.2f}\n"
+                        f"Std:  {data.std():.2f}"
+                    )
+
+                    ax.text(0.95, 0.95, stats_text,
+                            transform=ax.transAxes,
+                            fontsize=12,
+                            verticalalignment='top',
+                            horizontalalignment='right',
+                            bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
+                else:
+                    # --- CATEGORICAL PLOT ---
+                    data.plot(kind='bar', ax=ax, color='steelblue', width=0.8)
+                    ax.set_ylabel("Count")
+                    ax.tick_params(axis='x', rotation=45)
+
+                # Shared Y-Axis
                 ax.set_ylim(0, y_axis_limit)
-
-                ax.set_title(f"Year: {year}")
-                ax.set_xlabel(None)
-                ax.set_ylabel("Frequency / Count")
-                ax.tick_params(axis='x', rotation=45)
+                ax.set_title(f"Year: {year}", fontsize=16)
+                ax.set_xlabel(col)
+                ax.grid(axis='y', linestyle='--', alpha=0.5)
 
             plot_num += 1
 
-        # 6. Turn off any unused subplots
-        for i in range(plot_num, 4):
-            axes_flat[i].axis('off')
-
-        # 7. Save the combined figure
         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         save_path = output_path / f"{col}_comparison.png"
         fig.savefig(save_path)
         plt.close(fig)
-
-        print(f"  -> Saved comparison plot to: {save_path}")
+        print(f"  -> Saved to {save_path}")
 
 if __name__ == '__main__':
     #BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
@@ -457,7 +491,7 @@ if __name__ == '__main__':
     cen21_sps = DATA_DIR / "cen21.sps"
     cen21_filtered = OUTPUT_DIR / "cen21_filtered.csv"
     cen21_filtered2 = OUTPUT_DIR / "cen21_filtered2.csv"
-    """"""
+    """
     #CENSUS2006
     read_select_and_save(cen06, cen06_sps,
                          ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AgeGrp", "SEX", "KOL", "AttSch", "CIP", "NOCS",
@@ -466,8 +500,8 @@ if __name__ == '__main__':
                           "HRSWRK","MODE"], cen06_filtered)
     filter_and_save(csv_file_path=cen06_filtered,
                     values_to_remove_dict={'AGEGRP': [88], 'CIP': [12, 88],'NOCS': [88], "BUILTH":[88], "CONDO":[8], "GENSTAT":[8],"CITIZEN":[8],  
-                    "COW":[8], "POWST":[8], "HRSWRK":[999],
-                                           "VALUE": [99999999,9999999, 999999]},
+                    "COW":[8], "POWST":[8], "HRSWRK":[999], "VALUE": [8888888], "EMPIN": [88888888,8888888], "TOTINC": [88888888,8888888],
+                                           "INCTAX": [8888888]},
                     output_csv_path=cen06_filtered2,
                     column_rename_dict={"BROOMH": "BEDRM", "MARST": "MARSTH", "BUILTH": "BUILT", "LFACT":"LFTAG", "REGION":"PR"},
                     recategorize_dict={"DTYPE": {1: [1], 2: [4, 5, 6], 3: [2, 3, 7, 8]}, "ROOM": {1: [1,2,3], 2: [4, 5], 3: [6,7], 4:[8, 9, 10, 11]},
@@ -475,6 +509,7 @@ if __name__ == '__main__':
                                        "CFSTAT": {1: [1, 2, 3, 4], 2: [5, 6], 3: [7, 8], 4: [9, 10], 5: [12], 6: [13], 7: [11]},
                                        "BUILT": {1: [1,2,3], 2: [4,5], 3:[6,7,8,9], 4:[10]}, "CF_RP": {3: [0], 1: [1], 2:[2]},
                                        "COW": {1: [4], 2: [2, 5], 3: [3, 6], 4: [1]}, "PR":{1:[1],2:[24],3:[35],4:[46,47,48],5:[59],6:[63]},
+                                       "EMPIN": {0: [99999999, 9999999]},"TOTINC": {0: [99999999, 9999999]}, "INCTAX": {0: [9999999]}, "VALUE": {0: [9999999]},
                                        "HRSWRK": {0:[0,999],1:list(range(1,10)),2:list(range(10,20)),3:list(range(20,30)),4:list(range(30,38)),5:list(range(38,41)),6:list(range(41,50)),7:list(range(50,60)),8:list(range(60,70)),9:list(range(70,80)),10:list(range(80,101))}},)
     feature_engineering(csv_file_path=cen06_filtered2)
     #print_column_info(cen06_filtered2) # unique values, total row count, empty rows
@@ -488,8 +523,8 @@ if __name__ == '__main__':
     filter_and_save(csv_file_path=cen11_filtered,
                     values_to_remove_dict={'AGEGRP': [88], 'CIP2011': [12, 88],'NOCS': [88],
                                            "BEDRM": [8], "ROOM": [88], "CONDO":[8], "GENSTAT":[8],"CITIZEN":[8],
-                                           "COW":[8], "POWST":[8], "MODE":[8],"EMPIN": [88888888], "TOTINC": [88888888],
-                                           "VALUE": [99999999,9999999, 999999]},
+                                           "COW":[8], "POWST":[8], "MODE":[8], "EMPIN": [88888888,8888888], "TOTINC": [88888888,8888888],
+                                           "VALUE": [8888888],"INCTAX": [888888]},
                     output_csv_path=cen11_filtered2,
                     column_rename_dict={"CIP2011": "CIP"},
                     recategorize_dict={"DTYPE": {1: [1],  2: [4, 5, 6],   3: [2, 3, 7, 8]}, "ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]},
@@ -498,24 +533,24 @@ if __name__ == '__main__':
                                        "BUILT": {1: [1,2,3], 2: [4,5], 3:[6,7,8], 4:[9, 10]},
                                        "COW": {1: [1], 2: [3, 5], 3: [4, 6], 4: [2]},
                                        "HRSWRK": {0: [99]},
-                                       "EMPIN": {0: [99999999]}, "TOTINC": {0: [99999999]},
-                                       "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[63,70]}},)
+                                       "EMPIN": {0: [99999999, 9999999]},"TOTINC": {0: [99999999, 9999999]},"INCTAX": {0: [999999]}, "VALUE": {0: [9999999]},
+                                       "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[63,70]}})
     feature_engineering(csv_file_path=cen11_filtered2)
     #print_column_info(cen11_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen11_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot11.png")
+    
     #CENSUS2016
     read_select_and_save(cen16, cen16_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH",
                                             "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE", "MarStH",
                                             "CFSTAT", "BUILT", "CONDO", "GENSTAT", "CITIZEN", "LFTAG", "CF_RP",
                                             "COW", "POWST", "INCTAX", "PR", "VALUE", "REPAIR","HRSWRK","MODE"], cen16_filtered)
-    
     filter_and_save(csv_file_path=cen16_filtered,
                     values_to_remove_dict={'AGEGRP': [88], "BEDRM": [8], 'CIP2011': [88], "DTYPE": [8],
                                            "KOL": [8], 'NOCS': [88], "ROOM": [88], "SEX": [8],
                                            "MARSTH": [8], "CFSTAT":[88], "BUILT": [88],
                                            "CONDO":[8], "GENSTAT":[8],"CITIZEN":[8], "COW":[8], "POWST":[8],
-                                           "EMPIN": [88888888], "TOTINC": [88888888],
-                                             "VALUE": [99999999,9999999, 999999]},
+                                           "EMPIN": [88888888,8888888], "TOTINC": [88888888,8888888],"INCTAX": [88888888], "VALUE": [88888888],
+                                           },
                     output_csv_path=cen16_filtered2, column_rename_dict={"CIP2011": "CIP"},
                     recategorize_dict= {"ROOM": {1: [1,2,3],  2: [4, 5],   3: [6,7], 4:[8,9,10,11]},
                                         "BEDRM": {1: [0, 1,],  2: [2,3],   3: [4,5]},
@@ -523,7 +558,7 @@ if __name__ == '__main__':
                                         "CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]},
                                         "BUILT": {1: [1, 2, 3], 2: [4, 5], 3: [6, 7, 8], 4: [9, 10,11]},
                                         "HRSWRK": {0: [99]},
-                                        "EMPIN": {0: [99999999]},"TOTINC": {0: [99999999]},
+                                        "EMPIN": {0: [99999999, 9999999]},"TOTINC": {0: [99999999, 9999999]},"INCTAX": {0: [99999999]},"VALUE": {0: [99999999]},
                                         "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[63,70]}},)
     feature_engineering(csv_file_path=cen16_filtered2)
 
@@ -538,9 +573,9 @@ if __name__ == '__main__':
 
     filter_and_save(csv_file_path=cen21_filtered,
                     values_to_remove_dict={
-                        "AGEGRP": [88], "ATTSCH": [8], "BEDRM": [8], 'CIP2021': [12, 88], "DTYPE": [8], "GENDER": [8],"NOC21": [88],"VALUE": [99999999,9999999, 999999],
+                        "AGEGRP": [88], "ATTSCH": [8], "BEDRM": [8], 'CIP2021': [12, 88], "DTYPE": [8], "GENDER": [8],"NOC21": [88],
                         "BUILT": [88], "CONDO":[8], "GENSTAT":[8], "CITIZEN":[8], "COW":[8], "POWST":[8],"KOL": [8],"CFSTAT": [88],"MARSTH": [8],
-                        "EMPIN": [88888888], "TOTINC": [88888888],
+                        "EMPIN": [88888888,8888888], "TOTINC": [88888888,8888888], "INCTAX": [88888888], "VALUE": [88888888],
                     },
                     output_csv_path=cen21_filtered2, 
                     column_rename_dict={"NOC21": "NOCS", "CIP2021": "CIP", "GENDER": "SEX", "LFACT":"LFTAG",},
@@ -548,16 +583,16 @@ if __name__ == '__main__':
                     recategorize_dict= {"ROOM": {1: [1,2,3], 2: [4, 5], 3: [6,7], 4:[8,9,10,11]},
                                         "BEDRM": {1: [0, 1,], 2: [2,3], 3: [4,5]}, "MARSTH": {1: [1,3], 2: [2], 3:[4]},
                                         "CFSTAT": {1:[1,2],2:[3],3:[4],4:[5],5:[6],6:[7],7:[8]},
-                                        "EMPIN": {0: [99999999]}, "TOTINC": {0: [99999999]},
+                                        "EMPIN": {0: [99999999, 9999999]},"TOTINC": {0: [99999999, 9999999]}, "INCTAX": {0: [99999999]}, "VALUE": {0: [99999999]},
                                         "BUILT": {1: [1, 2], 2: [3,4], 3: [5, 6, 7], 4: [8, 9, 10,11]},
                                         "PR":{1:[10,11,12,13],2:[24],3:[35],4:[46,47,48],5:[59],6:[70]}},)
 
     feature_engineering(csv_file_path=cen21_filtered2)
-
-    #print_column_info(cen21_filtered2) # unique values, total row count, empty rows
+    
+    print_column_info(cen21_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen21_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot21.png")
-
-    """"""
+    """
+    """
     #-------------------------------------------------------------------------------------------------------------------
     # 2. Define your inputs
     csv_paths = {'2006': cen06_filtered2, '2011': cen11_filtered2, '2016': cen16_filtered2, '2021': cen21_filtered2}
@@ -565,4 +600,4 @@ if __name__ == '__main__':
     cols_to_exclude = ["HH_ID", "EF_ID", "CF_ID", "PP_ID"]
     # 3. Run the function
     plot_comparison_by_column(csv_paths, cols_to_exclude, OUTPUT_DIR)
-
+    """
