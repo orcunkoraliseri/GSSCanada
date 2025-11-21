@@ -1,7 +1,4 @@
-from typing import List, Dict, Tuple, Any
-import pandas as pd
-import numpy as np
-import pathlib
+from typing import List, Dict, Tuple
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.linear_model import LinearRegression
@@ -10,12 +7,13 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
 import uuid
-import uuid
 import pathlib
-
+import pandas as pd
+import numpy as np
+from pathlib import Path
+from tqdm import tqdm
 keras = tf.keras
 layers = tf.keras.layers
-
 # PREPARATION ----------------------------------------------------------------------------------------------------------
 def get_feature_metadata(demo_cols, continuous_cols):
     """
@@ -676,7 +674,6 @@ def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bld
     save_path = OUTPUT_DIR / "Latent_Trajectory_Plot.png"
     plt.savefig(save_path)
     print(f"   Plot saved to {save_path}")
-
 # VISUALIZATION & TESTING ----------------------------------------------------------------------------------------------
 def plot_training_history(history):
     """
@@ -746,7 +743,6 @@ def check_reconstruction_quality(encoder, decoder, df_processed, demo_cols, bldg
     print("\n--- RECONSTRUCTED ---")
     # Show the same 10 features from the reconstructed data
     print(reconstructed_df.iloc[0][original_df.iloc[0].nlargest(10).index])
-
 def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_cols, bldg_cols, continuous_cols, output_dir, n_samples=5):
     """
     Expanded evaluation: Checks samples, compares Original vs. Reconstructed,
@@ -850,7 +846,6 @@ def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_c
     df_results = pd.DataFrame(results_list)
     df_results.to_csv(output_path, index=False)
     print(f"\n✅ Detailed reconstruction report saved to: {output_path}")
-
 #ASSEMBLE HOUSEHOLD ----------------------------------------------------------------------------------------------------
 def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     """
@@ -996,6 +991,253 @@ def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     print(f"✅ Saved linked {target_year} data to: {save_path}")
 
     return df_assembled
+#PROFILE MATCHER -------------------------------------------------------------------------------------------------------
+class MatchProfiler:
+    """
+    Phase 2 & 3: Assigns GSS Schedule IDs to Census Agents.
+    """
+
+    def __init__(self, df_census, df_gss, dday_col="DDAY", id_col="occID", cols_match_t1=None):
+        print(f"\n{'=' * 60}")
+        print(f"⚙️  INITIALIZING PHASE 2: MATCH PROFILER")
+        print(f"{'=' * 60}")
+
+        self.df_census = df_census.copy()
+        self.id_col = id_col
+        self.dday_col = dday_col
+
+        # Define Tiers
+        if cols_match_t1 is None:
+            self.cols_t1 = ["HHSIZE", "HRSWRK", "AGEGRP", "MARSTH", "SEX", "KOL", "NOCS", "PR", "COW", "MODE"]
+        else:
+            self.cols_t1 = cols_match_t1
+
+        self.cols_t2 = ["HHSIZE", "HRSWRK", "AGEGRP", "SEX", "COW"]
+        self.cols_t3 = ["HHSIZE", "HRSWRK", "AGEGRP"]
+        self.cols_t4 = ["HHSIZE"]
+
+        # Split & Flatten GSS to create "Catalogs"
+        print(f"   Splitting GSS by Day Type ({dday_col})...")
+        catalog_cols = list(set([self.id_col] + self.cols_t1 + ["HHSIZE"]))
+
+        # Weekday Catalog (Unique Profiles)
+        raw_wd = df_gss[df_gss[self.dday_col].isin([2, 3, 4, 5, 6])]
+        self.catalog_wd = raw_wd[catalog_cols].drop_duplicates(subset=[self.id_col])
+
+        # Weekend Catalog (Unique Profiles)
+        raw_we = df_gss[df_gss[self.dday_col].isin([1, 7])]
+        self.catalog_we = raw_we[catalog_cols].drop_duplicates(subset=[self.id_col])
+
+        print(f"   ✅ Catalogs Created: WD={len(self.catalog_wd):,}, WE={len(self.catalog_we):,}")
+
+    def run_matching(self):
+        print(f"\n🚀 Starting Matching Loop...")
+        results = []
+        for idx, agent in tqdm(self.df_census.iterrows(), total=len(self.df_census), desc="Matching"):
+            # 1. Find Weekday Match
+            wd_id, wd_tier = self._find_best_match(agent, self.catalog_wd)
+            # 2. Find Weekend Match
+            we_id, we_tier = self._find_best_match(agent, self.catalog_we)
+
+            row = agent.to_dict()
+            row['MATCH_ID_WD'] = wd_id
+            row['MATCH_TIER_WD'] = wd_tier
+            row['MATCH_ID_WE'] = we_id
+            row['MATCH_TIER_WE'] = we_tier
+            results.append(row)
+
+        return pd.DataFrame(results)
+
+    def _find_best_match(self, agent, catalog):
+        # Tier 1
+        mask = np.ones(len(catalog), dtype=bool)
+        for col in self.cols_t1: mask &= (catalog[col] == agent[col])
+        matches = catalog[mask]
+        if not matches.empty: return matches.sample(1)[self.id_col].values[0], "1_Perfect"
+
+        # Tier 2
+        mask = np.ones(len(catalog), dtype=bool)
+        for col in self.cols_t2: mask &= (catalog[col] == agent[col])
+        matches = catalog[mask]
+        if not matches.empty: return matches.sample(1)[self.id_col].values[0], "2_Drivers"
+
+        # Tier 3
+        mask = np.ones(len(catalog), dtype=bool)
+        for col in self.cols_t3: mask &= (catalog[col] == agent[col])
+        matches = catalog[mask]
+        if not matches.empty: return matches.sample(1)[self.id_col].values[0], "3_Constraints"
+
+        # Tier 4
+        mask = (catalog["HHSIZE"] == agent["HHSIZE"])
+        matches = catalog[mask]
+        if not matches.empty: return matches.sample(1)[self.id_col].values[0], "4_FailSafe"
+
+        return catalog.sample(1)[self.id_col].values[0], "5_Random"
+class ScheduleExpander:
+    """
+    Phase 4: Retrieval & Expansion.
+    Takes the Matched Census DF and the Raw GSS DF.
+    Retrieves the original variable-length episode lists.
+    """
+
+    def __init__(self, df_gss_raw, id_col="occID"):
+        print(f"\n{'=' * 60}")
+        print(f"📂 INITIALIZING PHASE 4: SCHEDULE EXPANDER")
+        print(f"{'=' * 60}")
+
+        self.df_gss_raw = df_gss_raw
+        self.id_col = id_col
+
+        # Indexing the Raw GSS by occID for instant retrieval
+        print("   Indexing GSS Episodes for fast retrieval...")
+        self.gss_indexed = self.df_gss_raw.set_index(self.id_col).sort_index()
+        print("   ✅ Indexing complete.")
+
+    def get_episodes(self, matched_id):
+        """
+        Directly retrieves episodes based on the Schedule ID.
+        Used by generate_full_expansion.
+        """
+        try:
+            # .loc[[id]] ensures we return a DataFrame, not a Series
+            return self.gss_indexed.loc[[matched_id]].copy()
+        except KeyError:
+            # If ID is missing (shouldn't happen if matching worked), return None
+            return None
+# --- Helper Function for Verification ---
+def verify_sample(df_matched, expander, n=3):
+    """
+    Verifies that we can successfully retrieve episode rows for the matched agents.
+    """
+    print(f"\n🔎 VERIFYING EXPANSION (Sample of {n})")
+
+    for i, agent in df_matched.head(n).iterrows():
+        # 1. Extract the Assigned IDs from the dataframe row
+        id_wd = agent['MATCH_ID_WD']
+        id_we = agent['MATCH_ID_WE']
+
+        # 2. Use the new 'get_episodes' method with the ID directly
+        ep_wd = expander.get_episodes(id_wd)
+        ep_we = expander.get_episodes(id_we)
+
+        # 3. Safely count rows (handle None if ID wasn't found)
+        count_wd = len(ep_wd) if ep_wd is not None else 0
+        count_we = len(ep_we) if ep_we is not None else 0
+
+        print(f"   User {i}: WD={count_wd} rows | WE={count_we} rows")
+# Function to Save the Massive File
+def generate_full_expansion(df_matched, expander, output_path):
+    print(f"\n💾 Expanding Schedules for {len(df_matched)} agents...")
+    all_episodes = []
+
+    for _, agent in tqdm(df_matched.iterrows(), total=len(df_matched), desc="Expanding"):
+        # Expand Weekday
+        ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
+        if ep_wd is not None:
+            ep_wd['SIM_HH_ID'] = agent['SIM_HH_ID']  # Link to House
+            ep_wd['Day_Type'] = 'Weekday'
+            all_episodes.append(ep_wd)
+
+        # Expand Weekend
+        ep_we = expander.get_episodes(agent['MATCH_ID_WE'])
+        if ep_we is not None:
+            ep_we['SIM_HH_ID'] = agent['SIM_HH_ID']
+            ep_we['Day_Type'] = 'Weekend'
+            all_episodes.append(ep_we)
+
+    if all_episodes:
+        full_df = pd.concat(all_episodes)
+
+        # --- NEW: SORTING LOGIC ---
+        # Sorts by Household first, then Day Type, then Person ID
+        print(f"   Sorting expanded data by SIM_HH_ID...")
+        full_df = full_df.sort_values(by=['SIM_HH_ID', 'Day_Type', 'occID'])
+
+        full_df.to_csv(output_path)  # Index is PUMFID/occID
+        print(f"✅ Saved Expanded File: {len(full_df):,} rows to {output_path.name}")
+#VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
+def validate_matching_quality(df_matched, expander, save_path=None):
+    """
+    Calculates validation metrics and saves the report to a text file.
+    """
+    # --- Buffer to capture output ---
+    report_buffer = []
+
+    def log(message):
+        """Helper to print to console AND append to buffer."""
+        print(message)
+        report_buffer.append(message)
+
+    log(f"\n{'=' * 60}")
+    log(f"📊 VALIDATION REPORT (CORRECTED)")
+    log(f"{'=' * 60}")
+
+    # --- METHOD 1: TIER DISTRIBUTION ---
+    log(f"\n1. MATCH QUALITY (TIER DISTRIBUTION)")
+    log("-" * 40)
+
+    for day_type in ['WD', 'WE']:
+        col = f'MATCH_TIER_{day_type}'
+        if col in df_matched.columns:
+            counts = df_matched[col].value_counts(normalize=True) * 100
+            log(f"\n   [{day_type} Matching Tiers]")
+            for tier, pct in counts.items():
+                log(f"      - {tier}: {pct:.1f}%")
+
+    # --- METHOD 2: BEHAVIORAL CONSISTENCY ---
+    log(f"\n2. BEHAVIORAL CONSISTENCY (Workers vs. Non-Workers)")
+    log("-" * 40)
+
+    # Filter for Employees (COW 1 or 2)
+    # We take a larger sample (up to 500) for better accuracy
+    sample_size = min(500, len(df_matched))
+    workers = df_matched[df_matched['COW'].isin([1, 2])].sample(sample_size)
+
+    work_minutes = []
+
+    for _, agent in workers.iterrows():
+        # Get Weekday episodes
+        ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
+
+        if ep_wd is not None:
+            # Filter for Work Activities
+            # Standard GSS Work Codes often start with '1' or '0'. Adjust if needed.
+            work_acts = ep_wd[ep_wd['occACT'].astype(str).str.startswith(('1', '0', '8'))]
+
+            total_duration = 0
+            for _, row in work_acts.iterrows():
+                s = row['start']
+                e = row['end']
+
+                # --- FIX FOR MIDNIGHT WRAP ---
+                # If end time is smaller than start time (e.g. 02:00 < 23:00), adds 24h (1440 min)
+                if e < s:
+                    duration = (e + 1440) - s
+                else:
+                    duration = e - s
+
+                total_duration += duration
+
+            work_minutes.append(total_duration)
+
+    avg_work = np.mean(work_minutes) if work_minutes else 0
+    log(f"   👉 Average Work Duration for 'Employees' (n={sample_size}): {avg_work:.0f} minutes/day")
+
+    if avg_work < 60:
+        log("      ⚠️ WARNING: Low work duration. Check if 'occACT' filter matches your GSS codes.")
+    elif avg_work > 300:
+        log("      ✅ Success: Employees are performing ~5-8 hours of work.")
+    else:
+        log("      ℹ️ Note: Work duration is moderate. Verify part-time vs full-time mix.")
+
+    # --- STEP 3: SAVE TO FILE ---
+    if save_path:
+        try:
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(report_buffer))
+            print(f"\n✅ Validation Report saved to: {save_path}")
+        except Exception as e:
+            print(f"\n❌ Error saving report: {e}")
 if __name__ == '__main__':
     #DIRECTORIES -------------------------------------------------------------------------------------------------------
     # BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
@@ -1003,6 +1245,8 @@ if __name__ == '__main__':
 
     DATA_DIR = BASE_DIR / "DataSources_CENSUS"
     OUTPUT_DIR = BASE_DIR / "Outputs_CENSUS"
+    OUTPUT_DIR_ALIGNED = BASE_DIR / "Outputs_Aligned"
+    OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
 
     # --- NEW: Define a directory to save your trained models ---
     MODEL_DIR = BASE_DIR / "saved_models_cvae"
@@ -1018,13 +1262,20 @@ if __name__ == '__main__':
     cen25 = OUTPUT_DIR / "forecasted_population_2025.csv"
     cen30 = OUTPUT_DIR / "forecasted_population_2030.csv"
 
+    # --- Aligned Files ---
+    aligned_CENSUS = OUTPUT_DIR_ALIGNED / "Aligned_Census_2025.csv"
+    aligned_GSS = OUTPUT_DIR_ALIGNED / "Aligned_GSS_2022.csv"
+
     # VALIDATION
     VALIDATION_DIR = OUTPUT_DIR / "Validation_Report_2021"
 
+    #DATA LOADING ------------------------------------------------------------------------------------------------------
+    """
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
     processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths,sample_frac=1)
     """
     #TRAINING ----------------------------------------------------------------------------------------------------------
+    """
     encoder, decoder, cvae_model, training_history = train_cvae(df_processed=processed_data, demo_cols=demo_cols, bldg_cols=bldg_cols,
                                                                 continuous_cols= ['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'],
                                                                 latent_dim=128,  epochs=100, batch_size=4096)
@@ -1047,11 +1298,12 @@ if __name__ == '__main__':
     print(f"--- Loading pre-trained models from: {MODEL_DIR} ---")
     """
     #TESTING -----------------------------------------------------------------------------------------------------------
+    """
     encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
     decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
     print("--- Models loaded successfully! ---")
-    #check_reconstruction_quality_expanded(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
-
+    check_reconstruction_quality_expanded(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
+    """
     #FORECASTING -------------------------------------------------------------------------------------------------------
     """
     # 3. Train Temporal Drift
@@ -1084,7 +1336,49 @@ if __name__ == '__main__':
     generate_validation_report(encoder, decoder, processed_data, demo_cols, bldg_cols, data_scalers, output_folder=VALIDATION_DIR)
     """
     #ASSEMBLE HOUSEHOLD ------------------------------------------------------------------------------------------------
+    """
     # --- Run Assembly for 2025 ---
     df_linked_2025 = assemble_households(cen25, target_year=2025, output_dir=OUTPUT_DIR)
+    """
+    #PROFILE MATCHER ---------------------------------------------------------------------------------------------------
+    """
+    # 1. Paths & Load
+    print("1. Loading Data...")
+    df_census = pd.read_csv(aligned_CENSUS)
+    df_gss = pd.read_csv(aligned_GSS, low_memory=False)
+
+    # 2. Run Matching
+    matcher = MatchProfiler(df_census, df_gss, dday_col="DDAY", id_col="occID")
+    df_matched = matcher.run_matching()
+
+    # 3. Save Matched Keys (Lightweight)
+    df_matched.to_csv(OUTPUT_DIR_ALIGNED / "Matched_Population_Keys.csv", index=False)
+    print(f"   Saved Keys: Matched_Population_Keys.csv")
+
+    # 4. Expand & Save Full Schedules (Heavyweight)
+    expander = ScheduleExpander(df_gss, id_col="occID")
+    verify_sample(df_matched, expander)
+
+    # Define output path for the massive file
+    expanded_path = OUTPUT_DIR_ALIGNED / "Full_Expanded_Schedules.csv"
+    generate_full_expansion(df_matched, expander, expanded_path)
+
+    print("\n✅ Workflow Complete.")
+    """
+    #VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
+    """
+    IO_DIR = Path(OUTPUT_DIR_ALIGNED)
+    df_matched = pd.read_csv(IO_DIR / "Matched_Population_Keys.csv")
+    df_gss = pd.read_csv(IO_DIR / "Aligned_GSS_2022.csv", low_memory=False)
+
+    # Re-initialize Expander
+    # We need to import or paste the ScheduleExpander class here first!
+    expander = ScheduleExpander(df_gss, id_col="occID")
+
+    # Run Validation
+    validate_matching_quality(df_matched, expander, save_path=(IO_DIR / "Validation_ProfileMatcher_2025.txt"))
+    """
+    #HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
+
 
 

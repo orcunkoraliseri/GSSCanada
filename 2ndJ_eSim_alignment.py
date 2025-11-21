@@ -1,20 +1,25 @@
 import pandas as pd
 import pathlib
 import os
+import seaborn as sns
+import matplotlib.pyplot as plt
+import math
 
 # --- 1. Define Paths ---
 BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal")
 
+# Output
+OUTPUT_DIR_GSS = BASE_DIR / "Outputs_GSS"
+OUTPUT_DIR_ALIGNED = BASE_DIR / "Outputs_Aligned"
+OUTPUT_DIR_GSS.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
+
 # Inputs
 DATA_DIR_GSS = BASE_DIR / "DataSources_GSS/Canada_2022/Data_Données"
 FILE_MAIN = DATA_DIR_GSS / "TU_ET_2022_Main-Principal_PUMF.sas7bdat"
-FILE_EPISODE = DATA_DIR_GSS / "TU_ET_2022_Episode_PUMF.sas7bdat"
+FILE_EPISODE = OUTPUT_DIR_GSS / "out22EP_ACT_PRE_coPRE.csv"
 
 CENSUS_FILE = BASE_DIR / "Outputs_CENSUS/forecasted_population_2025_LINKED.csv"
-
-# Output
-OUTPUT_DIR_GSS = BASE_DIR / "Outputs_GSS"
-OUTPUT_DIR_GSS.mkdir(parents=True, exist_ok=True)
 
 # --- 2. Define Columns ---
 
@@ -23,6 +28,7 @@ COLS_MAIN = [
     'PUMFID',  # Key for merging
     'PRV',  # Geography
     'REGION',  # Geography
+    'DDAY',
     'HSDSIZEC',  # Household Size
     'AGEGR10',  # Age
     'GENDER2',  # Sex
@@ -40,19 +46,6 @@ COLS_MAIN = [
     'INC_C',  # Total Income (TOTINC)
     'LUC_RST',  # Urban/Rural (CMA Proxy)
     'PHSDFLG', 'CXRFLAG', 'PARNUM'  # Reference Person Helpers
-]
-
-# B) EPISODE FILE COLUMNS (Time Use - The "Content")
-COLS_EPISODE = [
-    'PUMFID',  # Key for merging
-    'INSTANCE',  # Episode Number
-    'WGHT_EPI',  # Episode Weight
-    'STARTIME',  # Start Time
-    'ENDTIME',  # End Time
-    'LOCATION',  # Location
-    'TUI_01',  # Main Activity Code
-    # Co-Presence Indicators (Updated based on your request)
-    'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06E', 'TUI_06G', 'TUI_06J'
 ]
 
 # C) RENAME MAP (Census Standards + Your Episode Names)
@@ -75,27 +68,14 @@ RENAME_MAP = {
     'CTW_140I': 'POWST',
     'INC_C': 'TOTINC',
     'LUC_RST': 'CMA',
-
-    # --- EPISODE VARIABLES (Your Specific Names) ---
-    'PUMFID': 'occID',  # Renaming the ID after merge
-    'INSTANCE': 'EPINO',
-    'TUI_01': 'occACT',
-    'STARTIME': 'start',
-    'ENDTIME': 'end',
-    'LOCATION': 'occPRE',
-    'TUI_06A': 'Alone',
-    'TUI_06B': 'Spouse',
-    'TUI_06C': 'Children',
-    'TUI_06E': 'parents',
-    'TUI_06G': 'otherHHs',
-    'TUI_06J': 'others'
+    "PUMFID": "occID",
 }
 
 # --- 3. The Logic Function --
-def read_merge_save_gss(main_path, episode_path, cols_main, cols_episode, rename_dict, output_csv_path, chunk_size=100000):
+def read_merge_save_gss(main_path, episode_path, cols_main, rename_dict, output_csv_path, chunk_size=100000):
     """
-    1. Reads MAIN file fully (Demographics).
-    2. Reads EPISODE file in chunks.
+    1. Reads MAIN file fully (Demographics - SAS format).
+    2. Reads EPISODE file in chunks (Pre-processed CSV format).
     3. Merges Demographics onto Episodes.
     4. Saves to CSV.
     5. Prints unique values for verification.
@@ -109,7 +89,10 @@ def read_merge_save_gss(main_path, episode_path, cols_main, cols_episode, rename
         return None
 
     try:
+        # Reading SAS file for Demographics
         df_main = pd.read_sas(main_path, encoding='latin-1')
+
+        # Keep only the relevant demographic columns
         valid_main_cols = [c for c in cols_main if c in df_main.columns]
         df_main = df_main[valid_main_cols]
         print(f"   Loaded Main Data: {len(df_main)} people.")
@@ -127,19 +110,26 @@ def read_merge_save_gss(main_path, episode_path, cols_main, cols_episode, rename
     merged_chunks = []
 
     try:
-        reader = pd.read_sas(
+        # UPDATED: Read CSV instead of SAS
+        # We do not filter columns here because the input CSV is already pre-processed
+        reader = pd.read_csv(
             episode_path,
             chunksize=chunk_size,
-            iterator=True,
-            encoding='latin-1'
+            encoding='utf-8',  # Assuming standard CSV encoding
+            low_memory=False
         )
 
         for i, chunk in enumerate(reader):
-            valid_ep_cols = [c for c in cols_episode if c in chunk.columns]
-            chunk_filtered = chunk[valid_ep_cols]
+            # UPDATED: Handle 'occID' in pre-processed CSV vs 'PUMFID' in Main SAS
+            if 'occID' in chunk.columns:
+                # Rename to PUMFID to match the Demographics file key
+                chunk = chunk.rename(columns={'occID': 'PUMFID'})
+            elif 'PUMFID' not in chunk.columns:
+                print("❌ Error: Merge key ('occID' or 'PUMFID') missing in Episode chunk. Cannot merge.")
+                return None
 
             # Merge Main Data onto Episode Chunk
-            chunk_merged = pd.merge(chunk_filtered, df_main, on='PUMFID', how='left')
+            chunk_merged = pd.merge(chunk, df_main, on='PUMFID', how='left')
 
             merged_chunks.append(chunk_merged)
             print(f"   Processed & Merged chunk {i + 1}...")
@@ -153,6 +143,7 @@ def read_merge_save_gss(main_path, episode_path, cols_main, cols_episode, rename
     full_df = pd.concat(merged_chunks, ignore_index=True)
 
     print("4. Renaming columns...")
+    # rename_dict handles mapping Demographics (PRV->PR) and ID (PUMFID->occID)
     full_df = full_df.rename(columns=rename_dict)
 
     # --- STEP 4: Save ---
@@ -163,22 +154,29 @@ def read_merge_save_gss(main_path, episode_path, cols_main, cols_episode, rename
     print("\n6. Unique Values Check:")
     print("-" * 40)
     for col in full_df.columns:
-        unique_vals = full_df[col].unique()
-        count = len(unique_vals)
+        # Basic check to avoid crashing on unhashable types
+        try:
+            unique_vals = full_df[col].unique()
+            count = len(unique_vals)
 
-        # If less than 20 unique values, print all. Otherwise, truncate.
-        if count <= 20:
-            print(f"[{col}] ({count}): {unique_vals}")
-        else:
-            print(f"[{col}] ({count}): {unique_vals[:5]} ... (truncated)")
+            # If less than 20 unique values, print all. Otherwise, truncate.
+            if count <= 20:
+                print(f"[{col}] ({count}): {unique_vals}")
+            else:
+                print(f"[{col}] ({count}): {unique_vals[:5]} ... (truncated)")
+        except Exception:
+            print(f"[{col}] (Check skipped - likely unhashable)")
+
     print("-" * 40)
 
     print(f"✅ Success! Saved {len(full_df)} rows (Episodes).")
     return full_df
-def data_alignment(census_csv_path, gss_csv_path):
+def data_alignment(census_csv_path: pathlib.Path, gss_csv_path: pathlib.Path,
+                   output_dir: pathlib.Path = OUTPUT_DIR_ALIGNED):
     """
     Loads Census Forecast and GSS Library.
     Applies all harmonization functions to align columns and categories.
+    Saves the resulting aligned DataFrames to CSV.
     Returns aligned DataFrames ready for matching.
     """
     print("--- Step 1: Loading Datasets for Alignment ---")
@@ -197,8 +195,6 @@ def data_alignment(census_csv_path, gss_csv_path):
     print("\n--- Step 2: Running Harmonization Pipeline ---")
 
     # Call each function sequentially
-    # Note: The order doesn't matter as they are independent
-
     df_census, df_gss = harmonize_agegrp(df_census, df_gss)
     df_census, df_gss = harmonize_hhsize(df_census, df_gss)
     df_census, df_gss = harmonize_hrswrk(df_census, df_gss)
@@ -210,15 +206,25 @@ def data_alignment(census_csv_path, gss_csv_path):
     df_census, df_gss = harmonize_cow(df_census, df_gss)
     df_census, df_gss = harmonize_mode(df_census, df_gss)
 
-    # --- Additional Cleanup (Optional but recommended) ---
-    # Ensure Census ID columns are strings to match GSS if needed for later steps
-    # (Though matching is done on the demographic columns we just harmonized)
-
     print(f"--- Alignment Complete. ---")
     print(f"   Census Shape: {df_census.shape}")
     print(f"   GSS Shape:    {df_gss.shape}")
 
+    # --- Step 3: Save Aligned Data to CSV ---
+    print("\n--- Step 3: Saving Aligned DataFrames ---")
+
+    # Define file names
+    census_out_file = output_dir / "Aligned_Census_2025.csv"
+    gss_out_file = output_dir / "Aligned_GSS_2022.csv"
+
+    print(f"   Saving Census to: {census_out_file}...")
+    df_census.to_csv(census_out_file, index=False)
+
+    print(f"   Saving GSS to:    {gss_out_file}...")
+    df_gss.to_csv(gss_out_file, index=False)
+
     return df_census, df_gss
+
 # HARMONIZE SUB-FUNCTIONS-----------------------------------------------------------------------------------------------
 def harmonize_agegrp(df_census, df_gss):
     """
@@ -608,17 +614,101 @@ def check_value_alignment(df1, df2, df1_name="Census", df2_name="GSS", target_co
                     print(f"   ⚠️ In {df2_name} ONLY: {row[f'Missing_in_{df1_name}']}")
 
     return df_res
+def plot_distribution_comparison(df1, df2, df1_name="Census", df2_name="GSS", target_cols=None):
+    """
+    Plots side-by-side bar charts (normalized to percentage) for common columns.
+    Useful for visually verifying if the distribution of GSS matches the Census.
+
+    Parameters:
+    - df1, df2: DataFrames to compare.
+    - df1_name, df2_name: Labels for the legend (e.g., "Census", "GSS").
+    - target_cols: List of column names to plot.
+    """
+
+    # --- SAFEGUARD: Check if data exists ---
+    if df1 is None or df2 is None:
+        print("❌ Error: One of the DataFrames is None. Cannot plot.")
+        return
+
+    # 1. Identify Common Columns from the Target List
+    common_cols = sorted(list(set(target_cols).intersection(set(df1.columns)).intersection(set(df2.columns))))
+
+    if not common_cols:
+        print("❌ No common columns found to plot.")
+        return
+
+    print(f"📊 Plotting distributions for {len(common_cols)} columns...")
+
+    # 2. Setup Plot Grid
+    num_plots = len(common_cols)
+    cols_per_row = 3
+    rows = math.ceil(num_plots / cols_per_row)
+
+    # Dynamic Figure Size: (Width, Height per row * rows)
+    fig, axes = plt.subplots(rows, cols_per_row, figsize=(18, 5 * rows))
+    axes = axes.flatten()  # Flatten to 1D array for easy looping
+
+    # 3. Loop through columns and plot
+    for i, col in enumerate(common_cols):
+        ax = axes[i]
+
+        # Prepare temporary data for Seaborn
+        # We merge just this column into a "Long Format" DF for easy plotting
+        d1 = df1[[col]].dropna().copy()
+        d1['Source'] = df1_name
+
+        d2 = df2[[col]].dropna().copy()
+        d2['Source'] = df2_name
+
+        combined = pd.concat([d1, d2], ignore_index=True)
+
+        # Determine if categorical (Discrete) or Continuous
+        # Heuristic: If < 20 unique values, treat as distinct categories (bars)
+        # If > 20 (like HRSWRK might be), let histogram bin it.
+        n_unique = combined[col].nunique()
+        is_discrete = n_unique < 25
+
+        # PLOT
+        # stat='percent' ensures we compare Proportions, not Raw Counts
+        # common_norm=False ensures 100% is calculated per Group (Census=100%, GSS=100%)
+        sns.histplot(
+            data=combined,
+            x=col,
+            hue='Source',
+            stat='percent',
+            common_norm=False,
+            multiple='dodge',  # 'dodge' puts bars side-by-side
+            shrink=0.8,  # Adds valid spacing between bars
+            discrete=is_discrete,
+            ax=ax,
+            palette={df1_name: "#1f77b4", df2_name: "#ff7f0e"}  # Blue vs Orange
+        )
+
+        ax.set_title(f"Distribution: {col}", fontsize=12, fontweight='bold')
+        ax.set_ylabel("Percent (%)")
+        ax.grid(axis='y', alpha=0.3)
+
+    # 4. Hide empty subplots (if any)
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.show()
 
 # --- 4. Execution ---
 if __name__ == "__main__":
     GSS_FILE = OUTPUT_DIR_GSS / "GSS_2022_Merged_Episodes.csv"
-
+    """
     # read & merge GSS
-    #df_merged = read_merge_save_gss(main_path=FILE_MAIN, episode_path=FILE_EPISODE, cols_main=COLS_MAIN, cols_episode=COLS_EPISODE, rename_dict=RENAME_MAP, output_csv_path=GSS_FILE)
-
+    read_merge_save_gss(main_path=FILE_MAIN, episode_path=FILE_EPISODE, cols_main=COLS_MAIN, rename_dict=RENAME_MAP, output_csv_path=GSS_FILE)
+    
     # Run Function
     df_census, df_gss = data_alignment(CENSUS_FILE, GSS_FILE)
 
     # --- STEP 0: Define Target Columns & Filter ---
     target_cols = ["HHSIZE", "HRSWRK", "AGEGRP", "MARSTH", "SEX", "KOL", "NOCS", "PR", "COW", "MODE"]
     check_value_alignment(df_census, df_gss, target_cols=target_cols)
+
+    # --- Example Usage ---
+    plot_distribution_comparison(df_census, df_gss, target_cols=target_cols)
+    """

@@ -461,9 +461,9 @@ if __name__ == '__main__':
     GSS_2022_SPSS_episode = "/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Data Sources/Canada_2022/Data_Données/TU_ET_2022_Episode_PUMF.sas7bdat"
 
     ####################################################################################################################
-    # 2010 - GPT
-    """"""
     # READING
+    """
+    # 2010 - GPT
     df_2005_episode = load_spss_file(GSS_2005_SPSS_episode,
                                      selected_columns=["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE", "ALONE",
                                                        "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "NHSDCL15", "NHSDC15P", "OTHERS", "PARHSD", "NHSDPAR", "MEMBHSD"],
@@ -505,7 +505,6 @@ if __name__ == '__main__':
 
     ####################################################################################################################
     #2010 - gemini
-    """"""
     # READING
     df_2010_episode = load_dat_with_sps_layout(GSS_2010_SPSS_episode, sps_syntax_2010,
                                                selected_columns=["RECID", "EPINO", "WGHT_EPI","ACTCODE", "STARTIME", "ENDTIME", "PLACE", "ALONE", "SPOUSE", "CHILDHSD",
@@ -585,12 +584,15 @@ if __name__ == '__main__':
                                                          "TUI_06A": "Alone", "TUI_06B": "Spouse", "TUI_06C": "Children", "TUI_06G": "otherHHs", "TUI_06J":"others", "TUI_06E":"parents"})
 
     ####################################################################################################################
+    
+    """
     # 2022 - gemini
-    """"""
+    """
     # READING
     df_2022_episode = read_SAS(GSS_2022_SPSS_episode, columns_to_keep= ['PUMFID', 'INSTANCE', 'WGHT_EPI', 'ENDTIME', 'LOCATION', 'STARTIME', 'TUI_01', 'TUI_06A', 'TUI_06B', 'TUI_06C', 'TUI_06D', 'TUI_06E','TUI_06F', 'TUI_06G', 'TUI_06H', 'TUI_06I', 'TUI_06J'],
                                  chunk_size=100000,
                                printNan=False)
+    
 
     # ----------------
     # EDITING - OCCUPANT ACTIVITY
@@ -610,6 +612,8 @@ if __name__ == '__main__':
                                                 9: ["3312", "3308", "3311"], 10: ["3313"], 11: ["3314"], 12: ["3315"], 13: ["3316"], 14: ["3317"], 15: ["3318"],
                                                 16: ["3320"], 17: ["3323", "3399", "3319"], 18: ["9996", "9997", "9998", "9999"]},
                                                printNan=False)
+                                               
+    
 
     # ----------------
     # EDITING - CO-PRESENCE
@@ -624,7 +628,10 @@ if __name__ == '__main__':
                                                      output_csv_path="/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs/out22EP_ACT_PRE_coPRE.csv",
                                                      rename_map={"PUMFID":"occID", "TUI_01":"occACT", "STARTIME":"start", "ENDTIME":"end", "LOCATION":"occPRE", "INSTANCE": "EPINO",
                                                      "TUI_06A": "Alone", "TUI_06B": "Spouse", "TUI_06C": "Children", "TUI_06G": "otherHHs", "TUI_06J":"others", "TUI_06E":"parents"})
-
+    
+    """
+    df = pd.read_csv("/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal/Outputs_GSS/out22EP_ACT_PRE_coPRE.csv")
+    print(df.nunique())
     # ----------------
     # EDITING - OTHER COLUMNS
 
