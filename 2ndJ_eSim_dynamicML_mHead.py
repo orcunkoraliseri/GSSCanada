@@ -4,14 +4,16 @@ from tensorflow import keras
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
 import seaborn as sns
 import uuid
 import pathlib
+from tqdm import tqdm
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
-from tqdm import tqdm
+import math
+
 keras = tf.keras
 layers = tf.keras.layers
 # PREPARATION ----------------------------------------------------------------------------------------------------------
@@ -671,7 +673,7 @@ def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bld
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
 
-    save_path = OUTPUT_DIR / "Latent_Trajectory_Plot.png"
+    save_path = VALIDATION_FORECASTVIS_DIR /"Latent_Trajectory_Plot.png"
     plt.savefig(save_path)
     print(f"   Plot saved to {save_path}")
 # VISUALIZATION & TESTING ----------------------------------------------------------------------------------------------
@@ -743,7 +745,7 @@ def check_reconstruction_quality(encoder, decoder, df_processed, demo_cols, bldg
     print("\n--- RECONSTRUCTED ---")
     # Show the same 10 features from the reconstructed data
     print(reconstructed_df.iloc[0][original_df.iloc[0].nlargest(10).index])
-def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_cols, bldg_cols, continuous_cols, output_dir, n_samples=5):
+def validate_vae_reconstruction(encoder, decoder, df_processed, demo_cols, bldg_cols, continuous_cols, output_dir, n_samples=5):
     """
     Expanded evaluation: Checks samples, compares Original vs. Reconstructed,
     prints to console, AND saves the detailed report to a CSV file.
@@ -842,7 +844,7 @@ def check_reconstruction_quality_expanded(encoder, decoder, df_processed, demo_c
                 })
 
     # --- 7. Save to CSV ---
-    output_path = pathlib.Path(output_dir) / "reconstruction_check_results.csv"
+    output_path = pathlib.Path(output_dir) / "Validation_VAE_Reconstruction/validation_vae_reconstruction.csv"
     df_results = pd.DataFrame(results_list)
     df_results.to_csv(output_path, index=False)
     print(f"\n✅ Detailed reconstruction report saved to: {output_path}")
@@ -1130,30 +1132,35 @@ def generate_full_expansion(df_matched, expander, output_path):
     print(f"\n💾 Expanding Schedules for {len(df_matched)} agents...")
     all_episodes = []
 
-    for _, agent in tqdm(df_matched.iterrows(), total=len(df_matched), desc="Expanding"):
+    # Use 'idx' as the Unique Agent ID
+    for idx, agent in tqdm(df_matched.iterrows(), total=len(df_matched), desc="Expanding"):
+
         # Expand Weekday
         ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
         if ep_wd is not None:
-            ep_wd['SIM_HH_ID'] = agent['SIM_HH_ID']  # Link to House
+            ep_wd = ep_wd.copy()
+            ep_wd['SIM_HH_ID'] = agent['SIM_HH_ID']
             ep_wd['Day_Type'] = 'Weekday'
+            ep_wd['AgentID'] = idx  # <--- NEW: Unique ID
             all_episodes.append(ep_wd)
 
         # Expand Weekend
         ep_we = expander.get_episodes(agent['MATCH_ID_WE'])
         if ep_we is not None:
+            ep_we = ep_we.copy()
             ep_we['SIM_HH_ID'] = agent['SIM_HH_ID']
             ep_we['Day_Type'] = 'Weekend'
+            ep_we['AgentID'] = idx  # <--- NEW: Unique ID
             all_episodes.append(ep_we)
 
     if all_episodes:
         full_df = pd.concat(all_episodes)
 
-        # --- NEW: SORTING LOGIC ---
-        # Sorts by Household first, then Day Type, then Person ID
-        print(f"   Sorting expanded data by SIM_HH_ID...")
-        full_df = full_df.sort_values(by=['SIM_HH_ID', 'Day_Type', 'occID'])
+        # Sort by Household, Day, then Unique AgentID
+        print(f"   Sorting expanded data...")
+        full_df = full_df.sort_values(by=['SIM_HH_ID', 'Day_Type', 'AgentID'])
 
-        full_df.to_csv(output_path)  # Index is PUMFID/occID
+        full_df.to_csv(output_path, index=False)
         print(f"✅ Saved Expanded File: {len(full_df):,} rows to {output_path.name}")
 #VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
 def validate_matching_quality(df_matched, expander, save_path=None):
@@ -1238,6 +1245,357 @@ def validate_matching_quality(df_matched, expander, save_path=None):
             print(f"\n✅ Validation Report saved to: {save_path}")
         except Exception as e:
             print(f"\n❌ Error saving report: {e}")
+#HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
+class HouseholdAggregator:
+    """
+    Transforms individual episode lists into aggregated Household Profiles.
+    Resolution: 5 Minutes (288 slots per 24 hours).
+
+    Step A: Grid Construction (Individual)
+    Step B: Binary Presence (Household) -> 'occPre'
+    Step C: Social Density (Household)    -> 'occDensity'
+    Step D: Activity Sets (Household)     -> 'occActivity'
+    """
+
+    def __init__(self, resolution_min=5):
+        self.res = resolution_min
+        self.slots = int(1440 / self.res)  # 288 slots for 24h
+
+        # Social columns to sum for Step C (excluding 'Alone')
+        self.social_cols = [
+            'Spouse', 'Children', 'parents', 'friends',
+            'otherHHs', 'others', 'otherInFAMs'
+        ]
+
+    def process_all(self, df_expanded):
+        """
+        Main driver function.
+        Groups data by Household and Day Type, aggregates,
+        and then merges aggregation back to individual grids.
+        Includes ALL static columns from the input CSV (Demographics, etc.).
+        """
+        print(f"   Grouping data by Household and Day Type...")
+
+        # Columns that change per episode and shouldn't be broadcasted statically
+        time_varying_cols = [
+            'start', 'end', 'EPINO', 'occACT', 'occPRE', 'social_sum',
+            'Spouse', 'Children', 'parents', 'friends',
+            'otherHHs', 'others', 'otherInFAMs'
+        ]
+
+        # Group by Household AND Day
+        groups = df_expanded.groupby(['SIM_HH_ID', 'Day_Type'])
+
+        full_data_results = []
+
+        # Iterate through each household scenario
+        for (hh_id, day_type), group_df in tqdm(groups, desc="Processing Households"):
+
+            # 1. Map AgentID -> Grid DataFrame
+            people_grids_map = {}
+            # 2. Map AgentID -> Static Metadata (Series)
+            people_meta_map = {}
+
+            # FIX 1: Group by 'AgentID' (Unique Index) instead of 'occID'
+            # This ensures distinct people with the same GSS ID are treated separately
+            if 'AgentID' not in group_df.columns:
+                raise ValueError(
+                    "❌ Error: 'AgentID' column missing. Please re-run Step 2 (Expansion) with the updated script.")
+
+            for agent_id, person_data in group_df.groupby('AgentID'):
+                # Step A: Create 5-min grid for this person
+                grid = self._create_individual_grid(person_data)
+                people_grids_map[agent_id] = grid
+
+                # Capture Static Metadata (Take 1st row, drop time-varying)
+                meta = person_data.iloc[0].drop(labels=time_varying_cols, errors='ignore')
+                people_meta_map[agent_id] = meta
+
+            # 3. Steps B, C, D: Aggregate the household
+            hh_profile = self._aggregate_household(list(people_grids_map.values()))
+
+            # 4. INTEGRATION: Merge Household Data + Individual Grid + Static Metadata
+            for agent_id, p_grid in people_grids_map.items():
+                # a. Concatenate Household Profile + Individual Grid
+                combined = pd.concat([hh_profile, p_grid], axis=1)
+
+                # b. Add Static Metadata
+                meta = people_meta_map[agent_id]
+                for col_name, val in meta.items():
+                    combined[col_name] = val
+
+                # Ensure essential keys are correct
+                combined['SIM_HH_ID'] = hh_id
+                combined['Day_Type'] = day_type
+                combined['AgentID'] = agent_id  # Persist Unique ID
+
+                full_data_results.append(combined)
+
+        # Combine all individuals into one big dataframe
+        return pd.concat(full_data_results, ignore_index=True)
+
+    def _create_individual_grid(self, episodes):
+        """
+        Step A: 5-Minute Grid Construction (Standardization)
+        Converts variable start/end times into a fixed length array (288 slots).
+        """
+        # Initialize blank arrays
+        loc_grid = np.zeros(self.slots, dtype=int)
+        act_grid = np.zeros(self.slots, dtype=int)
+        dens_grid = np.zeros(self.slots, dtype=int)
+
+        # --- FIX 2: Density Logic (Ghost Density Fix) ---
+        valid_social = [c for c in self.social_cols if c in episodes.columns]
+
+        # Convert 1=Yes, 2=No, 9=Unknown to Binary (1=Yes, 0=Else)
+        episodes_social = episodes[valid_social].replace({1: 1, 2: 0, 9: 0}).fillna(0)
+
+        # MASK: Only count social density if occPRE == 1 (Home)
+        # If occPRE is NOT 1 (e.g. Work/Travel), density becomes 0
+        is_home = (episodes['occPRE'] == 1).astype(int)
+
+        # Assign to copy to avoid warnings
+        episodes = episodes.copy()
+        episodes['social_sum'] = episodes_social.sum(axis=1) * is_home
+
+        # Fill the grid based on episodes
+        for _, row in episodes.iterrows():
+            # Convert minutes to slot index
+            s_idx = int(np.floor(row['start'] / self.res))
+            e_idx = int(np.floor(row['end'] / self.res))
+
+            s_idx = max(0, min(s_idx, self.slots - 1))
+            e_idx = max(0, min(e_idx, self.slots))
+
+            # Fill range
+            if e_idx > s_idx:
+                loc_grid[s_idx:e_idx] = row['occPRE']
+                act_grid[s_idx:e_idx] = row['occACT']
+                dens_grid[s_idx:e_idx] = row['social_sum']
+
+        # Return dataframe for this individual
+        return pd.DataFrame({
+            'ind_occPRE': loc_grid,
+            'ind_occACT': act_grid,
+            'ind_density': dens_grid
+        })
+
+    def _aggregate_household(self, people_grids):
+        """
+        Executes Steps B, C, and D combining multiple individual grids.
+        """
+        # Create Time Index (00:00, 00:05, ... 23:55)
+        time_slots = pd.date_range("00:00", "23:55", freq=f"{self.res}min").strftime('%H:%M')
+
+        # Dataframe to store final household results
+        hh_df = pd.DataFrame({'Time_Slot': time_slots})
+
+        if not people_grids:
+            hh_df['occPre'] = 0
+            hh_df['occDensity'] = 0
+            hh_df['occActivity'] = ""
+            return hh_df
+
+        # --- STEP B: Aggregated Presence (Binary) -> occPre ---
+        # 1. Stack location arrays (using 'ind_occPRE')
+        loc_stack = np.vstack([p['ind_occPRE'].values for p in people_grids])
+
+        # 2. Convert to Binary Presence (1=Home, 0=Outside)
+        presence_binary = (loc_stack == 1).astype(int)
+
+        # 3. Sum vertically (How many people home?)
+        occupancy_count = presence_binary.sum(axis=0)
+
+        # 4. Household Binary Status (1 if anyone is home, else 0)
+        hh_df['occPre'] = (occupancy_count >= 1).astype(int)
+
+        # --- STEP C: Social Density -> occDensity ---
+        # 1. Stack density arrays (using 'ind_density')
+        dens_stack = np.vstack([p['ind_density'].values for p in people_grids])
+
+        # 2. Sum vertically
+        hh_df['occDensity'] = dens_stack.sum(axis=0)
+
+        # --- STEP D: Aggregated Activity Sets -> occActivity ---
+        # 1. Stack activity arrays (using 'ind_occACT')
+        act_stack = np.vstack([p['ind_occACT'].values for p in people_grids])
+
+        activity_sets = []
+
+        # Iterate through each time slot (column)
+        for t in range(self.slots):
+            # Get activities and presence for this moment
+            acts_at_t = act_stack[:, t]
+            pres_at_t = presence_binary[:, t]  # Only consider people AT HOME
+
+            # Filter: Keep activities only for people who are PRESENT (1)
+            valid_acts = acts_at_t[pres_at_t == 1]
+
+            # Get Unique, Sort, Convert to String
+            if len(valid_acts) > 0:
+                unique_acts = sorted(np.unique(valid_acts))
+                # Remove 0 or NaNs if any slipped in
+                unique_acts = [str(a) for a in unique_acts if a > 0]
+                act_str = ",".join(unique_acts)
+            else:
+                act_str = "0"  # "0" indicates Unoccupied/No Activity
+
+            activity_sets.append(act_str)
+
+        hh_df['occActivity'] = activity_sets
+
+        return hh_df
+#VALIDATION OF AGGREGATION -----------------------------------------------------------------------------------------
+def validate_household_aggregation(df_full, report_path=None):
+    """
+    Performs logical checks on the aggregated data and saves report to txt.
+    """
+    # Buffer to hold log messages
+    logs = []
+
+    def log(message):
+        print(message)
+        logs.append(str(message))
+
+    log(f"\n{'=' * 60}")
+    log(f"🔎 VALIDATING HOUSEHOLD AGGREGATION")
+    log(f"{'=' * 60}")
+
+    # --- CHECK 1: COMPLETENESS ---
+    log(f"\n1. CHECKING TIME GRID COMPLETENESS...")
+    if 'AgentID' not in df_full.columns:
+        log("   ❌ Error: 'AgentID' column missing. Cannot validate completeness.")
+        return False
+
+    counts = df_full.groupby(['AgentID', 'Day_Type']).size()
+
+    if (counts == 288).all():
+        log(f"   ✅ Success: All {len(counts)} person-days have exactly 288 time slots.")
+    else:
+        errors = counts[counts != 288]
+        log(f"   ❌ Error: Found {len(errors)} incomplete profiles.")
+        log(errors.head())
+
+    # --- CHECK 2: LOGIC (Presence vs. Density) ---
+    log(f"\n2. CHECKING LOGIC (Presence vs. Density)...")
+    empty_house = df_full[df_full['occPre'] == 0]
+    ghosts = empty_house[empty_house['occDensity'] > 0]
+
+    if len(ghosts) == 0:
+        log(f"   ✅ Success: No social density detected in empty houses.")
+    else:
+        log(f"   ❌ Error: Found {len(ghosts)} rows where House is Empty but Density > 0.")
+
+    # --- CHECK 3: ACTIVITY CONSISTENCY ---
+    log(f"\n3. CHECKING ACTIVITY STRINGS...")
+    if 'occActivity' in empty_house.columns:
+        ghost_activities = empty_house[empty_house['occActivity'].astype(str) != "0"]
+        if len(ghost_activities) == 0:
+            log(f"   ✅ Success: Activity is correctly marked '0' when empty.")
+        else:
+            log(f"   ❌ Error: Found {len(ghost_activities)} rows with activities in empty house.")
+
+    # --- SAVE REPORT TO FILE ---
+    if report_path:
+        try:
+            with open(report_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(logs))
+                f.write("\n")  # Add newline at end
+            # We don't print "Saved" here to avoid cluttering the console output if it's called often
+        except Exception as e:
+            print(f"   ❌ Error writing report file: {e}")
+
+    return True
+def visualize_multiple_households(df_full, n_samples=10, output_img_path=None, report_path=None):
+    """
+    Generates a Grid Plot for 'n_samples' random households.
+    Optionally appends status to the report file.
+    """
+    if output_img_path is None:
+        output_img_path = Path("Validation_Plot_Batch.png")
+
+    msg_start = f"\n4. GENERATING VISUAL VERIFICATION PLOT ({n_samples} Households)..."
+    print(msg_start)
+
+    if report_path:
+        with open(report_path, "a", encoding="utf-8") as f:
+            f.write(msg_start + "\n")
+
+    # 1. Filter for households with some activity (Density > 1)
+    interesting_ids = df_full[df_full['occDensity'] > 1]['SIM_HH_ID'].unique()
+
+    if len(interesting_ids) == 0:
+        print("   ⚠️ No high-density households found. Sampling random ones.")
+        interesting_ids = df_full['SIM_HH_ID'].unique()
+
+    # 2. Random Sample
+    actual_n = min(n_samples, len(interesting_ids))
+    sample_ids = np.random.choice(interesting_ids, actual_n, replace=False)
+
+    # 3. Setup Grid
+    cols = 4
+    rows = math.ceil(actual_n / cols)
+    figsize_height = rows * 3
+
+    fig, axes = plt.subplots(rows, cols, figsize=(15, figsize_height), sharex=False)
+    axes = axes.flatten()
+
+    # 4. Plot Loop
+    for i, ax in enumerate(axes):
+        if i < actual_n:
+            hh_id = sample_ids[i]
+
+            # Get Data (Priority: Weekday -> Weekend)
+            mask = (df_full['SIM_HH_ID'] == hh_id) & (df_full['Day_Type'] == 'Weekday')
+            df_hh = df_full[mask].copy()
+
+            if df_hh.empty:
+                mask = (df_full['SIM_HH_ID'] == hh_id) & (df_full['Day_Type'] == 'Weekend')
+                df_hh = df_full[mask].copy()
+
+            df_plot = df_hh[['Time_Slot', 'occPre', 'occDensity']].drop_duplicates()
+            x = range(len(df_plot))
+
+            if df_plot.empty:
+                ax.text(0.5, 0.5, "No Data", ha='center')
+                continue
+
+            # Plot
+            ax.fill_between(x, df_plot['occPre'], step="pre", color='green', alpha=0.3, label='Occupied')
+            ax.set_ylim(0, 1.2)
+            ax.set_yticks([])
+            ax.set_ylabel("Presence", fontsize=8, color='green')
+
+            ax2 = ax.twinx()
+            ax2.plot(x, df_plot['occDensity'], color='blue', linewidth=1.5, label='Density')
+            ax2.set_ylabel("Density", fontsize=8, color='blue')
+            ax2.tick_params(axis='y', labelsize=8)
+
+            ax.set_title(f"Household #{hh_id}", fontsize=10, fontweight='bold', pad=3)
+
+            ticks = np.arange(0, 288, 48)
+            labels = [df_plot['Time_Slot'].iloc[j] for j in ticks]
+            ax.set_xticks(ticks)
+            ax.set_xticklabels(labels, rotation=45, fontsize=8)
+            ax.grid(True, alpha=0.2)
+
+            if i == 0:
+                lines, lbls = ax.get_legend_handles_labels()
+                lines2, lbls2 = ax2.get_legend_handles_labels()
+                ax.legend(lines + lines2, lbls + lbls2, loc='upper left', fontsize=8)
+        else:
+            ax.axis('off')
+
+    plt.tight_layout()
+    plt.savefig(output_img_path)
+
+    msg_end = f"   ✅ Batch Plot saved to: {output_img_path.name}"
+    print(msg_end)
+
+    if report_path:
+        with open(report_path, "a", encoding="utf-8") as f:
+            f.write(msg_end + "\n")
+
 if __name__ == '__main__':
     #DIRECTORIES -------------------------------------------------------------------------------------------------------
     # BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
@@ -1267,15 +1625,15 @@ if __name__ == '__main__':
     aligned_GSS = OUTPUT_DIR_ALIGNED / "Aligned_GSS_2022.csv"
 
     # VALIDATION
-    VALIDATION_DIR = OUTPUT_DIR / "Validation_Report_2021"
+    VALIDATION_FORECAST_DIR = OUTPUT_DIR / "Validation_Forecasting_VisualbyColumn"
+    VALIDATION_FORECASTVIS_DIR = OUTPUT_DIR / "Validation_Forecasting_Visual"
+    VALIDATION_PR_MATCH_DIR = OUTPUT_DIR / "Validation_ProfileMatcher"
+    VALIDATION_HH_AGG_DIR = OUTPUT_DIR / "Validation_HHaggregation"
 
-    #DATA LOADING ------------------------------------------------------------------------------------------------------
+    #TRAINING ----------------------------------------------------------------------------------------------------------
     """
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
     processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths,sample_frac=1)
-    """
-    #TRAINING ----------------------------------------------------------------------------------------------------------
-    """
     encoder, decoder, cvae_model, training_history = train_cvae(df_processed=processed_data, demo_cols=demo_cols, bldg_cols=bldg_cols,
                                                                 continuous_cols= ['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'],
                                                                 latent_dim=128,  epochs=100, batch_size=4096)
@@ -1299,10 +1657,12 @@ if __name__ == '__main__':
     """
     #TESTING -----------------------------------------------------------------------------------------------------------
     """
+    file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
+    processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths,sample_frac=1)
     encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
     decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
     print("--- Models loaded successfully! ---")
-    check_reconstruction_quality_expanded(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
+    validate_vae_reconstruction(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
     """
     #FORECASTING -------------------------------------------------------------------------------------------------------
     """
@@ -1330,10 +1690,14 @@ if __name__ == '__main__':
         df_forecast.to_csv(save_path, index=False)
         print(f"✅ Saved {year} forecast to: {save_path}")
         print(df_forecast.head())
-
-    #VALIDATION OF FORECASTING -----------------------------------------------------------------------------------------
-    # --- Execute (Assuming models/data loaded) ---
-    generate_validation_report(encoder, decoder, processed_data, demo_cols, bldg_cols, data_scalers, output_folder=VALIDATION_DIR)
+    """
+    #VALIDATION OF FORECASTING_VISUAL -----------------------------------------------------------------------------------------
+    """
+    file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
+    processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths, sample_frac=1)
+    encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
+    decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
+    generate_validation_report(encoder, decoder, processed_data, demo_cols, bldg_cols, data_scalers, output_folder=VALIDATION_FORECAST_DIR)
     """
     #ASSEMBLE HOUSEHOLD ------------------------------------------------------------------------------------------------
     """
@@ -1360,16 +1724,17 @@ if __name__ == '__main__':
     verify_sample(df_matched, expander)
 
     # Define output path for the massive file
-    expanded_path = OUTPUT_DIR_ALIGNED / "Full_Expanded_Schedules.csv"
+    expanded_path = OUTPUT_DIR / "Profile_Matcher_Expanded_Occ.csv"
     generate_full_expansion(df_matched, expander, expanded_path)
 
     print("\n✅ Workflow Complete.")
     """
     #VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
     """
-    IO_DIR = Path(OUTPUT_DIR_ALIGNED)
-    df_matched = pd.read_csv(IO_DIR / "Matched_Population_Keys.csv")
-    df_gss = pd.read_csv(IO_DIR / "Aligned_GSS_2022.csv", low_memory=False)
+    IO_DIR_ALIGNED = Path(OUTPUT_DIR_ALIGNED)
+    IO_DIR = Path(VALIDATION_PR_MATCH_DIR)
+    df_matched = pd.read_csv(IO_DIR_ALIGNED / "Matched_Population_Keys.csv")
+    df_gss = pd.read_csv(IO_DIR_ALIGNED / "Aligned_GSS_2022.csv", low_memory=False)
 
     # Re-initialize Expander
     # We need to import or paste the ScheduleExpander class here first!
@@ -1379,6 +1744,58 @@ if __name__ == '__main__':
     validate_matching_quality(df_matched, expander, save_path=(IO_DIR / "Validation_ProfileMatcher_2025.txt"))
     """
     #HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
+    """
+    IO_DIR = Path(OUTPUT_DIR)
+    expanded_file = IO_DIR / "Full_Expanded_Schedules.csv"
+    output_full = IO_DIR / "Full_data.csv"
 
+    # 2. Load Data
+    print("1. Loading Expanded Schedules...")
+    if not expanded_file.exists():
+        print(f"❌ Error: {expanded_file} not found. Run Step 2 first.")
+    else:
+        df_expanded = pd.read_csv(expanded_file, low_memory=False)
+
+        # 3. Initialize Aggregator
+        aggregator = HouseholdAggregator(resolution_min=5)
+
+        # 4. Run Process
+        print("2. Starting Process (Padding + Aggregation)...")
+        # Now returns the full dataset with all original columns integrated
+        df_final = aggregator.process_all(df_expanded)
+
+        # 5. Save
+        print(f"3. Saving Full Integrated Data to: {output_full.name}...")
+        df_final.to_csv(output_full, index=False)
+
+        # 6. Verification
+        print("\n--- Verification: Columns in Output ---")
+        print(f"Total Columns: {len(df_final.columns)}")
+        print(f"Sample Columns: {list(df_final.columns[:10])} ... {list(df_final.columns[-3:])}")
+
+        print("\n✅ Step 3 Complete. Full Integrated Data generated.")
+    """
+    #VALIDATION: HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------
+    """
+    IO_DIR = Path(OUTPUT_DIR)
+    IO_VALID_HHagg_DIR = Path(VALIDATION_HH_AGG_DIR)
+    full_data_path = IO_DIR / "Full_data.csv"
+    plot_path = IO_VALID_HHagg_DIR / "Validation_Plot_Batch.png"
+    report_path = IO_VALID_HHagg_DIR / "Validation_Report_HH.txt"  # New Output File
+
+    if not full_data_path.exists():
+        print("❌ Error: Full_data.csv not found.")
+    else:
+        print("Loading data for validation...")
+        df_full = pd.read_csv(full_data_path, low_memory=False)
+
+        # Run Checks (Writes 1-3 to file)
+        validate_household_aggregation(df_full, report_path=report_path)
+
+        # Run Visuals (Appends 4 to file)
+        visualize_multiple_households(df_full, n_samples=16, output_img_path=plot_path, report_path=report_path)
+
+        print(f"\n✅ Full Validation Report saved to: {report_path.name}")
+    """
 
 
