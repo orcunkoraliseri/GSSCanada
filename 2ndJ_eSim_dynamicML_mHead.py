@@ -848,6 +848,8 @@ def validate_vae_reconstruction(encoder, decoder, df_processed, demo_cols, bldg_
     df_results = pd.DataFrame(results_list)
     df_results.to_csv(output_path, index=False)
     print(f"\n✅ Detailed reconstruction report saved to: {output_path}")
+
+
 #ASSEMBLE HOUSEHOLD ----------------------------------------------------------------------------------------------------
 def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     """
@@ -993,10 +995,16 @@ def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     print(f"✅ Saved linked {target_year} data to: {save_path}")
 
     return df_assembled
+
+
 #PROFILE MATCHER -------------------------------------------------------------------------------------------------------
+# =============================================================================
+# CLASS 1: MatchProfiler (The Linker)
+# =============================================================================
 class MatchProfiler:
     """
     Phase 2 & 3: Assigns GSS Schedule IDs to Census Agents.
+    Updated to include Residential Variables (DTYPE, BEDRM, etc.) in matching logic.
     """
 
     def __init__(self, df_census, df_gss, dday_col="DDAY", id_col="occID", cols_match_t1=None):
@@ -1008,19 +1016,43 @@ class MatchProfiler:
         self.id_col = id_col
         self.dday_col = dday_col
 
-        # Define Tiers
+        # --- UPDATED TIERS WITH RESIDENTIAL VARIABLES ---
+        # Tier 1: Perfect Match
         if cols_match_t1 is None:
-            self.cols_t1 = ["HHSIZE", "HRSWRK", "AGEGRP", "MARSTH", "SEX", "KOL", "NOCS", "PR", "COW", "MODE"]
+            self.cols_t1 = [
+                "HHSIZE", "HRSWRK", "AGEGRP", "MARSTH", "SEX",
+                "KOL", "NOCS", "PR", "COW", "MODE",
+                "DTYPE", "BEDRM", "CONDO", "ROOM", "REPAIR"
+            ]
         else:
             self.cols_t1 = cols_match_t1
 
-        self.cols_t2 = ["HHSIZE", "HRSWRK", "AGEGRP", "SEX", "COW"]
+        # Tier 2: Energy Drivers (Physical Dwelling Attributes + Key Drivers)
+        self.cols_t2 = [
+            "HHSIZE", "HRSWRK", "AGEGRP", "SEX", "COW",
+            "DTYPE", "BEDRM", "CONDO", "ROOM", "REPAIR"
+        ]
+
+        # Tier 3: Constraints (Occupancy physics only)
         self.cols_t3 = ["HHSIZE", "HRSWRK", "AGEGRP"]
+
+        # Tier 4: Fail-safe
         self.cols_t4 = ["HHSIZE"]
 
         # Split & Flatten GSS to create "Catalogs"
         print(f"   Splitting GSS by Day Type ({dday_col})...")
-        catalog_cols = list(set([self.id_col] + self.cols_t1 + ["HHSIZE"]))
+
+        # --- FIX: Only include columns that actually exist in GSS ---
+        # This prevents KeyError if residential variables (DTYPE, etc.) are missing in GSS
+        available_t1 = [c for c in self.cols_t1 if c in df_gss.columns]
+        missing_t1 = list(set(self.cols_t1) - set(available_t1))
+
+        if missing_t1:
+            print(f"⚠️  Warning: The following match columns are MISSING in GSS and will be ignored in matching:")
+            print(f"    {missing_t1}")
+
+        # We must include all AVAILABLE match columns in the catalog
+        catalog_cols = list(set([self.id_col] + available_t1 + ["HHSIZE"]))
 
         # Weekday Catalog (Unique Profiles)
         raw_wd = df_gss[df_gss[self.dday_col].isin([2, 3, 4, 5, 6])]
@@ -1051,30 +1083,39 @@ class MatchProfiler:
         return pd.DataFrame(results)
 
     def _find_best_match(self, agent, catalog):
-        # Tier 1
+        # Tier 1: Perfect Match
         mask = np.ones(len(catalog), dtype=bool)
-        for col in self.cols_t1: mask &= (catalog[col] == agent[col])
+        for col in self.cols_t1:
+            if col in catalog.columns and col in agent:
+                mask &= (catalog[col] == agent[col])
         matches = catalog[mask]
         if not matches.empty: return matches.sample(1)[self.id_col].values[0], "1_Perfect"
 
-        # Tier 2
+        # Tier 2: Energy Drivers
         mask = np.ones(len(catalog), dtype=bool)
-        for col in self.cols_t2: mask &= (catalog[col] == agent[col])
+        for col in self.cols_t2:
+            if col in catalog.columns and col in agent:
+                mask &= (catalog[col] == agent[col])
         matches = catalog[mask]
         if not matches.empty: return matches.sample(1)[self.id_col].values[0], "2_Drivers"
 
-        # Tier 3
+        # Tier 3: Constraints
         mask = np.ones(len(catalog), dtype=bool)
-        for col in self.cols_t3: mask &= (catalog[col] == agent[col])
+        for col in self.cols_t3:
+            if col in catalog.columns and col in agent:
+                mask &= (catalog[col] == agent[col])
         matches = catalog[mask]
         if not matches.empty: return matches.sample(1)[self.id_col].values[0], "3_Constraints"
 
-        # Tier 4
+        # Tier 4: FailSafe
         mask = (catalog["HHSIZE"] == agent["HHSIZE"])
         matches = catalog[mask]
         if not matches.empty: return matches.sample(1)[self.id_col].values[0], "4_FailSafe"
 
         return catalog.sample(1)[self.id_col].values[0], "5_Random"
+# =============================================================================
+# CLASS 2: ScheduleExpander (The Retriever)
+# =============================================================================
 class ScheduleExpander:
     """
     Phase 4: Retrieval & Expansion.
@@ -1106,28 +1147,19 @@ class ScheduleExpander:
         except KeyError:
             # If ID is missing (shouldn't happen if matching worked), return None
             return None
-# --- Helper Function for Verification ---
+# =============================================================================
+# HELPER FUNCTIONS & MAIN EXECUTION
+# =============================================================================
 def verify_sample(df_matched, expander, n=3):
-    """
-    Verifies that we can successfully retrieve episode rows for the matched agents.
-    """
     print(f"\n🔎 VERIFYING EXPANSION (Sample of {n})")
-
     for i, agent in df_matched.head(n).iterrows():
-        # 1. Extract the Assigned IDs from the dataframe row
         id_wd = agent['MATCH_ID_WD']
         id_we = agent['MATCH_ID_WE']
-
-        # 2. Use the new 'get_episodes' method with the ID directly
         ep_wd = expander.get_episodes(id_wd)
         ep_we = expander.get_episodes(id_we)
-
-        # 3. Safely count rows (handle None if ID wasn't found)
         count_wd = len(ep_wd) if ep_wd is not None else 0
         count_we = len(ep_we) if ep_we is not None else 0
-
         print(f"   User {i}: WD={count_wd} rows | WE={count_we} rows")
-# Function to Save the Massive File
 def generate_full_expansion(df_matched, expander, output_path):
     print(f"\n💾 Expanding Schedules for {len(df_matched)} agents...")
     all_episodes = []
@@ -1135,13 +1167,22 @@ def generate_full_expansion(df_matched, expander, output_path):
     # Use 'idx' as the Unique Agent ID
     for idx, agent in tqdm(df_matched.iterrows(), total=len(df_matched), desc="Expanding"):
 
+        # List of residential variables to carry over
+        res_vars = ["DTYPE", "BEDRM", "CONDO", "ROOM", "REPAIR", "PR"]
+
         # Expand Weekday
         ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
         if ep_wd is not None:
             ep_wd = ep_wd.copy()
             ep_wd['SIM_HH_ID'] = agent['SIM_HH_ID']
             ep_wd['Day_Type'] = 'Weekday'
-            ep_wd['AgentID'] = idx  # <--- NEW: Unique ID
+            ep_wd['AgentID'] = idx  # Unique ID
+
+            # --- CRITICAL: Ensure Residential Variables are carried over ---
+            for var in res_vars:
+                if var in agent:
+                    ep_wd[var] = agent[var]
+
             all_episodes.append(ep_wd)
 
         # Expand Weekend
@@ -1150,19 +1191,24 @@ def generate_full_expansion(df_matched, expander, output_path):
             ep_we = ep_we.copy()
             ep_we['SIM_HH_ID'] = agent['SIM_HH_ID']
             ep_we['Day_Type'] = 'Weekend'
-            ep_we['AgentID'] = idx  # <--- NEW: Unique ID
+            ep_we['AgentID'] = idx  # Unique ID
+
+            # --- CRITICAL: Ensure Residential Variables are carried over ---
+            for var in res_vars:
+                if var in agent:
+                    ep_we[var] = agent[var]
+
             all_episodes.append(ep_we)
 
     if all_episodes:
         full_df = pd.concat(all_episodes)
-
-        # Sort by Household, Day, then Unique AgentID
         print(f"   Sorting expanded data...")
         full_df = full_df.sort_values(by=['SIM_HH_ID', 'Day_Type', 'AgentID'])
-
         full_df.to_csv(output_path, index=False)
         print(f"✅ Saved Expanded File: {len(full_df):,} rows to {output_path.name}")
-#VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+
+#VALIDATION: PROFILE MATCHER -------------------------------------------------------------------------------------------
 def validate_matching_quality(df_matched, expander, save_path=None):
     """
     Calculates validation metrics and saves the report to a text file.
@@ -1245,7 +1291,7 @@ def validate_matching_quality(df_matched, expander, save_path=None):
             print(f"\n✅ Validation Report saved to: {save_path}")
         except Exception as e:
             print(f"\n❌ Error saving report: {e}")
-#HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
+#HOUSEHOLD AGGREGATION -------------------------------------------------------------------------------------------------
 class HouseholdAggregator:
     """
     Transforms individual episode lists into aggregated Household Profiles.
@@ -1445,7 +1491,7 @@ class HouseholdAggregator:
         hh_df['occActivity'] = activity_sets
 
         return hh_df
-#VALIDATION OF AGGREGATION -----------------------------------------------------------------------------------------
+#VALIDATION OF AGGREGATION ---------------------------------------------------------------------------------------------
 def validate_household_aggregation(df_full, report_path=None):
     """
     Performs logical checks on the aggregated data and saves report to txt.
@@ -1595,7 +1641,115 @@ def visualize_multiple_households(df_full, n_samples=10, output_img_path=None, r
     if report_path:
         with open(report_path, "a", encoding="utf-8") as f:
             f.write(msg_end + "\n")
+#OCC to BEM input ------------------------------------------------------------------------------------------------------
+class BEMConverter:
+    """
+    Converts 5-minute ABM profiles into Hourly BEM Schedules.
+    Output format: 60-minute resolution, fractional occupancy (0-1), metabolic rate (W).
+    Includes Residential variables (DTYPE, BEDRM, etc.) for building matching.
+    """
 
+    def __init__(self, output_dir):
+        self.output_dir = output_dir
+
+        # ASHRAE / GSS Mappings (Activity Code -> Watts)
+        self.metabolic_map = {
+            '1': 130, '2': 180, '3': 140, '4': 120,
+            '5': 75, '6': 110, '7': 100, '8': 100,
+            '9': 120, '10': 90, '11': 160, '12': 130,
+            '13': 110, '14': 90, '0': 0  # Empty
+        }
+
+        # DTYPE Mapping (Code -> Description)
+        self.dtype_map = {
+            '1': "Single-detached house",
+            '2': "Apartment",
+            '3': "Other dwelling"
+        }
+
+    def process_households(self, df_full):
+        print(f"\n🚀 Starting BEM Conversion (Hourly Resampling)...")
+
+        # 1. Prepare Time Index
+        # We need a dummy date to enable resampling
+        df_full['datetime'] = pd.to_datetime(df_full['Time_Slot'], format='%H:%M')
+
+        # 2. Map Activities to Watts (Vectorized)
+        print("   Mapping metabolic rates...")
+        df_full['watts_5min'] = df_full['occActivity'].apply(self._calculate_watts)
+
+        # 3. Group by Household & DayType
+        groups = df_full.groupby(['SIM_HH_ID', 'Day_Type'])
+
+        bem_schedules = []
+
+        # List of residential variables to carry over
+        target_res_cols = ['DTYPE', 'BEDRM', 'CONDO', 'ROOM', 'REPAIR']
+
+        for (hh_id, day_type), group in tqdm(groups, desc="Generating Schedules"):
+            # Get Static Attributes (First row of the group)
+            hh_size = group['HHSIZE'].iloc[0]
+
+            # Extract residential vars safely (handle if missing)
+            res_data = {}
+            for col in target_res_cols:
+                val = group[col].iloc[0] if col in group.columns else "Unknown"
+
+                # Apply DTYPE Mapping
+                if col == 'DTYPE':
+                    # Convert to string and strip decimals (e.g. 1.0 -> '1') for lookup
+                    val_str = str(int(val)) if pd.notnull(val) and val != "Unknown" else str(val)
+                    res_data[col] = self.dtype_map.get(val_str, val)  # Fallback to original if not found
+                else:
+                    res_data[col] = val
+
+            # --- HOURLY RESAMPLING ---
+            # Set index to datetime for resampling
+            g_indexed = group.set_index('datetime')
+
+            # Resample 5min -> 60min (Mean)
+            hourly = g_indexed.resample('60min').agg({
+                'occPre': 'mean',  # Fraction of hour home (0.0 - 1.0)
+                'occDensity': 'mean',  # Avg social density
+                'watts_5min': 'mean'  # Avg metabolic rate
+            }).reset_index()
+
+            # --- BEM FORMULAS ---
+
+            # 1. Reconstruct People Count: (1 person + Social Density) * Presence Fraction
+            estimated_count = hourly['occPre'] * (hourly['occDensity'] + 1)
+
+            # 2. Normalize to Schedule (0-1) by dividing by HH Capacity
+            occupancy_sched = (estimated_count / hh_size).clip(upper=1.0)
+
+            # 3. Create Result DataFrame
+            # Construct the dictionary with all columns
+            data_dict = {
+                'SIM_HH_ID': hh_id,
+                'Day_Type': day_type,
+                'Hour': hourly['datetime'].dt.hour,
+                'HHSIZE': hh_size,
+                # Unpack the residential variables here
+                **res_data,
+                'Occupancy_Schedule': occupancy_sched.round(3),  # 0 to 1
+                'Metabolic_Rate': hourly['watts_5min'].round(1)  # Watts
+            }
+
+            hourly_df = pd.DataFrame(data_dict)
+            bem_schedules.append(hourly_df)
+
+        # Combine
+        return pd.concat(bem_schedules, ignore_index=True)
+
+    def _calculate_watts(self, act_str):
+        """
+        Parses activity string '1,5' -> maps to Watts -> returns average.
+        """
+        if act_str == "0": return 0
+
+        codes = str(act_str).split(',')
+        watts = [self.metabolic_map.get(c.strip(), 100) for c in codes]  # Default 100W if unknown
+        return sum(watts) / len(watts)
 if __name__ == '__main__':
     #DIRECTORIES -------------------------------------------------------------------------------------------------------
     # BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
@@ -1691,7 +1845,7 @@ if __name__ == '__main__':
         print(f"✅ Saved {year} forecast to: {save_path}")
         print(df_forecast.head())
     """
-    #VALIDATION OF FORECASTING_VISUAL -----------------------------------------------------------------------------------------
+    #VALIDATION OF FORECASTING_VISUAL ----------------------------------------------------------------------------------
     """
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
     processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths, sample_frac=1)
@@ -1706,7 +1860,7 @@ if __name__ == '__main__':
     """
     #PROFILE MATCHER ---------------------------------------------------------------------------------------------------
     """
-    # 1. Paths & Load
+    IO_DIR = Path(OUTPUT_DIR)
     print("1. Loading Data...")
     df_census = pd.read_csv(aligned_CENSUS)
     df_gss = pd.read_csv(aligned_GSS, low_memory=False)
@@ -1724,7 +1878,7 @@ if __name__ == '__main__':
     verify_sample(df_matched, expander)
 
     # Define output path for the massive file
-    expanded_path = OUTPUT_DIR / "Profile_Matcher_Expanded_Occ.csv"
+    expanded_path = IO_DIR / "Full_Expanded_Schedules.csv"
     generate_full_expansion(df_matched, expander, expanded_path)
 
     print("\n✅ Workflow Complete.")
@@ -1732,7 +1886,7 @@ if __name__ == '__main__':
     #VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
     """
     IO_DIR_ALIGNED = Path(OUTPUT_DIR_ALIGNED)
-    IO_DIR = Path(VALIDATION_PR_MATCH_DIR)
+    IO_DIR_VALID = Path(VALIDATION_PR_MATCH_DIR)
     df_matched = pd.read_csv(IO_DIR_ALIGNED / "Matched_Population_Keys.csv")
     df_gss = pd.read_csv(IO_DIR_ALIGNED / "Aligned_GSS_2022.csv", low_memory=False)
 
@@ -1741,8 +1895,8 @@ if __name__ == '__main__':
     expander = ScheduleExpander(df_gss, id_col="occID")
 
     # Run Validation
-    validate_matching_quality(df_matched, expander, save_path=(IO_DIR / "Validation_ProfileMatcher_2025.txt"))
-    """
+    validate_matching_quality(df_matched, expander, save_path=(IO_DIR_VALID / "Validation_ProfileMatcher_2025.txt"))
+"""
     #HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
     """
     IO_DIR = Path(OUTPUT_DIR)
@@ -1797,5 +1951,40 @@ if __name__ == '__main__':
 
         print(f"\n✅ Full Validation Report saved to: {report_path.name}")
     """
+    #OCC to BEM input --------------------------------------------------------------------------------------------------
+    """  """
+    IO_DIR = Path(OUTPUT_DIR)
+    full_data_path = IO_DIR / "Full_data.csv"
+    output_path = IO_DIR / "BEM_Schedules_2025.csv"
 
+    if not full_data_path.exists():
+        print("❌ Error: Full_data.csv not found.")
+    else:
+        print("1. Loading Household Data...")
+        df_full = pd.read_csv(full_data_path, low_memory=False)
 
+        # Initialize Converter
+        converter = BEMConverter(output_dir=IO_DIR)
+
+        # Run
+        df_bem = converter.process_households(df_full)
+
+        # Save
+        # float_format='%.3f' ensures 0.333 is written as "0.333" not ".333"
+        print(f"2. Saving Hourly BEM Input to: {output_path.name}")
+        df_bem.to_csv(output_path, index=False, float_format='%.3f')
+
+        # Verify
+        print("\n--- Verification: Sample Household ---")
+
+        # Force pandas to show 3 decimal places with leading zero
+        pd.options.display.float_format = '{:.3f}'.format
+
+        # Show relevant columns including new residential ones
+        cols_to_show = ['SIM_HH_ID', 'Hour', 'DTYPE', 'BEDRM',"ROOM", 'Occupancy_Schedule', 'Metabolic_Rate']
+        # Filter cols that actually exist in output
+        valid_cols = [c for c in cols_to_show if c in df_bem.columns]
+
+        print(df_bem[valid_cols].head(12).to_string(index=False))
+
+        print("\n✅ Step 4 Complete. Ready for EnergyPlus/Honeybee.")
