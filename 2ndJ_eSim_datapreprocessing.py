@@ -514,12 +514,12 @@ if __name__ == '__main__':
     feature_engineering(csv_file_path=cen06_filtered2)
     #print_column_info(cen06_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen06_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot06.png")
-
     #CENSUS2011
     read_select_and_save(cen11, cen11_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH",
                                             "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE","MARSTH",
                                             "CFSTAT", "BUILT", "CONDO", "GENSTAT", "CITIZEN","LFTAG", "CF_RP",
                                             "COW", "POWST", "INCTAX","PR", "VALUE", "REPAIR", "HRSWRK","MODE"], cen11_filtered)
+    
     filter_and_save(csv_file_path=cen11_filtered,
                     values_to_remove_dict={'AGEGRP': [88], 'CIP2011': [12, 88],'NOCS': [88],
                                            "BEDRM": [8], "ROOM": [88], "CONDO":[8], "GENSTAT":[8],"CITIZEN":[8],
@@ -538,7 +538,6 @@ if __name__ == '__main__':
     feature_engineering(csv_file_path=cen11_filtered2)
     #print_column_info(cen11_filtered2) # unique values, total row count, empty rows
     #plot_value_counts(csv_file_path=cen11_filtered2, columns_to_exclude= ["HH_ID", "EF_ID", "CF_ID", "PP_ID",], output_image_path=OUTPUT_DIR / "plot11.png")
-    
     #CENSUS2016
     read_select_and_save(cen16, cen16_sps, ["HH_ID", "EF_ID", "CF_ID", "PP_ID", "CMA", "AGEGRP", "SEX", "KOL", "ATTSCH",
                                             "CIP2011", "NOCS", "EMPIN", "TOTINC", "BEDRM", "ROOM", "DTYPE", "MarStH",
@@ -601,3 +600,9 @@ if __name__ == '__main__':
     # 3. Run the function
     plot_comparison_by_column(csv_paths, cols_to_exclude, OUTPUT_DIR)
     """
+
+    #for DTYPE expansion during PROFILE-MATCHER:POST-PROCESSING
+    feature_engineering(cen06_filtered)
+    feature_engineering(cen11_filtered)
+
+

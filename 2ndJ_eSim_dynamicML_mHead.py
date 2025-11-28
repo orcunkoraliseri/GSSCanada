@@ -4,15 +4,18 @@ from tensorflow import keras
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
-import seaborn as sns
 import uuid
 import pathlib
 from tqdm import tqdm
+import math
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
 from pathlib import Path
-import math
 
 keras = tf.keras
 layers = tf.keras.layers
@@ -370,8 +373,66 @@ def train_cvae(df_processed, demo_cols, bldg_cols, continuous_cols=None, latent_
 #FORECASTING -------------------------------------------------------------------------------------------------------
 # --- 3. Temporal Modeling Function ---
 #FORECASTING -----------------------------------------------------------------------------------------------------------
+# FORECASTING -------------------------------------------------------------------------------------------------------------
+class VectorMomentumModel:
+    """
+    Models temporal drift as a weighted velocity vector.
+    Captures non-linear turns (e.g., 2011->2016 shift) better than Linear Regression.
+    """
+
+    def __init__(self, decay_factor=0.95, recent_weight=0.5):
+        self.decay = decay_factor  # Damping factor for long-term (prevent runaway)
+        self.alpha = recent_weight  # Weight for recent trend (11->16)
+        self.velocity = None
+        self.last_point = None
+        self.last_year = None
+
+    def fit(self, years, points):
+        """
+        Calculates weighted momentum vector.
+        years: List of years [2006, 2011, 2016]
+        points: List of latent vectors (archetypes).
+        """
+        # Ensure sorted
+        sorted_indices = np.argsort(years)
+        years = np.array(years)[sorted_indices]
+        points = np.array(points)[sorted_indices]
+
+        # Calculate Historic Velocity (2006 -> 2011)
+        dt_old = years[1] - years[0]
+        v_old = (points[1] - points[0]) / dt_old
+
+        # Calculate Recent Velocity (2011 -> 2016)
+        dt_recent = years[2] - years[1]
+        v_recent = (points[2] - points[1]) / dt_recent
+
+        # Weighted Average Velocity
+        self.velocity = (self.alpha * v_recent) + ((1 - self.alpha) * v_old)
+
+        # Store anchor
+        self.last_point = points[-1]
+        self.last_year = years[-1]
+
+        print(f"   -> Momentum Vector Calculated (Recent Weight: {self.alpha:.0%})")
+
+    def predict(self, target_year_array):
+        """
+        Projects future points. Input is [[year]] to match sklearn API style.
+        """
+        target_year = target_year_array[0][0]
+        delta_t = target_year - self.last_year
+
+        # Apply projection with decay
+        # Effective velocity slows down over time
+        effective_velocity = self.velocity * (self.decay ** (delta_t / 5))
+
+        prediction = self.last_point + (effective_velocity * delta_t)
+
+        return np.array([prediction])
+
+    # --- 1. Train Temporal Model ---
 def train_temporal_model(encoder, df_processed, demo_cols, bldg_cols):
-    print("--- Starting Step 3: Temporal Modeling ---")
+    print("--- Starting Step 3: Temporal Modeling (Vector Momentum) ---")
 
     # Find all 'YEAR_...' columns
     year_cols = sorted([col for col in demo_cols if col.startswith('YEAR_')])
@@ -381,7 +442,7 @@ def train_temporal_model(encoder, df_processed, demo_cols, bldg_cols):
     y_temporal = []
     last_avg_log_var = None
 
-    print(f"Extracting latent archetypes for years: {years}")
+    print(f"   Extracting archetypes for years: {years}")
     for year, col_name in zip(years, year_cols):
         year_df = df_processed[df_processed[col_name] == 1]
         if len(year_df) == 0: continue
@@ -393,81 +454,62 @@ def train_temporal_model(encoder, df_processed, demo_cols, bldg_cols):
         z_mean, z_log_var, z = encoder.predict([demo_data, bldg_data], verbose=0)
 
         avg_z_mean = np.mean(z_mean, axis=0)
-        X_temporal.append([year])
+        X_temporal.append(year)
         y_temporal.append(avg_z_mean)
-        last_avg_log_var = np.mean(z_log_var, axis=0)
 
-    print("--- Training LinearRegression on temporal drift... ---")
-    temporal_model = LinearRegression()
+        if year == years[-1]:
+            last_avg_log_var = np.mean(z_log_var, axis=0)
+
+    print("--- Fitting Vector Momentum Model... ---")
+    # Using Custom Vector Model instead of LinearRegression
+    temporal_model = VectorMomentumModel(decay_factor=0.95, recent_weight=0.5)
     temporal_model.fit(X_temporal, y_temporal)
 
     return temporal_model, last_avg_log_var
-# --- 4. Generation Function (Updated for Multi-Head) ---
-def generate_future_population(decoder, temporal_model, last_avg_log_var, df_processed, bldg_cols, target_year, n_samples):
-    """
-    Generates a new synthetic population for a target future year.
-    Handles Multi-Head Decoder output.
-    """
+# --- 3. Generation Function ---
+def generate_future_population(decoder, temporal_model, last_avg_log_var, df_processed, bldg_cols, target_year,
+                               n_samples):
     print(f"--- Starting Step 4: Generating Population for {target_year} ---")
 
-    # 1. Predict the future "archetype" (mean)
+    # 1. Predict future archetype
     predicted_z_mean = temporal_model.predict([[target_year]])
 
     # 2. Get realistic building conditions (from 2021)
-    year_2021_col = [col for col in df_processed.columns if col.startswith('YEAR_')][-1]
+    year_cols = sorted([col for col in df_processed.columns if col.startswith('YEAR_')])
+    year_2021_col = year_cols[-1]
     bldg_conditions_2021 = df_processed[df_processed[year_2021_col] == 1][bldg_cols]
 
-    bldg_future_samples = bldg_conditions_2021.sample(
-        n_samples,
-        replace=True
-    ).values.astype(np.float32)
+    bldg_future_samples = bldg_conditions_2021.sample(n_samples, replace=True).values.astype(np.float32)
 
-    # 3. Generate new latent vectors (z)
+    # 3. Generate new latent vectors
     latent_dim = len(predicted_z_mean[0])
     z_std_dev = np.exp(0.5 * last_avg_log_var)
 
-    z_new = np.random.normal(
-        loc=predicted_z_mean,
-        scale=z_std_dev,
-        size=(n_samples, latent_dim)
-    )
+    z_new = np.random.normal(loc=predicted_z_mean, scale=z_std_dev, size=(n_samples, latent_dim))
 
-    # 4. Use the Decoder
-    print(f"   Using decoder to generate {n_samples} new demographic profiles...")
-    generated_list = decoder.predict([z_new, bldg_future_samples])
+    # 4. Decode
+    print(f"   Using decoder to generate {n_samples} profiles...")
+    generated_list = decoder.predict([z_new, bldg_future_samples], verbose=0)
 
-    # --- FIX: Concatenate Multi-Head Output ---
-    # The decoder returns a list of arrays. We merge them into one big matrix.
+    # Concatenate Multi-Head Output
     generated_raw_matrix = np.concatenate(generated_list, axis=1)
-    # --- END FIX ---
 
     print("--- Generation Complete ---")
     return generated_raw_matrix, bldg_future_samples
-# --- 5. Post-Processing Function ---
+# --- 4. Post-Processing Function ---
 def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_data, bldg_cols, scalers):
-    """
-    Converts the raw generated data (probabilities) back into a
-    human-readable, decoded DataFrame.
-    """
     print("--- Starting Post-Processing ---")
-
     df_gen_demo = pd.DataFrame(generated_raw_data, columns=demo_cols)
     df_gen_bldg = pd.DataFrame(generated_bldg_data, columns=bldg_cols)
     df_final = pd.DataFrame()
 
-    # 1. Inverse-scale the continuous columns
+    # Inverse Scale Continuous
     for col_name, scaler in scalers.items():
         if col_name in df_gen_demo.columns:
-            # Reshape to (N, 1) for the scaler
             col_data = df_gen_demo[col_name].values.reshape(-1, 1)
-
-            # --- FIX IS HERE ---
-            # Inverse transform returns (N, 1), but pandas needs (N,).
-            # We use .flatten() to convert it to a 1D array.
             df_final[col_name] = scaler.inverse_transform(col_data).flatten()
-            # --- END FIX ---
 
-    # 2. Decode the One-Hot Encoded demographic columns
+    # Decode One-Hot (Demographics)
     all_prefixes = set()
     for col in demo_cols:
         if '_' in col and col not in scalers:
@@ -479,7 +521,7 @@ def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_da
             predicted_col = df_gen_demo[cat_cols].idxmax(axis=1)
             df_final[prefix] = predicted_col.str.replace(f"{prefix}_", "")
 
-    # 3. Decode the One-Hot Encoded building columns
+    # Decode One-Hot (Buildings)
     bldg_prefixes = set()
     for col in bldg_cols:
         if '_' in col and col not in scalers:
@@ -493,131 +535,7 @@ def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_da
 
     print("--- Post-Processing Complete ---")
     return df_final
-#VALIDATION OF FORECASTING ---------------------------------------------------------------------------------------------
-def generate_validation_report(encoder, decoder, df_processed, demo_cols, bldg_cols, scalers,output_folder=None):
-    """
-    Performs hindcasting for 2021 (training drift on 06-16)
-    and generates comparison plots for EVERY column.
-    """
-    save_dir = pathlib.Path(output_folder)
-    save_dir.mkdir(parents=True, exist_ok=True)
-    print(f"--- Starting Comprehensive Validation (Saving to {save_dir}) ---")
 
-    # 1. Train Temporal Model on 2006-2016 ONLY
-    print("   Training Temporal Model on 2006, 2011, 2016...")
-    years_train = [2006, 2011, 2016]
-    target_year = 2021
-
-    X_temporal = []
-    y_temporal = []
-    last_avg_log_var = None
-
-    for year in years_train:
-        col_name = f"YEAR_{year}"
-        # Handle year columns
-        if col_name not in df_processed.columns:
-            print(f"Skipping {year} (Column not found)")
-            continue
-
-        year_df = df_processed[df_processed[col_name] == 1]
-        demo_data = year_df[demo_cols].values.astype(np.float32)
-        bldg_data = year_df[bldg_cols].values.astype(np.float32)
-
-        z_mean, z_log_var, z = encoder.predict([demo_data, bldg_data], verbose=0)
-
-        X_temporal.append([year])
-        y_temporal.append(np.mean(z_mean, axis=0))
-        if year == 2016: last_avg_log_var = np.mean(z_log_var, axis=0)
-
-    temporal_model = LinearRegression()
-    temporal_model.fit(X_temporal, y_temporal)
-
-    # 2. Generate Synthetic 2021
-    print("   Generating Synthetic 2021 Population...")
-    real_2021_df = df_processed[df_processed[f"YEAR_{target_year}"] == 1]
-    bldg_conditions = real_2021_df[bldg_cols].values.astype(np.float32)
-
-    pred_z_mean = temporal_model.predict([[target_year]])
-    latent_dim = len(pred_z_mean[0])
-    z_std_dev = np.exp(0.5 * last_avg_log_var)
-
-    # Match size of real data for fair comparison
-    n_samples = len(real_2021_df)
-    z_new = np.random.normal(loc=pred_z_mean, scale=z_std_dev, size=(n_samples, latent_dim))
-
-    gen_list = decoder.predict([z_new, bldg_conditions], verbose=0)
-    gen_matrix = np.concatenate(gen_list, axis=1)
-
-    # 3. Create DataFrames for Comparison
-    df_real_decoded = pd.DataFrame()
-    df_gen_decoded = pd.DataFrame()
-
-    # Helper to decode continuous
-    print("   Decoding and Plotting...")
-
-    # --- A) CONTINUOUS COLUMNS ---
-    for col_name in scalers.keys():
-        if col_name in demo_cols:
-            idx = demo_cols.index(col_name)
-
-            # Inverse Scale Real
-            real_val = real_2021_df[col_name].values.reshape(-1, 1)
-            real_val = scalers[col_name].inverse_transform(real_val).flatten()
-
-            # Inverse Scale Gen
-            gen_val = gen_matrix[:, idx].reshape(-1, 1)
-            gen_val = scalers[col_name].inverse_transform(gen_val).flatten()
-
-            # Plot
-            plt.figure(figsize=(10, 6))
-            sns.kdeplot(real_val, label='Real 2021', fill=True, color='skyblue')
-            sns.kdeplot(gen_val, label='Forecast 2021', fill=True, color='orange')
-            plt.title(f"Validation: {col_name}")
-            plt.legend()
-            plt.savefig(save_dir / f"Continuous_{col_name}.png")
-            plt.close()
-
-    # --- B) CATEGORICAL COLUMNS ---
-    # Find prefixes
-    all_prefixes = set()
-    for col in demo_cols:
-        if '_' in col and col not in scalers:
-            all_prefixes.add(col.rsplit('_', 1)[0])
-
-    for prefix in sorted(list(all_prefixes)):
-        if prefix == 'YEAR': continue  # Skip Year
-
-        # Get columns for this feature
-        cat_cols = [c for c in demo_cols if c.startswith(f"{prefix}_")]
-        indices = [demo_cols.index(c) for c in cat_cols]
-
-        # 1. Calculate Distribution for Real Data
-        # (Sum the one-hot values)
-        real_counts = real_2021_df[cat_cols].sum().values
-        real_dist = real_counts / real_counts.sum()
-
-        # 2. Calculate Distribution for Generated Data
-        # (Sum the probabilities)
-        gen_probs = gen_matrix[:, indices]
-        gen_dist = gen_probs.sum(axis=0) / gen_probs.sum()
-
-        # 3. Plot Side-by-Side Bar Chart
-        labels = [c.replace(f"{prefix}_", "") for c in cat_cols]
-        x = np.arange(len(labels))
-        width = 0.35
-
-        plt.figure(figsize=(12, 6))
-        plt.bar(x - width / 2, real_dist, width, label='Real 2021', color='skyblue')
-        plt.bar(x + width / 2, gen_dist, width, label='Forecast 2021', color='orange')
-
-        plt.xticks(x, labels, rotation=45)
-        plt.title(f"Validation: {prefix}")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(save_dir / f"Categorical_{prefix}.png")
-        plt.close()
-
-    print(f"--- Validation Complete. Check folder: {save_dir} ---")
 #VISUALIZATION FOR FORECASTING -----------------------------------------------------------------------------------------
 def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bldg_cols):
     print("--- Generating Latent Space Trajectory Plot ---")
@@ -676,6 +594,249 @@ def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bld
     save_path = VALIDATION_FORECASTVIS_DIR /"Latent_Trajectory_Plot.png"
     plt.savefig(save_path)
     print(f"   Plot saved to {save_path}")
+#VALIDATION OF FORECASTING ---------------------------------------------------------------------------------------------
+def validate_forecast_trajectory(encoder, df_processed, demo_cols, bldg_cols, output_dir):
+    """
+    Validates the forecasting logic by visualizing the latent space trajectory.
+    Generates a 2-panel subplot:
+      1. 2D PCA Trajectory (Map view)
+      2. Component Evolution over Time (Time-series view)
+    """
+    print(f"\n{'=' * 60}")
+    print(f"🔮 VALIDATING FORECAST TRAJECTORY (Vector Momentum)")
+    print(f"{'=' * 60}")
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Extract Historical Archetypes (2006, 2011, 2016)
+    print("1. Extracting Historical Latent Points...")
+    year_cols = sorted([col for col in demo_cols if col.startswith('YEAR_')])
+    years_hist = [int(col.split('_')[1]) for col in year_cols]
+
+    latent_points = []
+    labels = []
+    years_all = []
+
+    for year, col_name in zip(years_hist, year_cols):
+        year_df = df_processed[df_processed[col_name] == 1]
+        if len(year_df) == 0: continue
+
+        # Get mean latent vector for this year
+        demo_data = year_df[demo_cols].values.astype(np.float32)
+        bldg_data = year_df[bldg_cols].values.astype(np.float32)
+        z_mean, _, _ = encoder.predict([demo_data, bldg_data], verbose=0)
+
+        centroid = np.mean(z_mean, axis=0)
+        latent_points.append(centroid)
+        labels.append(f"{year}")
+        years_all.append(year)
+
+    # 2. Train Vector Model & Predict Future (2021, 2025, 2030)
+    print("2. Projecting Future Points...")
+    model = VectorMomentumModel(decay_factor=0.95, recent_weight=0.5)
+    model.fit(years_hist, latent_points)
+
+    years_future = [2021, 2025, 2030]
+    for year in years_future:
+        pred = model.predict([[year]])[0]  # Returns [1, dim] array
+        latent_points.append(pred)
+        labels.append(f"{year}")
+        years_all.append(year)
+
+    # 3. PCA Projection (Latent Dim -> 2D)
+    print("3. Generating Plots...")
+    all_points = np.array(latent_points)
+    pca = PCA(n_components=2)
+    points_2d = pca.fit_transform(all_points)
+
+    # 4. PLOTTING (Subplots)
+    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+
+    # --- SUBPLOT 1: Trajectory Map (PC1 vs PC2) ---
+    ax1 = axes[0]
+    n_hist = len(years_hist)
+
+    # History Line
+    ax1.plot(points_2d[:n_hist, 0], points_2d[:n_hist, 1], 'o-',
+             color='blue', linewidth=2, label='History (06-16)', markersize=8)
+
+    # Forecast Line (Connect from last history point)
+    forecast_indices = range(n_hist - 1, len(points_2d))
+    ax1.plot(points_2d[forecast_indices, 0], points_2d[forecast_indices, 1], 'o--',
+             color='red', linewidth=2, label='Forecast (Vector)', markersize=8)
+
+    for i, txt in enumerate(labels):
+        ax1.annotate(txt, (points_2d[i, 0], points_2d[i, 1]),
+                     xytext=(5, 5), textcoords='offset points', fontsize=9, fontweight='bold')
+
+    ax1.set_title(f"Latent Space Trajectory (PCA Map)\nExplained Variance: {np.sum(pca.explained_variance_ratio_):.1%}")
+    ax1.set_xlabel(f"Principal Component 1 ({pca.explained_variance_ratio_[0]:.1%})")
+    ax1.set_ylabel(f"Principal Component 2 ({pca.explained_variance_ratio_[1]:.1%})")
+    ax1.grid(True, linestyle='--', alpha=0.5)
+    ax1.legend()
+
+    # --- SUBPLOT 2: Time Series View (PC1 & PC2 over Years) ---
+    ax2 = axes[1]
+    ax2.plot(years_all, points_2d[:, 0], 's-', color='purple', label='PC1 Value', linewidth=2)
+    ax2.plot(years_all, points_2d[:, 1], '^-', color='orange', label='PC2 Value', linewidth=2)
+    ax2.axvline(x=2016, color='gray', linestyle=':', label='Forecast Start')
+
+    ax2.set_title("Evolution of Principal Components Over Time")
+    ax2.set_xlabel("Year")
+    ax2.set_ylabel("Component Value (Z-Score Space)")
+    ax2.set_xticks(years_all)
+    ax2.grid(True, alpha=0.3)
+    ax2.legend()
+
+    plt.tight_layout()
+    plot_path = output_dir / "Validation_Forecast_Trajectory.png"
+    plt.savefig(plot_path)
+    print(f"   ✅ Trajectory Subplots saved to: {plot_path}")
+def validate_forecast_distributions(encoder, decoder, df_processed, demo_cols, bldg_cols, scalers, output_dir):
+    """
+    Performs 'Hindcasting' (Train 06-16, Forecast 21) and plots Real vs Forecast distributions
+    for all variables in a single subplot grid.
+    """
+    print(f"\n{'=' * 60}")
+    print(f"📊 VALIDATING FORECAST DISTRIBUTIONS (Hindcast 2021)")
+    print(f"{'=' * 60}")
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Train Temporal Model on 2006-2016 ONLY
+    print("1. Training Temporal Model (2006, 2011, 2016)...")
+    years_train = [2006, 2011, 2016]
+    target_year = 2021
+
+    years_hist = []
+    points_hist = []
+    last_avg_log_var = None
+
+    for year in years_train:
+        col_name = f"YEAR_{year}"
+        if col_name not in df_processed.columns: continue
+
+        year_df = df_processed[df_processed[col_name] == 1]
+        demo_data = year_df[demo_cols].values.astype(np.float32)
+        bldg_data = year_df[bldg_cols].values.astype(np.float32)
+
+        # Get Mean Latent Vector
+        z_mean, z_log_var, z = encoder.predict([demo_data, bldg_data], verbose=0)
+
+        years_hist.append(year)
+        points_hist.append(np.mean(z_mean, axis=0))
+
+        if year == 2016:
+            last_avg_log_var = np.mean(z_log_var, axis=0)
+
+    # Use Vector Momentum Model (Consistent with Forecast Step)
+    temporal_model = VectorMomentumModel(decay_factor=0.95, recent_weight=0.5)
+    temporal_model.fit(years_hist, points_hist)
+
+    # 2. Generate Synthetic 2021
+    print("2. Generating Synthetic 2021 Population...")
+    # Get Real 2021 Building Conditions for fair comparison
+    real_2021_df = df_processed[df_processed[f"YEAR_{target_year}"] == 1]
+    if len(real_2021_df) == 0:
+        print("❌ Error: No Real 2021 data found for validation.")
+        return
+
+    bldg_conditions = real_2021_df[bldg_cols].values.astype(np.float32)
+
+    # Predict 2021 Latent Mean
+    pred_z_mean = temporal_model.predict([[target_year]])
+
+    # Sample Z
+    n_samples = len(real_2021_df)
+    latent_dim = len(pred_z_mean[0])
+    z_std_dev = np.exp(0.5 * last_avg_log_var)
+    z_new = np.random.normal(loc=pred_z_mean, scale=z_std_dev, size=(n_samples, latent_dim))
+
+    # Decode
+    gen_list = decoder.predict([z_new, bldg_conditions], verbose=0)
+    gen_matrix = np.concatenate(gen_list, axis=1)  # Multi-head concat
+
+    # 3. Prepare Plotting Grid
+    print("3. Generating Distribution Plots...")
+
+    # Identify variables to plot
+    # Continuous
+    cont_cols = [c for c in scalers.keys() if c in demo_cols]
+
+    # Categorical Prefixes
+    cat_prefixes = set()
+    for col in demo_cols:
+        if '_' in col and col not in scalers and not col.startswith('YEAR_'):
+            cat_prefixes.add(col.rsplit('_', 1)[0])
+    cat_prefixes = sorted(list(cat_prefixes))
+
+    total_plots = len(cont_cols) + len(cat_prefixes)
+    cols_grid = 6
+    rows_grid = math.ceil(total_plots / cols_grid)
+
+    fig, axes = plt.subplots(rows_grid, cols_grid, figsize=(18, 3 * rows_grid))
+    axes = axes.flatten()
+    plot_idx = 0
+
+    # --- A) Plot Continuous Variables ---
+    for col_name in cont_cols:
+        ax = axes[plot_idx]
+        idx = demo_cols.index(col_name)
+
+        # Inverse Scale
+        real_val = real_2021_df[col_name].values.reshape(-1, 1)
+        real_val = scalers[col_name].inverse_transform(real_val).flatten()
+
+        gen_val = gen_matrix[:, idx].reshape(-1, 1)
+        gen_val = scalers[col_name].inverse_transform(gen_val).flatten()
+
+        # KDE Plot
+        sns.kdeplot(real_val, label='Real 2021', fill=True, color='skyblue', ax=ax)
+        sns.kdeplot(gen_val, label='Forecast 2021', fill=True, color='orange', ax=ax)
+        ax.set_title(f"{col_name} (Continuous)")
+        ax.legend()
+        plot_idx += 1
+
+    # --- B) Plot Categorical Variables ---
+    for prefix in cat_prefixes:
+        ax = axes[plot_idx]
+
+        # Get one-hot columns for this feature
+        cat_cols = [c for c in demo_cols if c.startswith(f"{prefix}_")]
+        indices = [demo_cols.index(c) for c in cat_cols]
+
+        # Calculate Real Distribution
+        real_counts = real_2021_df[cat_cols].sum().values
+        real_dist = real_counts / real_counts.sum()
+
+        # Calculate Gen Distribution
+        gen_probs = gen_matrix[:, indices]
+        gen_dist = gen_probs.sum(axis=0) / gen_probs.sum()
+
+        # Bar Plot
+        labels = [c.replace(f"{prefix}_", "") for c in cat_cols]
+        x = np.arange(len(labels))
+        width = 0.35
+
+        ax.bar(x - width / 2, real_dist, width, label='Real 2021', color='skyblue')
+        ax.bar(x + width / 2, gen_dist, width, label='Forecast 2021', color='orange')
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=8)
+        ax.set_title(f"{prefix} (Categorical)")
+        ax.legend()
+        plot_idx += 1
+
+    # Hide unused subplots
+    for i in range(plot_idx, len(axes)):
+        axes[i].axis('off')
+
+    plt.tight_layout()
+    plot_path = output_dir / "Validation_Forecast_Distributions.png"
+    plt.savefig(plot_path)
+    print(f"   ✅ Distribution Subplots saved to: {plot_path}")
 # VISUALIZATION & TESTING ----------------------------------------------------------------------------------------------
 def plot_training_history(history):
     """
@@ -848,8 +1009,6 @@ def validate_vae_reconstruction(encoder, decoder, df_processed, demo_cols, bldg_
     df_results = pd.DataFrame(results_list)
     df_results.to_csv(output_path, index=False)
     print(f"\n✅ Detailed reconstruction report saved to: {output_path}")
-
-
 #ASSEMBLE HOUSEHOLD ----------------------------------------------------------------------------------------------------
 def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     """
@@ -995,8 +1154,6 @@ def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     print(f"✅ Saved linked {target_year} data to: {save_path}")
 
     return df_assembled
-
-
 #PROFILE MATCHER -------------------------------------------------------------------------------------------------------
 # =============================================================================
 # CLASS 1: MatchProfiler (The Linker)
@@ -1291,6 +1448,247 @@ def validate_matching_quality(df_matched, expander, save_path=None):
             print(f"\n✅ Validation Report saved to: {save_path}")
         except Exception as e:
             print(f"\n❌ Error saving report: {e}")
+#PROFILE MATCHER: POST-PROCESSING --------------------------------------------------------------------------------------
+class DTypeRefiner:
+    """
+    Refines coarse DTYPE categories (1, 2, 3) into detailed categories (1-8)
+    using STOCHASTIC SAMPLING and DERIVED FEATURES to improve accuracy.
+    """
+
+    def __init__(self, output_dir):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.models = {}
+
+        # Base Features + Derived Features
+        self.base_features = ['BEDRM', 'ROOM', 'PR', 'HHSIZE', 'CONDO', 'REPAIR']
+        self.train_features = self.base_features + ['ROOM_PER_PERSON', 'BEDRM_RATIO']
+
+        self.dtype_labels = {
+            1: "Single-detached",
+            2: "Semi-detached",
+            3: "Row house",
+            4: "Duplex",
+            5: "Apt 5+ Storeys",
+            6: "Apt <5 Storeys",
+            7: "Other single-attached",
+            8: "Movable"
+        }
+
+    def _add_derived_features(self, df):
+        """
+        Creates ratio-based features to help distinguish similar housing types.
+        """
+        df = df.copy()
+        # Avoid division by zero
+        df['HHSIZE'] = df['HHSIZE'].replace(0, 1)
+        df['ROOM'] = df['ROOM'].replace(0, 1)
+
+        # 1. Crowding Metric: Rooms per Person
+        # (Row houses often have more space per person than Duplexes)
+        df['ROOM_PER_PERSON'] = df['ROOM'] / df['HHSIZE']
+
+        # 2. Structural Metric: Bedroom to Room Ratio
+        # (Apartments often have higher bedroom ratios than Houses which have living/dining rooms)
+        df['BEDRM_RATIO'] = df['BEDRM'] / df['ROOM']
+
+        return df.fillna(0)
+
+    def train_models(self, df_historic):
+        print(f"\n🧠 Training DTYPE Refinement Models (With Derived Features)...")
+
+        # Pre-process Historic Data
+        for col in self.base_features:
+            if col in df_historic.columns:
+                df_historic[col] = pd.to_numeric(df_historic[col], errors='coerce').fillna(0)
+
+        # Add the new "Smart" features
+        df_historic = self._add_derived_features(df_historic)
+
+        # --- MODEL A: APARTMENTS (2 -> 5, 6) ---
+        subset_apt = df_historic[df_historic['DTYPE'].isin([5, 6])]
+        if len(subset_apt) > 100:
+            clf_apt = RandomForestClassifier(
+                n_estimators=150,  # More trees
+                max_depth=15,  # Prevent overfitting to majority
+                min_samples_leaf=5,  # Smooth out noise
+                random_state=42,
+                class_weight='balanced'  # Critical for minority classes
+            )
+            clf_apt.fit(subset_apt[self.train_features], subset_apt['DTYPE'])
+            self.models['Apt'] = clf_apt
+            print(f"   ✅ Trained Apartment Splitter (n={len(subset_apt)})")
+
+        # --- MODEL B: OTHER DWELLINGS (3 -> 2, 3, 4, 7, 8) ---
+        subset_other = df_historic[df_historic['DTYPE'].isin([2, 3, 4, 7, 8])]
+        if len(subset_other) > 100:
+            clf_other = RandomForestClassifier(
+                n_estimators=150,
+                max_depth=15,
+                min_samples_leaf=5,
+                random_state=42,
+                class_weight='balanced'
+            )
+            clf_other.fit(subset_other[self.train_features], subset_other['DTYPE'])
+            self.models['Other'] = clf_other
+            print(f"   ✅ Trained 'Other' Decoder (n={len(subset_other)})")
+
+    def apply_refinement(self, df_forecast):
+        print(f"\n✨ Applying Refinement with Enhanced Features...")
+
+        # Generate the same features for the forecast data
+        df_enhanced = self._add_derived_features(df_forecast)
+        X = df_enhanced[self.train_features].fillna(0)
+
+        refined_dtype = df_forecast['DTYPE'].copy()
+
+        # --- APPLY MODEL A (Apartments) ---
+        if 'Apt' in self.models:
+            mask = (df_forecast['DTYPE'] == 2)
+            if mask.sum() > 0:
+                probs = self.models['Apt'].predict_proba(X[mask])
+                classes = self.models['Apt'].classes_
+                # Stochastic Sample
+                choices = [np.random.choice(classes, p=p) for p in probs]
+                refined_dtype.loc[mask] = choices
+                print(f"   Refined {mask.sum()} Apartments (Stochastic)")
+
+        # --- APPLY MODEL B (Other) ---
+        if 'Other' in self.models:
+            mask = (df_forecast['DTYPE'] == 3)
+            if mask.sum() > 0:
+                probs = self.models['Other'].predict_proba(X[mask])
+                classes = self.models['Other'].classes_
+                # Stochastic Sample
+                choices = [np.random.choice(classes, p=p) for p in probs]
+                refined_dtype.loc[mask] = choices
+                print(f"   Refined {mask.sum()} 'Other' dwellings (Stochastic)")
+
+        # Update DataFrame
+        df_forecast['DTYPE_Detailed'] = refined_dtype
+        df_forecast['DTYPE'] = refined_dtype
+
+        return df_forecast
+def validate_refinement_model(historic_input, forecast_refined_path, output_dir):
+    # --- Setup Output Directory & Logging ---
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    report_path = output_dir / "Validation_Report_DTYPE.txt"
+    report_buffer = []
+
+    def log(message=""):
+        """Helper to print to console and save to buffer."""
+        print(message)
+        report_buffer.append(str(message))
+
+    log(f"\n{'=' * 60}")
+    log(f"🕵️‍♂️ VALIDATING DTYPE REFINEMENT LOGIC")
+    log(f"{'=' * 60}")
+    log(f"   📂 Output Folder: {output_dir}")
+
+    # 1. Load Data
+    log("\n1. Loading Datasets...")
+
+    # Handle List of Paths vs Single Path
+    if isinstance(historic_input, list):
+        log(f"   Loading {len(historic_input)} historic files...")
+        dfs = []
+        for p in historic_input:
+            dfs.append(pd.read_csv(p, low_memory=False))
+        df_hist = pd.concat(dfs, ignore_index=True)
+    else:
+        df_hist = pd.read_csv(historic_input, low_memory=False)
+
+    df_future = pd.read_csv(forecast_refined_path, low_memory=False)
+
+    log(f"   Historic Data: {len(df_hist):,} rows")
+    log(f"   Refined Forecast: {len(df_future):,} rows")
+
+    # Features used in Step 2b
+    features = ['BEDRM', 'ROOM', 'PR', 'HHSIZE', 'CONDO', 'REPAIR', 'ROOM_PER_PERSON', 'BEDRM_RATIO']
+
+    # Create derived features for validation if missing in historic
+    if 'ROOM_PER_PERSON' not in df_hist.columns:
+        df_hist['HHSIZE'] = df_hist['HHSIZE'].replace(0, 1)
+        df_hist['ROOM'] = df_hist['ROOM'].replace(0, 1)
+        df_hist['ROOM_PER_PERSON'] = df_hist['ROOM'] / df_hist['HHSIZE']
+        df_hist['BEDRM_RATIO'] = df_hist['BEDRM'] / df_hist['ROOM']
+
+    dtype_labels = {
+        1: "Single-detached", 2: "Semi-detached", 3: "Row house",
+        4: "Duplex", 5: "Apt 5+ Storeys", 6: "Apt <5 Storeys",
+        7: "Other single-attached", 8: "Movable"
+    }
+
+    # =========================================================
+    # PART A: INTERNAL VALIDITY
+    # =========================================================
+    log(f"\n2. INTERNAL VALIDATION (Train/Test Split)...")
+
+    # Filter for complex categories 'Other' (2,3,4,7,8)
+    mask_other = df_hist['DTYPE'].isin([2, 3, 4, 7, 8])
+    X = df_hist.loc[mask_other, features].fillna(0)
+    y = df_hist.loc[mask_other, 'DTYPE']
+
+    if len(X) > 100:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        clf = RandomForestClassifier(n_estimators=50, random_state=42, class_weight='balanced')
+        clf.fit(X_train, y_train)
+        preds = clf.predict(X_test)
+
+        report = classification_report(y_test, preds, output_dict=True, zero_division=0)
+        log(f"   👉 Accuracy on 'Other' Dwellings: {report['accuracy']:.2%}")
+        log("   👉 Breakdown by Class (Precision/Recall):")
+        for cls, metrics in report.items():
+            if cls.isdigit():
+                label = dtype_labels.get(int(cls), cls)
+                log(f"      - {label:<22}: Precision={metrics['precision']:.2f}, Recall={metrics['recall']:.2f}")
+    else:
+        log("   ⚠️ Not enough historic data to validate model performance.")
+
+    # =========================================================
+    # PART B: EXTERNAL VALIDITY
+    # =========================================================
+    log(f"\n3. EXTERNAL VALIDATION (Distribution Comparison)...")
+
+    dist_hist = df_hist['DTYPE'].value_counts(normalize=True).sort_index() * 100
+    dist_fut = df_future['DTYPE'].value_counts(normalize=True).sort_index() * 100
+
+    df_comp = pd.DataFrame({
+        'Historic (Combined)': dist_hist,
+        'Forecast (2030 Refined)': dist_fut
+    }).fillna(0)
+
+    df_comp.index = [dtype_labels.get(i, f"Code {i}") for i in df_comp.index]
+
+    log("\n   --- Distribution Comparison (%) ---")
+    log(df_comp.round(1).to_string())
+
+    # =========================================================
+    # PART C: VISUALIZATION
+    # =========================================================
+    log(f"\n4. GENERATING PLOT...")
+    plt.figure(figsize=(12, 6))
+    df_plot = df_comp.reset_index().melt(id_vars='index', var_name='Dataset', value_name='Percentage')
+
+    sns.barplot(data=df_plot, x='index', y='Percentage', hue='Dataset', palette='viridis')
+    plt.title("Dwelling Type Distribution: Historic Baseline vs. Refined Forecast")
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
+    # Save Plot to Specific Folder
+    plot_path = output_dir / "Validation_DTYPE_Refinement.png"
+    plt.savefig(plot_path)
+    log(f"   ✅ Plot saved to: {plot_path}")
+
+    # --- SAVE TEXT REPORT ---
+    try:
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(report_buffer))
+        print(f"\n✅ Validation Report saved to: {report_path}")
+    except Exception as e:
+        print(f"❌ Error saving text report: {e}")
 #HOUSEHOLD AGGREGATION -------------------------------------------------------------------------------------------------
 class HouseholdAggregator:
     """
@@ -1652,19 +2050,39 @@ class BEMConverter:
     def __init__(self, output_dir):
         self.output_dir = output_dir
 
-        # ASHRAE / GSS Mappings (Activity Code -> Watts)
+        # 2024 Compendium of Physical Activities Mapping (Activity Code -> Watts)
+        # Assumes 1 MET ~= 70 Watts (Avg adult 70kg)
         self.metabolic_map = {
-            '1': 130, '2': 180, '3': 140, '4': 120,
-            '5': 75, '6': 110, '7': 100, '8': 100,
-            '9': 120, '10': 90, '11': 160, '12': 130,
-            '13': 110, '14': 90, '0': 0  # Empty
+            '1': 125,  # Work & Related (~1.8 MET - Standing/Office)
+            '2': 175,  # Household Work (~2.5 MET - Cleaning/Cooking)
+            '3': 190,  # Caregiving (~2.7 MET - Active child/elder care)
+            '4': 195,  # Shopping (~2.8 MET - Walking with cart)
+            '5': 70,  # Sleep (~1.0 MET - Sleeping/Lying quietly)
+            '6': 105,  # Eating (~1.5 MET - Sitting eating)
+            '7': 170,  # Personal Care (~2.4 MET - Dressing/Showering)
+            '8': 110,  # Education (~1.6 MET - Sitting in class/Studying)
+            '9': 90,  # Socializing (~1.3 MET - Sitting talking)
+            '10': 85,  # Passive Leisure (~1.2 MET - TV/Reading + fidgeting)
+            '11': 245,  # Active Leisure (~3.5 MET - Walking/Exercise)
+            '12': 105,  # Volunteer (~1.5 MET - Light effort)
+            '13': 140,  # Travel (~2.0 MET - Driving/Walking mix)
+            '14': 135,  # Miscellaneous (~1.9 MET - Standing/Misc tasks)
+            '0': 0  # Empty
         }
 
         # DTYPE Mapping (Code -> Description)
         self.dtype_map = {
-            '1': "Single-detached house",
-            '2': "Apartment",
-            '3': "Other dwelling"
+            '1': "SingleD", # Detached
+            '2': "SemiD",
+            '3': "Attached",
+            '4': "DuplexD",
+            '5': "HighRise",
+            '6': "MidRise",
+            '7': "OtherA", # Attached
+            '8': "Movable",
+            # Fallbacks
+            'Apartment': "Apt (Unspec.)",
+            'Other dwelling': "Other"
         }
 
     def process_households(self, df_full):
@@ -1750,6 +2168,179 @@ class BEMConverter:
         codes = str(act_str).split(',')
         watts = [self.metabolic_map.get(c.strip(), 100) for c in codes]  # Default 100W if unknown
         return sum(watts) / len(watts)
+def visualize_bem_distributions(df_bem, output_dir=None):
+    """
+    Generates two validation plot files:
+    1. 'BEM_Schedules_2025_temporals.png':
+       - Row 1: Population Distributions (Histograms)
+       - Row 2: Population Averages (Line Plots)
+       - Row 3: SAMPLE HOUSEHOLD SCHEDULE (Specific Weekday vs Weekend)
+    2. 'BEM_Schedules_2025_non_temporals.png': Residential stats.
+    """
+    print(f"\n📊 GENERATING BEM DISTRIBUTION PLOTS...")
+
+    if output_dir is None:
+        output_dir = Path(".")
+    else:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Define paths
+    path_temporal = output_dir / "BEM_Schedules_2025_temporals.png"
+    path_nontemporal = output_dir / "BEM_Schedules_2025_non_temporals.png"
+
+    # Set style
+    sns.set_theme(style="whitegrid")
+
+    # =========================================================
+    # 1. TEMPORAL PLOTS (3x2 Grid)
+    # =========================================================
+    # Increased figure height to accommodate the new 3rd row
+    fig1, axes1 = plt.subplots(3, 2, figsize=(16, 15))
+
+    # --- ROW 1: HISTOGRAMS ---
+    # Top-Left: Occupancy Distribution
+    sns.histplot(
+        data=df_bem, x='Occupancy_Schedule', bins=20, kde=False,
+        color='green', alpha=0.6, ax=axes1[0, 0]
+    )
+    axes1[0, 0].set_title("Population Distribution: Occupancy Fractions")
+    axes1[0, 0].set_xlabel("Occupancy (0=Empty, 1=Full)")
+
+    # Top-Right: Metabolic Distribution
+    active_watts = df_bem[df_bem['Metabolic_Rate'] > 0]
+    sns.histplot(
+        data=active_watts, x='Metabolic_Rate', bins=30, kde=True,
+        color='orange', alpha=0.6, ax=axes1[0, 1]
+    )
+    axes1[0, 1].set_title("Population Distribution: Metabolic Rates (Occupied)")
+    axes1[0, 1].set_xlabel("Watts per Person")
+
+    # --- ROW 2: AVERAGE PROFILES (RENAMED) ---
+    # Mid-Left: Average Presence
+    sns.lineplot(
+        data=df_bem, x='Hour', y='Occupancy_Schedule', hue='Day_Type',
+        estimator='mean', errorbar=('sd', 1),
+        palette={'Weekday': 'green', 'Weekend': 'teal'}, ax=axes1[1, 0]
+    )
+    axes1[1, 0].set_title("Population Trend: Average Presence Schedule")
+    axes1[1, 0].set_ylim(0, 1.05)
+    axes1[1, 0].set_xticks(range(0, 25, 4))
+
+    # Mid-Right: Average Metabolic
+    sns.lineplot(
+        data=active_watts, x='Hour', y='Metabolic_Rate', hue='Day_Type',
+        estimator='mean', errorbar=None,
+        palette={'Weekday': 'orange', 'Weekend': 'red'}, ax=axes1[1, 1]
+    )
+    axes1[1, 1].set_title("Population Trend: Average Metabolic Intensity (Heat Output)")
+    axes1[1, 1].set_xticks(range(0, 25, 4))
+
+    # --- ROW 3: SAMPLE HOUSEHOLD (NEW) ---
+    # Pick a random household that has some activity
+    # We group by ID and find max occupancy to avoid picking empty houses
+    occupancy_check = df_bem.groupby('SIM_HH_ID')['Occupancy_Schedule'].max()
+    valid_ids = occupancy_check[occupancy_check > 0].index
+
+    if len(valid_ids) > 0:
+        sample_id = np.random.choice(valid_ids)
+        sample_data = df_bem[df_bem['SIM_HH_ID'] == sample_id]
+
+        # Split into Weekday/Weekend
+        wd_data = sample_data[sample_data['Day_Type'] == 'Weekday'].sort_values('Hour')
+        we_data = sample_data[sample_data['Day_Type'] == 'Weekend'].sort_values('Hour')
+
+        # Helper to plot dual axis
+        def plot_dual_axis(ax, data, title):
+            if data.empty: return
+            x = data['Hour']
+
+            # Primary Y: Occupancy (Green Area)
+            ax.fill_between(x, data['Occupancy_Schedule'], color='green', alpha=0.3, label='Occupancy')
+            ax.set_ylim(0, 1.1)
+            ax.set_ylabel("Occupancy Fraction", color='green', fontsize=10)
+            ax.tick_params(axis='y', labelcolor='green')
+
+            # Secondary Y: Metabolic (Orange Line)
+            ax2 = ax.twinx()
+            ax2.plot(x, data['Metabolic_Rate'], color='darkorange', linewidth=2.5, label='Heat Gain')
+            ax2.set_ylabel("Metabolic Rate (W)", color='darkorange', fontsize=10)
+            ax2.tick_params(axis='y', labelcolor='darkorange')
+            ax2.set_ylim(0, 250)  # Fixed scale for comparison
+
+            ax.set_title(title, fontsize=12, fontweight='bold')
+            ax.set_xticks(range(0, 25, 4))
+            ax.set_xlabel("Hour of Day")
+
+            # Combined Legend
+            lines, labels = ax.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax.legend(lines + lines2, labels + labels2, loc='upper left')
+
+        # Bottom-Left: Sample Weekday
+        plot_dual_axis(axes1[2, 0], wd_data, f"Sample Household #{sample_id}: Weekday Schedule")
+
+        # Bottom-Right: Sample Weekend
+        plot_dual_axis(axes1[2, 1], we_data, f"Sample Household #{sample_id}: Weekend Schedule")
+
+    else:
+        axes1[2, 0].text(0.5, 0.5, "No Valid Samples Found", ha='center')
+        axes1[2, 1].axis('off')
+
+    plt.tight_layout()
+    fig1.savefig(path_temporal)
+    plt.close(fig1)
+    print(f"   ✅ Temporal Plot saved: {path_temporal.name}")
+
+    # =========================================================
+    # 2. NON-TEMPORAL PLOTS (Residential Variables)
+    # =========================================================
+    cols_static = [c for c in ['SIM_HH_ID', 'DTYPE', 'BEDRM', 'ROOM'] if c in df_bem.columns]
+    df_static = df_bem[cols_static].drop_duplicates(subset=['SIM_HH_ID'])
+
+    if len(df_static) > 0 and len(cols_static) > 1:
+        fig2, axes2 = plt.subplots(1, 3, figsize=(18, 6))
+
+        # Plot DTYPE
+        if 'DTYPE' in df_static.columns:
+            sns.countplot(
+                data=df_static, x='DTYPE', hue='DTYPE',
+                palette='viridis', ax=axes2[0], legend=False
+            )
+            axes2[0].set_title("Distribution of Dwelling Types")
+            axes2[0].tick_params(axis='x', rotation=15, labelsize=8)  # Smaller labels
+            axes2[0].set_ylabel("Count of Households")
+        else:
+            axes2[0].text(0.5, 0.5, "DTYPE missing", ha='center')
+
+        # Plot BEDRM
+        if 'BEDRM' in df_static.columns:
+            sns.countplot(
+                data=df_static, x='BEDRM', hue='BEDRM',
+                palette='magma', ax=axes2[1], legend=False
+            )
+            axes2[1].set_title("Distribution of Bedroom Counts")
+            axes2[1].set_ylabel("Count of Households")
+        else:
+            axes2[1].text(0.5, 0.5, "BEDRM missing", ha='center')
+
+        # Plot ROOM
+        if 'ROOM' in df_static.columns:
+            sns.histplot(
+                data=df_static, x='ROOM', discrete=True,
+                color='purple', alpha=0.7, ax=axes2[2]
+            )
+            axes2[2].set_title("Distribution of Total Room Counts")
+            axes2[2].set_ylabel("Count of Households")
+        else:
+            axes2[2].text(0.5, 0.5, "ROOM missing", ha='center')
+
+        plt.tight_layout()
+        fig2.savefig(path_nontemporal)
+        plt.close(fig2)
+        print(f"   ✅ Non-Temporal Plot saved: {path_nontemporal.name}")
+    else:
+        print("   ⚠️ Skipped Non-Temporal plots (Residential columns missing or empty data).")
 if __name__ == '__main__':
     #DIRECTORIES -------------------------------------------------------------------------------------------------------
     # BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
@@ -1763,6 +2354,10 @@ if __name__ == '__main__':
     # --- NEW: Define a directory to save your trained models ---
     MODEL_DIR = BASE_DIR / "saved_models_cvae"
     MODEL_DIR.mkdir(parents=True, exist_ok=True)  # This creates the folder
+
+    # --- Raw Files ---
+    cen06_filtered = OUTPUT_DIR / "cen06_filtered.csv"
+    cen11_filtered = OUTPUT_DIR / "cen11_filtered.csv"
 
     # --- Edited Files ---
     cen06_filtered2 = OUTPUT_DIR / "cen06_filtered2.csv"
@@ -1819,40 +2414,45 @@ if __name__ == '__main__':
     validate_vae_reconstruction(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
     """
     #FORECASTING -------------------------------------------------------------------------------------------------------
-    """
+    """"""
+    file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
+    processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths,sample_frac=1)
+    encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
+    decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
     # 3. Train Temporal Drift
     print("\n=== Step 3: Modeling Temporal Drift ===")
-    temporal_model, last_variance = train_temporal_model(encoder,processed_data, demo_cols, bldg_cols)
-    
-    # --- NEW: Plot the Trajectory ---
-    plot_latent_trajectory(encoder, temporal_model, processed_data, demo_cols, bldg_cols)
+    temporal_model, last_variance = train_temporal_model(encoder, processed_data, demo_cols, bldg_cols)
 
     # 4. Generate Forecasts
     TARGET_YEARS = [2025, 2030]
-    N_SAMPLES = 10000
+    N_SAMPLES = 1000
+    OUTPUT_DIR = Path(OUTPUT_DIR / "Generated") # Example path
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for year in TARGET_YEARS:
         print(f"\n=== Step 4: Forecasting for {year} ===")
         # Generate
         gen_raw, bldg_raw = generate_future_population(decoder, temporal_model, last_variance, processed_data, bldg_cols, target_year=year, n_samples=N_SAMPLES)
         # Post-Process
-        df_forecast = post_process_generated_data(gen_raw, demo_cols, bldg_raw, bldg_cols, data_scalers )
-        # Add Year Column
+        df_forecast = post_process_generated_data(gen_raw, demo_cols, bldg_raw, bldg_cols, data_scalers)
+        # Add Year
         df_forecast['YEAR'] = year
         # Save
         save_path = OUTPUT_DIR / f"forecasted_population_{year}.csv"
         df_forecast.to_csv(save_path, index=False)
         print(f"✅ Saved {year} forecast to: {save_path}")
         print(df_forecast.head())
-    """
+
     #VALIDATION OF FORECASTING_VISUAL ----------------------------------------------------------------------------------
-    """
+    """"""
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
     processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths, sample_frac=1)
     encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
     decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
-    generate_validation_report(encoder, decoder, processed_data, demo_cols, bldg_cols, data_scalers, output_folder=VALIDATION_FORECAST_DIR)
-    """
+    # Run Validation
+    validate_forecast_trajectory(encoder, processed_data, demo_cols, bldg_cols, VALIDATION_FORECASTVIS_DIR)
+    validate_forecast_distributions(encoder=encoder, decoder=decoder, df_processed=processed_data, demo_cols=demo_cols,
+                                    bldg_cols=bldg_cols, scalers=data_scalers, output_dir=VALIDATION_FORECAST_DIR)
     #ASSEMBLE HOUSEHOLD ------------------------------------------------------------------------------------------------
     """
     # --- Run Assembly for 2025 ---
@@ -1897,10 +2497,86 @@ if __name__ == '__main__':
     # Run Validation
     validate_matching_quality(df_matched, expander, save_path=(IO_DIR_VALID / "Validation_ProfileMatcher_2025.txt"))
 """
+    #PROFILE MATCHER: POST-PROCESSING ----------------------------------------------------------------------------------
+    """
+    import pandas as pd
+    from pathlib import Path
+    # =============================================================================
+    # CONFIGURATION
+    # =============================================================================
+    IO_DIR = Path(OUTPUT_DIR)
+    # 1. The "Teacher": Historic Data (Must have detailed DTYPE 1-8)
+    # Replace this with the actual path to your 2006 or 2011 raw data
+    HISTORIC_DATA_PATHS = [cen06_filtered, cen11_filtered]
+    # 2. The "Student": Step 2 Output (Has coarse DTYPE 1-3)
+    INPUT_FORECAST_PATH = IO_DIR / "Full_Expanded_Schedules.csv"
+    # 3. The Result: Input for Step 3
+    OUTPUT_REFINED_PATH = IO_DIR / "Full_Expanded_Schedules_Refined.csv"
+    VALIDATION_DIR = IO_DIR / "Validation_ProfileMatcher_PostProcessing"
+    # =============================================================================
+    # EXECUTION
+    # =============================================================================
+    if __name__ == "__main__":
+        print(f"\n🚀 Starting Step 2b: DTYPE Refinement (Multi-Year Training)...")
+
+        # 1. Validation Checks
+        if not INPUT_FORECAST_PATH.exists():
+            print(f"❌ Error: Forecast file not found at: {INPUT_FORECAST_PATH}")
+            print("   Please run Step 2 (Expansion) first.")
+            exit()
+
+        # 2. Load and Merge Historic Data
+        print("1. Loading Datasets...")
+        historic_dfs = []
+
+        for path in HISTORIC_DATA_PATHS:
+            p = Path(path)
+            if p.exists():
+                print(f"   - Loading: {p.name} ...")
+                df = pd.read_csv(p, low_memory=False)
+                historic_dfs.append(df)
+            else:
+                print(f"   ⚠️ Warning: File not found: {path}")
+
+        if not historic_dfs:
+            print("❌ Error: No valid historic data found.")
+            exit()
+
+        # Concatenate all historic years into one big training set
+        df_hist_combined = pd.concat(historic_dfs, ignore_index=True)
+        print(f"   -> Combined Training Set: {len(df_hist_combined):,} rows")
+
+        # Load Forecast
+        df_forecast = pd.read_csv(INPUT_FORECAST_PATH, low_memory=False)
+        print(f"   Forecast Data: {len(df_forecast):,} rows")
+
+        # 3. Initialize & Train
+        # The Refiner will now learn from the combined patterns of 06 and 11
+        refiner = DTypeRefiner(output_dir=IO_DIR)
+        refiner.train_models(df_hist_combined)
+
+        # 4. Apply Refinement
+        df_refined = refiner.apply_refinement(df_forecast)
+
+        # 5. Save
+        print(f"2. Saving Refined Data to: {OUTPUT_REFINED_PATH.name}...")
+        df_refined.to_csv(OUTPUT_REFINED_PATH, index=False)
+
+        # 6. Verification
+        print("\n--- Verification: New DTYPE Distribution ---")
+        dist = df_refined['DTYPE'].value_counts().sort_index()
+        for code, count in dist.items():
+            label = refiner.dtype_labels.get(code, "Unknown")
+            print(f"   Code {code} ({label}): {count:,} rows")
+
+        print("\n✅ Step 2b Complete.")
+
+    validate_refinement_model(HISTORIC_DATA_PATHS, OUTPUT_REFINED_PATH, VALIDATION_DIR)
+    """
     #HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
     """
     IO_DIR = Path(OUTPUT_DIR)
-    expanded_file = IO_DIR / "Full_Expanded_Schedules.csv"
+    expanded_file = IO_DIR / "Full_Expanded_Schedules_Refined.csv"
     output_full = IO_DIR / "Full_data.csv"
 
     # 2. Load Data
@@ -1952,10 +2628,11 @@ if __name__ == '__main__':
         print(f"\n✅ Full Validation Report saved to: {report_path.name}")
     """
     #OCC to BEM input --------------------------------------------------------------------------------------------------
-    """  """
+    """ 
     IO_DIR = Path(OUTPUT_DIR)
     full_data_path = IO_DIR / "Full_data.csv"
     output_path = IO_DIR / "BEM_Schedules_2025.csv"
+    output_path_vis = IO_DIR
 
     if not full_data_path.exists():
         print("❌ Error: Full_data.csv not found.")
@@ -1988,3 +2665,6 @@ if __name__ == '__main__':
         print(df_bem[valid_cols].head(12).to_string(index=False))
 
         print("\n✅ Step 4 Complete. Ready for EnergyPlus/Honeybee.")
+        visualize_bem_distributions(df_bem, output_dir=output_path_vis)
+        """
+
