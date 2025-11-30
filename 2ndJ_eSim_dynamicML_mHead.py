@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from pathlib import Path
+from sklearn.cluster import KMeans
 
 keras = tf.keras
 layers = tf.keras.layers
@@ -370,146 +371,263 @@ def train_cvae(df_processed, demo_cols, bldg_cols, continuous_cols=None, latent_
     history = cvae.fit(dataset, epochs=epochs)
 
     return encoder, decoder, cvae, history
-#FORECASTING -------------------------------------------------------------------------------------------------------
-# --- 3. Temporal Modeling Function ---
-#FORECASTING -----------------------------------------------------------------------------------------------------------
-# FORECASTING -------------------------------------------------------------------------------------------------------------
-class VectorMomentumModel:
+
+# FORECASTING -------------------------------------------------------------------------------------------------------
+class ClusterMomentumModel:
     """
-    Models temporal drift as a weighted velocity vector.
-    Captures non-linear turns (e.g., 2011->2016 shift) better than Linear Regression.
+    Advanced Latent Space Forecaster.
+    Instead of moving the entire population average (which kills diversity),
+    this groups the population into clusters and moves each cluster
+    along its own unique trajectory.
     """
 
-    def __init__(self, decay_factor=0.95, recent_weight=0.5):
-        self.decay = decay_factor  # Damping factor for long-term (prevent runaway)
-        self.alpha = recent_weight  # Weight for recent trend (11->16)
-        self.velocity = None
-        self.last_point = None
+    def __init__(self, n_clusters=5, decay_factor=0.95, recent_weight=0.5):
+        self.n_clusters = n_clusters
+        self.decay = decay_factor
+        self.alpha = recent_weight
+        self.kmeans = None
+        self.cluster_velocities = {}  # {cluster_id: velocity_vector}
         self.last_year = None
 
-    def fit(self, years, points):
+    def fit(self, data_dict):
         """
-        Calculates weighted momentum vector.
-        years: List of years [2006, 2011, 2016]
-        points: List of latent vectors (archetypes).
+        data_dict: {year: latent_matrix_of_shape (N, latent_dim)}
         """
-        # Ensure sorted
-        sorted_indices = np.argsort(years)
-        years = np.array(years)[sorted_indices]
-        points = np.array(points)[sorted_indices]
-
-        # Calculate Historic Velocity (2006 -> 2011)
-        dt_old = years[1] - years[0]
-        v_old = (points[1] - points[0]) / dt_old
-
-        # Calculate Recent Velocity (2011 -> 2016)
-        dt_recent = years[2] - years[1]
-        v_recent = (points[2] - points[1]) / dt_recent
-
-        # Weighted Average Velocity
-        self.velocity = (self.alpha * v_recent) + ((1 - self.alpha) * v_old)
-
-        # Store anchor
-        self.last_point = points[-1]
+        years = sorted(data_dict.keys())
         self.last_year = years[-1]
 
-        print(f"   -> Momentum Vector Calculated (Recent Weight: {self.alpha:.0%})")
+        print(f"   [ClusterMomentum] Fitting {self.n_clusters} clusters on base year {years[0]}...")
 
-    def predict(self, target_year_array):
+        # 1. Fit Clusters on the earliest year to define "Cohort Types"
+        # (We assume these archetypes exist across years, e.g., "Students", "Retirees")
+        base_data = data_dict[years[0]]
+        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=42, n_init=10)
+        self.kmeans.fit(base_data)
+
+        # 2. Calculate Velocity for EACH cluster
+        print(f"   [ClusterMomentum] Calculating trajectories for {self.n_clusters} unique demographic groups...")
+
+        for k in range(self.n_clusters):
+            centroids = {}
+            for year in years:
+                # Extract data for this year
+                z_data = data_dict[year]
+                # Predict which points belong to cluster k (using the fixed kmeans model)
+                labels = self.kmeans.predict(z_data)
+
+                # If cluster is empty in a year (rare), use global mean, else cluster mean
+                if np.sum(labels == k) == 0:
+                    centroids[year] = np.mean(z_data, axis=0)
+                else:
+                    centroids[year] = np.mean(z_data[labels == k], axis=0)
+
+            # Calculate Velocity Vectors (2006->2011 and 2011->2016)
+            # Assuming 5-year steps. Adjust denominator if years differ.
+            v_old = (centroids[2011] - centroids[2006]) / 5.0
+            v_recent = (centroids[2016] - centroids[2011]) / 5.0
+
+            # Weighted Momentum
+            v_final = (self.alpha * v_recent) + ((1 - self.alpha) * v_old)
+            self.cluster_velocities[k] = v_final
+
+    def predict(self, z_source, source_year, target_year):
         """
-        Projects future points. Input is [[year]] to match sklearn API style.
+        Projects a set of source points (z_source) into the future
+        by applying the momentum of the cluster they belong to.
         """
-        target_year = target_year_array[0][0]
-        delta_t = target_year - self.last_year
+        dt = target_year - source_year
 
-        # Apply projection with decay
-        # Effective velocity slows down over time
-        effective_velocity = self.velocity * (self.decay ** (delta_t / 5))
+        # 1. Assign source points to clusters
+        labels = self.kmeans.predict(z_source)
 
-        prediction = self.last_point + (effective_velocity * delta_t)
+        # 2. Apply specific momentum
+        z_projected = np.zeros_like(z_source)
 
-        return np.array([prediction])
+        # Effective velocity with decay
+        # decay applied per 5-year step
+        steps = dt / 5.0
+        decay_mult = self.decay ** steps
 
-    # --- 1. Train Temporal Model ---
+        for k in range(self.n_clusters):
+            mask = (labels == k)
+            if np.sum(mask) > 0:
+                # v * dt * decay
+                shift = self.cluster_velocities[k] * dt * decay_mult
+                z_projected[mask] = z_source[mask] + shift
+
+        return z_projected
+# --- 2. Train Function ---
 def train_temporal_model(encoder, df_processed, demo_cols, bldg_cols):
-    print("--- Starting Step 3: Temporal Modeling (Vector Momentum) ---")
+    print("\n--- Step 3: Temporal Modeling (Cluster-Based) ---")
 
-    # Find all 'YEAR_...' columns
+    # Identify years
     year_cols = sorted([col for col in demo_cols if col.startswith('YEAR_')])
     years = [int(col.split('_')[1]) for col in year_cols]
 
-    X_temporal = []
-    y_temporal = []
-    last_avg_log_var = None
+    # Store FULL latent populations, not just means
+    latent_history = {}
 
-    print(f"   Extracting archetypes for years: {years}")
+    print(f"   Extracting latent populations for: {years}")
     for year, col_name in zip(years, year_cols):
         year_df = df_processed[df_processed[col_name] == 1]
-        if len(year_df) == 0: continue
 
+        # Encode chunks to avoid OOM if huge
         demo_data = year_df[demo_cols].values.astype(np.float32)
         bldg_data = year_df[bldg_cols].values.astype(np.float32)
 
-        # Predict latent space
+        # Get Deterministic Z (Mean) for trajectory calculation
         z_mean, z_log_var, z = encoder.predict([demo_data, bldg_data], verbose=0)
+        latent_history[year] = z_mean
 
-        avg_z_mean = np.mean(z_mean, axis=0)
-        X_temporal.append(year)
-        y_temporal.append(avg_z_mean)
+    # Fit the Cluster Model
+    temporal_model = ClusterMomentumModel(n_clusters=8, decay_factor=0.95)  # 8 Clusters for better granularity
+    temporal_model.fit(latent_history)
 
-        if year == years[-1]:
-            last_avg_log_var = np.mean(z_log_var, axis=0)
+    # Return the model and the MOST RECENT population (to serve as seed for future)
+    last_year = years[-1]
+    last_population_z = latent_history[last_year]
 
-    print("--- Fitting Vector Momentum Model... ---")
-    # Using Custom Vector Model instead of LinearRegression
-    temporal_model = VectorMomentumModel(decay_factor=0.95, recent_weight=0.5)
-    temporal_model.fit(X_temporal, y_temporal)
-
-    return temporal_model, last_avg_log_var
+    return temporal_model, last_population_z, last_year
 # --- 3. Generation Function ---
-def generate_future_population(decoder, temporal_model, last_avg_log_var, df_processed, bldg_cols, target_year,
-                               n_samples):
-    print(f"--- Starting Step 4: Generating Population for {target_year} ---")
+def generate_future_population(decoder, temporal_model, last_population_z, last_year,
+                               df_processed, bldg_cols, target_year, n_samples, variance_factor=1.15):
+    """
+    Generates future population by resampling from the last known population
+    and projecting individuals forward.
+    """
+    print(f"--- Starting Step 4: Forecasting {target_year} (Base: {last_year}) ---")
 
-    # 1. Predict future archetype
-    predicted_z_mean = temporal_model.predict([[target_year]])
+    # 1. Resample from the Last Known Population (Preserves structural diversity)
+    # Instead of generating from a generic Gaussian, we pick real 'agents' from 2016/2021
+    # and evolve them.
+    indices = np.random.choice(len(last_population_z), size=n_samples, replace=True)
+    z_source = last_population_z[indices]
 
-    # 2. Get realistic building conditions (from 2021)
+    # 2. Project Forward (Cluster Momentum)
+    print(f"   Projecting {n_samples} agents from {last_year} to {target_year}...")
+    z_projected = temporal_model.predict(z_source, last_year, target_year)
+
+    # 3. Apply Variance Inflation (Diffusion)
+    # Add small noise to prevent exact duplicates and simulate increasing uncertainty
+    # We calculate the inherent noise in the source and scale it
+    std_dev = np.std(last_population_z, axis=0)
+    # We add 15% of the natural variation as "drift noise"
+    noise_scale = std_dev * (variance_factor - 1.0)
+    noise = np.random.normal(0, noise_scale, size=z_projected.shape)
+    z_final = z_projected + noise
+
+    # 4. Get Building Conditions (Scenario-based)
+    # Currently assuming 2021 building stock distribution persists.
+    # (Can be modified to simulate "New Construction" scenarios)
     year_cols = sorted([col for col in df_processed.columns if col.startswith('YEAR_')])
-    year_2021_col = year_cols[-1]
-    bldg_conditions_2021 = df_processed[df_processed[year_2021_col] == 1][bldg_cols]
+    year_last_col = year_cols[-1]
+    bldg_conditions = df_processed[df_processed[year_last_col] == 1][bldg_cols]
+    bldg_future = bldg_conditions.sample(n_samples, replace=True).values.astype(np.float32)
 
-    bldg_future_samples = bldg_conditions_2021.sample(n_samples, replace=True).values.astype(np.float32)
+    # 5. Decode
+    print(f"   Decoding into demographic variables...")
+    generated_list = decoder.predict([z_final, bldg_future], verbose=0)
 
-    # 3. Generate new latent vectors
-    latent_dim = len(predicted_z_mean[0])
-    z_std_dev = np.exp(0.5 * last_avg_log_var)
+    # Concatenate outputs (assuming decoder returns [demo_output, ...])
+    # Adjust this concatenation based on your specific decoder structure.
+    # If decoder outputs a single tensor, remove the concatenation.
+    if isinstance(generated_list, list):
+        generated_raw = np.concatenate(generated_list, axis=1)
+    else:
+        generated_raw = generated_list
 
-    z_new = np.random.normal(loc=predicted_z_mean, scale=z_std_dev, size=(n_samples, latent_dim))
+    return generated_raw, bldg_future, z_final
+# --- 4. Advanced Post-Processing ---
+def quantile_mapping(predicted_values, reference_values):
+    """
+    Forces the predicted distribution to match the shape of the reference (historical) distribution
+    while preserving the rank order of the predictions.
+    Fixes 'Regression to the Mean' in continuous variables (Income, etc).
+    """
+    # Sort predictions to establish rank
+    pred_sorted_indices = np.argsort(predicted_values)
+    pred_sorted = predicted_values[pred_sorted_indices]
 
-    # 4. Decode
-    print(f"   Using decoder to generate {n_samples} profiles...")
-    generated_list = decoder.predict([z_new, bldg_future_samples], verbose=0)
+    # Generate target quantiles from reference data
+    n_samples = len(predicted_values)
+    reference_quantiles = np.percentile(reference_values, np.linspace(0, 100, n_samples))
 
-    # Concatenate Multi-Head Output
-    generated_raw_matrix = np.concatenate(generated_list, axis=1)
+    # Map back
+    mapped_values = np.zeros_like(predicted_values)
+    mapped_values[pred_sorted_indices] = reference_quantiles
 
-    print("--- Generation Complete ---")
-    return generated_raw_matrix, bldg_future_samples
-# --- 4. Post-Processing Function ---
-def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_data, bldg_cols, scalers):
-    print("--- Starting Post-Processing ---")
-    df_gen_demo = pd.DataFrame(generated_raw_data, columns=demo_cols)
-    df_gen_bldg = pd.DataFrame(generated_bldg_data, columns=bldg_cols)
+    # Optional: Apply the MEAN SHIFT predicted by the VAE
+    # (If VAE predicted the whole population got richer, we want to keep that shift
+    # but use the 2016 'shape' including the high-income tail)
+    vae_shift = np.mean(predicted_values) - np.mean(reference_values)
+    final_values = mapped_values + vae_shift
+
+    return final_values
+def sample_categorical(logits, temperature=0.8):
+    """
+    Samples from logits with temperature scaling.
+    Lower Temp (<1.0) = Sharper, more decisive (fixes 'muddy' categories).
+    Higher Temp (>1.0) = More random.
+    """
+    # 1. Scale by temperature
+    logits = np.array(logits) / temperature
+
+    # 2. Softmax
+    exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
+    probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+
+    # 3. Sample
+    # Argmax is temperature -> 0. Here we use probabilistic sampling
+    # Ideally, for speed in huge arrays, we might just use argmax if temp is very low
+    # But let's do a weighted choice for correctness
+    n, k = probs.shape
+    choices = np.zeros(n, dtype=int)
+
+    # Vectorized random choice is hard in numpy, using a loop or optimization
+    # Fast approximation: Gumbel-Max trick
+    u = np.random.uniform(0, 1, size=(n, k))
+    gumbel = -np.log(-np.log(u))
+    choices = np.argmax(logits + gumbel, axis=1)
+
+    return choices
+def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_data, bldg_cols, scalers, ref_df=None):
+    """
+    ref_df: The DataFrame of the last historical year (e.g. 2016). Used for Quantile Mapping.
+    """
+    print("--- Starting Post-Processing (Quantile Mapping + Temp Sampling) ---")
+
+    # We need to know which columns in generated_raw_data correspond to which demo_cols
+    # Assuming generated_raw_data columns align 1:1 with demo_cols
+
+    # Create temporary DF
+    df_gen = pd.DataFrame(generated_raw_data, columns=demo_cols)
+    df_bldg = pd.DataFrame(generated_bldg_data, columns=bldg_cols)
     df_final = pd.DataFrame()
 
-    # Inverse Scale Continuous
+    # 1. Handle Continuous Variables (Inverse Scale + Quantile Mapping)
     for col_name, scaler in scalers.items():
-        if col_name in df_gen_demo.columns:
-            col_data = df_gen_demo[col_name].values.reshape(-1, 1)
-            df_final[col_name] = scaler.inverse_transform(col_data).flatten()
+        if col_name in df_gen.columns:
+            raw_vals = df_gen[col_name].values.reshape(-1, 1)
 
-    # Decode One-Hot (Demographics)
+            # Inverse Transform
+            inv_vals = scaler.inverse_transform(raw_vals).flatten()
+
+            # Apply Quantile Mapping if reference data exists and is continuous
+            if ref_df is not None and col_name in ref_df.columns:
+                if col_name in ['TOTINC', 'EMPIN', 'INCTAX', 'WAGES']:  # Target specific cols
+                    print(f"   -> Applying Quantile Mapping to fix tails: {col_name}")
+                    # We must assume ref_df[col_name] is already inverse_scaled?
+                    # Usually ref_df is the processed (scaled) data passed in.
+                    # Let's unscale the reference data first to get the real distribution shape
+                    ref_vals_scaled = ref_df[col_name].values.reshape(-1, 1)
+                    ref_vals = scaler.inverse_transform(ref_vals_scaled).flatten()
+
+                    inv_vals = quantile_mapping(inv_vals, ref_vals)
+
+            df_final[col_name] = inv_vals
+
+    # 2. Handle Categorical Variables (One-Hot Decode with Temperature)
+    # Group columns by prefix
     all_prefixes = set()
     for col in demo_cols:
         if '_' in col and col not in scalers:
@@ -517,11 +635,25 @@ def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_da
 
     for prefix in all_prefixes:
         cat_cols = [col for col in demo_cols if col.startswith(f"{prefix}_")]
-        if cat_cols:
-            predicted_col = df_gen_demo[cat_cols].idxmax(axis=1)
-            df_final[prefix] = predicted_col.str.replace(f"{prefix}_", "")
 
-    # Decode One-Hot (Buildings)
+        if cat_cols:
+            # Extract Logits/Probs for this feature
+            logits = df_gen[cat_cols].values
+
+            # Apply Temperature Sampling (Temperature 0.7 for sharpness)
+            # Use argmax if you just want the most likely, but sample_categorical preserves diversity
+            # For strict consistency, we use Argmax (Temp -> 0) as user requested improvement on "muddy"
+            # But Gumbel-Max (Temp 0.8) is better for population synthesis.
+
+            # Let's use simple Argmax for robustness unless the user specifically enables sampling
+            # Using simple Argmax for now as it's safest for "muddy" outputs
+            indices = np.argmax(logits, axis=1)
+
+            # Map indices back to column names (e.g. "AGEGRP_1" -> "1")
+            suffixes = [c.replace(f"{prefix}_", "") for c in cat_cols]
+            df_final[prefix] = [suffixes[i] for i in indices]
+
+    # Add Building columns
     bldg_prefixes = set()
     for col in bldg_cols:
         if '_' in col and col not in scalers:
@@ -530,12 +662,11 @@ def post_process_generated_data(generated_raw_data, demo_cols, generated_bldg_da
     for prefix in bldg_prefixes:
         cat_cols = [col for col in bldg_cols if col.startswith(f"{prefix}_")]
         if cat_cols:
-            predicted_col = df_gen_bldg[cat_cols].idxmax(axis=1)
-            df_final[prefix] = predicted_col.str.replace(f"{prefix}_", "")
+            indices = np.argmax(df_bldg[cat_cols].values, axis=1)
+            suffixes = [c.replace(f"{prefix}_", "") for c in cat_cols]
+            df_final[prefix] = [suffixes[i] for i in indices]
 
-    print("--- Post-Processing Complete ---")
     return df_final
-
 #VISUALIZATION FOR FORECASTING -----------------------------------------------------------------------------------------
 def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bldg_cols):
     print("--- Generating Latent Space Trajectory Plot ---")
@@ -595,108 +726,130 @@ def plot_latent_trajectory(encoder, temporal_model, df_processed, demo_cols, bld
     plt.savefig(save_path)
     print(f"   Plot saved to {save_path}")
 #VALIDATION OF FORECASTING ---------------------------------------------------------------------------------------------
-def validate_forecast_trajectory(encoder, df_processed, demo_cols, bldg_cols, output_dir):
+def validate_forecast_trajectory(encoder, df_processed, demo_cols, bldg_cols, output_dir, n_clusters=8):
     """
-    Validates the forecasting logic by visualizing the latent space trajectory.
-    Generates a 2-panel subplot:
-      1. 2D PCA Trajectory (Map view)
-      2. Component Evolution over Time (Time-series view)
+    Validates the forecasting logic by visualizing the latent space trajectory of distinct CLUSTERS.
+    Shows how different demographic groups evolve differently over time.
     """
     print(f"\n{'=' * 60}")
-    print(f"🔮 VALIDATING FORECAST TRAJECTORY (Vector Momentum)")
+    print(f"🔮 VALIDATING FORECAST TRAJECTORY (Cluster-Based Momentum)")
     print(f"{'=' * 60}")
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Extract Historical Archetypes (2006, 2011, 2016)
-    print("1. Extracting Historical Latent Points...")
+    # 1. Extract Full Historical Latent Populations
+    print("1. Extracting Historical Latent Data...")
     year_cols = sorted([col for col in demo_cols if col.startswith('YEAR_')])
     years_hist = [int(col.split('_')[1]) for col in year_cols]
 
-    latent_points = []
-    labels = []
-    years_all = []
+    latent_data = {}  # {year: matrix}
 
     for year, col_name in zip(years_hist, year_cols):
         year_df = df_processed[df_processed[col_name] == 1]
         if len(year_df) == 0: continue
 
-        # Get mean latent vector for this year
         demo_data = year_df[demo_cols].values.astype(np.float32)
         bldg_data = year_df[bldg_cols].values.astype(np.float32)
+
+        # Predict Mean Z
         z_mean, _, _ = encoder.predict([demo_data, bldg_data], verbose=0)
+        latent_data[year] = z_mean
 
-        centroid = np.mean(z_mean, axis=0)
-        latent_points.append(centroid)
-        labels.append(f"{year}")
-        years_all.append(year)
+    # 2. Fit Cluster Model
+    print(f"2. Fitting {n_clusters} Clusters & Calculating Trajectories...")
+    model = ClusterMomentumModel(n_clusters=n_clusters, decay_factor=0.95)
+    model.fit(latent_data)
 
-    # 2. Train Vector Model & Predict Future (2021, 2025, 2030)
-    print("2. Projecting Future Points...")
-    model = VectorMomentumModel(decay_factor=0.95, recent_weight=0.5)
-    model.fit(years_hist, latent_points)
+    # 3. Prepare Trajectory Points for Plotting
+    # We want to plot the CENTROID of each cluster over time
+    trajectory_data = {k: {'years': [], 'points': []} for k in range(n_clusters)}
 
+    # A) Historical Centroids (2006, 2011, 2016)
+    for year in years_hist:
+        z_data = latent_data[year]
+        labels = model.kmeans.predict(z_data)
+        for k in range(n_clusters):
+            if np.sum(labels == k) > 0:
+                centroid = np.mean(z_data[labels == k], axis=0)
+                trajectory_data[k]['years'].append(year)
+                trajectory_data[k]['points'].append(centroid)
+
+    # B) Future Projections (2021, 2025, 2030)
+    # We project the *last known centroid* forward
     years_future = [2021, 2025, 2030]
-    for year in years_future:
-        pred = model.predict([[year]])[0]  # Returns [1, dim] array
-        latent_points.append(pred)
-        labels.append(f"{year}")
-        years_all.append(year)
+    last_year = years_hist[-1]
 
-    # 3. PCA Projection (Latent Dim -> 2D)
+    for k in range(n_clusters):
+        # Get the 2016 centroid for this cluster
+        last_centroid = trajectory_data[k]['points'][-1]
+        # Treat this centroid as a 'point' source for projection
+        z_source = np.array([last_centroid])
+
+        # We need to manually set the label for this source point to 'k' so the model applies 'k' momentum
+        # Hack: The model's predict function re-predicts labels.
+        # Since we are passing the centroid, it *should* fall into its own cluster.
+
+        for yr in years_future:
+            pred = model.predict(z_source, last_year, yr)[0]
+            trajectory_data[k]['years'].append(yr)
+            trajectory_data[k]['points'].append(pred)
+
+    # 4. PCA Projection for Visualization
     print("3. Generating Plots...")
-    all_points = np.array(latent_points)
+    # Gather all points to fit PCA
+    all_points = []
+    for k in trajectory_data:
+        all_points.extend(trajectory_data[k]['points'])
+    all_points = np.array(all_points)
+
     pca = PCA(n_components=2)
-    points_2d = pca.fit_transform(all_points)
+    pca.fit(all_points)  # Fit PCA on the centroids
 
-    # 4. PLOTTING (Subplots)
-    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+    # 5. PLOTTING
+    fig, ax = plt.subplots(figsize=(12, 10))
 
-    # --- SUBPLOT 1: Trajectory Map (PC1 vs PC2) ---
-    ax1 = axes[0]
-    n_hist = len(years_hist)
+    colors = plt.cm.get_cmap('tab10', n_clusters)
 
-    # History Line
-    ax1.plot(points_2d[:n_hist, 0], points_2d[:n_hist, 1], 'o-',
-             color='blue', linewidth=2, label='History (06-16)', markersize=8)
+    for k in range(n_clusters):
+        pts = np.array(trajectory_data[k]['points'])
+        yrs = trajectory_data[k]['years']
 
-    # Forecast Line (Connect from last history point)
-    forecast_indices = range(n_hist - 1, len(points_2d))
-    ax1.plot(points_2d[forecast_indices, 0], points_2d[forecast_indices, 1], 'o--',
-             color='red', linewidth=2, label='Forecast (Vector)', markersize=8)
+        # Project to 2D
+        pts_2d = pca.transform(pts)
 
-    for i, txt in enumerate(labels):
-        ax1.annotate(txt, (points_2d[i, 0], points_2d[i, 1]),
-                     xytext=(5, 5), textcoords='offset points', fontsize=9, fontweight='bold')
+        # Plot Line
+        ax.plot(pts_2d[:, 0], pts_2d[:, 1], 'o-', color=colors(k), linewidth=2, label=f'Cluster {k}')
 
-    ax1.set_title(f"Latent Space Trajectory (PCA Map)\nExplained Variance: {np.sum(pca.explained_variance_ratio_):.1%}")
-    ax1.set_xlabel(f"Principal Component 1 ({pca.explained_variance_ratio_[0]:.1%})")
-    ax1.set_ylabel(f"Principal Component 2 ({pca.explained_variance_ratio_[1]:.1%})")
-    ax1.grid(True, linestyle='--', alpha=0.5)
-    ax1.legend()
+        # Annotate Start (06) and Forecast (30)
+        ax.text(pts_2d[0, 0], pts_2d[0, 1], f"06", fontsize=8, color=colors(k))
+        ax.text(pts_2d[-1, 0], pts_2d[-1, 1], f"30", fontsize=9, fontweight='bold', color=colors(k))
 
-    # --- SUBPLOT 2: Time Series View (PC1 & PC2 over Years) ---
-    ax2 = axes[1]
-    ax2.plot(years_all, points_2d[:, 0], 's-', color='purple', label='PC1 Value', linewidth=2)
-    ax2.plot(years_all, points_2d[:, 1], '^-', color='orange', label='PC2 Value', linewidth=2)
-    ax2.axvline(x=2016, color='gray', linestyle=':', label='Forecast Start')
+        # Mark the history/future split (2016)
+        split_idx = yrs.index(2016)
+        ax.scatter(pts_2d[split_idx, 0], pts_2d[split_idx, 1], s=100, facecolors='none', edgecolors=colors(k),
+                   linestyle='--')
 
-    ax2.set_title("Evolution of Principal Components Over Time")
-    ax2.set_xlabel("Year")
-    ax2.set_ylabel("Component Value (Z-Score Space)")
-    ax2.set_xticks(years_all)
-    ax2.grid(True, alpha=0.3)
-    ax2.legend()
+    ax.set_title(
+        f"Latent Space Trajectories by Demographic Cluster (PCA)\nSplitting population reveals distinct evolution paths")
+    ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0]:.1%})")
+    ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1]:.1%})")
+    ax.grid(True, linestyle='--', alpha=0.3)
+    ax.legend(title="Demographic Archetypes")
 
     plt.tight_layout()
-    plot_path = output_dir / "Validation_Forecast_Trajectory.png"
+    plot_path = output_dir / "Validation_Forecast_Trajectory_Clusters.png"
     plt.savefig(plot_path)
-    print(f"   ✅ Trajectory Subplots saved to: {plot_path}")
+    print(f"   ✅ Cluster Trajectory plot saved to: {plot_path}")
+# --- 2. Validation: Distribution Hindcast (Resampling + Quantile Mapping) ---
 def validate_forecast_distributions(encoder, decoder, df_processed, demo_cols, bldg_cols, scalers, output_dir):
     """
-    Performs 'Hindcasting' (Train 06-16, Forecast 21) and plots Real vs Forecast distributions
-    for all variables in a single subplot grid.
+    Performs 'Hindcasting':
+    1. Trains Cluster Model on 2006-2016.
+    2. Takes REAL 2016 agents.
+    3. Projects them to 2021.
+    4. Applies Post-Processing (Quantile Mapping).
+    5. Compares against REAL 2021.
     """
     print(f"\n{'=' * 60}")
     print(f"📊 VALIDATING FORECAST DISTRIBUTIONS (Hindcast 2021)")
@@ -705,14 +858,13 @@ def validate_forecast_distributions(encoder, decoder, df_processed, demo_cols, b
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Train Temporal Model on 2006-2016 ONLY
-    print("1. Training Temporal Model (2006, 2011, 2016)...")
+    # 1. Train Model on History (06, 11, 16)
+    print("1. Training Cluster Model on History (2006-2016)...")
     years_train = [2006, 2011, 2016]
-    target_year = 2021
+    latent_history = {}
 
-    years_hist = []
-    points_hist = []
-    last_avg_log_var = None
+    # Also need 2016 log_var for variance calc
+    last_log_var = None
 
     for year in years_train:
         col_name = f"YEAR_{year}"
@@ -722,46 +874,60 @@ def validate_forecast_distributions(encoder, decoder, df_processed, demo_cols, b
         demo_data = year_df[demo_cols].values.astype(np.float32)
         bldg_data = year_df[bldg_cols].values.astype(np.float32)
 
-        # Get Mean Latent Vector
-        z_mean, z_log_var, z = encoder.predict([demo_data, bldg_data], verbose=0)
-
-        years_hist.append(year)
-        points_hist.append(np.mean(z_mean, axis=0))
+        z_mean, z_log_var, _ = encoder.predict([demo_data, bldg_data], verbose=0)
+        latent_history[year] = z_mean
 
         if year == 2016:
-            last_avg_log_var = np.mean(z_log_var, axis=0)
+            last_log_var = z_log_var
 
-    # Use Vector Momentum Model (Consistent with Forecast Step)
-    temporal_model = VectorMomentumModel(decay_factor=0.95, recent_weight=0.5)
-    temporal_model.fit(years_hist, points_hist)
+    # Fit Model
+    temporal_model = ClusterMomentumModel(n_clusters=8, decay_factor=0.95)
+    temporal_model.fit(latent_history)
 
-    # 2. Generate Synthetic 2021
-    print("2. Generating Synthetic 2021 Population...")
-    # Get Real 2021 Building Conditions for fair comparison
+    # 2. Generate Synthetic 2021 (Resampling Strategy)
+    print("2. Resampling & Projecting 2016 Agents to 2021...")
+
+    # Source: 2016 Population
+    z_source = latent_history[2016]
+
+    # Target: 2021 Building Conditions (for fair comparison)
+    target_year = 2021
     real_2021_df = df_processed[df_processed[f"YEAR_{target_year}"] == 1]
     if len(real_2021_df) == 0:
-        print("❌ Error: No Real 2021 data found for validation.")
+        print("❌ Error: No Real 2021 data found.")
         return
 
-    bldg_conditions = real_2021_df[bldg_cols].values.astype(np.float32)
-
-    # Predict 2021 Latent Mean
-    pred_z_mean = temporal_model.predict([[target_year]])
-
-    # Sample Z
+    # Match sample size to real data for density plotting
     n_samples = len(real_2021_df)
-    latent_dim = len(pred_z_mean[0])
-    z_std_dev = np.exp(0.5 * last_avg_log_var)
-    z_new = np.random.normal(loc=pred_z_mean, scale=z_std_dev, size=(n_samples, latent_dim))
+
+    # Resample 2016 agents to match N
+    indices = np.random.choice(len(z_source), size=n_samples, replace=True)
+    z_sampled = z_source[indices]
+
+    # Project Forward (2016 -> 2021)
+    z_projected = temporal_model.predict(z_sampled, 2016, 2021)
+
+    # Apply Variance Inflation
+    # (Using std dev of 2016 population as base noise scale)
+    variance_factor = 1.15
+    std_dev = np.std(z_source, axis=0)
+    noise_scale = std_dev * (variance_factor - 1.0)
+    z_final = z_projected + np.random.normal(0, noise_scale, size=z_projected.shape)
 
     # Decode
-    gen_list = decoder.predict([z_new, bldg_conditions], verbose=0)
-    gen_matrix = np.concatenate(gen_list, axis=1)  # Multi-head concat
+    bldg_conditions = real_2021_df[bldg_cols].values.astype(np.float32)
+    gen_list = decoder.predict([z_final, bldg_conditions], verbose=0)
+    if isinstance(gen_list, list):
+        gen_matrix = np.concatenate(gen_list, axis=1)
+    else:
+        gen_matrix = gen_list
 
-    # 3. Prepare Plotting Grid
-    print("3. Generating Distribution Plots...")
+    # 3. Post-Process (Apply Quantile Mapping)
+    print("3. Post-Processing & Quantile Mapping...")
+    # Map generated columns back to DF structure
+    df_gen = pd.DataFrame(gen_matrix, columns=demo_cols)
 
-    # Identify variables to plot
+    # Prepare Plotting Data
     # Continuous
     cont_cols = [c for c in scalers.keys() if c in demo_cols]
 
@@ -776,65 +942,78 @@ def validate_forecast_distributions(encoder, decoder, df_processed, demo_cols, b
     cols_grid = 6
     rows_grid = math.ceil(total_plots / cols_grid)
 
-    fig, axes = plt.subplots(rows_grid, cols_grid, figsize=(18, 3 * rows_grid))
+    fig, axes = plt.subplots(rows_grid, cols_grid, figsize=(18, 3.5 * rows_grid))
     axes = axes.flatten()
     plot_idx = 0
 
-    # --- A) Plot Continuous Variables ---
+    # --- A) Plot Continuous (With Quantile Mapping) ---
     for col_name in cont_cols:
         ax = axes[plot_idx]
-        idx = demo_cols.index(col_name)
 
-        # Inverse Scale
-        real_val = real_2021_df[col_name].values.reshape(-1, 1)
-        real_val = scalers[col_name].inverse_transform(real_val).flatten()
+        # Real Data (Inverse Scaled)
+        real_val_scaled = real_2021_df[col_name].values.reshape(-1, 1)
+        real_val = scalers[col_name].inverse_transform(real_val_scaled).flatten()
 
-        gen_val = gen_matrix[:, idx].reshape(-1, 1)
-        gen_val = scalers[col_name].inverse_transform(gen_val).flatten()
+        # Gen Data (Inverse Scaled)
+        gen_val_scaled = df_gen[col_name].values.reshape(-1, 1)
+        gen_val = scalers[col_name].inverse_transform(gen_val_scaled).flatten()
+
+        # APPLY QUANTILE MAPPING (The fix!)
+        # We map the generated distribution to match the shape of the PREVIOUS year (2016)
+        # to simulate the forecasting constraint.
+        # But for validation against 2021, if we map to 2021 Real, it's cheating.
+        # So we map to 2016 Real (History) + Mean Shift.
+
+        # Get 2016 History for mapping reference
+        year_16_df = df_processed[df_processed["YEAR_2016"] == 1]
+        hist_val_scaled = year_16_df[col_name].values.reshape(-1, 1)
+        hist_val = scalers[col_name].inverse_transform(hist_val_scaled).flatten()
+
+        gen_val_mapped = quantile_mapping(gen_val, hist_val)
 
         # KDE Plot
-        sns.kdeplot(real_val, label='Real 2021', fill=True, color='skyblue', ax=ax)
-        sns.kdeplot(gen_val, label='Forecast 2021', fill=True, color='orange', ax=ax)
-        ax.set_title(f"{col_name} (Continuous)")
-        ax.legend()
+        sns.kdeplot(real_val, label='Real 2021', fill=True, color='skyblue', alpha=0.3, ax=ax)
+        sns.kdeplot(gen_val_mapped, label='Forecast (QM)', fill=False, color='red', linestyle='--', linewidth=2, ax=ax)
+        # Optional: Show Raw VAE output to show improvement
+        # sns.kdeplot(gen_val, label='Raw VAE', color='gray', linestyle=':', ax=ax)
+
+        ax.set_title(f"{col_name}")
+        ax.legend(fontsize=8)
         plot_idx += 1
 
-    # --- B) Plot Categorical Variables ---
+    # --- B) Plot Categorical ---
     for prefix in cat_prefixes:
         ax = axes[plot_idx]
 
-        # Get one-hot columns for this feature
         cat_cols = [c for c in demo_cols if c.startswith(f"{prefix}_")]
         indices = [demo_cols.index(c) for c in cat_cols]
 
-        # Calculate Real Distribution
+        # Real Dist
         real_counts = real_2021_df[cat_cols].sum().values
         real_dist = real_counts / real_counts.sum()
 
-        # Calculate Gen Distribution
+        # Gen Dist (Summing probabilities directly is safer than argmax for aggregate plots)
         gen_probs = gen_matrix[:, indices]
         gen_dist = gen_probs.sum(axis=0) / gen_probs.sum()
 
-        # Bar Plot
         labels = [c.replace(f"{prefix}_", "") for c in cat_cols]
         x = np.arange(len(labels))
         width = 0.35
 
         ax.bar(x - width / 2, real_dist, width, label='Real 2021', color='skyblue')
-        ax.bar(x + width / 2, gen_dist, width, label='Forecast 2021', color='orange')
+        ax.bar(x + width / 2, gen_dist, width, label='Forecast', color='orange')
 
         ax.set_xticks(x)
         ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=8)
-        ax.set_title(f"{prefix} (Categorical)")
-        ax.legend()
+        ax.set_title(f"{prefix}")
         plot_idx += 1
 
-    # Hide unused subplots
+    # Hide unused
     for i in range(plot_idx, len(axes)):
         axes[i].axis('off')
 
     plt.tight_layout()
-    plot_path = output_dir / "Validation_Forecast_Distributions.png"
+    plot_path = output_dir / "Validation_Forecast_Distributions_Resampled.png"
     plt.savefig(plot_path)
     print(f"   ✅ Distribution Subplots saved to: {plot_path}")
 # VISUALIZATION & TESTING ----------------------------------------------------------------------------------------------
@@ -2366,8 +2545,8 @@ if __name__ == '__main__':
     cen21_filtered2 = OUTPUT_DIR / "cen21_filtered2.csv"
 
     # --- Forecasted Files ---
-    cen25 = OUTPUT_DIR / "forecasted_population_2025.csv"
-    cen30 = OUTPUT_DIR / "forecasted_population_2030.csv"
+    cen25 = OUTPUT_DIR / "Generated/forecasted_population_2025.csv"
+    cen30 = OUTPUT_DIR / "Generated/forecasted_population_2030.csv"
 
     # --- Aligned Files ---
     aligned_CENSUS = OUTPUT_DIR_ALIGNED / "Aligned_Census_2025.csv"
@@ -2414,45 +2593,72 @@ if __name__ == '__main__':
     validate_vae_reconstruction(encoder, decoder, processed_data, demo_cols, bldg_cols, continuous_cols=['EMPIN', 'TOTINC', 'INCTAX', 'VALUE'], n_samples=10, output_dir=OUTPUT_DIR)
     """
     #FORECASTING -------------------------------------------------------------------------------------------------------
-    """"""
+    """
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
-    processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths,sample_frac=1)
+    processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths, sample_frac=1)
+
+    # Load Models
+    # Ensure 'Sampling' class is available for custom_objects
     encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
     decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
-    # 3. Train Temporal Drift
+
+    # 3. Train Temporal Drift (Cluster-Based)
     print("\n=== Step 3: Modeling Temporal Drift ===")
-    temporal_model, last_variance = train_temporal_model(encoder, processed_data, demo_cols, bldg_cols)
+    # UPDATED: Now returns the model + the full latent population + the last year
+    temporal_model, last_population_z, last_year = train_temporal_model(encoder, processed_data, demo_cols, bldg_cols)
 
     # 4. Generate Forecasts
     TARGET_YEARS = [2025, 2030]
-    N_SAMPLES = 1000
-    OUTPUT_DIR = Path(OUTPUT_DIR / "Generated") # Example path
+    N_SAMPLES = 2000
+    OUTPUT_DIR = Path(OUTPUT_DIR) / "Generated"
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     for year in TARGET_YEARS:
         print(f"\n=== Step 4: Forecasting for {year} ===")
-        # Generate
-        gen_raw, bldg_raw = generate_future_population(decoder, temporal_model, last_variance, processed_data, bldg_cols, target_year=year, n_samples=N_SAMPLES)
-        # Post-Process
-        df_forecast = post_process_generated_data(gen_raw, demo_cols, bldg_raw, bldg_cols, data_scalers)
+
+        # UPDATED: Pass last_population_z for resampling, and last_year for momentum calc
+        gen_raw, bldg_raw, _ = generate_future_population(
+            decoder,
+            temporal_model,
+            last_population_z,
+            last_year,
+            processed_data,
+            bldg_cols,
+            target_year=year,
+            n_samples=N_SAMPLES,
+            variance_factor=1.15
+        )
+
+        # UPDATED: Pass ref_df (processed_data) to enable Quantile Mapping for income tails
+        df_forecast = post_process_generated_data(
+            gen_raw,
+            demo_cols,
+            bldg_raw,
+            bldg_cols,
+            data_scalers,
+            ref_df=processed_data
+        )
+
         # Add Year
         df_forecast['YEAR'] = year
+
         # Save
         save_path = OUTPUT_DIR / f"forecasted_population_{year}.csv"
         df_forecast.to_csv(save_path, index=False)
         print(f"✅ Saved {year} forecast to: {save_path}")
         print(df_forecast.head())
-
+    """
     #VALIDATION OF FORECASTING_VISUAL ----------------------------------------------------------------------------------
-    """"""
+    """
     file_paths = {2006: cen06_filtered2, 2011: cen11_filtered2, 2016: cen16_filtered2, 2021: cen21_filtered2}
     processed_data, demo_cols, bldg_cols, data_scalers = prepare_data_for_generative_model(file_paths, sample_frac=1)
     encoder = keras.models.load_model(MODEL_DIR / 'cvae_encoder.keras', custom_objects={'Sampling': Sampling})
     decoder = keras.models.load_model(MODEL_DIR / 'cvae_decoder.keras')
     # Run Validation
     validate_forecast_trajectory(encoder, processed_data, demo_cols, bldg_cols, VALIDATION_FORECASTVIS_DIR)
-    validate_forecast_distributions(encoder=encoder, decoder=decoder, df_processed=processed_data, demo_cols=demo_cols,
-                                    bldg_cols=bldg_cols, scalers=data_scalers, output_dir=VALIDATION_FORECAST_DIR)
+    #validate_forecast_distributions(encoder=encoder, decoder=decoder, df_processed=processed_data, demo_cols=demo_cols,
+    #                                bldg_cols=bldg_cols, scalers=data_scalers, output_dir=VALIDATION_FORECAST_DIR)
+    """
     #ASSEMBLE HOUSEHOLD ------------------------------------------------------------------------------------------------
     """
     # --- Run Assembly for 2025 ---
@@ -2482,9 +2688,9 @@ if __name__ == '__main__':
     generate_full_expansion(df_matched, expander, expanded_path)
 
     print("\n✅ Workflow Complete.")
-    """
+
     #VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
-    """
+    """"""
     IO_DIR_ALIGNED = Path(OUTPUT_DIR_ALIGNED)
     IO_DIR_VALID = Path(VALIDATION_PR_MATCH_DIR)
     df_matched = pd.read_csv(IO_DIR_ALIGNED / "Matched_Population_Keys.csv")
@@ -2498,7 +2704,7 @@ if __name__ == '__main__':
     validate_matching_quality(df_matched, expander, save_path=(IO_DIR_VALID / "Validation_ProfileMatcher_2025.txt"))
 """
     #PROFILE MATCHER: POST-PROCESSING ----------------------------------------------------------------------------------
-    """
+    """    
     import pandas as pd
     from pathlib import Path
     # =============================================================================
@@ -2628,7 +2834,7 @@ if __name__ == '__main__':
         print(f"\n✅ Full Validation Report saved to: {report_path.name}")
     """
     #OCC to BEM input --------------------------------------------------------------------------------------------------
-    """ 
+    """"""
     IO_DIR = Path(OUTPUT_DIR)
     full_data_path = IO_DIR / "Full_data.csv"
     output_path = IO_DIR / "BEM_Schedules_2025.csv"
@@ -2666,5 +2872,5 @@ if __name__ == '__main__':
 
         print("\n✅ Step 4 Complete. Ready for EnergyPlus/Honeybee.")
         visualize_bem_distributions(df_bem, output_dir=output_path_vis)
-        """
+
 
