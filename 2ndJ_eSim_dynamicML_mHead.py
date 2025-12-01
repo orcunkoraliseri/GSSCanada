@@ -1628,171 +1628,221 @@ def validate_matching_quality(df_matched, expander, save_path=None):
         except Exception as e:
             print(f"\n❌ Error saving report: {e}")
 #PROFILE MATCHER: POST-PROCESSING --------------------------------------------------------------------------------------
-class DTypeRefiner:
+def merge_keys_into_forecast(df_forecast, df_keys):
     """
-    Refines coarse DTYPE categories (1, 2, 3) into detailed categories (1-8)
-    using STOCHASTIC SAMPLING and DERIVED FEATURES to improve accuracy.
+    Merges authoritative Census columns (CFSIZE, TOTINC) from the Keys file
+    into the Forecast file using 'AgentID'.
     """
+    print("\n🔗 Merging Keys (CFSIZE, TOTINC) into Forecast...")
 
+    # Validation
+    if 'AgentID' not in df_forecast.columns:
+        print("❌ Error: Forecast file missing 'AgentID'. Cannot merge keys.")
+        return df_forecast
+
+    # Select columns to retrieve
+    # We retrieve CFSIZE and TOTINC. We can also retrieve others if needed.
+    cols_to_retrieve = ['CFSIZE', 'TOTINC', 'CF_RP']
+    available_cols = [c for c in cols_to_retrieve if c in df_keys.columns]
+
+    if not available_cols:
+        print("⚠️ Warning: Keys file missing CFSIZE/TOTINC columns.")
+        return df_forecast
+
+    print(f"   Retrieved columns: {available_cols}")
+
+    # Prepare Lookup DataFrame
+    # df_keys is indexed 0..N. We assume AgentID in forecast corresponds to this index.
+    df_lookup = df_keys[available_cols].copy()
+    df_lookup['AgentID'] = df_lookup.index
+
+    # Merge
+    # We use 'left' merge to preserve all schedule rows
+    # We suffix existing columns in forecast with '_old' to verify overwrite
+    df_merged = df_forecast.merge(df_lookup, on='AgentID', how='left', suffixes=('_old', ''))
+
+    # Cleanup: If the merge created duplicate columns (e.g. TOTINC_old vs TOTINC),
+    # The new 'TOTINC' (from keys) is the one we want. We drop the _old version.
+    for col in available_cols:
+        old_col = f"{col}_old"
+        if old_col in df_merged.columns:
+            # If the Key value is NaN (rare), fallback to old value
+            df_merged[col] = df_merged[col].fillna(df_merged[old_col])
+            df_merged.drop(columns=[old_col], inplace=True)
+
+    print(f"   ✅ Merge complete. Forecast now has accurate {available_cols}")
+    return df_merged
+class DTypeRefiner:
     def __init__(self, output_dir):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.models = {}
 
-        # Base Features + Derived Features
-        self.base_features = ['BEDRM', 'ROOM', 'PR', 'HHSIZE', 'CONDO', 'REPAIR']
-        self.train_features = self.base_features + ['ROOM_PER_PERSON', 'BEDRM_RATIO']
+        self.base_features = ['BEDRM', 'ROOM', 'PR', 'HHSIZE', 'CONDO', 'REPAIR', 'TOTINC', 'CFSIZE']
+        self.train_features = self.base_features + ['ROOM_PER_PERSON', 'BEDRM_RATIO', 'INCOME_PER_PERSON']
 
-        self.dtype_labels = {
-            1: "Single-detached",
-            2: "Semi-detached",
-            3: "Row house",
-            4: "Duplex",
-            5: "Apt 5+ Storeys",
-            6: "Apt <5 Storeys",
-            7: "Other single-attached",
-            8: "Movable"
-        }
+    def _ensure_consistent_scaling(self, df, is_training=False):
+        if 'TOTINC' not in df.columns: return df
+
+        mean_inc = df['TOTINC'].mean()
+        max_inc = df['TOTINC'].max()
+
+        status = "Training" if is_training else "Forecast"
+        if mean_inc < 50 and max_inc < 50:
+            print(f"   ⚠️ [{status}] DETECTED LOG/SCALED INCOME (Mean={mean_inc:.2f}).")
+            print(f"      🔄 Converting Log -> Dollars (exp(x) - 1)...")
+            df['TOTINC'] = np.expm1(df['TOTINC'])
+
+        return df
 
     def _add_derived_features(self, df):
-        """
-        Creates ratio-based features to help distinguish similar housing types.
-        """
         df = df.copy()
-        # Avoid division by zero
+        cols_to_numeric = ['HHSIZE', 'ROOM', 'BEDRM', 'TOTINC', 'CFSIZE']
+        for c in cols_to_numeric:
+            if c in df.columns:
+                df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+
+        # Fallbacks
+        if 'CFSIZE' not in df.columns:
+            df['CFSIZE'] = df['HHSIZE'] if 'HHSIZE' in df.columns else 1
+
+        # Ratios
         df['HHSIZE'] = df['HHSIZE'].replace(0, 1)
         df['ROOM'] = df['ROOM'].replace(0, 1)
 
-        # 1. Crowding Metric: Rooms per Person
-        # (Row houses often have more space per person than Duplexes)
         df['ROOM_PER_PERSON'] = df['ROOM'] / df['HHSIZE']
-
-        # 2. Structural Metric: Bedroom to Room Ratio
-        # (Apartments often have higher bedroom ratios than Houses which have living/dining rooms)
         df['BEDRM_RATIO'] = df['BEDRM'] / df['ROOM']
+
+        if 'TOTINC' in df.columns:
+            df['INCOME_PER_PERSON'] = df['TOTINC'] / df['HHSIZE']
+        else:
+            df['INCOME_PER_PERSON'] = 0
 
         return df.fillna(0)
 
     def train_models(self, df_historic):
-        print(f"\n🧠 Training DTYPE Refinement Models (With Derived Features)...")
-
-        # Pre-process Historic Data
-        for col in self.base_features:
-            if col in df_historic.columns:
-                df_historic[col] = pd.to_numeric(df_historic[col], errors='coerce').fillna(0)
-
-        # Add the new "Smart" features
+        print(f"\n🧠 Training DTYPE Refinement Models...")
+        df_historic = self._ensure_consistent_scaling(df_historic, is_training=True)
         df_historic = self._add_derived_features(df_historic)
 
-        # --- MODEL A: APARTMENTS (2 -> 5, 6) ---
+        # --- MODEL A: APARTMENTS (Coarse 2 -> 5, 6) ---
         subset_apt = df_historic[df_historic['DTYPE'].isin([5, 6])]
         if len(subset_apt) > 100:
             clf_apt = RandomForestClassifier(
-                n_estimators=150,  # More trees
-                max_depth=15,  # Prevent overfitting to majority
-                min_samples_leaf=5,  # Smooth out noise
-                random_state=42,
-                class_weight='balanced'  # Critical for minority classes
+                n_estimators=200, max_depth=20, min_samples_leaf=4,
+                random_state=42, class_weight='balanced', n_jobs=-1
             )
             clf_apt.fit(subset_apt[self.train_features], subset_apt['DTYPE'])
             self.models['Apt'] = clf_apt
-            print(f"   ✅ Trained Apartment Splitter (n={len(subset_apt)})")
+            print(f"   ✅ Trained Apartment Splitter (n={len(subset_apt):,})")
 
-        # --- MODEL B: OTHER DWELLINGS (3 -> 2, 3, 4, 7, 8) ---
+        # --- MODEL B: OTHER DWELLINGS (Coarse 3 -> 2, 3, 4, 7, 8) ---
         subset_other = df_historic[df_historic['DTYPE'].isin([2, 3, 4, 7, 8])]
         if len(subset_other) > 100:
+            custom_weights = {2: 2.0, 3: 2.0, 4: 1.0, 7: 1.0, 8: 1.0}
             clf_other = RandomForestClassifier(
-                n_estimators=150,
-                max_depth=15,
-                min_samples_leaf=5,
-                random_state=42,
-                class_weight='balanced'
+                n_estimators=200, max_depth=20, min_samples_leaf=2,
+                random_state=42, class_weight=custom_weights, n_jobs=-1
             )
             clf_other.fit(subset_other[self.train_features], subset_other['DTYPE'])
             self.models['Other'] = clf_other
-            print(f"   ✅ Trained 'Other' Decoder (n={len(subset_other)})")
+            print(f"   ✅ Trained 'Other' Decoder (n={len(subset_other):,})")
 
     def apply_refinement(self, df_forecast):
-        print(f"\n✨ Applying Refinement with Enhanced Features...")
+        print(f"\n✨ Applying Refinement with Quota Calibration...")
 
-        # Generate the same features for the forecast data
+        df_forecast = self._ensure_consistent_scaling(df_forecast, is_training=False)
         df_enhanced = self._add_derived_features(df_forecast)
-        X = df_enhanced[self.train_features].fillna(0)
 
+        # Ensure features exist
+        missing = [c for c in self.train_features if c not in df_enhanced.columns]
+        if missing:
+            print(f"   ⚠️ Warning: Still missing features: {missing}. Filling 0.")
+            for c in missing: df_enhanced[c] = 0
+
+        X = df_enhanced[self.train_features].fillna(0)
         refined_dtype = df_forecast['DTYPE'].copy()
 
-        # --- APPLY MODEL A (Apartments) ---
+        # --- HELPER: Quota Sampling ---
+        def apply_quota_sampling(model, X_subset, mask_subset, target_ratios):
+            if mask_subset.sum() == 0: return
+
+            probs = model.predict_proba(X_subset)
+            classes = model.classes_
+            df_probs = pd.DataFrame(probs, columns=classes, index=X_subset.index)
+
+            final_assignments = pd.Series(index=X_subset.index, dtype=int)
+            total_n = len(X_subset)
+            available_indices = set(X_subset.index)
+
+            # Iterate through classes
+            for cls, ratio in target_ratios.items():
+                if cls not in df_probs.columns: continue
+                target_count = int(total_n * ratio)
+
+                if target_count > 0 and available_indices:
+                    # Pick top N most likely candidates
+                    candidates = df_probs.loc[list(available_indices), cls].sort_values(ascending=False)
+                    selected = candidates.head(target_count).index
+                    final_assignments.loc[selected] = cls
+                    available_indices -= set(selected)
+
+            # Fill remainder
+            if available_indices:
+                remaining = list(available_indices)
+                fallback = df_probs.loc[remaining].idxmax(axis=1)
+                final_assignments.loc[remaining] = fallback
+
+            return final_assignments
+
+        # --- APPLY MODEL A: APARTMENTS ---
         if 'Apt' in self.models:
             mask = (df_forecast['DTYPE'] == 2)
             if mask.sum() > 0:
-                probs = self.models['Apt'].predict_proba(X[mask])
-                classes = self.models['Apt'].classes_
-                # Stochastic Sample
-                choices = [np.random.choice(classes, p=p) for p in probs]
-                refined_dtype.loc[mask] = choices
-                print(f"   Refined {mask.sum()} Apartments (Stochastic)")
+                # Historic Split: 34% High Rise, 66% Low Rise
+                ratios_apt = {5: 0.34, 6: 0.66}
+                assignments = apply_quota_sampling(self.models['Apt'], X[mask], mask, ratios_apt)
+                refined_dtype.loc[mask] = assignments
+                print(f"   Refined {mask.sum():,} Apartments (Calibrated)")
 
-        # --- APPLY MODEL B (Other) ---
+        # --- APPLY MODEL B: OTHER DWELLINGS ---
         if 'Other' in self.models:
             mask = (df_forecast['DTYPE'] == 3)
             if mask.sum() > 0:
-                probs = self.models['Other'].predict_proba(X[mask])
-                classes = self.models['Other'].classes_
-                # Stochastic Sample
-                choices = [np.random.choice(classes, p=p) for p in probs]
-                refined_dtype.loc[mask] = choices
-                print(f"   Refined {mask.sum()} 'Other' dwellings (Stochastic)")
+                # Historic Split: Row(33%), Semi(29%), Duplex(29%), Mobile(7%), Other(2%)
+                ratios_other = {3: 0.33, 2: 0.29, 4: 0.29, 8: 0.07, 7: 0.02}
+                assignments = apply_quota_sampling(self.models['Other'], X[mask], mask, ratios_other)
+                refined_dtype.loc[mask] = assignments
+                print(f"   Refined {mask.sum():,} 'Other' dwellings (Calibrated)")
 
-        # Update DataFrame
-        df_forecast['DTYPE_Detailed'] = refined_dtype
         df_forecast['DTYPE'] = refined_dtype
-
+        df_forecast['DTYPE_Detailed'] = refined_dtype
         return df_forecast
 def validate_refinement_model(historic_input, forecast_refined_path, output_dir):
-    # --- Setup Output Directory & Logging ---
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-
     report_path = output_dir / "Validation_Report_DTYPE.txt"
     report_buffer = []
 
     def log(message=""):
-        """Helper to print to console and save to buffer."""
         print(message)
         report_buffer.append(str(message))
 
     log(f"\n{'=' * 60}")
-    log(f"🕵️‍♂️ VALIDATING DTYPE REFINEMENT LOGIC")
-    log(f"{'=' * 60}")
-    log(f"   📂 Output Folder: {output_dir}")
+    log(f"🕵️‍♂️ VALIDATING DTYPE REFINEMENT")
 
-    # 1. Load Data
-    log("\n1. Loading Datasets...")
-
-    # Handle List of Paths vs Single Path
     if isinstance(historic_input, list):
-        log(f"   Loading {len(historic_input)} historic files...")
-        dfs = []
-        for p in historic_input:
-            dfs.append(pd.read_csv(p, low_memory=False))
+        dfs = [pd.read_csv(p, low_memory=False) for p in historic_input]
         df_hist = pd.concat(dfs, ignore_index=True)
     else:
         df_hist = pd.read_csv(historic_input, low_memory=False)
 
     df_future = pd.read_csv(forecast_refined_path, low_memory=False)
 
-    log(f"   Historic Data: {len(df_hist):,} rows")
-    log(f"   Refined Forecast: {len(df_future):,} rows")
-
-    # Features used in Step 2b
-    features = ['BEDRM', 'ROOM', 'PR', 'HHSIZE', 'CONDO', 'REPAIR', 'ROOM_PER_PERSON', 'BEDRM_RATIO']
-
-    # Create derived features for validation if missing in historic
-    if 'ROOM_PER_PERSON' not in df_hist.columns:
-        df_hist['HHSIZE'] = df_hist['HHSIZE'].replace(0, 1)
-        df_hist['ROOM'] = df_hist['ROOM'].replace(0, 1)
-        df_hist['ROOM_PER_PERSON'] = df_hist['ROOM'] / df_hist['HHSIZE']
-        df_hist['BEDRM_RATIO'] = df_hist['BEDRM'] / df_hist['ROOM']
+    # Check stats
+    if 'TOTINC' in df_hist.columns and 'TOTINC' in df_future.columns:
+        log(f"   Stats Check: Historic TOTINC Mean: {df_hist['TOTINC'].mean():.2f}")
+        log(f"   Stats Check: Forecast TOTINC Mean: {df_future['TOTINC'].mean():.2f}")
 
     dtype_labels = {
         1: "Single-detached", 2: "Semi-detached", 3: "Row house",
@@ -1800,74 +1850,21 @@ def validate_refinement_model(historic_input, forecast_refined_path, output_dir)
         7: "Other single-attached", 8: "Movable"
     }
 
-    # =========================================================
-    # PART A: INTERNAL VALIDITY
-    # =========================================================
-    log(f"\n2. INTERNAL VALIDATION (Train/Test Split)...")
-
-    # Filter for complex categories 'Other' (2,3,4,7,8)
-    mask_other = df_hist['DTYPE'].isin([2, 3, 4, 7, 8])
-    X = df_hist.loc[mask_other, features].fillna(0)
-    y = df_hist.loc[mask_other, 'DTYPE']
-
-    if len(X) > 100:
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        clf = RandomForestClassifier(n_estimators=50, random_state=42, class_weight='balanced')
-        clf.fit(X_train, y_train)
-        preds = clf.predict(X_test)
-
-        report = classification_report(y_test, preds, output_dict=True, zero_division=0)
-        log(f"   👉 Accuracy on 'Other' Dwellings: {report['accuracy']:.2%}")
-        log("   👉 Breakdown by Class (Precision/Recall):")
-        for cls, metrics in report.items():
-            if cls.isdigit():
-                label = dtype_labels.get(int(cls), cls)
-                log(f"      - {label:<22}: Precision={metrics['precision']:.2f}, Recall={metrics['recall']:.2f}")
-    else:
-        log("   ⚠️ Not enough historic data to validate model performance.")
-
-    # =========================================================
-    # PART B: EXTERNAL VALIDITY
-    # =========================================================
-    log(f"\n3. EXTERNAL VALIDATION (Distribution Comparison)...")
-
     dist_hist = df_hist['DTYPE'].value_counts(normalize=True).sort_index() * 100
     dist_fut = df_future['DTYPE'].value_counts(normalize=True).sort_index() * 100
 
     df_comp = pd.DataFrame({
-        'Historic (Combined)': dist_hist,
-        'Forecast (2030 Refined)': dist_fut
+        'Historic': dist_hist,
+        'Forecast': dist_fut
     }).fillna(0)
-
     df_comp.index = [dtype_labels.get(i, f"Code {i}") for i in df_comp.index]
 
     log("\n   --- Distribution Comparison (%) ---")
-    log(df_comp.round(1).to_string())
+    log(df_comp.round(2).to_string())
 
-    # =========================================================
-    # PART C: VISUALIZATION
-    # =========================================================
-    log(f"\n4. GENERATING PLOT...")
-    plt.figure(figsize=(12, 6))
-    df_plot = df_comp.reset_index().melt(id_vars='index', var_name='Dataset', value_name='Percentage')
-
-    sns.barplot(data=df_plot, x='index', y='Percentage', hue='Dataset', palette='viridis')
-    plt.title("Dwelling Type Distribution: Historic Baseline vs. Refined Forecast")
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-
-    # Save Plot to Specific Folder
-    plot_path = output_dir / "Validation_DTYPE_Refinement.png"
-    plt.savefig(plot_path)
-    log(f"   ✅ Plot saved to: {plot_path}")
-
-    # --- SAVE TEXT REPORT ---
-    try:
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(report_buffer))
-        print(f"\n✅ Validation Report saved to: {report_path}")
-    except Exception as e:
-        print(f"❌ Error saving text report: {e}")
+    # Save Report
+    with open(report_path, "w") as f:
+        f.write("\n".join(report_buffer))
 #HOUSEHOLD AGGREGATION -------------------------------------------------------------------------------------------------
 class HouseholdAggregator:
     """
@@ -2688,9 +2685,9 @@ if __name__ == '__main__':
     generate_full_expansion(df_matched, expander, expanded_path)
 
     print("\n✅ Workflow Complete.")
-
+    """
     #VALIDATION: PROFILE MATCHER ---------------------------------------------------------------------------------------
-    """"""
+    """
     IO_DIR_ALIGNED = Path(OUTPUT_DIR_ALIGNED)
     IO_DIR_VALID = Path(VALIDATION_PR_MATCH_DIR)
     df_matched = pd.read_csv(IO_DIR_ALIGNED / "Matched_Population_Keys.csv")
@@ -2703,8 +2700,8 @@ if __name__ == '__main__':
     # Run Validation
     validate_matching_quality(df_matched, expander, save_path=(IO_DIR_VALID / "Validation_ProfileMatcher_2025.txt"))
 """
-    #PROFILE MATCHER: POST-PROCESSING ----------------------------------------------------------------------------------
-    """    
+    #PROFILE MATCHER: POST-PROCESSING & VALIDATION OF POST-PROCESSING --------------------------------------------------
+    """
     import pandas as pd
     from pathlib import Path
     # =============================================================================
@@ -2716,68 +2713,51 @@ if __name__ == '__main__':
     HISTORIC_DATA_PATHS = [cen06_filtered, cen11_filtered]
     # 2. The "Student": Step 2 Output (Has coarse DTYPE 1-3)
     INPUT_FORECAST_PATH = IO_DIR / "Full_Expanded_Schedules.csv"
+    # 2. The Source of Truth (Matched Keys with original Census attributes)
+    INPUT_KEYS_PATH = IO_DIR / "Matched_Population_Keys.csv"
     # 3. The Result: Input for Step 3
     OUTPUT_REFINED_PATH = IO_DIR / "Full_Expanded_Schedules_Refined.csv"
     VALIDATION_DIR = IO_DIR / "Validation_ProfileMatcher_PostProcessing"
     # =============================================================================
     # EXECUTION
     # =============================================================================
-    if __name__ == "__main__":
-        print(f"\n🚀 Starting Step 2b: DTYPE Refinement (Multi-Year Training)...")
+    print(f"\n🚀 Starting Step 2b: DTYPE Refinement (Merged Strategy)...")
+    # 1. Load Forecast
+    if not INPUT_FORECAST_PATH.exists():
+        print(f"❌ Error: Forecast file not found at {INPUT_FORECAST_PATH}")
+        exit()
+    df_forecast = pd.read_csv(INPUT_FORECAST_PATH, low_memory=False)
 
-        # 1. Validation Checks
-        if not INPUT_FORECAST_PATH.exists():
-            print(f"❌ Error: Forecast file not found at: {INPUT_FORECAST_PATH}")
-            print("   Please run Step 2 (Expansion) first.")
-            exit()
+    # 2. Merge Keys (The Upgrade)
+    if INPUT_KEYS_PATH.exists():
+        df_keys = pd.read_csv(INPUT_KEYS_PATH, low_memory=False)
+        df_forecast = merge_keys_into_forecast(df_forecast, df_keys)
+    else:
+        print("⚠️ Keys file not found. Falling back to deriving CFSIZE/TOTINC.")
 
-        # 2. Load and Merge Historic Data
-        print("1. Loading Datasets...")
-        historic_dfs = []
+    # 3. Load Historic Data for Training
+    print("Loading Historic Data...")
+    historic_dfs = []
+    for path in HISTORIC_DATA_PATHS:
+        if path.exists():
+            historic_dfs.append(pd.read_csv(path, low_memory=False))
 
-        for path in HISTORIC_DATA_PATHS:
-            p = Path(path)
-            if p.exists():
-                print(f"   - Loading: {p.name} ...")
-                df = pd.read_csv(p, low_memory=False)
-                historic_dfs.append(df)
-            else:
-                print(f"   ⚠️ Warning: File not found: {path}")
+    if historic_dfs:
+        df_hist = pd.concat(historic_dfs, ignore_index=True)
 
-        if not historic_dfs:
-            print("❌ Error: No valid historic data found.")
-            exit()
+        # 4. Train & Apply
+        refiner = DTypeRefiner(IO_DIR)
+        refiner.train_models(df_hist)
 
-        # Concatenate all historic years into one big training set
-        df_hist_combined = pd.concat(historic_dfs, ignore_index=True)
-        print(f"   -> Combined Training Set: {len(df_hist_combined):,} rows")
-
-        # Load Forecast
-        df_forecast = pd.read_csv(INPUT_FORECAST_PATH, low_memory=False)
-        print(f"   Forecast Data: {len(df_forecast):,} rows")
-
-        # 3. Initialize & Train
-        # The Refiner will now learn from the combined patterns of 06 and 11
-        refiner = DTypeRefiner(output_dir=IO_DIR)
-        refiner.train_models(df_hist_combined)
-
-        # 4. Apply Refinement
         df_refined = refiner.apply_refinement(df_forecast)
 
-        # 5. Save
-        print(f"2. Saving Refined Data to: {OUTPUT_REFINED_PATH.name}...")
         df_refined.to_csv(OUTPUT_REFINED_PATH, index=False)
+        print(f"✅ Saved Refined Data to: {OUTPUT_REFINED_PATH}")
 
-        # 6. Verification
-        print("\n--- Verification: New DTYPE Distribution ---")
-        dist = df_refined['DTYPE'].value_counts().sort_index()
-        for code, count in dist.items():
-            label = refiner.dtype_labels.get(code, "Unknown")
-            print(f"   Code {code} ({label}): {count:,} rows")
-
-        print("\n✅ Step 2b Complete.")
-
-    validate_refinement_model(HISTORIC_DATA_PATHS, OUTPUT_REFINED_PATH, VALIDATION_DIR)
+        # 5. Validate
+        validate_refinement_model(HISTORIC_DATA_PATHS, OUTPUT_REFINED_PATH, VALIDATION_DIR)
+    else:
+        print("❌ No historic data found for training.")
     """
     #HOUSEHOLD AGGREGATION ---------------------------------------------------------------------------------------------
     """
@@ -2872,5 +2852,6 @@ if __name__ == '__main__':
 
         print("\n✅ Step 4 Complete. Ready for EnergyPlus/Honeybee.")
         visualize_bem_distributions(df_bem, output_dir=output_path_vis)
+
 
 
