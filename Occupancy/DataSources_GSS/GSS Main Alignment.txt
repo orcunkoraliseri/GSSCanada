@@ -1,0 +1,296 @@
+====================================================================================================
+GSS MAIN COLUMN AVAILABILITY SUMMARY
+====================================================================================================
+
+COLS_MAIN columns checked against GSSMain_2005, GSSMain_2015, GSSMain_2022
+
+----------------------------------------------------------------------------------------------------
+COLUMN: PUMFID
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - PUMFID
+  2015: FOUND - PUMFID
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: RECID
+        (RECID has 19,597 unique values for 19,597 rows - verified as unique identifier)
+
+----------------------------------------------------------------------------------------------------
+COLUMN: PRV
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - PRV
+  2015: FOUND - PRV
+  2005: FOUND - PRV
+
+----------------------------------------------------------------------------------------------------
+COLUMN: REGION
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - REGION
+  2015: MISSING
+        CAN BE DERIVED FROM: PRV (Province)
+        Mapping: REGION 1 (Atlantic) = PRV 10,11,12,13
+                 REGION 2 (Quebec) = PRV 24
+                 REGION 3 (Ontario) = PRV 35
+                 REGION 4 (Prairies) = PRV 46,47,48
+                 REGION 5 (BC) = PRV 59
+  2005: FOUND - REGION
+
+----------------------------------------------------------------------------------------------------
+COLUMN: DDAY
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - DDAY
+        Unique values: [1, 2, 3, 4, 5, 6, 7] (day of week: 1=Sun...7=Sat)
+  2015: MISSING
+        ALTERNATIVE: DVTDAY
+        Unique values: [1, 2, 3] (1=Weekday, 2=Saturday, 3=Sunday)
+  2005: MISSING
+        ALTERNATIVE: DVTDAY
+        Unique values: [1, 2, 3] (1=Weekday, 2=Saturday, 3=Sunday)
+        
+  Note: DDAY provides specific day of week, DVTDAY provides day type category only
+
+----------------------------------------------------------------------------------------------------
+COLUMN: HSDSIZEC
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - HSDSIZEC
+  2015: FOUND - HSDSIZEC
+  2005: FOUND - HSDSIZEC
+
+----------------------------------------------------------------------------------------------------
+COLUMN: AGEGR10
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - AGEGR10
+  2015: FOUND - AGEGR10
+  2005: FOUND - AGEGR10
+
+----------------------------------------------------------------------------------------------------
+COLUMN: GENDER2
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - GENDER2
+        Unique values: [1, 2] (1=Male: 5489, 2=Female: 6847)
+  2015: MISSING
+        CONFIRMED ALTERNATIVE: SEX
+        Unique values: [1, 2] (same coding as GENDER2)
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: sex (lowercase)
+        Unique values: [1, 2] (1=Male: 8621, 2=Female: 10976)
+        
+  Note: SEXPR also exists but has 3 values [0, 1, 2] - likely for spouse/partner
+
+----------------------------------------------------------------------------------------------------
+COLUMN: MARSTAT
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - MARSTAT
+        Unique values: [1, 2, 3, 4, 5, 6, 99]
+  2015: FOUND - MARSTAT
+        Unique values: [1, 2, 3, 4, 5, 6]
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: marstat (lowercase)
+        Unique values: [1, 2, 3, 4, 5, 6, 8, 9]
+        
+  Note: Value coding appears consistent (1=Married, 2=Common-law, 3=Widowed, etc.)
+        2005 uses 8,9 for special codes; 2022 uses 99
+
+----------------------------------------------------------------------------------------------------
+COLUMN: LAN_01
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - LAN_01
+        Unique values: [1, 2, 3, 4, 9]
+        (1=English, 2=French, 3=Both, 4=Other, 9=Not stated)
+  2015: FOUND - LAN_01
+        Unique values: [1, 2, 3, 4, 7, 8, 9]
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: LANHSDC (Language at Home - Derived Code)
+        Unique values: [1, 2, 3, 8, 9]
+        (1=English, 2=French, 3=Both, 8=Don't know, 9=Not stated)
+        
+  Note: All represent language spoken at home with similar coding
+
+----------------------------------------------------------------------------------------------------
+COLUMN: EDC_10
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - EDC_10 (School Attendance)
+        Unique values: [1, 2, 9]
+        (1=Yes attending: 475, 2=No: 11220, 9=Not stated: 641)
+  2015: MISSING
+        POSSIBLE ALTERNATIVE: ATT_120
+        Unique values: [1, 2, 3, 4, 7, 8, 9]
+        Note: Different coding - may represent different attendance categories
+  2005: MISSING
+        POSSIBLE ALTERNATIVE: EDUSTAT (Education Status)
+        Unique values: [1, 2, 7, 8, 9]
+        (1=Attending: 1252, 2=Not attending: 97, 7=N/A: 18195, 8=DK, 9=NS)
+        
+  WARNING: These columns may not be directly equivalent - verify survey documentation
+
+----------------------------------------------------------------------------------------------------
+COLUMN: ED_05
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - ED_05 (Highest Education/Degree)
+        Unique values: [1, 2, 3, 4, 5, 6, 7, 99]
+        (Likely: 1=Less than HS, 2=HS, 3=Some post-sec, 4=College, 5=Univ below BA, 
+         6=Bachelor's, 7=Above Bachelor's, 99=Not stated)
+  2015: MISSING
+        CONFIRMED ALTERNATIVE: EHG_ALL (Education Highest - All)
+        Unique values: [1, 2, 3, 4, 5, 6, 7, 97, 98, 99]
+        Distribution matches ED_05 pattern very well
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: EDU5 (5-category education)
+        Unique values: [1, 2, 3, 4, 5, 8, 9]
+        (1=Less than HS: 4302, 2=HS: 4839, 3=Some post-sec: 2880, 
+         4=College/Trade: 3214, 5=University: 4106)
+         
+  Note: EDU10 also available in 2005 for more detailed 10-category breakdown
+
+----------------------------------------------------------------------------------------------------
+COLUMN: NOCLBR_Y
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - NOCLBR_Y (National Occupational Classification - 10 categories)
+        Unique values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 95, 96, 99]
+        Top counts: 96 (Not in LF): 5015, 2: 1469, 7: 1139, 5: 956
+  2015: MISSING
+        CONFIRMED ALTERNATIVE: NOC1110Y
+        Unique values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 95, 96, 97, 98, 99]
+        Top counts: 96: 6605, 7: 2209, 2: 1881, 5: 1469
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: SOC91C10 (SOC 1991 - 10 categories)
+        Unique values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 97, 98, 99]
+        Top counts: 97 (N/A): 6158, 7: 3258, 2: 2442
+        
+  Note: All use 10-category occupation coding. 2005 uses SOC91 (older classification)
+        vs NOC (newer). Categories should be comparable but verify with documentation.
+
+----------------------------------------------------------------------------------------------------
+COLUMN: NAIC22CY
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - NAIC22CY (NAICS 2022 - 20 industry categories)
+        Unique values: [1-12, 14-20, 95, 96, 99]
+        Top counts: 96 (Not in LF): 5015, 16: 1070, 12: 793, 15: 625
+  2015: MISSING
+        CONFIRMED ALTERNATIVE: NAIC12CY (NAICS 2012 - 20 categories)
+        Unique values: [1-12, 14-20, 95, 96, 97, 98, 99]
+        Top counts: 96: 6605, 16: 1357, 7: 1058, 15: 931
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: NAICS2002_C16 (NAICS 2002 - 16 categories)
+        Unique values: [1-16, 97, 98, 99]
+        Top counts: 97 (N/A): 6158, 6: 1835, 12: 1558, 5: 1306
+        
+  Note: All use NAICS industry classification but different versions/years.
+        2022/2015 use 20 categories (missing 13), 2005 uses 16 categories.
+        Category numbers are NOT directly comparable - need crosswalk.
+
+----------------------------------------------------------------------------------------------------
+COLUMN: ACT7DAYC
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - ACT7DAYC (Activity in last 7 days - Labor Force Status)
+        Unique values: [1, 2, 3, 4, 5, 9]
+        (1=Employed/worked: 6152, 2=Employed/absent: 220, 3=Unemployed: 875,
+         4=Not in LF: 3875, 5=Retired: 726, 9=Not stated: 488)
+  2015: MISSING
+        CONFIRMED ALTERNATIVE: ACT7DAYS
+        Unique values: [1, 2, 3, 4, 5, 6, 97, 98, 99]
+        (1=Worked: 8471, 5=Not in LF: 4985, 4=Retired: 1207, 6=Other: 1183)
+  2005: MISSING
+        CONFIRMED ALTERNATIVE: ACT7DAYS
+        Unique values: [1, 2, 3, 4, 5, 6, 8, 9]
+        (1=Worked: 10430, 5=Not in LF: 3703, 4=Retired: 2518, 3=Unemployed: 1403)
+        
+  Note: Similar coding across years but number of categories varies (5-6 + specials).
+        ACT7DAYS_PR also available in 2005 for spouse/partner.
+
+----------------------------------------------------------------------------------------------------
+COLUMN: WET_120
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - WET_120 (Class of Worker / Employment Type)
+        Unique values: [1, 2, 3, 6, 9]
+        (1=Employee: 5976, 2=Self-employed: 1275, 3=Unpaid family: 28,
+         6=Not in LF: 5015, 9=Not stated: 42)
+  2015: MISSING
+        NO DIRECT EQUIVALENT FOUND
+        WET_110 = weeks worked (52 categories) - different variable
+        WET_171 = hours/days worked - different variable
+  2005: MISSING
+        NO DIRECT EQUIVALENT FOUND
+        
+  WARNING: Class of worker variable not available in 2015/2005 GSS Time Use.
+           May need to derive from other employment indicators or exclude.
+
+----------------------------------------------------------------------------------------------------
+COLUMN: WHWD140G
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - WHWD140G (Usual Hours Worked - CATEGORICAL)
+        Unique values: [1, 2, 3, 4, 5, 6, 7, 8, 96, 99]
+        (1-8 = hour range categories, 96=Not in LF: 5035, 99=NS: 1402)
+        Top: 4=2089, 3=1268, 5=525
+  2015: MISSING
+        POSSIBLE ALTERNATIVE: WHWD140C (Actual Hours - CONTINUOUS)
+        Unique values: 0-75+ (actual hours per week)
+        Top counts: 99 (NS): 6817, 40hrs: 2846, 37hrs: 809, 50hrs: 776
+  2005: MISSING
+        NO DIRECT EQUIVALENT FOUND
+        
+  WARNING: 2022 uses 8 CATEGORIES (ranges), 2015 uses ACTUAL HOURS.
+           Need to recode 2015 continuous hours into 2022 categories to align.
+
+----------------------------------------------------------------------------------------------------
+COLUMN: ATT_150C
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - ATT_150C
+  2015: MISSING
+        Possible alternatives: ATT_120
+  2005: MISSING - No similar columns found
+
+----------------------------------------------------------------------------------------------------
+COLUMN: CTW_140I
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - CTW_140I
+  2015: FOUND - CTW_140I
+  2005: MISSING
+        Possible alternatives: WORKPAID
+
+----------------------------------------------------------------------------------------------------
+COLUMN: INC_C
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - INC_C
+  2015: MISSING - No similar columns found
+  2005: MISSING - No similar columns found
+
+----------------------------------------------------------------------------------------------------
+COLUMN: LUC_RST
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - LUC_RST
+  2015: FOUND - LUC_RST
+  2005: FOUND - LUC_RST
+
+----------------------------------------------------------------------------------------------------
+COLUMN: PHSDFLG
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - PHSDFLG
+  2015: FOUND - PHSDFLG
+  2005: MISSING - No similar columns found
+
+----------------------------------------------------------------------------------------------------
+COLUMN: CXRFLAG
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - CXRFLAG
+  2015: FOUND - CXRFLAG
+  2005: MISSING
+        Possible alternatives: CHRFLAG
+
+----------------------------------------------------------------------------------------------------
+COLUMN: PARNUM
+----------------------------------------------------------------------------------------------------
+  2022: FOUND - PARNUM
+  2015: FOUND - PARNUM
+  2005: MISSING - No similar columns found
+
+====================================================================================================
+SUMMARY
+====================================================================================================
+
+Present in ALL 3 datasets (4):
+  PRV, HSDSIZEC, AGEGR10, LUC_RST
+
+Present in 2022 and 2015 only (7):
+  PUMFID, MARSTAT, LAN_01, CTW_140I, PHSDFLG, CXRFLAG, PARNUM
+
+Present ONLY in 2022 (12):
+  REGION, DDAY, GENDER2, EDC_10, ED_05, NOCLBR_Y, NAIC22CY, ACT7DAYC, WET_120, WHWD140G, ATT_150C, INC_C
