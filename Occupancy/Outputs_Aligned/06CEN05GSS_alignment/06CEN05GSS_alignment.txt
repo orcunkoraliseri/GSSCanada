@@ -1,0 +1,353 @@
+====================================================================================================
+2005 GSS-CENSUS COLUMN ALIGNMENT
+====================================================================================================
+
+GSS_2005 (GSS_2005_Merged_Episodes.csv): 333654 rows, 30 columns
+CENSUS_2006 (2006_LINKED.csv): 220588 rows, 37 columns
+
+----------------------------------------------------------------------------------------------------
+SUMMARY
+----------------------------------------------------------------------------------------------------
+
+MATCHING COLUMNS (11):
+  AGEGRP, ATTSCH, CMA, HHSIZE, KOL, LFTAG, MARSTH, NOCS, PR, SEX, TOTINC
+
+GSS ONLY COLUMNS (19):
+  Alone, Children, DDAY, EPINO, Friends, HDGREE, NAICS, Others, REGION, Spouse, WGHT_EPI, end, occACT, occID, occPRE, otherHHs, otherInFAMs, parents, start
+
+CENSUS ONLY COLUMNS (26):
+  BEDRM, BUILT, CFSIZE, CFSTAT, CF_ID, CF_RP, CIP, CITIZEN, CONDO, COW, DTYPE, EFSIZE, EF_ID, EMPIN, GENSTAT, HH_ID, HRSWRK, INCTAX, MODE, PID, POWST, PP_ID, REPAIR, ROOM, SIM_HH_ID, VALUE
+
+====================================================================================================
+MATCHING COLUMNS - UNIQUE VALUE COMPARISON
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+COLUMN: AGEGRP
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 7 unique values
+    Values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+    Sample distribution:
+      3.0: 68447
+      4.0: 62254
+      2.0: 52952
+      5.0: 50756
+      1.0: 39011
+
+  CENSUS_2006:
+    Count: 11 unique values
+    Values: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    Sample distribution:
+      11: 33343
+      9: 21999
+      8: 21917
+      12: 21084
+      10: 20190
+
+  COMPARISON:
+    Common values: 5
+    GSS only values: 2
+      [1.0, 2.0]
+    Census only values: 6
+      [8, 9, 10, 11, 12, 13]
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: ATTSCH
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 5 unique values
+    Values: [1.0, 2.0, 7.0, 8.0, 9.0]
+    Sample distribution:
+      7.0: 311028
+      1.0: 20404
+      2.0: 1498
+      8.0: 690
+      9.0: 34
+
+  CENSUS_2006:
+    Count: 2 unique values
+    Values: [1, 2]
+    Sample distribution:
+      1: 183961
+      2: 36627
+
+  COMPARISON:
+    Common values: 2
+    GSS only values: 3
+      [7.0, 8.0, 9.0]
+    Census only values: 0
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: CMA
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 3 unique values
+    Values: [1.0, 2.0, 3.0]
+    Sample distribution:
+      1.0: 250851
+      2.0: 72354
+      3.0: 10449
+
+  CENSUS_2006:
+    Count: 6 unique values
+    Values: [462, 535, 825, 835, 933, 999]
+    Sample distribution:
+      999: 137717
+      535: 30486
+      462: 25900
+      933: 12918
+      825: 6869
+
+  COMPARISON:
+    Common values: 0
+    GSS only values: 3
+      [1.0, 2.0, 3.0]
+    Census only values: 6
+      [462, 535, 825, 835, 933, 999]
+
+  STATUS: NO MATCH - completely different values
+
+----------------------------------------------------------------------------------------------------
+COLUMN: HHSIZE
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 6 unique values
+    Values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+    Sample distribution:
+      2.0: 113316
+      1.0: 86761
+      3.0: 53833
+      4.0: 53383
+      5.0: 19337
+
+  CENSUS_2006:
+    Count: 7 unique values
+    Values: [1, 2, 3, 4, 5, 6, 7]
+    Sample distribution:
+      2: 114634
+      3: 42442
+      1: 37119
+      4: 21950
+      5: 3982
+
+  COMPARISON:
+    Common values: 6
+    GSS only values: 0
+    Census only values: 1
+      [7]
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: KOL
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 5 unique values
+    Values: [1.0, 2.0, 3.0, 8.0, 9.0]
+    Sample distribution:
+      1.0: 244439
+      2.0: 61008
+      3.0: 24954
+      8.0: 3031
+      9.0: 222
+
+  CENSUS_2006:
+    Count: 4 unique values
+    Values: [1, 2, 3, 4]
+    Sample distribution:
+      1: 145538
+      3: 42513
+      2: 30092
+      4: 2445
+
+  COMPARISON:
+    Common values: 3
+    GSS only values: 2
+      [8.0, 9.0]
+    Census only values: 1
+      [4]
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: LFTAG
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 8 unique values
+    Values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0]
+    Sample distribution:
+      1.0: 174848
+      5.0: 63315
+      4.0: 47280
+      3.0: 22651
+      6.0: 16161
+
+  CENSUS_2006:
+    Count: 14 unique values
+    Values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    Sample distribution:
+      1: 129737
+      13: 45966
+      14: 16398
+      12: 6526
+      11: 6280
+
+  COMPARISON:
+    Common values: 8
+    GSS only values: 0
+    Census only values: 6
+      [7, 10, 11, 12, 13, 14]
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: MARSTH
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 8 unique values
+    Values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0]
+    Sample distribution:
+      1.0: 158430
+      6.0: 81066
+      3.0: 28414
+      2.0: 28069
+      5.0: 24643
+
+  CENSUS_2006:
+    Count: 3 unique values
+    Values: [1, 2, 3]
+    Sample distribution:
+      2: 105555
+      1: 75446
+      3: 39587
+
+  COMPARISON:
+    Common values: 3
+    GSS only values: 5
+      [4.0, 5.0, 6.0, 8.0, 9.0]
+    Census only values: 0
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: NOCS
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 13 unique values
+    Values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 97.0, 98.0, 99.0]
+    Sample distribution:
+      97.0: 104453
+      7.0: 55899
+      2.0: 44229
+      8.0: 25044
+      5.0: 20515
+
+  CENSUS_2006:
+    Count: 11 unique values
+    Values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 99]
+    Sample distribution:
+      99: 64742
+      7: 37635
+      2: 28427
+      8: 23810
+      1: 14538
+
+  COMPARISON:
+    Common values: 11
+    GSS only values: 2
+      [97.0, 98.0]
+    Census only values: 0
+
+  STATUS: PARTIAL MATCH - some values differ
+
+----------------------------------------------------------------------------------------------------
+COLUMN: PR
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 10 unique values
+    Values: [10.0, 11.0, 12.0, 13.0, 24.0, 35.0, 46.0, 47.0, 48.0, 59.0]
+    Sample distribution:
+      35.0: 94655
+      24.0: 64825
+      59.0: 37907
+      48.0: 29983
+      10.0: 20516
+
+  CENSUS_2006:
+    Count: 6 unique values
+    Values: [1, 2, 3, 4, 5, 6]
+    Sample distribution:
+      3: 81697
+      2: 56599
+      4: 36883
+      5: 27161
+      1: 17687
+
+  COMPARISON:
+    Common values: 0
+    GSS only values: 10
+      [10.0, 11.0, 12.0, 13.0, 24.0, 35.0, 46.0, 47.0, 48.0, 59.0]
+    Census only values: 6
+      [1, 2, 3, 4, 5, 6]
+
+  STATUS: NO MATCH - completely different values
+
+----------------------------------------------------------------------------------------------------
+COLUMN: SEX
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 2 unique values
+    Values: [1.0, 2.0]
+    Sample distribution:
+      2.0: 196323
+      1.0: 137331
+
+  CENSUS_2006:
+    Count: 2 unique values
+    Values: [1, 2]
+    Sample distribution:
+      1: 113577
+      2: 107011
+
+  COMPARISON:
+    Common values: 2
+    GSS only values: 0
+    Census only values: 0
+
+  STATUS: EXACT MATCH
+
+----------------------------------------------------------------------------------------------------
+COLUMN: TOTINC
+----------------------------------------------------------------------------------------------------
+  GSS_2005:
+    Count: 14 unique values
+    Values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 98.0, 99.0]
+    Sample distribution:
+      98.0: 45472
+      6.0: 37838
+      7.0: 36993
+      99.0: 33021
+      8.0: 27709
+
+  CENSUS_2006:
+    Count: 203 unique values
+    Values: [-50000, -48000, -47000, -45000, -44000, -43000, -42000, -41000, -40000, -38000, -37000, -36000, -35000, -34000, -32000]...[527319, 602284, 774387, 836251, 1143655]
+    Sample distribution:
+      0: 8783
+      1000: 4845
+      10000: 4758
+      14000: 4709
+      15000: 4599
+
+  COMPARISON:
+    Common values: 1
+    GSS only values: 13
+    Census only values: 202
+
+  STATUS: PARTIAL MATCH - some values differ
+

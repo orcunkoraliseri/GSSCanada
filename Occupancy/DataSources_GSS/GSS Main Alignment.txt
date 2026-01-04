@@ -233,25 +233,56 @@ COLUMN: WHWD140G
 ----------------------------------------------------------------------------------------------------
 COLUMN: ATT_150C
 ----------------------------------------------------------------------------------------------------
-  2022: FOUND - ATT_150C
+  2022: FOUND - ATT_150C (Commuting Mode / Transportation to Work)
+        Unique values: [1, 2, 3, 4, 5, 6, 99]
+        (1=Car driver: 9285, 2=Car passenger: 961, 3=Public transit: 663,
+         4=Walk: 550, 5=Bicycle: 120, 6=Other: 132, 99=NS: 625)
   2015: MISSING
-        Possible alternatives: ATT_120
-  2005: MISSING - No similar columns found
+        POSSIBLE ALTERNATIVE: ATT_120
+        Unique values: [1, 2, 3, 4, 7, 8, 9]
+        (1=Most common: 14079, 4: 1377, 2: 1103, 9 NS: 409)
+        Note: Codes don't match 2022 directly - needs verification
+  2005: MISSING
+        NO DIRECT EQUIVALENT FOUND
+        RELIGATT found but unrelated (religious attendance)
+        
+  WARNING: ATT_120 in 2015 may represent different categories.
+           Verify survey documentation before mapping.
 
 ----------------------------------------------------------------------------------------------------
 COLUMN: CTW_140I
 ----------------------------------------------------------------------------------------------------
-  2022: FOUND - CTW_140I
+  2022: FOUND - CTW_140I (Place/Location of Work)
+        Unique values: [1, 2, 6, 9]
+        (1=Work from home: 1027, 2=Fixed workplace: 4767, 6=Not in LF: 6265, 9=NS: 277)
   2015: FOUND - CTW_140I
+        Unique values: [1, 2, 6, 7, 8, 9]
+        (1=Home: 90, 2=Fixed workplace: 8685, 6=Not in LF: 8531, 7/8/9=DK/Ref/NS)
   2005: MISSING
-        Possible alternatives: WORKPAID
+        NO DIRECT EQUIVALENT FOUND
+        WORKPAID found but represents something different
+        
+  Note: Direct match between 2022 and 2015. Large difference in "work from home" 
+        (1027 in 2022 vs 90 in 2015) reflects real change in work patterns.
 
 ----------------------------------------------------------------------------------------------------
 COLUMN: INC_C
 ----------------------------------------------------------------------------------------------------
-  2022: FOUND - INC_C
-  2015: MISSING - No similar columns found
-  2005: MISSING - No similar columns found
+  2022: FOUND - INC_C (Total Personal Income - 5 categories)
+        Unique values: [1, 2, 3, 4, 5]
+        Distribution: 1: 2110, 2: 3303, 3: 3182, 4: 1684, 5: 2057
+  2015: MISSING
+        POSSIBLE ALTERNATIVES: 
+        - INCG1 (Personal Income - 7 categories): [1-7]
+          (1: 4561, 2: 4620, 3: 3522, 4: 1964, 5: 1232, 6: 598, 7 NS: 893)
+        - HHINCG1 (Household Income - 8 categories): [1-8]
+  2005: MISSING
+        POSSIBLE ALTERNATIVE: INCM (Income - 12+ categories)
+        Unique values: [1-12, 98, 99]
+        
+  WARNING: Different number of categories across years.
+           2022=5 categories, 2015=7 categories, 2005=12 categories.
+           Need recoding to align income brackets.
 
 ----------------------------------------------------------------------------------------------------
 COLUMN: LUC_RST
@@ -261,36 +292,73 @@ COLUMN: LUC_RST
   2005: FOUND - LUC_RST
 
 ----------------------------------------------------------------------------------------------------
-COLUMN: PHSDFLG
+COLUMN: PHSDFLG (Primary Household Flag)
 ----------------------------------------------------------------------------------------------------
   2022: FOUND - PHSDFLG
+        Unique values: [1, 2]
   2015: FOUND - PHSDFLG
-  2005: MISSING - No similar columns found
+        Unique values: [1, 2]
+  2005: MISSING - No equivalent found
 
 ----------------------------------------------------------------------------------------------------
 COLUMN: CXRFLAG
 ----------------------------------------------------------------------------------------------------
   2022: FOUND - CXRFLAG
+        Unique values: [1, 2]
   2015: FOUND - CXRFLAG
-  2005: MISSING
-        Possible alternatives: CHRFLAG
+        Unique values: [1, 2]
+  2005: MISSING - No equivalent found
 
 ----------------------------------------------------------------------------------------------------
-COLUMN: PARNUM
+COLUMN: PARNUM (Number of Parents in Household)
 ----------------------------------------------------------------------------------------------------
   2022: FOUND - PARNUM
-  2015: FOUND - PARNUM
-  2005: MISSING - No similar columns found
+        Unique values: [0, 1, 2]
+  2015: FOUND - PARNUM  
+        Unique values: [0, 1, 2]
+  2005: MISSING - No equivalent found
 
 ====================================================================================================
 SUMMARY
 ====================================================================================================
 
-Present in ALL 3 datasets (4):
+COLUMNS PRESENT IN ALL 3 DATASETS (4):
   PRV, HSDSIZEC, AGEGR10, LUC_RST
 
-Present in 2022 and 2015 only (7):
-  PUMFID, MARSTAT, LAN_01, CTW_140I, PHSDFLG, CXRFLAG, PARNUM
+COLUMNS PRESENT IN 2022 AND 2015 ONLY (4):
+  MARSTAT, LAN_01, CTW_140I, PHSDFLG, CXRFLAG, PARNUM
 
-Present ONLY in 2022 (12):
-  REGION, DDAY, GENDER2, EDC_10, ED_05, NOCLBR_Y, NAIC22CY, ACT7DAYC, WET_120, WHWD140G, ATT_150C, INC_C
+COLUMNS WITH CONFIRMED ALTERNATIVES IN ALL YEARS (11):
+  - PUMFID: 2005=RECID
+  - REGION: 2015=derived from PRV
+  - DDAY: 2015/2005=DVTDAY (day type only, less granular)
+  - GENDER2: 2015/2005=SEX/sex
+  - MARSTAT: 2005=marstat (lowercase)
+  - LAN_01: 2005=LANHSDC
+  - ED_05: 2015=EHG_ALL, 2005=EDU5
+  - NOCLBR_Y: 2015=NOC1110Y, 2005=SOC91C10
+  - NAIC22CY: 2015=NAIC12CY, 2005=NAICS2002_C16
+  - ACT7DAYC: 2015/2005=ACT7DAYS
+
+COLUMNS WITH POSSIBLE ALTERNATIVES (VERIFY BEFORE USE) (4):
+  - EDC_10: 2015=ATT_120(?), 2005=EDUSTAT(?) - different coding
+  - WHWD140G: 2015=WHWD140C (continuous vs categorical)
+  - ATT_150C: 2015=ATT_120(?) - different coding
+  - INC_C: 2015=INCG1, 2005=INCM (different category counts)
+
+COLUMNS NOT AVAILABLE IN 2015/2005 (4):
+  - WET_120 (Class of Worker) - no equivalent
+  - WHWD140G - 2005 has no equivalent
+  - ATT_150C - 2005 has no equivalent  
+  - CTW_140I - 2005 has no equivalent
+  - PHSDFLG, CXRFLAG, PARNUM - 2005 has no equivalent
+
+====================================================================================================
+RECODING REQUIREMENTS
+====================================================================================================
+1. REGION in 2015: Derive from PRV using province-to-region mapping
+2. DDAY in 2015/2005: Only day type available (weekday/Saturday/Sunday)
+3. Case sensitivity in 2005: Several columns are lowercase (sex, marstat)
+4. Income categories: Need to align 5/7/12 category schemes
+5. Industry (NAICS): Need crosswalk between 2002/2012/2022 versions
+6. Hours worked (WHWD140G): Recode 2015 continuous to 2022 categories

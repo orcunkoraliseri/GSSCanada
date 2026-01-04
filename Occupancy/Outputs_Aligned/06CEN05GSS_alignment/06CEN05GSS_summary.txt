@@ -1,0 +1,165 @@
+================================================================================
+06CENSUS05GSS ALIGNMENT MODULE - SUMMARY
+================================================================================
+
+This module performs data harmonization and alignment between the Census 2006
+and GSS (General Social Survey) 2005 datasets for occupancy modeling purposes.
+
+================================================================================
+OVERVIEW
+================================================================================
+
+The script performs the following pipeline:
+1. Reads GSS 2005 main demographics file (SAS format)
+2. Merges with pre-processed episode data
+3. Harmonizes 11 demographic columns between Census and GSS
+4. Saves aligned datasets for further matching
+5. Validates alignment with value comparison
+6. Generates distribution comparison plots
+
+================================================================================
+INPUT FILES
+================================================================================
+
+GSS 2005 Main File:
+  - Path: DataSources_GSS/Main_files/GSSMain_2005.sas7bdat
+  - Format: SAS7BDAT
+  - Contains: Demographics for 19,597 respondents
+
+GSS 2005 Episode File:
+  - Path: Outputs_GSS/out05EP_ACT_PRE_coPRE.csv
+  - Format: CSV (pre-processed)
+  - Contains: Time-use episode data
+
+Census 2006 File:
+  - Path: Outputs_CENSUS/2006_LINKED.csv
+  - Format: CSV
+  - Contains: 220,588 census records
+
+================================================================================
+OUTPUT FILES (in Outputs_Aligned/06CENSUS05GSS_alignment/)
+================================================================================
+
+1. Aligned_Census_2005.csv
+   - Census data with harmonized demographic columns
+   - 218,143 rows after filtering
+
+2. Aligned_GSS_2005.csv
+   - GSS data with harmonized demographic columns
+   - 234,743 rows after filtering
+
+3. 06CENSUS05GSS_distribution_comparison.png
+   - Side-by-side bar charts comparing distributions
+   - All 11 matched columns visualized
+
+4. 06CENSUS05GSS_alignment.txt
+   - Detailed column-by-column comparison
+   - Unique values before/after alignment
+
+5. 06CENSUS05GSS_headers.csv
+   - Header comparison between datasets
+
+================================================================================
+HARMONIZED COLUMNS (11 Total)
+================================================================================
+
+Column      GSS Original    Census Original    Aligned Values
+------      ------------    ---------------    --------------
+AGEGRP      AGEGR10         3-13              1-7 (age groups)
+ATTSCH      EDUSTAT         1-2               1-2 (school attendance)
+CMA         LUC_RST         462-999           1-2 (urban/rural)
+HHSIZE      HSDSIZEC        1-7               1-6 (household size)
+KOL         LANHSDC         1-4               1-3 (language)
+LFTAG       ACT7DAYS        1-14              1-5 (labour force)
+MARSTH      marstat         1-3               1-3 (marital status)
+NOCS        SOC91C10        1-10,99           1-10,99 (occupation)
+PR          PRV             10-59             10,24,35,46,48,59 (province)
+SEX         sex             1-2               1-2 (sex)
+TOTINC      INCM            continuous        1-12 (income brackets)
+
+================================================================================
+KEY TRANSFORMATIONS
+================================================================================
+
+1. AGEGRP (Age Groups):
+   - Census: 5-year groups (3-13) mapped to 10-year groups (1-7)
+   - Mapping: 3,4→1 | 5,6→2 | 7,8→3 | 9,10→4 | 11→5 | 12→6 | 13→7
+
+2. CMA (Urban/Rural):
+   - Census: Specific CMA codes (462,535,825,835,933,999) → 1=CMA, 2=Other
+   - GSS: Value 3 (Rural) dropped to match Census
+
+3. LFTAG (Labour Force):
+   - Census: 14 categories condensed to 5
+   - GSS: Value 6 dropped to match Census
+
+4. PR (Province):
+   - GSS: Atlantic provinces (11,12,13) → 10 (NL representative)
+   - GSS: Saskatchewan (47) → 46 (MB as Prairie representative)
+   - Final: 6 regional codes [10,24,35,46,48,59]
+
+5. TOTINC (Total Income):
+   - Census: Continuous values → 12 income brackets
+   - Brackets: ≤0, <5K, <10K, <15K, <20K, <30K, <40K, <50K, <60K, <80K, <100K, 100K+
+
+================================================================================
+VALIDATION RESULTS
+================================================================================
+
+All 11 columns achieved EXACT MATCH after harmonization:
+
+Column      Status      Unique_Census    Unique_GSS
+AGEGRP      MATCH       7                7
+ATTSCH      MATCH       2                2
+CMA         MATCH       2                2
+HHSIZE      MATCH       6                6
+KOL         MATCH       3                3
+LFTAG       MATCH       5                5
+MARSTH      MATCH       3                3
+NOCS        MATCH       11               11
+PR          MATCH       6                6
+SEX         MATCH       2                2
+TOTINC      MATCH       12               12
+
+================================================================================
+FUNCTIONS IN MODULE
+================================================================================
+
+Data Processing:
+  - read_merge_save_gss(): Read SAS + CSV, merge, rename, save
+
+Harmonization (11 functions):
+  - harmonize_agegrp()
+  - harmonize_attsch()
+  - harmonize_cma()
+  - harmonize_hhsize()
+  - harmonize_kol()
+  - harmonize_lftag()
+  - harmonize_marsth()
+  - harmonize_nocs()
+  - harmonize_pr()
+  - harmonize_sex()
+  - harmonize_totinc()
+
+Main Pipeline:
+  - data_alignment(): Orchestrates harmonization and saves aligned data
+
+Validation:
+  - check_value_alignment(): Compares unique values between datasets
+  - plot_distribution_comparison(): Generates comparison bar charts
+
+================================================================================
+USAGE
+================================================================================
+
+Run the module directly:
+  /Users/orcunkoraliseri/.pyenv/versions/3.9.2/bin/python \
+    /Users/orcunkoraliseri/Desktop/Postdoc/eSim/occ_utils/06CENSUS05GSS_alignment.py
+
+Or import specific functions:
+  from occ_utils.06CENSUS05GSS_alignment import data_alignment, harmonize_agegrp
+
+================================================================================
+CREATED: 2026-01-04
+AUTHOR: GSS-Census Alignment Pipeline
+================================================================================
