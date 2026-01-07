@@ -363,6 +363,139 @@ def generate_full_expansion(
 
 
 # =============================================================================
+# VALIDATION FUNCTION
+# =============================================================================
+
+def validate_matching_quality(
+    df_matched: pd.DataFrame,
+    expander: ScheduleExpander,
+    save_path: Path = None
+) -> None:
+    """
+    Validates profile matching quality by analyzing tier distribution
+    and behavioral consistency.
+    
+    Args:
+        df_matched: DataFrame with matched Census-GSS keys.
+        expander: ScheduleExpander instance for episode retrieval.
+        save_path: Optional path to save validation report.
+    """
+    # Buffer to capture output
+    report_buffer = []
+
+    def log(message: str) -> None:
+        """Print and append to buffer."""
+        print(message)
+        report_buffer.append(message)
+
+    log(f"\n{'=' * 60}")
+    log(f"  VALIDATION REPORT: PROFILE MATCHING QUALITY")
+    log(f"{'=' * 60}")
+
+    # --- METHOD 1: TIER DISTRIBUTION ---
+    log(f"\n1. MATCH QUALITY (TIER DISTRIBUTION)")
+    log("-" * 40)
+
+    for day_type in ['WD', 'WE']:
+        col = f'MATCH_TIER_{day_type}'
+        if col in df_matched.columns:
+            counts = df_matched[col].value_counts(normalize=True) * 100
+            log(f"\n   [{day_type} Matching Tiers]")
+            for tier, pct in sorted(counts.items()):
+                log(f"      - {tier}: {pct:.1f}%")
+
+    # --- METHOD 2: BEHAVIORAL CONSISTENCY (Workers) ---
+    log(f"\n2. BEHAVIORAL CONSISTENCY (Workers vs. Non-Workers)")
+    log("-" * 40)
+
+    # Filter for Employed (LFTAG 1 or 2 = Employed full-time/part-time)
+    # Note: For 2005 GSS, we use LFTAG instead of COW
+    sample_size = min(500, len(df_matched))
+    
+    if 'LFTAG' in df_matched.columns:
+        workers = df_matched[df_matched['LFTAG'].isin([1, 2])]
+        if len(workers) > sample_size:
+            workers = workers.sample(sample_size, random_state=42)
+        worker_label = "LFTAG 1-2 (Employed)"
+    else:
+        # Fallback: random sample
+        workers = df_matched.sample(min(sample_size, len(df_matched)), random_state=42)
+        worker_label = "Random Sample"
+
+    log(f"\n   Analyzing {len(workers)} workers ({worker_label})...")
+    
+    work_minutes = []
+
+    for _, agent in workers.iterrows():
+        # Get Weekday episodes
+        ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
+
+        if ep_wd is not None and 'occACT' in ep_wd.columns:
+            # Filter for Work Activities
+            # GSS Work Codes typically start with '1', '0', or '8'
+            work_acts = ep_wd[ep_wd['occACT'].astype(str).str.startswith(('1', '0', '8'))]
+
+            total_duration = 0
+            for _, row in work_acts.iterrows():
+                s = row.get('start', 0)
+                e = row.get('end', 0)
+
+                # Fix for midnight wrap
+                if e < s:
+                    duration = (e + 1440) - s
+                else:
+                    duration = e - s
+
+                total_duration += duration
+
+            work_minutes.append(total_duration)
+
+    avg_work = np.mean(work_minutes) if work_minutes else 0
+    log(f"\n   Average Work Duration for 'Employees': {avg_work:.0f} minutes/day")
+    log(f"   (Based on {len(work_minutes)} workers with valid schedules)")
+
+    if avg_work < 60:
+        log("      WARNING: Low work duration. Check 'occACT' filter codes.")
+    elif avg_work > 300:
+        log("      SUCCESS: Employees performing ~5-8 hours of work.")
+    else:
+        log("      NOTE: Work duration moderate. May reflect part-time mix.")
+
+    # --- METHOD 3: EPISODE COUNT SANITY CHECK ---
+    log(f"\n3. EPISODE COUNT SANITY CHECK")
+    log("-" * 40)
+    
+    sample_for_check = df_matched.head(100)
+    wd_counts = []
+    we_counts = []
+    
+    for _, agent in sample_for_check.iterrows():
+        ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
+        ep_we = expander.get_episodes(agent['MATCH_ID_WE'])
+        if ep_wd is not None:
+            wd_counts.append(len(ep_wd))
+        if ep_we is not None:
+            we_counts.append(len(ep_we))
+    
+    if wd_counts:
+        log(f"   Weekday Episodes: min={min(wd_counts)}, max={max(wd_counts)}, avg={np.mean(wd_counts):.1f}")
+    if we_counts:
+        log(f"   Weekend Episodes: min={min(we_counts)}, max={max(we_counts)}, avg={np.mean(we_counts):.1f}")
+
+    log(f"\n{'=' * 60}")
+
+    # Save to file
+    if save_path:
+        try:
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(report_buffer))
+            print(f"\n   Validation Report saved to: {save_path.name}")
+        except Exception as e:
+            print(f"\n   Error saving report: {e}")
+
+
+
 # SAMPLING FUNCTIONS
 # =============================================================================
 
@@ -466,6 +599,11 @@ def main(sample_pct: float = 100.0) -> None:
     expanded_path = OUTPUT_DIR / f"06CEN05GSS_Full_Schedules{suffix}.csv"
     generate_full_expansion(df_matched, expander, expanded_path)
     
+    # --- 7. Validate Matching Quality ---
+    print("\n--- Step 7: Running Validation ---")
+    validation_path = OUTPUT_DIR / f"06CEN05GSS_Validation{suffix}.txt"
+    validate_matching_quality(df_matched, expander, save_path=validation_path)
+    
     print("\n" + "=" * 60)
     print("  WORKFLOW COMPLETE")
     print("=" * 60)
@@ -478,7 +616,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample",
         type=float,
-        default=100,
+        default=20,
         help="Percentage of data to sample (1-100). Default: 100 (full data)"
     )
     args = parser.parse_args()

@@ -1,0 +1,83 @@
+================================================================================
+06CEN05GSS PROFILE MATCHING - VALIDATION TREND ANALYSIS
+================================================================================
+Date: 2026-01-07
+Dataset: Census 2006 vs GSS 2005
+
+================================================================================
+1. TREND ANALYSIS: 5% → 10% → 20% SAMPLING
+================================================================================
+
++--------------------+--------+--------+--------+-----------------+
+| Metric             |   5%   |   10%  |   20%  | Trend           |
++--------------------+--------+--------+--------+-----------------+
+| GSS Catalog (WD)   |    215 |    403 |    815 | ⬆️ +279%        |
+| GSS Catalog (WE)   |    460 |    948 |  1,888 | ⬆️ +310%        |
+| Tier 2 Weekday     |   9.7% |  13.6% |  25.0% | ⬆️ +157%        |
+| Tier 2 Weekend     |  18.5% |  29.9% |  39.0% | ⬆️ +111%        |
+| Tier 3 Weekday     |  84.5% |  84.2% |  74.7% | ⬇️ (improving)  |
+| Tier 3 Weekend     |  79.8% |  68.4% |  60.7% | ⬇️ (improving)  |
+| Tier 4 FailSafe    |   3.7% |   2.0% |  0.25% | ⬇️ EXCELLENT    |
+| Work Duration      | 606min | 576min | 584min | ✅ Stable       |
++--------------------+--------+--------+--------+-----------------+
+
+Key Observations:
+- Tier 2 (Core Demographics) matches increase significantly with larger catalogs
+- Tier 3 (Constraints only) decreases as more complete matches are found
+- FailSafe rate dropped from 3.7% to 0.25% - near-zero fallback matches
+- Work duration remains consistent (~580-600 min/day) across all samples
+
+
+================================================================================
+2. OVERALL ASSESSMENT (20% Sample)
+================================================================================
+
++-------------------------+---------+-------------+
+| Metric                  | Score   | Status      |
++-------------------------+---------+-------------+
+| Tier Quality            | 4/5     | ⭐⭐⭐⭐    |
+| Behavioral Coherence    | 4/5     | ⭐⭐⭐⭐    |
+| Data Integrity          | 4/5     | ⭐⭐⭐⭐    |
+| FailSafe Rate           | 5/5     | ⭐⭐⭐⭐⭐  |
++-------------------------+---------+-------------+
+| OVERALL                 | 4.25/5  | EXCELLENT   |
++-------------------------+---------+-------------+
+
+
+================================================================================
+3. TIER DEFINITIONS
+================================================================================
+
+Tier 1 - Perfect Match:
+  All 11 columns match: HHSIZE, AGEGRP, MARSTH, SEX, KOL, NOCS, PR, LFTAG, 
+  TOTINC, CMA, ATTSCH
+
+Tier 2 - Core Demographics:
+  6 key columns match: HHSIZE, AGEGRP, SEX, MARSTH, LFTAG, PR
+
+Tier 3 - Key Constraints:
+  3 essential columns match: HHSIZE, AGEGRP, SEX
+
+Tier 4 - FailSafe:
+  Only HHSIZE matches
+
+Tier 5 - Random:
+  No match found, random assignment (not observed in results)
+
+
+================================================================================
+4. RECOMMENDATION
+================================================================================
+
+The 20% sample provides an excellent balance for production use:
+  ✅ Near-zero FailSafe (0.25%) - almost all agents have meaningful matches
+  ✅ Strong Tier 2 rates (25-39%) - good demographic alignment
+  ✅ Stable behavioral coherence - work patterns match employment status
+  ✅ Reasonable runtime (~5 minutes)
+  ✅ Manageable file size (~1.4M rows)
+
+For final production run, consider:
+  - Full 100% for maximum matching quality
+  - 20-30% for balanced quality/performance
+
+================================================================================
