@@ -310,9 +310,12 @@ def generate_full_expansion(
     print(f"\n  Expanding Schedules for {len(df_matched):,} agents...")
     all_episodes = []
 
-    # Variables to carry over from Census
+    # Variables to carry over from Census (including SIM_HH_ID for HH aggregation)
+    # Demographics + Residential variables for BEM
     carry_vars = ["HHSIZE", "AGEGRP", "SEX", "MARSTH", "PR", "TOTINC", 
-                  "KOL", "NOCS", "LFTAG", "CMA", "ATTSCH"]
+                  "KOL", "NOCS", "LFTAG", "CMA", "ATTSCH",
+                  "DTYPE", "BEDRM", "ROOM", "CONDO", "REPAIR"]  # Residential for BEM
+
 
     for idx, agent in tqdm(
         df_matched.iterrows(),
@@ -321,12 +324,15 @@ def generate_full_expansion(
     ):
         # Get Census ID (use PP_ID or index)
         census_id = agent.get(census_id_col, idx)
+        # Get Household ID for aggregation
+        hh_id = agent.get('SIM_HH_ID', idx)
 
         # Expand Weekday
         ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
         if ep_wd is not None:
             ep_wd = ep_wd.copy()
             ep_wd['Census_ID'] = census_id
+            ep_wd['SIM_HH_ID'] = hh_id
             ep_wd['Day_Type'] = 'Weekday'
             ep_wd['AgentID'] = idx
 
@@ -342,6 +348,7 @@ def generate_full_expansion(
         if ep_we is not None:
             ep_we = ep_we.copy()
             ep_we['Census_ID'] = census_id
+            ep_we['SIM_HH_ID'] = hh_id
             ep_we['Day_Type'] = 'Weekend'
             ep_we['AgentID'] = idx
 
