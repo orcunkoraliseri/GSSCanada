@@ -504,12 +504,13 @@ def sample_data(
     df_gss: pd.DataFrame,
     sample_pct: float = 100.0,
     id_col: str = "occID",
+    hh_col: str = "SIM_HH_ID",
     random_state: int = 42
 ) -> tuple:
     """
-    Sample Census and GSS data by percentage.
+    Sample Census and GSS data by percentage, preserving household integrity.
     
-    Census: Random sample of rows.
+    Census: Sample by unique household ID (keeps all members of selected households).
     GSS: Sample by unique occID (keeps all episodes for sampled occupants).
     
     Args:
@@ -517,6 +518,7 @@ def sample_data(
         df_gss: Full GSS DataFrame (temporal with multiple rows per occID).
         sample_pct: Percentage of data to sample (1-100).
         id_col: Column for unique occupant ID in GSS.
+        hh_col: Column for household ID in Census (default: SIM_HH_ID).
         random_state: Random seed for reproducibility.
         
     Returns:
@@ -526,13 +528,16 @@ def sample_data(
         print("   Using full dataset (no sampling)")
         return df_census, df_gss
     
-    print(f"\n   Sampling {sample_pct}% of data...")
+    print(f"\n   Sampling {sample_pct}% of data (household-based)...")
     np.random.seed(random_state)
     
-    # Sample Census (random rows)
-    n_census = int(len(df_census) * sample_pct / 100)
-    df_census_sampled = df_census.sample(n=n_census, random_state=random_state)
-    print(f"   Census: {len(df_census):,} -> {len(df_census_sampled):,} rows")
+    # Sample Census by HOUSEHOLD (keeps all members together)
+    unique_hh = df_census[hh_col].unique()
+    n_hh = int(len(unique_hh) * sample_pct / 100)
+    sampled_hh = np.random.choice(unique_hh, size=n_hh, replace=False)
+    df_census_sampled = df_census[df_census[hh_col].isin(sampled_hh)]
+    print(f"   Census: {len(df_census):,} -> {len(df_census_sampled):,} persons "
+          f"({len(unique_hh):,} -> {len(sampled_hh):,} households)")
     
     # Sample GSS (by unique occID, keeping all episodes per occupant)
     unique_ids = df_gss[id_col].unique()
@@ -616,7 +621,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample",
         type=float,
-        default=20,
+        default=25,
         help="Percentage of data to sample (1-100). Default: 100 (full data)"
     )
     args = parser.parse_args()
