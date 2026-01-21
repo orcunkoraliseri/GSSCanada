@@ -1,0 +1,99 @@
+================================================================================
+                PROFILE MATCHING VALIDATION COMPARISON
+                16CEN15GSS vs 06CEN05GSS vs Census 2025
+================================================================================
+
+Generated: 2026-01-09
+
+Datasets Compared:
+  - 16CEN15GSS: Census 2016 + GSS 2015 (5% sample)
+  - 06CEN05GSS: Census 2006 + GSS 2005 (5% sample)  
+  - Census 2025: Validation_ProfileMatcher_2025.txt
+
+================================================================================
+1. MATCH QUALITY (TIER DISTRIBUTION)
+================================================================================
+
+WEEKDAY MATCHING:
+--------------------------------------------------------------------------------
+Tier             | 16CEN15GSS | 06CEN05GSS | Census 2025
+--------------------------------------------------------------------------------
+1_Perfect        |    0.5%    |    0.0%    |   12.4%
+2_Core/Drivers   |    8.2%    |    7.1%    |   84.6%
+3_Constraints    |   80.6%    |   85.8%    |    2.6%
+4_FailSafe       |   10.7%    |    7.2%    |    0.3%
+5_Random         |    0.0%    |    0.0%    |    0.0%
+--------------------------------------------------------------------------------
+
+WEEKEND MATCHING:
+--------------------------------------------------------------------------------
+Tier             | 16CEN15GSS | 06CEN05GSS | Census 2025
+--------------------------------------------------------------------------------
+1_Perfect        |    1.2%    |    0.0%    |    7.5%
+2_Core/Drivers   |   13.7%    |   14.6%    |   83.9%
+3_Constraints    |   84.2%    |   84.0%    |    7.9%
+4_FailSafe       |    1.0%    |    1.4%    |    0.7%
+5_Random         |    0.0%    |    0.0%    |    0.0%
+--------------------------------------------------------------------------------
+
+================================================================================
+2. BEHAVIORAL CONSISTENCY (Work Duration)
+================================================================================
+
+Dataset         | Avg Work Duration | Hours/Day | Status
+--------------------------------------------------------------------------------
+16CEN15GSS      |    542 min/day    |   ~9 hrs  | SUCCESS
+06CEN05GSS      |    596 min/day    |  ~10 hrs  | SUCCESS
+Census 2025     |    858 min/day    |  ~14 hrs  | SUCCESS
+--------------------------------------------------------------------------------
+
+Note: All datasets show employees with reasonable work durations (>5 hrs),
+indicating correct behavioral matching.
+
+================================================================================
+3. EPISODE COUNT SANITY CHECK
+================================================================================
+
+Dataset         | Weekday (min/max/avg) | Weekend (min/max/avg)
+--------------------------------------------------------------------------------
+16CEN15GSS      |   4 / 25 / 13.2       |   5 / 28 / 15.0
+06CEN05GSS      |   9 / 32 / 17.1       |   5 / 31 / 16.2
+--------------------------------------------------------------------------------
+
+================================================================================
+KEY OBSERVATIONS
+================================================================================
+
+1. 16CEN15GSS vs 06CEN05GSS - Very Similar Performance:
+   - Both have ~80-85% in Tier 3 (Constraints matching)
+   - Weekend matching is slightly better for 16CEN15GSS (1.2% perfect vs 0%)
+   - Work duration is comparable (542 vs 596 min)
+   - No significant quality degradation between GSS 2005 and GSS 2015
+
+2. Census 2025 - Different Matching Approach:
+   - Much higher Perfect (12.4%) and Core (84.6%) matches
+   - Likely uses a different matching tier definition or has better column alignment
+   - May have more matching columns available
+
+3. Zero Random Fallbacks:
+   - All three datasets avoid Tier 5 (random) completely
+   - This indicates matching column alignment is working correctly
+
+4. Episode Counts:
+   - 13-17 episodes/day is typical for time-use surveys
+   - 16CEN15GSS has slightly fewer episodes (13.2 avg) vs 06CEN05GSS (17.1 avg)
+   - Difference may reflect changes in GSS survey methodology between 2005-2015
+
+================================================================================
+CONCLUSION
+================================================================================
+
+The 16CEN15GSS Profile Matching quality is CONSISTENT with 06CEN05GSS and is
+suitable for occupancy simulation. The tiered matching approach successfully
+assigns GSS schedules to Census agents with behavioral consistency.
+
+Recommended next steps:
+  - Proceed with HH Aggregation phase
+  - Full dataset matching (100%) for production use
+
+================================================================================

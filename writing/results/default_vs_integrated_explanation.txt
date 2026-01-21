@@ -1,0 +1,108 @@
+================================================================================
+DEFAULT SCHEDULE vs INTEGRATED (TUS-DERIVED) VALUES
+================================================================================
+Date: January 21, 2026
+Context: BEM Simulation - Occupancy Integration Analysis
+
+--------------------------------------------------------------------------------
+OBSERVATION
+--------------------------------------------------------------------------------
+
+In comparative simulations, the "Default" scenario often shows HIGHER energy 
+consumption for Interior Lights and Interior Equipment compared to the 
+integrated scenarios (2025, 2015, 2005). 
+
+Initial reaction: This seems counterintuitive - shouldn't real occupancy data 
+produce values closer to or around the default?
+
+--------------------------------------------------------------------------------
+EXPLANATION: WHY LOWER VALUES CAN BE VALID
+--------------------------------------------------------------------------------
+
+1. WHAT DEFAULT SCHEDULES REPRESENT
+   ---------------------------------
+   Default schedules (from ASHRAE/DOE building energy codes) represent 
+   "average/typical" residential behavior assumptions:
+   - Assume ~2-3 people home in evenings
+   - Assume some daytime presence
+   - Based on generalized survey data, not specific households
+   - Represent a "typical" household, not any real household
+
+2. WHAT TUS-DERIVED OCCUPANCY REPRESENTS
+   --------------------------------------
+   Time-Use Survey (TUS) data captures ACTUAL behavior for specific households:
+   - Real work schedules (people away during 9-5)
+   - Actual household sizes and compositions
+   - Specific presence patterns (retired, WFH, students, etc.)
+   - Year-specific behavioral differences (2005 vs 2015 vs 2025)
+
+3. THE KEY INSIGHT
+   ----------------
+   Default schedules may OVERESTIMATE presence if they assume more "average" 
+   home time than what TUS data actually shows for sampled households.
+   
+   Example:
+   - Default assumes people are home 60% of the time during weekdays
+   - TUS data shows sampled households are actually home only 40%
+   - Result: Integrated values are legitimately lower
+
+--------------------------------------------------------------------------------
+VALIDITY TABLE
+--------------------------------------------------------------------------------
+
+| Scenario                                      | Expected Result           |
+|-----------------------------------------------|---------------------------|
+| TUS shows LESS home time than default assumes | Integrated values LOWER ✓ |
+| TUS shows MORE home time than default assumes | Integrated values HIGHER  |
+| TUS matches default assumptions               | Values similar            |
+
+--------------------------------------------------------------------------------
+THE FORMULA
+--------------------------------------------------------------------------------
+
+Hybrid Proportional Approach:
+
+    Schedule_Value = Occupancy × MAX(Default_Schedule, Active_Floor) 
+                   + (1 - Occupancy) × Baseload
+
+Where:
+- Occupancy = Fraction of household members present (0.0 to 1.0)
+- Default_Schedule = Original building schedule value from the IDF
+- Active_Floor = Minimum active level (0.50 for lights/equipment)
+- Baseload = Minimum consumption when empty (0.05 lights, 0.35 equipment)
+
+For Pure Proportional (without MAX):
+
+    Schedule_Value = Occupancy × Active_Floor + (1 - Occupancy) × Baseload
+
+This produces lower values when real occupancy is lower - which is 
+SCIENTIFICALLY VALID, not a bug.
+
+--------------------------------------------------------------------------------
+PREVIOUS BUG (NOW FIXED)
+--------------------------------------------------------------------------------
+
+The original issue was a threshold = 0.3 that caused artificial drops:
+
+PROBLEM:
+- 1 of 4 people home → occupancy = 0.25
+- Since 0.25 < 0.30 threshold → classified as "absent"
+- Result: Baseload applied even with someone home
+
+This was MECHANICALLY WRONG and has been fixed with the proportional approach.
+
+--------------------------------------------------------------------------------
+CONCLUSION
+--------------------------------------------------------------------------------
+
+Seeing lower energy values with integrated (TUS) approaches compared to 
+Default is VALID and EXPECTED when:
+
+1. Real households are away more than "average" assumptions
+2. Sampled households have different occupancy patterns
+3. Temporal trends show changing behavior (e.g., more WFH in 2025)
+
+This is not a bug - it's the model correctly reflecting that real households 
+may consume less energy than generalized assumptions predict.
+
+================================================================================

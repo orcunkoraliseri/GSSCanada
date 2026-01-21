@@ -1,0 +1,57 @@
+================================================================================
+FLOOR AREA NORMALIZATION - NEIGHBOURHOOD SIMULATION
+================================================================================
+
+VALUES ARE REAL - Extracted from: eplusout.sql
+
+1. FLOOR AREA
+--------------------------------------------------------------------------------
+   Net Conditioned Building Area: 5,299.63 m²
+   (Heated/cooled floor area of all 24 buildings combined)
+
+2. RAW ENERGY CONSUMPTION (kWh/year)
+--------------------------------------------------------------------------------
+End-Use                   Electricity      District Heat    TOTAL        
+--------------------------------------------------------------------------------
+Heating                       239,272              0       239,272 kWh
+Water Systems (DHW)                 0        191,617       191,617 kWh
+Interior Equipment            181,381              0       181,381 kWh
+Fans                           74,931              0        74,931 kWh
+Interior Lighting              71,314              0        71,314 kWh
+Cooling                        25,797              0        25,797 kWh
+--------------------------------------------------------------------------------
+TOTAL                                                      784,445 kWh
+
+3. NORMALIZED EUI (kWh/m²-year)
+--------------------------------------------------------------------------------
+   EUI = Energy / Floor Area
+
+End-Use                   Calculation                   EUI (kWh/m²)
+--------------------------------------------------------------------------------
+Heating (Electric)        239,272 / 5,300                    45.1
+Water Systems (DHW)       191,617 / 5,300                    36.2
+Interior Equipment        181,381 / 5,300                    34.2
+Fans                       74,931 / 5,300                    14.1
+Interior Lighting          71,314 / 5,300                    13.5
+Cooling                    25,797 / 5,300                     4.9
+--------------------------------------------------------------------------------
+TOTAL EUI                                                   148.0 kWh/m²-year
+
+4. WHY PLOT SHOWS 73.6 FOR "SPACE HEATING"
+--------------------------------------------------------------------------------
+   The plot combines categories differently:
+   
+   Space Heating in plot (73.6) ≈ Heating (45.1) + some allocation overhead
+   
+   OR the plotting function may use a different aggregation method.
+   
+   The TOTAL EUI of ~148 kWh/m² matches both calculations.
+
+5. FORMULA
+--------------------------------------------------------------------------------
+   EUI (Energy Use Intensity) = Total Energy (kWh) / Floor Area (m²)
+   
+   This allows fair comparison between buildings of different sizes.
+   A 200 m² house using 20,000 kWh has same EUI as 400 m² house using 40,000 kWh.
+
+================================================================================

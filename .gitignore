@@ -1,0 +1,40 @@
+# Large data files
+*.dat
+*.sas7bdat
+*.sav
+
+# Large CSV outputs
+*.csv
+!BEM_Setup/*.csv
+Occupancy/**/Outputs_**/*.csv
+Occupancy/DataSources_CENSUS/
+Occupancy/DataSources_GSS/Main_files/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Model files (optional - can be large)
+*.keras
+*.h5
+*.pkl
+
+# BEM Simulation Results
+BEM_Setup/SimResults/
+BEM_Setup/SimResults_Plotting/
+Pipeline_Test_Output/
+Test_Output/
+**/eplusout.*
+**/sqlite.err
+**/ExpandObjects.log
+**/audit.out
+**/Energy+.idd
+**/Energy+.ini

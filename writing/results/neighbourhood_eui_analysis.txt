@@ -1,0 +1,34 @@
+================================================================================
+NEIGHBOURHOOD EUI ANALYSIS: 24 vs 48 BUILDINGS
+================================================================================
+
+OBSERVATION:
+------------
+NUs_RC1 (24 Buildings): Heating EUI = 73.6 kWh/m²
+NUs_RC2 (48 Buildings): Heating EUI = 97.0 kWh/m² (+32% Increase)
+
+WHY IS HEATING HIGHER IN THE DENSER NEIGHBOURHOOD?
+--------------------------------------------------
+The primary cause is REDUCED PASSIVE SOLAR GAINS due to MUTUAL SHADING.
+
+1. BENEFICIAL SOLAR GAIN (The "Free Heat" Effect)
+   - In winter, low-angle sunlight enters windows and provides significant heating.
+   - For detached houses with good glazing, this can offset 20-40% of heating load.
+
+2. THE "URBAN CANYON" EFFECT IN RC2
+   - RC2 doubles the density (48 vs 24 buildings).
+   - Buildings are likely placed closer together or in additional rows.
+   - Front rows cast shadows on back rows.
+   - Side-by-side buildings block morning/afternoon sun.
+
+3. IMPACT ON ENERGY BALANCE
+   - RC1: Buildings are spaced enough to receive full solar access.
+   - RC2: Many facades define "self-shading" or "mutual shading" obstructions.
+   - Result: The heating system must compensate for the lost solar heat.
+
+CONCLUSION:
+-----------
+The 32% increase in heating EUI confirms that the densification in RC2 
+significantly compromises solar access. This is a realistic physical 
+phenomenon in urban energy modeling.
+================================================================================

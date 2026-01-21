@@ -1,0 +1,24 @@
+
+============================================================
+📊 VALIDATION REPORT (CORRECTED)
+============================================================
+
+1. MATCH QUALITY (TIER DISTRIBUTION)
+----------------------------------------
+
+   [WD Matching Tiers]
+      - 2_Drivers: 84.6%
+      - 1_Perfect: 12.4%
+      - 3_Constraints: 2.6%
+      - 4_FailSafe: 0.3%
+
+   [WE Matching Tiers]
+      - 2_Drivers: 83.9%
+      - 3_Constraints: 7.9%
+      - 1_Perfect: 7.5%
+      - 4_FailSafe: 0.7%
+
+2. BEHAVIORAL CONSISTENCY (Workers vs. Non-Workers)
+----------------------------------------
+   👉 Average Work Duration for 'Employees' (n=500): 858 minutes/day
+      ✅ Success: Employees are performing ~5-8 hours of work.

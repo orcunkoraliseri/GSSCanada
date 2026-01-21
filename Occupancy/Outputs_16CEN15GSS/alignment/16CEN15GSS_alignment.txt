@@ -1,0 +1,244 @@
+================================================================================
+16CEN15GSS ALIGNMENT - Detailed Column Comparison
+================================================================================
+
+Pre-alignment analysis comparing unique values between Census 2016 and GSS 2015.
+
+================================================================================
+COLUMN BY COLUMN COMPARISON
+================================================================================
+
+--------------------------------------------------------------------------------
+1. AGE GROUP (AGEGRP -> AGEGR10)
+--------------------------------------------------------------------------------
+
+Census 2016 (AGEGRP):
+  Values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+  Meaning: 5-year age groups (detailed)
+    1: 0-4    2: 5-9    3: 10-14  4: 15-19  5: 20-24  6: 25-29  7: 30-34
+    8: 35-39  9: 40-44  10: 45-49 11: 50-54 12: 55-59 13: 60+
+
+GSS 2015 (AGEGR10):
+  Values: [1, 2, 3, 4, 5, 6, 7]
+  Meaning: 10-year age groups
+    1: 15-24  2: 25-34  3: 35-44  4: 45-54  5: 55-64  6: 65-74  7: 75+
+
+ALIGNMENT NEEDED:
+  Census ages 3-4 (10-19) need age filter (GSS starts at 15)
+  Census 5-6 -> GSS 1 (15-24)
+  Census 7-8 -> GSS 2 (25-34)
+  Census 9-10 -> GSS 3 (35-44)
+  Census 11-12 -> GSS 4 (45-54)
+  Census 13 -> GSS 5-7 (need more detail from Census)
+
+STATUS: [!] REQUIRES MAPPING
+
+--------------------------------------------------------------------------------
+2. SEX (SEX -> SEX)
+--------------------------------------------------------------------------------
+
+Census 2016 (SEX):
+  Values: [1, 2]
+  Meaning: 1=Male, 2=Female
+
+GSS 2015 (SEX):
+  Values: [1, 2]
+  Meaning: 1=Male, 2=Female
+
+STATUS: [OK] DIRECT MATCH
+
+--------------------------------------------------------------------------------
+3. MARITAL STATUS (MARSTH -> MARSTAT)
+--------------------------------------------------------------------------------
+
+Census 2016 (MARSTH):
+  Values: [1, 2, 3]
+  Meaning: 1=Married/CL, 2=Never Married, 3=Separated/Divorced/Widowed
+
+GSS 2015 (MARSTAT):
+  Values: [1, 2, 3, 4, 5, 6]
+  Meaning: 
+    1=Married, 2=Common-law, 3=Widowed, 
+    4=Separated, 5=Divorced, 6=Single/Never married
+
+ALIGNMENT NEEDED:
+  GSS 1+2 -> Census 1 (Married/CL)
+  GSS 6 -> Census 2 (Never Married)
+  GSS 3+4+5 -> Census 3 (Sep/Div/Widowed)
+
+STATUS: [!] REQUIRES MAPPING
+
+--------------------------------------------------------------------------------
+4. HOUSEHOLD SIZE (HHSIZE -> HSDSIZEC)
+--------------------------------------------------------------------------------
+
+Census 2016 (HHSIZE):
+  Values: [1, 2, 3, 4, 5, 6, 7]
+  Meaning: Number of persons (7 = 7+)
+
+GSS 2015 (HSDSIZEC):
+  Values: [1, 2, 3, 4, 5, 6]
+  Meaning: Number of persons (6 = 6+)
+
+ALIGNMENT NEEDED:
+  Census 6-7 -> GSS 6 (cap at 6+)
+
+STATUS: [!] REQUIRES MAPPING (minor)
+
+--------------------------------------------------------------------------------
+5. LABOUR FORCE (LFTAG -> ACT7DAYS)
+--------------------------------------------------------------------------------
+
+Census 2016 (LFTAG):
+  Values: [1-14, 99]
+  Meaning: 14 detailed labour force categories
+
+GSS 2015 (ACT7DAYS):
+  Values: [1, 2, 3, 4, 5, 6, 97, 98, 99]
+  Meaning:
+    1=Worked at paid job, 2=Absent from paid job
+    3=No paid job/looking, 4=No paid job/wanted
+    5=No paid job/did not want, 6=Permanently unable
+    97=Valid skip, 98=Don't know, 99=Not stated
+
+ALIGNMENT NEEDED:
+  Census employed (1-4) -> GSS 1-2
+  Census unemployed (5-6) -> GSS 3
+  Census not in LF (7-14) -> GSS 4-6
+  Complex mapping required
+
+STATUS: [!] REQUIRES COMPLEX MAPPING
+
+--------------------------------------------------------------------------------
+6. OCCUPATION (NOCS -> NOC1110Y)
+--------------------------------------------------------------------------------
+
+Census 2016 (NOCS):
+  Values: [1-10, 99]
+  Meaning: NOC 2016 broad categories (10 groups + not applicable)
+
+GSS 2015 (NOC1110Y):
+  Values: Need to extract - NOC 2011 based
+
+ALIGNMENT NEEDED:
+  Map NOC 2011 (GSS) to NOC 2016 (Census) categories
+  Both should have similar 10-category structure
+
+STATUS: [!] REQUIRES VERIFICATION
+
+--------------------------------------------------------------------------------
+7. INCOME (TOTINC -> INCG1)
+--------------------------------------------------------------------------------
+
+Census 2016 (TOTINC):
+  Values: Continuous (-50000 to 500000+)
+  Meaning: Total personal income in dollars
+
+GSS 2015 (INCG1):
+  Values: [1, 2, 3, 4, 5, 6, 7]
+  Meaning: Income group categories
+
+ALIGNMENT NEEDED:
+  Convert Census continuous income to 7 brackets
+  Match GSS bracket definitions
+
+STATUS: [!] REQUIRES MAPPING (Census -> brackets)
+
+--------------------------------------------------------------------------------
+8. CMA/URBAN CLASSIFICATION (CMA -> LUC_RST)
+--------------------------------------------------------------------------------
+
+Census 2016 (CMA):
+  Values: [462, 535, 825, 835, 933, 999]
+  Meaning: Specific CMA codes (Toronto, Montreal, Vancouver, etc.)
+
+GSS 2015 (LUC_RST):
+  Values: [1, 2, 3]
+  Meaning: 1=CMA/Large urban, 2=CA/Medium urban, 3=Rural
+
+ALIGNMENT NEEDED:
+  Census specific CMAs -> GSS 1 (Large urban)
+  Census 999 (non-CMA) -> GSS 2 or 3
+
+STATUS: [!] REQUIRES MAPPING
+
+--------------------------------------------------------------------------------
+9. PROVINCE (PR -> PRV)
+--------------------------------------------------------------------------------
+
+Census 2016 (PR):
+  Values: [1, 2, 3, 4, 5, 6]
+  Meaning: Regional codes (merged provinces)
+
+GSS 2015 (PRV):
+  Values: [10, 11, 12, 13, 24, 35, 46, 47, 48, 59]
+  Meaning: 
+    10=NL, 11=PE, 12=NS, 13=NB, 24=QC, 35=ON
+    46=MB, 47=SK, 48=AB, 59=BC
+
+ALIGNMENT NEEDED:
+  GSS Atlantic (10-13) -> Census 1
+  GSS QC (24) -> Census 2
+  GSS ON (35) -> Census 3
+  GSS Prairie (46-48) -> Census 4-5
+  GSS BC (59) -> Census 6
+
+STATUS: [!] REQUIRES MAPPING
+
+--------------------------------------------------------------------------------
+10. KNOWLEDGE OF LANGUAGES (KOL -> LAN_01)
+--------------------------------------------------------------------------------
+
+Census 2016 (KOL):
+  Values: [1, 2, 3, 4]
+  Meaning: 1=English only, 2=French only, 3=Both, 4=Neither
+
+GSS 2015 (LAN_01):
+  Values: [1, 2, 3, 4, 7, 8, 9]
+  Meaning: Language spoken at home (need to verify categories)
+
+ALIGNMENT NEEDED:
+  Verify GSS language categories match Census
+  May need to derive from other language variables
+
+STATUS: [!] REQUIRES VERIFICATION
+
+--------------------------------------------------------------------------------
+11. SCHOOL ATTENDANCE (ATTSCH -> EDM_02)
+--------------------------------------------------------------------------------
+
+Census 2016 (ATTSCH):
+  Values: [1, 2, 9]
+  Meaning: 1=Yes attending, 2=No, 9=Not applicable
+
+GSS 2015 (EDM_02):
+  Values: Need to extract from GSS
+
+ALIGNMENT NEEDED:
+  Verify GSS education variable categories
+
+STATUS: [!] REQUIRES VERIFICATION
+
+================================================================================
+SUMMARY
+================================================================================
+
+Direct Match:     1 column  (SEX)
+Mapping Required: 10 columns (all others need harmonization)
+
+PRIORITY ORDER FOR IMPLEMENTATION:
+1. SEX - Direct (no work needed)
+2. HHSIZE - Simple cap at 6
+3. MARSTH - Simple merge categories
+4. AGEGRP - Map 5-year to 10-year groups
+5. PR - Province regional mapping
+6. CMA - Urban/Rural classification
+7. KOL - Language verification
+8. ATTSCH - Education verification
+9. NOCS - Occupation code mapping
+10. LFTAG - Labour force complex mapping
+11. TOTINC - Income bracket creation
+
+================================================================================
+CREATED: 2026-01-09
+================================================================================

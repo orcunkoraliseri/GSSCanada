@@ -1,0 +1,79 @@
+================================================================================
+  BEM SCHEDULES VALIDATION: TEMPORAL PROFILE COMPARISON
+================================================================================
+
+Generated: 2026-01-09
+Comparison: 16CEN15GSS vs 06CEN05GSS vs Census 2025
+Metric: Temporal Occupancy & Metabolic Profiles (24-Hour Cycle)
+
+================================================================================
+1. DATASETS COMPARED
+================================================================================
+
+A. 16CEN15GSS (Target)
+   - Plot: 16CEN15GSS_BEM_temporals.png
+
+B. 06CEN05GSS (Historic Baseline)
+   - Plot: 06CEN05GSS_BEM_temporals.png
+
+C. Census 2025 (Ref)
+   - Plot: BEM_Schedules_2025_temporals.png
+
+================================================================================
+2. AVERAGE OCCUPANCY PROFILE ANALYSIS (Presence 0.0 - 1.0)
+================================================================================
+
+A. Morning Wake-Up & Departure (06:00 - 09:00)
+------------------------------------------------------------
+- All three datasets show a sharp rise in "Active Presence" around 06:00-07:00
+  as people wake up.
+- A clear dip begins around 08:00-09:00 as workers/students leave home.
+- Result: ✅ Consistent behavior across years.
+
+B. Mid-Day / Working Hours (09:00 - 16:00)
+------------------------------------------------------------
+- 06CEN05GSS: Distinct "U-shape" trough. Occupancy drops to ~0.3-0.4 avg.
+- 16CEN15GSS: Matches 06CEN pattern closely. Clear evidence of work/school
+  commutes.
+- Census 2025: Similar trough, maintaining the pattern.
+
+C. Evening Return & Night (17:00 - 06:00)
+------------------------------------------------------------
+- All datasets show a rise starting 16:00-17:00.
+- Peak occupancy achieved by 21:00-22:00.
+- Nighttime occupancy (sleeping) remains high (~0.9-1.0).
+
+================================================================================
+3. METABOLIC RATE ANALYSIS (Heat Output in Watts)
+================================================================================
+
+A. Sleep State (00:00 - 06:00)
+------------------------------------------------------------
+- Consistent low baseline (~70-75W/person) represents sleeping metabolic rate.
+- Deepest dip around 04:00-05:00 is visible in all plots.
+
+B. Activity Spikes
+------------------------------------------------------------
+- Morning Peak (07:00-08:00): Breakfast/Getting ready (~80-100W).
+- Evening Peak (18:00-20:00): Dinner/Activities (~120-130W).
+- 16CEN15GSS peaks align perfectly with 06CEN05GSS, confirming activity
+  mapping (Cooking, Cleaning, Leisure) is functioning correctly.
+
+================================================================================
+4. CONCLUSION
+================================================================================
+
+The 16CEN15GSS Temporal Profiles are VALIDATED.
+
+1. Shape Consistency: The daily rhythm (Wake -> Leave -> Return -> Sleep)
+   closely matches both the historic 06CEN baseline and the 2025 benchmark.
+
+2. Behavioral Validity: Metabolic spikes correctly align with aggregation
+   activity slots (meals, chores).
+
+3. Pipeline Stability: The transition from 2005 GSS to 2015 GSS input data
+   has not disrupted the fundamental time-use signatures required for
+   accurate energy modeling.
+
+Status: PASSED ✅
+================================================================================

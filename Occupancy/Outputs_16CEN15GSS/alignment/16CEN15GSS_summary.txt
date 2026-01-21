@@ -1,0 +1,110 @@
+================================================================================
+16CEN15GSS COLUMN OBSERVATION - Pre-Alignment Analysis
+================================================================================
+
+This document analyzes column alignment between Census 2016 and GSS 2015
+datasets before implementing harmonization functions.
+
+================================================================================
+OVERVIEW
+================================================================================
+
+Census 2016 Source:
+  - File: Outputs_16CEN15GSS/alignment/2016_LINKED.csv
+  - Records: 273,956 persons in 126,361 households
+  - Columns: 37
+
+GSS 2015 Source:
+  - File: DataSources_GSS/Main_files/GSSMain_2015.txt
+  - Format: Fixed-width text with SPSS syntax (.sps)
+  - Columns: 848
+
+================================================================================
+CENSUS 2016 COLUMNS (37 Total)
+================================================================================
+
+ID Columns:
+  HH_ID, EF_ID, CF_ID, PP_ID, PID, SIM_HH_ID
+
+Demographics:
+  AGEGRP, SEX, MARSTH, HHSIZE, KOL, ATTSCH, LFTAG
+
+Socioeconomic:
+  NOCS, EMPIN, TOTINC, INCTAX, COW, HRSWRK
+
+Housing:
+  DTYPE, BEDRM, ROOM, BUILT, CONDO, REPAIR, VALUE
+
+Geography:
+  CMA, PR, POWST, MODE
+
+Family:
+  CFSTAT, CFSIZE, EFSIZE, CF_RP, GENSTAT, CITIZEN, CIP
+
+================================================================================
+GSS 2015 KEY DEMOGRAPHIC COLUMNS
+================================================================================
+
+Column      GSS 2015 Name    Description
+------      -------------    -----------
+AGEGRP  ->  AGEGR10          Age group (10-year)
+SEX     ->  SEX              Sex (Male/Female)
+MARSTH  ->  MARSTAT          Marital status
+HHSIZE  ->  HSDSIZEC         Household size category
+LFTAG   ->  ACT7DAYS         Labour force / Activity 7 days
+NOCS    ->  NOC1110Y         Occupation (NOC 2011, 10 categories)
+TOTINC  ->  INCG1            Income group
+CMA     ->  LUC_RST          Urban/Rural classification
+PR      ->  PRV              Province
+KOL     ->  LAN_01           Knowledge of official languages
+ATTSCH  ->  EDM_02           School attendance / Education
+
+================================================================================
+COLUMN MAPPING STATUS
+================================================================================
+
+[OK] Direct Match Available (11 columns):
+  AGEGRP  -> AGEGR10      (Age group categories)
+  SEX     -> SEX          (Direct match)
+  MARSTH  -> MARSTAT      (Marital status)
+  HHSIZE  -> HSDSIZEC     (Household size)
+  LFTAG   -> ACT7DAYS     (Labour force activity)
+  NOCS    -> NOC1110Y     (Occupation codes - NOC 2011)
+  TOTINC  -> INCG1        (Income groups)
+  CMA     -> LUC_RST      (Urban/Rural/CMA)
+  PR      -> PRV          (Province)
+  KOL     -> LAN_01       (Language)
+  ATTSCH  -> EDM_02       (Education/School)
+
+[X] NOT Found in GSS 2015:
+  COW     (Class of worker)
+  HRSWRK  (Hours worked)
+  POWST   (Place of work status)
+  MODE    (Commuting mode - only TRANSDUR duration available)
+
+================================================================================
+COMPARISON WITH 06CEN05GSS
+================================================================================
+
+The 06CEN05GSS alignment used these GSS 2005 columns:
+  - AGEGR10, sex, marstat, HSDSIZEC, ACT7DAYS
+  - SOC91C10, INCM, LUC_RST, PRV, LANHSDC, EDUSTAT
+
+Key differences in GSS 2015:
+  1. NOCS: SOC91C10 (GSS2005) -> NOC1110Y (GSS2015) different classification
+  2. KOL:  LANHSDC (GSS2005) -> LAN_01 (GSS2015) different variable
+  3. ATTSCH: EDUSTAT (GSS2005) -> EDM_02 (GSS2015) different variable
+  4. TOTINC: INCM (GSS2005) -> INCG1 (GSS2015) different groupings
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Analyze unique values in each GSS 2015 column
+2. Compare category codes between Census 2016 and GSS 2015
+3. Create harmonization mappings for each column
+4. Implement harmonize_* functions in 16CEN15GSS_alignment.py
+
+================================================================================
+CREATED: 2026-01-09
+================================================================================
