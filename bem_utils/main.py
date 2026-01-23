@@ -1303,13 +1303,13 @@ def option_kfold_comparative_simulation() -> None:
     print(f"\nK-Fold Comparative Simulation complete. Results in: {batch_dir}")
 
 
-def option_kfold_comparative_neighbourhood_simulation() -> None:
+def option_batch_comparative_neighbourhood_simulation() -> None:
     """Option 7: K-Fold Comparative Neighbourhood Simulation (runs K iterations, averages results)."""
     import random
     import sqlite3
     import numpy as np
     
-    print("\n=== K-Fold Comparative Neighbourhood Simulation ===")
+    print("\n=== Batch Comparative Neighbourhood Simulation ===")
     print("This runs comparative neighbourhood simulations K times with different random household sets,")
     print("then averages results to reduce selection bias.")
     
@@ -1675,7 +1675,7 @@ def main_menu() -> None:
         print("  4. K-Fold Comparative, single building (averaged over K runs) (2025/2015/2005/Default)")
         print("  5. Neighbourhood simulation (multi-building)")
         print("  6. Comparative neighbourhood (2025/2015/2005/Default)")
-        print("  7. K-Fold Comparative, Neighbourhood (averaged over K runs) (2025/2015/2005/Default)")
+        print("  7. Batch Comparative Neighbourhood Simulation (averaged over K runs) (2025/2015/2005/Default)")
         print("  8. Visualize performance results")
         print("  q. Quit")
         
@@ -1694,7 +1694,7 @@ def main_menu() -> None:
         elif choice == '6':
             option_comparative_neighbourhood_simulation()
         elif choice == '7':
-            option_kfold_comparative_neighbourhood_simulation()
+            option_batch_comparative_neighbourhood_simulation()
         elif choice == '8':
             option_visualize_results()
         elif choice == 'q':

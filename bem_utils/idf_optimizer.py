@@ -7,9 +7,11 @@ Prepares IDF files for simulation by:
 3. Adding Output:SQLite for result extraction
 4. Fixing simulation settings (timestep, solar distribution)
 5. Injecting missing objects (OtherSideCoefficients, etc.)
+6. Standardizing residential schedules to DOE MidRise Apartment baseline
 """
 import os
 import re
+import json
 from typing import Optional, List
 from eppy.modeleditor import IDF
 
@@ -218,8 +220,168 @@ def optimize_idf(idf: IDF, verbose: bool = True) -> List[str]:
     return actions
 
 
+
+# Cache for standard residential schedules (loaded once)
+_STANDARD_SCHEDULES_CACHE: Optional[dict] = None
+
+
+def load_standard_residential_schedules(verbose: bool = False) -> dict:
+    """
+    Loads standardized MidRise Apartment schedules from the DOE Commercial
+    Reference Buildings (via OpenStudio Standards / schedule.json).
+
+    Data Source:
+        - U.S. Department of Energy (DOE) Commercial Reference Buildings
+        - OpenStudio Standards Gem (NREL)
+        - File: BEM_Setup/Templates/schedule.json
+
+    Returns:
+        dict: Standard residential schedules with 24-hour profiles:
+              {
+                  'occupancy': {'Weekday': [24 values], 'Weekend': [24 values]},
+                  'equipment': {'Weekday': [24 values], 'Weekend': [24 values]},
+                  'lighting':  {'Weekday': [24 values], 'Weekend': [24 values]},
+                  'dhw':       {'Weekday': [24 values], 'Weekend': [24 values]},
+                  'activity':  95.0  # Metabolic rate in Watts
+              }
+    """
+    global _STANDARD_SCHEDULES_CACHE
+
+    if _STANDARD_SCHEDULES_CACHE is not None:
+        return _STANDARD_SCHEDULES_CACHE
+
+    # Locate schedule.json
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    schedule_json_path = os.path.join(
+        base_dir, 'BEM_Setup', 'Templates', 'schedule.json'
+    )
+
+    if not os.path.exists(schedule_json_path):
+        if verbose:
+            print(f"  Warning: schedule.json not found at {schedule_json_path}")
+        return _get_fallback_schedules()
+
+    try:
+        with open(schedule_json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception as e:
+        if verbose:
+            print(f"  Warning: Could not load schedule.json: {e}")
+        return _get_fallback_schedules()
+
+    # Target schedules from MidRise Apartment
+    schedule_mapping = {
+        'occupancy': 'ApartmentMidRise OCC_APT_SCH',
+        'equipment': 'ApartmentMidRise EQP_APT_SCH',
+        'lighting': 'ApartmentMidRise LTG_APT_SCH',
+        'dhw': 'ApartmentMidRise APT_DHW_SCH',
+        'activity': 'ApartmentMidRise Activity Schedule',
+    }
+
+    result = {}
+
+    for key, schedule_name in schedule_mapping.items():
+        if schedule_name not in data:
+            if verbose:
+                print(f"  Warning: Schedule '{schedule_name}' not found")
+            continue
+
+        sch = data[schedule_name]
+
+        if key == 'activity':
+            # Activity is constant metabolic rate
+            for ds in sch.get('day_schedules', []):
+                if 'Default' in ds.get('identifier', ''):
+                    result['activity'] = ds['values'][0]
+                    break
+            continue
+
+        # Extract 24-hour profile from Default day schedule
+        hourly_values = [0.0] * 24
+
+        for ds in sch.get('day_schedules', []):
+            if 'Default' in ds.get('identifier', ''):
+                values = ds.get('values', [])
+                times = ds.get('times', [])
+
+                # Convert time-value pairs to 24-hour array
+                for i, time_pair in enumerate(times):
+                    hour = time_pair[0]
+                    value = values[i] if i < len(values) else values[-1]
+
+                    # Fill from this hour until next time point
+                    if i + 1 < len(times):
+                        end_hour = times[i + 1][0]
+                    else:
+                        end_hour = 24
+
+                    for h in range(hour, min(end_hour, 24)):
+                        hourly_values[h] = value
+
+                break
+
+        # For residential, Weekday and Weekend are often the same in DOE models
+        result[key] = {
+            'Weekday': hourly_values.copy(),
+            'Weekend': hourly_values.copy()
+        }
+
+    # Ensure activity has a default
+    if 'activity' not in result:
+        result['activity'] = 95.0
+
+    if verbose:
+        print("  Loaded standard MidRise Apartment schedules from schedule.json")
+
+    _STANDARD_SCHEDULES_CACHE = result
+    return result
+
+
+def _get_fallback_schedules() -> dict:
+    """
+    Returns hardcoded fallback schedules if schedule.json is unavailable.
+    Based on DOE MidRise Apartment reference building.
+    """
+    # MidRise Apartment Occupancy (high night, low day)
+    occ_weekday = [
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.85,
+        0.39, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
+        0.30, 0.52, 0.87, 0.87, 0.87, 1.0, 1.0, 1.0
+    ]
+
+    # MidRise Apartment Equipment
+    eqp_weekday = [
+        0.45, 0.41, 0.39, 0.38, 0.38, 0.43, 0.54, 0.65,
+        0.66, 0.67, 0.69, 0.70, 0.69, 0.66, 0.65, 0.68,
+        0.80, 1.00, 1.00, 0.93, 0.89, 0.85, 0.71, 0.58
+    ]
+
+    # MidRise Apartment Lighting (low values - efficient lighting)
+    ltg_weekday = [
+        0.01, 0.01, 0.01, 0.01, 0.03, 0.07, 0.08, 0.07,
+        0.03, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.04,
+        0.08, 0.11, 0.15, 0.18, 0.18, 0.12, 0.07, 0.03
+    ]
+
+    # MidRise Apartment DHW (morning and evening peaks)
+    dhw_weekday = [
+        0.08, 0.04, 0.02, 0.02, 0.04, 0.27, 0.94, 1.00,
+        0.96, 0.84, 0.76, 0.61, 0.53, 0.47, 0.41, 0.47,
+        0.55, 0.73, 0.86, 0.82, 0.75, 0.61, 0.53, 0.29
+    ]
+
+    return {
+        'occupancy': {'Weekday': occ_weekday, 'Weekend': occ_weekday.copy()},
+        'equipment': {'Weekday': eqp_weekday, 'Weekend': eqp_weekday.copy()},
+        'lighting': {'Weekday': ltg_weekday, 'Weekend': ltg_weekday.copy()},
+        'dhw': {'Weekday': dhw_weekday, 'Weekend': dhw_weekday.copy()},
+        'activity': 95.0
+    }
+
+
 def prepare_idf_for_simulation(idf_path: str, output_path: str = None, 
-                                verbose: bool = True) -> bool:
+                                verbose: bool = True,
+                                standardize_schedules: bool = True) -> bool:
     """
     Prepares an IDF file for simulation.
     
@@ -227,6 +389,7 @@ def prepare_idf_for_simulation(idf_path: str, output_path: str = None,
         idf_path: Path to the source IDF file.
         output_path: Path to save the optimized IDF. If None, overwrites source.
         verbose: If True, print progress messages.
+        standardize_schedules: If True, replaces schedules with DOE MidRise standard.
     
     Returns:
         True if successful, False otherwise.
@@ -246,6 +409,12 @@ def prepare_idf_for_simulation(idf_path: str, output_path: str = None,
         idf = IDF(idf_path)
         actions = optimize_idf(idf, verbose=verbose)
         
+        # Apply residential schedule standardization if requested
+        if standardize_schedules:
+            std_schedules = load_standard_residential_schedules(verbose=verbose)
+            std_actions = standardize_residential_schedules(idf, std_schedules, verbose=verbose)
+            actions.extend(std_actions)
+        
         if actions:
             idf.saveas(output_path)
             if verbose:
@@ -259,3 +428,232 @@ def prepare_idf_for_simulation(idf_path: str, output_path: str = None,
     except Exception as e:
         print(f"Error optimizing {idf_path}: {e}")
         return False
+
+def scale_water_use_peak_flow(
+    idf: IDF, 
+    standard_schedules: dict, 
+    target_vol_m3: float = 0.22, 
+    verbose: bool = False
+) -> List[str]:
+    """
+    Scales the Peak Flow Rate of all WaterUse:Equipment objects so that the
+    total daily consumption matches the target volume (default 220 L/day)
+    when driven by the Standard Residential DHW schedule.
+    """
+    actions = []
+    water_objs = idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
+    
+    if not water_objs or 'dhw' not in standard_schedules:
+        return actions
+
+    # Calculate sum of hourly fractions in standard schedule
+    dhw_sch = standard_schedules['dhw']['Weekday']
+    sum_fractions = sum(dhw_sch)
+    
+    if sum_fractions <= 0:
+        return actions
+
+    # Derived Total Peak Flow (m3/s) needed to hit daily target
+    # Peak * Sum_Fractions * 3600 = Daily_Vol
+    target_total_peak = target_vol_m3 / (sum_fractions * 3600)
+    
+    # Calculate existing total peak
+    original_total_peak = 0.0
+    for w in water_objs:
+        if hasattr(w, 'Peak_Flow_Rate'):
+             try:
+                 val = float(w.Peak_Flow_Rate)
+                 original_total_peak += val
+             except:
+                 pass
+    
+    scaling_factor = 1.0
+    if original_total_peak > 0:
+        scaling_factor = target_total_peak / original_total_peak
+        if verbose:
+            msg = f"  Rescaling WaterUse Peak Flows by {scaling_factor:.4f} (Target: ~{target_vol_m3*1000:.0f} L/day)"
+            print(msg)
+            actions.append(msg)
+    
+    # Apply scaling
+    for w in water_objs:
+        if hasattr(w, 'Peak_Flow_Rate'):
+             try:
+                 old_val = float(w.Peak_Flow_Rate)
+                 new_val = old_val * scaling_factor
+                 w.Peak_Flow_Rate = new_val
+             except:
+                 pass
+            
+    if verbose and scaling_factor != 1.0 and scaling_factor != 0.0:
+         actions.append(f"Updated {len(water_objs)} WaterUse:Equipment objects with scaled flow")
+         
+    return actions
+
+
+def standardize_residential_schedules(
+    idf: IDF, 
+    standard_schedules: dict,
+    verbose: bool = True
+) -> List[str]:
+    """
+    Standardizes residential schedules in an IDF to DOE MidRise Apartment baseline.
+    
+    This is the "gatekeeper" function that ensures ALL IDFs start from the same
+    schedule baseline, enabling fair comparisons between Default and year scenarios.
+    
+    Data Source:
+        - U.S. Department of Energy (DOE) Commercial Reference Buildings
+        - OpenStudio Standards Gem (NREL)
+        - ASHRAE Standard 90.1 compliant schedules
+    
+    Args:
+        idf: Eppy IDF object to modify.
+        standard_schedules: Dict from load_standard_residential_schedules().
+        verbose: If True, print progress messages.
+    
+    Returns:
+        List of actions performed.
+    """
+    actions = []
+    
+    def create_compact_schedule_obj(
+        idf: IDF, 
+        name: str, 
+        type_limit: str, 
+        hourly_values: list
+    ):
+        """Creates a Schedule:Compact object with 24 hourly values."""
+        sch = idf.newidfobject("Schedule:Compact")
+        
+        # Build fields list
+        fields = [
+            "Schedule:Compact",
+            name,
+            type_limit,
+            "Through: 12/31",
+            "For: AllDays",
+        ]
+        
+        # Add hourly values
+        for hour in range(24):
+            val = hourly_values[hour] if hour < len(hourly_values) else hourly_values[-1]
+            fields.append(f"Until: {hour+1:02d}:00")
+            fields.append(f"{val:.4f}")
+        
+        sch.obj = fields
+        return sch
+    
+    # 1. Create standard schedule objects
+    schedule_names = {}
+    
+    # Occupancy schedule
+    if 'occupancy' in standard_schedules:
+        occ_name = "Standard_Residential_Occupancy"
+        create_compact_schedule_obj(
+            idf, occ_name, "Fraction", 
+            standard_schedules['occupancy']['Weekday']
+        )
+        schedule_names['occupancy'] = occ_name
+        actions.append(f"Created schedule: {occ_name}")
+    
+    # Equipment schedule
+    if 'equipment' in standard_schedules:
+        eqp_name = "Standard_Residential_Equipment"
+        create_compact_schedule_obj(
+            idf, eqp_name, "Fraction", 
+            standard_schedules['equipment']['Weekday']
+        )
+        schedule_names['equipment'] = eqp_name
+        actions.append(f"Created schedule: {eqp_name}")
+    
+    # Lighting schedule
+    if 'lighting' in standard_schedules:
+        ltg_name = "Standard_Residential_Lighting"
+        create_compact_schedule_obj(
+            idf, ltg_name, "Fraction", 
+            standard_schedules['lighting']['Weekday']
+        )
+        schedule_names['lighting'] = ltg_name
+        actions.append(f"Created schedule: {ltg_name}")
+    
+    # DHW schedule
+    if 'dhw' in standard_schedules:
+        dhw_name = "Standard_Residential_DHW"
+        create_compact_schedule_obj(
+            idf, dhw_name, "Fraction", 
+            standard_schedules['dhw']['Weekday']
+        )
+        schedule_names['dhw'] = dhw_name
+        actions.append(f"Created schedule: {dhw_name}")
+    
+    # Activity schedule (constant metabolic rate)
+    activity_val = standard_schedules.get('activity', 95.0)
+    act_name = "Standard_Residential_Activity"
+    act_sch = idf.newidfobject("Schedule:Compact")
+    act_sch.obj = [
+        "Schedule:Compact",
+        act_name,
+        "Any Number",
+        "Through: 12/31",
+        "For: AllDays",
+        "Until: 24:00",
+        f"{activity_val:.1f}"
+    ]
+    schedule_names['activity'] = act_name
+    actions.append(f"Created schedule: {act_name} ({activity_val}W)")
+    
+    # 2. Apply schedules to load objects
+    # People objects
+    people_objs = idf.idfobjects.get('PEOPLE', [])
+    for p in people_objs:
+        if 'occupancy' in schedule_names:
+            p.Number_of_People_Schedule_Name = schedule_names['occupancy']
+        if 'activity' in schedule_names:
+            p.Activity_Level_Schedule_Name = schedule_names['activity']
+    if people_objs:
+        actions.append(f"Updated {len(people_objs)} People objects")
+    
+    # Lights objects
+    lights_objs = idf.idfobjects.get('LIGHTS', [])
+    for lt in lights_objs:
+        if 'lighting' in schedule_names:
+            lt.Schedule_Name = schedule_names['lighting']
+    if lights_objs:
+        actions.append(f"Updated {len(lights_objs)} Lights objects")
+    
+    # Electric Equipment objects
+    equip_objs = idf.idfobjects.get('ELECTRICEQUIPMENT', [])
+    for eq in equip_objs:
+        if 'equipment' in schedule_names:
+            eq.Schedule_Name = schedule_names['equipment']
+    if equip_objs:
+        actions.append(f"Updated {len(equip_objs)} ElectricEquipment objects")
+    
+    # Gas Equipment objects
+    gas_objs = idf.idfobjects.get('GASEQUIPMENT', [])
+    for g in gas_objs:
+        if 'equipment' in schedule_names:
+            g.Schedule_Name = schedule_names['equipment']
+    if gas_objs:
+        actions.append(f"Updated {len(gas_objs)} GasEquipment objects")
+    
+    # WaterUse:Equipment objects
+    water_objs = idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
+    if water_objs and 'dhw' in schedule_names:
+        for w in water_objs:
+            if hasattr(w, 'Flow_Rate_Fraction_Schedule_Name'):
+                w.Flow_Rate_Fraction_Schedule_Name = schedule_names['dhw']
+        
+        # Scale Peak Flow Rates (Consolidated Load Strategy)
+        scaling_actions = scale_water_use_peak_flow(idf, standard_schedules, verbose=verbose)
+        actions.extend(scaling_actions)
+        
+        actions.append(f"Updated {len(water_objs)} WaterUse:Equipment objects with standard schedule and scaled flow")
+    
+    if verbose:
+        print("  Standardized residential schedules (DOE MidRise Apartment baseline)")
+        for action in actions:
+            print(f"    {action}")
+    
+    return actions

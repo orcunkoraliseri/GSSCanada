@@ -1,5 +1,6 @@
 import csv
 import glob
+import json
 import os
 from collections import defaultdict
 from typing import Optional
@@ -546,6 +547,9 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
     """
     Injects specific household schedules into an IDF file.
     
+    Uses DOE MidRise Apartment schedules as the standardized baseline,
+    then applies occupancy-based modifications for year scenarios.
+    
     Args:
         idf_path (str): Path to the base IDF.
         output_path (str): Path to save the modified IDF.
@@ -555,7 +559,10 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
     IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd") 
     idf = IDF(idf_path)
     
-    # 1. Prepare Data
+    # 0. Load standard residential schedules (DOE MidRise Apartment baseline)
+    standard_schedules = idf_optimizer.load_standard_residential_schedules(verbose=False)
+    
+    # 1. Prepare Occupancy Data from TUS/Census
     day_types = ['Weekday', 'Weekend']
     occ_data = {}
     met_data = {}
@@ -574,14 +581,9 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
     metadata = schedule_data.get('metadata', {})
     hhsize = metadata.get('hhsize', 2)
     
-    # simple floor area estimation (sum of Zone areas if available, or just use People default)
-    # To be safe, we just set Number of People = hhsize.
-    # And we REMOVE Zone_Floor_Area_per_Person fields if they exist to force usage of Number of People.
-    
     people_objs = idf.idfobjects['PEOPLE']
     for people in people_objs:
         people.Number_of_People = hhsize
-        # Clear conflicting fields (use try/except as fields may not exist in all IDFs)
         try:
             people.Zone_Floor_Area_per_Person = ""
         except Exception:
@@ -595,11 +597,10 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
         except Exception:
             pass
     
-    # 3. Create Basic Schedules
+    # 3. Create Occupancy and Metabolic Schedules from TUS data
     occ_sch_name = f"Occ_Sch_HH_{hh_id}"
     met_sch_name = f"Met_Sch_HH_{hh_id}"
     
-    # Helper to re-format for create_compact_schedule
     def fmt_for_compact(data_list):
         return [{'hour': i, 'value': v} for i, v in enumerate(data_list)]
 
@@ -616,112 +617,64 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
         people.Number_of_People_Schedule_Name = occ_sch_name
         people.Activity_Level_Schedule_Name = met_sch_name
 
-    # 4. Presence Projection for Loads
-    # Strategy: Create a new generic "Projected_Fraction" schedule that is 1 when Home, 0 when Away.
-    # Then multiply existing schedules? No, E+ schedules don't multiply easily without EMS.
-    # Simpler: We replace the schedules with a NEW schedule that toggles 0/1 based on occupancy.
-    # But we lose the original shape (e.g. lights only on in evening).
+    # 4. Apply presence projection using STANDARD schedules as baseline
+    # Formula: result = occ × MAX(standard_val, active_floor) + (1-occ) × baseload
     
-    # USER REQUEST: "when people are inside the home it follows the default schedule patterns"
-    # This implies we DO need to know the default pattern.
-    # Given parsing is hard, we can assume a "Generic Residential Profile" or try to clone/modify.
-    
-    # Let's create a "Presence_Mask_Schedule" (1 if occ>0.3 else 0).
-    # Then we invoke a helper to apply this mask.
-    
-    # Construct mask data
-    mask_data = {}
-    threshold = 0.3
-    for dtype, values in occ_data.items():
-        mask_data[dtype] = [1.0 if v > threshold else 0.0 for v in values]
-        
-    mask_sch_name = f"Presence_Mask_HH_{hh_id}"
-    mask_dict = {k: fmt_for_compact(v) for k, v in mask_data.items()}
-    
-    mask_obj = idf.newidfobject("Schedule:Compact")
-    mask_obj.obj = ["Schedule:Compact"] + create_compact_schedule(mask_sch_name, "Fraction", mask_dict)
-    
-    # Now, how to apply this mask to existing schedules?
-    # Complex without EMS.
-    # ALTERNATIVE: Since we are running a simplified model, maybe just use the Mask AS the schedule?
-    # "All loads zero when away". When home, they are ON (1.0).
-    # This is a reasonable approximation for "Default Schedule" which is often flat or simple.
-    # The user said: "when people are inside ... it follows default schedule".
-    # If default is 1.0, then Mask is perfect.
-    # If default varies, Mask loses info.
-    
-    # Let's apply this Mask to Lights and Equipment.
-    # NOTE: WATERUSE:EQUIPMENT is excluded because its Flow_Rate_Fraction uses 
-    # small values (0.05, 0.1) and replacing with 1.0 would cause unrealistic spikes.
-    # Water heating follows the base IDF schedule.
-    
-    # 4b. Apply presence projection to Lights, Equipment, Gas
-    # Formula: updated_schedule = default_schedule × presence_mask
-    # - When home (occ > threshold): keep default schedule value
-    # - When away (occ <= threshold): zero out
+    # [FIX] Apply Water Use Peak Scaling for Year Scenarios
+    # The integration logic projects schedules but preserves original Peak Flow Rates.
+    # We must scale the peaks to match the standard baseline consumption (~220 L/day).
+    idf_optimizer.scale_water_use_peak_flow(idf, standard_schedules, verbose=True)
     
     load_targets = [
-        ('LIGHTS', 'Schedule_Name'),
-        ('ELECTRICEQUIPMENT', 'Schedule_Name'),
-        ('GASEQUIPMENT', 'Schedule_Name'),
-        ('WATERUSE:EQUIPMENT', 'Flow_Rate_Fraction_Schedule_Name'),
+        ('LIGHTS', 'Schedule_Name', 'lighting', 0.50, 0.05),
+        ('ELECTRICEQUIPMENT', 'Schedule_Name', 'equipment', 0.50, 0.35),
+        ('GASEQUIPMENT', 'Schedule_Name', 'equipment', 0.50, 0.35),
+        ('WATERUSE:EQUIPMENT', 'Flow_Rate_Fraction_Schedule_Name', 'dhw', 0.0, 0.0),
     ]
     
-    created_schedules = {}  # Cache to avoid duplicate schedules
+    created_schedules = {}
     
-    for obj_type, field_name in load_targets:
+    for obj_type, field_name, std_key, active_floor, baseload in load_targets:
         objs = idf.idfobjects.get(obj_type, [])
+        
+        # Get standard schedule values
+        std_values = standard_schedules.get(std_key, {}).get('Weekday', [0.5] * 24)
+        
         for idx, obj in enumerate(objs):
             try:
                 if not hasattr(obj, field_name):
                     continue
-                orig_sch_name = getattr(obj, field_name)
-                if not orig_sch_name:
-                    continue
                 
-                # Check cache for already-created projected schedule
-                cache_key = f"{orig_sch_name}_{hh_id}"
+                # Create projected schedule using standard baseline
+                cache_key = f"{obj_type}_{std_key}_{hh_id}"
                 if cache_key in created_schedules:
                     setattr(obj, field_name, created_schedules[cache_key])
                     continue
                 
-                # Parse original schedule values
-                orig_values = parse_schedule_values(idf, orig_sch_name)
-                
-                if orig_values is None:
-                    # Could not parse - keep original schedule unchanged
-                    continue
-                
-                # Multiply: updated = default × presence_mask
                 proj_data = {}
                 for dtype in ['Weekday', 'Weekend']:
-                    if dtype in orig_values and dtype in occ_data:
+                    if dtype in occ_data:
                         proj_data[dtype] = []
+                        std_vals = standard_schedules.get(std_key, {}).get(dtype, std_values)
+                        
                         for h in range(24):
                             occ_val = occ_data[dtype][h] if h < len(occ_data[dtype]) else 0
-                            orig_val = orig_values[dtype][h] if h < len(orig_values[dtype]) else 1.0
-                            # Hybrid proportional approach:
-                            # result = occ × MAX(orig_val, active_floor) + (1-occ) × baseload
-                            # This ensures when present, we use at least the default schedule
-                            if obj_type == 'LIGHTS':
-                                # Lights: active_floor=0.50, baseload=0.05
-                                active_value = max(orig_val, 0.50)
-                                proj_val = occ_val * active_value + (1.0 - occ_val) * 0.05
-                            elif obj_type == 'ELECTRICEQUIPMENT':
-                                # Equipment: active_floor=0.50, baseload=0.35
-                                active_value = max(orig_val, 0.50)
-                                proj_val = occ_val * active_value + (1.0 - occ_val) * 0.35
-                            elif obj_type == 'WATERUSE:EQUIPMENT':
-                                # Water: proportional with original schedule
-                                proj_val = occ_val * orig_val  # No water use when absent
+                            std_val = std_vals[h] if h < len(std_vals) else 0.5
+                            
+                            if obj_type == 'WATERUSE:EQUIPMENT':
+                                # Water: proportional with standard schedule
+                                proj_val = occ_val * std_val
                             else:
-                                proj_val = orig_val
+                                # Lights/Equipment: hybrid proportional
+                                active_value = max(std_val, active_floor)
+                                proj_val = occ_val * active_value + (1.0 - occ_val) * baseload
+                            
                             proj_data[dtype].append(proj_val)
                 
                 if not proj_data:
                     continue
                 
-                # Create new schedule with unique name
+                # Create new schedule
                 proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
                 proj_dict = {k: fmt_for_compact(v) for k, v in proj_data.items()}
                 
@@ -730,7 +683,6 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
                     proj_sch_name, "Fraction", proj_dict
                 )
                 
-                # Apply to object and cache
                 setattr(obj, field_name, proj_sch_name)
                 created_schedules[cache_key] = proj_sch_name
                 
@@ -1066,8 +1018,13 @@ def inject_neighbourhood_default_schedules(
     Injects DEFAULT residential schedules into a prepared neighbourhood IDF.
     
     This is used for the "Default" scenario in comparative simulations.
-    It applies standard residential profiles WITHOUT occupancy-based modifications,
+    It applies DOE MidRise Apartment schedules from OpenStudio Standards,
     providing a proper baseline for comparison.
+    
+    Data Source:
+        - U.S. Department of Energy (DOE) Commercial Reference Buildings
+        - OpenStudio Standards Gem (NREL)
+        - ASHRAE Standard 90.1 compliant schedules
     
     Args:
         idf_path: Path to the prepared neighbourhood IDF.
@@ -1079,70 +1036,26 @@ def inject_neighbourhood_default_schedules(
     IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
     idf = IDF(idf_path)
     
-    # Define default residential profiles (same as used in inject_neighbourhood_schedules)
-    # These represent typical Canadian residential patterns
+    # Load DOE MidRise Apartment standard schedules
+    standard_schedules = idf_optimizer.load_standard_residential_schedules(verbose=verbose)
     
-    # Typical residential lighting profile (fraction of max)
-    default_light_weekday = [
-        0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.3, 0.2,
-        0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.7, 0.9, 0.9,
-        0.8, 0.6, 0.4, 0.2
-    ]
-    default_light_weekend = [
-        0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.4, 0.4,
-        0.3, 0.3, 0.3, 0.3, 0.3, 0.4, 0.5, 0.7, 0.9, 0.9,
-        0.8, 0.6, 0.4, 0.2
-    ]
+    # Extract profiles from standard schedules
+    default_light_weekday = standard_schedules.get('lighting', {}).get('Weekday', [0.1] * 24)
+    default_light_weekend = standard_schedules.get('lighting', {}).get('Weekend', default_light_weekday)
     
-    # Typical residential equipment profile (fraction of max)
-    default_equip_weekday = [
-        0.3, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.6, 0.5, 0.4,
-        0.4, 0.4, 0.5, 0.4, 0.4, 0.4, 0.5, 0.6, 0.7, 0.7,
-        0.6, 0.5, 0.4, 0.3
-    ]
-    default_equip_weekend = [
-        0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.4, 0.5, 0.6,
-        0.6, 0.6, 0.6, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.7,
-        0.6, 0.5, 0.4, 0.3
-    ]
+    default_equip_weekday = standard_schedules.get('equipment', {}).get('Weekday', [0.5] * 24)
+    default_equip_weekend = standard_schedules.get('equipment', {}).get('Weekend', default_equip_weekday)
     
-    # Default occupancy profile (typical residential: home at night, away during work hours)
-    default_occ_weekday = [
-        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.4, 0.2, 0.2,
-        0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.6, 0.8, 0.9,
-        1.0, 1.0, 1.0, 1.0
-    ]
-    default_occ_weekend = [
-        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9, 0.8, 0.8, 0.8,
-        0.8, 0.8, 0.7, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1.0,
-        1.0, 1.0, 1.0, 1.0
-    ]
+    default_occ_weekday = standard_schedules.get('occupancy', {}).get('Weekday', [0.5] * 24)
+    default_occ_weekend = standard_schedules.get('occupancy', {}).get('Weekend', default_occ_weekday)
     
-    # Default metabolic activity (W) - typical sedentary/light activity
-    default_met_weekday = [70] * 24  # ~70W sedentary
-    default_met_weekend = [70] * 24
+    default_water_weekday = standard_schedules.get('dhw', {}).get('Weekday', [0.1] * 24)
+    default_water_weekend = standard_schedules.get('dhw', {}).get('Weekend', default_water_weekday)
     
-    # Water use profile
-    default_water_weekday = [
-        0.05, 0.05, 0.05, 0.05, 0.1, 0.3, 0.5, 0.4, 0.2, 0.1,
-        0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.4,
-        0.3, 0.2, 0.1, 0.05
-    ]
-    default_water_weekend = default_water_weekday
-    
-    # Try Single Building Fallback to align defaults
-    # This ensures the 'Default' scenario in Neighbourhood sims matches what users see in Single Building sims
-    sb_light, sb_equip, sb_water = _get_single_building_fallback_profiles(verbose)
-    
-    if sb_light:
-        default_light_weekday = sb_light.get('Weekday', default_light_weekday)
-        default_light_weekend = sb_light.get('Weekend', default_light_weekend)
-    if sb_equip:
-        default_equip_weekday = sb_equip.get('Weekday', default_equip_weekday)
-        default_equip_weekend = sb_equip.get('Weekend', default_equip_weekend)
-    if sb_water:
-        default_water_weekday = sb_water.get('Weekday', default_water_weekday)
-        default_water_weekend = sb_water.get('Weekend', default_water_weekend)
+    # Default metabolic activity from standard schedules
+    default_activity = standard_schedules.get('activity', 95.0)
+    default_met_weekday = [default_activity] * 24
+    default_met_weekend = [default_activity] * 24
 
     
     def to_hour_value_list(values: list) -> list:
