@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import Optional
 from eppy.modeleditor import IDF
 from bem_utils import idf_optimizer
+from bem_utils import schedule_generator
 
 
 def export_schedule_csv(
@@ -543,20 +544,29 @@ def inject_presence_projected_schedules(idf: IDF, hh_id: str, occ_data: dict, th
     return
 
 
-def inject_schedules(idf_path, output_path, hh_id, schedule_data):
+def inject_schedules(
+    idf_path: str,
+    output_path: str,
+    hh_id: str,
+    schedule_data: dict,
+    epw_path: Optional[str] = None
+) -> None:
     """
     Injects specific household schedules into an IDF file.
-    
+
     Uses DOE MidRise Apartment schedules as the standardized baseline,
-    then applies occupancy-based modifications for year scenarios.
-    
+    then applies occupancy-based modifications for year scenarios:
+    - Lighting: Daylight Threshold Method (Gatekeeper logic).
+    - Equipment/DHW: Presence Filter Method (Min/Max toggling).
+
     Args:
-        idf_path (str): Path to the base IDF.
-        output_path (str): Path to save the modified IDF.
-        hh_id (str): Household ID.
-        schedule_data (dict): Data for this household from load_schedules.
+        idf_path: Path to the base IDF.
+        output_path: Path to save the modified IDF.
+        hh_id: Household ID.
+        schedule_data: Data for this household from load_schedules.
+        epw_path: Path to the EPW weather file (used to find .stat for lighting).
     """
-    IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd") 
+    IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
     idf = IDF(idf_path)
     
     # 0. Load standard residential schedules (DOE MidRise Apartment baseline)
@@ -617,75 +627,74 @@ def inject_schedules(idf_path, output_path, hh_id, schedule_data):
         people.Number_of_People_Schedule_Name = occ_sch_name
         people.Activity_Level_Schedule_Name = met_sch_name
 
-    # 4. Apply presence projection using STANDARD schedules as baseline
-    # Formula: result = occ × MAX(standard_val, active_floor) + (1-occ) × baseload
-    
+    # 4. Apply presence-based schedule transformations
+    # Using the new schedule_generator module for Lighting, Equipment, and DHW.
+
     # [FIX] Apply Water Use Peak Scaling for Year Scenarios
-    # The integration logic projects schedules but preserves original Peak Flow Rates.
-    # We must scale the peaks to match the standard baseline consumption (~220 L/day).
     idf_optimizer.scale_water_use_peak_flow(idf, standard_schedules, verbose=True)
-    
+
+    # Initialize generators
+    lighting_gen = schedule_generator.LightingGenerator(epw_path=epw_path)
+
     load_targets = [
-        ('LIGHTS', 'Schedule_Name', 'lighting', 0.50, 0.05),
-        ('ELECTRICEQUIPMENT', 'Schedule_Name', 'equipment', 0.50, 0.35),
-        ('GASEQUIPMENT', 'Schedule_Name', 'equipment', 0.50, 0.35),
-        ('WATERUSE:EQUIPMENT', 'Flow_Rate_Fraction_Schedule_Name', 'dhw', 0.0, 0.0),
+        ('LIGHTS', 'Schedule_Name', 'lighting'),
+        ('ELECTRICEQUIPMENT', 'Schedule_Name', 'equipment'),
+        ('GASEQUIPMENT', 'Schedule_Name', 'equipment'),
+        ('WATERUSE:EQUIPMENT', 'Flow_Rate_Fraction_Schedule_Name', 'dhw'),
     ]
-    
+
     created_schedules = {}
-    
-    for obj_type, field_name, std_key, active_floor, baseload in load_targets:
+
+    for obj_type, field_name, std_key in load_targets:
         objs = idf.idfobjects.get(obj_type, [])
-        
-        # Get standard schedule values
-        std_values = standard_schedules.get(std_key, {}).get('Weekday', [0.5] * 24)
-        
+
+        # Get standard schedule values for PresenceFilter
+        std_weekday = standard_schedules.get(std_key, {}).get('Weekday', [0.5] * 24)
+        std_weekend = standard_schedules.get(std_key, {}).get('Weekend', std_weekday)
+
         for idx, obj in enumerate(objs):
             try:
                 if not hasattr(obj, field_name):
                     continue
-                
-                # Create projected schedule using standard baseline
+
                 cache_key = f"{obj_type}_{std_key}_{hh_id}"
                 if cache_key in created_schedules:
                     setattr(obj, field_name, created_schedules[cache_key])
                     continue
-                
+
                 proj_data = {}
                 for dtype in ['Weekday', 'Weekend']:
-                    if dtype in occ_data:
-                        proj_data[dtype] = []
-                        std_vals = standard_schedules.get(std_key, {}).get(dtype, std_values)
-                        
-                        for h in range(24):
-                            occ_val = occ_data[dtype][h] if h < len(occ_data[dtype]) else 0
-                            std_val = std_vals[h] if h < len(std_vals) else 0.5
-                            
-                            if obj_type == 'WATERUSE:EQUIPMENT':
-                                # Water: proportional with standard schedule
-                                proj_val = occ_val * std_val
-                            else:
-                                # Lights/Equipment: hybrid proportional
-                                active_value = max(std_val, active_floor)
-                                proj_val = occ_val * active_value + (1.0 - occ_val) * baseload
-                            
-                            proj_data[dtype].append(proj_val)
-                
+                    if dtype not in occ_data:
+                        continue
+
+                    presence = occ_data[dtype]
+                    default_vals = std_weekday if dtype == 'Weekday' else std_weekend
+
+                    if obj_type == 'LIGHTS':
+                        # Daylight Threshold Method (with default schedule for gradual changes)
+                        proj_data[dtype] = lighting_gen.generate(
+                            presence, default_schedule=default_vals, day_type=dtype
+                        )
+                    else:
+                        # Presence Filter Method (Equipment & DHW)
+                        pf = schedule_generator.PresenceFilter(default_vals, presence)
+                        proj_data[dtype] = pf.apply(presence)
+
                 if not proj_data:
                     continue
-                
-                # Create new schedule
+
+                # Create new Schedule:Compact object
                 proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
                 proj_dict = {k: fmt_for_compact(v) for k, v in proj_data.items()}
-                
+
                 proj_obj = idf.newidfobject("Schedule:Compact")
                 proj_obj.obj = ["Schedule:Compact"] + create_compact_schedule(
                     proj_sch_name, "Fraction", proj_dict
                 )
-                
+
                 setattr(obj, field_name, proj_sch_name)
                 created_schedules[cache_key] = proj_sch_name
-                
+
             except Exception as e:
                 print(f"  Warning: Could not project {obj_type} schedule: {e}")
 
@@ -699,6 +708,7 @@ def inject_neighbourhood_schedules(
     output_path: str,
     schedules_list: list[dict],
     original_idf_path: Optional[str] = None,
+    epw_path: Optional[str] = None,
     verbose: bool = True
 ) -> None:
     """
@@ -707,11 +717,16 @@ def inject_neighbourhood_schedules(
     This function expects the IDF to have been prepared by neighbourhood.prepare_neighbourhood_idf(),
     which creates per-building objects with schedule names like Occ_Bldg_0, Light_Bldg_0, etc.
 
+    Uses the schedule_generator module for:
+    - Lighting: Daylight Threshold Method (Gatekeeper logic).
+    - Equipment/DHW: Presence Filter Method (Min/Max toggling).
+
     Args:
         idf_path: Path to the prepared neighbourhood IDF.
         output_path: Path to save the modified IDF.
         schedules_list: List of schedule_data dicts, one per building.
         original_idf_path: Path to the ORIGINAL IDF (before preparation) to parse default schedules.
+        epw_path: Path to the EPW weather file (used to find .stat for lighting).
         verbose: Whether to print progress messages.
     """
     if not schedules_list:
@@ -817,7 +832,8 @@ def inject_neighbourhood_schedules(
 
     print(f"\nInjecting schedules for {len(schedules_list)} buildings...")
 
-    threshold = 0.3
+    # Initialize lighting generator with EPW path
+    lighting_gen = schedule_generator.LightingGenerator(epw_path=epw_path)
 
     for bldg_idx, schedule_data in enumerate(schedules_list):
         hh_id = schedule_data['hh_id']
@@ -872,27 +888,15 @@ def inject_neighbourhood_schedules(
                 }
             )
 
-        # 3. Lighting schedule (Light_Bldg_X) - presence-adjusted
-        # Formula: updated_schedule = default_schedule × presence_mask
+        # 3. Lighting schedule (Light_Bldg_X) - Daylight Threshold Method
         light_sch_name = f"Light_{bldg_id}"
-        weekday_light = []
-        weekend_light = []
-        for h in range(24):
-            # Weekday Lights - Hybrid: occ × MAX(default, 0.50) + (1-occ) × 0.05
-            occ_val = weekday_occ[h]
-            default_val = default_light_values['Weekday'][h] if h < len(default_light_values['Weekday']) else 1.0
-            active_value = max(default_val, 0.50)
-            proj_val = occ_val * active_value + (1.0 - occ_val) * 0.05
-            weekday_light.append(proj_val)
+        weekday_light = lighting_gen.generate(
+            weekday_occ, default_schedule=default_light_values['Weekday'], day_type='Weekday'
+        )
+        weekend_light = lighting_gen.generate(
+            weekend_occ, default_schedule=default_light_values['Weekend'], day_type='Weekend'
+        )
 
-        for h in range(24):
-            # Weekend Lights - Hybrid: occ × MAX(default, 0.50) + (1-occ) × 0.05
-            occ_val = weekend_occ[h]
-            default_val = default_light_values['Weekend'][h] if h < len(default_light_values['Weekend']) else 1.0
-            active_value = max(default_val, 0.50)
-            proj_val = occ_val * active_value + (1.0 - occ_val) * 0.05
-            weekend_light.append(proj_val)
-            
         light_schedules = [s for s in idf.idfobjects["SCHEDULE:COMPACT"] if s.Name == light_sch_name]
         if light_schedules:
             light_sch = light_schedules[0]
@@ -903,26 +907,12 @@ def inject_neighbourhood_schedules(
                 }
             )
 
-        # 4. Equipment schedule (Equip_Bldg_X) - presence-adjusted
-        # Formula: updated_schedule = default_schedule × presence_mask
+        # 4. Equipment schedule (Equip_Bldg_X) - Presence Filter Method
         equip_sch_name = f"Equip_{bldg_id}"
-        weekday_equip = []
-        weekend_equip = []
-        for h in range(24):
-            # Weekday Equipment - Hybrid: occ × MAX(default, 0.50) + (1-occ) × 0.35
-            occ_val = weekday_occ[h]
-            default_val = default_equip_values['Weekday'][h] if h < len(default_equip_values['Weekday']) else 1.0
-            active_value = max(default_val, 0.50)
-            proj_val = occ_val * active_value + (1.0 - occ_val) * 0.35
-            weekday_equip.append(proj_val)
-
-        for h in range(24):
-            # Weekend Equipment - Hybrid: occ × MAX(default, 0.50) + (1-occ) × 0.35
-            occ_val = weekend_occ[h]
-            default_val = default_equip_values['Weekend'][h] if h < len(default_equip_values['Weekend']) else 1.0
-            active_value = max(default_val, 0.50)
-            proj_val = occ_val * active_value + (1.0 - occ_val) * 0.35
-            weekend_equip.append(proj_val)
+        equip_pf_weekday = schedule_generator.PresenceFilter(default_equip_values['Weekday'], weekday_occ)
+        equip_pf_weekend = schedule_generator.PresenceFilter(default_equip_values['Weekend'], weekend_occ)
+        weekday_equip = equip_pf_weekday.apply(weekday_occ)
+        weekend_equip = equip_pf_weekend.apply(weekend_occ)
 
         equip_schedules = [s for s in idf.idfobjects["SCHEDULE:COMPACT"] if s.Name == equip_sch_name]
         if equip_schedules:
@@ -934,35 +924,15 @@ def inject_neighbourhood_schedules(
                 }
             )
 
-        # 5. Water Use schedule (Water_Bldg_X) - presence-adjusted
-        # Formula: updated_schedule = default_schedule × presence_mask
+        # 5. Water Use schedule (Water_Bldg_X) - Presence Filter Method
         water_sch_name = f"Water_{bldg_id}"
-        weekday_water = []
-        weekend_water = []
-        for h in range(24):
-            # Weekday Water
-            default_val = default_water_values['Weekday'][h] if h < len(default_water_values['Weekday']) else 1.0
-            presence = 1.0 if weekday_occ[h] > threshold else 0.0
-            if presence > 0:
-                weekday_water.append(max(default_val, 0.0)) # No active floor
-            else:
-                weekday_water.append(0.0) # Baseload (No draw)
-
-        for h in range(24):
-             # Weekend Water
-            default_val = default_water_values['Weekend'][h] if h < len(default_water_values['Weekend']) else 1.0
-            presence = 1.0 if weekend_occ[h] > threshold else 0.0
-            if presence > 0:
-                weekend_water.append(max(default_val, 0.0)) # No active floor
-            else:
-                weekend_water.append(0.0) # Baseload
+        water_pf_weekday = schedule_generator.PresenceFilter(default_water_values['Weekday'], weekday_occ)
+        water_pf_weekend = schedule_generator.PresenceFilter(default_water_values['Weekend'], weekend_occ)
+        weekday_water = water_pf_weekday.apply(weekday_occ)
+        weekend_water = water_pf_weekend.apply(weekend_occ)
 
         water_schedules = [s for s in idf.idfobjects["SCHEDULE:COMPACT"] if s.Name == water_sch_name]
-        
-        # If schedule doesn't exist, create it (unlike Lights/Equip where we seemingly only update if exists?)
-        # Actually for Lights/Equip we checked `if light_schedules`. If inconsistent, we should consistently CREATE or UPDATE.
-        # Since we want to ensure it exists for the WaterUse object update below, we should create/update.
-        
+
         if water_schedules:
             water_sch = water_schedules[0]
             water_sch.obj = ["Schedule:Compact"] + create_compact_schedule(

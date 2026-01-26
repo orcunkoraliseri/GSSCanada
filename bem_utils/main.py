@@ -241,7 +241,10 @@ def option_run_simulation() -> None:
         hh_idf_path = os.path.join(hh_dir, hh_idf_name)
         
         try:
-            integration.inject_schedules(selected_idf, hh_idf_path, hh_id, schedules[hh_id])
+            integration.inject_schedules(
+                selected_idf, hh_idf_path, hh_id, schedules[hh_id],
+                epw_path=selected_epw
+            )
             
             # Export schedule for debugging
             integration.export_schedule_csv(
@@ -417,8 +420,9 @@ def option_comparative_simulation() -> None:
                     
                 print(f"  {scenario}: Using HH {year_hh} ({target_hhsize} persons)")
                 integration.inject_schedules(
-                    selected_idf, idf_path, year_hh, 
-                    all_schedules[scenario][year_hh]
+                    selected_idf, idf_path, year_hh,
+                    all_schedules[scenario][year_hh],
+                    epw_path=selected_epw
                 )
                 
                 # Export schedule for debugging
@@ -653,7 +657,10 @@ def option_neighbourhood_simulation() -> None:
     # 7. Inject schedules
     final_idf_path = os.path.join(run_dir, "neighbourhood_final.idf")
     print(f"\nInjecting schedules...")
-    integration.inject_neighbourhood_schedules(prepared_idf_path, final_idf_path, schedules_list, original_idf_path=selected_idf)
+    integration.inject_neighbourhood_schedules(
+        prepared_idf_path, final_idf_path, schedules_list,
+        original_idf_path=selected_idf, epw_path=selected_epw
+    )
     
     # Export all used schedules for debugging
     for hh_id, hh_schedule in schedules_list:
@@ -853,7 +860,10 @@ def option_comparative_neighbourhood_simulation() -> None:
                 
                 print(f"\n  {scenario}: Preparing IDF and injecting {len(schedules_list)} schedules...")
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
-                integration.inject_neighbourhood_schedules(prepared_idf, final_idf, schedules_list, original_idf_path=selected_idf)
+                integration.inject_neighbourhood_schedules(
+                    prepared_idf, final_idf, schedules_list,
+                    original_idf_path=selected_idf, epw_path=selected_epw
+                )
                 
                 # Export all used schedules for debugging
                 for sched in schedules_list:
@@ -1157,8 +1167,9 @@ def option_kfold_comparative_simulation() -> None:
                     hh_schedule = all_schedules[scenario][year_hh]
                     
                     integration.inject_schedules(
-                        selected_idf, idf_path, year_hh, 
-                        hh_schedule
+                        selected_idf, idf_path, year_hh,
+                        hh_schedule,
+                        epw_path=selected_epw
                     )
                     
                     # Export schedule to CSV for debugging
@@ -1521,7 +1532,10 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
                     schedules_list.append({**data, 'hh_id': hh_id})
                 
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
-                integration.inject_neighbourhood_schedules(prepared_idf, final_idf, schedules_list, original_idf_path=selected_idf)
+                integration.inject_neighbourhood_schedules(
+                    prepared_idf, final_idf, schedules_list,
+                    original_idf_path=selected_idf, epw_path=selected_epw
+                )
                 
                 # Export all used schedules for debugging (Iter 1 only to save space, or all?)
                 # User specifically asked for it, so let's export for all iters or just first?
