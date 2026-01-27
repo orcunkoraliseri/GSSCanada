@@ -7,6 +7,68 @@ from typing import Optional
 from eppy.modeleditor import IDF
 from bem_utils import idf_optimizer
 from bem_utils import schedule_generator
+from bem_utils import schedule_visualizer
+
+import random
+
+
+# Target "Standard Working Day" Profile (Matches DEFAULT_PRESENCE in debugVis)
+# Used to select representative households for comparative simulations.
+TARGET_WORKING_PROFILE = [
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.5,  # 0-7: Home (Sleep/Wake)
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  # 8-15: Away (Work)
+    0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.5   # 16-23: Home (Evening)
+]
+
+
+def find_best_match_household(
+    schedules: dict, 
+    candidates: list[str] = None, 
+    day_type: str = 'Weekday'
+) -> str:
+    """
+    Finds the household that best matches the TARGET_WORKING_PROFILE.
+    
+    Args:
+        schedules: Dict of all loaded schedules.
+        candidates: Optional list of HH_IDs to search. If None, searches all.
+        day_type: Day type to compare ('Weekday' or 'Weekend').
+        
+    Returns:
+        The HH_ID of the best matching household.
+    """
+    if not candidates:
+        candidates = list(schedules.keys())
+        # If too many, sample a subset for performance? 
+        # Actually with <20k households, iterating all is fast enough for Python.
+    
+    best_hh_id = None
+    best_score = float('inf')
+    
+    # Pre-compute target length
+    target_len = len(TARGET_WORKING_PROFILE)
+    
+    for hh_id in candidates:
+        hh_data = schedules[hh_id]
+        entries = hh_data.get(day_type, [])
+        if not entries:
+            continue
+            
+        # Extract presence profile
+        # Assume sorted by hour or sort it
+        profile = [0.0] * 24
+        for e in entries:
+            if 0 <= e['hour'] < 24:
+                profile[e['hour']] = float(e['occ'])
+                
+        # Calculate SSE Score
+        score = sum((profile[i] - TARGET_WORKING_PROFILE[i])**2 for i in range(24))
+        
+        if score < best_score:
+            best_score = score
+            best_hh_id = hh_id
+            
+    return best_hh_id if best_hh_id else (candidates[0] if candidates else None)
 
 
 def export_schedule_csv(
@@ -549,7 +611,9 @@ def inject_schedules(
     output_path: str,
     hh_id: str,
     schedule_data: dict,
-    epw_path: Optional[str] = None
+    epw_path: Optional[str] = None,
+    sim_results_dir: str = None,
+    batch_name: str = None
 ) -> None:
     """
     Injects specific household schedules into an IDF file.
@@ -644,6 +708,27 @@ def inject_schedules(
     ]
 
     created_schedules = {}
+    
+    collected_schedules = {
+        'lighting': None, 
+        'equipment': None, 
+        'dhw': None,
+        'presence': None
+    }
+    
+    collected_defaults = {
+        'lighting': None,
+        'equipment': None,
+        'dhw': None
+    }
+    # Check if we have presence data for Weekday (primary visual)
+    if 'Weekday' in occ_data:
+        collected_schedules['presence'] = occ_data['Weekday']
+    
+    # Initialize Visualizer
+    visualizer = None
+    if epw_path and sim_results_dir:
+         visualizer = schedule_visualizer.ScheduleVisualizer(epw_path)
 
     for obj_type, field_name, std_key in load_targets:
         objs = idf.idfobjects.get(obj_type, [])
@@ -682,6 +767,14 @@ def inject_schedules(
 
                 if not proj_data:
                     continue
+                
+                # --- Visualization Integration ---
+                if 'Weekday' in proj_data:
+                    # Save the first instance of each type for visualization
+                    if collected_schedules[std_key] is None:
+                        collected_schedules[std_key] = proj_data['Weekday']
+                    if collected_defaults[std_key] is None:
+                        collected_defaults[std_key] = std_weekday
 
                 # Create new Schedule:Compact object
                 proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
@@ -698,6 +791,63 @@ def inject_schedules(
             except Exception as e:
                 print(f"  Warning: Could not project {obj_type} schedule: {e}")
 
+    # Generate Visualization if enabled and all data present
+    if visualizer and sim_results_dir and collected_schedules['presence']:
+        # Construct path
+        plot_base = os.path.join(os.path.dirname(os.path.dirname(sim_results_dir)), "SimResults_Plotting_Schedules") 
+        # Attempt to find project root relative to SimResults or just use BEM_Setup parent?
+        # main.py sets SIM_RESULTS_DIR = BEM_Setup/SimResults.
+        # So dirname(sim_results_dir) -> BEM_Setup.
+        # dirname(BEM_Setup) -> Root.
+        # User asked for "BEM_Setup/SimResults_Plotting_Schedules" ? 
+        # "put them ... under the folder of 'SimResults_Plotting_Schedules' in that way we can compare"
+        # I'll put it in BEM_Setup/SimResults_Plotting_Schedules
+        
+        # If sim_results_dir is absolute path to Batch folder.
+        # batch_name is passed.
+        
+        # Assumption: sim_results_dir passed from main.py is "BEM_Setup/SimResults" 
+        # NO, main.py passes `scenario_dir` as `output_dir` but `inject_schedules` signature ?
+        # main.py calls `inject_schedules(..., sim_results_dir=SIM_RESULTS_DIR, batch_name=batch_name)`?
+        # I need to update main.py call first!
+        # But assuming valid path:
+        
+        # Construct BEM_Setup/SimResults_Plotting_Schedules
+        # If sim_results_dir ends with "SimResults", go up one.
+        if os.path.basename(sim_results_dir) == 'SimResults':
+            bem_setup = os.path.dirname(sim_results_dir)
+        else:
+            # Fallback
+            bem_setup = os.path.dirname(sim_results_dir)
+
+        plot_dir_base = os.path.join(bem_setup, "SimResults_Plotting_Schedules")
+        
+        if batch_name:
+             plot_dir = os.path.join(plot_dir_base, batch_name)
+        else:
+             plot_dir = plot_dir_base
+             
+        plot_filename = f"{batch_name if batch_name else 'Debug'}_HH{hh_id}.png"
+        plot_path = os.path.join(plot_dir, plot_filename)
+        
+        # Default missing schedules to 0
+        p_light = collected_schedules['lighting'] or [0.0]*24
+        p_equip = collected_schedules['equipment'] or [0.0]*24
+        p_dhw = collected_schedules['dhw'] or [0.0]*24
+        
+        visualizer.visualize_schedule_integration(
+             presence_schedule=collected_schedules['presence'],
+             proj_light=p_light,
+             proj_equip=p_equip,
+             proj_water=p_dhw,
+             output_path=plot_path,
+             title=f"Integrated Schedules - HH {hh_id} (Weekday)",
+             default_light=collected_defaults['lighting'],
+             default_equip=collected_defaults['equipment'],
+             default_water=collected_defaults['dhw']
+        )
+
+
     # 5. Optimize & Save
     idf_optimizer.optimize_idf(idf, verbose=True)
     idf.saveas(output_path)
@@ -709,6 +859,8 @@ def inject_neighbourhood_schedules(
     schedules_list: list[dict],
     original_idf_path: Optional[str] = None,
     epw_path: Optional[str] = None,
+    sim_results_dir: str = None,
+    batch_name: str = None,
     verbose: bool = True
 ) -> None:
     """
@@ -930,8 +1082,35 @@ def inject_neighbourhood_schedules(
         water_pf_weekend = schedule_generator.PresenceFilter(default_water_values['Weekend'], weekend_occ)
         weekday_water = water_pf_weekday.apply(weekday_occ)
         weekend_water = water_pf_weekend.apply(weekend_occ)
+        
+        # --- Visualization Integration ---
+        if visualizer and sim_results_dir:
+             plot_base = os.path.join(os.path.dirname(sim_results_dir), "SimResults_Plotting_Schedules")
+             if batch_name:
+                 plot_dir = os.path.join(plot_base, batch_name)
+             else:
+                 plot_dir = plot_base
+                 
+             plot_path = os.path.join(plot_dir, f"Bldg{bldg_idx}_HH{hh_id}.png")
+             
+             visualizer.visualize_schedule_integration(
+                 presence_schedule=weekday_occ,
+                 proj_light=weekday_light,
+                 proj_equip=weekday_equip,
+                 proj_water=weekday_water,
+                 output_path=plot_path,
+                 title=f"Integrated Schedules - Bldg {bldg_idx} HH {hh_id} (Weekday)",
+                 active_load_equip=equip_pf_weekday.active_load,
+                 base_load_equip=equip_pf_weekday.base_load,
+                 active_load_water=water_pf_weekday.active_load,
+                 base_load_water=water_pf_weekday.base_load,
+                 default_light=default_light_values['Weekday'],
+                 default_equip=default_equip_values['Weekday'],
+                 default_water=default_water_values['Weekday']
+             )        
 
         water_schedules = [s for s in idf.idfobjects["SCHEDULE:COMPACT"] if s.Name == water_sch_name]
+
 
         if water_schedules:
             water_sch = water_schedules[0]

@@ -375,9 +375,13 @@ def option_comparative_simulation() -> None:
         return
     
     # 5. Randomly select one household from the first available year
-    # Then match by hhsize (household size) for other years
+    # But filtering for one that resembles "Standard Working Day"
     first_year = list(all_schedules.keys())[0]
-    first_hh = random.choice(list(all_schedules[first_year].keys()))
+    first_candidates = list(all_schedules[first_year].keys())
+    if len(first_candidates) > 100:
+        first_candidates = random.sample(first_candidates, 100)
+        
+    first_hh = integration.find_best_match_household(all_schedules[first_year], first_candidates)
     target_hhsize = all_schedules[first_year][first_hh].get('metadata', {}).get('hhsize', 0)
     
     print(f"\nRandomly selected Household: {first_hh} (from {first_year})")
@@ -411,7 +415,12 @@ def option_comparative_simulation() -> None:
                 ]
                 
                 if matching_hhs:
-                    year_hh = random.choice(matching_hhs)
+                    # Select the one that best matches standard working day
+                    candidates = matching_hhs
+                    # Limit candidates to speed up?
+                    if len(candidates) > 50:
+                        candidates = random.sample(candidates, 50)
+                    year_hh = integration.find_best_match_household(all_schedules[scenario], candidates)
                 else:
                     # Fallback to random if no exact match
                     year_hh = random.choice(list(all_schedules[scenario].keys()))
@@ -422,7 +431,9 @@ def option_comparative_simulation() -> None:
                 integration.inject_schedules(
                     selected_idf, idf_path, year_hh,
                     all_schedules[scenario][year_hh],
-                    epw_path=selected_epw
+                    epw_path=selected_epw,
+                    sim_results_dir=SIM_RESULTS_DIR,
+                    batch_name=batch_name
                 )
                 
                 # Export schedule for debugging
@@ -862,7 +873,9 @@ def option_comparative_neighbourhood_simulation() -> None:
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
                 integration.inject_neighbourhood_schedules(
                     prepared_idf, final_idf, schedules_list,
-                    original_idf_path=selected_idf, epw_path=selected_epw
+                    original_idf_path=selected_idf, epw_path=selected_epw,
+                    sim_results_dir=SIM_RESULTS_DIR,
+                    batch_name=batch_name
                 )
                 
                 # Export all used schedules for debugging
@@ -1134,8 +1147,12 @@ def option_kfold_comparative_simulation() -> None:
         print(f"\n--- Iteration {k+1}/{K} ---")
         
         # Select a random hhsize for this iteration
+        # Pick 100 candidates and find best working day match
         first_year = list(all_schedules.keys())[0]
-        first_hh = random.choice(list(all_schedules[first_year].keys()))
+        i_candidates = list(all_schedules[first_year].keys())
+        if len(i_candidates) > 100:
+            i_candidates = random.sample(i_candidates, 100)
+        first_hh = integration.find_best_match_household(all_schedules[first_year], i_candidates)
         target_hhsize = all_schedules[first_year][first_hh].get('metadata', {}).get('hhsize', 0)
         print(f"  Target household size: {target_hhsize} persons")
         
@@ -1160,7 +1177,10 @@ def option_kfold_comparative_simulation() -> None:
                     ]
                     
                     if matching_hhs:
-                        year_hh = random.choice(matching_hhs)
+                        cands = matching_hhs
+                        if len(cands) > 50:
+                            cands = random.sample(cands, 50)
+                        year_hh = integration.find_best_match_household(all_schedules[scenario], cands)
                     else:
                         year_hh = random.choice(list(all_schedules[scenario].keys()))
                     
@@ -1169,7 +1189,9 @@ def option_kfold_comparative_simulation() -> None:
                     integration.inject_schedules(
                         selected_idf, idf_path, year_hh,
                         hh_schedule,
-                        epw_path=selected_epw
+                        epw_path=selected_epw,
+                        sim_results_dir=SIM_RESULTS_DIR,
+                        batch_name=f"{batch_name}/iter_{k+1}"
                     )
                     
                     # Export schedule to CSV for debugging
@@ -1534,7 +1556,9 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
                 integration.inject_neighbourhood_schedules(
                     prepared_idf, final_idf, schedules_list,
-                    original_idf_path=selected_idf, epw_path=selected_epw
+                    original_idf_path=selected_idf, epw_path=selected_epw,
+                    sim_results_dir=SIM_RESULTS_DIR,
+                    batch_name=f"{batch_name}/iter_{k+1}"
                 )
                 
                 # Export all used schedules for debugging (Iter 1 only to save space, or all?)

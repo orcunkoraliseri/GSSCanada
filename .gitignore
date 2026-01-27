@@ -30,6 +30,7 @@ __pycache__/
 # BEM Simulation Results
 BEM_Setup/SimResults/
 BEM_Setup/SimResults_Plotting/
+BEM_Setup/SimResults_Plotting_Schedules/
 Pipeline_Test_Output/
 Test_Output/
 **/eplusout.*

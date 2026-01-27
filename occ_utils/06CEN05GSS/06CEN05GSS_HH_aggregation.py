@@ -18,7 +18,10 @@ import pandas as pd
 import numpy as np
 import pathlib
 from pathlib import Path
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except ImportError:
+    def tqdm(iterable, **kwargs): return iterable
 
 
 # =============================================================================
@@ -160,18 +163,37 @@ class HouseholdAggregator:
 
         # Fill the grid based on episodes
         for _, row in episodes.iterrows():
+            # Convert HHMM format to total minutes (e.g., 1030 -> 10*60 + 30 = 630)
+            s_raw = int(row['start'])
+            s_min = (s_raw // 100) * 60 + (s_raw % 100)
+            
+            e_raw = int(row['end'])
+            e_min = (e_raw // 100) * 60 + (e_raw % 100)
+
             # Convert minutes to slot index
-            s_idx = int(np.floor(row['start'] / self.res))
-            e_idx = int(np.floor(row['end'] / self.res))
+            s_idx = int(np.floor(s_min / self.res))
+            e_idx = int(np.floor(e_min / self.res))
 
             s_idx = max(0, min(s_idx, self.slots - 1))
             e_idx = max(0, min(e_idx, self.slots))
 
             # Fill range
             if e_idx > s_idx:
+                # Normal Case
                 loc_grid[s_idx:e_idx] = row['occPRE']
                 act_grid[s_idx:e_idx] = row['occACT']
                 dens_grid[s_idx:e_idx] = row['social_sum']
+            elif e_idx < s_idx:
+                # WRAPPED EPISODE (Crosses Midnight, e.g. 23:00 to 07:00)
+                # Fill s_idx -> End of Day
+                loc_grid[s_idx:] = row['occPRE']
+                act_grid[s_idx:] = row['occACT']
+                dens_grid[s_idx:] = row['social_sum']
+                
+                # Fill Start of Day -> e_idx
+                loc_grid[:e_idx] = row['occPRE']
+                act_grid[:e_idx] = row['occACT']
+                dens_grid[:e_idx] = row['social_sum']
 
         # Return dataframe for this individual
         return pd.DataFrame({

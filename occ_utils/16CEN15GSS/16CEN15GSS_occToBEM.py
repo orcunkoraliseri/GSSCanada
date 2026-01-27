@@ -21,7 +21,10 @@ import pandas as pd
 import numpy as np
 import pathlib
 from pathlib import Path
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except ImportError:
+    def tqdm(iterable, **kwargs): return iterable
 import matplotlib.pyplot as plt
 import seaborn as sns
 
