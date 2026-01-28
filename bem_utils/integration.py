@@ -8,6 +8,7 @@ from eppy.modeleditor import IDF
 from bem_utils import idf_optimizer
 from bem_utils import schedule_generator
 from bem_utils import schedule_visualizer
+from bem_utils import config
 
 import random
 
@@ -19,6 +20,8 @@ TARGET_WORKING_PROFILE = [
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  # 8-15: Away (Work)
     0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.5   # 16-23: Home (Evening)
 ]
+
+# [OVERRIDE] Constants for Single Family Lighting Schedule
 
 
 def find_best_match_household(
@@ -606,6 +609,10 @@ def inject_presence_projected_schedules(idf: IDF, hh_id: str, occ_data: dict, th
     return
 
 
+# Removed load_lighting_override_from_idf (moved to idf_optimizer)
+
+
+
 def inject_schedules(
     idf_path: str,
     output_path: str,
@@ -635,6 +642,9 @@ def inject_schedules(
     
     # 0. Load standard residential schedules (DOE MidRise Apartment baseline)
     standard_schedules = idf_optimizer.load_standard_residential_schedules(verbose=False)
+    
+    # [OVERRIDE] Use Single Family High-Usage Lighting Schedule
+    # handled automatically by idf_optimizer.load_standard_residential_schedules() now!
     
     # 1. Prepare Occupancy Data from TUS/Census
     day_types = ['Weekday', 'Weekend']
@@ -719,7 +729,8 @@ def inject_schedules(
     collected_defaults = {
         'lighting': None,
         'equipment': None,
-        'dhw': None
+        'dhw': None,
+        'presence': standard_schedules.get('occupancy', {}).get('Weekday')
     }
     # Check if we have presence data for Weekday (primary visual)
     if 'Weekday' in occ_data:
@@ -844,7 +855,8 @@ def inject_schedules(
              title=f"Integrated Schedules - HH {hh_id} (Weekday)",
              default_light=collected_defaults['lighting'],
              default_equip=collected_defaults['equipment'],
-             default_water=collected_defaults['dhw']
+             default_water=collected_defaults['dhw'],
+             default_presence=collected_defaults['presence']
         )
 
 
@@ -897,40 +909,14 @@ def inject_neighbourhood_schedules(
     
     # Typical residential lighting profile (fraction of max)
     # Hours: 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
-    default_light_weekday = [
-        0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.3, 0.2,
-        0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.7, 0.9, 0.9,
-        0.8, 0.6, 0.4, 0.2
-    ]
-    default_light_weekend = [
-        0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.4, 0.4,
-        0.3, 0.3, 0.3, 0.3, 0.3, 0.4, 0.5, 0.7, 0.9, 0.9,
-        0.8, 0.6, 0.4, 0.2
-    ]
     
-    # Typical residential equipment profile (fraction of max)
-    default_equip_weekday = [
-        0.3, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.6, 0.5, 0.4,
-        0.4, 0.4, 0.5, 0.4, 0.4, 0.4, 0.5, 0.6, 0.7, 0.7,
-        0.6, 0.5, 0.4, 0.3
-    ]
-    default_equip_weekend = [
-        0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.4, 0.5, 0.6,
-        0.6, 0.6, 0.6, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.7,
-        0.6, 0.5, 0.4, 0.3
-    ]
+    # Use Standardized Residential Schedules for all defaults
+    # This ensures consistency with Option 3 (Single Building) simulations.
+    std_schedules = idf_optimizer.load_standard_residential_schedules(verbose=verbose)
     
-    default_light_values = {'Weekday': default_light_weekday, 'Weekend': default_light_weekend}
-    default_equip_values = {'Weekday': default_equip_weekday, 'Weekend': default_equip_weekend}
-    
-    # Typical residential water profile (extracted from debug_compare_schedules.py)
-    default_water_weekday = [
-        0.05, 0.05, 0.05, 0.05, 0.1, 0.3, 0.5, 0.4, 0.2, 0.1,
-        0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.4,
-        0.3, 0.2, 0.1, 0.05
-    ]
-    default_water_weekend = default_water_weekday # Assume similar for fallback
-    default_water_values = {'Weekday': default_water_weekday, 'Weekend': default_water_weekend}
+    default_light_values = std_schedules['lighting']
+    default_equip_values = std_schedules['equipment']
+    default_water_values = std_schedules['dhw']
     
     if original_idf_path:
         try:
@@ -973,14 +959,8 @@ def inject_neighbourhood_schedules(
             print(f"  Warning: Could not parse original IDF schedules: {e}")
     print(f"  Falling back to presence mask only (1.0 when home).")
 
-    # If parsing failed or wasn't attempted (NUs_RC1.idf case), try Single Building Fallback
-    # This ensures neighbourhood defaults match single building defaults (higher loads)
-    # rather than the conservative hardcoded profiles.
-    if default_light_values == {'Weekday': default_light_weekday, 'Weekend': default_light_weekend}:
-        l_fb, e_fb, w_fb = _get_single_building_fallback_profiles(verbose)
-        if l_fb: default_light_values = l_fb
-        if e_fb: default_equip_values = e_fb
-        if w_fb: default_water_values = w_fb
+    # Fallback to presence mask only was implicit if parsing failed, 
+    # but now we use standard_schedules which is robust.
 
     print(f"\nInjecting schedules for {len(schedules_list)} buildings...")
 

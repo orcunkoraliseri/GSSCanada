@@ -129,3 +129,11 @@ Compare energy performance of "like-for-like" occupants. Since the "Default" bas
 -   Home: 16:00 - 24:00
 
 This ensures that comparative plots visualize the impact of *technological* and *behavioral* differences (e.g., lighting efficiency, base loads, activity levels) rather than gross occupancy differences (e.g., Retiree vs Worker).
+
+---
+
+## 7. Resources
+
+*   **Lighting**: [DOE Building Energy Codes Program - Prototype Building Models, IECC Prototype Building Models, Single-family detached house](https://www.energycodes.gov/prototype-building-models#Residential)
+*   **Equipment and DHW**: [honeybee energyplus default schedules](https://github.com/ladybug-tools/honeybee-energy-standards/tree/master/honeybee_energy_standards/schedules)
+

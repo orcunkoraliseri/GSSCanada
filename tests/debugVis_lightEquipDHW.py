@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT_DIR)
 
 from bem_utils import schedule_generator
 from bem_utils import integration
-
+from bem_utils import idf_optimizer
 
 # --- Configuration ---
 EPW_PATH = os.path.join(
@@ -36,22 +36,14 @@ SCHEDULES_DIR = os.path.join(
     "BEM_Setup"
 )
 
-# Default schedules (ApartmentMidrise baseline)
-DEFAULT_LIGHT = [
-    0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.3, 0.2,
-    0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.7, 0.9, 0.9,
-    0.8, 0.6, 0.4, 0.2
-]
-DEFAULT_EQUIP = [
-    0.3, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.6, 0.5, 0.4,
-    0.4, 0.4, 0.5, 0.4, 0.4, 0.4, 0.5, 0.6, 0.7, 0.7,
-    0.6, 0.5, 0.4, 0.3
-]
-DEFAULT_WATER = [
-    0.05, 0.05, 0.05, 0.05, 0.1, 0.3, 0.5, 0.4, 0.2, 0.1,
-    0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.4,
-    0.3, 0.2, 0.1, 0.05
-]
+# Load Standard Schedules (Matches Simulation Default)
+print("Loading standard schedules for visualization...")
+_STD_SCH = idf_optimizer.load_standard_residential_schedules(verbose=False)
+
+# Default schedules (Dynamically loaded)
+DEFAULT_LIGHT = _STD_SCH['lighting']['Weekday']
+DEFAULT_EQUIP = _STD_SCH['equipment']['Weekday']
+DEFAULT_WATER = _STD_SCH['dhw']['Weekday']
 
 # Hypothetical presence (for default visualization)
 DEFAULT_PRESENCE = [

@@ -15,7 +15,7 @@ import time
 # Add project root to path so bem_utils can be imported when running directly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from bem_utils import integration, simulation, plotting, visualizer, idf_optimizer, neighbourhood
+from bem_utils import integration, simulation, plotting, visualizer, idf_optimizer, neighbourhood, config
 
 # --- CONFIGURATION ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,22 +26,10 @@ SIM_RESULTS_DIR = os.path.join(BEM_SETUP_DIR, "SimResults")
 PLOT_RESULTS_DIR = os.path.join(BEM_SETUP_DIR, "SimResults_Plotting")
 NEIGHBOURHOODS_DIR = os.path.join(BEM_SETUP_DIR, "Neighbourhoods")
 
-# EnergyPlus Configuration
-if platform.system() == 'Darwin':  # macOS
-    ENERGYPLUS_DIR = '/Applications/EnergyPlus-24-2-0'
-elif platform.system() == 'Windows':
-    ENERGYPLUS_DIR = r'C:\EnergyPlusV24-2-0'
-else:
-    ENERGYPLUS_DIR = '/usr/local/EnergyPlus-24-2-0'
-
-# Determine executable extension based on platform
-_exe_ext = '.exe' if platform.system() == 'Windows' else ''
-ENERGYPLUS_EXE = os.path.join(ENERGYPLUS_DIR, f'energyplus{_exe_ext}')
-IDD_FILE = os.path.join(ENERGYPLUS_DIR, 'Energy+.idd')
-
-# Set env var for Eppy
-# Set env var for Eppy
-os.environ["IDD_FILE"] = IDD_FILE
+# EnergyPlus Configuration from config module
+ENERGYPLUS_DIR = config.ENERGYPLUS_DIR
+ENERGYPLUS_EXE = config.ENERGYPLUS_EXE
+IDD_FILE = config.IDD_FILE
 
 
 def get_region_from_epw(epw_path: str) -> str:
@@ -145,7 +133,7 @@ def option_run_simulation() -> None:
     print("\n=== Run BEM Simulation ===")
     
     # 1. Select Year / Schedule File
-    schedule_files = glob.glob(os.path.join(BEM_SETUP_DIR, "*.csv"))
+    schedule_files = glob.glob(os.path.join(BEM_SETUP_DIR, "BEM_Schedules_*.csv"))
     schedule_files.sort()
     if not schedule_files:
         print(f"Error: No schedule CSV files found in {BEM_SETUP_DIR}")
@@ -632,8 +620,9 @@ def option_neighbourhood_simulation() -> None:
         print("\nRegion could not be inferred from Weather File (will load all regions).")
 
     # 4. Select Schedule CSV
-    schedule_dir = os.path.join(BASE_DIR, "Occupancy")
-    csv_files = glob.glob(os.path.join(schedule_dir, "**", "*BEM_Schedules*.csv"), recursive=True)
+    # schedule_dir = os.path.join(BASE_DIR, "Occupancy") # Old path
+    schedule_dir = BEM_SETUP_DIR
+    csv_files = glob.glob(os.path.join(schedule_dir, "BEM_Schedules_*.csv"))
     if not csv_files:
         print("No BEM schedule CSV files found.")
         return

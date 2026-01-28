@@ -14,6 +14,11 @@ import re
 import json
 from typing import Optional, List
 from eppy.modeleditor import IDF
+from bem_utils import config
+
+# Constants for Lighting Override
+DEFAULT_LIGHTING_SOURCE_IDF = "US+SF+CZ5A+elecres+slab+IECC_2024.idf"
+DEFAULT_LIGHTING_SCHEDULE_NAME = "LightingDay_EELighting"
 
 
 # Output variables required for comprehensive energy analysis
@@ -225,6 +230,84 @@ def optimize_idf(idf: IDF, verbose: bool = True) -> List[str]:
 _STANDARD_SCHEDULES_CACHE: Optional[dict] = None
 
 
+def load_lighting_override_from_idf() -> Optional[list[float]]:
+    """
+    Loads the high-usage lighting schedule from the standard Single Family IDF template.
+    Returns:
+        List of 24 float values representing the hourly profile, or None if failed.
+    """
+    try:
+        # Construct path to BEM_Setup/Templates
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Use config for path safety if needed (though templates are in repo)
+        template_idf_path = os.path.join(base_dir, 'BEM_Setup', 'Templates', DEFAULT_LIGHTING_SOURCE_IDF)
+        
+        if not os.path.exists(template_idf_path):
+            return None
+            
+        # Ensure IDD is set
+        if not IDF.getiddname():
+             IDF.setiddname(config.IDD_FILE)
+
+        idf = IDF(template_idf_path)
+        
+        # Use simple extraction (assuming it's a Schedule details we can parse or Schedule:Compact)
+        # Note: We need helper 'parse_schedule_values' logic here or duplicate distinct logic.
+        # But 'parse_schedule_values' is in integration.py. 
+        # To avoid circular imports, we implement specific extraction for this known template.
+        
+        if not IDF.getiddname():
+             IDF.setiddname(config.IDD_FILE)
+
+        idf = IDF(template_idf_path)
+        
+        # Target: Schedule:Day:Hourly "LightingDay_EELighting"
+        # Note: Previous inspection confirmed it is Schedule:Day:Hourly
+        day_obj = idf.getobject('SCHEDULE:DAY:HOURLY', DEFAULT_LIGHTING_SCHEDULE_NAME)
+        if day_obj:
+            # Schedule:Day:Hourly format: Name, Type, Hour1, Hour2...
+            # Fields in eppy obj.obj: [Type, Name, LimitsName, Hour1, Hour2...]
+            # Hour 1 is at index 3
+            raw_vals = day_obj.obj[3:]
+            # Ensure we have 24 values
+            if len(raw_vals) >= 24:
+                return [float(x) for x in raw_vals[:24]]
+                
+        # Fallback to Interval if Hourly fails (for robustness)
+        day_obj = idf.getobject('SCHEDULE:DAY:INTERVAL', DEFAULT_LIGHTING_SCHEDULE_NAME)
+        if day_obj:
+            values = [0.0] * 24
+            fields = day_obj.obj[4:]  # Skip name, type, interpolate
+            last_hour = 0
+            i = 0
+            while i < len(fields) - 1:
+                time_str = str(fields[i]).strip() if fields[i] else ""
+                val_str = str(fields[i+1]).strip() if fields[i+1] else "0"
+                
+                try:
+                    if ':' in time_str:
+                        hour_part = time_str.split(':')[0]
+                        end_hour = int(hour_part)
+                    else:
+                        end_hour = int(time_str)
+                    
+                    value = float(val_str)
+                    for h in range(last_hour, min(end_hour, 24)):
+                        values[h] = value
+                    last_hour = end_hour
+                except:
+                    pass
+                i += 2
+            return values
+            
+        print(f"  Warning: Lighting Schedule {DEFAULT_LIGHTING_SCHEDULE_NAME} not found in template.")
+        return None
+
+    except Exception as e:
+        print(f"  Warning: Failed to load lighting override: {e}")
+        return None
+
+
 def load_standard_residential_schedules(verbose: bool = False) -> dict:
     """
     Loads standardized MidRise Apartment schedules from the DOE Commercial
@@ -332,6 +415,17 @@ def load_standard_residential_schedules(verbose: bool = False) -> dict:
 
     if verbose:
         print("  Loaded standard MidRise Apartment schedules from schedule.json")
+
+    
+    # [OVERRIDE] Apply Single Family High-Usage Lighting Schedule
+    override_lighting = load_lighting_override_from_idf()
+    if override_lighting:
+        if verbose:
+            print(f"  Applied Lighting Override from {DEFAULT_LIGHTING_SOURCE_IDF}")
+        result['lighting'] = {
+            'Weekday': override_lighting,
+            'Weekend': override_lighting
+        }
 
     _STANDARD_SCHEDULES_CACHE = result
     return result

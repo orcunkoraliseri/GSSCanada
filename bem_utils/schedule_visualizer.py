@@ -49,7 +49,8 @@ class ScheduleVisualizer:
         base_load_water: float = None,
         default_light: list[float] = None,
         default_equip: list[float] = None,
-        default_water: list[float] = None
+        default_water: list[float] = None,
+        default_presence: list[float] = None
     ) -> None:
         """
         Generates a 4-panel comparison plot of the integrated schedules.
@@ -74,7 +75,10 @@ class ScheduleVisualizer:
 
         # Panel 1: Presence
         ax = axes[0]
-        ax.bar(hours, presence_schedule, color=COLOR_PRESENCE, alpha=0.7, label='Presence')
+        ax.bar(hours, presence_schedule, color=COLOR_PRESENCE, alpha=0.7, label='Presence (Assigned)')
+        if default_presence:
+            ax.step(hours, default_presence, where='mid', color=COLOR_DEFAULT, linestyle='--', label='Default', alpha=0.9, linewidth=2)
+        
         ax.set_title("1. Presence Schedule", fontsize=12, fontweight='bold')
         ax.set_ylabel("Occupancy")
         ax.set_ylim(0, 1.2)
@@ -107,6 +111,11 @@ class ScheduleVisualizer:
              ax.axhline(active_load_equip, color='green', linestyle=':', alpha=0.5)
         if base_load_equip is not None:
              ax.axhline(base_load_equip, color='gray', linestyle=':', alpha=0.5)
+        
+        # Add Green Shading for Presence
+        ax.fill_between(hours, 0, 1, where=[p > 0 for p in presence_schedule],
+                        color=COLOR_PRESENCE, alpha=0.1)
+                        
         ax.set_title("3. Equipment (Presence Filter)", fontsize=12, fontweight='bold')
         ax.set_ylabel("Fraction")
         ax.set_ylim(0, 1.2)
@@ -120,6 +129,11 @@ class ScheduleVisualizer:
              ax.axhline(active_load_water, color='green', linestyle=':', alpha=0.5)
         if base_load_water is not None:
              ax.axhline(base_load_water, color='gray', linestyle=':', alpha=0.5)
+             
+        # Add Green Shading for Presence
+        ax.fill_between(hours, 0, 1, where=[p > 0 for p in presence_schedule],
+                        color=COLOR_PRESENCE, alpha=0.1)
+                        
         ax.set_title("4. DHW (Presence Filter)", fontsize=12, fontweight='bold')
         ax.set_ylabel("Fraction")
         ax.set_xlabel("Hour")
