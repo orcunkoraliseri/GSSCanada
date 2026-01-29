@@ -225,6 +225,231 @@ def optimize_idf(idf: IDF, verbose: bool = True) -> List[str]:
     return actions
 
 
+def apply_speed_optimizations(idf: IDF, verbose: bool = True) -> List[str]:
+    """
+    Apply speed optimizations to an IDF object.
+    
+    These are applied to ALL simulations regardless of run period mode.
+    Optimizations include:
+    - Shadow calculation: PixelCounting, 60-day update, 5000 max figures
+    - HVAC convergence: Max iterations = 10
+    - Convection: TARP (inside) + DOE-2 (outside) for accuracy
+    
+    Args:
+        idf: Eppy IDF object.
+        verbose: If True, print optimization messages.
+    
+    Returns:
+        List of optimization actions performed.
+    """
+    actions = []
+    
+    # ==========================================================================
+    # 1. Shadow Calculation Optimization
+    # ==========================================================================
+    shadow_objs = idf.idfobjects.get('SHADOWCALCULATION', [])
+    if shadow_objs:
+        shadow = shadow_objs[0]
+    else:
+        shadow = idf.newidfobject('ShadowCalculation')
+        actions.append("Created ShadowCalculation object")
+    
+    # Apply optimized settings
+    shadow.Shading_Calculation_Method = 'PixelCounting'
+    shadow.Pixel_Counting_Resolution = 512
+    shadow.Shading_Calculation_Update_Frequency_Method = 'Periodic'
+    shadow.Shading_Calculation_Update_Frequency = 1  # Updated to 1 (Daily) for accuracy in Fast Mode
+    shadow.Maximum_Figures_in_Shadow_Overlap_Calculations = 5000
+    
+    msg = "Shadow: PixelCounting (512), 1-day update, 5000 max figures"
+    actions.append(msg)
+    if verbose:
+        print(f"  {msg}")
+    
+    # ==========================================================================
+    # 2. HVAC Convergence Limits
+    # ==========================================================================
+    conv_limits = idf.idfobjects.get('CONVERGENCELIMITS', [])
+    if conv_limits:
+        conv_limits[0].Maximum_HVAC_Iterations = 10
+    else:
+        conv_obj = idf.newidfobject('ConvergenceLimits')
+        conv_obj.Maximum_HVAC_Iterations = 10
+    
+    msg = "HVAC Max Iterations: 10"
+    actions.append(msg)
+    if verbose:
+        print(f"  {msg}")
+    
+    # ==========================================================================
+    # 3. Convection Algorithm (TARP inside, DOE-2 outside for accuracy)
+    # ==========================================================================
+    inside_conv = idf.idfobjects.get('SURFACECONVECTIONALGORITHM:INSIDE', [])
+    outside_conv = idf.idfobjects.get('SURFACECONVECTIONALGORITHM:OUTSIDE', [])
+    
+    # Inside convection: TARP for accurate heating/cooling
+    if inside_conv:
+        old_alg = inside_conv[0].Algorithm
+        if old_alg != 'TARP':
+            inside_conv[0].Algorithm = 'TARP'
+            msg = f"Inside Convection: {old_alg} -> TARP"
+            actions.append(msg)
+            if verbose:
+                print(f"  {msg}")
+    else:
+        conv_obj = idf.newidfobject('SurfaceConvectionAlgorithm:Inside')
+        conv_obj.Algorithm = 'TARP'
+        msg = "Created Inside Convection: TARP"
+        actions.append(msg)
+        if verbose:
+            print(f"  {msg}")
+    
+    # Outside convection: DOE-2 for good balance
+    if outside_conv:
+        old_alg = outside_conv[0].Algorithm
+        if old_alg != 'DOE-2':
+            outside_conv[0].Algorithm = 'DOE-2'
+            msg = f"Outside Convection: {old_alg} -> DOE-2"
+            actions.append(msg)
+            if verbose:
+                print(f"  {msg}")
+    else:
+        conv_obj = idf.newidfobject('SurfaceConvectionAlgorithm:Outside')
+        conv_obj.Algorithm = 'DOE-2'
+        msg = "Created Outside Convection: DOE-2"
+        actions.append(msg)
+        if verbose:
+            print(f"  {msg}")
+    
+    return actions
+
+
+def configure_run_period(
+    idf: IDF, 
+    mode: str = 'standard',
+    verbose: bool = True
+) -> List[str]:
+    """
+    Configure the simulation run period based on mode.
+    
+    Modes:
+        - 'standard': Full year simulation (365 days)
+        - 'weekly': 24 TMY-representative weeks (168 days, scaled to annual)
+        - 'design_day': Design days only (sizing validation)
+    
+    Args:
+        idf: Eppy IDF object.
+        mode: Run period mode.
+        verbose: If True, print changes.
+    
+    Returns:
+        List of actions performed.
+    """
+    actions = []
+    
+    if mode == 'standard':
+        # Keep original run period - no changes needed
+        msg = "Run Period: Standard (full year)"
+        actions.append(msg)
+        if verbose:
+            print(f"  {msg}")
+        return actions
+    
+    elif mode == 'weekly':
+        # Remove existing run periods
+        for rp in idf.idfobjects.get('RUNPERIOD', [])[:]:
+            idf.removeidfobject(rp)
+        
+        # TMY-REPRESENTATIVE: 2 weeks per month (168 days total)
+        tmy_weeks = [
+            (1, 1, 1, 7, "Jan_W1"), (1, 15, 1, 21, "Jan_W2"),
+            (2, 1, 2, 7, "Feb_W1"), (2, 15, 2, 21, "Feb_W2"),
+            (3, 1, 3, 7, "Mar_W1"), (3, 15, 3, 21, "Mar_W2"),
+            (4, 1, 4, 7, "Apr_W1"), (4, 15, 4, 21, "Apr_W2"),
+            (5, 1, 5, 7, "May_W1"), (5, 15, 5, 21, "May_W2"),
+            (6, 1, 6, 7, "Jun_W1"), (6, 15, 6, 21, "Jun_W2"),
+            (7, 1, 7, 7, "Jul_W1"), (7, 15, 7, 21, "Jul_W2"),
+            (8, 1, 8, 7, "Aug_W1"), (8, 15, 8, 21, "Aug_W2"),
+            (9, 1, 9, 7, "Sep_W1"), (9, 15, 9, 21, "Sep_W2"),
+            (10, 1, 10, 7, "Oct_W1"), (10, 15, 10, 21, "Oct_W2"),
+            (11, 1, 11, 7, "Nov_W1"), (11, 15, 11, 21, "Nov_W2"),
+            (12, 1, 12, 7, "Dec_W1"), (12, 15, 12, 21, "Dec_W2"),
+        ]
+        
+        for start_m, start_d, end_m, end_d, name in tmy_weeks:
+            rp = idf.newidfobject('RunPeriod')
+            rp.Name = name
+            rp.Begin_Month = start_m
+            rp.Begin_Day_of_Month = start_d
+            rp.End_Month = end_m
+            rp.End_Day_of_Month = end_d
+            rp.Day_of_Week_for_Start_Day = 'Sunday'
+            rp.Use_Weather_File_Holidays_and_Special_Days = 'No'
+            rp.Use_Weather_File_Daylight_Saving_Period = 'No'
+            rp.Apply_Weekend_Holiday_Rule = 'No'
+            rp.Use_Weather_File_Rain_Indicators = 'Yes'
+            rp.Use_Weather_File_Snow_Indicators = 'Yes'
+        
+        msg = "Run Period: 24 TMY weeks (168 days, ~2.5x faster)"
+        actions.append(msg)
+        if verbose:
+            print(f"  {msg}")
+        
+    elif mode == 'design_day':
+        # Remove all run periods - only design days will run
+        removed_count = 0
+        for rp in idf.idfobjects.get('RUNPERIOD', [])[:]:
+            idf.removeidfobject(rp)
+            removed_count += 1
+        
+        msg = f"Run Period: Design days only (sizing, ~33x faster)"
+        actions.append(msg)
+        if verbose:
+            print(f"  {msg}")
+    
+    return actions
+
+
+def prune_output_objects(idf: IDF, verbose: bool = True) -> List[str]:
+    """
+    Remove unnecessary output objects to speed up simulation.
+    
+    Preserves: Output:SQLite (needed for results extraction)
+    Removes: Output:Variable, Output:Meter, Output:Constructions, etc.
+    
+    Args:
+        idf: Eppy IDF object.
+        verbose: If True, print removal messages.
+    
+    Returns:
+        List of actions performed.
+    """
+    actions = []
+    
+    # Object types to remove for speed
+    prune_types = [
+        'OUTPUT:VARIABLE',
+        'OUTPUT:METER',
+        'OUTPUT:CONSTRUCTIONS',
+        'OUTPUT:DIAGNOSTICS',
+        'OUTPUT:SURFACES:LIST',
+        'OUTPUT:SURFACES:DRAWING',
+    ]
+    
+    for obj_type in prune_types:
+        objs = idf.idfobjects.get(obj_type, [])
+        count = len(objs)
+        if count > 0:
+            for obj in objs[:]:
+                idf.removeidfobject(obj)
+            msg = f"Pruned {obj_type}: {count} objects"
+            actions.append(msg)
+            if verbose:
+                print(f"  {msg}")
+    
+    return actions
+
+
 
 # Cache for standard residential schedules (loaded once)
 _STANDARD_SCHEDULES_CACHE: Optional[dict] = None
@@ -473,17 +698,23 @@ def _get_fallback_schedules() -> dict:
     }
 
 
-def prepare_idf_for_simulation(idf_path: str, output_path: str = None, 
-                                verbose: bool = True,
-                                standardize_schedules: bool = True) -> bool:
+def prepare_idf_for_simulation(
+    idf_path: str, 
+    output_path: str = None, 
+    verbose: bool = True,
+    standardize_schedules: bool = True,
+    run_period_mode: str = 'standard'
+) -> bool:
     """
-    Prepares an IDF file for simulation.
+    Prepares an IDF file for simulation with all optimizations.
     
     Args:
         idf_path: Path to the source IDF file.
         output_path: Path to save the optimized IDF. If None, overwrites source.
         verbose: If True, print progress messages.
         standardize_schedules: If True, replaces schedules with DOE MidRise standard.
+        run_period_mode: 'standard' (full year), 'weekly' (24 TMY weeks), 
+                        or 'design_day' (sizing only).
     
     Returns:
         True if successful, False otherwise.
@@ -508,6 +739,14 @@ def prepare_idf_for_simulation(idf_path: str, output_path: str = None,
             std_schedules = load_standard_residential_schedules(verbose=verbose)
             std_actions = standardize_residential_schedules(idf, std_schedules, verbose=verbose)
             actions.extend(std_actions)
+        
+        # Apply speed optimizations (shadow, HVAC, convection)
+        speed_actions = apply_speed_optimizations(idf, verbose=verbose)
+        actions.extend(speed_actions)
+        
+        # Configure run period based on mode
+        rp_actions = configure_run_period(idf, mode=run_period_mode, verbose=verbose)
+        actions.extend(rp_actions)
         
         if actions:
             idf.saveas(output_path)

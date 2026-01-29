@@ -74,6 +74,45 @@ def find_best_match_household(
     return best_hh_id if best_hh_id else (candidates[0] if candidates else None)
 
 
+def filter_matching_households(
+    schedules: dict, 
+    candidates: list[str] = None, 
+    day_type: str = 'Weekday'
+) -> list[tuple[str, float]]:
+    """
+    Returns a list of (hh_id, score) tuples for all candidates, sorted by match score (ascending).
+    Score is SSE against TARGET_WORKING_PROFILE (lower is better).
+    """
+    if not candidates:
+        candidates = list(schedules.keys())
+    
+    results = []
+    
+    for hh_id in candidates:
+        hh_data = schedules[hh_id]
+        
+        # Must have both Weekday and Weekend data for simulation
+        entries = hh_data.get(day_type, [])
+        if not entries:
+            continue
+            
+        if not hh_data.get('Weekend'):
+             continue
+            
+        # Extract presence profile
+        profile = [0.0] * 24
+        for e in entries:
+            if 0 <= e['hour'] < 24:
+                profile[e['hour']] = float(e['occ'])
+                
+        # Calculate SSE Score
+        score = sum((profile[i] - TARGET_WORKING_PROFILE[i])**2 for i in range(24))
+        results.append((hh_id, score))
+        
+    # Sort by score (ascending, lower is better)
+    return sorted(results, key=lambda x: x[1])
+
+
 def export_schedule_csv(
     schedule_data: dict,
     hh_id: str,
@@ -620,7 +659,8 @@ def inject_schedules(
     schedule_data: dict,
     epw_path: Optional[str] = None,
     sim_results_dir: str = None,
-    batch_name: str = None
+    batch_name: str = None,
+    run_period_mode: str = 'standard'
 ) -> None:
     """
     Injects specific household schedules into an IDF file.
@@ -636,7 +676,9 @@ def inject_schedules(
         hh_id: Household ID.
         schedule_data: Data for this household from load_schedules.
         epw_path: Path to the EPW weather file (used to find .stat for lighting).
+        run_period_mode: 'standard' (full year), 'weekly' (24 TMY weeks), etc.
     """
+
     IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
     idf = IDF(idf_path)
     
@@ -862,6 +904,8 @@ def inject_schedules(
 
     # 5. Optimize & Save
     idf_optimizer.optimize_idf(idf, verbose=True)
+    idf_optimizer.apply_speed_optimizations(idf, verbose=True)
+    idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=True)
     idf.saveas(output_path)
 
 
@@ -873,7 +917,8 @@ def inject_neighbourhood_schedules(
     epw_path: Optional[str] = None,
     sim_results_dir: str = None,
     batch_name: str = None,
-    verbose: bool = True
+    verbose: bool = True,
+    run_period_mode: str = 'standard'
 ) -> None:
     """
     Injects multiple household schedules into a prepared neighbourhood IDF.
@@ -912,6 +957,11 @@ def inject_neighbourhood_schedules(
     
     # Use Standardized Residential Schedules for all defaults
     # This ensures consistency with Option 3 (Single Building) simulations.
+    
+    # Initialize Visualizer
+    visualizer = None
+    if epw_path:
+        visualizer = schedule_visualizer.ScheduleVisualizer(epw_path)
     std_schedules = idf_optimizer.load_standard_residential_schedules(verbose=verbose)
     
     default_light_values = std_schedules['lighting']
@@ -1117,22 +1167,90 @@ def inject_neighbourhood_schedules(
         if verbose:
             print(f"  Updating {len(water_equip_objs)} WaterUse:Equipment objects with new schedules.")
         for i, obj in enumerate(water_equip_objs):
-            bldg_id_str = f"Bldg_{i}" # Assuming 0-based index from loop above matches
-            # The loop used range(len(schedules_list)) so bldg_idx=0 -> Bldg_0
-            # Wait, the loop used `bldg_id = f"Bldg_{bldg_idx}"`.
-            # So `Water_Bldg_0`, `Water_Bldg_1` etc.
-            
-            # Check if we should use 1-based or 0-based?
-            # The previous code used `bldg_idx, schedule_data in enumerate(schedules_list)`.
-            # So `Bldg_0` is the first one.
-            
             target_sch_name = f"Water_Bldg_{i}"
             obj.Flow_Rate_Fraction_Schedule_Name = target_sch_name
     elif water_equip_objs:
         print(f"  Warning: Mismatch between WaterUse objects ({len(water_equip_objs)}) and Buildings ({len(schedules_list)}). Skipping object update.")
+        
+    # [FIX] Update PEOPLE objects to match household size (Consistency with Option 3)
+    # Switch from People/Area (default in prepare_neighbourhood_idf) to People count
+    people_objs = idf.idfobjects.get('PEOPLE', [])
+    updates_count = 0
+    for bldg_idx, schedule_data in enumerate(schedules_list):
+        bldg_id = f"Bldg_{bldg_idx}"
+        target_name = f"Neighbourhood_{bldg_id}_People"
+        
+        # Find matching People object
+        obj = next((p for p in people_objs if p.Name == target_name), None)
+        if obj:
+            hh_size = schedule_data.get('metadata', {}).get('hhsize', 2)
+            obj.Number_of_People_Calculation_Method = "People"
+            obj.Number_of_People = hh_size
+            obj.People_per_Floor_Area = ""
+            obj.Floor_Area_per_Person = ""
+            updates_count += 1
+            
+    if verbose:
+        print(f"  Updated {updates_count} PEOPLE objects with specific household sizes.")
+
+    # [FIX] Apply Water Use Peak Scaling (Consistency with Option 3)
+    # This loads standard_schedules internally if not passed, but we already loaded them.
+    # We can pass them to avoid reload if the function supported it, but it loads them itself or we assume consistency.
+    # Actually scale_water_use_peak_flow signature is (idf, standard_schedules, verbose).
+    idf_optimizer.scale_water_use_peak_flow(idf, std_schedules, verbose=verbose)
+
+    
+    # [FIX] Update Power Densities (Lights/Equip) to match Original IDF (Physics Consistency)
+    # The default prepare_neighbourhood_idf hardcodes 9.05 W/m2 (Equip) and 4 W/m2 (Lights).
+    # We must overwrite these if the original IDF had different values (e.g. Passive House).
+    if original_idf_path:
+        try:
+             # We assume we loaded orig_idf earlier in the function logic, but scope issues?
+             # Let's re-instantiate or assume we can grab it. 
+             # Actually, we didn't save orig_idf in a variable accessible here easily outside the try block?
+             # Let's just do a quick read since we have the path.
+             
+             # Note: We can reuse the earlier logic if we restructure, but adding a dedicated block is safer for now.
+             orig_idf_local = IDF(original_idf_path)
+             
+             # 1. Equipment Density
+             equip_objs = orig_idf_local.idfobjects.get('ELECTRICEQUIPMENT', [])
+             target_equip_w_m2 = None
+             if equip_objs:
+                 # Check calculation method
+                 method = getattr(equip_objs[0], 'Design_Level_Calculation_Method', '')
+                 if method == 'Watts/Area':
+                     target_equip_w_m2 = getattr(equip_objs[0], 'Watts_per_Zone_Floor_Area', None)
+             
+             # 2. Lighting Density
+             light_objs = orig_idf_local.idfobjects.get('LIGHTS', [])
+             target_light_w_m2 = None
+             if light_objs:
+                 method = getattr(light_objs[0], 'Design_Level_Calculation_Method', '')
+                 if method == 'Watts/Area':
+                     target_light_w_m2 = getattr(light_objs[0], 'Watts_per_Zone_Floor_Area', None)
+                     
+             if target_equip_w_m2 is not None:
+                 if verbose: print(f"  Updating Equipment Density to {target_equip_w_m2} W/m2 (from Original IDF)")
+                 for obj in idf.idfobjects['ELECTRICEQUIPMENT']:
+                     obj.Design_Level_Calculation_Method = 'Watts/Area'
+                     obj.Watts_per_Zone_Floor_Area = target_equip_w_m2
+                     obj.Design_Level = ""
+                     
+             if target_light_w_m2 is not None:
+                 if verbose: print(f"  Updating Lighting Density to {target_light_w_m2} W/m2 (from Original IDF)")
+                 for obj in idf.idfobjects['LIGHTS']:
+                     obj.Design_Level_Calculation_Method = 'Watts/Area'
+                     obj.Watts_per_Zone_Floor_Area = target_light_w_m2
+                     obj.Lighting_Level = ""
+                     
+        except Exception as e:
+            print(f"  Warning: Could not update densities from original IDF: {e}")
 
     # Optimize and save
     idf_optimizer.optimize_idf(idf, verbose=verbose)
+    idf_optimizer.apply_speed_optimizations(idf, verbose=verbose)
+    idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=verbose)
     idf.saveas(output_path)
     print(f"Neighbourhood IDF saved to: {output_path}")
 
@@ -1141,7 +1259,8 @@ def inject_neighbourhood_default_schedules(
     idf_path: str,
     output_path: str,
     n_buildings: int,
-    verbose: bool = True
+    verbose: bool = True,
+    run_period_mode: str = 'standard'
 ) -> None:
     """
     Injects DEFAULT residential schedules into a prepared neighbourhood IDF.
@@ -1277,6 +1396,8 @@ def inject_neighbourhood_default_schedules(
     
     # Optimize and save
     idf_optimizer.optimize_idf(idf, verbose=verbose)
+    idf_optimizer.apply_speed_optimizations(idf, verbose=verbose)
+    idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=verbose)
     idf.saveas(output_path)
     print(f"Neighbourhood Default IDF saved to: {output_path}")
 

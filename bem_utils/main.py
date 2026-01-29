@@ -103,6 +103,38 @@ def select_file(files: list, prompt_text: str) -> str:
         print("Invalid selection. Try again.")
 
 
+def select_simulation_mode() -> str:
+    """
+    Display simulation mode sub-menu and return selected mode.
+    
+    Returns:
+        str: Selected mode ('standard', 'weekly', or 'comparison')
+    """
+    print("\n[Simulation Mode Selection]")
+    print("  1. Standard Simulation (full year)")
+    print("  2. Fast Simulation (24 TMY weeks, ~2.5x faster)")
+    print("  3. Comparison Mode (runs Standard + Fast, generates report)")
+    
+    sim_modes = ['standard', 'weekly', 'comparison']
+    mode_names = {
+        'standard': 'Standard (Full Year)',
+        'weekly': 'Fast (24 TMY Weeks)',
+        'comparison': 'Comparison Mode'
+    }
+    
+    while True:
+        try:
+            mode_choice = input("Select mode (1-3): ").strip()
+            mode_idx = int(mode_choice) - 1
+            if 0 <= mode_idx < len(sim_modes):
+                selected_mode = sim_modes[mode_idx]
+                print(f"\nSelected Mode: {mode_names[selected_mode]}")
+                return selected_mode
+        except ValueError:
+            pass
+        print("Invalid selection. Try again.")
+
+
 def option_visualize_building() -> None:
     """Option 1: Visualize a building or neighbourhood model in 3D."""
     print("\n=== Visualize Building/Neighbourhood Model ===")
@@ -131,6 +163,9 @@ def option_visualize_building() -> None:
 def option_run_simulation() -> None:
     """Option 2: Run BEM simulations with schedule injection."""
     print("\n=== Run BEM Simulation ===")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
     
     # 1. Select Year / Schedule File
     schedule_files = glob.glob(os.path.join(BEM_SETUP_DIR, "BEM_Schedules_*.csv"))
@@ -213,46 +248,69 @@ def option_run_simulation() -> None:
     # 7. Generate IDFs and Prepare Jobs
     jobs = []
     
-    batch_name = f"Batch_{year_tag}_{int(time.time())}"
+    batch_name = f"Batch_{year_tag}_{selected_sim_mode}_{int(time.time())}"
     batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
     if not os.path.exists(batch_dir):
         os.makedirs(batch_dir)
         
     print(f"Output Directory: {batch_dir}")
+    print("\n[Applying Speed Optimizations]")
+    
+    modes_to_run = ['standard', 'weekly'] if selected_sim_mode == 'comparison' else [selected_sim_mode]
     
     for hh_id in hh_ids:
         hh_dir = os.path.join(batch_dir, f"HH_{hh_id}")
         if not os.path.exists(hh_dir):
             os.makedirs(hh_dir)
             
-        hh_idf_name = f"HH_{hh_id}.idf"
-        hh_idf_path = os.path.join(hh_dir, hh_idf_name)
-        
-        try:
-            integration.inject_schedules(
-                selected_idf, hh_idf_path, hh_id, schedules[hh_id],
-                epw_path=selected_epw
-            )
+        for mode in modes_to_run:
+            # Sub-directory to avoid output conflicts (eplusout.sql)
+            if len(modes_to_run) > 1:
+                run_dir = os.path.join(hh_dir, mode)
+            else:
+                run_dir = hh_dir
+            os.makedirs(run_dir, exist_ok=True)
             
-            # Export schedule for debugging
-            integration.export_schedule_csv(
-                schedules[hh_id], hh_id, year_tag, 
-                SIM_RESULTS_DIR, batch_name=batch_name
-            )
+            suffix = f"_{mode}" if len(modes_to_run) > 1 else ""
+            hh_idf_name = f"HH_{hh_id}{suffix}.idf"
+            hh_idf_path = os.path.join(run_dir, hh_idf_name)
             
-            jobs.append({
-                'idf': hh_idf_path,
-                'epw': selected_epw,
-                'output_dir': hh_dir,
-                'name': f"HH_{hh_id}"
-            })
-        except Exception as e:
-            print(f"Error preparing HH {hh_id}: {e}")
+            try:
+                integration.inject_schedules(
+                    selected_idf, hh_idf_path, hh_id, schedules[hh_id],
+                    epw_path=selected_epw,
+                    run_period_mode=mode
+                )
+                
+                # Export schedule for debugging
+                integration.export_schedule_csv(
+                    schedules[hh_id], hh_id, year_tag, 
+                    SIM_RESULTS_DIR, batch_name=batch_name
+                )
+                
+                job_name = f"HH_{hh_id}{suffix}"
+                jobs.append({
+                    'idf': hh_idf_path,
+                    'epw': selected_epw,
+                    'output_dir': run_dir,
+                    'name': job_name,
+                    'mode': mode # for post-processing
+                })
+            except Exception as e:
+                print(f"Error preparing HH {hh_id} (Mode: {mode}): {e}")
             
     # 8. Run Simulations
     if not jobs:
         print("No jobs generated.")
         return
+    
+    # Show expected speedup
+    speedup_info = {
+        'standard': '1.0x (baseline)',
+        'weekly': '~2.5x faster',
+        'comparison': 'runs Standard + Fast, generates report'
+    }
+    print(f"\nExpected Speedup: {speedup_info[selected_sim_mode]}")
         
     confirm = input(f"Ready to run {len(jobs)} simulations. Proceed? (y/n): ")
     if confirm.lower() != 'y':
@@ -261,17 +319,49 @@ def option_run_simulation() -> None:
         
     results = simulation.run_simulations_parallel(jobs, ENERGYPLUS_EXE)
     
-    # 9. Plot Results
+    # 9. Plot Results and/or Comparative Report
     if results['successful']:
         print("\nGenerating Plots...")
-        try:
-            plotting.plot_eui_histogram(
-                results['successful'], 
-                title=f"EUI_Distribution_{year_tag}",
-                output_dir=PLOT_RESULTS_DIR
-            )
-        except Exception as e:
-            print(f"Error generating plot: {e}")
+        
+        if selected_sim_mode == 'comparison':
+            # Group results by HH and Compare
+            hh_results = {}
+            for res in results['successful']:
+                name = res['name'] # e.g. HH_1_standard
+                parts = name.split('_')
+                if len(parts) >= 3:
+                    mode = parts[-1]
+                    hh_id = '_'.join(parts[1:-1])
+                    if hh_id not in hh_results: hh_results[hh_id] = {}
+                    hh_results[hh_id][mode] = res
+            
+            for hh_id, modes in hh_results.items():
+                if 'standard' in modes and 'weekly' in modes:
+                    print(f"  Generating Comparison Report for HH {hh_id}...")
+                    
+                    std_eui = plotting.process_single_result(modes['standard']['output_dir'], scaling_factor=1.0)
+                    fast_eui = plotting.process_single_result(modes['weekly']['output_dir'], scaling_factor=52.0/24.0)
+                    
+                    comparison_data = {
+                        'Standard (Full Year)': std_eui,
+                        'Fast (24 Weeks)': fast_eui
+                    }
+                    
+                    plotting.plot_comparative_eui(
+                        comparison_data, f"{hh_id}_Val", PLOT_RESULTS_DIR, 
+                        idf_name=os.path.basename(selected_idf)
+                    )
+        else:
+            scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+            try:
+                plotting.plot_eui_histogram(
+                    results['successful'], 
+                    title=f"EUI_Distribution_{year_tag}_{selected_sim_mode}",
+                    output_dir=PLOT_RESULTS_DIR,
+                    scaling_factor=scaling_factor
+                )
+            except Exception as e:
+                print(f"Error generating plot: {e}")
             
     print("\nSimulation complete.")
 
@@ -287,6 +377,9 @@ def option_comparative_simulation() -> None:
     print("  - 2015 Schedules")
     print("  - 2005 Schedules")
     print("  - Default (No schedule injection)")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
     
     # 1. Select Base IDF
     idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "*.idf"))
@@ -366,8 +459,6 @@ def option_comparative_simulation() -> None:
     # But filtering for one that resembles "Standard Working Day"
     first_year = list(all_schedules.keys())[0]
     first_candidates = list(all_schedules[first_year].keys())
-    if len(first_candidates) > 100:
-        first_candidates = random.sample(first_candidates, 100)
         
     first_hh = integration.find_best_match_household(all_schedules[first_year], first_candidates)
     target_hhsize = all_schedules[first_year][first_hh].get('metadata', {}).get('hhsize', 0)
@@ -394,7 +485,10 @@ def option_comparative_simulation() -> None:
         try:
             if scenario == 'Default':
                 # Just optimize the base IDF without schedule injection
-                idf_optimizer.prepare_idf_for_simulation(selected_idf, idf_path, verbose=True)
+                idf_optimizer.prepare_idf_for_simulation(
+                    selected_idf, idf_path, verbose=True, 
+                    run_period_mode=selected_sim_mode
+                )
             elif scenario in all_schedules:
                 # Find a household with matching hhsize
                 matching_hhs = [
@@ -405,9 +499,6 @@ def option_comparative_simulation() -> None:
                 if matching_hhs:
                     # Select the one that best matches standard working day
                     candidates = matching_hhs
-                    # Limit candidates to speed up?
-                    if len(candidates) > 50:
-                        candidates = random.sample(candidates, 50)
                     year_hh = integration.find_best_match_household(all_schedules[scenario], candidates)
                 else:
                     # Fallback to random if no exact match
@@ -421,7 +512,8 @@ def option_comparative_simulation() -> None:
                     all_schedules[scenario][year_hh],
                     epw_path=selected_epw,
                     sim_results_dir=SIM_RESULTS_DIR,
-                    batch_name=batch_name
+                    batch_name=batch_name,
+                    run_period_mode=selected_sim_mode
                 )
                 
                 # Export schedule for debugging
@@ -471,6 +563,10 @@ def option_comparative_simulation() -> None:
             eui_data = plotting.calculate_eui(conn)
             conn.close()
             
+            # Upscale results if Fast Simulation (24 weeks -> 52 weeks)
+            scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+            eui_data = plotting.scale_eui_results(eui_data, scaling_factor)
+            
             eui_results[scenario] = eui_data
             
             # Generate individual breakdown plot
@@ -494,6 +590,8 @@ def option_comparative_simulation() -> None:
             conn.close()
             
             if meter_data:
+                scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+                meter_data = plotting.scale_meter_results(meter_data, scaling_factor)
                 meter_results[scenario] = meter_data
         except Exception as e:
             print(f"  Error extracting meters for {scenario}: {e}")
@@ -587,6 +685,9 @@ def option_neighbourhood_simulation() -> None:
     """Option 4: Run simulation with a neighbourhood IDF (multiple buildings)."""
     print("\n--- Neighbourhood Simulation ---")
     print("This option runs a simulation with per-building occupancy profiles.")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
 
     # 1. Select Neighbourhood IDF
     idf_files = glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "*.idf"))
@@ -628,20 +729,31 @@ def option_neighbourhood_simulation() -> None:
         return
     selected_csv = select_file(csv_files, "Select Schedule CSV:")
 
-    # 5. Load N households
-    print(f"\nLoading {n_buildings} households from CSV...")
+    # 5. Load and filter households
+    print(f"\nLoading households from CSV...")
     all_schedules = integration.load_schedules(selected_csv, region=selected_region)
 
-    if len(all_schedules) < n_buildings:
-        print(f"Warning: Only {len(all_schedules)} households available, need {n_buildings}.")
-        print("Will reuse households if necessary.")
+    # Filter for Typical Working Day profile
+    print("\nFiltering for households matching 'Typical Working Day' profile...")
+    scored_matches = integration.filter_matching_households(all_schedules)
+    
+    if not scored_matches:
+        print("Error: No valid households found matching the profile.")
+        return
 
-    # Create list of (hh_id, schedule_data) tuples for injection
-    hh_ids = list(all_schedules.keys())
+    sorted_hh_ids = [hh for hh, score in scored_matches]
+    best_score = scored_matches[0][1]
+    worst_selected_idx = min(len(scored_matches), n_buildings) - 1
+    worst_score = scored_matches[worst_selected_idx][1]
+    
+    print(f"  Selected top matches from {len(scored_matches)} candidates.")
+    print(f"  Score Range (SSE): {best_score:.4f} (Best) to {worst_score:.4f}")
+
+    hh_ids = sorted_hh_ids
     schedules_list = []
     for i in range(n_buildings):
-        hh_id = hh_ids[i % len(hh_ids)]  # Cycle if not enough households
-        schedules_list.append((hh_id, all_schedules[hh_id]))
+        hh_id = hh_ids[i % len(hh_ids)]  # Cycle top matches if not enough unique
+        schedules_list.append({**all_schedules[hh_id], 'hh_id': hh_id})
 
     print(f"\nAssigned {n_buildings} unique occupancy profiles to buildings.")
 
@@ -659,11 +771,13 @@ def option_neighbourhood_simulation() -> None:
     print(f"\nInjecting schedules...")
     integration.inject_neighbourhood_schedules(
         prepared_idf_path, final_idf_path, schedules_list,
-        original_idf_path=selected_idf, epw_path=selected_epw
+        original_idf_path=selected_idf, epw_path=selected_epw,
+        run_period_mode=selected_sim_mode
     )
     
     # Export all used schedules for debugging
-    for hh_id, hh_schedule in schedules_list:
+    for hh_schedule in schedules_list:
+        hh_id = hh_schedule['hh_id']
         integration.export_schedule_csv(
             hh_schedule, str(hh_id), 'Neighbourhood',
             SIM_RESULTS_DIR, batch_name=run_id
@@ -686,9 +800,11 @@ def option_neighbourhood_simulation() -> None:
             os.makedirs(PLOT_RESULTS_DIR, exist_ok=True)
             
             # Process the simulation results and generate EUI breakdown plot
+            scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
             eui_results = plotting.process_single_result(
                 output_dir=run_dir,
-                plot_output_dir=PLOT_RESULTS_DIR
+                plot_output_dir=PLOT_RESULTS_DIR,
+                scaling_factor=scaling_factor
             )
             
             if eui_results:
@@ -728,6 +844,9 @@ def option_comparative_neighbourhood_simulation() -> None:
     print("  - 2015 Schedules")
     print("  - 2005 Schedules")
     print("  - Default (No schedule injection)")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
     
     # 1. Select Neighbourhood IDF
     neighbourhood_files = glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "*.idf"))
@@ -787,22 +906,36 @@ def option_comparative_neighbourhood_simulation() -> None:
         print("Error: No schedule files with enough households could be loaded.")
         return
     
-    # 6. Select households for consistency - match by hhsize
+    # 6. Select households for consistency - match by hhsize AND profile
     first_year = list(all_schedules.keys())[0]
     first_schedules = all_schedules[first_year]
     
-    # Sample n_buildings households from first year
-    available_hhs = list(first_schedules.keys())
-    random.shuffle(available_hhs)
-    base_hhs = available_hhs[:n_buildings]
+    # Filter for Typical Working Day profile
+    print(f"\nFiltering {first_year} households for Typical Working Day profile...")
+    scored_matches = integration.filter_matching_households(first_schedules)
     
-    # Get hhsize profile
+    if not scored_matches:
+        print("Error: No valid households found matching the profile.")
+        return
+        
+    sorted_hh_ids = [hh for hh, score in scored_matches]
+    best_score = scored_matches[0][1]
+    worst_idx = min(len(scored_matches), n_buildings) - 1
+    print(f"  Selected top matches from {len(scored_matches)} candidates.")
+    print(f"  Score Range (SSE): {best_score:.4f} to {scored_matches[worst_idx][1]:.4f}")
+
+    # Select n_buildings households (cycling top matches)
+    base_hhs = []
+    for i in range(n_buildings):
+        base_hhs.append(sorted_hh_ids[i % len(sorted_hh_ids)])
+    
+    # Get hhsize profile for these base households
     hhsize_profile = []
     for hh_id in base_hhs:
         hhsize = first_schedules[hh_id].get('metadata', {}).get('hhsize', 2)
         hhsize_profile.append(hhsize)
     
-    print(f"\nSelected {n_buildings} households from {first_year}")
+    print(f"\nSelected {n_buildings} households from {first_year} (profile-filtered)")
     print(f"  Household sizes: {hhsize_profile[:5]}... (matching for other years)")
     
     # 7. Create batch directory
@@ -828,33 +961,53 @@ def option_comparative_neighbourhood_simulation() -> None:
                 # Then inject default residential schedules (no occupancy modification)
                 print(f"\n  {scenario}: Preparing IDF with default residential schedules...")
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
-                integration.inject_neighbourhood_default_schedules(prepared_idf, final_idf, n_buildings, verbose=True)
+                integration.inject_neighbourhood_default_schedules(prepared_idf, final_idf, n_buildings, verbose=True, run_period_mode=selected_sim_mode)
             elif scenario in all_schedules:
                 # Find matching households by hhsize
                 schedules_list = []
                 year_schedules = all_schedules[scenario]
                 
+                # Filter this year's schedules by profile first
+                print(f"    Filtering {scenario} candidates by profile...")
+                scored_year_matches = integration.filter_matching_households(year_schedules)
+                sorted_year_hhs = [hh for hh, s in scored_year_matches]
+                
+                used_hhs = set(s.get('hh_id') for s in schedules_list)
+
                 for i, target_hhsize in enumerate(hhsize_profile):
-                    # Find a household with matching hhsize
-                    matching = [
-                        (hh_id, data) for hh_id, data in year_schedules.items()
-                        if data.get('metadata', {}).get('hhsize', 0) == target_hhsize
-                        and hh_id not in [s.get('hh_id') for s in schedules_list]
-                    ]
+                    # Find best profile match with correct hhsize
+                    # Search through sorted_year_hhs (best fit first)
+                    found_hh = None
+                    found_data = None
                     
-                    if matching:
-                        hh_id, data = matching[0]
+                    for candidate_hh in sorted_year_hhs:
+                        # Check if matches size and not already used
+                        if year_schedules[candidate_hh].get('metadata', {}).get('hhsize', 0) == target_hhsize:
+                            if candidate_hh not in used_hhs:
+                                found_hh = candidate_hh
+                                found_data = year_schedules[candidate_hh]
+                                break
+                    
+                    if found_hh:
+                        hh_id = found_hh
+                        data = found_data
+                        used_hhs.add(hh_id)
                     else:
-                        # Fallback to any available household
-                        remaining = [
-                            (hh_id, data) for hh_id, data in year_schedules.items()
-                            if hh_id not in [s.get('hh_id') for s in schedules_list]
-                        ]
-                        if remaining:
-                            hh_id, data = remaining[0]
+                        print(f"    Warning: No unused {target_hhsize}-person HH found in {scenario} matching profile.")
+                        # Fallback: Try any unused HH of correct size (ignoring profile score sort order if needed, but we already iterated all)
+                        # Since sorted_year_hhs contains *all* candidates, if not found above, none exist.
+                        # Try relaxing size constraint? Or just pick best available profile regardless of size?
+                        # Let's pick best available profile regardless of size to maintain profile consistency
+                        for candidate_hh in sorted_year_hhs:
+                            if candidate_hh not in used_hhs:
+                                hh_id = candidate_hh
+                                data = year_schedules[candidate_hh]
+                                used_hhs.add(hh_id)
+                                print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
+                                break
                         else:
-                            print(f"    Warning: Not enough households in {scenario}")
-                            continue
+                             print(f"      Critical: No households left in {scenario}!")
+                             continue
                     
                     schedules_list.append({**data, 'hh_id': hh_id})
                 
@@ -864,7 +1017,8 @@ def option_comparative_neighbourhood_simulation() -> None:
                     prepared_idf, final_idf, schedules_list,
                     original_idf_path=selected_idf, epw_path=selected_epw,
                     sim_results_dir=SIM_RESULTS_DIR,
-                    batch_name=batch_name
+                    batch_name=batch_name,
+                    run_period_mode=selected_sim_mode
                 )
                 
                 # Export all used schedules for debugging
@@ -918,6 +1072,11 @@ def option_comparative_neighbourhood_simulation() -> None:
         try:
             conn = sqlite3.connect(sql_path)
             eui_data = plotting.calculate_eui(conn)
+            
+            # Upscale
+            scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+            eui_data = plotting.scale_eui_results(eui_data, scaling_factor)
+            
             conn.close()
             
             eui_results[scenario] = eui_data
@@ -959,6 +1118,8 @@ def option_comparative_neighbourhood_simulation() -> None:
             conn.close()
             
             if meter_data:
+                scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+                meter_data = plotting.scale_meter_results(meter_data, scaling_factor)
                 meter_results[scenario] = meter_data
         except Exception as e:
             print(f"  Error extracting meters for {scenario}: {e}")
@@ -996,6 +1157,9 @@ def option_kfold_comparative_simulation() -> None:
     print("\n=== K-Fold Comparative Simulation ===")
     print("This runs comparative simulations K times with different random households,")
     print("then averages results to reduce single-household bias.")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
     
     # 1. Select Base IDF
     idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "*.idf"))
@@ -1096,7 +1260,10 @@ def option_kfold_comparative_simulation() -> None:
     os.makedirs(default_dir, exist_ok=True)
     default_idf_path = os.path.join(default_dir, "Scenario_Default.idf")
     
-    idf_optimizer.prepare_idf_for_simulation(selected_idf, default_idf_path, verbose=False)
+    idf_optimizer.prepare_idf_for_simulation(
+        selected_idf, default_idf_path, verbose=False,
+        run_period_mode=selected_sim_mode
+    )
     
     default_job = {
         'idf': default_idf_path,
@@ -1115,6 +1282,13 @@ def option_kfold_comparative_simulation() -> None:
             conn = sqlite3.connect(default_sql_path)
             default_eui_data = plotting.calculate_eui(conn)
             default_meter_data = plotting.get_meter_data(conn)
+            
+            # Upscale
+            scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+            default_eui_data = plotting.scale_eui_results(default_eui_data, scaling_factor)
+            
+            if default_meter_data:
+                default_meter_data = plotting.scale_meter_results(default_meter_data, scaling_factor)
             conn.close()
             print("  Default simulation complete.")
         except Exception as e:
@@ -1139,8 +1313,6 @@ def option_kfold_comparative_simulation() -> None:
         # Pick 100 candidates and find best working day match
         first_year = list(all_schedules.keys())[0]
         i_candidates = list(all_schedules[first_year].keys())
-        if len(i_candidates) > 100:
-            i_candidates = random.sample(i_candidates, 100)
         first_hh = integration.find_best_match_household(all_schedules[first_year], i_candidates)
         target_hhsize = all_schedules[first_year][first_hh].get('metadata', {}).get('hhsize', 0)
         print(f"  Target household size: {target_hhsize} persons")
@@ -1167,8 +1339,6 @@ def option_kfold_comparative_simulation() -> None:
                     
                     if matching_hhs:
                         cands = matching_hhs
-                        if len(cands) > 50:
-                            cands = random.sample(cands, 50)
                         year_hh = integration.find_best_match_household(all_schedules[scenario], cands)
                     else:
                         year_hh = random.choice(list(all_schedules[scenario].keys()))
@@ -1180,7 +1350,8 @@ def option_kfold_comparative_simulation() -> None:
                         hh_schedule,
                         epw_path=selected_epw,
                         sim_results_dir=SIM_RESULTS_DIR,
-                        batch_name=f"{batch_name}/iter_{k+1}"
+                        batch_name=f"{batch_name}/iter_{k+1}",
+                        run_period_mode=selected_sim_mode
                     )
                     
                     # Export schedule to CSV for debugging
@@ -1219,11 +1390,17 @@ def option_kfold_comparative_simulation() -> None:
             try:
                 conn = sqlite3.connect(sql_path)
                 eui_data = plotting.calculate_eui(conn)
+                
+                # Upscale
+                scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
+                eui_data = plotting.scale_eui_results(eui_data, scaling_factor)
+                
                 all_eui_results[scenario].append(eui_data)
                 
                 # Also extract meter data for time-series
                 meter_data = plotting.get_meter_data(conn)
                 if meter_data:
+                    meter_data = plotting.scale_meter_results(meter_data, scaling_factor)
                     all_meter_results[scenario].append(meter_data)
                 conn.close()
             except Exception as e:
@@ -1334,6 +1511,9 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
     print("\n=== Batch Comparative Neighbourhood Simulation ===")
     print("This runs comparative neighbourhood simulations K times with different random household sets,")
     print("then averages results to reduce selection bias.")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
     
     # 1. Select Neighbourhood IDF
     neighbourhood_files = glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "*.idf"))
@@ -1477,16 +1657,22 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
     for k in range(K):
         print(f"\n--- Iteration {k+1}/{K} ---")
         
-        # Randomly sample unique set of households for this iteration
+        # Filter Base Year (2025) candidates by profile
+        print(f"  Filtering {first_year} candidates by profile...")
         first_schedules = all_schedules[first_year]
-        available_hhs = list(first_schedules.keys())
-        # Sample n_buildings distinct households
-        base_hhs = random.sample(available_hhs, min(len(available_hhs), n_buildings))
+        scored_matches = integration.filter_matching_households(first_schedules)
         
-        # If not enough, reuse with replacement (shouldn't happen with check above)
-        if len(base_hhs) < n_buildings:
-             base_hhs = [random.choice(available_hhs) for _ in range(n_buildings)]
-             
+        # Define candidate pool: Top 50% or at least 2*N (to allow variety)
+        pool_size = max(n_buildings * 2, len(scored_matches) // 2)
+        candidate_pool = [hh for hh, s in scored_matches[:pool_size]]
+        
+        # Sample n_buildings distinct households from the filtered pool
+        if len(candidate_pool) < n_buildings:
+            print(f"  Warning: Candidate pool smaller than N ({len(candidate_pool)} < {n_buildings}). Using duplication.")
+            base_hhs = [random.choice(candidate_pool) for _ in range(n_buildings)]
+        else:
+            base_hhs = random.sample(candidate_pool, n_buildings)
+        
         # Get hhsize profile for matching
         hhsize_profile = []
         for hh_id in base_hhs:
@@ -1512,34 +1698,45 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
             final_idf = os.path.join(scenario_dir, f"Scenario_{scenario}.idf")
             
             try:
-                # Find matching households logic (same as Option 6)
+                # Find matching households logic (filtered by profile)
                 schedules_list = []
                 year_schedules = all_schedules[scenario]
+                
+                # Filter this year's schedules by profile first
+                scored_year_matches = integration.filter_matching_households(year_schedules)
+                sorted_year_hhs = [hh for hh, s in scored_year_matches]
+                
                 used_hhs = set()
                 
                 for target_hhsize in hhsize_profile:
-                    # Find a household with matching hhsize not already used in this scenario
-                    matching = [
-                        (hh_id, data) for hh_id, data in year_schedules.items()
-                        if data.get('metadata', {}).get('hhsize', 0) == target_hhsize
-                        and hh_id not in used_hhs
-                    ]
+                    # Find best profile match with correct hhsize
+                    found_hh = None
+                    found_data = None
                     
-                    if matching:
-                        hh_id, data = random.choice(matching) # Random choice among matches for variety
+                    for candidate_hh in sorted_year_hhs:
+                         if year_schedules[candidate_hh].get('metadata', {}).get('hhsize', 0) == target_hhsize:
+                            if candidate_hh not in used_hhs:
+                                found_hh = candidate_hh
+                                found_data = year_schedules[candidate_hh]
+                                break
+                    
+                    if found_hh:
+                        hh_id = found_hh
+                        data = found_data
+                        used_hhs.add(hh_id)
                     else:
-                        # Fallback
-                        remaining = [
-                            (hh_id, data) for hh_id, data in year_schedules.items()
-                            if hh_id not in used_hhs
-                        ]
-                        if remaining:
-                            hh_id, data = random.choice(remaining)
+                        # Fallback: Best available profile regardless of size
+                        for candidate_hh in sorted_year_hhs:
+                            if candidate_hh not in used_hhs:
+                                hh_id = candidate_hh
+                                data = year_schedules[candidate_hh]
+                                used_hhs.add(hh_id)
+                                print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
+                                break
                         else:
-                            # Must reuse
-                            hh_id, data = random.choice(list(year_schedules.items()))
+                             print(f"      Critical: No households left in {scenario}!")
+                             continue
                     
-                    used_hhs.add(hh_id)
                     schedules_list.append({**data, 'hh_id': hh_id})
                 
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)

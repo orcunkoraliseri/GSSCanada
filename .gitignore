@@ -33,6 +33,8 @@ BEM_Setup/SimResults_Plotting/
 BEM_Setup/SimResults_Plotting_Schedules/
 Pipeline_Test_Output/
 Test_Output/
+# Test & Debug Artifacts
+tests/benchmark_results/
 **/eplusout.*
 **/sqlite.err
 **/ExpandObjects.log

@@ -221,6 +221,52 @@ def calculate_eui(conn) -> dict:
     return results
 
 
+def scale_eui_results(results: dict, factor: float) -> dict:
+    """
+    Scales energy values in EUI results dictionary by a factor.
+    Used for upscaling partial year simulations (e.g. 24 weeks -> 52 weeks).
+    """
+    if factor == 1.0:
+        return results
+        
+    scaled = results.copy()
+    scaled['eui'] = round(results['eui'] * factor, 3)
+    scaled['total_energy'] = round(results['total_energy'] * factor, 3)
+    
+    scaled['end_uses'] = {k: round(v * factor, 3) for k, v in results['end_uses'].items()}
+    scaled['end_uses_normalized'] = {k: round(v * factor, 3) for k, v in results['end_uses_normalized'].items()}
+    
+    return scaled
+
+
+def scale_meter_results(meter_results: Dict[str, List[float]], factor: float) -> Dict[str, List[float]]:
+    """
+    Scales extracted meter data values by a factor.
+    """
+    if factor == 1.0:
+        return meter_results
+        
+    scaled = {}
+    for key, values in meter_results.items():
+        # Handle Weekly mode (24 items) -> Convert to Monthly (12 items)
+        # Weekly mode produces 24 periods (2 per month). We sum them to get 2-week total, then scale.
+        if len(values) == 24:
+            aggregated = []
+            for i in range(12):
+                # Sum the two periods for this month
+                month_val = values[i*2] + values[i*2+1]
+                aggregated.append(month_val)
+            
+            # Use month-specific scaling factors to restore natural variation (Sawtooth pattern)
+            # Fast Mode simulates 14 days (2 weeks) per month.
+            month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+            scaled[key] = [val * (days / 14.0) for val, days in zip(aggregated, month_days)]
+        else:
+            # Standard scaling
+            scaled[key] = [v * factor for v in values]
+    return scaled
+
+
 def plot_eui_breakdown(eui_results: dict, output_path: str) -> None:
     """
     Generates a bar plot for the EUI breakdown with semantic energy colors.
@@ -280,13 +326,14 @@ def plot_eui_breakdown(eui_results: dict, output_path: str) -> None:
     plt.close()
 
 
-def process_single_result(output_dir: str, plot_output_dir: str = None) -> dict:
+def process_single_result(output_dir: str, plot_output_dir: str = None, scaling_factor: float = 1.0) -> dict:
     """
     Processes a single simulation result directory.
     
     Args:
         output_dir: Path to directory containing eplusout.sql.
         plot_output_dir: Optional path to save plots. Uses output_dir if not specified.
+        scaling_factor: Factor to scale results (e.g. 52/24 for weekly sim).
     
     Returns:
         dict: EUI results dictionary.
@@ -307,6 +354,9 @@ def process_single_result(output_dir: str, plot_output_dir: str = None) -> dict:
         eui_results = calculate_eui(conn)
         conn.close()
         
+        # Scale if needed
+        eui_results = scale_eui_results(eui_results, scaling_factor)
+        
         # Save JSON summary
         json_path = os.path.join(output_dir, 'eui_summary.json')
         with open(json_path, 'w') as f:
@@ -325,7 +375,7 @@ def process_single_result(output_dir: str, plot_output_dir: str = None) -> dict:
 
 
 def plot_eui_histogram(simulation_results: list, title: str = "EUI Distribution", 
-                       output_dir: str = None) -> None:
+                       output_dir: str = None, scaling_factor: float = 1.0) -> None:
     """
     Plots a histogram of EUI results from multiple simulations.
     Also generates individual breakdown plots for each simulation.
@@ -345,7 +395,7 @@ def plot_eui_histogram(simulation_results: list, title: str = "EUI Distribution"
             continue
         
         # Process each result to get EUI and generate breakdown
-        eui_result = process_single_result(res_output_dir, output_dir)
+        eui_result = process_single_result(res_output_dir, output_dir, scaling_factor=scaling_factor)
         if eui_result and eui_result.get('eui', 0) > 0:
             eui_values.append(eui_result['eui'])
             
