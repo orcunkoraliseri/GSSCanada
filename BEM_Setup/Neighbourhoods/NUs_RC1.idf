@@ -2023,7 +2023,7 @@ Schedule:Week:Daily,
   noSummer_Day Schedule;                  !- CustomDay2 Schedule:Day Name
 
 Schedule:Week:Daily,
-  VentingSched Week Rule - Jul2-Sep30,    !- Name
+  VentingSched Week Rule - Jul2-Aug31,    !- Name
   {e342bbb8-2e67-4bae-bb40-0e1ec518c0ea}, !- Sunday Schedule:Day Name
   {e342bbb8-2e67-4bae-bb40-0e1ec518c0ea}, !- Monday Schedule:Day Name
   {e342bbb8-2e67-4bae-bb40-0e1ec518c0ea}, !- Tuesday Schedule:Day Name
@@ -2065,13 +2065,13 @@ Schedule:Year,
   25,                                     !- Start Day 2
   7,                                      !- End Month 2
   1,                                      !- End Day 2
-  VentingSched Week Rule - Jul2-Sep30,    !- Schedule:Week Name 3
+  VentingSched Week Rule - Jul2-Aug31,    !- Schedule:Week Name 3
   7,                                      !- Start Month 3
   2,                                      !- Start Day 3
-  9,                                      !- End Month 3
-  30,                                     !- End Day 3
+  8,                                      !- End Month 3
+  31,                                     !- End Day 3
   VentingSched Week Rule - Oct1-Dec31,    !- Schedule:Week Name 4
-  10,                                     !- Start Month 4
+  9,                                      !- Start Month 4
   1,                                      !- Start Day 4
   12,                                     !- End Month 4
   31;                                     !- End Day 4

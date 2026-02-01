@@ -242,6 +242,11 @@ def scale_eui_results(results: dict, factor: float) -> dict:
 def scale_meter_results(meter_results: Dict[str, List[float]], factor: float) -> Dict[str, List[float]]:
     """
     Scales extracted meter data values by a factor.
+    
+    For weekly mode (24 periods), aggregates to 12 monthly values and scales
+    to estimate full-year equivalent monthly totals.
+    
+    NOTE: Data is kept as monthly totals - daily normalization happens in plotting.
     """
     if factor == 1.0:
         return meter_results
@@ -249,20 +254,19 @@ def scale_meter_results(meter_results: Dict[str, List[float]], factor: float) ->
     scaled = {}
     for key, values in meter_results.items():
         # Handle Weekly mode (24 items) -> Convert to Monthly (12 items)
-        # Weekly mode produces 24 periods (2 per month). We sum them to get 2-week total, then scale.
+        # Weekly mode produces 24 periods (2 per month). Sum to get monthly total.
         if len(values) == 24:
             aggregated = []
             for i in range(12):
-                # Sum the two periods for this month
+                # Sum the two periods for this month (each is ~14 days)
                 month_val = values[i*2] + values[i*2+1]
                 aggregated.append(month_val)
             
-            # Use month-specific scaling factors to restore natural variation (Sawtooth pattern)
-            # Fast Mode simulates 14 days (2 weeks) per month.
-            month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-            scaled[key] = [val * (days / 14.0) for val, days in zip(aggregated, month_days)]
+            # Scale by factor (52/24) to estimate full-year monthly totals
+            # The 14-day periods already captured the pattern - just extrapolate
+            scaled[key] = [val * factor for val in aggregated]
         else:
-            # Standard scaling
+            # Standard mode (12 items) - scale as-is
             scaled[key] = [v * factor for v in values]
     return scaled
 
@@ -620,7 +624,8 @@ def plot_comparative_timeseries_subplots(
     output_dir: Optional[str] = None,
     floor_area: float = 0.0,
     region: Optional[str] = None,
-    idf_name: Optional[str] = None
+    idf_name: Optional[str] = None,
+    sim_mode: str = 'standard'
 ) -> None:
     """
     Generates a figure with subplots (one per meter) comparing scenario traces.
@@ -630,6 +635,10 @@ def plot_comparative_timeseries_subplots(
         hh_id: Household ID for labeling.
         output_dir: Directory to save the plot.
         floor_area: Conditioned floor area in m2 for normalization (optional).
+        region: Region name for title (optional).
+        idf_name: IDF filename for title (optional).
+        sim_mode: Simulation mode ('standard' or 'weekly'). Weekly mode skips
+                  daily normalization to avoid sawtooth pattern from sample data.
     """
     if not results_dict:
         return
@@ -672,8 +681,17 @@ def plot_comparative_timeseries_subplots(
     month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
-    # Determine unit label
-    y_unit = 'kWh/m²' if floor_area > 0 else 'kWh'
+    # Days per month (using 2024 leap year for consistency with EnergyPlus)
+    days_per_month = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    
+    # Determine unit label based on simulation mode
+    # Weekly mode: skip daily normalization to avoid sawtooth (data represents sample periods)
+    # Standard mode: normalize to daily average
+    use_daily_norm = (sim_mode != 'weekly')
+    if use_daily_norm:
+        y_unit = 'kWh/m²/day' if floor_area > 0 else 'kWh/day'
+    else:
+        y_unit = 'kWh/m²/month' if floor_area > 0 else 'kWh/month'
     
     for i, meter in enumerate(display_meters):
         ax = axes[i]
@@ -683,6 +701,10 @@ def plot_comparative_timeseries_subplots(
             # Pad or truncate to 12
             if len(values) > 12: values = values[:12]
             if len(values) < 12: values = values + [0]*(12-len(values))
+            
+            # Normalize by days per month to get daily average (only for standard mode)
+            if use_daily_norm:
+                values = [v / days for v, days in zip(values, days_per_month)]
             
             # Normalize if floor area is provided
             if floor_area > 0:
@@ -698,6 +720,13 @@ def plot_comparative_timeseries_subplots(
         ax.set_xticklabels(month_labels, rotation=45, fontsize=8)
         ax.grid(True, alpha=0.3)
         
+        # Expand y-axis for lighting and equipment to avoid exaggerated visual differences
+        # Set y-axis to start at 0 and expand range by 20% above max
+        if 'InteriorLights' in meter or 'InteriorEquipment' in meter:
+            ax.set_ylim(bottom=0)
+            current_ylim = ax.get_ylim()
+            ax.set_ylim(bottom=0, top=current_ylim[1] * 1.2)
+        
         # Legend only on first plot to save space
         if i == 0:
             ax.legend()
@@ -709,7 +738,7 @@ def plot_comparative_timeseries_subplots(
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)
     
-    title_str = f'Comparative Annual Time-Series (kWh/m²) - {hh_id}'
+    title_str = f'Comparative Annual Time-Series (kWh/m²/day) - {hh_id}'
     if idf_name:
         title_str += f"\nModel: {idf_name}"
     if region:
@@ -820,7 +849,8 @@ def plot_kfold_timeseries(
     floor_area: float = 0.0,
     K: int = 5,
     region: Optional[str] = None,
-    idf_name: Optional[str] = None
+    idf_name: Optional[str] = None,
+    sim_mode: str = 'standard'
 ) -> None:
     """
     Generates multi-panel time-series plots for K-Fold results with mean ± std shading.
@@ -833,6 +863,8 @@ def plot_kfold_timeseries(
         K: Number of iterations.
         region: Region name for title.
         idf_name: IDF filename for title.
+        sim_mode: Simulation mode ('standard' or 'weekly'). Weekly mode skips
+                  daily normalization to avoid sawtooth pattern from sample data.
     """
     import numpy as np
     
@@ -864,12 +896,22 @@ def plot_kfold_timeseries(
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     x = np.arange(12)
     
+    # Days per month (using 2024 leap year for consistency with EnergyPlus)
+    days_per_month = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    
     scenario_colors = {
         '2025': '#041991',
         '2015': '#0758FF',
         '2005': '#61F69C',
         'Default': '#8A1100'
     }
+    
+    # Determine unit label based on simulation mode
+    use_daily_norm = (sim_mode != 'weekly')
+    if use_daily_norm:
+        y_unit = 'kWh/m²/day' if floor_area > 0 else 'kWh/day'
+    else:
+        y_unit = 'kWh/m²/month' if floor_area > 0 else 'kWh/month'
     
     for idx, meter in enumerate(meters_to_plot):
         row, col = divmod(idx, n_cols)
@@ -879,11 +921,15 @@ def plot_kfold_timeseries(
             mean_vals = aggregated_meters['mean'].get(scenario, {}).get(meter, [0]*12)
             std_vals = aggregated_meters['std'].get(scenario, {}).get(meter, [0]*12)
             
-            # Normalize by floor area only (data is already in kWh from get_meter_data)
+            # Normalize by days per month to get daily average (only for standard mode)
+            if use_daily_norm:
+                mean_vals = [v / days for v, days in zip(mean_vals, days_per_month)]
+                std_vals = [v / days for v, days in zip(std_vals, days_per_month)]
+            
+            # Normalize by floor area (data is already in kWh from get_meter_data)
             if floor_area > 0:
                 mean_vals = [v / floor_area for v in mean_vals]
                 std_vals = [v / floor_area for v in std_vals]
-            # If no floor area, keep as raw kWh
             
             color = scenario_colors.get(scenario, '#666666')
             
@@ -900,8 +946,14 @@ def plot_kfold_timeseries(
         ax.set_title(meter_label, fontsize=10)
         ax.set_xticks(x)
         ax.set_xticklabels(months, fontsize=8, rotation=45)
-        ax.set_ylabel('kWh/m²' if floor_area > 0 else 'kWh', fontsize=9)
+        ax.set_ylabel(y_unit, fontsize=9)
         ax.grid(alpha=0.3)
+        
+        # Expand y-axis for lighting and equipment to avoid exaggerated visual differences
+        if 'InteriorLights' in meter or 'InteriorEquipment' in meter:
+            ax.set_ylim(bottom=0)
+            current_ylim = ax.get_ylim()
+            ax.set_ylim(bottom=0, top=current_ylim[1] * 1.2)
         
         if idx == 0:
             ax.legend(fontsize=8, loc='upper right')

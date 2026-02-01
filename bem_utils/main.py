@@ -616,7 +616,8 @@ def option_comparative_simulation() -> None:
             meter_results, first_hh, PLOT_RESULTS_DIR, 
             floor_area=planting_floor_area,
             region=selected_region,
-            idf_name=os.path.basename(selected_idf)
+            idf_name=os.path.basename(selected_idf),
+            sim_mode=selected_sim_mode
         )
     
     print("\nComparative simulation complete.")
@@ -789,7 +790,8 @@ def option_neighbourhood_simulation() -> None:
         idf_path=final_idf_path,
         epw_path=selected_epw,
         output_dir=run_dir,
-        ep_path=ENERGYPLUS_DIR
+        ep_path=ENERGYPLUS_DIR,
+        quiet=True
     )
 
     # 9. Generate Plots
@@ -1138,7 +1140,8 @@ def option_comparative_neighbourhood_simulation() -> None:
             PLOT_RESULTS_DIR,
             floor_area=floor_area,
             region=selected_region,
-            idf_name=os.path.basename(selected_idf)
+            idf_name=os.path.basename(selected_idf),
+            sim_mode=selected_sim_mode
         )
         
         print(f"\nPlots saved to: {PLOT_RESULTS_DIR}")
@@ -1496,7 +1499,8 @@ def option_kfold_comparative_simulation() -> None:
         ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_TimeSeries_{batch_name}.png")
         plotting.plot_kfold_timeseries(
             aggregated_meters, meter_names, ts_plot_path,
-            floor_area=floor_area, K=K, region=selected_region, idf_name=os.path.basename(selected_idf)
+            floor_area=floor_area, K=K, region=selected_region, 
+            idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
         )
     
     print(f"\nK-Fold Comparative Simulation complete. Results in: {batch_dir}")
@@ -1879,7 +1883,8 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_Neighbourhood_TimeSeries_{batch_name}.png")
         plotting.plot_kfold_timeseries(
             aggregated_meters, meter_names, ts_plot_path,
-            floor_area=floor_area, K=K, region=selected_region, idf_name=os.path.basename(selected_idf)
+            floor_area=floor_area, K=K, region=selected_region, 
+            idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
         )
         
     print(f"\nK-Fold Neighbourhood Simulation complete. Results in: {batch_dir}")

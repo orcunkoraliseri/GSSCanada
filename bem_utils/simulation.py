@@ -141,8 +141,8 @@ def run_simulations_parallel(simulation_jobs, ep_path, max_workers=None):
     
     # Add ep_path to each job
     jobs = []
-    # Use verbose mode for single simulations
-    use_quiet = len(simulation_jobs) > 1
+    # Always use quiet mode to suppress verbose EnergyPlus output
+    use_quiet = True
     for job in simulation_jobs:
         job_copy = job.copy()
         job_copy['ep_path'] = ep_path
