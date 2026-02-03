@@ -389,8 +389,10 @@ def main(sample_pct: float = 100.0) -> None:
     Args:
         sample_pct: Percentage identifier (only used for file naming).
     """
-    # --- CONFIGURATION ---
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # --- CONFIGURATION (Cross-platform) ---
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR
 
     # Historic data (Teacher) - Census 2006 and 2011 with detailed DTYPE 1-8
     HISTORIC_DATA_PATHS = [

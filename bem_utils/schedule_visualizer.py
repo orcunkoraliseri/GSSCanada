@@ -144,4 +144,4 @@ class ScheduleVisualizer:
         plt.tight_layout()
         plt.savefig(output_path, dpi=100)
         plt.close()
-        print(f"    📊 Schedule plot saved: {os.path.basename(output_path)}")
+        print(f"    [PLOT] Schedule plot saved: {os.path.basename(output_path)}")

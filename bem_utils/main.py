@@ -1051,7 +1051,8 @@ def option_comparative_neighbourhood_simulation() -> None:
         return
     
     # 9. Run all simulations in parallel
-    confirm = input(f"\nReady to run {len(jobs)} simulations in parallel. Proceed? (y/n): ")
+    # confirm = input(f"\nReady to run {len(jobs)} simulations in parallel. Proceed? (y/n): ")
+    confirm = 'y'
     if confirm.lower() != 'y':
         print("Aborted.")
         return
@@ -1616,7 +1617,7 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
     
     # Prepare neighbourhood with default logic
     neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
-    integration.inject_neighbourhood_default_schedules(prepared_idf, final_idf, n_buildings, verbose=False)
+    integration.inject_neighbourhood_default_schedules(prepared_idf, final_idf, n_buildings, original_idf_path=selected_idf, verbose=False)
     
     default_job = {
         'idf': final_idf,

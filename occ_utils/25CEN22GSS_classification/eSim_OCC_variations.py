@@ -147,11 +147,12 @@ def assemble_households(csv_file_path, target_year, output_dir, start_id=100):
     return df_assembled
 
 if __name__ == '__main__':
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
-
-    DATA_DIR = BASE_DIR / "DataSources_CENSUS"
-    OUTPUT_DIR = BASE_DIR / "Outputs_CENSUS"
-    OUTPUT_DIR_ALIGNED = BASE_DIR / "Outputs_Aligned"
+    # Cross-platform path configuration
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR, OUTPUT_DIR_ALIGNED
+    
+    # Ensure directory exists
     OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
 
     # --- Edited Files ---

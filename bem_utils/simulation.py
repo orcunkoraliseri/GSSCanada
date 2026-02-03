@@ -3,6 +3,8 @@ import subprocess
 import platform
 import shutil
 import time
+import threading
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 def run_simulation(idf_path, epw_path, output_dir, ep_path, n_jobs=1, quiet=False):
@@ -157,30 +159,58 @@ def run_simulations_parallel(simulation_jobs, ep_path, max_workers=None):
     successful = []
     failed = []
     start_time = time.time()
+    completed = 0
     
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        # Submit all jobs
-        future_to_job = {executor.submit(_run_simulation_wrapper, job): job for job in jobs}
-        
-        # Process completed jobs
-        completed = 0
-        for future in as_completed(future_to_job):
-            completed += 1
-            job = future_to_job[future]
-            job_name = job.get('name', os.path.basename(job['idf']))
+    # Progress monitor - shows elapsed time every 30 seconds
+    stop_progress = threading.Event()
+    
+    def progress_monitor():
+        """Background thread that prints elapsed time periodically."""
+        last_completed = 0
+        while not stop_progress.is_set():
+            elapsed = time.time() - start_time
+            mins, secs = divmod(int(elapsed), 60)
+            if completed == last_completed:
+                # Only show status update if no new completions
+                status_msg = f"  [SIM] Running... [{completed}/{len(jobs)} complete] Elapsed: {mins:02d}:{secs:02d}"
+                print(status_msg, flush=True)
+            last_completed = completed
+            stop_progress.wait(30)  # Update every 30 seconds
+    
+    # Start progress monitor thread
+    monitor_thread = threading.Thread(target=progress_monitor, daemon=True)
+    monitor_thread.start()
+    
+    try:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all jobs
+            future_to_job = {executor.submit(_run_simulation_wrapper, job): job for job in jobs}
             
-            try:
-                result = future.result()
-                if result['success']:
-                    successful.append(result)
-                    status = "✓"
-                else:
-                    failed.append(result)
-                    status = "✗"
-                print(f"[{completed}/{len(jobs)}] {status} {job_name}")
-            except Exception as e:
-                failed.append({'name': job_name, 'message': str(e), 'success': False})
-                print(f"[{completed}/{len(jobs)}] ✗ {job_name} - Exception: {e}")
+            # Process completed jobs
+            for future in as_completed(future_to_job):
+                completed += 1
+                job = future_to_job[future]
+                job_name = job.get('name', os.path.basename(job['idf']))
+                
+                elapsed = time.time() - start_time
+                mins, secs = divmod(int(elapsed), 60)
+                
+                try:
+                    result = future.result()
+                    if result['success']:
+                        successful.append(result)
+                        status = "[OK]"
+                    else:
+                        failed.append(result)
+                        status = "[FAIL]"
+                    print(f"[{completed}/{len(jobs)}] {status} {job_name} ({mins:02d}:{secs:02d})")
+                except Exception as e:
+                    failed.append({'name': job_name, 'message': str(e), 'success': False})
+                    print(f"[{completed}/{len(jobs)}] [FAIL] {job_name} - Exception: {e}")
+    finally:
+        # Stop the progress monitor
+        stop_progress.set()
+        monitor_thread.join(timeout=1)
     
     elapsed = time.time() - start_time
     

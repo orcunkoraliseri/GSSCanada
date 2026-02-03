@@ -17,7 +17,11 @@ from pathlib import Path
 def main():
     """Read all Census files and compare DTYPE distributions."""
     
-    BASE_DIR = Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # Cross-platform path configuration
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from occ_config import BASE_DIR
+    
     CENSUS_DIR = BASE_DIR / "Outputs_CENSUS"
     OUTPUT_DIR = BASE_DIR / "Outputs_CENSUS"
     

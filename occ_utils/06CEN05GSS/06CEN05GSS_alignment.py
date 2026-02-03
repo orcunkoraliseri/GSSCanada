@@ -835,8 +835,10 @@ def read_merge_save_gss(
 
 def main() -> None:
     """Entry point for 2005 GSS-Census alignment."""
-    # --- 1. Define Paths ---
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # --- 1. Define Paths (Cross-platform) ---
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR
 
     # Output directories
     OUTPUT_DIR_GSS = BASE_DIR / "Outputs_GSS"

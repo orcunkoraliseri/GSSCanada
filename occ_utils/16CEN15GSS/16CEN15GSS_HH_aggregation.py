@@ -469,8 +469,10 @@ def main(sample_pct: int = 10, skip_validation: bool = False) -> None:
         sample_pct: Sample percentage used in ProfileMatcher (for file naming).
         skip_validation: If True, skip validation step.
     """
-    # --- 1. Define Paths ---
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # --- 1. Define Paths (Cross-platform) ---
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR
     
     # Input from DTYPE_expansion (refined DTYPE)
     INPUT_DIR = BASE_DIR / "Outputs_16CEN15GSS" / "DTYPE_expansion"

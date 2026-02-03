@@ -268,10 +268,11 @@ class PresenceFilter:
         self.default_schedule = default_schedule
         self.active_load = max(default_schedule) if default_schedule else 1.0
 
+        threshold = 1e-3
         # Calculate base_load from absent hours
         if presence_schedule and default_schedule:
-            # Find hours where presence is 0 (absent)
-            absent_hours = [h for h in range(24) if h < len(presence_schedule) and presence_schedule[h] == 0.0]
+            # Find hours where presence is near 0 (absent)
+            absent_hours = [h for h in range(24) if h < len(presence_schedule) and presence_schedule[h] < threshold]
             if absent_hours:
                 # Use minimum of default schedule during absent hours
                 absent_values = [default_schedule[h] for h in absent_hours if h < len(default_schedule)]
@@ -299,11 +300,12 @@ class PresenceFilter:
             base load (minimum from absent hours) when absent.
         """
         result = []
+        threshold = 1e-3
         for hour in range(24):
             presence = presence_schedule[hour] if hour < len(presence_schedule) else 0.0
             default_val = self.default_schedule[hour] if hour < len(self.default_schedule) else self.base_load
 
-            if presence > 0.0:
+            if presence > threshold:
                 # When present: use the exact default schedule value (gradual changes)
                 result.append(default_val)
             else:

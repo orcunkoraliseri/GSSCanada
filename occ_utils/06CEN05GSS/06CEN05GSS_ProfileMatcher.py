@@ -568,8 +568,10 @@ def main(sample_pct: float = 100.0) -> None:
     Args:
         sample_pct: Percentage of data to sample (1-100). Default 100 = full data.
     """
-    # --- 1. Define Paths ---
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # --- 1. Define Paths (Cross-platform) ---
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR
     
     ALIGNED_DIR = BASE_DIR / "Outputs_06CEN05GSS" / "alignment"
     OUTPUT_DIR = BASE_DIR / "Outputs_06CEN05GSS" / "ProfileMatching"

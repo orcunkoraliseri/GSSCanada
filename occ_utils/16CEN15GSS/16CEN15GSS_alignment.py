@@ -849,8 +849,10 @@ def plot_distribution_comparison(
 
 def main() -> None:
     """Main entry point for 16CEN15GSS alignment."""
-    # --- Configuration ---
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # --- Configuration (Cross-platform) ---
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR
 
     # Output directories
     OUTPUT_DIR_GSS = BASE_DIR / "Outputs_GSS"

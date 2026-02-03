@@ -462,11 +462,10 @@ def plot_comparison_by_column(csv_files_dict: Dict[str, str], columns_to_exclude
         print(f"  -> Saved to {save_path}")
 
 if __name__ == '__main__':
-    #BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
-
-    DATA_DIR = BASE_DIR / "DataSources_CENSUS"
-    OUTPUT_DIR = BASE_DIR / "Outputs_CENSUS"
+    # Cross-platform path configuration
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR
 
     # --- 2006 Files ---
     cen06 = DATA_DIR / "cen06.dat"

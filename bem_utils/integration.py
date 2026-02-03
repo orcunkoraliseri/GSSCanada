@@ -621,10 +621,63 @@ def _get_single_building_fallback_profiles(verbose: bool = False) -> tuple:
             
         return l_vals, e_vals, w_vals
         
+        return l_vals, e_vals, w_vals
+        
     except Exception as e:
         if verbose:
             print(f"  Warning: Could not load single building fallback defaults: {e}")
         return None, None, None
+
+
+def _update_power_densities_from_original(idf: IDF, original_idf_path: str, verbose: bool = False):
+    """
+    Updates the active IDF's Lights and ElectricEquipment power densities (W/m2)
+    to match the values found in the original IDF.
+    
+    This is critical for ensuring that neighbourhood simulations (which start from
+    hardcoded defaults in prepare_neighbourhood_idf) match the physics of the
+    Source IDF provided by the user.
+    """
+    try:
+        if verbose:
+            print(f"  Checking Original IDF for power density overrides...")
+            
+        orig_idf_local = IDF(original_idf_path)
+        
+        # 1. Equipment Density
+        equip_objs = orig_idf_local.idfobjects.get('ELECTRICEQUIPMENT', [])
+        target_equip_w_m2 = None
+        if equip_objs:
+            # Check calculation method
+            method = getattr(equip_objs[0], 'Design_Level_Calculation_Method', '')
+            if method == 'Watts/Area':
+                target_equip_w_m2 = getattr(equip_objs[0], 'Watts_per_Zone_Floor_Area', None)
+        
+        # 2. Lighting Density
+        light_objs = orig_idf_local.idfobjects.get('LIGHTS', [])
+        target_light_w_m2 = None
+        if light_objs:
+            method = getattr(light_objs[0], 'Design_Level_Calculation_Method', '')
+            if method == 'Watts/Area':
+                target_light_w_m2 = getattr(light_objs[0], 'Watts_per_Zone_Floor_Area', None)
+                
+        # Apply updates
+        if target_equip_w_m2 is not None:
+            if verbose: print(f"    Restoring Equipment Density: {target_equip_w_m2} W/m2")
+            for obj in idf.idfobjects['ELECTRICEQUIPMENT']:
+                obj.Design_Level_Calculation_Method = 'Watts/Area'
+                obj.Watts_per_Zone_Floor_Area = target_equip_w_m2
+                obj.Design_Level = ""
+                
+        if target_light_w_m2 is not None:
+            if verbose: print(f"    Restoring Lighting Density: {target_light_w_m2} W/m2")
+            for obj in idf.idfobjects['LIGHTS']:
+                obj.Design_Level_Calculation_Method = 'Watts/Area'
+                obj.Watts_per_Zone_Floor_Area = target_light_w_m2
+                obj.Lighting_Level = ""
+                
+    except Exception as e:
+        print(f"  Warning: Could not update densities from original IDF: {e}")
 
 
 
@@ -967,47 +1020,21 @@ def inject_neighbourhood_schedules(
     default_light_values = std_schedules['lighting']
     default_equip_values = std_schedules['equipment']
     default_water_values = std_schedules['dhw']
+    default_occ_values = std_schedules['occupancy']
     
-    if original_idf_path:
-        try:
-            orig_idf = IDF(original_idf_path)
-            
-            # Find LIGHTS schedule name from original IDF
-            light_objs = orig_idf.idfobjects.get('LIGHTS', [])
-            if light_objs:
-                light_sch_name = getattr(light_objs[0], 'Schedule_Name', None)
-                if light_sch_name:
-                    parsed = parse_schedule_values(orig_idf, light_sch_name)
-                    if parsed:
-                        default_light_values = parsed
-                        if verbose:
-                            print(f"  Parsed original LIGHTS schedule: {light_sch_name}")
-            
-            # Find ELECTRICEQUIPMENT schedule name from original IDF
-            equip_objs = orig_idf.idfobjects.get('ELECTRICEQUIPMENT', [])
-            if equip_objs:
-                equip_sch_name = getattr(equip_objs[0], 'Schedule_Name', None)
-                if equip_sch_name:
-                    parsed = parse_schedule_values(orig_idf, equip_sch_name)
-                    if parsed:
-                        default_equip_values = parsed
-                        if verbose:
-                            print(f"  Parsed original EQUIPMENT schedule: {equip_sch_name}")
-
-            # Find WATERUSE:EQUIPMENT schedule name from original IDF
-            water_objs = orig_idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
-            if water_objs:
-                water_sch_name = getattr(water_objs[0], 'Flow_Rate_Fraction_Schedule_Name', None)
-                if water_sch_name:
-                    parsed = parse_schedule_values(orig_idf, water_sch_name)
-                    if parsed:
-                        default_water_values = parsed
-                        if verbose:
-                            print(f"  Parsed original WATER schedule: {water_sch_name}")
-                            
-        except Exception as e:
-            print(f"  Warning: Could not parse original IDF schedules: {e}")
-    print(f"  Falling back to presence mask only (1.0 when home).")
+    # NOTE: We intentionally do NOT parse schedules from original_idf_path anymore.
+    # Original IDFs (especially neighbourhood files like NUs_RC1/RC2) often contain
+    # commercial/industrial schedules (e.g., "INTERMITTENT" with binary 0/1 values:
+    # 0 midnight-8am, 1 from 8am-6pm, 0 from 6pm-midnight) that are completely
+    # inappropriate for residential simulations.
+    # 
+    # The DOE MidRise Apartment standard schedules from std_schedules provide proper
+    # residential curves with gradual transitions (e.g., equipment: 0.45 at midnight,
+    # rising to 1.0 around 6pm, then decreasing). These are consistent with Option 3
+    # (single building) simulations and ensure PresenceFilter works correctly.
+    
+    if verbose:
+        print(f"  Using DOE MidRise Apartment standard schedules for Lights/Equipment/DHW")
 
     # Fallback to presence mask only was implicit if parsing failed, 
     # but now we use standard_schedules which is robust.
@@ -1088,6 +1115,19 @@ def inject_neighbourhood_schedules(
                     'Weekend': to_hour_value_list(weekend_light)
                 }
             )
+            if verbose:
+                print(f"    Updated existing Lighting schedule: {light_sch_name}")
+        else:
+            # Create new schedule if not found
+            new_sch = idf.newidfobject("SCHEDULE:COMPACT")
+            new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
+                light_sch_name, "Fractional", {
+                    'Weekday': to_hour_value_list(weekday_light),
+                    'Weekend': to_hour_value_list(weekend_light)
+                }
+            )
+            if verbose:
+                print(f"    Created new Lighting schedule: {light_sch_name}")
 
         # 4. Equipment schedule (Equip_Bldg_X) - Presence Filter Method
         equip_sch_name = f"Equip_{bldg_id}"
@@ -1105,6 +1145,19 @@ def inject_neighbourhood_schedules(
                     'Weekend': to_hour_value_list(weekend_equip)
                 }
             )
+            if verbose:
+                print(f"    Updated existing Equipment schedule: {equip_sch_name}")
+        else:
+            # Create new schedule if not found
+            new_sch = idf.newidfobject("SCHEDULE:COMPACT")
+            new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
+                equip_sch_name, "Fractional", {
+                    'Weekday': to_hour_value_list(weekday_equip),
+                    'Weekend': to_hour_value_list(weekend_equip)
+                }
+            )
+            if verbose:
+                print(f"    Created new Equipment schedule: {equip_sch_name}")
 
         # 5. Water Use schedule (Water_Bldg_X) - Presence Filter Method
         water_sch_name = f"Water_{bldg_id}"
@@ -1136,7 +1189,8 @@ def inject_neighbourhood_schedules(
                  base_load_water=water_pf_weekday.base_load,
                  default_light=default_light_values['Weekday'],
                  default_equip=default_equip_values['Weekday'],
-                 default_water=default_water_values['Weekday']
+                 default_water=default_water_values['Weekday'],
+                 default_presence=default_occ_values['Weekday']
              )        
 
         water_schedules = [s for s in idf.idfobjects["SCHEDULE:COMPACT"] if s.Name == water_sch_name]
@@ -1201,9 +1255,11 @@ def inject_neighbourhood_schedules(
 
     
     # [FIX] Update Power Densities (Lights/Equip) to match Original IDF (Physics Consistency)
-    # The default prepare_neighbourhood_idf hardcodes 9.05 W/m2 (Equip) and 4 W/m2 (Lights).
-    # We must overwrite these if the original IDF had different values (e.g. Passive House).
     if original_idf_path:
+        _update_power_densities_from_original(idf, original_idf_path, verbose=verbose)
+
+    # Old logic disabled (refactored to helper above)
+    if False and original_idf_path:
         try:
              # We assume we loaded orig_idf earlier in the function logic, but scope issues?
              # Let's re-instantiate or assume we can grab it. 
@@ -1259,6 +1315,7 @@ def inject_neighbourhood_default_schedules(
     idf_path: str,
     output_path: str,
     n_buildings: int,
+    original_idf_path: Optional[str] = None,
     verbose: bool = True,
     run_period_mode: str = 'standard'
 ) -> None:
@@ -1393,6 +1450,11 @@ def inject_neighbourhood_default_schedules(
     if len(water_equip_objs) == n_buildings:
         for i, obj in enumerate(water_equip_objs):
             obj.Flow_Rate_Fraction_Schedule_Name = f"Water_Bldg_{i}"
+    
+    # [FIX] Update Power Densities (Lights/Equip) to match Original IDF (Physics Consistency)
+    # This ensures consistency with Option 3 (Single Building) and Integrated Scenarios.
+    if original_idf_path:
+        _update_power_densities_from_original(idf, original_idf_path, verbose=verbose)
     
     # Optimize and save
     idf_optimizer.optimize_idf(idf, verbose=verbose)

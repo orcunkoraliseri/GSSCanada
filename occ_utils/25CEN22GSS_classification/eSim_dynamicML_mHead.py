@@ -2521,17 +2521,12 @@ def visualize_bem_distributions(df_bem, output_dir=None):
         print("   ⚠️ Skipped Non-Temporal plots (Columns missing).")
 if __name__ == '__main__':
     #DIRECTORIES -------------------------------------------------------------------------------------------------------
-    # BASE_DIR = pathlib.Path("C:/Users/o_iseri/Desktop/2ndJournal")
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
-
-    DATA_DIR = BASE_DIR / "DataSources_CENSUS"
-    OUTPUT_DIR = BASE_DIR / "Outputs_CENSUS"
-    OUTPUT_DIR_ALIGNED = BASE_DIR / "Outputs_Aligned"
-    OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
-
-    # --- NEW: Define a directory to save your trained models ---
-    MODEL_DIR = BASE_DIR / "saved_models_cvae"
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)  # This creates the folder
+    # Import cross-platform config
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR, OUTPUT_DIR_ALIGNED, MODEL_DIR
+    
+    # Directories are now imported from occ_config
 
     # --- Raw Files ---
     cen06_filtered = OUTPUT_DIR / "cen06_filtered.csv"

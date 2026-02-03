@@ -411,8 +411,10 @@ def main(sample_pct: int = 5) -> None:
     Args:
         sample_pct: Sample percentage used in previous steps (for file naming).
     """
-    # --- 1. Define Paths ---
-    BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy")
+    # --- 1. Define Paths (Cross-platform) ---
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from occ_config import BASE_DIR
     
     INPUT_DIR = BASE_DIR / "Outputs_06CEN05GSS" / "HH_aggregation"
     OUTPUT_DIR = BASE_DIR / "Outputs_06CEN05GSS" / "occToBEM"
