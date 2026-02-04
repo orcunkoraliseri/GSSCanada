@@ -11,6 +11,7 @@ import sys
 import glob
 import platform
 import time
+import csv
 
 # Add project root to path so bem_utils can be imported when running directly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -187,6 +188,14 @@ def option_run_simulation() -> None:
         return
         
     selected_idf = select_file(idf_files, "Select Base IDF Building Model:")
+    
+    # [AUTOMATION] Automatically prepare/optimize the selected IDF
+    print(f"\nVerifying and preparing {os.path.basename(selected_idf)}...")
+    idf_optimizer.prepare_idf_for_simulation(
+        selected_idf, 
+        verbose=True, 
+        standardize_schedules=True
+    )
     
     # 3. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
@@ -366,6 +375,186 @@ def option_run_simulation() -> None:
     print("\nSimulation complete.")
 
 
+
+def option_validation_simulation() -> None:
+    """Option 9: Run validation simulation against reference data (Refactored Flow)."""
+    import sqlite3
+    
+    print("\n=== Validation Simulation ===")
+    print("Simulates existing IDFs and compares EUI against IECC reference values.")
+    
+    # 0. Select Simulation Mode
+    selected_sim_mode = select_simulation_mode()
+
+    # 1. Load Reference Data
+    ref_csv_path = os.path.join(BEM_SETUP_DIR, "Reference-Validation", "IECC_residential_simulation_results_Canadian_Cities.csv")
+    if not os.path.exists(ref_csv_path):
+        print(f"Error: Validation CSV not found at {ref_csv_path}")
+        return
+    
+    ref_data = {} # Key: ASHRAE Zone (str), Value: 2021 Standard EUI (float)
+    try:
+        with open(ref_csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                zone = row['ASHRAE Zone'].strip().upper()
+                try:
+                    eui = float(row['2021 Standard (kWh/m2)'])
+                    ref_data[zone] = eui
+                except ValueError:
+                    pass
+    except Exception as e:
+        print(f"Error reading validation CSV: {e}")
+        return
+        
+    print(f"Loaded reference data for zones: {', '.join(ref_data.keys())}")
+    
+    # 2. Select Base IDF Building Model
+    idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "*.idf"))
+    if not idf_files:
+        print(f"Error: No IDF files found in {BUILDINGS_DIR}")
+        return
+
+    # Filter for those with CZ indicators (optional, but helpful to highlight validation targets)
+    # But user wants to SELECT. So show ALL, maybe sort?
+    idf_files.sort()
+    selected_idf = select_file(idf_files, "Select Base IDF Building Model:")
+    name = os.path.basename(selected_idf).replace('.idf', '')
+    
+    # Detect Zone from filename for reference lookup
+    detected_zone = None
+    for zone in ref_data.keys():
+        if f"CZ{zone}" in name.upper() or f" {zone} " in name.upper():
+            detected_zone = zone
+            break
+            
+    if detected_zone:
+        print(f"Detected Climate Zone: {detected_zone} (Reference EUI: {ref_data[detected_zone]} kWh/m2)")
+    else:
+        print("Warning: Could not detect Climate Zone (CZ) from filename. Reference comparison may be unavailable.")
+    
+    # 3. Prepare Job
+    batch_name = f"Validation_{int(time.time())}"
+    batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
+    os.makedirs(batch_dir, exist_ok=True)
+    
+    run_dir = os.path.join(batch_dir, name)
+    os.makedirs(run_dir, exist_ok=True)
+    
+    print(f"\n[Critical Step] Optimizing IDF in-place at {run_dir}...")
+    run_idf_path = os.path.join(run_dir, os.path.basename(selected_idf))
+    
+    try:
+        # Prepare IDF (Speed optimize but DO NOT standardize schedules - Validation needs original schedules)
+        # However, user prompt said "Version updated to 24.2. Physics optimizations applied."
+        # This matches `prepare_idf_for_simulation` with `standardize_schedules=False`.
+        
+        idf_optimizer.prepare_idf_for_simulation(
+            idf_path=selected_idf,
+            output_path=run_idf_path,
+            verbose=True,
+            standardize_schedules=False, 
+            run_period_mode=selected_sim_mode if selected_sim_mode != 'comparison' else 'standard'
+        )
+        
+        # 4. Auto-detect Weather File (EPW)
+        epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
+        target_epw = None
+        
+        # Mapping logic
+        zone_epw_map = {
+            '5A': ['TORONTO', 'BUFFALO', 'ON'],
+            '5C': ['VANCOUVER', 'VICTORIA', 'BC'],
+            '6A': ['MONTREAL', 'OTTAWA', 'QUEBEC', 'QC'],
+            '7':  ['CALGARY', 'EDMONTON', 'WINNIPEG', 'AB', 'MB'],
+            '8':  ['YELLOWKNIFE']
+        }
+        
+        search_terms = []
+        if detected_zone:
+            search_terms = zone_epw_map.get(detected_zone, [])
+        
+        # Also try to match city name from IDF name?
+        city_map = {'TORONTO': 'TORONTO', 'VANCOUVER': 'VANCOUVER', 'MONTREAL': 'MONTREAL', 'CALGARY': 'CALGARY'}
+        for city in city_map:
+            if city in name.upper():
+                search_terms.insert(0, city)
+        
+        if search_terms:
+            for epw in epw_files:
+                epw_base = os.path.basename(epw).upper()
+                if any(term in epw_base for term in search_terms):
+                    target_epw = epw
+                    break
+        
+        if not target_epw and epw_files:
+            target_epw = epw_files[0]
+            print(f"Warning: Could not auto-detect EPW. Using fallback: {os.path.basename(target_epw)}")
+        elif target_epw:
+            print(f"Auto-selected Weather File: {os.path.basename(target_epw)}")
+        else:
+            print("Error: No EPW files found.")
+            return
+
+        # 5. Run 1 Simulation
+        jobs = [{
+            'idf': run_idf_path,
+            'epw': target_epw,
+            'output_dir': run_dir,
+            'name': name,
+            'zone': detected_zone
+        }]
+        
+        print("\nStarting simulation...")
+        results = simulation.run_simulations_parallel(jobs, ENERGYPLUS_EXE)
+        
+        # 6-8. Process Results
+        if results['successful']:
+            print("\n=== Validation Results ===")
+            
+            sql_path = os.path.join(run_dir, 'eplusout.sql')
+            if os.path.exists(sql_path):
+                conn = sqlite3.connect(sql_path)
+                eui_data = plotting.calculate_eui(conn)
+                conn.close()
+                
+                # Scaling if Fast Mode
+                factor = 52.0/24.0 if selected_sim_mode == 'weekly' else 1.0
+                if factor != 1.0:
+                    eui_data = plotting.scale_eui_results(eui_data, factor)
+                
+                sim_eui = eui_data.get('eui', 0)
+                ref_eui = ref_data.get(detected_zone, 0)
+                
+                print(f"Model:     {name}")
+                print(f"Zone:      {detected_zone}")
+                print(f"Sim EUI:   {sim_eui:.2f} kWh/m2")
+                print(f"Ref EUI:   {ref_eui:.2f} kWh/m2")
+                
+                if ref_eui > 0:
+                    diff = (sim_eui - ref_eui) / ref_eui * 100
+                    print(f"Diff %:    {diff:+.1f}%")
+                else:
+                    print("Diff %:    N/A (No Ref)")
+                
+                # Plot Bar Chart
+                print("\nGenerating Validation Comparison Plot...")
+                try:
+                    plotting.plot_validation_comparison(
+                        sim_eui, ref_eui, PLOT_RESULTS_DIR, name, str(detected_zone)
+                    )
+                except Exception as pl_err:
+                     print(f"Plotting Error: {pl_err}")
+
+            else:
+                print("Error: eplusout.sql not found.")
+                
+    except Exception as e:
+        print(f"Error in validation workflow: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 def option_comparative_simulation() -> None:
     """Option 3: Run comparative simulation across 2025, 2015, 2005, and Default."""
     import random
@@ -391,6 +580,14 @@ def option_comparative_simulation() -> None:
         return
         
     selected_idf = select_file(idf_files, "Select Base IDF Building Model:")
+
+    # [AUTOMATION] Automatically prepare/optimize the selected IDF
+    print(f"\nVerifying and preparing {os.path.basename(selected_idf)}...")
+    idf_optimizer.prepare_idf_for_simulation(
+        selected_idf, 
+        verbose=True, 
+        standardize_schedules=True
+    )
     
     # 2. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
@@ -1907,6 +2104,7 @@ def main_menu() -> None:
         print("  6. Comparative neighbourhood (2025/2015/2005/Default)")
         print("  7. Batch Comparative Neighbourhood Simulation (averaged over K runs) (2025/2015/2005/Default)")
         print("  8. Visualize performance results")
+        print("  9. Run Validation Simulation (Existing IDFs vs Reference)")
         print("  q. Quit")
         
         choice = input("\nSelect option: ").strip().lower()
@@ -1927,6 +2125,8 @@ def main_menu() -> None:
             option_batch_comparative_neighbourhood_simulation()
         elif choice == '8':
             option_visualize_results()
+        elif choice == '9':
+            option_validation_simulation()
         elif choice == 'q':
             print("\nGoodbye!")
             break

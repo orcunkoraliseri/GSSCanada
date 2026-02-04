@@ -976,3 +976,65 @@ def plot_kfold_timeseries(
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
     print(f"K-Fold time-series plot saved to {output_path}")
     plt.close()
+
+
+def plot_validation_comparison(
+    sim_eui: float, 
+    ref_eui: float, 
+    output_dir: str, 
+    model_name: str, 
+    zone: str
+) -> None:
+    """
+    Plots a comparison bar chart between Simulated EUI and Reference EUI.
+    
+    Args:
+        sim_eui: Simulated Energy Use Intensity.
+        ref_eui: IECC Reference EUI.
+        output_dir: Directory to save the plot.
+        model_name: Name of the model (for title/filename).
+        zone: Climate Zone (for context).
+    """
+    import numpy as np
+    
+    # Data
+    labels = ['Simulated', 'Reference (IECC 2021)']
+    values = [sim_eui, ref_eui]
+    colors = ['#1f77b4', '#ff7f0e'] # Blue, Orange
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
+    bars = ax.bar(labels, values, color=colors, width=0.5)
+    
+    # Add values on top of bars
+    for bar in bars:
+        height = bar.get_height()
+        ax.annotate(f'{height:.2f}\nkWh/m²',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom', fontsize=12, fontweight='bold')
+    
+    # Calculate difference
+    if ref_eui > 0:
+        diff_pct = (sim_eui - ref_eui) / ref_eui * 100
+        diff_text = f"Difference: {diff_pct:+.1f}%"
+        title_color = 'green' if abs(diff_pct) < 10 else 'red'
+    else:
+        diff_text = "Reference Not Available"
+        title_color = 'black'
+        
+    ax.set_title(f"Validation Result: {model_name} (Zone {zone})\n{diff_text}", fontsize=14, color=title_color)
+    ax.set_ylabel('EUI (kWh/m²)')
+    ax.set_ylim(0, max(values) * 1.2) # Add headroom
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Note
+    plt.tight_layout()
+    
+    # Save
+    filename = f"Validation_Comparison_{model_name}.png"
+    filepath = os.path.join(output_dir, filename)
+    plt.savefig(filepath, dpi=300)
+    plt.close()
+    print(f"    [PLOT] Validation comparison saved: {filename}")
+

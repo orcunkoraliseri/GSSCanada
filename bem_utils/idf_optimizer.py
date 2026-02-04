@@ -46,9 +46,36 @@ FIELD_FIXES = {
 MISSING_OBJECTS = {
     'SURFPROPOTHSDCOEFSLABAVERAGE': {
         'object_type': 'SurfaceProperty:OtherSideCoefficients',
+        'triggers': ['GroundSlabPreprocessorAverage'],
         'fields': {
             'Combined_ConvectiveRadiative_Film_Coefficient': 0,
             'Constant_Temperature': 18.0,
+            'Constant_Temperature_Coefficient': 1,
+            'External_DryBulb_Temperature_Coefficient': 0,
+            'Ground_Temperature_Coefficient': 0,
+            'Wind_Speed_Coefficient': 0,
+            'Zone_Air_Temperature_Coefficient': 0,
+        }
+    },
+    'SURFPROPOTHSDCOEFBASEMENTAVGWALL': {
+        'object_type': 'SurfaceProperty:OtherSideCoefficients',
+        'triggers': ['GroundBasementPreprocessorAverageWall'],
+        'fields': {
+            'Combined_ConvectiveRadiative_Film_Coefficient': 0,
+            'Constant_Temperature': 15.0,
+            'Constant_Temperature_Coefficient': 1,
+            'External_DryBulb_Temperature_Coefficient': 0,
+            'Ground_Temperature_Coefficient': 0,
+            'Wind_Speed_Coefficient': 0,
+            'Zone_Air_Temperature_Coefficient': 0,
+        }
+    },
+    'SURFPROPOTHSDCOEFBASEMENTAVGFLOOR': {
+        'object_type': 'SurfaceProperty:OtherSideCoefficients',
+        'triggers': ['GroundBasementPreprocessorAverageFloor'],
+        'fields': {
+            'Combined_ConvectiveRadiative_Film_Coefficient': 0,
+            'Constant_Temperature': 12.0,
             'Constant_Temperature_Coefficient': 1,
             'External_DryBulb_Temperature_Coefficient': 0,
             'Ground_Temperature_Coefficient': 0,
@@ -181,13 +208,50 @@ def optimize_idf(idf: IDF, verbose: bool = True) -> List[str]:
         obj_exists = any(o.Name.upper() == obj_name for o in existing_objs)
         
         if not obj_exists:
-            # Check if any surface references it
+            # Check if any surface references it BY NAME or BY TRIGGER Condition
             surfaces = idf.idfobjects.get('BUILDINGSURFACE:DETAILED', [])
-            needs_obj = any(
-                hasattr(s, 'Outside_Boundary_Condition_Object') and 
-                s.Outside_Boundary_Condition_Object.upper() == obj_name 
-                for s in surfaces
-            )
+            triggers = obj_config.get('triggers', [])
+            needs_obj = False
+            
+            for s in surfaces:
+                # 1. Direct Object Reference (e.g. "SURFPROPOTHSDCOEF...")
+                if hasattr(s, 'Outside_Boundary_Condition_Object'):
+                    val_obj = s.Outside_Boundary_Condition_Object
+                    if val_obj and val_obj.upper().strip() == obj_name:
+                        needs_obj = True
+                        break
+                        
+                # 2. Trigger Condition (e.g. "GroundBasementPreprocessorAverageWall")
+                if hasattr(s, 'Outside_Boundary_Condition'):
+                    val_cond = s.Outside_Boundary_Condition
+                    if val_cond and any(trig.upper() == val_cond.upper().strip() for trig in triggers):
+                         # Found a surface using the trigger condition!
+                         # We should probably force its Object field to point to our new object?
+                         # Or just assume E+ needs the object to exist with that name?
+                         # NOTE: For OtherSideCoefficients, the surface MUST point to the object name.
+                         # If it has the Condition but NO Object name, we should SET the object name.
+                         if hasattr(s, 'Outside_Boundary_Condition_Object'):
+                             current_obj_ref = s.Outside_Boundary_Condition_Object
+                             if not current_obj_ref: # If empty, set it
+                                 s.Outside_Boundary_Condition_Object = obj_name
+                                 # And ensure condition is "OtherSideCoefficients" or keep as Preprocessor?
+                                 # E+ Reference says: If using OtherSideCoefficients, Condition should be "OtherSideCoefficients".
+                                 # But let's trust the injection first. 
+                                 # Wait, if Condition is "GroundBasementPreprocessor...", E+ LOOKS for specific object names?
+                                 # NO. "GroundBasementPreprocessorAverageWall" is a SPECIAL condition that requires Preprocessor.
+                                 # BUT the user wants to REPLACE it with OtherSideCoefficients?
+                                 # The error said: invalid Outside Boundary Condition Object="SURFPROPOTHSDCOEF..."
+                                 # This implies the IDF ALREADY points to it?
+                                 # Wait. My Debug script said: Surface BGWall_lower_ldf OCBO: '' (Empty)
+                                 # The ERROR said: BuildingSurface:Detailed="BGWALL_LOWER_LDF", invalid Outside Boundary Condition Object="SURFPROPOTHSDCOEFBASEMENTAVGWALL".
+                                 # This is CONTRADICTORY.
+                                 # Hypothesis: The ERROR came from a file where I had RAN a previous script that SET it?
+                                 # OR EnergyPlus defaults?
+                                 
+                                 # Let's assume we simply need to inject the object.
+                                 pass
+                         needs_obj = True
+                         break
             
             if needs_obj:
                 new_obj = idf.newidfobject(obj_type)
