@@ -1079,7 +1079,7 @@ def inject_neighbourhood_schedules(
         if occ_schedules:
             occ_sch = occ_schedules[0]
             occ_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                occ_sch_name, "Fractional", {
+                occ_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_occ),
                     'Weekend': to_hour_value_list(weekend_occ)
                 }
@@ -1091,7 +1091,7 @@ def inject_neighbourhood_schedules(
         if act_schedules:
             act_sch = act_schedules[0]
             act_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                act_sch_name, "Activity Level", {
+                act_sch_name, "Any Number", {
                     'Weekday': to_hour_value_list(weekday_met),
                     'Weekend': to_hour_value_list(weekend_met)
                 }
@@ -1110,7 +1110,7 @@ def inject_neighbourhood_schedules(
         if light_schedules:
             light_sch = light_schedules[0]
             light_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                light_sch_name, "Fractional", {
+                light_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_light),
                     'Weekend': to_hour_value_list(weekend_light)
                 }
@@ -1121,7 +1121,7 @@ def inject_neighbourhood_schedules(
             # Create new schedule if not found
             new_sch = idf.newidfobject("SCHEDULE:COMPACT")
             new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                light_sch_name, "Fractional", {
+                light_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_light),
                     'Weekend': to_hour_value_list(weekend_light)
                 }
@@ -1140,7 +1140,7 @@ def inject_neighbourhood_schedules(
         if equip_schedules:
             equip_sch = equip_schedules[0]
             equip_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                equip_sch_name, "Fractional", {
+                equip_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_equip),
                     'Weekend': to_hour_value_list(weekend_equip)
                 }
@@ -1151,7 +1151,7 @@ def inject_neighbourhood_schedules(
             # Create new schedule if not found
             new_sch = idf.newidfobject("SCHEDULE:COMPACT")
             new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                equip_sch_name, "Fractional", {
+                equip_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_equip),
                     'Weekend': to_hour_value_list(weekend_equip)
                 }
@@ -1199,7 +1199,7 @@ def inject_neighbourhood_schedules(
         if water_schedules:
             water_sch = water_schedules[0]
             water_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                water_sch_name, "Fractional", {
+                water_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_water),
                     'Weekend': to_hour_value_list(weekend_water)
                 }
@@ -1208,23 +1208,18 @@ def inject_neighbourhood_schedules(
             # Create new schedule object
             new_sch = idf.newidfobject("SCHEDULE:COMPACT")
             new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                water_sch_name, "Fractional", {
+                water_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(weekday_water),
                     'Weekend': to_hour_value_list(weekend_water)
                 }
             )
 
-    # Update WaterUse:Equipment objects to point to new Water_Bldg_X schedules
-    # Assumption: water_objs[i] corresponds to schedules_list[i] (Building i+1)
-    water_equip_objs = idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
-    if len(water_equip_objs) == len(schedules_list):
-        if verbose:
-            print(f"  Updating {len(water_equip_objs)} WaterUse:Equipment objects with new schedules.")
-        for i, obj in enumerate(water_equip_objs):
-            target_sch_name = f"Water_Bldg_{i}"
-            obj.Flow_Rate_Fraction_Schedule_Name = target_sch_name
-    elif water_equip_objs:
-        print(f"  Warning: Mismatch between WaterUse objects ({len(water_equip_objs)}) and Buildings ({len(schedules_list)}). Skipping object update.")
+    # WaterUse:Equipment schedule names (Water_Bldg_X) were already set in-place
+    # by prepare_neighbourhood_idf(). The Water_Bldg_X schedule content was
+    # populated above. Plant Loop connections remain intact for DHW heating.
+    if verbose:
+        water_equip_objs = idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
+        print(f"  WaterUse:Equipment objects: {len(water_equip_objs)} (schedule names pre-set by prepare step)")
         
     # [FIX] Update PEOPLE objects to match household size (Consistency with Option 3)
     # Switch from People/Area (default in prepare_neighbourhood_idf) to People count
@@ -1252,6 +1247,8 @@ def inject_neighbourhood_schedules(
     # We can pass them to avoid reload if the function supported it, but it loads them itself or we assume consistency.
     # Actually scale_water_use_peak_flow signature is (idf, standard_schedules, verbose).
     idf_optimizer.scale_water_use_peak_flow(idf, std_schedules, verbose=verbose)
+        
+
 
     
     # [FIX] Update Power Densities (Lights/Equip) to match Original IDF (Physics Consistency)
@@ -1382,7 +1379,7 @@ def inject_neighbourhood_default_schedules(
         if occ_schedules:
             occ_sch = occ_schedules[0]
             occ_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                occ_sch_name, "Fractional", {
+                occ_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(default_occ_weekday),
                     'Weekend': to_hour_value_list(default_occ_weekend)
                 }
@@ -1394,7 +1391,7 @@ def inject_neighbourhood_default_schedules(
         if act_schedules:
             act_sch = act_schedules[0]
             act_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                act_sch_name, "Activity Level", {
+                act_sch_name, "Any Number", {
                     'Weekday': to_hour_value_list(default_met_weekday),
                     'Weekend': to_hour_value_list(default_met_weekend)
                 }
@@ -1406,7 +1403,7 @@ def inject_neighbourhood_default_schedules(
         if light_schedules:
             light_sch = light_schedules[0]
             light_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                light_sch_name, "Fractional", {
+                light_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(default_light_weekday),
                     'Weekend': to_hour_value_list(default_light_weekend)
                 }
@@ -1418,7 +1415,7 @@ def inject_neighbourhood_default_schedules(
         if equip_schedules:
             equip_sch = equip_schedules[0]
             equip_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                equip_sch_name, "Fractional", {
+                equip_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(default_equip_weekday),
                     'Weekend': to_hour_value_list(default_equip_weekend)
                 }
@@ -1430,7 +1427,7 @@ def inject_neighbourhood_default_schedules(
         if water_schedules:
             water_sch = water_schedules[0]
             water_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                water_sch_name, "Fractional", {
+                water_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(default_water_weekday),
                     'Weekend': to_hour_value_list(default_water_weekend)
                 }
@@ -1439,17 +1436,21 @@ def inject_neighbourhood_default_schedules(
             # Create new schedule object if needed
             new_sch = idf.newidfobject("SCHEDULE:COMPACT")
             new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                water_sch_name, "Fractional", {
+                water_sch_name, "Fraction", {
                     'Weekday': to_hour_value_list(default_water_weekday),
                     'Weekend': to_hour_value_list(default_water_weekend)
                 }
             )
     
-    # Update WaterUse:Equipment objects
-    water_equip_objs = idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
-    if len(water_equip_objs) == n_buildings:
-        for i, obj in enumerate(water_equip_objs):
-            obj.Flow_Rate_Fraction_Schedule_Name = f"Water_Bldg_{i}"
+    # WaterUse:Equipment schedule names (Water_Bldg_X) were already set in-place
+    # by prepare_neighbourhood_idf(). Plant Loop connections remain intact.
+    if verbose:
+        water_equip_objs = idf.idfobjects.get('WATERUSE:EQUIPMENT', [])
+        print(f"  WaterUse:Equipment objects: {len(water_equip_objs)} (schedule names pre-set by prepare step)")
+
+    # [FIX] Apply Water Use Peak Scaling (Physics Consistency)
+    # This ensures the peak flow rate is adjusted so that the daily volume matches target (220L).
+    idf_optimizer.scale_water_use_peak_flow(idf, standard_schedules, verbose=verbose)
     
     # [FIX] Update Power Densities (Lights/Equip) to match Original IDF (Physics Consistency)
     # This ensures consistency with Option 3 (Single Building) and Integrated Scenarios.

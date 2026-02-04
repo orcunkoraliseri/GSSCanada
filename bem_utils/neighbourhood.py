@@ -68,6 +68,64 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
     return buildings
 
 
+def get_water_equipment_building_map(
+    idf_content: str,
+    buildings: dict[str, list[str]]
+) -> dict[str, list[str]]:
+    """
+    Maps existing WaterUse:Equipment objects to buildings by matching
+    the coordinate prefix in their names against the building groups.
+
+    Naming convention:
+        WaterUse:Equipment name: "Apartment Water Equipment..<prefix>_Room_<N>_<hash>"
+        Space name:              "<prefix>_Room_<N>_<hash>_Space"
+    The prefix before _Room_ identifies which building the object belongs to.
+
+    Args:
+        idf_content: The full text content of the IDF file.
+        buildings: Building groups from get_building_groups().
+
+    Returns:
+        Dict mapping building IDs to lists of WaterUse:Equipment names.
+    """
+    # Extract all WaterUse:Equipment names from the IDF text
+    water_name_pattern = re.compile(
+        r"WaterUse:Equipment,\s*\n\s*([^,\n]+),\s*!-\s*Name",
+        re.MULTILINE
+    )
+    water_names = [m.group(1).strip() for m in water_name_pattern.finditer(idf_content)]
+
+    if not water_names:
+        return {}
+
+    # Build prefix-to-building lookup from the buildings dict
+    prefix_to_bldg: dict[str, str] = {}
+    for bldg_id, spaces in buildings.items():
+        for space in spaces:
+            prefix_match = re.match(r"(.+?)_Room_", space)
+            if prefix_match:
+                prefix = prefix_match.group(1)
+                if prefix not in prefix_to_bldg:
+                    prefix_to_bldg[prefix] = bldg_id
+
+    # Map each WaterUse:Equipment to its building via coordinate prefix
+    water_map: dict[str, list[str]] = {}
+    for wname in water_names:
+        # Extract prefix between ".." and "_Room_"
+        equip_prefix_match = re.search(r"\.\.(.*?)_Room_", wname)
+        if equip_prefix_match:
+            equip_prefix = equip_prefix_match.group(1)
+            bldg_id = prefix_to_bldg.get(equip_prefix)
+            if bldg_id:
+                water_map.setdefault(bldg_id, []).append(wname)
+            else:
+                print(f"  Warning: WaterUse prefix '{equip_prefix}' not matched to any building.")
+        else:
+            print(f"  Warning: Could not extract prefix from WaterUse name '{wname}'.")
+
+    return water_map
+
+
 def prepare_neighbourhood_idf(
     idf_path: str,
     output_path: str,
@@ -104,48 +162,39 @@ def prepare_neighbourhood_idf(
 
     print(f"\nPreparing IDF for {n_buildings} buildings...")
 
-    # Find and store the original People object for reference
-    people_pattern = re.compile(
-        r"People,\s*\n([\s\S]*?);",
-        re.MULTILINE
-    )
-    people_match = people_pattern.search(content)
-
-    if not people_match:
-        print("Warning: No People object found.")
-        original_people_block = None
-    else:
-        original_people_block = people_match.group(0)
-        # Extract key fields
-        people_lines = original_people_block.split("\n")
-
-    # Find the original Lights object
-    lights_pattern = re.compile(
-        r"Lights,\s*\n([\s\S]*?);",
-        re.MULTILINE
-    )
-    lights_match = lights_pattern.search(content)
-    original_lights_block = lights_match.group(0) if lights_match else None
-
-    # Find the original ElectricEquipment object
-    equip_pattern = re.compile(
-        r"ElectricEquipment,\s*\n([\s\S]*?);",
-        re.MULTILINE
-    )
-    equip_match = equip_pattern.search(content)
-    original_equip_block = equip_match.group(0) if equip_match else None
-
     # Remove original objects (we'll add per-building ones)
-    modified_content = content
-    if original_people_block:
-        modified_content = modified_content.replace(original_people_block, "")
-    if original_lights_block:
-        modified_content = modified_content.replace(original_lights_block, "")
-    if original_equip_block:
-        modified_content = modified_content.replace(original_equip_block, "")
+    # Using re.sub to remove ALL instances of People, Lights, ElectricEquipment
+    modified_content = re.sub(r"People,\s*\n([\s\S]*?);", "", content, flags=re.MULTILINE)
+    modified_content = re.sub(r"Lights,\s*\n([\s\S]*?);", "", modified_content, flags=re.MULTILINE)
+    modified_content = re.sub(r"ElectricEquipment,\s*\n([\s\S]*?);", "", modified_content, flags=re.MULTILINE)
+    
+    # Keep original WaterUse:Equipment objects intact (preserves Plant Loop connections).
+    # Their Flow_Rate_Fraction_Schedule_Name will be updated in-place below to
+    # point to per-building Water_Bldg_X schedules.
 
     # Generate new per-building objects
     new_objects: list[str] = []
+
+    # Inject missing ScheduleTypeLimits if needed
+    if not any(obj.startswith("ScheduleTypeLimits,\n  Fraction,") for obj in content.split("\n\n")):
+        new_objects.append("""
+ScheduleTypeLimits,
+  Fraction,                !- Name
+  0.0,                     !- Lower Limit Value
+  1.0,                     !- Upper Limit Value
+  Continuous,              !- Numeric Type
+  Dimensionless;           !- Unit Type
+""")
+
+    if not any(obj.startswith("ScheduleTypeLimits,\n  Any Number,") for obj in content.split("\n\n")):
+        new_objects.append("""
+ScheduleTypeLimits,
+  Any Number,              !- Name
+  ,                        !- Lower Limit Value
+  ,                        !- Upper Limit Value
+  Continuous,              !- Numeric Type
+  Dimensionless;           !- Unit Type
+""")
 
     for i, (bldg_id, spaces) in enumerate(buildings.items()):
         if i >= n_buildings:
@@ -220,18 +269,58 @@ ElectricEquipment,
         new_objects.append(equip_obj)
 
         # Create placeholder schedules
-        for sched_type in ["Occ", "Activity", "Light", "Equip"]:
+        for sched_type in ["Occ", "Activity", "Light", "Equip", "Water"]:
+            type_limit = "Any Number" if sched_type == "Activity" else "Fraction"
             sched_name = f"{sched_type}_{bldg_id}"
             sched_obj = f"""
 Schedule:Compact,
   {sched_name},  !- Name
-  Fractional,  !- Schedule Type Limits Name
+  {type_limit},  !- Schedule Type Limits Name
   Through: 12/31,  !- Field 1
   For: AllDays,  !- Field 2
   Until: 24:00,  !- Field 3
-  1.0;  !- Field 4
+  {"120" if sched_type == "Activity" else "1.0"};  !- Field 4
 """
             new_objects.append(sched_obj)
+
+    # Update existing WaterUse:Equipment objects in-place to use per-building schedules.
+    # This preserves their WaterUse:Connections and PlantLoop links so that DHW
+    # heating energy is properly calculated through the SHW plant loop.
+    water_map = get_water_equipment_building_map(content, buildings)
+    water_update_count = 0
+
+    for bldg_id, water_names in water_map.items():
+        bldg_idx = int(bldg_id.split("_")[1])
+        if bldg_idx >= n_buildings:
+            continue
+
+        water_sch_name = f"Water_{bldg_id}"
+
+        for wname in water_names:
+            # Replace the Flow Rate Fraction Schedule Name (4th field) for this
+            # specific WaterUse:Equipment object, identified by its exact name.
+            # Field order: Name, End-Use Subcategory, Peak Flow Rate,
+            #              Flow Rate Fraction Schedule Name, ...
+            escaped_name = re.escape(wname)
+            pattern = (
+                r"(WaterUse:Equipment,\s*\n"
+                r"\s*" + escaped_name + r"\s*,\s*!-[^\n]*\n"   # Name
+                r"\s*[^,\n]+\s*,\s*!-[^\n]*\n"                 # End-Use Subcategory
+                r"\s*[^,\n]+\s*,\s*!-[^\n]*\n)"                # Peak Flow Rate
+                r"\s*[^,\n]+(\s*,\s*!-)"                        # Flow Rate Fraction Schedule (replace value, keep comment marker)
+            )
+
+            def _replacement(m):
+                return m.group(1) + "  " + water_sch_name + m.group(2)
+
+            modified_content, count = re.subn(pattern, _replacement, modified_content, flags=re.MULTILINE)
+            if count > 0:
+                water_update_count += count
+
+    if water_update_count > 0:
+        print(f"  Updated {water_update_count} WaterUse:Equipment objects with per-building schedules.")
+    elif water_map:
+        print("  Warning: Could not update any WaterUse:Equipment schedule names.")
 
     # Append new objects to the IDF
     modified_content += "\n! ========== NEIGHBOURHOOD PER-BUILDING OBJECTS ==========\n"
@@ -244,6 +333,7 @@ Schedule:Compact,
 
     print(f"Prepared IDF saved to: {output_path}")
     print(f"Created {n_buildings} sets of People/Lights/Equipment objects.")
+    print(f"Existing WaterUse:Equipment objects preserved (Plant Loop connections intact).")
 
     return n_buildings
 
