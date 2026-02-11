@@ -226,8 +226,8 @@ def main():
             # Fill under curve
             ax.fill_between(profile.index, profile.values, color=YEAR_COLORS[year], alpha=0.1)
             
-            # 120W Reference
-            ax.axhline(120, color='red', linestyle='--', linewidth=2, label='Default (120W)')
+            # 95W Reference
+            ax.axhline(95, color='darkred', linestyle='--', linewidth=2, label='Default (95W)')
             
             ax.set_title(f"{year} - Metabolic Profile", fontsize=14, fontweight='bold')
             ax.set_xlabel("Hour of Day")
@@ -239,7 +239,7 @@ def main():
             if i == 0:
                 ax.legend(loc='upper left', frameon=True)
             else:
-                ax.text(1, 125, "120W Default", color='red', fontsize=9, fontweight='bold')
+                ax.text(1, 102, "95W Default (DOE Prototype)", color='darkred', fontsize=12, fontweight='bold')
                 
         else:
              ax.text(0.5, 0.5, "No Data", ha='center')

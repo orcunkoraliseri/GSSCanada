@@ -81,9 +81,8 @@ def generate_plot() -> None:
             grp = subset[subset["HHSIZE"] == size]
             stats = grp.groupby("Hour")["Occupancy_Schedule"].agg(["mean", "std"])
 
-            n_hh = hh_counts.get(size, 0)
             color = COLORS.get(size, "gray")
-            label = f"{LABELS.get(size, str(size))} (n={n_hh})"
+            label = f"{LABELS.get(size, str(size))}"
 
             # Plot Line
             ax.plot(hours, stats["mean"], color=color, linewidth=2.5, label=label)
