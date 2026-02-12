@@ -309,8 +309,7 @@ def plot_eui_breakdown(eui_results: dict, output_path: str) -> None:
     
     ax.set_xlabel('End Use Category', fontsize=12, fontweight='bold')
     ax.set_ylabel('EUI (kWh/m²)', fontsize=12, fontweight='bold')
-    ax.set_title('End Use Intensity Breakdown', fontsize=14, fontweight='bold')
-    plt.xticks(rotation=45, ha='right', fontsize=8)
+    plt.title(f"Monte Carlo Comparison (N={{K}}) - {{region_str}}\n{{idf_str}}", fontsize=14)
     
     # Add value labels on bars
     for bar, value in zip(bars, values):
@@ -618,6 +617,59 @@ def get_meter_data(conn) -> Dict[str, List[float]]:
     return results
 
 
+def get_hourly_meter_data(conn) -> Dict[str, List[float]]:
+    """
+    Retrieves HOURLY meter data for key energy categories.
+    
+    Returns:
+        Dict[meter_name, list_of_8760_values_in_J]
+    """
+    # ReportingFrequency: 3 = Hourly
+    query_meta = """
+    SELECT ReportDataDictionaryIndex, KeyValue, Name, Units 
+    FROM ReportDataDictionary 
+    WHERE ReportingFrequency = 3
+    """
+    
+    try:
+        meta_df = pd.read_sql_query(query_meta, conn)
+    except Exception as e:
+        return {}
+    
+    index_map = {}
+    for _, row in meta_df.iterrows():
+        name = row['Name']
+        units = row['Units']
+        # Filter for relevant meters to save memory
+        if any(x in name for x in ['EnergyTransfer', 'Electricity', 'WaterSystems']):
+             index_map[row['ReportDataDictionaryIndex']] = (name, units)
+
+    if not index_map:
+        return {}
+
+    query_data = """
+    SELECT rd.ReportDataDictionaryIndex, rd.Value
+    FROM ReportData rd
+    JOIN Time t ON rd.TimeIndex = t.TimeIndex
+    JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex
+    WHERE ep.EnvironmentType = 3
+    ORDER BY t.TimeIndex ASC
+    """
+    
+    data_df = pd.read_sql_query(query_data, conn)
+    
+    results = {}
+    for idx, (name, units) in index_map.items():
+        subset = data_df[data_df['ReportDataDictionaryIndex'] == idx]
+        values = subset['Value'].tolist()
+        
+        # Keep in Joules (W*3600s) or Watts? 
+        # Usually Hourly data is Energy (J) or Power (W). E+ reports Energy in J usually.
+        # We'll return raw extracted values (likely J) and convert in reporting.
+        results[name] = values
+        
+    return results
+
 def plot_comparative_timeseries_subplots(
     results_dict: Dict[str, dict],
     hh_id: str,
@@ -722,8 +774,11 @@ def plot_comparative_timeseries_subplots(
         
         # Expand y-axis for lighting and equipment to avoid exaggerated visual differences
         # Set y-axis to start at 0 and expand range by 20% above max
+        # Enforce y-axis starting at 0 for all plots (User Request)
+        ax.set_ylim(bottom=0)
+
+        # Expand y-axis for lighting and equipment to avoid exaggerated visual differences
         if 'InteriorLights' in meter or 'InteriorEquipment' in meter:
-            ax.set_ylim(bottom=0)
             current_ylim = ax.get_ylim()
             ax.set_ylim(bottom=0, top=current_ylim[1] * 1.2)
         
@@ -949,9 +1004,12 @@ def plot_kfold_timeseries(
         ax.set_ylabel(y_unit, fontsize=9)
         ax.grid(alpha=0.3)
         
+        # Enforce y-axis starting at 0 for all plots (User Request)
+        ax.set_ylim(bottom=0)
+        
         # Expand y-axis for lighting and equipment to avoid exaggerated visual differences
+        # (Optional: could apply to all, but keeping specific logic for these flat profiles)
         if 'InteriorLights' in meter or 'InteriorEquipment' in meter:
-            ax.set_ylim(bottom=0)
             current_ylim = ax.get_ylim()
             ax.set_ylim(bottom=0, top=current_ylim[1] * 1.2)
         

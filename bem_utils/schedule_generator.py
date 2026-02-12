@@ -186,14 +186,14 @@ class LightingGenerator:
         day_type: str = "Weekday"
     ) -> list[float]:
         """
-        Generate a lighting schedule for a single day.
+        Generate a lighting schedule for a single day (non-seasonal).
 
         Logic: Same as Equipment/DHW PresenceFilter:
         - Present: use default schedule value (gradual changes)
         - Absent: use base_load (minimum from absent hours)
 
-        Note: Solar radiation data is still loaded for visualization purposes
-        but not used for schedule gating (to match Equipment/DHW behavior).
+        Note: This non-seasonal version is kept for backward compatibility.
+        For seasonal variation, use generate_monthly().
 
         Args:
             presence_schedule: A list of 24 fractional occupancy values (0-1).
@@ -233,6 +233,91 @@ class LightingGenerator:
             else:
                 # Absent: use base_load (like Equipment/DHW)
                 result.append(base_load)
+
+        return result
+
+    def get_monthly_daylight_factor(self, month: str) -> list[float]:
+        """
+        Calculate hourly daylight reduction factors for a given month.
+
+        For each hour, computes how much artificial lighting can be
+        reduced based on available solar radiation. Higher solar radiation
+        means less artificial lighting is needed.
+
+        Args:
+            month: Three-letter month abbreviation (e.g., 'Jan', 'Jul').
+
+        Returns:
+            A list of 24 factors (0.0 to 1.0) where:
+            - 1.0 = full artificial lighting needed (nighttime/low solar)
+            - lower values = solar displaces some artificial lighting
+        """
+        if not self.solar_data or month not in self.solar_data:
+            return [1.0] * 24
+
+        monthly_solar = self.solar_data[month]
+
+        # Find peak solar radiation across all months for normalization
+        peak_solar = 0.0
+        for m in self.solar_data:
+            for val in self.solar_data[m]:
+                if val > peak_solar:
+                    peak_solar = val
+
+        if peak_solar == 0.0:
+            return [1.0] * 24
+
+        factors = []
+        for hour in range(24):
+            solar = monthly_solar[hour] if hour < len(monthly_solar) else 0.0
+
+            if solar <= self.threshold:
+                # Below threshold: full artificial lighting needed
+                factors.append(1.0)
+            else:
+                # Above threshold: reduce lighting proportional to solar
+                # Scale: threshold → 1.0, peak → minimum factor (0.3)
+                min_factor = 0.3  # Never reduce below 30% (some rooms have no windows)
+                normalized = (solar - self.threshold) / (peak_solar - self.threshold)
+                factor = 1.0 - normalized * (1.0 - min_factor)
+                factors.append(max(min_factor, min(1.0, factor)))
+
+        return factors
+
+    def generate_monthly(
+        self,
+        presence_schedule: list[float],
+        default_schedule: Optional[list[float]] = None,
+        month: str = "Jan",
+        day_type: str = "Weekday"
+    ) -> list[float]:
+        """
+        Generate a lighting schedule with monthly daylight variation.
+
+        Combines presence filtering with monthly solar radiation data
+        to produce seasonal lighting demand. During daylight hours with
+        high solar radiation, artificial lighting demand is reduced.
+
+        Args:
+            presence_schedule: A list of 24 fractional occupancy values.
+            default_schedule: A list of 24 default lighting values.
+            month: Three-letter month abbreviation (e.g., 'Jan', 'Jul').
+            day_type: 'Weekday' or 'Weekend'.
+
+        Returns:
+            A list of 24 lighting schedule values with seasonal scaling.
+        """
+        # Start with the base presence-filtered schedule
+        base_schedule = self.generate(
+            presence_schedule, default_schedule, day_type
+        )
+
+        # Apply monthly daylight factors
+        daylight_factors = self.get_monthly_daylight_factor(month)
+
+        result = []
+        for hour in range(24):
+            result.append(base_schedule[hour] * daylight_factors[hour])
 
         return result
 

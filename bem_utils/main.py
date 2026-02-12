@@ -16,7 +16,7 @@ import csv
 # Add project root to path so bem_utils can be imported when running directly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from bem_utils import integration, simulation, plotting, visualizer, idf_optimizer, neighbourhood, config
+from bem_utils import integration, simulation, plotting, visualizer, idf_optimizer, neighbourhood, config, reporting
 
 # --- CONFIGURATION ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -85,6 +85,31 @@ def get_region_from_epw(epw_path: str) -> str:
             
     return None
 
+
+
+def _sort_key_by_city(filepath: str) -> tuple:
+    """Extract city name from filepath for consistent sorting.
+
+    Recognizes Canadian city names in both IDF and EPW filenames
+    so that files for the same city get the same sort position.
+
+    Args:
+        filepath: Full or basename path to an IDF or EPW file.
+
+    Returns:
+        Tuple of (city_name, basename) for stable sorting.
+        Files without a recognized city sort after those with one.
+    """
+    basename = os.path.basename(filepath).upper()
+    cities = [
+        'CALGARY', 'EDMONTON', 'HALIFAX', 'MONTREAL', 'MONCTON',
+        'OTTAWA', 'QUEBEC', 'TORONTO', 'VANCOUVER', 'VICTORIA',
+        'WINNIPEG',
+    ]
+    for city in cities:
+        if city in basename:
+            return (0, city, basename)
+    return (1, '', basename)
 
 
 def select_file(files: list, prompt_text: str) -> str:
@@ -183,6 +208,8 @@ def option_run_simulation() -> None:
     if not idf_files:
         idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "**", "*.idf"), recursive=True)
     
+    idf_files.sort(key=_sort_key_by_city)
+
     if not idf_files:
         print(f"Error: No IDF files found in {BUILDINGS_DIR}")
         return
@@ -199,6 +226,8 @@ def option_run_simulation() -> None:
     
     # 3. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
+    epw_files.sort(key=_sort_key_by_city)
+
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
@@ -235,24 +264,14 @@ def option_run_simulation() -> None:
     # 5. Load Schedules
     schedules = integration.load_schedules(selected_schedule_csv, dwelling_type=selected_dtype, region=selected_region)
     
-    # 6. Simulation Settings
+    # 6. Simulation Settings — Auto-select 1 random household
     print(f"\nTotal Households found: {len(schedules)}")
     
-    try:
-        limit_input = input("Enter number of households to simulate (Enter for all): ").strip()
-        limit = int(limit_input) if limit_input else len(schedules)
-    except ValueError:
-        limit = len(schedules)
-    
-    # Random selection of households
     import random
     all_hh_ids = list(schedules.keys())
-    if limit >= len(all_hh_ids):
-        hh_ids = all_hh_ids
-    else:
-        hh_ids = random.sample(all_hh_ids, limit)
+    hh_ids = random.sample(all_hh_ids, 1)
     
-    print(f"Randomly selected {len(hh_ids)} households: {hh_ids[:5]}{'...' if len(hh_ids) > 5 else ''}")
+    print(f"Auto-selected household: {hh_ids[0]}")
     
     # 7. Generate IDFs and Prepare Jobs
     jobs = []
@@ -417,7 +436,7 @@ def option_validation_simulation() -> None:
 
     # Filter for those with CZ indicators (optional, but helpful to highlight validation targets)
     # But user wants to SELECT. So show ALL, maybe sort?
-    idf_files.sort()
+    idf_files.sort(key=_sort_key_by_city)
     selected_idf = select_file(idf_files, "Select Base IDF Building Model:")
     name = os.path.basename(selected_idf).replace('.idf', '')
     
@@ -575,6 +594,8 @@ def option_comparative_simulation() -> None:
     if not idf_files:
         idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "**", "*.idf"), recursive=True)
     
+    idf_files.sort(key=_sort_key_by_city)
+
     if not idf_files:
         print(f"Error: No IDF files found in {BUILDINGS_DIR}")
         return
@@ -591,6 +612,8 @@ def option_comparative_simulation() -> None:
     
     # 2. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
+    epw_files.sort(key=_sort_key_by_city)
+
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
@@ -889,6 +912,7 @@ def option_neighbourhood_simulation() -> None:
 
     # 1. Select Neighbourhood IDF
     idf_files = glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "*.idf"))
+    idf_files.sort(key=_sort_key_by_city)
     if not idf_files:
         print(f"No IDF files found in {NEIGHBOURHOODS_DIR}")
         return
@@ -906,6 +930,8 @@ def option_neighbourhood_simulation() -> None:
 
     # 3. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
+    epw_files.sort(key=_sort_key_by_city)
+
     if not epw_files:
         print(f"No EPW files found in {WEATHER_DIR}")
         return
@@ -1049,7 +1075,7 @@ def option_comparative_neighbourhood_simulation() -> None:
     
     # 1. Select Neighbourhood IDF
     neighbourhood_files = glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "*.idf"))
-    neighbourhood_files.sort()
+    neighbourhood_files.sort(key=_sort_key_by_city)
     if not neighbourhood_files:
         print(f"Error: No IDF files found in {NEIGHBOURHOODS_DIR}")
         return
@@ -1063,7 +1089,7 @@ def option_comparative_neighbourhood_simulation() -> None:
     
     # 3. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
-    epw_files.sort()
+    epw_files.sort(key=_sort_key_by_city)
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
@@ -1350,13 +1376,13 @@ def option_comparative_neighbourhood_simulation() -> None:
     print(f"{'='*60}")
 
 def option_kfold_comparative_simulation() -> None:
-    """Option 7: K-Fold Comparative Simulation (runs K iterations, averages results)."""
+    """Option 4: Monte Carlo Comparative Simulation (runs multiple iterations, averages results)."""
     import random
     import sqlite3
     import numpy as np
     
-    print("\n=== K-Fold Comparative Simulation ===")
-    print("This runs comparative simulations K times with different random households,")
+    print("\n=== Monte Carlo Comparative Simulation ===")
+    print("This runs comparative simulations multiple times with different random households,")
     print("then averages results to reduce single-household bias.")
     
     # 0. Select Simulation Mode
@@ -1367,6 +1393,8 @@ def option_kfold_comparative_simulation() -> None:
     if not idf_files:
         idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "**", "*.idf"), recursive=True)
     
+    idf_files.sort(key=_sort_key_by_city)
+
     if not idf_files:
         print(f"Error: No IDF files found in {BUILDINGS_DIR}")
         return
@@ -1375,6 +1403,8 @@ def option_kfold_comparative_simulation() -> None:
     
     # 2. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
+    epw_files.sort(key=_sort_key_by_city)
+
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
@@ -1408,23 +1438,24 @@ def option_kfold_comparative_simulation() -> None:
             pass
         print("Invalid selection. Try again.")
     
-    # 4. Select K (number of iterations)
+    # 4. Select Iteration Count
     while True:
         try:
-            k_input = input("\nEnter number of iterations K (default=5): ").strip()
+            k_input = input("\nEnter iteration count (iter_count=) (default=5): ").strip()
             if not k_input:
-                K = 5
+                iter_count = 5
             else:
-                K = int(k_input)
-            if K < 1:
-                print("K must be at least 1.")
+                iter_count = int(k_input)
+            if iter_count < 1:
+                print("Iteration count must be at least 1.")
                 continue
             break
         except ValueError:
             print("Invalid number. Try again.")
     
-    total_sims = K * 4
-    print(f"\nThis will run {K} iterations × 4 scenarios = {total_sims} total simulations.")
+    total_sims = 1 + iter_count * 3
+    print(f"\nThis will run 1 Default + {iter_count} iterations × 3 year scenarios"
+          f" = {total_sims} total simulations.")
     confirm = input("Proceed? (y/n): ")
     if confirm.lower() != 'y':
         print("Aborted.")
@@ -1450,7 +1481,8 @@ def option_kfold_comparative_simulation() -> None:
         return
     
     # 6. Create output directory
-    batch_name = f"KFold_K{K}_{int(time.time())}"
+    # 6. Create output directory
+    batch_name = f"MonteCarlo_N{iter_count}_{int(time.time())}"
     batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
     os.makedirs(batch_dir, exist_ok=True)
     print(f"\nOutput Directory: {batch_dir}")
@@ -1495,27 +1527,59 @@ def option_kfold_comparative_simulation() -> None:
         except Exception as e:
             print(f"  Error extracting Default: {e}")
     
-    # 8. K-Fold Loop (only year scenarios, not Default)
+    # 8. Monte Carlo Loop (only year scenarios, not Default)
     year_scenarios = ['2025', '2015', '2005']
     scenarios = ['2025', '2015', '2005', 'Default']  # For aggregation
+    # Track full results for reporting
+    all_run_results = {s: [] for s in scenarios}
     all_eui_results = {s: [] for s in scenarios}
     all_meter_results = {s: [] for s in scenarios}
     
-    # Pre-populate Default results (same for all K - no variance)
+    # Pre-populate Default results K times (same for all K - no variance)
     if default_eui_data:
-        all_eui_results['Default'].append(default_eui_data)
-    if default_meter_data:
-        all_meter_results['Default'].append(default_meter_data)
+        default_result = {
+            'eui_data': default_eui_data,
+            'meter_data': default_meter_data,
+            'hourly_data': None # Default usually doesn't need hourly unless re-run
+        }
+        for _ in range(iter_count):
+            all_eui_results['Default'].append(default_eui_data)
+            if default_meter_data:
+                all_meter_results['Default'].append(default_meter_data)
+            all_run_results['Default'].append(default_result)
     
-    for k in range(K):
-        print(f"\n--- Iteration {k+1}/{K} ---")
+    # Pre-filter candidates by profile (like Option 7)
+    candidate_pool = []
+    pool_year = None
+    for yr in all_schedules:
+        if all_schedules[yr]:
+            scored_matches = integration.filter_matching_households(
+                all_schedules[yr]
+            )
+            if scored_matches:
+                pool_year = yr
+                pool_size = max(iter_count * 2, len(scored_matches) // 2)
+                candidate_pool = [
+                    hh for hh, s in scored_matches[:pool_size]
+                ]
+                break
+
+    if not candidate_pool:
+        print("\nError: No matching households found in any year. "
+              "Try a different dwelling type or region.")
+        return
+
+    print(f"\nCandidate pool: {len(candidate_pool)} households "
+          f"(from {pool_year}, {len(scored_matches)} profile-filtered)")
+    
+    for k in range(iter_count):
+        print(f"\n--- Iteration {k+1}/{iter_count} ---")
         
-        # Select a random hhsize for this iteration
-        # Pick 100 candidates and find best working day match
-        first_year = list(all_schedules.keys())[0]
-        i_candidates = list(all_schedules[first_year].keys())
-        first_hh = integration.find_best_match_household(all_schedules[first_year], i_candidates)
-        target_hhsize = all_schedules[first_year][first_hh].get('metadata', {}).get('hhsize', 0)
+        # Randomly select a household from the filtered pool
+        first_hh = random.choice(candidate_pool)
+        target_hhsize = all_schedules[pool_year][first_hh].get(
+            'metadata', {}
+        ).get('hhsize', 0)
         print(f"  Target household size: {target_hhsize} persons")
         
         # Prepare jobs for this iteration
@@ -1539,8 +1603,7 @@ def option_kfold_comparative_simulation() -> None:
                     ]
                     
                     if matching_hhs:
-                        cands = matching_hhs
-                        year_hh = integration.find_best_match_household(all_schedules[scenario], cands)
+                        year_hh = random.choice(matching_hhs)
                     else:
                         year_hh = random.choice(list(all_schedules[scenario].keys()))
                     
@@ -1552,7 +1615,8 @@ def option_kfold_comparative_simulation() -> None:
                         epw_path=selected_epw,
                         sim_results_dir=SIM_RESULTS_DIR,
                         batch_name=f"{batch_name}/iter_{k+1}",
-                        run_period_mode=selected_sim_mode
+                        run_period_mode=selected_sim_mode,
+                        output_frequency='Hourly'
                     )
                     
                     # Export schedule to CSV for debugging
@@ -1603,6 +1667,19 @@ def option_kfold_comparative_simulation() -> None:
                 if meter_data:
                     meter_data = plotting.scale_meter_results(meter_data, scaling_factor)
                     all_meter_results[scenario].append(meter_data)
+                
+                # Reporting: Extract hourly data if available
+                # (Note: Requires ReportingFrequency=3 in output variables)
+                hourly_data = plotting.get_hourly_meter_data(conn)
+                
+                # Helper dictionary for reporting
+                run_result = {
+                    'eui_data': eui_data,
+                    'meter_data': meter_data,
+                    'hourly_data': hourly_data
+                }
+                all_run_results[scenario].append(run_result)
+
                 conn.close()
             except Exception as e:
                 print(f"    Error extracting {scenario}: {e}")
@@ -1643,6 +1720,15 @@ def option_kfold_comparative_simulation() -> None:
             values = [r.get('end_uses_normalized', r.get('end_uses', {})).get(cat, 0.0) for r in results_list]
             aggregated['mean'][scenario][cat] = float(np.mean(values)) if values else 0.0
             aggregated['std'][scenario][cat] = float(np.std(values)) if len(values) > 1 else 0.0
+            
+    # 9. Generate Report (CSV)
+    print("\nGenerating Detailed Report...")
+    try:
+        report_gen = reporting.ReportGenerator(all_run_results, batch_dir, region=selected_region or "Unknown")
+        report_path = report_gen.generate_report()
+    except Exception as e:
+        print(f"Error generating report: {e}")
+
     
     # 9. Save aggregated CSV
     csv_path = os.path.join(batch_dir, "aggregated_eui.csv")
@@ -1661,7 +1747,7 @@ def option_kfold_comparative_simulation() -> None:
     plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_Comparative_EUI_{batch_name}.png")
     plotting.plot_kfold_comparative_eui(
         aggregated, categories, plot_path,
-        K=K, region=selected_region, idf_name=os.path.basename(selected_idf)
+        K=iter_count, region=selected_region, idf_name=os.path.basename(selected_idf)
     )
     
     # 11. Aggregate meter data and generate time-series plot
@@ -1719,7 +1805,7 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
     
     # 1. Select Neighbourhood IDF
     neighbourhood_files = glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "*.idf"))
-    neighbourhood_files.sort()
+    neighbourhood_files.sort(key=_sort_key_by_city)
     if not neighbourhood_files:
         print(f"Error: No IDF files found in {NEIGHBOURHOODS_DIR}")
         return
@@ -1737,6 +1823,8 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
 
     # 3. Select Weather File
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
+    epw_files.sort(key=_sort_key_by_city)
+
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
@@ -2099,10 +2187,10 @@ def main_menu() -> None:
         print("  1. Visualize a building")
         print("  2. Run a simulation, single building")
         print("  3. Comparative simulation, single building (2025/2015/2005/Default)")
-        print("  4. K-Fold Comparative, single building (averaged over K runs) (2025/2015/2005/Default)")
+        print("  4. Monte Carlo Comparative, single building (averaged over iterations) (2025/2015/2005/Default)")
         print("  5. Neighbourhood simulation (multi-building)")
         print("  6. Comparative neighbourhood (2025/2015/2005/Default)")
-        print("  7. Batch Comparative Neighbourhood Simulation (averaged over K runs) (2025/2015/2005/Default)")
+        print("  7. Batch Comparative Neighbourhood Simulation (Monte Carlo) (2025/2015/2005/Default)")
         print("  8. Visualize performance results")
         print("  9. Run Validation Simulation (Existing IDFs vs Reference)")
         print("  q. Quit")

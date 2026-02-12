@@ -299,6 +299,63 @@ def create_compact_schedule(name, type_limit, day_schedules):
     return fields
 
 
+def create_monthly_compact_schedule(
+    name: str,
+    type_limit: str,
+    monthly_schedules: dict[str, dict[str, list[dict]]]
+) -> list:
+    """
+    Create a Schedule:Compact with per-month Through: blocks.
+
+    This enables seasonal variation by specifying different hourly
+    values for each month of the year.
+
+    Args:
+        name: Schedule name.
+        type_limit: Schedule type limit (e.g., 'Fraction').
+        monthly_schedules: Dict mapping month abbreviation to
+            day_schedules dict {'Weekday': [...], 'Weekend': [...]}.
+            Each value list contains dicts with 'hour' and 'value' keys.
+
+    Returns:
+        list: Fields for the Schedule:Compact object.
+    """
+    fields = [
+        name,
+        type_limit,
+    ]
+
+    months_info = [
+        ('Jan', '1/31'), ('Feb', '2/28'), ('Mar', '3/31'),
+        ('Apr', '4/30'), ('May', '5/31'), ('Jun', '6/30'),
+        ('Jul', '7/31'), ('Aug', '8/31'), ('Sep', '9/30'),
+        ('Oct', '10/31'), ('Nov', '11/30'), ('Dec', '12/31'),
+    ]
+
+    ep_day_types = {
+        'Weekday': 'For: Weekdays SummerDesignDay WinterDesignDay',
+        'Weekend': 'For: Weekends Holidays AllOtherDays',
+    }
+
+    for month_abbr, through_date in months_info:
+        if month_abbr not in monthly_schedules:
+            continue
+
+        fields.append(f"Through: {through_date}")
+
+        day_data = monthly_schedules[month_abbr]
+        for day_type in ['Weekday', 'Weekend']:
+            if day_type in day_data and day_data[day_type]:
+                fields.append(ep_day_types[day_type])
+                for entry in day_data[day_type]:
+                    hour = entry['hour'] + 1
+                    val = entry['value']
+                    fields.append(f"Until: {hour:02d}:00")
+                    fields.append(f"{val:.4f}")
+
+    return fields
+
+
     idf.saveas(output_path)
 
 
@@ -713,7 +770,8 @@ def inject_schedules(
     epw_path: Optional[str] = None,
     sim_results_dir: str = None,
     batch_name: str = None,
-    run_period_mode: str = 'standard'
+    run_period_mode: str = 'standard',
+    output_frequency: str = 'Monthly'
 ) -> None:
     """
     Injects specific household schedules into an IDF file.
@@ -853,46 +911,103 @@ def inject_schedules(
                     setattr(obj, field_name, created_schedules[cache_key])
                     continue
 
-                proj_data = {}
-                for dtype in ['Weekday', 'Weekend']:
-                    if dtype not in occ_data:
-                        continue
+                if obj_type == 'LIGHTS':
+                    # Monthly daylight-responsive lighting
+                    months = [
+                        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+                    ]
+                    monthly_data = {}
+                    for month in months:
+                        month_day_data = {}
+                        for dtype in ['Weekday', 'Weekend']:
+                            if dtype not in occ_data:
+                                continue
+                            presence = occ_data[dtype]
+                            default_vals = (
+                                std_weekday if dtype == 'Weekday'
+                                else std_weekend
+                            )
+                            values = lighting_gen.generate_monthly(
+                                presence,
+                                default_schedule=default_vals,
+                                month=month,
+                                day_type=dtype,
+                            )
+                            month_day_data[dtype] = [
+                                {'hour': h, 'value': v}
+                                for h, v in enumerate(values)
+                            ]
+                        monthly_data[month] = month_day_data
 
-                    presence = occ_data[dtype]
-                    default_vals = std_weekday if dtype == 'Weekday' else std_weekend
-
-                    if obj_type == 'LIGHTS':
-                        # Daylight Threshold Method (with default schedule for gradual changes)
-                        proj_data[dtype] = lighting_gen.generate(
-                            presence, default_schedule=default_vals, day_type=dtype
-                        )
-                    else:
-                        # Presence Filter Method (Equipment & DHW)
-                        pf = schedule_generator.PresenceFilter(default_vals, presence)
-                        proj_data[dtype] = pf.apply(presence)
-
-                if not proj_data:
-                    continue
-                
-                # --- Visualization Integration ---
-                if 'Weekday' in proj_data:
-                    # Save the first instance of each type for visualization
+                    # Visualization: use January as representative
                     if collected_schedules[std_key] is None:
-                        collected_schedules[std_key] = proj_data['Weekday']
-                    if collected_defaults[std_key] is None:
+                        jan_wd = monthly_data.get('Jan', {}).get(
+                            'Weekday', []
+                        )
+                        if jan_wd:
+                            collected_schedules[std_key] = [
+                                e['value'] for e in jan_wd
+                            ]
                         collected_defaults[std_key] = std_weekday
 
-                # Create new Schedule:Compact object
-                proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
-                proj_dict = {k: fmt_for_compact(v) for k, v in proj_data.items()}
+                    proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
+                    proj_obj = idf.newidfobject("Schedule:Compact")
+                    proj_obj.obj = (
+                        ["Schedule:Compact"]
+                        + create_monthly_compact_schedule(
+                            proj_sch_name, "Fraction", monthly_data
+                        )
+                    )
 
-                proj_obj = idf.newidfobject("Schedule:Compact")
-                proj_obj.obj = ["Schedule:Compact"] + create_compact_schedule(
-                    proj_sch_name, "Fraction", proj_dict
-                )
+                    setattr(obj, field_name, proj_sch_name)
+                    created_schedules[cache_key] = proj_sch_name
 
-                setattr(obj, field_name, proj_sch_name)
-                created_schedules[cache_key] = proj_sch_name
+                else:
+                    # Equipment / DHW: flat presence filter
+                    proj_data = {}
+                    for dtype in ['Weekday', 'Weekend']:
+                        if dtype not in occ_data:
+                            continue
+                        presence = occ_data[dtype]
+                        default_vals = (
+                            std_weekday if dtype == 'Weekday'
+                            else std_weekend
+                        )
+                        pf = schedule_generator.PresenceFilter(
+                            default_vals, presence
+                        )
+                        proj_data[dtype] = pf.apply(presence)
+
+                    if not proj_data:
+                        continue
+
+                    # Visualization
+                    if 'Weekday' in proj_data:
+                        if collected_schedules[std_key] is None:
+                            collected_schedules[std_key] = (
+                                proj_data['Weekday']
+                            )
+                        if collected_defaults[std_key] is None:
+                            collected_defaults[std_key] = std_weekday
+
+                    proj_sch_name = (
+                        f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
+                    )
+                    proj_dict = {
+                        k: fmt_for_compact(v)
+                        for k, v in proj_data.items()
+                    }
+                    proj_obj = idf.newidfobject("Schedule:Compact")
+                    proj_obj.obj = (
+                        ["Schedule:Compact"]
+                        + create_compact_schedule(
+                            proj_sch_name, "Fraction", proj_dict
+                        )
+                    )
+
+                    setattr(obj, field_name, proj_sch_name)
+                    created_schedules[cache_key] = proj_sch_name
 
             except Exception as e:
                 print(f"  Warning: Could not project {obj_type} schedule: {e}")
@@ -956,7 +1071,7 @@ def inject_schedules(
 
 
     # 5. Optimize & Save
-    idf_optimizer.optimize_idf(idf, verbose=True)
+    idf_optimizer.optimize_idf(idf, verbose=True, meter_frequency=output_frequency)
     idf_optimizer.apply_speed_optimizations(idf, verbose=True)
     idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=True)
     idf.saveas(output_path)
@@ -1097,37 +1212,60 @@ def inject_neighbourhood_schedules(
                 }
             )
 
-        # 3. Lighting schedule (Light_Bldg_X) - Daylight Threshold Method
+        # 3. Lighting schedule (Light_Bldg_X) - Monthly Daylight Method
         light_sch_name = f"Light_{bldg_id}"
-        weekday_light = lighting_gen.generate(
-            weekday_occ, default_schedule=default_light_values['Weekday'], day_type='Weekday'
-        )
-        weekend_light = lighting_gen.generate(
-            weekend_occ, default_schedule=default_light_values['Weekend'], day_type='Weekend'
-        )
+        months = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        ]
+        monthly_light = {}
+        for month in months:
+            wd = lighting_gen.generate_monthly(
+                weekday_occ,
+                default_schedule=default_light_values['Weekday'],
+                month=month,
+                day_type='Weekday',
+            )
+            we = lighting_gen.generate_monthly(
+                weekend_occ,
+                default_schedule=default_light_values['Weekend'],
+                month=month,
+                day_type='Weekend',
+            )
+            monthly_light[month] = {
+                'Weekday': to_hour_value_list(wd),
+                'Weekend': to_hour_value_list(we),
+            }
 
-        light_schedules = [s for s in idf.idfobjects["SCHEDULE:COMPACT"] if s.Name == light_sch_name]
+        # Keep weekday_light for visualization (January representative)
+        weekday_light = [
+            e['value'] for e in monthly_light['Jan']['Weekday']
+        ]
+
+        light_schedules = [
+            s for s in idf.idfobjects["SCHEDULE:COMPACT"]
+            if s.Name == light_sch_name
+        ]
         if light_schedules:
             light_sch = light_schedules[0]
-            light_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                light_sch_name, "Fraction", {
-                    'Weekday': to_hour_value_list(weekday_light),
-                    'Weekend': to_hour_value_list(weekend_light)
-                }
+            light_sch.obj = (
+                ["Schedule:Compact"]
+                + create_monthly_compact_schedule(
+                    light_sch_name, "Fraction", monthly_light
+                )
             )
             if verbose:
-                print(f"    Updated existing Lighting schedule: {light_sch_name}")
+                print(f"    Updated Lighting schedule: {light_sch_name} (monthly)")
         else:
-            # Create new schedule if not found
             new_sch = idf.newidfobject("SCHEDULE:COMPACT")
-            new_sch.obj = ["Schedule:Compact"] + create_compact_schedule(
-                light_sch_name, "Fraction", {
-                    'Weekday': to_hour_value_list(weekday_light),
-                    'Weekend': to_hour_value_list(weekend_light)
-                }
+            new_sch.obj = (
+                ["Schedule:Compact"]
+                + create_monthly_compact_schedule(
+                    light_sch_name, "Fraction", monthly_light
+                )
             )
             if verbose:
-                print(f"    Created new Lighting schedule: {light_sch_name}")
+                print(f"    Created Lighting schedule: {light_sch_name} (monthly)")
 
         # 4. Equipment schedule (Equip_Bldg_X) - Presence Filter Method
         equip_sch_name = f"Equip_{bldg_id}"

@@ -8,38 +8,41 @@ Before implementing the occupancy-based logic for Lighting, Equipment, and DHW, 
 
 ---
 
-## 2. Lighting: "The Presence Filter Method"
+## 2. Lighting: Daylight-Responsive Lighting (Seasonal)
 
 ### 2.1 Objective
-To modulate electrical lighting load based on occupancy presence while preserving the natural shape of default lighting profiles. Lighting energy follows the default schedule when the household is active, and drops to base load when absent.
+To simulate realistic seasonal lighting variations by combining **occupancy presence** with **local solar radiation data**. Lighting demand is reduced during daylight hours when sufficient natural light is available, while maintaining the occupancy-driven base load behavior.
 
 ### 2.2 Data Sources & Input
-The primary environmental data is derived from the EnergyPlus Weather Statistics (`.stat`) file.
+The primary environmental data is derived from the EnergyPlus Weather Statistics (`.stat`) file corresponding to the simulation region.
 
-*   **Table 1: Average Hourly Statistics for Global Horizontal Solar Radiation [Wh/m²]**
-    *   *Usage*: Provides the 24-hour average solar profile for each month. Used for visualization purposes to show daylight conditions.
-    *   *Files*: Located in `/Users/orcunkoraliseri/Desktop/Postdoc/eSim/BEM_Setup/WeatherFile`
-        *   `CAN_ON_Toronto.City-Univ.of.Toronto.715080_TMYx.stat`
-        *   `CAN_QC_Montreal.Center-Jean.Brebeuf-McGill.Univ-McTavish.716120_TMYx.stat`
-*   **Table 2: Monthly Sunshine/Daylight (Daily Average) [hours]**
-    *   *Usage*: Validates the "active daylight hours" window.
+*   **Global Horizontal Solar Radiation**: Extracted from the "Average Hourly Statistics for Global Horizontal Solar Radiation [Wh/m²]" table in the `.stat` file.
+*   **Files**:
+    *   `CAN_ON_Toronto...TMYx.stat`
+    *   `CAN_QC_Montreal...TMYx.stat`
 
-### 2.3 Methodology: Presence Filter with Gradual Changes
-This method preserves the natural shape of the default lighting schedule while modulating based on occupancy.
-
-#### Definitions:
-*   **Default Schedule Value**: The hourly value from the standardized ApartmentMidrise lighting schedule (varies by hour).
-*   **Base Load**: The minimum value from the default schedule during absent hours (representing standby/minimal lighting).
+### 2.3 Methodology: Presence + Daylight Scaling
+This method modulates the standardized lighting schedule based on two factors:
+1.  **Presence**: Is the household active?
+2.  **Daylight Availability**: Is there sufficient natural light?
 
 #### The Logic Rule:
-```
-IF (Household is Active/Home)
-THEN Lighting Load = Default Schedule Value at that hour (preserves gradual changes)
-ELSE Lighting Load = Base Load (minimum from absent hours)
-```
+1.  **Base Schedule**: Generated using the *Presence Filter Method* (same as Equipment):
+    *   *Active*: Use Default Schedule Value.
+    *   *Absent*: Use Base Load (minimum).
+2.  **Daylight Factor**: Calculated hourly for each month based on solar radiation.
+    *   *Threshold*: **150 Wh/m²** (Global Horizontal).
+    *   If Solar > 150: Reduce lighting factor linearly (down to a minimum of 0.3).
+    *   If Solar ≤ 150: Factor = 1.0 (Full artificial light).
+3.  **Final Schedule**: `Base Schedule * Daylight Factor`
 
-#### Parameters:
-*   **Threshold (reference)**: 150 Wh/m² (Global Horizontal). Used for visualization to indicate daylight conditions.
+#### Implementation:
+*   **Monthly Variation**: The system generates **12 distinct daily profiles** (one for each month) to capture seasonal changes in sunrise/sunset times and solar intensity.
+*   **IDF Structure**: Schedules are injected as `Schedule:Compact` objects with 12 monthly `Through:` blocks (e.g., `Through: 1/31`, `Through: 2/28`, etc.), allowing EnergyPlus to simulate seasonal lighting variances accurately.
+
+#### Outcome:
+*   **Winter (Dec/Jan)**: Higher lighting demand due to short days and low solar angle.
+*   **Summer (Jun/Jul)**: Lower lighting demand due to extended daylight hours and higher solar intensity.
 
 ---
 

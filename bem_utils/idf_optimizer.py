@@ -97,7 +97,7 @@ def get_idf_version(file_path: str) -> Optional[str]:
     return None
 
 
-def optimize_idf(idf: IDF, verbose: bool = True) -> List[str]:
+def optimize_idf(idf: IDF, verbose: bool = True, meter_frequency: str = 'Monthly') -> List[str]:
     """
     Optimizes an IDF object for simulation.
     
@@ -168,16 +168,17 @@ def optimize_idf(idf: IDF, verbose: bool = True) -> List[str]:
             print(f"  {msg}")
     
     # 4b. Add Output:Meter for Monthly Totals (for time-series plotting)
+    # 4b. Add Output:Meter (Frequency customizable, default Monthly)
     REQUIRED_METERS = [
-        ('Heating:EnergyTransfer', 'Monthly'),
-        ('Cooling:EnergyTransfer', 'Monthly'),
-        ('InteriorLights:Electricity', 'Monthly'),
-        ('InteriorEquipment:Electricity', 'Monthly'),
-        ('InteriorEquipment:Gas', 'Monthly'),
-        ('Fans:Electricity', 'Monthly'),
-        ('WaterSystems:EnergyTransfer', 'Monthly'),
-        ('Electricity:Facility', 'Monthly'),
-        ('Gas:Facility', 'Monthly')
+        ('Heating:EnergyTransfer', meter_frequency),
+        ('Cooling:EnergyTransfer', meter_frequency),
+        ('InteriorLights:Electricity', meter_frequency),
+        ('InteriorEquipment:Electricity', meter_frequency),
+        ('InteriorEquipment:Gas', meter_frequency),
+        ('Fans:Electricity', meter_frequency),
+        ('WaterSystems:EnergyTransfer', meter_frequency),
+        ('Electricity:Facility', meter_frequency),
+        ('Gas:Facility', meter_frequency)
     ]
     
     existing_meters = set()
@@ -941,13 +942,49 @@ def standardize_residential_schedules(
         sch.obj = fields
         return sch
     
-    # 1. Create standard schedule objects
+    # 1. Create standard schedule objects (or reuse existing)
     schedule_names = {}
+
+    def _get_or_create_schedule(
+        idf: IDF,
+        name: str,
+        type_limit: str,
+        hourly_values: list,
+    ):
+        """Create Schedule:Compact or update if it already exists."""
+        existing = [
+            s for s in idf.idfobjects.get('SCHEDULE:COMPACT', [])
+            if s.Name == name
+        ]
+        if existing:
+            # Update in-place instead of creating duplicate
+            sch = existing[0]
+        else:
+            sch = idf.newidfobject("Schedule:Compact")
+
+        fields = [
+            "Schedule:Compact",
+            name,
+            type_limit,
+            "Through: 12/31",
+            "For: AllDays",
+        ]
+        for hour in range(24):
+            val = (
+                hourly_values[hour]
+                if hour < len(hourly_values)
+                else hourly_values[-1]
+            )
+            fields.append(f"Until: {hour+1:02d}:00")
+            fields.append(f"{val:.4f}")
+
+        sch.obj = fields
+        return sch
     
     # Occupancy schedule
     if 'occupancy' in standard_schedules:
         occ_name = "Standard_Residential_Occupancy"
-        create_compact_schedule_obj(
+        _get_or_create_schedule(
             idf, occ_name, "Fraction", 
             standard_schedules['occupancy']['Weekday']
         )
@@ -957,7 +994,7 @@ def standardize_residential_schedules(
     # Equipment schedule
     if 'equipment' in standard_schedules:
         eqp_name = "Standard_Residential_Equipment"
-        create_compact_schedule_obj(
+        _get_or_create_schedule(
             idf, eqp_name, "Fraction", 
             standard_schedules['equipment']['Weekday']
         )
@@ -967,7 +1004,7 @@ def standardize_residential_schedules(
     # Lighting schedule
     if 'lighting' in standard_schedules:
         ltg_name = "Standard_Residential_Lighting"
-        create_compact_schedule_obj(
+        _get_or_create_schedule(
             idf, ltg_name, "Fraction", 
             standard_schedules['lighting']['Weekday']
         )
@@ -977,7 +1014,7 @@ def standardize_residential_schedules(
     # DHW schedule
     if 'dhw' in standard_schedules:
         dhw_name = "Standard_Residential_DHW"
-        create_compact_schedule_obj(
+        _get_or_create_schedule(
             idf, dhw_name, "Fraction", 
             standard_schedules['dhw']['Weekday']
         )
@@ -987,7 +1024,14 @@ def standardize_residential_schedules(
     # Activity schedule (constant metabolic rate)
     activity_val = standard_schedules.get('activity', 95.0)
     act_name = "Standard_Residential_Activity"
-    act_sch = idf.newidfobject("Schedule:Compact")
+    existing_act = [
+        s for s in idf.idfobjects.get('SCHEDULE:COMPACT', [])
+        if s.Name == act_name
+    ]
+    if existing_act:
+        act_sch = existing_act[0]
+    else:
+        act_sch = idf.newidfobject("Schedule:Compact")
     act_sch.obj = [
         "Schedule:Compact",
         act_name,
