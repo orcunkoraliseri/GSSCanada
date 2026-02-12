@@ -1783,7 +1783,7 @@ def option_kfold_comparative_simulation() -> None:
         ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_TimeSeries_{batch_name}.png")
         plotting.plot_kfold_timeseries(
             aggregated_meters, meter_names, ts_plot_path,
-            floor_area=floor_area, K=K, region=selected_region, 
+            floor_area=floor_area, K=iter_count, region=selected_region, 
             idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
         )
     
