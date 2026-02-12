@@ -97,14 +97,16 @@ def get_idf_version(file_path: str) -> Optional[str]:
     return None
 
 
-def optimize_idf(idf: IDF, verbose: bool = True, meter_frequency: str = 'Monthly') -> List[str]:
+def optimize_idf(idf: IDF, verbose: bool = True, meter_frequency: str = 'Monthly', enable_hourly_detail: bool = False) -> List[str]:
     """
     Optimizes an IDF object for simulation.
-    
+
     Args:
         idf: Eppy IDF object.
         verbose: If True, print optimization messages.
-    
+        meter_frequency: Base reporting frequency for Output:Meter objects ('Hourly', 'Monthly', etc.).
+        enable_hourly_detail: If True, adds hourly frequency meters for detailed reporting (full year simulations only).
+
     Returns:
         List of optimization actions performed.
     """
@@ -194,11 +196,42 @@ def optimize_idf(idf: IDF, verbose: bool = True, meter_frequency: str = 'Monthly
             added_meters += 1
             
     if added_meters > 0:
-        msg = f"Added {added_meters} output meters (Monthly)"
+        msg = f"Added {added_meters} output meters ({meter_frequency})"
         actions.append(msg)
         if verbose:
             print(f"  {msg}")
-    
+
+    # 4c. Add HOURLY frequency meters for detailed reporting (only if enabled)
+    # These are needed for hourly load profiles and peak load analysis
+    if enable_hourly_detail:
+        HOURLY_DETAIL_METERS = [
+            'Heating:EnergyTransfer',
+            'Cooling:EnergyTransfer',
+            'WaterSystems:EnergyTransfer',
+            'InteriorLights:Electricity',
+            'InteriorEquipment:Electricity'
+        ]
+
+        # Check which meters exist at hourly frequency
+        existing_hourly_meters = set()
+        for meter in idf.idfobjects.get('OUTPUT:METER', []):
+            if meter.Reporting_Frequency in ['Hourly', 'hourly']:
+                existing_hourly_meters.add(meter.Key_Name)
+
+        added_hourly = 0
+        for meter_name in HOURLY_DETAIL_METERS:
+            if meter_name not in existing_hourly_meters:
+                meter_obj = idf.newidfobject("Output:Meter")
+                meter_obj.Key_Name = meter_name
+                meter_obj.Reporting_Frequency = 'Hourly'
+                added_hourly += 1
+
+        if added_hourly > 0:
+            msg = f"Added {added_hourly} hourly detail meters (for load profiles & peak analysis)"
+            actions.append(msg)
+            if verbose:
+                print(f"  {msg}")
+
     # 5. Fix missing SurfaceProperty:OtherSideCoefficients
     for obj_name, obj_config in MISSING_OBJECTS.items():
         obj_type = obj_config['object_type']
@@ -764,40 +797,46 @@ def _get_fallback_schedules() -> dict:
 
 
 def prepare_idf_for_simulation(
-    idf_path: str, 
-    output_path: str = None, 
+    idf_path: str,
+    output_path: str = None,
     verbose: bool = True,
     standardize_schedules: bool = True,
-    run_period_mode: str = 'standard'
+    run_period_mode: str = 'standard',
+    meter_frequency: str = 'Monthly'
 ) -> bool:
     """
     Prepares an IDF file for simulation with all optimizations.
-    
+
     Args:
         idf_path: Path to the source IDF file.
         output_path: Path to save the optimized IDF. If None, overwrites source.
         verbose: If True, print progress messages.
         standardize_schedules: If True, replaces schedules with DOE MidRise standard.
-        run_period_mode: 'standard' (full year), 'weekly' (24 TMY weeks), 
+        run_period_mode: 'standard' (full year), 'weekly' (24 TMY weeks),
                         or 'design_day' (sizing only).
-    
+        meter_frequency: Reporting frequency for Output:Meter objects ('Hourly', 'Monthly', etc.).
+
     Returns:
         True if successful, False otherwise.
     """
     if output_path is None:
         output_path = idf_path
-    
+
     try:
         # Set IDD
         idd_file = os.environ.get('IDD_FILE')
         if idd_file:
             IDF.setiddname(idd_file)
-        
+
         if verbose:
             print(f"Optimizing: {os.path.basename(idf_path)}")
-        
+
+        # Enable hourly detail output only for full year simulations
+        # This adds hourly meters needed for load profiles and peak analysis
+        enable_hourly_detail = (run_period_mode == 'standard')
+
         idf = IDF(idf_path)
-        actions = optimize_idf(idf, verbose=verbose)
+        actions = optimize_idf(idf, verbose=verbose, meter_frequency=meter_frequency, enable_hourly_detail=enable_hourly_detail)
         
         # Apply residential schedule standardization if requested
         if standardize_schedules:

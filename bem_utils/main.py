@@ -1495,7 +1495,8 @@ def option_kfold_comparative_simulation() -> None:
     
     idf_optimizer.prepare_idf_for_simulation(
         selected_idf, default_idf_path, verbose=False,
-        run_period_mode=selected_sim_mode
+        run_period_mode=selected_sim_mode,
+        meter_frequency='Hourly'
     )
     
     default_job = {
@@ -1509,17 +1510,19 @@ def option_kfold_comparative_simulation() -> None:
     # Extract Default results
     default_eui_data = None
     default_meter_data = None
+    default_hourly_data = None
     default_sql_path = os.path.join(default_dir, 'eplusout.sql')
     if os.path.exists(default_sql_path):
         try:
             conn = sqlite3.connect(default_sql_path)
             default_eui_data = plotting.calculate_eui(conn)
             default_meter_data = plotting.get_meter_data(conn)
-            
+            default_hourly_data = plotting.get_hourly_meter_data(conn)
+
             # Upscale
             scaling_factor = 52.0 / 24.0 if selected_sim_mode == 'weekly' else 1.0
             default_eui_data = plotting.scale_eui_results(default_eui_data, scaling_factor)
-            
+
             if default_meter_data:
                 default_meter_data = plotting.scale_meter_results(default_meter_data, scaling_factor)
             conn.close()
@@ -1540,7 +1543,7 @@ def option_kfold_comparative_simulation() -> None:
         default_result = {
             'eui_data': default_eui_data,
             'meter_data': default_meter_data,
-            'hourly_data': None # Default usually doesn't need hourly unless re-run
+            'hourly_data': default_hourly_data
         }
         for _ in range(iter_count):
             all_eui_results['Default'].append(default_eui_data)
@@ -1744,7 +1747,7 @@ def option_kfold_comparative_simulation() -> None:
     print(f"Saved aggregated CSV to: {csv_path}")
     
     # 10. Generate plot with error bars
-    plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_Comparative_EUI_{batch_name}.png")
+    plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Comparative_EUI_{batch_name}.png")
     plotting.plot_kfold_comparative_eui(
         aggregated, categories, plot_path,
         K=iter_count, region=selected_region, idf_name=os.path.basename(selected_idf)
@@ -1780,24 +1783,24 @@ def option_kfold_comparative_simulation() -> None:
         # Get floor area from sample EUI result
         floor_area = sample_result.get('conditioned_floor_area', 0.0) or sample_result.get('total_floor_area', 0.0)
         
-        ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_TimeSeries_{batch_name}.png")
+        ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_TimeSeries_{batch_name}.png")
         plotting.plot_kfold_timeseries(
             aggregated_meters, meter_names, ts_plot_path,
-            floor_area=floor_area, K=iter_count, region=selected_region, 
+            floor_area=floor_area, K=iter_count, region=selected_region,
             idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
         )
-    
-    print(f"\nK-Fold Comparative Simulation complete. Results in: {batch_dir}")
+
+    print(f"\nMonte Carlo Comparative Simulation complete. Results in: {batch_dir}")
 
 
 def option_batch_comparative_neighbourhood_simulation() -> None:
-    """Option 7: K-Fold Comparative Neighbourhood Simulation (runs K iterations, averages results)."""
+    """Option 7: Monte Carlo Comparative Neighbourhood Simulation (runs iter_count iterations, averages results)."""
     import random
     import sqlite3
     import numpy as np
-    
-    print("\n=== Batch Comparative Neighbourhood Simulation ===")
-    print("This runs comparative neighbourhood simulations K times with different random household sets,")
+
+    print("\n=== Monte Carlo Comparative Neighbourhood Simulation ===")
+    print("This runs comparative neighbourhood simulations multiple times with different random household sets,")
     print("then averages results to reduce selection bias.")
     
     # 0. Select Simulation Mode
@@ -1838,23 +1841,23 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
     else:
         print("\nRegion could not be inferred from Weather File (will load all regions).")
     
-    # 4. Select K (number of iterations)
+    # 4. Select iteration count
     while True:
         try:
-            k_input = input("\nEnter number of iterations K (default=5): ").strip()
+            k_input = input("\nEnter iteration count (iter_count=) (default=5): ").strip()
             if not k_input:
-                K = 5
+                iter_count = 5
             else:
-                K = int(k_input)
-            if K < 1:
-                print("K must be at least 1.")
+                iter_count = int(k_input)
+            if iter_count < 1:
+                print("Iteration count must be at least 1.")
                 continue
             break
         except ValueError:
             print("Invalid number. Try again.")
-    
-    total_sims = K * 3 + 1 # K iterations of 3 scenarios + 1 Default
-    print(f"\nThis will run 1 Default + ({K} iterations × 3 scenarios) = {total_sims} total simulations.")
+
+    total_sims = iter_count * 3 + 1 # iter_count iterations of 3 scenarios + 1 Default
+    print(f"\nThis will run 1 Default + ({iter_count} iterations × 3 scenarios) = {total_sims} total simulations.")
     confirm = input("Proceed? (y/n): ")
     if confirm.lower() != 'y':
         print("Aborted.")
@@ -1887,7 +1890,7 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         return
     
     # 6. Create output directory
-    batch_name = f"KFold_Neighbourhood_K{K}_{int(time.time())}"
+    batch_name = f"MonteCarlo_Neighbourhood_N{iter_count}_{int(time.time())}"
     batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
     os.makedirs(batch_dir, exist_ok=True)
     print(f"\nOutput Directory: {batch_dir}")
@@ -1927,25 +1930,25 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         except Exception as e:
             print(f"  Error extracting Default: {e}")
     
-    # 8. K-Fold Loop (only year scenarios)
+    # 8. Monte Carlo Loop (only year scenarios)
     year_scenarios = ['2025', '2015', '2005']
     scenarios = ['2025', '2015', '2005', 'Default']  # For aggregation
     all_eui_results = {s: [] for s in scenarios}
     all_meter_results = {s: [] for s in scenarios}
     
-    # Pre-populate Default results (same for all K)
+    # Pre-populate Default results (same for all iterations)
     if default_eui_data:
-        # Replicate Default result K times so it has same weight/variance (std=0)
-        # Or just append once and handle it? 
-        # For plot, we need list of values. Since Default is constant, we append it K times.
-        for _ in range(K):
+        # Replicate Default result iter_count times so it has same weight/variance (std=0)
+        # Or just append once and handle it?
+        # For plot, we need list of values. Since Default is constant, we append it iter_count times.
+        for _ in range(iter_count):
             all_eui_results['Default'].append(default_eui_data)
             all_meter_results['Default'].append(default_meter_data)
-    
+
     first_year = list(all_schedules.keys())[0]
-    
-    for k in range(K):
-        print(f"\n--- Iteration {k+1}/{K} ---")
+
+    for k in range(iter_count):
+        print(f"\n--- Iteration {k+1}/{iter_count} ---")
         
         # Filter Base Year (2025) candidates by profile
         print(f"  Filtering {first_year} candidates by profile...")
@@ -2133,47 +2136,47 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
             f.write(",".join(row) + "\n")
     print(f"Saved aggregated CSV to: {csv_path}")
     
-    # 11. Plot K-Fold EUI
-    plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_Neighbourhood_EUI_{batch_name}.png")
+    # 11. Plot Monte Carlo EUI
+    plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Neighbourhood_EUI_{batch_name}.png")
     plotting.plot_kfold_comparative_eui(
         aggregated, categories, plot_path,
-        K=K, region=selected_region, idf_name=os.path.basename(selected_idf)
+        K=iter_count, region=selected_region, idf_name=os.path.basename(selected_idf)
     )
     
-    # 12. Plot K-Fold Time-Series
+    # 12. Plot Monte Carlo Time-Series
     sample_meter = None
     for s in scenarios:
         if all_meter_results[s]:
             sample_meter = all_meter_results[s][0]
             break
-            
+
     if sample_meter:
         meter_names = list(sample_meter.keys())
         aggregated_meters = {'mean': {}, 'std': {}}
-        
+
         for scenario in scenarios:
             meter_list = all_meter_results[scenario]
             if not meter_list:
                 continue
             aggregated_meters['mean'][scenario] = {}
             aggregated_meters['std'][scenario] = {}
-            
+
             for meter in meter_names:
                 all_values = [m.get(meter, [0]*12) for m in meter_list]
                 stacked = np.array(all_values)
                 aggregated_meters['mean'][scenario][meter] = np.mean(stacked, axis=0).tolist()
                 aggregated_meters['std'][scenario][meter] = np.std(stacked, axis=0).tolist() if len(stacked) > 1 else [0]*12
-        
+
         floor_area = sample_result.get('conditioned_floor_area', 0.0) or sample_result.get('total_floor_area', 0.0)
-        
-        ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"KFold_Neighbourhood_TimeSeries_{batch_name}.png")
+
+        ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Neighbourhood_TimeSeries_{batch_name}.png")
         plotting.plot_kfold_timeseries(
             aggregated_meters, meter_names, ts_plot_path,
-            floor_area=floor_area, K=K, region=selected_region, 
+            floor_area=floor_area, K=iter_count, region=selected_region,
             idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
         )
-        
-    print(f"\nK-Fold Neighbourhood Simulation complete. Results in: {batch_dir}")
+
+    print(f"\nMonte Carlo Neighbourhood Simulation complete. Results in: {batch_dir}")
 
 
 def main_menu() -> None:

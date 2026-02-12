@@ -1071,7 +1071,9 @@ def inject_schedules(
 
 
     # 5. Optimize & Save
-    idf_optimizer.optimize_idf(idf, verbose=True, meter_frequency=output_frequency)
+    # Enable hourly detail output only for full year simulations
+    enable_hourly_detail = (run_period_mode == 'standard')
+    idf_optimizer.optimize_idf(idf, verbose=True, meter_frequency=output_frequency, enable_hourly_detail=enable_hourly_detail)
     idf_optimizer.apply_speed_optimizations(idf, verbose=True)
     idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=True)
     idf.saveas(output_path)
@@ -1439,7 +1441,9 @@ def inject_neighbourhood_schedules(
             print(f"  Warning: Could not update densities from original IDF: {e}")
 
     # Optimize and save
-    idf_optimizer.optimize_idf(idf, verbose=verbose)
+    # Enable hourly detail output only for full year simulations
+    enable_hourly_detail = (run_period_mode == 'standard')
+    idf_optimizer.optimize_idf(idf, verbose=verbose, enable_hourly_detail=enable_hourly_detail)
     idf_optimizer.apply_speed_optimizations(idf, verbose=verbose)
     idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=verbose)
     idf.saveas(output_path)
@@ -1596,7 +1600,9 @@ def inject_neighbourhood_default_schedules(
         _update_power_densities_from_original(idf, original_idf_path, verbose=verbose)
     
     # Optimize and save
-    idf_optimizer.optimize_idf(idf, verbose=verbose)
+    # Enable hourly detail output only for full year simulations
+    enable_hourly_detail = (run_period_mode == 'standard')
+    idf_optimizer.optimize_idf(idf, verbose=verbose, enable_hourly_detail=enable_hourly_detail)
     idf_optimizer.apply_speed_optimizations(idf, verbose=verbose)
     idf_optimizer.configure_run_period(idf, mode=run_period_mode, verbose=verbose)
     idf.saveas(output_path)

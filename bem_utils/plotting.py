@@ -620,15 +620,15 @@ def get_meter_data(conn) -> Dict[str, List[float]]:
 def get_hourly_meter_data(conn) -> Dict[str, List[float]]:
     """
     Retrieves HOURLY meter data for key energy categories.
-    
+
     Returns:
         Dict[meter_name, list_of_8760_values_in_J]
     """
-    # ReportingFrequency: 3 = Hourly
+    # ReportingFrequency: 3 = Hourly (numeric) OR 'Hourly' (string)
     query_meta = """
-    SELECT ReportDataDictionaryIndex, KeyValue, Name, Units 
-    FROM ReportDataDictionary 
-    WHERE ReportingFrequency = 3
+    SELECT ReportDataDictionaryIndex, KeyValue, Name, Units
+    FROM ReportDataDictionary
+    WHERE ReportingFrequency = 3 OR ReportingFrequency = 'Hourly'
     """
     
     try:
@@ -824,7 +824,7 @@ def plot_kfold_comparative_eui(
     idf_name: Optional[str] = None
 ) -> None:
     """
-    Generates a grouped bar chart with error bars for K-Fold simulation results.
+    Generates a grouped bar chart with error bars for Monte Carlo simulation results.
     
     Args:
         aggregated: Dict with 'mean' and 'std' sub-dicts, each scenario -> category -> value.
@@ -841,7 +841,7 @@ def plot_kfold_comparative_eui(
     n_scenarios = len(scenarios)
     
     if n_categories == 0 or n_scenarios == 0:
-        print("Warning: No data to plot for K-Fold results.")
+        print("Warning: No data to plot for Monte Carlo results.")
         return
     
     # Color mapping for scenarios
@@ -881,19 +881,19 @@ def plot_kfold_comparative_eui(
     ax.set_xticklabels(x_labels, rotation=45, ha='right', fontsize=9)
     
     # Title
-    title_parts = [f"K-Fold Comparative EUI (K={K})"]
+    title_parts = [f"Monte Carlo Comparative EUI (N={K})"]
     if idf_name:
         title_parts.append(f"Model: {idf_name}")
     if region:
         title_parts.append(f"Region: {region}")
     ax.set_title(" | ".join(title_parts), fontsize=12)
-    
+
     ax.legend(title="Scenario", loc='upper right')
     ax.grid(axis='y', alpha=0.3)
-    
+
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"K-Fold EUI plot saved to {output_path}")
+    print(f"Monte Carlo EUI plot saved to {output_path}")
     plt.close()
 
 
@@ -908,7 +908,7 @@ def plot_kfold_timeseries(
     sim_mode: str = 'standard'
 ) -> None:
     """
-    Generates multi-panel time-series plots for K-Fold results with mean ± std shading.
+    Generates multi-panel time-series plots for Monte Carlo results with mean ± std shading.
     
     Args:
         aggregated_meters: Dict with 'mean' and 'std' sub-dicts.
@@ -940,7 +940,7 @@ def plot_kfold_timeseries(
     
     n_meters = len(meters_to_plot)
     if n_meters == 0:
-        print("Warning: No meter data to plot for K-Fold time-series.")
+        print("Warning: No meter data to plot for Monte Carlo time-series.")
         return
     
     # Layout
@@ -1022,17 +1022,17 @@ def plot_kfold_timeseries(
         axes[row, col].axis('off')
     
     # Title
-    title_parts = [f"K-Fold Time-Series (K={K})"]
+    title_parts = [f"Monte Carlo Time-Series (N={K})"]
     if idf_name:
         title_parts.append(f"Model: {idf_name}")
     if region:
         title_parts.append(f"Region: {region}")
     fig.suptitle(" | ".join(title_parts), fontsize=12, fontweight='bold')
-    
+
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"K-Fold time-series plot saved to {output_path}")
+    print(f"Monte Carlo time-series plot saved to {output_path}")
     plt.close()
 
 

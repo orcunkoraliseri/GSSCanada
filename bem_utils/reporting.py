@@ -99,29 +99,37 @@ class ReportGenerator:
         """Writes Annual Energy Demand Metrics section."""
         writer.writerow(["[SECTION] Annual Energy Demand Metrics (Aggregated)"])
         writer.writerow(["Category", "Scenario", "Mean(kWh/m2)", "StdDev", "CI_Lower", "CI_Upper"])
-        
+
         for cat_key, cat_name in DISPLAY_CATEGORIES.items():
             if cat_key not in self.eui_by_cat: continue
-            
+
             for scenario in self.scenarios:
                 values = self.eui_by_cat[cat_key][scenario]
                 if not values:
                     writer.writerow([cat_name, scenario, "N/A", "N/A", "N/A", "N/A"])
                     continue
-                    
+
                 mean = np.mean(values)
                 std = np.std(values, ddof=1) if len(values) > 1 else 0.0
-                
+
                 # 95% Confidence Interval
-                if len(values) > 1:
+                if len(values) > 1 and std > 0:
+                    # Only calculate CI if we have variance
                     se = std / np.sqrt(len(values))
-                    ci = stats.t.interval(0.95, len(values)-1, loc=mean, scale=se)
+                    with np.errstate(invalid='ignore'):  # Suppress warnings for edge cases
+                        ci = stats.t.interval(0.95, len(values)-1, loc=mean, scale=se)
+                    # Check for invalid results
+                    if np.isnan(ci[0]) or np.isnan(ci[1]) or np.isinf(ci[0]) or np.isinf(ci[1]):
+                        ci = (mean, mean)
+                elif len(values) == 1 or std == 0:
+                    # Zero variance: CI equals the mean
+                    ci = (mean, mean)
                 else:
                     ci = (mean, mean)
-                
+
                 writer.writerow([
-                    cat_name, scenario, 
-                    f"{mean:.4f}", f"{std:.4f}", 
+                    cat_name, scenario,
+                    f"{mean:.4f}", f"{std:.4f}",
                     f"{ci[0]:.4f}", f"{ci[1]:.4f}"
                 ])
         writer.writerow([]) # Spacer
@@ -156,23 +164,47 @@ class ReportGenerator:
             
             for scenario in self.scenarios:
                 if scenario == ref_scenario: continue
-                
+
                 scen_values = self.eui_by_cat[cat_key].get(scenario, [])
                 if not scen_values: continue
-                
-                # Tukey HSD (Pairwise) - simplified to t-test equivalent if using scipy < 1.8 
-                # But requirement allows tukey_hsd from scipy 1.11
-                res = stats.tukey_hsd(scen_values, ref_values)
-                p_val = res.pvalue[0, 1] # p-value comparing group 0 and 1
-                
-                sig = "Yes" if p_val < 0.05 else "No"
-                
-                # Cohen's d
-                n1, n2 = len(scen_values), len(ref_values)
-                var1, var2 = np.var(scen_values, ddof=1), np.var(ref_values, ddof=1)
-                pooled_std = np.sqrt(((n1-1)*var1 + (n2-1)*var2) / (n1+n2-2))
-                cohens_d = (np.mean(scen_values) - np.mean(ref_values)) / pooled_std if pooled_std > 0 else 0.0
-                
+
+                # Check for zero variance in either group (e.g., Default scenario)
+                scen_std = np.std(scen_values, ddof=1) if len(scen_values) > 1 else 0.0
+                ref_std = np.std(ref_values, ddof=1) if len(ref_values) > 1 else 0.0
+
+                # Skip statistical test if either group has zero variance
+                if scen_std == 0 or ref_std == 0:
+                    # Can't perform meaningful statistical test on constant values
+                    p_val = 1.0  # No difference if both are constant
+                    cohens_d = 0.0
+                    sig = "No"
+                else:
+                    # Tukey HSD (Pairwise)
+                    try:
+                        with np.errstate(divide='ignore', invalid='ignore'):
+                            res = stats.tukey_hsd(scen_values, ref_values)
+                            p_val = res.pvalue[0, 1]  # p-value comparing group 0 and 1
+
+                        # Check for invalid p-value
+                        if np.isnan(p_val) or np.isinf(p_val):
+                            p_val = 1.0
+                    except Exception:
+                        p_val = 1.0
+
+                    sig = "Yes" if p_val < 0.05 else "No"
+
+                    # Cohen's d
+                    n1, n2 = len(scen_values), len(ref_values)
+                    var1, var2 = np.var(scen_values, ddof=1), np.var(ref_values, ddof=1)
+
+                    with np.errstate(divide='ignore', invalid='ignore'):
+                        pooled_std = np.sqrt(((n1-1)*var1 + (n2-1)*var2) / (n1+n2-2))
+                        cohens_d = (np.mean(scen_values) - np.mean(ref_values)) / pooled_std if pooled_std > 0 else 0.0
+
+                    # Check for invalid Cohen's d
+                    if np.isnan(cohens_d) or np.isinf(cohens_d):
+                        cohens_d = 0.0
+
                 writer.writerow([
                     cat_name, f"{scenario} vs {ref_scenario}",
                     f"{p_val:.5f}", sig, f"{cohens_d:.4f}"
@@ -184,11 +216,11 @@ class ReportGenerator:
         writer.writerow(["[SECTION] Raw Simulation Data (Per Simulation)"])
         header = ["Run_ID", "Scenario"] + list(DISPLAY_CATEGORIES.values())
         writer.writerow(header)
-        
+
         # Re-iterate to align rows by Run ID if possible, or just list them
         # We assume lists are ordered by run k
         max_runs = max(len(v) for s in self.results.values() for v in s) if self.results else 0
-        
+
         run_idx = 1
         # Loop scenarios, then runs
         for scenario in self.scenarios:
@@ -196,12 +228,27 @@ class ReportGenerator:
             for i, run in enumerate(runs):
                 row = [i+1, scenario]
                 eui_data = run.get('eui_data', {}).get('end_uses_normalized', {})
-                
+
+                # Use the same matching logic as _organize_eui_data
                 for cat_key in DISPLAY_CATEGORIES:
-                    # Find matching value
                     val = 0.0
                     for k, v in eui_data.items():
-                        if cat_key in k.lower(): # simple match
+                        clean_key = k.split(':')[0].lower()
+
+                        # Match using same logic as _organize_eui_data
+                        matched = False
+                        if 'heating' in clean_key and cat_key == 'heating':
+                            matched = True
+                        elif 'cooling' in clean_key and cat_key == 'cooling':
+                            matched = True
+                        elif 'lights' in clean_key and cat_key == 'interiorlights':
+                            matched = True
+                        elif 'equipment' in clean_key and cat_key == 'interiorequipment':
+                            matched = True
+                        elif 'water' in clean_key and cat_key == 'watersystems':
+                            matched = True
+
+                        if matched:
                             val = v
                             break
                     row.append(f"{val:.4f}")
