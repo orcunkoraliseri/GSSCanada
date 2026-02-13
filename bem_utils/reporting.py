@@ -67,37 +67,60 @@ class ReportGenerator:
     def generate_report(self) -> str:
         """
         Generates the full CSV report.
-        
+
         Returns:
             Path to the generated CSV file.
         """
         filename = f"{self.region}_Comparative_Analysis_Report.csv"
         filepath = os.path.join(self.output_dir, filename)
-        
+
+        # Get simulation details
+        sim_id = os.path.basename(self.output_dir)
+        total_runs = sum(len(runs) for runs in self.results.values())
+
         with open(filepath, 'w', newline='') as f:
             writer = csv.writer(f)
-            
+
+            # Header Section
+            writer.writerow([f"SIMULATION RESULTS SUMMARY - {self.region.upper()}"])
+            writer.writerow([f"Simulation ID: {sim_id}"])
+            writer.writerow([f"Total Simulations: {total_runs}"])
+            writer.writerow([f"Scenarios: {', '.join(self.scenarios)}"])
+            writer.writerow([])
+
             # 1. Annual Energy Demand Metrics
             self._write_annual_metrics(writer)
-            
+
             # 2. Statistical Variability
             self._write_statistical_analysis(writer)
-            
+
             # 3. Raw Simulation Data
             self._write_raw_data(writer)
-            
+
             # 4. Hourly Load Profiles
             self._write_hourly_profiles(writer)
-            
+
             # 5. Peak Load Characteristics
             self._write_peak_loads(writer)
-            
-        print(f"\nReport generated: {filepath}")
+
+            # 6. Summary of Key Findings
+            self._write_summary(writer)
+
+        print(f"\n{'='*80}")
+        print(f"COMPREHENSIVE REPORT GENERATED")
+        print(f"{'='*80}")
+        print(f"Location: {self.region}")
+        print(f"File: {filepath}")
+        print(f"Total Simulations: {total_runs}")
+        print(f"Scenarios: {', '.join(self.scenarios)}")
+        print(f"{'='*80}")
         return filepath
 
     def _write_annual_metrics(self, writer):
         """Writes Annual Energy Demand Metrics section."""
+        writer.writerow(["="*80])
         writer.writerow(["[SECTION] Annual Energy Demand Metrics (Aggregated)"])
+        writer.writerow(["="*80])
         writer.writerow(["Category", "Scenario", "Mean(kWh/m2)", "StdDev", "CI_Lower", "CI_Upper"])
 
         for cat_key, cat_name in DISPLAY_CATEGORIES.items():
@@ -136,7 +159,9 @@ class ReportGenerator:
 
     def _write_statistical_analysis(self, writer):
         """Writes Statistical Variability section (ANOVA, Tukey, Cohen's d)."""
+        writer.writerow(["="*80])
         writer.writerow(["[SECTION] Statistical Variability (Reference: Default)"])
+        writer.writerow(["="*80])
         writer.writerow(["Category", "Comparison", "P-Value", "Significant?", "Cohens_D"])
         
         ref_scenario = 'Default'
@@ -213,7 +238,9 @@ class ReportGenerator:
 
     def _write_raw_data(self, writer):
         """Writes Raw Simulation Data section."""
+        writer.writerow(["="*80])
         writer.writerow(["[SECTION] Raw Simulation Data (Per Simulation)"])
+        writer.writerow(["="*80])
         header = ["Run_ID", "Scenario"] + list(DISPLAY_CATEGORIES.values())
         writer.writerow(header)
 
@@ -257,11 +284,13 @@ class ReportGenerator:
 
     def _write_hourly_profiles(self, writer):
         """Writes Hourly Load Profiles section."""
+        writer.writerow(["="*80])
         writer.writerow(["[SECTION] Hourly Load Profiles (kW)"])
+        writer.writerow(["="*80])
         # Columns: Season, DayType, Hour, Scen1_Mean, Scen2_Mean...
         header = ["Season", "DayType", "Hour"] + [f"{s}_Mean" for s in self.scenarios]
         writer.writerow(header)
-        
+
         # Define profile windows (Day of Year 1-365)
         # Jan: 1-31
         # Jul: 182-212 (approx)
@@ -383,7 +412,9 @@ class ReportGenerator:
 
     def _write_peak_loads(self, writer):
         """Writes Peak Load Characteristics section."""
+        writer.writerow(["="*80])
         writer.writerow(["[SECTION] Peak Load Characteristics"])
+        writer.writerow(["="*80])
         writer.writerow(["Category", "Scenario", "Peak_Load(W/m2)", "Peak_Time"])
         
         target_meters = {
@@ -469,7 +500,59 @@ class ReportGenerator:
                 time_str = f"{month}/{day} {hour:02d}:00"
                 
                 writer.writerow([
-                    cat_name, scenario, 
+                    cat_name, scenario,
                     f"{avg_peak_w_m2:.2f}", time_str
                 ])
         writer.writerow([])
+
+    def _write_summary(self, writer):
+        """Writes Summary of Key Findings section."""
+        writer.writerow(["="*80])
+        writer.writerow(["[SECTION] Summary of Key Findings"])
+        writer.writerow(["="*80])
+        writer.writerow([])
+
+        # Calculate key statistics for heating and cooling
+        heating_data = self.eui_by_cat.get('heating', {})
+        cooling_data = self.eui_by_cat.get('cooling', {})
+
+        if heating_data and 'Default' in heating_data:
+            writer.writerow(["1. HEATING PERFORMANCE:"])
+            default_heating = np.mean(heating_data['Default'])
+
+            for scenario in ['2025', '2015', '2005']:
+                if scenario in heating_data:
+                    scen_mean = np.mean(heating_data[scenario])
+                    scen_std = np.std(heating_data[scenario], ddof=1) if len(heating_data[scenario]) > 1 else 0.0
+                    diff = scen_mean - default_heating
+                    pct_change = (diff / default_heating * 100) if default_heating > 0 else 0
+                    writer.writerow([f"   - {scenario}: {scen_mean:.2f} kWh/m² (±{scen_std:.2f}), {pct_change:+.1f}% vs Default"])
+            writer.writerow([])
+
+        if cooling_data and 'Default' in cooling_data:
+            writer.writerow(["2. COOLING PERFORMANCE:"])
+            default_cooling = np.mean(cooling_data['Default'])
+
+            for scenario in ['2025', '2015', '2005']:
+                if scenario in cooling_data:
+                    scen_mean = np.mean(cooling_data[scenario])
+                    scen_std = np.std(cooling_data[scenario], ddof=1) if len(cooling_data[scenario]) > 1 else 0.0
+                    diff = scen_mean - default_cooling
+                    pct_change = (diff / default_cooling * 100) if default_cooling > 0 else 0
+                    writer.writerow([f"   - {scenario}: {scen_mean:.2f} kWh/m² (±{scen_std:.2f}), {pct_change:+.1f}% vs Default"])
+            writer.writerow([])
+
+        writer.writerow(["3. DATA QUALITY:"])
+        for scenario, runs in self.results.items():
+            writer.writerow([f"   - {scenario}: {len(runs)} simulation(s) completed"])
+        writer.writerow([])
+
+        writer.writerow(["4. STATISTICAL SIGNIFICANCE:"])
+        writer.writerow(["   - P-values < 0.05 indicate statistically significant differences"])
+        writer.writerow(["   - Cohen's D > 0.8 indicates large practical effect size"])
+        writer.writerow(["   - See Statistical Variability section for detailed test results"])
+        writer.writerow([])
+
+        writer.writerow(["="*80])
+        writer.writerow(["END OF REPORT"])
+        writer.writerow(["="*80])

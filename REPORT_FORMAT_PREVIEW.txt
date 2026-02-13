@@ -1,0 +1,130 @@
+================================================================================
+ENHANCED REPORT FORMAT PREVIEW
+================================================================================
+
+The next simulation run will generate reports with the following structure:
+
+================================================================================
+HEADER SECTION (NEW!)
+================================================================================
+SIMULATION RESULTS SUMMARY - MONTREAL
+Simulation ID: MonteCarlo_N5_1771005117
+Total Simulations: 20
+Scenarios: 2025, 2015, 2005, Default
+
+================================================================================
+================================================================================
+[SECTION] Annual Energy Demand Metrics (Aggregated)
+================================================================================
+Category,Scenario,Mean(kWh/m2),StdDev,CI_Lower,CI_Upper
+Heating,2025,76.7970,5.1069,70.4559,83.1381
+Heating,2015,80.3608,4.3145,75.0036,85.7180
+...
+
+================================================================================
+================================================================================
+[SECTION] Statistical Variability (Reference: Default)
+================================================================================
+Category,Comparison,P-Value,Significant?,Cohens_D
+Heating,2025 vs Default,1.00000,No,0.0000
+Cooling,2025 vs Default,0.03342,Yes,-1.6219
+...
+
+================================================================================
+================================================================================
+[SECTION] Raw Simulation Data (Per Simulation)
+================================================================================
+Run_ID,Scenario,Heating,Cooling,Lighting,Equipment,DHW
+1,2025,78.8720,1.2540,0.5730,0.0000,7.2460
+2,2025,77.6230,1.3740,0.5720,0.0000,9.2210
+...
+
+================================================================================
+================================================================================
+[SECTION] Hourly Load Profiles (kW)
+================================================================================
+Season,DayType,Hour,2025_Mean,2015_Mean,2005_Mean,Default_Mean
+Note: Profiles are for Total Heating + Cooling Load (kW)
+Category,Season,DayType,Hour,2025_Mean,2015_Mean,2005_Mean,Default_Mean
+Heating,Winter,Weekday,0,6.2223,6.3593,6.3730,5.9937
+...
+
+================================================================================
+================================================================================
+[SECTION] Peak Load Characteristics
+================================================================================
+Category,Scenario,Peak_Load(W/m2),Peak_Time
+Heating,2025,31.06,1/7 05:00
+Cooling,2025,10.20,6/21 17:00
+...
+
+================================================================================
+================================================================================
+[SECTION] Summary of Key Findings (NEW!)
+================================================================================
+
+1. HEATING PERFORMANCE:
+   - 2025: 76.80 kWh/m² (±5.11), +9.0% vs Default
+   - 2015: 80.36 kWh/m² (±4.31), +14.1% vs Default
+   - 2005: 79.80 kWh/m² (±5.34), +13.3% vs Default
+
+2. COOLING PERFORMANCE:
+   - 2025: 1.42 kWh/m² (±0.34), -21.5% vs Default
+   - 2015: 1.29 kWh/m² (±0.31), -28.6% vs Default
+   - 2005: 1.32 kWh/m² (±0.34), -26.9% vs Default
+
+3. DATA QUALITY:
+   - 2025: 5 simulation(s) completed
+   - 2015: 5 simulation(s) completed
+   - 2005: 5 simulation(s) completed
+   - Default: 5 simulation(s) completed
+
+4. STATISTICAL SIGNIFICANCE:
+   - P-values < 0.05 indicate statistically significant differences
+   - Cohen's D > 0.8 indicates large practical effect size
+   - See Statistical Variability section for detailed test results
+
+================================================================================
+END OF REPORT
+================================================================================
+
+================================================================================
+ENHANCEMENTS MADE:
+================================================================================
+
+1. ✅ Professional Header
+   - Location name prominently displayed
+   - Simulation ID for traceability
+   - Total simulation count
+   - Scenarios listed
+
+2. ✅ Clear Visual Separators
+   - === dividers between all sections
+   - Better readability and organization
+
+3. ✅ Summary Section (NEW!)
+   - Quick overview of heating/cooling performance
+   - Percentage changes vs Default scenario
+   - Data quality check
+   - Statistical significance guidance
+
+4. ✅ Enhanced Console Output
+   - Professional formatting when report is generated
+   - Key information displayed
+
+5. ✅ All Original Metrics Preserved
+   - Annual Energy Demand Metrics
+   - Statistical Variability
+   - Raw Simulation Data
+   - Hourly Load Profiles
+   - Peak Load Characteristics
+
+================================================================================
+NEXT STEPS:
+================================================================================
+
+Run your next simulation (Option 4) and the report will automatically be
+generated with this enhanced format!
+
+Example command: python run_bem.py
+Then select: Option 4 (Monte Carlo Comparative)
