@@ -49,3 +49,6 @@ eSim_tests/benchmark_results/
 **/audit.out
 **/Energy+.idd
 **/Energy+.ini
+
+# Pipeline Phase 1 & 2 Outputs
+2J_docs_occ_nTemp/outputs/
