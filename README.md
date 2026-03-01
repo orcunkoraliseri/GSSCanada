@@ -13,11 +13,11 @@ This project creates realistic occupant behavior profiles by:
 
 ```
 eSim/
-├── occ_utils/                          # Core utilities
+├── eSim_occ_utils/                          # Core utilities
 │   ├── 06CEN05GSS_alignment.py        # Census 2006 + GSS 2005 alignment
 │   ├── 06CEN05GSS_ProfileMatcher.py   # Profile matching & schedule generation
 │   └── gss_reader.py                  # GSS data reader
-├── Occupancy/
+├── 0_Occupancy/
 │   ├── DataSources_GSS/               # GSS raw data
 │   ├── DataSources_CENSUS/            # Census raw data
 │   ├── Outputs_Aligned/               # Aligned datasets
@@ -32,14 +32,14 @@ eSim/
 
 ### 1. Data Alignment (Census 2006 ↔ GSS 2005)
 
-**Script:** `occ_utils/06CEN05GSS_alignment.py`
+**Script:** `eSim_occ_utils/06CEN05GSS_alignment.py`
 
 Harmonizes 11 demographic columns between Census 2006 and GSS 2005:
 - `AGEGRP`, `ATTSCH`, `CMA`, `HHSIZE`, `KOL`, `LFTAG`, `MARSTH`, `NOCS`, `PR`, `SEX`, `TOTINC`
 
 **Run:**
 ```bash
-python occ_utils/06CEN05GSS_alignment.py
+python eSim_occ_utils/06CEN05GSS_alignment.py
 ```
 
 **Outputs:**
@@ -49,7 +49,7 @@ python occ_utils/06CEN05GSS_alignment.py
 
 ### 2. Profile Matching
 
-**Script:** `occ_utils/06CEN05GSS_ProfileMatcher.py`
+**Script:** `eSim_occ_utils/06CEN05GSS_ProfileMatcher.py`
 
 Matches Census agents to GSS schedules using tiered demographic matching:
 - **Tier 1:** Perfect match (all 11 columns)
@@ -65,10 +65,10 @@ Matches Census agents to GSS schedules using tiered demographic matching:
 **Run:**
 ```bash
 # Full dataset
-python occ_utils/06CEN05GSS_ProfileMatcher.py
+python eSim_occ_utils/06CEN05GSS_ProfileMatcher.py
 
 # 25% sample (recommended for testing)
-python occ_utils/06CEN05GSS_ProfileMatcher.py --sample 25
+python eSim_occ_utils/06CEN05GSS_ProfileMatcher.py --sample 25
 ```
 
 **Outputs:**

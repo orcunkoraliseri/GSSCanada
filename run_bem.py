@@ -6,9 +6,9 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    from bem_utils.main import main
+    from eSim_bem_utils.main import main
 except ImportError as e:
-    print(f"Error importing bem_utils: {e}")
+    print(f"Error importing eSim_bem_utils: {e}")
     print("Make sure you are running this script from the project root.")
     sys.exit(1)
 

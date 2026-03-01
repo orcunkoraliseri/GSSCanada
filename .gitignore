@@ -1,14 +1,13 @@
-# Large data files
+# Large data files and formats
 *.dat
 *.sas7bdat
 *.sav
-
-# Large CSV outputs
+*.txt
 *.csv
-!BEM_Setup/*.csv
-Occupancy/**/Outputs_**/*.csv
-Occupancy/DataSources_CENSUS/
-Occupancy/DataSources_GSS/Main_files/
+
+# Exceptions for small configuration files or scripts if needed
+!eSim_writing/**/*.csv
+!eSim_writing/**/*.txt
 
 # Python cache
 __pycache__/
@@ -22,26 +21,31 @@ __pycache__/
 .Spotlight-V100
 .Trashes
 
-# Model files (optional - can be large)
+# Model files
 *.keras
 *.h5
 *.pkl
 
-# BEM Simulation Results
-BEM_Setup/SimResults/
-BEM_Setup/SimResults_Plotting/
-BEM_Setup/SimResults_Plotting_Schedules/
+# BEM Simulation Results and Setup
+0_BEM_Setup/
+0_Occupancy/DataSources_CENSUS/
+0_Occupancy/DataSources_GSS/
+0_Occupancy/Outputs_CENSUS/
+0_Occupancy/Outputs_GSS/
+
+# Simulation Results - Generated Files
+eSim_writing/results/
+SimResults/
+SimResults_Plotting/
+SimResults_Plotting_Schedules/
 Pipeline_Test_Output/
 Test_Output/
+
 # Test & Debug Artifacts
-tests/benchmark_results/
+eSim_tests/benchmark_results/
 **/eplusout.*
 **/sqlite.err
 **/ExpandObjects.log
 **/audit.out
 **/Energy+.idd
 **/Energy+.ini
-
-# Simulation Results - Generated Files
-BEM_Setup/SimResults/
-BEM_Setup/SimResults_Plotting/
