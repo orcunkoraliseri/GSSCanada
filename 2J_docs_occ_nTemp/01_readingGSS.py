@@ -20,23 +20,29 @@ import pyreadstat
 # Main file columns selected based on raw data headers
 MAIN_COLS_2005: list[str] = [
     "RECID", "AGEGR10", "sex", "marstat", "HSDSIZEC", "REGION", "LUC_RST",
-    "WKWE", "wght_per", "DVTDAY", "LANCH", "LFSGSS", "INCM", "EDU10"
+    "WKWE", "wght_per", "DVTDAY", "LANCH", "LFSGSS", "INCM", "EDU10", "WKWEHR_C"
 ]
 
-# The original 2010 data file provided is a subset. Removed columns genuinely absent from the raw source.
 MAIN_COLS_2010: list[str] = [
-    "RECID", "PRV", "HSDSIZEC", "AGEGR10", "SEX", "LUC_RST", "WGHT_PER"
+    "RECID", "AGEGR10", "SEX", "MARSTAT", "HSDSIZEC", "REGION", "PRV", "LUC_RST",
+    "WKWE", "WGHT_PER", "DVTDAY", "LANCH", "LFSGSS", "ACT7DAYS", "INCM", "EDU10",
+    "WKWEHR_C",
+    "CTW_Q140_C01", "CTW_Q140_C02", "CTW_Q140_C03", "CTW_Q140_C04", "CTW_Q140_C05",
+    "CTW_Q140_C06", "CTW_Q140_C07", "CTW_Q140_C08", "CTW_Q140_C09"
 ]
 
 MAIN_COLS_2015: list[str] = [
     "PUMFID", "SURVMNTH", "AGEGR10", "SEX", "MARSTAT", "HSDSIZEC", "PRV",
     "LUC_RST", "ACT7DAYS", "WET_110", "NOC1110Y", "WHW_110", "WHWD140C",
-    "CTW_140I", "EHG_ALL", "LAN_01", "INCG1", "WGHT_PER", "DVTDAY"
+    "CTW_140A", "CTW_140B", "CTW_140C", "CTW_140D", "CTW_140E",
+    "CTW_140F", "CTW_140G", "CTW_140H", "CTW_140I",
+    "EHG_ALL", "LAN_01", "INCG1", "WGHT_PER", "DVTDAY"
 ]
 
 MAIN_COLS_2022: list[str] = [
     "PUMFID", "SURVMNTH", "AGEGR10", "GENDER2", "MARSTAT", "HSDSIZEC", "PRV",
-    "LUC_RST", "ACT7DAYC", "WET_120", "NOCLBR_Y", "WHWD140G", "CTW_140I",
+    "LUC_RST", "ACT7DAYC", "WET_120", "NOCLBR_Y", "WHWD140G",
+    "CTW_140A", "CTW_140B", "CTW_140C", "CTW_140D", "CTW_140E", "CTW_140I",
     "ATT_150C", "EDC_10", "LAN_01", "INC_C", "WGHT_PER", "DDAY"
 ]
 

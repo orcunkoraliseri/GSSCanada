@@ -57,7 +57,7 @@ DEMO_VARS: dict[str, dict[str, str | None]] = {
         "2015": "SEX",  "2022": "GENDER2",
     },
     "Marital Status": {
-        "2005": "marstat", "2010": None,   # MARSTH absent from 2010 syntax output
+        "2005": "marstat", "2010": "MARSTAT",
         "2015": "MARSTAT", "2022": "MARSTAT",
     },
     "Household Size": {
@@ -73,26 +73,70 @@ DEMO_VARS: dict[str, dict[str, str | None]] = {
         "2015": "LUC_RST",  "2022": "LUC_RST",
     },
     "Labour Force Activity": {
-        "2005": "LFSGSS",  "2010": None,
+        "2005": "LFSGSS",   "2010": "ACT7DAYS",
         "2015": "ACT7DAYS", "2022": "ACT7DAYC",
     },
     "Employment Type (COW)": {
-        "2005": "WKWE",   "2010": None,
+        "2005": "WKWE",    "2010": "WKWE",
         "2015": "WET_110", "2022": "WET_120",
     },
-    "Hours Worked (grouped)": {
-        "2005": None,       "2010": None,
+    "Hours Worked": {
+        "2005": "WKWEHR_C", "2010": "WKWEHR_C",
         "2015": "WHWD140C", "2022": "WHWD140G",
     },
-    "Place of Work": {
-        "2005": None,       "2010": None,
-        "2015": "CTW_140I", "2022": "CTW_140I",
+    "Commute Mode": {
+        "2005": None,              # Absent from 2005 GSS
+        "2010": "__CTW_2010__",    # derived from CTW_Q140_C01–C09
+        "2015": "__CTW_2015__",    # derived from CTW_140A–I
+        "2022": "__CTW_2022__",    # derived from CTW_140A–I
     },
     "Language at Home": {
-        "2005": "LANCH",  "2010": None,
-        "2015": "LAN_01", "2022": "LAN_01",
+        "2005": "LANCH",   "2010": "LANCH",
+        "2015": "LAN_01",  "2022": "LAN_01",
     },
 }
+
+
+# --- Helper constants / functions for derived Chart 3 variables ---
+
+_HOURS_BINS = [0, 15, 30, 40, 50, 75, 999]
+_HOURS_LABELS = ["<15h", "15–29h", "30–39h", "40–49h", "50–74h", "75h+"]
+
+_CTW_COLS_2010 = [
+    "CTW_Q140_C01", "CTW_Q140_C02", "CTW_Q140_C03", "CTW_Q140_C04",
+    "CTW_Q140_C05", "CTW_Q140_C06", "CTW_Q140_C07", "CTW_Q140_C08", "CTW_Q140_C09",
+]
+_CTW_COLS_2015_2022 = [
+    "CTW_140A", "CTW_140B", "CTW_140C", "CTW_140D",
+    "CTW_140E", "CTW_140F", "CTW_140G", "CTW_140H", "CTW_140I",
+]
+_CTW_LABELS = [
+    "Car (driver)", "Car (passenger)", "Public transit", "Walked",
+    "Bicycle", "Motorcycle", "Taxicab", "Works from home", "Other",
+]
+
+
+def _bin_hours(series: pd.Series) -> pd.Series:
+    """Bin continuous hours-worked values (WKWEHR_C / WHWD140C) into 6 groups."""
+    numeric = pd.to_numeric(series, errors="coerce")
+    valid = numeric[numeric < 96]   # exclude ALL missing/skip codes (96–99, 99.6–99.9)
+    return pd.cut(valid, bins=_HOURS_BINS, labels=_HOURS_LABELS, right=False)
+
+
+def _derive_commute_mode(df: pd.DataFrame, cycle: int) -> pd.Series:
+    """Derive a single 'primary commute mode' categorical from multi-select checkboxes.
+
+    Priority order: Car driver wins over Car passenger, etc.
+    Value 1 = Yes in the raw checkbox columns.
+    """
+    cols = _CTW_COLS_2010 if cycle == 2010 else _CTW_COLS_2015_2022
+    result = pd.Series(pd.NA, index=df.index, dtype="object")
+    # Iterate in reverse so higher-priority modes overwrite lower ones
+    for col, lbl in zip(reversed(cols), reversed(_CTW_LABELS)):
+        if col in df.columns:
+            mask = pd.to_numeric(df[col], errors="coerce") == 1
+            result[mask] = lbl
+    return result
 
 
 class GSSValidator:
@@ -166,7 +210,28 @@ class GSSValidator:
                 if "main" in self.data[year]:
                     df = self.data[year]["main"]
                     col = col_mapping[str(year)]
-                    if col in df.columns:
+                    if col is None:
+                        print(f"  {year} (None): Column missing")
+                        valid = False
+                    elif col.startswith("__CTW_"):
+                        series = _derive_commute_mode(df, year).dropna()
+                        uniques = sorted(series.unique().tolist())
+                        print(f"  {year} (derived commute): {uniques}")
+                    elif category_name == "Hours Worked":
+                        if col not in df.columns:
+                            print(f"  {year} ({col}): Column missing")
+                            valid = False
+                        else:
+                            numeric = pd.to_numeric(df[col], errors="coerce")
+                            v = numeric[numeric < 96]
+                            if not v.empty and (v <= 10).all():
+                                uniques = sorted(v.astype(int).unique().tolist())
+                                print(f"  {year} ({col}, grouped codes): {uniques}")
+                            else:
+                                binned = _bin_hours(df[col]).dropna()
+                                uniques = [str(lbl) for lbl in _HOURS_LABELS if lbl in binned.values]
+                                print(f"  {year} ({col}, binned): {uniques}")
+                    elif col in df.columns:
                         uniques = pd.Series(df[col].dropna().unique()).sort_values().tolist()
                         print(f"  {year} ({col}): {uniques[:10]}{'...' if len(uniques) > 10 else ''}")
                     else:
@@ -367,10 +432,12 @@ class GSSValidator:
                 year = int(cyc)
 
                 mapped_col = col_map.get(cyc)  # None means explicitly N/A
+                is_sentinel = isinstance(mapped_col, str) and mapped_col.startswith("__CTW_")
+                df_main = self.data[year].get("main")
                 data_available = (
                     mapped_col is not None
-                    and "main" in self.data[year]
-                    and mapped_col in self.data[year]["main"].columns
+                    and df_main is not None
+                    and (is_sentinel or mapped_col in df_main.columns)
                 )
 
                 if not data_available:
@@ -386,15 +453,36 @@ class GSSValidator:
                     ax.set_xticks([])
                     ax.set_yticks([])
                 else:
-                    series = (
-                        self.data[year]["main"][mapped_col]
-                        .dropna()
-                        .pipe(lambda s: pd.to_numeric(s, errors="coerce"))
-                        .dropna()
-                        .astype(int)
-                        .value_counts(normalize=True)
-                        .sort_index()
-                    )
+                    # --- resolve the series depending on variable type ---
+                    if is_sentinel:
+                        # Derived commute mode from checkbox columns
+                        raw = _derive_commute_mode(df_main, year).dropna()
+                        series = raw.value_counts(normalize=True).sort_index()
+                    elif var_name == "Hours Worked":
+                        # Bin continuous hours; 2022 WHWD140G uses group codes 1-8
+                        raw_col = df_main[mapped_col]
+                        numeric = pd.to_numeric(raw_col, errors="coerce")
+                        valid = numeric[numeric < 96]   # strip missing/skip codes
+                        if not valid.empty and (valid <= 10).all():
+                            # Pre-grouped (2022 WHWD140G): codes are 1-8, keep as-is
+                            series = (
+                                valid.astype(int)
+                                .value_counts(normalize=True).sort_index()
+                            )
+                        else:
+                            # Continuous (2005, 2010, 2015): bin into hour bands
+                            binned = _bin_hours(raw_col).dropna()
+                            series = binned.value_counts(normalize=True).reindex(_HOURS_LABELS).dropna()
+                    else:
+                        series = (
+                            df_main[mapped_col]
+                            .dropna()
+                            .pipe(lambda s: pd.to_numeric(s, errors="coerce"))
+                            .dropna()
+                            .astype(int)
+                            .value_counts(normalize=True)
+                            .sort_index()
+                        )
                     cats = series.index.tolist()
                     vals = series.values
 
