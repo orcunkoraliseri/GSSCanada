@@ -1,0 +1,659 @@
+"""
+02_harmonizeGSS.py
+
+Step 2 of the Occupancy Modeling Pipeline: Data Harmonization.
+Transforms the four raw Step 1 CSV outputs into a unified, cross-cycle-compatible schema.
+"""
+
+import pathlib
+import pandas as pd
+import openpyxl
+
+INPUT_DIR = "outputs/"
+OUTPUT_DIR = "outputs_step2/"
+
+CYCLES = [2005, 2010, 2015, 2022]
+
+MAIN_RENAME_MAP = {
+    2005: {
+        "RECID": "occID",
+        "AGEGR10": "AGEGRP",
+        "sex": "SEX",
+        "marstat": "MARSTH",
+        "HSDSIZEC": "HHSIZE",
+        "REGION": "PR",
+        "LUC_RST": "CMA",
+        "wght_per": "WGHT_PER",
+        "DVTDAY": "DDAY",
+        "LANCH": "KOL",
+        "LFSGSS": "LFTAG",
+        "INCM": "TOTINC",
+        "INCM": "TOTINC",
+        "WKWEHR_C": "HRSWRK",
+    },
+    2010: {
+        "RECID": "occID",
+        "AGEGR10": "AGEGRP",
+        "SEX": "SEX",
+        "MARSTAT": "MARSTH",
+        "HSDSIZEC": "HHSIZE",
+        "PRV": "PR",
+        "LUC_RST": "CMA",
+        "wght_per": "WGHT_PER",
+        "DVTDAY": "DDAY",
+        "LANCH": "KOL",
+        "LFSGSS": "LFTAG",
+        "INCM": "TOTINC",
+        "WKWEHR_C": "HRSWRK",
+    },
+    2015: {
+        "PUMFID": "occID",
+        "AGEGR10": "AGEGRP",
+        "SEX": "SEX",
+        "MARSTAT": "MARSTH",
+        "HSDSIZEC": "HHSIZE",
+        "PRV": "PR",
+        "LUC_RST": "CMA",
+        "WGHT_PER": "WGHT_PER",
+        "DVTDAY": "DDAY",
+        "LAN_01": "KOL",
+        "ACT7DAYS": "LFTAG",
+        "INCG1": "TOTINC",
+        "WHWD140C": "HRSWRK",
+        "NOC1110Y": "NOCS",
+        "SURVMNTH": "SURVMNTH",
+    },
+    2022: {
+        "PUMFID": "occID",
+        "AGEGR10": "AGEGRP",
+        "GENDER2": "SEX",
+        "MARSTAT": "MARSTH",
+        "HSDSIZEC": "HHSIZE",
+        "PRV": "PR",
+        "LUC_RST": "CMA",
+        "WGHT_PER": "WGHT_PER",
+        "DVTDAY": "DDAY",
+        "LAN_01": "KOL",
+        "ACT7DAYC": "LFTAG",
+        "INC_C": "TOTINC",
+        "WHWD140G": "HRSWRK",
+        "NOCLBR_Y": "NOCS",
+        "ATT_150C": "MODE",
+        "SURVMNTH": "SURVMNTH",
+    },
+}
+
+EPISODE_RENAME_MAP = {
+    2005: {
+        "RECID": "occID",
+        "STARTIME": "start",
+        "ENDTIME": "end",
+    },
+    2010: {
+        "RECID": "occID",
+        "STARTIME": "start",
+        "ENDTIME": "end",
+    },
+    2015: {
+        "PUMFID": "occID",
+        "STARTIME": "start",
+        "ENDTIME": "end",
+    },
+    2022: {
+        "PUMFID": "occID",
+        "INSTANCE": "EPINO",
+        "STARTIME": "start",
+        "ENDTIME": "end",
+    },
+}
+
+SENTINEL_MAP = {
+    "KOL": {7, 8, 9, 98, 99},
+    "TOTINC": {98, 99},
+    "HRSWRK": {96, 97, 98, 99},
+    "NOCS": {96, 97, 98, 99},
+    # LFTAG sentinels are handled inside recode_lftag per-cycle before this map runs.
+    "MARSTH": {8, 9, 99},
+    "MODE": {99},
+}
+
+if __name__ == "__main__":
+    pass
+
+# --- PHASE C: DEMOGRAPHIC RECODES ---
+
+
+def recode_sex(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Rename only processing; ensure values are {1, 2}."""
+    return df
+
+
+def recode_marsth(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Unified values: {1, 2, 3, 4, 5, 6} + NaN."""
+    if cycle in (2005, 2010):
+        df["MARSTH"] = df["MARSTH"].replace({8: pd.NA, 9: pd.NA})
+    elif cycle == 2022:
+        df["MARSTH"] = df["MARSTH"].replace({99: pd.NA})
+    return df
+
+
+def recode_agegrp(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """1-7 unified scheme. No changes needed."""
+    return df
+
+
+def recode_lftag(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Collapse labour-force status to a 3-category scheme comparable across all cycles.
+    Target scheme:
+        1 = Working at paid job (any hours/type; includes vacation, maternity)
+        2 = Going to school (student, no paid employment)
+        3 = Not employed (retired, HH work, looking for work, illness, other)
+
+    2005/2010 LFSGSS:
+        1 (FT employed)       → 1
+        2 (PT employed)       → 1
+        3 (Student+employed)  → 1
+        4 (Student only)      → 2
+        5 (No employment)     → 3  (undifferentiated; covers retired/HH work/other)
+        8/9 (NS/DK)           → NaN
+
+    2015 ACT7DAYS:
+        1 (Working)           → 1
+        2 (Looking for work)  → 3
+        3 (School)            → 2
+        4 (HH work/caring)    → 3
+        5 (Retired)           → 3
+        6 (Other)             → 3
+        97/98/99 (NS/RF/DK)   → NaN
+
+    2022 ACT7DAYC:
+        1 (Working)           → 1
+        2 (School)            → 2
+        3 (HH work/caring)    → 3
+        4 (Retired)           → 3
+        5 (Other)             → 3
+        9 (NS)                → NaN
+    """
+    if cycle in (2005, 2010):
+        df["LFTAG"] = df["LFTAG"].replace({8: pd.NA, 9: pd.NA})
+        df["LFTAG"] = df["LFTAG"].replace({1: 1, 2: 1, 3: 1, 4: 2, 5: 3})
+    elif cycle == 2015:
+        df["LFTAG"] = df["LFTAG"].replace({97: pd.NA, 98: pd.NA, 99: pd.NA})
+        df["LFTAG"] = df["LFTAG"].replace({1: 1, 2: 3, 3: 2, 4: 3, 5: 3, 6: 3})
+    elif cycle == 2022:
+        df["LFTAG"] = df["LFTAG"].replace({9: pd.NA})
+        df["LFTAG"] = df["LFTAG"].replace({1: 1, 2: 2, 3: 3, 4: 3, 5: 3})
+    return df
+
+
+def recode_pr(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """No remap needed. 2005 stays as REGION (1-5), others as PRV (10-59)."""
+    return df
+
+
+def recode_cma(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """LUC_RST 1-3. No remap needed."""
+    return df
+
+
+def recode_hhsize(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Collapse 2005-2015 code 6 into 5."""
+    if cycle in (2005, 2010, 2015):
+        df["HHSIZE"] = df["HHSIZE"].replace({6: 5})
+    return df
+
+
+def recode_hrswrk(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Map continuous hours to discrete brackets matching 2022 (8 bins)."""
+    df["HRSWRK_RAW"] = df["HRSWRK"]
+    if cycle in (2005, 2010, 2015):
+        # Null out sentinel/skip codes BEFORE binning.
+        # Valid range is 0–75 for all three cycles; sentinel codes (97/99.6/99.7/99.8/99.9)
+        # are all > 75 and must not be binned into category 8 (60+ hours).
+        df["HRSWRK"] = pd.to_numeric(df["HRSWRK"], errors="coerce")
+        df["HRSWRK"] = df["HRSWRK"].where(df["HRSWRK"] <= 75)
+        # 1: Under 30, 2: 30-34, 3: 35-39, 4: 40-44, 5: 45-49, 6: 50-54, 7: 55-59, 8: 60+
+        bins = [-1, 29.99, 34.99, 39.99, 44.99, 49.99, 54.99, 59.99, 200]
+        labels = [1, 2, 3, 4, 5, 6, 7, 8]
+        mask = df["HRSWRK"].notna()
+        df.loc[mask, "HRSWRK"] = pd.cut(
+            df.loc[mask, "HRSWRK"], bins=bins, labels=labels, right=True
+        ).astype("float64")
+    elif cycle == 2022:
+        # 2022 already in 1-8 bins. Just ensure it is float.
+        df["HRSWRK"] = pd.to_numeric(df["HRSWRK"], errors="coerce")
+    return df
+
+
+def recode_kol(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Collapse language categories to 3 buckets: 1=English, 2=French, 3=Other/Both/Multiple."""
+    if cycle in (2005, 2010):
+        # LANCH: 1=Eng, 2=Fre, 3=Other, 4/5/6/7=Multiple
+        mapping = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 3, 7: 3}
+        df["KOL"] = df["KOL"].map(mapping)
+    elif cycle in (2015, 2022):
+        # LAN_01: 1=Eng, 2=Fre, 3=Both, 4=Neither
+        mapping = {1: 1, 2: 2, 3: 3, 4: 3}
+        df["KOL"] = df["KOL"].map(mapping)
+    return df
+
+
+def derive_mode(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Hierarchical priority mapping."""
+    if cycle == 2005:
+        df["MODE"] = pd.NA
+    elif cycle == 2010:
+        # Hierarchical derived from CTW checkboxes
+        def get_priority_2010(row):
+            def is_checked(val):
+                return val in (1, 1.0, "1", "1.0", "Yes", "yes", "YES")
+
+            if is_checked(row.get("CTW_Q140_C01")):
+                return 1
+            if is_checked(row.get("CTW_Q140_C02")):
+                return 2
+            if is_checked(row.get("CTW_Q140_C04")) or is_checked(
+                row.get("CTW_Q140_C05")
+            ):
+                return 3
+            if is_checked(row.get("CTW_Q140_C08")):
+                return 4
+            if is_checked(row.get("CTW_Q140_C07")):
+                return 5
+            if (
+                is_checked(row.get("CTW_Q140_C06"))
+                or is_checked(row.get("CTW_Q140_C09"))
+                or is_checked(row.get("CTW_Q140_C03"))
+            ):
+                return 6
+            return pd.NA
+
+        df["MODE"] = df.apply(get_priority_2010, axis=1)
+    elif cycle == 2015:
+        # Hierarchical priority
+        def get_priority_2015(row):
+            def is_checked(val):
+                return val in (1, 1.0, "1", "1.0", "Yes", "yes", "YES")
+
+            if is_checked(row.get("CTW_140A")):
+                return 1
+            if is_checked(row.get("CTW_140B")):
+                return 2
+            if is_checked(row.get("CTW_140C")) or is_checked(row.get("CTW_140D")):
+                return 3
+            if is_checked(row.get("CTW_140G")):
+                return 4
+            if is_checked(row.get("CTW_140F")):
+                return 5
+            if (
+                is_checked(row.get("CTW_140E"))
+                or is_checked(row.get("CTW_140H"))
+                or is_checked(row.get("CTW_140I"))
+            ):
+                return 6
+            return pd.NA
+
+        df["MODE"] = df.apply(get_priority_2015, axis=1)
+    elif cycle == 2022:
+        df["MODE"] = df["MODE"].replace({99: pd.NA})
+    return df
+
+
+def recode_totinc(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Income harmonized to buckets. Discretize CRA values in 2022."""
+    df["TOTINC_RAW"] = df["TOTINC"]
+    if cycle in (2005, 2010):
+        df["TOTINC_SOURCE"] = "SELF"
+        mapping = {
+            1: 1,
+            2: 1,
+            3: 1,
+            4: 1,
+            5: 1,
+            6: 2,
+            7: 2,
+            8: 3,
+            9: 3,
+            10: 4,
+            11: 5,
+            12: 5,
+        }
+        df["TOTINC"] = df["TOTINC"].map(mapping)
+    elif cycle == 2015:
+        df["TOTINC_SOURCE"] = "SELF"
+        mapping = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 5, 7: 5}
+        df["TOTINC"] = df["TOTINC"].map(mapping)
+    elif cycle == 2022:
+        df["TOTINC_SOURCE"] = "CRA"
+    return df
+
+
+# --- PHASE D: ACTIVITY CODE CROSSWALK ---
+
+ACTIVITY_EXCEL = (
+    "references_activityCodes/Data Harmonization_activityCategories - execution.xlsx"
+)
+ACT_SHEET_MAP = {
+    2005: "2005codebook",
+    2010: "2010codebook",
+    2015: "2015codebook",
+    2022: "2022codebook",
+}
+
+ACT_LABELS = {
+    1: "Work & Related",
+    2: "Household Work & Maintenance",
+    3: "Caregiving & Help",
+    4: "Purchasing Goods & Services",
+    5: "Sleep & Naps & Resting",
+    6: "Eating & Drinking",
+    7: "Personal Care",
+    8: "Education",
+    9: "Socializing",
+    10: "Passive Leisure",
+    11: "Active Leisure",
+    12: "Community & Volunteer",
+    13: "Travel",
+    14: "Miscellaneous / Idle",
+}
+
+
+def build_activity_crosswalks(excel_path: str) -> dict[int, dict]:
+    """Build {cycle_year: {raw_code: category_num}} from the Excel."""
+    wb = openpyxl.load_workbook(excel_path, data_only=True)
+    crosswalks = {}
+    for cycle_year, sheet_name in ACT_SHEET_MAP.items():
+        if sheet_name not in wb.sheetnames:
+            continue
+        ws = wb[sheet_name]
+        lookup = {}
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row[0] is None or row[1] is None or type(row[0]) == str:
+                continue
+            category = int(row[0])
+            raw_str = str(row[1]).replace(",", ".")
+            raw_code = float(raw_str) if cycle_year == 2010 else int(float(raw_str))
+            lookup[raw_code] = category
+            if cycle_year == 2010:
+                lookup[int(raw_code)] = category
+        crosswalks[cycle_year] = lookup
+    return crosswalks
+
+
+def apply_activity_crosswalk(
+    df: pd.DataFrame, cycle: int, crosswalk: dict
+) -> pd.DataFrame:
+    """Map raw activity codes to 14-category scheme."""
+    raw_col = "ACTCODE" if cycle in (2005, 2010) else "TUI_01"
+    if raw_col not in df.columns:
+        return df
+
+    df["occACT_raw"] = df[raw_col]
+
+    if cycle == 2010:
+        df["occACT"] = (
+            pd.to_numeric(df[raw_col], errors="coerce").astype(float).map(crosswalk)
+        )
+        mask = df["occACT"].isna() & df[raw_col].notna()
+        if mask.any():
+            fallback_map = (
+                pd.to_numeric(df.loc[mask, raw_col], errors="coerce")
+                .fillna(-1)
+                .astype(int)
+                .map(crosswalk)
+            )
+            df.loc[mask, "occACT"] = fallback_map
+    else:
+        df["occACT"] = pd.to_numeric(df[raw_col], errors="coerce").map(crosswalk)
+
+    if cycle in (2005, 2010):
+        df.loc[df[raw_col] == 995, "occACT"] = 10
+    elif cycle == 2015:
+        df.loc[df[raw_col] == 95, "occACT"] = 14
+    elif cycle == 2022:
+        df.loc[df[raw_col] == 9999, "occACT"] = 14
+
+    df["occACT_label"] = df["occACT"].map(ACT_LABELS)
+    return df
+
+
+# --- PHASE E: PRESENCE & CO-PRESENCE ---
+
+PRESENCE_EXCEL = (
+    "references_Pre_coPre_Codes/Data Harmonization_presenceCategories - execution.xlsx"
+)
+PRES_SHEET_MAP = {
+    2005: "2005-2010codebook",
+    2010: "2005-2010codebook",
+    2015: "2015codebook",
+    2022: "2022codebook",
+}
+
+
+def build_presence_crosswalks(excel_path: str) -> dict[int, dict]:
+    wb = openpyxl.load_workbook(excel_path, data_only=True)
+    crosswalks = {}
+    for cycle_year, sheet_name in PRES_SHEET_MAP.items():
+        if sheet_name not in wb.sheetnames:
+            continue
+        ws = wb[sheet_name]
+        lookup = {}
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row[0] is None or row[1] is None or type(row[0]) == str:
+                continue
+            unified = int(row[0])
+            raw_code = int(float(row[1]))
+            lookup[raw_code] = unified
+        crosswalks[cycle_year] = lookup
+    return crosswalks
+
+
+def apply_presence_crosswalk(
+    df: pd.DataFrame, cycle: int, crosswalk: dict
+) -> pd.DataFrame:
+    raw_col = "PLACE" if cycle in (2005, 2010) else "LOCATION"
+    if raw_col not in df.columns:
+        return df
+    df["occPRE_raw"] = df[raw_col]
+    df["occPRE"] = pd.to_numeric(df[raw_col], errors="coerce").map(crosswalk)
+    df["AT_HOME"] = (df["occPRE"] == 1).astype(int)
+    return df
+
+
+COPRESENCE_MAP = {
+    2005: {
+        "ALONE": "Alone",
+        "SPOUSE": "Spouse",
+        "CHILDHSD": "Children",
+        "FRIENDS": "friends",
+        "OTHFAM": "otherHHs",
+        "OTHERS": "others",
+        "PARHSD": "parents",
+        "MEMBHSD": "otherInFAMs",
+    },
+    2010: {
+        "ALONE": "Alone",
+        "SPOUSE": "Spouse",
+        "CHILDHSD": "Children",
+        "FRIENDS": "friends",
+        "OTHFAM": "otherHHs",
+        "OTHERS": "others",
+        "PARHSD": "parents",
+        "MEMBHSD": "otherInFAMs",
+    },
+    2015: {
+        "TUI_06A": "Alone",
+        "TUI_06B": "Spouse",
+        "TUI_06C": "Children",
+        "TUI_06H": "friends",
+        "TUI_06G": "otherHHs",
+        "TUI_06J": "others",
+        "TUI_06E": "parents",
+        "TUI_06D": "otherInFAMs",
+    },
+    2022: {
+        "TUI_06A": "Alone",
+        "TUI_06B": "Spouse",
+        "TUI_06C": "Children",
+        "TUI_06H": "friends",
+        "TUI_06G": "otherHHs",
+        "TUI_06J": "others",
+        "TUI_06E": "parents",
+        "TUI_06D": "otherInFAMs",
+    },
+}
+
+
+def harmonize_copresence(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    rename_map = COPRESENCE_MAP.get(cycle, {})
+    df = df.rename(columns=rename_map)
+    cols_to_drop = [
+        c
+        for c in df.columns
+        if c.startswith(("NHSD", "TUI_06")) and c not in rename_map.values()
+    ]
+    df = df.drop(columns=cols_to_drop, errors="ignore")
+
+    unified_cols = list(rename_map.values())
+    for col in unified_cols:
+        if col in df.columns:
+            df[col] = df[col].replace({7: pd.NA, 8: pd.NA, 9: pd.NA})
+    return df
+
+
+# --- PHASE F: METADATA & DIARY QA ---
+
+
+def assign_metadata(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    df["CYCLE_YEAR"] = cycle
+    df["SURVYEAR"] = cycle
+    if cycle in (2005, 2010):
+        df["SURVMNTH"] = pd.NA
+    df["COLLECT_MODE"] = 1 if cycle == 2022 else 0
+    df["TUI_10_AVAIL"] = 1 if cycle in (2015, 2022) else 0
+    df["BS_TYPE"] = "MEAN_BS" if cycle in (2005, 2010) else "STANDARD_BS"
+    return df
+
+
+def convert_hhmm_to_minutes(hhmm_series: pd.Series) -> pd.Series:
+    """Convert HHMM integer (e.g., 400 to 240)."""
+    hh = hhmm_series // 100
+    mm = hhmm_series % 100
+    return hh * 60 + mm
+
+
+def check_diary_closure(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    if "start" not in df.columns or "end" not in df.columns:
+        df["DIARY_VALID"] = 0
+        return df
+
+    start_raw = pd.to_numeric(df["start"], errors="coerce")
+    end_raw = pd.to_numeric(df["end"], errors="coerce")
+
+    if cycle in (2005, 2010):
+        # The diary tracks roughly 4:00 AM to 4:00 AM.
+        # But respondents might report sleeping from e.g. 23:30 to 07:30 (next day wakes).
+        # We must cap the final episode's end time at 4:00 (400) to measure the strict 24h block.
+        last_mask = ~df.duplicated(subset=["occID"], keep="last")
+        # If the last episode extends past 4AM on the NEXT day (end_raw > 400 but started the night before)
+        # Note: In GSS, 4:00 to 23:59 are day 1, 0:00 to 3:59 are day 2.
+        # So "400" here means 4:00 AM. Anything from 4:01 to 23:59 represents the previous/current day.
+        # Usually, wake-up times like 600 or 730 on the last row mean they slept past the 4AM barrier.
+        cap_mask = (
+            last_mask & (end_raw > 400) & (end_raw < 1200)
+        )  # Only cap morning wake-ups
+        end_raw = end_raw.copy()
+        end_raw.loc[cap_mask] = 400
+
+        # Also cap ANY very first episode starting before 4:00 AM
+        first_mask = ~df.duplicated(subset=["occID"], keep="first")
+        cap_start_mask = first_mask & (start_raw < 400)
+        start_raw = start_raw.copy()
+        start_raw.loc[cap_start_mask] = 400
+
+    start_min = convert_hhmm_to_minutes(start_raw)
+    end_min = convert_hhmm_to_minutes(end_raw)
+
+    dur = end_min - start_min
+    dur[dur < 0] += 1440  # Wrap midnight
+
+    df["duration"] = dur
+
+    totals = df.groupby("occID")["duration"].sum()
+    valid_ids = totals[totals == 1440].index
+
+    df["DIARY_VALID"] = df["occID"].isin(valid_ids).astype(int)
+    return df
+
+
+# --- PHASE G: ORCHESTRATOR ---
+
+
+def harmonize_main(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    rename_dict = MAIN_RENAME_MAP.get(cycle, {})
+    df = df.rename(columns=rename_dict)
+
+    df = recode_sex(df, cycle)
+    df = recode_marsth(df, cycle)
+    df = recode_agegrp(df, cycle)
+    df = recode_lftag(df, cycle)
+    df = recode_pr(df, cycle)
+    df = recode_cma(df, cycle)
+    df = recode_hhsize(df, cycle)
+    df = recode_hrswrk(df, cycle)
+    df = recode_kol(df, cycle)
+    df = derive_mode(df, cycle)
+    df = recode_totinc(df, cycle)
+
+    for col, sentinels in SENTINEL_MAP.items():
+        if col in df.columns:
+            df[col] = df[col].replace(list(sentinels), pd.NA)
+
+    df = assign_metadata(df, cycle)
+    return df
+
+
+def harmonize_episode(
+    df: pd.DataFrame, cycle: int, act_crosswalk: dict, pre_crosswalk: dict
+) -> pd.DataFrame:
+    rename_dict = EPISODE_RENAME_MAP.get(cycle, {})
+    df = df.rename(columns=rename_dict)
+
+    df = apply_activity_crosswalk(df, cycle, act_crosswalk)
+    df = apply_presence_crosswalk(df, cycle, pre_crosswalk)
+    df = harmonize_copresence(df, cycle)
+    df = check_diary_closure(df, cycle)
+
+    df["CYCLE_YEAR"] = cycle
+    return df
+
+
+def harmonize_all():
+    pathlib.Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+
+    act_crosswalks = build_activity_crosswalks(ACTIVITY_EXCEL)
+    pre_crosswalks = build_presence_crosswalks(PRESENCE_EXCEL)
+
+    for cycle in CYCLES:
+        print(f"--- Harmonizing {cycle} ---")
+        main_path = pathlib.Path(INPUT_DIR) / f"main_{cycle}.csv"
+        epi_path = pathlib.Path(INPUT_DIR) / f"episode_{cycle}.csv"
+
+        main_df = pd.read_csv(main_path, low_memory=False)
+        epi_df = pd.read_csv(epi_path, low_memory=False)
+
+        h_main = harmonize_main(main_df, cycle)
+        h_epi = harmonize_episode(
+            epi_df, cycle, act_crosswalks.get(cycle, {}), pre_crosswalks.get(cycle, {})
+        )
+
+        out_main = pathlib.Path(OUTPUT_DIR) / f"main_{cycle}.csv"
+        out_epi = pathlib.Path(OUTPUT_DIR) / f"episode_{cycle}.csv"
+
+        h_main.to_csv(out_main, index=False)
+        h_epi.to_csv(out_epi, index=False)
+        print(f"[{cycle}] Main: {h_main.shape}, Epi: {h_epi.shape}")
+
+
+if __name__ == "__main__":
+    harmonize_all()
