@@ -52,3 +52,7 @@ eSim_tests/benchmark_results/
 
 # Pipeline Phase 1 & 2 Outputs
 2J_docs_occ_nTemp/outputs/
+
+# IDE and Large Outputs
+.idea/
+2J_docs_occ_nTemp/outputs_step3/

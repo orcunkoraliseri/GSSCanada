@@ -160,12 +160,12 @@ SENTINEL_MAP = {
 
 3. **`recode_agegrp(df, cycle)`** — All cycles use identical 1–7 coding. **No recoding needed** — just rename.
 
-4. **`recode_lftag(df, cycle)`**:
+4. **`recode_lftag(df, cycle)`** ✅ Collapse to 5-cat:
    - 2005/2010 `LFSGSS`: 1–5 + sentinels 8, 9 → map 8/9 → NaN
    - 2010 also has `ACT7DAYS`: 1–6 + sentinels 8, 9
-   - 2015 `ACT7DAYS`: 1–6 + sentinels 97, 98, 99 → map 97/98/99 → NaN
+   - 2015 `ACT7DAYS`: 1–6, sentinels 97/98/99 → NaN; **collapse cat 6 → nearest 1–5**
    - 2022 `ACT7DAYC`: 1–5 + sentinel 9 → map 9 → NaN
-   - Unified: 5-category standard (1=Employed at work, 2=Employed absent, 3=Unemployed, 4=Not in LF, 5=Not stated→NaN)
+   - Unified: **5-category** (1=Employed at work, 2=Employed absent, 3=Unemployed, 4=Not in LF, 5=Not stated→NaN)
 
 5. **`recode_pr(df, cycle)`**:
    - 2005: only `REGION` (1–5: Atlantic/Quebec/Ontario/Prairies/BC)
@@ -175,29 +175,31 @@ SENTINEL_MAP = {
 
 6. **`recode_cma(df, cycle)`** — All cycles already use `LUC_RST` with codes 1–3. **Rename only**.
 
-7. **`recode_hhsize(df, cycle)`** — 2005/2010/2015 use 1–6, 2022 uses 1–5 (likely 5=5+). Check if 2005–2015 code 6 is "6+" and collapse to match 2022 if needed.
+7. **`recode_hhsize(df, cycle)`** ✅ Collapse to 5-cat: 2005–2015 remap code 6→5 (merge "6+" into "5+"). 2022 already 1–5. Unified: {1, 2, 3, 4, 5="5+"}.
 
 8. **`recode_cow(df, cycle)`** — Map sentinels 97/98/99 → NaN. Source: `WKWE`, `WET_110`, `WET_120`.
 
-9. **`recode_hrswrk(df, cycle)`** — Handle three formats:
-   - 2005/2010 `WKWEHR_C`: continuous hours → bin or keep continuous + map sentinels 97/98/99 → NaN
-   - 2015 `WHWD140C`: check format from data, map sentinels → NaN
-   - 2022 `WHWD140G`: has codes 96, 99 as sentinels → NaN
+9. **`recode_hrswrk(df, cycle)`** ✅ Categorical bins:
+   - 2005/2010 `WKWEHR_C`: continuous hours → sentinels 97/98/99 → NaN → **bin to brackets**
+   - 2015 `WHWD140C`: sentinels → NaN → **bin to brackets**
+   - 2022 `WHWD140G`: sentinels {96, 99} → NaN → **bin to brackets**
+   - Preserve original continuous as `HRSWRK_RAW`
 
 10. **`recode_attsch(df, cycle)`** — Map sentinels 98/99 → NaN. Source: `EDU10`, `EHG_ALL`, `EDC_10`.
 
 11. **`recode_kol(df, cycle)`** — Map sentinels 98/99 → NaN. Source: `LANCH`, `LAN_01`.
 
-12. **`derive_mode(df, cycle)`** — Commuting mode:
+12. **`derive_mode(df, cycle)`** ✅ Hierarchical priority:
     - 2005: **no commute mode columns** → set `MODE = NaN`
-    - 2010: derive from `CTW_Q140_C01–C09` multi-select checkboxes (priority-based)
-    - 2015: derive from `CTW_140A–I` multi-select checkboxes (priority-based)
+    - 2010: derive from `CTW_Q140_C01–C09` multi-select (**hierarchical**: car driver > car passenger > transit > bicycle > walk > other)
+    - 2015: derive from `CTW_140A–I` multi-select (**same hierarchical priority**)
     - 2022: use `ATT_150C` directly; map sentinel 99 → NaN
 
-13. **`recode_totinc(df, cycle)`**:
+13. **`recode_totinc(df, cycle)`** ✅ Discretize CRA:
     - 2005/2010 `INCM`: categorical brackets + sentinels 98/99 → NaN
     - 2015 `INCG1`: categorical brackets
-    - 2022 `INC_C`: CRA-linked continuous → discretize into matching brackets
+    - 2022 `INC_C`: CRA-linked continuous → **discretize via `pd.cut()` to matching 2005–2015 bracket boundaries**
+    - Preserve 2022 original as `TOTINC_RAW`
     - Append `TOTINC_SOURCE` column
 
 ##### Activity Code Crosswalk (Critical)
