@@ -275,15 +275,22 @@ def filter_invalid_diaries(merged: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataF
 
 # ── Phase E — Temporal Feature Derivation ─────────────────────────────────────
 
-# GSS DDAY encoding: 1=Sunday, 2=Monday, ..., 7=Saturday
+# DDAY Encoding to 3-category stratum ({1=Weekday, 2=Saturday, 3=Sunday})
+# 2005/2010/2015 already use this in DDAY. 2022 uses 1=Sunday...7=Saturday.
+_DDAY_STRATAMAP_2022: dict[int, int] = {
+    1: 3,  # Sunday   -> 3
+    2: 1,  # Monday   -> 1
+    3: 1,  # Tuesday  -> 1
+    4: 1,  # Wednesday-> 1
+    5: 1,  # Thursday -> 1
+    6: 1,  # Friday   -> 1
+    7: 2,  # Saturday -> 2
+}
+
 _DAYTYPE_MAP: dict[int, str] = {
-    1: "Weekend",
-    2: "Weekday",
-    3: "Weekday",
-    4: "Weekday",
-    5: "Weekday",
-    6: "Weekday",
-    7: "Weekend",
+    1: "Weekday",
+    2: "Weekend",  # Saturday
+    3: "Weekend",  # Sunday
 }
 
 
@@ -329,8 +336,14 @@ def derive_temporal_features(merged: pd.DataFrame) -> pd.DataFrame:
 
     df = merged.copy()
 
-    # DAYTYPE: Weekday / Weekend
-    df["DAYTYPE"] = df["DDAY"].map(_DAYTYPE_MAP)
+    # DDAY_STRATA: 3-category day-of-week stratum (1=Weekday, 2=Saturday, 3=Sunday)
+    # 2005/2010/2015 already hold this logic in DDAY. 2022 holds 1-7 and must be mapped.
+    mask_2022 = df["CYCLE_YEAR"] == 2022
+    df["DDAY_STRATA"] = df["DDAY"].astype(int)
+    df.loc[mask_2022, "DDAY_STRATA"] = df.loc[mask_2022, "DDAY"].map(_DDAY_STRATAMAP_2022)
+
+    # DAYTYPE: Weekday / Weekend derived from the 3-category DDAY_STRATA
+    df["DAYTYPE"] = df["DDAY_STRATA"].map(_DAYTYPE_MAP)
 
     # Minutes from midnight for episode start
     df["startMin"] = _parse_hhmm_to_minutes(df["start"])
@@ -340,9 +353,6 @@ def derive_temporal_features(merged: pd.DataFrame) -> pd.DataFrame:
 
     # TIMESLOT_10: HETUS 10-min slot (1–144, 4 AM origin)
     df["TIMESLOT_10"] = _hhmm_to_hetus_slot(df["start"])
-
-    # DDAY_STRATA: day-of-week stratum (1–7)
-    df["DDAY_STRATA"] = df["DDAY"].astype(int)
 
     derived_cols = ["DAYTYPE", "startMin", "HOUR_OF_DAY", "TIMESLOT_10", "DDAY_STRATA"]
     print(f"  Derived columns added: {derived_cols}")

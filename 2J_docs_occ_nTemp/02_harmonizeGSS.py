@@ -417,6 +417,24 @@ def apply_activity_crosswalk(
     return df
 
 
+def validate_activity_crosswalk(
+    df: pd.DataFrame, cycle: int, raw_col: str
+) -> None:
+    """Log unmapped raw activity codes with their frequencies."""
+    nan_mask = df["occACT"].isna() & df[raw_col].notna()
+    if not nan_mask.any():
+        print(f"  [{cycle}] All activity codes mapped. ✅")
+        return
+
+    unmapped = df.loc[nan_mask, raw_col].value_counts()
+    n_eps = nan_mask.sum()
+    n_resp = df.loc[nan_mask, "occID"].nunique()
+    print(f"  [{cycle}] ⚠️  {n_eps} unmapped episodes in {n_resp} respondents:")
+    for code, count in unmapped.items():
+        pct = count / len(df) * 100
+        print(f"    {raw_col}={code}: {count} episodes ({pct:.2f}%)")
+
+
 # --- PHASE E: PRESENCE & CO-PRESENCE ---
 
 PRESENCE_EXCEL = (
@@ -620,6 +638,7 @@ def harmonize_episode(
     df = df.rename(columns=rename_dict)
 
     df = apply_activity_crosswalk(df, cycle, act_crosswalk)
+    validate_activity_crosswalk(df, cycle, raw_col="ACTCODE" if cycle in (2005, 2010) else "TUI_01")
     df = apply_presence_crosswalk(df, cycle, pre_crosswalk)
     df = harmonize_copresence(df, cycle)
     df = check_diary_closure(df, cycle)

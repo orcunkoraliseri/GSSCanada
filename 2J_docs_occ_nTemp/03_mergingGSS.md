@@ -306,23 +306,20 @@ def episodes_to_144_slots(respondent_episodes):
         end_hhmm = ep["end"]
         act = ep["occACT"]
 
-        # Convert HHMM to minutes from midnight
         start_min = (start_hhmm // 100) * 60 + (start_hhmm % 100)
-        end_min = (end_hhmm // 100) * 60 + (end_hhmm % 100)
 
-        # Handle midnight wrap (e.g., 2350 → 0400)
-        if end_min <= start_min:
-            end_min += 1440
-
-        # Shift to 4:00 AM origin
+        # Shift start to 4:00 AM origin (HETUS standard)
         start_shifted = (start_min - 240) % 1440
-        end_shifted = (end_min - 240) % 1440
-        if end_shifted == 0:
-            end_shifted = 1440
+
+        # Duration-based end: avoids double-wrap errors for episodes crossing
+        # both midnight AND the 4:00 AM diary boundary (e.g., sleep 23:35->04:00).
+        # end HHMM cannot be used directly because two consecutive modulo operations
+        # collapse the shifted end time to a value less than start_shifted.
+        end_shifted = min(start_shifted + ep["duration"], 1440)
 
         # Assign activity to each 10-min slot covered
         slot_start = start_shifted // 10  # 0-indexed
-        slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
+        slot_end = (end_shifted - 1) // 10 + 1 if end_shifted > 0 else 0
 
         for s in range(slot_start, min(slot_end, 144)):
             slot_key = f"slot_{s+1:03d}"  # 1-indexed, zero-padded
@@ -499,7 +496,7 @@ Respondent IDs (occID) are assigned independently per survey cycle. The same int
 If an episode's start/end times don't perfectly tile the 10-minute grid, some slots may be assigned by the episode that *starts before* the slot boundary. The algorithm assigns based on which episode covers the slot's start time. This is standard HETUS practice.
 
 ### 4. Duration Column vs. HHMM Calculation
-The `duration` column from Step 2 should equal `(end - start)` accounting for midnight wrap. Use `duration` as a cross-check but compute slots from `start`/`end` times directly for accuracy.
+Duration is used as the **primary** input for end-slot computation, not `end` HHMM. The `end` HHMM column is not read during slot assignment. This decision was made to avoid double-wrap errors for episodes that cross both midnight (end < start in HHMM space) and the 4:00 AM diary boundary simultaneously. Using `end_shifted = min(start_shifted + duration, 1440)` is both correct and more robust.
 
 ---
 

@@ -41,7 +41,7 @@
 
 ---
 
-## 🔴 RED FLAG 2 — DDAY Encoding Not Verified Against GSS Codebook
+## ✅ RED FLAG 2 — DDAY Encoding Not Verified Against GSS Codebook (RESOLVED)
 
 **Assumption in plan**:
 ```
@@ -49,76 +49,48 @@ DDAY encoding: 1=Sunday, 2=Monday, 3=Tuesday, 4=Wednesday, 5=Thursday, 6=Friday,
 → DAYTYPE: {1,7}=Weekend, {2,3,4,5,6}=Weekday
 ```
 
-**Verification status**: Not checked. The encoding is hardcoded in `03_mergingGSS.py` without reference to actual GSS codebook values.
+**Verification status**: **RESOLVED**. The 1-7 encoding assumption is correct *in theory*, but the 2005/2010/2015 main files did **not contain the 7-day variable (`DDAY`)**, they contained the 3-day variable (`DVTDAY`), which was renamed to `DDAY` by Step 2.
 
-**Risk**: Different cycles may use different DDAY encodings. For example:
-- 2005/2010: might use 1=Monday (ISO standard)
-- 2015/2022: might use 1=Sunday (US convention)
+**Root cause**: For 81.7% of the dataset (cycles 05/10/15), Step 3's 7-day `DAYTYPE` mapping was applied to a 3-category column `{1=Weekday, 2=Saturday, 3=Sunday}`. It effectively labelled every single Weekday diary as "Weekend", and every Weekend diary as "Weekday".
 
-If the encoding differs by cycle, then DAYTYPE labels are systematically flipped per cycle, producing weekday schedules labeled Weekend and vice versa.
+**The Fix**: In `03_mergingGSS.py`, 2022's true 7-category `DDAY` is now collapsed into the consistent 3-category format (`DDAY_STRATA={1: Weekday, 2: Saturday, 3: Sunday}`) matching the older cycles. Then this is mapped to Weekday vs Weekend.
 
-**Impact chain**:
-1. DAYTYPE is used in Phase E to condition Step 4's Conditional Transformer
-2. Step 4 generates synthetic diaries stratified by DAYTYPE
-3. Step 6 uses DAYTYPE for BEM archetype assignment and schedule stratification
-4. Step 7 generates hourly occupancy profiles stratified by weekday/weekend
-5. **Wrong DAYTYPE → wrong BEM occupancy profiles → incorrect energy demand predictions**
-
-This is a methodological error with direct downstream consequences.
-
-**Investigation Required**:
-- [ ] Check GSS Cycle 19 (2005) codebook for `DVTDAY` or `DDAY` encoding
-- [ ] Check GSS Cycle 24 (2010) codebook for the same
-- [ ] Check GSS Cycle 29 (2015) codebook
-- [ ] Check GSS Cycle GSSP (2022) codebook
-- [ ] Cross-validate with one known survey date: pick one respondent with a known interview date, check `DDAY` value, compute actual day of week, verify match
-
-**Action**:
-- [ ] Create a verification script: load raw GSS files, inspect DDAY distributions, compare to expected (should have ~14% Sunday, ~14% Monday, … per cycle if valid)
-- [ ] If encoding differs by cycle, add a cycle-aware DDAY_REMAP in Step 3
-- [ ] Document verified encoding in `03_mergingGSS.md` as a known-good assumption
+**Docs Link**: See `03_mergingGSS_RF2_action_plan.md` (in the `docs_debug` folder) for full explanation and verified implementation.
 
 ---
 
-## 🟠 RED FLAG 3 — 1,988 Respondents (14.8% of 2022) Had NaN Activity Codes
+## ✅ RED FLAG 3 — 1,988 Respondents (14.8% of 2022) Had NaN Activity Codes (RESOLVED)
 
 **Symptom**: During Phase F HETUS conversion, 1,988 respondents had at least one episode with `occACT=NaN` (unmapped activity code).
 
-**Breakdown by cycle**:
-| Cycle | NaN respondents | % of cycle | Cause |
-|-------|-----------------|-----------|-------|
+**Breakdown by cycle (Before Fix)**:
+| Cycle | NaN respondents | % of cycle | Root Cause |
+|-------|-----------------|-----------|------------|
 | 2005 | 0 | 0.0% | ✓ |
-| 2010 | 162 | 1.1% | Step 2 crosswalk gap (minor) |
+| 2010 | 325 | 2.1% | Missing code 2, 712, 713 |
 | 2015 | 0 | 0.0% | ✓ |
-| 2022 | 1,826 | **14.8%** | 🚨 **HIGH** |
+| 2022 | 1,829 | 14.8% | Missing TUI_01 codes 1105, 1303, 1304 |
 
-**What happened**: Forward-fill (ffill) was applied row-wise within each respondent's 144-slot sequence, carrying the preceding valid activity forward across the NaN slot. This is standard time-use practice for brief gaps but was applied silently without investigation.
+**Post-Fix Assessment (Currently in Data)**:
+| Cycle | NaN respondents | % of cycle | Status |
+|-------|-----------------|-----------|--------|
+| 2005 | 0 | **0.0%** | ✅ Clean |
+| 2010 | 0 | **0.0%** | ✅ Clean |
+| 2015 | 0 | **0.0%** | ✅ Clean |
+| 2022 | 0 | **0.0%** | ✅ Clean |
 
-**Root cause in Step 2**: The activity code crosswalks (TUI_01 → 14-category schema) had incomplete coverage for 2022. Specifically:
-- 2022 TUI_01 has 121 unique codes (hierarchical structure: 101, 102, 231, …)
-- Crosswalk maps only a subset to the 14-category flat schema
-- **~1,826 respondents × ~16 episodes = ~29,000 unmapped episodes** (out of ~168,000 = **17.3%**)
+**The Fix**:
+- The missing raw GSS activity codes were correctly identified from codebooks and incorporated into the `Data Harmonization_activityCategories - execution.xlsx` Excel file.
+  - **2022 (Added)**: 1105 (Arts, hobbies) -> 11 Active Leisure; 1303 (Doing nothing) -> 14 Miscellaneous / Idle; 1304 (Other activity) -> 14 Miscellaneous / Idle.
+  - **2010 (Added)**: 2 -> 1 Work-related; 712, 713 -> 10 Passive Leisure.
+- In `02_harmonizeGSS.py`, a `validate_activity_crosswalk()` function was implemented to strictly prevent unmapped raw activity codes from failing silently during the merge in the future.
+- Steps 2 and 3 were subsequently re-run cleanly (`NaN-slot respondents before ffill: 0, after: 0`).
 
-**Impact**:
-- 14.8% of 2022 respondents have synthetic activity codes (ffill'd) rather than observed. This biases the 2022 activity distribution and distorts Step 4's training data.
-- The ffill silently assumes that activity codes are "sticky" across brief gaps, which is false for activity boundaries (e.g., sleep→wake transitions).
-
-**Investigation Required**:
-- [ ] Extract the 1,826 bad respondents' episode data from Step 3's merged CSV
-- [ ] Identify which specific 2022 `TUI_01` codes failed the crosswalk
-- [ ] Check the Step 2 activity crosswalk Excel file (`references_activityCodes/Data Harmonization_activityCategories - execution.xlsx`) for coverage gaps
-- [ ] Cross-reference with Statistics Canada's 2022 GSSP activity code documentation
-
-**Action**:
-- [ ] Update `02_harmonizeGSS.py` to add validation: log unmapped TUI_01 codes with their frequencies per cycle
-- [ ] Extend the 2022 crosswalk in the Excel file to cover all 121 codes (currently incomplete)
-- [ ] Re-run Step 2 harmonization with complete crosswalk
-- [ ] Re-run Step 3 (will reduce NaN respondents to near 0)
-- [ ] Document in validation report: percent of episodes successfully mapped per cycle per activity code
+**Docs Link**: See `03_mergingGSS_RF3_action_plan.md` (in the `docs_debug` folder).
 
 ---
 
-## 🟠 RED FLAG 4 — Plan Pseudocode Is Contradicted by Actual Slot Algorithm
+## ✅ RED FLAG 4 — Plan Pseudocode Is Contradicted by Actual Slot Algorithm (RESOLVED)
 
 **Plan statement (Edge Case #4)**:
 > "Use `duration` as a cross-check but compute slots from `start`/`end` times directly for accuracy."
@@ -143,25 +115,12 @@ slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
 - Shift to 4 AM: end_shifted = (1890 - 240) % 1440 = 210 < start_shifted = 1175 ❌
 - Result: empty slot range → missing slots 119–144
 
-**Fix applied**: switched to `end_shifted = min(start_shifted + duration, 1440)`, which is **duration-based**, not end_HHMM-based.
+**Fix applied**: The Python code was correctly written to use `end_shifted = min(start_shifted + duration, 1440)`. This handles all midnight boundaries safely because the diary perfectly spans exactly 1440 minutes, meaning episodes that cross midnight just continue filling slots without wrap errors.
 
-**Actual code (03_mergingGSS.py, lines 385–390)**:
-```python
-# Compute end using duration -- avoids double-wrap errors from
-# end HHMM times that cross both midnight and the 4 AM boundary.
-# Cap at 1440 (diary ends at 3:59 AM next day).
-end_shifted = min(start_shifted + dur, 1440)
-```
-
-**Why this matters**:
-- The plan is **wrong** as written. Anyone reading it would implement the buggy version.
-- The actual implementation (duration-based) is correct and more robust.
-- But the plan and code are now **out of sync**, creating future maintenance confusion.
-
-**Action**:
-- [ ] Update `03_mergingGSS.md` Phase F2 pseudocode to use the duration-based approach
-- [ ] Update Edge Case #4 to explain why duration-based is superior
-- [ ] Add a note in Phase F2: "This approach handles episodes crossing the midnight/4AM boundary without risk of double-wrap errors."
+**Action Taken**:
+- Updated `03_mergingGSS.md` Phase F2 pseudocode to display the true duration-based implementation.
+- Updated Edge Case #4 text to clearly state why duration-based slot end computation is robust and avoids double-wrap edge cases.
+- **Docs Link**: See `03_mergingGSS_RF4_action_plan.md` (in the `docs_debug` folder).
 
 ---
 
@@ -221,9 +180,9 @@ end_shifted = min(start_shifted + dur, 1440)
 | # | Flag | Severity | Status | Blocker |
 |---|------|----------|--------|---------|
 | 1 | 2022 sample 27% smaller than expected | ✅ Resolved | Correct PUMF size; docs need updating | No |
-| 2 | DDAY encoding unverified | 🔴 Critical | Requires codebook review | Yes — affects all downstream stratification |
-| 3 | 14.8% 2022 NaN occACT | 🟠 Important | Requires Step 2 fix | Yes — affects 2022 data quality |
-| 4 | Plan pseudocode wrong | 🟠 Important | Requires plan update | No — code is correct |
+| 2 | DDAY encoding unverified | ✅ Resolved | DVTDAY mismatch fixed in Step 3 | No |
+| 3 | 14.8% 2022 NaN occACT | ✅ Resolved | Complete mapping fixed in Step 2 Excel crosswalk | No |
+| 4 | Plan pseudocode wrong | ✅ Resolved | Documentation corrected | No |
 | 5 | COW variable missing | 🟡 Notable | Requires Step 2 fix or Step 3 addition | Yes — affects model conditioning |
 | 6 | Size estimates off | 🟡 Minor | Requires plan update | No |
 
@@ -231,17 +190,17 @@ end_shifted = min(start_shifted + dur, 1440)
 
 ## Recommended Next Steps
 
-1. **Before proceeding to Step 4**, resolve flags 2 and 3:
-   - [ ] Verify DDAY encoding per cycle (codebook + data validation)
-   - [ ] Fix 2022 activity code crosswalk in Step 2, re-run harmonization
+1. **Before proceeding to Step 4**:
+   - [x] ~~Verify DDAY encoding per cycle (codebook + data validation)~~ — Resolved in `03_mergingGSS_RF2_action_plan.md`
+   - [x] ~~Fix 2022 activity code crosswalk in Step 2, re-run harmonization~~ — Resolved in `03_mergingGSS_RF3_action_plan.md`
    - [x] ~~Investigate 2022 sample shortfall~~ — Resolved: 12,336 is the correct published PUMF size
 
 2. **Update Step 2 or Step 3** (flag 5):
    - [ ] Add COW harmonization (Step 2 preferred) or derivation (Step 3 fallback)
    - [ ] Re-export merged/HETUS files with COW included
 
-3. **Update documentation** (flags 4, 6):
-   - [ ] Correct `03_mergingGSS.md` pseudocode and Edge Case notes
+3. **Update documentation** (flag 6):
+   - [x] ~~Correct `03_mergingGSS.md` pseudocode and Edge Case notes~~ — Resolved in `03_mergingGSS_RF4_action_plan.md`
    - [ ] Update file size estimates
 
 4. **Add validation checks** (ongoing):
