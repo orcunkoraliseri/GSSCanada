@@ -32,67 +32,67 @@ OUTPUTS_DIR = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nT
 CYCLES = [2005, 2010, 2015, 2022]
 
 EXPECTED_MAIN_COLS = {
-    2005: reading_gss.MAIN_COLS_2005,
-    2010: reading_gss.MAIN_COLS_2010,
-    2015: reading_gss.MAIN_COLS_2015,
-    2022: reading_gss.MAIN_COLS_2022,
+    2005: [reading_gss.MAIN_RENAME_MAP[2005].get(c, c) for c in reading_gss.MAIN_COLS_2005],
+    2010: [reading_gss.MAIN_RENAME_MAP[2010].get(c, c) for c in reading_gss.MAIN_COLS_2010],
+    2015: [reading_gss.MAIN_RENAME_MAP[2015].get(c, c) for c in reading_gss.MAIN_COLS_2015],
+    2022: [reading_gss.MAIN_RENAME_MAP[2022].get(c, c) for c in reading_gss.MAIN_COLS_2022],
 }
 
 EXPECTED_EPISODE_COLS = {
-    2005: reading_gss.EPISODE_COLS_2005,
-    2010: reading_gss.EPISODE_COLS_2010,
-    2015: reading_gss.EPISODE_COLS_2015,
-    2022: reading_gss.EPISODE_COLS_2022,
+    2005: [reading_gss.EPISODE_RENAME_MAP[2005].get(c, c) for c in reading_gss.EPISODE_COLS_2005],
+    2010: [reading_gss.EPISODE_RENAME_MAP[2010].get(c, c) for c in reading_gss.EPISODE_COLS_2010],
+    2015: [reading_gss.EPISODE_RENAME_MAP[2015].get(c, c) for c in reading_gss.EPISODE_COLS_2015],
+    2022: [reading_gss.EPISODE_RENAME_MAP[2022].get(c, c) for c in reading_gss.EPISODE_COLS_2022],
 }
 
 # --- Cross-cycle demographic variable mapping (None = not available in that cycle) ---
 # Each entry: friendly_name -> {cycle_str: column_name | None}
 DEMO_VARS: dict[str, dict[str, str | None]] = {
-    "Age Group": {
-        "2005": "AGEGR10", "2010": "AGEGR10",
-        "2015": "AGEGR10", "2022": "AGEGR10",
+    "AGEGRP": {
+        "2005": "AGEGRP", "2010": "AGEGRP",
+        "2015": "AGEGRP", "2022": "AGEGRP",
     },
-    "Sex / Gender": {
-        "2005": "sex", "2010": "SEX",
-        "2015": "SEX",  "2022": "GENDER2",
+    "SEX": {
+        "2005": "SEX", "2010": "SEX",
+        "2015": "SEX",  "2022": "SEX",
     },
-    "Marital Status": {
-        "2005": "marstat", "2010": "MARSTAT",
-        "2015": "MARSTAT", "2022": "MARSTAT",
+    "MARSTH": {
+        "2005": "MARSTH", "2010": "MARSTH",
+        "2015": "MARSTH", "2022": "MARSTH",
     },
-    "Household Size": {
-        "2005": "HSDSIZEC", "2010": "HSDSIZEC",
-        "2015": "HSDSIZEC",  "2022": "HSDSIZEC",
+    "HHSIZE": {
+        "2005": "HHSIZE", "2010": "HHSIZE",
+        "2015": "HHSIZE",  "2022": "HHSIZE",
     },
-    "Province / Region": {
-        "2005": "REGION", "2010": "PRV",
-        "2015": "PRV",    "2022": "PRV",
+    "PR": {
+        "2005": "PR", "2010": "PR",
+        "2015": "PR",    "2022": "PR",
     },
-    "Urban / Rural (CMA)": {
-        "2005": "LUC_RST", "2010": "LUC_RST",
-        "2015": "LUC_RST",  "2022": "LUC_RST",
+    "CMA": {
+        "2005": "CMA", "2010": "CMA",
+        "2015": "CMA",  "2022": "CMA",
     },
-    "Labour Force Activity": {
-        "2005": "LFSGSS",   "2010": "ACT7DAYS",
-        "2015": "ACT7DAYS", "2022": "ACT7DAYC",
+    "LFTAG": {
+        "2005": "LFTAG",   "2010": "LFTAG",
+        "2015": "LFTAG", "2022": "LFTAG",
     },
-    "Employment Type (COW)": {
-        "2005": "WKWE",    "2010": "WKWE",
-        "2015": "WET_110", "2022": "WET_120",
+    "COW": {
+        "2005": "COW",    "2010": "COW",
+        "2015": "COW", "2022": "COW",
     },
-    "Hours Worked": {
-        "2005": "WKWEHR_C", "2010": "WKWEHR_C",
-        "2015": "WHWD140C", "2022": "WHWD140G",
+    "HRSWRK": {
+        "2005": "HRSWRK", "2010": "HRSWRK",
+        "2015": "HRSWRK", "2022": "HRSWRK",
     },
-    "Commute Mode": {
+    "MODE": {
         "2005": None,              # Absent from 2005 GSS
         "2010": "__CTW_2010__",    # derived from CTW_Q140_C01–C09
         "2015": "__CTW_2015__",    # derived from CTW_140A–I
-        "2022": "__CTW_2022__",    # derived from CTW_140A–I
+        "2022": "MODE",            # derived directly after rename
     },
-    "Language at Home": {
-        "2005": "LANCH",   "2010": "LANCH",
-        "2015": "LAN_01",  "2022": "LAN_01",
+    "KOL": {
+        "2005": "KOL",   "2010": "KOL",
+        "2015": "KOL",  "2022": "KOL",
     },
 }
 
@@ -137,6 +137,41 @@ def _derive_commute_mode(df: pd.DataFrame, cycle: int) -> pd.Series:
             mask = pd.to_numeric(df[col], errors="coerce") == 1
             result[mask] = lbl
     return result
+
+
+STEP1_OVERVIEW = """\
+╔══════════════════════════════════════════════════════════════════════════╗
+║  STEP 1 — DATA COLLECTION & COLUMN SELECTION                            ║
+║                                                                          ║
+║  GSS MAIN FILE (Cycles 19/24/29/GSSP: 2005/2010/2015/2022)             ║
+║  ┌─ Identity & Temporal ──────────────────────────────────────────────┐ ║
+║  │  occID (PUMFID), SURVYEAR, SURVMNTH                                │ ║
+║  ├─ Demographic ─────────────────────────────────────────────────────┤ ║
+║  │  PR, HHSIZE, AGEGRP, SEX, MARSTH, KOL, ATTSCH, NOCS, LFTAG,      │ ║
+║  │  COW, HRSWRK, MODE, POWST, CMA                                    │ ║
+║  ├─ Socioeconomic ───────────────────────────────────────────────────┤ ║
+║  │  TOTINC (self-reported 2005–2015 / CRA-linked 2022)               │ ║
+║  └─ Weights ─────────────────────────────────────────────────────────┘ ║
+║     WGHT_PER, WTBS_001–500                                              ║
+║                                                                          ║
+║  GSS EPISODE FILE (same cycles)                                         ║
+║  ┌─ Identity & Temporal ──────────────────────────────────────────────┐ ║
+║  │  occID, EPINO, DDAY, start/end (HHMM), startMin/endMin, duration  │ ║
+║  ├─ Occupancy Content ───────────────────────────────────────────────┤ ║
+║  │  occACT (TUI_01, 63 activity codes), occPRE (LOCATION→AT_HOME)    │ ║
+║  ├─ Social Context ──────────────────────────────────────────────────┤ ║
+║  │  Spouse, Children, Friends, otherHHs, Others (TUI_06A–J)         │ ║
+║  ├─ Auxiliary (cycle-dependent) ────────────────────────────────────┤ ║
+║  │  techUse (TUI_07), wellbeing (TUI_10: 2015/2022 only)            │ ║
+║  └─ Weights ─────────────────────────────────────────────────────────┘ ║
+║     WGHT_EPI, WTBS_EPI_001–500                                          ║
+║                                                                          ║
+║  CENSUS PUMF (2006/2011/2016/2021 — for Step 5 linkage only)           ║
+║  BUILTH, DTYPE, BEDRM, ROOM, CONDO, REPAIR, VALUE,                     ║
+║  GENSTAT, CITIZEN, CF_RP, CFSTAT, EFSIZE, CFSIZE, EMPIN, INCTAX, CIP  ║
+║                                                                          ║
+║  * Note: Columns are renamed to unified schema during export           ║
+╚══════════════════════════════════════════════════════════════════════════╝"""
 
 
 class GSSValidator:
@@ -217,7 +252,7 @@ class GSSValidator:
                         series = _derive_commute_mode(df, year).dropna()
                         uniques = sorted(series.unique().tolist())
                         print(f"  {year} (derived commute): {uniques}")
-                    elif category_name == "Hours Worked":
+                    elif category_name == "HRSWRK":
                         if col not in df.columns:
                             print(f"  {year} ({col}): Column missing")
                             valid = False
@@ -251,8 +286,8 @@ class GSSValidator:
             epi_df = self.data[year]["episode"]
             
             # Identify ID columns
-            main_id = "RECID" if year <= 2010 else "PUMFID"
-            epi_id = "RECID" if year <= 2010 else "PUMFID"
+            main_id = "occID"
+            epi_id = "occID"
             
             # Check ID Linkage
             if main_id in main_df.columns and epi_id in epi_df.columns:
@@ -265,11 +300,11 @@ class GSSValidator:
                     self._record("fail", f"{year}: Low ID overlap! Only {overlap:.1%} Episode IDs match.")
             
             # Check Time Ordering constraints
-            if "STARTIME" in epi_df.columns and "ENDTIME" in epi_df.columns:
+            if "start" in epi_df.columns and "end" in epi_df.columns:
                 try:
                     # Clean potential string times before conversion if necessary
-                    s_time = pd.to_numeric(epi_df["STARTIME"], errors="coerce")
-                    e_time = pd.to_numeric(epi_df["ENDTIME"], errors="coerce")
+                    s_time = pd.to_numeric(epi_df["start"], errors="coerce")
+                    e_time = pd.to_numeric(epi_df["end"], errors="coerce")
                     valid_time = (s_time <= e_time) | ((s_time > e_time) & (e_time < 240)) # e.g. cross midnight
                     pass_rate = valid_time.mean()
                     if pass_rate > 0.90:
@@ -364,7 +399,7 @@ class GSSValidator:
         for year in CYCLES:
             if "episode" in self.data[year]:
                 df = self.data[year]["episode"]
-                epi_id = "RECID" if year <= 2010 else "PUMFID"
+                epi_id = "occID"
                 if epi_id in df.columns:
                     counts = df.groupby(epi_id).size().reset_index(name="episodes")
                     counts["Cycle"] = str(year)
@@ -458,7 +493,7 @@ class GSSValidator:
                         # Derived commute mode from checkbox columns
                         raw = _derive_commute_mode(df_main, year).dropna()
                         series = raw.value_counts(normalize=True).sort_index()
-                    elif var_name == "Hours Worked":
+                    elif var_name == "HRSWRK":
                         # Bin continuous hours; 2022 WHWD140G uses group codes 1-8
                         raw_col = df_main[mapped_col]
                         numeric = pd.to_numeric(raw_col, errors="coerce")
@@ -535,12 +570,18 @@ class GSSValidator:
     def _plot_nan_heatmap(self) -> None:
         """Heatmap: % missing values per column × cycle (Main files only)."""
         records = []
+        # Target harmonized names across all cycles
+        target_cols = set()
+        for c, m in reading_gss.MAIN_RENAME_MAP.items():
+            target_cols.update(m.values())
+            
         for year in CYCLES:
             if "main" in self.data[year]:
                 df = self.data[year]["main"]
                 nan_pct = df.isnull().mean() * 100
                 for col, pct in nan_pct.items():
-                    records.append({"Cycle": str(year), "Column": col, "NaN%": pct})
+                    if col in target_cols:
+                        records.append({"Cycle": str(year), "Column": col, "NaN%": pct})
 
         if not records:
             return
@@ -575,10 +616,10 @@ class GSSValidator:
             if "episode" not in self.data[year]:
                 continue
             df = self.data[year]["episode"]
-            if "STARTIME" not in df.columns or "ENDTIME" not in df.columns:
+            if "start" not in df.columns or "end" not in df.columns:
                 continue
-            s = pd.to_numeric(df["STARTIME"], errors="coerce")
-            e = pd.to_numeric(df["ENDTIME"], errors="coerce")
+            s = pd.to_numeric(df["start"], errors="coerce")
+            e = pd.to_numeric(df["end"], errors="coerce")
             valid = (s <= e) | ((s > e) & (e < 240))
             pass_rates[str(year)] = valid.mean() * 100
 
@@ -727,6 +768,20 @@ class GSSValidator:
     .chart-wrap {{ text-align: center; }}
     .chart-wrap img {{ max-width: 100%; height: auto; border-radius: 8px; }}
 
+    .pipeline-section {{
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px; margin-bottom: 28px;
+    }}
+    .pipeline-section h2 {{
+      font-size: 1.0rem; color: var(--accent); margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }}
+    .pipeline-pre {{
+      font-family: 'Courier New', Consolas, monospace; font-size: 0.78rem;
+      color: var(--subtext); white-space: pre; overflow-x: auto;
+      background: var(--surface2); padding: 16px; border-radius: 8px;
+      border: 1px solid var(--border); line-height: 1.5;
+    }}
     footer {{
       text-align: center; padding: 20px; font-size: 0.78rem;
       color: var(--subtext); border-top: 1px solid var(--border); margin-top: 10px;
@@ -740,8 +795,14 @@ class GSSValidator:
       <p>Pre-harmonization quality check across cycles 2005, 2010, 2015, 2022</p>
     </div>
   </header>
-  <nav>{nav_links}</nav>
+  <nav><a href="#pipeline-overview">Pipeline Overview</a>{nav_links}</nav>
   <main>
+    <!-- Pipeline Overview -->
+    <section class="pipeline-section" id="pipeline-overview">
+      <h2>Pipeline Overview — Step 1: Data Collection &amp; Column Selection</h2>
+      <pre class="pipeline-pre">{STEP1_OVERVIEW}</pre>
+    </section>
+
     <!-- Scorecard -->
     <div class="scorecard">
       <div class="score-card ok"><div class="number">{n_pass}</div><div class="label">Checks Passed</div></div>
@@ -772,7 +833,7 @@ class GSSValidator:
 </html>
 """
 
-        out_path = os.path.join(self.data_dir, "validation_report.html")
+        out_path = os.path.join(self.data_dir, "step1_validation_report.html")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"\nHTML Report saved to: {out_path}")

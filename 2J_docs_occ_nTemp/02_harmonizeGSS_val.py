@@ -43,12 +43,12 @@ SENTINEL_MAP: dict[str, set[int]] = {
 
 # Step-1 column names for pre-harmonization comparison
 STEP1_WEIGHT_COL: dict[int, str] = {
-    2005: "wght_per",
+    2005: "WGHT_PER",
     2010: "WGHT_PER",
     2015: "WGHT_PER",
     2022: "WGHT_PER",
 }
-STEP1_SEX_COL: dict[int, str] = {2005: "sex", 2010: "SEX", 2015: "SEX", 2022: "GENDER2"}
+STEP1_SEX_COL: dict[int, str] = {2005: "SEX", 2010: "SEX", 2015: "SEX", 2022: "SEX"}
 
 # Harmonized Main variables to show in the stacked-bar grid
 HARM_VARS: dict[str, dict] = {
@@ -112,6 +112,26 @@ def _b64(fig: plt.Figure) -> str:
     plt.close(fig)
     buf.seek(0)
     return base64.b64encode(buf.read()).decode("utf-8")
+
+
+STEP2_OVERVIEW = """\
+╔══════════════════════════════════════════════════════════════════════════╗
+║  STEP 2 — DATA HARMONIZATION (per cycle: 2005/2010/2015/2022)          ║
+║                                                                          ║
+║  Category recoding (SEX, MARSTH, AGEGRP, LFTAG, ATTSCH, PR, CMA)      ║
+║  Missing value alignment (96/97/98/99 → NaN)                           ║
+║                                                                          ║
+║  ⚠ Critical harmonization flags:                                        ║
+║  • TOTINC regime break: self-reported (2005–2015) / CRA-linked (2022)  ║
+║  • TUI_01 crosswalk: 2022 hierarchical tree → 63-code flat scheme      ║
+║  • COLLECT_MODE flag: 0=CATI (2005/2010) / 1=EQ (2022)                ║
+║  • TUI_10_AVAIL flag: 0=absent (2005/2010) / 1=present (2015/2022)    ║
+║  • Bootstrap flag: MEAN_BS (2005/2010) / STANDARD_BS (2015/2022)      ║
+║  • DIARY_VALID QA: assert sum(DURATION per occID) == 1440 min          ║
+║  • CYCLE_YEAR + SURVYEAR appended as longitudinal labels               ║
+║                                                                          ║
+║  Output: 4 harmonized cycle pairs (Main + Episode), identical schema   ║
+╚══════════════════════════════════════════════════════════════════════════╝"""
 
 
 class GSSHarmonizationValidator:
@@ -800,6 +820,14 @@ class GSSHarmonizationValidator:
                          padding-bottom:8px; border-bottom:1px solid var(--border); }}
     .chart-wrap {{ text-align:center; }}
     .chart-wrap img {{ max-width:100%; height:auto; border-radius:8px; }}
+    .pipeline-section {{ background:var(--surface); border:1px solid var(--border);
+                         border-radius:14px; padding:24px; margin-bottom:28px; }}
+    .pipeline-section h2 {{ font-size:1.0rem; color:var(--accent); margin-bottom:16px;
+                             padding-bottom:8px; border-bottom:1px solid var(--border); }}
+    .pipeline-pre {{ font-family:'Courier New',Consolas,monospace; font-size:0.78rem;
+                     color:var(--subtext); white-space:pre; overflow-x:auto;
+                     background:var(--surface2); padding:16px; border-radius:8px;
+                     border:1px solid var(--border); line-height:1.5; }}
     footer {{ text-align:center; padding:20px; font-size:0.78rem;
               color:var(--subtext); border-top:1px solid var(--border); margin-top:10px; }}
   </style>
@@ -811,8 +839,14 @@ class GSSHarmonizationValidator:
       <p>Post-harmonization quality check across cycles 2005, 2010, 2015, 2022</p>
     </div>
   </header>
-  <nav>{nav_links}</nav>
+  <nav><a href="#pipeline-overview">Pipeline Overview</a>{nav_links}</nav>
   <main>
+    <!-- Pipeline Overview -->
+    <section class="pipeline-section" id="pipeline-overview">
+      <h2>Pipeline Overview — Step 2: Data Harmonization</h2>
+      <pre class="pipeline-pre">{STEP2_OVERVIEW}</pre>
+    </section>
+
     <div class="scorecard">
       <div class="score-card ok"><div class="number">{n_pass}</div><div class="label">Checks Passed</div></div>
       <div class="score-card warn"><div class="number">{n_warn}</div><div class="label">Warnings</div></div>

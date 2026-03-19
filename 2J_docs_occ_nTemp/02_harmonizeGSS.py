@@ -14,99 +14,6 @@ OUTPUT_DIR = "outputs_step2/"
 
 CYCLES = [2005, 2010, 2015, 2022]
 
-MAIN_RENAME_MAP = {
-    2005: {
-        "RECID": "occID",
-        "AGEGR10": "AGEGRP",
-        "sex": "SEX",
-        "marstat": "MARSTH",
-        "HSDSIZEC": "HHSIZE",
-        "REGION": "PR",
-        "LUC_RST": "CMA",
-        "wght_per": "WGHT_PER",
-        "DVTDAY": "DDAY",
-        "LANCH": "KOL",
-        "LFSGSS": "LFTAG",
-        "INCM": "TOTINC",
-        "INCM": "TOTINC",
-        "WKWEHR_C": "HRSWRK",
-    },
-    2010: {
-        "RECID": "occID",
-        "AGEGR10": "AGEGRP",
-        "SEX": "SEX",
-        "MARSTAT": "MARSTH",
-        "HSDSIZEC": "HHSIZE",
-        "PRV": "PR",
-        "LUC_RST": "CMA",
-        "wght_per": "WGHT_PER",
-        "DVTDAY": "DDAY",
-        "LANCH": "KOL",
-        "LFSGSS": "LFTAG",
-        "INCM": "TOTINC",
-        "WKWEHR_C": "HRSWRK",
-    },
-    2015: {
-        "PUMFID": "occID",
-        "AGEGR10": "AGEGRP",
-        "SEX": "SEX",
-        "MARSTAT": "MARSTH",
-        "HSDSIZEC": "HHSIZE",
-        "PRV": "PR",
-        "LUC_RST": "CMA",
-        "WGHT_PER": "WGHT_PER",
-        "DVTDAY": "DDAY",
-        "LAN_01": "KOL",
-        "ACT7DAYS": "LFTAG",
-        "INCG1": "TOTINC",
-        "WHWD140C": "HRSWRK",
-        "NOC1110Y": "NOCS",
-        "SURVMNTH": "SURVMNTH",
-    },
-    2022: {
-        "PUMFID": "occID",
-        "AGEGR10": "AGEGRP",
-        "GENDER2": "SEX",
-        "MARSTAT": "MARSTH",
-        "HSDSIZEC": "HHSIZE",
-        "PRV": "PR",
-        "LUC_RST": "CMA",
-        "WGHT_PER": "WGHT_PER",
-        "DVTDAY": "DDAY",
-        "LAN_01": "KOL",
-        "ACT7DAYC": "LFTAG",
-        "INC_C": "TOTINC",
-        "WHWD140G": "HRSWRK",
-        "NOCLBR_Y": "NOCS",
-        "ATT_150C": "MODE",
-        "SURVMNTH": "SURVMNTH",
-    },
-}
-
-EPISODE_RENAME_MAP = {
-    2005: {
-        "RECID": "occID",
-        "STARTIME": "start",
-        "ENDTIME": "end",
-    },
-    2010: {
-        "RECID": "occID",
-        "STARTIME": "start",
-        "ENDTIME": "end",
-    },
-    2015: {
-        "PUMFID": "occID",
-        "STARTIME": "start",
-        "ENDTIME": "end",
-    },
-    2022: {
-        "PUMFID": "occID",
-        "INSTANCE": "EPINO",
-        "STARTIME": "start",
-        "ENDTIME": "end",
-    },
-}
-
 SENTINEL_MAP = {
     "KOL": {7, 8, 9, 98, 99},
     "TOTINC": {98, 99},
@@ -115,6 +22,8 @@ SENTINEL_MAP = {
     # LFTAG sentinels are handled inside recode_lftag per-cycle before this map runs.
     "MARSTH": {8, 9, 99},
     "MODE": {99},
+    "WKSWRK": {96, 97, 98, 99},
+    # COW sentinels are handled inside recode_cow() per-cycle (values differ across cycles).
 }
 
 if __name__ == "__main__":
@@ -325,6 +234,26 @@ def recode_totinc(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
         df["TOTINC"] = df["TOTINC"].map(mapping)
     elif cycle == 2022:
         df["TOTINC_SOURCE"] = "CRA"
+    return df
+
+
+def recode_cow(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Harmonize Class of Worker to 3-category scheme:
+        1 = Employee (paid worker for someone else)
+        2 = Self-employed (with or without employees) or unpaid family worker
+        NaN = Not applicable / not at paid work / sentinel
+    """
+    if "COW" not in df.columns:
+        return df
+    if cycle in (2005, 2010):
+        # MAR_Q172: 1=employee, 2=self-employed, 3=unpaid family, 7=not asked, 8/9=sentinel
+        df["COW"] = df["COW"].replace({1: 1, 2: 2, 3: 2, 7: pd.NA, 8: pd.NA, 9: pd.NA})
+    elif cycle == 2015:
+        # WHW_110: 1=self-employed (w/ paid help), 2=employee, 6=not applicable, 7/8/9=sentinel
+        df["COW"] = df["COW"].replace({1: 2, 2: 1, 6: pd.NA, 7: pd.NA, 8: pd.NA, 9: pd.NA})
+    elif cycle == 2022:
+        # WET_120: 1=employee, 2=self-emp w/ employees, 3=self-emp w/o employees, 6=N/A, 9=sentinel
+        df["COW"] = df["COW"].replace({1: 1, 2: 2, 3: 2, 6: pd.NA, 9: pd.NA})
     return df
 
 
@@ -608,9 +537,6 @@ def check_diary_closure(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
 
 
 def harmonize_main(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
-    rename_dict = MAIN_RENAME_MAP.get(cycle, {})
-    df = df.rename(columns=rename_dict)
-
     df = recode_sex(df, cycle)
     df = recode_marsth(df, cycle)
     df = recode_agegrp(df, cycle)
@@ -622,6 +548,7 @@ def harmonize_main(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
     df = recode_kol(df, cycle)
     df = derive_mode(df, cycle)
     df = recode_totinc(df, cycle)
+    df = recode_cow(df, cycle)
 
     for col, sentinels in SENTINEL_MAP.items():
         if col in df.columns:
@@ -634,9 +561,6 @@ def harmonize_main(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
 def harmonize_episode(
     df: pd.DataFrame, cycle: int, act_crosswalk: dict, pre_crosswalk: dict
 ) -> pd.DataFrame:
-    rename_dict = EPISODE_RENAME_MAP.get(cycle, {})
-    df = df.rename(columns=rename_dict)
-
     df = apply_activity_crosswalk(df, cycle, act_crosswalk)
     validate_activity_crosswalk(df, cycle, raw_col="ACTCODE" if cycle in (2005, 2010) else "TUI_01")
     df = apply_presence_crosswalk(df, cycle, pre_crosswalk)
@@ -676,3 +600,7 @@ def harmonize_all():
 
 if __name__ == "__main__":
     harmonize_all()
+
+    import subprocess
+    print("\nRunning Step 2 Validation...")
+    subprocess.run(["python", "02_harmonizeGSS_val.py"], check=True)

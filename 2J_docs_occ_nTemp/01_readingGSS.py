@@ -20,15 +20,17 @@ import pyreadstat
 # Main file columns selected based on raw data headers
 MAIN_COLS_2005: list[str] = [
     "RECID", "AGEGR10", "sex", "marstat", "HSDSIZEC", "REGION", "LUC_RST",
-    "WKWE", "wght_per", "DVTDAY", "LANCH", "LFSGSS", "INCM", "EDU10", "WKWEHR_C"
+    "WKWE", "wght_per", "DVTDAY", "LANCH", "LFSGSS", "INCM", "EDU10", "WKWEHR_C",
+    "MAR_Q172",    # Class of Worker
 ]
 
 MAIN_COLS_2010: list[str] = [
-    "RECID", "AGEGR10", "SEX", "MARSTAT", "HSDSIZEC", "REGION", "PRV", "LUC_RST",
-    "WKWE", "WGHT_PER", "DVTDAY", "LANCH", "LFSGSS", "ACT7DAYS", "INCM", "EDU10",
+    "RECID", "AGEGR10", "SEX", "MARSTAT", "HSDSIZEC", "PRV", "LUC_RST",
+    "WKWE", "WGHT_PER", "DVTDAY", "LANCH", "LFSGSS", "INCM", "EDU10",
     "WKWEHR_C",
     "CTW_Q140_C01", "CTW_Q140_C02", "CTW_Q140_C03", "CTW_Q140_C04", "CTW_Q140_C05",
-    "CTW_Q140_C06", "CTW_Q140_C07", "CTW_Q140_C08", "CTW_Q140_C09"
+    "CTW_Q140_C06", "CTW_Q140_C07", "CTW_Q140_C08", "CTW_Q140_C09",
+    "MAR_Q172",    # Class of Worker
 ]
 
 MAIN_COLS_2015: list[str] = [
@@ -70,6 +72,50 @@ EPISODE_COLS_2022: list[str] = [
     "TUI_06A", "TUI_06B", "TUI_06C", "TUI_06D", "TUI_06E", "TUI_06F", "TUI_06G",
     "TUI_06H", "TUI_06I", "TUI_06J", "TUI_07", "TUI_15"
 ]
+
+
+# --- RENAME MAPS (Moved from Step 2) ---
+MAIN_RENAME_MAP = {
+    2005: {
+        "RECID": "occID", "AGEGR10": "AGEGRP", "sex": "SEX", "marstat": "MARSTH",
+        "HSDSIZEC": "HHSIZE", "REGION": "PR", "LUC_RST": "CMA", "wght_per": "WGHT_PER",
+        "DVTDAY": "DDAY", "LANCH": "KOL", "LFSGSS": "LFTAG", "INCM": "TOTINC",
+        "WKWEHR_C": "HRSWRK", "WKWE": "WKSWRK", "MAR_Q172": "COW",
+    },
+    2010: {
+        "RECID": "occID", "AGEGR10": "AGEGRP", "SEX": "SEX", "MARSTAT": "MARSTH",
+        "HSDSIZEC": "HHSIZE", "PRV": "PR", "LUC_RST": "CMA", "wght_per": "WGHT_PER",
+        "DVTDAY": "DDAY", "LANCH": "KOL", "LFSGSS": "LFTAG", "INCM": "TOTINC",
+        "WKWEHR_C": "HRSWRK", "WKWE": "WKSWRK", "MAR_Q172": "COW",
+    },
+    2015: {
+        "PUMFID": "occID", "AGEGR10": "AGEGRP", "SEX": "SEX", "MARSTAT": "MARSTH",
+        "HSDSIZEC": "HHSIZE", "PRV": "PR", "LUC_RST": "CMA", "WGHT_PER": "WGHT_PER",
+        "DVTDAY": "DDAY", "LAN_01": "KOL", "ACT7DAYS": "LFTAG", "INCG1": "TOTINC",
+        "WHWD140C": "HRSWRK", "NOC1110Y": "NOCS", "SURVMNTH": "SURVMNTH",
+        "WET_110": "WKSWRK", "WHW_110": "COW",
+    },
+    2022: {
+        "PUMFID": "occID", "AGEGR10": "AGEGRP", "GENDER2": "SEX", "MARSTAT": "MARSTH",
+        "HSDSIZEC": "HHSIZE", "PRV": "PR", "LUC_RST": "CMA", "WGHT_PER": "WGHT_PER",
+        "DVTDAY": "DDAY", "LAN_01": "KOL", "ACT7DAYC": "LFTAG", "INC_C": "TOTINC",
+        "WHWD140G": "HRSWRK", "NOCLBR_Y": "NOCS", "ATT_150C": "MODE",
+        "SURVMNTH": "SURVMNTH", "WET_120": "COW",
+    },
+}
+
+EPISODE_RENAME_MAP = {
+    2005: {"RECID": "occID", "STARTIME": "start", "ENDTIME": "end"},
+    2010: {"RECID": "occID", "STARTIME": "start", "ENDTIME": "end"},
+    2015: {"PUMFID": "occID", "STARTIME": "start", "ENDTIME": "end"},
+    2022: {"PUMFID": "occID", "INSTANCE": "EPINO", "STARTIME": "start", "ENDTIME": "end"},
+}
+
+def apply_rename_map(df: pd.DataFrame, cycle: int, rename_map: dict) -> pd.DataFrame:
+    """Applies the specified rename map to the dataframe for unified schema target names."""
+    if df.empty or cycle not in rename_map:
+        return df
+    return df.rename(columns=rename_map[cycle])
 
 
 # --- FILE FORMAT READER FUNCTIONS ---
@@ -422,46 +468,53 @@ def read_gss_main(
     """
     if cycle_year == 2005:
         if file_path.lower().endswith(".sas7bdat"):
-            return read_sas_file(
+            df = read_sas_file(
                 file_path, selected_columns=MAIN_COLS_2005, 
-                output_csv=output_csv, verbose=verbose
+                output_csv=None, verbose=verbose
             )
         elif file_path.lower().endswith(".sav"):
-            return load_spss_file(
+            df = load_spss_file(
                 file_path, selected_columns=MAIN_COLS_2005, 
-                output_csv=output_csv, verbose=verbose
+                output_csv=None, verbose=verbose
             )
         else:
             print(f"Unsupported extension for 2005 Main file: {file_path}")
-            return pd.DataFrame()
+            df = pd.DataFrame()
 
     elif cycle_year == 2010:
         if not syntax_path:
             print("Error: syntax_path is required for 2010 Main file.")
-            return pd.DataFrame()
-        return load_dat_with_sps_layout(
-            file_path, syntax_path, selected_columns=MAIN_COLS_2010,
-            output_csv=output_csv, verbose=verbose
-        )
+            df = pd.DataFrame()
+        else:
+            df = load_dat_with_sps_layout(
+                file_path, syntax_path, selected_columns=MAIN_COLS_2010,
+                output_csv=None, verbose=verbose
+            )
 
     elif cycle_year == 2015:
         if not syntax_path:
             print("Error: syntax_path is required for 2015 Main file.")
-            return pd.DataFrame()
-        return read_gss_data_selective(
-            file_path, syntax_path, columns_to_keep=MAIN_COLS_2015,
-            output_csv=output_csv, verbose=verbose
-        )
+            df = pd.DataFrame()
+        else:
+            df = read_gss_data_selective(
+                file_path, syntax_path, columns_to_keep=MAIN_COLS_2015,
+                output_csv=None, verbose=verbose
+            )
 
     elif cycle_year == 2022:
-        return read_sas_file(
+        df = read_sas_file(
             file_path, selected_columns=MAIN_COLS_2022, 
-            output_csv=output_csv, verbose=verbose
+            output_csv=None, verbose=verbose
         )
 
     else:
         print(f"Unsupported cycle year: {cycle_year}")
-        return pd.DataFrame()
+        df = pd.DataFrame()
+        
+    df = apply_rename_map(df, cycle_year, MAIN_RENAME_MAP)
+    if output_csv:
+        save_df_to_csv(df, output_csv)
+    return df
 
 
 def read_gss_episode(
@@ -485,38 +538,45 @@ def read_gss_episode(
         pd.DataFrame for the specified Episode file.
     """
     if cycle_year == 2005:
-        return load_spss_file(
+        df = load_spss_file(
             file_path, selected_columns=EPISODE_COLS_2005,
-            output_csv=output_csv, verbose=verbose
+            output_csv=None, verbose=verbose
         )
 
     elif cycle_year == 2010:
         if not syntax_path:
             print("Error: syntax_path is required for 2010 Episode file.")
-            return pd.DataFrame()
-        return load_dat_with_sps_layout(
-            file_path, syntax_path, selected_columns=EPISODE_COLS_2010,
-            output_csv=output_csv, verbose=verbose
-        )
+            df = pd.DataFrame()
+        else:
+            df = load_dat_with_sps_layout(
+                file_path, syntax_path, selected_columns=EPISODE_COLS_2010,
+                output_csv=None, verbose=verbose
+            )
 
     elif cycle_year == 2015:
         if not syntax_path:
             print("Error: syntax_path is required for 2015 Episode file.")
-            return pd.DataFrame()
-        return read_gss_data_selective(
-            file_path, syntax_path, columns_to_keep=EPISODE_COLS_2015,
-            output_csv=output_csv, verbose=verbose
-        )
+            df = pd.DataFrame()
+        else:
+            df = read_gss_data_selective(
+                file_path, syntax_path, columns_to_keep=EPISODE_COLS_2015,
+                output_csv=None, verbose=verbose
+            )
 
     elif cycle_year == 2022:
-        return read_sas_file(
+        df = read_sas_file(
             file_path, selected_columns=EPISODE_COLS_2022,
-            output_csv=output_csv, verbose=verbose
+            output_csv=None, verbose=verbose
         )
 
     else:
         print(f"Unsupported cycle year: {cycle_year}")
-        return pd.DataFrame()
+        df = pd.DataFrame()
+        
+    df = apply_rename_map(df, cycle_year, EPISODE_RENAME_MAP)
+    if output_csv:
+        save_df_to_csv(df, output_csv)
+    return df
 
 
 def read_all_cycles(
@@ -655,3 +715,7 @@ if __name__ == "__main__":
             print(f"EPISODE columns: {epi_df.columns.tolist()}")
             
     print("\nGSS Data Collection complete.")
+
+    import subprocess
+    print("\nRunning Step 1 Validation...")
+    subprocess.run(["python", "01_readingGSS_val.py"], check=True)

@@ -39,10 +39,11 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  CENSUS PUMF (2006/2011/2016/2021 — for Step 5 linkage only)           ║
 ║  BUILTH, DTYPE, BEDRM, ROOM, CONDO, REPAIR, VALUE,                     ║
 ║  GENSTAT, CITIZEN, CF_RP, CFSTAT, EFSIZE, CFSIZE, EMPIN, INCTAX, CIP  ║
+║                                                                          ║
+║  * Note: Columns are renamed to unified schema during export           ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 2 — DATA HARMONIZATION (per cycle: 2005/2010/2015/2022)          ║
 ║                                                                          ║
-║  Column renames → unified schema                                        ║
 ║  Category recoding (SEX, MARSTH, AGEGRP, LFTAG, ATTSCH, PR, CMA)      ║
 ║  Missing value alignment (96/97/98/99 → NaN)                           ║
 ║                                                                          ║
@@ -180,6 +181,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | Conditional Transformer over C-VAE | Superior long-range dependency capture across 144 slots; scales to 84-condition space without posterior collapse risk |
 | HETUS 144-slot format for DL input | Fixed sequence length enables standard Transformer training; compatible with European TUS comparisons |
 | Census linkage via classical ML (Step 5) | Avoids joint DL training complexity; building variables are slow-changing and well-suited to archetype-level probabilistic matching |
+| Renaming applied at read time (Step 1) | Unifies schema early so both raw output and harmonized output share semantic columns—Step 2 handles *values* rather than names. |
 | SURVYEAR as explicit variable (Step 1A) | Required for longitudinal pooling; primary indexing axis for Model 2 trend encoding |
 | TOTINC harmonized as two regimes (Step 2) | Pre-2022 = self-reported categorical; 2022 = CRA T1FF continuous. Pooling without harmonization introduces systematic artefact |
 | TUI_01 crosswalk mandatory for 2022 (Step 2) | 2022 hierarchical tree → 63-code flat scheme; required for cross-cycle occACT comparability |

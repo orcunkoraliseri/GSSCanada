@@ -393,11 +393,13 @@ This produces columns `home_001`–`home_144` alongside `slot_001`–`slot_144`.
 
 | File | Description | Approx Size |
 |------|-------------|-------------|
-| `outputs_step3/merged_episodes.csv` | Full episode-level merged dataset with derived features | ~600 MB |
-| `outputs_step3/merged_episodes.parquet` | Same as above in Parquet for efficient downstream loading | ~100 MB |
-| `outputs_step3/hetus_wide.csv` | 144-slot wide format + AT_HOME slots + demographics (one row per respondent) | ~50 MB |
+| `outputs_step3/merged_episodes.csv` | Full episode-level merged dataset with derived features | ~228 MB |
+| `outputs_step3/merged_episodes.parquet` | Same as above in Parquet for efficient downstream loading | ~15 MB |
+| `outputs_step3/hetus_wide.csv` | 144-slot wide format + AT_HOME slots + demographics (one row per respondent) | ~83 MB |
 
 > **Note**: The AT_HOME slot columns (`home_001`–`home_144`) are included in the same `hetus_wide.csv` file alongside `slot_001`–`slot_144`, rather than a separate file, to keep a single respondent-level output.
+
+> **Note on file sizes**: Actual sizes depend on the post-`DIARY_VALID` respondent count (64,061 after 652 exclusions) and cycle-specific sample sizes (2022: 12,336 instead of the ~17,000 originally assumed). `merged_episodes.csv` is smaller than initially estimated because integer-coded categorical columns compress efficiently in CSV. `hetus_wide.csv` is larger than estimated because it carries 288+ columns (144 activity slots + 144 AT_HOME slots + demographics) per respondent row.
 
 ---
 

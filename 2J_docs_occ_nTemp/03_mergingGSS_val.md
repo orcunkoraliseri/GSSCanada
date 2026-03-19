@@ -138,13 +138,13 @@ if __name__ == "__main__":
 |-------|-------|----------------|
 | 5.1 Weighted activity distribution | Per-cycle weighted `occACT` proportions (using `WGHT_EPI`) | Broadly consistent; known shifts acceptable |
 | 5.2 Weighted AT_HOME rate | Per-cycle weighted mean AT_HOME | Within 55–75% range per cycle |
-| 5.3 Demographic preservation | AGEGRP, SEX, HHSIZE distributions per cycle | Must match Step 2 marginals exactly |
+| 5.3 Demographic preservation | All harmonized variables (SEX, AGEGRP, MARSTH, HHSIZE, CMA, LFTAG, HRSWRK, KOL, MODE, TOTINC) distributions per cycle | Must match Step 2 marginals exactly |
 | 5.4 Episode count per respondent | Mean/median episodes per respondent per cycle | Reasonable range (10–30) |
 
 ### Charts
 - Stacked bar chart: weighted activity proportions per cycle (14 categories)
 - Line chart: weighted AT_HOME rate per cycle
-- Demographic bar charts per cycle (AGEGRP, SEX, HHSIZE) — side-by-side with Step 2 values
+- Demographic bar charts per cycle (all 10 harmonized variables) — side-by-side with Step 2 values
 - Box plot: episodes per respondent, grouped by cycle
 
 ---
@@ -191,12 +191,26 @@ Following the same style as `step2_validation_report.html`:
 
 ## Checklist (for progress tracking)
 
-- [ ] Create `03_mergingGSS_val.py` with `GSSMergeValidator` class
-- [ ] Section 1: Row count preservation checks + grouped bar chart
-- [ ] Section 2: Merge key integrity checks + orphan table
-- [ ] Section 3: Derived feature verification + distribution charts
-- [ ] Section 4: HETUS slot integrity + activity heatmap + AT_HOME curve
-- [ ] Section 5: Cross-cycle consistency + weighted distribution charts
-- [ ] Section 6: Summary statistics table
-- [ ] HTML report builder with base64 embedded PNGs
-- [ ] End-to-end run: `python 03_mergingGSS_val.py` → `step3_validation_report.html`
+- [x] Create `03_mergingGSS_val.py` with `GSSMergeValidator` class
+- [x] Section 1: Row count preservation checks + grouped bar chart
+- [x] Section 2: Merge key integrity checks + orphan table
+- [x] Section 3: Derived feature verification + distribution charts
+- [x] Section 4: HETUS slot integrity + activity heatmap + AT_HOME curve
+- [x] Section 5: Cross-cycle consistency + weighted distribution charts
+- [x] Section 6: Summary statistics table
+- [x] HTML report builder with base64 embedded PNGs
+- [x] End-to-end run: `python 03_mergingGSS_val.py` → `step3_validation_report.html`
+
+## Result (2026-03-19)
+
+**54 PASS / 0 WARN / 0 FAIL**
+
+Key findings:
+- Zero orphan episodes, zero duplicate respondents
+- All 144 HETUS slots 100% complete for all 64,061 respondents
+- Night Sleep & Rest rate: 83.7% (>50% ✓), Night AT_HOME rate: 93.4% (>80% ✓)
+- Weekday ratio: 72.8% (within 65–77% ✓)
+- Weighted AT_HOME: 62–71% across cycles (within 55–75% ✓)
+- Demographic marginals (SEX, AGEGRP, etc.) preserved within 0.5% of Step 2
+- DIARY_VALID exclusion: 1.9% (2005), 1.8% (2010), 0% (2015/2022) — all <3% ✓
+- Note: DDAY_STRATA produces {1,2,3} (3-category), not {1,...,7} as stated in plan

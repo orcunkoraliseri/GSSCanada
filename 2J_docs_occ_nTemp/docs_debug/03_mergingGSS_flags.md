@@ -124,7 +124,7 @@ slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
 
 ---
 
-## 🟡 RED FLAG 5 — COW (Class of Worker) Variable Missing from Outputs
+## ✅ RED FLAG 5 — COW (Class of Worker) Variable Missing from Outputs (RESOLVED)
 
 **Pipeline overview expectation** (00_GSS_Occupancy_Documentation.md, Step 1A):
 > COW (Class of Worker) is a key demographic variable for conditioning the model.
@@ -154,7 +154,7 @@ slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
 
 ---
 
-## 🟡 RED FLAG 6 — Output File Size Estimates in Plan Are Significantly Off
+## ✅ RED FLAG 6 — Output File Size Estimates in Plan Are Significantly Off (RESOLVED)
 
 | File | Plan Estimate | Actual | Error |
 |------|----------------|--------|-------|
@@ -170,8 +170,8 @@ slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
 **Not a critical issue** (just estimation error), but indicates the plan was based on earlier assumptions that changed during implementation.
 
 **Action**:
-- [ ] Update plan section "Phase G — Export, G1. Output Files" with actual file sizes
-- [ ] Add note: "Actual sizes depend on post-DIARY_VALID respondent count (652 exclusions) and cycle-specific sample sizes (2022: 12,336 instead of ~17,000)"
+- [x] Update plan section "Phase G — Export, G1. Output Files" with actual file sizes
+- [x] Add note: "Actual sizes depend on post-DIARY_VALID respondent count (652 exclusions) and cycle-specific sample sizes (2022: 12,336 instead of ~17,000)"
 
 ---
 
@@ -183,8 +183,8 @@ slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
 | 2 | DDAY encoding unverified | ✅ Resolved | DVTDAY mismatch fixed in Step 3 | No |
 | 3 | 14.8% 2022 NaN occACT | ✅ Resolved | Complete mapping fixed in Step 2 Excel crosswalk | No |
 | 4 | Plan pseudocode wrong | ✅ Resolved | Documentation corrected | No |
-| 5 | COW variable missing | 🟡 Notable | Requires Step 2 fix or Step 3 addition | Yes — affects model conditioning |
-| 6 | Size estimates off | 🟡 Minor | Requires plan update | No |
+| 5 | COW variable missing | ✅ Resolved | Fixed in Steps 1/2/3 — see RF5 action plan | No |
+| 6 | Size estimates off | ✅ Minor | Documentation updated | No |
 
 ---
 
@@ -201,7 +201,7 @@ slot_end = (end_shifted - 1) // 10 + 1  # inclusive upper bound
 
 3. **Update documentation** (flag 6):
    - [x] ~~Correct `03_mergingGSS.md` pseudocode and Edge Case notes~~ — Resolved in `03_mergingGSS_RF4_action_plan.md`
-   - [ ] Update file size estimates
+   - [x] ~~Update file size estimates~~ — Resolved in `03_mergingGSS_RF6_action_plan_resolved.md`
 
 4. **Add validation checks** (ongoing):
    - [ ] Extend `03_mergingGSS_val.py` to flag DDAY encoding issues

@@ -46,6 +46,8 @@ MAIN_COMMON_COLS = [
     "HRSWRK",
     "MODE",
     "NOCS",          # 2015/2022 only → NaN for 2005/2010
+    "COW",           # Class of Worker (harmonized 3-category)
+    "WKSWRK",        # Weeks worked per year
     # Metadata flags
     "TOTINC_SOURCE",
     "CYCLE_YEAR",
@@ -437,7 +439,7 @@ def build_hetus_wide(merged: pd.DataFrame) -> pd.DataFrame:
     PERSON_COLS = [
         "occID", "CYCLE_YEAR", "AGEGRP", "SEX", "MARSTH", "HHSIZE", "PR",
         "CMA", "WGHT_PER", "DDAY", "KOL", "LFTAG", "TOTINC", "HRSWRK",
-        "MODE", "NOCS", "TOTINC_SOURCE", "SURVYEAR",
+        "MODE", "NOCS", "COW", "WKSWRK", "TOTINC_SOURCE", "SURVYEAR",
         "COLLECT_MODE", "TUI_10_AVAIL", "BS_TYPE",
         "DAYTYPE", "DDAY_STRATA",
     ]

@@ -12,6 +12,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 
 ### 1A. GSS Main File Variables
 *Source: Statistics Canada GSS PUMF, Cycles 19/24/29/GSSP (2005/2010/2015/2022)*
+*(Note: Variables are read using raw names but are actively renamed to the unified 'Renamed To' schema during Step 1 read/export)*
 
 | Raw GSS Name | Renamed To | Description | C-VAE Role | Encoding |
 |---|---|---|---|---|
@@ -97,7 +98,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ## STEP 2 — DATA HARMONIZATION
 *Cross-cycle alignment for GSS Cycles 2005, 2010, 2015, 2022*
 
-This step standardizes all four GSS cycles into a unified schema before merging. Variable names, category encodings, and value ranges differ across cycles due to questionnaire redesigns and Statistics Canada's 2015 "common tools" transition.
+This step takes the unified schema exports from Step 1 and applies category recodings and missing value alignment. Variable category encodings and value ranges differ across cycles due to questionnaire redesigns and Statistics Canada's 2015 "common tools" transition.
 
 ### 2A. Known Cross-Cycle Variable Discrepancies
 
@@ -123,8 +124,8 @@ This step standardizes all four GSS cycles into a unified schema before merging.
 
 ```
 For each cycle in [2005, 2010, 2015, 2022]:
-  1. Load Main + Episode raw files
-  2. Rename columns to unified schema (see Step 1 naming)
+  1. Load Main + Episode Step 1 exports
+  2. Columns already renamed to unified schema by Step 1 — verify schema before recoding
   3. Apply category recoding per discrepancy table above
   4. Enforce common missing value convention (96/97/98/99 → NaN)
   5. Validate: check marginal distributions match known population benchmarks
@@ -501,9 +502,10 @@ Output format:
 ║  GSS Main (PUMFID, SURVMNTH, 17 demographic vars, weights)              ║
 ║  GSS Episode (occID, DDAY, occACT, start/end, occPRE, co-presence)     ║
 ║  Census PUMF (building: DTYPE, BUILTH, BEDRM, ROOM, VALUE, CONDO…)     ║
+║  * Note: GSS Columns are renamed to unified schema during export       ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 2 — DATA HARMONIZATION (per cycle: 2005/2010/2015/2022)          ║
-║  Rename → Recode categories → Align missing values → Add CYCLE_YEAR    ║
+║  Recode categories → Align missing values → Add CYCLE_YEAR              ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 3 — MERGE & FEATURE DERIVATION                                    ║
 ║  Episode ← Main (LEFT JOIN on occID)                                    ║
@@ -550,6 +552,7 @@ Output format:
 | Census linkage via classical ML (Step 5) | Avoids joint DL training complexity; building variables are slow-changing and well-suited to archetype-level probabilistic matching |
 | Separate Step 5 before Step 6 | Building archetypes are needed as conditioning for 2030 BEM integration; must be established before final forecast |
 | Concordia HPC for Step 4 | ~5.8M sequences × 144 tokens requires GPU parallelization; estimated feasible within standard HPC job allocation |
+| Renaming applied at read time (Step 1) | Unifies schema early so both raw output and harmonized output share semantic columns—Step 2 handles *values* rather than names. |
 | SURVYEAR added as explicit variable (Step 1A) | Required for longitudinal pooling and GSS Historical Database alignment; CYCLE_YEAR and SURVYEAR serve as the primary indexing axis for Model 2 trend encoding |
 | TOTINC harmonized as two regimes (Step 2) | Pre-2022 = self-reported categorical brackets; 2022 = CRA T1FF tax-linked continuous value. Pooling without harmonization would introduce a systematic income measurement artefact across cycles |
 | TUI_01 crosswalk mandatory for 2022 (Step 2) | Statistics Canada restructured activity codes into a two-level hierarchical tree in 2022. Pooling raw codes without crosswalk mapping would make occACT incomparable across cycles, corrupting Model 1 training |
