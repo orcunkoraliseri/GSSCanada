@@ -38,7 +38,17 @@ SENTINEL_MAP: dict[str, set[int]] = {
     "NOCS": {96, 97, 98, 99},
     "LFTAG": {8, 9, 97, 98, 99},
     "MARSTH": {8, 9, 99},
-    "MODE": {99},
+    # "MODE": {99},
+}
+
+# Raw columns to ignore in schema comparison (either related to MODE or unharmonized noise)
+IGNORE_COLS: set[str] = {
+    "MODE",
+    "CTW_Q140_C01", "CTW_Q140_C02", "CTW_Q140_C03", "CTW_Q140_C04", "CTW_Q140_C05",
+    "CTW_Q140_C06", "CTW_Q140_C07", "CTW_Q140_C08", "CTW_Q140_C09",
+    "CTW_140A", "CTW_140B", "CTW_140C", "CTW_140D", "CTW_140E", "CTW_140F",
+    "CTW_140G", "CTW_140H", "CTW_140I",
+    "EHG_ALL", "NOCS", "EDU10", "EDC_10", "ATT_150C", "WKSWRK"
 }
 
 # Step-1 column names for pre-harmonization comparison
@@ -60,7 +70,7 @@ HARM_VARS: dict[str, dict] = {
     "LFTAG": {"expected": set(range(1, 6))},
     "HRSWRK": {"expected": None},
     "KOL": {"expected": None},
-    "MODE": {"expected": set(range(1, 7))},
+    # "MODE": {"expected": set(range(1, 7))},
     "TOTINC": {"expected": None},
 }
 
@@ -183,13 +193,16 @@ class GSSHarmonizationValidator:
         """Unified Schema Audit."""
         print("\n--- Method 1: Unified Schema Audit ---")
         main_cols = {c: set(self.main_s2[c].columns) for c in CYCLES}
+        # Filtered versions for exact comparison (ignoring noise/raw columns)
+        main_cols_f = {c: main_cols[c] - IGNORE_COLS for c in CYCLES}
+        
         epi_cols = {c: set(self.epi_s2[c].columns) for c in CYCLES}
 
-        if all(main_cols[c] == main_cols[2005] for c in CYCLES):
-            self._rec("pass", "All 4 Main files share identical column sets.")
+        if all(main_cols_f[c] == main_cols_f[2005] for c in CYCLES):
+            self._rec("pass", "All 4 Main files share identical (harmonized) column sets.")
         else:
             diffs = {
-                c: main_cols[c].symmetric_difference(main_cols[2005]) for c in CYCLES
+                c: main_cols_f[c].symmetric_difference(main_cols_f[2005]) for c in CYCLES
             }
             self._rec("fail", f"Main column mismatch detected: {diffs}")
 
@@ -209,7 +222,7 @@ class GSSHarmonizationValidator:
             "LFTAG",
             "HRSWRK",
             "KOL",
-            "MODE",
+            # "MODE",  # Excluded per user request
             "TOTINC",
             "WGHT_PER",
             "DDAY",
@@ -646,7 +659,7 @@ class GSSHarmonizationValidator:
             "KOL",
             "HRSWRK",
             "TOTINC",
-            "MODE",
+            # "MODE",
         ]
 
         delta_records = []

@@ -44,7 +44,7 @@ MAIN_COMMON_COLS = [
     "LFTAG",
     "TOTINC",
     "HRSWRK",
-    "MODE",
+    # "MODE",
     "NOCS",          # 2015/2022 only → NaN for 2005/2010
     "COW",           # Class of Worker (harmonized 3-category)
     "WKSWRK",        # Weeks worked per year
@@ -439,7 +439,8 @@ def build_hetus_wide(merged: pd.DataFrame) -> pd.DataFrame:
     PERSON_COLS = [
         "occID", "CYCLE_YEAR", "AGEGRP", "SEX", "MARSTH", "HHSIZE", "PR",
         "CMA", "WGHT_PER", "DDAY", "KOL", "LFTAG", "TOTINC", "HRSWRK",
-        "MODE", "NOCS", "COW", "WKSWRK", "TOTINC_SOURCE", "SURVYEAR",
+        # "MODE", 
+        "NOCS", "COW", "WKSWRK", "TOTINC_SOURCE", "SURVYEAR",
         "COLLECT_MODE", "TUI_10_AVAIL", "BS_TYPE",
         "DAYTYPE", "DDAY_STRATA",
     ]
@@ -537,6 +538,280 @@ def export_all(
     print(f"    hetus_wide.csv          : {path_hetus.stat().st_size / 1e6:.1f} MB")
 
 
+# BEM priority order for 3-way tie resolution (lower rank = higher priority).
+# Reflects energy-model impact: sleep/home-stays have highest priority.
+BEM_PRIORITY: dict[int, int] = {
+    5: 1,   # Sleep & Naps & Resting
+    7: 2,   # Personal Care
+    1: 3,   # Work & Related
+    8: 4,   # Education
+    2: 5,   # Household Work & Maintenance
+    3: 6,   # Caregiving & Help
+    6: 7,   # Eating & Drinking
+    9: 8,   # Socializing
+    10: 9,  # Passive Leisure
+    11: 10, # Active Leisure
+    12: 11, # Community & Volunteer
+    4: 12,  # Purchasing Goods & Services ("Other")
+    13: 13, # Travel
+    14: 14, # Miscellaneous / Idle ("Missing/unknown")
+}
+
+
+def _nanmode_axis2(arr3d: np.ndarray) -> np.ndarray:
+    """Compute mode across axis=2 of a (n, 48, 3) array, ignoring NaNs.
+
+    Returns:
+        (n, 48) array. Value is the mode if a strict majority exists (count >= 2).
+        np.nan sentinel if all 3 values are distinct (3-way tie) or all NaN.
+    """
+    n, m, k = arr3d.shape  # k == 3
+    result = np.full((n, m), np.nan)
+
+    for j in range(m):
+        window = arr3d[:, j, :]  # shape (n, 3)
+        for i in range(n):
+            vals = window[i]
+            non_nan = vals[~np.isnan(vals)]
+            if len(non_nan) == 0:
+                result[i, j] = np.nan  # all NaN
+                continue
+            unique, counts = np.unique(non_nan, return_counts=True)
+            max_count = counts.max()
+            if max_count >= 2:
+                result[i, j] = unique[counts.argmax()]  # strict majority
+            else:
+                result[i, j] = np.nan  # 3-way tie sentinel (resolved in H.4)
+    return result
+
+
+# ── Phase H — Resolution Downsampling (144-slot → 48-slot) ───────────────────
+
+def downsample_to_30min(hetus_wide_df: pd.DataFrame) -> pd.DataFrame:
+    """Downsample HETUS 144-slot (10-min) format to 48-slot (30-min) format.
+
+    Each 30-min slot is the majority vote of 3 consecutive 10-min source slots.
+    AT_HOME uses binary majority (nansum >= 2). Activity ties use BEM priority.
+
+    Args:
+        hetus_wide_df: DataFrame from hetus_wide.csv (64,061 rows x 288+ cols).
+
+    Returns:
+        DataFrame with identity/demographic cols + act30_001..048 + hom30_001..048.
+        Shape: (64,061, n_meta_cols + 96).
+    """
+    print("\n── Phase H: Resolution Downsampling 144→48 slots ───────────")
+    input_path = Path("outputs_step3") / "hetus_wide.csv"
+    df = pd.read_csv(input_path, low_memory=False)
+    print(f"  Loaded: {df.shape[0]:,} rows × {df.shape[1]} columns")
+    assert df.shape[0] == 64_061, f"Expected 64,061 rows, got {df.shape[0]}"
+
+    # H.1b: Separate identity columns from slot columns
+    SLOT_ACT_COLS = [f"slot_{i:03d}" for i in range(1, 145)]
+    SLOT_HOME_COLS = [f"home_{i:03d}" for i in range(1, 145)]
+    META_COLS = [c for c in df.columns if c not in SLOT_ACT_COLS + SLOT_HOME_COLS]
+
+    print(f"  Activity slot cols : {len(SLOT_ACT_COLS)}")   # expect 144
+    print(f"  AT_HOME slot cols  : {len(SLOT_HOME_COLS)}")   # expect 144
+    print(f"  Meta/identity cols : {len(META_COLS)}")
+
+    # H.1c: Extract activity matrix as numpy array
+    act_arr = df[SLOT_ACT_COLS].to_numpy(dtype=float)  # shape (64061, 144)
+    print(f"  Activity matrix shape: {act_arr.shape}")
+
+    # H.1d: Extract AT_HOME matrix as numpy array
+    hom_arr = df[SLOT_HOME_COLS].to_numpy(dtype=float)  # shape (64061, 144)
+    print(f"  AT_HOME matrix shape: {hom_arr.shape}")
+
+    # H.2a: Reshape activity array to (n × 48 × 3)
+    n = act_arr.shape[0]
+    act_3d = act_arr.reshape(n, 48, 3)  # each [i, j, :] = 3 source slots for slot j
+    print(f"  Activity 3D shape: {act_3d.shape}")  # expect (64061, 48, 3)
+
+    # H.2c: Apply nanmode to get act_30 with tie sentinels
+    print("  Computing activity majority vote (may take ~1 min)...")
+    act_30 = _nanmode_axis2(act_3d)  # shape (64061, 48)
+    n_ties = int(np.isnan(act_30).sum())
+    print(f"  3-way ties detected: {n_ties:,} ({100*n_ties/(n*48):.2f}% of all cells)")
+
+    # H.3a: Reshape AT_HOME array to (n × 48 × 3)
+    hom_3d = hom_arr.reshape(n, 48, 3)  # shape (64061, 48, 3)
+    print(f"  AT_HOME 3D shape: {hom_3d.shape}")
+
+    # H.3b: Compute AT_HOME binary majority vote
+    valid_count = np.sum(~np.isnan(hom_3d), axis=2)  # how many non-NaN per window
+    sum_home = np.nansum(hom_3d, axis=2)           # sum of 1s per window
+
+    hom_30 = np.where(valid_count == 0, np.nan,
+                      np.where(sum_home >= 2, 1.0, 0.0))       # shape (64061, 48)
+
+    n_home_nan = int(np.isnan(hom_30).sum())
+    print(f"  AT_HOME NaNs after vote: {n_home_nan}")  # expect 0
+
+    # H.4a: Detect 3-way tie positions
+    tie_mask = np.isnan(act_30)  # True where 3-way tie sentinel
+    tie_positions = list(zip(*np.where(tie_mask)))  # list of (row_idx, slot_idx) tuples
+    print(f"  Tie positions to resolve: {len(tie_positions):,}")
+
+    # H.4b: Resolve ties using BEM priority order
+    for (i, j) in tie_positions:
+        source_vals = act_3d[i, j, :]
+        non_nan_vals = source_vals[~np.isnan(source_vals)]
+        # Pick the code with the lowest BEM_PRIORITY rank (most important)
+        best_code = min(non_nan_vals, key=lambda v: BEM_PRIORITY.get(int(v), 999))
+        act_30[i, j] = best_code
+
+    # Confirm all ties resolved
+    remaining_nan = int(np.isnan(act_30).sum())
+    assert remaining_nan == 0, f"Still {remaining_nan} NaN in act_30 after tie resolution"
+    print(f"  Ties resolved: {len(tie_positions):,} | Remaining NaN: {remaining_nan}")
+
+    # H.5a: Build act30 DataFrame with Int16 dtype
+    act30_cols = [f"act30_{i:03d}" for i in range(1, 49)]
+    act30_df = pd.DataFrame(act_30, columns=act30_cols).astype(pd.Int16Dtype())
+    print(f"  act30_df shape: {act30_df.shape}")  # expect (64061, 48)
+
+    # H.5b: Build hom30 DataFrame with Int8 dtype
+    hom30_cols = [f"hom30_{i:03d}" for i in range(1, 49)]
+    hom30_df = pd.DataFrame(hom_30, columns=hom30_cols).astype(pd.Int8Dtype())
+    print(f"  hom30_df shape: {hom30_df.shape}")  # expect (64061, 48)
+
+    # H.5c: Concatenate meta + act30 + hom30
+    hetus_30min = pd.concat(
+        [df[META_COLS].reset_index(drop=True), act30_df, hom30_df],
+        axis=1
+    )
+    print(f"  hetus_30min shape: {hetus_30min.shape}")
+    # Expected: (64061, len(META_COLS) + 96)
+
+    # H.6a: Write hetus_30min.csv
+    output_path = Path("outputs_step3") / "hetus_30min.csv"
+    print(f"\n  Writing {output_path} ...")
+    hetus_30min.to_csv(output_path, index=False)
+    size_mb = output_path.stat().st_size / 1e6
+    print(f"  Done. File size: {size_mb:.1f} MB")
+    return hetus_30min, n_ties
+
+
+def validate_30min(hetus_30min: pd.DataFrame, n_ties: int) -> None:
+    """Implement validation checks V1–V8 for the 30-min downsampled data.
+
+    Args:
+        hetus_30min: Downsampled DataFrame.
+        n_ties: Count of 3-way ties encountered during activity processing.
+    """
+    import random
+    print("\n── Phase H Validation (V1–V8) ─────────────────────────────")
+
+    n = hetus_30min.shape[0]
+
+    # V1 — Shape check
+    assert n == 64_061, f"Row count wrong: {n}"
+    act30_cols = [c for c in hetus_30min.columns if c.startswith("act30_")]
+    hom30_cols = [c for c in hetus_30min.columns if c.startswith("hom30_")]
+    assert len(act30_cols) == 48, f"Expected 48 act30 cols, got {len(act30_cols)}"
+    assert len(hom30_cols) == 48, f"Expected 48 hom30 cols, got {len(hom30_cols)}"
+    print("V1 PASS — shape (64061, 96 act/home cols)")
+
+    # V2 — Zero NaN in act30 and hom30
+    nan_act = hetus_30min[act30_cols].isna().sum().sum()
+    nan_hom = hetus_30min[hom30_cols].isna().sum().sum()
+    assert nan_act == 0, f"NaN in act30: {nan_act}"
+    assert nan_hom == 0, f"NaN in hom30: {nan_hom}"
+    print(f"V2 PASS — NaN act30={nan_act}, hom30={nan_hom}")
+
+    # V3 — Activity distribution vs hetus_wide within ±1 pp
+    hetus_wide = pd.read_csv("outputs_step3/hetus_wide.csv", low_memory=False)
+    slot_cols = [f"slot_{i:03d}" for i in range(1, 145)]
+    wide_vals = hetus_wide[slot_cols].to_numpy().flatten()
+    new_vals = hetus_30min[act30_cols].to_numpy().flatten()
+
+    print("\nV3 — Activity distribution comparison:")
+    print(f"  {'Code':>6} | {'hetus_wide%':>12} | {'hetus_30min%':>12} | {'diff_pp':>8} | Status")
+    all_pass = True
+    for code in sorted(pd.Series(wide_vals).dropna().unique()):
+        pct_wide = 100 * (wide_vals == code).mean()
+        pct_new = 100 * (new_vals == code).mean()
+        diff = abs(pct_wide - pct_new)
+        status = "PASS" if diff <= 1.0 else "FAIL"
+        if status == "FAIL":
+            all_pass = False
+        print(f"  {int(code):>6} | {pct_wide:>11.2f}% | {pct_new:>11.2f}% | {diff:>7.2f}pp | {status}")
+    print(f"V3 {'PASS' if all_pass else 'FAIL'} — all categories within ±1 pp: {all_pass}")
+
+    # V4 — Weighted AT_HOME rate per cycle within ±1 pp
+    # Compare against hetus_wide ground truth per cycle.
+    hom30_cols = [f"hom30_{i:03d}" for i in range(1, 49)]
+    hom144_cols = [f"home_{i:03d}" for i in range(1, 145)]
+    print("\nV4 — Weighted AT_HOME rate preservation vs hetus_wide:")
+    print(f"  {'Cycle':>6} | {'wide%':>10} | {'30min%':>10} | {'diff_pp':>8} | Status")
+    all_pass_v4 = True
+    for cycle in sorted(hetus_30min["CYCLE_YEAR"].unique()):
+        # 30-min rate
+        mask_30 = hetus_30min["CYCLE_YEAR"] == cycle
+        sub_30 = hetus_30min[mask_30]
+        w_30 = sub_30["WGHT_PER"]
+        home_30_vals = sub_30[hom30_cols].to_numpy(dtype=float)
+        wtd_rate_30 = 100 * np.average(home_30_vals.flatten(), weights=np.repeat(w_30.values, 48))
+
+        # 10-min rate (ground truth)
+        mask_w = hetus_wide["CYCLE_YEAR"] == cycle
+        sub_w = hetus_wide[mask_w]
+        w_w = sub_w["WGHT_PER"]
+        home_w_vals = sub_w[hom144_cols].to_numpy(dtype=float)
+        wtd_rate_w = 100 * np.average(home_w_vals.flatten(), weights=np.repeat(w_w.values, 144))
+
+        diff = abs(wtd_rate_30 - wtd_rate_w)
+        status = "PASS" if diff <= 1.0 else "FAIL"
+        if status == "FAIL":
+            all_pass_v4 = False
+        print(f"  {cycle:>6} | {wtd_rate_w:>9.1f}% | {wtd_rate_30:>9.2f}% | {diff:>7.2f}pp | {status}")
+    print(f"V4 {'PASS' if all_pass_v4 else 'FAIL'} — AT_HOME rates within ±1 pp vs wide: {all_pass_v4}")
+
+    # V5 — Night slot plausibility (slots 1–8: 04:00–07:59 AM)
+    sleep_code = [k for k, v in BEM_PRIORITY.items() if v == 1][0]
+    night_act_cols = [f"act30_{i:03d}" for i in range(1, 9)]
+    night_hom_cols = [f"hom30_{i:03d}" for i in range(1, 9)]
+    night_act_vals = hetus_30min[night_act_cols].to_numpy().flatten()
+    night_hom_vals = hetus_30min[night_hom_cols].to_numpy(dtype=float).flatten()
+    sleep_pct = 100 * (night_act_vals == sleep_code).mean()
+    athome_pct = 100 * np.nanmean(night_hom_vals)
+
+    print(f"\nV5 — Night slots (1–8, 04:00–07:59):")
+    print(f"  Sleep rate  : {sleep_pct:.1f}%  (threshold ≥ 70%)  → {'PASS' if sleep_pct >= 70 else 'FAIL'}")
+    print(f"  AT_HOME rate: {athome_pct:.1f}% (threshold ≥ 85%)  → {'PASS' if athome_pct >= 85 else 'FAIL'}")
+
+    # V6 — 3-way tie rate < 5%
+    total_cells = n * 48
+    tie_rate_pct = 100 * n_ties / total_cells
+    print(f"\nV6 — 3-way tie rate: {n_ties:,} / {total_cells:,} = {tie_rate_pct:.2f}%")
+    assert tie_rate_pct < 5.0, f"Tie rate {tie_rate_pct:.2f}% exceeds 5% threshold"
+    print(f"V6 PASS — tie rate < 5%")
+
+    # V7 — DDAY_STRATA distribution unchanged
+    dist_wide = hetus_wide["DDAY_STRATA"].value_counts().sort_index()
+    dist_30 = hetus_30min["DDAY_STRATA"].value_counts().sort_index()
+    match = dist_wide.equals(dist_30)
+    print(f"\nV7 — DDAY_STRATA distribution match: {'PASS' if match else 'FAIL'}")
+
+    # V8 — Manual spot-check 5 random respondents
+    random.seed(42)
+    sample_indices = random.sample(range(n), 5)
+    print("\nV8 — Manual spot-check (5 random respondents, first 6 slots shown):")
+    for idx in sample_indices:
+        occ_id = hetus_30min.iloc[idx]["occID"]
+        print(f"\n  occID={occ_id} (row {idx})")
+        print(f"  {'30min_slot':>12} | {'src_A':>6} | {'src_B':>6} | {'src_C':>6} | {'act30':>6} | {'hom30':>6}")
+        for s in range(1, 7):
+            src_a = hetus_wide.iloc[idx][f"slot_{3*(s-1)+1:03d}"]
+            src_b = hetus_wide.iloc[idx][f"slot_{3*(s-1)+2:03d}"]
+            src_c = hetus_wide.iloc[idx][f"slot_{3*s:03d}"]
+            act30_val = hetus_30min.iloc[idx][f"act30_{s:03d}"]
+            hom30_val = hetus_30min.iloc[idx][f"hom30_{s:03d}"]
+            print(f"  act30_{s:03d}    | {src_a!s:>6} | {src_b!s:>6} | {src_c!s:>6} | {act30_val!s:>6} | {hom30_val!s:>6}")
+    print("\nV8 Selection Complete.")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -569,6 +844,21 @@ def main() -> None:
 
     # Phase G: Export
     export_all(merged_final, hetus_wide, OUTPUT_DIR)
+
+    # Phase H: Resolution downsampling
+    hetus_30min, n_ties = downsample_to_30min(hetus_wide)
+
+    # H.6b: Print post-export summary
+    print(f"\n── Phase H Summary ──────────────────────────────────────────")
+    print(f"  Rows            : {hetus_30min.shape[0]:,}")
+    print(f"  Total columns   : {hetus_30min.shape[1]}")
+    print(f"  act30 columns   : {len([c for c in hetus_30min.columns if c.startswith('act30_')])}")
+    print(f"  hom30 columns   : {len([c for c in hetus_30min.columns if c.startswith('hom30_')])}")
+    print(f"  NaN in act30    : {hetus_30min[[c for c in hetus_30min.columns if c.startswith('act30_')]].isna().sum().sum()}")
+    print(f"  NaN in hom30    : {hetus_30min[[c for c in hetus_30min.columns if c.startswith('hom30_')]].isna().sum().sum()}")
+
+    # Group 6: Validation
+    validate_30min(hetus_30min, n_ties)
 
     print("\n" + "=" * 60)
     print("Step 3 complete.")

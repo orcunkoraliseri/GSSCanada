@@ -21,7 +21,7 @@ SENTINEL_MAP = {
     "NOCS": {96, 97, 98, 99},
     # LFTAG sentinels are handled inside recode_lftag per-cycle before this map runs.
     "MARSTH": {8, 9, 99},
-    "MODE": {99},
+    # "MODE": {99},
     "WKSWRK": {96, 97, 98, 99},
     # COW sentinels are handled inside recode_cow() per-cycle (values differ across cycles).
 }
@@ -546,7 +546,7 @@ def harmonize_main(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
     df = recode_hhsize(df, cycle)
     df = recode_hrswrk(df, cycle)
     df = recode_kol(df, cycle)
-    df = derive_mode(df, cycle)
+    # df = derive_mode(df, cycle)
     df = recode_totinc(df, cycle)
     df = recode_cow(df, cycle)
 
@@ -568,6 +568,33 @@ def harmonize_episode(
     df = check_diary_closure(df, cycle)
 
     df["CYCLE_YEAR"] = cycle
+
+    # RF-B1: Drop raw source columns — replaced by derived occACT / occPRE
+    df = df.drop(columns=["ACTCODE", "TUI_01", "PLACE", "LOCATION"], errors="ignore")
+
+    # RF-B2: Drop TOTEPISO — 2015-only; derivable from max(EPINO) per occID if needed
+    df = df.drop(columns=["TOTEPISO"], errors="ignore")
+
+    # RF-B3: Standardize TUI_07 (tech use) — NaN for 2005/2010 where absent
+    if "TUI_07" not in df.columns:
+        df["TUI_07"] = pd.NA
+
+    # RF-B4: Unify well-being column → wellbeing (TUI_10 for 2015, TUI_15 for 2022)
+    if cycle == 2015:
+        if "TUI_10" in df.columns:
+            df = df.rename(columns={"TUI_10": "wellbeing"})
+            df["wellbeing"] = df["wellbeing"].replace({96: pd.NA, 97: pd.NA, 98: pd.NA, 99: pd.NA})
+        else:
+            df["wellbeing"] = pd.NA
+    elif cycle == 2022:
+        if "TUI_15" in df.columns:
+            df = df.rename(columns={"TUI_15": "wellbeing"})
+            df["wellbeing"] = df["wellbeing"].replace({9: pd.NA})
+        else:
+            df["wellbeing"] = pd.NA
+    else:  # 2005, 2010
+        df["wellbeing"] = pd.NA
+
     return df
 
 

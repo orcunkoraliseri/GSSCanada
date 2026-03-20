@@ -140,6 +140,15 @@ class GSSMergeValidator:
         print(f"  hetus_wide: {len(self.hetus):,} rows × "
               f"{self.hetus.shape[1]} cols")
 
+        h30_path = f"{step3_dir}/hetus_30min.csv"
+        if os.path.exists(h30_path):
+            self.hetus_30min = pd.read_csv(h30_path, low_memory=False)
+            print(f"  hetus_30min: {len(self.hetus_30min):,} rows × "
+                  f"{self.hetus_30min.shape[1]} cols")
+        else:
+            self.hetus_30min = None
+            print("  hetus_30min: NOT FOUND — Section 7 will be skipped")
+
         self.step3_dir = step3_dir
         self.results: dict[str, list[str]] = {"pass": [], "fail": [], "warn": []}
         self.plots_b64: dict[str, str] = {}
@@ -880,7 +889,7 @@ class GSSMergeValidator:
                       f"(expected 55–75%)")
 
         # Check 5.3: Demographic marginals Step2 vs Step3
-        for var in ["SEX", "AGEGRP", "MARSTH", "HHSIZE", "CMA", "LFTAG", "HRSWRK", "KOL", "MODE", "TOTINC"]:
+        for var in ["SEX", "AGEGRP", "MARSTH", "HHSIZE", "CMA", "LFTAG", "HRSWRK", "KOL", "TOTINC"]: # "MODE",
             for c in CYCLES:
                 if var not in self.main_s2[c].columns:
                     continue
@@ -974,7 +983,7 @@ class GSSMergeValidator:
 
         # Chart 5c: Demographics Step2 vs Step3 per cycle
         _apply_dark()
-        demo_vars = ["SEX", "AGEGRP", "MARSTH", "HHSIZE", "CMA", "LFTAG", "HRSWRK", "KOL", "MODE", "TOTINC"]
+        demo_vars = ["SEX", "AGEGRP", "MARSTH", "HHSIZE", "CMA", "LFTAG", "HRSWRK", "KOL", "TOTINC"] # "MODE",
         fig, axes = plt.subplots(
             len(demo_vars), len(CYCLES),
             figsize=(16, 4 * len(demo_vars)))
@@ -1142,6 +1151,152 @@ class GSSMergeValidator:
         self.summary_data["summary_df"] = summary_df
         return summary_df
 
+    # ── Section 7: 30-Minute Resolution Downsampling ────────────────────────────
+
+    def validate_30min_downsampling(self) -> None:
+        print("\n─── Section 7: 30-Minute Resolution Downsampling ─────────────────")
+        if self.hetus_30min is None:
+            print("  ⚠️  hetus_30min not loaded — Section 7 skipped")
+            return
+
+        _apply_dark()
+        h30 = self.hetus_30min
+        hw = self.hetus
+
+        STRATA_LABELS = {1: "Weekday", 2: "Saturday", 3: "Sunday"}
+        STRATA_COLORS = {1: "#89b4fa", 2: "#f38ba8", 3: "#a6e3a1"}
+
+        ACT_COLS_30 = [f"act30_{i:03d}" for i in range(1, 49)]
+        HOM_COLS_30 = [f"hom30_{i:03d}" for i in range(1, 49)]
+        SLOT_COLS_10 = [f"slot_{i:03d}" for i in range(1, 145)]
+
+        act_cols_30_present = [c for c in ACT_COLS_30 if c in h30.columns]
+        hom_cols_30_present = [c for c in HOM_COLS_30 if c in h30.columns]
+        slot_cols_10_present = [c for c in SLOT_COLS_10 if c in hw.columns]
+
+        act_ids = sorted(ACT_LABELS.keys())
+        act_names = [ACT_LABELS[a] for a in act_ids]
+
+        # ── 7a: Activity distribution comparison ──────────────────────────
+        fig7a, axes = plt.subplots(1, 3, figsize=(21, 9), sharey=True)
+        fig7a.suptitle(
+            "Section 7a — Activity Distribution: 10-min vs 30-min by Day Type",
+            color="#cdd6f4", fontsize=13, y=1.01)
+
+        for ax, (sid, sname) in zip(axes, STRATA_LABELS.items()):
+            mask_hw = (hw["DDAY_STRATA"] == sid
+                       if "DDAY_STRATA" in hw.columns
+                       else pd.Series(True, index=hw.index))
+            hw_sub = hw[mask_hw]
+            if len(hw_sub) > 0 and slot_cols_10_present:
+                vals_10 = hw_sub[slot_cols_10_present].values.flatten()
+                vals_10 = vals_10[~np.isnan(vals_10.astype(float))].astype(int)
+                props_10 = np.array([np.mean(vals_10 == a) for a in act_ids])
+            else:
+                props_10 = np.zeros(len(act_ids))
+
+            mask_h30 = (h30["DDAY_STRATA"] == sid
+                        if "DDAY_STRATA" in h30.columns
+                        else pd.Series(True, index=h30.index))
+            h30_sub = h30[mask_h30]
+            if len(h30_sub) > 0 and act_cols_30_present:
+                arr_30 = h30_sub[act_cols_30_present].values.flatten()
+                arr_30 = arr_30[~np.isnan(arr_30.astype(float))].astype(int)
+                props_30 = np.array([np.mean(arr_30 == a) for a in act_ids])
+            else:
+                props_30 = np.zeros(len(act_ids))
+
+            y = np.arange(len(act_ids))
+            bar_h = 0.35
+            ax.barh(y + bar_h / 2, props_10 * 100, bar_h,
+                    color="#89b4fa", alpha=0.85, label="10-min")
+            ax.barh(y - bar_h / 2, props_30 * 100, bar_h,
+                    color=STRATA_COLORS[sid], alpha=0.85, label="30-min")
+
+            ax.set_yticks(y)
+            ax.set_yticklabels(act_names, fontsize=9)
+            ax.set_xlabel("% of slots", color="#cdd6f4", fontsize=10)
+            ax.set_title(sname, color="#cdd6f4", fontsize=11, pad=8)
+            ax.legend(fontsize=8)
+            ax.grid(axis="x", alpha=0.3)
+
+        plt.tight_layout()
+        self.plots_b64["7a_act_dist_30min"] = _b64(fig7a)
+        print("  ✅ 7a: Activity distribution (10-min vs 30-min by stratum)")
+
+        # ── 7b: AT_HOME daily rhythm ───────────────────────────────────────
+        fig7b, ax = plt.subplots(figsize=(16, 5))
+        fig7b.suptitle("Section 7b — AT_HOME Daily Rhythm at 30-min Resolution",
+                       color="#cdd6f4", fontsize=13)
+
+        slot_labels = []
+        for i in range(48):
+            total_min = 4 * 60 + i * 30
+            hh = (total_min // 60) % 24
+            mm = total_min % 60
+            slot_labels.append(f"{hh:02d}:{mm:02d}" if mm == 0 else "")
+
+        x = np.arange(48)
+        for sid, sname in STRATA_LABELS.items():
+            mask = (h30["DDAY_STRATA"] == sid
+                    if "DDAY_STRATA" in h30.columns
+                    else pd.Series(True, index=h30.index))
+            sub = h30[mask]
+            if len(sub) > 0 and hom_cols_30_present:
+                rates = sub[hom_cols_30_present].mean().values * 100
+                ax.plot(x, rates, color=STRATA_COLORS[sid], linewidth=2,
+                        label=sname, marker="o", markersize=3)
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(slot_labels, rotation=45, fontsize=7)
+        ax.set_xlabel("30-min slot (04:00 AM origin)", color="#cdd6f4")
+        ax.set_ylabel("AT_HOME rate (%)", color="#cdd6f4")
+        ax.legend()
+        ax.grid(alpha=0.3)
+        plt.tight_layout()
+        self.plots_b64["7b_at_home_rhythm"] = _b64(fig7b)
+        print("  ✅ 7b: AT_HOME daily rhythm (30-min by stratum)")
+
+        # ── 7c: Activity heatmap ───────────────────────────────────────────
+        fig7c, axes = plt.subplots(1, 3, figsize=(21, 7), sharey=True)
+        fig7c.suptitle(
+            "Section 7c — Activity Heatmap at 30-min Resolution (% of respondents)",
+            color="#cdd6f4", fontsize=13, y=1.02)
+
+        tick_pos = list(range(0, 48, 4))
+        tick_lbl = []
+        for t in tick_pos:
+            total_min = 4 * 60 + t * 30
+            hh = (total_min // 60) % 24
+            tick_lbl.append(f"{hh:02d}h")
+
+        for ax, (sid, sname) in zip(axes, STRATA_LABELS.items()):
+            mask = (h30["DDAY_STRATA"] == sid
+                    if "DDAY_STRATA" in h30.columns
+                    else pd.Series(True, index=h30.index))
+            sub = h30[mask]
+
+            mat = np.zeros((len(act_ids), 48))
+            if len(sub) > 0 and act_cols_30_present:
+                arr = sub[act_cols_30_present].values.astype(float)
+                for ai, act_id in enumerate(act_ids):
+                    mat[ai] = np.nanmean(arr == act_id, axis=0) * 100
+
+            im = ax.imshow(mat, aspect="auto", cmap="plasma",
+                           interpolation="nearest", vmin=0)
+            ax.set_yticks(range(len(act_ids)))
+            ax.set_yticklabels(act_names, fontsize=8)
+            ax.set_xlabel("30-min slot", color="#cdd6f4", fontsize=9)
+            ax.set_title(sname, color="#cdd6f4", fontsize=11, pad=8)
+            ax.set_xticks(tick_pos)
+            ax.set_xticklabels(tick_lbl, fontsize=8)
+            plt.colorbar(im, ax=ax, fraction=0.04, pad=0.02,
+                         label="% of respondents")
+
+        plt.tight_layout()
+        self.plots_b64["7c_act_heatmap"] = _b64(fig7c)
+        print("  ✅ 7c: Activity heatmap (30-min, 3 panels by stratum)")
+
     # ── HTML Report ─────────────────────────────────────────────────────────────
 
     def build_html_report(self) -> str:
@@ -1178,6 +1333,12 @@ class GSSMergeValidator:
              "Section 5c — Demographic Distributions: Step 2 vs. Step 3"),
             ("5d_episodes_per_resp",
              "Section 5d — Episodes per Respondent by Cycle"),
+            ("7a_act_dist_30min",
+             "Section 7a — Activity Distribution: 10-min vs 30-min by Day Type"),
+            ("7b_at_home_rhythm",
+             "Section 7b — AT_HOME Daily Rhythm at 30-min Resolution"),
+            ("7c_act_heatmap",
+             "Section 7c — Activity Heatmap at 30-min Resolution"),
         ]
 
         charts_html = ""
@@ -1229,6 +1390,8 @@ class GSSMergeValidator:
             for k, lbl in chart_sections
             if k in self.plots_b64)
         nav_links += '<a href="#summary-table">Section 6</a>'
+        if "7a_act_dist_30min" in self.plots_b64:
+            nav_links += '<a href="#7a_act_dist_30min">Section 7</a>'
 
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -1396,6 +1559,7 @@ class GSSMergeValidator:
         self.validate_hetus_slots()
         self.validate_cross_cycle_consistency()
         self.generate_summary_table()
+        self.validate_30min_downsampling()
         self.build_html_report()
         n_p = len(self.results["pass"])
         n_w = len(self.results["warn"])

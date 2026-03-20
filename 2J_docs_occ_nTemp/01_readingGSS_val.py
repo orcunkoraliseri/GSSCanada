@@ -84,12 +84,12 @@ DEMO_VARS: dict[str, dict[str, str | None]] = {
         "2005": "HRSWRK", "2010": "HRSWRK",
         "2015": "HRSWRK", "2022": "HRSWRK",
     },
-    "MODE": {
-        "2005": None,              # Absent from 2005 GSS
-        "2010": "__CTW_2010__",    # derived from CTW_Q140_C01–C09
-        "2015": "__CTW_2015__",    # derived from CTW_140A–I
-        "2022": "MODE",            # derived directly after rename
-    },
+    # "MODE": {
+    #     "2005": None,              # Absent from 2005 GSS
+    #     "2010": "__CTW_2010__",    # derived from CTW_Q140_C01–C09
+    #     "2015": "__CTW_2015__",    # derived from CTW_140A–I
+    #     "2022": "MODE",            # derived directly after rename
+    # },
     "KOL": {
         "2005": "KOL",   "2010": "KOL",
         "2015": "KOL",  "2022": "KOL",
@@ -148,7 +148,7 @@ STEP1_OVERVIEW = """\
 ║  │  occID (PUMFID), SURVYEAR, SURVMNTH                                │ ║
 ║  ├─ Demographic ─────────────────────────────────────────────────────┤ ║
 ║  │  PR, HHSIZE, AGEGRP, SEX, MARSTH, KOL, ATTSCH, NOCS, LFTAG,      │ ║
-║  │  COW, HRSWRK, MODE, POWST, CMA                                    │ ║
+║  │  COW, HRSWRK, POWST, CMA                                    │ ║
 ║  ├─ Socioeconomic ───────────────────────────────────────────────────┤ ║
 ║  │  TOTINC (self-reported 2005–2015 / CRA-linked 2022)               │ ║
 ║  └─ Weights ─────────────────────────────────────────────────────────┘ ║

@@ -99,7 +99,7 @@ MAIN_RENAME_MAP = {
         "PUMFID": "occID", "AGEGR10": "AGEGRP", "GENDER2": "SEX", "MARSTAT": "MARSTH",
         "HSDSIZEC": "HHSIZE", "PRV": "PR", "LUC_RST": "CMA", "WGHT_PER": "WGHT_PER",
         "DVTDAY": "DDAY", "LAN_01": "KOL", "ACT7DAYC": "LFTAG", "INC_C": "TOTINC",
-        "WHWD140G": "HRSWRK", "NOCLBR_Y": "NOCS", "ATT_150C": "MODE",
+        "WHWD140G": "HRSWRK", "NOCLBR_Y": "NOCS", # "ATT_150C": "MODE",
         "SURVMNTH": "SURVMNTH", "WET_120": "COW",
     },
 }

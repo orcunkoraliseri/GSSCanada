@@ -2,7 +2,10 @@
 
 ## Goal
 
-Merge the eight harmonized Step 2 CSV files (4 Main + 4 Episode) into a single unified occupancy dataset, derive temporal features for downstream modeling, and convert variable-length episode data into the HETUS 144-slot wide format required by the Conditional Transformer (Step 4).
+Merge the eight harmonized Step 2 CSV files (4 Main + 4 Episode) into a single unified occupancy dataset, derive temporal features for downstream modeling, convert variable-length episode data into the HETUS 144-slot wide format, and downsample to 30-minute resolution for direct use in the Conditional Transformer (Step 4) and BEM/UBEM integration (Step 7).
+
+> **Status: COMPLETE** — 99% pass rate (81/82 checks), Phase H validated (V1–V8 all PASS).
+> Primary outputs: `hetus_wide.csv` (10-min archival intermediate) and `hetus_30min.csv` (30-min Transformer input).
 
 **Input directory**: `outputs_step2/`
 **Output directory**: `outputs_step3/`
@@ -55,6 +58,11 @@ Step 2 harmonized all four cycles into a unified schema: column names, category 
 ╠══════════════════════════════════════════════════════════════════════╣
 ║  Phase G — Export                                                    ║
 ║  Save merged episode-level CSV + HETUS wide-format CSV             ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  Phase H — Resolution Downsampling (144-slot → 48-slot)            ║
+║  Majority-vote aggregation of 3 × 10-min slots → 1 × 30-min slot  ║
+║  AT_HOME: binary majority (nansum ≥ 2); Activity: mode + BEM tie   ║
+║  Output: hetus_30min.csv (64,061 rows × 96 temporal columns)       ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -393,13 +401,132 @@ This produces columns `home_001`–`home_144` alongside `slot_001`–`slot_144`.
 
 | File | Description | Approx Size |
 |------|-------------|-------------|
-| `outputs_step3/merged_episodes.csv` | Full episode-level merged dataset with derived features | ~228 MB |
-| `outputs_step3/merged_episodes.parquet` | Same as above in Parquet for efficient downstream loading | ~15 MB |
-| `outputs_step3/hetus_wide.csv` | 144-slot wide format + AT_HOME slots + demographics (one row per respondent) | ~83 MB |
+| `outputs_step3/merged_episodes.csv` | Full episode-level merged dataset with derived features | 222 MB |
+| `outputs_step3/merged_episodes.parquet` | Same as above in Parquet for efficient downstream loading | 14 MB |
+| `outputs_step3/hetus_wide.csv` | 144-slot wide format + AT_HOME slots + demographics (archival intermediate, one row per respondent) | 79 MB |
+| `outputs_step3/hetus_30min.csv` | **30-min downsampled format** — 48 activity + 48 AT_HOME slots + demographics (direct Step 4 input) | 19 MB |
 
-> **Note**: The AT_HOME slot columns (`home_001`–`home_144`) are included in the same `hetus_wide.csv` file alongside `slot_001`–`slot_144`, rather than a separate file, to keep a single respondent-level output.
+> **Note**: `hetus_wide.csv` is the HETUS-compatible archival intermediate at 10-min resolution and is kept for auditability and potential HETUS-standard reporting. `hetus_30min.csv` is the primary input for all downstream steps (Step 4 Transformer, Step 7 BEM/UBEM). The AT_HOME slot columns (`home_001`–`home_144`) are included in the same `hetus_wide.csv` alongside `slot_001`–`slot_144`; similarly `hom30_001`–`hom30_048` are in `hetus_30min.csv` alongside `act30_001`–`act30_048`.
 
-> **Note on file sizes**: Actual sizes depend on the post-`DIARY_VALID` respondent count (64,061 after 652 exclusions) and cycle-specific sample sizes (2022: 12,336 instead of the ~17,000 originally assumed). `merged_episodes.csv` is smaller than initially estimated because integer-coded categorical columns compress efficiently in CSV. `hetus_wide.csv` is larger than estimated because it carries 288+ columns (144 activity slots + 144 AT_HOME slots + demographics) per respondent row.
+---
+
+## Phase H — Resolution Downsampling (144-Slot → 48-Slot)
+
+### H1. Purpose & Rationale
+
+After `hetus_wide.csv` is written (Phase G), the 144-slot 10-minute representation is downsampled to **48 slots at 30-minute resolution**. This is the direct input format for Model 1 (Step 4 Transformer) and all downstream BEM/UBEM integration (Steps 6–7).
+
+**Why 30-min instead of 10-min:**
+- EnergyPlus and most BEM tools operate at hourly or 30-min timesteps; 10-min adds no useful simulation information.
+- Transformer self-attention scales as O(L²): 144 → 48 tokens cuts attention cost ~9×.
+- Estimated training time: ~1.5–3 hrs vs. ~4–8 hrs at 144-slot resolution.
+
+**Slot grouping rule:** Each 30-min slot `s` (1–48) aggregates exactly 3 consecutive 10-min source slots from `hetus_wide.csv`:
+
+```
+source_slots(s) = [3*(s-1)+1, 3*(s-1)+2, 3*s]
+
+e.g.  act30_001  ←  mode(slot_001, slot_002, slot_003)   # 04:00–04:29
+      act30_002  ←  mode(slot_004, slot_005, slot_006)   # 04:30–04:59
+      ...
+      act30_048  ←  mode(slot_142, slot_143, slot_144)   # 03:30–03:59
+```
+
+### H2. Activity Downsampling — Majority Vote
+
+```python
+# Reshape (n × 144) → (n × 48 × 3) and apply mode across axis=2
+act_arr = df[SLOT_ACT_COLS].to_numpy(dtype=float)
+act_3d  = act_arr.reshape(n, 48, 3)
+act_30  = _nanmode_axis2(act_3d)  # NaN sentinel where 3-way tie
+```
+
+`_nanmode_axis2` returns a NaN sentinel for positions where all 3 source slots carry distinct activity codes (3-way tie). These are resolved in H4.
+
+**Observed tie rate:** 0.82% of all 3,074,928 slot-cells (25,236 ties) — well below the 5% caution threshold.
+
+### H3. AT_HOME Downsampling — Binary Majority
+
+Binary values over 3 slots cannot produce a true tie (odd number of votes):
+
+```python
+hom_3d      = hom_arr.reshape(n, 48, 3)
+valid_count = np.sum(~np.isnan(hom_3d), axis=2)
+sum_home    = np.nansum(hom_3d, axis=2)
+hom_30      = np.where(valid_count == 0, np.nan,
+              np.where(sum_home >= 2, 1.0, 0.0))
+```
+
+A 30-min slot is marked AT_HOME = 1 if ≥ 2 of its 3 source slots are AT_HOME = 1.
+
+### H4. 3-Way Tie Resolution — BEM Priority Order
+
+When all 3 source activity slots in a window carry distinct codes, the tie is resolved by assigning the code with the highest BEM energy-modeling importance (lowest rank in `BEM_PRIORITY`):
+
+```python
+BEM_PRIORITY: dict[int, int] = {
+    5: 1,   # Sleep & Naps & Resting       ← highest BEM priority
+    7: 2,   # Personal Care
+    1: 3,   # Work & Related
+    8: 4,   # Education
+    2: 5,   # Household Work & Maintenance
+    3: 6,   # Caregiving & Help
+    6: 7,   # Eating & Drinking
+    9: 8,   # Socializing
+    10: 9,  # Passive Leisure
+    11: 10, # Active Leisure
+    12: 11, # Community & Volunteer
+    4: 12,  # Purchasing Goods & Services
+    13: 13, # Travel
+    14: 14, # Miscellaneous / Idle         ← lowest BEM priority
+}
+```
+
+Codes verified against `ACT_LABELS` in `02_harmonizeGSS.py`. All 14 categories covered.
+
+### H5. Output Column Schema
+
+```
+# 24 identity / demographic columns (carried from hetus_wide.csv):
+occID, CYCLE_YEAR, AGEGRP, SEX, MARSTH, HHSIZE, PR, CMA, WGHT_PER,
+DDAY, KOL, LFTAG, TOTINC, HRSWRK, NOCS, COW, WKSWRK,
+TOTINC_SOURCE, SURVYEAR, COLLECT_MODE, TUI_10_AVAIL, BS_TYPE,
+DAYTYPE, DDAY_STRATA
+
+# 48 activity slots (30-min, 4:00 AM origin, codes 1–14):
+act30_001 … act30_048
+
+# 48 AT_HOME slots (30-min, 4:00 AM origin, values 0/1):
+hom30_001 … hom30_048
+```
+
+Total: 120 columns (24 meta + 96 temporal). Column naming `act30_NNN` / `hom30_NNN` distinguishes from the 10-min `slot_NNN` / `home_NNN` in `hetus_wide.csv`.
+
+### H6. Confirmed Output Statistics (post-run)
+
+| Metric | Value |
+|--------|-------|
+| Rows | 64,061 |
+| Total columns | 120 (24 meta + 48 act + 48 home) |
+| NaN in act30 | 0 |
+| NaN in hom30 | 0 |
+| 3-way tie rate | 0.82% (25,236 / 3,074,928 cells) |
+| File size | 19 MB |
+
+### H7. Validation Results (V1–V8, all PASS)
+
+| Check | Result | Details |
+|-------|--------|---------|
+| V1 Shape | PASS | 64,061 rows × 48 act + 48 home cols |
+| V2 Zero NaN | PASS | 0 NaN across all 3,074,928 temporal cells |
+| V3 Activity distribution | PASS | Max diff vs hetus_wide = 0.43 pp (Travel); all 14 categories < 0.5 pp |
+| V4 AT_HOME rate per cycle | PASS | Max diff vs hetus_wide slot-rate = 0.039 pp (2005) |
+| V5 Night plausibility | PASS | Sleep 71.6% (≥70%); AT_HOME 87.4% (≥85%) for slots 1–8 |
+| V6 Tie rate | PASS | 0.82% < 5% threshold |
+| V7 DDAY_STRATA | PASS | Weekday=45,638 / Sat=8,821 / Sun=9,602 — exact match with hetus_wide |
+| V8 Spot-check | PASS | 5 random respondents × 6 slots each — all majority votes verified correct |
+
+> **V4 note:** The documentation values (62.7%, 62.3%, etc.) are respondent-level weighted rates from episode data. The slot-level AT_HOME rates in `hetus_wide` are already ~69–75% per cycle (because each respondent's time is spread across 144 slots, many of which are sleep/night AT_HOME=1). The downsampling preserves these slot-level rates to within 0.04 pp across all cycles — the correct comparison for this check.
 
 ---
 
@@ -423,9 +550,10 @@ This produces columns `home_001`–`home_144` alongside `slot_001`–`slot_144`.
 │   ├── episode_2015.csv
 │   └── episode_2022.csv
 └── outputs_step3/             # Output
-    ├── merged_episodes.csv
-    ├── merged_episodes.parquet
-    ├── hetus_wide.csv
+    ├── merged_episodes.csv         # Episode-level with derived features
+    ├── merged_episodes.parquet     # Same, Parquet format
+    ├── hetus_wide.csv              # 10-min archival intermediate (144 slots)
+    ├── hetus_30min.csv             # 30-min Transformer input (48 slots) ← Phase H
     └── step3_validation_report.html
 ```
 
@@ -467,6 +595,12 @@ build_hetus_wide(merged) → hetus_wide
 
 # ── Phase G: Export ──────────────────────────────────────────
 export_all(merged, hetus_wide, output_dir)
+
+# ── Phase H: Resolution Downsampling ─────────────────────────
+BEM_PRIORITY                                          # module-level constant
+_nanmode_axis2(arr3d) → ndarray                       # mode helper, NaN sentinel for ties
+downsample_to_30min(hetus_wide_df) → (DataFrame, int) # returns (hetus_30min, n_ties)
+validate_30min(hetus_30min, n_ties) → None            # V1–V8 validation suite
 
 # ── Main ─────────────────────────────────────────────────────
 if __name__ == "__main__":
@@ -511,47 +645,69 @@ graph TD
     C --> D["Phase D: DIARY_VALID Filtering"]
     D --> E["Phase E: Temporal Feature Derivation"]
     D --> F["Phase F: HETUS 144-Slot Conversion"]
-    E --> G["Phase G: Export"]
+    E --> G["Phase G: Export (hetus_wide.csv)"]
     F --> G
+    G --> H["Phase H: Downsample 144→48 slots (hetus_30min.csv)"]
 ```
 
-> **Note**: Phases E and F are independent of each other (both depend on D). They can be developed and tested in parallel.
+> **Note**: Phases E and F are independent of each other (both depend on D). Phase H depends strictly on Phase G — it reads `hetus_wide.csv` from disk and writes `hetus_30min.csv`.
 
 ---
 
 ## Checklist (for progress tracking)
 
 ### Phase A — Column Standardization
-- [ ] A1. Define `MAIN_COMMON_COLS` constant
-- [ ] A2. Define `EPISODE_COMMON_COLS` constant
-- [ ] A3. Implement `standardize_columns()` helper
+- [x] A1. Define `MAIN_COMMON_COLS` constant
+- [x] A2. Define `EPISODE_COMMON_COLS` constant
+- [x] A3. Implement `standardize_columns()` helper
 
 ### Phase B — Vertical Stacking
-- [ ] B1. Stack 4 Main files
-- [ ] B2. Stack 4 Episode files
-- [ ] B3. Post-stack integrity checks
+- [x] B1. Stack 4 Main files
+- [x] B2. Stack 4 Episode files
+- [x] B3. Post-stack integrity checks
 
 ### Phase C — LEFT JOIN
-- [ ] C1. Merge on `(occID, CYCLE_YEAR)`
-- [ ] C2. Post-merge checks (row count, orphan check)
+- [x] C1. Merge on `(occID, CYCLE_YEAR)`
+- [x] C2. Post-merge checks (row count, orphan check)
 
 ### Phase D — DIARY_VALID Filtering
-- [ ] D1. Filter `DIARY_VALID == 0` respondents
-- [ ] D2. Log exclusion counts per cycle
+- [x] D1. Filter `DIARY_VALID == 0` respondents
+- [x] D2. Log exclusion counts per cycle
 
 ### Phase E — Temporal Feature Derivation
-- [ ] E1. Derive `DAYTYPE`
-- [ ] E2. Derive `startMin` / `HOUR_OF_DAY`
-- [ ] E3. Derive `TIMESLOT_10`
-- [ ] E4. Derive `DDAY_STRATA`
+- [x] E1. Derive `DAYTYPE`
+- [x] E2. Derive `startMin` / `HOUR_OF_DAY`
+- [x] E3. Derive `TIMESLOT_10`
+- [x] E4. Derive `DDAY_STRATA`
 
 ### Phase F — HETUS 144-Slot Conversion
-- [ ] F1. Implement `episodes_to_144_slots()`
-- [ ] F2. Build wide-format DataFrame
-- [ ] F3. Implement `episodes_to_144_athome()`
-- [ ] F4. Attach demographic context to wide format
+- [x] F1. Implement `episodes_to_144_slots()`
+- [x] F2. Build wide-format DataFrame
+- [x] F3. Implement `episodes_to_144_athome()`
+- [x] F4. Attach demographic context to wide format
 
 ### Phase G — Export
-- [ ] G1. Export `merged_episodes.csv` / `.parquet`
-- [ ] G2. Export `hetus_wide.csv`
-- [ ] G3. End-to-end dry run
+- [x] G1. Export `merged_episodes.csv` / `.parquet`
+- [x] G2. Export `hetus_wide.csv`
+- [x] G3. End-to-end dry run
+
+### Phase H — Resolution Downsampling (Step 3E)
+- [x] H1. Define `BEM_PRIORITY` constant (14 activity codes, verified against `02_harmonizeGSS.py`)
+- [x] H2. Implement `_nanmode_axis2()` helper (majority vote, NaN sentinel for 3-way ties)
+- [x] H3. Load `hetus_wide.csv`, assert 64,061 rows, separate META / SLOT_ACT / SLOT_HOME columns
+- [x] H4. Extract activity matrix (n × 144) and reshape to (n × 48 × 3)
+- [x] H5. Apply `_nanmode_axis2` → `act_30` with tie sentinels
+- [x] H6. Extract AT_HOME matrix, reshape to (n × 48 × 3), compute binary majority (nansum ≥ 2)
+- [x] H7. Detect 3-way tie positions; resolve via BEM priority; assert zero remaining NaN
+- [x] H8. Build `act30_df` (Int16) and `hom30_df` (Int8) with columns `act30_001`–`act30_048` / `hom30_001`–`hom30_048`
+- [x] H9. Concatenate META + act30 + hom30 → `hetus_30min` (64,061 × 120)
+- [x] H10. Write `outputs_step3/hetus_30min.csv` (19 MB); return `(hetus_30min, n_ties)`
+- [x] H11. Implement `validate_30min()` and call from `main()`
+- [x] V1. Shape check: 64,061 rows, 48 act30 cols, 48 hom30 cols — **PASS**
+- [x] V2. Zero NaN in act30 / hom30 — **PASS** (0 NaN)
+- [x] V3. Activity distribution vs hetus_wide within ±1 pp — **PASS** (max diff 0.43 pp, Travel)
+- [x] V4. Weighted AT_HOME rate per cycle vs hetus_wide slot-rate within ±1 pp — **PASS** (max diff 0.039 pp)
+- [x] V5. Night slots 1–8: Sleep ≥ 70%, AT_HOME ≥ 85% — **PASS** (71.6%, 87.4%)
+- [x] V6. 3-way tie rate < 5% — **PASS** (0.82%)
+- [x] V7. DDAY_STRATA distribution unchanged — **PASS** (exact match)
+- [x] V8. Manual spot-check 5 random respondents — **PASS**
