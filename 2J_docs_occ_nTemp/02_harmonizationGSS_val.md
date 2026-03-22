@@ -224,7 +224,7 @@ For each variable, verify:
 
 A `GSSHarmonizationValidator` class (mirroring `GSSValidator` from Step 1) that:
 1. Loads the 8 harmonized CSVs from `outputs_step2/`
-2. Loads the 8 Step 1 CSVs from `outputs/` (for comparison checks)
+2. Loads the 8 Step 1 CSVs from `outputs_step1/` (for comparison checks)
 3. Runs all 9 validation methods
 4. Produces a styled HTML report at `outputs_step2/step2_validation_report.html`
 

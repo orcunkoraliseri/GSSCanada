@@ -691,7 +691,7 @@ if __name__ == "__main__":
         }
     }
 
-    OUTPUT_DIRECTORY = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs"
+    OUTPUT_DIRECTORY = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step1"
 
     print("Starting GSS Data Collection (Step 1)...")
     

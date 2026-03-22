@@ -25,8 +25,12 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║                                                                              ║
 ║  GSS EPISODE: occID, EPINO, DDAY, start/end (HHMM), startMin/endMin,       ║
 ║               duration, occACT (->14 grouped categories),                  ║
-║               occPRE (->AT_HOME), Spouse, Children, Friends, otherHHs,     ║
-║               Others, techUse (TUI_07), wellbeing (TUI_10: 2015/22 only),  ║
+║               occPRE (->AT_HOME),                                           ║
+║               Co-presence [9 unified cols, OR-merged in Step 2]:           ║
+║               Alone, Spouse, Children, parents, otherInFAMs,               ║
+║               otherHHs, friends, others,                                   ║
+║               colleagues (TUI_06I; 2015/22 only — NaN for 2005/2010),     ║
+║               techUse (TUI_07), wellbeing (TUI_10: 2015/22 only),          ║
 ║               WGHT_EPI, WTBS_EPI_001-500                                    ║
 ║                                                                              ║
 ║  CENSUS PUMF (2006/2011/2016/2021 — Step 5 linkage only):                  ║
@@ -43,6 +47,9 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║    DIARY_VALID pass: 2005=98.3%, 2010=98.5%, 2015=100%, 2022=100%          ║
 ║    COLLECT_MODE: 2005/2010=0 (CATI), 2022=1 (EQ)                           ║
 ║    TUI_10_AVAIL: 2005/2010=0, 2015/2022=1                                  ║
+║    Co-presence OR-merge: NHSDCL15→Children, NHSDPAR→parents,               ║
+║      NHSDC15P→otherInFAMs (2005/2010); TUI_06F→otherInFAMs (2015/2022)    ║
+║    colleagues: TUI_06I (2015/2022); NaN for 2005/2010 (not measured)       ║
 ║    TOTINC regime: self-reported (2005-2015) / CRA-linked (2022)             ║
 ║    Bootstrap: MEAN_BS (2005/2010) / STANDARD_BS (2015/2022)                ║
 ║    CYCLE_YEAR + SURVYEAR appended; weight delta-mean = 0.0000               ║
@@ -86,20 +93,30 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  Status: PENDING (ready to start)                                           ║
 ║                                                                              ║
 ║  Input: hetus_30min.csv (96 tokens per respondent: 48 activity + 48 home)  ║
+║         + co-presence [9 cols x 48 slots] from merged_episodes.csv         ║
 ║  Problem: Each respondent has 1 of 3 DDAY_STRATA observed                  ║
 ║  Goal:    Generate synthetic schedules for the other 2 DDAY_STRATA         ║
 ║                                                                              ║
 ║  Architecture: Conditional Transformer Encoder-Decoder                      ║
 ║    Encoder input:                                                            ║
-║      96 tokens (48 activity + 48 AT_HOME, 30-min resolution)                ║
+║      48 slots × 11 features per slot (multivariate token):                 ║
+║        [occACT (14-cat), AT_HOME (binary),                                  ║
+║         Alone, Spouse, Children, parents, otherInFAMs,                      ║
+║         otherHHs, friends, others, colleagues]                              ║
+║      colleagues masked to 0 for 2005/2010 (not measured)                   ║
 ║      Conditioning: [demog. profile + DDAY_STRATA + SURVMNTH* +              ║
 ║                     CYCLE_YEAR + COLLECT_MODE]                              ║
 ║    Decoder input: target DDAY_STRATA + cross-attention over encoder         ║
-║    Output: 96 synthetic tokens for target stratum                           ║
+║    Output per target stratum:                                               ║
+║      48 activity tokens (14 categories)                                     ║
+║      + 48 AT_HOME tokens (binary)                                           ║
+║      + 9 × 48 co-presence tokens (binary per column per slot)              ║
 ║                                                                              ║
 ║  Training:                                                                   ║
 ║    Cross-entropy over 14 categories x 48 slots (activity)                  ║
 ║    + BCE over AT_HOME x 48 slots                                            ║
+║    + BCE over co-presence x 9 cols x 48 slots                              ║
+║      (colleagues loss masked out for 2005/2010 rows)                        ║
 ║    Validation: JS divergence per stratum                                    ║
 ║                                                                              ║
 ║  Output: 64,061 x 3 = ~192,183 synthetic diary-days (all cycles)           ║
@@ -176,6 +193,8 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | SURVYEAR as explicit variable (Step 1A) | Required for longitudinal pooling; primary indexing axis for Model 2 trend encoding |
 | TOTINC harmonized as two regimes (Step 2) | Pre-2022 = self-reported; 2022 = CRA T1FF. Confirmed pass |
 | TUI_01 -> 14 grouped categories (Step 2) | 0.00% unmapped rate confirmed all cycles; appropriate granularity for BEM occupancy states |
+| Co-presence OR-merged into 9 unified columns (Step 2) | NHSDCL15/NHSDPAR/NHSDC15P (2005/2010) and TUI_06F (2015/2022) OR-merged into existing columns rather than dropped; `colleagues` (TUI_06I) new column, NaN for 2005/2010 — no equivalent measured |
+| Co-presence as per-slot encoder features + decoder output (Step 4) | 9 binary co-presence cols embedded in each 30-min slot token; synthetic diaries include predicted co-presence; `colleagues` BCE loss masked for 2005/2010 |
 | COLLECT_MODE as model covariate (Steps 2 + 4) | Disentangles behavioral change from CATI vs. EQ collection artefacts |
 | DIARY_VALID QA filter (Step 3) | Confirmed exclusion: 2005=1.92%, 2010=1.79%, 2015/2022=0.00% |
 | TUI_10 as auxiliary variable only (Steps 1B + 4) | Absent 2005/2010; excluded from cross-cycle model inputs |

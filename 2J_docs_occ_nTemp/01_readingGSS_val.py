@@ -28,7 +28,7 @@ if spec and spec.loader:
     spec.loader.exec_module(reading_gss)
 
 # Constants
-OUTPUTS_DIR = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs"
+OUTPUTS_DIR = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step1"
 CYCLES = [2005, 2010, 2015, 2022]
 
 EXPECTED_MAIN_COLS = {
@@ -647,6 +647,34 @@ class GSSValidator:
         self._save_plot_to_b64("5_time_ordering")
         self._record("pass", "Time-ordering pass rate chart generated.")
 
+    def check_raw_copresence_coverage(self) -> None:
+        """Verify that all raw co-presence columns are present in Step 1 episode files."""
+        print("\n--- Raw Co-Presence Column Coverage ---")
+
+        RAW_COPRE_EXPECTED = {
+            2005: ["ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "OTHERS",
+                   "PARHSD", "MEMBHSD", "NHSDCL15", "NHSDC15P", "NHSDPAR"],
+            2010: ["ALONE", "SPOUSE", "CHILDHSD", "FRIENDS", "OTHFAM", "OTHERS",
+                   "PARHSD", "MEMBHSD", "NHSDCL15", "NHSDC15P", "NHSDPAR"],
+            2015: ["TUI_06A", "TUI_06B", "TUI_06C", "TUI_06D", "TUI_06E",
+                   "TUI_06F", "TUI_06G", "TUI_06H", "TUI_06I", "TUI_06J"],
+            2022: ["TUI_06A", "TUI_06B", "TUI_06C", "TUI_06D", "TUI_06E",
+                   "TUI_06F", "TUI_06G", "TUI_06H", "TUI_06I", "TUI_06J"],
+        }
+
+        for c in CYCLES:
+            if "episode" not in self.data[c]:
+                continue
+            df = self.data[c]["episode"]
+            expected = RAW_COPRE_EXPECTED[c]
+            present = [col for col in expected if col in df.columns]
+            missing = [col for col in expected if col not in df.columns]
+
+            if not missing:
+                self._record("pass", f"{c} — All {len(expected)} raw co-presence columns present.")
+            else:
+                self._record("fail", f"{c} — Missing raw co-presence columns: {missing}")
+
     # ---- HTML Export ----
     def export_html_report(self) -> None:
         """Build and save a styled HTML report embedding all charts."""
@@ -845,6 +873,7 @@ if __name__ == "__main__":
     validator.audit_schema()
     validator.compare_categories()
     validator.verify_episode_integrity()
+    validator.check_raw_copresence_coverage()
     validator.generate_visuals()
 
     print("\nValidation complete.")

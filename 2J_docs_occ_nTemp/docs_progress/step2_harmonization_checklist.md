@@ -26,7 +26,7 @@
 
 - [x] **B1. Create `02_harmonizeGSS.py`** — new module file
   - [x] B1.1 Add module docstring, imports (`pandas`, `openpyxl`, `pathlib`)
-  - [x] B1.2 Define `INPUT_DIR = "outputs/"` and `OUTPUT_DIR = "outputs_step2/"`
+  - [x] B1.2 Define `INPUT_DIR = "outputs_step1/"` and `OUTPUT_DIR = "outputs_step2/"`
   - [x] B1.3 Define `CYCLES = [2005, 2010, 2015, 2022]`
 
 - [x] **B2. Define `MAIN_RENAME_MAP`** — per-cycle rename dictionaries (Main files)
@@ -199,7 +199,7 @@
 
 - [x] **G3. `harmonize_all_cycles(input_dir, output_dir)`**
   - [x] G3.1 Loop over `CYCLES = [2005, 2010, 2015, 2022]`
-  - [x] G3.2 Read each Step 1 CSV pair from `outputs/`
+  - [x] G3.2 Read each Step 1 CSV pair from `outputs_step1/`
   - [x] G3.3 Call `harmonize_main()` + `harmonize_episode()` per cycle
   - [x] G3.4 Export 8 CSVs to `outputs_step2/`
   - [x] G3.5 Print summary statistics per cycle (row counts, NaN rates)
@@ -211,7 +211,7 @@
 - [x] **H1. Create `02_harmonizeGSS_val.py`** — validation module
   - [x] H1.1 Define `GSSHarmonizationValidator` class (mirror Step 1's `GSSValidator`)
   - [x] H1.2 Load 8 harmonized CSVs from `outputs_step2/`
-  - [x] H1.3 Load 8 Step 1 CSVs from `outputs/` for comparison
+  - [x] H1.3 Load 8 Step 1 CSVs from `outputs_step1/` for comparison
 
 - [x] **H2. Method 1 — Unified Schema Audit**
   - [x] H2.1 Assert identical column sets across 4 Main files

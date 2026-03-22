@@ -145,3 +145,128 @@ This document tracks the implementation progress of the 4:00 AM origin 144-slot 
 Phase H is fully implemented, rigorously validated, and successfully integrated into the main `03_mergingGSS.py` pipeline. The downsampled 30-min resolution data is officially ready for downstream training in Step 4.
 
 **Primary Output:** `outputs_step3/hetus_30min.csv` (64,061 rows × 120 columns).
+
+---
+
+---
+
+# Phase I — Co-Presence Tiling: Progress Log (Tasks 27–)
+
+This section tracks implementation of Phase I: tiling the 9 episode-level co-presence columns from `merged_episodes.csv` into the same 30-min slot format as `hetus_30min.csv`.
+
+**Status:** PENDING
+**Prerequisite:** Phase H complete ✅
+**Target output:** `outputs_step3/copresence_30min.csv` (64,061 rows × 433 columns)
+
+---
+
+## Group 7 — Setup & Load
+
+### Task #27 — Add Phase I function skeleton
+- **Status:** PENDING
+- **Actions:** Add `tile_copresence_to_30min()` function skeleton to `03_mergingGSS.py` after Phase H. Add call in `main()` after Phase H block.
+
+### Task #28 — Define co-presence column list constant
+- **Status:** PENDING
+- **Actions:** Define `COP_COLS = ["Alone", "Spouse", "Children", "parents", "otherInFAMs", "otherHHs", "friends", "others", "colleagues"]` as a module-level constant. Confirm these names match the actual column headers in `merged_episodes.csv`.
+
+---
+
+## Group 8 — Load Inputs
+
+### Task #29 — I.1: Load merged_episodes.csv and verify
+- **Status:** PENDING
+- **Actions:** Load `outputs_step3/merged_episodes.csv`. Verify presence of `occID`, `startMin`, `endMin`, `CYCLE_YEAR`, and all 9 co-presence columns. Print row count (~1,049,480) and unique occID count (64,061).
+
+### Task #30 — I.2: Load hetus_30min.csv for occID order reference
+- **Status:** PENDING
+- **Actions:** Extract the ordered occID list from `hetus_30min.csv` (64,061 rows). Build an `occid_to_idx` dict for O(1) row-index lookups during the tiling loop.
+
+---
+
+## Group 9 — Tiling Loop (I.3)
+
+### Task #31 — I.3a: Pre-allocate 9 × (64,061 × 144) NaN arrays
+- **Status:** PENDING
+- **Actions:** Allocate one float64 array of shape (64,061 × 144) per co-presence column (or a single (9 × 64,061 × 144) array). Initialise all values to NaN.
+
+### Task #32 — I.3b: Sort episodes by occID for efficient grouped access
+- **Status:** PENDING
+- **Actions:** Sort `merged_episodes` by `occID` and build a group index (start/end row per occID) for fast iteration without repeated `.groupby()` calls.
+
+### Task #33 — I.3c: Tiling loop — episode → 10-min slots
+- **Status:** PENDING
+- **Actions:** Iterate over all respondents; for each episode, compute `slot_start = startMin//10` and `slot_end = endMin//10` (0-indexed), and fill the NaN array for each co-presence column. Handle endMin=0 wrap-around (endMin → 144). Log progress every 10,000 respondents.
+
+---
+
+## Group 10 — Downsample to 30-Min (I.4)
+
+### Task #34 — I.4a: Reshape each (64,061 × 144) array to (64,061 × 48 × 3)
+- **Status:** PENDING
+- **Actions:** Apply `.reshape(n, 48, 3)` to each of the 9 10-min arrays.
+
+### Task #35 — I.4b: Binary majority vote → (64,061 × 48) output per column
+- **Status:** PENDING
+- **Actions:** For each column: `sum_present = nansum(cop_3d == 1, axis=2)`; `valid_count = sum(~isnan, axis=2)`; assign 1 if `sum_present >= 2`, else 2; NaN if `valid_count == 0`. Log NaN rate per column.
+
+---
+
+## Group 11 — Assemble & Export
+
+### Task #36 — I.5a: Build {ColName}30_NNN DataFrames (Int8) for each column
+- **Status:** PENDING
+- **Actions:** For each of 9 columns, create a DataFrame (64,061 × 48) with columns named `{ColName}30_{001..048}`, cast to `pd.Int8Dtype()`.
+
+### Task #37 — I.5b: Concatenate all 9 DataFrames + occID
+- **Status:** PENDING
+- **Actions:** Concatenate occID column + 9 co-presence DataFrames (in COP_COLS order) into `copresence_30min`. Verify shape (64,061 × 433).
+
+### Task #38 — I.6a: Write copresence_30min.csv
+- **Status:** PENDING
+- **Actions:** Write to `outputs_step3/copresence_30min.csv`. Log file size.
+
+### Task #39 — I.6b: Print post-export summary
+- **Status:** PENDING
+- **Actions:** Print shape, column count per co-presence variable, NaN counts per column (colleagues expected all-NaN for 2005/2010 rows).
+
+---
+
+## Group 12 — Validation Suite (VI-1 through VI-7)
+
+### Task #40 — VI-1: Shape check
+- **Status:** PENDING
+- **Actions:** Assert 64,061 rows and 433 columns (1 occID + 432 co-presence slots).
+
+### Task #41 — VI-2: occID alignment with hetus_30min
+- **Status:** PENDING
+- **Actions:** Assert `copresence_30min["occID"].equals(hetus_30min["occID"])` — identical order, no mismatches.
+
+### Task #42 — VI-3: No all-NaN respondents for primary 8 columns
+- **Status:** PENDING
+- **Actions:** For each of [Alone, Spouse, Children, parents, otherInFAMs, otherHHs, friends, others]: assert no respondent has all-NaN across their 48 slots.
+
+### Task #43 — VI-4: colleagues NaN pattern by cycle
+- **Status:** PENDING
+- **Actions:** For 2005/2010 rows: assert all 48 `colleagues30_NNN` slots are NaN (100%). For 2015/2022 rows: assert NaN rate < 100%.
+
+### Task #44 — VI-5: Value range check
+- **Status:** PENDING
+- **Actions:** For all non-NaN values across all 9×48 co-presence slot columns: assert values ∈ {1, 2}.
+
+### Task #45 — VI-6: Co-presence prevalence plausibility
+- **Status:** PENDING
+- **Actions:** Compute proportion of slots with value=1 (present) for `Alone30_NNN` (expect ~30–50%) and `Spouse30_NNN` (expect ~20–40%) across all respondents. Log and verify directionally plausible.
+
+### Task #46 — VI-7: Manual spot-check 5 random respondents
+- **Status:** PENDING
+- **Actions:** For 5 randomly selected occIDs: cross-check `Alone30_001` against the source episodes in `merged_episodes.csv` covering 10-min slots 1–3 (04:00–04:29). Confirm majority vote is correct.
+
+---
+
+## Group 14 — Co-Presence Before/After Plot in `03_mergingGSS_val.py`
+
+### Task #47 — Add Section 8a: Co-Presence Prevalence Before vs. After 30-Min Tiling
+- **Status:** PENDING
+- **Dependencies:** Task #38 (copresence_30min.csv must exist); Phase H output (hetus_30min.csv must exist)
+- **Actions:** Add `validate_copresence_30min()` method to `Step3Validator` in `03_mergingGSS_val.py`. Plot compares episode-level prevalence (before tiling, from `merged_episodes.csv`) vs. 30-min slot prevalence (after tiling, from `copresence_30min.csv`) for all 9 co-presence columns across 4 cycles. Figure layout: 2-row grid — Row 1: four per-cycle panels (grouped bars, blue = episode, orange = slot); Row 2: single delta panel (slot − episode in pp, one line per cycle). Wire into `run()` and `build_html_report()` as plot key `"8a_copre_before_after"`.

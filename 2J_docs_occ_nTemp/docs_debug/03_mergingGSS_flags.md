@@ -13,7 +13,7 @@
 |--------|----------|--------|---------|
 | Pipeline Overview (`00_GSS_Occupancy_Pipeline_Overview.md`) | ~17,000 | 12,336 | Estimate was wrong |
 | Raw SAS file (`GSSMain_2022.sas7bdat`) | — | 12,336 | ✓ Published PUMF size |
-| Step 1 output (`outputs/main_2022.csv`) | — | 12,336 | ✓ No rows lost |
+| Step 1 output (`outputs_step1/main_2022.csv`) | — | 12,336 | ✓ No rows lost |
 | Step 2 output (`outputs_step2/main_2022.csv`) | — | 12,336 | ✓ No rows lost |
 | Step 3 post-DIARY_VALID filter | — | 12,336 | ✓ 0 exclusions |
 

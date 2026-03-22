@@ -122,10 +122,10 @@ For a practical validation before Step 2, I recommend **Methods 1 + 2 + 3 + 5** 
 ### [NEW] [01_readingGSS_val.py](file:///Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/01_readingGSS_val.py)
 
 A validation script that:
-1. Loads the 8 CSV files from `outputs/` (4 Main + 4 Episode)
+1. Loads the 8 CSV files from `outputs_step1/` (4 Main + 4 Episode)
 2. Runs the selected validation methods
 3. Prints a structured console report with ✅/❌ per check
-4. Optionally saves the report to `outputs/validation_report.txt`
+4. Optionally saves the report to `outputs_step1/validation_report.txt`
 
 ---
 

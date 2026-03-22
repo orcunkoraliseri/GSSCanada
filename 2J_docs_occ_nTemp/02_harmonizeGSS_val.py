@@ -25,9 +25,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-INPUT_DIR = "outputs/"
+INPUT_DIR = "outputs_step1/"
 OUTPUT_DIR = "outputs_step2/"
 CYCLES = [2005, 2010, 2015, 2022]
+
+COPRE_COLS = [
+    "Alone", "Spouse", "Children", "parents",
+    "otherInFAMs", "otherHHs", "friends", "others", "colleagues",
+]
 
 SENTINEL_MAP: dict[str, set[int]] = {
     "COW": {97, 98, 99},
@@ -174,7 +179,7 @@ class GSSHarmonizationValidator:
         print(f"{icon} {msg}")
 
     def run_all(self) -> None:
-        """Execute all 9 validation methods and export HTML."""
+        """Execute all 10 validation methods and export HTML."""
         _apply_dark()
         print("=== Step 2 Harmonization Validation ===\n")
         self.method1_schema()
@@ -186,6 +191,7 @@ class GSSHarmonizationValidator:
         self.method7_metadata()
         self.method8_diary()
         self.method9_regression()
+        self.method10_copresence()
         self.export_html()
 
     # ---------------------------------------------------------------- Method 1
@@ -744,6 +750,151 @@ class GSSHarmonizationValidator:
         self.plots_b64["9b_nan_heatmap"] = _b64(fig2)
         self._rec("pass", "Regression NaN heatmap generated.")
 
+    # --------------------------------------------------------------- Method 10
+    def method10_copresence(self) -> None:
+        """Co-Presence Quality Report — 4 charts."""
+        print("\n--- Method 10: Co-Presence Quality Report ---")
+        _apply_dark()
+
+        # --- Plot 1: Weighted prevalence grouped bar -------------------------
+        fig, ax = plt.subplots(figsize=(13, 5))
+        x = np.arange(len(COPRE_COLS))
+        width = 0.18
+        for i, c in enumerate(CYCLES):
+            df = self.epi_s2[c]
+            rates = []
+            for col in COPRE_COLS:
+                if col in df.columns:
+                    valid_mask = df[col].notna()
+                    total_valid = valid_mask.sum()
+                    rate = 100.0 * (df.loc[valid_mask, col] == 1).sum() / total_valid if total_valid else 0.0
+                else:
+                    rate = 0.0
+                rates.append(rate)
+            ax.bar(
+                x + (i - 1.5) * width, rates, width,
+                label=str(c), color=CYCLE_COLORS[i], edgecolor="#1e1e2e", linewidth=0.5
+            )
+        ax.set_xticks(x)
+        ax.set_xticklabels(COPRE_COLS, rotation=30, ha="right", fontsize=9)
+        ax.set_ylabel("% of non-NaN episodes with presence = 1")
+        ax.set_ylim(0, 100)
+        ax.legend(title="Cycle", fontsize=9)
+        ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        ax.set_title(
+            "Co-Presence Prevalence by Category and Cycle\n"
+            "(weighted by episode count; NaN excluded from denominator)",
+            fontsize=12,
+        )
+        self.plots_b64["10a_copre_prevalence"] = _b64(fig)
+
+        # Record pass/fail for Alone column plausibility (expect 10–60% present)
+        for c in CYCLES:
+            df = self.epi_s2[c]
+            if "Alone" not in df.columns:
+                self._rec("fail", f"{c} — 'Alone' column missing from Step 2 episode file.")
+                continue
+            valid = df["Alone"].dropna()
+            alone_pct = 100.0 * (valid == 1).mean()
+            level = "pass" if 10 <= alone_pct <= 60 else "warn"
+            self._rec(level, f"{c} — Alone prevalence: {alone_pct:.1f}% (expected 10–60%)")
+
+        # --- Plot 2: Missing rate heatmap -----------------------------------
+        nan_matrix = []
+        for col in COPRE_COLS:
+            row = []
+            for c in CYCLES:
+                df = self.epi_s2[c]
+                pct_nan = 100.0 * df[col].isna().mean() if col in df.columns else 100.0
+                row.append(pct_nan)
+            nan_matrix.append(row)
+        arr = np.array(nan_matrix)
+
+        fig2, ax2 = plt.subplots(figsize=(8, 5))
+        im = ax2.imshow(arr, aspect="auto", cmap="YlOrRd", vmin=0, vmax=100)
+        ax2.set_xticks(range(len(CYCLES)))
+        ax2.set_xticklabels([str(c) for c in CYCLES])
+        ax2.set_yticks(range(len(COPRE_COLS)))
+        ax2.set_yticklabels(COPRE_COLS, fontsize=9)
+        for i in range(len(COPRE_COLS)):
+            for j in range(len(CYCLES)):
+                ax2.text(j, i, f"{arr[i, j]:.1f}%", ha="center", va="center", fontsize=8,
+                         color="black" if arr[i, j] < 60 else "white")
+        plt.colorbar(im, ax=ax2, label="% NaN")
+        ax2.set_title("Co-Presence Missing Rate (% NaN) per Column × Cycle\n"
+                      "(`colleagues` should be 100% NaN for 2005/2010)", fontsize=11)
+        self.plots_b64["10b_copre_missing"] = _b64(fig2)
+
+        # Record pass/fail: colleagues must be 100% NaN for 2005/2010
+        for c in (2005, 2010):
+            df = self.epi_s2[c]
+            if "colleagues" in df.columns:
+                all_nan = df["colleagues"].isna().all()
+                level = "pass" if all_nan else "fail"
+                self._rec(level, f"{c} — colleagues column all-NaN: {all_nan}")
+            else:
+                self._rec("warn", f"{c} — colleagues column absent from Step 2 output (expected).")
+
+        # --- Plot 3: Alone vs. With Someone per cycle -----------------------
+        fig3, ax3 = plt.subplots(figsize=(8, 4))
+        x3 = np.arange(len(CYCLES))
+        width3 = 0.35
+        alone_rates = []
+        social_rates = []
+        for c in CYCLES:
+            df = self.epi_s2[c]
+            if "Alone" in df.columns:
+                valid = df["Alone"].dropna()
+                alone_rates.append(100.0 * (valid == 1).mean())
+                social_rates.append(100.0 * (valid == 2).mean())
+            else:
+                alone_rates.append(0.0)
+                social_rates.append(0.0)
+        ax3.bar(x3 - width3 / 2, alone_rates,  width3, label="Alone (=1)",         color="#f38ba8", edgecolor="#1e1e2e")
+        ax3.bar(x3 + width3 / 2, social_rates, width3, label="With someone (=2)",  color="#89b4fa", edgecolor="#1e1e2e")
+        ax3.set_xticks(x3)
+        ax3.set_xticklabels([str(c) for c in CYCLES])
+        ax3.set_ylabel("% of non-NaN episodes")
+        ax3.set_ylim(0, 100)
+        ax3.set_title("Alone vs. With Someone per Cycle (NaN excluded)", fontsize=12)
+        ax3.legend()
+        ax3.yaxis.grid(True, linestyle="--", alpha=0.3)
+        for bar, val in zip(ax3.patches, alone_rates + social_rates):
+            ax3.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
+                     f"{val:.1f}%", ha="center", fontsize=8)
+        self.plots_b64["10c_copre_alone"] = _b64(fig3)
+
+        # --- Plot 4: colleagues column coverage per cycle -------------------
+        fig4, ax4 = plt.subplots(figsize=(8, 4))
+        x4 = np.arange(len(CYCLES))
+        width4 = 0.25
+        yes_rates, no_rates, nan_rates = [], [], []
+        for c in CYCLES:
+            df = self.epi_s2[c]
+            if "colleagues" in df.columns:
+                total = len(df)
+                yes_rates.append(100.0 * (df["colleagues"] == 1).sum() / total)
+                no_rates.append(100.0 * (df["colleagues"] == 2).sum() / total)
+                nan_rates.append(100.0 * df["colleagues"].isna().mean())
+            else:
+                yes_rates.append(0.0); no_rates.append(0.0); nan_rates.append(100.0)
+        ax4.bar(x4 - width4, yes_rates, width4, label="Present (=1)",  color="#a6e3a1", edgecolor="#1e1e2e")
+        ax4.bar(x4,           no_rates,  width4, label="Absent (=2)",   color="#89b4fa", edgecolor="#1e1e2e")
+        ax4.bar(x4 + width4, nan_rates,  width4, label="NaN (missing)", color="#585b70", edgecolor="#1e1e2e")
+        ax4.set_xticks(x4)
+        ax4.set_xticklabels([str(c) for c in CYCLES])
+        ax4.set_ylabel("% of all episodes")
+        ax4.set_ylim(0, 110)
+        ax4.set_title(
+            "colleagues Column Coverage per Cycle\n"
+            "(expect ~100% NaN for 2005/2010; mix of 1/2/NaN for 2015/2022)",
+            fontsize=11,
+        )
+        ax4.legend()
+        ax4.yaxis.grid(True, linestyle="--", alpha=0.3)
+        self.plots_b64["10d_copre_colleagues"] = _b64(fig4)
+        print("  [DONE] Method 10 complete — 4 co-presence charts generated.")
+
     # ---------------------------------------------------------------- HTML
     def export_html(self) -> None:
         """Build and export the styled HTML validation report."""
@@ -754,12 +905,16 @@ class GSSHarmonizationValidator:
         pct_ok = round(100 * n_pass / total) if total else 0
 
         chart_titles: dict[str, str] = {
-            "4_categories": "Chart 4 — Demographic Category Distributions (all vars × 4 cycles)",
-            "5_activity": "Chart 5 — Activity Code Crosswalk Heatmap (14 categories × 4 cycles)",
-            "6_location": "Chart 6 — AT_HOME Rate per Cycle",
-            "8_diary": "Chart 8 — Diary Closure Pass Rate & Episode Distribution",
-            "9a_weights": "Chart 9a — Survey Weight: Step 1 vs Step 2 Box Plots",
-            "9b_nan_heatmap": "Chart 9b — NaN % per Harmonized Column (Regression Check)",
+            "4_categories":        "Chart 4 — Demographic Category Distributions (all vars × 4 cycles)",
+            "5_activity":          "Chart 5 — Activity Code Crosswalk Heatmap (14 categories × 4 cycles)",
+            "6_location":          "Chart 6 — AT_HOME Rate per Cycle",
+            "8_diary":             "Chart 8 — Diary Closure Pass Rate & Episode Distribution",
+            "9a_weights":          "Chart 9a — Survey Weight: Step 1 vs Step 2 Box Plots",
+            "9b_nan_heatmap":      "Chart 9b — NaN % per Harmonized Column (Regression Check)",
+            "10a_copre_prevalence":"Chart 10a — Co-Presence Prevalence by Category and Cycle",
+            "10b_copre_missing":   "Chart 10b — Co-Presence Missing Rate Heatmap",
+            "10c_copre_alone":     "Chart 10c — Alone vs. With Someone per Cycle",
+            "10d_copre_colleagues":"Chart 10d — colleagues Column Coverage per Cycle",
         }
 
         charts_html = ""

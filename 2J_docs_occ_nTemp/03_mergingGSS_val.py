@@ -24,6 +24,11 @@ import seaborn as sns
 
 CYCLES = [2005, 2010, 2015, 2022]
 
+COPRE_COLS = [
+    "Alone", "Spouse", "Children", "parents",
+    "otherInFAMs", "otherHHs", "friends", "others", "colleagues",
+]
+
 STEP3_OVERVIEW = """\
 ╔══════════════════════════════════════════════════════════════════════════╗
 ║  STEP 3 — MERGE & TEMPORAL FEATURE DERIVATION                          ║
@@ -1297,6 +1302,112 @@ class GSSMergeValidator:
         self.plots_b64["7c_act_heatmap"] = _b64(fig7c)
         print("  ✅ 7c: Activity heatmap (30-min, 3 panels by stratum)")
 
+    def validate_copresence(self) -> None:
+        """Section 6 — Co-Presence Completeness and Prevalence in Merged Dataset."""
+        print("\n--- Section 6: Co-Presence Validation ---")
+
+        df = self.merged  # full merged_episodes DataFrame
+
+        # --- Plot 6a: Completeness heatmap (% non-NaN per column × cycle) ---
+        completeness_matrix = []
+        for col in COPRE_COLS:
+            row = []
+            for c in CYCLES:
+                sub = df[df["CYCLE_YEAR"] == c]
+                pct_filled = 100.0 * sub[col].notna().mean() if col in df.columns else 0.0
+                row.append(pct_filled)
+            completeness_matrix.append(row)
+        arr6a = np.array(completeness_matrix)
+
+        fig6a, ax6a = plt.subplots(figsize=(8, 5))
+        im6a = ax6a.imshow(arr6a, aspect="auto", cmap="YlGn", vmin=0, vmax=100)
+        ax6a.set_xticks(range(len(CYCLES)))
+        ax6a.set_xticklabels([str(c) for c in CYCLES])
+        ax6a.set_yticks(range(len(COPRE_COLS)))
+        ax6a.set_yticklabels(COPRE_COLS, fontsize=9)
+        for i in range(len(COPRE_COLS)):
+            for j in range(len(CYCLES)):
+                ax6a.text(j, i, f"{arr6a[i, j]:.1f}%", ha="center", va="center", fontsize=8,
+                          color="black" if arr6a[i, j] > 30 else "white")
+        plt.colorbar(im6a, ax=ax6a, label="% non-NaN")
+        ax6a.set_title(
+            "Co-Presence Column Completeness in Merged Dataset\n"
+            "(`colleagues` should be ~0% filled for 2005/2010)",
+            fontsize=11,
+        )
+        self.plots_b64["6a_copre_completeness"] = _b64(fig6a)
+
+        # Check: all 8 primary co-presence columns must have >50% fill for each cycle
+        for col in COPRE_COLS[:-1]:  # exclude colleagues
+            for c in CYCLES:
+                sub = df[df["CYCLE_YEAR"] == c]
+                if col not in df.columns:
+                    self._rec("fail", f"Merged dataset missing co-presence column '{col}'")
+                    continue
+                fill = 100.0 * sub[col].notna().mean()
+                level = "pass" if fill > 50 else "warn"
+                self._rec(level, f"{c} '{col}' fill: {fill:.1f}%")
+
+        # --- Plot 6b: Weighted prevalence grouped bar -----------------------
+        fig6b, ax6b = plt.subplots(figsize=(13, 5))
+        x = np.arange(len(COPRE_COLS))
+        width = 0.18
+        CYCLE_COLORS = ["#89b4fa", "#f38ba8", "#fab387", "#a6e3a1"]
+        for i, c in enumerate(CYCLES):
+            sub = df[df["CYCLE_YEAR"] == c].copy()
+            rates = []
+            for col in COPRE_COLS:
+                if col not in sub.columns:
+                    rates.append(0.0)
+                    continue
+                valid_mask = sub[col].notna()
+                total = valid_mask.sum()
+                rate = 100.0 * (sub.loc[valid_mask, col] == 1).sum() / total if total else 0.0
+                rates.append(rate)
+            ax6b.bar(
+                x + (i - 1.5) * width, rates, width,
+                label=str(c), color=CYCLE_COLORS[i], edgecolor="#1e1e2e", linewidth=0.5,
+            )
+        ax6b.set_xticks(x)
+        ax6b.set_xticklabels(COPRE_COLS, rotation=30, ha="right", fontsize=9)
+        ax6b.set_ylabel("% of non-NaN episodes with presence = 1")
+        ax6b.set_ylim(0, 100)
+        ax6b.legend(title="Cycle", fontsize=9)
+        ax6b.yaxis.grid(True, linestyle="--", alpha=0.3)
+        ax6b.set_title(
+            "Co-Presence Prevalence by Category and Cycle — Merged Dataset",
+            fontsize=12,
+        )
+        self.plots_b64["6b_copre_prevalence"] = _b64(fig6b)
+
+        # --- Plot 6c: Alone rate by hour of day per cycle -------------------
+        if "HOUR_OF_DAY" in df.columns and "Alone" in df.columns:
+            fig6c, ax6c = plt.subplots(figsize=(12, 5))
+            CYCLE_COLORS = ["#89b4fa", "#f38ba8", "#fab387", "#a6e3a1"]
+            for i, c in enumerate(CYCLES):
+                sub = df[(df["CYCLE_YEAR"] == c) & df["Alone"].notna()].copy()
+                hourly = sub.groupby("HOUR_OF_DAY").apply(
+                    lambda g: 100.0 * (g["Alone"] == 1).mean()
+                )
+                ax6c.plot(hourly.index, hourly.values, label=str(c),
+                          color=CYCLE_COLORS[i], linewidth=2, marker="o", markersize=3)
+            ax6c.set_xlabel("Hour of Day (0 = midnight, 4 = 4 AM diary start)")
+            ax6c.set_ylabel("% of episodes where Alone = 1")
+            ax6c.set_xticks(range(0, 24))
+            ax6c.set_xlim(0, 23)
+            ax6c.set_ylim(0, 100)
+            ax6c.yaxis.grid(True, linestyle="--", alpha=0.3)
+            ax6c.legend(title="Cycle")
+            ax6c.set_title(
+                "% Alone by Hour of Day per Cycle\n"
+                "(expect high solo at night/early morning, low during work/social hours)",
+                fontsize=11,
+            )
+            self.plots_b64["6c_copre_alone_hourly"] = _b64(fig6c)
+        else:
+            print("  [SKIP] HOUR_OF_DAY or Alone column not available — skipping Plot 6c.")
+        print("  [DONE] Section 6 complete — co-presence charts generated.")
+
     # ── HTML Report ─────────────────────────────────────────────────────────────
 
     def build_html_report(self) -> str:
@@ -1339,6 +1450,12 @@ class GSSMergeValidator:
              "Section 7b — AT_HOME Daily Rhythm at 30-min Resolution"),
             ("7c_act_heatmap",
              "Section 7c — Activity Heatmap at 30-min Resolution"),
+            ("6a_copre_completeness",
+             "Section 6a — Co-Presence Column Completeness in Merged Dataset"),
+            ("6b_copre_prevalence",
+             "Section 6b — Co-Presence Prevalence by Category and Cycle"),
+            ("6c_copre_alone_hourly",
+             "Section 6c — Alone Rate by Hour of Day per Cycle"),
         ]
 
         charts_html = ""
@@ -1558,6 +1675,7 @@ class GSSMergeValidator:
         self.validate_derived_features()
         self.validate_hetus_slots()
         self.validate_cross_cycle_consistency()
+        self.validate_copresence()
         self.generate_summary_table()
         self.validate_30min_downsampling()
         self.build_html_report()

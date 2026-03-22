@@ -62,7 +62,7 @@
 ## 5. Re-run Step 1 and Verify Output CSVs
 
 - [ ] Run `python 01_readingGSS.py` from `2J_docs_occ_nTemp/`.
-- [ ] Spot-check `outputs/main_2005.csv` columns — confirm `SEX` (not `sex`),
+- [ ] Spot-check `outputs_step1/main_2005.csv` columns — confirm `SEX` (not `sex`),
       `MARSTH` (not `marstat`), `PR` (not `REGION`), etc.
 - [ ] Confirm `step1_validation_report.html` is regenerated without errors.
 
@@ -74,7 +74,7 @@
 
 ## 7. Manual Validation — Compare Both Reports
 
-- [ ] Open `outputs/step1_validation_report.html` in browser.
+- [ ] Open `outputs_step1/step1_validation_report.html` in browser.
 - [ ] Open `outputs_step2/step2_validation_report.html` in browser.
 - [ ] Confirm Chart 3 (Step 1) and Chart 4 (Step 2) row labels are now consistent.
 - [ ] Confirm no new failures or regressions appear in either report's scorecard.

@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-06
 **Scope:** Step 1 — GSS Data Collection (`01_readingGSS.py` + `01_readingGSS_val.py`)
-**Affected output:** `outputs/validation_report.html` — Chart 3 (Demographic & Socioeconomic Distributions)
+**Affected output:** `outputs_step1/validation_report.html` — Chart 3 (Demographic & Socioeconomic Distributions)
 
 ---
 
@@ -187,8 +187,8 @@ All 34 schema and integrity validation checks pass after the fix.
 |------|--------|
 | `01_readingGSS.py` | Expanded `MAIN_COLS_2005`, `MAIN_COLS_2010`, `MAIN_COLS_2015`, `MAIN_COLS_2022` |
 | `01_readingGSS_val.py` | Updated `DEMO_VARS`; added `_bin_hours()`, `_derive_commute_mode()` helpers; updated `_plot_demo_frequencies()` and `compare_categories()` dispatch logic |
-| `outputs/main_2005.csv` | Regenerated — now 15 columns (was 14) |
-| `outputs/main_2010.csv` | Regenerated — now 26 columns (was 7, then 16) |
-| `outputs/main_2015.csv` | Regenerated — now 27 columns (was 19) |
-| `outputs/main_2022.csv` | Regenerated — now 24 columns (was 19) |
-| `outputs/validation_report.html` | Regenerated — Chart 3 fully populated |
+| `outputs_step1/main_2005.csv` | Regenerated — now 15 columns (was 14) |
+| `outputs_step1/main_2010.csv` | Regenerated — now 26 columns (was 7, then 16) |
+| `outputs_step1/main_2015.csv` | Regenerated — now 27 columns (was 19) |
+| `outputs_step1/main_2022.csv` | Regenerated — now 24 columns (was 19) |
+| `outputs_step1/validation_report.html` | Regenerated — Chart 3 fully populated |

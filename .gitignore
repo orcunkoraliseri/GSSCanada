@@ -51,8 +51,9 @@ eSim_tests/benchmark_results/
 **/Energy+.ini
 
 # Pipeline Phase 1 & 2 Outputs
-2J_docs_occ_nTemp/outputs/
+2J_docs_occ_nTemp/outputs_step1/
+2J_docs_occ_nTemp/outputs_step2/
+2J_docs_occ_nTemp/outputs_step3/
 
 # IDE and Large Outputs
 .idea/
-2J_docs_occ_nTemp/outputs_step3/

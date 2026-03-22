@@ -144,14 +144,14 @@ cd /Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp
 python 01_readingGSS.py
 ```
 
-Check that `outputs/main_2005.csv` (and other cycles) now have column `SEX` instead of
+Check that `outputs_step1/main_2005.csv` (and other cycles) now have column `SEX` instead of
 `sex`, `MARSTH` instead of `marstat`, etc.:
 
 ```bash
 python -c "
 import pandas as pd
 for year in [2005, 2010, 2015, 2022]:
-    df = pd.read_csv(f'outputs/main_{year}.csv', nrows=1)
+    df = pd.read_csv(f'outputs_step1/main_{year}.csv', nrows=1)
     print(year, df.columns.tolist())
 "
 ```
@@ -174,6 +174,6 @@ Open both HTML reports side-by-side in a browser and confirm:
 - No new failures or errors appear in either report's scorecard.
 
 ```
-open /Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs/step1_validation_report.html
+open /Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step1/step1_validation_report.html
 open /Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step2/step2_validation_report.html
 ```

@@ -83,6 +83,7 @@ EPISODE_COMMON_COLS = [
     "otherHHs",
     "friends",
     "others",
+    "colleagues",    # TUI_06I (2015/2022 only) → NaN for 2005/2010
     # Auxiliary (optional)
     "TUI_07",        # tech use: 2015/2022 only → NaN for 2005/2010
     # QA flag

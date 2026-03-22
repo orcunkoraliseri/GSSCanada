@@ -9,7 +9,7 @@ import pathlib
 import pandas as pd
 import openpyxl
 
-INPUT_DIR = "outputs/"
+INPUT_DIR = "outputs_step1/"
 OUTPUT_DIR = "outputs_step2/"
 
 CYCLES = [2005, 2010, 2015, 2022]
@@ -451,20 +451,91 @@ COPRESENCE_MAP = {
 }
 
 
-def harmonize_copresence(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
-    rename_map = COPRESENCE_MAP.get(cycle, {})
-    df = df.rename(columns=rename_map)
-    cols_to_drop = [
-        c
-        for c in df.columns
-        if c.startswith(("NHSD", "TUI_06")) and c not in rename_map.values()
-    ]
-    df = df.drop(columns=cols_to_drop, errors="ignore")
+def or_merge_copresence(
+    df: pd.DataFrame, target_col: str, source_cols: list[str]
+) -> pd.DataFrame:
+    """OR-merge binary (1/2/NaN) source columns into target_col.
 
-    unified_cols = list(rename_map.values())
-    for col in unified_cols:
+    Rules:
+        result = 1   if any source == 1                  (person was present)
+        result = 2   if no source == 1, at least one == 2 (person was absent)
+        result = NaN if all sources are NaN               (not measured)
+
+    Operates in-place on target_col; drops no columns itself.
+
+    Args:
+        df:          Episode DataFrame for one cycle.
+        target_col:  Name of the unified column to write the result into.
+        source_cols: List of column names to OR-merge (may include target_col itself).
+
+    Returns:
+        df with target_col updated.
+    """
+    available = [c for c in source_cols if c in df.columns]
+    if not available:
+        return df
+    any_present = (df[available] == 1).any(axis=1)
+    any_absent  = (df[available] == 2).any(axis=1)
+    result = pd.Series(pd.NA, index=df.index, dtype="Int8")
+    result[any_present]            = 1
+    result[~any_present & any_absent] = 2
+    df[target_col] = result
+    return df
+
+
+def harmonize_copresence(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """Rename, OR-merge, and clean all co-presence columns.
+
+    Steps:
+        A. Standardize missing codes (7/8/9 → NaN) on ALL raw co-presence
+           columns (both mapped and unmapped) before any renaming.
+        B. Rename primary columns to unified names via COPRESENCE_MAP.
+        C. OR-merge unmapped columns into existing unified targets.
+        D. Add `colleagues` column (TUI_06I for 2015/2022; NaN for 2005/2010).
+        E. Drop all residual raw co-presence columns.
+
+    Produces 9 unified columns:
+        Alone, Spouse, Children, parents, otherInFAMs, otherHHs,
+        friends, others, colleagues
+    """
+    rename_map = COPRESENCE_MAP.get(cycle, {})
+
+    # Step A: Standardize missing codes on raw columns before rename
+    extra_raw = (
+        ["NHSDCL15", "NHSDC15P", "NHSDPAR"] if cycle in (2005, 2010)
+        else ["TUI_06F", "TUI_06I"]
+    )
+    for col in list(rename_map.keys()) + extra_raw:
         if col in df.columns:
             df[col] = df[col].replace({7: pd.NA, 8: pd.NA, 9: pd.NA})
+
+    # Step B: Rename primary columns to unified names
+    df = df.rename(columns=rename_map)
+
+    # Step C: OR-merge unmapped columns into unified targets
+    if cycle in (2005, 2010):
+        # NHSDCL15: children outside HH <15 → merge into Children
+        df = or_merge_copresence(df, "Children",    ["Children",    "NHSDCL15"])
+        # NHSDPAR:  parents outside HH   → merge into parents
+        df = or_merge_copresence(df, "parents",     ["parents",     "NHSDPAR"])
+        # NHSDC15P: children outside HH ≥15 → merge into otherInFAMs
+        df = or_merge_copresence(df, "otherInFAMs", ["otherInFAMs", "NHSDC15P"])
+        # No equivalent for colleagues in 2005/2010
+        df["colleagues"] = pd.NA
+
+    else:  # 2015, 2022
+        # TUI_06F: other HH adults → merge into otherInFAMs (alongside TUI_06D→otherInFAMs)
+        df = or_merge_copresence(df, "otherInFAMs", ["otherInFAMs", "TUI_06F"])
+        # TUI_06I: colleagues/classmates → new unified column
+        df["colleagues"] = df["TUI_06I"].copy() if "TUI_06I" in df.columns else pd.NA
+
+    # Step D: Drop residual raw co-presence columns
+    raw_to_drop = [
+        c for c in df.columns
+        if c in {"NHSDCL15", "NHSDC15P", "NHSDPAR", "TUI_06F", "TUI_06I"}
+    ]
+    df = df.drop(columns=raw_to_drop, errors="ignore")
+
     return df
 
 

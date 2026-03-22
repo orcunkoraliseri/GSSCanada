@@ -1,7 +1,7 @@
 # Task: Investigate step1_validation_report.html for column naming issues
 
 ## Progress Checklist
-- [x] Open the file: `file:///Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs/step1_validation_report.html` (via directory browsing)
+- [x] Open the file: `file:///Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step1/step1_validation_report.html` (via directory browsing)
 - [x] Screenshot and extract labels for Chart 3 (Demographic Category Distributions)
 - [x] Screenshot and extract labels for Chart 4 (NaN heatmap)
 - [x] Compare findings with expected harmonized names: `occID`, `start`, `end`, etc.
