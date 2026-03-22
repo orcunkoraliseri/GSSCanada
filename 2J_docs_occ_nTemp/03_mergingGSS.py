@@ -350,6 +350,7 @@ def derive_temporal_features(merged: pd.DataFrame) -> pd.DataFrame:
 
     # Minutes from midnight for episode start
     df["startMin"] = _parse_hhmm_to_minutes(df["start"])
+    df["endMin"] = _parse_hhmm_to_minutes(df["end"])
 
     # HOUR_OF_DAY (0–23)
     df["HOUR_OF_DAY"] = (df["startMin"] // 60).astype(int)
@@ -357,7 +358,7 @@ def derive_temporal_features(merged: pd.DataFrame) -> pd.DataFrame:
     # TIMESLOT_10: HETUS 10-min slot (1–144, 4 AM origin)
     df["TIMESLOT_10"] = _hhmm_to_hetus_slot(df["start"])
 
-    derived_cols = ["DAYTYPE", "startMin", "HOUR_OF_DAY", "TIMESLOT_10", "DDAY_STRATA"]
+    derived_cols = ["DAYTYPE", "startMin", "endMin", "HOUR_OF_DAY", "TIMESLOT_10", "DDAY_STRATA"]
     print(f"  Derived columns added: {derived_cols}")
     for col in derived_cols:
         print(f"    {col}: {df[col].nunique()} unique values, "
@@ -813,6 +814,209 @@ def validate_30min(hetus_30min: pd.DataFrame, n_ties: int) -> None:
     print("\nV8 Selection Complete.")
 
 
+# ── Phase I — Co-Presence Tiling (episode → 48-slot 30-min format) ───────────
+
+COP_COLS = [
+    "Alone", "Spouse", "Children", "parents", "otherInFAMs",
+    "otherHHs", "friends", "others", "colleagues"
+]
+
+def tile_copresence_to_30min() -> pd.DataFrame:
+    """Tile episode-level co-presence columns to 30-min slot wide format.
+
+    Reads merged_episodes.csv and hetus_30min.csv (for occID order).
+    Applies the same two-stage tiling as Phase F+H: episode → 144-slot 10-min
+    intermediate → 48-slot 30-min via binary majority vote.
+
+    Returns:
+        DataFrame: 64,061 rows × 433 cols (occID + 9×48 co-presence slots).
+        Values: 1=present, 2=absent, pd.NA for NaN slots.
+        Output: outputs_step3/copresence_30min.csv
+    """
+    print("\n── Phase I: Co-Presence Tiling (episode → 30-min slots) ──────")
+    ep_path = Path("outputs_step3") / "merged_episodes.csv"
+    episodes = pd.read_csv(ep_path, low_memory=False)
+    print(f"  Loaded: {len(episodes):,} episode rows")
+
+    # Verify required columns
+    required_cols = ["occID", "startMin", "endMin", "CYCLE_YEAR"] + COP_COLS
+    missing = [c for c in required_cols if c not in episodes.columns]
+    assert not missing, f"Missing columns: {missing}"
+
+    n_unique_occ = episodes.groupby(["occID", "CYCLE_YEAR"]).ngroups
+    print(f"  Unique (occID, CYCLE_YEAR) in episodes: {n_unique_occ:,}")  # expect 64,061
+
+    ref_path = Path("outputs_step3") / "hetus_30min.csv"
+    ref_df = pd.read_csv(ref_path, usecols=["occID", "CYCLE_YEAR"], low_memory=False)
+    occid_order = list(zip(ref_df["occID"], ref_df["CYCLE_YEAR"]))
+    occid_to_idx = {oid_cyc: i for i, oid_cyc in enumerate(occid_order)}
+    n = len(occid_order)
+    print(f"  Reference order loaded: {n:,} respondents")
+    assert n == 64_061, f"Expected 64,061, got {n}"
+
+    # One float64 array per co-presence column
+    cop_10min = {col: np.full((n, 144), np.nan, dtype=float) for col in COP_COLS}
+    print(f"  Pre-allocated 9 arrays of shape ({n}, 144)")
+
+    # Sort by CYCLE_YEAR and occID for sequential group access
+    episodes_sorted = episodes.sort_values(["CYCLE_YEAR", "occID"]).reset_index(drop=True)
+
+    # Build group boundary index: (occid, cycle) → (start_row, end_row)
+    grp = episodes_sorted.groupby(["occID", "CYCLE_YEAR"], sort=False)
+    grp_indices = {k: (grp.indices[k].min(), grp.indices[k].max() + 1)
+                   for k in grp.groups}
+    print(f"  Episode group index built for {len(grp_indices):,} respondents")
+
+    # Extract needed arrays for speed
+    start_mins   = episodes_sorted["startMin"].to_numpy(dtype=float)
+    durations    = episodes_sorted["duration"].to_numpy(dtype=float)
+    cop_vals     = {col: episodes_sorted[col].to_numpy(dtype=float) for col in COP_COLS}
+
+    print("  Tiling episodes to 10-min slots...")
+    for resp_idx, key in enumerate(occid_order):
+        if resp_idx > 0 and resp_idx % 10_000 == 0:
+            print(f"    {resp_idx:,} / {n:,}")
+        if key not in grp_indices:
+            continue  # no episodes
+        row_start, row_end = grp_indices[key]
+        for ep_row in range(row_start, row_end):
+            s_min = start_mins[ep_row]
+            dur = durations[ep_row]
+            
+            # Shift to 4:00 AM origin
+            start_shifted = (int(s_min) - 240) % 1440
+            end_shifted = min(start_shifted + int(dur), 1440)
+            
+            slot_s = start_shifted // 10
+            slot_e = (end_shifted - 1) // 10 + 1 if end_shifted > 0 else 0
+            
+            slot_e = min(slot_e, 144)        # clamp to array bounds
+            for col in COP_COLS:
+                val = cop_vals[col][ep_row]
+                if not np.isnan(val):
+                    cop_10min[col][resp_idx, slot_s:slot_e] = val
+
+    print("  Tiling complete.")
+
+    cop_3d = {}
+    for col in COP_COLS:
+        cop_3d[col] = cop_10min[col].reshape(n, 48, 3)
+        # Shape check
+        assert cop_3d[col].shape == (n, 48, 3), f"Reshape failed for {col}"
+    print("  Reshaped all 9 arrays to (64061, 48, 3)")
+
+    cop_30 = {}
+    for col in COP_COLS:
+        arr = cop_3d[col]
+        valid_count = np.sum(~np.isnan(arr), axis=2)         # (n, 48): non-NaN count
+        sum_present = np.nansum(arr == 1.0, axis=2).astype(float)  # count of "1" per window
+
+        result = np.where(valid_count == 0, np.nan,
+                 np.where(sum_present >= 2, 1.0, 2.0))       # 1 if majority present, else 2
+        cop_30[col] = result
+
+        nan_count = int(np.isnan(result).sum())
+        print(f"  {col}: NaN slots = {nan_count:,} ({100*nan_count/(n*48):.2f}%)")
+
+    cop30_dfs = []
+    for col in COP_COLS:
+        slot_cols = [f"{col}30_{i:03d}" for i in range(1, 49)]
+        df_col = pd.DataFrame(cop_30[col], columns=slot_cols)
+        # Cast to nullable Int8 (supports NaN)
+        for c in slot_cols:
+            df_col[c] = df_col[c].astype(pd.Int8Dtype())
+        cop30_dfs.append(df_col)
+        print(f"  {col}: built DataFrame {df_col.shape}")
+
+    occid_col = pd.DataFrame({"occID": [k[0] for k in occid_order]})
+    copresence_30min = pd.concat([occid_col] + cop30_dfs, axis=1)
+    print(f"  copresence_30min shape: {copresence_30min.shape}")
+    # Expected: (64061, 433) — 1 occID + 9×48 = 433
+    assert copresence_30min.shape == (64_061, 433), f"Shape mismatch: {copresence_30min.shape}"
+
+    out_path = Path("outputs_step3") / "copresence_30min.csv"
+    print(f"\n  Writing {out_path} ...")
+    copresence_30min.to_csv(out_path, index=False)
+    size_mb = out_path.stat().st_size / 1e6
+    print(f"  Done. File size: {size_mb:.1f} MB")
+    return copresence_30min
+
+def validate_copresence_30min_export(copresence_30min: pd.DataFrame, occid_order: list[int]) -> None:
+    print("\n── Phase I Validation (VI-1–7) ─────────────────────────────")
+    # VI-1: Shape check
+    assert copresence_30min.shape[0] == 64_061, f"Row count: {copresence_30min.shape[0]}"
+    assert copresence_30min.shape[1] == 433, f"Col count: {copresence_30min.shape[1]}"
+    print("VI-1 PASS — shape (64061, 433)")
+
+    # VI-2: occID alignment with hetus_30min
+    hetus_occids = pd.read_csv("outputs_step3/hetus_30min.csv", usecols=["occID"])["occID"]
+    match = copresence_30min["occID"].equals(hetus_occids)
+    assert match, "occID mismatch between copresence_30min and hetus_30min"
+    print("VI-2 PASS — occID order matches hetus_30min exactly")
+
+    # VI-3: No all-NaN respondents for primary 8 columns
+    primary_cols = [c for c in COP_COLS if c != "colleagues"]
+    for col in primary_cols:
+        slot_cols = [f"{col}30_{i:03d}" for i in range(1, 49)]
+        all_nan_mask = copresence_30min[slot_cols].isna().all(axis=1)
+        n_all_nan = all_nan_mask.sum()
+        if n_all_nan > 0:
+            print(f"VI-3 WARN — {col}: {n_all_nan} respondents have all-NaN across 48 slots (reflects source data missingness)")
+        else:
+            print(f"VI-3 PASS — {col}: no all-NaN respondents")
+
+    # VI-4: colleagues NaN pattern by cycle
+    ref_df = pd.read_csv("outputs_step3/hetus_30min.csv", usecols=["occID", "CYCLE_YEAR"])
+    coll_slots = [f"colleagues30_{i:03d}" for i in range(1, 49)]
+
+    merged_check = copresence_30min[["occID"] + coll_slots].copy()
+    merged_check["CYCLE_YEAR"] = ref_df["CYCLE_YEAR"].values
+
+    for cycle in [2005, 2010, 2015, 2022]:
+        sub = merged_check[merged_check["CYCLE_YEAR"] == cycle][coll_slots]
+        nan_rate = sub.isna().sum().sum() / sub.size
+        if cycle in [2005, 2010]:
+            assert nan_rate == 1.0, f"Cycle {cycle}: colleagues NaN rate = {nan_rate:.4f}, expected 1.0"
+            status = "PASS (100% NaN as expected)"
+        else:
+            assert nan_rate < 1.0, f"Cycle {cycle}: colleagues NaN rate = {nan_rate:.4f}, expected <1.0"
+            status = f"PASS ({100*nan_rate:.1f}% NaN)"
+        print(f"VI-4 colleagues {cycle}: {status}")
+
+    # VI-5: Value range check
+    all_slot_cols = [f"{col}30_{i:03d}" for col in COP_COLS for i in range(1, 49)]
+    vals = copresence_30min[all_slot_cols].stack().dropna().unique()
+    invalid = set(vals) - {1, 2}
+    assert not invalid, f"Unexpected values in co-presence slots: {invalid}"
+    print(f"VI-5 PASS — all non-NaN values ∈ {{1, 2}}")
+
+    # VI-6: Co-presence prevalence plausibility
+    for col, low, high in [("Alone", 30, 60), ("Spouse", 15, 45)]:
+        slot_cols = [f"{col}30_{i:03d}" for i in range(1, 49)]
+        vals = copresence_30min[slot_cols].to_numpy(dtype=float, na_value=np.nan)
+        pct_present = 100 * np.nanmean(vals == 1)
+        status = "PASS" if low <= pct_present <= high else "WARN"
+        print(f"VI-6 {col}: {pct_present:.1f}% present (expected {low}–{high}%) → {status}")
+
+    # VI-7: Manual spot-check 5 random respondents
+    import random
+    random.seed(42)
+    episodes_chk = pd.read_csv("outputs_step3/merged_episodes.csv", low_memory=False)
+    sample_ids = random.sample(occid_order, 5)
+    print("\nVI-7 — Manual spot-check (Alone30_001, slot 1 = 04:00–04:29)")
+    for key in sample_ids:
+        occ_id, cycle = key
+        ep_sub = episodes_chk[(episodes_chk["occID"] == occ_id) & (episodes_chk["CYCLE_YEAR"] == cycle)].copy()
+        # Episodes overlapping 04:00-04:29 (minutes 240-269 from midnight)
+        # Note: endMin=0 or <240 means it wrapped to next day
+        covering = ep_sub[((ep_sub["startMin"] <= 269) & (ep_sub["endMin"] > 240)) | (ep_sub["endMin"] <= 30)]
+        src_vals = covering["Alone"].tolist()
+        idx = occid_order.index(key)
+        alone30_001 = copresence_30min.iloc[idx]["Alone30_001"]
+        print(f"  occID={occ_id}, CYCLE={cycle}: source episode Alone vals near 04:00 = {src_vals} → Alone30_001 = {alone30_001}")
+    print("VI-7 — Review output above manually to confirm majority vote is correct.")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -860,6 +1064,23 @@ def main() -> None:
 
     # Group 6: Validation
     validate_30min(hetus_30min, n_ties)
+
+    # Phase I: Co-presence tiling
+    copresence_30min = tile_copresence_to_30min()
+
+    # H.6b / I.6b: Print post-export summary for co-presence
+    print(f"\n── Phase I Summary ──────────────────────────────────────────")
+    print(f"  Rows             : {copresence_30min.shape[0]:,}")
+    print(f"  Total columns    : {copresence_30min.shape[1]}")
+    for col in COP_COLS:
+        slot_cols = [f"{col}30_{i:03d}" for i in range(1, 49)]
+        nan_total = copresence_30min[slot_cols].isna().sum().sum()
+        print(f"  {col:>14}: NaN slots = {nan_total:,}")
+
+    # Validate Phase I
+    ref_df = pd.read_csv("outputs_step3/hetus_30min.csv", usecols=["occID", "CYCLE_YEAR"], low_memory=False)
+    occ_cyc = list(zip(ref_df["occID"], ref_df["CYCLE_YEAR"]))
+    validate_copresence_30min_export(copresence_30min, occ_cyc)
 
     print("\n" + "=" * 60)
     print("Step 3 complete.")

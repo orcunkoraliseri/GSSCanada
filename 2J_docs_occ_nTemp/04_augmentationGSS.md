@@ -17,11 +17,11 @@ Each of 64,061 respondents has exactly **1 observed diary day** (one DDAY_STRATA
 | File | Location | Content | Rows | Columns |
 |---|---|---|---|---|
 | `hetus_30min.csv` | `outputs_step3/` | 48 activity slots (`act30_001`–`act30_048`) + 48 AT_HOME slots (`hom30_001`–`hom30_048`) + 24 demographic/metadata columns | 64,061 | 120 |
-| `merged_episodes.csv` | `outputs_step3/` | Episode-level data with 9 co-presence columns (`Alone`, `Spouse`, `Children`, `parents`, `otherInFAMs`, `otherHHs`, `friends`, `others`, `colleagues`) | ~1,049,480 | 49 |
+| `copresence_30min.csv` | `outputs_step3/` | 9 co-presence columns tiled to 48 30-min slots each (`{ColName}30_001`–`{ColName}30_048`) + occID | 64,061 | 433 |
 
-### Critical Gap: Co-Presence Not Yet in 30-Min Slot Format
-
-The `hetus_30min.csv` currently contains **only** activity and AT_HOME slots. The 9 co-presence columns exist at episode level in `merged_episodes.csv` but have **not been tiled into 30-min slot format**. This must be done in Sub-step 4A before any model work begins.
+> **Note on `copresence_30min.csv`:** Produced by Phase I of `03_mergingGSS.py` (Step 3 extension). Values use original GSS coding: 1=present, 2=absent, pd.NA=missing. `colleagues30_*` is entirely NaN for 2005/2010 respondents (not measured in those cycles). Full spec in `docs_progress/03_mergingGSS_resolutionSampling.md` — Phase I section.
+>
+> **Important — Co-Presence NaN Rates:** The primary 8 co-presence columns (Alone through others) have non-trivial NaN rates at the episode level, which propagate to the 30-min slot level: **2005: ~20% NaN, 2010: ~19.3%, 2015: ~0.1%, 2022: ~6.8%** (overall ~12.5%). These NaNs represent episodes where co-presence was not recorded in the source GSS microdata. The availability mask in Sub-step 4A must account for this. Colleagues NaN: **2005/2010: 100%, 2015: ~0.1%, 2022: ~6.8%**.
 
 ### Confirmed Data Characteristics
 
@@ -42,68 +42,25 @@ The `hetus_30min.csv` currently contains **only** activity and AT_HOME slots. Th
 
 ---
 
-### Sub-step 4A — Co-Presence Tiling to 30-Min Slot Format
-
-> **SCOPE NOTE — This sub-step has been moved to Step 3.**
->
-> Co-presence tiling is implemented as **Phase I** of `03_mergingGSS.py`, appended after the existing Phase H (resolution downsampling). It is treated as a Step 3 extension because it uses the same episode-tiling + majority-vote pipeline established in Phases F and H, and its output (`copresence_30min.csv`) is a peer of `hetus_30min.csv` in `outputs_step3/`.
->
-> Full specification, task list, and progress tracking are in:
-> - `docs_progress/03_mergingGSS_resolutionSampling.md` — Phase I section (algorithmic design, validation checks, integration notes)
-> - `docs_progress/03_mergingGSS_resolutionSampling_tasks.md` — Tasks #27–#46 (GROUP 7–13)
-> - `docs_progress/03_mergingGSS_resolutionSampling_progress.md` — Tasks #27–#46 progress log
->
-> **This sub-step must be completed before Sub-step 4B can begin.**
-
-**Expected output (from Phase I):** `outputs_step3/copresence_30min.csv`
-- 64,061 rows × 433 columns (occID + 9×48 co-presence slot columns)
-- Column naming: `{ColName}30_{001..048}` (e.g. `Alone30_001`, `colleagues30_048`)
-- Values: 1=present, 2=absent, pd.NA for NaN — original GSS coding retained
-- `colleagues30_*` is entirely NaN for 2005/2010 respondents (not measured)
-
-**Summary of Phase I algorithm:**
-```
-Source: merged_episodes.csv (episode-level, 9 co-presence columns)
-
-For each respondent × co-presence column:
-  Stage 1 — Episode → 144 × 10-min slots (same logic as Phase F):
-    Initialize cop_slots[0..143] = NaN
-    For each episode:
-      slot_start = startMin // 10          (0-indexed)
-      slot_end   = endMin   // 10          (exclusive)
-      cop_slots[slot_start:slot_end] = episode co-presence value
-
-  Stage 2 — 144-slot → 48-slot majority vote (same logic as Phase H):
-    For each 30-min slot s in [0..47]:
-      source = cop_slots[3s : 3s+3]
-      if count(source == 1) >= 2: assign 1 (present)
-      elif all NaN:               assign NaN
-      else:                       assign 2 (absent)
-
-Output: copresence_30min.csv  (64,061 rows × 433 cols)
-```
-
----
-
-### Sub-step 4B — Unified Training Dataset Assembly
+### Sub-step 4A — Unified Training Dataset Assembly
 
 **Purpose:** Merge `hetus_30min.csv` and `copresence_30min.csv` into a single model-ready dataset, with all features encoded for Transformer input.
 
-**Script:** `04B_dataset_assembly.py`
+**Script:** `04A_dataset_assembly.py`
 
 **Inputs:**
 - `hetus_30min.csv` (demographic + activity + AT_HOME slots)
-- `copresence_30min.csv` (co-presence slots from 4A)
+- `copresence_30min.csv` (co-presence slots from Step 3 Phase I)
 
 **Operations:**
 
-#### B1. Merge on occID
+#### A1. Merge on occID
 ```python
 df = hetus_30min.merge(copresence_30min, on='occID', how='inner', validate='1:1')
 assert len(df) == 64061
 ```
 
-#### B2. Feature Encoding — Demographic Conditioning Vector
+#### A2. Feature Encoding — Demographic Conditioning Vector
 
 | Column | Encoding | Dim |
 |---|---|---|
@@ -126,7 +83,7 @@ assert len(df) == 64061
 | `TOTINC_SOURCE` | Binary flag (SELF/CRA) | 1 |
 | **Total conditioning dim** | | **~91 raw → projected to d_model** |
 
-#### B3. Sequence Token Construction — Per-Slot Multivariate Token
+#### A3. Sequence Token Construction — Per-Slot Multivariate Token
 
 Each of the 48 time slots becomes a single multivariate token with 11 features:
 
@@ -144,9 +101,11 @@ Each of the 48 time slots becomes a single multivariate token with 11 features:
 | `others` | `others30_{s}` | Binary | Scalar (recode: 1→1, 2→0) |
 | `colleagues` | `colleagues30_{s}` | Binary | Scalar (recode: 1→1, 2→0; 0 for 2005/2010 NaN) |
 
-> **Co-presence recoding:** GSS uses 1=Yes, 2=No. Recode to standard binary (1=present, 0=absent) before model input. NaN → 0 with a separate availability mask for loss computation.
+> **Co-presence recoding:** GSS uses 1=Yes, 2=No. Recode to standard binary (1=present, 0=absent) before model input. NaN → 0 with a separate **availability mask** for loss computation.
+>
+> **NaN handling detail:** Co-presence NaN is not limited to colleagues — the primary 8 columns also have missing data (2005: ~20%, 2010: ~19.3%, 2015: ~0.1%, 2022: ~6.8% of slots). Build a per-slot boolean availability mask `cop_avail[respondent, slot, col]` = True where the source value was non-NaN. During training, the co-presence BCE loss must be multiplied by this mask so the model is not penalized for predicting values where no ground truth exists. During inference, generate all 9 co-presence values regardless of source availability.
 
-#### B4. Train/Val/Test Split Strategy
+#### A4. Train/Val/Test Split Strategy
 
 ```
 Split by respondent (occID), stratified by CYCLE_YEAR × DDAY_STRATA:
@@ -166,19 +125,21 @@ Stratification ensures each split has proportional representation of:
 - `step4_train.pt` / `step4_val.pt` / `step4_test.pt` (PyTorch tensor datasets)
 - `step4_feature_config.json` (encoding dimensions, column mappings, masks)
 
-**Validation checks (04B):**
+**Validation checks (04A):**
 - [ ] No data leakage: occID sets are disjoint across train/val/test
 - [ ] Stratification check: CYCLE_YEAR × DDAY_STRATA proportions within ±2% across splits
 - [ ] All demographic columns have no unexpected NaN (except SURVMNTH for 2005/2010)
-- [ ] Co-presence recoding verified: all values ∈ {0, 1} after recode
+- [ ] Co-presence recoding verified: all non-NaN values ∈ {0, 1} after recode
 - [ ] colleagues = 0 for all 2005/2010 rows (confirmed masked)
+- [ ] Availability mask shape matches (n_respondents, 48, 9) — True where source co-presence was non-NaN
+- [ ] NaN rate in availability mask matches expected: ~20% for 2005, ~19.3% for 2010, ~0.1% for 2015, ~6.8% for 2022 (primary 8 cols); 100% for colleagues 2005/2010
 - [ ] Total conditioning vector dimension logged
 
 ---
 
-### Sub-step 4C — Transformer Architecture Definition
+### Sub-step 4B — Transformer Architecture Definition
 
-**Script:** `04C_model.py`
+**Script:** `04B_model.py`
 
 #### Architecture: Conditional Transformer Encoder-Decoder
 
@@ -260,11 +221,11 @@ Standard sinusoidal encoding for 48 positions. Temporal semantics (time-of-day) 
 
 ---
 
-### Sub-step 4D — Training Pair Construction (Supervision Strategy)
+### Sub-step 4C — Training Pair Construction (Supervision Strategy)
 
 **Purpose:** Transformers need paired (input, target) examples. Since each respondent has only 1 diary, we construct approximate supervision pairs from **demographically similar respondents observed on different DDAY_STRATA**.
 
-**Script:** `04D_training_pairs.py`
+**Script:** `04C_training_pairs.py`
 
 #### Pair Construction Logic
 
@@ -312,7 +273,7 @@ Weekday respondents (~72.8%) outnumber Saturday (~13.6%) and Sunday (~13.6%). Th
 
 Mitigation: oversample weekend-observed respondents as encoders during training (weighted sampler with inverse DDAY_STRATA frequency).
 
-**Validation checks (04D):**
+**Validation checks (04C):**
 - [ ] Every respondent has exactly 2 target strata assigned
 - [ ] All K neighbors share same CYCLE_YEAR as source respondent
 - [ ] Demographic match quality: mean exact-match score ≥ 3 of 5 core attributes
@@ -321,9 +282,9 @@ Mitigation: oversample weekend-observed respondents as encoders during training 
 
 ---
 
-### Sub-step 4E — Training Loop
+### Sub-step 4D — Training Loop
 
-**Script:** `04E_train.py`
+**Script:** `04D_train.py`
 
 #### Loss Function
 
@@ -383,19 +344,29 @@ For each epoch:
   5. Save checkpoint if best val JS divergence
 ```
 
-#### Colleagues Masking Detail
+#### Co-Presence Availability Masking Detail
+
+The co-presence loss uses a **per-slot availability mask** (not just a per-cycle colleagues mask), because the primary 8 columns also have NaN data (~12.5% overall):
 
 ```python
-# Build mask: 1 for 2015/2022 rows, 0 for 2005/2010 rows
-colleagues_mask = (cycle_year >= 2015).float()  # shape: (batch,)
+# cop_avail: boolean tensor (batch, 48, 9) — True where source co-presence was non-NaN
+# Built during 04A dataset assembly from the raw copresence_30min.csv
 
 # In loss computation:
-# L_copresence computed over all 9 columns × 48 slots
-# Then multiply colleagues column (index 8) loss by mask before reduction
-cop_loss_per_col[:, 8, :] *= colleagues_mask.unsqueeze(-1)
+# L_copresence = BCEWithLogitsLoss(pred_cop, target_cop, reduction='none')  # (batch, 48, 9)
+# Apply availability mask: zero out loss for slots/columns with no ground truth
+cop_loss_masked = cop_loss_raw * cop_avail.float()  # (batch, 48, 9)
+
+# Colleagues is a special case: 100% NaN for 2005/2010 (already handled by cop_avail)
+# but additionally enforce explicit zero for safety:
+colleagues_mask = (cycle_year >= 2015).float()  # shape: (batch,)
+cop_loss_masked[:, :, 8] *= colleagues_mask.unsqueeze(-1)
+
+# Reduce: mean over available slots only
+cop_loss = cop_loss_masked.sum() / cop_avail.float().sum().clamp(min=1)
 ```
 
-**Validation checks (04E):**
+**Validation checks (04D):**
 - [ ] Training loss decreases monotonically over first 10 epochs
 - [ ] Validation JS divergence improves for ≥20 epochs before plateau
 - [ ] No NaN/Inf in loss values
@@ -405,15 +376,15 @@ cop_loss_per_col[:, 8, :] *= colleagues_mask.unsqueeze(-1)
 
 ---
 
-### Sub-step 4F — Inference & Synthetic Diary Generation
+### Sub-step 4E — Inference & Synthetic Diary Generation
 
-**Script:** `04F_inference.py`
+**Script:** `04E_inference.py`
 
 #### Generation Procedure
 
 ```
 For each respondent R_i (all 64,061):
-  Load best checkpoint from 4E
+  Load best checkpoint from 4D
 
   For S_target in {1, 2, 3}:
     If S_target == R_i.DDAY_STRATA:
@@ -468,96 +439,15 @@ Total columns: ~24 metadata + 48 act + 48 hom + 432 copresence = ~552 columns
 
 ---
 
-### Sub-step 4G — Validation & Quality Assurance
+### Sub-step 4F — Validation & Quality Assurance
 
-**Script:** `04G_validation.py`
+**Script:** `04F_validation.py`
 
-#### Validation Framework
-
-##### V1. Activity Distribution Fidelity (Primary Metric)
-
-```
-For each CYCLE_YEAR × DDAY_STRATA:
-  Compute activity marginal distribution:
-    P_obs(a) = weighted frequency of activity a across observed diaries
-    P_syn(a) = frequency of activity a across synthetic diaries
-
-  JS divergence: JS(P_obs || P_syn) for each of 14 categories
-
-  Pass criterion: JS < 0.05 for all strata × cycles
-```
-
-##### V2. AT_HOME Rate Consistency
-
-```
-For each CYCLE_YEAR × DDAY_STRATA:
-  Observed AT_HOME rate (weighted) vs. Synthetic AT_HOME rate
-
-  Pass criterion: |rate_obs - rate_syn| < 2 percentage points
-
-  Expected baseline rates (from Step 3):
-    2005: ~62.7% | 2010: ~62.3% | 2015: ~64.5% | 2022: ~70.6%
-```
-
-##### V3. Temporal Structure Plausibility
-
-```
-For synthetic diaries:
-  - Sleep continuity: sleep episodes should be contiguous at night
-    (flag: >3 sleep-wake-sleep transitions between slots 37-48 and 1-8)
-  - Activity transition rate: should be within ±20% of observed rate
-  - Peak activity hours: paid work peak (slots 9-20 = 8:00-14:00) should match observed
-```
-
-##### V4. Co-Presence Prevalence Match
-
-```
-For each co-presence column × CYCLE_YEAR × DDAY_STRATA:
-  P_obs(present) = weighted proportion of slots where col=1
-  P_syn(present) = proportion in synthetic diaries
-
-  Pass criterion: |P_obs - P_syn| < 3 percentage points per column
-
-  Special check: colleagues prevalence = 0 for 2005/2010 synthetic diaries
-```
-
-##### V5. Demographic Conditioning Fidelity
-
-```
-Verify that synthetic schedule distributions vary meaningfully by:
-  - AGEGRP (e.g., younger respondents have later sleep onset)
-  - LFTAG (employed vs. not-in-labour-force should differ in work hours)
-  - HHSIZE (larger households → more co-presence)
-
-  Method: compute per-group activity distributions for observed vs. synthetic
-  and confirm correlation ≥ 0.9 between observed and synthetic group means
-```
-
-##### V6. Cross-Stratum Consistency
-
-```
-For the same respondent, the 3 DDAY_STRATA diaries should:
-  - Share demographic profile (trivially true — same conditioning)
-  - Show plausible weekday vs. weekend differences:
-    → Weekday: more paid work activity
-    → Saturday/Sunday: more leisure, later wake-up, more AT_HOME
-
-  Method: compute mean activity proportions per stratum and verify
-  directional expectations hold for ≥90% of respondents
-```
-
-#### Validation Report
-
-**Output:** `outputs_step4/step4_validation_report.html`
-
-Report sections:
-1. Training curves (loss, JS divergence per epoch)
-2. Activity distribution comparison: observed vs. synthetic (grouped bar charts per stratum × cycle)
-3. AT_HOME rate table: observed vs. synthetic per cycle × stratum
-4. Temporal heatmaps: activity by slot (48 columns × 14 activities), observed vs. synthetic side-by-side
-5. Co-presence prevalence table: 9 columns × 4 cycles × 3 strata
-6. Demographic conditioning analysis: per-group activity distribution correlation
-7. Failure/warning log with flagged respondents
+> Full validation specification is in the separate document: **`04_augmentationGSS_val.md`**
+>
+> 8 validation sections covering: training curves, activity distribution JS divergence, AT_HOME rate consistency, temporal structure plausibility, co-presence prevalence match, demographic conditioning fidelity, cross-stratum consistency, and summary statistics.
+>
+> **Output:** `outputs_step4/step4_validation_report.html`
 
 ---
 
@@ -565,7 +455,6 @@ Report sections:
 
 | File | Location | Content |
 |---|---|---|
-| `copresence_30min.csv` | `outputs_step3/` | Co-presence tiled to 30-min slots (64,061 rows) — produced by Phase I of `03_mergingGSS.py` |
 | `step4_train.pt` | `outputs_step4/` | Training tensor dataset |
 | `step4_val.pt` | `outputs_step4/` | Validation tensor dataset |
 | `step4_test.pt` | `outputs_step4/` | Test tensor dataset |
@@ -580,19 +469,19 @@ Report sections:
 ## SCRIPT EXECUTION ORDER
 
 ```
-[Phase I of 03_mergingGSS.py]    # Tile co-presence → 30-min slots
-                                  # → outputs_step3/copresence_30min.csv
-                                  # (Step 3 extension; must run before 04B)
-
-04B_dataset_assembly.py          # Merge hetus_30min + copresence_30min + encode → training-ready dataset
-04C_model.py                     # Architecture definition (imported, not run)
-04D_training_pairs.py            # Construct demographic-match supervision pairs
-04E_train.py                     # Training loop (HPC GPU)
-04F_inference.py                 # Generate synthetic diaries for all respondents
-04G_validation.py                # Validation report
+04A_dataset_assembly.py          # Merge hetus_30min + copresence_30min + encode → training-ready dataset
+04B_model.py                     # Architecture definition (imported, not run)
+04C_training_pairs.py            # Construct demographic-match supervision pairs
+04D_train.py                     # Training loop (HPC GPU)
+04E_inference.py                 # Generate synthetic diaries for all respondents
+04F_validation.py                # Validation report
 ```
 
-**Dependencies:** Phase I (Step 3) → 04B → (04C, 04D) → 04E → 04F → 04G
+**Prerequisites from Step 3:**
+- `outputs_step3/hetus_30min.csv` (Phase H)
+- `outputs_step3/copresence_30min.csv` (Phase I)
+
+**Dependencies:** 04A → (04B, 04C) → 04D → 04E → 04F
 
 ---
 
@@ -617,7 +506,6 @@ Report sections:
 | Weekend respondent scarcity (~13.6% each) limits target pool for Weekday generation | Target reuse/overfitting | Oversample weekend respondents; augment with noise injection |
 | AT_HOME–activity inconsistency in generated diaries | Invalid BEM schedules | Post-hoc consistency correction (deterministic rules) |
 | Colleagues column all-NaN for 2005/2010 leaks information about cycle | Model uses colleagues as cycle proxy | Masking in loss + set to 0 in encoder input; verify no leakage in validation |
-| Co-presence tiling introduces artifacts at episode boundaries | Incorrect slot values | Validate against episode source; check boundary slot accuracy specifically |
 | DDAY_STRATA imbalance (73/14/14) causes mode collapse toward weekday patterns | Poor weekend generation | Weighted sampler; per-stratum JS monitoring; stratum-balanced batches |
 
 ---

@@ -1410,6 +1410,126 @@ class GSSMergeValidator:
 
     # ── HTML Report ─────────────────────────────────────────────────────────────
 
+    def validate_copresence_30min(self) -> None:
+        """Section 8a — Co-Presence Prevalence: Episode Level vs. 30-Min Slot Level."""
+        print("\n--- Section 8: Co-Presence Before/After 30-Min Tiling ---")
+
+        # 1. Load copresence_30min.csv
+        cop_path = os.path.join(self.step3_dir, "copresence_30min.csv")
+        if not os.path.exists(cop_path):
+            print("  [SKIP] copresence_30min.csv not found — run Phase I first.")
+            return
+        cop30 = pd.read_csv(cop_path, low_memory=False)
+
+        # Need CYCLE_YEAR from hetus_30min to filter by cycle
+        ref = pd.read_csv(os.path.join(self.step3_dir, "hetus_30min.csv"),
+                          usecols=["occID", "CYCLE_YEAR"], low_memory=False)
+        cop30["CYCLE_YEAR"] = ref["CYCLE_YEAR"].values
+
+        df = self.merged  # episode-level (merged_episodes.csv)
+
+        # 2. Compute prevalence for each (col × cycle) pair — episode level and slot level
+        episode_prev = {}   # {col: {cycle: pct}}
+        slot_prev    = {}   # {col: {cycle: pct}}
+
+        for col in COPRE_COLS:
+            episode_prev[col] = {}
+            slot_prev[col]    = {}
+            slot_cols_30 = [f"{col}30_{i:03d}" for i in range(1, 49)]
+            # Filter to only the slot columns that actually exist
+            slot_cols_30 = [c for c in slot_cols_30 if c in cop30.columns]
+
+            for cycle in CYCLES:
+                # --- episode level ---
+                sub_ep = df[(df["CYCLE_YEAR"] == cycle) & df[col].notna()] if col in df.columns else None
+                if sub_ep is not None and len(sub_ep) > 0:
+                    episode_prev[col][cycle] = 100.0 * (sub_ep[col] == 1).mean()
+                else:
+                    episode_prev[col][cycle] = float("nan")
+
+                # --- slot level ---
+                sub_sl = cop30[cop30["CYCLE_YEAR"] == cycle]
+                if slot_cols_30 and len(sub_sl) > 0:
+                    vals = sub_sl[slot_cols_30].to_numpy(dtype=float, na_value=np.nan)
+                    slot_prev[col][cycle] = 100.0 * float(
+                        (vals == 1).sum() / (~np.isnan(vals)).sum()
+                    ) if (~np.isnan(vals)).sum() > 0 else float("nan")
+                else:
+                    slot_prev[col][cycle] = float("nan")
+
+        print(f"\n  {'Column':>14} | {'Cycle':>4} | {'Ep%':>6} | {'Slot%':>6} | {'Δpp':>6} | Status")
+        for col in COPRE_COLS:
+            for cycle in CYCLES:
+                ep  = episode_prev[col].get(cycle, float("nan"))
+                sl  = slot_prev[col].get(cycle, float("nan"))
+                if np.isnan(ep) or np.isnan(sl):
+                    continue
+                delta = sl - ep
+                status = "PASS" if abs(delta) <= 5.0 else "WARN"
+                print(f"  {col:>14} | {cycle} | {ep:>5.1f}% | {sl:>5.1f}% | {delta:>+5.1f} | {status}")
+
+        # 3. Build figure: 2 rows
+        _apply_dark()
+        fig8a = plt.figure(figsize=(22, 10))
+        fig8a.suptitle(
+            "Section 8a — Co-Presence Prevalence: Episode Level vs. 30-Min Slot Level\n"
+            "Blue = episode prevalence (before tiling)  |  Orange = slot prevalence (after tiling)",
+            fontsize=13, fontweight="bold"
+        )
+        gs = fig8a.add_gridspec(2, 4, hspace=0.45, wspace=0.3,
+                                 top=0.88, bottom=0.08, left=0.05, right=0.97)
+
+        x = np.arange(len(COPRE_COLS))
+        BAR_W = 0.35
+        BLUE   = "#89b4fa"
+        ORANGE = "#fab387"
+
+        # Row 1: one panel per cycle
+        for ci, cycle in enumerate(CYCLES):
+            ax = fig8a.add_subplot(gs[0, ci])
+            ep_vals  = [episode_prev[col].get(cycle, float("nan")) for col in COPRE_COLS]
+            sl_vals  = [slot_prev[col].get(cycle, float("nan"))    for col in COPRE_COLS]
+
+            ax.bar(x - BAR_W / 2, ep_vals, BAR_W, label="Episode (before)",
+                   color=BLUE,   edgecolor="#1e1e2e", linewidth=0.5)
+            ax.bar(x + BAR_W / 2, sl_vals, BAR_W, label="Slot 30min (after)",
+                   color=ORANGE, edgecolor="#1e1e2e", linewidth=0.5)
+
+            ax.set_title(str(cycle), fontsize=11, fontweight="bold")
+            ax.set_xticks(x)
+            ax.set_xticklabels(COPRE_COLS, rotation=40, ha="right", fontsize=7.5)
+            ax.set_ylim(0, 100)
+            ax.set_ylabel("% present (= 1)" if ci == 0 else "")
+            ax.yaxis.grid(True, linestyle="--", alpha=0.25)
+            if ci == 0:
+                ax.legend(fontsize=8, loc="upper right")
+
+        # Row 2: delta plot (slot − episode) all cycles on one panel
+        ax_delta = fig8a.add_subplot(gs[1, :])  # spans all 4 columns
+        CYCLE_COLORS_DELTA = ["#89b4fa", "#f38ba8", "#fab387", "#a6e3a1"]
+        for ci, cycle in enumerate(CYCLES):
+            deltas = [
+                slot_prev[col].get(cycle, float("nan")) - episode_prev[col].get(cycle, float("nan"))
+                for col in COPRE_COLS
+            ]
+            ax_delta.plot(x, deltas, marker="o", linewidth=2, markersize=6,
+                          label=str(cycle), color=CYCLE_COLORS_DELTA[ci])
+
+        ax_delta.axhline(0, color="#cdd6f4", linewidth=1.2, linestyle="--", alpha=0.6)
+        ax_delta.set_xticks(x)
+        ax_delta.set_xticklabels(COPRE_COLS, rotation=30, ha="right", fontsize=9)
+        ax_delta.set_ylabel("Δ prevalence (slot − episode, pp)")
+        ax_delta.set_title(
+            "Δ Co-Presence Prevalence: 30-min slot − episode level  "
+            "(values near 0 = tiling preserved the signal)",
+            fontsize=11
+        )
+        ax_delta.yaxis.grid(True, linestyle="--", alpha=0.25)
+        ax_delta.legend(title="Cycle", fontsize=9, ncol=4, loc="upper right")
+
+        self.plots_b64["8a_copre_before_after"] = _b64(fig8a)
+        print("  ✅ 8a: Co-presence before/after 30-min tiling chart generated.")
+
     def build_html_report(self) -> str:
         n_pass = len(self.results["pass"])
         n_warn = len(self.results["warn"])
@@ -1456,6 +1576,8 @@ class GSSMergeValidator:
              "Section 6b — Co-Presence Prevalence by Category and Cycle"),
             ("6c_copre_alone_hourly",
              "Section 6c — Alone Rate by Hour of Day per Cycle"),
+            ("8a_copre_before_after",
+             "Section 8a — Co-Presence Prevalence: Episode Level vs. 30-Min Slot Level"),
         ]
 
         charts_html = ""
@@ -1676,6 +1798,7 @@ class GSSMergeValidator:
         self.validate_hetus_slots()
         self.validate_cross_cycle_consistency()
         self.validate_copresence()
+        self.validate_copresence_30min()
         self.generate_summary_table()
         self.validate_30min_downsampling()
         self.build_html_report()
