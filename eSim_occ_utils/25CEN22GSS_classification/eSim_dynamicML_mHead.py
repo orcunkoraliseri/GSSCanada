@@ -2524,7 +2524,7 @@ if __name__ == '__main__':
     # Import cross-platform config
     import sys
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-    from occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR, OUTPUT_DIR_ALIGNED, MODEL_DIR
+    from eSim_occ_utils.occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR, OUTPUT_DIR_ALIGNED, MODEL_DIR
     
     # Directories are now imported from occ_config
 
