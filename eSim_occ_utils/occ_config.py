@@ -18,7 +18,7 @@ SYSTEM_PLATFORM = platform.system()
 
 # Default base directories by platform
 if SYSTEM_PLATFORM == 'Darwin':  # macOS
-    _DEFAULT_BASE_DIR = Path('/Users/orcunkoraliseri/Desktop/Postdoc/eSim/Occupancy')
+    _DEFAULT_BASE_DIR = Path('/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy')
 elif SYSTEM_PLATFORM == 'Windows':
     _DEFAULT_BASE_DIR = Path(r'C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\Occupancy')
 else:  # Linux or other

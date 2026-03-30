@@ -40,6 +40,7 @@ SimResults_Plotting/
 SimResults_Plotting_Schedules/
 Pipeline_Test_Output/
 Test_Output/
+0_Occupancy/Outputs_Aligned/
 
 # Test & Debug Artifacts
 eSim_tests/benchmark_results/

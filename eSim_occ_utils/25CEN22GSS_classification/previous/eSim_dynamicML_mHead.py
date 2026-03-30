@@ -1582,8 +1582,9 @@ def validate_matching_quality(df_matched, expander, save_path=None):
 
     # Filter for Employees (COW 1 or 2)
     # We take a larger sample (up to 500) for better accuracy
-    sample_size = min(500, len(df_matched))
-    workers = df_matched[df_matched['COW'].isin([1, 2])].sample(sample_size)
+    workers_pool = df_matched[df_matched['COW'].isin([1, 2])]
+    sample_size = min(500, len(workers_pool))
+    workers = workers_pool.sample(sample_size)
 
     work_minutes = []
 
@@ -2390,7 +2391,7 @@ def visualize_bem_distributions(df_bem, output_dir=None):
     print(f"\n📊 GENERATING BEM DISTRIBUTION PLOTS...")
 
     if output_dir is None:
-        output_dir = Path(".")
+        output_dir = Path("..")
     else:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import math
 
 # --- 1. Define Paths ---
-BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/2ndJournal")
+BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy")
 
 # Output
 OUTPUT_DIR_GSS = BASE_DIR / "Outputs_GSS"
@@ -15,8 +15,8 @@ OUTPUT_DIR_GSS.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
 
 # Inputs
-DATA_DIR_GSS = BASE_DIR / "DataSources_GSS/Canada_2022/Data_Données"
-FILE_MAIN = DATA_DIR_GSS / "TU_ET_2022_Main-Principal_PUMF.sas7bdat"
+DATA_DIR_GSS = BASE_DIR / "DataSources_GSS/Main_files"
+FILE_MAIN = DATA_DIR_GSS / "GSSMain_2022.sas7bdat"
 FILE_EPISODE = OUTPUT_DIR_GSS / "out22EP_ACT_PRE_coPRE.csv"
 
 CENSUS_FILE = BASE_DIR / "Outputs_CENSUS/forecasted_population_2025_LINKED.csv"
@@ -393,8 +393,9 @@ def harmonize_nocs(df_census, df_gss):
     # Filter: Remove 97, 98, 99 (Keep 1-10, 95, 96)
     df_gss = df_gss[~df_gss['NOCS'].isin([97, 98, 99]) & df_gss['NOCS'].notna()].copy()
 
-    # Map 96 (Skip) and 95 (Uncodable) to 99 (Not Applicable)
+    # Map 96 (Skip) and 95 (Uncodable) to 99 (Not Applicable), then remove
     df_gss['NOCS'] = df_gss['NOCS'].replace({96: 99, 95: 99}).astype(int)
+    df_gss = df_gss[df_gss['NOCS'] != 99].copy()
 
     # --- Census Preparation ---
     df_census['NOCS'] = df_census['NOCS'].astype(float).astype(int)
@@ -709,7 +710,7 @@ def plot_distribution_comparison(df1, df2, df1_name="Census", df2_name="GSS", ta
 # --- 4. Execution ---
 if __name__ == "__main__":
     GSS_FILE = OUTPUT_DIR_GSS / "GSS_2022_Merged_Episodes.csv"
-    """
+    """"""
     # read & merge GSS
     read_merge_save_gss(main_path=FILE_MAIN, episode_path=FILE_EPISODE, cols_main=COLS_MAIN, rename_dict=RENAME_MAP, output_csv_path=GSS_FILE)
     
@@ -722,4 +723,4 @@ if __name__ == "__main__":
 
     # --- Example Usage ---
     plot_distribution_comparison(df_census, df_gss, target_cols=target_cols)
-    """
+
