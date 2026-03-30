@@ -5,6 +5,27 @@
 *.txt
 *.csv
 
+# Exceptions for 0_Occupancy (un-ignoring specific files under 100MB)
+!0_Occupancy/**/*.csv
+!0_Occupancy/**/*.txt
+!0_Occupancy/**/*.DAT
+!0_Occupancy/**/*.sas7bdat
+!0_Occupancy/**/*.SAV
+
+# Explicitly ignore files over 100MB in 0_Occupancy
+0_Occupancy/Outputs_06CEN05GSS/HH_aggregation/06CEN05GSS_Full_Aggregated_sample5pct.csv
+0_Occupancy/Outputs_16CEN15GSS/HH_aggregation/16CEN15GSS_Full_Aggregated_sample10pct.csv
+0_Occupancy/Outputs_16CEN15GSS/DTYPE_expansion/16CEN15GSS_Full_Schedules_Refined_sample10pct.csv
+0_Occupancy/DataSources_CENSUS/cen16.dat
+0_Occupancy/DataSources_CENSUS/cen06.dat
+0_Occupancy/DataSources_CENSUS/cen11.dat
+0_Occupancy/DataSources_CENSUS/cen21.dat
+0_Occupancy/DataSources_GSS/Episode_files/GSS_2005_episode/C19PUMFM_NUM.SAV
+0_Occupancy/DataSources_GSS/Episode_files/GSS_2015_episode/GSS29PUMFE.txt
+0_Occupancy/DataSources_GSS/Episode_files/GSS_2022_episode/TU_ET_2022_Episode_PUMF.sas7bdat
+0_Occupancy/DataSources_GSS/Main_files/GSSMain_2005.sas7bdat
+0_Occupancy/DataSources_GSS/Main_files/GSSMain_2010.DAT
+
 # Exceptions for small configuration files or scripts if needed
 !eSim_writing/**/*.csv
 !eSim_writing/**/*.txt
@@ -28,10 +49,6 @@ __pycache__/
 
 # BEM Simulation Results and Setup
 0_BEM_Setup/
-0_Occupancy/DataSources_CENSUS/
-0_Occupancy/DataSources_GSS/
-0_Occupancy/Outputs_CENSUS/
-0_Occupancy/Outputs_GSS/
 
 # Simulation Results - Generated Files
 eSim_writing/results/
@@ -40,7 +57,6 @@ SimResults_Plotting/
 SimResults_Plotting_Schedules/
 Pipeline_Test_Output/
 Test_Output/
-0_Occupancy/Outputs_Aligned/
 
 # Test & Debug Artifacts
 eSim_tests/benchmark_results/
