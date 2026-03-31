@@ -48,7 +48,6 @@ cen21_filtered2: Path = OUTPUT_DIR / "cen21_filtered2.csv"
 VALIDATION_FORECASTVIS_DIR: Path = OUTPUT_DIR / "Validation_Forecasting_Visual"
 VALIDATION_FORECAST_DIR: Path = OUTPUT_DIR / "Validation_Forecasting_VisualbyColumn"
 
-
 # =============================================================================
 # SUB-STEP 1a: TRAINING
 # =============================================================================
@@ -99,7 +98,6 @@ def run_training() -> None:
         encoder, decoder, processed_data, demo_cols, bldg_cols
     )
     print(f"--- Models saved to: {MODEL_DIR} ---")
-
 
 # =============================================================================
 # SUB-STEP 1b: TESTING
