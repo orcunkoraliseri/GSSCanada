@@ -7,20 +7,20 @@
 ----------------------------------------
 
    [WD Matching Tiers]
-      - 1_Perfect: 3.2%
-      - 2_Core: 38.9%
-      - 3_Constraints: 55.0%
-      - 4_FailSafe: 2.9%
+      - 1_Perfect: 3.3%
+      - 2_Core: 37.0%
+      - 3_Constraints: 56.5%
+      - 4_FailSafe: 3.2%
 
    [WE Matching Tiers]
       - 1_Perfect: 1.6%
-      - 2_Core: 21.9%
-      - 3_Constraints: 68.7%
-      - 4_FailSafe: 7.9%
+      - 2_Core: 21.7%
+      - 3_Constraints: 69.9%
+      - 4_FailSafe: 6.8%
 
 2. EPISODE COUNT SANITY CHECK
 ----------------------------------------
-   Weekday Episodes: min=6, max=39, avg=16.9
-   Weekend Episodes: min=7, max=31, avg=17.7
+   Weekday Episodes: min=6, max=31, avg=17.0
+   Weekend Episodes: min=8, max=37, avg=16.7
 
 ============================================================

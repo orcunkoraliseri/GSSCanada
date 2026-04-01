@@ -1,0 +1,7 @@
+
+============================================================
+  VALIDATING BEM CONVERSION
+============================================================
+   [OK] All 2,950 household-days have exactly 24 hourly rows.
+   [OK] Occupancy_Schedule within [0, 1] (min=0.000, max=1.000).
+   [OK] Metabolic_Rate is non-negative (min=0.0).

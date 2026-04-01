@@ -16,6 +16,7 @@ Usage:
 """
 
 import sys
+import importlib.util
 from pathlib import Path
 
 
@@ -35,6 +36,7 @@ def print_header() -> None:
     print("\n" + "=" * 60)
     print("  11CEN10GSS OCCUPANCY MODELING PIPELINE")
     print("  Census 2011 + GSS 2010 Integration")
+    print("  Step 0 runs automatically on startup")
     print("=" * 60)
 
 
@@ -63,6 +65,44 @@ def print_menu(sample_pct: int) -> None:
 # STEP FUNCTIONS
 # =============================================================================
 
+def _load_module(module_name: str, filename: str):
+    """Load a sibling module from this pipeline directory."""
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        Path(__file__).parent / filename,
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load module spec for {filename}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def run_step0() -> bool:
+    """
+    Step 0: Run episode preprocessing before the alignment stage.
+
+    Returns:
+        True if successful, False otherwise.
+    """
+    print("\n" + "=" * 50)
+    print("  STEP 0: EPISODE PREPROCESSING")
+    print("=" * 50)
+
+    try:
+        step0 = _load_module("step0_11", "11CEN10GSS_step0.py")
+    except Exception as e:
+        print(f"  ❌ Could not import step0 module: {e}")
+        return False
+
+    try:
+        step0.main(project_root=Path(__file__).resolve().parents[2])
+        print("  ✅ Step 0 complete!")
+        return True
+    except Exception as e:
+        print(f"  ❌ Step 0 failed: {e}")
+        return False
+
 def run_alignment() -> bool:
     """
     Step 1: Run Census-GSS alignment.
@@ -75,13 +115,7 @@ def run_alignment() -> bool:
     print("=" * 50)
 
     try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "alignment",
-            Path(__file__).parent / "11CEN10GSS_alignment.py"
-        )
-        alignment = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(alignment)
+        alignment = _load_module("alignment", "11CEN10GSS_alignment.py")
     except Exception as e:
         print(f"  ❌ Could not import alignment module: {e}")
         return False
@@ -110,13 +144,7 @@ def run_profile_matching(sample_pct: int) -> bool:
     print("=" * 50)
 
     try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "profile_matcher",
-            Path(__file__).parent / "11CEN10GSS_ProfileMatcher.py"
-        )
-        profile_matcher = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(profile_matcher)
+        profile_matcher = _load_module("profile_matcher", "11CEN10GSS_ProfileMatcher.py")
     except Exception as e:
         print(f"  ❌ Could not import ProfileMatcher module: {e}")
         return False
@@ -145,13 +173,7 @@ def run_hh_aggregation(sample_pct: int) -> bool:
     print("=" * 50)
 
     try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "hh_aggregation",
-            Path(__file__).parent / "11CEN10GSS_HH_aggregation.py"
-        )
-        hh_aggregation = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(hh_aggregation)
+        hh_aggregation = _load_module("hh_aggregation", "11CEN10GSS_HH_aggregation.py")
     except Exception as e:
         print(f"  ❌ Could not import HH_aggregation module: {e}")
         return False
@@ -180,13 +202,7 @@ def run_bem_conversion(sample_pct: int) -> bool:
     print("=" * 50)
 
     try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "bem_converter",
-            Path(__file__).parent / "11CEN10GSS_occToBEM.py"
-        )
-        bem_converter = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(bem_converter)
+        bem_converter = _load_module("bem_converter", "11CEN10GSS_occToBEM.py")
     except Exception as e:
         print(f"  ❌ Could not import occToBEM module: {e}")
         return False
@@ -323,6 +339,9 @@ def main() -> None:
 
     sample_pct = args.sample
 
+    if not run_step0():
+        return
+
     # If --run specified, execute directly without menu
     if args.run:
         print_header()
@@ -340,6 +359,7 @@ def main() -> None:
 
     # Interactive menu loop
     print_header()
+    print("\n  Step 0 ran automatically before the menu.")
 
     while True:
         print_menu(sample_pct)

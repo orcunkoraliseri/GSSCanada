@@ -13,11 +13,10 @@
 !0_Occupancy/**/*.SAV
 
 # Explicitly ignore files over 100MB in 0_Occupancy
-0_Occupancy/Outputs_06CEN05GSS/HH_aggregation/06CEN05GSS_Full_Aggregated_sample5pct.csv
-0_Occupancy/Outputs_16CEN15GSS/HH_aggregation/16CEN15GSS_Full_Aggregated_sample10pct.csv
-0_Occupancy/Outputs_16CEN15GSS/DTYPE_expansion/16CEN15GSS_Full_Schedules_Refined_sample10pct.csv
-0_Occupancy/Outputs_11CEN10GSS/HH_aggregation/11CEN10GSS_Full_Aggregated_sample10pct.csv
-0_Occupancy/Outputs_11CEN10GSS/ProfileMatching/11CEN10GSS_Full_Schedules_sample10pct.csv
+0_Occupancy/Outputs_*/HH_aggregation/*Full_Aggregated_*.csv
+0_Occupancy/Outputs_*/ProfileMatching/*Full_Schedules_*.csv
+0_Occupancy/Outputs_*/DTYPE_expansion/*Full_Schedules_*.csv
+0_Occupancy/Outputs_21CEN22GSS/HH_aggregation/21CEN22GSS_Full_Aggregated_sample1pct.csv
 0_Occupancy/DataSources_CENSUS/cen16.dat
 0_Occupancy/DataSources_CENSUS/cen06.dat
 0_Occupancy/DataSources_CENSUS/cen11.dat

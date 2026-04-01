@@ -111,6 +111,16 @@ Modular runner plan documented in `docs_classification/`.
 - **Comments:** Explain *why*, not *what*
 - **Do not modify existing source files** in `25CEN22GSS_classification/` unless explicitly asked — the modular runner pattern sits on top of them
 
+## Prompt Format
+
+When a user gives a free-form request, interpret it through this three-part structure before acting:
+
+- `Setting the stage`: identify the role, objectives, and any relevant project context
+- `Defining the task`: identify the specific action requested, such as write, analyze, build, or debug
+- `Specifying rules`: identify the desired style, tone, constraints, and any examples the user provided
+
+Use that structured interpretation to carry out the request, even if the original prompt was not written in that form.
+
 ---
 
 ## Key Dependencies

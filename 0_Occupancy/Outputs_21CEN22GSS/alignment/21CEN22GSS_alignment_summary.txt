@@ -1,0 +1,9 @@
+Column  Status  Unique_Census  Unique_GSS
+AGEGRP ✅ MATCH              7           7
+   CMA ✅ MATCH              2           2
+HHSIZE ✅ MATCH              5           5
+   KOL ✅ MATCH              3           3
+ LFTAG ✅ MATCH              5           5
+MARSTH ✅ MATCH              3           3
+    PR ✅ MATCH              6           6
+   SEX ✅ MATCH              2           2

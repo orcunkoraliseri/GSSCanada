@@ -41,6 +41,11 @@
 - Read `CLAUDE.md` for additional project context before making broad changes.
 - Keep changes local and pragmatic. This codebase is script-oriented and researcher-maintained; avoid unnecessary abstraction or broad refactors.
 - Prefer editing wrappers, controllers, or adjacent utilities over rewriting established pipeline code.
+- When a user writes a free-form prompt, normalize it into this structure before acting:
+  - `Setting the stage`: role, objectives, and any project context
+  - `Defining the task`: the action requested, such as write, analyze, build, or debug
+  - `Specifying rules`: style, tone, constraints, and any examples
+  - Then carry out the request using that structured interpretation
 - Treat these files as sensitive unless the task explicitly targets them:
   - `eSim_occ_utils/25CEN22GSS_classification/eSim_datapreprocessing.py`
   - `eSim_occ_utils/25CEN22GSS_classification/eSim_dynamicML_mHead_alignment.py`

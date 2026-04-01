@@ -472,6 +472,13 @@ def data_alignment(
     df_census = pd.read_csv(census_csv_path)
     df_gss = pd.read_csv(gss_csv_path, dtype=str, low_memory=False)
 
+    # Filter implausible Census ROOM counts (>15 rooms not realistic for residential)
+    if 'ROOM' in df_census.columns:
+        df_census['ROOM'] = pd.to_numeric(df_census['ROOM'], errors='coerce')
+        before = len(df_census)
+        df_census = df_census[df_census['ROOM'] <= 15].copy()
+        print(f"   [ROOM filter] Dropped {before - len(df_census)} rows with ROOM > 15")
+
     print("\n--- Step 2: Running Harmonization Pipeline ---")
     df_census, df_gss = harmonize_agegrp(df_census, df_gss)
     df_census, df_gss = harmonize_sex(df_census, df_gss)

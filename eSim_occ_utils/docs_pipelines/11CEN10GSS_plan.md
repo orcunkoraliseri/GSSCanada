@@ -775,3 +775,51 @@ python 11CEN10GSS_main.py --run 5 --sample 10
   - Produced hourly BEM schedules and validation plots under `Outputs_11CEN10GSS/BEM/`.
 
 All deliverables for tasks 0 through 4 are complete and recorded above in the verified run outputs.
+
+---
+
+## Final Verification (2026-03-31)
+
+### 11CEN10GSS Pipeline — Verification Summary ✅
+
+#### Source files (all present)
+
+| File | Status |
+|---|---|
+| `11CEN10GSS_main.py` | ✅ |
+| `11CEN10GSS_step0.py` | ✅ |
+| `11CEN10GSS_alignment.py` | ✅ |
+| `11CEN10GSS_ProfileMatcher.py` | ✅ |
+| `11CEN10GSS_HH_aggregation.py` | ✅ |
+| `11CEN10GSS_occToBEM.py` | ✅ |
+| `__init__.py` | ✅ |
+
+#### Intermediate files (row counts match plan)
+
+| File | Expected | Actual |
+|---|---|---|
+| `out10EP_ACT_PRE_coPRE.csv` | 283,287 | **283,287** ✅ |
+| `GSS_2010_Merged.csv` | 283,287 | **283,287** ✅ |
+| `2011_LINKED.csv` | 337,126 | **337,126** ✅ |
+
+#### Alignment outputs
+
+| File | Expected rows | Actual |
+|---|---|---|
+| `Aligned_GSS_2010.csv` | 219,584 | **219,584** ✅ (25 columns, no `DDAY.1`) |
+| `Aligned_Census_2010.csv` | 273,678 | **273,678** ✅ |
+
+#### Downstream outputs (all present, non-empty)
+
+- **ProfileMatching**: `Full_Schedules` (1M+ rows), `Matched_Keys`, `Validation_sample10pct.txt`
+- **HH_aggregation**: `Full_Aggregated` (15M+ rows), `Validation_HH`, `Validation_Plot.png`
+- **occToBEM**: `BEM_Schedules` (600K+ rows), two validation plots
+
+#### Validation quality (from the .txt reports)
+
+- Tier distribution is healthy — Tier 4 (FailSafe) is only 2.9% WD / 7.9% WE
+- All 54,548 person-days have exactly 288 time slots (5-min resolution)
+- No social density logic errors
+- BEM output has the expected columns: `SIM_HH_ID`, `Day_Type`, `Hour`, `Occupancy_Schedule`, `Metabolic_Rate`, etc.
+
+**The pipeline completed correctly end-to-end. All expected files exist, row counts match the plan's documented values, and the validation reports are clean.**

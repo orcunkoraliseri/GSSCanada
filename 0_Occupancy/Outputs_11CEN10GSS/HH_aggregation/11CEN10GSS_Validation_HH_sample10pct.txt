@@ -4,7 +4,7 @@
 ============================================================
 
 1. CHECKING TIME GRID COMPLETENESS...
-   [OK] All 54,548 person-days have exactly 288 time slots.
+   [OK] All 54,332 person-days have exactly 288 time slots.
 
 2. CHECKING LOGIC (Presence vs. Density)...
    [OK] No social density detected in empty houses.
