@@ -1,0 +1,35 @@
+
+============================================================
+  VALIDATION REPORT: PROFILE MATCHING QUALITY
+============================================================
+
+1. MATCH QUALITY (TIER DISTRIBUTION)
+----------------------------------------
+
+   [WD Matching Tiers]
+      - 1_Perfect: 2.8%
+      - 2_Core: 23.3%
+      - 3_Constraints: 73.5%
+      - 4_FailSafe: 0.3%
+
+   [WE Matching Tiers]
+      - 1_Perfect: 5.5%
+      - 2_Core: 29.2%
+      - 3_Constraints: 64.9%
+      - 4_FailSafe: 0.4%
+
+2. BEHAVIORAL CONSISTENCY (Workers vs. Non-Workers)
+----------------------------------------
+
+   Analyzing 500 workers (LFTAG 1-2 (Employed))...
+
+   Average Work Duration for 'Employees': 595 minutes/day
+   (Based on 500 workers with valid schedules)
+      SUCCESS: Employees performing ~5-8 hours of work.
+
+3. EPISODE COUNT SANITY CHECK
+----------------------------------------
+   Weekday Episodes: min=5, max=32, avg=14.7
+   Weekend Episodes: min=3, max=27, avg=14.1
+
+============================================================

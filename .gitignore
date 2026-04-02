@@ -5,23 +5,15 @@
 *.txt
 *.csv
 
-# Exceptions for 0_Occupancy (un-ignoring specific files under 100MB)
-!0_Occupancy/**/*.csv
-!0_Occupancy/**/*.txt
-!0_Occupancy/**/*.DAT
-!0_Occupancy/**/*.sas7bdat
-!0_Occupancy/**/*.SAV
+# 0_Occupancy Management: Always include files under 100MB
+!0_Occupancy/**
 !requirements.txt
 
 # Explicitly ignore files over 100MB in 0_Occupancy
-0_Occupancy/Outputs_*/HH_aggregation/*Full_Aggregated_*.csv
-0_Occupancy/Outputs_*/ProfileMatching/*Full_Schedules_*.csv
-0_Occupancy/Outputs_*/DTYPE_expansion/*Full_Schedules_*.csv
-0_Occupancy/Outputs_21CEN22GSS/HH_aggregation/21CEN22GSS_Full_Aggregated_sample1pct.csv
-0_Occupancy/DataSources_CENSUS/cen16.dat
-0_Occupancy/DataSources_CENSUS/cen06.dat
-0_Occupancy/DataSources_CENSUS/cen11.dat
-0_Occupancy/DataSources_CENSUS/cen21.dat
+0_Occupancy/**/cen*.dat
+0_Occupancy/**/cen*.DAT
+0_Occupancy/**/*_Full_Aggregated_*.csv
+0_Occupancy/**/*_Full_Schedules_*.csv
 0_Occupancy/DataSources_GSS/Episode_files/GSS_2005_episode/C19PUMFM_NUM.SAV
 0_Occupancy/DataSources_GSS/Episode_files/GSS_2015_episode/GSS29PUMFE.txt
 0_Occupancy/DataSources_GSS/Episode_files/GSS_2022_episode/TU_ET_2022_Episode_PUMF.sas7bdat

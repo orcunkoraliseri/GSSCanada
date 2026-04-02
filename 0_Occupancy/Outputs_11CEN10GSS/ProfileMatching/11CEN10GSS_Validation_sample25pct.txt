@@ -1,0 +1,26 @@
+
+============================================================
+  VALIDATION REPORT: PROFILE MATCHING QUALITY
+============================================================
+
+1. MATCH QUALITY (TIER DISTRIBUTION)
+----------------------------------------
+
+   [WD Matching Tiers]
+      - 1_Perfect: 7.5%
+      - 2_Core: 52.2%
+      - 3_Constraints: 38.7%
+      - 4_FailSafe: 1.6%
+
+   [WE Matching Tiers]
+      - 1_Perfect: 3.2%
+      - 2_Core: 39.7%
+      - 3_Constraints: 53.1%
+      - 4_FailSafe: 4.0%
+
+2. EPISODE COUNT SANITY CHECK
+----------------------------------------
+   Weekday Episodes: min=6, max=35, avg=17.4
+   Weekend Episodes: min=8, max=31, avg=15.8
+
+============================================================
