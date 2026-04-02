@@ -11,6 +11,7 @@
 !0_Occupancy/**/*.DAT
 !0_Occupancy/**/*.sas7bdat
 !0_Occupancy/**/*.SAV
+!requirements.txt
 
 # Explicitly ignore files over 100MB in 0_Occupancy
 0_Occupancy/Outputs_*/HH_aggregation/*Full_Aggregated_*.csv

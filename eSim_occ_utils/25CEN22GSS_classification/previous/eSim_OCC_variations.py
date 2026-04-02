@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # Cross-platform path configuration
     import sys
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-    from occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR, OUTPUT_DIR_ALIGNED
+    from eSim_occ_utils.occ_config import BASE_DIR, DATA_DIR, OUTPUT_DIR, OUTPUT_DIR_ALIGNED
     
     # Ensure directory exists
     OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     #ASSEMBLE HOUSEHOLD ------------------------------------------------------------------------------------------------
     #df_linked_2006 = assemble_households(cen06_filtered2, target_year=2006, output_dir=OUTPUT_DIR)
-    df_linked_2016 = assemble_households(cen16_filtered2, target_year=2016, output_dir=OUTPUT_DIR)
+    #df_linked_2016 = assemble_households(cen16_filtered2, target_year=2016, output_dir=OUTPUT_DIR)
 
     #PROFILE MATCHER ---------------------------------------------------------------------------------------------------
 
