@@ -1,0 +1,16 @@
+
+============================================================
+  VALIDATING HOUSEHOLD AGGREGATION
+============================================================
+
+1. CHECKING TIME GRID COMPLETENESS...
+   [OK] All 143,560 person-days have exactly 288 time slots.
+
+2. CHECKING LOGIC (Presence vs. Density)...
+   [OK] No social density detected in empty houses.
+
+3. CHECKING ACTIVITY STRINGS...
+   [OK] Activity is correctly marked '0' when empty.
+
+4. GENERATING VISUAL VERIFICATION PLOT (16 Households)...
+   [OK] Batch Plot saved to: 21CEN22GSS_Validation_Plot_sample25pct.png

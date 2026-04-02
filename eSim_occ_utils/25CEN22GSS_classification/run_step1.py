@@ -51,11 +51,14 @@ VALIDATION_FORECAST_DIR: Path = OUTPUT_DIR / "Validation_Forecasting_VisualbyCol
 # =============================================================================
 # SUB-STEP 1a: TRAINING
 # =============================================================================
-def run_training() -> None:
+def run_training(sample_frac: float = 1.0) -> None:
     """
     Trains the CVAE model from scratch using census data from 2006–2021.
 
     Saves the encoder and decoder to MODEL_DIR.
+
+    Parameters:
+        sample_frac: Fraction of data to use for training (0.0 to 1.0).
 
     Inputs:
         OUTPUT_DIR/cen06_filtered2.csv … cen21_filtered2.csv
@@ -74,7 +77,7 @@ def run_training() -> None:
         2021: cen21_filtered2,
     }
     processed_data, demo_cols, bldg_cols, data_scalers = (
-        prepare_data_for_generative_model(file_paths, sample_frac=1)
+        prepare_data_for_generative_model(file_paths, sample_frac=sample_frac)
     )
 
     encoder, decoder, cvae_model, training_history = train_cvae(
@@ -102,11 +105,14 @@ def run_training() -> None:
 # =============================================================================
 # SUB-STEP 1b: TESTING
 # =============================================================================
-def run_testing() -> None:
+def run_testing(sample_frac: float = 1.0) -> None:
     """
     Loads saved CVAE models and validates reconstruction quality.
 
     Validates against the original census data.
+
+    Parameters:
+        sample_frac: Fraction of data to use for testing (0.0 to 1.0).
 
     Inputs:
         MODEL_DIR/cvae_encoder.keras
@@ -126,7 +132,7 @@ def run_testing() -> None:
         2021: cen21_filtered2,
     }
     processed_data, demo_cols, bldg_cols, data_scalers = (
-        prepare_data_for_generative_model(file_paths, sample_frac=1)
+        prepare_data_for_generative_model(file_paths, sample_frac=sample_frac)
     )
 
     # IMPORTANT: Sampling must be passed as a custom_object when loading the encoder
@@ -236,9 +242,12 @@ def run_forecasting(
 # =============================================================================
 # SUB-STEP 1d: VISUAL VALIDATION OF FORECASTING
 # =============================================================================
-def run_visual_validation() -> None:
+def run_visual_validation(sample_frac: float = 1.0) -> None:
     """
     Generates latent-space trajectory plots to visually validate forecast quality.
+
+    Parameters:
+        sample_frac: Fraction of data to use for plotting (0.0 to 1.0).
 
     Inputs:
         MODEL_DIR/cvae_encoder.keras
@@ -258,7 +267,7 @@ def run_visual_validation() -> None:
         2021: cen21_filtered2,
     }
     processed_data, demo_cols, bldg_cols, data_scalers = (
-        prepare_data_for_generative_model(file_paths, sample_frac=1)
+        prepare_data_for_generative_model(file_paths, sample_frac=sample_frac)
     )
 
     # IMPORTANT: Sampling must be passed as a custom_object when loading the encoder

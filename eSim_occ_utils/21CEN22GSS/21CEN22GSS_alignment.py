@@ -645,7 +645,7 @@ def data_alignment(
     report_csv = output_dir / "21CEN22GSS_alignment_summary.csv"
     report_txt = output_dir / "21CEN22GSS_alignment_summary.txt"
     report_df.to_csv(report_csv, index=False)
-    report_txt.write_text(report_df[["Column", "Status", "Unique_Census", "Unique_GSS"]].to_string(index=False))
+    report_txt.write_text(report_df[["Column", "Status", "Unique_Census", "Unique_GSS"]].to_string(index=False), encoding="utf-8")
     print(f"  Saved alignment summary to: {report_csv.name}")
     print(f"  Saved alignment text report to: {report_txt.name}")
 
@@ -657,6 +657,10 @@ def main() -> None:
     Run the Census 2021 / GSS 2022 alignment workflow.
     """
     import sys
+
+    # Ensure stdout supports Unicode emoji (✅, ❌, ⚠️) on Windows cp1252 consoles.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from occ_config import BASE_DIR
