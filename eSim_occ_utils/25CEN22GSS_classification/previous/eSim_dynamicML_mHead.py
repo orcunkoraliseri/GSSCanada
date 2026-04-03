@@ -1880,7 +1880,7 @@ def validate_refinement_model(historic_input, forecast_refined_path, output_dir)
     log(df_comp.round(2).to_string())
 
     # Save Report
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write("\n".join(report_buffer))
 #HOUSEHOLD AGGREGATION -------------------------------------------------------------------------------------------------
 class HouseholdAggregator:

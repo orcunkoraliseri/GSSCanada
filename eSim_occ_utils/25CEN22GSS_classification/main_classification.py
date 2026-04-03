@@ -49,23 +49,23 @@ from run_step3 import run_bem_conversion
 
 # --- SAMPLING CONFIGURATION ---
 SAMPLE_PCT: int = 100    # 1 to 100 — % of census data to use for modeling
-SAMPLE_SIZE: int = 2000  # Total individuals to generate in forecasting
+SAMPLE_SIZE: int = 36909  # Total individuals to generate in forecasting
 
 # --- STEP 1: CVAE Model Pipeline ---
 # Prerequisites: cen06_filtered2.csv … cen21_filtered2.csv in OUTPUT_DIR
-RUN_TRAINING: bool = False  # 1a — trains CVAE, saves encoder + decoder
-RUN_TESTING: bool = False  # 1b — validates reconstruction quality
-RUN_FORECASTING: bool = False  # 1c — generates forecasted_population_YYYY.csv
-RUN_VISUAL_VALIDATION: bool = False  # 1d — plots latent-space validation figures
+RUN_TRAINING: bool = True  # 1a — trains CVAE, saves encoder + decoder
+RUN_TESTING: bool = True  # 1b — validates reconstruction quality
+RUN_FORECASTING: bool = True  # 1c — generates forecasted_population_YYYY.csv
+RUN_VISUAL_VALIDATION: bool = True  # 1d — plots latent-space validation figures
 
 # --- STEP 2: Schedule Assignment ---
 # Prerequisites: outputs from Step 1 + Aligned_Census_2025.csv + Aligned_GSS_2022.csv
-RUN_ASSEMBLE_HH: bool = False  # 2a — links agents into households
-RUN_PROFILE_MATCHER: bool = False  # 2b — matches census agents to GSS schedules
-RUN_VALIDATE_PM: bool = False  # 2c — validates matching quality
-RUN_POSTPROCESSING: bool = False  # 2d — refines DTYPE labels (1-3 → 1-8)
-RUN_HH_AGGREGATION: bool = False  # 2e — aggregates to 5-min time-grid
-RUN_VALIDATE_HH_AGG: bool = False  # 2f — validates household aggregation
+RUN_ASSEMBLE_HH: bool = True  # 2a — links agents into households
+RUN_PROFILE_MATCHER: bool = True  # 2b — matches census agents to GSS schedules
+RUN_VALIDATE_PM: bool = True  # 2c — validates matching quality
+RUN_POSTPROCESSING: bool = True  # 2d — refines DTYPE labels (1-3 → 1-8)
+RUN_HH_AGGREGATION: bool = True  # 2e — aggregates to 5-min time-grid
+RUN_VALIDATE_HH_AGG: bool = True  # 2f — validates household aggregation
 
 # --- STEP 3: BEM Output ---
 # Prerequisites: Full_data.csv from Step 2e

@@ -18,5 +18,5 @@
 
 2. BEHAVIORAL CONSISTENCY (Workers vs. Non-Workers)
 ----------------------------------------
-   👉 Average Work Duration for 'Employees' (n=399): 914 minutes/day
+   👉 Average Work Duration for 'Employees' (n=399): 910 minutes/day
       ✅ Success: Employees are performing ~5-8 hours of work.
