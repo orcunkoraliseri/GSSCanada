@@ -1,20 +1,10 @@
-"""Plot presence evolution — Version 2.
-
-Changes vs. v1
---------------
-* Grid layout changed from 2 rows × 3 columns to 3 rows × 2 columns.
-  Each row corresponds to one year (2005 / 2015 / 2025).
-  Left column: Presence Schedule; Right column: Summary Metrics.
-* All font sizes roughly doubled for publication readability.
-* Output file: BEM_Presence_Evolution_Comparison_v2.png (original untouched).
-"""
-
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
+import matplotlib.gridspec as gridspec
 import seaborn as sns
 from pathlib import Path
+import sys
 
 # BASE DIR: ../../../ from this script
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -23,301 +13,347 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # CONFIGURATION
 # =============================================================================
 
-FILE_BEM_2005 = BASE_DIR / "0_BEM_Setup/BEM_Schedules_2005.csv"
-FILE_BEM_2015 = BASE_DIR / "0_BEM_Setup/BEM_Schedules_2015.csv"
-FILE_BEM_2025 = BASE_DIR / "0_BEM_Setup/BEM_Schedules_2025.csv"
+FILE_BEM_2005 = BASE_DIR / "0_Occupancy/Outputs_06CEN05GSS/occToBEM/06CEN05GSS_BEM_Schedules_sample25pct.csv"
+FILE_BEM_2010 = BASE_DIR / "0_Occupancy/Outputs_11CEN10GSS/occToBEM/11CEN10GSS_BEM_Schedules_sample25pct.csv"
+FILE_BEM_2015 = BASE_DIR / "0_Occupancy/Outputs_16CEN15GSS/occToBEM/16CEN15GSS_BEM_Schedules_sample25pct.csv"
+FILE_BEM_2022 = BASE_DIR / "0_Occupancy/Outputs_21CEN22GSS/occToBEM/21CEN22GSS_BEM_Schedules_sample25pct.csv"
+FILE_BEM_2025 = BASE_DIR / "0_Occupancy/Outputs_CENSUS/BEM_Schedules_2025.csv"
 
 OUTPUT_DIR = Path(__file__).resolve().parent
-OUTPUT_FILE = OUTPUT_DIR / "BEM_Presence_Evolution_Comparison_v2.png"
+OUTPUT_FILE = OUTPUT_DIR / "BEM_Presence_Evolution_v2.png"
 
-YEARS: list[str] = ["2005", "2015", "2025"]
-FILES: list[Path] = [FILE_BEM_2005, FILE_BEM_2015, FILE_BEM_2025]
+YEARS = ['2005', '2010', '2015', '2022', '2025']
+FILES = [FILE_BEM_2005, FILE_BEM_2010, FILE_BEM_2015, FILE_BEM_2022, FILE_BEM_2025]
 
-# Style Colors
-PALETTE_PRESENCE: dict[str, str] = {"Weekday": "green", "Weekend": "teal"}
-BAR_COLORS: dict[str, str] = {
-    "Weekday": "#4CAF50",
-    "Weekend": "#009688",
-}  # Material Green & Teal
+# Style Colors — default (GSS cycles)
+PALETTE_PRESENCE = {'Weekday': 'green', 'Weekend': 'teal'}
+BAR_COLORS = {'Weekday': '#4CAF50', 'Weekend': '#009688'}  # Material Green & Teal
 
-# =============================================================================
-# FONT SIZE CONSTANTS  (roughly 2× the original values)
-# =============================================================================
-
-FS_TITLE: int = 26       # subplot titles
-FS_AXIS_LABEL: int = 20  # x/y axis labels
-FS_TICK: int = 18        # tick labels
-FS_LEGEND: int = 18      # legend text
-FS_BAR_ANNOT: int = 20   # bar height annotations
-FS_POINT_ANNOT: int = 22 # daytime fraction point labels
+# Style Colors — 2025 (classified/forecasted data)
+PALETTE_PRESENCE_2025 = {'Weekday': '#E64A19', 'Weekend': '#FF8F00'}  # Deep Orange & Amber
+BAR_COLORS_2025 = {'Weekday': '#F4511E', 'Weekend': '#FFB300'}  # Material Deep Orange & Amber
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-
-def load_bem_data(file_path: Path, year_label: str) -> pd.DataFrame | None:
-    """Load BEM schedule CSV for one year.
-
-    Args:
-        file_path: Path to the CSV file.
-        year_label: Human-readable year string used in log messages.
-
-    Returns:
-        DataFrame with columns [Hour, Day_Type, Occupancy_Schedule], or None
-        on failure.
-    """
+def load_bem_data(file_path, year_label):
     print(f"   Loading {year_label} BEM schedules...")
     if not file_path.exists():
         print(f"   ❌ File not found: {file_path}")
         return None
+
     try:
-        cols = ["Hour", "Day_Type", "Occupancy_Schedule"]
-        return pd.read_csv(file_path, usecols=cols)
-    except Exception as exc:
-        print(f"   ⚠️ Error reading {year_label}: {exc}")
+        # Load columns used for both plots
+        cols = ['Hour', 'Day_Type', 'Occupancy_Schedule']
+        df = pd.read_csv(file_path, usecols=cols)
+        return df
+    except Exception as e:
+        print(f"   ⚠️ Error reading {year_label}: {e}")
         return None
 
-
-def compute_summary_metrics(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute daily occupied hours and daytime occupancy fraction.
-
-    Metrics per Day_Type:
-    * Daily_Hours       — mean(Occupancy_Schedule) × 24
-    * Daytime_Fraction  — mean(Occupancy_Schedule) for Hours 9–16 (09:00–17:00)
-
-    Args:
-        df: DataFrame with columns [Hour, Day_Type, Occupancy_Schedule].
-
-    Returns:
-        DataFrame with columns [Day_Type, Daily_Hours, Daytime_Fraction].
+def compute_summary_metrics(df):
     """
-    metrics: list[dict] = []
-    for dtype in ["Weekday", "Weekend"]:
-        subset = df[df["Day_Type"] == dtype]
+    Computes:
+    1. Mean Daily Occupied Hours = Mean(Occupancy_Schedule) * 24
+    2. Daytime Occupancy Fraction = Mean(Occupancy_Schedule) for Hours 9-16 (09:00-17:00)
+    """
+    metrics = []
+
+    for dtype in ['Weekday', 'Weekend']:
+        subset = df[df['Day_Type'] == dtype]
         if subset.empty:
             continue
-        mean_occ = subset["Occupancy_Schedule"].mean()
+
+        # 1. Daily Occupied Hours
+        mean_occ = subset['Occupancy_Schedule'].mean()
         daily_hours = mean_occ * 24
-        daytime_subset = subset[
-            (subset["Hour"] >= 9) & (subset["Hour"] <= 16)
-        ]
-        daytime_frac = (
-            daytime_subset["Occupancy_Schedule"].mean()
-            if not daytime_subset.empty
-            else 0.0
-        )
-        metrics.append(
-            {
-                "Day_Type": dtype,
-                "Daily_Hours": daily_hours,
-                "Daytime_Fraction": daytime_frac,
-            }
-        )
+
+        # 2. Daytime Fraction (09:00 - 17:00 => Hours 9 to 16 inclusive)
+        daytime_subset = subset[(subset['Hour'] >= 9) & (subset['Hour'] <= 16)]
+        daytime_frac = daytime_subset['Occupancy_Schedule'].mean() if not daytime_subset.empty else 0
+
+        metrics.append({
+            'Day_Type': dtype,
+            'Daily_Hours': daily_hours,
+            'Daytime_Fraction': daytime_frac
+        })
+
     return pd.DataFrame(metrics)
 
-
-def _plot_presence(
-    ax: plt.Axes,
-    df: pd.DataFrame,
-    year: str,
-    show_legend: bool,
-) -> None:
-    """Draw the hourly presence schedule curve on *ax*.
-
-    Args:
-        ax: Target Axes object.
-        df: BEM schedule DataFrame for the given year.
-        year: Year label used in the subplot title.
-        show_legend: Whether to render the legend on this axes.
+def compute_table_metrics(df):
     """
-    sns.lineplot(
-        data=df,
-        x="Hour",
-        y="Occupancy_Schedule",
-        hue="Day_Type",
-        palette=PALETTE_PRESENCE,
-        estimator="mean",
-        errorbar=("sd", 1),
-        ax=ax,
-        legend=show_legend,
-    )
-    ax.set_title(
-        f"{year} — Presence Schedule",
-        fontsize=FS_TITLE,
-        fontweight="bold",
-    )
-    ax.set_ylim(0, 1.05)
-    ax.set_xticks(range(0, 25, 4))
-    ax.set_ylabel("Occupancy Probability", fontsize=FS_AXIS_LABEL)
-    ax.set_xlabel("Hour of Day", fontsize=FS_AXIS_LABEL)
-    ax.tick_params(axis="both", labelsize=FS_TICK)
-    ax.grid(True, linestyle="--", alpha=0.6)
-    if show_legend:
-        legend = ax.get_legend()
-        if legend:
-            legend.set_title("Day Type", prop={"size": FS_LEGEND})
-            for text in legend.get_texts():
-                text.set_fontsize(FS_LEGEND)
-
-
-def _plot_metrics(
-    ax: plt.Axes,
-    metrics_df: pd.DataFrame,
-    year: str,
-) -> None:
-    """Draw the summary metrics (bar + twin-axis line) on *ax*.
-
-    Args:
-        ax: Target Axes object.
-        metrics_df: DataFrame with columns [Day_Type, Daily_Hours,
-            Daytime_Fraction].
-        year: Year label used in the subplot title.
+    Computes table metrics per year:
+    - Weekday/Weekend occupied hours
+    - Morning departure (first hour after 5am where weekday mean occ < 0.5)
+    - Evening return (first hour after noon where weekday mean occ > 0.5)
+    - Daytime vacancy % = (1 - daytime_fraction) * 100 for weekday 09-17
     """
-    # --- Left axis: bar chart (daily occupied hours) ---
-    sns.barplot(
-        data=metrics_df,
-        x="Day_Type",
-        y="Daily_Hours",
-        palette=BAR_COLORS,
-        ax=ax,
-        alpha=0.7,
-        edgecolor="black",
-    )
-    ax.set_title(
-        f"{year} — Summary Metrics",
-        fontsize=FS_TITLE,
-        fontweight="bold",
-    )
-    ax.set_ylabel("Avg. Daily Occupied Hours", fontsize=FS_AXIS_LABEL)
-    ax.set_xlabel("", fontsize=FS_AXIS_LABEL)
-    # 7 evenly-spaced ticks: 0, 4, 8, 12, 16, 20, 24
-    _N_TICKS = 7
-    ax.set_ylim(0, 24)
-    ax.set_yticks(np.linspace(0, 24, _N_TICKS))
-    ax.tick_params(axis="both", labelsize=FS_TICK)
+    metrics = {}
 
-    # Annotate bar heights
-    for patch in ax.patches:
-        ax.annotate(
-            f"{patch.get_height():.1f}h",
-            (patch.get_x() + patch.get_width() / 2.0, patch.get_height()),
-            ha="center",
-            va="bottom",
-            fontsize=FS_BAR_ANNOT,
-            fontweight="bold",
-            xytext=(0, 4),
-            textcoords="offset points",
-        )
+    for dtype in ['Weekday', 'Weekend']:
+        subset = df[df['Day_Type'] == dtype]
+        if subset.empty:
+            metrics[f'{dtype}_Hours'] = '—'
+            continue
+        metrics[f'{dtype}_Hours'] = f"{subset['Occupancy_Schedule'].mean() * 24:.1f}"
 
-    # Fix x-axis tick labels (seaborn barplot uses numeric ticks by default)
-    ax.set_xticks(range(len(metrics_df)))
-    ax.set_xticklabels(metrics_df["Day_Type"], fontsize=FS_TICK)
+    # Weekday-specific metrics
+    wd = df[df['Day_Type'] == 'Weekday']
+    if not wd.empty:
+        hourly = wd.groupby('Hour')['Occupancy_Schedule'].mean()
 
-    # --- Right axis: daytime fraction line ---
-    ax_right = ax.twinx()
-    x_coords = range(len(metrics_df))
-    fractions = metrics_df["Daytime_Fraction"].values
+        daytime = wd[(wd['Hour'] >= 9) & (wd['Hour'] <= 16)]
+        daytime_frac = daytime['Occupancy_Schedule'].mean() if not daytime.empty else 0
+        metrics['Daytime_Vacancy'] = f"{(1 - daytime_frac) * 100:.1f}"
 
-    ax_right.plot(
-        x_coords,
-        fractions,
-        color="darkred",
-        marker="o",
-        markersize=10,
-        linewidth=2.5,
-        linestyle="-",
-        label="Daytime (09–17) Fraction",
-    )
-    for x, y in zip(x_coords, fractions):
-        ax_right.annotate(
-            f"{y:.2f}",
-            (x, y),
-            ha="center",
-            va="bottom",
-            fontsize=FS_POINT_ANNOT,
-            color="white",
-            fontweight="bold",
-            xytext=(0, 7),
-            textcoords="offset points",
-        )
-    ax_right.set_ylabel(
-        "Daytime Occupancy Fraction (09–17)",
-        color="darkred",
-        fontsize=FS_AXIS_LABEL,
-    )
-    ax_right.tick_params(
-        axis="y", labelcolor="darkred", labelsize=FS_TICK
-    )
-    ax_right.set_ylim(0, 1.0)
-    # Align right-axis ticks to the same interval count as the left axis so
-    # that gridlines coincide.  Suppress the right-axis grid to avoid the
-    # double-grid visual artefact.
-    ax_right.set_yticks(np.linspace(0, 1.0, _N_TICKS))
-    ax_right.yaxis.set_major_formatter(
-        mticker.FuncFormatter(lambda v, _: f"{v:.2f}")
-    )
-    ax_right.grid(False)
+        # Morning departure: first hour (5-12) where mean occupancy drops below 0.5
+        dep = next((h for h in range(5, 13) if h in hourly.index and hourly[h] < 0.5), None)
+        metrics['Departure'] = f"{dep:02d}:00" if dep is not None else '—'
 
+        # Evening return: first hour (13-22) where mean occupancy rises above 0.5
+        ret = next((h for h in range(13, 23) if h in hourly.index and hourly[h] > 0.5), None)
+        metrics['Return'] = f"{ret:02d}:00" if ret is not None else '—'
+    else:
+        metrics['Daytime_Vacancy'] = '—'
+        metrics['Departure'] = '—'
+        metrics['Return'] = '—'
+
+    return metrics
 
 # =============================================================================
 # MAIN
 # =============================================================================
 
+def main():
+    print("="*60)
+    print("  PRESENCE SCHEDULE EVOLUTION PLOT GENERATOR (3-ROW GRID)")
+    print("="*60)
 
-def main() -> None:
-    """Generate the 3 × 2 presence evolution comparison figure."""
-    print("=" * 60)
-    print("  PRESENCE SCHEDULE EVOLUTION PLOT GENERATOR v2 (3×2 GRID)")
-    print("=" * 60)
-
-    # Load data
-    data_map: dict[str, pd.DataFrame] = {}
+    # Load Data
+    data_map = {}
     for year, fpath in zip(YEARS, FILES):
         df = load_bem_data(fpath, year)
         if df is not None:
             data_map[year] = df
 
-    # Apply global base font size — all explicit sizes multiply from this
-    plt.rcParams.update({"font.size": FS_TICK})
-
+    # Prepare Figure with GridSpec: 3 rows x 5 columns
+    fig = plt.figure(figsize=(34, 17))
+    gs = gridspec.GridSpec(3, 5, figure=fig, height_ratios=[1, 1, 1],
+                           hspace=0.20, wspace=0.3)
     sns.set_theme(style="whitegrid")
 
-    # 3 rows × 2 columns; taller figure to accommodate the extra row
-    fig, axes = plt.subplots(
-        3, 2, figsize=(18, 22), constrained_layout=True
-    )
-
+    # --- LOOP THROUGH YEARS (COLUMNS) FOR ROW 0 & 1 ---
     for i, year in enumerate(YEARS):
-        ax_left = axes[i, 0]   # Presence schedule
-        ax_right_col = axes[i, 1]  # Summary metrics
+        ax_top = fig.add_subplot(gs[0, i])
+        ax_btm = fig.add_subplot(gs[1, i])
 
         if year not in data_map:
-            ax_left.text(0.5, 0.5, "No Data", ha="center", fontsize=FS_TITLE)
-            ax_right_col.text(
-                0.5, 0.5, "No Data", ha="center", fontsize=FS_TITLE
-            )
+            ax_top.text(0.5, 0.5, "No Data", ha='center')
+            ax_btm.text(0.5, 0.5, "No Data", ha='center')
             continue
 
         df = data_map[year]
 
-        # Left subplot — presence schedule (legend only on first row)
-        _plot_presence(ax_left, df, year, show_legend=(i == 0))
+        # Use red-orange palette for 2025 (classified/forecasted data)
+        palette_line = PALETTE_PRESENCE_2025 if year == '2025' else PALETTE_PRESENCE
+        palette_bar  = BAR_COLORS_2025       if year == '2025' else BAR_COLORS
 
-        # Right subplot — summary metrics
+        # --- ROW 0: PRESENCE CURVES ---
+        sns.lineplot(
+            data=df,
+            x='Hour',
+            y='Occupancy_Schedule',
+            hue='Day_Type',
+            palette=palette_line,
+            estimator='mean',
+            errorbar=('sd', 1),  # Mean +/- 1 SD
+            ax=ax_top,
+            legend=(i==0)  # Only legend on first plot
+        )
+
+        ax_top.set_title(f"{year} - Presence Schedule", fontsize=14, fontweight='bold')
+        ax_top.set_ylim(0, 1.05)
+        ax_top.set_xticks(range(0, 25, 4))
+        ax_top.set_ylabel("Occupancy Probability" if i == 0 else "")
+        ax_top.set_xlabel("")
+        ax_top.grid(True, linestyle='--', alpha=0.6)
+
+        # --- ROW 1: SUMMARY METRICS ---
         metrics_df = compute_summary_metrics(df)
+
         if not metrics_df.empty:
-            _plot_metrics(ax_right_col, metrics_df, year)
-        else:
-            ax_right_col.text(
-                0.5, 0.5, "No Metrics", ha="center", fontsize=FS_TITLE
+            # Dual Axis Plot
+
+            # 1. Bar Chart (Daily Hours) - Left Axis
+            sns.barplot(
+                data=metrics_df,
+                x='Day_Type',
+                y='Daily_Hours',
+                palette=palette_bar,
+                ax=ax_btm,
+                alpha=0.7,
+                edgecolor='black'
             )
 
+            ax_btm.set_title(f"{year} - Summary Metrics", fontsize=12, fontweight='bold')
+            ax_btm.set_ylabel("Avg. Daily Occupied Hours" if i == 0 else "")
+            ax_btm.set_xlabel("")
+            ax_btm.set_ylim(0, 20)
+
+            # Annotate bars
+            for p in ax_btm.patches:
+                ax_btm.annotate(f'{p.get_height():.1f}h',
+                               (p.get_x() + p.get_width() / 2., p.get_height()),
+                               ha='center', va='bottom', fontsize=10,
+                               fontweight='bold', xytext=(0, 3),
+                               textcoords='offset points')
+
+            # 2. Line/Point Chart (Daytime Fraction) - Right Axis
+            ax_right = ax_btm.twinx()
+
+            x_coords = range(len(metrics_df))
+            fractions = metrics_df['Daytime_Fraction'].values
+
+            ax_right.plot(x_coords, fractions, color='darkred', marker='o', markersize=8, linewidth=2, linestyle='-', label='Daytime (09-17) Fraction')
+
+            # Label points
+            for x, y in zip(x_coords, fractions):
+                ax_right.annotate(f'{y:.2f}',
+                                 (x, y),
+                                 ha='center', va='bottom',
+                                 fontsize=14, color='white', fontweight='bold',
+                                 xytext=(0, 6), textcoords='offset points')
+
+            ax_right.set_ylabel("Daytime Occupancy Fraction (09-17)", color='darkred')
+            ax_right.tick_params(axis='y', labelcolor='darkred')
+            ax_right.set_ylim(0, 1.0)
+
+            # Clean up x-axis labels from seaborn
+            ax_btm.set_xticklabels(metrics_df['Day_Type'])
+
+        else:
+             ax_btm.text(0.5, 0.5, "No Metrics", ha='center')
+
+    # --- EXPORT METRICS TABLE AS CSV ---
+    print("\n3. Computing metrics table...")
+
+    # DOE prototype default baseline (hardcoded reference values)
+    table_metrics = {
+        'Default': {
+            'Weekday_Hours': '16.4', 'Weekend_Hours': '16.4',
+            'Departure': '08:00', 'Return': '18:00', 'Daytime_Vacancy': '74.4'
+        }
+    }
+    for year in YEARS:
+        if year in data_map:
+            table_metrics[year] = compute_table_metrics(data_map[year])
+
+    all_cols    = ['Default'] + YEARS
+    metric_keys = ['Weekday_Hours', 'Weekend_Hours', 'Departure', 'Return', 'Daytime_Vacancy']
+    row_labels  = [
+        'Weekday occupied hours (h)',
+        'Weekend occupied hours (h)',
+        'Morning departure',
+        'Evening return',
+        'Daytime vacancy (09-17) %',
+    ]
+
+    csv_rows = []
+    for key, label in zip(metric_keys, row_labels):
+        row = {'Metric': label}
+        for col in all_cols:
+            row[col] = table_metrics.get(col, {}).get(key, '—')
+        csv_rows.append(row)
+
+    csv_path = OUTPUT_FILE.with_suffix('.csv')
+    pd.DataFrame(csv_rows).to_csv(csv_path, index=False)
+    print(f"   ✅ Table saved to: {csv_path}")
+
+    # --- ROW 2: PER-YEAR POINT PLOTS (Occupied Hours & Daytime Vacancy) ---
+    default_weekday = float(table_metrics['Default']['Weekday_Hours'])
+    default_vacancy = float(table_metrics['Default']['Daytime_Vacancy'])
+
+    hours_ylim = (10, 20)
+    perc_ylim  = (35, 90)
+
+    evo_lines, evo_labels = [], []
+
+    for i, year in enumerate(YEARS):
+        ax1 = fig.add_subplot(gs[2, i])
+        ax2 = ax1.twinx()
+
+        m = table_metrics.get(year)
+        if m is None:
+            ax1.text(0.5, 0.5, "No Data", ha='center', transform=ax1.transAxes)
+            continue
+
+        try:
+            wkd_val = float(m['Weekday_Hours'])
+        except (ValueError, KeyError):
+            wkd_val = np.nan
+        try:
+            wnd_val = float(m['Weekend_Hours'])
+        except (ValueError, KeyError):
+            wnd_val = np.nan
+        try:
+            vac_val = float(m['Daytime_Vacancy'])
+        except (ValueError, KeyError):
+            vac_val = np.nan
+
+        # Plot single points (no connecting lines)
+        l1 = ax1.plot([0], [wkd_val], marker='o', color='#1f77b4', linestyle='None',
+                       markersize=14, label='Weekday occupied hours (h)')
+        l2 = ax1.plot([0], [wnd_val], marker='s', color='#ff7f0e', linestyle='None',
+                       markersize=14, label='Weekend occupied hours (h)')
+        l4 = ax2.plot([0], [vac_val], marker='^', color='#2ca02c', linestyle='None',
+                       markersize=14, label='Daytime vacancy (%)')
+
+        # Default baselines
+        l3 = ax1.axhline(y=default_weekday, color='#1f77b4', linestyle='--', alpha=0.3,
+                          label='Default Hours')
+        l5 = ax2.axhline(y=default_vacancy, color='#2ca02c', linestyle='--', alpha=0.3,
+                          label='Default Vacancy')
+
+        # Axis limits & formatting
+        ax1.set_ylim(hours_ylim)
+        ax2.set_ylim(perc_ylim)
+        ax1.set_xticks([0])
+        ax1.set_xticklabels([year], fontweight='bold', fontsize=11)
+        ax1.set_title(f"{year} - Metrics", fontsize=12, fontweight='bold')
+        ax1.grid(True, linestyle='--', alpha=0.4)
+
+        # Only show left Y-labels on first subplot, right on last
+        if i == 0:
+            ax1.set_ylabel('Hours', color='#1f77b4', fontweight='bold')
+            ax1.tick_params(axis='y', labelcolor='#1f77b4')
+        else:
+            ax1.set_yticklabels([])
+            ax1.tick_params(axis='y', length=0)
+
+        if i == len(YEARS) - 1:
+            ax2.set_ylabel('Percentage (%)', color='#2ca02c', fontweight='bold')
+            ax2.tick_params(axis='y', labelcolor='#2ca02c')
+        else:
+            ax2.set_yticklabels([])
+            ax2.tick_params(axis='y', length=0)
+
+        # Collect legend items from first iteration
+        if i == 0:
+            evo_lines = l1 + l2 + [l3] + l4 + [l5]
+            evo_labels = [l.get_label() for l in evo_lines]
+
+    # Add a single-line legend below the 3rd row
+    if evo_lines:
+        fig.subplots_adjust(bottom=0.07)
+        fig.legend(evo_lines, evo_labels, loc='lower center',
+                   bbox_to_anchor=(0.5, 0.01), ncol=5, framealpha=0.95,
+                   fontsize=13)
+
     # Save
-    fig.savefig(OUTPUT_FILE, dpi=300)
+    fig.savefig(OUTPUT_FILE, dpi=300, bbox_inches='tight')
     print(f"\n✅ Plot saved to: {OUTPUT_FILE}")
     plt.close(fig)
-
 
 if __name__ == "__main__":
     main()
