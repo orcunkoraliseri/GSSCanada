@@ -12,8 +12,16 @@
 # Explicitly ignore files over 100MB in 0_Occupancy
 0_Occupancy/**/cen*.dat
 0_Occupancy/**/cen*.DAT
-0_Occupancy/**/*_Full_Aggregated_*.csv
-0_Occupancy/**/*_Full_Schedules_*.csv
+0_Occupancy/**/*_Full_*.csv
+0_Occupancy/**/sample*.csv
+0_Occupancy/Outputs_CENSUS/Full_data.csv
+0_Occupancy/Outputs_CENSUS/Full_Expanded_Schedules.csv
+0_Occupancy/Outputs_CENSUS/Full_Expanded_Schedules_Refined.csv
+0_Occupancy/Outputs_06CEN05GSS/ProfileMatching/*sample*.csv
+0_Occupancy/Outputs_11CEN10GSS/ProfileMatching/*sample*.csv
+0_Occupancy/Outputs_16CEN15GSS/ProfileMatching/*sample*.csv
+0_Occupancy/Outputs_16CEN15GSS/DTYPE_expansion/*sample*.csv
+0_Occupancy/Outputs_21CEN22GSS/ProfileMatching/*sample*.csv
 0_Occupancy/DataSources_GSS/Episode_files/GSS_2005_episode/C19PUMFM_NUM.SAV
 0_Occupancy/DataSources_GSS/Episode_files/GSS_2015_episode/GSS29PUMFE.txt
 0_Occupancy/DataSources_GSS/Episode_files/GSS_2022_episode/TU_ET_2022_Episode_PUMF.sas7bdat
@@ -51,6 +59,8 @@ SimResults_Plotting/
 SimResults_Plotting_Schedules/
 Pipeline_Test_Output/
 Test_Output/
+BEM_Setup/SimResults/
+eplusout.csv
 
 # Test & Debug Artifacts
 eSim_tests/benchmark_results/

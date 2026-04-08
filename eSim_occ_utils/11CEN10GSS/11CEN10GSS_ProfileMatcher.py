@@ -320,6 +320,7 @@ def generate_full_expansion(
             ep_wd['SIM_HH_ID'] = hh_id
             ep_wd['Day_Type'] = 'Weekday'
             ep_wd['AgentID'] = idx
+            ep_wd['MATCH_TIER_WD'] = agent.get('MATCH_TIER_WD', '')
             for var in carry_vars:
                 if var in agent.index:
                     ep_wd[f'Census_{var}'] = agent[var]
@@ -333,6 +334,7 @@ def generate_full_expansion(
             ep_we['SIM_HH_ID'] = hh_id
             ep_we['Day_Type'] = 'Weekend'
             ep_we['AgentID'] = idx
+            ep_we['MATCH_TIER_WE'] = agent.get('MATCH_TIER_WE', '')
             for var in carry_vars:
                 if var in agent.index:
                     ep_we[f'Census_{var}'] = agent[var]

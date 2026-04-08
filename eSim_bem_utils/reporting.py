@@ -520,7 +520,7 @@ class ReportGenerator:
             writer.writerow(["1. HEATING PERFORMANCE:"])
             default_heating = np.mean(heating_data['Default'])
 
-            for scenario in ['2025', '2015', '2005']:
+            for scenario in [s for s in self.scenarios if s != 'Default']:
                 if scenario in heating_data:
                     scen_mean = np.mean(heating_data[scenario])
                     scen_std = np.std(heating_data[scenario], ddof=1) if len(heating_data[scenario]) > 1 else 0.0
@@ -533,7 +533,7 @@ class ReportGenerator:
             writer.writerow(["2. COOLING PERFORMANCE:"])
             default_cooling = np.mean(cooling_data['Default'])
 
-            for scenario in ['2025', '2015', '2005']:
+            for scenario in [s for s in self.scenarios if s != 'Default']:
                 if scenario in cooling_data:
                     scen_mean = np.mean(cooling_data[scenario])
                     scen_std = np.std(cooling_data[scenario], ddof=1) if len(cooling_data[scenario]) > 1 else 0.0

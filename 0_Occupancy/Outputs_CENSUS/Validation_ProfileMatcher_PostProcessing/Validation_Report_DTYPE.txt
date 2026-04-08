@@ -2,15 +2,15 @@
 ============================================================
 🕵️‍♂️ VALIDATING DTYPE REFINEMENT
    Stats Check: Historic TOTINC Mean: 1793926.16
-   Stats Check: Forecast TOTINC Mean: 74763.50
+   Stats Check: Forecast TOTINC Mean: 64947.43
 
    --- Distribution Comparison (%) ---
                        Historic  Forecast
-Single-detached           62.21     58.08
-Semi-detached              5.30      3.79
-Row house                  6.00      4.34
-Duplex                     5.26      3.79
-Apt 5+ Storeys             6.67      9.80
-Apt <5 Storeys            13.18     19.03
-Other single-attached      0.23      0.25
-Movable                    1.16      0.91
+Single-detached           62.21     56.87
+Semi-detached              5.30      3.83
+Row house                  6.00      4.35
+Duplex                     5.26      3.83
+Apt 5+ Storeys             6.67     10.18
+Apt <5 Storeys            13.18     19.76
+Other single-attached      0.23      0.26
+Movable                    1.16      0.92

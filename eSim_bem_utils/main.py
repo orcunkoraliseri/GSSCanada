@@ -27,6 +27,19 @@ SIM_RESULTS_DIR = os.path.join(BEM_SETUP_DIR, "SimResults")
 PLOT_RESULTS_DIR = os.path.join(BEM_SETUP_DIR, "SimResults_Plotting")
 NEIGHBOURHOODS_DIR = os.path.join(BEM_SETUP_DIR, "Neighbourhoods")
 
+# Comparative simulation scenario configuration
+# Order matters for plot legends (left-to-right chronological).
+COMPARATIVE_YEARS = ('2005', '2010', '2015', '2022', '2025')
+COMPARATIVE_SCENARIOS = COMPARATIVE_YEARS + ('Default',)
+
+def _build_schedule_file_map() -> dict:
+    """Return {year: BEM_Schedules_<year>.csv path} for all comparative years."""
+    return {
+        year: os.path.join(BEM_SETUP_DIR, f"BEM_Schedules_{year}.csv")
+        for year in COMPARATIVE_YEARS
+    }
+
+
 # EnergyPlus Configuration from config module
 ENERGYPLUS_DIR = config.ENERGYPLUS_DIR
 ENERGYPLUS_EXE = config.ENERGYPLUS_EXE
@@ -579,11 +592,10 @@ def option_comparative_simulation() -> None:
     import random
     import sqlite3
     
-    print("\n=== Comparative Simulation (4 Scenarios) ===")
-    print("This will run 4 simulations for a randomly selected household:")
-    print("  - 2025 Schedules")
-    print("  - 2015 Schedules")
-    print("  - 2005 Schedules")
+    print("\n=== Comparative Simulation (6 Scenarios) ===")
+    print("This will run 6 simulations for a randomly selected household:")
+    for year in COMPARATIVE_YEARS:
+        print(f"  - {year} Schedules")
     print("  - Default (No schedule injection)")
     
     # 0. Select Simulation Mode
@@ -647,13 +659,9 @@ def option_comparative_simulation() -> None:
             pass
         print("Invalid selection. Try again.")
     
-    # 4. Load schedules from all 3 years
-    schedule_files = {
-        '2025': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2025.csv'),
-        '2015': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2015.csv'),
-        '2005': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2005.csv'),
-    }
-    
+    # 4. Load schedules from all years
+    schedule_files = _build_schedule_file_map()
+
     all_schedules = {}
     common_hh_ids = None
     
@@ -686,14 +694,14 @@ def option_comparative_simulation() -> None:
     print(f"\nRandomly selected Household: {first_hh} (from {first_year})")
     print(f"  Matching by household size: {target_hhsize} persons")
     
-    # 6. Prepare jobs for all 4 scenarios
+    # 6. Prepare jobs for all 6 scenarios
     batch_name = f"Comparative_HH{target_hhsize}p_{int(time.time())}"
     batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
     os.makedirs(batch_dir, exist_ok=True)
     print(f"Output Directory: {batch_dir}")
-    
+
     jobs = []
-    scenarios = ['2025', '2015', '2005', 'Default']
+    scenarios = list(COMPARATIVE_SCENARIOS)
     
     for scenario in scenarios:
         scenario_dir = os.path.join(batch_dir, scenario)
@@ -973,13 +981,18 @@ def option_neighbourhood_simulation() -> None:
     print(f"  Selected top matches from {len(scored_matches)} candidates.")
     print(f"  Score Range (SSE): {best_score:.4f} (Best) to {worst_score:.4f}")
 
-    hh_ids = sorted_hh_ids
-    schedules_list = []
-    for i in range(n_buildings):
-        hh_id = hh_ids[i % len(hh_ids)]  # Cycle top matches if not enough unique
-        schedules_list.append({**all_schedules[hh_id], 'hh_id': hh_id})
+    import random
+    # Randomly sample from the top quarter of SSE-ranked candidates (Task 2)
+    top_cut = max(n_buildings, len(sorted_hh_ids) // 4)
+    sample_pool = sorted_hh_ids[:top_cut]
+    print(f"  Sampling pool: {len(sample_pool)} candidates (top_cut={top_cut}) for {n_buildings} buildings.")
+    if len(sample_pool) >= n_buildings:
+        hh_ids = random.sample(sample_pool, n_buildings)
+    else:
+        hh_ids = [random.choice(sample_pool) for _ in range(n_buildings)]
+    schedules_list = [{**all_schedules[hh_id], 'hh_id': hh_id} for hh_id in hh_ids]
 
-    print(f"\nAssigned {n_buildings} unique occupancy profiles to buildings.")
+    print(f"\nAssigned {n_buildings} randomized occupancy profiles to buildings.")
 
     # 6. Prepare the IDF (explode shared objects)
     run_id = f"Neighbourhood_{int(time.time())}"
@@ -1034,11 +1047,12 @@ def option_neighbourhood_simulation() -> None:
             
             if eui_results:
                 print(f"\n--- Neighbourhood Energy Summary ---")
-                print(f"Total Floor Area: {eui_results.get('floor_area_m2', 0):.1f} m²")
-                print(f"Total EUI: {eui_results.get('total_eui', 0):.1f} kWh/m²-year")
-                
-                # Print breakdown by end-use
-                end_uses = eui_results.get('end_uses', {})
+                floor_area = eui_results.get('conditioned_floor_area') or eui_results.get('total_floor_area', 0)
+                print(f"Total Floor Area: {floor_area:.1f} m²")
+                print(f"Total EUI: {eui_results.get('eui', 0):.1f} kWh/m²-year")
+
+                # Print breakdown by end-use (normalized per m²)
+                end_uses = eui_results.get('end_uses_normalized') or eui_results.get('end_uses', {})
                 if end_uses:
                     print("\nEnd-Use Breakdown (kWh/m²-year):")
                     for use, val in sorted(end_uses.items(), key=lambda x: -x[1]):
@@ -1063,11 +1077,10 @@ def option_comparative_neighbourhood_simulation() -> None:
     import random
     import sqlite3
     
-    print("\n=== Comparative Neighbourhood Simulation (4 Scenarios) ===")
-    print("This will run 4 parallel simulations for a neighbourhood:")
-    print("  - 2025 Schedules")
-    print("  - 2015 Schedules")
-    print("  - 2005 Schedules")
+    print("\n=== Comparative Neighbourhood Simulation (6 Scenarios) ===")
+    print("This will run 6 parallel simulations for a neighbourhood:")
+    for year in COMPARATIVE_YEARS:
+        print(f"  - {year} Schedules")
     print("  - Default (No schedule injection)")
     
     # 0. Select Simulation Mode
@@ -1107,30 +1120,26 @@ def option_comparative_neighbourhood_simulation() -> None:
     # For neighbourhood simulations, we load all dwelling types (schedules from mixed buildings)
     selected_dtype = None
     
-    # 6. Load schedules from all 3 years
-    schedule_files = {
-        '2025': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2025.csv'),
-        '2015': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2015.csv'),
-        '2005': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2005.csv'),
-    }
-    
+    # 6. Load schedules from all years
+    schedule_files = _build_schedule_file_map()
+
     all_schedules = {}
     for year, csv_path in schedule_files.items():
         if not os.path.exists(csv_path):
             print(f"Warning: {csv_path} not found, skipping {year}")
             continue
-        
+
         schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=selected_region)
         if len(schedules) >= n_buildings:
             all_schedules[year] = schedules
             print(f"  {year}: Loaded {len(schedules)} households")
         else:
             print(f"  {year}: Only {len(schedules)} households (need {n_buildings}), skipping")
-    
+
     if not all_schedules:
         print("Error: No schedule files with enough households could be loaded.")
         return
-    
+
     # 6. Select households for consistency - match by hhsize AND profile
     first_year = list(all_schedules.keys())[0]
     first_schedules = all_schedules[first_year]
@@ -1169,10 +1178,10 @@ def option_comparative_neighbourhood_simulation() -> None:
     os.makedirs(batch_dir, exist_ok=True)
     print(f"\nOutput Directory: {batch_dir}")
     
-    # 8. Prepare jobs for all 4 scenarios
+    # 8. Prepare jobs for all 6 scenarios
     jobs = []
-    scenarios = ['2025', '2015', '2005', 'Default']
-    
+    scenarios = list(COMPARATIVE_SCENARIOS)
+
     for scenario in scenarios:
         scenario_dir = os.path.join(batch_dir, scenario)
         os.makedirs(scenario_dir, exist_ok=True)
@@ -1199,41 +1208,31 @@ def option_comparative_neighbourhood_simulation() -> None:
                 
                 used_hhs = set(s.get('hh_id') for s in schedules_list)
 
-                for i, target_hhsize in enumerate(hhsize_profile):
-                    # Find best profile match with correct hhsize
-                    # Search through sorted_year_hhs (best fit first)
-                    found_hh = None
-                    found_data = None
-                    
-                    for candidate_hh in sorted_year_hhs:
-                        # Check if matches size and not already used
-                        if year_schedules[candidate_hh].get('metadata', {}).get('hhsize', 0) == target_hhsize:
-                            if candidate_hh not in used_hhs:
-                                found_hh = candidate_hh
-                                found_data = year_schedules[candidate_hh]
-                                break
-                    
-                    if found_hh:
-                        hh_id = found_hh
-                        data = found_data
+                for target_hhsize in hhsize_profile:
+                    # Per-building SSE matching — same logic as single-building mode (Task 5)
+                    size_candidates = [
+                        hh for hh in sorted_year_hhs
+                        if year_schedules[hh].get('metadata', {}).get('hhsize', 0) == target_hhsize
+                        and hh not in used_hhs
+                    ]
+
+                    if size_candidates:
+                        hh_id = integration.find_best_match_household(year_schedules, size_candidates)
+                        data = year_schedules[hh_id]
                         used_hhs.add(hh_id)
                     else:
                         print(f"    Warning: No unused {target_hhsize}-person HH found in {scenario} matching profile.")
-                        # Fallback: Try any unused HH of correct size (ignoring profile score sort order if needed, but we already iterated all)
-                        # Since sorted_year_hhs contains *all* candidates, if not found above, none exist.
-                        # Try relaxing size constraint? Or just pick best available profile regardless of size?
-                        # Let's pick best available profile regardless of size to maintain profile consistency
-                        for candidate_hh in sorted_year_hhs:
-                            if candidate_hh not in used_hhs:
-                                hh_id = candidate_hh
-                                data = year_schedules[candidate_hh]
-                                used_hhs.add(hh_id)
-                                print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
-                                break
+                        # Fallback: best SSE match regardless of hhsize
+                        remaining = [hh for hh in sorted_year_hhs if hh not in used_hhs]
+                        if remaining:
+                            hh_id = integration.find_best_match_household(year_schedules, remaining)
+                            data = year_schedules[hh_id]
+                            used_hhs.add(hh_id)
+                            print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
                         else:
-                             print(f"      Critical: No households left in {scenario}!")
-                             continue
-                    
+                            print(f"      Critical: No households left in {scenario}!")
+                            continue
+
                     schedules_list.append({**data, 'hh_id': hh_id})
                 
                 print(f"\n  {scenario}: Preparing IDF and injecting {len(schedules_list)} schedules...")
@@ -1376,14 +1375,20 @@ def option_comparative_neighbourhood_simulation() -> None:
     print(f"{'='*60}")
 
 def option_kfold_comparative_simulation() -> None:
-    """Option 4: Monte Carlo Comparative Simulation (runs multiple iterations, averages results)."""
+    """Option 4: Monte Carlo Comparative Simulation.
+
+    Samples N random households per scenario (Task 16: default N=20).
+    Reports mean ± std EUI per end-use across the N samples, with error bars
+    in the comparative bar chart so reviewer uncertainty is quantified.
+    Raw per-sample values are also saved to CSV for post-hoc analysis.
+    """
     import random
     import sqlite3
     import numpy as np
-    
+
     print("\n=== Monte Carlo Comparative Simulation ===")
-    print("This runs comparative simulations multiple times with different random households,")
-    print("then averages results to reduce single-household bias.")
+    print("Samples N households per scenario and reports mean ± std EUI.")
+    print("Increase N for tighter confidence intervals (N=20 default, N=30 production).")
     
     # 0. Select Simulation Mode
     selected_sim_mode = select_simulation_mode()
@@ -1438,36 +1443,35 @@ def option_kfold_comparative_simulation() -> None:
             pass
         print("Invalid selection. Try again.")
     
-    # 4. Select Iteration Count
+    # 4. Select Monte Carlo sample size N (Task 16)
+    # Each sample draws a different random household per scenario; mean ± std across N
+    # gives the uncertainty interval shown in result bar charts.
     while True:
         try:
-            k_input = input("\nEnter iteration count (iter_count=) (default=5): ").strip()
+            k_input = input("\nEnter Monte Carlo sample size N (default=20, minimum=5): ").strip()
             if not k_input:
-                iter_count = 5
+                iter_count = 20
             else:
                 iter_count = int(k_input)
             if iter_count < 1:
-                print("Iteration count must be at least 1.")
+                print("Sample size must be at least 1.")
                 continue
             break
         except ValueError:
             print("Invalid number. Try again.")
-    
-    total_sims = 1 + iter_count * 3
-    print(f"\nThis will run 1 Default + {iter_count} iterations × 3 year scenarios"
-          f" = {total_sims} total simulations.")
+
+    total_sims = 1 + iter_count * len(COMPARATIVE_YEARS)
+    print(f"\nThis will run 1 Default + {iter_count} samples × "
+          f"{len(COMPARATIVE_YEARS)} year scenarios = {total_sims} total simulations.")
+    print(f"  Results will be reported as mean ± std across the {iter_count} samples.")
     confirm = input("Proceed? (y/n): ")
     if confirm.lower() != 'y':
         print("Aborted.")
         return
     
-    # 5. Load schedules from all 3 years
-    schedule_files = {
-        '2025': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2025.csv'),
-        '2015': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2015.csv'),
-        '2005': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2005.csv'),
-    }
-    
+    # 5. Load schedules from all years
+    schedule_files = _build_schedule_file_map()
+
     all_schedules = {}
     for year, csv_path in schedule_files.items():
         if not os.path.exists(csv_path):
@@ -1475,12 +1479,11 @@ def option_kfold_comparative_simulation() -> None:
             continue
         schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=selected_region)
         all_schedules[year] = schedules
-    
+
     if not all_schedules:
         print("Error: No schedule files could be loaded.")
         return
-    
-    # 6. Create output directory
+
     # 6. Create output directory
     batch_name = f"MonteCarlo_N{iter_count}_{int(time.time())}"
     batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
@@ -1531,8 +1534,8 @@ def option_kfold_comparative_simulation() -> None:
             print(f"  Error extracting Default: {e}")
     
     # 8. Monte Carlo Loop (only year scenarios, not Default)
-    year_scenarios = ['2025', '2015', '2005']
-    scenarios = ['2025', '2015', '2005', 'Default']  # For aggregation
+    year_scenarios = list(COMPARATIVE_YEARS)
+    scenarios = list(COMPARATIVE_SCENARIOS)
     # Track full results for reporting
     all_run_results = {s: [] for s in scenarios}
     all_eui_results = {s: [] for s in scenarios}
@@ -1733,7 +1736,7 @@ def option_kfold_comparative_simulation() -> None:
         print(f"Error generating report: {e}")
 
     
-    # 9. Save aggregated CSV
+    # 9. Save aggregated CSV (mean ± std summary)
     csv_path = os.path.join(batch_dir, "aggregated_eui.csv")
     with open(csv_path, 'w') as f:
         f.write("EndUse," + ",".join([f"{s}_mean,{s}_std" for s in scenarios]) + "\n")
@@ -1745,7 +1748,19 @@ def option_kfold_comparative_simulation() -> None:
                 row.extend([f"{mean_val:.4f}", f"{std_val:.4f}"])
             f.write(",".join(row) + "\n")
     print(f"Saved aggregated CSV to: {csv_path}")
-    
+
+    # 9b. Save raw per-sample EUI CSV so the user can compute additional statistics (Task 16)
+    raw_csv_path = os.path.join(batch_dir, "raw_samples_eui.csv")
+    with open(raw_csv_path, 'w', newline='') as f:
+        header = ["sample", "scenario"] + categories
+        f.write(",".join(header) + "\n")
+        for s in scenarios:
+            for i, eui_data in enumerate(all_eui_results[s]):
+                end_use_vals = eui_data.get('end_uses_normalized', eui_data.get('end_uses', {}))
+                row = [str(i + 1), s] + [f"{end_use_vals.get(cat, 0.0):.4f}" for cat in categories]
+                f.write(",".join(row) + "\n")
+    print(f"Saved raw sample CSV to: {raw_csv_path}")
+
     # 10. Generate plot with error bars
     plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Comparative_EUI_{batch_name}.png")
     plotting.plot_kfold_comparative_eui(
@@ -1856,24 +1871,21 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         except ValueError:
             print("Invalid number. Try again.")
 
-    total_sims = iter_count * 3 + 1 # iter_count iterations of 3 scenarios + 1 Default
-    print(f"\nThis will run 1 Default + ({iter_count} iterations × 3 scenarios) = {total_sims} total simulations.")
+    total_sims = iter_count * len(COMPARATIVE_YEARS) + 1
+    print(f"\nThis will run 1 Default + ({iter_count} iterations × "
+          f"{len(COMPARATIVE_YEARS)} scenarios) = {total_sims} total simulations.")
     confirm = input("Proceed? (y/n): ")
     if confirm.lower() != 'y':
         print("Aborted.")
         return
     
-    # 5. Load schedules from all 3 years
-    schedule_files = {
-        '2025': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2025.csv'),
-        '2015': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2015.csv'),
-        '2005': os.path.join(BEM_SETUP_DIR, 'BEM_Schedules_2005.csv'),
-    }
-    
+    # 5. Load schedules from all years
+    schedule_files = _build_schedule_file_map()
+
     all_schedules = {}
     # We load all dwelling types for neighbourhoods
     selected_dtype = None
-    
+
     for year, csv_path in schedule_files.items():
         if not os.path.exists(csv_path):
             print(f"Warning: {csv_path} not found, skipping {year}")
@@ -1884,7 +1896,7 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
             print(f"  {year}: Loaded {len(schedules)} households")
         else:
             print(f"  {year}: Only {len(schedules)} households (need {n_buildings}), skipping")
-    
+
     if not all_schedules:
         print("Error: No schedule files could be loaded.")
         return
@@ -1931,8 +1943,8 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
             print(f"  Error extracting Default: {e}")
     
     # 8. Monte Carlo Loop (only year scenarios)
-    year_scenarios = ['2025', '2015', '2005']
-    scenarios = ['2025', '2015', '2005', 'Default']  # For aggregation
+    year_scenarios = list(COMPARATIVE_YEARS)
+    scenarios = list(COMPARATIVE_SCENARIOS)
     all_eui_results = {s: [] for s in scenarios}
     all_meter_results = {s: [] for s in scenarios}
     
@@ -1947,19 +1959,28 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
 
     first_year = list(all_schedules.keys())[0]
 
+    # Pre-compute sorted household lists per scenario — identical every iteration (Task 3)
+    print("\nPre-computing household rankings per scenario...")
+    sorted_year_hhs_cache = {}
+    for scenario in year_scenarios:
+        if scenario not in all_schedules:
+            continue
+        sorted_year_hhs_cache[scenario] = [
+            hh for hh, _ in integration.filter_matching_households(all_schedules[scenario])
+        ]
+        print(f"  {scenario}: {len(sorted_year_hhs_cache[scenario])} ranked candidates")
+
+    # Pre-compute first_year candidate pool — identical every iteration (Task 3)
+    first_schedules = all_schedules[first_year]
+    first_year_scored = integration.filter_matching_households(first_schedules)
+    pool_size = max(n_buildings * 2, len(first_year_scored) // 2)
+    candidate_pool = [hh for hh, s in first_year_scored[:pool_size]]
+    print(f"  Base year ({first_year}) pool: {len(candidate_pool)} candidates for hhsize sampling\n")
+
     for k in range(iter_count):
         print(f"\n--- Iteration {k+1}/{iter_count} ---")
-        
-        # Filter Base Year (2025) candidates by profile
-        print(f"  Filtering {first_year} candidates by profile...")
-        first_schedules = all_schedules[first_year]
-        scored_matches = integration.filter_matching_households(first_schedules)
-        
-        # Define candidate pool: Top 50% or at least 2*N (to allow variety)
-        pool_size = max(n_buildings * 2, len(scored_matches) // 2)
-        candidate_pool = [hh for hh, s in scored_matches[:pool_size]]
-        
-        # Sample n_buildings distinct households from the filtered pool
+
+        # Sample n_buildings distinct households from the pre-computed pool
         if len(candidate_pool) < n_buildings:
             print(f"  Warning: Candidate pool smaller than N ({len(candidate_pool)} < {n_buildings}). Using duplication.")
             base_hhs = [random.choice(candidate_pool) for _ in range(n_buildings)]
@@ -1994,42 +2015,36 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
                 # Find matching households logic (filtered by profile)
                 schedules_list = []
                 year_schedules = all_schedules[scenario]
-                
-                # Filter this year's schedules by profile first
-                scored_year_matches = integration.filter_matching_households(year_schedules)
-                sorted_year_hhs = [hh for hh, s in scored_year_matches]
-                
+
+                # Use pre-computed sorted list (Task 3)
+                sorted_year_hhs = sorted_year_hhs_cache[scenario]
+
                 used_hhs = set()
-                
+
                 for target_hhsize in hhsize_profile:
-                    # Find best profile match with correct hhsize
-                    found_hh = None
-                    found_data = None
-                    
-                    for candidate_hh in sorted_year_hhs:
-                         if year_schedules[candidate_hh].get('metadata', {}).get('hhsize', 0) == target_hhsize:
-                            if candidate_hh not in used_hhs:
-                                found_hh = candidate_hh
-                                found_data = year_schedules[candidate_hh]
-                                break
-                    
-                    if found_hh:
-                        hh_id = found_hh
-                        data = found_data
+                    # Per-building SSE matching — same logic as single-building mode (Task 5)
+                    size_candidates = [
+                        hh for hh in sorted_year_hhs
+                        if year_schedules[hh].get('metadata', {}).get('hhsize', 0) == target_hhsize
+                        and hh not in used_hhs
+                    ]
+
+                    if size_candidates:
+                        hh_id = integration.find_best_match_household(year_schedules, size_candidates)
+                        data = year_schedules[hh_id]
                         used_hhs.add(hh_id)
                     else:
-                        # Fallback: Best available profile regardless of size
-                        for candidate_hh in sorted_year_hhs:
-                            if candidate_hh not in used_hhs:
-                                hh_id = candidate_hh
-                                data = year_schedules[candidate_hh]
-                                used_hhs.add(hh_id)
-                                print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
-                                break
+                        # Fallback: best SSE match regardless of hhsize
+                        remaining = [hh for hh in sorted_year_hhs if hh not in used_hhs]
+                        if remaining:
+                            hh_id = integration.find_best_match_household(year_schedules, remaining)
+                            data = year_schedules[hh_id]
+                            used_hhs.add(hh_id)
+                            print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
                         else:
-                             print(f"      Critical: No households left in {scenario}!")
-                             continue
-                    
+                            print(f"      Critical: No households left in {scenario}!")
+                            continue
+
                     schedules_list.append({**data, 'hh_id': hh_id})
                 
                 neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
@@ -2189,11 +2204,11 @@ def main_menu() -> None:
         print("\nOptions:")
         print("  1. Visualize a building")
         print("  2. Run a simulation, single building")
-        print("  3. Comparative simulation, single building (2025/2015/2005/Default)")
-        print("  4. Monte Carlo Comparative, single building (averaged over iterations) (2025/2015/2005/Default)")
+        print("  3. Comparative simulation, single building (2005/2010/2015/2022/2025/Default)")
+        print("  4. Monte Carlo Comparative, single building (averaged over iterations) (2005/2010/2015/2022/2025/Default)")
         print("  5. Neighbourhood simulation (multi-building)")
-        print("  6. Comparative neighbourhood (2025/2015/2005/Default)")
-        print("  7. Batch Comparative Neighbourhood Simulation (Monte Carlo) (2025/2015/2005/Default)")
+        print("  6. Comparative neighbourhood (2005/2010/2015/2022/2025/Default)")
+        print("  7. Batch Comparative Neighbourhood Simulation (Monte Carlo) (2005/2010/2015/2022/2025/Default)")
         print("  8. Visualize performance results")
         print("  9. Run Validation Simulation (Existing IDFs vs Reference)")
         print("  q. Quit")

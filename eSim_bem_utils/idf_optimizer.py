@@ -16,11 +16,6 @@ from typing import Optional, List
 from eppy.modeleditor import IDF
 from eSim_bem_utils import config
 
-# Constants for Lighting Override
-DEFAULT_LIGHTING_SOURCE_IDF = "US+SF+CZ5A+elecres+slab+IECC_2024.idf"
-DEFAULT_LIGHTING_SCHEDULE_NAME = "LightingDay_EELighting"
-
-
 # Output variables required for comprehensive energy analysis
 REQUIRED_OUTPUT_VARIABLES = [
     ('Zone Lights Electricity Energy', 'Hourly'),
@@ -553,93 +548,22 @@ def prune_output_objects(idf: IDF, verbose: bool = True) -> List[str]:
 _STANDARD_SCHEDULES_CACHE: Optional[dict] = None
 
 
-def load_lighting_override_from_idf() -> Optional[list[float]]:
+def load_standard_residential_schedules(
+    verbose: bool = False,
+    baseline: str = 'midrise',
+) -> dict:
     """
-    Loads the high-usage lighting schedule from the standard Single Family IDF template.
-    Returns:
-        List of 24 float values representing the hourly profile, or None if failed.
-    """
-    try:
-        # Construct path to 0_BEM_Setup/Templates
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        # Use config for path safety if needed (though templates are in repo)
-        template_idf_path = os.path.join(base_dir, 'BEM_Setup', 'Templates', DEFAULT_LIGHTING_SOURCE_IDF)
-        
-        if not os.path.exists(template_idf_path):
-            return None
-            
-        # Ensure IDD is set
-        if not IDF.getiddname():
-             IDF.setiddname(config.IDD_FILE)
+    Loads standardized residential schedules for EnergyPlus baseline injection.
 
-        idf = IDF(template_idf_path)
-        
-        # Use simple extraction (assuming it's a Schedule details we can parse or Schedule:Compact)
-        # Note: We need helper 'parse_schedule_values' logic here or duplicate distinct logic.
-        # But 'parse_schedule_values' is in integration.py. 
-        # To avoid circular imports, we implement specific extraction for this known template.
-        
-        if not IDF.getiddname():
-             IDF.setiddname(config.IDD_FILE)
-
-        idf = IDF(template_idf_path)
-        
-        # Target: Schedule:Day:Hourly "LightingDay_EELighting"
-        # Note: Previous inspection confirmed it is Schedule:Day:Hourly
-        day_obj = idf.getobject('SCHEDULE:DAY:HOURLY', DEFAULT_LIGHTING_SCHEDULE_NAME)
-        if day_obj:
-            # Schedule:Day:Hourly format: Name, Type, Hour1, Hour2...
-            # Fields in eppy obj.obj: [Type, Name, LimitsName, Hour1, Hour2...]
-            # Hour 1 is at index 3
-            raw_vals = day_obj.obj[3:]
-            # Ensure we have 24 values
-            if len(raw_vals) >= 24:
-                return [float(x) for x in raw_vals[:24]]
-                
-        # Fallback to Interval if Hourly fails (for robustness)
-        day_obj = idf.getobject('SCHEDULE:DAY:INTERVAL', DEFAULT_LIGHTING_SCHEDULE_NAME)
-        if day_obj:
-            values = [0.0] * 24
-            fields = day_obj.obj[4:]  # Skip name, type, interpolate
-            last_hour = 0
-            i = 0
-            while i < len(fields) - 1:
-                time_str = str(fields[i]).strip() if fields[i] else ""
-                val_str = str(fields[i+1]).strip() if fields[i+1] else "0"
-                
-                try:
-                    if ':' in time_str:
-                        hour_part = time_str.split(':')[0]
-                        end_hour = int(hour_part)
-                    else:
-                        end_hour = int(time_str)
-                    
-                    value = float(val_str)
-                    for h in range(last_hour, min(end_hour, 24)):
-                        values[h] = value
-                    last_hour = end_hour
-                except:
-                    pass
-                i += 2
-            return values
-            
-        print(f"  Warning: Lighting Schedule {DEFAULT_LIGHTING_SCHEDULE_NAME} not found in template.")
-        return None
-
-    except Exception as e:
-        print(f"  Warning: Failed to load lighting override: {e}")
-        return None
-
-
-def load_standard_residential_schedules(verbose: bool = False) -> dict:
-    """
-    Loads standardized MidRise Apartment schedules from the DOE Commercial
-    Reference Buildings (via OpenStudio Standards / schedule.json).
-
-    Data Source:
-        - U.S. Department of Energy (DOE) Commercial Reference Buildings
-        - OpenStudio Standards Gem (NREL)
-        - File: 0_BEM_Setup/Templates/schedule.json
+    Args:
+        verbose: Print progress messages.
+        baseline: Which schedule set to load.
+            'midrise'    — DOE MidRise Apartment (default; OpenStudio Standards
+                           via 0_BEM_Setup/Templates/schedule.json).
+            'sf_detached' — IECC 2021 Single-Family Detached reference
+                            (0_BEM_Setup/Templates/schedule_sf.json).
+                            Use for robustness check only; does not affect
+                            production runs unless explicitly passed.
 
     Returns:
         dict: Standard residential schedules with 24-hour profiles:
@@ -653,56 +577,77 @@ def load_standard_residential_schedules(verbose: bool = False) -> dict:
     """
     global _STANDARD_SCHEDULES_CACHE
 
-    if _STANDARD_SCHEDULES_CACHE is not None:
+    # Only cache the default midrise baseline so callers that pass
+    # baseline='sf_detached' always read fresh data.
+    if baseline == 'midrise' and _STANDARD_SCHEDULES_CACHE is not None:
         return _STANDARD_SCHEDULES_CACHE
 
-    # Locate schedule.json
+    # Route to the correct file and schedule-name mapping
+    if baseline == 'sf_detached':
+        json_filename = 'schedule_sf.json'
+        schedule_mapping = {
+            'occupancy': 'SF_Detached OCC_SCH',
+            'equipment': 'SF_Detached EQP_SCH',
+            'lighting':  'SF_Detached LTG_SCH',
+            'dhw':       'SF_Detached DHW_SCH',
+            'activity':  'SF_Detached Activity',
+        }
+    else:
+        json_filename = 'schedule.json'
+        schedule_mapping = {
+            'occupancy': 'ApartmentMidRise OCC_APT_SCH',
+            'equipment': 'ApartmentMidRise EQP_APT_SCH',
+            'lighting':  'ApartmentMidRise LTG_APT_SCH',
+            'dhw':       'ApartmentMidRise APT_DHW_SCH',
+            'activity':  'ApartmentMidRise Activity Schedule',
+        }
+
+    # Locate the JSON file for the selected baseline
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    schedule_json_path = os.path.join(
-        base_dir, 'BEM_Setup', 'Templates', 'schedule.json'
-    )
+    schedule_json_path = os.path.join(base_dir, 'BEM_Setup', 'Templates', json_filename)
 
     if not os.path.exists(schedule_json_path):
         if verbose:
-            print(f"  Warning: schedule.json not found at {schedule_json_path}")
-        return _get_fallback_schedules()
+            print(f"  Warning: {json_filename} not found at {schedule_json_path}")
+        if baseline == 'midrise':
+            return _get_fallback_schedules()
+        raise FileNotFoundError(
+            f"SF Detached schedule file not found: {schedule_json_path}\n"
+            "Create BEM_Setup/Templates/schedule_sf.json before using baseline='sf_detached'."
+        )
 
     try:
         with open(schedule_json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
     except Exception as e:
         if verbose:
-            print(f"  Warning: Could not load schedule.json: {e}")
-        return _get_fallback_schedules()
-
-    # Target schedules from MidRise Apartment
-    schedule_mapping = {
-        'occupancy': 'ApartmentMidRise OCC_APT_SCH',
-        'equipment': 'ApartmentMidRise EQP_APT_SCH',
-        'lighting': 'ApartmentMidRise LTG_APT_SCH',
-        'dhw': 'ApartmentMidRise APT_DHW_SCH',
-        'activity': 'ApartmentMidRise Activity Schedule',
-    }
+            print(f"  Warning: Could not load {json_filename}: {e}")
+        if baseline == 'midrise':
+            return _get_fallback_schedules()
+        raise
 
     result = {}
 
     for key, schedule_name in schedule_mapping.items():
         if schedule_name not in data:
             if verbose:
-                print(f"  Warning: Schedule '{schedule_name}' not found")
+                print(f"  Warning: Schedule '{schedule_name}' not found in {json_filename}")
             continue
 
         sch = data[schedule_name]
 
         if key == 'activity':
-            # Activity is constant metabolic rate
+            # Activity is a constant metabolic rate stored as a single value
             for ds in sch.get('day_schedules', []):
                 if 'Default' in ds.get('identifier', ''):
                     result['activity'] = ds['values'][0]
                     break
             continue
 
-        # Extract 24-hour profile from Default day schedule
+        # Extract 24-hour profile from the Default day schedule.
+        # Two supported formats:
+        #   (a) schedule_sf.json: 'values' is already a 24-element list
+        #   (b) schedule.json:    'values'+'times' are paired time-step arrays
         hourly_values = [0.0] * 24
 
         for ds in sch.get('day_schedules', []):
@@ -710,47 +655,38 @@ def load_standard_residential_schedules(verbose: bool = False) -> dict:
                 values = ds.get('values', [])
                 times = ds.get('times', [])
 
-                # Convert time-value pairs to 24-hour array
-                for i, time_pair in enumerate(times):
-                    hour = time_pair[0]
-                    value = values[i] if i < len(values) else values[-1]
-
-                    # Fill from this hour until next time point
-                    if i + 1 < len(times):
-                        end_hour = times[i + 1][0]
-                    else:
-                        end_hour = 24
-
-                    for h in range(hour, min(end_hour, 24)):
-                        hourly_values[h] = value
+                if len(values) == 24 and not times:
+                    # Format (a): direct 24-hour list
+                    hourly_values = list(values)
+                else:
+                    # Format (b): time-value pairs → fill forward
+                    for i, time_pair in enumerate(times):
+                        hour = time_pair[0]
+                        value = values[i] if i < len(values) else values[-1]
+                        end_hour = times[i + 1][0] if i + 1 < len(times) else 24
+                        for h in range(hour, min(end_hour, 24)):
+                            hourly_values[h] = value
 
                 break
 
-        # For residential, Weekday and Weekend are often the same in DOE models
+        # DOE MidRise uses identical Weekday and Weekend in the source JSON;
+        # schedule_sf.json also provides a single profile applied to both.
         result[key] = {
             'Weekday': hourly_values.copy(),
             'Weekend': hourly_values.copy()
         }
 
-    # Ensure activity has a default
+    # Ensure activity has a default if not found in JSON
     if 'activity' not in result:
         result['activity'] = 95.0
 
     if verbose:
-        print("  Loaded standard MidRise Apartment schedules from schedule.json")
+        label = 'DOE MidRise Apartment' if baseline == 'midrise' else 'IECC SF Detached'
+        print(f"  Loaded {label} schedules from {json_filename}")
 
-    
-    # [OVERRIDE] Apply Single Family High-Usage Lighting Schedule
-    override_lighting = load_lighting_override_from_idf()
-    if override_lighting:
-        if verbose:
-            print(f"  Applied Lighting Override from {DEFAULT_LIGHTING_SOURCE_IDF}")
-        result['lighting'] = {
-            'Weekday': override_lighting,
-            'Weekend': override_lighting
-        }
-
-    _STANDARD_SCHEDULES_CACHE = result
+    # Baseline is DOE MidRise from schedule.json — no overrides applied.
+    if baseline == 'midrise':
+        _STANDARD_SCHEDULES_CACHE = result
     return result
 
 
@@ -866,10 +802,51 @@ def prepare_idf_for_simulation(
         print(f"Error optimizing {idf_path}: {e}")
         return False
 
+def create_schedule_file_object(
+    idf: IDF,
+    name: str,
+    type_limit: str,
+    csv_path: str,
+    n_hours: int = 8760,
+) -> object:
+    """
+    Creates a Schedule:File IDF object pointing at an 8760-row single-column CSV.
+
+    The CSV must contain one numeric value per line with no header row.
+    EnergyPlus reads the file relative to the IDF directory; if `csv_path` is an
+    absolute path it is stored as-is (works when both IDF and CSV are in the same
+    run directory, or when an absolute path is portable across machines).
+
+    Args:
+        idf: The IDF object to modify.
+        name: Schedule name (must match the name used in PEOPLE/LIGHTS/etc. objects).
+        type_limit: Schedule Type Limits name (e.g., 'Fraction', 'Any Number').
+        csv_path: Path to the 8760-row CSV file.
+        n_hours: Number of data rows (default 8760).
+
+    Returns:
+        The newly created Schedule:File IDF object.
+    """
+    sch_obj = idf.newidfobject("Schedule:File")
+    sch_obj.obj = [
+        "Schedule:File",
+        name,            # Name
+        type_limit,      # Schedule Type Limits Name
+        csv_path,        # File Name
+        "1",             # Column Number
+        "0",             # Rows to Skip at Top
+        str(n_hours),    # Number of Hours of Data
+        "Comma",         # Column Separator
+        "No",            # Interpolate to Timestep
+        "60",            # Minutes per Item
+    ]
+    return sch_obj
+
+
 def scale_water_use_peak_flow(
-    idf: IDF, 
-    standard_schedules: dict, 
-    target_vol_m3: float = 0.22, 
+    idf: IDF,
+    standard_schedules: dict,
+    target_vol_m3: float = 0.22,
     verbose: bool = False
 ) -> List[str]:
     """
@@ -988,15 +965,15 @@ def standardize_residential_schedules(
         idf: IDF,
         name: str,
         type_limit: str,
-        hourly_values: list,
+        weekday_values: list,
+        weekend_values: list,
     ):
-        """Create Schedule:Compact or update if it already exists."""
+        """Create Schedule:Compact with separate Weekday and Weekend blocks."""
         existing = [
             s for s in idf.idfobjects.get('SCHEDULE:COMPACT', [])
             if s.Name == name
         ]
         if existing:
-            # Update in-place instead of creating duplicate
             sch = existing[0]
         else:
             sch = idf.newidfobject("Schedule:Compact")
@@ -1006,14 +983,16 @@ def standardize_residential_schedules(
             name,
             type_limit,
             "Through: 12/31",
-            "For: AllDays",
+            "For: Weekdays",
         ]
         for hour in range(24):
-            val = (
-                hourly_values[hour]
-                if hour < len(hourly_values)
-                else hourly_values[-1]
-            )
+            val = weekday_values[hour] if hour < len(weekday_values) else weekday_values[-1]
+            fields.append(f"Until: {hour+1:02d}:00")
+            fields.append(f"{val:.4f}")
+
+        fields.append("For: Weekend Holidays")
+        for hour in range(24):
+            val = weekend_values[hour] if hour < len(weekend_values) else weekend_values[-1]
             fields.append(f"Until: {hour+1:02d}:00")
             fields.append(f"{val:.4f}")
 
@@ -1024,38 +1003,42 @@ def standardize_residential_schedules(
     if 'occupancy' in standard_schedules:
         occ_name = "Standard_Residential_Occupancy"
         _get_or_create_schedule(
-            idf, occ_name, "Fraction", 
-            standard_schedules['occupancy']['Weekday']
+            idf, occ_name, "Fraction",
+            standard_schedules['occupancy']['Weekday'],
+            standard_schedules['occupancy']['Weekend'],
         )
         schedule_names['occupancy'] = occ_name
         actions.append(f"Created schedule: {occ_name}")
-    
+
     # Equipment schedule
     if 'equipment' in standard_schedules:
         eqp_name = "Standard_Residential_Equipment"
         _get_or_create_schedule(
-            idf, eqp_name, "Fraction", 
-            standard_schedules['equipment']['Weekday']
+            idf, eqp_name, "Fraction",
+            standard_schedules['equipment']['Weekday'],
+            standard_schedules['equipment']['Weekend'],
         )
         schedule_names['equipment'] = eqp_name
         actions.append(f"Created schedule: {eqp_name}")
-    
+
     # Lighting schedule
     if 'lighting' in standard_schedules:
         ltg_name = "Standard_Residential_Lighting"
         _get_or_create_schedule(
-            idf, ltg_name, "Fraction", 
-            standard_schedules['lighting']['Weekday']
+            idf, ltg_name, "Fraction",
+            standard_schedules['lighting']['Weekday'],
+            standard_schedules['lighting']['Weekend'],
         )
         schedule_names['lighting'] = ltg_name
         actions.append(f"Created schedule: {ltg_name}")
-    
+
     # DHW schedule
     if 'dhw' in standard_schedules:
         dhw_name = "Standard_Residential_DHW"
         _get_or_create_schedule(
-            idf, dhw_name, "Fraction", 
-            standard_schedules['dhw']['Weekday']
+            idf, dhw_name, "Fraction",
+            standard_schedules['dhw']['Weekday'],
+            standard_schedules['dhw']['Weekend'],
         )
         schedule_names['dhw'] = dhw_name
         actions.append(f"Created schedule: {dhw_name}")

@@ -7,16 +7,19 @@
 ----------------------------------------
 
    [WD Matching Tiers]
-      - 2_Drivers: 70.8%
-      - 1_Perfect: 23.4%
-      - 3_Constraints: 5.7%
+      - 2_Drivers: 70.1%
+      - 1_Perfect: 27.0%
+      - 3_Constraints: 2.7%
+      - 4_FailSafe: 0.2%
 
    [WE Matching Tiers]
-      - 2_Drivers: 78.3%
-      - 1_Perfect: 13.5%
-      - 3_Constraints: 8.2%
+      - 2_Drivers: 77.5%
+      - 1_Perfect: 16.6%
+      - 3_Constraints: 5.4%
+      - 4_FailSafe: 0.6%
 
 2. BEHAVIORAL CONSISTENCY (Workers vs. Non-Workers)
 ----------------------------------------
-   👉 Average Work Duration for 'Employees' (n=399): 910 minutes/day
-      ✅ Success: Employees are performing ~5-8 hours of work.
+   👉 Average Work+Commute Duration for 'Employees' (n=500): 386 min/day
+      (Expected range: 300–600 min/day; historical baseline ~542 min/day)
+      ✅ Success: Employees performing 5–10 hours of work+commute (plausible range).

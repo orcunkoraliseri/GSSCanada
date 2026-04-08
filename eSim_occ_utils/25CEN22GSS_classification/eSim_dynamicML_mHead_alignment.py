@@ -1,25 +1,23 @@
 import pandas as pd
 import pathlib
 import os
+import sys
 import seaborn as sns
 import matplotlib.pyplot as plt
 import math
 
-# --- 1. Define Paths ---
-BASE_DIR = pathlib.Path("/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy")
+# --- 1. Define Paths (cross-platform via occ_config) ---
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent.parent))
+from eSim_occ_utils.occ_config import BASE_DIR, OUTPUT_DIR, OUTPUT_DIR_GSS, OUTPUT_DIR_ALIGNED
 
-# Output
-OUTPUT_DIR_GSS = BASE_DIR / "Outputs_GSS"
-OUTPUT_DIR_ALIGNED = BASE_DIR / "Outputs_Aligned"
-OUTPUT_DIR_GSS.mkdir(parents=True, exist_ok=True)
-OUTPUT_DIR_ALIGNED.mkdir(parents=True, exist_ok=True)
+# Output dirs are already created by occ_config; no extra mkdir needed here.
 
 # Inputs
 DATA_DIR_GSS = BASE_DIR / "DataSources_GSS/Main_files"
 FILE_MAIN = DATA_DIR_GSS / "GSSMain_2022.sas7bdat"
 FILE_EPISODE = OUTPUT_DIR_GSS / "out22EP_ACT_PRE_coPRE.csv"
 
-CENSUS_FILE = BASE_DIR / "Outputs_CENSUS/forecasted_population_2025_LINKED.csv"
+CENSUS_FILE = pathlib.Path(OUTPUT_DIR) / "forecasted_population_2025_LINKED.csv"
 
 # --- 2. Define Columns ---
 # A) MAIN FILE COLUMNS (Demographics - The "Bridge")

@@ -124,6 +124,8 @@ class BEMConverter:
 
         # List of residential variables to carry over
         target_res_cols = ['DTYPE', 'BEDRM', 'CONDO', 'ROOM', 'REPAIR', 'PR']
+        # Match-tier columns (present only when ProfileMatcher propagation is active)
+        tier_cols = ['MATCH_TIER_WD', 'MATCH_TIER_WE']
         # Also check for Census-prefixed versions
         census_res_cols = ['Census_HHSIZE']
 
@@ -176,13 +178,25 @@ class BEMConverter:
             # 2. Normalize to Schedule (0-1) by dividing by HH Capacity
             occupancy_sched = (estimated_count / hh_size).clip(upper=1.0)
 
-            # 3. Create Result DataFrame
+            # 3. Collect match-tier (static; take first row, gracefully absent)
+            tier_data = {}
+            for tc in tier_cols:
+                if tc in group.columns:
+                    tier_data[tc] = group[tc].iloc[0]
+            # Derive a single MATCH_TIER: the worst tier seen across WD and WE
+            # Tier strings sort lexicographically: "1_Perfect" < "4_FailSafe"
+            wd_tier = tier_data.get('MATCH_TIER_WD', '')
+            we_tier = tier_data.get('MATCH_TIER_WE', '')
+            match_tier = max(wd_tier, we_tier) if (wd_tier or we_tier) else ''
+
+            # 4. Create Result DataFrame
             data_dict = {
                 'SIM_HH_ID': hh_id,
                 'Day_Type': day_type,
                 'Hour': hourly['datetime'].dt.hour,
                 'HHSIZE': hh_size,
                 **res_data,
+                'MATCH_TIER': match_tier,
                 'Occupancy_Schedule': occupancy_sched.round(3),
                 'Metabolic_Rate': hourly['watts_5min'].round(1)
             }

@@ -159,7 +159,7 @@ def run_testing(sample_frac: float = 1.0) -> None:
 # SUB-STEP 1c: FORECASTING
 # =============================================================================
 def run_forecasting(
-    target_years: list[int] | None = None, n_samples: int = 2000
+    target_years: list[int] | None = None, n_samples: int = 250_000
 ) -> None:
     """
     Models temporal drift in latent space and generates forecasted populations.
@@ -287,10 +287,10 @@ def run_visual_validation(sample_frac: float = 1.0) -> None:
 # Set each flag to True to run that sub-step when executing this file directly.
 # =============================================================================
 if __name__ == "__main__":
-    RUN_TRAINING: bool = False  # trains from scratch, saves encoder/decoder
-    RUN_TESTING: bool = False  # loads saved models, validates reconstruction
-    RUN_FORECASTING: bool = False  # generates forecasted_population_YYYY.csv
-    RUN_VISUAL_VALIDATION: bool = False  # plots latent-space validation figures
+    RUN_TRAINING: bool = True  # trains from scratch, saves encoder/decoder
+    RUN_TESTING: bool = True  # loads saved models, validates reconstruction
+    RUN_FORECASTING: bool = True  # generates forecasted_population_YYYY.csv
+    RUN_VISUAL_VALIDATION: bool = True  # plots latent-space validation figures
 
     if RUN_TRAINING:
         run_training()

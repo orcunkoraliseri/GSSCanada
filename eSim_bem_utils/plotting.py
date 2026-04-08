@@ -79,6 +79,17 @@ END_USE_LABELS = {
 }
 
 
+# Comparative scenario palette — keep keys aligned with main.COMPARATIVE_SCENARIOS
+SCENARIO_COLORS = {
+    '2005':    '#A6F956',
+    '2010':    '#00B050',
+    '2015':    '#0758FF',
+    '2022':    '#041991',
+    '2025':    '#7A00B0',
+    'Default': '#8A1100',
+}
+
+
 def get_energy_color(category_name: str) -> Optional[str]:
     """Returns the appropriate color for an energy category."""
     category_lower = category_name.lower()
@@ -157,8 +168,10 @@ def calculate_eui(conn) -> dict:
         units = row['Units']
         val_str = row['Value']
         
-        # Skip water columns
-        if 'Water' in col_name or 'm3' in str(units):
+        # Skip water-consumption columns (m3, m3/s units); do NOT match on
+        # column name because 'District Heating Water' also contains 'Water'
+        # and would incorrectly drop the entire heating end-use.
+        if 'm3' in str(units):
             continue
             
         try:
@@ -485,24 +498,23 @@ def plot_comparative_eui(
     
     # Prepare data for each scenario
     scenario_names = list(results_dict.keys())
-    scenario_colors = ['#041991', '#0758FF', '#A6F956', '#8A1100']  # Blue to Red gradient
-    
+
     # Build data matrix
     import numpy as np
     x = np.arange(len(categories))
-    width = 0.2  # Bar width
-    
+    width = 0.8 / max(len(scenario_names), 1)  # Bar width scales with scenario count
+
     fig, ax = plt.subplots(figsize=(16, 8))
-    
+
     for i, scenario_name in enumerate(scenario_names):
         data = results_dict.get(scenario_name, {})
         end_uses = data.get('end_uses_normalized', {})
-        
+
         values = [end_uses.get(cat, 0) for cat in categories]
         offset = (i - len(scenario_names) / 2 + 0.5) * width
-        
-        bars = ax.bar(x + offset, values, width, label=scenario_name, 
-                     color=scenario_colors[i % len(scenario_colors)],
+
+        bars = ax.bar(x + offset, values, width, label=scenario_name,
+                     color=SCENARIO_COLORS.get(scenario_name, '#666666'),
                      edgecolor='black', linewidth=0.5)
     
     ax.set_xlabel('End Use Category', fontsize=12, fontweight='bold')
@@ -724,10 +736,7 @@ def plot_comparative_timeseries_subplots(
     axes = axes.flatten()
     
     # Colors (consistent with bar chart)
-    scenario_colors = {
-        '2025': '#041991', '2015': '#0758FF', 
-        '2005': '#A6F956', 'Default': '#8A1100'
-    }
+    scenario_colors = SCENARIO_COLORS
     
     months = range(1, 13)
     month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -845,16 +854,11 @@ def plot_kfold_comparative_eui(
         return
     
     # Color mapping for scenarios
-    scenario_colors = {
-        '2025': '#041991',  # Dark Blue
-        '2015': '#0758FF',  # Blue
-        '2005': '#61F69C',  # Green
-        'Default': '#8A1100' # Red
-    }
-    
+    scenario_colors = SCENARIO_COLORS
+
     # Prepare data
     x = np.arange(n_categories)
-    bar_width = 0.2
+    bar_width = 0.8 / max(n_scenarios, 1)
     
     fig, ax = plt.subplots(figsize=(14, 7))
     
@@ -954,12 +958,7 @@ def plot_kfold_timeseries(
     # Days per month (using 2024 leap year for consistency with EnergyPlus)
     days_per_month = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     
-    scenario_colors = {
-        '2025': '#041991',
-        '2015': '#0758FF',
-        '2005': '#61F69C',
-        'Default': '#8A1100'
-    }
+    scenario_colors = SCENARIO_COLORS
     
     # Determine unit label based on simulation mode
     use_daily_norm = (sim_mode != 'weekly')

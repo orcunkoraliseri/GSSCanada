@@ -437,13 +437,28 @@ class ClusterMomentumModel:
                 else:
                     centroids[year] = np.mean(z_data[labels == k], axis=0)
 
-            # Calculate Velocity Vectors (2006->2011 and 2011->2016)
-            # Assuming 5-year steps. Adjust denominator if years differ.
-            v_old = (centroids[2011] - centroids[2006]) / 5.0
-            v_recent = (centroids[2016] - centroids[2011]) / 5.0
+            # Calculate Velocity Vectors from all consecutive year pairs.
+            # Use actual year gaps so this works for any set of census years.
+            n_years = len(years)
+            velocities = []
+            for yi in range(n_years - 1):
+                y0, y1 = years[yi], years[yi + 1]
+                gap = y1 - y0
+                velocities.append((centroids[y1] - centroids[y0]) / gap)
 
-            # Weighted Momentum
-            v_final = (self.alpha * v_recent) + ((1 - self.alpha) * v_old)
+            # Weighted Momentum: most recent interval gets highest weight (self.alpha),
+            # each earlier interval gets (1 - self.alpha) split evenly.
+            # Example with 3 intervals (2006-11, 2011-16, 2016-21):
+            #   weights = [0.5/2, 0.5/2, 0.5] = [0.25, 0.25, 0.5]
+            n_intervals = len(velocities)
+            if n_intervals == 1:
+                v_final = velocities[0]
+            else:
+                recent_w = self.alpha
+                older_w = (1.0 - self.alpha) / (n_intervals - 1)
+                weights = [older_w] * (n_intervals - 1) + [recent_w]
+                v_final = sum(w * v for w, v in zip(weights, velocities))
+
             self.cluster_velocities[k] = v_final
 
     def predict(self, z_source, source_year, target_year):
@@ -533,8 +548,11 @@ def generate_future_population(decoder, temporal_model, last_population_z, last_
     z_final = z_projected + noise
 
     # 4. Get Building Conditions (Scenario-based)
-    # Currently assuming 2021 building stock distribution persists.
-    # (Can be modified to simulate "New Construction" scenarios)
+    # ASSUMPTION: 2021 building stock distribution is frozen for the 2025 forecast.
+    # Statistics Canada has not released a housing inventory for 2022-2025; any
+    # extrapolation would add more uncertainty than it removes.  The 2025 results
+    # therefore reflect demographic drift only, not changes in housing stock.
+    # Documented in BEM_Methodology_Paper.md §5.2.
     year_cols = sorted([col for col in df_processed.columns if col.startswith('YEAR_')])
     year_last_col = year_cols[-1]
     bldg_conditions = df_processed[df_processed[year_last_col] == 1][bldg_cols]
@@ -1606,35 +1624,46 @@ def validate_matching_quality(df_matched, expander, save_path=None):
         ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
 
         if ep_wd is not None:
-            # Filter for Work Activities
-            # Standard GSS Work Codes often start with '1' or '0'. Adjust if needed.
-            work_acts = ep_wd[ep_wd['occACT'].astype(str).str.startswith(('1', '0', '8'))]
+            # Filter for Work + Commute activities using harmonized 1-14 occACT categories.
+            # Category 1 = Paid work (ACTCODE 400 in GSS 2022).
+            # Category 8 = Transport/commute (ACTCODE 500 in GSS 2022).
+            # Intentionally excludes categories 10-14 (household, social, personal care).
+            # IMPORTANT: do NOT use str.startswith('1') — that incorrectly captures
+            # categories 10-14 alongside 1, inflating work duration to ~918 min/day (Task 25 fix).
+            work_acts = ep_wd[ep_wd['occACT'].isin([1, 8])]
 
             total_duration = 0
             for _, row in work_acts.iterrows():
-                s = row['start']
-                e = row['end']
+                s_hhmm = row['start']  # HHMM integer, e.g. 920 = 9:20 AM
+                e_hhmm = row['end']
 
-                # --- FIX FOR MIDNIGHT WRAP ---
-                # If end time is smaller than start time (e.g. 02:00 < 23:00), adds 24h (1440 min)
-                if e < s:
-                    duration = (e + 1440) - s
-                else:
-                    duration = e - s
+                # Convert HHMM to real minutes from midnight before subtracting.
+                # Raw HHMM subtraction (e.g. 1700 - 920 = 780) overestimates because it
+                # treats the hundreds digit as minutes (Task 25 fix).
+                s_min = (int(s_hhmm) // 100) * 60 + (int(s_hhmm) % 100)
+                e_min = (int(e_hhmm) // 100) * 60 + (int(e_hhmm) % 100)
+                if e_min < s_min:          # episode crosses midnight
+                    e_min += 1440
+                duration = max(0, e_min - s_min)
 
                 total_duration += duration
 
             work_minutes.append(total_duration)
 
     avg_work = np.mean(work_minutes) if work_minutes else 0
-    log(f"   👉 Average Work Duration for 'Employees' (n={sample_size}): {avg_work:.0f} minutes/day")
+    log(f"   👉 Average Work+Commute Duration for 'Employees' (n={sample_size}): {avg_work:.0f} min/day")
+    log(f"      (Expected range: 300–600 min/day; historical baseline ~542 min/day)")
 
     if avg_work < 60:
-        log("      ⚠️ WARNING: Low work duration. Check if 'occACT' filter matches your GSS codes.")
-    elif avg_work > 300:
-        log("      ✅ Success: Employees are performing ~5-8 hours of work.")
+        log("      ⚠️ WARNING: Work duration too low (<60 min). Check if occACT categories 1/8 are populated.")
+    elif avg_work > 600:
+        log(f"      ⚠️ WARNING: Work duration too high (>{avg_work:.0f} min = {avg_work/60:.1f} h/day).")
+        log("      Investigate: (a) occACT filter over-capture, (b) velocity-fix demographic shift,")
+        log("      or (c) Profile Matcher retrieving wrong GSS episodes. See Task 25 in OccIntegrationFramework.md.")
+    elif avg_work >= 300:
+        log("      ✅ Success: Employees performing 5–10 hours of work+commute (plausible range).")
     else:
-        log("      ℹ️ Note: Work duration is moderate. Verify part-time vs full-time mix.")
+        log("      ℹ️ Note: Work duration is moderate (<5 h). Verify part-time vs full-time mix.")
 
     # --- STEP 3: SAVE TO FILE ---
     if save_path:
@@ -2295,15 +2324,21 @@ class BEMConverter:
             'Other dwelling': "Other"
         }
 
-        # PR (Region) Mapping (ID -> Description)
+        # PR (Region) Mapping (StatCan PUMF province code -> census label).
+        # Keys are strings to match the str(int(float(val))) cast in process_households().
+        # Reference: eSim_occ_utils/21CEN22GSS/21CEN22GSS_occToBEM.py:61-68
         self.pr_map = {
-            1: "Eastern Canada",
-            2: "Quebec",
-            3: "Ontario",
-            4: "Prairies",
-            5: "British Columbia",
-            6: "Northern Canada",
-            99: "Others"
+            "10": "Atlantic",   # Newfoundland & Labrador
+            "11": "Atlantic",   # Prince Edward Island
+            "12": "Atlantic",   # Nova Scotia
+            "13": "Atlantic",   # New Brunswick
+            "24": "Quebec",
+            "35": "Ontario",
+            "46": "Prairies",   # Manitoba  (SK + MB only — AB is its own bucket)
+            "47": "Prairies",   # Saskatchewan
+            "48": "Alberta",    # Alberta on its own
+            "59": "BC",
+            "70": "Northern Canada",
         }
 
     def process_households(self, df_full):
@@ -2339,12 +2374,13 @@ class BEMConverter:
                     val_str = str(int(val)) if pd.notnull(val) and val != "Unknown" else str(val)
                     res_data[col] = self.dtype_map.get(val_str, val)
                 elif col == 'PR':
-                    # Map ID -> String Name directly (already encoded 1-6 or 99)
+                    # Map StatCan province code (int) -> census label string.
+                    # The pr_map uses string keys; convert val via str(int(float())).
                     try:
-                        region_id = int(float(val))
+                        region_key = str(int(float(val)))
                     except (ValueError, TypeError):
-                        region_id = 99
-                    res_data[col] = self.pr_map.get(region_id, "Others")
+                        region_key = "99"
+                    res_data[col] = self.pr_map.get(region_key, "Others")
                 else:
                     res_data[col] = val
 
@@ -2617,7 +2653,7 @@ if __name__ == '__main__':
 
     # 4. Generate Forecasts
     TARGET_YEARS = [2025, 2030]
-    N_SAMPLES = 2000
+    N_SAMPLES = 250_000
     OUTPUT_DIR = Path(OUTPUT_DIR) / "Generated"
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 

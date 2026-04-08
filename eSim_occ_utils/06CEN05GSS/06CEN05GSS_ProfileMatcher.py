@@ -335,6 +335,7 @@ def generate_full_expansion(
             ep_wd['SIM_HH_ID'] = hh_id
             ep_wd['Day_Type'] = 'Weekday'
             ep_wd['AgentID'] = idx
+            ep_wd['MATCH_TIER_WD'] = agent.get('MATCH_TIER_WD', '')
 
             # Carry over Census variables
             for var in carry_vars:
@@ -351,6 +352,7 @@ def generate_full_expansion(
             ep_we['SIM_HH_ID'] = hh_id
             ep_we['Day_Type'] = 'Weekend'
             ep_we['AgentID'] = idx
+            ep_we['MATCH_TIER_WE'] = agent.get('MATCH_TIER_WE', '')
 
             # Carry over Census variables
             for var in carry_vars:
@@ -438,33 +440,38 @@ def validate_matching_quality(
         ep_wd = expander.get_episodes(agent['MATCH_ID_WD'])
 
         if ep_wd is not None and 'occACT' in ep_wd.columns:
-            # Filter for Work Activities
-            # GSS Work Codes typically start with '1', '0', or '8'
-            work_acts = ep_wd[ep_wd['occACT'].astype(str).str.startswith(('1', '0', '8'))]
+            # Filter for Work + Commute activities using harmonized 1-14 occACT categories.
+            # Category 1 = Paid work, Category 8 = Transport/commute.
+            # Do NOT use str.startswith('1') — that incorrectly captures 10-14 (Task 25 fix).
+            work_acts = ep_wd[ep_wd['occACT'].isin([1, 8])]
 
             total_duration = 0
             for _, row in work_acts.iterrows():
-                s = row.get('start', 0)
-                e = row.get('end', 0)
+                s_hhmm = row.get('start', 0)
+                e_hhmm = row.get('end', 0)
 
-                # Fix for midnight wrap
-                if e < s:
-                    duration = (e + 1440) - s
-                else:
-                    duration = e - s
+                # Convert HHMM to real minutes before subtracting (Task 25 fix).
+                s_min = (int(s_hhmm) // 100) * 60 + (int(s_hhmm) % 100)
+                e_min = (int(e_hhmm) // 100) * 60 + (int(e_hhmm) % 100)
+                if e_min < s_min:
+                    e_min += 1440
+                duration = max(0, e_min - s_min)
 
                 total_duration += duration
 
             work_minutes.append(total_duration)
 
     avg_work = np.mean(work_minutes) if work_minutes else 0
-    log(f"\n   Average Work Duration for 'Employees': {avg_work:.0f} minutes/day")
+    log(f"\n   Average Work+Commute Duration for 'Employees': {avg_work:.0f} min/day")
+    log(f"   (Expected: 300–600 min/day; historical baseline ~542 min/day)")
     log(f"   (Based on {len(work_minutes)} workers with valid schedules)")
 
     if avg_work < 60:
-        log("      WARNING: Low work duration. Check 'occACT' filter codes.")
-    elif avg_work > 300:
-        log("      SUCCESS: Employees performing ~5-8 hours of work.")
+        log("      WARNING: Work duration too low. Check occACT categories 1/8 are populated.")
+    elif avg_work > 600:
+        log(f"      WARNING: Work duration too high ({avg_work:.0f} min = {avg_work/60:.1f} h/day). Investigate filter or demographic shift.")
+    elif avg_work >= 300:
+        log("      SUCCESS: Employees performing 5-10 hours of work+commute (plausible range).")
     else:
         log("      NOTE: Work duration moderate. May reflect part-time mix.")
 

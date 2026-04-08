@@ -11,12 +11,47 @@ import re
 from typing import Optional
 
 
+_SPACELIST_PATTERN = re.compile(
+    r"SpaceList,\s*\n\s*([^,]+),\s*!-\s*Name\s*\n([\s\S]*?);",
+    re.MULTILINE
+)
+_HEX_RE = re.compile(r"^[0-9a-fA-F]{6,}$")
+
+
+def _find_primary_spacelist(idf_content: str):
+    """Return (name, spaces_block) for the first non-DesignSpecification SpaceList."""
+    for m in _SPACELIST_PATTERN.finditer(idf_content):
+        if "DesignSpecification" not in m.group(1):
+            return m.group(1).strip(), m.group(2)
+    return None, None
+
+
+def _parse_space_names(spaces_block: str) -> list[str]:
+    """
+    Extract space names from a SpaceList body.
+
+    Fixes the original off-by-one: the last entry ends with ';' instead of
+    a '!-' comment, so we no longer require '!-' to be present on each line.
+    """
+    names: list[str] = []
+    for line in spaces_block.split("\n"):
+        stripped = line.strip().rstrip(",;")
+        if not stripped or stripped.startswith("!"):
+            continue
+        name_part = stripped.split("!-")[0].rstrip(",; ").strip()
+        if name_part:
+            names.append(name_part)
+    return names
+
+
 def get_building_groups(idf_content: str) -> dict[str, list[str]]:
     """
     Analyzes a neighbourhood IDF and groups spaces by building.
 
-    This function parses the SpaceList object to extract space names and groups
-    them by their coordinate-based prefix (e.g., "83.928..." identifies Building X).
+    Groups by the trailing hex hash in each space name (e.g. the 'a8a609ec'
+    in '132.8660_living_unit1_2_a8a609ec_Space').  Falls back to the legacy
+    '_Room_' prefix logic for any space whose last token is not a hex hash,
+    so IDFs that pre-date this fix continue to work.
 
     Args:
         idf_content: The full text content of the IDF file.
@@ -24,44 +59,33 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
     Returns:
         A dictionary mapping building IDs (e.g., "Bldg_0") to lists of space names.
     """
-    # Find the SpaceList block
-    spacelist_pattern = re.compile(
-        r"SpaceList,\s*\n\s*([^,]+),\s*!-\s*Name\s*\n([\s\S]*?);",
-        re.MULTILINE
-    )
-    match = spacelist_pattern.search(idf_content)
-    if not match:
+    spacelist_name, spaces_block = _find_primary_spacelist(idf_content)
+    if spaces_block is None:
         print("Warning: No SpaceList found in IDF.")
         return {}
 
-    spacelist_name = match.group(1).strip()
-    spaces_block = match.group(2)
+    space_names = _parse_space_names(spaces_block)
 
-    # Extract individual space names from the block
-    space_names: list[str] = []
-    for line in spaces_block.split("\n"):
-        line = line.strip()
-        if line and "!-" in line:
-            # Extract name before the comma
-            name_part = line.split(",")[0].strip()
-            if name_part:
-                space_names.append(name_part)
-
-    # Group spaces by their coordinate prefix (first part before _Room_)
     buildings: dict[str, list[str]] = {}
-    building_prefixes: list[str] = []
+    hash_to_bldg: dict[str, str] = {}
 
     for space in space_names:
-        # Extract prefix (everything before _Room_)
-        prefix_match = re.match(r"(.+?)_Room_", space)
-        if prefix_match:
-            prefix = prefix_match.group(1)
-            if prefix not in building_prefixes:
-                building_prefixes.append(prefix)
-            bldg_id = f"Bldg_{building_prefixes.index(prefix)}"
-            if bldg_id not in buildings:
-                buildings[bldg_id] = []
-            buildings[bldg_id].append(space)
+        # Strip trailing _Space, then split to reach the last token
+        candidate = space[:-len("_Space")] if space.endswith("_Space") else space
+        parts = candidate.split("_")
+        last  = parts[-1] if parts else ""
+
+        if _HEX_RE.match(last):
+            # Primary rule: group by trailing hex hash
+            key = last
+        else:
+            # Fallback: legacy _Room_ prefix grouping
+            pm = re.match(r"(.+?)_Room_", space)
+            key = pm.group(1) if pm else space
+
+        if key not in hash_to_bldg:
+            hash_to_bldg[key] = f"Bldg_{len(hash_to_bldg)}"
+        buildings.setdefault(hash_to_bldg[key], []).append(space)
 
     print(f"Found SpaceList '{spacelist_name}' with {len(space_names)} spaces.")
     print(f"Grouped into {len(buildings)} buildings.")
@@ -74,12 +98,13 @@ def get_water_equipment_building_map(
 ) -> dict[str, list[str]]:
     """
     Maps existing WaterUse:Equipment objects to buildings by matching
-    the coordinate prefix in their names against the building groups.
+    the trailing hex hash in their names against the building groups.
 
-    Naming convention:
-        WaterUse:Equipment name: "Apartment Water Equipment..<prefix>_Room_<N>_<hash>"
-        Space name:              "<prefix>_Room_<N>_<hash>_Space"
-    The prefix before _Room_ identifies which building the object belongs to.
+    The trailing hex hash in a WaterUse:Equipment name (e.g. 'a8a609ec' in
+    'Apartment Water Equipment..132.8660_living_unit1_2_a8a609ec') is the same
+    hash used to group the corresponding spaces in get_building_groups(), so
+    it is the correct join key.  Falls back to the legacy '..<prefix>_Room_'
+    extraction for names that do not end in a hex token.
 
     Args:
         idf_content: The full text content of the IDF file.
@@ -98,30 +123,47 @@ def get_water_equipment_building_map(
     if not water_names:
         return {}
 
-    # Build prefix-to-building lookup from the buildings dict
+    # Build hash-to-building lookup from the buildings dict (mirrors get_building_groups)
+    hash_to_bldg: dict[str, str] = {}
+    for bldg_id, spaces in buildings.items():
+        for space in spaces:
+            candidate = space[:-len("_Space")] if space.endswith("_Space") else space
+            parts = candidate.split("_")
+            last  = parts[-1] if parts else ""
+            if _HEX_RE.match(last) and last not in hash_to_bldg:
+                hash_to_bldg[last] = bldg_id
+
+    # Legacy fallback: prefix-to-building via _Room_ (unchanged from original)
     prefix_to_bldg: dict[str, str] = {}
     for bldg_id, spaces in buildings.items():
         for space in spaces:
-            prefix_match = re.match(r"(.+?)_Room_", space)
-            if prefix_match:
-                prefix = prefix_match.group(1)
+            pm = re.match(r"(.+?)_Room_", space)
+            if pm:
+                prefix = pm.group(1)
                 if prefix not in prefix_to_bldg:
                     prefix_to_bldg[prefix] = bldg_id
 
-    # Map each WaterUse:Equipment to its building via coordinate prefix
+    # Map each WaterUse:Equipment to its building
     water_map: dict[str, list[str]] = {}
     for wname in water_names:
-        # Extract prefix between ".." and "_Room_"
-        equip_prefix_match = re.search(r"\.\.(.*?)_Room_", wname)
-        if equip_prefix_match:
-            equip_prefix = equip_prefix_match.group(1)
-            bldg_id = prefix_to_bldg.get(equip_prefix)
-            if bldg_id:
-                water_map.setdefault(bldg_id, []).append(wname)
-            else:
-                print(f"  Warning: WaterUse prefix '{equip_prefix}' not matched to any building.")
+        bldg_id = None
+
+        # Primary: extract trailing hex hash from the equipment name
+        parts = wname.split("_")
+        last  = parts[-1] if parts else ""
+        if _HEX_RE.match(last):
+            bldg_id = hash_to_bldg.get(last)
+
+        # Fallback: legacy '..<prefix>_Room_' extraction
+        if bldg_id is None:
+            equip_prefix_match = re.search(r"\.\.(.*?)_Room_", wname)
+            if equip_prefix_match:
+                bldg_id = prefix_to_bldg.get(equip_prefix_match.group(1))
+
+        if bldg_id:
+            water_map.setdefault(bldg_id, []).append(wname)
         else:
-            print(f"  Warning: Could not extract prefix from WaterUse name '{wname}'.")
+            print(f"  Warning: Could not map WaterUse:Equipment '{wname}' to any building.")
 
     return water_map
 

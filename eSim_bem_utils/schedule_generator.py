@@ -327,8 +327,13 @@ class PresenceFilter:
     Filters default schedules using the Presence Filter Method.
 
     Logic: IF (Household is Active/Home)
-           THEN Load = default_schedule[hour] (preserve gradual changes)
+           THEN Load = occ * default_schedule[hour] + (1 - occ) * base_load
            ELSE Load = Base Load (value from default schedule during typical absent hours)
+
+    The occupied branch blends the full DOE default with the baseload proportionally
+    to the fractional occupancy (e.g., 1 of 5 people home → occ=0.20 → 20% default +
+    80% baseload). The absent branch preserves the original binary gate so that hours
+    with zero occupancy are not affected by the TUS injection at all.
     """
 
     # Typical work hours when occupants are away (9 AM to 5 PM)
@@ -373,16 +378,32 @@ class PresenceFilter:
         else:
             self.base_load = 0.0
 
-    def apply(self, presence_schedule: list[float]) -> list[float]:
+    def apply(
+        self,
+        presence_schedule: list[float],
+        continuous: bool = False,
+    ) -> list[float]:
         """
         Apply the presence filter to generate a modified schedule.
 
         Args:
             presence_schedule: A list of 24 fractional occupancy values (0-1).
+            continuous: If True, use the continuous blending formula for every
+                        hour regardless of whether presence is zero.  This is
+                        the correct mode for DHW, where even a single occupant
+                        produces partial demand rather than the full DOE default.
+                        If False (default), absent hours (presence ≤ threshold)
+                        are clamped to base_load so the TUS injection does not
+                        interfere with genuinely unoccupied hours.
 
         Returns:
-            A list of 24 schedule values: default values when present,
-            base load (minimum from absent hours) when absent.
+            A list of 24 schedule values:
+            - Standard (continuous=False):
+                Occupied  → occ * default_val + (1 - occ) * base_load
+                Absent    → base_load
+            - Continuous (continuous=True):
+                All hours → occ * default_val + (1 - occ) * base_load
+                (occ=0 naturally collapses to base_load, no binary gate)
         """
         result = []
         threshold = 1e-3
@@ -390,11 +411,14 @@ class PresenceFilter:
             presence = presence_schedule[hour] if hour < len(presence_schedule) else 0.0
             default_val = self.default_schedule[hour] if hour < len(self.default_schedule) else self.base_load
 
-            if presence > threshold:
-                # When present: use the exact default schedule value (gradual changes)
-                result.append(default_val)
+            if continuous or presence > threshold:
+                # Blend default with baseload proportional to occupancy fraction.
+                # In continuous mode this also covers hours where presence == 0
+                # (producing exactly base_load), which reflects partial-occupancy
+                # DHW demand more accurately than the binary gate.
+                result.append(presence * default_val + (1.0 - presence) * self.base_load)
             else:
-                # When absent: use base load (minimum from absent hours)
+                # When absent in standard mode: use base load only.
                 result.append(self.base_load)
 
         return result

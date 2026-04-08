@@ -25,6 +25,9 @@ _SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in _sys.path:
     _sys.path.insert(0, str(_SCRIPT_DIR))
 
+from eSim_dynamicML_mHead_alignment import data_alignment
+from eSim_occ_utils.occ_config import OUTPUT_DIR, OUTPUT_DIR_ALIGNED, OUTPUT_DIR_GSS
+
 from run_step1 import (
     run_forecasting,
     run_testing,
@@ -49,18 +52,19 @@ from run_step3 import run_bem_conversion
 
 # --- SAMPLING CONFIGURATION ---
 SAMPLE_PCT: int = 100    # 1 to 100 — % of census data to use for modeling
-SAMPLE_SIZE: int = 36909  # Total individuals to generate in forecasting
+SAMPLE_SIZE: int = 250_000  # Total individuals to generate in forecasting
 
 # --- STEP 1: CVAE Model Pipeline ---
 # Prerequisites: cen06_filtered2.csv … cen21_filtered2.csv in OUTPUT_DIR
-RUN_TRAINING: bool = True  # 1a — trains CVAE, saves encoder + decoder
-RUN_TESTING: bool = True  # 1b — validates reconstruction quality
+RUN_TRAINING: bool = False  # 1a — trains CVAE, saves encoder + decoder  [skip: model already trained]
+RUN_TESTING: bool = False  # 1b — validates reconstruction quality          [skip: no retraining done]
 RUN_FORECASTING: bool = True  # 1c — generates forecasted_population_YYYY.csv
 RUN_VISUAL_VALIDATION: bool = True  # 1d — plots latent-space validation figures
 
 # --- STEP 2: Schedule Assignment ---
 # Prerequisites: outputs from Step 1 + Aligned_Census_2025.csv + Aligned_GSS_2022.csv
-RUN_ASSEMBLE_HH: bool = True  # 2a — links agents into households
+RUN_ASSEMBLE_HH: bool = True      # 2a — links agents into households
+RUN_ALIGNMENT: bool = True        # 2a.5 — re-aligns LINKED census to GSS after assemble
 RUN_PROFILE_MATCHER: bool = True  # 2b — matches census agents to GSS schedules
 RUN_VALIDATE_PM: bool = True  # 2c — validates matching quality
 RUN_POSTPROCESSING: bool = True  # 2d — refines DTYPE labels (1-3 → 1-8)
@@ -88,6 +92,12 @@ if __name__ == "__main__":
 
     if RUN_ASSEMBLE_HH:
         run_assemble_household()
+    if RUN_ALIGNMENT:
+        from pathlib import Path
+        _linked = Path(OUTPUT_DIR) / "forecasted_population_2025_LINKED.csv"
+        _gss    = Path(OUTPUT_DIR_GSS) / "GSS_2022_Merged_Episodes.csv"
+        _out    = Path(OUTPUT_DIR_ALIGNED)
+        data_alignment(_linked, _gss, output_dir=_out)
     if RUN_PROFILE_MATCHER:
         run_profile_matcher()
     if RUN_VALIDATE_PM:

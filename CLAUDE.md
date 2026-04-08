@@ -113,13 +113,26 @@ Modular runner plan documented in `docs_classification/`.
 
 ## Prompt Format
 
-When a user gives a free-form request, interpret it through this three-part structure before acting:
+### Prompt Intake Rule
+Before acting on any user request, normalize it into this shape:
+- `Setting the stage`: who is acting, what the objective is, and any relevant context
+- `Defining the task`: the exact action requested, such as write, analyze, build, review, or debug
+- `Specifying rules`: style, tone, constraints, examples, and other preferences
+- If the user omits a part, infer it from the surrounding context
+- Then carry out the request directly using that normalized interpretation
 
-- `Setting the stage`: identify the role, objectives, and any relevant project context
-- `Defining the task`: identify the specific action requested, such as write, analyze, build, or debug
-- `Specifying rules`: identify the desired style, tone, constraints, and any examples the user provided
+### Task List Format
+When preparing a task list as a separate document or as an additional chapter inside a document, organize each task in a way that is easy to understand and step-by-step using this structure:
+- aim of task
+- what to do
+- how to do
+- why to do this task
+- what will impact on
+- what are the step(s)/sub-step(s)
+- what to expect as result
+- if possible or needed how to test
 
-Use that structured interpretation to carry out the request, even if the original prompt was not written in that form.
+Keep the task list clear, ordered, and consistent across documents.
 
 ---
 

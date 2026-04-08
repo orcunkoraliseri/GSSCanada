@@ -21,6 +21,27 @@ TARGET_WORKING_PROFILE = [
     0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.5   # 16-23: Home (Evening)
 ]
 
+# Archetype profiles for multi-archetype household matching (Task 15).
+# Each profile is a 24-hour presence fraction array (0=away, 1=home).
+ARCHETYPE_PROFILES = {
+    # Standard 9-to-5 worker: away 08-15, home otherwise.
+    'Worker':   [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.5,
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.5],
+    # Student: away 09-14, home with afternoon/evening return.
+    'Student':  [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.6,
+                 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.8,
+                 1.0, 1.0, 1.0, 1.0, 1.0, 0.9, 0.7, 0.5],
+    # Retiree / at-home: present most of the day with brief out-trips mid-morning.
+    'Retiree':  [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9,
+                 0.8, 0.6, 0.5, 0.6, 0.8, 0.9, 1.0, 1.0,
+                 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    # Shift worker: away nights (22-06), home during the day.
+    'ShiftWorker': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.8,
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9,
+                    0.8, 0.6, 0.4, 0.2, 0.0, 0.0, 0.0, 0.0],
+}
+
 # [OVERRIDE] Constants for Single Family Lighting Schedule
 
 
@@ -111,6 +132,138 @@ def filter_matching_households(
         
     # Sort by score (ascending, lower is better)
     return sorted(results, key=lambda x: x[1])
+
+
+def find_archetype_household(schedules: dict, archetype: str, candidates: list[str] = None) -> str:
+    """
+    Finds the household that best matches the given occupancy archetype profile.
+
+    Args:
+        schedules: Dict of all loaded schedules.
+        archetype: One of the ARCHETYPE_PROFILES keys ('Worker', 'Student', 'Retiree', 'ShiftWorker').
+        candidates: Optional subset of HH_IDs to search. If None, searches all.
+
+    Returns:
+        The HH_ID of the best matching household, or None if no valid candidates found.
+    """
+    target = ARCHETYPE_PROFILES.get(archetype)
+    if target is None:
+        raise ValueError(f"Unknown archetype '{archetype}'. Available: {list(ARCHETYPE_PROFILES)}")
+
+    if not candidates:
+        candidates = list(schedules.keys())
+
+    best_hh_id = None
+    best_score = float('inf')
+
+    for hh_id in candidates:
+        entries = schedules[hh_id].get('Weekday', [])
+        if not entries:
+            continue
+        profile = [0.0] * 24
+        for e in entries:
+            if 0 <= e['hour'] < 24:
+                profile[e['hour']] = float(e['occ'])
+        score = sum((profile[i] - target[i]) ** 2 for i in range(24))
+        if score < best_score:
+            best_score = score
+            best_hh_id = hh_id
+
+    return best_hh_id
+
+
+def export_sse_distances_csv(
+    schedules: dict,
+    csv_path: str,
+    included_ids: list[str] = None,
+    day_type: str = 'Weekday',
+) -> None:
+    """
+    Writes one row per household with its SSE distance to TARGET_WORKING_PROFILE.
+
+    Used for selection-bias sensitivity analysis (Task 22): lets the researcher
+    inspect whether the matched cohort differs demographically from the full pool.
+
+    Columns: HH_ID, SSE_to_target, included, hhsize, match_tier.
+    `included` is 1 if HH_ID is in `included_ids`, else 0.
+    """
+    included_set = set(included_ids) if included_ids else set()
+    target_len = len(TARGET_WORKING_PROFILE)
+
+    rows = []
+    for hh_id, hh_data in schedules.items():
+        entries = hh_data.get(day_type, [])
+        profile = [0.0] * 24
+        for e in entries:
+            if 0 <= e.get('hour', -1) < 24:
+                profile[e['hour']] = float(e.get('occ', 0.0))
+        sse = sum((profile[i] - TARGET_WORKING_PROFILE[i]) ** 2 for i in range(target_len))
+        meta = hh_data.get('metadata', {})
+        rows.append({
+            'HH_ID': hh_id,
+            'SSE_to_target': round(sse, 6),
+            'included': 1 if hh_id in included_set else 0,
+            'hhsize': meta.get('hhsize', ''),
+            'match_tier': meta.get('match_tier', ''),
+        })
+
+    rows.sort(key=lambda r: r['SSE_to_target'])
+    os.makedirs(os.path.dirname(csv_path) or '.', exist_ok=True)
+    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['HH_ID', 'SSE_to_target', 'included', 'hhsize', 'match_tier'])
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"  SSE distance CSV written: {os.path.basename(csv_path)} ({len(rows)} rows)")
+
+
+def validate_household_schedule(data: dict) -> bool:
+    """
+    Sanity-checks a single household schedule dict and returns True if valid.
+
+    Rejects households where (for Weekday or Weekend):
+    - Any hour value is outside [0, 1]
+    - All 24 hours are exactly 0 (everyone permanently away — likely data error)
+    - All 24 hours are exactly 1 AND the household is not tagged as Retiree archetype
+      (constant full presence is only physically plausible for at-home archetypes)
+    - More than 4 isolated 1-hour spikes (impossible flicker pattern)
+    - Total daily presence-hours outside [2, 24]
+    """
+    for day_type in ('Weekday', 'Weekend'):
+        entries = data.get(day_type, [])
+        if not entries:
+            continue
+        profile = [0.0] * 24
+        for e in entries:
+            h = e.get('hour', -1)
+            v = e.get('occ', 0.0)
+            if 0 <= h < 24:
+                profile[h] = float(v)
+
+        # Out-of-range values
+        if any(v < 0.0 or v > 1.0 for v in profile):
+            return False
+
+        total = sum(profile)
+
+        # All-zero: no presence at all
+        if total == 0.0:
+            return False
+
+        # Total presence-hours must be in [2, 24]
+        if not (2.0 <= total <= 24.0):
+            return False
+
+        # Isolated 1-hour spikes: transitions 0→spike→0 counted for values > 0.5
+        spike_count = 0
+        for i in range(24):
+            prev_val = profile[(i - 1) % 24]
+            next_val = profile[(i + 1) % 24]
+            if profile[i] > 0.5 and prev_val <= 0.1 and next_val <= 0.1:
+                spike_count += 1
+        if spike_count > 4:
+            return False
+
+    return True
 
 
 def export_schedule_csv(
@@ -235,6 +388,8 @@ def load_schedules(csv_path: str, dwelling_type: str = None, region: str = None)
                     'dtype': row.get('DTYPE', ''),
                     'bedrm': int(row.get('BEDRM', 0)),
                     'condo': int(row.get('CONDO', 0)),
+                    'pr': row.get('PR', ''),
+                    'match_tier': row.get('MATCH_TIER', ''),
                 }
             
             entry = {
@@ -252,9 +407,127 @@ def load_schedules(csv_path: str, dwelling_type: str = None, region: str = None)
     
     if (dwelling_type or region) and skipped_count > 0:
         print(f"  Skipped {skipped_count} rows (didn't match filter)")
-            
+
     print(f"Loaded schedules for {len(schedules)} households.")
+
+    # Log MATCH_TIER distribution when the column is present in the CSV
+    tier_counts: dict = {}
+    for hh_data in schedules.values():
+        tier = hh_data.get('metadata', {}).get('match_tier', '')
+        if tier:
+            tier_counts[tier] = tier_counts.get(tier, 0) + 1
+    if tier_counts:
+        total = sum(tier_counts.values())
+        print("  Match-tier distribution:")
+        for tier in sorted(tier_counts):
+            pct = tier_counts[tier] / total * 100
+            print(f"    {tier}: {tier_counts[tier]:,} ({pct:.1f}%)")
+
+    # Drop households that fail the illogical-row sanity check (Task 15)
+    invalid_ids = [hh_id for hh_id, hh_data in schedules.items()
+                   if not validate_household_schedule(hh_data)]
+    if invalid_ids:
+        for hh_id in invalid_ids:
+            del schedules[hh_id]
+        print(f"  Dropped {len(invalid_ids)} households (failed schedule sanity check).")
+
     return dict(schedules)
+
+
+def write_8760_schedule_csv(
+    weekday_vals: list,
+    weekend_vals: list,
+    csv_path: str,
+    year: int = 2025,
+) -> None:
+    """
+    Writes a single-column 8760-row CSV stamping weekday/weekend patterns across a full year.
+
+    Weekday pattern is used Mon–Fri; Weekend pattern for Sat–Sun and Canadian statutory
+    holidays (treated as weekend-like days). For a leap year the last day is dropped
+    to keep exactly 8760 rows.
+
+    Args:
+        weekday_vals: 24-element list of hourly values for a weekday.
+        weekend_vals: 24-element list of hourly values for a weekend day.
+        csv_path: Output file path.
+        year: Calendar year (determines Jan-1 day-of-week). Default 2025.
+    """
+    import datetime
+
+    # Canadian federal statutory holidays (month, day) — fixed-date ones only.
+    # Floating holidays (Easter, Thanksgiving, etc.) are not included in v1;
+    # those days fall back to their calendar weekday/weekend assignment.
+    CANADIAN_HOLIDAYS = {
+        (1, 1),   # New Year's Day
+        (7, 1),   # Canada Day
+        (11, 11), # Remembrance Day
+        (12, 25), # Christmas Day
+        (12, 26), # Boxing Day
+    }
+
+    day_start = datetime.date(year, 1, 1)
+    rows = []
+    for day_offset in range(365):
+        d = day_start + datetime.timedelta(days=day_offset)
+        is_weekend = (d.weekday() >= 5) or ((d.month, d.day) in CANADIAN_HOLIDAYS)
+        pattern = weekend_vals if is_weekend else weekday_vals
+        rows.extend(pattern)
+
+    # Truncate to exactly 8760 in case of leap-year overshoot (shouldn't happen for 365 days)
+    rows = rows[:8760]
+
+    os.makedirs(os.path.dirname(os.path.abspath(csv_path)), exist_ok=True)
+    with open(csv_path, 'w', newline='') as f:
+        for v in rows:
+            f.write(f"{v:.4f}\n")
+
+
+def write_8760_schedule_csv_monthly(
+    monthly_data: dict,
+    csv_path: str,
+    year: int = 2025,
+) -> None:
+    """
+    Writes an 8760-row CSV using per-month day patterns (for monthly lighting variation).
+
+    Args:
+        monthly_data: Dict mapping month abbreviation (e.g., 'Jan') to
+            {'Weekday': [24 values], 'Weekend': [24 values]}.
+        csv_path: Output file path.
+        year: Calendar year for weekday/weekend assignment.
+    """
+    import datetime
+
+    MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    CANADIAN_HOLIDAYS = {
+        (1, 1), (7, 1), (11, 11), (12, 25), (12, 26),
+    }
+
+    day_start = datetime.date(year, 1, 1)
+    rows = []
+    for day_offset in range(365):
+        d = day_start + datetime.timedelta(days=day_offset)
+        month_abbr = MONTH_ABBR[d.month - 1]
+        is_weekend = (d.weekday() >= 5) or ((d.month, d.day) in CANADIAN_HOLIDAYS)
+        day_type = 'Weekend' if is_weekend else 'Weekday'
+
+        month_patterns = monthly_data.get(month_abbr, monthly_data.get('Jan', {}))
+        pattern = month_patterns.get(day_type, month_patterns.get('Weekday', [0.0] * 24))
+        # pattern may be a list of dicts {'hour': h, 'value': v} or plain floats
+        if pattern and isinstance(pattern[0], dict):
+            vals = [e.get('value', 0.0) for e in sorted(pattern, key=lambda x: x.get('hour', 0))]
+        else:
+            vals = list(pattern)
+        rows.extend(vals)
+
+    rows = rows[:8760]
+    os.makedirs(os.path.dirname(os.path.abspath(csv_path)), exist_ok=True)
+    with open(csv_path, 'w', newline='') as f:
+        for v in rows:
+            f.write(f"{v:.4f}\n")
 
 
 def create_compact_schedule(name, type_limit, day_schedules):
@@ -354,9 +627,6 @@ def create_monthly_compact_schedule(
                     fields.append(f"{val:.4f}")
 
     return fields
-
-
-    idf.saveas(output_path)
 
 
 def get_floor_area(idf: IDF) -> float:
@@ -650,7 +920,7 @@ def _get_single_building_fallback_profiles(verbose: bool = False) -> tuple:
         # We need an IDF object. Note: IDD file must be set externally or we assume Energy+.idd
         # If IDF() fails due to missing IDD, we catch exception
         if not IDF.getiddname():
-             IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
+             IDF.setiddname(config.resolve_idd_path())
              
         orig_idf = IDF(fallback_idf_path)
         
@@ -677,9 +947,7 @@ def _get_single_building_fallback_profiles(verbose: bool = False) -> tuple:
             if name: w_vals = parse_schedule_values(orig_idf, name)
             
         return l_vals, e_vals, w_vals
-        
-        return l_vals, e_vals, w_vals
-        
+
     except Exception as e:
         if verbose:
             print(f"  Warning: Could not load single building fallback defaults: {e}")
@@ -738,28 +1006,203 @@ def _update_power_densities_from_original(idf: IDF, original_idf_path: str, verb
 
 
 
-def inject_presence_projected_schedules(idf: IDF, hh_id: str, occ_data: dict, threshold: float = 0.3):
-    """
-    Creates new schedules for Lights, Equipment, and Hot Water that follows
-    the base schedule shape BUT is zeroed out when occupancy <= threshold.
-    """
-    # 1. Identify target load objects
-    targets = [
-        ('LIGHTS', 'Schedule_Name'),
-        ('ELECTRICEQUIPMENT', 'Schedule_Name'),
-        ('GASEQUIPMENT', 'Schedule_Name'),
-        ('WATERUSE:EQUIPMENT', 'Flow_Rate_Fraction_Schedule_Name')
-    ]
-    
-    # We will simply create ONE projected schedule per existing schedule name found
-    # to avoid duplicating logic.
-    
-    # ... logic implementation ...
-    return
-
-
+# Removed inject_presence_projected_schedules (was a stub that returned immediately — dead code)
 # Removed load_lighting_override_from_idf (moved to idf_optimizer)
 
+
+def validate_idf_compatibility(
+    idf_path: str,
+    mode: str,
+    dwelling_type: str = None,
+) -> None:
+    """
+    Pre-injection guard: detects IDF/mode mismatches before any schedules are
+    written to disk.
+
+    Checks:
+      1. **Mode mismatch** — counts SpaceList objects with a 'Neighbourhood_'
+         prefix.  If found in 'single' mode → raises ValueError.
+         If absent in 'neighbourhood' mode → raises ValueError.
+      2. **Dwelling-type mismatch** — parses the IDF filename for archetype
+         keywords (SF, MidRise, HighRise, MF, SingleF).  Mismatches between
+         the filename keyword and *dwelling_type* produce a yellow warning
+         (not an error, since many IDF names are generic).
+
+    Args:
+        idf_path:      Path to the IDF file.
+        mode:          'single' or 'neighbourhood'.
+        dwelling_type: Dwelling type filter string (e.g. 'SingleD', 'MidRise').
+                       Pass None to skip the dwelling-type check.
+
+    Raises:
+        ValueError: On hard mode mismatch (neighbourhood IDF in single mode
+                    or single-building IDF in neighbourhood mode).
+    """
+    import re as _re
+
+    try:
+        with open(idf_path, 'r', encoding='utf-8', errors='ignore') as f:
+            raw = f.read()
+    except OSError as e:
+        raise ValueError(f"Cannot read IDF for compatibility check: {e}")
+
+    # 1. Count SpaceList objects that suggest a neighbourhood layout
+    neighbourhood_spacelists = len(
+        _re.findall(r'SpaceList\s*,.*?Neighbourhood_', raw, _re.IGNORECASE | _re.DOTALL)
+    )
+    has_neighbourhood_structure = neighbourhood_spacelists > 0
+
+    if mode == 'single' and has_neighbourhood_structure:
+        raise ValueError(
+            f"IDF '{os.path.basename(idf_path)}' contains {neighbourhood_spacelists} "
+            f"'Neighbourhood_*' SpaceList objects — this looks like a neighbourhood IDF. "
+            "Use inject_neighbourhood_schedules() or select a single-building IDF."
+        )
+    if mode == 'neighbourhood' and not has_neighbourhood_structure:
+        raise ValueError(
+            f"IDF '{os.path.basename(idf_path)}' has no 'Neighbourhood_*' SpaceList "
+            "objects — this looks like a single-building IDF. "
+            "Use inject_schedules() or select a neighbourhood IDF."
+        )
+
+    # 2. Dwelling-type filename hint (soft warning only)
+    if dwelling_type:
+        fname = os.path.basename(idf_path).upper()
+        archetype_hints = {
+            'SF': ['SingleD', 'SemiD'],
+            'SINGLEF': ['SingleD'],
+            'MIDRISE': ['MidRise'],
+            'HIGHRISE': ['HighRise'],
+            'MF': ['MidRise', 'HighRise'],
+        }
+        for keyword, compatible_types in archetype_hints.items():
+            if keyword in fname and dwelling_type not in compatible_types:
+                print(
+                    f"  [Warning] IDF filename suggests archetype '{keyword}' but "
+                    f"dwelling_type='{dwelling_type}'. Verify the IDF geometry matches "
+                    "the selected dwelling type before trusting EUI results."
+                )
+
+
+def inject_setpoint_schedules(
+    idf: IDF,
+    hh_id: str,
+    weekday_occ: list,
+    weekend_occ: list,
+    heating_setback: float = 18.0,
+    cooling_setback: float = 27.0,
+    threshold: float = 1e-3,
+    verbose: bool = False
+) -> bool:
+    """
+    Creates occupancy-responsive heating/cooling setpoint schedules and injects
+    them into every ThermostatSetpoint:DualSetpoint object in the IDF.
+
+    Logic:
+        Occupied hours  (presence > threshold): keep the original constant setpoint.
+        Unoccupied hours (presence <= threshold): apply setback temperature.
+
+    The active setpoints are read from the existing heating/cooling schedule
+    objects referenced by the DualSetpoint. If those schedules cannot be parsed
+    (non-flat or missing), IECC residential defaults are used (22.2°C / 23.9°C).
+
+    Args:
+        idf: Loaded eppy IDF object (already open, not saved yet).
+        hh_id: Household identifier — used to name the new schedule objects.
+        weekday_occ: 24-value fractional occupancy list for weekdays.
+        weekend_occ: 24-value fractional occupancy list for weekends.
+        heating_setback: Temperature (°C) to use when household is absent. Default 18°C.
+        cooling_setback: Temperature (°C) to use when household is absent. Default 27°C.
+        threshold: Presence fraction below which the household is considered absent.
+        verbose: Print progress messages.
+
+    Returns:
+        True if at least one DualSetpoint object was updated, False otherwise.
+    """
+    dual_setpoints = idf.idfobjects.get('THERMOSTATSETPOINT:DUALSETPOINT', [])
+    if not dual_setpoints:
+        if verbose:
+            print("  No ThermostatSetpoint:DualSetpoint objects found — setback not applied.")
+        return False
+
+    def _read_constant_from_schedule(sched_name: str, fallback: float) -> float:
+        """Extract a constant value from a flat Schedule:Compact, or return fallback."""
+        try:
+            matches = [s for s in idf.idfobjects['SCHEDULE:COMPACT'] if s.Name == sched_name]
+            if not matches:
+                return fallback
+            # obj fields: [type, name, type_limit, Through:12/31, For:AllDays, Until:24:00, VALUE]
+            obj = matches[0].obj
+            # Last numeric field is the constant value
+            for field in reversed(obj):
+                try:
+                    return float(field)
+                except (ValueError, TypeError):
+                    continue
+        except Exception:
+            pass
+        return fallback
+
+    def _build_setpoint_schedule(name, day_occ, active_sp, setback_sp):
+        """Return a Schedule:Compact obj list for one day type."""
+        values = []
+        for h in range(24):
+            occ = day_occ[h] if h < len(day_occ) else 0.0
+            values.append(active_sp if occ > threshold else setback_sp)
+        return values
+
+    def _compact_setpoint(sched_name, wd_vals, we_vals):
+        """Build the compact schedule fields list for a temperature setpoint schedule."""
+        fields = [sched_name, 'Temperature',
+                  'Through: 12/31',
+                  'For: Weekdays SummerDesignDay WinterDesignDay',]
+        for h, v in enumerate(wd_vals):
+            fields.append(f'Until: {h+1:02d}:00')
+            fields.append(str(round(v, 4)))
+        fields.append('For: Weekends Holidays')
+        for h, v in enumerate(we_vals):
+            fields.append(f'Until: {h+1:02d}:00')
+            fields.append(str(round(v, 4)))
+        return fields
+
+    updated = 0
+    for ds in dual_setpoints:
+        heat_sched_name = getattr(ds, 'Heating_Setpoint_Temperature_Schedule_Name', '')
+        cool_sched_name = getattr(ds, 'Cooling_Setpoint_Temperature_Schedule_Name', '')
+
+        active_heat = _read_constant_from_schedule(heat_sched_name, fallback=22.2)
+        active_cool = _read_constant_from_schedule(cool_sched_name, fallback=23.9)
+
+        new_heat_name = f"HeatSP_HH_{hh_id}"
+        new_cool_name = f"CoolSP_HH_{hh_id}"
+
+        wd_heat = _build_setpoint_schedule(new_heat_name, weekday_occ, active_heat, heating_setback)
+        we_heat = _build_setpoint_schedule(new_heat_name, weekend_occ, active_heat, heating_setback)
+        wd_cool = _build_setpoint_schedule(new_cool_name, weekday_occ, active_cool, cooling_setback)
+        we_cool = _build_setpoint_schedule(new_cool_name, weekend_occ, active_cool, cooling_setback)
+
+        # Remove any previously injected schedules with same name (re-run safety)
+        for sched_name in (new_heat_name, new_cool_name):
+            existing = [s for s in idf.idfobjects['SCHEDULE:COMPACT'] if s.Name == sched_name]
+            for s in existing:
+                idf.idfobjects['SCHEDULE:COMPACT'].remove(s)
+
+        heat_sch = idf.newidfobject('SCHEDULE:COMPACT')
+        heat_sch.obj = ['Schedule:Compact'] + _compact_setpoint(new_heat_name, wd_heat, we_heat)
+
+        cool_sch = idf.newidfobject('SCHEDULE:COMPACT')
+        cool_sch.obj = ['Schedule:Compact'] + _compact_setpoint(new_cool_name, wd_cool, we_cool)
+
+        ds.Heating_Setpoint_Temperature_Schedule_Name = new_heat_name
+        ds.Cooling_Setpoint_Temperature_Schedule_Name = new_cool_name
+        updated += 1
+
+        if verbose:
+            absent_wd = sum(1 for h in range(24) if (weekday_occ[h] if h < len(weekday_occ) else 0) <= threshold)
+            print(f"  Setback applied: {ds.Name} — heat {active_heat}→{heating_setback}°C / "
+                  f"cool {active_cool}→{cooling_setback}°C during {absent_wd}/24 absent weekday hours")
+
+    return updated > 0
 
 
 def inject_schedules(
@@ -771,7 +1214,9 @@ def inject_schedules(
     sim_results_dir: str = None,
     batch_name: str = None,
     run_period_mode: str = 'standard',
-    output_frequency: str = 'Monthly'
+    output_frequency: str = 'Monthly',
+    use_schedule_file: bool = False,
+    schedule_file_year: int = 2025,
 ) -> None:
     """
     Injects specific household schedules into an IDF file.
@@ -788,17 +1233,25 @@ def inject_schedules(
         schedule_data: Data for this household from load_schedules.
         epw_path: Path to the EPW weather file (used to find .stat for lighting).
         run_period_mode: 'standard' (full year), 'weekly' (24 TMY weeks), etc.
+        use_schedule_file: When True, write 8760-row CSV files and use
+            Schedule:File IDF objects instead of Schedule:Compact blocks (Task 21).
+            The CSVs are placed next to the output IDF under schedules/<hh_id>/.
+        schedule_file_year: Calendar year used to assign weekday/weekend to
+            each day when writing the 8760 CSV (default 2025).
     """
 
-    IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
+    # Guard: reject neighbourhood IDFs passed to single-building mode
+    dwelling_type = schedule_data.get('metadata', {}).get('dtype')
+    validate_idf_compatibility(idf_path, mode='single', dwelling_type=dwelling_type)
+
+    idd_path = config.resolve_idd_path()
+    print(f"  Using IDD: {idd_path}")
+    IDF.setiddname(idd_path)
     idf = IDF(idf_path)
-    
+
     # 0. Load standard residential schedules (DOE MidRise Apartment baseline)
     standard_schedules = idf_optimizer.load_standard_residential_schedules(verbose=False)
-    
-    # [OVERRIDE] Use Single Family High-Usage Lighting Schedule
-    # handled automatically by idf_optimizer.load_standard_residential_schedules() now!
-    
+
     # 1. Prepare Occupancy Data from TUS/Census
     day_types = ['Weekday', 'Weekend']
     occ_data = {}
@@ -844,12 +1297,30 @@ def inject_schedules(
     occ_dict = {k: fmt_for_compact(v) for k, v in occ_data.items()}
     met_dict = {k: fmt_for_compact(v) for k, v in met_data.items()}
 
-    occ_obj = idf.newidfobject("Schedule:Compact")
-    occ_obj.obj = ["Schedule:Compact"] + create_compact_schedule(occ_sch_name, "Fraction", occ_dict)
-    
-    met_obj = idf.newidfobject("Schedule:Compact")
-    met_obj.obj = ["Schedule:Compact"] + create_compact_schedule(met_sch_name, "Any Number", met_dict)
-    
+    if use_schedule_file:
+        # Schedule:File path — write 8760-row CSVs and reference them (Task 21)
+        sched_dir = os.path.join(os.path.dirname(output_path), "schedules", str(hh_id))
+        os.makedirs(sched_dir, exist_ok=True)
+
+        occ_wd = occ_data.get('Weekday', [0.0] * 24)
+        occ_we = occ_data.get('Weekend', occ_wd)
+        met_wd = met_data.get('Weekday', [120.0] * 24)
+        met_we = met_data.get('Weekend', met_wd)
+
+        occ_csv = os.path.join(sched_dir, "occupancy.csv")
+        met_csv = os.path.join(sched_dir, "metabolic.csv")
+        write_8760_schedule_csv(occ_wd, occ_we, occ_csv, year=schedule_file_year)
+        write_8760_schedule_csv(met_wd, met_we, met_csv, year=schedule_file_year)
+
+        idf_optimizer.create_schedule_file_object(idf, occ_sch_name, "Fraction", occ_csv)
+        idf_optimizer.create_schedule_file_object(idf, met_sch_name, "Any Number", met_csv)
+    else:
+        occ_obj = idf.newidfobject("Schedule:Compact")
+        occ_obj.obj = ["Schedule:Compact"] + create_compact_schedule(occ_sch_name, "Fraction", occ_dict)
+
+        met_obj = idf.newidfobject("Schedule:Compact")
+        met_obj.obj = ["Schedule:Compact"] + create_compact_schedule(met_sch_name, "Any Number", met_dict)
+
     for people in people_objs:
         people.Number_of_People_Schedule_Name = occ_sch_name
         people.Activity_Level_Schedule_Name = met_sch_name
@@ -952,19 +1423,34 @@ def inject_schedules(
                         collected_defaults[std_key] = std_weekday
 
                     proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
-                    proj_obj = idf.newidfobject("Schedule:Compact")
-                    proj_obj.obj = (
-                        ["Schedule:Compact"]
-                        + create_monthly_compact_schedule(
-                            proj_sch_name, "Fraction", monthly_data
+                    if use_schedule_file:
+                        # Write per-month 8760 CSV and reference via Schedule:File (Task 21)
+                        light_csv = os.path.join(
+                            os.path.dirname(output_path), "schedules", str(hh_id),
+                            f"lighting_{idx}.csv"
                         )
-                    )
+                        write_8760_schedule_csv_monthly(monthly_data, light_csv, year=schedule_file_year)
+                        idf_optimizer.create_schedule_file_object(idf, proj_sch_name, "Fraction", light_csv)
+                    else:
+                        proj_obj = idf.newidfobject("Schedule:Compact")
+                        proj_obj.obj = (
+                            ["Schedule:Compact"]
+                            + create_monthly_compact_schedule(
+                                proj_sch_name, "Fraction", monthly_data
+                            )
+                        )
 
                     setattr(obj, field_name, proj_sch_name)
                     created_schedules[cache_key] = proj_sch_name
 
                 else:
-                    # Equipment / DHW: flat presence filter
+                    # Equipment / DHW: presence filter.
+                    # DHW uses continuous=True so that a single occupant (e.g.,
+                    # presence=0.2) produces 20% of the default demand rather than
+                    # the full default value — physically correct for showers/sinks.
+                    # Equipment keeps continuous=False (binary gate preserves absent-
+                    # hour behaviour for appliances that don't scale with headcount).
+                    use_continuous = (std_key == 'dhw')
                     proj_data = {}
                     for dtype in ['Weekday', 'Weekend']:
                         if dtype not in occ_data:
@@ -977,7 +1463,7 @@ def inject_schedules(
                         pf = schedule_generator.PresenceFilter(
                             default_vals, presence
                         )
-                        proj_data[dtype] = pf.apply(presence)
+                        proj_data[dtype] = pf.apply(presence, continuous=use_continuous)
 
                     if not proj_data:
                         continue
@@ -994,17 +1480,29 @@ def inject_schedules(
                     proj_sch_name = (
                         f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
                     )
-                    proj_dict = {
-                        k: fmt_for_compact(v)
-                        for k, v in proj_data.items()
-                    }
-                    proj_obj = idf.newidfobject("Schedule:Compact")
-                    proj_obj.obj = (
-                        ["Schedule:Compact"]
-                        + create_compact_schedule(
-                            proj_sch_name, "Fraction", proj_dict
+                    if use_schedule_file:
+                        # Write 8760 CSV for equipment/DHW and reference via Schedule:File (Task 21)
+                        end_use_tag = std_key  # 'equipment' or 'dhw'
+                        equip_csv = os.path.join(
+                            os.path.dirname(output_path), "schedules", str(hh_id),
+                            f"{end_use_tag}_{idx}.csv"
                         )
-                    )
+                        wd_vals = proj_data.get('Weekday', [0.0] * 24)
+                        we_vals = proj_data.get('Weekend', wd_vals)
+                        write_8760_schedule_csv(wd_vals, we_vals, equip_csv, year=schedule_file_year)
+                        idf_optimizer.create_schedule_file_object(idf, proj_sch_name, "Fraction", equip_csv)
+                    else:
+                        proj_dict = {
+                            k: fmt_for_compact(v)
+                            for k, v in proj_data.items()
+                        }
+                        proj_obj = idf.newidfobject("Schedule:Compact")
+                        proj_obj.obj = (
+                            ["Schedule:Compact"]
+                            + create_compact_schedule(
+                                proj_sch_name, "Fraction", proj_dict
+                            )
+                        )
 
                     setattr(obj, field_name, proj_sch_name)
                     created_schedules[cache_key] = proj_sch_name
@@ -1070,6 +1568,18 @@ def inject_schedules(
         )
 
 
+    # 4b. Thermostat Setback (occupancy-responsive setpoints)
+    weekday_occ_list = occ_data.get('Weekday', [0.0] * 24)
+    weekend_occ_list = occ_data.get('Weekend', [0.0] * 24)
+    inject_setpoint_schedules(
+        idf, hh_id,
+        weekday_occ=weekday_occ_list,
+        weekend_occ=weekend_occ_list,
+        heating_setback=18.0,
+        cooling_setback=27.0,
+        verbose=True
+    )
+
     # 5. Optimize & Save
     # Enable hourly detail output only for full year simulations
     enable_hourly_detail = (run_period_mode == 'standard')
@@ -1108,12 +1618,15 @@ def inject_neighbourhood_schedules(
         epw_path: Path to the EPW weather file (used to find .stat for lighting).
         verbose: Whether to print progress messages.
     """
+    # Guard: reject single-building IDFs passed to neighbourhood mode
+    validate_idf_compatibility(idf_path, mode='neighbourhood')
+
     if not schedules_list:
         print("Error: No schedules provided for neighbourhood injection.")
         return
 
     # Initialize IDF
-    IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
+    IDF.setiddname(config.resolve_idd_path())
     idf = IDF(idf_path)
 
     # Parse default schedule values from original IDF (if provided)
@@ -1299,12 +1812,14 @@ def inject_neighbourhood_schedules(
             if verbose:
                 print(f"    Created new Equipment schedule: {equip_sch_name}")
 
-        # 5. Water Use schedule (Water_Bldg_X) - Presence Filter Method
+        # 5. Water Use schedule (Water_Bldg_X) — continuous DHW scaling.
+        # continuous=True: partial occupancy produces partial demand (e.g., 1 of 5
+        # people home → 20% of default) rather than the full DOE default value.
         water_sch_name = f"Water_{bldg_id}"
         water_pf_weekday = schedule_generator.PresenceFilter(default_water_values['Weekday'], weekday_occ)
         water_pf_weekend = schedule_generator.PresenceFilter(default_water_values['Weekend'], weekend_occ)
-        weekday_water = water_pf_weekday.apply(weekday_occ)
-        weekend_water = water_pf_weekend.apply(weekend_occ)
+        weekday_water = water_pf_weekday.apply(weekday_occ, continuous=True)
+        weekend_water = water_pf_weekend.apply(weekend_occ, continuous=True)
         
         # --- Visualization Integration ---
         if visualizer and sim_results_dir:
@@ -1395,51 +1910,6 @@ def inject_neighbourhood_schedules(
     if original_idf_path:
         _update_power_densities_from_original(idf, original_idf_path, verbose=verbose)
 
-    # Old logic disabled (refactored to helper above)
-    if False and original_idf_path:
-        try:
-             # We assume we loaded orig_idf earlier in the function logic, but scope issues?
-             # Let's re-instantiate or assume we can grab it. 
-             # Actually, we didn't save orig_idf in a variable accessible here easily outside the try block?
-             # Let's just do a quick read since we have the path.
-             
-             # Note: We can reuse the earlier logic if we restructure, but adding a dedicated block is safer for now.
-             orig_idf_local = IDF(original_idf_path)
-             
-             # 1. Equipment Density
-             equip_objs = orig_idf_local.idfobjects.get('ELECTRICEQUIPMENT', [])
-             target_equip_w_m2 = None
-             if equip_objs:
-                 # Check calculation method
-                 method = getattr(equip_objs[0], 'Design_Level_Calculation_Method', '')
-                 if method == 'Watts/Area':
-                     target_equip_w_m2 = getattr(equip_objs[0], 'Watts_per_Zone_Floor_Area', None)
-             
-             # 2. Lighting Density
-             light_objs = orig_idf_local.idfobjects.get('LIGHTS', [])
-             target_light_w_m2 = None
-             if light_objs:
-                 method = getattr(light_objs[0], 'Design_Level_Calculation_Method', '')
-                 if method == 'Watts/Area':
-                     target_light_w_m2 = getattr(light_objs[0], 'Watts_per_Zone_Floor_Area', None)
-                     
-             if target_equip_w_m2 is not None:
-                 if verbose: print(f"  Updating Equipment Density to {target_equip_w_m2} W/m2 (from Original IDF)")
-                 for obj in idf.idfobjects['ELECTRICEQUIPMENT']:
-                     obj.Design_Level_Calculation_Method = 'Watts/Area'
-                     obj.Watts_per_Zone_Floor_Area = target_equip_w_m2
-                     obj.Design_Level = ""
-                     
-             if target_light_w_m2 is not None:
-                 if verbose: print(f"  Updating Lighting Density to {target_light_w_m2} W/m2 (from Original IDF)")
-                 for obj in idf.idfobjects['LIGHTS']:
-                     obj.Design_Level_Calculation_Method = 'Watts/Area'
-                     obj.Watts_per_Zone_Floor_Area = target_light_w_m2
-                     obj.Lighting_Level = ""
-                     
-        except Exception as e:
-            print(f"  Warning: Could not update densities from original IDF: {e}")
-
     # Optimize and save
     # Enable hourly detail output only for full year simulations
     enable_hourly_detail = (run_period_mode == 'standard')
@@ -1477,7 +1947,7 @@ def inject_neighbourhood_default_schedules(
         verbose: Whether to print progress messages.
     """
     # Initialize IDF
-    IDF.setiddname(os.environ.get('IDD_FILE') or "Energy+.idd")
+    IDF.setiddname(config.resolve_idd_path())
     idf = IDF(idf_path)
     
     # Load DOE MidRise Apartment standard schedules

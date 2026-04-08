@@ -82,6 +82,7 @@ class BEMConverter:
         bem_schedules = []
 
         target_res_cols = ["DTYPE", "BEDRM", "CONDO", "ROOM", "REPAIR", "PR"]
+        tier_cols = ["MATCH_TIER_WD", "MATCH_TIER_WE"]
 
         for (hh_id, day_type), group in tqdm(groups, desc="Generating Schedules"):
             hh_size = self._get_scalar(group, ["HHSIZE", "Census_HHSIZE"], default=1)
@@ -111,12 +112,17 @@ class BEMConverter:
             estimated_count = hourly["occPre"] * (hourly["occDensity"] + 1)
             occupancy_sched = (estimated_count / hh_size).clip(upper=1.0)
 
+            wd_tier = group["MATCH_TIER_WD"].iloc[0] if "MATCH_TIER_WD" in group.columns else ""
+            we_tier = group["MATCH_TIER_WE"].iloc[0] if "MATCH_TIER_WE" in group.columns else ""
+            match_tier = max(wd_tier, we_tier) if (wd_tier or we_tier) else ""
+
             data_dict = {
                 "SIM_HH_ID": hh_id,
                 "Day_Type": day_type,
                 "Hour": hourly["datetime"].dt.hour,
                 "HHSIZE": hh_size,
                 **res_data,
+                "MATCH_TIER": match_tier,
                 "Occupancy_Schedule": occupancy_sched.round(3),
                 "Metabolic_Rate": hourly["watts_5min"].round(1),
             }

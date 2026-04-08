@@ -243,7 +243,10 @@ def generate_full_expansion(
         census_id = agent.get(census_id_col, idx)
         hh_id = agent.get("SIM_HH_ID", idx)
 
-        for day_type, match_col in [("Weekday", "MATCH_ID_WD"), ("Weekend", "MATCH_ID_WE")]:
+        for day_type, match_col, tier_col in [
+            ("Weekday", "MATCH_ID_WD", "MATCH_TIER_WD"),
+            ("Weekend", "MATCH_ID_WE", "MATCH_TIER_WE"),
+        ]:
             episodes = expander.get_episodes(agent[match_col])
             if episodes is None:
                 continue
@@ -253,6 +256,7 @@ def generate_full_expansion(
             episodes["SIM_HH_ID"] = hh_id
             episodes["Day_Type"] = day_type
             episodes["AgentID"] = idx
+            episodes[tier_col] = agent.get(tier_col, '')
 
             for var in carry_vars:
                 if var in agent.index:
