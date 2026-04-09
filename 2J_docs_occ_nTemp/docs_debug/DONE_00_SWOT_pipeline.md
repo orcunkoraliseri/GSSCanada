@@ -1053,6 +1053,49 @@ the only symptom will be physically nonsensical synthetic schedules later.
 
 ---
 
+**Progress Log — 2026-04-09 — Task 4 Phase A execution (Sonnet)**
+
+Phase A completed in full read-only mode. No code changed, no Step 2/3 rerun.
+
+**Traceability table built:** All 9 columns × 4 cycles traced from raw GSS
+column → missing-code handling → OR-merge rule → unified column. See
+`docs_debug/02_W7_copresence_encoding_audit.md` for the full table.
+
+**Codebook cross-check:** `Data Harmonization - Category-CoPresence.csv`
+confirms 1 = "yes, person/state present" (2 = no) in every raw column in
+every cycle — both the 2005/2010 ALONE/SPOUSE/etc. series and the 2015/2022
+TUI_06A/TUI_06B/etc. series. The OR-merge logic (1 → present) is correct.
+
+**Per-cycle `== 1` shares (% of observed episodes):**
+
+| Column | 2005 | 2010 | 2015 | 2022 | Max spread |
+|--------|------|------|------|------|-----------|
+| Alone | 51.7% | 46.6% | 49.6% | 54.1% | 7.4 pp |
+| Spouse | 21.7% | 25.1% | 29.4% | 30.8% | 9.1 pp |
+| Children | 13.2% | 15.0% | 9.5% | 8.2% | 6.8 pp |
+| parents | 2.8% | 3.3% | 2.5% | 1.7% | 1.6 pp |
+| otherInFAMs | 3.4% | 4.5% | 3.3% | 3.7% | 1.2 pp |
+| otherHHs | 3.2% | 4.0% | 3.4% | 2.3% | 1.8 pp |
+| friends | 6.9% | 6.2% | 4.6% | 2.9% | 4.0 pp |
+| others | 7.8% | 9.1% | 5.8% | 2.7% | 6.4 pp |
+| colleagues | NaN | NaN | 4.6% | 3.0% | 1.6 pp |
+
+No column exceeds the 10 pp flag threshold (max spread: 9.1 pp, Spouse).
+All spreads are demographically explainable (aging, WFH shift, COVID, and
+pre-existing instrument scope differences between survey generations).
+
+**Decision gate: CLEAR. Phase B NOT triggered.**
+
+Three pre-existing scope differences noted (Children, otherInFAMs, others)
+where 2005/2010 and 2015/2022 instruments include slightly different
+sub-populations in the OR-merge. These are instrument-level differences, not
+encoding errors, and fall well within normal multi-cycle harmonization tolerance.
+
+**Status:** Task 4 Phase A closed. W7 closes with audit note only.
+Four tasks done (1, 2/2a, 2b, 4A). Task 3 protocol filed.
+
+---
+
 ### TASK 5 — Plain-language explanation: W6 (two-model HPC plan)
 
 **Step impact:** Steps 4 and 6 have not started yet. The training-discipline
@@ -1117,6 +1160,29 @@ research effort.
 **How to test**
 Try resuming a checkpoint mid-run on a tiny dataset to confirm the
 checkpoint code actually works before the real long run.
+
+---
+
+**Progress Log — 2026-04-09 — Task 5 executed (Sonnet)**
+
+Document written at `docs_debug/02_W6_training_discipline.md`. No source
+files modified.
+
+Decisions recorded:
+- **Budget:** 3 LR × 2 BS = 6 runs declared in advance. LRs: 1e-3, 3e-4, 1e-4.
+  BSs: 64, 256. Default start: LR=3e-4, BS=256. Stop at 6 regardless.
+- **Checkpointing:** End of every epoch into
+  `saved_models_cvae/step4_transformer/run_lr{LR}_bs{BS}_seed42/`.
+  `epoch_best.pt` symlink for the best-val-loss checkpoint.
+  Step 6 uses sibling folder `step6_finetune/run_…_cycle{CYCLE}/`.
+- **Seed:** `SEED = 42` set via `torch.manual_seed`, `np.random.seed`, and
+  `random.seed` at training script top; `torch.backends.cudnn.deterministic = True`.
+  Seed recorded in folder name.
+- **Selection rule:** Lowest val loss; tie → larger batch size.
+- **Paper statement:** Draft reproducibility paragraph included in the doc.
+
+**Status:** Task 5 closed. W6 addressed. Block is paste-ready for Step 4 and
+Step 6 documentation.
 
 ---
 
@@ -1236,3 +1302,205 @@ A short prioritized artifact list pinned in the paper-writing folder.
 
 **How to test**
 Not applicable — this is a planning task, not a code task.
+
+---
+
+**Progress Log — 2026-04-09 — Task 6 executed (Sonnet)**
+
+Document written at `docs_debug/02_O1_publishable_artifacts.md`. No source
+files modified, no data computed.
+
+For each of the 5 artifacts: target venue, 1–2 figure ideas, and one-sentence
+novel claim were sketched. Prioritization order:
+
+1. **Artifact 3 (COVID drift)** — data already in hand, lowest effort
+2. **Artifact 2 (30-min note)** — pre-Step-4 experiment, clears a methods decision
+3. **Artifact 1 (DRIFT_MATRIX full)** — extends naturally from Artifact 3 after Step 6
+4. **Artifact 5 (recipe)** — follows from Step 6 completion
+5. **Artifact 4 (co-presence BEM)** — highest effort, depends on Steps 4–7
+
+Single-deadline mitigation: Artifacts 2 + 3 can stand alone for eSim 2026 if
+Step 4 is not complete before the abstract deadline.
+
+**Status:** Task 6 closed. All six SWOT tasks now documented.
+
+---
+
+### TASK 7 — Full pipeline re-run (Steps 1–3) and validation-report sweep
+
+**Step impact:** **Regression-rebuild on Steps 1, 2, and 3.** Executes
+`00_mainGSS.py --all` (or interactive `A`) which sequentially runs
+`01_readingGSS.py`, `02_harmonizeGSS.py`, and `03_mergingGSS.py`. All three
+steps regenerate their outputs and their HTML validation reports. The
+already-validated 0-failure baseline established after Task 2a must be
+re-confirmed; any new warning/failure is a regression to investigate before
+Step 4 starts.
+
+**Authorization gate:** Pre-authorized 2026-04-09 by user explicit request.
+No further authorization needed for Sonnet to execute.
+
+**Aim of task**
+Confirm that the full Steps 1–3 pipeline still runs end-to-end cleanly on
+the current code state (post Task 2a SEASON drop, post Task 2b doc cleanup),
+and that all three HTML validation reports are at zero failures with no new
+warnings. Surface any quality issues, drift, or improvement opportunities
+that the validation reports reveal — even when they pass — so they can be
+fed back into the SWOT before Step 4 starts.
+
+**What to do**
+1. Run the pipeline end-to-end via `00_mainGSS.py`.
+2. Read each of the three validation reports in full.
+3. Produce a single audit note that records: (a) whether each step ran to
+   completion without exception, (b) the pass/warn/fail counts for each
+   report, (c) any non-failing observations that nonetheless suggest a
+   tightening or methodological improvement, and (d) a clear go/no-go
+   verdict for moving on to Step 4.
+
+**How to do**
+
+*Sub-step A — Pre-flight (read-only).*
+1. Confirm the working directory is `2J_docs_occ_nTemp/`.
+2. Confirm the three current output folders exist and note their last-
+   modified timestamps so any regenerated files are visible:
+   - `outputs_step1/`
+   - `outputs_step2/`
+   - `outputs_step3/`
+3. Confirm `00_mainGSS.py` and the three step scripts (`01_readingGSS.py`,
+   `02_harmonizeGSS.py`, `03_mergingGSS.py`) are present and executable.
+4. Confirm raw GSS source files are reachable via the path resolution in
+   `eSim_occ_utils/occ_config.py` (no environment override required for the
+   default macOS path).
+
+*Sub-step B — Execute the pipeline.*
+5. Run `python 00_mainGSS.py --all` from `2J_docs_occ_nTemp/`. Stream the
+   output to a log file as well as stdout:
+   `python 00_mainGSS.py --all 2>&1 | tee outputs_step3/run_taskN_full.log`
+6. If any step exits non-zero, **stop**. Capture the exit code, the failing
+   script, the last ~50 lines of stderr, and record them in the Progress
+   Log entry below. Do not proceed to Sub-step C until the failure is
+   diagnosed and either resolved or explicitly accepted by the user.
+7. On success, record the wall-clock duration of each step (printed by the
+   `00_mainGSS.py` banner around `run_script`).
+
+*Sub-step C — Read the validation reports.*
+8. Open `outputs_step1/step1_validation_report.html` in full. Record:
+   - Total checks, pass count, warn count, fail count.
+   - Per-cycle pass/fail breakdown.
+   - Any check that warns or fails — name it precisely and quote the
+     report's recorded value vs. the expected threshold.
+   - Any "soft" observation (e.g. a row count drift, a column-min/max
+     change, a NaN-rate change) that is technically passing but suggests a
+     follow-up.
+9. Repeat for `outputs_step2/step2_validation_report.html`. In particular,
+   confirm:
+   - 4 cycles × harmonization expectations are all green.
+   - `COPRESENCE_MAP` outputs match the Task 4 Phase A audit table
+     (per-cycle `== 1` shares within ~1 pp of the audit values; spreads
+     unchanged).
+   - `SURVMNTH` is still flagged as expected-NaN for 2005/2010 only.
+10. Repeat for `outputs_step3/step3_validation_report.html`. In particular,
+    confirm:
+    - Total check count is the post-Task-2a baseline (~110 checks per
+      Task 2a Progress Log; the historical 81/82 number is stale).
+    - Failure count = 0.
+    - `'SEASON' not in merged_episodes.columns` invariant.
+    - `'SURVMNTH' not in merged_episodes.columns` invariant (Task 2b).
+    - `DDAY_STRATA` is the 3-category cross-cycle stratum.
+    - `colleagues` NaN structure matches Task 1 findings (100% NaN for
+      2005/2010; 0.1% / 6.8% NaN for 2015/2022).
+
+*Sub-step D — Synthesize findings.*
+11. Compile a short audit note at
+    `docs_debug/02_T7_full_pipeline_rerun.md` with the structure:
+    - **Run summary:** date, command, duration per step, overall exit.
+    - **Step 1 report digest:** counts, any flags, follow-up notes.
+    - **Step 2 report digest:** counts, any flags, follow-up notes.
+    - **Step 3 report digest:** counts, any flags, follow-up notes.
+    - **Cross-step invariants** (single table): SEASON absent, SURVMNTH
+      absent from Step 3, SURVMNTH present in Step 2, DDAY_STRATA = 3,
+      colleagues NaN structure correct, co-presence shares match audit.
+    - **Improvement opportunities:** ranked list of any non-blocking
+      observations worth folding into Step 4 design or a future SWOT
+      iteration.
+    - **Go/no-go verdict for Step 4.**
+12. Append a Progress Log entry to **this task in `00_SWOT_pipeline.md`**
+    summarising the run outcome and linking to the audit note. Do not
+    duplicate the audit note's body in the Progress Log — keep the SWOT
+    entry to ~10 lines.
+
+**Why to do this task**
+Tasks 2a, 2b, 4 (Phase A) and the supporting doc cleanups have all touched
+the code or the docs around Steps 2 and 3 since the last full end-to-end
+run. The 0-failure baseline cited in the Task 2a Progress Log is the
+authoritative invariant, but it has not been re-confirmed in a single fresh
+run after all the changes landed. Step 4 design assumes Steps 1–3 are
+clean — confirming that empirically, with the validation reports as
+evidence, eliminates one whole class of "stale assumption" risk before any
+ML training begins.
+
+This is also the right moment to read the validation reports with fresh
+eyes. The reports are auto-generated and reviewed for pass/fail at the
+moment they are produced, but their *non-failing* observations (NaN
+patterns, marginal drift, distribution tails) often contain the early
+warning signals that would otherwise be discovered only when Step 4 starts
+producing odd outputs.
+
+**What will impact on**
+- Confidence that Steps 1–3 are fully clean before Step 4 design starts.
+- The Task 2a "0-failure" invariant is re-confirmed (or, if it has
+  regressed, the regression is caught now).
+- Any non-blocking observation flagged here may seed a future Task 8 or a
+  Step 4 design constraint.
+- The audit note becomes the canonical pre-Step-4 baseline reference.
+
+**Steps / sub-steps**
+1. Pre-flight: confirm working directory, output folders, scripts, raw
+   data reachability.
+2. Run `python 00_mainGSS.py --all` from `2J_docs_occ_nTemp/`, tee'd to a
+   log file.
+3. On any non-zero exit, stop and record the failure.
+4. On success, read all three HTML validation reports in full.
+5. Cross-check against the post-Task-2a/2b invariants (SEASON absent,
+   SURVMNTH absent from Step 3 only, DDAY_STRATA = 3, colleagues NaN
+   structure, co-presence audit values).
+6. Write `02_T7_full_pipeline_rerun.md` with the structure named in
+   Sub-step D above.
+7. Append Progress Log entry to this task in `00_SWOT_pipeline.md`.
+8. No commit on this task by default — it is read/audit work plus one
+   markdown note. If the run regenerates output files with binary deltas
+   that the user wants version-controlled, ask first.
+
+**What to expect as result**
+- Most likely outcome: all three steps run to completion, all three
+  validation reports are at zero failures, the cross-step invariants all
+  hold, and the audit note records a "go" verdict for Step 4 plus a
+  short list of optional improvement opportunities.
+- Alternative outcome: a step fails or a previously-passing check regresses.
+  In that case the audit note records the failure precisely, the Progress
+  Log says "no-go," and a follow-up task is opened to fix the regression
+  before Step 4 starts.
+
+**How to test**
+- Sub-step A is its own pre-flight test.
+- Sub-step B test: `00_mainGSS.py --all` exits 0 and produces three updated
+  validation HTML files with timestamps newer than the pre-flight reading.
+- Sub-step C test: each report's `Failures: 0` line is visible and the
+  pass count matches or exceeds the post-Task-2a baseline.
+- Sub-step D test: the audit note exists, has all five sections populated,
+  and the Progress Log entry in this file is appended.
+
+---
+
+**Progress Log**
+
+**2026-04-09 — Task 7 execution (Sonnet)**
+
+Full pipeline re-run completed. Exit 0. Wall-clock: 3 min 20 s. All three steps ran to
+completion without exception. Step 1 HTML (43 checks): 0 warn / 0 fail. Step 2 HTML
+(60 checks): 0 warn / 0 fail. Step 3 HTML was not regenerated by `--all` (tooling gap:
+`03_mergingGSS.py` does not invoke `03_mergingGSS_val.py`); direct check on
+`merged_episodes.parquet` confirms all invariants hold. SEASON absent ✓. SURVMNTH
+absent from merged_episodes ✓ (stale HTML note disagrees — see audit note). DDAY_STRATA
+= [1, 2, 3] ✓. Colleagues NaN (2005/2010: 100%, 2015: 0.1%, 2022: 6.8%) ✓.
+Co-presence shares match Task 4 audit within ≤0.1 pp ✓. Five non-blocking improvement
+opportunities noted. **Go verdict for Step 4.** Full audit: `docs_debug/02_T7_full_pipeline_rerun.md`.
