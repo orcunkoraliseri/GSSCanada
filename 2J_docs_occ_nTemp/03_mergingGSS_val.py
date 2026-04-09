@@ -37,12 +37,15 @@ STEP3_OVERVIEW = """\
 ║  Weight rule: WGHT_EPI (episode-level) / WGHT_PER (person-level)       ║
 ║                                                                          ║
 ║  Derived columns:                                                        ║
-║  • SEASON       ← SURVMNTH (Dec/Jan/Feb=Winter … Sep/Oct/Nov=Fall)     ║
+║  • DDAY_STRATA  ← DDAY (1=Weekday, 2=Saturday, 3=Sunday)              ║
 ║  • DAYTYPE      ← DDAY (Mon–Fri=Weekday / Sat–Sun=Weekend)             ║
 ║  • HOUR_OF_DAY  ← startMin // 60  → 0–23                              ║
 ║  • TIMESLOT_10  ← startMin // 10 + 1  → slots 1–144 (HETUS format)    ║
 ║  • AT_HOME      ← LOCATION==300 → binary 1/0                          ║
-║  • STRATA_ID    ← DDAY × SURVMNTH → integer 1–84                      ║
+║                                                                          ║
+║  Note: SEASON (from SURVMNTH) was dropped — seasonal JS divergence     ║
+║  <0.001 across all activity pairs; AT_HOME lift <2 pp on weekdays.     ║
+║  SURVMNTH is retained in merged_episodes.csv as a diagnostic column.   ║
 ║                                                                          ║
 ║  HETUS 144-slot conversion:                                             ║
 ║  Variable-length episodes → 144 fixed 10-min activity tokens per person ║
@@ -51,7 +54,7 @@ STEP3_OVERVIEW = """\
 ║  DIARY_VALID QA filter: respondents with sum(duration) ≠ 1440 min     ║
 ║  are excluded before HETUS conversion (corrupted diaries)              ║
 ║                                                                          ║
-║  Output: ~64,000 diary rows (each has 1 of 84 strata observed)         ║
+║  Output: ~64,000 diary rows (each has 1 of 3 DDAY_STRATA observed)    ║
 ║  ┌────────────┬────────────┬────────────┬────────────┬────────────┐    ║
 ║  │ 2005 (C19) │ 2010 (C24) │ 2015 (C29) │ 2022 GSSP  │  TOTAL     │    ║
 ║  │  19,221    │  15,114    │  17,390    │  12,336    │  64,061    │    ║

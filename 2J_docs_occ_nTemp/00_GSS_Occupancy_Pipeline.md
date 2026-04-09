@@ -115,7 +115,7 @@ This step standardizes all four GSS cycles into a unified schema before merging.
 | `ATTSCH` | `AttSch` | `ATTSCH` | `EDC_10` | `EDC_10` | Align binary Y/N coding | ✅ Pass |
 | `PR` | `REGION` | `PRV` | `PRV` | `PRV` | Map REGION codes → PRV codes | ✅ Pass |
 | `CMA` | Check | `LUC_RST` | `LUC_RST` | `LUC_RST` | Standardize urban/rural bins | ✅ Pass |
-| `SURVMNTH` | **All NaN** | **All NaN** | Has values | Has values | NaN for 2005/2010 is confirmed correct — temporal stratum is `DDAY_STRATA` (3 categories) as cross-cycle denominator; SEASON only derived for 2015/2022 | ✅ NaN confirmed correct |
+| `SURVMNTH` | **All NaN** | **All NaN** | Has values | Has values | NaN for 2005/2010 is confirmed correct — temporal stratum is `DDAY_STRATA` (3 categories) as cross-cycle denominator; retained as diagnostic column only (SEASON dropped — see W3 decision) | ✅ NaN confirmed correct |
 | `TOTINC` | Self-reported brackets | Self-reported brackets | Self-reported brackets | **CRA T1FF (continuous)** | ⚠️ Regime break at 2022: pre-2022 = ordinal; 2022 = continuous. Discretize 2022 into matching brackets for cross-cycle comparability | ✅ Pass |
 | `occACT` (TUI_01) | Flat ~65 codes | Flat ~72 codes | **Flat 63 codes** | **Two-level hierarchical tree** | ⚠️ Mapped to **14 grouped categories** via TUI_01 crosswalk. **0.00% unmapped rate confirmed all cycles** | ✅ 0.00% unmapped all cycles |
 | `wellbeing` (TUI_10) | **Absent** | **Absent** | Present | Present | `TUI_10_AVAIL = 0` for 2005/2010; auxiliary conditioning only for 2015/2022 | ✅ Pass |
@@ -211,7 +211,6 @@ Weight rule:
 
 | Derived Column | Source | Logic | Availability |
 |---|---|---|---|
-| `SEASON` | `SURVMNTH` | Dec/Jan/Feb=Winter, Mar/Apr/May=Spring, Jun/Jul/Aug=Summer, Sep/Oct/Nov=Fall | **2015 and 2022 only** (SURVMNTH is NaN for 2005/2010) |
 | `DAYTYPE` | `DDAY` | Mon–Fri (2–6) = Weekday; Sat–Sun (1,7) = Weekend | All cycles |
 | `DDAY_STRATA` | `DDAY` | **1=Weekday, 2=Saturday, 3=Sunday** — 3-category cross-cycle temporal denominator | All cycles ✅ Confirmed [1,2,3] |
 | `HOUR_OF_DAY` | `startMin` | `startMin // 60` → 0–23 | All cycles |
@@ -222,7 +221,7 @@ Weight rule:
 | `TUI_10_AVAIL` | Cycle metadata | 0 = not collected (2005/2010); 1 = available (2015/2022) | All cycles |
 | `DIARY_VALID` | `DURATION` sum check | 1 = sum(DURATION per occID) == 1440; 0 = corrupted diary → exclude | All cycles |
 
-> **Key constraint:** `STRATA_ID` is now `DDAY_STRATA` with **3 values** (not 84). The original 84-strata design (7 days × 12 months) is not achievable across all four cycles because SURVMNTH is absent from 2005 and 2010. The 3-stratum design (Weekday / Saturday / Sunday) is the confirmed cross-cycle temporal denominator. For 2015 and 2022 only, an additional SURVMNTH or SEASON dimension can be added for richer seasonal analysis.
+> **Key constraint:** `DDAY_STRATA` has **3 values** (Weekday / Saturday / Sunday). The original 84-strata design (7 days × 12 months) was not adopted because SURVMNTH is absent from 2005 and 2010, and Task 2 (W3) confirmed that seasonal JS divergence is <0.001 — below the signal threshold for a conditioning dimension. The 3-stratum design is the confirmed cross-cycle temporal denominator.
 
 ### 3C. Format Conversion: Episode → HETUS 144-Slot Wide Format (10-minute intermediate)
 Each respondent's variable-length episodes are first redistributed into 144 fixed 10-minute slots (4:00 AM to 3:50 AM next day). This intermediate representation preserves the full temporal granularity from the raw GSS episode data and maintains compatibility with the HETUS standard.
@@ -253,7 +252,7 @@ For each respondent (occID):
 
 > **DDAY_STRATA distribution confirmed:** Weekday ratio = 72.8% (expected 65–77% ✅). DDAY_STRATA values [1, 2, 3] consistent with Weekday / Saturday / Sunday classification, with 0 inconsistencies between DAYTYPE and DDAY_STRATA.
 
-Each diary row has: **1 `DDAY_STRATA`** (1 of 3 categories) as the primary temporal stratum. For 2015/2022, additionally **1 `SURVMNTH`** (1 of 12) enables seasonal stratification. The augmentation target for Model 1 is generating the **2 unobserved `DDAY_STRATA` per respondent** (all cycles), plus **missing SURVMNTH strata** for 2015/2022.
+Each diary row has: **1 `DDAY_STRATA`** (1 of 3 categories) as the temporal stratum for all cycles. The augmentation target for Model 1 is generating the **2 unobserved `DDAY_STRATA` per respondent** across all cycles. Seasonal conditioning via SURVMNTH is not used — seasonal JS divergence <0.001 confirmed sub-noise-floor (see docs_debug/02_W3_season_lift.md).
 
 ### 3E. Resolution Downsampling: 144-Slot → 48-Slot (30-Minute Interval) for BEM/UBEM
 Before Model 1 training, the 144-slot (10-minute) representation is downsampled to **48 slots at 30-minute resolution**. This is the direct input format for the Transformer and all downstream BEM/UBEM integration.
@@ -304,7 +303,7 @@ Computational benefit vs. 10-min format:
 *(1 observed diary → 3 complete DDAY_STRATA per occupant archetype)*
 
 ### Problem Statement
-Each of **64,061 respondents** contributes exactly one diary day — one observed `DDAY_STRATA` value (Weekday, Saturday, or Sunday). Model 1 generates synthetic schedules for the **2 unobserved DDAY_STRATA**, conditioned on the respondent's demographic profile and their one observed diary. For 2015/2022 respondents where SURVMNTH is available, the model additionally generates missing seasonal strata. This extends your previous 12-strata Italian TUS C-VAE work to a fully cross-cycle-consistent design.
+Each of **64,061 respondents** contributes exactly one diary day — one observed `DDAY_STRATA` value (Weekday, Saturday, or Sunday). Model 1 generates synthetic schedules for the **2 unobserved DDAY_STRATA**, conditioned on the respondent's demographic profile and their one observed diary. The conditioning vector is identical for all four cycles (no seasonal conditioning — see W3 decision). This extends the C-VAE multi-stratum design to a fully cross-cycle-consistent Transformer.
 
 ### Architecture: Conditional Transformer Encoder-Decoder
 
@@ -359,7 +358,6 @@ OUTPUT PER TARGET STRATUM
 ```
 64,061 respondents × 3 DDAY_STRATA = ~192,000 synthetic diary days (all cycles)
 Each diary: 48 activity + 48 AT_HOME + 9×48 co-presence tokens (30-min resolution)
-For 2015/2022 only: additionally expanded with SURVMNTH strata for seasonal analysis
 Stratified by: DDAY_STRATA × demographic archetype × CYCLE_YEAR
 ```
 
@@ -543,7 +541,7 @@ The three DRIFT_MATRIX outputs (0510, 1015, 1522) are not just training diagnost
 | Output | Description | Use in paper |
 |---|---|---|
 | Per-activity drift score | JS divergence of each TUI_01 category between cycle pairs | Quantifies which activities changed most (e.g., telecommuting, childcare, screen time) |
-| Per-stratum drift score | Drift broken down by DDAY × SURVMNTH cell | Shows whether behavioral change is season-specific or day-specific |
+| Per-stratum drift score | Drift broken down by DDAY_STRATA cell | Shows whether behavioral change is weekday- vs weekend-specific |
 | Per-archetype drift score | Drift broken down by demographic group | Shows which occupant types changed most — key for BEM archetype differentiation |
 | Aggregate cycle shift index | Single scalar per cycle transition | Supports the longitudinal narrative: "Canadian residential occupancy patterns shifted most significantly between 2015 and 2022, primarily driven by..." |
 
@@ -592,14 +590,14 @@ For each archetype × building type combination:
      → Aggregate AT_HOME flag across respondents by hour
   2. Compute activity-specific internal heat gains
      → Map occACT to metabolic rate (W/person) per ASHRAE 55 / ISO 7730
-  3. Stratify by: season × daytype (weekday / Saturday / Sunday)
-     → 3 schedule types × 4 seasons = 12 annual schedule variants
+  3. Stratify by: DDAY_STRATA (Weekday / Saturday / Sunday)
+     → 3 schedule types per archetype × climate zone
   4. Align province (PR) → ASHRAE climate zone
      → Climate-differentiated occupancy profiles for Montreal, Calgary, Vancouver, etc.
 
 Output format:
   • EnergyPlus Schedule:Compact objects (annual, weekday/weekend/holiday)
-  • CSV lookup tables: hourly probability × archetype × climate zone × season
+  • CSV lookup tables: hourly probability × archetype × climate zone × DDAY_STRATA
   • UBEM-ready: compatible with CityGML-linked building stock models
 ```
 
@@ -619,14 +617,14 @@ Output format:
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 3 — MERGE & FEATURE DERIVATION                                    ║
 ║  Episode ← Main (LEFT JOIN on occID)                                    ║
-║  Derive: SEASON, DAYTYPE, TIMESLOT_10, AT_HOME, STRATA_ID              ║
+║  Derive: DDAY_STRATA, DAYTYPE, TIMESLOT_10, AT_HOME                    ║
 ║  Convert to HETUS 144-slot wide format per respondent                   ║
-║  Output: ~69,000 diary rows (1 of 84 strata each)                      ║
+║  Output: ~64,000 diary rows (1 of 3 DDAY_STRATA each)                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 4 — MODEL 1: CONDITIONAL TRANSFORMER (Augmentation)              ║
 ║  Input:  1 observed diary + demographic conditioning                    ║
-║  Output: 84 synthetic diaries per respondent                            ║
-║  Scale:  ~5.8M diary-days across all cycles                             ║
+║  Output: 3 synthetic diaries per respondent (all DDAY_STRATA)          ║
+║  Scale:  ~192,000 diary-days across all cycles                          ║
 ║  HPC:    ~4–8 hrs on 1× GPU node (Concordia)                           ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 5 — CENSUS–GSS LINKAGE MODEL (Classical ML)                      ║
@@ -646,7 +644,7 @@ Output format:
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 7 — BEM/UBEM INTEGRATION                                          ║
 ║  Hourly occupancy probability + metabolic gain → EnergyPlus schedules  ║
-║  Stratified by: archetype × climate zone × season × daytype            ║
+║  Stratified by: archetype × climate zone × DDAY_STRATA                 ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 

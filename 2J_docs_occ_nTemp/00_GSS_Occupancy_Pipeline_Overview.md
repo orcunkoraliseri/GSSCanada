@@ -66,8 +66,8 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  Derived columns:                                                            ║
 ║    DDAY_STRATA: 1=Weekday / 2=Saturday / 3=Sunday (confirmed [1,2,3])      ║
 ║    DAYTYPE: Mon-Fri=Weekday / Sat-Sun=Weekend                               ║
-║    SEASON: from SURVMNTH (2015/2022 only)                                   ║
 ║    HOUR_OF_DAY, TIMESLOT_10, AT_HOME, DIARY_VALID                           ║
+║    (SEASON dropped — seasonal JS <0.001, AT_HOME lift <2pp on weekdays)     ║
 ║                                                                              ║
 ║  Sub-step 3C — HETUS 144-slot intermediate (10-min resolution):            ║
 ║    144 activity slots (14 categories) + 144 AT_HOME slots = 288 col/person ║
@@ -168,7 +168,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  Per archetype x building type:                                             ║
 ║    1. Hourly occupancy probability (AT_HOME, 0.0-1.0) per 30-min slot      ║
 ║    2. Activity-specific metabolic gain (W/person, ASHRAE 55/ISO 7730)      ║
-║    3. Stratify: Weekday / Saturday / Sunday x season (where available)     ║
+║    3. Stratify: DDAY_STRATA (Weekday / Saturday / Sunday)                  ║
 ║    4. Province (PR) -> ASHRAE climate zone mapping                         ║
 ║                                                                              ║
 ║  Output formats:                                                             ║
@@ -199,7 +199,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | DIARY_VALID QA filter (Step 3) | Confirmed exclusion: 2005=1.92%, 2010=1.79%, 2015/2022=0.00% |
 | TUI_10 as auxiliary variable only (Steps 1B + 4) | Absent 2005/2010; excluded from cross-cycle model inputs |
 | DDAY_STRATA = 3 categories (Step 3) | SURVMNTH confirmed NaN for 2005/2010. Cross-cycle temporal denominator is Weekday/Saturday/Sunday |
-| SEASON restricted to 2015/2022 (Step 3) | Derived from SURVMNTH; only available where SURVMNTH has values |
+| SEASON dropped (Step 3) | Seasonal JS divergence <0.001 across all activity pairs; AT_HOME lift <2 pp on weekdays — sub-noise-floor signal (see docs_debug/02_W3_season_lift.md) |
 | 2022 AT_HOME = 70.6% vs ~63% baseline (Step 2) | COVID-19 behavioral shift confirmed; DRIFT_MATRIX_1522 documents this explicitly |
 | Progressive fine-tuning with weight inheritance (Step 6) | Encodes temporal ordering; reduces per-phase training time |
 | DRIFT_MATRIX at each cycle transition (Step 6) | 3 publishable drift outputs: per-activity, per-stratum, per-archetype JS divergence |
