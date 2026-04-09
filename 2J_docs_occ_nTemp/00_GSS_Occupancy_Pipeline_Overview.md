@@ -104,8 +104,9 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║         Alone, Spouse, Children, parents, otherInFAMs,                      ║
 ║         otherHHs, friends, others, colleagues]                              ║
 ║      colleagues masked to 0 for 2005/2010 (not measured)                   ║
-║      Conditioning: [demog. profile + DDAY_STRATA + SURVMNTH* +              ║
+║      Conditioning: [demog. profile + DDAY_STRATA +                          ║
 ║                     CYCLE_YEAR + COLLECT_MODE]                              ║
+║      (SURVMNTH/SEASON dropped — see W3 decision)                            ║
 ║    Decoder input: target DDAY_STRATA + cross-attention over encoder         ║
 ║    Output per target stratum:                                               ║
 ║      48 activity tokens (14 categories)                                     ║

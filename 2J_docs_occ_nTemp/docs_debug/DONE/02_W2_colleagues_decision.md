@@ -12,13 +12,17 @@
 
 | Cycle year | Total episodes | `colleagues == 1` | `colleagues == 2` | NaN |
 |-----------|---------------|-------------------|-------------------|-----|
-| 2005 | 303,703 | 0 | 0 | 303,703 (100%) |
-| 2010 | 303,591 | 0 | 0 | 303,591 (100%) |
+| 2005 | 328,143 | 0 | 0 | 328,143 (100%) |
+| 2010 | 279,151 | 0 | 0 | 279,151 (100%) |
 | 2015 | 274,108 | 12,680 | 261,088 | 340 (0.1%) |
 | 2022 | 168,078 | 4,774 | 151,944 | 11,360 (6.8%) |
 
 `colleagues` is entirely absent for 2005 and 2010. The 2022 NaN rate (6.8%)
 reflects instrument/design gaps but is not a coding problem.
+
+*Re-baselined 2026-04-09: 2005/2010 row counts updated against Step 3 outputs
+regenerated during Task 2a (original counts were 303,703 / 303,591). The
+2015/2022 numbers and all decision conclusions are unchanged.*
 
 ---
 

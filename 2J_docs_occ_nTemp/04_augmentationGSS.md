@@ -34,7 +34,7 @@ Each of 64,061 respondents has exactly **1 observed diary day** (one DDAY_STRATA
 | Co-presence columns | 9 binary (`colleagues` = NaN for 2005/2010) |
 | DDAY_STRATA values | 1=Weekday, 2=Saturday, 3=Sunday |
 | DDAY_STRATA distribution | ~72.8% Weekday, ~13.6% Saturday, ~13.6% Sunday |
-| SURVMNTH | Available for 2015/2022 only; NaN for 2005/2010 |
+| SURVMNTH | Not in Step 4 conditioning (dropped — see W3 decision); archived in Step 2 outputs only |
 
 ---
 
@@ -77,11 +77,11 @@ assert len(df) == 64061
 | `NOCS` | One-hot | ~10 |
 | `COW` | One-hot | ~5 |
 | `DDAY_STRATA` (observed) | One-hot | 3 |
-| `SURVMNTH` | One-hot (12) + NaN-mask flag | 13 |
 | `CYCLE_YEAR` | Learned embedding | 4 (→ d_embed) |
 | `COLLECT_MODE` | Binary flag | 1 |
 | `TOTINC_SOURCE` | Binary flag (SELF/CRA) | 1 |
-| **Total conditioning dim** | | **~91 raw → projected to d_model** |
+| **Total conditioning dim** | | **~78 raw → projected to d_model** |
+| *(SURVMNTH dropped — see W3 decision)* | | — |
 
 #### A3. Sequence Token Construction — Per-Slot Multivariate Token
 
@@ -128,7 +128,7 @@ Stratification ensures each split has proportional representation of:
 **Validation checks (04A):**
 - [ ] No data leakage: occID sets are disjoint across train/val/test
 - [ ] Stratification check: CYCLE_YEAR × DDAY_STRATA proportions within ±2% across splits
-- [ ] All demographic columns have no unexpected NaN (except SURVMNTH for 2005/2010)
+- [ ] All demographic columns have no unexpected NaN (SURVMNTH not present — dropped from Step 3 output per W3 decision)
 - [ ] Co-presence recoding verified: all non-NaN values ∈ {0, 1} after recode
 - [ ] colleagues = 0 for all 2005/2010 rows (confirmed masked)
 - [ ] Availability mask shape matches (n_respondents, 48, 9) — True where source co-presence was non-NaN

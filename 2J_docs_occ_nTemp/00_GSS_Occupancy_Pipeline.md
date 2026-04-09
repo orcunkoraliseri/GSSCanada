@@ -6,7 +6,7 @@
 ## AIM
 Construct a comprehensive, annually-representative synthetic occupancy dataset — covering all temporal strata per occupant archetype — from GSS Canada Time Use cycles (2005–2022), augmented via deep learning and forecast to 2030, for direct integration into BEM/UBEM residential energy simulations.
 
-> **Confirmed temporal stratum structure (from Step 3 validation):** `SURVMNTH` is absent (all NaN) in Cycles 2005 and 2010; it is only available in 2015 and 2022. Accordingly, `DDAY` has been grouped into **3 `DDAY_STRATA` categories** (1=Weekday, 2=Saturday, 3=Sunday) as the common cross-cycle temporal denominator. Seasonal analysis via `SURVMNTH` is available only for the 2015 and 2022 cycles.
+> **Confirmed temporal stratum structure (from Step 3 validation):** `SURVMNTH` is absent (all NaN) in Cycles 2005 and 2010; it is only available in 2015 and 2022. Accordingly, `DDAY` has been grouped into **3 `DDAY_STRATA` categories** (1=Weekday, 2=Saturday, 3=Sunday) as the common cross-cycle temporal denominator. Seasonal analysis via `SURVMNTH` was originally planned but dropped — seasonal AT_HOME lift <2 pp on weekdays, full-distribution JS <0.002 across all season pairs (see W3 decision, `docs_debug/DONE/02_W3_season_lift.md`).
 
 ---
 
@@ -221,7 +221,7 @@ Weight rule:
 | `TUI_10_AVAIL` | Cycle metadata | 0 = not collected (2005/2010); 1 = available (2015/2022) | All cycles |
 | `DIARY_VALID` | `DURATION` sum check | 1 = sum(DURATION per occID) == 1440; 0 = corrupted diary → exclude | All cycles |
 
-> **Key constraint:** `DDAY_STRATA` has **3 values** (Weekday / Saturday / Sunday). The original 84-strata design (7 days × 12 months) was not adopted because SURVMNTH is absent from 2005 and 2010, and Task 2 (W3) confirmed that seasonal JS divergence is <0.001 — below the signal threshold for a conditioning dimension. The 3-stratum design is the confirmed cross-cycle temporal denominator.
+> **Key constraint:** `DDAY_STRATA` has **3 values** (Weekday / Saturday / Sunday). The original 84-strata design (7 days × 12 months) was not adopted because SURVMNTH is absent from 2005 and 2010, and Task 2 (W3) confirmed that seasonal JS divergence is <0.002 — below the signal threshold for a conditioning dimension. The 3-stratum design is the confirmed cross-cycle temporal denominator.
 
 ### 3C. Format Conversion: Episode → HETUS 144-Slot Wide Format (10-minute intermediate)
 Each respondent's variable-length episodes are first redistributed into 144 fixed 10-minute slots (4:00 AM to 3:50 AM next day). This intermediate representation preserves the full temporal granularity from the raw GSS episode data and maintains compatibility with the HETUS standard.
@@ -252,7 +252,7 @@ For each respondent (occID):
 
 > **DDAY_STRATA distribution confirmed:** Weekday ratio = 72.8% (expected 65–77% ✅). DDAY_STRATA values [1, 2, 3] consistent with Weekday / Saturday / Sunday classification, with 0 inconsistencies between DAYTYPE and DDAY_STRATA.
 
-Each diary row has: **1 `DDAY_STRATA`** (1 of 3 categories) as the temporal stratum for all cycles. The augmentation target for Model 1 is generating the **2 unobserved `DDAY_STRATA` per respondent** across all cycles. Seasonal conditioning via SURVMNTH is not used — seasonal JS divergence <0.001 confirmed sub-noise-floor (see docs_debug/02_W3_season_lift.md).
+Each diary row has: **1 `DDAY_STRATA`** (1 of 3 categories) as the temporal stratum for all cycles. The augmentation target for Model 1 is generating the **2 unobserved `DDAY_STRATA` per respondent** across all cycles. Seasonal conditioning via SURVMNTH is not used — seasonal JS divergence <0.002 confirmed sub-noise-floor (see docs_debug/DONE/02_W3_season_lift.md).
 
 ### 3E. Resolution Downsampling: 144-Slot → 48-Slot (30-Minute Interval) for BEM/UBEM
 Before Model 1 training, the 144-slot (10-minute) representation is downsampled to **48 slots at 30-minute resolution**. This is the direct input format for the Transformer and all downstream BEM/UBEM integration.
@@ -322,9 +322,10 @@ INPUT TO ENCODER
 
 • Conditioning vector:      [demographic profile (one-hot + continuous)]
                           + [observed DDAY_STRATA (one-hot, 3)]
-                          + [observed SURVMNTH (one-hot, 12; NaN-masked for 2005/2010)]
                           + [CYCLE_YEAR embedding (2005/2010/2015/2022)]
                           + [COLLECT_MODE flag (0=CATI / 1=EQ)]
+                          Note: SURVMNTH/SEASON omitted — seasonal lift <2 pp on
+                          weekdays, full-dist JS <0.002 (see W3 decision)
                           Note: COLLECT_MODE controls for mode effects on activity
                           reporting patterns between telephone and self-administered cycles
 
@@ -526,9 +527,9 @@ Input:
       - Adjusted age distribution (population aging)
       - Adjusted work-from-home rates (post-COVID baseline)
       - Adjusted commute mode share
-  • All 84 DDAY × SURVMNTH target strata
+  • All 3 DDAY_STRATA (Weekday / Saturday / Sunday)
 Output:
-  • Synthetic 2030 diary schedules (144 slots) per archetype × 84 strata
+  • Synthetic 2030 diary schedules (144 slots) per archetype × 3 DDAY_STRATA
   • Saved metrics: overall + stratified per demographic group
 ```
 
@@ -574,7 +575,7 @@ Cost increase is approximately **2×** versus the original Step 6 single-run arc
 ---
 
 ### Final 2030 Dataset
-Complete annual occupancy schedule matrix per building/occupant archetype combination, covering all 84 DDAY × SURVMNTH strata, with three publishable DRIFT_MATRIX outputs documenting longitudinal behavioral change → directly integrable into BEM/UBEM in Step 7.
+Complete annual occupancy schedule matrix per building/occupant archetype combination, covering all 3 DDAY_STRATA (Weekday / Saturday / Sunday), with three publishable DRIFT_MATRIX outputs documenting longitudinal behavioral change → directly integrable into BEM/UBEM in Step 7.
 
 ---
 

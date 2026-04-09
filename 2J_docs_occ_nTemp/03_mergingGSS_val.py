@@ -45,7 +45,7 @@ STEP3_OVERVIEW = """\
 ║                                                                          ║
 ║  Note: SEASON (from SURVMNTH) was dropped — seasonal JS divergence     ║
 ║  <0.001 across all activity pairs; AT_HOME lift <2 pp on weekdays.     ║
-║  SURVMNTH is retained in merged_episodes.csv as a diagnostic column.   ║
+║  SURVMNTH not carried through to Step 3 output (see W3 decision).      ║
 ║                                                                          ║
 ║  HETUS 144-slot conversion:                                             ║
 ║  Variable-length episodes → 144 fixed 10-min activity tokens per person ║
