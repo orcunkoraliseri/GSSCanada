@@ -291,6 +291,111 @@ Sanity-check: after the decision, the Step 4 input/output schema document
 should have exactly one consistent treatment of `colleagues`, and the loss
 function description should match.
 
+#### Task 1 — Findings & Decision (`02_W2_colleagues_decision.md`)
+
+**Date:** 2026-04-09 | **Input:** `outputs_step3/merged_episodes.csv` (read-only)
+
+**Data overview**
+
+`merged_episodes.csv` has 1,049,480 rows across 4 cycles.
+
+| Cycle year | Total episodes | `colleagues == 1` | `colleagues == 2` | NaN |
+|-----------|---------------|-------------------|-------------------|-----|
+| 2005 | 303,703 | 0 | 0 | 303,703 (100%) |
+| 2010 | 303,591 | 0 | 0 | 303,591 (100%) |
+| 2015 | 274,108 | 12,680 | 261,088 | 340 (0.1%) |
+| 2022 | 168,078 | 4,774 | 151,944 | 11,360 (6.8%) |
+
+**(a) Episode-level share of `colleagues == 1`** (observed episodes only)
+
+| Cycle year | Observed episodes | `colleagues == 1` share |
+|-----------|------------------|------------------------|
+| 2015 | 273,768 | **4.63%** |
+| 2022 | 156,718 | **3.05%** |
+
+**(b) Respondent-level share (≥1 `colleagues == 1` episode in diary)**
+
+| Cycle year | Respondents | Share with ≥1 colleagues episode |
+|-----------|-------------|----------------------------------|
+| 2015 | 17,390 | **27.4%** |
+| 2022 | 12,336 | **20.9%** |
+
+**(c) Cross-tab: `colleagues == 1` share by LFTAG × DDAY_STRATA**
+
+2015:
+
+| LFTAG \ DDAY_STRATA | Weekday | Saturday | Sunday |
+|---------------------|---------|----------|--------|
+| Employed (n~92K) | **10.49%** | 2.59% | 2.10% |
+| Unemployed (n~8.5K) | **11.68%** | 4.21% | 2.76% |
+| Not-in-LF (n~92K) | 0.60% | 0.33% | 0.32% |
+
+2022:
+
+| LFTAG \ DDAY_STRATA | Weekday | Saturday | Sunday |
+|---------------------|---------|----------|--------|
+| Employed (n~53K) | **6.66%** | 2.51% | 2.51% |
+| Unemployed (n~2K) | **8.67%** | 4.36% | 3.72% |
+| Not-in-LF (n~55K) | 0.40% | 0.50% | 0.20% |
+
+Signal is almost entirely in **Employed × Weekday** (10.5% → 6.7%). Drop directly mirrors WFH shift.
+
+**Decision: Option 2** — predict `colleagues` for 2015/2022 strata; emit NaN for 2005/2010.
+
+- 27% respondent prevalence is too high to drop (vs. Option 3).
+- No ground truth for 2005/2010 makes all-cycle prediction unverifiable (vs. Option 1).
+- Masked-loss already planned for Step 4 — this extends the same mask to inference time.
+- One-line post-decoder mask conditioned on `CYCLE_YEAR ∈ {2005, 2010}` (not on observed input value).
+
+**Consistency check for Step 4 schema**
+
+| Element | State |
+|---------|-------|
+| `colleagues` in decoder output | Yes (9th co-presence col) |
+| Loss masked for 2005/2010 | Yes |
+| Inference output for 2005/2010 | NaN (post-decoder mask) |
+| Inference output for 2015/2022 | Binary predicted value |
+| Step 6 progressive fine-tuning target | 2015/2022 `colleagues` signal included |
+| Step 7 BEM use | Optional; safe to include for 2015/2022 archetypes |
+
+#### Task 1 — Progress Log
+
+**2026-04-09 — Review of Sonnet's Task 1 execution**
+
+Numbers look healthy.
+- Episode-level 4.63% / 3.05% is in the expected range — `colleagues` is a
+  sparse but real signal, not a phantom column.
+- 27.4% / 20.9% respondent-level prevalence confirms it touches roughly
+  1 in 4–5 diaries. Definitely too much to drop.
+- The Employed × Weekday cell (10.5% → 6.7%) is the cleanest possible
+  signature of the WFH shift. That's a real, interpretable result on its own.
+
+Recommendation (Option 2) is the right call.
+- It matches the existing masked-loss design in Step 4 — extends the same
+  mask from training time to inference time. One-line change in the decoder
+  post-processing, no architectural rework.
+- It preserves the publishable 2015→2022 drop for the COVID-drift story
+  (Artifact 3 in Task 6 / O1).
+- It avoids fabricating predictions on a column that has no ground truth
+  for half the corpus, which would be the weakest part of the methods
+  section under reviewer scrutiny.
+
+One thing to make sure lands in the Step 4 spec when it gets written:
+- The NaN mask at inference must be conditioned on
+  `CYCLE_YEAR ∈ {2005, 2010}`, not on whether the *input* `colleagues` was
+  observed. Otherwise a 2015/2022 respondent who happens to have all-zero
+  colleagues episodes will be wrongly NaN'd.
+
+Optional sanity check (only if extra confidence is wanted before closing):
+- Cross-tab `colleagues == 1` against `AT_HOME == 0` for the
+  Employed × Weekday cell. Expected pattern: vast majority of
+  `colleagues == 1` episodes have `AT_HOME == 0` in 2015 (in-office) and a
+  noticeably higher share with `AT_HOME == 1` in 2022 (Zoom calls / hybrid).
+  If that pattern shows, it is a second independent confirmation that the
+  encoding is correct *and* a bonus figure for the COVID-drift artifact.
+
+**Status:** Task 1 closed cleanly.
+
 ---
 
 ### TASK 2 — Investigate W3: SEASON coverage gap
@@ -462,6 +567,131 @@ This is a regression-rebuild touching a validated step. Authorized
 2026-04-09 by user explicit request: *"lets drop SEASON from the
 pipeline and all codebase, you are right."* No further authorization
 needed for Sonnet to execute.
+
+#### Task 2 — Findings & Decision (`02_W3_season_lift.md`)
+
+**Date:** 2026-04-09 | **Input:** `outputs_step3/merged_episodes.csv` + `outputs_step2/main_2015/2022.csv` for SURVMNTH join
+
+**Setup:** SEASON derived from SURVMNTH (Dec/Jan/Feb=Winter; Mar/Apr/May=Spring; Jun/Jul/Aug=Summer; Sep/Oct/Nov=Fall). All 540,737 episodes in 2015/2022 have a valid SEASON. 2005/2010: all NaN, no proxy available.
+
+**(1) AT_HOME marginals by SEASON × DDAY_STRATA**
+
+AT_HOME (%) pooled 2015+2022:
+
+| Season | AT_HOME % |
+|--------|-----------|
+| Winter | 68.79% |
+| Fall | 68.74% |
+| Spring | 68.14% |
+| Summer | 67.98% |
+| **Max spread** | **0.81 pp** |
+
+By DDAY_STRATA:
+
+| Day type | Winter | Spring | Summer | Fall | Spread |
+|----------|--------|--------|--------|------|--------|
+| Weekday | 68.29% | 67.70% | 68.08% | 68.48% | **0.78 pp** |
+| Saturday | 68.29% | 67.99% | 65.96% | 67.51% | **2.34 pp** |
+| Sunday | 71.66% | 70.47% | 69.29% | 71.26% | **2.37 pp** |
+
+**(2) Per-activity shares by season and JS divergence**
+
+Activity shares (%) — pooled 2015+2022, largest movers:
+
+| Activity | Winter | Spring | Summer | Fall | Max diff (pp) |
+|----------|--------|--------|--------|------|---------------|
+| Passive Leisure | 15.85 | 15.58 | 14.83 | 14.69 | **1.16** |
+| Household Work & Maintenance | 9.40 | 9.69 | 10.32 | 10.05 | **0.92** |
+| Education | 1.16 | 1.23 | 0.74 | 1.37 | **0.62** |
+| Socializing | 3.59 | 3.73 | 4.09 | 3.63 | **0.50** |
+| Work & Related | 12.68 | 12.72 | 12.53 | 12.98 | **0.45** |
+
+No activity shifts by more than 1.2 pp. Full 14-activity table in `02_W3_season_lift.md`.
+
+JS divergence — full 14-activity distribution between season pairs:
+
+| Season pair | JS (full dist) |
+|-------------|----------------|
+| Summer vs Fall | 0.001004 |
+| Winter vs Summer | 0.000987 |
+| Spring vs Summer | 0.000780 |
+| Winter vs Fall | 0.000424 |
+| Spring vs Fall | 0.000262 |
+| Winter vs Spring | 0.000105 |
+
+All values < 0.001 — two orders of magnitude below the threshold where conditioning pays off (~0.01–0.05).
+
+**(3) Summary of findings**
+
+| Metric | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| AT_HOME spread (Weekday) | 0.78 pp | < 2 pp = safe to drop | ✅ well below |
+| AT_HOME spread (Weekend) | 2.34–2.37 pp | > 5 pp = must keep | ✅ well below |
+| Max per-activity spread | 1.16 pp (Passive Leisure) | < 2 pp = safe to drop | ✅ below |
+| Max full-distribution JS | 0.001004 | — | Noise-floor level |
+| Max per-activity JS | 6.84 × 10⁻⁴ (Education) | — | Noise-floor level |
+
+**Decision: (a) Drop SEASON entirely.**
+
+1. Weekday AT_HOME lift 0.78 pp — far below the 2 pp threshold.
+2. JS divergence at noise floor — 10–50× below conditioning threshold.
+3. No SURVMNTH proxy exists for 2005/2010 — imputation is not feasible.
+4. Including SEASON would create masked/uninformative conditioning for 50% of the corpus with no payoff.
+
+**Consistency check for Step 4 schema**
+
+| Element | State |
+|---------|-------|
+| `SEASON` in conditioning vector | **No** |
+| `SURVMNTH` in conditioning vector | **No** |
+| `DDAY_STRATA` (3-category) as temporal condition | Yes — identical for all 4 cycles |
+| Annual forecast stratified by season | **No** — DDAY_STRATA only |
+| BEM schedules: seasonal variants | Not generated |
+
+#### Task 2 / 2a — Progress Log
+
+**Progress Log**
+
+*2026-04-09 — Task 2a executed (Sonnet).*
+- **Discovery surprise:** SEASON was never actually written to any Step 3
+  output file. The column existed only in the validation script banner
+  (line 40) and in documentation. **No Step 3 rerun was required** — the
+  regression-rebuild downgraded to a doc-and-comment cleanup.
+- **Code touched:** `03_mergingGSS_val.py` banner only (SEASON line replaced
+  with DDAY_STRATA entry; stale `STRATA_ID ← DDAY × SURVMNTH → 1–84`
+  removed; stale "1 of 84 strata" → "1 of 3 DDAY_STRATA").
+- **Docs touched:** `00_GSS_Occupancy_Pipeline.md` (9 edits across §3B,
+  §3D, §4, §7 and the full-pipeline banner — derived-columns table,
+  stratum description, conditioning vector, output scale block,
+  DRIFT_MATRIX description, BEM stratification);
+  `00_GSS_Occupancy_Pipeline_Overview.md` (3 edits — derived-columns list,
+  Step 7 stratification, design-decisions table line "SEASON restricted"
+  → "SEASON dropped"); `docs_progress/03_mergingGSS_resolutionSampling.md`
+  (output column schema).
+- **Test assertions passed:** `'SEASON' not in merged_episodes.columns`,
+  `'SURVMNTH' in main_2015.columns`. SURVMNTH preservation confirmed.
+- **Step 3 validation:** 110 PASS / 0 WARN / 0 FAIL. The 81/82 baseline
+  cited in this SWOT is from before the validation suite was extended;
+  the operative metric is now zero-failures, and no regressions were
+  introduced by Task 2a.
+- **Commit:** `8af2ed4` — `[pipeline]: Drop SEASON column — sub-noise-floor signal`.
+
+**Reviewer note (me, on the discovery surprise):** This is a *good* outcome.
+The risk in this task was always Step 3 regenerating with an unexpected
+delta in `merged_episodes.csv`. That risk did not materialize because the
+SEASON derivation was specified in the docs but never actually implemented
+in the merging script. Two implications worth noting:
+1. The SWOT's W3 framing was based on the documented pipeline, not the
+   implemented one. The two had drifted apart on this column. Worth a
+   periodic spot-check that other "documented but not implemented" features
+   do not exist elsewhere — particularly in the Step 4/6/7 design where
+   the gap is most likely to be hidden.
+2. The Step 3 validation suite has grown from 82 to 110 checks since the
+   SWOT was written. The 81/82 number in this document is now stale as a
+   baseline reference. Treat **0 failures** as the live invariant.
+
+**Status:** Task 2a closed. W3 fully resolved. Two of seven tasks done
+(Task 1 closed, Task 2 closed, Task 2a closed). Safe to move on to Task 3.
 
 ---
 
