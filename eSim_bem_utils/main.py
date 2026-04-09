@@ -237,24 +237,7 @@ def option_run_simulation() -> None:
         standardize_schedules=True
     )
     
-    # 3. Select Weather File
-    epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
-    epw_files.sort(key=_sort_key_by_city)
-
-    if not epw_files:
-        print(f"Error: No EPW files found in {WEATHER_DIR}")
-        return
-        
-    selected_epw = select_file(epw_files, "Select Weather File:")
-
-    # 3b. Infer Region from Weather File
-    selected_region = get_region_from_epw(selected_epw)
-    if selected_region:
-        print(f"\nDetected Region from Weather File: {selected_region}")
-    else:
-        print("\nRegion could not be inferred from Weather File (will load all regions).")
-    
-    # 4. Select Dwelling Type Filter
+    # 3. Select Dwelling Type Filter
     dwelling_types = ['SingleD', 'Attached', 'DuplexD', 'SemiD', 
                       'MidRise', 'HighRise', 'Movable', 'OtherA', 'All']
     print("\nSelect Dwelling Type for Schedule Filter:")
@@ -274,17 +257,23 @@ def option_run_simulation() -> None:
             pass
         print("Invalid selection. Try again.")
     
-    # 5. Load Schedules
-    schedules = integration.load_schedules(selected_schedule_csv, dwelling_type=selected_dtype, region=selected_region)
-    
+    # 5. Load Schedules (region=None: all PRs visible to EPW auto-resolution, Task 27)
+    schedules = integration.load_schedules(selected_schedule_csv, dwelling_type=selected_dtype, region=None)
+
     # 6. Simulation Settings — Auto-select 1 random household
     print(f"\nTotal Households found: {len(schedules)}")
-    
+
     import random
     all_hh_ids = list(schedules.keys())
     hh_ids = random.sample(all_hh_ids, 1)
-    
+
     print(f"Auto-selected household: {hh_ids[0]}")
+
+    # Auto-select EPW from household PR (Task 27)
+    hh_pr = integration.get_household_pr(schedules[hh_ids[0]])
+    selected_epw = config.resolve_epw_path(hh_pr, WEATHER_DIR)
+    selected_region = get_region_from_epw(selected_epw)
+    print(f"  Auto-selected EPW for HH {hh_ids[0]} (PR='{hh_pr}'): {os.path.basename(selected_epw)}")
     
     # 7. Generate IDFs and Prepare Jobs
     jobs = []
@@ -622,30 +611,13 @@ def option_comparative_simulation() -> None:
         standardize_schedules=True
     )
     
-    # 2. Select Weather File
-    epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
-    epw_files.sort(key=_sort_key_by_city)
-
-    if not epw_files:
-        print(f"Error: No EPW files found in {WEATHER_DIR}")
-        return
-        
-    selected_epw = select_file(epw_files, "Select Weather File:")
-    
-    # 2b. Infer Region from Weather File
-    selected_region = get_region_from_epw(selected_epw)
-    if selected_region:
-        print(f"\nDetected Region from Weather File: {selected_region}")
-    else:
-        print("\nRegion could not be inferred from Weather File (will load all regions).")
-    
-    # 3. Select Dwelling Type Filter
-    dwelling_types = ['SingleD', 'Attached', 'DuplexD', 'SemiD', 
+    # 2. Select Dwelling Type Filter
+    dwelling_types = ['SingleD', 'Attached', 'DuplexD', 'SemiD',
                       'MidRise', 'HighRise', 'Movable', 'OtherA', 'All']
     print("\nSelect Dwelling Type for Schedule Filter:")
     for i, dt in enumerate(dwelling_types):
         print(f"  {i+1}. {dt}")
-    
+
     while True:
         try:
             dt_choice = input(f"Select number (1-{len(dwelling_types)}): ").strip()
@@ -658,41 +630,47 @@ def option_comparative_simulation() -> None:
         except ValueError:
             pass
         print("Invalid selection. Try again.")
-    
-    # 4. Load schedules from all years
+
+    # 3. Load schedules from all years (region=None: all PRs visible to SSE matcher)
     schedule_files = _build_schedule_file_map()
 
     all_schedules = {}
     common_hh_ids = None
-    
+
     for year, csv_path in schedule_files.items():
         if not os.path.exists(csv_path):
             print(f"Warning: {csv_path} not found, skipping {year}")
             continue
-        
-        schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=selected_region)
+
+        schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=None)
         all_schedules[year] = schedules
-        
+
         hh_ids = set(schedules.keys())
         if common_hh_ids is None:
             common_hh_ids = hh_ids
         else:
             common_hh_ids = common_hh_ids.intersection(hh_ids)
-    
+
     if not all_schedules:
         print("Error: No schedule files could be loaded.")
         return
-    
-    # 5. Randomly select one household from the first available year
+
+    # 4. Randomly select one household from the first available year
     # But filtering for one that resembles "Standard Working Day"
     first_year = list(all_schedules.keys())[0]
     first_candidates = list(all_schedules[first_year].keys())
-        
+
     first_hh = integration.find_best_match_household(all_schedules[first_year], first_candidates)
     target_hhsize = all_schedules[first_year][first_hh].get('metadata', {}).get('hhsize', 0)
-    
+
     print(f"\nRandomly selected Household: {first_hh} (from {first_year})")
     print(f"  Matching by household size: {target_hhsize} persons")
+
+    # 5. Auto-select EPW from household PR (Task 27)
+    hh_pr = integration.get_household_pr(all_schedules[first_year][first_hh])
+    selected_epw = config.resolve_epw_path(hh_pr, WEATHER_DIR)
+    print(f"  Auto-selected EPW for HH {first_hh} (PR='{hh_pr}'): {os.path.basename(selected_epw)}")
+    selected_region = get_region_from_epw(selected_epw)
     
     # 6. Prepare jobs for all 6 scenarios
     batch_name = f"Comparative_HH{target_hhsize}p_{int(time.time())}"
@@ -936,23 +914,7 @@ def option_neighbourhood_simulation() -> None:
         print("Error: Could not detect buildings. Check IDF structure.")
         return
 
-    # 3. Select Weather File
-    epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
-    epw_files.sort(key=_sort_key_by_city)
-
-    if not epw_files:
-        print(f"No EPW files found in {WEATHER_DIR}")
-        return
-    selected_epw = select_file(epw_files, "Select Weather File:")
-
-    # Infer region from weather file
-    selected_region = get_region_from_epw(selected_epw)
-    if selected_region:
-        print(f"\nDetected Region from Weather File: {selected_region}")
-    else:
-        print("\nRegion could not be inferred from Weather File (will load all regions).")
-
-    # 4. Select Schedule CSV
+    # 3. Select Schedule CSV
     # schedule_dir = os.path.join(BASE_DIR, "Occupancy") # Old path
     schedule_dir = BEM_SETUP_DIR
     csv_files = glob.glob(os.path.join(schedule_dir, "BEM_Schedules_*.csv"))
@@ -961,11 +923,11 @@ def option_neighbourhood_simulation() -> None:
         return
     selected_csv = select_file(csv_files, "Select Schedule CSV:")
 
-    # 5. Load and filter households
+    # 4. Load and filter households (region=None: all PRs visible, Task 27)
     print(f"\nLoading households from CSV...")
-    all_schedules = integration.load_schedules(selected_csv, region=selected_region)
+    all_schedules = integration.load_schedules(selected_csv, region=None)
 
-    # Filter for Typical Working Day profile
+    # 5. Filter for Typical Working Day profile
     print("\nFiltering for households matching 'Typical Working Day' profile...")
     scored_matches = integration.filter_matching_households(all_schedules)
     
@@ -993,6 +955,16 @@ def option_neighbourhood_simulation() -> None:
     schedules_list = [{**all_schedules[hh_id], 'hh_id': hh_id} for hh_id in hh_ids]
 
     print(f"\nAssigned {n_buildings} randomized occupancy profiles to buildings.")
+
+    # Auto-select EPW from dominant PR across selected households (Task 27)
+    from collections import Counter
+    pr_counts = Counter(
+        integration.get_household_pr(all_schedules[hh_id]) for hh_id in hh_ids
+    )
+    dominant_pr = pr_counts.most_common(1)[0][0] if pr_counts else ''
+    selected_epw = config.resolve_epw_path(dominant_pr, WEATHER_DIR)
+    selected_region = get_region_from_epw(selected_epw)
+    print(f"  Auto-selected EPW (dominant PR='{dominant_pr}'): {os.path.basename(selected_epw)}")
 
     # 6. Prepare the IDF (explode shared objects)
     run_id = f"Neighbourhood_{int(time.time())}"
@@ -1100,27 +1072,10 @@ def option_comparative_neighbourhood_simulation() -> None:
     n_buildings = neighbourhood.get_num_buildings_from_idf(selected_idf)
     print(f"\nDetected {n_buildings} buildings in the neighbourhood.")
     
-    # 3. Select Weather File
-    epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
-    epw_files.sort(key=_sort_key_by_city)
-    if not epw_files:
-        print(f"Error: No EPW files found in {WEATHER_DIR}")
-        return
-    
-    selected_epw = select_file(epw_files, "\nSelect Weather File:")
-    
-    # 4. Infer Region from Weather File
-    selected_region = get_region_from_epw(selected_epw)
-    if selected_region:
-        print(f"\nDetected Region from Weather File: {selected_region}")
-    else:
-        print("\nRegion could not be inferred (will load all regions).")
-    
-    
     # For neighbourhood simulations, we load all dwelling types (schedules from mixed buildings)
     selected_dtype = None
-    
-    # 6. Load schedules from all years
+
+    # 3. Load schedules from all years (region=None: all PRs visible, Task 27)
     schedule_files = _build_schedule_file_map()
 
     all_schedules = {}
@@ -1129,7 +1084,7 @@ def option_comparative_neighbourhood_simulation() -> None:
             print(f"Warning: {csv_path} not found, skipping {year}")
             continue
 
-        schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=selected_region)
+        schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=None)
         if len(schedules) >= n_buildings:
             all_schedules[year] = schedules
             print(f"  {year}: Loaded {len(schedules)} households")
@@ -1171,7 +1126,17 @@ def option_comparative_neighbourhood_simulation() -> None:
     
     print(f"\nSelected {n_buildings} households from {first_year} (profile-filtered)")
     print(f"  Household sizes: {hhsize_profile[:5]}... (matching for other years)")
-    
+
+    # Auto-select EPW from dominant PR across base households (Task 27)
+    from collections import Counter
+    pr_counts = Counter(
+        integration.get_household_pr(first_schedules[hh_id]) for hh_id in base_hhs
+    )
+    dominant_pr = pr_counts.most_common(1)[0][0] if pr_counts else ''
+    selected_epw = config.resolve_epw_path(dominant_pr, WEATHER_DIR)
+    selected_region = get_region_from_epw(selected_epw)
+    print(f"  Auto-selected EPW (dominant PR='{dominant_pr}'): {os.path.basename(selected_epw)}")
+
     # 7. Create batch directory
     batch_name = f"Neighbourhood_Comparative_{int(time.time())}"
     batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
@@ -1407,15 +1372,17 @@ def option_kfold_comparative_simulation() -> None:
     selected_idf = select_file(idf_files, "Select Base IDF Building Model:")
     
     # 2. Select Weather File
+    # TODO(Task 27 follow-up): replace interactive select with config.resolve_epw_path()
+    #   using the dominant PR across sampled households, same pattern as Options 2/3/5/6.
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
     epw_files.sort(key=_sort_key_by_city)
 
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
-        
+
     selected_epw = select_file(epw_files, "Select Weather File:")
-    
+
     # 2b. Infer Region from Weather File
     selected_region = get_region_from_epw(selected_epw)
     if selected_region:
@@ -1840,13 +1807,15 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         return
 
     # 3. Select Weather File
+    # TODO(Task 27 follow-up): replace interactive select with config.resolve_epw_path()
+    #   using dominant PR across selected neighbourhood households, same pattern as Options 5/6.
     epw_files = glob.glob(os.path.join(WEATHER_DIR, "*.epw"))
     epw_files.sort(key=_sort_key_by_city)
 
     if not epw_files:
         print(f"Error: No EPW files found in {WEATHER_DIR}")
         return
-        
+
     selected_epw = select_file(epw_files, "Select Weather File:")
     
     # 3b. Infer Region from Weather File

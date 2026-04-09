@@ -434,6 +434,16 @@ def load_schedules(csv_path: str, dwelling_type: str = None, region: str = None)
     return dict(schedules)
 
 
+def get_household_pr(hh_schedule: dict) -> str:
+    """Return the PR region string for a household dict from load_schedules().
+
+    The PR value (e.g. 'Quebec', 'Ontario', 'Alberta') is stored by
+    load_schedules() at hh_schedule['metadata']['pr'].  Returns an empty
+    string when the key is absent (e.g. older CSVs that pre-date the PR column).
+    """
+    return hh_schedule.get('metadata', {}).get('pr', '') or ''
+
+
 def write_8760_schedule_csv(
     weekday_vals: list,
     weekend_vals: list,
@@ -1046,23 +1056,31 @@ def validate_idf_compatibility(
     except OSError as e:
         raise ValueError(f"Cannot read IDF for compatibility check: {e}")
 
-    # 1. Count SpaceList objects that suggest a neighbourhood layout
+    # 1. Detect neighbourhood vs single-building IDF.
+    #    Two independent signals are combined:
+    #    a) Presence of 'Neighbourhood_*' SpaceList objects (prepared neighbourhood IDFs).
+    #    b) Zone count > 20 (raw neighbourhood IDFs like NUS_RC*.idf have 96 zones;
+    #       single-building IDFs in this repo have 7).  Threshold of 20 gives headroom
+    #       for unusually-large single-building models while still catching neighbourhoods.
     neighbourhood_spacelists = len(
         _re.findall(r'SpaceList\s*,.*?Neighbourhood_', raw, _re.IGNORECASE | _re.DOTALL)
     )
-    has_neighbourhood_structure = neighbourhood_spacelists > 0
+    zone_count = len(_re.findall(r'^Zone,', raw, _re.MULTILINE))
+    has_neighbourhood_structure = neighbourhood_spacelists > 0 or zone_count > 20
 
     if mode == 'single' and has_neighbourhood_structure:
         raise ValueError(
-            f"IDF '{os.path.basename(idf_path)}' contains {neighbourhood_spacelists} "
-            f"'Neighbourhood_*' SpaceList objects — this looks like a neighbourhood IDF. "
-            "Use inject_neighbourhood_schedules() or select a single-building IDF."
+            f"IDF '{os.path.basename(idf_path)}' looks like a neighbourhood model "
+            f"({zone_count} zones, neigh_spacelists={neighbourhood_spacelists}) but was "
+            "passed to inject_schedules(). Use inject_neighbourhood_schedules() or "
+            "select a single-building IDF."
         )
     if mode == 'neighbourhood' and not has_neighbourhood_structure:
         raise ValueError(
-            f"IDF '{os.path.basename(idf_path)}' has no 'Neighbourhood_*' SpaceList "
-            "objects — this looks like a single-building IDF. "
-            "Use inject_schedules() or select a neighbourhood IDF."
+            f"IDF '{os.path.basename(idf_path)}' looks like a single-building model "
+            f"({zone_count} zones, no Neighbourhood_* SpaceLists) but was passed to "
+            "inject_neighbourhood_schedules(). Use inject_schedules() or select a "
+            "neighbourhood IDF."
         )
 
     # 2. Dwelling-type filename hint (soft warning only)
