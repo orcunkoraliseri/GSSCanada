@@ -370,9 +370,9 @@ Record a short report for each completed task here. Include: what was done, what
 - **Report:** Modified `option_neighbourhood_simulation()` in `main.py`. Added `DTYPE_FALLBACK` constant at module level (shared by Options 5/6/7). After loading all schedules, pre-groups by DTYPE and SSE-ranks each pool (top quarter). Loops over `building_dtypes` and picks from the matching pool; falls back via `DTYPE_FALLBACK` when pool empty. Prints `"Assigned: X MidRise, Y HighRise"` summary. Test suite re-run: all 6 groups still PASS.
 
 ### Task 5
-- **Status:** NOT STARTED
-- **Date:**
-- **Report:**
+- **Status:** DONE
+- **Date:** 2026-04-10
+- **Report:** Modified `option_comparative_neighbourhood_simulation()` in `main.py`. Base-year selection now uses DTYPE-aware pool (same pattern as Task 4) and records both `hhsize_profile` and `dtype_profile`. Per-scenario matching loop extended: tries (DTYPE+hhsize) first, then DTYPE-only, then DTYPE fallback chain. Fallback warnings printed per building. Test suite re-run: all 6 groups still PASS.
 
 ### Task 6
 - **Status:** NOT STARTED
