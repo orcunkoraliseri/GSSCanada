@@ -123,7 +123,7 @@ Expected baseline rates (from Step 3):
 |-------|-------|----------------|
 | 4.1 Sleep continuity | Count sleep-wake-sleep transitions in night slots (37–48, 1–8) per synthetic diary | ≤ 3 transitions for ≥ 95% of diaries |
 | 4.2 Activity transition rate | Mean transitions per 48-slot diary, observed vs. synthetic | Synthetic within ±20% of observed |
-| 4.3 Work peak hours | Paid work (category 1) proportion in slots 9–20 (08:00–14:00) | Synthetic within ±3 pp of observed |
+| 4.3 Work peak hours | Paid work (category 5) proportion in slots 9–20 (08:00–14:00) | Synthetic within ±3 pp of observed |
 | 4.4 Sleep onset time | Modal slot for sleep start, observed vs. synthetic | Within ±1 slot (30 min) |
 | 4.5 No impossible sequences | No paid work at 3–5 AM for non-shift workers (LFTAG = standard employment) | < 1% violation rate |
 

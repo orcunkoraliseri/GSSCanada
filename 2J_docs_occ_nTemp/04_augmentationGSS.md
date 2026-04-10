@@ -461,7 +461,7 @@ Total columns: ~24 metadata + 48 act + 48 hom + 432 copresence = ~552 columns
 | `step4_feature_config.json` | `outputs_step4/` | Feature encodings, dimensions, masks |
 | `best_model.pt` | `outputs_step4/checkpoints/` | Best model checkpoint (lowest val JS) |
 | `augmented_diaries.csv` | `outputs_step4/` | Full augmented dataset (~192,183 rows × ~552 cols) |
-| `step4_validation_report.html` | `outputs_step4/` | Validation report with all V1–V6 checks |
+| `step4_validation_report.html` | `outputs_step4/` | Validation report with all Sections 1–8 checks |
 | `step4_training_log.csv` | `outputs_step4/` | Per-epoch training metrics |
 
 ---
@@ -482,6 +482,8 @@ Total columns: ~24 metadata + 48 act + 48 hom + 432 copresence = ~552 columns
 - `outputs_step3/copresence_30min.csv` (Phase I)
 
 **Dependencies:** 04A → (04B, 04C) → 04D → 04E → 04F
+
+> **Python import note:** Script names beginning with a digit (e.g., `04B_model.py`) cannot be imported with a plain `import` statement. Use `importlib.import_module("04B_model")` to import them, or place shared code in a helper module with a letter-prefixed name (e.g., `step4_model.py`).
 
 ---
 
@@ -515,3 +517,19 @@ Total columns: ~24 metadata + 48 act + 48 hom + 432 copresence = ~552 columns
 - **Step 5 (Census Linkage):** Uses augmented demographic profiles (all 192K diary-days) for archetype clustering
 - **Step 6 (Forecasting):** Uses augmented_diaries.csv as longitudinal anchors; the fine-tuned Model 1 decoder is reused in Step 6's schedule generation
 - **Step 7 (BEM Integration):** Requires all 3 DDAY_STRATA per respondent for weekday/Saturday/Sunday schedule generation; AT_HOME + co-presence slots directly map to EnergyPlus occupancy schedules
+
+---
+
+## Progress Log
+
+| Date | Script | Status | Notes |
+|------|--------|--------|-------|
+| 2026-04-10 | sample_for_testing.py | COMPLETE | Exact implementation from testing spec. Stratified 500-respondent sample by CYCLE_YEAR × DDAY_STRATA. |
+| 2026-04-10 | 04A_dataset_assembly.py | COMPLETE | Merges hetus_30min + copresence_30min on occID. Encodes CAT_COLS (12 one-hot) + TOTINC (standardized) + COLLECT_MODE + TOTINC_SOURCE as conditioning vector. ATTSCH and POWST absent from Step 3 output — skipped without error. CYCLE_YEAR saved separately as integer index (0–3) for model's Embedding layer. cop_avail mask shape (n, 48, 9) built from ~isnan(). Saves step4_{train,val,test}.pt + step4_feature_config.json + metadata CSVs. |
+| 2026-04-10 | 04B_model.py | COMPLETE | ConditionalTransformer with batch_first=True (requires PyTorch ≥ 2.0). Slot linear takes d_act + 10 (1 AT_HOME + 9 co-pres). CLS MLP: (d_cond + d_cycle) → 256 → d_model. Encoder: 49 positions (CLS + 48 slots). Decoder: 48 positions (BOS + 47 shifted GT slots). Target strata via Linear(3, d_model) added to all decoder positions. Autoregressive generate() included. DEFAULT_CONFIG and TEST_CONFIG exported. |
+| 2026-04-10 | 04C_training_pairs.py | COMPLETE | K=5 neighbors per (source, target_strata). Exact match on AGEGRP/SEX/MARSTH/HHSIZE/LFTAG; fuzzy (±1 bin) on PR/CMA/HRSWRK/NOCS/TOTINC. TOTINC binned into 6 quantile bins per CYCLE_YEAR. Saves training_pairs.pt and val_pairs.pt. Deviations: also builds val_pairs (spec only mentioned training_pairs) to support validation in 04D. |
+| 2026-04-10 | 04D_train.py | COMPLETE | Full training loop with teacher forcing, co-presence availability masking, colleagues defense-in-depth zero for 2005/2010. AdamW + linear warm-up → cosine decay. WeightedRandomSampler for DDAY_STRATA imbalance. FP16 via torch.amp.GradScaler. Validation samples 200 val respondents with argmax decoding and per-stratum JS. Saves best_model.pt, last_checkpoint.pt, step4_training_log.csv. |
+| 2026-04-10 | 04E_inference.py | COMPLETE | Loads all three .pt splits and concatenates. Per-respondent × stratum: copies observed (IS_SYNTHETIC=0) or autoregressively generates (IS_SYNTHETIC=1). Post-hoc consistency: Sleep (cat 1 raw, night slots) → AT_HOME=1; PaidWork (cat 5 raw) → AT_HOME=0. Colleagues = NaN for 2005/2010 observed rows; 0 for 2005/2010 synthetic rows. Output: augmented_diaries.csv with all metadata merged. |
+| 2026-04-10 | 04F_validation.py | COMPLETE | AugmentationValidator class with 8 sections. Uses scipy.spatial.distance.jensenshannon. Chart output embedded as base64 PNG in HTML. Sample mode uses relaxed thresholds (JS < 0.20 vs 0.05 full). Deviations: Section 4 uses raw activity category 5 for paid-work check (matches 1-indexed data); Section 1 relies on training log CSV being present. |
+| 2026-04-10 | ALL SCRIPTS | COMPLETE | Full pipeline chain: sample_for_testing → 04A → (04B, 04C) → 04D → 04E → 04F. All scripts accept --sample flag. All use importlib for 04B import where needed. Activity stored as 0-indexed in tensors (shifted from 1-indexed raw values). |
+| 2026-04-10 | SMOKE TESTS | COMPLETE | All 7 --sample smoke tests passed. Three bugs fixed during testing: (1) 04A: TOTINC_SOURCE is a string column ('SELF'/'CRA') — fixed with pd.factorize() before float cast. (2) 04E: metadata merge was on occID only, causing cartesian product for non-unique occIDs across cycles — fixed to merge on ["occID", "CYCLE_YEAR"]. (3) 04F: _load_data() was always loading full-dataset filenames — fixed to use _SAMPLE suffix when sample_mode=True. Results: 04D trained 5 epochs (val_JS=0.136); 04E produced 1500 rows (500×3, 500 observed + 1000 synthetic); 04F produced HTML report (28 PASS / 1 WARN / 17 FAIL — FAILs expected for 5-epoch undertrained model). |

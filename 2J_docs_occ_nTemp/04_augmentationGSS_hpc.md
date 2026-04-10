@@ -135,7 +135,10 @@ export CONDA_PKGS_DIRS=/speed-scratch/$USER/envs/pkgs
 conda create --prefix /speed-scratch/$USER/envs/step4 python=3.10 -y
 conda activate /speed-scratch/$USER/envs/step4
 
-# Install PyTorch with CUDA
+# Check GPU driver version first — the CUDA toolkit must be compatible
+nvidia-smi  # note the "CUDA Version" in top-right (driver's max supported CUDA)
+
+# Install PyTorch with CUDA (adjust pytorch-cuda version if driver requires it)
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 
 # Install remaining dependencies

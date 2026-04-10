@@ -211,7 +211,9 @@ Run a single forward pass (1 batch) with no gradient, to see tensor shapes and o
 #### 3a. Model architecture summary
 
 ```python
-from 04B_model import ConditionalTransformer  # adjust import
+import importlib
+model_module = importlib.import_module("04B_model")  # digit-prefixed module needs importlib
+ConditionalTransformer = model_module.ConditionalTransformer
 
 model = ConditionalTransformer(config)
 total_params = sum(p.numel() for p in model.parameters())
