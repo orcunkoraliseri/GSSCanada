@@ -449,38 +449,37 @@ def write_8760_schedule_csv(
     weekend_vals: list,
     csv_path: str,
     year: int = 2025,
+    design_day_dates: set = None,
 ) -> None:
     """
     Writes a single-column 8760-row CSV stamping weekday/weekend patterns across a full year.
 
-    Weekday pattern is used Mon–Fri; Weekend pattern for Sat–Sun and Canadian statutory
-    holidays (treated as weekend-like days). For a leap year the last day is dropped
-    to keep exactly 8760 rows.
+    Weekday pattern is used Mon–Fri; Weekend pattern for Sat–Sun. For a leap year the
+    last day is dropped to keep exactly 8760 rows.
 
     Args:
         weekday_vals: 24-element list of hourly values for a weekday.
         weekend_vals: 24-element list of hourly values for a weekend day.
         csv_path: Output file path.
         year: Calendar year (determines Jan-1 day-of-week). Default 2025.
+        design_day_dates: Set of (month, day) tuples that are SizingPeriod:DesignDay
+            dates in the IDF. Those calendar dates are forced to weekday pattern so that
+            autosizing matches the Schedule:Compact "For: WinterDesignDay SummerDesignDay"
+            behaviour. If None, no overrides are applied.
     """
     import datetime
 
-    # Canadian federal statutory holidays (month, day) — fixed-date ones only.
-    # Floating holidays (Easter, Thanksgiving, etc.) are not included in v1;
-    # those days fall back to their calendar weekday/weekend assignment.
-    CANADIAN_HOLIDAYS = {
-        (1, 1),   # New Year's Day
-        (7, 1),   # Canada Day
-        (11, 11), # Remembrance Day
-        (12, 25), # Christmas Day
-        (12, 26), # Boxing Day
-    }
+    # No EPW holiday overrides: EPW has zero holidays defined, so EnergyPlus assigns
+    # day types purely by calendar weekday/weekend. We match that here.
+    # Design-day dates ARE forced to weekday pattern (see parameter above).
+    _dd = design_day_dates or set()
 
     day_start = datetime.date(year, 1, 1)
     rows = []
     for day_offset in range(365):
         d = day_start + datetime.timedelta(days=day_offset)
-        is_weekend = (d.weekday() >= 5) or ((d.month, d.day) in CANADIAN_HOLIDAYS)
+        is_design_day = (d.month, d.day) in _dd
+        is_weekend = (d.weekday() >= 5) and not is_design_day
         pattern = weekend_vals if is_weekend else weekday_vals
         rows.extend(pattern)
 
@@ -497,6 +496,7 @@ def write_8760_schedule_csv_monthly(
     monthly_data: dict,
     csv_path: str,
     year: int = 2025,
+    design_day_dates: set = None,
 ) -> None:
     """
     Writes an 8760-row CSV using per-month day patterns (for monthly lighting variation).
@@ -506,22 +506,23 @@ def write_8760_schedule_csv_monthly(
             {'Weekday': [24 values], 'Weekend': [24 values]}.
         csv_path: Output file path.
         year: Calendar year for weekday/weekend assignment.
+        design_day_dates: Set of (month, day) tuples forced to weekday pattern
+            so autosizing matches Schedule:Compact design-day behaviour.
     """
     import datetime
 
     MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    CANADIAN_HOLIDAYS = {
-        (1, 1), (7, 1), (11, 11), (12, 25), (12, 26),
-    }
+    _dd = design_day_dates or set()
 
     day_start = datetime.date(year, 1, 1)
     rows = []
     for day_offset in range(365):
         d = day_start + datetime.timedelta(days=day_offset)
         month_abbr = MONTH_ABBR[d.month - 1]
-        is_weekend = (d.weekday() >= 5) or ((d.month, d.day) in CANADIAN_HOLIDAYS)
+        is_design_day = (d.month, d.day) in _dd
+        is_weekend = (d.weekday() >= 5) and not is_design_day
         day_type = 'Weekend' if is_weekend else 'Weekday'
 
         month_patterns = monthly_data.get(month_abbr, monthly_data.get('Jan', {}))
@@ -1110,7 +1111,11 @@ def inject_setpoint_schedules(
     heating_setback: float = 18.0,
     cooling_setback: float = 27.0,
     threshold: float = 1e-3,
-    verbose: bool = False
+    verbose: bool = False,
+    use_schedule_file: bool = False,
+    sched_dir: str = None,
+    schedule_file_year: int = 2025,
+    design_day_dates: set = None,
 ) -> bool:
     """
     Creates occupancy-responsive heating/cooling setpoint schedules and injects
@@ -1133,6 +1138,12 @@ def inject_setpoint_schedules(
         cooling_setback: Temperature (°C) to use when household is absent. Default 27°C.
         threshold: Presence fraction below which the household is considered absent.
         verbose: Print progress messages.
+        use_schedule_file: When True, write 8760-row CSVs (heating_setpoint.csv,
+            cooling_setpoint.csv) and reference them via Schedule:File instead of
+            building Schedule:Compact blocks (Task 21). Requires sched_dir.
+        sched_dir: Directory where the setpoint CSVs are written. Only used when
+            use_schedule_file=True.
+        schedule_file_year: Calendar year for weekday/weekend assignment in 8760 CSV.
 
     Returns:
         True if at least one DualSetpoint object was updated, False otherwise.
@@ -1162,7 +1173,7 @@ def inject_setpoint_schedules(
         return fallback
 
     def _build_setpoint_schedule(name, day_occ, active_sp, setback_sp):
-        """Return a Schedule:Compact obj list for one day type."""
+        """Return a list of 24 hourly setpoint values for one day type."""
         values = []
         for h in range(24):
             occ = day_occ[h] if h < len(day_occ) else 0.0
@@ -1183,6 +1194,13 @@ def inject_setpoint_schedules(
             fields.append(str(round(v, 4)))
         return fields
 
+    # For Schedule:File path: write the CSVs once (based on first DualSetpoint's active
+    # setpoints), then reference the same files from all DualSetpoint objects.
+    # Residential buildings typically have one DualSetpoint; the first one is used if multiple.
+    schedule_file_written = False
+    new_heat_name = f"HeatSP_HH_{hh_id}"
+    new_cool_name = f"CoolSP_HH_{hh_id}"
+
     updated = 0
     for ds in dual_setpoints:
         heat_sched_name = getattr(ds, 'Heating_Setpoint_Temperature_Schedule_Name', '')
@@ -1191,25 +1209,43 @@ def inject_setpoint_schedules(
         active_heat = _read_constant_from_schedule(heat_sched_name, fallback=22.2)
         active_cool = _read_constant_from_schedule(cool_sched_name, fallback=23.9)
 
-        new_heat_name = f"HeatSP_HH_{hh_id}"
-        new_cool_name = f"CoolSP_HH_{hh_id}"
-
         wd_heat = _build_setpoint_schedule(new_heat_name, weekday_occ, active_heat, heating_setback)
         we_heat = _build_setpoint_schedule(new_heat_name, weekend_occ, active_heat, heating_setback)
         wd_cool = _build_setpoint_schedule(new_cool_name, weekday_occ, active_cool, cooling_setback)
         we_cool = _build_setpoint_schedule(new_cool_name, weekend_occ, active_cool, cooling_setback)
 
-        # Remove any previously injected schedules with same name (re-run safety)
-        for sched_name in (new_heat_name, new_cool_name):
-            existing = [s for s in idf.idfobjects['SCHEDULE:COMPACT'] if s.Name == sched_name]
-            for s in existing:
-                idf.idfobjects['SCHEDULE:COMPACT'].remove(s)
+        if use_schedule_file and sched_dir:
+            if not schedule_file_written:
+                # Write heating_setpoint.csv and cooling_setpoint.csv once (Task 21).
+                os.makedirs(sched_dir, exist_ok=True)
+                heat_csv = os.path.join(sched_dir, "heating_setpoint.csv")
+                cool_csv = os.path.join(sched_dir, "cooling_setpoint.csv")
+                write_8760_schedule_csv(wd_heat, we_heat, heat_csv, year=schedule_file_year,
+                                        design_day_dates=design_day_dates)
+                write_8760_schedule_csv(wd_cool, we_cool, cool_csv, year=schedule_file_year,
+                                        design_day_dates=design_day_dates)
 
-        heat_sch = idf.newidfobject('SCHEDULE:COMPACT')
-        heat_sch.obj = ['Schedule:Compact'] + _compact_setpoint(new_heat_name, wd_heat, we_heat)
+                # Remove any prior Schedule:File objects with same name (re-run safety).
+                for sn in (new_heat_name, new_cool_name):
+                    existing_sf = [s for s in idf.idfobjects.get('SCHEDULE:FILE', []) if s.Name == sn]
+                    for s in existing_sf:
+                        idf.idfobjects['SCHEDULE:FILE'].remove(s)
 
-        cool_sch = idf.newidfobject('SCHEDULE:COMPACT')
-        cool_sch.obj = ['Schedule:Compact'] + _compact_setpoint(new_cool_name, wd_cool, we_cool)
+                idf_optimizer.create_schedule_file_object(idf, new_heat_name, "Temperature", heat_csv)
+                idf_optimizer.create_schedule_file_object(idf, new_cool_name, "Temperature", cool_csv)
+                schedule_file_written = True
+        else:
+            # Remove any previously injected Compact schedules with same name (re-run safety)
+            for sched_name in (new_heat_name, new_cool_name):
+                existing = [s for s in idf.idfobjects['SCHEDULE:COMPACT'] if s.Name == sched_name]
+                for s in existing:
+                    idf.idfobjects['SCHEDULE:COMPACT'].remove(s)
+
+            heat_sch = idf.newidfobject('SCHEDULE:COMPACT')
+            heat_sch.obj = ['Schedule:Compact'] + _compact_setpoint(new_heat_name, wd_heat, we_heat)
+
+            cool_sch = idf.newidfobject('SCHEDULE:COMPACT')
+            cool_sch.obj = ['Schedule:Compact'] + _compact_setpoint(new_cool_name, wd_cool, we_cool)
 
         ds.Heating_Setpoint_Temperature_Schedule_Name = new_heat_name
         ds.Cooling_Setpoint_Temperature_Schedule_Name = new_cool_name
@@ -1217,8 +1253,9 @@ def inject_setpoint_schedules(
 
         if verbose:
             absent_wd = sum(1 for h in range(24) if (weekday_occ[h] if h < len(weekday_occ) else 0) <= threshold)
-            print(f"  Setback applied: {ds.Name} — heat {active_heat}→{heating_setback}°C / "
-                  f"cool {active_cool}→{cooling_setback}°C during {absent_wd}/24 absent weekday hours")
+            mode = "Schedule:File" if (use_schedule_file and sched_dir) else "Schedule:Compact"
+            print(f"  Setback applied ({mode}): {ds.Name} — heat {active_heat}->{heating_setback}C / "
+                  f"cool {active_cool}->{cooling_setback}C during {absent_wd}/24 absent weekday hours")
 
     return updated > 0
 
@@ -1234,7 +1271,7 @@ def inject_schedules(
     run_period_mode: str = 'standard',
     output_frequency: str = 'Monthly',
     use_schedule_file: bool = False,
-    schedule_file_year: int = 2025,
+    schedule_file_year: Optional[int] = None,
 ) -> None:
     """
     Injects specific household schedules into an IDF file.
@@ -1255,7 +1292,10 @@ def inject_schedules(
             Schedule:File IDF objects instead of Schedule:Compact blocks (Task 21).
             The CSVs are placed next to the output IDF under schedules/<hh_id>/.
         schedule_file_year: Calendar year used to assign weekday/weekend to
-            each day when writing the 8760 CSV (default 2025).
+            each day when writing the 8760 CSV. When None (default), the year is
+            auto-derived so that Jan 1 falls on the same weekday as the IDF's
+            RunPeriod 'Day of Week for Start Day' (always Sunday in this pipeline),
+            ensuring CSV alignment with EnergyPlus weekday/weekend logic.
     """
 
     # Guard: reject neighbourhood IDFs passed to single-building mode
@@ -1266,6 +1306,49 @@ def inject_schedules(
     print(f"  Using IDD: {idd_path}")
     IDF.setiddname(idd_path)
     idf = IDF(idf_path)
+
+    # Determine calendar year for 8760 CSV generation when use_schedule_file=True.
+    # The year must have Jan 1 on the same weekday as the RunPeriod 'Day of Week
+    # for Start Day', otherwise Schedule:File rows will be shifted by 1+ days vs
+    # what EnergyPlus's Weekdays/Weekends schedule logic produces.
+    if use_schedule_file and schedule_file_year is None:
+        import datetime as _dt
+        _EP_TO_PY = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
+                     'Friday': 4, 'Saturday': 5, 'Sunday': 6}
+        _run_periods = idf.idfobjects.get('RUNPERIOD', [])
+        _ep_start = 'Sunday'  # configure_run_period always sets this
+        if _run_periods:
+            _ep_start = getattr(_run_periods[0], 'Day_of_Week_for_Start_Day', 'Sunday') or 'Sunday'
+        _target_wd = _EP_TO_PY.get(_ep_start, 6)
+        _yr = _dt.date.today().year
+        for _ in range(15):  # search up to 15 years back
+            if _dt.date(_yr, 1, 1).weekday() == _target_wd:
+                schedule_file_year = _yr
+                break
+            _yr -= 1
+        if schedule_file_year is None:
+            schedule_file_year = 2023  # fallback: Jan 1, 2023 = Sunday
+        print(f"  Schedule:File year auto-derived: {schedule_file_year} "
+              f"(Jan 1 = {_ep_start}, matching RunPeriod)")
+
+    if schedule_file_year is None:
+        schedule_file_year = 2025  # not used unless use_schedule_file=True
+
+    # Extract SizingPeriod:DesignDay dates so Schedule:File CSVs can force weekday
+    # pattern on those calendar dates, matching Schedule:Compact's
+    # "For: WinterDesignDay SummerDesignDay" block (which always uses weekday values).
+    design_day_dates = set()
+    if use_schedule_file:
+        for dd_obj in idf.idfobjects.get('SIZINGPERIOD:DESIGNDAY', []):
+            try:
+                m = int(getattr(dd_obj, 'Month', 0))
+                d = int(getattr(dd_obj, 'Day_of_Month', 0))
+                if m and d:
+                    design_day_dates.add((m, d))
+            except (ValueError, TypeError):
+                pass
+        if design_day_dates:
+            print(f"  Design-day weekday overrides: {sorted(design_day_dates)}")
 
     # 0. Load standard residential schedules (DOE MidRise Apartment baseline)
     standard_schedules = idf_optimizer.load_standard_residential_schedules(verbose=False)
@@ -1315,9 +1398,16 @@ def inject_schedules(
     occ_dict = {k: fmt_for_compact(v) for k, v in occ_data.items()}
     met_dict = {k: fmt_for_compact(v) for k, v in met_data.items()}
 
+    sched_dir = None  # Populated below when use_schedule_file=True
+
     if use_schedule_file:
-        # Schedule:File path — write 8760-row CSVs and reference them (Task 21)
-        sched_dir = os.path.join(os.path.dirname(output_path), "schedules", str(hh_id))
+        # Schedule:File path — write 8760-row CSVs and reference them (Task 21).
+        # Place CSVs at batch level (BEM_Setup/SimResults/<batch>/schedules/HH_<id>/)
+        # so one household's schedules are shared across all scenario IDFs in a batch.
+        if sim_results_dir and batch_name:
+            sched_dir = os.path.join(sim_results_dir, batch_name, "schedules", f"HH_{hh_id}")
+        else:
+            sched_dir = os.path.join(os.path.dirname(output_path), "schedules", f"HH_{hh_id}")
         os.makedirs(sched_dir, exist_ok=True)
 
         occ_wd = occ_data.get('Weekday', [0.0] * 24)
@@ -1327,8 +1417,10 @@ def inject_schedules(
 
         occ_csv = os.path.join(sched_dir, "occupancy.csv")
         met_csv = os.path.join(sched_dir, "metabolic.csv")
-        write_8760_schedule_csv(occ_wd, occ_we, occ_csv, year=schedule_file_year)
-        write_8760_schedule_csv(met_wd, met_we, met_csv, year=schedule_file_year)
+        write_8760_schedule_csv(occ_wd, occ_we, occ_csv, year=schedule_file_year,
+                                design_day_dates=design_day_dates)
+        write_8760_schedule_csv(met_wd, met_we, met_csv, year=schedule_file_year,
+                                design_day_dates=design_day_dates)
 
         idf_optimizer.create_schedule_file_object(idf, occ_sch_name, "Fraction", occ_csv)
         idf_optimizer.create_schedule_file_object(idf, met_sch_name, "Any Number", met_csv)
@@ -1442,12 +1534,12 @@ def inject_schedules(
 
                     proj_sch_name = f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
                     if use_schedule_file:
-                        # Write per-month 8760 CSV and reference via Schedule:File (Task 21)
-                        light_csv = os.path.join(
-                            os.path.dirname(output_path), "schedules", str(hh_id),
-                            f"lighting_{idx}.csv"
-                        )
-                        write_8760_schedule_csv_monthly(monthly_data, light_csv, year=schedule_file_year)
+                        # Write per-month 8760 CSV and reference via Schedule:File (Task 21).
+                        # Multiple LIGHTS objects share the same schedule (first one cached);
+                        # use a simple name without index since caching means only one is written.
+                        light_csv = os.path.join(sched_dir, "lighting.csv")
+                        write_8760_schedule_csv_monthly(monthly_data, light_csv, year=schedule_file_year,
+                                                        design_day_dates=design_day_dates)
                         idf_optimizer.create_schedule_file_object(idf, proj_sch_name, "Fraction", light_csv)
                     else:
                         proj_obj = idf.newidfobject("Schedule:Compact")
@@ -1499,15 +1591,16 @@ def inject_schedules(
                         f"Proj_{obj_type[:4]}_{idx}_{hh_id}"
                     )
                     if use_schedule_file:
-                        # Write 8760 CSV for equipment/DHW and reference via Schedule:File (Task 21)
+                        # Write 8760 CSV for equipment/DHW and reference via Schedule:File (Task 21).
+                        # Use end-use name without obj_type prefix — ELECTRIC and GAS equipment
+                        # share the same occupancy-derived schedule fraction, so writing
+                        # both to equipment.csv is intentional (same data, same source template).
                         end_use_tag = std_key  # 'equipment' or 'dhw'
-                        equip_csv = os.path.join(
-                            os.path.dirname(output_path), "schedules", str(hh_id),
-                            f"{end_use_tag}_{idx}.csv"
-                        )
+                        equip_csv = os.path.join(sched_dir, f"{end_use_tag}.csv")
                         wd_vals = proj_data.get('Weekday', [0.0] * 24)
                         we_vals = proj_data.get('Weekend', wd_vals)
-                        write_8760_schedule_csv(wd_vals, we_vals, equip_csv, year=schedule_file_year)
+                        write_8760_schedule_csv(wd_vals, we_vals, equip_csv, year=schedule_file_year,
+                                                design_day_dates=design_day_dates)
                         idf_optimizer.create_schedule_file_object(idf, proj_sch_name, "Fraction", equip_csv)
                     else:
                         proj_dict = {
@@ -1595,7 +1688,11 @@ def inject_schedules(
         weekend_occ=weekend_occ_list,
         heating_setback=18.0,
         cooling_setback=27.0,
-        verbose=True
+        verbose=True,
+        use_schedule_file=use_schedule_file,
+        sched_dir=sched_dir if use_schedule_file else None,
+        schedule_file_year=schedule_file_year,
+        design_day_dates=design_day_dates,
     )
 
     # 5. Optimize & Save

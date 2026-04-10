@@ -98,30 +98,30 @@ def main():
 
     # 3. Mode mismatch — single IDF in neighbourhood mode — expect ValueError
     results.append(run_test(
-        3, "Mode mismatch: single IDF in neighbourhood mode → ValueError",
+        3, "Mode mismatch: single IDF in neighbourhood mode -> ValueError",
         lambda: validate_idf_compatibility(MONTREAL_IDF, mode='neighbourhood'),
         expect_error=True,
     ))
 
     # 4. Mode mismatch — neighbourhood IDF in single mode — expect ValueError
     results.append(run_test(
-        4, "Mode mismatch: neighbourhood IDF in single mode → ValueError",
+        4, "Mode mismatch: neighbourhood IDF in single mode -> ValueError",
         lambda: validate_idf_compatibility(NEIGHBOURHOOD_IDF, mode='single'),
         expect_error=True,
     ))
 
     # 5. Dtype warning: Montreal + mode='single' + dwelling_type='MidRise'
-    #    IDF filename contains 'SF' which is incompatible with MidRise → [Warning]
+    #    IDF filename contains 'SF' which is incompatible with MidRise -> [Warning]
     results.append(run_test(
-        5, "Dtype warning: Montreal + dwelling_type='MidRise' → [Warning] printed",
+        5, "Dtype warning: Montreal + dwelling_type='MidRise' -> [Warning] printed",
         lambda: validate_idf_compatibility(MONTREAL_IDF, mode='single', dwelling_type='MidRise'),
         expect_warning=True,
     ))
 
     # 6. Dtype silent-pass: Montreal + mode='single' + dwelling_type='SingleD'
-    #    IDF filename contains 'SF' → SingleD is compatible → no warning
+    #    IDF filename contains 'SF' -> SingleD is compatible -> no warning
     results.append(run_test(
-        6, "Dtype silent-pass: Montreal + dwelling_type='SingleD' → no warning",
+        6, "Dtype silent-pass: Montreal + dwelling_type='SingleD' -> no warning",
         lambda: validate_idf_compatibility(MONTREAL_IDF, mode='single', dwelling_type='SingleD'),
     ))
 

@@ -71,7 +71,7 @@ Census PUMF data
 - Tier 1: Perfect match on all demographic columns
 - Tier 2: Match on core columns (28.4% weekday, 41.5% weekend)
 - Tier 3: Match on key columns only
-- Tier 4: Fail-safe fallback (< 0.5% of records)
+- Tier 4: Fail-safe fallback — measured rates: 2005 WD 0.53% / WE 0.29%; 2010 WD 1.14% / WE 4.41%; 2015 WD 0.30% / WE 0.26%; 2022 WD 2.91% / WE 4.84% (see eSim_tests/task33_tier_summary_all_cycles.csv). The original "< 0.5%" claim is a prospective target, not a measured outcome.
 
 ### 25CEN22GSS Classification Pipeline (active ML pipeline)
 Located in `eSim_occ_utils/25CEN22GSS_classification/`

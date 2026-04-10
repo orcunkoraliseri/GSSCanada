@@ -101,9 +101,10 @@ class TestPresenceFilterAlwaysAway:
                 f"Hour {h}: expected baseload {expected:.4f}, got {result[h]:.4f}"
             )
 
-    def test_baseload_uses_typical_away_hours_fallback(self, always_away):
-        """With no absent hours available, base_load should use 9 AM–5 PM values."""
-        pf = PresenceFilter(DEFAULT_EQUIP, always_away)
+    def test_baseload_uses_typical_away_hours_fallback(self, fractional):
+        """When presence is always > 0 (no absent hours), base_load uses 9AM–5PM minimum."""
+        # fractional=[0.4]*24 has no hours < threshold, so the typical-away fallback fires.
+        pf = PresenceFilter(DEFAULT_EQUIP, fractional)
         typical_away_min = min(DEFAULT_EQUIP[h] for h in range(9, 17))
         assert abs(pf.base_load - typical_away_min) < 1e-9
 
@@ -112,12 +113,14 @@ class TestPresenceFilterFractional:
     """Partial occupancy (0.4) must produce values strictly between baseload and default."""
 
     def test_blended_value_is_between_base_and_default(self, fractional):
+        # base_load may exceed some early-morning default values (base derives from 9AM–5PM
+        # typical-away hours which are peak-demand hours). Correct bound is min/max of the pair.
         pf = PresenceFilter(DEFAULT_EQUIP, fractional)
         result = pf.apply(fractional)
         for h in range(24):
-            low = pf.base_load
-            high = DEFAULT_EQUIP[h]
-            assert low <= result[h] <= high + 1e-9, (
+            low = min(pf.base_load, DEFAULT_EQUIP[h])
+            high = max(pf.base_load, DEFAULT_EQUIP[h])
+            assert low - 1e-9 <= result[h] <= high + 1e-9, (
                 f"Hour {h}: result {result[h]:.4f} not in [{low:.4f}, {high:.4f}]"
             )
 
@@ -182,11 +185,12 @@ class TestLightingGeneratorNoStat:
     def test_always_away_returns_baseload(self, always_away):
         lg = LightingGenerator(epw_path=None)
         result = lg.generate(always_away, DEFAULT_LIGHTS)
-        # All hours should be the same base_load (min of 9AM–5PM typical away)
-        away_min = min(DEFAULT_LIGHTS[h] for h in range(9, 17))
+        # All 24 hours are absent → base_load = min of all absent-hour defaults = min(DEFAULT_LIGHTS).
+        # (The typical-away fallback only fires when there are zero absent hours, which can't happen here.)
+        base_load = min(DEFAULT_LIGHTS)
         for h in range(24):
-            assert abs(result[h] - away_min) < 1e-9, (
-                f"Hour {h}: expected baseload {away_min:.4f}, got {result[h]:.4f}"
+            assert abs(result[h] - base_load) < 1e-9, (
+                f"Hour {h}: expected baseload {base_load:.4f}, got {result[h]:.4f}"
             )
 
     def test_24_values_returned(self, single_absence):
@@ -312,3 +316,91 @@ class TestFindArchetypeHousehold:
         # Only offer student and shift worker; worker archetype should match student
         result = find_archetype_household(scheds, 'Worker', candidates=['student_hh', 'shift_hh'])
         assert result in ('student_hh', 'shift_hh')
+
+
+# ---------------------------------------------------------------------------
+# Task 32 Step 2 — 8 spec-required assertions (named as in spec)
+# ---------------------------------------------------------------------------
+
+_RAMP_24 = [0.1 + i * 0.9 / 23 for i in range(24)]  # 0.1 at h=0, 1.0 at h=23
+
+
+def test_presencefilter_always_home():
+    """presence=1.0 every hour → output == default (blend at occ=1 collapses to default)."""
+    pf = PresenceFilter(_RAMP_24, [1.0] * 24)
+    result = pf.apply([1.0] * 24)
+    for h in range(24):
+        assert abs(result[h] - _RAMP_24[h]) < 1e-9, f"Hour {h}: expected {_RAMP_24[h]:.6f}, got {result[h]:.6f}"
+
+
+def test_presencefilter_always_away():
+    """presence=0.0 every hour → every output hour == base_load."""
+    pf = PresenceFilter(_RAMP_24, [0.0] * 24)
+    result = pf.apply([0.0] * 24)
+    for h in range(24):
+        assert abs(result[h] - pf.base_load) < 1e-9, f"Hour {h}: expected base_load {pf.base_load:.6f}, got {result[h]:.6f}"
+
+
+def test_presencefilter_half_day_morning():
+    """First 12 hours home, last 12 away → first 12 == default, last 12 == base_load."""
+    presence = [1.0] * 12 + [0.0] * 12
+    pf = PresenceFilter(_RAMP_24, presence)
+    result = pf.apply(presence)
+    for h in range(12):
+        assert abs(result[h] - _RAMP_24[h]) < 1e-9, f"Hour {h} (home): expected {_RAMP_24[h]:.6f}, got {result[h]:.6f}"
+    for h in range(12, 24):
+        assert abs(result[h] - pf.base_load) < 1e-9, f"Hour {h} (away): expected base_load {pf.base_load:.6f}, got {result[h]:.6f}"
+
+
+def test_presencefilter_single_hour_absence():
+    """Single absent hour (h=9) → hour 9 == base_load, all others == default."""
+    presence = [1.0] * 9 + [0.0] + [1.0] * 14
+    pf = PresenceFilter(_RAMP_24, presence)
+    result = pf.apply(presence)
+    assert abs(result[9] - pf.base_load) < 1e-9, f"Hour 9 (absent): expected base_load {pf.base_load:.6f}, got {result[9]:.6f}"
+    for h in [h for h in range(24) if h != 9]:
+        assert abs(result[h] - _RAMP_24[h]) < 1e-9, f"Hour {h} (home): expected {_RAMP_24[h]:.6f}, got {result[h]:.6f}"
+
+
+def test_presencefilter_continuous_mode_zero():
+    """continuous=True, presence=0.0 → output == base_load (continuous formula collapses)."""
+    pf = PresenceFilter(_RAMP_24, [0.0] * 24)
+    result = pf.apply([0.0] * 24, continuous=True)
+    for h in range(24):
+        assert abs(result[h] - pf.base_load) < 1e-9, f"Hour {h}: expected base_load {pf.base_load:.6f}, got {result[h]:.6f}"
+
+
+def test_presencefilter_continuous_mode_half():
+    """continuous=True, presence=0.5 → each hour = 0.5*default + 0.5*base_load."""
+    presence = [0.5] * 24
+    pf = PresenceFilter(_RAMP_24, presence)
+    result = pf.apply(presence, continuous=True)
+    for h in range(24):
+        expected = 0.5 * _RAMP_24[h] + 0.5 * pf.base_load
+        assert abs(result[h] - expected) < 1e-9, f"Hour {h}: expected {expected:.6f}, got {result[h]:.6f}"
+
+
+def test_lightinggenerator_no_epw_fallback():
+    """No .stat file → _get_annual_average_solar returns [0]*7 + [200]*12 + [0]*5."""
+    lg = LightingGenerator(epw_path=None)
+    solar = lg._get_annual_average_solar()
+    expected = [0.0] * 7 + [200.0] * 12 + [0.0] * 5
+    assert len(solar) == 24
+    for h in range(24):
+        assert abs(solar[h] - expected[h]) < 1e-9, f"Hour {h}: expected {expected[h]}, got {solar[h]}"
+
+
+def test_lightinggenerator_generate_respects_presence():
+    """presence=[0]*8+[1]*8+[0]*8, default=[0.5]*24 → middle 8 hrs get default, outer 16 get base_load."""
+    presence = [0.0] * 8 + [1.0] * 8 + [0.0] * 8
+    default = [0.5] * 24
+    lg = LightingGenerator(epw_path=None)
+    result = lg.generate(presence, default)
+    # base_load = min of absent-hour defaults = min([0.5]*16) = 0.5
+    base_load = 0.5
+    for h in range(8):
+        assert abs(result[h] - base_load) < 1e-9, f"Hour {h} (away): expected base_load {base_load}, got {result[h]}"
+    for h in range(8, 16):
+        assert abs(result[h] - 0.5) < 1e-9, f"Hour {h} (home): expected default 0.5, got {result[h]}"
+    for h in range(16, 24):
+        assert abs(result[h] - base_load) < 1e-9, f"Hour {h} (away): expected base_load {base_load}, got {result[h]}"

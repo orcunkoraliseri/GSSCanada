@@ -13,6 +13,15 @@ import platform
 import time
 import csv
 
+# Windows: reconfigure stdout/stderr to UTF-8 so Unicode characters (e.g. →, —) in
+# integration.py verbose output do not raise charmap codec errors on cp1252 consoles.
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except AttributeError:
+        pass  # reconfigure not available on older Python TextIOWrapper
+
 # Add project root to path so eSim_bem_utils can be imported when running directly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -172,6 +181,49 @@ def select_simulation_mode() -> str:
         except ValueError:
             pass
         print("Invalid selection. Try again.")
+
+
+def _run_simulations_with_fallback(jobs: list, ep_path: str) -> dict:
+    """Run simulations via ProcessPoolExecutor; fall back to sequential on Windows crash.
+
+    ProcessPoolExecutor is known to deadlock or raise BrokenProcessPool on Windows
+    when child processes fail to spawn (Task 26 / Session 7 known issue). This
+    wrapper catches any such exception and re-runs all jobs one-at-a-time using
+    simulation.run_simulation() so the Monte Carlo loop can complete without manual
+    intervention. The return format matches run_simulations_parallel().
+    """
+    try:
+        return simulation.run_simulations_parallel(jobs, ep_path)
+    except Exception as e:
+        print(f"\n[WARN] ProcessPoolExecutor failed ({type(e).__name__}: {e}).")
+        print("[WARN] Falling back to sequential single-process execution (Windows fallback).")
+
+        successful = []
+        failed = []
+        start = time.time()
+        for i, job in enumerate(jobs, 1):
+            name = job.get('name', os.path.basename(job['idf']))
+            print(f"  [{i}/{len(jobs)}] Running {name} sequentially...")
+            result = simulation.run_simulation(
+                idf_path=job['idf'],
+                epw_path=job['epw'],
+                output_dir=job['output_dir'],
+                ep_path=ep_path,
+                n_jobs=1,
+                quiet=True
+            )
+            if result['success']:
+                successful.append(result)
+                print(f"  [{i}/{len(jobs)}] [OK] {name}")
+            else:
+                failed.append(result)
+                print(f"  [{i}/{len(jobs)}] [FAIL] {name}: {result.get('message', '')}")
+
+        return {
+            'successful': successful,
+            'failed': failed,
+            'total_time': time.time() - start
+        }
 
 
 def option_visualize_building() -> None:
@@ -580,16 +632,24 @@ def option_comparative_simulation() -> None:
     """Option 3: Run comparative simulation across 2025, 2015, 2005, and Default."""
     import random
     import sqlite3
-    
+
     print("\n=== Comparative Simulation (6 Scenarios) ===")
     print("This will run 6 simulations for a randomly selected household:")
     for year in COMPARATIVE_YEARS:
         print(f"  - {year} Schedules")
     print("  - Default (No schedule injection)")
-    
+
     # 0. Select Simulation Mode
     selected_sim_mode = select_simulation_mode()
-    
+
+    # 0b. Select Baseline Schedule Set (Task 23)
+    print("\nSelect Baseline Schedule Set for Default scenario:")
+    print("  1. MidRise  — DOE MidRise Apartment (default; existing runs unchanged)")
+    print("  2. SF Detached — IECC SF Detached / HPXML BAHSP (robustness check only)")
+    baseline_choice = input("Select (1-2, default=1): ").strip()
+    selected_baseline = 'sf_detached' if baseline_choice == '2' else 'midrise'
+    print(f"  Baseline: {selected_baseline}")
+
     # 1. Select Base IDF
     idf_files = glob.glob(os.path.join(BUILDINGS_DIR, "*.idf"))
     if not idf_files:
@@ -690,10 +750,11 @@ def option_comparative_simulation() -> None:
         
         try:
             if scenario == 'Default':
-                # Just optimize the base IDF without schedule injection
+                # Optimize with selected baseline (midrise or sf_detached)
                 idf_optimizer.prepare_idf_for_simulation(
-                    selected_idf, idf_path, verbose=True, 
-                    run_period_mode=selected_sim_mode
+                    selected_idf, idf_path, verbose=True,
+                    run_period_mode=selected_sim_mode,
+                    baseline=selected_baseline,
                 )
             elif scenario in all_schedules:
                 # Find a household with matching hhsize
@@ -1475,8 +1536,8 @@ def option_kfold_comparative_simulation() -> None:
         'output_dir': default_dir,
         'name': 'Default'
     }
-    simulation.run_simulations_parallel([default_job], ENERGYPLUS_EXE)
-    
+    _run_simulations_with_fallback([default_job], ENERGYPLUS_EXE)
+
     # Extract Default results
     default_eui_data = None
     default_meter_data = None
@@ -1615,8 +1676,8 @@ def option_kfold_comparative_simulation() -> None:
         
         # Run simulations for this iteration
         print(f"  Running {len(jobs)} simulations...")
-        simulation.run_simulations_parallel(jobs, ENERGYPLUS_EXE)
-        
+        _run_simulations_with_fallback(jobs, ENERGYPLUS_EXE)
+
         # Extract EUI results
         for job in jobs:
             scenario = job['name']
