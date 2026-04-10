@@ -41,6 +41,21 @@ NEIGHBOURHOODS_DIR = os.path.join(BEM_SETUP_DIR, "Neighbourhoods")
 COMPARATIVE_YEARS = ('2005', '2010', '2015', '2022', '2025')
 COMPARATIVE_SCENARIOS = COMPARATIVE_YEARS + ('Default',)
 
+# Fallback hierarchy when a building's DTYPE has too few schedule candidates.
+# Apartment types fall back to other apartment types first; low-rise types to
+# other low-rise types first.
+DTYPE_FALLBACK = {
+    'HighRise': ['MidRise',  'Attached', 'SemiD',    'DuplexD', 'SingleD'],
+    'MidRise':  ['HighRise', 'Attached', 'SemiD',    'DuplexD', 'SingleD'],
+    'Attached': ['SemiD',    'DuplexD',  'SingleD',  'MidRise', 'HighRise'],
+    'SemiD':    ['Attached', 'DuplexD',  'SingleD',  'MidRise', 'HighRise'],
+    'DuplexD':  ['SemiD',    'Attached', 'SingleD',  'MidRise', 'HighRise'],
+    'SingleD':  ['SemiD',    'DuplexD',  'Attached', 'MidRise', 'HighRise'],
+    'Movable':  ['SingleD',  'SemiD',    'Attached', 'DuplexD', 'MidRise'],
+    'OtherA':   ['SingleD',  'SemiD',    'Attached', 'DuplexD', 'MidRise'],
+}
+
+
 def _build_schedule_file_map() -> dict:
     """Return {year: BEM_Schedules_<year>.csv path} for all comparative years."""
     return {
@@ -967,13 +982,15 @@ def option_neighbourhood_simulation() -> None:
     print("\nAvailable Neighbourhood IDFs:")
     selected_idf = select_file(idf_files, "Select Neighbourhood IDF:")
 
-    # 2. Detect number of buildings
+    # 2. Detect number of buildings and their DTYPEs
     n_buildings = neighbourhood.get_num_buildings_from_idf(selected_idf)
     print(f"\nDetected {n_buildings} buildings in the neighbourhood.")
 
     if n_buildings == 0:
         print("Error: Could not detect buildings. Check IDF structure.")
         return
+
+    building_dtypes = neighbourhood.get_building_dtypes_from_idf(selected_idf)
 
     # 3. Select Schedule CSV
     # schedule_dir = os.path.join(BASE_DIR, "Occupancy") # Old path
@@ -984,38 +1001,55 @@ def option_neighbourhood_simulation() -> None:
         return
     selected_csv = select_file(csv_files, "Select Schedule CSV:")
 
-    # 4. Load and filter households (region=None: all PRs visible, Task 27)
+    # 4. Load all households (no DTYPE filter — pool all types, then select per building)
     print(f"\nLoading households from CSV...")
     all_schedules = integration.load_schedules(selected_csv, region=None)
 
-    # 5. Filter for Typical Working Day profile
-    print("\nFiltering for households matching 'Typical Working Day' profile...")
-    scored_matches = integration.filter_matching_households(all_schedules)
-    
-    if not scored_matches:
-        print("Error: No valid households found matching the profile.")
-        return
+    # 5. Pre-group and SSE-rank households by DTYPE
+    print("\nPre-grouping and ranking households by DTYPE...")
+    dtype_raw: dict[str, list[str]] = {}
+    for hh_id, hh_data in all_schedules.items():
+        hh_dtype = hh_data.get('metadata', {}).get('dtype', 'SingleD')
+        dtype_raw.setdefault(hh_dtype, []).append(hh_id)
 
-    sorted_hh_ids = [hh for hh, score in scored_matches]
-    best_score = scored_matches[0][1]
-    worst_selected_idx = min(len(scored_matches), n_buildings) - 1
-    worst_score = scored_matches[worst_selected_idx][1]
-    
-    print(f"  Selected top matches from {len(scored_matches)} candidates.")
-    print(f"  Score Range (SSE): {best_score:.4f} (Best) to {worst_score:.4f}")
+    dtype_pools: dict[str, list[str]] = {}
+    for hh_dtype, pool in dtype_raw.items():
+        scored = integration.filter_matching_households(all_schedules, candidates=pool)
+        if not scored:
+            continue
+        top_cut = max(1, len(scored) // 4)
+        dtype_pools[hh_dtype] = [hh for hh, _ in scored[:top_cut]]
+        print(f"  {hh_dtype}: {len(scored)} candidates -> top {top_cut} in pool")
 
+    # 6. Assign one household per building from the correct DTYPE pool
     import random
-    # Randomly sample from the top quarter of SSE-ranked candidates (Task 2)
-    top_cut = max(n_buildings, len(sorted_hh_ids) // 4)
-    sample_pool = sorted_hh_ids[:top_cut]
-    print(f"  Sampling pool: {len(sample_pool)} candidates (top_cut={top_cut}) for {n_buildings} buildings.")
-    if len(sample_pool) >= n_buildings:
-        hh_ids = random.sample(sample_pool, n_buildings)
-    else:
-        hh_ids = [random.choice(sample_pool) for _ in range(n_buildings)]
+    used_hhs: set[str] = set()
+    hh_ids: list[str] = []
+    dtype_assigned: dict[str, int] = {}
+
+    for bldg_dtype in building_dtypes:
+        pool = [hh for hh in dtype_pools.get(bldg_dtype, []) if hh not in used_hhs]
+
+        if not pool:
+            for fb_dtype in DTYPE_FALLBACK.get(bldg_dtype, []):
+                fb_pool = [hh for hh in dtype_pools.get(fb_dtype, []) if hh not in used_hhs]
+                if fb_pool:
+                    print(f"  Warning: Fallback for {bldg_dtype} -> {fb_dtype}")
+                    pool = fb_pool
+                    break
+
+        if pool:
+            hh_id = random.choice(pool)
+            used_hhs.add(hh_id)
+            hh_ids.append(hh_id)
+            dtype_assigned[bldg_dtype] = dtype_assigned.get(bldg_dtype, 0) + 1
+        else:
+            print(f"  Critical: No household found for building dtype '{bldg_dtype}'")
+
     schedules_list = [{**all_schedules[hh_id], 'hh_id': hh_id} for hh_id in hh_ids]
 
-    print(f"\nAssigned {n_buildings} randomized occupancy profiles to buildings.")
+    summary = ', '.join(f"{v} {k}" for k, v in sorted(dtype_assigned.items()))
+    print(f"\nAssigned: {summary}")
 
     # Auto-select EPW from dominant PR across selected households (Task 27)
     from collections import Counter

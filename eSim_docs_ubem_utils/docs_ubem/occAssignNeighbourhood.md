@@ -365,9 +365,9 @@ Record a short report for each completed task here. Include: what was done, what
 - **Report:** Added `get_building_dtypes_from_idf(idf_path)` (thin wrapper returning ordered DTYPE list) and `load_dtype_overrides(idf_path)` (JSON sidecar loader) to `neighbourhood.py`. Task 7 sidecar logic was included here since it's a single function. Print summary shows DTYPE breakdown. Only `neighbourhood.py` changed.
 
 ### Task 4
-- **Status:** NOT STARTED
-- **Date:**
-- **Report:**
+- **Status:** DONE
+- **Date:** 2026-04-10
+- **Report:** Modified `option_neighbourhood_simulation()` in `main.py`. Added `DTYPE_FALLBACK` constant at module level (shared by Options 5/6/7). After loading all schedules, pre-groups by DTYPE and SSE-ranks each pool (top quarter). Loops over `building_dtypes` and picks from the matching pool; falls back via `DTYPE_FALLBACK` when pool empty. Prints `"Assigned: X MidRise, Y HighRise"` summary. Test suite re-run: all 6 groups still PASS.
 
 ### Task 5
 - **Status:** NOT STARTED
