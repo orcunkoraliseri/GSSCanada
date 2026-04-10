@@ -1925,13 +1925,15 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
     print("\nAvailable Neighbourhood IDFs:")
     selected_idf = select_file(neighbourhood_files, "\nSelect Neighbourhood IDF:")
     
-    # 2. Get building count
+    # 2. Get building count and per-building DTYPEs
     n_buildings = neighbourhood.get_num_buildings_from_idf(selected_idf)
     print(f"\nDetected {n_buildings} buildings in the neighbourhood.")
-    
+
     if n_buildings == 0:
         print("Error: Could not detect buildings. Check IDF structure.")
         return
+
+    building_dtypes = neighbourhood.get_building_dtypes_from_idf(selected_idf)
 
     # 3. Select Weather File
     # TODO(Task 27 follow-up): replace interactive select with config.resolve_epw_path()
@@ -2066,30 +2068,51 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         ]
         print(f"  {scenario}: {len(sorted_year_hhs_cache[scenario])} ranked candidates")
 
-    # Pre-compute first_year candidate pool — identical every iteration (Task 3)
+    # Pre-compute per-DTYPE candidate pools for base-year sampling (once, before iterating)
     first_schedules = all_schedules[first_year]
-    first_year_scored = integration.filter_matching_households(first_schedules)
-    pool_size = max(n_buildings * 2, len(first_year_scored) // 2)
-    candidate_pool = [hh for hh, s in first_year_scored[:pool_size]]
-    print(f"  Base year ({first_year}) pool: {len(candidate_pool)} candidates for hhsize sampling\n")
+    dtype_raw_first: dict[str, list[str]] = {}
+    for hh_id, hh_data in first_schedules.items():
+        hh_dtype = hh_data.get('metadata', {}).get('dtype', 'SingleD')
+        dtype_raw_first.setdefault(hh_dtype, []).append(hh_id)
+
+    dtype_pools_first: dict[str, list[str]] = {}
+    for hh_dtype, pool in dtype_raw_first.items():
+        scored = integration.filter_matching_households(first_schedules, candidates=pool)
+        if not scored:
+            continue
+        pool_size = max(n_buildings * 2, len(scored) // 2)
+        dtype_pools_first[hh_dtype] = [hh for hh, _ in scored[:pool_size]]
+        print(f"  Base year ({first_year}) {hh_dtype} pool: {len(dtype_pools_first[hh_dtype])} candidates")
+    print()
 
     for k in range(iter_count):
         print(f"\n--- Iteration {k+1}/{iter_count} ---")
 
-        # Sample n_buildings distinct households from the pre-computed pool
-        if len(candidate_pool) < n_buildings:
-            print(f"  Warning: Candidate pool smaller than N ({len(candidate_pool)} < {n_buildings}). Using duplication.")
-            base_hhs = [random.choice(candidate_pool) for _ in range(n_buildings)]
-        else:
-            base_hhs = random.sample(candidate_pool, n_buildings)
-        
-        # Get hhsize profile for matching
-        hhsize_profile = []
-        for hh_id in base_hhs:
-            hhsize = first_schedules[hh_id].get('metadata', {}).get('hhsize', 2)
-            hhsize_profile.append(hhsize)
-            
-        print(f"  Selected {n_buildings} households (Sizes: {hhsize_profile[:5]}...)")
+        # Sample one base household per building from the correct DTYPE pool
+        base_hhs: list[str] = []
+        used_base_k: set[str] = set()
+        for bldg_dtype in building_dtypes:
+            pool_k = [hh for hh in dtype_pools_first.get(bldg_dtype, []) if hh not in used_base_k]
+            if not pool_k:
+                for fb_dtype in DTYPE_FALLBACK.get(bldg_dtype, []):
+                    fb_pool_k = [hh for hh in dtype_pools_first.get(fb_dtype, []) if hh not in used_base_k]
+                    if fb_pool_k:
+                        pool_k = fb_pool_k
+                        break
+            if pool_k:
+                hh_id_k = random.choice(pool_k)
+                used_base_k.add(hh_id_k)
+                base_hhs.append(hh_id_k)
+            else:
+                base_hhs.append(list(first_schedules.keys())[0])
+
+        # Record hhsize and dtype profiles for cross-year matching
+        hhsize_profile = [first_schedules[hh].get('metadata', {}).get('hhsize', 2) for hh in base_hhs]
+        dtype_profile  = [first_schedules[hh].get('metadata', {}).get('dtype', 'SingleD') for hh in base_hhs]
+
+        from collections import Counter as _Counter
+        dtype_summary_k = ', '.join(f"{v} {k}" for k, v in _Counter(dtype_profile).most_common())
+        print(f"  Selected {n_buildings} households: {dtype_summary_k}")
         
         # Prepare jobs for this iteration
         iter_dir = os.path.join(batch_dir, f"iter_{k+1}")
@@ -2117,29 +2140,41 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
 
                 used_hhs = set()
 
-                for target_hhsize in hhsize_profile:
-                    # Per-building SSE matching — same logic as single-building mode (Task 5)
+                for target_hhsize, target_dtype in zip(hhsize_profile, dtype_profile):
+                    # Per-building SSE matching filtered by DTYPE + hhsize
                     size_candidates = [
                         hh for hh in sorted_year_hhs
                         if year_schedules[hh].get('metadata', {}).get('hhsize', 0) == target_hhsize
+                        and year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
                         and hh not in used_hhs
                     ]
+
+                    if not size_candidates:
+                        # DTYPE-only fallback (relax hhsize)
+                        size_candidates = [
+                            hh for hh in sorted_year_hhs
+                            if year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
+                            and hh not in used_hhs
+                        ]
+
+                    if not size_candidates:
+                        # DTYPE fallback chain
+                        for fb_dtype in DTYPE_FALLBACK.get(target_dtype, []):
+                            size_candidates = [
+                                hh for hh in sorted_year_hhs
+                                if year_schedules[hh].get('metadata', {}).get('dtype', '') == fb_dtype
+                                and hh not in used_hhs
+                            ]
+                            if size_candidates:
+                                break
 
                     if size_candidates:
                         hh_id = integration.find_best_match_household(year_schedules, size_candidates)
                         data = year_schedules[hh_id]
                         used_hhs.add(hh_id)
                     else:
-                        # Fallback: best SSE match regardless of hhsize
-                        remaining = [hh for hh in sorted_year_hhs if hh not in used_hhs]
-                        if remaining:
-                            hh_id = integration.find_best_match_household(year_schedules, remaining)
-                            data = year_schedules[hh_id]
-                            used_hhs.add(hh_id)
-                            print(f"      Fallback: Used {data.get('metadata', {}).get('hhsize')}p HH instead.")
-                        else:
-                            print(f"      Critical: No households left in {scenario}!")
-                            continue
+                        print(f"      Critical: No households left in {scenario}!")
+                        continue
 
                     schedules_list.append({**data, 'hh_id': hh_id})
                 

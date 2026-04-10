@@ -375,9 +375,9 @@ Record a short report for each completed task here. Include: what was done, what
 - **Report:** Modified `option_comparative_neighbourhood_simulation()` in `main.py`. Base-year selection now uses DTYPE-aware pool (same pattern as Task 4) and records both `hhsize_profile` and `dtype_profile`. Per-scenario matching loop extended: tries (DTYPE+hhsize) first, then DTYPE-only, then DTYPE fallback chain. Fallback warnings printed per building. Test suite re-run: all 6 groups still PASS.
 
 ### Task 6
-- **Status:** NOT STARTED
-- **Date:**
-- **Report:**
+- **Status:** DONE
+- **Date:** 2026-04-10
+- **Report:** Modified `option_batch_comparative_neighbourhood_simulation()` in `main.py`. Detect building DTYPEs once before iteration loop. Pre-compute per-DTYPE candidate pools for base-year alongside `sorted_year_hhs_cache`. In each iteration: sample base households per-DTYPE (replaces flat `random.sample`); record `dtype_profile`. Inner per-scenario loop: filter by (DTYPE+hhsize), then DTYPE-only, then DTYPE fallback chain. Test suite re-run: all 6 groups still PASS.
 
 ### Task 7
 - **Status:** NOT STARTED
