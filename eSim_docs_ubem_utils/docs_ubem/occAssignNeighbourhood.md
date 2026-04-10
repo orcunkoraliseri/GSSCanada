@@ -380,9 +380,9 @@ Record a short report for each completed task here. Include: what was done, what
 - **Report:** Modified `option_batch_comparative_neighbourhood_simulation()` in `main.py`. Detect building DTYPEs once before iteration loop. Pre-compute per-DTYPE candidate pools for base-year alongside `sorted_year_hhs_cache`. In each iteration: sample base households per-DTYPE (replaces flat `random.sample`); record `dtype_profile`. Inner per-scenario loop: filter by (DTYPE+hhsize), then DTYPE-only, then DTYPE fallback chain. Test suite re-run: all 6 groups still PASS.
 
 ### Task 7
-- **Status:** NOT STARTED
-- **Date:**
-- **Report:**
+- **Status:** DONE (implemented as part of Task 3)
+- **Date:** 2026-04-10
+- **Report:** `load_dtype_overrides(idf_path)` was implemented in Task 3 and integrated into `get_building_dtypes_from_idf()`. Looks for `<idf_stem>_dtypes.json` alongside the IDF. If present, uses its `{"Bldg_0": "SemiD", ...}` mapping; otherwise falls back to zone-name inference. Prints source (sidecar vs. inferred). Validated by the sidecar override test in Task 8's test suite (PASS).
 
 ### Task 8
 - **Status:** DONE
