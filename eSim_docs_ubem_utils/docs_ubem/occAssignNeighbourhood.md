@@ -355,9 +355,9 @@ Record a short report for each completed task here. Include: what was done, what
 - **Report:** Added `_infer_dtype_from_zone_name(zone_name)` and `infer_building_dtype(zones)` to `neighbourhood.py` (inserted before `get_building_groups`). Helper checks `highrise > midrise > apartment > living_unit > room_` in case-insensitive order, returns None for non-residential zones. `infer_building_dtype` does majority vote over non-None results, falls back to `'SingleD'`. No other files changed.
 
 ### Task 2
-- **Status:** NOT STARTED
-- **Date:**
-- **Report:**
+- **Status:** DONE
+- **Date:** 2026-04-10
+- **Report:** Changed `get_building_groups()` return type from `dict[str, list[str]]` to `dict[str, dict]` where each value is `{'spaces': [...], 'dtype': '...'}`. Print summary now shows DTYPE counts. Updated `get_water_equipment_building_map()` and `prepare_neighbourhood_idf()` to use `bldg_data['spaces']` instead of raw list. `get_num_buildings_from_idf()` needed no change (only counts keys).
 
 ### Task 3
 - **Status:** NOT STARTED

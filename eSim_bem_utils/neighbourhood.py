@@ -93,7 +93,7 @@ def infer_building_dtype(zones: list[str]) -> str:
     return Counter(valid).most_common(1)[0][0]
 
 
-def get_building_groups(idf_content: str) -> dict[str, list[str]]:
+def get_building_groups(idf_content: str) -> dict[str, dict]:
     """
     Analyzes a neighbourhood IDF and groups spaces by building.
 
@@ -106,8 +106,11 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
         idf_content: The full text content of the IDF file.
 
     Returns:
-        A dictionary mapping building IDs (e.g., "Bldg_0") to lists of space names.
+        A dictionary mapping building IDs (e.g., "Bldg_0") to dicts of the form
+        {'spaces': [...], 'dtype': 'MidRise'}.
     """
+    from collections import Counter
+
     spacelist_name, spaces_block = _find_primary_spacelist(idf_content)
     if spaces_block is None:
         print("Warning: No SpaceList found in IDF.")
@@ -115,7 +118,7 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
 
     space_names = _parse_space_names(spaces_block)
 
-    buildings: dict[str, list[str]] = {}
+    space_lists: dict[str, list[str]] = {}
     hash_to_bldg: dict[str, str] = {}
 
     for space in space_names:
@@ -134,16 +137,27 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
 
         if key not in hash_to_bldg:
             hash_to_bldg[key] = f"Bldg_{len(hash_to_bldg)}"
-        buildings.setdefault(hash_to_bldg[key], []).append(space)
+        space_lists.setdefault(hash_to_bldg[key], []).append(space)
 
+    # Attach inferred DTYPE to each building group
+    buildings: dict[str, dict] = {}
+    for bldg_id, spaces in space_lists.items():
+        buildings[bldg_id] = {
+            'spaces': spaces,
+            'dtype': infer_building_dtype(spaces),
+        }
+
+    # Summary
+    dtype_counts = Counter(b['dtype'] for b in buildings.values())
+    dtype_summary = ', '.join(f"{count} {dtype}" for dtype, count in dtype_counts.most_common())
     print(f"Found SpaceList '{spacelist_name}' with {len(space_names)} spaces.")
-    print(f"Grouped into {len(buildings)} buildings.")
+    print(f"Grouped into {len(buildings)} buildings: {dtype_summary}.")
     return buildings
 
 
 def get_water_equipment_building_map(
     idf_content: str,
-    buildings: dict[str, list[str]]
+    buildings: dict[str, dict]
 ) -> dict[str, list[str]]:
     """
     Maps existing WaterUse:Equipment objects to buildings by matching
@@ -174,8 +188,8 @@ def get_water_equipment_building_map(
 
     # Build hash-to-building lookup from the buildings dict (mirrors get_building_groups)
     hash_to_bldg: dict[str, str] = {}
-    for bldg_id, spaces in buildings.items():
-        for space in spaces:
+    for bldg_id, bldg_data in buildings.items():
+        for space in bldg_data['spaces']:
             candidate = space[:-len("_Space")] if space.endswith("_Space") else space
             parts = candidate.split("_")
             last  = parts[-1] if parts else ""
@@ -184,8 +198,8 @@ def get_water_equipment_building_map(
 
     # Legacy fallback: prefix-to-building via _Room_ (unchanged from original)
     prefix_to_bldg: dict[str, str] = {}
-    for bldg_id, spaces in buildings.items():
-        for space in spaces:
+    for bldg_id, bldg_data in buildings.items():
+        for space in bldg_data['spaces']:
             pm = re.match(r"(.+?)_Room_", space)
             if pm:
                 prefix = pm.group(1)
@@ -287,9 +301,11 @@ ScheduleTypeLimits,
   Dimensionless;           !- Unit Type
 """)
 
-    for i, (bldg_id, spaces) in enumerate(buildings.items()):
+    for i, (bldg_id, bldg_data) in enumerate(buildings.items()):
         if i >= n_buildings:
             break
+
+        spaces = bldg_data['spaces']
 
         # Create a SpaceList for this building
         space_list_name = f"Neighbourhood_{bldg_id}_SpaceList"
