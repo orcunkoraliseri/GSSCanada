@@ -557,6 +557,12 @@ Record a short report for each completed task here. Include: what was done, what
 
   **Validation:** All 73,818 household-days have exactly 24 hourly rows. Occupancy within [0,1]. Metabolic rate non-negative. Step 4 (Option 7 spot-check) pending — requires user to run `! py run_bem.py` interactively.
 
+  **Project context (for relating spot-check results):**
+  - *eSim expanded:* Occupancy modeling is complete; current work is integration into neighbourhood simulations.
+  - *SharePoint → Google Drive:* Transferring all project files from SharePoint to Google Drive safely — coordinate any file references accordingly.
+  - *NUS_BES:* Working to complete the missing simulations in this dataset.
+  - *LMN-tool:* No meeting next week; the following week's meeting topic is icon selection for the LMN tool UI update.
+
 ---
 
 ## Execution Prompt for Sonnet
