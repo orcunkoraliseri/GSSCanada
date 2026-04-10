@@ -459,3 +459,66 @@ def get_num_buildings_from_idf(idf_path: str) -> int:
         content = f.read()
     buildings = get_building_groups(content)
     return len(buildings)
+
+
+def get_building_dtypes_from_idf(idf_path: str) -> list[str]:
+    """
+    Return an ordered list of DTYPEs for every building in a neighbourhood IDF.
+
+    The list is indexed identically to Bldg_0, Bldg_1, ... produced by
+    get_building_groups(), so index i corresponds to building i.
+
+    Supports an optional JSON sidecar file (see load_dtype_overrides()).
+
+    Args:
+        idf_path: Path to the neighbourhood IDF.
+
+    Returns:
+        List of DTYPE strings, one per building (e.g. ['MidRise'] * 36).
+    """
+    from collections import Counter
+
+    with open(idf_path, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+
+    buildings = get_building_groups(content)
+
+    # Apply sidecar overrides if present
+    overrides = load_dtype_overrides(idf_path)
+    if overrides:
+        print(f"Building types: loaded from {os.path.basename(idf_path).replace('.idf', '_dtypes.json')}")
+    else:
+        print("Building types: inferred from zone names")
+
+    dtypes = []
+    for bldg_id in buildings:
+        if bldg_id in overrides:
+            dtypes.append(overrides[bldg_id])
+        else:
+            dtypes.append(buildings[bldg_id]['dtype'])
+
+    dtype_counts = Counter(dtypes)
+    summary = ', '.join(f"{count} {dtype}" for dtype, count in dtype_counts.most_common())
+    print(f"  Building types: {summary}")
+    return dtypes
+
+
+def load_dtype_overrides(idf_path: str) -> dict[str, str]:
+    """
+    Load manual DTYPE overrides from a JSON sidecar file alongside the IDF.
+
+    For 'NUS_RC1.idf', looks for 'NUS_RC1_dtypes.json' in the same directory.
+    Expected format: {"Bldg_0": "SemiD", "Bldg_1": "Attached", ...}
+
+    Returns an empty dict if no sidecar exists.
+    """
+    import json
+
+    sidecar = idf_path.replace('.idf', '_dtypes.json')
+    if not os.path.exists(sidecar):
+        return {}
+
+    with open(sidecar, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    return {k: v for k, v in data.items() if isinstance(v, str)}

@@ -360,9 +360,9 @@ Record a short report for each completed task here. Include: what was done, what
 - **Report:** Changed `get_building_groups()` return type from `dict[str, list[str]]` to `dict[str, dict]` where each value is `{'spaces': [...], 'dtype': '...'}`. Print summary now shows DTYPE counts. Updated `get_water_equipment_building_map()` and `prepare_neighbourhood_idf()` to use `bldg_data['spaces']` instead of raw list. `get_num_buildings_from_idf()` needed no change (only counts keys).
 
 ### Task 3
-- **Status:** NOT STARTED
-- **Date:**
-- **Report:**
+- **Status:** DONE
+- **Date:** 2026-04-10
+- **Report:** Added `get_building_dtypes_from_idf(idf_path)` (thin wrapper returning ordered DTYPE list) and `load_dtype_overrides(idf_path)` (JSON sidecar loader) to `neighbourhood.py`. Task 7 sidecar logic was included here since it's a single function. Print summary shows DTYPE breakdown. Only `neighbourhood.py` changed.
 
 ### Task 4
 - **Status:** NOT STARTED
