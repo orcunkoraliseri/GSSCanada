@@ -44,6 +44,55 @@ def _parse_space_names(spaces_block: str) -> list[str]:
     return names
 
 
+def _infer_dtype_from_zone_name(zone_name: str) -> str | None:
+    """
+    Return the DTYPE implied by a single zone name, or None for ambiguous/non-residential zones.
+
+    Checks in priority order so that 'highrise' beats 'apartment'.
+    Returns None for Corridor/Office/etc. — caller handles via majority vote.
+    """
+    lower = zone_name.lower()
+    if 'highrise' in lower:
+        return 'HighRise'
+    if 'midrise' in lower:
+        return 'MidRise'
+    if 'apartment' in lower:
+        # Ambiguous (e.g. NUS_RC5 "0_Apartment_...") — default to MidRise
+        return 'MidRise'
+    if 'living_unit' in lower:
+        return 'SingleD'
+    if 'room_' in lower:
+        return 'SingleD'
+    return None
+
+
+def infer_building_dtype(zones: list[str]) -> str:
+    """
+    Infer the DTYPE for a building group from its zone/space names.
+
+    Applies _infer_dtype_from_zone_name to every zone and takes a majority
+    vote over non-None results.  Non-residential zones (Corridor, Office)
+    return None from the helper and are ignored, so they inherit the type
+    from their residential siblings.
+
+    Args:
+        zones: Space names belonging to one building group.
+
+    Returns:
+        One of the 8 DTYPE strings.  Falls back to 'SingleD' (the largest
+        pool) when no zone yields a positive signal.
+    """
+    from collections import Counter
+
+    votes = [_infer_dtype_from_zone_name(z) for z in zones]
+    valid = [v for v in votes if v is not None]
+
+    if not valid:
+        return 'SingleD'
+
+    return Counter(valid).most_common(1)[0][0]
+
+
 def get_building_groups(idf_content: str) -> dict[str, list[str]]:
     """
     Analyzes a neighbourhood IDF and groups spaces by building.
