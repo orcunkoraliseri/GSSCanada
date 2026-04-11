@@ -555,7 +555,45 @@ Record a short report for each completed task here. Include: what was done, what
   Apartment:           0  ← eliminated
   ```
 
-  **Validation:** All 73,818 household-days have exactly 24 hourly rows. Occupancy within [0,1]. Metabolic rate non-negative. Step 4 (Option 7 spot-check) pending — requires user to run `! py run_bem.py` interactively.
+  **Validation:** All 73,818 household-days have exactly 24 hourly rows. Occupancy within [0,1]. Metabolic rate non-negative.
+
+  **Step 4 — Option 7 spot-check (2026-04-11): DONE**
+
+  Batch: `MonteCarlo_Neighbourhood_N1_1775862856` (N=1, NUS_RC4)
+
+  ```
+  Batch:       MonteCarlo_Neighbourhood_N1_1775862856
+  Iterations:  1
+  Scenarios:   ('2005', '2010', '2015', '2022', '2025')
+  Expected DTYPE: MidRise
+
+  === (a) DTYPE Compliance ===
+  (checking iter_1 exported schedule CSVs only — later iterations are not exported)
+    Scenario 2005: 8 HHs assigned — all MidRise ... PASS
+    Scenario 2010: 8 HHs assigned — all MidRise ... PASS
+    Scenario 2015: 8 HHs assigned — all MidRise ... PASS
+    Scenario 2022: 8 HHs assigned — all MidRise ... PASS
+    Scenario 2025: 8 HHs assigned — all MidRise ... PASS
+
+  === (c) Simulation Success ===
+    Default: eplusout.sql exists ... PASS
+    5/5 scenario runs have eplusout.sql ... PASS
+
+  === (d) EUI Sanity [50–500 kWh/m2-year] ===
+    No zero/negative EUI values (0 found) ... PASS
+    All 6 EUI values within [50.0, 500.0] kWh/m2-year ... PASS
+      Default EUI = 89.7 kWh/m2-year
+
+  === (e) Cross-Iteration EUI Spread ===
+    (N=1 spot-check — std check skipped by design)
+
+  === (b) Monte Carlo Variation ===
+    At least 2 iterations produce meaningfully different EUI ... FAIL
+    (expected — N=1 cannot show variation; not a real failure for this spot-check)
+
+  Critical check result: 2022 DTYPE compliance PASS — all buildings assigned MidRise.
+  All other year DTYPE compliance rows PASS.
+  ```
 
   **Project context (for relating spot-check results):**
   - *eSim expanded:* Occupancy modeling is complete; current work is integration into neighbourhood simulations.
