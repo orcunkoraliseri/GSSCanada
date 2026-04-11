@@ -603,6 +603,57 @@ Record a short report for each completed task here. Include: what was done, what
 
 ---
 
+## Task Completion Report
+
+**Document:** occAssignNeighbourhood.md
+**Completed:** 2026-04-11
+**Tasks covered:** 1–10
+
+### Summary
+
+All 10 tasks in this document are complete. The work spans the full implementation of DTYPE-aware building occupancy assignment in the neighbourhood BEM pipeline, from initial code scaffolding through final data fix and simulation validation.
+
+### What was built
+
+- **Tasks 1–6:** Core implementation of `neighbourhood.py` — DTYPE-aware schedule assignment, fallback logic, multi-scenario iteration, EnergyPlus IDF patching, result aggregation, and Monte Carlo orchestration.
+- **Task 7:** Integration wiring — `neighbourhood.py` connected to `main.py` and `integration.py` as Option 7 in the interactive menu.
+- **Task 8:** Occupancy schedule export — per-household CSV export added to the simulation loop for downstream validation.
+- **Task 9:** End-to-end simulation validation — `eSim_tests/test_task9_simulation_validation.py` written and run; confirmed DTYPE assignment, simulation success, and EUI sanity for years 2005, 2010, 2015, 2025. Identified 2022 DTYPE taxonomy mismatch (all buildings falling back to `SingleD`).
+- **Task 10:** 2022 DTYPE fix — root cause traced to `21CEN22GSS_occToBEM.py`, which mapped the 2021 PUMF's collapsed `"Apartment"` code without splitting into `MidRise`/`HighRise`. Option B applied: BEDRM-based split (BEDRM ≤ 1 → `HighRise`, BEDRM ≥ 2 → `MidRise`). `BEM_Schedules_2022.csv` regenerated (1,771,632 rows; 0 `Apartment` rows remaining). Spot-check simulation confirmed 2022 DTYPE compliance PASS.
+
+### Files changed
+
+| File | Change |
+|---|---|
+| `eSim_bem_utils/neighbourhood.py` | Core DTYPE-aware assignment and Monte Carlo logic (Tasks 1–6) |
+| `eSim_bem_utils/main.py` | Option 7 menu integration (Task 7) |
+| `eSim_bem_utils/integration.py` | Option 7 dispatch wiring (Task 7) |
+| `eSim_occ_utils/21CEN22GSS/21CEN22GSS_occToBEM.py` | BEDRM-based Apartment split (Task 10) |
+| `BEM_Setup/BEM_Schedules_2022.csv` | Regenerated with corrected DTYPE taxonomy (Task 10) |
+| `eSim_tests/test_task9_simulation_validation.py` | Validation script (Task 9) |
+
+### Final validation result
+
+```
+Batch: MonteCarlo_Neighbourhood_N1_1775862856 (N=1, NUS_RC4)
+
+DTYPE Compliance:
+  Scenario 2005 ... PASS
+  Scenario 2010 ... PASS
+  Scenario 2015 ... PASS
+  Scenario 2022 ... PASS  ← fixed by Task 10
+  Scenario 2025 ... PASS
+
+Simulation success: 5/5 ... PASS
+EUI sanity [50–500 kWh/m2-year]: PASS (Default = 89.7 kWh/m2-year)
+```
+
+### Status
+
+**ALL TASKS COMPLETE.** The neighbourhood occupancy assignment pipeline is implemented, validated, and ready for production Monte Carlo runs (N=20+).
+
+---
+
 ## Execution Prompt for Sonnet
 
 Copy and paste the block below into a fresh Claude Code session to execute Task 9.
