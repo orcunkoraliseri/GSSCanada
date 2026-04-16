@@ -6,7 +6,7 @@ import os
 import calendar
 
 # --- Configuration ---
-SCENARIOS = ["Default", "2005", "2015", "2025"]
+SCENARIOS = ["Default", "2005", "2010", "2015", "2022", "2025"]
 # We use Toronto as the representative for peak timing analysis
 CITY = "Toronto (5A)"
 CITY_FOLDER = "MonteCarlo_N60_1771006398"

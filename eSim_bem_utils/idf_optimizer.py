@@ -27,6 +27,12 @@ REQUIRED_OUTPUT_VARIABLES = [
     ('Zone Ideal Loads Supply Air Total Cooling Energy', 'Hourly'),
 ]
 
+# Monthly variables for physically intuitive heating/cooling time-series plots.
+MONTHLY_IDEAL_LOADS_OUTPUT_VARIABLES = [
+    ('Zone Ideal Loads Supply Air Total Heating Energy', 'Monthly'),
+    ('Zone Ideal Loads Supply Air Total Cooling Energy', 'Monthly'),
+]
+
 # Field value fixes for E+ 24.2 compatibility
 FIELD_FIXES = {
     'PEOPLE': {
@@ -147,19 +153,32 @@ def optimize_idf(idf: IDF, verbose: bool = True, meter_frequency: str = 'Monthly
     # 4. Add required output variables if missing
     existing_vars = set()
     for var in idf.idfobjects.get('OUTPUT:VARIABLE', []):
-        existing_vars.add(var.Variable_Name)
-    
+        existing_vars.add((var.Variable_Name, str(var.Reporting_Frequency).strip().lower()))
+
     added_vars = 0
     for var_name, frequency in REQUIRED_OUTPUT_VARIABLES:
-        if var_name not in existing_vars:
+        var_key = (var_name, str(frequency).strip().lower())
+        if var_key not in existing_vars:
             var_obj = idf.newidfobject("Output:Variable")
             var_obj.Key_Value = "*"
             var_obj.Variable_Name = var_name
             var_obj.Reporting_Frequency = frequency
             added_vars += 1
-    
-    if added_vars > 0:
-        msg = f"Added {added_vars} output variables"
+
+    monthly_added = 0
+    for var_name, frequency in MONTHLY_IDEAL_LOADS_OUTPUT_VARIABLES:
+        var_key = (var_name, str(frequency).strip().lower())
+        if var_key not in existing_vars:
+            var_obj = idf.newidfobject("Output:Variable")
+            var_obj.Key_Value = "*"
+            var_obj.Variable_Name = var_name
+            var_obj.Reporting_Frequency = frequency
+            monthly_added += 1
+            existing_vars.add(var_key)
+
+    total_added_vars = added_vars + monthly_added
+    if total_added_vars > 0:
+        msg = f"Added {total_added_vars} output variables"
         actions.append(msg)
         if verbose:
             print(f"  {msg}")

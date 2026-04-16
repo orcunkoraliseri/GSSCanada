@@ -12,6 +12,7 @@ import glob
 import platform
 import time
 import csv
+import subprocess
 
 # Windows: reconfigure stdout/stderr to UTF-8 so Unicode characters (e.g. →, —) in
 # integration.py verbose output do not raise charmap codec errors on cp1252 consoles.
@@ -1902,11 +1903,431 @@ def option_kfold_comparative_simulation() -> None:
     print(f"\nMonte Carlo Comparative Simulation complete. Results in: {batch_dir}")
 
 
-def option_batch_comparative_neighbourhood_simulation() -> None:
-    """Option 7: Monte Carlo Comparative Neighbourhood Simulation (runs iter_count iterations, averages results)."""
+def _resolve_epw_for_idf(idf_path: str) -> str:
+    """Unreliable: NUS_RC*.idf files have no embedded city (lat/lon=0, generic zone names).
+
+    This function ignores idf_path entirely and samples from the global schedule CSV,
+    so it returns the same EPW for every neighbourhood — giving wrong climate for 5 of 6.
+    It is retained only as a fallback; Option 10 uses pre-batch EPW assignment instead.
+    Do not call this for per-neighbourhood EPW resolution.
+    """
+    from collections import Counter as _Counter
+    schedule_files = _build_schedule_file_map()
+    for csv_path in schedule_files.values():
+        if not os.path.exists(csv_path):
+            continue
+        try:
+            schedules = integration.load_schedules(csv_path, dwelling_type=None, region=None)
+        except Exception:
+            continue
+        if not schedules:
+            continue
+        sample = list(schedules.values())[:100]
+        pr_counts = _Counter(integration.get_household_pr(hh) for hh in sample)
+        dominant_pr = pr_counts.most_common(1)[0][0] if pr_counts else ''
+        return config.resolve_epw_path(dominant_pr, WEATHER_DIR)
+    # Fallback: first EPW found
+    epw_files = sorted(glob.glob(os.path.join(WEATHER_DIR, "*.epw")))
+    if epw_files:
+        return epw_files[0]
+    raise FileNotFoundError(f"No EPW files found in {WEATHER_DIR}")
+
+
+def _run_mc_neighbourhood(
+    selected_idf: str,
+    selected_epw: str,
+    selected_region,
+    selected_sim_mode,
+    iter_count: int,
+    batch_dir: str,
+    n_buildings: int,
+    building_dtypes: list,
+) -> dict:
+    """Run one Monte Carlo neighbourhood simulation and return a result summary dict.
+
+    Args:
+        selected_idf:    Path to the neighbourhood IDF file.
+        selected_epw:    Path to the EPW weather file.
+        selected_region: Province/region string (or None).
+        selected_sim_mode: Simulation mode (passed through to plotting).
+        iter_count:      Number of MC iterations.
+        batch_dir:       Parent output directory; a per-neighbourhood subdir is created inside it.
+        n_buildings:     Building count pre-read from the IDF.
+        building_dtypes: Per-building DTYPE list pre-read from the IDF.
+
+    Returns:
+        dict with keys: idf, n_buildings, output_dir, aggregated_csv, eui_plot,
+        ts_plot, status ("ok"|"failed"), error.
+    """
     import random
     import sqlite3
     import numpy as np
+
+    idf_stem = os.path.splitext(os.path.basename(selected_idf))[0]
+    neighbourhood_dir = os.path.join(batch_dir, idf_stem)
+    # batch_name scopes plot filenames so they stay unique across neighbourhoods
+    batch_name = f"{os.path.basename(batch_dir)}_{idf_stem}"
+
+    result: dict = {
+        "idf": os.path.basename(selected_idf),
+        "n_buildings": n_buildings,
+        "output_dir": neighbourhood_dir,
+        "aggregated_csv": None,
+        "eui_plot": None,
+        "ts_plot": None,
+        "status": "ok",
+        "error": None,
+    }
+
+    try:
+        # 5. Load schedules from all years
+        schedule_files = _build_schedule_file_map()
+
+        all_schedules = {}
+        selected_dtype = None
+
+        for year, csv_path in schedule_files.items():
+            if not os.path.exists(csv_path):
+                print(f"Warning: {csv_path} not found, skipping {year}")
+                continue
+            schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=selected_region)
+            if len(schedules) >= n_buildings:
+                all_schedules[year] = schedules
+                print(f"  {year}: Loaded {len(schedules)} households")
+            else:
+                print(f"  {year}: Only {len(schedules)} households (need {n_buildings}), skipping")
+
+        if not all_schedules:
+            raise RuntimeError("No schedule files could be loaded.")
+
+        # 6. Create output directory
+        os.makedirs(neighbourhood_dir, exist_ok=True)
+        print(f"\nOutput Directory: {neighbourhood_dir}")
+
+        # 7. Run Default simulation ONCE (it's the same for all iterations)
+        print("\n--- Running Default Simulation (once) ---")
+        default_dir = os.path.join(neighbourhood_dir, "Default")
+        os.makedirs(default_dir, exist_ok=True)
+
+        prepared_idf = os.path.join(default_dir, "prepared.idf")
+        final_idf = os.path.join(default_dir, "Scenario_Default.idf")
+
+        # Prepare neighbourhood with default logic
+        neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
+        integration.inject_neighbourhood_default_schedules(prepared_idf, final_idf, n_buildings, original_idf_path=selected_idf, verbose=False)
+
+        default_job = {
+            'idf': final_idf,
+            'epw': selected_epw,
+            'output_dir': default_dir,
+            'name': 'Default'
+        }
+        simulation.run_simulations_parallel([default_job], ENERGYPLUS_EXE)
+
+        # Extract Default results
+        default_eui_data = None
+        default_meter_data = None
+        default_sql_path = os.path.join(default_dir, 'eplusout.sql')
+        if os.path.exists(default_sql_path):
+            try:
+                conn = sqlite3.connect(default_sql_path)
+                default_eui_data = plotting.calculate_eui(conn)
+                default_meter_data = plotting.get_meter_data(conn)
+                conn.close()
+                print("  Default simulation complete.")
+                print(f"  Default EUI: {default_eui_data.get('eui', 0):.1f} kWh/m\u00b2-year")
+            except Exception as e:
+                print(f"  Error extracting Default: {e}")
+
+        # 8. Monte Carlo Loop (only year scenarios)
+        year_scenarios = list(COMPARATIVE_YEARS)
+        scenarios = list(COMPARATIVE_SCENARIOS)
+        all_eui_results = {s: [] for s in scenarios}
+        all_meter_results = {s: [] for s in scenarios}
+
+        # Pre-populate Default results (same for all iterations)
+        if default_eui_data:
+            for _ in range(iter_count):
+                all_eui_results['Default'].append(default_eui_data)
+                all_meter_results['Default'].append(default_meter_data)
+
+        first_year = list(all_schedules.keys())[0]
+
+        # Pre-compute sorted household lists per scenario — identical every iteration (Task 3)
+        print("\nPre-computing household rankings per scenario...")
+        sorted_year_hhs_cache = {}
+        for scenario in year_scenarios:
+            if scenario not in all_schedules:
+                continue
+            sorted_year_hhs_cache[scenario] = [
+                hh for hh, _ in integration.filter_matching_households(all_schedules[scenario])
+            ]
+            print(f"  {scenario}: {len(sorted_year_hhs_cache[scenario])} ranked candidates")
+
+        # Pre-compute per-DTYPE candidate pools for base-year sampling (once, before iterating)
+        first_schedules = all_schedules[first_year]
+        dtype_raw_first: dict = {}
+        for hh_id, hh_data in first_schedules.items():
+            hh_dtype = hh_data.get('metadata', {}).get('dtype', 'SingleD')
+            dtype_raw_first.setdefault(hh_dtype, []).append(hh_id)
+
+        dtype_pools_first: dict = {}
+        for hh_dtype, pool in dtype_raw_first.items():
+            scored = integration.filter_matching_households(first_schedules, candidates=pool)
+            if not scored:
+                continue
+            pool_size = max(n_buildings * 2, len(scored) // 2)
+            dtype_pools_first[hh_dtype] = [hh for hh, _ in scored[:pool_size]]
+            print(f"  Base year ({first_year}) {hh_dtype} pool: {len(dtype_pools_first[hh_dtype])} candidates")
+        print()
+
+        for k in range(iter_count):
+            print(f"\n--- Iteration {k+1}/{iter_count} ---")
+
+            # Sample one base household per building from the correct DTYPE pool
+            base_hhs: list = []
+            used_base_k: set = set()
+            for bldg_dtype in building_dtypes:
+                pool_k = [hh for hh in dtype_pools_first.get(bldg_dtype, []) if hh not in used_base_k]
+                if not pool_k:
+                    for fb_dtype in DTYPE_FALLBACK.get(bldg_dtype, []):
+                        fb_pool_k = [hh for hh in dtype_pools_first.get(fb_dtype, []) if hh not in used_base_k]
+                        if fb_pool_k:
+                            pool_k = fb_pool_k
+                            break
+                if pool_k:
+                    hh_id_k = random.choice(pool_k)
+                    used_base_k.add(hh_id_k)
+                    base_hhs.append(hh_id_k)
+                else:
+                    base_hhs.append(list(first_schedules.keys())[0])
+
+            # Record hhsize and dtype profiles for cross-year matching
+            hhsize_profile = [first_schedules[hh].get('metadata', {}).get('hhsize', 2) for hh in base_hhs]
+            dtype_profile  = [first_schedules[hh].get('metadata', {}).get('dtype', 'SingleD') for hh in base_hhs]
+
+            from collections import Counter as _Counter
+            dtype_summary_k = ', '.join(f"{v} {k2}" for k2, v in _Counter(dtype_profile).most_common())
+            print(f"  Selected {n_buildings} households: {dtype_summary_k}")
+
+            # Prepare jobs for this iteration
+            iter_dir = os.path.join(neighbourhood_dir, f"iter_{k+1}")
+            os.makedirs(iter_dir, exist_ok=True)
+
+            jobs = []
+
+            for scenario in year_scenarios:
+                if scenario not in all_schedules:
+                    continue
+
+                scenario_dir = os.path.join(iter_dir, scenario)
+                os.makedirs(scenario_dir, exist_ok=True)
+
+                prepared_idf = os.path.join(scenario_dir, "prepared.idf")
+                final_idf = os.path.join(scenario_dir, f"Scenario_{scenario}.idf")
+
+                try:
+                    # Find matching households logic (filtered by profile)
+                    schedules_list = []
+                    year_schedules = all_schedules[scenario]
+
+                    # Use pre-computed sorted list (Task 3)
+                    sorted_year_hhs = sorted_year_hhs_cache[scenario]
+
+                    used_hhs = set()
+
+                    for target_hhsize, target_dtype in zip(hhsize_profile, dtype_profile):
+                        # Per-building SSE matching filtered by DTYPE + hhsize
+                        size_candidates = [
+                            hh for hh in sorted_year_hhs
+                            if year_schedules[hh].get('metadata', {}).get('hhsize', 0) == target_hhsize
+                            and year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
+                            and hh not in used_hhs
+                        ]
+
+                        if not size_candidates:
+                            # DTYPE-only fallback (relax hhsize)
+                            size_candidates = [
+                                hh for hh in sorted_year_hhs
+                                if year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
+                                and hh not in used_hhs
+                            ]
+
+                        if not size_candidates:
+                            # DTYPE fallback chain
+                            for fb_dtype in DTYPE_FALLBACK.get(target_dtype, []):
+                                size_candidates = [
+                                    hh for hh in sorted_year_hhs
+                                    if year_schedules[hh].get('metadata', {}).get('dtype', '') == fb_dtype
+                                    and hh not in used_hhs
+                                ]
+                                if size_candidates:
+                                    break
+
+                        if size_candidates:
+                            hh_id = integration.find_best_match_household(year_schedules, size_candidates)
+                            data = year_schedules[hh_id]
+                            used_hhs.add(hh_id)
+                        else:
+                            print(f"      Critical: No households left in {scenario}!")
+                            continue
+
+                        schedules_list.append({**data, 'hh_id': hh_id})
+
+                    neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
+                    integration.inject_neighbourhood_schedules(
+                        prepared_idf, final_idf, schedules_list,
+                        original_idf_path=selected_idf, epw_path=selected_epw,
+                        sim_results_dir=SIM_RESULTS_DIR,
+                        batch_name=f"{batch_name}/iter_{k+1}"
+                    )
+
+                    # Export all used schedules for debugging (Iter 1 only to save space, or all?)
+                    # User specifically asked for it, so let's export for all iters or just first?
+                    # Let's export for ALL to be safe, but organize by iter
+                    if k == 0: # Export only for first iteration to avoid spamming 100s of CSVs?
+                        # Or maybe export for all but in subfolders?
+                        # The user said "option 7 do not generate schedule... we can not see"
+                        # Let's export for every iteration.
+                        for sched in schedules_list:
+                            hh_id = sched.get('hh_id', 'unknown')
+                            integration.export_schedule_csv(
+                                sched, str(hh_id), f"{scenario}_Iter{k+1}",
+                                SIM_RESULTS_DIR, batch_name=batch_name
+                            )
+
+                    jobs.append({
+                        'idf': final_idf,
+                        'epw': selected_epw,
+                        'output_dir': scenario_dir,
+                        'name': scenario
+                    })
+
+                except Exception as e:
+                    print(f"    Error preparing {scenario}: {e}")
+
+            if not jobs:
+                print(f"  No jobs for iteration {k+1}, skipping.")
+                continue
+
+            # Run simulations
+            simulation.run_simulations_parallel(jobs, ENERGYPLUS_EXE)
+
+            # Extract EUI results
+            for job in jobs:
+                scenario = job['name']
+                sql_path = os.path.join(job['output_dir'], 'eplusout.sql')
+
+                if not os.path.exists(sql_path):
+                    continue
+
+                try:
+                    conn = sqlite3.connect(sql_path)
+                    eui_data = plotting.calculate_eui(conn)
+                    all_eui_results[scenario].append(eui_data)
+
+                    meter_data = plotting.get_meter_data(conn)
+                    if meter_data:
+                        all_meter_results[scenario].append(meter_data)
+                    conn.close()
+                except Exception as e:
+                    print(f"    Error extracting {scenario}: {e}")
+
+        # 9. Aggregate results (mean ± std)
+        print("\n=== Aggregating Results ===")
+
+        sample_result = None
+        for s in scenarios:
+            if all_eui_results[s]:
+                sample_result = all_eui_results[s][0]
+                break
+
+        if not sample_result:
+            raise RuntimeError("No valid results collected.")
+
+        end_uses = sample_result.get('end_uses_normalized', {}) or sample_result.get('end_uses', {})
+        categories = list(end_uses.keys())
+
+        aggregated = {'mean': {}, 'std': {}}
+
+        for scenario in scenarios:
+            results_list = all_eui_results[scenario]
+            if not results_list:
+                continue
+
+            aggregated['mean'][scenario] = {}
+            aggregated['std'][scenario] = {}
+
+            for cat in categories:
+                values = [r.get('end_uses_normalized', r.get('end_uses', {})).get(cat, 0.0) for r in results_list]
+                aggregated['mean'][scenario][cat] = float(np.mean(values)) if values else 0.0
+                aggregated['std'][scenario][cat] = float(np.std(values)) if len(values) > 1 else 0.0
+
+        # 10. Save CSV
+        csv_path = os.path.join(neighbourhood_dir, "aggregated_eui.csv")
+        with open(csv_path, 'w') as f:
+            f.write("EndUse," + ",".join([f"{s}_mean,{s}_std" for s in scenarios]) + "\n")
+            for cat in categories:
+                row = [cat]
+                for s in scenarios:
+                    mean_val = aggregated['mean'].get(s, {}).get(cat, 0.0)
+                    std_val = aggregated['std'].get(s, {}).get(cat, 0.0)
+                    row.extend([f"{mean_val:.4f}", f"{std_val:.4f}"])
+                f.write(",".join(row) + "\n")
+        print(f"Saved aggregated CSV to: {csv_path}")
+        result["aggregated_csv"] = csv_path
+
+        # 11. Plot Monte Carlo EUI
+        plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Neighbourhood_EUI_{batch_name}.png")
+        plotting.plot_kfold_comparative_eui(
+            aggregated, categories, plot_path,
+            K=iter_count, region=selected_region, idf_name=os.path.basename(selected_idf)
+        )
+        result["eui_plot"] = plot_path
+
+        # 12. Plot Monte Carlo Time-Series
+        sample_meter = None
+        for s in scenarios:
+            if all_meter_results[s]:
+                sample_meter = all_meter_results[s][0]
+                break
+
+        if sample_meter:
+            meter_names = list(sample_meter.keys())
+            aggregated_meters = {'mean': {}, 'std': {}}
+
+            for scenario in scenarios:
+                meter_list = all_meter_results[scenario]
+                if not meter_list:
+                    continue
+                aggregated_meters['mean'][scenario] = {}
+                aggregated_meters['std'][scenario] = {}
+
+                for meter in meter_names:
+                    all_values = [m.get(meter, [0]*12) for m in meter_list]
+                    stacked = np.array(all_values)
+                    aggregated_meters['mean'][scenario][meter] = np.mean(stacked, axis=0).tolist()
+                    aggregated_meters['std'][scenario][meter] = np.std(stacked, axis=0).tolist() if len(stacked) > 1 else [0]*12
+
+            floor_area = sample_result.get('conditioned_floor_area', 0.0) or sample_result.get('total_floor_area', 0.0)
+
+            ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Neighbourhood_TimeSeries_{batch_name}.png")
+            plotting.plot_kfold_timeseries(
+                aggregated_meters, meter_names, ts_plot_path,
+                floor_area=floor_area, K=iter_count, region=selected_region,
+                idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
+            )
+            result["ts_plot"] = ts_plot_path
+
+    except Exception as e:
+        result["status"] = "failed"
+        result["error"] = str(e)
+
+    return result
+
+
+def option_batch_comparative_neighbourhood_simulation() -> None:
+    """Option 7: Monte Carlo Comparative Neighbourhood Simulation (runs iter_count iterations, averages results)."""
 
     print("\n=== Monte Carlo Comparative Neighbourhood Simulation ===")
     print("This runs comparative neighbourhood simulations multiple times with different random household sets,")
@@ -1977,352 +2398,184 @@ def option_batch_comparative_neighbourhood_simulation() -> None:
         print("Aborted.")
         return
     
-    # 5. Load schedules from all years
-    schedule_files = _build_schedule_file_map()
-
-    all_schedules = {}
-    # We load all dwelling types for neighbourhoods
-    selected_dtype = None
-
-    for year, csv_path in schedule_files.items():
-        if not os.path.exists(csv_path):
-            print(f"Warning: {csv_path} not found, skipping {year}")
-            continue
-        schedules = integration.load_schedules(csv_path, dwelling_type=selected_dtype, region=selected_region)
-        if len(schedules) >= n_buildings:
-            all_schedules[year] = schedules
-            print(f"  {year}: Loaded {len(schedules)} households")
-        else:
-            print(f"  {year}: Only {len(schedules)} households (need {n_buildings}), skipping")
-
-    if not all_schedules:
-        print("Error: No schedule files could be loaded.")
-        return
-    
-    # 6. Create output directory
-    batch_name = f"MonteCarlo_Neighbourhood_N{iter_count}_{int(time.time())}"
-    batch_dir = os.path.join(SIM_RESULTS_DIR, batch_name)
+    # 5–12. Run the MC simulation via shared helper
+    batch_dir = os.path.join(SIM_RESULTS_DIR, f"MonteCarlo_Neighbourhood_N{iter_count}_{int(time.time())}")
     os.makedirs(batch_dir, exist_ok=True)
-    print(f"\nOutput Directory: {batch_dir}")
-    
-    # 7. Run Default simulation ONCE (it's the same for all iterations)
-    print("\n--- Running Default Simulation (once) ---")
-    default_dir = os.path.join(batch_dir, "Default")
-    os.makedirs(default_dir, exist_ok=True)
-    
-    prepared_idf = os.path.join(default_dir, "prepared.idf")
-    final_idf = os.path.join(default_dir, "Scenario_Default.idf")
-    
-    # Prepare neighbourhood with default logic
-    neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
-    integration.inject_neighbourhood_default_schedules(prepared_idf, final_idf, n_buildings, original_idf_path=selected_idf, verbose=False)
-    
-    default_job = {
-        'idf': final_idf,
-        'epw': selected_epw,
-        'output_dir': default_dir,
-        'name': 'Default'
-    }
-    simulation.run_simulations_parallel([default_job], ENERGYPLUS_EXE)
-    
-    # Extract Default results
-    default_eui_data = None
-    default_meter_data = None
-    default_sql_path = os.path.join(default_dir, 'eplusout.sql')
-    if os.path.exists(default_sql_path):
-        try:
-            conn = sqlite3.connect(default_sql_path)
-            default_eui_data = plotting.calculate_eui(conn)
-            default_meter_data = plotting.get_meter_data(conn)
-            conn.close()
-            print("  Default simulation complete.")
-            print(f"  Default EUI: {default_eui_data.get('eui', 0):.1f} kWh/m²-year")
-        except Exception as e:
-            print(f"  Error extracting Default: {e}")
-    
-    # 8. Monte Carlo Loop (only year scenarios)
-    year_scenarios = list(COMPARATIVE_YEARS)
-    scenarios = list(COMPARATIVE_SCENARIOS)
-    all_eui_results = {s: [] for s in scenarios}
-    all_meter_results = {s: [] for s in scenarios}
-    
-    # Pre-populate Default results (same for all iterations)
-    if default_eui_data:
-        # Replicate Default result iter_count times so it has same weight/variance (std=0)
-        # Or just append once and handle it?
-        # For plot, we need list of values. Since Default is constant, we append it iter_count times.
-        for _ in range(iter_count):
-            all_eui_results['Default'].append(default_eui_data)
-            all_meter_results['Default'].append(default_meter_data)
 
-    first_year = list(all_schedules.keys())[0]
-
-    # Pre-compute sorted household lists per scenario — identical every iteration (Task 3)
-    print("\nPre-computing household rankings per scenario...")
-    sorted_year_hhs_cache = {}
-    for scenario in year_scenarios:
-        if scenario not in all_schedules:
-            continue
-        sorted_year_hhs_cache[scenario] = [
-            hh for hh, _ in integration.filter_matching_households(all_schedules[scenario])
-        ]
-        print(f"  {scenario}: {len(sorted_year_hhs_cache[scenario])} ranked candidates")
-
-    # Pre-compute per-DTYPE candidate pools for base-year sampling (once, before iterating)
-    first_schedules = all_schedules[first_year]
-    dtype_raw_first: dict[str, list[str]] = {}
-    for hh_id, hh_data in first_schedules.items():
-        hh_dtype = hh_data.get('metadata', {}).get('dtype', 'SingleD')
-        dtype_raw_first.setdefault(hh_dtype, []).append(hh_id)
-
-    dtype_pools_first: dict[str, list[str]] = {}
-    for hh_dtype, pool in dtype_raw_first.items():
-        scored = integration.filter_matching_households(first_schedules, candidates=pool)
-        if not scored:
-            continue
-        pool_size = max(n_buildings * 2, len(scored) // 2)
-        dtype_pools_first[hh_dtype] = [hh for hh, _ in scored[:pool_size]]
-        print(f"  Base year ({first_year}) {hh_dtype} pool: {len(dtype_pools_first[hh_dtype])} candidates")
-    print()
-
-    for k in range(iter_count):
-        print(f"\n--- Iteration {k+1}/{iter_count} ---")
-
-        # Sample one base household per building from the correct DTYPE pool
-        base_hhs: list[str] = []
-        used_base_k: set[str] = set()
-        for bldg_dtype in building_dtypes:
-            pool_k = [hh for hh in dtype_pools_first.get(bldg_dtype, []) if hh not in used_base_k]
-            if not pool_k:
-                for fb_dtype in DTYPE_FALLBACK.get(bldg_dtype, []):
-                    fb_pool_k = [hh for hh in dtype_pools_first.get(fb_dtype, []) if hh not in used_base_k]
-                    if fb_pool_k:
-                        pool_k = fb_pool_k
-                        break
-            if pool_k:
-                hh_id_k = random.choice(pool_k)
-                used_base_k.add(hh_id_k)
-                base_hhs.append(hh_id_k)
-            else:
-                base_hhs.append(list(first_schedules.keys())[0])
-
-        # Record hhsize and dtype profiles for cross-year matching
-        hhsize_profile = [first_schedules[hh].get('metadata', {}).get('hhsize', 2) for hh in base_hhs]
-        dtype_profile  = [first_schedules[hh].get('metadata', {}).get('dtype', 'SingleD') for hh in base_hhs]
-
-        from collections import Counter as _Counter
-        dtype_summary_k = ', '.join(f"{v} {k}" for k, v in _Counter(dtype_profile).most_common())
-        print(f"  Selected {n_buildings} households: {dtype_summary_k}")
-        
-        # Prepare jobs for this iteration
-        iter_dir = os.path.join(batch_dir, f"iter_{k+1}")
-        os.makedirs(iter_dir, exist_ok=True)
-        
-        jobs = []
-        
-        for scenario in year_scenarios:
-            if scenario not in all_schedules:
-                continue
-                
-            scenario_dir = os.path.join(iter_dir, scenario)
-            os.makedirs(scenario_dir, exist_ok=True)
-            
-            prepared_idf = os.path.join(scenario_dir, "prepared.idf")
-            final_idf = os.path.join(scenario_dir, f"Scenario_{scenario}.idf")
-            
-            try:
-                # Find matching households logic (filtered by profile)
-                schedules_list = []
-                year_schedules = all_schedules[scenario]
-
-                # Use pre-computed sorted list (Task 3)
-                sorted_year_hhs = sorted_year_hhs_cache[scenario]
-
-                used_hhs = set()
-
-                for target_hhsize, target_dtype in zip(hhsize_profile, dtype_profile):
-                    # Per-building SSE matching filtered by DTYPE + hhsize
-                    size_candidates = [
-                        hh for hh in sorted_year_hhs
-                        if year_schedules[hh].get('metadata', {}).get('hhsize', 0) == target_hhsize
-                        and year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
-                        and hh not in used_hhs
-                    ]
-
-                    if not size_candidates:
-                        # DTYPE-only fallback (relax hhsize)
-                        size_candidates = [
-                            hh for hh in sorted_year_hhs
-                            if year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
-                            and hh not in used_hhs
-                        ]
-
-                    if not size_candidates:
-                        # DTYPE fallback chain
-                        for fb_dtype in DTYPE_FALLBACK.get(target_dtype, []):
-                            size_candidates = [
-                                hh for hh in sorted_year_hhs
-                                if year_schedules[hh].get('metadata', {}).get('dtype', '') == fb_dtype
-                                and hh not in used_hhs
-                            ]
-                            if size_candidates:
-                                break
-
-                    if size_candidates:
-                        hh_id = integration.find_best_match_household(year_schedules, size_candidates)
-                        data = year_schedules[hh_id]
-                        used_hhs.add(hh_id)
-                    else:
-                        print(f"      Critical: No households left in {scenario}!")
-                        continue
-
-                    schedules_list.append({**data, 'hh_id': hh_id})
-                
-                neighbourhood.prepare_neighbourhood_idf(selected_idf, prepared_idf, n_buildings)
-                integration.inject_neighbourhood_schedules(
-                    prepared_idf, final_idf, schedules_list,
-                    original_idf_path=selected_idf, epw_path=selected_epw,
-                    sim_results_dir=SIM_RESULTS_DIR,
-                    batch_name=f"{batch_name}/iter_{k+1}"
-                )
-                
-                # Export all used schedules for debugging (Iter 1 only to save space, or all?)
-                # User specifically asked for it, so let's export for all iters or just first?
-                # Let's export for ALL to be safe, but organize by iter
-                if k == 0: # Export only for first iteration to avoid spamming 100s of CSVs?
-                    # Or maybe export for all but in subfolders?
-                    # The user said "option 7 do not generate schedule... we can not see"
-                    # Let's export for every iteration.
-                    for sched in schedules_list:
-                        hh_id = sched.get('hh_id', 'unknown')
-                        integration.export_schedule_csv(
-                            sched, str(hh_id), f"{scenario}_Iter{k+1}",
-                            SIM_RESULTS_DIR, batch_name=batch_name
-                        )
-
-                jobs.append({
-                    'idf': final_idf,
-                    'epw': selected_epw,
-                    'output_dir': scenario_dir,
-                    'name': scenario
-                })
-                
-            except Exception as e:
-                print(f"    Error preparing {scenario}: {e}")
-        
-        if not jobs:
-            print(f"  No jobs for iteration {k+1}, skipping.")
-            continue
-            
-        # Run simulations
-        simulation.run_simulations_parallel(jobs, ENERGYPLUS_EXE)
-        
-        # Extract EUI results
-        for job in jobs:
-            scenario = job['name']
-            sql_path = os.path.join(job['output_dir'], 'eplusout.sql')
-            
-            if not os.path.exists(sql_path):
-                continue
-            
-            try:
-                conn = sqlite3.connect(sql_path)
-                eui_data = plotting.calculate_eui(conn)
-                all_eui_results[scenario].append(eui_data)
-                
-                meter_data = plotting.get_meter_data(conn)
-                if meter_data:
-                    all_meter_results[scenario].append(meter_data)
-                conn.close()
-            except Exception as e:
-                print(f"    Error extracting {scenario}: {e}")
-                
-    # 9. Aggregate results (mean ± std)
-    print("\n=== Aggregating Results ===")
-    
-    # Get all end-use categories from sample
-    sample_result = None
-    for s in scenarios:
-        if all_eui_results[s]:
-            sample_result = all_eui_results[s][0]
-            break
-            
-    if not sample_result:
-        print("Error: No valid results collected.")
-        return
-        
-    end_uses = sample_result.get('end_uses_normalized', {}) or sample_result.get('end_uses', {})
-    categories = list(end_uses.keys())
-    
-    aggregated = {'mean': {}, 'std': {}}
-    
-    for scenario in scenarios:
-        results_list = all_eui_results[scenario]
-        if not results_list:
-            continue
-            
-        aggregated['mean'][scenario] = {}
-        aggregated['std'][scenario] = {}
-        
-        for cat in categories:
-            values = [r.get('end_uses_normalized', r.get('end_uses', {})).get(cat, 0.0) for r in results_list]
-            aggregated['mean'][scenario][cat] = float(np.mean(values)) if values else 0.0
-            aggregated['std'][scenario][cat] = float(np.std(values)) if len(values) > 1 else 0.0
-            
-    # 10. Save CSV
-    csv_path = os.path.join(batch_dir, "aggregated_eui.csv")
-    with open(csv_path, 'w') as f:
-        f.write("EndUse," + ",".join([f"{s}_mean,{s}_std" for s in scenarios]) + "\n")
-        for cat in categories:
-            row = [cat]
-            for s in scenarios:
-                mean_val = aggregated['mean'].get(s, {}).get(cat, 0.0)
-                std_val = aggregated['std'].get(s, {}).get(cat, 0.0)
-                row.extend([f"{mean_val:.4f}", f"{std_val:.4f}"])
-            f.write(",".join(row) + "\n")
-    print(f"Saved aggregated CSV to: {csv_path}")
-    
-    # 11. Plot Monte Carlo EUI
-    plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Neighbourhood_EUI_{batch_name}.png")
-    plotting.plot_kfold_comparative_eui(
-        aggregated, categories, plot_path,
-        K=iter_count, region=selected_region, idf_name=os.path.basename(selected_idf)
+    result = _run_mc_neighbourhood(
+        selected_idf, selected_epw, selected_region,
+        selected_sim_mode, iter_count, batch_dir,
+        n_buildings, building_dtypes,
     )
-    
-    # 12. Plot Monte Carlo Time-Series
-    sample_meter = None
-    for s in scenarios:
-        if all_meter_results[s]:
-            sample_meter = all_meter_results[s][0]
-            break
 
-    if sample_meter:
-        meter_names = list(sample_meter.keys())
-        aggregated_meters = {'mean': {}, 'std': {}}
+    if result.get("status") == "ok":
+        print(f"\nMonte Carlo Neighbourhood Simulation complete. Results in: {result['output_dir']}")
+    else:
+        print(f"\nMonte Carlo Neighbourhood Simulation failed: {result.get('error')}")
 
-        for scenario in scenarios:
-            meter_list = all_meter_results[scenario]
-            if not meter_list:
+
+def option_batch_all_neighbourhoods_monte_carlo() -> None:
+    """Option 10: Batch Monte Carlo across ALL NUS_RC*.idf neighbourhoods."""
+
+    print("\n=== Batch MC across ALL Neighbourhoods ===")
+
+    # 0. Sim mode (shared for all neighbourhoods)
+    selected_sim_mode = select_simulation_mode()
+
+    # 1. Discover neighbourhood IDF files
+    neighbourhood_files = sorted(
+        glob.glob(os.path.join(NEIGHBOURHOODS_DIR, "NUS_RC*.idf")),
+        key=_sort_key_by_city,
+    )
+    if not neighbourhood_files:
+        print(f"Error: No NUS_RC*.idf files found in {NEIGHBOURHOODS_DIR}")
+        return
+
+    print(f"\nFound {len(neighbourhood_files)} neighbourhoods:")
+    for p in neighbourhood_files:
+        print(f"  - {os.path.basename(p)}")
+
+    # 1b. Pre-batch EPW assignment — asked once per IDF before the loop starts.
+    #     NUS_RC*.idf files have no embedded city (lat/lon=0, generic zone names),
+    #     so EPW cannot be auto-resolved from the IDF itself.
+    epw_files = sorted(glob.glob(os.path.join(WEATHER_DIR, "*.epw")), key=_sort_key_by_city)
+    if not epw_files:
+        print(f"Error: No EPW files found in {WEATHER_DIR}")
+        return
+
+    print("\nAssign a weather file to each neighbourhood")
+    print("(NUS_RC IDF files carry no embedded city — must be set manually):")
+    epw_assignments: dict = {}
+    for idf_path in neighbourhood_files:
+        name = os.path.basename(idf_path)
+        assigned_epw = select_file(epw_files, f"EPW for {name}:")
+        assigned_region = get_region_from_epw(assigned_epw)
+        epw_assignments[idf_path] = (assigned_epw, assigned_region)
+        print(f"  {name} → {os.path.basename(assigned_epw)} (region='{assigned_region}')")
+
+    # 2. Iteration count (shared for all neighbourhoods)
+    while True:
+        try:
+            k_input = input("\nEnter iteration count (iter_count=) (default=5): ").strip()
+            if not k_input:
+                iter_count = 5
+            else:
+                iter_count = int(k_input)
+            if iter_count < 1:
+                print("Iteration count must be at least 1.")
                 continue
-            aggregated_meters['mean'][scenario] = {}
-            aggregated_meters['std'][scenario] = {}
+            break
+        except ValueError:
+            print("Invalid number. Try again.")
 
-            for meter in meter_names:
-                all_values = [m.get(meter, [0]*12) for m in meter_list]
-                stacked = np.array(all_values)
-                aggregated_meters['mean'][scenario][meter] = np.mean(stacked, axis=0).tolist()
-                aggregated_meters['std'][scenario][meter] = np.std(stacked, axis=0).tolist() if len(stacked) > 1 else [0]*12
+    total_sims = len(neighbourhood_files) * (1 + iter_count * len(COMPARATIVE_YEARS))
+    print(f"\nRunning batch: {len(neighbourhood_files)} neighbourhoods × "
+          f"{iter_count} iterations × {len(COMPARATIVE_YEARS)} scenarios "
+          f"= {total_sims} total simulations (plus {len(neighbourhood_files)} Default runs).")
 
-        floor_area = sample_result.get('conditioned_floor_area', 0.0) or sample_result.get('total_floor_area', 0.0)
+    confirm = input("Proceed? (y/n): ")
+    if confirm.lower() != 'y':
+        print("Aborted.")
+        return
 
-        ts_plot_path = os.path.join(PLOT_RESULTS_DIR, f"MonteCarlo_Neighbourhood_TimeSeries_{batch_name}.png")
-        plotting.plot_kfold_timeseries(
-            aggregated_meters, meter_names, ts_plot_path,
-            floor_area=floor_area, K=iter_count, region=selected_region,
-            idf_name=os.path.basename(selected_idf), sim_mode=selected_sim_mode
+    # 3. Create top-level batch output directory
+    ts = int(time.time())
+    batch_dir = os.path.join(SIM_RESULTS_DIR, f"BatchAll_MC_N{iter_count}_{ts}")
+    os.makedirs(batch_dir, exist_ok=True)
+
+    log_path = os.path.join(batch_dir, "batch_log.txt")
+    summary_rows: list = []
+
+    # 4. Loop over neighbourhoods
+    for i, idf_path in enumerate(neighbourhood_files, 1):
+        name = os.path.basename(idf_path)
+        t0 = time.time()
+        print(f"\n[{i}/{len(neighbourhood_files)}] {name} — start")
+
+        try:
+            n_buildings = neighbourhood.get_num_buildings_from_idf(idf_path)
+            if n_buildings == 0:
+                raise RuntimeError("0 buildings detected in IDF")
+            building_dtypes = neighbourhood.get_building_dtypes_from_idf(idf_path)
+
+            # Use pre-assigned EPW (set upfront before the loop)
+            selected_epw, selected_region = epw_assignments[idf_path]
+            print(f"  EPW: {os.path.basename(selected_epw)} (region='{selected_region}')")
+
+            result = _run_mc_neighbourhood(
+                idf_path, selected_epw, selected_region,
+                selected_sim_mode, iter_count, batch_dir,
+                n_buildings, building_dtypes,
+            )
+        except Exception as e:
+            result = {
+                "idf": name,
+                "n_buildings": "",
+                "output_dir": "",
+                "aggregated_csv": "",
+                "eui_plot": "",
+                "ts_plot": "",
+                "status": "failed",
+                "error": str(e),
+            }
+
+        dt = time.time() - t0
+        result["elapsed_s"] = round(dt, 1)
+        summary_rows.append(result)
+
+        with open(log_path, "a") as lf:
+            lf.write(
+                f"[{i}/{len(neighbourhood_files)}] {name} "
+                f"{result.get('status', '?')} {dt:.1f}s "
+                f"{result.get('error', '') or ''}\n"
+            )
+
+        status_str = result.get("status", "?")
+        print(f"[{i}/{len(neighbourhood_files)}] {name} — {status_str} ({dt:.1f}s)")
+
+    # 5. Write batch_summary.csv
+    csv_path = os.path.join(batch_dir, "batch_summary.csv")
+    with open(csv_path, "w", newline="") as cf:
+        cf.write("idf,n_buildings,status,elapsed_s,error,aggregated_csv,eui_plot,ts_plot\n")
+        for r in summary_rows:
+            cf.write(",".join([
+                str(r.get("idf", "")),
+                str(r.get("n_buildings", "")),
+                str(r.get("status", "")),
+                str(r.get("elapsed_s", "")),
+                (str(r.get("error") or "")).replace(",", ";"),
+                str(r.get("aggregated_csv", "") or ""),
+                str(r.get("eui_plot", "") or ""),
+                str(r.get("ts_plot", "") or ""),
+            ]) + "\n")
+
+    ok = sum(1 for r in summary_rows if r.get("status") == "ok")
+    print(f"\nBatch complete: {ok}/{len(summary_rows)} neighbourhoods succeeded.")
+    print(f"Results : {batch_dir}")
+    print(f"Summary : {csv_path}")
+    print(f"Log     : {log_path}")
+
+    # 6. Auto-generate interim report if at least one neighbourhood succeeded
+    if ok > 0:
+        report_script = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "interim_report_gen.py",
         )
-
-    print(f"\nMonte Carlo Neighbourhood Simulation complete. Results in: {batch_dir}")
+        if os.path.isfile(report_script):
+            print("\nGenerating interim report...")
+            result = subprocess.run(
+                [sys.executable, report_script],
+                capture_output=True, text=True,
+            )
+            if result.returncode == 0:
+                out_dir = os.path.join(batch_dir, "interim_report")
+                print(f"Interim report generated: {out_dir}")
+            else:
+                print(f"WARNING: interim_report_gen.py failed (rc={result.returncode})")
+                if result.stderr:
+                    print(result.stderr[:500])
+        else:
+            print(f"WARNING: interim_report_gen.py not found at {report_script}")
 
 
 def main_menu() -> None:
@@ -2342,6 +2595,7 @@ def main_menu() -> None:
         print("  7. Batch Comparative Neighbourhood Simulation (Monte Carlo) (2005/2010/2015/2022/2025/Default)")
         print("  8. Visualize performance results")
         print("  9. Run Validation Simulation (Existing IDFs vs Reference)")
+        print("  10. Batch MC across ALL Neighbourhoods (2005/2010/2015/2022/2025/Default)")
         print("  q. Quit")
         
         choice = input("\nSelect option: ").strip().lower()
@@ -2364,11 +2618,13 @@ def main_menu() -> None:
             option_visualize_results()
         elif choice == '9':
             option_validation_simulation()
+        elif choice == '10':
+            option_batch_all_neighbourhoods_monte_carlo()
         elif choice == 'q':
             print("\nGoodbye!")
             break
         else:
-            print("Invalid option. Please select 1-8 or q.")
+            print("Invalid option. Please select 1-10 or q.")
 
 
 def main():
