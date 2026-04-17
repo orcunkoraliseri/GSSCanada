@@ -1933,6 +1933,39 @@ def _resolve_epw_for_idf(idf_path: str) -> str:
     raise FileNotFoundError(f"No EPW files found in {WEATHER_DIR}")
 
 
+def _flush_aggregated_csv(csv_path: str, all_eui_results: dict, scenarios: list) -> None:
+    """Write (or overwrite) aggregated_eui.csv from all results collected so far.
+
+    Called after every iteration so the file is always up-to-date. A SLURM
+    wall-time kill will leave a valid CSV reflecting however many iterations
+    completed rather than no file at all.
+    """
+    sample_result = None
+    for s in scenarios:
+        if all_eui_results[s]:
+            sample_result = all_eui_results[s][0]
+            break
+    if not sample_result:
+        return
+
+    end_uses = sample_result.get('end_uses_normalized', {}) or sample_result.get('end_uses', {})
+    categories = list(end_uses.keys())
+
+    with open(csv_path, 'w') as f:
+        f.write("EndUse," + ",".join([f"{s}_mean,{s}_std" for s in scenarios]) + "\n")
+        for cat in categories:
+            row = [cat]
+            for s in scenarios:
+                values = [
+                    r.get('end_uses_normalized', r.get('end_uses', {})).get(cat, 0.0)
+                    for r in all_eui_results.get(s, [])
+                ]
+                mean_val = float(np.mean(values)) if values else 0.0
+                std_val = float(np.std(values)) if len(values) > 1 else 0.0
+                row.extend([f"{mean_val:.4f}", f"{std_val:.4f}"])
+            f.write(",".join(row) + "\n")
+
+
 def _run_mc_neighbourhood(
     selected_idf: str,
     selected_epw: str,
@@ -2233,6 +2266,12 @@ def _run_mc_neighbourhood(
                 except Exception as e:
                     print(f"    Error extracting {scenario}: {e}")
 
+            # Flush CSV after every completed iteration so a wall-time kill
+            # leaves a valid aggregated_eui.csv rather than no file at all.
+            csv_path = os.path.join(neighbourhood_dir, "aggregated_eui.csv")
+            _flush_aggregated_csv(csv_path, all_eui_results, scenarios)
+            print(f"  [checkpoint] aggregated_eui.csv updated ({k+1} iterations so far)")
+
         # 9. Aggregate results (mean ± std)
         print("\n=== Aggregating Results ===")
 
@@ -2263,17 +2302,9 @@ def _run_mc_neighbourhood(
                 aggregated['mean'][scenario][cat] = float(np.mean(values)) if values else 0.0
                 aggregated['std'][scenario][cat] = float(np.std(values)) if len(values) > 1 else 0.0
 
-        # 10. Save CSV
+        # 10. Save CSV (final flush — per-iteration checkpointing already wrote this)
         csv_path = os.path.join(neighbourhood_dir, "aggregated_eui.csv")
-        with open(csv_path, 'w') as f:
-            f.write("EndUse," + ",".join([f"{s}_mean,{s}_std" for s in scenarios]) + "\n")
-            for cat in categories:
-                row = [cat]
-                for s in scenarios:
-                    mean_val = aggregated['mean'].get(s, {}).get(cat, 0.0)
-                    std_val = aggregated['std'].get(s, {}).get(cat, 0.0)
-                    row.extend([f"{mean_val:.4f}", f"{std_val:.4f}"])
-                f.write(",".join(row) + "\n")
+        _flush_aggregated_csv(csv_path, all_eui_results, scenarios)
         print(f"Saved aggregated CSV to: {csv_path}")
         result["aggregated_csv"] = csv_path
 

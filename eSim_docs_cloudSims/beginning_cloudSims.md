@@ -391,8 +391,47 @@ rsync -avz o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/GSSCanada/resu
 | 2026-04-16 | Task 6c: --workers flag | Done | run_batch_hpc.py --workers (default=1); ESIM_WORKERS env var threads to run_simulations_parallel; iteration-level ProcessPoolExecutor deferred (>40-line refactor) |
 | 2026-04-16 | Task 6d: --use-tmpdir flag | Done | run_batch_hpc.py --use-tmpdir; ESIM_USE_TMPDIR env var triggers tmpdir redirect in simulation.run_simulation; copy-back of .sql/.csv after each run |
 | 2026-04-16 | Task 6: HPC resource optimization | 6a-6d Done / 6e Skip | 6e skipped: within-iteration parallelism already capped at 5 workers (5 year-scenarios); passing --workers 32 auto-caps to 5 via min(). No further benchmark needed. Upload updated files before production run. |
-| | Task 7: Production run (N=20) | Ready | Code confirmed working. Upload sim.py + run_batch_hpc.py + submit_array_tuned.sh, then sbatch submit_array_tuned.sh. Est. ~22h/neighbourhood (20 × 65 min); fits 24h walltime. |
-| | Task 8: Retrieve results | Pending | |
+| 2026-04-17 | Task 7: Production run (N=20) | In Progress | First attempt (job 900364_v1) wall-time killed at 24h — RC1 completed 17/20, RC5 only 3/20 (8h/iter). Root cause: iterations are serial; large neighbourhoods far exceed 24h. Fix: (1) wall time raised to 7 days (Speed HPC max); (2) main.py updated to checkpoint aggregated_eui.csv after every iteration so wall-time kills leave a valid CSV; (3) OUTPUT_PARENT changed to BatchAll_MC_N20_v2. Resubmitted as job 900364 on 2026-04-17, all 6 tasks running. |
+| | Task 8: Retrieve results | Pending | Once jobs finish, scp 6 aggregated_eui.csv files and run interim_report_gen.py. |
+
+---
+
+## If Simulations Are Interrupted
+
+If a SLURM job times out or is killed before all iterations complete, the already-finished iterations are safely on disk. Two options to recover:
+
+### Option A: Resume in-place (preferred for partial runs)
+
+How it works: Results are collected in-memory (`all_eui_results`, `all_meter_results`) then aggregated at the end. A resume means: reload completed iters' SQL files back into those dicts, then continue the loop from the next iteration.
+
+Implementation — 3 small changes:
+
+1. **`main.py` `_run_mc_neighbourhood`** — add `start_iter=1` param; before the loop, read existing `iter_1` … `iter_{start_iter-1}` SQLs into the result dicts; change `range(iter_count)` → `range(start_iter-1, iter_count)`
+2. **`run_batch_hpc.py`** — add `--start-iter` arg (default auto-detects by counting `iter_*/` dirs that have all SQL files)
+3. **`submit_array_resume.sh`** — clone of `submit_array_tuned.sh` but passes `--start-iter` automatically; points to the same `OUTPUT_PARENT` so existing results aren't overwritten
+
+The aggregation at the end sees all 20 iterations regardless of which run produced them. No results are lost.
+
+> Not yet implemented in the codebase — implement only if needed.
+
+---
+
+### Option B: Merge local N=3 results to fill missing iterations
+
+If the HPC run completes e.g. 17 iterations, the local smoke-run results at `BEM_Setup/SimResults/BatchAll_MC_N3_1776120359/` (3 iterations, same IDFs, same 5 year-scenarios) can fill the gap.
+
+The merge plan is simple:
+
+Copy the 3 local iters as `iter_18`, `iter_19`, `iter_20` into each neighbourhood's HPC output dir, then re-run aggregation. Each iteration is an independent random draw — merging them is methodologically sound.
+
+Two-step implementation:
+
+1. A shell snippet to copy local iters into the HPC dir with renumbered names
+2. A small Python script that reads all `iter_*/` SQL files from a directory and re-aggregates (the same logic already in `_run_mc_neighbourhood` lines 2217–2254, just decoupled from the simulation loop)
+
+> Wait and see how many HPC iters complete first. If all 20 finish (job finishes before the 24h wall-time), neither option is needed. If some tasks time out, check exactly how many are missing and choose the option that minimises effort.
+>
+> Not yet implemented in the codebase — implement only if needed.
 
 ---
 

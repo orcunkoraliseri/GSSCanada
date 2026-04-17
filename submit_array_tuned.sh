@@ -5,8 +5,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5           # 5 = one core per year-scenario (5 parallel E+ workers)
-#SBATCH --mem=16G                   # ~3 GB per concurrent EnergyPlus worker
-#SBATCH -t 1-00:00:00
+#SBATCH --mem=64G                   # RC6 peaked at 58 GB; 64G gives headroom
+#SBATCH -t 7-00:00:00
 #SBATCH --array=1-6                 # one array task per neighbourhood
 # --exclusive: prevents node-sharing for clean wall-time benchmarks, but lengthens
 # queue wait when the cluster is busy. Uncomment only for benchmarking (Task 6e).
@@ -34,7 +34,7 @@ ITER_COUNT=20
 PROJECT=/speed-scratch/o_iseri/GSSCanada/GSSCanada-main
 EP_DIR=/speed-scratch/o_iseri/EnergyPlus/EnergyPlus-24.2.0-94a887817b-Linux-CentOS7.9.2009-x86_64
 VENV=/speed-scratch/o_iseri/GSSCanada/venv
-OUTPUT_PARENT=/speed-scratch/o_iseri/GSSCanada/results/BatchAll_MC_N${ITER_COUNT}
+OUTPUT_PARENT=/speed-scratch/o_iseri/GSSCanada/results/BatchAll_MC_N${ITER_COUNT}_v2
 LOG_DIR=/speed-scratch/o_iseri/GSSCanada/logs
 
 # --- Environment ---
