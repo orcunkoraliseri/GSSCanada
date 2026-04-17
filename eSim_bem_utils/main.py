@@ -2566,6 +2566,7 @@ def option_batch_all_neighbourhoods_monte_carlo() -> None:
             result = subprocess.run(
                 [sys.executable, report_script],
                 capture_output=True, text=True,
+                env={**os.environ, "ESIM_BATCH_DIR": batch_dir},
             )
             if result.returncode == 0:
                 out_dir = os.path.join(batch_dir, "interim_report")

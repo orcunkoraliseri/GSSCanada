@@ -187,6 +187,34 @@ Cross-neighbourhood summary figures are in [`BEM_Setup/SimResults/BatchAll_MC_N3
 | `fig4_improvement_vs_2005.png` | % EUI reduction relative to 2005, colour-coded positive/negative |
 | `fig5_heatmap.png` | Neighbourhood × scenario intensity heatmap (heating and cooling separately) |
 
+### Section 4.3 Figures
+
+Generated inline by `interim_report_gen.py` from batch output; copied into `interim_report/`. All six scenarios (Default, 2005, 2010, 2015, 2022, 2025) are included where data are available.
+
+| File | Generator | Description | Notes |
+|---|---|---|---|
+| `Figure_4.3.1_Energy_Demand.png` | `plot_figure_4.3.1.py` (inline) | Annual heating/cooling demand bar chart — 6 scenarios from `aggregated_eui.csv` | Reads batch output directly; no external CSV dependency |
+| `Figure_4.3.2_Temporal_Trend.png` | `plot_figure_4.3.2.py` (inline) | EUI trend over code years 2005–2025, per neighbourhood | Same source as 4.3.1 |
+| `Figure_4.3.3_Diurnal_Profiles.png` | `plot_figure_4.3.3.py` (inline) | Seasonal diurnal H/C profiles from `eplusout.sql` | SQLite extraction; missing 2010/2022 SQL skipped gracefully; results cached in `_sql_cache/` |
+| `Figure_4.3.4_Peak_Loads.png` | `plot_figure_4.3.4.py` (inline) | Peak heating and cooling loads (W/m²), Toronto representative | Same SQL extraction as 4.3.3; cached |
+
+> All four 4.3.x scripts in `eSim_occ_utils/plotting/` are now re-implemented inline inside `interim_report_gen.py`, reading from the current batch output (`BatchAll_MC_N3_*/`) rather than `MonteCarlo_N60_*`. The originals are unchanged.
+
+### Sim_plots
+
+Per-neighbourhood Monte Carlo plots copied from `BEM_Setup/SimResults_Plotting/` into [`BEM_Setup/SimResults/BatchAll_MC_N3_1776120359/Sim_plots/`](../BEM_Setup/SimResults/BatchAll_MC_N3_1776120359/Sim_plots/) by `interim_report_gen.py`. Originals remain in `SimResults_Plotting/`.
+
+| Neighbourhood | EUI Bar | Time-Series |
+|---|---|---|
+| NUS_RC1 | `MonteCarlo_Neighbourhood_EUI_*_NUS_RC1.png` *(re-run batch)* | `MonteCarlo_Neighbourhood_TimeSeries_*_NUS_RC1.png` *(re-run batch)* |
+| NUS_RC2–RC6 | `MonteCarlo_Neighbourhood_EUI_BatchAll_MC_N3_1776120359_NUS_RC*.png` | `MonteCarlo_Neighbourhood_TimeSeries_BatchAll_MC_N3_1776120359_NUS_RC*.png` |
+
+> Up to 12 PNGs (EUI + time-series × 6 neighbourhoods); actual count depends on what is present in `SimResults_Plotting/` at run time.
+
+### Figures Companion Document
+
+Full figure log, task list, and progress log for this run are in [`DONE_report_opt7_iter3_figures.md`](DONE_report_opt7_iter3_figures.md).
+
 ---
 
 ## 6. Pending Actions
@@ -196,6 +224,10 @@ Cross-neighbourhood summary figures are in [`BEM_Setup/SimResults/BatchAll_MC_N3
 - [x] Update Section 3 improvement table with full 6-neighbourhood average
 - [x] Investigate RC1 Default IDF zero-output → root cause: EnergyPlus sizing crash; fixed by re-running Option 7 (run `MonteCarlo_Neighbourhood_N3_1776338176`) and patching `aggregated_eui.csv`
 - [x] Re-run `interim_report_gen.py` — regenerated all 5 cross-neighbourhood figures with all 6 neighbourhoods and corrected RC1 Default values (2026-04-16)
+- [x] Reimplement 4.3.x figures inline in `interim_report_gen.py` (Task A) — reads from `BatchAll_MC_N3_*/aggregated_eui.csv` and `eplusout.sql`; no `importlib`/`shutil` dependency on `eSim_occ_utils/plotting/`
+- [x] Create `Sim_plots/` extraction step in `interim_report_gen.py` (Task B) — copies per-neighbourhood MC PNGs from `SimResults_Plotting/`; 44 PNGs copied
+- [x] Tighten y-axis ranges on fig1, fig2, fig3, Figure_4.3.1, Figure_4.3.4 for better inter-scenario visibility
+- [x] Add Parquet/JSON SQL cache layer (`_sql_cache/`, `_cache_fresh()`) to 4.3.3 and 4.3.4 extraction — warm re-runs near-instant
 
 ---
 
@@ -224,3 +256,8 @@ Cross-neighbourhood summary figures are in [`BEM_Setup/SimResults/BatchAll_MC_N3
 | 2026-04-16 | All 6 neighbourhoods completed; 6/6 ok; report updated to final |
 | 2026-04-16 | RC1 Default re-run via Option 7 (run `MonteCarlo_Neighbourhood_N3_1776338176`); patched into `BatchAll_MC_N3_1776120359/NUS_RC1/aggregated_eui.csv`; Default EUI = 145.19 kWh/m²/yr |
 | 2026-04-16 | `interim_report_gen.py` updated for all 6 neighbourhoods and re-run; fig1–fig5 regenerated in `BatchAll_MC_N3_1776120359/interim_report/` |
+| 2026-04-16 | Figures companion document created (`DONE_report_opt7_iter3_figures.md`); all 9 figures present in `interim_report/`; 4.3.1 and 4.3.2 empty (missing MonteCarlo_N60 CSVs); 4.3.3 and 4.3.4 partial (missing 2010/2022 SQL) |
+| 2026-04-16 | Task A complete: 4.3.1–4.3.4 reimplemented inline in `interim_report_gen.py` reading from `BatchAll_MC_N3_*/`; no importlib or plotting_dir references remain; all 9 PNGs + summary confirmed |
+| 2026-04-16 | Task B complete: `Sim_plots/` created alongside `interim_report/`; 44 PNGs copied from `SimResults_Plotting/` |
+| 2026-04-16 | Y-axis ranges tightened on fig1, fig2, fig3, Figure_4.3.1, Figure_4.3.4 for better inter-scenario visibility |
+| 2026-04-16 | Parquet/JSON cache layer added (`_sql_cache/`, `_cache_fresh()` helper) for 4.3.3 and 4.3.4 SQL extraction; pyarrow 23.0.1 installed |

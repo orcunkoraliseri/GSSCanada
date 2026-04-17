@@ -44,7 +44,7 @@ def _parse_space_names(spaces_block: str) -> list[str]:
     return names
 
 
-def _infer_dtype_from_zone_name(zone_name: str) -> str | None:
+def _infer_dtype_from_zone_name(zone_name: str) -> Optional[str]:
     """
     Return the DTYPE implied by a single zone name, or None for ambiguous/non-residential zones.
 

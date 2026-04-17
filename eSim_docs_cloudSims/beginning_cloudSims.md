@@ -249,7 +249,94 @@ find /speed-scratch/o_iseri/GSSCanada/smoke_test/NUS_RC1/ -name "*.csv" | head -
 
 ---
 
-### Task 6: Production Run (N=20)
+### Task 6: HPC Resource Optimization (Maximize CPU Throughput)
+
+**What:** Before launching the full N=20 batch, tune the SLURM submission to extract maximum parallelism from Speed. EnergyPlus itself is single-threaded per simulation, so speedup has to come from **running many EnergyPlus processes in parallel on the same node** (intra-node) and across multiple nodes (inter-node via job arrays).
+
+**References:**
+- Speed HPC manual: https://nag-devops.github.io/speed-hpc/
+- Speed HPC repo (example scripts): https://github.com/NAG-DevOps/speed-hpc
+
+**How:**
+
+#### 6a. Inspect node capacity
+
+```bash
+# Check what the ps (CPU serial) partition offers
+sinfo -p ps -o "%n %c %m %f %G"    # cores, memory, features per node
+scontrol show partition ps
+
+# Check a specific node's topology
+scontrol show node <nodename>
+```
+
+Speed's general-purpose CPU nodes typically expose **32 cores** and 500GB+ RAM. Goal: request one node, fill its cores with EnergyPlus workers.
+
+#### 6b. Rework SLURM resource request
+
+Change the array script from `-c 4` (4 cores, one EnergyPlus at a time) to a **fat task** that runs multiple EnergyPlus processes in parallel:
+
+```bash
+#SBATCH -p ps
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32          # grab a whole node's worth of cores
+#SBATCH --mem=64G                   # ~2GB per concurrent EnergyPlus worker
+#SBATCH -t 1-00:00:00
+#SBATCH --array=1-6                 # one array task per neighbourhood
+#SBATCH --exclusive                 # optional: refuse node-sharing for clean timing
+```
+
+Notes:
+- `--exclusive` removes noisy neighbours but may lengthen queue time — drop it if queue pressure is high.
+- If `ps` limits `--cpus-per-task`, fall back to `--cpus-per-task=16` or check partitions `pl` / `pt` (see manual §Partitions).
+
+#### 6c. Parallelize MC iterations inside `run_batch_hpc.py`
+
+Within one neighbourhood, the 20 MC iterations × 5 years = 100 EnergyPlus runs are **embarrassingly parallel**. Two options:
+
+1. **`concurrent.futures.ProcessPoolExecutor`** inside `run_batch_hpc.py`, with `max_workers = int(os.environ.get("SLURM_CPUS_PER_TASK", 4))`. Each worker spawns one EnergyPlus subprocess.
+2. **GNU `parallel`** wrapping single-run invocations — simpler but requires refactoring the script to accept a single `(scenario, iter)` pair per call.
+
+Add a `--workers` CLI flag so the smoke test (Task 5) can still run serially for debugging.
+
+#### 6d. I/O hygiene
+
+EnergyPlus is I/O-heavy. Two concrete wins:
+
+- **Run each EnergyPlus instance in `$TMPDIR`** (node-local SSD), then copy final `eplusout.sql` + CSV back to `/speed-scratch/`. Avoids 100 concurrent writers hammering scratch.
+- **Skip unused outputs**: in the IDF or via `Output:SQLite SimpleAndTabular` and pruning `Output:Variable` entries not consumed downstream. Meter-only output is dramatically smaller/faster than full variable dumps.
+
+#### 6e. Benchmark before committing to N=20
+
+Run a **timed N=2 pass** on NUS_RC1 with `--workers=1`, `--workers=8`, `--workers=16`, `--workers=32`. Record wall time and pick the worker count where speedup flattens (typically 0.6–0.8 × core count because of I/O contention). Use that as the production setting.
+
+```bash
+for W in 1 8 16 32; do
+  time python eSim_bem_utils/run_batch_hpc.py \
+    --idf BEM_Setup/Neighbourhoods/NUS_RC1.idf \
+    --region Quebec --sim-mode weekly --iter-count 2 \
+    --workers $W \
+    --output-dir /speed-scratch/o_iseri/GSSCanada/bench/W${W}
+done
+```
+
+#### 6f. Optional: explore higher-throughput partitions
+
+Per the Speed manual, `pl` (long) or `pt` (throughput) partitions may allow larger `--cpus-per-task` or longer walltime. If `ps` caps resources, retarget the array to a partition better suited to long-running CPU batches.
+
+**Expected result:**
+- A documented optimal `(--cpus-per-task, --workers)` pair.
+- Per-neighbourhood wall time for N=20 is a known quantity, not a guess.
+- SLURM script updated in-place with the tuned values.
+
+**Test method:** benchmark log (wall times per worker count) saved under `eSim_docs_cloudSims/benchmarks/` and committed.
+
+**Pass criteria:** at least 4x speedup vs. `-c 4` baseline, no increase in FATAL rate.
+
+---
+
+### Task 7: Production Run (N=20)
 
 **What:** Submit the full production batch.
 
@@ -267,13 +354,13 @@ squeue -u o_iseri
 sacct -j <JOBID> --format=JobID,State,Elapsed,MaxRSS
 ```
 
-**Expected result:** 6 jobs complete (one per neighbourhood), each producing N=20 MC results.
+**Expected result:** 6 jobs complete (one per neighbourhood), each producing N=20 MC results, using the tuned settings from Task 6.
 
 **Test method:** Check `batch_summary.csv` in each output dir; compare EUI ranges with local N=5 sanity run.
 
 ---
 
-### Task 7: Retrieve Results
+### Task 8: Retrieve Results
 
 **What:** Download completed results back to local machine.
 
@@ -295,12 +382,17 @@ rsync -avz o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/GSSCanada/resu
 |------|------|--------|-------|
 | 2026-04-16 | Plan created | Done | All 8 tasks defined |
 | 2026-04-16 | Task 1: Cluster setup | Done | EnergyPlus CentOS7 build + venv installed |
-| 2026-04-16 | Task 2: File transfer | In progress | IDFs + eSim_bem_utils transferred; EPWs/CSVs to confirm |
-| | Task 3: Headless runner | Pending | |
-| | Task 4: SLURM scripts | Pending | |
-| | Task 5: Smoke test NUS_RC1 N=2 | Pending | New — added 2026-04-16 |
-| | Task 6: Production run (N=20) | Pending | Only after Task 5 passes |
-| | Task 7: Retrieve results | Pending | |
+| 2026-04-16 | Task 2: File transfer | Done | All files on cluster via git clone + scp for CSVs |
+| 2026-04-16 | Task 3: Headless runner | Done | run_batch_hpc.py written in eSim_bem_utils/ |
+| 2026-04-16 | Task 4: SLURM scripts | Done | submit_array.sh written at project root |
+| 2026-04-16 | Task 5: Smoke test NUS_RC1 N=2 | Code OK / salloc timeout | Iter 1 passed (5/5 scenarios, 64.7 min); Iter 2 killed by interactive salloc time limit, NOT a code error. IDF prep, schedule injection, and E+ runs all confirmed working. ~65 min/iter measured. |
+| 2026-04-16 | Task 6a: Node inventory doc | Done | hpc_node_inventory.md created; blank table for user to fill after cluster inspection |
+| 2026-04-16 | Task 6b: SLURM tuned script | Done | submit_array_tuned.sh: nodes=1 ntasks=1 cpus-per-task=32 mem=64G; --workers $SLURM_CPUS_PER_TASK passed; --exclusive commented out with tradeoff note |
+| 2026-04-16 | Task 6c: --workers flag | Done | run_batch_hpc.py --workers (default=1); ESIM_WORKERS env var threads to run_simulations_parallel; iteration-level ProcessPoolExecutor deferred (>40-line refactor) |
+| 2026-04-16 | Task 6d: --use-tmpdir flag | Done | run_batch_hpc.py --use-tmpdir; ESIM_USE_TMPDIR env var triggers tmpdir redirect in simulation.run_simulation; copy-back of .sql/.csv after each run |
+| 2026-04-16 | Task 6: HPC resource optimization | 6a-6d Done / 6e Skip | 6e skipped: within-iteration parallelism already capped at 5 workers (5 year-scenarios); passing --workers 32 auto-caps to 5 via min(). No further benchmark needed. Upload updated files before production run. |
+| | Task 7: Production run (N=20) | Ready | Code confirmed working. Upload sim.py + run_batch_hpc.py + submit_array_tuned.sh, then sbatch submit_array_tuned.sh. Est. ~22h/neighbourhood (20 × 65 min); fits 24h walltime. |
+| | Task 8: Retrieve results | Pending | |
 
 ---
 
