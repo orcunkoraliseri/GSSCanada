@@ -1,0 +1,186 @@
+{
+  "d_cond": 76,
+  "n_activity_classes": 14,
+  "n_copresence": 9,
+  "n_slots": 48,
+  "cycle_map": {
+    "2005": 0,
+    "2010": 1,
+    "2015": 2,
+    "2022": 3
+  },
+  "cop_col_names": [
+    "Alone",
+    "Spouse",
+    "Children",
+    "parents",
+    "otherInFAMs",
+    "otherHHs",
+    "friends",
+    "others",
+    "colleagues"
+  ],
+  "feature_parts": {
+    "AGEGRP": {
+      "type": "one-hot",
+      "n_cats": 7,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 6
+      }
+    },
+    "SEX": {
+      "type": "one-hot",
+      "n_cats": 2,
+      "categories": {
+        "1": 0,
+        "2": 1
+      }
+    },
+    "MARSTH": {
+      "type": "one-hot",
+      "n_cats": 6,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5
+      }
+    },
+    "HHSIZE": {
+      "type": "one-hot",
+      "n_cats": 5,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4
+      }
+    },
+    "PR": {
+      "type": "one-hot",
+      "n_cats": 15,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "10": 5,
+        "11": 6,
+        "12": 7,
+        "13": 8,
+        "24": 9,
+        "35": 10,
+        "46": 11,
+        "47": 12,
+        "48": 13,
+        "59": 14
+      }
+    },
+    "CMA": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2
+      }
+    },
+    "KOL": {
+      "type": "one-hot",
+      "n_cats": 4,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3
+      }
+    },
+    "LFTAG": {
+      "type": "one-hot",
+      "n_cats": 4,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3
+      }
+    },
+    "HRSWRK": {
+      "type": "one-hot",
+      "n_cats": 9,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8
+      }
+    },
+    "NOCS": {
+      "type": "one-hot",
+      "n_cats": 12,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "95": 11
+      }
+    },
+    "COW": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2
+      }
+    },
+    "DDAY_STRATA": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2
+      }
+    },
+    "TOTINC": {
+      "type": "continuous",
+      "mean": 2.296,
+      "std": 1.5298313632554406
+    },
+    "COLLECT_MODE": {
+      "type": "binary"
+    },
+    "TOTINC_SOURCE": {
+      "type": "binary"
+    }
+  },
+  "split_sizes": {
+    "train": 350,
+    "val": 75,
+    "test": 75
+  }
+}

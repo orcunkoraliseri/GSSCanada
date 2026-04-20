@@ -29,6 +29,93 @@ Prepare, transfer, train, and retrieve results for the Conditional Transformer (
 
 ---
 
+## Cluster Access & Operating Model
+
+1. **SSH hardening.** Use `ssh -o ServerAliveInterval=60 <ENCSuser>@speed.encs.concordia.ca` to avoid idle disconnects during long monitoring sessions. Off-campus: connect via Concordia GlobalProtect VPN first.
+2. **Golden rule: login node vs. compute node.** The landing node is for editing, staging, `sbatch` submissions, and quick `squeue`/`sacct` checks only. All Python, `nvidia-smi`, `torch.cuda.is_available()`, and every package install **must** run inside an `salloc` shell or an `sbatch` job. Installing torch on the login node has bitten others.
+3. **Interactive GPU shell for debugging.** For first-time env checks and one-off `torch.cuda.is_available()` sanity tests:
+   ```bash
+   salloc -p pg --gres=gpu:1 --cpus-per-task=4 --mem=32G -t 2:00:00
+   ```
+   Cheap and quick — burn this, not a 12-hour training slot, to confirm CUDA+torch see the GPU.
+4. **Routine SLURM status commands.**
+   - `squeue -u $USER` — is the job queued / running?
+   - `sacct -j <jobid> --format=JobID,State,Elapsed,MaxRSS,ReqGRES` — post-mortem: was it host-RAM-bound? time-bound? did GPU allocation succeed? Use this before blaming the code.
+   - `sinfo -p pg` — partition load / node availability.
+
+### CPU pipeline → GPU pipeline parallels
+
+The reader already runs a CPU-based EnergyPlus Monte Carlo pipeline on Speed (BEM). This table maps that mental model onto the Step-4 GPU workflow; reuse the patterns, switch the resource flags.
+
+| Piece | CPU pipeline (existing BEM) | GPU pipeline (Step 4) |
+|---|---|---|
+| Scheduler | SLURM | SLURM |
+| Job shape | Array `--array=1-6` (one task per neighbourhood) | Single job per training run today; array job reserved for future HP sweep |
+| Submission script | `submit_array_tuned.sh` | `job_04D_train.sh` — same skeleton, different resource flags |
+| Checkpointing | `iter_*/` dirs + `aggregated_eui.csv` | `ckpt_epoch_*.pt` (+ `best_model.pt`) + `step4_training_log.csv` |
+| Progress monitor | `check_progress.sh` over SSH | `tail -f logs/04D_<jobid>.out` |
+| Environment | `source $VENV/bin/activate` (CPU venv) | `conda activate /speed-scratch/$USER/envs/step4` — **separate CUDA-enabled env; do not share the CPU venv** |
+
+---
+
+## HPC Submission Checklist
+
+One-page, tickable pre-flight and run-through for an end-to-end Step-4 submission on Speed. Each block abbreviates the corresponding phase — commands and context live in Phases 1–9 below; tick items here as you execute.
+
+### Block 1 — Local Pre-flight (→ Phase 1)
+
+- [ ] Phase-1 local gate green: seeds applied in 04D/04E, checkpoint guards in place, 04A–04F smoke-verified (see `Phase1_ready.md` Progress Log, 2026-04-20)
+- [ ] `outputs_step4/step4_{train,val,test}.pt` present and non-empty
+- [ ] `outputs_step4/step4_feature_config.json` present
+- [ ] `outputs_step4/training_pairs.pt` and `val_pairs.pt` present (or 04A-produced equivalents)
+- [ ] `requirements_step4.txt` written (§1.2)
+- [ ] Transfer package created (§1.3)
+
+### Block 2 — Transfer (→ Phase 2)
+
+- [ ] `rsync -av` package to `/speed-scratch/$USER/occModeling/` (§2.1)
+- [ ] SSH with keepalive verified: `ssh -o ServerAliveInterval=60 <ENCSuser>@speed.encs.concordia.ca` (see Cluster Access & Operating Model, §2.2)
+- [ ] Package unpacked; repo and `outputs_step4/` visible on Speed
+
+### Block 3 — Environment (one-time, on compute node) (→ Phase 3)
+
+- [ ] Interactive GPU shell up: `salloc -p pg --gres=gpu:1 --cpus-per-task=4 --mem=32G -t 2:00:00` (see Cluster Access & Operating Model)
+- [ ] Conda env built at `/speed-scratch/$USER/envs/step4` with `cuda/11.8` + torch cu118 (§3.1)
+- [ ] `python -c "import torch; print(torch.cuda.is_available())"` returns `True` inside the salloc shell (§3.2)
+- [ ] (Optional) cu121 alternative evaluated and deferred — switch only after re-running local smoke tests (§3.1 note)
+
+### Block 4 — Pre-Training CPU Jobs (→ Phase 4)
+
+- [ ] `JOB_A=$(sbatch --parsable job_04A_dataset.sh)` — record job id (§4.1)
+- [ ] `JOB_C=$(sbatch --parsable --dependency=afterok:$JOB_A job_04C_pairs.sh)` — record job id (§4.2)
+- [ ] §4.3 output verification passes (file sizes sane, no empty tensors)
+- [ ] If 04A fails → follow §4.2b recovery
+
+### Block 5 — GPU Training (→ Phase 5)
+
+- [ ] `JOB_D=$(sbatch --parsable --dependency=afterok:$JOB_A:$JOB_C job_04D_train.sh)` — record job id (§5.1)
+- [ ] `tail -f logs/04D_<JOB_D>.out` — confirm GPU allocated, `$SLURM_TMPDIR` staging printed, first epoch starts (§5.1, §5.2)
+- [ ] `squeue -u $USER` shows `R` (running), not stuck in `PD` (§5.2)
+- [ ] Mid-run: `outputs_step4/checkpoints/ckpt_epoch_*.pt` land as expected
+- [ ] If P6 OOM → resubmit with `--gres=gpu:v100:1` or `--batch_size=128` (§5.3, Troubleshooting)
+- [ ] If wall-time hit → `--resume outputs_step4/checkpoints/<last_ckpt>.pt` (§5.4)
+
+### Block 6 — Inference + Validation (→ Phases 6–7)
+
+- [ ] `JOB_E=$(sbatch --parsable --dependency=afterok:$JOB_D job_04E_inference.sh)` — record job id (§6.1)
+- [ ] 04E log shows checkpoint path + size printed (Phase1_ready item 4); predictions written under `outputs_step4/predictions/`
+- [ ] `JOB_F=$(sbatch --parsable --dependency=afterok:$JOB_E job_04F_validation.sh)` — record job id (§7.1)
+- [ ] Validation metrics written (`outputs_step4/validation/*.json` or equivalent per §7.1)
+
+### Block 7 — Retrieve + Post-mortem + Cleanup (→ Phases 8–9)
+
+- [ ] `rsync -av` outputs back to local — at minimum: checkpoints, predictions, validation, logs (§8.1)
+- [ ] Local verification pass on downloaded files (§8.3)
+- [ ] `sacct -j <JOB_A|C|D|E|F> --format=JobID,State,Elapsed,MaxRSS,ReqGRES` for each job — note any host-RAM pressure or GPU-starvation
+- [ ] (Optional) Phase-9 cleanup on Speed — only after local validation sign-off
+
+---
+
 ## Phase 1 — Local Preparation (Before Cluster)
 
 ### 1.1 Verify Local Files Are Ready
@@ -52,13 +139,15 @@ Before uploading, confirm all Step 4 scripts run locally on the sample dataset (
 ### 1.2 Create `requirements_step4.txt`
 
 ```
-torch>=2.0
+torch>=2.0,<2.5
 numpy>=1.24
 pandas>=2.0
 scikit-learn>=1.3
 matplotlib>=3.7
 scipy>=1.11
 ```
+
+**Interpreter + CUDA pins for Speed:** Python 3.10, PyTorch 2.0–2.4, CUDA 11.8 (Speed module `cuda/11.8`). Do not upgrade torch to 3.x without re-smoke-testing locally first — `torch.load(weights_only=False)` semantics may change.
 
 ### 1.3 Package for Transfer
 
@@ -112,7 +201,7 @@ ls -la  # verify all files present
 Request an interactive GPU node first — do NOT install packages on the login node:
 
 ```bash
-salloc --mem=20G --gpus=1 -p pg -c 4 -t 2:00:00
+salloc --mem=20G --gres=gpu:1 -p pg -c 4 -t 2:00:00
 ```
 
 Once on the compute node:
@@ -141,6 +230,12 @@ nvidia-smi  # note the "CUDA Version" in top-right (driver's max supported CUDA)
 # Install PyTorch with CUDA (adjust pytorch-cuda version if driver requires it)
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 
+# Alternative (venv + pip): `module load cuda/12.1` then
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+# Do NOT switch to cu121 without re-running the local smoke test first — torch 2.5+
+# changes the default for torch.load(weights_only=...) and will break --resume
+# unless the load calls are updated.
+
 # Install remaining dependencies
 pip install pandas>=2.0 scikit-learn>=1.3 matplotlib>=3.7 scipy>=1.11
 
@@ -151,10 +246,12 @@ conda deactivate
 exit  # release the interactive node
 ```
 
+**Keep the CPU BEM venv and this GPU env separate.** Reusing the BEM venv would pull in CPU-only `torch` wheels and mask GPU usage. Path convention: `/speed-scratch/$USER/envs/step4` for this pipeline; the BEM pipeline keeps its own path from the companion session.
+
 ### 3.2 Verify Environment (quick test)
 
 ```bash
-salloc --mem=10G --gpus=1 -p pg -c 2 -t 0:30:00
+salloc --mem=10G --gres=gpu:1 -p pg -c 2 -t 0:30:00
 
 module load anaconda3/2023.03/default
 conda activate /speed-scratch/$USER/envs/step4
@@ -248,6 +345,14 @@ conda deactivate
 sbatch job_04C_pairs.sh
 ```
 
+### 4.2b What to do if 04A fails on Speed
+
+Do **not** launch 04C/04D — both depend on the `step4_{train,val,test}.pt` files that 04A produces. Instead:
+
+1. Pull the failing job's log (`logs/04A_<jobid>.err`) back to local.
+2. Reproduce the failure locally on the 500-respondent sample (`python 04A_dataset_assembly.py --sample`) — it is almost always a data issue (column missing, unexpected dtype) rather than an HPC issue.
+3. Fix and re-smoke-test locally, re-upload just the changed `.py` file (no need to re-tar the CSVs), and resubmit the chain starting from 04A. The `--dependency=afterok:$JOB_A` gating will keep 04C/04D pending until 04A succeeds.
+
 ### 4.3 Verify Pre-Training Outputs
 
 After both jobs complete:
@@ -276,7 +381,8 @@ Create `job_04D_train.sh`:
 #SBATCH --mem=40G
 #SBATCH -c 8
 #SBATCH -p pg
-#SBATCH --gpus=1
+#SBATCH --gres=gpu:1
+# Pin family if needed:   #SBATCH --gres=gpu:v100:1   (or  gpu:a100:1  on -p pt)
 #SBATCH -t 0-12:00:00
 #SBATCH --output=logs/04D_%j.out
 #SBATCH --error=logs/04D_%j.err
@@ -297,10 +403,22 @@ mkdir -p outputs_step4/checkpoints
 echo "=== Job ID: $SLURM_JOBID ==="
 echo "=== Node: $(hostname) ==="
 echo "=== GPU: $(nvidia-smi --query-gpu=name --format=csv,noheader) ==="
+
+# Stage tensors to node-local fast scratch (GPU analogue of the BEM --use-tmpdir flag).
+# $SLURM_TMPDIR is auto-cleaned when the job ends. Reads happen from local NVMe, not
+# shared scratch — reduces per-epoch I/O wait on contended storage.
+STAGE=$SLURM_TMPDIR/step4_data
+mkdir -p $STAGE
+cp outputs_step4/step4_{train,val,test}.pt  $STAGE/
+cp outputs_step4/step4_feature_config.json  $STAGE/
+cp outputs_step4/training_pairs.pt          $STAGE/ 2>/dev/null || true
+cp outputs_step4/val_pairs.pt               $STAGE/ 2>/dev/null || true
+echo "Staged $(du -sh $STAGE | cut -f1) to $STAGE"
+
 echo "=== Starting 04D Training ==="
 
 python 04D_train.py \
-    --data_dir outputs_step4 \
+    --data_dir $STAGE \
     --output_dir outputs_step4 \
     --checkpoint_dir outputs_step4/checkpoints \
     --batch_size 256 \
@@ -337,6 +455,10 @@ tail -f logs/04D_<jobid>.out
 
 # Check job efficiency after completion
 seff <jobid>
+
+# Full post-mortem — tells you whether you were host-RAM-bound (bump --mem) or
+# time-bound (resume with --resume), and whether the GPU was actually allocated.
+sacct -j <jobid> --format=JobID,State,Elapsed,MaxRSS,ReqGRES
 ```
 
 ### 5.3 Fallback: Smaller Batch for P6 (16 GB VRAM)
@@ -355,15 +477,17 @@ sbatch --constraint=v100 job_04D_train.sh
 
 ### 5.4 Resume from Checkpoint (if job times out)
 
-If training is interrupted by the 12-hour wall time:
+GPU partition wall-time is tight; always design for resume. If training is interrupted by the 12-hour wall time:
+
+1. Identify the latest checkpoint: `ls -t outputs_step4/checkpoints/*.pt | head -1`. `04D_train.py` writes `best_model.pt` (best val_JS so far) and periodic `ckpt_epoch_*.pt`; use the most recent of either.
+2. Edit `job_04D_train.sh` to add the `--resume` flag pointing at the absolute path of that checkpoint. `04D_train.py` now raises `FileNotFoundError` with the absolute path if the resume target is missing (Phase1_ready item 3), so a typo fails loudly rather than silently restarting from scratch.
 
 ```bash
-# Edit job_04D_train.sh to add --resume flag:
 python 04D_train.py \
-    --data_dir outputs_step4 \
+    --data_dir $STAGE \
     --output_dir outputs_step4 \
     --checkpoint_dir outputs_step4/checkpoints \
-    --resume outputs_step4/checkpoints/last_checkpoint.pt \
+    --resume /speed-scratch/$USER/occModeling/outputs_step4/checkpoints/best_model.pt \
     --batch_size 256 \
     --max_epochs 100 \
     --patience 10 \
@@ -388,7 +512,8 @@ Create `job_04E_inference.sh`:
 #SBATCH --mem=32G
 #SBATCH -c 8
 #SBATCH -p pg
-#SBATCH --gpus=1
+#SBATCH --gres=gpu:1
+# Pin family if needed:   #SBATCH --gres=gpu:v100:1
 #SBATCH -t 0-02:00:00
 #SBATCH --output=logs/04E_%j.out
 #SBATCH --error=logs/04E_%j.err
@@ -405,6 +530,9 @@ conda activate /speed-scratch/$USER/envs/step4
 cd /speed-scratch/$USER/occModeling
 
 echo "=== Starting 04E Inference ==="
+# 04E asserts the checkpoint path exists and prints its absolute path + size
+# before loading (Phase1_ready item 4). A missing --checkpoint here fails with
+# a clear FileNotFoundError rather than a silent torch.load traceback.
 python 04E_inference.py \
     --data_dir outputs_step4 \
     --checkpoint outputs_step4/checkpoints/best_model.pt \
@@ -546,6 +674,28 @@ echo "Submitted chain: $JOB_A → $JOB_C → $JOB_D → $JOB_E → $JOB_F"
 | `Disk quota exceeded` | Writing to home instead of scratch | Ensure all paths use `/speed-scratch/$USER/`; set `TMPDIR` |
 | `bash: module: command not found` | Module system not sourced | Add `. /encs/pkg/modules-5.3.1/root/init/bash` to script |
 | NaN in training loss | Learning rate too high or data issue | Check `logs/04D_*.out`; reduce `--lr` to 5e-5; verify data locally first |
+| Idle SSH drops after ~10 min | Missing keepalive | Reconnect with `ssh -o ServerAliveInterval=60` |
+| Training works on V100 but OOMs on P6 | P6 has only 16 GB VRAM | Resubmit with `--gres=gpu:v100:1` or reduce `--batch_size` to 128 |
+| DataLoader I/O bottleneck (low GPU util) | Reading `.pt` over shared scratch each step | Stage to `$SLURM_TMPDIR` at job start (see §5.1) |
+| Host-RAM OOM but GPU fine | `--mem` sets host RAM, not VRAM | Increase `--mem` (not `--gres`); lower DataLoader `num_workers` if spiking |
+
+---
+
+## Pitfalls (Speed-specific)
+
+- **GPU queues are contended and wall-time-capped.** `pg` and `pt` fill up faster than `ps`, and the GPU partitions cap wall-time tighter than the CPU partition. Always design for checkpoint/resume — do not rely on "one clean 12-hour run."
+- **`--mem` is host RAM, not VRAM.** VRAM is fixed by the card (32 GB V100, 80 GB A100, 16 GB P6). A job can succeed on host RAM and still CUDA-OOM on the GPU. The two are independent dials.
+- **Don't over-request `--cpus-per-task`.** DataLoader workers rarely benefit beyond 4–8 for this dataset size; over-requesting just increases queue time without speeding training.
+- **`--exclusive` almost never makes sense on GPU nodes.** Shared-node GPU jobs are the norm on Speed — each user's job gets its own GPU via `--gres` and the host node is shared.
+
+---
+
+## Future: hyperparameter sweep & multi-GPU
+
+Neither is needed for the first HPC run. They are listed here so the pipeline's growth path is visible.
+
+1. **HP sweep via array job.** Mirror the BEM CPU-pipeline pattern: `#SBATCH --array=1-N`, where `$SLURM_ARRAY_TASK_ID` selects a row from a CSV of `(lr, d_model, batch_size, n_enc_layers, …)` configs. Each array task writes to `outputs_step4/sweep_<task_id>/` with its own checkpoints; a small trailing CPU job aggregates `best_val_js` across runs to pick the winner.
+2. **Multi-GPU training (DDP).** Change `--gres=gpu:1` to `--gres=gpu:2` and wrap the call with `torchrun --nproc_per_node=2 04D_train.py ...`. Requires a small refactor in `04D_train.py` (wrap the model in `DistributedDataParallel`, use `DistributedSampler` for the DataLoader, guard checkpoint-writes behind `rank==0`). Defer until single-GPU training is validated end-to-end on real data.
 
 ---
 
@@ -555,3 +705,12 @@ echo "Submitted chain: $JOB_A → $JOB_C → $JOB_D → $JOB_E → $JOB_F"
 - Job script generator: https://nag-devops.github.io/speed-hpc/generator.html
 - Example scripts: https://github.com/NAG-DevOps/speed-hpc/tree/master/src
 - HPC support: `rt-ex-hpc@encs.concordia.ca`
+
+---
+
+## Progress Log
+
+| Date | Change | Status |
+|---|---|---|
+| 2026-04-20 | Reconciled doc with Speed GPU operating guidance from companion BEM session: added Cluster Access & Operating Model subsection (SSH keepalive, login-vs-compute rule, interactive GPU shell, `sacct` post-mortem), added CPU→GPU pipeline parallels table, switched `--gpus=1` → `--gres=gpu:1` in 04D/04E (with `gpu:v100:1` / `gpu:a100:1` pin examples), added `$SLURM_TMPDIR` data-staging block to `job_04D_train.sh`, tightened §5.4 resume guidance around the hardened `--resume` path (Phase1_ready item 3), cross-referenced checkpoint-path guard in §6.1 (Phase1_ready item 4), added Pitfalls (Speed-specific) and Future (HP sweep + DDP) subsections, expanded Troubleshooting with 4 Speed-specific rows. CUDA version unchanged (`cuda/11.8` + torch cu118); cu121 alternative noted with switch-discipline caveat. | COMPLETE |
+| 2026-04-20 | Added "HPC Submission Checklist" section (7 blocks, GitHub `- [ ]` task list) mapping end-to-end submission to Phases 1–9. Placement: top matter, after CPU→GPU parallels table, before Phase 1. Cross-references existing §§ rather than duplicating commands. | COMPLETE |

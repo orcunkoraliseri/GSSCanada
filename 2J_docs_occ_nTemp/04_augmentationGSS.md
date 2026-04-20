@@ -30,11 +30,34 @@ Each of 64,061 respondents has exactly **1 observed diary day** (one DDAY_STRATA
 | Total respondents | 64,061 (post DIARY_VALID filter) |
 | Respondents per cycle | 2005: 19,221 / 2010: 15,114 / 2015: 17,390 / 2022: 12,336 |
 | Slots per respondent | 48 (30-min, 4:00 AM to 3:50 AM next day) |
-| Activity categories | 14 grouped (from TUI_01 crosswalk) |
-| Co-presence columns | 9 binary (`colleagues` = NaN for 2005/2010) |
+| Activity categories | 14 grouped (from TUI_01 crosswalk — see **Activity category mapping** below) |
+| Co-presence columns | 9 binary — **all 9 carry NaN (~12.5% overall); `colleagues` is additionally 100% NaN for 2005/2010** |
 | DDAY_STRATA values | 1=Weekday, 2=Saturday, 3=Sunday |
 | DDAY_STRATA distribution | ~72.8% Weekday, ~13.6% Saturday, ~13.6% Sunday |
-| SURVMNTH | Not in Step 4 conditioning (dropped — see W3 decision); archived in Step 2 outputs only |
+| SURVMNTH | Not in Step 4 conditioning (dropped because seasonal JS <0.002 and AT_HOME lift <2 pp — see `docs_debug/DONE/02_W3_season_lift.md`); archived in Step 2 outputs only |
+
+### Activity category mapping (14 classes)
+
+Source of truth: `references_activityCodes/Data Harmonization - mainActivityCategoryList.csv` (mirrored in `02_harmonizeGSS.py` `CATEGORY_NAMES`). Tensors stored in `step4_*.pt` are **0-indexed** (`raw - 1`). `augmented_diaries.csv` stores the **1-indexed raw** value (`tensor + 1`). **Read this carefully — category 1 is Work, category 5 is Sleep, not the other way around.**
+
+| Tensor idx (0-indexed) | Raw code (1-indexed CSV) | Name | Notes |
+|---|---|---|---|
+| 0 | 1 | Work & Related | Paid/unpaid work, job search, overtime, work-related breaks |
+| 1 | 2 | Household Work & Maintenance | Cooking, cleaning, laundry, repairs, gardening |
+| 2 | 3 | Caregiving & Help | Childcare, adult/non-HH care, medical assistance |
+| 3 | 4 | Purchasing Goods & Services | Shopping, errands, services |
+| 4 | 5 | **Sleep & Naps & Resting** | Night sleep, naps, lying down |
+| 5 | 6 | Eating & Drinking | All eating/drinking (home or away) |
+| 6 | 7 | Personal Care | Grooming, hygiene, personal medical |
+| 7 | 8 | Education | Classes, studying, homework |
+| 8 | 9 | Socializing | Visiting, parties, bars, direct social interaction |
+| 9 | 10 | Passive Leisure | TV, reading, gaming, meditation |
+| 10 | 11 | Active Leisure | Sports, hobbies, outdoor recreation |
+| 11 | 12 | Community & Volunteer | Civic, religious, volunteering |
+| 12 | 13 | Travel | All travel for any purpose |
+| 13 | 14 | Miscellaneous / Idle | Waiting, unspecified, unclassifiable |
+
+> **IMPORTANT:** `04E_inference.py` and `04F_validation.py` currently have these two indices swapped (they treat raw 1 as Sleep and raw 5 as Paid Work). This is a confirmed bug tracked in `Phase1_ready.md` and **must be fixed before full-scale HPC training**.
 
 ---
 
@@ -80,7 +103,7 @@ assert len(df) == 64061
 | `CYCLE_YEAR` | Learned embedding | 4 (→ d_embed) |
 | `COLLECT_MODE` | Binary flag | 1 |
 | `TOTINC_SOURCE` | Binary flag (SELF/CRA) | 1 |
-| **Total conditioning dim** | | **~78 raw → projected to d_model** |
+| **Total conditioning dim** | | **`d_cond` computed at runtime** — measured 76 on both the 500-respondent sample and the full dataset (exact value depends on observed category cardinalities; do not hardcode) |
 | *(SURVMNTH dropped — see W3 decision)* | | — |
 
 #### A3. Sequence Token Construction — Per-Slot Multivariate Token
@@ -303,15 +326,17 @@ Loss weights (initial):
   λ_cop  = 0.3   (auxiliary; noisier signal)
 ```
 
-#### Consistency Constraint (Post-Hoc or Soft)
+#### Consistency Constraint (Post-Hoc — decided)
 
-AT_HOME must be logically consistent with occACT:
-- Sleep (category 1) at night → AT_HOME should be 1
-- Paid work (category 5) → AT_HOME should be 0 unless POWST indicates WFH
+AT_HOME must be logically consistent with occACT. **Chosen implementation: deterministic post-hoc correction in 04E**, no soft-constraint penalty added to the training loss. The rule mirrors what `04E_inference.py` (`apply_posthoc_consistency`) applies per synthetic slot:
 
-Implementation options:
-1. **Soft constraint (recommended):** Add consistency penalty term to loss — penalize AT_HOME=0 when predicted activity is sleep/personal care
-2. **Post-hoc correction:** After generation, enforce deterministic rules on AT_HOME based on activity
+- If predicted activity = **Sleep & Naps & Resting** (raw code 5, tensor idx 4) **AND** slot ∈ `NIGHT_SLOTS` (0–6 ∪ 37–47, i.e. 22:30–07:30) → force `AT_HOME = 1`
+- If predicted activity = **Work & Related** (raw code 1, tensor idx 0) → force `AT_HOME = 0` (no WFH flag is available in this dataset, so the rule is applied unconditionally)
+- All other slots keep the decoder's sigmoid-thresholded `AT_HOME` output unchanged
+
+> The raw-code ↔ tensor-index mapping above follows the harmonization in `02_harmonizeGSS.py`. **`04E_inference.py` currently has these two categories swapped** (see `Phase1_ready.md` bug chapter); the rule described here is the *intended* behavior, and will match reality once that bug is fixed.
+
+Observed diaries (`IS_SYNTHETIC=0`) are copied verbatim from the source; the rule is applied only to generated slots.
 
 #### Training Configuration
 
@@ -451,6 +476,84 @@ Total columns: ~24 metadata + 48 act + 48 hom + 432 copresence = ~552 columns
 
 ---
 
+## Reproducibility seeds
+
+All stochastic steps in the Step 4 pipeline must be seeded so that two runs on the same inputs produce byte-identical artifacts. Required seeds per script:
+
+| Script | Seed(s) | Status |
+|---|---|---|
+| `04A_dataset_assembly.py` | `np.random.seed(42)`, `StratifiedShuffleSplit(random_state=42)` | ✅ Present |
+| `04C_training_pairs.py` | `np.random.default_rng(seed=src_i*3 + s_tgt)` for K-padding (deterministic per source/target) | ✅ Present |
+| `04D_train.py` | `torch.manual_seed(42)`, `np.random.seed(42)`, and `torch.cuda.manual_seed_all(42)` at the top of `train()` | ❌ **Missing — blocks reproducibility of HPC training run** (see `Phase1_ready.md`) |
+| `04E_inference.py` | `torch.manual_seed(42)` immediately before the autoregressive generation loop | ❌ **Missing — `torch.multinomial` with `temperature>0` is non-deterministic without it** |
+| `04F_validation.py` | `np.random.default_rng(42)` in `validate_activity_distribution()` | ✅ Present |
+
+All three locked ML files (`eSim_datapreprocessing.py`, `eSim_dynamicML_mHead*.py`) are out of Step-4 scope and follow their own seed conventions.
+
+---
+
+## Intermediate artifact schemas
+
+These are the artifacts produced by the Step 4 scripts and consumed by downstream scripts / Step 5. Shapes and dtypes must remain stable because the training loop and inference both read them directly.
+
+### `step4_feature_config.json` (written by 04A, read by 04B/04D/04E)
+
+```json
+{
+  "d_cond": 76,               // int — runtime-measured conditioning-vector dimension
+  "cat_cols":  ["AGEGRP", "SEX", "MARSTH", "HHSIZE", "PR", "CMA",
+                "KOL", "LFTAG", "HRSWRK", "NOCS", "COW", "DDAY_STRATA"],
+  "cont_cols": ["TOTINC"],
+  "bin_cols":  ["COLLECT_MODE", "TOTINC_SOURCE"],
+  "cardinalities": { "AGEGRP": 8, "SEX": 2, ... },   // per-category one-hot widths
+  "n_slots": 48,
+  "n_activity_classes": 14,   // 0-indexed internally (tensor values 0..13)
+  "n_copresence": 9
+}
+```
+
+### `step4_{train,val,test}.pt` (written by 04A, read by 04D/04E)
+
+Each file is a dict of CPU tensors. `N` = number of respondents in that split.
+
+| Key | Dtype | Shape | Meaning |
+|---|---|---|---|
+| `act_seq`    | `long`  | `(N, 48)`    | Activity tokens, **0-indexed** (raw − 1) |
+| `aux_seq`    | `float` | `(N, 48, 10)`| Per-slot [AT_HOME + 9 co-presence binary] |
+| `cond_vec`   | `float` | `(N, d_cond)`| Encoded demographics (one-hot + continuous) |
+| `cycle_idx`  | `long`  | `(N,)`       | 0..3 for {2005, 2010, 2015, 2022} |
+| `cycle_year` | `long`  | `(N,)`       | Raw cycle year (2005/2010/2015/2022) |
+| `obs_strata` | `long`  | `(N,)`       | Observed DDAY_STRATA (1=Weekday, 2=Sat, 3=Sun) |
+| `wght_per`   | `float` | `(N,)`       | Survey weight carried forward |
+| `occ_ids`    | `long`  | `(N,)`       | Respondent occID (not unique across cycles — pair with `cycle_year` for joins) |
+| `cop_avail`  | `bool`  | `(N, 48, 9)` | `True` where source co-presence was non-NaN — used to mask the co-presence BCE loss |
+
+### `training_pairs.pt` / `val_pairs.pt` (written by 04C, read by 04D)
+
+Dict produced by `compute_pair_indices()`:
+
+| Key | Shape | Meaning |
+|---|---|---|
+| `src_idx`    | `(P,)`     | Source respondent index into the training/val split |
+| `tgt_idx_K`  | `(P, K=5)` | K candidate neighbor indices (same cycle, target stratum) |
+| `tgt_strata` | `(P,)`     | Target DDAY_STRATA (∈ {1,2,3} \ source observed) |
+| `match_score`| `(P, K)`   | Demographic match score (exact + fuzzy, 0–5 range) — informational |
+
+`P ≈ 2 × N_split` (two target strata per source). At training time, `Step4Dataset.resample()` picks one of the K neighbors per source per epoch.
+
+### `augmented_diaries.csv` (written by 04E, read by 04F and Step 5/6/7)
+
+~192,183 rows × ~552 columns. Key column groups:
+
+- **Metadata**: `occID`, `CYCLE_YEAR`, `SURVYEAR`, `DDAY_STRATA`, `IS_SYNTHETIC` (0=observed, 1=generated), full demographic passthrough, `WGHT_PER`.
+- **Activity**: `act30_001`..`act30_048` — integer **1–14** (raw, 1-indexed).
+- **AT_HOME**: `hom30_001`..`hom30_048` — integer 0 or 1 (post-hoc consistency already applied).
+- **Co-presence**: `{Alone,Spouse,Children,parents,otherInFAMs,otherHHs,friends,others,colleagues}30_{001..048}` — integer 0 or 1; `colleagues*` columns are **NaN for 2005/2010 observed rows** and **0 for 2005/2010 synthetic rows**.
+
+Downstream consumers MUST check `IS_SYNTHETIC` and handle `colleagues` NaN explicitly.
+
+---
+
 ## OUTPUT FILES
 
 | File | Location | Content |
@@ -529,7 +632,9 @@ Total columns: ~24 metadata + 48 act + 48 hom + 432 copresence = ~552 columns
 | 2026-04-10 | 04B_model.py | COMPLETE | ConditionalTransformer with batch_first=True (requires PyTorch ≥ 2.0). Slot linear takes d_act + 10 (1 AT_HOME + 9 co-pres). CLS MLP: (d_cond + d_cycle) → 256 → d_model. Encoder: 49 positions (CLS + 48 slots). Decoder: 48 positions (BOS + 47 shifted GT slots). Target strata via Linear(3, d_model) added to all decoder positions. Autoregressive generate() included. DEFAULT_CONFIG and TEST_CONFIG exported. |
 | 2026-04-10 | 04C_training_pairs.py | COMPLETE | K=5 neighbors per (source, target_strata). Exact match on AGEGRP/SEX/MARSTH/HHSIZE/LFTAG; fuzzy (±1 bin) on PR/CMA/HRSWRK/NOCS/TOTINC. TOTINC binned into 6 quantile bins per CYCLE_YEAR. Saves training_pairs.pt and val_pairs.pt. Deviations: also builds val_pairs (spec only mentioned training_pairs) to support validation in 04D. |
 | 2026-04-10 | 04D_train.py | COMPLETE | Full training loop with teacher forcing, co-presence availability masking, colleagues defense-in-depth zero for 2005/2010. AdamW + linear warm-up → cosine decay. WeightedRandomSampler for DDAY_STRATA imbalance. FP16 via torch.amp.GradScaler. Validation samples 200 val respondents with argmax decoding and per-stratum JS. Saves best_model.pt, last_checkpoint.pt, step4_training_log.csv. |
-| 2026-04-10 | 04E_inference.py | COMPLETE | Loads all three .pt splits and concatenates. Per-respondent × stratum: copies observed (IS_SYNTHETIC=0) or autoregressively generates (IS_SYNTHETIC=1). Post-hoc consistency: Sleep (cat 1 raw, night slots) → AT_HOME=1; PaidWork (cat 5 raw) → AT_HOME=0. Colleagues = NaN for 2005/2010 observed rows; 0 for 2005/2010 synthetic rows. Output: augmented_diaries.csv with all metadata merged. |
-| 2026-04-10 | 04F_validation.py | COMPLETE | AugmentationValidator class with 8 sections. Uses scipy.spatial.distance.jensenshannon. Chart output embedded as base64 PNG in HTML. Sample mode uses relaxed thresholds (JS < 0.20 vs 0.05 full). Deviations: Section 4 uses raw activity category 5 for paid-work check (matches 1-indexed data); Section 1 relies on training log CSV being present. |
+| 2026-04-10 | 04E_inference.py | COMPLETE (patched 2026-04-20) | Loads all three .pt splits and concatenates. Per-respondent × stratum: copies observed (IS_SYNTHETIC=0) or autoregressively generates (IS_SYNTHETIC=1). Post-hoc consistency: Sleep (raw cat 5, night slots) → AT_HOME=1; Work & Related (raw cat 1) → AT_HOME=0. Colleagues = NaN for 2005/2010 observed rows; 0 for 2005/2010 synthetic rows. Output: augmented_diaries.csv with all metadata merged. **Note:** original commit had SLEEP_CAT/WORK_CAT reversed; corrected 2026-04-20 (see row below). |
+| 2026-04-10 | 04F_validation.py | COMPLETE (patched 2026-04-20) | AugmentationValidator class with 8 sections. Uses scipy.spatial.distance.jensenshannon. Chart output embedded as base64 PNG in HTML. Sample mode uses relaxed thresholds (JS < 0.20 vs 0.05 full). Section 4/6/7: Sleep uses raw cat 5, Work & Related uses raw cat 1 (matches harmonization taxonomy — see crosswalk in `references_activityCodes/`). Section 1 relies on training log CSV being present. **Note:** original commit had Sleep/Work `== 1` / `== 5` reversed across 6 call sites; corrected 2026-04-20. |
 | 2026-04-10 | ALL SCRIPTS | COMPLETE | Full pipeline chain: sample_for_testing → 04A → (04B, 04C) → 04D → 04E → 04F. All scripts accept --sample flag. All use importlib for 04B import where needed. Activity stored as 0-indexed in tensors (shifted from 1-indexed raw values). |
 | 2026-04-10 | SMOKE TESTS | COMPLETE | All 7 --sample smoke tests passed. Three bugs fixed during testing: (1) 04A: TOTINC_SOURCE is a string column ('SELF'/'CRA') — fixed with pd.factorize() before float cast. (2) 04E: metadata merge was on occID only, causing cartesian product for non-unique occIDs across cycles — fixed to merge on ["occID", "CYCLE_YEAR"]. (3) 04F: _load_data() was always loading full-dataset filenames — fixed to use _SAMPLE suffix when sample_mode=True. Results: 04D trained 5 epochs (val_JS=0.136); 04E produced 1500 rows (500×3, 500 observed + 1000 synthetic); 04F produced HTML report (28 PASS / 1 WARN / 17 FAIL — FAILs expected for 5-epoch undertrained model). |
+| 2026-04-20 | 04D/04E seeds + checkpoint guards (Phase1_ready items 2–5) | COMPLETE | Non-breaking hardening. `04D_train.py::train()` seeds (`torch.manual_seed(42)`, `np.random.seed(42)`, CUDA-conditional `torch.cuda.manual_seed_all(42)`) at top; prints absolute `checkpoint_dir`; `--resume` path now raises `FileNotFoundError` with absolute path + size (MB) if missing. `04E_inference.py::run_inference()` reseeds before the generation loop (makes `torch.multinomial` reproducible for a given checkpoint × temperature); `main()` asserts `args.checkpoint` exists before `torch.load` and prints absolute path + size. Docstring post-hoc-rule block updated to post-fix taxonomy (raw 5 = Sleep, raw 1 = Work). `--sample` smoke-test re-run: checkpoint guard printed `best_model.pt (1.2 MB)`, generation completed cleanly, 1500 rows, colleagues-zero assertion passed. Phase1_ready chapter now fully executed. |
+| 2026-04-20 | 04E/04F activity-index swap fix + smoke verify | COMPLETE | Phase1_ready item 1 executed. `04E_inference.py` lines 53–54: `SLEEP_CAT 0→4`, `WORK_CAT 4→0`. `04F_validation.py`: 6 `== 1`/`== 5` comparison sites corrected (345 sleep transitions, 359/363 night-sleep rate, 371/374 work-peak rate, 467 `work_prop`, 525 cross-stratum work, 567/571 work chart). Lines 433/435 left untouched — those are co-presence 0/1 presence, not activity codes. Re-ran `python 04E_inference.py --sample` and `python 04F_validation.py --sample` against the existing 2-epoch checkpoint (val_JS=0.136). Result: **night-slot sleep rate obs=81.5% / syn=89.7%** (sleep dominance confirmed); **work-slot work rate obs=31.4% / syn=14.5%** (ordinally correct, underweight is expected for undertrained checkpoint); overall synthetic activity distribution plausible (raw 5 Sleep=43.6%, raw 2 Personal=10.8%, raw 10 Leisure=23.8%). 04F report: 27 PASS / 2 WARN / 17 FAIL (FAILs driven by 2-epoch undertraining, not by validation logic). Items 2–5 of Phase1_ready chapter executed in a follow-up pass (see row above). |

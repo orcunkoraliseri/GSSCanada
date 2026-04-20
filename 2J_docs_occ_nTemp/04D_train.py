@@ -252,10 +252,17 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
 # ── Main training function ────────────────────────────────────────────────────
 
 def train(args):
+    # Reproducibility seeds (see Phase1_ready.md: HPC runs must match on rerun)
+    torch.manual_seed(42)
+    np.random.seed(42)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(42)
+
     out_dir   = args.output_dir
     ckpt_dir  = args.checkpoint_dir
     os.makedirs(out_dir,  exist_ok=True)
     os.makedirs(ckpt_dir, exist_ok=True)
+    print(f"  checkpoint_dir (absolute): {os.path.abspath(ckpt_dir)}")
 
     # ── Config ───────────────────────────────────────────────────────────
     cfg_path = os.path.join(args.data_dir, "step4_feature_config.json")
@@ -347,9 +354,17 @@ def train(args):
     best_val_js = float("inf")
     patience_counter = 0
 
-    if args.resume and os.path.isfile(args.resume):
-        print(f"  Resuming from {args.resume}")
-        ckpt = torch.load(args.resume, map_location=device, weights_only=False)
+    if args.resume:
+        if not os.path.isfile(args.resume):
+            raise FileNotFoundError(
+                f"--resume path does not exist: {os.path.abspath(args.resume)}"
+            )
+        print(f"  Resuming from {os.path.abspath(args.resume)} "
+              f"({os.path.getsize(args.resume) / 1e6:.1f} MB)")
+        try:
+            ckpt = torch.load(args.resume, map_location=device, weights_only=False)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Failed to load --resume checkpoint: {e}")
         model.load_state_dict(ckpt["model_state"])
         optimizer.load_state_dict(ckpt["optimizer_state"])
         scheduler.load_state_dict(ckpt["scheduler_state"])

@@ -342,7 +342,7 @@ class AugmentationValidator:
         def sleep_transitions(row_acts):
             night = [row_acts[i] for i in NIGHT_SLOTS]
             return sum(1 for i in range(len(night)-1) if
-                       (night[i] == 1) != (night[i+1] == 1))  # raw cat 1 = sleep
+                       (night[i] == 5) != (night[i+1] == 5))  # raw cat 5 = Sleep & Naps & Resting
 
         # 4.2 Transition rate
         obs_acts = self.obs[act_cols].values
@@ -355,23 +355,23 @@ class AugmentationValidator:
         self._add_check(4, "4.2", "Activity transition rate ratio (syn/obs)",
                         abs(ratio - 1.0) * 100, thr["transition_pct"])
 
-        # 4.1 Sleep continuity (slots in NIGHT_SLOTS should be mostly sleep)
-        night_sleep_rate = np.mean(obs_acts[:, NIGHT_SLOTS] == 1)
+        # 4.1 Sleep continuity (slots in NIGHT_SLOTS should be mostly sleep; raw cat 5)
+        night_sleep_rate = np.mean(obs_acts[:, NIGHT_SLOTS] == 5)
         syn_night_cols = [f"act30_{s+1:03d}" for s in NIGHT_SLOTS
                           if f"act30_{s+1:03d}" in self.syn.columns]
         syn_night_sleep = np.mean(
-            self.syn[syn_night_cols].values == 1 if syn_night_cols else [[0.5]]
+            self.syn[syn_night_cols].values == 5 if syn_night_cols else [[0.5]]
         )
         self._add_check(4, "4.1", "Night-slot sleep rate (synthetic)",
                         abs(night_sleep_rate - syn_night_sleep) * 100,
                         thr["transition_pct"])
 
-        # 4.3 Work peak hours (slots 9–20, raw category 5 = paid work)
+        # 4.3 Work peak hours (slots 9–20, raw category 1 = Work & Related)
         obs_work_slots = obs_acts[:, 8:20]
-        obs_work_rate  = (obs_work_slots == 5).mean() * 100
+        obs_work_rate  = (obs_work_slots == 1).mean() * 100
         syn_work_cols  = [f"act30_{s+1:03d}" for s in range(8, 20)
                           if f"act30_{s+1:03d}" in self.syn.columns]
-        syn_work_rate  = (self.syn[syn_work_cols].values == 5).mean() * 100 if syn_work_cols else 0
+        syn_work_rate  = (self.syn[syn_work_cols].values == 1).mean() * 100 if syn_work_cols else 0
         self._add_check(4, "4.3", "Work peak rate delta (slots 9–20)",
                         abs(obs_work_rate - syn_work_rate), thr["work_pp"])
 
@@ -464,7 +464,7 @@ class AugmentationValidator:
 
         def work_prop(df):
             a = df[[c for c in act_cols if c in df.columns]].values
-            return (a == 5).mean()  # raw category 5 = paid work
+            return (a == 1).mean()  # raw category 1 = Work & Related
 
         if "LFTAG" in self.obs.columns and "LFTAG" in self.syn.columns:
             employed_obs = self.obs[self.obs["LFTAG"] == 1]   # LFTAG=1 typically employed
@@ -522,7 +522,7 @@ class AugmentationValidator:
             oid = row["occID"]
             s   = row["DDAY_STRATA"]
             a   = row[[c for c in act_cols if c in self.aug.columns]].values.astype(float)
-            wp  = (a == 5).mean()
+            wp  = (a == 1).mean()  # raw category 1 = Work & Related
             aug_work.setdefault(oid, {})[s] = wp
 
         # 7.1 Weekday work > Saturday > Sunday for each respondent
@@ -564,11 +564,11 @@ class AugmentationValidator:
                 o = self.obs[(self.obs["CYCLE_YEAR"] == cy) & (self.obs["DDAY_STRATA"] == s)]
                 sv = self.syn[(self.syn["CYCLE_YEAR"] == cy) & (self.syn["DDAY_STRATA"] == s)]
                 obs_wp.append(
-                    (o[[c for c in act_cols if c in o.columns]].values == 5).mean() * 100
+                    (o[[c for c in act_cols if c in o.columns]].values == 1).mean() * 100
                     if len(o) else 0
                 )
                 syn_wp.append(
-                    (sv[[c for c in act_cols if c in sv.columns]].values == 5).mean() * 100
+                    (sv[[c for c in act_cols if c in sv.columns]].values == 1).mean() * 100
                     if len(sv) else 0
                 )
             ax.bar(x + si * w - w, obs_wp, w * 0.8,

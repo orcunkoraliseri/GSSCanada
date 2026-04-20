@@ -7,8 +7,9 @@ respondents.  For each respondent × DDAY_STRATA:
   - Else → autoregressive generation with temperature τ (IS_SYNTHETIC=1)
 
 Post-hoc consistency rules:
-  - Sleep (category 0, 0-indexed; category 1 raw) at night slots → AT_HOME=1
-  - Paid work (category 4, 0-indexed; category 5 raw) → AT_HOME=0
+  - Sleep (tensor value 4, 0-indexed; raw category 5 = Sleep & Naps & Resting)
+    at night slots → AT_HOME=1
+  - Work & Related (tensor value 0, 0-indexed; raw category 1) → AT_HOME=0
   - Colleagues zeroed for 2005/2010 respondents
 
 Output: augmented_diaries.csv (~192,183 rows × ~552 columns)
@@ -50,8 +51,8 @@ COP_COLS = [
 #              and 22:30 AM–3:30 AM = slots 37–47, 0-indexed)
 # Diaries start at 4:00 AM: slot 0 = 4:00–4:29, slot 47 = 3:30–3:59 (next day)
 NIGHT_SLOTS = list(range(0, 7)) + list(range(37, 48))  # 4:00–7:30 and 22:30–4:00
-SLEEP_CAT   = 0   # 0-indexed (raw category 1)
-WORK_CAT    = 4   # 0-indexed (raw category 5 = Paid work)
+SLEEP_CAT   = 4   # 0-indexed tensor value (raw category 5 = Sleep & Naps & Resting)
+WORK_CAT    = 0   # 0-indexed tensor value (raw category 1 = Work & Related)
 
 
 def parse_args():
@@ -110,6 +111,12 @@ def run_inference(model, data: dict, device, temperature: float,
     Returns list of dicts (one per output row).
     """
     model.eval()
+
+    # Reproducibility: torch.multinomial with temperature>0 is non-deterministic;
+    # seeding here makes a given checkpoint + temperature reproduce the same CSV.
+    torch.manual_seed(42)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(42)
 
     n = len(data["act_seq"])
     obs_strata_all = data["obs_strata"].numpy()
@@ -249,6 +256,13 @@ def main():
         feat_cfg = json.load(f)
 
     print("\n[2/4] Loading model checkpoint...")
+    if not os.path.isfile(args.checkpoint):
+        raise FileNotFoundError(
+            f"Checkpoint not found: {os.path.abspath(args.checkpoint)}\n"
+            f"  Run 04D_train.py first, or pass --checkpoint <path>."
+        )
+    print(f"  checkpoint (absolute): {os.path.abspath(args.checkpoint)} "
+          f"({os.path.getsize(args.checkpoint) / 1e6:.1f} MB)")
     ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
     model_config = ckpt["model_config"]
     model_config["d_cond"] = feat_cfg["d_cond"]

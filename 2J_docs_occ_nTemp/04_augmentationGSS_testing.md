@@ -499,6 +499,32 @@ for cycle in [2005, 2010, 2015, 2022]:
 
 ---
 
+## Acceptable smoke-test ranges (500 respondents, 5 epochs, `--sample`)
+
+These are the bands that define a "healthy" local run. Values well outside them mean something is wrong; proceeding to HPC will just waste GPU hours.
+
+| Signal | On-track | Concerning | Abort and debug |
+|---|---|---|---|
+| Training loss monotonicity | Drops in ≥3 of 5 epochs; final < initial × 0.8 | Drops in 2 of 5 | No drop or oscillating |
+| Val JS at epoch 5 | 0.02 – 0.10 (undertrained, expected) | 0.10 – 0.20 | >0.20 or NaN |
+| Per-epoch NaN loss | 0 occurrences | Any single NaN then recovery | Persistent NaN — stop, do not retry on HPC |
+| Colleagues loss (2005/2010 rows) | ~0 | <1e−4 | >1e−4 (masking broken) |
+| Gradient norm after warm-up | <1.0 after clip | 0.9–1.0 sustained | Clipping at every step |
+| Activity-raw range in `augmented_diaries_SAMPLE.csv` | `act30_*` ∈ {1..14} | any 0 or 15 | Indexing offset (see `Phase1_ready.md` bug chapter) |
+
+### Debugging NaN loss
+
+If any epoch produces `NaN` in total/component loss, do not escalate to HPC. Check, in order:
+
+1. **Conditioning vector integrity** — `torch.isfinite(cond_vec).all()` must be `True`. A NaN here typically comes from `TOTINC` standardization when all values in a training batch are identical (zero variance → division by zero). Verify the scaler was fit on the full training split, not a single batch.
+2. **Activity logit clipping** — log `act_logits.min()/max()` for the first batch of the failing epoch. Extreme values (|x| > 50) before softmax point to weight-init or learning-rate problems.
+3. **Learning rate overshoot** — after the 2000-step warm-up, `lr` should be at the peak (~1e-4) before cosine decay. If the peak is higher (check scheduler), drop to 5e-5.
+4. **FP16 overflow** — disable `--fp16` and rerun one epoch. If NaN disappears, the issue is AMP-scale collapse; file under "HPC-only, do not proceed".
+
+Record which of the four was the culprit in the Progress Log.
+
+---
+
 ## Checklist
 
 - [ ] Run `sample_for_testing.py` → `hetus_30min_SAMPLE.csv` + `copresence_30min_SAMPLE.csv`

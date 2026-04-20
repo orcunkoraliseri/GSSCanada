@@ -8,6 +8,8 @@ Validate the outputs of the Step 4 augmentation pipeline by verifying that synth
 **Reference**: `outputs_step3/hetus_30min.csv`, `outputs_step3/copresence_30min.csv`
 **Output**: `outputs_step4/step4_validation_report.html`
 
+> **Activity-code caveat (must read before interpreting any S4 report):** Per the Step-2 harmonization, raw code **1 = Work & Related** and raw code **5 = Sleep & Naps & Resting**. `04F_validation.py` currently has these swapped in several places (`== 1` is used where the code intends "sleep", `== 5` where it intends "paid work"). See the confirmed-bug chapter in `Phase1_ready.md`. Until that is fixed, checks 4.1, 4.3, 6.2, 7.1, and 7.2 are effectively measuring the *opposite* quantity of what their labels claim — ignore their PASS/FAIL status until the code is patched.
+
 ---
 
 ## Script Structure: `04F_validation.py`
@@ -121,9 +123,9 @@ Expected baseline rates (from Step 3):
 
 | Check | Logic | Pass Criterion |
 |-------|-------|----------------|
-| 4.1 Sleep continuity | Count sleep-wake-sleep transitions in night slots (37–48, 1–8) per synthetic diary | ≤ 3 transitions for ≥ 95% of diaries |
+| 4.1 Sleep continuity | Count sleep-wake-sleep transitions in night slots (37–48, 1–8) per synthetic diary, where "sleep" = **Sleep & Naps & Resting** (raw code **5**, tensor idx 4 — **not** raw 1) | ≤ 3 transitions for ≥ 95% of diaries |
 | 4.2 Activity transition rate | Mean transitions per 48-slot diary, observed vs. synthetic | Synthetic within ±20% of observed |
-| 4.3 Work peak hours | Paid work (category 5) proportion in slots 9–20 (08:00–14:00) | Synthetic within ±3 pp of observed |
+| 4.3 Work peak hours | **Work & Related** (raw code **1**, tensor idx 0 — **not** raw 5) proportion in slots 9–20 (08:00–14:00) | Synthetic within ±3 pp of observed |
 | 4.4 Sleep onset time | Modal slot for sleep start, observed vs. synthetic | Within ±1 slot (30 min) |
 | 4.5 No impossible sequences | No paid work at 3–5 AM for non-shift workers (LFTAG = standard employment) | < 1% violation rate |
 
@@ -220,11 +222,28 @@ Following the same style as `step3_validation_report.html`:
 
 ### Pass/Fail Severity Levels
 
-| Level | Meaning |
-|-------|---------|
-| PASS | Check passes within expected bounds |
-| WARN | Check passes but with marginal values (e.g., JS between 0.03 and 0.05) |
-| FAIL | Check fails — requires investigation before proceeding to Step 5/6 |
+Uniform convention across all sections. Let `T` be the PASS threshold stated in the section's check table.
+
+| Level | Rule | Example (§2.1, `T = 0.05`) |
+|-------|---------|---------|
+| PASS  | `value ≤ T`           | JS ≤ 0.05 |
+| WARN  | `T < value ≤ 2 × T`   | 0.05 < JS ≤ 0.10 |
+| FAIL  | `value > 2 × T`       | JS > 0.10 |
+
+Applies to §2.1 (JS per cell), §3.1 (AT_HOME rate Δ), §4.1 (sleep-continuity transitions — use `T = 3` so WARN = 3–6 transitions), §5.1 (co-presence prevalence Δ), and any other numeric threshold stated in a check table. For boolean/ordering checks (e.g., §3.2, §7.1), there is no WARN tier — the check is PASS if the condition holds, FAIL otherwise.
+
+### Blocking vs. investigate policy
+
+Not every FAIL should block downstream Step 5 submission. Use this rule:
+
+| Failure location | Action |
+|---|---|
+| §2.1 (activity JS per cell) **FAIL** | **BLOCK** — re-train or re-check pair construction before Step 5 |
+| §3.1 (AT_HOME rate Δ per cell) **FAIL** | **BLOCK** — AT_HOME is load-bearing for BEM downstream |
+| §4–§7 **FAIL** | **INVESTIGATE** — log the finding in the Progress Log and proceed to Step 5, but revisit if Step 5/6 anomalies appear |
+| §1 (training-curve) FAIL with WARN on §2–§5 | Typically an under-training artifact — rerun with more epochs if wall time allows, otherwise proceed |
+
+Sample-mode runs (`--sample`) use relaxed thresholds (`T × 4`) and are for pipeline wiring only — their FAILs never block.
 
 ---
 
