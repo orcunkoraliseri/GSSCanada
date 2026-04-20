@@ -8,6 +8,7 @@
 # 0_Occupancy Management: Always include files under 100MB
 !0_Occupancy/**
 !requirements.txt
+!2J_docs_occ_nTemp/requirements_step4.txt
 
 # Explicitly ignore files over 100MB in 0_Occupancy
 0_Occupancy/**/cen*.dat
@@ -74,7 +75,9 @@ eSim_tests/benchmark_results/
 # Pipeline Phase 1 & 2 Outputs
 2J_docs_occ_nTemp/outputs_step1/
 2J_docs_occ_nTemp/outputs_step2/
-2J_docs_occ_nTemp/outputs_step3/
+2J_docs_occ_nTemp/outputs_step3/*
+!2J_docs_occ_nTemp/outputs_step3/hetus_30min.csv
+!2J_docs_occ_nTemp/outputs_step3/copresence_30min.csv
 
 # IDE and Large Outputs
 .idea/
