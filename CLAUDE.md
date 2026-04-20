@@ -1,184 +1,91 @@
-# CLAUDE.md — Occupancy Modeling Project (occModeling)
+# CLAUDE.md
 
-## Project Overview
+## eSim 2026: Occupancy Modeling
 
-This project generates realistic occupancy schedules for Canadian residential buildings to use as inputs in EnergyPlus building energy models (BEM). It does this by aligning Statistics Canada Census demographic data with General Social Survey (GSS) time-use data across multiple census years, then using machine learning to forecast synthetic future populations.
+This repo builds residential occupancy schedules for EnergyPlus by aligning Statistics Canada Census data with GSS time-use data, with an ML-based path for newer synthetic populations.
 
-**Research context:** Postdoctoral research for eSim 2026 paper — "Longitudinal Occupancy-Driven Energy Demand in Canadian Residential Buildings"
+## Environment
 
-**Platform:** macOS, Python 3.9+, scripts run manually (not via CLI automation)
+- Primary research context: macOS, with Windows use
+- Python 3.9+
+- Use the repo's existing environment before proposing new packages
+- Run scripts manually, one at a time
 
----
+Key deps: `pandas`, `numpy`, `scipy`, `matplotlib`, `seaborn`, `tqdm`, `eppy`, `scikit-learn`, `torch` or `tensorflow`
 
-## Project Structure
+## Important Directories
 
-```
-occModeling/
-├── 0_Occupancy/                    # Raw data inputs and processed outputs
-│   ├── DataSources_CENSUS/         # Census PUMF files (2006, 2011, 2016, 2021)
-│   ├── DataSources_GSS/            # GSS time-use survey files (2005–2022)
-│   ├── Outputs_06CEN05GSS/         # Outputs: 2006 Census + 2005 GSS
-│   ├── Outputs_11CEN10GSS/         # Outputs: 2011 Census + 2010 GSS
-│   ├── Outputs_16CEN15GSS/         # Outputs: 2016 Census + 2015 GSS
-│   ├── Outputs_Aligned/            # Cross-year aligned datasets
-│   └── saved_models_cvae/          # Saved ML model weights
-│
-├── 0_BEM_Setup/                    # EnergyPlus IDF files, weather data, sim results
-│
-├── eSim_occ_utils/                 # Core occupancy modeling library
-│   ├── occ_config.py               # Cross-platform path config (macOS/Windows)
-│   ├── gss_reader.py               # GSS file parser (.sas7bdat, .sps formats)
-│   ├── cen_reader.py               # Census DTYPE reader and validator
-│   ├── 06CEN05GSS/                 # Pipeline: 2006 Census + 2005 GSS
-│   ├── 11CEN10GSS/                 # Pipeline: 2011 Census + 2010 GSS
-│   ├── 16CEN15GSS/                 # Pipeline: 2016 Census + 2015 GSS
-│   ├── 25CEN22GSS_classification/  # Pipeline: 2022 Census + ML classification (active)
-│   ├── plotting/                   # 15+ visualization scripts
-│   └── docs_pipelines/             # Pipeline documentation
-│
-├── eSim_bem_utils/                 # EnergyPlus BEM integration
-│   ├── main.py                     # Menu-driven entry point
-│   ├── simulation.py               # EnergyPlus runner
-│   ├── idf_optimizer.py            # IDF preprocessing (inject meters/outputs)
-│   ├── integration.py              # Link occupancy schedules to BEM
-│   └── plotting.py / reporting.py  # Results extraction and visualization
-│
-├── eSim_docs_occ_utils/            # Occupancy pipeline documentation (Markdown + PDF)
-├── eSim_docs_bem_utils/            # BEM documentation
-├── eSim_writing/                   # Academic writing (methodology, results)
-├── eSim_tests/                     # Test suite and benchmarks
-├── eSim_README.md                  # Main project overview
-└── run_bem.py                      # BEM workflow entry point
-```
+- `0_Occupancy/`: Census/GSS inputs, processed outputs, model artifacts
+- `0_BEM_Setup/`: IDFs, weather files, simulation results
+- `eSim_occ_utils/`: occupancy pipeline, `occ_config.py`, optional `GSS_BASE_DIR`
+- `eSim_bem_utils/`: BEM integration, `config.py`, optional `ENERGYPLUS_DIR`
+- `eSim_docs_occ_utils/`, `eSim_docs_bem_utils/`: workflow docs
+- `eSim_tests/`: tests and validation outputs
 
----
+## Standard Pipeline
 
-## Core Pipelines
+Typical Census-year flow:
 
-### Occupancy Pipeline (per census year)
-Each pipeline follows the same 5-step structure:
+1. `*_alignment.py`
+2. `*_ProfileMatcher.py`
+3. `*_HH_aggregation.py`
+4. `*_occToBEM.py`
+5. `*_main.py`
 
-```
-Census PUMF data
-    ↓ *_alignment.py          — Harmonize demographic columns between Census & GSS
-    ↓ *_ProfileMatcher.py     — Tiered matching (Tier 1–4) of Census agents to GSS schedules
-    ↓ *_HH_aggregation.py     — Aggregate individual profiles to household level
-    ↓ *_occToBEM.py           — Convert 5-min ABM schedules → hourly BEM format
-    ↓ *_main.py               — Orchestration script (runs all above)
-```
+Meaning: align demographics, match profiles, aggregate households, convert to BEM schedules, then orchestrate the run.
 
-**Matching tiers:**
-- Tier 1: Perfect match on all demographic columns
-- Tier 2: Match on core columns (28.4% weekday, 41.5% weekend)
-- Tier 3: Match on key columns only
-- Tier 4: Fail-safe fallback (< 0.5% of records)
+Source schedules are usually 5-minute data, then converted to 30-minute or hourly outputs for EnergyPlus.
 
-### 25CEN22GSS Classification Pipeline (active ML pipeline)
-Located in `eSim_occ_utils/25CEN22GSS_classification/`
+## ML Pipeline
 
-**Three source files (do not modify without explicit instruction):**
-- `eSim_datapreprocessing.py` — Census data ingestion and cleaning
-- `eSim_dynamicML_mHead.py` — Main ML pipeline: CVAE architecture, household assembly, profile matching, BEM conversion
-- `eSim_dynamicML_mHead_alignment.py` — GSS-to-Census demographic harmonization
+Location: `eSim_occ_utils/25CEN22GSS_classification/`
 
-**11-step pipeline organized in 3 phases:**
-- **Step 1** (run_step1.py): Data prep → CVAE training → forecasting 2025/2030 → visual validation
-- **Step 2** (run_step2.py): Household assembly → Profile Matcher → Post-processing → HH Aggregation
-- **Step 3** (run_step3.py): OCC to BEM Input conversion
+- `run_step1.py`: preprocessing, training, forecasting, validation
+- `run_step2.py`: household assembly, profile matching, aggregation
+- `run_step3.py`: occupancy-to-BEM conversion
 
-Modular runner plan documented in `docs_classification/`.
+Do not modify these files unless explicitly instructed:
 
----
+- `eSim_occ_utils/25CEN22GSS_classification/eSim_datapreprocessing.py`
+- `eSim_occ_utils/25CEN22GSS_classification/eSim_dynamicML_mHead.py`
+- `eSim_occ_utils/25CEN22GSS_classification/eSim_dynamicML_mHead_alignment.py`
 
-## Configuration
+## Working Rules
 
-### Path Configuration
-`eSim_occ_utils/occ_config.py` handles cross-platform paths:
-- macOS base: `/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy`
-- Override with env var: `GSS_BASE_DIR`
+- Read relevant files before editing
+- Preserve workflow, naming, and research assumptions unless asked to change them
+- Make the smallest practical change
+- Do not invent new pipeline steps, files, or datasets
+- Be explicit about assumptions, risks, and validation gaps
+- Use exact file references with line numbers when citing code
 
-`eSim_bem_utils/config.py` handles EnergyPlus paths:
-- macOS: `/Applications/EnergyPlus-24-2-0`
-- Override with env var: `ENERGYPLUS_DIR`
+## Research and BEM Guardrails
 
----
+- Treat Census and GSS inputs as research data, not sample data
+- Be cautious with demographic mappings, silent cleaning, or formatting changes
+- Occupancy output changes can affect IDF inputs, simulation, and reporting
+- If a change could alter publishable results, call that out clearly
 
-## Coding Standards
+## Validation
 
-- **Style:** PEP 8, plain readable code (no over-engineering)
-- **No premature abstractions:** Add helpers only when used in 2+ places
-- **No extra features:** Only change what was asked; don't refactor surrounding code
-- **Comments:** Explain *why*, not *what*
-- **Do not modify existing source files** in `25CEN22GSS_classification/` unless explicitly asked — the modular runner pattern sits on top of them
+- Prefer the narrowest meaningful check
+- For data-processing edits, verify schema, row counts, and sample outputs
+- For BEM-facing edits, verify schedule shape, resolution, and compatibility
+- If full execution is too expensive, state what was not verified
 
-## Prompt Format
+## Task and Commit Format
 
-### Prompt Intake Rule
-Before acting on any user request, normalize it into this shape:
-- `Setting the stage`: who is acting, what the objective is, and any relevant context
-- `Defining the task`: the exact action requested, such as write, analyze, build, review, or debug
-- `Specifying rules`: style, tone, constraints, examples, and other preferences
-- If the user omits a part, infer it from the surrounding context
-- Then carry out the request directly using that normalized interpretation
+Task notes or plans should use:
 
-### Task List Format
-When preparing a task list as a separate document or as an additional chapter inside a document, organize each task in a way that is easy to understand and step-by-step using this structure:
-- aim of task
-- what to do
-- how to do
-- why to do this task
-- what will impact on
-- what are the step(s)/sub-step(s)
-- what to expect as result
-- if possible or needed how to test
+- aim
+- steps
+- expected result
+- test method
 
-Keep the task list clear, ordered, and consistent across documents.
+Completed task docs should add a `Progress Log`.
 
----
+Commit format:
 
-## Key Dependencies
+`[type]: Brief description`
 
-```
-pandas, numpy, scipy, matplotlib, seaborn
-tqdm, eppy
-scikit-learn (Random Forest for DTYPE expansion)
-torch or tensorflow (CVAE in 25CEN22GSS classification)
-```
-
-No requirements.txt currently exists. Dependencies are documented in `eSim_README.md`.
-
----
-
-## Data Notes
-
-- Census data: Statistics Canada PUMF files (not publicly redistributable, stored locally)
-- GSS data: General Social Survey time-use files (.sas7bdat format)
-- Outputs are 5-minute resolution activity grids → converted to 48-slot (30-min) or hourly BEM schedules
-- Key validated metrics: 28,454 households sampled; work duration ~542 min/day for employed agents
-
----
-
-## BEM Integration
-
-EnergyPlus 24.2 is used for simulation. Occupancy schedules generated by the pipeline are injected into IDF files via `eSim_bem_utils/integration.py`. Simulation outputs are extracted from `eplusout.sql` for EUI analysis.
-
----
-
-## Git Commit Style
-
-```
-[type]: Brief description
-- Detail 1
-- Detail 2
-```
-
-Types: `[data]`, `[ml]`, `[pipeline]`, `[bem]`, `[fix]`, `[docs]`
-
----
-
-## Session Tips
-
-- Scripts are run manually, one at a time — suggest individual script runs, not bash pipelines
-- When referencing code, include `file_path:line_number` for easy navigation
-- Keep explanations plain-language; this researcher codes pragmatically, not as a software engineer
-- Before suggesting changes to any file, read it first
+Allowed types: `[data]`, `[ml]`, `[pipeline]`, `[bem]`, `[fix]`, `[docs]`

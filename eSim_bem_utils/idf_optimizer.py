@@ -27,6 +27,12 @@ REQUIRED_OUTPUT_VARIABLES = [
     ('Zone Ideal Loads Supply Air Total Cooling Energy', 'Hourly'),
 ]
 
+# Monthly variables for physically intuitive heating/cooling time-series plots.
+MONTHLY_IDEAL_LOADS_OUTPUT_VARIABLES = [
+    ('Zone Ideal Loads Supply Air Total Heating Energy', 'Monthly'),
+    ('Zone Ideal Loads Supply Air Total Cooling Energy', 'Monthly'),
+]
+
 # Field value fixes for E+ 24.2 compatibility
 FIELD_FIXES = {
     'PEOPLE': {
@@ -147,19 +153,32 @@ def optimize_idf(idf: IDF, verbose: bool = True, meter_frequency: str = 'Monthly
     # 4. Add required output variables if missing
     existing_vars = set()
     for var in idf.idfobjects.get('OUTPUT:VARIABLE', []):
-        existing_vars.add(var.Variable_Name)
-    
+        existing_vars.add((var.Variable_Name, str(var.Reporting_Frequency).strip().lower()))
+
     added_vars = 0
     for var_name, frequency in REQUIRED_OUTPUT_VARIABLES:
-        if var_name not in existing_vars:
+        var_key = (var_name, str(frequency).strip().lower())
+        if var_key not in existing_vars:
             var_obj = idf.newidfobject("Output:Variable")
             var_obj.Key_Value = "*"
             var_obj.Variable_Name = var_name
             var_obj.Reporting_Frequency = frequency
             added_vars += 1
-    
-    if added_vars > 0:
-        msg = f"Added {added_vars} output variables"
+
+    monthly_added = 0
+    for var_name, frequency in MONTHLY_IDEAL_LOADS_OUTPUT_VARIABLES:
+        var_key = (var_name, str(frequency).strip().lower())
+        if var_key not in existing_vars:
+            var_obj = idf.newidfobject("Output:Variable")
+            var_obj.Key_Value = "*"
+            var_obj.Variable_Name = var_name
+            var_obj.Reporting_Frequency = frequency
+            monthly_added += 1
+            existing_vars.add(var_key)
+
+    total_added_vars = added_vars + monthly_added
+    if total_added_vars > 0:
+        msg = f"Added {total_added_vars} output variables"
         actions.append(msg)
         if verbose:
             print(f"  {msg}")
@@ -604,7 +623,7 @@ def load_standard_residential_schedules(
 
     # Locate the JSON file for the selected baseline
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    schedule_json_path = os.path.join(base_dir, 'BEM_Setup', 'Templates', json_filename)
+    schedule_json_path = os.path.join(base_dir, '0_BEM_Setup', 'Templates', json_filename)
 
     if not os.path.exists(schedule_json_path):
         if verbose:
@@ -613,7 +632,7 @@ def load_standard_residential_schedules(
             return _get_fallback_schedules()
         raise FileNotFoundError(
             f"SF Detached schedule file not found: {schedule_json_path}\n"
-            "Create BEM_Setup/Templates/schedule_sf.json before using baseline='sf_detached'."
+            "Create 0_BEM_Setup/Templates/schedule_sf.json before using baseline='sf_detached'."
         )
 
     try:
@@ -639,41 +658,58 @@ def load_standard_residential_schedules(
         if key == 'activity':
             # Activity is a constant metabolic rate stored as a single value
             for ds in sch.get('day_schedules', []):
-                if 'Default' in ds.get('identifier', ''):
+                ident = ds.get('identifier', '')
+                if 'Default' in ident or 'Weekday' in ident:
                     result['activity'] = ds['values'][0]
                     break
             continue
 
-        # Extract 24-hour profile from the Default day schedule.
-        # Two supported formats:
-        #   (a) schedule_sf.json: 'values' is already a 24-element list
-        #   (b) schedule.json:    'values'+'times' are paired time-step arrays
-        hourly_values = [0.0] * 24
+        # Extract 24-hour profiles. Supports three identifier conventions:
+        #   'Weekday' / 'Weekend' — Task 14 split (schedule_sf.json)
+        #   'Default'             — single profile applied to both (schedule.json)
+        # Two value formats:
+        #   (a) 'values' is a 24-element list with no 'times' key
+        #   (b) 'values'+'times' are paired time-step arrays (fill-forward)
+        def _extract_hourly(ds):
+            values = ds.get('values', [])
+            times = ds.get('times', [])
+            hv = [0.0] * 24
+            if len(values) == 24 and not times:
+                return list(values)
+            for i, time_pair in enumerate(times):
+                hour = time_pair[0]
+                value = values[i] if i < len(values) else values[-1]
+                end_hour = times[i + 1][0] if i + 1 < len(times) else 24
+                for h in range(hour, min(end_hour, 24)):
+                    hv[h] = value
+            return hv
+
+        weekday_values = [0.0] * 24
+        weekend_values = [0.0] * 24
+        found_weekday = False
+        found_weekend = False
 
         for ds in sch.get('day_schedules', []):
-            if 'Default' in ds.get('identifier', ''):
-                values = ds.get('values', [])
-                times = ds.get('times', [])
-
-                if len(values) == 24 and not times:
-                    # Format (a): direct 24-hour list
-                    hourly_values = list(values)
-                else:
-                    # Format (b): time-value pairs → fill forward
-                    for i, time_pair in enumerate(times):
-                        hour = time_pair[0]
-                        value = values[i] if i < len(values) else values[-1]
-                        end_hour = times[i + 1][0] if i + 1 < len(times) else 24
-                        for h in range(hour, min(end_hour, 24)):
-                            hourly_values[h] = value
-
+            ident = ds.get('identifier', '')
+            if 'Weekday' in ident:
+                weekday_values = _extract_hourly(ds)
+                found_weekday = True
+            elif 'Weekend' in ident:
+                weekend_values = _extract_hourly(ds)
+                found_weekend = True
+            elif 'Default' in ident:
+                v = _extract_hourly(ds)
+                weekday_values = v
+                weekend_values = v.copy()
+                found_weekday = found_weekend = True
                 break
 
-        # DOE MidRise uses identical Weekday and Weekend in the source JSON;
-        # schedule_sf.json also provides a single profile applied to both.
+        if not found_weekend:
+            weekend_values = weekday_values.copy()
+
         result[key] = {
-            'Weekday': hourly_values.copy(),
-            'Weekend': hourly_values.copy()
+            'Weekday': weekday_values,
+            'Weekend': weekend_values,
         }
 
     # Ensure activity has a default if not found in JSON
@@ -738,7 +774,8 @@ def prepare_idf_for_simulation(
     verbose: bool = True,
     standardize_schedules: bool = True,
     run_period_mode: str = 'standard',
-    meter_frequency: str = 'Monthly'
+    meter_frequency: str = 'Monthly',
+    baseline: str = 'midrise',
 ) -> bool:
     """
     Prepares an IDF file for simulation with all optimizations.
@@ -776,7 +813,7 @@ def prepare_idf_for_simulation(
         
         # Apply residential schedule standardization if requested
         if standardize_schedules:
-            std_schedules = load_standard_residential_schedules(verbose=verbose)
+            std_schedules = load_standard_residential_schedules(verbose=verbose, baseline=baseline)
             std_actions = standardize_residential_schedules(idf, std_schedules, verbose=verbose)
             actions.extend(std_actions)
         

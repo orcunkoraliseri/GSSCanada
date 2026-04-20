@@ -109,6 +109,151 @@ def get_tabular_data(conn, table_name: str) -> pd.DataFrame:
     return pd.read_sql_query(query, conn, params=(table_name,))
 
 
+def _convert_energy_value(value, units: str) -> float:
+    """Normalize common EnergyPlus energy units to kWh."""
+    try:
+        numeric_value = float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+    units = str(units or '').strip()
+    if units == 'J':
+        return numeric_value / 3600000.0
+    if units == 'GJ':
+        return numeric_value * 277.778
+    if units == 'kBtu':
+        return numeric_value * 0.293071
+    if units == 'Btu':
+        return numeric_value * 0.000293071
+    if units == 'MJ':
+        return numeric_value * 0.277778
+    return numeric_value
+
+
+def _get_time_month_column(conn) -> Optional[str]:
+    """Return the Time-table column that stores the month number, if present."""
+    try:
+        columns_df = pd.read_sql_query("PRAGMA table_info('Time')", conn)
+    except Exception:
+        return None
+
+    if columns_df.empty or 'name' not in columns_df.columns:
+        return None
+
+    name_map = {str(name).strip().lower(): str(name).strip() for name in columns_df['name'].tolist() if name}
+    for candidate in ('month', 'monthofyear', 'calendar_month'):
+        if candidate in name_map:
+            return name_map[candidate]
+    return None
+
+
+def _get_monthly_report_series(conn, source_names: List[str]) -> Dict[str, List[float]]:
+    """
+    Retrieve monthly series for one or more ReportDataDictionary names.
+
+    The result is month-ordered and zero-padded to 12 months. Values are summed
+    across all matching zones/keys for each month.
+    """
+    source_names = list(OrderedDict.fromkeys(source_names))
+    if not source_names:
+        return {}
+
+    month_column = _get_time_month_column(conn)
+    if not month_column:
+        return {}
+
+    placeholders = ", ".join(["?"] * len(source_names))
+    query = f"""
+    SELECT rdd.Name, rdd.Units, t.{month_column} AS MonthIndex, rd.Value
+    FROM ReportData rd
+    JOIN ReportDataDictionary rdd ON rd.ReportDataDictionaryIndex = rdd.ReportDataDictionaryIndex
+    JOIN Time t ON rd.TimeIndex = t.TimeIndex
+    JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex
+    WHERE ep.EnvironmentType = 3
+      AND (rdd.ReportingFrequency = 5 OR rdd.ReportingFrequency = 'Monthly')
+      AND rdd.Name IN ({placeholders})
+    ORDER BY CAST(t.{month_column} AS INTEGER) ASC, rd.TimeIndex ASC
+    """
+
+    try:
+        data_df = pd.read_sql_query(query, conn, params=source_names)
+    except Exception:
+        return {}
+
+    if data_df.empty:
+        return {}
+
+    data_df['MonthIndex'] = pd.to_numeric(data_df['MonthIndex'], errors='coerce')
+    data_df['ConvertedValue'] = data_df.apply(
+        lambda row: _convert_energy_value(row['Value'], row['Units']),
+        axis=1
+    )
+    data_df = data_df.dropna(subset=['MonthIndex'])
+    if data_df.empty:
+        return {}
+
+    grouped = (
+        data_df
+        .groupby(['Name', 'MonthIndex'], as_index=False)['ConvertedValue']
+        .sum()
+    )
+
+    results = {}
+    for source_name in source_names:
+        monthly_values = [0.0] * 12
+        subset = grouped[grouped['Name'] == source_name]
+        for _, row in subset.iterrows():
+            month_index = int(row['MonthIndex'])
+            if 1 <= month_index <= 12:
+                monthly_values[month_index - 1] = float(row['ConvertedValue'])
+        results[source_name] = monthly_values
+
+    return results
+
+
+def _get_legacy_monthly_series(conn) -> Dict[str, List[float]]:
+    """Fallback monthly series reader based on the legacy meter path."""
+    query_meta = """
+    SELECT ReportDataDictionaryIndex, KeyValue, Name, Units 
+    FROM ReportDataDictionary 
+    WHERE ReportingFrequency = 5 OR ReportingFrequency = 'Monthly'
+    """
+
+    try:
+        meta_df = pd.read_sql_query(query_meta, conn)
+    except Exception as e:
+        print(f"Error querying dictionary: {e}")
+        return {}
+
+    index_map = {}
+    for _, row in meta_df.iterrows():
+        name = row['Name']
+        units = row['Units']
+        index_map[row['ReportDataDictionaryIndex']] = (name, units)
+
+    if not index_map:
+        return {}
+
+    query_data = """
+    SELECT rd.ReportDataDictionaryIndex, rd.Value
+    FROM ReportData rd
+    JOIN Time t ON rd.TimeIndex = t.TimeIndex
+    JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex
+    WHERE ep.EnvironmentType = 3
+    ORDER BY t.TimeIndex ASC
+    """
+
+    data_df = pd.read_sql_query(query_data, conn)
+
+    results = {}
+    for idx, (name, units) in index_map.items():
+        subset = data_df[data_df['ReportDataDictionaryIndex'] == idx]
+        values = subset['Value'].tolist()
+        results[name] = [_convert_energy_value(v, units) for v in values]
+
+    return results
+
+
 def calculate_eui(conn) -> dict:
     """
     Calculates EUI, Total Floor Area, and End Uses from SQL connection.
@@ -557,75 +702,31 @@ def get_meter_data(conn) -> Dict[str, List[float]]:
     Returns:
         Dict[meter_name, list_of_12_monthly_values_in_kWh]
     """
-    # 1. Get ReportDataDictionary IDs for our target meters (Monthly)
-    # We look for ReportingFrequency=Monthly (check numeric code if needed, usually 5 or similar string)
-    # Actually, SQL output stores string 'Monthly' in ReportingFrequency for tabular, 
-    # but for time series it uses integers in ReportDataDictionary.ReportingFrequency
-    # Month=5
-    
-    query_meta = """
-    SELECT ReportDataDictionaryIndex, KeyValue, Name, Units 
-    FROM ReportDataDictionary 
-    WHERE ReportingFrequency = 5 OR ReportingFrequency = 'Monthly'
-    """
-    
-    try:
-        meta_df = pd.read_sql_query(query_meta, conn)
-    except Exception as e:
-        print(f"Error querying dictionary: {e}")
-        return {}
-    
-    # Map Index -> Name
-    index_map = {}
-    for _, row in meta_df.iterrows():
-        # Name format usually 'MeterName'
-        name = row['Name']
-        units = row['Units']
-        index_map[row['ReportDataDictionaryIndex']] = (name, units)
-        
-    if not index_map:
-        return {}
-        
-    # 2. Get Data
-    # Month indices are typically 1-12 in TimeIndex (or we can just order by time)
-    # We want 12 values per meter
-    
-    query_data = """
-    SELECT rd.ReportDataDictionaryIndex, rd.Value
-    FROM ReportData rd
-    JOIN Time t ON rd.TimeIndex = t.TimeIndex
-    JOIN EnvironmentPeriods ep ON t.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex
-    WHERE ep.EnvironmentType = 3
-    ORDER BY t.TimeIndex ASC
-    """
-    
-    data_df = pd.read_sql_query(query_data, conn)
-    
+    source_map = OrderedDict([
+        ('Heating:EnergyTransfer', 'Zone Ideal Loads Supply Air Total Heating Energy'),
+        ('Cooling:EnergyTransfer', 'Zone Ideal Loads Supply Air Total Cooling Energy'),
+        ('InteriorLights:Electricity', 'InteriorLights:Electricity'),
+        ('InteriorEquipment:Electricity', 'InteriorEquipment:Electricity'),
+        ('InteriorEquipment:Gas', 'InteriorEquipment:Gas'),
+        ('Fans:Electricity', 'Fans:Electricity'),
+        ('WaterSystems:EnergyTransfer', 'WaterSystems:EnergyTransfer'),
+    ])
+
+    monthly_series = _get_monthly_report_series(conn, list(source_map.values()))
+    legacy_series = None
+
     results = {}
-    
-    for idx, (name, units) in index_map.items():
-        # Filter for this meter
-        subset = data_df[data_df['ReportDataDictionaryIndex'] == idx]
-        values = subset['Value'].tolist()
-        
-        # We expect 12 values for annual monthly simulation
-        # If run period is partial, we take what we get
-        
-        # Convert units to kWh
-        # Meters usually in J or kWh directly
-        converted_values = []
-        for v in values:
-            if units == 'J':
-                converted_values.append(v / 3600000.0)
-            elif units == 'GJ':
-                converted_values.append(v * 277.778)
-            elif units == 'kBtu':
-                converted_values.append(v * 0.293071)
-            else:
-                converted_values.append(v) # Assume kWh or similar
-        
-        results[name] = converted_values
-        
+    for output_name, source_name in source_map.items():
+        values = monthly_series.get(source_name)
+        if values is None:
+            if legacy_series is None:
+                legacy_series = _get_legacy_monthly_series(conn)
+            values = legacy_series.get(output_name)
+            if values is None:
+                values = legacy_series.get(source_name)
+        if values is not None:
+            results[output_name] = values
+
     return results
 
 

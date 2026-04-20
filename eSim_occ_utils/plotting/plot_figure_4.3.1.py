@@ -68,8 +68,8 @@ def plot_figure(data, output_dir):
     output_dir: str (path detailed in main)
     """
     cities = ["Toronto (5A)", "Montreal (6A)", "Winnipeg (7)"]
-    scenarios = ["Default", "2005", "2015", "2025"]
-    scenario_labels = ["Def", "'05", "'15", "'25"] # Shortened for grid
+    scenarios = ["Default", "2005", "2010", "2015", "2022", "2025"]
+    scenario_labels = ["Def", "'05", "'10", "'15", "'22", "'25"] # Shortened for grid
     
     # 2 Rows (Heating, Cooling), 3 Columns (Cities)
     fig, axes = plt.subplots(2, 3, figsize=(15, 8), sharex=True)

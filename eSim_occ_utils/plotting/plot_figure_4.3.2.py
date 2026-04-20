@@ -65,8 +65,8 @@ def plot_temporal_trend(data, output_dir):
     data: dict {City: {Scenario: {'Heating': mean, 'Cooling': mean}}}
     """
     cities = ["Toronto (5A)", "Montreal (6A)", "Winnipeg (7)"]
-    years = [2005, 2015, 2025]
-    scenarios = ["2005", "2015", "2025"]
+    years = [2005, 2010, 2015, 2022, 2025]
+    scenarios = ["2005", "2010", "2015", "2022", "2025"]
     
     # 2 Rows (Heating, Cooling), 3 Columns (Cities)
     fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True)

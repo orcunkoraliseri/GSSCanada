@@ -25,12 +25,22 @@ def run_simulation(idf_path, epw_path, output_dir, ep_path, n_jobs=1, quiet=Fals
     name = os.path.basename(idf_path)
     
     try:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            
+        # 6d: Redirect E+ I/O to $TMPDIR when ESIM_USE_TMPDIR=1, then copy
+        # eplusout.sql + CSVs back to output_dir. Reduces concurrent write
+        # pressure on /speed-scratch. Default (env var unset) is unchanged.
+        _tmpdir_base = os.environ.get("TMPDIR", "") if os.environ.get("ESIM_USE_TMPDIR") else ""
+        if _tmpdir_base:
+            import tempfile as _tempfile
+            run_dir = _tempfile.mkdtemp(prefix="esim_", dir=_tmpdir_base)
+        else:
+            run_dir = output_dir
+
+        if not os.path.exists(run_dir):
+            os.makedirs(run_dir)
+
         # Determine executable extension based on platform
         exe_ext = '.exe' if platform.system() == 'Windows' else ''
-            
+
         # If ep_path is a directory, look for energyplus executable
         if os.path.isdir(ep_path):
             ep_dir = ep_path
@@ -38,7 +48,7 @@ def run_simulation(idf_path, epw_path, output_dir, ep_path, n_jobs=1, quiet=Fals
         else:
             ep_dir = os.path.dirname(ep_path)
             ep_exe = ep_path
-            
+
         if not os.path.exists(ep_exe):
             msg = f"Error: EnergyPlus executable not found at {ep_exe}"
             if not quiet:
@@ -46,25 +56,25 @@ def run_simulation(idf_path, epw_path, output_dir, ep_path, n_jobs=1, quiet=Fals
             return {'success': False, 'name': name, 'message': msg}
 
         # Prepare for ExpandObjects
-        in_idf_path = os.path.join(output_dir, 'in.idf')
+        in_idf_path = os.path.join(run_dir, 'in.idf')
         shutil.copy2(idf_path, in_idf_path)
 
-        # Copy Energy+.idd to output directory for ExpandObjects
+        # Copy Energy+.idd to run directory for ExpandObjects
         idd_path = os.path.join(ep_dir, 'Energy+.idd')
         if os.path.exists(idd_path):
-            shutil.copy2(idd_path, os.path.join(output_dir, 'Energy+.idd'))
+            shutil.copy2(idd_path, os.path.join(run_dir, 'Energy+.idd'))
         elif not quiet:
             print(f"Warning: Energy+.idd not found at {idd_path}. ExpandObjects might fail.")
-        
+
         expand_objects_exe = os.path.join(ep_dir, f'ExpandObjects{exe_ext}')
         if os.path.exists(expand_objects_exe):
             # if not quiet:
-            #     print(f"Running ExpandObjects in {output_dir}")
-            subprocess.run([expand_objects_exe], cwd=output_dir, check=True,
+            #     print(f"Running ExpandObjects in {run_dir}")
+            subprocess.run([expand_objects_exe], cwd=run_dir, check=True,
                           capture_output=quiet)
-        
+
         # Check if expanded.idf was created
-        expanded_idf_path = os.path.join(output_dir, 'expanded.idf')
+        expanded_idf_path = os.path.join(run_dir, 'expanded.idf')
         if os.path.exists(expanded_idf_path):
             simulation_idf_path = expanded_idf_path
         else:
@@ -74,19 +84,27 @@ def run_simulation(idf_path, epw_path, output_dir, ep_path, n_jobs=1, quiet=Fals
         cmd = [
             ep_exe,
             '-w', epw_path,
-            '-d', output_dir,
+            '-d', run_dir,
         ]
-        
+
         if n_jobs > 1:
             cmd.extend(['-j', str(n_jobs)])
-            
+
         cmd.append(simulation_idf_path)
-        
+
         if not quiet:
             print(f"Running simulation for {name}...")
-        
+
         subprocess.run(cmd, check=True, capture_output=quiet)
-        
+
+        # 6d: Copy results back from TMPDIR to the real output_dir.
+        if run_dir != output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            for _f in os.listdir(run_dir):
+                if _f.endswith('.sql') or _f.endswith('.csv'):
+                    shutil.copy2(os.path.join(run_dir, _f), output_dir)
+            shutil.rmtree(run_dir, ignore_errors=True)
+
         msg = f"Simulation completed successfully: {name}"
         if not quiet:
             print(msg)
@@ -136,7 +154,10 @@ def run_simulations_parallel(simulation_jobs, ep_path, max_workers=None):
     """
     
     if max_workers is None:
-        max_workers = os.cpu_count() or 4
+        # 6c: honour --workers flag propagated via ESIM_WORKERS env var.
+        # Falls back to cpu_count when called outside run_batch_hpc.py (e.g. Option 7).
+        _env_w = os.environ.get("ESIM_WORKERS")
+        max_workers = int(_env_w) if _env_w else (os.cpu_count() or 4)
     
     # Limit workers to number of jobs
     max_workers = min(max_workers, len(simulation_jobs))

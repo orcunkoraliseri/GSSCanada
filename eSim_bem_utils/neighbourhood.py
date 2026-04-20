@@ -44,7 +44,56 @@ def _parse_space_names(spaces_block: str) -> list[str]:
     return names
 
 
-def get_building_groups(idf_content: str) -> dict[str, list[str]]:
+def _infer_dtype_from_zone_name(zone_name: str) -> Optional[str]:
+    """
+    Return the DTYPE implied by a single zone name, or None for ambiguous/non-residential zones.
+
+    Checks in priority order so that 'highrise' beats 'apartment'.
+    Returns None for Corridor/Office/etc. — caller handles via majority vote.
+    """
+    lower = zone_name.lower()
+    if 'highrise' in lower:
+        return 'HighRise'
+    if 'midrise' in lower:
+        return 'MidRise'
+    if 'apartment' in lower:
+        # Ambiguous (e.g. NUS_RC5 "0_Apartment_...") — default to MidRise
+        return 'MidRise'
+    if 'living_unit' in lower:
+        return 'SingleD'
+    if 'room_' in lower:
+        return 'SingleD'
+    return None
+
+
+def infer_building_dtype(zones: list[str]) -> str:
+    """
+    Infer the DTYPE for a building group from its zone/space names.
+
+    Applies _infer_dtype_from_zone_name to every zone and takes a majority
+    vote over non-None results.  Non-residential zones (Corridor, Office)
+    return None from the helper and are ignored, so they inherit the type
+    from their residential siblings.
+
+    Args:
+        zones: Space names belonging to one building group.
+
+    Returns:
+        One of the 8 DTYPE strings.  Falls back to 'SingleD' (the largest
+        pool) when no zone yields a positive signal.
+    """
+    from collections import Counter
+
+    votes = [_infer_dtype_from_zone_name(z) for z in zones]
+    valid = [v for v in votes if v is not None]
+
+    if not valid:
+        return 'SingleD'
+
+    return Counter(valid).most_common(1)[0][0]
+
+
+def get_building_groups(idf_content: str) -> dict[str, dict]:
     """
     Analyzes a neighbourhood IDF and groups spaces by building.
 
@@ -57,8 +106,11 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
         idf_content: The full text content of the IDF file.
 
     Returns:
-        A dictionary mapping building IDs (e.g., "Bldg_0") to lists of space names.
+        A dictionary mapping building IDs (e.g., "Bldg_0") to dicts of the form
+        {'spaces': [...], 'dtype': 'MidRise'}.
     """
+    from collections import Counter
+
     spacelist_name, spaces_block = _find_primary_spacelist(idf_content)
     if spaces_block is None:
         print("Warning: No SpaceList found in IDF.")
@@ -66,7 +118,7 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
 
     space_names = _parse_space_names(spaces_block)
 
-    buildings: dict[str, list[str]] = {}
+    space_lists: dict[str, list[str]] = {}
     hash_to_bldg: dict[str, str] = {}
 
     for space in space_names:
@@ -85,16 +137,27 @@ def get_building_groups(idf_content: str) -> dict[str, list[str]]:
 
         if key not in hash_to_bldg:
             hash_to_bldg[key] = f"Bldg_{len(hash_to_bldg)}"
-        buildings.setdefault(hash_to_bldg[key], []).append(space)
+        space_lists.setdefault(hash_to_bldg[key], []).append(space)
 
+    # Attach inferred DTYPE to each building group
+    buildings: dict[str, dict] = {}
+    for bldg_id, spaces in space_lists.items():
+        buildings[bldg_id] = {
+            'spaces': spaces,
+            'dtype': infer_building_dtype(spaces),
+        }
+
+    # Summary
+    dtype_counts = Counter(b['dtype'] for b in buildings.values())
+    dtype_summary = ', '.join(f"{count} {dtype}" for dtype, count in dtype_counts.most_common())
     print(f"Found SpaceList '{spacelist_name}' with {len(space_names)} spaces.")
-    print(f"Grouped into {len(buildings)} buildings.")
+    print(f"Grouped into {len(buildings)} buildings: {dtype_summary}.")
     return buildings
 
 
 def get_water_equipment_building_map(
     idf_content: str,
-    buildings: dict[str, list[str]]
+    buildings: dict[str, dict]
 ) -> dict[str, list[str]]:
     """
     Maps existing WaterUse:Equipment objects to buildings by matching
@@ -125,8 +188,8 @@ def get_water_equipment_building_map(
 
     # Build hash-to-building lookup from the buildings dict (mirrors get_building_groups)
     hash_to_bldg: dict[str, str] = {}
-    for bldg_id, spaces in buildings.items():
-        for space in spaces:
+    for bldg_id, bldg_data in buildings.items():
+        for space in bldg_data['spaces']:
             candidate = space[:-len("_Space")] if space.endswith("_Space") else space
             parts = candidate.split("_")
             last  = parts[-1] if parts else ""
@@ -135,8 +198,8 @@ def get_water_equipment_building_map(
 
     # Legacy fallback: prefix-to-building via _Room_ (unchanged from original)
     prefix_to_bldg: dict[str, str] = {}
-    for bldg_id, spaces in buildings.items():
-        for space in spaces:
+    for bldg_id, bldg_data in buildings.items():
+        for space in bldg_data['spaces']:
             pm = re.match(r"(.+?)_Room_", space)
             if pm:
                 prefix = pm.group(1)
@@ -238,9 +301,11 @@ ScheduleTypeLimits,
   Dimensionless;           !- Unit Type
 """)
 
-    for i, (bldg_id, spaces) in enumerate(buildings.items()):
+    for i, (bldg_id, bldg_data) in enumerate(buildings.items()):
         if i >= n_buildings:
             break
+
+        spaces = bldg_data['spaces']
 
         # Create a SpaceList for this building
         space_list_name = f"Neighbourhood_{bldg_id}_SpaceList"
@@ -394,3 +459,66 @@ def get_num_buildings_from_idf(idf_path: str) -> int:
         content = f.read()
     buildings = get_building_groups(content)
     return len(buildings)
+
+
+def get_building_dtypes_from_idf(idf_path: str) -> list[str]:
+    """
+    Return an ordered list of DTYPEs for every building in a neighbourhood IDF.
+
+    The list is indexed identically to Bldg_0, Bldg_1, ... produced by
+    get_building_groups(), so index i corresponds to building i.
+
+    Supports an optional JSON sidecar file (see load_dtype_overrides()).
+
+    Args:
+        idf_path: Path to the neighbourhood IDF.
+
+    Returns:
+        List of DTYPE strings, one per building (e.g. ['MidRise'] * 36).
+    """
+    from collections import Counter
+
+    with open(idf_path, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+
+    buildings = get_building_groups(content)
+
+    # Apply sidecar overrides if present
+    overrides = load_dtype_overrides(idf_path)
+    if overrides:
+        print(f"Building types: loaded from {os.path.basename(idf_path).replace('.idf', '_dtypes.json')}")
+    else:
+        print("Building types: inferred from zone names")
+
+    dtypes = []
+    for bldg_id in buildings:
+        if bldg_id in overrides:
+            dtypes.append(overrides[bldg_id])
+        else:
+            dtypes.append(buildings[bldg_id]['dtype'])
+
+    dtype_counts = Counter(dtypes)
+    summary = ', '.join(f"{count} {dtype}" for dtype, count in dtype_counts.most_common())
+    print(f"  Building types: {summary}")
+    return dtypes
+
+
+def load_dtype_overrides(idf_path: str) -> dict[str, str]:
+    """
+    Load manual DTYPE overrides from a JSON sidecar file alongside the IDF.
+
+    For 'NUS_RC1.idf', looks for 'NUS_RC1_dtypes.json' in the same directory.
+    Expected format: {"Bldg_0": "SemiD", "Bldg_1": "Attached", ...}
+
+    Returns an empty dict if no sidecar exists.
+    """
+    import json
+
+    sidecar = idf_path.replace('.idf', '_dtypes.json')
+    if not os.path.exists(sidecar):
+        return {}
+
+    with open(sidecar, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    return {k: v for k, v in data.items() if isinstance(v, str)}

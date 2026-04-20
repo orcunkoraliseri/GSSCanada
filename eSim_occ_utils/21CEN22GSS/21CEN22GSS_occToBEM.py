@@ -3,6 +3,26 @@
 
 Converts 5-minute household profiles into hourly BEM schedules for
 EnergyPlus/Honeybee simulations.
+
+--- Why this script exists ---
+This is the final preprocessing step for the Census 2021 / GSS 2022 occupancy
+pipeline. It reads the household-aggregated 5-minute time-use data produced by
+21CEN22GSS_HH_aggregation.py and resamples it to hourly BEM schedules (occupancy
+fraction + metabolic rate) that EnergyPlus/Honeybee can consume directly.
+
+--- Why it was re-run (Task 10 fix, 2026-04-10) ---
+The 2021 Census PUMF collapses the older 8-category dwelling-type variable
+(DPDSORT) into only 3 codes: 1=Single-detached, 2=Apartment, 3=Other dwelling.
+This meant BEM_Schedules_2022.csv contained an "Apartment" DTYPE label that does
+not exist in any other year's schedule CSV, causing the DTYPE-aware neighbourhood
+assignment code (Options 5/6/7) to find zero MidRise candidates for 2022 and fall
+back to SingleD for every apartment building.
+
+Fix: when DTYPE resolves to "Apartment", the script now splits further using the
+BEDRM field as a proxy — BEDRM <= 1 maps to HighRise, BEDRM >= 2 maps to MidRise.
+This threshold is consistent with the 2005 Census data where HighRise households
+have a median of 1 bedroom and MidRise households have a median of 2 bedrooms.
+No upstream Census variable distinguishes the two types in the 2021 PUMF.
 """
 
 from __future__ import annotations
@@ -93,7 +113,19 @@ class BEMConverter:
 
                 if col == "DTYPE":
                     val_str = self._normalize_dtype_value(val)
-                    res_data[col] = self.dtype_map.get(val_str, val_str)
+                    dtype_label = self.dtype_map.get(val_str, val_str)
+                    if dtype_label == "Apartment":
+                        # 2021 Census PUMF collapses high-rise and mid-rise into a
+                        # single "Apartment" code (DTYPE=2). Use BEDRM as a proxy:
+                        # BEDRM <= 1 → HighRise, BEDRM >= 2 → MidRise.
+                        # Consistent with 2005 data: HighRise median BEDRM=1, MidRise=2.
+                        bedrm_raw = self._get_scalar(group, ["BEDRM", "Census_BEDRM"], default=2)
+                        try:
+                            bedrm_int = int(float(bedrm_raw))
+                        except (ValueError, TypeError):
+                            bedrm_int = 2  # default to MidRise if BEDRM unknown
+                        dtype_label = "HighRise" if bedrm_int <= 1 else "MidRise"
+                    res_data[col] = dtype_label
                 elif col == "PR":
                     val_str = self._normalize_numeric_value(val)
                     res_data[col] = self.pr_map.get(val_str, val_str)

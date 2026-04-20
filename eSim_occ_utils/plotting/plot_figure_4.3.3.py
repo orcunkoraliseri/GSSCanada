@@ -8,7 +8,7 @@ import glob
 from datetime import datetime
 
 # --- Configuration ---
-SCENARIOS = ["Default", "2005", "2015", "2025"]
+SCENARIOS = ["Default", "2005", "2010", "2015", "2022", "2025"]
 CITIES = ["Toronto (5A)", "Montreal (6A)", "Winnipeg (7)"]
 
 # Map City to SimResults Folder
