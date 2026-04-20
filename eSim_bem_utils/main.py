@@ -13,6 +13,7 @@ import platform
 import time
 import csv
 import subprocess
+import numpy as np
 
 # Windows: reconfigure stdout/stderr to UTF-8 so Unicode characters (e.g. →, —) in
 # integration.py verbose output do not raise charmap codec errors on cp1252 consoles.
