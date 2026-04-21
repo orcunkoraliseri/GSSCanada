@@ -103,11 +103,12 @@ def apply_posthoc_consistency(
 
 
 def run_inference(model, data: dict, device, temperature: float,
-                  batch_size: int = 64) -> list:
+                  batch_size: int = 256) -> list:
     """
-    Generate synthetic diaries for all respondents.
+    Generate synthetic diaries for all respondents (batched generation).
 
-    For each respondent × 3 strata, builds one output row.
+    Collects all synthetic (respondent, target_stratum) pairs per chunk and
+    calls model.generate() once per chunk — ~50-100x faster than B=1 per call.
     Returns list of dicts (one per output row).
     """
     model.eval()
@@ -127,15 +128,52 @@ def run_inference(model, data: dict, device, temperature: float,
 
     for start in range(0, n, batch_size):
         end   = min(start + batch_size, n)
-        b_idx = list(range(start, end))
-        B     = len(b_idx)
+        chunk = list(range(start, end))
 
-        for i in b_idx:
-            occ_id    = int(occ_ids_all[i])
-            cy        = int(cycle_year_all[i])
-            s_obs     = int(obs_strata_all[i])
+        # ── Collect all (respondent, target_stratum) pairs needing generation ──
+        syn_idx    = []   # respondent index in data
+        syn_strata = []   # target DDAY_STRATA
+        for i in chunk:
+            s_obs = int(obs_strata_all[i])
+            for s_tgt in [1, 2, 3]:
+                if s_tgt != s_obs:
+                    syn_idx.append(i)
+                    syn_strata.append(s_tgt)
 
-            # Observed sequences (already on CPU; 0-indexed for act)
+        # ── Batch generate all synthetic pairs in one model.generate() call ───
+        syn_results = {}   # (i, s_tgt) → (act_0idx ndarray, home ndarray, cop ndarray)
+
+        if syn_idx:
+            act_t  = data["act_seq"][syn_idx].to(device)
+            aux_t  = data["aux_seq"][syn_idx].to(device)
+            cond_t = data["cond_vec"][syn_idx].to(device)
+            cidx_t = data["cycle_idx"][syn_idx].to(device)
+            strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
+
+            with torch.no_grad():
+                gen_act, gen_home, gen_cop = model.generate(
+                    act_t, aux_t, cond_t, cidx_t, strat,
+                    temperature=temperature,
+                )
+
+            gen_act  = gen_act.cpu().numpy()    # (K, 48) 0-indexed
+            gen_home = gen_home.cpu().numpy()   # (K, 48)
+            gen_cop  = gen_cop.cpu().numpy()    # (K, 48, 9)
+
+            for k, (i, s_tgt) in enumerate(zip(syn_idx, syn_strata)):
+                cy     = int(cycle_year_all[i])
+                home_k = apply_posthoc_consistency(gen_act[k], gen_home[k])
+                cop_k  = gen_cop[k].copy()
+                if cy in (2005, 2010):
+                    cop_k[:, 8] = 0.0
+                syn_results[(i, s_tgt)] = (gen_act[k], home_k, cop_k)
+
+        # ── Build output rows ──────────────────────────────────────────────────
+        for i in chunk:
+            occ_id = int(occ_ids_all[i])
+            cy     = int(cycle_year_all[i])
+            s_obs  = int(obs_strata_all[i])
+
             obs_act  = data["act_seq"][i].numpy()   # (48,) 0-indexed
             obs_aux  = data["aux_seq"][i].numpy()   # (48, 10)
             obs_home = obs_aux[:, 0]                 # (48,) AT_HOME
@@ -143,46 +181,22 @@ def run_inference(model, data: dict, device, temperature: float,
 
             for s_tgt in [1, 2, 3]:
                 row = {
-                    "occID":      occ_id,
-                    "CYCLE_YEAR": cy,
+                    "occID":       occ_id,
+                    "CYCLE_YEAR":  cy,
                     "DDAY_STRATA": s_tgt,
                     "IS_SYNTHETIC": 0 if s_tgt == s_obs else 1,
                 }
 
                 if s_tgt == s_obs:
-                    # Copy observed diary directly
-                    act_out  = obs_act.copy()   # 0-indexed
+                    act_out  = obs_act.copy()
                     home_out = obs_home.copy()
                     cop_out  = obs_cop.copy()
                 else:
-                    # Autoregressive generation
-                    act_t  = data["act_seq"][i:i+1].to(device)
-                    aux_t  = data["aux_seq"][i:i+1].to(device)
-                    cond_t = data["cond_vec"][i:i+1].to(device)
-                    cidx_t = data["cycle_idx"][i:i+1].to(device)
-                    strat  = torch.tensor([s_tgt], dtype=torch.long, device=device)
-
-                    with torch.no_grad():
-                        gen_act, gen_home, gen_cop = model.generate(
-                            act_t, aux_t, cond_t, cidx_t, strat,
-                            temperature=temperature,
-                        )
-
-                    act_out  = gen_act[0].cpu().numpy()    # (48,) 0-indexed
-                    home_out = gen_home[0].cpu().numpy()   # (48,)
-                    cop_out  = gen_cop[0].cpu().numpy()    # (48, 9)
-
-                    # Post-hoc consistency
-                    home_out = apply_posthoc_consistency(act_out, home_out)
-
-                    # Zero out colleagues for 2005/2010 (not measured)
-                    if cy in (2005, 2010):
-                        cop_out[:, 8] = 0.0
+                    act_out, home_out, cop_out = syn_results[(i, s_tgt)]
 
                 # Convert activity from 0-indexed to raw 1-indexed for output CSV
                 act_out_raw = act_out + 1
 
-                # Build flat output row
                 for s in range(N_SLOTS):
                     slot_str = f"{s+1:03d}"
                     row[f"act30_{slot_str}"]  = int(act_out_raw[s])
@@ -200,9 +214,8 @@ def run_inference(model, data: dict, device, temperature: float,
 
                 rows.append(row)
 
-        if (start // batch_size) % 50 == 0:
-            pct = 100.0 * end / n
-            print(f"  Processed {end}/{n} respondents ({pct:.1f}%)")
+        pct = 100.0 * end / n
+        print(f"  Processed {end}/{n} respondents ({pct:.1f}%)", flush=True)
 
     return rows
 

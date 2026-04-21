@@ -98,13 +98,15 @@ class Step4Dataset(Dataset):
 
 # ── Loss ─────────────────────────────────────────────────────────────────────
 
-def compute_loss(output: dict, batch: dict, device) -> dict:
+def compute_loss(output: dict, batch: dict, device,
+                 act_weights: torch.Tensor = None) -> dict:
     """
     Computes the three-component loss.
 
     Co-presence BCE is masked by:
       1. per-slot availability from the TARGET respondent (cop_avail)
       2. explicit zero for colleagues (index 8) when CYCLE_YEAR < 2015
+    act_weights: optional (14,) float tensor of per-class CE weights.
     """
     act_logits  = output["act_logits"]   # (B, 48, 14)
     home_logits = output["home_logits"]  # (B, 48)
@@ -115,11 +117,12 @@ def compute_loss(output: dict, batch: dict, device) -> dict:
     home_tgt = batch["dec_aux_seq"][:, :, 0]    # (B, 48) — AT_HOME is feature 0
     cop_tgt  = batch["dec_aux_seq"][:, :, 1:]   # (B, 48, 9) — features 1..9
 
-    # Activity: cross-entropy over 14 classes
+    # Activity: cross-entropy over 14 classes (inverse-sqrt-frequency weighted)
     B, T, C = act_logits.shape
     act_loss = F.cross_entropy(
         act_logits.reshape(B * T, C),
         act_tgt.reshape(B * T),
+        weight=act_weights,
     )
 
     # AT_HOME: binary cross-entropy
@@ -178,58 +181,73 @@ def js_divergence(p: np.ndarray, q: np.ndarray) -> float:
 
 @torch.no_grad()
 def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
-             n_sample: int = 200) -> dict:
+             n_sample: int = 2000) -> dict:
     """
     Validation pass: argmax decoding on a sample of val respondents.
     Computes per-stratum JS divergence between predicted and observed
     activity distributions within the val set.
+
+    Uses batched generation (same approach as 04E) for speed.
+    n_sample=2000 gives stable JS estimates; old n=200 was too noisy.
     """
     model.eval()
     n_val = len(val_data["act_seq"])
     n_sample = min(n_sample, n_val)
 
     # Pre-compute reference activity distributions per (CYCLE_YEAR, DDAY_STRATA)
-    act_np     = val_data["act_seq"].cpu().numpy()           # (n_val, 48)
-    strata_np  = val_data["obs_strata"].cpu().numpy()        # (n_val,)
-    cycle_np   = val_data["cycle_year"].cpu().numpy()        # (n_val,)
-    ref_dists  = {}
+    act_np    = val_data["act_seq"].cpu().numpy()           # (n_val, 48)
+    strata_np = val_data["obs_strata"].cpu().numpy()        # (n_val,)
+    cycle_np  = val_data["cycle_year"].cpu().numpy()        # (n_val,)
+    ref_dists = {}
     for cy in np.unique(cycle_np):
         for s in [1, 2, 3]:
             mask = (cycle_np == cy) & (strata_np == s)
             if mask.sum() == 0:
                 continue
-            acts = act_np[mask].flatten()                    # 0-indexed
+            acts = act_np[mask].flatten()                   # 0-indexed
             dist = np.bincount(acts, minlength=14).astype(float)
             ref_dists[(int(cy), int(s))] = dist
 
-    # Sample a subset of val respondents
+    # Sample val respondents (fixed seed for reproducibility across epochs)
     rng     = np.random.default_rng(42)
     src_idx = rng.choice(n_val, size=n_sample, replace=False)
 
-    generated = {s: [] for s in [1, 2, 3]}
+    generated  = {s: [] for s in [1, 2, 3]}
     gen_cycles = {s: [] for s in [1, 2, 3]}
 
-    batch_sz = 32
+    # Batched generation: collect all (respondent, s_tgt) pairs per chunk
+    batch_sz = 256
     for start in range(0, n_sample, batch_sz):
         end   = min(start + batch_sz, n_sample)
-        batch_idx = src_idx[start:end]
+        chunk = src_idx[start:end]
 
-        for i in batch_idx:
+        syn_idx    = []
+        syn_strata = []
+        syn_cycles = []
+        for i in chunk:
             s_obs = int(strata_np[i])
             cy    = int(cycle_np[i])
             for s_tgt in [1, 2, 3]:
-                if s_tgt == s_obs:
-                    continue
-                # Build single-item batch
-                act  = val_data["act_seq"][i:i+1].to(device)
-                aux  = val_data["aux_seq"][i:i+1].to(device)
-                cond = val_data["cond_vec"][i:i+1].to(device)
-                cidx = val_data["cycle_idx"][i:i+1].to(device)
-                tgt  = torch.tensor([s_tgt], dtype=torch.long, device=device)
+                if s_tgt != s_obs:
+                    syn_idx.append(int(i))
+                    syn_strata.append(s_tgt)
+                    syn_cycles.append(cy)
 
-                gen_act, _, _ = model.generate(act, aux, cond, cidx, tgt, temperature=0)
-                generated[s_tgt].append(gen_act.cpu().numpy()[0])
-                gen_cycles[s_tgt].append(cy)
+        if not syn_idx:
+            continue
+
+        act_t  = val_data["act_seq"][syn_idx].to(device)
+        aux_t  = val_data["aux_seq"][syn_idx].to(device)
+        cond_t = val_data["cond_vec"][syn_idx].to(device)
+        cidx_t = val_data["cycle_idx"][syn_idx].to(device)
+        strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
+
+        gen_act, _, _ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
+        gen_act = gen_act.cpu().numpy()   # (K, 48) 0-indexed
+
+        for k, (s_tgt, cy) in enumerate(zip(syn_strata, syn_cycles)):
+            generated[s_tgt].append(gen_act[k])
+            gen_cycles[s_tgt].append(cy)
 
     js_vals = []
     for s_tgt in [1, 2, 3]:
@@ -241,7 +259,7 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
             ref = ref_dists.get((int(cy), s_tgt))
             if ref is None:
                 continue
-            mask_g = cys_gen == cy
+            mask_g   = cys_gen == cy
             gen_dist = np.bincount(acts_gen[mask_g].flatten(), minlength=14).astype(float)
             js_vals.append(js_divergence(ref, gen_dist))
 
@@ -317,6 +335,17 @@ def train(args):
     print(f"  Train pairs: {len(train_dataset)} | Val respondents: "
           f"{len(val_data['act_seq'])}")
 
+    # Inverse-sqrt-frequency class weights for activity CE loss.
+    # Downweights Sleep/Recreation dominance; boosts Work, Transit, Shopping gradients.
+    act_flat = train_data["act_seq"].numpy().flatten()
+    class_counts = np.bincount(act_flat, minlength=14).astype(float)
+    class_weights_np = 1.0 / np.sqrt(np.maximum(class_counts, 1.0))
+    class_weights_np = class_weights_np / class_weights_np.mean()  # normalize: mean=1
+    act_class_weights = torch.tensor(class_weights_np, dtype=torch.float32, device=device)
+    print("  Activity class weights (inv-sqrt-freq, mean-normalized):")
+    for i, w in enumerate(class_weights_np):
+        print(f"    class {i:2d}: {w:.3f}")
+
     # Inverse-frequency weighting for DDAY_STRATA imbalance
     src_strata = train_data["obs_strata"][train_pairs["src_idx"]].numpy()
     strata_counts = np.bincount(src_strata, minlength=4)
@@ -370,7 +399,7 @@ def train(args):
         scheduler.load_state_dict(ckpt["scheduler_state"])
         start_epoch     = ckpt["epoch"] + 1
         best_val_js     = ckpt.get("best_val_js", float("inf"))
-        patience_counter = ckpt.get("patience_counter", 0)
+        patience_counter = 0  # reset on resume — prior patience was from buggy warmup run
         print(f"  Resumed from epoch {start_epoch}, best_val_js={best_val_js:.4f}")
 
     # ── Training log CSV ─────────────────────────────────────────────────
@@ -403,7 +432,7 @@ def train(args):
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(batch)
-                    losses = compute_loss(out, batch, device)
+                    losses = compute_loss(out, batch, device, act_weights=act_class_weights)
                 scaler.scale(losses["total_loss"]).backward()
                 scaler.unscale_(optimizer)
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 1.0).item()
@@ -411,7 +440,7 @@ def train(args):
                 scaler.update()
             else:
                 out    = model(batch)
-                losses = compute_loss(out, batch, device)
+                losses = compute_loss(out, batch, device, act_weights=act_class_weights)
                 losses["total_loss"].backward()
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 1.0).item()
                 optimizer.step()
@@ -446,7 +475,7 @@ def train(args):
         avg_home  = epoch_losses["home"]  / n_batches
         avg_cop   = epoch_losses["cop"]   / n_batches
         avg_gnorm = float(np.mean(grad_norms))
-        cur_lr    = scheduler.get_last_lr()[0] * args.lr
+        cur_lr    = scheduler.get_last_lr()[0]
 
         # Validation pass
         val_result = validate(model, val_data, val_pairs, device, model_config)
@@ -492,7 +521,8 @@ def train(args):
             print(f"  ✓ New best model saved (val_JS={val_js:.4f})")
         else:
             patience_counter += 1
-            if patience_counter >= args.patience:
+            warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
+            if patience_counter >= args.patience and (epoch + 1) > warmup_epochs:
                 print(f"  Early stopping at epoch {epoch+1} "
                       f"(no improvement for {args.patience} epochs)")
                 break
