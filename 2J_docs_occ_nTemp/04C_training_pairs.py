@@ -284,6 +284,15 @@ def main():
     print(f"\n  Saved {train_path}")
     print(f"  Saved {val_path}")
 
+    # Save strata_inv_freq for F3-D DATA_SIDE_SAMPLING in 04D
+    strata_counts_train = Counter(train_meta["DDAY_STRATA"].values)
+    strata_inv_freq_arr = np.array(
+        [1.0 / strata_counts_train.get(s, 1) for s in range(4)], dtype=np.float32
+    )
+    sif_path = os.path.join(out_dir, "strata_inv_freq.npy")
+    np.save(sif_path, strata_inv_freq_arr)
+    print(f"  Saved {sif_path}  (strata 0-3: {strata_inv_freq_arr.tolist()})")
+
     print(f"\n✓ 04C complete.")
     print(f"  Training pairs: {len(train_pairs['src_idx'])} "
           f"({len(train_meta)} respondents × 2 target strata)")

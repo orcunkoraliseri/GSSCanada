@@ -11,5 +11,5 @@
 module load cuda/12.8
 
 cd /speed-scratch/o_iseri/occModeling
-/speed-scratch/o_iseri/envs/step4/bin/python 04D_train.py \
+/speed-scratch/o_iseri/envs/step4/bin/python -u 04D_train.py \
     --fp16

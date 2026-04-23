@@ -96,6 +96,25 @@ def main():
         flag = "  <-- LARGE DIFF" if abs(o_pct - s_pct) > 5 else ""
         print(f"  {int(cat):>3}  {label:<15}  {o_pct:6.1f}%   {s_pct:6.1f}%{flag}")
 
+    # ── 2b. Per-stratum activity distribution ─────────────────────
+    print("\n── 2b. Per-stratum activity distribution ─────────────────")
+    strata_names = {1: "Weekday", 2: "Saturday", 3: "Sunday"}
+    for s in [1, 2, 3]:
+        obs_s = df[(df["IS_SYNTHETIC"] == 0) & (df["DDAY_STRATA"] == s)][act_cols].values.flatten()
+        syn_s = df[(df["IS_SYNTHETIC"] == 1) & (df["DDAY_STRATA"] == s)][act_cols].values.flatten()
+        if len(obs_s) == 0 or len(syn_s) == 0:
+            print(f"  DDAY_STRATA={s} ({strata_names[s]}): insufficient data")
+            continue
+        print(f"\n  DDAY_STRATA={s} ({strata_names[s]}):  "
+              f"obs n={len(obs_s)//N_SLOTS:,}  syn n={len(syn_s)//N_SLOTS:,}")
+        print(f"  {'Cat':>3}  {'Label':<15}  {'Observed':>8}   {'Synthetic':>9}")
+        for cat in range(1, 15):
+            o_pct = 100 * np.mean(obs_s == cat)
+            s_pct = 100 * np.mean(syn_s == cat)
+            label = ACT_LABELS.get(cat, "?")
+            flag = "  <-- LARGE DIFF" if abs(o_pct - s_pct) > 5 else ""
+            print(f"  {cat:>3}  {label:<15}  {o_pct:6.1f}%   {s_pct:6.1f}%{flag}")
+
     # ── 3. Sleep temporal pattern ──────────────────────────────────
     print("\n── 3. Sleep temporal pattern (slot 0 = 4:00 AM) ─────────")
     print("  Fraction of respondents sleeping each slot (synthetic only):")

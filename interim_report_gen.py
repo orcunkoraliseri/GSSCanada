@@ -57,7 +57,7 @@ for ax, (n, df) in zip(axes, data.items()):
     for bar, sc in zip(bars, scenarios):
         ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+span*0.04,
                 f"{totals[sc]:.1f}", ha='center', va='bottom', fontsize=7)
-fig.suptitle("Total EUI by Code Scenario — All 6 Neighbourhoods (Montreal, N=3)",
+fig.suptitle("Total EUI by Code Scenario — All 6 Neighbourhoods (Montreal, N=20)",
              fontsize=12, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "fig1_total_eui_by_scenario.png"), dpi=150)
@@ -86,7 +86,7 @@ for ax, (n, df) in zip(axes, data.items()):
     span = max(tmax - tmin, 1e-6)
     ax.set_ylim(max(0, tmin - span * 0.6), tmax + span * 0.4)
     ax.legend(loc='upper right', fontsize=7)
-fig.suptitle("Stacked End-Use EUI by Code Scenario — All 6 Neighbourhoods (Montreal, N=3)",
+fig.suptitle("Stacked End-Use EUI by Code Scenario — All 6 Neighbourhoods (Montreal, N=20)",
              fontsize=12, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "fig2_stacked_enduse.png"), dpi=150)
@@ -116,7 +116,7 @@ for ax, (n, df) in zip(axes, data.items()):
         span = max(vmax - vmin, 1e-6)
         ax.set_ylim(max(0, vmin - span * 0.5), vmax + span * 0.3)
     ax.legend(fontsize=8)
-fig.suptitle("Heating vs Cooling EUI — All 6 Neighbourhoods (Montreal, N=3)",
+fig.suptitle("Heating vs Cooling EUI — All 6 Neighbourhoods (Montreal, N=20)",
              fontsize=12, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "fig3_heating_cooling.png"), dpi=150)
@@ -145,7 +145,7 @@ for ax, (n, df) in zip(axes, data.items()):
     ax.set_xlabel("Code Scenario")
     for x, v in zip(xs, impr):
         ax.text(x, v + (0.1 if v >= 0 else -0.5), f"{v:.1f}%", ha='center', va='bottom', fontsize=8)
-fig.suptitle("Total EUI Improvement vs 2005 Baseline — All 6 Neighbourhoods (Montreal, N=3)",
+fig.suptitle("Total EUI Improvement vs 2005 Baseline — All 6 Neighbourhoods (Montreal, N=20)",
              fontsize=12, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "fig4_improvement_vs_2005.png"), dpi=150)
@@ -241,7 +241,7 @@ for ax, (n, df) in zip(axes_flat, data.items()):
     ax.set_ylabel("EUI (kWh/m\u00b2/yr)", fontsize=9)
     ax.grid(axis='y', linestyle='--', alpha=0.5)
     ax.legend(fontsize=7)
-fig.suptitle("Figure 4.3.1 — Annual Energy Demand by Code Scenario (All Neighbourhoods, N=3)",
+fig.suptitle("Figure 4.3.1 — Annual Energy Demand by Code Scenario (All Neighbourhoods, N=20)",
              fontsize=12, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "Figure_4.3.1_Energy_Demand.png"), dpi=150)
@@ -278,7 +278,7 @@ for ax, (n, df) in zip(axes_flat, data.items()):
     ax.set_ylabel("EUI (kWh/m\u00b2/yr)", fontsize=9)
     ax.grid(True, linestyle='--', alpha=0.3)
     ax.legend(fontsize=7)
-fig.suptitle("Figure 4.3.2 — EUI Temporal Trend by Code Year (All Neighbourhoods, N=3)",
+fig.suptitle("Figure 4.3.2 — EUI Temporal Trend by Code Year (All Neighbourhoods, N=20)",
              fontsize=12, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "Figure_4.3.2_Temporal_Trend.png"), dpi=150)
@@ -714,7 +714,7 @@ for _ax_idx, _eu in enumerate(_OCC_EU4):
 _h_a1, _l_a1 = axes[0].get_legend_handles_labels()
 fig.legend(_h_a1, _l_a1, loc='upper center', bbox_to_anchor=(0.5, 1.01), ncol=3, fontsize=9)
 fig.suptitle(
-    "Figure_Occ_A1 \u2014 End-Use EUI Delta (Scenario \u2212 Default), All Neighbourhoods (N=3)\n"
+    "Figure_Occ_A1 \u2014 End-Use EUI Delta (Scenario \u2212 Default), All Neighbourhoods (N=20)\n"
     "[" + _OCC_DISCLAIMER + "]",
     fontsize=10, fontweight='bold', y=1.04)
 plt.tight_layout()
@@ -758,7 +758,7 @@ for _ax_idx, _eu in enumerate(_OCC_EU4):
     _ax.grid(axis='x', alpha=0.3)
 fig.suptitle(
     "Figure_Occ_A3 \u2014 End-Use Sensitivity Tornado (Max\u2212Min across all 6 scenarios)\n"
-    "All 6 Neighbourhoods (N=3)", fontsize=11, fontweight='bold')
+    "All 6 Neighbourhoods (N=20)", fontsize=11, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "Figure_Occ_A3_Sensitivity_Tornado.png"), dpi=150)
 plt.close()
@@ -805,7 +805,7 @@ for _sc, _mk in _OCC_MKRS.items():
 axes[0].legend(fontsize=7, loc='lower right', ncol=2)
 fig.suptitle(
     "Figure_Occ_A4 \u2014 Equipment \u2194 Cooling/Heating Coupling Scatter\n"
-    "All 6 Neighbourhoods \u00d7 6 Scenarios (N=3)", fontsize=11, fontweight='bold')
+    "All 6 Neighbourhoods \u00d7 6 Scenarios (N=20)", fontsize=11, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "Figure_Occ_A4_Coupling_Scatter.png"), dpi=150)
 plt.close()
@@ -868,7 +868,7 @@ for _ax_idx, (_n, _df) in enumerate(data.items()):
     _ax.grid(axis='y', alpha=0.3)
 fig.suptitle(
     "Figure_Occ_B4 \u2014 Waterfall: Default \u2192 2025 Total EUI by End-Use, "
-    "All Neighbourhoods (N=3)\n[" + _OCC_DISCLAIMER + "]",
+    "All Neighbourhoods (N=20)\n[" + _OCC_DISCLAIMER + "]",
     fontsize=10, fontweight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "Figure_Occ_B4_Waterfall.png"), dpi=150)
@@ -928,7 +928,7 @@ for _ax_idx, (_n, _df) in enumerate(data.items()):
     _ax.legend(loc='upper right', bbox_to_anchor=(1.35, 1.15), fontsize=7)
 fig.suptitle(
     "Figure_Occ_A2 \u2014 End-Use Radar Fingerprint (Normalized to Default=1.0)\n"
-    "Scenarios: 2005, 2010, 2015, 2022, 2025 vs Default (N=3)\n"
+    "Scenarios: 2005, 2010, 2015, 2022, 2025 vs Default (N=20)\n"
     "(Spoke labels: end-use abbreviation and Default kWh/m\u00b2/yr)",
     fontsize=11, fontweight='bold')
 plt.tight_layout()
@@ -985,7 +985,7 @@ if not grp_occ.empty and _C5_EU:
                ncol=3, fontsize=8)
     fig.suptitle(
         "Figure_Occ_C5 \u2014 Weekday vs Weekend End-Use \u0394 (Weekend \u2212 Weekday)\n"
-        "Averaged over Jan+Jul diurnal profile (N=3)",
+        "Averaged over Jan+Jul diurnal profile (N=20)",
         fontsize=11, fontweight='bold', y=1.06)
     plt.tight_layout()
     plt.savefig(os.path.join(OUT, "Figure_Occ_C5_WeekdayWeekend_Delta.png"),
@@ -1066,7 +1066,7 @@ if not grp_occ.empty and 'Equipment' in grp_occ.columns and 'Cooling' in grp_occ
                    bbox_to_anchor=(0.5, 1.07), ncol=3, fontsize=8)
         fig.suptitle(
             f"Figure_Occ_B1 \u2014 Diurnal Load Shape Ribbon: Default vs 2025\n"
-            f"{_n_b1} (N=3, Jan=Winter / Jul=Summer)",
+            f"{_n_b1} (N=20, Jan=Winter / Jul=Summer)",
             fontsize=10, fontweight='bold', y=1.12)
         plt.tight_layout()
         _b1_fname = f"Figure_Occ_B1_Diurnal_Ribbon_{_n_b1}.png"
@@ -1206,7 +1206,7 @@ if (not df_pk5.empty
                         title='Scenario', title_fontsize=7)
     fig.suptitle(
         "Figure_Occ_B2 \u2014 Peak Load Time-Shift: Cooling Hour vs Equipment Hour\n"
-        "Marker size \u221d peak Cooling magnitude (W/m\u00b2), N=3",
+        "Marker size \u221d peak Cooling magnitude (W/m\u00b2), N=20",
         fontsize=11, fontweight='bold')
     plt.tight_layout()
     plt.savefig(os.path.join(OUT, "Figure_Occ_B2_Peak_TimeShift.png"),
@@ -1342,7 +1342,7 @@ if collected_occ:
     fig.legend(_h6, _l6, loc='upper center',
                bbox_to_anchor=(0.5, 1.005), ncol=5, fontsize=9)
     fig.suptitle(
-        "Figure_Occ_B3 \u2014 Monthly End-Use Stack: Default vs 2025 (N=3)\n"
+        "Figure_Occ_B3 \u2014 Monthly End-Use Stack: Default vs 2025 (N=20)\n"
         "Black line = monthly People heat-gain proxy (right axis, kWh/m\u00b2)",
         fontsize=11, fontweight='bold', y=1.01)
     plt.tight_layout(rect=[0, 0, 1, 0.99])

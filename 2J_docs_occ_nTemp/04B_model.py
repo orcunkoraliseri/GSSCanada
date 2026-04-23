@@ -74,6 +74,52 @@ TEST_CONFIG = {
 }
 
 
+# ── FiLM modulation (per-decoder-layer conditioning) ───────────────────────
+
+class FiLMLayer(nn.Module):
+    """Feature-wise linear modulation. Generates (γ, β) from a conditioning
+    vector and applies x → (1 + γ) ⊙ x + β. Zero-init makes the layer start
+    as identity, so a fresh FiLM-decorated decoder behaves exactly like the
+    pre-FiLM version on epoch 0 — only fine-tuning learns to deviate.
+    """
+
+    def __init__(self, d_cond_dec: int, d_model: int):
+        super().__init__()
+        self.gen = nn.Linear(d_cond_dec, 2 * d_model)
+        nn.init.zeros_(self.gen.weight)
+        nn.init.zeros_(self.gen.bias)
+
+    def forward(self, x: torch.Tensor, cond: torch.Tensor) -> torch.Tensor:
+        # x: (B, T, d_model); cond: (B, d_cond_dec)
+        gamma, beta = self.gen(cond).chunk(2, dim=-1)
+        return (1.0 + gamma).unsqueeze(1) * x + beta.unsqueeze(1)
+
+
+class FiLMTransformerDecoder(nn.Module):
+    """Stack of TransformerDecoderLayer + per-layer FiLM, with final LayerNorm.
+
+    Drop-in replacement for nn.TransformerDecoder, with two differences:
+      • forward() takes a `dec_cond` (B, d_cond_dec) tensor.
+      • does not pass `tgt_is_causal` to layers (causal mask is sufficient,
+        and the kwarg requires PyTorch ≥ 2.1).
+    """
+
+    def __init__(self, layer_factory, num_layers: int, d_model: int, d_cond_dec: int):
+        super().__init__()
+        self.layers = nn.ModuleList([layer_factory() for _ in range(num_layers)])
+        self.films  = nn.ModuleList([FiLMLayer(d_cond_dec, d_model) for _ in range(num_layers)])
+        self.norm   = nn.LayerNorm(d_model)
+
+    def forward(self, x, memory, tgt_mask, dec_cond):
+        layer0_hidden = None
+        for i, (layer, film) in enumerate(zip(self.layers, self.films)):
+            x = layer(x, memory, tgt_mask=tgt_mask)
+            x = film(x, dec_cond)
+            if i == 0:
+                layer0_hidden = x
+        return self.norm(x), layer0_hidden
+
+
 # ── Model ────────────────────────────────────────────────────────────────────
 
 class ConditionalTransformer(nn.Module):
@@ -148,19 +194,40 @@ class ConditionalTransformer(nn.Module):
             enc_layer, num_layers=N_enc, norm=nn.LayerNorm(d_model)
         )
 
-        # ── Transformer decoder ──────────────────────────────────────────
-        dec_layer = nn.TransformerDecoderLayer(
-            d_model=d_model, nhead=n_heads, dim_feedforward=d_ff,
-            dropout=dropout, activation="gelu", batch_first=True,
-        )
-        self.decoder = nn.TransformerDecoder(
-            dec_layer, num_layers=N_dec, norm=nn.LayerNorm(d_model)
+        # ── Transformer decoder (with FiLM conditioning per layer) ───────
+        # FiLM input: cond_vec + cycle_emb + strata_oh (3-way) — gives every
+        # decoder layer direct access to demographic, cycle, and stratum signal.
+        # Addresses §3 (AT_HOME bias) + §4.3 (work peak) + §6.2 (LFTAG separation)
+        # which the calibration sweep (job 901177) showed cannot be fixed at
+        # inference time alone.
+        self.d_cond_dec = d_cond + d_cycle + 3
+        def _dec_layer_factory():
+            return nn.TransformerDecoderLayer(
+                d_model=d_model, nhead=n_heads, dim_feedforward=d_ff,
+                dropout=dropout, activation="gelu", batch_first=True,
+            )
+        self.decoder = FiLMTransformerDecoder(
+            layer_factory=_dec_layer_factory,
+            num_layers=N_dec,
+            d_model=d_model,
+            d_cond_dec=self.d_cond_dec,
         )
 
         # ── Output heads ─────────────────────────────────────────────────
         self.act_head  = nn.Linear(d_model, n_act)  # → 14 activity logits
         self.home_head = nn.Linear(d_model, 1)      # → 1 AT_HOME logit
         self.cop_head  = nn.Linear(d_model, n_cop)  # → 9 co-presence logits
+
+        # Optional auxiliary head: predicts target DDAY_STRATA (3-way CE) from
+        # decoder layer-0 hidden mean-pool. Gated by config["aux_stratum_head"].
+        if config.get("aux_stratum_head", False):
+            self.aux_strata_head = nn.Sequential(
+                nn.Linear(d_model, 64),
+                nn.GELU(),
+                nn.Linear(64, 3),
+            )
+        else:
+            self.aux_strata_head = None
 
         self._init_weights()
 
@@ -213,7 +280,14 @@ class ConditionalTransformer(nn.Module):
 
     # ── Decoder (teacher-forcing mode) ──────────────────────────────────────
 
-    def decode(self, dec_act_seq, dec_aux_seq, tgt_strata, memory):
+    def _build_dec_cond(self, cond_vec, cycle_idx, tgt_strata):
+        """Concat (cond_vec, cycle_emb, strata_oh) → (B, d_cond_dec) for FiLM."""
+        cycle_emb = self.cycle_embedding(cycle_idx)
+        strata_oh = F.one_hot((tgt_strata - 1).clamp(0, 2), num_classes=3).float()
+        return torch.cat([cond_vec, cycle_emb, strata_oh], dim=-1), strata_oh
+
+    def decode(self, dec_act_seq, dec_aux_seq, tgt_strata, memory,
+               cond_vec, cycle_idx):
         """
         Teacher-forcing decode: predicts target slots given ground-truth shifted input.
 
@@ -221,6 +295,8 @@ class ConditionalTransformer(nn.Module):
         dec_aux_seq : (B, 48, 10) — target [AT_HOME | co-pres]
         tgt_strata  : (B,) — int64, target DDAY_STRATA (1,2,3)
         memory      : (B, 49, d_model) — encoder output
+        cond_vec    : (B, d_cond)
+        cycle_idx   : (B,) — int64
 
         Returns act_logits (B,48,14), home_logits (B,48), cop_logits (B,48,9)
         """
@@ -236,8 +312,9 @@ class ConditionalTransformer(nn.Module):
         # Positional encoding (positions 0..T-1)
         dec_input = dec_input + self.dec_pos_enc[:, :T, :]
 
-        # Add target strata conditioning (broadcast to all positions)
-        strata_oh  = F.one_hot((tgt_strata - 1).clamp(0, 2), num_classes=3).float()
+        # FiLM conditioning vector + additive strata embedding (kept for backwards
+        # compatibility with the old conditioning path).
+        dec_cond, strata_oh = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
         strata_emb = self.strata_linear(strata_oh).unsqueeze(1)  # (B, 1, d_model)
         dec_input  = dec_input + strata_emb
 
@@ -245,13 +322,19 @@ class ConditionalTransformer(nn.Module):
         causal_mask = nn.Transformer.generate_square_subsequent_mask(
             T, device=dec_input.device
         )
-        dec_output = self.decoder(dec_input, memory, tgt_mask=causal_mask,
-                                  tgt_is_causal=True)             # (B, T, d_model)
+        dec_output, layer0_hidden = self.decoder(
+            dec_input, memory, tgt_mask=causal_mask, dec_cond=dec_cond
+        )  # dec_output: (B, T, d_model); layer0_hidden: (B, T, d_model)
+
+        aux_logits = None
+        if self.aux_strata_head is not None and layer0_hidden is not None:
+            aux_logits = self.aux_strata_head(layer0_hidden.mean(dim=1))  # (B, 3)
 
         return (
-            self.act_head(dec_output),          # (B, T, 14)
+            self.act_head(dec_output),               # (B, T, 14)
             self.home_head(dec_output).squeeze(-1),  # (B, T)
-            self.cop_head(dec_output),          # (B, T, 9)
+            self.cop_head(dec_output),               # (B, T, 9)
+            aux_logits,                              # (B, 3) or None
         )
 
     # ── Forward (teacher-forcing, called during training) ────────────────────
@@ -272,6 +355,7 @@ class ConditionalTransformer(nn.Module):
         act_logits, home_logits, cop_logits = self.decode(
             batch["dec_act_seq"], batch["dec_aux_seq"],
             batch["tgt_strata"], memory,
+            batch["cond_vec"], batch["cycle_idx"],
         )
         return {
             "act_logits":  act_logits,
@@ -290,6 +374,7 @@ class ConditionalTransformer(nn.Module):
         cycle_idx: torch.Tensor,
         tgt_strata: torch.Tensor,
         temperature: float = 0.8,
+        home_threshold: float = 0.5,
     ):
         """
         Autoregressive generation for one or more respondents.
@@ -300,6 +385,10 @@ class ConditionalTransformer(nn.Module):
         cycle_idx  : (B,)
         tgt_strata : (B,) — target DDAY_STRATA (1,2,3)
         temperature: >0 → multinomial sampling; 0 → argmax (deterministic)
+        home_threshold: sigmoid cutoff for AT_HOME decision (default 0.5).
+                        Raising it reduces AT_HOME=1 predictions; because
+                        home_tok is fed back into the decoder's aux input at
+                        the next step, the choice cascades through the diary.
 
         Returns:
             gen_act  (B, 48) int64 — 0-indexed generated activity
@@ -311,13 +400,14 @@ class ConditionalTransformer(nn.Module):
 
         memory = self.encode(act_seq, aux_seq, cond_vec, cycle_idx)
 
-        # Strata conditioning vector (fixed for all decoder steps)
-        strata_oh  = F.one_hot((tgt_strata - 1).clamp(0, 2), num_classes=3).float()
+        # FiLM conditioning vector (fixed for all decoder steps)
+        dec_cond, strata_oh = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
         strata_emb = self.strata_linear(strata_oh).unsqueeze(1)  # (B, 1, d_model)
 
-        gen_acts  = []
-        gen_homes = []
-        gen_cops  = []
+        gen_acts       = []
+        gen_homes      = []
+        gen_cops       = []
+        gen_cop_probs  = []
 
         # Decoder sequence starts with the BOS token at position 0
         bos_tok = (
@@ -333,7 +423,7 @@ class ConditionalTransformer(nn.Module):
                 dec_seq.shape[1], device=device
             )
             dec_out = self.decoder(dec_seq, memory,
-                                   tgt_mask=causal_mask, tgt_is_causal=True)
+                                   tgt_mask=causal_mask, dec_cond=dec_cond)
             out_t = dec_out[:, -1, :]                             # (B, d_model)
 
             # Activity head
@@ -345,14 +435,16 @@ class ConditionalTransformer(nn.Module):
                 act_tok = act_logits.argmax(dim=-1)
 
             # AT_HOME head
-            home_tok = (torch.sigmoid(self.home_head(out_t).squeeze(-1)) > 0.5).float()
+            home_tok = (torch.sigmoid(self.home_head(out_t).squeeze(-1)) > home_threshold).float()
 
-            # Co-presence head
-            cop_tok = (torch.sigmoid(self.cop_head(out_t)) > 0.5).float()  # (B, 9)
+            # Co-presence head — raw σ for output, binary for AR feedback
+            cop_probs = torch.sigmoid(self.cop_head(out_t))        # (B, 9) float in [0,1]
+            cop_tok   = (cop_probs > 0.5).float()                  # (B, 9) binary — matches training
 
             gen_acts.append(act_tok)
             gen_homes.append(home_tok)
             gen_cops.append(cop_tok)
+            gen_cop_probs.append(cop_probs)
 
             # Embed the just-generated slot to feed as next decoder input
             # Position t+1 in the decoder sequence (BOS was position 0)
@@ -365,7 +457,8 @@ class ConditionalTransformer(nn.Module):
                 dec_tokens.append(slot_out)
 
         return (
-            torch.stack(gen_acts,  dim=1),          # (B, 48) int64
-            torch.stack(gen_homes, dim=1),          # (B, 48) float32
-            torch.stack(gen_cops,  dim=1),          # (B, 48, 9) float32
+            torch.stack(gen_acts,      dim=1),      # (B, 48) int64
+            torch.stack(gen_homes,     dim=1),      # (B, 48) float32
+            torch.stack(gen_cops,      dim=1),      # (B, 48, 9) float32 binary
+            torch.stack(gen_cop_probs, dim=1),      # (B, 48, 9) float32 raw σ
         )

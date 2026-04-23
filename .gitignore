@@ -81,3 +81,7 @@ eSim_tests/benchmark_results/
 
 # IDE and Large Outputs
 .idea/
+
+# Large PyTorch checkpoint files (>100MB, exceeds GitHub limit)
+2J_docs_occ_nTemp/outputs_step4/checkpoints/last_checkpoint.pt
+2J_docs_occ_nTemp/outputs_step4/step4_train.pt

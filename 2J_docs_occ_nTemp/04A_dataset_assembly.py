@@ -353,6 +353,24 @@ def main():
         cycles = sub["CYCLE_YEAR"].value_counts().sort_index().to_dict()
         print(f"  {name}  DDAY_STRATA:{strata}  CYCLE_YEAR:{cycles}")
 
+    # ── Class frequencies for F3 sweep (training split only) ───────────
+    # 7 usable COP channels (skip otherInFAMs=4 and otherHHs=5)
+    COP7_INDICES = [0, 1, 2, 3, 6, 7, 8]
+    COP7_NAMES   = ["Alone", "Spouse", "Children", "parents", "friends", "others", "colleagues"]
+    cop_pos_weights = {}
+    for name, ci in zip(COP7_NAMES, COP7_INDICES):
+        avail_mask = cop_avail[train_idx, :, ci]
+        vals = cop_bin[train_idx, :, ci][avail_mask]
+        freq = float(vals.mean()) if len(vals) > 0 else 0.5
+        pw = (1.0 - freq) / max(freq, 1e-9)
+        assert pw > 1.0, f"{name} pos_weight={pw:.4f} ≤ 1 (freq={freq:.4f}) — sign-flip guard"
+        cop_pos_weights[name] = round(pw, 6)
+    act_train_flat = act_seq[train_idx].flatten()
+    act_counts_arr = np.bincount(act_train_flat, minlength=14).astype(float)
+    act_class_freqs = [round(v, 6) for v in (act_counts_arr / act_counts_arr.sum()).tolist()]
+    print(f"\n  COP pos_weights (7-way): { {k: f'{v:.4f}' for k, v in cop_pos_weights.items()} }")
+    print(f"  Activity class freqs (14-way): {[f'{v:.4f}' for v in act_class_freqs]}")
+
     # ── Save datasets ───────────────────────────────────────────────────
     print("\n[6/6] Saving tensor datasets...")
 
@@ -401,6 +419,8 @@ def main():
             "val":   int(len(val_idx)),
             "test":  int(len(test_idx)),
         },
+        "cop_pos_weights":  cop_pos_weights,
+        "act_class_freqs":  act_class_freqs,
     }
     cfg_path = os.path.join(out_dir, "step4_feature_config.json")
     with open(cfg_path, "w") as f:

@@ -59,6 +59,11 @@ Do not modify these files unless explicitly instructed:
 - Be explicit about assumptions, risks, and validation gaps
 - Use exact file references with line numbers when citing code
 
+## Speed HPC Cluster
+
+- Host: `o_iseri@speed.encs.concordia.ca`; login node `speed-submit2` is for job submissions only — do not run any computation, builds, or interactive workloads on it (admin warning: "this node is for job submissions only: no compute").
+- Always submit every cluster command as a single line (no line breaks), and when instructing the user, label each command explicitly as "locally" or "on the cluster".
+
 ## Research and BEM Guardrails
 
 - Treat Census and GSS inputs as research data, not sample data

@@ -45,9 +45,11 @@ sys.path.insert(0, SCRIPT_DIR)
 model_mod = importlib.import_module("04B_model")
 ConditionalTransformer = model_mod.ConditionalTransformer
 
-LAMBDA_ACT  = 1.0
-LAMBDA_HOME = 0.5
-LAMBDA_COP  = 0.3
+LAMBDA_ACT  = float(os.environ.get("LAMBDA_ACT",  "1.0"))
+LAMBDA_HOME = float(os.environ.get("LAMBDA_HOME", "0.5"))
+LAMBDA_COP  = float(os.environ.get("LAMBDA_COP",  "0.3"))
+LAMBDA_MARG = float(os.environ.get("LAMBDA_MARG", "0.1"))
+MARG_MODE   = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
 
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
@@ -99,14 +101,20 @@ class Step4Dataset(Dataset):
 # ── Loss ─────────────────────────────────────────────────────────────────────
 
 def compute_loss(output: dict, batch: dict, device,
-                 act_weights: torch.Tensor = None) -> dict:
+                 act_weights: torch.Tensor = None,
+                 home_pos_weight: torch.Tensor = None,
+                 cop_pos_weight: torch.Tensor = None) -> dict:
     """
-    Computes the three-component loss.
+    Computes the four-component loss.
 
     Co-presence BCE is masked by:
       1. per-slot availability from the TARGET respondent (cop_avail)
       2. explicit zero for colleagues (index 8) when CYCLE_YEAR < 2015
     act_weights: optional (14,) float tensor of per-class CE weights.
+    home_pos_weight: optional (1,) tensor passed to BCE-with-logits.
+                    Should be (1 - obs_home_rate) / obs_home_rate to combat the
+                    home_head's saturation toward 1 (job 901177 sweep showed
+                    σ outputs cluster above 0.70).
     """
     act_logits  = output["act_logits"]   # (B, 48, 14)
     home_logits = output["home_logits"]  # (B, 48)
@@ -125,13 +133,35 @@ def compute_loss(output: dict, batch: dict, device,
         weight=act_weights,
     )
 
-    # AT_HOME: binary cross-entropy
-    home_loss = F.binary_cross_entropy_with_logits(home_logits, home_tgt)
+    # AT_HOME: binary cross-entropy with class re-balancing
+    home_loss = F.binary_cross_entropy_with_logits(
+        home_logits, home_tgt, pos_weight=home_pos_weight,
+    )
+    # Marginal-bias term: penalize mismatch between predicted and observed AT_HOME rate.
+    # MARG_MODE='per_cs': per-(target_cycle × target_stratum) gaps averaged (F3-B/C/D)
+    # MARG_MODE='global': batch-level gap (F1 / F3-A)
+    if MARG_MODE == "per_cs":
+        pred_home  = torch.sigmoid(home_logits)
+        tgt_cs_key = batch["tgt_strata"].long() * 4 + batch["cycle_idx"].long()
+        cs_keys    = tgt_cs_key.unique()
+        marg_loss  = torch.stack([
+            (pred_home[tgt_cs_key == cs].mean() - home_tgt[tgt_cs_key == cs].mean()).abs()
+            for cs in cs_keys
+        ]).mean()
+    else:
+        marg_loss = (torch.sigmoid(home_logits).mean() - home_tgt.mean()).abs()
 
     # Co-presence: BCE with per-slot availability masking
-    cop_loss_raw = F.binary_cross_entropy_with_logits(
-        cop_logits, cop_tgt, reduction="none"
-    )  # (B, 48, 9)
+    if cop_pos_weight is not None:
+        cop_loss_raw = F.binary_cross_entropy_with_logits(
+            cop_logits, cop_tgt,
+            pos_weight=cop_pos_weight.view(1, 1, -1),
+            reduction="none",
+        )
+    else:
+        cop_loss_raw = F.binary_cross_entropy_with_logits(
+            cop_logits, cop_tgt, reduction="none"
+        )  # (B, 48, 9)
 
     cop_avail = batch["dec_cop_avail"].float()   # (B, 48, 9)
     cop_loss_masked = cop_loss_raw * cop_avail
@@ -146,13 +176,31 @@ def compute_loss(output: dict, batch: dict, device,
     denom    = cop_avail.sum().clamp(min=1.0)
     cop_loss = cop_loss_masked.sum() / denom
 
-    total = LAMBDA_ACT * act_loss + LAMBDA_HOME * home_loss + LAMBDA_COP * cop_loss
+    # Optional auxiliary stratum-prediction head (F3-C, AUX_STRATUM_HEAD=1)
+    aux_logits = output.get("aux_logits")  # (B, 3) or None
+    if aux_logits is not None:
+        aux_tgt = (batch["tgt_strata"] - 1).clamp(0, 2).long()  # 1-indexed → 0-indexed
+        aux_loss = F.cross_entropy(aux_logits, aux_tgt)
+        LAMBDA_AUX = float(os.environ.get("LAMBDA_AUX", "0.1"))
+    else:
+        aux_loss  = torch.tensor(0.0)
+        LAMBDA_AUX = 0.0
+
+    total = (
+        LAMBDA_ACT  * act_loss
+        + LAMBDA_HOME * home_loss
+        + LAMBDA_COP  * cop_loss
+        + LAMBDA_MARG * marg_loss
+        + LAMBDA_AUX  * aux_loss
+    )
 
     return {
         "total_loss": total,
         "act_loss":   act_loss.item(),
         "home_loss":  home_loss.item(),
         "cop_loss":   cop_loss.item(),
+        "marg_loss":  marg_loss.item(),
+        "aux_loss":   aux_loss.item() if aux_logits is not None else 0.0,
     }
 
 
@@ -198,7 +246,9 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
     act_np    = val_data["act_seq"].cpu().numpy()           # (n_val, 48)
     strata_np = val_data["obs_strata"].cpu().numpy()        # (n_val,)
     cycle_np  = val_data["cycle_year"].cpu().numpy()        # (n_val,)
+    home_np   = val_data["aux_seq"][:, :, 0].cpu().numpy()  # (n_val, 48) AT_HOME channel
     ref_dists = {}
+    ref_home  = {}
     for cy in np.unique(cycle_np):
         for s in [1, 2, 3]:
             mask = (cycle_np == cy) & (strata_np == s)
@@ -207,13 +257,15 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
             acts = act_np[mask].flatten()                   # 0-indexed
             dist = np.bincount(acts, minlength=14).astype(float)
             ref_dists[(int(cy), int(s))] = dist
+            ref_home[(int(cy), int(s))]  = float(home_np[mask].mean())
 
     # Sample val respondents (fixed seed for reproducibility across epochs)
     rng     = np.random.default_rng(42)
     src_idx = rng.choice(n_val, size=n_sample, replace=False)
 
-    generated  = {s: [] for s in [1, 2, 3]}
-    gen_cycles = {s: [] for s in [1, 2, 3]}
+    generated      = {s: [] for s in [1, 2, 3]}
+    generated_home = {s: [] for s in [1, 2, 3]}
+    gen_cycles     = {s: [] for s in [1, 2, 3]}
 
     # Batched generation: collect all (respondent, s_tgt) pairs per chunk
     batch_sz = 256
@@ -242,16 +294,20 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
         cidx_t = val_data["cycle_idx"][syn_idx].to(device)
         strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
 
-        gen_act, _, _ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
-        gen_act = gen_act.cpu().numpy()   # (K, 48) 0-indexed
+        gen_act, gen_home, _ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
+        gen_act  = gen_act.cpu().numpy()    # (K, 48) 0-indexed
+        gen_home = gen_home.cpu().numpy()   # (K, 48) {0, 1}
 
         for k, (s_tgt, cy) in enumerate(zip(syn_strata, syn_cycles)):
             generated[s_tgt].append(gen_act[k])
+            generated_home[s_tgt].append(gen_home[k])
             gen_cycles[s_tgt].append(cy)
 
-    js_vals = []
+    js_vals    = []
+    home_gaps  = []
     for s_tgt in [1, 2, 3]:
         acts_gen = np.array(generated[s_tgt]) if generated[s_tgt] else np.array([]).reshape(0, 48)
+        home_gen = np.array(generated_home[s_tgt]) if generated_home[s_tgt] else np.array([]).reshape(0, 48)
         cys_gen  = np.array(gen_cycles[s_tgt]) if gen_cycles[s_tgt] else np.array([])
         if len(acts_gen) == 0:
             continue
@@ -262,9 +318,20 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
             mask_g   = cys_gen == cy
             gen_dist = np.bincount(acts_gen[mask_g].flatten(), minlength=14).astype(float)
             js_vals.append(js_divergence(ref, gen_dist))
+            ref_h = ref_home.get((int(cy), s_tgt))
+            if ref_h is not None and mask_g.sum() > 0:
+                gen_home_rate = float(home_gen[mask_g].mean())
+                home_gaps.append(abs(gen_home_rate - ref_h))
 
-    mean_js = float(np.mean(js_vals)) if js_vals else float("nan")
-    return {"val_js": mean_js}
+    mean_js       = float(np.mean(js_vals))   if js_vals   else float("nan")
+    mean_home_gap = float(np.mean(home_gaps)) if home_gaps else float("nan")
+    # Combined checkpoint-selection metric: val_JS + 0.5 * mean |ΔAT_HOME|.
+    # Rationale (2026-04-22): pure val_JS picked epoch 1 with a 10–17 pp §3 failure;
+    # pure home-gap would pick late epochs with degraded activity marginals.
+    # 0.5 weight puts the two quantities on comparable scale (JS ~ 0.02-0.1;
+    # home_gap ~ 0.02-0.25 in failed runs).
+    val_score = mean_js + 0.5 * mean_home_gap
+    return {"val_js": mean_js, "home_gap": mean_home_gap, "val_score": val_score}
 
 
 # ── Main training function ────────────────────────────────────────────────────
@@ -288,6 +355,7 @@ def train(args):
         feat_cfg = json.load(f)
     d_cond = feat_cfg["d_cond"]
 
+    _aux_head = os.environ.get("AUX_STRATUM_HEAD", "0") == "1"
     if args.sample:
         # Local test config (CPU-friendly, fast)
         model_config = {
@@ -296,6 +364,7 @@ def train(args):
             "d_act": 16, "d_cycle": 16,
             "dropout": 0.1, "n_activity_classes": 14,
             "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+            "aux_stratum_head": _aux_head,
         }
         args.batch_size = 16
         args.max_epochs = 5
@@ -309,7 +378,12 @@ def train(args):
             "d_act": 32, "d_cycle": 32,
             "dropout": 0.1, "n_activity_classes": 14,
             "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+            "aux_stratum_head": _aux_head,
         }
+    print(f"  AUX_STRATUM_HEAD={_aux_head}  COP_POS_WEIGHT={os.environ.get('COP_POS_WEIGHT','0')}"
+          f"  ACTIVITY_BOOSTS={os.environ.get('ACTIVITY_BOOSTS','1')}"
+          f"  DATA_SIDE_SAMPLING={os.environ.get('DATA_SIDE_SAMPLING','0')}"
+          f"  MARG_MODE={MARG_MODE}")
 
     # ── Device ───────────────────────────────────────────────────────────
     if torch.cuda.is_available():
@@ -341,10 +415,49 @@ def train(args):
     class_counts = np.bincount(act_flat, minlength=14).astype(float)
     class_weights_np = 1.0 / np.sqrt(np.maximum(class_counts, 1.0))
     class_weights_np = class_weights_np / class_weights_np.mean()  # normalize: mean=1
+    if os.environ.get("ACTIVITY_BOOSTS", "1") != "0":
+        # Manual boosts from diagnostic job 901054; set ACTIVITY_BOOSTS=0 for F3-A+
+        class_weights_np[0]  *= 5.0   # Work (idx 0)
+        class_weights_np[12] *= 3.0   # Transit (idx 12)
+        class_weights_np[8]  *= 2.0   # Social (idx 8)
     act_class_weights = torch.tensor(class_weights_np, dtype=torch.float32, device=device)
-    print("  Activity class weights (inv-sqrt-freq, mean-normalized):")
+    print(f"  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS="
+          f"{os.environ.get('ACTIVITY_BOOSTS','1')}):")
     for i, w in enumerate(class_weights_np):
         print(f"    class {i:2d}: {w:.3f}")
+
+    # AT_HOME pos_weight disabled 2026-04-22: 04H diagnostic (diagnostics_v4.json)
+    # confirmed the bias has sign-flipped — synthetic now UNDER-represents AT_HOME
+    # midday by 30+ pp (H2_dominant, H1/H3/H5 rejected). The original counter-measure
+    # against saturation-toward-1 is now pushing the wrong direction, because
+    # pos_weight = (1-p)/p with p≈0.725 down-weights the majority (AT_HOME=1) class.
+    # LAMBDA_MARG=0.1 remains as a direction-agnostic marginal guard.
+    home_targets = train_data["aux_seq"][:, :, 0].float()  # (n, 48)
+    obs_home_rate = float(home_targets.mean().item())
+    home_pos_weight = None
+    print(f"  AT_HOME observed rate: {obs_home_rate:.4f}  pos_weight: disabled")
+    print(f"  Marginal-bias loss weight: LAMBDA_MARG={LAMBDA_MARG}  MARG_MODE={MARG_MODE}")
+
+    # Co-presence pos_weight from feature_config (F3-A+: COP_POS_WEIGHT=1)
+    cop_pos_weight = None
+    if os.environ.get("COP_POS_WEIGHT", "0") == "1":
+        cop_pw_dict = feat_cfg.get("cop_pos_weights", {})
+        cop_pw_list = [cop_pw_dict.get(n, 1.0) for n in [
+            "Alone", "Spouse", "Children", "parents", "otherInFAMs",
+            "otherHHs", "friends", "others", "colleagues",
+        ]]
+        cop_pos_weight = torch.tensor(cop_pw_list, dtype=torch.float32, device=device)
+        for n, v in zip(["Alone","Spouse","Children","parents","otherInFAMs",
+                          "otherHHs","friends","others","colleagues"], cop_pw_list):
+            print(f"  COP pos_weight  {n:>12}: {v:.4f}")
+        real_pws = [v for n, v in zip(
+            ["Alone","Spouse","Children","parents","friends","others","colleagues"],
+            [cop_pw_list[i] for i in [0,1,2,3,6,7,8]]
+        )]
+        assert all(v > 1.0 for v in real_pws), \
+            f"COP pos_weight ≤ 1 for a real channel — sign-flip guard: {real_pws}"
+    else:
+        print("  COP pos_weight: disabled (COP_POS_WEIGHT=0)")
 
     # Inverse-frequency weighting for DDAY_STRATA imbalance
     src_strata = train_data["obs_strata"][train_pairs["src_idx"]].numpy()
@@ -352,6 +465,12 @@ def train(args):
     sample_weights = np.array([
         1.0 / max(strata_counts[s], 1) for s in src_strata
     ], dtype=np.float32)
+    if os.environ.get("DATA_SIDE_SAMPLING", "0") == "1":
+        # F3-D: multiply by per-person GSS weight (WGHT_PER), normalized to mean=1
+        wght_per = train_data["wght_per"][train_pairs["src_idx"]].numpy().astype(np.float32)
+        wght_per = wght_per / wght_per.mean()
+        sample_weights = sample_weights * wght_per
+        print(f"  DATA_SIDE_SAMPLING=1: sample_weights multiplied by WGHT_PER (mean-normalized)")
     sampler = WeightedRandomSampler(
         weights=sample_weights,
         num_samples=len(train_dataset),
@@ -380,7 +499,7 @@ def train(args):
 
     # Resume from checkpoint if requested
     start_epoch = 0
-    best_val_js = float("inf")
+    best_val_score = float("inf")
     patience_counter = 0
 
     if args.resume:
@@ -398,14 +517,17 @@ def train(args):
         optimizer.load_state_dict(ckpt["optimizer_state"])
         scheduler.load_state_dict(ckpt["scheduler_state"])
         start_epoch     = ckpt["epoch"] + 1
-        best_val_js     = ckpt.get("best_val_js", float("inf"))
+        # Fall back to old "best_val_js" key if resuming from a pre-2026-04-22 checkpoint.
+        best_val_score  = ckpt.get("best_val_score",
+                                   ckpt.get("best_val_js", float("inf")))
         patience_counter = 0  # reset on resume — prior patience was from buggy warmup run
-        print(f"  Resumed from epoch {start_epoch}, best_val_js={best_val_js:.4f}")
+        print(f"  Resumed from epoch {start_epoch}, best_val_score={best_val_score:.4f}")
 
     # ── Training log CSV ─────────────────────────────────────────────────
     log_path = os.path.join(out_dir, "step4_training_log.csv")
     log_fields = ["epoch", "train_loss", "act_loss", "home_loss", "cop_loss",
-                  "val_js", "lr", "grad_norm", "elapsed_s"]
+                  "marg_loss", "val_js", "home_gap", "val_score",
+                  "lr", "grad_norm", "elapsed_s"]
     if start_epoch == 0:
         with open(log_path, "w", newline="") as f:
             csv.DictWriter(f, fieldnames=log_fields).writeheader()
@@ -421,7 +543,7 @@ def train(args):
         # Resample 1-of-K neighbors for this epoch
         train_dataset.resample()
 
-        epoch_losses = {"total": 0.0, "act": 0.0, "home": 0.0, "cop": 0.0}
+        epoch_losses = {"total": 0.0, "act": 0.0, "home": 0.0, "cop": 0.0, "marg": 0.0}
         grad_norms   = []
 
         for batch in train_loader:
@@ -432,7 +554,10 @@ def train(args):
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(batch)
-                    losses = compute_loss(out, batch, device, act_weights=act_class_weights)
+                    losses = compute_loss(out, batch, device,
+                                          act_weights=act_class_weights,
+                                          home_pos_weight=home_pos_weight,
+                                          cop_pos_weight=cop_pos_weight)
                 scaler.scale(losses["total_loss"]).backward()
                 scaler.unscale_(optimizer)
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 1.0).item()
@@ -440,7 +565,10 @@ def train(args):
                 scaler.update()
             else:
                 out    = model(batch)
-                losses = compute_loss(out, batch, device, act_weights=act_class_weights)
+                losses = compute_loss(out, batch, device,
+                                      act_weights=act_class_weights,
+                                      home_pos_weight=home_pos_weight,
+                                      cop_pos_weight=cop_pos_weight)
                 losses["total_loss"].backward()
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 1.0).item()
                 optimizer.step()
@@ -452,6 +580,7 @@ def train(args):
             epoch_losses["act"]   += losses["act_loss"]
             epoch_losses["home"]  += losses["home_loss"]
             epoch_losses["cop"]   += losses["cop_loss"]
+            epoch_losses["marg"]  += losses["marg_loss"]
             grad_norms.append(grad_norm)
 
             # Gradient health check: first backward pass of first epoch
@@ -474,17 +603,21 @@ def train(args):
         avg_act   = epoch_losses["act"]   / n_batches
         avg_home  = epoch_losses["home"]  / n_batches
         avg_cop   = epoch_losses["cop"]   / n_batches
+        avg_marg  = epoch_losses["marg"]  / n_batches
         avg_gnorm = float(np.mean(grad_norms))
         cur_lr    = scheduler.get_last_lr()[0]
 
         # Validation pass
         val_result = validate(model, val_data, val_pairs, device, model_config)
         val_js     = val_result["val_js"]
+        home_gap   = val_result["home_gap"]
+        val_score  = val_result["val_score"]
         elapsed    = time.time() - epoch_start
 
         print(f"Epoch {epoch+1:3d}/{args.max_epochs}: "
               f"train_loss={avg_loss:.4f}  act={avg_act:.4f}  home={avg_home:.4f}  "
-              f"cop={avg_cop:.4f}  |  val_JS={val_js:.4f}  "
+              f"cop={avg_cop:.4f}  marg={avg_marg:.4f}  |  val_JS={val_js:.4f}  "
+              f"home_gap={home_gap:.4f}  val_score={val_score:.4f}  "
               f"lr={cur_lr:.2e}  grad_norm={avg_gnorm:.3f}  "
               f"({elapsed:.0f}s)")
 
@@ -493,7 +626,9 @@ def train(args):
             csv.DictWriter(f, fieldnames=log_fields).writerow({
                 "epoch": epoch + 1, "train_loss": round(avg_loss, 6),
                 "act_loss": round(avg_act, 6), "home_loss": round(avg_home, 6),
-                "cop_loss": round(avg_cop, 6), "val_js": round(val_js, 6),
+                "cop_loss": round(avg_cop, 6), "marg_loss": round(avg_marg, 6),
+                "val_js": round(val_js, 6),
+                "home_gap": round(home_gap, 6), "val_score": round(val_score, 6),
                 "lr": round(cur_lr, 8), "grad_norm": round(avg_gnorm, 4),
                 "elapsed_s": round(elapsed, 1),
             })
@@ -504,21 +639,22 @@ def train(args):
             "epoch": epoch, "model_state": model.state_dict(),
             "optimizer_state": optimizer.state_dict(),
             "scheduler_state": scheduler.state_dict(),
-            "best_val_js": best_val_js, "patience_counter": patience_counter,
+            "best_val_score": best_val_score, "patience_counter": patience_counter,
             "model_config": model_config,
         }, last_ckpt)
 
-        # Save best checkpoint
-        if val_js < best_val_js:
-            best_val_js      = val_js
+        # Save best checkpoint — selected on combined val_JS + 0.5·|ΔAT_HOME|.
+        if val_score < best_val_score:
+            best_val_score   = val_score
             patience_counter = 0
             best_ckpt = os.path.join(ckpt_dir, "best_model.pt")
             torch.save({
                 "epoch": epoch, "model_state": model.state_dict(),
                 "model_config": model_config,
-                "val_js": val_js,
+                "val_js": val_js, "home_gap": home_gap, "val_score": val_score,
             }, best_ckpt)
-            print(f"  ✓ New best model saved (val_JS={val_js:.4f})")
+            print(f"  ✓ New best model saved "
+                  f"(val_score={val_score:.4f}  val_JS={val_js:.4f}  home_gap={home_gap:.4f})")
         else:
             patience_counter += 1
             warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
@@ -527,7 +663,7 @@ def train(args):
                       f"(no improvement for {args.patience} epochs)")
                 break
 
-    print(f"\n[4/4] Training complete. Best val_JS={best_val_js:.4f}")
+    print(f"\n[4/4] Training complete. Best val_score={best_val_score:.4f}")
     print(f"  Best checkpoint: {os.path.join(ckpt_dir, 'best_model.pt')}")
     print(f"  Training log:    {log_path}")
 
@@ -539,8 +675,8 @@ def parse_args():
     p.add_argument("--checkpoint_dir", default=None)
     p.add_argument("--batch_size",     type=int,   default=256)
     p.add_argument("--max_epochs",     type=int,   default=100)
-    p.add_argument("--patience",       type=int,   default=10)
-    p.add_argument("--lr",             type=float, default=1e-4)
+    p.add_argument("--patience",       type=int,   default=15)
+    p.add_argument("--lr",             type=float, default=5e-5)
     p.add_argument("--d_model",        type=int,   default=256)
     p.add_argument("--n_heads",        type=int,   default=8)
     p.add_argument("--n_enc_layers",   type=int,   default=6)

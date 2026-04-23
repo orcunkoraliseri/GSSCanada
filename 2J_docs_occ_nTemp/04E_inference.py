@@ -61,6 +61,9 @@ def parse_args():
     p.add_argument("--checkpoint", default=None)
     p.add_argument("--output",     default=None)
     p.add_argument("--temperature", type=float, default=0.8)
+    p.add_argument("--home_threshold", type=float, default=0.5,
+                   help="Sigmoid cutoff for AT_HOME head (default 0.5). "
+                        "Raise to reduce AT_HOME=1 predictions.")
     p.add_argument("--sample", action="store_true")
     return p.parse_args()
 
@@ -103,6 +106,7 @@ def apply_posthoc_consistency(
 
 
 def run_inference(model, data: dict, device, temperature: float,
+                  home_threshold: float = 0.5,
                   batch_size: int = 256) -> list:
     """
     Generate synthetic diaries for all respondents (batched generation).
@@ -151,19 +155,20 @@ def run_inference(model, data: dict, device, temperature: float,
             strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
 
             with torch.no_grad():
-                gen_act, gen_home, gen_cop = model.generate(
+                gen_act, gen_home, gen_cop, gen_cop_probs = model.generate(
                     act_t, aux_t, cond_t, cidx_t, strat,
                     temperature=temperature,
+                    home_threshold=home_threshold,
                 )
 
-            gen_act  = gen_act.cpu().numpy()    # (K, 48) 0-indexed
-            gen_home = gen_home.cpu().numpy()   # (K, 48)
-            gen_cop  = gen_cop.cpu().numpy()    # (K, 48, 9)
+            gen_act       = gen_act.cpu().numpy()        # (K, 48) 0-indexed
+            gen_home      = gen_home.cpu().numpy()       # (K, 48)
+            gen_cop_probs = gen_cop_probs.cpu().numpy()  # (K, 48, 9) raw σ — used for output
 
             for k, (i, s_tgt) in enumerate(zip(syn_idx, syn_strata)):
                 cy     = int(cycle_year_all[i])
                 home_k = apply_posthoc_consistency(gen_act[k], gen_home[k])
-                cop_k  = gen_cop[k].copy()
+                cop_k  = gen_cop_probs[k].copy()
                 if cy in (2005, 2010):
                     cop_k[:, 8] = 0.0
                 syn_results[(i, s_tgt)] = (gen_act[k], home_k, cop_k)
@@ -210,7 +215,7 @@ def run_inference(model, data: dict, device, temperature: float,
                         if cn == "colleagues" and cy in (2005, 2010) and s_tgt == s_obs:
                             row[f"{cn}30_{slot_str}"] = np.nan
                         else:
-                            row[f"{cn}30_{slot_str}"] = int(val)
+                            row[f"{cn}30_{slot_str}"] = round(float(val), 4)
 
                 rows.append(row)
 
@@ -241,7 +246,8 @@ def main():
     print(f"  data_dir:   {args.data_dir}")
     print(f"  checkpoint: {args.checkpoint}")
     print(f"  output:     {args.output}")
-    print(f"  temperature: {args.temperature}")
+    print(f"  temperature:    {args.temperature}")
+    print(f"  home_threshold: {args.home_threshold}")
 
     # Device
     if torch.cuda.is_available():
@@ -287,7 +293,8 @@ def main():
 
     # Run inference
     print("\n[3/4] Generating synthetic diaries...")
-    rows = run_inference(model, data, device, args.temperature)
+    rows = run_inference(model, data, device, args.temperature,
+                         home_threshold=args.home_threshold)
 
     # Build output DataFrame
     print("\n[4/4] Assembling augmented_diaries.csv...")
