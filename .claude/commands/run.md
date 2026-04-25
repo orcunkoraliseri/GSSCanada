@@ -1,33 +1,61 @@
-The message I just typed after `/run` IS the goal. Do not ask me anything.
+The message I just typed after /run IS the goal.
+Do not ask me anything. Do not confirm. Just execute.
 
-Execute the full agent loop autonomously:
+Full autonomous agent loop:
 
-1. **Planner** — read full project structure and `.claude/state.md`, create `.claude/tasks.md` and one task document per task in the correct `eSim_docs_*/` folder for this goal.
-2. **Reviewer MODE A** — review the plan.
-   - If `APPROVED` → continue.
-   - If `NEEDS_REVISION` → silently send the planner back to fix the flagged tasks, then re-review. Repeat until `APPROVED`.
-   - If `BLOCKED` → stop and tell me why.
-3. **Builder** — execute all unchecked tasks without pausing.
-4. **Reporter** — append a Progress Log chapter to each completed task document.
-5. **Reviewer MODE B** — review execution.
-   - If all `PASS` → reporter updates `.claude/state.md` to `Status: COMPLETE` and the loop ends.
-   - If any `NEEDS_FIX` → send the **builder back to those tasks only**, then reporter again, then reviewer again.
-   - If any `FAIL` → see interrupt rules below.
-6. Repeat from step 5 until clean.
+1. PLANNER (claude-opus-4-7)
+   - Read goal
+   - Select minimum skills needed from .claude/skills/
+   - Declare session path scope (read/write/off-limits)
+   - Create tasks.md with skills list and scope at the top
+   - Create task documents in correct eSim_docs_*/ folder
+   - Load only selected skills
 
-## Interrupt only if
+2. REVIEWER MODE A (claude-opus-4-7)
+   - Read only files within declared session scope
+   - Check tasks.md and all task documents
+   - If APPROVED → continue immediately
+   - If NEEDS_REVISION → fix silently and re-review once
+   - If still NEEDS_REVISION → fix again silently
+   - If BLOCKED → stop and report to user, explain why
 
-- Reviewer returns `BLOCKED` (decision only the user can make — missing data, ambiguous research intent, conflicting prior decisions).
-- A task requires writing outside its agent's `allowedPaths`.
-- A builder task `FAILED` twice on the same task across the same goal.
+3. BUILDER (claude-sonnet-4-6)
+   - Load only skills declared in tasks.md
+   - Read only files within declared session scope
+   - Execute all tasks sequentially without pausing
+   - After each task: mark [x] in tasks.md, append to progress.md
+   - If a task requires reading outside session scope:
+     log SCOPE_BREACH in progress.md and skip that file
 
-Otherwise run to completion silently. When done, show me:
-- The final `.claude/state.md` content.
-- The list of task documents created (path + title) for this loop.
+4. REPORTER (claude-opus-4-7)
+   - Load only: sequential-thinking.md, report-generation.md
+   - Read only: progress.md, task documents, state.md
+   - Append Progress Log chapter to each completed task document
+   - Never delete or overwrite existing content
+   - Update state.md with loop count and status
 
-## Hard rules during the loop
+5. REVIEWER MODE B (claude-opus-4-7)
+   - Read only files listed in progress.md as modified
+   - Do not crawl entire project
+   - Per-task verdict: PASS | NEEDS_FIX
+   - If all PASS → update state.md COMPLETE, stop, show summary
+   - If NEEDS_FIX → send builder to fix failed tasks only,
+     then reporter, then reviewer MODE B again
 
-- Honor every constraint in `CLAUDE.md` (Task and Commit Format, protected ML files, schedule contracts, no hardcoded paths, joblib loky, cluster login is submission-only).
-- Reporter is append-only on task documents. State.md is the only file the reporter overwrites.
-- Reviewer is read-only — never let it edit.
-- The builder never submits sbatch jobs; it produces the script and the literal command for the user.
+6. Repeat build → report → review until all tasks PASS or 
+   a task FAILS twice on the same issue
+
+Interrupt me ONLY if:
+- Reviewer returns BLOCKED (needs a decision only I can make)
+- Any task FAILS twice on the same task
+- A task requires writing outside declared session scope
+
+On completion show me:
+## Session Complete
+- Goal: ...
+- Status: COMPLETE | BLOCKED
+- Skills loaded: (list)
+- Session scope: (read/write paths used)
+- Tasks completed: (list with commit strings)
+- Documents created or updated: (list with paths)
+- Tokens saved by scope limiting: (estimate based on files skipped)

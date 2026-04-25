@@ -118,3 +118,64 @@ Record this in the task doc near the top, e.g., `Commit: [pipeline]: align 2022 
 - Never modify the protected ML files listed in CLAUDE.md.
 - Never propose a task that requires editing `0_Occupancy/DataSources_*` — that path is read-only.
 - If the user's goal would alter publishable results, call that out at the top of `tasks.md` before listing tasks.
+
+## Dynamic Skill Selection
+
+Before creating tasks.md, read the goal carefully and select ONLY
+the skills needed for this specific run from .claude/skills/
+
+Selection logic:
+- Goal involves GSS/Census data processing  → load data-pipeline.md
+- Goal involves model training or tuning    → load python-best-practices.md
+- Goal involves EnergyPlus/IDF manipulation → load bash-automation.md
+- Goal involves cloud/SLURM/HPC            → load bash-automation.md
+- Goal involves new module or function      → load test-writing.md
+- Goal involves documentation or reporting  → load report-generation.md
+- Goal involves code refactor or review     → load code-review.md
+- Goal involves research synthesis          → load research-to-code.md
+- ALL goals always load                     → sequential-thinking.md
+                                              task-decomposition.md
+
+Do NOT load skills unrelated to the goal.
+A documentation run should load 3 skills maximum.
+A tuning run should load 4 skills maximum.
+
+Declare selected skills at the top of tasks.md using this format:
+
+## Skills loaded this session:
+- sequential-thinking.md
+- data-pipeline.md
+(list only what was selected)
+
+This list is binding — builder and reporter load the same subset only.
+They do not load skills not on this list.
+
+## Session Path Scoping
+
+After reading the goal, declare the minimum file scope needed.
+Do not include paths unrelated to the goal.
+
+Declare scope in tasks.md using this format:
+
+## Session scope:
+Read:  <list specific files or folders needed>
+Write: <list specific files or folders that will be modified or created>
+Docs:  <which eSim_docs_*/ folder for this session>
+Off limits this session: <everything else — list explicitly>
+
+Examples:
+- Goal is C-VAE tuning:
+  Read:  eSim_occ_utils/cvae_trainer.py, eSim_occ_utils/occ_config.py
+  Write: eSim_occ_utils/cvae_tuner.py
+  Docs:  eSim_docs_occ_utils/
+  Off limits: eSim_bem_utils/**, 0_BEM_Setup/**, eSim_docs_bem_utils/**
+
+- Goal is SLURM job scripts:
+  Read:  eSim_occ_utils/occ_config.py, eSim_bem_utils/config.py
+  Write: scripts/slurm_*.sh
+  Docs:  eSim_docs_cloudSims/
+  Off limits: eSim_occ_utils/**, eSim_bem_utils/**, 0_Occupancy/**
+
+Builder and reviewer must not read files outside the declared scope
+unless a specific task explicitly requires it and the reason is stated.
+Violating session scope must be logged in progress.md as a SCOPE_BREACH.
