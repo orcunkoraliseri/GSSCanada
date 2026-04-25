@@ -294,7 +294,7 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
         cidx_t = val_data["cycle_idx"][syn_idx].to(device)
         strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
 
-        gen_act, gen_home, _ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
+        gen_act, gen_home, _, __ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
         gen_act  = gen_act.cpu().numpy()    # (K, 48) 0-indexed
         gen_home = gen_home.cpu().numpy()   # (K, 48) {0, 1}
 
@@ -446,15 +446,23 @@ def train(args):
             "Alone", "Spouse", "Children", "parents", "otherInFAMs",
             "otherHHs", "friends", "others", "colleagues",
         ]]
+        # F4: Alone freq≈0.35 → pw≈1.86, which upweights Alone=1 predictions and
+        # worsens the observed over-prediction gap (same sign-flip as AT_HOME pos_weight).
+        # COP_ALONE_PW=0 overrides Alone's weight to 1.0 while keeping other channels.
+        _alone_pw_disabled = os.environ.get("COP_ALONE_PW", "1") == "0"
+        if _alone_pw_disabled:
+            cop_pw_list[0] = 1.0
+            print("  COP_ALONE_PW=0: Alone pos_weight overridden to 1.0 (sign-flip guard)")
         cop_pos_weight = torch.tensor(cop_pw_list, dtype=torch.float32, device=device)
         for n, v in zip(["Alone","Spouse","Children","parents","otherInFAMs",
                           "otherHHs","friends","others","colleagues"], cop_pw_list):
             print(f"  COP pos_weight  {n:>12}: {v:.4f}")
-        real_pws = [v for n, v in zip(
+        # Sign-flip guard: exclude Alone when explicitly disabled (1.0 is correct there)
+        real_pws = [(n, v) for n, v in zip(
             ["Alone","Spouse","Children","parents","friends","others","colleagues"],
             [cop_pw_list[i] for i in [0,1,2,3,6,7,8]]
-        )]
-        assert all(v > 1.0 for v in real_pws), \
+        ) if not (n == "Alone" and _alone_pw_disabled)]
+        assert all(v > 1.0 for _, v in real_pws), \
             f"COP pos_weight ≤ 1 for a real channel — sign-flip guard: {real_pws}"
     else:
         print("  COP pos_weight: disabled (COP_POS_WEIGHT=0)")

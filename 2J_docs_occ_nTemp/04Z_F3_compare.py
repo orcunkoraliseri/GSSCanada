@@ -52,28 +52,27 @@ def load_json(path: str) -> dict:
 def extract_metrics(d: dict) -> dict:
     m = {}
 
-    # Composite score (primary ranking metric)
-    m["composite_score"] = d.get("composite_score", float("nan"))
+    # Composite score — nested under d["composite"]["composite_score"]
+    m["composite_score"] = d.get("composite", {}).get("composite_score", float("nan"))
 
-    # AT_HOME bootstrap gap (pp)
-    at_home = d.get("bootstrap_cis", {}).get("AT_HOME", {})
-    m["AT_HOME_gap_pp"] = at_home.get("mean_gap_pp", float("nan"))
-    m["AT_HOME_ci_lo"]  = at_home.get("ci_lo", float("nan"))
-    m["AT_HOME_ci_hi"]  = at_home.get("ci_hi", float("nan"))
+    # AT_HOME bootstrap gap (pp) — key is "at_home" (lowercase), inner key "gap_pp"
+    at_home = d.get("bootstrap_cis", {}).get("at_home", {})
+    m["AT_HOME_gap_pp"] = at_home.get("gap_pp", float("nan"))
+    m["AT_HOME_ci_lo"]  = at_home.get("gap_ci_lo_pp", float("nan"))
+    m["AT_HOME_ci_hi"]  = at_home.get("gap_ci_hi_pp", float("nan"))
 
-    # Co-presence gaps
+    # Co-presence gaps — inner key is "gap_pp" (not "mean_gap_pp")
     cop_gaps = d.get("bootstrap_cis", {}).get("copresence", {})
     for ch in ["Alone", "Spouse", "Children", "parents", "friends", "others", "colleagues"]:
         key = f"cop_{ch.lower()}_gap_pp"
-        m[key] = cop_gaps.get(ch, {}).get("mean_gap_pp", float("nan"))
+        m[key] = cop_gaps.get(ch, {}).get("gap_pp", float("nan"))
 
-    # Activity JS
-    act = d.get("bootstrap_cis", {}).get("activity", {})
-    m["act_JS_mean"] = act.get("JS_mean", float("nan"))
+    # Activity JS — stored in composite components, not in bootstrap_cis
+    m["act_JS_mean"] = d.get("composite", {}).get("components", {}).get("act_js_mean", float("nan"))
 
-    # Calibration MAE (Alone channel, most diagnostic)
+    # Calibration MAE (Alone channel) — key is "mae" (lowercase)
     cal = d.get("calibration", {}).get("Alone", {})
-    m["cal_Alone_MAE"] = cal.get("MAE", float("nan"))
+    m["cal_Alone_MAE"] = cal.get("mae", float("nan"))
 
     return m
 

@@ -246,9 +246,20 @@ def main():
     assert (hetus["occID"].values == cop["occID"].values).all(), (
         "occID order mismatch between hetus_30min and copresence_30min"
     )
+    cop_slot_cols = [
+        f"{ch}30_{s:03d}"
+        for ch in COP_COLS
+        for s in range(1, N_SLOTS + 1)
+    ]
+    missing = [c for c in cop_slot_cols if c not in cop.columns]
+    assert not missing, (
+        f"copresence_30min.csv is missing {len(missing)} of {len(cop_slot_cols)} "
+        f"expected slot columns (e.g. {missing[:3]}). "
+        f"File appears wrong — regenerate via 03_mergingGSS.py Phase I."
+    )
     df = pd.concat(
         [hetus.reset_index(drop=True),
-         cop.drop(columns=["occID"]).reset_index(drop=True)],
+         cop[cop_slot_cols].reset_index(drop=True)],
         axis=1,
     )
 

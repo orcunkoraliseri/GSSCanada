@@ -352,7 +352,7 @@ class ConditionalTransformer(nn.Module):
             batch["act_seq"], batch["aux_seq"],
             batch["cond_vec"], batch["cycle_idx"],
         )
-        act_logits, home_logits, cop_logits = self.decode(
+        act_logits, home_logits, cop_logits, aux_logits = self.decode(
             batch["dec_act_seq"], batch["dec_aux_seq"],
             batch["tgt_strata"], memory,
             batch["cond_vec"], batch["cycle_idx"],
@@ -361,6 +361,7 @@ class ConditionalTransformer(nn.Module):
             "act_logits":  act_logits,
             "home_logits": home_logits,
             "cop_logits":  cop_logits,
+            "aux_logits":  aux_logits,
         }
 
     # ── Inference (autoregressive generation) ────────────────────────────────
@@ -422,8 +423,8 @@ class ConditionalTransformer(nn.Module):
             causal_mask = nn.Transformer.generate_square_subsequent_mask(
                 dec_seq.shape[1], device=device
             )
-            dec_out = self.decoder(dec_seq, memory,
-                                   tgt_mask=causal_mask, dec_cond=dec_cond)
+            dec_out, _ = self.decoder(dec_seq, memory,
+                                      tgt_mask=causal_mask, dec_cond=dec_cond)
             out_t = dec_out[:, -1, :]                             # (B, d_model)
 
             # Activity head

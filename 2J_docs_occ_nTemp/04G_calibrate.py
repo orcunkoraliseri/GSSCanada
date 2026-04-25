@@ -190,7 +190,7 @@ def generate_syn_for_subsample(
         strat  = torch.tensor(s_b, dtype=torch.long, device=device)
 
         with torch.no_grad():
-            gen_act, gen_home, _gen_cop = model.generate(
+            gen_act, gen_home, _gen_cop, _gen_cop_probs = model.generate(
                 act_t, aux_t, cond_t, cidx_t, strat,
                 temperature=temperature,
                 home_threshold=home_threshold,

@@ -57,13 +57,17 @@ submit_chain() {
     local JID_E
     JID_E=$(sbatch --parsable \
         --dependency=afterok:$JID_D \
+        --partition=pg \
+        --gres=gpu:1 \
+        --mem=48Gb \
+        --time=04:00:00 \
         --job-name=04E_${TAG} \
         --output="logs/04E_${TAG}_%j.out" \
         --error="logs/04E_${TAG}_%j.err" \
         --export=ALL \
-        --wrap="cd $BASE && mkdir -p ${OUT_DIR} && \
+        --wrap="cd $BASE && . /encs/pkg/modules-5.3.1/root/init/bash && module load cuda/12.8 && mkdir -p ${OUT_DIR} && \
             /speed-scratch/o_iseri/envs/step4/bin/python -u 04E_inference.py \
-            --data_dir ${OUT_DIR} \
+            --data_dir outputs_step4 \
             --checkpoint ${CKPT_DIR}/best_model.pt \
             --output ${OUT_DIR}/augmented_diaries.csv \
             --temperature 0.8")

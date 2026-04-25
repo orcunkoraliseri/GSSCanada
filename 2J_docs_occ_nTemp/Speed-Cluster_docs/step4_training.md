@@ -688,6 +688,19 @@ Composite score from 04J strictly better than F1 baseline on all four component 
 
 ### 9.10 Progress Log
 
+- **2026-04-23 (F3 sweep first submission attempt — failed, multiple root causes).** Ran `bash submit_step4_F3_sweep.sh F3_sweep_20260423`. All 4 × 04D training jobs (902057/902063/902069/902075) failed immediately; 04E–04J cascade as `DependencyNeverSatisfied` / `Dependency`. Three root causes identified and fixed:
+
+  1. **04D job scripts: `--mem=40G` format rejected by cluster** (`pg` partition requires `Gb` suffix per error message). Fixed: `--mem=40Gb` in all 4 `job_04D_train_F3*.sh`.
+
+  2. **04E `--wrap` call in `submit_step4_F3_sweep.sh` missing GPU resources.** The `submit_chain()` function submitted 04E via `--wrap` but omitted `--partition=pg --gres=gpu:1 --mem=48Gb --time=04:00:00` and the cuda module load. Fixed: added all four resource flags and `. /encs/pkg/modules-5.3.1/root/init/bash && module load cuda/12.8` to the wrap string.
+
+  3. **04A (`job_04A_assembly.sh`) also failing — prerequisite for all 04D runs.** Three consecutive failures (902033, 902083, 902085) traced to `04A_dataset_assembly.py`:
+     - *Attempt 1 (902033)*: `CYCLE_YEAR` column duplicated in `pd.concat` (both `hetus_30min.csv` and `copresence_30min.csv` contain `CYCLE_YEAR`). Fix: drop all shared columns from `cop` before concat.
+     - *Attempt 2 (902083)*: `unhashable type: 'numpy.ndarray'` in `encode_demographics` — same root cause, a different duplicate demographic column. Fix refined to: drop from `cop` all columns that also appear in `hetus`.
+     - *Attempt 3 (902085)*: "drop all shared columns" over-dropped cop slot columns (`Alone30_*` etc.) — `hetus` unexpectedly contains some co-presence column names. **Final fix**: instead of dropping by overlap, explicitly select only the needed cop slot columns: `cop_keep = [f"{ch}30_{s:03d}" for ch in COP_COLS for s in range(1, N_SLOTS+1)]`, then concat only those. This is schema-explicit and immune to any future overlap in input files.
+
+  Status after fixes: 04A job 902088 submitted and running (`speed-33`). Old stuck jobs (902058–902081) pending cancellation. Sweep resubmission queued on 04A success.
+
 ---
 
 ## §10 — 04J Statistical Diagnostics
