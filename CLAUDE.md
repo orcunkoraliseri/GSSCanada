@@ -94,3 +94,45 @@ Commit format:
 `[type]: Brief description`
 
 Allowed types: `[data]`, `[ml]`, `[pipeline]`, `[bem]`, `[fix]`, `[docs]`
+
+## Multi-Agent Workflow
+
+### Agent Registry
+
+| Agent    | Model             | Permissions         | Primary Write Target              |
+|----------|-------------------|---------------------|-----------------------------------|
+| planner  | claude-opus-4-7   | plan mode           | `.claude/tasks.md`, `eSim_docs_*/` |
+| reviewer | claude-opus-4-7   | read only           | terminal output only              |
+| builder  | claude-sonnet-4-6 | bypassPermissions   | src files, `.claude/progress.md`   |
+| reporter | claude-opus-4-7   | plan mode           | `eSim_docs_*/` (append only)       |
+
+### Loop Order
+
+1. `/plan` → planner reads project, creates `tasks.md` + task docs in `eSim_docs_*/`.
+2. `/review-plan` → reviewer MODE A approves or flags tasks before execution.
+3. `/build` → builder executes tasks, appends to `progress.md`.
+4. `/report` → reporter appends a Progress Log chapter to each task doc.
+5. `/review-execution` → reviewer MODE B checks task docs + source files.
+6. Repeat from `/build` until all tasks DONE.
+7. Final `/report` → updates `state.md` to `COMPLETE`.
+
+`/run <goal>` runs steps 1–7 autonomously without prompting; it interrupts only on BLOCKED, out-of-allowedPaths writes, or a task that fails twice.
+
+### Task Document Routing
+
+- `eSim_docs_occ_utils/`  → occupancy, GSS/Census, C-VAE, schedule generation
+- `eSim_docs_bem_utils/`  → EnergyPlus, IDF, eppy/geomeppy, schedule injection
+- `eSim_docs_cloudSims/`  → Calcul Québec / Speed cluster, HPC batch jobs
+- `eSim_docs_ubem_utils/` → urban-scale geometry, neighborhood units, aggregation
+- `eSim_docs_report/`     → validation, analysis, figures, paper sections
+
+### Reporter Rule
+
+Reporter ONLY appends. It never deletes or reformats existing document content. Each loop's results are permanently recorded as a new dated sub-entry. `.claude/state.md` is the only file the reporter overwrites in full.
+
+### State Files
+
+- `.claude/tasks.md`    — current session task list (planner writes)
+- `.claude/progress.md` — execution log (builder appends per task)
+- `.claude/state.md`    — loop counter and overall project status (reporter updates)
+
