@@ -1,0 +1,7 @@
+# sweep_F9.yaml — F9 sweep: mechanism-level (F9a) + symptom-level (F9b) in parallel
+# First sweep on the new job-array orchestration system.
+# Submit: bash Speed_Cluster/submit_step4_array.sh configs/sweep_F9.yaml F9_$(date +%Y%m%d_%H%M)
+# Gates (per arm): composite < 1.045, AT_HOME <= +5.3 pp, Spouse <= +10 pp, act_JS <= 0.05
+tags:
+  - F9a
+  - F9b

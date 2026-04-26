@@ -1,0 +1,14 @@
+# sweep_smoke.yaml — plumbing check for the new job-array system
+# Runs F1, F9a, F9b in --sample mode (d_model=64, 5 epochs, ~5 min each, 1 GPU per trial).
+# NOTE: --sample uses a tiny model (d_model=64, N_enc=N_dec=2) — this is NOT a bit-for-bit
+# F1 reproducibility check. Smoke verifies plumbing only:
+#   (1) argparse accepts the YAML-emitted flags
+#   (2) job-array dependency chain reaches extract_metrics
+#   (3) results_index/results.csv gets 3 rows with all 6 metric columns populated
+#   (4) per-trial console shows AUX_STRATUM_LAMBDA=0.02 (F9a) and SPOUSE_NEG_WEIGHT override (F9b)
+# Submit: bash Speed_Cluster/submit_step4_array.sh configs/sweep_smoke.yaml smoke_$(date +%Y%m%d_%H%M)
+tags:
+  - F1
+  - F9a
+  - F9b
+smoke: true

@@ -37,6 +37,13 @@ You execute tasks from `.claude/tasks.md` sequentially. You have full read/write
 2. Read every linked task doc in `eSim_docs_*/` for the unchecked tasks.
 3. Read `CLAUDE.md` for project rules.
 4. Read `.claude/state.md` for loop context.
+5. Read the **"Ext agents loaded this session"** block in `.claude/tasks.md`.
+   For each entry, read the corresponding file in `.claude/agents/`
+   (e.g., `ext_python-pro.md`, `ext_ml-engineer.md`) and treat its content
+   as additional persona guidance for the rest of the session.
+   These augment — never override — the project rules in `CLAUDE.md` and
+   the hard technical constraints below. If the planner did not declare
+   ext agents, default to loading only `ext_python-pro.md`.
 
 ## Per-task workflow
 
@@ -74,6 +81,24 @@ Notes: <what was done, edge cases, deviations from plan>
 - **`0_Occupancy/DataSources_*` is read-only.** Never modify, never print raw rows.
 - **Protected ML files** listed in CLAUDE.md are untouchable unless the task explicitly authorizes it.
 
+## Per-task read cap
+
+If executing a single task requires reading **more than 15 files**, stop and
+log BLOCKED instead of proceeding:
+
+```
+## <TASK_ID> — <ISO datetime>
+Status: BLOCKED
+Commit: (none)
+Files modified: (none)
+Tests: SKIPPED
+Notes: BLOCKED — task scope too wide (would read >15 files). Need: planner to split task or narrow scope.
+```
+
+This surfaces runaway tasks visibly instead of silently burning context.
+Files already declared in the planner's `Read:` scope and re-read across
+multiple tasks count once per task, not cumulatively.
+
 ## When a task would write outside `allowedPaths`
 
 Do not attempt the write. Log:
@@ -99,6 +124,14 @@ Move to the next task.
 
 You do **not** submit jobs to Speed (`speed-submit2`). For cluster work:
 - Produce the sbatch script as a committed file under `eSim_docs_cloudSims/` or `submit_*.sh`.
+- **Dependency precheck (mandatory).** Before declaring a cluster script ready,
+  scan the entry-point Python script's imports. For every non-stdlib import
+  (`yaml`/PyYAML, `eppy`, `geomeppy`, `joblib`, `tensorflow`, `torch`, etc.)
+  ensure the sbatch preamble either activates an env known to have it, or
+  installs/loads it. Add a defensive precheck line to the sbatch script:
+  `python -c "import yaml, eppy, joblib"` (adjust to actual imports) so missing
+  modules surface immediately in the job log instead of mid-run. Note this
+  check in the progress entry.
 - End the relevant progress entry with the literal `sbatch` command on its own line, labeled `# on the cluster`.
 - Never claim a job is submitted.
 

@@ -13,6 +13,7 @@ allowedPaths:
   - eSim_docs_cloudSims/**  # append-only
   - eSim_docs_ubem_utils/** # append-only
   - eSim_docs_report/**     # append-only
+  - eSim_docs_archive/**    # write — end-of-pipeline session archive
 permissions:
   planMode: true
 skills:
@@ -51,6 +52,12 @@ For every completed task in `.claude/progress.md`:
 <Factual summary of what the builder produced — files created, row counts,
 metric values, test outcomes. Cite specific filenames and line counts.>
 
+### Footprint
+Files read: <N>
+Files written: <N>
+Tasks in this loop: <N>
+(Rough proxy for session size — used to spot bloat across runs.)
+
 ### Interpretation
 <Research-level commentary. Does the result match the aim? Are the occupancy
 schedules behaviorally realistic (morning/evening peaks for residential,
@@ -84,6 +91,26 @@ After all task docs are appended to, overwrite `.claude/state.md` with:
 ```
 
 `Status: COMPLETE` is set only when the reviewer's MODE B verdict for this loop is APPROVED.
+
+## End-of-pipeline archive
+
+When invoked at end of pipeline (after final REVIEWER B = APPROVED — runs once,
+not per loop iteration):
+
+1. Compute `<slug>` from the session goal in `.claude/state.md` or `.claude/tasks.md`:
+   take the first 30 chars of the goal, lowercase, replace any non-alphanum
+   character with a dash, collapse repeated dashes, strip leading/trailing dashes.
+2. Create the folder `eSim_docs_archive/<YYYY-MM-DD>_<slug>/`.
+3. Copy these three files into it, preserving filenames (no rename, no edits):
+   - `.claude/tasks.md`
+   - `.claude/progress.md`
+   - `.claude/state.md`
+4. Do not modify content during the copy. The archive is a verbatim snapshot.
+5. Skip the archive entirely if the final REVIEWER B verdict was BLOCKED or
+   the session ended on a repeated FAIL — failed sessions are not archived.
+
+The archive is the permanent session-level history; the working state files
+will be overwritten by the next `/run` starting fresh.
 
 ## CRITICAL RULES
 

@@ -1,0 +1,32 @@
+# F1.yaml — Step-4 baseline Conditional Transformer
+# Reproduces: Speed_Cluster/job_04D_train.sh exactly
+# Reference result: composite 1.045 (gate), AT_HOME +5.3 pp, Alone +16.1 pp, act_JS 0.056
+tag: F1
+seed: 42
+
+# Argparse flags
+data_dir: outputs_step4
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 256
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+fp16: true
+
+# Loss weights (explicit for reproducibility — match 04D_train.py defaults)
+lambda_act: 1.0
+lambda_home: 0.5
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+# Feature switches (explicit — match F1 job_04D_train.sh implicit defaults)
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 1.0
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0

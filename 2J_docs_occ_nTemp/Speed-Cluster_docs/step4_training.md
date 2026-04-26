@@ -763,4 +763,52 @@ Must pass before sweep submission: the Alone calibration curve must show σ̄ �
 
 ### 10.7 Progress Log
 
+- **2026-04-25 — F6 COMPLETE / INVALID (job 903599): fp32 cleared NaN but warmup-induced early-stopping trap fired.**
+
+  Config: F3-C + `COP_POS_WEIGHT=0` + fp32 (no `--fp16`). fp32 eliminated the FP16 gradient NaN that broke F4 (large cop pos_weights → overflow) and F5 (residual NaN with fp16 after `COP_POS_WEIGHT=0`). However a new failure mode emerged: at epoch 1, LR = 8.77e-06 (17.5% of peak 5e-05 — deep in the linear warmup ramp). The model makes near-uniform predictions at this LR → val_JS=0.0866, combined val_score=0.1844. This was saved as best_model.pt. Epochs 2–16 val_score ranged 0.2082–0.3915 — none beat 0.1844. Early stopping fired at epoch 16. **`best_model.pt` = epoch-1 near-uniform weights; F6 is invalid.**
+
+  Root cause: `04D_train.py` lines ~654–672 had the early-stop patience counter gated on `past_warmup`, but the best-model save block had no such gate. Same structural trap as F4/F5 (different mechanism: NaN vs. warmup), same outcome: an untrained/near-uniform checkpoint locks out all real training.
+
+  Fix for F7: gate both the best-model save block AND the patience counter on `past_warmup = (epoch+1) > warmup_epochs` (warmup_epochs = ceil(2000 / ~350 batches) ≈ 6). During warmup, the train loop prints `[warmup epoch N/6 — skipping best-model tracking]` and skips both save and patience increment. The first post-warmup val_score becomes the real baseline.
+
+- **2026-04-25 — F7 COMPLETE (jobs 903690–903695): both hard gates PASS; stretch goal not met. First valid run since F1.**
+
+  Config: F3-C + `COP_POS_WEIGHT=0` + fp32 + warmup-gate fix. Chain: `04D_F7` 903690 → `04E_F7` 903691 → parallel `{04F_F7` 903692, `04H_F7` 903693, `04I_F7` 903694, `04J_F7` 903695}. Outputs in `outputs_step4_F7/`. Best checkpoint: epoch 72, val_score=0.1743 (val_JS=0.0810, home_gap=0.1866).
+
+  **Gate results from `outputs_step4_F7/diagnostics_v4_statistical.json`:**
+
+  | Gate | Threshold | F7 | Status |
+  |---|---|---|---|
+  | Composite score | < 2.366 (F3-C) | **1.3645** | ✅ PASS |
+  | Alone gap | < 13.3 pp | **12.95 pp** | ✅ PASS (margin 0.35 pp) |
+  | Stretch composite | < 1.045 (F1) | 1.3645 | ✗ FAIL |
+
+  **Key metrics (bootstrap CIs, `bootstrap_cis` field):**
+  - AT_HOME gap: +11.14 pp [+10.88, +11.38], obs 72.5%, syn 83.6% — **regressed vs F1 (+5.3 pp) and F3-C (+5.8 pp)**
+  - Alone gap: +12.95 pp [+12.56, +13.33] — improved vs F1 (+16.1 pp)
+  - Spouse gap: +20.27 pp [+19.86, +20.67], obs 22.4%, syn 42.6% — **dominant issue; 2× over-prediction**
+  - Children: −3.90 pp; parents: −1.47 pp; friends: −3.94 pp; others: −6.18 pp; colleagues: −6.13 pp
+
+  **Composite breakdown (composite_score = 1.3645):**
+  - AT_HOME_rms_pp = 8.63 → w1 contribution: 0.173
+  - cop_max_gap_pp = 20.27 (Spouse) → w2 contribution: **0.709** (52% of total)
+  - act_JS_mean = 0.0406 → w3 contribution: 0.142
+  - cop_cal_MAE = 0.340 → w4 contribution: 0.340
+
+  The Spouse gap dominates the composite. Closing Spouse from 20.3 pp to ~5 pp would reduce the composite to ~0.65, well under the F1 stretch goal.
+
+  **AT_HOME calibration anomaly:** `calibration.AT_HOME` shows all 1,006,233 predictions in the σ≈0 bin (mae=0.511). This is a **04J bug** — the script is reading the binary AT_HOME column from `augmented_diaries.csv` (values 0/1) instead of the raw sigmoid output from the home_head. The calibration section for AT_HOME should be ignored; the bootstrap CI gap (+11.14 pp) is the reliable AT_HOME metric.
+
+  **F7 vs F1 and F3-C comparison:**
+
+  | Run | Composite | AT_HOME gap | Alone gap | act_JS | Valid? |
+  |---|---|---|---|---|---|
+  | F1 | 1.045 | +5.3 pp | +16.1 pp | 0.056 | ✅ |
+  | F3-C | 2.366 | +5.8 pp | +13.3 pp | 0.041 | ✅ |
+  | **F7** | **1.364** | **+11.1 pp** | **+13.0 pp** | **0.041** | ✅ |
+
+  F7 improves Alone gap and act_JS vs F1, but AT_HOME regressed significantly. F7 improves composite vs F3-C, with marginally better Alone gap. The new dominant failure is Spouse over-prediction (+20.3 pp) — not present at this magnitude in F1 or F3-C sweeps. Likely caused by the model defaulting toward majority-class co-presence without the pos_weight signal (which was removed via `COP_POS_WEIGHT=0` to fix the FP16 NaN).
+
+  **Decision pending:** F7 is the first valid model since F1 and passes both hard gates. Whether to accept `outputs_step4_F7/augmented_diaries.csv` as production (AT_HOME +11.1 pp will inflate EnergyPlus occupancy schedules by ~11 pp vs observed), or attempt F8 targeting the Spouse gap and AT_HOME regression.
+
 ---

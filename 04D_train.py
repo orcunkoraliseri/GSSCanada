@@ -49,7 +49,9 @@ LAMBDA_ACT  = float(os.environ.get("LAMBDA_ACT",  "1.0"))
 LAMBDA_HOME = float(os.environ.get("LAMBDA_HOME", "0.5"))
 LAMBDA_COP  = float(os.environ.get("LAMBDA_COP",  "0.3"))
 LAMBDA_MARG = float(os.environ.get("LAMBDA_MARG", "0.1"))
-MARG_MODE   = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
+MARG_MODE          = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
+AUX_STRATUM_LAMBDA = float(os.environ.get("AUX_STRATUM_LAMBDA", "0.1"))
+SPOUSE_NEG_WEIGHT  = float(os.environ.get("SPOUSE_NEG_WEIGHT",  "1.0"))
 
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
@@ -151,11 +153,17 @@ def compute_loss(output: dict, batch: dict, device,
     else:
         marg_loss = (torch.sigmoid(home_logits).mean() - home_tgt.mean()).abs()
 
-    # Co-presence: BCE with per-slot availability masking
-    if cop_pos_weight is not None:
+    # Co-presence: BCE with per-slot availability masking.
+    # SPOUSE_NEG_WEIGHT < 1.0 (F9-b) down-weights Spouse=True to reduce over-prediction.
+    _cop_pw = cop_pos_weight  # None when COP_POS_WEIGHT=0
+    if SPOUSE_NEG_WEIGHT != 1.0:
+        pw_base = _cop_pw.clone() if _cop_pw is not None else torch.ones(9, dtype=torch.float32, device=cop_logits.device)
+        pw_base[1] = SPOUSE_NEG_WEIGHT  # index 1 = Spouse
+        _cop_pw = pw_base
+    if _cop_pw is not None:
         cop_loss_raw = F.binary_cross_entropy_with_logits(
             cop_logits, cop_tgt,
-            pos_weight=cop_pos_weight.view(1, 1, -1),
+            pos_weight=_cop_pw.view(1, 1, -1),
             reduction="none",
         )
     else:
@@ -181,7 +189,7 @@ def compute_loss(output: dict, batch: dict, device,
     if aux_logits is not None:
         aux_tgt = (batch["tgt_strata"] - 1).clamp(0, 2).long()  # 1-indexed → 0-indexed
         aux_loss = F.cross_entropy(aux_logits, aux_tgt)
-        LAMBDA_AUX = float(os.environ.get("LAMBDA_AUX", "0.1"))
+        LAMBDA_AUX = AUX_STRATUM_LAMBDA
     else:
         aux_loss  = torch.tensor(0.0)
         LAMBDA_AUX = 0.0
@@ -383,7 +391,8 @@ def train(args):
     print(f"  AUX_STRATUM_HEAD={_aux_head}  COP_POS_WEIGHT={os.environ.get('COP_POS_WEIGHT','0')}"
           f"  ACTIVITY_BOOSTS={os.environ.get('ACTIVITY_BOOSTS','1')}"
           f"  DATA_SIDE_SAMPLING={os.environ.get('DATA_SIDE_SAMPLING','0')}"
-          f"  MARG_MODE={MARG_MODE}")
+          f"  MARG_MODE={MARG_MODE}"
+          f"  AUX_STRATUM_LAMBDA={AUX_STRATUM_LAMBDA}  SPOUSE_NEG_WEIGHT={SPOUSE_NEG_WEIGHT}")
 
     # ── Device ───────────────────────────────────────────────────────────
     if torch.cuda.is_available():

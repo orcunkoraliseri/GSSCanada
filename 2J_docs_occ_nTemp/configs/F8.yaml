@@ -1,0 +1,32 @@
+# F8.yaml — F1 baseline + AUX_STRATUM_HEAD=1 (single-axis ablation, fp32)
+# Reproduces: Speed_Cluster/job_04D_train_F8.sh exactly
+# Reference result: composite 1.376, AT_HOME +1.41 pp, Spouse +19.36 pp, act_JS 0.066
+# Gates (not met): composite 1.376 > 1.045 FAIL; Spouse +19.36 pp > +5 pp FAIL
+tag: F8
+seed: 42
+
+# Argparse flags (fp32 — no fp16 flag)
+data_dir: outputs_step4
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 256
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+# Loss weights (F1 defaults)
+lambda_act: 1.0
+lambda_home: 0.5
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+# Feature switches (F1 defaults + AUX_STRATUM_HEAD=1)
+aux_stratum_head: 1
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 1.0
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0

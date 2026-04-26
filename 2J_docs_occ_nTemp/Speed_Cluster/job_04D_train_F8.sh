@@ -45,13 +45,11 @@ sys.path.insert(0, SCRIPT_DIR)
 model_mod = importlib.import_module("04B_model")
 ConditionalTransformer = model_mod.ConditionalTransformer
 
-LAMBDA_ACT         = float(os.environ.get("LAMBDA_ACT",         "1.0"))
-LAMBDA_HOME        = float(os.environ.get("LAMBDA_HOME",        "0.5"))
-LAMBDA_COP         = float(os.environ.get("LAMBDA_COP",         "0.3"))
-LAMBDA_MARG        = float(os.environ.get("LAMBDA_MARG",        "0.1"))
-MARG_MODE          = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
-AUX_STRATUM_LAMBDA = float(os.environ.get("AUX_STRATUM_LAMBDA", "0.1"))
-SPOUSE_NEG_WEIGHT  = float(os.environ.get("SPOUSE_NEG_WEIGHT",  "1.0"))
+LAMBDA_ACT  = float(os.environ.get("LAMBDA_ACT",  "1.0"))
+LAMBDA_HOME = float(os.environ.get("LAMBDA_HOME", "0.5"))
+LAMBDA_COP  = float(os.environ.get("LAMBDA_COP",  "0.3"))
+LAMBDA_MARG = float(os.environ.get("LAMBDA_MARG", "0.1"))
+MARG_MODE   = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
 
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
@@ -183,7 +181,7 @@ def compute_loss(output: dict, batch: dict, device,
     if aux_logits is not None:
         aux_tgt = (batch["tgt_strata"] - 1).clamp(0, 2).long()  # 1-indexed → 0-indexed
         aux_loss = F.cross_entropy(aux_logits, aux_tgt)
-        LAMBDA_AUX = AUX_STRATUM_LAMBDA
+        LAMBDA_AUX = float(os.environ.get("LAMBDA_AUX", "0.1"))
     else:
         aux_loss  = torch.tensor(0.0)
         LAMBDA_AUX = 0.0
@@ -385,8 +383,7 @@ def train(args):
     print(f"  AUX_STRATUM_HEAD={_aux_head}  COP_POS_WEIGHT={os.environ.get('COP_POS_WEIGHT','0')}"
           f"  ACTIVITY_BOOSTS={os.environ.get('ACTIVITY_BOOSTS','1')}"
           f"  DATA_SIDE_SAMPLING={os.environ.get('DATA_SIDE_SAMPLING','0')}"
-          f"  MARG_MODE={MARG_MODE}"
-          f"  AUX_STRATUM_LAMBDA={AUX_STRATUM_LAMBDA}  SPOUSE_NEG_WEIGHT={SPOUSE_NEG_WEIGHT}")
+          f"  MARG_MODE={MARG_MODE}")
 
     # ── Device ───────────────────────────────────────────────────────────
     if torch.cuda.is_available():
@@ -469,15 +466,6 @@ def train(args):
             f"COP pos_weight ≤ 1 for a real channel — sign-flip guard: {real_pws}"
     else:
         print("  COP pos_weight: disabled (COP_POS_WEIGHT=0)")
-
-    # Per-channel Spouse override (F9-b axis): down-weight Spouse=True to reduce over-prediction.
-    # Works regardless of COP_POS_WEIGHT value; default 1.0 is a no-op (backward-compatible).
-    if SPOUSE_NEG_WEIGHT != 1.0:
-        if cop_pos_weight is None:
-            cop_pos_weight = torch.ones(9, dtype=torch.float32, device=device)
-        cop_pos_weight = cop_pos_weight.clone()
-        cop_pos_weight[1] = SPOUSE_NEG_WEIGHT  # index 1 = Spouse (9-channel cop order)
-        print(f"  SPOUSE_NEG_WEIGHT={SPOUSE_NEG_WEIGHT}: Spouse (idx 1) cop pos_weight overridden")
 
     # Inverse-frequency weighting for DDAY_STRATA imbalance
     src_strata = train_data["obs_strata"][train_pairs["src_idx"]].numpy()
@@ -667,7 +655,7 @@ def train(args):
         # Both save and patience counter are gated on past_warmup to prevent
         # near-uniform warmup predictions from locking in a deceptively low score.
         warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
-        past_warmup = args.sample or (epoch + 1) > warmup_epochs
+        past_warmup = (epoch + 1) > warmup_epochs
         if not past_warmup:
             print(f"  [warmup epoch {epoch+1}/{warmup_epochs} — skipping best-model tracking]")
         elif val_score < best_val_score:
