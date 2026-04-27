@@ -27,8 +27,9 @@ echo "============================================================"
 mkdir -p "$BASE/logs" "$BASE/outputs_step4_${TRIAL_TAG}/checkpoints"
 
 # Load env vars + PY_ARGS from YAML config (yq if available, else python fallback)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_PATH="${SCRIPT_DIR}/../configs/${TRIAL_TAG}.yaml"
+# BASH_SOURCE[0] resolves to SLURM spool dir at runtime — use BASE-relative path instead.
+SCRIPT_DIR="$BASE/Speed_Cluster"
+CONFIG_PATH="$BASE/configs/${TRIAL_TAG}.yaml"
 source "${SCRIPT_DIR}/config_to_env.sh" "$CONFIG_PATH"
 
 # Smoke mode: override to --sample (5 epochs, small model, ~5 min)

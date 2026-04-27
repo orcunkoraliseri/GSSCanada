@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 437, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 294, in main
+    cop_bin, cop_avail = build_cop_avail_and_recode(df)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 82, in build_cop_avail_and_recode
+    cop_arr[:, :, col_idx] = df[cols].values  # NaN propagates automatically
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/frame.py", line 4119, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 6212, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 6261, in _raise_if_missing
+    raise KeyError(f"None of [{key}] are in the [{axis_name}]")
+KeyError: "None of [Index(['Alone30_001', 'Alone30_002', 'Alone30_003', 'Alone30_004',\n       'Alone30_005', 'Alone30_006', 'Alone30_007', 'Alone30_008',\n       'Alone30_009', 'Alone30_010', 'Alone30_011', 'Alone30_012',\n       'Alone30_013', 'Alone30_014', 'Alone30_015', 'Alone30_016',\n       'Alone30_017', 'Alone30_018', 'Alone30_019', 'Alone30_020',\n       'Alone30_021', 'Alone30_022', 'Alone30_023', 'Alone30_024',\n       'Alone30_025', 'Alone30_026', 'Alone30_027', 'Alone30_028',\n       'Alone30_029', 'Alone30_030', 'Alone30_031', 'Alone30_032',\n       'Alone30_033', 'Alone30_034', 'Alone30_035', 'Alone30_036',\n       'Alone30_037', 'Alone30_038', 'Alone30_039', 'Alone30_040',\n       'Alone30_041', 'Alone30_042', 'Alone30_043', 'Alone30_044',\n       'Alone30_045', 'Alone30_046', 'Alone30_047', 'Alone30_048'],\n      dtype='object')] are in the [columns]"

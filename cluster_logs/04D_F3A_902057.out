@@ -1,0 +1,38 @@
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       outputs_step4
+  output_dir:     outputs_step4_F3A
+  checkpoint_dir: outputs_step4_F3A/checkpoints
+  batch_size=256  max_epochs=100  patience=15  lr=5e-05  fp16=True
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_F3A/checkpoints
+  AUX_STRATUM_HEAD=False  COP_POS_WEIGHT=1  ACTIVITY_BOOSTS=0  DATA_SIDE_SAMPLING=0  MARG_MODE=global
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 89686 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=0):
+    class  0: 0.435
+    class  1: 0.517
+    class  2: 1.072
+    class  3: 1.110
+    class  4: 0.261
+    class  5: 0.752
+    class  6: 0.892
+    class  7: 1.355
+    class  8: 0.737
+    class  9: 0.406
+    class 10: 1.161
+    class 11: 1.782
+    class 12: 0.780
+    class 13: 2.742
+  AT_HOME observed rate: 0.7250  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=global
+  COP pos_weight         Alone: 1.0000
+  COP pos_weight        Spouse: 1.0000
+  COP pos_weight      Children: 1.0000
+  COP pos_weight       parents: 1.0000
+  COP pos_weight   otherInFAMs: 1.0000
+  COP pos_weight      otherHHs: 1.0000
+  COP pos_weight       friends: 1.0000
+  COP pos_weight        others: 1.0000
+  COP pos_weight    colleagues: 1.0000

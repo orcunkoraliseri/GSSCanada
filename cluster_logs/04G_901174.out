@@ -1,0 +1,26 @@
+=== Starting 04G calibration sweep ===
+============================================================
+Step 4G — Inference calibration sweep
+============================================================
+  data_dir:    outputs_step4
+  checkpoint:  outputs_step4/checkpoints/best_model.pt
+  out_dir:     outputs_step4/calibration
+  per_bucket:  150
+  temps:       [0.5, 0.6, 0.7, 0.8]
+  thresholds:  [0.5, 0.55, 0.6, 0.65, 0.7]
+  Device: cpu
+
+[1/4] Loading tensor datasets...
+  Total respondents: 64061
+
+[2/4] Loading checkpoint...
+  Loaded from epoch 0  val_JS=0.09280065428545976
+
+[3/4] Building subsample and observed-reference metrics...
+  Subsample respondents: 1800  (target 150 × 12 buckets)
+  Observed mean transitions / diary: 10.43
+  Observed AT_HOME rate buckets: 12
+
+[4/4] Sweeping 20 combos...
+=== 04G Calibration Complete ===
+--- sweep_summary.txt ---

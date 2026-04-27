@@ -1,0 +1,2 @@
+ERROR: Unable to locate a modulefile for 'cuda/12.1'
+slurmstepd: error: *** JOB 900968 ON speed-01 CANCELLED AT 2026-04-20T20:16:27 ***

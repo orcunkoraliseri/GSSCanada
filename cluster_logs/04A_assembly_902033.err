@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 436, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 258, in main
+    print(f"  Unique (occID, CYCLE_YEAR): {df.groupby(['occID', 'CYCLE_YEAR']).ngroups}")
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/frame.py", line 9210, in groupby
+    return DataFrameGroupBy(
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/groupby/groupby.py", line 1331, in __init__
+    grouper, exclusions, obj = get_grouper(
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/groupby/grouper.py", line 1038, in get_grouper
+    raise ValueError(f"Grouper for '{name}' not 1-dimensional")
+ValueError: Grouper for 'CYCLE_YEAR' not 1-dimensional

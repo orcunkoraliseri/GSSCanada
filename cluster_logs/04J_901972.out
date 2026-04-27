@@ -1,0 +1,10 @@
+============================================================
+Step 4J — Statistical Diagnostic Battery
+============================================================
+  data_dir    = outputs_step4
+  step3_dir   = outputs_step3
+  out_json    = outputs_step4/diagnostics_v4_statistical.json
+  n_bootstrap = 1000
+  rows: aug=192183  obs=64061  syn=128122
+
+[T1] Bootstrap CIs ...

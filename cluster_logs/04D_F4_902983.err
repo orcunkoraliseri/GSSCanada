@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04D_train.py", line 646, in <module>
+    train(args)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04D_train.py", line 545, in train
+    val_result = validate(model, val_data, val_pairs, device, model_config)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04D_train.py", line 266, in validate
+    gen_act, gen_home, _ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
+ValueError: too many values to unpack (expected 3)

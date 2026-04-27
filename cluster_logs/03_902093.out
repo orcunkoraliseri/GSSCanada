@@ -1,0 +1,66 @@
+============================================================
+Step 3 — Merge & Temporal Feature Derivation
+============================================================
+
+── Phase A+B: Load & Stack ─────────────────────────────────
+
+Main files:
+  main_2005.csv → 19,597 rows | columns: ['occID', 'AGEGRP', 'SEX', 'MARSTH', 'HHSIZE']…
+  main_2010.csv → 15,390 rows | columns: ['occID', 'AGEGRP', 'SEX', 'MARSTH', 'HHSIZE']…
+  main_2015.csv → 17,390 rows | columns: ['occID', 'AGEGRP', 'SEX', 'MARSTH', 'HHSIZE']…
+  main_2022.csv → 12,336 rows | columns: ['occID', 'AGEGRP', 'SEX', 'MARSTH', 'HHSIZE']…
+
+  Unified Main: 64,713 rows × 22 columns
+
+Episode files:
+  episode_2005.csv →  333,654 rows | columns: ['occID', 'EPINO', 'WGHT_EPI', 'start', 'end']…
+  episode_2010.csv →  283,287 rows | columns: ['occID', 'EPINO', 'WGHT_EPI', 'start', 'end']…
+  episode_2015.csv →  274,108 rows | columns: ['occID', 'EPINO', 'WGHT_EPI', 'start', 'end']…
+  episode_2022.csv →  168,078 rows | columns: ['occID', 'EPINO', 'WGHT_EPI', 'start', 'end']…
+
+  Unified Episodes: 1,059,127 rows × 24 columns
+
+── Stack integrity checks ──────────────────────────────────
+  [PASS] Duplicate (occID, CYCLE_YEAR) in Main: 0
+
+  Episode counts per cycle:
+    2005:  333,654
+    2010:  283,287
+    2015:  274,108
+    2022:  168,078
+
+  Respondent counts per cycle (Main):
+    2005: 19,597
+    2010: 15,390
+    2015: 17,390
+    2022: 12,336
+
+── Phase C: LEFT JOIN ──────────────────────────────────────
+  [PASS] Orphan episodes (no Main match): 0
+  Merged: 1,059,127 rows × 44 columns
+
+── Phase D: DIARY_VALID Filtering ──────────────────────────
+  2005: 19,597 respondents →  376 excluded (1.92%)
+  2010: 15,390 respondents →  276 excluded (1.79%)
+  2015: 17,390 respondents →    0 excluded (0.00%)
+  2022: 12,336 respondents →    0 excluded (0.00%)
+
+  Post-filter: 64,061 respondents | 1,049,480 episodes
+
+── Phase E: Temporal Feature Derivation ────────────────────
+  Derived columns added: ['DAYTYPE', 'startMin', 'endMin', 'HOUR_OF_DAY', 'TIMESLOT_10', 'DDAY_STRATA']
+    DAYTYPE: 2 unique values, 0 NaN
+    startMin: 1370 unique values, 0 NaN
+    endMin: 1375 unique values, 0 NaN
+    HOUR_OF_DAY: 24 unique values, 0 NaN
+    TIMESLOT_10: 144 unique values, 0 NaN
+    DDAY_STRATA: 3 unique values, 0 NaN
+
+── Phase F: HETUS 144-Slot Conversion ──────────────────────
+  Building 64,061 respondent rows …
+  NaN-slot respondents before ffill: 0, after: 0
+  Done: 64,061 rows x 312 columns
+
+── Phase G: Export ──────────────────────────────────────────
+  Writing outputs_step3/merged_episodes.csv …
+  Writing outputs_step3/merged_episodes.parquet …

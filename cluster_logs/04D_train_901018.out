@@ -1,0 +1,84 @@
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       /nfs/speed-scratch/o_iseri/occModeling/outputs_step4
+  output_dir:     /nfs/speed-scratch/o_iseri/occModeling/outputs_step4
+  checkpoint_dir: /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/checkpoints
+  batch_size=256  max_epochs=100  patience=10  lr=0.0001  fp16=True
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/checkpoints
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 89686 | Val respondents: 9609
+[2/4] Building model...
+  Parameters: 11,172,952
+ConditionalTransformer(
+  (act_embedding): Embedding(14, 32)
+  (slot_linear): Linear(in_features=42, out_features=256, bias=True)
+  (cycle_embedding): Embedding(4, 32)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=109, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=256, bias=True)
+  )
+  (strata_linear): Linear(in_features=3, out_features=256, bias=False)
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)
+        )
+        (linear1): Linear(in_features=256, out_features=1024, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1024, out_features=256, bias=True)
+        (norm1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+  )
+  (decoder): TransformerDecoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)
+        )
+        (multihead_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)
+        )
+        (linear1): Linear(in_features=256, out_features=1024, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1024, out_features=256, bias=True)
+        (norm1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (norm3): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+        (dropout3): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=256, out_features=14, bias=True)
+  (home_head): Linear(in_features=256, out_features=1, bias=True)
+  (cop_head): Linear(in_features=256, out_features=9, bias=True)
+)
+  Resuming from /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/checkpoints/last_checkpoint.pt (134.4 MB)
+  Resumed from epoch 12, best_val_js=0.1649
+[3/4] Training...
+Epoch  13/100: train_loss=0.7901  act=0.6938  home=0.1373  cop=0.0920  |  val_JS=0.2856  lr=9.98e-05  grad_norm=0.395  (533s)
+Epoch  14/100: train_loss=0.7936  act=0.6972  home=0.1379  cop=0.0914  |  val_JS=0.2856  lr=9.98e-05  grad_norm=0.389  (520s)
+Epoch  15/100: train_loss=0.7888  act=0.6926  home=0.1376  cop=0.0910  |  val_JS=0.2834  lr=9.97e-05  grad_norm=0.383  (520s)
+Epoch  16/100: train_loss=0.7782  act=0.6835  home=0.1349  cop=0.0910  |  val_JS=0.2856  lr=9.97e-05  grad_norm=0.385  (519s)
+Epoch  17/100: train_loss=0.7723  act=0.6778  home=0.1343  cop=0.0910  |  val_JS=0.2856  lr=9.96e-05  grad_norm=0.398  (519s)
+Epoch  18/100: train_loss=0.7627  act=0.6690  home=0.1328  cop=0.0908  |  val_JS=0.2808  lr=9.95e-05  grad_norm=0.399  (520s)
+Epoch  19/100: train_loss=0.7540  act=0.6614  home=0.1312  cop=0.0901  |  val_JS=0.2679  lr=9.94e-05  grad_norm=0.410  (519s)
+Epoch  20/100: train_loss=0.7445  act=0.6525  home=0.1298  cop=0.0902  |  val_JS=0.2856  lr=9.94e-05  grad_norm=0.425  (520s)
+Epoch  21/100: train_loss=0.7341  act=0.6434  home=0.1275  cop=0.0899  |  val_JS=0.2743  lr=9.93e-05  grad_norm=0.433  (519s)
+Epoch  22/100: train_loss=0.7238  act=0.6336  home=0.1264  cop=0.0899  |  val_JS=0.2856  lr=9.92e-05  grad_norm=0.445  (520s)
+  Early stopping at epoch 22 (no improvement for 10 epochs)
+
+[4/4] Training complete. Best val_JS=0.1649
+  Best checkpoint: /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/checkpoints/best_model.pt
+  Training log:    /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/step4_training_log.csv

@@ -1,0 +1,96 @@
+=== Starting 04G calibration sweep ===
+============================================================
+Step 4G — Inference calibration sweep
+============================================================
+  data_dir:    outputs_step4
+  checkpoint:  outputs_step4/checkpoints/best_model.pt
+  out_dir:     outputs_step4/calibration
+  per_bucket:  150
+  temps:       [0.5, 0.6, 0.7, 0.8]
+  thresholds:  [0.5, 0.55, 0.6, 0.65, 0.7]
+  Device: cuda
+
+[1/4] Loading tensor datasets...
+  Total respondents: 64061
+
+[2/4] Loading checkpoint...
+  Loaded from epoch 0  val_JS=0.09280065428545976
+
+[3/4] Building subsample and observed-reference metrics...
+  Subsample respondents: 1800  (target 150 × 12 buckets)
+  Observed mean transitions / diary: 10.43
+  Observed AT_HOME rate buckets: 12
+
+[4/4] Sweeping 20 combos...
+  [ 1/20] T=0.50 θ=0.50  AT_HOME max=26.27pp mean=18.99pp  trans_ratio=1.882 (|dev|= 88.2%)  [37.6s]
+  [ 2/20] T=0.50 θ=0.55  AT_HOME max=26.27pp mean=18.99pp  trans_ratio=1.882 (|dev|= 88.2%)  [37.6s]
+  [ 3/20] T=0.50 θ=0.60  AT_HOME max=26.27pp mean=18.98pp  trans_ratio=1.882 (|dev|= 88.2%)  [37.8s]
+  [ 4/20] T=0.50 θ=0.65  AT_HOME max=26.27pp mean=18.95pp  trans_ratio=1.882 (|dev|= 88.2%)  [37.7s]
+  [ 5/20] T=0.50 θ=0.70  AT_HOME max=26.27pp mean=18.64pp  trans_ratio=1.880 (|dev|= 88.0%)  [37.8s]
+  [ 6/20] T=0.60 θ=0.50  AT_HOME max=26.08pp mean=19.46pp  trans_ratio=2.113 (|dev|=111.3%)  [37.8s]
+  [ 7/20] T=0.60 θ=0.55  AT_HOME max=26.08pp mean=19.46pp  trans_ratio=2.113 (|dev|=111.3%)  [37.8s]
+  [ 8/20] T=0.60 θ=0.60  AT_HOME max=26.08pp mean=19.45pp  trans_ratio=2.113 (|dev|=111.3%)  [37.8s]
+  [ 9/20] T=0.60 θ=0.65  AT_HOME max=26.08pp mean=19.42pp  trans_ratio=2.113 (|dev|=111.3%)  [37.8s]
+  [10/20] T=0.60 θ=0.70  AT_HOME max=26.08pp mean=19.20pp  trans_ratio=2.112 (|dev|=111.2%)  [37.8s]
+  [11/20] T=0.70 θ=0.50  AT_HOME max=25.66pp mean=19.67pp  trans_ratio=2.325 (|dev|=132.5%)  [37.8s]
+  [12/20] T=0.70 θ=0.55  AT_HOME max=25.66pp mean=19.67pp  trans_ratio=2.325 (|dev|=132.5%)  [37.8s]
+  [13/20] T=0.70 θ=0.60  AT_HOME max=25.66pp mean=19.65pp  trans_ratio=2.324 (|dev|=132.4%)  [37.7s]
+  [14/20] T=0.70 θ=0.65  AT_HOME max=25.66pp mean=19.63pp  trans_ratio=2.324 (|dev|=132.4%)  [37.8s]
+  [15/20] T=0.70 θ=0.70  AT_HOME max=25.66pp mean=19.41pp  trans_ratio=2.324 (|dev|=132.4%)  [37.8s]
+  [16/20] T=0.80 θ=0.50  AT_HOME max=25.34pp mean=19.74pp  trans_ratio=2.523 (|dev|=152.3%)  [37.8s]
+  [17/20] T=0.80 θ=0.55  AT_HOME max=25.34pp mean=19.74pp  trans_ratio=2.523 (|dev|=152.3%)  [37.8s]
+  [18/20] T=0.80 θ=0.60  AT_HOME max=25.34pp mean=19.74pp  trans_ratio=2.523 (|dev|=152.3%)  [37.8s]
+  [19/20] T=0.80 θ=0.65  AT_HOME max=25.34pp mean=19.71pp  trans_ratio=2.523 (|dev|=152.3%)  [37.8s]
+  [20/20] T=0.80 θ=0.70  AT_HOME max=25.34pp mean=19.50pp  trans_ratio=2.523 (|dev|=152.3%)  [37.8s]
+
+  Sweep wall time: 755.1 s
+
+========================================================================
+04G sweep summary — sorted by combined_score (lower = better)
+========================================================================
+
+ temperature  home_threshold  runtime_s  at_home_max_pp  at_home_mean_pp  transition_ratio  transition_pct_dev  syn_trans_mean  combined_score
+         0.5            0.70       37.8           26.27            18.64             1.880                88.0           19.62           70.27
+         0.5            0.50       37.6           26.27            18.99             1.882                88.2           19.64           70.37
+         0.5            0.60       37.8           26.27            18.98             1.882                88.2           19.64           70.37
+         0.5            0.55       37.6           26.27            18.99             1.882                88.2           19.64           70.37
+         0.5            0.65       37.7           26.27            18.95             1.882                88.2           19.64           70.37
+         0.6            0.70       37.8           26.08            19.20             2.112               111.2           22.04           81.68
+         0.6            0.55       37.8           26.08            19.46             2.113               111.3           22.05           81.73
+         0.6            0.50       37.8           26.08            19.46             2.113               111.3           22.05           81.73
+         0.6            0.60       37.8           26.08            19.45             2.113               111.3           22.05           81.73
+         0.6            0.65       37.8           26.08            19.42             2.113               111.3           22.05           81.73
+
+Winner: T=0.5  θ=0.7
+  AT_HOME |Δ| per (cycle_strata): {'2005_1': 11.86, '2005_2': 26.19, '2005_3': 22.48, '2010_1': 9.91, '2010_2': 26.27, '2010_3': 20.84, '2015_1': 13.04, '2015_2': 24.29, '2015_3': 21.31, '2022_1': 7.12, '2022_2': 21.62, '2022_3': 18.8}
+  Thresholds for PASS (04F non-sample): AT_HOME ≤ 2.0 pp, |trans dev| ≤ 20%
+
+Next step:
+  Re-run 04E full inference with --temperature 0.5 --home_threshold 0.7, then 04F.
+
+✓ Wrote outputs_step4/calibration/sweep_results.csv
+✓ Wrote outputs_step4/calibration/sweep_summary.txt
+=== 04G Calibration Complete ===
+--- sweep_summary.txt ---
+========================================================================
+04G sweep summary — sorted by combined_score (lower = better)
+========================================================================
+
+ temperature  home_threshold  runtime_s  at_home_max_pp  at_home_mean_pp  transition_ratio  transition_pct_dev  syn_trans_mean  combined_score
+         0.5            0.70       37.8           26.27            18.64             1.880                88.0           19.62           70.27
+         0.5            0.50       37.6           26.27            18.99             1.882                88.2           19.64           70.37
+         0.5            0.60       37.8           26.27            18.98             1.882                88.2           19.64           70.37
+         0.5            0.55       37.6           26.27            18.99             1.882                88.2           19.64           70.37
+         0.5            0.65       37.7           26.27            18.95             1.882                88.2           19.64           70.37
+         0.6            0.70       37.8           26.08            19.20             2.112               111.2           22.04           81.68
+         0.6            0.55       37.8           26.08            19.46             2.113               111.3           22.05           81.73
+         0.6            0.50       37.8           26.08            19.46             2.113               111.3           22.05           81.73
+         0.6            0.60       37.8           26.08            19.45             2.113               111.3           22.05           81.73
+         0.6            0.65       37.8           26.08            19.42             2.113               111.3           22.05           81.73
+
+Winner: T=0.5  θ=0.7
+  AT_HOME |Δ| per (cycle_strata): {'2005_1': 11.86, '2005_2': 26.19, '2005_3': 22.48, '2010_1': 9.91, '2010_2': 26.27, '2010_3': 20.84, '2015_1': 13.04, '2015_2': 24.29, '2015_3': 21.31, '2022_1': 7.12, '2022_2': 21.62, '2022_3': 18.8}
+  Thresholds for PASS (04F non-sample): AT_HOME ≤ 2.0 pp, |trans dev| ≤ 20%
+
+Next step:
+  Re-run 04E full inference with --temperature 0.5 --home_threshold 0.7, then 04F.

@@ -1,0 +1,3 @@
+usage: 04F_validation.py [-h] [--step3_dir STEP3_DIR] [--step4_dir STEP4_DIR]
+                         [--sample]
+04F_validation.py: error: unrecognized arguments: --data_dir outputs_step4_F3B

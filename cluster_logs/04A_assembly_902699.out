@@ -1,0 +1,9 @@
+============================================================
+Step 4A — Dataset Assembly  
+============================================================
+
+[1/6] Loading data...
+  hetus_30min:      (64061, 120)
+  copresence_30min: (64061, 120)
+
+[2/6] Joining hetus + copresence (positional, same row order)...

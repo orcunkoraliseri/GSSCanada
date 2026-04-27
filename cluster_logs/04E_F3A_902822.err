@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 364, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 263, in main
+    data = load_all_data(args.data_dir)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 76, in load_all_data
+    splits[split] = torch.load(path, map_location="cpu", weights_only=False)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/torch/serialization.py", line 1319, in load
+    with _open_file_like(f, "rb") as opened_file:
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/torch/serialization.py", line 659, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/torch/serialization.py", line 640, in __init__
+    super().__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: 'outputs_step4_F3A/step4_train.pt'

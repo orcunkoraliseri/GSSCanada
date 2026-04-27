@@ -1,0 +1,11 @@
+  data_dir  = outputs_step4_F3A
+  step3_dir = outputs_step3
+  out_json  = outputs_step4_F3A/diagnostics_v4_actcop.json
+  rows: aug=192183  syn=128122  obs=64061  obs_cop=64061
+  [activity] computing per-CS JS + top-1 agreement ...
+    verdict = activity_ok  overall_js_mean = 0.02420732981618393
+  [copresence] computing per-channel prevalence gaps ...
+    verdict = copresence_fail  max_gap_pp = 49.97192230192057
+  wrote outputs_step4_F3A/diagnostics_v4_actcop.json
+  wrote outputs_step4_F3A/diagnostics_v4_activity.png
+  wrote outputs_step4_F3A/diagnostics_v4_copresence.png

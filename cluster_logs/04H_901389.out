@@ -1,0 +1,40 @@
+============================================================
+Step 4H — AT_HOME Bias Diagnostics  
+============================================================
+  data_dir  : outputs_step4
+  step3_dir : outputs_step3
+  output    : outputs_step4/diagnostics_v4.json
+  hetus path: outputs_step3/hetus_30min.csv
+
+[T1] Training-pair target AT_HOME...
+     T1a gap = +2.43 pp (pair mean 74.94%, pop 72.50%)
+     tgt_strata_marg = {'1': 0.14379055816961397, '2': 0.4311486742635417, '3': 0.4250607675668443}
+     pop_strata_marg = {'1': 0.712418883660772, '2': 0.13770265147291663, '3': 0.14987846486631135}
+     weekend skew ratio = 2.977
+     verdict = H1_rejected
+
+[T2] Post-hoc rule contribution...
+     mean gap closure (non-night vs all) = +10.90 pp   verdict = H2_dominant
+
+[T3] Per-slot trajectory...
+     morning = -0.91 pp | midday = -27.78 | evening = -9.92
+     afternoon+evening = -17.28 pp | night = +3.32
+     slot_of_max_gap = 26  max_gap = -40.94 pp  range = 48.99
+     verdict = H3_not_dominant
+
+[T6] Observed AT_HOME sanity...
+     any_implausible = False  flagged cells = 0
+
+  Saved plot: outputs_step4/diagnostics_v4_trajectories.png
+
+============================================================
+04H DIAGNOSTIC SUMMARY
+============================================================
+   H1: H1_rejected               [PASS]
+   H2: H2_dominant               [FLAG]
+   H3: H3_not_dominant           [WARN]
+   H5: H5_rejected               [PASS]
+
+  RECOMMENDATION -> SKIP_GPU
+  JSON: outputs_step4/diagnostics_v4.json
+============================================================

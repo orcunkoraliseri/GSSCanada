@@ -1,0 +1,19 @@
+============================================================
+Step 4E — Inference  
+============================================================
+  data_dir:   outputs_step4
+  checkpoint: outputs_step4/checkpoints/best_model.pt
+  output:     outputs_step4/augmented_diaries.csv
+  temperature: 0.8
+  Device: cuda
+
+[1/4] Loading tensor datasets...
+  Total respondents: 64061
+  Metadata: (64061, 16)
+
+[2/4] Loading model checkpoint...
+  checkpoint (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/checkpoints/best_model.pt (44.9 MB)
+  Loaded from epoch 0  val_JS=0.1648745322829536
+
+[3/4] Generating synthetic diaries...
+  Processed 64/64061 respondents (0.1%)

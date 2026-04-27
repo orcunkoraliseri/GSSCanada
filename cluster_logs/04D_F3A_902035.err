@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04D_train.py", line 712, in <module>
+    train(args)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04D_train.py", line 457, in train
+    assert all(v > 1.0 for v in real_pws), \
+AssertionError: COP pos_weight ≤ 1 for a real channel — sign-flip guard: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

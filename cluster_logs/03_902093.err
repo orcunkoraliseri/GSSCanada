@@ -1,0 +1,22 @@
+/nfs/speed-scratch/o_iseri/occModeling/03_mergingGSS.py:135: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  unified = pd.concat(dfs, ignore_index=True)
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/03_mergingGSS.py", line 1091, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/03_mergingGSS.py", line 1051, in main
+    export_all(merged_final, hetus_wide, OUTPUT_DIR)
+  File "/nfs/speed-scratch/o_iseri/occModeling/03_mergingGSS.py", line 532, in export_all
+    merged.to_parquet(path_pq, index=False)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/core/frame.py", line 3124, in to_parquet
+    return to_parquet(
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parquet.py", line 478, in to_parquet
+    impl = get_engine(engine)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parquet.py", line 68, in get_engine
+    raise ImportError(
+ImportError: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.
+ - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet.

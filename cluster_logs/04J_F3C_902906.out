@@ -1,0 +1,54 @@
+============================================================
+Step 4J — Statistical Diagnostic Battery
+============================================================
+  data_dir    = outputs_step4_F3C
+  step3_dir   = outputs_step3
+  out_json    = outputs_step4_F3C/diagnostics_v4_statistical.json
+  n_bootstrap = 1000
+  rows: aug=192183  obs=64061  syn=128122
+
+[T1] Bootstrap CIs ...
+  * Alone        gap=+13.3 pp  CI=[+13.0, +13.5]
+  * Spouse       gap=+35.9 pp  CI=[+35.6, +36.1]
+  * Children     gap=+40.2 pp  CI=[+40.0, +40.4]
+  * parents      gap=+45.7 pp  CI=[+45.6, +45.8]
+  * friends      gap=+47.8 pp  CI=[+47.6, +47.9]
+  * others       gap=+30.6 pp  CI=[+30.5, +30.8]
+  * colleagues   gap=+7.1 pp  CI=[+6.9, +7.4]
+  * AT_HOME      gap=+5.8 pp  CI=[+5.6, +6.1]
+
+[T2] Calibration curves ...
+  [Alone]  calibration MAE = 0.1319
+  [Spouse]  calibration MAE = 0.2711
+  [Children]  calibration MAE = 0.3478
+  [parents]  calibration MAE = 0.4539
+  [friends]  calibration MAE = 0.4291
+  [others]  calibration MAE = 0.3825
+  [colleagues]  calibration MAE = 0.3008
+  [AT_HOME] calibration MAE = 0.4496
+
+[T3] Joint distributions ...
+  activity_x_at_home [obs]  V=0.2161
+  activity_x_at_home [syn]  V=0.1564
+  activity_x_alone [obs]  V=0.0906
+  activity_x_alone [syn]  V=0.0689
+  alone_x_at_home [obs]  V=0.0666
+  alone_x_at_home [syn]  V=0.1227
+
+[T4] χ²/KS tests ...
+  χ² (activity): 12/12 cells reject H₀ at α=2.98e-04
+  KS (AT_HOME/Alone): 12/12 cells reject H₀
+
+[T5] Composite score ...
+  AT_HOME gap RMS:   11.00 pp
+  COP max gap:       47.77 pp
+  Activity JS mean:  0.0408
+  COP cal MAE mean:  0.3310
+  Composite score S: 2.3658  (lower=better)
+
+  wrote outputs_step4_F3C/diagnostics_v4_statistical.json
+  wrote outputs_step4_F3C/diagnostics_v4_bootstrap.png
+  wrote outputs_step4_F3C/diagnostics_v4_calibration.png
+  wrote outputs_step4_F3C/diagnostics_v4_joints.png
+
+✓ 04J complete.  Composite score S = 2.3658

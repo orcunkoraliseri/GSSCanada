@@ -1,0 +1,37 @@
+============================================================
+Step 4H — AT_HOME Bias Diagnostics  
+============================================================
+  data_dir  : outputs_step4_F3A
+  step3_dir : outputs_step3
+  output    : outputs_step4_F3A/diagnostics_v4.json
+  hetus path: outputs_step3/hetus_30min.csv
+  ERROR: step4_train.pt or training_pairs.pt missing in outputs_step4_F3A
+
+[T1] Training-pair target AT_HOME...
+     SKIPPED — inputs missing
+
+[T2] Post-hoc rule contribution...
+     mean gap closure (non-night vs all) = -4.12 pp   verdict = H2_rejected
+
+[T3] Per-slot trajectory...
+     morning = +20.18 pp | midday = +28.36 | evening = +10.75
+     afternoon+evening = +18.00 pp | night = +7.29
+     slot_of_max_gap = 13  max_gap = +35.53 pp  range = 31.31
+     verdict = H3_not_dominant
+
+[T6] Observed AT_HOME sanity...
+     any_implausible = False  flagged cells = 0
+
+  Saved plot: outputs_step4_F3A/diagnostics_v4_trajectories.png
+
+============================================================
+04H DIAGNOSTIC SUMMARY
+============================================================
+   H1: unknown                   [FLAG]
+   H2: H2_rejected               [PASS]
+   H3: H3_not_dominant           [WARN]
+   H5: H5_rejected               [PASS]
+
+  RECOMMENDATION -> SKIP_GPU
+  JSON: outputs_step4_F3A/diagnostics_v4.json
+============================================================

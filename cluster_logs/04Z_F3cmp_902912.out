@@ -1,0 +1,17 @@
+
+============================================================
+F3 sweep comparison complete
+============================================================
+  WARNING: no valid composite scores found — check input JSONs
+
+  Ranking:
+    1. F1      score=—  AT_HOME=—pp  Alone=—pp  JS=—  pass=0/0
+    2. F3-A    score=—  AT_HOME=—pp  Alone=—pp  JS=—  pass=0/0
+    3. F3-B    score=—  AT_HOME=—pp  Alone=—pp  JS=—  pass=0/0
+    4. F3-C    score=—  AT_HOME=—pp  Alone=—pp  JS=—  pass=0/0
+    5. F3-D    score=—  AT_HOME=—pp  Alone=—pp  JS=—  pass=0/0
+
+  Outputs:
+    deliveries/F3_sweep/F3_sweep_20260424_1635/F3_sweep_ranking.md
+    deliveries/F3_sweep/F3_sweep_20260424_1635/F3_sweep_comparison.html
+    deliveries/F3_sweep/F3_sweep_20260424_1635/F3_sweep_results.json

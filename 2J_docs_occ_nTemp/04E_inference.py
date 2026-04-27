@@ -284,7 +284,6 @@ def main():
           f"({os.path.getsize(args.checkpoint) / 1e6:.1f} MB)")
     ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
     model_config = ckpt["model_config"]
-    model_config["d_cond"] = feat_cfg["d_cond"]
     model = ConditionalTransformer(model_config).to(device)
     model.load_state_dict(ckpt["model_state"])
     model.eval()

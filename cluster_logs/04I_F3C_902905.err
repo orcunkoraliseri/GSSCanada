@@ -1,0 +1,24 @@
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:201: RuntimeWarning: Mean of empty slice
+  overall = float(np.nanmean(mat))             # scalar mean across rows × slots
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:202: RuntimeWarning: Mean of empty slice
+  per_slot = np.nanmean(mat, axis=0)           # (n_slots,)
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:201: RuntimeWarning: Mean of empty slice
+  overall = float(np.nanmean(mat))             # scalar mean across rows × slots
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:202: RuntimeWarning: Mean of empty slice
+  per_slot = np.nanmean(mat, axis=0)           # (n_slots,)
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:201: RuntimeWarning: Mean of empty slice
+  overall = float(np.nanmean(mat))             # scalar mean across rows × slots
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:202: RuntimeWarning: Mean of empty slice
+  per_slot = np.nanmean(mat, axis=0)           # (n_slots,)
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:201: RuntimeWarning: Mean of empty slice
+  overall = float(np.nanmean(mat))             # scalar mean across rows × slots
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:202: RuntimeWarning: Mean of empty slice
+  per_slot = np.nanmean(mat, axis=0)           # (n_slots,)
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:201: RuntimeWarning: Mean of empty slice
+  overall = float(np.nanmean(mat))             # scalar mean across rows × slots
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:202: RuntimeWarning: Mean of empty slice
+  per_slot = np.nanmean(mat, axis=0)           # (n_slots,)
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:201: RuntimeWarning: Mean of empty slice
+  overall = float(np.nanmean(mat))             # scalar mean across rows × slots
+/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py:202: RuntimeWarning: Mean of empty slice
+  per_slot = np.nanmean(mat, axis=0)           # (n_slots,)

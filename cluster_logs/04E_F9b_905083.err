@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 364, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 289, in main
+    model.load_state_dict(ckpt["model_state"])
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/torch/nn/modules/module.py", line 2584, in load_state_dict
+    raise RuntimeError(
+RuntimeError: Error(s) in loading state_dict for ConditionalTransformer:
+	size mismatch for cls_mlp.0.weight: copying a param with shape torch.Size([256, 92]) from checkpoint, the shape in current model is torch.Size([256, 93]).
+	size mismatch for decoder.films.0.gen.weight: copying a param with shape torch.Size([128, 95]) from checkpoint, the shape in current model is torch.Size([128, 96]).
+	size mismatch for decoder.films.1.gen.weight: copying a param with shape torch.Size([128, 95]) from checkpoint, the shape in current model is torch.Size([128, 96]).

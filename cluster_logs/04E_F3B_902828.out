@@ -1,0 +1,11 @@
+============================================================
+Step 4E — Inference  
+============================================================
+  data_dir:   outputs_step4_F3B
+  checkpoint: outputs_step4_F3B/checkpoints/best_model.pt
+  output:     outputs_step4_F3B/augmented_diaries.csv
+  temperature:    0.8
+  home_threshold: 0.5
+  Device: cuda
+
+[1/4] Loading tensor datasets...

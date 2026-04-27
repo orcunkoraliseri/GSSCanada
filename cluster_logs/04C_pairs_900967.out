@@ -1,0 +1,38 @@
+============================================================
+Step 4C — Training Pairs  
+============================================================
+
+[1/3] Loading metadata...
+  Train metadata: (44843, 14)
+  Val metadata:   (9609, 14)
+  Train DDAY_STRATA distribution: {1: 31947, 2: 6175, 3: 6721}
+
+[2/3] Building training pairs (K=5 per source × target strata)...
+
+[3/3] Building validation pairs...
+
+  === TRAINING PAIRS INSPECTION (Test 2) ===
+
+  Total pairs: 89686  (expect ~89686 for full split)
+  Pairs per target strata: {1: 12896, 2: 38668, 3: 38122}
+
+  === SOURCE RESPONDENT (pair 0) ===
+    occID=10754.0  CYCLE_YEAR=2005.0  DDAY_STRATA=1.0(observed)
+    AGEGRP=6.0  SEX=1.0  MARSTH=3.0
+
+  === TARGET STRATA: 2 (K=5 neighbors) ===
+    Neighbor occIDs: [np.float64(10967.0), np.float64(4350.0), np.float64(387.0), np.float64(14717.0), np.float64(14682.0)]
+    Sampled neighbor: occID=10967.0  DDAY_STRATA=2.0  CYCLE_YEAR=2005.0
+    Exact-match score: 5/5  (AGEGRP, SEX, MARSTH, HHSIZE, LFTAG)
+  ✓ No self-pairing in first 50 pairs
+  ✓ All sampled neighbors share CYCLE_YEAR with source (first 50)
+
+  Unique targets used: 19729 / 89686 pairs
+  Most reused target: row 35031  used 85 times
+
+  Saved /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/training_pairs.pt
+  Saved /nfs/speed-scratch/o_iseri/occModeling/outputs_step4/val_pairs.pt
+
+✓ 04C complete.
+  Training pairs: 89686 (44843 respondents × 2 target strata)
+  Val pairs:      19218

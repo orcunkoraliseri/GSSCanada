@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 715, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 653, in main
+    results["bootstrap_cis"] = run_bootstrap_cis(obs_aug, syn_aug, n_boot=args.n_bootstrap)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 129, in run_bootstrap_cis
+    obs_lo, obs_hi, obs_mean = _bootstrap_mean_ci(obs_vals, n_boot, rng)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 106, in _bootstrap_mean_ci
+    boot = rng.choice(vals, size=(n_boot, len(vals)), replace=True).mean(axis=1)
+  File "numpy/random/_generator.pyx", line 1012, in numpy.random._generator.Generator.choice
+numpy._core._exceptions._ArrayMemoryError: Unable to allocate 22.9 GiB for an array with shape (1000, 3074928) and data type float64

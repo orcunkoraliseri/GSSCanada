@@ -1,0 +1,118 @@
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       outputs_step4
+  output_dir:     outputs_step4_F6
+  checkpoint_dir: outputs_step4_F6/checkpoints
+  batch_size=256  max_epochs=100  patience=15  lr=5e-05  fp16=False
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_F6/checkpoints
+  AUX_STRATUM_HEAD=True  COP_POS_WEIGHT=0  ACTIVITY_BOOSTS=0  DATA_SIDE_SAMPLING=0  MARG_MODE=per_cs
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 89686 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=0):
+    class  0: 0.435
+    class  1: 0.517
+    class  2: 1.072
+    class  3: 1.110
+    class  4: 0.261
+    class  5: 0.752
+    class  6: 0.892
+    class  7: 1.355
+    class  8: 0.737
+    class  9: 0.406
+    class 10: 1.161
+    class 11: 1.782
+    class 12: 0.780
+    class 13: 2.742
+  AT_HOME observed rate: 0.7250  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=per_cs
+  COP pos_weight: disabled (COP_POS_WEIGHT=0)
+[2/4] Building model...
+  Parameters: 11,536,731
+ConditionalTransformer(
+  (act_embedding): Embedding(14, 32)
+  (slot_linear): Linear(in_features=42, out_features=256, bias=True)
+  (cycle_embedding): Embedding(4, 32)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=109, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=256, bias=True)
+  )
+  (strata_linear): Linear(in_features=3, out_features=256, bias=False)
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)
+        )
+        (linear1): Linear(in_features=256, out_features=1024, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1024, out_features=256, bias=True)
+        (norm1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+  )
+  (decoder): FiLMTransformerDecoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)
+        )
+        (multihead_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)
+        )
+        (linear1): Linear(in_features=256, out_features=1024, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1024, out_features=256, bias=True)
+        (norm1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (norm3): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+        (dropout3): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (films): ModuleList(
+      (0-5): 6 x FiLMLayer(
+        (gen): Linear(in_features=112, out_features=512, bias=True)
+      )
+    )
+    (norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=256, out_features=14, bias=True)
+  (home_head): Linear(in_features=256, out_features=1, bias=True)
+  (cop_head): Linear(in_features=256, out_features=9, bias=True)
+  (aux_strata_head): Sequential(
+    (0): Linear(in_features=256, out_features=64, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=64, out_features=3, bias=True)
+  )
+)
+[3/4] Training...
+Epoch   1/100: train_loss=3.0137  act=2.5043  home=0.5542  cop=0.4500  marg=0.0705  |  val_JS=0.0866  home_gap=0.1957  val_score=0.1844  lr=8.77e-06  grad_norm=7.123  (283s)
+  ✓ New best model saved (val_score=0.1844  val_JS=0.0866  home_gap=0.1957)
+Epoch   2/100: train_loss=2.1119  act=1.8768  home=0.2598  cop=0.2954  marg=0.0180  |  val_JS=0.1133  home_gap=0.2585  val_score=0.2426  lr=1.75e-05  grad_norm=3.118  (283s)
+Epoch   3/100: train_loss=1.8281  act=1.6619  home=0.1923  cop=0.2210  marg=0.0110  |  val_JS=0.0951  home_gap=0.2262  val_score=0.2082  lr=2.63e-05  grad_norm=2.703  (283s)
+Epoch   4/100: train_loss=1.5282  act=1.3748  home=0.1857  cop=0.1935  marg=0.0110  |  val_JS=0.1659  home_gap=0.2585  val_score=0.2952  lr=3.51e-05  grad_norm=3.564  (283s)
+Epoch   5/100: train_loss=1.2888  act=1.1464  home=0.1771  cop=0.1737  marg=0.0095  |  val_JS=0.2316  home_gap=0.2585  val_score=0.3608  lr=4.39e-05  grad_norm=2.450  (283s)
+Epoch   6/100: train_loss=1.1851  act=1.0558  home=0.1652  cop=0.1512  marg=0.0092  |  val_JS=0.2392  home_gap=0.2511  val_score=0.3648  lr=5.00e-05  grad_norm=1.600  (283s)
+Epoch   7/100: train_loss=1.1366  act=1.0176  home=0.1574  cop=0.1314  marg=0.0080  |  val_JS=0.2474  home_gap=0.2514  val_score=0.3730  lr=5.00e-05  grad_norm=1.134  (282s)
+Epoch   8/100: train_loss=1.1112  act=0.9979  home=0.1531  cop=0.1198  marg=0.0071  |  val_JS=0.2503  home_gap=0.2479  val_score=0.3743  lr=5.00e-05  grad_norm=0.930  (282s)
+Epoch   9/100: train_loss=1.0954  act=0.9860  home=0.1506  cop=0.1109  marg=0.0069  |  val_JS=0.2263  home_gap=0.2470  val_score=0.3498  lr=5.00e-05  grad_norm=0.792  (283s)
+Epoch  10/100: train_loss=1.0820  act=0.9743  home=0.1498  cop=0.1066  marg=0.0071  |  val_JS=0.2284  home_gap=0.2431  val_score=0.3499  lr=5.00e-05  grad_norm=0.740  (283s)
+Epoch  11/100: train_loss=1.0727  act=0.9676  home=0.1469  cop=0.1032  marg=0.0066  |  val_JS=0.2658  home_gap=0.2513  val_score=0.3915  lr=5.00e-05  grad_norm=0.688  (283s)
+Epoch  12/100: train_loss=1.0640  act=0.9597  home=0.1464  cop=0.1014  marg=0.0066  |  val_JS=0.2444  home_gap=0.2444  val_score=0.3666  lr=4.99e-05  grad_norm=0.652  (282s)
+Epoch  13/100: train_loss=1.0547  act=0.9518  home=0.1448  cop=0.0995  marg=0.0064  |  val_JS=0.2210  home_gap=0.2237  val_score=0.3328  lr=4.99e-05  grad_norm=0.636  (282s)
+Epoch  14/100: train_loss=1.0476  act=0.9453  home=0.1444  cop=0.0983  marg=0.0063  |  val_JS=0.2418  home_gap=0.2485  val_score=0.3660  lr=4.99e-05  grad_norm=0.622  (283s)
+Epoch  15/100: train_loss=1.0431  act=0.9419  home=0.1431  cop=0.0970  marg=0.0062  |  val_JS=0.2373  home_gap=0.2379  val_score=0.3562  lr=4.99e-05  grad_norm=0.610  (283s)
+Epoch  16/100: train_loss=1.0417  act=0.9402  home=0.1436  cop=0.0970  marg=0.0061  |  val_JS=0.2230  home_gap=0.2352  val_score=0.3406  lr=4.98e-05  grad_norm=0.584  (282s)
+  Early stopping at epoch 16 (no improvement for 15 epochs)
+
+[4/4] Training complete. Best val_score=0.1844
+  Best checkpoint: outputs_step4_F6/checkpoints/best_model.pt
+  Training log:    outputs_step4_F6/step4_training_log.csv

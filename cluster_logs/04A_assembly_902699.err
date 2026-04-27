@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 447, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04A_dataset_assembly.py", line 255, in main
+    assert not missing, (
+AssertionError: copresence_30min.csv is missing 432 of 432 expected slot columns (e.g. ['Alone30_001', 'Alone30_002', 'Alone30_003']). File appears wrong — regenerate via 03_mergingGSS.py Phase I.

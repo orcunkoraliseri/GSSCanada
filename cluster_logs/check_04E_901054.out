@@ -1,0 +1,174 @@
+============================================================
+04E Output Diagnostic
+============================================================
+
+Loading outputs_step4/augmented_diaries.csv ...
+  Shape: (192183, 545)
+
+── 1. IS_SYNTHETIC counts ────────────────────────────────
+  IS_SYNTHETIC=0 (observed):   64,061
+  IS_SYNTHETIC=1 (synthetic): 128,122
+  Total rows:                 192,183  (expect 192183)
+  Rows per occID: {9: np.int64(10754), 3: np.int64(7917), 6: np.int64(5495), 12: np.int64(3223)}
+  Cycle years: {2005: np.int64(57663), 2010: np.int64(45342), 2015: np.int64(52170), 2022: np.int64(37008)}
+
+── 2. Activity marginal distribution ─────────────────────
+  Cat  Label            Observed   Synthetic
+  ---  ---------------  ----------------------------
+    1  Work               13.3%      1.1%  <-- LARGE DIFF
+    2  Education           9.4%     12.4%
+    3  Domestic            2.2%      0.8%
+    4  Volunteer           2.0%      1.8%
+    5  Sleep              37.1%     35.0%
+    6  Meals               4.5%      8.8%
+    7  Personal care       3.2%      4.1%
+    8  Shopping            1.4%      1.5%
+    9  Social              4.6%      3.3%
+   10  Recreation         15.2%     26.1%  <-- LARGE DIFF
+   11  Sport               1.8%      2.0%
+   12  TV/Screen           0.8%      1.1%
+   13  Transit             4.1%      1.1%
+   14  Other               0.3%      1.1%
+
+── 2b. Per-stratum activity distribution ─────────────────
+
+  DDAY_STRATA=1 (Weekday):  obs n=45,638  syn n=18,423
+  Cat  Label            Observed   Synthetic
+    1  Work               16.5%      3.9%  <-- LARGE DIFF
+    2  Education           8.8%     12.8%
+    3  Domestic            2.2%      1.1%
+    4  Volunteer           1.9%      1.6%
+    5  Sleep              36.3%     33.1%
+    6  Meals               4.3%      8.2%
+    7  Personal care       3.2%      4.3%
+    8  Shopping            1.6%      3.3%
+    9  Social              3.7%      1.8%
+   10  Recreation         14.6%     25.2%  <-- LARGE DIFF
+   11  Sport               1.7%      2.0%
+   12  TV/Screen           0.7%      0.6%
+   13  Transit             4.2%      1.3%
+   14  Other               0.3%      0.8%
+
+  DDAY_STRATA=2 (Saturday):  obs n=8,821  syn n=55,240
+  Cat  Label            Observed   Synthetic
+    1  Work                5.9%      0.7%  <-- LARGE DIFF
+    2  Education          10.8%     12.8%
+    3  Domestic            2.2%      0.8%
+    4  Volunteer           3.0%      2.3%
+    5  Sleep              37.7%     34.7%
+    6  Meals               4.9%      8.8%
+    7  Personal care       3.0%      3.8%
+    8  Shopping            0.7%      1.2%
+    9  Social              7.6%      4.1%
+   10  Recreation         16.5%     25.6%  <-- LARGE DIFF
+   11  Sport               2.2%      2.3%
+   12  TV/Screen           0.9%      0.7%
+   13  Transit             4.2%      1.1%
+   14  Other               0.3%      1.0%
+
+  DDAY_STRATA=3 (Sunday):  obs n=9,602  syn n=54,459
+  Cat  Label            Observed   Synthetic
+    1  Work                5.0%      0.6%
+    2  Education          10.7%     11.8%
+    3  Domestic            2.2%      0.6%
+    4  Volunteer           1.8%      1.3%
+    5  Sleep              40.3%     35.9%
+    6  Meals               4.7%      9.0%
+    7  Personal care       3.0%      4.2%
+    8  Shopping            0.8%      1.3%
+    9  Social              6.6%      2.9%
+   10  Recreation         17.0%     26.9%  <-- LARGE DIFF
+   11  Sport               2.1%      1.7%
+   12  TV/Screen           1.4%      1.6%
+   13  Transit             4.0%      1.0%
+   14  Other               0.4%      1.4%
+
+── 3. Sleep temporal pattern (slot 0 = 4:00 AM) ─────────
+  Fraction of respondents sleeping each slot (synthetic only):
+  slot 00 (04:00) [####################]  98.4% [night]
+  slot 04 (06:00) [#################   ]  83.6% [night]
+  slot 08 (08:00) [###                 ]  14.6%
+  slot 12 (10:00) [#                   ]   3.8%
+  slot 16 (12:00) [#                   ]   2.6%
+  slot 20 (14:00) [#                   ]   3.0%
+  slot 24 (16:00) [#                   ]   3.2%
+  slot 28 (18:00) [                    ]   1.0%
+  slot 32 (20:00) [                    ]   1.4%
+  slot 36 (22:00) [####                ]  20.4%
+  slot 40 (00:00) [#################   ]  86.9% [night]
+  slot 44 (02:00) [####################]  97.5% [night]
+  slot 47 (03:30) [####################]  98.6% [night]
+  WARNING: high daytime sleep fraction:
+    slot 07 (07:30): 26.8%
+    slot 36 (22:00): 20.4%
+
+── 4. Work temporal pattern (slot 0 = 4:00 AM) ──────────
+  Fraction working each slot (synthetic only):
+  slot 00 (04:00) [                    ]   0.2%
+  slot 04 (06:00) [                    ]   0.4%
+  slot 08 (08:00) [#                   ]   3.7%
+  slot 12 (10:00) [#                   ]   5.0%
+  slot 16 (12:00) [                    ]   1.4%
+  slot 20 (14:00) [                    ]   1.9%
+  slot 24 (16:00) [                    ]   0.8%
+  slot 28 (18:00) [                    ]   0.2%
+  slot 32 (20:00) [                    ]   0.2%
+  slot 36 (22:00) [                    ]   0.2%
+  slot 40 (00:00) [                    ]   0.1%
+  slot 44 (02:00) [                    ]   0.0%
+  WARNING: no clear work peak during 8 AM–6 PM — check generation
+
+── 5. AT_HOME consistency (synthetic rows only) ──────────
+  Sleep@night not AT_HOME: 0 / 1,958,128 (0.00%)  OK
+  Work but AT_HOME=1:      0 / 68,628 (0.00%)  OK
+
+── 6. Sample respondent (first occID) ────────────────────
+
+  DDAY_STRATA=1.0 [observed]
+    Time: 04:00  04:30  05:00  05:30  06:00  06:30  07:00  07:30
+    Act:     5     5     5     5     5     5     9     3
+    Home:    1     1     1     1     1     0     0     0
+    Act:    10    10    10    10    10     7     7    13
+    Home:    1     1     1     1     1     0     0     0
+    Act:    10    10    10    10    10    10    10    10
+    Home:    1     1     1     1     1     1     1     1
+    Act:    10    10     6    10    10    10    10    10
+    Home:    1     1     1     1     1     1     1     1
+    Act:    10    10    10    10    10    10    10    10
+    Home:    1     1     1     1     1     1     1     1
+    Act:    10    10     5     5     5     5     5     5
+    Home:    1     1     1     1     1     1     1     1
+
+  DDAY_STRATA=2.0 [synthetic]
+    Time: 04:00  04:30  05:00  05:30  06:00  06:30  07:00  07:30
+    Act:     5     5     5     5     2    11     6    10
+    Home:    1     1     1     1     1     1     1     1
+    Act:     2     6    10     6     2    12    10     6
+    Home:    1     1     1     1     1     1     1     1
+    Act:     6     2     2     8     2     9     2     6
+    Home:    1     1     1     1     1     1     1     1
+    Act:     9     6    10    10     6    10    10    10
+    Home:    1     1     1     1     1     1     1     1
+    Act:    10    10    10    10    10     5     5     7
+    Home:    1     1     1     1     1     1     1     1
+    Act:    10     5     5     5     5     5     5     5
+    Home:    1     1     1     1     1     1     1     1
+
+  DDAY_STRATA=3.0 [synthetic]
+    Time: 04:00  04:30  05:00  05:30  06:00  06:30  07:00  07:30
+    Act:     5     5     5     7     5     5     2     7
+    Home:    1     1     1     1     1     1     1     1
+    Act:     5     9    10     5     2     3     2     4
+    Home:    1     1     1     1     1     1     1     1
+    Act:     2     2     6    10    10    10     4    10
+    Home:    1     1     1     1     1     1     1     1
+    Act:     9    10     6    10    10    10    10     5
+    Home:    1     1     1     1     1     1     1     1
+    Act:    10    10    10    10    14    10     5     5
+    Home:    1     1     1     1     1     1     1     1
+    Act:     5     5     5     5     5     5     5     5
+    Home:    1     1     1     1     1     1     1     1
+
+============================================================
+Diagnostic complete.
+============================================================

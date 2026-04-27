@@ -1,0 +1,53 @@
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04G_calibrate.py", line 366, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04G_calibrate.py", line 312, in main
+    syn_act, syn_home, syn_cy, syn_s = generate_syn_for_subsample(
+  File "/nfs/speed-scratch/o_iseri/occModeling/04G_calibrate.py", line 193, in generate_syn_for_subsample
+    gen_act, gen_home, _gen_cop = model.generate(
+  File "/encs/pkg/anaconda3-2023.03/root/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04B_model.py", line 340, in generate
+    dec_out = self.decoder(dec_seq, memory,
+  File "/encs/pkg/anaconda3-2023.03/root/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+TypeError: TransformerDecoder.forward() got an unexpected keyword argument 'tgt_is_causal'
+cat: outputs_step4/calibration/sweep_summary.txt: No such file or directory
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda deactivate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
