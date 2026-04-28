@@ -811,4 +811,185 @@ Must pass before sweep submission: the Alone calibration curve must show σ̄ �
 
   **Decision pending:** F7 is the first valid model since F1 and passes both hard gates. Whether to accept `outputs_step4_F7/augmented_diaries.csv` as production (AT_HOME +11.1 pp will inflate EnergyPlus occupancy schedules by ~11 pp vs observed), or attempt F8 targeting the Spouse gap and AT_HOME regression.
 
+- **2026-04-26 — F8 COMPLETE: Spouse axis still dominant (+19.4 pp), composite 1.376.**
+
+  Config: F7 base + targeted Spouse intervention. F8 closed Alone gap further but did not move Spouse meaningfully (+19.4 pp), confirming Spouse over-prediction is not an Alone-channel side-effect. Composite 1.376 — essentially flat vs F7. Triggered the orchestration refactor (YAML configs + sbatch arrays + auto-rsync `results_index/results.csv`); F9 deferred and re-launched as the first sweep on the new system. See `04_augmentationGSS_orchestration.md` for the refactor record.
+
+- **2026-04-27 — F9 sweep COMPLETE (first run on YAML/array system).**
+
+  Two arms via `sweep_F9.yaml`: F9a (`AUX_STRATUM_LAMBDA=0.02`) and F9b (`SPOUSE_NEG_WEIGHT=0.4`). Results from `results_index/results.csv`:
+
+  | tag | composite | AT_HOME pp | Spouse pp | act_JS |
+  |---|---|---|---|---|
+  | F9a | 1.904 | 9.36 | **+25.4** | 0.158 |
+  | F9b | 1.481 | 7.61 | **−3.49** | 0.072 |
+
+  F9a (aux_lambda 0.1 → 0.02) drove Spouse the **wrong way** (+19.4 → +25.4 pp) and degraded act_JS — aux-stratum-lambda axis closed, will not be retuned. F9b (spouse_neg_weight 1.0 → 0.4) overshot the Spouse zero-crossing to −3.5 pp and improved composite to 1.48. F8 (1.0) → +19.4 pp, F9b (0.4) → −3.5 pp ⇒ linear-interp zero-crossing near 0.49. Spouse axis monotone and well-behaved.
+
+- **2026-04-28 — F10 sweep COMPLETE — HARD STOP, no F11.**
+
+  Spouse-axis bracket sweep around predicted zero-crossing: F10a/b/c/d at SPOUSE_NEG_WEIGHT ∈ {0.45, 0.50, 0.55, 0.60}. AUX_STRATUM_LAMBDA held at 0.1. Results from `results_index/results.csv`:
+
+  | arm | weight | composite | AT_HOME pp | Spouse pp | act_JS | cop_cal_MAE |
+  |---|---|---|---|---|---|---|
+  | **F10a** | 0.45 | **1.306** | **6.98** | **+1.60** | **0.0686** | 0.321 |
+  | F10b | 0.50 | 1.399 | 7.08 | +2.52 | 0.0691 | 0.317 |
+  | F10c | 0.55 | 1.428 | 6.67 | +5.42 | 0.0706 | 0.327 |
+  | F10d | 0.60 | 1.357 | 7.45 | +8.04 | 0.0691 | 0.324 |
+
+  **F10a Pareto-dominates** — best composite, best Spouse, best act_JS; AT_HOME 6.98 pp (F10c marginally better at 6.67). True Spouse zero-crossing landed below 0.45, not at the linear-interp prediction of 0.49 — the F8↔F9b interpolation was non-linear in the relevant region.
+
+  **Hard-gate audit (composite < 1.045, AT_HOME ≤ 5.3 pp, |Spouse| ≤ 10 pp, act_JS ≤ 0.05):**
+  - Spouse: ✅ all four arms pass (1.6 → 8.0 pp, all under 10).
+  - composite: ✗ all fail (best 1.306, target 1.045 — 25 % over).
+  - AT_HOME: ✗ all fail (best 6.67 pp, target 5.3 pp).
+  - act_JS: ✗ all fail (best 0.0686, target 0.05).
+
+  **Verdict.** Single-axis hyperparameter exploration is exhausted. F1→F10 (10 trials, ~28 GPU-days on `pg`) drove composite from 1.802 → 1.306 — a **floor**, not a tuning gap. The remaining headroom on composite, AT_HOME, and act_JS is structural: decoder capacity / attention pattern / loss formulation, not loss weights or pos_weight tuning.
+
+  **Outcome:**
+  - **F10a accepted as the chosen Step-4 configuration** (Pareto-best, Spouse gate cleared, the other three gates missed by a margin that no further single-axis sweep will close).
+  - **Hard stop on the F-series.** No F11. Any further Step-4 work belongs to a separate architectural task, not this plan.
+  - **Step-4 training is closed at F10a as best-achievable-under-current-architecture.** Whether F10a's `augmented_diaries.csv` is acceptable for downstream BEM / paper acceptance is a research-framing decision, not a tuning decision.
+  - Orchestration refactor (YAML + array + auto-rsync `results_index/results.csv`) validated end-to-end across 6 trials (F1 smoke, F9a, F9b, F10a-d) with zero per-trial babysitting. Reusable for any future Step-4 architectural work.
+
+---
+
+## §11 — Chain-submit Wrapper Task
+
+*(Merged 2026-04-28 from former `step4_chain_submit.md`. Historical task spec from 2026-04-23; superseded operationally by the YAML/array orchestration refactor — see `04_augmentationGSS_hpc.md` Orchestration Refactor section. Preserved here for the dependency-chain pattern it documents and as the precursor to the array system.)*
+
+**Date:** 2026-04-23. **Status at writing:** approved — implement before F2 submit.
+
+### 11.1 Aim
+
+Replace the four manual SLURM submissions for Step 4 (04D train → 04E inference → 04F validation → 04H diagnostics) with a single wrapper that chains them via `--dependency=afterok`, then bundles user-facing artefacts into one delivery folder for a single local `scp` pull. Plumbing change only — no Python, no model, no training HPs touched. The four existing job scripts stay reusable for one-off reruns.
+
+### 11.2 Steps
+
+1. **Create `Speed_Cluster/submit_step4_chain.sh`** (bash, run on login node only).
+   - Accept optional `tag` arg; default `$(date +%Y%m%d_%H%M)`.
+   - Resolve job-script paths via explicit variables at the top.
+   - Pre-flight: `set -euo pipefail`, verify scripts exist, `mkdir -p logs deliveries`.
+   - Submit with `sbatch --parsable` capturing each JID:
+     - `JID_D` = 04D (no dep)
+     - `JID_E` = 04E, `--dependency=afterok:$JID_D`
+     - `JID_F` = 04F, `--dependency=afterok:$JID_E`
+     - `JID_H` = 04H, `--dependency=afterok:$JID_E` (parallel with 04F)
+     - `JID_I` = 04I co-presence/activity audit, `--dependency=afterok:$JID_E` (optional, parallel)
+     - `JID_Z` = bundle, `--dependency=afterok:$JID_F:$JID_H[:$JID_I]`
+   - Echo chain summary, delivery path, monitor/post-mortem/cancel commands.
+2. **Create `Speed_Cluster/job_04Z_bundle.sh`** (`ps`, 2G, 5min).
+   - Reads `CHAIN_TAG`, `JID_D`, `JID_E`, `JID_F`, `JID_H` from env.
+   - Creates `deliveries/$CHAIN_TAG/`, copies validation HTML, diagnostic JSONs, trajectory PNG, all `.out` logs.
+   - Writes `CHAIN_DONE` sentinel with JIDs + `sacct` summary. Missing artefacts → `WARN` line, do not fail.
+3. **Do not modify** `job_04D_train.sh`, `job_04E_inference.sh`, `job_04F_validation.sh`, `job_04H_diagnostics.sh`.
+
+### 11.3 Expected result
+
+- One command on the cluster (`./submit_step4_chain.sh [tag]`) launches the full pipeline.
+- `squeue` shows 5 jobs: 1 running/queued + 4 with `Dependency` state.
+- Upstream failure auto-cancels downstream; `scancel <all_ids>` cleans in one call.
+- `deliveries/<tag>/` contains HTML + JSON + PNG + 4 logs + `CHAIN_DONE`.
+- Local pull: `scp -r o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/occModeling/deliveries/<tag> .`
+
+### 11.4 Test method
+
+- **Syntax:** `bash -n submit_step4_chain.sh && bash -n job_04Z_bundle.sh`.
+- **First live run:** use the next real retrain cycle. Verify `squeue` shows 5 JIDs with correct `Dependency` fields; `sacct -j <chain>` end-state shows all `COMPLETED` on partitions `pg / pg / ps / ps / ps / ps`.
+- **Fail-propagation (one cheap exercise):** `scancel $JID_D` mid-queue; confirm 04E/04F/04H/bundle go to `DependencyNotSatisfied`.
+
+### 11.5 Risks / fallback
+
+- *04H path drift:* on cluster all scripts flatten into one dir. Keep path vars at top, labelled.
+- *Silent non-convergence:* `afterok` checks exit status, not model quality. Out of scope; revisit only if needed.
+- *`pg` queue wait between 04D and 04E:* scheduler-dependent; acceptable vs manual.
+- *Collision with in-flight F1 cycle:* do not invoke until that cycle finishes.
+- *Fallback:* original four job scripts still work standalone — zero regression surface.
+
+### 11.6 Progress Log
+
+- **2026-04-23.** Task spec written. Implementation deferred — waiting on F1 retrain (job 901399) + 04E (job 901476) results and the post-04H branch decision before committing to another full retrain cycle.
+- **2026-04-23 (later).** F1 verdict in — H2 rejected, T3 midday gap −27.8 → +4.08 pp, 04H reports SKIP_GPU, trajectories v4 visibly closer to observed. Status flipped to **approved — implement before F2 submit**. Added: (i) 04I audit job as fourth parallel branch off `afterok:$JID_E`; (ii) bundle copies new `diagnostics_v4_copresence.json` / `diagnostics_v4_activity.json`. F2 HP scope (HP-1a LAMBDA_HOME escalation + HP-2 min_epoch floor) specified in §12 below.
+- **2026-04-28.** Operationally superseded by the YAML configs + sbatch job-array system (see `04_augmentationGSS_hpc.md` → Orchestration Refactor). The `submit_step4_chain.sh` pattern was the conceptual precursor to `submit_step4_array.sh`; the per-trial dependency chain (04D → 04E → {04F, 04H, 04I} → bundle) was generalized to a per-array-element dependency chain plus a final `extract_metrics.py` step replacing the bundle job. The chain-submit wrapper itself was never deployed in production — F2 went out as a manual chain, and F3+ went through the array system.
+
+---
+
+## §12 — F2 Retrain Task Spec
+
+*(Merged 2026-04-28 from former `step4_F2_retrain.md`. Historical task spec from 2026-04-23. F2 was executed; outcome is captured in the main `04_augmentationGSS_hpc.md` Progress Log. The HP catalogue here remains the canonical reference for what HP-1a/HP-1b/HP-2/HP-3/HP-4 mean.)*
+
+**Date:** 2026-04-23. **Status at writing:** proposed (awaiting user approval of HP scope + 04I contract).
+
+### 12.1 Aim
+
+Close the residual stratum-conditional AT_HOME bias (weekday under / weekend over by 5–14 pp) left after F1, and validate the two **unaudited output channels** in `augmented_diaries.csv`:
+
+- **Co-presence** (9-way BCE head: alone / with-spouse / with-child / …) — drives BEM room-level occupancy multipliers.
+- **Activity** (14-way CE head: Work / Sleep / Cook / Transit / …) — drives appliance & lighting schedules downstream.
+
+Ride the chain wrapper from §11 so the full F2 cycle is one submission and one `scp -r` pull.
+
+### 12.2 HP catalogue (single-variable, not a grid)
+
+F2 runs **HP-1a + HP-2 only**; HP-1b / HP-3 / HP-4 are pre-documented for F3 so attribution on F2 stays clean.
+
+- **HP-1 LAMBDA_HOME escalation** (primary).
+  - **HP-1a (run in F2):** raise scalar `LAMBDA_HOME` 2–3× the F1 value in `04D_train.py`. Cheapest possible change. Bounded at 3× to avoid trading AT_HOME for activity drift.
+  - **HP-1b (deferred to F3 if HP-1a insufficient):** re-shape `marg_loss` (`04D_train.py:140` currently uses global `home_tgt.mean()`) as a sum over per-(target_cycle × target_stratum) observed AT_HOME references from `hetus_30min.csv`. Template: F1b in §5.
+- **HP-2 min_epoch floor** (cheap guard, run in F2). Enforce `epoch ≥ min_epoch=5` before best-checkpoint updates in `04D_train.py`. One-line change.
+- **HP-3 soften post-hoc rule** (deferred to F3). Replace night-Sleep → AT_HOME=1 in `04E_inference.py::apply_posthoc_consistency` with observed conditional rate `p(home | night, sleep, cycle, stratum)`. F2b template, §5.
+- **HP-4 conditioning auxiliary loss** (deferred to F3 unless HP-1 alone fails). Small MLP head predicting `tgt_strata` from decoder layer-0 hidden, λ ≈ 0.1. F4a template, §5.
+
+**Decision rule:** lock F2 = HP-1a + HP-2 only. If F2 does not close the stratum gap, F3 picks from HP-1b / HP-3 / HP-4.
+
+### 12.3 New 04I co-presence + activity audit (contract)
+
+- **Inputs:** `outputs_step4/augmented_diaries.csv` (synthetic), `outputs_step3/hetus_30min.csv` (observed).
+- **Outputs:** `diagnostics_v4_copresence.json`, `diagnostics_v4_activity.json` (both mirroring the 04H contract).
+- **Co-presence (9 classes):** per-(cycle × stratum) marginals, per-slot trajectory, scalars `overall_gap_pp`, `morning_mean_gap_pp` (slots 0–13), `midday_mean_gap_pp` (14–27), `evening_mean_gap_pp` (28–47), `max_gap_pp`, `slot_of_max_gap`.
+- **Activity (14 classes):** same structure; flag any class with `|overall_gap_pp| ≥ 3` as potential regression from §2 JS PASS baseline.
+- **Resource:** `ps` partition, 8G, 4 cores, 30 min wall.
+- **Job script:** `Speed_Cluster/job_04I_audit.sh`. Wrapper treats it as a fourth parallel branch off `afterok:$JID_E`.
+- **Python entrypoint:** `04I_audit_cpu.py`, templated on `04H_diagnostics_cpu.py`. Read-only.
+
+### 12.4 Wrapper invocation + delivery contract
+
+- **Submit:** `./submit_step4_chain.sh F2_lambda_home_escalation`
+- **squeue check:** must show 6 jobs (04D running/queued; 04E/04F/04H/04I/bundle with `Dependency`).
+- **Delivery folder** `deliveries/F2_lambda_home_escalation/` contains: `step4_validation_report.html` (pull as `_v5.html`), `diagnostics_v4.json`, `diagnostics_v4_trajectories.png`, `diagnostics_v4_copresence.json`, `diagnostics_v4_activity.json`, 5 `.out` logs, `CHAIN_DONE`.
+- **Local pull:** `scp -r o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/occModeling/deliveries/F2_lambda_home_escalation .`
+
+### 12.5 Expected result
+
+- Single command launches the full F2 cycle.
+- Global AT_HOME marginal stays within F1 ±5 pp band (no regression).
+- Stratum-conditional AT_HOME gap narrows: weekday under-bias and weekend over-bias both < 5 pp absolute.
+- 04I: no co-presence or activity class flagged with `|overall_gap_pp| ≥ 3`. Any flagged class becomes F3 priority.
+- 04F HTML renders with embedded plots (the v4 33 KB / zero-`<img>` clobber bug does not recur).
+
+### 12.6 Test method
+
+- **Before submit:** `bash -n submit_step4_chain.sh job_04Z_bundle.sh job_04I_audit.sh`.
+- **04I smoke test:** run `04I_audit_cpu.py` against current F1 `augmented_diaries.csv` before F2 submit → pre-F2 baseline for F3 branch decision.
+- **Live F2 run:** `sacct -j <chain_ids>` end-state COMPLETED on partitions `pg / pg / ps / ps / ps / ps`.
+- **Post-run three-question protocol:**
+  - (a) Did stratum-conditional AT_HOME gap close, or did only the global marginal move?
+  - (b) Per-(cycle × stratum) and per-class gap for co-presence and activity: any cells `|gap_pp| ≥ 3`?
+  - (c) Which §4–§7 sections moved vs F1?
+- **Fail-propagation:** `scancel $JID_D` mid-queue; confirm dependents go to `DependencyNotSatisfied`.
+
+### 12.7 Risks / fallback
+
+- *Over-escalating LAMBDA_HOME trades AT_HOME for activity drift.* Mitigation: HP-1a bounded 2–3× F1 value; 04I activity audit catches regressions in the same run.
+- *04I is new code.* It is read-only; if 04I fails, 04F still produces HTML and 04H still produces `diagnostics_v4.json`.
+- *F1 `best_model.pt` overwritten by F2 04D.* Before submitting F2: scp F1 deliveries locally and keep a cluster-side F1-tagged copy of the checkpoint.
+- *Collision with unresolved F1 work.* Do not submit F2 until F1 v4 HTML regenerated, all F1 deliverables scp'd locally, 04I audit on F1 run as pre-F2 baseline.
+- *Fallback:* if HP-1a / HP-2 regresses anything vs F1, revert to saved F1 `best_model.pt` and fold findings into F3 with HP-1b or HP-4.
+
+### 12.8 Progress Log
+
+- **2026-04-23.** Task spec written. F2 scope locked as HP-1a + HP-2 + new 04I audit. Implementation deferred to post-approval session; three review gates: (a) HP scope, (b) 04I contract, (c) chain tag naming. F3 candidates (HP-1b / HP-3 / HP-4) pre-documented.
+- **2026-04-22 → 2026-04-23 (executed).** F2 ran (job 901267 + downstream). Outcome captured in `04_augmentationGSS_hpc.md` Progress Log: composite/AT_HOME regressed vs F1; combined val_score metric overshot. The catalogue here (HP-1 / HP-2 / HP-3 / HP-4) remained the canonical reference for subsequent F3 sweep config naming.
+
 ---

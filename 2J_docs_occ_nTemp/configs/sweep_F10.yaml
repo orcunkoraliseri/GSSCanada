@@ -1,0 +1,11 @@
+# sweep_F10.yaml — Spouse-axis convergence sweep (HARD STOP — no F11)
+# F9b (SPOUSE_NEG_WEIGHT=0.4) overshot to Spouse=-3.5pp; F8 (1.0) was +19.4pp.
+# Linear interp → zero-crossing near 0.49. F10a/b/c/d bracket at 0.45/0.50/0.55/0.60.
+# AUX_STRATUM_LAMBDA held at 0.1 default (F9a proved 0.02 wrong direction).
+# Submit: bash Speed_Cluster/submit_step4_array.sh configs/sweep_F10.yaml F10_$(date +%Y%m%d_%H%M)
+# Gates (per arm): composite < 1.045, AT_HOME <= +5.3 pp, Spouse <= +10 pp, act_JS <= 0.05
+tags:
+  - F10a
+  - F10b
+  - F10c
+  - F10d

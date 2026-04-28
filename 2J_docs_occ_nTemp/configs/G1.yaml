@@ -1,0 +1,33 @@
+# G1.yaml — G-series stage 1: Proportional target sampling
+# Derived from F10a.yaml. Only data_dir differs (outputs_step4_G1 carries the new pairs).
+# Before submitting 04D: run 04C --proportional --output_dir outputs_step4_G1 and
+# symlink step4_train.pt / step4_val.pt / step4_feature_config.json into outputs_step4_G1/.
+# Hard gates (G-series, tightened from F): composite < 1.045 | AT_HOME <= +5.3 pp | Spouse <= +5 pp | act_JS <= 0.05
+tag: G1
+seed: 42
+
+# Argparse flags (fp32, same as F10a)
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 256
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+# Loss weights (F10a base — unchanged)
+lambda_act: 1.0
+lambda_home: 0.5
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+# Feature switches (F10a base — unchanged)
+aux_stratum_head: 1
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0

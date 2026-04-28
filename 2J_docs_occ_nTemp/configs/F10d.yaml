@@ -1,0 +1,33 @@
+# F10d.yaml — F9b base + SPOUSE_NEG_WEIGHT=0.60 (upper bracket)
+# F9b at 0.4 → Spouse=-3.5pp; F8 at 1.0 → Spouse=+19.4pp; linear interp puts Spouse=0 near 0.49.
+# F10 sweep (a/b/c/d) brackets the zero-crossing at 0.45/0.50/0.55/0.60.
+# AUX_STRATUM_LAMBDA stays at 0.1 (F9a proved 0.02 wrong direction).
+# Hard gates: composite < 1.045, AT_HOME <= +5.3 pp, Spouse <= +10 pp, act_JS <= 0.05
+tag: F10d
+seed: 42
+
+# Argparse flags (fp32 — no fp16)
+data_dir: outputs_step4
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 256
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+# Loss weights (F8/F1 defaults)
+lambda_act: 1.0
+lambda_home: 0.5
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+# Feature switches: F9b base + Spouse pos_weight axis sweep
+aux_stratum_head: 1
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.60
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0

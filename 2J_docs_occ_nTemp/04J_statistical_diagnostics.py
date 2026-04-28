@@ -8,7 +8,7 @@ Augments 04H (AT_HOME marginals) and 04I (activity + co-presence marginals) with
   T3. Joint distributions: (activity × AT_HOME), (activity × Alone), (Alone × AT_HOME)
       with χ²-of-independence Cramér's V
   T4. χ² / KS tests per (cycle × stratum × class) with Bonferroni-corrected α
-  T5. Composite score S (lower = better); pinned weights from §10.4 of step4_training.md
+  T5. Composite score S (lower = better); pinned weights from §10.4 of DONE_step4_training.md
 
 Usage:
     python 04J_statistical_diagnostics.py \\

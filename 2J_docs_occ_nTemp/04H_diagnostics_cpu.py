@@ -3,7 +3,7 @@
 
 Implements Tests T1 (H1 pair-sampling), T2 (H2 post-hoc rule),
 T3 (H3 exposure-bias trajectory), and T6 (H5 observed sanity) per
-`Speed-Cluster_docs/step4_training.md`. Emits a machine-readable JSON
+`Speed-Cluster_docs/DONE_step4_training.md`. Emits a machine-readable JSON
 summary and (unless --no_plot) a 3×4 trajectory PNG.
 
 Usage:
