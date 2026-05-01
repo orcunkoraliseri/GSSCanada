@@ -30,6 +30,8 @@ declare -A _ENV_MAP=(
     [cop_alone_pw]=COP_ALONE_PW
     [activity_boosts]=ACTIVITY_BOOSTS
     [data_side_sampling]=DATA_SIDE_SAMPLING
+    [sched_sample_p]=SCHED_SAMPLE_P
+    [home_label_smooth]=HOME_LABEL_SMOOTH
 )
 
 for yaml_key in "${!_ENV_MAP[@]}"; do

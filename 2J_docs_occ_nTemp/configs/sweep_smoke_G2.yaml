@@ -1,0 +1,10 @@
+# sweep_smoke_G2.yaml — plumbing check for G2 (scheduled sampling + label smoothing)
+# Runs G2 in --sample mode (d_model=64, 5 epochs, ~5 min, 1 GPU).
+# Verifies: (1) SCHED_SAMPLE_P + HOME_LABEL_SMOOTH env vars loaded from G2.yaml via config_to_env,
+#           (2) slot-dropout and label-smoothing code paths execute without error,
+#           (3) job-array dependency chain reaches extract_metrics,
+#           (4) results_index/results.csv gets a G2 row with all 6 metric columns populated.
+# Submit: bash Speed_Cluster/submit_step4_array.sh configs/sweep_smoke_G2.yaml G2_smoke_20260429
+tags:
+  - G2
+smoke: true

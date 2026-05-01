@@ -1,0 +1,4 @@
+# sweep_G4.yaml — solo G4 submission driver
+# G4 is config-only (no source-file changes vs G3), so bundle-submission degenerates to solo run.
+tags:
+  - G4

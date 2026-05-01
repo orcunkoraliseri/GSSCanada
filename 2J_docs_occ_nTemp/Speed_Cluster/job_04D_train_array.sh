@@ -37,12 +37,24 @@ if [ "${SWEEP_SMOKE:-0}" = "1" ]; then
     PY_ARGS="$PY_ARGS --sample"
 fi
 
+# Extract data_dir directly from YAML via grep/sed — yq-independent, same approach as
+# submit_step4_array.sh uses for TRIAL_DATA_DIR. Guarantees correct data_dir regardless
+# of yq version or config_to_env PY_ARGS emission failures.
+DATA_DIR=$(grep '^data_dir:' "$CONFIG_PATH" 2>/dev/null | sed 's/^data_dir:[[:space:]]*//')
+[ -z "$DATA_DIR" ] && DATA_DIR="outputs_step4"
+
+# Strip --data_dir from PY_ARGS to avoid duplicate flag (argparse takes last value, but
+# cleaner to pass it exactly once via the explicit flag below).
+PY_ARGS=$(echo "$PY_ARGS" | sed 's/--data_dir[[:space:]]*[^[:space:]]*//')
+
 echo "  Env: AUX_STRATUM_HEAD=${AUX_STRATUM_HEAD:-0}  AUX_STRATUM_LAMBDA=${AUX_STRATUM_LAMBDA:-0.1}  SPOUSE_NEG_WEIGHT=${SPOUSE_NEG_WEIGHT:-1.0}"
+echo "  DATA_DIR: $DATA_DIR"
 echo "  PY_ARGS: $PY_ARGS"
 
 PYTHON=/speed-scratch/o_iseri/envs/step4/bin/python
 
 $PYTHON -u 04D_train.py \
+    --data_dir    "$DATA_DIR" \
     --output_dir  "outputs_step4_${TRIAL_TAG}" \
     --checkpoint_dir "outputs_step4_${TRIAL_TAG}/checkpoints" \
     $PY_ARGS

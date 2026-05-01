@@ -52,6 +52,9 @@ LAMBDA_MARG        = float(os.environ.get("LAMBDA_MARG",        "0.1"))
 MARG_MODE          = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
 AUX_STRATUM_LAMBDA = float(os.environ.get("AUX_STRATUM_LAMBDA", "0.1"))
 SPOUSE_NEG_WEIGHT  = float(os.environ.get("SPOUSE_NEG_WEIGHT",  "1.0"))
+# G2: H3 interventions (defaults 0.0 → backward-compatible with F/G1)
+SCHED_SAMPLE_P    = float(os.environ.get("SCHED_SAMPLE_P",    "0.0"))
+HOME_LABEL_SMOOTH = float(os.environ.get("HOME_LABEL_SMOOTH", "0.0"))
 
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
@@ -123,9 +126,12 @@ def compute_loss(output: dict, batch: dict, device,
     cop_logits  = output["cop_logits"]   # (B, 48, 9)
 
     # Activity targets: 0-indexed int64
-    act_tgt  = batch["dec_act_seq"]              # (B, 48)
-    home_tgt = batch["dec_aux_seq"][:, :, 0]    # (B, 48) — AT_HOME is feature 0
-    cop_tgt  = batch["dec_aux_seq"][:, :, 1:]   # (B, 48, 9) — features 1..9
+    act_tgt  = batch["dec_act_seq"]                          # (B, 48)
+    home_tgt = batch["dec_aux_seq"][:, :, 0].float()        # (B, 48) — AT_HOME is feature 0
+    if HOME_LABEL_SMOOTH > 0.0:
+        # {0,1} → {ε, 1-ε} to prevent sigmoid saturation (G2 / H3 fix)
+        home_tgt = home_tgt * (1.0 - 2.0 * HOME_LABEL_SMOOTH) + HOME_LABEL_SMOOTH
+    cop_tgt  = batch["dec_aux_seq"][:, :, 1:]               # (B, 48, 9) — features 1..9
 
     # Activity: cross-entropy over 14 classes (inverse-sqrt-frequency weighted)
     B, T, C = act_logits.shape
@@ -571,9 +577,22 @@ def train(args):
             batch = {k: v.to(device) for k, v in batch.items()}
             optimizer.zero_grad()
 
+            # G2: slot dropout on AT_HOME decoder input (H3 fix).
+            # Corrupt SCHED_SAMPLE_P fraction of slots → 0.5 (neutral).
+            # targets in batch remain untouched for loss computation.
+            if SCHED_SAMPLE_P > 0.0:
+                mask = torch.bernoulli(
+                    torch.full(batch["dec_aux_seq"].shape[:2], SCHED_SAMPLE_P, device=device)
+                ).bool()
+                corrupted_aux = batch["dec_aux_seq"].clone()
+                corrupted_aux[:, :, 0][mask] = 0.5
+                train_batch = {**batch, "dec_aux_seq": corrupted_aux}
+            else:
+                train_batch = batch
+
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
-                    out   = model(batch)
+                    out   = model(train_batch)
                     losses = compute_loss(out, batch, device,
                                           act_weights=act_class_weights,
                                           home_pos_weight=home_pos_weight,
@@ -584,7 +603,7 @@ def train(args):
                 scaler.step(optimizer)
                 scaler.update()
             else:
-                out    = model(batch)
+                out    = model(train_batch)
                 losses = compute_loss(out, batch, device,
                                       act_weights=act_class_weights,
                                       home_pos_weight=home_pos_weight,

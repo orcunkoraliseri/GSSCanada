@@ -1,0 +1,5 @@
+# sweep_G2.yaml — single-arm sweep driver for G2 full training
+# Feeds configs/G2.yaml into the job-array machinery (submit_step4_array.sh).
+# Submit: bash Speed_Cluster/submit_step4_array.sh configs/sweep_G2.yaml G2_20260429
+tags:
+  - G2

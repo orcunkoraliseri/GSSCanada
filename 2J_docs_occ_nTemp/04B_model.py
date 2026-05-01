@@ -74,47 +74,46 @@ TEST_CONFIG = {
 }
 
 
-# ── FiLM modulation (per-decoder-layer conditioning) ───────────────────────
+# ── Cross-attention conditioning decoder (G3) ────────────────────────────────
 
-class FiLMLayer(nn.Module):
-    """Feature-wise linear modulation. Generates (γ, β) from a conditioning
-    vector and applies x → (1 + γ) ⊙ x + β. Zero-init makes the layer start
-    as identity, so a fresh FiLM-decorated decoder behaves exactly like the
-    pre-FiLM version on epoch 0 — only fine-tuning learns to deviate.
-    """
-
-    def __init__(self, d_cond_dec: int, d_model: int):
+class CondCrossAttnDecoderLayer(nn.Module):
+    def __init__(self, d_model, n_heads, d_ff, dropout=0.0):
         super().__init__()
-        self.gen = nn.Linear(d_cond_dec, 2 * d_model)
-        nn.init.zeros_(self.gen.weight)
-        nn.init.zeros_(self.gen.bias)
+        self.self_attn  = nn.MultiheadAttention(d_model, n_heads, dropout=dropout, batch_first=True)
+        self.cross_mem  = nn.MultiheadAttention(d_model, n_heads, dropout=dropout, batch_first=True)
+        self.cross_cond = nn.MultiheadAttention(d_model, n_heads, dropout=dropout, batch_first=True)
+        self.ffn = nn.Sequential(nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model))
+        self.ln1, self.ln2, self.ln3, self.ln4 = (nn.LayerNorm(d_model) for _ in range(4))
+        self.drop = nn.Dropout(dropout)
 
-    def forward(self, x: torch.Tensor, cond: torch.Tensor) -> torch.Tensor:
-        # x: (B, T, d_model); cond: (B, d_cond_dec)
-        gamma, beta = self.gen(cond).chunk(2, dim=-1)
-        return (1.0 + gamma).unsqueeze(1) * x + beta.unsqueeze(1)
+    def forward(self, x, memory, cond_tokens, tgt_mask):
+        x = x + self.drop(self.self_attn(self.ln1(x), self.ln1(x), self.ln1(x), attn_mask=tgt_mask, need_weights=False)[0])
+        x = x + self.drop(self.cross_mem(self.ln2(x), memory, memory, need_weights=False)[0])
+        x = x + self.drop(self.cross_cond(self.ln3(x), cond_tokens, cond_tokens, need_weights=False)[0])
+        x = x + self.drop(self.ffn(self.ln4(x)))
+        return x
 
 
-class FiLMTransformerDecoder(nn.Module):
-    """Stack of TransformerDecoderLayer + per-layer FiLM, with final LayerNorm.
-
-    Drop-in replacement for nn.TransformerDecoder, with two differences:
-      • forward() takes a `dec_cond` (B, d_cond_dec) tensor.
-      • does not pass `tgt_is_causal` to layers (causal mask is sufficient,
-        and the kwarg requires PyTorch ≥ 2.1).
-    """
-
-    def __init__(self, layer_factory, num_layers: int, d_model: int, d_cond_dec: int):
+class CrossAttnDecoder(nn.Module):
+    def __init__(self, d_model, n_heads, n_layers, d_ff, d_cond, d_cycle):
         super().__init__()
-        self.layers = nn.ModuleList([layer_factory() for _ in range(num_layers)])
-        self.films  = nn.ModuleList([FiLMLayer(d_cond_dec, d_model) for _ in range(num_layers)])
-        self.norm   = nn.LayerNorm(d_model)
+        self.proj_demo   = nn.Linear(d_cond,  d_model)
+        self.proj_cycle  = nn.Linear(d_cycle, d_model)
+        self.proj_strata = nn.Linear(3,       d_model)
+        self.layers = nn.ModuleList([
+            CondCrossAttnDecoderLayer(d_model, n_heads, d_ff) for _ in range(n_layers)
+        ])
+        self.norm = nn.LayerNorm(d_model)
 
-    def forward(self, x, memory, tgt_mask, dec_cond):
+    def forward(self, x, memory, cond_vec, cycle_emb, strata_oh, tgt_mask):
+        cond_tokens = torch.stack([
+            self.proj_demo(cond_vec),
+            self.proj_cycle(cycle_emb),
+            self.proj_strata(strata_oh),
+        ], dim=1)                                    # (B, 3, d_model)
         layer0_hidden = None
-        for i, (layer, film) in enumerate(zip(self.layers, self.films)):
-            x = layer(x, memory, tgt_mask=tgt_mask)
-            x = film(x, dec_cond)
+        for i, layer in enumerate(self.layers):
+            x = layer(x, memory, cond_tokens, tgt_mask)
             if i == 0:
                 layer0_hidden = x
         return self.norm(x), layer0_hidden
@@ -173,9 +172,7 @@ class ConditionalTransformer(nn.Module):
             nn.Linear(256, d_model),
         )
 
-        # ── Decoder: target DDAY_STRATA conditioning + BOS token ─────────
-        # Strata one-hot (3) projected to d_model; added to every decoder position
-        self.strata_linear = nn.Linear(3, d_model, bias=False)
+        # ── Decoder: BOS token ───────────────────────────────────────────
         # Learnable BOS token (start-of-sequence for decoder)
         self.bos_token = nn.Parameter(torch.randn(1, 1, d_model) * 0.02)
 
@@ -194,23 +191,12 @@ class ConditionalTransformer(nn.Module):
             enc_layer, num_layers=N_enc, norm=nn.LayerNorm(d_model)
         )
 
-        # ── Transformer decoder (with FiLM conditioning per layer) ───────
-        # FiLM input: cond_vec + cycle_emb + strata_oh (3-way) — gives every
-        # decoder layer direct access to demographic, cycle, and stratum signal.
-        # Addresses §3 (AT_HOME bias) + §4.3 (work peak) + §6.2 (LFTAG separation)
-        # which the calibration sweep (job 901177) showed cannot be fixed at
-        # inference time alone.
-        self.d_cond_dec = d_cond + d_cycle + 3
-        def _dec_layer_factory():
-            return nn.TransformerDecoderLayer(
-                d_model=d_model, nhead=n_heads, dim_feedforward=d_ff,
-                dropout=dropout, activation="gelu", batch_first=True,
-            )
-        self.decoder = FiLMTransformerDecoder(
-            layer_factory=_dec_layer_factory,
-            num_layers=N_dec,
-            d_model=d_model,
-            d_cond_dec=self.d_cond_dec,
+        # ── Transformer decoder (cross-attention conditioning, G3) ───────
+        # CrossAttnDecoder: self-attn → cross-attn(memory) → cross-attn(3
+        # conditioning tokens: demo, cycle, strata) → FFN, per layer.
+        self.decoder = CrossAttnDecoder(
+            d_model=d_model, n_heads=n_heads, n_layers=N_dec,
+            d_ff=d_ff, d_cond=d_cond, d_cycle=d_cycle,
         )
 
         # ── Output heads ─────────────────────────────────────────────────
@@ -281,10 +267,10 @@ class ConditionalTransformer(nn.Module):
     # ── Decoder (teacher-forcing mode) ──────────────────────────────────────
 
     def _build_dec_cond(self, cond_vec, cycle_idx, tgt_strata):
-        """Concat (cond_vec, cycle_emb, strata_oh) → (B, d_cond_dec) for FiLM."""
+        """Returns (cond_vec, cycle_emb, strata_oh) for CrossAttnDecoder."""
         cycle_emb = self.cycle_embedding(cycle_idx)
         strata_oh = F.one_hot((tgt_strata - 1).clamp(0, 2), num_classes=3).float()
-        return torch.cat([cond_vec, cycle_emb, strata_oh], dim=-1), strata_oh
+        return cond_vec, cycle_emb, strata_oh
 
     def decode(self, dec_act_seq, dec_aux_seq, tgt_strata, memory,
                cond_vec, cycle_idx):
@@ -312,18 +298,15 @@ class ConditionalTransformer(nn.Module):
         # Positional encoding (positions 0..T-1)
         dec_input = dec_input + self.dec_pos_enc[:, :T, :]
 
-        # FiLM conditioning vector + additive strata embedding (kept for backwards
-        # compatibility with the old conditioning path).
-        dec_cond, strata_oh = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
-        strata_emb = self.strata_linear(strata_oh).unsqueeze(1)  # (B, 1, d_model)
-        dec_input  = dec_input + strata_emb
+        # Cross-attention conditioning tensors
+        cond_vec_d, cycle_emb_d, strata_oh_d = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
 
         # Causal mask: each position attends only to itself and earlier positions
         causal_mask = nn.Transformer.generate_square_subsequent_mask(
             T, device=dec_input.device
         )
         dec_output, layer0_hidden = self.decoder(
-            dec_input, memory, tgt_mask=causal_mask, dec_cond=dec_cond
+            dec_input, memory, cond_vec_d, cycle_emb_d, strata_oh_d, causal_mask
         )  # dec_output: (B, T, d_model); layer0_hidden: (B, T, d_model)
 
         aux_logits = None
@@ -401,9 +384,8 @@ class ConditionalTransformer(nn.Module):
 
         memory = self.encode(act_seq, aux_seq, cond_vec, cycle_idx)
 
-        # FiLM conditioning vector (fixed for all decoder steps)
-        dec_cond, strata_oh = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
-        strata_emb = self.strata_linear(strata_oh).unsqueeze(1)  # (B, 1, d_model)
+        # Cross-attn conditioning tensors (fixed for all decoder steps)
+        cond_vec_g, cycle_emb_g, strata_oh_g = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
 
         gen_acts       = []
         gen_homes      = []
@@ -414,7 +396,6 @@ class ConditionalTransformer(nn.Module):
         bos_tok = (
             self.bos_token.expand(B, 1, self.d_model)
             + self.dec_pos_enc[:, :1, :]
-            + strata_emb
         )
         dec_tokens = [bos_tok]
 
@@ -424,7 +405,7 @@ class ConditionalTransformer(nn.Module):
                 dec_seq.shape[1], device=device
             )
             dec_out, _ = self.decoder(dec_seq, memory,
-                                      tgt_mask=causal_mask, dec_cond=dec_cond)
+                                      cond_vec_g, cycle_emb_g, strata_oh_g, causal_mask)
             out_t = dec_out[:, -1, :]                             # (B, d_model)
 
             # Activity head
@@ -454,7 +435,7 @@ class ConditionalTransformer(nn.Module):
                 act_emb  = self.act_embedding(act_tok)                            # (B, d_act)
                 slot_in  = torch.cat([act_emb, aux_t], dim=-1)                   # (B, d_act+10)
                 slot_out = self.slot_linear(slot_in).unsqueeze(1)                 # (B, 1, d_model)
-                slot_out = slot_out + self.dec_pos_enc[:, t + 1:t + 2, :] + strata_emb
+                slot_out = slot_out + self.dec_pos_enc[:, t + 1:t + 2, :]
                 dec_tokens.append(slot_out)
 
         return (

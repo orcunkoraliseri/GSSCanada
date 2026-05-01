@@ -1,0 +1,5 @@
+# sweep_G3.yaml — solo G3 submission driver
+# G2-full already landed before G3 was implemented, so bundle-submission
+# degenerates to a solo run per step4_training_v2.md §Bundle-Submission Protocol.
+tags:
+  - G3
