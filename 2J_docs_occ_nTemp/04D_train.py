@@ -60,11 +60,7 @@ HOME_LABEL_SMOOTH = float(os.environ.get("HOME_LABEL_SMOOTH", "0.0"))
 # LAMBDA_ALL_EQUAL=1 normalises [ACT, HOME, COP, MARG] to equal 0.25 each.
 # Default "0" → G4 behaviour unchanged.
 if os.environ.get("LAMBDA_ALL_EQUAL", "0") == "1":
-    _lam_sum = LAMBDA_ACT + LAMBDA_HOME + LAMBDA_COP + LAMBDA_MARG
-    LAMBDA_ACT  = LAMBDA_ACT  / _lam_sum
-    LAMBDA_HOME = LAMBDA_HOME / _lam_sum
-    LAMBDA_COP  = LAMBDA_COP  / _lam_sum
-    LAMBDA_MARG = LAMBDA_MARG / _lam_sum
+    LAMBDA_ACT = LAMBDA_HOME = LAMBDA_COP = LAMBDA_MARG = 0.25
 
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
