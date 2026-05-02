@@ -1,0 +1,7 @@
+# sweep_smoke_H_tier1.yaml — H-Tier-1 smoke driver (5 epochs, d_model=64, --sample)
+# Uses configs/{H_Tanh,H4,H6}.yaml; smoke: true adds --sample to 04D.
+tags:
+  - H_Tanh
+  - H4
+  - H6
+smoke: true

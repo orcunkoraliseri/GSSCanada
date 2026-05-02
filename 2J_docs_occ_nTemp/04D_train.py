@@ -56,6 +56,16 @@ SPOUSE_NEG_WEIGHT  = float(os.environ.get("SPOUSE_NEG_WEIGHT",  "1.0"))
 SCHED_SAMPLE_P    = float(os.environ.get("SCHED_SAMPLE_P",    "0.0"))
 HOME_LABEL_SMOOTH = float(os.environ.get("HOME_LABEL_SMOOTH", "0.0"))
 
+# H4: equal-weight all loss terms — overrides per-axis lambda values.
+# LAMBDA_ALL_EQUAL=1 normalises [ACT, HOME, COP, MARG] to equal 0.25 each.
+# Default "0" → G4 behaviour unchanged.
+if os.environ.get("LAMBDA_ALL_EQUAL", "0") == "1":
+    _lam_sum = LAMBDA_ACT + LAMBDA_HOME + LAMBDA_COP + LAMBDA_MARG
+    LAMBDA_ACT  = LAMBDA_ACT  / _lam_sum
+    LAMBDA_HOME = LAMBDA_HOME / _lam_sum
+    LAMBDA_COP  = LAMBDA_COP  / _lam_sum
+    LAMBDA_MARG = LAMBDA_MARG / _lam_sum
+
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
 

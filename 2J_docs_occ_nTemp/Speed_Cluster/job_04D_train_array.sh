@@ -47,6 +47,10 @@ DATA_DIR=$(grep '^data_dir:' "$CONFIG_PATH" 2>/dev/null | sed 's/^data_dir:[[:sp
 # cleaner to pass it exactly once via the explicit flag below).
 PY_ARGS=$(echo "$PY_ARGS" | sed 's/--data_dir[[:space:]]*[^[:space:]]*//')
 
+# Guard: PY_ARGS must contain at least --batch_size, which means config_to_env ran cleanly.
+# Empty PY_ARGS means config_to_env.sh failed silently (e.g. CRLF crash) — abort early.
+[[ -z "$PY_ARGS" ]] && { echo "ERROR: PY_ARGS empty — config_to_env failed for $CONFIG_PATH"; exit 1; }
+
 echo "  Env: AUX_STRATUM_HEAD=${AUX_STRATUM_HEAD:-0}  AUX_STRATUM_LAMBDA=${AUX_STRATUM_LAMBDA:-0.1}  SPOUSE_NEG_WEIGHT=${SPOUSE_NEG_WEIGHT:-1.0}"
 echo "  DATA_DIR: $DATA_DIR"
 echo "  PY_ARGS: $PY_ARGS"

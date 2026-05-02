@@ -17,7 +17,6 @@ This file is imported, NOT run directly.
 """
 
 import math
-import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -201,14 +200,9 @@ class ConditionalTransformer(nn.Module):
         )
 
         # ── Output heads ─────────────────────────────────────────────────
-        # H_TANH_HEADS=1: wrap home/cop heads with Tanh pre-activation (H_Tanh trial).
-        # H_TANH_HEADS=0 (default): plain Linear — identical to G4.
-        _h_tanh = os.environ.get("H_TANH_HEADS", "0") == "1"
         self.act_head  = nn.Linear(d_model, n_act)  # → 14 activity logits
-        self.home_head = (nn.Sequential(nn.Tanh(), nn.Linear(d_model, 1))
-                          if _h_tanh else nn.Linear(d_model, 1))
-        self.cop_head  = (nn.Sequential(nn.Tanh(), nn.Linear(d_model, n_cop))
-                          if _h_tanh else nn.Linear(d_model, n_cop))
+        self.home_head = nn.Linear(d_model, 1)      # → 1 AT_HOME logit
+        self.cop_head  = nn.Linear(d_model, n_cop)  # → 9 co-presence logits
 
         # Optional auxiliary head: predicts target DDAY_STRATA (3-way CE) from
         # decoder layer-0 hidden mean-pool. Gated by config["aux_stratum_head"].

@@ -32,6 +32,8 @@ declare -A _ENV_MAP=(
     [data_side_sampling]=DATA_SIDE_SAMPLING
     [sched_sample_p]=SCHED_SAMPLE_P
     [home_label_smooth]=HOME_LABEL_SMOOTH
+    [h_tanh_heads]=H_TANH_HEADS
+    [lambda_all_equal]=LAMBDA_ALL_EQUAL
 )
 
 for yaml_key in "${!_ENV_MAP[@]}"; do
