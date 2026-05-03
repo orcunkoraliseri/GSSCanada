@@ -24,6 +24,7 @@ ENV_MAP = {
     "sched_sample_p":     "SCHED_SAMPLE_P",
     "home_label_smooth":  "HOME_LABEL_SMOOTH",
     "h_tanh_heads":       "H_TANH_HEADS",
+    "h_time_pe":          "H_TIME_PE",
     "lambda_all_equal":   "LAMBDA_ALL_EQUAL",
 }
 

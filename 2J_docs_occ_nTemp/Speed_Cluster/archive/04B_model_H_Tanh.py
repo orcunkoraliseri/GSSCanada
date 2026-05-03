@@ -22,8 +22,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-H_TIME_PE = int(os.environ.get("H_TIME_PE", "0"))
-
 
 # ── Positional encoding ──────────────────────────────────────────────────────
 
@@ -185,16 +183,6 @@ class ConditionalTransformer(nn.Module):
         self.register_buffer("enc_pos_enc", sinusoidal_pos_enc(n_slots + 1, d_model))
         self.register_buffer("dec_pos_enc", sinusoidal_pos_enc(n_slots,     d_model))
 
-        if H_TIME_PE:
-            self.learnable_pe = nn.Parameter(torch.randn(1, n_slots, d_model) * 0.02)
-            t_idx = torch.arange(n_slots, dtype=torch.float)
-            cyc = torch.stack([
-                torch.sin(2 * math.pi * t_idx / n_slots),
-                torch.cos(2 * math.pi * t_idx / n_slots),
-            ], dim=-1).unsqueeze(0)  # (1, 48, 2)
-            self.register_buffer("cyclical_time", cyc)
-            self.time_proj = nn.Linear(d_model + 2, d_model)
-
         # ── Transformer encoder ──────────────────────────────────────────
         enc_layer = nn.TransformerEncoderLayer(
             d_model=d_model, nhead=n_heads, dim_feedforward=d_ff,
@@ -314,12 +302,7 @@ class ConditionalTransformer(nn.Module):
         dec_input = torch.cat([bos, tgt_emb[:, :-1, :]], dim=1) # (B, T, d_model)
 
         # Positional encoding (positions 0..T-1)
-        if H_TIME_PE:
-            cyc = self.cyclical_time.expand(B, -1, -1)[:, :T, :]
-            dec_input = self.time_proj(torch.cat([dec_input, cyc], dim=-1))
-            dec_input = dec_input + self.learnable_pe[:, :T, :]
-        else:
-            dec_input = dec_input + self.dec_pos_enc[:, :T, :]
+        dec_input = dec_input + self.dec_pos_enc[:, :T, :]
 
         # Cross-attention conditioning tensors
         cond_vec_d, cycle_emb_d, strata_oh_d = self._build_dec_cond(cond_vec, cycle_idx, tgt_strata)
@@ -416,18 +399,14 @@ class ConditionalTransformer(nn.Module):
         gen_cop_probs  = []
 
         # Decoder sequence starts with the BOS token at position 0
-        bos_tok = self.bos_token.expand(B, 1, self.d_model)
-        if not H_TIME_PE:
-            bos_tok = bos_tok + self.dec_pos_enc[:, :1, :]
+        bos_tok = (
+            self.bos_token.expand(B, 1, self.d_model)
+            + self.dec_pos_enc[:, :1, :]
+        )
         dec_tokens = [bos_tok]
 
         for t in range(self.n_slots):
-            dec_seq = torch.cat(dec_tokens, dim=1)           # (B, t+1, d_model)
-            if H_TIME_PE:
-                _sz = dec_seq.size(1)
-                cyc = self.cyclical_time.expand(B, -1, -1)[:, :_sz, :]
-                dec_seq = self.time_proj(torch.cat([dec_seq, cyc], dim=-1))
-                dec_seq = dec_seq + self.learnable_pe[:, :_sz, :]
+            dec_seq     = torch.cat(dec_tokens, dim=1)           # (B, t+1, d_model)
             causal_mask = nn.Transformer.generate_square_subsequent_mask(
                 dec_seq.shape[1], device=device
             )
@@ -462,8 +441,7 @@ class ConditionalTransformer(nn.Module):
                 act_emb  = self.act_embedding(act_tok)                            # (B, d_act)
                 slot_in  = torch.cat([act_emb, aux_t], dim=-1)                   # (B, d_act+10)
                 slot_out = self.slot_linear(slot_in).unsqueeze(1)                 # (B, 1, d_model)
-                if not H_TIME_PE:
-                    slot_out = slot_out + self.dec_pos_enc[:, t + 1:t + 2, :]
+                slot_out = slot_out + self.dec_pos_enc[:, t + 1:t + 2, :]
                 dec_tokens.append(slot_out)
 
         return (
