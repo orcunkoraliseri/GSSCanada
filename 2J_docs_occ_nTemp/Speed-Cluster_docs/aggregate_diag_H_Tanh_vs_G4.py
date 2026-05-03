@@ -270,7 +270,7 @@ def write_markdown(summary, artefacts, out_path):
         "",
     ]
 
-    with open(out_path, "w") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print(f"  saved {out_path}")
 
