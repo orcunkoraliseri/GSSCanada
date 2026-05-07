@@ -43,7 +43,10 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Import model via importlib (filename starts with digit)
 sys.path.insert(0, SCRIPT_DIR)
 model_mod = importlib.import_module("04B_model")
-ConditionalTransformer = model_mod.ConditionalTransformer
+ConditionalTransformer    = model_mod.ConditionalTransformer
+EncoderOnlyOccupancyModel = getattr(model_mod, "EncoderOnlyOccupancyModel", None)
+IOccupancyModel           = getattr(model_mod, "IOccupancyModel",           None)
+JSeriesHybrid             = getattr(model_mod, "JSeriesHybrid",             None)
 
 LAMBDA_ACT         = float(os.environ.get("LAMBDA_ACT",         "1.0"))
 LAMBDA_HOME        = float(os.environ.get("LAMBDA_HOME",        "0.5"))
@@ -61,6 +64,9 @@ HOME_LABEL_SMOOTH = float(os.environ.get("HOME_LABEL_SMOOTH", "0.0"))
 # Default "0" → G4 behaviour unchanged.
 if os.environ.get("LAMBDA_ALL_EQUAL", "0") == "1":
     LAMBDA_ACT = LAMBDA_HOME = LAMBDA_COP = LAMBDA_MARG = 0.25
+
+# H_NAT: encoder-only model type selector.
+MODEL_TYPE = os.environ.get("MODEL_TYPE", "ConditionalTransformer")
 
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
@@ -178,17 +184,32 @@ def compute_loss(output: dict, batch: dict, device,
         )  # (B, 48, 9)
 
     cop_avail = batch["dec_cop_avail"].float()   # (B, 48, 9)
-    cop_loss_masked = cop_loss_raw * cop_avail
-
-    # Defense-in-depth: also zero out colleagues (index 8) for 2005/2010 rows
-    # cycle_year is from the source respondent, but within-cycle matching ensures
-    # source and target share the same CYCLE_YEAR
     colleagues_mask = (batch["cycle_year"] >= 2015).float()  # (B,)
-    cop_loss_masked[:, :, 8] *= colleagues_mask.unsqueeze(-1)
 
-    # Verify colleagues loss is ~0 for 2005/2010 (print check in train loop)
-    denom    = cop_avail.sum().clamp(min=1.0)
-    cop_loss = cop_loss_masked.sum() / denom
+    if MODEL_TYPE == "I1":
+        # I1: Spouse (idx 1) uses home-masked BCE to learn p(spouse|home).
+        # Other 8 channels use standard availability masking unchanged.
+        home_tgt_raw = batch["dec_aux_seq"][:, :, 0].float()  # (B, 48) binary, unsmoothed
+
+        sp_mask  = (home_tgt_raw == 1).float() * cop_avail[:, :, 1]
+        sp_denom = sp_mask.sum().clamp(min=1.0)
+        cop_loss_spouse = (cop_loss_raw[:, :, 1] * sp_mask).sum() / sp_denom
+
+        other_avail = cop_avail.clone()
+        other_avail[:, :, 1] = 0.0  # exclude Spouse from combined average
+        cop_other = cop_loss_raw * other_avail
+        cop_other[:, :, 8] *= colleagues_mask.unsqueeze(-1)
+        other_denom = other_avail.sum().clamp(min=1.0)
+        cop_loss_other = cop_other.sum() / other_denom
+
+        # Weight by channel count: 8 standard + 1 home-masked Spouse
+        cop_loss = (8.0 * cop_loss_other + cop_loss_spouse) / 9.0
+    else:
+        cop_loss_masked = cop_loss_raw * cop_avail
+        # Defense-in-depth: zero colleagues (index 8) for 2005/2010 rows
+        cop_loss_masked[:, :, 8] *= colleagues_mask.unsqueeze(-1)
+        denom    = cop_avail.sum().clamp(min=1.0)
+        cop_loss = cop_loss_masked.sum() / denom
 
     # Optional auxiliary stratum-prediction head (F3-C, AUX_STRATUM_HEAD=1)
     aux_logits = output.get("aux_logits")  # (B, 3) or None
@@ -308,9 +329,15 @@ def validate(model, val_data: dict, val_pairs: dict, device, config: dict,
         cidx_t = val_data["cycle_idx"][syn_idx].to(device)
         strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
 
-        gen_act, gen_home, _, __ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
-        gen_act  = gen_act.cpu().numpy()    # (K, 48) 0-indexed
-        gen_home = gen_home.cpu().numpy()   # (K, 48) {0, 1}
+        if hasattr(model, "infer"):
+            # H_NAT: single-pass inference (no AR loop)
+            gen_act_t, gen_home_t, _ = model.infer(act_t, aux_t, cond_t, cidx_t, strat, apply_safety=False)
+            gen_act  = gen_act_t.cpu().numpy()
+            gen_home = gen_home_t.cpu().numpy()
+        else:
+            gen_act, gen_home, _, __ = model.generate(act_t, aux_t, cond_t, cidx_t, strat, temperature=0)
+            gen_act  = gen_act.cpu().numpy()    # (K, 48) 0-indexed
+            gen_home = gen_home.cpu().numpy()   # (K, 48) {0, 1}
 
         for k, (s_tgt, cy) in enumerate(zip(syn_strata, syn_cycles)):
             generated[s_tgt].append(gen_act[k])
@@ -370,7 +397,119 @@ def train(args):
     d_cond = feat_cfg["d_cond"]
 
     _aux_head = os.environ.get("AUX_STRATUM_HEAD", "0") == "1"
-    if args.sample:
+    if MODEL_TYPE == "H_NAT":
+        if args.sample:
+            model_config = {
+                "model_type": "H_NAT",
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2, "refinement_layers": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+            args.batch_size = 16
+            args.max_epochs = 5
+            args.patience   = 3
+            args.fp16       = False
+        else:
+            model_config = {
+                "model_type": "H_NAT",
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": 1024 if args.d_model == 256 else args.d_model * 4,
+                "N_enc": args.n_enc_layers, "refinement_layers": 2,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+    elif MODEL_TYPE == "I1":
+        # I1: faithful encoder-only port — per-slot fusion, no decoder, no fp16
+        args.fp16 = False  # spec: no fp16 for I1
+        if args.sample:
+            model_config = {
+                "model_type": "I1",
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+            args.batch_size = 16
+            args.max_epochs = 10
+            args.patience   = 10
+        else:
+            model_config = {
+                "model_type": "I1",
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": args.d_model * 4,
+                "N_enc": args.n_enc_layers,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+    elif MODEL_TYPE == "J1":
+        # J1: Hybrid AR-Encoder — G4 CrossAttnDecoder (Arm 1) + NAT binary heads (Arm 2).
+        # No fp16 (same I1 training hygiene: fp32, clip_grad_norm=25, ReduceLROnPlateau).
+        args.fp16 = False
+        if args.sample:
+            model_config = {
+                "model_type": "J1",
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2, "N_dec": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+            args.batch_size = 16
+            args.max_epochs = 10
+            args.patience   = 10
+        else:
+            model_config = {
+                "model_type": "J1",
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": args.d_model * 4,
+                "N_enc": args.n_enc_layers,
+                "N_dec": args.n_dec_layers,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+    elif MODEL_TYPE in ("J2", "J2_5", "J3"):
+        # J2/J2.5/J3: same JSeriesHybrid trunk; single-axis AT_HOME-targeted variants.
+        # J2 = config-only (lambda_home=0.90); J2.5 = home_head arch; J3 = arm2_act_proj.
+        # fp32, ReduceLROnPlateau, clip_grad_norm=25 (same I1/J1 hygiene).
+        args.fp16 = False
+        if args.sample:
+            model_config = {
+                "model_type": MODEL_TYPE,
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2, "N_dec": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+            args.batch_size = 16
+            args.max_epochs = 10
+            args.patience   = 10
+        else:
+            model_config = {
+                "model_type": MODEL_TYPE,
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": args.d_model * 4,
+                "N_enc": args.n_enc_layers,
+                "N_dec": args.n_dec_layers,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+    elif args.sample:
         # Local test config (CPU-friendly, fast)
         model_config = {
             "d_model": 64, "n_heads": 4, "d_ff": 256,
@@ -515,7 +654,17 @@ def train(args):
 
     # ── Model ────────────────────────────────────────────────────────────
     print("[2/4] Building model...")
-    model = ConditionalTransformer(model_config).to(device)
+    if MODEL_TYPE == "H_NAT":
+        assert EncoderOnlyOccupancyModel is not None, "EncoderOnlyOccupancyModel not found in 04B_model.py"
+        model = EncoderOnlyOccupancyModel(model_config).to(device)
+    elif MODEL_TYPE == "I1":
+        assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
+        model = IOccupancyModel(model_config).to(device)
+    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3"):
+        assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
+        model = JSeriesHybrid(model_config).to(device)
+    else:
+        model = ConditionalTransformer(model_config).to(device)
     total_params = sum(p.numel() for p in model.parameters())
     print(f"  Parameters: {total_params:,}")
     print(model)
@@ -523,10 +672,19 @@ def train(args):
     # ── Optimizer & schedule ─────────────────────────────────────────────
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     warmup_steps = 2000 if not args.sample else 50
-    scheduler = torch.optim.lr_scheduler.LambdaLR(
-        optimizer,
-        lr_lambda=lambda step: get_lr(step, model_config["d_model"], warmup_steps),
-    )
+    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3"):
+        # I1/J-series: ReduceLROnPlateau only — skipping LambdaLR prevents lr_lambda(0)
+        # from crushing the optimizer LR to ~2.5e-8 before training begins.
+        scheduler = None
+        plateau_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=0.95, patience=5,
+        )
+    else:
+        scheduler = torch.optim.lr_scheduler.LambdaLR(
+            optimizer,
+            lr_lambda=lambda step: get_lr(step, model_config["d_model"], warmup_steps),
+        )
+        plateau_sched = None
     scaler = torch.amp.GradScaler("cuda") if (args.fp16 and device.type == "cuda") else None
 
     # Resume from checkpoint if requested
@@ -547,7 +705,8 @@ def train(args):
             raise FileNotFoundError(f"Failed to load --resume checkpoint: {e}")
         model.load_state_dict(ckpt["model_state"])
         optimizer.load_state_dict(ckpt["optimizer_state"])
-        scheduler.load_state_dict(ckpt["scheduler_state"])
+        if scheduler is not None and ckpt.get("scheduler_state") is not None:
+            scheduler.load_state_dict(ckpt["scheduler_state"])
         start_epoch     = ckpt["epoch"] + 1
         # Fall back to old "best_val_js" key if resuming from a pre-2026-04-22 checkpoint.
         best_val_score  = ckpt.get("best_val_score",
@@ -596,6 +755,7 @@ def train(args):
             else:
                 train_batch = batch
 
+            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3") else 1.0
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(train_batch)
@@ -605,7 +765,7 @@ def train(args):
                                           cop_pos_weight=cop_pos_weight)
                 scaler.scale(losses["total_loss"]).backward()
                 scaler.unscale_(optimizer)
-                grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 1.0).item()
+                grad_norm = nn.utils.clip_grad_norm_(model.parameters(), _clip_norm).item()
                 scaler.step(optimizer)
                 scaler.update()
             else:
@@ -615,10 +775,12 @@ def train(args):
                                       home_pos_weight=home_pos_weight,
                                       cop_pos_weight=cop_pos_weight)
                 losses["total_loss"].backward()
-                grad_norm = nn.utils.clip_grad_norm_(model.parameters(), 1.0).item()
+                grad_norm = nn.utils.clip_grad_norm_(model.parameters(), _clip_norm).item()
                 optimizer.step()
 
-            scheduler.step()
+            # I1/J-series: per-epoch ReduceLROnPlateau; all others: per-batch LambdaLR
+            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3"):
+                scheduler.step()
             global_step += 1
 
             epoch_losses["total"] += losses["total_loss"].item()
@@ -650,13 +812,17 @@ def train(args):
         avg_cop   = epoch_losses["cop"]   / n_batches
         avg_marg  = epoch_losses["marg"]  / n_batches
         avg_gnorm = float(np.mean(grad_norms))
-        cur_lr    = scheduler.get_last_lr()[0]
+        cur_lr    = optimizer.param_groups[0]["lr"]
 
         # Validation pass
         val_result = validate(model, val_data, val_pairs, device, model_config)
         val_js     = val_result["val_js"]
         home_gap   = val_result["home_gap"]
         val_score  = val_result["val_score"]
+
+        # I1: step plateau scheduler on val_score once per epoch
+        if plateau_sched is not None:
+            plateau_sched.step(val_score)
         elapsed    = time.time() - epoch_start
 
         print(f"Epoch {epoch+1:3d}/{args.max_epochs}: "
@@ -683,7 +849,7 @@ def train(args):
         torch.save({
             "epoch": epoch, "model_state": model.state_dict(),
             "optimizer_state": optimizer.state_dict(),
-            "scheduler_state": scheduler.state_dict(),
+            "scheduler_state": scheduler.state_dict() if scheduler is not None else None,
             "best_val_score": best_val_score, "patience_counter": patience_counter,
             "model_config": model_config,
         }, last_ckpt)
@@ -691,8 +857,11 @@ def train(args):
         # Save best checkpoint — selected on combined val_JS + 0.5·|ΔAT_HOME|.
         # Both save and patience counter are gated on past_warmup to prevent
         # near-uniform warmup predictions from locking in a deceptively low score.
-        warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
-        past_warmup = args.sample or (epoch + 1) > warmup_epochs
+        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3"):
+            past_warmup = True  # no LambdaLR warmup for I1/J-series; track from epoch 1
+        else:
+            warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
+            past_warmup = args.sample or (epoch + 1) > warmup_epochs
         if not past_warmup:
             print(f"  [warmup epoch {epoch+1}/{warmup_epochs} — skipping best-model tracking]")
         elif val_score < best_val_score:

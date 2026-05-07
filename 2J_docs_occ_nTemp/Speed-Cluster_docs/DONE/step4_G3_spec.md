@@ -207,7 +207,7 @@ home_label_smooth: 0.05
 
 ```yaml
 # sweep_G23.yaml — combined driver, G2 + G3 in one array submission
-# Submit (cluster-tier action — Sonnet/builder owns this): bundle protocol, see step4_training_v2.md §Bundle-Submission Protocol.
+# Submit (cluster-tier action — Sonnet/builder owns this): bundle protocol, see DONE_step4_training_v2.md §Bundle-Submission Protocol.
 tags:
   - G2
   - G3

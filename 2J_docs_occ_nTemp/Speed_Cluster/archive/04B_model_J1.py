@@ -786,21 +786,13 @@ class IOccupancyModel(nn.Module):
 
 class JSeriesHybrid(nn.Module):
     """
-    J-series Hybrid AR-Encoder architecture (J1 / J2 / J2.5 / J3).
+    J1: Hybrid AR-Encoder architecture for diary augmentation.
 
     Trunk:  6-layer TransformerEncoder (d_model=384, n_heads=8, d_ff=1536, sinusoidal PE).
     Arm 1:  G4 CrossAttnDecoder, activity-only AR loop, sched_sample_p=0.0.
             Does NOT consume AT_HOME at any step (no feedback cascade).
-    Arm 2:  Per-slot NAT fusion → Tanh-gated binary heads (J1/J2 default).
-
-    MODEL_TYPE variants (single-axis each, forked from frozen J1):
-      J1  — baseline; all defaults below apply.
-      J2  — config-only (lambda_home=0.90); architecture identical to J1.
-      J2_5 — home_head replaced with Linear→GELU→Dropout→Linear (drops Tanh collapse);
-              cop head unchanged; arm2_proj unchanged.
-      J3  — arm2_act_proj: Linear(n_act, d_model) projects soft activity probs before
-              Arm-2 concat (dim-balance fix); arm2_proj input grows by (d_model - n_act);
-              heads and Arm-1 unchanged.
+    Arm 2:  Per-slot NAT fusion — encoder memory + Arm1 act_probs.detach() +
+            cond_vec + cycle_emb + strata_oh → arm2_proj → Tanh-gated binary heads.
 
     Loss:   standard cop_loss_masked path (NOT I1 masked Spouse BCE).
     Infer:  clip-only Spouse safety at inference: cop_pred[:,:,1] *= (home_pred>0.5).
@@ -833,7 +825,6 @@ class JSeriesHybrid(nn.Module):
         self.n_slots = n_slots
         self.n_act   = n_act
         self.n_cop   = n_cop
-        _mtype = config.get("model_type", "J1")
 
         # ── Encoder: source-diary slot embedding (act + full aux) ────────
         self.act_embedding = nn.Embedding(n_act, d_act)
@@ -870,28 +861,16 @@ class JSeriesHybrid(nn.Module):
         self.act_head = nn.Linear(d_model, n_act)
 
         # ── Arm 2: per-slot fusion projection ────────────────────────────
-        # J3: arm2_act_proj projects soft act probs (n_act → d_model) before concat.
-        # J1/J2/J2.5: raw n_act-dim probs enter concat directly.
-        if _mtype == "J3":
-            self.arm2_act_proj = nn.Linear(n_act, d_model)
-            d_arm2_in = d_model + d_model + d_cond + d_cycle + 3
-        else:
-            d_arm2_in = d_model + n_act + d_cond + d_cycle + 3
+        # Input concat: [memory_slot(d_model) | act_probs(n_act) |
+        #                cond_vec(d_cond) | cycle_emb(d_cycle) | strata_oh(3)]
+        d_arm2_in = d_model + n_act + d_cond + d_cycle + 3
         self.arm2_proj = nn.Linear(d_arm2_in, d_model)
 
-        # AT_HOME head (logit output; sigmoid applied externally in loss/infer).
-        # J2_5: GELU+Dropout variant — hypothesis: Tanh gate causes σ=0.0 collapse.
-        # J1/J2/J3: original Tanh-gated head.
-        if _mtype == "J2_5":
-            self.home_head = nn.Sequential(
-                nn.Linear(d_model, d_model), nn.GELU(), nn.Dropout(dropout),
-                nn.Linear(d_model, 1),
-            )
-        else:
-            self.home_head = nn.Sequential(
-                nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, 1)
-            )
-        # Co-presence head: Tanh-gated, 9-channel — unchanged across all J arms
+        # AT_HOME head: Linear→Tanh→Linear (logit), sigmoid applied separately
+        self.home_head = nn.Sequential(
+            nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, 1)
+        )
+        # Co-presence head: same Tanh-gated pattern, 9-channel
         self.cop_head = nn.Sequential(
             nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, n_cop)
         )
@@ -998,7 +977,6 @@ class JSeriesHybrid(nn.Module):
         memory:    (B, 49, d_model) — CLS dropped internally
         act_probs: (B, 48, n_act)   — soft probs at train, one-hot at infer
         Returns:   (B, 48, d_model)
-        J3: act_probs projected to d_model via arm2_act_proj before concat.
         """
         T         = self.n_slots
         slots_mem = memory[:, 1:, :]                                           # (B, 48, d_model)
@@ -1012,14 +990,8 @@ class JSeriesHybrid(nn.Module):
         cycle_b  = cycle_emb.unsqueeze(1).expand(-1, T, -1)                   # (B, 48, d_cycle)
         strata_b = strata_oh.unsqueeze(1).expand(-1, T, -1)                   # (B, 48, 3)
 
-        # J3: project activity distribution to d_model (detach already on act_probs)
-        if hasattr(self, "arm2_act_proj"):
-            act_emb = self.arm2_act_proj(act_probs)                            # (B, 48, d_model)
-        else:
-            act_emb = act_probs                                                 # (B, 48, n_act)
-
         fused = torch.cat(
-            [slots_mem, act_emb, cond_b, cycle_b, strata_b], dim=-1
+            [slots_mem, act_probs, cond_b, cycle_b, strata_b], dim=-1
         )                                                                       # (B, 48, d_arm2_in)
         return self.arm2_proj(fused)                                            # (B, 48, d_model)
 

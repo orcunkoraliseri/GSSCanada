@@ -26,6 +26,7 @@ ENV_MAP = {
     "h_tanh_heads":       "H_TANH_HEADS",
     "h_time_pe":          "H_TIME_PE",
     "lambda_all_equal":   "LAMBDA_ALL_EQUAL",
+    "model_type":         "MODEL_TYPE",
 }
 
 FLAG_KEYS = [

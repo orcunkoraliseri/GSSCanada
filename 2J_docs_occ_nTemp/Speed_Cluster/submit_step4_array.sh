@@ -53,7 +53,7 @@ for i in "${!TAGS[@]}"; do
     TRIAL_DATA_DIR=$(grep '^data_dir:' "$BASE/configs/${TAG}.yaml" 2>/dev/null | sed 's/^data_dir:[[:space:]]*//')
     [ -z "$TRIAL_DATA_DIR" ] && TRIAL_DATA_DIR="outputs_step4"
 
-    JID_E=$(sbatch --parsable --dependency=afterok:${JID_D}_${i} --partition=pg --gres=gpu:1 --mem=48Gb --time=04:00:00 --job-name=04E_${TAG} --output="logs/04E_${TAG}_%j.out" --error="logs/04E_${TAG}_%j.err" --export=ALL --wrap="cd $BASE && . /encs/pkg/modules-5.3.1/root/init/bash && module load cuda/12.8 && $PYTHON -u 04E_inference.py --data_dir ${TRIAL_DATA_DIR} --checkpoint $CKPT --output ${OUT_DIR}/augmented_diaries.csv --temperature 0.8")
+    JID_E=$(sbatch --parsable --dependency=afterok:${JID_D}_${i} --partition=pg --gres=gpu:1 --mem=48Gb --time=04:00:00 --job-name=04E_${TAG} --output="logs/04E_${TAG}_%j.out" --error="logs/04E_${TAG}_%j.err" --export=ALL --wrap="cd $BASE && . /encs/pkg/modules-5.3.1/root/init/bash && module load cuda/12.8 && source Speed_Cluster/config_to_env.sh configs/${TAG}.yaml && $PYTHON -u 04E_inference.py --data_dir ${TRIAL_DATA_DIR} --checkpoint $CKPT --output ${OUT_DIR}/augmented_diaries.csv --temperature 0.8")
     echo "  04E_${TAG}: $JID_E (afterok:${JID_D}_${i})"
 
     JID_F=$(sbatch --parsable --dependency=afterok:${JID_E} --partition=ps --mem=48G --time=02:00:00 --job-name=04F_${TAG} --output="logs/04F_${TAG}_%j.out" --error="logs/04F_${TAG}_%j.err" --wrap="cd $BASE && $PYTHON -u 04F_validation.py --step3_dir outputs_step3 --step4_dir ${OUT_DIR}")

@@ -1,0 +1,32 @@
+# sweep_smoke_I1.yaml — smoke run for I1 (10 epochs, --sample, small model)
+# Pass criterion: act_loss strictly decreasing across first 5 epochs AND grad_norm
+# finite throughout. If either fails → STOP, do not proceed to full train.
+tag: I1_smoke
+seed: 42
+model_type: I1
+
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 10
+patience: 10
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.6
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 1.0
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.0

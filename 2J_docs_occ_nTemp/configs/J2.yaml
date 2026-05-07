@@ -1,0 +1,34 @@
+# J2.yaml — J-Series, lambda_home 0.7 → 0.90 (config-only, single axis)
+# Architecture: JSeriesHybrid unchanged from J1 (no code change).
+# Target: activate collapsed home_head with stronger gradient signal.
+# Hard gates: composite < 1.045 | AT_HOME <= 5.3 pp | Spouse <= 5 pp | act_JS <= 0.05
+tag: J2
+seed: 42
+model_type: J2
+
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.90
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05

@@ -1,0 +1,127 @@
+============================================================
+J3 smoke run: MODEL_TYPE=J3  DATA_DIR=outputs_step4_G1
+PY_ARGS:  --batch_size 256 --max_epochs 10 --patience 10 --lr 5e-05 --d_model 384 --n_heads 8 --n_enc_layers 6 --n_dec_layers 6
+============================================================
+============================================================
+Step 4D — Training  [SAMPLE MODE]
+============================================================
+  data_dir:       outputs_step4_G1
+  output_dir:     outputs_step4_J3_smoke
+  checkpoint_dir: outputs_step4_J3_smoke/checkpoints
+  batch_size=256  max_epochs=10  patience=10  lr=5e-05  fp16=False
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_J3_smoke/checkpoints
+  AUX_STRATUM_HEAD=False  COP_POS_WEIGHT=0  ACTIVITY_BOOSTS=1  DATA_SIDE_SAMPLING=0  MARG_MODE=global  AUX_STRATUM_LAMBDA=0.1  SPOUSE_NEG_WEIGHT=0.45
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 141270 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=1):
+    class  0: 2.174
+    class  1: 0.517
+    class  2: 1.072
+    class  3: 1.110
+    class  4: 0.261
+    class  5: 0.752
+    class  6: 0.892
+    class  7: 1.355
+    class  8: 1.473
+    class  9: 0.406
+    class 10: 1.161
+    class 11: 1.782
+    class 12: 2.341
+    class 13: 2.742
+  AT_HOME observed rate: 0.7250  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=global
+  COP pos_weight: disabled (COP_POS_WEIGHT=0)
+  SPOUSE_NEG_WEIGHT=0.45: Spouse (idx 1) cop pos_weight overridden
+[2/4] Building model...
+  Parameters: 342,520
+JSeriesHybrid(
+  (act_embedding): Embedding(14, 16)
+  (slot_linear): Linear(in_features=26, out_features=64, bias=True)
+  (cycle_embedding): Embedding(4, 16)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=93, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=64, bias=True)
+  )
+  (arm1_slot_proj): Linear(in_features=16, out_features=64, bias=True)
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-1): 2 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+        )
+        (linear1): Linear(in_features=64, out_features=256, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=256, out_features=64, bias=True)
+        (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+  )
+  (arm1_decoder): CrossAttnDecoder(
+    (proj_demo): Linear(in_features=77, out_features=64, bias=True)
+    (proj_cycle): Linear(in_features=16, out_features=64, bias=True)
+    (proj_strata): Linear(in_features=3, out_features=64, bias=True)
+    (layers): ModuleList(
+      (0-1): 2 x CondCrossAttnDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+        )
+        (cross_mem): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+        )
+        (cross_cond): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+        )
+        (ffn): Sequential(
+          (0): Linear(in_features=64, out_features=256, bias=True)
+          (1): GELU(approximate='none')
+          (2): Linear(in_features=256, out_features=64, bias=True)
+        )
+        (ln1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+        (ln2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+        (ln3): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+        (ln4): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+    (norm): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=64, out_features=14, bias=True)
+  (arm2_act_proj): Linear(in_features=14, out_features=64, bias=True)
+  (arm2_proj): Linear(in_features=224, out_features=64, bias=True)
+  (home_head): Sequential(
+    (0): Linear(in_features=64, out_features=64, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=64, out_features=1, bias=True)
+  )
+  (cop_head): Sequential(
+    (0): Linear(in_features=64, out_features=64, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=64, out_features=9, bias=True)
+  )
+)
+[3/4] Training...
+Epoch   1/10: train_loss=1.4450  act=1.0569  home=0.4415  cop=0.2527  marg=0.0322  |  val_JS=0.2386  home_gap=0.2341  val_score=0.3556  lr=5.00e-05  grad_norm=3.232  (152s)
+  ✓ New best model saved (val_score=0.3556  val_JS=0.2386  home_gap=0.2341)
+Epoch   2/10: train_loss=1.2407  act=0.8798  home=0.4184  cop=0.2169  marg=0.0300  |  val_JS=0.2186  home_gap=0.1608  val_score=0.2990  lr=5.00e-05  grad_norm=1.783  (154s)
+  ✓ New best model saved (val_score=0.2990  val_JS=0.2186  home_gap=0.1608)
+Epoch   3/10: train_loss=1.2193  act=0.8617  home=0.4154  cop=0.2132  marg=0.0294  |  val_JS=0.2299  home_gap=0.1809  val_score=0.3204  lr=5.00e-05  grad_norm=1.464  (155s)
+Epoch   4/10: train_loss=1.2119  act=0.8558  home=0.4141  cop=0.2112  marg=0.0293  |  val_JS=0.2166  home_gap=0.2302  val_score=0.3317  lr=5.00e-05  grad_norm=1.332  (155s)
+Epoch   5/10: train_loss=1.2005  act=0.8477  home=0.4101  cop=0.2094  marg=0.0291  |  val_JS=0.2139  home_gap=0.1963  val_score=0.3120  lr=5.00e-05  grad_norm=1.263  (155s)
+Epoch   6/10: train_loss=1.1947  act=0.8420  home=0.4100  cop=0.2096  marg=0.0286  |  val_JS=0.1926  home_gap=0.1733  val_score=0.2792  lr=5.00e-05  grad_norm=1.217  (155s)
+  ✓ New best model saved (val_score=0.2792  val_JS=0.1926  home_gap=0.1733)
+Epoch   7/10: train_loss=1.1861  act=0.8362  home=0.4065  cop=0.2085  marg=0.0282  |  val_JS=0.2080  home_gap=0.1888  val_score=0.3024  lr=5.00e-05  grad_norm=1.189  (156s)
+Epoch   8/10: train_loss=1.1827  act=0.8331  home=0.4063  cop=0.2079  marg=0.0284  |  val_JS=0.2107  home_gap=0.1934  val_score=0.3074  lr=5.00e-05  grad_norm=1.179  (156s)
+Epoch   9/10: train_loss=1.1810  act=0.8320  home=0.4052  cop=0.2082  marg=0.0284  |  val_JS=0.1944  home_gap=0.1455  val_score=0.2672  lr=5.00e-05  grad_norm=1.169  (156s)
+  ✓ New best model saved (val_score=0.2672  val_JS=0.1944  home_gap=0.1455)
+Epoch  10/10: train_loss=1.1768  act=0.8284  home=0.4050  cop=0.2070  marg=0.0284  |  val_JS=0.1992  home_gap=0.1407  val_score=0.2695  lr=5.00e-05  grad_norm=1.170  (156s)
+
+[4/4] Training complete. Best val_score=0.2672
+  Best checkpoint: outputs_step4_J3_smoke/checkpoints/best_model.pt
+  Training log:    outputs_step4_J3_smoke/step4_training_log.csv
+=== J3 SMOKE COMPLETE ===

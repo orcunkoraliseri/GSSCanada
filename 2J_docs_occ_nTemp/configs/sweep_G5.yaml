@@ -1,0 +1,4 @@
+# sweep_G5.yaml — solo G5 submission driver
+# G5 is config-only (lambda_home 0.6 -> 0.7 vs G4), no source-file changes.
+tags:
+  - G5

@@ -40,6 +40,9 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 model_mod = importlib.import_module("04B_model")
 ConditionalTransformer = model_mod.ConditionalTransformer
+EncoderOnlyOccupancyModel = getattr(model_mod, "EncoderOnlyOccupancyModel", None)
+IOccupancyModel = getattr(model_mod, "IOccupancyModel", None)
+JSeriesHybrid   = getattr(model_mod, "JSeriesHybrid",   None)
 
 N_SLOTS = 48
 N_COP   = 9
@@ -155,11 +158,17 @@ def run_inference(model, data: dict, device, temperature: float,
             strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
 
             with torch.no_grad():
-                gen_act, gen_home, gen_cop, gen_cop_probs = model.generate(
-                    act_t, aux_t, cond_t, cidx_t, strat,
-                    temperature=temperature,
-                    home_threshold=home_threshold,
-                )
+                if hasattr(model, "infer"):
+                    gen_act, gen_home, gen_cop_probs = model.infer(
+                        act_t, aux_t, cond_t, cidx_t, strat,
+                        apply_safety=True,
+                    )
+                else:
+                    gen_act, gen_home, gen_cop, gen_cop_probs = model.generate(
+                        act_t, aux_t, cond_t, cidx_t, strat,
+                        temperature=temperature,
+                        home_threshold=home_threshold,
+                    )
 
             gen_act       = gen_act.cpu().numpy()        # (K, 48) 0-indexed
             gen_home      = gen_home.cpu().numpy()       # (K, 48)
@@ -284,7 +293,18 @@ def main():
           f"({os.path.getsize(args.checkpoint) / 1e6:.1f} MB)")
     ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
     model_config = ckpt["model_config"]
-    model = ConditionalTransformer(model_config).to(device)
+    _mtype = model_config.get("model_type", "ConditionalTransformer")
+    if _mtype == "H_NAT":
+        assert EncoderOnlyOccupancyModel is not None, "EncoderOnlyOccupancyModel not found in 04B_model.py"
+        model = EncoderOnlyOccupancyModel(model_config).to(device)
+    elif _mtype == "I1":
+        assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
+        model = IOccupancyModel(model_config).to(device)
+    elif _mtype in ("J1", "J2", "J2_5", "J3"):
+        assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
+        model = JSeriesHybrid(model_config).to(device)
+    else:
+        model = ConditionalTransformer(model_config).to(device)
     model.load_state_dict(ckpt["model_state"])
     model.eval()
     print(f"  Loaded from epoch {ckpt.get('epoch', '?')}  "
