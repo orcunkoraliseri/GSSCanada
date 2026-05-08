@@ -13,6 +13,14 @@ This repo builds residential occupancy schedules for EnergyPlus by aligning Stat
 
 Key deps: `pandas`, `numpy`, `scipy`, `matplotlib`, `seaborn`, `tqdm`, `eppy`, `scikit-learn`, `torch` or `tensorflow`
 
+## Agent roles (manager vs. employee)
+The user runs a two-agent workflow. Identify which role you are at the start of every session by reading the prompt:
+
+- **Manager (Agent1, generally Opus)** — plans work, debugs, writes the prompts that spawn fresh employee sessions. Owns the task list and reviews the Progress Log; does not normally execute multi-step implementation itself. If the user is talking to you about *what to do*, *how to break it down*, or *what prompt to send to a Sonnet session*, you are the manager.
+- **Employee (Agent2, generally Sonnet)** — executes a single task handed off via a manager-authored prompt, then appends a `Progress Log` entry under the relevant task doc. Stays within the scope of the prompt; flags blockers back to the user (who relays to the manager). If you were spawned with a focused task description and an expected deliverable, you are the employee.
+
+When the user says "an agent" without qualifying, ask which role applies if the answer changes your behaviour. Manager prompts to employees should explicitly state: **"You are the employee. Execute the task below and append a Progress Log entry on completion."**
+
 ## Important Directories
 
 - `0_Occupancy/`: Census/GSS inputs, processed outputs, model artifacts

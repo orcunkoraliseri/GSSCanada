@@ -834,8 +834,6 @@ class JSeriesHybrid(nn.Module):
         self.n_act   = n_act
         self.n_cop   = n_cop
         _mtype = config.get("model_type", "J1")
-        self.enable_temporal_injection = config.get("enable_temporal_injection", False)
-        self.enable_hierarchical_cop   = config.get("enable_hierarchical_cop",   False)
 
         # ── Encoder: source-diary slot embedding (act + full aux) ────────
         self.act_embedding = nn.Embedding(n_act, d_act)
@@ -872,19 +870,14 @@ class JSeriesHybrid(nn.Module):
         self.act_head = nn.Linear(d_model, n_act)
 
         # ── Arm 2: per-slot fusion projection ────────────────────────────
-        # J3/J4_x: arm2_act_proj projects soft act probs (n_act → d_model) before concat.
+        # J3: arm2_act_proj projects soft act probs (n_act → d_model) before concat.
         # J1/J2/J2.5: raw n_act-dim probs enter concat directly.
-        if _mtype in ("J3", "J4_1", "J4_2", "J4_3"):
+        if _mtype == "J3":
             self.arm2_act_proj = nn.Linear(n_act, d_model)
             d_arm2_in = d_model + d_model + d_cond + d_cycle + 3
         else:
             d_arm2_in = d_model + n_act + d_cond + d_cycle + 3
         self.arm2_proj = nn.Linear(d_arm2_in, d_model)
-
-        # J-4.1: explicit time-of-day and day-of-week embeddings injected into fused_seq.
-        if self.enable_temporal_injection:
-            self.tod_emb = nn.Embedding(48, d_model)
-            self.dow_emb = nn.Embedding(3,  d_model)
 
         # AT_HOME head (logit output; sigmoid applied externally in loss/infer).
         # J2_5: GELU+Dropout variant — hypothesis: Tanh gate causes σ=0.0 collapse.
@@ -898,10 +891,9 @@ class JSeriesHybrid(nn.Module):
             self.home_head = nn.Sequential(
                 nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, 1)
             )
-        # Co-presence head: J-4.2 widens input by 1 to receive home_prob conditioning.
-        _cop_in = d_model + 1 if self.enable_hierarchical_cop else d_model
+        # Co-presence head: Tanh-gated, 9-channel — unchanged across all J arms
         self.cop_head = nn.Sequential(
-            nn.Linear(_cop_in, d_model), nn.Tanh(), nn.Linear(d_model, n_cop)
+            nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, n_cop)
         )
 
         self._init_weights()
@@ -1006,22 +998,21 @@ class JSeriesHybrid(nn.Module):
         memory:    (B, 49, d_model) — CLS dropped internally
         act_probs: (B, 48, n_act)   — soft probs at train, one-hot at infer
         Returns:   (B, 48, d_model)
-        J3/J4_x: act_probs projected to d_model via arm2_act_proj before concat.
-        J-4.1: tod_emb + dow_emb added to fused_seq after arm2_proj.
+        J3: act_probs projected to d_model via arm2_act_proj before concat.
         """
         T         = self.n_slots
-        B         = memory.shape[0]
         slots_mem = memory[:, 1:, :]                                           # (B, 48, d_model)
 
-        cycle_emb   = self.cycle_embedding(cycle_idx)                          # (B, d_cycle)
-        strata_long = (tgt_strata - 1).clamp(0, 2)                            # (B,) — 0/1/2
-        strata_oh   = F.one_hot(strata_long, num_classes=3).float()           # (B, 3)
+        cycle_emb = self.cycle_embedding(cycle_idx)                            # (B, d_cycle)
+        strata_oh = F.one_hot(
+            (tgt_strata - 1).clamp(0, 2), num_classes=3
+        ).float()                                                               # (B, 3)
 
         cond_b   = cond_vec.unsqueeze(1).expand(-1, T, -1)                    # (B, 48, d_cond)
         cycle_b  = cycle_emb.unsqueeze(1).expand(-1, T, -1)                   # (B, 48, d_cycle)
         strata_b = strata_oh.unsqueeze(1).expand(-1, T, -1)                   # (B, 48, 3)
 
-        # J3/J4_x: project activity distribution to d_model (detach already on act_probs)
+        # J3: project activity distribution to d_model (detach already on act_probs)
         if hasattr(self, "arm2_act_proj"):
             act_emb = self.arm2_act_proj(act_probs)                            # (B, 48, d_model)
         else:
@@ -1030,14 +1021,7 @@ class JSeriesHybrid(nn.Module):
         fused = torch.cat(
             [slots_mem, act_emb, cond_b, cycle_b, strata_b], dim=-1
         )                                                                       # (B, 48, d_arm2_in)
-        fused_seq = self.arm2_proj(fused)                                      # (B, 48, d_model)
-
-        if self.enable_temporal_injection:
-            slot_idx = torch.arange(T, device=fused_seq.device).unsqueeze(0).expand(B, -1)
-            dow_idx  = strata_long.unsqueeze(-1).expand(-1, T)
-            fused_seq = fused_seq + self.tod_emb(slot_idx) + self.dow_emb(dow_idx)
-
-        return fused_seq
+        return self.arm2_proj(fused)                                            # (B, 48, d_model)
 
     # ── Forward (teacher-forcing, training) ──────────────────────────────────
 
@@ -1058,18 +1042,10 @@ class JSeriesHybrid(nn.Module):
             batch["cycle_idx"], batch["tgt_strata"],
         )  # (B, 48, d_model)
 
-        home_logits = self.home_head(arm2_feat).squeeze(-1)          # (B, 48)
-        if self.enable_hierarchical_cop:
-            home_probs  = torch.sigmoid(home_logits).detach()       # (B, 48) — detach isolates grads
-            cop_input   = torch.cat([arm2_feat, home_probs.unsqueeze(-1)], dim=-1)
-            cop_logits  = self.cop_head(cop_input)                   # (B, 48, 9)
-        else:
-            cop_logits  = self.cop_head(arm2_feat)                   # (B, 48, 9)
-
         return {
             "act_logits":  act_logits,
-            "home_logits": home_logits,
-            "cop_logits":  cop_logits,
+            "home_logits": self.home_head(arm2_feat).squeeze(-1),  # (B, 48)
+            "cop_logits":  self.cop_head(arm2_feat),               # (B, 48, 9)
             "aux_logits":  None,
         }
 
@@ -1091,15 +1067,10 @@ class JSeriesHybrid(nn.Module):
         act_probs = F.one_hot(act_tokens, num_classes=self.n_act).float()  # (B, 48, n_act)
         arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
 
-        home_logits_inf = self.home_head(arm2_feat).squeeze(-1)       # (B, 48)
-        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()   # (B, 48)
-
-        if self.enable_hierarchical_cop:
-            home_probs_inf = torch.sigmoid(home_logits_inf).detach()
-            cop_input_inf  = torch.cat([arm2_feat, home_probs_inf.unsqueeze(-1)], dim=-1)
-            cop_prob = torch.sigmoid(self.cop_head(cop_input_inf))   # (B, 48, 9)
-        else:
-            cop_prob = torch.sigmoid(self.cop_head(arm2_feat))       # (B, 48, 9)
+        gen_home = (
+            torch.sigmoid(self.home_head(arm2_feat).squeeze(-1)) > 0.5
+        ).float()                                                     # (B, 48)
+        cop_prob = torch.sigmoid(self.cop_head(arm2_feat))           # (B, 48, 9)
 
         if apply_safety:
             cop_prob = cop_prob.clone()

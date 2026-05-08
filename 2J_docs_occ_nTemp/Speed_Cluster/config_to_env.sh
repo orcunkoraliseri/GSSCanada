@@ -22,6 +22,7 @@ declare -A _ENV_MAP=(
     [lambda_home]=LAMBDA_HOME
     [lambda_cop]=LAMBDA_COP
     [lambda_marg]=LAMBDA_MARG
+    [lambda_logic]=LAMBDA_LOGIC
     [marg_mode]=MARG_MODE
     [aux_stratum_lambda]=AUX_STRATUM_LAMBDA
     [spouse_neg_weight]=SPOUSE_NEG_WEIGHT

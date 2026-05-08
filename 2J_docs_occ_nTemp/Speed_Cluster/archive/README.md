@@ -15,7 +15,9 @@ Each file is a frozen snapshot of `2J_docs_occ_nTemp/04B_model.py` for one Step-
 | `04B_model_pre_HNAT.py`    | H_Time       | Legacy name for H_Time snapshot — retained because `step4_training_v3.md` cites it.         |
 | `04B_model_H_NAT.py`       | H_NAT        | Working tree at the H_NAT run (encoder-only stack added on top of H_Time). Same as `pre_I1`.|
 | `04B_model_pre_I1.py`      | H_NAT        | Legacy name for H_NAT snapshot — retained because `step4_training_v3.md` cites it.          |
-| (live `04B_model.py`)      | I1           | Faithful encoder-only port. Will be archived as `04B_model_I1.py` when I2 starts.           |
+| `04B_model_J4.py`          | J4_1 / J4_2  | `04B_model.py` at J-4 series start (2026-05-08). Contains `enable_temporal_injection` (J4_1) and `enable_hierarchical_cop` (J4_2) flags. J4_3 uses frozen J3 arch — no separate snapshot needed. |
+| `04D_train_J4.py`          | J4_3         | `04D_train.py` at J-4 series start (2026-05-08). Adds `LAMBDA_LOGIC` env var + `loss_logic = (p_alone * p_others).mean()` term to `compute_loss()`. Default `LAMBDA_LOGIC=0.0` keeps J1/J2/J3 unaffected. |
+| (live `04B_model.py`)      | J4_1 / J4_2  | Enable flags: `enable_temporal_injection` (J4_1), `enable_hierarchical_cop` (J4_2). Archived as `04B_model_J4.py`. |
 
 ## Notes
 

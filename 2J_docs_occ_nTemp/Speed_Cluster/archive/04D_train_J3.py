@@ -52,7 +52,6 @@ LAMBDA_ACT         = float(os.environ.get("LAMBDA_ACT",         "1.0"))
 LAMBDA_HOME        = float(os.environ.get("LAMBDA_HOME",        "0.5"))
 LAMBDA_COP         = float(os.environ.get("LAMBDA_COP",         "0.3"))
 LAMBDA_MARG        = float(os.environ.get("LAMBDA_MARG",        "0.1"))
-LAMBDA_LOGIC       = float(os.environ.get("LAMBDA_LOGIC",       "0.0"))
 MARG_MODE          = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
 AUX_STRATUM_LAMBDA = float(os.environ.get("AUX_STRATUM_LAMBDA", "0.1"))
 SPOUSE_NEG_WEIGHT  = float(os.environ.get("SPOUSE_NEG_WEIGHT",  "1.0"))
@@ -137,17 +136,6 @@ def compute_loss(output: dict, batch: dict, device,
     act_logits  = output["act_logits"]   # (B, 48, 14)
     home_logits = output["home_logits"]  # (B, 48)
     cop_logits  = output["cop_logits"]   # (B, 48, 9)
-
-    # J-4.3 logic loss: penalise co-occurrence of Alone and any non-Alone cop channel.
-    # alone_idx=0 confirmed from COP_COLS in 04E_inference.py. Default LAMBDA_LOGIC=0.0
-    # keeps J1/J2/J2.5/J3 unaffected.
-    if LAMBDA_LOGIC > 0.0:
-        cop_probs_logic = torch.sigmoid(cop_logits)                  # (B, 48, 9)
-        p_alone  = cop_probs_logic[..., 0]                           # (B, 48)
-        p_others = cop_probs_logic.sum(dim=-1) - p_alone             # (B, 48)
-        loss_logic = (p_alone * p_others).mean()
-    else:
-        loss_logic = torch.tensor(0.0, device=cop_logits.device)
 
     # Activity targets: 0-indexed int64
     act_tgt  = batch["dec_act_seq"]                          # (B, 48)
@@ -234,22 +222,20 @@ def compute_loss(output: dict, batch: dict, device,
         LAMBDA_AUX = 0.0
 
     total = (
-        LAMBDA_ACT   * act_loss
-        + LAMBDA_HOME  * home_loss
-        + LAMBDA_COP   * cop_loss
-        + LAMBDA_MARG  * marg_loss
-        + LAMBDA_AUX   * aux_loss
-        + LAMBDA_LOGIC * loss_logic
+        LAMBDA_ACT  * act_loss
+        + LAMBDA_HOME * home_loss
+        + LAMBDA_COP  * cop_loss
+        + LAMBDA_MARG * marg_loss
+        + LAMBDA_AUX  * aux_loss
     )
 
     return {
-        "total_loss":  total,
-        "act_loss":    act_loss.item(),
-        "home_loss":   home_loss.item(),
-        "cop_loss":    cop_loss.item(),
-        "marg_loss":   marg_loss.item(),
-        "aux_loss":    aux_loss.item() if aux_logits is not None else 0.0,
-        "logic_loss":  loss_logic.item(),
+        "total_loss": total,
+        "act_loss":   act_loss.item(),
+        "home_loss":  home_loss.item(),
+        "cop_loss":   cop_loss.item(),
+        "marg_loss":  marg_loss.item(),
+        "aux_loss":   aux_loss.item() if aux_logits is not None else 0.0,
     }
 
 
@@ -523,40 +509,6 @@ def train(args):
                 "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
                 "aux_stratum_head": False,
             }
-    elif MODEL_TYPE in ("J4_1", "J4_2", "J4_3"):
-        # J4_x: parallel precision ladder forked from frozen J3.
-        # J4_1 = temporal injection; J4_2 = hierarchical cop; J4_3 = logic loss only (no arch change).
-        # fp32, ReduceLROnPlateau, clip_grad_norm=25 (same J-series hygiene).
-        args.fp16 = False
-        if args.sample:
-            model_config = {
-                "model_type": MODEL_TYPE,
-                "d_model": 64, "n_heads": 4, "d_ff": 256,
-                "N_enc": 2, "N_dec": 2,
-                "d_act": 16, "d_cycle": 16,
-                "dropout": 0.1, "n_activity_classes": 14,
-                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
-                "aux_stratum_head": False,
-                "enable_temporal_injection": MODEL_TYPE == "J4_1",
-                "enable_hierarchical_cop":   MODEL_TYPE == "J4_2",
-            }
-            args.batch_size = 16
-            args.max_epochs = 10
-            args.patience   = 10
-        else:
-            model_config = {
-                "model_type": MODEL_TYPE,
-                "d_model": args.d_model, "n_heads": args.n_heads,
-                "d_ff": args.d_model * 4,
-                "N_enc": args.n_enc_layers,
-                "N_dec": args.n_dec_layers,
-                "d_act": 32, "d_cycle": 32,
-                "dropout": 0.1, "n_activity_classes": 14,
-                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
-                "aux_stratum_head": False,
-                "enable_temporal_injection": MODEL_TYPE == "J4_1",
-                "enable_hierarchical_cop":   MODEL_TYPE == "J4_2",
-            }
     elif args.sample:
         # Local test config (CPU-friendly, fast)
         model_config = {
@@ -708,7 +660,7 @@ def train(args):
     elif MODEL_TYPE == "I1":
         assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
         model = IOccupancyModel(model_config).to(device)
-    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
     else:
@@ -720,7 +672,7 @@ def train(args):
     # ── Optimizer & schedule ─────────────────────────────────────────────
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     warmup_steps = 2000 if not args.sample else 50
-    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3"):
         # I1/J-series: ReduceLROnPlateau only — skipping LambdaLR prevents lr_lambda(0)
         # from crushing the optimizer LR to ~2.5e-8 before training begins.
         scheduler = None
@@ -803,7 +755,7 @@ def train(args):
             else:
                 train_batch = batch
 
-            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3") else 1.0
+            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3") else 1.0
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(train_batch)
@@ -827,7 +779,7 @@ def train(args):
                 optimizer.step()
 
             # I1/J-series: per-epoch ReduceLROnPlateau; all others: per-batch LambdaLR
-            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3"):
                 scheduler.step()
             global_step += 1
 
@@ -905,7 +857,7 @@ def train(args):
         # Save best checkpoint — selected on combined val_JS + 0.5·|ΔAT_HOME|.
         # Both save and patience counter are gated on past_warmup to prevent
         # near-uniform warmup predictions from locking in a deceptively low score.
-        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3"):
             past_warmup = True  # no LambdaLR warmup for I1/J-series; track from epoch 1
         else:
             warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
