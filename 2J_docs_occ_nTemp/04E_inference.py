@@ -300,7 +300,7 @@ def main():
     elif _mtype == "I1":
         assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
         model = IOccupancyModel(model_config).to(device)
-    elif _mtype in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+    elif _mtype in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
     else:

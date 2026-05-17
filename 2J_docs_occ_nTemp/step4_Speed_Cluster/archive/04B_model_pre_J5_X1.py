@@ -834,7 +834,6 @@ class JSeriesHybrid(nn.Module):
         self.n_act   = n_act
         self.n_cop   = n_cop
         _mtype = config.get("model_type", "J1")
-        self._mtype = _mtype
         self.enable_temporal_injection = config.get("enable_temporal_injection", False)
         self.enable_hierarchical_cop   = config.get("enable_hierarchical_cop",   False)
 
@@ -875,8 +874,7 @@ class JSeriesHybrid(nn.Module):
         # ── Arm 2: per-slot fusion projection ────────────────────────────
         # J3/J4_x: arm2_act_proj projects soft act probs (n_act → d_model) before concat.
         # J1/J2/J2.5: raw n_act-dim probs enter concat directly.
-        # J5_X1/X1b: arm2_act_proj kept defined (bypassed in forward/infer) for revert safety.
-        if _mtype in ("J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+        if _mtype in ("J3", "J4_1", "J4_2", "J4_3"):
             self.arm2_act_proj = nn.Linear(n_act, d_model)
             d_arm2_in = d_model + d_model + d_cond + d_cycle + 3
         else:
@@ -964,21 +962,6 @@ class JSeriesHybrid(nn.Module):
         )
         return self.act_head(dec_out)  # (B, T, n_act)
 
-    def _arm1_decode_tf_full(self, dec_act_seq, tgt_strata, memory, cond_vec, cycle_idx):
-        """Teacher-forced Arm 1 decode returning (act_logits, dec_out). Used by J5_X1/X1b head routing."""
-        B, T = dec_act_seq.shape
-        act_emb   = self.act_embedding(dec_act_seq)
-        tgt_emb   = self.arm1_slot_proj(act_emb)
-
-        bos = self.bos_token.expand(B, 1, -1)
-        dec_input = torch.cat([bos, tgt_emb[:, :-1, :]], dim=1)
-        dec_input = dec_input + self.dec_pos_enc[:, :T, :]
-
-        cond_vec_d, cycle_emb_d, strata_oh_d = self._build_arm1_cond(cond_vec, cycle_idx, tgt_strata)
-        causal_mask = nn.Transformer.generate_square_subsequent_mask(T, device=dec_input.device)
-        dec_out, _ = self.arm1_decoder(dec_input, memory, cond_vec_d, cycle_emb_d, strata_oh_d, causal_mask)
-        return self.act_head(dec_out), dec_out  # (B, T, n_act), (B, T, d_model)
-
     def _arm1_generate(self, memory, cond_vec, cycle_idx, tgt_strata):
         """
         AR activity generation. No AT_HOME feedback. Returns (B, 48) int64 0-indexed.
@@ -1064,33 +1047,24 @@ class JSeriesHybrid(nn.Module):
             batch["act_seq"], batch["aux_seq"],
             batch["cond_vec"], batch["cycle_idx"],
         )
+        act_logits = self._arm1_decode_tf(
+            batch["dec_act_seq"], batch["tgt_strata"],
+            memory, batch["cond_vec"], batch["cycle_idx"],
+        )  # (B, 48, n_act)
 
-        if self._mtype in ("J5_X1", "J5_X1b"):
-            # J5-X1/X1b: bypassed, dec_output route active
-            act_logits, dec_out = self._arm1_decode_tf_full(
-                batch["dec_act_seq"], batch["tgt_strata"],
-                memory, batch["cond_vec"], batch["cycle_idx"],
-            )
-            binary_input = dec_out.detach() if self._mtype == "J5_X1" else dec_out
-        else:
-            act_logits = self._arm1_decode_tf(
-                batch["dec_act_seq"], batch["tgt_strata"],
-                memory, batch["cond_vec"], batch["cycle_idx"],
-            )  # (B, 48, n_act)
-            act_probs = F.softmax(act_logits.detach(), dim=-1)  # (B, 48, n_act) — no grad to Arm 1
-            arm2_feat = self._arm2_fuse(
-                memory, act_probs, batch["cond_vec"],
-                batch["cycle_idx"], batch["tgt_strata"],
-            )  # (B, 48, d_model)
-            binary_input = arm2_feat
+        act_probs = F.softmax(act_logits.detach(), dim=-1)  # (B, 48, n_act) — no grad to Arm 1
+        arm2_feat = self._arm2_fuse(
+            memory, act_probs, batch["cond_vec"],
+            batch["cycle_idx"], batch["tgt_strata"],
+        )  # (B, 48, d_model)
 
-        home_logits = self.home_head(binary_input).squeeze(-1)          # (B, 48)
+        home_logits = self.home_head(arm2_feat).squeeze(-1)          # (B, 48)
         if self.enable_hierarchical_cop:
-            home_probs  = torch.sigmoid(home_logits).detach()           # (B, 48) — detach isolates grads
-            cop_input   = torch.cat([binary_input, home_probs.unsqueeze(-1)], dim=-1)
-            cop_logits  = self.cop_head(cop_input)                       # (B, 48, 9)
+            home_probs  = torch.sigmoid(home_logits).detach()       # (B, 48) — detach isolates grads
+            cop_input   = torch.cat([arm2_feat, home_probs.unsqueeze(-1)], dim=-1)
+            cop_logits  = self.cop_head(cop_input)                   # (B, 48, 9)
         else:
-            cop_logits  = self.cop_head(binary_input)                    # (B, 48, 9)
+            cop_logits  = self.cop_head(arm2_feat)                   # (B, 48, 9)
 
         return {
             "act_logits":  act_logits,
@@ -1114,26 +1088,18 @@ class JSeriesHybrid(nn.Module):
 
         act_tokens = self._arm1_generate(memory, cond_vec, cycle_idx, tgt_strata)  # (B, 48)
 
-        if self._mtype in ("J5_X1", "J5_X1b"):
-            # J5-X1/X1b: bypassed, dec_output route active
-            _, dec_out = self._arm1_decode_tf_full(
-                act_tokens, tgt_strata, memory, cond_vec, cycle_idx,
-            )
-            binary_input = dec_out  # no-grad context; detach vs no-detach is irrelevant here
-        else:
-            act_probs = F.one_hot(act_tokens, num_classes=self.n_act).float()  # (B, 48, n_act)
-            arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
-            binary_input = arm2_feat
+        act_probs = F.one_hot(act_tokens, num_classes=self.n_act).float()  # (B, 48, n_act)
+        arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
 
-        home_logits_inf = self.home_head(binary_input).squeeze(-1)       # (B, 48)
-        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()         # (B, 48)
+        home_logits_inf = self.home_head(arm2_feat).squeeze(-1)       # (B, 48)
+        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()   # (B, 48)
 
         if self.enable_hierarchical_cop:
             home_probs_inf = torch.sigmoid(home_logits_inf).detach()
-            cop_input_inf  = torch.cat([binary_input, home_probs_inf.unsqueeze(-1)], dim=-1)
-            cop_prob = torch.sigmoid(self.cop_head(cop_input_inf))         # (B, 48, 9)
+            cop_input_inf  = torch.cat([arm2_feat, home_probs_inf.unsqueeze(-1)], dim=-1)
+            cop_prob = torch.sigmoid(self.cop_head(cop_input_inf))   # (B, 48, 9)
         else:
-            cop_prob = torch.sigmoid(self.cop_head(binary_input))          # (B, 48, 9)
+            cop_prob = torch.sigmoid(self.cop_head(arm2_feat))       # (B, 48, 9)
 
         if apply_safety:
             cop_prob = cop_prob.clone()

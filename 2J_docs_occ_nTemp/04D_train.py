@@ -69,6 +69,10 @@ if os.environ.get("LAMBDA_ALL_EQUAL", "0") == "1":
 # H_NAT: encoder-only model type selector.
 MODEL_TYPE = os.environ.get("MODEL_TYPE", "ConditionalTransformer")
 
+# DEBUG_GRAD_CHECK=1: after first backward (J5_X1 only), assert act_head.weight.grad is nonzero.
+# Verifies that activity-CE backprops through decoder while home/cop BCE cannot (detach barrier).
+_DEBUG_GRAD = os.environ.get("DEBUG_GRAD_CHECK", "0") == "1"
+
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
 
@@ -557,6 +561,36 @@ def train(args):
                 "enable_temporal_injection": MODEL_TYPE == "J4_1",
                 "enable_hierarchical_cop":   MODEL_TYPE == "J4_2",
             }
+    elif MODEL_TYPE in ("J5_X1", "J5_X1b"):
+        # J5_X1/X1b: dec_output head re-route (with/without detach barrier).
+        # Config and training hygiene identical to J3; only model_type differs.
+        # fp32, ReduceLROnPlateau, clip_grad_norm=25 (same J-series hygiene).
+        args.fp16 = False
+        if args.sample:
+            model_config = {
+                "model_type": MODEL_TYPE,
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2, "N_dec": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+            args.batch_size = 16
+            args.max_epochs = 10
+            args.patience   = 10
+        else:
+            model_config = {
+                "model_type": MODEL_TYPE,
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": args.d_model * 4,
+                "N_enc": args.n_enc_layers,
+                "N_dec": args.n_dec_layers,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
     elif args.sample:
         # Local test config (CPU-friendly, fast)
         model_config = {
@@ -708,7 +742,7 @@ def train(args):
     elif MODEL_TYPE == "I1":
         assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
         model = IOccupancyModel(model_config).to(device)
-    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
     else:
@@ -720,7 +754,7 @@ def train(args):
     # ── Optimizer & schedule ─────────────────────────────────────────────
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     warmup_steps = 2000 if not args.sample else 50
-    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
         # I1/J-series: ReduceLROnPlateau only — skipping LambdaLR prevents lr_lambda(0)
         # from crushing the optimizer LR to ~2.5e-8 before training begins.
         scheduler = None
@@ -803,7 +837,7 @@ def train(args):
             else:
                 train_batch = batch
 
-            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3") else 1.0
+            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b") else 1.0
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(train_batch)
@@ -823,11 +857,15 @@ def train(args):
                                       home_pos_weight=home_pos_weight,
                                       cop_pos_weight=cop_pos_weight)
                 losses["total_loss"].backward()
+                # DEBUG: J5_X1 detach barrier — gate with DEBUG_GRAD_CHECK=1 (not run in full training)
+                if _DEBUG_GRAD and MODEL_TYPE == "J5_X1" and global_step == 0:
+                    assert model.act_head.weight.grad is not None, "[J5_X1 DEBUG] act_head.weight.grad is None — act_loss not backpropagating to decoder"
+                    print(f"[J5_X1 DEBUG] detach barrier active: act_head.weight.grad.norm={model.act_head.weight.grad.norm():.6f}")
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), _clip_norm).item()
                 optimizer.step()
 
             # I1/J-series: per-epoch ReduceLROnPlateau; all others: per-batch LambdaLR
-            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
                 scheduler.step()
             global_step += 1
 
@@ -905,7 +943,7 @@ def train(args):
         # Save best checkpoint — selected on combined val_JS + 0.5·|ΔAT_HOME|.
         # Both save and patience counter are gated on past_warmup to prevent
         # near-uniform warmup predictions from locking in a deceptively low score.
-        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3"):
+        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
             past_warmup = True  # no LambdaLR warmup for I1/J-series; track from epoch 1
         else:
             warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))

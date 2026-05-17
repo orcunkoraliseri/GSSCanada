@@ -1,0 +1,36 @@
+# J5_X1b.yaml — J5-X1b re-route experiment (dec_output, no detach barrier)
+# Inherits J3.yaml byte-for-byte; only model_type changes.
+# Binary heads read dec_output directly — cross-arm gradient flow accepted (H_Tanh regime).
+# Hard gates: composite < 1.045 | AT_HOME RMS <= 5.30 pp | Spouse <= 5 pp | act_JS <= 0.05
+# Target: home_loss <= 0.27, cop_loss <= 0.12, composite <= J3's 0.6355
+# Watch: act_JS (decoder is perturbed by binary-head gradients); Spouse |Delta| gate.
+tag: J5_X1b
+seed: 42
+model_type: J5_X1b
+
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.7
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05
