@@ -44,7 +44,9 @@ MAIN_COMMON_COLS = [
     "LFTAG",
     "TOTINC",
     "HRSWRK",
-    # "MODE",
+    "MODE",          # commute mode (2010/2015/2022); NaN for 2005
+    "ATTSCH",        # school-attendance binary (all cycles)
+    "POWST",         # works-from-home binary (all cycles; NaN for non-workers)
     "NOCS",          # 2015/2022 only → NaN for 2005/2010
     "COW",           # Class of Worker (harmonized 3-category)
     "WKSWRK",        # Weeks worked per year
@@ -441,7 +443,7 @@ def build_hetus_wide(merged: pd.DataFrame) -> pd.DataFrame:
     PERSON_COLS = [
         "occID", "CYCLE_YEAR", "AGEGRP", "SEX", "MARSTH", "HHSIZE", "PR",
         "CMA", "WGHT_PER", "DDAY", "KOL", "LFTAG", "TOTINC", "HRSWRK",
-        # "MODE", 
+        "MODE", "ATTSCH", "POWST",  # Phase 2 (2026-05-22): restored GSS demographics
         "NOCS", "COW", "WKSWRK", "TOTINC_SOURCE", "SURVYEAR",
         "COLLECT_MODE", "TUI_10_AVAIL", "BS_TYPE",
         "DAYTYPE", "DDAY_STRATA",

@@ -548,6 +548,23 @@ The three DRIFT_MATRIX outputs (0510, 1015, 1522) are not just training diagnost
 
 ---
 
+### Lessons Learned: Architecture Search Methodology (Step 4)
+
+Full-data single-shot experiments (Phases 1–5) are too expensive for broad architecture exploration (~5–6h/trial, 2 weeks consumed without beating baseline). The correct approach is a **progressive sample funnel**:
+
+1. **Stage A** (2% sample, 10 candidates, ~1h each) — cheap structural breadth
+2. **Stage B** (20%, top 3, ~3h each) — verify scaling behavior
+3. **Stage C** (100%, top 1–2, ~5–6h each) — hard gate evaluation
+4. **Stage D–E** (HPT on locked architecture) — loss weight tuning only after structure is decided
+
+This found MDLM+CC (composite 0.5665, 10.9% better than J3 baseline) in 3 days. Full details in `04_augmentationGSS.md` and `04_augmentationGSS_hpc.md` §9.
+
+**Critical HPT lesson (2026-05-25):** For diffusion models (MDLM/SEDD), HPT must target the model's intrinsic generative mechanics — denoise steps, masking schedule, encoder/refiner depth, mask ratio bounds — NOT loss weights (lambda_home, lambda_trans, lambda_marg). Loss weights are downstream consequences; the generative process parameters are the upstream causes of sequence quality. Stages D+E spent 10 trials tuning loss weights with zero improvement — all failed to beat MDLM_C.
+
+**Sample-based HPT:** HPT should also use the sample funnel approach (10% stratified sample, ~40 min/trial) rather than full-data runs (~10h/trial). Train a control baseline on the same sample, compare relative rankings, and only promote winners to full data. This enables testing 8–10 HPT configurations in ~1h total wall-clock instead of committing 50+ GPU-hours per HPT stage.
+
+---
+
 ### Validation Summary
 
 | Phase | Train data | Validation | True future test | Metric |
@@ -556,7 +573,7 @@ The three DRIFT_MATRIX outputs (0510, 1015, 1522) are not just training diagnost
 | Fine-tune 1 (2010) | 05'+10' (70%) | 10' (20%) | 15' (unseen) | JS divergence, activity accuracy |
 | Fine-tune 2 (2015) | 05'+10'+15' (70%) | 15' (20%) | 22' (unseen) | JS divergence, activity accuracy |
 | Fine-tune 3 (2022) | All (70%) | 22' (20%) | — | JS divergence, activity accuracy |
-| Forecast (2030) | All pooled | — | N/A (future) | Scenario plausibility check vs. Stats Canada projections |
+| Forecast (2030) | All pooled | �� | N/A (future) | Scenario plausibility check vs. Stats Canada projections |
 
 ---
 

@@ -343,3 +343,20 @@ FILE_PATHS = {
 
 > [!NOTE]
 > Since the 2005 Main file column names need verification during the first run, the execution phase will begin with a column discovery step: load the 2005 `.sas7bdat` without column filtering to inspect all available column names, then finalize `MAIN_COLS_2005`.
+
+---
+
+## Progress Log
+
+### 2026-05-22 — Phase 2 extractor patches (ATTSCH / POWST / MODE)
+
+Driven by `04_augmentationGSS_IMP.md` §3 Lever A. New raw cols added to extractor lists:
+
+- **MAIN_COLS_2005**: `+EDUSTAT, +MAR_Q190, +MAR_Q193` (ATTSCH + POWST narrow-definition sources).
+- **MAIN_COLS_2010**: `+EOR_Q320` (ATTSCH; **not** `EOR_Q210` — the IMP doc originally listed `EOR_Q210` but the 2010 PUMF syntax file shows `EOR_Q210` is about *where* education was attained; `EOR_Q320` is the "year studies completed / 9995 = still attending" column). `CTW_Q140_C08` already present.
+- **MAIN_COLS_2015**: `+ESC1_01` (ATTSCH all-respondent). `CTW_140H` already present (the correct POWST col; the previously-documented `CTW_140I → POWST` mapping in this doc §line 113 is wrong — `CTW_140I` is "Other transport mode" in 2015).
+- **MAIN_COLS_2022**: no raw-col additions; uncommented the `"ATT_150C": "MODE"` rename in `MAIN_RENAME_MAP[2022]` so the 2022 branch of `derive_mode()` finds the MODE column.
+
+Cross-platform: added `platform.system()` branching for `DATA_ROOT` and `OUTPUT_DIRECTORY` so the script runs on both Windows and macOS without manual path edits.
+
+Re-run on Windows confirmed all 8 CSVs written with the new raw cols present. Auto-launched validator subprocess crashed on cp1252 Unicode (✅/❌ chars) — cosmetic; data is fine. Workaround: invoke with `py -X utf8 01_readingGSS.py`.

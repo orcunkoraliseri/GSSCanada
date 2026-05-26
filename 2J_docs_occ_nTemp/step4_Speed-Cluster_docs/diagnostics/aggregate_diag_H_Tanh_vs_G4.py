@@ -12,8 +12,8 @@ Reads the 8 diagnostic artefacts produced by diagnostic_H_Tanh_vs_G4.py
 All outputs land in --data_dir (the pulled diagnostics_H_Tanh_vs_G4/ folder).
 
 Usage (locally, after scp pull):
-    python Speed-Cluster_docs/aggregate_diag_H_Tanh_vs_G4.py \\
-        --data_dir 2J_docs_occ_nTemp/Speed-Cluster_docs/diagnostics_H_Tanh_vs_G4
+    python step4_Speed-Cluster_docs/aggregate_diag_H_Tanh_vs_G4.py \\
+        --data_dir 2J_docs_occ_nTemp/step4_Speed-Cluster_docs/diagnostics_H_Tanh_vs_G4
 """
 
 import argparse

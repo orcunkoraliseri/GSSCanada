@@ -202,6 +202,9 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | DDAY_STRATA = 3 categories (Step 3) | SURVMNTH confirmed NaN for 2005/2010. Cross-cycle temporal denominator is Weekday/Saturday/Sunday |
 | SEASON dropped (Step 3) | Seasonal JS divergence <0.001 across all activity pairs; AT_HOME lift <2 pp on weekdays — sub-noise-floor signal (see docs_debug/02_W3_season_lift.md) |
 | 2022 AT_HOME = 70.6% vs ~63% baseline (Step 2) | COVID-19 behavioral shift confirmed; DRIFT_MATRIX_1522 documents this explicitly |
+| Progressive funnel for architecture search (Step 4) | Sample-first (2%→20%→100%) multi-architecture sweep before HPT. Full-data single-shot experiments are too expensive for broad exploration — 5 failed phases proved this. Funnel found MDLM+CC (composite 0.5665, 10.9% better than J3) in 3 days vs 2 weeks of prior failures. See `04_augmentationGSS.md` and `04_augmentationGSS_hpc.md` §9 for full methodology. |
+| HPT must target diffusion mechanics, not loss weights (Step 4) | For MDLM/SEDD, the correct HPT variables are denoise steps, masking schedule, encoder depth, and mask ratio bounds — NOT loss weights (lambda_home/trans/marg). Stages D+E: 10 full-data trials tuning loss weights all failed. Loss weights are downstream consequences; generative process parameters are upstream causes. |
+| Sample-based HPT (Step 4) | HPT should use 10% stratified sample (~40 min/trial) with a same-sample control baseline, promoting only winners to full data. Avoids committing 50+ GPU-hours to HPT stages that may produce no improvement. |
 | Progressive fine-tuning with weight inheritance (Step 6) | Encodes temporal ordering; reduces per-phase training time |
 | DRIFT_MATRIX at each cycle transition (Step 6) | 3 publishable drift outputs: per-activity, per-stratum, per-archetype JS divergence |
 | True Future Test validation (Step 6) | Next unseen cycle as holdout simulates the forecasting task |

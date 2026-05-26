@@ -492,6 +492,49 @@ All three locked ML files (`eSim_datapreprocessing.py`, `eSim_dynamicML_mHead*.p
 
 ---
 
+## Lessons Learned: Progressive Funnel for Architecture Search
+
+### The problem with full-data single-shot experiments
+
+Our initial approach (Phases 1–5, May 2026) attempted single-knob architectural or loss modifications directly on the full 64K-respondent dataset (~5–6h per training run). Five consecutive trials (J3-PSB, J3-DEMO, J3-DEMO-PSBLite, J3-NEIGH, J3-CLEAN) failed to beat the J3 baseline (composite 0.6355), consuming ~2 weeks of GPU time. The failure mode: expensive feedback cycles prevent broad exploration, biasing toward conservative tweaks in a regime already exhaustively mined.
+
+### The correct methodology: sample-first progressive funnel
+
+```
+Stage A — 2% sample, 50 ep, ~1h/trial    → 10 candidates → rank → top 3
+Stage B — 20% sample, 100 ep, ~3h/trial   → 3 candidates  → rank → top 1–2
+Stage C — 100% data, 100 ep, ~5–6h/trial  → 1–2 finalists → hard gate evaluation
+Stage D — HPT on winner, full data         → 4–6 knob trials → pick best config
+Stage E — Focused HPT on D winner          → 3–4 narrow trials → ship final model
+```
+
+**Principles:**
+1. Cheap breadth first — 10 trials at 2% costs the same as 2 full-data runs but explores 5× more structural space.
+2. Architecture before hyperparameters — structural diversity in A–C, loss tuning only in D–E after architecture is locked.
+3. No stacking — one change per trial. Stacking causes unattributable regressions (J3-CLEAN lesson).
+4. Hard gates at full scale only — sample noise makes per-cell metrics unreliable below 100%.
+5. HPT is a separate phase — never mix architecture search with hyperparameter tuning.
+
+### Result
+
+Phase 6 (funnel) found MDLM + composite conditioning as the winner in ~3 days wall-clock. Stage C composite = 0.5665 (10.9% better than J3) — larger improvement than all 5 prior full-data phases combined. This methodology should be the default for any future model development on this pipeline.
+
+### HPT target selection for diffusion models (lesson from Stages D+E, 2026-05-25)
+
+For diffusion/masked-generative architectures (MDLM, SEDD), HPT must target the model's **intrinsic generative mechanics**:
+- Denoise steps (number of iterative unmasking passes)
+- Masking schedule (uniform vs cosine vs linear; controls noise injection during training)
+- Encoder/refiner depth (capacity of the denoising network)
+- Mask ratio clamp bounds (range of masking intensity during training)
+
+These are the upstream causes of generation quality. Loss weights (lambda_home, lambda_trans, lambda_marg) are downstream consequences — they were already implicitly tuned during the funnel stages A–C. Stages D+E spent 10 full-data trials tuning loss weights and demographic amplification with zero improvement over MDLM_C. The correct HPT variables were never touched.
+
+### Sample-based HPT (lesson from Stages D+E, 2026-05-25)
+
+HPT should use the same sample funnel approach as architecture search: train on a stratified 10% sample (~40 min/trial), compare relative rankings against a same-sample control baseline, and promote only winners to full data. This enables 8–10 configurations in ~1h wall-clock instead of committing 50+ GPU-hours to full-data HPT stages that may produce no improvement. The relative composite ranking on 10% sample is a reliable proxy for full-data ranking when only one variable changes per trial.
+
+---
+
 ## Intermediate artifact schemas
 
 These are the artifacts produced by the Step 4 scripts and consumed by downstream scripts / Step 5. Shapes and dtypes must remain stable because the training loop and inference both read them directly.
@@ -638,3 +681,4 @@ Downstream consumers MUST check `IS_SYNTHETIC` and handle `colleagues` NaN expli
 | 2026-04-10 | SMOKE TESTS | COMPLETE | All 7 --sample smoke tests passed. Three bugs fixed during testing: (1) 04A: TOTINC_SOURCE is a string column ('SELF'/'CRA') — fixed with pd.factorize() before float cast. (2) 04E: metadata merge was on occID only, causing cartesian product for non-unique occIDs across cycles — fixed to merge on ["occID", "CYCLE_YEAR"]. (3) 04F: _load_data() was always loading full-dataset filenames — fixed to use _SAMPLE suffix when sample_mode=True. Results: 04D trained 5 epochs (val_JS=0.136); 04E produced 1500 rows (500×3, 500 observed + 1000 synthetic); 04F produced HTML report (28 PASS / 1 WARN / 17 FAIL — FAILs expected for 5-epoch undertrained model). |
 | 2026-04-20 | 04D/04E seeds + checkpoint guards (Phase1_ready items 2–5) | COMPLETE | Non-breaking hardening. `04D_train.py::train()` seeds (`torch.manual_seed(42)`, `np.random.seed(42)`, CUDA-conditional `torch.cuda.manual_seed_all(42)`) at top; prints absolute `checkpoint_dir`; `--resume` path now raises `FileNotFoundError` with absolute path + size (MB) if missing. `04E_inference.py::run_inference()` reseeds before the generation loop (makes `torch.multinomial` reproducible for a given checkpoint × temperature); `main()` asserts `args.checkpoint` exists before `torch.load` and prints absolute path + size. Docstring post-hoc-rule block updated to post-fix taxonomy (raw 5 = Sleep, raw 1 = Work). `--sample` smoke-test re-run: checkpoint guard printed `best_model.pt (1.2 MB)`, generation completed cleanly, 1500 rows, colleagues-zero assertion passed. Phase1_ready chapter now fully executed. |
 | 2026-04-20 | 04E/04F activity-index swap fix + smoke verify | COMPLETE | Phase1_ready item 1 executed. `04E_inference.py` lines 53–54: `SLEEP_CAT 0→4`, `WORK_CAT 4→0`. `04F_validation.py`: 6 `== 1`/`== 5` comparison sites corrected (345 sleep transitions, 359/363 night-sleep rate, 371/374 work-peak rate, 467 `work_prop`, 525 cross-stratum work, 567/571 work chart). Lines 433/435 left untouched — those are co-presence 0/1 presence, not activity codes. Re-ran `python 04E_inference.py --sample` and `python 04F_validation.py --sample` against the existing 2-epoch checkpoint (val_JS=0.136). Result: **night-slot sleep rate obs=81.5% / syn=89.7%** (sleep dominance confirmed); **work-slot work rate obs=31.4% / syn=14.5%** (ordinally correct, underweight is expected for undertrained checkpoint); overall synthetic activity distribution plausible (raw 5 Sleep=43.6%, raw 2 Personal=10.8%, raw 10 Leisure=23.8%). 04F report: 27 PASS / 2 WARN / 17 FAIL (FAILs driven by 2-epoch undertraining, not by validation logic). Items 2–5 of Phase1_ready chapter executed in a follow-up pass (see row above). |
+| 2026-05-22 | 04A_dataset_assembly.py — Phase 2 plumbing | COMPLETE | `CAT_COLS` extended with `["ATTSCH", "POWST", "MODE"]` per `04_augmentationGSS_IMP.md` Phase 2 (Lever A). Prior Step 1+2+3 plumbing patches populated these three columns end-to-end (see Progress Log entries in `01_readingGSS.md`, `02_harmonizationGSS.md`, `03_mergingGSS.md`). The 2026-04-10 row above notes "ATTSCH and POWST absent from Step 3 output — skipped without error" — the silent-skip path is now activated. Re-ran 04A full (no `--sample`, since no pre-built `_SAMPLE` Step 3 file exists post-Phase-2): **`d_cond = 90`** (was ~76; +14 from the three new one-hot widths — exactly as predicted). Tensors saved: `step4_train.pt` (n=44,843), `step4_val.pt` (n=9,609), `step4_test.pt` (n=9,609). Stratified 70/15/15 by DDAY_STRATA × CYCLE_YEAR. COP pos_weights re-computed (Alone=1.21, Spouse=2.52, Children=10.99, parents=39.71, friends=15.21, others=9.27, colleagues=12.17). Co-presence availability rate 74.7%. **No code changes to 04B/04C/04D/04E/04F** — model graph adapts automatically to the new `d_cond` because all heads are defined relative to `feature_config.json`. Next: build `04B_model_J3_v3.py` (PSB-Lite) for the J3-DEMO-PSBLite arm; submit J3-DEMO + J3-DEMO-PSBLite as parallel sbatch jobs. |

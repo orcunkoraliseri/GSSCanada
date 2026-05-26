@@ -770,7 +770,7 @@ class AugmentationValidator:
         n_pass = sum(1 for c in self.checks if c[4] == "PASS")
         n_warn = sum(1 for c in self.checks if c[4] == "WARN")
         n_fail = sum(1 for c in self.checks if c[4] == "FAIL")
-        print(f"\n✓ Validation complete.")
+        print(f"\nValidation complete.")
         print(f"  PASS: {n_pass}  WARN: {n_warn}  FAIL: {n_fail}")
         print(f"  Report saved: {report_path}")
 

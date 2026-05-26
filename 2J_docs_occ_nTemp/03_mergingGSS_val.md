@@ -214,3 +214,34 @@ Key findings:
 - Demographic marginals (SEX, AGEGRP, etc.) preserved within 0.5% of Step 2
 - DIARY_VALID exclusion: 1.9% (2005), 1.8% (2010), 0% (2015/2022) — all <3% ✓
 - Note: DDAY_STRATA produces {1,2,3} (3-category), not {1,...,7} as stated in plan
+
+---
+
+## Progress Log
+
+### 2026-05-22 — Phase 2 plumbing — Step 3 output shape change
+
+Per-respondent slate in `hetus_30min.csv` now carries three additional columns from Phase 2 (see `04_augmentationGSS_IMP.md`):
+
+- `ATTSCH` — binary school-attendance flag (Int8, NaN for outside-universe rows)
+- `POWST` — binary works-from-home flag (Int8, NaN for non-workers per LFTAG)
+- `MODE` — commute mode 1-6 (NaN for 2005 globally and for non-workers in 2010/2015)
+
+Resulting file shapes:
+- `hetus_30min.csv`: 64,061 × **123** cols (was 120)
+- `hetus_wide.csv`: 315 cols (was 312)
+- `copresence_30min.csv`: 433 cols (unchanged)
+- `merged_episodes.csv`: 53 cols (unchanged)
+
+Per-cycle coverage of the three new cols (validated against codebook expectations):
+
+| Cycle | n_respondents | ATTSCH | POWST | MODE |
+|---|---|---|---|---|
+| 2005 | 19,221 | 99.7% | 59.7% workers | 0% (intentional) |
+| 2010 | 15,114 | 64.0% (EOR_Q320 universe) | 50.1% workers | 50.1% workers |
+| 2015 | 17,390 | 97.5% | 50.5% workers | 50.5% workers |
+| 2022 | 12,336 | 94.8% | 47.0% workers | 94.9% (ATT_150C all-respondent) |
+
+Cross-cycle WFH rates (POWST==1 as % of workers): 5.9% / 5.0% / 5.2% / **17.7%** — matches the documented COVID-era jump for 2022. Baseline is stable ~5%.
+
+Validation checks not yet re-run with the new columns; all prior V1–V8 checks remain valid since they target slot/AT_HOME/cycle structure that is unchanged.

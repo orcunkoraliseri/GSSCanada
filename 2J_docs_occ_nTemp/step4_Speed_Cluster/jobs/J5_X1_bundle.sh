@@ -33,7 +33,7 @@ mkdir -p "$BASE/logs" "$BASE/outputs_step4_J5_X1/checkpoints" "$BASE/outputs_ste
 # ─── Leg 1: J5-X1 (dec_output.detach() route) ────────────────────────────────
 
 echo "=== J5_X1 TRAIN START ==="
-source "${SCRIPT_DIR}/config_to_env.sh" "${SCRIPT_DIR}/configs/J5_X1.yaml"
+source "${SCRIPT_DIR}/config_to_env.sh" "$BASE/configs/J5_X1.yaml"
 PY_ARGS_CLEAN=$(echo "$PY_ARGS" | sed 's/--data_dir[[:space:]]*[^[:space:]]*//')
 $PYTHON -u 04D_train.py --data_dir "$DATA" --output_dir outputs_step4_J5_X1 --checkpoint_dir outputs_step4_J5_X1/checkpoints $PY_ARGS_CLEAN
 echo "=== J5_X1 TRAIN DONE ==="
@@ -53,7 +53,7 @@ echo "=== J5_X1 VALIDATION DONE ==="
 # ─── Leg 2: J5-X1b (dec_output, no detach barrier) ───────────────────────────
 
 echo "=== J5_X1b TRAIN START ==="
-source "${SCRIPT_DIR}/config_to_env.sh" "${SCRIPT_DIR}/configs/J5_X1b.yaml"
+source "${SCRIPT_DIR}/config_to_env.sh" "$BASE/configs/J5_X1b.yaml"
 PY_ARGS_CLEAN=$(echo "$PY_ARGS" | sed 's/--data_dir[[:space:]]*[^[:space:]]*//')
 $PYTHON -u 04D_train.py --data_dir "$DATA" --output_dir outputs_step4_J5_X1b --checkpoint_dir outputs_step4_J5_X1b/checkpoints $PY_ARGS_CLEAN
 echo "=== J5_X1b TRAIN DONE ==="

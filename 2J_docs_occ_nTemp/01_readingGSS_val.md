@@ -134,3 +134,22 @@ A validation script that:
 The validation script itself passes if:
 - All 8 files load without error
 - No check produces a ❌ (or ❌ results are explainable by known cross-cycle differences documented in the pipeline, e.g., 2010 Main having fewer columns due to syntax file limitations)
+
+---
+
+## Progress Log
+
+### 2026-05-22 — Phase 2 raw-column additions
+
+Step 1 outputs now carry the following additional raw columns per cycle (Phase 2 plumbing, see `04_augmentationGSS_IMP.md`):
+
+| Cycle | New raw cols in `main_<cycle>.csv` |
+|---|---|
+| 2005 | `EDUSTAT`, `MAR_Q190`, `MAR_Q193` |
+| 2010 | `EOR_Q320`, `CTW_Q140_C08` |
+| 2015 | `ESC1_01`, `CTW_140H` (was present), `CTW_140I` (was present, but is unrelated to POWST despite the original doc's claim) |
+| 2022 | `EDC_10` already present; `ATT_150C` now renamed to `MODE` at extract time |
+
+Shape changes (post-Phase-2): main_2005 (19597, 19), main_2010 (15390, 26), main_2015 (17390, 28), main_2022 (12336, 24).
+
+Validation-script crash: `01_readingGSS_val.py` calls `print(f"❌ ...")` and crashes on Windows because the default Python stdout encoding is cp1252. Workaround for Windows: run with `py -X utf8` (or set `PYTHONIOENCODING=utf-8` in the parent process). Linux/macOS unaffected.

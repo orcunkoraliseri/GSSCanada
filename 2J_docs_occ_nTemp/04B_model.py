@@ -24,6 +24,15 @@ import torch.nn.functional as F
 
 H_TIME_PE = int(os.environ.get("H_TIME_PE", "0"))
 
+# Phase 6 Stage A — CC (composite conditioning) toggles. All default off.
+# When set, JSeriesHybrid (and the 5 new model families that inherit it) inject
+# FiLM affine modulation from cond_vec, Fourier diurnal PE, and per-stratum
+# learnable prefix tokens into the encoder slot path. Off by default → byte-
+# identical J3 behaviour for any pre-Phase-6 checkpoint.
+USE_FILM       = int(os.environ.get("USE_FILM",       "0"))
+USE_FOURIER_PE = int(os.environ.get("USE_FOURIER_PE", "0"))
+USE_PREFIX     = int(os.environ.get("USE_PREFIX",     "0"))
+
 
 # ── Positional encoding ──────────────────────────────────────────────────────
 
@@ -801,6 +810,14 @@ class JSeriesHybrid(nn.Module):
       J3  — arm2_act_proj: Linear(n_act, d_model) projects soft activity probs before
               Arm-2 concat (dim-balance fix); arm2_proj input grows by (d_model - n_act);
               heads and Arm-1 unchanged.
+      J5_F — joint encoder supervision + AR decoder for activity only. Arm-2 fusion
+              bypassed; home_head / cop_head attach to encoder slots directly. All three
+              losses shape the encoder; no .detach() barrier (2026-05-20 topology fix).
+      J_old — pure encoder-only revert mirroring Transformer_pipeline.py:556-558.
+              Three parallel Linear heads off encoder slots; no AR decoder, no Arm-2.
+      J5_C — J3 architecture + linear-chain CRF (psi_pair, 14×14) on Arm-1 activity
+              logits. Replaces per-slot CE with CRF NLL at training; Viterbi decode at
+              inference. Arm-2 path and detach barrier preserved.
 
     Loss:   standard cop_loss_masked path (NOT I1 masked Spouse BCE).
     Infer:  clip-only Spouse safety at inference: cop_pred[:,:,1] *= (home_pred>0.5).
@@ -876,7 +893,11 @@ class JSeriesHybrid(nn.Module):
         # J3/J4_x: arm2_act_proj projects soft act probs (n_act → d_model) before concat.
         # J1/J2/J2.5: raw n_act-dim probs enter concat directly.
         # J5_X1/X1b: arm2_act_proj kept defined (bypassed in forward/infer) for revert safety.
-        if _mtype in ("J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+        # J5_C: J3 build path verbatim (CRF added separately below); J5_F/J_old: Arm 2 bypassed
+        # in forward/infer but the projection layers are still constructed to keep state-dict
+        # shape compatible with revert checkpoints.
+        if _mtype in ("J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b",
+                      "J5_A", "J5_B", "J5_F", "J5_C"):
             self.arm2_act_proj = nn.Linear(n_act, d_model)
             d_arm2_in = d_model + d_model + d_cond + d_cycle + 3
         else:
@@ -906,6 +927,45 @@ class JSeriesHybrid(nn.Module):
             nn.Linear(_cop_in, d_model), nn.Tanh(), nn.Linear(d_model, n_cop)
         )
 
+        # ── J_old: pure encoder-only revert (mirrors Transformer_pipeline.py:556-558) ──
+        # Three parallel Linear heads off encoder output. No AR decoder, no Arm-2 fusion.
+        # Constructed only when needed so non-J_old checkpoints keep their state-dict shape.
+        if _mtype == "J_old":
+            self.activity_head_old = nn.Linear(d_model, n_act)
+            self.home_head_old     = nn.Linear(d_model, 1)
+            self.cop_head_old      = nn.Linear(d_model, n_cop)
+
+        # ── J5_C: linear-chain CRF transition matrix on Arm-1 activity logits ─────────
+        # Unaries come from act_head (n_act logits per slot); psi_pair[i,j] = score for
+        # transition class i → class j. Initialised to zero (= no prior).
+        if _mtype == "J5_C":
+            self.psi_pair = nn.Parameter(torch.zeros(n_act, n_act))
+
+        # ── Phase 6 CC conditioning (FiLM + Fourier PE + per-stratum prefix) ──
+        # Added when env toggles are set; default off → byte-identical to J3.
+        # Subclasses (HSMM/MDLM/HIER/MAMBA/SEDD) all inherit these layers.
+        if USE_FILM:
+            # FiLM: γ, β = MLP(cond_vec)  → per-slot affine on slot_emb (broadcast).
+            self.film_gamma = nn.Linear(d_cond, d_model)
+            self.film_beta  = nn.Linear(d_cond, d_model)
+        if USE_FOURIER_PE:
+            # Fourier diurnal PE: pre-computed sin/cos features at 4 frequencies
+            # capturing time-of-day (period=48 slots = 24h) + half-day (24 slots).
+            t = torch.arange(n_slots, dtype=torch.float)            # (48,)
+            freqs = torch.tensor([1.0, 2.0, 4.0, 8.0])              # cycles per day
+            phase = 2.0 * math.pi * t.unsqueeze(-1) / float(n_slots) * freqs  # (48, 4)
+            fpe = torch.cat([torch.sin(phase), torch.cos(phase)], dim=-1)     # (48, 8)
+            self.register_buffer("fourier_pe_raw", fpe.unsqueeze(0))          # (1, 48, 8)
+            self.fourier_pe_proj = nn.Linear(8, d_model)
+        if USE_PREFIX:
+            # Per-stratum learnable prefix tokens prepended before CLS.
+            # n_prefix_per_stratum = 4; 3 strata → 12 prefix slots total in worst case.
+            n_prefix_per_stratum = 4
+            self.n_prefix_per_stratum = n_prefix_per_stratum
+            self.prefix_tokens = nn.Parameter(
+                torch.randn(3, n_prefix_per_stratum, d_model) * 0.02
+            )
+
         self._init_weights()
 
     def _init_weights(self):
@@ -919,11 +979,31 @@ class JSeriesHybrid(nn.Module):
 
     # ── Encoder ─────────────────────────────────────────────────────────────
 
-    def _encode(self, act_seq, aux_seq, cond_vec, cycle_idx):
-        """Encode observed source diary. Returns memory (B, 49, d_model)."""
+    def _encode(self, act_seq, aux_seq, cond_vec, cycle_idx, tgt_strata=None):
+        """Encode observed source diary. Returns memory (B, 49 [+prefix], d_model).
+
+        Phase 6 CC conditioning (env-gated, default off):
+          USE_FILM=1       — affine (γ, β) modulation of slot_emb from cond_vec
+          USE_FOURIER_PE=1 — Fourier diurnal PE added to slot_emb
+          USE_PREFIX=1     — per-stratum learnable prefix tokens prepended before CLS
+
+        With CC off the encoder output shape is unchanged (B, 49, d_model) and
+        matches J3 byte-for-byte. With USE_PREFIX=1 the output grows to
+        (B, 49 + n_prefix, d_model); downstream Arm-2 fusion strips the CLS at
+        index 0 unchanged (the 48 slot tokens stay at positions [-48:]).
+        """
         act_emb  = self.act_embedding(act_seq)
         slot_emb = self.slot_linear(torch.cat([act_emb, aux_seq], dim=-1))
         slot_emb = slot_emb + self.enc_pos_enc[:, 1:, :]
+
+        if USE_FILM and hasattr(self, "film_gamma"):
+            gamma = self.film_gamma(cond_vec).unsqueeze(1)   # (B, 1, d_model)
+            beta  = self.film_beta(cond_vec).unsqueeze(1)    # (B, 1, d_model)
+            slot_emb = slot_emb * (1.0 + gamma) + beta
+
+        if USE_FOURIER_PE and hasattr(self, "fourier_pe_proj"):
+            fpe = self.fourier_pe_proj(self.fourier_pe_raw)  # (1, 48, d_model)
+            slot_emb = slot_emb + fpe
 
         cycle_emb = self.cycle_embedding(cycle_idx)
         cls_tok   = self.cls_mlp(
@@ -931,7 +1011,20 @@ class JSeriesHybrid(nn.Module):
         ).unsqueeze(1)
         cls_tok   = cls_tok + self.enc_pos_enc[:, :1, :]
 
-        return self.encoder(torch.cat([cls_tok, slot_emb], dim=1))
+        enc_in = torch.cat([cls_tok, slot_emb], dim=1)
+        n_prefix = 0
+        if USE_PREFIX and hasattr(self, "prefix_tokens") and tgt_strata is not None:
+            strata_idx = (tgt_strata - 1).clamp(0, 2).long()                 # (B,)
+            prefix = self.prefix_tokens[strata_idx]                          # (B, k, d_model)
+            enc_in = torch.cat([prefix, enc_in], dim=1)
+            n_prefix = prefix.shape[1]
+
+        enc_out = self.encoder(enc_in)
+        # Strip prefix so downstream `memory[:, 1:, :]` slicing keeps working
+        # (callers expect (B, 49, d_model) = [CLS, slot_0, ..., slot_47]).
+        if n_prefix > 0:
+            enc_out = enc_out[:, n_prefix:, :]
+        return enc_out
 
     # ── Arm 1 helpers ────────────────────────────────────────────────────────
 
@@ -1056,14 +1149,94 @@ class JSeriesHybrid(nn.Module):
 
         return fused_seq
 
+    # ── CRF helpers (J5_C only) ──────────────────────────────────────────────
+
+    @staticmethod
+    def _crf_log_partition(unaries: torch.Tensor, psi_pair: torch.Tensor) -> torch.Tensor:
+        """log Z(x) via forward algorithm. unaries (B, T, C), psi_pair (C, C). Returns (B,)."""
+        T = unaries.shape[1]
+        log_alpha = unaries[:, 0]                                            # (B, C)
+        for t in range(1, T):
+            log_alpha = unaries[:, t] + torch.logsumexp(
+                log_alpha.unsqueeze(2) + psi_pair.unsqueeze(0), dim=1
+            )                                                                 # (B, C)
+        return torch.logsumexp(log_alpha, dim=-1)                            # (B,)
+
+    @staticmethod
+    def _crf_nll(unaries: torch.Tensor, targets: torch.Tensor,
+                 psi_pair: torch.Tensor) -> torch.Tensor:
+        """Mean per-slot CRF negative log-likelihood.
+        unaries (B,T,C), targets (B,T), psi_pair (C,C). Dividing by T puts the loss on
+        the same scale as F.cross_entropy(reduction='mean'), so lambda_act in compute_loss
+        keeps the same effective weighting as the standard CE J-series variants."""
+        T = unaries.shape[1]
+        unary_score = unaries.gather(-1, targets.unsqueeze(-1)).squeeze(-1).sum(dim=-1)  # (B,)
+        trans_score = psi_pair[targets[:, :-1], targets[:, 1:]].sum(dim=-1)              # (B,)
+        score = unary_score + trans_score                                                # (B,)
+        logZ  = JSeriesHybrid._crf_log_partition(unaries, psi_pair)                      # (B,)
+        return ((logZ - score) / T).mean()
+
+    @staticmethod
+    def _crf_viterbi(unaries: torch.Tensor, psi_pair: torch.Tensor) -> torch.Tensor:
+        """Viterbi decode. unaries (B, T, C), psi_pair (C, C). Returns (B, T) int64."""
+        B, T, C = unaries.shape
+        bp = []
+        delta = unaries[:, 0]                                                # (B, C)
+        for t in range(1, T):
+            scores = delta.unsqueeze(2) + psi_pair.unsqueeze(0)              # (B, C, C)
+            delta_next, idx = scores.max(dim=1)                              # (B, C), (B, C)
+            delta = delta_next + unaries[:, t]
+            bp.append(idx)
+        last = delta.argmax(dim=-1)                                          # (B,)
+        path = [last]
+        for idx in reversed(bp):
+            last = idx.gather(1, last.unsqueeze(1)).squeeze(1)
+            path.append(last)
+        path.reverse()
+        return torch.stack(path, dim=1)                                      # (B, T)
+
     # ── Forward (teacher-forcing, training) ──────────────────────────────────
 
     def forward(self, batch: dict) -> dict:
-        """Full forward with teacher forcing. Arm 1 → Arm 2 (detached)."""
+        """Full forward with teacher forcing. Arm 1 → Arm 2 (detached) by default;
+        J5_F/J_old/J5_C take dedicated branches (see 2026-05-20 architecture re-diagnosis)."""
         memory = self._encode(
             batch["act_seq"], batch["aux_seq"],
             batch["cond_vec"], batch["cycle_idx"],
+            tgt_strata=batch.get("tgt_strata"),
         )
+
+        if self._mtype == "J_old":
+            # Pure encoder-only revert. Three parallel Linear heads off encoder slots.
+            # No AR decoder, no Arm-2 fusion. Mirrors Transformer_pipeline.py:556-558.
+            enc_slots   = memory[:, 1:, :]                                   # (B, 48, d_model) — drop CLS
+            act_logits  = self.activity_head_old(enc_slots)                  # (B, 48, n_act)
+            home_logits = self.home_head_old(enc_slots).squeeze(-1)          # (B, 48)
+            cop_logits  = self.cop_head_old(enc_slots)                       # (B, 48, n_cop)
+            return {
+                "act_logits":  act_logits,
+                "home_logits": home_logits,
+                "cop_logits":  cop_logits,
+                "aux_logits":  None,
+            }
+
+        if self._mtype == "J5_F":
+            # Joint encoder supervision + AR decoder for activity only.
+            # Activity path retains J3's AR decoder; binary heads attach to enc_slots
+            # directly (no Arm-2 fusion, no .detach() barrier).
+            act_logits = self._arm1_decode_tf(
+                batch["dec_act_seq"], batch["tgt_strata"],
+                memory, batch["cond_vec"], batch["cycle_idx"],
+            )                                                                # (B, 48, n_act)
+            enc_slots   = memory[:, 1:, :]                                   # (B, 48, d_model)
+            home_logits = self.home_head(enc_slots).squeeze(-1)              # (B, 48)
+            cop_logits  = self.cop_head(enc_slots)                           # (B, 48, n_cop)
+            return {
+                "act_logits":  act_logits,
+                "home_logits": home_logits,
+                "cop_logits":  cop_logits,
+                "aux_logits":  None,
+            }
 
         if self._mtype in ("J5_X1", "J5_X1b"):
             # J5-X1/X1b: bypassed, dec_output route active
@@ -1073,6 +1246,7 @@ class JSeriesHybrid(nn.Module):
             )
             binary_input = dec_out.detach() if self._mtype == "J5_X1" else dec_out
         else:
+            # J1/J2/J2.5/J3/J4_x/J5_A/J5_B/J5_C: standard Arm 1 → Arm 2 (detached) path.
             act_logits = self._arm1_decode_tf(
                 batch["dec_act_seq"], batch["tgt_strata"],
                 memory, batch["cond_vec"], batch["cycle_idx"],
@@ -1092,12 +1266,20 @@ class JSeriesHybrid(nn.Module):
         else:
             cop_logits  = self.cop_head(binary_input)                    # (B, 48, 9)
 
-        return {
+        output = {
             "act_logits":  act_logits,
             "home_logits": home_logits,
             "cop_logits":  cop_logits,
             "aux_logits":  None,
         }
+
+        if self._mtype == "J5_C":
+            # CRF NLL on Arm-1 activity logits (replaces per-slot CE in compute_loss).
+            output["act_crf_nll"] = self._crf_nll(
+                act_logits, batch["dec_act_seq"], self.psi_pair
+            )
+
+        return output
 
     # ── Inference (AR Arm 1 → NAT Arm 2) ─────────────────────────────────────
 
@@ -1109,9 +1291,54 @@ class JSeriesHybrid(nn.Module):
 
         Returns (gen_act [B,48] int64, gen_home [B,48] float, cop_prob [B,48,9] float).
         apply_safety=True: Spouse cop_prob *= (home_pred > 0.5) clip-only (not masked BCE).
+        J_old/J5_F/J5_C take dedicated branches.
         """
-        memory = self._encode(act_seq, aux_seq, cond_vec, cycle_idx)
+        memory = self._encode(act_seq, aux_seq, cond_vec, cycle_idx, tgt_strata=tgt_strata)
 
+        if self._mtype == "J_old":
+            # Pure encoder-only inference: argmax activity + sigmoid binaries off enc_slots.
+            enc_slots   = memory[:, 1:, :]                                   # (B, 48, d_model)
+            act_tokens  = self.activity_head_old(enc_slots).argmax(dim=-1)   # (B, 48) int64
+            home_logits = self.home_head_old(enc_slots).squeeze(-1)          # (B, 48)
+            gen_home    = (torch.sigmoid(home_logits) > 0.5).float()
+            cop_prob    = torch.sigmoid(self.cop_head_old(enc_slots))        # (B, 48, n_cop)
+            if apply_safety:
+                cop_prob = cop_prob.clone()
+                cop_prob[:, :, self.SPOUSE_IDX] *= gen_home
+            return act_tokens, gen_home, cop_prob
+
+        if self._mtype == "J5_F":
+            # Joint-supervised encoder with AR activity head. Binaries from enc_slots directly.
+            act_tokens  = self._arm1_generate(memory, cond_vec, cycle_idx, tgt_strata)  # (B, 48)
+            enc_slots   = memory[:, 1:, :]                                   # (B, 48, d_model)
+            home_logits = self.home_head(enc_slots).squeeze(-1)              # (B, 48)
+            gen_home    = (torch.sigmoid(home_logits) > 0.5).float()
+            cop_prob    = torch.sigmoid(self.cop_head(enc_slots))            # (B, 48, n_cop)
+            if apply_safety:
+                cop_prob = cop_prob.clone()
+                cop_prob[:, :, self.SPOUSE_IDX] *= gen_home
+            return act_tokens, gen_home, cop_prob
+
+        # J5_C: greedy AR → teacher-forced unaries → Viterbi decode → Arm-2 path.
+        if self._mtype == "J5_C":
+            tentative_seq = self._arm1_generate(memory, cond_vec, cycle_idx, tgt_strata)  # (B, 48)
+            act_logits, _ = self._arm1_decode_tf_full(
+                tentative_seq, tgt_strata, memory, cond_vec, cycle_idx,
+            )                                                                # (B, 48, n_act)
+            act_tokens = self._crf_viterbi(act_logits, self.psi_pair)        # (B, 48) int64
+            act_probs  = F.one_hot(act_tokens, num_classes=self.n_act).float()
+            binary_input = self._arm2_fuse(
+                memory, act_probs, cond_vec, cycle_idx, tgt_strata,
+            )
+            home_logits_inf = self.home_head(binary_input).squeeze(-1)
+            gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()
+            cop_prob = torch.sigmoid(self.cop_head(binary_input))
+            if apply_safety:
+                cop_prob = cop_prob.clone()
+                cop_prob[:, :, self.SPOUSE_IDX] *= gen_home
+            return act_tokens, gen_home, cop_prob
+
+        # ── Standard J-series AR-Arm1 → NAT-Arm2 path ────────────────────────────
         act_tokens = self._arm1_generate(memory, cond_vec, cycle_idx, tgt_strata)  # (B, 48)
 
         if self._mtype in ("J5_X1", "J5_X1b"):
@@ -1128,15 +1355,73 @@ class JSeriesHybrid(nn.Module):
         home_logits_inf = self.home_head(binary_input).squeeze(-1)       # (B, 48)
         gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()         # (B, 48)
 
-        if self.enable_hierarchical_cop:
+        if self._mtype == "J5_B":
+            # J5-B chain-rule cop head: p_alone = σ(z_alone); p_other_i = (1 - p_alone) · σ(z_other_i).
+            # Inference safety mask (cop_prob[:,:,Spouse] *= gen_home) dropped — chain rule subsumes
+            # the Alone-vs-Other mutual exclusivity by construction.
+            cop_logits_inf = self.cop_head(binary_input)                   # (B, 48, 9)
+            z_alone   = cop_logits_inf[..., 0:1]
+            z_others  = cop_logits_inf[..., 1:]
+            p_alone   = torch.sigmoid(z_alone)
+            p_others  = (1.0 - p_alone) * torch.sigmoid(z_others)
+            cop_prob  = torch.cat([p_alone, p_others], dim=-1)             # (B, 48, 9)
+        elif self.enable_hierarchical_cop:
             home_probs_inf = torch.sigmoid(home_logits_inf).detach()
             cop_input_inf  = torch.cat([binary_input, home_probs_inf.unsqueeze(-1)], dim=-1)
             cop_prob = torch.sigmoid(self.cop_head(cop_input_inf))         # (B, 48, 9)
         else:
             cop_prob = torch.sigmoid(self.cop_head(binary_input))          # (B, 48, 9)
 
-        if apply_safety:
+        if apply_safety and self._mtype != "J5_B":
             cop_prob = cop_prob.clone()
             cop_prob[:, :, self.SPOUSE_IDX] *= gen_home  # Spouse clip when not home
 
         return act_tokens, gen_home, cop_prob
+
+
+# ── J3-PSB v2 (per-slot demographic broadcast) ───────────────────────────────
+# Defined in 04B_model_J3_v2.py to keep the J3 baseline reproducible from the
+# unmodified JSeriesHybrid class above. Imported here via importlib because
+# both filenames start with a digit. 04D_train.py picks JSeriesHybridV2 up
+# through the same getattr pattern as JSeriesHybrid.
+import importlib as _il_v2
+import os as _os_v2
+import sys as _sys_v2
+
+_v2_dir = _os_v2.path.dirname(_os_v2.path.abspath(__file__))
+if _v2_dir not in _sys_v2.path:
+    _sys_v2.path.insert(0, _v2_dir)
+try:
+    _v2_mod = _il_v2.import_module("04B_model_J3_v2")
+    JSeriesHybridV2 = _v2_mod.JSeriesHybridV2
+except (ImportError, AttributeError):
+    JSeriesHybridV2 = None
+
+# ── J3-PSB-Lite v3 (regularized per-slot demographic broadcast) ──────────────
+# Defined in 04B_model_J3_v3.py. Phase 2 Arm 2 of 04_augmentationGSS_IMP.md.
+# Adds Linear(d_cond, 8) projection + per-slot cond-dropout p=0.5 before
+# broadcast — fixes the over-parameterization that crashed raw PSB (v2).
+try:
+    _v3_mod = _il_v2.import_module("04B_model_J3_v3")
+    JSeriesHybridV3 = _v3_mod.JSeriesHybridV3
+except (ImportError, AttributeError):
+    JSeriesHybridV3 = None
+
+# ── Phase 6 Stage A model families (HSMM / MDLM / HIER / MAMBA / SEDD) ──────
+# All 5 subclass JSeriesHybrid (reuse encoder + Arm-2 binary heads); only the
+# Arm-1 activity decoder differs. Loaded via importlib because all filenames
+# start with a digit. Setting any name to None when its file is missing keeps
+# import-time graceful (e.g. local checkout missing one file).
+def _import_optional(modname, attr):
+    try:
+        return getattr(_il_v2.import_module(modname), attr)
+    except (ImportError, AttributeError):
+        return None
+
+
+HSMMHybrid   = _import_optional("04B_model_HSMM",    "HSMMHybrid")
+MDLMHybrid   = _import_optional("04B_model_MDLM",    "MDLMHybrid")
+MDLMHybridV2 = _import_optional("04B_model_MDLM_v2", "MDLMHybrid")
+HIERHybrid   = _import_optional("04B_model_HIER",    "HIERHybrid")
+MAMBAHybrid = _import_optional("04B_model_MAMBA", "MAMBAHybrid")
+SEDDHybrid  = _import_optional("04B_model_SEDD",  "SEDDHybrid")

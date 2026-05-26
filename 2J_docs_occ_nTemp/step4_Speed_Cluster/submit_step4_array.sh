@@ -2,8 +2,8 @@
 # submit_step4_array.sh — sweep driver for Step-4 YAML-config + job-array system
 #
 # Usage (on the cluster, login node only):
-#   bash Speed_Cluster/submit_step4_array.sh configs/sweep_F9.yaml [CHAIN_TAG]
-#   e.g.: bash Speed_Cluster/submit_step4_array.sh configs/sweep_F9.yaml F9_$(date +%Y%m%d_%H%M)
+#   bash step4_Speed_Cluster/submit_step4_array.sh configs/sweep_F9.yaml [CHAIN_TAG]
+#   e.g.: bash step4_Speed_Cluster/submit_step4_array.sh configs/sweep_F9.yaml F9_$(date +%Y%m%d_%H%M)
 #
 # Chain per trial: 04D (array) -> 04E -> {04F, 04H, 04I, 04J} (parallel) -> extract_metrics
 # Results appended to: results_index/results.csv

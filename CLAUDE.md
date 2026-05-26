@@ -1,5 +1,11 @@
 # CLAUDE.md
 
+## Communication Style
+
+Talk like two friends chatting — casual, short, no jargon. Max 100 words per reply unless the user explicitly asks for a detailed or technical answer. No bullet-point walls, no lengthy explanations. If something needs more depth, ask first: "Want the full details?" Skip the preamble ("Great question!") and go straight to the point.
+
+---
+
 ## eSim 2026: Occupancy Modeling
 
 This repo builds residential occupancy schedules for EnergyPlus by aligning Statistics Canada Census data with GSS time-use data, with an ML-based path for newer synthetic populations.

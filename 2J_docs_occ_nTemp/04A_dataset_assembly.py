@@ -39,6 +39,7 @@ CYCLE_MAP = {2005: 0, 2010: 1, 2015: 2, 2022: 3}
 CAT_COLS = [
     "AGEGRP", "SEX", "MARSTH", "HHSIZE", "PR", "CMA",
     "KOL", "LFTAG", "HRSWRK", "NOCS", "COW", "DDAY_STRATA",
+    "ATTSCH", "POWST", "MODE",  # Phase 2 additions (2026-05-22): restored GSS demographics
 ]
 CONT_COLS = ["TOTINC"]          # standardized continuous
 BIN_COLS = ["COLLECT_MODE", "TOTINC_SOURCE"]   # binary flags
@@ -385,10 +386,14 @@ def main():
     # ── Save datasets ───────────────────────────────────────────────────
     print("\n[6/6] Saving tensor datasets...")
 
-    # Metadata columns needed by 04C for demographic matching
+    # Metadata columns needed by 04C for demographic matching.
+    # ATTSCH/POWST appended 2026-05-22 for Phase 3 Lever B(i) — required as
+    # EXACT_COLS terms in 04C neighbor scoring. MODE not in EXACT_COLS so
+    # not added here (kept in CAT_COLS / cond_vec only).
     meta_cols = ["occID", "CYCLE_YEAR", "DDAY_STRATA", "AGEGRP", "SEX",
                  "MARSTH", "HHSIZE", "LFTAG", "PR", "CMA",
-                 "HRSWRK", "NOCS", "TOTINC", "WGHT_PER"]
+                 "HRSWRK", "NOCS", "TOTINC", "WGHT_PER",
+                 "ATTSCH", "POWST"]
     meta_cols = [c for c in meta_cols if c in df.columns]
 
     for split_name, row_idx in [("train", train_idx), ("val", val_idx), ("test", test_idx)]:

@@ -47,18 +47,31 @@ ConditionalTransformer    = model_mod.ConditionalTransformer
 EncoderOnlyOccupancyModel = getattr(model_mod, "EncoderOnlyOccupancyModel", None)
 IOccupancyModel           = getattr(model_mod, "IOccupancyModel",           None)
 JSeriesHybrid             = getattr(model_mod, "JSeriesHybrid",             None)
+JSeriesHybridV2           = getattr(model_mod, "JSeriesHybridV2",           None)
+JSeriesHybridV3           = getattr(model_mod, "JSeriesHybridV3",           None)
+# Phase 6 Stage A model families (HSMM/MDLM/HIER/MAMBA/SEDD)
+HSMMHybrid                = getattr(model_mod, "HSMMHybrid",                None)
+MDLMHybrid                = getattr(model_mod, "MDLMHybrid",                None)
+MDLMHybridV2              = getattr(model_mod, "MDLMHybridV2",              None)
+HIERHybrid                = getattr(model_mod, "HIERHybrid",                None)
+MAMBAHybrid               = getattr(model_mod, "MAMBAHybrid",               None)
+SEDDHybrid                = getattr(model_mod, "SEDDHybrid",                None)
 
 LAMBDA_ACT         = float(os.environ.get("LAMBDA_ACT",         "1.0"))
 LAMBDA_HOME        = float(os.environ.get("LAMBDA_HOME",        "0.5"))
 LAMBDA_COP         = float(os.environ.get("LAMBDA_COP",         "0.3"))
 LAMBDA_MARG        = float(os.environ.get("LAMBDA_MARG",        "0.1"))
 LAMBDA_LOGIC       = float(os.environ.get("LAMBDA_LOGIC",       "0.0"))
+# Phase 4 Lever C-iii (2026-05-23): transition-rate penalty.
+# Targets 157.95× over-fragmentation gate. Default 0.0 = backward-compatible.
+LAMBDA_TRANS       = float(os.environ.get("LAMBDA_TRANS",       "0.0"))
 MARG_MODE          = os.environ.get("MARG_MODE", "global")  # 'global' | 'per_cs' (F3-B/C/D)
 AUX_STRATUM_LAMBDA = float(os.environ.get("AUX_STRATUM_LAMBDA", "0.1"))
 SPOUSE_NEG_WEIGHT  = float(os.environ.get("SPOUSE_NEG_WEIGHT",  "1.0"))
 # G2: H3 interventions (defaults 0.0 → backward-compatible with F/G1)
 SCHED_SAMPLE_P    = float(os.environ.get("SCHED_SAMPLE_P",    "0.0"))
 HOME_LABEL_SMOOTH = float(os.environ.get("HOME_LABEL_SMOOTH", "0.0"))
+DROPOUT           = float(os.environ.get("DROPOUT",           "0.1"))
 
 # H4: equal-weight all loss terms — overrides per-axis lambda values.
 # LAMBDA_ALL_EQUAL=1 normalises [ACT, HOME, COP, MARG] to equal 0.25 each.
@@ -68,6 +81,30 @@ if os.environ.get("LAMBDA_ALL_EQUAL", "0") == "1":
 
 # H_NAT: encoder-only model type selector.
 MODEL_TYPE = os.environ.get("MODEL_TYPE", "ConditionalTransformer")
+
+# J3_v3 (PSB-Lite) regularization knobs — only consumed when MODEL_TYPE == "J3_v3".
+D_PSB_PROJ = int(os.environ.get("D_PSB_PROJ", "8"))
+P_PSB_DROP = float(os.environ.get("P_PSB_DROP", "0.5"))
+
+# Phase 6 Stage A — loss-side toggles. All default off → byte-identical J3.
+# USE_SPL: semantic-probabilistic-layer soft logic constraints
+#   (¬home ⇒ ¬alone, work ⇒ ¬home ∧ colleagues, sleep ⇒ home)
+# USE_FACT: factorized joint decoding consistency — same rules as SPL but
+#   weighted as hard penalties (×3) and applied without entropy regularisation.
+# LOSS_MODE ∈ {ce, sinkhorn, gce}: primary activity objective.
+USE_SPL          = int(os.environ.get("USE_SPL",  "0"))
+USE_FACT         = int(os.environ.get("USE_FACT", "0"))
+LOSS_MODE        = os.environ.get("LOSS_MODE", "ce").lower()
+# Activity-class indices in the 14-way 0-indexed mapping (see 04A_dataset_assembly.py).
+# Work=0, Sleep=4 confirmed from 04E_inference.py:58-59; colleagues=8 in 9-cop ordering.
+SPL_ACT_WORK    = 0
+SPL_ACT_SLEEP   = 4
+SPL_COP_ALONE   = 0
+SPL_COP_COLLEAG = 8
+SPL_LAMBDA      = float(os.environ.get("SPL_LAMBDA", "0.1"))
+FACT_LAMBDA     = float(os.environ.get("FACT_LAMBDA", "0.3"))
+GCE_Q           = float(os.environ.get("GCE_Q", "0.5"))
+SINKHORN_EPS    = float(os.environ.get("SINKHORN_EPS", "0.05"))
 
 # DEBUG_GRAD_CHECK=1: after first backward (J5_X1 only), assert act_head.weight.grad is nonzero.
 # Verifies that activity-CE backprops through decoder while home/cop BCE cannot (detach barrier).
@@ -79,7 +116,11 @@ _DEBUG_GRAD = os.environ.get("DEBUG_GRAD_CHECK", "0") == "1"
 class Step4Dataset(Dataset):
     """
     Wraps a single split's tensor dict + training pairs.
-    Resamples one of K neighbors per epoch.
+
+    Activity + 9-channel co-presence + AT_HOME targets: 1-of-K neighbor resampled
+    each epoch. Phase 3 Lever B(ii) K-mean soft AT_HOME target was reverted on
+    2026-05-23 (J3-NEIGH job 935306 failed: soft target decalibrated sigmoid head,
+    home_gap blew up 0.033 → 0.26 by ep 3, val_score 0.2045 vs Phase 2 DEMO 0.0496).
     """
 
     def __init__(self, data: dict, pairs: dict):
@@ -111,7 +152,7 @@ class Step4Dataset(Dataset):
             "cycle_idx":  self.data["cycle_idx"][s],
             "cycle_year": self.data["cycle_year"][s],
             "obs_strata": self.data["obs_strata"][s],
-            # Decoder target: neighbor's diary
+            # Decoder target: sampled neighbor's diary (activity + cop + home)
             "dec_act_seq":    self.data["act_seq"][t],
             "dec_aux_seq":    self.data["aux_seq"][t],
             "dec_cop_avail":  self.data["cop_avail"][t],
@@ -155,19 +196,55 @@ def compute_loss(output: dict, batch: dict, device,
 
     # Activity targets: 0-indexed int64
     act_tgt  = batch["dec_act_seq"]                          # (B, 48)
-    home_tgt = batch["dec_aux_seq"][:, :, 0].float()        # (B, 48) — AT_HOME is feature 0
+    # AT_HOME target: binary, 1-of-K resampled (Phase 3 Lever B-ii K-mean soft
+    # target reverted 2026-05-23 — see Step4Dataset docstring).
+    home_tgt = batch["dec_aux_seq"][:, :, 0].float()        # (B, 48) binary
     if HOME_LABEL_SMOOTH > 0.0:
-        # {0,1} → {ε, 1-ε} to prevent sigmoid saturation (G2 / H3 fix)
         home_tgt = home_tgt * (1.0 - 2.0 * HOME_LABEL_SMOOTH) + HOME_LABEL_SMOOTH
     cop_tgt  = batch["dec_aux_seq"][:, :, 1:]               # (B, 48, 9) — features 1..9
 
-    # Activity: cross-entropy over 14 classes (inverse-sqrt-frequency weighted)
+    # Activity: cross-entropy over 14 classes (inverse-sqrt-frequency weighted).
+    # J5_C replaces per-slot CE with linear-chain CRF NLL — the model returns the NLL
+    # under output["act_crf_nll"]; CE branch is skipped to keep the loss surface clean.
     B, T, C = act_logits.shape
-    act_loss = F.cross_entropy(
-        act_logits.reshape(B * T, C),
-        act_tgt.reshape(B * T),
-        weight=act_weights,
-    )
+    if "act_crf_nll" in output and output["act_crf_nll"] is not None:
+        act_loss = output["act_crf_nll"]
+    elif LOSS_MODE == "gce":
+        # Generalized Cross-Entropy (Zhang & Sabuncu 2018; cited in deep-research as
+        # appropriate for noisy K-NN supervision). L_GCE = (1 - p_y^q) / q. As q → 0
+        # this becomes CE; q = 1 makes it MAE. Default q = 0.5 sits in the middle.
+        probs = F.softmax(act_logits, dim=-1)
+        py    = probs.gather(-1, act_tgt.unsqueeze(-1)).squeeze(-1).clamp(1e-7, 1.0)
+        gce   = (1.0 - py.pow(GCE_Q)) / max(GCE_Q, 1e-6)
+        if act_weights is not None:
+            w_per_slot = act_weights[act_tgt]
+            gce = gce * w_per_slot
+        act_loss = gce.mean()
+    elif LOSS_MODE == "sinkhorn":
+        # Batch-level Sinkhorn divergence between predicted slot-distribution and
+        # observed slot-distribution (per time-slot). Fast 1-D OT approximation:
+        # compare the sorted per-class predicted vs observed mean probability
+        # across the batch at each slot, then sum the entropy-regularised cost.
+        probs = F.softmax(act_logits, dim=-1)                            # (B, T, C)
+        tgt_oh = F.one_hot(act_tgt, num_classes=C).float()
+        # Mean per (slot, class) over batch → (T, C); 1-D Wasserstein along class axis
+        p_mean = probs.mean(dim=0)                                       # (T, C)
+        q_mean = tgt_oh.mean(dim=0)                                      # (T, C)
+        # Entropy-regularised OT via Sinkhorn: closed-form for unit cost.
+        # We use the practical approximation Σ_t Σ_c |F_p(c) - F_q(c)| (1-D EMD)
+        # plus an ε * KL regulariser — this avoids the iterative Sinkhorn loop
+        # while preserving the spirit of the loss.
+        cum_p = p_mean.cumsum(dim=-1)
+        cum_q = q_mean.cumsum(dim=-1)
+        emd_per_slot = (cum_p - cum_q).abs().sum(dim=-1)                 # (T,)
+        kl_reg       = (p_mean * (p_mean.clamp(1e-7).log() - q_mean.clamp(1e-7).log())).sum(dim=-1)
+        act_loss = emd_per_slot.mean() + SINKHORN_EPS * kl_reg.mean()
+    else:
+        act_loss = F.cross_entropy(
+            act_logits.reshape(B * T, C),
+            act_tgt.reshape(B * T),
+            weight=act_weights,
+        )
 
     # AT_HOME: binary cross-entropy with class re-balancing
     home_loss = F.binary_cross_entropy_with_logits(
@@ -188,7 +265,23 @@ def compute_loss(output: dict, batch: dict, device,
         marg_loss = (torch.sigmoid(home_logits).mean() - home_tgt.mean()).abs()
 
     # Co-presence: BCE with per-slot availability masking
-    if cop_pos_weight is not None:
+    if MODEL_TYPE == "J5_B":
+        # J5-B chain-rule cop head: p_alone = σ(z_alone); p_other_i = (1 - p_alone) · σ(z_other_i).
+        # BCE applied on marginal probs (not logits); spouse_neg_weight via cop_pos_weight is
+        # applied manually since F.binary_cross_entropy lacks pos_weight support.
+        z_alone   = cop_logits[..., 0:1]                                   # (B, 48, 1)
+        z_others  = cop_logits[..., 1:]                                    # (B, 48, 8)
+        p_alone   = torch.sigmoid(z_alone)
+        p_others  = (1.0 - p_alone) * torch.sigmoid(z_others)
+        cop_probs = torch.cat([p_alone, p_others], dim=-1).clamp(1e-7, 1.0 - 1e-7)  # (B, 48, 9)
+        if cop_pos_weight is not None:
+            pw = cop_pos_weight.view(1, 1, -1)
+            cop_loss_raw = -(pw * cop_tgt * torch.log(cop_probs)
+                             + (1.0 - cop_tgt) * torch.log(1.0 - cop_probs))
+        else:
+            cop_loss_raw = -(cop_tgt * torch.log(cop_probs)
+                             + (1.0 - cop_tgt) * torch.log(1.0 - cop_probs))
+    elif cop_pos_weight is not None:
         cop_loss_raw = F.binary_cross_entropy_with_logits(
             cop_logits, cop_tgt,
             pos_weight=cop_pos_weight.view(1, 1, -1),
@@ -237,6 +330,46 @@ def compute_loss(output: dict, batch: dict, device,
         aux_loss  = torch.tensor(0.0)
         LAMBDA_AUX = 0.0
 
+    # Phase 4 Lever C-iii (2026-05-23): differentiable transition-rate penalty.
+    # P(class-change between slot t and t+1) under softmax: 1 - Σ_c p_c(t) · p_c(t+1).
+    # Sum across 47 transitions, mean across batch → expected # transitions per diary.
+    # Observed # transitions per diary = count where act_tgt[:,t+1] != act_tgt[:,t].
+    if LAMBDA_TRANS > 0.0:
+        act_probs   = F.softmax(act_logits, dim=-1)                              # (B, 48, 14)
+        same_prob   = (act_probs[:, :-1, :] * act_probs[:, 1:, :]).sum(dim=-1)   # (B, 47)
+        pred_trans  = (1.0 - same_prob).sum(dim=-1).mean()
+        obs_trans   = (act_tgt[:, 1:] != act_tgt[:, :-1]).float().sum(dim=-1).mean()
+        trans_loss  = (pred_trans - obs_trans).abs()
+    else:
+        trans_loss  = torch.tensor(0.0, device=cop_logits.device)
+
+    # Phase 6 Stage A — SPL (semantic probabilistic layer) soft logic constraints
+    # and FACT (factorized joint decoding) heavier consistency penalty. Both share
+    # the same three rules; SPL adds them as a soft term, FACT applies a larger λ
+    # so violations are penalised harder.
+    #   R1: ¬home ⇒ ¬alone     →  loss ∝ p(home=0) · p(alone=1)
+    #   R2: work ⇒ ¬home       →  loss ∝ p(act=work) · p(home=1)
+    #   R3: work ⇒ colleagues  →  loss ∝ p(act=work) · (1 - p(colleagues))
+    #   R4: sleep ⇒ home       →  loss ∝ p(act=sleep) · (1 - p(home))
+    if USE_SPL or USE_FACT:
+        act_probs_c = F.softmax(act_logits, dim=-1)                              # (B, 48, 14)
+        p_work      = act_probs_c[..., SPL_ACT_WORK]                             # (B, 48)
+        p_sleep     = act_probs_c[..., SPL_ACT_SLEEP]                            # (B, 48)
+        p_home_sig  = torch.sigmoid(home_logits)                                  # (B, 48)
+        cop_probs_c = torch.sigmoid(cop_logits)                                   # (B, 48, 9)
+        p_alone     = cop_probs_c[..., SPL_COP_ALONE]
+        p_colleag   = cop_probs_c[..., SPL_COP_COLLEAG]
+
+        r1 = ((1.0 - p_home_sig) * p_alone).mean()
+        r2 = (p_work * p_home_sig).mean()
+        r3 = (p_work * (1.0 - p_colleag)).mean()
+        r4 = (p_sleep * (1.0 - p_home_sig)).mean()
+        spl_total = r1 + r2 + r3 + r4
+        spl_lambda = FACT_LAMBDA if USE_FACT else SPL_LAMBDA
+    else:
+        spl_total = torch.tensor(0.0, device=cop_logits.device)
+        spl_lambda = 0.0
+
     total = (
         LAMBDA_ACT   * act_loss
         + LAMBDA_HOME  * home_loss
@@ -244,6 +377,8 @@ def compute_loss(output: dict, batch: dict, device,
         + LAMBDA_MARG  * marg_loss
         + LAMBDA_AUX   * aux_loss
         + LAMBDA_LOGIC * loss_logic
+        + LAMBDA_TRANS * trans_loss
+        + spl_lambda   * spl_total
     )
 
     return {
@@ -254,6 +389,8 @@ def compute_loss(output: dict, batch: dict, device,
         "marg_loss":   marg_loss.item(),
         "aux_loss":    aux_loss.item() if aux_logits is not None else 0.0,
         "logic_loss":  loss_logic.item(),
+        "trans_loss":  trans_loss.item(),
+        "spl_loss":    spl_total.item(),
     }
 
 
@@ -497,9 +634,16 @@ def train(args):
                 "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
                 "aux_stratum_head": False,
             }
-    elif MODEL_TYPE in ("J2", "J2_5", "J3"):
+    elif MODEL_TYPE in ("J2", "J2_5", "J3", "J3_v2", "J3_v3", "J5_A", "J5_B", "J5_F", "J_old", "J5_C"):
         # J2/J2.5/J3: same JSeriesHybrid trunk; single-axis AT_HOME-targeted variants.
         # J2 = config-only (lambda_home=0.90); J2.5 = home_head arch; J3 = arm2_act_proj.
+        # J3_v2 = J3 + per-slot demographic broadcast on encoder slot tokens (J3-PSB,
+        #         Phase 1 of 04_augmentationGSS_IMP.md). Uses JSeriesHybridV2 subclass.
+        # J3_v3 = J3 + regularized per-slot demographic broadcast (PSB-Lite, Phase 2
+        #         Arm 2). Linear(d_cond, D_PSB_PROJ) projection + per-slot Bernoulli
+        #         cond-dropout P_PSB_DROP. Uses JSeriesHybridV3 subclass.
+        # J5_F = joint encoder supervision + AR activity; J_old = pure encoder-only revert;
+        # J5_C = J3 + linear-chain CRF on Arm-1 activity logits.
         # fp32, ReduceLROnPlateau, clip_grad_norm=25 (same I1/J1 hygiene).
         args.fp16 = False
         if args.sample:
@@ -523,10 +667,13 @@ def train(args):
                 "N_enc": args.n_enc_layers,
                 "N_dec": args.n_dec_layers,
                 "d_act": 32, "d_cycle": 32,
-                "dropout": 0.1, "n_activity_classes": 14,
+                "dropout": DROPOUT, "n_activity_classes": 14,
                 "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
                 "aux_stratum_head": False,
             }
+        if MODEL_TYPE == "J3_v3":
+            model_config["d_psb_proj"] = D_PSB_PROJ
+            model_config["p_psb_drop"] = P_PSB_DROP
     elif MODEL_TYPE in ("J4_1", "J4_2", "J4_3"):
         # J4_x: parallel precision ladder forked from frozen J3.
         # J4_1 = temporal injection; J4_2 = hierarchical cop; J4_3 = logic loss only (no arch change).
@@ -591,6 +738,36 @@ def train(args):
                 "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
                 "aux_stratum_head": False,
             }
+    elif MODEL_TYPE in ("HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD"):
+        # Phase 6 Stage A model families. All subclass JSeriesHybrid → reuse J3
+        # encoder + Arm-2 binary heads; only the Arm-1 activity decoder differs.
+        # Same J-series training hygiene (fp32, ReduceLROnPlateau, clip_grad_norm=25).
+        args.fp16 = False
+        if args.sample:
+            model_config = {
+                "model_type": MODEL_TYPE,
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2, "N_dec": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
+            args.batch_size = 16
+            args.max_epochs = 10
+            args.patience   = 10
+        else:
+            model_config = {
+                "model_type": MODEL_TYPE,
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": args.d_model * 4,
+                "N_enc": args.n_enc_layers,
+                "N_dec": args.n_dec_layers,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+            }
     elif args.sample:
         # Local test config (CPU-friendly, fast)
         model_config = {
@@ -619,7 +796,13 @@ def train(args):
           f"  ACTIVITY_BOOSTS={os.environ.get('ACTIVITY_BOOSTS','1')}"
           f"  DATA_SIDE_SAMPLING={os.environ.get('DATA_SIDE_SAMPLING','0')}"
           f"  MARG_MODE={MARG_MODE}"
-          f"  AUX_STRATUM_LAMBDA={AUX_STRATUM_LAMBDA}  SPOUSE_NEG_WEIGHT={SPOUSE_NEG_WEIGHT}")
+          f"  AUX_STRATUM_LAMBDA={AUX_STRATUM_LAMBDA}  SPOUSE_NEG_WEIGHT={SPOUSE_NEG_WEIGHT}"
+          f"  LAMBDA_TRANS={LAMBDA_TRANS}")
+    print(f"  [Phase 6] MODEL_TYPE={MODEL_TYPE}  LOSS_MODE={LOSS_MODE}"
+          f"  USE_FILM={os.environ.get('USE_FILM','0')}"
+          f"  USE_FOURIER_PE={os.environ.get('USE_FOURIER_PE','0')}"
+          f"  USE_PREFIX={os.environ.get('USE_PREFIX','0')}"
+          f"  USE_SPL={USE_SPL}  USE_FACT={USE_FACT}")
 
     # ── Device ───────────────────────────────────────────────────────────
     if torch.cuda.is_available():
@@ -742,9 +925,34 @@ def train(args):
     elif MODEL_TYPE == "I1":
         assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
         model = IOccupancyModel(model_config).to(device)
-    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+    elif MODEL_TYPE == "J3_v2":
+        assert JSeriesHybridV2 is not None, "JSeriesHybridV2 not found in 04B_model.py (check 04B_model_J3_v2.py import)"
+        model = JSeriesHybridV2(model_config).to(device)
+    elif MODEL_TYPE == "J3_v3":
+        assert JSeriesHybridV3 is not None, "JSeriesHybridV3 not found in 04B_model.py (check 04B_model_J3_v3.py import)"
+        model = JSeriesHybridV3(model_config).to(device)
+    elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3",
+                         "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
+    elif MODEL_TYPE == "HSMM":
+        assert HSMMHybrid is not None, "HSMMHybrid not found (check 04B_model_HSMM.py)"
+        model = HSMMHybrid(model_config).to(device)
+    elif MODEL_TYPE == "MDLM":
+        assert MDLMHybrid is not None, "MDLMHybrid not found (check 04B_model_MDLM.py)"
+        model = MDLMHybrid(model_config).to(device)
+    elif MODEL_TYPE == "MDLM_v2":
+        assert MDLMHybridV2 is not None, "MDLMHybridV2 not found (check 04B_model_MDLM_v2.py)"
+        model = MDLMHybridV2(model_config).to(device)
+    elif MODEL_TYPE == "HIER":
+        assert HIERHybrid is not None, "HIERHybrid not found (check 04B_model_HIER.py)"
+        model = HIERHybrid(model_config).to(device)
+    elif MODEL_TYPE == "MAMBA":
+        assert MAMBAHybrid is not None, "MAMBAHybrid not found (check 04B_model_MAMBA.py)"
+        model = MAMBAHybrid(model_config).to(device)
+    elif MODEL_TYPE == "SEDD":
+        assert SEDDHybrid is not None, "SEDDHybrid not found (check 04B_model_SEDD.py)"
+        model = SEDDHybrid(model_config).to(device)
     else:
         model = ConditionalTransformer(model_config).to(device)
     total_params = sum(p.numel() for p in model.parameters())
@@ -754,7 +962,9 @@ def train(args):
     # ── Optimizer & schedule ─────────────────────────────────────────────
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     warmup_steps = 2000 if not args.sample else 50
-    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+    if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3",
+                       "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
+                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD"):
         # I1/J-series: ReduceLROnPlateau only — skipping LambdaLR prevents lr_lambda(0)
         # from crushing the optimizer LR to ~2.5e-8 before training begins.
         scheduler = None
@@ -799,7 +1009,7 @@ def train(args):
     # ── Training log CSV ─────────────────────────────────────────────────
     log_path = os.path.join(out_dir, "step4_training_log.csv")
     log_fields = ["epoch", "train_loss", "act_loss", "home_loss", "cop_loss",
-                  "marg_loss", "val_js", "home_gap", "val_score",
+                  "marg_loss", "trans_loss", "val_js", "home_gap", "val_score",
                   "lr", "grad_norm", "elapsed_s"]
     if start_epoch == 0:
         with open(log_path, "w", newline="") as f:
@@ -816,7 +1026,7 @@ def train(args):
         # Resample 1-of-K neighbors for this epoch
         train_dataset.resample()
 
-        epoch_losses = {"total": 0.0, "act": 0.0, "home": 0.0, "cop": 0.0, "marg": 0.0}
+        epoch_losses = {"total": 0.0, "act": 0.0, "home": 0.0, "cop": 0.0, "marg": 0.0, "trans": 0.0}
         grad_norms   = []
 
         for batch in train_loader:
@@ -837,7 +1047,7 @@ def train(args):
             else:
                 train_batch = batch
 
-            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b") else 1.0
+            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD") else 1.0
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(train_batch)
@@ -865,7 +1075,8 @@ def train(args):
                 optimizer.step()
 
             # I1/J-series: per-epoch ReduceLROnPlateau; all others: per-batch LambdaLR
-            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
+                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD"):
                 scheduler.step()
             global_step += 1
 
@@ -874,6 +1085,7 @@ def train(args):
             epoch_losses["home"]  += losses["home_loss"]
             epoch_losses["cop"]   += losses["cop_loss"]
             epoch_losses["marg"]  += losses["marg_loss"]
+            epoch_losses["trans"] += losses.get("trans_loss", 0.0)
             grad_norms.append(grad_norm)
 
             # Gradient health check: first backward pass of first epoch
@@ -897,6 +1109,7 @@ def train(args):
         avg_home  = epoch_losses["home"]  / n_batches
         avg_cop   = epoch_losses["cop"]   / n_batches
         avg_marg  = epoch_losses["marg"]  / n_batches
+        avg_trans = epoch_losses["trans"] / n_batches
         avg_gnorm = float(np.mean(grad_norms))
         cur_lr    = optimizer.param_groups[0]["lr"]
 
@@ -913,8 +1126,8 @@ def train(args):
 
         print(f"Epoch {epoch+1:3d}/{args.max_epochs}: "
               f"train_loss={avg_loss:.4f}  act={avg_act:.4f}  home={avg_home:.4f}  "
-              f"cop={avg_cop:.4f}  marg={avg_marg:.4f}  |  val_JS={val_js:.4f}  "
-              f"home_gap={home_gap:.4f}  val_score={val_score:.4f}  "
+              f"cop={avg_cop:.4f}  marg={avg_marg:.4f}  trans={avg_trans:.4f}  |  "
+              f"val_JS={val_js:.4f}  home_gap={home_gap:.4f}  val_score={val_score:.4f}  "
               f"lr={cur_lr:.2e}  grad_norm={avg_gnorm:.3f}  "
               f"({elapsed:.0f}s)")
 
@@ -924,6 +1137,7 @@ def train(args):
                 "epoch": epoch + 1, "train_loss": round(avg_loss, 6),
                 "act_loss": round(avg_act, 6), "home_loss": round(avg_home, 6),
                 "cop_loss": round(avg_cop, 6), "marg_loss": round(avg_marg, 6),
+                "trans_loss": round(avg_trans, 6),
                 "val_js": round(val_js, 6),
                 "home_gap": round(home_gap, 6), "val_score": round(val_score, 6),
                 "lr": round(cur_lr, 8), "grad_norm": round(avg_gnorm, 4),
@@ -943,7 +1157,8 @@ def train(args):
         # Save best checkpoint — selected on combined val_JS + 0.5·|ΔAT_HOME|.
         # Both save and patience counter are gated on past_warmup to prevent
         # near-uniform warmup predictions from locking in a deceptively low score.
-        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+        if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
+                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD"):
             past_warmup = True  # no LambdaLR warmup for I1/J-series; track from epoch 1
         else:
             warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))
@@ -959,7 +1174,7 @@ def train(args):
                 "model_config": model_config,
                 "val_js": val_js, "home_gap": home_gap, "val_score": val_score,
             }, best_ckpt)
-            print(f"  ✓ New best model saved "
+            print(f"  NEW BEST saved "
                   f"(val_score={val_score:.4f}  val_JS={val_js:.4f}  home_gap={home_gap:.4f})")
         else:
             patience_counter += 1

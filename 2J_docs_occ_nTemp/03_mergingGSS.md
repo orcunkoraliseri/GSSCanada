@@ -711,3 +711,33 @@ graph TD
 - [x] V6. 3-way tie rate < 5% — **PASS** (0.82%)
 - [x] V7. DDAY_STRATA distribution unchanged — **PASS** (exact match)
 - [x] V8. Manual spot-check 5 random respondents — **PASS**
+
+---
+
+## Progress Log
+
+### 2026-05-22 — Phase 2 plumbing through Step 3
+
+Triggered by `04_augmentationGSS_IMP.md` Phase 2. Two filter lists in `03_mergingGSS.py` had to be extended for `ATTSCH` / `POWST` / `MODE` to propagate end-to-end:
+
+1. **`MAIN_COMMON_COLS`** (line 33-58) — top-of-file list used by `load_and_stack_main()` to select per-cycle Main columns. Extended with `["ATTSCH", "POWST", "MODE"]`.
+2. **`PERSON_COLS`** inside `build_hetus_wide()` (line 443-450) — *second* filter list, separate from `MAIN_COMMON_COLS`, applied during the 144-slot wide-table pivot. **Easy to miss**: extending only `MAIN_COMMON_COLS` propagates the columns through the merge but they get silently dropped at the wide-table stage. After the first Step 3 run completed with the new cols absent from `hetus_wide.csv`, `PERSON_COLS` was extended too. Re-running Step 3 then carried the new cols through to `hetus_30min.csv`.
+
+Post-Phase-2 shapes:
+- `hetus_30min.csv`: 64,061 × 123 cols (was 120; +3 from ATTSCH/POWST/MODE)
+- `hetus_wide.csv`: 315 cols (was 312)
+- `copresence_30min.csv`: 433 cols (unchanged)
+- `merged_episodes.csv`: 53 cols (unchanged)
+
+Per-cycle coverage of new cols in `hetus_30min.csv` (after diary-validity filtering):
+
+| Cycle | n_respondents | ATTSCH coverage | POWST coverage | MODE coverage |
+|---|---|---|---|---|
+| 2005 | 19,221 | 99.7% (1,279 students) | 59.7% (680 WFH) | 0% (intentional NaN) |
+| 2010 | 15,114 | 64.0% (596) | 50.1% (382) | 50.1% |
+| 2015 | 17,390 | 97.5% (1,310) | 50.5% (458) | 50.5% |
+| 2022 | 12,336 | 94.8% (475) | 47.0% (1,027) | 94.9% |
+
+(Coverage matches Step 2 within the diary-validity merge filter; small row reductions in 2005/2010 are expected.)
+
+**Lesson learned (for §3.5 of the IMP doc):** future Step 3 edits adding new MAIN columns must touch BOTH filter lists. Consider consolidating into a single source list in a future refactor.

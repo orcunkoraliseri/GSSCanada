@@ -43,6 +43,14 @@ ConditionalTransformer = model_mod.ConditionalTransformer
 EncoderOnlyOccupancyModel = getattr(model_mod, "EncoderOnlyOccupancyModel", None)
 IOccupancyModel = getattr(model_mod, "IOccupancyModel", None)
 JSeriesHybrid   = getattr(model_mod, "JSeriesHybrid",   None)
+JSeriesHybridV2 = getattr(model_mod, "JSeriesHybridV2", None)
+JSeriesHybridV3 = getattr(model_mod, "JSeriesHybridV3", None)
+# Phase 6 Stage A model families
+HSMMHybrid  = getattr(model_mod, "HSMMHybrid",  None)
+MDLMHybrid  = getattr(model_mod, "MDLMHybrid",  None)
+HIERHybrid  = getattr(model_mod, "HIERHybrid",  None)
+MAMBAHybrid = getattr(model_mod, "MAMBAHybrid", None)
+SEDDHybrid  = getattr(model_mod, "SEDDHybrid",  None)
 
 N_SLOTS = 48
 N_COP   = 9
@@ -300,9 +308,31 @@ def main():
     elif _mtype == "I1":
         assert IOccupancyModel is not None, "IOccupancyModel not found in 04B_model.py"
         model = IOccupancyModel(model_config).to(device)
-    elif _mtype in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b"):
+    elif _mtype == "J3_v2":
+        assert JSeriesHybridV2 is not None, "JSeriesHybridV2 not found in 04B_model.py (check 04B_model_J3_v2.py import)"
+        model = JSeriesHybridV2(model_config).to(device)
+    elif _mtype == "J3_v3":
+        assert JSeriesHybridV3 is not None, "JSeriesHybridV3 not found in 04B_model.py (check 04B_model_J3_v3.py import)"
+        model = JSeriesHybridV3(model_config).to(device)
+    elif _mtype in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3",
+                     "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
+    elif _mtype == "HSMM":
+        assert HSMMHybrid is not None, "HSMMHybrid not found (check 04B_model_HSMM.py)"
+        model = HSMMHybrid(model_config).to(device)
+    elif _mtype == "MDLM":
+        assert MDLMHybrid is not None, "MDLMHybrid not found (check 04B_model_MDLM.py)"
+        model = MDLMHybrid(model_config).to(device)
+    elif _mtype == "HIER":
+        assert HIERHybrid is not None, "HIERHybrid not found (check 04B_model_HIER.py)"
+        model = HIERHybrid(model_config).to(device)
+    elif _mtype == "MAMBA":
+        assert MAMBAHybrid is not None, "MAMBAHybrid not found (check 04B_model_MAMBA.py)"
+        model = MAMBAHybrid(model_config).to(device)
+    elif _mtype == "SEDD":
+        assert SEDDHybrid is not None, "SEDDHybrid not found (check 04B_model_SEDD.py)"
+        model = SEDDHybrid(model_config).to(device)
     else:
         model = ConditionalTransformer(model_config).to(device)
     model.load_state_dict(ckpt["model_state"])

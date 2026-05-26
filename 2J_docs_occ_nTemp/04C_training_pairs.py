@@ -16,6 +16,7 @@ Usage:
 """
 
 import argparse
+import json
 import os
 from collections import Counter
 
@@ -36,11 +37,56 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--sample", action="store_true",
                    help="Use 500-respondent sample files for local testing")
+    p.add_argument("--sample_dir", default=None,
+                   help="Phase 6 Stage A/B: path to outputs_step4_G2_sample<N>/ "
+                        "(takes precedence over --sample). When set, pairs are built "
+                        "from the sample slice and the JS-disagreement floor is logged.")
     p.add_argument("--output_dir", default=None,
                    help="Where to save pairs (default: same as data dir)")
     p.add_argument("--proportional", action="store_true",
                    help="G1: replicate pair rows proportional to target-stratum population frequency")
     return p.parse_args()
+
+
+def _measure_js_floor(pairs: dict, data: dict, n_probe: int = 500) -> float:
+    """
+    Estimate the pairwise JS-disagreement floor across K=5 neighbors per source.
+    Mean over a probe of `n_probe` sources: average JS between each pair of the
+    K=5 neighbor activity distributions for that source. Reported alongside
+    rankings (Phase 6 Stage A risk #1).
+    """
+    src_idx = pairs["src_idx"].numpy()
+    k_idx   = pairs["tgt_k_indices"].numpy()
+    if len(src_idx) == 0:
+        return float("nan")
+    act_seq = data["act_seq"].numpy()                # (n_total, 48), 0-indexed
+    rng = np.random.default_rng(123)
+    probe = rng.choice(len(src_idx), size=min(n_probe, len(src_idx)), replace=False)
+    K = k_idx.shape[1]
+
+    eps = 1e-12
+    vals = []
+    for p in probe:
+        dists = []
+        for k in range(K):
+            ti = int(k_idx[p, k])
+            acts = act_seq[ti].flatten()
+            d = np.bincount(acts, minlength=14).astype(float)
+            d = np.clip(d / (d.sum() + eps), eps, None)
+            dists.append(d)
+        # mean pairwise JS between K=5 distributions
+        ks = 0
+        s  = 0.0
+        for a in range(K):
+            for b in range(a + 1, K):
+                m = 0.5 * (dists[a] + dists[b])
+                js = 0.5 * np.sum(dists[a] * np.log(dists[a] / m)) \
+                   + 0.5 * np.sum(dists[b] * np.log(dists[b] / m))
+                s  += float(js)
+                ks += 1
+        if ks > 0:
+            vals.append(s / ks)
+    return float(np.mean(vals)) if vals else float("nan")
 
 
 def load_metadata(out_dir: str, split: str) -> pd.DataFrame:
@@ -257,7 +303,7 @@ def inspect_pairs(pairs: dict, meta: pd.DataFrame):
         si = pairs["src_idx"][i].item()
         for ti in pairs["tgt_k_indices"][i].tolist():
             assert si != ti, f"FAIL: self-pairing at pair {i}"
-    print("  ✓ No self-pairing in first 50 pairs")
+    print("  OK No self-pairing in first 50 pairs")
 
     # Target cycle matches source cycle
     for i in range(min(50, len(pairs["src_idx"]))):
@@ -265,7 +311,7 @@ def inspect_pairs(pairs: dict, meta: pd.DataFrame):
         for ti in pairs["tgt_k_indices"][i].tolist():
             assert meta.iloc[si]["CYCLE_YEAR"] == meta.iloc[ti]["CYCLE_YEAR"], \
                 f"FAIL: cross-cycle pair at {i}"
-    print("  ✓ All sampled neighbors share CYCLE_YEAR with source (first 50)")
+    print("  OK All sampled neighbors share CYCLE_YEAR with source (first 50)")
 
     # Target reuse analysis
     tgt_sampled = [pairs["tgt_k_indices"][i, 0].item()
@@ -278,14 +324,24 @@ def inspect_pairs(pairs: dict, meta: pd.DataFrame):
 
 def main():
     args = parse_args()
-    data_dir = os.path.join(
-        SCRIPT_DIR, "outputs_step4_test" if args.sample else "outputs_step4"
-    )
+    if args.sample_dir is not None:
+        data_dir = args.sample_dir if os.path.isabs(args.sample_dir) \
+                   else os.path.join(SCRIPT_DIR, args.sample_dir)
+        if not os.path.isdir(data_dir):
+            raise FileNotFoundError(f"--sample_dir not found: {data_dir}")
+    else:
+        data_dir = os.path.join(
+            SCRIPT_DIR, "outputs_step4_test" if args.sample else "outputs_step4"
+        )
     output_dir = args.output_dir if args.output_dir else data_dir
     os.makedirs(output_dir, exist_ok=True)
 
+    _mode = (
+        "[SAMPLE_DIR]" if args.sample_dir
+        else ("[SAMPLE MODE]" if args.sample else "")
+    )
     print("=" * 60)
-    print(f"Step 4C — Training Pairs  {'[SAMPLE MODE]' if args.sample else ''}"
+    print(f"Step 4C — Training Pairs  {_mode}"
           f"{'  [PROPORTIONAL G1]' if args.proportional else ''}")
     print("=" * 60)
     print(f"  data_dir:   {data_dir}")
@@ -345,7 +401,28 @@ def main():
         except Exception as e:
             print(f"\n  WARNING: could not compute obs_home_rate: {e}")
 
-    print(f"\n✓ 04C complete.")
+    # Phase 6 risk #1: measure JS-disagreement floor between K=5 neighbors on the
+    # current slice. Full data baseline ≈ 0.1888 (per IMP doc). On 2% sample we
+    # expect this to climb; report so rankings can be interpreted accordingly.
+    if args.sample_dir is not None:
+        try:
+            train_tensors = torch.load(
+                os.path.join(data_dir, "step4_train.pt"),
+                map_location="cpu", weights_only=False,
+            )
+            js_floor = _measure_js_floor(train_pairs, train_tensors)
+            print(f"\n  K=5 neighbor JS-disagreement floor (sample): {js_floor:.4f}")
+            print(f"  (full G2 baseline ≈ 0.1888; ratio = {js_floor/0.1888:.2f}x)")
+            floor_path = os.path.join(output_dir, "js_disagreement_floor.json")
+            with open(floor_path, "w") as f:
+                json.dump({"js_floor": js_floor,
+                           "baseline_full": 0.1888,
+                           "sample_dir": os.path.basename(data_dir.rstrip(os.sep))}, f, indent=2)
+            print(f"  Saved {floor_path}")
+        except Exception as e:
+            print(f"  WARN: could not measure JS floor: {e}")
+
+    print(f"\n04C complete.")
     n_src = len(train_meta)
     print(f"  Training pairs: {len(train_pairs['src_idx'])} "
           f"({'proportional' if args.proportional else 'uniform'}, {n_src} respondents)")

@@ -1,5 +1,0 @@
-# sweep_smoke_G5.yaml — G5 smoke driver (5 epochs, d_model=64, --sample override)
-# Uses configs/G5.yaml; smoke: true adds --sample to 04D, overriding d_model/d_ff/layers.
-tags:
-  - G5
-smoke: true

@@ -623,6 +623,61 @@ open step4_validation_report.html
 
 ---
 
+## 9 — Lessons Learned: Progressive Funnel Methodology
+
+### What didn't work
+
+Our initial approach (Phases 1–5) attempted single-knob architectural or loss modifications on the full dataset (64K respondents, ~5–6h per run). Each trial committed to one hypothesis, trained to convergence on full data, and was evaluated post-hoc. Five consecutive failures (J3-PSB, J3-DEMO, J3-DEMO-PSBLite, J3-NEIGH, J3-CLEAN) consumed ~2 weeks of GPU time without beating the J3 baseline (composite 0.6355). J3-CLEAN stacked 4 changes and catastrophically regressed (composite 3.29 at epoch 1).
+
+The fundamental problem: full-data training is expensive feedback. By the time you know a direction is wrong, you've spent 5–6h of GPU and a day of wall-clock. This makes broad exploration impractical and biases toward conservative single-knob tweaks — exactly the regime where J3 had already been exhaustively mined.
+
+### What works: sample-first progressive funnel
+
+The correct methodology for architecture/loss search on HPC:
+
+```
+Stage A (2% sample, 50 ep, ~1h/trial)     → 10 candidates → rank → top 3
+Stage B (20% sample, 100 ep, ~3h/trial)    → 3 candidates  → rank → top 1–2
+Stage C (100% data, 100 ep, ~5–6h/trial)   → 1–2 finalists → score vs hard gates
+Stage D (HPT on winner, 100%, ~5–6h/trial) → 4–6 knob trials → pick best
+Stage E (focused HPT on D winner)          → 3–4 narrow trials → final model
+```
+
+**Key principles:**
+
+1. **Cheap breadth first, expensive depth later.** 10 trials at 2% (10 GPU-hours total) eliminates 7 candidates that would each have cost 5–6h at full scale. Total savings: ~35–40 GPU-hours per eliminated candidate.
+
+2. **Structural diversity before hyperparameter polish.** Stages A–C test fundamentally different architectures (HSMM, MDLM, SEDD, Mamba, hierarchical, diffusion vs AR, conditioning modules). HPT comes only after the winning structure is identified.
+
+3. **No stacking.** One structural change per trial. Stacking (as in J3-CLEAN) makes it impossible to attribute improvement or regression. Isolation is non-negotiable.
+
+4. **Hard gates at full scale only.** Sample noise makes per-cell gates unreliable at 2–20%. Use ranking proxies (composite + act_JS + AT_HOME RMS) for Stages A–B. Reserve 4/4 hard gate evaluation for Stage C (full data).
+
+5. **HPT is a separate stage, not mixed into architecture search.** Loss weights, learning rates, and diffusion-specific params are tuned only after the architecture is locked. This prevents confounding structural signal with tuning noise.
+
+### Outcome
+
+Phase 6 (funnel approach) found MDLM with composite conditioning (FiLM + Fourier PE + per-stratum prefix) as the winning architecture in ~3 days of wall-clock. Stage C composite = 0.5665, beating J3 by 10.9% — a larger improvement than all 5 prior full-data phases combined.
+
+The methodology generalises: any future model development on this pipeline should start with a sample funnel, not full-data single-shot experiments.
+
+### HPT target selection for diffusion models (added 2026-05-25)
+
+**Critical lesson from Stages D+E:** For diffusion/masked-generative architectures, HPT must target the model's intrinsic generative mechanics — NOT loss weights:
+
+| Correct HPT targets (generative mechanics) | Wrong HPT targets (loss weights) |
+|---|---|
+| Denoise steps (16 → 32, 64) | lambda_home, lambda_trans |
+| Masking schedule (uniform → cosine/linear) | lambda_marg, marg_mode |
+| Encoder/refiner depth | home_label_smooth |
+| Mask ratio clamp bounds (0.05–0.95 → tighter/wider) | aux_stratum_lambda |
+
+Loss weights are downstream of the generation process. They were already implicitly tuned during the funnel (Stages A–C). Tuning them further produced 10 consecutive failures across Stages D+E — none beat MDLM_C (composite 0.5665). The generative process parameters (denoise steps, masking schedule, depth, noise bounds) were never touched.
+
+### Sample-based HPT (added 2026-05-25)
+
+HPT should also use the sample funnel: 10% stratified sample (~40 min/trial on `pg` GPUs), with a same-sample control baseline. Compare relative composite rankings, promote top 2–3 to full data. This tests 8–10 HPT configurations in ~1h total wall-clock. Full-data HPT (Stages D+E: ~10h/trial, 6 trials/stage) wasted ~100 GPU-hours with no improvement — the sample approach would have revealed the same null result in ~1h.
+
 ## Phase 9 — Cleanup on Speed
 
 ```bash

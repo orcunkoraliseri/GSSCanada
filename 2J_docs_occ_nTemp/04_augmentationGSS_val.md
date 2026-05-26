@@ -258,5 +258,37 @@ Sample-mode runs (`--sample`) use relaxed thresholds (`T × 4`) and are for pipe
 - [ ] Section 6: Demographic conditioning fidelity + per-group charts
 - [ ] Section 7: Cross-stratum consistency + radar charts
 - [ ] Section 8: Summary statistics table
-- [ ] HTML report builder with base64 embedded PNGs
-- [ ] End-to-end run: `python 04F_validation.py` → `step4_validation_report.html`
+- [x] HTML report builder with base64 embedded PNGs
+- [x] End-to-end run: `python 04F_validation.py` → `step4_validation_report.html`
+
+---
+
+## Progress Log
+
+### 2026-05-12 — J3 validation run
+- Model: J3 (composite=0.6355, 87 epochs)
+- Observed rows: 64,061 | Synthetic rows: 128,122
+- Section 1 (training curves): PASS (1.1 loss monotone, 1.2 67 improving epochs, 1.3 0 NaN)
+- Section 2 (activity JS): overall JS = 0.0242 — PASS (all 12 per-stratum cells < 0.05; max cell = 0.0308)
+- Section 3 (AT_HOME): max |Δ| = 9.69 pp (2022 × Weekday) — FAIL (all 12 cells exceed 2 pp threshold; range 2.95–9.69 pp; BLOCK per policy — but J3 already ships per gate AT_HOME RMS=4.57 pp)
+- Section 4 (temporal): FAIL — 4.2 transition rate ratio = 157.95 (INVESTIGATE); 4.3 swapped-code bug (see caveat in doc header, ignore PASS/FAIL)
+- Section 5 (co-presence): PASS (5.2 colleagues=0 for 2005/2010; 5.4 all binary values valid)
+- Section 6 (demographic conditioning): PASS/FAIL mixed — 6.1 AGEGRP r=0.9583 PASS; 6.2 FAIL (swapped Work/Sleep code bug, ignore per caveat)
+- Section 7 (cross-stratum): FAIL — 7.1 work ordering 46.5% FAIL (swapped-code bug, ignore); 7.4 AT_HOME weekend≥weekday 72.1% WARN (< 80% threshold)
+- Section 8 (summary table): generated
+- HTML report: outputs_step4/step4_validation_report.html ✅
+
+### 2026-05-22 — Pre-J3-DEMO retrain: tensor inputs rebuilt with restored demographics
+
+Inputs to Step 4 changed. Phase 2 plumbing (see `04_augmentationGSS_IMP.md`) restored three previously-dropped GSS columns into the conditioning vector. No retrain yet — this entry only records the input change so that the next J3-DEMO / J3-DEMO-PSBLite retrain has a clean reference point for diff-analysis.
+
+- `d_cond`: 76 → **90** (+14 from `ATTSCH`, `POWST`, `MODE` one-hot widths)
+- `step4_feature_config.json` regenerated with the three new categorical columns
+- Train/val/test tensors regenerated: 44,843 / 9,609 / 9,609 (stratification structure unchanged)
+- New COP `pos_weights` (Alone 1.21, Spouse 2.52, Children 10.99, parents 39.71, friends 15.21, others 9.27, colleagues 12.17) — small numerical drift from the prior J3-baseline weights due to the 70/15/15 stratified split being re-drawn on the regenerated frame; same magnitudes, same ordering.
+
+Validation sections to recheck after the next retrain:
+- Section 3 (AT_HOME): does the 2022 × Weekday cell narrow from 9.69 pp? (Lever A's most direct target — POWST encodes the WFH workers dominating that cell.)
+- Section 6 (demographic conditioning): add ATTSCH / POWST / MODE correlation checks (parallel to the existing AGEGRP, SEX, MARSTH checks). Current Section 6 logic computes `df.groupby(cat_col)[at_home].mean()` and correlates with the cond vector; same logic applies — just add the three new keys to the iteration list when the script is next run.
+
+J3 baseline (composite 0.6355, 4/4 gates) remains the reference. Whichever of J3-DEMO / J3-DEMO-PSBLite wins becomes the new baseline; the loser is shelved (per IMP doc §5 Phased execution).

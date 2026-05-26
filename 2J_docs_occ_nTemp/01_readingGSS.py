@@ -22,6 +22,9 @@ MAIN_COLS_2005: list[str] = [
     "RECID", "AGEGR10", "sex", "marstat", "HSDSIZEC", "REGION", "LUC_RST",
     "WKWE", "wght_per", "DVTDAY", "LANCH", "LFSGSS", "INCM", "EDU10", "WKWEHR_C",
     "MAR_Q172",    # Class of Worker
+    "EDUSTAT",     # ATTSCH source (full/part-time student; universe MAR_Q100=4)
+    "MAR_Q190",    # POWST source — paid work at home flag
+    "MAR_Q193",    # POWST narrowing — reason (==5: "home is usual place of work")
 ]
 
 MAIN_COLS_2010: list[str] = [
@@ -31,6 +34,7 @@ MAIN_COLS_2010: list[str] = [
     "CTW_Q140_C01", "CTW_Q140_C02", "CTW_Q140_C03", "CTW_Q140_C04", "CTW_Q140_C05",
     "CTW_Q140_C06", "CTW_Q140_C07", "CTW_Q140_C08", "CTW_Q140_C09",
     "MAR_Q172",    # Class of Worker
+    "EOR_Q320",    # ATTSCH source — "In what year did you complete your studies?"; 9995 = still attending
 ]
 
 MAIN_COLS_2015: list[str] = [
@@ -38,7 +42,8 @@ MAIN_COLS_2015: list[str] = [
     "LUC_RST", "ACT7DAYS", "WET_110", "NOC1110Y", "WHW_110", "WHWD140C",
     "CTW_140A", "CTW_140B", "CTW_140C", "CTW_140D", "CTW_140E",
     "CTW_140F", "CTW_140G", "CTW_140H", "CTW_140I",
-    "EHG_ALL", "LAN_01", "INCG1", "WGHT_PER", "DVTDAY"
+    "EHG_ALL", "LAN_01", "INCG1", "WGHT_PER", "DVTDAY",
+    "ESC1_01",     # ATTSCH source — currently attending school (all-respondent)
 ]
 
 MAIN_COLS_2022: list[str] = [
@@ -99,7 +104,7 @@ MAIN_RENAME_MAP = {
         "PUMFID": "occID", "AGEGR10": "AGEGRP", "GENDER2": "SEX", "MARSTAT": "MARSTH",
         "HSDSIZEC": "HHSIZE", "PRV": "PR", "LUC_RST": "CMA", "WGHT_PER": "WGHT_PER",
         "DVTDAY": "DDAY", "LAN_01": "KOL", "ACT7DAYC": "LFTAG", "INC_C": "TOTINC",
-        "WHWD140G": "HRSWRK", "NOCLBR_Y": "NOCS", # "ATT_150C": "MODE",
+        "WHWD140G": "HRSWRK", "NOCLBR_Y": "NOCS", "ATT_150C": "MODE",
         "SURVMNTH": "SURVMNTH", "WET_120": "COW",
     },
 }
@@ -666,7 +671,11 @@ def print_nan_counts(df: pd.DataFrame) -> None:
 # --- ENTRY POINT ---
 
 if __name__ == "__main__":
-    DATA_ROOT = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy/DataSources_GSS"
+    import platform
+    if platform.system() == "Windows":
+        DATA_ROOT = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\0_Occupancy\DataSources_GSS"
+    else:
+        DATA_ROOT = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy/DataSources_GSS"
     
     FILE_PATHS_CONFIG = {
         2005: {
@@ -691,7 +700,10 @@ if __name__ == "__main__":
         }
     }
 
-    OUTPUT_DIRECTORY = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step1"
+    if platform.system() == "Windows":
+        OUTPUT_DIRECTORY = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\2J_docs_occ_nTemp\outputs_step1"
+    else:
+        OUTPUT_DIRECTORY = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/2J_docs_occ_nTemp/outputs_step1"
 
     print("Starting GSS Data Collection (Step 1)...")
     

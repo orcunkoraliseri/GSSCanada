@@ -293,3 +293,29 @@ See the separate expanded validation plan: [02_harmonizationGSS_val.md](file:///
 > [!NOTE]
 > **Province for 2005**: The 2005 PUMF only has `REGION` (5 macro-regions), not individual province codes `PRV`. This means `PR` for 2005 will have coarser granularity (5 categories) vs. the 10 province codes available in 2010+.
 
+---
+
+## Progress Log
+
+### 2026-05-22 — Phase 2 harmonizer additions (recode_attsch, derive_powst, derive_mode)
+
+Three new (or newly-active) functions to harmonize ATTSCH / POWST / MODE across cycles. Triggered by `04_augmentationGSS_IMP.md` Phase 2 (Lever A — restore dropped GSS demographics). Per-cycle source columns verified against raw SAS / DAT files + codebooks 2026-05-21/22.
+
+**`recode_attsch(df, cycle)` (new)** — universe-pad-to-No reconciliation; returns `Int8` ∈ {0, 1, NaN}.
+- 2005: `EDUSTAT` 1/2 → 1, 7 → 0 (universe MAR_Q100=4; 7 = "not asked" = non-student for this binary)
+- 2010: `EOR_Q320` 9995 → 1, 1900–2010 → 0 (was originally specced as `EOR_Q210`; corrected after 2010 PUMF syntax file confirmed `EOR_Q320` is the "year studies completed / 9995 = still attending school" column)
+- 2015: `ESC1_01` 1 → 1, 2 → 0 (all-respondent universe)
+- 2022: `EDC_10` 1 → 1, 2 → 0 (all-respondent universe)
+
+**`derive_powst(df, cycle)` (new)** — WFH binary; returns `Int8` ∈ {0, 1, NaN}. Non-workers stay NaN (LFTAG upstream already disambiguates worker vs non-worker, so no `POWST_MISSING` flag is needed).
+- 2005: `(MAR_Q190 == 1) AND (MAR_Q193 == 5)` → 1 ("home is usual place of work"); else 0 among valid workers. Narrow definition chosen for cross-cycle semantic harmony; baseline ~5–6%.
+- 2010: `CTW_Q140_C08` 1 → 1, 2 → 0
+- 2015: `CTW_140H` 1 → 1, 2 → 0 (NOT `CTW_140I` — see correction note in `01_readingGSS.md`)
+- 2022: `CTW_140I` 1 → 1, 2 → 0
+
+**`derive_mode(df, cycle)` (re-enabled)** — already-written function at line 150 was commented out at line 620 of `02_harmonizeGSS.py`; uncommented to populate `MODE`. Hierarchical priority over `CTW_*` checkbox columns for 2010/2015; sentinel-clean of the renamed `ATT_150C → MODE` for 2022; NaN for 2005 (no Main-derivable source).
+
+Wired into `harmonize_main()` after `recode_kol`, before `recode_totinc`.
+
+**Validation-script crash:** `02_harmonizeGSS_val.py` uses ✅/❌ chars and crashes under Windows cp1252. Workaround: `py -X utf8 02_harmonizeGSS.py`.
+

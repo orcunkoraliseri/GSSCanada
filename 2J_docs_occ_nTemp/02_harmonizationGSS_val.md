@@ -331,3 +331,27 @@ The script will:
 1. Print a console summary with ✅/❌ per check
 2. Generate and save `outputs_step2/step2_validation_report.html`
 3. Exit with code 0 if all critical checks pass, or code 1 if any critical check fails
+
+---
+
+## Progress Log
+
+### 2026-05-22 — Phase 2 plumbing — coverage check
+
+Step 2 output now includes three new harmonized columns: `ATTSCH`, `POWST`, `MODE`. Coverage verified against codebook expectations:
+
+| Cycle | n | ATTSCH coverage | ATTSCH ==1 | POWST coverage | POWST ==1 (% of workers) | MODE coverage |
+|---|---|---|---|---|---|---|
+| 2005 | 19,597 | 99.7% | 1,349 (6.9%) | 59.7% | 689 (5.9%) | 0% (no source — intentional NaN) |
+| 2010 | 15,390 | 63.9% | 617 (4.0%) | 50.1% | 383 (5.0%) | 50.1% |
+| 2015 | 17,390 | 97.5% | 1,310 (7.5%) | 50.5% | 458 (5.2%) | 50.5% |
+| 2022 | 12,336 | 94.8% | 475 (3.9%) | 47.0% | 1,027 (17.7%) | 94.9% |
+
+- POWST workers-only coverage (50–60%) is intentional — non-workers stay NaN, since LFTAG upstream already encodes worker vs non-worker.
+- 2010 ATTSCH coverage 63.9% reflects the EOR_Q320 universe (only respondents who answered the year-completed question — i.e., post-elementary respondents).
+- 2022 POWST 17.7% WFH rate matches the documented COVID-era jump; 2005–2015 baseline ~5% (matches Stats Canada published rates).
+- 2005 MODE = 100% NaN is intentional (no usable transport mode in 2005 Main; episode-level `PLACE` codes during travel episodes could derive it but that is out of Phase 2 scope).
+
+Main file shape after Phase 2: 2005 (19597, 31), 2010 (15390, 38), 2015 (17390, 39), 2022 (12336, 34).
+
+**Validation-script crash on Windows** (`UnicodeEncodeError: cp1252 can't encode ❌`): cosmetic, doesn't affect data. Run with `py -X utf8` or set `PYTHONIOENCODING=utf-8`.

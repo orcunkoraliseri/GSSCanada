@@ -208,6 +208,85 @@ def derive_mode(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
     return df
 
 
+def recode_attsch(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """ATTSCH — binary school-attendance flag, harmonized across cycles.
+
+    Output: Int8 column ATTSCH ∈ {0, 1, NaN}. Universe-pad-to-No reconciliation —
+    respondents outside the source-column universe are mapped to 0 (not 1),
+    so cross-cycle prevalence stays comparable. See IMP doc §3 Lever A.
+    """
+    out = pd.Series(pd.NA, index=df.index, dtype="Int8")
+    if cycle == 2005:
+        # EDUSTAT: 1=studying full-time, 2=studying part-time, 7=not asked (universe MAR_Q100=4)
+        # Universe-pad: respondents with 7 ("not asked") are non-students for this binary.
+        if "EDUSTAT" in df.columns:
+            s = pd.to_numeric(df["EDUSTAT"], errors="coerce")
+            out[s.isin([1, 2])] = 1
+            out[s == 7] = 0
+    elif cycle == 2010:
+        # EOR_Q320: "In what year did you complete your studies?"; 9995 = still attending.
+        # Other valid years (1900–2010) → 0; 9996/9997/9998/9999 sentinels → NaN.
+        if "EOR_Q320" in df.columns:
+            s = pd.to_numeric(df["EOR_Q320"], errors="coerce")
+            out[s == 9995] = 1
+            out[s.between(1900, 2010)] = 0
+    elif cycle == 2015:
+        # ESC1_01: 1=Yes (currently attending), 2=No (all-respondent universe)
+        if "ESC1_01" in df.columns:
+            s = pd.to_numeric(df["ESC1_01"], errors="coerce")
+            out[s == 1] = 1
+            out[s == 2] = 0
+    elif cycle == 2022:
+        # EDC_10: 1=Yes, 2=No (all-respondent universe)
+        if "EDC_10" in df.columns:
+            s = pd.to_numeric(df["EDC_10"], errors="coerce")
+            out[s == 1] = 1
+            out[s == 2] = 0
+    df["ATTSCH"] = out
+    return df
+
+
+def derive_powst(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
+    """POWST — binary works-from-home flag, harmonized across cycles.
+
+    Output: Int8 column POWST ∈ {0, 1, NaN}. Non-workers stay NaN (LFTAG already
+    disambiguates worker vs non-worker upstream — no POWST_MISSING flag needed).
+    See IMP doc §3 Lever A for the verified per-cycle source columns.
+    """
+    out = pd.Series(pd.NA, index=df.index, dtype="Int8")
+    if cycle == 2005:
+        # Narrow definition: MAR_Q190==1 (does some paid work at home) AND
+        # MAR_Q193==5 ("home is usual place of work"). Cross-cycle baseline ~5%.
+        if "MAR_Q190" in df.columns and "MAR_Q193" in df.columns:
+            q190 = pd.to_numeric(df["MAR_Q190"], errors="coerce")
+            q193 = pd.to_numeric(df["MAR_Q193"], errors="coerce")
+            # Workers with valid q190 response
+            valid = q190.isin([1, 2])
+            out[valid & (q190 == 1) & (q193 == 5)] = 1
+            out[valid & ~((q190 == 1) & (q193 == 5))] = 0
+    elif cycle == 2010:
+        # CTW_Q140_C08: 1=Yes (works/attends school at home), 2=No (worker universe).
+        if "CTW_Q140_C08" in df.columns:
+            s = pd.to_numeric(df["CTW_Q140_C08"], errors="coerce")
+            out[s == 1] = 1
+            out[s == 2] = 0
+    elif cycle == 2015:
+        # CTW_140H: "Commute to work - Works or attends school at home"
+        # 1=Yes, 2=No, 6=Valid skip (non-worker → NaN).
+        if "CTW_140H" in df.columns:
+            s = pd.to_numeric(df["CTW_140H"], errors="coerce")
+            out[s == 1] = 1
+            out[s == 2] = 0
+    elif cycle == 2022:
+        # CTW_140I: "Worked/Attended school at home". 1=Yes, 2=No, 6=Valid skip.
+        if "CTW_140I" in df.columns:
+            s = pd.to_numeric(df["CTW_140I"], errors="coerce")
+            out[s == 1] = 1
+            out[s == 2] = 0
+    df["POWST"] = out
+    return df
+
+
 def recode_totinc(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
     """Income harmonized to buckets. Discretize CRA values in 2022."""
     df["TOTINC_RAW"] = df["TOTINC"]
@@ -617,7 +696,9 @@ def harmonize_main(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
     df = recode_hhsize(df, cycle)
     df = recode_hrswrk(df, cycle)
     df = recode_kol(df, cycle)
-    # df = derive_mode(df, cycle)
+    df = derive_mode(df, cycle)
+    df = recode_attsch(df, cycle)
+    df = derive_powst(df, cycle)
     df = recode_totinc(df, cycle)
     df = recode_cow(df, cycle)
 

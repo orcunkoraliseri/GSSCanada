@@ -14,6 +14,7 @@ ENV_MAP = {
     "lambda_cop":         "LAMBDA_COP",
     "lambda_marg":        "LAMBDA_MARG",
     "lambda_logic":       "LAMBDA_LOGIC",
+    "lambda_trans":       "LAMBDA_TRANS",
     "marg_mode":          "MARG_MODE",
     "aux_stratum_lambda": "AUX_STRATUM_LAMBDA",
     "spouse_neg_weight":  "SPOUSE_NEG_WEIGHT",
@@ -28,6 +29,17 @@ ENV_MAP = {
     "h_time_pe":          "H_TIME_PE",
     "lambda_all_equal":   "LAMBDA_ALL_EQUAL",
     "model_type":         "MODEL_TYPE",
+    "d_psb_proj":         "D_PSB_PROJ",
+    "p_psb_drop":         "P_PSB_DROP",
+    # Phase 6 Stage A toggles — CC conditioning, consistency layers, loss modes
+    "use_film":           "USE_FILM",
+    "use_fourier_pe":     "USE_FOURIER_PE",
+    "use_prefix":         "USE_PREFIX",
+    "use_spl":            "USE_SPL",
+    "use_fact":           "USE_FACT",
+    "loss_mode":          "LOSS_MODE",
+    "sample_frac":        "SAMPLE_FRAC",
+    "tag":                "TRIAL_TAG",
 }
 
 FLAG_KEYS = [
