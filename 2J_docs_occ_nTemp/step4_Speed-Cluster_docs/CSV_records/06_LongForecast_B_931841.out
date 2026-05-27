@@ -1,0 +1,150 @@
+============================================================
+Step 6 Longitudinal Forecasting — stage=B
+Start: Sun May 17 09:54:42 AM EDT 2026
+============================================================
+Device: cuda
+Loading /nfs/speed-scratch/o_iseri/occModeling/2J_docs_occ_nTemp/outputs_step4/augmented_diaries.csv ...
+Loaded 192,183 rows x 545 cols
+
+============================================================
+SUB-STEP 6A — Input Audit
+============================================================
+[PASS] Row count: 192,183 (expected ~192,183 ±10)
+[PASS] CYCLE_YEAR in [np.int64(2005), np.int64(2010), np.int64(2015), np.int64(2022)]
+  Per-cycle counts:
+    2005: 57,663
+    2010: 45,342
+    2015: 52,170
+    2022: 37,008
+[PASS] DDAY_STRATA in [np.int64(1), np.int64(2), np.int64(3)]
+  Per-cycle × per-stratum counts:
+    2005 / strata=1: 19,221
+    2005 / strata=2: 19,221
+    2005 / strata=3: 19,221
+    2010 / strata=1: 15,114
+    2010 / strata=2: 15,114
+    2010 / strata=3: 15,114
+    2015 / strata=1: 17,390
+    2015 / strata=2: 17,390
+    2015 / strata=3: 17,390
+    2022 / strata=1: 12,336
+    2022 / strata=2: 12,336
+    2022 / strata=3: 12,336
+[PASS] IS_SYNTHETIC column present
+  IS_SYNTHETIC per cycle:
+    2005 / IS_SYNTHETIC=0 (observed): 19,221
+    2005 / IS_SYNTHETIC=1 (synthetic): 38,442
+    2010 / IS_SYNTHETIC=0 (observed): 15,114
+    2010 / IS_SYNTHETIC=1 (synthetic): 30,228
+    2015 / IS_SYNTHETIC=0 (observed): 17,390
+    2015 / IS_SYNTHETIC=1 (synthetic): 34,780
+    2022 / IS_SYNTHETIC=0 (observed): 12,336
+    2022 / IS_SYNTHETIC=1 (synthetic): 24,672
+[PASS] All 96 act30/hom30 columns present
+[PASS] act30 range: [1, 14] (expected [1, 14])
+[PASS] hom30 values: [np.int64(0), np.int64(1)] (expected {0, 1})
+
+AT_HOME mean per cycle (weekday only, DDAY_STRATA=1):
+  2005: 66.9%  (expected ~62.7%,  diff=+4.2pp)
+  2010: 68.2%  (expected ~62.3%,  diff=+5.9pp)
+  2015: 69.3%  (expected ~64.5%,  diff=+4.8pp)
+  2022: 74.2%  (expected ~70.6%,  diff=+3.6pp)
+
+==================================================
+6A AUDIT: 7/7 checks passed
+
+============================================================
+SUB-STAGE B — Progressive Fine-Tuning (3 Phases)
+============================================================
+
+--- Phase 2: 2005+2010 → W_2010_ft (weekend up-weighted) ---
+Loaded W_2005.pt (val_JS=0.1369)
+  train=72,103  val=20,611
+   Epoch    train_loss    val_JS
+       1        0.3448    0.1425
+       2        0.3424    0.1548
+       3        0.3408    0.1484
+       4        0.3395    0.1368
+       5        0.3384    0.1538
+       6        0.3375    0.1514
+       7        0.3367    0.1455
+       8        0.3359    0.1478
+       9        0.3352    0.1425
+  Early stop at epoch 9 (patience=5)
+[TRUE_FUTURE_TEST_2015] JS_WD=0.0803 JS_Sat=0.2015 JS_Sun=0.1938
+  Gate < 0.2: FAIL
+
+Computing DRIFT_MATRIX_1015 on 2015 data ...
+Saved DRIFT_MATRIX_1015.csv (42 rows)
+Saved W_2010_ft.pt (val_JS=0.1368)
+
+--- Phase 3: 2005+2010+2015 → W_2015_ft (weekend up-weighted) ---
+Loaded W_2010_ft.pt (val_JS=0.1368)
+  train=108,622  val=31,050
+   Epoch    train_loss    val_JS
+       1        0.3952    0.1405
+       2        0.3924    0.1463
+       3        0.3910    0.1463
+       4        0.3898    0.1427
+       5        0.3887    0.1316
+       6        0.3877    0.1377
+       7        0.3867    0.1332
+       8        0.3856    0.1385
+       9        0.3846    0.1342
+      10        0.3835    0.1383
+  Early stop at epoch 10 (patience=5)
+[TRUE_FUTURE_TEST_2022] JS_WD=0.0609 JS_Sat=0.1858 JS_Sun=0.1893
+  Gate < 0.2: PASS
+
+Computing DRIFT_MATRIX_1522 on 2022 data ...
+Saved DRIFT_MATRIX_1522.csv (42 rows)
+
+AT_HOME aggregate check (2015 vs 2022 WD) ...
+[AT_HOME_CHECK] obs_2015_wd=0.693  pred_2015_wd=0.689
+[AT_HOME_CHECK] obs_2022_wd=0.742  pred_2022_wd=0.734
+[AT_HOME_CHECK] obs_gap=+4.9pp  pred_gap=+4.5pp
+[AT_HOME_CHECK] PASS — suppression=0.8pp (threshold <=5pp)
+Saved W_2015_ft.pt (val_JS=0.1316)
+
+--- Phase 4: all 4 cycles → W_2022_ft (weekend up-weighted) ---
+Loaded W_2015_ft.pt (val_JS=0.1316)
+  train=134,528  val=38,455
+   Epoch    train_loss    val_JS
+       1        0.4493    0.1384
+       2        0.4474    0.1360
+       3        0.4458    0.1356
+       4        0.4442    0.1382
+       5        0.4426    0.1337
+       6        0.4409    0.1325
+       7        0.4393    0.1346
+       8        0.4377    0.1303
+       9        0.4360    0.1344
+      10        0.4344    0.1330
+      11        0.4327    0.1297
+      12        0.4310    0.1309
+      13        0.4293    0.1345
+      14        0.4276    0.1332
+      15        0.4259    0.1280
+      16        0.4242    0.1309
+      17        0.4225    0.1322
+      18        0.4208    0.1307
+      19        0.4191    0.1294
+      20        0.4174    0.1273
+      21        0.4159    0.1268
+      22        0.4143    0.1264
+      23        0.4127    0.1297
+      24        0.4113    0.1255
+      25        0.4098    0.1244
+      26        0.4084    0.1251
+      27        0.4070    0.1253
+      28        0.4057    0.1222
+      29        0.4045    0.1246
+      30        0.4032    0.1246
+      31        0.4019    0.1236
+      32        0.4008    0.1214
+      33        0.3996    0.1235
+      34        0.3985    0.1220
+      35        0.3974    0.1203
+      36        0.3963    0.1232
+      37        0.3954    0.1191
+      38        0.3943    0.1207

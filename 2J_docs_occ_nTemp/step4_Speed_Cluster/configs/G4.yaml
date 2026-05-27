@@ -1,0 +1,39 @@
+# G4.yaml — G-series stage 4: Remove SCHED_SAMPLE_P, keep G3 CrossAttnDecoder architecture
+# Change from G3: sched_sample_p 0.2 -> 0.0 (eliminates AT_HOME teacher-forcing corruption -> Spouse fix)
+#                 lambda_home 0.5 -> 0.6 (close 0.758 pp AT_HOME gap)
+# Hard gates (unchanged): composite < 1.045 | AT_HOME <= +5.3 pp | Spouse <= +5 pp | act_JS <= 0.05
+tag: G4
+seed: 42
+
+# Argparse flags (G3 base)
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+# Architecture (unchanged from G3 — CrossAttnDecoder)
+d_ff: 1536
+
+# Loss weights — lambda_home bumped to close AT_HOME gap
+lambda_act: 1.0
+lambda_home: 0.6
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+# Feature switches (unchanged from G3)
+aux_stratum_head: 1
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+
+# G4 key change: sched_sample_p removed (was 0.2 in G2/G3)
+sched_sample_p: 0.0
+home_label_smooth: 0.05

@@ -1,0 +1,33 @@
+# F9b.yaml — F8 + SPOUSE_NEG_WEIGHT=0.4 (symptom-level test)
+# Hypothesis: cop BCE down-weighting Spouse=True reduces over-prediction
+# (obs 22.4%, syn 41.7%) by penalizing false positives during training.
+# Does NOT address act_JS regression — that is a mechanism-level issue (see F9a).
+# Hard gates: composite < 1.045, AT_HOME <= +5.3 pp, Spouse <= +10 pp, act_JS <= 0.05
+tag: F9b
+seed: 42
+
+# Argparse flags (fp32 — no fp16)
+data_dir: outputs_step4
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 256
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+# Loss weights (F8/F1 defaults)
+lambda_act: 1.0
+lambda_home: 0.5
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+# Feature switches: F8 base + Spouse pos_weight override
+aux_stratum_head: 1
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.4
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0

@@ -1,0 +1,601 @@
+=== J5_B TRAIN START ===
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       outputs_step4_G1
+  output_dir:     outputs_step4_J5_B
+  checkpoint_dir: outputs_step4_J5_B/checkpoints
+  batch_size=256  max_epochs=100  patience=15  lr=5e-05  fp16=False
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_J5_B/checkpoints
+  AUX_STRATUM_HEAD=False  COP_POS_WEIGHT=0  ACTIVITY_BOOSTS=1  DATA_SIDE_SAMPLING=0  MARG_MODE=global  AUX_STRATUM_LAMBDA=0.1  SPOUSE_NEG_WEIGHT=0.45
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 141270 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=1):
+    class  0: 2.174
+    class  1: 0.517
+    class  2: 1.072
+    class  3: 1.110
+    class  4: 0.261
+    class  5: 0.752
+    class  6: 0.892
+    class  7: 1.355
+    class  8: 1.473
+    class  9: 0.406
+    class 10: 1.161
+    class 11: 1.782
+    class 12: 2.341
+    class 13: 2.742
+  AT_HOME observed rate: 0.7250  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=global
+  COP pos_weight: disabled (COP_POS_WEIGHT=0)
+  SPOUSE_NEG_WEIGHT=0.45: Spouse (idx 1) cop pos_weight overridden
+[2/4] Building model...
+  Parameters: 29,250,776
+JSeriesHybrid(
+  (act_embedding): Embedding(14, 32)
+  (slot_linear): Linear(in_features=42, out_features=384, bias=True)
+  (cycle_embedding): Embedding(4, 32)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=109, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=384, bias=True)
+  )
+  (arm1_slot_proj): Linear(in_features=32, out_features=384, bias=True)
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (linear1): Linear(in_features=384, out_features=1536, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1536, out_features=384, bias=True)
+        (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (arm1_decoder): CrossAttnDecoder(
+    (proj_demo): Linear(in_features=77, out_features=384, bias=True)
+    (proj_cycle): Linear(in_features=32, out_features=384, bias=True)
+    (proj_strata): Linear(in_features=3, out_features=384, bias=True)
+    (layers): ModuleList(
+      (0-5): 6 x CondCrossAttnDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_mem): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_cond): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (ffn): Sequential(
+          (0): Linear(in_features=384, out_features=1536, bias=True)
+          (1): GELU(approximate='none')
+          (2): Linear(in_features=1536, out_features=384, bias=True)
+        )
+        (ln1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln3): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln4): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=384, out_features=14, bias=True)
+  (arm2_act_proj): Linear(in_features=14, out_features=384, bias=True)
+  (arm2_proj): Linear(in_features=880, out_features=384, bias=True)
+  (home_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=1, bias=True)
+  )
+  (cop_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=9, bias=True)
+  )
+)
+[3/4] Training...
+Epoch   1/100: train_loss=1.9037  act=1.4768  home=0.4963  cop=0.2578  marg=0.0224  |  val_JS=0.1870  home_gap=0.1497  val_score=0.2618  lr=5.00e-05  grad_norm=6.383  (671s)
+  ✓ New best model saved (val_score=0.2618  val_JS=0.1870  home_gap=0.1497)
+Epoch   2/100: train_loss=1.2682  act=0.9029  home=0.4239  cop=0.2236  marg=0.0149  |  val_JS=0.2554  home_gap=0.2531  val_score=0.3820  lr=5.00e-05  grad_norm=4.920  (668s)
+Epoch   3/100: train_loss=1.2198  act=0.8599  home=0.4194  cop=0.2169  marg=0.0128  |  val_JS=0.2321  home_gap=0.2032  val_score=0.3337  lr=5.00e-05  grad_norm=2.701  (665s)
+Epoch   4/100: train_loss=1.1994  act=0.8431  home=0.4155  cop=0.2136  marg=0.0140  |  val_JS=0.2142  home_gap=0.1840  val_score=0.3062  lr=5.00e-05  grad_norm=2.431  (668s)
+Epoch   5/100: train_loss=1.1850  act=0.8304  home=0.4137  cop=0.2123  marg=0.0127  |  val_JS=0.2230  home_gap=0.2105  val_score=0.3282  lr=5.00e-05  grad_norm=1.755  (666s)
+Epoch   6/100: train_loss=1.1764  act=0.8236  home=0.4118  cop=0.2107  marg=0.0123  |  val_JS=0.2003  home_gap=0.1352  val_score=0.2679  lr=5.00e-05  grad_norm=1.612  (665s)
+Epoch   7/100: train_loss=1.1654  act=0.8145  home=0.4093  cop=0.2105  marg=0.0124  |  val_JS=0.2127  home_gap=0.1965  val_score=0.3109  lr=5.00e-05  grad_norm=1.432  (667s)
+Epoch   8/100: train_loss=1.1574  act=0.8071  home=0.4094  cop=0.2084  marg=0.0114  |  val_JS=0.1879  home_gap=0.2079  val_score=0.2919  lr=4.75e-05  grad_norm=1.383  (666s)
+Epoch   9/100: train_loss=1.1406  act=0.7932  home=0.4056  cop=0.2076  marg=0.0117  |  val_JS=0.1894  home_gap=0.1443  val_score=0.2616  lr=4.75e-05  grad_norm=1.376  (666s)
+  ✓ New best model saved (val_score=0.2616  val_JS=0.1894  home_gap=0.1443)
+Epoch  10/100: train_loss=1.1266  act=0.7796  home=0.4050  cop=0.2077  marg=0.0122  |  val_JS=0.1625  home_gap=0.1410  val_score=0.2330  lr=4.75e-05  grad_norm=1.373  (662s)
+  ✓ New best model saved (val_score=0.2330  val_JS=0.1625  home_gap=0.1410)
+Epoch  11/100: train_loss=1.1091  act=0.7630  home=0.4041  cop=0.2069  marg=0.0118  |  val_JS=0.1633  home_gap=0.1018  val_score=0.2142  lr=4.75e-05  grad_norm=1.432  (665s)
+  ✓ New best model saved (val_score=0.2142  val_JS=0.1633  home_gap=0.1018)
+Epoch  12/100: train_loss=1.0861  act=0.7412  home=0.4028  cop=0.2061  marg=0.0106  |  val_JS=0.1241  home_gap=0.0958  val_score=0.1720  lr=4.75e-05  grad_norm=1.503  (665s)
+  ✓ New best model saved (val_score=0.1720  val_JS=0.1241  home_gap=0.0958)
+Epoch  13/100: train_loss=1.0634  act=0.7190  home=0.4022  cop=0.2056  marg=0.0116  |  val_JS=0.1345  home_gap=0.1400  val_score=0.2045  lr=4.75e-05  grad_norm=1.629  (666s)
+Epoch  14/100: train_loss=1.0376  act=0.6938  home=0.4013  cop=0.2056  marg=0.0119  |  val_JS=0.1099  home_gap=0.1160  val_score=0.1679  lr=4.75e-05  grad_norm=1.692  (666s)
+  ✓ New best model saved (val_score=0.1679  val_JS=0.1099  home_gap=0.1160)
+Epoch  15/100: train_loss=1.0073  act=0.6654  home=0.3990  cop=0.2050  marg=0.0112  |  val_JS=0.0910  home_gap=0.1383  val_score=0.1602  lr=4.75e-05  grad_norm=1.778  (665s)
+  ✓ New best model saved (val_score=0.1602  val_JS=0.0910  home_gap=0.1383)
+Epoch  16/100: train_loss=0.9811  act=0.6395  home=0.3988  cop=0.2044  marg=0.0117  |  val_JS=0.0845  home_gap=0.0792  val_score=0.1241  lr=4.75e-05  grad_norm=1.894  (664s)
+  ✓ New best model saved (val_score=0.1241  val_JS=0.0845  home_gap=0.0792)
+Epoch  17/100: train_loss=0.9510  act=0.6099  home=0.3978  cop=0.2048  marg=0.0112  |  val_JS=0.1031  home_gap=0.1284  val_score=0.1673  lr=4.75e-05  grad_norm=1.950  (666s)
+Epoch  18/100: train_loss=0.9222  act=0.5836  home=0.3949  cop=0.2037  marg=0.0101  |  val_JS=0.0906  home_gap=0.0777  val_score=0.1295  lr=4.75e-05  grad_norm=2.010  (665s)
+Epoch  19/100: train_loss=0.8928  act=0.5568  home=0.3913  cop=0.2035  marg=0.0102  |  val_JS=0.0609  home_gap=0.1574  val_score=0.1396  lr=4.75e-05  grad_norm=2.061  (664s)
+Epoch  20/100: train_loss=0.8681  act=0.5322  home=0.3914  cop=0.2030  marg=0.0108  |  val_JS=0.0585  home_gap=0.1261  val_score=0.1216  lr=4.75e-05  grad_norm=2.132  (664s)
+  ✓ New best model saved (val_score=0.1216  val_JS=0.0585  home_gap=0.1261)
+Epoch  21/100: train_loss=0.8412  act=0.5065  home=0.3900  cop=0.2018  marg=0.0110  |  val_JS=0.0440  home_gap=0.0933  val_score=0.0907  lr=4.75e-05  grad_norm=2.155  (665s)
+  ✓ New best model saved (val_score=0.0907  val_JS=0.0440  home_gap=0.0933)
+Epoch  22/100: train_loss=0.8155  act=0.4816  home=0.3890  cop=0.2021  marg=0.0106  |  val_JS=0.0532  home_gap=0.1144  val_score=0.1104  lr=4.75e-05  grad_norm=2.188  (665s)
+Epoch  23/100: train_loss=0.7933  act=0.4601  home=0.3881  cop=0.2016  marg=0.0106  |  val_JS=0.0493  home_gap=0.0736  val_score=0.0861  lr=4.75e-05  grad_norm=2.213  (664s)
+  ✓ New best model saved (val_score=0.0861  val_JS=0.0493  home_gap=0.0736)
+Epoch  24/100: train_loss=0.7690  act=0.4378  home=0.3855  cop=0.2011  marg=0.0099  |  val_JS=0.0325  home_gap=0.0894  val_score=0.0771  lr=4.75e-05  grad_norm=2.241  (665s)
+  ✓ New best model saved (val_score=0.0771  val_JS=0.0325  home_gap=0.0894)
+Epoch  25/100: train_loss=0.7486  act=0.4186  home=0.3839  cop=0.2009  marg=0.0099  |  val_JS=0.0271  home_gap=0.0809  val_score=0.0676  lr=4.75e-05  grad_norm=2.252  (663s)
+  ✓ New best model saved (val_score=0.0676  val_JS=0.0271  home_gap=0.0809)
+Epoch  26/100: train_loss=0.7286  act=0.3995  home=0.3829  cop=0.2001  marg=0.0105  |  val_JS=0.0387  home_gap=0.0723  val_score=0.0748  lr=4.75e-05  grad_norm=2.285  (664s)
+Epoch  27/100: train_loss=0.7096  act=0.3806  home=0.3825  cop=0.2007  marg=0.0104  |  val_JS=0.0232  home_gap=0.0629  val_score=0.0546  lr=4.75e-05  grad_norm=2.266  (666s)
+  ✓ New best model saved (val_score=0.0546  val_JS=0.0232  home_gap=0.0629)
+Epoch  28/100: train_loss=0.6910  act=0.3641  home=0.3803  cop=0.1991  marg=0.0095  |  val_JS=0.0188  home_gap=0.0840  val_score=0.0608  lr=4.75e-05  grad_norm=2.287  (660s)
+Epoch  29/100: train_loss=0.6722  act=0.3457  home=0.3795  cop=0.1996  marg=0.0097  |  val_JS=0.0130  home_gap=0.0596  val_score=0.0428  lr=4.75e-05  grad_norm=2.280  (667s)
+  ✓ New best model saved (val_score=0.0428  val_JS=0.0130  home_gap=0.0596)
+Epoch  30/100: train_loss=0.6555  act=0.3298  home=0.3789  cop=0.1989  marg=0.0090  |  val_JS=0.0230  home_gap=0.0561  val_score=0.0510  lr=4.75e-05  grad_norm=2.298  (664s)
+Epoch  31/100: train_loss=0.6404  act=0.3150  home=0.3783  cop=0.1990  marg=0.0093  |  val_JS=0.0171  home_gap=0.0381  val_score=0.0362  lr=4.75e-05  grad_norm=2.268  (665s)
+  ✓ New best model saved (val_score=0.0362  val_JS=0.0171  home_gap=0.0381)
+Epoch  32/100: train_loss=0.6251  act=0.3012  home=0.3763  cop=0.1982  marg=0.0095  |  val_JS=0.0161  home_gap=0.0436  val_score=0.0379  lr=4.75e-05  grad_norm=2.279  (666s)
+Epoch  33/100: train_loss=0.6120  act=0.2883  home=0.3761  cop=0.1981  marg=0.0100  |  val_JS=0.0153  home_gap=0.0392  val_score=0.0348  lr=4.75e-05  grad_norm=2.253  (666s)
+  ✓ New best model saved (val_score=0.0348  val_JS=0.0153  home_gap=0.0392)
+Epoch  34/100: train_loss=0.5983  act=0.2757  home=0.3750  cop=0.1976  marg=0.0086  |  val_JS=0.0133  home_gap=0.0510  val_score=0.0388  lr=4.75e-05  grad_norm=2.253  (666s)
+Epoch  35/100: train_loss=0.5856  act=0.2633  home=0.3743  cop=0.1977  marg=0.0093  |  val_JS=0.0128  home_gap=0.0491  val_score=0.0374  lr=4.75e-05  grad_norm=2.229  (667s)
+Epoch  36/100: train_loss=0.5731  act=0.2512  home=0.3736  cop=0.1982  marg=0.0092  |  val_JS=0.0103  home_gap=0.0396  val_score=0.0301  lr=4.75e-05  grad_norm=2.213  (666s)
+  ✓ New best model saved (val_score=0.0301  val_JS=0.0103  home_gap=0.0396)
+Epoch  37/100: train_loss=0.5627  act=0.2416  home=0.3728  cop=0.1971  marg=0.0092  |  val_JS=0.0070  home_gap=0.0338  val_score=0.0238  lr=4.75e-05  grad_norm=2.200  (667s)
+  ✓ New best model saved (val_score=0.0238  val_JS=0.0070  home_gap=0.0338)
+Epoch  38/100: train_loss=0.5520  act=0.2310  home=0.3728  cop=0.1971  marg=0.0087  |  val_JS=0.0080  home_gap=0.0367  val_score=0.0264  lr=4.75e-05  grad_norm=2.169  (667s)
+Epoch  39/100: train_loss=0.5415  act=0.2222  home=0.3705  cop=0.1967  marg=0.0089  |  val_JS=0.0120  home_gap=0.0257  val_score=0.0248  lr=4.75e-05  grad_norm=2.173  (665s)
+Epoch  40/100: train_loss=0.5337  act=0.2140  home=0.3709  cop=0.1966  marg=0.0105  |  val_JS=0.0119  home_gap=0.0396  val_score=0.0317  lr=4.75e-05  grad_norm=2.157  (668s)
+Epoch  41/100: train_loss=0.5243  act=0.2054  home=0.3697  cop=0.1971  marg=0.0094  |  val_JS=0.0075  home_gap=0.0347  val_score=0.0249  lr=4.75e-05  grad_norm=2.127  (668s)
+Epoch  42/100: train_loss=0.5168  act=0.1971  home=0.3711  cop=0.1967  marg=0.0094  |  val_JS=0.0079  home_gap=0.0250  val_score=0.0205  lr=4.75e-05  grad_norm=2.080  (665s)
+  ✓ New best model saved (val_score=0.0205  val_JS=0.0079  home_gap=0.0250)
+Epoch  43/100: train_loss=0.5085  act=0.1909  home=0.3686  cop=0.1956  marg=0.0091  |  val_JS=0.0064  home_gap=0.0262  val_score=0.0195  lr=4.75e-05  grad_norm=2.118  (667s)
+  ✓ New best model saved (val_score=0.0195  val_JS=0.0064  home_gap=0.0262)
+Epoch  44/100: train_loss=0.4994  act=0.1825  home=0.3675  cop=0.1958  marg=0.0092  |  val_JS=0.0068  home_gap=0.0299  val_score=0.0218  lr=4.75e-05  grad_norm=2.056  (666s)
+Epoch  45/100: train_loss=0.4947  act=0.1774  home=0.3684  cop=0.1950  marg=0.0091  |  val_JS=0.0075  home_gap=0.0420  val_score=0.0285  lr=4.75e-05  grad_norm=2.061  (661s)
+Epoch  46/100: train_loss=0.4872  act=0.1709  home=0.3669  cop=0.1951  marg=0.0093  |  val_JS=0.0044  home_gap=0.0314  val_score=0.0201  lr=4.75e-05  grad_norm=2.011  (662s)
+Epoch  47/100: train_loss=0.4801  act=0.1642  home=0.3662  cop=0.1954  marg=0.0088  |  val_JS=0.0067  home_gap=0.0386  val_score=0.0260  lr=4.75e-05  grad_norm=1.979  (663s)
+Epoch  48/100: train_loss=0.4758  act=0.1598  home=0.3665  cop=0.1953  marg=0.0084  |  val_JS=0.0060  home_gap=0.0316  val_score=0.0218  lr=4.75e-05  grad_norm=1.978  (669s)
+Epoch  49/100: train_loss=0.4703  act=0.1540  home=0.3667  cop=0.1957  marg=0.0092  |  val_JS=0.0050  home_gap=0.0332  val_score=0.0216  lr=4.75e-05  grad_norm=1.955  (667s)
+Epoch  50/100: train_loss=0.4601  act=0.1453  home=0.3645  cop=0.1957  marg=0.0087  |  val_JS=0.0046  home_gap=0.0322  val_score=0.0207  lr=4.51e-05  grad_norm=1.831  (669s)
+Epoch  51/100: train_loss=0.4567  act=0.1429  home=0.3637  cop=0.1944  marg=0.0093  |  val_JS=0.0043  home_gap=0.0420  val_score=0.0253  lr=4.51e-05  grad_norm=1.867  (666s)
+Epoch  52/100: train_loss=0.4515  act=0.1377  home=0.3635  cop=0.1947  marg=0.0091  |  val_JS=0.0049  home_gap=0.0300  val_score=0.0200  lr=4.51e-05  grad_norm=1.829  (665s)
+Epoch  53/100: train_loss=0.4483  act=0.1346  home=0.3637  cop=0.1942  marg=0.0089  |  val_JS=0.0043  home_gap=0.0365  val_score=0.0225  lr=4.51e-05  grad_norm=1.843  (666s)
+Epoch  54/100: train_loss=0.4448  act=0.1321  home=0.3621  cop=0.1944  marg=0.0091  |  val_JS=0.0042  home_gap=0.0254  val_score=0.0169  lr=4.51e-05  grad_norm=1.837  (668s)
+  ✓ New best model saved (val_score=0.0169  val_JS=0.0042  home_gap=0.0254)
+Epoch  55/100: train_loss=0.4385  act=0.1265  home=0.3613  cop=0.1941  marg=0.0090  |  val_JS=0.0050  home_gap=0.0336  val_score=0.0218  lr=4.51e-05  grad_norm=1.774  (665s)
+Epoch  56/100: train_loss=0.4363  act=0.1244  home=0.3613  cop=0.1937  marg=0.0087  |  val_JS=0.0045  home_gap=0.0340  val_score=0.0214  lr=4.51e-05  grad_norm=1.787  (663s)
+Epoch  57/100: train_loss=0.4312  act=0.1203  home=0.3599  cop=0.1936  marg=0.0087  |  val_JS=0.0058  home_gap=0.0304  val_score=0.0210  lr=4.51e-05  grad_norm=1.739  (666s)
+Epoch  58/100: train_loss=0.4292  act=0.1184  home=0.3596  cop=0.1939  marg=0.0088  |  val_JS=0.0046  home_gap=0.0288  val_score=0.0189  lr=4.51e-05  grad_norm=1.751  (665s)
+Epoch  59/100: train_loss=0.4254  act=0.1152  home=0.3590  cop=0.1937  marg=0.0085  |  val_JS=0.0054  home_gap=0.0406  val_score=0.0257  lr=4.51e-05  grad_norm=1.704  (667s)
+Epoch  60/100: train_loss=0.4246  act=0.1147  home=0.3585  cop=0.1934  marg=0.0099  |  val_JS=0.0041  home_gap=0.0284  val_score=0.0183  lr=4.51e-05  grad_norm=1.745  (667s)
+Epoch  61/100: train_loss=0.4171  act=0.1078  home=0.3577  cop=0.1932  marg=0.0089  |  val_JS=0.0039  home_gap=0.0273  val_score=0.0176  lr=4.29e-05  grad_norm=1.628  (666s)
+Epoch  62/100: train_loss=0.4143  act=0.1051  home=0.3577  cop=0.1934  marg=0.0083  |  val_JS=0.0036  home_gap=0.0294  val_score=0.0183  lr=4.29e-05  grad_norm=1.606  (666s)
+Epoch  63/100: train_loss=0.4110  act=0.1040  home=0.3547  cop=0.1931  marg=0.0085  |  val_JS=0.0045  home_gap=0.0298  val_score=0.0194  lr=4.29e-05  grad_norm=1.626  (665s)
+Epoch  64/100: train_loss=0.4098  act=0.1024  home=0.3553  cop=0.1928  marg=0.0085  |  val_JS=0.0045  home_gap=0.0335  val_score=0.0212  lr=4.29e-05  grad_norm=1.613  (668s)
+Epoch  65/100: train_loss=0.4069  act=0.0998  home=0.3553  cop=0.1915  marg=0.0084  |  val_JS=0.0037  home_gap=0.0354  val_score=0.0214  lr=4.29e-05  grad_norm=1.575  (667s)
+Epoch  66/100: train_loss=0.4065  act=0.0990  home=0.3553  cop=0.1928  marg=0.0087  |  val_JS=0.0034  home_gap=0.0445  val_score=0.0257  lr=4.29e-05  grad_norm=1.585  (666s)
+Epoch  67/100: train_loss=0.3996  act=0.0937  home=0.3537  cop=0.1917  marg=0.0082  |  val_JS=0.0032  home_gap=0.0367  val_score=0.0216  lr=4.07e-05  grad_norm=1.490  (666s)
+Epoch  68/100: train_loss=0.3978  act=0.0920  home=0.3536  cop=0.1917  marg=0.0083  |  val_JS=0.0041  home_gap=0.0363  val_score=0.0223  lr=4.07e-05  grad_norm=1.472  (664s)
+Epoch  69/100: train_loss=0.3967  act=0.0913  home=0.3528  cop=0.1921  marg=0.0085  |  val_JS=0.0042  home_gap=0.0595  val_score=0.0339  lr=4.07e-05  grad_norm=1.486  (666s)
+  Early stopping at epoch 69 (no improvement for 15 epochs)
+
+[4/4] Training complete. Best val_score=0.0169
+  Best checkpoint: outputs_step4_J5_B/checkpoints/best_model.pt
+  Training log:    outputs_step4_J5_B/step4_training_log.csv
+=== J5_B TRAIN DONE ===
+=== J5_B INFERENCE ===
+============================================================
+Step 4E — Inference  
+============================================================
+  data_dir:   outputs_step4_G1
+  checkpoint: outputs_step4_J5_B/checkpoints/best_model.pt
+  output:     outputs_step4_J5_B/augmented_diaries.csv
+  temperature:    0.8
+  home_threshold: 0.5
+  Device: cuda
+
+[1/4] Loading tensor datasets...
+  Total respondents: 64061
+  Metadata: (64061, 16)
+
+[2/4] Loading model checkpoint...
+  checkpoint (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_J5_B/checkpoints/best_model.pt (117.2 MB)
+  Loaded from epoch 53  val_JS=0.004197497478081504
+
+[3/4] Generating synthetic diaries...
+  Processed 256/64061 respondents (0.4%)
+  Processed 512/64061 respondents (0.8%)
+  Processed 768/64061 respondents (1.2%)
+  Processed 1024/64061 respondents (1.6%)
+  Processed 1280/64061 respondents (2.0%)
+  Processed 1536/64061 respondents (2.4%)
+  Processed 1792/64061 respondents (2.8%)
+  Processed 2048/64061 respondents (3.2%)
+  Processed 2304/64061 respondents (3.6%)
+  Processed 2560/64061 respondents (4.0%)
+  Processed 2816/64061 respondents (4.4%)
+  Processed 3072/64061 respondents (4.8%)
+  Processed 3328/64061 respondents (5.2%)
+  Processed 3584/64061 respondents (5.6%)
+  Processed 3840/64061 respondents (6.0%)
+  Processed 4096/64061 respondents (6.4%)
+  Processed 4352/64061 respondents (6.8%)
+  Processed 4608/64061 respondents (7.2%)
+  Processed 4864/64061 respondents (7.6%)
+  Processed 5120/64061 respondents (8.0%)
+  Processed 5376/64061 respondents (8.4%)
+  Processed 5632/64061 respondents (8.8%)
+  Processed 5888/64061 respondents (9.2%)
+  Processed 6144/64061 respondents (9.6%)
+  Processed 6400/64061 respondents (10.0%)
+  Processed 6656/64061 respondents (10.4%)
+  Processed 6912/64061 respondents (10.8%)
+  Processed 7168/64061 respondents (11.2%)
+  Processed 7424/64061 respondents (11.6%)
+  Processed 7680/64061 respondents (12.0%)
+  Processed 7936/64061 respondents (12.4%)
+  Processed 8192/64061 respondents (12.8%)
+  Processed 8448/64061 respondents (13.2%)
+  Processed 8704/64061 respondents (13.6%)
+  Processed 8960/64061 respondents (14.0%)
+  Processed 9216/64061 respondents (14.4%)
+  Processed 9472/64061 respondents (14.8%)
+  Processed 9728/64061 respondents (15.2%)
+  Processed 9984/64061 respondents (15.6%)
+  Processed 10240/64061 respondents (16.0%)
+  Processed 10496/64061 respondents (16.4%)
+  Processed 10752/64061 respondents (16.8%)
+  Processed 11008/64061 respondents (17.2%)
+  Processed 11264/64061 respondents (17.6%)
+  Processed 11520/64061 respondents (18.0%)
+  Processed 11776/64061 respondents (18.4%)
+  Processed 12032/64061 respondents (18.8%)
+  Processed 12288/64061 respondents (19.2%)
+  Processed 12544/64061 respondents (19.6%)
+  Processed 12800/64061 respondents (20.0%)
+  Processed 13056/64061 respondents (20.4%)
+  Processed 13312/64061 respondents (20.8%)
+  Processed 13568/64061 respondents (21.2%)
+  Processed 13824/64061 respondents (21.6%)
+  Processed 14080/64061 respondents (22.0%)
+  Processed 14336/64061 respondents (22.4%)
+  Processed 14592/64061 respondents (22.8%)
+  Processed 14848/64061 respondents (23.2%)
+  Processed 15104/64061 respondents (23.6%)
+  Processed 15360/64061 respondents (24.0%)
+  Processed 15616/64061 respondents (24.4%)
+  Processed 15872/64061 respondents (24.8%)
+  Processed 16128/64061 respondents (25.2%)
+  Processed 16384/64061 respondents (25.6%)
+  Processed 16640/64061 respondents (26.0%)
+  Processed 16896/64061 respondents (26.4%)
+  Processed 17152/64061 respondents (26.8%)
+  Processed 17408/64061 respondents (27.2%)
+  Processed 17664/64061 respondents (27.6%)
+  Processed 17920/64061 respondents (28.0%)
+  Processed 18176/64061 respondents (28.4%)
+  Processed 18432/64061 respondents (28.8%)
+  Processed 18688/64061 respondents (29.2%)
+  Processed 18944/64061 respondents (29.6%)
+  Processed 19200/64061 respondents (30.0%)
+  Processed 19456/64061 respondents (30.4%)
+  Processed 19712/64061 respondents (30.8%)
+  Processed 19968/64061 respondents (31.2%)
+  Processed 20224/64061 respondents (31.6%)
+  Processed 20480/64061 respondents (32.0%)
+  Processed 20736/64061 respondents (32.4%)
+  Processed 20992/64061 respondents (32.8%)
+  Processed 21248/64061 respondents (33.2%)
+  Processed 21504/64061 respondents (33.6%)
+  Processed 21760/64061 respondents (34.0%)
+  Processed 22016/64061 respondents (34.4%)
+  Processed 22272/64061 respondents (34.8%)
+  Processed 22528/64061 respondents (35.2%)
+  Processed 22784/64061 respondents (35.6%)
+  Processed 23040/64061 respondents (36.0%)
+  Processed 23296/64061 respondents (36.4%)
+  Processed 23552/64061 respondents (36.8%)
+  Processed 23808/64061 respondents (37.2%)
+  Processed 24064/64061 respondents (37.6%)
+  Processed 24320/64061 respondents (38.0%)
+  Processed 24576/64061 respondents (38.4%)
+  Processed 24832/64061 respondents (38.8%)
+  Processed 25088/64061 respondents (39.2%)
+  Processed 25344/64061 respondents (39.6%)
+  Processed 25600/64061 respondents (40.0%)
+  Processed 25856/64061 respondents (40.4%)
+  Processed 26112/64061 respondents (40.8%)
+  Processed 26368/64061 respondents (41.2%)
+  Processed 26624/64061 respondents (41.6%)
+  Processed 26880/64061 respondents (42.0%)
+  Processed 27136/64061 respondents (42.4%)
+  Processed 27392/64061 respondents (42.8%)
+  Processed 27648/64061 respondents (43.2%)
+  Processed 27904/64061 respondents (43.6%)
+  Processed 28160/64061 respondents (44.0%)
+  Processed 28416/64061 respondents (44.4%)
+  Processed 28672/64061 respondents (44.8%)
+  Processed 28928/64061 respondents (45.2%)
+  Processed 29184/64061 respondents (45.6%)
+  Processed 29440/64061 respondents (46.0%)
+  Processed 29696/64061 respondents (46.4%)
+  Processed 29952/64061 respondents (46.8%)
+  Processed 30208/64061 respondents (47.2%)
+  Processed 30464/64061 respondents (47.6%)
+  Processed 30720/64061 respondents (48.0%)
+  Processed 30976/64061 respondents (48.4%)
+  Processed 31232/64061 respondents (48.8%)
+  Processed 31488/64061 respondents (49.2%)
+  Processed 31744/64061 respondents (49.6%)
+  Processed 32000/64061 respondents (50.0%)
+  Processed 32256/64061 respondents (50.4%)
+  Processed 32512/64061 respondents (50.8%)
+  Processed 32768/64061 respondents (51.2%)
+  Processed 33024/64061 respondents (51.6%)
+  Processed 33280/64061 respondents (52.0%)
+  Processed 33536/64061 respondents (52.4%)
+  Processed 33792/64061 respondents (52.7%)
+  Processed 34048/64061 respondents (53.1%)
+  Processed 34304/64061 respondents (53.5%)
+  Processed 34560/64061 respondents (53.9%)
+  Processed 34816/64061 respondents (54.3%)
+  Processed 35072/64061 respondents (54.7%)
+  Processed 35328/64061 respondents (55.1%)
+  Processed 35584/64061 respondents (55.5%)
+  Processed 35840/64061 respondents (55.9%)
+  Processed 36096/64061 respondents (56.3%)
+  Processed 36352/64061 respondents (56.7%)
+  Processed 36608/64061 respondents (57.1%)
+  Processed 36864/64061 respondents (57.5%)
+  Processed 37120/64061 respondents (57.9%)
+  Processed 37376/64061 respondents (58.3%)
+  Processed 37632/64061 respondents (58.7%)
+  Processed 37888/64061 respondents (59.1%)
+  Processed 38144/64061 respondents (59.5%)
+  Processed 38400/64061 respondents (59.9%)
+  Processed 38656/64061 respondents (60.3%)
+  Processed 38912/64061 respondents (60.7%)
+  Processed 39168/64061 respondents (61.1%)
+  Processed 39424/64061 respondents (61.5%)
+  Processed 39680/64061 respondents (61.9%)
+  Processed 39936/64061 respondents (62.3%)
+  Processed 40192/64061 respondents (62.7%)
+  Processed 40448/64061 respondents (63.1%)
+  Processed 40704/64061 respondents (63.5%)
+  Processed 40960/64061 respondents (63.9%)
+  Processed 41216/64061 respondents (64.3%)
+  Processed 41472/64061 respondents (64.7%)
+  Processed 41728/64061 respondents (65.1%)
+  Processed 41984/64061 respondents (65.5%)
+  Processed 42240/64061 respondents (65.9%)
+  Processed 42496/64061 respondents (66.3%)
+  Processed 42752/64061 respondents (66.7%)
+  Processed 43008/64061 respondents (67.1%)
+  Processed 43264/64061 respondents (67.5%)
+  Processed 43520/64061 respondents (67.9%)
+  Processed 43776/64061 respondents (68.3%)
+  Processed 44032/64061 respondents (68.7%)
+  Processed 44288/64061 respondents (69.1%)
+  Processed 44544/64061 respondents (69.5%)
+  Processed 44800/64061 respondents (69.9%)
+  Processed 45056/64061 respondents (70.3%)
+  Processed 45312/64061 respondents (70.7%)
+  Processed 45568/64061 respondents (71.1%)
+  Processed 45824/64061 respondents (71.5%)
+  Processed 46080/64061 respondents (71.9%)
+  Processed 46336/64061 respondents (72.3%)
+  Processed 46592/64061 respondents (72.7%)
+  Processed 46848/64061 respondents (73.1%)
+  Processed 47104/64061 respondents (73.5%)
+  Processed 47360/64061 respondents (73.9%)
+  Processed 47616/64061 respondents (74.3%)
+  Processed 47872/64061 respondents (74.7%)
+  Processed 48128/64061 respondents (75.1%)
+  Processed 48384/64061 respondents (75.5%)
+  Processed 48640/64061 respondents (75.9%)
+  Processed 48896/64061 respondents (76.3%)
+  Processed 49152/64061 respondents (76.7%)
+  Processed 49408/64061 respondents (77.1%)
+  Processed 49664/64061 respondents (77.5%)
+  Processed 49920/64061 respondents (77.9%)
+  Processed 50176/64061 respondents (78.3%)
+  Processed 50432/64061 respondents (78.7%)
+  Processed 50688/64061 respondents (79.1%)
+  Processed 50944/64061 respondents (79.5%)
+  Processed 51200/64061 respondents (79.9%)
+  Processed 51456/64061 respondents (80.3%)
+  Processed 51712/64061 respondents (80.7%)
+  Processed 51968/64061 respondents (81.1%)
+  Processed 52224/64061 respondents (81.5%)
+  Processed 52480/64061 respondents (81.9%)
+  Processed 52736/64061 respondents (82.3%)
+  Processed 52992/64061 respondents (82.7%)
+  Processed 53248/64061 respondents (83.1%)
+  Processed 53504/64061 respondents (83.5%)
+  Processed 53760/64061 respondents (83.9%)
+  Processed 54016/64061 respondents (84.3%)
+  Processed 54272/64061 respondents (84.7%)
+  Processed 54528/64061 respondents (85.1%)
+  Processed 54784/64061 respondents (85.5%)
+  Processed 55040/64061 respondents (85.9%)
+  Processed 55296/64061 respondents (86.3%)
+  Processed 55552/64061 respondents (86.7%)
+  Processed 55808/64061 respondents (87.1%)
+  Processed 56064/64061 respondents (87.5%)
+  Processed 56320/64061 respondents (87.9%)
+  Processed 56576/64061 respondents (88.3%)
+  Processed 56832/64061 respondents (88.7%)
+  Processed 57088/64061 respondents (89.1%)
+  Processed 57344/64061 respondents (89.5%)
+  Processed 57600/64061 respondents (89.9%)
+  Processed 57856/64061 respondents (90.3%)
+  Processed 58112/64061 respondents (90.7%)
+  Processed 58368/64061 respondents (91.1%)
+  Processed 58624/64061 respondents (91.5%)
+  Processed 58880/64061 respondents (91.9%)
+  Processed 59136/64061 respondents (92.3%)
+  Processed 59392/64061 respondents (92.7%)
+  Processed 59648/64061 respondents (93.1%)
+  Processed 59904/64061 respondents (93.5%)
+  Processed 60160/64061 respondents (93.9%)
+  Processed 60416/64061 respondents (94.3%)
+  Processed 60672/64061 respondents (94.7%)
+  Processed 60928/64061 respondents (95.1%)
+  Processed 61184/64061 respondents (95.5%)
+  Processed 61440/64061 respondents (95.9%)
+  Processed 61696/64061 respondents (96.3%)
+  Processed 61952/64061 respondents (96.7%)
+  Processed 62208/64061 respondents (97.1%)
+  Processed 62464/64061 respondents (97.5%)
+  Processed 62720/64061 respondents (97.9%)
+  Processed 62976/64061 respondents (98.3%)
+  Processed 63232/64061 respondents (98.7%)
+  Processed 63488/64061 respondents (99.1%)
+  Processed 63744/64061 respondents (99.5%)
+  Processed 64000/64061 respondents (99.9%)
+  Processed 64061/64061 respondents (100.0%)
+
+[4/4] Assembling augmented_diaries.csv...
+
+  === AUGMENTED OUTPUT ===
+  Shape: (192183, 545)
+  IS_SYNTHETIC=0 (observed): 64061
+  IS_SYNTHETIC=1 (synthetic): 128122
+  Unique occIDs: 27389
+  Rows per occID: [np.int64(3), np.int64(6), np.int64(9), np.int64(12)]
+
+  === EXAMPLE RESPONDENT (occID=10754, CYCLE_YEAR=2005) ===
+  Observed DDAY_STRATA: 1
+  DDAY_STRATA=1.0 IS_SYNTHETIC=0.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(9.0), np.float64(3.0), np.float64(10.0), np.float64(10.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(0.0), np.float64(0.0), np.float64(0.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=2.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=3.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(6.0), np.float64(7.0), np.float64(2.0), np.float64(2.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=1.0 IS_SYNTHETIC=0.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(6.0), np.float64(6.0), np.float64(2.0), np.float64(2.0), np.float64(2.0), np.float64(2.0), np.float64(2.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=2.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=3.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(6.0), np.float64(6.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=1.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(6.0), np.float64(13.0), np.float64(8.0), np.float64(8.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(0.0), np.float64(0.0), np.float64(0.0)]...
+  DDAY_STRATA=2.0 IS_SYNTHETIC=0.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=3.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(9.0), np.float64(8.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(0.0), np.float64(0.0)]...
+  DDAY_STRATA=1.0 IS_SYNTHETIC=0.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(3.0), np.float64(3.0), np.float64(3.0), np.float64(3.0), np.float64(3.0), np.float64(8.0), np.float64(8.0), np.float64(8.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=2.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  DDAY_STRATA=3.0 IS_SYNTHETIC=1.0  acts=[np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0), np.float64(5.0)]...  home=[np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0), np.float64(1.0)]...
+  ✓ colleagues = 0 for all 2005/2010 synthetic rows
+
+✓ 04E complete. Saved outputs_step4_J5_B/augmented_diaries.csv
+  Total rows: 192183 (expect 192183)
+=== J5_B INFERENCE DONE ===
+=== J5_B AT_HOME DIAGNOSTICS ===
+============================================================
+Step 4H — AT_HOME Bias Diagnostics  
+============================================================
+  data_dir  : outputs_step4_J5_B
+  step3_dir : outputs_step3
+  output    : outputs_step4_J5_B/diagnostics_H_J5_B.json
+  hetus path: outputs_step3/hetus_30min.csv
+  ERROR: step4_train.pt or training_pairs.pt missing in outputs_step4_J5_B
+
+[T1] Training-pair target AT_HOME...
+     SKIPPED — inputs missing
+
+[T2] Post-hoc rule contribution...
+     mean gap closure (non-night vs all) = +1.89 pp   verdict = H2_rejected
+
+[T3] Per-slot trajectory...
+     morning = +13.65 pp | midday = +2.04 | evening = -1.06
+     afternoon+evening = +0.21 pp | night = +3.92
+     slot_of_max_gap = 9  max_gap = +23.04 pp  range = 26.48
+     verdict = H3_not_dominant
+
+[T6] Observed AT_HOME sanity...
+     any_implausible = False  flagged cells = 0
+
+============================================================
+04H DIAGNOSTIC SUMMARY
+============================================================
+   H1: unknown                   [FLAG]
+   H2: H2_rejected               [PASS]
+   H3: H3_not_dominant           [WARN]
+   H5: H5_rejected               [PASS]
+
+  RECOMMENDATION -> SKIP_GPU
+  JSON: outputs_step4_J5_B/diagnostics_H_J5_B.json
+============================================================
+=== J5_B ACTIVITY+COP DIAGNOSTICS ===
+  data_dir  = outputs_step4_J5_B
+  step3_dir = outputs_step3
+  out_json  = outputs_step4_J5_B/diagnostics_I_J5_B.json
+  rows: aug=192183  syn=128122  obs=64061  obs_cop=64061
+  [activity] computing per-CS JS + top-1 agreement ...
+    verdict = activity_partial  overall_js_mean = 0.032198233717391
+  [copresence] computing per-channel prevalence gaps ...
+    verdict = copresence_partial  max_gap_pp = 7.06866282560108
+  wrote outputs_step4_J5_B/diagnostics_I_J5_B.json
+=== J5_B COMPOSITE SCORE ===
+============================================================
+Step 4J — Statistical Diagnostic Battery
+============================================================
+  data_dir    = outputs_step4_J5_B
+  step3_dir   = outputs_step3
+  out_json    = outputs_step4_J5_B/diagnostics_J5_B.json
+  n_bootstrap = 1000
+  rows: aug=192183  obs=64061  syn=128122
+
+[T1] Bootstrap CIs ...
+  * Alone        gap=+7.1 pp  CI=[+6.8, +7.3]
+  * Spouse       gap=+1.6 pp  CI=[+1.4, +1.9]
+  * Children     gap=+3.0 pp  CI=[+2.8, +3.1]
+  * parents      gap=+1.4 pp  CI=[+1.3, +1.5]
+  * friends      gap=+2.6 pp  CI=[+2.5, +2.7]
+  * others       gap=-2.2 pp  CI=[-2.3, -2.1]
+  * colleagues   gap=-5.3 pp  CI=[-5.5, -5.1]
+  * AT_HOME      gap=+4.1 pp  CI=[+3.9, +4.4]
+
+[T2] Calibration curves ...
+  [Alone]  calibration MAE = 0.1858
+  [Spouse]  calibration MAE = 0.0596
+  [Children]  calibration MAE = 0.1819
+  [parents]  calibration MAE = 0.2018
+  [friends]  calibration MAE = 0.3935
+  [others]  calibration MAE = 0.2903
+  [colleagues]  calibration MAE = 0.3203
+  [AT_HOME] calibration MAE = 0.5543
+
+[T3] Joint distributions ...
+  activity_x_at_home [obs]  V=0.2161
+  activity_x_at_home [syn]  V=0.2630
+  activity_x_alone [obs]  V=0.0906
+  activity_x_alone [syn]  V=0.0907
+  alone_x_at_home [obs]  V=0.0666
+  alone_x_at_home [syn]  V=0.2693
+
+[T4] χ²/KS tests ...
+  χ² (activity): 12/12 cells reject H₀ at α=2.98e-04
+  KS (AT_HOME/Alone): 12/12 cells reject H₀
+
+[T5] Composite score ...
+  AT_HOME gap RMS:   5.20 pp
+  COP max gap:       7.07 pp
+  Activity JS mean:  0.0322
+  COP cal MAE mean:  0.2333
+  Composite score S: 0.6975  (lower=better)
+
+  wrote outputs_step4_J5_B/diagnostics_J5_B.json
+
+✓ 04J complete.  Composite score S = 0.6975
+=== J5_B DONE: check outputs_step4_J5_B/diagnostics_J5_B.json ===

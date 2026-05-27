@@ -1,0 +1,92 @@
+ERROR: Unable to locate a modulefile for 'cuda/12.1'
+============================================================
+Step 6 Longitudinal Forecasting — stage=C
+Start: Tue May 19 04:24:27 PM EDT 2026
+============================================================
+Device: cuda
+Loading /nfs/speed-scratch/o_iseri/occModeling/2J_docs_occ_nTemp/outputs_step4/augmented_diaries.csv ...
+Loaded 192,183 rows x 545 cols
+
+============================================================
+SUB-STEP 6A — Input Audit
+============================================================
+[PASS] Row count: 192,183 (expected ~192,183 ±10)
+[PASS] CYCLE_YEAR in [np.int64(2005), np.int64(2010), np.int64(2015), np.int64(2022)]
+  Per-cycle counts:
+    2005: 57,663
+    2010: 45,342
+    2015: 52,170
+    2022: 37,008
+[PASS] DDAY_STRATA in [np.int64(1), np.int64(2), np.int64(3)]
+  Per-cycle × per-stratum counts:
+    2005 / strata=1: 19,221
+    2005 / strata=2: 19,221
+    2005 / strata=3: 19,221
+    2010 / strata=1: 15,114
+    2010 / strata=2: 15,114
+    2010 / strata=3: 15,114
+    2015 / strata=1: 17,390
+    2015 / strata=2: 17,390
+    2015 / strata=3: 17,390
+    2022 / strata=1: 12,336
+    2022 / strata=2: 12,336
+    2022 / strata=3: 12,336
+[PASS] IS_SYNTHETIC column present
+  IS_SYNTHETIC per cycle:
+    2005 / IS_SYNTHETIC=0 (observed): 19,221
+    2005 / IS_SYNTHETIC=1 (synthetic): 38,442
+    2010 / IS_SYNTHETIC=0 (observed): 15,114
+    2010 / IS_SYNTHETIC=1 (synthetic): 30,228
+    2015 / IS_SYNTHETIC=0 (observed): 17,390
+    2015 / IS_SYNTHETIC=1 (synthetic): 34,780
+    2022 / IS_SYNTHETIC=0 (observed): 12,336
+    2022 / IS_SYNTHETIC=1 (synthetic): 24,672
+[PASS] All 96 act30/hom30 columns present
+[PASS] act30 range: [1, 14] (expected [1, 14])
+[PASS] hom30 values: [np.int64(0), np.int64(1)] (expected {0, 1})
+
+AT_HOME mean per cycle (weekday only, DDAY_STRATA=1):
+  2005: 66.9%  (expected ~62.7%,  diff=+4.2pp)
+  2010: 68.2%  (expected ~62.3%,  diff=+5.9pp)
+  2015: 69.3%  (expected ~64.5%,  diff=+4.8pp)
+  2022: 74.2%  (expected ~70.6%,  diff=+3.6pp)
+
+==================================================
+6A AUDIT: 7/7 checks passed
+
+============================================================
+SUB-STAGE C — Pooled Recency-Weighted Training + TrendEncoder
+============================================================
+Drift vectors loaded: dim=42
+
+[PRETEXT] Training TrendEncoder (500 steps, MSE) ...
+[PRETEXT] Final MSE: 0.002439
+/nfs/speed-scratch/o_iseri/occModeling/eSim_occ_utils/25CEN22GSS_classification/06_longitudinalForecasting.py:960: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  ckpt = torch.load(ckpt_path, map_location=device)
+
+Loaded W_2022_ft.pt (val_JS=0.1259)
+train=134,528  val(2022)=7,235
+
+ Epoch    train_loss    val_JS
+     1        0.4379    0.1391
+  [CKPT] saved epoch 1 val_JS=0.1391
+     2        0.4362    0.1422
+     3        0.4345    0.1345
+  [CKPT] saved epoch 3 val_JS=0.1345
+     4        0.4329    0.1460
+     5        0.4312    0.1399
+     6        0.4293    0.1346
+     7        0.4277    0.1424
+     8        0.4260    0.1272
+  [CKPT] saved epoch 8 val_JS=0.1272
+     9        0.4243    0.1372
+    10        0.4227    0.1421
+    11        0.4210    0.1294
+    12        0.4195    0.1325
+    13        0.4178    0.1296
+  Early stop at epoch 13 (patience=5)
+
+[SUBSTAGE_C_COMPLETE] W_pooled_2030 val_JS=0.1272
+============================================================
+Step 6 Sub-stage C COMPLETE — Tue May 19 10:14:39 PM EDT 2026
+============================================================

@@ -1,0 +1,37 @@
+# J3_PSB.yaml — J3 + Per-Slot Demographic Broadcast (Phase 1 of 04_augmentationGSS_IMP.md)
+# Architecture: JSeriesHybridV2 (subclass of JSeriesHybrid) — overrides _encode() to
+# concat cond_vec onto every encoder slot token before slot_linear. Widens slot_linear
+# input dim by d_cond. All other layers (arm2_act_proj, detach barrier, heads, decoder)
+# identical to J3.
+# Hyperparameters mirror J3 baseline (config J3.yaml) — single axis change is architectural.
+# Hard gates: composite < 1.045 | AT_HOME <= 5.3 pp | Spouse <= 5 pp | act_JS <= 0.05
+tag: J3_PSB
+seed: 42
+model_type: J3_v2
+
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.7
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05

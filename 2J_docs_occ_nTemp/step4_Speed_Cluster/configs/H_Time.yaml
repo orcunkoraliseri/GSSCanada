@@ -1,0 +1,32 @@
+tag: H_Time
+seed: 42
+
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+h_tanh_heads: 1
+h_time_pe: 1
+
+lambda_act: 1.0
+lambda_home: 0.6
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 1
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05

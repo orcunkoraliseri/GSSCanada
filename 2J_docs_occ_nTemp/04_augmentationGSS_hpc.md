@@ -655,6 +655,8 @@ Stage E (focused HPT on D winner)          → 3–4 narrow trials → final mod
 
 5. **HPT is a separate stage, not mixed into architecture search.** Loss weights, learning rates, and diffusion-specific params are tuned only after the architecture is locked. This prevents confounding structural signal with tuning noise.
 
+6. **Low training loss ≠ good generation quality.** The model practiced only with cheat sheets, so it scores perfectly on homework but fails the real exam. Training loss measures prediction under teacher forcing (model sees correct history). At inference, the model uses its own predictions — mistakes snowball. Example: H_Time cop_loss=0.062 (best) but COP max gap=22.86 pp at inference. Always run full diagnostic gates, never select architectures by training loss alone.
+
 ### Outcome
 
 Phase 6 (funnel approach) found MDLM with composite conditioning (FiLM + Fourier PE + per-stratum prefix) as the winning architecture in ~3 days of wall-clock. Stage C composite = 0.5665, beating J3 by 10.9% — a larger improvement than all 5 prior full-data phases combined.

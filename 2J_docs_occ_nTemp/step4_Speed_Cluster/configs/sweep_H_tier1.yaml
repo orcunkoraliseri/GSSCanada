@@ -1,0 +1,7 @@
+# sweep_H_tier1.yaml — H-series Tier-1 full submission driver
+# Three independent axes over G4 base: H_Tanh | H4 | H6
+# G4 is the comparison row already in results.csv.
+tags:
+  - H_Tanh
+  - H4
+  - H6

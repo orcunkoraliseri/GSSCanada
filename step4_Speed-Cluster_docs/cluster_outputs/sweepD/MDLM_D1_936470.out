@@ -1,0 +1,175 @@
+=== MDLM_D1 TRAIN START ===
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       outputs_step4_G2
+  output_dir:     outputs_step4_full/MDLM_D1
+  checkpoint_dir: outputs_step4_full/MDLM_D1/checkpoints
+  batch_size=256  max_epochs=100  patience=15  lr=5e-05  fp16=False
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_full/MDLM_D1/checkpoints
+  AUX_STRATUM_HEAD=False  COP_POS_WEIGHT=0  ACTIVITY_BOOSTS=1  DATA_SIDE_SAMPLING=0  MARG_MODE=global  AUX_STRATUM_LAMBDA=0.1  SPOUSE_NEG_WEIGHT=0.45  LAMBDA_TRANS=0.0
+  [Phase 6] MODEL_TYPE=MDLM  LOSS_MODE=ce  USE_FILM=1  USE_FOURIER_PE=1  USE_PREFIX=1  USE_SPL=0  USE_FACT=0
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 89686 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=1):
+    class  0: 2.185
+    class  1: 0.520
+    class  2: 1.074
+    class  3: 1.108
+    class  4: 0.261
+    class  5: 0.754
+    class  6: 0.893
+    class  7: 1.353
+    class  8: 1.474
+    class  9: 0.408
+    class 10: 1.172
+    class 11: 1.769
+    class 12: 2.348
+    class 13: 2.729
+  AT_HOME observed rate: 0.7251  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=global
+  COP pos_weight: disabled (COP_POS_WEIGHT=0)
+  SPOUSE_NEG_WEIGHT=0.45: Spouse (idx 1) cop pos_weight overridden
+[2/4] Building model...
+  Parameters: 32,897,158
+MDLMHybrid(
+  (act_embedding): Embedding(14, 32)
+  (slot_linear): Linear(in_features=42, out_features=384, bias=True)
+  (cycle_embedding): Embedding(4, 32)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=122, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=384, bias=True)
+  )
+  (arm1_slot_proj): Linear(in_features=32, out_features=384, bias=True)
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (linear1): Linear(in_features=384, out_features=1536, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1536, out_features=384, bias=True)
+        (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (arm1_decoder): CrossAttnDecoder(
+    (proj_demo): Linear(in_features=90, out_features=384, bias=True)
+    (proj_cycle): Linear(in_features=32, out_features=384, bias=True)
+    (proj_strata): Linear(in_features=3, out_features=384, bias=True)
+    (layers): ModuleList(
+      (0-5): 6 x CondCrossAttnDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_mem): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_cond): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (ffn): Sequential(
+          (0): Linear(in_features=384, out_features=1536, bias=True)
+          (1): GELU(approximate='none')
+          (2): Linear(in_features=1536, out_features=384, bias=True)
+        )
+        (ln1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln3): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln4): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=384, out_features=14, bias=True)
+  (arm2_act_proj): Linear(in_features=14, out_features=384, bias=True)
+  (arm2_proj): Linear(in_features=893, out_features=384, bias=True)
+  (home_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=1, bias=True)
+  )
+  (cop_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=9, bias=True)
+  )
+  (film_gamma): Linear(in_features=90, out_features=384, bias=True)
+  (film_beta): Linear(in_features=90, out_features=384, bias=True)
+  (fourier_pe_proj): Linear(in_features=8, out_features=384, bias=True)
+  (x0_refiner): TransformerEncoder(
+    (layers): ModuleList(
+      (0-1): 2 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (linear1): Linear(in_features=384, out_features=1536, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1536, out_features=384, bias=True)
+        (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (x0_head): Linear(in_features=384, out_features=14, bias=True)
+)
+[3/4] Training...
+Epoch   1/100: train_loss=1.9168  act=1.5376  home=0.3285  cop=0.2702  marg=0.0251  trans=0.0000  |  val_JS=0.0380  home_gap=0.0457  val_score=0.0609  lr=5.00e-05  grad_norm=6.538  (467s)
+  NEW BEST saved (val_score=0.0609  val_JS=0.0380  home_gap=0.0457)
+Epoch   2/100: train_loss=1.1594  act=0.9128  home=0.1982  cop=0.2228  marg=0.0140  trans=0.0000  |  val_JS=0.0458  home_gap=0.0496  val_score=0.0706  lr=5.00e-05  grad_norm=7.760  (469s)
+Epoch   3/100: train_loss=0.8478  act=0.5617  home=0.2458  cop=0.2118  marg=0.0131  trans=0.0000  |  val_JS=0.0593  home_gap=0.0298  val_score=0.0742  lr=5.00e-05  grad_norm=4.904  (469s)
+Epoch   4/100: train_loss=0.7457  act=0.4379  home=0.2714  cop=0.2081  marg=0.0115  trans=0.0000  |  val_JS=0.0449  home_gap=0.0482  val_score=0.0690  lr=5.00e-05  grad_norm=2.314  (469s)
+Epoch   5/100: train_loss=0.7139  act=0.4001  home=0.2786  cop=0.2062  marg=0.0118  trans=0.0000  |  val_JS=0.0340  home_gap=0.0423  val_score=0.0551  lr=5.00e-05  grad_norm=1.647  (469s)
+  NEW BEST saved (val_score=0.0551  val_JS=0.0340  home_gap=0.0423)
+Epoch   6/100: train_loss=0.6947  act=0.3772  home=0.2833  cop=0.2043  marg=0.0126  trans=0.0000  |  val_JS=0.0349  home_gap=0.0498  val_score=0.0598  lr=5.00e-05  grad_norm=1.376  (469s)
+Epoch   7/100: train_loss=0.6797  act=0.3633  home=0.2821  cop=0.2043  marg=0.0121  trans=0.0000  |  val_JS=0.0330  home_gap=0.0493  val_score=0.0576  lr=5.00e-05  grad_norm=1.248  (468s)
+Epoch   8/100: train_loss=0.6697  act=0.3565  home=0.2790  cop=0.2029  marg=0.0120  trans=0.0000  |  val_JS=0.0408  home_gap=0.0553  val_score=0.0685  lr=5.00e-05  grad_norm=1.124  (468s)
+Epoch   9/100: train_loss=0.6557  act=0.3478  home=0.2739  cop=0.2008  marg=0.0110  trans=0.0000  |  val_JS=0.0330  home_gap=0.0339  val_score=0.0500  lr=5.00e-05  grad_norm=1.030  (469s)
+  NEW BEST saved (val_score=0.0500  val_JS=0.0330  home_gap=0.0339)
+Epoch  10/100: train_loss=0.6498  act=0.3438  home=0.2719  cop=0.1997  marg=0.0131  trans=0.0000  |  val_JS=0.0365  home_gap=0.0666  val_score=0.0698  lr=5.00e-05  grad_norm=1.030  (469s)
+Epoch  11/100: train_loss=0.6431  act=0.3408  home=0.2680  cop=0.2001  marg=0.0112  trans=0.0000  |  val_JS=0.0366  home_gap=0.0502  val_score=0.0617  lr=5.00e-05  grad_norm=0.965  (469s)
+Epoch  12/100: train_loss=0.6352  act=0.3359  home=0.2652  cop=0.1982  marg=0.0113  trans=0.0000  |  val_JS=0.0343  home_gap=0.0429  val_score=0.0557  lr=5.00e-05  grad_norm=0.977  (468s)
+Epoch  13/100: train_loss=0.6271  act=0.3316  home=0.2613  cop=0.1974  marg=0.0110  trans=0.0000  |  val_JS=0.0289  home_gap=0.0500  val_score=0.0539  lr=5.00e-05  grad_norm=0.961  (469s)
+Epoch  14/100: train_loss=0.6254  act=0.3297  home=0.2614  cop=0.1978  marg=0.0116  trans=0.0000  |  val_JS=0.0330  home_gap=0.0439  val_score=0.0549  lr=5.00e-05  grad_norm=0.967  (469s)
+Epoch  15/100: train_loss=0.6174  act=0.3256  home=0.2577  cop=0.1964  marg=0.0096  trans=0.0000  |  val_JS=0.0324  home_gap=0.0514  val_score=0.0580  lr=5.00e-05  grad_norm=0.921  (468s)
+Epoch  16/100: train_loss=0.6187  act=0.3258  home=0.2583  cop=0.1978  marg=0.0118  trans=0.0000  |  val_JS=0.0329  home_gap=0.0692  val_score=0.0675  lr=4.75e-05  grad_norm=0.984  (469s)
+Epoch  17/100: train_loss=0.6144  act=0.3216  home=0.2587  cop=0.1965  marg=0.0102  trans=0.0000  |  val_JS=0.0340  home_gap=0.0419  val_score=0.0550  lr=4.75e-05  grad_norm=0.948  (469s)
+Epoch  18/100: train_loss=0.6103  act=0.3189  home=0.2574  cop=0.1957  marg=0.0100  trans=0.0000  |  val_JS=0.0290  home_gap=0.0402  val_score=0.0491  lr=4.75e-05  grad_norm=0.951  (468s)
+  NEW BEST saved (val_score=0.0491  val_JS=0.0290  home_gap=0.0402)
+Epoch  19/100: train_loss=0.6041  act=0.3162  home=0.2543  cop=0.1929  marg=0.0118  trans=0.0000  |  val_JS=0.0325  home_gap=0.0407  val_score=0.0529  lr=4.75e-05  grad_norm=1.001  (469s)
+Epoch  20/100: train_loss=0.6032  act=0.3137  home=0.2556  cop=0.1948  marg=0.0103  trans=0.0000  |  val_JS=0.0319  home_gap=0.0444  val_score=0.0541  lr=4.75e-05  grad_norm=0.967  (469s)
+Epoch  21/100: train_loss=0.5998  act=0.3118  home=0.2543  cop=0.1933  marg=0.0114  trans=0.0000  |  val_JS=0.0255  home_gap=0.0442  val_score=0.0476  lr=4.75e-05  grad_norm=0.999  (469s)
+  NEW BEST saved (val_score=0.0476  val_JS=0.0255  home_gap=0.0442)
+Epoch  22/100: train_loss=0.5981  act=0.3110  home=0.2537  cop=0.1926  marg=0.0099  trans=0.0000  |  val_JS=0.0316  home_gap=0.0335  val_score=0.0483  lr=4.75e-05  grad_norm=0.958  (469s)
+Epoch  23/100: train_loss=0.5908  act=0.3081  home=0.2491  cop=0.1923  marg=0.0091  trans=0.0000  |  val_JS=0.0299  home_gap=0.0551  val_score=0.0574  lr=4.75e-05  grad_norm=0.934  (469s)
+Epoch  24/100: train_loss=0.5931  act=0.3087  home=0.2511  cop=0.1912  marg=0.0106  trans=0.0000  |  val_JS=0.0299  home_gap=0.0408  val_score=0.0504  lr=4.75e-05  grad_norm=0.994  (469s)
+Epoch  25/100: train_loss=0.5921  act=0.3052  home=0.2536  cop=0.1921  marg=0.0110  trans=0.0000  |  val_JS=0.0268  home_gap=0.0345  val_score=0.0441  lr=4.75e-05  grad_norm=1.012  (469s)
+  NEW BEST saved (val_score=0.0441  val_JS=0.0268  home_gap=0.0345)
+Epoch  26/100: train_loss=0.5887  act=0.3043  home=0.2506  cop=0.1927  marg=0.0101  trans=0.0000  |  val_JS=0.0312  home_gap=0.0544  val_score=0.0584  lr=4.75e-05  grad_norm=0.975  (468s)
+Epoch  27/100: train_loss=0.5879  act=0.3031  home=0.2513  cop=0.1921  marg=0.0101  trans=0.0000  |  val_JS=0.0405  home_gap=0.0753  val_score=0.0781  lr=4.75e-05  grad_norm=0.983  (469s)
+Epoch  28/100: train_loss=0.5851  act=0.3018  home=0.2498  cop=0.1920  marg=0.0100  trans=0.0000  |  val_JS=0.0309  home_gap=0.0556  val_score=0.0587  lr=4.75e-05  grad_norm=0.979  (468s)
+Epoch  29/100: train_loss=0.5828  act=0.2980  home=0.2515  cop=0.1911  marg=0.0113  trans=0.0000  |  val_JS=0.0285  home_gap=0.0319  val_score=0.0445  lr=4.75e-05  grad_norm=1.026  (468s)
+Epoch  30/100: train_loss=0.5826  act=0.2954  home=0.2543  cop=0.1917  marg=0.0094  trans=0.0000  |  val_JS=0.0279  home_gap=0.0369  val_score=0.0464  lr=4.75e-05  grad_norm=0.966  (468s)
+Epoch  31/100: train_loss=0.5813  act=0.2964  home=0.2519  cop=0.1902  marg=0.0108  trans=0.0000  |  val_JS=0.0248  home_gap=0.0329  val_score=0.0413  lr=4.75e-05  grad_norm=1.015  (469s)
+  NEW BEST saved (val_score=0.0413  val_JS=0.0248  home_gap=0.0329)
+Epoch  32/100: train_loss=0.5715  act=0.2920  home=0.2469  cop=0.1879  marg=0.0097  trans=0.0000  |  val_JS=0.0255  home_gap=0.0252  val_score=0.0381  lr=4.75e-05  grad_norm=0.959  (468s)
+  NEW BEST saved (val_score=0.0381  val_JS=0.0255  home_gap=0.0252)
+Epoch  33/100: train_loss=0.5733  act=0.2923  home=0.2480  cop=0.1893  marg=0.0100  trans=0.0000  |  val_JS=0.0277  home_gap=0.0539  val_score=0.0546  lr=4.75e-05  grad_norm=0.982  (469s)
+Epoch  34/100: train_loss=0.5737  act=0.2923  home=0.2487  cop=0.1889  marg=0.0091  trans=0.0000  |  val_JS=0.0268  home_gap=0.0542  val_score=0.0539  lr=4.75e-05  grad_norm=0.956  (468s)
+Epoch  35/100: train_loss=0.5699  act=0.2880  home=0.2488  cop=0.1896  marg=0.0109  trans=0.0000  |  val_JS=0.0237  home_gap=0.0298  val_score=0.0386  lr=4.75e-05  grad_norm=1.028  (469s)
+Epoch  36/100: train_loss=0.5672  act=0.2859  home=0.2486  cop=0.1885  marg=0.0103  trans=0.0000  |  val_JS=0.0264  home_gap=0.0338  val_score=0.0434  lr=4.75e-05  grad_norm=1.005  (469s)
+Epoch  37/100: train_loss=0.5653  act=0.2846  home=0.2478  cop=0.1892  marg=0.0091  trans=0.0000  |  val_JS=0.0260  home_gap=0.0384  val_score=0.0452  lr=4.75e-05  grad_norm=0.961  (469s)
+Epoch  38/100: train_loss=0.5620  act=0.2805  home=0.2490  cop=0.1879  marg=0.0102  trans=0.0000  |  val_JS=0.0271  home_gap=0.0636  val_score=0.0589  lr=4.75e-05  grad_norm=1.022  (468s)
+Epoch  39/100: train_loss=0.5596  act=0.2798  home=0.2471  cop=0.1884  marg=0.0088  trans=0.0000  |  val_JS=0.0302  home_gap=0.0348  val_score=0.0476  lr=4.51e-05  grad_norm=0.951  (469s)
+Epoch  40/100: train_loss=0.5575  act=0.2780  home=0.2468  cop=0.1882  marg=0.0093  trans=0.0000  |  val_JS=0.0299  home_gap=0.0287  val_score=0.0442  lr=4.51e-05  grad_norm=0.981  (469s)

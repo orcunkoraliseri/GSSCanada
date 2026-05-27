@@ -1,0 +1,42 @@
+# J3_DEMO_PSBLite.yaml — Arm 2 of Phase 2: PSB-Lite + restored demographics.
+# Architecture: JSeriesHybridV3 (subclass of JSeriesHybrid) — projects cond_vec
+# (~90 dim) to d_psb_proj=8 dims via a learnable Linear, broadcasts the projection
+# onto every encoder slot token, with per-slot Bernoulli cond-dropout p=0.5
+# applied at training only. Compared to raw J3-PSB (v2, shelved 2026-05-22):
+# extra capacity per sample drops from ~4,320 features to ~384 (~11× smaller).
+# Same data bundle as J3_DEMO (outputs_step4_G2 with d_cond=90).
+# Hard gates: composite < 1.045 | AT_HOME <= 5.3 pp | Spouse <= 5 pp | act_JS <= 0.05
+tag: J3_DEMO_PSBLite
+seed: 42
+model_type: J3_v3
+
+data_dir: outputs_step4_G2
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.7
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05
+
+# PSB-Lite-specific knobs (consumed by JSeriesHybridV3.__init__).
+d_psb_proj: 8
+p_psb_drop: 0.5

@@ -563,6 +563,8 @@ This found MDLM+CC (composite 0.5665, 10.9% better than J3 baseline) in 3 days. 
 
 **Sample-based HPT:** HPT should also use the sample funnel approach (10% stratified sample, ~40 min/trial) rather than full-data runs (~10h/trial). Train a control baseline on the same sample, compare relative rankings, and only promote winners to full data. This enables testing 8–10 HPT configurations in ~1h total wall-clock instead of committing 50+ GPU-hours per HPT stage.
 
+**Low training loss ≠ good generation quality (2026-05-26):** The model practiced only with cheat sheets, so it scores perfectly on homework but fails the real exam. Training loss measures prediction under teacher forcing (model always sees correct history). At inference, the model uses its own predictions — mistakes snowball (exposure bias). Example: H_Time cop_loss=0.062 (best) but COP max gap=22.86 pp at inference (catastrophic). Never select architectures by training loss alone — always run full diagnostic gates (04H + 04I + 04J).
+
 ---
 
 ### Validation Summary

@@ -533,6 +533,10 @@ These are the upstream causes of generation quality. Loss weights (lambda_home, 
 
 HPT should use the same sample funnel approach as architecture search: train on a stratified 10% sample (~40 min/trial), compare relative rankings against a same-sample control baseline, and promote only winners to full data. This enables 8–10 configurations in ~1h wall-clock instead of committing 50+ GPU-hours to full-data HPT stages that may produce no improvement. The relative composite ranking on 10% sample is a reliable proxy for full-data ranking when only one variable changes per trial.
 
+### Low training loss ≠ good generation quality (lesson from Phase 8 diagnostics, 2026-05-26)
+
+The model practiced only with cheat sheets, so it scores perfectly on homework but fails the real exam. Training loss measures prediction accuracy under teacher forcing (model always sees correct previous values). At inference, the model uses its own predictions — mistakes snowball (exposure bias). Example: H_Time achieved cop_loss=0.062 (best in class) but COP max gap=22.86 pp at inference (catastrophic failure). Always evaluate with full diagnostic gates (04H + 04I + 04J), never trust training loss alone as a proxy for generation quality.
+
 ---
 
 ## Intermediate artifact schemas

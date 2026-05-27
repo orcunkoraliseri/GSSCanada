@@ -1,0 +1,182 @@
+============================================================
+COP Rescue Test -- G4 Inference Modifications
+============================================================
+============================================================
+COP Rescue Test -- G4 Inference Modifications
+============================================================
+  checkpoint: /speed-scratch/o_iseri/occModeling/outputs_step4_G4/checkpoints/best_model.pt
+  data_dir:   /speed-scratch/o_iseri/occModeling/outputs_step4_G1
+  subset:     5000
+  K:          10
+  device:     cuda
+
+[1/5] Loading data...
+  Total respondents: 64061
+  Subset: 5000 respondents
+
+  Observed COP prevalence (%):
+    Alone               : 34.94%
+    Spouse              : 22.43%
+    OwnChild_under5     : 6.57%
+    OwnChild_5to13      : 1.87%
+    OwnChild_14to17     : 2.47%
+    OtherHH             : 2.90%
+    OtherNonHH          : 4.63%
+    Coworker            : 7.87%
+    Colleagues          : 3.49%
+
+  Synthetic pairs: 10000
+
+[2/5] Loading G4 checkpoint...
+  Loaded from epoch 66
+
+============================================================
+[3/5] TEST 1: Seed Variance (10 seeds, greedy COP)
+============================================================
+  Seed  1: max gap =  20.79 pp (Alone               ) [286.0s]
+  Seed  2: max gap =  20.82 pp (Alone               ) [280.4s]
+  Seed  3: max gap =  21.02 pp (Alone               ) [280.4s]
+  Seed  4: max gap =  20.95 pp (Alone               ) [280.7s]
+  Seed  5: max gap =  20.96 pp (Alone               ) [280.0s]
+  Seed  6: max gap =  20.65 pp (Alone               ) [280.2s]
+  Seed  7: max gap =  20.73 pp (Alone               ) [280.4s]
+  Seed  8: max gap =  20.72 pp (Alone               ) [280.2s]
+  Seed  9: max gap =  20.90 pp (Alone               ) [280.0s]
+  Seed 10: max gap =  20.98 pp (Alone               ) [279.5s]
+
+  Summary: min=20.65, max=21.02, mean=20.85, std=0.12
+  Verdict: SYSTEMATIC_BIAS
+
+============================================================
+[4/5] TEST 2: COP Feedback Threshold Sweep
+============================================================
+  Thresh 0.30: max gap =  21.12 pp (Alone               ) [280.1s]
+    Alone               :  +21.12 pp <<<
+    Spouse              :   +9.68 pp
+    OwnChild_under5     :   -0.70 pp
+    OwnChild_5to13      :   -1.33 pp
+    OwnChild_14to17     :   -2.07 pp
+    OtherHH             :   -1.41 pp
+    OtherNonHH          :   -0.74 pp
+    Coworker            :   -3.93 pp
+    Colleagues          :   +2.34 pp
+  Thresh 0.35: max gap =  18.80 pp (Alone               ) [279.6s]
+    Alone               :  +18.80 pp <<<
+    Spouse              :  +11.68 pp
+    OwnChild_under5     :   -2.58 pp
+    OwnChild_5to13      :   -1.38 pp
+    OwnChild_14to17     :   -2.06 pp
+    OtherHH             :   -1.58 pp
+    OtherNonHH          :   -1.43 pp
+    Coworker            :   -4.75 pp
+    Colleagues          :   +2.00 pp
+  Thresh 0.40: max gap =  19.56 pp (Alone               ) [279.9s]
+    Alone               :  +19.56 pp <<<
+    Spouse              :   +9.47 pp
+    OwnChild_under5     :   -3.35 pp
+    OwnChild_5to13      :   -1.42 pp
+    OwnChild_14to17     :   -2.05 pp
+    OtherHH             :   -1.78 pp
+    OtherNonHH          :   -1.72 pp
+    Coworker            :   -5.27 pp
+    Colleagues          :   +1.77 pp
+  Thresh 0.45: max gap =  20.80 pp (Alone               ) [280.2s]
+    Alone               :  +20.80 pp <<<
+    Spouse              :   +5.68 pp
+    OwnChild_under5     :   -3.13 pp
+    OwnChild_5to13      :   -1.43 pp
+    OwnChild_14to17     :   -2.04 pp
+    OtherHH             :   -1.98 pp
+    OtherNonHH          :   -2.11 pp
+    Coworker            :   -5.61 pp
+    Colleagues          :   +1.65 pp
+  Thresh 0.50: max gap =  20.95 pp (Alone               ) [280.3s]
+    Alone               :  +20.95 pp <<<
+    Spouse              :   +1.58 pp
+    OwnChild_under5     :   -2.92 pp
+    OwnChild_5to13      :   -1.42 pp
+    OwnChild_14to17     :   -1.97 pp
+    OtherHH             :   -2.09 pp
+    OtherNonHH          :   -2.41 pp
+    Coworker            :   -5.77 pp
+    Colleagues          :   +1.54 pp
+  Thresh 0.55: max gap =  19.98 pp (Alone               ) [280.3s]
+    Alone               :  +19.98 pp <<<
+    Spouse              :   -2.54 pp
+    OwnChild_under5     :   -3.16 pp
+    OwnChild_5to13      :   -1.40 pp
+    OwnChild_14to17     :   -1.95 pp
+    OtherHH             :   -2.16 pp
+    OtherNonHH          :   -2.59 pp
+    Coworker            :   -5.99 pp
+    Colleagues          :   +1.19 pp
+  Thresh 0.60: max gap =  17.74 pp (Alone               ) [280.7s]
+    Alone               :  +17.74 pp <<<
+    Spouse              :   -6.93 pp
+    OwnChild_under5     :   -3.36 pp
+    OwnChild_5to13      :   -1.36 pp
+    OwnChild_14to17     :   -1.88 pp
+    OtherHH             :   -2.21 pp
+    OtherNonHH          :   -2.76 pp
+    Coworker            :   -6.20 pp
+    Colleagues          :   +1.11 pp
+  Thresh 0.65: max gap =  15.08 pp (Alone               ) [280.4s]
+    Alone               :  +15.08 pp <<<
+    Spouse              :  -10.65 pp
+    OwnChild_under5     :   -3.69 pp
+    OwnChild_5to13      :   -1.30 pp
+    OwnChild_14to17     :   -1.81 pp
+    OtherHH             :   -2.22 pp
+    OtherNonHH          :   -3.00 pp
+    Coworker            :   -6.32 pp
+    Colleagues          :   +0.86 pp
+  Thresh 0.70: max gap =  12.88 pp (Spouse              ) [280.4s]
+    Alone               :  +11.51 pp
+    Spouse              :  -12.88 pp <<<
+    OwnChild_under5     :   -4.00 pp
+    OwnChild_5to13      :   -1.27 pp
+    OwnChild_14to17     :   -1.77 pp
+    OtherHH             :   -2.23 pp
+    OtherNonHH          :   -3.09 pp
+    Coworker            :   -6.39 pp
+    Colleagues          :   +0.74 pp
+
+  Best threshold: 0.70 -> COP max gap = 12.88 pp
+
+============================================================
+[5/5] TEST 3: Per-Respondent Multi-Sample (K=10)
+============================================================
+  Sample  1/10: max gap =  17.56 pp (Alone) [280.2s]
+  Sample  2/10: max gap =  17.62 pp (Alone) [280.3s]
+  Sample  3/10: max gap =  17.86 pp (Alone) [280.5s]
+  Sample  4/10: max gap =  17.24 pp (Alone) [280.4s]
+  Sample  5/10: max gap =  17.13 pp (Alone) [280.6s]
+  Sample  6/10: max gap =  17.35 pp (Alone) [280.3s]
+  Sample  7/10: max gap =  17.06 pp (Alone) [280.1s]
+  Sample  8/10: max gap =  16.90 pp (Alone) [280.1s]
+  Sample  9/10: max gap =  17.63 pp (Alone) [280.2s]
+  Sample 10/10: max gap =  17.45 pp (Alone) [280.0s]
+
+  Best single seed (Test 1):    20.65 pp
+  Best single Bernoulli sample: 16.90 pp
+  Per-respondent selected:      14.89 pp (Alone)
+  Selection distribution: {0: 952, 1: 992, 2: 1049, 3: 957, 4: 1048, 5: 1021, 6: 1011, 7: 1028, 8: 955, 9: 987}
+
+============================================================
+FINAL SUMMARY
+============================================================
+  Gate threshold:           5.0 pp
+  J3 reference:             ~2.03 pp
+  G4 baseline (seed=42):    ~20.55 pp
+  ----
+  Test 1 (seed variance):   SYSTEMATIC_BIAS  [20.65 - 21.02 pp]
+  Test 2 (threshold sweep): best=0.70 -> 12.88 pp
+  Test 3 (multi-sample):    14.89 pp
+
+  >>> MINIMAL IMPROVEMENT (12.88 pp)
+  >>> COP bias is structural -- Phase B retraining needed <<<
+
+  Results saved to: /speed-scratch/o_iseri/occModeling/outputs_step4_G4/cop_rescue_test.json
+============================================================
+COP RESCUE TEST COMPLETE
+============================================================

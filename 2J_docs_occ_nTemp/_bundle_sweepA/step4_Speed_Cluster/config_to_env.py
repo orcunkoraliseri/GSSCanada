@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""
+config_to_env.py — YAML → env-export translator (no external dependencies).
+Usage: eval $(python config_to_env.py configs/F8.yaml)
+Emits: export VAR=value  and  export PY_ARGS="--flag val ..."
+Missing keys → not emitted → 04D_train.py uses its built-in defaults.
+Parses simple flat key: value YAML only (no nested structures, no PyYAML needed).
+"""
+import sys
+
+ENV_MAP = {
+    "lambda_act":         "LAMBDA_ACT",
+    "lambda_home":        "LAMBDA_HOME",
+    "lambda_cop":         "LAMBDA_COP",
+    "lambda_marg":        "LAMBDA_MARG",
+    "lambda_logic":       "LAMBDA_LOGIC",
+    "lambda_trans":       "LAMBDA_TRANS",
+    "marg_mode":          "MARG_MODE",
+    "aux_stratum_lambda": "AUX_STRATUM_LAMBDA",
+    "spouse_neg_weight":  "SPOUSE_NEG_WEIGHT",
+    "aux_stratum_head":   "AUX_STRATUM_HEAD",
+    "cop_pos_weight":     "COP_POS_WEIGHT",
+    "cop_alone_pw":       "COP_ALONE_PW",
+    "activity_boosts":    "ACTIVITY_BOOSTS",
+    "data_side_sampling": "DATA_SIDE_SAMPLING",
+    "sched_sample_p":     "SCHED_SAMPLE_P",
+    "home_label_smooth":  "HOME_LABEL_SMOOTH",
+    "h_tanh_heads":       "H_TANH_HEADS",
+    "h_time_pe":          "H_TIME_PE",
+    "lambda_all_equal":   "LAMBDA_ALL_EQUAL",
+    "model_type":         "MODEL_TYPE",
+    "d_psb_proj":         "D_PSB_PROJ",
+    "p_psb_drop":         "P_PSB_DROP",
+    # Phase 6 Stage A toggles — CC conditioning, consistency layers, loss modes
+    "use_film":           "USE_FILM",
+    "use_fourier_pe":     "USE_FOURIER_PE",
+    "use_prefix":         "USE_PREFIX",
+    "use_spl":            "USE_SPL",
+    "use_fact":           "USE_FACT",
+    "loss_mode":          "LOSS_MODE",
+    "sample_frac":        "SAMPLE_FRAC",
+    "tag":                "TRIAL_TAG",
+}
+
+FLAG_KEYS = [
+    "data_dir", "batch_size", "max_epochs", "patience", "lr",
+    "d_model", "n_heads", "n_enc_layers", "n_dec_layers",
+]
+BOOL_FLAGS = ["fp16", "sample"]
+
+
+def parse_yaml_flat(path):
+    """Parse a flat (no-nesting) YAML file without PyYAML."""
+    cfg = {}
+    with open(path) as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#") or line.startswith("-"):
+                continue
+            if ":" not in line:
+                continue
+            key, _, val = line.partition(":")
+            key = key.strip()
+            val = val.strip()
+            if val.lower() == "true":
+                cfg[key] = True
+            elif val.lower() == "false":
+                cfg[key] = False
+            elif val == "" or val == "null":
+                cfg[key] = None
+            else:
+                try:
+                    cfg[key] = int(val)
+                except ValueError:
+                    try:
+                        cfg[key] = float(val)
+                    except ValueError:
+                        cfg[key] = val
+    return cfg
+
+
+cfg = parse_yaml_flat(sys.argv[1])
+
+lines = []
+py_args = []
+
+for yaml_key, env_var in ENV_MAP.items():
+    if yaml_key in cfg and cfg[yaml_key] is not None:
+        lines.append(f"export {env_var}={cfg[yaml_key]}")
+
+for flag in FLAG_KEYS:
+    if flag in cfg and cfg[flag] is not None:
+        py_args.append(f"--{flag} {cfg[flag]}")
+
+for flag in BOOL_FLAGS:
+    if cfg.get(flag) is True:
+        py_args.append(f"--{flag}")
+
+lines.append(f'export PY_ARGS="{" ".join(py_args)}"')
+print("\n".join(lines))
