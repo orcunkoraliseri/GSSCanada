@@ -1,0 +1,19 @@
+21CEN22GSS Aug Pipeline - Sub-step 5F BEM Schedules Validation
+============================================================
+Row count: 286537
+act30 cols: 48 (act30_001 to act30_048)
+hom30 cols: 48 (hom30_001 to hom30_048)
+act30 unique values: [np.int64(1), np.int64(2), np.int64(3), np.int64(4), np.int64(5), np.int64(6), np.int64(7), np.int64(8), np.int64(9), np.int64(10), np.int64(11), np.int64(12), np.int64(13), np.int64(14)]
+hom30 unique values: [np.int64(0), np.int64(1)]
+DTYPE unique (numeric): [np.int64(1), np.int64(2), np.int64(3), np.int64(8)]
+DTYPE_str unique: ['Attached', 'Movable', 'SemiD', 'SingleD']
+PR_str unique: ['Alberta', 'Atlantic', 'BC', 'Ontario', 'Prairies', 'Quebec']
+
+[GATE] 48-slot schema (act30+hom30 present): PASS
+[GATE] act30 values in {1..14}: PASS
+[GATE] hom30 values in {0,1}: PASS
+[GATE] row count == 286537: PASS
+
+Format note: BEMConverter (run_step3.py) produces hourly household-level
+schedules. Aug pipeline retains 30-min per-person slot format for Step 7.
+BEM conversion = schema validation + DTYPE/PR label enrichment.

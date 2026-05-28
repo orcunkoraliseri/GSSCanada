@@ -1,0 +1,9 @@
+21CEN22GSS Aug Pipeline - Match Tier Report
+Total Census agents: 286537
+
+  1_Perfect: 128778 (44.94%)
+  2_Core: 61294 (21.39%)
+  3_Constraints: 96465 (33.67%)
+
+WD FailSafe rate: 0.00%  (gate <=10%)
+WE FailSafe rate: 0.00%  (gate <=12%)

@@ -1,0 +1,118 @@
+{
+  "run_timestamp": "2026-05-22T20:51:02",
+  "inputs": {
+    "data_dir": "/nfs/speed-scratch/o_iseri/occModeling/outputs_step4_J3_NEIGH",
+    "step3_dir": "/nfs/speed-scratch/o_iseri/occModeling/outputs_step3",
+    "augmented_diaries_rows": 0,
+    "train_pairs_count": 0,
+    "hetus_path": "outputs_step3/hetus_30min.csv",
+    "plot_path": null
+  },
+  "population": {
+    "at_home_rate_overall": null,
+    "at_home_per_cycle_stratum": {}
+  },
+  "T1": {
+    "_skipped": "step4_train.pt or training_pairs.pt missing"
+  },
+  "T2": {
+    "_skipped": "augmented_diaries.csv or hetus_30min.csv not available"
+  },
+  "T3": {
+    "_skipped": "augmented_diaries.csv or hetus_30min.csv not available"
+  },
+  "T6": {
+    "2005_1": {
+      "at_home_all": 0.6895911349340382,
+      "at_home_night": 0.9246232795685766,
+      "at_home_day": 0.5485718481533152,
+      "n": 13619,
+      "implausible": false
+    },
+    "2005_2": {
+      "at_home_all": 0.718523040320561,
+      "at_home_night": 0.8834835962935137,
+      "at_home_day": 0.6195467067367894,
+      "n": 2662,
+      "implausible": false
+    },
+    "2005_3": {
+      "at_home_all": 0.7565405328798186,
+      "at_home_night": 0.9222789115646258,
+      "at_home_day": 0.6570975056689342,
+      "n": 2940,
+      "implausible": false
+    },
+    "2010_1": {
+      "at_home_all": 0.7001615881809787,
+      "at_home_night": 0.9240279060223658,
+      "at_home_day": 0.5658417974761465,
+      "n": 10830,
+      "implausible": false
+    },
+    "2010_2": {
+      "at_home_all": 0.7187600936692506,
+      "at_home_night": 0.8899386304909561,
+      "at_home_day": 0.6160529715762274,
+      "n": 2064,
+      "implausible": false
+    },
+    "2010_3": {
+      "at_home_all": 0.7762762762762763,
+      "at_home_night": 0.9341591591591591,
+      "at_home_day": 0.6815465465465466,
+      "n": 2220,
+      "implausible": false
+    },
+    "2015_1": {
+      "at_home_all": 0.7084231394875966,
+      "at_home_night": 0.9188333107405902,
+      "at_home_day": 0.5821770367358005,
+      "n": 12295,
+      "implausible": false
+    },
+    "2015_2": {
+      "at_home_all": 0.741998182552504,
+      "at_home_night": 0.8965849937174655,
+      "at_home_day": 0.6492460958535272,
+      "n": 2476,
+      "implausible": false
+    },
+    "2015_3": {
+      "at_home_all": 0.7729015527555047,
+      "at_home_night": 0.9237834627296254,
+      "at_home_day": 0.6823724067710322,
+      "n": 2619,
+      "implausible": false
+    },
+    "2022_1": {
+      "at_home_all": 0.7693060865002623,
+      "at_home_night": 0.9421145341428678,
+      "at_home_day": 0.6656210179146991,
+      "n": 8894,
+      "implausible": false
+    },
+    "2022_2": {
+      "at_home_all": 0.7727635371628577,
+      "at_home_night": 0.9226889026147828,
+      "at_home_day": 0.6828083178917027,
+      "n": 1619,
+      "implausible": false
+    },
+    "2022_3": {
+      "at_home_all": 0.8017462058877308,
+      "at_home_night": 0.9405131955872493,
+      "at_home_day": 0.7184860120680198,
+      "n": 1823,
+      "implausible": false
+    },
+    "any_implausible": false
+  },
+  "hypothesis_verdicts": {
+    "H1": "unknown",
+    "H2": "unknown",
+    "H3": "unknown",
+    "H5": "H5_rejected"
+  },
+  "recommendation_next_test": "SKIP_GPU"
+}

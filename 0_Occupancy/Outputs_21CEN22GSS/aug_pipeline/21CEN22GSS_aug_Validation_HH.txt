@@ -1,0 +1,17 @@
+21CEN22GSS Aug Pipeline - Sub-step 5E HH Aggregation Report
+============================================================
+Row count: 286537
+HH_ID null: 0
+Duplicate PP_IDs: 0
+Unique HH_IDs: 145589
+Mean HHSIZE (Census): 2.7969
+HH_hom30 cols added: 48  (HH_hom30_001 to HH_hom30_048)
+N_HH_MEMBERS col added: yes
+
+[GATE] HH_ID completeness (100% non-null): PASS
+[GATE] No duplicate PP_IDs: PASS
+[GATE] Row count == 286537: PASS
+
+Adapter note: HouseholdAggregator (eSim_dynamicML_mHead.py) expects
+episode-format (5-min grids). Slot-native adapter computes HH_hom30
+as max(hom30) across members per slot. No modification to source files.

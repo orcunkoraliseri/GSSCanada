@@ -1,0 +1,50 @@
+21CEN22GSS Aug Pipeline - Sub-step 5G Regression Validation Report
+============================================================
+Augmented (all):  286537 rows  (IS_SYNTHETIC=0: 158121, =1: 128416)
+Primary baseline: IS_SYNTHETIC=0 (observed) subset — same 30-min slot format.
+Spec BEM baseline (21CEN22GSS_BEM_Schedules_sample25pct.csv): hourly HH-level BEMConverter output;
+  used for supplementary AT_HOME overlay plot only (different metric/format).
+
+--- Gate 1: AT_HOME mean per 30-min slot (all vs observed subset) ---
+  All-agents mean AT_HOME:  69.04%
+  Observed-only mean:       69.89%
+  Max slot diff:            6.733 pp  (gate: <=3 pp)
+  Slots exceeding 3 pp:     9
+  [GATE] AT_HOME: FAIL
+
+--- Gate 2: Top-5 activity time-share (all vs observed subset) ---
+  Act 5: all=34.41%  obs=36.06%  diff=1.65pp
+  Act 1: all=21.58%  obs=18.32%  diff=3.27pp
+  Act 10: all=11.51%  obs=13.65%  diff=2.14pp
+  Act 2: all=6.44%  obs=8.10%  diff=1.66pp
+  Act 13: all=5.96%  obs=4.27%  diff=1.69pp
+  Max diff: 3.27 pp  (gate: <=2 pp)
+  [GATE] Top-5 activity: FAIL
+
+--- Gate 3: Spouse co-presence mean (all vs observed subset) ---
+  All-agents Spouse mean:  27.60%
+  Observed-only mean:      25.37%
+  Diff:                    2.232 pp  (gate: <=3 pp)
+  [GATE] Spouse: PASS
+
+--- Gate 4: DTYPE distribution (augmented vs Census input) ---
+  Aug categories:    [1, 2, 3, 8]
+  Census categories: [1, 2, 3, 8]
+  Per-category (aug% / census%):
+    SingleD (code 1): aug=58.74%  cen=58.74%  diff=0.000pp
+    SemiD (code 2): aug=28.02%  cen=28.02%  diff=0.000pp
+    Attached (code 3): aug=13.20%  cen=13.20%  diff=0.000pp
+    Movable (code 8): aug=0.04%  cen=0.04%  diff=0.000pp
+  Categories match:  True
+  Values match (<0.5pp): True
+  [GATE] DTYPE exact match: PASS
+
+--- Gate Summary ---
+  Gate 1  AT_HOME max slot diff:  FAIL (6.73 pp vs obs baseline)
+  Gate 2  Top-5 activity:         FAIL (3.27 pp vs obs baseline)
+  Gate 3  Spouse co-presence:     PASS (2.23 pp vs obs baseline)
+  Gate 4  DTYPE exact match:      PASS
+
+  Note: Gates 1-3 compare all augmented agents vs IS_SYNTHETIC=0
+  (observed-only) subset — same 30-min slot format, apples-to-apples.
+  Gate 4 compares augmented DTYPE vs Aligned_Census_2022.csv input.

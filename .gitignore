@@ -88,3 +88,22 @@ tmp/
 # Large PyTorch checkpoint files (>100MB, exceeds GitHub limit)
 2J_docs_occ_nTemp/outputs_step4/checkpoints/last_checkpoint.pt
 2J_docs_occ_nTemp/outputs_step4/step4_train.pt
+
+# Giant generated schedules and feature files
+0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/*_Schedules*.csv
+0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/*_Aggregated*.csv
+0_Occupancy/Inputs_Step6/scenario_2030_features.csv
+
+# Large intermediate checkpoints and redundant packages
+2J_docs_occ_nTemp/outputs_step4_J3_NEIGH/checkpoints/
+2J_docs_occ_nTemp/outputs_step4_J3_PSB/checkpoints/
+2J_docs_occ_nTemp/outputs_step4_G2_sample2/
+2J_docs_occ_nTemp/outputs_step4_G2_sample20/
+2J_docs_occ_nTemp/_bundle_*/
+2J_docs_occ_nTemp/*.log
+2J_docs_occ_nTemp/*.err
+2J_docs_occ_nTemp/*.out
+2J_docs_occ_nTemp/outputs_step4/test/checkpoints/
+2J_docs_occ_nTemp/step4_Speed-Cluster_docs/cluster_outputs/checkpoints/
+
+
