@@ -1428,3 +1428,13 @@ SEDDHybrid  = _import_optional("04B_model_SEDD",  "SEDDHybrid")
 
 # ── Phase 8B-2: G4 AR (activity+home) + NAT (COP) hybrid ───────────────────
 G4NATCopHybrid = _import_optional("04B_model_B2", "G4NATCopHybrid")
+
+# ── Phase 8B-3: four single-axis fixes over B2 ──────────────────────────────
+# B2a V1 G4_NAT_COP_HH  — dedicated MARSTH+HHSIZE conditioning in COP head
+# B2b V2 G4_NAT_COP_MC  — mass-coupled COP parameterization (Alone = 1 - any-company)
+# B2c V3 G4_NAT_COP_SG  — soft continuous home gate replaces hard binary multiply
+# B2d V4 G4_NAT_COP_NATH — AT_HOME moved to NAT Arm-2 (J3 wiring, G4 encoder)
+G4NATCopHH   = _import_optional("04B_model_B2a", "G4NATCopHH")
+G4NATCopMC   = _import_optional("04B_model_B2b", "G4NATCopMC")
+G4NATCopSG   = _import_optional("04B_model_B2c", "G4NATCopSG")
+G4NATCopNATH = _import_optional("04B_model_B2d", "G4NATCopNATH")

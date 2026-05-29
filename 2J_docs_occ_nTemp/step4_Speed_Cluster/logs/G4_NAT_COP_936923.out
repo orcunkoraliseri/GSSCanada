@@ -1,0 +1,218 @@
+============================================================
+Phase 8B-2: G4_NAT_COP — AR(act+home) + NAT(COP)
+============================================================
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       /speed-scratch/o_iseri/occModeling/outputs_step4_G1
+  output_dir:     /speed-scratch/o_iseri/occModeling/outputs_step4_B2
+  checkpoint_dir: /speed-scratch/o_iseri/occModeling/outputs_step4_B2/checkpoints
+  batch_size=256  max_epochs=100  patience=15  lr=5e-05  fp16=False
+  checkpoint_dir (absolute): /speed-scratch/o_iseri/occModeling/outputs_step4_B2/checkpoints
+  AUX_STRATUM_HEAD=False  COP_POS_WEIGHT=0  ACTIVITY_BOOSTS=1  DATA_SIDE_SAMPLING=0  MARG_MODE=global  AUX_STRATUM_LAMBDA=0.1  SPOUSE_NEG_WEIGHT=0.45  LAMBDA_TRANS=0.0
+  [Phase 6] MODEL_TYPE=G4_NAT_COP  LOSS_MODE=ce  USE_FILM=0  USE_FOURIER_PE=0  USE_PREFIX=0  USE_SPL=0  USE_FACT=0
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 141270 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=1):
+    class  0: 2.174
+    class  1: 0.517
+    class  2: 1.072
+    class  3: 1.110
+    class  4: 0.261
+    class  5: 0.752
+    class  6: 0.892
+    class  7: 1.355
+    class  8: 1.473
+    class  9: 0.406
+    class 10: 1.161
+    class 11: 1.782
+    class 12: 2.341
+    class 13: 2.742
+  AT_HOME observed rate: 0.7250  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=global
+  COP pos_weight: disabled (COP_POS_WEIGHT=0)
+  SPOUSE_NEG_WEIGHT=0.45: Spouse (idx 1) cop pos_weight overridden
+[2/4] Building model...
+  Parameters: 29,251,544
+G4NATCopHybrid(
+  (act_embedding): Embedding(14, 32)
+  (enc_slot_linear): Linear(in_features=42, out_features=384, bias=True)
+  (dec_slot_linear): Linear(in_features=33, out_features=384, bias=True)
+  (cycle_embedding): Embedding(4, 32)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=109, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=384, bias=True)
+  )
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (linear1): Linear(in_features=384, out_features=1536, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1536, out_features=384, bias=True)
+        (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (decoder): CrossAttnDecoder(
+    (proj_demo): Linear(in_features=77, out_features=384, bias=True)
+    (proj_cycle): Linear(in_features=32, out_features=384, bias=True)
+    (proj_strata): Linear(in_features=3, out_features=384, bias=True)
+    (layers): ModuleList(
+      (0-5): 6 x CondCrossAttnDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_mem): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_cond): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (ffn): Sequential(
+          (0): Linear(in_features=384, out_features=1536, bias=True)
+          (1): GELU(approximate='none')
+          (2): Linear(in_features=1536, out_features=384, bias=True)
+        )
+        (ln1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln3): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln4): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=384, out_features=14, bias=True)
+  (home_head): Linear(in_features=384, out_features=1, bias=True)
+  (arm2_act_proj): Linear(in_features=14, out_features=384, bias=True)
+  (arm2_home_proj): Linear(in_features=1, out_features=384, bias=True)
+  (arm2_proj): Linear(in_features=1264, out_features=384, bias=True)
+  (cop_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=9, bias=True)
+  )
+)
+[3/4] Training...
+Epoch   1/100: train_loss=1.7026  act=1.4083  home=0.3595  cop=0.2533  marg=0.0259  trans=0.0000  |  val_JS=0.1826  home_gap=0.2585  val_score=0.3119  lr=5.00e-05  grad_norm=6.866  (818s)
+  NEW BEST saved (val_score=0.3119  val_JS=0.1826  home_gap=0.2585)
+Epoch   2/100: train_loss=1.1494  act=0.9058  home=0.2974  cop=0.2136  marg=0.0108  trans=0.0000  |  val_JS=0.1245  home_gap=0.2505  val_score=0.2498  lr=5.00e-05  grad_norm=5.201  (812s)
+  NEW BEST saved (val_score=0.2498  val_JS=0.1245  home_gap=0.2505)
+Epoch   3/100: train_loss=1.0908  act=0.8526  home=0.2918  cop=0.2076  marg=0.0083  trans=0.0000  |  val_JS=0.2044  home_gap=0.2567  val_score=0.3327  lr=5.00e-05  grad_norm=3.194  (813s)
+Epoch   4/100: train_loss=1.0706  act=0.8342  home=0.2897  cop=0.2058  marg=0.0082  trans=0.0000  |  val_JS=0.1952  home_gap=0.2352  val_score=0.3128  lr=5.00e-05  grad_norm=2.535  (813s)
+Epoch   5/100: train_loss=1.0543  act=0.8189  home=0.2886  cop=0.2050  marg=0.0073  trans=0.0000  |  val_JS=0.1793  home_gap=0.2564  val_score=0.3075  lr=5.00e-05  grad_norm=2.032  (814s)
+Epoch   6/100: train_loss=1.0453  act=0.8110  home=0.2874  cop=0.2041  marg=0.0064  trans=0.0000  |  val_JS=0.1901  home_gap=0.2123  val_score=0.2963  lr=5.00e-05  grad_norm=1.772  (813s)
+Epoch   7/100: train_loss=1.0351  act=0.8012  home=0.2872  cop=0.2031  marg=0.0067  trans=0.0000  |  val_JS=0.1942  home_gap=0.2308  val_score=0.3096  lr=5.00e-05  grad_norm=1.584  (813s)
+Epoch   8/100: train_loss=1.0252  act=0.7924  home=0.2862  cop=0.2014  marg=0.0072  trans=0.0000  |  val_JS=0.1423  home_gap=0.1955  val_score=0.2400  lr=5.00e-05  grad_norm=1.536  (813s)
+  NEW BEST saved (val_score=0.2400  val_JS=0.1423  home_gap=0.1955)
+Epoch   9/100: train_loss=1.0116  act=0.7791  home=0.2859  cop=0.2013  marg=0.0063  trans=0.0000  |  val_JS=0.1641  home_gap=0.1833  val_score=0.2558  lr=5.00e-05  grad_norm=1.486  (812s)
+Epoch  10/100: train_loss=0.9959  act=0.7638  home=0.2855  cop=0.2008  marg=0.0058  trans=0.0000  |  val_JS=0.1952  home_gap=0.2427  val_score=0.3165  lr=5.00e-05  grad_norm=1.475  (812s)
+Epoch  11/100: train_loss=0.9773  act=0.7458  home=0.2848  cop=0.2002  marg=0.0056  trans=0.0000  |  val_JS=0.1481  home_gap=0.2074  val_score=0.2518  lr=5.00e-05  grad_norm=1.553  (813s)
+Epoch  12/100: train_loss=0.9496  act=0.7193  home=0.2835  cop=0.1987  marg=0.0054  trans=0.0000  |  val_JS=0.1513  home_gap=0.2310  val_score=0.2669  lr=5.00e-05  grad_norm=1.640  (812s)
+Epoch  13/100: train_loss=0.9243  act=0.6948  home=0.2823  cop=0.1987  marg=0.0052  trans=0.0000  |  val_JS=0.1211  home_gap=0.1887  val_score=0.2154  lr=5.00e-05  grad_norm=1.754  (812s)
+  NEW BEST saved (val_score=0.2154  val_JS=0.1211  home_gap=0.1887)
+Epoch  14/100: train_loss=0.8933  act=0.6647  home=0.2807  cop=0.1989  marg=0.0052  trans=0.0000  |  val_JS=0.1147  home_gap=0.1698  val_score=0.1996  lr=5.00e-05  grad_norm=1.880  (812s)
+  NEW BEST saved (val_score=0.1996  val_JS=0.1147  home_gap=0.1698)
+Epoch  15/100: train_loss=0.8635  act=0.6356  home=0.2798  cop=0.1982  marg=0.0049  trans=0.0000  |  val_JS=0.0837  home_gap=0.1761  val_score=0.1718  lr=5.00e-05  grad_norm=1.954  (812s)
+  NEW BEST saved (val_score=0.1718  val_JS=0.0837  home_gap=0.1761)
+Epoch  16/100: train_loss=0.8295  act=0.6030  home=0.2780  cop=0.1975  marg=0.0046  trans=0.0000  |  val_JS=0.0723  home_gap=0.1809  val_score=0.1628  lr=5.00e-05  grad_norm=2.029  (813s)
+  NEW BEST saved (val_score=0.1628  val_JS=0.0723  home_gap=0.1809)
+Epoch  17/100: train_loss=0.8011  act=0.5755  home=0.2766  cop=0.1973  marg=0.0042  trans=0.0000  |  val_JS=0.0644  home_gap=0.1997  val_score=0.1643  lr=5.00e-05  grad_norm=2.120  (813s)
+Epoch  18/100: train_loss=0.7713  act=0.5468  home=0.2748  cop=0.1970  marg=0.0048  trans=0.0000  |  val_JS=0.0520  home_gap=0.1414  val_score=0.1227  lr=5.00e-05  grad_norm=2.208  (813s)
+  NEW BEST saved (val_score=0.1227  val_JS=0.0520  home_gap=0.1414)
+Epoch  19/100: train_loss=0.7442  act=0.5211  home=0.2731  cop=0.1959  marg=0.0044  trans=0.0000  |  val_JS=0.0570  home_gap=0.1721  val_score=0.1431  lr=5.00e-05  grad_norm=2.256  (812s)
+Epoch  20/100: train_loss=0.7144  act=0.4924  home=0.2714  cop=0.1956  marg=0.0045  trans=0.0000  |  val_JS=0.0513  home_gap=0.1433  val_score=0.1229  lr=5.00e-05  grad_norm=2.258  (813s)
+Epoch  21/100: train_loss=0.6873  act=0.4662  home=0.2701  cop=0.1950  marg=0.0043  trans=0.0000  |  val_JS=0.0300  home_gap=0.1365  val_score=0.0983  lr=5.00e-05  grad_norm=2.322  (813s)
+  NEW BEST saved (val_score=0.0983  val_JS=0.0300  home_gap=0.1365)
+Epoch  22/100: train_loss=0.6630  act=0.4429  home=0.2685  cop=0.1952  marg=0.0040  trans=0.0000  |  val_JS=0.0279  home_gap=0.1130  val_score=0.0844  lr=5.00e-05  grad_norm=2.336  (813s)
+  NEW BEST saved (val_score=0.0844  val_JS=0.0279  home_gap=0.1130)
+Epoch  23/100: train_loss=0.6405  act=0.4218  home=0.2667  cop=0.1942  marg=0.0040  trans=0.0000  |  val_JS=0.0239  home_gap=0.1209  val_score=0.0844  lr=5.00e-05  grad_norm=2.366  (813s)
+  NEW BEST saved (val_score=0.0844  val_JS=0.0239  home_gap=0.1209)
+Epoch  24/100: train_loss=0.6182  act=0.4007  home=0.2652  cop=0.1933  marg=0.0040  trans=0.0000  |  val_JS=0.0214  home_gap=0.0993  val_score=0.0711  lr=5.00e-05  grad_norm=2.397  (814s)
+  NEW BEST saved (val_score=0.0711  val_JS=0.0214  home_gap=0.0993)
+Epoch  25/100: train_loss=0.5955  act=0.3791  home=0.2633  cop=0.1935  marg=0.0034  trans=0.0000  |  val_JS=0.0221  home_gap=0.1389  val_score=0.0916  lr=5.00e-05  grad_norm=2.357  (814s)
+Epoch  26/100: train_loss=0.5752  act=0.3599  home=0.2620  cop=0.1923  marg=0.0042  trans=0.0000  |  val_JS=0.0190  home_gap=0.1379  val_score=0.0880  lr=5.00e-05  grad_norm=2.362  (814s)
+Epoch  27/100: train_loss=0.5580  act=0.3432  home=0.2606  cop=0.1933  marg=0.0040  trans=0.0000  |  val_JS=0.0146  home_gap=0.1114  val_score=0.0703  lr=5.00e-05  grad_norm=2.373  (815s)
+  NEW BEST saved (val_score=0.0703  val_JS=0.0146  home_gap=0.1114)
+Epoch  28/100: train_loss=0.5381  act=0.3246  home=0.2590  cop=0.1927  marg=0.0033  trans=0.0000  |  val_JS=0.0116  home_gap=0.1126  val_score=0.0680  lr=5.00e-05  grad_norm=2.363  (815s)
+  NEW BEST saved (val_score=0.0680  val_JS=0.0116  home_gap=0.1126)
+Epoch  29/100: train_loss=0.5222  act=0.3096  home=0.2578  cop=0.1919  marg=0.0033  trans=0.0000  |  val_JS=0.0162  home_gap=0.1142  val_score=0.0733  lr=5.00e-05  grad_norm=2.355  (815s)
+Epoch  30/100: train_loss=0.5073  act=0.2956  home=0.2565  cop=0.1916  marg=0.0033  trans=0.0000  |  val_JS=0.0106  home_gap=0.1121  val_score=0.0666  lr=5.00e-05  grad_norm=2.358  (816s)
+  NEW BEST saved (val_score=0.0666  val_JS=0.0106  home_gap=0.1121)
+Epoch  31/100: train_loss=0.4911  act=0.2805  home=0.2552  cop=0.1906  marg=0.0034  trans=0.0000  |  val_JS=0.0115  home_gap=0.1220  val_score=0.0725  lr=5.00e-05  grad_norm=2.324  (814s)
+Epoch  32/100: train_loss=0.4786  act=0.2686  home=0.2538  cop=0.1913  marg=0.0034  trans=0.0000  |  val_JS=0.0093  home_gap=0.1125  val_score=0.0655  lr=5.00e-05  grad_norm=2.328  (813s)
+  NEW BEST saved (val_score=0.0655  val_JS=0.0093  home_gap=0.1125)
+Epoch  33/100: train_loss=0.4665  act=0.2573  home=0.2527  cop=0.1910  marg=0.0032  trans=0.0000  |  val_JS=0.0088  home_gap=0.1197  val_score=0.0686  lr=5.00e-05  grad_norm=2.327  (813s)
+Epoch  34/100: train_loss=0.4529  act=0.2444  home=0.2517  cop=0.1905  marg=0.0032  trans=0.0000  |  val_JS=0.0103  home_gap=0.0900  val_score=0.0553  lr=5.00e-05  grad_norm=2.274  (815s)
+  NEW BEST saved (val_score=0.0553  val_JS=0.0103  home_gap=0.0900)
+Epoch  35/100: train_loss=0.4407  act=0.2333  home=0.2506  cop=0.1893  marg=0.0030  trans=0.0000  |  val_JS=0.0111  home_gap=0.0841  val_score=0.0532  lr=5.00e-05  grad_norm=2.255  (815s)
+  NEW BEST saved (val_score=0.0532  val_JS=0.0111  home_gap=0.0841)
+Epoch  36/100: train_loss=0.4298  act=0.2227  home=0.2496  cop=0.1901  marg=0.0035  trans=0.0000  |  val_JS=0.0088  home_gap=0.1149  val_score=0.0663  lr=5.00e-05  grad_norm=2.239  (815s)
+Epoch  37/100: train_loss=0.4197  act=0.2134  home=0.2486  cop=0.1894  marg=0.0030  trans=0.0000  |  val_JS=0.0071  home_gap=0.1294  val_score=0.0718  lr=5.00e-05  grad_norm=2.201  (815s)
+Epoch  38/100: train_loss=0.4094  act=0.2042  home=0.2472  cop=0.1884  marg=0.0032  trans=0.0000  |  val_JS=0.0070  home_gap=0.1171  val_score=0.0655  lr=5.00e-05  grad_norm=2.197  (815s)
+Epoch  39/100: train_loss=0.4010  act=0.1962  home=0.2464  cop=0.1889  marg=0.0027  trans=0.0000  |  val_JS=0.0080  home_gap=0.0861  val_score=0.0511  lr=5.00e-05  grad_norm=2.170  (815s)
+  NEW BEST saved (val_score=0.0511  val_JS=0.0080  home_gap=0.0861)
+Epoch  40/100: train_loss=0.3931  act=0.1887  home=0.2456  cop=0.1892  marg=0.0029  trans=0.0000  |  val_JS=0.0061  home_gap=0.1070  val_score=0.0596  lr=5.00e-05  grad_norm=2.165  (815s)
+Epoch  41/100: train_loss=0.3850  act=0.1814  home=0.2444  cop=0.1890  marg=0.0028  trans=0.0000  |  val_JS=0.0074  home_gap=0.1046  val_score=0.0597  lr=5.00e-05  grad_norm=2.112  (816s)
+Epoch  42/100: train_loss=0.3774  act=0.1744  home=0.2439  cop=0.1875  marg=0.0031  trans=0.0000  |  val_JS=0.0098  home_gap=0.1196  val_score=0.0696  lr=5.00e-05  grad_norm=2.107  (815s)
+Epoch  43/100: train_loss=0.3705  act=0.1680  home=0.2430  cop=0.1880  marg=0.0025  trans=0.0000  |  val_JS=0.0069  home_gap=0.0905  val_score=0.0521  lr=5.00e-05  grad_norm=2.058  (815s)
+Epoch  44/100: train_loss=0.3635  act=0.1616  home=0.2423  cop=0.1874  marg=0.0029  trans=0.0000  |  val_JS=0.0062  home_gap=0.1171  val_score=0.0648  lr=5.00e-05  grad_norm=2.042  (815s)
+Epoch  45/100: train_loss=0.3575  act=0.1562  home=0.2414  cop=0.1872  marg=0.0030  trans=0.0000  |  val_JS=0.0062  home_gap=0.1089  val_score=0.0607  lr=5.00e-05  grad_norm=2.014  (815s)
+Epoch  46/100: train_loss=0.3485  act=0.1476  home=0.2405  cop=0.1879  marg=0.0027  trans=0.0000  |  val_JS=0.0050  home_gap=0.0893  val_score=0.0496  lr=4.75e-05  grad_norm=1.919  (814s)
+  NEW BEST saved (val_score=0.0496  val_JS=0.0050  home_gap=0.0893)
+Epoch  47/100: train_loss=0.3433  act=0.1427  home=0.2397  cop=0.1884  marg=0.0025  trans=0.0000  |  val_JS=0.0075  home_gap=0.0934  val_score=0.0542  lr=4.75e-05  grad_norm=1.911  (815s)
+Epoch  48/100: train_loss=0.3385  act=0.1389  home=0.2388  cop=0.1870  marg=0.0024  trans=0.0000  |  val_JS=0.0049  home_gap=0.0900  val_score=0.0499  lr=4.75e-05  grad_norm=1.904  (814s)
+Epoch  49/100: train_loss=0.3344  act=0.1348  home=0.2384  cop=0.1876  marg=0.0023  trans=0.0000  |  val_JS=0.0048  home_gap=0.1041  val_score=0.0569  lr=4.75e-05  grad_norm=1.901  (814s)
+Epoch  50/100: train_loss=0.3298  act=0.1309  home=0.2376  cop=0.1866  marg=0.0027  trans=0.0000  |  val_JS=0.0052  home_gap=0.1029  val_score=0.0567  lr=4.75e-05  grad_norm=1.866  (814s)
+Epoch  51/100: train_loss=0.3261  act=0.1275  home=0.2372  cop=0.1868  marg=0.0024  trans=0.0000  |  val_JS=0.0055  home_gap=0.0992  val_score=0.0551  lr=4.75e-05  grad_norm=1.843  (813s)
+Epoch  52/100: train_loss=0.3220  act=0.1239  home=0.2364  cop=0.1864  marg=0.0024  trans=0.0000  |  val_JS=0.0062  home_gap=0.1091  val_score=0.0607  lr=4.75e-05  grad_norm=1.842  (812s)
+Epoch  53/100: train_loss=0.3144  act=0.1169  home=0.2354  cop=0.1866  marg=0.0024  trans=0.0000  |  val_JS=0.0055  home_gap=0.0812  val_score=0.0461  lr=4.51e-05  grad_norm=1.710  (814s)
+  NEW BEST saved (val_score=0.0461  val_JS=0.0055  home_gap=0.0812)
+Epoch  54/100: train_loss=0.3118  act=0.1145  home=0.2347  cop=0.1873  marg=0.0025  trans=0.0000  |  val_JS=0.0055  home_gap=0.0986  val_score=0.0547  lr=4.51e-05  grad_norm=1.729  (814s)
+Epoch  55/100: train_loss=0.3080  act=0.1115  home=0.2341  cop=0.1858  marg=0.0023  trans=0.0000  |  val_JS=0.0057  home_gap=0.0951  val_score=0.0532  lr=4.51e-05  grad_norm=1.683  (814s)
+Epoch  56/100: train_loss=0.3070  act=0.1106  home=0.2338  cop=0.1862  marg=0.0021  trans=0.0000  |  val_JS=0.0052  home_gap=0.0786  val_score=0.0445  lr=4.51e-05  grad_norm=1.739  (813s)
+  NEW BEST saved (val_score=0.0445  val_JS=0.0052  home_gap=0.0786)
+Epoch  57/100: train_loss=0.3035  act=0.1075  home=0.2332  cop=0.1862  marg=0.0024  trans=0.0000  |  val_JS=0.0046  home_gap=0.0826  val_score=0.0459  lr=4.51e-05  grad_norm=1.697  (813s)
+Epoch  58/100: train_loss=0.2998  act=0.1043  home=0.2324  cop=0.1862  marg=0.0019  trans=0.0000  |  val_JS=0.0050  home_gap=0.0911  val_score=0.0506  lr=4.51e-05  grad_norm=1.655  (813s)
+Epoch  59/100: train_loss=0.2981  act=0.1029  home=0.2322  cop=0.1858  marg=0.0023  trans=0.0000  |  val_JS=0.0045  home_gap=0.0898  val_score=0.0494  lr=4.51e-05  grad_norm=1.644  (814s)
+Epoch  60/100: train_loss=0.2953  act=0.1004  home=0.2316  cop=0.1858  marg=0.0024  trans=0.0000  |  val_JS=0.0038  home_gap=0.0909  val_score=0.0493  lr=4.51e-05  grad_norm=1.632  (814s)
+Epoch  61/100: train_loss=0.2943  act=0.0997  home=0.2312  cop=0.1856  marg=0.0021  trans=0.0000  |  val_JS=0.0041  home_gap=0.0707  val_score=0.0395  lr=4.51e-05  grad_norm=1.658  (815s)
+  NEW BEST saved (val_score=0.0395  val_JS=0.0041  home_gap=0.0707)
+Epoch  62/100: train_loss=0.2908  act=0.0967  home=0.2305  cop=0.1852  marg=0.0022  trans=0.0000  |  val_JS=0.0053  home_gap=0.0886  val_score=0.0496  lr=4.51e-05  grad_norm=1.597  (815s)
+Epoch  63/100: train_loss=0.2890  act=0.0951  home=0.2299  cop=0.1857  marg=0.0022  trans=0.0000  |  val_JS=0.0050  home_gap=0.0998  val_score=0.0548  lr=4.51e-05  grad_norm=1.593  (815s)
+Epoch  64/100: train_loss=0.2861  act=0.0929  home=0.2293  cop=0.1847  marg=0.0023  trans=0.0000  |  val_JS=0.0051  home_gap=0.0869  val_score=0.0485  lr=4.51e-05  grad_norm=1.549  (814s)
+Epoch  65/100: train_loss=0.2857  act=0.0927  home=0.2291  cop=0.1846  marg=0.0020  trans=0.0000  |  val_JS=0.0040  home_gap=0.0744  val_score=0.0411  lr=4.51e-05  grad_norm=1.582  (813s)
+Epoch  66/100: train_loss=0.2838  act=0.0908  home=0.2287  cop=0.1855  marg=0.0022  trans=0.0000  |  val_JS=0.0032  home_gap=0.0617  val_score=0.0341  lr=4.51e-05  grad_norm=1.551  (815s)
+  NEW BEST saved (val_score=0.0341  val_JS=0.0032  home_gap=0.0617)
+Epoch  67/100: train_loss=0.2822  act=0.0896  home=0.2282  cop=0.1847  marg=0.0021  trans=0.0000  |  val_JS=0.0043  home_gap=0.0699  val_score=0.0392  lr=4.51e-05  grad_norm=1.552  (814s)
+Epoch  68/100: train_loss=0.2779  act=0.0860  home=0.2274  cop=0.1842  marg=0.0020  trans=0.0000  |  val_JS=0.0045  home_gap=0.0662  val_score=0.0376  lr=4.51e-05  grad_norm=1.457  (814s)
+Epoch  69/100: train_loss=0.2785  act=0.0865  home=0.2271  cop=0.1848  marg=0.0022  trans=0.0000  |  val_JS=0.0040  home_gap=0.0738  val_score=0.0409  lr=4.51e-05  grad_norm=1.501  (815s)
+Epoch  70/100: train_loss=0.2759  act=0.0843  home=0.2266  cop=0.1851  marg=0.0022  trans=0.0000  |  val_JS=0.0046  home_gap=0.0683  val_score=0.0387  lr=4.51e-05  grad_norm=1.458  (813s)
+Epoch  71/100: train_loss=0.2763  act=0.0849  home=0.2263  cop=0.1847  marg=0.0020  trans=0.0000  |  val_JS=0.0047  home_gap=0.0773  val_score=0.0433  lr=4.51e-05  grad_norm=1.496  (815s)
+Epoch  72/100: train_loss=0.2728  act=0.0821  home=0.2257  cop=0.1839  marg=0.0021  trans=0.0000  |  val_JS=0.0037  home_gap=0.0652  val_score=0.0363  lr=4.51e-05  grad_norm=1.427  (814s)
+Epoch  73/100: train_loss=0.2688  act=0.0786  home=0.2247  cop=0.1838  marg=0.0018  trans=0.0000  |  val_JS=0.0040  home_gap=0.0845  val_score=0.0462  lr=4.29e-05  grad_norm=1.323  (814s)
+Epoch  74/100: train_loss=0.2687  act=0.0786  home=0.2245  cop=0.1843  marg=0.0018  trans=0.0000  |  val_JS=0.0045  home_gap=0.0751  val_score=0.0421  lr=4.29e-05  grad_norm=1.373  (814s)
+Epoch  75/100: train_loss=0.2687  act=0.0783  home=0.2244  cop=0.1848  marg=0.0021  trans=0.0000  |  val_JS=0.0041  home_gap=0.0743  val_score=0.0413  lr=4.29e-05  grad_norm=1.382  (814s)
+Epoch  76/100: train_loss=0.2657  act=0.0762  home=0.2236  cop=0.1841  marg=0.0018  trans=0.0000  |  val_JS=0.0048  home_gap=0.0805  val_score=0.0451  lr=4.29e-05  grad_norm=1.329  (814s)
+Epoch  77/100: train_loss=0.2650  act=0.0757  home=0.2233  cop=0.1837  marg=0.0018  trans=0.0000  |  val_JS=0.0055  home_gap=0.0938  val_score=0.0524  lr=4.29e-05  grad_norm=1.345  (814s)
+Epoch  78/100: train_loss=0.2642  act=0.0752  home=0.2230  cop=0.1837  marg=0.0017  trans=0.0000  |  val_JS=0.0040  home_gap=0.0736  val_score=0.0409  lr=4.29e-05  grad_norm=1.327  (814s)
+Epoch  79/100: train_loss=0.2607  act=0.0722  home=0.2223  cop=0.1832  marg=0.0017  trans=0.0000  |  val_JS=0.0038  home_gap=0.0759  val_score=0.0418  lr=4.07e-05  grad_norm=1.256  (814s)
+Epoch  80/100: train_loss=0.2589  act=0.0708  home=0.2217  cop=0.1830  marg=0.0019  trans=0.0000  |  val_JS=0.0036  home_gap=0.0710  val_score=0.0391  lr=4.07e-05  grad_norm=1.232  (815s)
+Epoch  81/100: train_loss=0.2588  act=0.0709  home=0.2214  cop=0.1829  marg=0.0017  trans=0.0000  |  val_JS=0.0034  home_gap=0.0764  val_score=0.0415  lr=4.07e-05  grad_norm=1.254  (816s)
+  Early stopping at epoch 81 (no improvement for 15 epochs)
+
+[4/4] Training complete. Best val_score=0.0341
+  Best checkpoint: /speed-scratch/o_iseri/occModeling/outputs_step4_B2/checkpoints/best_model.pt
+  Training log:    /speed-scratch/o_iseri/occModeling/outputs_step4_B2/step4_training_log.csv
+============================================================
+G4_NAT_COP TRAINING COMPLETE
+============================================================

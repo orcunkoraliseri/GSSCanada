@@ -1,0 +1,29 @@
+# B2a.yaml — Phase 8B-3 V1: G4_NAT_COP_HH — dedicated MARSTH+HHSIZE conditioning
+# Single-axis fix over B2: adds arm2_hh_proj(11→d_model) for marital+household signal in COP head.
+# V1 cond_vec finding: MARSTH dims 9:15 + HHSIZE dims 15:20 ARE present in d_cond=76. BUILT.
+tag: B2a
+model_type: G4_NAT_COP_HH
+seed: 42
+
+data_dir: outputs_step4_G1
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.6
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05

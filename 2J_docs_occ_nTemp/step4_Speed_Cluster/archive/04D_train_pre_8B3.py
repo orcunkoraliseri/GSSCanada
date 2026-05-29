@@ -57,11 +57,6 @@ HIERHybrid                = getattr(model_mod, "HIERHybrid",                None
 MAMBAHybrid               = getattr(model_mod, "MAMBAHybrid",               None)
 SEDDHybrid                = getattr(model_mod, "SEDDHybrid",                None)
 G4NATCopHybrid            = getattr(model_mod, "G4NATCopHybrid",            None)
-# Phase 8B-3 single-axis fixes
-G4NATCopHH                = getattr(model_mod, "G4NATCopHH",                None)
-G4NATCopMC                = getattr(model_mod, "G4NATCopMC",                None)
-G4NATCopSG                = getattr(model_mod, "G4NATCopSG",                None)
-G4NATCopNATH              = getattr(model_mod, "G4NATCopNATH",              None)
 
 LAMBDA_ACT         = float(os.environ.get("LAMBDA_ACT",         "1.0"))
 LAMBDA_HOME        = float(os.environ.get("LAMBDA_HOME",        "0.5"))
@@ -280,22 +275,6 @@ def compute_loss(output: dict, batch: dict, device,
         p_alone   = torch.sigmoid(z_alone)
         p_others  = (1.0 - p_alone) * torch.sigmoid(z_others)
         cop_probs = torch.cat([p_alone, p_others], dim=-1).clamp(1e-7, 1.0 - 1e-7)  # (B, 48, 9)
-        if cop_pos_weight is not None:
-            pw = cop_pos_weight.view(1, 1, -1)
-            cop_loss_raw = -(pw * cop_tgt * torch.log(cop_probs)
-                             + (1.0 - cop_tgt) * torch.log(1.0 - cop_probs))
-        else:
-            cop_loss_raw = -(cop_tgt * torch.log(cop_probs)
-                             + (1.0 - cop_tgt) * torch.log(1.0 - cop_probs))
-    elif MODEL_TYPE == "G4_NAT_COP_MC":
-        # Phase 8B-3 V2 mass-coupled COP: z[0] → g = any-company prob; z[1:9] conditional.
-        # P(Alone) = 1 − g;  P(company_i) = g × σ(z[i]).  Load-bearing: Alone + any-company = 1.
-        z_comp     = cop_logits[..., 0:1]                                  # (B, 48, 1)
-        z_channels = cop_logits[..., 1:]                                   # (B, 48, 8)
-        g          = torch.sigmoid(z_comp)
-        p_alone    = (1.0 - g)
-        p_channels = g * torch.sigmoid(z_channels)
-        cop_probs  = torch.cat([p_alone, p_channels], dim=-1).clamp(1e-7, 1.0 - 1e-7)  # (B, 48, 9)
         if cop_pos_weight is not None:
             pw = cop_pos_weight.view(1, 1, -1)
             cop_loss_raw = -(pw * cop_tgt * torch.log(cop_probs)
@@ -790,35 +769,6 @@ def train(args):
                 "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
                 "aux_stratum_head": False,
             }
-    elif MODEL_TYPE in ("G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH"):
-        # Phase 8B-3 single-axis variants off B2. Same G4 training hygiene:
-        # fp32, ReduceLROnPlateau, clip_grad_norm=25, same d_model/loss config as B2.
-        args.fp16 = False
-        if args.sample:
-            model_config = {
-                "model_type": MODEL_TYPE,
-                "d_model": 64, "n_heads": 4, "d_ff": 256,
-                "N_enc": 2, "N_dec": 2,
-                "d_act": 16, "d_cycle": 16,
-                "dropout": 0.1, "n_activity_classes": 14,
-                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
-                "aux_stratum_head": False,
-            }
-            args.batch_size = 16
-            args.max_epochs = 10
-            args.patience   = 10
-        else:
-            model_config = {
-                "model_type": MODEL_TYPE,
-                "d_model": args.d_model, "n_heads": args.n_heads,
-                "d_ff": args.d_model * 4,
-                "N_enc": args.n_enc_layers,
-                "N_dec": args.n_dec_layers,
-                "d_act": 32, "d_cycle": 32,
-                "dropout": DROPOUT, "n_activity_classes": 14,
-                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
-                "aux_stratum_head": False,
-            }
     elif MODEL_TYPE in ("HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP"):
         # Phase 6 Stage A model families. All subclass JSeriesHybrid → reuse J3
         # encoder + Arm-2 binary heads; only the Arm-1 activity decoder differs.
@@ -1037,18 +987,6 @@ def train(args):
     elif MODEL_TYPE == "G4_NAT_COP":
         assert G4NATCopHybrid is not None, "G4NATCopHybrid not found (check 04B_model_B2.py)"
         model = G4NATCopHybrid(model_config).to(device)
-    elif MODEL_TYPE == "G4_NAT_COP_HH":
-        assert G4NATCopHH is not None, "G4NATCopHH not found (check 04B_model_B2a.py)"
-        model = G4NATCopHH(model_config).to(device)
-    elif MODEL_TYPE == "G4_NAT_COP_MC":
-        assert G4NATCopMC is not None, "G4NATCopMC not found (check 04B_model_B2b.py)"
-        model = G4NATCopMC(model_config).to(device)
-    elif MODEL_TYPE == "G4_NAT_COP_SG":
-        assert G4NATCopSG is not None, "G4NATCopSG not found (check 04B_model_B2c.py)"
-        model = G4NATCopSG(model_config).to(device)
-    elif MODEL_TYPE == "G4_NAT_COP_NATH":
-        assert G4NATCopNATH is not None, "G4NATCopNATH not found (check 04B_model_B2d.py)"
-        model = G4NATCopNATH(model_config).to(device)
     else:
         model = ConditionalTransformer(model_config).to(device)
     total_params = sum(p.numel() for p in model.parameters())
@@ -1060,8 +998,7 @@ def train(args):
     warmup_steps = 2000 if not args.sample else 50
     if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3",
                        "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
-                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP",
-                       "G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH"):
+                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP"):
         # I1/J-series: ReduceLROnPlateau only — skipping LambdaLR prevents lr_lambda(0)
         # from crushing the optimizer LR to ~2.5e-8 before training begins.
         scheduler = None
@@ -1144,7 +1081,7 @@ def train(args):
             else:
                 train_batch = batch
 
-            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP", "G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH") else 1.0
+            _clip_norm = 25.0 if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP") else 1.0
             if scaler is not None:
                 with torch.amp.autocast("cuda"):
                     out   = model(train_batch)
@@ -1173,8 +1110,7 @@ def train(args):
 
             # I1/J-series: per-epoch ReduceLROnPlateau; all others: per-batch LambdaLR
             if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
-                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP",
-                       "G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH"):
+                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP"):
                 scheduler.step()
             global_step += 1
 
@@ -1256,8 +1192,7 @@ def train(args):
         # Both save and patience counter are gated on past_warmup to prevent
         # near-uniform warmup predictions from locking in a deceptively low score.
         if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
-                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP",
-                       "G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH"):
+                       "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP"):
             past_warmup = True  # no LambdaLR warmup for I1/J-series; track from epoch 1
         else:
             warmup_epochs = math.ceil(warmup_steps / max(1, len(train_loader)))

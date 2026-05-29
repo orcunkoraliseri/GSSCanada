@@ -509,3 +509,181 @@ Individual samples: 16.90–17.86 pp (all Alone). Per-respondent cherry-pick: 14
 **Training config:** lambda_act=1.0, lambda_home=0.6, lambda_cop=0.3, lambda_marg=0.1, label_smooth=0.05, sched_sample=0.0, d_model=384, n_heads=8, 6-enc/6-dec, d_cond=76 (G1 data), batch=256, lr=5e-5, patience=15, max_epochs=100.
 
 **Submitted:** job 936923, `outputs_step4_B2/`. ~6h expected. Check training logs at ep 20–25 (~4.5h in).
+
+### 2026-05-28 — Phase 8B-2 (G4_NAT_COP) RESULTS: 2/4 gates, COP halved but still fails
+
+**Training (job 936923):** early-stopped ep 81, best val_score 0.0341 (ep 66). 29.25M params. Final losses act=0.071 (= G4), home=0.221 (= G4), cop=0.183 (J3-level, expected for the NAT branch). AR side hit G4 quality exactly.
+
+**Inference gates (job 937549, eval chain 04E→04H→04I→04J):**
+
+| Gate | Threshold | B2 | Pass |
+|---|---|---|---|
+| composite | < 1.045 | **0.801** | ✓ |
+| act_JS | ≤ 0.05 | **0.0202** | ✓ |
+| AT_HOME RMS (pp) | ≤ 5.3 | **5.75** | ✗ (by 0.45) |
+| COP max gap (pp) | ≤ 5.0 | **10.21** | ✗ (2.0×) |
+
+**The bet half-worked.** NAT cut COP from G4's 20.55 pp to **10.2 pp** — roughly halved, cascading shape gone. But it lands halfway to J3 (2.03 pp), not at it.
+
+**Failure mode = Spouse↓ / Alone↑ (not cascading):**
+- COP max gap channel = **Alone** (+10.2 pp overall; worst slot = slot 1 / 00:30 night, **+30.6 pp**).
+- **Spouse** systematically undershoots: −2.9 pp overall, −14 pp in 2015_2/3, −9 pp in 2022_2/3. Undershoot scales with the true spouse rate (worst in high-spouse 2015/2022 cohorts).
+- `colleagues` overall gap (−6.0 pp) is a pooling artifact — the channel is absent in 2005–2010 surveys; per-cs 2015/2022 colleagues is fine (<1.5 pp).
+
+**Root-cause diagnosis (`04B_model_B2.py`):**
+1. **Not the safety multiply.** Alone's worst error is at night (slot 1) where `gen_home=1`, so `cop_prob[:,:,SPOUSE_IDX] *= gen_home` (line 337) is inactive. The `cop_head` itself fails to assign spouse co-presence when people are home asleep and defaults to Alone.
+2. **The NAT cop_head regresses to the marginal.** 9 independent sigmoids (lines 156–158) over (encoder memory + detached act one-hot + binary home + cond_vec). "Married & home at night" vs "single & home at night" are identical in act+home space; the only discriminator (household/marital latent) reaches the head only faintly via cond_vec. Loss-minimizing bet = predict the population marginal (low Spouse, high Alone).
+3. **Independent sigmoids = no mass conservation.** Nothing couples Alone to the company channels, so the mass Spouse loses inflates Alone freely. Spouse↓ and Alone↑ are one failure seen from two unconstrained heads.
+4. **Inherited biased home generation.** B2's AT_HOME generation overshoots (+6.8 pp, RMS 5.75, fails gate) despite G4-level *training* home_loss (0.221). The NAT COP branch consumes that biased `gen_home`, so home generation error propagates into COP. J3 (clean home, RMS 4.57) → clean COP (2.03); B2 (biased home, 5.75) → degraded COP (10.2).
+5. The hard binary `*= gen_home` is a secondary aggravator at daytime/away slots (Spouse worst slot 28 / 14:00) — clips real out-of-home couple time, asymmetric downward bias on the already-undershooting channel.
+
+**Cross-architecture context (comparision.md):** training cop_loss does NOT predict inference COP gap. G4 cop_loss=0.064 → 20.55 pp; J3 cop_loss=0.192 (3× worse) → 2.03 pp. B2 cop_loss=0.183 (≈ J3) but COP gap 10.2 (≈ 5× J3) — the gap is explained by B2's biased home generation feeding the COP branch + the marginal-regression on Spouse, NOT by COP training fit.
+
+**Verdict:** B2 does not pass. Premise that "G4's home is better" held only in *training loss*; in *generation* G4/B2 home (5.66/5.75 RMS) is worse than J3 (4.57). Next: fix directions under discussion — (1) feed household composition explicitly into `_arm2_fuse`, (2) replace hard `*= gen_home` with a soft/learned gate, (3) couple COP channels (Alone = 1 − P(any company)). Do NOT re-couple COP into the AR trunk (that is the G4/H_Time → 20 pp path).
+
+---
+
+### 2026-05-28 — Phase 8B-3: four single-axis B2 variants BUILT
+
+**V1 cond_vec finding:** MARSTH (dims 9:15, 6 dims) and HHSIZE (dims 15:20, 5 dims) ARE present in `cond_vec` (d_cond=76, `outputs_step4_G1`, `step4_feature_config.json`). V1 is **BUILT** (not BLOCKED).
+
+**Four variants, each exactly one change vs B2 (`G4NATCopHybrid`):**
+
+| Tag | model_type | Class | File | Change |
+|-----|-----------|-------|------|--------|
+| B2a | G4_NAT_COP_HH | G4NATCopHH | 04B_model_B2a.py | `arm2_hh_proj(11→d_model)` for MARSTH+HHSIZE; dedicated per-slot HH embedding appended to arm2 fusion |
+| B2b | G4_NAT_COP_MC | G4NATCopMC | 04B_model_B2b.py | Mass-coupled COP: z[0]→g=any-company; P(Alone)=1−g; P(company_i)=g·σ(z[i]); BCE on derived probs |
+| B2c | G4_NAT_COP_SG | G4NATCopSG | 04B_model_B2c.py | Soft gate: cop_head input d_model+1 (appends continuous home_prob); inference uses sigmoid not binary; removes hard multiply |
+| B2d | G4_NAT_COP_NATH | G4NATCopNATH | 04B_model_B2d.py | AT_HOME to NAT Arm-2: activity-only AR; dec_slot_linear d_act→d_model; home_head reads arm2_feat parallel to cop_head |
+
+**Files created/modified (all in `step4_Speed_Cluster/`):**
+
+New model files:
+- `04B_model_B2a.py` — G4NATCopHH (V1 HH conditioning)
+- `04B_model_B2b.py` — G4NATCopMC (V2 mass coupling)
+- `04B_model_B2c.py` — G4NATCopSG (V3 soft gate)
+- `04B_model_B2d.py` — G4NATCopNATH (V4 NAT home)
+
+Edited:
+- `04B_model.py` — added 4 `_import_optional` calls for B2a–d classes
+- `04D_train.py` — added imports, `G4_NAT_COP_MC` loss branch in `compute_loss`, config block for all 4 types, 4 hygiene list updates (ReduceLROnPlateau, clip_norm=25, plateau step, past_warmup), 4 instantiation branches
+- `04E_inference.py` — added 4 `getattr` imports + 4 `elif _mtype == ...` dispatch branches
+
+New configs: `configs/B2a.yaml`, `configs/B2b.yaml`, `configs/B2c.yaml`, `configs/B2d.yaml`
+
+New train jobs: `jobs/train_B2a.sh`, `jobs/train_B2b.sh`, `jobs/train_B2c.sh`, `jobs/train_B2d.sh`
+
+New eval jobs: `job_step4_B2a_eval.sh`, `job_step4_B2b_eval.sh`, `job_step4_B2c_eval.sh`, `job_step4_B2d_eval.sh`
+
+Archived (before edits): `archive/04B_model_pre_8B3.py`, `archive/04D_train_pre_8B3.py`, `archive/04E_inference_pre_8B3.py`
+
+**Module pre-flight check:** All imports (torch, torch.nn, torch.nn.functional, math, os) are stdlib or PyTorch — no new deps beyond what B2 already uses. No yaml/eppy/joblib needed. Cluster env `/speed-scratch/o_iseri/envs/step4` already covers these.
+
+**4 train sbatch commands (submit in parallel locally):**
+```
+sbatch /speed-scratch/o_iseri/occModeling/jobs/train_B2a.sh
+sbatch /speed-scratch/o_iseri/occModeling/jobs/train_B2b.sh
+sbatch /speed-scratch/o_iseri/occModeling/jobs/train_B2c.sh
+sbatch /speed-scratch/o_iseri/occModeling/jobs/train_B2d.sh
+```
+
+**4 eval sbatch commands (after training completes):**
+```
+sbatch /speed-scratch/o_iseri/occModeling/job_step4_B2a_eval.sh
+sbatch /speed-scratch/o_iseri/occModeling/job_step4_B2b_eval.sh
+sbatch /speed-scratch/o_iseri/occModeling/job_step4_B2c_eval.sh
+sbatch /speed-scratch/o_iseri/occModeling/job_step4_B2d_eval.sh
+```
+
+**No blockers.** All 4 variants built and ready for upload + submission.
+
+---
+
+### 2026-05-28 — Phase 8B-3: four variants TRAINING IN PROGRESS (results PENDING)
+
+**Status:** all 4 submitted and RUNNING on `speed-17`.
+
+| Job | Tag | model_type | State | Elapsed | ETA |
+|-----|-----|-----------|-------|---------|-----|
+| 937597 | B2a | G4_NAT_COP_HH | RUNNING | 4:33 | ~14 h |
+| 937598 | B2b | G4_NAT_COP_MC | RUNNING | 4:33 | ~14 h |
+| 937599 | B2c | G4_NAT_COP_SG | RUNNING | 4:33 | ~14 h |
+| 937600 | B2d | G4_NAT_COP_NATH | RUNNING | 4:33 | ~14 h |
+
+ETA from B2 baseline (936923 = 18h24m wall). At 4h33m in → ~14 h remaining; finish expected early **2026-05-29**.
+
+**Mid-training snapshot (ep ~24, ~4.5 h, ~700 s/epoch — TRAINING losses + val proxies, NOT inference gates):**
+
+| Variant | ep | act | home | cop | marg | val_JS | home_gap | best val_score (ep) |
+|---------|----|-----|------|-----|------|--------|----------|---------------------|
+| B2a HH | 23 | 0.419 | 0.267 | 0.192 | 0.004 | 0.024 | 0.148 | 0.0948 (21) |
+| B2b MC | 24 | 0.413 | 0.266 | 0.193 | 0.004 | 0.020 | 0.140 | 0.0746 (23) |
+| B2c SG | 24 | 0.420 | 0.267 | 0.194 | 0.004 | 0.025 | 0.152 | 0.0890 (23) |
+| B2d NATH | 24 | 0.427 | **0.397** | 0.202 | 0.011 | 0.030 | **0.075** | **0.0674 (24)** |
+
+Read of the snapshot:
+- **~1/3 through.** act_loss still falling steeply; none converged (B2 baseline best ep66, stopped ep81). Expect best checkpoints ~ep 60–80.
+- **cop ≈ 0.19** for B2a/b/c = J3-level, exactly as designed for the NAT branch. B2d cop ≈ 0.20.
+- **B2d home ≈ 0.40 is NOT a regression** — moving AT_HOME into NAT Arm-2 shifts home_loss into the J-series regime (~0.35, see comparision.md key obs), which measures something different from the G4-regime ~0.27 in a/b/c.
+- **Early proxy tell:** B2d (NATH) leads val_score (0.067) and home_gap (0.075); B2b (MC) second (0.075 / 0.140). Consistent with the "clean home → clean COP" thesis (NATH = highest leverage). **But these are losses + val proxies, not gates** — B2 had val_score 0.034 yet failed COP at 10.2 pp. No gate verdict until the eval chain runs.
+
+**Results table (FILLED 2026-05-29, all 4 `EVAL COMPLETE`).** Lead with COP max gap and AT_HOME RMS. Bar to beat = J3 (4/4). B2 baseline = 2/4.
+
+| Variant | COP max gap (≤5.0) | AT_HOME RMS (≤5.3) | act_JS (≤0.05) | composite (<1.045) | Gates | Targets which failure |
+|---------|--------------------|--------------------|----------------|--------------------|-------|-----------------------|
+| **J3** (bar) | 2.03 ✓ | 4.57 ✓ | 0.0191 ✓ | 0.6355 ✓ | 4/4 | — (reference) |
+| **B2** (base) | 10.21 ✗ | 5.75 ✗ | 0.0202 ✓ | 0.801 ✓ | 2/4 | — (reference) |
+| B2a HH | 7.99 ✗ | 7.78 ✗ | 0.0697 ✗ | 0.923 ✓ | **1/4** | Spouse marginal-regression (explicit MARSTH/HHSIZE → cop_head) |
+| B2b MC | 10.50 ✗ | 7.63 ✗ | 0.0659 ✗ | 0.983 ✓ | **1/4** | Alone overshoot (mass coupling: Alone=1−g, no free inflation) |
+| B2c SG | 9.67 ✗ | 6.14 ✗ | 0.0279 ✓ | 0.802 ✓ | **2/4** | Spouse daytime clip (soft gate replaces hard `*= gen_home`) |
+| B2d NATH | 7.07 ✗ | **4.94 ✓** | 0.0238 ✓ | **0.670 ✓** | **3/4** | Biased home feeding COP (AT_HOME→NAT, J3-style; highest leverage) |
+
+**Next:** when all 4 leave the queue, submit the 4 eval jobs (commands above), scp down `diagnostics_{H,I,J}_B2{a,b,c,d}.json`, fill this table, compare to J3, write the RESULTS verdict.
+
+### 2026-05-29 — Phase 8B-3: all 4 trainings COMPLETE; eval chain SUBMITTED + RUNNING
+
+All 4 jobs left the queue cleanly — every log shows `TRAINING COMPLETE` with a best checkpoint (`outputs_step4_B2{a,b,c,d}/checkpoints/best_model.pt`, ~117 MB each, written May 28–29).
+
+**Final training scores — at the BEST checkpoint** (the model that gets evaluated; pulled from each `step4_training_log.csv`, NOT the last epoch, which is ~15 ep past it and overfit). Format `best ep (stop ep)`:
+
+| Variant | model_type | best ep (stop) | val_score | act | home | cop | home_gap |
+|---------|-----------|----------------|-----------|-----|------|-----|----------|
+| B2a HH | G4_NAT_COP_HH | 33 (48) | 0.0549 | 0.251 | 0.253 | 0.189 | 0.0895 |
+| B2b MC | G4_NAT_COP_MC | 35 (50) | 0.0444 | 0.245 | 0.252 | 0.189 | 0.0728 |
+| B2c SG | G4_NAT_COP_SG | 66 (81) | 0.0391 | 0.094 | 0.231 | 0.185 | 0.0685 |
+| **B2d NATH** | G4_NAT_COP_NATH | 62 (77) | **0.0138** | 0.099 | 0.371 | 0.194 | **0.0200** |
+
+Reference (comparision.md, best ckpt): **J3** ep72 — act 0.088, home 0.351, cop 0.192, val_score 0.0166 (4/4). **B2** base ep66 — val_score 0.0341 (2/4, COP 10.2 pp).
+
+Read:
+- **B2d NATH is a J3-twin in training space** — act 0.099 (≈ J3 0.088), home 0.371 (≈ J3 0.351), cop 0.194 (= J3 0.192) — but with a *better* val_score (0.0138 < 0.0166) and the tightest home_gap (0.020). Expected: NATH moves AT_HOME into NAT Arm-2, replicating J3's topology. Strongest proxy of the four.
+- **B2c SG**: best activity fit (act 0.094) but home stays G4-regime (0.231) — it keeps the CrossAttn home path, only softening the gate. The home_loss regime is the AT_HOME-gate risk to watch.
+- **B2a HH / B2b MC stalled early** (best ep 33/35) with activity badly under-fit (act ≈ 0.25, ~3× J3). The added structure (HH proj / mass-coupling reparam) made optimization harder — val_score stopped improving while train act was still falling (overfit). Weakest pair on training.
+- **cop ≈ 0.19 across all four** (NAT branch, by design); B2d home ≈ 0.37 = J-series regime, not a regression.
+- **Caveat that has burned us every cycle:** training scores do NOT predict the gates. G4 had the best training losses in the whole table and failed COP at 20 pp; B2 had val_score 0.034 and failed COP at 10.2 pp. The eval chain (running) is the only verdict.
+
+**Eval chain submitted** (verified scripts + checkpoints present first):
+
+| Eval job | Variant | State | Node |
+|----------|---------|-------|------|
+| 939105 | B2a | RUNNING | cisr-1 |
+| 939106 | B2b | RUNNING | cisr-2 |
+| 939107 | B2c | RUNNING | speed-01 |
+| 939108 | B2d | RUNNING | speed-01 |
+
+Each runs 04E (inference) → 04H (AT_HOME) → 04I (activity + COP) → 04J (composite), writing `diagnostics_{H,I,J}_B2<x>.json` into the variant's output dir. **Next:** on queue-empty, confirm each eval log reached `EVAL COMPLETE` (queue-empty alone doesn't prove success), scp the 12 JSONs down, fill the PENDING table above (lead with COP max gap + AT_HOME RMS), and write the verdict vs J3.
+
+### 2026-05-29 — Phase 8B-3 RESULTS: B2d NATH best at 3/4, none beats J3; COP still open
+
+All 4 evals reached `EVAL COMPLETE` (logs `logs/B2{a,b,c,d}_eval_<jobid>.out`); 12 diagnostics JSONs pulled to `step4_Speed_Cluster/`. Gates scored from each `diagnostics_J_B2<x>.json` → `composite.components`. See the now-filled results table above.
+
+**Headline: no variant passes 4/4 — J3 still stands alone. Best is B2d NATH at 3/4** (passes AT_HOME, act_JS, composite; **only COP max gap fails, 7.07 > 5.0**).
+
+**Per-variant verdict:**
+- **B2d NATH (3/4) — the one to build on.** Moving AT_HOME out of the AR trunk into NAT Arm-2 (J3's topology) did exactly what the training proxy predicted: **AT_HOME RMS 5.75 → 4.94 (now PASSES**, near J3's 4.57), composite 0.801 → **0.670** (best of all four, near J3's 0.6355), and COP dragged down 10.21 → **7.07** as a *side effect* of cleaner home feeding the COP head. Crucially this was achieved **without re-coupling COP into the AR trunk** — so the NAT-split direction is validated, not the dead end. But COP 7.07 still misses the ≤5.0 gate: moving AT_HOME alone does not fully fix Spouse-collapse.
+- **B2c SG (2/4) — flat.** Soft home gate held activity (act_JS 0.0279 ✓) and composite (0.802, = baseline) but did **not** fix COP (9.67, barely off 10.21) or AT_HOME (6.14 ✗). Softening the gate alone is insufficient; it keeps the CrossAttn home path (G4-regime home_loss 0.231), which is the AT_HOME risk we flagged.
+- **B2a HH (1/4) and B2b MC (1/4) — regressions.** Both **broke act_JS** (0.070 / 0.066, was 0.0202 ✓ at baseline) — the training under-fit (best ep 33/35, act ≈ 0.25) showed up directly as activity-distribution failure at inference. B2b mass-coupling didn't even dent COP (10.50, *worse* than baseline). Added structure (HH proj / Alone=1−g reparam) made optimization harder for no gate gain.
+
+**What this confirms:** the training-space proxy held this cycle — B2d (the J3-twin: act 0.099 / home 0.371 / cop 0.194, val_score 0.0138) was the clear inference winner; the under-fit pair (B2a/B2b) were the clear losers. AT_HOME genuinely *wants* to live in the NAT arm (J3 and now B2d both confirm). COP improves when home is clean but is **not** solved by it — the residual 7.07 pp is a COP-head problem, to be closed on top of the NATH base **without** AR coupling.
+
+**Decision: next direction under discussion.** B2d NATH is the new working base. Open options to close COP 7.07 → ≤5.0 (all keep AT_HOME in NAT, none touch the AR trunk): stack a COP-specific fix onto NATH — e.g. (a) household/marital conditioning *inside the NAT Arm-2 COP path* (B2a's idea, but on the NATH topology where activity isn't starved), (b) Spouse-channel reweighting / focal loss on the cop_head, (c) mass-coupling applied *only* at the NAT COP head. Do **not** revisit B2b's global reparam or any AR-trunk COP coupling.
