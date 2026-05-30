@@ -687,3 +687,173 @@ All 4 evals reached `EVAL COMPLETE` (logs `logs/B2{a,b,c,d}_eval_<jobid>.out`); 
 **What this confirms:** the training-space proxy held this cycle — B2d (the J3-twin: act 0.099 / home 0.371 / cop 0.194, val_score 0.0138) was the clear inference winner; the under-fit pair (B2a/B2b) were the clear losers. AT_HOME genuinely *wants* to live in the NAT arm (J3 and now B2d both confirm). COP improves when home is clean but is **not** solved by it — the residual 7.07 pp is a COP-head problem, to be closed on top of the NATH base **without** AR coupling.
 
 **Decision: next direction under discussion.** B2d NATH is the new working base. Open options to close COP 7.07 → ≤5.0 (all keep AT_HOME in NAT, none touch the AR trunk): stack a COP-specific fix onto NATH — e.g. (a) household/marital conditioning *inside the NAT Arm-2 COP path* (B2a's idea, but on the NATH topology where activity isn't starved), (b) Spouse-channel reweighting / focal loss on the cop_head, (c) mass-coupling applied *only* at the NAT COP head. Do **not** revisit B2b's global reparam or any AR-trunk COP coupling.
+
+---
+
+## Phase 8B-4: J6 — J3 trunk + COP-path conditioning
+
+### 2026-05-29 — J6 family BUILT; smoke PASS; awaiting cluster submission
+
+**Aim:** Test whether demographic + home conditioning injected at the cop_head input (Arm-2 NAT path) closes the residual COP gap (7.07 pp → ≤5.0) on top of J3's 4/4 topology. Base = `JSeriesHybrid` in `04B_model.py`; J3 wiring untouched.
+
+#### Edits made
+
+**Archive:** `step4_Speed_Cluster/archive/04B_model_preJ6_20260529.py` (predecessor copy per archive rule).
+
+**04B_model.py — JSeriesHybrid:**
+1. `__init__`: added `self.enable_hh_cop_cond = config.get("enable_hh_cop_cond", False)`. Added `self.arm2_hh_proj = nn.Linear(11, d_model)` when True. Added `"J6"` to the `arm2_act_proj` model-type tuple (line ~900) so J6 gets the d_model-projected activity input. Updated `_cop_in` formula: `d_model + (1 if enable_hierarchical_cop else 0) + (d_model if enable_hh_cop_cond else 0)`.
+2. `forward` (standard AR-Arm1 → NAT-Arm2 path): replaced the single `if self.enable_hierarchical_cop` block with a unified `if self.enable_hierarchical_cop or self.enable_hh_cop_cond` builder; appends `home_probs.detach().unsqueeze(-1)` when hierarchical, appends `self.arm2_hh_proj(batch["cond_vec"][:, 9:20]).unsqueeze(1).expand(-1, T, -1)` when hh_cop_cond.
+3. `infer` (standard path): same unified builder using `cond_vec[:, 9:20]`.
+4. J_old / J5_F / J5_C / J5_X1 special branches left untouched.
+
+**04D_train.py:**
+- New `elif MODEL_TYPE == "J6":` branch (mirrors J3 config: d_model=args.d_model, d_ff=d_model×4, N_enc/dec=args.n_enc/dec_layers, dropout=DROPOUT, d_cond=d_cond). Reads `ENABLE_HIERARCHICAL_COP` and `ENABLE_HH_COP_COND` from env and injects into model_config.
+- Added `"J6"` to model-dispatch tuple (line ~1016), scheduler-bypass tuple (line ~1062), and per-batch scheduler-skip guard (line ~1213).
+
+**Scripts created:**
+- `jobs/train_J6_HHC.sh` — ENABLE_HH_COP_COND=1, ENABLE_HIERARCHICAL_COP=0 (HH conditioning only)
+- `jobs/train_J6_HC.sh`  — ENABLE_HH_COP_COND=0, ENABLE_HIERARCHICAL_COP=1 (home hierarchical only)
+- `jobs/train_J6_HCHH.sh` — both flags 1 (combined)
+- All 3: MODEL_TYPE=J6, LAMBDA_HOME=0.7, LAMBDA_ACT=1.0, LAMBDA_COP=0.3, LAMBDA_MARG=0.1, SPOUSE_NEG_WEIGHT=0.45, HOME_LABEL_SMOOTH=0.05, SCHED_SAMPLE_P=0.0, DROPOUT=0.1, --batch_size 256 --max_epochs 100 --patience 15 --lr 5e-5 --d_model 384 --n_heads 8 --n_enc_layers 6 --n_dec_layers 6, data_dir=outputs_step4_G1, #SBATCH --time=48:00:00.
+- `job_step4_J6_HHC_eval.sh`, `job_step4_J6_HC_eval.sh`, `job_step4_J6_HCHH_eval.sh` — each runs 04E → 04H → 04I → 04J, writing `diagnostics_{H,I,J}_J6_<v>.json` into the variant output dir.
+
+#### Smoke test results (--sample, CPU, 10 epochs each)
+
+All 3 flag combos ran to completion with no concat-dim errors:
+
+| Variant | Flags | cop_head[0] input dim | arm2_hh_proj | 10-ep best val_score |
+|---------|-------|-----------------------|--------------|----------------------|
+| J6_HHC  | HH=1, HC=0 | 128 (64+64) | Linear(11→64) ✓ | 0.2321 |
+| J6_HC   | HH=0, HC=1 | 65  (64+1)  | None ✓         | 0.2077 |
+| J6_HCHH | HH=1, HC=1 | 129 (64+1+64)| Linear(11→64) ✓ | 0.2602 |
+
+- All 3 variants trained without errors through forward + infer (validate uses infer at every epoch).
+- `arm2_act_proj` (J3 dim-balance fix) present in all 3 ✓.
+- J_old / J5_F / J5_C branches confirmed untouched (only the final `elif ... or ...` block changed).
+
+#### Config parity vs J3
+
+J6 config equals J3 except the two new flags. Confirmed by reading the J3 branch (lines 671–698) vs the new J6 branch: same d_model×4 d_ff, same N_enc/N_dec, same d_act/d_cycle, same aux_stratum_head=False. The two flags default False → J6 with both flags off is byte-identical to J3 forward/infer.
+
+#### Blockers
+None. Manager to submit 3 sbatch jobs when ready.
+
+#### 2026-05-29 — Manager review + cluster upload
+
+Manager audited the build before committing GPU time:
+- `04B_model.py` forward (lines 1268–1282) and infer (1383–1396) build `cop_input` by the **same** concat order `[binary_input, home_probs.detach()?, hh_emb?]`, so trained weights map correctly at inference. `home_head` reads `binary_input` only — home path untouched → AT_HOME-safe by construction. `home_probs` detached before the COP path (no backprop into home via the prob input).
+- `04D_train.py` J6 branch (822–856) config = J3 except the two flags; full-run `d_ff=d_model×4=1536`, `d_act/d_cycle=32`. J6 in dispatch/scheduler/skip tuples.
+- No new deps (`arm2_hh_proj` is pure-torch `nn.Linear`); same `envs/step4` that ran B2d.
+
+Uploaded to `/speed-scratch/o_iseri/occModeling/` (2 edited `.py` + 3 eval to BASE, 3 train to `jobs/`); presence verified by `ls`. Success criterion: hold J3's 4/4 gates (AT_HOME guardrail) while tightening COP below J3's 2.03 margin.
+
+**8B-4 SUBMITTED 2026-05-29** — 3 parallel J6 trainings RUNNING:
+
+| Job ID | Variant | Flags | Node |
+|--------|---------|-------|------|
+| 939524 | J6_HHC  | HH=1, HC=0 | cisr-1 |
+| 939525 | J6_HC   | HH=0, HC=1 | cisr-2 |
+| 939526 | J6_HCHH | HH=1, HC=1 | speed-01 |
+
+All got nodes immediately. Next: on training completion submit the 3 `job_step4_J6_*_eval.sh` chains, then scp `diagnostics_{H,I,J}_J6_*.json` and score vs gates.
+
+---
+
+### 2026-05-29 — J6_HT (4th variant) BUILT + SUBMITTED
+
+**Aim:** Add a 4th J6 axis — `ENABLE_HOME_TEMPORAL` — a residual depthwise temporal Conv1d on the Arm-2 features before `home_head`, so the AT_HOME prediction can learn transition timing and midday level. COP and activity paths untouched. Single-axis isolation: only the new flag is set; the two existing COP flags are off.
+
+#### Archive
+
+`archive/04B_model_preJ6HT_20260529.py` — predecessor copy taken before edits (per architecture-edit rule).
+
+#### Edits made
+
+**04B_model.py — JSeriesHybrid:**
+
+1. `__init__` flag (after `enable_hh_cop_cond`):
+   ```python
+   self.enable_home_temporal = config.get("enable_home_temporal", False)
+   ```
+2. Layer construction (immediately after `home_head` block, before `cop_head`):
+   ```python
+   if self.enable_home_temporal:
+       self.home_temporal = nn.Conv1d(d_model, d_model, kernel_size=5, padding=2, groups=d_model)
+       nn.init.zeros_(self.home_temporal.weight)
+       nn.init.zeros_(self.home_temporal.bias)
+   ```
+   **Zero-init rationale:** depthwise conv with all-zero weights is the identity map (output = 0 added to binary_input residual), so J6_HT at init is byte-identical to J3's home path. Training can specialise the temporal filter without a cold-start regression.
+3. Helper method `_home_feat` added after `_arm2_fuse` (before CRF helpers section):
+   ```python
+   def _home_feat(self, binary_input):
+       if self.enable_home_temporal:
+           t = self.home_temporal(binary_input.transpose(1, 2)).transpose(1, 2)
+           return binary_input + t
+       return binary_input
+   ```
+4. `forward` (standard AR → NAT path, line ~1278): `home_logits = self.home_head(self._home_feat(binary_input)).squeeze(-1)`
+5. `infer` (standard path, line ~1380): `home_logits_inf = self.home_head(self._home_feat(binary_input)).squeeze(-1)`
+6. **COP path verified untouched:** `cop_parts = [binary_input]` (not `_home_feat(binary_input)`) in both forward and infer — raw `binary_input` feeds cop_head as before.
+
+**04D_train.py — J6 branch:**
+
+Added alongside the two existing flags:
+```python
+_j6_ht = os.environ.get("ENABLE_HOME_TEMPORAL", "0") == "1"
+```
+And `"enable_home_temporal": _j6_ht,` in both the `--sample` and full `model_config` dicts.
+
+**Scripts created:**
+
+- `jobs/train_J6_HT.sh` — cloned from `train_J6_HHC.sh`; changes: job-name/logs → `J6_HT`; mkdir → `outputs_step4_J6_HT/checkpoints`; `ENABLE_HIERARCHICAL_COP=0`, `ENABLE_HH_COP_COND=0`, `ENABLE_HOME_TEMPORAL=1`; `--output_dir`/`--checkpoint_dir` → `outputs_step4_J6_HT`. J3 recipe identical: LAMBDA_HOME=0.7, LAMBDA_ACT=1.0, LAMBDA_COP=0.3, LAMBDA_MARG=0.1, SPOUSE_NEG_WEIGHT=0.45, HOME_LABEL_SMOOTH=0.05, SCHED_SAMPLE_P=0.0, DROPOUT=0.1, --batch_size 256 --max_epochs 100 --patience 15 --lr 5e-5 --d_model 384 --n_heads 8 --n_enc_layers 6 --n_dec_layers 6, `#SBATCH --time=48:00:00`.
+- `job_step4_J6_HT_eval.sh` — cloned from `job_step4_J6_HHC_eval.sh`; `OUT=outputs_step4_J6_HT`; diagnostics written as `diagnostics_{H,I,J}_J6_HT.json`; job-name `J6_HT_eval`.
+- `jobs/smoke_J6_HT.sh` — 15-min compute-node smoke (no local Python/data available); `--sample` flag, MODEL_TYPE=J6, ENABLE_HOME_TEMPORAL=1, 10 epochs.
+
+#### Smoke test
+
+No local `envs/step4` or `outputs_step4_G1`; smoke submitted to a compute node.
+
+- **Smoke job ID: 939535** (`smoke_J6_HT`) — submitted 2026-05-29; RUNNING on speed-03 at submission confirmation. Expected: 10 epochs, no shape error, home output (B,48), cop output (B,48,9), `self.home_temporal = Conv1d(64,64,k=5,groups=64)` under d_model=64 --sample. With flag off the home path is byte-identical to J3.
+
+#### Upload confirmation
+
+Uploaded in one bundle (locally):
+```
+"04B_model.py","04D_train.py","job_step4_J6_HT_eval.sh" | ForEach-Object { scp GSSCanada-main\...\$_ o_iseri@speed:occModeling/ }
+"train_J6_HT.sh","smoke_J6_HT.sh" | ForEach-Object { scp ... o_iseri@speed:occModeling/jobs/ }
+```
+
+#### Training submission
+
+**J6_HT job ID: 939536** — submitted 2026-05-29 alongside 939524–26; PENDING (AssocGrpGRES) at submission — normal GPU queue behaviour, will start when a slot opens.
+
+| Job ID | Variant  | Key flag              | Status at submission |
+|--------|----------|-----------------------|----------------------|
+| 939524 | J6_HHC   | HH_COP_COND=1         | RUNNING cisr-1       |
+| 939525 | J6_HC    | HIERARCHICAL_COP=1    | RUNNING cisr-2       |
+| 939526 | J6_HCHH  | both COP flags=1      | RUNNING speed-01     |
+| 939536 | J6_HT    | HOME_TEMPORAL=1       | PENDING (queue)      |
+
+**Eval deferred** — manager will submit all 4 eval chains (`job_step4_J6_{HC,HHC,HCHH,HT}_eval.sh`) together once all trainings complete, then compare `diagnostics_J_J6_*.json` composite scores vs gates.
+
+#### Progress Log — 2026-05-29 (manager): J6_HT training done; eval cycle-1 bug + fix
+
+**Training (939536):** COMPLETED clean (exit `0:0`, elapsed 03:10:34). Early-stopped at epoch 65 (patience 15; best = epoch 50). Best `val_score=0.0148` (`val_JS=0.0048`, home-gap proxy `0.0201`). Checkpoint contains `home_temporal` Conv1d → training wiring correct. Finished ~2 h before its siblings because it converged, not a crash.
+
+**Eval cycle-1 (939677) — INVALID, not a gate result:** SLURM reported COMPLETED in 34 s, but `04E_inference.py` crashed at `load_state_dict`:
+`RuntimeError: Error(s) in loading state_dict for ConditionalTransformer` (missing `decoder.*`/`home_head.weight`/`cop_head.weight`; unexpected `arm1_decoder.*`/`arm2_proj.*`/`home_temporal.*`/`home_head.0.*`/`cop_head.0.*`). Root cause: the model-dispatch tuple at `04E_inference.py:324-325` listed `J1…J5_C` but **not `"J6"`**, so the `model_type="J6"` checkpoint fell through to the `else: ConditionalTransformer` branch (line 359). 04E therefore wrote no `augmented_diaries.csv`; 04H/I/J then ran on missing data and each exited 0 (script has no `set -e`) → false-positive COMPLETED. The T6 values in `diagnostics_H_J6_HT.json` are observed HETUS reference only.
+
+**Fix (one line, full-chain):** added `"J6"` to the `JSeriesHybrid` dispatch tuple at `04E_inference.py:325`, mirroring 04D's known-good line `04D_train.py:1053-1054`. Checkpoint and eval script left untouched (both valid). Uploaded patched 04E (`scp` → SCP_OK) and verified on cluster (`grep` shows `…"J5_C", "J6"):`). **This single fix covers all four J6 evals** — J6_HHC/HC/HCHH evals will now load correctly with the same patched 04E. Re-running J6_HT eval via `sbatch job_step4_J6_HT_eval.sh`; gate scorecard pending.
+
+#### Progress Log — 2026-05-29 (manager): J6_HT eval cycle-2 — GATE SCORECARD (FAIL, 2/4)
+
+**Eval cycle-2 (939686) — VALID:** COMPLETED `0:0`, elapsed **16:36** (vs the 34 s false-positive), `augmented_diaries.csv` = **192,183 rows**, all three `diagnostics_{H,I,J}_J6_HT.json` written. Canonical roll-up from `04J` `composite.components`:
+
+| Gate | Threshold | J6_HT | J3 baseline | Pass? | vs J3 |
+|------|-----------|-------|-------------|-------|-------|
+| Composite | < 1.045 | **0.6866** | 0.6355 | ✅ | +0.051 worse |
+| AT_HOME RMS | ≤ 5.3 pp | **6.10** | 4.57 | ❌ | **+1.53 pp worse** |
+| COP max gap | ≤ 5.0 pp | **5.83** | 2.03 | ❌ | +3.80 pp worse |
+| act_JS | ≤ 0.05 | **0.0351** | 0.0191 | ✅ | +0.016 worse |
+
+**Verdict: 2/4 — FAILS. J6_HT does not beat J3 on any metric.** The residual depthwise temporal home head **regressed the exact metric it was designed to improve** (AT_HOME RMS 6.10 vs J3 4.57 — the hypothesis is falsified, not just unconfirmed). COP also degraded (5.83 vs 2.03) even though the COP heads read raw `binary_input` and the temporal residual feeds only `home_head`: the home loss back-propagates through `home_temporal` into the **shared trunk**, perturbing the trunk features the COP heads depend on. So the temporal head is net-harmful to the trunk. **Recommendation: shelve J6_HT.** Whether the temporal idea is worth salvaging (e.g. detach the trunk from the temporal residual, or apply it post-trunk only) is deferred until the other three J6 variants (HHC/HC/HCHH) report — full J6 row needed before next-step prompts.

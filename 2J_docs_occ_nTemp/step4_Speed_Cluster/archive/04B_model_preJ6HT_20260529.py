@@ -855,7 +855,6 @@ class JSeriesHybrid(nn.Module):
         self.enable_temporal_injection = config.get("enable_temporal_injection", False)
         self.enable_hierarchical_cop   = config.get("enable_hierarchical_cop",   False)
         self.enable_hh_cop_cond        = config.get("enable_hh_cop_cond",        False)
-        self.enable_home_temporal      = config.get("enable_home_temporal",      False)
 
         # ── Encoder: source-diary slot embedding (act + full aux) ────────
         self.act_embedding = nn.Embedding(n_act, d_act)
@@ -927,12 +926,6 @@ class JSeriesHybrid(nn.Module):
             self.home_head = nn.Sequential(
                 nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, 1)
             )
-        # J6-HT: depthwise temporal conv on Arm-2 features before home_head.
-        # Zero-init so it is identity at start (= J3 home path at init time).
-        if self.enable_home_temporal:
-            self.home_temporal = nn.Conv1d(d_model, d_model, kernel_size=5, padding=2, groups=d_model)
-            nn.init.zeros_(self.home_temporal.weight)
-            nn.init.zeros_(self.home_temporal.bias)
         # Co-presence head: J-4.2 widens by 1 (home_prob); J6 widens by d_model (hh_emb).
         _cop_in = (d_model
                    + (1       if self.enable_hierarchical_cop else 0)
@@ -1163,14 +1156,6 @@ class JSeriesHybrid(nn.Module):
 
         return fused_seq
 
-    def _home_feat(self, binary_input):
-        """Apply depthwise temporal conv residual to Arm-2 features for the home head (J6-HT).
-        Zero-init conv => identity at start; COP path must keep reading raw binary_input."""
-        if self.enable_home_temporal:
-            t = self.home_temporal(binary_input.transpose(1, 2)).transpose(1, 2)
-            return binary_input + t
-        return binary_input
-
     # ── CRF helpers (J5_C only) ──────────────────────────────────────────────
 
     @staticmethod
@@ -1280,7 +1265,7 @@ class JSeriesHybrid(nn.Module):
             )  # (B, 48, d_model)
             binary_input = arm2_feat
 
-        home_logits = self.home_head(self._home_feat(binary_input)).squeeze(-1)  # (B, 48)
+        home_logits = self.home_head(binary_input).squeeze(-1)          # (B, 48)
         if self.enable_hierarchical_cop or self.enable_hh_cop_cond:
             cop_parts = [binary_input]
             if self.enable_hierarchical_cop:
@@ -1382,8 +1367,8 @@ class JSeriesHybrid(nn.Module):
             arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
             binary_input = arm2_feat
 
-        home_logits_inf = self.home_head(self._home_feat(binary_input)).squeeze(-1)  # (B, 48)
-        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()                   # (B, 48)
+        home_logits_inf = self.home_head(binary_input).squeeze(-1)       # (B, 48)
+        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()         # (B, 48)
 
         if self._mtype == "J5_B":
             # J5-B chain-rule cop head: p_alone = σ(z_alone); p_other_i = (1 - p_alone) · σ(z_other_i).

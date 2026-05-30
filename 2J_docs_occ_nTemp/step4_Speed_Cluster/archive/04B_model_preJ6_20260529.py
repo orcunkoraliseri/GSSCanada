@@ -854,8 +854,6 @@ class JSeriesHybrid(nn.Module):
         self._mtype = _mtype
         self.enable_temporal_injection = config.get("enable_temporal_injection", False)
         self.enable_hierarchical_cop   = config.get("enable_hierarchical_cop",   False)
-        self.enable_hh_cop_cond        = config.get("enable_hh_cop_cond",        False)
-        self.enable_home_temporal      = config.get("enable_home_temporal",      False)
 
         # ── Encoder: source-diary slot embedding (act + full aux) ────────
         self.act_embedding = nn.Embedding(n_act, d_act)
@@ -899,16 +897,12 @@ class JSeriesHybrid(nn.Module):
         # in forward/infer but the projection layers are still constructed to keep state-dict
         # shape compatible with revert checkpoints.
         if _mtype in ("J3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b",
-                      "J5_A", "J5_B", "J5_F", "J5_C", "J6"):
+                      "J5_A", "J5_B", "J5_F", "J5_C"):
             self.arm2_act_proj = nn.Linear(n_act, d_model)
             d_arm2_in = d_model + d_model + d_cond + d_cycle + 3
         else:
             d_arm2_in = d_model + n_act + d_cond + d_cycle + 3
         self.arm2_proj = nn.Linear(d_arm2_in, d_model)
-
-        # J6: optional HH conditioning projection for COP head (11 features: cond_vec[9:20]).
-        if self.enable_hh_cop_cond:
-            self.arm2_hh_proj = nn.Linear(11, d_model)
 
         # J-4.1: explicit time-of-day and day-of-week embeddings injected into fused_seq.
         if self.enable_temporal_injection:
@@ -927,16 +921,8 @@ class JSeriesHybrid(nn.Module):
             self.home_head = nn.Sequential(
                 nn.Linear(d_model, d_model), nn.Tanh(), nn.Linear(d_model, 1)
             )
-        # J6-HT: depthwise temporal conv on Arm-2 features before home_head.
-        # Zero-init so it is identity at start (= J3 home path at init time).
-        if self.enable_home_temporal:
-            self.home_temporal = nn.Conv1d(d_model, d_model, kernel_size=5, padding=2, groups=d_model)
-            nn.init.zeros_(self.home_temporal.weight)
-            nn.init.zeros_(self.home_temporal.bias)
-        # Co-presence head: J-4.2 widens by 1 (home_prob); J6 widens by d_model (hh_emb).
-        _cop_in = (d_model
-                   + (1       if self.enable_hierarchical_cop else 0)
-                   + (d_model if self.enable_hh_cop_cond      else 0))
+        # Co-presence head: J-4.2 widens input by 1 to receive home_prob conditioning.
+        _cop_in = d_model + 1 if self.enable_hierarchical_cop else d_model
         self.cop_head = nn.Sequential(
             nn.Linear(_cop_in, d_model), nn.Tanh(), nn.Linear(d_model, n_cop)
         )
@@ -1163,14 +1149,6 @@ class JSeriesHybrid(nn.Module):
 
         return fused_seq
 
-    def _home_feat(self, binary_input):
-        """Apply depthwise temporal conv residual to Arm-2 features for the home head (J6-HT).
-        Zero-init conv => identity at start; COP path must keep reading raw binary_input."""
-        if self.enable_home_temporal:
-            t = self.home_temporal(binary_input.transpose(1, 2)).transpose(1, 2)
-            return binary_input + t
-        return binary_input
-
     # ── CRF helpers (J5_C only) ──────────────────────────────────────────────
 
     @staticmethod
@@ -1280,19 +1258,11 @@ class JSeriesHybrid(nn.Module):
             )  # (B, 48, d_model)
             binary_input = arm2_feat
 
-        home_logits = self.home_head(self._home_feat(binary_input)).squeeze(-1)  # (B, 48)
-        if self.enable_hierarchical_cop or self.enable_hh_cop_cond:
-            cop_parts = [binary_input]
-            if self.enable_hierarchical_cop:
-                home_probs = torch.sigmoid(home_logits).detach()        # (B, 48)
-                cop_parts.append(home_probs.unsqueeze(-1))
-            if self.enable_hh_cop_cond:
-                T = binary_input.shape[1]
-                hh_emb = self.arm2_hh_proj(
-                    batch["cond_vec"][:, 9:20]
-                ).unsqueeze(1).expand(-1, T, -1)                        # (B, T, d_model)
-                cop_parts.append(hh_emb)
-            cop_logits = self.cop_head(torch.cat(cop_parts, dim=-1))    # (B, 48, 9)
+        home_logits = self.home_head(binary_input).squeeze(-1)          # (B, 48)
+        if self.enable_hierarchical_cop:
+            home_probs  = torch.sigmoid(home_logits).detach()           # (B, 48) — detach isolates grads
+            cop_input   = torch.cat([binary_input, home_probs.unsqueeze(-1)], dim=-1)
+            cop_logits  = self.cop_head(cop_input)                       # (B, 48, 9)
         else:
             cop_logits  = self.cop_head(binary_input)                    # (B, 48, 9)
 
@@ -1382,8 +1352,8 @@ class JSeriesHybrid(nn.Module):
             arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
             binary_input = arm2_feat
 
-        home_logits_inf = self.home_head(self._home_feat(binary_input)).squeeze(-1)  # (B, 48)
-        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()                   # (B, 48)
+        home_logits_inf = self.home_head(binary_input).squeeze(-1)       # (B, 48)
+        gen_home = (torch.sigmoid(home_logits_inf) > 0.5).float()         # (B, 48)
 
         if self._mtype == "J5_B":
             # J5-B chain-rule cop head: p_alone = σ(z_alone); p_other_i = (1 - p_alone) · σ(z_other_i).
@@ -1395,18 +1365,10 @@ class JSeriesHybrid(nn.Module):
             p_alone   = torch.sigmoid(z_alone)
             p_others  = (1.0 - p_alone) * torch.sigmoid(z_others)
             cop_prob  = torch.cat([p_alone, p_others], dim=-1)             # (B, 48, 9)
-        elif self.enable_hierarchical_cop or self.enable_hh_cop_cond:
-            cop_parts = [binary_input]
-            if self.enable_hierarchical_cop:
-                home_probs_inf = torch.sigmoid(home_logits_inf).detach()
-                cop_parts.append(home_probs_inf.unsqueeze(-1))
-            if self.enable_hh_cop_cond:
-                T = binary_input.shape[1]
-                hh_emb = self.arm2_hh_proj(
-                    cond_vec[:, 9:20]
-                ).unsqueeze(1).expand(-1, T, -1)                          # (B, T, d_model)
-                cop_parts.append(hh_emb)
-            cop_prob = torch.sigmoid(self.cop_head(torch.cat(cop_parts, dim=-1)))
+        elif self.enable_hierarchical_cop:
+            home_probs_inf = torch.sigmoid(home_logits_inf).detach()
+            cop_input_inf  = torch.cat([binary_input, home_probs_inf.unsqueeze(-1)], dim=-1)
+            cop_prob = torch.sigmoid(self.cop_head(cop_input_inf))         # (B, 48, 9)
         else:
             cop_prob = torch.sigmoid(self.cop_head(binary_input))          # (B, 48, 9)
 

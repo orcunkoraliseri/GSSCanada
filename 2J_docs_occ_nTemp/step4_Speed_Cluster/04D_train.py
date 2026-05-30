@@ -819,6 +819,44 @@ def train(args):
                 "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
                 "aux_stratum_head": False,
             }
+    elif MODEL_TYPE == "J6":
+        # J6: J3 trunk + COP-path information-flow. enable_hierarchical_cop and
+        # enable_hh_cop_cond gate the two new COP-head conditioning axes.
+        args.fp16 = False
+        _j6_hier = os.environ.get("ENABLE_HIERARCHICAL_COP", "0") == "1"
+        _j6_hh   = os.environ.get("ENABLE_HH_COP_COND",      "0") == "1"
+        _j6_ht   = os.environ.get("ENABLE_HOME_TEMPORAL",     "0") == "1"
+        if args.sample:
+            model_config = {
+                "model_type": "J6",
+                "d_model": 64, "n_heads": 4, "d_ff": 256,
+                "N_enc": 2, "N_dec": 2,
+                "d_act": 16, "d_cycle": 16,
+                "dropout": 0.1, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+                "enable_hierarchical_cop": _j6_hier,
+                "enable_hh_cop_cond":     _j6_hh,
+                "enable_home_temporal":   _j6_ht,
+            }
+            args.batch_size = 16
+            args.max_epochs = 10
+            args.patience   = 10
+        else:
+            model_config = {
+                "model_type": "J6",
+                "d_model": args.d_model, "n_heads": args.n_heads,
+                "d_ff": args.d_model * 4,
+                "N_enc": args.n_enc_layers,
+                "N_dec": args.n_dec_layers,
+                "d_act": 32, "d_cycle": 32,
+                "dropout": DROPOUT, "n_activity_classes": 14,
+                "n_copresence": 9, "n_slots": 48, "d_cond": d_cond,
+                "aux_stratum_head": False,
+                "enable_hierarchical_cop": _j6_hier,
+                "enable_hh_cop_cond":     _j6_hh,
+                "enable_home_temporal":   _j6_ht,
+            }
     elif MODEL_TYPE in ("HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP"):
         # Phase 6 Stage A model families. All subclass JSeriesHybrid → reuse J3
         # encoder + Arm-2 binary heads; only the Arm-1 activity decoder differs.
@@ -1013,7 +1051,7 @@ def train(args):
         assert JSeriesHybridV3 is not None, "JSeriesHybridV3 not found in 04B_model.py (check 04B_model_J3_v3.py import)"
         model = JSeriesHybridV3(model_config).to(device)
     elif MODEL_TYPE in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3",
-                         "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C"):
+                         "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "J6"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
     elif MODEL_TYPE == "HSMM":
@@ -1059,7 +1097,7 @@ def train(args):
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     warmup_steps = 2000 if not args.sample else 50
     if MODEL_TYPE in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3",
-                       "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
+                       "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "J6",
                        "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP",
                        "G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH"):
         # I1/J-series: ReduceLROnPlateau only — skipping LambdaLR prevents lr_lambda(0)
@@ -1172,7 +1210,7 @@ def train(args):
                 optimizer.step()
 
             # I1/J-series: per-epoch ReduceLROnPlateau; all others: per-batch LambdaLR
-            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C",
+            if MODEL_TYPE not in ("I1", "J1", "J2", "J2_5", "J3", "J3_v2", "J3_v3", "J4_1", "J4_2", "J4_3", "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "J6",
                        "HSMM", "MDLM", "MDLM_v2", "HIER", "MAMBA", "SEDD", "G4_NAT_COP",
                        "G4_NAT_COP_HH", "G4_NAT_COP_MC", "G4_NAT_COP_SG", "G4_NAT_COP_NATH"):
                 scheduler.step()

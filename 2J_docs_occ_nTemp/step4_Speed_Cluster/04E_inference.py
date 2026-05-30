@@ -322,7 +322,7 @@ def main():
         assert JSeriesHybridV3 is not None, "JSeriesHybridV3 not found in 04B_model.py (check 04B_model_J3_v3.py import)"
         model = JSeriesHybridV3(model_config).to(device)
     elif _mtype in ("J1", "J2", "J2_5", "J3", "J4_1", "J4_2", "J4_3",
-                     "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C"):
+                     "J5_X1", "J5_X1b", "J5_A", "J5_B", "J5_F", "J_old", "J5_C", "J6"):
         assert JSeriesHybrid is not None, "JSeriesHybrid not found in 04B_model.py"
         model = JSeriesHybrid(model_config).to(device)
     elif _mtype == "G4_NAT_COP":
