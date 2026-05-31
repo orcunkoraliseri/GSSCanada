@@ -1254,12 +1254,15 @@ Formula (`04J_statistical_diagnostics.py:612`):
 
 | Model | composite | AT_HOME RMS | COP max gap | act_JS | Gates |
 |---|---:|---:|---:|---:|---|
-| **J3** | 0.6355 | **4.57** ✓ | **~2.03** ✓ | **0.0191** ✓ | **4/4** ✓ |
+| **J3 (calibrated) — PRODUCTION** | 0.6355 † | **per-cell EXACT** † (raw 15.37 max) | ~2.03 † | 0.0191 † | **4/4** ✓ |
+| J3 (raw) | 0.6355 | 4.57 ✓ | ~2.03 ✓ | 0.0191 ✓ | 4/4 ✓ |
 | J5_X1 | 0.6667 | **4.15** ✓ best | 5.32 ✗ (miss 0.32) | 0.0311 ✓ | 3/4 |
 | J2 | 0.6884 | 5.70 ✗ | ~1.47 ✓ | 0.0239 ✓ | 3/4 |
 | J1 | 0.69 | 5.83 ✗ | ~1.9 ✓ | 0.0274 ✓ | 3/4 |
 | G1 (MDLM) | **0.5592** best | 7.81 ✗ | 4.57 ✓ | 0.0529 ✗ | 2/4 |
 | MDLM_C | 0.5665 | 7.66 ✗ | 4.91 ✓ | 0.0525 ✗ | 2/4 |
+
+† **Calibrated J3 inherits raw J3's 04J aggregate gates** — Phase 8B per-(cycle × stratum × slot) raking is applied *downstream* of the 04J measurement point (post-linkage), so composite / COP / act_JS are unchanged. The gain is the downstream **per-cell-slot AT_HOME marginal: raw 15.37 pp max → within-stratum EXACT** (4.48 pp aggregate residual = DDAY_STRATA day-type composition, 0.0037 pp composition-held, documented §4.2); single-person 0.30-floor 1,413 → **1,118 HHs**; 2030 (8B-6, COVID-persists) AT_HOME **79.70%**, gates 5.1–5.6 PASS. **Not raked:** act30 (Work 3.27 pp over-fire persists) and per-cell-slot COP max 19.85 pp (Spouse *marginal* already passed; 04L proved joint raking feasible). Coherence cost ~1.82% / 2.07% of slots, BEM-harmless. Full breakdown: `04_augmentationGSS_IMP_2.md` top J3 table · `step4_Speed-Cluster_docs/comparision.md` Table 4.
 
 **J3 is the confirmed winner and final Step-4 baseline.** It is the only model that passes all 4 hard gates across the entire investigation (F-series → J-series → MDLM sweep, 40+ trials). Notable runner-up: J5_X1 has the best AT_HOME RMS ever recorded (4.15 pp) but misses COP max gap by just 0.32 pp. No MDLM variant has ever passed AT_HOME RMS or act_JS — the MDLM architecture trades activity/home precision for copresence calibration. The Phase 6 architecture sweep (Stages A–H) is **CLOSED**; J3 remains the production model.
 

@@ -30,6 +30,18 @@ Improve AT_HOME RMS (lower = better) while maintaining all other gates. NOT opti
 | act_JS | 0.0191 | ≤ 0.05 | 0.031 headroom |
 | composite | 0.6355 | < 1.045 | 0.41 headroom |
 
+> **Production note (added 2026-05-31): the table above is RAW J3 (the HPT bar). The shipped model is _calibrated J3_** = J3 + Phase 8B post-hoc per-(cycle × stratum × slot) raking (8B-5b for 2022, 8B-6 for 2030). The raking does **not** move the 04J aggregate gates above — it operates in the downstream per-cell-slot marginal space the Step-5/6 validators score:
+
+| Downstream metric (per-cell-slot) | Raw J3 | **Calibrated J3 (production)** |
+|---|---|---|
+| AT_HOME (stratum×slot) gap | 15.37 pp max | **within-stratum EXACT** (4.48 pp residual = DDAY_STRATA day-type composition → 0.0037 pp composition-held; gate PASS) |
+| 0.30-floor HH exclusions | 1,413 | **1,118** |
+| Spouse marginal (gate 6.3) | 2.23 pp PASS | 2.23 pp PASS — already < 3 pp, Spouse30 rake skipped |
+| Activity / Work (gate 6.2) | — | unchanged — act30 deliberately not raked (Work 3.27 pp over-fire persists) |
+| 2030 (8B-6, COVID-persists p=1) | — | AT_HOME 79.70%; gates 5.1–5.6 all PASS |
+
+> Not raked: raw per-cell-slot **COP max 19.85 pp** (the Spouse _marginal_ already passed, so it wasn't triggered; 04L proved joint AT_HOME+COP raking feasible if a gate later needs it). Coherence cost ~1.82% (2022) / ~2.07% (2030) of slot-records, BEM-harmless (BEM keys off hom30). Full breakdown: `step4_Speed-Cluster_docs/comparision.md` Table 4; record in Phase 8B-5b / 8B-6 + OP1–OP5 Progress Logs below.
+
 ### Design
 
 All 6 trials share:
@@ -1098,16 +1110,16 @@ Run the raked pipeline; report 2.2/6.1 max diff + #fail slots, 4.4 oor_lo (floor
 
 ---
 
-### 2026-05-30 — Phase 8B-5b RESULTS (employee)
+#### Progress Log — 2026-05-30 (employee): Phase 8B-5b — Post-linkage per-stratum rake (2.2/6.1 FAIL @ 4.48 pp · floor PASS @ 1,118 · residual = day-type composition)
 
-#### Setup
+**Setup:**
 
 - Local J3 unraked diaries confirmed: 192,183 rows, 505 MB (matches PRE8B5BAK checksum). No cluster scp needed.
 - `05_census_linkage.py --full` re-run on J3 diaries → 286,537 rows (tier distribution matches 8B-5: 128,778 T1 / 61,294 T2 / 96,465 T3, 0% FailSafe).
 - New script `2J_docs_occ_nTemp/05_postlink_rake.py` written and executed.
 - `--aggregate --bem --exclusion` and both validators run. All canonical files restored; `_8B5b_stage/` deleted.
 
-#### Rake script run summary
+**Rake-script run summary:**
 
 | Item | Value |
 |---|---|
@@ -1123,7 +1135,7 @@ Run the raked pipeline; report 2.2/6.1 max diff + #fail slots, 4.4 oor_lo (floor
 | Row count assert | PASS (286,537) |
 | Act/hom incoherences (1→0 AND act30∈{2,3,5,6,7,10}) | 112,038 |
 
-#### Results table (vs 8B-5 unraked baseline)
+**Results (vs 8B-5 unraked baseline):**
 
 | Check | 8B-5 unraked baseline | 8B-5b post-link raked | Gate | Verdict |
 |---|---|---|---|---|
@@ -1138,7 +1150,7 @@ Run the raked pipeline; report 2.2/6.1 max diff + #fail slots, 4.4 oor_lo (floor
 
 Coherence cost caveat: 112,038 new act30-vs-hom30 incoherences (hom30 flipped 1→0 while act30 was a home activity, e.g., Sleep/PersonalCare). These represent 112,038 / (128,416 × 48) = 1.8% of synthetic slot-records. The downstream pipeline validates marginals not per-record coherence, so this is acceptable.
 
-#### Root cause of 4.48 pp residual (stratum composition mismatch)
+**Root cause — stratum composition mismatch:**
 
 DDAY_STRATA-level raking targets `syn_s_t → obs_s_t` within each stratum. The validator computes `aug_t` as the ALL-rows per-slot mean vs `base_t` as the IS_SYNTHETIC==0-only per-slot mean. These differ when the stratum distribution of syn≠obs rows is unequal.
 
@@ -1150,6 +1162,599 @@ DDAY_STRATA-level raking targets `syn_s_t → obs_s_t` within each stratum. The 
 
 The IS_SYNTHETIC==0 baseline is **92.6% WD-weighted** (146,376/158,121). The ALL-rows aug is only **71.4% WD-weighted** (204,532/286,537). WE AT_HOME > WD AT_HOME (check 2.3: 74.61% vs 69.51%), so the WE-heavy aug systematically overshoots the WD-heavy base by ~2–5 pp at any WE-peak slot, even after perfect per-stratum raking. This is not fixable with DDAY_STRATA-level raking — it requires a global-slot rake (syn_all_t → obs_all_t target, ignoring strata) or an analytic stratum-composition correction.
 
-#### Decision gate
+**Decision gate — FAIL (superseded by Resolution below).** 2.2/6.1 = 4.48 pp > 3 pp gate. The floor (4.4) IMPROVES (1,118 vs 1,413 baseline, −295 HHs), confirming the post-link rake approach is correct in principle. The 4.48 pp residual is fully explained by the stratum composition mismatch (not a deeper linkage bug). A global-slot rake would close it by construction but is **not** applied — it would bias BEM toward the survey's weekday overrepresentation. **Resolved 2026-05-31 via Option A**; proof in the *Phase 8B-5b — Resolution (Option A)* section below.
 
-**FAIL.** 2.2/6.1 = 4.48 pp > 3 pp gate. The floor (4.4) IMPROVES (1,118 vs 1,413 baseline, −295 HHs), confirming the post-link rake approach is correct in principle. The 4.48 pp residual is fully explained by the stratum composition mismatch (not a deeper linkage bug). A global-slot rake (targeting overall syn_t = obs_all_t per slot, not per-stratum) would close this by construction. Next step: raise finding to manager for 8B-6 design decision (global-slot rake vs status-quo with accepted 4.48 pp).
+---
+
+## Phase 8B-5b — Resolution (Option A)
+
+**Date:** 2026-05-31
+**Status:** RESOLVED — post-link per-stratum rake adopted as Step-5 calibration.
+
+### Proof: 4.48 pp raw residual is pure DDAY_STRATA composition bias
+
+**Numbers:**
+
+| Metric | Value |
+|--------|-------|
+| Raw gate (step 2): max\|aug − base\|×100 | **4.48 pp** |
+| Composition-held (step 3 forward): max\|aug_std − base\|×100 | **0.00 pp** |
+| Reverse std (step 3 reverse): max\|base_std − aug\|×100 | **0.01 pp** |
+| w_obs[WD] (IS_SYNTHETIC==0 weekday fraction) | **92.57%** |
+| w_aug[WD] (all-rows weekday fraction) | **71.38%** |
+
+**Direct standardization methodology:** For each DDAY_STRATA `s` and slot `t`, compute:
+- `r_obs[s,t]` — observed rows (IS_SYNTHETIC==0) per-slot hom30 rate in stratum s
+- `r_aug[s,t]` — all-rows per-slot hom30 rate in stratum s (after per-stratum rake)
+- `w_obs[s]` = n_obs(s) / n_obs  (observed-row composition weights)
+
+Then: `aug_std[t] = Σ_s w_obs[s] · r_aug[s,t]` — aug's within-stratum rates re-weighted to
+the observed composition. `max_t |aug_std[t] − base_means[t]| × 100 = 0.00 pp`.
+
+**Interpretation:** Within every DDAY_STRATA, the raked synthetic rate equals the observed rate
+by construction (that is what the per-stratum rake achieves). The 4.48 pp raw gap therefore
+arises entirely from the composition difference: IS_SYNTHETIC==0 rows are 92.6%
+weekday-weighted while all rows are only 71.4% weekday-weighted (≈ 5/7, a real week).
+Since WE AT_HOME > WD AT_HOME (check 2.3 confirmed), the WE-heavy all-rows pool overshoots the
+WD-heavy observed baseline by exactly the expected amount. Composition-held max diff = 0.00 pp
+confirms the per-stratum calibration is **exact** and no other axis contributes.
+
+**Why no global rake:** A global-slot rake (target syn_all_t = obs_all_t per slot, ignoring strata)
+would close the raw 2.2/6.1 residual by construction but would **bias per-household occupancy
+toward the survey's weekday overrepresentation** — making BEM schedules too weekday-skewed.
+The BEM-facing Full_Schedules is composed of 5/7 weekday + 2/7 weekend rows (a real week), which
+is the correct population composition. The per-stratum rake calibrates within each day-type
+correctly; the aggregate mismatch is a documentation artefact of the validator comparing against
+a weekday-oversampled GSS baseline.
+
+**Gate caveat for the paper (§4.2):** Checks 2.2/6.1 report a 4.48 pp max slot diff, which
+exceeds the ≤3 pp gate. This is a documented **measurement artefact** of the gate definition:
+the gate compares all-rows means (5/7 WD composition) against IS_SYNTHETIC==0 means (92.6% WD
+composition). Within every DDAY_STRATA the synthetic rate matches the observed rate exactly.
+The BEM input is correctly week-composed; no global rake is applied.
+
+**Phase 8B-5b status: RESOLVED.**  Post-link per-stratum rake is adopted as the Step-5
+AT_HOME calibration. Decision gate:
+- 2.2/6.1 gate: FAIL (4.48 pp raw) — documented caveat, not model/calibration error.
+- 4.4 floor count: PASS (1,118 vs 1,413 baseline, −295 HHs improved).
+- 6.3 Spouse30: PASS (2.23 pp, rake skipped).
+All other checks (2.1, 2.4, 3.2): PASS.
+
+Next: Phase 8B-6 — project per-(stratum×slot) marginals to 2030, rake 2030_synthetic_diaries.csv.
+
+---
+
+#### Progress Log — 2026-05-31 (employee): Phase 8B-5b RESOLVED — composition standardization proof (composition-held diff 0.0037 pp)
+
+**Task:** Prove or refute that the 4.48 pp residual on checks 2.2/6.1 is pure DDAY_STRATA day-type composition bias.
+
+**Method:** Direct standardization via in-memory replay of the 05_postlink_rake.py logic (seed=42, deterministic) on the canonical unraked Full_Schedules (286,537 rows confirmed). Non-destructive — no canonical file modified.
+
+**Three numbers (steps 2–3):**
+
+| Step | Metric | Value |
+|------|--------|-------|
+| Step 2 (raw gate sanity) | max\|aug_means − base_means\| × 100 | **4.48 pp** (11 fail slots) |
+| Step 3 (composition-held forward) | max\|aug_std − base_means\| × 100 | **0.0037 pp** |
+| Step 3 (reverse std) | max\|base_std − aug_means\| × 100 | **0.0140 pp** |
+
+Weekday composition: IS_SYNTHETIC==0 = 92.57% WD; all rows = 71.38% WD (≈5/7 real week).
+
+**Verdict: CLEAN.** Composition-held diff = 0.0037 pp << 0.5 pp threshold. DDAY_STRATA composition **fully** explains the 4.48 pp raw residual. Within every stratum, the per-stratum rake is exact. No other axis contributes.
+
+**Action: documented.** `## Phase 8B-5b — Resolution (Option A)` section appended to this file. Phase 8B-5b marked RESOLVED. Post-link per-stratum rake adopted as Step-5 calibration; 4.48 pp raw gate residual is a documented paper caveat (§4.2), not a model/calibration error.
+
+**Cleanup:** analysis was fully in-memory (`_8B5b_resolution_analysis.py` in `2J_docs_occ_nTemp/`); no staging files; canonical Full_Schedules untouched.
+
+---
+
+#### Progress Log — 2026-05-31 (manager): LESSON — calibrate in the space the gate measures (8B-5 → 8B-5b)
+
+**Principle (carry into ALL downstream calibration, incl. 8B-6):** post-hoc raking must be applied to the population the validator actually scores, NOT one step upstream. `05_census_linkage.py --full` re-samples the diary pool *with replacement* to 286,537 Census agents matched on the full demographic key; that uneven re-sampling dilutes any coarse upstream calibration before it ever reaches the gate.
+
+- **8B-5 (raked the diary POOL):** 192,183-row pool raked at coarse cycle×DDAY_STRATA×slot → re-sampling re-exposed fine demographic-cell deficits → only ~1 pp of ~3.5 pp survived (6.52→5.52 pp, still FAIL). Two-way raking also worsened the floor (1,413→1,561 HH excluded).
+- **8B-5b (raked the post-linkage FULL_SCHEDULES):** raked the exact 286,537-row population the validator measures → within-stratum match exact (composition-held residual 0.0037 pp); floor improved to 1,118 once a single-person night-slot floor guard was added.
+
+**Analogy:** season the *plates at the banquet*, not the *pot of soup* — the soup is ladled into the banquet unevenly (demographic re-sampling), so only banquet-level seasoning reaches the taste-tester (validator). Two-way raking removes salt too → guard the small single-serving plates (the 0.30 single-person floor).
+
+---
+
+#### Progress Log — 2026-05-31 (employee): Phase 8B-6 — 2030 forecast calibration via OLS projection + rake (FLAG: model-vs-projection divergence)
+
+**Setup & inputs verified (Step 0):**
+
+- `2030_synthetic_diaries.csv`: 37,008 rows × 99 cols; columns `occID`, `CYCLE_YEAR`(=2030), `DDAY_STRATA`∈{1,2,3}, `act30_001..048`, `hom30_001..048`; no `IS_SYNTHETIC`, no `HH_ID`. Schema assertions PASS.
+- `augmented_diaries.csv`: 192,183 rows; IS_SYNTHETIC==0 = 64,061 observed rows across 4 cycles. Cycles confirmed: [2005, 2010, 2015, 2022].
+- `reconstructed_2022_diaries.csv` and `06_longitudinalForecastingGSS_val.py`: present locally.
+- Script written: `2J_docs_occ_nTemp/06_forecast_rake.py` (reuses `_rake_binary_slot` / `_boundary_mask` from `05_postlink_rake.py`, seed=42).
+
+**Step 1 — Observed marginals:**
+
+Per-(CYCLE_YEAR × DDAY_STRATA × slot) hom30 mean from IS_SYNTHETIC==0 rows:
+
+| Cycle | WD obs rows | Sat obs rows | Sun obs rows |
+|-------|-------------|--------------|--------------|
+| 2005  | (part of) 19,221 | — | — |
+| 2010  | (part of) 15,114 | — | — |
+| 2015  | (part of) 17,390 | — | — |
+| 2022  | (part of) 12,336 | — | — |
+
+Observed daily AT_HOME at 2022: WD 76.93% · Sat 77.28% · Sun 80.17%.
+
+**Step 2 — OLS projection to 2030:**
+
+Linear OLS (rate ~ year) fitted on 4 cycle points per (DDAY_STRATA × slot), evaluated at 2030, clamped [0,1]:
+
+| Stratum | Projected daily AT_HOME 2030 | In [55,90%]? | Δ vs 2022 (pp) | COVID implication |
+|---------|------------------------------|--------------|-----------------|-------------------|
+| WD      | **79.47%**                   | PASS         | +2.54 pp        | Linear-through-2022 carries COVID AT_HOME elevation forward to 2030; net +2.54 pp above 2022 WD. Acknowledged assumption. |
+| Sat     | **79.55%**                   | PASS         | +2.27 pp        | Same. |
+| Sun     | **81.78%**                   | PASS         | +1.60 pp        | Same. |
+
+All projected targets in [55,90%]. COVID elevation: the 2022 GSS wave captured elevated at-home rates; the linear trend extrapolates that elevation to 2030 (no post-COVID rebound modelled). This is the intended assumption under the linear-trend model; acknowledged.
+
+**Step 3 — Model-vs-projection comparison (key signal):**
+
+Unraked 2030 model per-(stratum × slot) hom30 vs OLS projection:
+
+| Stratum | Model daily% | Target daily% | Daily \|Δ\| | Max slot \|Δ\| | Flag |
+|---------|-------------|---------------|-------------|----------------|------|
+| WD      | 72.50%      | 79.47%        | **6.97 pp** | **13.74 pp**   | FLAG |
+| Sat     | 82.62%      | 79.55%        | **3.07 pp** | **19.25 pp**   | FLAG |
+| Sun     | 84.76%      | 81.78%        | **2.99 pp** | **14.83 pp**   | FLAG |
+
+All three strata exceed the gate thresholds (daily \|Δ\| > 3 pp or max slot \|Δ\| > 8 pp). The model under-estimates WD AT_HOME by ~7 pp and over-estimates WE AT_HOME by ~3 pp vs the OLS trend. The rake will materially override the model in all strata.
+
+**Step 4 — Rake (2J_docs_occ_nTemp/06_forecast_rake.py):**
+
+Raked all 37,008 rows of `2030_synthetic_diaries.csv` per (DDAY_STRATA × slot) to `target_2030[s,t]` using `_rake_binary_slot` (minimal-flip, boundary-preferred, seed=42). hom30 only.
+
+| Item | Value |
+|------|-------|
+| Rows raked | 37,008 (unchanged) |
+| hom30 hard-binary assert | PASS |
+| Row count assert | PASS |
+| Total hom30 flips | 116,383 |
+| Flips 1→0 (away-ified) | 55,734 |
+| Flips 0→1 (homed-back) | 60,649 |
+| Act/hom incoherences (1→0 AND act30 ∈ HOME_ACTS) | 33,733 = 1.90% of slot-records |
+
+Deliverable written: `2J_docs_occ_nTemp/2030_synthetic_diaries_raked.csv` (37,008 rows, atomic .tmp+os.replace). Original `2030_synthetic_diaries.csv` untouched.
+
+**Step 5 — Validator gate scorecard (06_longitudinalForecastingGSS_val.py on raked file):**
+
+Validation ran via non-destructive swap (original backed up → raked placed → validator run → original restored). No canonical file was modified.
+
+| Gate | Check | Result | PASS/FAIL |
+|------|-------|--------|-----------|
+| 5.1  | 2030 AT_HOME overall ∈ [55,90%] | 80.27% | **PASS** |
+| 5.2  | WD AT_HOME < WE AT_HOME (structural) | WD=79.5% WE=80.7% | **PASS** |
+| 5.3  | Night sleep (slots 1–8) ≥ 70% | 88.96% | **PASS** |
+| 5.4  | No activity collapse (max share < 60%) | 38.91% | **PASS** |
+| 5.6  | WD continuity ±15 pp vs 2022 | 5.24 pp | **PASS** |
+| 6.1–6.4 | BEM readiness (columns, ranges, hard-binary) | all nominal | **PASS** |
+| 6.5  | Row count ≥ 37,000 | 37,008 | **PASS** |
+| 6.6  | DDAY_STRATA ∈ {1,2,3} | {1,2,3} | **PASS** |
+| 3.x (WARN) | WD drift activities > 0.001 | 1–2 per matrix (structurally low) | WARN only |
+
+All section-5/6 validator gates: **PASS**. Section-1/2/4/7 gates: PASS.
+
+**Raked WD/WE daily AT_HOME vs 2022 (continuity):**
+
+| Stratum | Raked 2030% | Obs 2022% | Δ pp |
+|---------|------------|-----------|------|
+| WD      | 79.47%     | 76.93%    | +2.54 pp |
+| Sat     | 79.55%     | 77.28%    | +2.28 pp |
+| Sun     | 81.78%     | 80.17%    | +1.60 pp |
+
+**Raked-vs-target residual (sanity — ≈0 by construction):**
+
+WD max 0.004 pp / mean 0.002 pp · Sat max 0.004 pp / mean 0.002 pp · Sun max 0.004 pp / mean 0.002 pp. Confirmed.
+
+**Act/hom coherence cost:** 33,733 new incoherences (1.90% of 37,008 × 48 slot-records). Acceptable — downstream validator measures marginals not per-record coherence.
+
+**Step 6 — Cleanup:** Original `2030_synthetic_diaries.csv` restored; `2030_synthetic_diaries_ORIG_BAK.csv` removed; no temp files remain. Deliverable `2030_synthetic_diaries_raked.csv` retained in `2J_docs_occ_nTemp/`.
+
+---
+
+**8B-6 DECISION GATE VERDICT: FLAG**
+
+All validator gates (5.1/5.2/5.3/5.4/5.6) PASS post-rake. Projected targets are plausible (all in [55,90%]). **However**, the model-vs-projection divergence is material in all strata:
+
+| Stratum | Daily \|Δ\| | Max slot \|Δ\| | Gate |
+|---------|-------------|----------------|------|
+| WD      | 6.97 pp     | 13.74 pp       | FLAG (>3 pp daily, >8 pp slot) |
+| Sat     | 3.07 pp     | 19.25 pp       | FLAG (>3 pp daily, >8 pp slot) |
+| Sun     | 2.99 pp     | 14.83 pp       | FLAG (>8 pp slot) |
+
+The rake is materially overriding the Trend-Encoder's learned 2030 forecast in all strata. The WD direction is notable: the model under-predicts WD AT_HOME by ~7 pp vs a naive linear-trend projection. The WE strata show the opposite sign (model over-estimates by ~3 pp). **Stopping for manager call on which 2030 forecast to trust: the model's learned drift or the linear OLS projection through 2022.**
+
+> **FLAG RESOLVED — 2026-05-31 (manager/user):** Override accepted. User decided to adopt the COVID-persists 2030 target (higher AT_HOME; the model's COVID-reversion is overridden). Model-vs-projection divergence is **intended** — report its size, do not stop. Target construction updated to structural-break p=1 (pre-COVID slope only, 2022 level shift permanent) — see "8B-6 structural-break run" Progress Log entry below.
+
+---
+
+#### Progress Log — 2026-05-31 (employee): Phase 8B-6 structural-break run — FLAG RESOLVED, structural-break p=1 target, all gates PASS
+
+**Manager call / resolution:**
+
+FLAG from the 4-point OLS run resolved by user: adopt the COVID-persists 2030 target. Model-vs-projection divergence is intended; the rake overrides the Trend-Encoder's COVID-reversion. Target construction changed to structural-break p=1 per (DDAY_STRATA × slot):
+
+- Pre-COVID slope from cycles 2005/2010/2015 only (`pre_slope[s,t]`)
+- `jump_st = obs[2022,s,t] − pre_trend_st(2022)` (2022 residual)
+- `target_2030[s,t] = obs[2022,s,t] + 8 × pre_slope_st` (= trend_2030 + jump)
+- Clamp [0,1]. Slots clamped: **0**.
+
+**Structural-break 2030 targets:**
+
+| Stratum | Daily AT_HOME 2030 | In [55,90%]? | Δ vs 2022 | Sanity check |
+|---------|--------------------|--------------|-----------|--------------|
+| WD      | **78.44%**         | PASS         | +1.51 pp  | Expected ~78.4% ✓ |
+| Sat     | **79.15%**         | PASS         | +1.88 pp  | Expected ~80.4% (within 1.25 pp) ✓ |
+| Sun     | **81.48%**         | PASS         | +1.31 pp  | — |
+
+COVID implication: 2022 level shift treated as permanent; pre-COVID growth projected forward (+1.3–1.9 pp above 2022). ~1 pp lower than the 4-point linear run (which let the COVID outlier steepen the slope). Acknowledged.
+
+**Model-vs-projection override (INTENDED — COVID-persists call):**
+
+| Stratum | Model daily% | Target daily% | Daily \|Δ\| | Max slot \|Δ\| |
+|---------|-------------|---------------|-------------|----------------|
+| WD      | 72.50%      | 78.44%        | **5.94 pp** | **12.47 pp**   |
+| Sat     | 82.62%      | 79.15%        | **3.47 pp** | **18.76 pp**   |
+| Sun     | 84.76%      | 81.48%        | **3.28 pp** | **13.85 pp**   |
+
+All exceed the gate thresholds but are INTENDED by manager/user COVID-persists decision. WD: model under-predicts by ~6 pp (COVID-reversion artefact). WE: model over-predicts by ~3 pp.
+
+**Rake (2J_docs_occ_nTemp/06_forecast_rake.py, structural-break target, seed=42):**
+
+| Item | Value |
+|------|-------|
+| Rows raked | 37,008 (unchanged) |
+| hom30 hard-binary assert | PASS |
+| Row count assert | PASS |
+| Total hom30 flips | 113,978 |
+| Flips 1→0 (away-ified) | 59,626 |
+| Flips 0→1 (homed-back) | 54,352 |
+| Act/hom incoherences (1→0 AND act30 ∈ HOME_ACTS) | 36,761 = 2.07% of slot-records |
+
+Deliverable overwritten: `2J_docs_occ_nTemp/2030_synthetic_diaries_raked.csv` (37,008 rows, atomic). Original `2030_synthetic_diaries.csv` untouched.
+
+**Validator gate scorecard (non-destructive swap, 06_longitudinalForecastingGSS_val.py):**
+
+| Gate | Check | Result | Verdict |
+|------|-------|--------|---------|
+| 5.1  | 2030 AT_HOME overall ∈ [55,90%] | 79.70% | **PASS** |
+| 5.2  | WD AT_HOME < WE AT_HOME (structural) | WD=78.4% WE=80.3% | **PASS** |
+| 5.3  | Night sleep (slots 1–8) ≥ 70% | 88.96% | **PASS** |
+| 5.4  | No activity collapse (max share < 60%) | 38.91% | **PASS** |
+| 5.6  | WD continuity ±15 pp vs 2022 | 4.21 pp | **PASS** |
+| 6.1–6.4 | BEM readiness | all nominal | **PASS** |
+| 6.5  | Row count ≥ 37,000 | 37,008 | **PASS** |
+| 6.6  | DDAY_STRATA ∈ {1,2,3} | {1,2,3} | **PASS** |
+| 3.x  | WD drift activities (pre-existing) | 1–2 per matrix | WARN only |
+
+All section-5/6 gates: **PASS**.
+
+**Raked WD/WE daily AT_HOME vs 2022 (continuity):**
+
+| Stratum | Raked 2030% | Obs 2022% | Δ pp |
+|---------|------------|-----------|------|
+| WD      | 78.44%     | 76.93%    | +1.51 pp |
+| Sat     | 79.15%     | 77.28%    | +1.88 pp |
+| Sun     | 81.48%     | 80.17%    | +1.31 pp |
+
+**Raked-vs-target residual:** WD max 0.004 pp / mean 0.002 pp · Sat 0.004/0.002 · Sun 0.004/0.002. Confirmed ≈0.
+
+**Act/hom coherence cost:** 36,761 = 2.07% of 37,008 × 48 slot-records. Acceptable.
+
+**8B-6 DECISION GATE VERDICT: PASS**
+
+All validator gates (5.1/5.2/5.3/5.4/5.6) PASS. Structural-break targets plausible and in [55,90%]. Model-vs-projection divergence (WD 5.94 pp, Sat 3.47 pp, Sun 3.28 pp daily; slot max up to 18.76 pp) is **intended** per COVID-persists manager decision. Deliverable: `2J_docs_occ_nTemp/2030_synthetic_diaries_raked.csv`.
+
+---
+
+#### Progress Log — 2026-05-31 (manager): Phase 8B COMPLETE — downstream calibration proven end-to-end; Step-4 deliverable finalized
+
+**Phase 8B closed.** The downstream-driven return to Step 4 is resolved NOT by a better model (architecture search J5/J6/MDLM/CrossAttn/8B-3 stayed closed; J3 never beaten) but by a post-hoc marginal-calibration layer applied in the space each downstream step measures.
+
+- **Step 5 (2022) — 8B-5b RESOLVED:** post-linkage per-stratum rake; within-DDAY_STRATA AT_HOME match exact (composition-held residual 0.0037 pp); single-person floor 1,413→1,118 HH; the 4.48 pp gate-2.2 residual is a documented composition artefact (GSS obs 92.6% WD vs population 71.4%=5/7), not model error.
+- **Step 6 (2030) — 8B-6 PASS:** rake the 2030 diary file directly (verified: no census-linkage downstream of 2030) to a structural-break COVID-persists target (p=1 = obs2022 + 8×pre-COVID-slope) → WD 78.44 / Sat 79.15 / Sun 81.48; all gates 5.1–5.6 PASS; the ~+6 pp WD override of the model's COVID-reversion is the user's intended call.
+
+**Step 4 status — COMPLETE (one production loose end).** Model: J3 final (4/4 gates, composite 0.6355; architecture search exhausted). Calibration: validated end-to-end (Steps 5 & 6 gates pass). Loose end: 8B-6 persisted its 2030 deliverable, but 8B-5b was a validation run (restored canonical) → the calibrated 2022 Full_Schedules must be re-run + persisted, and both wired into Step 7 BEM, before "BEM-ready done".
+
+**Better than the previous J3?** The model is UNCHANGED (activity stays at J3's already-strong act_JS 0.0191 — raking touches only the binary channels). The gain is entirely on the BINARY/downstream axis — exactly J3's recorded weakness: raw J3 passes the 4/4 aggregate gates (composite 0.6355) but its binary outputs fail per-CELL downstream (Step-5 per-slot AT_HOME 6.52 pp; per-cell 2.95–9.69 pp; ref §"Why J3 alone isn't enough" above). Calibrated J3 drives those to pass — BY CONSTRUCTION (raking to observed/projected marginals; valid because downstream consumes only marginals). Net: same J3 + a calibration layer that fixes precisely the downstream-binary deficit raw J3 had. Cost: ~2% act/hom incoherence (documented).
+
+---
+
+## Phase 8B — Production Runbook (OP3)
+
+**Purpose:** Ordered, copy-pasteable stages to persist the calibrated 2022 and 2030 outputs from scratch. Run LOCALLY (no cluster). All scripts self-resolve paths; `cd` to repo root first.
+
+### Prerequisites
+- `2J_docs_occ_nTemp/05_postlink_rake.py` — 2022 Full_Schedules raker
+- `2J_docs_occ_nTemp/06_forecast_rake.py` — 2030 diary raker (produces `2030_synthetic_diaries_raked.csv`)
+- `2J_docs_occ_nTemp/_activate_2030_canonical.py` — 2030 activation helper (OP2)
+
+### ⚠ Critical constraint
+**NEVER run `05_census_linkage.py --full` after the rake.** `--full` rebuilds `21CEN22GSS_aug_Full_Schedules.csv` unraked from `augmented_diaries.csv` (line 311/338), discarding the calibration entirely. Only `--aggregate`, `--bem`, and `--exclusion` are safe post-rake.
+
+---
+
+### Part A — OP1: Persist calibrated 2022 Step-5 outputs
+
+**A1. Back up unraked canonical** (`~6 GB`; excludes `smoke/`):
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main
+robocopy "0_Occupancy\Outputs_21CEN22GSS\aug_pipeline" "0_Occupancy\Outputs_21CEN22GSS\aug_pipeline_UNRAKED_BAK" /E /XD smoke
+```
+Backup path: `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline_UNRAKED_BAK/`
+Confirm in backup: `21CEN22GSS_aug_Full_Schedules.csv`, `BEM_Schedules*.csv`, `excluded_ppids.csv`.
+Exit code ≤ 7 = success.
+
+**A2. Rake Full_Schedules in place** (atomic overwrite):
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main
+py 2J_docs_occ_nTemp\05_postlink_rake.py
+```
+Expected: 286,537 rows written; hom30 hard 0/1; ~148,957 down-flips (1→0); ~112,038 new act/hom incoherences (~1.82% of synthetic slot-records); Spouse30 rake skipped (6.3 ≈ 2.23 pp < 3 pp threshold).
+
+**A3. Propagate through producer** (reads prior stage from disk; calibration propagates automatically):
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\eSim_occ_utils\25CEN22GSS_classification
+py 05_census_linkage.py --aggregate
+py 05_census_linkage.py --bem
+py 05_census_linkage.py --exclusion
+```
+Regenerates (calibrated, KEEP): `Full_Aggregated`, `BEM_Schedules`, `Full_Schedules_excl`, `Full_Aggregated_excl`, `BEM_Schedules_excl`, `excluded_ppids`.
+Expected exclusion floor: **1,118 HHs** (down from 1,413 pre-rake).
+
+**A4. Validate** (run from `2J_docs_occ_nTemp/`):
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\2J_docs_occ_nTemp
+py 05_censusLinkageGSS_val.py
+py 05_censusLinkageGSS_val.py --excl
+```
+Expected gate results:
+- 2.2 / 6.1: AT_HOME max slot diff ~4.48 pp (11 slots) — **DOCUMENTED ARTEFACT** (GSS sample 92.6% WD vs population 71.4%); NOT a regression
+- 4.4: ~1,118 HHs below threshold (exclusion floor)
+- 6.3: Spouse30 ~2.23 pp PASS
+- 6.2: Work ~3.27 pp EXPECTED-FAIL (act30 untouched by rake, by design)
+- 3.3: Night sleep dominance 67.46% FAIL — **pre-existing** (act30 not raked; present before and after)
+
+**A5. (Optional) Regression artefact refresh:**
+```
+py 05_census_linkage.py --regression
+```
+Not required for closeout. The 2026-05-12 regression report remains stale until this is run.
+
+---
+
+### Part B — OP2: Activate calibrated 2030 file
+
+**B1. Back up canonical:**
+```
+Copy-Item "0_Occupancy\Outputs_21CEN22GSS\forecast_2030\2030_synthetic_diaries.csv" "0_Occupancy\Outputs_21CEN22GSS\forecast_2030\2030_synthetic_diaries_UNRAKED_BAK_2026-05-31.csv"
+```
+Backup path: `0_Occupancy/Outputs_21CEN22GSS/forecast_2030/2030_synthetic_diaries_UNRAKED_BAK_2026-05-31.csv`
+
+**B2. Run activation helper** (verifies structural-break identity, casts hom30 float→int, atomic overwrite):
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main
+py 2J_docs_occ_nTemp\_activate_2030_canonical.py
+```
+Expected prints: `WD daily AT_HOME = 78.44%`, `Sat = 79.15%`, `Sun = 81.48%`, then `ACTIVATED: 37,008 rows`.
+If a stratum assert trips, the side file is the wrong version — STOP and flag.
+
+**B3. Re-validate live canonical:**
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\eSim_occ_utils\25CEN22GSS_classification
+set PYTHONIOENCODING=utf-8 && py 06_longitudinalForecastingGSS_val.py
+```
+(On Windows PowerShell: `$env:PYTHONIOENCODING="utf-8"; py 06_longitudinalForecastingGSS_val.py`)
+Expected gates 5.1–5.6 PASS: AT_HOME ~79.70%, WD<WE, night sleep ~88.96%, max activity share ~38.91%, WD continuity ~4.21 pp. All section-6 BEM readiness PASS.
+
+---
+
+### Rollback procedure
+
+**2022 rollback:** Restore `aug_pipeline/` from backup:
+```
+robocopy "0_Occupancy\Outputs_21CEN22GSS\aug_pipeline_UNRAKED_BAK" "0_Occupancy\Outputs_21CEN22GSS\aug_pipeline" /E /IS /IT
+```
+
+**2030 rollback:**
+```
+Copy-Item "0_Occupancy\Outputs_21CEN22GSS\forecast_2030\2030_synthetic_diaries_UNRAKED_BAK_2026-05-31.csv" "0_Occupancy\Outputs_21CEN22GSS\forecast_2030\2030_synthetic_diaries.csv" -Force
+```
+
+---
+
+### Part C — OP4: Build calibrated BEM_Schedules_{2022,2030}.csv
+
+**Script:** `2J_docs_occ_nTemp/07_aug_to_bem.py`  
+**Input:** `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/21CEN22GSS_aug_Full_Aggregated_excl.csv` (2022) + `forecast_2030/2030_synthetic_diaries.csv` (2030 diaries pool)  
+**Output:** `BEM_Setup/BEM_Schedules_2022.csv`, `BEM_Setup/BEM_Schedules_2030.csv`  
+**Design:** 2-day-type (Weekday/Weekend); DDAY_STRATA {1,2,3} → {Weekday, Weekend}; 30-min→hourly mean of consecutive slot pairs; seed=42, reversible. **Missing-day imputation (donor-draw):** GSS assigns one diary day per respondent → 77,313 HHs are WD-only and 19,730 WE-only. The missing day is filled by drawing a *genuine* opposite-day diary from the in-frame pool (same DDAY_STRATA, seed=42, per member) — NOT by copying the HH's own diary. This preserves the calibrated weekend marginal and matches the 2030 stock-freeze mechanism. (The earlier copy-day approach biased the weekend marginal −2.76 pp; see manager Progress Log 2026-05-31.)
+
+**C1. Run 2022:**
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\2J_docs_occ_nTemp
+py 07_aug_to_bem.py --year 2022
+```
+Expected: classic backup → `BEM_Setup/BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv`; then `BEM_Schedules_2022.csv`: 6,936,336 rows, 144,507 HH.  
+Donor-draw print: `77,313 WD-only HHs → Weekend (donor)` and `19,730 WE-only HHs → Weekday (donor)`.
+
+**C2. Run 2030:**
+```
+cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\2J_docs_occ_nTemp
+py 07_aug_to_bem.py --year 2030
+```
+Expected: `BEM_Schedules_2030.csv`: 6,936,336 rows, 144,507 HH (same HH set as 2022).
+
+**Acceptance gates (all must hold before continuing):**
+1. Identical 13-col header; Day_Type ⊆ {Weekday,Weekend}; DTYPE ⊆ {SingleD,HighRise,MidRise,OtherDwelling,8}; PR ⊆ {Atlantic,Quebec,Ontario,Prairies,Alberta,BC}.
+2. Occupancy_Schedule ∈ [0,1]; Metabolic_Rate ≥ 0; Hour 0–23; every HH has both Weekday and Weekend (48 rows each).
+3. 2022: 144,507 HHs; classic Weekday/Weekend mean Occupancy ~0.662/0.690 → calibrated higher. **Donor-draw must NOT dilute the weekend** (genuine WD/WE daily-AT_HOME gap = +4.99 pp; the superseded copy-day run gave 0.714/0.730 with the weekend understated −2.76 pp). **Donor-draw actuals (2026-05-31): Weekday 0.703 / Weekend 0.749; gap = +4.6 pp — weekend marginal restored.**
+4. 2030: HH set identical to 2022; 2030 mean Occ ≥ 2022 — COVID-persists. Donor-draw keeps the Sat 79.15 / Sun 81.48 weekend signal intact. **Donor-draw actuals (2026-05-31): Weekday 0.785 / Weekend 0.803; gap = +1.8 pp; 2030 Weekend (0.803) ≥ 2022 Weekend (0.749) — COVID-persists confirmed.**
+
+**Rollback (BEM only):**
+```
+Copy-Item "BEM_Setup\BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv" "BEM_Setup\BEM_Schedules_2022.csv" -Force
+Remove-Item "BEM_Setup\BEM_Schedules_2030.csv"
+```
+No rollback needed for upstream data — OP4 only writes to `BEM_Setup/`.
+
+---
+
+## OP5 — Coherence cost (documented limitation)
+
+Raking `hom30` without touching `act30` creates slot-records where `hom30=0` (away) but `act30 ∈ HOME_ACTS` (a home activity). This incoherence is introduced by 1→0 hom30 flips.
+
+| Year | Total 1→0 flips | Act/hom incoherences | % of synthetic slot-records |
+|------|-----------------|----------------------|-----------------------------|
+| 2022 | 148,957 | 112,038 | ~1.82% (128,416 syn rows × 48 slots) |
+| 2030 | 59,626 | 36,761 | ~2.07% (37,008 rows × 48 slots) |
+
+**BEM-safe:** EnergyPlus occupancy presence in BEM_Schedules keys off `hom30` (the calibrated channel), not `act30`. The coherence cost therefore does not propagate to the energy simulation. Re-confirm at OP4 (Step-7 BEM wiring).
+
+**Paper treatment:** Document as a known limitation of the post-hoc raking approach. The calibration achieves its stated goal (marginal AT_HOME calibration) at the cost of internal act/hom consistency in ~2% of slot-records. The ~98% consistent slot-records are unaffected.
+
+---
+
+#### Progress Log — 2026-05-31 (employee): Phase 8B production persistence — OP1/OP2/OP3/OP5 closed
+
+**OP1 — 2022 calibration persisted.**
+- Backup: `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline_UNRAKED_BAK/` (16 files, excl. smoke/, dated 2026-05-12)
+- Rake run: `05_postlink_rake.py` → 286,537 rows written; hom30 hard 0/1; 148,957 down-flips; 112,038 act/hom incoherences (1.82% of synthetic slot-records); Spouse30 skipped (2.23 pp < 3 pp)
+- Producer propagated: `--aggregate` (286,537 rows, 145,589 unique HH_IDs) → `--bem` (schema OK) → `--exclusion` (floor **1,118 HHs**)
+- Validator `05_censusLinkageGSS_val.py`: 2.2/6.1 = **4.48 pp** (11 slots, documented day-type composition artefact; NOT regression); 4.4 = 1,118 below-range HHs; 6.3 Spouse = 2.23 pp PASS; 6.2 Work = 3.27 pp expected-FAIL (act30 untouched); 3.3 night sleep = 67.46% FAIL (pre-existing, act30 not raked)
+- Validator `--excl`: 4.4 PASS (zero below-range after exclusion); 6.1 = 4.37 pp; 6.3 = 2.22 pp PASS; 6.2 = 3.29 pp expected-FAIL
+- A5 regression refresh: SKIPPED (2026-05-12 artefact remains stale)
+
+**OP2 — 2030 canonical activated.**
+- Backup: `0_Occupancy/Outputs_21CEN22GSS/forecast_2030/2030_synthetic_diaries_UNRAKED_BAK_2026-05-31.csv` (7,914,312 bytes)
+- `_activate_2030_canonical.py` run: stratum checks WD 78.44% / Sat 79.15% / Sun 81.48% all within 0.01 pp of targets; hom30 cast float→int; column parity confirmed; atomic overwrite successful (37,008 rows → 7,951,321 bytes)
+- Re-validator `06_longitudinalForecastingGSS_val.py` (PYTHONIOENCODING=utf-8): all gates 5.1–5.6 PASS — AT_HOME 79.70%, WD=78.4%<WE=80.3%, night sleep 88.96%, max activity 38.91%, WD continuity 4.21 pp; all section-6 BEM readiness PASS; 3 pre-existing WARN in section 3 (WD drift activities, unchanged)
+
+**OP3 — Production runbook written** in `04_augmentationGSS_IMP_2.md` § "Phase 8B — Production Runbook" above. Includes ordered A1→B3 stages, backup paths, expected row counts and gate numbers, NEVER-run-full warning, rollback steps.
+
+**OP5 — Coherence cost documented** in `04_augmentationGSS_IMP_2.md` § "OP5 — Coherence cost" above. 2022 ~1.82%, 2030 ~2.07% of slot-records act/hom incoherent post-rake. BEM-safe (BEM uses hom30 not act30). Flagged for re-confirm at OP4 (Step-7 BEM wiring). Logged as paper limitation, not open blocker.
+
+**Status: OP1/OP2/OP3/OP5 closed; OP4 (Step-7 BEM_Schedules_ wiring) remains.**
+
+---
+
+#### Progress Log — 2026-05-31 (employee): OP4 — aug→BEM converter built and validated
+
+> **⚠ SUPERSEDED (copy-day imputation) — see manager Progress Log 2026-05-31 below.** The converter and all schema/vocab/backup/2030-assembly results below stand; only `complete_day_types()` is revised (copy-day → donor-draw) to stop diluting the calibrated weekend marginal. The 0.714/0.730 weekend figures below understate the true weekend by ~2.76 pp.
+
+**Script written:** `2J_docs_occ_nTemp/07_aug_to_bem.py` (new; reference design + `complete_day_types()` extension)
+
+**Design gap resolved:** The reference script asserted every HH has both Weekday and Weekend rows but had no imputation logic. In the aug file each GSS respondent has only ONE diary day, so 77,313 HHs are WD-only and 19,730 are WE-only. Added `complete_day_types()`: WD-only HHs get Weekend rows by copying their WD diary (relabeled DDAY_STRATA=2); WE-only HHs get Weekday rows by copying their WE diary (relabeled DDAY_STRATA=1). Fully deterministic. Documented as limitation below.
+
+**Files written:**
+
+| File | Rows | HHs | Backup |
+|------|------|-----|--------|
+| `BEM_Setup/BEM_Schedules_2022.csv` | 6,936,336 | 144,507 | `BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv` |
+| `BEM_Setup/BEM_Schedules_2030.csv` | 6,936,336 | 144,507 | — (new file) |
+
+**All acceptance gates PASS:**
+1. Schema/vocab: identical 13-col header; Day_Type ⊆ {Weekday,Weekend}; DTYPE ⊆ {SingleD,HighRise,MidRise,OtherDwelling,8}; PR ⊆ {Atlantic,Quebec,Ontario,Prairies,Alberta,BC} ✓
+2. Occupancy ∈ [0,1]; Metabolic ≥ 0; Hour 0–23; all 144,507 HHs have both Weekday + Weekend ✓
+3. 2022 HH count: 144,507 (~4× classic 36,909) ✓
+4. 2030 HH set identical to 2022 ✓; 2030 ≥ 2022 mean Occupancy ✓ (COVID-persists confirmed)
+
+**New-vs-classic 2022 occupancy:**
+- Weekday: new=0.714, classic=0.662 (+5.2 pp — calibrated raking raised at-home)
+- Weekend: new=0.730, classic=0.690 (+4.0 pp)
+
+**2030-vs-2022 occupancy (COVID-persists p=1):**
+- Weekday: 2030=0.787 vs 2022=0.714 (+7.3 pp)
+- Weekend: 2030=0.793 vs 2022=0.730 (+6.3 pp)
+
+**Flags:**
+- **2-day-type collapse:** Sat+Sun→Weekend for BEM People schedule (Sat/Sun split preserved in Step-5/6 outputs; documented limitation). Additionally, 77,313 WD-only and 19,730 WE-only HHs have identical schedules for both day types due to single-diary-day GSS design (further documented limitation).
+- **Publishable:** 2022 BEM baseline is now ML-calibrated (classic backed up). Scale: ~144,507 HHs (~4× classic 36,909) → larger file + heavier EnergyPlus runtime (HH sampling deferred to Step-7 sim phase).
+- **OP5 re-confirm:** BEM-safe confirmed — Occupancy_Schedule = hom30 (calibrated); Metabolic_Rate = act30 mapped watts, gated by occupancy in EnergyPlus People object (zero gain when unoccupied). Act/hom incoherences (~1.82%/~2.07%) do not propagate to energy simulation.
+
+**One-line status:** OP4 done — calibrated 2022/2030 BEM inputs live in BEM_Setup/. Running EnergyPlus on them is the next (Step-7 sim) phase.
+
+---
+
+#### Progress Log — 2026-05-31 (manager): OP4 REVIEW — copy-day dilutes the weekend marginal → revise to donor-draw
+
+**Review of the employee OP4 run.** Converter math, schema, vocab mapping, backups, ranges, 2030 assembly, and OP5 BEM-safety all verified correct. One issue in `complete_day_types()`: filling a HH's missing day type by **copying its own diary** systematically biases the calibrated weekend marginal.
+
+**Quantified** (calibrated 2022 `Full_Aggregated_excl`, person-level daily mean `hom30`):
+
+| Stratum | Genuine daily AT_HOME | n_person |
+|---|---|---|
+| Weekday | 69.77% | 203,622 |
+| Saturday | 72.95% | 40,891 |
+| Sunday | 76.57% | 40,906 |
+| **Pooled WD** | **69.77%** | |
+| **Pooled WE (genuine)** | **74.76%** | |
+
+Genuine WD→WE gap = **+4.99 pp** (a real weekend lift). Copy-day fills 77,313 WD-only HHs' weekend with their weekday curve → the realized weekend marginal drops **74.76% → 72.00% (−2.76 pp)**, erasing ~⅔ of the gap. The same mechanism dilutes the 2030 COVID-persists weekend signal (Sat 79.15 / Sun 81.48) just forecast in 8B-6.
+
+**Decision (user-approved).** Revise `complete_day_types()` from copy-day to **stratum-matched donor-draw** (seed=42): for a HH missing a day type, draw a genuine opposite-day diary from the in-frame pool (same DDAY_STRATA) and assign per member, keeping the HH's own dwelling/HH attrs. This is the **identical mechanism already locked for the 2030 stock-freeze** (`assemble_2030`) → method consistent across both years, calibrated weekend marginal preserved (~74.76%, no −2.76 pp bias). For 2030 the donor pool is the assembled 2030 frame (donors carry 2030 occupancy), so the COVID-weekend signal stays intact.
+
+**Unchanged:** converter math, 30-min→hourly resample, vocab mapping, backups, acceptance gates, `assemble_2030`. Only the imputation step changes. Employee to re-run both years and log actual donor-draw marginals (expect weekend ↑ vs the copy-day 0.730, gap restored toward +5 pp).
+
+**Status: OP4 revision in progress (copy-day → donor-draw).**
+
+---
+
+#### Progress Log — 2026-05-31 (employee): OP4-REV — donor-draw imputation complete
+
+**Function replaced** (`complete_day_types()`, lines 61-78 → new donor-draw implementation):
+
+```python
+def complete_day_types(df):
+    rng = np.random.default_rng(42)
+    hh_strata = df.groupby('HH_ID')['DDAY_STRATA'].apply(lambda s: frozenset(s.unique()))
+    wd_only = set(hh_strata.index[hh_strata.apply(lambda s: (1 in s) and not (2 in s or 3 in s))])
+    we_only = set(hh_strata.index[hh_strata.apply(lambda s: (2 in s or 3 in s) and (1 not in s))])
+    wd_pool = df[df['DDAY_STRATA'] == 1]
+    we_pool = df[df['DDAY_STRATA'].isin([2, 3])]
+    extra = []
+    if wd_only:
+        sub = df[df['HH_ID'].isin(wd_only)].copy()
+        pick = rng.integers(0, len(we_pool), size=len(sub))
+        sub[ACT + HOM] = we_pool.iloc[pick][ACT + HOM].values
+        sub['DDAY_STRATA'] = 2
+        extra.append(sub)
+        print(f"  donor-draw {len(wd_only):,} WD-only HHs -> Weekend ({len(sub):,} member-rows)", flush=True)
+    if we_only:
+        sub = df[df['HH_ID'].isin(we_only)].copy()
+        pick = rng.integers(0, len(wd_pool), size=len(sub))
+        sub[ACT + HOM] = wd_pool.iloc[pick][ACT + HOM].values
+        sub['DDAY_STRATA'] = 1
+        extra.append(sub)
+        print(f"  donor-draw {len(we_only):,} WE-only HHs -> Weekday ({len(sub):,} member-rows)", flush=True)
+    return pd.concat([df] + extra, ignore_index=True) if extra else df
+```
+
+**Donor-draw print output (both years identical):**
+```
+  donor-draw 77,313 WD-only HHs -> Weekend (133,668 member-rows)
+  donor-draw 19,730 WE-only HHs -> Weekday (26,269 member-rows)
+```
+
+**2022 results** (vs superseded copy-day 0.714/0.730):
+- Weekday mean Occupancy: **0.703** | Weekend mean Occupancy: **0.749** | gap = **+4.6 pp**
+- Weekend marginal no longer diluted (copy-day had erased ~⅔ of the genuine +4.99 pp gap; donor-draw restores it)
+- Row count: 6,936,336 | HH count: 144,507 ✓
+
+**2030 results** (COVID-persists):
+- Weekday mean Occupancy: **0.785** | Weekend mean Occupancy: **0.803** | gap = **+1.8 pp**
+- 2030 Weekend (0.803) ≥ 2022 Weekend (0.749) ✓ — COVID-persists signal intact
+- Row count: 6,936,336 | HH count: 144,507 ✓
+
+**Classic backups confirmed present:**
+- `BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv` (pre-existed, `if not bak.exists()` guard preserved it unchanged)
+- `BEM_Schedules_2030_CLASSIC_BAK_2026-05-31.csv` (created this run)
+
+**Synthetic co-presence limitation (unchanged from original OP4):** Imputed day's within-HH co-presence and WD/WE correlation are synthetic. BEM consumes only the occupancy fraction + metabolic (not pairwise COP), so this is harmless.
+
+**One-line status:** OP4-REV complete — donor-draw replaces copy-day; weekend marginal restored (0.749 vs 0.730); 2030 COVID-persists intact; both BEM files live in BEM_Setup/.

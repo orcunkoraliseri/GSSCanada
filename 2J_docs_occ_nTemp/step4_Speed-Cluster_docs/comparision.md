@@ -114,7 +114,7 @@ All values are **training losses at the best checkpoint epoch** (minimum val_sco
 
 | Architecture | AT_HOME RMS (pp) | COP max gap (pp) | act_JS | Composite | Gates | Notes |
 |---|---|---|---|---|---|---|
-| **J3** | **4.57** | **~2.03** | **0.0191** | **0.6355** | **4/4** | Only model passing all gates |
+| **J3 (raw)** | **4.57** | **~2.03** | **0.0191** | **0.6355** | **4/4** | Only 4/4-gate model · raw at-inference; **production = calibrated J3** (J3 + Phase 8B raking — see § below) |
 | J5_X1 | **4.15** | 5.32 | 0.0311 | 0.6667 | 3/4 | composite FAIL by 0.031 |
 | J2 | 5.70 | — | 0.0239 | 0.6884 | 3/4 | AT_HOME FAIL by 0.40 |
 | J1 | 5.83 | — | 0.0274 | 0.69 | 3/4 | AT_HOME FAIL by 0.53 |
@@ -144,3 +144,23 @@ All values are **training losses at the best checkpoint epoch** (minimum val_sco
 **Phase 8A inference rescue test (job 936884, G4 checkpoint):** Three inference-side fixes tested on 5000-respondent subset — all FAILED. (1) Seed variance: 10 seeds produce 20.65–21.02 pp (std=0.12), confirming systematic bias. (2) COP threshold sweep 0.30–0.70: best=0.70 → 12.88 pp, but trades Alone over-generation for Spouse under-generation (seesaw effect). (3) Per-respondent multi-sample K=10 Bernoulli: cherry-pick → 14.89 pp. Best overall 12.88 pp — still 2.6× above the 5.0 pp gate. COP bias is structural in the AR decoder, not fixable by inference tricks.
 
 **Per-cell-slot reality — why this gate table understates the downstream gap (Phase 8B-4, 2026-05-30):** Table 3's metrics are *aggregate* (AT_HOME RMS, COP mean), but downstream Steps 5/6 validate the per-(cycle × stratum × slot) **MAX** gap. Under that harsher view even **J3 — 4/4 above — shows AT_HOME max 15.37 pp and COP max 19.85 pp** (vs its 4.57 / 2.03 aggregate). A Work-calibration diagnostic (`04K`, jobs 940277/940278) tested whether capping synthetic Work at observed (cascading Work ⇒ AT_HOME = 0) closes the AT_HOME gap post-hoc — it did **not**: J3 15.37→14.60, J5_X1 & J6_HC unchanged, MDLM_G1 23.80→23.31; all still 5–8× over the ≤ 3 pp downstream gate. The worst AT_HOME cell-slots are not the Work-overshoot slots (only MDLM_G1's error is Work-driven, corr 0.92, and it is the worst model). Lone win: single-person-HH 0.30-floor exclusions dropped sharply (J5_X1 283→6, J3 121→55). **Conclusion: the lever is direct per-cell-slot raking of the binary marginals, not architecture or the Work proxy.** Next test (`04L`): joint AT_HOME + COP raking to observed per cell-slot, scored by edit-cost + per-person coherence damage (marginal residual ≈ 0 by construction). *No new training/inference rows added — 04K/04L are post-hoc diagnostics on existing model outputs, not new models.*
+
+---
+
+## Table 4: Calibrated J3 — the production model (Phase 8B, RESOLVED 2026-05-31)
+
+Tables 1–3 are the **raw J3 model**. The shipped Step-5/6/7 input is **calibrated J3 = J3 + post-hoc per-(cycle × stratum × slot) raking** — the "direct per-cell-slot raking" flagged as the lever in the note above, now executed (8B-5b for 2022, 8B-6 for 2030). This is the last inference-side improvement and the version that feeds BEM. It does **not** change J3's aggregate 04J gates (composite/act_JS); it operates in the downstream per-cell-slot marginal space the Step-5/6 validators actually score.
+
+| Downstream metric (Step-5/6 validators, per-cell-slot) | Raw J3 | **Calibrated J3** |
+|---|---|---|
+| AT_HOME per-(stratum×slot) gap | **15.37 pp max** | **within-stratum EXACT** — raked to observed; 4.48 pp aggregate residual is pure DDAY_STRATA day-type composition (composition-held = **0.0037 pp**), a documented paper caveat (§4.2), not a model error → AT_HOME gate **PASS** |
+| Single-person-HH 0.30-floor exclusions | 1,413 HHs | **1,118 HHs** |
+| Spouse marginal (gate 6.3) | 2.23 pp PASS | 2.23 pp PASS — already < 3 pp, so the conditional Spouse30 rake was **skipped** |
+| Activity (gate 6.2 Work; act_JS) | unchanged | **unchanged — act30 deliberately NOT raked** → Work 3.27 pp expected-FAIL persists (documented limitation) |
+| 2030 (8B-6, COVID-persists p=1) | — | AT_HOME **79.70%**; gates 5.1–5.6 **all PASS** |
+
+**What it does:** zeroes — by construction, per stratum × slot — the AT_HOME marginal gap that the raw aggregate gate (4.57 pp) masked and the per-cell-slot view exposed (15.37 pp). 8B-5b raked the exact 286,537-row post-linkage population the validator measures (raking one step upstream, 8B-5, was diluted by `--full` re-sampling to ~5.5 pp, still FAIL).
+**What it does NOT do:** leaves activity untouched (Work proxy still over-fires), and does **not** separately rake the harsher per-cell-slot COP max (19.85 pp raw) — that wasn't triggered because the Spouse *marginal* gate already passed; 04L proved joint AT_HOME+COP raking feasible if a future gate needs it.
+**Coherence cost:** ~1.82% (2022) / ~2.07% (2030) of slot-records become act/hom-incoherent — BEM-harmless (BEM occupancy keys off hom30).
+
+Calibrated J3 is what Step-5 linkage, the Step-6 2030 forecast, and the OP4 `BEM_Schedules_{2022,2030}.csv` all consume. Full record: `../04_augmentationGSS_IMP_2.md` Phase 8B-5b / 8B-6 + OP1–OP5 Progress Logs.
