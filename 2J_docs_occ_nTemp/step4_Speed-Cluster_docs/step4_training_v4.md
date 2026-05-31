@@ -1202,4 +1202,31 @@ Submitted batch job 934720
 |---|---|---|---|---|
 | J3_PSB | 934720 | RUNNING | cisr-1 | pg |
 
+---
+
+## Progress Log — Step 4K Work-Calibration Diagnostic (2026-05-30)
+
+**Trigger:** manager confirmed 2026-05-30 that the downstream (Steps 5–7) bottleneck is per-CELL marginal accuracy on AT_HOME + 9 co-presence channels, not per-respondent composite score. J3's +3.27 pp Work over-prediction pushes AT_HOME below the ≤3 pp per-slot gate in all 12 cycle×stratum cells (2.95–9.69 pp range). Post-hoc Work→AT_HOME rule converts excess Work into a 6.73 pp midday AT_HOME deficit, pushing 1,248 HHSIZE=1 weekday synthetic HH below the 0.30 floor. Calibration (raking) can fix Work/AT_HOME marginals but not co-presence joint structure.
+
+**Task K objective:** Rank 4 candidate models (J3, J5_X1, J6_HC, MDLM_G1) by their POST-calibration AT_HOME profile and co-presence max gap. No model training.
+
+**Deliverables built (2026-05-30):**
+- `04K_work_calibration_test.py` — CPU-only diagnostic: baseline Work excess / AT_HOME gaps / COP max gap / HH<0.30, midday accounting correlation, post-calibration AT_HOME rates + HH<0.30 expected count.
+- `job_step4_MDLM_G1_regen.sh` — GPU inference wrapper to regenerate `outputs_step4_full/MDLM_G1/augmented_diaries.csv`. Confirmed: MDLM_G1 was trained on `outputs_step4_G2` (job 936694 log), model_type=MDLM → MDLMHybrid from `04B_model_MDLM.py`, N_DENOISE_STEPS=16 (env default), no extra params required. `outputs_step4_G2` has all required .pt tensor files.
+- `job_step4_workcal_test.sh` — CPU-only SLURM wrapper for 04K (48G, 48h, no --gres). Runs after MDLM regen via `--dependency=afterok`.
+
+All three files uploaded to `/speed-scratch/o_iseri/occModeling/` in a single scp bundle (verified 2026-05-30 13:21).
+
+**Cluster submission (pending user):**
+
+```
+# on the cluster — (1) MDLM_G1 regen:
+cd /speed-scratch/o_iseri/occModeling; sbatch job_step4_MDLM_G1_regen.sh
+
+# on the cluster — (2) calibration diagnostic (replace REGEN_JOBID with output of step 1):
+cd /speed-scratch/o_iseri/occModeling; sbatch --dependency=afterok:REGEN_JOBID job_step4_workcal_test.sh
+```
+
+**Results pending:** user to paste back jobids + squeue. After results, comparison table + verdicts will be appended to `04_augmentationGSS_IMP_2.md`.
+
 ETA ≈ 5–6 h training + ~30 min inference/diagnostics. Next checkpoint: monitor with `sacct -j 934720` until COMPLETED, then bundle-download `outputs_step4_J3_PSB/` and run composite-vs-J3 comparison (Phase 1 gate check from [[04_augmentationGSS_IMP]]).

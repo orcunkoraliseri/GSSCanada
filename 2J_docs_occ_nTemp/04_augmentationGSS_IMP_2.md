@@ -857,3 +857,299 @@ Uploaded in one bundle (locally):
 | act_JS | ≤ 0.05 | **0.0351** | 0.0191 | ✅ | +0.016 worse |
 
 **Verdict: 2/4 — FAILS. J6_HT does not beat J3 on any metric.** The residual depthwise temporal home head **regressed the exact metric it was designed to improve** (AT_HOME RMS 6.10 vs J3 4.57 — the hypothesis is falsified, not just unconfirmed). COP also degraded (5.83 vs 2.03) even though the COP heads read raw `binary_input` and the temporal residual feeds only `home_head`: the home loss back-propagates through `home_temporal` into the **shared trunk**, perturbing the trunk features the COP heads depend on. So the temporal head is net-harmful to the trunk. **Recommendation: shelve J6_HT.** Whether the temporal idea is worth salvaging (e.g. detach the trunk from the temporal residual, or apply it post-trunk only) is deferred until the other three J6 variants (HHC/HC/HCHH) report — full J6 row needed before next-step prompts.
+
+#### Progress Log — 2026-05-30 (manager): J6_HHC/HC/HCHH evals — FULL J6 ROW COMPLETE
+
+**Evals (940133 HHC / 940134 HC / 940135 HCHH) — all VALID:** COMPLETED `0:0`, elapsed 01:02:45 / 01:02:28 / 00:53:29, `augmented_diaries.csv` = 192,183 rows each, all `diagnostics_J` written. Roll-up from each `04J` `composite.components` (gates: composite < 1.045 · AT_HOME RMS ≤ 5.3 · COP max gap ≤ 5.0 · act_JS ≤ 0.05):
+
+| Model | Flag(s) | Composite | AT_HOME RMS | COP gap | act_JS | Gates |
+|-------|---------|-----------|-------------|---------|--------|-------|
+| **J3** (champion) | — | 0.6355 | 4.57 | 2.03 | 0.0191 | **4/4** |
+| J6_HC | hierarchical_cop | **0.6300** ✅ | 4.82 ✅ | 6.25 ❌ | 0.0228 ✅ | 3/4 |
+| J6_HCHH | hier_cop + hh_cop_cond | 0.6825 ✅ | 5.19 ✅ | 6.44 ❌ | 0.0325 ✅ | 3/4 |
+| J6_HT | home_temporal | 0.6866 ✅ | 6.10 ❌ | 5.83 ❌ | 0.0351 ✅ | 2/4 |
+| J6_HHC | hh_cop_cond | 0.7736 ✅ | 7.36 ❌ | 6.79 ❌ | 0.0461 ✅ | 2/4 |
+
+**Verdict: NONE of the four J6 variants is 4/4. J3 remains the only 4/4 model.** Two findings dominate:
+
+1. **COP max gap fails in ALL FOUR variants (5.83–6.79, all > 5.0, all ~4–5 pp worse than J3's 2.03).** This is *systematic*, not per-variant: even J6_HT — which makes **no** change to the COP path (heads read raw `binary_input`) — fails COP at 5.83. So the COP regression is driven by something **shared across the whole J6 setup vs J3**, not by the individual flags. The three COP-targeting mechanisms (hierarchical COP, HH-COP-conditioning, both) did **not** improve COP — they land in the same failing band as the COP-agnostic temporal variant. Prime suspect: a shared training hyperparameter in the J6 job scripts (`LAMBDA_COP=0.3`, `SPOUSE_NEG_WEIGHT=0.45`, `LAMBDA_HOME=0.7`, `LAMBDA_MARG=0.1`) that differs from J3's recipe, perturbing the trunk away from the COP optimum. **Next debugging step: diff J6 training config vs J3's, COP-relevant knobs first.**
+
+2. **J6_HC is the bright spot — composite 0.6300 actually *beats* J3's 0.6355** (lower = better), and it passes AT_HOME (4.82) and act_JS (0.0228). Its **only** miss is COP (6.25). Same irony as J6_HT: the variant whose flag targets COP produced the best *overall* model yet still failed COP. If the systematic COP cause (finding 1) is a fixable shared-config issue, J6_HC is the most likely candidate to recover to 4/4.
+
+**val_score did not predict gates** (as warned): HCHH had the best val_score (0.0143) but HC had the best composite & gate profile; HT had the 2nd-best val_score yet only 2/4. Offline proxy ≠ gate. **No next-gen builder prompts emitted yet** — the COP-config diagnosis (finding 1) must resolve first, per "resolve clarifying questions before printing a builder prompt."
+
+---
+
+#### Progress Log — 2026-05-30 (employee): Phase 8B-4 — 04L Joint Raking Diagnostic built
+
+**Context:** Work-calibration diagnostic (04K, jobs 940277/940278) confirmed that capping Work cannot fix AT_HOME — J3 per-cell-slot max gap moves only 15.37→14.60 pp, all 4 models fail the ≤3 pp gate. Next lever is direct raking of the binary marginals. Phase 8B-4 builds the joint raking test (04L) that measures the *cost* and *coherence damage* of post-hoc raking rather than just the residual (which is ≈0 by construction).
+
+**Deliverables built:**
+- `04L_joint_rake_test.py` — joint raking diagnostic for 4 models
+- `job_step4_rake_test.sh` — SLURM wrapper (partition pg, mem=48G, time=48:00:00, CPU-only)
+Both staged locally in `step4_Speed_Cluster/`; single recursive scp then sbatch.
+
+**Algorithm — joint raking (per model × cell=cycle×stratum × slot):**
+
+*Step 1 — AT_HOME raking:* For each (cell, slot t), compute observed home rate from `hetus_30min.csv`. Flip the minimum number of synthetic records to hit the integer target count. **Boundary preference:** prefer flipping records whose slot t is at the start or end of a home/away run (i.e., the adjacent slot value differs from the current slot value). Both 1→0 and 0→1 flips use the same boundary test (`neighbor ≠ current`), which maps to "end of home run" for 1→0 flips and "adjacent to home run" for 0→1 flips — both minimize fragmentation. Ties broken by fixed-seed RNG(seed=42).
+
+*Step 2 — COP raking (standalone per-slot marginal):* For each channel in the 9-channel set from 04K, rake each slot to the observed standalone rate from `aug[IS_SYNTHETIC==0]` (same source as 04K's `_cop_max_gap_per_cell`). **Standalone, not conditional on home** — rationale documented in script docstring: channels include "colleagues" (work context), and 04K measures all 9 channels as per-slot binary rates regardless of AT_HOME. Boundary preference + seed=42 apply identically. Newly-homed records from step 1 participate in COP raking alongside all other synthetic records.
+
+**Schema surprises documented:**
+1. *COP conditional-vs-marginal:* COP is standalone (not conditional on home). Script docstring states this explicitly with rationale.
+2. *copresence_30min.csv does NOT carry COP columns* (per 04I comment: "COP columns live in augmented_diaries.csv. Neither copresence_30min.csv nor hetus_30min.csv carries them"). Script loads copresence_30min.csv and inspects it but uses `aug[IS_SYNTHETIC==0]` for COP targets regardless, for consistency with 04K.
+3. *Household pairing:* SKIPPED. `augmented_diaries.csv` has no HH_ID column linking individuals across households. GSS is individual-respondent. Script detects any `HH_ID`-like column and logs the result; no fabrication.
+
+**Key outputs of 04L:**
+- `diag_rake_compare.json` — all 4 models; per-cell pre/post ATH and COP gaps; flip%, reassign%, coherence transitions
+- `outputs_step4_J3/augmented_diaries_raked.csv` — J3 only; ~192,183 rows; AT_HOME + COP columns edited per joint raking; all other columns untouched
+- Console summary table: Model | ATH-pre | ATH-post | flip% | COP-pre | COP-post | reassign% | transΔ%
+- Three verdicts: V1 feasibility, V2 cost (best raking base), V3 coherence (Step-7 risk flag if Δ > 20%)
+
+**Discriminating outputs per design:** Post-rake residuals are ≈0 by construction (the raking hits per-slot integer targets exactly up to floor rounding). The discriminating metrics are (a) **COST** = flip% + reassign% and (b) **COHERENCE** = Δ% in per-person AT_HOME transitions and COP channel switches. A model with lower pre-rake error needs fewer edits (lower cost) and fewer transition disruptions, making it the better raking base for downstream (Steps 5/6/7).
+
+**Sanity checks passed:** imports clean (numpy, pandas, argparse, json, datetime, os, sys only — no torch/eppy); MODELS_REL paths match 04K exactly; wrapper `--time=48:00:00` confirmed; no GPU dependency; single standalone CPU job.
+
+#### Progress Log — 2026-05-30 (manager): KEY PIVOT — downstream needs per-CELL marginals; Work-calibration test (04K) INSUFFICIENT → joint-raking decision (04L)
+
+**Why we pivoted (the decision + the observations that forced it).** The J6 family closed the architecture search: a month of J5 / J6 / 8B-3 variants and none is 4/4; J3 remains the only one. Re-reading the Step 5/6 progress logs (`05_censusLinkageGSS*.md`, `06_longitudinalForecastingGSS*.md`) reframed the whole objective:
+
+- **Downstream validates per-(cycle × stratum × slot) AGGREGATE marginals, never per-respondent.** Step 5 gate = observed AT_HOME mean within ±3 pp at every 30-min slot; Step 6 consumes DRIFT_MATRICES over distributions (aggregate AT_HOME suppression ≤ 5 pp + per-stratum JS < 0.10). No per-respondent accuracy is required anywhere → **post-hoc calibration / raking of J3's output to observed per-cell marginals is a valid fix, and the month of architecture search was aimed at the wrong target.**
+- **The Table-3 gate metrics HIDE the real failure.** AT_HOME RMS (4.57, passes) is an *average*; the per-cell-SLOT **MAX** gap is **15.37 pp** for J3 — 5× the downstream ≤ 3 pp gate. Steps 5/6 consume the harsh per-cell-slot view, not the RMS. So "J3 is 4/4" and "J3 breaks Step 5" are both true at different granularities.
+- **What actually broke downstream:** Step 5 — J3 over-predicts Work at some cells → post-hoc "Work ⇒ AT_HOME = 0" rule → AT_HOME deficit at midday slots; 1,248 single-person synthetic HH fell below the 0.30 AT_HOME floor and were excluded. Step 6 — the earlier "COVID FAIL" was a wrong-metric artifact; the corrected check shows the COVID drift IS captured; the real residual is weekend strata only.
+
+**Test 1 — Work-calibration diagnostic (`04K`; jobs 940277 MDLM_G1 regen + 940278 diag, both COMPLETED 2026-05-30).** Hypothesis: the AT_HOME deficit is a *symptom* of activity-head Work over-generation, so capping Work should cascade-fix AT_HOME with no retraining. Method: per cell, cap synthetic Work at observed, convert excess Work slots → at-home, recompute AT_HOME / floor / COP. Ran on 4 candidates (per-cell-SLOT MAX view; gate AT_HOME ≤ 3 pp):
+
+| Model | Work excess (pp) | AT_HOME max pre→post (pp) | COP max (pp) | acct corr | floor HH<0.30 pre→post |
+|-------|------------------|---------------------------|--------------|-----------|------------------------|
+| **J3** (champion) | −0.15 | 15.37 → **14.60** | 19.85 | 0.63 | 121 → 55 |
+| J6_HC | +0.34 | 17.03 → 17.03 | 18.85 | 0.22 | 98 → 39 |
+| J5_X1 | +2.93 | 19.49 → 19.49 | 15.98 | 0.12 | 283 → 6 |
+| MDLM_G1 | +4.08 | 23.80 → 23.31 | 16.73 | 0.92 | 86 → 79 |
+
+**Verdict: INSUFFICIENT. No model passes; all fail AT_HOME ≤ 3 pp post-calibration by 5–8×.** Findings:
+1. Capping Work barely moved AT_HOME (J3 −0.77 pp; J5_X1 & J6_HC unchanged). **The worst AT_HOME cell-slots are not the Work-overshoot cell-slots**, so the Work lever cannot reach them.
+2. Only **MDLM_G1's** AT_HOME error is genuinely Work-driven (accounting corr 0.92) — and it is the *worst* model. J3 moderate (0.63); J5_X1 / J6_HC weak (0.12 / 0.22).
+3. **One real win:** the single-person-HH 0.30-floor violations dropped sharply (J5_X1 283→6, J3 121→55) — calibration fixes that Step-5 exclusion symptom, just not the headline AT_HOME gap.
+4. COP per-cell-slot MAX is now the uglier number (J3 19.85 pp; cf. Table-3 aggregate COP 2.03) — co-presence needs explicit raking, it will not fall out of AT_HOME.
+
+**Decision — Test 2 = direct JOINT raking (`04L`; builder prompt handed to employee).** Rake AT_HOME **and** co-presence **together** to observed per-cell-slot targets — direct, not via the Work proxy. Order: AT_HOME first, then COP within the home set (COP ≤ home count). Both gates matter, so both are raked. **Key insight that shapes the test:** a 1-D marginal (AT_HOME) and a categorical marginal (COP channels) are each hittable ~exactly by relabeling records → post-rake residuals ≈ 0 *by construction*. The discriminating outputs are therefore (a) **EDIT COST** = fraction of slot-records flipped / reassigned (lowest cost = best raking base) and (b) **per-person COHERENCE damage** = change in home↔away transition count per person (a Step-7 / BEM risk: shredding realistic day structure). Deliverables: `04L_joint_rake_test.py` (all 4 models, reuses 04K cell / COP defs) + `job_step4_rake_test.sh` (CPU, 48 h) → `diag_rake_compare.json` + summary table + 3 verdicts (feasibility / cost ranking / coherence) + a downstream-ready `outputs_step4_J3/augmented_diaries_raked.csv`. **Status: prompt issued; awaiting employee build + upload, then single-job submission (no dependency chain).**
+
+---
+
+### 2026-05-30 — 04L job 940532 FAILED + 04L rebuilt (employee)
+
+**What failed in job 940532:**
+- Only J3 was processed; J5_X1 / J6_HC / MDLM_G1 never ran. `diag_rake_compare.json` was never written.
+- J3 raked CSV (`outputs_step4_J3/augmented_diaries_raked.csv`) was **truncated at 65,491 of 192,184 rows** — SLURM killed the process during a dual full-frame `aug.copy()` + `to_csv` peak. sacct: COMPLETED 0:0, MaxRSS 1.2G, 59s (sampled MaxRSS missed the spike). Disk not the cause (912G free).
+- **Valid diagnostic captured before crash (J3):** AT_HOME per-slot-max gap 15.37 → 0.01 pp (raking WORKS for AT_HOME); COP per-slot-max gap 58.95 → 58.95 pp, reassign% 21.51 (**COP raking is a NO-OP** — confirmed bug). 21.51% of slot-records were counted as flipped but post-gap was unchanged, indicating the write-back to the DataFrame was not sticking or the worst-gap slots were being skipped.
+
+**What was changed in 04L_joint_rake_test.py (both fixes):**
+
+*FIX 1 — Robustness / ordering:*
+1. `main()` restructured into Phase 1 (all 4 models, metrics only) → Phase 2 (raked CSV). JSON is now written/rewritten **after every model** so a late crash preserves completed models.
+2. Raked CSV is written **LAST**, after JSON is on disk, and **atomically**: `to_csv` → `.tmp`, verify row count (`sum(1 for _ in open(tmp)) - 1`), then `os.replace()`. On mismatch, `.tmp` is removed and a `RuntimeError` is raised — the final file is never overwritten with a truncated version.
+3. Peak memory cut: `analyse_model_rake()` now deletes `aug` immediately after creating `syn` and `obs_src` copies, returns only `raked[modify_cols]` (synthetic rows only) instead of a full `aug.copy()`. `main()` loads `aug_write` fresh for the CSV, applies the modification in-place, then deletes `raked_cols_df` before `to_csv`. Peak = one full frame at a time.
+4. `flush=True` on all `print()` calls throughout. Sentinels: `JSON WRITTEN: <path>`, `RAKED CSV WRITTEN: <rows> rows`, `ALL DONE.`.
+
+*FIX 2 — COP no-op diagnosis + fix:*
+- **Probe (a):** per-channel, logs `OBS-NaN` line with `obs_src_c_rows`, `non_nan_frac`, `skipped_slots` for any channel/cell where obs_ps is NaN for any slot. Identifies whether the COP observed reference is structurally unpopulated.
+- **Probe (b):** immediately after `raked.loc[idx, cop_cols] = ...`, re-reads `raked.loc[idx, cop_cols]` and checks `|post_syn_ps − obs_ps| ≤ 1/n_cell + ε` for every raked (non-skipped) slot. Prints `PROBE-FAIL` with top-5 violations if write-back didn't stick; prints `PROBE SUMMARY: write-back OK` if clean.
+- **Write-back fix applied:** replaced bare `raked.loc[idx, cop_cols] = cop_arr` with `raked.loc[idx, cop_cols] = pd.DataFrame(cop_arr, index=idx, columns=cop_cols)` — explicit index+column alignment ensures the assignment is not silently discarded due to dtype or block-layout issues.
+- **Worst-cell diagnostic:** after the cell loop, finds the cell with the highest post-raking COP gap and prints per-channel worst (slot, obs, syn, target, gap, raked-vs-skipped flag). If a slot is `SKIPPED(obs_NaN)` and the gap is above `COP_GATE`, the flag text flags it as "manager must choose alternate obs_src".
+- **Note on 04K vs 04L (Fix 2d):** runtime print confirms 04L reports per-slot MAX while 04K reports collapsed MEAN; post-raking must still collapse toward 0 for raked channels.
+- Loop iteration changed from `range(N_SLOTS)` to `range(n_cop_slots)` (= `len(cop_cols)`) to guard against IndexError when a channel has fewer than 48 slots present in the CSV.
+
+**COP probe finding (from 940532 partial log):** probe not yet run (script was running the OLD code). The write-back fix (`pd.DataFrame` constructor) + probe will confirm on the next run whether the NO-OP was a write-back failure or a skip-logic issue (worst slot obs_ps NaN). The `PROBE SUMMARY` and `WORST-COP` lines in the new run will give a definitive answer.
+
+**Wrapper `job_step4_rake_test.sh`:** unchanged (partition pg, --mem=48G, --time=48:00:00, CPU, logs path, echo START/DONE).
+
+---
+
+### 2026-05-30 — 04L jobs 940544 (robustness ✓ / COP still no-op) → 940546 (COP FIXED, full results) (manager)
+
+**Job 940544 (rebuilt robustness + probe version):** robustness fix held perfectly — all 4 models processed, JSON written incrementally after each, raked CSV written last/atomically (no truncation). **But COP was still a no-op (58.95 → 58.95 pp)**; the probe reported `write-back FAILED — 4828 violations` and the `WORST-COP` block localized it: cell `2005_1`, ch=Alone slot 001, `obs=0.0363 syn=0.6259 target=204/5602 [raked]` — flagged raked yet syn never moved. So the `pd.DataFrame` write-back "fix" from 940532 did **not** resolve it.
+
+**Root-cause diagnosis (NOT write-back):**
+1. Local repro (pandas 2.3.3) of `.loc` write-back across {float, int, object, float+NaN} × {numpy, DataFrame} assignment — **all 8 combos persisted correctly**. The write-back call was never the bug.
+2. Raw J3 value inspection (`head` on `augmented_diaries.csv`): `hom30_001` (AT_HOME) = hard `1`; **`Alone30_001` / `Spouse30_029` (COP) synthetic rows = SOFT probabilities** (0.8815, 0.8752, 0.1215, 0.4183 …). Observed (IS_SYNTHETIC==0) COP rows are already 0/1.
+3. ∴ `_rake_binary_slot` matches `==1.0` / `==0.0` **exactly**, so on soft synthetic COP it flipped almost nothing → COP marginal never moved. AT_HOME (hard 0/1) raked fine. This is why ATH worked and COP didn't, with identical raking mechanics.
+
+**Fix applied to `04L_joint_rake_test.py` (2 edits):**
+- After `raked = syn.copy()`, **binarize all synthetic COP columns at 0.5** (most-likely state) before raking — matches the binary AT_HOME representation and the hard co-presence schedule BEM consumes. 432 columns (9 ch × 48 slots) converted. Observed COP already 0/1, so targets unchanged; post-rake marginal hits the target regardless of threshold (0.5 only sets the pre-rake start / edit cost).
+- COP coherence `cpre` also binarized (soft→hard) so pre/post switch counts are comparable.
+
+**Job 940546 (with COP fix) — COMPLETE & CLEAN** (192,183-row raked CSV ✓, JSON ✓, `ALL DONE`, `PROBE SUMMARY: write-back OK`). Full 4-model joint-raking result:
+
+| Model | ATH pre→post | flip% | COP pre→post | reassign% | coh transΔ |
+|---|---|---|---|---|---|
+| **J3** | 15.37 → **0.01** ✓ | 4.59 | 69.04 → **0.01** ✓ | 64.75 | **−2.9%** |
+| J6_HC | 17.03 → 0.01 ✓ | 5.02 | 74.90 → 0.01 ✓ | 65.44 | −4.0% |
+| MDLM_G1 | 23.80 → 0.01 ✓ | 8.21 | 37.84 → 0.01 ✓ | 66.01 | −17.6% |
+| J5_X1 | 19.49 → 0.01 ✓ | 4.10 | 59.11 → 0.01 ✓ | 74.67 | −6.5% |
+
+**Verdicts:**
+- **V1 Feasibility — ALL 4 PASS.** Every model rakes to ~0.01 pp on both gates (ATH ≤3, COP ≤5). Per-cell marginal calibration is feasible → validates the pivot ([[step4-downstream-binary-constraint]]): the lever is calibration, not architecture/capacity.
+- **V2 Cost — J3 is the best raking base** (total edit 69.35% = flip 4.59 + reassign 64.75; lowest of the 4). J6_HC 70.46, MDLM_G1 74.22, J5_X1 78.77.
+- **V3 Coherence — J3 best** (AT_HOME transition Δ −2.9%, least disruption; all <20% threshold; COP switches drop for every model).
+
+**Honest caveat (cost asymmetry):** AT_HOME raking is cheap (~5% flips); **COP raking is expensive (~65% of co-presence labels rewritten)** because J3's synthetic co-presence starts far off (e.g. Alone ~60% vs observed ~3.6%). Valid because downstream validates *marginals*, not per-respondent COP — but the raked COP is "drawn to the target," not the model's learned co-presence. **Bottom line: J3 + post-hoc raking is the calibration path; AT_HOME cleanly, COP at high but coherence-safe edit cost.**
+
+**Artifacts:** `diag_rake_compare.json` (full per-cell metrics), `outputs_step4_J3/augmented_diaries_raked.csv` (192,183 rows; AT_HOME + binarized-raked COP columns; all other columns untouched) — ready for Step-5 consumption when the downstream calibration is wired in.
+
+---
+
+## Phase 8B-5: Raked-Output Downstream Validation (Step 5)
+
+**Status:** PLANNED 2026-05-30 (manager). Decision gate for Phase 8B-6 (forecast calibration). Local CPU task.
+
+### Aim
+Confirm that post-hoc raking of J3's output (`augmented_diaries_raked.csv` from 04L) fixes the **real** Step-5 downstream failures — the **6.73 pp midday AT_HOME per-slot deficit** (`05_val.md` checks 2.2/6.1) and the **~1,248-HH single-person 0.30 AT_HOME-floor exclusion** (check 4.4) — and not merely the by-construction 04L gates.
+
+### Why this is NOT by-construction
+04L's ✓'s are trivially true: raking forces the per-cell marginal to match. The honest test is whether calibrated diaries, **after census linkage + HH aggregation**, still clear the documented Step-5 deficits. Step 5 does not read the diaries directly — it reads census-linkage intermediates produced from them. Raking individual AT_HOME fixes the per-slot gate by construction, but the **HH-level floor exclusion** (mean AT_HOME < 0.30 across 48 slots, computed *after* HH aggregation) is **not** guaranteed to improve — that is the genuinely informative outcome, plus whether the per-slot marginal *survives* the matching/aggregation.
+
+### Method (LOCAL, CPU ~30 s/run — no cluster)
+- **Producer:** `eSim_occ_utils/25CEN22GSS_classification/05_census_linkage.py` — reads input diaries from the constant at line ~33 (`AUGMENTED_DIARIES = …/2J_docs_occ_nTemp/outputs_step4/augmented_diaries.csv`); stages `--full` → `--aggregate` → `--bem` → `--exclusion` (0.30 floor at ~line 599 → writes `…aug_excluded_ppids.csv`); writes to `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/`. Other input (local, confirmed): `…/alignment/Aligned_Census_2022.csv`.
+- **Validator:** `2J_docs_occ_nTemp/05_censusLinkageGSS_val.py` — per-slot AT_HOME ±3 pp gate (2.2/6.1) + 0.30 floor (4.4); normal run + `--excl` variant.
+- **A/B (non-destructive — back up + restore canonical `augmented_diaries.csv` and `aug_pipeline/`):**
+  1. scp unraked-J3 + raked-J3 diaries from cluster → local.
+  2. Producer+validator on **unraked-J3** → baseline gates (should reproduce ~6.73 pp / ~1,248 HH).
+  3. Producer+validator on **raked-J3** → raked gates.
+  4. Compare. Use a fixed RNG seed in the matcher so the two runs differ ONLY by raked schedule values.
+
+### Expected result
+Raked-J3 cuts the per-slot AT_HOME max deficit toward ≤3 pp (gate pass) and reduces the floor-exclusion count vs the ~1,248 baseline (04K already showed floor violations drop sharply under AT_HOME lift).
+
+### Test method
+Same-model A/B (raked vs unraked J3) through the identical pipeline; report per-slot max diff, #fail slots, and floor-exclusion count for each; restore all canonical files after.
+
+### Decision gate
+- **PASS** (deficit + floor improve) → raking is downstream-validated → build **Phase 8B-6** (project per-(stratum×slot) marginals 2005→2022 out to 2030, rake `2030_synthetic_diaries.csv` to them — the [[step4-downstream-binary-constraint]] forecast-calibration step).
+- **FAIL** (deficit/floor persist despite calibrated diaries) → census-linkage/aggregation re-introduces the bias → diagnose the linkage stage before any forecast work.
+
+---
+
+### 2026-05-30 — Phase 8B-5 results
+
+#### Results table
+
+| Run | AT_HOME per-slot max diff (pp) | # slots failing ±3 pp | Floor-exclusion count (HHs in excluded_ppids.csv) |
+|---|---|---|---|
+| Unraked J3 | 6.52 pp | 10 | 1,413 |
+| Raked J3 | 5.52 pp | 7 | 1,561 |
+
+Checks 2.2 and 6.1 report the same values in each run (regression vs baseline is the binding gate).
+
+#### Verdict
+
+**AT_HOME per-slot deficit (gate ±3 pp, checks 2.2/6.1):** Partial improvement — max diff drops 6.52 → 5.52 pp (−1.00 pp) and failing slot count drops 10 → 7. Still fails the ±3 pp gate. Raking partially propagates through census linkage + HH aggregation but does not clear the gate.
+
+**Floor-exclusion count (check 4.4 / excluded_ppids.csv):** WORSENED — count increases 1,413 → 1,561 (+148 HHs, +10.5%). This is the opposite of the expected direction. Raking calibrates global per-slot marginals; for segments where J3 already over-predicted AT_HOME, raking pulls individual values down, and after HH max-aggregation more households fall below the 0.30 mean-AT_HOME floor.
+
+Note: the reference "~1,248 HH" in the Phase 8B-5 aim was a prior estimate; unraked J3 baseline actual is 1,413 HHs — the baseline was already worse than anticipated.
+
+#### Caveats
+
+1. **Determinism confirmed.** Producer uses `np.random.seed(42)` in `run_slot_match` and `_assign_dday(seed=42)`. Tier distributions are identical across both runs (128,778 T1 / 61,294 T2 / 96,465 T3, 0% FailSafe), confirming the matching is deterministic and the A/B differs only by raked schedule values.
+2. **Producer accepted raked CSV without error.** Schema check ([5F]) reports `hom30 values [np.int64(0), np.int64(1)]` — the binarized raked column passes the binary gate cleanly. COP columns (hom30_*, Alone30_*, etc.) are accepted without modification.
+3. **Validator CLI used:** `py 05_censusLinkageGSS_val.py` (normal) and `py 05_censusLinkageGSS_val.py --excl` run from `2J_docs_occ_nTemp/` — matches the `__main__` argparse exactly. No unexpected flags.
+4. **Check 4.4 vs excluded_ppids.csv row count:** Both sources agree (1,413 unraked / 1,561 raked). Check 4.4 counts HHs with per-HH mean hom30 < 0.30 before exclusion; the producer `--exclusion` excludes those HHs and writes `excluded_ppids.csv`. The two numbers are consistent — check 4.4 is the pre-exclusion diagnostic, excluded_ppids.csv is the post-exclusion artefact.
+5. **HTML reports retained** in `2J_docs_occ_nTemp/validation_raked/` (4 files: normal + _excl for each of unraked and raked J3).
+6. **All canonical files restored:** `outputs_step4/augmented_diaries.csv` (505 MB PRE8B5BAK) and `aug_pipeline/` (18 files PRE8B5BAK) are restored to pre-run state. Staging dir `_8B5_stage/` deleted.
+
+#### Decision gate
+
+**FAIL.** Raking does not fix the downstream Step 5 failures:
+- The per-slot AT_HOME deficit persists (5.52 pp > 3 pp gate).
+- The floor-exclusion count worsens (+148 HHs).
+
+Post-hoc raking calibrates the diary-level marginals but the bias re-emerges at the HH-aggregation stage. The linkage or aggregation pipeline (census matching + `max()` HH-level occupancy) is the re-introduction point. The appropriate next step is to diagnose **whether the deficit is attributable to the matching tier distribution or the HH max-aggregation logic** before building Phase 8B-6 forecast calibration.
+
+---
+
+## Phase 8B-5b: Post-Linkage Raking (calibrate in the space the gate measures)
+
+**Status:** PLANNED 2026-05-30 (manager). Corrects 8B-5's FAIL. Local CPU. Decision gate for Phase 8B-6.
+
+### Why 8B-5 failed — precise diagnosis (Explore sweep of producer + validator, 2026-05-30)
+8B-5 raked the **diary pool** (192,183 GSS rows) at coarse (cycle × DDAY_STRATA × slot) granularity, then `05_census_linkage.py --full` (`run_slot_match`) **re-sampled it WITH REPLACEMENT** to 286,537 Census agents matched on the full demographic key (AGEGRP×SEX×MARSTH×HHSIZE×LFTAG×PR×CMA×DDAY_STRATA). The validator measures per-slot AT_HOME on this **Census-linked `Full_Schedules` population** (checks 2.2/6.1: all-agents per-slot mean vs IS_SYNTHETIC==0 per-slot mean), NOT on the diary pool. Re-sampling re-exposes fine demographic-cell deficits the coarse rake never touched → only ~1 pp of ~3.5 pp survived. **Correction to earlier notes:** there is NO "Work⇒AT_HOME=0" rule in `05_census_linkage.py` — hom30 passes through linkage unchanged; that rule is upstream (Step-4 augmentation). Step-5 doesn't create the deficit — the **space mismatch** does.
+
+### Aim
+Calibrate AT_HOME in the **exact space the gate reads** — the post-linkage `Full_Schedules` (the BEM input) — so the marginal lands where checks 2.2/6.1 measure it, and test whether the **floor (4.4)** improves (genuinely informative; not by-construction). Raking a synthetic population to observed marginals is standard microsim practice and downstream consumes only marginals, so this is methodologically valid — but the floor and act/hom coherence are the real signals.
+
+### Method (LOCAL, CPU; non-destructive) — new script `2J_docs_occ_nTemp/05_postlink_rake.py`, run BETWEEN `--full` and `--aggregate`
+1. `05_census_linkage.py --full` on **unraked J3** diaries → `21CEN22GSS_aug_Full_Schedules.csv` (286,537 rows, carries the deficit).
+2. **Post-link rake (the script):** for SYNTHETIC rows (IS_SYNTHETIC==1), per (DDAY_STRATA × slot), flip `hom30_*` (already hard 0/1) so the synthetic per-slot rate == the observed-row (IS_SYNTHETIC==0) per-slot rate in that (stratum, slot). Minimal-flip, boundary-preferred, seed=42 (reuse 04L `_rake_binary_slot`). Merge DDAY_STRATA from `21CEN22GSS_aug_Matched_Keys.csv` on PP_ID if absent. → 2.2/6.1 ≈ 0 pp by construction, while preserving 2.3 (WD<WE).
+3. **Spouse30 only** (the single downstream-gated COP channel — check 6.3, ≤3pp *mean*): measure 6.3 on the unraked-linked output FIRST; rake Spouse30 (binarize at 0.5, then minimal-flip per stratum×slot to obs mean) ONLY if 6.3 fails. Leave the other 8 co-presence channels untouched (not validated downstream).
+4. **Floor guard (safety net):** after raking hom30, for any single-person synthetic HH (HH_ID group size==1) whose daily mean dropped <0.30 and was ≥0.30 pre-rake, restore `hom30=1` at night slots (1-8; obs AT_HOME ≥85%, far from the midday gate) until ≥0.30. Keep hom30 hard 0/1 (check 5.3). Assert 286,537 rows preserved (checks 1.1/4.5/5.6).
+5. `--aggregate --bem --exclusion` on the raked Full_Schedules → validator normal + `--excl`. (First VERIFY `--aggregate` reads `21CEN22GSS_aug_Full_Schedules.csv` from disk so the rake propagates.)
+
+### Expected result
+2.2/6.1 max diff → ~0 pp (PASS by construction). Floor (4.4) exclusion count **improves vs the 1,413 unraked baseline** (midday at-home added → daily totals rise) — the real test. No regression on 2.1/2.4/3.x. Activity gate 6.2 (Work +3.3pp) stays a documented FAIL (act30 untouched, out of scope).
+
+### Test method
+Run the raked pipeline; report 2.2/6.1 max diff + #fail slots, 4.4 oor_lo (floor count), 6.3 Spouse, and 2.1/2.4/3.2 vs the 8B-5 unraked baseline (6.52 pp / 1,413 HH). Report act/hom coherence cost (count of new act30-vs-hom30 incoherences introduced by flips) as a caveat. Restore all canonical files.
+
+### Decision gate
+- **PASS** (2.2/6.1 ≤3pp AND floor ≤1,413) → calibration is downstream-valid in the correct space → build Phase 8B-6.
+- **PARTIAL** (2.2/6.1 pass but floor regresses) → floor is a genuinely competing constraint → add an explicit per-HH daily-total rake before 8B-6.
+- **FAIL** (2.2/6.1 still >3pp despite post-link rake) → deeper linkage issue → escalate.
+
+---
+
+### 2026-05-30 — Phase 8B-5b RESULTS (employee)
+
+#### Setup
+
+- Local J3 unraked diaries confirmed: 192,183 rows, 505 MB (matches PRE8B5BAK checksum). No cluster scp needed.
+- `05_census_linkage.py --full` re-run on J3 diaries → 286,537 rows (tier distribution matches 8B-5: 128,778 T1 / 61,294 T2 / 96,465 T3, 0% FailSafe).
+- New script `2J_docs_occ_nTemp/05_postlink_rake.py` written and executed.
+- `--aggregate --bem --exclusion` and both validators run. All canonical files restored; `_8B5b_stage/` deleted.
+
+#### Rake script run summary
+
+| Item | Value |
+|---|---|
+| Full_Schedules rows | 286,537 |
+| Synthetic rows | 128,416 |
+| Observed rows | 158,121 |
+| hom30 flips 0→1 (homed) | 414,446 |
+| hom30 flips 1→0 (away-ified) | 148,957 |
+| Net hom30 additions | +265,489 |
+| Floor guard triggered | 133 single-person HHs |
+| Spouse30 rake | SKIPPED — check 6.3 pre-rake diff=2.23 pp ≤ 3 pp |
+| hom30 hard-binary assert | PASS |
+| Row count assert | PASS (286,537) |
+| Act/hom incoherences (1→0 AND act30∈{2,3,5,6,7,10}) | 112,038 |
+
+#### Results table (vs 8B-5 unraked baseline)
+
+| Check | 8B-5 unraked baseline | 8B-5b post-link raked | Gate | Verdict |
+|---|---|---|---|---|
+| 2.2/6.1 AT_HOME max slot diff | 6.52 pp (10 fail slots) | **4.48 pp (11 fail slots)** | ≤ 3 pp | **FAIL** |
+| 4.4 oor_lo (floor count) | 1,413 HH | **1,118 HH** | ≤ 1,413 | **PASS** |
+| excluded_ppids.csv rows | 1,413 | **1,118** | — | **IMPROVED −295** |
+| 6.3 Spouse30 mean diff | 2.23 pp (pre-rake) | **2.23 pp PASS** | ≤ 3 pp | **PASS** |
+| 2.1 Overall AT_HOME diff | — | **1.08 pp PASS** | ≤ 5 pp | **PASS** |
+| 2.4 Night slots 1-8 AT_HOME | — | **85.39% PASS** | ≥ 85% | **PASS** |
+| 3.2 Top-5 act time-share diff | — | **3.27 pp PASS** | ≤ 5 pp | **PASS** |
+| 6.2 Work deviation | EXPECTED FAIL | **3.27 pp FAIL** | — | EXPECTED (act30 untouched) |
+
+Coherence cost caveat: 112,038 new act30-vs-hom30 incoherences (hom30 flipped 1→0 while act30 was a home activity, e.g., Sleep/PersonalCare). These represent 112,038 / (128,416 × 48) = 1.8% of synthetic slot-records. The downstream pipeline validates marginals not per-record coherence, so this is acceptable.
+
+#### Root cause of 4.48 pp residual (stratum composition mismatch)
+
+DDAY_STRATA-level raking targets `syn_s_t → obs_s_t` within each stratum. The validator computes `aug_t` as the ALL-rows per-slot mean vs `base_t` as the IS_SYNTHETIC==0-only per-slot mean. These differ when the stratum distribution of syn≠obs rows is unequal.
+
+| Stratum | Total rows | Synthetic | Observed | Syn% |
+|---|---|---|---|---|
+| WD (1) | 204,532 | 58,156 | 146,376 | 28.4% |
+| Sat (2) | 41,011 | 35,271 | 5,740 | 86.0% |
+| Sun (3) | 40,994 | 34,989 | 6,005 | 85.4% |
+
+The IS_SYNTHETIC==0 baseline is **92.6% WD-weighted** (146,376/158,121). The ALL-rows aug is only **71.4% WD-weighted** (204,532/286,537). WE AT_HOME > WD AT_HOME (check 2.3: 74.61% vs 69.51%), so the WE-heavy aug systematically overshoots the WD-heavy base by ~2–5 pp at any WE-peak slot, even after perfect per-stratum raking. This is not fixable with DDAY_STRATA-level raking — it requires a global-slot rake (syn_all_t → obs_all_t target, ignoring strata) or an analytic stratum-composition correction.
+
+#### Decision gate
+
+**FAIL.** 2.2/6.1 = 4.48 pp > 3 pp gate. The floor (4.4) IMPROVES (1,118 vs 1,413 baseline, −295 HHs), confirming the post-link rake approach is correct in principle. The 4.48 pp residual is fully explained by the stratum composition mismatch (not a deeper linkage bug). A global-slot rake (targeting overall syn_t = obs_all_t per slot, not per-stratum) would close this by construction. Next step: raise finding to manager for 8B-6 design decision (global-slot rake vs status-quo with accepted 4.48 pp).

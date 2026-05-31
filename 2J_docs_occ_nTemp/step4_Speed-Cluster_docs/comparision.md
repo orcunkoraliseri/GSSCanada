@@ -15,19 +15,23 @@ All values are **training losses at the best checkpoint epoch** (minimum val_sco
 | H_Tanh | 0.0851 | 0.2265 | 0.0675 | 0.0508 | 58 | Tanh-bounded heads; 3/4 gates |
 | J3 | 0.0878 | 0.3514 | 0.1919 | 0.0166 | 72 | arm2_act_proj; 4/4 GATES PASS |
 | J5_B | 0.0913 | 0.3528 | 0.1921 | 0.0339 | 69 | SHELVED |
+| J6_HC | 0.0928 | 0.3547 | 0.1921 | 0.0160 | 64 | J3 trunk + hierarchical COP; 3/4 gates, COP 6.25 |
 | B2c (8B-3) | 0.0943 | 0.2307 | 0.1852 | 0.0391 | 66 | G4_NAT_COP soft-home-gate; 2/4 gates |
 | J5_F | 0.0962 | 0.3556 | 0.2083 | 0.0222 | 66 | SHELVED |
 | B2d (8B-3) | 0.0989 | 0.3710 | 0.1938 | 0.0138 | 62 | G4_NAT_COP AT_HOME→NAT (J3-style); 3/4 gates, COP 7.07 |
 | J1 | 0.1028 | 0.3596 | 0.1943 | 0.0171 | 60 | Hybrid AR+NAT; 3/4 gates |
 | J2 | 0.1031 | 0.3572 | 0.1943 | 0.0173 | 60 | lambda_home=0.9 |
 | J2.5 | 0.1045 | 0.3595 | 0.1942 | 0.0176 | 60 | GELU head (no Tanh) |
+| J6_HCHH | 0.1168 | 0.3572 | 0.1933 | 0.0143 | 55 | J3 trunk + hier_cop + HH-cop-cond; 3/4 gates, COP 6.44 |
 | J5_X1b | 0.1177 | 0.2405 | 0.1583 | 0.0141 | 64 | cross-arm grad; best home+cop in J-series |
 | J4_2 | 0.1318 | 0.3629 | 0.1951 | 0.0161 | 53 | hierarchical cop; SHELVED |
+| J6_HT | 0.1352 | 0.3489 | 0.1947 | 0.0148 | 50 | J3 trunk + temporal home head; 2/4 gates |
 | J5_X1 | 0.1379 | 0.3610 | 0.2090 | 0.0196 | 51 | dec_out.detach→binary; 3/4 gates |
 | J4_1 | 0.1487 | 0.3675 | 0.1959 | 0.0171 | 49 | tod/dow embed; SHELVED |
 | MDLM_G1 | 0.1570 | 0.3292 | 0.1887 | 0.0372 | 64 | MDLM champion; 2/4 gates |
 | SEDD_C | 0.1646 | 0.3323 | 0.1899 | 0.0352 | 54 | SEDD tuned |
 | G3 | 0.1909 | 0.0505 | 0.0847 | 0.0477 | 60 | CrossAttn dec; sched_sample_p=0.2 |
+| J6_HHC | 0.1985 | 0.3707 | 0.1966 | 0.0192 | 39 | J3 trunk + HH-cop-cond; 2/4 gates |
 | B2b (8B-3) | 0.2452 | 0.2517 | 0.1893 | 0.0444 | 35 | G4_NAT_COP mass-coupled; under-fit; 1/4 gates |
 | J4_3 | 0.2461 | 0.3732 | 0.2069 | 0.0183 | 37 | logic loss; SHELVED |
 | B2a (8B-3) | 0.2515 | 0.2529 | 0.1889 | 0.0549 | 33 | G4_NAT_COP +HH cond; under-fit; 1/4 gates |
@@ -117,10 +121,14 @@ All values are **training losses at the best checkpoint epoch** (minimum val_sco
 | H_Tanh | 5.70 | — | — | ~0.85 | 3/4 | AT_HOME FAIL by 0.40 |
 | J4_2 | 5.88 | 6.22 | 0.0266 | 0.6578 | 3/4 | AT_HOME FAIL |
 | B2d (8B-3) | **4.94** | 7.07 | 0.0238 | **0.670** | 3/4 | AT_HOME→NAT (J3-style); COP FAIL by 2.07; best 8B-3 variant |
+| J6_HC | 4.82 | 6.25 | 0.0228 | **0.6300** | 3/4 | hierarchical COP; composite beats J3; COP FAIL by 1.25 |
+| J6_HCHH | 5.19 | 6.44 | 0.0325 | 0.6825 | 3/4 | hier_cop + HH_cond; COP FAIL by 1.44 |
 | MDLM_G1 | 7.81 | **4.57** | 0.053 | **0.5592** | 2/4 | Best composite, AT_HOME+act_JS FAIL |
 | J5_X1b | 5.88 | 8.14 | 0.0285 | 0.8086 | 2/4 | cross-arm gradient distorted cop |
 | B2 (8B-2) | 5.75 | 10.21 | 0.0202 | 0.801 | 2/4 | hybrid AR-act + NAT-COP base; AT_HOME+COP FAIL (8B-3 parent) |
 | B2c (8B-3) | 6.14 | 9.67 | 0.0279 | 0.802 | 2/4 | soft home gate; flat vs B2 base, COP unfixed |
+| J6_HT | 6.10 | 5.83 | 0.0351 | 0.6866 | 2/4 | temporal home head; AT_HOME+COP FAIL (backfired on home) |
+| J6_HHC | 7.36 | 6.79 | 0.0461 | 0.7736 | 2/4 | HH-cop-cond; AT_HOME+COP FAIL |
 | **H_Time** | 5.68 | **22.86** | **0.0233** | 1.3214 | **1/4** | Best training losses but catastrophic inference COP |
 | G3 | 6.06 | **19.77** | **0.0241** | 1.2284 | **1/4** | sched_sample=0.2 did NOT fix COP; Spouse channel=19.77 pp |
 | G4 | 5.66 | **20.55** | **0.0296** | 1.2564 | **1/4** | Best training act_loss (0.07) but COP catastrophic (Alone=20.55 pp) |
@@ -131,4 +139,8 @@ All values are **training losses at the best checkpoint epoch** (minimum val_sco
 
 **Key finding:** Every CrossAttn AR decoder model catastrophically fails the COP gate at inference (~20 pp), regardless of training cop_loss. G4 has cop_loss=0.064 (best), G3 has cop_loss=0.085, H_Time has cop_loss=0.062 — yet all produce COP max gap 19–23 pp. Meanwhile J3 (cop_loss=0.192, 3x worse training loss) achieves COP max gap ~2.03 pp. The Arm-2 NAT per-slot parallel architecture avoids cascading errors that destroy CrossAttn copresence at inference. Scheduled sampling (G3, p=0.2) does NOT fix this — it improves activity (act_JS=0.024) but COP remains catastrophic.
 
+**J6 family (Phase 8B-4, J3-trunk variants):** All four J6 variants take J3's exact Arm-2 NAT trunk plus one structural tweak each, and **all four fail the COP gate at inference** (5.83–6.79 pp vs J3's 2.03) — including J6_HT, which leaves the COP path untouched. Unlike the CrossAttn catastrophe (~20 pp), this is a milder but **systematic** ~4–5 pp regression shared across the whole family, pointing to a common cause (shared J6 training recipe — `LAMBDA_COP=0.3`, `SPOUSE_NEG_WEIGHT=0.45` — rather than the per-variant flags). The three COP-targeting mechanisms (hierarchical COP, HH-cop-cond, both) did not improve COP over the COP-agnostic temporal variant. Notably **J6_HC's composite (0.6300) edges out J3 (0.6355)** — the only model to beat J3 on composite — yet still misses COP; if the shared cause is fixed it is the strongest 4/4 candidate.
+
 **Phase 8A inference rescue test (job 936884, G4 checkpoint):** Three inference-side fixes tested on 5000-respondent subset — all FAILED. (1) Seed variance: 10 seeds produce 20.65–21.02 pp (std=0.12), confirming systematic bias. (2) COP threshold sweep 0.30–0.70: best=0.70 → 12.88 pp, but trades Alone over-generation for Spouse under-generation (seesaw effect). (3) Per-respondent multi-sample K=10 Bernoulli: cherry-pick → 14.89 pp. Best overall 12.88 pp — still 2.6× above the 5.0 pp gate. COP bias is structural in the AR decoder, not fixable by inference tricks.
+
+**Per-cell-slot reality — why this gate table understates the downstream gap (Phase 8B-4, 2026-05-30):** Table 3's metrics are *aggregate* (AT_HOME RMS, COP mean), but downstream Steps 5/6 validate the per-(cycle × stratum × slot) **MAX** gap. Under that harsher view even **J3 — 4/4 above — shows AT_HOME max 15.37 pp and COP max 19.85 pp** (vs its 4.57 / 2.03 aggregate). A Work-calibration diagnostic (`04K`, jobs 940277/940278) tested whether capping synthetic Work at observed (cascading Work ⇒ AT_HOME = 0) closes the AT_HOME gap post-hoc — it did **not**: J3 15.37→14.60, J5_X1 & J6_HC unchanged, MDLM_G1 23.80→23.31; all still 5–8× over the ≤ 3 pp downstream gate. The worst AT_HOME cell-slots are not the Work-overshoot slots (only MDLM_G1's error is Work-driven, corr 0.92, and it is the worst model). Lone win: single-person-HH 0.30-floor exclusions dropped sharply (J5_X1 283→6, J3 121→55). **Conclusion: the lever is direct per-cell-slot raking of the binary marginals, not architecture or the Work proxy.** Next test (`04L`): joint AT_HOME + COP raking to observed per cell-slot, scored by edit-cost + per-person coherence damage (marginal residual ≈ 0 by construction). *No new training/inference rows added — 04K/04L are post-hoc diagnostics on existing model outputs, not new models.*
