@@ -6,10 +6,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-HERE  = Path(__file__).resolve().parent          # 2J_docs_occ_nTemp/
-BASE  = HERE.parent                              # GSSCanada-main/
-RAKED = HERE / "2030_synthetic_diaries_raked.csv"
-CANON = BASE / "0_Occupancy" / "Outputs_21CEN22GSS" / "forecast_2030" / "2030_synthetic_diaries.csv"
+HERE     = Path(__file__).resolve().parent       # 2J_docs_occ_nTemp/step4_Speed_Cluster/
+BASE     = HERE.parent.parent                    # GSSCanada-main/
+FORECAST = BASE / "0_Occupancy" / "Outputs_21CEN22GSS" / "forecast_2030"
+RAKED = FORECAST / "2030_synthetic_diaries_raked.csv"   # side file written by 06_forecast_rake.py
+CANON = FORECAST / "2030_synthetic_diaries.csv"
 HOM   = [f"hom30_{s:03d}" for s in range(1, 49)]
 LBL   = {1: "WD", 2: "Sat", 3: "Sun"}
 EXP   = {1: 78.44, 2: 79.15, 3: 81.48}           # structural-break p=1 daily AT_HOME %

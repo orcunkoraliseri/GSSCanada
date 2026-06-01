@@ -133,6 +133,18 @@ class CensusLinkageValidator:
             self.census = self.census.rename(columns={"BUILT": "BUILTH"})
         print(f"  -> {len(self.census):,} rows x {self.census.shape[1]} cols")
 
+        # Expected row count — adjusted for the post-exclusion file set under --excl so the
+        # row-count gates (1.1/4.5/5.6) validate against the intended 286,537 - n_excluded,
+        # not the pre-exclusion constant. Still an exact check, just the correct baseline.
+        self.expected_rows = EXPECTED_ROWS
+        if self.file_suffix == "_excl":
+            _excl_path = os.path.join(self.aug_dir, "21CEN22GSS_aug_excluded_ppids.csv")
+            if os.path.exists(_excl_path):
+                _n_excl = sum(1 for _ in open(_excl_path, encoding="utf-8")) - 1
+                self.expected_rows = EXPECTED_ROWS - _n_excl
+                print(f"  [--excl] expected row count: {EXPECTED_ROWS:,} - {_n_excl:,} "
+                      f"= {self.expected_rows:,}")
+
         self.results: dict[str, list[str]] = {"pass": [], "fail": [], "warn": []}
         self.plots_b64: dict[str, str] = {}
         self.summary_rows: list[dict] = []
@@ -150,12 +162,12 @@ class CensusLinkageValidator:
         k = self.keys
 
         n = len(k)
-        ok11 = n == EXPECTED_ROWS
+        ok11 = n == self.expected_rows
         self._rec("pass" if ok11 else "fail",
-                  f"1.1 | Row count: {n:,} (expected {EXPECTED_ROWS:,})")
+                  f"1.1 | Row count: {n:,} (expected {self.expected_rows:,})")
         self.summary_rows.append({
             "Gate / Check": "Full-sample row count",
-            "Threshold": f"== {EXPECTED_ROWS:,}",
+            "Threshold": f"== {self.expected_rows:,}",
             "Observed": f"{n:,}",
             "Status": "PASS" if ok11 else "FAIL",
         })
@@ -468,8 +480,8 @@ class CensusLinkageValidator:
             self._rec("warn", "4.4 | HH_hom30 columns missing")
 
         n = len(df)
-        self._rec("pass" if n == EXPECTED_ROWS else "fail",
-                  f"4.5 | Aggregated row count: {n:,} (expected {EXPECTED_ROWS:,})")
+        self._rec("pass" if n == self.expected_rows else "fail",
+                  f"4.5 | Aggregated row count: {n:,} (expected {self.expected_rows:,})")
 
         fig, axes = plt.subplots(1, 2, figsize=(12, 5))
         fig.suptitle("Section 4 — HH Aggregation Integrity",
@@ -543,10 +555,16 @@ class CensusLinkageValidator:
             self._rec("fail", "5.3 | hom30 columns missing from BEM")
 
         # 5.4 DTYPE distribution
+        # Under --excl the excluded HHs are intentionally dropped, so comparing against the
+        # FULL Census would spuriously diff by their DTYPE share. DTYPE is a per-PP_ID Census
+        # attribute, so restrict Census to the RETAINED PP_IDs — the correct exact-match test.
+        _cen5 = self.census
+        if self.file_suffix == "_excl" and "PP_ID" in self.census.columns and "PP_ID" in b.columns:
+            _cen5 = self.census[self.census["PP_ID"].isin(b["PP_ID"])]
         bem_dtype = b["DTYPE"].value_counts(normalize=True).sort_index() \
                     if "DTYPE" in b.columns else None
-        cen_dtype = self.census["DTYPE"].value_counts(normalize=True).sort_index() \
-                    if "DTYPE" in self.census.columns else None
+        cen_dtype = _cen5["DTYPE"].value_counts(normalize=True).sort_index() \
+                    if "DTYPE" in _cen5.columns else None
         dtype_match = False
         max_dtype_diff = float("nan")
         all_types: list = []
@@ -581,8 +599,8 @@ class CensusLinkageValidator:
                 self._rec("warn", f"5.5 | {v} not found in BEM output")
 
         n = len(b)
-        self._rec("pass" if n == EXPECTED_ROWS else "fail",
-                  f"5.6 | BEM row count: {n:,} (expected {EXPECTED_ROWS:,})")
+        self._rec("pass" if n == self.expected_rows else "fail",
+                  f"5.6 | BEM row count: {n:,} (expected {self.expected_rows:,})")
 
         # Charts
         fig, axes = plt.subplots(1, 2, figsize=(13, 5))
@@ -697,11 +715,14 @@ class CensusLinkageValidator:
         else:
             self._rec("warn", "6.3 | Spouse30 columns missing — skip")
 
-        # 6.4 DTYPE distribution exact match
+        # 6.4 DTYPE distribution exact match (Census restricted to retained PP_IDs under --excl)
+        _cen6 = self.census
+        if self.file_suffix == "_excl" and "PP_ID" in self.census.columns and "PP_ID" in b.columns:
+            _cen6 = self.census[self.census["PP_ID"].isin(b["PP_ID"])]
         bem_dtype = b["DTYPE"].value_counts(normalize=True).sort_index() \
                     if "DTYPE" in b.columns else None
-        cen_dtype = self.census["DTYPE"].value_counts(normalize=True).sort_index() \
-                    if "DTYPE" in self.census.columns else None
+        cen_dtype = _cen6["DTYPE"].value_counts(normalize=True).sort_index() \
+                    if "DTYPE" in _cen6.columns else None
         if bem_dtype is not None and cen_dtype is not None:
             all_t = sorted(set(bem_dtype.index) | set(cen_dtype.index))
             md = max(abs(bem_dtype.get(t, 0) - cen_dtype.get(t, 0)) * 100

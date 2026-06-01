@@ -1471,8 +1471,8 @@ All validator gates (5.1/5.2/5.3/5.4/5.6) PASS. Structural-break targets plausib
 
 ### Prerequisites
 - `2J_docs_occ_nTemp/05_postlink_rake.py` — 2022 Full_Schedules raker
-- `2J_docs_occ_nTemp/06_forecast_rake.py` — 2030 diary raker (produces `2030_synthetic_diaries_raked.csv`)
-- `2J_docs_occ_nTemp/_activate_2030_canonical.py` — 2030 activation helper (OP2)
+- `2J_docs_occ_nTemp/06_forecast_rake.py` — 2030 diary raker (writes `2030_synthetic_diaries_raked.csv` into `0_Occupancy/Outputs_21CEN22GSS/forecast_2030/`)
+- `2J_docs_occ_nTemp/step4_Speed_Cluster/_activate_2030_canonical.py` — 2030 activation helper (OP2)
 
 ### ⚠ Critical constraint
 **NEVER run `05_census_linkage.py --full` after the rake.** `--full` rebuilds `21CEN22GSS_aug_Full_Schedules.csv` unraked from `augmented_diaries.csv` (line 311/338), discarding the calibration entirely. Only `--aggregate`, `--bem`, and `--exclusion` are safe post-rake.
@@ -1539,7 +1539,7 @@ Backup path: `0_Occupancy/Outputs_21CEN22GSS/forecast_2030/2030_synthetic_diarie
 **B2. Run activation helper** (verifies structural-break identity, casts hom30 float→int, atomic overwrite):
 ```
 cd C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main
-py 2J_docs_occ_nTemp\_activate_2030_canonical.py
+py 2J_docs_occ_nTemp\step4_Speed_Cluster\_activate_2030_canonical.py
 ```
 Expected prints: `WD daily AT_HOME = 78.44%`, `Sat = 79.15%`, `Sun = 81.48%`, then `ACTIVATED: 37,008 rows`.
 If a stratum assert trips, the side file is the wrong version — STOP and flag.
@@ -1758,3 +1758,41 @@ def complete_day_types(df):
 **Synthetic co-presence limitation (unchanged from original OP4):** Imputed day's within-HH co-presence and WD/WE correlation are synthetic. BEM consumes only the occupancy fraction + metabolic (not pairwise COP), so this is harmless.
 
 **One-line status:** OP4-REV complete — donor-draw replaces copy-day; weekend marginal restored (0.749 vs 0.730); 2030 COVID-persists intact; both BEM files live in BEM_Setup/.
+
+---
+
+#### Progress Log — 2026-06-01 (manager): Clean reproducible re-run — calibrated-J3 downstream (Steps 5 → 6 → 7-data)
+
+**Purpose:** Clean-room reproducibility pass for the paper. Re-executed the proven Phase-8B calibrated-J3 chain end-to-end, LOCALLY, from the raw J3 diaries (`augmented_diaries.csv`, 192,183 rows) through to `BEM_Setup/BEM_Schedules_{2022,2030}.csv`, to confirm it deterministically reproduces the 2026-05-31 production outputs. No methodology / script / threshold changes (seed=42 throughout). Run directly by the manager (runbook proven + user-confirmed scope).
+
+**Pre-flight finding:** `_activate_2030_canonical.py` had been relocated to `step4_Speed_Cluster/` by the doc reorg, but its paths derive from `Path(__file__).parent` assuming it sits in `2J_docs_occ_nTemp/` (see its line-9 comment); from the new location both `RAKED` (input) and `CANON` (output) resolve one directory level wrong and it would crash. Restored a copy to the runbook-documented path `2J_docs_occ_nTemp/_activate_2030_canonical.py` (no edit to the script). *Flag: the `step4_Speed_Cluster/` copy still carries the stale relative-path assumption — dedupe or fix-path if it is meant to live there.*
+
+**Execution order (all LOCAL, CPU):** `05_census_linkage.py --full` → `05_postlink_rake.py` → `--aggregate` → `--bem` → `--exclusion` → `05_censusLinkageGSS_val.py` {normal, `--excl`} → restore unraked 2030 → `06_forecast_rake.py` → `_activate_2030_canonical.py` → `06_longitudinalForecastingGSS_val.py` → `07_aug_to_bem.py --year 2022` → `--year 2030`.
+
+**Reproducibility ledger — every gate matched 2026-05-31 to the digit:**
+
+| Phase | Metric | Documented 2026-05-31 | Re-run 2026-06-01 | Match |
+|---|---|---|---|:--:|
+| 5 link | tier dist (T1/T2/T3, FailSafe) | 128,778 / 61,294 / 96,465, 0% | 128,778 / 61,294 / 96,465, 0% | ✅ |
+| 5 rake | hom30 1→0 down-flips | 148,957 | 148,957 | ✅ |
+| 5 rake | act/hom incoherences | 112,038 (1.82%) | 112,038 (1.82%) | ✅ |
+| 5 rake | Spouse30 check 6.3 | 2.23 pp → skipped | 2.23 pp → skipped | ✅ |
+| 5 excl | 0.30-floor exclusions | 1,118 | 1,118 | ✅ |
+| 5 excl | `_excl` row count | 285,419 | 285,419 | ✅ |
+| 5 val | normal PASS/WARN/FAIL | 29 / 0 / 5 | 29 / 0 / 5 | ✅ |
+| 5 val | `--excl` PASS/WARN/FAIL | 25 / 0 / 9 (4.4 PASS) | 25 / 0 / 9 (4.4 PASS) | ✅ |
+| 5 val | 2.2/6.1 AT_HOME (norm / excl) | 4.48 / 4.37 pp | 4.48 / 4.37 pp | ✅ |
+| 6 rake | structural-break targets WD/Sat/Sun | 78.44 / 79.15 / 81.48% | 78.44 / 79.15 / 81.48% | ✅ |
+| 6 rake | hom30 1→0 down-flips | 59,626 | 59,626 | ✅ |
+| 6 rake | act/hom incoherences | 36,761 (2.07%) | 36,761 (2.07%) | ✅ |
+| 6 val | §5.1–5.6 | all PASS (AT_HOME 79.70%, WD 78.4<WE 80.3, sleep 88.96%, max-act 38.91%, cont 4.21pp) | identical | ✅ |
+| 6 val | backcast JS WD/Sat/Sun | 0.063 / 0.164 / 0.162 | 0.063 / 0.164 / 0.162 | ✅ |
+| 7 BEM | 2022 rows / HH / occ WD–WE | 6,936,336 / 144,507 / 0.703–0.749 | identical | ✅ |
+| 7 BEM | 2030 rows / HH / occ WD–WE | 6,936,336 / 144,507 / 0.785–0.803 | identical | ✅ |
+| 7 BEM | donor-draw WD-only / WE-only | 77,313 / 19,730 | 77,313 / 19,730 | ✅ |
+
+**Two expected-FAILs reproduced as-is (not regressions):** 5-val 6.2 Work proxy (3.27 / 3.29 pp — `act30` un-raked by design) and 3.3 night-sleep dominance (67.46 / 67.49% — pre-existing, `act30` un-raked).
+
+**Artifacts regenerated:** `aug_pipeline/` calibrated canonical (raked `Full_Schedules`, `_excl` @ 285,419, `BEM_Schedules`); `forecast_2030/2030_synthetic_diaries.csv` (raked + activated, hom30 int); `BEM_Setup/BEM_Schedules_{2022,2030}.csv`; `outputs_step5/step5_validation_report{,_excl}.html`; `outputs_step6/step6_validation_report.html`. Genuine unraked/classic backups (`aug_pipeline_UNRAKED_BAK/`, `2030_..._UNRAKED_BAK_2026-05-31.csv`, `BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv`) verified pre-flight and never overwritten.
+
+**Conclusion:** the calibrated-J3 downstream pipeline is fully deterministic and reproducible from the raw J3 diaries; the 2026-05-31 production outputs are confirmed reproducible end-to-end. Only remaining downstream work is the Step-7 **EnergyPlus simulations** on `BEM_Setup/BEM_Schedules_{2022,2030}.csv`.

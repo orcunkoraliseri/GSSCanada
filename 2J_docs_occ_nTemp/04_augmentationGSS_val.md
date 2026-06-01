@@ -292,3 +292,29 @@ Validation sections to recheck after the next retrain:
 - Section 6 (demographic conditioning): add ATTSCH / POWST / MODE correlation checks (parallel to the existing AGEGRP, SEX, MARSTH checks). Current Section 6 logic computes `df.groupby(cat_col)[at_home].mean()` and correlates with the cond vector; same logic applies — just add the three new keys to the iteration list when the script is next run.
 
 J3 baseline (composite 0.6355, 4/4 gates) remains the reference. Whichever of J3-DEMO / J3-DEMO-PSBLite wins becomes the new baseline; the loser is shelved (per IMP doc §5 Phased execution).
+
+### 2026-06-01 — v4 → v5 (Calibrated J3) validation comparison
+
+Head-to-head between the original validation report (`step4_validation_report_v4.html`, 2026-04-23 — the early Conditional Transformer / "F-series raw" run) and the shipped-model report (`step4_validation_report_v5.html`, 2026-05-31 — **Calibrated J3** = J3 Hybrid AR-Encoder + Phase 8B per-(stratum × slot) raking).
+
+| Metric | v4 — Cond. Transformer (Apr 23) | v5 — Calibrated J3 (May 31) |
+|---|---|---|
+| **Hard FAILs** | **17** | **0** |
+| PASS / WARN | 28 / 1 | 21 / 1 |
+| AT_HOME cells | **all 12 FAIL** (2.95–9.69 pp) | per-(stratum × slot) **EXACT** (15.37 → 0) |
+| Activity JS | 0.0242 ✅ | **0.0191** ✅ |
+| Temporal / work-peak | FAIL | PASS |
+| Work ordering (WD ≥ Sat ≥ Sun) | FAIL (46.5%) | PASS |
+| 4 model gates | — (pre-gate model) | **4/4 PASS** |
+| Downstream 2022 / 2030 | not run | both PASS |
+| BEM schedules | not built | built + verified (2022 + 2030) |
+| Verdict | — | **✅ SHIP** |
+
+**Read:** the failure that defined v4 — the AT_HOME bias, all 12 (cycle × stratum) cells failing — is exactly what Calibrated J3 closes. Raw J3 already cut the aggregate to 4.57 pp (gate ≤ 5.3 pp); Phase 8B raking then zeroes the per-cell-slot marginal in the population the Step-5/6 validators actually score (15.37 pp max → within-stratum exact). Every category that failed in v4 now passes; 0 hard FAILs, 4/4 model gates.
+
+**Caveats (so the table isn't over-read):**
+- **Different check inventories.** v4 reports 46 granular checks (12 per-cell AT_HOME + 9 binary co-presence + 12 JS cells, …); v5 consolidates to 21 higher-level checks (Model / Cal-2022 / FC-2030 / BEM). PASS counts are therefore *not* directly comparable — the meaningful axis is **FAILs (17 → 0)** and the per-category outcomes.
+- **Some v4 FAILs are confounded by the swapped Work/Sleep activity-code bug** in `04F_validation.py` (see the caveat in this doc's header and the 2026-05-12 entry): §4.3 work-peak, §6.2 work hours, and §7.1 work ordering measure the opposite quantity until that's patched. The **AT_HOME FAILs (§3.1) are real**, and are what calibration addresses.
+- **v5 carries one deliberate expected-FAIL** — Work proxy 3.27 pp — because activity (`act30`) is un-raked by design; documented, and not counted in the FAIL tally.
+
+Source: `outputs_step4/step4_validation_report_{v4,v5}.html`. Full calibration record: `step4_Speed_Cluster/step4_Speed-Cluster_docs/04_augmentationGSS_IMP_2.md` and `…/comparision.md` Table 4.

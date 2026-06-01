@@ -511,6 +511,8 @@ No new packages required.
 | 2026-05-12 | 5E — HH Aggregation | PASS — all gates green | See detail below |
 | 2026-05-12 | 5F — occToBEM Conversion | PASS — all gates green | See detail below |
 | 2026-05-12 | 5G — Regression Validation | 2/4 gates FAIL (AT_HOME +6.73 pp, Act-1 +3.27 pp); 2/4 PASS | Deviations documented below |
+| 2026-06-01 | Clean reproducible re-run (calibrated J3, Steps 5→6→7-data) | ✅ EXACT match to 2026-05-31 | `--full` tier 128,778 / 61,294 / 96,465, 0% FailSafe → rake **148,957** down-flips (112,038 incoh, 1.82%; Spouse 6.3=2.23pp skipped) → excl floor **1,118** (285,419 rows) → validators **29/0/5** (normal) + **25/0/9** (`--excl`, 4.4 PASS): 2.2/6.1=4.48/4.37pp, 6.3=2.23/2.22pp, 6.2=3.27/3.29pp expected-FAIL, 3.3=67.46/67.49% pre-existing. Both HTML reports regenerated. Full ledger → `step4_Speed_Cluster/step4_Speed-Cluster_docs/04_augmentationGSS_IMP_2.md`. |
+| 2026-06-01 | Validator fixes (`05_censusLinkageGSS_val.py`, journal-prep) | `--excl` **25/0/9 → 30/0/4**; normal 29/0/5 unchanged | Exclusion-aware row-count (1.1/4.5/5.6 now expect 286,537−1,118 = 285,419) + DTYPE 5.4/6.4 compare vs Census **restricted to retained PP_IDs** (0.1063% → **0.0003%**). Removed 5 spurious `--excl` FAILs; 4.4 PASS post-exclusion. Remaining 4 FAILs = documented 2.2/6.1 composition artefact + 3.3/6.2 un-raked act30. No gate loosened, no data touched. Detail → `Step5_docs/Step5_6_warnings_investigation.md` (§4, §9). |
 
 ### 2026-05-12 Audit Detail (Sub-step 5A)
 

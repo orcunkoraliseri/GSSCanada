@@ -47,7 +47,7 @@ _VALIDATOR     = (_BASE / "eSim_occ_utils" / "25CEN22GSS_classification"
 
 _AUG_PATH      = _STEP4_DIR / "augmented_diaries.csv"
 _DIARIES_2030  = _FORECAST_DIR / "2030_synthetic_diaries.csv"
-_RAKED_OUT     = _HERE / "2030_synthetic_diaries_raked.csv"
+_RAKED_OUT     = _FORECAST_DIR / "2030_synthetic_diaries_raked.csv"
 
 # Column lists
 N_SLOTS   = 48
