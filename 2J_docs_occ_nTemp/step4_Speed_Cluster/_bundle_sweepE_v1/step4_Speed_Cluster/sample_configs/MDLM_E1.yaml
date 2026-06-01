@@ -1,0 +1,39 @@
+# MDLM_E1.yaml — Phase 6 Stage E Trial 1: conservative AT_HOME push (control arm).
+# lambda_home 0.7→0.8, home_label_smooth 0.05→0.03. All else matches MDLM_C.
+# Full data (outputs_step4_G2), 100 epoch cap, patience 15.
+tag: MDLM_E1
+seed: 42
+model_type: MDLM
+
+data_dir: outputs_step4_G2
+sample_frac: 1.0
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.8
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.03
+
+use_film: 1
+use_fourier_pe: 1
+use_prefix: 1
+use_spl: 0
+use_fact: 0
+loss_mode: ce

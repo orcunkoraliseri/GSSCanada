@@ -1,0 +1,52 @@
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 388, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04E_inference.py", line 279, in main
+    meta = pd.read_csv(meta_path, low_memory=False)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 620, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1620, in __init__
+    self._engine = self._make_engine(f, self.engine)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1880, in _make_engine
+    self.handles = get_handle(
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: 'outputs_step4_G2/step4_all_meta.csv'
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py", line 401, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py", line 357, in main
+    aug, syn, obs, obs_cop = _load_frames(data_dir, step3_dir, args.sample)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04I_activity_copresence_diagnostics.py", line 71, in _load_frames
+    aug = pd.read_csv(aug_path, low_memory=False)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 620, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1620, in __init__
+    self._engine = self._make_engine(f, self.engine)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1880, in _make_engine
+    self.handles = get_handle(
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: 'outputs_step4_J3_NEIGH/augmented_diaries.csv'
+Traceback (most recent call last):
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 716, in <module>
+    main()
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 644, in main
+    aug, obs_aug, syn_aug, obs_ext = _load_frames(data_dir, step3_dir, args.sample)
+  File "/nfs/speed-scratch/o_iseri/occModeling/04J_statistical_diagnostics.py", line 88, in _load_frames
+    aug = pd.read_csv(aug_path, low_memory=False)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 620, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1620, in __init__
+    self._engine = self._make_engine(f, self.engine)
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/parsers/readers.py", line 1880, in _make_engine
+    self.handles = get_handle(
+  File "/speed-scratch/o_iseri/envs/step4/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: 'outputs_step4_J3_NEIGH/augmented_diaries.csv'

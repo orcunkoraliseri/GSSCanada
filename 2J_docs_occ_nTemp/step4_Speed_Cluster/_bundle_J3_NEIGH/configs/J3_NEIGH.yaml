@@ -1,0 +1,41 @@
+# J3_NEIGH.yaml — Phase 3 (Lever B): tighter K=5 neighbor matching + K-mean
+# soft target on AT_HOME only. NO architecture change vs J3 baseline; same
+# lambdas, same model_type=J3. The change is entirely in 04C (EXACT_COLS gains
+# ATTSCH/POWST) and 04D (Step4Dataset returns K-mean AT_HOME via dec_home_soft;
+# compute_loss reads home_tgt from dec_home_soft when present).
+# Attacks the K=5 neighbor-disagreement JS floor (0.1888) that bounded both
+# Phase 2 arms (J3_DEMO, J3_DEMO_PSBLite cancelled 2026-05-22 at ep 41 with
+# home_BCE flat at ~0.385). Cop kept as 1-of-K resampled; activity kept as
+# 1-of-K resampled. See 04_augmentationGSS_IMP.md §3 Lever B and Phase 3
+# checklist for design rationale.
+# Hard gates: composite < 1.045 | AT_HOME <= 5.3 pp | Spouse <= 5 pp | act_JS <= 0.05
+tag: J3_NEIGH
+seed: 42
+model_type: J3
+
+data_dir: outputs_step4_G2
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.7
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05

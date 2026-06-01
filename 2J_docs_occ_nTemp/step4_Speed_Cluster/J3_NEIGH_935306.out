@@ -1,0 +1,189 @@
+=== J3_NEIGH TRAIN START ===
+============================================================
+Step 4D — Training  
+============================================================
+  data_dir:       outputs_step4_G2
+  output_dir:     outputs_step4_J3_NEIGH
+  checkpoint_dir: outputs_step4_J3_NEIGH/checkpoints
+  batch_size=256  max_epochs=100  patience=15  lr=5e-05  fp16=False
+  checkpoint_dir (absolute): /nfs/speed-scratch/o_iseri/occModeling/outputs_step4_J3_NEIGH/checkpoints
+  AUX_STRATUM_HEAD=False  COP_POS_WEIGHT=0  ACTIVITY_BOOSTS=1  DATA_SIDE_SAMPLING=0  MARG_MODE=global  AUX_STRATUM_LAMBDA=0.1  SPOUSE_NEG_WEIGHT=0.45
+  Device: cuda
+[1/4] Loading datasets and pairs...
+  Train pairs: 89686 | Val respondents: 9609
+  Activity class weights (inv-sqrt-freq, ACTIVITY_BOOSTS=1):
+    class  0: 2.185
+    class  1: 0.520
+    class  2: 1.074
+    class  3: 1.108
+    class  4: 0.261
+    class  5: 0.754
+    class  6: 0.893
+    class  7: 1.353
+    class  8: 1.474
+    class  9: 0.408
+    class 10: 1.172
+    class 11: 1.769
+    class 12: 2.348
+    class 13: 2.729
+  AT_HOME observed rate: 0.7251  pos_weight: disabled
+  Marginal-bias loss weight: LAMBDA_MARG=0.1  MARG_MODE=global
+  COP pos_weight: disabled (COP_POS_WEIGHT=0)
+  SPOUSE_NEG_WEIGHT=0.45: Spouse (idx 1) cop pos_weight overridden
+[2/4] Building model...
+  Parameters: 29,264,088
+JSeriesHybrid(
+  (act_embedding): Embedding(14, 32)
+  (slot_linear): Linear(in_features=42, out_features=384, bias=True)
+  (cycle_embedding): Embedding(4, 32)
+  (cls_mlp): Sequential(
+    (0): Linear(in_features=122, out_features=256, bias=True)
+    (1): GELU(approximate='none')
+    (2): Linear(in_features=256, out_features=384, bias=True)
+  )
+  (arm1_slot_proj): Linear(in_features=32, out_features=384, bias=True)
+  (encoder): TransformerEncoder(
+    (layers): ModuleList(
+      (0-5): 6 x TransformerEncoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (linear1): Linear(in_features=384, out_features=1536, bias=True)
+        (dropout): Dropout(p=0.1, inplace=False)
+        (linear2): Linear(in_features=1536, out_features=384, bias=True)
+        (norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (norm2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (dropout1): Dropout(p=0.1, inplace=False)
+        (dropout2): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (arm1_decoder): CrossAttnDecoder(
+    (proj_demo): Linear(in_features=90, out_features=384, bias=True)
+    (proj_cycle): Linear(in_features=32, out_features=384, bias=True)
+    (proj_strata): Linear(in_features=3, out_features=384, bias=True)
+    (layers): ModuleList(
+      (0-5): 6 x CondCrossAttnDecoderLayer(
+        (self_attn): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_mem): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (cross_cond): MultiheadAttention(
+          (out_proj): NonDynamicallyQuantizableLinear(in_features=384, out_features=384, bias=True)
+        )
+        (ffn): Sequential(
+          (0): Linear(in_features=384, out_features=1536, bias=True)
+          (1): GELU(approximate='none')
+          (2): Linear(in_features=1536, out_features=384, bias=True)
+        )
+        (ln1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln2): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln3): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (ln4): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+  )
+  (act_head): Linear(in_features=384, out_features=14, bias=True)
+  (arm2_act_proj): Linear(in_features=14, out_features=384, bias=True)
+  (arm2_proj): Linear(in_features=893, out_features=384, bias=True)
+  (home_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=1, bias=True)
+  )
+  (cop_head): Sequential(
+    (0): Linear(in_features=384, out_features=384, bias=True)
+    (1): Tanh()
+    (2): Linear(in_features=384, out_features=9, bias=True)
+  )
+)
+[3/4] Training...
+Epoch   1/100: train_loss=2.2892  act=1.8234  home=0.5373  cop=0.2922  marg=0.0205  |  val_JS=0.1877  home_gap=0.0336  val_score=0.2045  lr=5.00e-05  grad_norm=5.352  (554s)
+  ✓ New best model saved (val_score=0.2045  val_JS=0.1877  home_gap=0.0336)
+Epoch   2/100: train_loss=1.5291  act=1.0898  home=0.5180  cop=0.2513  marg=0.0130  |  val_JS=0.2461  home_gap=0.1113  val_score=0.3018  lr=5.00e-05  grad_norm=7.859  (554s)
+Epoch   3/100: train_loss=1.3624  act=0.9303  home=0.5157  cop=0.2337  marg=0.0101  |  val_JS=0.2522  home_gap=0.2585  val_score=0.3814  lr=5.00e-05  grad_norm=4.283  (554s)
+Epoch   4/100: train_loss=1.3359  act=0.9070  home=0.5144  cop=0.2257  marg=0.0107  |  val_JS=0.2479  home_gap=0.2417  val_score=0.3687  lr=5.00e-05  grad_norm=3.059  (554s)
+Epoch   5/100: train_loss=1.3190  act=0.8919  home=0.5135  cop=0.2223  marg=0.0094  |  val_JS=0.2133  home_gap=0.2099  val_score=0.3182  lr=5.00e-05  grad_norm=2.508  (555s)
+Epoch   6/100: train_loss=1.3082  act=0.8819  home=0.5131  cop=0.2209  marg=0.0093  |  val_JS=0.2148  home_gap=0.1976  val_score=0.3136  lr=5.00e-05  grad_norm=2.334  (554s)
+Epoch   7/100: train_loss=1.2962  act=0.8709  home=0.5120  cop=0.2197  marg=0.0095  |  val_JS=0.1984  home_gap=0.1893  val_score=0.2930  lr=5.00e-05  grad_norm=2.059  (554s)
+Epoch   8/100: train_loss=1.2865  act=0.8619  home=0.5115  cop=0.2184  marg=0.0099  |  val_JS=0.2335  home_gap=0.2342  val_score=0.3506  lr=4.75e-05  grad_norm=1.879  (555s)
+Epoch   9/100: train_loss=1.2789  act=0.8541  home=0.5114  cop=0.2190  marg=0.0111  |  val_JS=0.1676  home_gap=0.1816  val_score=0.2584  lr=4.75e-05  grad_norm=1.798  (555s)
+Epoch  10/100: train_loss=1.2670  act=0.8437  home=0.5102  cop=0.2177  marg=0.0084  |  val_JS=0.1826  home_gap=0.1841  val_score=0.2746  lr=4.75e-05  grad_norm=1.758  (554s)
+Epoch  11/100: train_loss=1.2582  act=0.8356  home=0.5100  cop=0.2160  marg=0.0082  |  val_JS=0.1722  home_gap=0.1620  val_score=0.2532  lr=4.75e-05  grad_norm=1.665  (554s)
+Epoch  12/100: train_loss=1.2466  act=0.8245  home=0.5093  cop=0.2156  marg=0.0086  |  val_JS=0.1551  home_gap=0.1896  val_score=0.2499  lr=4.75e-05  grad_norm=1.724  (554s)
+Epoch  13/100: train_loss=1.2282  act=0.8061  home=0.5095  cop=0.2155  marg=0.0082  |  val_JS=0.1623  home_gap=0.1844  val_score=0.2545  lr=4.75e-05  grad_norm=1.765  (555s)
+Epoch  14/100: train_loss=1.2158  act=0.7933  home=0.5100  cop=0.2155  marg=0.0088  |  val_JS=0.1486  home_gap=0.2096  val_score=0.2534  lr=4.51e-05  grad_norm=1.818  (554s)
+Epoch  15/100: train_loss=1.1961  act=0.7743  home=0.5091  cop=0.2151  marg=0.0085  |  val_JS=0.1470  home_gap=0.1689  val_score=0.2315  lr=4.51e-05  grad_norm=1.962  (554s)
+Epoch  16/100: train_loss=1.1717  act=0.7499  home=0.5095  cop=0.2145  marg=0.0081  |  val_JS=0.1465  home_gap=0.1547  val_score=0.2239  lr=4.51e-05  grad_norm=2.042  (554s)
+  Early stopping at epoch 16 (no improvement for 15 epochs)
+
+[4/4] Training complete. Best val_score=0.2045
+  Best checkpoint: outputs_step4_J3_NEIGH/checkpoints/best_model.pt
+  Training log:    outputs_step4_J3_NEIGH/step4_training_log.csv
+=== J3_NEIGH TRAIN DONE ===
+=== J3_NEIGH INFERENCE ===
+============================================================
+Step 4E — Inference  
+============================================================
+  data_dir:   outputs_step4_G2
+  checkpoint: outputs_step4_J3_NEIGH/checkpoints/best_model.pt
+  output:     outputs_step4_J3_NEIGH/augmented_diaries.csv
+  temperature:    0.8
+  home_threshold: 0.5
+  Device: cuda
+
+[1/4] Loading tensor datasets...
+  Total respondents: 64061
+=== J3_NEIGH INFERENCE DONE ===
+=== J3_NEIGH AT_HOME DIAGNOSTICS ===
+============================================================
+Step 4H — AT_HOME Bias Diagnostics  
+============================================================
+  data_dir  : outputs_step4_J3_NEIGH
+  step3_dir : outputs_step3
+  output    : outputs_step4_J3_NEIGH/diagnostics_H_J3_NEIGH.json
+  NOTE: outputs_step4_J3_NEIGH/augmented_diaries.csv not found — T2/T3 will be skipped.
+  hetus path: outputs_step3/hetus_30min.csv
+  ERROR: step4_train.pt or training_pairs.pt missing in outputs_step4_J3_NEIGH
+
+[T1] Training-pair target AT_HOME...
+     SKIPPED — inputs missing
+
+[T2] Post-hoc rule contribution...
+     SKIPPED — inputs missing
+
+[T3] Per-slot trajectory...
+     SKIPPED — inputs missing
+
+[T6] Observed AT_HOME sanity...
+     any_implausible = False  flagged cells = 0
+
+============================================================
+04H DIAGNOSTIC SUMMARY
+============================================================
+   H1: unknown                   [FLAG]
+   H2: unknown                   [FLAG]
+   H3: unknown                   [FLAG]
+   H5: H5_rejected               [PASS]
+
+  RECOMMENDATION -> SKIP_GPU
+  JSON: outputs_step4_J3_NEIGH/diagnostics_H_J3_NEIGH.json
+============================================================
+=== J3_NEIGH ACTIVITY+COP DIAGNOSTICS ===
+  data_dir  = outputs_step4_J3_NEIGH
+  step3_dir = outputs_step3
+  out_json  = outputs_step4_J3_NEIGH/diagnostics_I_J3_NEIGH.json
+=== J3_NEIGH COMPOSITE SCORE ===
+============================================================
+Step 4J — Statistical Diagnostic Battery
+============================================================
+  data_dir    = outputs_step4_J3_NEIGH
+  step3_dir   = outputs_step3
+  out_json    = outputs_step4_J3_NEIGH/diagnostics_J3_NEIGH.json
+  n_bootstrap = 1000
+=== J3_NEIGH DONE: check outputs_step4_J3_NEIGH/diagnostics_J3_NEIGH.json ===

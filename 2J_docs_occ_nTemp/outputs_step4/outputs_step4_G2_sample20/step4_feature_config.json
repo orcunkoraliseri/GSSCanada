@@ -1,0 +1,246 @@
+{
+  "d_cond": 90,
+  "n_activity_classes": 14,
+  "n_copresence": 9,
+  "n_slots": 48,
+  "cycle_map": {
+    "2005": 0,
+    "2010": 1,
+    "2015": 2,
+    "2022": 3
+  },
+  "cop_col_names": [
+    "Alone",
+    "Spouse",
+    "Children",
+    "parents",
+    "otherInFAMs",
+    "otherHHs",
+    "friends",
+    "others",
+    "colleagues"
+  ],
+  "feature_parts": {
+    "AGEGRP": {
+      "type": "one-hot",
+      "n_cats": 7,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 6
+      }
+    },
+    "SEX": {
+      "type": "one-hot",
+      "n_cats": 2,
+      "categories": {
+        "1": 0,
+        "2": 1
+      }
+    },
+    "MARSTH": {
+      "type": "one-hot",
+      "n_cats": 7,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6
+      }
+    },
+    "HHSIZE": {
+      "type": "one-hot",
+      "n_cats": 5,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4
+      }
+    },
+    "PR": {
+      "type": "one-hot",
+      "n_cats": 15,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "10": 5,
+        "11": 6,
+        "12": 7,
+        "13": 8,
+        "24": 9,
+        "35": 10,
+        "46": 11,
+        "47": 12,
+        "48": 13,
+        "59": 14
+      }
+    },
+    "CMA": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2
+      }
+    },
+    "KOL": {
+      "type": "one-hot",
+      "n_cats": 4,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3
+      }
+    },
+    "LFTAG": {
+      "type": "one-hot",
+      "n_cats": 4,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3
+      }
+    },
+    "HRSWRK": {
+      "type": "one-hot",
+      "n_cats": 9,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8
+      }
+    },
+    "NOCS": {
+      "type": "one-hot",
+      "n_cats": 12,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "95": 11
+      }
+    },
+    "COW": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2
+      }
+    },
+    "DDAY_STRATA": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "1": 0,
+        "2": 1,
+        "3": 2
+      }
+    },
+    "ATTSCH": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "-1": 0,
+        "0": 1,
+        "1": 2
+      }
+    },
+    "POWST": {
+      "type": "one-hot",
+      "n_cats": 3,
+      "categories": {
+        "-1": 0,
+        "0": 1,
+        "1": 2
+      }
+    },
+    "MODE": {
+      "type": "one-hot",
+      "n_cats": 7,
+      "categories": {
+        "-1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6
+      }
+    },
+    "TOTINC": {
+      "type": "continuous",
+      "mean": 2.27352055072509,
+      "std": 1.4989908455531467
+    },
+    "COLLECT_MODE": {
+      "type": "binary"
+    },
+    "TOTINC_SOURCE": {
+      "type": "binary"
+    }
+  },
+  "split_sizes": {
+    "train": 9318,
+    "val": 1915,
+    "test": 1922
+  },
+  "cop_pos_weights": {
+    "Alone": 1.263579,
+    "Spouse": 2.49048,
+    "Children": 10.786367,
+    "parents": 37.713533,
+    "friends": 14.859792,
+    "others": 9.389418,
+    "colleagues": 9.947587
+  },
+  "act_class_freqs": [
+    0.137067,
+    0.092936,
+    0.022369,
+    0.020426,
+    0.370535,
+    0.044354,
+    0.032113,
+    0.013712,
+    0.047314,
+    0.148561,
+    0.018535,
+    0.008463,
+    0.040509,
+    0.003106
+  ],
+  "sample_frac": 0.2,
+  "sample_seed": 42,
+  "sample_source": "outputs_step4"
+}

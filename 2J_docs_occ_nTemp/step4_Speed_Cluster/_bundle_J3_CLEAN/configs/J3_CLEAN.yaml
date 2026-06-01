@@ -1,0 +1,49 @@
+# J3_CLEAN.yaml — Phase 4 (Lever C cheap-fixes stack) on stock J3 baseline.
+# Builds on J3 composite 0.6355 (4/4 gates pass tight). No architecture change.
+# Stacks 4 loss-side fixes — all gated by env vars, each with independent evidence:
+#   1. activity_boosts=0       Drop ×5/×3/×2 class boosts. Cheapest act_JS lever.
+#   2. lambda_trans=0.05       Differentiable transition-rate penalty. Targets
+#                              157.95× over-fragmentation gate directly.
+#   3. marg_mode=per_cs        Replace global marg with per-(cycle×stratum) gap.
+#                              Matches the per-cell AT_HOME gate framing.
+#   4. cop_pos_weight=1 +      Re-enable feat_cfg per-channel pos_weight on rare
+#      cop_alone_pw=0 +        cop channels (parents 39.7×, friends 15.2×, etc).
+#      spouse_neg_weight=0.45  Down-weight Spouse (idx 1) to reduce its +2.03 pp
+#                              over-prediction. Override Alone pos_weight (1.21)
+#                              to 1.0 — Alone is over-predicted, not under.
+# Phase 3 J3-NEIGH (Lever B) shelved 2026-05-23: K-mean soft AT_HOME target
+# decalibrated sigmoid head; both Lever B(i) and B(ii) reverted in 04C and 04D
+# Step4Dataset (see archive/04D_train_pre_J3_CLEAN.py).
+# Hard gates: composite < 1.045 | AT_HOME <= 5.3 pp | Spouse <= 5 pp | act_JS <= 0.05
+tag: J3_CLEAN
+seed: 42
+model_type: J3
+
+data_dir: outputs_step4_G2
+batch_size: 256
+max_epochs: 100
+patience: 15
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+
+d_ff: 1536
+
+lambda_act: 1.0
+lambda_home: 0.7
+lambda_cop: 0.3
+lambda_marg: 0.1
+lambda_trans: 0.05
+marg_mode: per_cs
+
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 1
+cop_alone_pw: 0
+activity_boosts: 0
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05

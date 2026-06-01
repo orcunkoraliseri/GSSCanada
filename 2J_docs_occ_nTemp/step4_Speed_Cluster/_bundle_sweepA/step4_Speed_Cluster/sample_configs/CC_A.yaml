@@ -1,0 +1,41 @@
+# CC_A.yaml — Phase 6 Stage A Trial 1: composite conditioning (FiLM + Fourier diurnal PE
+# + per-stratum prefix-tuning). model_type=J3; only the env-gated CC layers are new.
+# Targets the weekday/weekend ordering failure mode (72.1% violation in J3 baseline).
+tag: CC_A
+seed: 42
+model_type: J3
+
+data_dir: outputs_step4_G2_sample2
+sample_frac: 0.02
+batch_size: 256
+max_epochs: 50
+patience: 10
+lr: 5.0e-5
+d_model: 384
+n_heads: 8
+n_enc_layers: 6
+n_dec_layers: 6
+d_ff: 1536
+
+# J3 baseline lambdas (held constant across Stage A trials)
+lambda_act: 1.0
+lambda_home: 0.7
+lambda_cop: 0.3
+lambda_marg: 0.1
+marg_mode: global
+aux_stratum_head: 0
+aux_stratum_lambda: 0.1
+spouse_neg_weight: 0.45
+cop_pos_weight: 0
+activity_boosts: 1
+data_side_sampling: 0
+sched_sample_p: 0.0
+home_label_smooth: 0.05
+
+# Phase 6 CC toggles
+use_film: 1
+use_fourier_pe: 1
+use_prefix: 1
+use_spl: 0
+use_fact: 0
+loss_mode: ce
