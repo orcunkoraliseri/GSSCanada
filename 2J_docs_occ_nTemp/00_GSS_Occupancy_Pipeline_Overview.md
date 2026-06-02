@@ -176,6 +176,22 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║    EnergyPlus Schedule:Compact (30-min timestep, weekday/Sat/Sun)           ║
 ║    CSV: hourly probability x archetype x climate zone x DDAY_STRATA        ║
 ║    UBEM-ready: compatible with CityGML-linked building stock models         ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  STEP 8 - BEM SIMULATION  (this paper's results)                             ║
+║  Status: DESIGN (2026-06-01)                                                 ║
+║                                                                              ║
+║  Novelty: time-series occupancy -> energy LOAD SHAPE & peak timing           ║
+║    (conference / journal-1 used non-time-series occupancy -> annual kWh)     ║
+║                                                                              ║
+║  Design: single-building archetype + PAIRED Monte-Carlo (frozen frame)       ║
+║    4 archetypes x 6 climate zones x 5 years x 50 HH = 6,000 E+ runs          ║
+║    2005/2010/2015/2022(cal)/2030(forecast) - same HH across all years        ║
+║    hold IDF + TMY weather; vary ONLY the occupancy time-series               ║
+║                                                                              ║
+║  Outputs: 8760 load profiles + MC bands, peak-hour shift, load-shape         ║
+║    metrics, stock-weighted ensemble; annual EUI = secondary                  ║
+║                                                                              ║
+║  Engine: eSim_bem_utils/ (run_bem.py opt 4/10).  See 08_simulation.md        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -211,3 +227,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | True Future Test validation (Step 6) | Next unseen cycle as holdout simulates the forecasting task |
 | Recency weighting: 2022=0.40 to 2005=0.10 (Step 6) | Correct prior for 2030; recent patterns are stronger predictors |
 | POWST + Episode column mismatches — solved issues (Step 2) | Confirmed pass before full-fidelity pooling and Step 4 training |
+| Time-series occupancy as the BEM driver (Step 8) | Conference + journal-1 used non-time-series occupancy (diversity factors → annual kWh). This paper drives EnergyPlus with the predicted 30-min AT_HOME + metabolic time-series → energy **load shape** and **peak timing** |
+| Single building + Monte-Carlo = stock scale (Step 8) | One archetype IDF run over many sampled household schedules; the ensemble is the stock distribution — avoids simulating all 144,507 dwellings |
+| Paired MC over the frozen 2022 frame (Step 8) | Every SIM_HH_ID exists in all years → run the same household across 2005→2030; within-household Δenergy isolates the occupancy-forecast effect with tight CIs |
+| Hold IDF + TMY weather, vary only occupancy (Step 8) | The cross-year energy delta is purely the predicted behavioural change; future-weather morphing deferred to a sensitivity |

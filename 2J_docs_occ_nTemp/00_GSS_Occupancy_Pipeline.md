@@ -623,6 +623,54 @@ Output format:
 
 ---
 
+## STEP 8 — BEM SIMULATION
+*(predicted occupancy time-series → EnergyPlus → the 2022 → 2030 energy load-shape shift)*
+
+### Why This Step Is the Contribution
+The conference paper (single buildings) and the first journal (Neighbourhood Units) drove BEM with
+**non-time-series** occupancy (demographic diversity factors → annual energy). This second paper
+predicts occupancy as a **behavioural time-series** (AT_HOME + co-presence + activity, calibrated,
+forecast to 2030), so the headline result is the **load shape** — hourly profile, peak magnitude,
+and **peak-hour timing** — with Monte-Carlo uncertainty bands, not just annual kWh.
+
+### Design — single building + paired Monte-Carlo (stock scale)
+One **archetype IDF** is run many times over occupancy schedules sampled from the calibrated
+household population; the **ensemble** is the stock-scale result (no need to simulate all 144,507
+dwellings). Because the dwelling stock is **frozen at the 2022 frame**, every `SIM_HH_ID` exists in
+every year — so we **sample 50 household IDs once per (archetype × climate-region) and run each
+across all five years** (2005/2010/2015/2022/2030). This gives **paired** per-household
+Δenergy with tight CIs; building physics and climate difference out, leaving only the predicted
+occupancy change.
+
+```
+Grid:  4 dwelling archetypes (SingleD 52.9% / MidRise 21.3% / OtherDwelling 13.0% / HighRise 12.8%)
+     x 6 climate zones (Toronto 5A, Kelowna 5B, Vancouver 5C, Montreal 6A, Calgary 6B, Winnipeg 7A)
+     x 5 cycle-years (2005 / 2010 / 2015 / 2022-calibrated / 2030-forecast)
+     x 50 paired Monte-Carlo households
+     = 6,000 annual EnergyPlus runs (cloud/HPC batch)
+
+Held constant per cell: IDF + TMY weather   |   Varied: sampled household + cycle-year
+```
+
+### Inputs / Engine / Outputs
+- **Inputs:** Step-7 `BEM_Schedules_<year>.csv` (occupancy + metabolic). Historical 2005/2010/2015
+  schedules are back-filled by assembling each cycle's Step-4 diaries onto the frozen 2022 frame
+  (same mechanism as 2030).
+- **Engine:** `eSim_bem_utils/` (versioned copy for this paper) — `integration.py` builds
+  `Schedule:Compact` (Weekday/Weekend) and injects the People object; `run_bem.py` option 4/10 runs
+  comparative + batch Monte-Carlo; `config.py` already routes province → EPW climate zone.
+- **Primary outputs (time-series):** 8760-hour load profiles with MC bands, diurnal-by-season
+  shapes, peak magnitude **and hour-of-peak shift** 2022→2030, load-shape metrics
+  (load factor, peak/average, ramp), ensemble coincidence factor. Annual EUI is a **secondary**
+  summary + the 2005→2030 longitudinal trend (incl. the COVID break).
+
+**Prerequisites:** (P1) generate `BEM_Schedules_{2005,2010,2015}.csv`; (P2) acquire MidRise +
+Row/Attached archetype IDFs (or proxy); add 2030 to the runner's year list.
+
+Full spec: `08_simulation.md`; validation plan: `08_simulation_val.md`.
+
+---
+
 ## FULL PIPELINE OVERVIEW
 
 ```
@@ -665,6 +713,22 @@ Output format:
 ║  STEP 7 — BEM/UBEM INTEGRATION                                          ║
 ║  Hourly occupancy probability + metabolic gain → EnergyPlus schedules  ║
 ║  Stratified by: archetype × climate zone × DDAY_STRATA                 ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  STEP 8 - BEM SIMULATION  (this paper's results)                         ║
+║  Status: DESIGN (2026-06-01)                                             ║
+║                                                                          ║
+║  Novelty: time-series occupancy -> energy LOAD SHAPE & peak timing       ║
+║    (conference / journal-1 used non-time-series occupancy -> annual kWh) ║
+║                                                                          ║
+║  Design: single-building archetype + PAIRED Monte-Carlo (frozen frame)   ║
+║    4 archetypes x 6 climate zones x 5 years x 50 HH = 6,000 E+ runs      ║
+║    2005/2010/2015/2022(cal)/2030(forecast) - same HH across all years    ║
+║    hold IDF + TMY weather; vary ONLY the occupancy time-series           ║
+║                                                                          ║
+║  Outputs: 8760 load profiles + MC bands, peak-hour shift, load-shape     ║
+║    metrics, stock-weighted ensemble; annual EUI = secondary              ║
+║                                                                          ║
+║  Engine: eSim_bem_utils/ (run_bem.py opt 4/10).  See 08_simulation.md    ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -693,3 +757,7 @@ Output format:
 | True Future Test: next unseen cycle as holdout (Step 6) | Stronger validation than within-cycle random splits. Directly simulates the forecasting task (predict T+5 from data up to T), producing validation metrics that are meaningful for the 2030 forecast claim |
 | Recency weighting in final pooled model (Step 6) | 2022 data receives 0.40 loss weight vs. 0.10 for 2005. Correct prior for 2030 forecasting: recent behavioral patterns are stronger predictors than 17-year-old patterns |
 | Full five-column flowchart structure NOT adopted (Step 6) | Compute cost assessment: the four extracted elements deliver ~90% of methodological value at ~2× cost. The full structure would be ~5× cost with diminishing marginal return for the forecasting objective |
+| Time-series occupancy as the BEM driver (Step 8) | Conference + journal-1 used non-time-series occupancy (diversity factors → annual kWh). This paper drives EnergyPlus with the predicted 30-min AT_HOME + metabolic time-series → energy **load shape** and **peak timing** |
+| Single building + Monte-Carlo = stock scale (Step 8) | One archetype IDF run over many sampled household schedules; the ensemble is the stock distribution — avoids simulating all 144,507 dwellings |
+| Paired MC over the frozen 2022 frame (Step 8) | Every SIM_HH_ID exists in all years → run the same household across 2005→2030; within-household Δenergy isolates the occupancy-forecast effect with tight CIs |
+| Hold IDF + TMY weather, vary only occupancy (Step 8) | The cross-year energy delta is purely the predicted behavioural change; future-weather morphing deferred to a sensitivity |

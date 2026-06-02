@@ -1,0 +1,76 @@
+Loading augmented_diaries.csv (cycles) ...
+  192,183 rows; cycles [np.int64(2005), np.int64(2010), np.int64(2015), np.int64(2022)]
+Loading frozen 2022 stock frame ...
+  285,419 rows, 144,507 HH
+
+================================================================
+  CYCLE 2005
+================================================================
+  pool: 57,663 rows (obs 19,221 / syn 38,442)
+    rake WD: 5,602 syn rows -> obs marginal (syn 62.01% -> 68.96%, obs 68.96%)
+    rake Sat: 16,559 syn rows -> obs marginal (syn 74.80% -> 71.85%, obs 71.85%)
+    rake Sun: 16,281 syn rows -> obs marginal (syn 81.06% -> 75.65%, obs 75.65%)
+    total hom30 flips: 132,004
+  demographic-matched assembly (option B):
+    tier 1 (AGEGRP,SEX,MARSTH,HHSIZE,LFTAG): matched 166,137, remaining 119,282
+    tier 2 (AGEGRP,SEX,LFTAG): matched 24,569, remaining 94,713
+    tier 3 (AGEGRP,SEX): matched 94,713, remaining 0
+  donor-draw 77,313 WD-only HHs -> Weekend (133,668 rows)
+  donor-draw 19,730 WE-only HHs -> Weekday (26,269 rows)
+  WROTE BEM_Schedules_2005.csv: 6,936,336 rows, 144,507 HH
+    Weekday: occ 0.690, met 108.0
+    Weekend: occ 0.738, met 106.7
+
+================================================================
+  CYCLE 2010
+================================================================
+  pool: 45,342 rows (obs 15,114 / syn 30,228)
+    rake WD: 4,284 syn rows -> obs marginal (syn 63.58% -> 70.02%, obs 70.02%)
+    rake Sat: 13,050 syn rows -> obs marginal (syn 75.69% -> 71.88%, obs 71.88%)
+    rake Sun: 12,894 syn rows -> obs marginal (syn 81.53% -> 77.63%, obs 77.63%)
+    total hom30 flips: 94,416
+  demographic-matched assembly (option B):
+    tier 1 (AGEGRP,SEX,MARSTH,HHSIZE,LFTAG): matched 160,041, remaining 125,378
+    tier 2 (AGEGRP,SEX,LFTAG): matched 31,526, remaining 93,852
+    tier 3 (AGEGRP,SEX): matched 93,852, remaining 0
+  donor-draw 77,313 WD-only HHs -> Weekend (133,668 rows)
+  donor-draw 19,730 WE-only HHs -> Weekday (26,269 rows)
+  WROTE BEM_Schedules_2010.csv: 6,936,336 rows, 144,507 HH
+    Weekday: occ 0.683, met 108.0
+    Weekend: occ 0.723, met 107.4
+
+================================================================
+  CYCLE 2015
+================================================================
+  pool: 52,170 rows (obs 17,390 / syn 34,780)
+    rake WD: 5,095 syn rows -> obs marginal (syn 65.75% -> 70.84%, obs 70.84%)
+    rake Sat: 14,914 syn rows -> obs marginal (syn 78.37% -> 74.20%, obs 74.20%)
+    rake Sun: 14,771 syn rows -> obs marginal (syn 82.99% -> 77.29%, obs 77.29%)
+    total hom30 flips: 96,617
+  demographic-matched assembly (option B):
+    tier 1 (AGEGRP,SEX,MARSTH,HHSIZE,LFTAG): matched 163,318, remaining 122,101
+    tier 2 (AGEGRP,SEX,LFTAG): matched 27,651, remaining 94,450
+    tier 3 (AGEGRP,SEX): matched 94,450, remaining 0
+  donor-draw 77,313 WD-only HHs -> Weekend (133,668 rows)
+  donor-draw 19,730 WE-only HHs -> Weekday (26,269 rows)
+  WROTE BEM_Schedules_2015.csv: 6,936,336 rows, 144,507 HH
+    Weekday: occ 0.671, met 108.5
+    Weekend: occ 0.707, met 109.1
+
+================================================================
+  CYCLE 2030
+================================================================
+  2030 diaries: 37,008 rows (pre-raked structural-break forecast)
+  demo join via occID: 12,336 2022 respondents; 0 unmatched 2030 rows
+  demographic-matched assembly (option B):
+    tier 1 (AGEGRP,SEX,MARSTH,HHSIZE,LFTAG): matched 145,676, remaining 139,743
+    tier 2 (AGEGRP,SEX,LFTAG): matched 44,499, remaining 95,244
+    tier 3 (AGEGRP,SEX): matched 95,244, remaining 0
+  donor-draw 77,313 WD-only HHs -> Weekend (133,668 rows)
+  donor-draw 19,730 WE-only HHs -> Weekday (26,269 rows)
+  backed up -> BEM_Schedules_2030_PRE_STEP8_BAK.csv
+  WROTE BEM_Schedules_2030.csv: 6,936,336 rows, 144,507 HH
+    Weekday: occ 0.776, met 107.3
+    Weekend: occ 0.782, met 99.7
+
+DONE
