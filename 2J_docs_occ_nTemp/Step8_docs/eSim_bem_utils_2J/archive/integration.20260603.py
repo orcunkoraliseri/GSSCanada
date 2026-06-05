@@ -390,18 +390,12 @@ def load_schedules(csv_path: str, dwelling_type: str = None, region: str = None)
                     'condo': int(row.get('CONDO', 0)),
                     'pr': row.get('PR', ''),
                     'match_tier': row.get('MATCH_TIER', ''),
-                    # Step 9: per-HH design levels (0.0 when column absent / old CSV)
-                    'equip_design_w': float(row.get('Equip_Design_W') or 0.0),
-                    'light_design_w': float(row.get('Light_Design_W') or 0.0),
                 }
             
             entry = {
                 'hour': hour,
                 'occ': occ,
-                'met': met,
-                # Step 9: activity-driven fractions (0 when column absent / old CSV)
-                'equip_frac': float(row.get('Equipment_Fraction') or 0.0),
-                'light_frac': float(row.get('Lighting_Fraction') or 0.0),
+                'met': met
             }
             schedules[hh_id][day_type].append(entry)
             
@@ -1374,19 +1368,6 @@ def inject_schedules(
             met_map = {x['hour']: x['met'] for x in schedule_data[dtype]}
             met_data[dtype] = [met_map.get(h, 120.0) for h in range(24)]
     
-    # 1b. Step 9: extract activity-driven fractions if present in schedule_data
-    _s9_meta        = schedule_data.get('metadata', {})
-    _s9_equip_dw    = float(_s9_meta.get('equip_design_w', 0.0))
-    _s9_light_dw    = float(_s9_meta.get('light_design_w', 0.0))
-    _s9_equip_data  = {}   # {day_type: [24 floats]}
-    _s9_light_data  = {}
-    if _s9_equip_dw > 0:
-        for _dt in day_types:
-            if _dt in schedule_data:
-                _sorted = sorted(schedule_data[_dt], key=lambda x: x['hour'])
-                _s9_equip_data[_dt] = [e.get('equip_frac', 0.0) for e in _sorted]
-                _s9_light_data[_dt] = [e.get('light_frac', 0.0) for e in _sorted]
-
     # 2. Update People Object (Occupant Density)
     metadata = schedule_data.get('metadata', {})
     hhsize = metadata.get('hhsize', 2)
@@ -1494,213 +1475,7 @@ def inject_schedules(
     if epw_path and sim_results_dir:
          visualizer = schedule_visualizer.ScheduleVisualizer(epw_path)
 
-    # --------------------------------------------------------------------------
-    # Step 9 consolidation — neutralize existing objects + inject one carrier.
-    # MUST run before the load_targets loop; the loop then skips ELECTRICEQUIPMENT
-    # and LIGHTS when Step 9 is active (guards below), preventing the cache-key
-    # continue bug (only first object got Design_Level override; rest kept
-    # original watts AND got the activity schedule → double-count / no-op).
-    # Step 8 path is byte-identical: this block is only entered when _s9_*_dw > 0.
-    # --------------------------------------------------------------------------
-    _s9_occ_zone = None
-    _s9_active_equip = _s9_equip_dw > 0 and bool(_s9_equip_data)
-    _s9_active_light = _s9_light_dw > 0 and bool(_s9_light_data)
-
-    if _s9_active_equip or _s9_active_light:
-
-        def _s9_get_zone(ep_obj):
-            for _zf in ('Zone_or_ZoneList_or_Space_or_SpaceList_Name',
-                        'Zone_or_ZoneList_Name', 'Zone_Name'):
-                _zv = getattr(ep_obj, _zf, None)
-                if _zv:
-                    return str(_zv).strip()
-            return str(ep_obj.obj[2]).strip() if len(ep_obj.obj) > 2 else None
-
-        def _s9_set_zone(ep_obj, zname):
-            for _zf in ('Zone_or_ZoneList_or_Space_or_SpaceList_Name',
-                        'Zone_or_ZoneList_Name', 'Zone_Name'):
-                try:
-                    setattr(ep_obj, _zf, zname)
-                    return
-                except Exception:
-                    pass
-            if len(ep_obj.obj) > 2:
-                ep_obj.obj[2] = zname
-
-        if people_objs:
-            _s9_occ_zone = _s9_get_zone(people_objs[0])
-            if len(people_objs) > 1:
-                _pz = {_s9_get_zone(p) for p in people_objs} - {None}
-                if len(_pz) > 1:
-                    print(f"  FLAG [S9 HH {hh_id}]: {len(_pz)} People zones {sorted(_pz)}; "
-                          f"using '{_s9_occ_zone}' — verify Phase 5 meter matches this zone")
-
-        if _s9_occ_zone is None:
-            print(f"  WARNING [S9 HH {hh_id}]: occupancy zone not found — Step 9 skipped")
-        else:
-            # --- Equipment consolidation ---
-            if _s9_active_equip:
-                def _is_fridge(o):
-                    _n = (getattr(o, 'Name', '') or '').lower()
-                    _s = (getattr(o, 'Schedule_Name', '') or '').lower()
-                    return 'refrigerator' in _n or _s == 'refrigerator'
-
-                _fridge_found = False
-                _fridge_w = round(448.0 * 1000.0 / 8760.0, 2)  # 51.14 W fallback (always-on)
-                _n_eq_neut = 0
-                for _eo in list(idf.idfobjects.get('ELECTRICEQUIPMENT', [])):
-                    if _is_fridge(_eo):
-                        _fridge_found = True
-                        # Calibrate to FRIDGE_KWH_IDF = 448 kWh/yr. Keep the original
-                        # schedule (avoid injecting 'Always On Discrete' which E+ 24.2
-                        # rejects at runtime). Instead parse the existing schedule to get
-                        # annual frac-hours and back-calculate the target wattage.
-                        _fr_sched = getattr(_eo, 'Schedule_Name', '') or ''
-                        _fr_sv = parse_schedule_values(idf, _fr_sched) if _fr_sched else {}
-                        if _fr_sv:
-                            _fr_wd = _fr_sv.get('Weekday', [1.0] * 24)
-                            _fr_we = _fr_sv.get('Weekend', _fr_wd)
-                            _fr_fh = 261 * sum(_fr_wd) + 104 * sum(_fr_we)
-                            _fr_target_w = round(448.0 * 1000.0 / max(_fr_fh, 1.0), 2)
-                        else:
-                            _fr_target_w = _fridge_w  # fallback: assume always-on
-                        try: _eo.Design_Level_Calculation_Method = 'EquipmentLevel'
-                        except Exception: pass
-                        try: _eo.Design_Level = _fr_target_w
-                        except Exception: pass
-                        try: _eo.Watts_per_Zone_Floor_Area = 0.0
-                        except Exception: pass
-                        continue
-                    # Neutralize across ALL zones (not just occ zone) so that
-                    # multi-zone NECB apartments don't leave Watts/Area leaks in
-                    # the 23 non-target unit zones, which would break the precheck
-                    # and inflate the zone-level E+ meter. Carrier is injected in
-                    # the occupancy zone only.
-                    try: _eo.Design_Level_Calculation_Method = 'EquipmentLevel'
-                    except Exception: pass
-                    try: _eo.Design_Level = 0.0
-                    except Exception: pass
-                    try: _eo.Watts_per_Zone_Floor_Area = 0.0
-                    except Exception: pass
-                    _n_eq_neut += 1
-
-                _s9e_sch = f"S9_Equip_{hh_id}"
-                _s9e_pd = {dt: list(v) for dt, v in _s9_equip_data.items()}
-                if use_schedule_file:
-                    _ecsv = os.path.join(sched_dir, "equipment.csv")
-                    _ewd = _s9e_pd.get('Weekday', [0.0] * 24)
-                    _ewe = _s9e_pd.get('Weekend', _ewd)
-                    write_8760_schedule_csv(_ewd, _ewe, _ecsv,
-                                            year=schedule_file_year,
-                                            design_day_dates=design_day_dates)
-                    idf_optimizer.create_schedule_file_object(idf, _s9e_sch, "Fraction", _ecsv)
-                else:
-                    _se = idf.newidfobject("Schedule:Compact")
-                    _se.obj = (["Schedule:Compact"]
-                               + create_compact_schedule(_s9e_sch, "Fraction",
-                                                         {k: fmt_for_compact(v)
-                                                          for k, v in _s9e_pd.items()}))
-
-                _ec = idf.newidfobject("ElectricEquipment")
-                _ec.Name = f"STEP9_Equip_{hh_id}"
-                _s9_set_zone(_ec, _s9_occ_zone)
-                _ec.Schedule_Name = _s9e_sch
-                try: _ec.Design_Level_Calculation_Method = 'EquipmentLevel'
-                except Exception: pass
-                try: _ec.Design_Level = round(_s9_equip_dw, 2)
-                except Exception: pass
-                try: _ec.Watts_per_Zone_Floor_Area = ''
-                except Exception: pass
-
-                if not _fridge_found:
-                    # Apartment IDF lumps fridge into Watts/Area — after neutralization
-                    # the fridge kWh is gone. Inject an explicit always-on baseload
-                    # (~51 W = 448 kWh/yr) so the SHEU net target remains additive-correct.
-                    _fr_w = round(448.0 * 1000.0 / 8760.0, 2)
-                    # Use Schedule:Compact (all 1.0) — parseable by precheck_calibration.py
-                    # and valid for E+ 24.2. 'Always On'/'Always On Discrete' are rejected
-                    # by E+ 24.2 GetInternalHeatGains; Schedule:Constant is not parseable
-                    # by parse_schedule_values, causing false LEAK flags in the precheck.
-                    _fr_sched_name = f"STEP9_FRSCHED_{hh_id}"
-                    _fr_sc = idf.newidfobject("Schedule:Compact")
-                    _fr_sc.obj = ["Schedule:Compact", _fr_sched_name, "Fraction",
-                                  "Through: 12/31", "For: AllDays", "Until: 24:00", "1.0"]
-                    _fr = idf.newidfobject("ElectricEquipment")
-                    _fr.Name = f"STEP9_Fridge_{hh_id}"
-                    _s9_set_zone(_fr, _s9_occ_zone)
-                    _fr.Schedule_Name = _fr_sched_name
-                    try: _fr.Design_Level_Calculation_Method = 'EquipmentLevel'
-                    except Exception: pass
-                    try: _fr.Design_Level = _fr_w
-                    except Exception: pass
-                    try: _fr.Watts_per_Zone_Floor_Area = ''
-                    except Exception: pass
-                    print(f"  [S9 HH {hh_id}]: no named fridge — injected {_fr_w} W always-on baseload")
-
-                _fr_log = (f"calibrated@{_fr_target_w}W(sched={_fr_sched})"
-                           if _fridge_found else f"injected@{_fridge_w}W(always-on)")
-                print(f"  [S9] Equip: {_n_eq_neut} neutralized; carrier {round(_s9_equip_dw, 1)} W; "
-                      f"fridge={_fr_log}")
-
-            # --- Lighting consolidation ---
-            if _s9_active_light:
-                _n_li_neut = 0
-                for _lo in list(idf.idfobjects.get('LIGHTS', [])):
-                    # Same all-zones neutralization as equipment (see above).
-                    try: _lo.Design_Level_Calculation_Method = 'LightingLevel'
-                    except Exception: pass
-                    try: _lo.Lighting_Level = 0.0
-                    except Exception: pass
-                    try: _lo.Watts_per_Zone_Floor_Area = 0.0
-                    except Exception: pass
-                    _n_li_neut += 1
-
-                _s9l_sch = f"S9_Light_{hh_id}"
-                _s9l_months = {}
-                for _mo in ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'):
-                    _mdd = {}
-                    for _dt in ('Weekday', 'Weekend'):
-                        if _dt not in _s9_light_data:
-                            continue
-                        _fa = _s9_light_data[_dt]
-                        _mdd[_dt] = [{'hour': _h, 'value': float(_fa[_h])}
-                                     for _h in range(24)]
-                    _s9l_months[_mo] = _mdd
-
-                if use_schedule_file:
-                    _lcsv = os.path.join(sched_dir, "lighting.csv")
-                    write_8760_schedule_csv_monthly(_s9l_months, _lcsv,
-                                                    year=schedule_file_year,
-                                                    design_day_dates=design_day_dates)
-                    idf_optimizer.create_schedule_file_object(idf, _s9l_sch, "Fraction", _lcsv)
-                else:
-                    _sl = idf.newidfobject("Schedule:Compact")
-                    _sl.obj = (["Schedule:Compact"]
-                               + create_monthly_compact_schedule(_s9l_sch, "Fraction", _s9l_months))
-
-                _lc = idf.newidfobject("Lights")
-                _lc.Name = f"STEP9_Lights_{hh_id}"
-                _s9_set_zone(_lc, _s9_occ_zone)
-                _lc.Schedule_Name = _s9l_sch
-                try: _lc.Design_Level_Calculation_Method = 'LightingLevel'
-                except Exception: pass
-                try: _lc.Lighting_Level = round(_s9_light_dw, 2)
-                except Exception: pass
-                try: _lc.Watts_per_Zone_Floor_Area = ''
-                except Exception: pass
-
-                print(f"  [S9] Lights: {_n_li_neut} neutralized; carrier {round(_s9_light_dw, 1)} W")
-    # --------------------------------------------------------------------------
-
     for obj_type, field_name, std_key in load_targets:
-        # Step 9 consolidation block handled these object types; skip to avoid
-        # the cache-key continue bug and the broken per-object Design_Level mutation.
-        if obj_type == 'ELECTRICEQUIPMENT' and _s9_active_equip:
-            continue
-        if obj_type == 'LIGHTS' and _s9_active_light:
-            continue
-
         objs = idf.idfobjects.get(obj_type, [])
 
         # Get standard schedule values for PresenceFilter
@@ -1718,54 +1493,33 @@ def inject_schedules(
                     continue
 
                 if obj_type == 'LIGHTS':
+                    # Monthly daylight-responsive lighting
                     months = [
                         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
                     ]
                     monthly_data = {}
-
-                    if _s9_light_dw > 0 and _s9_light_data:
-                        # Step 9: activity-driven lighting — same fractions for all months
-                        # (no seasonal variation in basic Step 9; deferred to cluster).
-                        # Update Lighting_Level so SHEU calibration holds in E+ output.
-                        try:
-                            obj.Lighting_Level = round(_s9_light_dw, 2)
-                        except Exception:
-                            pass
-                        for month in months:
-                            month_day_data = {}
-                            for dtype in ['Weekday', 'Weekend']:
-                                if dtype not in _s9_light_data:
-                                    continue
-                                frac_arr = _s9_light_data[dtype]
-                                month_day_data[dtype] = [
-                                    {'hour': h, 'value': float(frac_arr[h])}
-                                    for h in range(24)
-                                ]
-                            monthly_data[month] = month_day_data
-                    else:
-                        # Existing monthly daylight-responsive lighting
-                        for month in months:
-                            month_day_data = {}
-                            for dtype in ['Weekday', 'Weekend']:
-                                if dtype not in occ_data:
-                                    continue
-                                presence = occ_data[dtype]
-                                default_vals = (
-                                    std_weekday if dtype == 'Weekday'
-                                    else std_weekend
-                                )
-                                values = lighting_gen.generate_monthly(
-                                    presence,
-                                    default_schedule=default_vals,
-                                    month=month,
-                                    day_type=dtype,
-                                )
-                                month_day_data[dtype] = [
-                                    {'hour': h, 'value': v}
-                                    for h, v in enumerate(values)
-                                ]
-                            monthly_data[month] = month_day_data
+                    for month in months:
+                        month_day_data = {}
+                        for dtype in ['Weekday', 'Weekend']:
+                            if dtype not in occ_data:
+                                continue
+                            presence = occ_data[dtype]
+                            default_vals = (
+                                std_weekday if dtype == 'Weekday'
+                                else std_weekend
+                            )
+                            values = lighting_gen.generate_monthly(
+                                presence,
+                                default_schedule=default_vals,
+                                month=month,
+                                day_type=dtype,
+                            )
+                            month_day_data[dtype] = [
+                                {'hour': h, 'value': v}
+                                for h, v in enumerate(values)
+                            ]
+                        monthly_data[month] = month_day_data
 
                     # Visualization: use January as representative
                     if collected_schedules[std_key] is None:
@@ -1800,37 +1554,26 @@ def inject_schedules(
                     created_schedules[cache_key] = proj_sch_name
 
                 else:
-                    # Equipment / DHW: presence filter (default) or Step 9 activity-driven.
-                    # DHW uses continuous=True (physical partial-occupancy scaling).
-                    # ELECTRICEQUIPMENT uses Step 9 fractions when available;
-                    # GASEQUIPMENT and DHW always use the presence-filter path.
+                    # Equipment / DHW: presence filter.
+                    # DHW uses continuous=True so that a single occupant (e.g.,
+                    # presence=0.2) produces 20% of the default demand rather than
+                    # the full default value — physically correct for showers/sinks.
+                    # Equipment keeps continuous=False (binary gate preserves absent-
+                    # hour behaviour for appliances that don't scale with headcount).
                     use_continuous = (std_key == 'dhw')
-                    step9_elec = (obj_type == 'ELECTRICEQUIPMENT'
-                                  and _s9_equip_dw > 0 and bool(_s9_equip_data))
                     proj_data = {}
-                    if step9_elec:
-                        # Step 9: use activity-driven equipment fractions.
-                        # Update Design_Level so SHEU calibration holds in E+ output.
-                        try:
-                            obj.Design_Level = round(_s9_equip_dw, 2)
-                        except Exception:
-                            pass
-                        for dtype in ['Weekday', 'Weekend']:
-                            if dtype in _s9_equip_data:
-                                proj_data[dtype] = list(_s9_equip_data[dtype])
-                    else:
-                        for dtype in ['Weekday', 'Weekend']:
-                            if dtype not in occ_data:
-                                continue
-                            presence = occ_data[dtype]
-                            default_vals = (
-                                std_weekday if dtype == 'Weekday'
-                                else std_weekend
-                            )
-                            pf = schedule_generator.PresenceFilter(
-                                default_vals, presence
-                            )
-                            proj_data[dtype] = pf.apply(presence, continuous=use_continuous)
+                    for dtype in ['Weekday', 'Weekend']:
+                        if dtype not in occ_data:
+                            continue
+                        presence = occ_data[dtype]
+                        default_vals = (
+                            std_weekday if dtype == 'Weekday'
+                            else std_weekend
+                        )
+                        pf = schedule_generator.PresenceFilter(
+                            default_vals, presence
+                        )
+                        proj_data[dtype] = pf.apply(presence, continuous=use_continuous)
 
                     if not proj_data:
                         continue

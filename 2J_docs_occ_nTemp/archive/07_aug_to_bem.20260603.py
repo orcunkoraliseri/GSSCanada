@@ -1,20 +1,13 @@
-"""07_aug_to_bem.py — OP4 + Step 9: calibrated aug occupancy -> EnergyPlus BEM_Schedules_<year>.csv.
-17-col hourly-household format eSim_bem_utils_2J/integration.py consumes.  BEM is 2-day-type
+"""07_aug_to_bem.py — OP4: calibrated aug occupancy -> EnergyPlus BEM_Schedules_<year>.csv.
+13-col hourly-household format eSim_bem_utils/main.py consumes. BEM is 2-day-type
 (Weekday/Weekend) per integration.py: DDAY_STRATA {1,2,3} -> {Weekday, Weekend=Sat+Sun}.
-New Step-9 columns (additive, backward-compatible): Equipment_Fraction, Lighting_Fraction,
-Equip_Design_W, Light_Design_W.  Predecessor archived at archive/07_aug_to_bem.20260603.py.
 Run-from-anywhere, seed=42, reversible.  Usage:  py 07_aug_to_bem.py --year 2022 | --year 2030
-
-2026-06-03 v2: per-DTYPE SHEU calibration targets now passed to activity_loads.calibrate_schedules().
-v1 archived at archive/07_aug_to_bem.20260603b.py.
 """
 import os, sys, argparse, shutil
 from pathlib import Path
 import numpy as np, pandas as pd
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))              # ensure activity_loads importable
-import activity_loads as _al
 BASE = HERE.parent                         # GSSCanada-main/
 AUG  = BASE/"0_Occupancy"/"Outputs_21CEN22GSS"/"aug_pipeline"/"21CEN22GSS_aug_Full_Aggregated_excl.csv"
 D2030= BASE/"0_Occupancy"/"Outputs_21CEN22GSS"/"forecast_2030"/"2030_synthetic_diaries.csv"
@@ -24,8 +17,7 @@ ACT = [f"act30_{i:03d}" for i in range(1,49)]
 HOM = [f"hom30_{i:03d}" for i in range(1,49)]
 STAT = ["HHSIZE","DTYPE","BEDRM","CONDO","ROOM","REPAIR","PR","MATCH_TIER"]
 OUT_COLS = ["SIM_HH_ID","Day_Type","Hour","HHSIZE","DTYPE","BEDRM","CONDO","ROOM",
-            "REPAIR","PR","MATCH_TIER","Occupancy_Schedule","Metabolic_Rate",
-            "Equipment_Fraction","Lighting_Fraction","Equip_Design_W","Light_Design_W"]
+            "REPAIR","PR","MATCH_TIER","Occupancy_Schedule","Metabolic_Rate"]
 # act code -> watts/person (BEMConverter.metabolic_map in 21CEN22GSS_occToBEM.py); unknown->100
 MET = {0:0,1:125,2:175,3:190,4:195,5:70,6:105,7:170,8:110,9:90,10:85,11:245,12:105,13:140,14:135}
 PR_LBL = {10:"Atlantic",11:"Atlantic",12:"Atlantic",13:"Atlantic",24:"Quebec",35:"Ontario",
@@ -38,55 +30,6 @@ def dtype_label(code, bedrm):
         except (ValueError,TypeError): b=2
         return "HighRise" if b<=1 else "MidRise"
     return {1:"SingleD",3:"OtherDwelling"}.get(int(code), str(int(code)))   # 8 -> "8" (matches classic)
-
-def _compute_hh_activity_fracs(df):
-    """Step 9: compute per-HH activity-driven fractions (Equipment + Lighting).
-
-    Returns
-    -------
-    dict keyed by (hh_id, day_type) ->
-        {'equip_frac': arr24, 'light_frac': arr24,
-         'equip_design_W': float, 'light_design_W': float}
-    df must already have SIM_HH_ID, Day_Type, DTYPE, BEDRM columns.
-    Per-HH dtype is passed to activity_loads.calibrate_schedules() so that
-    HighRise/MidRise apartments use their own SHEU targets (not SingleD).
-    """
-    needed = ACT + HOM + ["SIM_HH_ID", "Day_Type", "DTYPE", "BEDRM"]
-    sub = df[needed].copy()
-    n_hh = sub["SIM_HH_ID"].nunique()
-    print(f"  Step 9: computing activity fractions for {n_hh:,} HHs...", flush=True)
-    result = {}
-    for i, (hh_id, hh_df) in enumerate(sub.groupby("SIM_HH_ID")):
-        if i % 10000 == 0:
-            print(f"    {i:,}/{n_hh:,}", flush=True, end="\r")
-        # Determine per-HH dwelling type label (DTYPE numeric code -> string)
-        first = hh_df.iloc[0]
-        hh_dtype = dtype_label(first.get("DTYPE", 1), first.get("BEDRM", 2))
-        by_dt = {}
-        for dt in ("Weekday", "Weekend"):
-            rows = hh_df[hh_df["Day_Type"] == dt].to_dict("records")
-            if rows:
-                by_dt[dt] = rows
-        if "Weekday" not in by_dt and "Weekend" in by_dt:
-            by_dt["Weekday"] = by_dt["Weekend"]
-        elif "Weekend" not in by_dt and "Weekday" in by_dt:
-            by_dt["Weekend"] = by_dt["Weekday"]
-        elif not by_dt:
-            continue
-        raw = _al.compute_48slot_loads(by_dt)
-        cal = _al.calibrate_schedules(raw, dtype=hh_dtype)
-        for dt in ("Weekday", "Weekend"):
-            frac_key = "equip_frac_wd" if dt == "Weekday" else "equip_frac_we"
-            lfrac_key = "light_frac_wd" if dt == "Weekday" else "light_frac_we"
-            result[(hh_id, dt)] = {
-                "equip_frac":     cal[frac_key],
-                "light_frac":     cal[lfrac_key],
-                "equip_design_W": cal["equip_design_W"],
-                "light_design_W": cal["light_design_W"],
-            }
-    print(f"    {n_hh:,}/{n_hh:,} done.", flush=True)
-    return result
-
 
 def convert(df):
     df = df.rename(columns={"HH_ID":"SIM_HH_ID"}).copy()
@@ -113,28 +56,6 @@ def convert(df):
     out["DTYPE"] = [dtype_label(c,b) for c,b in zip(dt,bd)]
     pr = np.repeat(stat["PR"].values,24)
     out["PR"] = [PR_LBL.get(int(p), str(int(p))) for p in pr]
-
-    # Step 9: activity-driven Equipment_Fraction + Lighting_Fraction
-    frac_map = _compute_hh_activity_fracs(df)
-    eq_col, lt_col, eq_dw_col, lt_dw_col = [], [], [], []
-    for hh, dt in zip(occ48.index.get_level_values("SIM_HH_ID"),
-                      occ48.index.get_level_values("Day_Type")):
-        fracs = frac_map.get((hh, dt))
-        if fracs is not None:
-            eq_col.extend(fracs["equip_frac"].tolist())
-            lt_col.extend(fracs["light_frac"].tolist())
-            eq_dw_col.extend([fracs["equip_design_W"]] * 24)
-            lt_dw_col.extend([fracs["light_design_W"]] * 24)
-        else:
-            eq_col.extend([0.0] * 24)
-            lt_col.extend([0.0] * 24)
-            eq_dw_col.extend([0.0] * 24)
-            lt_dw_col.extend([0.0] * 24)
-    out["Equipment_Fraction"] = np.round(eq_col, 4)
-    out["Lighting_Fraction"]  = np.round(lt_col,  4)
-    out["Equip_Design_W"]     = np.round(eq_dw_col, 2)
-    out["Light_Design_W"]     = np.round(lt_dw_col,  2)
-
     return out[OUT_COLS]
 
 def complete_day_types(df):
@@ -196,11 +117,6 @@ def main():
     assert (bem["Metabolic_Rate"]>=0).all()
     cov = bem.groupby("SIM_HH_ID")["Day_Type"].nunique()
     assert (cov==2).all(), f"{int((cov<2).sum())} HHs missing a day-type (integration.py would reject)"
-    # Step 9 gates
-    assert bem["Equipment_Fraction"].between(0,1).all(), "Equipment_Fraction out of [0,1]"
-    assert bem["Lighting_Fraction"].between(0,1).all(),  "Lighting_Fraction out of [0,1]"
-    assert (bem["Equip_Design_W"]>=0).all(),             "Equip_Design_W negative"
-    assert (bem["Light_Design_W"]>=0).all(),             "Light_Design_W negative"
     target = BEMS/f"BEM_Schedules_{yr}.csv"
     if target.exists():
         bak = BEMS/f"BEM_Schedules_{yr}_CLASSIC_BAK_2026-05-31.csv"
@@ -208,9 +124,6 @@ def main():
     tmp=str(target)+".tmp"; bem.to_csv(tmp,index=False,float_format="%.3f"); os.replace(tmp,str(target))
     nhh=bem["SIM_HH_ID"].nunique()
     print(f"WROTE {target.name}: {len(bem):,} rows, {nhh:,} HH", flush=True)
-    base_path=BEMS/f"BEM_Schedules_{yr}_baseline.csv"
-    tmp2=str(base_path)+".tmp"; bem[OUT_COLS[:13]].to_csv(tmp2,index=False,float_format="%.3f"); os.replace(tmp2,str(base_path))
-    print(f"WROTE {base_path.name}: {len(bem):,} rows, {nhh:,} HH (13-col baseline)", flush=True)
     print("  DTYPE:", sorted(bem['DTYPE'].astype(str).unique()), flush=True)
     print("  PR:", sorted(bem['PR'].astype(str).unique()), flush=True)
     for d in ("Weekday","Weekend"):

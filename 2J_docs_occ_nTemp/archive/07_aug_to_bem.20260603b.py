@@ -5,8 +5,8 @@ New Step-9 columns (additive, backward-compatible): Equipment_Fraction, Lighting
 Equip_Design_W, Light_Design_W.  Predecessor archived at archive/07_aug_to_bem.20260603.py.
 Run-from-anywhere, seed=42, reversible.  Usage:  py 07_aug_to_bem.py --year 2022 | --year 2030
 
-2026-06-03 v2: per-DTYPE SHEU calibration targets now passed to activity_loads.calibrate_schedules().
-v1 archived at archive/07_aug_to_bem.20260603b.py.
+ARCHIVE NOTE: this is the v1 Step-9 version (SingleD-only SHEU calibration targets).
+Superseded by the per-DTYPE version; archived 2026-06-03 before apartment-target addition.
 """
 import os, sys, argparse, shutil
 from pathlib import Path
@@ -47,11 +47,9 @@ def _compute_hh_activity_fracs(df):
     dict keyed by (hh_id, day_type) ->
         {'equip_frac': arr24, 'light_frac': arr24,
          'equip_design_W': float, 'light_design_W': float}
-    df must already have SIM_HH_ID, Day_Type, DTYPE, BEDRM columns.
-    Per-HH dtype is passed to activity_loads.calibrate_schedules() so that
-    HighRise/MidRise apartments use their own SHEU targets (not SingleD).
+    df must already have SIM_HH_ID and Day_Type columns.
     """
-    needed = ACT + HOM + ["SIM_HH_ID", "Day_Type", "DTYPE", "BEDRM"]
+    needed = ACT + HOM + ["SIM_HH_ID", "Day_Type"]
     sub = df[needed].copy()
     n_hh = sub["SIM_HH_ID"].nunique()
     print(f"  Step 9: computing activity fractions for {n_hh:,} HHs...", flush=True)
@@ -59,9 +57,6 @@ def _compute_hh_activity_fracs(df):
     for i, (hh_id, hh_df) in enumerate(sub.groupby("SIM_HH_ID")):
         if i % 10000 == 0:
             print(f"    {i:,}/{n_hh:,}", flush=True, end="\r")
-        # Determine per-HH dwelling type label (DTYPE numeric code -> string)
-        first = hh_df.iloc[0]
-        hh_dtype = dtype_label(first.get("DTYPE", 1), first.get("BEDRM", 2))
         by_dt = {}
         for dt in ("Weekday", "Weekend"):
             rows = hh_df[hh_df["Day_Type"] == dt].to_dict("records")
@@ -74,7 +69,7 @@ def _compute_hh_activity_fracs(df):
         elif not by_dt:
             continue
         raw = _al.compute_48slot_loads(by_dt)
-        cal = _al.calibrate_schedules(raw, dtype=hh_dtype)
+        cal = _al.calibrate_schedules(raw)
         for dt in ("Weekday", "Weekend"):
             frac_key = "equip_frac_wd" if dt == "Weekday" else "equip_frac_we"
             lfrac_key = "light_frac_wd" if dt == "Weekday" else "light_frac_we"
@@ -208,9 +203,6 @@ def main():
     tmp=str(target)+".tmp"; bem.to_csv(tmp,index=False,float_format="%.3f"); os.replace(tmp,str(target))
     nhh=bem["SIM_HH_ID"].nunique()
     print(f"WROTE {target.name}: {len(bem):,} rows, {nhh:,} HH", flush=True)
-    base_path=BEMS/f"BEM_Schedules_{yr}_baseline.csv"
-    tmp2=str(base_path)+".tmp"; bem[OUT_COLS[:13]].to_csv(tmp2,index=False,float_format="%.3f"); os.replace(tmp2,str(base_path))
-    print(f"WROTE {base_path.name}: {len(bem):,} rows, {nhh:,} HH (13-col baseline)", flush=True)
     print("  DTYPE:", sorted(bem['DTYPE'].astype(str).unique()), flush=True)
     print("  PR:", sorted(bem['PR'].astype(str).unique()), flush=True)
     for d in ("Weekday","Weekend"):

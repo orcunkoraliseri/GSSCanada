@@ -70,7 +70,10 @@ DTYPE_FALLBACK = {
 # SIM_HH_IDs (frozen frame, verified), so one sampled household runs across
 # every year with only its occupancy/metabolic schedule changing -> a clean
 # within-household paired Δ.
-STEP8_BUILDINGS_DIR = os.path.join(BASE_DIR, "2J_docs_occ_nTemp", "BEM_setup", "Buildings_MTL")
+# MTL archetypes upgraded from EnergyPlus v22.1 -> v24.2 via the official IDFVersionUpdater
+# transition chain (the raw _v221 IDFs fatal-out under the 24.2 IDD: field shift in
+# HeatExchanger:AirToAir:SensibleAndLatent / Coil:Cooling:DX:SingleSpeed). Originals in Buildings_MTL/.
+STEP8_BUILDINGS_DIR = os.path.join(BASE_DIR, "2J_docs_occ_nTemp", "BEM_setup", "Buildings_MTL_v242")
 STEP8_RESULTS_DIR   = os.path.join(BEM_SETUP_DIR, "SimResults_Step8")
 
 # The 4 dwelling archetypes: DTYPE filter string <-> MTL IDF filename substring.
@@ -1956,6 +1959,18 @@ def _step8_cell_seed(base_seed: int, tag: str) -> int:
     return (int(base_seed) * 1_000_003 + h) % (2 ** 31)
 
 
+def _step8_job_succeeded(out_dir: str) -> bool:
+    """True iff EnergyPlus finished this job cleanly (per eplusout.end)."""
+    end = os.path.join(out_dir, "eplusout.end")
+    if not os.path.exists(end):
+        return False
+    try:
+        with open(end, "r", encoding="utf-8", errors="ignore") as f:
+            return "Completed Successfully" in f.read()
+    except Exception:
+        return False
+
+
 def run_step8_paired_mc(
     idf_path: str,
     epw_path: str,
@@ -2069,6 +2084,9 @@ def run_step8_paired_mc(
     print(f"  Running {len(jobs)} EnergyPlus jobs ({len(sampled)} HH x {len(years)} yr)...")
     _run_simulations_with_fallback(jobs, ENERGYPLUS_EXE)
 
+    # Count genuine EnergyPlus successes (per eplusout.end), not just "ran".
+    n_run_ok = sum(1 for j in jobs if _step8_job_succeeded(j["output_dir"]))
+
     # 6. Parse + persist hourly meters per job (raw .sql already saved in each sc_dir).
     n_ok = 0
     for job in jobs:
@@ -2093,14 +2111,24 @@ def run_step8_paired_mc(
         except Exception as e:
             print(f"  [parse WARN] {job['name']}: {e}")
 
+    # Status reflects ACTUAL EnergyPlus success: ok (all ran), partial (some), error (none).
+    if n_run_ok == len(jobs):
+        status = "ok"
+    elif n_run_ok > 0:
+        status = "partial"
+    else:
+        status = "error"
+
     summary = {
-        "status": "ok", "cell": cell_label, "dtype": dtype, "region": region,
+        "status": status, "cell": cell_label, "dtype": dtype, "region": region,
         "idf": os.path.basename(idf_path), "epw": os.path.basename(epw_path),
         "n": n, "pool": len(pool), "with_replacement": with_replacement,
-        "years": years, "n_jobs": len(jobs), "n_hourly_ok": n_ok,
-        "output_dir": output_dir,
+        "years": years, "n_jobs": len(jobs),
+        "n_run_ok": n_run_ok, "n_run_fail": len(jobs) - n_run_ok,
+        "n_hourly_ok": n_ok, "output_dir": output_dir,
     }
-    print(f"  DONE cell={cell_label}: {n_ok}/{len(jobs)} hourly parsed -> {output_dir}")
+    print(f"  DONE cell={cell_label}: status={status} | E+ {n_run_ok}/{len(jobs)} ok | "
+          f"{n_ok}/{len(jobs)} hourly parsed -> {output_dir}")
     return summary
 
 
