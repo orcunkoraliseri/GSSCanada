@@ -146,6 +146,18 @@ def main():
                                           'ElectricEquipment')
     light_kwh, light_leaks = _sum_objects(idf, 'LIGHTS', 'Lighting_Level', 'Lights')
 
+    # D8 correction: OtherDwelling IDFs have N_units named fridges, but the SHEU target
+    # and validate both account for only 1. Subtract the excess fridges before gating.
+    if args.dtype == 'OtherDwelling':
+        fridge_objs = [o for o in idf.idfobjects.get('ELECTRICEQUIPMENT', [])
+                       if 'refrigerator' in (o.Name or '').lower()]
+        n_fridges = len(fridge_objs)
+        if n_fridges > 1:
+            excess = (n_fridges - 1) * AL.FRIDGE_KWH_IDF
+            print(f"  [D8 correction] {n_fridges} named fridges; subtracting "
+                  f"{n_fridges - 1} x {AL.FRIDGE_KWH_IDF:.1f} = {excess:.1f} kWh excess")
+            equip_kwh -= excess
+
     def verdict(label, got, target):
         dev = (got - target) / target if target else float('inf')
         ok = abs(dev) <= args.tol

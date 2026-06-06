@@ -38,6 +38,8 @@ Energy+.idd extracted from SIF at start of each stage.
 | D4 | Baseline CSV design (2026-06-04) | **CHANGED** | Original design used `_CLASSIC_BAK` (May-31 backup, 2,819 SingleD+Prairies HHs from a different run). Fixed: `step9_a2_baseline_extract.py` derives `_baseline.csv` from the same synthetic population run as the activity CSV, guaranteeing identical HH IDs. Root cause: `07_aug_to_bem.py` generates fresh random `SIM_HH_ID`s each run. |
 | D5 | IDF sampling pool (2026-06-04) | **CHANGED** | Original sampled pool from `baseline/2022` only → HH absent from 2030 CSVs caused skips (HH 81825 found missing from 2030, 238/240 IDFs). Fixed: pool is now the intersection of all 4 CSVs (2022+2030 × baseline+activity), guaranteeing no skips. |
 | D6 | EPW path in manifest (2026-06-04) | **FIXED** | `step9_idf_gen.py` calls `glob.glob()` which resolves the `/speed-scratch` symlink → real NFS path `/nfs/speed-scratch/...` stored in manifest. Inside Singularity (`--bind /speed-scratch`), only `/speed-scratch` is mounted — `/nfs/speed-scratch` is invisible, so E+ couldn't open the EPW. Two-part fix: (a) `tr -d '\r'` in both bash scripts (csv.writer CRLF caused invisible `\r` on last field); (b) `sed 's|/nfs/speed-scratch/|/speed-scratch/|g'` to normalize to the bound path. Also fixed `step9_idf_gen.py` to write LF-only manifest (`lineterminator="\n"`) for future runs. |
+| D7 | OtherDwelling SHEU targets + fridge path (2026-06-05) | **ADDED** | **SHEU targets** already in `activity_loads.SHEU_BY_DTYPE`: `OtherDwelling: (2691.0, 1100.0)` — derived the same way as D1 (attached total ≈10,750 kWh/yr × 29.2% appliance ratio = 3,139 kWh gross; net = 3,139 − 448 fridge = 2,691; lighting = midpoint SingleD 1,262 + apt 736 ≈ 1,100 kWh). **Fridge path audit**: `AttachedHouse+CZ6A+IECC+2024_NBC936_Z6_v242.idf` has **5 NAMED refrigerators** (`refrigerator_unit1–5`, 91.06 W each, `EquipmentLevel`, schedule `Refrigerator`) across 5 unit zones (`living_unit1–5`). Takes the **named-fridge path** (same as SingleD): `integration.py` calibrates each named fridge to ~51.14 W (448 kWh/yr) by back-calculating from the `Refrigerator` schedule frac-hours. No STEP9_Fridge injected. |
+| D8 | OtherDwelling multi-unit fridge in validate (2026-06-05) | **ADDED** | AttachedHouse has 5 units; after Step 9 consolidation, 5 named fridges remain (one per zone). Building-level `InteriorEquipment:Electricity` captures ALL 5 fridges: `ac_building = STEP9_Equip (unit 1) + 5 × 448 kWh`. Per-HH SHEU gross target = 2,691 + 448 = 3,139 kWh. **Correction in `step9_validate_full.py`**: subtract `(OD_N_UNITS − 1) × FRIDGE_KWH_IDF = 4 × 448 = 1,792 kWh` from building-level reading before the gate check. The precheck (`precheck_calibration.py`) is unaffected — it reads objects in the occupancy zone (living_unit1) only, which has the correctly calibrated fridge + STEP9_Equip = 3,139 kWh ≈ gross target. |
 
 ---
 
@@ -60,6 +62,23 @@ Energy+.idd extracted from SIF at start of each stage.
 | 4 FULL ARRAY | COMPLETE | 948810 | 240/240 hourly_meters.csv, 0 FAIL logs; task 0 idempotent-skipped (smoke pre-ran) |
 | 5 VALIDATE attempt-1 | FAIL | 949082 | validate.py: same 3.6e9 unit bug + no N_HH averaging + wrong meter columns (building vs zone) |
 | 5 VALIDATE attempt-2 | FAIL | 949086 | Fixed: 3.6e9→3.6e6, /N_HH, Zone-level meters. All 6 SHEU gates fail — calibration bug |
+
+---
+
+## Full-Grid Run (24 cells / n=50) — Phase Status
+
+*Scripts: `step9_a_generate_full.sh` → `step9_precheck_full.sh` → `step9_b_smoke.sh` → `step9_b_array_full.sh` → `step9_c_validate_full.sh`*
+
+| Phase | Status | Job ID | Notes |
+|---|---|---|---|
+| AUDIT | COMPLETE | — | D7: OtherDwelling SHEU targets already in activity_loads.py; 5 named fridges confirmed (named-fridge path). D8: 4×FRIDGE_KWH_IDF correction in step9_validate_full.py. |
+| SCRIPTS | COMPLETE | — | 6 new scripts written locally: step9_idf_gen_full.py, step9_a_generate_full.sh, step9_precheck_full.sh, step9_b_array_full.sh, step9_validate_full.py, step9_c_validate_full.sh. |
+| UPLOAD | PENDING | — | scp new scripts to cluster; trigger via sbatch. |
+| A GENERATE FULL | PENDING | — | step9_a_generate_full.sh: A1 (07_aug_to_bem.py) + A2-1 (baseline extract) + A2-2 (9,600 IDFs). |
+| PRECHECK FULL | PENDING | — | step9_precheck_full.sh: 4 cells (SingleD, OtherDwelling, MidRise, HighRise), ±5%, must include OtherDwelling. |
+| SMOKE FULL | PENDING | — | step9_b_smoke.sh on 2 cells from full manifest (OtherDwelling + one other). |
+| B ARRAY FULL | PENDING | — | step9_b_array_full.sh: 48 tasks (24 cells × 2 arms), 4-parallel E+, 100 IDFs/task. |
+| C VALIDATE FULL | PENDING | — | step9_c_validate_full.sh: 48 cell×year gates ±15%, sleep check, pairing assert. |
 
 ---
 
