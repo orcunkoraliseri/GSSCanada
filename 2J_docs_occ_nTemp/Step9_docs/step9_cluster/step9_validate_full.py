@@ -6,12 +6,15 @@ Extends step9_validate.py to cover all 24 cells (4 archetypes x 6 cities) and
 applies the OtherDwelling multi-unit fridge correction (see D8 in cluster_run.md).
 
 OtherDwelling fridge correction (D8):
-  AttachedHouse IDF has 5 units, each with a named refrigerator (refrigerator_unit1–5).
-  integration.py calibrates ALL named fridges to ~51.14 W = 448 kWh/yr each.
-  Building-level InteriorEquipment:Electricity captures all 5 fridges:
-    ac_building_kwh = STEP9_Equip (1 unit) + 5 x 448 kWh
+  AttachedHouse IDF has 7 units, each with a named refrigerator (refrigerator_unit1–7).
+  integration.py calibrates ALL named fridges to ~61 W = 448 kWh/yr each.
+  Building-level InteriorEquipment:Electricity captures all 7 fridges:
+    ac_building_kwh = STEP9_Equip (1 unit) + 7 x 448 kWh
   Per-unit SHEU target = 2691 (net) + 448 (fridge) = 3139 kWh gross.
-  Correction: subtract (5-1) x 448 kWh from building-level reading before gate check.
+  Correction: subtract (7-1) x 448 kWh from building-level reading before gate check.
+
+Memory note: files are streamed one at a time and only column sums are retained
+(not row lists), so RAM use is O(n_keys * n_cols) regardless of IDF count.
 
 Usage:
   python step9_validate_full.py --root /speed-scratch/o_iseri/step9_run \
@@ -21,18 +24,17 @@ import argparse
 import csv
 import os
 import sys
-from pathlib import Path
 
 SHEU_EQUIP_NET   = {'SingleD': 3252.0, 'HighRise': 1474.0, 'MidRise': 1718.0, 'OtherDwelling': 2691.0}
 FRIDGE_KWH_IDF   = 448.0
 SHEU_EQUIP_GROSS = {k: v + FRIDGE_KWH_IDF for k, v in SHEU_EQUIP_NET.items()}
 SHEU_LIGHT       = {'SingleD': 1262.0, 'HighRise': 736.0, 'MidRise': 736.0, 'OtherDwelling': 1100.0}
 
-# AttachedHouse IDF has 5 units (refrigerator_unit1..5 across 5 zones).
-# After Step 9 consolidation, 5 named fridges remain; 4 are in non-occupancy zones.
-# Subtract 4 x FRIDGE_KWH_IDF from building-level InteriorEquipment:Electricity
+# AttachedHouse IDF has 7 units (refrigerator_unit1..7 across 7 zones).
+# After Step 9 consolidation, 7 named fridges remain; 6 are in non-occupancy zones.
+# Subtract 6 x FRIDGE_KWH_IDF from building-level InteriorEquipment:Electricity
 # to recover the per-HH (single occupancy zone) activity equipment total.
-OD_N_UNITS = 5
+OD_N_UNITS = 7
 
 ARCHETYPES = ['SingleD', 'OtherDwelling', 'MidRise', 'HighRise']
 CITIES     = ['Toronto_5A', 'Kelowna_5B', 'Vancouver_5C', 'Montreal_6A', 'Calgary_6B', 'Winnipeg_7A']
@@ -46,18 +48,6 @@ CELL_DTYPE = {
 SLEEP_HOURS = {2, 3, 4, 5}
 
 
-def load_csv(path):
-    with open(path) as f:
-        return list(csv.DictReader(f))
-
-
-def annual_kwh(rows, col, n_hh=1):
-    try:
-        return sum(float(r.get(col) or 0) for r in rows) / 3.6e6 / max(n_hh, 1)
-    except Exception:
-        return None
-
-
 def find_col(row_dict, keywords):
     for k in row_dict:
         if all(kw.lower() in k.lower() for kw in keywords):
@@ -65,37 +55,84 @@ def find_col(row_dict, keywords):
     return None
 
 
-def validate_cell_year(cell, year, bl_rows, ac_rows):
+def _empty_agg():
+    return {'n_hh': 0, 'sample': None, 'sums': {}, 'sleep_sum_j': 0.0, 'sleep_n': 0}
+
+
+def stream_into_agg(agg, path, treatment):
+    """Stream one hourly_meters.csv into agg in-place. Never stores row lists."""
+    sleep_col = None
+    with open(path, newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if agg['sample'] is None:
+                agg['sample'] = dict(row)
+                if treatment == 'activity':
+                    sleep_col = (find_col(row, ['InteriorEquipment:Electricity']) or
+                                 find_col(row, ['Zone Electric Equipment Electricity Energy']))
+            try:
+                hr = int(row.get('hour', -1))
+            except (ValueError, TypeError):
+                hr = -1
+            for col, val in row.items():
+                if col == 'hour':
+                    continue
+                try:
+                    agg['sums'][col] = agg['sums'].get(col, 0.0) + float(val or 0)
+                except (ValueError, TypeError):
+                    pass
+            if treatment == 'activity' and hr in SLEEP_HOURS:
+                if sleep_col is None and agg['sample']:
+                    sleep_col = (find_col(agg['sample'], ['InteriorEquipment:Electricity']) or
+                                 find_col(agg['sample'], ['Zone Electric Equipment Electricity Energy']))
+                if sleep_col:
+                    try:
+                        agg['sleep_sum_j'] += float(row.get(sleep_col) or 0)
+                        agg['sleep_n'] += 1
+                    except (ValueError, TypeError):
+                        pass
+    agg['n_hh'] += 1
+
+
+def validate_cell_year(cell, year, bl_agg, ac_agg):
     dtype = CELL_DTYPE.get(cell, 'SingleD')
     results = {'cell': cell, 'year': year, 'dtype': dtype}
 
-    n_hh = max(1, len(bl_rows) // 8760)
+    n_hh = max(1, bl_agg['n_hh'])
 
-    bl_sample = bl_rows[0] if bl_rows else {}
-    ac_sample = ac_rows[0] if ac_rows else {}
+    bl_sample = bl_agg.get('sample') or {}
+    ac_sample = ac_agg.get('sample') or {}
     elec_col     = find_col(bl_sample, ['Electricity:Facility'])
     equip_col    = find_col(bl_sample, ['Zone Electric Equipment Electricity Energy'])
     light_col    = find_col(bl_sample, ['Zone Lights Electricity Energy'])
     ac_equip_col = find_col(ac_sample, ['InteriorEquipment:Electricity'])
     ac_light_col = find_col(ac_sample, ['InteriorLights:Electricity'])
 
+    def kwh(agg, col):
+        if col is None:
+            return None
+        s = agg['sums'].get(col)
+        if s is None:
+            return None
+        return s / 3.6e6 / n_hh
+
     if elec_col is None:
         results['elec_col'] = 'MISSING'
     else:
         results['elec_col'] = elec_col
-        results['bl_elec_kwh'] = annual_kwh(bl_rows, elec_col, n_hh)
-        results['ac_elec_kwh'] = annual_kwh(ac_rows, elec_col, n_hh)
+        results['bl_elec_kwh'] = kwh(bl_agg, elec_col)
+        results['ac_elec_kwh'] = kwh(ac_agg, elec_col)
         if results['bl_elec_kwh'] is not None and results['ac_elec_kwh'] is not None:
             results['delta_elec_kwh'] = results['ac_elec_kwh'] - results['bl_elec_kwh']
 
     results['equip_col']    = equip_col    or 'MISSING'
     results['ac_equip_col'] = ac_equip_col or 'MISSING'
     if equip_col:
-        results['bl_equip_kwh'] = annual_kwh(bl_rows, equip_col, n_hh)
+        results['bl_equip_kwh'] = kwh(bl_agg, equip_col)
     if ac_equip_col:
-        raw_ac_equip = annual_kwh(ac_rows, ac_equip_col, n_hh)
+        raw_ac_equip = kwh(ac_agg, ac_equip_col)
         if raw_ac_equip is not None and dtype == 'OtherDwelling':
-            # D8: subtract fridge contribution from the 4 non-occupancy units
+            # D8: subtract fridge contribution from the 6 non-occupancy units
             raw_ac_equip -= (OD_N_UNITS - 1) * FRIDGE_KWH_IDF
         results['ac_equip_kwh'] = raw_ac_equip
     if results.get('bl_equip_kwh') is not None and results.get('ac_equip_kwh') is not None:
@@ -104,9 +141,9 @@ def validate_cell_year(cell, year, bl_rows, ac_rows):
     results['light_col']    = light_col    or 'MISSING'
     results['ac_light_col'] = ac_light_col or 'MISSING'
     if light_col:
-        results['bl_light_kwh'] = annual_kwh(bl_rows, light_col, n_hh)
+        results['bl_light_kwh'] = kwh(bl_agg, light_col)
     if ac_light_col:
-        results['ac_light_kwh'] = annual_kwh(ac_rows, ac_light_col, n_hh)
+        results['ac_light_kwh'] = kwh(ac_agg, ac_light_col)
     if results.get('bl_light_kwh') is not None and results.get('ac_light_kwh') is not None:
         results['delta_light_kwh'] = results['ac_light_kwh'] - results['bl_light_kwh']
 
@@ -121,14 +158,11 @@ def validate_cell_year(cell, year, bl_rows, ac_rows):
             results[f'sheu_gate_{label}'] = 'PASS' if abs(pct) <= 15 else 'FAIL'
 
     # Sleep/away zero-check (h02-h05)
-    _sleep_col = ac_equip_col or equip_col
-    if _sleep_col:
-        sleep_vals = [float(r.get(_sleep_col) or 0)
-                      for r in ac_rows if int(r.get('hour', -1)) in SLEEP_HOURS]
-        if sleep_vals:
-            mean_sleep_wh = sum(sleep_vals) / len(sleep_vals) / 3600
-            results['sleep_equip_mean_wh'] = mean_sleep_wh
-            results['sleep_check'] = 'PASS' if mean_sleep_wh < 300 else 'WARN'
+    sleep_n = ac_agg.get('sleep_n', 0)
+    if sleep_n > 0:
+        mean_sleep_wh = ac_agg['sleep_sum_j'] / 3600.0 / sleep_n
+        results['sleep_equip_mean_wh'] = mean_sleep_wh
+        results['sleep_check'] = 'PASS' if mean_sleep_wh < 300 else 'WARN'
 
     return results
 
@@ -147,15 +181,17 @@ def main():
     with open(manifest_path) as f:
         manifest = list(csv.DictReader(f))
 
+    # Stream each file into per-key aggregates — never store row lists.
     data = {}
     missing = []
+    n_loaded = 0
 
     for mrow in manifest:
-        cell      = mrow['cell']
-        treatment = mrow['treatment']
-        year      = mrow['year']
-        idf_path  = mrow['idf_path']
-        out_dir   = os.path.dirname(idf_path)
+        cell       = mrow['cell']
+        treatment  = mrow['treatment']
+        year       = mrow['year']
+        idf_path   = mrow['idf_path']
+        out_dir    = os.path.dirname(idf_path)
         meters_csv = os.path.join(out_dir, 'hourly_meters.csv')
 
         if not os.path.exists(meters_csv):
@@ -164,8 +200,14 @@ def main():
 
         key = (cell, year, treatment)
         if key not in data:
-            data[key] = []
-        data[key].extend(load_csv(meters_csv))
+            data[key] = _empty_agg()
+
+        stream_into_agg(data[key], meters_csv, treatment)
+        n_loaded += 1
+        if n_loaded % 500 == 0:
+            print(f"  Loaded {n_loaded} files …")
+
+    print(f"Streamed {n_loaded} hourly_meters.csv files into {len(data)} cell×year×treatment aggregates.")
 
     if missing:
         print(f"WARNING: {len(missing)} missing hourly_meters.csv files:")
@@ -230,23 +272,21 @@ def main():
             print(f"  {cell:35s}  act Δ22→30: {ac_trend:+.0f} kWh  "
                   f"bl Δ22→30: {bl_trend:+.0f} kWh  sharpness: {sharpness:+.0f} kWh")
 
-    # HH pairing check: assert symmetric diff = 0 across {baseline,activity}x{2022,2030}
-    print("\n--- HH pairing check (symmetric diff across arms x years) ---")
+    # HH pairing check: n_hh must match across all four (baseline/activity × 2022/2030) per cell
+    print("\n--- HH pairing check (n_hh consistency across arms × years) ---")
     pair_ok = True
     for cell in cells:
-        sets = {}
+        counts = {}
         for yr in years:
             for trt in ('baseline', 'activity'):
                 key = (cell, yr, trt)
                 if key in data:
-                    rows = data[key]
-                    sets[f"{yr}/{trt}"] = set(r.get('hour', '') for r in rows[:8760])
-        if len(sets) == 4:
-            s0 = list(sets.values())[0]
-            for label, s in sets.items():
-                if s != s0:
-                    print(f"  {cell}: MISMATCH {label}")
-                    pair_ok = False
+                    counts[f"{yr}/{trt}"] = data[key]['n_hh']
+        if len(counts) == 4:
+            vals = list(counts.values())
+            if len(set(vals)) > 1:
+                print(f"  {cell}: n_hh MISMATCH {counts}")
+                pair_ok = False
     if pair_ok:
         print("  All cells: pairing OK")
 
