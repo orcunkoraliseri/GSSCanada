@@ -1,5 +1,7 @@
 # Step 8 — BEM Simulation: Validation Plan
 
+> ⚠️ **UNDER REVISION — 4-hour schedule-injection bug found 2026-06-08.** `07_aug_to_bem.py` wrote the 4 AM-origin GSS diary slots straight to EnergyPlus `Hour` (slot @ 04:00 → Hour 0) instead of rotating to real clock (slot @ 04:00 → Hour 4). Occupancy / metabolic / equipment / lighting were all injected **4 h early** vs the EPW weather. The "fidelity" axis below (injected time-series matches Step-7 schedules) was checked in the same mis-clocked frame, so it did NOT catch this. Bug fixed; **full cluster re-simulation in progress (initiated 2026-06-08)** — re-validate after. Annual EUI is largely phase-invariant. Details: `Step9_docs/investigation/step9_investigation.md`.
+
 ## Goal
 
 Validate the EnergyPlus simulation campaign (Step 8) on three axes: **engine integrity** (runs

@@ -79,9 +79,8 @@ def _compute_hh_activity_fracs(df):
             frac_key = "equip_frac_wd" if dt == "Weekday" else "equip_frac_we"
             lfrac_key = "light_frac_wd" if dt == "Weekday" else "light_frac_we"
             result[(hh_id, dt)] = {
-                # FIX 2026-06-08: same +4 h diary->clock roll as occupancy/metabolic (see convert()).
-                "equip_frac":     np.roll(cal[frac_key], 4),
-                "light_frac":     np.roll(cal[lfrac_key], 4),
+                "equip_frac":     cal[frac_key],
+                "light_frac":     cal[lfrac_key],
                 "equip_design_W": cal["equip_design_W"],
                 "light_design_W": cal["light_design_W"],
             }
@@ -101,12 +100,6 @@ def convert(df):
     G = len(occ48.index)
     occ24 = occ48.values.reshape(G,24,2).mean(axis=2)                        # hour h = slots (2h,2h+1)
     met24 = met48.values.reshape(G,24,2).mean(axis=2)
-    # FIX 2026-06-08 (4h diary->clock offset): GSS diary slots are 4 AM-origin (slot 1 = 04:00), so
-    # reshape index 0 = real 04:00. Roll +4 h so Hour 0 = real midnight, matching the classic
-    # 21CEN22GSS_occToBEM.py datetime resample (slot@04:00 -> Hour 4) and the EPW weather clock.
-    # Without this, occupancy/metabolic/equipment/lighting all inject 4 h early vs the weather.
-    occ24 = np.roll(occ24, 4, axis=1)
-    met24 = np.roll(met24, 4, axis=1)
     out = pd.DataFrame({
         "SIM_HH_ID": occ48.index.get_level_values("SIM_HH_ID").repeat(24),
         "Day_Type" : occ48.index.get_level_values("Day_Type").repeat(24),

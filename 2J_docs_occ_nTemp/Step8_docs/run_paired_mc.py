@@ -22,7 +22,8 @@ import sys
 # Make the versioned engine package + run_bem helpers importable.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from eSim_bem_utils_2J.main import STEP8_ARCHETYPES, STEP8_CITIES
+from eSim_bem_utils_2J.main import STEP8_ARCHETYPES, STEP8_CITIES, COMPARATIVE_YEARS
+from eSim_bem_utils_2J import integration as _integ
 from run_bem import resolve_cell, run_step8_paired_mc
 
 
@@ -42,6 +43,8 @@ def main():
                    help="comma-separated years; default = all 5 (2005..2030).")
     p.add_argument("--output-dir", default=None,
                    help="cell output dir; default = SimResults_Step8/<archetype>__<city>.")
+    p.add_argument("--sched-dir", default=None,
+                   help="override schedule CSV dir (default=BEM_Setup); pass private dir for isolation.")
     args = p.parse_args()
 
     if args.n < 1:
@@ -56,10 +59,24 @@ def main():
     idf, epw, region, dtype, label = cell
     years = tuple(y.strip() for y in args.years.split(",")) if args.years else None
 
+    # Pre-load schedules from override dir if --sched-dir provided
+    sched_preload = None
+    if args.sched_dir:
+        yrs_to_load = [str(y) for y in (list(years) if years else list(COMPARATIVE_YEARS))]
+        sched_preload = {}
+        for y in yrs_to_load:
+            csv_path = os.path.join(args.sched_dir, f"BEM_Schedules_{y}.csv")
+            if not os.path.exists(csv_path):
+                print(f"ERROR: missing {csv_path}", flush=True)
+                sys.exit(2)
+            print(f"  Loading BEM_Schedules_{y}.csv from {args.sched_dir}", flush=True)
+            sched_preload[y] = _integ.load_schedules(csv_path, dwelling_type=dtype, region=region)
+
     res = run_step8_paired_mc(
         idf, epw, region, dtype,
         n=args.n, seed=args.seed, years=years,
         sim_mode=args.sim_mode, output_dir=args.output_dir, cell_label=label,
+        schedules=sched_preload,
     )
 
     status = res.get("status")

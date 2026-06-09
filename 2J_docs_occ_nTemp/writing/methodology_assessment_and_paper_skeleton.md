@@ -1,0 +1,289 @@
+# Methodology Assessment & Paper Skeleton
+### Realistic Occupancy → Residential Energy Demand (GSS Canada, 2nd journal paper)
+
+**Date:** 2026-06-08 (literature-grounded 2026-06-09) · **Author:** project assessment (manager) · **Status:** living draft (a corrected Step 8 + Step 9 re-simulation is in flight).
+
+This document does two jobs: (1) it answers, head-on, the four questions you posed — *what did we prove, was the method correct, can it model presence / co-presence / equipment demand, and what do the equipment plots mean* — and (2) it lays out a manuscript skeleton you can grow into the paper. It is also a deliberate **double-check** of the current approach for a high-bar journal.
+
+**Literature grounding (2026-06-09).** Parts 1–3 are now cross-referenced to ten deep-research literature reviews (saved in `writing/deepResearch/`, one per pipeline theme). Every author-year citation below is listed with a DOI in **Part 5 — References**. The most load-bearing and the internally-inconsistent citations (those a deep-research tool rendered with conflicting DOIs/pages) were **web-verified**; Part 5 marks which. Two findings from that pass are worth stating up front because they directly defend our approach:
+
+> **The 4-hour shift is a *known, documented* pipeline pitfall — not an idiosyncratic blunder.** The temporal-representation literature explicitly warns that time-use diaries begin at a **04:00 origin** and must be **circularly shifted** to EnergyPlus's midnight clock; skipping that rotation "would create a 4-hour phase shift, leading to severe physical inaccuracies (e.g., simulating peak morning activity during the midnight sleep period)" — *exactly* our bug and its symptom (see DR-S3 / Aerts et al. 2014; Eurostat HETUS 2018). Our fix (`np.roll(...,4)`) is the textbook remedy.
+
+> **Annual energy is *supposed* to be phase-blind — that is a documented thermodynamic property, which is why the bug hid.** NREL's ResStock work (Chen et al. 2022) and the occupant-gain literature (DR-S7) show that, under continuous conditioning with no occupancy-linked controls, the envelope acts as a low-pass integrator: shifting the *phase* of internal gains "merely shifts the load peak in time … leaving the annual energy balance virtually unaltered." Our annual-EUI and SHEU gates were structurally incapable of catching a phase error — so finding it required the independent phase check we ran.
+
+---
+
+## Part 0 — How to read this (the proven / pending split)
+
+Every quantitative claim below is tagged with its trust level. There is exactly one fault line, and it is important to state plainly:
+
+> **The 4-hour schedule-injection bug.** `07_aug_to_bem.py` originally wrote the 4 AM-origin GSS diary slots straight to EnergyPlus clock hours (diary slot @ 04:00 → E+ `Hour 0`) instead of rotating them to the real clock (→ `Hour 4`), the way the classic `21CEN22GSS_occToBEM.py` did. So occupancy, metabolic, equipment and lighting schedules all entered EnergyPlus **4 hours early** relative to the weather file. The bug is **fixed** (`np.roll(..., 4)` on all four channels — `07_aug_to_bem.py:82-83, 104-109`) and a **full Step 8 + Step 9 re-simulation is running now** (Step 8 array `953111`; Step 9 chain `952995→`).
+
+The consequence splits results cleanly into two buckets:
+
+| Tag | Meaning |
+|---|---|
+| **✅ PROVEN** | Phase-invariant or design-level. A 4-hour circular shift does not change an annual sum or a calibration ratio, so these results stand as-is. (Phase-invariance of annual energy is itself a documented property — Chen et al. 2022; DR-S7.) |
+| **⚠ PENDING-RESIM** | Any **absolute timing** result — peak hour, peak-shift, diurnal phase, "when" a load occurs. Currently computed on mis-clocked schedules; **must be re-read from the corrected re-sim.** The numbers are quoted here (flagged) so this is a complete working draft, not because they are final. |
+
+**Bottom line up front:** the *methodology* is sound and the *dataset + calibration + magnitude* results are proven. The bug is a single converter coding error, caught by independent verification, that corrupted only the **timing** layer — which is exactly what the running re-sim repairs. Do not cite any peak-timing number externally until the re-sim lands.
+
+---
+
+## Part 1 — The four questions answered
+
+### Q1 — What did we prove with our approach?
+
+**1. That a behaviourally-grounded, annually-representative synthetic occupancy dataset can be built end-to-end from public Canadian microdata.** From four GSS Time-Use cycles (2005/2010/2015/2022; 64,061 valid diaries after the 1,440-min closure filter) the pipeline harmonizes cross-cycle schemas (Step 2, 100% pass), merges + tiles to HETUS 48-slot/30-min diaries (Step 3), augments each respondent's 2 unobserved day-types with a conditional diffusion model (Step 4 MDLM → ~192,000 diary-days), links the GSS occupant archetypes to the Census 2021 dwelling stock (Step 5), forecasts to 2030 via progressive fine-tuning with a True-Future-Test protocol (Step 6), and converts to per-household hourly EnergyPlus schedules (Step 7). **✅ PROVEN** (each step has its own validation record). *Using national time-use microdata as the empirical basis for occupancy schedules is well-established (Widén & Wäckelgård 2010; Aerts et al. 2014; Wilke et al. 2013), including for Canada specifically (Armstrong et al. 2009; Osman et al. 2023; Ferreira et al. 2024); the 1,440-minute diary-closure filter and 144→48-slot tiling follow the HETUS/MTUS data-quality convention (Eurostat 2018; DR-S3).*
+
+**2. That the pipeline produces physically plausible building energy.** The 6,000-run Step-8 campaign lands every cell inside NRCan SHEU plausibility bands — EUI ≈ **SingleD 202–207 · MidRise 151–153 · OtherDwelling 126–127 · HighRise 115–116 kWh/m²** (correctly ordered by envelope-to-occupant ratio, colder zones higher). The Step-9 end-use calibration is tighter still: **all 48 cells pass the SHEU ±15% gate, max deviation 2.5%** (equipment) / 2.4% (lighting). **✅ PROVEN** (annual totals are phase-invariant — Chen et al. 2022; DR-S7). *Post-simulation per-end-use calibration of a bottom-up model to regional energy statistics is standard practice (Richardson et al. 2010; Armstrong et al. 2009; Osman et al. 2023; DR-S9).*
+
+**3. That occupancy has a measurable, cleanly-attributable effect on the load** — via the **paired within-household design**: the same 50 household IDs are run across all five cycle-years in one frozen archetype IDF under one TMY weather file, so building physics, climate and stock turnover difference out and only the predicted occupancy time-series varies. The cross-year Δ is therefore *purely* the occupancy effect, with tight CIs. **✅ PROVEN** (design-level; the *existence and direction* of the effect are robust — see Q1.note). *This matched-pair Monte-Carlo design is the recommended attribution control in stock-scale occupancy work: holding the physical archetype and weather fixed "eliminates the thermodynamic and environmental confounders that typically plague empirical field studies," and differencing the same synthesized cohorts removes the between-household Monte-Carlo sampling variance, sharply reducing the ensemble size needed for convergence (DR-S8; Chen et al. 2022).*
+
+**4. A longitudinal behavioural signal with a clear COVID structural break.** On the diary basis the weekday at-home rate runs flat pre-COVID (2005 → 2015), breaks **+5.2 pp at 2015→2022** (WD +6.6 pp), and **persists +2.2–3.9 pp to 2030**. A standardization check (AGEGRP×SEX×LFTAG) confirms the gentle pre-COVID drift is compositional (sample aging), not behavioural — the genuine shift is COVID. Annual electricity tracks this: **+1.4–2.6% at the COVID break, +0.6–1.2% to 2030.** **✅ PROVEN** (annual magnitudes; the at-home trajectory is a property of the calibrated input). *That occupant behaviour is non-stationary over decadal scales, and that COVID/WFH is a genuine structural break (not a transient) which shifts the residential daytime load centre, is now directly evidenced in the literature (Yin et al. 2025; Bielskus et al. 2021; Ramirez-Aguilar et al. 2023) — and forecasting 2030 off a pre-COVID baseline is exactly the gap they flag.* **The persistence is empirically grounded** (DR-S6): WFH settled at ~2× the pre-pandemic norm rather than reverting (Barrero, Bloom & Davis 2021; Guo et al. 2026), weekday smart-meter profiles took on a weekend shape with a weather-adjusted **+7.9% residential electricity** (Cicala 2023), and in-home-activity duration is projected to stay **+32% → ~+12% structural** residential demand (Khalil & Fatmi 2022). Our occupancy-channel-only deltas (+1.4–2.6%) are *conservative* against Cicala's all-cause +7.9% — expected, since our paired frame holds envelope/weather fixed and varies only the occupancy time-series.
+
+**5. That the predicted *activity* (not just presence) can shape end-use-resolved demand.** Step 9 maps the 14-category activity diary to equipment and lighting end-uses, anchored to SHEU annual totals; the activity-driven arm reproduces the national benchmark to ≤2.5% in every cell. **✅ PROVEN (magnitude).** *The "activity-to-appliance" crosswalk — occupants perform activities that trigger appliances, rather than consuming electricity directly — is the foundational principle of bottom-up load modelling (Richardson et al. 2010; Widén & Wäckelgård 2010; McKenna & Thomson 2016).*
+
+> **Q1.note — what is NOT yet proven.** Every "when" result — absolute peak hour, the equipment peak-shift, the diurnal phase, the "peak-flatten vs peak-shift" characterization — is **⚠ PENDING-RESIM**. The headline "equipment peak moves ~4 h earlier" is, on inspection, the injection bug itself (see Q4), not a behavioural finding.
+
+---
+
+### Q2 — Was our method correct?
+
+**Yes at the design level, with one real implementation bug now fixed and re-simulating, plus a short list of honest, documented limitations.**
+
+**The design is sound and defensible:**
+- **Paired Monte-Carlo over a frozen 2022 frame** — isolates the occupancy effect from physics/weather/stock; gives within-household deltas with tight CIs. This is the cleanest available attribution design, and the matched-pair-as-control logic is explicitly endorsed in the ensemble-simulation literature (DR-S8; Chen et al. 2022).
+- **True-Future-Test validation** (Step 6) — each fine-tuning phase is tested on the *next unseen cycle* (predict T+5 from ≤T), a far stronger generalization claim than within-cycle splits, and the right protocol given documented behavioural non-stationarity (Yin et al. 2025). This "train-to-wave-T, evaluate-on-T+1" design is the recognised gold standard for temporal validation (FDOT travel-demand backcasting practice) and is exactly the *Eval-Fix* protocol of the Wild-Time temporal-distribution-shift benchmark (DR-S6), which shows naïve models lose ~20% on future timestamps — quantifying precisely what our protocol guards against.
+- **Progressive fine-tuning as regularized continual learning** (Step 6) — initialising wave *T+1* from wave *T*'s converged weights is weight-inheritance continual learning; the dual-drift framing (Gama et al. 2014) is clean: progressive fine-tuning + recency-weighting tracks **real concept drift** *P(Y|X)* (behaviour changing), while injecting 2030 demographic scenarios warps the input space for **virtual drift** *P(X)* (population aging). Catastrophic-forgetting risk is the known failure mode, with EWC / variational continual learning as the standard guards (Kirkpatrick et al. 2017; DR-S6).
+- **Per-cycle calibration** — synthetic AT_HOME raked to each cycle's observed within-stratum marginals (Phase-8B), so 2005→2030 is one uniform procedure.
+- **SHEU anchoring + established load model** — the activity→appliance crosswalk, two-tier baseload/activity split, and single per-end-use calibration scalar adapt the CREST/Richardson lineage and the Canadian Armstrong (2009) and Osman et al. (2023) generators; we use our *predicted* activities in place of their stochastically-generated ones, and bound the annual total with a per-end-use SHEU scalar. Crucially, **driving a load model with an externally-predicted activity sequence (rather than an internal Markov chain) is itself a precedented, validated choice** (decoupled "predict-then-shape" frameworks: Muroni et al. 2019; Moreau 2023; WGAN-GP load models; DR-S9). This is framed as *adaptation*, not a novel load-modelling method (correct, defensible positioning).
+- **MDLM augmentation (Step 4)** — using a masked discrete-diffusion model to synthesize the unobserved day-types is defensible against the alternatives: first-order Markov chains suffer parameter explosion and are memoryless; autoregressive RNN/Transformers suffer exposure bias (teacher-forcing drift); VAEs blur peaks; GANs mode-collapse (Austin et al. 2021; Sahoo et al. 2024; Lou et al. 2024; Lamb et al. 2016; Dahlström et al. 2024; DR-S4).
+
+**Correctness caveats, each with its disposition:**
+
+| # | Issue | Disposition |
+|---|---|---|
+| 1 | **4-hour injection bug** in `07_aug_to_bem.py` (slot@04:00 → Hour 0 instead of Hour 4). | **Real coding error; caught by independent verification; fixed (`np.roll(...,4)`); re-simulating now.** Does *not* invalidate the design — annual energy and SHEU calibration are phase-invariant (which is *why* it slipped past every annual sanity check — a documented thermodynamic property, Chen et al. 2022; DR-S7). Only timing was corrupted. The required diary→clock circular shift and the precise 4-h failure mode are described in the temporal-representation literature (DR-S3; Aerts et al. 2014), so our diagnosis and fix follow established method. **Correct the record:** the earlier "the offset is benign / the diary convention explains the afternoon peak" hypotheses (investigation items R2/R3) were **rejected**; the lighting-definition fix (R1) and the gross/net fridge fix (R4) remain valid. |
+| 2 | **Metabolic channel un-calibrated** — `Metabolic_Rate` rides the raw (un-raked) J3 activity mix. | Documented limitation. Occupancy — the dominant internal-gain driver — *is* calibrated; metabolic is a secondary gain. The activity→MET mapping is grounded in ASHRAE 55 / ISO 7730 and the Compendium of Physical Activities (Herrmann et al. 2024; DR-S7); an optional activity-side rake is available if results prove sensitive. |
+| 3 | **Sat+Sun pooled → "Weekend"** (loses the calibrated 2.3 pp Sat/Sun split); **hourly (24) vs 30-min**. | Accepted — `integration.py` is 2-day-type and EnergyPlus runs hourly. 30-min is the documented "optimal compromise" resolution for annual runs that still need peak sensitivity, and a presence-priority downsample preserves transient occupancy (DR-S3). The finer data is preserved upstream if needed. |
+| 4 | **Single MTL Z6 envelope across all 6 climates; frozen 2022 stock; TMY (not historical/future) weather.** | **Deliberate isolation choices.** The paired per-HH Δ cancels the envelope outright (DR-S8); weather and stock are held fixed precisely so the cross-year signal is occupancy-only. State as scope, with `Buildings_CLG` Z7A as a cold-zone EUI sensitivity. (Geographic transferability of behavioural models is a known limit — DR-S8/S9 — which is *why* we difference within-HH rather than transfer across regions.) |
+| 5 | Earlier Step-8 "provenance gap" (the as-built 2022/2030 schedule CSV was superseded before archiving). | **Largely moot now** — the running re-sim regenerates all schedules from the corrected converter, so the as-built artefacts are replaced by a clean, reproducible set. |
+| 6 | **Statistical-matching CIA risk (Step 5).** The GSS↔Census linkage assumes occupant behaviour and dwelling attributes are conditionally independent given shared demographics. | Documented limitation, with literature framing. The Conditional Independence Assumption can bias joint behaviour–envelope relationships (Rässler 2002; D'Orazio et al. 2006); we mitigate by matching on a parsimonious, strongly-predictive demographic vector and by carrying the linkage probabilistically rather than as a hard assignment (DR-S5). Worth a one-paragraph acknowledgement in Limitations. |
+| 7 | **Survey mode shift across GSS cycles** (CATI → electronic questionnaire) is a potential measurement break in the pooled 2005–2022 series. | Acknowledge in Data/Limitations. Mode effects (social-desirability, satisficing, completeness) are a documented confound when pooling repeated cross-sections (DR-S2); our harmonization (Step 2) and per-cycle calibration absorb level differences, and the COVID break is far larger than plausible mode effects, but the caveat should be stated. |
+| 8 | **2030 uses a single COVID-persistence scenario (p=1).** | Honest limitation. The forecasting literature argues future-year occupancy should be a *bounded multi-scenario* output, because return-to-office mandates are a real countervailing force (OPM, Eurofound; DR-S6). Frame our p=1 as the **high-persistence bound** and note a **high-reversion** scenario (stricter RTO, lower WFH) as the natural sensitivity — ideally add it before submission, or at minimum state it as scope. Aligns with how StatCan/UN issue projections as scenario sets, not point forecasts. |
+
+**Verdict:** the method is correct in design and, after the re-sim, will be correct in execution. The bug episode is, if anything, evidence of validation rigor — it was found by an independent phase check that the annual-energy gates structurally could not catch (phase-invariance, Chen et al. 2022), and it is being repaired by a full re-run rather than a patch.
+
+---
+
+### Q3 — Can the approach model realistic occupancy impact: presence, co-presence, equipment demand?
+
+**Presence — YES, and this is the validated core.** The 30-min AT_HOME time-series, per-cycle calibrated to observed marginals, drives the EnergyPlus `People` object directly. This is the strongest, fully-proven part of the contribution and the basis of the longitudinal COVID-break story. **✅ PROVEN.** *Presence-driven internal gains via the `People` object, with metabolic heat from activity codes, is the standard occupant-to-BEM coupling (Yan et al. 2015; Hong et al. 2016; DR-S1/S7).*
+
+**Co-presence — PARTIAL, and worth framing carefully.** Co-presence is *predicted* (9 binary columns per slot — Alone / Spouse / Children / parents / otherInFAMs / otherHHs / friends / others / colleagues) and is *used* in Step 9 to scale shared-vs-personal devices: shared devices (cooking, dishwasher, washer, dryer, TV) take a sub-linear effective-occupancy factor **EFF(N)=1.0/1.4/1.7/1.9/2.0**; personal devices (PC, hair-dryer, personal DHW) scale linearly. *This shared/personal split is exactly the co-presence ("effective occupancy") mechanism established to stop bottom-up models double-counting shared-appliance use — shared devices activate sub-linearly with active occupancy, personal devices linearly (Richardson et al. 2010; Yamaguchi & Shimoda 2017; DR-S9).* **But** co-presence is *not* a direct BEM occupancy/metabolic input — the converter averages members to a per-household occupancy fraction, and the donor-draw day-completion makes the imputed day's within-household co-presence synthetic (harmless to energy, since BEM consumes only the fraction). **So co-presence informs equipment-load shaping but is a lighter, indirect contributor — claim it as a load-shaping refinement, not a primary BEM driver.**
+
+**Equipment demand — YES, via Step 9, with a magnitude/timing split.** The activity→end-use crosswalk + two-tier (baseload + activity) split + SHEU anchor delivers end-use-resolved equipment and lighting. **Magnitude is proven** (48/48 cells ≤2.5% of SHEU). A notable finding: the presence-only baseline *over-predicts* detached/attached plug load (SingleD/OtherDwelling baseline ≈ 6,550–6,870 kWh/HH vs SHEU 3,139–3,700), and the SHEU-anchored activity model corrects it to the national benchmark; apartments were already near SHEU (~2,000 kWh). *The two-tier decomposition — flat non-behavioural baseload (fridges, standby) separated from transient activity-driven loads — is the established bottom-up structure (McKenna & Thomson 2016; DR-S9).* The **timing/shape of the equipment curve is ⚠ PENDING-RESIM.**
+
+**Net:** the approach *can* model all three dimensions for current (2022) and future (2030) conditions. Rank them honestly in the paper: **presence = proven core; equipment magnitude = proven; co-presence and equipment timing = lighter / pending the corrected re-sim.**
+
+---
+
+### Q4 — What do the equipment-demand plots mean?
+
+Two plot families exist. The **Step-9 SI figures** (`Step9_docs/figures/` + `outputs_step9/`) are the activity-driven equipment/lighting set you asked about; the **Step-8 main figures** (`outputs_step8/figures/`) are the occupancy-only electricity load-shape set. Each is explained below with what it plots and its trust status.
+
+#### Step-9 equipment/lighting SI figures
+
+| Figure | What it plots (x / y) | What it demonstrates | Trust |
+|---|---|---|---|
+| `figS1_equip_calibration.png` | per-cell annual equipment kWh, baseline vs activity, against the SHEU ±15% band | The activity model hits the SHEU dwelling target (SingleD 3700, OtherDwelling 3139, MidRise 2166, HighRise 1922) and *corrects* the over-predicted detached-home baseline | **✅ PROVEN** (annual) |
+| `figS3_sheu_pct.png` | % deviation from SHEU, all 48 cell×year | The calibration gate: every cell within ±2.5% | **✅ PROVEN** |
+| `figS2_light_calibration.png` | per-cell annual lighting kWh vs SHEU band | Lighting anchored to SHEU (1262 SingleD / 1100 OtherDwelling / 736 apt); fixes the daylight-only IDF default that under-counts (~151 kWh) | **✅ PROVEN** (annual) |
+| `figS6_diurnal_equip.png` | hour-of-day (x) vs equipment load (y), 4 archetype panels, baseline vs activity, 2022 | *Shape* claim: activity concentrates plug load at meal/active hours vs the flat presence-toggle baseline. The **shape contrast is the intended story**, but its **phase is mis-clocked** | **⚠ PENDING-RESIM** |
+| `figS7_peak_shift.png` | baseline→activity equipment peak-hour, all 24 cells (lollipop) | Currently shows a uniform **−4 to −5 h** shift (baseline peak h17–18 → activity peak h13–14). **This shift *is* the injection bug:** 13+4 = 17, 14+4 = 18 — the corrected activity peak lands back in the evening, on top of the baseline. **Do not report the −4 h number.** | **⚠ PENDING-RESIM** |
+| `figS8_diurnal_light.png` | hour-of-day vs lighting load, 4 panels, 2022 | Activity-shaped lighting vs daylight-gated baseline; same phase caveat | **⚠ PENDING-RESIM** |
+| `figS5_differential.png` | 2022→2030 equipment differential, activity vs baseline | The novelty claim: behaviour *sharpens* the forecast differential (prototype: **+35.4% activity vs +0.4% baseline**). **Direction robust; magnitude is prototype-only + pre-fix** | **⚠ PENDING-RESIM** (direction ✅) |
+| `figS4_sleep_check.png` | overnight equipment floor per cell vs a 300 Wh threshold | 28/48 cells WARN (SingleD/OtherDwelling all; HighRise pass). The "sleep hours" are themselves mis-phased by the bug, so this flag's interpretation is pending; expected to clarify post-fix | **⚠ PENDING-RESIM** |
+
+> **The single most important reading of the equipment plots:** the activity model's *value* is the **shape** — it moves plug load off a generic flat presence-toggle and onto a behaviourally-resolved curve (cooking, laundry, screen-time, home-office), pinned to the SHEU annual total. The current figures show that shape, but shifted 4 h early. After the re-sim, expect the equipment peak to sit in the **evening (~h17–19)** and the activity-vs-baseline difference to read as a **sharper, behaviourally-timed peak with WFH midday fill**, not a 4-hour clock shift. *That coarse temporal resolution and homogeneous schedules systematically mute/mis-time residential peaks — and that finer, behaviour-resolved schedules are needed to recover them — is the documented rationale for this whole exercise (IBPSA 2025 peak-resolution study; Chen et al. 2022; DR-S3/S8).*
+
+#### Step-8 main electricity figures (for context)
+
+`fig01_occupancy_driver` (the driver — 2030 holds ~15 pp more weekday-midday at-home vs pre-COVID) and `fig09_longitudinal` (the COVID break) are the **robust storytelling pair**. `fig02_diurnal_electricity`, `fig04_paired_delta_by_hour`, `fig03_peak_hour_shift`, `fig07_delta_by_cz` carry the same **⚠ PENDING-RESIM** timing caveat; what survives independent of phase is the **separability** of the load-shape effect (midday-share and load-factor CIs exclude zero) and the within-HH Δ *direction*. *Load-shape/peak metrics — load factor, coincidence/diversity factor, peak-to-average ratio — are the standard grid-edge diagnostics this design is built to produce (DR-S8).*
+
+---
+
+## Part 2 — Publication skeleton
+
+**Working title (draft):** *From "how much" to "when": forecasting the residential energy load shape from a calibrated behavioural occupancy time-series (Canada, 2005–2030).*
+
+**Contribution:** A prior line of work by the authors (Iseri & Hachem-Vermette, *Longitudinal Analysis…*, under review at *Journal of Building Performance Simulation*; the companion eSim 2026 conference paper; and Iseri, Dino & Kalkan 2026, *Energy and Buildings*) established a GSS→Census→BEM pipeline that uses a **Conditional Variational Autoencoder (C-VAE)** to generate longitudinally-consistent Canadian occupancy schedules (2005–2025) and showed they shift annual heating/cooling and reshape diurnal/peak loads versus static defaults. This paper advances that line by (i) replacing the C-VAE with a **masked discrete-diffusion (MDLM) day-type augmenter** that preserves the sharp activity peaks a VAE smooths; (ii) adding a **SHEU-calibrated, activity-resolved bottom-up end-use load model** (presence + co-presence + equipment) in place of presence-filtered defaults; (iii) forecasting to **2030 through the COVID/WFH break** with a True-Future-Test; and (iv) using a **paired within-household Monte-Carlo design** (6,000 runs) to cleanly attribute the load-**shape** and peak-**timing** effects — moving the contribution from "how much" (annual demand + first-look timing) to a rigorously calibrated, end-use-resolved account of **"when."**
+
+> **Relationship to the authors' prior work — state this explicitly; reviewers will have those papers.** Do **not** claim novelty for "time-series GSS occupancy in Canadian BEM" — the prior work already did that. The defensible deltas are four: **generator** (C-VAE → MDLM; literature-justified because VAEs blur/average peaks — Sahoo et al. 2024; DR-S4); **loads** (presence-filtered defaults → activity-resolved, SHEU-calibrated end-uses, 48/48 ≤2.5%); **horizon/validation** (2025 + hindcast → 2030 + True-Future-Test *through* the structural break); and **attribution** (SSE-matched per-scenario ensembles → the *same* 50 HH paired across all five cycle-years). Two cross-checks worth citing: (a) the prior journal paper already places the **equipment peak in the evening (17:00–18:00)** via the classic converter — exactly the clock-correct position our corrected re-sim must restore (Part 4b), independent evidence that the −4 h is a converter bug, not behaviour; (b) the prior conference paper's "−4 h **peak-occupancy** timing" is a *descriptive* default-vs-GSS argmax difference (both curves peak overnight), **not** the injection artifact — keep the two distinct so neither paper's reader conflates them.
+
+### The novelty gap (Introduction backbone)
+
+The literature splits into two tracks that rarely meet: (a) **high-fidelity stochastic occupant models** that are single-building and retrospective, and (b) **stock-scale tools** that run at scale but on simplified, baseline-year schedules. No prior study combines time-series occupancy, an empirically-calibrated behavioural model, **forward forecasting through the COVID/WFH structural break**, activity/end-use resolution, stock-scale execution, and a load-shape/peak focus. The matrix below (adapted from DR-X1) positions the closest competitors against these six dimensions:
+
+| Study | Time-series occupancy | Calibrated behavioural model | Forecast to future year | Activity / end-use resolved | Stock-scale | Load-shape / peak focus |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| Chiou (2009) | ✓ | ✗ | ✗ | ✓ | ✗ | ✓ |
+| Widén & Wäckelgård (2010) | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ |
+| de Wilde (2014) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Reinhart & Cerezo Davila (2016) | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+| Fischer et al. (2020) | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ |
+| Bielskus et al. (2021) | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| Chen et al. (2022, ResStock) | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ |
+| Ramirez-Aguilar et al. (2023) | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Osman et al. (2023, Canada) | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ |
+| Yin, Yamaguchi et al. (2025) | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| **This study** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** |
+
+**Reading of the matrix:** the closest single competitor is Chen et al. (2022) — stock-scale, calibrated, activity-resolved — but **retrospective** (no forecast, no COVID break). Yin et al. (2025) is the closest on *forecasting* non-stationary behaviour but stops at statistical probability modelling — **no bottom-up simulation, no stock-scale load shapes**. The combination of *forecast-to-2030 through the WFH break* **and** *stock-scale paired BEM simulation of the resulting load shape* is the open cell this paper fills. (The matrix lists **external** competitors only; the authors' own prior C-VAE work would satisfy most columns, so its delta is better captured by the generator/calibration/attribution advances in *Relationship to prior work* above than by these six binary axes.)
+
+### Section plan
+
+| § | Section | Content | Source / status |
+|---|---|---|---|
+| Abstract | ~150 words | The proven claims (dataset, calibration, COVID break, load-shape effect); timing claims phrased to be filled post-re-sim | draft after re-sim |
+| 1 | Introduction | Performance gap (de Wilde 2014; Yan et al. 2015) → field still leans on static schedules → the six-dimension gap (matrix above) → **relationship to authors' prior C-VAE work** (the departure point) → novelty: MDLM generator + SHEU-calibrated activity loads + 2030 forecast + paired attribution | 00_ docs; DR-X1; prior-work §|
+| 2 | Data | GSS Time-Use 2005–2022 (64,061 diaries; note CATI→EQ mode shift, DR-S2); Census 2006–2021 (dwelling stock, Step-5 linkage); NRCan SHEU 2019 (end-use anchor) | Step 1–2 docs |
+| 3 | Methods | Condensed Steps 1–9 (see Part 3 lit-map): harmonize → augment (MDLM) → link → forecast (progressive FT + True-Future-Test) → convert (Step 7) → simulate (Step 8) → activity loads (Step 9) | 00_, 04_, 06_, 07_, 09_ docs |
+| 4 | Experimental design | 4 archetypes × 6 climate zones × 5 years × 50 paired HH = 6,000 E+ runs; frozen frame; held-vs-varied table; paired-MC attribution rationale (DR-S8) | 08_simulation.md |
+| 5 | Results | (a) driver — Fig 1; (b) longitudinal/COVID — Fig 9 ✅; (c) load shape + peak — Figs 2/3/4/7 ⚠; (d) end-use resolution — Step-9 SI figs (magnitude ✅, shape ⚠); (e) annual EUI plausibility ✅ | outputs_step8 / Step9 figs |
+| 6 | Discussion | Grid / demand-response relevance (peak shaping, WFH persistence); what activity resolution adds over presence-only; load-shape metrics (DR-S8) | — |
+| 7 | Limitations | The Q2 list: corrected-and-re-simulated injection bug (framed as validation rigor); metabolic un-calibration; frozen stock; TMY weather; 2-day-type pooling; single envelope; CIA in linkage (DR-S5); survey mode shift (DR-S2) | Q2 above |
+| 8 | Figure/table inventory | Each figure → the exact claim it supports → trust tag (the Q4 table is the seed) | this doc |
+| Refs | References | Part 5 below (verified) | Part 5 |
+
+**Framing rule for the draft:** write Results §5 so the *magnitude and longitudinal* claims (✅) carry the headline, and the *timing* claims (⚠) are written as templated sentences ("the equipment peak occurs at hour __; the activity arm sharpens/shifts the peak by __") to fill from the corrected re-sim. That way the manuscript spine is complete now and only the timing values drop in later.
+
+---
+
+## Part 3 — Per-step methodology justification & literature map
+
+This is the methodology double-check in tabular form: each pipeline step → the design choice → the precedent that legitimises it → the disposition/caveat. Use it to build Methods §3 and to pre-empt reviewer challenges. (Full citations in Part 5; theme reports in `writing/deepResearch/`.)
+
+| Step | Design choice (ours) | Key precedent(s) | What it justifies | Caveat to state |
+|---|---|---|---|---|
+| **1 — Data** | National time-use microdata (GSS-TUS) as the empirical occupancy basis, vs ASHRAE/NECB static schedules | Widén & Wäckelgård 2010; Aerts et al. 2014; Wilke et al. 2013; Chiou 2009; (CA) Armstrong 2009; Osman 2023; Ferreira 2024 | TUS-derived schedules correct the documented over/under-prediction of standard profiles; nationally representative | Single-diary-day per respondent (→ Step 4); no room-level resolution; self-report/rounding bias (DR-S1) |
+| **2 — Harmonize** | Ex-post output harmonization of 4 cross-sections to a common 14-category scheme + per-cycle weights | SDR framework; IPUMS/MTUS/HETUS crosswalk practice; Eurostat 2018 (DR-S2) | Pooling repeated cross-sections is standard; composite hierarchical activity coding is the accepted device | Mode shift CATI→EQ across cycles = measurement-break risk; age–period–cohort collinearity (DR-S2) |
+| **3 — Merge / tile** | 144×10-min HETUS tiling → 48×30-min, presence-priority majority-vote; **04:00→00:00 circular shift**; 1,440-min closure filter | Eurostat 2018; Aerts et al. 2014; IBPSA 2025 (resolution); DR-S3 | 30-min is the optimal accuracy/cost compromise; presence-priority preserves transient gains; the circular shift is **mandatory** | **This is the step where the 4-h bug lived**; skipping the rotation is the documented failure mode (DR-S3) |
+| **4 — Augment (Model 1)** | Conditional Transformer + masked discrete-diffusion (MDLM) to synthesize 2 unobserved day-types per respondent | Sahoo et al. 2024 (MDLM/SUBS); Austin et al. 2021 (D3PM); Lou et al. 2024 (SEDD); Lamb et al. 2016 (exposure bias); Dahlström et al. 2024 (DR-S4) | Diffusion avoids Markov parameter-explosion, AR exposure bias, VAE blur, GAN mode-collapse; bidirectional infilling fits the "complete the week" task | Validate with JSD + transition-matrix Frobenius distance; watch socio-demographic coherence & fragmentation (DR-S4) |
+| **5 — Link (Census)** | Probabilistic statistical matching of GSS archetypes → Census dwelling stock on shared demographics | Rässler 2002; D'Orazio et al. 2006; Beckman et al. 1996; Putra et al. 2021; (CA) Ferreira 2024 (DR-S5) | Matching independent surveys without a common key is well-founded; cluster→classify→aggregate is the standard 3-step workflow | **CIA**: forces behaviour⊥envelope given demographics → can bias joint loads; report classifier accuracy + carry probabilistically (DR-S5) |
+| **6 — Forecast (Model 2)** | Progressive fine-tuning (weight inheritance) + True-Future-Test (next-wave eval); backcast 2022, forecast 2030 with COVID-persistence + demographic scenario injection | Gama et al. 2014 (concept drift); Wild-Time / FDOT (next-wave validation); Kirkpatrick et al. 2017 (EWC); Barrero-Bloom-Davis 2021, Cicala 2023, Guo 2026 (WFH persistence); Yin 2025; Bielskus 2021 (DR-S6, DR-X1) | True-Future-Test = the gold-standard temporal check; progressive FT handles **real drift** *P(Y\|X)*, scenario injection handles **virtual drift** *P(X)*; COVID persistence is empirically grounded, not assumed | Single-scenario p=1 (should be bounded high-persistence vs high-reversion — caveat 8); catastrophic-forgetting risk (EWC-type guard); metabolic channel rides raw J3 |
+| **7 — Convert (BEM)** | Per-household `Schedule:Compact` for occupancy/metabolic/equip/light; activity→MET via ASHRAE 55/ISO 7730/Compendium | Hong et al. 2016 (obFMU); Yan et al. 2015/2017; Herrmann et al. 2024 (DR-S7) | Per-HH dynamic internal gains replace flat diversity factors; physiology-grounded MET mapping | The 4-h rotation must be applied here too (now fixed); metabolic un-calibrated |
+| **8 — Simulate** | Paired Monte-Carlo over one frozen archetype + TMY; 4×6×5×50 = 6,000 runs; load-shape/peak metrics | Chen et al. 2022 (ResStock); Reinhart & Cerezo Davila 2016; DR-S8 | Matched-pair differencing isolates the occupancy Δ and removes between-HH MC variance → small ensemble suffices | Annual energy is phase-invariant (control, not headline); single envelope across zones (paired Δ cancels) |
+| **9 — Activity loads** | Two-tier baseload+activity split; activity→end-use crosswalk; co-presence sub-linear (shared) / linear (personal); per-end-use SHEU scalar | Richardson 2010; McKenna & Thomson 2016 (CREST); Armstrong 2009; Osman 2023; decoupled predict-then-shape (Muroni 2019; Moreau 2023); DR-S9 | Activity-to-appliance crosswalk + effective-occupancy + survey calibration is the established bottom-up recipe; externally-predicted activities are a precedented input | Magnitude ✅ (SHEU 48/48); timing ⚠ pending re-sim; R1 (lighting=occupied&awake, no daylight gate) + R4 (gross 3700/net 3252 kWh) SI fixes |
+
+---
+
+## Part 4 — Open items: what must hold after the corrected re-sim
+
+This is the "be sure" checklist. When the corrected Step 8 (`953111`) and Step 9 (`952995→`) campaigns land, verify each — independently, from the new outputs, not from prior summaries:
+
+- [ ] **(a) Occupancy phase corrected** — weekday occupancy now peaks overnight (h0–5) and troughs midday, matching the classic converter (the `step9_occ_verify.py` gate).
+- [ ] **(b) Equipment & electricity peak back in the evening (~h17–19)** — the activity equipment peak moves from the buggy h13–14 to ~h17–18; `figS6/S7` and Step-8 `fig02/03/04` regenerate accordingly. **External anchor:** the authors' prior journal paper independently places the equipment peak at **17:00–18:00** (classic converter) — use it as the target the corrected re-sim must reproduce.
+- [ ] **(c) Corrected peak-shift / peak-shape** — replace the −4 h artifact with the true activity-vs-baseline relationship (expected: a sharper, behaviourally-timed evening peak + WFH midday fill, not a clock shift).
+- [ ] **(d) Phase-invariant control holds** — SHEU 48/48 still passes (≤2.5%) and EUI bands unchanged. *If these move materially, something beyond a pure phase roll changed — investigate before trusting the rest.*
+- [ ] **(e) Within-HH 2022→2030 Δ direction preserved** — the COVID-persistence load-shape story survives the re-clocking.
+- [ ] **(f) SI text fixes applied** — R1 (lighting = binary occupied-&-awake, **no** daylight gate) and R4 (gross 3700 / net 3252 kWh fridge accounting) folded into `si_appendix_step9.md`; the rejected R2/R3 "benign offset" language removed.
+- [ ] **(g) Step-8 §2 schedule-provenance limitation** — now superseded by the clean re-sim; update the limitation paragraph to reflect the regenerated set.
+
+**Sources behind every project number in this document:** `00_GSS_Occupancy_Pipeline*.md`, `07_aug_to_bem.py` (fix at 82-83, 104-109), `07_bemIntegrationGSS.md`, `08_simulation.md`, `09_activityDrivenLoads.md`; results `Step9_docs/cluster_run_results.csv`, `peak_hours.csv`, `peak_shift_summary.csv` (live = pre-fix; each has a `_BUGGY_20260608` preserved twin); figures `Step9_docs/figures/figS1–S8` + `outputs_step8/figures/fig01–fig10`; investigations `Step8_docs/08_validation_warnings_investigation.md`, `Step9_docs/investigation/step9_investigation.md`. Prototype-only numbers (e.g. +35.4%) are labelled as such and await full-grid + re-sim confirmation.
+
+---
+
+## Part 5 — References (verified)
+
+DOIs cross-checked 2026-06-09. **[web-verified]** = title/venue/DOI confirmed via web search this session (resolving conflicting DOIs/pages the deep-research tools produced). Unmarked entries are high-confidence from internally-consistent reports + domain knowledge; confirm them in your reference manager at typesetting. Theme reports that contain the fuller annotated bibliographies are in `writing/deepResearch/` and noted per group.
+
+**Prior work by the authors (self-citations — the departure point for this paper)**
+- Iseri, O. K., & Hachem-Vermette, C. (under review, 2026). *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials.* **Journal of Building Performance Simulation** (under review). — C-VAE + Cluster-Based Vector Momentum; six Montreal Neighbourhood-Unit typologies, Climate Zone 6A; GSS 2005–2022 + Census, 2025 synthetic; code factors +10% heating / −20% cooling.
+- Iseri, O. K., & Hachem-Vermette, C. (2026). *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residential Buildings (2005–2025).* **Proc. eSim 2026 (IBPSA-Canada).** — C-VAE; DOE ASHRAE 90.1 single-family prototype; Toronto 5A / Montreal 6A / Winnipeg 7; n=100 SSE-matched ensemble. *(Authorship per the journal companion; the supplied manuscript file was blinded.)*
+- Iseri, O. K., Dino, I. G., & Kalkan, S. (2026). Occupancy modeling using population statistics and machine learning for urban residential built environment. *Energy and Buildings*, 117155. https://doi.org/10.1016/j.enbuild.2026.117155 **[from the conference paper's own reference list]**
+
+**Occupancy from time-use surveys; occupant behaviour in BPS** *(DR-S1, DR-S7)*
+- de Wilde, P. (2014). The gap between predicted and measured energy performance of buildings: A framework for investigation. *Automation in Construction*, 41, 40–49. https://doi.org/10.1016/j.autcon.2014.02.009
+- Yan, D., O'Brien, W., Hong, T., Feng, X., Gunay, H. B., Tahmasebi, F., & Mahdavi, A. (2015). Occupant behavior modeling for building performance simulation: Current state and future challenges. *Energy and Buildings*, 107, 264–278. https://doi.org/10.1016/j.enbuild.2015.08.032 **[web-verified — pages 264–278]**
+- Hong, T., Sun, H., Chen, Y., Taylor-Lange, S. C., & Yan, D. (2016). An occupant behavior modeling tool for co-simulation. *Energy and Buildings*, 117, 272–281. https://doi.org/10.1016/j.enbuild.2015.06.015
+- Yan, D., Hong, T., Dong, B., Mahdavi, A., D'Oca, S., Gaetani, I., & Feng, X. (2017). IEA EBC Annex 66: Definition and simulation of occupant behavior in buildings. *Energy and Buildings*, 156, 258–270. https://doi.org/10.1016/j.enbuild.2017.09.084
+- O'Brien, W., Wagner, A., Schweiker, M., et al. (2020). Introducing IEA EBC Annex 79: Key challenges and opportunities in the field of occupant-centric building design and operation. *Building and Environment*, 178, 106738. https://doi.org/10.1016/j.buildenv.2020.106738 **[web-verified — vol 178, art 106738]**
+- Aerts, D., Minnen, J., Glorieux, I., Wouters, I., & Descamps, F. (2014). A method for the identification and modelling of realistic domestic occupancy sequences for building energy demand simulations and peer comparison. *Building and Environment*, 75, 67–78. https://doi.org/10.1016/j.buildenv.2014.01.021
+- Wilke, U., Haldi, F., Scartezzini, J.-L., & Robinson, D. (2013). A bottom-up stochastic model to predict building occupants' time-dependent activities. *Building and Environment*, 60, 254–264. https://doi.org/10.1016/j.buildenv.2012.10.021
+- Yamaguchi, Y., & Shimoda, Y. (2017). A stochastic model to predict occupants' activities at home for community-/urban-scale energy demand modelling. *Journal of Building Performance Simulation*, 10(5–6), 565–581. https://doi.org/10.1080/19401493.2017.1336255
+- Herrmann, S. D., Willis, E. A., Ainsworth, B. E., et al. (2024). 2024 Adult Compendium of Physical Activities: A third update of the energy costs of human activities. *Journal of Sport and Health Science*, 13(1), 6–12. https://doi.org/10.1016/j.jshs.2023.10.010
+- Eurostat (2020). *Harmonised European Time Use Surveys (HETUS) — 2018 Guidelines (Re-edition)*. Publications Office of the EU. https://doi.org/10.2785/160444
+
+**Temporal representation / schedule resolution & the 04:00 shift** *(DR-S3)*
+- "Are hourly building energy simulations underestimating peak demand? A case for finer time resolutions." (2025). *Proc. Building Simulation 2025 (IBPSA)*, paper bs2025_1947. https://publications.ibpsa.org/proceedings/bs/2025/papers/bs2025_1947.pdf
+
+**Deep generative / sequence models (Step 4 augmentation)** *(DR-S4)*
+- Austin, J., Johnson, D. D., Ho, J., Tarlow, D., & van den Berg, R. (2021). Structured Denoising Diffusion Models in Discrete State-Spaces. *NeurIPS 34*. https://doi.org/10.48550/arXiv.2107.03006
+- Sahoo, S. S., Arriola, M., Schiff, Y., Gokaslan, A., Marroquin, E., Chiu, J. T., Rush, A. M., & Kuleshov, V. (2024). Simple and Effective Masked Diffusion Language Models. *NeurIPS 2024*. https://doi.org/10.48550/arXiv.2406.07524
+- Lou, A., Meng, C., & Ermon, S. (2024). Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution (SEDD). *ICML 2024*, PMLR 235. https://doi.org/10.48550/arXiv.2310.16834
+- Lamb, A., Goyal, A., Zhang, Y., Zhang, S., Courville, A., & Bengio, Y. (2016). Professor Forcing: A New Algorithm for Training Recurrent Networks. *NeurIPS 29*. https://doi.org/10.48550/arXiv.1610.09038
+- Dahlström, J., Broström, T., & Widén, J. (2024). Upscaling stochastic Markov-chain occupancy models previously developed for BEM to UBEM. *Journal of Building Performance Simulation*, 17(3), 345–361. https://doi.org/10.1080/19401493.2024.2445134
+
+**Statistical matching / survey linkage (Step 5)** *(DR-S5)*
+- Rässler, S. (2002). *Statistical Matching: A Frequentist Theory, Practical Applications, and Alternative Bayesian Approaches.* Lecture Notes in Statistics 168, Springer. https://doi.org/10.1007/978-1-4613-0053-3
+- D'Orazio, M., Di Zio, M., & Scanu, M. (2006). *Statistical Matching: Theory and Practice.* Wiley. https://doi.org/10.1002/0470023554
+- Beckman, R. J., Baggerly, K. A., & McKay, M. D. (1996). Creating synthetic baseline populations. *Transportation Research Part A*, 30(6), 415–429. https://doi.org/10.1016/0965-8564(96)00004-3
+- Putra, H. C., Andrews, C., & Hong, T. (2021). Generating synthetic occupants for use in building performance simulation. *Journal of Building Performance Simulation*, 15(1), 121–136. https://doi.org/10.1080/19401493.2021.2000029
+
+**Survey harmonization across waves (Step 2)** *(DR-S2)* — see DR-S2 report for the SDR framework, IPUMS/MTUS crosswalks, and mode-effect (CATI→CAWI) adjustment methods; no single anchor DOI folded into the main text yet.
+
+**Forecasting, COVID/WFH structural break (Step 6) & novelty positioning** *(DR-X1)*
+- Reinhart, C. F., & Cerezo Davila, C. (2016). Urban building energy modeling – A review of a nascent field. *Building and Environment*, 97, 196–202. https://doi.org/10.1016/j.buildenv.2015.12.001 **[web-verified — vol 97, pp 196–202; confirm DOI suffix at typesetting]**
+- Bielskus, S., Motuzienė, V., Vilutienė, T., & Indriulionis, A. (2021). Occupancy forecasting models during different periods of the COVID-19 pandemic. *Sustainability*, 13(18), 10141. https://doi.org/10.3390/su131810141
+- Ramirez-Aguilar, E. A., Sailor, D. J., Wentz, E., et al. (2023). Potential impact of work from home jobs on residential energy bills: A case study in Phoenix, AZ, USA. *Journal of Building Engineering*, 68, 106133. https://doi.org/10.1016/j.jobe.2023.106133
+- Yin, R., Yamaguchi, Y., Zajch, A. M., Uchida, H., & Shimoda, Y. (2025). Long-term changes in time use and its impacts on residential energy demand. *Proc. Building Simulation 2025 (IBPSA), Brisbane*. https://doi.org/10.26868/25222708.2025.1514 **[web-verified — BS2025 Brisbane, Osaka Univ.]**
+
+**Temporal validation, continual learning & COVID-persistence (Step 6)** *(DR-S6)*
+- Gama, J., Žliobaitė, I., Bifet, A., Pechenizkiy, M., & Bouchachia, A. (2014). A survey on concept drift adaptation. *ACM Computing Surveys*, 46(4), 44. https://doi.org/10.1145/2523813
+- Kirkpatrick, J., Pascanu, R., Rabinowitz, N., et al. (2017). Overcoming catastrophic forgetting in neural networks (EWC). *PNAS*, 114(13), 3521–3526. https://doi.org/10.1073/pnas.1611835114
+- Barrero, J. M., Bloom, N., & Davis, S. J. (2021). Why Working From Home Will Stick. *NBER Working Paper 28731*. https://doi.org/10.3386/w28731
+- Cicala, S. (2023). JUE Insight: Powering work from home. *Journal of Urban Economics*, 133, 103474. https://doi.org/10.1016/j.jue.2022.103474
+- Yao, H., Choi, C., Cao, B., Lee, Y., Koh, P. W., & Finn, C. (2022). Wild-Time: A Benchmark of in-the-Wild Distribution Shift over Time. *NeurIPS 2022 Datasets & Benchmarks Track*; arXiv:2211.14238. https://doi.org/10.48550/arXiv.2211.14238 **[web-verified — corrects the report's erroneous "Wang et al."]**
+- Guo, N., Jiang, W., Pothuru, Y., & Yang, B. (2026). Mapping the Midweek Mountain: The New Geography of Hybrid Work. *arXiv:2603.18440*. https://doi.org/10.48550/arXiv.2603.18440 **[web-verified — preprint exists; 41B mobile-geolocation records, US metros]**
+- Khalil, M. A., & Fatmi, M. R. (2022). How residential energy consumption has changed due to COVID-19 pandemic? An agent-based model. *Sustainable Cities and Society*, 81, 103832. https://doi.org/10.1016/j.scs.2022.103832 **[web-verified — two authors, not "et al."]**
+- *Institutional projection sources for demographic scenario injection:* Statistics Canada population projections (2025–2075) technical reports & the Demosim microsimulation model; UN World Population Prospects 2024 methodology — cite as agency/institutional references.
+
+**Monte-Carlo ensembles, paired design, stock-scale (Step 8)** *(DR-S8)*
+- Chen, J., Adhikari, R., Wilson, E., Robertson, J., Fontanini, A., Polly, B., & Olawale, O. (2022). Stochastic simulation of occupant-driven energy use in a bottom-up residential building stock model. *Applied Energy*, 325, 119890. https://doi.org/10.1016/j.apenergy.2022.119890 **[web-verified — published journal version of arXiv:2111.01881]**
+- Yoshino, H., Hong, T., & Nord, N. (2017). IEA EBC Annex 53: Total energy use in buildings — Analysis and evaluation methods. *Energy and Buildings*, 152, 124–136. https://doi.org/10.1016/j.enbuild.2017.07.038
+
+**Activity-based bottom-up load modelling (Step 9)** *(DR-S9)*
+- Richardson, I., Thomson, M., Infield, D., & Clifford, C. (2010). Domestic electricity use: A high-resolution energy demand model. *Energy and Buildings*, 42(10), 1878–1887. https://doi.org/10.1016/j.enbuild.2010.05.023
+- Widén, J., & Wäckelgård, E. (2010). A high-resolution stochastic model of domestic activity patterns and electricity demand. *Applied Energy*, 87(6), 1880–1892. https://doi.org/10.1016/j.apenergy.2009.11.006 **[web-verified — corrects two garbled DOIs in the reports]**
+- Widén, J., Lundh, M., Vassileva, I., Dahlquist, E., Ellegård, K., & Wäckelgård, E. (2009). Constructing load profiles for household electricity and hot water from time-use data — Modelling approach and validation. *Energy and Buildings*, 41(7), 753–768. https://doi.org/10.1016/j.enbuild.2009.02.013
+- McKenna, E., & Thomson, M. (2016). High-resolution stochastic integrated thermal–electrical domestic demand model. *Applied Energy*, 165, 445–461. https://doi.org/10.1016/j.apenergy.2015.12.089
+- Armstrong, M. M., Swinton, M. C., Ribberink, H., Beausoleil-Morrison, I., & Millette, J. (2009). Synthetically derived profiles for representing occupant-driven electric loads in Canadian housing. *Journal of Building Performance Simulation*, 2(1), 15–30. https://doi.org/10.1080/19401490802706653
+- Osman, M., Ouf, M., Azar, E., & Dong, B. (2023). Stochastic bottom-up load profile generator for Canadian households' electricity demand. *Building and Environment*, 241, 110490. https://doi.org/10.1016/j.buildenv.2023.110490 **[web-verified — Building and Environment, June 2023]**
+- Saldanha, N., & Beausoleil-Morrison, I. (2012). Measured end-use electric load profiles for 12 Canadian houses at high temporal resolution. *Energy and Buildings*, 49, 519–530. https://doi.org/10.1016/j.enbuild.2012.02.013
+- Johnson, G., & Beausoleil-Morrison, I. (2017). Electrical-end-use data from 23 houses sampled each minute for simulating micro-generation systems. *Applied Thermal Engineering*, 114, 1449–1456. https://doi.org/10.1016/j.applthermaleng.2016.11.121
+- Ferreira, S., Gunay, B., Papineau, M., & Nojedehi, P. (2024). From time to energy use: shaping high-resolution residential Canadian appliance use models. *Proc. eSim 2024 (IBPSA-Canada), Edmonton*, paper esim2024_149. https://publications.ibpsa.org/conference/paper/?id=esim2024_149 **[web-verified]**
+- Chiou, Y. S. (2009). Deriving U.S. household energy consumption profiles from American Time Use Survey data — A bootstrap approach. *Proc. IBPSA Building Simulation 2009, Glasgow*, 151–158.
+- Fischer, D., Surmann, A., Biener, W., & Selinger-Lutz, O. (2020). From residential electric load profiles to flexibility profiles — A stochastic bottom-up approach (synPRO). *Energy and Buildings*, 224, 110133. https://doi.org/10.1016/j.enbuild.2020.110133
+
+> **DOIs / details still to spot-check at typesetting** (high-confidence but not web-verified this session): Reinhart & Cerezo Davila 2016 DOI suffix; Hong et al. 2016; Bielskus et al. 2021; Fischer et al. 2020; Putra et al. 2021; Herrmann et al. 2024; Chiou 2009 (conference, no DOI). **From DR-S6 — all three now web-verified (2026-06-09):** Wild-Time = **Yao et al. 2022** (report's "Wang et al." was wrong); Guo et al. 2026 (arXiv:2603.18440) confirmed to exist; Khalil & Fatmi 2022 = *Sustainable Cities and Society* 81:103832 (two authors). **Self-citations:** venues confirmed — journal companion is under review at *Journal of Building Performance Simulation*; conference companion is eSim 2026 (IBPSA-Canada); add final volume/page or paper-ID once each is in proof. The deep-research tools also mis-rendered some pages/DOIs (e.g., three different DOIs for Widén & Wäckelgård 2010, two page ranges for Yan et al. 2015, two volumes for O'Brien et al. 2020) — those are corrected above and should **not** be copied from the raw `deepResearch/` reports.
+
+---
+
+### Appendix — cross-reference to the deep-research reports
+
+The ten theme reviews in `writing/deepResearch/` map to pipeline steps as follows (DR-S6 was re-run and returned 2026-06-09). Each report carries its own fuller annotated bibliography — this document folds in only the load-bearing anchors.
+
+| Report file | Theme | Steps | Used for |
+|---|---|---|---|
+| `Time-Use Surveys for Building Occupancy.txt` | DR-S1 — TUS as occupancy basis | 1 | Q1, Part 3 Step 1 |
+| `Harmonizing Multi-Wave Survey Data.md` | DR-S2 — multi-wave harmonization + mode effects | 2 | Q2 caveat 7, Part 3 Step 2 |
+| `Occupancy Schedule Temporal Representation Research.txt` | DR-S3 — temporal resolution + 04:00 shift | 3 | The 4-h bug defense, Q2 caveat 1/3 |
+| `Deep Generative Models for Activity Sequences.txt` | DR-S4 — D3PM / MDLM / SEDD | 4 | Q2 (MDLM choice), Part 3 Step 4 |
+| `Statistical Matching Research for Surveys.txt` | DR-S5 — statistical matching | 5 | Q2 caveat 6 (CIA), Part 3 Step 5 |
+| `Forecasting Human Time-Use Behavior.txt` | DR-S6 — forecasting, continual learning, COVID persistence | 6 | Q1.4, Q2 (True-Future-Test, caveat 8), Part 3 Step 6 |
+| `Building Energy Research Gap Analysis.txt` | DR-X1 — novelty / gap matrix | all | The Part 2 gap matrix, Q1.4 (COVID) |
+| `Occupancy Data for Building Energy Models.txt` | DR-S7 — occupancy→BEM, phase-invariance, metabolic | 7 | Phase-invariance anchor, Q2 caveat 2 |
+| `Building Energy Simulation Research Design.txt` | DR-S8 — Monte-Carlo ensembles, paired design | 8 | Q1.3, Q2 (paired-MC), Part 3 Step 8 |
+| `Residential Load Modeling Literature Review.txt` | DR-S9 — activity-based bottom-up loads | 9 | Q3, Q1.5, Part 3 Step 9 |

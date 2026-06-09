@@ -1,6 +1,8 @@
 # Step 9 — Activity-Driven Equipment & Lighting Schedules (light version)
 ### Using the predicted hourly *activities* to shape plug-load & lighting demand, anchored to NRCan SHEU 2019
 
+> ⚠️ **UNDER REVISION — 4-hour schedule-injection bug found 2026-06-08.** `07_aug_to_bem.py` wrote the 4 AM-origin GSS diary slots straight to EnergyPlus `Hour` (slot @ 04:00 → Hour 0) instead of rotating to real clock (slot @ 04:00 → Hour 4). All occupancy / metabolic / equipment / lighting schedules were injected **4 h early** vs the weather. **The headline −4 h equipment peak-shift reported below is an artifact of this bug, not behaviour**, and the "sleep-hour" WARN is really morning activity. Bug fixed; **full cluster re-simulation in progress (initiated 2026-06-08)** — every timing / peak-hour result here is pending corrected re-runs. The SHEU annual calibration (48/48) is phase-invariant and stands. SI fixes from the investigation: **R1** (lighting = binary occupied-&-awake, no daylight gate) + **R4** (gross 3700 / net 3252) valid; **R2/R3** (offset-is-benign) rejected. Details: `Step9_docs/investigation/step9_investigation.md`.
+
 > **Status: APPROVED — supplementary analysis (SI/Appendix) in this 2nd-journal paper.** Decision by
 > user 2026-06-02. Both deep-research inputs are now **RESOLVED** (see *Resolved Inputs*; numbers folded
 > into §9.2–§9.5), and the 1-cell prototype **PASSED** (`Step9_docs/prototype/PROTOTYPE_VERDICT.md`: equipment &

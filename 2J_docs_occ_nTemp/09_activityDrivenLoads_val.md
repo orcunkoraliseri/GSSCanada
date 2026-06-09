@@ -1,5 +1,7 @@
 # Step 9 — Activity-Driven Equipment & Lighting: Validation
 
+> ⚠️ **UNDER REVISION — 4-hour schedule-injection bug found 2026-06-08.** `07_aug_to_bem.py` wrote the 4 AM-origin GSS diary slots straight to EnergyPlus `Hour` (slot @ 04:00 → Hour 0) instead of rotating to real clock (slot @ 04:00 → Hour 4). All schedules were injected **4 h early** vs the weather. **The −4 h equipment peak-shift validated below is an artifact of this bug, not behaviour**; the G3 "sleep-hour" WARN (28/48) is really morning activity (E+ h02–h05 = real 06:00–09:59). Bug fixed; **full cluster re-simulation in progress (initiated 2026-06-08).** The SHEU calibration gates (G2, 48/48) are phase-invariant and stand; the timing gates (G4 peak-shift) must be re-evaluated after re-sim. SI fixes: **R1** (lighting mechanism) + **R4** (gross/net) valid; **R2/R3** rejected. Details: `Step9_docs/investigation/step9_investigation.md`.
+
 ## Goal
 
 Validate the Step-9 activity-driven load campaign (the supplementary, end-use-resolved load-shape

@@ -2,6 +2,8 @@
 ### Time-Series Occupancy → EnergyPlus: the 2022 → 2030 residential energy shift
 #### GSS Occupancy Pipeline — Detailed Implementation Specification
 
+> ⚠️ **UNDER REVISION — 4-hour schedule-injection bug found 2026-06-08.** `07_aug_to_bem.py` wrote the 4 AM-origin GSS diary slots straight to EnergyPlus `Hour` (slot @ 04:00 → Hour 0) instead of rotating to real clock (slot @ 04:00 → Hour 4, as the classic `21CEN22GSS_occToBEM.py` did). Occupancy / metabolic / equipment / lighting were therefore all injected **4 h early** vs the EPW weather. Bug fixed (rotation restored in `07_aug_to_bem.py`); **full cluster re-simulation in progress (initiated 2026-06-08).** Annual EUI is largely phase-invariant, so the numbers below are expected to move little — but they were computed on mis-clocked occupancy and are being re-confirmed. Details: `Step9_docs/investigation/step9_investigation.md`.
+
 ---
 
 ## GOAL
