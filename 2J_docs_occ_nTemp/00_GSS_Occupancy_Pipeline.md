@@ -357,13 +357,15 @@ OUTPUT PER TARGET STRATUM
 
 ### Output Dataset Scale
 ```
-64,061 respondents × 3 DDAY_STRATA = ~192,000 synthetic diary days (all cycles)
+64,061 respondents × 3 DDAY_STRATA = ~192,183 synthetic diary days (all cycles)
 Each diary: 48 activity + 48 AT_HOME + 9×48 co-presence tokens (30-min resolution)
 Stratified by: DDAY_STRATA × demographic archetype × CYCLE_YEAR
 ```
 
+> **As-built outcome (Step 4 COMPLETE, 2026-06-10 note).** The production generator is **calibrated J3** — a hybrid conditional Transformer (shared 6-layer encoder + 6-layer autoregressive activity decoder + parallel non-autoregressive binary heads behind a detach barrier; d_model 384, 8 heads, ~29.25M params) + Phase-8B per-(cycle×stratum×slot) raking. J3 is the only model to pass all 4 hard gates (act_JS 0.0191 ≤ 0.05; AT_HOME RMS 4.57 pp ≤ 5.3; co-presence max ~2.03 pp ≤ 5.0) across 40+ trials; the MDLM/SEDD diffusion branch scored the best composite (0.5665) but failed 2/4 hard gates. Full record: `04_augmentationGSS.md`.
+
 ### Computing Requirements (Concordia HPC)
-- Architecture: 6-layer Transformer, 8 attention heads, d_model=256
+- Architecture (design estimate): 6-layer Transformer, 8 attention heads, d_model=256 — **as-built (J3): 6L encoder + 6L AR decoder + NAT heads, d_model=384, ~29.25M params**
 - **Sequence length: 96 tokens** (48 slots × 2 channels — 3× reduction vs. 144-slot design)
 - **Attention cost reduction: ~9× vs. 144-slot** (self-attention scales as O(L²))
 - Estimated training time: **~1.5–3 hours** on 1× A100/V100 GPU node (vs. ~4–8 hrs at 144 slots)
@@ -420,6 +422,8 @@ Output: Building profile distribution table per occupant archetype
 
 ### Output
 A lookup table linking each of the K occupant archetypes (from augmented GSS data) to a probability distribution over building characteristics from Census. This is passed to Step 6 for BEM archetype assignment.
+
+**As-built counts (Step 5 COMPLETE):** 286,537 matched Census individuals (match tiers: 44.94% exact / 21.39% core / 33.67% constrained; FailSafe 0%); 145,589 linked households; Sub-step 5H plausibility exclusion removes 1,082 households (HH mean AT_HOME < 0.30; 1,248 person rows) → final BEM frame **144,507 households** (data-verified 2026-06-10).
 
 ### Computational Cost Note
 This step uses classical ML only (clustering + classifier), not deep learning. Training time is negligible (minutes). The key challenge is cross-cycle Census harmonization (2006/2011/2016/2021 → unified schema), which mirrors the GSS harmonization in Step 2.
@@ -557,7 +561,7 @@ Full-data single-shot experiments (Phases 1–5) are too expensive for broad arc
 3. **Stage C** (100%, top 1–2, ~5–6h each) — hard gate evaluation
 4. **Stage D–E** (HPT on locked architecture) — loss weight tuning only after structure is decided
 
-This found MDLM+CC (composite 0.5665, 10.9% better than J3 baseline) in 3 days. Full details in `04_augmentationGSS.md` and `04_augmentationGSS_hpc.md` §9.
+This found MDLM+CC (composite 0.5665, 10.9% better than J3 baseline) in 3 days — though the composite proved misleading: at Stage-C hard-gate evaluation the diffusion branch failed 2/4 gates (AT_HOME RMS 7.81 pp; act_JS 0.053) and **J3 remained the sole 4/4-gate production model** (shipped as calibrated J3 = J3 + Phase-8B raking). Full details in `04_augmentationGSS.md` and `04_augmentationGSS_hpc.md` §9.
 
 **Critical HPT lesson (2026-05-25):** For diffusion models (MDLM/SEDD), HPT must target the model's intrinsic generative mechanics — denoise steps, masking schedule, encoder/refiner depth, mask ratio bounds — NOT loss weights (lambda_home, lambda_trans, lambda_marg). Loss weights are downstream consequences; the generative process parameters are the upstream causes of sequence quality. Stages D+E spent 10 trials tuning loss weights with zero improvement — all failed to beat MDLM_C.
 
@@ -667,6 +671,12 @@ Held constant per cell: IDF + TMY weather   |   Varied: sampled household + cycl
 **Prerequisites:** (P1) generate `BEM_Schedules_{2005,2010,2015}.csv`; (P2) acquire MidRise +
 Row/Attached archetype IDFs (or proxy); add 2030 to the runner's year list.
 
+> **As-built outcome (Step 8 COMPLETE & VALIDATED 2026-06-10).** Both prerequisites were met and the 6,000-run campaign executed, then **fully re-simulated** after a 4-hour schedule-injection bug was found 2026-06-08 in `07_aug_to_bem.py` (diary 04:00-origin slots written straight to E+ `Hour`; fixed via `np.roll(...,4)` on all four channels). Corrected v2 campaign `953111` + full re-validation `954135` + Sub-step 8G recovery (1/6,000 run, DX-coil SHR autosize→0.75) → **6,000/6,000 runs, 24 PASS / 0 WARN / 3 INFO / 0 FAIL**, §2 schedule round-trip EXACT all 5 years. v2 results: EUI SingleD 208 / MidRise 152 / OtherDwelling 128 / HighRise 117 kWh/m² (all within NRCan SHEU bands); mean peak hour 17.5–17.7 h all years; paired Δmidday_share +0.367 pp CI [+0.208, +0.526]; Δload_factor +0.0117 CI [+0.0085, +0.0150]. Outputs: `SimResults_Step8_corrected_v2/` (cluster) → `outputs_step8_v2/` (local). See `08_simulation.md`, `08_simulation_val.md`.
+
+## STEP 9 — ACTIVITY-DRIVEN END-USE LOADS (equipment + lighting)
+
+Maps the 14-category activity diary to equipment/lighting end-uses (two-tier baseload + activity split; co-presence effective-occupancy — shared devices sub-linear, personal devices linear), anchored to per-end-use NRCan SHEU annual totals. **Status (2026-06-10): magnitude PROVEN — SHEU calibration 48/48 cells ≤ 2.5% (equipment; lighting 2.4%); all timing/diurnal/peak-shift results PENDING Step-9's own re-simulation** (in flight). The previously-reported "−4 h equipment peak shift" was the Step-7 injection bug, not behaviour. Lighting as-built: binary occupied-&-awake × SHEU scale, **no daylight gate** (R1). See `09_activityDrivenLoads.md`.
+
 Full spec: `08_simulation.md`; validation plan: `08_simulation_val.md`.
 
 ---
@@ -689,10 +699,10 @@ Full spec: `08_simulation.md`; validation plan: `08_simulation_val.md`.
 ║  Convert to HETUS 144-slot wide format per respondent                   ║
 ║  Output: ~64,000 diary rows (1 of 3 DDAY_STRATA each)                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣
-║  STEP 4 — MODEL 1: CONDITIONAL TRANSFORMER (Augmentation)              ║
+║  STEP 4 — MODEL 1: CONDITIONAL TRANSFORMER (as-built: calibrated J3)   ║
 ║  Input:  1 observed diary + demographic conditioning                    ║
 ║  Output: 3 synthetic diaries per respondent (all DDAY_STRATA)          ║
-║  Scale:  ~192,000 diary-days across all cycles                          ║
+║  Scale:  ~192,183 diary-days across all cycles                          ║
 ║  HPC:    ~4–8 hrs on 1× GPU node (Concordia)                           ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 5 — CENSUS–GSS LINKAGE MODEL (Classical ML)                      ║
@@ -715,7 +725,8 @@ Full spec: `08_simulation.md`; validation plan: `08_simulation_val.md`.
 ║  Stratified by: archetype × climate zone × DDAY_STRATA                 ║
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║  STEP 8 - BEM SIMULATION  (this paper's results)                         ║
-║  Status: DESIGN (2026-06-01)                                             ║
+║  Status: COMPLETE & VALIDATED 2026-06-10 (corrected v2 campaign):         ║
+║          6000/6000 runs, 24 PASS / 0 WARN / 3 INFO / 0 FAIL               ║
 ║                                                                          ║
 ║  Novelty: time-series occupancy -> energy LOAD SHAPE & peak timing       ║
 ║    (conference / journal-1 used non-time-series occupancy -> annual kWh) ║
@@ -727,8 +738,15 @@ Full spec: `08_simulation.md`; validation plan: `08_simulation_val.md`.
 ║                                                                          ║
 ║  Outputs: 8760 load profiles + MC bands, peak-hour shift, load-shape     ║
 ║    metrics, stock-weighted ensemble; annual EUI = secondary              ║
+║  v2 results: EUI 208/152/128/117 kWh/m2 (SingleD/MidRise/OtherD/HighR);  ║
+║    peak hour 17.5-17.7h all years; Δmidday +0.367pp, ΔLF +0.0117         ║
 ║                                                                          ║
 ║  Engine: eSim_bem_utils/ (run_bem.py opt 4/10).  See 08_simulation.md    ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  STEP 9 - ACTIVITY-DRIVEN END-USE LOADS (equipment + lighting)           ║
+║  Status: magnitude PROVEN (SHEU 48/48 <=2.5%); timing PENDING re-sim     ║
+║    ("-4h equipment peak shift" was the Step-7 injection bug, fixed)      ║
+║  See 09_activityDrivenLoads.md                                           ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 ```
 

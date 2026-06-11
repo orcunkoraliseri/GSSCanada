@@ -1,0 +1,55 @@
+# 6 Discussion
+
+The findings of §5 are interpreted here against the gap they were designed to close: the discussion moves from the principal result and its position in the literature (§6.1–§6.2), through what end-use resolution does and does not add (§6.3), to the implications for grid operation and code practice (§6.4), and closes with a reflection on the validation discipline that the campaign's phase-alignment episode exemplifies (§6.5).
+
+---
+
+### 6.1 The Open Cell: Structural Change in Load Shape Without Change in Magnitude
+
+The six-dimension gap matrix of §1.2 (Table 1) identified an open cell that no prior study occupies: a calibrated behavioural occupancy forecast, carried through the COVID/work-from-home structural break to 2030, and run through paired stock-scale building-energy simulation that resolves the load *shape* rather than the annual total. The present results fill that cell with a specific and, in one respect, counter-intuitive finding. The behavioural break is large and persistent (§5.1), yet its annual-energy footprint is small (+0.6 to +2.6 %; Figure 6), while its effect on the diurnal load shape is structural — a filling of the midday valley and a measurable flattening of the load factor, with the evening peak hour held stationary at ~17:30 (Figures 7–10). The "how much" versus "when" distinction is therefore not rhetorical: in well-insulated Canadian housing the occupant redistributes demand far more than augments it, and a model that reports only annual energy is blind to the change that matters most for the grid. This positions the work directly against the two nearest competitors in the matrix. Chen et al. (2022) supply the closest methodological precedent — a paired stock-scale simulation design — but apply it retrospectively; Yin et al. (2025) forecast occupancy through the break but stop at statistical probability modelling with no bottom-up simulation. The contribution here is to join forecast-through-the-break occupancy to physical load-shape simulation in a single, calibrated chain, which is precisely the capability the open cell required.
+
+---
+
+### 6.2 Reconciling a Conservative Occupancy-Channel Delta with the Literature
+
+The annual-electricity increments reported in §5.2 (+1.4 to +2.6 % across the break, +0.6 to +1.2 % to 2030) are deliberately conservative, and the reason is attributional rather than physical. The paired frozen-frame design (§4.3) varies only the occupancy time-series; envelope, weather, appliance stock, and tariff structure are all held fixed, so the reported delta is the *pure occupancy channel* and nothing else. Cicala's (2023) weather-adjusted +7.9 % residential electricity increase across the pandemic is an all-cause figure that also absorbs equipment acquisition, thermostat behaviour, and dwelling-occupancy turnover; our occupancy-isolated value should sit well below it by construction, and it does. The behavioural premise itself, however, is fully consistent with the independent literature: the persistence of elevated at-home time aligns with the roughly twofold settling of work-from-home above its pre-pandemic norm reported by Barrero, Bloom and Davis (2021), and the magnitude of the in-home demand shift is of the same order as the ~+12 % structural increase in residential in-home energy demand documented for the Canadian context by Khalil and Fatmi (2022). The interpretation that survives this triangulation is that the occupant's principal effect is on the *timing* and intraday distribution of load — the quantity the present design is built to isolate — while the annual-magnitude channel, taken alone, is genuinely modest.
+
+---
+
+### 6.3 What Activity Resolution Contributes: Magnitude Correction, Not Peak Displacement
+
+The activity-resolved end-use layer (Step 9) earns its place on two grounds, and it is important to state both honestly. The first is annual magnitude: deriving equipment operation from modelled activity events rather than from occupant presence alone corrects a substantial over-prediction of plug load in the detached and attached archetypes (presence-only baseline ≈ 6,550–6,870 kWh against SHEU targets of 3,139–3,700 kWh) and brings every one of the 48 dwelling-by-year cells within ±2.7 % of its SHEU benchmark (maximum +2.33 % equipment, +2.63 % lighting), with the single-detached arm landing on the survey-based annual anchor and total energy conserved (Figure 11). The second is intraday shape: the activity arm produces a more pronounced morning rise and a sharper evening concentration than a fixed schedule. What it does *not* do is move the peak. Across all 24 archetype-by-city cells the building-level equipment peak-hour shift is a verified null — 0 ± 1 h (mean −0.12 h, σ = 0.39 h) — with both arms cresting in the evening (Figure 12). We frame this plainly rather than spinning it as a positive timing result: Step-9's contribution is end-use magnitude calibration plus behaviourally-timed shape, and the paper's timing headline remains Step-8's WFH midday fill at a stationary evening peak. Within this layer, co-presence enters honestly as a load-shaping refinement — shared devices scaled sub-linearly with effective occupancy and personal devices linearly (Richardson et al. 2010; Yamaguchi and Shimoda 2017) — not as an independent novelty claim. The earlier "~4 h earlier" equipment peak that appeared before correction was a schedule-injection artefact, now eliminated, and is not part of the result.
+
+---
+
+### 6.4 Implications for Grid Operations, Building Codes, and Schedule Standards
+
+A stationary evening peak combined with a filled midday valley is a benign annual-energy story but a consequential operational one. Read at the fleet level through the coincidence factor (Figure 10), a flatter intraday profile with an unmoved ~17:30 maximum reshapes the ramp into the evening peak and widens the midday window available for demand-response and distributed-generation absorption, without relieving the capacity constraint set by the evening coincident peak itself. The practical message for planners is therefore that work-from-home does not defuse the residential peak — it redistributes the surrounding hours around a peak that stays put. For code and standards practice the implication is more pointed. Static ASHRAE/NECB diversity schedules encode a pre-pandemic intraday shape that this study shows to be structurally outdated in its midday segment, and the prior journal in this line proposed an occupancy-driven code-calibration factor to address the *magnitude* error; the present results extend that proposal from magnitude to *shape*, arguing for schedule-shape recalibration synchronized with the national time-use survey cycle, so that the diversity profiles embedded in stock-scale modelling track the behavioural break rather than lag a decade behind it (Iseri and Hachem-Vermette, under review).
+
+---
+
+### 6.5 Phase Alignment as a Validation Discipline
+
+Two methodological observations close the discussion. First, the paired within-household Monte-Carlo design is what makes a small signal legible: differencing each household against itself across cycle-years cancels envelope, climate, and stock variation and removes between-household sampling noise, so that load-shape shifts whose confidence intervals exclude zero are recoverable at only N = 50 households per cell (Figure 8). Second, the four-hour schedule-injection phase error — discovered on 2026-06-08 and repaired by full re-simulation of both campaigns — is presented not as an embarrassment but as an illustration of validation rigour. The error originated in a well-documented community pitfall: the GSS diary day begins at 04:00, and HETUS-derived diaries must be circularly rotated onto the simulation clock (Aerts et al. 2014; Eurostat HETUS 2018). Crucially, it was invisible to every annual-energy gate, because annual totals are phase-invariant — a property that the paired stock-scale literature relies on but that here concealed an intraday timing fault (Chen et al. 2022). It was caught only by an independent phase check that examined the hour of peak directly, and was eliminated by re-running rather than patching. The episode underlines a transferable lesson for occupancy-driven simulation: annual-energy validation, however thorough, cannot certify a timing result, and a load-shape claim demands a dedicated phase-level check. The transferability limits of the broader design are taken up in §7.
+
+---
+
+## References (this chapter)
+
+*All citations below are reused from earlier chapters or the master reference list and carry no new numerical claims. They are listed for completeness and should be reconciled against the master bibliography before submission.*
+
+**Self-citation (the departure point)**
+
+- Iseri, O. and Hachem-Vermette, C. (under review) *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials.* Journal of Building Performance Simulation. — *(verify final citation form / status against master bibliography)*
+
+**Literature and methodological references** *(verify against master bibliography):*
+
+- Aerts, D., Minnen, J., Glorieux, I., Wouters, I. and Descamps, F. (2014) A method for the identification and modelling of realistic domestic occupancy sequences for building energy demand simulations and peer comparison. *Building and Environment*, 75, pp. 67–78.
+- Barrero, J.M., Bloom, N. and Davis, S.J. (2021) Why working from home will stick. *NBER Working Paper* 28731.
+- Chen, Y. et al. (2022) — paired stock-scale building energy simulation methodology. — *(verify full citation against master bibliography)*
+- Cicala, S. (2023) — pandemic-era residential electricity demand (weather-adjusted +7.9 %). — *(verify full citation against master bibliography)*
+- Eurostat (2018) *Harmonised European Time Use Surveys (HETUS) — 2018 Guidelines.* Luxembourg: Publications Office of the European Union.
+- Khalil, M. and Fatmi, M.R. (2022) — structural change in residential in-home energy demand. — *(verify full citation against master bibliography)*
+- Richardson, I., Thomson, M., Infield, D. and Clifford, C. (2010) Domestic electricity use: A high-resolution energy demand model. *Energy and Buildings*, 42(10), pp. 1878–1887.
+- Yamaguchi, Y. and Shimoda, Y. (2017) — bottom-up residential end-use load modelling. — *(verify full citation against master bibliography)*
+- Yin, ... et al. (2025) — occupancy forecasting through the structural break (statistical, no bottom-up simulation). — *(verify full citation and author list against master bibliography)*

@@ -76,6 +76,7 @@ Do not modify these files unless explicitly instructed:
 ## Speed HPC Cluster
 
 - Host: `o_iseri@speed.encs.concordia.ca`; login node `speed-submit2` is for job submissions only — do not run any computation, builds, or interactive workloads on it (admin warning: "this node is for job submissions only: no compute").
+- **HARD RULE (admin warning 2026-06-10, repeat offence = account suspension): NO bare `python`/`python3` on the login node — ever.** This includes "quick" verification one-liners (`python3 -c`, `python - <<EOF`, glob/line-count scans over result dirs). Every check that runs Python or touches many files MUST be wrapped in the scheduler: `srun -p ps --mem=4G -t 00:30:00 python3 -c '...'` (or an sbatch script). Allowed directly on the login node: `sbatch`, `squeue`, `sacct`, `scancel`, `cd`, `ls`, `scp`, `module load`, and single-file peeks (`tail`/`head`/`grep`/`wc -l` on ONE log or csv). Anything iterating over directories or importing pandas/numpy/torch/eppy → srun, no exceptions.
 - Always submit every cluster command as a single line (no line breaks), and when instructing the user, label each command explicitly as "locally" or "on the cluster".
 
 ## Research and BEM Guardrails

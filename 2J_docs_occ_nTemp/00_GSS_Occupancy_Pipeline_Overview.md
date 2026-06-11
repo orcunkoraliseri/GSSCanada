@@ -90,7 +90,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  +------------+------------+------------+------------+------------+         ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 4 — MODEL 1: CONDITIONAL TRANSFORMER (Augmentation)                  ║
-║  Status: PENDING (ready to start)                                           ║
+║  Status: COMPLETE — production model = calibrated J3 (sole 4/4-gate model)   ║
 ║                                                                              ║
 ║  Input: hetus_30min.csv (96 tokens per respondent: 48 activity + 48 home)  ║
 ║         + co-presence [9 cols x 48 slots] from merged_episodes.csv         ║
@@ -122,9 +122,16 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║                                                                              ║
 ║  Output: 64,061 x 3 = ~192,183 synthetic diary-days (all cycles)           ║
 ║  HPC cost: ~1.5-3 hrs on 1x GPU node (vs ~4-8 hrs at 144 slots)            ║
+║                                                                              ║
+║  AS-BUILT (J3): shared 6L encoder + 6L AR activity decoder + parallel       ║
+║    non-AR binary heads (detach barrier); d_model 384, ~29.25M params;       ║
+║    shipped = J3 + Phase-8B raking. MDLM/SEDD searched & REJECTED            ║
+║    (best composite, but 2/4 hard gates). Gates passed: act_JS 0.0191 /      ║
+║    AT_HOME RMS 4.57pp / co-presence max ~2.03pp (40+ trials)                ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 5 — CENSUS-GSS PROBABILISTIC LINKAGE (Classical ML)                  ║
-║  Status: PENDING                                                             ║
+║  Status: COMPLETE — 286,537 persons matched; 145,589 HH; 5H exclusion        ║
+║          removes 1,082 implausible HH -> 144,507-HH BEM frame                ║
 ║                                                                              ║
 ║  Stage A: K-means archetype clustering on GSS augmented data (K=20-50)     ║
 ║  Stage B: Random Forest -> assign Census records to GSS archetypes          ║
@@ -133,7 +140,8 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  Cost: negligible (classical ML, minutes on CPU)                            ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 6 — MODEL 2: PROGRESSIVE FINE-TUNING + FORECASTING (2030)            ║
-║  Status: PENDING                                                             ║
+║  Status: COMPLETE — backcast-2022 PASS (obs-only JS 0.036-0.046);            ║
+║          2030 cohort = 37,008 diary-rows (StatCan M1 scenario)               ║
 ║                                                                              ║
 ║  Anchors (confirmed x3 strata): 2005=57K, 2010=45K, 2015=52K, 2022=37K    ║
 ║  Total: ~192,183 augmented diary-days                                        ║
@@ -161,7 +169,10 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  HPC cost: ~8-13 hrs on 1x GPU node                                         ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 7 — BEM/UBEM INTEGRATION                                              ║
-║  Status: PENDING                                                             ║
+║  Status: COMPLETE — BEM_Schedules_{2022,2030}.csv, 144,507 HH each;          ║
+║          4-h injection bug (diary 04:00 origin -> E+ Hour) found             ║
+║          2026-06-08, FIXED (np.roll +4, all 4 channels); donor-draw          ║
+║          day-completion preserves the calibrated weekend marginal            ║
 ║                                                                              ║
 ║  Input: 2030 synthetic schedules at 30-min resolution (Step 6)             ║
 ║         + building profiles (Step 5)                                        ║
@@ -178,7 +189,8 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║    UBEM-ready: compatible with CityGML-linked building stock models         ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 8 - BEM SIMULATION  (this paper's results)                             ║
-║  Status: DESIGN (2026-06-01)                                                 ║
+║  Status: COMPLETE & VALIDATED 2026-06-10 (corrected v2 campaign 953111 +     ║
+║          reval 954135 + 8G): 6000/6000, 24 PASS / 0 WARN / 3 INFO / 0 FAIL   ║
 ║                                                                              ║
 ║  Novelty: time-series occupancy -> energy LOAD SHAPE & peak timing           ║
 ║    (conference / journal-1 used non-time-series occupancy -> annual kWh)     ║
@@ -190,8 +202,17 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║                                                                              ║
 ║  Outputs: 8760 load profiles + MC bands, peak-hour shift, load-shape         ║
 ║    metrics, stock-weighted ensemble; annual EUI = secondary                  ║
+║  v2 results: EUI 208/152/128/117 kWh/m2 (SingleD/MidRise/OtherD/HighRise);   ║
+║    peak hour 17.5-17.7h all years; Δmidday +0.367pp, Δload_factor +0.0117    ║
 ║                                                                              ║
 ║  Engine: eSim_bem_utils/ (run_bem.py opt 4/10).  See 08_simulation.md        ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  STEP 9 - ACTIVITY-DRIVEN END-USE LOADS (equipment + lighting)               ║
+║  Status: magnitude PROVEN — SHEU calibration 48/48 cells <=2.5%;             ║
+║          ALL timing/diurnal/peak-shift results PENDING Step-9 re-sim         ║
+║          ("-4h equipment peak shift" was the Step-7 injection bug)           ║
+║  Lighting as-built: binary occupied-&-awake x SHEU scale (NO daylight gate)  ║
+║  See 09_activityDrivenLoads.md                                               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -218,7 +239,7 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | DDAY_STRATA = 3 categories (Step 3) | SURVMNTH confirmed NaN for 2005/2010. Cross-cycle temporal denominator is Weekday/Saturday/Sunday |
 | SEASON dropped (Step 3) | Seasonal JS divergence <0.001 across all activity pairs; AT_HOME lift <2 pp on weekdays — sub-noise-floor signal (see docs_debug/02_W3_season_lift.md) |
 | 2022 AT_HOME = 70.6% vs ~63% baseline (Step 2) | COVID-19 behavioral shift confirmed; DRIFT_MATRIX_1522 documents this explicitly |
-| Progressive funnel for architecture search (Step 4) | Sample-first (2%→20%→100%) multi-architecture sweep before HPT. Full-data single-shot experiments are too expensive for broad exploration — 5 failed phases proved this. Funnel found MDLM+CC (composite 0.5665, 10.9% better than J3) in 3 days vs 2 weeks of prior failures. See `04_augmentationGSS.md` and `04_augmentationGSS_hpc.md` §9 for full methodology. |
+| Progressive funnel for architecture search (Step 4) | Sample-first (2%→20%→100%) multi-architecture sweep before HPT. Full-data single-shot experiments are too expensive for broad exploration — 5 failed phases proved this. Funnel found MDLM+CC (composite 0.5665, 10.9% better than J3) in 3 days vs 2 weeks of prior failures — but the composite misled: MDLM failed 2/4 hard gates at Stage C, and **J3 remained the sole 4/4-gate production model** (shipped as calibrated J3 = J3 + Phase-8B raking). See `04_augmentationGSS.md` and `04_augmentationGSS_hpc.md` §9 for full methodology. |
 | HPT must target diffusion mechanics, not loss weights (Step 4) | For MDLM/SEDD, the correct HPT variables are denoise steps, masking schedule, encoder depth, and mask ratio bounds — NOT loss weights (lambda_home/trans/marg). Stages D+E: 10 full-data trials tuning loss weights all failed. Loss weights are downstream consequences; generative process parameters are upstream causes. |
 | Sample-based HPT (Step 4) | HPT should use 10% stratified sample (~40 min/trial) with a same-sample control baseline, promoting only winners to full data. Avoids committing 50+ GPU-hours to HPT stages that may produce no improvement. |
 | Low training loss ≠ good generation quality (Step 4) | The model practiced only with cheat sheets, so it scores perfectly on homework but fails the real exam. Training loss uses teacher forcing (correct history); inference uses own predictions — mistakes snowball. H_Time cop_loss=0.062 (best) but COP max gap=22.86 pp at inference. Never select by training loss alone — always run diagnostic gates. |

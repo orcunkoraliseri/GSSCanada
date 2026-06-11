@@ -50,8 +50,8 @@ asleep.
 For each 30-minute slot, each present household member's activity contributes a deterministic weight
 to the relevant activity-driven end uses. Table S4.1 gives the weight matrix actually used. Activities
 performed away from home (Purchasing, Community/volunteer, Travel) and Sleep contribute no active
-load (baseload only). Lighting carries a weight of 1.0 in every active at-home state and is then
-gated by daylight (§S4.6).
+load (baseload only). Lighting carries a weight of 1.0 in every active at-home state (see §S4.6
+for the lighting method).
 
 **Table S4.1 — Activity → end-use weight matrix (per active at-home member)**
 
@@ -125,13 +125,16 @@ splits are therefore **model-grade estimates**, not published values (see S6).
 
 ### S4.6 Lighting
 
-Lighting is modelled as `active_occupancy(t) × daylight_gate(t)`, scaled to the SHEU lighting total
-for the dwelling type. The daylight gate is the same one used in the baseline engine; the activity
-extension adds the active-occupancy shape and the SHEU scaling, and is reconciled with the EnergyPlus
-`Daylighting:Controls` so the daylight response is not double-counted. The archetype IDF default
-(daylight-gated only, not occupancy-shaped) substantially under-counts lighting — e.g. ≈151 kWh/yr
-for a single-detached Montreal dwelling against the 1,262 kWh/yr SHEU anchor — confirming that the
-SHEU scaling is essential rather than cosmetic.
+Lighting is modelled as a binary **occupied-AND-awake** indicator: a dwelling slot is lit (fraction
+= 1.0) whenever at least one household member is present at home and performing any activity other
+than Sleep; otherwise the slot is unlit (fraction = 0.0). This indicator is then scaled to the SHEU
+lighting total for the dwelling type via a single calibration scalar (§S4.5). There is **no daylight
+gating** in the shipped code (`activity_loads.py`): the activity extension bypasses the archetype's
+`Daylighting:Controls` by injecting an explicit fractional schedule on a dedicated `Lights` object,
+so no daylight correction is needed or applied. The archetype IDF default (daylight-gated only, not
+occupancy-shaped) substantially under-counts lighting — e.g. ≈151 kWh/yr for a single-detached
+Montreal dwelling against the 1,262 kWh/yr SHEU anchor — confirming that the SHEU scaling is
+essential rather than cosmetic.
 
 ### S4.7 Injection into EnergyPlus
 
@@ -165,9 +168,10 @@ The method was validated on a full factorial grid: **4 archetypes × 6 climate z
 Kelowna 5B, Vancouver 5C, Montreal 6A, Calgary 6B, Winnipeg 7A) × **n = 50 households per cell**
 (seed 42, the same sample as the primary simulations, for a paired comparison) × **2 years** (2022
 retrospective, 2030 projection) × **2 arms** (presence-only baseline, activity-driven) = **4,800
-paired EnergyPlus runs**. 4,790 completed; 8 runs were excluded from the diurnal analysis (7 high-rise
-apartment-zone warm-up oscillations and 1 mid-rise HVAC non-convergence, ≤0.2 % of the grid), and
-every cell-year-arm bucket retains n ≥ 48.
+paired EnergyPlus runs**. 4,795 runs produced hourly meter files (5 missing = 0.1% of the grid:
+MidRise\_Toronto\_5A/baseline/2022, MidRise\_Kelowna\_5B/activity/2022, MidRise\_Vancouver\_5C/baseline/2022,
+MidRise\_Montreal\_6A/activity/2030, HighRise\_Winnipeg\_7A/baseline/2022 — all persistent warm-up
+oscillation failures unresolved at 120-day limit); every reported cell-year-arm bucket retains n ≥ 49.
 
 For each of the 48 cell × year combinations, two annual SHEU gates (±15 %, one each for equipment and
 lighting) were evaluated on the activity arm.
@@ -176,17 +180,17 @@ lighting) were evaluated on the activity arm.
 
 | Metric | Result |
 |---|---|
-| Equipment SHEU ±15 % | **48/48 PASS**; max \|deviation\| 2.5 % (MidRise Toronto 2030, under) |
-| Lighting SHEU ±15 % | **48/48 PASS**; max \|deviation\| +2.3 % (HighRise Toronto 2030) |
-| Combined | all 48 within ±2.6 %, comfortably inside the tighter ±10 % design aspiration |
-| Sleep-hour floor (mean equip. Wh, 02:00–05:00) | elevated (>300 Wh) in 28/48 cell-years (all SingleD + all OtherDwelling + 4 MidRise-2022 cells) — the expected refrigerator/standby baseload, **not** a calibration error |
-| Household pairing (n consistent across arms) | 24/24 cells balanced |
+| Equipment SHEU ±15 % | **48/48 PASS**; max \|deviation\| 2.33 % (MidRise\_Toronto\_5A 2022, over) |
+| Lighting SHEU ±15 % | **48/48 PASS**; max \|deviation\| 2.63 % (MidRise\_Toronto\_5A 2022, over) |
+| Combined | all 48 within ±2.7 %, comfortably inside the tighter ±10 % design aspiration |
+| Sleep-hour floor (mean equip. Wh, 02:00–05:00) | elevated (>300 Wh) in 12/48 cell-years (all 12 OtherDwelling cells, both years; 426–505 Wh building-total) — the expected multi-unit refrigerator sum at the building meter, **not** a calibration error |
+| Household pairing (n consistent across arms) | 24/24 cells balanced (5 buckets at n = 49) |
 
 The calibration is numerically stable across climate zones and sample draws (deviation does not vary
-systematically with climate zone). The elevated sleep-hour floor in single-detached and attached
-dwellings reflects the retained refrigerator baseload and, for attached dwellings, the seven
-building fridges summing at the building meter; the paired Δ isolates the activity-driven component
-against the same baseload.
+systematically with climate zone). The elevated sleep-hour floor in attached dwellings (OtherDwelling
+cells only, 426–505 Wh building-total) reflects the seven building refrigerators summing at the
+building meter; the paired Δ isolates the activity-driven component against the same baseload.
+SingleD and apartment cells fall below the 300 Wh advisory threshold and are PASS.
 
 **Supplementary figures (calibration).**
 
@@ -199,7 +203,9 @@ against the same baseload.
 - **Fig S3** — SHEU gate deviation (%) for all 48 cell-years, equipment and lighting; all within the
   ±15 % gate and under ±3 %.
 - **Fig S4** — Sleep-hour mean equipment load (Wh, 02:00–05:00) per cell; the 300 Wh advisory
-  threshold and the physically expected baseload for each archetype.
+  threshold and the physically expected baseload for each archetype. WARN cells are all
+  OtherDwelling (12/48), consistent with the seven-unit fridge sum at the building meter
+  (426–505 Wh); all other cells PASS.
 - **Fig S5** — 2022→2030 equipment differential: activity vs baseline trend, with the activity-minus-
   baseline sharpness as markers.
 
@@ -209,10 +215,14 @@ against the same baseload.
 
 ### S5.1 Motivation
 
-Annual SHEU totals confirm that the activity-load model is well-calibrated (§S4.8) but mask the
-within-day temporal redistribution, which is the primary contribution of the activity-driven
-approach. This section characterises the diurnal load shape and the peak-hour shift across the full
-24-cell grid, for both equipment and lighting.
+Annual SHEU totals confirm that the activity-load model is well-calibrated within ±2.7 % across all
+48 cell-years (§S4.8) but mask the within-day load structure, which is the primary contribution of
+the activity-driven approach. This section characterises the diurnal load shape and the building-level
+peak hour across the full 24-cell grid, for both equipment and lighting. The corrected campaign
+(re-run after fixing a 4-hour schedule-injection offset present in an earlier analysis) shows **no
+meaningful building-level peak displacement**: both baseline and activity arms peak in the evening,
+and the activity arm's contribution is a behaviourally-structured intraday reshaping at an unchanged
+peak hour.
 
 ### S5.2 Metric definitions
 
@@ -225,22 +235,24 @@ approach. This section characterises the diurnal load shape and the peak-hour sh
 
 ### S5.3 Full-grid results
 
-The building-level **equipment** peak shifts **−4 h** essentially uniformly across all 24 cells:
-baseline equipment peaks at h17–18 (late afternoon/evening); the activity arm peaks at h13–14 (early
-afternoon, post-lunch cooking and appliance use). The mean shift is −4.1 h (σ = 0.4 h in 2022, 0.3 h
-in 2030; range −3 to −5 h). The **lighting** peak shifts **−2 to −5 h**: baseline lighting peaks at
-h19–20 (evening), the activity arm at h14–17 (a broad daytime profile consistent with screen and
-task-lighting activity in the diaries).
+The building-level **equipment** peak hour is **h17–18** in both the baseline and activity arms
+across all 24 cells (both years). The activity-minus-baseline peak shift is **0 ± 1 h** (mean
+−0.12 h, σ = 0.44 h in 2022, 0.33 h in 2030; range −1 to +1 h). There is no statistically
+meaningful displacement of the equipment peak: activity-driven schedule substitution reshapes the
+intraday load profile but does not move the peak hour. The **lighting** peak hour in the activity
+arm spans h18–21 (compared to h19–20 for the baseline); the light_bldg_shift is also 0 ± 1 h
+(mean +0.48 h). Both arms peak in the evening across all archetypes and climate zones.
 
-The shift is essentially identical in 2022 and 2030 (per-cell peak hours are unchanged between the
-two years in the great majority of cells), which confirms that the temporal redistribution is driven
-by the activity model itself rather than by the year-specific synthetic diary mix.
+The peak-hour pattern is essentially identical in 2022 and 2030 (per-cell shifts are consistent
+between the two years), confirming that the null result is driven by the activity model structure
+rather than by the year-specific synthetic diary mix.
 
-A direct baseline-vs-activity comparison for single-detached dwellings (**Fig S9**) makes the dual
-effect explicit: the default presence-gated IDF equipment averages ≈6,640 kWh/yr (six-city mean,
-2022) and peaks in the evening (h18), whereas the activity arm lands on the SHEU anchor (≈3,700
-kWh/yr) **and** peaks in the early afternoon (h14). The method thus corrects both the magnitude (the
-default over-states single-detached equipment by ≈80 %) and the timing.
+A direct baseline-vs-activity comparison for single-detached dwellings (**Fig S9**) shows that the
+default presence-gated IDF equipment averages ≈6,640 kWh/yr (six-city mean, 2022) and peaks in
+the evening (h18), whereas the activity arm lands on the SHEU net anchor (3,252 kWh/yr activity-
+driven, injected target) and also peaks at h17–18. The method therefore corrects the magnitude (the
+default over-states single-detached activity-driven equipment substantially) and restructures the
+intraday shape, but does not displace the building-level peak hour.
 
 ### S5.4 Meter notes and sanity check
 
@@ -256,10 +268,10 @@ building and zone peak hours match exactly for both equipment and lighting, conf
 implementation.
 
 **Note on the prototype.** An early single-cell prototype (n = 5) reported an activity equipment peak
-at h7. The full-grid result for the same cell (n = 50) peaks at h13–14: at n = 5 one or two early-
-breakfast households dominate the mean, whereas at n = 50 the distribution averages to the post-lunch
-peak. The direction (earlier than the evening baseline) is consistent; the prototype h7 value should
-not be reported as the representative aggregate.
+at h7. The full-grid corrected result for the same cell (n = 50) peaks at h17–18: at n = 5 one or
+two early-breakfast households dominated the mean, whereas at n = 50 the distribution averages to
+the typical evening peak. The prototype h7 value should not be reported as a representative
+aggregate result.
 
 ### S5.5 Per-cell peak-hour shift
 
@@ -267,85 +279,88 @@ not be reported as the representative aggregate.
 
 | Cell | equip_bldg (h) | light_bldg (h) | BL equip peak | AC equip peak | BL light peak | AC light peak |
 |---|---|---|---|---|---|---|
-| HighRise__Calgary_6B | −4 | −5 | h17 | h13 | h19 | h14 |
-| HighRise__Kelowna_5B | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Montreal_6A | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Toronto_5A | −4 | −4 | h17 | h13 | h19 | h15 |
-| HighRise__Vancouver_5C | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Winnipeg_7A | −4 | −4 | h17 | h13 | h19 | h15 |
-| MidRise__Calgary_6B | −4 | −5 | h17 | h13 | h19 | h14 |
-| MidRise__Kelowna_5B | −4 | −4 | h17 | h13 | h19 | h15 |
-| MidRise__Montreal_6A | −4 | −4 | h17 | h13 | h19 | h15 |
-| MidRise__Toronto_5A | −4 | −4 | h17 | h13 | h19 | h15 |
-| MidRise__Vancouver_5C | −4 | −5 | h17 | h13 | h19 | h14 |
-| MidRise__Winnipeg_7A | −3 | −4 | h17 | h14 | h19 | h15 |
-| OtherDwelling__Calgary_6B | −4 | −2 | h17 | h13 | h19 | h17 |
-| OtherDwelling__Kelowna_5B | −4 | −3 | h18 | h14 | h20 | h17 |
-| OtherDwelling__Montreal_6A | −4 | −3 | h18 | h14 | h19 | h16 |
-| OtherDwelling__Toronto_5A | −4 | −3 | h18 | h14 | h20 | h17 |
-| OtherDwelling__Vancouver_5C | −4 | −3 | h18 | h14 | h19 | h16 |
-| OtherDwelling__Winnipeg_7A | −5 | −5 | h18 | h13 | h20 | h15 |
-| SingleD__Calgary_6B | −5 | −5 | h18 | h13 | h20 | h15 |
-| SingleD__Kelowna_5B | −4 | −3 | h18 | h14 | h20 | h17 |
-| SingleD__Montreal_6A | −4 | −3 | h18 | h14 | h19 | h16 |
-| SingleD__Toronto_5A | −4 | −3 | h18 | h14 | h20 | h17 |
-| SingleD__Vancouver_5C | −4 | −4 | h18 | h14 | h19 | h15 |
-| SingleD__Winnipeg_7A | −5 | −3 | h18 | h13 | h20 | h17 |
+| HighRise__Calgary_6B | 0 | −1 | h17 | h17 | h19 | h18 |
+| HighRise__Kelowna_5B | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Montreal_6A | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Toronto_5A | 0 | 0 | h17 | h17 | h19 | h19 |
+| HighRise__Vancouver_5C | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Winnipeg_7A | 0 | 0 | h17 | h17 | h19 | h19 |
+| MidRise__Calgary_6B | 0 | −1 | h17 | h17 | h19 | h18 |
+| MidRise__Kelowna_5B | 0 | 0 | h17 | h17 | h19 | h19 |
+| MidRise__Montreal_6A | 0 | 0 | h17 | h17 | h19 | h19 |
+| MidRise__Toronto_5A | 0 | 0 | h17 | h17 | h19 | h19 |
+| MidRise__Vancouver_5C | 0 | −1 | h17 | h17 | h19 | h18 |
+| MidRise__Winnipeg_7A | +1 | 0 | h17 | h18 | h19 | h19 |
+| OtherDwelling__Calgary_6B | −1 | +1 | h18 | h17 | h20 | h21 |
+| OtherDwelling__Kelowna_5B | 0 | +1 | h18 | h18 | h20 | h21 |
+| OtherDwelling__Montreal_6A | 0 | 0 | h18 | h18 | h20 | h20 |
+| OtherDwelling__Toronto_5A | 0 | +1 | h18 | h18 | h20 | h21 |
+| OtherDwelling__Vancouver_5C | 0 | 0 | h18 | h18 | h20 | h20 |
+| OtherDwelling__Winnipeg_7A | −1 | −1 | h18 | h17 | h20 | h19 |
+| SingleD__Calgary_6B | −1 | 0 | h18 | h17 | h19 | h19 |
+| SingleD__Kelowna_5B | 0 | +1 | h18 | h18 | h20 | h21 |
+| SingleD__Montreal_6A | 0 | 0 | h18 | h18 | h20 | h20 |
+| SingleD__Toronto_5A | 0 | +1 | h18 | h18 | h20 | h21 |
+| SingleD__Vancouver_5C | 0 | −1 | h18 | h18 | h20 | h19 |
+| SingleD__Winnipeg_7A | −1 | +1 | h18 | h17 | h20 | h21 |
 
-*All shifts are negative (activity peak earlier). Mean equip_bldg shift = −4.1 h (σ = 0.4 h).*
+*Both arms peak in the evening. Mean equip_bldg shift = −0.12 h (σ = 0.44 h); range −1 to +1 h. No meaningful peak displacement.*
 
 **Table S5.2 — Peak-hour shift (activity − baseline), 2030**
 
 | Cell | equip_bldg (h) | light_bldg (h) | BL equip peak | AC equip peak | BL light peak | AC light peak |
 |---|---|---|---|---|---|---|
-| HighRise__Calgary_6B | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Kelowna_5B | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Montreal_6A | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Toronto_5A | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Vancouver_5C | −4 | −3 | h17 | h13 | h19 | h16 |
-| HighRise__Winnipeg_7A | −4 | −3 | h17 | h13 | h19 | h16 |
-| MidRise__Calgary_6B | −4 | −3 | h17 | h13 | h19 | h16 |
-| MidRise__Kelowna_5B | −4 | −3 | h17 | h13 | h19 | h16 |
-| MidRise__Montreal_6A | −4 | −3 | h17 | h13 | h19 | h16 |
-| MidRise__Toronto_5A | −4 | −3 | h17 | h13 | h19 | h16 |
-| MidRise__Vancouver_5C | −4 | −3 | h17 | h13 | h19 | h16 |
-| MidRise__Winnipeg_7A | −4 | −3 | h17 | h13 | h19 | h16 |
-| OtherDwelling__Calgary_6B | −4 | −2 | h18 | h14 | h19 | h17 |
-| OtherDwelling__Kelowna_5B | −4 | −3 | h18 | h14 | h19 | h16 |
-| OtherDwelling__Montreal_6A | −5 | −3 | h18 | h13 | h20 | h17 |
-| OtherDwelling__Toronto_5A | −4 | −2 | h18 | h14 | h19 | h17 |
-| OtherDwelling__Vancouver_5C | −5 | −2 | h18 | h13 | h19 | h17 |
-| OtherDwelling__Winnipeg_7A | −4 | −3 | h18 | h14 | h20 | h17 |
-| SingleD__Calgary_6B | −4 | −4 | h18 | h14 | h19 | h15 |
-| SingleD__Kelowna_5B | −4 | −3 | h18 | h14 | h20 | h17 |
-| SingleD__Montreal_6A | −4 | −2 | h18 | h14 | h19 | h17 |
-| SingleD__Toronto_5A | −4 | −4 | h18 | h14 | h20 | h16 |
-| SingleD__Vancouver_5C | −4 | −3 | h18 | h14 | h19 | h16 |
-| SingleD__Winnipeg_7A | −4 | −2 | h17 | h13 | h19 | h17 |
+| HighRise__Calgary_6B | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Kelowna_5B | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Montreal_6A | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Toronto_5A | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Vancouver_5C | 0 | +1 | h17 | h17 | h19 | h20 |
+| HighRise__Winnipeg_7A | 0 | +1 | h17 | h17 | h19 | h20 |
+| MidRise__Calgary_6B | 0 | +1 | h17 | h17 | h19 | h20 |
+| MidRise__Kelowna_5B | 0 | +1 | h17 | h17 | h19 | h20 |
+| MidRise__Montreal_6A | 0 | +1 | h17 | h17 | h19 | h20 |
+| MidRise__Toronto_5A | 0 | +1 | h17 | h17 | h19 | h20 |
+| MidRise__Vancouver_5C | 0 | +1 | h17 | h17 | h19 | h20 |
+| MidRise__Winnipeg_7A | 0 | +1 | h17 | h17 | h19 | h20 |
+| OtherDwelling__Calgary_6B | 0 | +1 | h18 | h18 | h20 | h21 |
+| OtherDwelling__Kelowna_5B | 0 | 0 | h18 | h18 | h20 | h20 |
+| OtherDwelling__Montreal_6A | −1 | +1 | h18 | h17 | h20 | h21 |
+| OtherDwelling__Toronto_5A | 0 | +1 | h18 | h18 | h20 | h21 |
+| OtherDwelling__Vancouver_5C | −1 | +1 | h18 | h17 | h20 | h21 |
+| OtherDwelling__Winnipeg_7A | 0 | +1 | h18 | h18 | h20 | h21 |
+| SingleD__Calgary_6B | 0 | −1 | h18 | h18 | h20 | h19 |
+| SingleD__Kelowna_5B | 0 | +1 | h18 | h18 | h20 | h21 |
+| SingleD__Montreal_6A | 0 | +1 | h18 | h18 | h20 | h21 |
+| SingleD__Toronto_5A | 0 | 0 | h18 | h18 | h20 | h20 |
+| SingleD__Vancouver_5C | 0 | 0 | h18 | h18 | h20 | h20 |
+| SingleD__Winnipeg_7A | −1 | +1 | h18 | h17 | h20 | h21 |
 
-*Mean equip_bldg shift = −4.1 h (σ = 0.3 h); 2022 and 2030 shifts are statistically identical.*
+*Both arms peak in the evening. Mean equip_bldg shift = −0.12 h (σ = 0.33 h); 2022 and 2030 shifts are statistically identical. No meaningful peak displacement in either year.*
 
 ### S5.6 Supplementary figures (load shape)
 
 - **Fig S6** — Equipment diurnal load *shape*, 2022: four archetype panels, each the six-city mean
   **normalised to its own daily mean**, so baseline and activity are compared on shape/timing alone
-  (calibrated magnitudes are in Fig S1). The activity peak sits ≈4 h earlier than the evening-peaked
-  baseline (early afternoon h13–14 vs late afternoon/evening h17–18) in every archetype and climate
-  zone. Normalisation is essential for the multi-unit panels: the building-level baseline aggregates
-  all dwellings whereas the activity arm injects only the occupied unit (§S4.7), so an absolute-Watts
+  (calibrated magnitudes are in Fig S1). The activity and baseline profiles share the same evening
+  peak hour (h17–18) in every archetype and climate zone; the activity arm shows behaviourally-
+  structured within-day variation (e.g. a secondary morning rise) but does not move the peak hour.
+  Normalisation is essential for the multi-unit panels: the building-level baseline aggregates all
+  dwellings whereas the activity arm injects only the occupied unit (§S4.7), so an absolute-Watts
   overlay would understate the activity curve by roughly the unit count; totals are gated separately
   in §S4.8.
-- **Fig S7** — Equipment baseline→activity peak-hour shift, 2022: all 24 cells as dumbbells (baseline
-  vs activity peak hour), grouped by archetype. The uniform downward (−4 h) shift moves the peak from
-  the evening baseline (h17–18) into the early afternoon (h13–14).
-- **Fig S8** — Lighting diurnal load *shape*, 2022: same layout and normalisation as Fig S6. The
-  baseline is sharply evening-peaked (h19–20); the activity curve is a broad daytime profile peaking
-  in the afternoon (h14–17) — a −2 to −5 h shift.
+- **Fig S7** — Equipment building-level peak hour, 2022: all 24 cells as dumbbells (baseline vs
+  activity peak hour), grouped by archetype. Points for each cell are essentially coincident (0 ± 1 h
+  shift), confirming the null peak displacement result at the building level.
+- **Fig S8** — Lighting diurnal load *shape*, 2022: same layout and normalisation as Fig S6. Both
+  baseline and activity peak in the evening (h19–21); the activity arm shows a broader evening
+  plateau consistent with occupied-and-awake occupancy patterns in the diaries.
 - **Fig S9** — Default vs activity-driven equipment demand: a four-panel archetype comparison. The
   single-detached panel is in absolute Watts (with annual kWh and the SHEU anchor annotated),
-  showing the default ≈6,640 kWh/yr evening-peaked profile re-shaped to the SHEU-anchored ≈3,700
-  kWh/yr early-afternoon profile; the multi-unit panels are normalised to daily mean for the reasons
-  in Fig S6.
+  showing the default ≈6,640 kWh/yr profile re-shaped to the SHEU-anchored net target (3,252 kWh/yr
+  activity-driven injection). Both profiles peak at h17–18; the activity arm's peak is slightly
+  lower in absolute Watts because the calibrated design-level is lower than the default. For
+  SingleD, a 1-hour earlier activity peak (h17 vs h18) is present in a minority of cells.
+  The multi-unit panels are normalised to daily mean for the reasons in Fig S6.
 
 ---
 
@@ -370,8 +385,9 @@ not be reported as the representative aggregate.
   level *activity* total therefore represents one occupied dwelling plus the building baseload, not a
   fully occupied building. Per-dwelling magnitudes and all timing/peak-shift results are valid; whole-
   building absolute activity totals are not.
-- **Excluded runs.** 8 of 4,800 runs (≤0.2 %) were excluded for warm-up oscillation (7 high-rise) or
-  HVAC non-convergence (1 mid-rise); all reported buckets retain n ≥ 48.
+- **Missing runs.** 5 of 4,800 runs (0.1 %) did not produce hourly meter files after warmup-120
+  recovery (4 mid-rise and 1 high-rise, all persistent thermal-convergence failures); all reported
+  buckets retain n ≥ 49. Statistical impact on SHEU gate checks and peak-hour analysis is negligible.
 
 ---
 

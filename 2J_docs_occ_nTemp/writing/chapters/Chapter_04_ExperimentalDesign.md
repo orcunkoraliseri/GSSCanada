@@ -1,0 +1,66 @@
+# 4 Experimental Design
+
+The simulation campaign is organised as a fully-specified factorial experiment whose domain, schedule-integration procedure, paired Monte-Carlo structure, and output metrics are summarised in Table 3, Figure 4, and Table 4 below.
+
+---
+
+### 4.1 Building-Archetype and Climate-Zone Domain
+
+The simulation domain spans four Canadian residential dwelling archetypes crossed with six cities representing the principal ASHRAE climate zones found in the inhabited Canadian stock. The four archetypes — SingleDetached, OtherDwelling (attached), MidRise, and HighRise — are drawn from the Canadian NECB 2017 and NBC 9.36 Zone-6 code-compliant geometry and envelope specifications (National Research Council Canada, 2017, 2020); they are not US DOE prototype buildings. Their representation in the 144,507-household analytical frame is unequal: SingleDetached accounts for 52.9% of the stock, MidRise for 21.3%, OtherDwelling for 13.0%, and HighRise for 12.8%, a distribution that reflects the urban-dominant character of the Canadian General Social Survey sample. The six cities and their ASHRAE climate-zone designations, inventoried in §2.4, are Toronto 5A (ON), Kelowna 5B (BC), Vancouver 5C (BC), Montréal 6A (QC), Calgary 6B (AB), and Winnipeg 7A (MB). Each city is assigned its own city-specific Typical Meteorological Year (TMY) EnergyPlus weather file (EPW), one per city, ensuring that the thermal boundary condition reflects the local long-run climate rather than a regional or national composite. The simulation engine throughout is EnergyPlus v24.2 (U.S. Department of Energy, 2024).
+
+A deliberate isolation choice underlies the archetype geometry: the base building model is a single Montréal (MTL) Zone-6 envelope set held fixed across all six climate cities. Because the paired within-household design described in §4.3 differences out the envelope by construction, this fixed-envelope strategy ensures that the cross-climate and cross-year variation in the simulated outputs is attributable to the interaction of occupancy time-series with weather, not to co-varying building physics. The practical limitations introduced by this choice — most notably the single-envelope generalisation across diverse thermal climates and the mapping of Atlantic-province households onto a Montréal EPW — are acknowledged in full in §7.
+
+**Table 3.** *(insert `Table_03_sim_domain.md` here)* — The 4 archetypes × 6 cities simulation domain, each city with its ASHRAE climate zone and representative TMY weather file, all built on the Canadian NECB 2017 / NBC 9.36 Zone-6 code archetype geometry and envelope; the 24 archetype-by-city cells simulated per cycle-year, with the single fixed Montréal Zone-6 envelope held across all six climates.
+
+---
+
+### 4.2 Occupancy-Schedule Integration into the Building Energy Model
+
+The per-household occupancy time-series produced by the calibrated J3 generative model (§3.2) and the activity-driven end-use model (§3.6) are materialised as two schedule files — `BEM_Schedules_2022.csv` and `BEM_Schedules_2030.csv`, with analogous files for 2005, 2010, and 2015 — covering the full 144,507-household frame. Each household's schedule is injected into EnergyPlus as a `Schedule:Compact` object carrying a 2-day-type profile: a Weekday profile and a pooled Weekend profile (Saturday and Sunday are combined). The temporal resolution at the IDF interface is hourly, with 24 values per day-type.
+
+Four parallel schedule channels are derived per household. The occupancy channel (AT\_HOME fraction) and the metabolic channel (activity-driven internal heat gain) load the EnergyPlus `People` object; the equipment channel (plug-loads) and the lighting channel load the `ElectricEquipment` and `Lights` objects respectively. The equipment and lighting magnitudes are SHEU-calibrated through the procedure described in §3.6. Metabolic heat gain is mapped from the 14-category activity classification scheme to per-person watts using metabolic-equivalent (MET) values drawn from the 2024 Adult Compendium of Physical Activities (Herrmann et al., 2024), scaled at 70 W/MET and referenced to an approximate 60 kg adult. This basis is deliberately conservative relative to the ASHRAE 55 / ISO 7730 reference of approximately 105 W/MET for a standard adult (ASHRAE, 2023; ISO, 2005): the lower per-MET wattage follows from referencing an approximate 60 kg adult rather than the ~70 kg standard body (which would imply ~83 W/MET), and therefore yields slightly lower internal-gain estimates than the comfort-standard default.
+
+A clock-alignment step rotates the 04:00-origin GSS diary time-slots onto the EnergyPlus 00:00 hour-of-day convention via a circular shift. Correcting this alignment proved to be the single most consequential correctness intervention in the simulation campaign. In the original implementation, the 04:00-origin diary slots were written directly into the EnergyPlus hour field without rotation, injecting all four schedule channels four hours early relative to the EPW clock — a systematic intraday phase error discovered on 2026-06-08. Following restoration of the circular-shift rotation, a full re-simulation was executed to produce the v2 corrected campaign. The error was strictly phase-related: annual energy totals were phase-invariant across v1 and v2 (the maximum archetype EUI change was +2.85%, and all cells remained within SHEU plausibility bands), confirming that the bug affected intraday timing only. The timing results unlocked by the corrected campaign are reported in §5.3, and the episode is discussed as an illustration of campaign validation rigour in §7.
+
+Households for whom a diary day-type is missing receive a donor-draw day-completion: a household observed only on a weekday draws a genuine weekend diary from the in-frame pool, matched per household member, thereby preserving the calibrated weekend marginal. An earlier copy-day completion — which replicated the observed weekday diary onto the weekend — had diluted the weekend marginal by −2.76 percentage points; the donor-draw approach eliminates this artefact. Step-7 schedule-integration validation confirmed clean passage for both target years: 29 PASS / 0 WARN / 0 FAIL for 2022 and 28 PASS / 0 WARN / 0 FAIL for 2030 (2030 lacks one observed-future gate). Injected weekday at-home means reproduce calibration targets to within approximately 0.5 percentage points or better — for example, the 2030 weekday at-home mean of 78.48% against a target of 78.44%.
+
+**Figure 4.** *(insert `Figure_04_schedule_integration.png` here)* — **Occupancy-to-EnergyPlus schedule integration.** The per-household predicted occupancy time-series passes through the 04:00→00:00 clock-alignment rotation and the activity-to-metabolic mapping, fans into four schedule channels (occupancy, metabolic, equipment, lighting), and converges into the per-household `Schedule:Compact` IDF block injected into EnergyPlus v24.2.
+
+---
+
+### 4.3 Paired Frozen-Frame Monte-Carlo Design
+
+The full factorial comprises 4 archetypes × 6 cities × 5 cycle-years × 50 paired households = 6,000 EnergyPlus v24.2 annual runs. The five cycle-years are 2005, 2010, 2015, the calibrated-observed year 2022, and the longitudinal forecast year 2030. Within each archetype-by-climate-region cell, N = 50 household IDs are sampled once, stratified by dwelling type (DTYPE) and province (PR), and that identical household set is carried forward across all five cycle-years — a frozen-frame design in which the dwelling stock is held at the 2022 analytical frame.
+
+Three elements are held constant within each cell across cycle-years: the archetype IDF (geometry and envelope), the city TMY weather file, and the household IDs. The single varied factor is the per-household occupancy and end-use time-series, which differs across years as the calibrated generative model (§3.2) and the activity-driven end-use model (§3.6) produce cycle-year-specific predictions for each household. This design follows the paired stock-scale simulation rationale articulated by Chen et al. (2022): because building physics, climate, and household composition are all held invariant, the within-household cross-year difference in energy output is attributable solely to the predicted change in the occupancy time-series. Envelope effects, climate variation, and between-household Monte-Carlo sampling variance difference out simultaneously, yielding paired deltas with substantially tighter confidence intervals than a conventional independent-sample design would achieve. The load-shape metrics that constitute the paper's primary inferential targets (§5.3) benefit particularly from this precision.
+
+Monte-Carlo convergence at N = 50 was assessed empirically. The 95% confidence-interval half-width of the cell-mean annual energy averages 1.80% across cells, with a worst-case cell of 4.04%; the load-shape metrics are considerably more precise, consistent with their lower household-to-household variance relative to annual kWh.
+
+**Table 4.** *(insert `Table_04_paired_design.md` here)* — The held-versus-varied paired frozen-frame design: the archetype IDF, TMY weather file, and household IDs held constant against the single varied factor (the occupancy time-series) across the five cycle-years, yielding the 6,000-run factorial and the within-household differencing that isolates the behavioural signal.
+
+---
+
+### 4.4 Simulation Outputs and Campaign Verification
+
+Each of the 6,000 EnergyPlus runs produces an 8,760-hour annual load profile. Seven meter streams are collected: Electricity:Facility, InteriorLights, InteriorEquipment, Fan, Heating:EnergyTransfer, Cooling:EnergyTransfer, and WaterSystems:EnergyTransfer. From these hourly profiles, four categories of derived product are computed. Load-shape metrics — load factor, midday energy share, peak-to-average ratio, and coincidence factor — constitute the primary inferential targets, reported in §5.3. Peak-load and hour-of-peak statistics characterise intraday timing. The stock-weighted ensemble load shape aggregates individual household profiles to the dwelling-type and national levels. Annual energy use intensity (EUI, kWh/m²·yr) serves as a secondary plausibility anchor against NRCan SHEU benchmarks, with results presented in §5.2.
+
+The campaign completed at 6,000 / 6,000 runs. One run — OtherDwelling × Kelowna 5B × 2010 — encountered a deterministic EnergyPlus DX-coil sizing fatal caused by a negative coil bypass factor; it was recovered under Sub-step 8G by a one-field fix (Gross Rated Sensible Heat Ratio changed from autosize to 0.75), with a negligible effect on results (archetype EUI delta ≤ 0.013 kWh/m²·yr). The final verification scorecard for the v2 corrected campaign reads 24 PASS / 0 WARN / 3 INFO / 0 FAIL. Schedule round-trip fidelity is exact across all five cycle-years. The mean peak hour falls between 17.5 and 17.7 hours across all years, consistent with the expected residential evening demand peak. The confirmed phase-invariance of annual energy across the v1-to-v2 correction (maximum archetype EUI change +2.85%, all cells within SHEU bands) establishes that the 04:00 rotation fix altered intraday timing exclusively, and that the timing results now reported in §5.3 reflect the corrected, physically consistent simulation.
+
+---
+
+## References (this chapter)
+
+National Research Council Canada (2017) *National Energy Code of Canada for Buildings 2017*. Ottawa: Canadian Commission on Building and Fire Codes (Cat. NR24-24/2017E-PDF).
+
+National Research Council Canada (2020) *National Building Code of Canada 2020*, Division B, Section 9.36 (Energy Efficiency). Ottawa: Canadian Commission on Building and Fire Codes.
+
+U.S. Department of Energy (2024) *EnergyPlus™ (Version 24.2.0)*. National Renewable Energy Laboratory (NREL). https://energyplus.net/.
+
+---
+
+**Standards and methodological references** *(verify against master bibliography):*
+
+- ASHRAE (2023) *ANSI/ASHRAE Standard 55: Thermal Environmental Conditions for Human Occupancy*. Atlanta: ASHRAE.
+- ISO (2005) *ISO 7730: Ergonomics of the thermal environment — Analytical determination and interpretation of thermal comfort using calculation of the PMV and PPD indices and local thermal comfort criteria*. Geneva: International Organization for Standardization.
+- Herrmann, S.D. et al. (2024) *2024 Adult Compendium of Physical Activities*. — *(verify author list, publisher, and citation form against master bibliography)*
+- Chen, Y. et al. (2022) — paired stock-scale building energy simulation methodology. — *(verify full citation against master bibliography)*
