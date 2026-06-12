@@ -1,4 +1,4 @@
-# IMP.md — Manuscript QA Audit & Improvement Log
+![img.png](img.png)# IMP.md — Manuscript QA Audit & Improvement Log
 
 **Date:** 2026-06-11 (night session)
 **Target file:** `2J_full_manuscript.md` (CANONICAL working document, 655 lines, ~16.7k words)
@@ -105,3 +105,32 @@ Per author decision, SR-2 and SR-5–SR-16 were executed on a **copy**: `fullSet
 ---
 
 *Audit + fixes executed by Sonnet employees, manager-triaged and spot-verified. The manuscript is internally consistent and content-complete; everything left on the list above is blocked only on the items requiring your input.*
+
+---
+
+## 6. SR-17 journal-style cleanup (2026-06-12) — `readySubmission.md`
+
+Executed by Sonnet employee on manager runbook. 13 edits applied to `readySubmission.md`; `2J_full_manuscript.md` untouched (canonical hash verified: E9DE8997…22B2C9).
+
+**Removed:**
+- Abstract-structure editorial note (line ~12).
+- Table-1 external-competitors blockquote note (line ~96).
+- `[^selfdelta]` footnote marker (§1.4) and full footnote definition block (line ~128).
+- Four bold summary blocks after Table 3 city table (lines ~294–300): archetype-per-city, stock-distribution, base-building-model, cold-zone-sensitivity paragraphs.
+- §4.3 DX-coil blockquote footnote and one redundant `---` rule (lines ~353–356).
+
+**Condensed:**
+- Table 2 Notes: seven-bullet internal block → single journal-style sentence.
+- Table 5 Notes: six-bullet block + standalone bold campaign line → three-bullet journal-style notes.
+
+**Stripped from prose and Table 4:**
+- Internal date `2026-06-08` → "during campaign verification" (§4.2).
+- `v2 corrected campaign` → "corrected campaign"; `v1 and v2` → "original and corrected campaigns" (§4.2, §4.4).
+- `Sub-step 8G` label removed from §4.4 and §5.2.
+- Repo path `` `BEM_setup/Buildings_MTL/` `` removed from Table 4 IDF factor row.
+- Inline scorecard `(24 PASS / 0 WARN / 3 INFO / 0 FAIL on the verification scorecard)` in §5.2 replaced with `(§4.4)`.
+- `One sub-step adjustment` → `One adjustment` in §5.2.
+
+**Post-edit verification:** leftover grep for `Sub-step`, `v2 corrected`, `v1`, `2026-0`, `✔`, `⚠`, `BEM_setup/`, `Buildings_CLG`, `[^selfdelta]` — zero hits. `readySubmission.docx` regenerated: 24.69 MB, 16 PNGs embedded, zero pandoc warnings.
+
+**New readySubmission.md SHA-256: 9330D5C6DCCF403A7BE42D7791BB90196AA7E6D6C756E604CF18700E0D51E2A3**
