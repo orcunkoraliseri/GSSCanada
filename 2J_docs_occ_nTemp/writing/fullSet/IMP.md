@@ -77,4 +77,31 @@ No content was lost in the chapters→fullSet inversion. No encoding damage anyw
 
 ---
 
+## 5. Submission-prep cycle (2026-06-12) — `readySubmission.md` created
+
+Per author decision, SR-2 and SR-5–SR-16 were executed on a **copy**: `fullSet/readySubmission.md` (613 lines, ~15.5k words). `2J_full_manuscript.md` remains byte-identical (SHA-256 `E9DE8997…22B2C9` verified before/after every phase). Executed by 4 Sonnet employees (mechanical-removals fixer · citation researcher ×2 · bibliography builder + final verifier), manager-triaged.
+
+**Done:**
+- **SR-2** Highlights instructional note removed (bullets kept).
+- **SR-6** All internal QA flags removed (12 instances: "DR-verified", "verify against master bibliography", "not in DR scope").
+- **SR-7/8** Table 5 notes: SLURM job IDs (953111/954135/954296/954300), "manager-verified" dates, and both `deepResearch/…` path citations removed.
+- **SR-16** Both self-citations (JBPS under-review + eSim 2026) deleted; 2 in-text cites rephrased (Table-1 footnote, §1.4); `[^selfdelta]` footnote untouched (descriptive prose, no citation marker).
+- **SR-5 + SR-9–12** Four per-chapter ref blocks + Table-1 "Sources for matrix rows"/"Removed:" notes consolidated into ONE `## References` section (after §8, before Appendix): **59 entries**, alphabetical author–year, 20 dedup merges, 0 orphan in-text citations.
+- **SR-13/14/15** Web-verified via CrossRef/primary sources (zero fabricated fields): Yamaguchi & Shimoda 2017 (JBPS 10(5–6), DOI confirmed) · Herrmann 2024 (JSHS 13(1), full 12-author list) · ASHRAE 55-2023 · ISO 7730:2005 full form · Chiou et al. 2011 DOI **10.1016/j.enbuild.2011.09.020** confirmed · **Yin et al. 2024: no DOI exists** (IBPSA ASim 2024 proceedings carry none) — cited via publications.ibpsa.org URL.
+- **Bonus:** 8 further short-form entries completed and verified (Austin 2021, Sahoo 2024, Lou 2024 — true titles restored; Rässler 2002; D'Orazio 2006; Beckman 1996; Putra 2021; Gama 2014). Citation-key fix: Table-1 row "Chiou (2009)" → "Chiou et al. (2011)".
+
+**Decisions taken (autonomous, reversible):**
+- ISO 7730 cited as **2005 edition** (the edition the methods used; a 2025 edition now exists — journal may ask to update).
+- 3 truly-uncited entries **removed** from References (full text preserved here if ever re-cited):
+  - Pérez-Lombard, L., Ortiz, J. and Pout, C. (2008). A review on buildings energy consumption information. *Energy and Buildings*, 40(3), pp. 394–398. https://doi.org/10.1016/j.enbuild.2007.03.007.
+  - Khalil, M.A. and Fatmi, M.R. (2022). How residential energy consumption has changed due to COVID-19 pandemic? An agent-based model. *Sustainable Cities and Society*, 81, 103832. https://doi.org/10.1016/j.scs.2022.103832.
+  - Vellei, M. et al. (2022). Documenting occupant models for building performance simulation: a state-of-the-art. *Journal of Building Performance Simulation*, 15, pp. 634–655. https://doi.org/10.1080/19401493.2022.2061050.
+- Minor flag for typesetting: Herrmann 2024 co-author given name "Zhenghua Cai" (CrossRef) vs "Zhenghui" (PubMed) — CrossRef form used.
+
+**Final verification (readySubmission.md):** 0 mojibake · 0 leftover internal flags · exactly one `## References` · sane outline (Front Matter → §1–8 → References → Appendix) · 16/16 figure embeds resolve · special chars intact.
+
+**Still open (yours):** SR-1 (abstract note + trim — needs target journal), SR-3 ([confirm] department/ORCIDs/CRediT), SR-4 (front-matter author-note block — not in your go-list, left in place), reference-style restyle once the journal is chosen.
+
+---
+
 *Audit + fixes executed by Sonnet employees, manager-triaged and spot-verified. The manuscript is internally consistent and content-complete; everything left on the list above is blocked only on the items requiring your input.*
