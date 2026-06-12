@@ -86,9 +86,11 @@ Cells give the fractional weight allocated to each end use for each activity cod
 | Dwelling type | SHEU equipment total (kWh/hh·yr) | Net SHEU after IDF fridge (kWh) |
 |---|---|---|
 | SingleDetached | 3,700 | 3,252 |
-| OtherDwelling (attached) | 3,139 | ⚠ check source |
-| MidRise apartment | 2,166 | ⚠ check source |
-| HighRise apartment | 1,922 | ⚠ check source |
+| OtherDwelling (attached) | 3,139 | 2,691 |
+| MidRise apartment | 2,166 | 1,718 |
+| HighRise apartment | 1,922 | 1,474 |
+
+> Net = gross SHEU equipment target − one 448 kWh per-household refrigerator (the same published fridge UEC used for SingleDetached). The OtherDwelling IDF carries multiple refrigerator objects (verified: 7 `refrigerator_unit` objects in the attached/row-house model), but calibration is **per household**, so a single 448 kWh fridge is subtracted per dwelling — not 7×. *(Fridge basis confirmed against the attached-house IDF; reconcile against the production `Buildings_MTL/` archetype if its fridge UEC differs.)*
 
 **SHEU lighting targets (kWh/hh·yr):**
 | Dwelling type | SHEU lighting (kWh/hh·yr) |

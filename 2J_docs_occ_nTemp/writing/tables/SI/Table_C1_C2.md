@@ -24,13 +24,13 @@
 | 5 | Census linkage — statistical matching | Final frame size | Linked households | 144,507 HH | PASS |
 | 6 | Longitudinal forecasting (TFT Phase 3) | True-future-test WD | WD JS divergence (2022 unseen) | 0.0619 ≤ 0.20 | PASS |
 | 6 | Longitudinal forecasting (TFT Phase 3) | True-future-test weekend | Sat/Sun JS (2022 unseen) | 0.1817 / 0.1843 ≤ 0.20 | PASS |
-| 6 | Longitudinal forecasting (backcast) | 2022 backcast WD | Backcast WD JS | 0.0623 ≤ 0.10 | PASS |
+| 6 | Longitudinal forecasting (backcast) | 2022 backcast WD | Backcast WD JS | 0.0630 ≤ 0.10 | PASS |
 | 6 | Longitudinal forecasting (backcast) | AT_HOME structural break | Backcast WD AT_HOME residual | +1.1 pp ≤ ±2 pp | PASS |
 | 6 | Longitudinal forecasting (2030 output) | Row count plausibility | 2030 synthetic row count | 37,008 ≥ 37,000 | PASS |
 | 6 | Longitudinal forecasting (2030 output) | 2030 AT_HOME plausibility | 2030 WD AT_HOME | 72.5% in 55–80% band | PASS |
 | 7 | BEM schedule conversion | Schedule round-trip fidelity | §2 schedule round-trip (v2) | EXACT all 5 years | PASS |
 | 8 | EnergyPlus simulation (v2 corrected) | Full scorecard | 24 PASS / 0 WARN / 3 INFO / 0 FAIL | 24/24 hard gates | PASS |
-| 8 | EnergyPlus simulation (v2 corrected) | EUI plausibility | All 4 archetypes within NRCan SHEU band | 208 / 152 / 128 / 117 kWh/m² | PASS |
+| 8 | EnergyPlus simulation (v2 corrected) | EUI/m² cross-check (secondary) | Mid/High within SHEU regional-average range; SingleD ≈ +12% above / OtherDwelling ≈ −6% below (basis-reconciled 2026-06-11 — genuine, not a denominator artefact) | 208 / 152 / 128 / 117 kWh/m² | INFO |
 | 9 | Activity-driven loads | SHEU equipment calibration | Max |deviation| (equipment) | +2.33% ≤ ±15% gate | PASS |
 | 9 | Activity-driven loads | SHEU lighting calibration | Max |deviation| (lighting) | +2.63% ≤ ±15% gate | PASS |
 | 9 | Activity-driven loads | SHEU cells all pass | Cells within gate | 48/48 | PASS |
@@ -61,7 +61,7 @@
 
 | Metric | Value | Threshold | Result |
 |---|---|---|---|
-| Backcast WD JS divergence (all rows) | 0.0623 | < 0.10 | PASS |
+| Backcast WD JS divergence (all rows) | 0.0630 | < 0.10 | PASS |
 | Backcast Sat JS divergence (all rows) | 0.1784 | < 0.20 (re-baselined) | PASS |
 | Backcast Sun JS divergence (all rows) | 0.1698 | < 0.20 (re-baselined) | PASS |
 | Backcast WD AT_HOME residual | +1.1 pp | ± 2 pp | PASS |

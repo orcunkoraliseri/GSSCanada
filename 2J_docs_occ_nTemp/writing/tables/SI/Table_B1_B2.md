@@ -14,7 +14,7 @@
 |---|---|
 | Encoder | Shared 6-layer Transformer encoder |
 | Activity decoder (Arm 1) | 6-layer autoregressive (AR) activity decoder → 14-category activity sequence, 48 slots |
-| Binary heads (Arm 2) | Parallel non-autoregressive (NAT) binary heads: AT_HOME (1) + co-presence (8/9); gradient-detach barrier between Arm 1 and Arm 2 |
+| Binary heads (Arm 2) | Parallel non-autoregressive (NAT) binary heads: AT_HOME (1) + co-presence (9; `colleagues` masked for 2005/2010); gradient-detach barrier between Arm 1 and Arm 2 |
 | d_model | 384 |
 | n_heads | 8 |
 | d_ff | 1,536 |

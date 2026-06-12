@@ -6,7 +6,7 @@ Seven limitations bound the interpretation of the results. Each is stated togeth
 
 ### 7.1 The Schedule-Injection Phase Error and Its Remediation
 
-The single most consequential correctness issue in the campaign was the four-hour schedule-injection phase error described in §4.2 and §6.5: the 04:00-origin GSS diary slots were initially written into the EnergyPlus hour field without the circular rotation onto the 00:00 simulation clock, displacing all four schedule channels four hours early. The disposition is complete. The error was diagnosed on 2026-06-08, the rotation was restored, and both the Step-8 occupancy campaign (6,000 runs) and the Step-9 end-use campaign (4,800 paired runs) were fully re-simulated and re-verified on 2026-06-10. Because annual energy is phase-invariant, the magnitude and SHEU-calibration results were never affected (maximum archetype EUI change +2.85 %, all cells remaining within plausibility bands); only the intraday timing required re-evaluation, and the corrected timing — a stationary ~17:30 peak and a 0 ± 1 h activity-arm null shift — is what the results report. The pre-fix "~4 h earlier" peak reading is superseded and is not cited as a finding.
+The single most consequential correctness issue in the campaign was the four-hour schedule-injection phase error described in §4.2 and §6.5: the 04:00-origin GSS diary slots were initially written into the EnergyPlus hour field without the circular rotation onto the 00:00 simulation clock, displacing all four schedule channels four hours early. The disposition is complete. The error was diagnosed on 2026-06-08, the rotation was restored, and both the Step-8 occupancy campaign (6,000 runs) and the Step-9 end-use campaign (4,800 paired runs) were fully re-simulated and re-verified on 2026-06-10. Because annual energy is phase-invariant, the magnitude and SHEU-calibration results were never affected (maximum archetype EUI change +2.85 %, leaving the per-household SHEU calibration unchanged); only the intraday timing required re-evaluation, and the corrected timing — a stationary ~17:30 peak and a 0 ± 1 h activity-arm null shift — is what the results report. The pre-fix "~4 h earlier" peak reading is superseded and is not cited as a finding.
 
 ---
 
@@ -52,7 +52,7 @@ The 2030 forecast is generated under a single demographic-and-behavioural scenar
 
 **Standards and methodological references** *(verify against master bibliography):*
 
-- Aerts, D., Minnen, J., Glorieux, I., Wouters, I. and Descamps, F. (2014) A method for the identification and modelling of realistic domestic occupancy sequences for building energy demand simulations and peer comparison. *Building and Environment*, 75, pp. 67–78.
+- Aerts, D., Minnen, J., Glorieux, I., Wouters, I. and Descamps, F. (2014) A method for the identification and modelling of realistic domestic occupancy sequences for building energy demand simulations and peer comparison. *Building and Environment*, 75, pp. 67–78. https://doi.org/10.1016/j.buildenv.2014.01.021.
 - ASHRAE (2023) *ANSI/ASHRAE Standard 55: Thermal Environmental Conditions for Human Occupancy.* Atlanta: ASHRAE.
 - Eurostat (2018) *Harmonised European Time Use Surveys (HETUS) — 2018 Guidelines.* Luxembourg: Publications Office of the European Union.
 - Herrmann, S.D. et al. (2024) *2024 Adult Compendium of Physical Activities.* — *(verify author list, publisher, and citation form against master bibliography)*

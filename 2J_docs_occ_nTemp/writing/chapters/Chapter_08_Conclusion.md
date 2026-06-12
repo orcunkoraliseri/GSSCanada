@@ -4,11 +4,11 @@ This paper asked whether a calibrated, behaviourally-grounded occupancy time-ser
 
 The principal findings are the following.
 
-1. An end-to-end national pipeline — 64,061 valid GSS diaries augmented to roughly 192,183 calibrated diary-days, linked to a 144,507-household Census frame, and simulated through 6,000 paired EnergyPlus runs — produces physically plausible energy at stock scale, with every archetype's annual energy use intensity falling inside the NRCan SHEU plausibility bands.
+1. An end-to-end national pipeline — 64,061 valid GSS diaries augmented to roughly 192,183 calibrated diary-days, linked to a 144,507-household Census frame, and simulated through 6,000 paired EnergyPlus runs — produces physically plausible energy at stock scale, calibrated to within ±2.7 % of NRCan SHEU-2019 per-household end-use benchmarks across all 48 dwelling-by-year cells, with archetype energy-use intensities consistent with the SHEU regional-average ranges.
 
 2. The COVID/work-from-home break is the dominant behavioural signal in the data: weekday at-home occupancy rises by +5.2 percentage points at the 2015→2022 transition, persists at +2.2 to +3.9 percentage points above the pre-pandemic baseline in the 2030 forecast, and is separable from compositional sample aging by demographic standardization.
 
-3. The load-shape consequence of that break is a filling of the midday valley and a flattening of the intraday profile, accompanied by a stationary evening peak at approximately 17:30; the paired within-household differentials place both shape changes with confidence intervals that exclude zero, while annual electricity magnitude moves only +0.6 to +2.6 %.
+3. The load-shape consequence of that break is a filling of the midday valley and a flattening of the intraday profile, accompanied by a stationary evening peak at approximately 17:30; the paired within-household differentials place both shape changes with confidence intervals that exclude zero, while annual electricity magnitude moves only +1.4 to +2.6 % across the break and +0.6 to +1.2 % to 2030.
 
 4. Activity-resolved end uses reproduce the SHEU benchmark within ±2.7 % in all 48 dwelling-by-year cells (maximum +2.33 % equipment, +2.63 % lighting) and correct the presence-only baseline's over-prediction of detached and attached plug load while conserving annual energy; the activity arm restructures the intraday equipment shape but leaves the building-level peak hour unchanged — a verified null peak shift of 0 ± 1 h. The paper's timing headline is therefore the occupancy-driven midday fill, and the activity layer delivers magnitude calibration and behaviourally-timed shape rather than peak displacement.
 
