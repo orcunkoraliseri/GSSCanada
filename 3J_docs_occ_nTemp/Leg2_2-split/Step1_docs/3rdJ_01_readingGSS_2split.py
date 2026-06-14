@@ -1,5 +1,5 @@
 """
-01_readingGSS_2split.py
+3rdJ_01_readingGSS_2split.py
 
 Step 1 of the Leg-2 Occupancy Modeling Pipeline (Residential + Office/AT_WORK).
 Reuse + delta of the Leg-1 reader (2J_docs_occ_nTemp/01_readingGSS.py):
@@ -749,6 +749,9 @@ if __name__ == "__main__":
     import platform
     if platform.system() == "Windows":
         DATA_ROOT = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\0_Occupancy\DataSources_GSS"
+    elif os.path.isdir("/speed-scratch/o_iseri"):
+        # Speed HPC cluster (repo mirrored under /speed-scratch/o_iseri/GSSCanada)
+        DATA_ROOT = "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/0_Occupancy/DataSources_GSS"
     else:
         DATA_ROOT = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/0_Occupancy/DataSources_GSS"
 
@@ -777,6 +780,8 @@ if __name__ == "__main__":
 
     if platform.system() == "Windows":
         OUTPUT_DIRECTORY = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step1_docs\outputs_step1"
+    elif os.path.isdir("/speed-scratch/o_iseri"):
+        OUTPUT_DIRECTORY = "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
     else:
         OUTPUT_DIRECTORY = "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
 

@@ -1,4 +1,4 @@
-# Implementation Plan — `01_readingGSS_2split.py`
+# Implementation Plan — `3rdJ_01_readingGSS_2split.py`
 ## STEP 1: Data Collection & Column Selection
 
 ---
@@ -7,7 +7,7 @@
 
 Document the data collection and column selection step for the **Leg-2 two-channel (Residential + Office/AT_WORK)** pipeline. This step is a **reuse + delta**: the Leg-1 reader (`01_readingGSS.py`) already extracts all residential Main and Episode columns for all four GSS cycles (2005, 2010, 2015, 2022) and is **reused unchanged**. The Leg-2 delta is solely the addition of **office employment-gating Main columns** to the per-cycle `MAIN_COLS_*` lists. The Episode side needs **no new columns**: `occPRE` (the harmonized 18-category location variable) is already extracted and carried through the Leg-1 pipeline; `AT_WORK = (occPRE == 2)` is a derived flag computed later at Step 2/3 tiling — not at read time.
 
-The suggested script name for the Leg-2 reader is `01_readingGSS_2split.py`. It would live alongside this doc in `Step1_docs/` and write outputs to `Step1_docs/outputs_step1/`. This file is a **documentation deliverable only** — no Python code is written or executed in this step.
+The suggested script name for the Leg-2 reader is `3rdJ_01_readingGSS_2split.py`. It would live alongside this doc in `Step1_docs/` and write outputs to `Step1_docs/outputs_step1/`. This file is a **documentation deliverable only** — no Python code is written or executed in this step.
 
 **Bootstrap weight columns (`WTBS_*`, `WTBS_EPI_*`) remain excluded** from this pipeline, as in Leg 1.
 
@@ -15,7 +15,7 @@ The suggested script name for the Leg-2 reader is `01_readingGSS_2split.py`. It 
 
 ## Reference
 
-- **Leg-2 pipeline overview**: `3J_docs_occ_nTemp\Leg2_2-split\00_2split_Occupancy_Pipeline.md` (Step 1 and Step 2 sections)
+- **Leg-2 pipeline overview**: `3J_docs_occ_nTemp\Leg2_2-split\3rdJ_00_2split_Occupancy_Pipeline.md` (Step 1 and Step 2 sections)
 - **Leg-1 reader doc (template)**: `2J_docs_occ_nTemp\01_readingGSS.md`
 - **Leg-1 reader script (reused)**: `01_readingGSS.py`
 - **Split suitability audit**: `3J_docs_occ_nTemp\00_GSS_split_suitability_audit.md` (Section 4 — office employment variables; Section 3 — `occPRE` wiring)
@@ -55,7 +55,7 @@ C:\Users\o_iseri\Desktop\Postdoc\occModeling\0_Occupancy\DataSources_GSS\
 
 ## Proposed Changes
 
-### [NEW] `Step1_docs\01_readingGSS_2split.py`
+### [NEW] `Step1_docs\3rdJ_01_readingGSS_2split.py`
 
 ---
 
@@ -81,7 +81,7 @@ Each reader accepts `file_path`, `selected_columns`, `output_csv` (optional), an
 
 The residential `MAIN_COLS_*` lists (occID, SURVMNTH, PR, HHSIZE, AGEGRP, SEX, MARSTH, KOL, ATTSCH, NOCS, LFTAG, COW, HRSWRK, CMA, POWST, TOTINC, WGHT_PER, DDAY) are **reused unchanged from Leg 1**. The Leg-2 delta appends the office employment-gating variables below — shown here as additions only, not full replacement lists.
 
-Column names are sourced from `00_GSS_split_suitability_audit.md` §4 (employment gating table), cross-referenced with `00_2split_Occupancy_Pipeline.md` §1A.
+Column names are sourced from `00_GSS_split_suitability_audit.md` §4 (employment gating table), cross-referenced with `3rdJ_00_2split_Occupancy_Pipeline.md` §1A.
 
 ```python
 # ── 2005 (C19 PUMF) — Office gating additions ──────────────────────────────
@@ -233,7 +233,7 @@ def read_all_cycles(
 
 ### E. `__main__` Block
 
-**⚠️ PLANNED (Leg 2)** — Entry point for `01_readingGSS_2split.py`. Writes outputs to `Step1_docs\outputs_step1\`.
+**⚠️ PLANNED (Leg 2)** — Entry point for `3rdJ_01_readingGSS_2split.py`. Writes outputs to `Step1_docs\outputs_step1\`.
 
 ```python
 DATA_ROOT = (
@@ -277,7 +277,7 @@ FILE_PATHS = {
 ## Module Structure Summary
 
 ```
-01_readingGSS_2split.py
+3rdJ_01_readingGSS_2split.py
 ├── Constants
 │   ├── MAIN_COLS_2005  = Leg-1 residential cols + office gating additions  ⚠️ PLANNED (Leg 2)
 │   ├── MAIN_COLS_2010  = Leg-1 residential cols + office gating additions  ⚠️ PLANNED (Leg 2)
@@ -310,7 +310,7 @@ FILE_PATHS = {
 
 The reference for this table is the Leg-1 reader `01_readingGSS.py`, not the older `2ndJ_datapreprocessing.py`.
 
-| Aspect | Leg-1 (`01_readingGSS.py`) | Leg-2 (`01_readingGSS_2split.py`) |
+| Aspect | Leg-1 (`01_readingGSS.py`) | Leg-2 (`3rdJ_01_readingGSS_2split.py`) |
 |---|---|---|
 | **Main columns — residential** | Full residential set (18–20 cols/cycle) | Reused unchanged ✅ DONE |
 | **Main columns — office gating** | Not included | Added per cycle: `MAR_Q100/ACT7DAYS/ACT7DAYC`, `WKLTWE/MRW_D40B`, `LFSGSS`, hours, COW, NOC, NAICS, telework ⚠️ PLANNED |
@@ -335,7 +335,7 @@ For each cycle, load the Main file **without column filtering** and print `df.co
 
 ### Step 2 — Load with Selected Columns
 
-Run `01_readingGSS_2split.py` with `verbose=True` for one cycle at a time:
+Run `3rdJ_01_readingGSS_2split.py` with `verbose=True` for one cycle at a time:
 - Confirm file loads without `KeyError` or shape mismatch.
 - Print `df.shape` — Main row counts should match Leg-1 outputs exactly (same respondents; only more columns selected).
 - Print `df[office_cols].head(10)` to spot-check values look like expected codes (not all-NaN, not all-zero).
@@ -369,7 +369,7 @@ Authored the Leg-2 Step-1 detail document (`01_readingGSS.md`) for the two-chann
 
 ---
 
-### 2026-06-13 — Reader implemented (`01_readingGSS_2split.py`)
+### 2026-06-13 — Reader implemented (`3rdJ_01_readingGSS_2split.py`)
 
 **Copied from Leg 1:**
 All five file-format readers (`load_spss_file`, `load_dat_with_sps_layout`, `parse_spss_syntax_selective`, `read_gss_data_selective`, `read_sas_file`), three orchestrators (`read_gss_main`, `read_gss_episode`, `read_all_cycles`), three utility functions (`save_df_to_csv`, `describe_unique_values`, `print_nan_counts`), all rename maps (`MAIN_RENAME_MAP`, `EPISODE_RENAME_MAP`, `apply_rename_map`), all four `EPISODE_COLS_*` constants, and the cross-platform `__main__` block are reproduced verbatim from `2J_docs_occ_nTemp/01_readingGSS.py`. The `__main__` subprocess call to `01_readingGSS_val.py` was intentionally dropped (no Leg-2 validation script exists yet).
@@ -389,4 +389,65 @@ All five file-format readers (`load_spss_file`, `load_dat_with_sps_layout`, `par
 
 **Output directory:** `C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step1_docs\outputs_step1` (Windows); analogous path on macOS. Output filenames: `main_<cycle>.csv` / `episode_<cycle>.csv` (unchanged from Leg 1).
 
-**py_compile result:** `py -3 -m py_compile 01_readingGSS_2split.py` → CLEAN (exit 0, no errors or warnings).
+**py_compile result:** `py -3 -m py_compile 3rdJ_01_readingGSS_2split.py` → CLEAN (exit 0, no errors or warnings).
+
+---
+
+### 2026-06-13 — Renamed `3rdJ_` + cluster wiring
+
+**Rename (no 2J/3J confusion):** all Step-1 files created for the 3rd Journal now carry a `3rdJ_` prefix — `3rdJ_01_readingGSS.md`, `3rdJ_01_readingGSS_val.md`, `3rdJ_01_readingGSS_2split.py`, `3rdJ_01_readingGSS_2split_val.py` (and the Leg-2 pipeline docs `3rdJ_00_2split_Occupancy_Pipeline*.md`). Internal references updated; 2J-template references (`2J_docs_occ_nTemp/...`) left untouched.
+
+**Cluster path branch:** `3rdJ_01_readingGSS_2split.py` `__main__` gained a Linux/Speed branch (`elif os.path.isdir("/speed-scratch/o_iseri")`) → `DATA_ROOT` and `OUTPUT_DIRECTORY` under `/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/...`. Validator got the matching `_BASE` branch. Windows/macOS paths unchanged.
+
+**Runner:** `3rdJ_s1_2split_read.sh` (sbatch, partition=ps, mem=64G, time=48:00:00) — pyreadstat auto-install precheck, 12-file data gate (aborts with MISS list if microdata absent), runs reader then validator. Both `.py` re-verified `py_compile` CLEAN after edits.
+
+---
+
+### 2026-06-13 — Leg-2 Step-1 reader job submitted to Speed HPC (job 967942)
+
+- 4 raw microdata files uploaded to `/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/0_Occupancy/DataSources_GSS/` (cluster previously held Leg-1 CSVs only): `GSSMain_2005.sas7bdat`, `GSSMain_2010.DAT`, `Episode_files/GSS_2015_episode/GSS29PUMFE.txt` (1.39 GB), `Episode_files/GSS_2022_episode/TU_ET_2022_Episode_PUMF.sas7bdat` (~2.45 GB total upload).
+- 3 scripts uploaded to cluster `Step1_docs/` dir: `3rdJ_01_readingGSS_2split.py`, `3rdJ_01_readingGSS_2split_val.py`, `3rdJ_s1_2split_read.sh`.
+- Submitted via `sbatch` as job **967942** (job-name `3rdJ_s1_read`, partition `ps`, 64 G, 48 h walltime); running on node `speed-07`.
+- sbatch wrapper 12-input data gate PASSED — job advanced past the gate into the reader stage.
+- STATUS: **RUNNING** — 8 CSVs (`main_<cycle>.csv` / `episode_<cycle>.csv`) in `outputs_step1/` are PENDING; a follow-up entry will record row counts, column-count verification, and any missing-column warnings.
+
+---
+
+### 2026-06-13 — Leg-2 Step-1 reader job COMPLETED (job 967942 + validator re-run 967945)
+
+Both the reader job (**967942**) and a validator-only re-run (**967945**) **COMPLETED** on the Speed HPC cluster. The 8 output CSVs and `validation_report.txt`/`.html` were downloaded locally to `outputs_step1/`. Reader output is sound and ready for Step 2.
+
+**8 CSVs written — shapes/row-counts (all correct):**
+
+| Cycle | Main rows | Episode rows |
+|---|---|---|
+| 2005 | 19,597 | 333,654 |
+| 2010 | 15,390 | 283,287 |
+| 2015 | 17,390 | 274,108 |
+| 2022 | 12,336 | 168,078 |
+
+**Reader integrity (all GOOD):**
+- **Null check** — no completely-null columns in any of the 8 files.
+- **ID linkage** — episode IDs 100% match main across all 4 cycles.
+- **Time ordering** — pass rate 94.3–95.7% across cycles (within the >90% acceptance band).
+
+**Office-gating coverage confirmed:**
+- **NAICS** present all 4 cycles (2005: 19 buckets, 2010: 19, 2015: 24, 2022: 22).
+- **Telework** present for 2010 / 2015 / 2022 (none in 2005, as expected — no PUMF variable).
+- **Residential vars** all verified across cycles: AGEGRP, SEX, MARSTH, HHSIZE, PR, CMA, LFTAG, COW, HRSWRK, KOL.
+
+**Note (not a blocker):** NOC is absent for 2015 (`NOC1110Y`) and 2022 (`NOCLBR_Y`); NAICS serves as the archetype proxy per the report's own note. `occPRE` is deliberately NOT created at read time — the reader preserves the raw location codes (`PLACE` for 2005/2010, `LOCATION` for 2015/2022), and `AT_WORK = (occPRE == 2)` is derived downstream at Step 2/3 (reader line 606-607, "unchanged from Leg 1").
+
+**BOTTOM LINE:** Step-1 reader output is sound and ready for Step 2. (For the validator's PASS 69 / WARN 22 / FAIL 4 tally and the false-positive interpretation of the FAILs/WARNs, see the companion entry in `3rdJ_01_readingGSS_val.md`.)
+
+---
+
+### 2026-06-14 — Validator corrected & re-run (job 968085)
+
+Cross-reference entry — see `3rdJ_01_readingGSS_val.md § 2026-06-14` for full detail.
+
+The prior run's 4 FAIL + 22 WARN were all validator false-positives (rename-unaware column-presence checks; `occPRE`-checked-at-read-time when the reader preserves raw `PLACE`/`LOCATION` instead; telework universe-coding flagged as unexpectedly high non-NaN). The corrected validator (`3rdJ_01_readingGSS_2split_val.py`) now checks canonical post-rename names, replaces the `occPRE` check with raw `PLACE`/`LOCATION` presence, and treats telework non-degeneracy as the pass criterion.
+
+Cluster re-run: job **968085**, State COMPLETED, ExitCode 0:0, Elapsed 00:01:01. New tally: **PASS 101 / WARN 0 / FAIL 0**.
+
+**BOTTOM LINE:** Step-1 Leg-2 reader output is validated clean and ready for Step 2.

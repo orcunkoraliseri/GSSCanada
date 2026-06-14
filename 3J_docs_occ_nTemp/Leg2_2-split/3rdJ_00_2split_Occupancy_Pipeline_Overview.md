@@ -9,7 +9,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 
 > **Three-leg roadmap.** Leg 1 = Residential (COMPLETE, 2nd Journal). **Leg 2 = Residential + Office (this doc).** Leg 3 = + Retail + Hotel (3rd-Journal target).
 >
-> **Status convention.** Residential portions = **COMPLETE (Leg 1, unchanged)**; Office portions = **PLANNED (Leg 2)**. The single real build delta is tiling AT_WORK into the 48-slot arrays (Step 3); everything else reuses or lightly extends Leg-1 machinery. Companion detail doc: `00_2split_Occupancy_Pipeline.md`.
+> **Status convention.** Residential portions = **COMPLETE (Leg 1, unchanged)**; Office portions = **PLANNED (Leg 2)**. The single real build delta is tiling AT_WORK into the 48-slot arrays (Step 3); everything else reuses or lightly extends Leg-1 machinery. Companion detail doc: `3rdJ_00_2split_Occupancy_Pipeline.md`.
 
 ---
 

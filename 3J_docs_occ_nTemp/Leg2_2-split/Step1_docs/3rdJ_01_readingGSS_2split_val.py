@@ -1,27 +1,34 @@
 # -*- coding: utf-8 -*-
 """
-01_readingGSS_2split_val.py
+3rdJ_01_readingGSS_2split_val.py
 
 Leg-2 (Residential + Office two-channel split) — Step-1 VALIDATOR.
 
-Loads the 8 Step-1 CSVs produced by 01_readingGSS_2split.py and runs
-validation methods defined in 01_readingGSS_val.md:
+Loads the 8 Step-1 CSVs produced by 3rdJ_01_readingGSS_2split.py and runs
+validation methods defined in 3rdJ_01_readingGSS_val.md:
   - Method 1: Schema & Shape Audit (residential + office column presence)
   - Method 2: Cross-Cycle Category Comparison (residential + office sanity)
-  - Method 3: Episode Integrity Check (residential + occPRE / AT_WORK checks)
+  - Method 3: Episode Integrity Check (residential + raw location-source checks)
   - Method 5: Visual Summary Dashboard (residential panels + 4 office panels)
+
+RENAME-AWARENESS (corrected 2026-06-14):
+  The reader renames raw PUMF variables to canonical names BEFORE writing the
+  CSVs, so this validator checks the canonical names (LFTAG / HRSWRK / COW / NOCS).
+  occPRE is NOT produced at Step 1 — the raw location source (PLACE 2005/2010,
+  LOCATION 2015/2022) is validated instead, since AT_WORK is derived from it at
+  Step 2/3.  See OFFICE COLUMN MAP below for the full crosswalk.
 
 Method 4 (weight distribution) is reused from Leg 1 as-is and included here
 as a lightweight add-on inside Method 1 / the dashboard.
 
 WINDOWS ENCODING NOTE:
-  Run with  py -X utf8 01_readingGSS_2split_val.py
+  Run with  py -X utf8 3rdJ_01_readingGSS_2split_val.py
   or set    PYTHONIOENCODING=utf-8
   to avoid cp1252 crashes on the ✅ / ❌ / ⚠️ glyphs.
 
 Robustness:
   - Missing CSVs: reported clearly; that cycle is skipped rather than crashing.
-  - Missing office column: EXPECTED for 2015 WET_120; soft warning for others.
+  - Missing office column: real soft warning only (rename-aware — canonical names).
 """
 
 import io
@@ -48,6 +55,11 @@ if platform.system() == "Darwin":
         "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/"
         "3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
     )
+elif os.path.isdir("/speed-scratch/o_iseri"):
+    _BASE = (
+        "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/"
+        "3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
+    )
 else:
     _BASE = (
         r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main"
@@ -60,37 +72,57 @@ CYCLES = [2005, 2010, 2015, 2022]
 # ---------------------------------------------------------------------------
 # OFFICE COLUMN MAP (per cycle)
 # None  → column does not exist for this cycle (expected absence)
+#
+# IMPORTANT — these are the CANONICAL (post-rename) names that actually appear
+# in the Step-1 output CSVs.  The reader (3rdJ_01_readingGSS_2split.py) applies
+# MAIN_RENAME_MAP (lines 151-178) BEFORE writing, so the validator must look for
+# the renamed names, not the raw PUMF variable names.  Rename crosswalk:
+#   LFSGSS / ACT7DAYS / ACT7DAYC      -> LFTAG   (LF-status source, all cycles)
+#   WKWEHR_C / WHWD140C / WHWD140G    -> HRSWRK  (hours worked, all cycles)
+#   MAR_Q172 / WHW_110 / WET_120      -> COW     (class of worker, all cycles)
+#   NOC1110Y / NOCLBR_Y              -> NOCS    (occupation, 2015/2022 only;
+#                                                2005/2010 keep raw SOC91C10 /
+#                                                NOCS2006_C10)
+# NAICS, telework, and MAR_Q100 (activity, 2005/2010) are kept raw by the reader.
 # ---------------------------------------------------------------------------
 
-# activity-last-week
-ACT_WEEK_COLS = {2005: "MAR_Q100", 2010: "MAR_Q100", 2015: "ACT7DAYS", 2022: "ACT7DAYC"}
+# activity-last-week — 2005/2010 kept raw (MAR_Q100); in 2015/2022 the activity
+# variable (ACT7DAYS / ACT7DAYC) IS the LF-status source and is renamed to LFTAG.
+ACT_WEEK_COLS = {2005: "MAR_Q100", 2010: "MAR_Q100", 2015: "LFTAG", 2022: "LFTAG"}
 
-# worked-last-week (2005 piggy-backs on MAR_Q100)
+# worked-last-week (2005 piggy-backs on MAR_Q100) — kept raw by the reader
 WORKED_WEEK_COLS = {2005: "MAR_Q100", 2010: "WKLTWE", 2015: "MRW_D40B", 2022: "MRW_D40B"}
 
-# LF status (2015/2022 are derived in later steps — not a raw column)
-LF_STATUS_COLS = {2005: "LFSGSS", 2010: "LFSGSS", 2015: None, 2022: None}
+# LF status — renamed to LFTAG in ALL four cycles (present everywhere post-rename)
+LF_STATUS_COLS = {2005: "LFTAG", 2010: "LFTAG", 2015: "LFTAG", 2022: "LFTAG"}
 
-# hours worked
-HOURS_COLS = {2005: "WKWEHR_C", 2010: "WKWEHR_C", 2015: "WHWD140C", 2022: "WHWD140G"}
+# hours worked — renamed to HRSWRK in all cycles
+HOURS_COLS = {2005: "HRSWRK", 2010: "HRSWRK", 2015: "HRSWRK", 2022: "HRSWRK"}
 
-# class of worker — WET_120 is SUPPRESSED in 2015 PUMF (expected miss)
-COW_COLS = {2005: "MAR_Q172", 2010: "MAR_Q172", 2015: "WET_120", 2022: "WET_120"}
-COW_2015_SUPPRESSED = True   # sentinel — used in Method 1 logic
+# class of worker — renamed to COW in all cycles.  Note: 2015 is sourced from
+# WHW_110 (NOT the suppressed WET_120), so COW IS present for 2015.
+COW_COLS = {2005: "COW", 2010: "COW", 2015: "COW", 2022: "COW"}
+COW_2015_SUPPRESSED = False   # corrected: COW present via WHW_110 rename
 
-# NOC occupation
-NOC_COLS = {2005: "SOC91C10", 2010: "NOCS2006_C10", 2015: "NOC1110Y", 2022: "NOCLBR_Y"}
+# NOC occupation — 2005/2010 keep raw codes; 2015/2022 renamed to NOCS
+NOC_COLS = {2005: "SOC91C10", 2010: "NOCS2006_C10", 2015: "NOCS", 2022: "NOCS"}
 
-# NAICS industry
+# NAICS industry — kept raw by the reader
 NAICS_COLS = {
     2005: "NAICS2002_C16", 2010: "NAICS2007_C16",
     2015: "NAIC12CY",      2022: "NAIC22CY",
 }
 
-# telework (2005 → None; 2022 has multiple sub-columns)
+# telework (2005 → None; 2022 has multiple sub-columns) — kept raw by the reader
 TELEWORK_COLS = {2005: None, 2010: "MAR_Q190", 2015: "WTI_130", 2022: "TLWK_01A"}
 # additional 2022 telework columns (B–D and 02G) — used for existence check only
 TELEWORK_2022_EXTRA = ["TLWK_01B", "TLWK_01C", "TLWK_01D", "TLWK_02G"]
+
+# RAW location source on the EPISODE file — this is what AT_WORK is derived FROM
+# at Step 2/3.  occPRE is a HARMONIZED code produced downstream; it is NOT created
+# at Step-1 read time.  The reader preserves the raw per-cycle location column:
+#   2005/2010 -> PLACE ;  2015/2022 -> LOCATION
+LOCATION_SRC_COLS = {2005: "PLACE", 2010: "PLACE", 2015: "LOCATION", 2022: "LOCATION"}
 
 # ---------------------------------------------------------------------------
 # RESIDENTIAL CROSS-CYCLE DEMO VARS (reused from Leg 1, stripped of
@@ -132,9 +164,9 @@ STEP1_OVERVIEW = """\
 ║  GSS EPISODE FILE (same cycles)                                               ║
 ║  ┌─ Residential (unchanged) ──────────────────────────────────────────────┐  ║
 ║  │  occID, EPINO, DDAY, start/end, startMin/endMin, duration,             │  ║
-║  │  occACT, occPRE, co-presence columns, techUse, wellbeing, WGHT_EPI     │  ║
+║  │  occACT, raw PLACE/LOCATION, co-presence cols, techUse, WGHT_EPI       │  ║
 ║  └─ Key NEW check ────────────────────────────────────────────────────────┘  ║
-║     occPRE must be present on EVERY episode row; AT_WORK derived in Step 2/3  ║
+║     raw PLACE (05/10) / LOCATION (15/22) present; AT_WORK derived Step 2/3    ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝"""
 
 
@@ -147,7 +179,7 @@ class GSSValidator2Split:
     Validation class for Leg-2 Step-1 outputs.
 
     Residential checks are reused unchanged from the Leg-1 validator.
-    Office checks are added per the spec in 01_readingGSS_val.md.
+    Office checks are added per the spec in 3rdJ_01_readingGSS_val.md.
     """
 
     def __init__(self, data_dir: str) -> None:
@@ -452,30 +484,32 @@ class GSSValidator2Split:
             if col not in df.columns:
                 self._record("warn", f"Telework {year} ({col}): column missing")
                 continue
+            # NOTE: GSS telework variables are UNIVERSE-CODED categoricals — every
+            # respondent receives a value (real codes + valid-skip / not-applicable
+            # codes such as 6/96/996), so ~100% non-NaN is the EXPECTED state, not a
+            # red flag.  The meaningful check is therefore (a) the column is present
+            # and (b) it is non-degenerate (carries more than one distinct value).
             non_nan_share = df[col].notna().mean()
-            print(f"    {year} ({col}): {non_nan_share:.1%} non-NaN")
-            if year == 2022:
-                if non_nan_share < 0.01:
-                    self._record(
-                        "fail",
-                        f"Telework 2022: implausibly low non-NaN share {non_nan_share:.1%} (<1%)",
-                    )
-                else:
-                    self._record(
-                        "pass",
-                        f"Telework 2022: {non_nan_share:.1%} non-NaN — COVID jump plausible",
-                    )
+            n_distinct = df[col].dropna().nunique()
+            print(f"    {year} ({col}): {non_nan_share:.1%} non-NaN, {n_distinct} distinct values")
+            if non_nan_share < 0.01:
+                self._record(
+                    "warn",
+                    f"Telework {year} ({col}): implausibly low non-NaN share "
+                    f"{non_nan_share:.1%} (<1%) — possible read error",
+                )
+            elif n_distinct < 2:
+                self._record(
+                    "warn",
+                    f"Telework {year} ({col}): degenerate — only {n_distinct} distinct "
+                    "value(s); column carries no signal",
+                )
             else:
-                if non_nan_share > 0.10:
-                    self._record(
-                        "warn",
-                        f"Telework {year}: non-NaN share {non_nan_share:.1%} > 10% (unexpectedly high)",
-                    )
-                else:
-                    self._record(
-                        "pass",
-                        f"Telework {year}: {non_nan_share:.1%} non-NaN — sparse as expected",
-                    )
+                self._record(
+                    "pass",
+                    f"Telework {year} ({col}): {non_nan_share:.1%} non-NaN, "
+                    f"{n_distinct} distinct values — universe-coded as expected",
+                )
 
     # ------------------------------------------------------------------
     # Method 3 — Episode Integrity Check
@@ -485,10 +519,11 @@ class GSSValidator2Split:
         """
         Method 3: Episode Integrity Check.
 
-        Residential checks — reused from Leg 1 (ID linkage, time ordering).
-        occPRE checks       — NEW: presence, NaN rate, value range 1–18,
-                              AT_WORK-compatible share (2–10%),
-                              AT_WORK column NOT present yet.
+        Residential checks  — reused from Leg 1 (ID linkage, time ordering).
+        Location-source     — NEW: raw PLACE (2005/2010) / LOCATION (2015/2022)
+                              presence, NaN rate, non-degeneracy.  occPRE/AT_WORK
+                              are derived at Step 2/3, so the AT_WORK column must
+                              NOT be present yet.
         """
         self._section("Method 3: Episode Integrity Check")
 
@@ -525,57 +560,48 @@ class GSSValidator2Split:
                 except Exception as exc:
                     self._record("warn", f"{year}: time ordering check error — {exc}")
 
-            # ---- occPRE presence (NEW) ----
-            if "occPRE" not in epi.columns:
+            # ---- Raw location-source presence (AT_WORK derivation key) ----
+            # occPRE is a HARMONIZED code produced at Step 2/3 — it does NOT exist
+            # in the Step-1 episode CSV by design.  What MUST be present here is the
+            # raw per-cycle location column (PLACE for 2005/2010, LOCATION for
+            # 2015/2022), since AT_WORK is derived FROM it downstream.
+            loc_col = LOCATION_SRC_COLS[year]
+            if loc_col not in epi.columns:
                 self._record(
                     "fail",
-                    f"{year}: occPRE MISSING from episode file — "
+                    f"{year}: raw location source '{loc_col}' MISSING from episode file — "
                     "AT_WORK cannot be derived in Step 2/3",
                 )
             else:
-                # NaN rate
-                nan_rate = epi["occPRE"].isnull().mean()
+                # NaN rate on the raw location column
+                nan_rate = epi[loc_col].isnull().mean()
                 if nan_rate < 0.05:
-                    self._record("pass", f"{year}: occPRE NaN rate {nan_rate:.1%} (<5% threshold)")
+                    self._record(
+                        "pass",
+                        f"{year}: location source '{loc_col}' NaN rate {nan_rate:.1%} (<5% threshold)",
+                    )
                 else:
                     self._record(
                         "warn",
-                        f"{year}: occPRE NaN rate {nan_rate:.1%} — exceeds 5% threshold",
+                        f"{year}: location source '{loc_col}' NaN rate {nan_rate:.1%} — "
+                        "exceeds 5% threshold",
                     )
 
-                # Value range 1–18
-                numeric_pre = pd.to_numeric(epi["occPRE"], errors="coerce").dropna()
-                out_of_range = numeric_pre[(numeric_pre < 1) | (numeric_pre > 18)]
-                if out_of_range.empty:
-                    self._record("pass", f"{year}: occPRE all values in 1–18 range")
-                else:
-                    bad_vals = sorted(out_of_range.unique().tolist())[:10]
+                # Non-degeneracy — must carry >1 distinct location code so the Step-2
+                # workplace bucket can actually be split out.
+                n_distinct = epi[loc_col].dropna().nunique()
+                if n_distinct >= 2:
                     self._record(
-                        "warn",
-                        f"{year}: occPRE has {len(out_of_range)} out-of-range values: {bad_vals}",
+                        "pass",
+                        f"{year}: location source '{loc_col}' has {n_distinct} distinct "
+                        "codes — splittable for AT_WORK derivation",
                     )
-
-                # AT_WORK-compatible share (occPRE == 2)
-                n_total = len(epi)
-                if n_total > 0:
-                    at_work_share = (pd.to_numeric(epi["occPRE"], errors="coerce") == 2).mean()
-                    if 0.02 <= at_work_share <= 0.10:
-                        self._record(
-                            "pass",
-                            f"{year}: AT_WORK-compatible share (occPRE==2) = {at_work_share:.2%} — plausible",
-                        )
-                    elif at_work_share == 0.0:
-                        self._record(
-                            "fail",
-                            f"{year}: AT_WORK-compatible share = 0% — occPRE==2 never seen; "
-                            "likely read error",
-                        )
-                    else:
-                        self._record(
-                            "warn",
-                            f"{year}: AT_WORK-compatible share = {at_work_share:.2%} — "
-                            "outside expected 2–10% range (check encoding)",
-                        )
+                else:
+                    self._record(
+                        "fail",
+                        f"{year}: location source '{loc_col}' degenerate "
+                        f"({n_distinct} distinct value) — AT_WORK cannot be derived",
+                    )
 
             # ---- AT_WORK column must NOT be present yet (NEW) ----
             if "AT_WORK" in epi.columns:
@@ -850,44 +876,48 @@ class GSSValidator2Split:
         self._save_plot_to_b64("6_telework_rate")
         self._record("pass", "Telework-rate-per-cycle chart generated")
 
-    # ---- Chart 7 (Office): occPRE distribution ----
+    # ---- Chart 7 (Office): raw location-code distribution ----
     def _plot_occpre_distribution(self) -> None:
         """
-        Office panel: share of episode rows in each occPRE category (1–18),
-        per cycle.  Category 2 (workplace) should be the second-largest after
-        category 1 (home); a COVID-era dip from 2015 to 2022 is expected.
+        Office panel: share of episode rows in each RAW location code, per cycle.
+        occPRE does not exist at Step 1; the raw per-cycle source (PLACE for
+        2005/2010, LOCATION for 2015/2022) is what AT_WORK is derived from at
+        Step 2/3.  The workplace code should be a visible non-trivial slice.
         """
         COLORS = ["#89b4fa", "#f38ba8", "#fab387", "#a6e3a1"]
         fig, axes = plt.subplots(1, len(CYCLES), figsize=(18, 5), squeeze=False, sharey=True)
 
         for col_idx, year in enumerate(CYCLES):
-            ax  = axes[0, col_idx]
-            epi = self.data[year].get("episode")
+            ax      = axes[0, col_idx]
+            epi     = self.data[year].get("episode")
+            loc_col = LOCATION_SRC_COLS[year]
 
-            if epi is None or "occPRE" not in epi.columns:
+            if epi is None or loc_col not in epi.columns:
                 ax.text(0.5, 0.5, "N/A", ha="center", va="center",
                         fontsize=14, color="#cdd6f4", transform=ax.transAxes)
                 ax.set_title(str(year), fontsize=12, fontweight="bold")
                 continue
 
-            numeric_pre = pd.to_numeric(epi["occPRE"], errors="coerce").dropna().astype(int)
-            counts = numeric_pre.value_counts(normalize=True).sort_index()
+            numeric_loc = pd.to_numeric(epi[loc_col], errors="coerce").dropna().astype(int)
+            # top-15 codes by frequency so high-cardinality LOCATION stays readable
+            counts = numeric_loc.value_counts(normalize=True).sort_values(ascending=False).head(15)
+            counts = counts.sort_index()
             ax.bar(counts.index.astype(str), counts.values * 100,
                    color=COLORS[col_idx], edgecolor="#1e1e2e", linewidth=0.5)
-            ax.set_title(str(year), fontsize=12, fontweight="bold")
-            ax.set_xlabel("occPRE category", fontsize=9)
+            ax.set_title(f"{year} ({loc_col})", fontsize=12, fontweight="bold")
+            ax.set_xlabel("location code", fontsize=9)
             if col_idx == 0:
                 ax.set_ylabel("% of episode rows", fontsize=9)
             ax.xaxis.set_tick_params(labelsize=7, rotation=45)
             ax.yaxis.grid(True, linestyle="--", alpha=0.3)
 
         fig.suptitle(
-            "Office Panel — occPRE Distribution per Cycle\n"
-            "Cat 2 = workplace (AT_WORK source); COVID dip 2015→2022 expected",
+            "Office Panel — Raw Location-Code Distribution per Cycle\n"
+            "Workplace code = AT_WORK source (derived at Step 2/3); top-15 codes shown",
             fontsize=12, fontweight="bold",
         )
         self._save_plot_to_b64("7_occpre_distribution")
-        self._record("pass", "occPRE distribution chart generated")
+        self._record("pass", "location-code distribution chart generated")
 
     # ------------------------------------------------------------------
     # HTML Report Export
@@ -907,7 +937,7 @@ class GSSValidator2Split:
             "4_time_ordering":     "Chart 4 — Episode Time-Ordering Pass Rate",
             "5_noc_naics_heatmap": "Office Chart 5 — NOC × NAICS Weighted Cross-Tab",
             "6_telework_rate":     "Office Chart 6 — Telework Rate per Cycle (COVID Jump)",
-            "7_occpre_distribution": "Office Chart 7 — occPRE Distribution per Cycle",
+            "7_occpre_distribution": "Office Chart 7 — Raw Location-Code Distribution per Cycle",
         }
 
         charts_html = ""
@@ -921,12 +951,20 @@ class GSSValidator2Split:
         </div>
       </section>"""
 
-        # WET_120 suppression notice panel
+        # Rename-crosswalk notice panel — explains why raw PUMF names do not
+        # appear in the output CSVs (the reader renames them to canonical names).
         wet120_notice = textwrap.dedent("""\
-            Class-of-worker (WET_120) is suppressed in the 2015 PUMF and is absent
-            from main_2015.csv.  This is an expected miss documented in
-            00_GSS_split_suitability_audit.md §4.  NOC / NAICS serve as archetype
-            proxies for the 2015 cycle.  No further action is required.
+            The Step-1 reader applies MAIN_RENAME_MAP before writing the CSVs, so the
+            output columns carry CANONICAL names, not the raw PUMF variable names:
+              LFSGSS / ACT7DAYS / ACT7DAYC  -> LFTAG   (LF-status / activity)
+              WKWEHR_C / WHWD140C / WHWD140G -> HRSWRK (hours worked)
+              MAR_Q172 / WHW_110 / WET_120   -> COW    (class of worker)
+              NOC1110Y / NOCLBR_Y           -> NOCS   (occupation, 2015/2022)
+            Class-of-worker IS present for all four cycles — 2015 is sourced from
+            WHW_110 (the WET_120 PUMF suppression is therefore not a gap here).
+            On the EPISODE file, occPRE does NOT exist at Step 1 by design: the raw
+            location source (PLACE for 2005/2010, LOCATION for 2015/2022) is what
+            AT_WORK is derived from at Step 2/3.  No further action is required.
         """)
 
         def _badge_list(items: list[str], cls: str) -> str:
@@ -999,7 +1037,7 @@ class GSSValidator2Split:
       <p>Residential + Office column check · Cycles 2005 / 2010 / 2015 / 2022 · {ts}</p>
     </div>
   </header>
-  <nav><a href="#pipeline-overview">Pipeline</a><a href="#wet120-notice">WET_120 Note</a>{nav_links}</nav>
+  <nav><a href="#pipeline-overview">Pipeline</a><a href="#wet120-notice">Rename Note</a>{nav_links}</nav>
   <main>
     <section class="pipeline-section" id="pipeline-overview">
       <h2>Pipeline Overview — Step 1: Two-Channel Split Data Collection</h2>
@@ -1007,7 +1045,7 @@ class GSSValidator2Split:
     </section>
 
     <section class="notice-section" id="wet120-notice">
-      <h2>⚠️  Known Expected Miss — 2015 WET_120 (Class of Worker)</h2>
+      <h2>ℹ️  Rename Crosswalk — Raw PUMF Names → Canonical CSV Names</h2>
       <pre class="notice-pre">{wet120_notice}</pre>
     </section>
 
