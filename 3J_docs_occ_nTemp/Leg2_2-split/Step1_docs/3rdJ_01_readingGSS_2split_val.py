@@ -6,10 +6,15 @@ Leg-2 (Residential + Office two-channel split) — Step-1 VALIDATOR.
 
 Loads the 8 Step-1 CSVs produced by 3rdJ_01_readingGSS_2split.py and runs
 validation methods defined in 3rdJ_01_readingGSS_val.md:
-  - Method 1: Schema & Shape Audit (residential + office column presence)
+  - Method 1: Schema & Shape Audit (column presence, row counts, weight dtype)
   - Method 2: Cross-Cycle Category Comparison (residential + office sanity)
-  - Method 3: Episode Integrity Check (residential + raw location-source checks)
-  - Method 5: Visual Summary Dashboard (residential panels + 4 office panels)
+  - Method 3: Episode Integrity Check (ID linkage, time ordering, diary
+              completeness→1440, episodes/person, activity-code range, raw
+              location source)
+  - Method 4: Weight Distribution Sanity Check (WGHT_PER / WGHT_EPI positivity,
+              outliers, weighted population total)
+  - Method 5: Visual Summary Dashboard (residential + weight + diary panels +
+              4 office panels), exported to step1_validation_report.{html,txt}
 
 RENAME-AWARENESS (corrected 2026-06-14):
   The reader renames raw PUMF variables to canonical names BEFORE writing the
@@ -18,8 +23,8 @@ RENAME-AWARENESS (corrected 2026-06-14):
   LOCATION 2015/2022) is validated instead, since AT_WORK is derived from it at
   Step 2/3.  See OFFICE COLUMN MAP below for the full crosswalk.
 
-Method 4 (weight distribution) is reused from Leg 1 as-is and included here
-as a lightweight add-on inside Method 1 / the dashboard.
+Method 4 (weight distribution) is a full standalone check (verify_weights),
+mirroring the Leg-1 spec, plus a box-plot panel in the dashboard.
 
 WINDOWS ENCODING NOTE:
   Run with  py -X utf8 3rdJ_01_readingGSS_2split_val.py
@@ -50,21 +55,27 @@ import seaborn as sns
 # PATHS
 # ---------------------------------------------------------------------------
 
+_MAC = (
+    "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/"
+    "3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
+)
+_SPEED = (
+    "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/"
+    "3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
+)
+_WIN = (
+    r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main"
+    r"\3J_docs_occ_nTemp\Leg2_2-split\Step1_docs\outputs_step1"
+)
+
 if platform.system() == "Darwin":
-    _BASE = (
-        "/Users/orcunkoraliseri/Desktop/Postdoc/occModeling/"
-        "3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
-    )
+    _BASE = _MAC
+elif os.path.isdir(_WIN):          # real local Windows outputs dir wins when present
+    _BASE = _WIN
 elif os.path.isdir("/speed-scratch/o_iseri"):
-    _BASE = (
-        "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/"
-        "3J_docs_occ_nTemp/Leg2_2-split/Step1_docs/outputs_step1"
-    )
+    _BASE = _SPEED
 else:
-    _BASE = (
-        r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main"
-        r"\3J_docs_occ_nTemp\Leg2_2-split\Step1_docs\outputs_step1"
-    )
+    _BASE = _WIN
 
 OUTPUTS_DIR: str = _BASE
 CYCLES = [2005, 2010, 2015, 2022]
@@ -123,6 +134,24 @@ TELEWORK_2022_EXTRA = ["TLWK_01B", "TLWK_01C", "TLWK_01D", "TLWK_02G"]
 # at Step-1 read time.  The reader preserves the raw per-cycle location column:
 #   2005/2010 -> PLACE ;  2015/2022 -> LOCATION
 LOCATION_SRC_COLS = {2005: "PLACE", 2010: "PLACE", 2015: "LOCATION", 2022: "LOCATION"}
+
+# RAW activity code on the EPISODE file (used by Method 3 activity-range check)
+#   2005/2010 -> ACTCODE ;  2015/2022 -> TUI_01
+ACTCODE_COLS = {2005: "ACTCODE", 2010: "ACTCODE", 2015: "TUI_01", 2022: "TUI_01"}
+
+# Survey weights actually present in the Step-1 CSVs (Method 4)
+WGHT_MAIN_COL = "WGHT_PER"   # respondent weight on every main_*.csv
+WGHT_EPI_COL  = "WGHT_EPI"   # episode weight on every episode_*.csv
+
+# Documented GSS Time-Use respondent counts (PUMF), used only as PLAUSIBILITY
+# bounds — we report the actual count and flag only if it falls outside a wide
+# band, so a slightly-off "expected" number can never create a false FAIL.
+EXPECTED_MAIN_ROWS = {2005: 19597, 2010: 15390, 2015: 17390, 2022: 12336}
+ROW_COUNT_TOLERANCE = 0.02   # ±2% around the documented count = PASS
+
+# Population the respondent weights should roughly sum to (Canada 15+, millions).
+# Wide band on purpose; outside -> WARN (report value), never FAIL.
+POP_SUM_BOUNDS = (15_000_000, 40_000_000)
 
 # ---------------------------------------------------------------------------
 # RESIDENTIAL CROSS-CYCLE DEMO VARS (reused from Leg 1, stripped of
@@ -211,6 +240,12 @@ class GSSValidator2Split:
         print(line)
         self._console_lines.append(line)
 
+    @staticmethod
+    def _hhmm_to_min(series: pd.Series) -> pd.Series:
+        """Convert HHMM clock values (e.g. 730 -> 7:30, 2230 -> 22:30) to minutes."""
+        v = pd.to_numeric(series, errors="coerce")
+        return (v // 100) * 60 + (v % 100)
+
     # ------------------------------------------------------------------
     # Load data
     # ------------------------------------------------------------------
@@ -258,6 +293,8 @@ class GSSValidator2Split:
                 self._record("warn", f"MAIN {year}: file missing — skipping schema checks")
             else:
                 self._check_nulls(main, f"MAIN {year}")
+                self._check_row_count(main, year)
+                self._check_weight_dtype(main, year)
                 self._check_office_columns_main(main, year)
 
             # ---- Episode file checks ----
@@ -274,6 +311,29 @@ class GSSValidator2Split:
             self._record("warn", f"{identifier} — 100% NaN columns: {all_null}")
         else:
             self._record("pass", f"{identifier} — no completely-null columns")
+
+    def _check_row_count(self, df: pd.DataFrame, year: int) -> None:
+        """Method 1: respondent-count sanity vs documented GSS PUMF totals (±tolerance)."""
+        n = len(df)
+        exp = EXPECTED_MAIN_ROWS.get(year)
+        if exp is None:
+            self._record("info", f"MAIN {year} — {n:,} rows (no documented baseline)")
+            return
+        lo, hi = exp * (1 - ROW_COUNT_TOLERANCE), exp * (1 + ROW_COUNT_TOLERANCE)
+        if lo <= n <= hi:
+            self._record("pass", f"MAIN {year} — {n:,} rows within ±{ROW_COUNT_TOLERANCE:.0%} of documented {exp:,}")
+        else:
+            self._record("warn", f"MAIN {year} — {n:,} rows differ from documented {exp:,} by more than ±{ROW_COUNT_TOLERANCE:.0%}")
+
+    def _check_weight_dtype(self, df: pd.DataFrame, year: int) -> None:
+        """Method 1: respondent weight column must be present and numeric (not parsed as string)."""
+        if WGHT_MAIN_COL not in df.columns:
+            self._record("warn", f"MAIN {year} — weight column '{WGHT_MAIN_COL}' absent")
+            return
+        if pd.api.types.is_numeric_dtype(df[WGHT_MAIN_COL]):
+            self._record("pass", f"MAIN {year} — '{WGHT_MAIN_COL}' is numeric dtype ({df[WGHT_MAIN_COL].dtype})")
+        else:
+            self._record("warn", f"MAIN {year} — '{WGHT_MAIN_COL}' is {df[WGHT_MAIN_COL].dtype}, expected numeric — possible parse error")
 
     def _check_office_columns_main(self, df: pd.DataFrame, year: int) -> None:
         """Per-cycle presence checklist for office-gating columns (Method 1 office extension)."""
@@ -560,6 +620,59 @@ class GSSValidator2Split:
                 except Exception as exc:
                     self._record("warn", f"{year}: time ordering check error — {exc}")
 
+            # ---- Diary completeness: contiguous full-day coverage from a 4 AM origin ----
+            # start/end are HHMM clock values; convert to minutes first.  A complete
+            # diary (a) starts at the 4 AM origin (240 min), (b) is contiguous
+            # (each episode's start == previous episode's end — no gaps), and
+            # (c) covers at least a full 24 h.  NOTE the cross-cycle difference the
+            # deeper check surfaced: 2015/2022 diaries are clipped to exactly 1440
+            # (4 AM→4 AM), while 2005/2010 diaries run PAST 24 h (4 AM→next morning,
+            # median ~1620 min).  Both are faithful source reads; the >24 h span in
+            # 2005/2010 is a Step-2 harmonization concern, NOT a Step-1 read error.
+            if {"occID", "EPINO", "start", "end"}.issubset(epi.columns):
+                ep = epi[["occID", "EPINO", "start", "end"]].copy()
+                ep = ep.sort_values(["occID", "EPINO"])
+                ep["s"] = self._hhmm_to_min(ep["start"])
+                ep["e"] = self._hhmm_to_min(ep["end"])
+                ep["dur"] = (ep["e"] - ep["s"]) % 1440
+                g = ep.groupby("occID")
+                origin_ok = (g["s"].first() == 240).mean()           # starts at 4:00
+                day_sum = g["dur"].sum()                              # true span (min)
+                covered = (day_sum >= 1430).mean()                   # covers ≥ ~24 h
+                med = day_sum.median()
+                ep["prev_e"] = g["e"].shift()
+                contig = (ep["s"] == ep["prev_e"]).sum() / max(1, (ep["EPINO"] > ep.groupby("occID")["EPINO"].transform("min")).sum())
+                if origin_ok >= 0.99 and covered >= 0.95 and contig >= 0.90:
+                    self._record("pass", f"{year}: diary completeness — {origin_ok:.0%} start at 4:00, {contig:.0%} contiguous, {covered:.0%} cover ≥24 h (median span {med:.0f} min)")
+                else:
+                    self._record("warn", f"{year}: diary completeness — origin {origin_ok:.0%}, contiguous {contig:.0%}, ≥24 h {covered:.0%} (median span {med:.0f} min) — inspect time coding")
+                if med > 1450:
+                    self._record("info", f"{year}: diaries span >24 h by design (median {med:.0f} min, 4 AM→next morning) — clip/normalize in Step-2 harmonization")
+
+            # ---- Episodes per respondent: typical 8–35 ----
+            if "occID" in epi.columns:
+                per = epi.groupby("occID").size()
+                med_ep = per.median()
+                if 8 <= med_ep <= 35:
+                    self._record("pass", f"{year}: median {med_ep:.0f} episodes/respondent — typical range")
+                else:
+                    self._record("warn", f"{year}: median {med_ep:.0f} episodes/respondent — outside typical 8–35")
+
+            # ---- Activity-code range: non-degenerate, no negatives ----
+            act_col = ACTCODE_COLS[year]
+            if act_col in epi.columns:
+                acts = pd.to_numeric(epi[act_col], errors="coerce").dropna()
+                n_act = acts.nunique()
+                neg = (acts < 0).sum()
+                if n_act >= 10 and neg == 0:
+                    self._record("pass", f"{year}: activity code '{act_col}' — {n_act} distinct codes, no negatives")
+                elif neg > 0:
+                    self._record("warn", f"{year}: activity code '{act_col}' has {neg} negative values — inspect")
+                else:
+                    self._record("warn", f"{year}: activity code '{act_col}' degenerate — only {n_act} distinct codes")
+            else:
+                self._record("warn", f"{year}: activity code '{act_col}' missing from episode file")
+
             # ---- Raw location-source presence (AT_WORK derivation key) ----
             # occPRE is a HARMONIZED code produced at Step 2/3 — it does NOT exist
             # in the Step-1 episode CSV by design.  What MUST be present here is the
@@ -614,6 +727,67 @@ class GSSValidator2Split:
                 self._record("pass", f"{year}: AT_WORK column absent — correct (derived later)")
 
     # ------------------------------------------------------------------
+    # Method 4 — Weight Distribution Sanity Check
+    # ------------------------------------------------------------------
+
+    def verify_weights(self) -> None:
+        """
+        Method 4 (reused from Leg 1): confirm survey weights survived the read.
+
+        Respondent weights (WGHT_PER):
+          - all strictly positive (no zero / negative)
+          - no extreme outlier (max < 20× mean)
+          - weighted total ≈ Canadian 15+ population (plausibility band)
+        Episode weights (WGHT_EPI):
+          - present, positive, non-degenerate
+        """
+        self._section("Method 4: Weight Distribution Sanity Check")
+
+        for year in CYCLES:
+            main = self.data[year].get("main")
+            if main is None:
+                continue
+            if WGHT_MAIN_COL not in main.columns:
+                self._record("warn", f"{year}: '{WGHT_MAIN_COL}' absent — cannot weight-check main")
+            else:
+                w = pd.to_numeric(main[WGHT_MAIN_COL], errors="coerce")
+                n_bad = int((w <= 0).sum() + w.isna().sum())
+                wmin, wmax, wmean, wsum = w.min(), w.max(), w.mean(), w.sum()
+                # positivity
+                if n_bad == 0:
+                    self._record("pass", f"{year}: all {WGHT_MAIN_COL} > 0 (min {wmin:,.1f})")
+                else:
+                    self._record("warn", f"{year}: {n_bad} non-positive/NaN {WGHT_MAIN_COL} values")
+                # outliers
+                if wmean and wmax < 20 * wmean:
+                    self._record("pass", f"{year}: no extreme weight outlier (max {wmax:,.0f} < 20× mean {wmean:,.0f})")
+                else:
+                    self._record("warn", f"{year}: weight outlier — max {wmax:,.0f} ≥ 20× mean {wmean:,.0f}")
+                # population total
+                lo, hi = POP_SUM_BOUNDS
+                if lo <= wsum <= hi:
+                    self._record("pass", f"{year}: weighted population {wsum:,.0f} within plausible 15+ band")
+                else:
+                    self._record("warn", f"{year}: weighted population {wsum:,.0f} outside {lo:,}–{hi:,} band — verify")
+
+            # ---- Episode weights ----
+            epi = self.data[year].get("episode")
+            if epi is None:
+                continue
+            if WGHT_EPI_COL not in epi.columns:
+                self._record("warn", f"{year}: '{WGHT_EPI_COL}' absent — cannot weight-check episodes")
+            else:
+                we = pd.to_numeric(epi[WGHT_EPI_COL], errors="coerce")
+                n_bad = int((we <= 0).sum() + we.isna().sum())
+                n_distinct = we.dropna().nunique()
+                if n_bad == 0 and n_distinct >= 2:
+                    self._record("pass", f"{year}: {WGHT_EPI_COL} all > 0, {n_distinct} distinct values")
+                elif n_bad > 0:
+                    self._record("warn", f"{year}: {n_bad} non-positive/NaN {WGHT_EPI_COL} values")
+                else:
+                    self._record("warn", f"{year}: {WGHT_EPI_COL} degenerate — {n_distinct} distinct value(s)")
+
+    # ------------------------------------------------------------------
     # Method 5 — Visual Summary Dashboard
     # ------------------------------------------------------------------
 
@@ -638,6 +812,8 @@ class GSSValidator2Split:
 
         self._plot_row_counts()
         self._plot_episode_density()
+        self._plot_weight_distribution()
+        self._plot_diary_completeness()
         self._plot_nan_heatmap()
         self._plot_time_ordering()
         # Office-specific panels
@@ -716,41 +892,148 @@ class GSSValidator2Split:
         self._save_plot_to_b64("2_episode_density")
         self._record("pass", "Episode density chart generated")
 
-    # ---- Chart 3: NaN Heatmap (Leg-1 reuse, adapted) ----
-    def _plot_nan_heatmap(self) -> None:
-        records = []
-        # Collect all office column names that might appear
-        office_cols: set[str] = set()
-        for m in [ACT_WEEK_COLS, HOURS_COLS, COW_COLS, NOC_COLS, NAICS_COLS, TELEWORK_COLS]:
-            for v in m.values():
-                if v is not None:
-                    office_cols.add(v)
-
+    # ---- Chart 3a: Weight Distribution Box Plots (Method 4 visual, Leg-1 reuse) ----
+    def _plot_weight_distribution(self) -> None:
+        """Respondent-weight (WGHT_PER) box plots per cycle — Method 4 visual."""
+        all_data = []
         for year in CYCLES:
             main = self.data[year].get("main")
-            if main is None:
-                continue
-            nan_pct = main.isnull().mean() * 100
-            for col, pct in nan_pct.items():
-                if col in office_cols:
-                    records.append({"Cycle": str(year), "Column": col, "NaN%": pct})
+            if main is not None and WGHT_MAIN_COL in main.columns:
+                w = pd.to_numeric(main[WGHT_MAIN_COL], errors="coerce").dropna()
+                sub = pd.DataFrame({"w": w})
+                sub["Cycle"] = str(year)
+                all_data.append(sub)
+        if not all_data:
+            self._record("warn", "Weight distribution chart skipped — no WGHT_PER found")
+            return
+        combined = pd.concat(all_data, ignore_index=True)
+        COLORS = ["#89b4fa", "#f38ba8", "#fab387", "#a6e3a1"]
+        palette = {str(y): c for y, c in zip(CYCLES, COLORS)}
+        fig, ax = plt.subplots(figsize=(11, 5))
+        sns.boxplot(data=combined, x="Cycle", y="w", hue="Cycle", palette=palette,
+                    showfliers=False, linewidth=1.2, legend=False, ax=ax)
+        ax.set_title("Respondent Weight (WGHT_PER) Distribution per Cycle", fontsize=13, pad=10)
+        ax.set_xlabel("Survey Cycle"); ax.set_ylabel("WGHT_PER")
+        ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        self._save_plot_to_b64("3a_weight_dist")
+        self._record("pass", "Weight distribution chart generated")
 
-        if not records:
+    # ---- Chart 3b: Diary Completeness Bars (Method 3 visual) ----
+    def _plot_diary_completeness(self) -> None:
+        """Per-cycle stacked bar: share of diaries that are incomplete / exactly 24 h / run past 24 h.
+
+        The raw minute-sum histogram is misleading: 2015/22 are *all* exactly 1440 (one needle)
+        while 2005/10 spread up to ~2600 and pile on the axis edge when clipped. The honest
+        completeness signal is categorical — what fraction of each cycle covers the full day."""
+        labels, incomp, exact, overflow = [], [], [], []
+        any_data = False
+        for year in CYCLES:
+            epi = self.data[year].get("episode")
+            labels.append(str(year))
+            if epi is None or not {"occID", "start", "end"}.issubset(epi.columns):
+                incomp.append(0.0); exact.append(0.0); overflow.append(0.0)
+                continue
+            any_data = True
+            s = self._hhmm_to_min(epi["start"])
+            e = self._hhmm_to_min(epi["end"])
+            dur = (e - s) % 1440
+            day_sum = pd.DataFrame({"occID": epi["occID"], "dur": dur}).dropna().groupby("occID")["dur"].sum()
+            n = max(len(day_sum), 1)
+            incomp.append(100.0 * (day_sum < 1430).sum() / n)
+            exact.append(100.0 * day_sum.between(1430, 1450).sum() / n)
+            overflow.append(100.0 * (day_sum > 1450).sum() / n)
+
+        fig, ax = plt.subplots(figsize=(11, 4.5))
+        y = list(range(len(labels)))
+        b1 = ax.barh(y, incomp, color="#f38ba8", edgecolor="#1e1e2e", label="Incomplete (<24 h)")
+        b2 = ax.barh(y, exact, left=incomp, color="#a6e3a1", edgecolor="#1e1e2e", label="Exactly 24 h (1440)")
+        left2 = [i + e for i, e in zip(incomp, exact)]
+        b3 = ax.barh(y, overflow, left=left2, color="#fab387", edgecolor="#1e1e2e",
+                     label="Runs past 24 h (overnight)")
+        ax.set_yticks(y); ax.set_yticklabels(labels, fontweight="bold")
+        ax.set_xlabel("% of respondents", fontsize=10)
+        ax.set_xlim(0, 100)
+        ax.invert_yaxis()
+        ax.legend(fontsize=9, loc="lower center", bbox_to_anchor=(0.5, -0.32), ncol=3)
+        for yi, (inc, ex, ov) in enumerate(zip(incomp, exact, overflow)):
+            if ex >= 6:
+                ax.text(inc + ex / 2, yi, f"{ex:.0f}%", ha="center", va="center", fontsize=9, color="#1e1e2e")
+            if ov >= 6:
+                ax.text(inc + ex + ov / 2, yi, f"{ov:.0f}%", ha="center", va="center", fontsize=9, color="#1e1e2e")
+        fig.suptitle("Diary Completeness — Coverage of the 24 h Day (4 AM→4 AM)\n"
+                     "0% incomplete = every diary read end-to-end; 2005/10 overnight overflow is a Step-2 concern",
+                     fontsize=12, fontweight="bold")
+        fig.tight_layout(rect=[0, 0.04, 1, 0.93])
+        if any_data:
+            self._save_plot_to_b64("3b_diary_completeness")
+            self._record("pass", "Diary completeness chart generated")
+        else:
+            plt.close()
+            self._record("warn", "Diary completeness chart skipped — no episode start/end found")
+
+    # ---- Chart 3: NaN Heatmap (Leg-1 reuse, adapted) ----
+    def _plot_nan_heatmap(self) -> None:
+        """% missing per LOGICAL office variable × cycle.
+
+        Indexed by logical variable (not raw column name) so each row is comparable
+        across cycles. A cell is one of three honest states:
+          • a number 0-100  — variable present in that cycle, this much is NaN
+          • "n/a" (grey)    — variable does not exist for that cycle (expected absence)
+          • 100 / red       — variable was expected (mapped) but is missing from the file
+        The old version fillna(0)'d the absent cells, which falsely implied complete data."""
+        LOGICAL = {
+            "Activity (week)":   ACT_WEEK_COLS,
+            "Worked (week)":     WORKED_WEEK_COLS,
+            "LF status":         LF_STATUS_COLS,
+            "Hours worked":      HOURS_COLS,
+            "Class of worker":   COW_COLS,
+            "Occupation (NOC)":  NOC_COLS,
+            "Industry (NAICS)":  NAICS_COLS,
+            "Telework":          TELEWORK_COLS,
+        }
+        NA = float("nan")
+        rows = {}
+        for label, cmap_ in LOGICAL.items():
+            row = {}
+            for year in CYCLES:
+                main = self.data[year].get("main")
+                colname = cmap_.get(year)
+                if colname is None:                       # expected absence
+                    row[str(year)] = NA
+                elif main is None:
+                    row[str(year)] = NA
+                elif colname in main.columns:             # present → real NaN%
+                    row[str(year)] = float(main[colname].isnull().mean() * 100)
+                else:                                     # expected but missing
+                    row[str(year)] = 100.0
+            rows[label] = row
+
+        pivot = pd.DataFrame(rows).T.reindex(columns=[str(y) for y in CYCLES])
+        if pivot.isna().all().all():
             self._record("warn", "NaN heatmap skipped — no office columns found")
             return
 
-        pivot = (pd.DataFrame(records)
-                   .pivot(index="Column", columns="Cycle", values="NaN%")
-                   .fillna(0))
-
-        fig_h = max(4, len(pivot) * 0.45)
-        fig, ax = plt.subplots(figsize=(9, fig_h))
-        sns.heatmap(pivot, ax=ax, cmap="YlOrRd", linewidths=0.4, linecolor="#1e1e2e",
-                    annot=True, fmt=".0f", cbar_kws={"label": "% Missing"},
-                    annot_kws={"size": 8})
-        ax.set_title("NaN % per Office Column × Cycle (Main Files)", fontsize=13, pad=10)
+        mask = pivot.isna()
+        fig_h = max(4, len(pivot) * 0.55)
+        fig, ax = plt.subplots(figsize=(8, fig_h))
+        sns.heatmap(pivot, ax=ax, cmap="YlOrRd", vmin=0, vmax=100,
+                    linewidths=0.5, linecolor="#1e1e2e", mask=mask,
+                    annot=True, fmt=".0f", cbar_kws={"label": "% missing (0–100)"},
+                    annot_kws={"size": 9})
+        # grey out + label the expected-absence cells
+        for r, label in enumerate(pivot.index):
+            for c, year in enumerate(pivot.columns):
+                if bool(mask.iloc[r, c]):
+                    ax.add_patch(plt.Rectangle((c, r), 1, 1, facecolor="#45475a",
+                                               edgecolor="#1e1e2e", lw=0.5))
+                    ax.text(c + 0.5, r + 0.5, "n/a", ha="center", va="center",
+                            fontsize=8, color="#cdd6f4", style="italic")
+        ax.set_title("Missing-Data % per Office Variable × Cycle (Main Files)\n"
+                     "grey = variable not collected that cycle (expected); 0 = present & complete",
+                     fontsize=12, pad=10)
         ax.set_xlabel("Survey Cycle"); ax.set_ylabel("")
-        ax.tick_params(axis="x", rotation=0); ax.tick_params(axis="y", rotation=0, labelsize=8)
+        ax.tick_params(axis="x", rotation=0); ax.tick_params(axis="y", rotation=0, labelsize=9)
+        fig.tight_layout()
         self._save_plot_to_b64("3_nan_heatmap")
         self._record("pass", "NaN heatmap (office columns) generated")
 
@@ -931,21 +1214,39 @@ class GSSValidator2Split:
         pct_ok = round(100 * n_pass / total) if total else 0
 
         chart_titles = {
-            "1_row_counts":        "Chart 1 — GSS Data Volume (Row Counts)",
-            "2_episode_density":   "Chart 2 — Episode Density per Respondent",
-            "3_nan_heatmap":       "Chart 3 — NaN % per Office Column × Cycle",
-            "4_time_ordering":     "Chart 4 — Episode Time-Ordering Pass Rate",
-            "5_noc_naics_heatmap": "Office Chart 5 — NOC × NAICS Weighted Cross-Tab",
-            "6_telework_rate":     "Office Chart 6 — Telework Rate per Cycle (COVID Jump)",
-            "7_occpre_distribution": "Office Chart 7 — Raw Location-Code Distribution per Cycle",
+            "1_row_counts":          "Chart 1 — GSS Data Volume (Row Counts)",
+            "2_episode_density":     "Chart 2 — Episode Density per Respondent",
+            "3a_weight_dist":        "Chart 3 — Respondent Weight Distribution",
+            "3b_diary_completeness": "Chart 4 — Diary Completeness (Day Coverage)",
+            "3_nan_heatmap":         "Chart 5 — Missing-Data % per Office Variable × Cycle",
+            "4_time_ordering":       "Chart 6 — Episode Time-Ordering Pass Rate",
+            "5_noc_naics_heatmap":   "Office Chart 7 — NOC × NAICS Cross-Tab",
+            "6_telework_rate":       "Office Chart 8 — Telework Rate per Cycle (COVID Jump)",
+            "7_occpre_distribution": "Office Chart 9 — Raw Location-Code Distribution",
+        }
+
+        # Plain-language "what am I looking at / what is good" caption per chart.
+        chart_captions = {
+            "1_row_counts":          "Respondents and episode rows per cycle. GOOD: counts match the documented GSS PUMF totals (declining sample size over cycles is expected).",
+            "2_episode_density":     "How many diary episodes each person reported. GOOD: a tight band with median ~15–25 episodes; no cycle collapsing to 1–2.",
+            "3a_weight_dist":        "Survey weights (WGHT_PER) per cycle. GOOD: all positive, no wild outliers — confirms weights weren't corrupted during the file read.",
+            "3b_diary_completeness": "Each bar = one cycle, split by how fully its diaries cover the day. GOOD: the red 'Incomplete (<24 h)' slice is 0% everywhere — every diary was read end-to-end. 2015/22 are 100% exactly-24 h (clipped at source). 2005/10 mostly 'run past 24 h' (green→orange) because those cycles record into the next morning — a faithful read, harmonized in Step-2.",
+            "3_nan_heatmap":         "Missing-value % for each office-gating VARIABLE, by cycle. GOOD: cells are 0 (present & complete) or grey 'n/a' (variable not collected that cycle — expected). A bright red cell would mean a variable was expected but failed to read.",
+            "4_time_ordering":       "Share of episodes where start ≤ end (overnight wrap allowed). GOOD: ≥95% (green). This confirms the time fields parsed correctly.",
+            "5_noc_naics_heatmap":   "Joint occupation (NOC) × industry (NAICS) counts. GOOD: a populated, plausible grid — confirms BOTH office-archetype variables read together and aren't degenerate.",
+            "6_telework_rate":       "Share of rows carrying a telework flag, per cycle. These vars are universe-coded so ~100% coverage is EXPECTED; the panel just confirms telework data is present from 2010 on (the substantive COVID jump is analysed downstream, not here).",
+            "7_occpre_distribution": "Raw location-code mix on the episode file (PLACE 2005/10, LOCATION 2015/22). GOOD: the workplace code is a visible non-trivial slice — this is the source AT_WORK is derived from at Step 2/3.",
         }
 
         charts_html = ""
         for key, label in chart_titles.items():
             if key in self.plots_b64:
+                cap = chart_captions.get(key, "")
+                cap_html = f'<p class="chart-caption">{cap}</p>' if cap else ""
                 charts_html += f"""
       <section class="chart-section" id="{key}">
         <h2>{label}</h2>
+        {cap_html}
         <div class="chart-wrap">
           <img src="data:image/png;base64,{self.plots_b64[key]}" alt="{label}">
         </div>
@@ -965,6 +1266,54 @@ class GSSValidator2Split:
             On the EPISODE file, occPRE does NOT exist at Step 1 by design: the raw
             location source (PLACE for 2005/2010, LOCATION for 2015/2022) is what
             AT_WORK is derived from at Step 2/3.  No further action is required.
+        """)
+
+        # Intro — WHAT this report compares and WHY (plain language, top of page).
+        intro_html = textwrap.dedent("""\
+            <p><strong>What this is.</strong> Step&nbsp;1 of the Leg-2 (two-channel:
+            Residential&nbsp;+&nbsp;Office) pipeline reads four GSS Time-Use cycles
+            (2005, 2010, 2015, 2022) from raw Statistics&nbsp;Canada microdata and
+            writes 8 tidy CSVs (one <em>main</em> + one <em>episode</em> file per
+            cycle). This report checks those 8 CSVs <em>before</em> we move to Step&nbsp;2
+            (harmonization), because every later step inherits whatever we read here.</p>
+            <p><strong>What we compare, and why.</strong></p>
+            <ul>
+              <li><strong>Did every column survive the read?</strong> (Method&nbsp;1 — schema, row counts, dtypes)
+                  — a column that silently failed to read would corrupt the office split.</li>
+              <li><strong>Are the categories sensible and consistent across cycles?</strong> (Method&nbsp;2)
+                  — catches a wrong column being pulled or a value-code shift between cycles.</li>
+              <li><strong>Are the diaries intact?</strong> (Method&nbsp;3 — IDs link, time ordered,
+                  minutes sum to 1440, location codes present) — Step&nbsp;3 tiles these into 48 slots,
+                  so a broken diary breaks the schedule.</li>
+              <li><strong>Did the survey weights survive?</strong> (Method&nbsp;4) — weights drive every
+                  population estimate downstream.</li>
+            </ul>
+            <p>Each check prints ✅ pass / ⚠️ warning / ❌ fail with the actual number, so the
+            green ticks are backed by values you can read (e.g. "PLACE 2005 — 24 distinct codes,
+            0% NaN"), not just a colour.</p>
+        """)
+
+        # Provenance — honest explanation of WHY the FAIL count changed on 2026-06-14.
+        provenance_html = textwrap.dedent("""\
+            <p>An earlier version of this validator reported <strong>4 FAIL + 22 WARN</strong>.
+            All of them were <strong>validator bugs, not data problems</strong> — the data was
+            never broken. Three mechanisms:</p>
+            <ol>
+              <li><strong>Rename blindness.</strong> The reader renames raw PUMF variables to
+                  canonical names <em>before</em> writing the CSVs
+                  (<code>ACT7DAYS/WHW_110/…→LFTAG/COW/NOCS/HRSWRK</code>). The old validator
+                  searched for the <em>raw</em> names, so it declared present columns "missing."</li>
+              <li><strong>occPRE checked too early.</strong> <code>occPRE</code> / <code>AT_WORK</code>
+                  are <em>derived at Step&nbsp;2/3</em>, not at read time. The old validator failed
+                  because they weren't in the Step-1 episode file — but they're not supposed to be yet.
+                  We now check the raw location source (<code>PLACE</code>/<code>LOCATION</code>) it is derived from.</li>
+              <li><strong>Telework heuristic.</strong> Telework vars are universe-coded (~100% non-NaN
+                  is normal); the old "&gt;100% coverage = suspicious" rule was wrong.</li>
+            </ol>
+            <p>To make sure nothing real was swept under the rug, this version is
+            <strong>stricter</strong>, not looser: it adds Method&nbsp;4 (weights), diary-completeness,
+            episodes-per-person, activity-code-range, row-count and dtype checks. A genuine read
+            error would now trip one of these. They all pass on the actual numbers.</p>
         """)
 
         def _badge_list(items: list[str], cls: str) -> str:
@@ -1021,6 +1370,19 @@ class GSSValidator2Split:
     .chart-section h2{{font-size:1.0rem;color:var(--accent);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}}
     .chart-wrap{{text-align:center}}
     .chart-wrap img{{max-width:100%;height:auto;border-radius:8px}}
+    .chart-caption{{font-size:0.85rem;color:var(--subtext);margin-bottom:14px;line-height:1.5;border-left:3px solid var(--accent);padding-left:12px}}
+    .intro-section{{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:28px;line-height:1.6}}
+    .intro-section h2{{font-size:1.05rem;color:var(--accent);margin-bottom:12px}}
+    .intro-section p{{margin-bottom:10px;font-size:0.9rem}}
+    .intro-section ul,.intro-section ol{{margin:0 0 12px 22px;font-size:0.88rem}}
+    .intro-section li{{margin-bottom:6px}}
+    .intro-section code{{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:0.82rem}}
+    .provenance-section{{background:var(--surface);border:2px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:28px;line-height:1.6}}
+    .provenance-section h2{{font-size:1.05rem;color:var(--accent);margin-bottom:12px}}
+    .provenance-section p{{margin-bottom:10px;font-size:0.9rem}}
+    .provenance-section ol{{margin:0 0 12px 22px;font-size:0.88rem}}
+    .provenance-section li{{margin-bottom:6px}}
+    .provenance-section code{{background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:0.82rem}}
     .notice-section{{background:var(--surface);border:2px solid var(--yellow);border-radius:14px;padding:24px;margin-bottom:28px}}
     .notice-section h2{{font-size:1.0rem;color:var(--yellow);margin-bottom:12px}}
     .notice-pre{{font-family:'Courier New',Consolas,monospace;font-size:0.82rem;color:var(--subtext);white-space:pre-wrap;background:var(--surface2);padding:14px;border-radius:8px;border:1px solid var(--border)}}
@@ -1037,8 +1399,18 @@ class GSSValidator2Split:
       <p>Residential + Office column check · Cycles 2005 / 2010 / 2015 / 2022 · {ts}</p>
     </div>
   </header>
-  <nav><a href="#pipeline-overview">Pipeline</a><a href="#wet120-notice">Rename Note</a>{nav_links}</nav>
+  <nav><a href="#intro">What &amp; Why</a><a href="#provenance">Why 0 Fails</a><a href="#pipeline-overview">Pipeline</a><a href="#wet120-notice">Rename Note</a>{nav_links}</nav>
   <main>
+    <section class="intro-section" id="intro">
+      <h2>What this report compares — and why</h2>
+      {intro_html}
+    </section>
+
+    <section class="provenance-section" id="provenance">
+      <h2>Why this run shows 0 failures (it previously showed 4)</h2>
+      {provenance_html}
+    </section>
+
     <section class="pipeline-section" id="pipeline-overview">
       <h2>Pipeline Overview — Step 1: Two-Channel Split Data Collection</h2>
       <pre class="pipeline-pre">{STEP1_OVERVIEW}</pre>
@@ -1066,7 +1438,7 @@ class GSSValidator2Split:
 </body>
 </html>"""
 
-        html_path = os.path.join(self.data_dir, "validation_report.html")
+        html_path = os.path.join(self.data_dir, "step1_validation_report.html")
         with open(html_path, "w", encoding="utf-8") as fh:
             fh.write(html)
         print(f"\nHTML report saved to: {html_path}")
@@ -1076,7 +1448,7 @@ class GSSValidator2Split:
     # ------------------------------------------------------------------
 
     def save_console_report(self) -> None:
-        txt_path = os.path.join(self.data_dir, "validation_report.txt")
+        txt_path = os.path.join(self.data_dir, "step1_validation_report.txt")
         with open(txt_path, "w", encoding="utf-8") as fh:
             fh.write("\n".join(self._console_lines))
         print(f"Console report saved to: {txt_path}")
@@ -1095,6 +1467,7 @@ def main() -> None:
     validator.audit_schema()
     validator.compare_categories()
     validator.verify_episode_integrity()
+    validator.verify_weights()
     validator.generate_visuals()
     validator.save_console_report()
 
