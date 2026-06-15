@@ -304,3 +304,37 @@ The 4 FAILs and 22 WARNs in the previous run were entirely validator bugs, not p
 All 101 checks pass. The downloaded `outputs_step1/validation_report.txt` (121 lines, all ✅) and `validation_report.html` are consistent with the stdout tally.
 
 **BOTTOM LINE:** Step-1 Leg-2 reader output is validated clean and ready for Step 2. The prior 4 FAIL + 22 WARN results were entirely validator false-positives and have been eliminated. No data issues remain open at Step 1.
+
+---
+
+### 2026-06-14 — Chart-quality fixes + cluster re-run (job 968314)
+
+**Cluster job:**
+
+| Field | Value |
+|---|---|
+| Job ID | 968314 |
+| State | COMPLETED |
+| ExitCode | 0:0 |
+| Elapsed | 00:00:17 |
+| Node | Speed HPC (partition ps) |
+
+**Tally: PASS 139 / WARN 0 / FAIL 0** — unchanged from logic perspective; the check count increased from 101 to 139 because the four rebuilt charts each generate additional internal sub-checks, but no check logic was altered and no new data issues surfaced.
+
+**Four chart fixes applied to `3rdJ_01_readingGSS_2split_val.py`:**
+
+1. **Chart 4 (Diary Completeness):** Replaced the misleading minute-sum histogram (produced a degenerate 1440-minute needle for 2015/2022 and a clamp artifact at 1800 min for 2005/2010) with a stacked completeness bar showing three categories — incomplete / exactly-24h / overnight-overflow — per cycle. Shows 0% incomplete every cycle.
+
+2. **Chart 5 (NaN heatmap):** Rebuilt to index by the LOGICAL office variable name (post-rename canonical name) rather than raw PUMF column names. Absent-for-cycle cells now render grey "n/a" instead of false 0%. Colorbar corrected to 0–100 range (was running negative in the previous version).
+
+3. **Chart 7 (NOC x NAICS cross-tab):** Excluded not-applicable and valid-skip codes (codes >= 90, including not-in-labour-force respondents) so the real occupation x industry structure is visible. Scale dropped from 1e7 to 1e6 after the exclusion.
+
+4. **Chart 8 (Telework):** Replaced flat non-NaN PRESENCE bars with the REAL decoded telework rate per instrument — 2010 MAR_Q190 21.9% (usual yes/no), 2015 WTI_130 7.8% (diary-day, different instrument), 2022 TLWK_01A 37.6% (usual yes/no), 2005 n/a. The comparable usual yes/no pair 2010→2022 (22%→38%) is the genuine COVID jump.
+
+**Path-priority fix also included:** A local path-priority bug was corrected — the Windows outputs directory now wins over a stray local /speed-scratch mount that was present on one dev machine. Cluster path logic is unchanged.
+
+**Reports downloaded locally:**
+- `outputs_step1/step1_validation_report.html` — 844,062 bytes, mtime 2026-06-14 19:54:37
+- `outputs_step1/step1_validation_report.txt` — 8,413 bytes, mtime 2026-06-14 19:54:38
+
+**BOTTOM LINE:** Charts now accurately represent the data structure. PASS 139 / WARN 0 / FAIL 0 confirms no regressions from the chart rework. Step-1 validation is complete and reports are current.

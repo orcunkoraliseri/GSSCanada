@@ -64,6 +64,7 @@ MAIN_COLS_2005: list[str] = [
     "MAR_Q100",      # Main activity last week (primary gate; no WKLTWE in 2005)
     "SOC91C10",      # Occupation — NOC 1991 10-cat (office vs non-office bucket)
     "NAICS2002_C16", # Industry — NAICS 2002, 16-cat (office vs non-office bucket)
+    "MAR_Q410",      # Usual work schedule/shift (1-9; 97-99=sentinel) — WORK_SCHEDULE source
 ]
 
 MAIN_COLS_2010: list[str] = [
@@ -82,6 +83,7 @@ MAIN_COLS_2010: list[str] = [
     "NOCS2006_C10",   # Occupation — NOC 2006, 10-cat
     "NAICS2007_C16",  # Industry — NAICS 2007, 16-cat
     "MAR_Q190",       # Telework / works at home (WFH signal for 2010)
+    "MAR_Q410",       # Usual work schedule/shift (1-9; 97-99=sentinel) — WORK_SCHEDULE source
 ]
 
 MAIN_COLS_2015: list[str] = [
@@ -100,6 +102,7 @@ MAIN_COLS_2015: list[str] = [
     "MRW_D40B",      # Worked last week Y/N
     "NAIC12CY",      # Industry — NAICS 2012, collapsed, main job
     "WTI_130",       # Telework / reason for working at home (WFH signal for 2015)
+    "WHW_230",       # Usual work schedule/shift (1-9; 96-99=sentinel) — WORK_SCHEDULE source
 ]
 
 MAIN_COLS_2022: list[str] = [
@@ -118,6 +121,7 @@ MAIN_COLS_2022: list[str] = [
     "TLWK_01C",      # Telework: hours teleworked (availability in PUMF unconfirmed — best-effort)
     "TLWK_01D",      # Telework: additional telework detail (best-effort)
     "TLWK_02G",      # Telework: employer expectation / arrangement type
+    "WHW_230",       # Usual work schedule/shift (1-9; 96-99=sentinel) — WORK_SCHEDULE source
 ]
 
 # Episode file columns verified from reference script and documentation.

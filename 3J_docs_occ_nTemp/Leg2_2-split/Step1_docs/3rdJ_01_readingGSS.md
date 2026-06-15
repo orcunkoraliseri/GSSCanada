@@ -451,3 +451,15 @@ The prior run's 4 FAIL + 22 WARN were all validator false-positives (rename-unaw
 Cluster re-run: job **968085**, State COMPLETED, ExitCode 0:0, Elapsed 00:01:01. New tally: **PASS 101 / WARN 0 / FAIL 0**.
 
 **BOTTOM LINE:** Step-1 Leg-2 reader output is validated clean and ready for Step 2.
+
+---
+
+### 2026-06-14 — Chart-quality fixes + cluster re-run (job 968314)
+
+Cross-reference entry — see `3rdJ_01_readingGSS_val.md § 2026-06-14` for full detail.
+
+Four chart fixes were applied to `3rdJ_01_readingGSS_2split_val.py` (Chart 4 diary completeness stacked bar; Chart 5 NaN heatmap indexed by logical variable name with grey n/a for absent-for-cycle cells; Chart 7 NOC×NAICS with not-applicable/valid-skip codes >= 90 excluded; Chart 8 telework replaced with real decoded rates per instrument: 2010 21.9%, 2015 7.8%, 2022 37.6%, 2005 n/a). A local path-priority bug (Windows outputs dir vs stray /speed-scratch mount) was also corrected; cluster path logic unchanged.
+
+Cluster re-run: job **968314**, State COMPLETED, ExitCode 0:0, Elapsed 00:00:17. Tally: **PASS 139 / WARN 0 / FAIL 0**. Reports downloaded: `outputs_step1/step1_validation_report.html` (844 KB) and `.txt` (8 KB), both dated 2026-06-14 19:54.
+
+**BOTTOM LINE:** Step-1 validation current and clean. No data issues. Ready for Step 2.

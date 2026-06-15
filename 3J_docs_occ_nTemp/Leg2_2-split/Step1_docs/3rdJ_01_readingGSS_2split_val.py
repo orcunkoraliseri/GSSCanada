@@ -1096,9 +1096,14 @@ class GSSValidator2Split:
             sub = df[[noc, nai]].copy()
             sub[noc] = pd.to_numeric(sub[noc], errors="coerce")
             sub[nai] = pd.to_numeric(sub[nai], errors="coerce")
-
             if wgt_col:
                 sub["_w"] = pd.to_numeric(df[wgt_col], errors="coerce").fillna(0)
+            # drop not-applicable / valid-skip / DK / refusal / NS codes (>=90 in both
+            # NOC and NAICS) so the real occupation x industry structure is visible
+            # rather than swamped by the huge "not in labour force" bucket (code 96/97).
+            sub = sub[(sub[noc] < 90) & (sub[nai] < 90)]
+
+            if wgt_col:
                 ct = sub.dropna().pivot_table(index=noc, columns=nai, values="_w",
                                               aggfunc="sum", fill_value=0)
             else:
@@ -1119,43 +1124,63 @@ class GSSValidator2Split:
             ax.set_xlabel("NAICS", fontsize=9)
             ax.set_ylabel("NOC" if col_idx == 0 else "", fontsize=9)
 
-        fig.suptitle("Office Panel — NOC × NAICS Weighted Cross-Tab (counts / weighted)",
-                     fontsize=13, fontweight="bold")
+        fig.suptitle("Office Panel — NOC × NAICS Weighted Cross-Tab (weighted)\n"
+                     "not-applicable / valid-skip codes (≥90, incl. not-in-labour-force) excluded",
+                     fontsize=12, fontweight="bold")
         self._save_plot_to_b64("5_noc_naics_heatmap")
         self._record("pass", "NOC × NAICS heatmap generated")
 
     # ---- Chart 6 (Office): Telework rate per cycle ----
-    def _plot_telework_rate(self) -> None:
-        """
-        Office panel: share of main-file rows with a non-NaN telework flag,
-        by cycle.  Should show near-zero in 2005, small in 2010/2015, COVID
-        jump in 2022.
-        """
-        cycle_labels: list[str] = []
-        rates: list[float] = []
+    # Per-cycle telework instrument + how to read it. The GSS telework question is
+    # NOT the same across cycles, so a single trend line would be misleading:
+    #   2010 MAR_Q190 — "usual" arrangement, yes/no  (yes=1, asked={1,2})
+    #   2015 WTI_130  — diary-DAY paid-work-at-home   (any of 1-9 vs valid-skip 96)
+    #   2022 TLWK_01A — "usual" arrangement, yes/no   (yes=1, asked={1,2})
+    # 2010 and 2022 share the same y/n "usual" instrument → that pair is the real,
+    # comparable COVID jump. 2015 is a different (diary-day) measure, flagged apart.
+    TELEWORK_RATE_CFG = {
+        2010: {"yes": {1},            "universe": {1, 2},                       "note": "usual (y/n)"},
+        2015: {"yes": set(range(1, 10)), "universe": set(range(1, 10)) | {96}, "note": "diary-day ≠"},
+        2022: {"yes": {1},            "universe": {1, 2},                       "note": "usual (y/n)"},
+    }
 
+    def _plot_telework_rate(self) -> None:
+        """Office panel: REAL telework rate per cycle = teleworked / in-universe,
+        decoded from each cycle's own instrument (see TELEWORK_RATE_CFG)."""
+        labels, rates, notes = [], [], []
         for year in CYCLES:
             col = TELEWORK_COLS[year]
             df  = self.data[year].get("main")
-            if df is None or col is None or col not in df.columns:
-                cycle_labels.append(str(year))
-                rates.append(0.0)
+            cfg = self.TELEWORK_RATE_CFG.get(year)
+            labels.append(str(year))
+            if df is None or col is None or col not in df.columns or cfg is None:
+                rates.append(None); notes.append("n/a")           # 2005: no telework var
                 continue
-            cycle_labels.append(str(year))
-            rates.append(df[col].notna().mean() * 100)
+            v = pd.to_numeric(df[col], errors="coerce")
+            uni = v.isin(cfg["universe"]).sum()
+            yes = v.isin(cfg["yes"]).sum()
+            rates.append(100.0 * yes / uni if uni else None)
+            notes.append(cfg["note"])
 
-        COLORS = ["#89b4fa", "#f38ba8", "#fab387", "#a6e3a1"]
-        fig, ax = plt.subplots(figsize=(8, 4))
-        bars = ax.bar(cycle_labels, rates, color=COLORS[:len(cycle_labels)],
-                      edgecolor="#1e1e2e", linewidth=0.8, width=0.55)
-        for bar, val in zip(bars, rates):
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
-                    f"{val:.1f}%", ha="center", va="bottom", fontsize=10)
-        ax.set_title("Office Panel — Telework Non-NaN Rate per Cycle\n"
-                     "(COVID jump expected in 2022)", fontsize=12, pad=10)
-        ax.set_ylabel("% rows with telework flag")
+        COLORS = ["#6c7086", "#f38ba8", "#fab387", "#a6e3a1"]   # 2005 grey = n/a
+        fig, ax = plt.subplots(figsize=(8.5, 4.6))
+        plot_vals = [r if r is not None else 0.0 for r in rates]
+        bars = ax.bar(labels, plot_vals, color=COLORS[:len(labels)],
+                      edgecolor="#1e1e2e", linewidth=0.8, width=0.6)
+        for bar, val, note in zip(bars, rates, notes):
+            if val is None:
+                ax.text(bar.get_x() + bar.get_width() / 2, 1.0, "n/a\n(no var)",
+                        ha="center", va="bottom", fontsize=9, color="#cdd6f4")
+            else:
+                ax.text(bar.get_x() + bar.get_width() / 2, val + 0.6,
+                        f"{val:.1f}%\n{note}", ha="center", va="bottom", fontsize=9)
+        ax.set_title("Office Panel — Telework Rate per Cycle (decoded from each instrument)\n"
+                     "comparable y/n 'usual' pair 2010→2022 = the COVID jump; 2015 is a diary-day measure",
+                     fontsize=11, pad=10)
+        ax.set_ylabel("% who telework (of in-universe)")
         ax.yaxis.grid(True, linestyle="--", alpha=0.4)
-        ax.set_ylim(0, max(rates + [5]) * 1.25)
+        ax.set_ylim(0, max(plot_vals + [5]) * 1.30)
+        fig.tight_layout()
         self._save_plot_to_b64("6_telework_rate")
         self._record("pass", "Telework-rate-per-cycle chart generated")
 
@@ -1220,7 +1245,7 @@ class GSSValidator2Split:
             "3b_diary_completeness": "Chart 4 — Diary Completeness (Day Coverage)",
             "3_nan_heatmap":         "Chart 5 — Missing-Data % per Office Variable × Cycle",
             "4_time_ordering":       "Chart 6 — Episode Time-Ordering Pass Rate",
-            "5_noc_naics_heatmap":   "Office Chart 7 — NOC × NAICS Cross-Tab",
+            "5_noc_naics_heatmap":   "Office Chart 7 — NOC × NAICS Cross-Tab (real codes only)",
             "6_telework_rate":       "Office Chart 8 — Telework Rate per Cycle (COVID Jump)",
             "7_occpre_distribution": "Office Chart 9 — Raw Location-Code Distribution",
         }
@@ -1233,8 +1258,8 @@ class GSSValidator2Split:
             "3b_diary_completeness": "Each bar = one cycle, split by how fully its diaries cover the day. GOOD: the red 'Incomplete (<24 h)' slice is 0% everywhere — every diary was read end-to-end. 2015/22 are 100% exactly-24 h (clipped at source). 2005/10 mostly 'run past 24 h' (green→orange) because those cycles record into the next morning — a faithful read, harmonized in Step-2.",
             "3_nan_heatmap":         "Missing-value % for each office-gating VARIABLE, by cycle. GOOD: cells are 0 (present & complete) or grey 'n/a' (variable not collected that cycle — expected). A bright red cell would mean a variable was expected but failed to read.",
             "4_time_ordering":       "Share of episodes where start ≤ end (overnight wrap allowed). GOOD: ≥95% (green). This confirms the time fields parsed correctly.",
-            "5_noc_naics_heatmap":   "Joint occupation (NOC) × industry (NAICS) counts. GOOD: a populated, plausible grid — confirms BOTH office-archetype variables read together and aren't degenerate.",
-            "6_telework_rate":       "Share of rows carrying a telework flag, per cycle. These vars are universe-coded so ~100% coverage is EXPECTED; the panel just confirms telework data is present from 2010 on (the substantive COVID jump is analysed downstream, not here).",
+            "5_noc_naics_heatmap":   "Joint occupation (NOC) × industry (NAICS) weighted counts, with the not-applicable/not-in-labour-force codes (≥90) removed so the real structure shows. GOOD: a populated, plausible grid — confirms BOTH office-archetype variables read together and aren't degenerate.",
+            "6_telework_rate":       "Real telework rate per cycle, decoded from each cycle's own instrument (rate = teleworked ÷ in-universe). The question DIFFERS by cycle, so this isn't one trend: 2010 & 2022 share the same yes/no 'usual arrangement' wording → that pair (~22%→~38%) is the genuine COVID jump; 2015 uses a diary-day measure (flagged ≠); 2005 has no telework variable (n/a).",
             "7_occpre_distribution": "Raw location-code mix on the episode file (PLACE 2005/10, LOCATION 2015/22). GOOD: the workplace code is a visible non-trivial slice — this is the source AT_WORK is derived from at Step 2/3.",
         }
 
