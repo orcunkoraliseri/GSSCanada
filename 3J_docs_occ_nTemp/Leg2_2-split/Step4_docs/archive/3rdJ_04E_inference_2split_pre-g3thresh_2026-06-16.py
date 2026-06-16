@@ -290,54 +290,6 @@ def main():
     meta_merge = meta.drop(columns=["DDAY_STRATA"], errors="ignore")
     aug_df = aug_df.merge(meta_merge, on=["occID", "CYCLE_YEAR"], how="left")
 
-    # ── G3 operating-point fix: per-channel rank-to-marginal binarization ──────
-    # Pool ALL synthetic rows per channel (unweighted) so that synthetic
-    # co-presence prevalence matches observed prevalence under the EXACT same
-    # definition the G3 validator uses:
-    #   obs:  np.nanmean(obs_block == 1)  (equality to 1, NaN-aware, unweighted)
-    #   syn:  np.nanmean(syn_block >= 0.5)  (after binarization, unweighted)
-    # Observed rows (IS_SYNTHETIC==0) are NOT modified — they stay 0/1/NaN.
-    print("\n[4b/4] Applying per-channel rank-to-marginal binarization (G3 fix)...")
-    syn_mask = aug_df["IS_SYNTHETIC"] == 1
-    obs_mask = aug_df["IS_SYNTHETIC"] == 0
-    thresholds = {}
-    for cn in COP_COLS:
-        cols = [f"{cn}30_{s:03d}" for s in range(1, N_SLOTS + 1)
-                if f"{cn}30_{s:03d}" in aug_df.columns]
-        if not cols:
-            continue
-        obs_vals = aug_df.loc[obs_mask, cols].to_numpy(dtype=float)
-        p_obs = np.nanmean(obs_vals == 1)           # fraction in [0,1], matches validator
-        syn_block = aug_df.loc[syn_mask, cols].to_numpy(dtype=float)
-        flat = syn_block[~np.isnan(syn_block)]
-        if flat.size == 0 or np.isnan(p_obs):
-            continue
-        # rank-to-marginal: choose threshold so synthetic prevalence == observed
-        q = min(max(1.0 - p_obs, 0.0), 1.0)
-        t = float(np.quantile(flat, q))
-        binarized = (syn_block >= t).astype(float)  # NaN >= t -> False -> 0.0
-        aug_df.loc[syn_mask, cols] = binarized
-        thresholds[cn] = {
-            "obs_prev_pct":      round(float(p_obs * 100), 4),
-            "threshold":         round(t, 6),
-            "syn_prev_pct_after": round(float(np.nanmean(binarized >= 0.5) * 100), 4),
-        }
-
-    # Write provenance JSON
-    out_thresh = os.path.join(os.path.dirname(args.output), "g3_copresence_thresholds.json")
-    with open(out_thresh, "w") as _f:
-        json.dump(thresholds, _f, indent=2)
-
-    if thresholds:
-        max_gap = max(
-            abs(v["obs_prev_pct"] - v["syn_prev_pct_after"]) for v in thresholds.values()
-        )
-        print(f"  Thresholded {len(thresholds)} channels; "
-              f"max |obs−syn| after binarization = {max_gap:.4f} pp  →  {out_thresh}")
-    else:
-        print("  Warning: no channels thresholded (check COP_COLS / column names).")
-    # ── end G3 fix ─────────────────────────────────────────────────────────────
-
     act_cols = [f"act30_{s:03d}" for s in range(1, N_SLOTS + 1)]
     hom_cols = [f"hom30_{s:03d}" for s in range(1, N_SLOTS + 1)]
     wrk_cols = [f"wrk30_{s:03d}" for s in range(1, N_SLOTS + 1)]

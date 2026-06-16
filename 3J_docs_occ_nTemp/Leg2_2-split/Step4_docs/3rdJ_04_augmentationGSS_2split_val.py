@@ -576,7 +576,7 @@ class AugmentationValidator2Split:
             else:
                 prev_obs[cn] = float("nan")
             sv = self.syn[scols].to_numpy(dtype=float)
-            prev_syn[cn] = np.nanmean(sv == 1) * 100
+            prev_syn[cn] = np.nanmean(sv >= 0.5) * 100
             if not np.isnan(prev_obs[cn]):
                 gaps[cn] = abs(prev_obs[cn] - prev_syn[cn])
 

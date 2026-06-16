@@ -356,23 +356,16 @@ class JSeriesHybrid2Split(nn.Module):
                  temperature: float = 0.8,
                  home_threshold: float = 0.5,
                  work_threshold: float = 0.5,
-                 apply_safety: bool = True,
-                 return_hw_probs: bool = False):
+                 apply_safety: bool = True):
         """
         AR activity (Arm 1) then NAT binary heads (Arm 2).
 
-        Returns (default, return_hw_probs=False — 5-tuple, 04E unchanged):
+        Returns:
             gen_act       (B,48) int64   — 0-indexed generated activity
             gen_home      (B,48) float32 — binary AT_HOME
             gen_work      (B,48) float32 — binary AT_WORK [Leg-2 NEW]
             gen_cop       (B,48,9) float32 — binary co-presence (AR-feedback style)
             gen_cop_probs (B,48,9) float32 — raw sigmoid co-presence
-
-        When return_hw_probs=True — 7-tuple (extra trailing values for 04H diagnostic):
-            ...same 5 as above...
-            gen_home_probs (B,48) float32 — raw sigmoid AT_HOME (pre-threshold)
-            gen_work_probs (B,48) float32 — raw sigmoid AT_WORK (pre-threshold)
-
         apply_safety: Spouse cop_prob *= (home_pred > 0.5) clip when not home.
         """
         memory = self._encode(act_seq, aux_seq, cond_vec, cycle_idx)
@@ -382,17 +375,13 @@ class JSeriesHybrid2Split(nn.Module):
         act_probs = F.one_hot(act_tokens, num_classes=self.n_act).float()  # hard at infer
         arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
 
-        home_sigmoid = torch.sigmoid(self.home_head(arm2_feat).squeeze(-1))  # (B,48) probs
-        work_sigmoid = torch.sigmoid(self.work_head(arm2_feat).squeeze(-1))  # (B,48) probs
-        gen_home = (home_sigmoid > home_threshold).float()
-        gen_work = (work_sigmoid > work_threshold).float()
-        cop_probs = torch.sigmoid(self.cop_head(arm2_feat))                  # (B,48,9)
+        gen_home = (torch.sigmoid(self.home_head(arm2_feat).squeeze(-1)) > home_threshold).float()
+        gen_work = (torch.sigmoid(self.work_head(arm2_feat).squeeze(-1)) > work_threshold).float()
+        cop_probs = torch.sigmoid(self.cop_head(arm2_feat))                 # (B,48,9)
         cop_bin   = (cop_probs > 0.5).float()
 
         if apply_safety:
             cop_probs = cop_probs.clone()
             cop_probs[:, :, self.SPOUSE_IDX] *= gen_home
 
-        if return_hw_probs:
-            return act_tokens, gen_home, gen_work, cop_bin, cop_probs, home_sigmoid, work_sigmoid
         return act_tokens, gen_home, gen_work, cop_bin, cop_probs

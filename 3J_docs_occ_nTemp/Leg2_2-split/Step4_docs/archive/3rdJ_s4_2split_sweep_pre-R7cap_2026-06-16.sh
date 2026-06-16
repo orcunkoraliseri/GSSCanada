@@ -24,9 +24,6 @@
 #   WEIGHT_MODE      uw | slaw | equal             (default: uw)
 #   LR               learning rate                 (default: 5e-5)
 #   DMODEL           transformer width             (default: 256)
-#   DENC             encoder layers                (default: 6)
-#   DDEC             decoder layers                (default: 6)
-#   PATIENCE         early-stop patience epochs    (default: 15)
 #
 # Submit (one line each, from Step4_docs on the cluster):
 #   sbatch --job-name=R1_workpw5 --export=ALL,VARIANT=R1_workpw5,WORK_POS_WEIGHT=5.0 3rdJ_s4_2split_sweep.sh
@@ -51,9 +48,6 @@ export LAMBDA_DIV="${LAMBDA_DIV:-0.1}"
 export COP_POS_WEIGHT="${COP_POS_WEIGHT:-0}"
 LR="${LR:-5e-5}"
 DMODEL="${DMODEL:-256}"
-DENC="${DENC:-6}"
-DDEC="${DDEC:-6}"
-PATIENCE="${PATIENCE:-15}"
 # WORK_POS_WEIGHT left unset => 04D uses the config (auto) value
 [ -n "${WORK_POS_WEIGHT:-}" ] && export WORK_POS_WEIGHT
 
@@ -61,7 +55,7 @@ echo "===== 3J Step 4 SWEEP — ${VARIANT} ====="
 date
 echo "SLURM_JOB_ID: $SLURM_JOB_ID   Node: $SLURMD_NODENAME"
 echo "  WEIGHT_MODE=$WEIGHT_MODE  LAMBDA_DIV=$LAMBDA_DIV  COP_POS_WEIGHT=$COP_POS_WEIGHT"
-echo "  WORK_POS_WEIGHT=${WORK_POS_WEIGHT:-auto}  LR=$LR  DMODEL=$DMODEL  DENC=$DENC  DDEC=$DDEC  PATIENCE=$PATIENCE"
+echo "  WORK_POS_WEIGHT=${WORK_POS_WEIGHT:-auto}  LR=$LR  DMODEL=$DMODEL"
 echo "  VARDIR=$VARDIR"
 
 # ── Require the baseline assembly (do NOT re-run 04A/04C) ──────────────────────
@@ -77,7 +71,9 @@ cd "$SDIR"
 
 # ── Train (reads shared tensors, writes to per-variant dir) ────────────────────
 echo ""; echo "[04D] Training variant ${VARIANT}..."
-$PYTHON 3rdJ_04D_train_2split.py --data_dir "$SHARED" --output_dir "$VARDIR" --checkpoint_dir "${VARDIR}/checkpoints" --lr "$LR" --d_model "$DMODEL" --n_enc_layers "$DENC" --n_dec_layers "$DDEC" --patience "$PATIENCE" --fp16 || { echo "[ERROR] 04D failed for ${VARIANT}"; exit 13; }
+$PYTHON 3rdJ_04D_train_2split.py --data_dir "$SHARED" --output_dir "$VARDIR" \
+        --checkpoint_dir "${VARDIR}/checkpoints" --lr "$LR" --d_model "$DMODEL" --fp16 \
+    || { echo "[ERROR] 04D failed for ${VARIANT}"; exit 13; }
 
 # ── Inference (shared data, variant checkpoint + output) ───────────────────────
 echo ""; echo "[04E] Generating diaries for ${VARIANT}..."

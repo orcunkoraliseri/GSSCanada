@@ -33,6 +33,7 @@ Monitoring/`squeue`/`sacct`/`scancel` polling loops and any other mechanical, re
 - Background/sub-agents **silently inherit the parent's model (Opus) when no model is set.** A poll loop spawned without an explicit model becomes a *second full Opus* burning premium budget to ask "done yet?". ALWAYS pass `model: haiku` (or `sonnet`) on the Agent tool for these.
 - Better still: **do not run live poll loops at all.** SLURM finishing does not need watching. The employee/user relays the job numbers; the manager (Opus) only acts on terminal results.
 - **Minimum monitoring frequency = 30 minutes.** When a job/task genuinely must be polled, space checks at least 30 min apart — never poll continuously or simultaneously. One status check, then wait ≥30 min before the next.
+- **Never scan big files yourself — delegate to a cheap-model employee.** Reading/scanning/parsing large files (big `.csv`, multi-MB logs, large data dumps, the augmented diaries ~500 MB, etc.) must be handed to a Haiku/Sonnet employee, never done in the manager's own context (it overflows context and burns Opus tokens). The manager writes the analysis script + says what to extract; the employee runs it and returns only the small result table.
 - Reserve Opus for what actually needs it: planning, debugging, analysis, writing prompts. If a task is a `while`-loop of the same command, it is not an Opus task.
 
 ## Important Directories

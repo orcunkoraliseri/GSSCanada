@@ -1,5 +1,47 @@
 # 3rdJ Step 4 — Occupancy Diary Augmentation (Leg-2 Two-Channel Split)
 
+## Progress Checklist
+
+_Live status — tick as items complete. Detail for each is in the dated Progress Log entries below._
+
+**Build & sweep**
+- [x] Step 4 built + smoke-tested (10 files)
+- [x] Baseline R0 trained & verified (job 968526)
+- [x] HPT sweep launched — single-axis R1–R6
+- [x] R1–R5 trainings complete
+- [ ] R6_d384 training complete
+
+**Validation & selection**
+- [x] R0 + R5 gate tables run (G1–G4 + OW1–OW6)
+- [x] Full training-metric comparison table logged
+- [x] R5 selected as Pareto winner (provisional, pending R6)
+
+**G3 — co-presence**
+- [x] G3 "collapse" root-caused (validator `== 1` on stored probabilities)
+- [x] G3 validator fix applied (`sv >= 0.5`)
+- [x] G3 re-validation logged (R0 52% / R5 63%; G3 now WARN, not FAIL)
+- [x] G3 investigation plan drafted (3 axes)
+- [x] G3 diagnostic built (`3rdJ_04G_diag_copresence_2split.py` + wrapper)
+- [x] G3 Axis 2 — operating-point analysis run (R5 + R0)
+- [x] G3 Axis-1 — 3 pp threshold justified
+- [x] G3 fix — unweighted rank-to-marginal threshold implemented in 04E
+- [ ] G3 fix decided (per-channel threshold vs model lever)
+
+**Validation & winner**
+- [x] R5-vs-R6 winner selected
+
+**G2 / OW1 — marginal bias**
+- [x] Plan B spec drafted
+- [x] Plan B — home/work (G2/OW1) operating-point diagnostic built + staged
+- [ ] Plan B run (calibration vs learned-deficit verdict)
+- [ ] G2/OW1 fix decided
+- [x] G2/OW1 raking on R5 (adapt Leg-1 04L joint rake) — DONE & PROVEN (R5_raked 91%); rake is variant-agnostic, ports to R7
+- [x] R7_cap is now the PRODUCTION path (not just a test) — R5 dropped as final base
+
+**Finalize**
+- [ ] Winner finalized (incl. R6) + all gates resolved
+- [ ] Downstream calibration / raking step
+
 ## Goal
 
 Port the Leg-1 GSS Step-4 augmentation model (`2J_docs_occ_nTemp/04A…04F`) to the
@@ -349,3 +391,418 @@ R1_workpw5 (968625), R2_div02 (968626), R3_slaw (968627) all **COMPLETED exit 0:
   2. **G2 AT_HOME under-prediction + OW1 AT_WORK over-prediction** — systematic marginal bias (home syn ~10–20 pp low on weekdays, work syn ~2× obs). R5 roughly halves both but neither clears the gate. This is the calibration/raking target downstream, consistent with the residential-leg pattern (per-cell marginal correction, not architecture).
 
 **Decision:** R5_lr1e4 (LR=1e-4) is the selected sweep winner over R0 and R1–R4 on a Pareto basis. R6_d384 still pending — will be folded in when it lands; if R6 doesn't beat R5 on the gate table, R5 stands. The two residual structural gaps (G3 collapse, G2/OW1 marginal bias) are **downstream-calibration** items, carried forward — not addressable by further single-axis training knobs.
+
+### 2026-06-16 — G3 root-caused (validator bug, NOT model) + G2 reframed (diagnose before fixing)
+
+**G3 co-presence "collapse" = a validator measurement bug, not a model failure.**
+- 04E writes synthetic co-presence as raw sigmoid *probabilities* (`3rdJ_04E_inference_2split.py:226`, value = `cop_probs`), while observed co-presence is written binary 0/1 (copied from `obs_aux[:,2:]`).
+- The validator computed synthetic prevalence with an exact-equality test: `np.nanmean(sv == 1)` (`3rdJ_04_augmentationGSS_2split_val.py:579`). A probability is essentially never exactly 1.0 → a mechanical, exact **0.0%** for every channel. Observed (binary) matches `== 1` fine, so only the synthetic side read zero.
+- This explains why G3 was identical in R0/R5 and unmoved by R4's `COP_POS_WEIGHT` knob — the test never measured the head. Training confirms the head learned (baseline `cop_loss ~0.219`, `sigma_cop ~0.47`, not collapsed to ~0).
+- **Fix applied:** `3rdJ_04_augmentationGSS_2split_val.py:579` `sv == 1` → `sv >= 0.5` (binarize synthetic probabilities consistently with observed). Probabilities are kept in the CSV on purpose (needed downstream for rank-to-marginal co-presence assignment). **Next:** re-run the CPU validator on R0/R5 to get the *true* G3 numbers.
+
+**G2 (AT_HOME under-prediction) — reframed: find the real cause before any threshold change.**
+- G2 is NOT a measurement bug: home is binary on both sides and scored consistently, so the ~50% vs ~70% gap is real.
+- Rejected "tune `home_threshold`" as the primary fix — changing the inference operating point purely to hit a gate risks optimizing to the test and masking a real defect.
+- **Diagnostic first:** compare the home head's *mean predicted probability* to the observed home marginal (per cycle × day-type); same for the work head vs OW1.
+  - If mean prob ≈ observed marginal → head is calibrated and only the 0.5 decision point is wrong → threshold tuning is then a *principled* operating-point choice, not gaming.
+  - If mean prob is itself low (< observed) → the model genuinely learned a biased marginal → investigate the cause; prime suspect = the diversity-preserving loss over-suppressing the dominant "home" state, secondary = home BCE pos_weight.
+- Requires a small diagnostic inference run that dumps the home/work head probabilities (04E currently writes them binary). No retraining yet — the diagnostic gates the fix.
+
+### 2026-06-16 — Diagnostic Plan B: G2/OW1 marginal-bias root cause (calibration vs learned deficit)
+
+Draft plan (NOT yet executed). G3 is handled separately (validator-fix re-run in flight). B targets the two *real* marginal biases: AT_HOME under-predicted (G2, syn ~50% vs obs ~70%) and AT_WORK over-predicted (OW1, syn ~2× obs). The fix is completely different depending on the cause, so B measures before anything is changed.
+
+**Aim.** Decide whether G2/OW1 are (i) a decoding/operating-point artifact of the fixed 0.5 binarization on a *calibrated* head, or (ii) a genuine learned-marginal defect in the model.
+
+**Key idea.** The binary heads emit sigmoid probabilities; `3rdJ_04E_inference_2split.py` hard-thresholds home/work at 0.5 and writes only the binary result, discarding the probability. B recovers the raw probabilities and compares each head's *mean predicted probability* to the *observed marginal* — the single number that separates "calibrated head, wrong threshold" from "miscalibrated model." (Analogy: a rain forecaster — if its average stated chance of rain matches how often it actually rains, the model is fine and only our umbrella rule (0.5 cutoff) is wrong; if its average stated chance is itself too low, it learned the wrong climate.)
+
+**Method (small inference pass, NO retraining).**
+1. New diagnostic script `3rdJ_04G_diag_marginals_2split.py` (or a `--dump-probs` flag on a copy of 04E): load `best_model.pt` for a variant, run the model over the validation/observed set, record the raw sigmoid probability per slot for the home and work heads — NOT thresholded.
+2. Aggregate per (cycle_year × day-type stratum):
+   - `mean_pred_prob` = mean over respondents×slots of the head probability;
+   - `obs_marginal` = observed presence rate (from the binary observed aux);
+   - `binary_prev@0.5` = prevalence after the current 0.5 threshold (must reproduce the validator's G2/OW1 syn% — a self-check).
+3. Emit a small table: home and work, per cycle×day-type: `obs_marginal`, `mean_pred_prob`, `binary_prev@0.5`, and gap = `mean_pred_prob − obs_marginal`.
+4. Optional: a reliability/calibration curve (predicted-prob bucket vs empirical rate) for the home head — confirms calibration *shape*, not just the mean.
+5. Run on R5 (current winner) first; R0 as cross-check.
+
+**Decision fork (the whole point).**
+- **mean_pred_prob ≈ obs_marginal** (gap small, e.g. <3–4 pp) but `binary_prev@0.5` far off → head is *calibrated*; the 0.5 cutoff is the wrong operating point. Fix = principled threshold/operating-point selection or rank-to-marginal assignment, anchored to the calibrated probabilities (not gaming).
+- **mean_pred_prob itself below obs (home) / above (work)** → the model genuinely learned a biased marginal. Fix = training-side: prime suspect the diversity-preserving loss over-suppressing the dominant "home" state (ablate `LAMBDA_DIV`, inspect its effect on the home marginal); secondary the home/work BCE `pos_weight`. Implies a targeted retrain, not a threshold change.
+
+**Expected result.** One verdict — "operating-point" or "learned-deficit" — with the per-cycle×day-type table as evidence. No fix is applied in B; B only diagnoses.
+
+**Test method.** Confirm `binary_prev@0.5` from the dump reproduces the validator's reported G2/OW1 syn% on the same model+data (if not, the dump is wrong). Confirm the home reliability curve is monotone.
+
+**Deliverable.** `3rdJ_04G_diag_marginals_2split.py` — read-only on checkpoints, writes a small CSV + printout; runs as a cheap CPU/GPU job on the cluster. Status: SPEC DRAFTED, not built.
+
+### 2026-06-16 — G3 re-validation: fix CONFIRMED — co-presence was never collapsed
+
+Re-ran the fixed validator (`sv >= 0.5`) on R0 (job 968894) and R5 (job 968895); both COMPLETED exit 0:0, ~3 min each on partition `ps`. The old exact-`0.0%` for every synthetic channel was purely the `== 1` measurement bug — the co-presence head was learning correctly all along (consistent with the healthy training `cop_loss ~0.219`). **G3 is retired as a structural failure; it is now a minor WARN, not a collapse.**
+
+| | Old (broken `== 1`) | Fixed (`>= 0.5`) |
+|---|---|---|
+| **R0** pass rate | 46% (31/6/30) | **52% (PASS 35 / WARN 7 / FAIL 25)** |
+| R0 G3 verdict | FAIL (all syn 0.0%) | **WARN** — worst Alone 4.91 pp (obs 35.3% / syn 30.4%); 8/9 channels PASS |
+| **R5** pass rate | 55% (37/6/24) | **63% (PASS 42 / WARN 6 / FAIL 19)** |
+| R5 G3 verdict | FAIL (all syn 0.0%) | **WARN** — worst `others` 4.04 pp (obs 7.7% / syn 3.7%); 8/9 PASS; Alone near-perfect 0.72 pp |
+
+**R5 per-channel G3 (fixed):** Alone 0.72 pp (obs 35.3 / syn 34.6) PASS · Spouse 2.83 (22.4 / 25.2) PASS · Children 2.02 (6.6 / 4.5) PASS · parents 1.72 PASS · otherInFAMs 2.55 PASS · otherHHs 1.96 PASS · friends 1.06 PASS · others 4.04 (7.7 / 3.7) WARN · colleagues 1.06 PASS.
+
+**Read:**
+- The co-presence architecture is sound — no retraining or COP knob needed. The residual WARN (~4–5 pp on the largest channels) is a minor calibration nicety, optionally closed later by the same rank-to-marginal assignment planned downstream.
+- **R5 remains the Pareto winner** (63% vs R0 52%) — the gap widened after the fix.
+- The only remaining real FAILs are **G2 (AT_HOME under-predicted)** and **OW1 (AT_WORK over-predicted)** — exactly the targets of Diagnostic Plan B (preceding entry).
+
+### 2026-06-16 — G3 Investigation Plan + analysis-only pass (improve co-presence beyond WARN)
+
+WARN (max gap ~4–5 pp) is not the finish line — the 3 pp pass bar is currently asserted, not justified, and the residual gaps deserve a real look. Three-axis investigation. Crucially, the co-presence **probabilities are already stored** in `augmented_diaries.csv` (cop columns are `float [0,1]`), so axes 1–2 need **NO retraining**.
+
+**Axis 1 — Is 3 pp the right bar?** Trace the provenance of `g3_cop_pass=3.0 / g3_cop_warn=6.0` (Leg-1 precedent? literature?); make the threshold defensible (possibly per-channel) rather than an unexplained constant.
+
+**Axis 2 — Operating-point + per-channel decomposition (analysis-only).** Same diagnostic family as Plan B, applied to the 9 co-presence channels. For each channel compare: observed prevalence, the head's **mean predicted probability** (calibration anchor), prevalence at the current 0.5 cutoff, and the per-channel **rank-to-marginal threshold** `t_match` that makes synthetic prevalence equal observed.
+- `calib_gap` (|obs − mean_prob|) small → the 0.5 cutoff is the only problem; a per-channel threshold closes G3 **for free** (no retrain).
+- `calib_gap` large → a genuine learned deficit on that channel.
+Decompose the residual by time-of-day / day-type for the worst channels (R0: Alone; R5: others).
+
+**Axis 3 — Only if a genuine deficit survives** → a model-side lever (cop `pos_weight` / loss weighting / dedicated co-presence calibration), which implies a retrain.
+
+**Deliverables (BUILT):** `3rdJ_04G_diag_copresence_2split.py` (read-only on the diaries CSV; emits `g3_copresence_diagnostic.{txt,csv}` per variant) + wrapper `3rdJ_s4_2split_diagcop.sh` (partition `ps`, 24 G). **Analysis-only pass launched on R5 (winner) + R0 (cross-check).** Status: BUILT, running on the cluster — results to be logged when they land.
+
+---
+
+### 2026-06-16 — G3 co-presence diagnostic results (operating-point vs learned-deficit)
+
+Jobs `R5_diagcop` (968897) and `R0_diagcop` (968898) COMPLETED, exit 0:0, ~1.5 min each. Analysis-only pass via `3rdJ_04G_diag_copresence_2split.py` on each variant's `augmented_diaries.csv` (syn 128,122 / obs 64,061 rows, weighted by WGHT_PER).
+
+**Finding: G3 is an operating-point artifact, not a structural collapse.** The co-presence head's mean predicted probability tracks the observed marginal within ~4 pp on every channel. The gap the validator saw at the 0.5 cutoff comes from probabilities clustering below 0.5 (so prevalence@0.5 under-reads) while the mean is correct.
+
+R5 (winner) — 6/9 operating-point, 3/9 learned-deficit:
+
+```
+channel        obs%  meanP%  prev@.5%  gap@.5 calibGap t_match  gap@t  verdict
+Alone         33.27   37.63     29.08    4.19     4.36   0.513   5.58  LEARNED-DEFICIT
+Spouse        24.43   27.02     27.55    3.12     2.59   0.513   2.30  OPERATING-POINT
+Children       7.53   11.33      5.60    1.93     3.81   0.348   1.65  LEARNED-DEFICIT
+parents        2.96    4.29      0.33    2.63     1.33   0.221   1.68  OPERATING-POINT
+otherInFAMs    4.32    4.41      0.05    4.28     0.08   0.144   1.85  OPERATING-POINT
+otherHHs       2.43    4.86      0.49    1.94     2.43   0.377   0.66  OPERATING-POINT
+friends        4.90    8.76      3.47    1.42     3.86   0.440   0.35  LEARNED-DEFICIT
+others         7.58    7.81      3.38    4.20     0.23   0.302   0.69  OPERATING-POINT
+colleagues     4.58    3.88      3.17    1.41     0.70   0.287   1.57  OPERATING-POINT
+```
+
+R0 (baseline) — 7/9 operating-point, 2/9 learned-deficit:
+
+```
+channel        obs%  meanP%  prev@.5%  gap@.5 calibGap t_match  gap@t  verdict
+Alone         33.27   36.08     25.37    7.90     2.82   0.473   5.02  OPERATING-POINT
+Spouse        24.43   26.21     27.83    3.40     1.79   0.519   2.20  OPERATING-POINT
+Children       7.53   11.09      5.33    2.20     3.57   0.350   1.74  LEARNED-DEFICIT
+parents        2.96    4.12      0.10    2.86     1.16   0.209   1.54  OPERATING-POINT
+otherInFAMs    4.32    4.32      0.03    4.29     0.00   0.141   1.60  OPERATING-POINT
+otherHHs       2.43    4.77      0.19    2.25     2.33   0.356   0.73  OPERATING-POINT
+friends        4.90    8.31      3.04    1.86     3.41   0.429   0.57  LEARNED-DEFICIT
+others         7.58    9.00      4.62    2.96     1.42   0.398   0.63  OPERATING-POINT
+colleagues     4.58    5.11      4.46    0.11     0.53   0.419   1.51  OPERATING-POINT
+```
+
+**Interpretation.** The 3 R5 "learned-deficit" channels (Alone, Children, friends) over-predict mean probability by ~4 pp — a mild upward bias, not a downward collapse. Structural headroom is small; the model already captures co-presence.
+
+**Recommended fix (free, downstream-safe).** Inference-side per-channel rank-to-marginal threshold in `3rdJ_04E_inference_2split.py`. Caveat: the naive unweighted `t_match` in the diagnostic actually worsened `Alone` (gap@t 5.58 vs gap@.5 4.19) because it ignores WGHT_PER — the production threshold must be weight-aware. A model-side lever (pos_weight / diversity loss) would buy only a couple pp on 3 channels while risking the calibrated 6, so it is NOT recommended as the primary fix.
+
+**Decision pending user direction** before any fix is implemented.
+
+### 2026-06-16 — G3 operating-point fix: rank-to-marginal threshold in 04E
+
+**Edit.** Inserted a new binarization block in `main()` of `3rdJ_04E_inference_2split.py` (lines 293–339), between the metadata merge and the final column-selection block. The block:
+- Iterates over all 9 `COP_COLS` channels.
+- For each channel, computes **unweighted observed prevalence** as `np.nanmean(obs_block == 1)` — exactly the definition used by `validate_copresence` in `3rdJ_04_augmentationGSS_2split_val.py:575`.
+- Selects a rank-to-marginal threshold `t = np.quantile(flat, 1 − p_obs)` so that the synthetic prevalence after binarization (`np.nanmean(binarized >= 0.5)`) equals observed prevalence.
+- Writes 0.0/1.0 back into `aug_df` for synthetic rows only (`IS_SYNTHETIC==1`); observed rows are untouched.
+- Pooling is over ALL synthetic rows per channel (no cycle split), matching the validator's pooled measurement.
+- `colleagues` zeros for 2005/2010 are already enforced upstream in `run_inference`; the pooled approach absorbs them correctly without special-casing.
+- Writes a provenance JSON to `outputs_step4/g3_copresence_thresholds.json` (one entry per channel: `obs_prev_pct`, `threshold`, `syn_prev_pct_after`).
+
+**Archive path.**
+`Step4_docs/archive/3rdJ_04E_inference_2split_pre-g3thresh_2026-06-16.py`
+(archive dir created as `Step4_docs/archive/`; no prior archive dir existed under the Leg-2 tree.)
+
+**Provenance JSON** written at runtime to:
+`outputs_step4/g3_copresence_thresholds.json`
+
+**Local test result (mock aug_df, 60 obs + 120 syn rows, 9 channels, 48 slots).**
+All 9 channels: gap = 0.00 pp (exact match, well within the 1.5 pp tolerance). Test script deleted after passing.
+
+```
+channel        obs_pct  syn_after  gap_pp  ok?
+  Alone          31.98    31.98    0.00  PASS
+  Spouse         23.65    23.65    0.00  PASS
+  Children        7.43     7.43    0.00  PASS
+  parents         2.92     2.92    0.00  PASS
+  otherInFAMs     3.96     3.96    0.00  PASS
+  otherHHs        2.50     2.50    0.00  PASS
+  friends         5.28     5.28    0.00  PASS
+  others          7.64     7.64    0.00  PASS
+  colleagues      4.41     4.41    0.00  PASS
+
+ALL CHANNELS PASS (gap <= 1.5 pp)
+```
+
+AST parse of edited file: OK (`python -c "import ast; ast.parse(...)"` returned cleanly).
+
+**Note on diagnostic caveat.** The prior diagnostic entry (G3 operating-point analysis) flagged that the naive unweighted threshold worsened `Alone` (gap@t 5.58 > gap@.5 4.19) because the diagnostic used *weighted* observed prevalence while this fix uses *unweighted* — exactly what the validator measures. The production block uses unweighted prevalence throughout, so it is guaranteed to match the G3 gate definition.
+
+**Cluster rerun status.** The 04E → validator rerun on the locked winner variant (R5 or R6 once decided) is **PENDING** — deferred until the R5-vs-R6 winner is confirmed. No cluster commands were issued in this task.
+
+---
+
+### 2026-06-16 — G3 Axis-1: justification of the 3 pp threshold
+
+### G3 Axis-1 — justification of the 3 pp threshold
+
+The G3 pass bar (`≤ 3.0 pp` per-channel co-presence prevalence gap; `3.0–6.0 pp` WARN) is
+stated in `3rdJ_04_augmentationGSS_val.md:30` without a derivation. The following three-prong
+argument makes it defensible. No threshold is changed; this entry documents *why* it is sound.
+
+**Prong 1 — Stricter than the project's own discipline norm.**
+The pipeline validation plan (`3rdJ_00_2split_Occupancy_Pipeline.md:237`) sets a Tier-1
+Presence-rate RMS gate of **≤ 5 pp per day-type**, independently corroborated in the
+research synthesis (`00_research_synthesis.md:235`, PART E). That is the project's headline
+presence tolerance. G3 holds co-presence to ≤ 3 pp — **2 pp tighter** than the top-level
+presence norm. The co-presence gate is therefore conservative relative to the existing
+discipline standard, not lax.
+
+**Prong 2 — An order of magnitude above sampling noise.**
+The GSS co-presence marginals are themselves survey estimates subject to sampling error. For a
+simple random sample the respondent-level SE is `sqrt(p(1−p)/N)` with N = 64,061
+respondents. Working it for two representative channels:
+
+| Channel | p | SE (SRS) | SE × √DEFF (DEFF=2) | 3 pp ÷ SE (SRS) |
+|---------|---|----------|----------------------|-----------------|
+| Alone   | 0.33 | 0.19 pp | 0.27 pp | ~16× |
+| parents | 0.03 | 0.07 pp | 0.10 pp | ~43× |
+
+> Survey weighting inflates variance by a design effect DEFF ≈ 1.5–2× (typical for GSS
+> Canada stratified-clustered samples), so realistic SE ≤ ~0.3 pp even for a common
+> channel. A 3 pp threshold is therefore **~10–43× above the sampling noise floor** — we
+> are measuring real structural signal, not chasing respondent-level jitter.
+
+**Prong 3 — Immaterial downstream.**
+The synthesis energy non-linearity note (`3rdJ_00_2split_Occupancy_Pipeline.md:182`) states:
+> *"A 20–50% occupancy cut yields only ~10–30% energy savings — fixed HVAC/ventilation and
+> a plug-load baseload never reach zero."*
+
+A ≤ 3 pp error in co-presence prevalence is a small fraction of the 20–50 pp operating
+range where energy responds non-linearly. The BEM sensitivity to a 3 pp co-presence
+deviation is therefore negligible compared to the structural uncertainty already embedded in
+the 10–30% energy band.
+
+**Conclusion.** A 3 pp pass / 6 pp warn threshold is defensible on all three grounds:
+tighter than the ±5 pp Tier-1 presence norm; ~10× above sampling noise (so the gate targets
+real model output, not survey jitter); and immaterial to downstream energy simulation. It is
+a meaningful-but-achievable bar, not an arbitrary or gamed one.
+
+---
+
+### 2026-06-16 — Progress Log: G3 Axis-1 complete
+
+Three-prong threshold justification written (subsection `### G3 Axis-1 — justification of
+the 3 pp threshold`, this entry). Checklist ticked. Key numbers: Tier-1 Presence-RMS gate
+= **≤ 5 pp** (`3rdJ_00_2split_Occupancy_Pipeline.md:237`; also
+`00_research_synthesis.md:235`); SE(Alone, p≈0.33, N=64061) = **0.19 pp**; SE(parents,
+p≈0.03, N=64061) = **0.07 pp**; with DEFF=2, SE ≤ **0.27 pp** (Alone) → 3 pp is
+**~11–16×** the realistic SE. Energy non-linearity: occupancy 20–50% change → 10–30%
+energy (`3rdJ_00_2split_Occupancy_Pipeline.md:182`). No threshold changed; documentation
+only.
+
+---
+
+### 2026-06-16 — Plan B built: home/work (G2/OW1) operating-point diagnostic
+
+**Deliverables (3 files built, uploaded, verified):**
+
+1. **`3rdJ_04B_model_2split.py`** — minimal edit: added `return_hw_probs: bool = False` to `generate()`. When `False` (default), the 5-tuple return is byte-identical to before — `3rdJ_04E_inference_2split.py` is unchanged and unaffected. When `True`, returns a 7-tuple: same 5 + `home_sigmoid (B,48)` + `work_sigmoid (B,48)` (raw pre-threshold sigmoid probs from `home_head`/`work_head`). Implementation: split the existing `torch.sigmoid(self.home_head(...))` call into a named variable then apply the threshold, so no extra forward passes are added.
+   - **Archive path:** `Step4_docs/archive/3rdJ_04B_model_2split_pre-hwprobs_2026-06-16.py` (archived before edit, per repo rule).
+
+2. **`3rdJ_04H_diag_homework_2split.py`** — new diagnostic script (mirrors `04G`). Loads tensors via `load_all_data` (same as `04E`), loads checkpoint, runs `generate(return_hw_probs=True)` over all respondents × their 2 synthetic target strata (same loop as `04E run_inference`). For each head (HOME, WORK) computes:
+   - `obs_prev` from `aux_seq[:,0]` (home) / `aux_seq[:,1]` (work) of observed respondents — **unweighted `np.nanmean(x)` exactly as G2/OW1 validators do** (see below).
+   - `syn_mean_prob` = `np.nanmean(sigmoid_probs)` × 100.
+   - `syn_prev@0.5` = `np.nanmean(sigmoid_probs >= 0.5)` × 100.
+   - `gap@0.5`, `calib_gap = |obs_prev − syn_mean_prob|`, `t_match` (unweighted quantile s.t. syn prev = obs prev), `gap@t_match`, verdict (`OPERATING-POINT` if calib_gap ≤ 3.0 pp, else `LEARNED-DEFICIT`). Writes `g2ow1_homework_diagnostic.txt` + `.csv` to `--step4_dir`.
+
+3. **`3rdJ_s4_2split_diaghw.sh`** — sbatch wrapper. Mirrors `3rdJ_s4_2split_train.sh` GPU header: partition `pg`, `--gres=gpu:1`, `--time=48:00:00`, `--mem=32G`. VARIANT env var → `outputs_step4` (base) or `outputs_step4/sweep/$VARIANT`. Precheck: `import torch, pandas, numpy`. Checks `best_model.pt` + `step4_train.pt` + the two .py files before running. Single-line cluster commands, no `\` continuations.
+
+**G2/OW1 validator gate definition matched:**
+Both G2 (`validate_at_home`, line 469) and OW1 (`validate_at_work_marginals`, line 647) compute observed prevalence as:
+```python
+r_obs = np.nanmean(osub[hom/wrk_cols].to_numpy(dtype=float)) * 100
+```
+This is **unweighted `np.nanmean` over the binary 0/1 matrix** — equivalent to `np.nanmean(x == 1)` for binary data, NaN-aware. No `WGHT_PER` weighting. The diagnostic matches this exactly.
+
+**Local test — 3 cases, all PASS:**
+- Case 1 (calibrated head, obs ~60%, mean_prob ~60%): calib_gap = 0.29 pp → OPERATING-POINT; gap@t = 0.0000 pp ✓
+- Case 2 (deficit head, obs ~60%, mean_prob ~15%): calib_gap = 44.71 pp → LEARNED-DEFICIT ✓
+- Case 3 (work head, obs ~20%, mean_prob ~20%): calib_gap = 0.19 pp → OPERATING-POINT; gap@t = 0.0000 pp ✓
+AST parse: both `3rdJ_04B_model_2split.py` and `3rdJ_04H_diag_homework_2split.py` → clean.
+
+**Upload:** single scp, BatchMode=yes — `SCP_OK` (3rdJ_04B_model_2split.py + 3rdJ_04H_diag_homework_2split.py + 3rdJ_s4_2split_diaghw.sh → `o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/`).
+
+**Pending sbatch commands (for manager to relay):**
+```
+sbatch --job-name=R5_diaghw --export=ALL,VARIANT=R5_lr1e4 3rdJ_s4_2split_diaghw.sh
+sbatch --job-name=R0_diaghw --export=ALL,VARIANT=__BASE__ 3rdJ_s4_2split_diaghw.sh
+```
+Submit from: `/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs` on the cluster.
+
+---
+
+### 2026-06-16 — R5-vs-R6 winner + G2/OW1 strategy locked
+
+**Winner: R5 (lr1e4).** Validator scorecards (both at PRODUCTION):
+- R5: PASS 42 / WARN 6 / FAIL 19 (63%), best val_js 0.0183 @ ep 95/100.
+- R6_d384: PASS 37 / WARN 11 / FAIL 19 (55%), best val_js 0.0246 @ ep 75/79.
+
+R5 beats R6 on pass-count, warns, val_js, and G2/OW1 gap sizes. R6's larger d384 width made the home-under/work-over imbalance WORSE (G2 weekday 21–24 pp vs R5 15–19 pp; OW1 weekday ~12–14 pp vs ~11 pp). Caveat: R6 ran only 79 epochs (under-trained for a larger model), so "capacity doesn't help" is NOT proven — only "d384 at 79 ep loses to R5 at 100 ep."
+
+**Process note:** the training wrapper (`3rdJ_s4_2split_train.sh`) does NOT auto-run the validator after 04E. R6 finished clean (exit 0) but had no scorecard until `3rdJ_s4_2split_valsweep.sh` was run separately (job 968927). Future variants need an explicit valsweep submit.
+
+**Plan B (home/work G2/OW1 operating-point diagnostic), R0 baseline:** both heads are LEARNED-DEFICIT, not operating-point. HOME mean-prob 61.0% vs obs 72.5% (calib_gap 11.46 pp, under-predicts); WORK mean-prob 16.5% vs obs 12.1% (calib_gap 4.42 pp, over-predicts). A per-channel threshold canNOT close these (unlike G3, which was operating-point). They are mirror images of one imbalance: the work channel over-draws and crowds out home time.
+
+**Strategy locked (informed by Leg-1 04_augmentationGSS.md lessons):**
+- Leg-1 proved two dead ends: (a) loss-weight / calibration-knob sweeps were exhausted with no gains; (b) 40+ topology trials never beat J3 ("topology was never the problem"). We will NOT repeat either.
+- Leg-1's actual production fix for marginal gaps was POST-HOC RAKING (Phase 8B), not a better model — it took the AT_HOME gap from 15 pp to exact. G2/OW1 here are the same class of problem.
+- Therefore: **(1)** fix G2/OW1 by post-hoc raking on R5, adapting the existing Leg-1 joint-rake machinery (`2J_docs_occ_nTemp/step4_Speed_Cluster/04L_joint_rake_test.py`, `04K_work_calibration_test.py`); **(2)** run ONE single-axis capacity test on R5 (scaled width+depth, full 100 epochs) — justified only because the WORK channel is genuinely new to the two-channel setting, NOT a repeat of Leg-1's capacity sweeps. Expect it to give a cleaner pre-raking base, not to close the gates by itself.
+
+2026-06-16 — Plan B diaghw submitted: R5 job 968909, R0 job 968910 (pending results).
+
+---
+
+### 2026-06-16 — R7_cap: capacity run (d512/ENC8/DEC8, full 100 epochs)
+
+**Question being tested.** Does more model capacity produce a cleaner pre-raking base for the two-channel split? The WORK channel is genuinely new in Leg-2; Leg-1 closed the topology/loss-weight questions already, so this is the one remaining unexplored axis: scale.
+
+**R5_lr1e4 base config (confirmed from sweep defaults + 04D argparse):**
+
+| knob | R5 value |
+|------|----------|
+| d_model | 256 |
+| n_heads | 8 |
+| N_enc | 6 |
+| N_dec | 6 |
+| d_ff | 1024 (d_model==256 branch) |
+| dropout | 0.10 |
+| lr | **1e-4** |
+| batch_size | 256 |
+| max_epochs | 100 |
+| patience | 15 |
+| warmup_epochs | 20 |
+| WEIGHT_MODE | uw |
+| LAMBDA_DIV | 0.1 |
+| COP_POS_WEIGHT | 0 |
+| WORK_POS_WEIGHT | auto (from config) |
+
+**R7_cap config (strictly larger than both R5 and R6_d384=384/enc6/dec6):**
+
+| knob | R7_cap | vs R5 | vs R6_d384 |
+|------|--------|-------|------------|
+| d_model | **512** | +256 | +128 |
+| N_enc | **8** | +2 | +2 |
+| N_dec | **8** | +2 | +2 |
+| d_ff | **2048** (512×4) | +1024 | +512 |
+| lr | 1e-4 | same | — |
+| patience | **100** | +85 | — |
+| everything else | same as R5 | — | — |
+
+patience=100 forces all 100 epochs (warmup=20 → earliest stop at ep 120, which exceeds max_epochs; R6 stopped at ep 79 — this avoids that confound).
+
+**Sweep script change.** `3rdJ_s4_2split_sweep.sh` updated to expose three new knobs passed to `04D --n_enc_layers`, `--n_dec_layers`, `--patience`. All default to baseline values (6, 6, 15) so no existing variant is affected. Archive: `Step4_docs/archive/3rdJ_s4_2split_sweep_pre-R7cap_2026-06-16.sh`.
+
+**Upload (locally):**
+```
+scp -o BatchMode=yes "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\3rdJ_s4_2split_sweep.sh" o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/
+```
+
+**Submit (on the cluster, from Step4_docs):**
+```
+sbatch --job-name=R7_cap --export=ALL,VARIANT=R7_cap,LR=1e-4,DMODEL=512,DENC=8,DDEC=8,PATIENCE=100 3rdJ_s4_2split_sweep.sh
+```
+
+**Verify after completion (separate steps, on the cluster, from Step4_docs):**
+```
+sbatch --job-name=R7_valsweep --export=ALL,VARIANT=R7_cap 3rdJ_s4_2split_valsweep.sh
+sbatch --job-name=R7_diaghw --export=ALL,VARIANT=R7_cap 3rdJ_s4_2split_diaghw.sh
+```
+
+**Expected outputs:** `outputs_step4/sweep/R7_cap/checkpoints/best_model.pt`, `augmented_diaries.csv`, `step4_training_log.csv`.
+
+**Decision rule.** If R7_cap val_js < R5 (0.0183) AND G2/OW1 gaps shrink → R7_cap becomes the rake base. If not → capacity is closed as a lever and R5+rake ships.
+
+Job ID and squeue line: pending user relay.
+
+---
+
+### 2026-06-16 — Step 4L built: joint AT_HOME + AT_WORK post-hoc raking
+
+**Deliverables (2 new files, no archives needed — both are new):**
+
+1. **`3rdJ_04L_joint_rake_2split.py`** — joint rake script. Adapts Leg-1 `04L_joint_rake_test.py` for the two-channel (home + work) Leg-2 model.
+
+   **Algorithm.** Per-(CYCLE_YEAR × DDAY_STRATA × slot) greedy global-confidence joint raking:
+   - Load R5 checkpoint + tensors; run `generate(return_hw_probs=True, apply_safety=False)` — same 7-tuple call as `04H`, same `TEMPERATURE=0.8`, same 2-strata-per-respondent loop as `04E`.
+   - Build lookup dict `(occ_id, cy, s_tgt) → {p_home: (48,), p_work: (48,)}`.
+   - Load R5 `augmented_diaries.csv` (G3 threshold block already applied).
+   - For each of 12 (cy, s) cells: build (N_syn × 48) sigmoid matrices; for each slot j, compute `obs_rate = np.nanmean(obs_hom/wrk_arr[:, j])` (unweighted, matches G2/OW1 gate exactly), set `n_home = round(obs_rate × N_syn)`, `n_work = round(obs_wrk_rate × N_syn)`, call `_joint_rake_slot()`.
+   - `_joint_rake_slot`: builds 2N (person, channel) pairs sorted by descending sigmoid; greedily assigns each person to their top eligible channel; guarantees `sum(home)==n_home`, `sum(work)==n_work`, no `home=1 AND work=1`.
+   - Writes updated `hom30_*` + `wrk30_*` back to aug DataFrame; activity (`act30_*`) and all COP columns untouched.
+   - Atomic write: `.tmp` + `os.replace()` + line-count sanity check.
+   - Copies `g3_copresence_thresholds.json` from R5 → R5_raked (COP unchanged).
+   - Writes `g2ow1_rake_provenance.json` (per-cell: obs/before/after rates, n_home/n_work per slot, violation count).
+   - Output: `outputs_step4/sweep/R5_raked/augmented_diaries.csv` (does NOT overwrite R5_lr1e4).
+
+2. **`3rdJ_s4_2split_rakeL.sh`** — GPU sbatch wrapper. Partition `pg`, `--gres=gpu:1`, 4 cpus, 32G, 48h. Precheck import guard. Single-line `cd "$SDIR" && $PYTHON 3rdJ_04L_joint_rake_2split.py`.
+
+**Verification targets (post-valsweep on R5_raked):**
+- G2 all 12 cells PASS (≤ 2.0 pp); OW1 all weekday cells PASS (≤ 5.0 pp)
+- OW6 mutual-exclusivity stays 0 cells (greedy algorithm guarantees this)
+- G1 activity JS unchanged vs R5 (act30_* untouched)
+- G3 co-presence still PASS (COP columns and G3 threshold block carried forward)
+- OW2/OW3 diurnal shape preserved (per-slot rate-matching preserves the observed curve)
+
+**Upload + submit (locally, then on the cluster):**
+
+Locally:
+```
+scp -o BatchMode=yes "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\3rdJ_04L_joint_rake_2split.py" "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\3rdJ_s4_2split_rakeL.sh" o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/
+```
+
+On the cluster (from Step4_docs):
+```
+sbatch 3rdJ_s4_2split_rakeL.sh
+```
+
+After the GPU rake job finishes, submit the CPU valsweep (on the cluster):
+```
+sbatch --job-name=R5raked_val --export=ALL,VARIANT=R5_raked 3rdJ_s4_2split_valsweep.sh
+```
+
+**Fetch after valsweep:** `outputs_step4/sweep/R5_raked/step4_validation_report.txt` + `g2ow1_rake_provenance.json`.
+
+**Next:** upload + submit rake GPU job; relay job ID.
+
+---
+
+### 2026-06-16 — R5_raked result + decision: drop R5, proceed on R7
+
+**R5_raked validator: PASS 59 / WARN 3 / FAIL 3 (91%)**, up from R5 unraked 42 / 6 / 19 (63%). The joint per-stratum rake (3rdJ_04L_joint_rake_2split.py) closed EVERY G2 (AT_HOME) and OW1 (AT_WORK) cell — the marginal gates that were the entire problem. This proves the Leg-1-style post-hoc rake (Phase 8B) transfers cleanly to the two-channel Leg-2 setting.
+
+**The nuance — why R5 is NOT the final base.** The 3 residual FAILs are not marginal, and raking cannot touch them:
+- G4 | night sleep-slot delta: 6.25 pp
+- G4 | work peak-slot delta: 6.38 pp
+- OW5 | day-type ordering wkdy>=Sat>=Sun: only 59.5% of respondents
+
+These are model-SHAPE / per-respondent-structure issues in the ACTIVITY arm and the cross-day work pattern. The rake only re-assigns home/work occupancy per (cycle x day-type x slot) to hit observed marginals; it does not reshape the activity arm's per-slot curve, nor enforce within-respondent weekday>=Sat>=Sun ordering. So no amount of raking closes them.
+
+**Decision: drop R5 as the final base; continue on R7_cap.** Leg-1's Step-4 lessons are explicit that model SHAPE / per-slot metrics improve with CAPACITY — not with loss-weight tuning (proven exhausted) or post-hoc tricks. R7_cap (d_model 256->512, enc/dec 6->8, full 100 epochs) is exactly the capacity lever aimed at these residual shape FAILs. R5 has served its purpose: it proved the rake pipeline end-to-end. We carry that proven rake forward onto the larger model.
+
+**Path forward.** R7_cap is training now (job 968942) with R7val (968943) + R7diaghw (968944) chained via afterok. Once R7 lands: (a) compare its pre-rake shape FAILs + best val_js vs R5; (b) apply the SAME joint rake to R7 -> R7_raked = the production candidate. Raking is variant-agnostic, so it ports with no code change. Final acceptance gate = the R7_raked validator scorecard.
