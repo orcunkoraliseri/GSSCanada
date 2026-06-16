@@ -255,3 +255,53 @@ New wrapper `3rdJ_s4_2split_sweep.sh` (`pg`, GPU, 48 h): **REUSES** the baseline
 3 variants (R1/R2/R3) RUNNING on speed-17; R4/R5/R6 PENDING on `AssocGrpCpuLimit` (group CPU cap, not a node shortage) — they start as the running ones release slots. Each writes to `outputs_step4/sweep/$VARIANT/`. Baseline 968526 unaffected (3:13 elapsed on cisr-1).
 
 **Next:** when all 6 finish, run `3rdJ_s4_2split_valonly.sh` per variant and compare the gate tables (G1–G4 + OW1–OW6) Pareto-style against R0.
+
+### 2026-06-15 — Baseline 968526 VERIFIED
+
+**Verdict: PASS.** All acceptance criteria met. The early-best (epoch-1) bug from run-1 did NOT recur — best tracking begins only after the 20-epoch warmup and the best checkpoint is loaded from epoch 99 (effectively the tail of a 100-epoch run that was still improving). Final val_js / home_gap are FAR below run-1's 0.22 / 0.18. Co-presence head did not collapse (sigma_c ~0.47–0.59 throughout, monotone with the other heads). Augmented CSV row count exact.
+
+| Metric | Value | Notes |
+|---|---|---|
+| State / ExitCode | COMPLETED / 0:0 | sacct |
+| Elapsed | 05:45:26 | MaxRSS 16.06 GB (batch) |
+| Epochs | 100/100 reached | warmup 20 deferred best-tracking + early-stop |
+| Best epoch (loaded) | epoch 99 | LATE — well past warmup-20, not epoch 1 ✓ |
+| Best val_score | 0.0759 | (epoch 100 row; epoch 99 loaded as best ckpt) |
+| Final val_JS | 0.0590 | « run-1's 0.22 ✓ |
+| Final home_gap | 0.0334 | « run-1's 0.18 ✓ |
+| Final work_gap | 0.0345 | — |
+| Final score | 0.0759 | — |
+| COP / sigma | sig(a/h/w/c)=0.71/0.53/0.45/0.47 | cop loss ~0.219 stable, NOT collapsed to ~0 ✓ |
+| best_model.pt | 52,940,735 B (~50.5 MB) | present |
+| augmented_diaries.csv | 543,906,713 B; 192,184 lines | 192,183 data rows + header = exact ✓; shape (192183, 596); IS_SYNTHETIC 0:64061 / 1:128122; wrk30 48/48; hom&wrk violations 0 |
+
+**Sweep snapshot (R1–R6, 968625–968630), as of ~17:24 EDT:**
+
+| JobID | Name | State | Elapsed | Node/Reason |
+|---|---|---|---|---|
+| 968625 | R1_workpw5 | RUNNING | 02:43:39 | speed-17 |
+| 968626 | R2_div02 | RUNNING | 02:43:37 | speed-17 |
+| 968627 | R3_slaw | RUNNING | 02:43:34 | speed-17 |
+| 968628 | R4_cop1 | RUNNING | 00:11:23 | cisr-1 |
+| 968629 | R5_lr1e4 | PENDING | — | AssocGrpCpuLimit |
+| 968630 | R6_d384 | PENDING | — | AssocGrpCpuLimit |
+
+R1–R4 running, R5/R6 queued on the group CPU cap (start as slots free up). Baseline confirmed as the R0 reference for the gate-table comparison once the sweep completes.
+
+### 2026-06-16 — Sweep partial: R4_cop1 (968628) + R5_lr1e4 (968629) FINISHED
+
+First two variants completed overnight. Both COMPLETED exit 0:0, ~5h42m each, sequential on the same node; `.err` logs 0 bytes (clean). Both wrote `best_model.pt` (~52.9 MB) and `augmented_diaries.csv` (~544 MB, 192,183 rows, hom∧wrk violations 0, wrk30 48/48); `[OK] complete`/`===== Done` present → 04E inference finished. Validator NOT yet run on these (gate tables pending behind 968679).
+
+**Training-metric comparison vs R0 baseline (lower = better):**
+
+| Variant | Knob | Best epoch | val_JS | home_gap | work_gap | val_score | vs R0 |
+|---|---|---|---|---|---|---|---|
+| R0 (968526) | baseline | 99 | 0.0590 | 0.0334 | 0.0345 | 0.0759 | reference |
+| R4_cop1 (968628) | `COP_POS_WEIGHT=1.0` | 99 | 0.0442 | 0.0517 | 0.0487 | 0.0688 | ❌ gaps worse |
+| R5_lr1e4 (968629) | `LR=1e-4` | 94 | **0.0183** | **0.0393** | **0.0301** | **0.0357** | ✅ beats R0 across board |
+
+**Read:**
+- **R5_lr1e4 = standout.** val_JS 0.0183 (~3× better than R0's 0.0590), work_gap 0.0301 < R0's 0.0345, home_gap ≈ R0; best val_score 0.0357 (~2× better). Lower LR gave smooth monotone descent; cop head well-behaved (cop loss ~0.213, sig_c ~0.46). Strong gate-table candidate.
+- **R4_cop1 = backfired.** Dropping `COP_POS_WEIGHT` from the baseline value to 1.0 removed the positive-class up-weighting → cop head barely learned (cop loss stuck ~0.54 vs R5's 0.21; sig_c pinned ~0.73–0.74). val_JS (0.044) still < R0 but home_gap (0.052) and work_gap (0.049) both WORSE than R0, and score still falling at epoch 100 (undertrained). Confirms COP_POS_WEIGHT=1.0 is a poor setting, not an optimum.
+
+**Ranking so far (finished only):** R5_lr1e4 ≫ R4_cop1; only R5 cleanly beats R0. R1/R2/R3/R6 still running (~15 h elapsed). Note these are *training* metrics — final selection still goes through the G1–G4 + OW1–OW6 gate tables Pareto-style, never a composite score.
