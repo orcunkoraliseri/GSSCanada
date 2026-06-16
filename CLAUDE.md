@@ -27,6 +27,14 @@ The user runs a two-agent workflow. Identify which role you are at the start of 
 
 When the user says "an agent" without qualifying, ask which role applies if the answer changes your behaviour. Manager prompts to employees should explicitly state: **"You are the employee. Execute the task below and append a Progress Log entry on completion."**
 
+### Cost rule — cheap models for cheap work (HARD RULE)
+Monitoring/`squeue`/`sacct`/`scancel` polling loops and any other mechanical, repetitive, or low-reasoning job (status checks, file existence/size peeks, log tails, simple scp uploads, waiting on jobs) are **cheap-model duties — use Haiku or Sonnet, never Opus.**
+
+- Background/sub-agents **silently inherit the parent's model (Opus) when no model is set.** A poll loop spawned without an explicit model becomes a *second full Opus* burning premium budget to ask "done yet?". ALWAYS pass `model: haiku` (or `sonnet`) on the Agent tool for these.
+- Better still: **do not run live poll loops at all.** SLURM finishing does not need watching. The employee/user relays the job numbers; the manager (Opus) only acts on terminal results.
+- **Minimum monitoring frequency = 30 minutes.** When a job/task genuinely must be polled, space checks at least 30 min apart — never poll continuously or simultaneously. One status check, then wait ≥30 min before the next.
+- Reserve Opus for what actually needs it: planning, debugging, analysis, writing prompts. If a task is a `while`-loop of the same command, it is not an Opus task.
+
 ## Important Directories
 
 - `0_Occupancy/`: Census/GSS inputs, processed outputs, model artifacts

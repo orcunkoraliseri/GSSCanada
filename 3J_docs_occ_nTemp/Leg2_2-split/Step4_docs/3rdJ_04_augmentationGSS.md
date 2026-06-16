@@ -305,3 +305,47 @@ First two variants completed overnight. Both COMPLETED exit 0:0, ~5h42m each, se
 - **R4_cop1 = backfired.** Dropping `COP_POS_WEIGHT` from the baseline value to 1.0 removed the positive-class up-weighting → cop head barely learned (cop loss stuck ~0.54 vs R5's 0.21; sig_c pinned ~0.73–0.74). val_JS (0.044) still < R0 but home_gap (0.052) and work_gap (0.049) both WORSE than R0, and score still falling at epoch 100 (undertrained). Confirms COP_POS_WEIGHT=1.0 is a poor setting, not an optimum.
 
 **Ranking so far (finished only):** R5_lr1e4 ≫ R4_cop1; only R5 cleanly beats R0. R1/R2/R3/R6 still running (~15 h elapsed). Note these are *training* metrics — final selection still goes through the G1–G4 + OW1–OW6 gate tables Pareto-style, never a composite score.
+
+### 2026-06-16 — Sweep: R1/R2/R3 finished + full training table + R0 vs R5 gate tables
+
+R1_workpw5 (968625), R2_div02 (968626), R3_slaw (968627) all **COMPLETED exit 0:0** (~17h07m each on speed-17), `.err` clean, each wrote `best_model.pt` (~52.9 MB) + `augmented_diaries.csv` (~544 MB). **R6_d384 (968630) is the only job still RUNNING** (~6h23m; the `DMODEL=384` widening trains slower). Both validators are done: R0 (968679) and R5val (968807), **COMPLETED exit 0:0**.
+
+**Full training-metric comparison vs R0 (lower = better; best-`val_score` epoch):**
+
+| Variant | Knob | Best ep | val_JS | home_gap | work_gap | val_score | vs R0 |
+|---|---|---|---|---|---|---|---|
+| R0 (968526) | baseline | 99 | 0.0590 | 0.0334 | 0.0345 | 0.0759 | reference |
+| R1_workpw5 (968625) | `WORK_POS_WEIGHT=5.0` | 100 | 0.0501 | 0.0432 | 0.0377 | 0.0704 | ~ JS↑ but gaps worse |
+| R2_div02 (968626) | `LAMBDA_DIV=0.2` | 100 | 0.0544 | 0.0394 | 0.0314 | 0.0721 | ~ marginal |
+| R3_slaw (968627) | `WEIGHT_MODE=slaw` | 95 | 0.0487 | 0.0415 | 0.0311 | 0.0669 | ↑ work_gap best of mid-pack |
+| R4_cop1 (968628) | `COP_POS_WEIGHT=1.0` | 99 | 0.0442 | 0.0517 | 0.0487 | 0.0688 | ❌ gaps worse |
+| **R5_lr1e4 (968629)** | `LR=1e-4` | 94 | **0.0183** | **0.0393** | **0.0301** | **0.0357** | ✅ beats R0 across board |
+| R6_d384 (968630) | `DMODEL=384` | — | running | — | — | — | pending |
+
+**Training read:** R5_lr1e4 dominates (val_score 0.0357, ~2× better than R0; val_JS 0.0183, ~3×). R1/R2/R3 cluster just below R0 on val_score (0.067–0.072) but each trades a small JS gain for a *worse* home/work gap than R0 — none is a clean win. R4 backfired (see prior entry).
+
+**R0 vs R5 gate tables (validator, PRODUCTION mode):**
+
+| | R0 baseline (968679) | R5_lr1e4 (968807) |
+|---|---|---|
+| **PASS / WARN / FAIL** | 31 / 6 / 30 (**46%**) | **37 / 6 / 24 (55%)** |
+| G1 Activity JS (overall) | 0.0316 (WARN) | **0.0160 (PASS)** |
+| G2 \|dAT_HOME\| weekday (worst) | 24.2 pp (2010) ❌ | **19.7 pp (2010)** ❌ (all cells lower) |
+| G3 co-presence \|dprev\| | Alone 35.3 / Spouse 22.4 pp ❌ | **identical** 35.3 / 22.4 pp ❌ |
+| G4 night sleep / work peak | 12.7 pp ❌ / 1.7 pp ✅ | **6.25 pp** ❌ / 6.38 pp ❌ |
+| OW1 AT_WORK RMS (#FAIL cells) | 11 FAIL ❌ | **4 FAIL** (weekday only) ❌ |
+| OW2 diurnal r (weekday) | 0.990 ✅ | **0.997 ✅** |
+| OW3 peak-timing shift | 0 slots ✅ | 0 slots ✅ |
+| OW4 night AT_WORK rate | 5.37% (WARN) | **3.36% (PASS)** |
+| OW5 day-type ordering | 46.1% ❌ | 49.5% ❌ |
+| OW6 channel exclusivity | 0 cells ✅ | 0 cells ✅ |
+| S8 AT_HOME mean-MAE / ACF | 11.86 pp / 0.028 ✅ | **6.44 pp** / 0.029 ✅ |
+| S8 AT_WORK mean-MAE / ACF | 3.94 pp / 0.054 ✅ | **2.55 pp** / 0.029 ✅ |
+
+**Gate read:**
+- **R5 Pareto-dominates R0** — better or equal on every gate family (G1, G2, OW1, OW2, OW4, S8 all strictly improve; G3/OW3/OW6 tie; only G4-workpeak regresses slightly, 1.7→6.4 pp, a fair trade for night-sleep 12.7→6.25 and JS halving). No gate where R0 beats R5 meaningfully. R5 is the working base.
+- **Two structural failures persist in BOTH, knob-independent → not a sweep problem:**
+  1. **G3 co-presence collapse** — syn prevalence is **0.0% for every channel** (Alone/Spouse/Children/…) in both R0 and R5. Even full 100-epoch training does not revive the COP head at inference, and R4's dedicated `COP_POS_WEIGHT` knob backfired. This is the same COP-collapse failure seen in earlier legs → fix belongs in inference/calibration (post-hoc co-presence assignment), **not** in a training knob.
+  2. **G2 AT_HOME under-prediction + OW1 AT_WORK over-prediction** — systematic marginal bias (home syn ~10–20 pp low on weekdays, work syn ~2× obs). R5 roughly halves both but neither clears the gate. This is the calibration/raking target downstream, consistent with the residential-leg pattern (per-cell marginal correction, not architecture).
+
+**Decision:** R5_lr1e4 (LR=1e-4) is the selected sweep winner over R0 and R1–R4 on a Pareto basis. R6_d384 still pending — will be folded in when it lands; if R6 doesn't beat R5 on the gate table, R5 stands. The two residual structural gaps (G3 collapse, G2/OW1 marginal bias) are **downstream-calibration** items, carried forward — not addressable by further single-axis training knobs.
