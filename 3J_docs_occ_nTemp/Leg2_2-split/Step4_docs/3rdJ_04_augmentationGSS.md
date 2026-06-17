@@ -948,3 +948,13 @@ All 8 tests PASS. Key checks: forward shapes OFF/ON, backward through R11 model 
 sbatch --job-name=R11 --export=ALL,VARIANT=R11,LR=1e-4,DMODEL=512,DENC=8,DDEC=8,PATIENCE=100,R11_LATENT=1,R11_LATENT_DIM=8,R11_MONO_WEIGHT=0.05 3rdJ_s4_2split_sweep.sh
 ```
 Config matches R7_cap (d512/ENC8/DEC8/LR1e-4/patience100) plus R11 latent ON (dim 8) and mono penalty weight 0.05 (light; comparable to LAMBDA_DIV 0.1 scale). After training completes, run validator + rake to compare OW5 vs R7_cap_raked (57.3%). Adopt R11 as base iff OW5 improves without regression on G2/OW1 (zeroed by rake) or S8/G1/G3.
+
+---
+
+### Progress Log — 2026-06-17 — R11 SUBMITTED (job 969261)
+
+R11 code (04B/04D/04E + sweep) uploaded to Speed; training submitted via `3rdJ_s4_2split_sweep.sh` with `R11_LATENT=1, R11_LATENT_DIM=8, R11_MONO_WEIGHT=0.05` (R7_cap config otherwise).
+
+- **Job 969261** — PENDING on `pg` (reason: Resources), queued behind R8_deep (968969) + R10_fast (968971), which hold both GPUs. Starts when a GPU frees.
+- **Next:** once running, verify the first ~15 min of the log confirms healthy training (catches any data-integration bug the local synthetic-tensor smoke could not). After it completes → rake + validate R11_raked → compare OW5 vs R7_cap_raked (57.3%); adopt iff OW5↑ with no binary/S8 regression.
+- Auto-comparison chain for R8/R10 (969243→969247) remains live and independent.
