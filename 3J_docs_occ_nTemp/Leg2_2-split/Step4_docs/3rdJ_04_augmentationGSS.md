@@ -39,8 +39,12 @@ _Live status — tick as items complete. Detail for each is in the dated Progres
 - [x] R7_cap is now the PRODUCTION path (not just a test) — R5 dropped as final base
 
 **Finalize**
-- [ ] Winner finalized (incl. R6) + all gates resolved
-- [ ] Downstream calibration / raking step
+- [x] R7_cap_raked validated (969147): 58/5/2, binaries perfect; only OW5 + G4(act30) soft
+- [x] G4 work-peak diagnosed: 9.13 pp inert (away), 1.19 pp load-driving (PASS) → not a blocker
+- [x] Auto-comparison chain wired (969243→969247): rake+validate R8/R10, Pareto vs R7 on rake-insensitive axes
+- [ ] R8/R10 raked + `compare_raked.txt` reviewed → confirm R7_cap_raked is best base
+- [ ] R11 (per-person OW5 coupling) built + trained → adopt iff OW5↑ without binary/S8 regression
+- [ ] Step 4 closed → Step 5 (archetype linkage)
 
 ## Goal
 
@@ -821,3 +825,126 @@ Overnight capacity-hedge sweep completed/in-progress on Speed. R7_cap (productio
 | R9_wide  | d640, 8enc/8dec, LR1e-4 | 14        | 13      | 0.147       | 0.084    | 0.061    | crawling         |
 
 Decision: **R7_cap = production base** (val_js 0.0042, both channel gaps ~2.7 pp — near floor). R7val (968943) + R7diaghw (968944) auto-chained off R7_cap (afterok). R9_wide (968970) killed — crawling at ~40 min/epoch, hopeless. R8_deep (968969) + R10_fast (968971) left running as a hedge; if either beats R7 we swap, otherwise R7 proceeds to the joint per-stratum rake.
+
+
+---
+
+### Progress Log — 2026-06-17 — HPT sweep final: R7_cap wins at epoch 100, R9 killed
+
+- R7_cap completed all 100 epochs. Global best val_js = 0.0033 (epoch 100), home_gap 0.037, work_gap 0.025 — balanced across both channels and ~2x better than the next variant. CONFIRMED production base.
+- R7_cap finishing auto-fires the chained afterok jobs: R7val (968943, validator, partition ps) and R7diaghw (968944, home/work diagnostic, GPU) — both were PENDING on dependency.
+- R9_wide (968970) KILLED via scancel — hopelessly slow (~2435 s/epoch, only epoch 19, val_js 0.090). Genuinely non-competitive.
+- Hedge runs continue: R8_deep (968969, best val_js 0.0066 @ ep58, still descending) and R10_fast (968971, best val_js 0.0083 @ ep32). Both ~2x+ behind R7; left running. Will swap into production only if either beats R7's 0.0033 with balanced gaps.
+- Next: collect R7val + R7diaghw scorecards when they finish, then apply joint per-stratum rake (3rdJ_04L_joint_rake_2split.py) to R7 → R7_raked candidate; final acceptance on the raked validator scorecard.
+
+---
+
+### Progress Log — 2026-06-17 — R7_cap raw scorecard collected; joint rake launched
+
+- R7_cap training finished (best val_js 0.0028 @ epoch 96/100, recomputed by validator).
+- R7val (raw, pre-rake) validator scorecard: 45 PASS / 11 WARN / 11 FAIL. All 11 FAILs are MARGINAL misses — exactly what the joint per-stratum rake targets:
+    * G2 AT_HOME systematically UNDER-predicted ~4.4–8.0 pp (all cycles, worst 2022 weekday 8.02 pp, 2010 weekday 7.40 pp).
+    * OW1 AT_WORK systematically OVER-predicted ~7.6–10.2 pp on weekdays (2022 wkdy 10.19 pp, 2010 wkdy 8.30 pp).
+    * G4 work peak-slot delta 10.33 pp.
+    * OW5 day-type ordering wkdy>=Sat>=Sun holds for only 47.4% of respondents.
+- Activity (G1 mean JS 0.0037), S8 secondary checks, G3 co-presence (WARN only: others 4.55 pp, Spouse 3.00 pp), OW2/OW3/OW6 all PASS.
+- R7diaghw (home/work diagnostic) FAILED — path bug: looks for step4_train.pt at variant root, but model saves checkpoints/best_model.pt. Diagnostic-only, NON-BLOCKING for production path. Flagged for later fix.
+- DECISION: R7_cap confirmed as production base. Hedges R8_deep (best val_js 0.0066) and R10_fast (0.0083) still running but neither beats R7's 0.0028 — no swap.
+- ACTION: rake wrapper 3rdJ_s4_2split_rakeL.sh parameterized (VARIANT default R7_cap, output -> sweep/R7_cap_raked); python 3rdJ_04L_joint_rake_2split.py already accepts --r5_dir/--output_dir. Predecessor archived to archive/3rdJ_s4_2split_rakeL_pre-R7param_20260617.sh. Joint per-stratum rake (per cycle x day-type x slot, joint home+work, mutual-exclusion preserved) launched on GPU.
+- NEXT: when rake finishes, run validator on R7_cap_raked (sbatch --job-name=R7raked_val --export=ALL,VARIANT=R7_cap_raked 3rdJ_s4_2split_valsweep.sh); final acceptance = raked validator scorecard. Expect the 11 marginal FAILs to close.
+
+---
+
+### Progress Log — 2026-06-17 — R7_cap_raked validation + G4 home-gated diagnosis
+
+**Rake validator (job 969147, R7raked_val) COMPLETED 17:14.** Scorecard on `outputs_step4/sweep/R7_cap_raked/step4_validation_report.txt`: **58 PASS / 5 WARN / 2 FAIL (89%)**.
+
+Rake nailed the binary channels:
+- G2 (AT_HOME marginals): all 12 year×daytype cells **0.00 pp**.
+- OW1 (AT_WORK presence RMS): all 12 cells **0.00 pp**.
+- OW2 diurnal Pearson r = 1.000; OW3 peak-timing shift 0 slots; OW6 channel exclusivity 0 cells.
+
+Two FAILs:
+- **OW5** day-type ordering wkdy≥Sat≥Sun: 57.3% — agreed lone soft holdout (per-person ordering; a marginal rake cannot enforce it).
+- **G4 work peak-slot delta: 10.33 pp** — investigated below.
+
+**G4 root cause:** G4 measures the `act30` activity-category (cat 1 "Work & Related", slots 8–19), NOT the binary `wrk30` channel. The joint rake carries `act30` forward untouched (`3rdJ_04L_joint_rake_2split.py:22`), so G4 == raw R7_cap — unchanged by raking.
+
+**Downstream relevance:** `act30` cat-1 IS consumed downstream — Step 7 `07_aug_to_bem.py:98` (metabolic 125 W/person) and Step 9 `activity_loads.py:35` (PC 0.90 + lighting) — but both are gated by `hom30` (`activity_loads.py:148`): a work slot fires a load only if the person is home (telework). Away-worker slots (act=1, hom=0) are filtered out.
+
+**Home-gated decomposition** (probe `3rdJ_04M_g4_homegated_probe.py`; R7_cap_raked diaries; obs n=64,061 / syn n=128,122):
+- UNCOND delta = 10.33 pp (reproduces validator)
+- AWAY (work & ~home) = **9.13 pp** → filtered out downstream
+- JOINT (work & home, load-driving) = **1.19 pp** → under the 3 pp PASS threshold
+- COND (work | home) = 3.01 pp
+
+**Verdict:** 9.13 of 10.33 pp is commuting-worker activity labels with zero downstream load consequence; the load-driving slice (work & home) passes at 1.19 pp. G4 is explained and bounded, not excused. Underlying away gap = model under-generates commuter work activity (syn 15.8% vs obs 25.0%) — real but inert for Leg-2 BEM; optional model-side fix, not a Step-4 blocker.
+
+**Status:** Step 4 NOT closed — under evaluation. R8_deep (968969) and R10_fast (968971) still training (~22h). No progression to Step 5.
+
+---
+
+### Progress Log — 2026-06-17 — Move: auto-comparison chain + R11 (OW5 per-person coupling)
+
+**Decision after evaluating R7_cap_raked:** close-path stays **R7_cap_raked**; R8/R10 are due-diligence only; **R11** is an optional *parallel* upgrade targeting the one training-fixable soft point (OW5). The act30 away-gap is left as a documented limitation (inert downstream — see prior entry).
+
+**Auto-comparison chain — LIVE (SLURM dependencies, no polling):**
+```
+968969 R8 train  ─▶ 969243 R8raked  ─▶ 969245 R8rval  ┐
+968971 R10 train ─▶ 969244 R10raked ─▶ 969246 R10rval ┴▶ 969247 compare
+                                       → outputs_step4/sweep/compare_raked.txt
+```
+New files: `3rdJ_04N_compare_raked.py` (Pareto on **rake-insensitive** axes only — OW5%, act30 work&home, S8 EMD/KS/MAE/ACF; **never composite**) + `3rdJ_s4_2split_compare.sh`. Reuses probe `3rdJ_04M_g4_homegated_probe.py`. Rationale: the rake equalizes binary marginals for any base, so bases can only be told apart on what the rake does NOT touch.
+
+**R11 — per-person OW5 coupling (handed to Sonnet builder):**
+- *Root cause:* each synthetic `occID`'s weekday/Sat/Sun diaries are sampled **independently** → population ordering correct (OW1) but per-person ordering breaks → OW5 = 57.3%. Post-hoc can't fix (can't relabel a day-type); rake is per-stratum, blind to cross-day structure.
+- *Design (conditioning + loss only, NO head rewiring; trains off R7_cap config d512/ENC8/DEC8):*
+  1. **Shared per-person work-intensity latent** injected into decoder conditioning (`3rdJ_04B_model_2split.py` `proj_*` cond tokens), reused across the person's 3 day-types.
+  2. **Soft monotonic penalty**: same-person weekday work-rate ≥ Sat ≥ Sun (needs per-person triplet batching in `3rdJ_04C/04D`).
+- *Acceptance:* OW5 ↑ vs R7 with binaries (G2/OW1) + S8 **not** regressed; validated on the same scorecard + rake. Adopt as base **iff** it wins; else close on R7_cap_raked.
+
+**Status:** R8/R10 chain pending their training (auto-fires); R11 build in progress.
+
+---
+
+### Progress Log — 2026-06-17 — R11 built: per-person work-intensity latent (OW5 coupling)
+
+**Aim.** Fix OW5 (57.3% wkdy≥Sat≥Sun per person) by coupling each synthetic occID's three day-type diaries via a shared per-person latent injected into the decoder — conditioning + loss only, no head rewiring, flags default OFF so R7 and all prior variants are unaffected.
+
+**Files modified (all archived before edit):**
+
+| File | Archive | Change summary |
+|------|---------|----------------|
+| `3rdJ_04B_model_2split.py` | `archive/3rdJ_04B_model_2split_pre-r11_2026-06-17.py` | `CrossAttnDecoder` gains optional 4th cond token from `proj_r11_latent` MLP; `JSeriesHybrid2Split.__init__` reads `r11_person_latent`/`r11_latent_dim` from config; `_arm1_decode_tf`/`_arm1_generate` accept `r11_latent` kwarg; `forward()` extracts `batch["r11_latent"]` when `_r11_on`; `generate()` accepts `r11_latent` kwarg. |
+| `3rdJ_04D_train_2split.py` | `archive/3rdJ_04D_train_2split_pre-r11_2026-06-17.py` | `Step4Dataset2Split` gains `r11_person_latent` + `r11_latent_dim` args; `resample()` draws `(n_pairs, d_latent)` latents from N(0,1) each epoch when ON; `__getitem__` adds `"r11_latent"` key; new `r11_monotonic_penalty()` function; training loop computes + accumulates mono penalty; log CSV gains `mono_loss` field; argparse gains `--r11_person_latent`, `--r11_latent_dim`, `--r11_mono_weight`. |
+| `3rdJ_04E_inference_2split.py` | `archive/3rdJ_04E_inference_2split_pre-r11_2026-06-17.py` | `run_inference()` draws one latent per respondent (N(0,1), seeded at 42); indexes by respondent `i` for each `(i, s_tgt)` pair so the SAME latent is reused across all day-types for person `i`; passes `r11_latent=r11_batch` to `model.generate()` when `model._r11_on`. |
+| `3rdJ_s4_2split_sweep.sh` | `archive/3rdJ_s4_2split_sweep_pre-R11_2026-06-17.sh` | Three new env-var knobs: `R11_LATENT` (0/1), `R11_LATENT_DIM` (int), `R11_MONO_WEIGHT` (float); defaults all OFF → no effect on existing variants; `R11_ARGS` shell var feeds `--r11_person_latent`/`--r11_latent_dim`/`--r11_mono_weight` to `04D` only when `R11_LATENT=1`. |
+
+**Design implemented:**
+
+*MVP — per-person shared latent (primary):*
+- `CrossAttnDecoder.forward()` (model line ~149): when `r11_latent_dim > 0` and latent is not None, a 4th cond token is appended after demo/cycle/strata — `proj_r11_latent: Linear(d_latent, d_model) → GELU → Linear(d_model, d_model)`. When `r11_latent_dim == 0` (default), cond_tokens stays `(B, 3, d_model)` — byte-identical to pre-R11.
+- At training: `Step4Dataset2Split.resample()` draws fresh `(n_pairs, d_latent)` latents from N(0,1) each epoch. Each pair gets its own latent; two pairs with the same source respondent naturally share the same encoder memory but get independent latents — a deliberate design: the model must learn to use the latent for CROSS-STRATUM consistency, not just encode the source.
+- At inference (`04E`): one latent drawn per respondent index `i` (shape `(n, d_latent)`). The `(i, s_tgt)` loop indexes `person_latents[i]` so weekday, Sat, and Sun decodes for respondent `i` all receive the SAME latent — enforcing the coupling.
+
+*Stretch — soft monotonic penalty:*
+- `r11_monotonic_penalty()` (`04D`, after `diversity_loss`): runs 3 teacher-forced Arm-1 decodes with strata forced to {1, 2, 3}; computes mean softmax probability of work activity (class 0) per strata; adds `relu(wrate_Sat − wrate_wkdy) + relu(wrate_Sun − wrate_Sat)`. Uses the ACTIVITY arm's work-class probability (not Arm-2 binary heads) — cleaner and avoids a 3× Arm-2 rollout.
+- Activated only when `--r11_person_latent` AND `--r11_mono_weight > 0`. Default weight = 0.0 → penalty is zero even when latent is on (two-stage activation).
+
+**Flags-off path verified (Test 1, 5, 6):**
+- `r11_person_latent=False` in config → `_r11_on=False`, `r11_latent_dim=0`, `proj_r11_latent=None`.
+- `forward()` ignores `batch["r11_latent"]` when `_r11_on` is False.
+- `generate()` ignores `r11_latent` kwarg when `_r11_on` is False.
+- `CrossAttnDecoder.forward()` with `r11_latent_dim=0` produces `cond_tokens (B,3,d_model)` — unchanged.
+- Sweep script: unset `R11_LATENT` → `R11_LATENT=0` → `R11_ARGS=""` → no new flags passed to 04D.
+
+**Smoke test result (local CPU, torch 2.11.0, 8 tests):**
+All 8 tests PASS. Key checks: forward shapes OFF/ON, backward through R11 model (no autograd errors), generate() 5-tuple return both paths, flags-off ignores latent in batch, cond_tokens dimensions (0 vs 8), `r11_monotonic_penalty` AST-verified in 04D, param count ON > OFF (+4,736 for d_latent=8 proj MLP). Runtime smoke deferred to cluster (environment has no GPU; full data not present locally).
+
+**Syntax check (py_compile):** 04B, 04D, 04E all `OK`.
+
+**Staged cluster command (do NOT submit — manager relays):**
+```
+sbatch --job-name=R11 --export=ALL,VARIANT=R11,LR=1e-4,DMODEL=512,DENC=8,DDEC=8,PATIENCE=100,R11_LATENT=1,R11_LATENT_DIM=8,R11_MONO_WEIGHT=0.05 3rdJ_s4_2split_sweep.sh
+```
+Config matches R7_cap (d512/ENC8/DEC8/LR1e-4/patience100) plus R11 latent ON (dim 8) and mono penalty weight 0.05 (light; comparable to LAMBDA_DIV 0.1 scale). After training completes, run validator + rake to compare OW5 vs R7_cap_raked (57.3%). Adopt R11 as base iff OW5 improves without regression on G2/OW1 (zeroed by rake) or S8/G1/G3.

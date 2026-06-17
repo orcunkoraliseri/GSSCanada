@@ -16,15 +16,8 @@
 SDIR="/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs"
 PYTHON="/speed-scratch/o_iseri/envs/step4/bin/python"
 
-# VARIANT = winner variant to rake (default R7_cap). Output -> <VARIANT>_raked.
-: "${VARIANT:=R7_cap}"
-R5DIR="${SDIR}/outputs_step4/sweep/${VARIANT}"
-OUTDIR="${SDIR}/outputs_step4/sweep/${VARIANT}_raked"
-
-echo "===== 3J Step 4L — Joint Rake (${VARIANT}) =====" ; date
+echo "===== 3J Step 4L — Joint Rake =====" ; date
 echo "SLURM_JOB_ID: $SLURM_JOB_ID  Node: $SLURMD_NODENAME"
-echo "  variant dir: $R5DIR"
-echo "  output  dir: $OUTDIR"
 
 $PYTHON -c "import pandas, numpy, torch" 2>/dev/null || {
     echo "[PRECHECK] Installing missing packages..."
@@ -32,7 +25,7 @@ $PYTHON -c "import pandas, numpy, torch" 2>/dev/null || {
 }
 
 cd "$SDIR"
-$PYTHON 3rdJ_04L_joint_rake_2split.py --r5_dir "$R5DIR" --output_dir "$OUTDIR"
+$PYTHON 3rdJ_04L_joint_rake_2split.py
 EXIT_RAKE=$?
 echo "[DONE] Rake exit code: $EXIT_RAKE" ; date
 exit $EXIT_RAKE

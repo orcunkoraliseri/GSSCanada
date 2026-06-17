@@ -132,19 +132,6 @@ def apply_posthoc_consistency(act_seq, home_seq, work_seq, home_prob, work_prob)
 
 def run_inference(model, data, device, temperature, home_threshold, work_threshold,
                   batch_size=256):
-    """
-    Generate synthetic diaries for each respondent × non-observed day-type.
-
-    R11 coupling: when the model was trained with r11_person_latent=True, the same
-    latent must be reused across ALL day-type decodes for a given respondent — that
-    is the coupling mechanism that fixes OW5. Implementation:
-      - Sample ONE latent per respondent (shape (r11_latent_dim,)) at the start of
-        inference (seeded for reproducibility).
-      - When building the syn_idx list for a chunk, pair each (i, s_tgt) with
-        respondent i's latent, replicated to match batch ordering.
-      - Pass the stacked latent tensor to model.generate() via r11_latent kwarg.
-    When model._r11_on is False, r11_latent is not passed (backward-compatible).
-    """
     model.eval()
     torch.manual_seed(42)
     if torch.cuda.is_available():
@@ -154,15 +141,6 @@ def run_inference(model, data, device, temperature, home_threshold, work_thresho
     obs_strata_all = data["obs_strata"].numpy()
     cycle_year_all = data["cycle_year"].numpy()
     occ_ids_all = data["occ_ids"].numpy()
-
-    # R11: draw one latent per respondent (seeded above for reproducibility).
-    # Shape: (n, r11_latent_dim) on CPU; will be indexed per-batch below.
-    r11_on = getattr(model, "_r11_on", False)
-    r11_latent_dim = getattr(model, "r11_latent_dim", 0)
-    if r11_on and r11_latent_dim > 0:
-        person_latents = torch.randn(n, r11_latent_dim)   # (n, d_latent), CPU
-    else:
-        person_latents = None
 
     rows = []
     for start in range(0, n, batch_size):
@@ -184,12 +162,6 @@ def run_inference(model, data, device, temperature, home_threshold, work_thresho
             cidx_t = data["cycle_idx"][syn_idx].to(device)
             strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
 
-            # R11: build per-element latent (each (i, s_tgt) pair gets respondent i's latent)
-            if person_latents is not None:
-                r11_batch = person_latents[syn_idx].to(device)   # (len(syn_idx), d_latent)
-            else:
-                r11_batch = None
-
             with torch.no_grad():
                 g_act, g_home, g_work, _, g_cop_probs = model.generate(
                     act_t, aux_t, cond_t, cidx_t, strat,
@@ -197,7 +169,6 @@ def run_inference(model, data, device, temperature, home_threshold, work_thresho
                     home_threshold=home_threshold,
                     work_threshold=work_threshold,
                     apply_safety=True,
-                    r11_latent=r11_batch,
                 )
             g_act = g_act.cpu().numpy()
             g_home = g_home.cpu().numpy()

@@ -44,18 +44,6 @@ import torch.nn.functional as F
 
 N_AUX = 11  # [AT_HOME | AT_WORK | 9 co-presence]
 
-# ── R11: per-person work-intensity latent (default OFF) ──────────────────────
-# All R11 additions are guarded by r11_person_latent=True in the model config.
-# When False (default), the code path is byte-identical to the pre-R11 model:
-#   - No new parameters are created in __init__
-#   - forward() / generate() signatures and returns are unchanged
-#   - CrossAttnDecoder cond_tokens shape stays (B,3,d_model) — no 4th token
-# When True:
-#   - A small MLP (d_latent -> d_model) maps the per-person latent to a 4th
-#     cond token; d_latent defaults to 8 (set via r11_latent_dim in config).
-#   - forward() expects batch["r11_latent"] (B, d_latent) float32.
-#   - generate() / _arm1_generate() accept an optional r11_latent kwarg.
-
 
 # ── Positional encoding ──────────────────────────────────────────────────────
 
@@ -127,49 +115,22 @@ class CondCrossAttnDecoderLayer(nn.Module):
 
 
 class CrossAttnDecoder(nn.Module):
-    def __init__(self, d_model, n_heads, n_layers, d_ff, d_cond, d_cycle, dropout=0.1,
-                 r11_latent_dim: int = 0):
-        """
-        r11_latent_dim > 0 activates R11 mode: a 4th cond token is added from the
-        per-person work-intensity latent (B, r11_latent_dim) -> (B, d_model).
-        When r11_latent_dim == 0 (default), behaviour is byte-identical to pre-R11.
-        """
+    def __init__(self, d_model, n_heads, n_layers, d_ff, d_cond, d_cycle, dropout=0.1):
         super().__init__()
         self.proj_demo   = nn.Linear(d_cond,  d_model)
         self.proj_cycle  = nn.Linear(d_cycle, d_model)
         self.proj_strata = nn.Linear(3,       d_model)
-
-        # R11: per-person latent projection (None when r11_latent_dim == 0)
-        self.r11_latent_dim = r11_latent_dim
-        if r11_latent_dim > 0:
-            self.proj_r11_latent = nn.Sequential(
-                nn.Linear(r11_latent_dim, d_model),
-                nn.GELU(),
-                nn.Linear(d_model, d_model),
-            )
-        else:
-            self.proj_r11_latent = None
-
         self.layers = nn.ModuleList([
             CondCrossAttnDecoderLayer(d_model, n_heads, d_ff, dropout) for _ in range(n_layers)
         ])
         self.norm = nn.LayerNorm(d_model)
 
-    def forward(self, x, memory, cond_vec, cycle_emb, strata_oh, tgt_mask,
-                r11_latent=None):
-        """
-        r11_latent: (B, r11_latent_dim) or None.
-        When None (or r11_latent_dim==0), cond_tokens is (B,3,d_model) — pre-R11.
-        When provided and r11_latent_dim>0, cond_tokens is (B,4,d_model).
-        """
-        tok_list = [
+    def forward(self, x, memory, cond_vec, cycle_emb, strata_oh, tgt_mask):
+        cond_tokens = torch.stack([
             self.proj_demo(cond_vec),
             self.proj_cycle(cycle_emb),
             self.proj_strata(strata_oh),
-        ]
-        if self.proj_r11_latent is not None and r11_latent is not None:
-            tok_list.append(self.proj_r11_latent(r11_latent))
-        cond_tokens = torch.stack(tok_list, dim=1)   # (B, 3 or 4, d_model)
+        ], dim=1)                                    # (B, 3, d_model)
         for layer in self.layers:
             x = layer(x, memory, cond_tokens, tgt_mask)
         return self.norm(x)
@@ -207,16 +168,11 @@ class JSeriesHybrid2Split(nn.Module):
         n_aux   = config.get("n_aux", N_AUX)
         d_cond  = config["d_cond"]
 
-        # R11: per-person work-intensity latent (0 == OFF == pre-R11 behaviour)
-        self._r11_on = bool(config.get("r11_person_latent", False))
-        r11_latent_dim = int(config.get("r11_latent_dim", 8)) if self._r11_on else 0
-
-        self.d_model      = d_model
-        self.n_slots      = n_slots
-        self.n_act        = n_act
-        self.n_cop        = n_cop
-        self.n_aux        = n_aux
-        self.r11_latent_dim = r11_latent_dim  # 0 when OFF
+        self.d_model = d_model
+        self.n_slots = n_slots
+        self.n_act   = n_act
+        self.n_cop   = n_cop
+        self.n_aux   = n_aux
 
         # ── Encoder: source-diary slot embedding (act + width-11 aux) ────
         self.act_embedding = nn.Embedding(n_act, d_act)
@@ -249,7 +205,6 @@ class JSeriesHybrid2Split(nn.Module):
         self.arm1_decoder = CrossAttnDecoder(
             d_model=d_model, n_heads=n_heads, n_layers=N_dec,
             d_ff=d_ff, d_cond=d_cond, d_cycle=d_cycle, dropout=dropout,
-            r11_latent_dim=r11_latent_dim,   # 0 == OFF (pre-R11 behaviour)
         )
         self.act_head = nn.Linear(d_model, n_act)
 
@@ -302,10 +257,8 @@ class JSeriesHybrid2Split(nn.Module):
         strata_oh = F.one_hot((tgt_strata - 1).clamp(0, 2), num_classes=3).float()
         return cond_vec, cycle_emb, strata_oh
 
-    def _arm1_decode_tf(self, dec_act_seq, tgt_strata, memory, cond_vec, cycle_idx,
-                        r11_latent=None):
-        """Teacher-forced Arm-1 decode (activity-only inputs). Returns (B,48,n_act).
-        r11_latent: (B, r11_latent_dim) or None — passed through to arm1_decoder."""
+    def _arm1_decode_tf(self, dec_act_seq, tgt_strata, memory, cond_vec, cycle_idx):
+        """Teacher-forced Arm-1 decode (activity-only inputs). Returns (B,48,n_act)."""
         B, T = dec_act_seq.shape
         act_emb = self.act_embedding(dec_act_seq)
         tgt_emb = self.arm1_slot_proj(act_emb)
@@ -316,14 +269,11 @@ class JSeriesHybrid2Split(nn.Module):
 
         cond_vec_d, cycle_emb_d, strata_oh_d = self._build_arm1_cond(cond_vec, cycle_idx, tgt_strata)
         causal_mask = nn.Transformer.generate_square_subsequent_mask(T, device=dec_input.device)
-        dec_out = self.arm1_decoder(dec_input, memory, cond_vec_d, cycle_emb_d, strata_oh_d,
-                                    causal_mask, r11_latent=r11_latent)
+        dec_out = self.arm1_decoder(dec_input, memory, cond_vec_d, cycle_emb_d, strata_oh_d, causal_mask)
         return self.act_head(dec_out)
 
-    def _arm1_generate(self, memory, cond_vec, cycle_idx, tgt_strata, temperature: float = 0.0,
-                       r11_latent=None):
-        """AR activity generation (no aux feedback). Returns (B,48) int64 0-indexed.
-        r11_latent: (B, r11_latent_dim) or None — reused across all slots for the same person."""
+    def _arm1_generate(self, memory, cond_vec, cycle_idx, tgt_strata, temperature: float = 0.0):
+        """AR activity generation (no aux feedback). Returns (B,48) int64 0-indexed."""
         B = memory.shape[0]
         device = memory.device
         cond_vec_d, cycle_emb_d, strata_oh_d = self._build_arm1_cond(cond_vec, cycle_idx, tgt_strata)
@@ -335,8 +285,7 @@ class JSeriesHybrid2Split(nn.Module):
         for t in range(self.n_slots):
             dec_seq = torch.cat(dec_tokens, dim=1)
             causal_mask = nn.Transformer.generate_square_subsequent_mask(dec_seq.shape[1], device=device)
-            dec_out = self.arm1_decoder(dec_seq, memory, cond_vec_d, cycle_emb_d, strata_oh_d,
-                                        causal_mask, r11_latent=r11_latent)
+            dec_out = self.arm1_decoder(dec_seq, memory, cond_vec_d, cycle_emb_d, strata_oh_d, causal_mask)
             out_t   = dec_out[:, -1, :]
             logits  = self.act_head(out_t)
             if temperature and temperature > 0:
@@ -376,16 +325,7 @@ class JSeriesHybrid2Split(nn.Module):
     # ── Forward (teacher-forcing, training) ──────────────────────────────────
 
     def forward(self, batch: dict) -> dict:
-        """Full forward with teacher forcing. Arm 1 -> detach -> Arm 2.
-
-        R11: when self._r11_on is True, batch must contain 'r11_latent' (B, r11_latent_dim).
-        The latent is passed to arm1_decoder as a 4th cond token and is sampled once
-        per training pair (same latent for the (src, tgt) pair, independent across samples).
-        When self._r11_on is False, batch['r11_latent'] is ignored if present.
-        """
-        # R11: extract per-person latent from batch (None when flag is off)
-        r11_latent = batch.get("r11_latent", None) if self._r11_on else None
-
+        """Full forward with teacher forcing. Arm 1 -> detach -> Arm 2."""
         memory = self._encode(
             batch["act_seq"], batch["aux_seq"],
             batch["cond_vec"], batch["cycle_idx"],
@@ -393,7 +333,6 @@ class JSeriesHybrid2Split(nn.Module):
         act_logits = self._arm1_decode_tf(
             batch["dec_act_seq"], batch["tgt_strata"],
             memory, batch["cond_vec"], batch["cycle_idx"],
-            r11_latent=r11_latent,
         )  # (B, 48, n_act)
 
         # DETACH BARRIER — preserved exactly.
@@ -418,8 +357,7 @@ class JSeriesHybrid2Split(nn.Module):
                  home_threshold: float = 0.5,
                  work_threshold: float = 0.5,
                  apply_safety: bool = True,
-                 return_hw_probs: bool = False,
-                 r11_latent=None):
+                 return_hw_probs: bool = False):
         """
         AR activity (Arm 1) then NAT binary heads (Arm 2).
 
@@ -436,19 +374,10 @@ class JSeriesHybrid2Split(nn.Module):
             gen_work_probs (B,48) float32 — raw sigmoid AT_WORK (pre-threshold)
 
         apply_safety: Spouse cop_prob *= (home_pred > 0.5) clip when not home.
-
-        r11_latent: (B, r11_latent_dim) float32 or None.
-          When self._r11_on is True, this latent is injected into the decoder as a
-          4th cond token — it must be the SAME tensor reused across all day-type
-          decode calls for a given person. When self._r11_on is False (default), this
-          argument is ignored.
         """
-        # R11: only use latent if flag is on
-        _r11 = r11_latent if self._r11_on else None
-
         memory = self._encode(act_seq, aux_seq, cond_vec, cycle_idx)
         act_tokens = self._arm1_generate(memory, cond_vec, cycle_idx, tgt_strata,
-                                         temperature=temperature, r11_latent=_r11)
+                                         temperature=temperature)
 
         act_probs = F.one_hot(act_tokens, num_classes=self.n_act).float()  # hard at infer
         arm2_feat = self._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)

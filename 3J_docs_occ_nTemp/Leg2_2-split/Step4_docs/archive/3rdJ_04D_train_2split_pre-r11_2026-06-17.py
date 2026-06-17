@@ -97,14 +97,6 @@ COLLEAGUES_IDX = 8
 # CYCLE_YEAR -> index (matches 04A CYCLE_MAP)
 CYCLE_MAP = {2005: 0, 2010: 1, 2015: 2, 2022: 3}
 
-# ── R11: per-person latent flags (default OFF — does NOT alter existing behaviour) ──
-# These come from argparse (--r11_person_latent / --r11_latent_dim / --r11_mono_weight).
-# When all are at defaults (False / 8 / 0.0), R7 and earlier variants are unaffected:
-#   no r11_latent key in batch, model config r11_person_latent=False, mono_weight=0.
-_R11_PERSON_LATENT = False   # overridden by parse_args() before train() is called
-_R11_LATENT_DIM    = 8
-_R11_MONO_WEIGHT   = 0.0
-
 
 # ── Dataset ──────────────────────────────────────────────────────────────────
 
@@ -113,22 +105,12 @@ class Step4Dataset2Split(Dataset):
     Per training pair: encoder = source respondent's tensors (observed day);
     decoder target = a sampled 1-of-K neighbour's tensors (resampled each epoch).
     Provides dec_act_seq, dec_aux_seq, dec_cop_avail, dec_work_avail, tgt_strata.
-
-    R11 mode (r11_person_latent=True): a pre-sampled per-person latent is stored in
-    self._r11_latents (n, d_latent) and added to every __getitem__ under key
-    'r11_latent'. Latents are re-drawn from N(0,1) each epoch in resample().
-    When r11_person_latent=False (default), self._r11_latents is None and no key
-    is added — the batch dict is byte-identical to the pre-R11 case.
     """
 
-    def __init__(self, data: dict, pairs: dict, r11_person_latent: bool = False,
-                 r11_latent_dim: int = 8):
+    def __init__(self, data: dict, pairs: dict):
         self.data = data
         self.pairs = pairs
-        self.r11_person_latent = r11_person_latent
-        self.r11_latent_dim    = r11_latent_dim
-        self._sampled_tgt   = None
-        self._r11_latents   = None
+        self._sampled_tgt = None
         self.resample()
 
     def resample(self):
@@ -137,25 +119,13 @@ class Step4Dataset2Split(Dataset):
         k_choice = torch.randint(0, K, (n_pairs,))
         self._sampled_tgt = self.pairs["tgt_k_indices"][torch.arange(n_pairs), k_choice]
 
-        # R11: draw fresh per-pair latents from N(0,1) each epoch.
-        # One latent per SOURCE respondent (occ-level coupling): two pairs with the
-        # same src get the same latent regardless of which tgt stratum is sampled.
-        # We store one latent per PAIR (not per unique src_idx) — simpler indexing,
-        # since pairs with the same src will naturally receive the same work-level
-        # signal via the encoder's memory representation, and the latent adds a
-        # stochastic EXTRA signal that is shared for the same pair this epoch.
-        if self.r11_person_latent:
-            self._r11_latents = torch.randn(n_pairs, self.r11_latent_dim)
-        else:
-            self._r11_latents = None
-
     def __len__(self):
         return len(self.pairs["src_idx"])
 
     def __getitem__(self, i):
         s = self.pairs["src_idx"][i].item()
         t = self._sampled_tgt[i].item()
-        item = {
+        return {
             # Encoder: observed diary of source respondent
             "act_seq":    self.data["act_seq"][s],
             "aux_seq":    self.data["aux_seq"][s],
@@ -170,10 +140,6 @@ class Step4Dataset2Split(Dataset):
             "dec_work_avail": self.data["work_avail"][t],
             "tgt_strata":    self.data["obs_strata"][t],
         }
-        # R11: add per-pair latent when enabled; absent otherwise (pre-R11 compat)
-        if self._r11_latents is not None:
-            item["r11_latent"] = self._r11_latents[i]
-        return item
 
 
 # ── Component losses (4 tasks) ────────────────────────────────────────────────
@@ -254,61 +220,6 @@ def diversity_loss(output: dict, batch: dict) -> torch.Tensor:
     if not losses:
         return torch.tensor(0.0, device=home_p.device)
     return torch.stack(losses).mean()
-
-
-def r11_monotonic_penalty(model, batch: dict, device) -> torch.Tensor:
-    """
-    R11 soft monotonic ordering penalty: per-person weekday work-rate >= Sat >= Sun.
-
-    Strategy: teacher-forced (not AR rollout) so cost is O(1) forward passes.
-    For each of the 3 strata in {1=wkdy, 2=Sat, 3=Sun}, run Arm-1 teacher-forced
-    decode on the SAME (src, r11_latent, cond) but with the strata one-hot forced
-    to that target value. Compute mean sigmoid(work_logit) over slots -> wrate_s.
-    Penalty = relu(wrate_Sat - wrate_wkdy) + relu(wrate_Sun - wrate_Sat).
-
-    This is computed on the CURRENT batch (teacher-forcing on tgt seq is fine here
-    because we only need a work-intensity signal, not a calibrated probability).
-    When batch["r11_latent"] is absent (r11_person_latent=False), this function
-    must never be called (guard in train loop).
-
-    NOTE: only Arm-1 (activity) logits are used here; the work_logit from Arm-2
-    is then derived from the detached activity probs — but for the ordering penalty
-    we want the direct work signal from the ACTIVITY head (work category = class 0):
-    wrate = mean probability that the model assigns to activity class 0 (Work).
-    This is cleaner (no Arm-2 rollout) and directly reflects the work-ordering intent.
-    """
-    B = batch["dec_act_seq"].shape[0]
-
-    # Build strata one-hot tensors for the 3 day-types, broadcast to batch size.
-    strata_vals = [
-        torch.ones(B, dtype=torch.long, device=device),   # 1 = weekday
-        torch.full((B,), 2, dtype=torch.long, device=device),  # 2 = Saturday
-        torch.full((B,), 3, dtype=torch.long, device=device),  # 3 = Sunday
-    ]
-
-    memory = model._encode(
-        batch["act_seq"], batch["aux_seq"],
-        batch["cond_vec"], batch["cycle_idx"],
-    )
-
-    r11_latent = batch.get("r11_latent", None)
-    wrates = []
-    for s_tensor in strata_vals:
-        act_logits = model._arm1_decode_tf(
-            batch["dec_act_seq"], s_tensor,
-            memory, batch["cond_vec"], batch["cycle_idx"],
-            r11_latent=r11_latent,
-        )  # (B, 48, n_act)
-        # Work probability: softmax -> class 0 -> mean over slots and batch
-        work_probs = torch.softmax(act_logits, dim=-1)[:, :, 0]   # (B, 48)
-        wrates.append(work_probs.mean())   # scalar
-
-    wrate_wkdy, wrate_sat, wrate_sun = wrates
-    penalty = (
-        torch.relu(wrate_sat  - wrate_wkdy) +
-        torch.relu(wrate_sun  - wrate_sat)
-    )
-    return penalty
 
 
 # ── Loss weighting strategies ─────────────────────────────────────────────────
@@ -553,20 +464,12 @@ def train(args):
         feat_cfg = json.load(f)
     d_cond = feat_cfg["d_cond"]
 
-    # R11 flags (from module-level vars, set by parse_args before train() call)
-    r11_on         = args.r11_person_latent
-    r11_latent_dim = args.r11_latent_dim
-    r11_mono_w     = args.r11_mono_weight
-
     if args.sample:
         model_config = {
             "model_type": "J3", "d_model": 64, "n_heads": 2, "d_ff": 256,
             "N_enc": 2, "N_dec": 2, "d_act": 16, "d_cycle": 16, "dropout": 0.1,
             "n_activity_classes": 14, "n_copresence": 9, "n_slots": 48,
             "n_aux": feat_cfg.get("n_aux", 11), "d_cond": d_cond,
-            # R11 (carried through even in sample mode so the flag is persisted in ckpt)
-            "r11_person_latent": r11_on,
-            "r11_latent_dim":    r11_latent_dim,
         }
         args.batch_size = 16
         args.max_epochs = 5
@@ -581,9 +484,6 @@ def train(args):
             "d_act": 32, "d_cycle": 32, "dropout": 0.1,
             "n_activity_classes": 14, "n_copresence": 9, "n_slots": 48,
             "n_aux": feat_cfg.get("n_aux", 11), "d_cond": d_cond,
-            # R11
-            "r11_person_latent": r11_on,
-            "r11_latent_dim":    r11_latent_dim,
         }
 
     # ── Device ───────────────────────────────────────────────────────────
@@ -595,8 +495,6 @@ def train(args):
         device = torch.device("cpu")
     print(f"  Device: {device}  WEIGHT_MODE={WEIGHT_MODE}  USE_PCGRAD={USE_PCGRAD}  "
           f"LAMBDA_DIV={LAMBDA_DIV}")
-    if r11_on:
-        print(f"  R11: person_latent=ON  latent_dim={r11_latent_dim}  mono_weight={r11_mono_w}")
 
     # ── Data ─────────────────────────────────────────────────────────────
     print("[1/4] Loading datasets and pairs...")
@@ -604,11 +502,7 @@ def train(args):
     val_data    = torch.load(os.path.join(args.data_dir, "step4_val.pt"), map_location="cpu", weights_only=False)
     train_pairs = torch.load(os.path.join(args.data_dir, "training_pairs.pt"), map_location="cpu", weights_only=False)
 
-    train_dataset = Step4Dataset2Split(
-        train_data, train_pairs,
-        r11_person_latent=r11_on,
-        r11_latent_dim=r11_latent_dim,
-    )
+    train_dataset = Step4Dataset2Split(train_data, train_pairs)
     print(f"  Train pairs: {len(train_dataset)} | Val respondents: {len(val_data['act_seq'])}")
 
     # Activity CE class weights (inverse-sqrt-frequency from act_class_freqs)
@@ -692,8 +586,7 @@ def train(args):
     # ── Training log ─────────────────────────────────────────────────────
     log_path = os.path.join(out_dir, "step4_training_log.csv")
     log_fields = ["epoch", "train_loss", "act_loss", "home_loss", "work_loss",
-                  "cop_loss", "div_loss", "mono_loss",
-                  "sigma_act", "sigma_home", "sigma_work",
+                  "cop_loss", "div_loss", "sigma_act", "sigma_home", "sigma_work",
                   "sigma_cop", "val_js", "home_gap", "work_gap", "val_score",
                   "lr", "grad_norm", "elapsed_s"]
     if start_epoch == 0:
@@ -710,7 +603,7 @@ def train(args):
         t0 = time.time()
         train_dataset.resample()
 
-        accum = {k: 0.0 for k in ["total", "act", "home", "work", "cop", "div", "mono"]}
+        accum = {k: 0.0 for k in ["total", "act", "home", "work", "cop", "div"]}
         grad_norms = []
 
         for batch in train_loader:
@@ -723,12 +616,7 @@ def train(args):
                     comp = component_losses(out, batch, act_class_weights, home_pw, work_pw, cop_pos_weight)
                     div = diversity_loss(out, batch)
                     total_w, per_task = weighter.weighted(comp)
-                    # R11 monotonic penalty (AMP path)
-                    if r11_on and r11_mono_w > 0.0 and "r11_latent" in batch:
-                        mono = r11_monotonic_penalty(model, batch, device)
-                    else:
-                        mono = torch.tensor(0.0, device=device)
-                    total = total_w + LAMBDA_DIV * div + r11_mono_w * mono
+                    total = total_w + LAMBDA_DIV * div
                 scaler.scale(total).backward()
                 scaler.unscale_(optimizer)
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), clip_norm).item()
@@ -739,22 +627,15 @@ def train(args):
                 comp = component_losses(out, batch, act_class_weights, home_pw, work_pw, cop_pos_weight)
                 div = diversity_loss(out, batch)
                 total_w, per_task = weighter.weighted(comp)
-                # R11 monotonic penalty (non-AMP path)
-                if r11_on and r11_mono_w > 0.0 and "r11_latent" in batch:
-                    mono = r11_monotonic_penalty(model, batch, device)
-                else:
-                    mono = torch.tensor(0.0, device=device)
-                total = total_w + LAMBDA_DIV * div + r11_mono_w * mono
+                total = total_w + LAMBDA_DIV * div
 
                 if pcgrad is not None:
                     # De-conflict the 4 UW-weighted per-task grads on shared params,
-                    # then add the diversity-loss grad and R11 mono-penalty grad on top.
-                    # Retain the graph so the diversity + UW-log_var grads can still
-                    # be computed below.
+                    # then add the diversity-loss grad on top. Retain the graph so
+                    # the diversity + UW-log_var grads can still be computed below.
                     pcgrad.backward([per_task[t] for t in TASKS], retain_all=True)
-                    extra = LAMBDA_DIV * div + r11_mono_w * mono
                     div_grads = torch.autograd.grad(
-                        extra, pcgrad.params, allow_unused=True, retain_graph=bool(weight_params),
+                        LAMBDA_DIV * div, pcgrad.params, allow_unused=True, retain_graph=bool(weight_params),
                     )
                     for p, dg in zip(pcgrad.params, div_grads):
                         if dg is not None:
@@ -775,7 +656,6 @@ def train(args):
             accum["act"]   += float(comp["act"].item())
             accum["home"]  += float(comp["home"].item())
             accum["work"]  += float(comp["work"].item())
-            accum["mono"]  += float(mono.item())
             accum["cop"]   += float(comp["cop"].item())
             accum["div"]   += float(div.item())
             grad_norms.append(grad_norm)
@@ -793,10 +673,9 @@ def train(args):
             plateau.step(val["val_score"] if not math.isnan(val["val_score"]) else avg["total"])
         elapsed = time.time() - t0
 
-        _mono_str = f" mono={avg['mono']:.4f}" if r11_on else ""
         print(f"Epoch {epoch+1:3d}/{args.max_epochs}: loss={avg['total']:.4f}  "
               f"act={avg['act']:.4f} home={avg['home']:.4f} work={avg['work']:.4f} "
-              f"cop={avg['cop']:.4f} div={avg['div']:.4f}{_mono_str} | "
+              f"cop={avg['cop']:.4f} div={avg['div']:.4f} | "
               f"sig(a/h/w/c)={sig['act']:.2f}/{sig['home']:.2f}/{sig['work']:.2f}/{sig['cop']:.2f} | "
               f"val_JS={val['val_js']:.4f} home_gap={val['home_gap']:.4f} "
               f"work_gap={val['work_gap']:.4f} score={val['val_score']:.4f} "
@@ -807,7 +686,7 @@ def train(args):
                 "epoch": epoch + 1, "train_loss": round(avg["total"], 6),
                 "act_loss": round(avg["act"], 6), "home_loss": round(avg["home"], 6),
                 "work_loss": round(avg["work"], 6), "cop_loss": round(avg["cop"], 6),
-                "div_loss": round(avg["div"], 6), "mono_loss": round(avg["mono"], 6),
+                "div_loss": round(avg["div"], 6),
                 "sigma_act": round(sig["act"], 6), "sigma_home": round(sig["home"], 6),
                 "sigma_work": round(sig["work"], 6), "sigma_cop": round(sig["cop"], 6),
                 "val_js": round(val["val_js"], 6), "home_gap": round(val["home_gap"], 6),
@@ -882,14 +761,6 @@ def parse_args():
     p.add_argument("--fp16", action="store_true")
     p.add_argument("--resume", default=None)
     p.add_argument("--sample", action="store_true")
-    # ── R11: per-person work-intensity latent (default OFF — preserves pre-R11 behaviour) ──
-    p.add_argument("--r11_person_latent", action="store_true", default=False,
-                   help="Enable R11 per-person work-intensity latent coupling across day-types.")
-    p.add_argument("--r11_latent_dim", type=int, default=8,
-                   help="Dimensionality of the R11 per-person latent (default 8).")
-    p.add_argument("--r11_mono_weight", type=float, default=0.0,
-                   help="Weight for R11 soft monotonic ordering penalty wkdy>=Sat>=Sun "
-                        "(default 0.0 = disabled). Only active when --r11_person_latent is set.")
     return p.parse_args()
 
 
