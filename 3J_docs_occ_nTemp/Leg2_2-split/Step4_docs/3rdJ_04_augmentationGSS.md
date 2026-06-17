@@ -806,3 +806,18 @@ These are model-SHAPE / per-respondent-structure issues in the ACTIVITY arm and 
 **Decision: drop R5 as the final base; continue on R7_cap.** Leg-1's Step-4 lessons are explicit that model SHAPE / per-slot metrics improve with CAPACITY — not with loss-weight tuning (proven exhausted) or post-hoc tricks. R7_cap (d_model 256->512, enc/dec 6->8, full 100 epochs) is exactly the capacity lever aimed at these residual shape FAILs. R5 has served its purpose: it proved the rake pipeline end-to-end. We carry that proven rake forward onto the larger model.
 
 **Path forward.** R7_cap is training now (job 968942) with R7val (968943) + R7diaghw (968944) chained via afterok. Once R7 lands: (a) compare its pre-rake shape FAILs + best val_js vs R5; (b) apply the SAME joint rake to R7 -> R7_raked = the production candidate. Raking is variant-agnostic, so it ports with no code change. Final acceptance gate = the R7_raked validator scorecard.
+
+---
+
+### Progress Log — 2026-06-17 — Overnight HPT capacity sweep (R7/R8/R9/R10)
+
+Overnight capacity-hedge sweep completed/in-progress on Speed. R7_cap (production candidate) vs three alternatives at/above its capacity. R7_cap is the decisive winner.
+
+| variant  | config                  | latest ep | best ep | best val_js | home_gap | work_gap | still improving? |
+|----------|-------------------------|-----------|---------|-------------|----------|----------|------------------|
+| R7_cap   | d512, 8enc/8dec, LR1e-4 | 80        | 79      | 0.0042      | 0.027    | 0.026    | floored          |
+| R8_deep  | d512, 12enc/12dec, LR1e-4 | 41      | 41      | 0.016       | 0.066    | 0.044    | yes, slowly      |
+| R10_fast | d512, 8enc/8dec, LR3e-4 | 23        | 23      | 0.022       | 0.085    | 0.062    | yes              |
+| R9_wide  | d640, 8enc/8dec, LR1e-4 | 14        | 13      | 0.147       | 0.084    | 0.061    | crawling         |
+
+Decision: **R7_cap = production base** (val_js 0.0042, both channel gaps ~2.7 pp — near floor). R7val (968943) + R7diaghw (968944) auto-chained off R7_cap (afterok). R9_wide (968970) killed — crawling at ~40 min/epoch, hopeless. R8_deep (968969) + R10_fast (968971) left running as a hedge; if either beats R7 we swap, otherwise R7 proceeds to the joint per-stratum rake.
