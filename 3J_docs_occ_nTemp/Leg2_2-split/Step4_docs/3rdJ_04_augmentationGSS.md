@@ -970,3 +970,22 @@ R11 job 969261 **FAILED after 10 s** — CUDA OOM (exit 13, the 04D failure path
 - **Resubmit:** same command as line 948 (`VARIANT=R11, LR=1e-4, DMODEL=512, DENC=8, DDEC=8, PATIENCE=100, R11_LATENT=1, R11_LATENT_DIM=8, R11_MONO_WEIGHT=0.05`). Only `3rdJ_04D_train_2split.py` re-uploaded.
 - **R8 branch:** R8_deep (968969) COMPLETED clean; R8raked (969243) + R8rval (969245) COMPLETED. R7-vs-R8 Pareto comparison (04N on the two raked dirs) submitted in parallel.
 - **R10:** still RUNNING (968971, speed-17); it gates R10raked (969244) → the 3-way auto-compare (969247).
+
+---
+
+### Progress Log — 2026-06-18 — R7 vs R8 (raked) comparison → R7 holds as base
+
+Ran `3rdJ_04N_compare_raked.py` on the two finished raked bases (R10 still running). Both land on the Pareto front, but the gate-level pull shows R8 is **not** an upgrade:
+
+| base | P/W/F | OW5% | act30 work&home (load) | act30 cond | S8 W/H curves |
+|---|---|---|---|---|---|
+| **R7_cap_raked** | 58/5/**2** | 57.3 | **1.19 pp** | **3.01 pp** | W-ACF 0.0095 / W-MAE 6.04 / H-ACF 0.0226 / H-MAE 3.94 |
+| R8_deep_raked | 58/2/**5** | **61.3** | 2.00 pp | 4.35 pp | *(identical)* |
+
+S8 shape metrics are byte-identical across bases — expected, since the rake forces both to the same observed binary marginals; only the rake-untouched axes (OW5, act30, G3) discriminate.
+
+**Gate detail:**
+- **R7 FAILs (2):** G4 work peak 10.33 pp (load-driving slice is fine — 1.19 pp, see 2026-06-18 home-gated diagnosis), OW5 57.3%.
+- **R8 FAILs (5):** G4 work peak 9.91 pp; **OW5 61.3% — still a FAIL** (better than R7 but does not clear the bar); **+3 new G3 co-presence FAILs** — Spouse prevalence blows out to 10.52 pp (obs 22.4% / syn 32.9%), Alone 6.24 pp (obs 35.3% / syn 29.1%), max-gap 10.52 pp. R7 only *WARNs* on these (Spouse 3.00 pp).
+
+**Verdict:** R8 trades a non-bar-clearing OW5 nudge (+4 pp, still FAIL) for real G3 co-presence regressions and worse act30 load accuracy. **R7_cap_raked remains the production base.** OW5 is a FAIL on *both* bases and the rake cannot touch it → R11 (per-person latent, job 970013) is the dedicated attempt to actually clear OW5 without the G3/act30 cost.
