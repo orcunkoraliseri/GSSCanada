@@ -1001,3 +1001,27 @@ Cross-checked the Leg-1 (2J) post-training tuning recipe (`2J_docs_occ_nTemp/04_
 - `3rdJ_s4_2split_tempsweep.sh` (NEW) — per-T job: symlink R7_cap checkpoint → re-infer (04E @ T) → rake (04L @ T) → validate, into `R7_<tag>` + `R7_<tag>_raked`.
 - **Sweep:** T ∈ {0.6, 0.7, 0.9}; anchor = existing `R7_cap_raked` (T=0.8). Lower T sharpens (better OW5/act30 ordering, watch S8 diversity); higher T diversifies. Compare via `04N` on OW5 / act30 work&home / S8 — Pareto, never composite.
 - Cost: inference + rake only, no training. Runs on `pg` (queues behind R11/R10). Strictly cheaper than R11; may close OW5 without it (or stack with it).
+
+---
+
+### Progress Log — 2026-06-18 — Deep-research reports in + Option-B improvement program
+
+Three Step-4 deep-research reports returned (`deepResearch/dr_S4-0{1,2,3}_*_REPORT.md`, Gemini/Antigravity, grounded in our code + Leg-1 numbers). User chose **Option B — act on findings** (methodology-first; learn/innovate over fast closure). Backlog below is **evidence-gated** (verify before building) and ranked by value × tractability.
+
+**Report verdicts:**
+- **S4-03 (architecture):** AR-Transformer validated over MDLM on our own gates (J3 4/4 vs MDLM-G1 2/4; cheaper; needs less raking 69% vs 74%). Keep the stack (UW/PCGrad/diversity/detach/raking). → paper justification secured.
+- **S4-01 (coupling):** R11 = principled (shared subject latent) but soft penalty gives **no inference guarantee**; PAVA isotonic = guaranteed OW5 fix; latent-sensitivity test = cheap collapse check.
+- **S4-02 (raking):** flagged ~61% of work slots have `wrk30=0` post-rake — but conflates legit telework with the true impossible state. Probe `04P` (job 970041, queued) decomposes it.
+
+**Tier 1 — rake semantics (gated on probe 970041):**
+- *If FLOATING (work & ~home & ~work) is non-trivial:* build **telework-aware / priority raking** in `04L` — lock work-at-workplace→`wrk30`, work-at-home→`hom30`, forbid the floating state, then greedy-rake the residual to marginals. (Headline methodology innovation; respects telework so it won't blow OW1.)
+- *Regardless:* add two permanent validator gates — activity↔occupancy **discordance** and binary **transition-flicker** (report found unraked ~5.4 home transitions/day vs obs ~2.4 — separate realism issue to confirm).
+
+**Tier 2 — OW5 / coupling (gated on R11 + temp-sweep results):**
+- Run the **latent-sensitivity test** on R11 (±3σ → Δwork-rate; ≈0 = posterior collapse).
+- If OW5 still fails: wire **PAVA isotonic** (hard guarantee) + **copula-coupled per-`occID` seeds** in `04E` binarization.
+
+**Tier 3 — learning/innovation capstone (optional, parallel):**
+- Bounded **10%-sample MDLM ablation** to rigorously settle open-decision #1 (AR vs diffusion). Not required to close Step 4; pure learning.
+
+**Sequence:** let in-flight jobs report (probe → R11 → temp) → execute Tier 1 → Tier 2 as needed → Tier 3 as capstone.
