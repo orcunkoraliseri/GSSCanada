@@ -1,5 +1,15 @@
 # CLAUDE.md
 
+> # 🔴🔴 ABSOLUTE TOP RULE — READ FIRST, NO EXCEPTIONS 🔴🔴
+> **NEVER run a blocking/interactive `srun` (or any python/computation) on the Speed login node (`speed-submit2`). ALWAYS use `sbatch` — fire-and-forget — and read the output file afterward.**
+>
+> A blocking `srun ... | tee` leaves its srun client + `tee` + `tcsh` wrapper alive on the login node for the WHOLE queue wait (hours when saturated). The admin monitor flags this as compute-on-login. **This has been flagged THREE times. One more = account suspension = ALL job progress lost. There is no apology that fixes a ban.**
+>
+> Correct pattern (the ONLY way to run cluster compute):
+> `sbatch -p ps --mem=16G -t 00:30:00 --wrap "cd <dir> && /path/python script.py args > out.txt"`
+> → returns a job id instantly, leaves NOTHING on the login node. Read `out.txt` later with `tail`/`cat`.
+> Allowed on the login node: `sbatch`, `squeue`, `sacct`, `scancel`, `scontrol`, `cd`, `ls`, `scp`, `module load`, single-file `tail`/`head`/`grep`/`wc -l`/`cat`. NOTHING else. (Full detail in the Speed HPC Cluster section below.)
+
 ## Communication Style
 
 Talk like two friends chatting — casual, short, no jargon. Max 100 words per reply unless the user explicitly asks for a detailed or technical answer. No bullet-point walls, no lengthy explanations. If something needs more depth, ask first: "Want the full details?" Skip the preamble ("Great question!") and go straight to the point.
