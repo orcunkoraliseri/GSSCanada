@@ -1025,3 +1025,19 @@ Three Step-4 deep-research reports returned (`deepResearch/dr_S4-0{1,2,3}_*_REPO
 - Bounded **10%-sample MDLM ablation** to rigorously settle open-decision #1 (AR vs diffusion). Not required to close Step 4; pure learning.
 
 **Sequence:** let in-flight jobs report (probe → R11 → temp) → execute Tier 1 → Tier 2 as needed → Tier 3 as capstone.
+
+---
+
+### Progress Log — 2026-06-18 — Tier-3 MDLM ablation BUILT (local, smoke 6/6, not submitted)
+
+Built the masked-diffusion (MDLM) backbone as a fair ablation vs the AR Transformer (settles open-decision #1). LOCAL build + smoke only — **not uploaded, not submitted** (manager review before any cluster run). 6 NEW files, AR path untouched:
+- `3rdJ_04B_mdlm_2split.py` — `MDLMOcc2Split`: bidirectional encoder (no causal mask), absorbing-state masking (vocab 14→15, idx 14 = mask, excluded from outputs); binary heads read a **clean (un-masked) pass** via a separate `slot_linear_clean` head on the shared encoder, with the same detach barrier as AR. Same d_model/heads/depth as AR for fairness.
+- `3rdJ_04D_mdlm_train_2split.py` — masked-diffusion CE on masked positions + the SAME binary BCE + diversity + UncertaintyWeighting; **loss weights held identical to AR** (isolate structural effect). Knobs: `--mdlm_mask_schedule {linear,cosine}` (default cosine), `--mdlm_denoise_steps` (default 16).
+- `3rdJ_04E_mdlm_infer_2split.py` — 16-step iterative denoise; binary via clean pass; **same output CSV schema as 04E** so `04L` rake + validator run unchanged.
+- `3rdJ_04Q_make_s10_sample.py` — 10% pair-level stratified subsample (by cycle×obs_strata, seed 42; val/test kept full) → `outputs_step4_s10/`, so AR-10% and MDLM-10% train on the SAME data.
+- `3rdJ_s4_2split_mdlm.sh` — sbatch wrapper (pg, gpu:1, 48h): make-s10 → train → infer → rake → validate into `sweep/MDLM_s10(_raked)`; header comments include BOTH the MDLM and the matching AR-10%-baseline submit lines. **Not submitted.**
+- `3rdJ_04B_mdlm_smoke.py` — CPU smoke.
+
+**Smoke 6/6 PASS:** builds (162k params); forward shapes act(4,48,15)/home(4,48)/work(4,48)/cop(4,48,9); masking isolates masked-position loss; backward no-NaN; denoise outputs in {1..14} (no mask leak); **clean-pass isolation proven** (perturbing the noisy seq moves home_logits by 0, clean seq by 0.042).
+
+**Open items before any submit (manager to handle):** (1) `outputs_step4_s10/` must be generated on the cluster first (the wrapper's make-s10 step does this; needs `outputs_step4/training_pairs.pt` present); (2) custom binary thresholds in 04E_mdlm are placeholder (default 0.5 fine for the ablation); (3) confirm `sweep/MDLM_s10/` writable; (4) validation at 16 denoise steps may be slow on small GPUs — drop to 8 if walltime tightens. Submission deferred until manager review + a free `pg` slot (and never via blocking srun).
