@@ -256,7 +256,7 @@ def diversity_loss(output: dict, batch: dict) -> torch.Tensor:
     return torch.stack(losses).mean()
 
 
-def r11_monotonic_penalty(model, batch: dict, device, cap: int = 32) -> torch.Tensor:
+def r11_monotonic_penalty(model, batch: dict, device) -> torch.Tensor:
     """
     R11 soft monotonic ordering penalty: per-person weekday work-rate >= Sat >= Sun.
 
@@ -277,41 +277,26 @@ def r11_monotonic_penalty(model, batch: dict, device, cap: int = 32) -> torch.Te
     wrate = mean probability that the model assigns to activity class 0 (Work).
     This is cleaner (no Arm-2 rollout) and directly reflects the work-ordering intent.
     """
-    # MEMORY (2026-06-18 OOM fix): this penalty retains THREE teacher-forced decode
-    # graphs at once (one per day-type) on top of the live main-forward graph (it is
-    # computed before backward), plus a re-encode. At full batch that OOM'd the 15 GiB
-    # pg card (969261, exit 13). We bound it two ways: (1) sub-batch to `cap` rows —
-    # the ordering signal is a population mean, so a representative slice gives the
-    # same gradient direction at a fraction of the memory; (2) compute the shared
-    # encoder under no_grad — the penalty is meant to shape the per-person latent +
-    # decoder day-type expression, not the shared feature extractor.
-    full_B = batch["dec_act_seq"].shape[0]
-    B = min(int(cap), full_B)
-    sl = slice(0, B)
-    dec_act_seq = batch["dec_act_seq"][sl]
-    act_seq     = batch["act_seq"][sl]
-    aux_seq     = batch["aux_seq"][sl]
-    cond_vec    = batch["cond_vec"][sl]
-    cycle_idx   = batch["cycle_idx"][sl]
-    r11_latent  = batch.get("r11_latent", None)
-    if r11_latent is not None:
-        r11_latent = r11_latent[sl]
+    B = batch["dec_act_seq"].shape[0]
 
-    # Build strata one-hot tensors for the 3 day-types, broadcast to the sub-batch.
+    # Build strata one-hot tensors for the 3 day-types, broadcast to batch size.
     strata_vals = [
         torch.ones(B, dtype=torch.long, device=device),   # 1 = weekday
         torch.full((B,), 2, dtype=torch.long, device=device),  # 2 = Saturday
         torch.full((B,), 3, dtype=torch.long, device=device),  # 3 = Sunday
     ]
 
-    with torch.no_grad():
-        memory = model._encode(act_seq, aux_seq, cond_vec, cycle_idx)
+    memory = model._encode(
+        batch["act_seq"], batch["aux_seq"],
+        batch["cond_vec"], batch["cycle_idx"],
+    )
 
+    r11_latent = batch.get("r11_latent", None)
     wrates = []
     for s_tensor in strata_vals:
         act_logits = model._arm1_decode_tf(
-            dec_act_seq, s_tensor,
-            memory, cond_vec, cycle_idx,
+            batch["dec_act_seq"], s_tensor,
+            memory, batch["cond_vec"], batch["cycle_idx"],
             r11_latent=r11_latent,
         )  # (B, 48, n_act)
         # Work probability: softmax -> class 0 -> mean over slots and batch

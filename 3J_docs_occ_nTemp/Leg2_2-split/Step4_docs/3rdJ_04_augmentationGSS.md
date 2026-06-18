@@ -958,3 +958,15 @@ R11 code (04B/04D/04E + sweep) uploaded to Speed; training submitted via `3rdJ_s
 - **Job 969261** — PENDING on `pg` (reason: Resources), queued behind R8_deep (968969) + R10_fast (968971), which hold both GPUs. Starts when a GPU frees.
 - **Next:** once running, verify the first ~15 min of the log confirms healthy training (catches any data-integration bug the local synthetic-tensor smoke could not). After it completes → rake + validate R11_raked → compare OW5 vs R7_cap_raked (57.3%); adopt iff OW5↑ with no binary/S8 regression.
 - Auto-comparison chain for R8/R10 (969243→969247) remains live and independent.
+
+---
+
+### Progress Log — 2026-06-18 — R11 OOM (969261 FAILED) + fix + resubmit
+
+R11 job 969261 **FAILED after 10 s** — CUDA OOM (exit 13, the 04D failure path). Card: 14.88/14.89 GiB used when `r11_monotonic_penalty()` tried to allocate.
+
+- **Root cause:** the penalty is computed *before* the main backward (`3rdJ_04D_train_2split.py:728`), so the full main-forward graph is still alive when the penalty builds **three** teacher-forced decode graphs (one per day-type, all retained for the relu comparison) **plus a re-encode** — at full batch on the d512/ENC8/DEC8 R7_cap model. `--fp16` was already on; insufficient. The local synthetic-tensor smoke never stressed GPU memory, so it passed.
+- **Fix (`3rdJ_04D_train_2split.py:259` `r11_monotonic_penalty`):** (1) sub-batch the penalty to `cap=32` rows — the ordering signal is a population mean, so a representative slice gives the same gradient direction at a fraction of the memory; (2) compute the shared encoder `memory` under `torch.no_grad()` — the penalty is meant to shape the per-person latent + decoder day-type expression, not the shared feature extractor. No change to the main training batch size, so R11 vs R7 dynamics stay comparable. Predecessor archived to `archive/3rdJ_04D_train_2split_pre-r11oomfix_2026-06-18.py`.
+- **Resubmit:** same command as line 948 (`VARIANT=R11, LR=1e-4, DMODEL=512, DENC=8, DDEC=8, PATIENCE=100, R11_LATENT=1, R11_LATENT_DIM=8, R11_MONO_WEIGHT=0.05`). Only `3rdJ_04D_train_2split.py` re-uploaded.
+- **R8 branch:** R8_deep (968969) COMPLETED clean; R8raked (969243) + R8rval (969245) COMPLETED. R7-vs-R8 Pareto comparison (04N on the two raked dirs) submitted in parallel.
+- **R10:** still RUNNING (968971, speed-17); it gates R10raked (969244) → the 3-way auto-compare (969247).
