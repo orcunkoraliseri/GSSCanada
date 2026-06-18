@@ -831,8 +831,60 @@ class AugmentationValidator2Split:
                 acf_mae = np.mean([abs(acf(o_curve, L) - acf(s_curve, L)) for L in lags])
                 lines.append(f"[{name}] ACF-MAE (lags 1-24): {acf_mae:.4f}")
 
+            # Mean state transitions per day (detects flickering/chatter)
+            s_trans = np.nansum(sarr[:, :-1] != sarr[:, 1:], axis=1).mean()
+            if len(self.obs) and ocols:
+                o_trans = np.nansum(oarr[:, :-1] != oarr[:, 1:], axis=1).mean()
+                lines.append(f"[{name}] transitions/day: obs {o_trans:.3f} / syn {s_trans:.3f}")
+            else:
+                lines.append(f"[{name}] transitions/day: syn {s_trans:.3f}")
+
         channel_metrics("AT_HOME", "hom30")
         channel_metrics("AT_WORK", "wrk30")
+
+        # Activity vs occupancy discordance (semantic consistency checks)
+        act_obs = present_cols(self.obs, "act30")
+        act_syn = present_cols(self.syn, "act30")
+        hom_obs = present_cols(self.obs, "hom30")
+        hom_syn = present_cols(self.syn, "hom30")
+        wrk_obs = present_cols(self.obs, "wrk30")
+        wrk_syn = present_cols(self.syn, "wrk30")
+
+        if act_syn and wrk_syn:
+            s_act = self.syn[act_syn].to_numpy(dtype=float)
+            s_wrk = self.syn[wrk_syn].to_numpy(dtype=float)
+            s_wact_mask = (s_act == 1)
+            s_wviol = np.sum(s_wact_mask & (s_wrk == 0))
+            s_wact_tot = np.sum(s_wact_mask)
+            s_wrate = (s_wviol / s_wact_tot * 100) if s_wact_tot > 0 else 0.0
+            if len(self.obs) and act_obs and wrk_obs:
+                o_act = self.obs[act_obs].to_numpy(dtype=float)
+                o_wrk = self.obs[wrk_obs].to_numpy(dtype=float)
+                o_wact_mask = (o_act == 1)
+                o_wviol = np.sum(o_wact_mask & (o_wrk == 0))
+                o_wact_tot = np.sum(o_wact_mask)
+                o_wrate = (o_wviol / o_wact_tot * 100) if o_wact_tot > 0 else 0.0
+                lines.append(f"[Semantic] Work activity but AT_WORK=0: obs {o_wrate:.1f}% / syn {s_wrate:.1f}%")
+            else:
+                lines.append(f"[Semantic] Work activity but AT_WORK=0: syn {s_wrate:.1f}%")
+
+        if act_syn and hom_syn:
+            s_act = self.syn[act_syn].to_numpy(dtype=float)
+            s_hom = self.syn[hom_syn].to_numpy(dtype=float)
+            s_sact_mask = (s_act == 5)
+            s_sviol = np.sum(s_sact_mask & (s_hom == 0))
+            s_sact_tot = np.sum(s_sact_mask)
+            s_srate = (s_sviol / s_sact_tot * 100) if s_sact_tot > 0 else 0.0
+            if len(self.obs) and act_obs and hom_obs:
+                o_act = self.obs[act_obs].to_numpy(dtype=float)
+                o_hom = self.obs[hom_obs].to_numpy(dtype=float)
+                o_sact_mask = (o_act == 5)
+                o_sviol = np.sum(o_sact_mask & (o_hom == 0))
+                o_sact_tot = np.sum(o_sact_mask)
+                o_srate = (o_sviol / o_sact_tot * 100) if o_sact_tot > 0 else 0.0
+                lines.append(f"[Semantic] Sleep activity but AT_HOME=0: obs {o_srate:.1f}% / syn {s_srate:.1f}%")
+            else:
+                lines.append(f"[Semantic] Sleep activity but AT_HOME=0: syn {s_srate:.1f}%")
 
         # Activity KL (obs||syn) overall
         if len(self.obs):

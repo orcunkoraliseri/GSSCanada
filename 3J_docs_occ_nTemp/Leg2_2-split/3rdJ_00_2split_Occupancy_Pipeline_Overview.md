@@ -157,7 +157,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 
 ## OPEN DECISIONS (resolve before/within Leg 2)
 
-1. MDLM vs multi-head Transformer (decide before committing Leg-2 compute).
+1. MDLM vs multi-head Transformer — RESOLVED 2026-06-18 (Transformer baseline retained; MDLM rejected due to validation gate failures and computation overhead; see [dr_S4-03_architecture_choice_REPORT.md](file:///c:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/deepResearch/dr_S4-03_architecture_choice_REPORT.md)).
 2. Interpolate-to-Timestep `Yes`/`No` in Step 7.
 3. Model office→retail lunch transition, or treat channels independently.
 4. Shared-vs-separate backbone ablation for reviewer defensibility.

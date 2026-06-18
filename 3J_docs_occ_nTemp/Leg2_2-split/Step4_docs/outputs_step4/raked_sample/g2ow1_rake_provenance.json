@@ -1,0 +1,5354 @@
+{
+  "cy2005_s1": {
+    "n_obs": 272,
+    "n_syn": 112,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 71.477,
+    "obs_work_agg_pct": 13.863,
+    "before_home_pct": 66.927,
+    "before_work_pct": 32.329,
+    "after_home_pct": 71.447,
+    "after_work_pct": 13.895,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 2.574,
+        "n_home": 105,
+        "n_work": 3,
+        "ach_home_pct": 93.75,
+        "ach_work_pct": 2.679
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 93.382,
+        "obs_work_pct": 2.574,
+        "n_home": 105,
+        "n_work": 3,
+        "ach_home_pct": 93.75,
+        "ach_work_pct": 2.679
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 91.912,
+        "obs_work_pct": 3.309,
+        "n_home": 103,
+        "n_work": 4,
+        "ach_home_pct": 91.964,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 91.176,
+        "obs_work_pct": 4.044,
+        "n_home": 102,
+        "n_work": 5,
+        "ach_home_pct": 91.071,
+        "ach_work_pct": 4.464
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 87.868,
+        "obs_work_pct": 4.412,
+        "n_home": 98,
+        "n_work": 5,
+        "ach_home_pct": 87.5,
+        "ach_work_pct": 4.464
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 84.191,
+        "obs_work_pct": 6.618,
+        "n_home": 94,
+        "n_work": 7,
+        "ach_home_pct": 83.929,
+        "ach_work_pct": 6.25
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 82.353,
+        "obs_work_pct": 8.088,
+        "n_home": 92,
+        "n_work": 9,
+        "ach_home_pct": 82.143,
+        "ach_work_pct": 8.036
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 73.529,
+        "obs_work_pct": 12.5,
+        "n_home": 82,
+        "n_work": 14,
+        "ach_home_pct": 73.214,
+        "ach_work_pct": 12.5
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 60.662,
+        "obs_work_pct": 19.853,
+        "n_home": 68,
+        "n_work": 22,
+        "ach_home_pct": 60.714,
+        "ach_work_pct": 19.643
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 56.985,
+        "obs_work_pct": 25.735,
+        "n_home": 64,
+        "n_work": 29,
+        "ach_home_pct": 57.143,
+        "ach_work_pct": 25.893
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 51.838,
+        "obs_work_pct": 28.676,
+        "n_home": 58,
+        "n_work": 32,
+        "ach_home_pct": 51.786,
+        "ach_work_pct": 28.571
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 30.147,
+        "n_home": 56,
+        "n_work": 34,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.357
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 47.794,
+        "obs_work_pct": 31.25,
+        "n_home": 54,
+        "n_work": 35,
+        "ach_home_pct": 48.214,
+        "ach_work_pct": 31.25
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 44.853,
+        "obs_work_pct": 31.25,
+        "n_home": 50,
+        "n_work": 35,
+        "ach_home_pct": 44.643,
+        "ach_work_pct": 31.25
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 45.221,
+        "obs_work_pct": 31.985,
+        "n_home": 51,
+        "n_work": 36,
+        "ach_home_pct": 45.536,
+        "ach_work_pct": 32.143
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 30.882,
+        "n_home": 56,
+        "n_work": 35,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 31.25
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 47.794,
+        "obs_work_pct": 29.044,
+        "n_home": 54,
+        "n_work": 33,
+        "ach_home_pct": 48.214,
+        "ach_work_pct": 29.464
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 47.059,
+        "obs_work_pct": 28.676,
+        "n_home": 53,
+        "n_work": 32,
+        "ach_home_pct": 47.321,
+        "ach_work_pct": 28.571
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 47.059,
+        "obs_work_pct": 30.882,
+        "n_home": 53,
+        "n_work": 35,
+        "ach_home_pct": 47.321,
+        "ach_work_pct": 31.25
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 44.485,
+        "obs_work_pct": 31.985,
+        "n_home": 50,
+        "n_work": 36,
+        "ach_home_pct": 44.643,
+        "ach_work_pct": 32.143
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 44.118,
+        "obs_work_pct": 31.25,
+        "n_home": 49,
+        "n_work": 35,
+        "ach_home_pct": 43.75,
+        "ach_work_pct": 31.25
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 44.118,
+        "obs_work_pct": 30.882,
+        "n_home": 49,
+        "n_work": 35,
+        "ach_home_pct": 43.75,
+        "ach_work_pct": 31.25
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 48.162,
+        "obs_work_pct": 29.044,
+        "n_home": 54,
+        "n_work": 33,
+        "ach_home_pct": 48.214,
+        "ach_work_pct": 29.464
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 56.25,
+        "obs_work_pct": 26.838,
+        "n_home": 63,
+        "n_work": 30,
+        "ach_home_pct": 56.25,
+        "ach_work_pct": 26.786
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 56.25,
+        "obs_work_pct": 24.632,
+        "n_home": 63,
+        "n_work": 28,
+        "ach_home_pct": 56.25,
+        "ach_work_pct": 25.0
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 57.353,
+        "obs_work_pct": 22.059,
+        "n_home": 64,
+        "n_work": 25,
+        "ach_home_pct": 57.143,
+        "ach_work_pct": 22.321
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 59.191,
+        "obs_work_pct": 15.074,
+        "n_home": 66,
+        "n_work": 17,
+        "ach_home_pct": 58.929,
+        "ach_work_pct": 15.179
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 63.235,
+        "obs_work_pct": 10.662,
+        "n_home": 71,
+        "n_work": 12,
+        "ach_home_pct": 63.393,
+        "ach_work_pct": 10.714
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 64.338,
+        "obs_work_pct": 8.456,
+        "n_home": 72,
+        "n_work": 9,
+        "ach_home_pct": 64.286,
+        "ach_work_pct": 8.036
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 67.279,
+        "obs_work_pct": 8.088,
+        "n_home": 75,
+        "n_work": 9,
+        "ach_home_pct": 66.964,
+        "ach_work_pct": 8.036
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 68.75,
+        "obs_work_pct": 6.618,
+        "n_home": 77,
+        "n_work": 7,
+        "ach_home_pct": 68.75,
+        "ach_work_pct": 6.25
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 73.162,
+        "obs_work_pct": 5.882,
+        "n_home": 82,
+        "n_work": 7,
+        "ach_home_pct": 73.214,
+        "ach_work_pct": 6.25
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 73.162,
+        "obs_work_pct": 5.882,
+        "n_home": 82,
+        "n_work": 7,
+        "ach_home_pct": 73.214,
+        "ach_work_pct": 6.25
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 75.368,
+        "obs_work_pct": 4.779,
+        "n_home": 84,
+        "n_work": 5,
+        "ach_home_pct": 75.0,
+        "ach_work_pct": 4.464
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 80.882,
+        "obs_work_pct": 3.676,
+        "n_home": 91,
+        "n_work": 4,
+        "ach_home_pct": 81.25,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 84.926,
+        "obs_work_pct": 3.309,
+        "n_home": 95,
+        "n_work": 4,
+        "ach_home_pct": 84.821,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 87.132,
+        "obs_work_pct": 2.941,
+        "n_home": 98,
+        "n_work": 3,
+        "ach_home_pct": 87.5,
+        "ach_work_pct": 2.679
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 90.441,
+        "obs_work_pct": 3.676,
+        "n_home": 101,
+        "n_work": 4,
+        "ach_home_pct": 90.179,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 92.279,
+        "obs_work_pct": 2.941,
+        "n_home": 103,
+        "n_work": 3,
+        "ach_home_pct": 91.964,
+        "ach_work_pct": 2.679
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 93.015,
+        "obs_work_pct": 3.309,
+        "n_home": 104,
+        "n_work": 4,
+        "ach_home_pct": 92.857,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 94.118,
+        "obs_work_pct": 3.676,
+        "n_home": 105,
+        "n_work": 4,
+        "ach_home_pct": 93.75,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 94.118,
+        "obs_work_pct": 3.309,
+        "n_home": 105,
+        "n_work": 4,
+        "ach_home_pct": 93.75,
+        "ach_work_pct": 3.571
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 94.485,
+        "obs_work_pct": 2.574,
+        "n_home": 106,
+        "n_work": 3,
+        "ach_home_pct": 94.643,
+        "ach_work_pct": 2.679
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 94.853,
+        "obs_work_pct": 2.574,
+        "n_home": 106,
+        "n_work": 3,
+        "ach_home_pct": 94.643,
+        "ach_work_pct": 2.679
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 95.221,
+        "obs_work_pct": 2.206,
+        "n_home": 107,
+        "n_work": 2,
+        "ach_home_pct": 95.536,
+        "ach_work_pct": 1.786
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 95.588,
+        "obs_work_pct": 2.206,
+        "n_home": 107,
+        "n_work": 2,
+        "ach_home_pct": 95.536,
+        "ach_work_pct": 1.786
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 95.588,
+        "obs_work_pct": 2.206,
+        "n_home": 107,
+        "n_work": 2,
+        "ach_home_pct": 95.536,
+        "ach_work_pct": 1.786
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 95.588,
+        "obs_work_pct": 2.206,
+        "n_home": 107,
+        "n_work": 2,
+        "ach_home_pct": 95.536,
+        "ach_work_pct": 1.786
+      }
+    ]
+  },
+  "cy2005_s2": {
+    "n_obs": 53,
+    "n_syn": 331,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 70.794,
+    "obs_work_agg_pct": 6.407,
+    "before_home_pct": 82.188,
+    "before_work_pct": 15.981,
+    "after_home_pct": 70.802,
+    "after_work_pct": 6.395,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 96.226,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 96.375,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 96.226,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 96.375,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 96.226,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 96.375,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 96.226,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 96.375,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 94.34,
+        "obs_work_pct": 0.0,
+        "n_home": 312,
+        "n_work": 0,
+        "ach_home_pct": 94.26,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 94.34,
+        "obs_work_pct": 0.0,
+        "n_home": 312,
+        "n_work": 0,
+        "ach_home_pct": 94.26,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 92.453,
+        "obs_work_pct": 0.0,
+        "n_home": 306,
+        "n_work": 0,
+        "ach_home_pct": 92.447,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 86.792,
+        "obs_work_pct": 3.774,
+        "n_home": 287,
+        "n_work": 12,
+        "ach_home_pct": 86.707,
+        "ach_work_pct": 3.625
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 75.472,
+        "obs_work_pct": 9.434,
+        "n_home": 250,
+        "n_work": 31,
+        "ach_home_pct": 75.529,
+        "ach_work_pct": 9.366
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 71.698,
+        "obs_work_pct": 9.434,
+        "n_home": 237,
+        "n_work": 31,
+        "ach_home_pct": 71.601,
+        "ach_work_pct": 9.366
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 64.151,
+        "obs_work_pct": 9.434,
+        "n_home": 212,
+        "n_work": 31,
+        "ach_home_pct": 64.048,
+        "ach_work_pct": 9.366
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 62.264,
+        "obs_work_pct": 11.321,
+        "n_home": 206,
+        "n_work": 37,
+        "ach_home_pct": 62.236,
+        "ach_work_pct": 11.178
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 52.83,
+        "obs_work_pct": 13.208,
+        "n_home": 175,
+        "n_work": 44,
+        "ach_home_pct": 52.87,
+        "ach_work_pct": 13.293
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 50.943,
+        "obs_work_pct": 15.094,
+        "n_home": 169,
+        "n_work": 50,
+        "ach_home_pct": 51.057,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 49.057,
+        "obs_work_pct": 15.094,
+        "n_home": 162,
+        "n_work": 50,
+        "ach_home_pct": 48.943,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 47.17,
+        "obs_work_pct": 15.094,
+        "n_home": 156,
+        "n_work": 50,
+        "ach_home_pct": 47.13,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 43.396,
+        "obs_work_pct": 15.094,
+        "n_home": 144,
+        "n_work": 50,
+        "ach_home_pct": 43.505,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 45.283,
+        "obs_work_pct": 15.094,
+        "n_home": 150,
+        "n_work": 50,
+        "ach_home_pct": 45.317,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 43.396,
+        "obs_work_pct": 15.094,
+        "n_home": 144,
+        "n_work": 50,
+        "ach_home_pct": 43.505,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 45.283,
+        "obs_work_pct": 16.981,
+        "n_home": 150,
+        "n_work": 56,
+        "ach_home_pct": 45.317,
+        "ach_work_pct": 16.918
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 47.17,
+        "obs_work_pct": 15.094,
+        "n_home": 156,
+        "n_work": 50,
+        "ach_home_pct": 47.13,
+        "ach_work_pct": 15.106
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 54.717,
+        "obs_work_pct": 13.208,
+        "n_home": 181,
+        "n_work": 44,
+        "ach_home_pct": 54.683,
+        "ach_work_pct": 13.293
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 56.604,
+        "obs_work_pct": 13.208,
+        "n_home": 187,
+        "n_work": 44,
+        "ach_home_pct": 56.495,
+        "ach_work_pct": 13.293
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 58.491,
+        "obs_work_pct": 13.208,
+        "n_home": 194,
+        "n_work": 44,
+        "ach_home_pct": 58.61,
+        "ach_work_pct": 13.293
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 58.491,
+        "obs_work_pct": 13.208,
+        "n_home": 194,
+        "n_work": 44,
+        "ach_home_pct": 58.61,
+        "ach_work_pct": 13.293
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 52.83,
+        "obs_work_pct": 13.208,
+        "n_home": 175,
+        "n_work": 44,
+        "ach_home_pct": 52.87,
+        "ach_work_pct": 13.293
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 62.264,
+        "obs_work_pct": 7.547,
+        "n_home": 206,
+        "n_work": 25,
+        "ach_home_pct": 62.236,
+        "ach_work_pct": 7.553
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 67.925,
+        "obs_work_pct": 5.66,
+        "n_home": 225,
+        "n_work": 19,
+        "ach_home_pct": 67.976,
+        "ach_work_pct": 5.74
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 71.698,
+        "obs_work_pct": 5.66,
+        "n_home": 237,
+        "n_work": 19,
+        "ach_home_pct": 71.601,
+        "ach_work_pct": 5.74
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 62.264,
+        "obs_work_pct": 5.66,
+        "n_home": 206,
+        "n_work": 19,
+        "ach_home_pct": 62.236,
+        "ach_work_pct": 5.74
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 60.377,
+        "obs_work_pct": 5.66,
+        "n_home": 200,
+        "n_work": 19,
+        "ach_home_pct": 60.423,
+        "ach_work_pct": 5.74
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 60.377,
+        "obs_work_pct": 5.66,
+        "n_home": 200,
+        "n_work": 19,
+        "ach_home_pct": 60.423,
+        "ach_work_pct": 5.74
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 64.151,
+        "obs_work_pct": 3.774,
+        "n_home": 212,
+        "n_work": 12,
+        "ach_home_pct": 64.048,
+        "ach_work_pct": 3.625
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 64.151,
+        "obs_work_pct": 3.774,
+        "n_home": 212,
+        "n_work": 12,
+        "ach_home_pct": 64.048,
+        "ach_work_pct": 3.625
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 69.811,
+        "obs_work_pct": 3.774,
+        "n_home": 231,
+        "n_work": 12,
+        "ach_home_pct": 69.789,
+        "ach_work_pct": 3.625
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 71.698,
+        "obs_work_pct": 3.774,
+        "n_home": 237,
+        "n_work": 12,
+        "ach_home_pct": 71.601,
+        "ach_work_pct": 3.625
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 75.472,
+        "obs_work_pct": 1.887,
+        "n_home": 250,
+        "n_work": 6,
+        "ach_home_pct": 75.529,
+        "ach_work_pct": 1.813
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 79.245,
+        "obs_work_pct": 1.887,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 79.154,
+        "ach_work_pct": 1.813
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 79.245,
+        "obs_work_pct": 1.887,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 79.154,
+        "ach_work_pct": 1.813
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 79.245,
+        "obs_work_pct": 1.887,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 79.154,
+        "ach_work_pct": 1.813
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 83.019,
+        "obs_work_pct": 1.887,
+        "n_home": 275,
+        "n_work": 6,
+        "ach_home_pct": 83.082,
+        "ach_work_pct": 1.813
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 83.019,
+        "obs_work_pct": 1.887,
+        "n_home": 275,
+        "n_work": 6,
+        "ach_home_pct": 83.082,
+        "ach_work_pct": 1.813
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 84.906,
+        "obs_work_pct": 0.0,
+        "n_home": 281,
+        "n_work": 0,
+        "ach_home_pct": 84.894,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 86.792,
+        "obs_work_pct": 0.0,
+        "n_home": 287,
+        "n_work": 0,
+        "ach_home_pct": 86.707,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 88.679,
+        "obs_work_pct": 0.0,
+        "n_home": 294,
+        "n_work": 0,
+        "ach_home_pct": 88.822,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 90.566,
+        "obs_work_pct": 0.0,
+        "n_home": 300,
+        "n_work": 0,
+        "ach_home_pct": 90.634,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 90.566,
+        "obs_work_pct": 0.0,
+        "n_home": 300,
+        "n_work": 0,
+        "ach_home_pct": 90.634,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 90.566,
+        "obs_work_pct": 0.0,
+        "n_home": 300,
+        "n_work": 0,
+        "ach_home_pct": 90.634,
+        "ach_work_pct": 0.0
+      }
+    ]
+  },
+  "cy2005_s3": {
+    "n_obs": 59,
+    "n_syn": 325,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 79.767,
+    "obs_work_agg_pct": 3.743,
+    "before_home_pct": 80.769,
+    "before_work_pct": 17.192,
+    "after_home_pct": 79.724,
+    "after_work_pct": 3.795,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 91.525,
+        "obs_work_pct": 0.0,
+        "n_home": 297,
+        "n_work": 0,
+        "ach_home_pct": 91.385,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 93.22,
+        "obs_work_pct": 0.0,
+        "n_home": 303,
+        "n_work": 0,
+        "ach_home_pct": 93.231,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 91.525,
+        "obs_work_pct": 0.0,
+        "n_home": 297,
+        "n_work": 0,
+        "ach_home_pct": 91.385,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 91.525,
+        "obs_work_pct": 1.695,
+        "n_home": 297,
+        "n_work": 6,
+        "ach_home_pct": 91.385,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 91.525,
+        "obs_work_pct": 1.695,
+        "n_home": 297,
+        "n_work": 6,
+        "ach_home_pct": 91.385,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 89.831,
+        "obs_work_pct": 1.695,
+        "n_home": 292,
+        "n_work": 6,
+        "ach_home_pct": 89.846,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 86.441,
+        "obs_work_pct": 3.39,
+        "n_home": 281,
+        "n_work": 11,
+        "ach_home_pct": 86.462,
+        "ach_work_pct": 3.385
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 84.746,
+        "obs_work_pct": 3.39,
+        "n_home": 275,
+        "n_work": 11,
+        "ach_home_pct": 84.615,
+        "ach_work_pct": 3.385
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 79.661,
+        "obs_work_pct": 8.475,
+        "n_home": 259,
+        "n_work": 28,
+        "ach_home_pct": 79.692,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 74.576,
+        "obs_work_pct": 8.475,
+        "n_home": 242,
+        "n_work": 28,
+        "ach_home_pct": 74.462,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 76.271,
+        "obs_work_pct": 8.475,
+        "n_home": 248,
+        "n_work": 28,
+        "ach_home_pct": 76.308,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 72.881,
+        "obs_work_pct": 8.475,
+        "n_home": 237,
+        "n_work": 28,
+        "ach_home_pct": 72.923,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 64.407,
+        "obs_work_pct": 8.475,
+        "n_home": 209,
+        "n_work": 28,
+        "ach_home_pct": 64.308,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 62.712,
+        "obs_work_pct": 8.475,
+        "n_home": 204,
+        "n_work": 28,
+        "ach_home_pct": 62.769,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 59.322,
+        "obs_work_pct": 10.169,
+        "n_home": 193,
+        "n_work": 33,
+        "ach_home_pct": 59.385,
+        "ach_work_pct": 10.154
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 57.627,
+        "obs_work_pct": 10.169,
+        "n_home": 187,
+        "n_work": 33,
+        "ach_home_pct": 57.538,
+        "ach_work_pct": 10.154
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 55.932,
+        "obs_work_pct": 10.169,
+        "n_home": 182,
+        "n_work": 33,
+        "ach_home_pct": 56.0,
+        "ach_work_pct": 10.154
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 50.847,
+        "obs_work_pct": 10.169,
+        "n_home": 165,
+        "n_work": 33,
+        "ach_home_pct": 50.769,
+        "ach_work_pct": 10.154
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 57.627,
+        "obs_work_pct": 10.169,
+        "n_home": 187,
+        "n_work": 33,
+        "ach_home_pct": 57.538,
+        "ach_work_pct": 10.154
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 61.017,
+        "obs_work_pct": 10.169,
+        "n_home": 198,
+        "n_work": 33,
+        "ach_home_pct": 60.923,
+        "ach_work_pct": 10.154
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 66.102,
+        "obs_work_pct": 8.475,
+        "n_home": 215,
+        "n_work": 28,
+        "ach_home_pct": 66.154,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 62.712,
+        "obs_work_pct": 8.475,
+        "n_home": 204,
+        "n_work": 28,
+        "ach_home_pct": 62.769,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 61.017,
+        "obs_work_pct": 8.475,
+        "n_home": 198,
+        "n_work": 28,
+        "ach_home_pct": 60.923,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 67.797,
+        "obs_work_pct": 8.475,
+        "n_home": 220,
+        "n_work": 28,
+        "ach_home_pct": 67.692,
+        "ach_work_pct": 8.615
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 71.186,
+        "obs_work_pct": 6.78,
+        "n_home": 231,
+        "n_work": 22,
+        "ach_home_pct": 71.077,
+        "ach_work_pct": 6.769
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 71.186,
+        "obs_work_pct": 5.085,
+        "n_home": 231,
+        "n_work": 17,
+        "ach_home_pct": 71.077,
+        "ach_work_pct": 5.231
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 67.797,
+        "obs_work_pct": 3.39,
+        "n_home": 220,
+        "n_work": 11,
+        "ach_home_pct": 67.692,
+        "ach_work_pct": 3.385
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 69.492,
+        "obs_work_pct": 1.695,
+        "n_home": 226,
+        "n_work": 6,
+        "ach_home_pct": 69.538,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 67.797,
+        "obs_work_pct": 1.695,
+        "n_home": 220,
+        "n_work": 6,
+        "ach_home_pct": 67.692,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 72.881,
+        "obs_work_pct": 1.695,
+        "n_home": 237,
+        "n_work": 6,
+        "ach_home_pct": 72.923,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 76.271,
+        "obs_work_pct": 1.695,
+        "n_home": 248,
+        "n_work": 6,
+        "ach_home_pct": 76.308,
+        "ach_work_pct": 1.846
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 83.051,
+        "obs_work_pct": 0.0,
+        "n_home": 270,
+        "n_work": 0,
+        "ach_home_pct": 83.077,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 83.051,
+        "obs_work_pct": 0.0,
+        "n_home": 270,
+        "n_work": 0,
+        "ach_home_pct": 83.077,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 83.051,
+        "obs_work_pct": 0.0,
+        "n_home": 270,
+        "n_work": 0,
+        "ach_home_pct": 83.077,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 83.051,
+        "obs_work_pct": 0.0,
+        "n_home": 270,
+        "n_work": 0,
+        "ach_home_pct": 83.077,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 88.136,
+        "obs_work_pct": 0.0,
+        "n_home": 286,
+        "n_work": 0,
+        "ach_home_pct": 88.0,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 93.22,
+        "obs_work_pct": 0.0,
+        "n_home": 303,
+        "n_work": 0,
+        "ach_home_pct": 93.231,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 93.22,
+        "obs_work_pct": 0.0,
+        "n_home": 303,
+        "n_work": 0,
+        "ach_home_pct": 93.231,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 96.61,
+        "obs_work_pct": 0.0,
+        "n_home": 314,
+        "n_work": 0,
+        "ach_home_pct": 96.615,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 96.61,
+        "obs_work_pct": 0.0,
+        "n_home": 314,
+        "n_work": 0,
+        "ach_home_pct": 96.615,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 96.61,
+        "obs_work_pct": 0.0,
+        "n_home": 314,
+        "n_work": 0,
+        "ach_home_pct": 96.615,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 96.61,
+        "obs_work_pct": 0.0,
+        "n_home": 314,
+        "n_work": 0,
+        "ach_home_pct": 96.615,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 96.61,
+        "obs_work_pct": 0.0,
+        "n_home": 314,
+        "n_work": 0,
+        "ach_home_pct": 96.615,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 98.305,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 98.154,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 98.305,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 98.154,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 98.305,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 98.154,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 98.305,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 98.154,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 98.305,
+        "obs_work_pct": 0.0,
+        "n_home": 319,
+        "n_work": 0,
+        "ach_home_pct": 98.154,
+        "ach_work_pct": 0.0
+      }
+    ]
+  },
+  "cy2010_s1": {
+    "n_obs": 217,
+    "n_syn": 85,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 67.713,
+    "obs_work_agg_pct": 16.091,
+    "before_home_pct": 68.873,
+    "before_work_pct": 30.294,
+    "after_home_pct": 67.672,
+    "after_work_pct": 16.103,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 94.47,
+        "obs_work_pct": 1.843,
+        "n_home": 80,
+        "n_work": 2,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 2.353
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 93.548,
+        "obs_work_pct": 2.765,
+        "n_home": 80,
+        "n_work": 2,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 2.353
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 91.705,
+        "obs_work_pct": 2.765,
+        "n_home": 78,
+        "n_work": 2,
+        "ach_home_pct": 91.765,
+        "ach_work_pct": 2.353
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 90.323,
+        "obs_work_pct": 4.608,
+        "n_home": 77,
+        "n_work": 4,
+        "ach_home_pct": 90.588,
+        "ach_work_pct": 4.706
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 87.558,
+        "obs_work_pct": 6.912,
+        "n_home": 74,
+        "n_work": 6,
+        "ach_home_pct": 87.059,
+        "ach_work_pct": 7.059
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 80.645,
+        "obs_work_pct": 7.834,
+        "n_home": 69,
+        "n_work": 7,
+        "ach_home_pct": 81.176,
+        "ach_work_pct": 8.235
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 72.35,
+        "obs_work_pct": 12.903,
+        "n_home": 61,
+        "n_work": 11,
+        "ach_home_pct": 71.765,
+        "ach_work_pct": 12.941
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 62.212,
+        "obs_work_pct": 20.737,
+        "n_home": 53,
+        "n_work": 18,
+        "ach_home_pct": 62.353,
+        "ach_work_pct": 21.176
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 54.378,
+        "obs_work_pct": 29.032,
+        "n_home": 46,
+        "n_work": 25,
+        "ach_home_pct": 54.118,
+        "ach_work_pct": 29.412
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 47.465,
+        "obs_work_pct": 34.101,
+        "n_home": 40,
+        "n_work": 29,
+        "ach_home_pct": 47.059,
+        "ach_work_pct": 34.118
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 44.24,
+        "obs_work_pct": 36.866,
+        "n_home": 38,
+        "n_work": 31,
+        "ach_home_pct": 44.706,
+        "ach_work_pct": 36.471
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 43.779,
+        "obs_work_pct": 38.249,
+        "n_home": 37,
+        "n_work": 33,
+        "ach_home_pct": 43.529,
+        "ach_work_pct": 38.824
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 35.023,
+        "obs_work_pct": 38.71,
+        "n_home": 30,
+        "n_work": 33,
+        "ach_home_pct": 35.294,
+        "ach_work_pct": 38.824
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 35.484,
+        "obs_work_pct": 39.631,
+        "n_home": 30,
+        "n_work": 34,
+        "ach_home_pct": 35.294,
+        "ach_work_pct": 40.0
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 35.023,
+        "obs_work_pct": 39.171,
+        "n_home": 30,
+        "n_work": 33,
+        "ach_home_pct": 35.294,
+        "ach_work_pct": 38.824
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 37.327,
+        "obs_work_pct": 38.249,
+        "n_home": 32,
+        "n_work": 33,
+        "ach_home_pct": 37.647,
+        "ach_work_pct": 38.824
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 38.249,
+        "obs_work_pct": 33.641,
+        "n_home": 33,
+        "n_work": 29,
+        "ach_home_pct": 38.824,
+        "ach_work_pct": 34.118
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 36.406,
+        "obs_work_pct": 34.562,
+        "n_home": 31,
+        "n_work": 29,
+        "ach_home_pct": 36.471,
+        "ach_work_pct": 34.118
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 34.562,
+        "obs_work_pct": 34.562,
+        "n_home": 29,
+        "n_work": 29,
+        "ach_home_pct": 34.118,
+        "ach_work_pct": 34.118
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 35.484,
+        "obs_work_pct": 35.484,
+        "n_home": 30,
+        "n_work": 30,
+        "ach_home_pct": 35.294,
+        "ach_work_pct": 35.294
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 34.562,
+        "obs_work_pct": 35.023,
+        "n_home": 29,
+        "n_work": 30,
+        "ach_home_pct": 34.118,
+        "ach_work_pct": 35.294
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 35.484,
+        "obs_work_pct": 34.562,
+        "n_home": 30,
+        "n_work": 29,
+        "ach_home_pct": 35.294,
+        "ach_work_pct": 34.118
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 38.71,
+        "obs_work_pct": 31.336,
+        "n_home": 33,
+        "n_work": 27,
+        "ach_home_pct": 38.824,
+        "ach_work_pct": 31.765
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 45.161,
+        "obs_work_pct": 28.571,
+        "n_home": 38,
+        "n_work": 24,
+        "ach_home_pct": 44.706,
+        "ach_work_pct": 28.235
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 49.309,
+        "obs_work_pct": 23.963,
+        "n_home": 42,
+        "n_work": 20,
+        "ach_home_pct": 49.412,
+        "ach_work_pct": 23.529
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 53.456,
+        "obs_work_pct": 18.433,
+        "n_home": 45,
+        "n_work": 16,
+        "ach_home_pct": 52.941,
+        "ach_work_pct": 18.824
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 61.751,
+        "obs_work_pct": 15.207,
+        "n_home": 52,
+        "n_work": 13,
+        "ach_home_pct": 61.176,
+        "ach_work_pct": 15.294
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 63.594,
+        "obs_work_pct": 13.825,
+        "n_home": 54,
+        "n_work": 12,
+        "ach_home_pct": 63.529,
+        "ach_work_pct": 14.118
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 66.82,
+        "obs_work_pct": 11.06,
+        "n_home": 57,
+        "n_work": 9,
+        "ach_home_pct": 67.059,
+        "ach_work_pct": 10.588
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 69.124,
+        "obs_work_pct": 11.06,
+        "n_home": 59,
+        "n_work": 9,
+        "ach_home_pct": 69.412,
+        "ach_work_pct": 10.588
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 68.203,
+        "obs_work_pct": 10.138,
+        "n_home": 58,
+        "n_work": 9,
+        "ach_home_pct": 68.235,
+        "ach_work_pct": 10.588
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 70.046,
+        "obs_work_pct": 9.217,
+        "n_home": 60,
+        "n_work": 8,
+        "ach_home_pct": 70.588,
+        "ach_work_pct": 9.412
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 73.733,
+        "obs_work_pct": 7.834,
+        "n_home": 63,
+        "n_work": 7,
+        "ach_home_pct": 74.118,
+        "ach_work_pct": 8.235
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 77.88,
+        "obs_work_pct": 5.991,
+        "n_home": 66,
+        "n_work": 5,
+        "ach_home_pct": 77.647,
+        "ach_work_pct": 5.882
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 80.184,
+        "obs_work_pct": 5.069,
+        "n_home": 68,
+        "n_work": 4,
+        "ach_home_pct": 80.0,
+        "ach_work_pct": 4.706
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 84.793,
+        "obs_work_pct": 4.147,
+        "n_home": 72,
+        "n_work": 4,
+        "ach_home_pct": 84.706,
+        "ach_work_pct": 4.706
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 87.558,
+        "obs_work_pct": 3.687,
+        "n_home": 74,
+        "n_work": 3,
+        "ach_home_pct": 87.059,
+        "ach_work_pct": 3.529
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 88.94,
+        "obs_work_pct": 2.765,
+        "n_home": 76,
+        "n_work": 2,
+        "ach_home_pct": 89.412,
+        "ach_work_pct": 2.353
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 91.705,
+        "obs_work_pct": 2.304,
+        "n_home": 78,
+        "n_work": 2,
+        "ach_home_pct": 91.765,
+        "ach_work_pct": 2.353
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 92.627,
+        "obs_work_pct": 2.304,
+        "n_home": 79,
+        "n_work": 2,
+        "ach_home_pct": 92.941,
+        "ach_work_pct": 2.353
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 94.009,
+        "obs_work_pct": 1.382,
+        "n_home": 80,
+        "n_work": 1,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 1.176
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 94.931,
+        "obs_work_pct": 0.922,
+        "n_home": 81,
+        "n_work": 1,
+        "ach_home_pct": 95.294,
+        "ach_work_pct": 1.176
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 95.853,
+        "obs_work_pct": 0.461,
+        "n_home": 81,
+        "n_work": 0,
+        "ach_home_pct": 95.294,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 95.853,
+        "obs_work_pct": 0.461,
+        "n_home": 81,
+        "n_work": 0,
+        "ach_home_pct": 95.294,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 95.853,
+        "obs_work_pct": 0.0,
+        "n_home": 81,
+        "n_work": 0,
+        "ach_home_pct": 95.294,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 96.313,
+        "obs_work_pct": 0.0,
+        "n_home": 82,
+        "n_work": 0,
+        "ach_home_pct": 96.471,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 96.774,
+        "obs_work_pct": 0.0,
+        "n_home": 82,
+        "n_work": 0,
+        "ach_home_pct": 96.471,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 96.774,
+        "obs_work_pct": 0.0,
+        "n_home": 82,
+        "n_work": 0,
+        "ach_home_pct": 96.471,
+        "ach_work_pct": 0.0
+      }
+    ]
+  },
+  "cy2010_s2": {
+    "n_obs": 41,
+    "n_syn": 261,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 74.695,
+    "obs_work_agg_pct": 1.626,
+    "before_home_pct": 80.556,
+    "before_work_pct": 17.593,
+    "after_home_pct": 74.737,
+    "after_work_pct": 1.636,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 92.683,
+        "obs_work_pct": 0.0,
+        "n_home": 242,
+        "n_work": 0,
+        "ach_home_pct": 92.72,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 92.683,
+        "obs_work_pct": 0.0,
+        "n_home": 242,
+        "n_work": 0,
+        "ach_home_pct": 92.72,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 92.683,
+        "obs_work_pct": 0.0,
+        "n_home": 242,
+        "n_work": 0,
+        "ach_home_pct": 92.72,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 92.683,
+        "obs_work_pct": 0.0,
+        "n_home": 242,
+        "n_work": 0,
+        "ach_home_pct": 92.72,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 90.244,
+        "obs_work_pct": 0.0,
+        "n_home": 236,
+        "n_work": 0,
+        "ach_home_pct": 90.421,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 87.805,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 87.739,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 87.805,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 87.739,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 85.366,
+        "obs_work_pct": 2.439,
+        "n_home": 223,
+        "n_work": 6,
+        "ach_home_pct": 85.441,
+        "ach_work_pct": 2.299
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 78.049,
+        "obs_work_pct": 2.439,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 78.161,
+        "ach_work_pct": 2.299
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 73.171,
+        "obs_work_pct": 4.878,
+        "n_home": 191,
+        "n_work": 13,
+        "ach_home_pct": 73.18,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 65.854,
+        "obs_work_pct": 4.878,
+        "n_home": 172,
+        "n_work": 13,
+        "ach_home_pct": 65.9,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 68.293,
+        "obs_work_pct": 4.878,
+        "n_home": 178,
+        "n_work": 13,
+        "ach_home_pct": 68.199,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 60.976,
+        "obs_work_pct": 4.878,
+        "n_home": 159,
+        "n_work": 13,
+        "ach_home_pct": 60.92,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 58.537,
+        "obs_work_pct": 4.878,
+        "n_home": 153,
+        "n_work": 13,
+        "ach_home_pct": 58.621,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 58.537,
+        "obs_work_pct": 4.878,
+        "n_home": 153,
+        "n_work": 13,
+        "ach_home_pct": 58.621,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 53.659,
+        "obs_work_pct": 4.878,
+        "n_home": 140,
+        "n_work": 13,
+        "ach_home_pct": 53.64,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 53.659,
+        "obs_work_pct": 4.878,
+        "n_home": 140,
+        "n_work": 13,
+        "ach_home_pct": 53.64,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 58.537,
+        "obs_work_pct": 4.878,
+        "n_home": 153,
+        "n_work": 13,
+        "ach_home_pct": 58.621,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 65.854,
+        "obs_work_pct": 4.878,
+        "n_home": 172,
+        "n_work": 13,
+        "ach_home_pct": 65.9,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 65.854,
+        "obs_work_pct": 4.878,
+        "n_home": 172,
+        "n_work": 13,
+        "ach_home_pct": 65.9,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 56.098,
+        "obs_work_pct": 4.878,
+        "n_home": 146,
+        "n_work": 13,
+        "ach_home_pct": 55.939,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 56.098,
+        "obs_work_pct": 4.878,
+        "n_home": 146,
+        "n_work": 13,
+        "ach_home_pct": 55.939,
+        "ach_work_pct": 4.981
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 53.659,
+        "obs_work_pct": 2.439,
+        "n_home": 140,
+        "n_work": 6,
+        "ach_home_pct": 53.64,
+        "ach_work_pct": 2.299
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 60.976,
+        "obs_work_pct": 2.439,
+        "n_home": 159,
+        "n_work": 6,
+        "ach_home_pct": 60.92,
+        "ach_work_pct": 2.299
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 60.976,
+        "obs_work_pct": 2.439,
+        "n_home": 159,
+        "n_work": 6,
+        "ach_home_pct": 60.92,
+        "ach_work_pct": 2.299
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 58.537,
+        "obs_work_pct": 2.439,
+        "n_home": 153,
+        "n_work": 6,
+        "ach_home_pct": 58.621,
+        "ach_work_pct": 2.299
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 68.293,
+        "obs_work_pct": 0.0,
+        "n_home": 178,
+        "n_work": 0,
+        "ach_home_pct": 68.199,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 63.415,
+        "obs_work_pct": 0.0,
+        "n_home": 166,
+        "n_work": 0,
+        "ach_home_pct": 63.602,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 65.854,
+        "obs_work_pct": 0.0,
+        "n_home": 172,
+        "n_work": 0,
+        "ach_home_pct": 65.9,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 63.415,
+        "obs_work_pct": 0.0,
+        "n_home": 166,
+        "n_work": 0,
+        "ach_home_pct": 63.602,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 65.854,
+        "obs_work_pct": 0.0,
+        "n_home": 172,
+        "n_work": 0,
+        "ach_home_pct": 65.9,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 63.415,
+        "obs_work_pct": 0.0,
+        "n_home": 166,
+        "n_work": 0,
+        "ach_home_pct": 63.602,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 68.293,
+        "obs_work_pct": 0.0,
+        "n_home": 178,
+        "n_work": 0,
+        "ach_home_pct": 68.199,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 73.171,
+        "obs_work_pct": 0.0,
+        "n_home": 191,
+        "n_work": 0,
+        "ach_home_pct": 73.18,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 70.732,
+        "obs_work_pct": 0.0,
+        "n_home": 185,
+        "n_work": 0,
+        "ach_home_pct": 70.881,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 70.732,
+        "obs_work_pct": 0.0,
+        "n_home": 185,
+        "n_work": 0,
+        "ach_home_pct": 70.881,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 78.049,
+        "obs_work_pct": 0.0,
+        "n_home": 204,
+        "n_work": 0,
+        "ach_home_pct": 78.161,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 78.049,
+        "obs_work_pct": 0.0,
+        "n_home": 204,
+        "n_work": 0,
+        "ach_home_pct": 78.161,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 85.366,
+        "obs_work_pct": 0.0,
+        "n_home": 223,
+        "n_work": 0,
+        "ach_home_pct": 85.441,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 87.805,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 87.739,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 87.805,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 87.739,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 90.244,
+        "obs_work_pct": 0.0,
+        "n_home": 236,
+        "n_work": 0,
+        "ach_home_pct": 90.421,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 92.683,
+        "obs_work_pct": 0.0,
+        "n_home": 242,
+        "n_work": 0,
+        "ach_home_pct": 92.72,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 92.683,
+        "obs_work_pct": 0.0,
+        "n_home": 242,
+        "n_work": 0,
+        "ach_home_pct": 92.72,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 97.561,
+        "obs_work_pct": 0.0,
+        "n_home": 255,
+        "n_work": 0,
+        "ach_home_pct": 97.701,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 97.561,
+        "obs_work_pct": 0.0,
+        "n_home": 255,
+        "n_work": 0,
+        "ach_home_pct": 97.701,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 97.561,
+        "obs_work_pct": 0.0,
+        "n_home": 255,
+        "n_work": 0,
+        "ach_home_pct": 97.701,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 97.561,
+        "obs_work_pct": 0.0,
+        "n_home": 255,
+        "n_work": 0,
+        "ach_home_pct": 97.701,
+        "ach_work_pct": 0.0
+      }
+    ]
+  },
+  "cy2010_s3": {
+    "n_obs": 44,
+    "n_syn": 258,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 72.633,
+    "obs_work_agg_pct": 4.261,
+    "before_home_pct": 80.443,
+    "before_work_pct": 17.361,
+    "after_home_pct": 72.626,
+    "after_work_pct": 4.264,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 88.636,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 88.76,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 88.636,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 88.76,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 88.636,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 88.76,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 86.364,
+        "obs_work_pct": 2.273,
+        "n_home": 223,
+        "n_work": 6,
+        "ach_home_pct": 86.434,
+        "ach_work_pct": 2.326
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 84.091,
+        "obs_work_pct": 4.545,
+        "n_home": 217,
+        "n_work": 12,
+        "ach_home_pct": 84.109,
+        "ach_work_pct": 4.651
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 84.091,
+        "obs_work_pct": 6.818,
+        "n_home": 217,
+        "n_work": 18,
+        "ach_home_pct": 84.109,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 79.545,
+        "obs_work_pct": 6.818,
+        "n_home": 205,
+        "n_work": 18,
+        "ach_home_pct": 79.457,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 9.091,
+        "n_home": 194,
+        "n_work": 23,
+        "ach_home_pct": 75.194,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 9.091,
+        "n_home": 194,
+        "n_work": 23,
+        "ach_home_pct": 75.194,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 68.182,
+        "obs_work_pct": 9.091,
+        "n_home": 176,
+        "n_work": 23,
+        "ach_home_pct": 68.217,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 59.091,
+        "obs_work_pct": 9.091,
+        "n_home": 152,
+        "n_work": 23,
+        "ach_home_pct": 58.915,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 61.364,
+        "obs_work_pct": 9.091,
+        "n_home": 158,
+        "n_work": 23,
+        "ach_home_pct": 61.24,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 54.545,
+        "obs_work_pct": 11.364,
+        "n_home": 141,
+        "n_work": 29,
+        "ach_home_pct": 54.651,
+        "ach_work_pct": 11.24
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 47.727,
+        "obs_work_pct": 11.364,
+        "n_home": 123,
+        "n_work": 29,
+        "ach_home_pct": 47.674,
+        "ach_work_pct": 11.24
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 52.273,
+        "obs_work_pct": 13.636,
+        "n_home": 135,
+        "n_work": 35,
+        "ach_home_pct": 52.326,
+        "ach_work_pct": 13.566
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 52.273,
+        "obs_work_pct": 11.364,
+        "n_home": 135,
+        "n_work": 29,
+        "ach_home_pct": 52.326,
+        "ach_work_pct": 11.24
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 59.091,
+        "obs_work_pct": 9.091,
+        "n_home": 152,
+        "n_work": 23,
+        "ach_home_pct": 58.915,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 54.545,
+        "obs_work_pct": 9.091,
+        "n_home": 141,
+        "n_work": 23,
+        "ach_home_pct": 54.651,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 9.091,
+        "n_home": 129,
+        "n_work": 23,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 8.915
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 45.455,
+        "obs_work_pct": 6.818,
+        "n_home": 117,
+        "n_work": 18,
+        "ach_home_pct": 45.349,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 45.455,
+        "obs_work_pct": 6.818,
+        "n_home": 117,
+        "n_work": 18,
+        "ach_home_pct": 45.349,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 45.455,
+        "obs_work_pct": 6.818,
+        "n_home": 117,
+        "n_work": 18,
+        "ach_home_pct": 45.349,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 45.455,
+        "obs_work_pct": 6.818,
+        "n_home": 117,
+        "n_work": 18,
+        "ach_home_pct": 45.349,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 45.455,
+        "obs_work_pct": 6.818,
+        "n_home": 117,
+        "n_work": 18,
+        "ach_home_pct": 45.349,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 6.818,
+        "n_home": 129,
+        "n_work": 18,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 54.545,
+        "obs_work_pct": 6.818,
+        "n_home": 141,
+        "n_work": 18,
+        "ach_home_pct": 54.651,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 63.636,
+        "obs_work_pct": 6.818,
+        "n_home": 164,
+        "n_work": 18,
+        "ach_home_pct": 63.566,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 63.636,
+        "obs_work_pct": 6.818,
+        "n_home": 164,
+        "n_work": 18,
+        "ach_home_pct": 63.566,
+        "ach_work_pct": 6.977
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 68.182,
+        "obs_work_pct": 2.273,
+        "n_home": 176,
+        "n_work": 6,
+        "ach_home_pct": 68.217,
+        "ach_work_pct": 2.326
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 70.455,
+        "obs_work_pct": 0.0,
+        "n_home": 182,
+        "n_work": 0,
+        "ach_home_pct": 70.543,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 72.727,
+        "obs_work_pct": 0.0,
+        "n_home": 188,
+        "n_work": 0,
+        "ach_home_pct": 72.868,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 70.455,
+        "obs_work_pct": 0.0,
+        "n_home": 182,
+        "n_work": 0,
+        "ach_home_pct": 70.543,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 79.545,
+        "obs_work_pct": 0.0,
+        "n_home": 205,
+        "n_work": 0,
+        "ach_home_pct": 79.457,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 79.545,
+        "obs_work_pct": 0.0,
+        "n_home": 205,
+        "n_work": 0,
+        "ach_home_pct": 79.457,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 81.818,
+        "obs_work_pct": 0.0,
+        "n_home": 211,
+        "n_work": 0,
+        "ach_home_pct": 81.783,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 84.091,
+        "obs_work_pct": 0.0,
+        "n_home": 217,
+        "n_work": 0,
+        "ach_home_pct": 84.109,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 86.364,
+        "obs_work_pct": 0.0,
+        "n_home": 223,
+        "n_work": 0,
+        "ach_home_pct": 86.434,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 86.364,
+        "obs_work_pct": 0.0,
+        "n_home": 223,
+        "n_work": 0,
+        "ach_home_pct": 86.434,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 88.636,
+        "obs_work_pct": 0.0,
+        "n_home": 229,
+        "n_work": 0,
+        "ach_home_pct": 88.76,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 90.909,
+        "obs_work_pct": 0.0,
+        "n_home": 235,
+        "n_work": 0,
+        "ach_home_pct": 91.085,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 93.182,
+        "obs_work_pct": 0.0,
+        "n_home": 240,
+        "n_work": 0,
+        "ach_home_pct": 93.023,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 93.182,
+        "obs_work_pct": 0.0,
+        "n_home": 240,
+        "n_work": 0,
+        "ach_home_pct": 93.023,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 95.455,
+        "obs_work_pct": 0.0,
+        "n_home": 246,
+        "n_work": 0,
+        "ach_home_pct": 95.349,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 95.455,
+        "obs_work_pct": 0.0,
+        "n_home": 246,
+        "n_work": 0,
+        "ach_home_pct": 95.349,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 95.455,
+        "obs_work_pct": 0.0,
+        "n_home": 246,
+        "n_work": 0,
+        "ach_home_pct": 95.349,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 95.455,
+        "obs_work_pct": 0.0,
+        "n_home": 246,
+        "n_work": 0,
+        "ach_home_pct": 95.349,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 95.455,
+        "obs_work_pct": 0.0,
+        "n_home": 246,
+        "n_work": 0,
+        "ach_home_pct": 95.349,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 95.455,
+        "obs_work_pct": 0.0,
+        "n_home": 246,
+        "n_work": 0,
+        "ach_home_pct": 95.349,
+        "ach_work_pct": 0.0
+      }
+    ]
+  },
+  "cy2015_s1": {
+    "n_obs": 246,
+    "n_syn": 102,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 71.316,
+    "obs_work_agg_pct": 14.321,
+    "before_home_pct": 62.153,
+    "before_work_pct": 37.153,
+    "after_home_pct": 71.344,
+    "after_work_pct": 14.297,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 93.089,
+        "obs_work_pct": 2.033,
+        "n_home": 95,
+        "n_work": 2,
+        "ach_home_pct": 93.137,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 93.089,
+        "obs_work_pct": 2.033,
+        "n_home": 95,
+        "n_work": 2,
+        "ach_home_pct": 93.137,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 91.057,
+        "obs_work_pct": 1.626,
+        "n_home": 93,
+        "n_work": 2,
+        "ach_home_pct": 91.176,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 91.057,
+        "obs_work_pct": 2.033,
+        "n_home": 93,
+        "n_work": 2,
+        "ach_home_pct": 91.176,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 88.618,
+        "obs_work_pct": 3.252,
+        "n_home": 90,
+        "n_work": 3,
+        "ach_home_pct": 88.235,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 85.772,
+        "obs_work_pct": 6.098,
+        "n_home": 87,
+        "n_work": 6,
+        "ach_home_pct": 85.294,
+        "ach_work_pct": 5.882
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 77.236,
+        "obs_work_pct": 9.35,
+        "n_home": 79,
+        "n_work": 10,
+        "ach_home_pct": 77.451,
+        "ach_work_pct": 9.804
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 69.512,
+        "obs_work_pct": 14.634,
+        "n_home": 71,
+        "n_work": 15,
+        "ach_home_pct": 69.608,
+        "ach_work_pct": 14.706
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 60.976,
+        "obs_work_pct": 24.39,
+        "n_home": 62,
+        "n_work": 25,
+        "ach_home_pct": 60.784,
+        "ach_work_pct": 24.51
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 54.472,
+        "obs_work_pct": 28.049,
+        "n_home": 56,
+        "n_work": 29,
+        "ach_home_pct": 54.902,
+        "ach_work_pct": 28.431
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 51.22,
+        "obs_work_pct": 31.707,
+        "n_home": 52,
+        "n_work": 32,
+        "ach_home_pct": 50.98,
+        "ach_work_pct": 31.373
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 48.78,
+        "obs_work_pct": 33.74,
+        "n_home": 50,
+        "n_work": 34,
+        "ach_home_pct": 49.02,
+        "ach_work_pct": 33.333
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 43.902,
+        "obs_work_pct": 34.553,
+        "n_home": 45,
+        "n_work": 35,
+        "ach_home_pct": 44.118,
+        "ach_work_pct": 34.314
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 44.309,
+        "obs_work_pct": 34.146,
+        "n_home": 45,
+        "n_work": 35,
+        "ach_home_pct": 44.118,
+        "ach_work_pct": 34.314
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 41.87,
+        "obs_work_pct": 34.553,
+        "n_home": 43,
+        "n_work": 35,
+        "ach_home_pct": 42.157,
+        "ach_work_pct": 34.314
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 42.683,
+        "obs_work_pct": 33.333,
+        "n_home": 44,
+        "n_work": 34,
+        "ach_home_pct": 43.137,
+        "ach_work_pct": 33.333
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 46.341,
+        "obs_work_pct": 30.081,
+        "n_home": 47,
+        "n_work": 31,
+        "ach_home_pct": 46.078,
+        "ach_work_pct": 30.392
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 47.967,
+        "obs_work_pct": 29.268,
+        "n_home": 49,
+        "n_work": 30,
+        "ach_home_pct": 48.039,
+        "ach_work_pct": 29.412
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 45.122,
+        "obs_work_pct": 31.707,
+        "n_home": 46,
+        "n_work": 32,
+        "ach_home_pct": 45.098,
+        "ach_work_pct": 31.373
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 44.715,
+        "obs_work_pct": 32.927,
+        "n_home": 46,
+        "n_work": 34,
+        "ach_home_pct": 45.098,
+        "ach_work_pct": 33.333
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 46.748,
+        "obs_work_pct": 33.74,
+        "n_home": 48,
+        "n_work": 34,
+        "ach_home_pct": 47.059,
+        "ach_work_pct": 33.333
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 45.122,
+        "obs_work_pct": 32.927,
+        "n_home": 46,
+        "n_work": 34,
+        "ach_home_pct": 45.098,
+        "ach_work_pct": 33.333
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 47.561,
+        "obs_work_pct": 30.894,
+        "n_home": 49,
+        "n_work": 32,
+        "ach_home_pct": 48.039,
+        "ach_work_pct": 31.373
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 27.642,
+        "n_home": 51,
+        "n_work": 28,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 27.451
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 54.878,
+        "obs_work_pct": 23.577,
+        "n_home": 56,
+        "n_work": 24,
+        "ach_home_pct": 54.902,
+        "ach_work_pct": 23.529
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 56.911,
+        "obs_work_pct": 18.293,
+        "n_home": 58,
+        "n_work": 19,
+        "ach_home_pct": 56.863,
+        "ach_work_pct": 18.627
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 60.569,
+        "obs_work_pct": 14.634,
+        "n_home": 62,
+        "n_work": 15,
+        "ach_home_pct": 60.784,
+        "ach_work_pct": 14.706
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 65.447,
+        "obs_work_pct": 12.195,
+        "n_home": 67,
+        "n_work": 12,
+        "ach_home_pct": 65.686,
+        "ach_work_pct": 11.765
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 67.886,
+        "obs_work_pct": 10.163,
+        "n_home": 69,
+        "n_work": 10,
+        "ach_home_pct": 67.647,
+        "ach_work_pct": 9.804
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 67.073,
+        "obs_work_pct": 8.943,
+        "n_home": 68,
+        "n_work": 9,
+        "ach_home_pct": 66.667,
+        "ach_work_pct": 8.824
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 67.073,
+        "obs_work_pct": 7.724,
+        "n_home": 68,
+        "n_work": 8,
+        "ach_home_pct": 66.667,
+        "ach_work_pct": 7.843
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 69.919,
+        "obs_work_pct": 7.724,
+        "n_home": 71,
+        "n_work": 8,
+        "ach_home_pct": 69.608,
+        "ach_work_pct": 7.843
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 72.358,
+        "obs_work_pct": 6.504,
+        "n_home": 74,
+        "n_work": 7,
+        "ach_home_pct": 72.549,
+        "ach_work_pct": 6.863
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 77.236,
+        "obs_work_pct": 6.098,
+        "n_home": 79,
+        "n_work": 6,
+        "ach_home_pct": 77.451,
+        "ach_work_pct": 5.882
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 82.114,
+        "obs_work_pct": 4.472,
+        "n_home": 84,
+        "n_work": 5,
+        "ach_home_pct": 82.353,
+        "ach_work_pct": 4.902
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 86.179,
+        "obs_work_pct": 4.065,
+        "n_home": 88,
+        "n_work": 4,
+        "ach_home_pct": 86.275,
+        "ach_work_pct": 3.922
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 89.431,
+        "obs_work_pct": 2.846,
+        "n_home": 91,
+        "n_work": 3,
+        "ach_home_pct": 89.216,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 91.463,
+        "obs_work_pct": 2.439,
+        "n_home": 93,
+        "n_work": 2,
+        "ach_home_pct": 91.176,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 94.309,
+        "obs_work_pct": 1.626,
+        "n_home": 96,
+        "n_work": 2,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 95.122,
+        "obs_work_pct": 1.626,
+        "n_home": 97,
+        "n_work": 2,
+        "ach_home_pct": 95.098,
+        "ach_work_pct": 1.961
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 95.528,
+        "obs_work_pct": 1.22,
+        "n_home": 97,
+        "n_work": 1,
+        "ach_home_pct": 95.098,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 96.748,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 96.748,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 96.748,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 96.748,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 97.154,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 97.154,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 97.154,
+        "obs_work_pct": 1.22,
+        "n_home": 99,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 0.98
+      }
+    ]
+  },
+  "cy2015_s2": {
+    "n_obs": 50,
+    "n_syn": 298,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 74.375,
+    "obs_work_agg_pct": 3.667,
+    "before_home_pct": 80.949,
+    "before_work_pct": 17.443,
+    "after_home_pct": 74.371,
+    "after_work_pct": 3.691,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 96.0,
+        "obs_work_pct": 0.0,
+        "n_home": 286,
+        "n_work": 0,
+        "ach_home_pct": 95.973,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 2.0,
+        "n_home": 280,
+        "n_work": 6,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 2.013
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 2.0,
+        "n_home": 280,
+        "n_work": 6,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 2.013
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 92.0,
+        "obs_work_pct": 2.0,
+        "n_home": 274,
+        "n_work": 6,
+        "ach_home_pct": 91.946,
+        "ach_work_pct": 2.013
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 88.0,
+        "obs_work_pct": 4.0,
+        "n_home": 262,
+        "n_work": 12,
+        "ach_home_pct": 87.919,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 84.0,
+        "obs_work_pct": 4.0,
+        "n_home": 250,
+        "n_work": 12,
+        "ach_home_pct": 83.893,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 84.0,
+        "obs_work_pct": 4.0,
+        "n_home": 250,
+        "n_work": 12,
+        "ach_home_pct": 83.893,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 76.0,
+        "obs_work_pct": 4.0,
+        "n_home": 226,
+        "n_work": 12,
+        "ach_home_pct": 75.839,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 60.0,
+        "obs_work_pct": 4.0,
+        "n_home": 179,
+        "n_work": 12,
+        "ach_home_pct": 60.067,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 60.0,
+        "obs_work_pct": 4.0,
+        "n_home": 179,
+        "n_work": 12,
+        "ach_home_pct": 60.067,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 58.0,
+        "obs_work_pct": 8.0,
+        "n_home": 173,
+        "n_work": 24,
+        "ach_home_pct": 58.054,
+        "ach_work_pct": 8.054
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 58.0,
+        "obs_work_pct": 8.0,
+        "n_home": 173,
+        "n_work": 24,
+        "ach_home_pct": 58.054,
+        "ach_work_pct": 8.054
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 58.0,
+        "obs_work_pct": 8.0,
+        "n_home": 173,
+        "n_work": 24,
+        "ach_home_pct": 58.054,
+        "ach_work_pct": 8.054
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 8.0,
+        "n_home": 149,
+        "n_work": 24,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 8.054
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 54.0,
+        "obs_work_pct": 6.0,
+        "n_home": 161,
+        "n_work": 18,
+        "ach_home_pct": 54.027,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 48.0,
+        "obs_work_pct": 6.0,
+        "n_home": 143,
+        "n_work": 18,
+        "ach_home_pct": 47.987,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 48.0,
+        "obs_work_pct": 6.0,
+        "n_home": 143,
+        "n_work": 18,
+        "ach_home_pct": 47.987,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 48.0,
+        "obs_work_pct": 6.0,
+        "n_home": 143,
+        "n_work": 18,
+        "ach_home_pct": 47.987,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 52.0,
+        "obs_work_pct": 6.0,
+        "n_home": 155,
+        "n_work": 18,
+        "ach_home_pct": 52.013,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 56.0,
+        "obs_work_pct": 6.0,
+        "n_home": 167,
+        "n_work": 18,
+        "ach_home_pct": 56.04,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 58.0,
+        "obs_work_pct": 6.0,
+        "n_home": 173,
+        "n_work": 18,
+        "ach_home_pct": 58.054,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 64.0,
+        "obs_work_pct": 6.0,
+        "n_home": 191,
+        "n_work": 18,
+        "ach_home_pct": 64.094,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 66.0,
+        "obs_work_pct": 6.0,
+        "n_home": 197,
+        "n_work": 18,
+        "ach_home_pct": 66.107,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 68.0,
+        "obs_work_pct": 4.0,
+        "n_home": 203,
+        "n_work": 12,
+        "ach_home_pct": 68.121,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 66.0,
+        "obs_work_pct": 4.0,
+        "n_home": 197,
+        "n_work": 12,
+        "ach_home_pct": 66.107,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 58.0,
+        "obs_work_pct": 4.0,
+        "n_home": 173,
+        "n_work": 12,
+        "ach_home_pct": 58.054,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 62.0,
+        "obs_work_pct": 6.0,
+        "n_home": 185,
+        "n_work": 18,
+        "ach_home_pct": 62.081,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 62.0,
+        "obs_work_pct": 6.0,
+        "n_home": 185,
+        "n_work": 18,
+        "ach_home_pct": 62.081,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 66.0,
+        "obs_work_pct": 6.0,
+        "n_home": 197,
+        "n_work": 18,
+        "ach_home_pct": 66.107,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 66.0,
+        "obs_work_pct": 6.0,
+        "n_home": 197,
+        "n_work": 18,
+        "ach_home_pct": 66.107,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 70.0,
+        "obs_work_pct": 6.0,
+        "n_home": 209,
+        "n_work": 18,
+        "ach_home_pct": 70.134,
+        "ach_work_pct": 6.04
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 72.0,
+        "obs_work_pct": 4.0,
+        "n_home": 215,
+        "n_work": 12,
+        "ach_home_pct": 72.148,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 76.0,
+        "obs_work_pct": 4.0,
+        "n_home": 226,
+        "n_work": 12,
+        "ach_home_pct": 75.839,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 78.0,
+        "obs_work_pct": 4.0,
+        "n_home": 232,
+        "n_work": 12,
+        "ach_home_pct": 77.852,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 84.0,
+        "obs_work_pct": 4.0,
+        "n_home": 250,
+        "n_work": 12,
+        "ach_home_pct": 83.893,
+        "ach_work_pct": 4.027
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 86.0,
+        "obs_work_pct": 2.0,
+        "n_home": 256,
+        "n_work": 6,
+        "ach_home_pct": 85.906,
+        "ach_work_pct": 2.013
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 86.0,
+        "obs_work_pct": 0.0,
+        "n_home": 256,
+        "n_work": 0,
+        "ach_home_pct": 85.906,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 88.0,
+        "obs_work_pct": 0.0,
+        "n_home": 262,
+        "n_work": 0,
+        "ach_home_pct": 87.919,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 92.0,
+        "obs_work_pct": 0.0,
+        "n_home": 274,
+        "n_work": 0,
+        "ach_home_pct": 91.946,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 92.0,
+        "obs_work_pct": 0.0,
+        "n_home": 274,
+        "n_work": 0,
+        "ach_home_pct": 91.946,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 94.0,
+        "obs_work_pct": 0.0,
+        "n_home": 280,
+        "n_work": 0,
+        "ach_home_pct": 93.96,
+        "ach_work_pct": 0.0
+      }
+    ]
+  },
+  "cy2015_s3": {
+    "n_obs": 52,
+    "n_syn": 296,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 74.92,
+    "obs_work_agg_pct": 5.088,
+    "before_home_pct": 80.053,
+    "before_work_pct": 18.335,
+    "after_home_pct": 74.93,
+    "after_work_pct": 5.103,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 88.462,
+        "obs_work_pct": 1.923,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 88.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 88.462,
+        "obs_work_pct": 1.923,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 88.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 88.462,
+        "obs_work_pct": 1.923,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 88.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 88.462,
+        "obs_work_pct": 1.923,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 88.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 88.462,
+        "obs_work_pct": 1.923,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 88.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 88.462,
+        "obs_work_pct": 1.923,
+        "n_home": 262,
+        "n_work": 6,
+        "ach_home_pct": 88.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 80.769,
+        "obs_work_pct": 1.923,
+        "n_home": 239,
+        "n_work": 6,
+        "ach_home_pct": 80.743,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 80.769,
+        "obs_work_pct": 3.846,
+        "n_home": 239,
+        "n_work": 11,
+        "ach_home_pct": 80.743,
+        "ach_work_pct": 3.716
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 78.846,
+        "obs_work_pct": 5.769,
+        "n_home": 233,
+        "n_work": 17,
+        "ach_home_pct": 78.716,
+        "ach_work_pct": 5.743
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 5.769,
+        "n_home": 222,
+        "n_work": 17,
+        "ach_home_pct": 75.0,
+        "ach_work_pct": 5.743
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 67.308,
+        "obs_work_pct": 7.692,
+        "n_home": 199,
+        "n_work": 23,
+        "ach_home_pct": 67.23,
+        "ach_work_pct": 7.77
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 63.462,
+        "obs_work_pct": 9.615,
+        "n_home": 188,
+        "n_work": 28,
+        "ach_home_pct": 63.514,
+        "ach_work_pct": 9.459
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 63.462,
+        "obs_work_pct": 9.615,
+        "n_home": 188,
+        "n_work": 28,
+        "ach_home_pct": 63.514,
+        "ach_work_pct": 9.459
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 55.769,
+        "obs_work_pct": 9.615,
+        "n_home": 165,
+        "n_work": 28,
+        "ach_home_pct": 55.743,
+        "ach_work_pct": 9.459
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 9.615,
+        "n_home": 148,
+        "n_work": 28,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 9.459
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 53.846,
+        "obs_work_pct": 11.538,
+        "n_home": 159,
+        "n_work": 34,
+        "ach_home_pct": 53.716,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 11.538,
+        "n_home": 148,
+        "n_work": 34,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 48.077,
+        "obs_work_pct": 11.538,
+        "n_home": 142,
+        "n_work": 34,
+        "ach_home_pct": 47.973,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 44.231,
+        "obs_work_pct": 11.538,
+        "n_home": 131,
+        "n_work": 34,
+        "ach_home_pct": 44.257,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 46.154,
+        "obs_work_pct": 11.538,
+        "n_home": 137,
+        "n_work": 34,
+        "ach_home_pct": 46.284,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 44.231,
+        "obs_work_pct": 11.538,
+        "n_home": 131,
+        "n_work": 34,
+        "ach_home_pct": 44.257,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 46.154,
+        "obs_work_pct": 11.538,
+        "n_home": 137,
+        "n_work": 34,
+        "ach_home_pct": 46.284,
+        "ach_work_pct": 11.486
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 13.462,
+        "n_home": 148,
+        "n_work": 40,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 13.514
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 51.923,
+        "obs_work_pct": 13.462,
+        "n_home": 154,
+        "n_work": 40,
+        "ach_home_pct": 52.027,
+        "ach_work_pct": 13.514
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 53.846,
+        "obs_work_pct": 9.615,
+        "n_home": 159,
+        "n_work": 28,
+        "ach_home_pct": 53.716,
+        "ach_work_pct": 9.459
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 55.769,
+        "obs_work_pct": 9.615,
+        "n_home": 165,
+        "n_work": 28,
+        "ach_home_pct": 55.743,
+        "ach_work_pct": 9.459
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 63.462,
+        "obs_work_pct": 7.692,
+        "n_home": 188,
+        "n_work": 23,
+        "ach_home_pct": 63.514,
+        "ach_work_pct": 7.77
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 61.538,
+        "obs_work_pct": 5.769,
+        "n_home": 182,
+        "n_work": 17,
+        "ach_home_pct": 61.486,
+        "ach_work_pct": 5.743
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 67.308,
+        "obs_work_pct": 3.846,
+        "n_home": 199,
+        "n_work": 11,
+        "ach_home_pct": 67.23,
+        "ach_work_pct": 3.716
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 63.462,
+        "obs_work_pct": 1.923,
+        "n_home": 188,
+        "n_work": 6,
+        "ach_home_pct": 63.514,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 76.923,
+        "obs_work_pct": 1.923,
+        "n_home": 228,
+        "n_work": 6,
+        "ach_home_pct": 77.027,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 82.692,
+        "obs_work_pct": 0.0,
+        "n_home": 245,
+        "n_work": 0,
+        "ach_home_pct": 82.77,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 84.615,
+        "obs_work_pct": 0.0,
+        "n_home": 250,
+        "n_work": 0,
+        "ach_home_pct": 84.459,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 90.385,
+        "obs_work_pct": 0.0,
+        "n_home": 268,
+        "n_work": 0,
+        "ach_home_pct": 90.541,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 92.308,
+        "obs_work_pct": 0.0,
+        "n_home": 273,
+        "n_work": 0,
+        "ach_home_pct": 92.23,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 92.308,
+        "obs_work_pct": 0.0,
+        "n_home": 273,
+        "n_work": 0,
+        "ach_home_pct": 92.23,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 0.0,
+        "n_home": 279,
+        "n_work": 0,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 94.231,
+        "obs_work_pct": 1.923,
+        "n_home": 279,
+        "n_work": 6,
+        "ach_home_pct": 94.257,
+        "ach_work_pct": 2.027
+      }
+    ]
+  },
+  "cy2022_s1": {
+    "n_obs": 178,
+    "n_syn": 68,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 77.072,
+    "obs_work_agg_pct": 12.886,
+    "before_home_pct": 62.194,
+    "before_work_pct": 37.408,
+    "after_home_pct": 77.145,
+    "after_work_pct": 12.929,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 96.067,
+        "obs_work_pct": 2.247,
+        "n_home": 65,
+        "n_work": 2,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 94.382,
+        "obs_work_pct": 2.809,
+        "n_home": 64,
+        "n_work": 2,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 93.82,
+        "obs_work_pct": 3.933,
+        "n_home": 64,
+        "n_work": 3,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 4.412
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 93.82,
+        "obs_work_pct": 3.933,
+        "n_home": 64,
+        "n_work": 3,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 4.412
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 92.135,
+        "obs_work_pct": 5.056,
+        "n_home": 63,
+        "n_work": 3,
+        "ach_home_pct": 92.647,
+        "ach_work_pct": 4.412
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 90.449,
+        "obs_work_pct": 5.618,
+        "n_home": 62,
+        "n_work": 4,
+        "ach_home_pct": 91.176,
+        "ach_work_pct": 5.882
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 84.831,
+        "obs_work_pct": 6.18,
+        "n_home": 58,
+        "n_work": 4,
+        "ach_home_pct": 85.294,
+        "ach_work_pct": 5.882
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 78.09,
+        "obs_work_pct": 11.236,
+        "n_home": 53,
+        "n_work": 8,
+        "ach_home_pct": 77.941,
+        "ach_work_pct": 11.765
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 71.348,
+        "obs_work_pct": 16.292,
+        "n_home": 49,
+        "n_work": 11,
+        "ach_home_pct": 72.059,
+        "ach_work_pct": 16.176
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 66.292,
+        "obs_work_pct": 21.348,
+        "n_home": 45,
+        "n_work": 15,
+        "ach_home_pct": 66.176,
+        "ach_work_pct": 22.059
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 63.483,
+        "obs_work_pct": 24.719,
+        "n_home": 43,
+        "n_work": 17,
+        "ach_home_pct": 63.235,
+        "ach_work_pct": 25.0
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 58.989,
+        "obs_work_pct": 25.281,
+        "n_home": 40,
+        "n_work": 17,
+        "ach_home_pct": 58.824,
+        "ach_work_pct": 25.0
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 56.18,
+        "obs_work_pct": 26.404,
+        "n_home": 38,
+        "n_work": 18,
+        "ach_home_pct": 55.882,
+        "ach_work_pct": 26.471
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 54.494,
+        "obs_work_pct": 29.213,
+        "n_home": 37,
+        "n_work": 20,
+        "ach_home_pct": 54.412,
+        "ach_work_pct": 29.412
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 50.562,
+        "obs_work_pct": 31.461,
+        "n_home": 34,
+        "n_work": 21,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 31.461,
+        "n_home": 34,
+        "n_work": 21,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 30.899,
+        "n_home": 34,
+        "n_work": 21,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 30.899,
+        "n_home": 34,
+        "n_work": 21,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 48.876,
+        "obs_work_pct": 30.899,
+        "n_home": 33,
+        "n_work": 21,
+        "ach_home_pct": 48.529,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 31.461,
+        "n_home": 34,
+        "n_work": 21,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 50.562,
+        "obs_work_pct": 30.337,
+        "n_home": 34,
+        "n_work": 21,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 30.882
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 52.809,
+        "obs_work_pct": 29.213,
+        "n_home": 36,
+        "n_work": 20,
+        "ach_home_pct": 52.941,
+        "ach_work_pct": 29.412
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 57.303,
+        "obs_work_pct": 28.652,
+        "n_home": 39,
+        "n_work": 19,
+        "ach_home_pct": 57.353,
+        "ach_work_pct": 27.941
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 54.494,
+        "obs_work_pct": 26.404,
+        "n_home": 37,
+        "n_work": 18,
+        "ach_home_pct": 54.412,
+        "ach_work_pct": 26.471
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 59.551,
+        "obs_work_pct": 22.472,
+        "n_home": 40,
+        "n_work": 15,
+        "ach_home_pct": 58.824,
+        "ach_work_pct": 22.059
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 64.045,
+        "obs_work_pct": 17.416,
+        "n_home": 44,
+        "n_work": 12,
+        "ach_home_pct": 64.706,
+        "ach_work_pct": 17.647
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 73.034,
+        "obs_work_pct": 14.045,
+        "n_home": 50,
+        "n_work": 10,
+        "ach_home_pct": 73.529,
+        "ach_work_pct": 14.706
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 74.719,
+        "obs_work_pct": 11.798,
+        "n_home": 51,
+        "n_work": 8,
+        "ach_home_pct": 75.0,
+        "ach_work_pct": 11.765
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 77.528,
+        "obs_work_pct": 9.551,
+        "n_home": 53,
+        "n_work": 6,
+        "ach_home_pct": 77.941,
+        "ach_work_pct": 8.824
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 78.09,
+        "obs_work_pct": 7.303,
+        "n_home": 53,
+        "n_work": 5,
+        "ach_home_pct": 77.941,
+        "ach_work_pct": 7.353
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 80.337,
+        "obs_work_pct": 5.618,
+        "n_home": 55,
+        "n_work": 4,
+        "ach_home_pct": 80.882,
+        "ach_work_pct": 5.882
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 81.461,
+        "obs_work_pct": 4.494,
+        "n_home": 55,
+        "n_work": 3,
+        "ach_home_pct": 80.882,
+        "ach_work_pct": 4.412
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 84.831,
+        "obs_work_pct": 5.056,
+        "n_home": 58,
+        "n_work": 3,
+        "ach_home_pct": 85.294,
+        "ach_work_pct": 4.412
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 86.517,
+        "obs_work_pct": 2.809,
+        "n_home": 59,
+        "n_work": 2,
+        "ach_home_pct": 86.765,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 91.011,
+        "obs_work_pct": 2.247,
+        "n_home": 62,
+        "n_work": 2,
+        "ach_home_pct": 91.176,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 92.135,
+        "obs_work_pct": 2.247,
+        "n_home": 63,
+        "n_work": 2,
+        "ach_home_pct": 92.647,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 92.697,
+        "obs_work_pct": 2.809,
+        "n_home": 63,
+        "n_work": 2,
+        "ach_home_pct": 92.647,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 94.382,
+        "obs_work_pct": 2.809,
+        "n_home": 64,
+        "n_work": 2,
+        "ach_home_pct": 94.118,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 94.944,
+        "obs_work_pct": 2.809,
+        "n_home": 65,
+        "n_work": 2,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 94.944,
+        "obs_work_pct": 2.809,
+        "n_home": 65,
+        "n_work": 2,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 94.944,
+        "obs_work_pct": 2.809,
+        "n_home": 65,
+        "n_work": 2,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 95.506,
+        "obs_work_pct": 2.809,
+        "n_home": 65,
+        "n_work": 2,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 96.067,
+        "obs_work_pct": 2.247,
+        "n_home": 65,
+        "n_work": 2,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 2.941
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 96.067,
+        "obs_work_pct": 1.685,
+        "n_home": 65,
+        "n_work": 1,
+        "ach_home_pct": 95.588,
+        "ach_work_pct": 1.471
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 96.629,
+        "obs_work_pct": 1.685,
+        "n_home": 66,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 1.471
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 96.629,
+        "obs_work_pct": 1.685,
+        "n_home": 66,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 1.471
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 97.191,
+        "obs_work_pct": 1.685,
+        "n_home": 66,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 1.471
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 97.191,
+        "obs_work_pct": 1.685,
+        "n_home": 66,
+        "n_work": 1,
+        "ach_home_pct": 97.059,
+        "ach_work_pct": 1.471
+      }
+    ]
+  },
+  "cy2022_s2": {
+    "n_obs": 32,
+    "n_syn": 214,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 73.763,
+    "obs_work_agg_pct": 6.966,
+    "before_home_pct": 80.929,
+    "before_work_pct": 18.38,
+    "after_home_pct": 73.773,
+    "after_work_pct": 7.0,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 96.875,
+        "obs_work_pct": 0.0,
+        "n_home": 207,
+        "n_work": 0,
+        "ach_home_pct": 96.729,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 96.875,
+        "obs_work_pct": 0.0,
+        "n_home": 207,
+        "n_work": 0,
+        "ach_home_pct": 96.729,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 96.875,
+        "obs_work_pct": 0.0,
+        "n_home": 207,
+        "n_work": 0,
+        "ach_home_pct": 96.729,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 96.875,
+        "obs_work_pct": 0.0,
+        "n_home": 207,
+        "n_work": 0,
+        "ach_home_pct": 96.729,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 0.0,
+        "n_home": 201,
+        "n_work": 0,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 90.625,
+        "obs_work_pct": 3.125,
+        "n_home": 194,
+        "n_work": 7,
+        "ach_home_pct": 90.654,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 90.625,
+        "obs_work_pct": 3.125,
+        "n_home": 194,
+        "n_work": 7,
+        "ach_home_pct": 90.654,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 90.625,
+        "obs_work_pct": 3.125,
+        "n_home": 194,
+        "n_work": 7,
+        "ach_home_pct": 90.654,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 84.375,
+        "obs_work_pct": 6.25,
+        "n_home": 181,
+        "n_work": 13,
+        "ach_home_pct": 84.579,
+        "ach_work_pct": 6.075
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 78.125,
+        "obs_work_pct": 6.25,
+        "n_home": 167,
+        "n_work": 13,
+        "ach_home_pct": 78.037,
+        "ach_work_pct": 6.075
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 78.125,
+        "obs_work_pct": 12.5,
+        "n_home": 167,
+        "n_work": 27,
+        "ach_home_pct": 78.037,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 12.5,
+        "n_home": 160,
+        "n_work": 27,
+        "ach_home_pct": 74.766,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 71.875,
+        "obs_work_pct": 12.5,
+        "n_home": 154,
+        "n_work": 27,
+        "ach_home_pct": 71.963,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 71.875,
+        "obs_work_pct": 12.5,
+        "n_home": 154,
+        "n_work": 27,
+        "ach_home_pct": 71.963,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 71.875,
+        "obs_work_pct": 12.5,
+        "n_home": 154,
+        "n_work": 27,
+        "ach_home_pct": 71.963,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 71.875,
+        "obs_work_pct": 12.5,
+        "n_home": 154,
+        "n_work": 27,
+        "ach_home_pct": 71.963,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 68.75,
+        "obs_work_pct": 15.625,
+        "n_home": 147,
+        "n_work": 33,
+        "ach_home_pct": 68.692,
+        "ach_work_pct": 15.421
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 62.5,
+        "obs_work_pct": 15.625,
+        "n_home": 134,
+        "n_work": 33,
+        "ach_home_pct": 62.617,
+        "ach_work_pct": 15.421
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 56.25,
+        "obs_work_pct": 15.625,
+        "n_home": 120,
+        "n_work": 33,
+        "ach_home_pct": 56.075,
+        "ach_work_pct": 15.421
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 56.25,
+        "obs_work_pct": 15.625,
+        "n_home": 120,
+        "n_work": 33,
+        "ach_home_pct": 56.075,
+        "ach_work_pct": 15.421
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 46.875,
+        "obs_work_pct": 15.625,
+        "n_home": 100,
+        "n_work": 33,
+        "ach_home_pct": 46.729,
+        "ach_work_pct": 15.421
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 43.75,
+        "obs_work_pct": 15.625,
+        "n_home": 94,
+        "n_work": 33,
+        "ach_home_pct": 43.925,
+        "ach_work_pct": 15.421
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 46.875,
+        "obs_work_pct": 12.5,
+        "n_home": 100,
+        "n_work": 27,
+        "ach_home_pct": 46.729,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 12.5,
+        "n_home": 107,
+        "n_work": 27,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 12.5,
+        "n_home": 107,
+        "n_work": 27,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 53.125,
+        "obs_work_pct": 12.5,
+        "n_home": 114,
+        "n_work": 27,
+        "ach_home_pct": 53.271,
+        "ach_work_pct": 12.617
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 53.125,
+        "obs_work_pct": 9.375,
+        "n_home": 114,
+        "n_work": 20,
+        "ach_home_pct": 53.271,
+        "ach_work_pct": 9.346
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 9.375,
+        "n_home": 107,
+        "n_work": 20,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 9.346
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 59.375,
+        "obs_work_pct": 6.25,
+        "n_home": 127,
+        "n_work": 13,
+        "ach_home_pct": 59.346,
+        "ach_work_pct": 6.075
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 59.375,
+        "obs_work_pct": 6.25,
+        "n_home": 127,
+        "n_work": 13,
+        "ach_home_pct": 59.346,
+        "ach_work_pct": 6.075
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 56.25,
+        "obs_work_pct": 6.25,
+        "n_home": 120,
+        "n_work": 13,
+        "ach_home_pct": 56.075,
+        "ach_work_pct": 6.075
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 56.25,
+        "obs_work_pct": 6.25,
+        "n_home": 120,
+        "n_work": 13,
+        "ach_home_pct": 56.075,
+        "ach_work_pct": 6.075
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 62.5,
+        "obs_work_pct": 3.125,
+        "n_home": 134,
+        "n_work": 7,
+        "ach_home_pct": 62.617,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 65.625,
+        "obs_work_pct": 3.125,
+        "n_home": 140,
+        "n_work": 7,
+        "ach_home_pct": 65.421,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 68.75,
+        "obs_work_pct": 3.125,
+        "n_home": 147,
+        "n_work": 7,
+        "ach_home_pct": 68.692,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 68.75,
+        "obs_work_pct": 3.125,
+        "n_home": 147,
+        "n_work": 7,
+        "ach_home_pct": 68.692,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 68.75,
+        "obs_work_pct": 3.125,
+        "n_home": 147,
+        "n_work": 7,
+        "ach_home_pct": 68.692,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 71.875,
+        "obs_work_pct": 3.125,
+        "n_home": 154,
+        "n_work": 7,
+        "ach_home_pct": 71.963,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 84.375,
+        "obs_work_pct": 3.125,
+        "n_home": 181,
+        "n_work": 7,
+        "ach_home_pct": 84.579,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 84.375,
+        "obs_work_pct": 3.125,
+        "n_home": 181,
+        "n_work": 7,
+        "ach_home_pct": 84.579,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 87.5,
+        "obs_work_pct": 3.125,
+        "n_home": 187,
+        "n_work": 7,
+        "ach_home_pct": 87.383,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 90.625,
+        "obs_work_pct": 3.125,
+        "n_home": 194,
+        "n_work": 7,
+        "ach_home_pct": 90.654,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 3.125,
+        "n_home": 201,
+        "n_work": 7,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 3.125,
+        "n_home": 201,
+        "n_work": 7,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 3.125,
+        "n_home": 201,
+        "n_work": 7,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 3.125,
+        "n_home": 201,
+        "n_work": 7,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 3.125,
+        "n_home": 201,
+        "n_work": 7,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 3.271
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 93.75,
+        "obs_work_pct": 3.125,
+        "n_home": 201,
+        "n_work": 7,
+        "ach_home_pct": 93.925,
+        "ach_work_pct": 3.271
+      }
+    ]
+  },
+  "cy2022_s3": {
+    "n_obs": 36,
+    "n_syn": 210,
+    "n_missing_keys": 0,
+    "obs_home_agg_pct": 77.894,
+    "obs_work_agg_pct": 5.382,
+    "before_home_pct": 79.851,
+    "before_work_pct": 19.335,
+    "after_home_pct": 77.857,
+    "after_work_pct": 5.456,
+    "mutual_excl_viol": 0,
+    "slots": [
+      {
+        "slot": 1,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 2,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 3,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 4,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 5,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 6,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 7,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 0.0,
+        "n_home": 198,
+        "n_work": 0,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 8,
+        "obs_home_pct": 88.889,
+        "obs_work_pct": 0.0,
+        "n_home": 187,
+        "n_work": 0,
+        "ach_home_pct": 89.048,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 9,
+        "obs_home_pct": 83.333,
+        "obs_work_pct": 0.0,
+        "n_home": 175,
+        "n_work": 0,
+        "ach_home_pct": 83.333,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 10,
+        "obs_home_pct": 80.556,
+        "obs_work_pct": 0.0,
+        "n_home": 169,
+        "n_work": 0,
+        "ach_home_pct": 80.476,
+        "ach_work_pct": 0.0
+      },
+      {
+        "slot": 11,
+        "obs_home_pct": 77.778,
+        "obs_work_pct": 2.778,
+        "n_home": 163,
+        "n_work": 6,
+        "ach_home_pct": 77.619,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 12,
+        "obs_home_pct": 77.778,
+        "obs_work_pct": 5.556,
+        "n_home": 163,
+        "n_work": 12,
+        "ach_home_pct": 77.619,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 13,
+        "obs_home_pct": 77.778,
+        "obs_work_pct": 5.556,
+        "n_home": 163,
+        "n_work": 12,
+        "ach_home_pct": 77.619,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 14,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 5.556,
+        "n_home": 158,
+        "n_work": 12,
+        "ach_home_pct": 75.238,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 15,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 5.556,
+        "n_home": 158,
+        "n_work": 12,
+        "ach_home_pct": 75.238,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 16,
+        "obs_home_pct": 69.444,
+        "obs_work_pct": 5.556,
+        "n_home": 146,
+        "n_work": 12,
+        "ach_home_pct": 69.524,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 17,
+        "obs_home_pct": 58.333,
+        "obs_work_pct": 13.889,
+        "n_home": 123,
+        "n_work": 29,
+        "ach_home_pct": 58.571,
+        "ach_work_pct": 13.81
+      },
+      {
+        "slot": 18,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 13.889,
+        "n_home": 105,
+        "n_work": 29,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 13.81
+      },
+      {
+        "slot": 19,
+        "obs_home_pct": 47.222,
+        "obs_work_pct": 13.889,
+        "n_home": 99,
+        "n_work": 29,
+        "ach_home_pct": 47.143,
+        "ach_work_pct": 13.81
+      },
+      {
+        "slot": 20,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 16.667,
+        "n_home": 105,
+        "n_work": 35,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 16.667
+      },
+      {
+        "slot": 21,
+        "obs_home_pct": 50.0,
+        "obs_work_pct": 16.667,
+        "n_home": 105,
+        "n_work": 35,
+        "ach_home_pct": 50.0,
+        "ach_work_pct": 16.667
+      },
+      {
+        "slot": 22,
+        "obs_home_pct": 47.222,
+        "obs_work_pct": 16.667,
+        "n_home": 99,
+        "n_work": 35,
+        "ach_home_pct": 47.143,
+        "ach_work_pct": 16.667
+      },
+      {
+        "slot": 23,
+        "obs_home_pct": 47.222,
+        "obs_work_pct": 13.889,
+        "n_home": 99,
+        "n_work": 29,
+        "ach_home_pct": 47.143,
+        "ach_work_pct": 13.81
+      },
+      {
+        "slot": 24,
+        "obs_home_pct": 44.444,
+        "obs_work_pct": 13.889,
+        "n_home": 93,
+        "n_work": 29,
+        "ach_home_pct": 44.286,
+        "ach_work_pct": 13.81
+      },
+      {
+        "slot": 25,
+        "obs_home_pct": 47.222,
+        "obs_work_pct": 8.333,
+        "n_home": 99,
+        "n_work": 18,
+        "ach_home_pct": 47.143,
+        "ach_work_pct": 8.571
+      },
+      {
+        "slot": 26,
+        "obs_home_pct": 47.222,
+        "obs_work_pct": 8.333,
+        "n_home": 99,
+        "n_work": 18,
+        "ach_home_pct": 47.143,
+        "ach_work_pct": 8.571
+      },
+      {
+        "slot": 27,
+        "obs_home_pct": 52.778,
+        "obs_work_pct": 8.333,
+        "n_home": 111,
+        "n_work": 18,
+        "ach_home_pct": 52.857,
+        "ach_work_pct": 8.571
+      },
+      {
+        "slot": 28,
+        "obs_home_pct": 58.333,
+        "obs_work_pct": 8.333,
+        "n_home": 123,
+        "n_work": 18,
+        "ach_home_pct": 58.571,
+        "ach_work_pct": 8.571
+      },
+      {
+        "slot": 29,
+        "obs_home_pct": 63.889,
+        "obs_work_pct": 5.556,
+        "n_home": 134,
+        "n_work": 12,
+        "ach_home_pct": 63.81,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 30,
+        "obs_home_pct": 69.444,
+        "obs_work_pct": 5.556,
+        "n_home": 146,
+        "n_work": 12,
+        "ach_home_pct": 69.524,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 31,
+        "obs_home_pct": 72.222,
+        "obs_work_pct": 5.556,
+        "n_home": 152,
+        "n_work": 12,
+        "ach_home_pct": 72.381,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 32,
+        "obs_home_pct": 75.0,
+        "obs_work_pct": 5.556,
+        "n_home": 158,
+        "n_work": 12,
+        "ach_home_pct": 75.238,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 33,
+        "obs_home_pct": 77.778,
+        "obs_work_pct": 5.556,
+        "n_home": 163,
+        "n_work": 12,
+        "ach_home_pct": 77.619,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 34,
+        "obs_home_pct": 80.556,
+        "obs_work_pct": 5.556,
+        "n_home": 169,
+        "n_work": 12,
+        "ach_home_pct": 80.476,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 35,
+        "obs_home_pct": 88.889,
+        "obs_work_pct": 5.556,
+        "n_home": 187,
+        "n_work": 12,
+        "ach_home_pct": 89.048,
+        "ach_work_pct": 5.714
+      },
+      {
+        "slot": 36,
+        "obs_home_pct": 88.889,
+        "obs_work_pct": 2.778,
+        "n_home": 187,
+        "n_work": 6,
+        "ach_home_pct": 89.048,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 37,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 2.778,
+        "n_home": 198,
+        "n_work": 6,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 38,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 2.778,
+        "n_home": 198,
+        "n_work": 6,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 39,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 2.778,
+        "n_home": 198,
+        "n_work": 6,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 40,
+        "obs_home_pct": 94.444,
+        "obs_work_pct": 2.778,
+        "n_home": 198,
+        "n_work": 6,
+        "ach_home_pct": 94.286,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 41,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 42,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 43,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 44,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 45,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 46,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 47,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      },
+      {
+        "slot": 48,
+        "obs_home_pct": 97.222,
+        "obs_work_pct": 2.778,
+        "n_home": 204,
+        "n_work": 6,
+        "ach_home_pct": 97.143,
+        "ach_work_pct": 2.857
+      }
+    ]
+  }
+}

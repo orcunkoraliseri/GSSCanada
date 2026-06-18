@@ -267,7 +267,7 @@ Mirror the Leg-1 activity-driven load method on the office channel: equipment an
 ## OPEN DECISIONS (resolve before/within Leg 2)
 *Carried from synthesis §C and the audit — listed here, not silently resolved.*
 
-1. **MDLM vs Transformer.** Stay on the safe Rank-1 multi-head Transformer (this doc's baseline), or pilot the diffusion (MDLM) upside given prior HPT work? Decide before committing Leg-2 compute.
+1. **MDLM vs Transformer — RESOLVED 2026-06-18.** Retain the safe Rank-1 multi-head Transformer (J3/J7 baseline) and reject MDLM discrete diffusion. This is justified by empirical gate failures of MDLM (failing AT_HOME and activity-JS gates) and high inference costs (32-64 forward passes per respondent), as detailed in [dr_S4-03_architecture_choice_REPORT.md](file:///c:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/deepResearch/dr_S4-03_architecture_choice_REPORT.md).
 2. **Interpolate to Timestep (Step 7).** `Yes` (averages, compounds peak loss) vs `No` (preserves the 30-min block) — pick deliberately and document.
 3. **Cross-use lunch transition.** Model office→retail lunch transitions from GSS diaries (potential novelty) or treat channels independently (simpler)? Leg 2 can defer the retail side but should decide how the office lunch dip is represented.
 4. **Shared-vs-separate backbone ablation.** The shared-encoder claim needs a small internal ablation for reviewer defensibility before the Leg-3 paper.
