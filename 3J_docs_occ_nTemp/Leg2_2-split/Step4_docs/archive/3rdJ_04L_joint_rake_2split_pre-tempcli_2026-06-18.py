@@ -88,10 +88,6 @@ def parse_args():
                    help="R5 variant dir containing checkpoints/ + augmented_diaries.csv")
     p.add_argument("--output_dir", default=None,
                    help="Output dir for raked augmented_diaries.csv (default: R5_raked)")
-    p.add_argument("--temperature", type=float, default=TEMPERATURE,
-                   help="Generation temperature for the rake's model.generate "
-                        "(should match the 04E temperature used to make the diaries; "
-                        f"default {TEMPERATURE}).")
     return p.parse_args()
 
 
@@ -230,9 +226,7 @@ def _joint_rake_slot(p_home, p_work, n_home, n_work):
 
 
 def main():
-    global TEMPERATURE
     args = parse_args()
-    TEMPERATURE = args.temperature   # rake's generate() reads the module global at call time
     data_dir   = args.data_dir   or _STEP4_SHARED
     r5_dir     = args.r5_dir     or _R5_DIR
     output_dir = args.output_dir or _RAKED_DIR
@@ -249,7 +243,6 @@ def main():
     print(f"  output_dir: {output_dir}")
     print(f"  checkpoint: {ckpt_path}")
     print(f"  aug source: {aug_src}")
-    print(f"  temperature: {TEMPERATURE}")
 
     os.makedirs(output_dir, exist_ok=True)
 

@@ -989,3 +989,15 @@ S8 shape metrics are byte-identical across bases — expected, since the rake fo
 - **R8 FAILs (5):** G4 work peak 9.91 pp; **OW5 61.3% — still a FAIL** (better than R7 but does not clear the bar); **+3 new G3 co-presence FAILs** — Spouse prevalence blows out to 10.52 pp (obs 22.4% / syn 32.9%), Alone 6.24 pp (obs 35.3% / syn 29.1%), max-gap 10.52 pp. R7 only *WARNs* on these (Spouse 3.00 pp).
 
 **Verdict:** R8 trades a non-bar-clearing OW5 nudge (+4 pp, still FAIL) for real G3 co-presence regressions and worse act30 load accuracy. **R7_cap_raked remains the production base.** OW5 is a FAIL on *both* bases and the rake cannot touch it → R11 (per-person latent, job 970013) is the dedicated attempt to actually clear OW5 without the G3/act30 cost.
+
+---
+
+### Progress Log — 2026-06-18 — Inference-time temperature sweep on R7_cap (post-training tuning)
+
+Cross-checked the Leg-1 (2J) post-training tuning recipe (`2J_docs_occ_nTemp/04_augmentationGSS_{hpc,testing,val}.md`). Leg-1's performance came from two after-training layers, **both already inherited by the R models**: (1) per-(stratum×slot) **raking** = "Calibrated J3" (17 FAILs→0; our `04L joint rake` is the same move, hence acceptance on the *raked* scorecard), and (2) inference-time knobs — Leg-1's `04E` generates at `temperature=0.8` + binary decision thresholds, ported verbatim into `3rdJ_04E` (and `04L` rake also hardcoded `TEMPERATURE=0.8`). Leg-1's third lesson — *HPT off a locked architecture mostly yields null results* — matches the R-sweep (R8/R10 don't beat R7 post-rake).
+
+**Gap found + closed:** we never *swept* temperature for the R models — both 04E and the rake sat on the ported default 0.8. The rake can't touch `act30` (G4) or OW5, but generation temperature shapes both. Set up a no-retrain sweep on the **locked R7_cap checkpoint**:
+- `3rdJ_04L_joint_rake_2split.py` — added `--temperature` CLI (default 0.8 = unchanged behavior; predecessor archived `archive/3rdJ_04L_joint_rake_2split_pre-tempcli_2026-06-18.py`). One T now flows through both 04E generation and the rake's `model.generate`, so the sweep moves both the activity channel (act30→G4/S8) and the raked binary channel (wrk30→OW5).
+- `3rdJ_s4_2split_tempsweep.sh` (NEW) — per-T job: symlink R7_cap checkpoint → re-infer (04E @ T) → rake (04L @ T) → validate, into `R7_<tag>` + `R7_<tag>_raked`.
+- **Sweep:** T ∈ {0.6, 0.7, 0.9}; anchor = existing `R7_cap_raked` (T=0.8). Lower T sharpens (better OW5/act30 ordering, watch S8 diversity); higher T diversifies. Compare via `04N` on OW5 / act30 work&home / S8 — Pareto, never composite.
+- Cost: inference + rake only, no training. Runs on `pg` (queues behind R11/R10). Strictly cheaper than R11; may close OW5 without it (or stack with it).
