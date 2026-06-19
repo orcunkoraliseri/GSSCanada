@@ -42,8 +42,17 @@ _Live status — tick as items complete. Detail for each is in the dated Progres
 - [x] R7_cap_raked validated (969147): 58/5/2, binaries perfect; only OW5 + G4(act30) soft
 - [x] G4 work-peak diagnosed: 9.13 pp inert (away), 1.19 pp load-driving (PASS) → not a blocker
 - [x] Auto-comparison chain wired (969243→969247): rake+validate R8/R10, Pareto vs R7 on rake-insensitive axes
-- [ ] R8/R10 raked + `compare_raked.txt` reviewed → confirm R7_cap_raked is best base
-- [ ] R11 (per-person OW5 coupling) built + trained → adopt iff OW5↑ without binary/S8 regression
+- [x] R8/R10 raked + `compare_raked.txt` reviewed → **base switched to R10_fast_raked** (62/1/2, OW5 60.9 > R7_cap 58/5/2)
+- [x] R11 (per-person OW5 coupling) built + trained (970013, clean; diaries written)
+
+**Option B — activity↔occupancy coherence (FLOATING) + OW5**
+- [x] FLOATING defect probed: synthetic 28.68% vs obs 2.96% (rake-blind) → Option B justified
+- [x] Tier-1 telework-aware rake + GA/GB validator gates built + smoke-tested
+- [x] Option B v1 run (971282): GA PASS (FLOATING→0) but GB FAIL (2×) + OW5 regressed 60.9→55.2
+- [x] v1 regression root-caused (lock-out starves rake) → coherence refined v2 (unlock + post-rake fixup), smoke 13/13
+- [ ] **Q1 — `R10_tw_v2` (976931):** does refined coherence hold GA PASS *and* recover GB ≤1.25× *and* OW5 ≥57.3 (~60.9) with no G2/OW1 regression? → if yes, telework-aware rake becomes production
+- [ ] **Q2 — `R11_rakeval` (976926):** is R11's OW5 ≥ R10_fast's 60.9 with no binary/S8 regression? → decides whether base switches from R10_fast to R11
+- [ ] Base + rake locked (depends on Q1, Q2)
 - [ ] Step 4 closed → Step 5 (archetype linkage)
 
 ## Goal
@@ -1041,3 +1050,135 @@ Built the masked-diffusion (MDLM) backbone as a fair ablation vs the AR Transfor
 **Smoke 6/6 PASS:** builds (162k params); forward shapes act(4,48,15)/home(4,48)/work(4,48)/cop(4,48,9); masking isolates masked-position loss; backward no-NaN; denoise outputs in {1..14} (no mask leak); **clean-pass isolation proven** (perturbing the noisy seq moves home_logits by 0, clean seq by 0.042).
 
 **Open items before any submit (manager to handle):** (1) `outputs_step4_s10/` must be generated on the cluster first (the wrapper's make-s10 step does this; needs `outputs_step4/training_pairs.pt` present); (2) custom binary thresholds in 04E_mdlm are placeholder (default 0.5 fine for the ablation); (3) confirm `sweep/MDLM_s10/` writable; (4) validation at 16 denoise steps may be slow on small GPUs — drop to 8 if walltime tightens. Submission deferred until manager review + a free `pg` slot (and never via blocking srun).
+
+---
+
+### Progress Log — 2026-06-18 — Async results in (discordance / temp / R10) + MDLM ARM-A false-complete fixed
+
+Read the in-flight result files via single-file `cat` (cheap-model employee; no login compute).
+
+**1. Tier-1 gate — discordance probe (`outputs_step4/sweep/R7_cap_raked/work_wrk30_discordance.txt`): FLOATING is LARGE → Option B confirmed.**
+The S4-02 "~61% wrk=0" conflated legitimate telework with the true impossible state. Decomposed over all 48 work-activity slots (act==1):
+
+| state | OBS (real) | SYN (R7_cap_raked) |
+|---|---|---|
+| AT-WORK (wrk=1) | 82.58% | 55.14% |
+| TELEWORK (wrk=0 & home=1) — legit | 14.46% | 16.18% |
+| **FLOATING (wrk=0 & ~home) — impossible** | **2.96%** | **28.68%** |
+
+Natural impossible-state floor ≈ 3%; the model emits it at **28.68%** (~26 pp excess, ~10×), driven by the AT-WORK co-state collapsing 82.6→55.1% — i.e. when the activity arm emits work, the AT_WORK occupancy channel often fails to fire. The rake is per-stratum and blind to this joint coherence. → **Tier-1 telework-aware / priority raking + a permanent activity↔occupancy discordance validator gate is warranted (Option B).** (A-vs-B is the user's call; the evidence now clearly favors B.)
+
+**2. Temperature sweep (`compare_tempsweep.txt`): no T beats the base; OW5 is temperature-blind.**
+
+| variant | P/W/F | OW5% | act30 work&home | cond |
+|---|---|---|---|---|
+| R7_cap_raked (T0.8) | 58/5/2 | 57.3 | 1.19 | 3.01 |
+| R7_t06_raked (T0.6) | 62/1/2 | 57.1 | 2.06 | 4.45 |
+| R7_t07_raked (T0.7) | 62/1/2 | 57.3 | 1.65 | 3.78 |
+| R7_t09_raked (T0.9) | 61/2/2 | 56.9 | 0.76 | 2.29 |
+
+OW5 stays ~57 across all T → structural, rake- **and** temp-blind (confirms R11/PAVA is the only OW5 lever). On rake-insensitive axes R7_cap dominates t06/t07; only t09 is non-dominated (better load accuracy 0.76, OW5 −0.4). The P/W/F gain at low T is on rake-zeroed binaries — not a real base upgrade. **R7_cap_raked holds.**
+
+**3. R10 chain (`compare_raked.txt`): `R10_fast_raked` is a scorecard challenger — do NOT re-lock yet.**
+
+| base | P/W/F | OW5% | work&home | cond |
+|---|---|---|---|---|
+| R7_cap_raked | 58/5/2 | 57.3 | 1.19 | 3.01 |
+| R8_deep_raked | 58/2/5 | 61.3 | 2.00 | 4.35 |
+| R10_fast_raked | 62/1/2 | 60.9 | 2.18 | 4.65 |
+
+R10_fast scores **62/1/2 with OW5 60.9** — more passes / fewer warns than R7_cap, same fail count, +3.6 pp OW5. The Pareto file (continuous axes) ranks R8_deep over R10_fast, but acceptance is the **scorecard**, where R10_fast > R7_cap. **Open:** the R10 chain's own validate (969246/969247) is still pending; need the gate-level diff — which 2 gates fail for R10_fast and whether OW5 (60.9) still falls under the bar. Base decision deferred to that diff.
+
+**4. MDLM Tier-3 — ARM A (971027) FALSE-COMPLETED; root-caused + fixed (full-chain audit).**
+971027 exited 0 in **1 second** but did nothing. stderr: the wrapper hardcoded `PYTHON=/speed-scratch/o_iseri/venv/bin/python`, which does not exist (correct interpreter, per the working sweep, is `/speed-scratch/o_iseri/envs/step4/bin/python`). With no `set -e`, every `${PYTHON}` no-op still printed "done" → a misleading "pipeline complete"; `outputs_step4_s10/` was never created. The 04Q inputs (`outputs_step4/training_pairs.pt`, `step4_train.pt`) are present — not the cause. Audited the whole MDLM file chain; fixed in one bundle:
+- `3rdJ_s4_2split_mdlm.sh`: PYTHON corrected to `envs/step4/bin/python` (3×, incl. the AR-arm comment); added `set -eo pipefail` so a future step failure can no longer masquerade as success. Predecessor archived `archive/3rdJ_s4_2split_mdlm_pre-pythonfix_2026-06-18.sh`.
+- **`3rdJ_04Q_make_s10_sample.py` was never uploaded** (new MDLM-build file; the earlier upload list omitted it). Uploaded now with the fixed wrapper.
+- Re-launch plan (true parallel, race-free): a standalone `04Q` job (ps/CPU) builds s10 first; ARM A (MDLM) and ARM B (AR-10%) are both submitted with `--dependency=afterok:<04Q>` so they run together once s10 exists. ARM B python path corrected to `envs/step4`.
+
+**Still running:** R11 (970013, ~15 h). **Status:** Step 4 still open; base = R7_cap_raked pending the R10_fast gate diff + R11 + the MDLM ablation; Tier-1 (telework-aware raking) is cleared to build pending the user's A/B confirmation.
+
+---
+
+### Progress Log — 2026-06-18 — User decisions: Option B greenlit + base switched to R10_fast_raked
+
+**Decision 1 — Option B confirmed (user).** Build telework-aware / priority raking + the two new validator gates (activity↔occupancy discordance, transition-flicker). Justified by the probe: synthetic FLOATING 28.68% vs obs 2.96% — a real, rake-invisible coherence defect.
+
+**Decision 2 — base switched to `R10_fast_raked` (user).** On the acceptance scorecard R10_fast (62/1/2, OW5 60.9) strictly beats R7_cap_raked (58/5/2, OW5 57.3): more passes, fewer warns, same fail count, +3.6 pp OW5. The earlier Pareto-file hesitation (R8_deep ranked above R10_fast on continuous axes) was the wrong lens — acceptance is the scorecard. R10_fast's exact 2 failing gates will still be pulled (from the pending R10 validate 969246/969247) to aim the Option-B rake, but that is targeting, not a re-litigation of the base.
+
+**Action:** telework-aware raking handed to a Sonnet builder — local implement + smoke only, no cluster run, manager review before any submit. Tier-1 rake will later be applied on the cluster to R10_fast's raw `augmented_diaries.csv`.
+
+---
+
+### Progress Log — 2026-06-18 — Option B built (smoke 8/8) + submitted on R10_fast (job 971282)
+
+**Build (local, Sonnet builder, manager-reviewed):** `--telework_aware` flag added to `3rdJ_04L_joint_rake_2split.py` (default OFF → byte-identical classic rake); coherence pass forbids FLOATING (work-activity slot → `hom30=1,wrk30=0` if respondent-level `TELEWORK==1`, else `wrk30=1,hom30=0`), locks those slots out of the rake free-pool, `act30`/OW1 untouched. Two new validator gates in `3rdJ_04_augmentationGSS_2split_val.py`: **GA** activity↔occupancy FLOATING discordance (PASS ≤ obs+2pp / WARN ≤ +5 / FAIL > +5) and **GB** home-transition flicker (PASS ≤1.25× obs / WARN ≤1.5× / FAIL >1.5×); thresholds are tunable constants. Predecessors archived (`archive/..._pre-teleworkaware_2026-06-18.py`, `..._pre-tier1gates_2026-06-18.py`). Smoke `3rdJ_04L_teleworkaware_smoke.py` 8/8 PASS (FLOATING 18.8%→0%, OW1 Δ=0.0pp, flag-OFF byte-identical, both gates run clean); `py_compile` clean.
+
+**Open judgment calls (manager to tune after first real run):** (1) `TELEWORK` is respondent-level (whole-day), NaN→at-workplace — may add a `TELEWORK_KNOWN` guard if NaN telework respondents matter; (2) GA/GB thresholds are provisional pending real raked numbers.
+
+**Submitted:** job **971282** `R10_twrake` (pg, gpu:1 — 04L loads the checkpoint + `model.generate`, so it needs GPU). Replicates R10_fast's known-good rake invocation (`--r5_dir sweep/R10_fast --temperature 0.8`) + `--telework_aware`, `--output_dir sweep/R10_fast_tw_raked`, then validates `--step4_dir sweep/R10_fast_tw_raked`. PENDING (AssocGrpCpuLimit) behind R11. Watch on completion: `R10_twrake_val.log` — does **GA** now PASS (synthetic FLOATING ~3% not 28.68%) with **no scorecard regression** vs R10_fast_raked (62/1/2).
+
+**Tier-3 note:** MDLM wrapper's rake/validate steps call 04L/validator with `--input/--output`, which neither accepts → MDLM ARM A (971031) will train+infer then abort at the rake step under `set -e` (trained ckpt + `augmented_diaries_MDLM.csv` are saved beforehand — recoverable). Correct MDLM raking is a separate fix (04L re-generates via the AR model, mismatched for MDLM output). Not addressed this cycle.
+
+---
+
+### Progress Log — 2026-06-19 — Option B RESULT (971282): FLOATING fixed, but per-slot coherence regresses OW5 + flicker
+
+**Terminal fates (sacct):** R11 (970013) COMPLETED 0:0 (19h55m); s10 builder (971030) **FAILED 1:0**; R10_twrake (971282) COMPLETED 0:0 (2h05m). Zombie arms 971031/971032 (DependencyNeverSatisfied behind the failed builder) **scancelled**; queue clear.
+
+**Option B raked numbers (`R10_twrake_val.log`, base = R10_fast raw):**
+
+| gate | verdict | value | bar |
+|---|---|---|---|
+| **GA** FLOATING discordance | **PASS** | syn **0.00%** (0/612,759) vs obs 2.96% → −2.96 pp | ≤+2pp |
+| **GB** home-transition flicker | **FAIL** | **2.000×** obs (syn 4.0/day vs obs 2.0/day) | ≤1.25× |
+| **OW5** day-type ordering | **FAIL** | **55.2%** of 11,757 | ≥57.3% |
+| G4 work peak-slot Δ | FAIL | 10.33 pp | — |
+| **Scorecard** | | **67 PASS / 1 WARN / 3 FAIL** | |
+
+**Reading (honest, no bar-moving).** The FLOATING defect is **real and fully fixable** — telework coherence drives 28.68% → 0.00%. But the *naive* implementation (per-slot resolution + lock work-slots out of the rake free-pool) trades it for two regressions that share **one root cause**:
+1. **GB flicker** — resolving each work-activity slot independently chops a single contiguous work episode into home↔work↔home oscillations (4 transitions/day vs obs 2). Fix = **block-wise**: one label per contiguous work episode (majority TELEWORK vote), not per-slot.
+2. **OW5 60.9 → 55.2** — locking the coherence-assigned slots out of the rake pool removed exactly the d.o.f. the rake used to enforce weekday≥Sat≥Sun. Fix = keep coherence-assigned `wrk30` slots **in** the rake free-pool (coherence fixes the *state*, rake still tunes *which respondents/days* work to hit the day-type marginal).
+
+So R10_fast_raked (62/1/2, OW5 60.9, FLOATING only caught by the new GA) and R10_twrake (67/1/3, FLOATING=0 but OW5+GB broken) bracket the trade-off; the **refined coherence** (block-wise + rake-pool-preserving) is the path to GA-PASS without OW5/GB regression. → handed to builder.
+
+**Other terminal results.**
+- **R11 (970013)** trained clean — `sweep/R11/augmented_diaries.csv` written (192,183 rows, `hom&wrk` violations 0), but **not yet raked/validated**. → submit R11 rake + valsweep to get its honest OW5/scorecard (Tier-2 latent track for OW5).
+- **s10 builder (971030) FAILED** — `3rdJ_04Q_make_s10_sample.py:190` `KeyError: np.int64(41268)`: a row kept by `keep_mask` references a token dropped from the subsampled vocab → `old_to_new` remap incomplete (vocab/row mismatch). Real 04Q bug, Tier-3; MDLM ablation blocked on it. **Deferred** (not on the acceptance critical path).
+
+---
+
+### Progress Log — 2026-06-19 — Coherence refined (v2: unlock + post-rake fixup); R11 rake+val submitted
+
+**Track 2 — R11 rake+val submitted (Sonnet, cluster).** Job **976926** `R11_rakeval` (pg/gpu, cisr-2, RUNNING) — CLASSIC rake (no `--telework_aware`) on `sweep/R11` → `sweep/R11_raked`, T=0.8, then validator on `R11_raked`. Gives R11's apples-to-apples scorecard vs R10_fast_raked (62/1/2, OW5 60.9) for the Tier-2 latent OW5 track. Logs: `R11_rake.log`, `R11_rakeval_val.log`.
+
+**Track 1 — coherence refined (Sonnet builder, local, manager-reviewed).** Root cause of the GB/OW5 regression was NOT per-slot fragmentation — since `TELEWORK` is scalar per-respondent, the per-slot pass already labeled each work episode consistently. **The real cause was the lock-out:** freezing coherence-assigned work-slots starved the rake's free pool, so the rake flipped `hom30` on *adjacent non-work* slots erratically (→ GB flicker) and lost the d.o.f. to enforce OW5 day-type ordering. Fix in `3rdJ_04L_joint_rake_2split.py`:
+- `_apply_telework_coherence` rewritten block-wise (one label per contiguous work episode; cosmetic for the common single-episode day, correct for multi-episode days).
+- **Lock-out removed** — the rake now runs over ALL persons/slots uniformly (identical to classic), restoring full d.o.f.
+- New `_post_rake_floating_fixup`: after the rake, any work-act slot left at `wrk30=0 & hom30=0` (FLOATING) is set `hom30=1` (home fallback — physically the only coherent option). Keeps FLOATING≈0% *without* constraining the rake. Only ever sets `hom30=1` → cannot create `wrk&hom` double-positives.
+- Flag-OFF remains byte-identical; smoke extended to **13/13 PASS** (incl. commuter day stays 2 transitions not 4; FLOATING→0 post-rake; fixup no-op when clean; no double-positives). Predecessor archived `archive/3rdJ_04L_joint_rake_2split_pre-blockwise_2026-06-19.py`. Validator (GA/GB gates) unchanged.
+- **Documented risk:** the post-rake fixup can nudge a cell's home-rate up by the residual FLOATING count (expected sub-1pp, within G2); watch G2 + OW1 on the real run.
+
+**Submitting:** refined Option B on R10_fast → new job (`R10_tw_v2`), mirroring 971282's invocation with `--output_dir sweep/R10_fast_tw_v2_raked`. **Watch:** GA still PASS (FLOATING≈0), GB back to ≤1.25×, OW5 back to ~60.9, G2/OW1 not regressed vs R10_fast_raked (62/1/2).
+
+---
+
+### Progress Log — 2026-06-19 — What the two in-flight rakes must answer (success criteria)
+
+Both jobs are RUNNING (pg/gpu). Each is one decision; recording the explicit pass/fail bars now so reading the logs is mechanical, not a judgment call after the fact.
+
+**Q1 — `R10_tw_v2` (976931): "Can we remove the impossible (FLOATING) states without breaking the scorecard?"**
+This is the acceptance question for Option B. v1 proved FLOATING is fixable (→0%) but cost OW5 + flicker; v2 unlocks the rake + adds a post-rake home-fixup. Counts as a YES iff `R10_tw_v2_val.log` shows ALL of:
+- **GA (FLOATING)** PASS — syn ≈ 0%, still ≤ obs+2pp.
+- **GB (flicker)** PASS — back to ≤1.25× obs (was 2.0×).
+- **OW5** ≥ 57.3% — recovered to ~60.9 (was 55.2 in v1).
+- **G2 / OW1** not regressed vs R10_fast_raked — the post-rake fixup's home-rate nudge stays sub-1pp / within PASS.
+- Net scorecard ≥ R10_fast_raked's 62/1/2 (with GA/GB now both green).
+→ **If YES:** telework-aware rake becomes the PRODUCTION rake (physically coherent + passes scorecard). **If NO** (e.g. fixup over-inflates home → G2/OW1 slips, or OW5 still short): the FLOATING fix and OW5 are in genuine tension — fall back to R10_fast_raked as base and treat FLOATING as a documented, bounded model limitation rather than forcing it.
+
+**Q2 — `R11_rakeval` (976926): "Is the latent-variable model (R11) a better base for OW5?"**
+OW5 (weekday≥Sat≥Sun work ordering) is the one structural gate that is rake- AND temperature-blind — no knob tried so far moves it (temp sweep flat at ~57). R11 was built specifically to couple OW5 at the model level. Counts as adopt-R11 iff `R11_rakeval_val.log` shows:
+- **OW5 ≥ R10_fast_raked's 60.9%** (ideally comfortably above 57.3) — a real model-level gain.
+- **No regression** on the binaries (G2/OW1) or S8 shape metrics vs R10_fast_raked.
+→ **If YES:** switch base from R10_fast to R11 (then re-run the chosen rake on R11). **If NO:** R10_fast stays the base; R11 is logged as a tried-and-rejected OW5 lever.
+
+**Decision coupling:** Q1 decides *how we rake*; Q2 decides *which model we rake*. If both YES, the endpoint is R11 + telework-aware rake; the final lock-in run would be telework-aware rake on R11. Neither job needs polling — read the two val logs when they land.

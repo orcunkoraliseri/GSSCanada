@@ -15,13 +15,13 @@
 #       sbatch --job-name=s4_AR_s10 -p pg --gres=gpu:1 --mem=64G --time=48:00:00 \
 #         --output=/speed-scratch/o_iseri/logs/s4_AR_s10_%j.out \
 #         --wrap="cd /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs && \
-#           /speed-scratch/o_iseri/envs/step4/bin/python 3rdJ_04D_train_2split.py \
+#           /speed-scratch/o_iseri/venv/bin/python 3rdJ_04D_train_2split.py \
 #             --data_dir /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/outputs_step4_s10 \
 #             --output_dir /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/outputs_step4/sweep/AR_s10 \
 #             --checkpoint_dir /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/outputs_step4/sweep/AR_s10/checkpoints \
 #             --max_epochs 100 --patience 15 --warmup-epochs 20 --lr 5e-5 --fp16 \
 #             > /speed-scratch/o_iseri/logs/s4_AR_s10_train.log 2>&1 && \
-#           /speed-scratch/o_iseri/envs/step4/bin/python 3rdJ_04E_inference_2split.py \
+#           /speed-scratch/o_iseri/venv/bin/python 3rdJ_04E_inference_2split.py \
 #             --data_dir /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/outputs_step4_s10 \
 #             --checkpoint /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/outputs_step4/sweep/AR_s10/checkpoints/best_model.pt \
 #             --output /speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/outputs_step4/sweep/AR_s10/augmented_diaries_AR.csv \
@@ -39,12 +39,9 @@
 #SBATCH --output=/speed-scratch/o_iseri/logs/s4_MDLM_s10_%j.out
 #SBATCH --error=/speed-scratch/o_iseri/logs/s4_MDLM_s10_%j.err
 
-# ── Fail loudly: any step error aborts the job (prevents 1-second false-completes) ──
-set -eo pipefail
-
 # ── Paths ────────────────────────────────────────────────────────────────────
 STEP4_DIR="/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs"
-PYTHON="/speed-scratch/o_iseri/envs/step4/bin/python"
+PYTHON="/speed-scratch/o_iseri/venv/bin/python"
 DATA_S10="${STEP4_DIR}/outputs_step4_s10"
 SWEEP_OUT="${STEP4_DIR}/outputs_step4/sweep/MDLM_s10"
 SWEEP_RAKED="${STEP4_DIR}/outputs_step4/sweep/MDLM_s10_raked"

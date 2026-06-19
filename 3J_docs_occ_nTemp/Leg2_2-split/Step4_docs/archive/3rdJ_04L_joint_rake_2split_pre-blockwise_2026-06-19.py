@@ -105,21 +105,12 @@ def parse_args():
 
 def _apply_telework_coherence(aug: pd.DataFrame) -> pd.DataFrame:
     """
-    Enforce work-slot occupancy coherence on SYNTHETIC rows (block-wise).
+    Enforce work-slot occupancy coherence on SYNTHETIC rows.
 
-    BLOCK-WISE RESOLUTION (v2, 2026-06-19):
-    Rather than resolving each work-activity slot independently, we treat each
-    contiguous run of work-activity slots within a respondent-day as ONE episode
-    and assign a SINGLE coherent label to the whole episode:
-      - TELEWORK==1  -> hom30=1, wrk30=0  for every slot in the episode
-      - TELEWORK==0  -> wrk30=1, hom30=0  for every slot in the episode
-    This is behaviourally identical to per-slot resolution for persons who have
-    one contiguous work block, but avoids producing different wrk30/hom30 states
-    within a single episode due to mid-block FLOATING slots, which could
-    interact badly with the downstream rake.
-
-    The approach correctly handles multi-episode days (two separate work spells):
-    each contiguous run is resolved independently as its own episode.
+    For every slot where act30==1 (Work & Related):
+      - If the respondent has TELEWORK==1 -> hom30=1, wrk30=0  (legit telework)
+      - Else (TELEWORK==0 or missing)     -> wrk30=1, hom30=0  (at workplace)
+    This eliminates FLOATING (act==1 & wrk30=0 & hom30=0) as a hard constraint.
 
     Observed rows (IS_SYNTHETIC==0) are never touched.
     TELEWORK is a scalar demographic column on each row; NaN is treated as 0.
@@ -128,26 +119,11 @@ def _apply_telework_coherence(aug: pd.DataFrame) -> pd.DataFrame:
     intact) but as home for the occupancy marginal (hom30=1), matching the physical
     interpretation.  The downstream rake then adjusts remaining non-work slots so
     the binary marginals (home/work rates) stay calibrated.
-
-    NOTE: This function only resolves the STATE (home vs work) for work-act slots.
-    The downstream rake is free to adjust ALL slots (including work-act slots) to
-    hit the per-stratum marginals.  A post-rake FLOATING fixup (applied inside
-    main() after the rake loop) ensures FLOATING stays at 0% even though work-act
-    slots are not locked out of the rake's free pool.
     """
     ACT_WORK = 1
     syn_mask = aug["IS_SYNTHETIC"] == 1
     if not syn_mask.any():
         return aug
-
-    # Collect act30 columns in slot order (only the ones actually present)
-    act_cols = [f"act30_{j:03d}" for j in range(1, N_SLOTS + 1)
-                if f"act30_{j:03d}" in aug.columns]
-    hom_cols_48 = [f"hom30_{j:03d}" for j in range(1, N_SLOTS + 1)
-                   if f"hom30_{j:03d}" in aug.columns]
-    wrk_cols_48 = [f"wrk30_{j:03d}" for j in range(1, N_SLOTS + 1)
-                   if f"wrk30_{j:03d}" in aug.columns]
-    n_slots_present = len(act_cols)
 
     # Telework flag per row (scalar): 1=yes, 0/NaN=no
     if "TELEWORK" in aug.columns:
@@ -157,71 +133,31 @@ def _apply_telework_coherence(aug: pd.DataFrame) -> pd.DataFrame:
 
     syn_idx = np.where(syn_mask.values)[0]
 
-    # Extract act/hom/wrk arrays for ALL rows (we write back only syn rows)
-    act_mat = aug[act_cols].to_numpy(dtype=float)      # (N, n_slots)
-    hom_mat = aug[hom_cols_48].to_numpy(dtype=float)   # (N, n_slots)
-    wrk_mat = aug[wrk_cols_48].to_numpy(dtype=float)   # (N, n_slots)
+    for j in range(1, N_SLOTS + 1):
+        ss = f"{j:03d}"
+        act_col = f"act30_{ss}"
+        hom_col = f"hom30_{ss}"
+        wrk_col = f"wrk30_{ss}"
+        if act_col not in aug.columns or hom_col not in aug.columns or wrk_col not in aug.columns:
+            continue
 
-    for i in syn_idx:
-        act_row = act_mat[i]
-        is_tele = tele_flag[i]
+        act_vals = aug[act_col].values
+        hom_vals = aug[hom_col].values.copy()
+        wrk_vals = aug[wrk_col].values.copy()
 
-        # Identify contiguous work-activity episodes (runs of ACT_WORK==1)
-        j = 0
-        while j < n_slots_present:
-            if act_row[j] == ACT_WORK:
-                # Start of a new work episode — find its end
-                ep_start = j
-                while j < n_slots_present and act_row[j] == ACT_WORK:
-                    j += 1
-                ep_end = j  # exclusive
-
-                # Assign SINGLE coherent label to the whole episode
-                if is_tele:
-                    hom_mat[i, ep_start:ep_end] = 1.0
-                    wrk_mat[i, ep_start:ep_end] = 0.0
+        for i in syn_idx:
+            if act_vals[i] == ACT_WORK:
+                if tele_flag[i]:
+                    hom_vals[i] = 1.0
+                    wrk_vals[i] = 0.0
                 else:
-                    wrk_mat[i, ep_start:ep_end] = 1.0
-                    hom_mat[i, ep_start:ep_end] = 0.0
-            else:
-                j += 1
+                    wrk_vals[i] = 1.0
+                    hom_vals[i] = 0.0
 
-    # Write modified hom/wrk back to aug (only syn rows were changed)
-    aug[hom_cols_48] = hom_mat
-    aug[wrk_cols_48] = wrk_mat
+        aug[hom_col] = hom_vals
+        aug[wrk_col] = wrk_vals
 
     return aug
-
-
-def _post_rake_floating_fixup(
-    new_hom_mat: np.ndarray,
-    new_wrk_mat: np.ndarray,
-    act_mat: np.ndarray,
-) -> tuple:
-    """
-    Post-rake FLOATING fixup (telework_aware mode only).
-
-    After the joint rake writes new_hom_mat / new_wrk_mat for a (cy x s) cell,
-    some work-activity slots may have ended up with wrk30=0 AND hom30=0 (FLOATING)
-    because the rake treated work-act slots as free (not locked).  This function
-    resolves any remaining FLOATING by forcing hom30=1 on those slots.
-
-    Rationale: wrk30=0 AND hom30=0 on a work-activity slot is physically impossible.
-    If the rake set wrk30=0 (no quota for work at this slot), the person must be
-    home (hom30=1) — the safer fallback.  This does NOT re-lock the slot; it is a
-    thin post-pass that costs at most 1 additional hom30=1 assignment per slot
-    per person, which is consistent with the observed home-rate distribution.
-
-    Inputs (n_syn, 48):
-        new_hom_mat, new_wrk_mat  — rake output (float32, 0/1)
-        act_mat                   — pre-rake activity matrix (float, ==1 for work)
-    Returns:
-        (new_hom_mat, new_wrk_mat)  — modified in-place and returned
-    """
-    ACT_WORK = 1.0
-    floating = (act_mat == ACT_WORK) & (new_wrk_mat == 0) & (new_hom_mat == 0)
-    new_hom_mat[floating] = 1.0   # FLOATING -> home fallback
-    return new_hom_mat, new_wrk_mat
 
 
 def load_all_data(data_dir: str):
@@ -507,17 +443,16 @@ def main():
             obs_work_agg = float(np.nanmean(obs_wrk_arr)) * 100 if n_obs > 0 else float("nan")
 
             # Per-slot joint rake
-            # telework_aware (v2): work-act slots are NOT locked; rake runs on ALL
-            # persons uniformly.  A post-rake FLOATING fixup (after this loop) ensures
-            # any work-act slot that ends up with wrk30=0 AND hom30=0 gets hom30=1.
-            # This restores the rake's degrees of freedom for OW5 day-type ordering
-            # while preserving FLOATING=0%.
+            # telework_aware: read pre-assigned hom/wrk from coherence pass
             if telework_aware:
-                # ACT matrix needed only for the post-rake fixup
+                # Current (post-coherence) hom/wrk for this syn cell
+                pre_hom_mat = aug.loc[ssub_idx, HOM_COLS].to_numpy(dtype=np.float32)
+                pre_wrk_mat = aug.loc[ssub_idx, WRK_COLS].to_numpy(dtype=np.float32)
+                # ACT columns for the synthetic cell
                 act_cols_48 = [f"act30_{s:03d}" for s in range(1, N_SLOTS + 1)]
                 pre_act_mat = aug.loc[ssub_idx, act_cols_48].to_numpy(dtype=float)
             else:
-                pre_act_mat = None
+                pre_hom_mat = pre_wrk_mat = pre_act_mat = None
 
             new_hom_mat = np.zeros((n_syn, N_SLOTS), dtype=np.float32)
             new_wrk_mat = np.zeros((n_syn, N_SLOTS), dtype=np.float32)
@@ -528,9 +463,36 @@ def main():
                 n_home = int(round(obs_r_hom * n_syn))
                 n_work = int(round(obs_r_wrk * n_syn))
 
-                # Full rake over ALL persons (no locking in telework_aware mode)
-                new_h, new_w = _joint_rake_slot(p_home_mat[:, j], p_work_mat[:, j],
-                                                n_home, n_work)
+                if telework_aware and pre_act_mat is not None:
+                    # Persons with work-activity in this slot are LOCKED by coherence.
+                    # Rake only the non-work-activity subset; paste locked values back.
+                    locked = (pre_act_mat[:, j] == 1)       # bool mask (n_syn,)
+                    free   = ~locked
+                    n_free = int(free.sum())
+
+                    # Locked persons: keep their pre-assigned hom/wrk
+                    new_h = pre_hom_mat[:, j].copy()
+                    new_w = pre_wrk_mat[:, j].copy()
+
+                    if n_free > 0:
+                        # Quota remaining for free persons after locking
+                        locked_home = int(new_h[locked].sum())
+                        locked_work = int(new_w[locked].sum())
+                        n_home_free = max(0, n_home - locked_home)
+                        n_work_free = max(0, n_work - locked_work)
+
+                        free_idx = np.where(free)[0]
+                        h_sub, w_sub = _joint_rake_slot(
+                            p_home_mat[free_idx, j],
+                            p_work_mat[free_idx, j],
+                            n_home_free,
+                            n_work_free,
+                        )
+                        new_h[free_idx] = h_sub
+                        new_w[free_idx] = w_sub
+                else:
+                    new_h, new_w = _joint_rake_slot(p_home_mat[:, j], p_work_mat[:, j],
+                                                    n_home, n_work)
                 new_hom_mat[:, j] = new_h
                 new_wrk_mat[:, j] = new_w
 
@@ -543,16 +505,6 @@ def main():
                     "ach_home_pct":  round(float(new_h.mean()) * 100, 3),
                     "ach_work_pct":  round(float(new_w.mean()) * 100, 3),
                 })
-
-            # telework_aware post-rake FLOATING fixup:
-            # The rake runs freely on ALL slots (no locking).  Any work-act slot
-            # that ends up with wrk30=0 AND hom30=0 after the rake gets hom30=1
-            # (home fallback).  This ensures FLOATING=0% without constraining the
-            # rake's degrees of freedom during the assignment.
-            if telework_aware and pre_act_mat is not None:
-                new_hom_mat, new_wrk_mat = _post_rake_floating_fixup(
-                    new_hom_mat, new_wrk_mat, pre_act_mat
-                )
 
             # Write raked values back into aug DataFrame
             aug.loc[ssub_idx, HOM_COLS] = new_hom_mat.astype(float)

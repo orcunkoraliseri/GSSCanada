@@ -898,111 +898,6 @@ class AugmentationValidator2Split:
         if not lines:
             self._rec("warn", "S8", "no secondary metrics computable")
 
-    # ── Section 8b: Tier-1 coherence gates (Gate A + Gate B) ─────────────────
-
-    # TIER-1 gate threshold — manager to tune
-    GATE_A_PASS_PP = 2.0   # Gate A: FLOATING rate excess (syn - obs) <= this -> PASS
-    GATE_A_WARN_PP = 5.0   # Gate A: <= this -> WARN; above -> FAIL
-    GATE_B_PASS_RATIO = 1.25  # Gate B: syn transitions/day <= this * obs -> PASS
-    GATE_B_WARN_RATIO = 1.50  # Gate B: <= this * obs -> WARN; above -> FAIL
-
-    def validate_tier1_coherence(self):
-        """
-        Gate A — Activity-Occupancy DISCORDANCE (FLOATING rate).
-          FLOATING = work-activity slot with wrk30=0 AND hom30=0 (physically impossible).
-          Computes FLOATING rate over all work-activity slots for obs and syn separately.
-          PASS if syn_floating_pct <= obs_floating_pct + GATE_A_PASS_PP,
-          WARN if <= obs + GATE_A_WARN_PP, FAIL otherwise.
-
-        Gate B — TRANSITION-FLICKER (median hom30 transitions per person per day).
-          Computes median of per-row hom30 transition count for obs and syn.
-          PASS if syn_median <= GATE_B_PASS_RATIO * obs_median,
-          WARN if <= GATE_B_WARN_RATIO * obs_median, FAIL otherwise.
-        """
-        print("\n--- Section 8b: Tier-1 coherence gates (Gate A + Gate B) ---")
-        act_obs = present_cols(self.obs, "act30")
-        act_syn = present_cols(self.syn, "act30")
-        hom_obs = present_cols(self.obs, "hom30")
-        hom_syn = present_cols(self.syn, "hom30")
-        wrk_obs = present_cols(self.obs, "wrk30")
-        wrk_syn = present_cols(self.syn, "wrk30")
-
-        # ── Gate A: FLOATING rate ─────────────────────────────────────────────
-        def _floating_rate(df, act_cols, wrk_cols, hom_cols):
-            """FLOATING = work-activity (act==1) & wrk30==0 & hom30==0."""
-            if not act_cols or not wrk_cols or not hom_cols or len(df) == 0:
-                return float("nan"), 0, 0
-            a = df[act_cols].to_numpy(dtype=float)
-            w = df[wrk_cols].to_numpy(dtype=float)
-            h = df[hom_cols].to_numpy(dtype=float)
-            work_mask = (a == 1)
-            n_work = int(work_mask.sum())
-            if n_work == 0:
-                return 0.0, 0, 0
-            n_float = int((work_mask & (w == 0) & (h == 0)).sum())
-            return 100.0 * n_float / n_work, n_float, n_work
-
-        obs_float_pct, obs_n_float, obs_n_work = _floating_rate(
-            self.obs, act_obs, wrk_obs, hom_obs)
-        syn_float_pct, syn_n_float, syn_n_work = _floating_rate(
-            self.syn, act_syn, wrk_syn, hom_syn)
-
-        if np.isnan(obs_float_pct):
-            self._rec("warn", "GA",
-                      "Gate A: no observed rows with act/hom/wrk columns — cannot compute obs baseline")
-        elif np.isnan(syn_float_pct):
-            self._rec("warn", "GA",
-                      "Gate A: no synthetic rows with act/hom/wrk columns — cannot compute syn rate")
-        else:
-            excess = syn_float_pct - obs_float_pct
-            lvl = self._grade(excess,
-                              self.__class__.GATE_A_PASS_PP,
-                              self.__class__.GATE_A_WARN_PP)
-            self._rec(lvl, "GA",
-                      f"FLOATING rate excess (syn-obs): {excess:+.2f} pp "
-                      f"(obs {obs_float_pct:.2f}% [{obs_n_float:,}/{obs_n_work:,}] / "
-                      f"syn {syn_float_pct:.2f}% [{syn_n_float:,}/{syn_n_work:,}]; "
-                      f"PASS<={self.__class__.GATE_A_PASS_PP}pp, "
-                      f"WARN<={self.__class__.GATE_A_WARN_PP}pp)")
-
-        # ── Gate B: TRANSITION-FLICKER (hom30 transitions/day) ───────────────
-        def _median_transitions(df, hom_cols):
-            """Median per-person per-day hom30 state transitions (0->1 or 1->0)."""
-            if not hom_cols or len(df) == 0:
-                return float("nan")
-            arr = df[hom_cols].to_numpy(dtype=float)
-            # Count transitions along slot axis (ignoring NaN pairs)
-            diff = np.abs(np.diff(arr, axis=1))   # (N, 47)
-            trans_per_row = np.nansum(diff, axis=1)
-            return float(np.median(trans_per_row))
-
-        obs_med_trans = _median_transitions(self.obs, hom_obs)
-        syn_med_trans = _median_transitions(self.syn, hom_syn)
-
-        if np.isnan(obs_med_trans):
-            self._rec("warn", "GB",
-                      "Gate B: no observed hom30 data — cannot compute obs transition baseline")
-        elif np.isnan(syn_med_trans):
-            self._rec("warn", "GB",
-                      "Gate B: no synthetic hom30 data — cannot compute syn transitions")
-        elif obs_med_trans <= 0:
-            self._rec("warn", "GB",
-                      f"Gate B: obs median transitions == {obs_med_trans} (floor); "
-                      f"syn median = {syn_med_trans:.2f} — ratio undefined")
-        else:
-            ratio = syn_med_trans / obs_med_trans
-            if ratio <= self.__class__.GATE_B_PASS_RATIO:
-                lvl = "pass"
-            elif ratio <= self.__class__.GATE_B_WARN_RATIO:
-                lvl = "warn"
-            else:
-                lvl = "fail"
-            self._rec(lvl, "GB",
-                      f"Transition-flicker ratio syn/obs: {ratio:.3f}x "
-                      f"(obs median {obs_med_trans:.2f}/day, syn {syn_med_trans:.2f}/day; "
-                      f"PASS<={self.__class__.GATE_B_PASS_RATIO}x, "
-                      f"WARN<={self.__class__.GATE_B_WARN_RATIO}x)")
-
     # ── Section 9 (summary table) ──────────────────────────────────────────────
 
     def build_summary_table(self):
@@ -1229,7 +1124,6 @@ class AugmentationValidator2Split:
         _safe(self.validate_at_work_marginals, "OW1")
         _safe(self.validate_at_work_sanity, "OW4")
         _safe(self.validate_secondary, "S8")
-        _safe(self.validate_tier1_coherence, "GA/GB")
         _safe(self.build_summary_table, "9")
         self.build_report()
 
