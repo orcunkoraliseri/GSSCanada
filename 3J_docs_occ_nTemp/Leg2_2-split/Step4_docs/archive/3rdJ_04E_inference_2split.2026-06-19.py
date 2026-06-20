@@ -87,11 +87,6 @@ def parse_args():
     p.add_argument("--home_threshold", type=float, default=0.5)
     p.add_argument("--work_threshold", type=float, default=0.5)
     p.add_argument("--sample", action="store_true")
-    p.add_argument("--telework_coherent", action="store_true", default=False,
-                   help="[OPT-IN] Use AT-WORK XOR TELEWORK assignment on work-activity slots "
-                        "keyed on the per-respondent TELEWORK flag. "
-                        "TELEWORK==1 -> hom30=1, wrk30=0; else -> wrk30=1, hom30=0. "
-                        "Default OFF -> byte-identical to original behaviour.")
     return p.parse_args()
 
 
@@ -105,37 +100,19 @@ def load_all_data(data_dir: str):
     return {k: torch.cat([splits[s][k] for s in ["train", "val", "test"]], dim=0) for k in keys}
 
 
-def apply_posthoc_consistency(act_seq, home_seq, work_seq, home_prob, work_prob,
-                              telework=0, telework_coherent=False):
+def apply_posthoc_consistency(act_seq, home_seq, work_seq, home_prob, work_prob):
     """
     Enforce logical home/work consistency on one generated diary.
     Returns (home, work) updated arrays.
-
-    telework_coherent (bool): when True, work-activity slots use AT-WORK XOR TELEWORK
-        keyed on the per-respondent `telework` scalar (0/1/NaN):
-          - telework == 1  -> hom30=1, wrk30=0  (working from home)
-          - else (0 or NaN) -> wrk30=1, hom30=0  (at workplace; default)
-        When False (default), the original unconditional wrk30=1, hom30=0 is used.
-        NON-work-activity slots and all other logic are unchanged.
     """
     home = home_seq.astype(np.float32).copy()
     work = work_seq.astype(np.float32).copy()
 
-    # Resolve telework flag: NaN/None treated as 0 (conservative at-work default).
-    _is_telework = (telework_coherent and
-                    telework is not None and
-                    not (isinstance(telework, float) and np.isnan(telework)) and
-                    telework == 1)
-
     for slot in range(N_SLOTS):
         act = act_seq[slot]
-        if act == WORK_CAT:                       # paid work -> location by telework status
-            if _is_telework:
-                home[slot] = 1.0                  # telework: at home
-                work[slot] = 0.0
-            else:
-                work[slot] = 1.0                  # at workplace (original behaviour)
-                home[slot] = 0.0
+        if act == WORK_CAT:                       # paid work -> at work, not home
+            work[slot] = 1.0
+            home[slot] = 0.0
         if act == SLEEP_CAT and slot in NIGHT_SLOTS:   # sleep at night -> home, not work
             home[slot] = 1.0
             work[slot] = 0.0
@@ -154,7 +131,7 @@ def apply_posthoc_consistency(act_seq, home_seq, work_seq, home_prob, work_prob,
 
 
 def run_inference(model, data, device, temperature, home_threshold, work_threshold,
-                  batch_size=256, telework_map=None, telework_coherent=False):
+                  batch_size=256):
     """
     Generate synthetic diaries for each respondent × non-observed day-type.
 
@@ -229,14 +206,10 @@ def run_inference(model, data, device, temperature, home_threshold, work_thresho
 
             for k, (i, s_tgt) in enumerate(zip(syn_idx, syn_strata)):
                 cy = int(cycle_year_all[i])
-                occ_i = int(occ_ids_all[i])
                 # work/home raw probs for tie-breaking are approximated by the
                 # binary decisions; use binary as proxy probability ordering.
-                _tw = (telework_map.get((occ_i, cy), np.nan)
-                       if telework_map is not None else 0)
                 home_k, work_k = apply_posthoc_consistency(
-                    g_act[k], g_home[k], g_work[k], g_home[k], g_work[k],
-                    telework=_tw, telework_coherent=telework_coherent,
+                    g_act[k], g_home[k], g_work[k], g_home[k], g_work[k]
                 )
                 cop_k = g_cop_probs[k].copy()
                 if cy in (2005, 2010):
@@ -304,7 +277,6 @@ def main():
     print(f"  checkpoint: {args.checkpoint}")
     print(f"  output:     {args.output}")
     print(f"  temperature={args.temperature} home_thr={args.home_threshold} work_thr={args.work_threshold}")
-    print(f"  telework_coherent={args.telework_coherent}")
 
     if torch.cuda.is_available():
         device = torch.device("cuda")
@@ -338,30 +310,9 @@ def main():
     print(f"  Loaded epoch {ckpt.get('epoch','?')}  val_JS={ckpt.get('val_js','?')} "
           f"work_gap={ckpt.get('work_gap','?')}")
 
-    # ── Build per-respondent TELEWORK lookup from metadata ────────────────────
-    telework_map = None
-    if args.telework_coherent:
-        if "TELEWORK" in meta.columns:
-            tw_sub = meta[["occID", "CYCLE_YEAR", "TELEWORK"]].drop_duplicates(
-                subset=["occID", "CYCLE_YEAR"]
-            )
-            telework_map = {
-                (int(r["occID"]), int(r["CYCLE_YEAR"])): r["TELEWORK"]
-                for _, r in tw_sub.iterrows()
-            }
-            print(f"  TELEWORK lookup built: {len(telework_map)} respondent-year entries; "
-                  f"TW=1: {sum(v==1 for v in telework_map.values())} "
-                  f"TW=0: {sum(v==0 for v in telework_map.values())} "
-                  f"NaN: {sum((isinstance(v, float) and np.isnan(v)) for v in telework_map.values())}")
-        else:
-            print("  WARNING: --telework_coherent set but TELEWORK not in metadata; "
-                  "all work slots will fall back to at-workplace.")
-
     print("\n[3/4] Generating synthetic diaries...")
     rows = run_inference(model, data, device, args.temperature,
-                         args.home_threshold, args.work_threshold,
-                         telework_map=telework_map,
-                         telework_coherent=args.telework_coherent)
+                         args.home_threshold, args.work_threshold)
 
     print("\n[4/4] Assembling augmented_diaries.csv...")
     aug_df = pd.DataFrame(rows)

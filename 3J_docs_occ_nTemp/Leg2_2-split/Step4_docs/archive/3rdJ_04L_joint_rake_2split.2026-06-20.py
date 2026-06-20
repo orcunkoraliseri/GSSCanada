@@ -103,20 +103,6 @@ def parse_args():
                         "Telework (TELEWORK==1) slots -> hom30=1, wrk30=0; "
                         "non-telework work slots -> wrk30=1, hom30=0. "
                         "Default OFF -> byte-identical to classic rake behaviour.")
-    p.add_argument("--floating_aware", action="store_true", default=False,
-                   help="[OPT-IN, root-cause fix] Floating-aware joint rake. Instead "
-                        "of the --telework_aware ADDITIVE post-rake fixup (which dumps "
-                        "every floating work-slot into hom30=1 ON TOP of the satisfied "
-                        "home quota -> AT_HOME inflation / G2 FAIL), this routes "
-                        "work-activity slots into the EXISTING per-slot home/work quota "
-                        "by PRIORITY: each work-act slot person is given first claim on "
-                        "their physical channel (TELEWORK==1 -> home, else -> work), then "
-                        "non-work-act persons fill whatever quota remains. Marginals "
-                        "(n_home/n_work) stay EXACT -> G2/OW1 preserved; floating "
-                        "collapses to only the irreducible activity-vs-occupancy excess "
-                        "(reported per cell in provenance). No additive home-mass. "
-                        "Mutually preferable to --telework_aware; do not combine. "
-                        "Default OFF -> byte-identical to classic rake behaviour.")
     return p.parse_args()
 
 
@@ -311,21 +297,13 @@ def collect_hw_probs(model, data, device):
     return hw_probs
 
 
-def _joint_rake_slot(p_home, p_work, n_home, n_work,
-                     force_home=None, force_work=None):
+def _joint_rake_slot(p_home, p_work, n_home, n_work):
     """
     Greedy global-confidence joint assignment for one (cell x slot).
 
     Inputs:
         p_home, p_work  — (N,) float32 sigmoid probabilities per person
         n_home, n_work  — integer target counts to assign (1s)
-        force_home      — (N,) bool, optional. Persons whose physical channel at
-                          this slot is HOME (work-activity AND telework). Given top
-                          priority for the home quota, then second priority for the
-                          work quota. [--floating_aware]
-        force_work      — (N,) bool, optional. Persons whose physical channel is
-                          WORK (work-activity AND non-telework). Top priority for
-                          the work quota, second for home. [--floating_aware]
 
     Outputs:
         new_home, new_work  — (N,) float32 binary arrays
@@ -334,13 +312,6 @@ def _joint_rake_slot(p_home, p_work, n_home, n_work,
         sum(new_home) == n_home
         sum(new_work) == n_work
         no person has new_home==1 AND new_work==1
-
-    Floating-aware behaviour (force_* given): the assignment ORDER is tiered so
-    work-activity persons claim the home/work quota BEFORE non-work-act persons,
-    minimising leftover FLOATING (work-act person assigned neither) WITHOUT changing
-    the quota counts — so the per-slot marginals stay exact. Residual floating can
-    only occur when n_home + n_work < (#work-act persons), i.e. the irreducible
-    activity-vs-occupancy excess; that is reported by the caller, never dumped to home.
     """
     N = len(p_home)
     n_home = max(0, min(int(n_home), N))
@@ -368,24 +339,7 @@ def _joint_rake_slot(p_home, p_work, n_home, n_work,
     actions_channel[N:] = 1           # 1 = work
     actions_idx[N:]     = np.arange(N, dtype=np.int32)
 
-    # Floating-aware priority tiers (added to the sort key only; sigmoid probs are
-    # in [0,1] so the +2/+1 offsets cleanly separate tiers without reordering within).
-    #   +2.0  forced person's PREFERRED channel  (telework->home, non-tele->work)
-    #   +1.0  forced person's non-preferred channel (fallback if preferred quota full)
-    #   +0.0  non-forced persons (fill leftover quota by confidence, as before)
-    if force_home is not None or force_work is not None:
-        sort_key = actions_prob.copy()
-        if force_home is not None:
-            fh = np.asarray(force_home, dtype=bool)
-            sort_key[:N][fh] += 2.0    # home channel  (preferred)
-            sort_key[N:][fh] += 1.0    # work channel  (fallback)
-        if force_work is not None:
-            fw = np.asarray(force_work, dtype=bool)
-            sort_key[N:][fw] += 2.0    # work channel  (preferred)
-            sort_key[:N][fw] += 1.0    # home channel  (fallback)
-        order = np.argsort(-sort_key, kind="stable")
-    else:
-        order = np.argsort(-actions_prob, kind="stable")
+    order    = np.argsort(-actions_prob, kind="stable")
     assigned = np.zeros(N, dtype=np.uint8)   # 0=unassigned, 1=home, 2=work
     rem_home = n_home
     rem_work = n_work
@@ -421,11 +375,6 @@ def main():
     raked_path = os.path.join(output_dir, "augmented_diaries.csv")
     prov_path  = os.path.join(output_dir, "g2ow1_rake_provenance.json")
     telework_aware = args.telework_aware
-    floating_aware = args.floating_aware
-    if floating_aware and telework_aware:
-        raise SystemExit("[ERROR] --floating_aware and --telework_aware are mutually "
-                         "exclusive (they are two different floating treatments). "
-                         "Pass only one.")
 
     print("=" * 64)
     print("3rdJ Step 4L (Leg-2) — Joint AT_HOME + AT_WORK Raking")
@@ -437,7 +386,6 @@ def main():
     print(f"  aug source: {aug_src}")
     print(f"  temperature: {TEMPERATURE}")
     print(f"  telework_aware: {telework_aware}")
-    print(f"  floating_aware: {floating_aware}")
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -569,22 +517,12 @@ def main():
             # any work-act slot that ends up with wrk30=0 AND hom30=0 gets hom30=1.
             # This restores the rake's degrees of freedom for OW5 day-type ordering
             # while preserving FLOATING=0%.
-            if telework_aware or floating_aware:
-                # ACT matrix: post-rake fixup (telework_aware) or per-slot force
-                # masks + residual report (floating_aware)
+            if telework_aware:
+                # ACT matrix needed only for the post-rake fixup
                 act_cols_48 = [f"act30_{s:03d}" for s in range(1, N_SLOTS + 1)]
                 pre_act_mat = aug.loc[ssub_idx, act_cols_48].to_numpy(dtype=float)
             else:
                 pre_act_mat = None
-
-            # Per-person telework flag for this cell (floating_aware routing)
-            if floating_aware:
-                if "TELEWORK" in aug.columns:
-                    tele_vec = (aug.loc[ssub_idx, "TELEWORK"].fillna(0) == 1).to_numpy()
-                else:
-                    tele_vec = np.zeros(n_syn, dtype=bool)
-            else:
-                tele_vec = None
 
             new_hom_mat = np.zeros((n_syn, N_SLOTS), dtype=np.float32)
             new_wrk_mat = np.zeros((n_syn, N_SLOTS), dtype=np.float32)
@@ -595,20 +533,9 @@ def main():
                 n_home = int(round(obs_r_hom * n_syn))
                 n_work = int(round(obs_r_wrk * n_syn))
 
-                # Full rake over ALL persons (no locking).
-                # floating_aware: route work-act persons into the quota by priority
-                # (telework->home, non-tele->work) so floating is minimised without
-                # changing n_home/n_work. Else: plain global-confidence rake.
-                if floating_aware:
-                    aw_j = pre_act_mat[:, j] == 1          # work-activity at slot j
-                    fh_j = aw_j & tele_vec                 # -> prefer home
-                    fw_j = aw_j & (~tele_vec)              # -> prefer work
-                    new_h, new_w = _joint_rake_slot(
-                        p_home_mat[:, j], p_work_mat[:, j], n_home, n_work,
-                        force_home=fh_j, force_work=fw_j)
-                else:
-                    new_h, new_w = _joint_rake_slot(p_home_mat[:, j], p_work_mat[:, j],
-                                                    n_home, n_work)
+                # Full rake over ALL persons (no locking in telework_aware mode)
+                new_h, new_w = _joint_rake_slot(p_home_mat[:, j], p_work_mat[:, j],
+                                                n_home, n_work)
                 new_hom_mat[:, j] = new_h
                 new_wrk_mat[:, j] = new_w
 
@@ -632,17 +559,6 @@ def main():
                     new_hom_mat, new_wrk_mat, pre_act_mat
                 )
 
-            # floating_aware: measure (do NOT dump) residual floating — work-act slots
-            # the quota could not cover. This is the irreducible activity-vs-occupancy
-            # excess (tied to G4 over-production), left as-is so AT_HOME stays exact.
-            cell_float = 0
-            cell_work_slots = 0
-            if floating_aware and pre_act_mat is not None:
-                aw_mat = pre_act_mat == 1
-                cell_work_slots = int(aw_mat.sum())
-                cell_float = int((aw_mat & (new_hom_mat == 0)
-                                  & (new_wrk_mat == 0)).sum())
-
             # Write raked values back into aug DataFrame
             aug.loc[ssub_idx, HOM_COLS] = new_hom_mat.astype(float)
             aug.loc[ssub_idx, WRK_COLS] = new_wrk_mat.astype(float)
@@ -662,17 +578,11 @@ def main():
                 "after_home_pct":    round(after_home, 3),
                 "after_work_pct":    round(after_work, 3),
                 "mutual_excl_viol":  both_viol,
-                "residual_floating":      cell_float,
-                "work_act_slots":         cell_work_slots,
-                "residual_floating_pct":  round(100.0 * cell_float / max(cell_work_slots, 1), 3),
                 "slots": slot_prov,
             }
-            _resid_str = (f"  resid_float: {cell_float}/{cell_work_slots} "
-                          f"({100.0*cell_float/max(cell_work_slots,1):.2f}%)"
-                          if floating_aware else "")
             print(f"    home: {before_home:.1f}% → {after_home:.1f}% (obs {obs_home_agg:.1f}%)  "
                   f"work: {before_work:.1f}% → {after_work:.1f}% (obs {obs_work_agg:.1f}%)  "
-                  f"both=1: {both_viol}{_resid_str}", flush=True)
+                  f"both=1: {both_viol}", flush=True)
 
     # ── Step 5: Atomic write ──────────────────────────────────────────────────
     print("\n[5/5] Writing raked CSV + provenance JSON...")
@@ -684,24 +594,6 @@ def main():
         w = aug[f"wrk30_{j:03d}"]
         total_both += int(((h == 1) & (w == 1)).sum())
     print(f"  Global hom==1 AND wrk==1 violations after rake: {total_both} (expect 0)")
-
-    # Global FLOATING tally on synthetic work-activity slots (floating_aware report)
-    if floating_aware:
-        syn_m = (aug["IS_SYNTHETIC"] == 1).values
-        g_float = 0
-        g_work  = 0
-        for j in range(1, N_SLOTS + 1):
-            ss = f"{j:03d}"
-            if f"act30_{ss}" not in aug.columns:
-                continue
-            aw = syn_m & (aug[f"act30_{ss}"].values == 1)
-            hv = aug[f"hom30_{ss}"].values
-            wv = aug[f"wrk30_{ss}"].values
-            g_work  += int(aw.sum())
-            g_float += int((aw & (hv == 0) & (wv == 0)).sum())
-        print(f"  Global residual FLOATING (work-act, syn): {g_float}/{g_work} "
-              f"({100.0*g_float/max(g_work,1):.2f}%) — irreducible activity-vs-occupancy "
-              f"excess; NOT dumped to home (AT_HOME marginal preserved)")
 
     # Atomic write: .tmp + os.replace
     tmp_path = raked_path + ".tmp"
@@ -723,7 +615,6 @@ def main():
 
     provenance["_meta"] = {
         "telework_aware": telework_aware,
-        "floating_aware": floating_aware,
         "temperature": TEMPERATURE,
     }
     with open(prov_path, "w", encoding="utf-8") as f:

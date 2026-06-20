@@ -50,9 +50,13 @@ _Live status — tick as items complete. Detail for each is in the dated Progres
 - [x] Tier-1 telework-aware rake + GA/GB validator gates built + smoke-tested
 - [x] Option B v1 run (971282): GA PASS (FLOATING→0) but GB FAIL (2×) + OW5 regressed 60.9→55.2
 - [x] v1 regression root-caused (lock-out starves rake) → coherence refined v2 (unlock + post-rake fixup), smoke 13/13
-- [ ] **Q1 — `R10_tw_v2` (976931):** does refined coherence hold GA PASS *and* recover GB ≤1.25× *and* OW5 ≥57.3 (~60.9) with no G2/OW1 regression? → if yes, telework-aware rake becomes production
-- [ ] **Q2 — `R11_rakeval` (976926):** is R11's OW5 ≥ R10_fast's 60.9 with no binary/S8 regression? → decides whether base switches from R10_fast to R11
-- [ ] Base + rake locked (depends on Q1, Q2)
+- [x] **Q1 — `R10_tw_v2` (976931): ANSWERED = NO.** GA PASS (FLOATING 25%→0.00%) BUT GB still FAIL 2.0× (flicker NOT recovered) + G2 regressed (2 FAIL/9 WARN, AT_HOME +2–4 pp from post-rake fixup) + OW5 flat 60.9. Net 55/11/5 vs base 62/1/2 → **telework-aware rake REJECTED** (post-hoc fixup is the wrong lever; trades FLOATING for G2)
+- [x] **Q2 — `R11_rakeval` (976926): ANSWERED = NO.** R11 OW5 = 56.9% < R10_fast's 60.9% → **base stays R10_fast_raked** (R11 logged as rejected OW5 lever; its G2 is perfect under classic rake but OW5 is worse)
+- [x] **Structural finding:** GB flicker (2.0×) is **rake-independent** — present in classic AND telework rake → it is a *base-model* property (hom30 toggles too often), not fixable by raking.
+- [x] **FLOATING root-caused (job 979239): the RAKE creates it, NOT the model.** Model pre-rake = 0.00% floating (head-disagreement hypothesis dead). 04E posthoc forces 100% AT-WORK / 0% telework; classic rake then drops wrk30→0 on work-slots without setting hom30→1 to hit marginals → manufactures 25% floating. Fix belongs at **04E inference** (telework-aware AT-WORK-XOR-TELEWORK posthoc), then classic rake on a coherent base.
+- [ ] **Confirm mechanism on raked CSV** (show 0%-floating work-slots → floating post-rake; audit-not-patch) before building fix
+- [ ] **Build telework-aware coherent posthoc at 04E** (location = AT-WORK XOR TELEWORK on work-slots, using observed TELEWORK flag) → re-infer → classic rake → validate
+- [ ] Base + rake locked (depends on the 04E fix result)
 - [ ] Step 4 closed → Step 5 (archetype linkage)
 
 ## Goal
@@ -1182,3 +1186,141 @@ OW5 (weekday≥Sat≥Sun work ordering) is the one structural gate that is rake-
 → **If YES:** switch base from R10_fast to R11 (then re-run the chosen rake on R11). **If NO:** R10_fast stays the base; R11 is logged as a tried-and-rejected OW5 lever.
 
 **Decision coupling:** Q1 decides *how we rake*; Q2 decides *which model we rake*. If both YES, the endpoint is R11 + telework-aware rake; the final lock-in run would be telework-aware rake on R11. Neither job needs polling — read the two val logs when they land.
+
+---
+
+### 2026-06-19 — Q1 & Q2 ANSWERED (both jobs complete): both NO
+
+Both GPU val jobs finished (queue clean apart from an unrelated `blockB_f` array job). Scorecards read from `R10_tw_v2_val.log` and `R11_rakeval_val.log`.
+
+**Q1 — `R10_tw_v2` (telework-aware rake) = NO. REJECTED.**
+| Gate | Result | vs criterion |
+|------|--------|--------------|
+| GA (FLOATING) | **PASS** −2.96 pp (obs 2.96% / syn **0.00%**) | ✓ FLOATING eliminated |
+| GB (flicker) | **FAIL 2.000×** (syn 4.00/day vs obs 2.00) | ✗ NOT recovered |
+| OW5 ordering | 60.9% (FAIL gate) | flat vs R10_fast — no gain |
+| G2 (AT_HOME) | **2 FAIL** (2015 wkdy +4.26 / Sat +4.43) **+ 9 WARN** | ✗ **regressed** from base PASS |
+| Net | **55 PASS / 11 WARN / 5 FAIL** | worse than base 62/1/2 |
+
+The post-rake FLOATING fixup forces `hom30=1` on ~22 pp of residual floating slots → inflates AT_HOME by 2–4 pp → G2 breaks. The "sub-1pp" risk flagged at build time materialized **far larger than estimated**. The post-hoc fixup is the wrong lever: it buys GA by spending G2. → **telework-aware rake is NOT production.**
+
+**Q2 — `R11_rakeval` (R11 model, classic rake) = NO. REJECTED.**
+- OW5 = **56.9%** < R10_fast_raked's **60.9%** → R11 is *worse* on the one gate it was built to move. → **base stays `R10_fast_raked`.**
+- R11's G2 is perfect (0.00 pp, obs==syn) and net is 66/1/4 — but classic rake also leaves GA FAIL (+22.66 pp FLOATING) and GB FAIL (2.0×). R11 logged as a tried-and-rejected OW5 lever.
+
+**Two structural findings (both load-bearing for the paper):**
+1. **GB flicker is rake-independent.** Both classic rake (R11) and telework rake (R10_tw_v2) show GB = 2.0× (syn 4 transitions/day vs obs 2). Raking does not touch it → it is a **base-model property** (the model toggles `hom30` ~2× too often), not a rake artifact. Not fixable by any rake; would need a model-training change.
+2. **FLOATING (GA) and AT_HOME (G2) are in genuine tension under a post-hoc fixup.** Classic rake → G2 perfect, FLOATING 25%. Force-fix FLOATING post-rake → FLOATING 0% but G2 fails. The only way to get both is to fold coherence into the **rake target** (assign floating work-slots to wrk30/hom30 *before* the rake, so the rake calibrates AT_HOME on the already-corrected matrix) — untested.
+
+**Endpoint as of now:** base = **R10_fast_raked**, rake = **classic** (telework-aware rejected; R11 rejected). FLOATING (25%) and flicker (2.0×) are open. **Decision pending with user:** (a) one more Option-B round folding coherence into the rake target (pre-rake assignment), or (b) lock R10_fast_raked + classic rake and document FLOATING/flicker as bounded limitations, then move to Step 5.
+
+---
+
+### 2026-06-19 — FLOATING root-cause diagnostic (job 979239): PREMISE OVERTURNED — the rake creates FLOATING, not the model
+
+Built `3rdJ_04R_diag_floating_2split.py` + `3rdJ_s4_diag_floating.sh` to test whether the 25% FLOATING is a decoding/threshold artifact (mass clipped at 0.5) or a learned no-location state. Ran on base R10_fast (job 979239, pg, ~9 min). The result killed the head-disagreement hypothesis and relocated the defect.
+
+**Finding 1 — the MODEL does not float.** R10_fast **pre-rake** `augmented_diaries.csv`: FLOATING = **0.00%** across all 612,759 synthetic work-activity slots. Raw-probability threshold sweep on a 2,000-respondent forward pass: FLOATING <0.5% even at the 0.5 cutoff (0.33% @0.5 → 0.05% @0.30), i.e. there is **no hidden sub-0.5 mass being clipped**. Head-disagreement / threshold-artifact hypothesis is **dead**.
+
+**Finding 2 — 04E erases telework.** The synthetic pre-rake split is **100.00% AT-WORK / 0.00% TELEWORK** vs observed **82.58% / 14.46%**. `04E.apply_posthoc_consistency()` unconditionally sets `wrk30=1, hom30=0` on every work-activity slot → it forces all working time to the workplace and destroys the telework signal the model carried.
+
+**Finding 3 — the RAKE manufactures FLOATING.** The 25.62% FLOATING in the R11_rakeval log is a **raked** output. The classic 04L rake (no `--telework_aware`) re-balances `hom30`/`wrk30` slot-by-slot to hit the AT_HOME/AT_WORK marginals with **no lock on work-activity slots** — so to pull the inflated 100% work-rate down to the marginal it drops `wrk30→0` on work-slots *without* setting `hom30→1`, creating "working but nowhere." Chain: model 0% → 04E forces 100% at-work → classic rake pulls work-rate down → FLOATING 25%.
+
+**Reframe of the fix.** This was never imputation of uncertain *model* output. The clean fix is a **logical constraint**: on a work-activity slot, location is **AT-WORK XOR TELEWORK** (a working person is at their workplace or teleworking from home, never nowhere) — two complementary states jointly calibrated to BOTH marginals, not two free independent bits. Enforce that at **inference (04E posthoc, telework-aware)** so the pre-rake matrix is coherent *and* carries the right telework split, then let the classic rake calibrate marginals on a coherent base. FLOATING then cannot appear and AT_HOME stays calibrated (no post-hoc home-mass inflation → no G2 break). This is the principled version of "fold coherence into the rake target."
+
+**Next (audit-not-patch):** before building the fix, confirm the mechanism directly on the raked CSV (show specific 0%-floating work-slots becoming floating after the rake) rather than inferring it. Same diagnostic harness, cheap. Then build the telework-aware coherent posthoc at 04E + re-rake + validate.
+
+### 2026-06-19 — FLOATING mechanism CONFIRMED on raked CSV (job 979806): rake creates 100% of it
+
+Built `3rdJ_04S_diag_rake_creates_floating_2split.py` + `3rdJ_s4_diag_rake_floating.sh`; ran on the pre-rake vs classic-raked R10_fast CSVs (job 979806, ps, 44 s). This is the direct "camera footage" confirming Finding 3 — no longer inferred.
+
+**Decomposition of all 612,759 synthetic work-activity slots (pre→post classic rake):**
+- (a) floating already pre-rake (model's own residual): **0 (0.00%)**
+- (b) coherent before AND after: 423,608 (rake left fine)
+- (c) **coherent before → FLOATING after (rake-manufactured)**: **189,151 (30.87% of all work slots)**
+- (d) floating before → coherent after (rake fixing): **0** — the rake never helps, only hurts.
+
+**Headline: 100.0% of the post-rake floating (189,151 / 189,151) is bucket (c) — manufactured by the rake. 0% is the model's own.** 18,889 respondent-diaries affected. Mechanism in every example: model emits `act=1, wrk=1, hom=0` (coherent at-work) → rake zeros `wrk30→0`, leaves `act30=1` and `hom30=0` → pure floating artifact.
+
+**Where the rake does the damage:** floating created across the whole day; worst at fringes (04:00–06:30: 49–57% of work slots flip; 22:00–27:30: 41–52%), core hours 08:00–17:00 still heavy (~23–30%). By stratum: weekday 17.92% of work slots flipped, **Saturday 36.48% / Sunday 36.58%** — weekends hit ~2× harder. In all three strata bucket (c) = 100% of that stratum's post-rake floating.
+
+Report: `outputs_step4/diag_rake_creates_floating_R10.txt`. **Verdict: hypothesis confirmed with certainty.** Fix is unblocked → telework-aware coherent posthoc at 04E (AT-WORK XOR TELEWORK) → re-infer R10_fast → classic rake → validate.
+
+### 2026-06-19 — 04E telework-coherent posthoc fix BUILT + SUBMITTED (job 979808, RUNNING)
+
+Implemented the AT-WORK XOR TELEWORK fix in `3rdJ_04E_inference_2split.py`, gated behind new CLI flag `--telework_coherent` (default OFF → byte-identical to old behavior; reproducibility preserved). Predecessor archived to `archive/3rdJ_04E_inference_2split.2026-06-19.py`.
+
+**Change (4 targeted edits, nothing else touched):**
+- `apply_posthoc_consistency()`: on WORK-activity slots, if respondent `TELEWORK==1` → `hom30=1, wrk30=0` (telework from home); else (`TELEWORK==0` or NaN) → `wrk30=1, hom30=0` (workplace; NaN defaults to at-work). Sleep / mutual-exclusion logic unchanged.
+- `run_inference()`: looks up per-respondent telework via `telework_map.get((occID, CYCLE_YEAR))` aligned to the `occ_ids_all`/`cycle_year_all` tensors.
+- `main()`: builds `telework_map` from `step4_all_meta.csv` (the same meta merged post-inference) when `--telework_coherent` is set.
+- `parse_args()`: `--telework_coherent` store_true.
+
+**Pipeline (job 979808, pg/gpu, cisr-2, one wrapper `3rdJ_s4_R10_twcoh.sh`, set -eo pipefail, 48h):** re-infer R10_fast with `--telework_coherent` → `outputs_step4/sweep/R10_fast_twcoh/` → **classic** 04L rake (`--data_dir`/`--r5_dir`/`--output_dir`/`--temperature 0.8`, NOT the buggy `--input`/`--output`) → `R10_fast_twcoh_raked/` → validator (`--step4_dir`). Base `R10_fast` outputs untouched (new dirs). Logs: `s4_R10_twcoh_{infer,rake,val}.log`.
+
+**Acceptance to check on completion:** pre-rake split ≈ 82.58/14.46 + 0% floating; post-rake FLOATING ≈ 2.96% (GA PASS ≤4.96%); G2/OW1 still PASS (no home-mass inflation); OW5 held ≥60.9; scorecard ≥ base (62 PASS). GB flicker ~2.0× expected unchanged (base-model property, documented limitation, NOT a regression of this fix).
+
+---
+
+### 2026-06-19 — Job 979808 FAILED at rake (checkpoint path) → fixed + resubmitted as 980832
+
+**Outcome of 979808:** Stage 1 (04E `--telework_coherent`) **succeeded** — all 64,061 respondents inferred, `R10_fast_twcoh/augmented_diaries.csv` (400 MB, 192,183 rows) + `g3_copresence_thresholds.json` written, G3 binarization max |obs−syn| 0.0054 pp, and **0 `hom==1 & wrk==1` conflicts** (the telework-coherent posthoc is behaving). Stage 2 (04L rake) then crashed immediately: `FileNotFoundError: Checkpoint not found: .../R10_fast_twcoh/checkpoints/best_model.pt`.
+
+**Root cause:** `04L` derived `ckpt_path` *solely* from `--r5_dir` (`<r5_dir>/checkpoints/best_model.pt`). We pointed `--r5_dir` at the re-inference dir `R10_fast_twcoh` (which holds the new diaries + g3 thresholds but NOT the model), while the checkpoint lives in the original `R10_fast/checkpoints/`. The model is identical between the two — only the inference output differs — so the checkpoint just needed decoupling from the diaries dir.
+
+**Fix (root cause, not a symlink hack) — predecessors archived to `archive/*.2026-06-19.*`:**
+- `3rdJ_04L_joint_rake_2split.py`: added `--checkpoint` override arg (default None); `ckpt_path = args.checkpoint or <r5_dir>/checkpoints/best_model.pt` (byte-identical when not passed).
+- `3rdJ_s4_R10_twcoh.sh`: (a) stage 1 made **idempotent** — skips inference if `R10_fast_twcoh/augmented_diaries.csv` exists, so the resubmit resumes at the rake and does NOT burn the ~2h GPU inference again; (b) rake call now passes `--checkpoint "${R10_CKPT}"` (the `R10_fast` checkpoint).
+
+**Resubmitted:** job **980832** (pg/gpu, cisr-2, RUNNING). Inference confirmed skipped (400 MB diaries intact from 19:09). Same acceptance criteria as above. Logs: `s4_R10_twcoh_{rake,val}.log`.
+
+---
+
+### 2026-06-19 — Job 980832 COMPLETE: telework-coherent INFERENCE fix had ZERO effect → wrong lever; pivot to rake-side `--telework_aware` (job 980893)
+
+**Result (2:02:38, ExitCode 0):** rake + validate ran clean, but **post-rake FLOATING = 30.87% (GA FAIL +27.91 pp)** — *byte-identical* to the pre-fix number (job 979806 decomposition was 30.87%). G2 (AT_HOME) and OW1 (AT_WORK) marginals perfect at 0.00 pp; G3 clean; OW2/OW3 r=1.000. Scorecard 66 PASS / 1 WARN / 4 FAIL (FAILs: GA floating, GB flicker 2.0×, G4 work-peak 10.33 pp, OW5 60.9%). Telework split applied at inference: TW=1 7,571 / TW=0 36,195 / NaN 20,295; **0 `hom & wrk` conflicts** post-inference (the 04E posthoc *did* run correctly).
+
+**Diagnosis — the fix was at the wrong stage.** The 04E `--telework_coherent` posthoc sets `hom30=1, wrk30=0` on telework at-work slots *at inference time*, but the **classic rake then overwrites it**: to hit the AT_WORK marginal the rake zeros `wrk30` on work-activity slots *without* setting `hom30=1`, manufacturing FLOATING from scratch. Inference-level coherence is upstream of and washed out by the rake — exactly consistent with job 979806 ("rake creates 100% of floating"). The inference lever cannot survive the rake.
+
+**Correct lever already exists in 04L — `--telework_aware` (was OFF this whole time).** That flag (lines 100-105 / `_post_rake_floating_fixup` 201-228 / applied 557-558): runs the rake uniformly with **no work-slot locking**, then a **post-rake FLOATING fixup** forces `hom30=1` on any work-activity slot left `wrk30=0 & hom30=0` → FLOATING = 0% *after* the rake. The open question it raises (and that the validator will adjudicate): does the added home-mass inflate G2 (AT_HOME)? If G2/OW1 hold and floating→0, the base→Step5 pipeline simplifies to `R10_fast inference → 04L --telework_aware → validate` and the 04E `--telework_coherent` flag becomes unnecessary.
+
+**Submitted job 980893** (`3rdJ_s4_R10_twaware.sh`, pg/gpu, cisr-2, RUNNING): rake-only (`--telework_aware`) + validate on the **original base R10_fast diaries** (no re-inference; isolates the rake-side lever). New output dir `R10_fast_twaware_raked/`; base + R10_fast_twcoh dirs untouched. **Acceptance:** FLOATING ≤ 4.96% (GA PASS); G2/OW1 still 0.00 pp PASS (the key risk — watch for home-mass inflation); OW5 ≥60.9; scorecard ≥ 66 PASS. Logs: `s4_R10_twaware_{rake,val}.log`. **No bars moved** — uses an existing documented flag and lets the scorecard decide.
+
+---
+
+### 2026-06-19 — Job 980893 COMPLETE: `--telework_aware` fixes FLOATING (0%) but inflates AT_HOME (G2) — the predicted trade-off; DECISION POINT, no job fired
+
+**Result (2:02:38, ExitCode 0, cisr-2/A2):** the rake-side lever works exactly as designed — and confirms the trade-off we flagged.
+
+- **GA / FLOATING: SOLVED.** Post-coherence FLOATING = **0/612,759 work-slots (0.00%)**; GA −2.96 pp (syn 0.00% vs obs 2.96%) **PASS**. Post-rake fixup: 0 `both=1` violations across all 12 cy×daytype cells, 0 global `hom==1 & wrk==1`.
+- **OW1 (AT_WORK presence): PASS** — all 12 cells 0.00 pp (work marginals lock exactly).
+- **G2 (AT_HOME): REGRESSED — this is the cost.** The post-rake fixup forces `hom30=1` on every ex-floating work slot → AT_HOME over-predicts. **2 cells now FAIL** (2015×Weekday **4.26 pp**, obs 70.8 / syn 75.1; 2015×Saturday **4.43 pp**, obs 74.2 / syn 78.6 — both just over the 4 pp gate) **+ 10 G2 WARNs** (2005/2010/2022 across day-types, 2.1–3.9 pp).
+- Unchanged structural FAILs (base-model properties, not caused by this fix): G4 work peak-slot 10.33 pp; OW5 day-type ordering 60.9%; GB transition-flicker 2.000× (syn 4.00/day vs obs 2.00/day).
+- **Scorecard: 55 PASS / 11 WARN / 5 FAIL** — vs twcoh/classic 66 PASS / 1 WARN / 4 FAIL.
+
+**The trade-off, quantified.** The classic rake (twcoh, job 980832) buys 66 PASS but leaves FLOATING at 30.87% (GA hard FAIL). `--telework_aware` (this job) drives FLOATING to 0% (GA PASS) but the home-mass it adds turns ~11 previously-PASS G2 cells into WARN/FAIL (net −11 PASS). **Neither config is a clean pass** — the fixup converts one hard FAIL (floating) into a spread of G2 AT_HOME over-predictions. This is precisely the home-mass-inflation risk noted when the job was fired.
+
+**Why it happens (root, not symptom):** floating slots are work-*activity* slots the rake stripped of `wrk30` to hit the AT_WORK marginal. The fixup's only move is `hom30=1` (home is the sole binary fallback), so every one of those slots becomes AT_HOME — and 2015 (highest work share → most stripped slots) absorbs the most, which is why 2015 wkdy/Sat tip over the gate first. The deeper issue: the joint rake hits AT_WORK and AT_HOME marginals *independently*, so reconciling FLOATING by hand necessarily perturbs the AT_HOME marginal it had already satisfied.
+
+**→ DECISION POINT for the user (NO further job fired, per protocol).** The floating fix and the AT_HOME marginal are in genuine tension under the current independent-rake design. Three honest paths, none of which moves a bar:
+  1. **Accept twcoh (classic rake) + document FLOATING as a known limitation.** 66 PASS / 4 FAIL, G2 perfect, but FLOATING 30.87% is a hard GA FAIL — hard to defend in the paper.
+  2. **Accept twaware + document the G2 2015 over-prediction** (4.26/4.43 pp, ~0.3–0.4 pp over gate). FLOATING solved, OW1 perfect; cost is 2 G2 FAIL + 10 WARN.
+  3. **Fix the root: make the rake floating-aware (joint constraint), not a post-hoc fixup.** Re-rake so the AT_WORK reconciliation routes ex-work slots to home/away in proportion to the *observed* AT_HOME marginal per cell, instead of dumping 100% to home — i.e. fold the no-floating constraint INTO the rake so it satisfies GA *and* G2 simultaneously. More work, but the only path to a clean scorecard. (Recommended, consistent with the standing "act on research / fix the root" preference.)
+
+Outputs preserved: `R10_fast_twaware_raked/` (this run) and `R10_fast_twcoh_raked/` (classic) both intact for side-by-side. Awaiting user's call on path 1/2/3 before any further submission.
+
+---
+
+### 2026-06-20 — PATH 3 chosen (root-cause rake fix): `--floating_aware` BUILT + SUBMITTED (job 980937)
+
+**User decision:** "go ahead with path 3 — 5 fails is not acceptable, even warnings." Path 3 = fix the rake at the root instead of the additive fixup.
+
+**Key diagnostic established first (changes the scope honestly):** G4's "Work peak-slot delta" (10.33 pp FAIL) is measured on the **activity** channel (`slot_rate(arr, WORK_PEAK_SLOTS, RAW_WORK_CAT)` over `act30_*`, validator lines 538-541) — which the rake **never touches** (the rake only re-assigns `hom30`/`wrk30` occupancy). So the model **over-generates ~10 pp of work *activity* at the peak hour**; those excess work-activity slots have no work-occupancy quota (quota = observed rate) and are forced to "float". The old `--telework_aware` fixup dumped all of them into `hom30=1`, manufacturing the G2 AT_HOME inflation. **⇒ FLOATING ↔ home-inflation is downstream of G4, a model-side over-production.** Consequences: the rake can cleanly fix **GA + G2**, but **G4 (activity peak) and OW5 (per-respondent day ordering) are model-side and NOT rake-fixable** — reaching 0 FAILs needs a model retrain (auxiliary losses). Path 3 = the correct, low-risk first step regardless.
+
+**Root-cause fix — `--floating_aware` flag in `3rdJ_04L_joint_rake_2split.py`** (predecessor archived `archive/3rdJ_04L_joint_rake_2split.2026-06-20.py`; classic + `--telework_aware` paths untouched, byte-identical when off; flags mutually exclusive):
+- `_joint_rake_slot()` now accepts optional `force_home`/`force_work` person-masks. A **tiered sort-key offset** is added to the existing greedy global-confidence assignment: `+2.0` = forced person's *preferred* channel (TELEWORK==1 → home, else → work), `+1.0` = forced person's *fallback* channel, `+0.0` = non-forced. Sigmoid probs ∈ [0,1] so the offsets cleanly separate tiers without reordering within a tier. Result: **work-activity persons claim the home/work quota FIRST, by priority, then non-work-act persons fill leftover quota — quota COUNTS (`n_home`/`n_work`) are unchanged, so per-slot marginals stay EXACT (G2/OW1 preserved).** No additive home-mass.
+- `main()` `--floating_aware` branch: builds per-slot `force_home = act_work & telework`, `force_work = act_work & ~telework` from the synthetic `act30_*` matrix + `TELEWORK`; calls the priority rake; then **measures residual floating per cell** (work-act slots the quota could not cover = irreducible activity-vs-occupancy excess, tied to G4) and writes it to provenance (`residual_floating`, `work_act_slots`, `residual_floating_pct`) + a global tally — **never dumped to home**.
+
+**Local verification (numpy-only smoke test of the real `_joint_rake_slot`, then `py_compile`):** (1) no-mask path = classic behaviour preserved (exact marginals, top-prob person assigned); (2) ample quota → **0 floating**, marginals exact, all forced covered; (3) tight quota → marginals **still exact** (60/60, 60/60), residual floats but **0 non-work-act persons assigned while a work-act person floats** (priority guarantee). All passed; module compiles clean.
+
+**Submitted job 980937** (`3rdJ_s4_R10_floataware.sh`, pg/gpu, 64 G, 48 h): rake-only (`--floating_aware`) + validate on the **base R10_fast diaries** (no re-inference). New output dir `R10_fast_floataware_raked/`; twaware/twcoh dirs intact for side-by-side. State: **PENDING (AssocGrpCpuLimit)**. Logs: `s4_R10_floataware_{rake,val}.log`. **Acceptance:** FLOATING ≤4.96% GA PASS (now from priority routing, not dumping); **G2 back to ~0.00 pp PASS** (the whole point — no home inflation); OW1 0.00 pp PASS; scorecard back toward 66 PASS with the 11 G2 WARNs gone. Expected to REMAIN failing: G4 (10.33 pp, activity peak), OW5 (60.9%), GB (2.0× flicker) — model-side, flagged for a separate retrain phase. **No bars moved.**
