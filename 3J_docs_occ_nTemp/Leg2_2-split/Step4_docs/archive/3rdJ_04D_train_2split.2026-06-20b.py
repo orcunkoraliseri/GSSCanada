@@ -666,34 +666,7 @@ def train(args):
 
     # ── Model ────────────────────────────────────────────────────────────
     print("[2/4] Building model...")
-    # Warm-start architecture reconciliation: when fine-tuning from an existing
-    # checkpoint, rebuild the model from THAT checkpoint's stored model_config so
-    # the architecture (d_model / N_enc / N_dec / n_heads / d_cond) matches the
-    # weights we are about to load — otherwise load_state_dict raises a shape
-    # mismatch (the bare arch flags here default to a smaller model). The data's
-    # d_cond must still agree with the checkpoint's d_cond (same feature config).
-    # best_model.pt carries model_config but no optimizer_state, so we adopt the
-    # architecture + weights only; optimizer/PCGrad are built fresh below.
-    _ws_state = None
-    if args.warm_start and os.path.isfile(args.warm_start):
-        _ck_ws  = torch.load(args.warm_start, map_location=device, weights_only=False)
-        _ws_cfg = _ck_ws.get("model_config")
-        if _ws_cfg is not None:
-            if _ws_cfg.get("d_cond") not in (None, d_cond):
-                raise ValueError(
-                    f"Warm-start d_cond mismatch: checkpoint d_cond={_ws_cfg.get('d_cond')} "
-                    f"vs current data d_cond={d_cond} — feature configs differ, cannot fine-tune.")
-            model_config = _ws_cfg
-            print(f"  Warm-start: adopting checkpoint architecture "
-                  f"d_model={model_config.get('d_model')} N_enc={model_config.get('N_enc')} "
-                  f"N_dec={model_config.get('N_dec')} n_heads={model_config.get('n_heads')} "
-                  f"d_cond={model_config.get('d_cond')}")
-        _ws_state = _ck_ws["model_state"]
     model = JSeriesHybrid2Split(model_config).to(device)
-    if _ws_state is not None:
-        model.load_state_dict(_ws_state)
-        print(f"  Warm-start from {args.warm_start} — weights loaded "
-              f"(architecture from checkpoint; optimizer/epoch fresh)")
     total_params = sum(p.numel() for p in model.parameters())
     print(f"  Parameters: {total_params:,}")
 
@@ -731,9 +704,12 @@ def train(args):
         best_val_score = ck.get("best_val_score", float("inf"))
         print(f"  Resumed from epoch {start_epoch}, best_val_score={best_val_score:.4f}")
 
-    # ── Warm-start handled at model-build time (architecture reconciled from the
-    #    checkpoint's model_config + weights loaded before optimizer/PCGrad were
-    #    built). Nothing to do here. ──
+    # ── Warm-start: load model weights only (best_model.pt has no optimizer state) ──
+    if args.warm_start and os.path.isfile(args.warm_start):
+        ck_ws = torch.load(args.warm_start, map_location=device, weights_only=False)
+        model.load_state_dict(ck_ws["model_state"])
+        n_params = sum(p.numel() for p in model.parameters())
+        print(f"  Warm-start from {args.warm_start} — {n_params:,} params loaded (weights only; optimizer/epoch untouched)")
 
     # ── Training log ─────────────────────────────────────────────────────
     log_path = os.path.join(out_dir, "step4_training_log.csv")

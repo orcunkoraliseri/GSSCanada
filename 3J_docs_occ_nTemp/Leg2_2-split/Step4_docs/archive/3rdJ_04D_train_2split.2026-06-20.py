@@ -666,34 +666,7 @@ def train(args):
 
     # ── Model ────────────────────────────────────────────────────────────
     print("[2/4] Building model...")
-    # Warm-start architecture reconciliation: when fine-tuning from an existing
-    # checkpoint, rebuild the model from THAT checkpoint's stored model_config so
-    # the architecture (d_model / N_enc / N_dec / n_heads / d_cond) matches the
-    # weights we are about to load — otherwise load_state_dict raises a shape
-    # mismatch (the bare arch flags here default to a smaller model). The data's
-    # d_cond must still agree with the checkpoint's d_cond (same feature config).
-    # best_model.pt carries model_config but no optimizer_state, so we adopt the
-    # architecture + weights only; optimizer/PCGrad are built fresh below.
-    _ws_state = None
-    if args.warm_start and os.path.isfile(args.warm_start):
-        _ck_ws  = torch.load(args.warm_start, map_location=device, weights_only=False)
-        _ws_cfg = _ck_ws.get("model_config")
-        if _ws_cfg is not None:
-            if _ws_cfg.get("d_cond") not in (None, d_cond):
-                raise ValueError(
-                    f"Warm-start d_cond mismatch: checkpoint d_cond={_ws_cfg.get('d_cond')} "
-                    f"vs current data d_cond={d_cond} — feature configs differ, cannot fine-tune.")
-            model_config = _ws_cfg
-            print(f"  Warm-start: adopting checkpoint architecture "
-                  f"d_model={model_config.get('d_model')} N_enc={model_config.get('N_enc')} "
-                  f"N_dec={model_config.get('N_dec')} n_heads={model_config.get('n_heads')} "
-                  f"d_cond={model_config.get('d_cond')}")
-        _ws_state = _ck_ws["model_state"]
     model = JSeriesHybrid2Split(model_config).to(device)
-    if _ws_state is not None:
-        model.load_state_dict(_ws_state)
-        print(f"  Warm-start from {args.warm_start} — weights loaded "
-              f"(architecture from checkpoint; optimizer/epoch fresh)")
     total_params = sum(p.numel() for p in model.parameters())
     print(f"  Parameters: {total_params:,}")
 
@@ -731,15 +704,10 @@ def train(args):
         best_val_score = ck.get("best_val_score", float("inf"))
         print(f"  Resumed from epoch {start_epoch}, best_val_score={best_val_score:.4f}")
 
-    # ── Warm-start handled at model-build time (architecture reconciled from the
-    #    checkpoint's model_config + weights loaded before optimizer/PCGrad were
-    #    built). Nothing to do here. ──
-
     # ── Training log ─────────────────────────────────────────────────────
     log_path = os.path.join(out_dir, "step4_training_log.csv")
     log_fields = ["epoch", "train_loss", "act_loss", "home_loss", "work_loss",
                   "cop_loss", "div_loss", "mono_loss",
-                  "l_peak", "l_order", "l_smooth",
                   "sigma_act", "sigma_home", "sigma_work",
                   "sigma_cop", "val_js", "home_gap", "work_gap", "val_score",
                   "lr", "grad_norm", "elapsed_s"]
@@ -757,7 +725,7 @@ def train(args):
         t0 = time.time()
         train_dataset.resample()
 
-        accum = {k: 0.0 for k in ["total", "act", "home", "work", "cop", "div", "mono", "l_peak", "l_order", "l_smooth"]}
+        accum = {k: 0.0 for k in ["total", "act", "home", "work", "cop", "div", "mono"]}
         grad_norms = []
 
         for batch in train_loader:
@@ -775,31 +743,7 @@ def train(args):
                         mono = r11_monotonic_penalty(model, batch, device)
                     else:
                         mono = torch.tensor(0.0, device=device)
-                    # Auxiliary losses (peak / order / smooth) — skipped when weight == 0
-                    if args.w_peak > 0.0:
-                        _p_pred = torch.softmax(out["act_logits"], dim=-1)[:, 8:20, 0].mean(0)
-                        _p_true = (batch["dec_act_seq"][:, 8:20] == 1).float().mean(0).detach()
-                        l_peak = F.mse_loss(_p_pred, _p_true)
-                    else:
-                        l_peak = torch.tensor(0.0, device=device)
-                    if args.w_order > 0.0:
-                        _wl = out["work_logits"]
-                        _st = batch["tgt_strata"]
-                        _q = {s: torch.sigmoid(_wl[_st == s]).mean(dim=1) for s in [1, 2, 3] if (_st == s).any()}
-                        l_order = torch.tensor(0.0, device=device)
-                        if 1 in _q and 2 in _q:
-                            l_order = l_order + F.relu(_q[2].mean() - _q[1].mean())
-                        if 2 in _q and 3 in _q:
-                            l_order = l_order + F.relu(_q[3].mean() - _q[2].mean())
-                    else:
-                        l_order = torch.tensor(0.0, device=device)
-                    if args.w_smooth > 0.0:
-                        _ph = torch.sigmoid(out["home_logits"])
-                        _trans = _ph.diff(dim=1).abs().sum(dim=1)
-                        l_smooth = F.relu(_trans - args.smooth_target).mean()
-                    else:
-                        l_smooth = torch.tensor(0.0, device=device)
-                    total = total_w + LAMBDA_DIV * div + r11_mono_w * mono + args.w_peak * l_peak + args.w_order * l_order + args.w_smooth * l_smooth
+                    total = total_w + LAMBDA_DIV * div + r11_mono_w * mono
                 scaler.scale(total).backward()
                 scaler.unscale_(optimizer)
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), clip_norm).item()
@@ -815,31 +759,7 @@ def train(args):
                     mono = r11_monotonic_penalty(model, batch, device)
                 else:
                     mono = torch.tensor(0.0, device=device)
-                # Auxiliary losses (peak / order / smooth) — skipped when weight == 0
-                if args.w_peak > 0.0:
-                    _p_pred = torch.softmax(out["act_logits"], dim=-1)[:, 8:20, 0].mean(0)
-                    _p_true = (batch["dec_act_seq"][:, 8:20] == 1).float().mean(0).detach()
-                    l_peak = F.mse_loss(_p_pred, _p_true)
-                else:
-                    l_peak = torch.tensor(0.0, device=device)
-                if args.w_order > 0.0:
-                    _wl = out["work_logits"]
-                    _st = batch["tgt_strata"]
-                    _q = {s: torch.sigmoid(_wl[_st == s]).mean(dim=1) for s in [1, 2, 3] if (_st == s).any()}
-                    l_order = torch.tensor(0.0, device=device)
-                    if 1 in _q and 2 in _q:
-                        l_order = l_order + F.relu(_q[2].mean() - _q[1].mean())
-                    if 2 in _q and 3 in _q:
-                        l_order = l_order + F.relu(_q[3].mean() - _q[2].mean())
-                else:
-                    l_order = torch.tensor(0.0, device=device)
-                if args.w_smooth > 0.0:
-                    _ph = torch.sigmoid(out["home_logits"])
-                    _trans = _ph.diff(dim=1).abs().sum(dim=1)
-                    l_smooth = F.relu(_trans - args.smooth_target).mean()
-                else:
-                    l_smooth = torch.tensor(0.0, device=device)
-                total = total_w + LAMBDA_DIV * div + r11_mono_w * mono + args.w_peak * l_peak + args.w_order * l_order + args.w_smooth * l_smooth
+                total = total_w + LAMBDA_DIV * div + r11_mono_w * mono
 
                 if pcgrad is not None:
                     # De-conflict the 4 UW-weighted per-task grads on shared params,
@@ -847,7 +767,7 @@ def train(args):
                     # Retain the graph so the diversity + UW-log_var grads can still
                     # be computed below.
                     pcgrad.backward([per_task[t] for t in TASKS], retain_all=True)
-                    extra = LAMBDA_DIV * div + r11_mono_w * mono + args.w_peak * l_peak + args.w_order * l_order + args.w_smooth * l_smooth
+                    extra = LAMBDA_DIV * div + r11_mono_w * mono
                     div_grads = torch.autograd.grad(
                         extra, pcgrad.params, allow_unused=True, retain_graph=bool(weight_params),
                     )
@@ -866,16 +786,13 @@ def train(args):
                 grad_norm = nn.utils.clip_grad_norm_(model.parameters(), clip_norm).item()
                 optimizer.step()
 
-            accum["total"]   += float(total.item())
-            accum["act"]     += float(comp["act"].item())
-            accum["home"]    += float(comp["home"].item())
-            accum["work"]    += float(comp["work"].item())
-            accum["mono"]    += float(mono.item())
-            accum["cop"]     += float(comp["cop"].item())
-            accum["div"]     += float(div.item())
-            accum["l_peak"]  += float(l_peak.item())
-            accum["l_order"] += float(l_order.item())
-            accum["l_smooth"] += float(l_smooth.item())
+            accum["total"] += float(total.item())
+            accum["act"]   += float(comp["act"].item())
+            accum["home"]  += float(comp["home"].item())
+            accum["work"]  += float(comp["work"].item())
+            accum["mono"]  += float(mono.item())
+            accum["cop"]   += float(comp["cop"].item())
+            accum["div"]   += float(div.item())
             grad_norms.append(grad_norm)
 
         nb = len(train_loader)
@@ -892,16 +809,9 @@ def train(args):
         elapsed = time.time() - t0
 
         _mono_str = f" mono={avg['mono']:.4f}" if r11_on else ""
-        _aux_str = ""
-        if args.w_peak > 0.0:
-            _aux_str += f" pk={avg['l_peak']:.4f}"
-        if args.w_order > 0.0:
-            _aux_str += f" ord={avg['l_order']:.4f}"
-        if args.w_smooth > 0.0:
-            _aux_str += f" sm={avg['l_smooth']:.4f}"
         print(f"Epoch {epoch+1:3d}/{args.max_epochs}: loss={avg['total']:.4f}  "
               f"act={avg['act']:.4f} home={avg['home']:.4f} work={avg['work']:.4f} "
-              f"cop={avg['cop']:.4f} div={avg['div']:.4f}{_mono_str}{_aux_str} | "
+              f"cop={avg['cop']:.4f} div={avg['div']:.4f}{_mono_str} | "
               f"sig(a/h/w/c)={sig['act']:.2f}/{sig['home']:.2f}/{sig['work']:.2f}/{sig['cop']:.2f} | "
               f"val_JS={val['val_js']:.4f} home_gap={val['home_gap']:.4f} "
               f"work_gap={val['work_gap']:.4f} score={val['val_score']:.4f} "
@@ -913,8 +823,6 @@ def train(args):
                 "act_loss": round(avg["act"], 6), "home_loss": round(avg["home"], 6),
                 "work_loss": round(avg["work"], 6), "cop_loss": round(avg["cop"], 6),
                 "div_loss": round(avg["div"], 6), "mono_loss": round(avg["mono"], 6),
-                "l_peak": round(avg["l_peak"], 6), "l_order": round(avg["l_order"], 6),
-                "l_smooth": round(avg["l_smooth"], 6),
                 "sigma_act": round(sig["act"], 6), "sigma_home": round(sig["home"], 6),
                 "sigma_work": round(sig["work"], 6), "sigma_cop": round(sig["cop"], 6),
                 "val_js": round(val["val_js"], 6), "home_gap": round(val["home_gap"], 6),
@@ -997,28 +905,6 @@ def parse_args():
     p.add_argument("--r11_mono_weight", type=float, default=0.0,
                    help="Weight for R11 soft monotonic ordering penalty wkdy>=Sat>=Sun "
                         "(default 0.0 = disabled). Only active when --r11_person_latent is set.")
-    # ── Auxiliary losses (default 0.0 = disabled, preserves classic byte-identical behaviour) ──
-    p.add_argument("--w_peak", type=float, default=0.0,
-                   help="Weight for L_peak: MSE between predicted and observed work-activity "
-                        "probability in peak slots 8:20 (act class 0 = Work). Default 0.0 = off.")
-    p.add_argument("--w_order", type=float, default=0.0,
-                   help="Weight for L_order: soft wkdy>=Sat>=Sun ordering on mean sigmoid(work_logits) "
-                        "per day-type stratum. Default 0.0 = off.")
-    p.add_argument("--w_smooth", type=float, default=0.0,
-                   help="Weight for L_smooth: hinge on per-person AT_HOME transition count vs "
-                        "--smooth_target (hinge so it never pushes below observed ~2.0). Default 0.0 = off.")
-    p.add_argument("--smooth_target", type=float, default=2.0,
-                   help="Hinge target for L_smooth: number of AT_HOME transitions per day below "
-                        "which no penalty is applied (default 2.0 ~ observed daily mean).")
-    p.add_argument("--aux_loss_variant", type=str, default="none",
-                   choices=["none", "peak", "order", "smooth", "all"],
-                   help="Logging tag for which auxiliary loss variant this run represents "
-                        "(informational only — actual losses are controlled by --w_peak/order/smooth).")
-    # ── Warm-start: load model weights only from a best_model.pt (no optimizer/epoch) ──
-    p.add_argument("--warm_start", type=str, default="",
-                   help="Path to a best_model.pt checkpoint to warm-start model weights from "
-                        "(loads model_state only — optimizer/epoch untouched). "
-                        "Use this instead of --resume when best_model.pt has no optimizer_state.")
     return p.parse_args()
 
 
