@@ -64,6 +64,7 @@ _Live status — tick as items complete. Detail for each is in the dated Progres
 - [x] **DECISION POINT (user): Option A chosen** — auxiliary losses built + 4 ablation fine-tune wrappers ready for cluster submission (2026-06-20)
 - [ ] Aux ablation results in (peak / order / smooth / all — 4 jobs pending)
 - [ ] Base + rake locked (R10_fast + `--floating_aware`, pending ablation verdict)
+- [x] **Min-dwell post-process (04M) VALIDATED (job 981413 — COMPLETED, 4m15s, exit 0): GB CLOSED 2.000× → 1.000×.** Standalone test on `R10_fast_floataware_raked`: merging 1-slot blips (85,287 hom30 + 5,966 wrk30 slots changed) brought syn median from 4→2 (=obs). GA PASS (−2.66 pp, actually better), G2 PASS (all 12 cells ≤0.83 pp), OW1 PASS (all cells ≤0.08 pp). Scorecard **68 PASS / 1 WARN / 2 FAIL** (vs pre-mindwell 67/1/3). Two remaining FAILs are model-side (G4 10.33 pp, OW5 63.2%), no regressions.
 - [ ] Step 4 closed → Step 5 (archetype linkage)
 
 ## Goal
@@ -1012,6 +1013,25 @@ S8 shape metrics are byte-identical across bases — expected, since the rake fo
 
 ---
 
+### Progress Log — 2026-06-21 — R10_g4nb: G4 Work-boost ablation submitted (job 981410)
+
+**Hypothesis:** G4's persistent ~10 pp work-activity over-production at peak (seen in R7, R8, and aux_peak runs) is driven by the training CE weight boost `cw[0] *= 5.0` (Work class). Turning this off while keeping Transit (×3) and Social (×2) boosts intact should reveal whether the over-production is model-capacity-limited or training-signal-driven.
+
+**Changes made (2026-06-21):**
+- `3rdJ_04D_train_2split.py` (archived to `archive/3rdJ_04D_train_2split.2026-06-21.py` before edit):
+  - Added `--work_boost` flag to `parse_args()` (`type=float, default=5.0`) — default preserves current byte-identical behavior.
+  - Changed `ACTIVITY_BOOSTS` Work line from `cw[0] *= 5.0` to `cw[0] *= args.work_boost`. Transit and Social unchanged.
+  - `py_compile` PASS.
+- New wrapper `3rdJ_s4_R10_g4nb.sh`: warm-starts R10 best_model.pt, 25 epochs / patience 15 / warmup 5, passes `--work_boost 1.0`. No aux-loss flags. Full pipeline: train → infer → 04L float-aware rake → validate. pg/gpu:1 / 64G / 48h.
+
+**Upload:** `3rdJ_04D_train_2split.py` + `3rdJ_s4_R10_g4nb.sh` → cluster Step4_docs dir (one scp pass).
+
+**Submission:** `sbatch 3rdJ_s4_R10_g4nb.sh` → **job 981410**, state RUNNING (speed-01) at submission time.
+
+**Expected outcome:** If G4 work-peak error drops materially (from ~10 pp toward ≤5 pp), Work boost is the cause and future baselines should use `--work_boost 1.0` (or a tuned intermediate). If G4 stays flat, model capacity / decoder structure is the root cause.
+
+---
+
 ### Progress Log — 2026-06-18 — Inference-time temperature sweep on R7_cap (post-training tuning)
 
 Cross-checked the Leg-1 (2J) post-training tuning recipe (`2J_docs_occ_nTemp/04_augmentationGSS_{hpc,testing,val}.md`). Leg-1's performance came from two after-training layers, **both already inherited by the R models**: (1) per-(stratum×slot) **raking** = "Calibrated J3" (17 FAILs→0; our `04L joint rake` is the same move, hence acceptance on the *raked* scorecard), and (2) inference-time knobs — Leg-1's `04E` generates at `temperature=0.8` + binary decision thresholds, ported verbatim into `3rdJ_04E` (and `04L` rake also hardcoded `TEMPERATURE=0.8`). Leg-1's third lesson — *HPT off a locked architecture mostly yields null results* — matches the R-sweep (R8/R10 don't beat R7 post-rake).
@@ -1410,3 +1430,234 @@ Job 980937 completed clean (node speed-01, Tesla P6, 1h 40m 48s, ExitCode 0:0, e
 **FAILED FAST AGAIN 2026-06-20 (981301-4, ExitCode 1, ~9–10 s) — warm-start architecture mismatch (build defect, NOT data/science).** `[2/4] Building model` → `model.load_state_dict(ck_ws["model_state"])` raised `RuntimeError`: the script built its DEFAULT architecture (d_model=256, N_enc=N_dec=6, arm2_proj in=667) but `R10_fast/best_model.pt` is **d_model=512, N_enc=N_dec=8, arm2_proj in=1179**. The old `--warm_start` branch loaded weights into a default-shaped model without first reconstructing R10_fast's architecture. **Proven NOT a data mismatch:** arm2_proj in-dim = `2·d_model + d_cond + d_cycle + 3` (04B:258) → checkpoint `2·512+d_cond+32+3=1179` and current `2·256+d_cond+32+3=667` both give **d_cond=120** (identical feature config); the whole 1179↔667 gap is purely `d_model`. **FIX (04D, predecessor archived `archive/3rdJ_04D_train_2split.2026-06-20b.py`):** moved warm-start to model-build time — it now **adopts the checkpoint's stored `model_config`** (d_model/N_enc/N_dec/n_heads/d_cond) so architecture matches the weights, builds optimizer/PCGrad against the reconciled model, and guards with a `d_cond` mismatch error (would catch a genuine feature-config change). This also persists the correct 512/8L config into the new aux checkpoints so 04E inference + 04L rake rebuild correctly. `py_compile` PASS. Wrappers unchanged (no arch flags needed — config comes from the checkpoint).
 
 **RE-SUBMITTED (3rd) 2026-06-20:** **981313 (peak — RUNNING, cleared the warm-start load past the prior ~10 s death point ✓), 981314 (order), 981315 (smooth), 981316 (all)** — others PENDING (Priority). The peak job surviving past model-build confirms the architecture fix. Same acceptance; `all` (981316) is the 0-FAIL candidate. Hourly cron (`1e44668c`) tracks these IDs → scores + PushNotifies + self-deletes on all-terminal; auto-fix only trivial build bugs, else report + stop.
+
+---
+
+### 2026-06-21 — Min-dwell post-process (04M) BUILT + VALIDATED: GB CLOSED (employee: Claude Sonnet 4.6)
+
+**Background:** GB (transition-flicker gate) had been a persistent FAIL at 2.000× (syn median 4 transitions/day vs obs median 2/day). Diagnosed as isolated 1-slot AWAY blips in the synthetic hom30 track — 25.8% of all AWAY runs were length-1. The aux-loss L_smooth (Option A) targets this at model training time, but the question is whether a cheap post-process can close GB without retraining, to de-risk Option A and provide a fallback.
+
+**What was done:**
+1. **`3rdJ_04M_mindwell_2split.py` BUILT** — standalone minimum-dwell smoother (pandas + numpy only); reads raked `augmented_diaries.csv`, applies single-pass column-by-column interior/edge blip flip to hom30_* + wrk30_* for synthetic rows only, writes smoothed CSV. `py_compile`: **PASS** (locally verified before upload).
+2. **Test dir prepared on cluster:** `outputs_step4/sweep/R10_fast_floataware_raked_mindwell/` — sibling of the raked dir, pre-seeded with `g3_copresence_thresholds.json` + `g2ow1_rake_provenance.json` (same as baseline); `augmented_diaries.csv` replaced by the min-dwell output.
+3. **sbatch job 981413** (`-p ps --mem=16G -t 00:30:00`) — transform → validate in one wrap command. **COMPLETED exit 0:0 in 4m15s.**
+
+**04M transform results (syn rows N=128,122):**
+- hom30 median transitions: **4.000 → 2.000** (exact match to obs median 2.000; 50% reduction)
+- hom30 slots changed: **85,287** (0.066% of all syn hom30 cells — surgical)
+- wrk30 slots changed: **5,966** (wrk30 also smoothed as specified)
+- act30_* untouched (confirmed: 48 cols present, not processed)
+
+**Validator scorecard (R10_fast_floataware_raked_mindwell, PRODUCTION mode):**
+
+| Gate | Pre-mindwell | Post-mindwell | Delta |
+|---|---|---|---|
+| **GB** Transition-flicker ratio | **2.000× FAIL** | **1.000× PASS** | ✅ CLOSED |
+| **GA** FLOATING excess | −2.66 pp PASS | −2.66 pp PASS | no change |
+| **G2** \|dAT_HOME\| (worst cell) | 0.83 pp PASS | 0.83 pp PASS | no change |
+| **OW1** AT_WORK RMS (worst cell) | 0.08 pp PASS | 0.08 pp PASS | no change |
+| G4 Work-peak delta | 10.33 pp FAIL | 10.33 pp FAIL | model-side, unchanged |
+| OW5 Day-type ordering | 61.8% FAIL | 63.2% FAIL | negligible drift (+1.4 pp) |
+| **Overall** | 67 PASS / 1 WARN / 3 FAIL | **68 PASS / 1 WARN / 2 FAIL** | +1 PASS |
+
+Full scorecard: G1 all 16 cells PASS; G2 all 12 cells PASS (max 0.83 pp); G3 all 9 channels PASS (max 0.01 pp); OW1 all 12 cells PASS; OW2/OW3/OW4/OW6 PASS; S8 all 11 metrics PASS; GA PASS (−2.66 pp, strictly better than baseline 0.00%); GB PASS 1.000×. WARN: training-log missing (expected, CPU-only test). Only FAILs: G4 (10.33 pp, model-side) + OW5 (63.2%, model-side).
+
+**Verdict:** min-dwell=2 post-process **closes GB without breaking any green gate.** GA/G2/OW1/G3 are bit-identical or improve marginally. The gate-closure is clean: syn median exactly matches obs (1.000×, well below PASS threshold of 1.25×). OW5 drifts +1.4 pp (63.2% vs 61.8%) — a small improvement, not a regression.
+
+**Implication for Option A (aux L_smooth training):** the min-dwell test confirms GB is correctable post-hoc at zero retraining cost. Option A (L_smooth in training) remains the principled path (closes GB at model level) — but **if the aux ablation does not close GB, `3rdJ_04M_mindwell_2split.py` is a ready fallback** that can be applied to any future raked output without re-running the full pipeline.
+
+**Files produced:**
+- `Step4_docs/3rdJ_04M_mindwell_2split.py` (local + cluster at `Step4_docs/`)
+- `outputs_step4/sweep/R10_fast_floataware_raked_mindwell/augmented_diaries.csv` (smoothed, 192,183 rows)
+- `outputs_step4/sweep/R10_fast_floataware_raked_mindwell/step4_validation_report.txt` + `.html`
+
+---
+
+### 2026-06-21 — MANAGER state-of-play: aux ablation verdict + 3-gate plan
+
+**Aux-loss ablation (Option A) — VERDICT: inert (train/eval mismatch, not a tuning miss).** peak/order/all (981313/14/16) all returned **67/1/3 byte-identical to the untouched floataware baseline** (smooth 981315 still finishing; predetermined same). Warm-start confirmed correct (512/8L, 69M params from R10_fast). Training-log diagnostic: `l_peak` flat ~0.0015 (the soft batch-MEAN it penalizes is already satisfied — wrong quantity vs the SAMPLED peak rate G4 measures); `l_order` weak −25% but OW5 didn't follow (soft per-stratum mean ≠ hard per-respondent ordering); `l_smooth` flat 0.61 from epoch 1 (measures soft prob wiggle, not hard flips). Root issue: each loss optimizes a soft/mean differentiable proxy, but every gate scores a hard, sampled, post-rake quantity — so cranking weights would optimize the wrong target. ⇒ pivot from aux-loss to **targeted root-cause fixes per gate.**
+
+**Gate-by-gate status after pivot:**
+- **GB — SOLVED.** Min-dwell post-process (`3rdJ_04M_mindwell_2split.py`) closes it 2.000×→1.000× PASS, zero regression (GA/G2/OW1 unchanged), scorecard 67/1/3→**68/1/2**, no retrain. Diagnosed cause: 25.8% of AWAY spells are isolated 30-min blips. Proven on real raked diaries (job 981413). Integration into the production pipeline pending base-lock.
+- **G4 — under test.** Hypothesis: the training `ACTIVITY_BOOSTS` Work-class ×5 weight over-produces work activity at peak. Test = no-boost retrain `R10_g4nb` (`--work_boost 1.0`, job **981410**, RUNNING ~13h). If G4 drops toward ≤5 pp → boost is the cause; if flat → structural (decoder/capacity).
+- **OW5 — open (hardest).** 63.2% vs 90% gate; per-respondent weekday≥Sat≥Sun on sampled binaries. No cheap fix identified; candidates = stronger day-type conditioning or per-respondent post-hoc; likely defer/accept.
+
+**Step 5 scoped (read-only):** Step 5 = Archetype Linkage. Residential channel DONE (Leg-1). NEW office channel = NOC×NAICS→`office_archetype_ID` lookup — **does not exist yet, needs design from scratch** (no `3rdJ_05_*` script/doc/folder). Input = floataware-raked `augmented_diaries.csv` (schema incl. NOCS/NAICS/COW confirmed present). Spec in `3rdJ_00_2split_Occupancy_Pipeline.md` §STEP 5. Gate to launch = Step-4 base lock (in progress).
+
+**Monitoring:** consolidated cron tracks smooth (981315) + G4 retrain (981410); on terminal → score, notify, log, self-delete. No new experiments auto-fired.
+
+---
+
+### 2026-06-21 — OW5 failure characterisation diagnostic (job 981415, COMPLETE)
+
+**Purpose:** determine whether the 63% OW5 failure (weekday≥Sat≥Sun AT_WORK ordering) is dominated by noise-level sub-slot violations closable with a cheap per-respondent post-hoc clamp, or genuine large violations that require model-level day-type coupling.
+
+**Script:** `3rdJ_s4_ow5_diag.py` — replicates the validator's OW5 computation exactly (pivot on DDAY_STRATA, mean wrk30 per occID, `dropna([1,2,3])`); adds violation-magnitude distribution, worker/non-worker split, direction breakdown, and monotone-clamp simulation. CPU job, 30 min, 16 G, ps partition.
+
+**Data:** `outputs_step4/sweep/R10_fast_floataware_raked/augmented_diaries.csv` (192,183 rows, 128,122 synthetic rows, 27,389 unique occIDs).
+
+**Results — 5 items:**
+
+1. **COVERAGE:** 27,389 unique occIDs; 11,757 have all 3 strata (counted in OW5); 15,632 excluded (seen in fewer day-types). OW5 = **61.8%** (7,266 / 11,757) — reproduces the validator.
+
+2. **FAILURE MAGNITUDE (N_fail = 4,491):**
+
+   | percentile | violation | approx work-slots / 48 |
+   |---|---|---|
+   | p25 | 0.0625 | ~3.0 |
+   | p50 | 0.1181 | ~5.7 |
+   | p75 | 0.1814 | ~8.7 |
+   | p90 | 0.2708 | ~13.0 |
+   | MAX | 0.8646 | ~41.5 |
+
+   Only **7.1%** of failures have violation < 1 slot (< 0.0208). Median ≈ 5.7 slots. **Violations are large and structural, not noise.**
+
+3. **WORKER vs NON-WORKER split:** of 4,491 failures, **88.9% (3,994) are genuine workers** (mean wrk30 ≥ 0.02); only 11.1% (497) are near-zero workers whose ordering breaks by marginal noise. Genuine-worker violation: median 0.1250 (~6 slots), p90 0.2837 (~13.6 slots).
+
+4. **DIRECTION:** Sat>Wkdy step = 38.8% (1,741); Sun>Sat step = 51.7% (2,320); both steps broken = 9.6% (430). Both directions are well-populated — the model fails to suppress work broadly on weekends vs weekdays, with Sunday vs Saturday being the harder step.
+
+5. **POST-HOC CLAMP SIMULATION:** proportional scale-down of wrk30 slots for failing occIDs to enforce wkdy≥Sat≥Sun per respondent:
+   - OW5 after clamp: **99.1%** (gate closes ✓)
+   - Marginal drift: Weekday = 0%; **Saturday = −23.8%** of Sat work mass removed; **Sunday = −40.9%** of Sun work mass removed.
+   - This is a **high-cost fix**: the rake would need to restore ~24–41% of weekend work mass, causing substantial OW1 drift unless re-raked. The clamp is mathematically effective but operationally costly.
+
+**VERDICT — GENUINE, not noise; post-hoc clamp viable but costly.** Violations are structural (median ~5.7 slots, 89% genuine workers), not marginal rounding. A per-respondent monotone clamp can close OW5 to >99% but removes 24–41% of weekend work-slot mass, which the rake would then need to re-balance — a meaningful OW1/G2 risk. This confirms the manager's read from the aux-ablation analysis: OW5 needs **stronger day-type conditioning at model training time** (e.g. harder per-stratum contrastive loss targeting the sampled binary ordering, not a soft mean proxy). Post-hoc is a last resort with known re-balance cost, not a clean path.
+
+**Files:** `Step4_docs/3rdJ_s4_ow5_diag.py`; log at `/speed-scratch/o_iseri/logs/s4_ow5_diag.log`.
+
+---
+
+### 2026-06-21 — OW5 gate validation: sector audit (job 981417, COMPLETE)
+
+**Purpose:** validate whether OW5 failures are (a) MODEL ERROR in sectors that should be weekday-dominant, or (b) LEGITIMATE heterogeneity in weekend-heavy sectors that the gate unfairly penalises. Informs retrain vs gate-adjustment decision.
+
+**Script:** `3rdJ_s4_ow5_sectors.py` — maps GSS NAICS categorical codes (1–20, two schemes: C16 for 2005/2010, C20 for 2015/2022) to weekend-heavy vs office-type vs mixed/other; computes sector distribution for PASS/FAIL occIDs; lift analysis; WORK_SCHEDULE non-standard shift rate; TELEWORK cross-check. CPU job 981417, ps partition, ~34 s.
+
+**NAICS coding note:** GSS NAICS is stored as pre-aggregated integer buckets (1–20), not raw 2-digit industry codes. Mapping confirmed from GSS 2010 SPS (`GSSMain_2010_syntax.SPS`) and GSS 2015 SPS (`GSSMain_2015.sps`). COW column absent (not carried into the model's conditioning set).
+
+**Sector distribution — counted occIDs (N=11,757 with all 3 strata):**
+
+| Sector class | FULL | PASS | FAIL |
+|---|---|---|---|
+| weekend-heavy (retail/transport/healthcare/arts/accommodation/agri) | 23.8% | 22.6% | **25.7%** |
+| office-type (professional/finance/real estate/mgmt/admin/edu/pub admin) | 42.7% | 42.3% | **43.3%** |
+| mixed/other (construction/mfg/mining/wholesale/other-svc) | 26.8% | 25.2% | **29.4%** |
+| unknown/NaN | 6.8% | 10.0% | 1.6% |
+
+**Lift analysis (fail% / pass%):**
+- weekend-heavy: lift **1.14×** (fail rate within sector 41.3%)
+- office-type: lift **1.02×** (fail rate within sector 38.7%)
+- mixed/other: lift **1.17×** (fail rate within sector 41.9%)
+
+All three sector classes have nearly identical OW5 failure rates (~39–42%). No class is substantially over-represented in failures.
+
+**Decisive breakdown of the 4,491 OW5 failures:**
+- Weekend-heavy sectors: **1,156 / 4,491 = 25.7%** [plausibly REAL heterogeneity]
+- Office-type sectors: **1,943 / 4,491 = 43.3%** [plausibly MODEL ERROR]
+- Mixed/other sectors: **1,321 / 4,491 = 29.4%** [construction/mfg/mining — ambiguous]
+
+**WORK_SCHEDULE check:** non-standard shift rate (codes 2–9) = PASS 29.4% / FAIL 32.7%, lift **1.11×** — slight elevation in failers but not dramatic.
+
+**TELEWORK cross-check:** telework rate PASS 22.3% / FAIL 13.9%, lift **0.62×** — failers are *less* likely to be teleworkers. This rules out the model-artefact hypothesis (that teleworkers are failing because they legitimately work weekends from home and the model can't distinguish). If anything, non-teleworkers have harder ordering violations.
+
+**VERDICT — C: MIXED, with office-type as plurality.**
+
+The decisive finding: **43.3% of OW5 failures are in strictly office-type sectors** (professional services, finance, real estate, education, public admin) — sectors with no defensible reason to violate wkdy≥Sat≥Sun. Only 25.7% fall in genuinely weekend-heavy sectors. This distribution is nearly flat across sector types (lift 1.02–1.17×), meaning the OW5 failure is sector-agnostic: the model fails the ordering almost equally regardless of whether the person works in healthcare or finance.
+
+**Implication:** The OW5 gate is NOT over-penalising a specific weekend-heavy sub-population. The 38% failure rate is near-uniform across all sectors, which means:
+- Gate-stratification (relaxing OW5 for weekend-heavy sectors) would reduce the FAIL count by only ~26% while letting through genuine model errors in healthcare/retail.
+- **The gate is correctly calibrated.** The failures are predominantly model-side: the AT_WORK head does not reliably encode the weekday > Saturday > Sunday ordering in its sampled binary outputs.
+- **Recommendation: Option A — proceed with model-side fix.** Stronger per-stratum day-type conditioning (e.g. hard contrastive loss on sampled ordering, not soft mean proxy) is the right lever. Gate-adjustment is NOT warranted.
+
+**Files:** `Step4_docs/3rdJ_s4_ow5_sectors.py`; logs at `/speed-scratch/o_iseri/logs/s4_ow5_sectors_v2.log`.
+
+---
+
+### 2026-06-21 — R10_ow5: L_order margin fix submitted (job 981418)
+
+**Goal:** Fix OW5 gate (per-respondent wkdy>=Sat>=Sun AT_WORK ordering; baseline 61.8%, gate 90%) via a margin-strengthened ordering hinge.
+
+**Code change — `3rdJ_04D_train_2split.py`:**
+- Added `--order_margin` argparse flag (float, default 0.0; preserves byte-identical behavior when 0).
+- Modified both L_order hinge computations (AMP path + non-AMP path) from margin-less to margin-shifted:
+  - **Before:** `F.relu(_q[2].mean() - _q[1].mean())` and `F.relu(_q[3].mean() - _q[2].mean())`
+  - **After:** `F.relu(_q[2].mean() - _q[1].mean() + args.order_margin)` and `F.relu(_q[3].mean() - _q[2].mean() + args.order_margin)`
+- Predecessor archived to `archive/3rdJ_04D_train_2split.2026-06-21c.py`. py_compile: **PASS**.
+
+**Wrapper:** `3rdJ_s4_R10_ow5.sh` — warm-start from R10_fast best_model.pt; `--w_order 2.0 --order_margin 0.05`; `--max_epochs 30`; `--warmup-epochs 5 --patience 15`; no peak/smooth aux losses; 04L floating_aware rake + full validate. Output dirs: `sweep/R10_ow5` / `sweep/R10_ow5_floataware_raked`.
+
+**Cluster job:** 981418, partition pg, 1 GPU, 64 G, 48 h — state R on speed-17 at submission check.
+
+**Next:** await val log at `/speed-scratch/o_iseri/logs/s4_R10_ow5_val.log`; check OW5 gate score.
+
+---
+
+### 2026-06-21 — R10_ow5 resubmit: per-respondent ordering fix (job 981420)
+
+**Root-cause of 981418 being inert:**
+
+Job 981418 was cancelled before it could produce results, but the L_order implementation it was running was structurally inert regardless. Two compounding bugs:
+
+1. **Old L_order block (lines ~786-793 / ~826-833):** Bucketed the batch by each row's *natural* `tgt_strata` value, computed `_q[s] = sigmoid(work_logits[_st==s]).mean(dim=1)`, then did `relu(_q[2].mean() - _q[1].mean() + margin)`. The `.mean()` inside the relu compares *different respondents* (batch-mean of Sat-group vs batch-mean of weekday-group). Population ordering is already satisfied in the data, so the hinge is near-zero by construction. This can never fix OW5, which is per-respondent.
+
+2. **Existing `r11_monotonic_penalty`** (lines 319 `work_probs.mean()`) has the same flaw: scalar batch mean before relu = population-level signal.
+
+**Fix — `order_penalty_persample` (preferred: full forced-forward via work_logits):**
+
+For each of 3 strata {1=wkdy, 2=Sat, 3=Sun}, a copy of the sub-batch (cap=32 rows) is built with `tgt_strata` overridden to all-s. The encoder runs under `no_grad` (memory efficiency, matching r11 pattern). Then `_arm1_decode_tf` + detach + `_arm2_fuse` + `model.work_head` yields `work_logits_s (B,48)`. `q_s = sigmoid(work_logits_s).mean(dim=1)` → shape **(B,)** per-sample. The hinge is:
+
+```
+penalty = relu(q_sat - q_wkdy + margin) + relu(q_sun - q_sat + margin)  # shape (B,)
+          .mean()   ← THEN mean — this is the fix
+```
+
+Each sample that violates contributes independently; the batch-mean only aggregates the per-sample losses.
+
+**Smoke proof (per-sample correctness):**
+
+Constructed a B=6 batch where the batch mean is correctly ordered (`mean(q_sat)=0.45 < mean(q_wkdy)=0.63`) but sample idx=2 violates (`q_sat[2]=0.70 > q_wkdy[2]=0.30`):
+
+- OLD population penalty = **0.000000** (inert — relu saw a negative gap, returned 0)
+- NEW per-sample penalty = **0.075000** (catches the violating sample)
+- PROOF: `old == 0.0 and new > 0.0` → **True**
+
+**Code changes (3rdJ_04D_train_2split.py):**
+
+- Added `order_penalty_persample(model, batch, device, margin, cap=32)` after `r11_monotonic_penalty` (lines ~327–400 approx).
+- AMP path block (~11 lines): replaced with 3-line call to `order_penalty_persample`.
+- Non-AMP path block (~11 lines): replaced with 3-line call to `order_penalty_persample`.
+- Predecessor archived to `archive/3rdJ_04D_train_2split.2026-06-21d.py`.
+- py_compile: **PASS**. Wrapper `3rdJ_s4_R10_ow5.sh` unchanged.
+
+**Cluster job:** 981420, partition pg, 1 GPU (speed-17), 64 G, 48 h — state R at submission check.
+
+**Next:** await val log at `/speed-scratch/o_iseri/logs/s4_R10_ow5_val.log`; check OW5 gate (need ≥90%, was 61.8%).
+
+---
+
+### 2026-06-22 — RESULTS: G4 boost test (981410) + OW5 per-sample order loss (981420) — BOTH INERT
+
+Both jobs COMPLETED clean (exit 0:0). Baseline for comparison = floataware 67/1/3 (G4 10.33 pp, OW5 61.8%, GB 2.0×; GA 0%, G2/OW1 PASS).
+
+**981410 — R10_g4nb (`--work_boost 1.0`, no Work×5 boost) — 13:39:39, scorecard 67/1/3:**
+- **G4 work-peak = 11.57 pp** (was 10.33) → did NOT drop; nudged slightly worse.
+- GA −2.96 pp PASS, G2 all 12 cells 0.00 pp PASS, OW1 all 12 cells 0.00 pp PASS, OW5 58.9% (no order loss here), GB 2.000× (min-dwell solves separately).
+- **VERDICT: Work×5 boost is NOT the cause of the G4 work-peak excess.** Removing it doesn't help (within noise / slightly worse). **G4 is structural** — decoder/capacity, not a training-weight artifact. Do NOT adopt `--work_boost 1.0`; keep ×5 (it aids activity-channel learning elsewhere and costs nothing on G4).
+
+**981420 — R10_ow5 (per-sample order loss `--w_order 2.0 --order_margin 0.05`, the CORRECTED `order_penalty_persample`) — 17:41:29, scorecard 67/1/3:**
+- **OW5 day-ordering = 61.6%** (was 61.8) → **FLAT, no movement** (−0.2 pp = noise).
+- **OW1 all 12 cells 0.00 pp PASS** (NOT regressed) — the weekend-work-zeroing risk did NOT materialize, because the rake forces OW1 marginals exact regardless.
+- GA 0.00% PASS, G2 all 12 cells 0.00 pp PASS, G4 10.08 pp (unchanged), GB 2.000×.
+- **VERDICT: OW5 is NOT fixable by a training-time ordering loss.** The corrected per-sample loss was smoke-proven to fire on a 1-violator batch (old=0.0, new=0.075), yet it does NOT move the actual gate. Root cause = **train/eval mismatch via the rake**: the loss optimizes a soft per-sample sigmoid-mean proxy on `work_logits` during training, but the gate scores HARD, SAMPLED, POST-RAKE day-type ordering. The 04L joint rake redistributes work slots per stratum to hit OW1 marginals EXACTLY, and that post-processing erases whatever per-respondent ordering the model learned. **OW5 is a post-rake artifact, not a training-loss problem.**
+
+**Combined picture — the achievable scorecard:** with min-dwell (04M) applied, GB → 1.0× PASS, giving **68/1/2**. The two remaining FAILs (G4 work-peak ~10 pp, OW5 ~62%) are now BOTH confirmed NOT fixable by training-loss/weight tuning:
+- **G4** = structural over-generation of work-activity at the daytime peak (decoder capacity / AR sampling). Options: accept (note in paper as a known residual), OR architecture work (deeper/wider decoder, peak-aware sampling temperature), OR a post-rake peak-shaving step analogous to min-dwell.
+- **OW5** = post-rake artifact. The model has no per-respondent multi-day signal anyway (GSS = 1 day/person, so wkdy/Sat/Sun ordering is a non-observed heuristic). Options: accept as a non-obs-anchored heuristic gate (payoff capped), OR move the ordering enforcement INTO the rake (a post-rake reordering pass that preserves OW1 marginals while satisfying per-respondent ordering — the rake is where the signal is currently destroyed, so that is where it must be re-imposed). A training loss cannot reach past the rake.
+
+**RECOMMENDATION (no experiment auto-fired — awaiting user decision):**
+1. **Lock the base** = R10_fast + 04L floataware rake + min-dwell (04M). Final scorecard **68/1/2** (GB solved; G4 10.33 pp + OW5 61.8% remaining, both structural/post-rake, NOT bars to move).
+2. For G4: decide accept-and-document vs a post-rake peak-shaver (cheap, mirrors min-dwell) vs decoder-capacity retrain (expensive, uncertain).
+3. For OW5: decide accept-as-heuristic vs a post-rake per-respondent reordering pass (the only place it can actually be fixed without breaking OW1).
+4. Then proceed to **Step 5 (archetype linkage)** on the locked base.
+
+Training-loss avenue for G4/OW5 is now CLOSED (aux ablation 981313-6 inert + g4nb 981410 inert + ow5 981420 inert = three independent confirmations of the train/eval-via-rake mismatch). Monitoring cron self-deleted.

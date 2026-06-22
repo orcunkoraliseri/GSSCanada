@@ -326,90 +326,6 @@ def r11_monotonic_penalty(model, batch: dict, device, cap: int = 32) -> torch.Te
     return penalty
 
 
-def order_penalty_persample(model, batch: dict, device, margin: float,
-                            cap: int = 32) -> torch.Tensor:
-    """
-    Per-respondent AT_WORK ordering penalty: weekday >= Sat >= Sun per SAMPLE.
-
-    WHY THE OLD L_ORDER WAS INERT (2026-06-21 fix):
-      The previous block bucketed the batch by tgt_strata and computed
-      q[2].mean() - q[1].mean() before relu — a BATCH-MEAN comparison across
-      DIFFERENT respondents. Population ordering is already satisfied in the
-      training data, so relu(population_gap + margin) is almost always 0.
-      OW5 is a PER-RESPONDENT constraint; the penalty must compare the SAME
-      sample forced through each stratum.
-
-    FIX — full forced forward, PREFERRED path (work_logits direct):
-      For each of the 3 strata {1=wkdy, 2=Sat, 3=Sun}, build a copy of the
-      sub-batch with tgt_strata overridden to that stratum and call
-      model.forward(batch_s) to obtain work_logits (B, 48).
-      q_s = sigmoid(work_logits).mean(dim=1)  →  (B,) per-sample mean AT_WORK rate.
-      penalty = relu(q_sat - q_wkdy + margin) + relu(q_sun - q_sat + margin)
-      THEN .mean() over the sub-batch.
-      This is genuinely per-respondent: a single violating sample generates a
-      non-zero hinge even when the batch mean is ordered.
-
-    MEMORY: shared encoder is run under no_grad (same as r11_monotonic_penalty);
-    sub-batch capped at `cap` rows (default 32) to stay within the 15 GiB pg card.
-    The work_head is small (Linear->Tanh->Linear) so the 3 mini-forwards are cheap.
-
-    NOTE: model.forward uses batch["tgt_strata"] in both _arm1_decode_tf AND
-    _arm2_fuse, so overriding that key correctly forces both arms.
-    """
-    full_B = batch["dec_act_seq"].shape[0]
-    B = min(int(cap), full_B)
-    sl = slice(0, B)
-
-    # Build a minimal sub-batch with all keys sliced to B rows.
-    sub = {}
-    for k, v in batch.items():
-        if isinstance(v, torch.Tensor) and v.shape[0] == full_B:
-            sub[k] = v[sl]
-        else:
-            sub[k] = v
-
-    # Shared encoder under no_grad (same optimisation as r11_monotonic_penalty).
-    with torch.no_grad():
-        memory = model._encode(
-            sub["act_seq"], sub["aux_seq"],
-            sub["cond_vec"], sub["cycle_idx"],
-        )
-
-    q_rates = []
-    for s_val in [1, 2, 3]:
-        # Override tgt_strata to force the same B samples through stratum s.
-        batch_s = dict(sub)
-        batch_s["tgt_strata"] = torch.full(
-            (B,), s_val, dtype=torch.long, device=device
-        )
-        # Teacher-forced Arm-1 (activity) — strata one-hot used inside decoder.
-        act_logits = model._arm1_decode_tf(
-            batch_s["dec_act_seq"], batch_s["tgt_strata"],
-            memory, batch_s["cond_vec"], batch_s["cycle_idx"],
-            r11_latent=batch_s.get("r11_latent", None),
-        )  # (B, 48, n_act)
-        # DETACH barrier (mirrors model.forward exactly).
-        act_probs = torch.softmax(act_logits.detach(), dim=-1)
-        # Arm-2 fusion with forced stratum.
-        arm2_feat = model._arm2_fuse(
-            memory, act_probs,
-            batch_s["cond_vec"], batch_s["cycle_idx"], batch_s["tgt_strata"],
-        )  # (B, 48, d_model)
-        # AT_WORK head → logits → sigmoid → mean over 48 slots → (B,) per-sample rate.
-        work_logits_s = model.work_head(arm2_feat).squeeze(-1)  # (B, 48)
-        q_s = torch.sigmoid(work_logits_s).mean(dim=1)          # (B,)
-        q_rates.append(q_s)
-
-    q_wkdy, q_sat, q_sun = q_rates
-    # Per-sample hinge — THEN mean. This is the fix: each sample that violates
-    # contributes to the penalty independently of the batch mean.
-    penalty = (
-        F.relu(q_sat - q_wkdy + margin) +
-        F.relu(q_sun - q_sat  + margin)
-    ).mean()
-    return penalty
-
-
 # ── Loss weighting strategies ─────────────────────────────────────────────────
 
 class UncertaintyWeighting(nn.Module):
@@ -716,7 +632,7 @@ def train(args):
     cw = 1.0 / np.sqrt(freqs)
     cw = cw / cw.mean()
     if ACTIVITY_BOOSTS:
-        cw[0] *= args.work_boost    # Work (was hard 5.0; now flag-controlled)
+        cw[0] *= 5.0    # Work
         cw[12] *= 3.0   # Transit
         cw[8] *= 2.0    # Social
     act_class_weights = torch.tensor(cw, dtype=torch.float32, device=device)
@@ -867,7 +783,14 @@ def train(args):
                     else:
                         l_peak = torch.tensor(0.0, device=device)
                     if args.w_order > 0.0:
-                        l_order = order_penalty_persample(model, batch, device, args.order_margin)
+                        _wl = out["work_logits"]
+                        _st = batch["tgt_strata"]
+                        _q = {s: torch.sigmoid(_wl[_st == s]).mean(dim=1) for s in [1, 2, 3] if (_st == s).any()}
+                        l_order = torch.tensor(0.0, device=device)
+                        if 1 in _q and 2 in _q:
+                            l_order = l_order + F.relu(_q[2].mean() - _q[1].mean())
+                        if 2 in _q and 3 in _q:
+                            l_order = l_order + F.relu(_q[3].mean() - _q[2].mean())
                     else:
                         l_order = torch.tensor(0.0, device=device)
                     if args.w_smooth > 0.0:
@@ -900,7 +823,14 @@ def train(args):
                 else:
                     l_peak = torch.tensor(0.0, device=device)
                 if args.w_order > 0.0:
-                    l_order = order_penalty_persample(model, batch, device, args.order_margin)
+                    _wl = out["work_logits"]
+                    _st = batch["tgt_strata"]
+                    _q = {s: torch.sigmoid(_wl[_st == s]).mean(dim=1) for s in [1, 2, 3] if (_st == s).any()}
+                    l_order = torch.tensor(0.0, device=device)
+                    if 1 in _q and 2 in _q:
+                        l_order = l_order + F.relu(_q[2].mean() - _q[1].mean())
+                    if 2 in _q and 3 in _q:
+                        l_order = l_order + F.relu(_q[3].mean() - _q[2].mean())
                 else:
                     l_order = torch.tensor(0.0, device=device)
                 if args.w_smooth > 0.0:
@@ -1074,10 +1004,6 @@ def parse_args():
     p.add_argument("--w_order", type=float, default=0.0,
                    help="Weight for L_order: soft wkdy>=Sat>=Sun ordering on mean sigmoid(work_logits) "
                         "per day-type stratum. Default 0.0 = off.")
-    p.add_argument("--order_margin", type=float, default=0.0,
-                   help="margin (AT_WORK rate units) added inside the L_order ordering hinges; "
-                        "pushes weekday above weekend by a buffer so sampled order is robust. "
-                        "0.0 = current behavior")
     p.add_argument("--w_smooth", type=float, default=0.0,
                    help="Weight for L_smooth: hinge on per-person AT_HOME transition count vs "
                         "--smooth_target (hinge so it never pushes below observed ~2.0). Default 0.0 = off.")
@@ -1088,9 +1014,6 @@ def parse_args():
                    choices=["none", "peak", "order", "smooth", "all"],
                    help="Logging tag for which auxiliary loss variant this run represents "
                         "(informational only — actual losses are controlled by --w_peak/order/smooth).")
-    # ── Work-class CE weight boost (default 5.0 = current behaviour; 1.0 = no boost) ──
-    p.add_argument("--work_boost", type=float, default=5.0,
-                   help="Work-class CE weight multiplier (5.0 = current ACTIVITY_BOOSTS default; 1.0 = no boost)")
     # ── Warm-start: load model weights only from a best_model.pt (no optimizer/epoch) ──
     p.add_argument("--warm_start", type=str, default="",
                    help="Path to a best_model.pt checkpoint to warm-start model weights from "
