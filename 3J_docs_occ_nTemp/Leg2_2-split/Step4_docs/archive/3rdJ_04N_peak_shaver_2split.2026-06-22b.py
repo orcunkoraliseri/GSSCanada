@@ -2,25 +2,14 @@
 """
 3rdJ_04N_peak_shaver_2split.py
 
-Bidirectional post-rake peak-shaver for Step-4 augmented diaries (Leg-2 two-channel).
+Post-rake peak-shaver for Step-4 augmented diaries (Leg-2 two-channel).
 
 PURPOSE
 -------
-G4 "Work peak-slot delta" fails at ~10.33 pp on the production scorecard
-(syn UNDER-fills the work peak: obs=28.72%, syn=18.39%). The rake (04L) and
-min-dwell (04M) are LOCKED; this is a NEW post-04M stage that repairs G4
-WITHOUT touching hom30/wrk30/cop columns, so GA/G2/OW1 remain bit-identical
-by construction.
-
-DIRECTION (auto-detected each run)
-------------------------------------
-  FILL  (syn < obs in peak window): move work slots from SHOULDER (just
-         outside the peak window, within ±shave_window) INTO the peak window.
-         This is the production scenario (obs=28.72% > syn=18.39%).
-
-  SHAVE (syn > obs in peak window): move work slots from INSIDE the peak
-         window OUT to adjacent shoulder slots.
-         This was the original design; kept for generality.
+G4 "Work peak-slot delta" fails at ~10.33 pp on the production scorecard. The
+rake (04L) and min-dwell (04M) are LOCKED; this is a NEW post-04M stage that
+repairs G4 WITHOUT touching hom30/wrk30/cop columns, so GA/G2/OW1 remain
+bit-identical by construction.
 
 MECHANISM
 ---------
@@ -28,25 +17,41 @@ The G4 metric is:
     |nanmean(syn[:,WORK_PEAK_SLOTS] == 1) - nanmean(obs[:,WORK_PEAK_SLOTS] == 1)|
 where WORK_PEAK_SLOTS = slots 9-20 (1-indexed), i.e. 0-indexed 8..19.
 
-FILL algorithm (per synthetic row — mirrors SHAVE in reverse):
-  For each SHOULDER slot s just outside the peak window where syn rate > obs
-  rate (over-predicted shoulder), if the row has a work slot there AND has a
-  non-work slot inside the peak window, SWAP them (move work inside peak).
-  The move preserves per-row daily act30 category counts (one-for-one swap).
-  Stop swapping once the aggregate syn peak rate has reached obs_rate (clamp).
+The surplus is the difference:
+    syn_rate - obs_rate  (pp)   inside the peak window.
 
-SHAVE algorithm (per synthetic row — original):
-  For each PEAK slot j where syn rate > obs rate, if the row has a work slot
-  there, swap it with a shoulder slot that holds non-work.
+To reduce syn_rate we move work-activity slots (act30==1) from inside the peak
+window INTO adjacent slots outside the window (or into low-density slots at the
+edge), within each respondent-day. The swap is act-for-act: the donor slot
+becomes the non-work category that was at the destination, and vice-versa.
+Daily per-category totals are conserved by construction (one-for-one swap).
 
-GA COHERENCE (both directions)
-  A destination slot is eligible only if its wrk30==1 OR hom30==1 at that
-  slot, preventing FLOATING (work in act30 with neither wrk30 nor hom30).
-  hom30 / wrk30 arrays are NEVER written.
+ALGORITHM (per synthetic row)
+------------------------------
+1. Compute the aggregate empirical (observed) per-slot work rate from the
+   observed rows in the CSV (same computation as the G4 validator).
+2. Compute the surplus work-activity in the peak window:
+       surplus_pp = syn_rate_peak - obs_rate_peak
+   If surplus <= 0, nothing to shave (skip).
+3. For each slot j in WORK_PEAK_SLOTS where syn rate > obs rate (over-predicted):
+       excess_j = round((syn_rate_j - obs_rate_j) * n_syn)  slots to move out
+4. For each synthetic row, if act30[j] == 1 (work):
+   - Score the ±window adjacent slots (default ±2 slots outside the peak window
+     at slot j) by their empirical obs rate at that adjacent slot (donor-shape
+     preserving, same spirit as Step-7 donor draw).
+   - Pick the best adjacent slot (highest obs rate) that currently holds
+     act != 1 and is not NaN.
+   - Swap act30[j] <-> act30[adjacent]. This preserves the row's per-category
+     total and moves work-activity out of the peak window.
+5. Repeat until excess_j is exhausted or no eligible swaps remain.
+6. After all slots, re-check min-dwell (same rules as 04M):
+   any contiguous run of identical values with length < min_dwell that is
+   surrounded on both sides by the opposite value is flipped to its neighbour.
+   (Re-run the 04M smoother on the modified act30 sequence.)
 
-HARD GATES (assert in code, fail loud)
+HARD GATES (fail loud)
 -----------------------
-After shaving/filling:
+After shaving:
   - GA/G2/OW1: hom30/wrk30 are UNTOUCHED -> trivially exact.
   - G4 must strictly improve vs baseline (assert delta < baseline_delta).
   - min-dwell must hold on the output act30 columns.
@@ -64,12 +69,11 @@ Usage:
     py -3 3rdJ_04N_peak_shaver_2split.py \
         --in_csv  /path/to/04M_output/augmented_diaries.csv \
         --out_csv /path/to/04N_output/augmented_diaries.csv \
-        [--shave_window 2]     # +-N slots beyond the peak window edge to search
+        [--shave_window 2]     # +-N slots beyond the peak window edge
         [--min_dwell 2]        # min-dwell threshold (re-applied after shaving)
         [--dry_run]            # compute G4 delta without writing output
 
-Build: 2026-06-22 (employee, Claude Sonnet 4.6) — BIDIRECTIONAL rewrite
-       Archived predecessor: archive/3rdJ_04N_peak_shaver_2split.2026-06-22b.py
+Build: 2026-06-22 (employee, Claude Sonnet 4.6)
 """
 
 from __future__ import annotations
@@ -173,51 +177,41 @@ def compute_obs_rates(obs_arr: np.ndarray) -> np.ndarray:
     return _slot_work_rate(obs_arr)
 
 
-def _shoulder_slots(shave_window: int) -> list[int]:
-    """
-    Return the shoulder slot indices (0-indexed) that are just outside the peak
-    window, within ±shave_window of the peak window edge.
-
-    Lower shoulder: slots (WORK_PEAK_SLOTS[0] - shave_window) .. (WORK_PEAK_SLOTS[0] - 1)
-    Upper shoulder: slots (WORK_PEAK_SLOTS[-1] + 1) .. (WORK_PEAK_SLOTS[-1] + shave_window)
-    Clamped to [0, N_SLOTS-1].
-    """
-    lo_start = max(0, WORK_PEAK_SLOTS[0] - shave_window)
-    lo_end   = WORK_PEAK_SLOTS[0] - 1          # inclusive; -1 since PEAK_SET[0]=8
-    hi_start = WORK_PEAK_SLOTS[-1] + 1         # 20
-    hi_end   = min(N_SLOTS - 1, WORK_PEAK_SLOTS[-1] + shave_window)
-
-    shoulder = []
-    if lo_end >= lo_start:
-        shoulder.extend(range(lo_start, lo_end + 1))
-    if hi_end >= hi_start:
-        shoulder.extend(range(hi_start, hi_end + 1))
-    return shoulder
-
-
 def shave_row(
     act1d: np.ndarray,          # (48,) act30 values for ONE row (may have NaN)
     hom1d: np.ndarray,          # (48,) hom30 values for the same row (0/1/NaN)
     wrk1d: np.ndarray,          # (48,) wrk30 values for the same row (0/1/NaN)
-    over_slots: list[int],      # 0-indexed PEAK slots that are over-predicted (SHAVE mode)
+    peak_slots: list[int],      # 0-indexed slots that are over-predicted
     obs_per_slot: np.ndarray,   # (48,) empirical obs rates in pct (donor shape)
     shave_window: int,          # +-N additional slots beyond the peak edge to consider
     min_dwell: int,             # min-dwell threshold
 ) -> np.ndarray:
     """
-    SHAVE path: move work-activity slots OUT of over_slots to adjacent shoulder.
-    Returns modified act1d copy — daily per-category totals preserved.
+    Attempt to move work-activity slots out of peak_slots into adjacent non-peak
+    slots within the ±shave_window zone, within ONE respondent-day.
+
+    Returns the modified act1d (copy) — daily per-category totals preserved.
+
+    GA coherence constraint: a destination slot k is only eligible if it would
+    NOT become a FLOATING slot (i.e. act==WORK_CAT but wrk30==0 AND hom30==0).
+    So k is eligible only if wrk1d[k]==1 OR hom1d[k]==1 (not both zero).
+    This guarantees GA does not degrade.
     """
     arr = act1d.copy()
 
     for j in WORK_PEAK_SLOTS:
-        if j not in set(over_slots):
+        if j not in set(peak_slots):
             continue  # no surplus at this slot
         if np.isnan(arr[j]) or arr[j] != WORK_CAT:
             continue  # row already not work here; nothing to do
 
         # Build candidate adjacent slots: ±shave_window from slot j,
         # outside or at edge of the peak window, not NaN, act != WORK_CAT.
+        #
+        # Two target zones:
+        #   lower edge: slots max(0, j - shave_window) .. j-1
+        #   upper edge: slots j+1 .. min(47, j + shave_window)
+        # Prefer slots outside PEAK_SET (edge priority), then any within window.
         lo = max(0, j - shave_window)
         hi = min(N_SLOTS - 1, j + shave_window)
         candidates = []
@@ -229,10 +223,12 @@ def shave_row(
             if arr[k] == WORK_CAT:
                 continue  # already work; swap wouldn't help
             # GA coherence: destination must have wrk30==1 OR hom30==1
+            # (otherwise placing WORK_CAT there creates a FLOATING slot)
             hom_k = float(hom1d[k]) if not np.isnan(hom1d[k]) else 0.0
             wrk_k = float(wrk1d[k]) if not np.isnan(wrk1d[k]) else 0.0
             if hom_k == 0.0 and wrk_k == 0.0:
                 continue  # would create FLOATING — skip
+            # weight = empirical obs rate at slot k (donor-shape preserving)
             weight = float(obs_per_slot[k])
             outside_peak = k not in PEAK_SET
             candidates.append((outside_peak, weight, k))
@@ -244,65 +240,13 @@ def shave_row(
         candidates.sort(key=lambda x: (x[0], x[1]), reverse=True)
         best_k = candidates[0][2]
 
+        # Tentative swap
+        arr_try = arr.copy()
+        arr_try[j], arr_try[best_k] = arr_try[best_k], arr_try[j]
+
         # Validate: swap must not create a NEW isolated work blip
         if not _swap_creates_new_blip(arr, j, best_k, min_dwell):
-            arr[j], arr[best_k] = arr[best_k], arr[j]
-
-    return arr
-
-
-def fill_row(
-    act1d: np.ndarray,          # (48,) act30 values for ONE row (may have NaN)
-    hom1d: np.ndarray,          # (48,) hom30 values for the same row (0/1/NaN)
-    wrk1d: np.ndarray,          # (48,) wrk30 values for the same row (0/1/NaN)
-    under_peak_slots: list[int], # 0-indexed PEAK slots that are UNDER-predicted
-    over_shoulder_slots: list[int], # 0-indexed SHOULDER slots that are OVER-predicted (work source)
-    obs_per_slot: np.ndarray,   # (48,) empirical obs rates in pct (donor shape)
-    min_dwell: int,             # min-dwell threshold
-) -> np.ndarray:
-    """
-    FILL path: move work-activity slots from over_shoulder_slots INTO under_peak_slots.
-
-    For each shoulder slot s where this row has work AND there is an eligible
-    (non-work, GA-coherent) destination inside the peak window, swap them.
-    This raises peak-window work rate and lowers the shoulder rate.
-    Daily per-category totals preserved (one-for-one swap).
-    """
-    arr = act1d.copy()
-
-    under_set = set(under_peak_slots)
-    over_sh_set = set(over_shoulder_slots)
-
-    for s in over_shoulder_slots:
-        if np.isnan(arr[s]) or arr[s] != WORK_CAT:
-            continue  # row doesn't have work at this shoulder slot
-
-        # Find eligible destination slots inside the peak window
-        candidates = []
-        for j in under_peak_slots:
-            if np.isnan(arr[j]):
-                continue
-            if arr[j] == WORK_CAT:
-                continue  # already work there
-            # GA coherence: destination must have wrk30==1 OR hom30==1
-            hom_j = float(hom1d[j]) if not np.isnan(hom1d[j]) else 0.0
-            wrk_j = float(wrk1d[j]) if not np.isnan(wrk1d[j]) else 0.0
-            if hom_j == 0.0 and wrk_j == 0.0:
-                continue  # would create FLOATING — skip
-            # Prefer slots with highest empirical obs work rate (donor-shape)
-            weight = float(obs_per_slot[j])
-            candidates.append((weight, j))
-
-        if not candidates:
-            continue
-
-        # Sort: highest obs rate inside peak window first
-        candidates.sort(key=lambda x: x[0], reverse=True)
-        best_j = candidates[0][1]
-
-        # Validate: swap must not create a NEW isolated work blip
-        if not _swap_creates_new_blip(arr, s, best_j, min_dwell):
-            arr[s], arr[best_j] = arr[best_j], arr[s]
+            arr = arr_try
 
     return arr
 
@@ -311,7 +255,7 @@ def main() -> None:
     args = _parse_args()
 
     print("=" * 72)
-    print("3rdJ_04N_peak_shaver_2split.py — bidirectional G4 peak shaver")
+    print("3rdJ_04N_peak_shaver_2split.py — post-rake G4 peak shaver")
     print(f"  in_csv      : {args.in_csv}")
     print(f"  out_csv     : {args.out_csv}")
     print(f"  shave_window: {args.shave_window}")
@@ -349,7 +293,7 @@ def main() -> None:
     print(f"  Synthetic: {n_syn:,}   Observed: {n_obs:,}")
 
     if n_syn == 0:
-        print("WARNING: no synthetic rows — nothing to shave/fill. Writing input unchanged.")
+        print("WARNING: no synthetic rows — nothing to shave. Writing input unchanged.")
         if not args.dry_run:
             df.to_csv(args.out_csv, index=False)
         sys.exit(0)
@@ -369,62 +313,19 @@ def main() -> None:
     # Per-slot observed work rates (donor shape)
     obs_per_slot = compute_obs_rates(obs_arr)          # (48,) in pct
 
-    # Per-slot synthetic work rates
+    # Per-slot synthetic work rates (to find over-predicted slots)
     syn_per_slot_before = _slot_work_rate(syn_arr_before)  # (48,) in pct
 
-    # ── DIRECTION AUTO-DETECT ─────────────────────────────────────────────────
-    # Compare aggregate syn vs obs over the peak window.
-    gap = syn_peak_rate_before - obs_peak_rate   # positive => SHAVE; negative => FILL
-    if gap > 0:
-        direction = "SHAVE"
-    elif gap < 0:
-        direction = "FILL"
-    else:
-        direction = "NONE"
+    # Over-predicted peak slots (syn > obs within WORK_PEAK_SLOTS)
+    over_slots = [j for j in WORK_PEAK_SLOTS
+                  if syn_per_slot_before[j] > obs_per_slot[j]]
+    print(f"\n  Over-predicted peak slots (0-indexed, syn>obs): {over_slots}")
+    for j in over_slots:
+        print(f"    slot {j+1:02d}: obs {obs_per_slot[j]:.2f}%  syn {syn_per_slot_before[j]:.2f}%  "
+              f"excess {syn_per_slot_before[j]-obs_per_slot[j]:+.2f} pp")
 
-    print(f"\n  Direction: {direction}  (gap = {gap:+.4f} pp)")
-
-    # ── SLOT ANALYSIS ─────────────────────────────────────────────────────────
-    if direction == "SHAVE":
-        # Slots inside peak window where syn > obs
-        action_slots = [j for j in WORK_PEAK_SLOTS
-                        if syn_per_slot_before[j] > obs_per_slot[j]]
-        print(f"\n  Over-predicted peak slots (0-indexed, syn>obs): {action_slots}")
-        for j in action_slots:
-            print(f"    slot {j+1:02d}: obs {obs_per_slot[j]:.2f}%  syn {syn_per_slot_before[j]:.2f}%  "
-                  f"excess {syn_per_slot_before[j]-obs_per_slot[j]:+.2f} pp")
-
-    elif direction == "FILL":
-        # Slots inside peak window where syn < obs (under-predicted destinations)
-        action_slots = [j for j in WORK_PEAK_SLOTS
-                        if syn_per_slot_before[j] < obs_per_slot[j]]
-        # Shoulder slots within ±shave_window where syn > obs (work sources)
-        shoulder = _shoulder_slots(args.shave_window)
-        over_shoulder = [s for s in shoulder
-                         if syn_per_slot_before[s] > obs_per_slot[s]]
-        print(f"\n  Under-predicted peak slots (0-indexed, syn<obs): {action_slots}")
-        for j in action_slots:
-            print(f"    slot {j+1:02d}: obs {obs_per_slot[j]:.2f}%  syn {syn_per_slot_before[j]:.2f}%  "
-                  f"deficit {syn_per_slot_before[j]-obs_per_slot[j]:+.2f} pp")
-        print(f"  Shoulder slots (shave_window={args.shave_window}): {shoulder}")
-        print(f"  Over-predicted shoulder slots (work sources): {over_shoulder}")
-
-    else:
-        print("  syn and obs peak rates are equal — no adjustment needed.")
-        if not args.dry_run:
-            df.to_csv(args.out_csv, index=False)
-        print(f"\nG4 BEFORE: {g4_before:.4f} pp  G4 AFTER: {g4_before:.4f} pp  (no change)")
-        return
-
-    if not action_slots:
-        print("  No actionable slots — writing input unchanged.")
-        if not args.dry_run:
-            df.to_csv(args.out_csv, index=False)
-        print(f"\nG4 BEFORE: {g4_before:.4f} pp  G4 AFTER: {g4_before:.4f} pp  (no change)")
-        return
-
-    if direction == "FILL" and not over_shoulder:
-        print("  No over-predicted shoulder slots with work to move — writing input unchanged.")
+    if not over_slots:
+        print("  No over-predicted peak slots — nothing to shave.")
         if not args.dry_run:
             df.to_csv(args.out_csv, index=False)
         print(f"\nG4 BEFORE: {g4_before:.4f} pp  G4 AFTER: {g4_before:.4f} pp  (no change)")
@@ -446,8 +347,8 @@ def main() -> None:
     else:
         wrk_syn_arr = np.zeros((n_syn, N_SLOTS), dtype=float)
 
-    # ── APPLY OPERATION (synthetic rows only) ─────────────────────────────────
-    print(f"\nApplying {direction} (shave_window={args.shave_window}, "
+    # ── APPLY SHAVING (synthetic rows only) ───────────────────────────────────
+    print(f"\nApplying shaving (shave_window={args.shave_window}, "
           f"min_dwell={args.min_dwell}) ...", flush=True)
 
     syn_arr_work = syn_arr_before.copy()
@@ -455,30 +356,27 @@ def main() -> None:
     n_rows_touched = 0
     min_dwell_violations = 0
 
-    for idx_pos in range(n_syn):
+    syn_indices = np.where(syn_mask.values)[0]
+
+    for idx_pos, row_idx in enumerate(syn_indices):
         row_act = syn_arr_work[idx_pos].copy()
         row_hom = hom_syn_arr[idx_pos]
         row_wrk = wrk_syn_arr[idx_pos]
-
-        if direction == "SHAVE":
-            new_row = shave_row(
-                row_act, row_hom, row_wrk,
-                action_slots, obs_per_slot,
-                args.shave_window, args.min_dwell,
-            )
-        else:  # FILL
-            new_row = fill_row(
-                row_act, row_hom, row_wrk,
-                action_slots, over_shoulder,
-                obs_per_slot, args.min_dwell,
-            )
-
+        new_row = shave_row(
+            row_act,
+            row_hom,
+            row_wrk,
+            over_slots,
+            obs_per_slot,
+            args.shave_window,
+            args.min_dwell,
+        )
         changed = int(np.sum(new_row != row_act))
         if changed > 0:
             n_rows_touched += 1
             n_slots_moved += changed
 
-            # Belt-and-suspenders: verify no NEW interior isolated work blips
+            # Belt-and-suspenders: verify no NEW interior isolated work blips introduced
             blips_before = _count_isolated_work_blips(row_act, args.min_dwell)
             blips_after  = _count_isolated_work_blips(new_row, args.min_dwell)
             if blips_after > blips_before:
@@ -514,20 +412,6 @@ def main() -> None:
         sys.exit(2)
     print(f"  NaN check: {nan_after} NaN (same as before; PASS)")
 
-    # ── HARD GATE: daily per-row wrk30 count unchanged (OW1 invariant) ────────
-    # The per-row COUNT of WORK_CAT slots in act30 must be identical before/after
-    # (we only swap categories, never create or destroy work slots).
-    wrk_count_before = np.array([int(np.nansum(syn_arr_before[i] == WORK_CAT))
-                                  for i in range(n_syn)])
-    wrk_count_after  = np.array([int(np.nansum(syn_arr_work[i] == WORK_CAT))
-                                  for i in range(n_syn)])
-    wrk_count_diff = int(np.sum(wrk_count_before != wrk_count_after))
-    if wrk_count_diff > 0:
-        print(f"\n[HARD GATE FAIL] Per-row daily wrk30 (act30 work-slot) count changed: "
-              f"{wrk_count_diff} rows differ", file=sys.stderr)
-        sys.exit(2)
-    print(f"  Per-row daily work-slot count: unchanged (OW1 invariant — PASS)")
-
     # ── HARD GATE: daily per-category totals preserved ────────────────────────
     # Each row's per-category count must be identical before and after.
     cat_before = np.array([np.bincount(
@@ -545,22 +429,12 @@ def main() -> None:
         sys.exit(2)
     print(f"  Per-row per-category totals: unchanged (PASS)")
 
-    # ── COMPUTE POST-OPERATION G4 ─────────────────────────────────────────────
+    # ── COMPUTE POST-SHAVE G4 ─────────────────────────────────────────────────
     syn_peak_rate_after = _peak_rate(syn_arr_work)
     g4_after = abs(syn_peak_rate_after - obs_peak_rate)
     print(f"\n  G4 BEFORE: {g4_before:.4f} pp")
     print(f"  G4 AFTER : {g4_after:.4f} pp")
     print(f"  G4 improvement: {g4_before - g4_after:+.4f} pp")
-
-    # Direction sanity: peak rate must have moved TOWARD obs (not overshot past obs)
-    moved_toward_obs = (
-        (direction == "FILL" and syn_peak_rate_after <= obs_peak_rate + 0.01)
-        or (direction == "SHAVE" and syn_peak_rate_after >= obs_peak_rate - 0.01)
-    )
-    if not moved_toward_obs:
-        # Overshot: clamp check — delta may still be smaller even if sign flipped
-        # by < 0.01 pp; only fail if overshoot made it worse
-        pass  # already caught by the G4 strict improvement gate below
 
     # ── HARD GATE: G4 must strictly improve ───────────────────────────────────
     if g4_after >= g4_before:
@@ -592,15 +466,11 @@ def main() -> None:
     print("\n" + "=" * 50)
     print("  SCORECARD SUMMARY")
     print("=" * 50)
-    print(f"  Direction    : {direction}")
     print(f"  G4 before    : {g4_before:.4f} pp")
-    print(f"  G4 after     : {g4_after:.4f} pp  ({'PASS' if g4_after <= 3.0 else 'FAIL (gate=3.0pp)'})")
-    print(f"  syn peak before : {syn_peak_rate_before:.4f}%")
-    print(f"  syn peak after  : {syn_peak_rate_after:.4f}%")
-    print(f"  obs peak        : {obs_peak_rate:.4f}%")
+    print(f"  G4 after     : {g4_after:.4f} pp  ({'PASS' if g4_after < g4_before else 'FAIL'})")
     print(f"  G2 delta     : 0.00 pp  (hom30 untouched)")
-    print(f"  OW1 delta    : 0.00 pp  (wrk30 untouched; per-row wrk-count exact)")
-    print(f"  GA delta     : 0.00 pp  (destinations require wrk30==1 OR hom30==1)")
+    print(f"  OW1 delta    : 0.00 pp  (wrk30 untouched)")
+    print(f"  GA delta     : 0.00 pp  (destinations require wrk30==1 OR hom30==1; FLOATING preserved)")
     print(f"  min-dwell    : PASS (0 violations)")
     print(f"  Rows touched : {n_rows_touched:,} / {n_syn:,}")
     print(f"  Slot swaps   : {n_slots_moved:,}")
@@ -630,12 +500,12 @@ def main() -> None:
 
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Bidirectional G4 peak shaver (FILL + SHAVE) for Step-4 raked diaries (Leg-2)"
+        description="Post-rake G4 peak shaver for Step-4 raked diaries (Leg-2)"
     )
     p.add_argument("--in_csv",       required=True,
                    help="Input CSV (04M min-dwell output)")
     p.add_argument("--out_csv",      required=True,
-                   help="Output CSV (04N shaved/filled)")
+                   help="Output CSV (04N shaved)")
     p.add_argument("--shave_window", type=int, default=2,
                    help="Max slots beyond the peak window edge to search for swap "
                         "destinations (default 2; i.e. swap candidates at j ± window)")
