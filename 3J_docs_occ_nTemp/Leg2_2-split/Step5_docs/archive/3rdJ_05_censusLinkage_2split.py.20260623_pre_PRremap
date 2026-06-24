@@ -43,7 +43,7 @@ SMOKE_POOL = (
 )
 FULL_POOL = (
     BASE / "3J_docs_occ_nTemp" / "Leg2_2-split" / "Step4_docs"
-    / "outputs_step4" / "sweep" / "R5_raked_mindwell" / "augmented_diaries.csv"
+    / "outputs_step4" / "augmented_diaries.csv"
 )
 
 # Census
@@ -178,49 +178,8 @@ def load_augmented_pool(path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
       - wd_pool: DDAY_STRATA == 1 (Weekday)
       - we_pool: DDAY_STRATA in {2, 3} (Saturday + Sunday)
     Returns (wd_pool, we_pool).
-
-    Province→region remap: pool carries StatCan province codes (10/11/12/13/24/35/
-    46/47/48/59) but the census uses grouped region codes (1–6). Apply the SAME
-    mapping used in eSim_dynamicML_mHead_alignment.py::harmonize_pr() to align
-    pool PR with census PR before any DDAY split or matching. Values already in
-    domain 1–6 are identity-mapped. Any unmapped value raises immediately.
-    Source: authoritative (eSim_dynamicML_mHead_alignment.py::harmonize_pr).
     """
-    # Province→region map (identity for already-grouped 1–6; province codes for 10+)
-    _PROVINCE_TO_REGION: dict[int, int] = {
-        1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6,  # already grouped — identity
-        10: 1, 11: 1, 12: 1, 13: 1,            # Atlantic / Eastern Canada
-        24: 2,                                  # Quebec
-        35: 3,                                  # Ontario
-        46: 4, 47: 4, 48: 4,                   # Prairies
-        59: 5,                                  # British Columbia
-        60: 6, 61: 6, 62: 6,                   # Northern Canada / Territories
-    }
-
     df = pd.read_csv(path, low_memory=False)
-
-    # Log PR distribution before remap
-    pr_before = df["PR"].value_counts().sort_index()
-    print("[load_augmented_pool] PR value_counts BEFORE remap:")
-    for v, c in pr_before.items():
-        print(f"  PR={v}: {c}")
-
-    # Apply remap
-    remapped = df["PR"].map(_PROVINCE_TO_REGION)
-    unmapped = df.loc[remapped.isna(), "PR"].unique().tolist()
-    if unmapped:
-        raise ValueError(
-            f"[load_augmented_pool] Unmapped PR values after province→region remap: {unmapped}. "
-            f"Add them to _PROVINCE_TO_REGION before proceeding."
-        )
-    df["PR"] = remapped.astype(int)
-
-    # Log PR distribution after remap
-    pr_after = df["PR"].value_counts().sort_index()
-    print("[load_augmented_pool] PR value_counts AFTER remap:")
-    for v, c in pr_after.items():
-        print(f"  PR={v}: {c}")
-
     wd_pool = df[df[DDAY_COL] == 1].reset_index(drop=True)
     we_pool = df[df[DDAY_COL].isin([2, 3])].reset_index(drop=True)
     return wd_pool, we_pool
@@ -450,15 +409,8 @@ def _nocs_agreement_report(df_full: pd.DataFrame, df_pool: pd.DataFrame) -> floa
 # ── Linkage runners ───────────────────────────────────────────────────────────
 
 def run_linkage_smoke(sample_frac: float = 0.01) -> None:
-    """
-    1% Census sample + raked_sample pool (3,840 rows).
-    Writes to outputs_step5/smoke_rungI/ (isolated — does NOT clobber existing
-    outputs_step5/smoke/ production outputs).
-    Includes Rung-(i) W3 colleagues before/after diagnostic.
-    """
-    # Isolated output directory — avoids clobbering production smoke outputs
-    smoke_out_dir = OUT_DIR / "smoke_rungI"
-    smoke_out_dir.mkdir(parents=True, exist_ok=True)
+    """1% Census sample + raked_sample pool (3,840 rows). Writes to outputs_step5/smoke/."""
+    SMOKE_DIR.mkdir(parents=True, exist_ok=True)
 
     print(f"[smoke] Loading pool from: {SMOKE_POOL}")
     wd_pool, we_pool = load_augmented_pool(str(SMOKE_POOL))
@@ -483,34 +435,6 @@ def run_linkage_smoke(sample_frac: float = 0.01) -> None:
 
     print(f"\n[smoke] {len(df_census_sample)} Census agents | pool: {len(df_pool)} rows")
     df_matched = run_slot_match(df_census_sample, df_pool, MATCH_KEYS, DDAY_COL)
-
-    # ── W3 BEFORE: compute colleagues30 stats before Rung-(i) is applied ────────
-    # We simulate the pre-Rung-I state by calling expand_slot_schedules with Rung-I
-    # temporarily disabled. Instead, capture pre-imputation from pool directly.
-    col_cols_pool = sorted([c for c in df_pool.columns if c.startswith("colleagues30_")])
-    wrk_cols_pool = sorted([c for c in df_pool.columns if c.startswith("wrk30_")])
-    if col_cols_pool:
-        pool_rows_pre = df_pool.loc[df_matched["_pool_idx"].to_numpy()].copy()
-        pool_rows_pre = pool_rows_pre.reset_index(drop=True)
-        syn_mask_pre = df_matched[DDAY_COL].isin([2, 3]).to_numpy()
-        obs_mask_pre = (df_matched[DDAY_COL] == 1).to_numpy()
-
-        # Full-pop mean (all rows, as carried from pool, before Rung-I)
-        all_col_before = float(pool_rows_pre[col_cols_pool].fillna(0).values.mean() * 100)
-        obs_col_before = float(pool_rows_pre[col_cols_pool].fillna(0).values[obs_mask_pre].mean() * 100) if obs_mask_pre.any() else float("nan")
-        syn_col_before = float(pool_rows_pre[col_cols_pool].fillna(0).values[syn_mask_pre].mean() * 100) if syn_mask_pre.any() else float("nan")
-        # Per-worker synthetic nonzero fraction
-        syn_wrk_mask_pre = (pool_rows_pre[wrk_cols_pool].fillna(0).values[syn_mask_pre].sum(axis=1) > 0)
-        syn_col_vals_pre = pool_rows_pre[col_cols_pool].fillna(0).values[syn_mask_pre]
-        syn_worker_col_nonzero_before = float(
-            (syn_col_vals_pre[syn_wrk_mask_pre] > 0).any(axis=1).mean() * 100
-        ) if syn_wrk_mask_pre.any() else float("nan")
-        print(f"\n[W3-BEFORE] Full-pop col mean: {all_col_before:.2f}%")
-        print(f"[W3-BEFORE] OBS-origin col mean: {obs_col_before:.2f}%")
-        print(f"[W3-BEFORE] SYN-origin col mean: {syn_col_before:.2f}%")
-        print(f"[W3-BEFORE] SYN worker nonzero frac: {syn_worker_col_nonzero_before:.1f}%")
-        print(f"[W3-BEFORE] W3 gap (|all - obs|): {abs(all_col_before - obs_col_before):.2f} pp  (gate <=3pp)")
-
     df_full = expand_slot_schedules(df_matched, df_pool, df_census_full)
 
     # ── Schema validation ─────────────────────────────────────────────────────
@@ -551,64 +475,6 @@ def run_linkage_smoke(sample_frac: float = 0.01) -> None:
         mean_at_home = float(df_full[hom_cols].values.mean())
         print(f"  Mean AT_HOME across all slots: {100 * mean_at_home:.2f}%  (baseline ~62.5%)")
 
-    # ── W3 AFTER: colleagues30 stats after Rung-(i) ──────────────────────────
-    col_cols_out = sorted([c for c in df_full.columns if c.startswith("colleagues30_")])
-    wrk_cols_out = sorted([c for c in df_full.columns if c.startswith("wrk30_")])
-    if col_cols_out:
-        syn_mask_out = df_full[DDAY_COL].isin([2, 3])
-        obs_mask_out = df_full[DDAY_COL] == 1
-
-        all_col_after  = float(df_full[col_cols_out].fillna(0).values.mean() * 100)
-        obs_col_after  = float(df_full.loc[obs_mask_out, col_cols_out].fillna(0).values.mean() * 100) if obs_mask_out.any() else float("nan")
-        syn_col_after  = float(df_full.loc[syn_mask_out, col_cols_out].fillna(0).values.mean() * 100) if syn_mask_out.any() else float("nan")
-        # Per-worker synthetic nonzero fraction
-        syn_rows_out = df_full[syn_mask_out]
-        syn_wrk_mask_out = (syn_rows_out[wrk_cols_out].fillna(0).values.sum(axis=1) > 0)
-        if syn_wrk_mask_out.any():
-            syn_col_vals_out = syn_rows_out[col_cols_out].fillna(0).values
-            syn_worker_col_nonzero_after = float(
-                (syn_col_vals_out[syn_wrk_mask_out] > 0).any(axis=1).mean() * 100
-            )
-        else:
-            syn_worker_col_nonzero_after = float("nan")
-
-        print(f"\n[W3-AFTER]  Full-pop col mean: {all_col_after:.2f}%")
-        print(f"[W3-AFTER]  OBS-origin col mean: {obs_col_after:.2f}%")
-        print(f"[W3-AFTER]  SYN-origin col mean: {syn_col_after:.2f}%")
-        print(f"[W3-AFTER]  SYN worker nonzero frac: {syn_worker_col_nonzero_after:.1f}%")
-        print(f"[W3-AFTER]  W3 gap (|all - obs|): {abs(all_col_after - obs_col_after):.2f} pp  (gate <=3pp)")
-
-        # Physical constraint check: col>0 where wrk==0
-        # Check SYNTHETIC rows only (observed rows are untouched, may have natural violations)
-        syn_full = df_full[syn_mask_out]
-        violations_syn_only = 0
-        for cc, wc in zip(col_cols_out, wrk_cols_out):
-            if wc in syn_full.columns:
-                violations_syn_only += int(((syn_full[cc].fillna(0) > 0) & (syn_full[wc] == 0)).sum())
-        total_slots_syn = len(syn_full) * len(col_cols_out)
-        violations_obs = 0
-        obs_full = df_full[obs_mask_out]
-        for cc, wc in zip(col_cols_out, wrk_cols_out):
-            if wc in obs_full.columns:
-                violations_obs += int(((obs_full[cc].fillna(0) > 0) & (obs_full[wc] == 0)).sum())
-        print(f"[W3-AFTER]  Physical constraint (SYN rows only — col>0 where wrk==0): "
-              f"{violations_syn_only} / {total_slots_syn}  "
-              f"({'PASS' if violations_syn_only == 0 else 'FAIL'})")
-        print(f"[W3-AFTER]  OBS row violations (untouched, informational): "
-              f"{violations_obs} / {len(obs_full)*len(col_cols_out)}")
-        violations = violations_syn_only  # Used in summary below
-
-        print("\n--- Rung-I W3 Summary ---")
-        if col_cols_pool:
-            print(f"  BEFORE: all={all_col_before:.2f}%  obs={obs_col_before:.2f}%  "
-                  f"syn={syn_col_before:.2f}%  syn-worker-nonzero={syn_worker_col_nonzero_before:.1f}%  "
-                  f"gap={abs(all_col_before - obs_col_before):.2f}pp")
-        print(f"  AFTER:  all={all_col_after:.2f}%   obs={obs_col_after:.2f}%  "
-              f"syn={syn_col_after:.2f}%  syn-worker-nonzero={syn_worker_col_nonzero_after:.1f}%  "
-              f"gap={abs(all_col_after - obs_col_after):.2f}pp")
-        print(f"  Constraint: col=0 where wrk=0 violations: {violations} "
-              f"({'PASS' if violations == 0 else 'FAIL'})")
-
     # ── Tier report ───────────────────────────────────────────────────────────
     print("\n--- Smoke Tier Distribution ---")
     _print_tier_report(df_matched)
@@ -634,14 +500,14 @@ def run_linkage_smoke(sample_frac: float = 0.01) -> None:
             f"\n    wrk[0:10]=[{wrk_first10}]"
         )
 
-    # ── Save (isolated smoke_rungI dir — does NOT overwrite production smoke/) ──
+    # ── Save ──────────────────────────────────────────────────────────────────
     df_matched.drop(columns=["_pool_idx"]).to_csv(
-        smoke_out_dir / "3rdJ_25CEN_aug_Matched_Keys_smoke.csv", index=False
+        SMOKE_DIR / "3rdJ_25CEN_aug_Matched_Keys_smoke.csv", index=False
     )
-    df_full.to_csv(smoke_out_dir / "3rdJ_25CEN_aug_Full_Schedules_smoke.csv", index=False)
+    df_full.to_csv(SMOKE_DIR / "3rdJ_25CEN_aug_Full_Schedules_smoke.csv", index=False)
 
-    print(f"\nSmoke outputs -> {smoke_out_dir}")
-    print("[smoke] DONE — both channels (hom30 + wrk30) + office_archetype_ID + Rung-I verified")
+    print(f"\nSmoke outputs -> {SMOKE_DIR}")
+    print("[smoke] DONE — both channels (hom30 + wrk30) + office_archetype_ID verified")
 
 
 def run_linkage_full() -> None:

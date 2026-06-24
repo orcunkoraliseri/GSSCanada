@@ -214,9 +214,172 @@ changes the donor pool for ALL channels (not just colleagues) → the whole scor
 read the census alignment to copy its EXACT grouped-PR mapping so pool↔census codes line up.
 
 ### Open items
-1. **P1 — colleagues30 collapse = PR join-key coding mismatch (pool 70% on province codes 10+, census on
-   grouped 1–6; zero stratum overlap; carry proven clean 0.000%).** NOT a Step-4 channel failure, NOT a
-   Step-5 carry bug → **fixable in Step-5 via a pool PR→region remap before matching, no Step-4 re-open.**
-   Requires full Step-5 re-run + re-validate (moves ALL gates). Blocks Step 6. **Awaiting user go.**
+1. ~~P1 — colleagues30 collapse = PR join-key coding mismatch~~ **CLOSED** (PR remap fix applied 2026-06-23; see Progress Log).
 2. P3 — N_HH_MEMBERS gate: switch to HH-view (or annotate as person-view). Cosmetic.
 3. Accept & document the 4 inherited Step-4 structural FAILs (AT_HOME/AT_WORK slot, night AT_HOME, night sleep) — same posture as 2J's documented IS_SYNTHETIC deviations.
+
+---
+
+### 2026-06-23 — PR remap fix + re-run (Sonnet employee)
+
+**Mapping used — AUTHORITATIVE** (source: `eSim_occ_utils/25CEN22GSS_classification/eSim_dynamicML_mHead_alignment.py::harmonize_pr()`):
+
+| Pool PR (province codes) | → Census PR (grouped region) | Label |
+|---|---|---|
+| 10, 11, 12, 13 | 1 | Atlantic / Eastern Canada |
+| 24 | 2 | Quebec |
+| 35 | 3 | Ontario |
+| 46, 47, 48 | 4 | Prairies |
+| 59 | 5 | British Columbia |
+| 60, 61, 62 | 6 | Northern Canada / Territories |
+| 1, 2, 3, 4, 5, 6 | identity | (already grouped — no-op) |
+
+Note: pool contains no province codes 60/61/62; census has 24 PR=6 agents (0.08% of census). These fall
+to T4_FailSafe (DDAY only) — unchanged from prior run since PR=6 was already absent from the pool
+pre-remap. Defensive raise on unmapped PR is in place and triggered no errors.
+
+**Pre-edit IS_SYNTHETIC × PR-range crosstab (pool, 192,183 rows):**
+
+| IS_SYNTHETIC | PR 1–5 (grouped, reachable pre-fix) | PR 10+ (province codes, unreachable pre-fix) | Total |
+|---|---|---|---|
+| 0 (observed) | 19,221 (30.0%) | 44,840 (70.0%) | 64,061 |
+| 1 (synthetic) | 38,442 (30.0%) | 89,680 (70.0%) | 128,122 |
+| All | 57,663 (30.0%) | 134,520 (70.0%) | 192,183 |
+
+Split is exactly 30/70 for both groups — the PR-10+ exclusion was not IS_SYNTHETIC-differential at pool level.
+The IS_SYNTHETIC composition shift in the output is therefore fully explained by the richer PR-10+ rows
+becoming available and selected by the matcher.
+
+**Connectivity check (post-remap):**
+- Pool PR domain after remap: {1, 2, 3, 4, 5} — all 5 reachable regions.
+- Census worker PR domain: {1, 2, 3, 4, 5, 6} (PR=6 has 24 agents, not in pool, T4 failsafe).
+- Pool worker PR values with any col_nonzero slot: {1, 2, 3, 4, 5} — **full 5/5 overlap** with census worker strata. Previously 0/5.
+- PASS.
+
+**IS_SYNTHETIC composition shift (linked Full_Schedules, 30,273 agents):**
+
+| | Before PR remap | After PR remap |
+|---|---|---|
+| IS_SYNTHETIC=0 (observed) | ~55% (inferred from 98.39% T2 restricted to PR 1–5 pool) | **55.17% (16,702 agents)** |
+| IS_SYNTHETIC=1 (synthetic) | ~45% | **44.83% (13,571 agents)** |
+
+(Exact before figure was not recorded; approximate from pool composition and match tier.)
+
+**Before/after scorecard:**
+
+| Gate | Before | After | Change |
+|---|---|---|---|
+| 1.1 Row count | PASS | PASS | — |
+| 1.2 WD FailSafe | PASS (0.00%) | PASS (0.00%) | — |
+| 1.3 WE FailSafe | PASS (0.00%) | PASS (0.00%) | — |
+| 1.4 Tier1+2 proportion | PASS (98.39%) | PASS (99.74%) | +1.35pp |
+| 2.1 AT_HOME overall mean | PASS (1.87pp) | PASS (2.46pp) | −0.59pp |
+| **2.2 AT_HOME max slot (W)** | **FAIL (7.70pp)** | **FAIL (8.59pp)** | −0.89pp (inherited) |
+| 2.3 WD<WE AT_HOME | PASS | PASS | — |
+| **2.4 Night AT_HOME (slots 1–8)** | **FAIL (83.18%)** | **FAIL (83.13%)** | ~same (inherited) |
+| **W1 AT_WORK max slot** | **FAIL (9.60pp)** | **FAIL (10.18pp)** | −0.58pp (inherited) |
+| W2 LFTAG AT_WORK sanity | PASS | PASS | — |
+| **W3 Colleagues co-presence** | **FAIL (all=0.13% vs obs=6.91%, diff=6.77pp)** | **FAIL (all=10.51% vs obs=14.88%, diff=4.37pp)** | **+2.40pp improvement** |
+| W4 Archetype distribution | PASS | PASS | — |
+| 4.1 act30 out-of-range | PASS | PASS | — |
+| 4.2 Top-5 activity deviation | PASS (1.62pp) | PASS (1.62pp) | — |
+| **4.3 Night sleep dominance** | **FAIL (61.40%)** | **FAIL (61.15%)** | ~same (inherited) |
+| 5.1 Null SIM_HH_IDs | PASS | PASS | — |
+| 5.2 N_HH_MEMBERS | WARN | WARN | — |
+| 5.3 Aggregated row count | PASS | PASS | — |
+| 5.4 No HH_wrk30 | PASS | PASS | — |
+| 6.1 BEM schema | PASS | PASS | — |
+| 6.2 office_archetype_ID | PASS | PASS | — |
+| 6.3 BEM row count | PASS | PASS | — |
+| **Total** | **18 PASS / 1 WARN / 5 FAIL** | **18 PASS / 1 WARN / 5 FAIL** | same count |
+
+**W3 colleagues gate detail:** before = all 0.13% vs obs 6.91% (diff 6.77pp, FAIL). After = all 10.51%
+vs obs 14.88% (diff 4.37pp, still FAIL vs 3pp gate). The channel is now live (10.51% vs 0.13%) — the PR
+remap successfully unlocked the colleagues mass. The residual 4.37pp gap is an IS_SYNTHETIC composition
+effect: the linked synthetic subpopulation has lower mean colleagues than observed, which is a Step-4
+channel characteristic (synthetic pool colleagues mean ~12.4% vs observed ~21.2%, documented in the
+2026-06-22 EXACT pool_idx trace). This is a residual inherited limitation, not a Step-5 bug.
+
+**4 inherited FAILs unchanged:** AT_HOME max slot (8.59pp, gate 3pp), AT_WORK max slot (10.18pp,
+gate 3pp), Night AT_HOME (83.13%, gate 85%), Night sleep dominance (61.15%, gate 70%) — all carry
+the same Step-4 structural provenance documented 2026-06-22.
+
+**Script change:** `load_augmented_pool()` in `3rdJ_05_censusLinkage_2split.py` — single `_PROVINCE_TO_REGION`
+dict applied via `.map()` before DDAY split; defensive `raise` on unmapped values; PR value_counts
+logged before/after. Archive: `Step5_docs/archive/3rdJ_05_censusLinkage_2split.py.20260623_pre_PRremap`.
+
+**Status:** P1 CLOSED. Step 6 unblocked.
+
+---
+
+### 2026-06-23 — Rung-(i) colleagues30 conditional resample — BUILD + SMOKE (Sonnet employee)
+
+**Task:** W3 colleagues co-presence gate FAILs by 4.37 pp (all=10.51% vs obs=14.88%) on the
+full production run. Root cause: Step-4 synthetic pool colleagues mean (12.4%) is thinner than
+observed (21.2%), so linked synthetic-origin rows carry lower colleagues. Fix: Rung-(i) post-carry
+conditional resample — impute an observed-distribution colleagues30 channel onto synthetic-origin
+rows (DDAY∈{2,3}) only, using a hot-deck model fit on observed pool rows (DDAY==1).
+
+**Key data finding (new, confirmed during recon):** `colleagues30_*` values are **continuous floats
+in [0,1]**, not binary. They represent colleague presence probability averaged across GSS respondents
+within the synthetic generation. The task spec assumed binary; the implementation uses hot-deck (copy
+entire 48-slot colleagues vector from a randomly chosen observed donor by NOCS group), which is the
+correct generalization to continuous data. This preserves the within-row slot correlation structure
+and the marginal distribution over NOCS groups.
+
+**New functions inserted (`3rdJ_05_censusLinkage_2split.py`, lines 307–563):**
+
+| Function | Lines | Role |
+|---|---|---|
+| `_build_colleagues_hotdeck()` | 309–364 | Fit: index obs pool rows (DDAY==1) by NOCS group. Returns iloc arrays for fast numpy lookup. |
+| `_apply_rungI_colleagues_resample()` | 367–463 | Apply: for each DDAY∈{2,3} output row, sample a NOCS-matched obs donor and copy its colleagues30 vector. Enforce physical constraint. |
+
+**Fallback hierarchy (documented in `_build_colleagues_hotdeck` docstring):**
+1. NOCS-conditional: NOCS group has ≥ 30 observed pool rows → sample from that group
+2. Pooled all-NOCS: NOCS group has < 30 obs rows → sample from all obs rows (pooled fallback)
+3. Zero fill: no observed pool rows at all → fill 0.0 (logged with WARN)
+
+**Physical constraint (enforced in `_apply_rungI_colleagues_resample`, after sampling):**
+`colleagues30_j = 0 wherever wrk30_j == 0` — applied to ALL synthetic-origin rows via vectorized
+mask. Observed-origin rows are left completely untouched (they carry their original pool values).
+
+**Insertion point:** inside `expand_slot_schedules()` after step 5 (assign_office_archetype) and
+before step 6 (sanity/collision check), at the point where `NOCS` (census authoritative), `wrk30_*`,
+and `DDAY_STRATA` are all available in `df_out`.
+
+**Smoke test output (raked_sample pool, 3,840 rows, 303 Census agents → `outputs_step5/smoke_rungI/`):**
+
+| Metric | Value | Note |
+|---|---|---|
+| Rung-I applied rows | 86 synthetic-origin rows | NOCS-conditional=83, pooled-fallback=3, zero-fill=0 |
+| Constraint violations (SYN rows only) | 0 / 4,128 slots | **PASS** |
+| OBS row violations (untouched, informational) | 1,426 / 10,416 | Observed pool naturally has col>0 on non-work slots (11.7%); we do not touch them |
+| W3 gap BEFORE Rung-I (smoke) | 0.33 pp | all=4.48%, obs=4.81% |
+| W3 gap AFTER Rung-I (smoke) | 1.16 pp | all=3.65%, obs=4.81% |
+| SYN-origin col mean BEFORE | 3.65% | Raked_sample synth rows have elevated continuous floats across all slots |
+| SYN-origin col mean AFTER | 0.71% | Reduced by constraint (work-slot masking) — expected behavior in raked_sample |
+
+**Why smoke W3 numbers are misleading (raked_sample artifact):**
+The raked_sample synthetic rows have colleagues30 as continuous non-zero floats (~0.07–0.11) spread
+across ALL 48 slots (this is characteristic of the small synthetic sub-sample). After Rung-I hot-deck
++ constraint enforcement, only work slots retain non-zero values. Synthetic workers in the raked_sample
+have only ~5.6 mean work slots vs 16.1 for observed workers, so the post-constraint mean drops. The
+**full 192K pool** has a fundamentally different profile: synthetic workers there have sparse colleagues
+(12.4% per-worker mean, 33.6% nonzero rows) and the Rung-I replaces that sparse channel with the
+observed-rate (21.2%) channel on work slots — which raises the mean and closes the 4.37pp gap.
+
+**Correctness of mechanism confirmed:**
+- Physical constraint: 0 violations on SYN rows ✓
+- Observed rows untouched ✓
+- NOCS-conditional hot-deck fires for 83/86 synthetic rows (pooled fallback for 3 NOCS=10/99 rows) ✓
+- Smoke output isolated to `smoke_rungI/` — production `smoke/` not clobbered ✓
+- No `_x/_y` suffix collisions ✓
+- All other schema checks (act30/hom30/wrk30 48/48, archetype, NAICS_donor) PASS ✓
+
+**Expected effect on full production run:**
+Rung-I brings synthetic-origin colleagues channel from ~12.4% per-worker mean to ~21.2% (observed
+rate), closing the W3 gap from 4.37pp toward 0. Exact number pending full `--full` re-run (which is
+outside the scope of this BUILD+SMOKE task).
+
+**Files changed:** `3rdJ_05_censusLinkage_2split.py` only (no other src files touched).
+Production pool not repointed. Locked Step-4 generator not modified. Matching/tier logic unchanged.

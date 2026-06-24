@@ -1,0 +1,54 @@
+{
+  "cy2022_s1": {
+    "n_obs": 8894,
+    "n_syn": 3442,
+    "obs_wrk_peak_pct": 27.025,
+    "before_wrk_peak_pct": 27.305,
+    "after_wrk_peak_wt_pct": 27.025,
+    "after_wrk_peak_mat_pct": 26.087,
+    "gap_before_pp": -0.28,
+    "gap_after_pp": 0.938,
+    "before_hom_agg_pct": 77.583,
+    "after_hom_agg_mat_pct": 77.288,
+    "before_wrk_agg_pct": 12.111,
+    "after_wrk_agg_mat_pct": 11.675,
+    "wrk_slot_max_err_pp": 1.293,
+    "hom_slot_max_err_pp": 1.358,
+    "convergence": {
+      "method": "IPF_3state",
+      "converged": true,
+      "iters": 371,
+      "max_delta_w": 9.99138721375914e-05,
+      "zero_cell": false
+    },
+    "elapsed_s": 0.42
+  },
+  "_meta": {
+    "mode": "smoke",
+    "r5_src": "outputs_step4\\augmented_diaries.csv",
+    "out_dir": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg2_2-split\\Step4_docs\\outputs_step4\\sweep\\R5_reweight",
+    "seed": 42,
+    "ipf_max_iter": 1000,
+    "ipf_tol": 0.0001,
+    "pot_available": false,
+    "scipy_available": true,
+    "fallback_method": "sinkhorn_numpy_logdomain",
+    "work_peak_slots_0idx": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "strata_processed": [
+      "cy2022_s1"
+    ]
+  }
+}

@@ -452,11 +452,8 @@ class CensusLinkageValidator2CH:
                     syn_g = df[(df["IS_SYNTHETIC"] == 1) & (df["DDAY_STRATA"].isin(dday_grp))]
                     obs_g = df[(df["IS_SYNTHETIC"] == 0) & (df["DDAY_STRATA"].isin(dday_grp))]
                     if len(syn_g) > 0 and len(obs_g) > 0:
-                        # NaN in colleagues30 = not-applicable slot = 0 colleagues present.
-                        # fillna(0) on both channels gives a consistent all-slot denominator
-                        # (syn already has 0% NaN; fillna is a no-op there but makes symmetry explicit).
-                        col_syn_g = float(syn_g[col_p].fillna(0).mean().mean() * 100)
-                        col_obs_g = float(obs_g[col_p].fillna(0).mean().mean() * 100)
+                        col_syn_g = float(syn_g[col_p].mean().mean() * 100)
+                        col_obs_g = float(obs_g[col_p].mean().mean() * 100)
                         d = abs(col_syn_g - col_obs_g)
                         diffs_w3.append(d)
                         print(f"  [W3-{label}] syn={col_syn_g:.2f}%  obs={col_obs_g:.2f}%  diff={d:.3f}pp")

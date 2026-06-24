@@ -222,3 +222,60 @@ All observed/calibratable gates PASS (68 PASS / 1 WARN). This is the data-limite
 - **OW5 (63%)** — no ground truth (GSS = 1 diary/person), so per-respondent weekday≥Sat≥Sun ordering is uncalibratable.
 
 Note 2J's "work-peak PASS" was itself partly the swapped Work/Sleep code bug, so 3J measures work more honestly and still keeps the marginals exact. **Net: 3J Step 4 is strictly more capable than 2J — a full second channel at parity on the first — with two honestly-reported, provably-unfixable work-shape gaps.** Ready for Step 5.
+
+---
+
+## Progress Log
+
+### 2026-06-23 — 04L2 diary-reweight script built and smoke-tested (employee, Claude Sonnet 4.6)
+
+**Task:** Build `3rdJ_04L2_diary_reweight_2split.py` — Rung-ii diary-level reweight to close the G4 work-peak under-fill gap (~10.3 pp) without re-training or editing locked 04L/04M. BUILD + SMOKE ONLY.
+
+**File created:**
+- `3rdJ_04L2_diary_reweight_2split.py` — new script, Step4_docs/ (does NOT touch 04L, 04M, R10_fast, or any locked file)
+
+**Algorithm:**
+1. Load raw R5 `augmented_diaries.csv` (pre-04L). Within each stratum (CYCLE_YEAR × DDAY_STRATA), init diary weights w_i = 1 for synthetic rows only.
+2. 3-state joint IPF per slot: at each slot j, each diary is in one of three mutually-exclusive states — HOME (hom=1,wrk=0), WORK (hom=0,wrk=1), NEITHER (hom=0,wrk=0). Multiplicative update ratio[state] = target_share[state] / current_weighted_share[state]. This avoids the cross-channel oscillation that breaks independent 1-D IPF (HOME and WORK are mutually exclusive, so raking them separately causes oscillation). Converges at tol=1e-4.
+3. Zero-cell fallback: log-domain Sinkhorn dual-variable ascent (numpy only; POT absent). Dual variables lam_h, lam_w for HOME/WORK per slot; gradient ascent with decaying lr. POT is NOT available in this environment (confirmed absent); scipy is available (1.17.0) but only used for detection — Sinkhorn is pure numpy.
+4. Materialize: resample synthetic diaries WITH REPLACEMENT proportional to w_i → new augmented_diaries.csv (same row count, same schema). Observed rows pass through unchanged.
+5. Output to `outputs_step4/sweep/R5_reweight/` (NOT R5_raked or R5_lr1e4 — locked dirs refused at runtime). Provenance JSON: per-stratum before/after work-peak, convergence info, method used.
+
+**CLI mirrors 04L:** `--smoke`, `--full`, `--r5_dir`/`--data_dir`/`--out_dir` args.
+
+**Smoke test results (cy=2022, s=1; local raw R5 data):**
+
+| Metric | Value |
+|--------|-------|
+| Raw R5 work-peak (syn, BEFORE) | 27.30% |
+| Obs work-peak target | 27.02% |
+| Gap BEFORE (obs − syn) | −0.28 pp |
+| Weighted work-peak (AFTER reweight, pre-resample) | **27.02%** (exact) |
+| Materialised work-peak (AFTER resample) | 26.09% |
+| Gap AFTER materialisation | +0.94 pp |
+| wrk slot max err (per-slot, mat) | 1.293 pp |
+| hom slot max err (per-slot, mat) | 1.358 pp |
+| Row count | 192,183 (unchanged) |
+| Column schema | 596 cols (unchanged) |
+| IPF method | IPF_3state CONVERGED (371 iters, delta 9.99e-5) |
+| Elapsed (one stratum) | 0.4 s |
+
+**Note on smoke gap numbers:** The local raw R5 CSV has near-zero work-peak gaps across all strata (e.g. cy=2022 s=1: syn=27.30% vs obs=27.02%, gap only −0.28 pp). The 10.3 pp gap reported in production logs exists ONLY in the cluster output of `R10_fast → 04L_floataware` (the raked diaries). The 04L2 script is designed to run on raw R5 diaries; on the cluster it should be pointed at the pre-04L checkpoint (sweep/R10_fast/augmented_diaries.csv), not the local file. The local smoke test therefore validates mechanics (IPF convergence, row count, schema, marginal accuracy) rather than gap closure — the gap closure test requires the cluster.
+
+**Post-resample marginal errors:** ~1.3 pp max. This is Monte Carlo variance from finite resample of n=3,442 synthetic rows in this stratum. On the full cluster population (~10,000+ syn rows per cell), the variance will be smaller (~0.5–0.8 pp expected). These errors stay within the G2/OW1 pass thresholds (≤2.0 / ≤5.0 pp).
+
+**Zero-cell method used:** Sinkhorn (numpy log-domain, `sinkhorn_numpy_logdomain`). POT not available. NOT triggered in smoke test (IPF converged). Fallback available for edge-case strata.
+
+**LOCAL vs CLUSTER determination:**
+- Raw R5 `augmented_diaries.csv` IS PRESENT LOCALLY at:
+  `C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\outputs_step4\augmented_diaries.csv`
+  Size: ~381 MB (400,139,256 bytes, 192,183 rows).
+- This is the raw R5 pre-04L output. A full run of 04L2 on this file would be feasible LOCALLY (no GPU, no model inference — pure pandas/numpy; ~0.4 s per stratum × 12 strata ≈ ~5 min for the full IPF + resample + write).
+- **HOWEVER:** The 10.3 pp gap only exists in the CLUSTER's production raked diaries (R10_fast → 04L_floataware). To actually close the G4 gap, 04L2 must run on the cluster's pre-04L raw diaries at `/speed-scratch/o_iseri/GSSCanada/.../sweep/R10_fast/augmented_diaries.csv`. That full run is an `sbatch` on the `ps` CPU partition (NOT pg/GPU — no inference).
+- Per task scope: full run NOT executed. Script built and smoke-tested only.
+
+**Blocker / manager note:** To close G4 on production data, manager must decide: (a) re-run 04L2 on cluster pointing `--r5_dir` at the R10_fast pre-rake diaries, THEN re-run 04M → validator; OR (b) integrate 04L2 into the locked chain as an additional post-processing step. The current locked chain (R10_fast → 04L → 04M) stays byte-identical. 04L2 is a NEW parallel path; it is NOT inserted into the locked chain without manager sign-off.
+
+**Output files:**
+- `outputs_step4/sweep/R5_reweight/augmented_diaries.csv` (smoke output, 192,183 rows)
+- `outputs_step4/sweep/R5_reweight/04L2_reweight_provenance.json`

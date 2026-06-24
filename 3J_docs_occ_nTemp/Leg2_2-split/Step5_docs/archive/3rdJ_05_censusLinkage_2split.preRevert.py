@@ -43,7 +43,7 @@ SMOKE_POOL = (
 )
 FULL_POOL = (
     BASE / "3J_docs_occ_nTemp" / "Leg2_2-split" / "Step4_docs"
-    / "outputs_step4" / "sweep" / "R5_raked_mindwell" / "augmented_diaries.csv"
+    / "outputs_step4" / "augmented_diaries.csv"
 )
 
 # Census
@@ -304,6 +304,165 @@ def run_slot_match(
     )
 
 
+# ── Rung-(i): conditional colleagues30 resample ──────────────────────────────
+
+def _build_colleagues_hotdeck(
+    df_pool: pd.DataFrame,
+    col_cols: list[str],
+    min_count: int = 30,
+) -> dict:
+    """
+    Build a hot-deck index for colleagues30 imputation, fit on OBSERVED pool rows
+    (DDAY_STRATA == 1) only. Groups by NOCS (single-digit occupation code).
+
+    Returns a dict with keys:
+        "by_nocs"   : {nocs_key -> np.ndarray of pool row positions (integer iloc)}
+        "pooled"    : np.ndarray of all obs row positions (fallback)
+        "col_cols"  : list of colleagues30 column names
+        "min_count" : int threshold used
+
+    Thresholds / fallback hierarchy (documented here, enforced in apply step):
+        1. NOCS-conditional  : group has >= min_count obs rows  → sample from that group
+        2. Pooled all-NOCS   : group has < min_count            → sample from all obs rows
+        3. Zero fill         : no obs rows at all               → fill with 0.0 (logged)
+
+    Notes:
+        - Fit is on donor pool rows where DDAY_STRATA == 1 (observed day).  Synthetic
+          pool rows (DDAY ∈ {2,3}) are excluded from the fit.
+        - colleagues30_* values are continuous floats in [0,1] (not binary).  The hot-
+          deck copies the entire 48-slot colleagues vector from a randomly chosen obs
+          donor row, which preserves the within-row slot correlation structure and the
+          marginal distribution over NOCS groups.
+        - NaN values in the pool colleagues columns are treated as 0.0 (missing = absent).
+        - The physical constraint col_j == 0 where wrk_j == 0 is enforced AFTER sampling
+          (see _apply_rungI_colleagues_resample).
+    """
+    obs_pool = df_pool[df_pool[DDAY_COL] == 1].copy()
+    obs_pool[col_cols] = obs_pool[col_cols].fillna(0.0)
+
+    # Integer iloc positions within df_pool for fast numpy indexing
+    obs_positions = np.where(df_pool[DDAY_COL] == 1)[0]
+
+    by_nocs: dict[int, np.ndarray] = {}
+    if "NOCS" in df_pool.columns:
+        for nocs_val, grp in obs_pool.groupby("NOCS", sort=False):
+            positions = np.where(
+                (df_pool[DDAY_COL] == 1) & (df_pool["NOCS"] == nocs_val)
+            )[0]
+            if len(positions) >= min_count:
+                try:
+                    key = int(nocs_val)
+                except (ValueError, TypeError):
+                    continue
+                by_nocs[key] = positions
+
+    return {
+        "by_nocs": by_nocs,
+        "pooled": obs_positions,
+        "col_cols": col_cols,
+        "min_count": min_count,
+    }
+
+
+def _apply_rungI_colleagues_resample(
+    df_out: pd.DataFrame,
+    df_pool: pd.DataFrame,
+    hotdeck: dict,
+    wrk_cols: list[str],
+    seed: int = 42,
+) -> pd.DataFrame:
+    """
+    Rung-(i) post-carry conditional resample of colleagues30 for SYNTHETIC-origin rows.
+
+    Operates ONLY on rows where DDAY_STRATA ∈ {2, 3} (synthetic-origin).  Observed-
+    origin rows (DDAY_STRATA == 1) are left completely untouched.
+
+    Algorithm per synthetic-origin row:
+        1. Look up Census NOCS (integer) in hotdeck["by_nocs"].
+        2. If found (>= min_count obs donors for that NOCS):
+               sample one pool iloc uniformly → copy its colleagues30 vector.
+        3. Else (sparse NOCS group): sample from hotdeck["pooled"] (all obs rows).
+        4. If pooled is also empty: fill with 0.0 (logged once).
+        5. Hard constraint: zero out col_j wherever wrk30_j == 0.
+
+    Uses np.random seeded with `seed` (same convention as run_slot_match: seed=42).
+    Does NOT modify any other channel or any observed-origin row.
+    """
+    col_cols: list[str] = hotdeck["col_cols"]
+    by_nocs: dict = hotdeck["by_nocs"]
+    pooled: np.ndarray = hotdeck["pooled"]
+
+    if not col_cols or not wrk_cols:
+        return df_out  # Nothing to do
+
+    # Preload pool colleagues as numpy array for fast row access (iloc-indexed)
+    pool_col_arr = df_pool[col_cols].fillna(0.0).to_numpy(dtype=float)
+
+    rng = np.random.default_rng(seed)
+
+    # Identify synthetic-origin rows (DDAY_STRATA in {2, 3})
+    syn_mask = df_out[DDAY_COL].isin([2, 3])
+    syn_idx = df_out.index[syn_mask].tolist()
+
+    if not syn_idx:
+        return df_out  # No synthetic-origin rows — nothing to do
+
+    # Ensure col/wrk arrays are float in df_out
+    df_out = df_out.copy()
+
+    n_nocs_hit = 0
+    n_pooled_hit = 0
+    n_zero_fill = 0
+    zero_fill_warned = False
+
+    for out_i in syn_idx:
+        # Get Census NOCS for this row
+        nocs_raw = df_out.at[out_i, "NOCS"] if "NOCS" in df_out.columns else None
+        try:
+            nocs_key = int(nocs_raw) if pd.notna(nocs_raw) else None
+        except (ValueError, TypeError):
+            nocs_key = None
+
+        # Select donor positions
+        if nocs_key is not None and nocs_key in by_nocs and len(by_nocs[nocs_key]) > 0:
+            donor_positions = by_nocs[nocs_key]
+            n_nocs_hit += 1
+        elif len(pooled) > 0:
+            donor_positions = pooled
+            n_pooled_hit += 1
+        else:
+            # Zero fill — no observed donors available at all
+            for cc in col_cols:
+                df_out.at[out_i, cc] = 0.0
+            n_zero_fill += 1
+            if not zero_fill_warned:
+                print("[rungI] WARN: no observed pool rows available for colleagues "
+                      "imputation — zero-filling.")
+                zero_fill_warned = True
+            continue
+
+        # Sample one donor row (uniform)
+        donor_iloc = int(rng.choice(donor_positions))
+        donor_col_vec = pool_col_arr[donor_iloc]  # shape (48,)
+
+        # Write colleagues30 values onto output row
+        for j, cc in enumerate(col_cols):
+            df_out.at[out_i, cc] = float(donor_col_vec[j])
+
+    # Hard physical constraint: colleagues30_j = 0 wherever wrk30_j == 0
+    # Applied to ALL synthetic-origin rows (including zero-fills above)
+    for cc, wc in zip(col_cols, wrk_cols):
+        if wc in df_out.columns:
+            df_out.loc[syn_mask & (df_out[wc] == 0), cc] = 0.0
+
+    print(
+        f"[rungI] Colleagues resample applied to {len(syn_idx)} synthetic-origin rows: "
+        f"NOCS-conditional={n_nocs_hit}, pooled-fallback={n_pooled_hit}, "
+        f"zero-fill={n_zero_fill}"
+    )
+    return df_out
+
+
 def expand_slot_schedules(
     df_matched: pd.DataFrame,
     df_pool: pd.DataFrame,
@@ -314,6 +473,7 @@ def expand_slot_schedules(
     Carries BOTH channels (act30, hom30, wrk30) + co-presence + metadata.
     Census is authoritative for shared columns; pool NAICS is kept as NAICS_donor.
     Adds office_archetype_ID from Census NOCS.
+    Applies Rung-(i) colleagues30 conditional resample to synthetic-origin rows.
     """
     # 1. Pull diary rows directly via stored pool index labels
     pool_rows = df_pool.loc[df_matched["_pool_idx"].to_numpy()].copy()
@@ -386,6 +546,20 @@ def expand_slot_schedules(
 
     # 5. Assign office archetype from Census NOCS
     df_out = assign_office_archetype(df_out, nocs_col="NOCS")
+
+    # ── Rung-(i): conditional colleagues30 resample for synthetic-origin rows ──
+    # Fit hot-deck model on OBSERVED pool rows (DDAY_STRATA==1) by NOCS group.
+    # Apply ONLY to SYNTHETIC-origin rows (DDAY_STRATA ∈ {2,3}).
+    # Threshold: NOCS groups with >= 30 obs rows → NOCS-conditional;
+    #            < 30 obs rows → pooled all-NOCS observed fallback.
+    # After sampling, enforce hard constraint: colleagues30_j = 0 where wrk30_j = 0.
+    # This preserves real observed data and does NOT touch the frozen Step-4 generator.
+    if col_cols and wrk_cols:
+        hotdeck = _build_colleagues_hotdeck(df_pool, col_cols, min_count=30)
+        df_out = _apply_rungI_colleagues_resample(
+            df_out, df_pool, hotdeck, wrk_cols, seed=42
+        )
+    # ── end Rung-(i) ────────────────────────────────────────────────────────────
 
     # 6. Sanity: no _x/_y suffix collisions
     xy_cols = [c for c in df_out.columns if c.endswith("_x") or c.endswith("_y")]

@@ -341,3 +341,47 @@ Full section results:
 - `outputs_step5/Full_Schedules_excl.csv` (29,660 rows)
 - `outputs_step5/Full_Aggregated_excl.csv` (29,660 rows)
 - `outputs_step5/BEM_Schedules_excl.csv` (29,660 rows)
+
+---
+
+### 2026-06-23 — Night Gate Window Fix (validator-only)
+
+**Employee:** Claude Sonnet 4.6
+
+**What changed:**
+
+Night gates 2.4 and 4.3 were reading the WRONG time window. Diaries are unrotated 04:00-origin (48×30-min slots), so slots 1-8 = 04:00-08:00 (morning rush) and the true overnight window 00:00-04:00 = slots 41-48 (last 8 columns). Both gates were slicing `[:8]` (morning), which caused artificial FAILs on what is actually a very high-AT_HOME, high-sleep window.
+
+**Edits made (single file only):**
+
+File: `3J_docs_occ_nTemp/Leg2_2-split/Step5_docs/3rdJ_05_censusLinkage_2split_val.py`
+
+1. Added module-level constant after line 52 (after `ACT_LABELS` dict):
+   ```python
+   NIGHT_SLOTS = slice(-8, None)  # slots 41-48 = 00:00-04:00 (unrotated 04:00-origin 48x30min diary)
+   ```
+
+2. Gate 2.4 (~line 295): `df[hom_p[:8]]` → `df[hom_p[NIGHT_SLOTS]]`; printed label updated from "Slots 1-8" to "Slots 41-48 (00:00-04:00)".
+
+3. Gate 4.3 (~line 479): `df[act_p[:8]]` → `df[act_p[NIGHT_SLOTS]]`; printed label updated from "Night sleep dominance" to "Night sleep dominance slots 41-48 (00:00-04:00)".
+
+No data files were modified. No other gates were touched.
+
+**Before/After gate values (full run, existing output — no data regenerated):**
+
+| Gate | Before | After | Result |
+|------|--------|-------|--------|
+| 2.4 Night AT_HOME (slots 1-8 → 41-48) | 83.18% (FAIL, gate >=85%) | **93.79% (PASS)** | Fixed |
+| 4.3 Night sleep dominance (slots 1-8 → 41-48) | 61.40% (FAIL, gate >=70%) | **91.12% (PASS)** | Fixed |
+
+**New scorecard:** 20 PASS / 1 WARN / 3 FAIL (was 18 PASS / 1 WARN / 5 FAIL)
+
+Remaining 3 FAILs (unchanged — not night gates):
+- 2.2 AT_HOME per-slot max diff: 8.59pp (gate <=3pp) — synthetic/observed distribution spread
+- W1 AT_WORK per-slot max diff: 10.18pp (gate <=3pp) — same cause
+- W3 Colleagues co-presence diff: 4.37pp (gate <=3pp) — IS_SYNTHETIC dilution effect
+
+Remaining WARN (unchanged):
+- 5.2 Mean N_HH_MEMBERS: 1.500 (per-person view vs HH aggregated view discrepancy)
+
+**HTML report regenerated:** `outputs_step5/3rdJ_step5_validation_report.html`

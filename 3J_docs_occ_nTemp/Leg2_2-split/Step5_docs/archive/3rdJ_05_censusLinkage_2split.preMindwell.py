@@ -43,7 +43,7 @@ SMOKE_POOL = (
 )
 FULL_POOL = (
     BASE / "3J_docs_occ_nTemp" / "Leg2_2-split" / "Step4_docs"
-    / "outputs_step4" / "sweep" / "R5_raked_mindwell" / "augmented_diaries.csv"
+    / "outputs_step4" / "augmented_diaries.csv"
 )
 
 # Census
