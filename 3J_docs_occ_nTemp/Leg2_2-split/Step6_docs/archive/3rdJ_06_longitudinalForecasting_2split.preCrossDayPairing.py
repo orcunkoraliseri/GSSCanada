@@ -453,169 +453,38 @@ def build_tensors_from_df(df: pd.DataFrame, feat_cfg: dict, device: torch.device
     }
 
 
-# ── Cross-day KNN pairing (mirrors 04C/04D exactly — numpy brute-force, no sklearn) ──
-#
-# FIX (2026-06-24): Step6Dataset formerly SELF-PAIRED each diary (src==tgt), turning
-# JSeriesHybrid2Split from a source→target translator into an identity autoencoder that
-# leaked the ground-truth aux_seq (home/work) directly into the decoder via encoder memory.
-# This produced val_js≈0, backcast JS_home=−0.0000, and all 3 WFH bands identical.
-#
-# The fix: replicate 04C's cross-day KNN pairing PER CYCLE SUBSET so that t≠s always.
-# No sklearn dependency — numpy brute-force (cycles are a few thousand rows, trivial).
-
-_EXACT_COLS = ["AGEGRP", "SEX", "MARSTH", "HHSIZE", "LFTAG"]
-_FUZZY_COLS = ["PR", "CMA", "HRSWRK", "NOCS"]
-_K = 5
-_N_TOTINC_BINS = 6
-
-
-def _bin_totinc_for_pairing(df: pd.DataFrame) -> np.ndarray:
-    """Bin TOTINC into _N_TOTINC_BINS quantile bins within the df (single-cycle)."""
-    out = np.zeros(len(df), dtype=int)
-    vals = pd.to_numeric(df.get("TOTINC", pd.Series(dtype=float)), errors="coerce")
-    vals = vals.fillna(vals.median() if not vals.isna().all() else 0)
-    try:
-        labels = pd.qcut(vals, q=_N_TOTINC_BINS, labels=False, duplicates="drop")
-        out[:] = labels.fillna(0).astype(int).values
-    except ValueError:
-        out[:] = 0
-    return out
-
-
-def _score_candidates_pairing(src_i: int, candidates: list,
-                               col_arrays: dict, totinc_bin: np.ndarray) -> np.ndarray:
-    """
-    Exact match on AGEGRP,SEX,MARSTH,HHSIZE,LFTAG: +1 each (max 5)
-    Fuzzy match on PR,CMA,HRSWRK,NOCS,TOTINC (+/-1 bin): +1 each (max 5)
-    Mirrors 04C _score_candidates exactly.
-    """
-    scores = np.zeros(len(candidates), dtype=np.float32)
-    cand_arr = np.array(candidates)
-    for col in _EXACT_COLS:
-        arr = col_arrays.get(col)
-        if arr is not None:
-            scores += (arr[cand_arr] == arr[src_i]).astype(np.float32)
-    for col in _FUZZY_COLS:
-        arr = col_arrays.get(col)
-        if arr is not None:
-            scores += (np.abs(arr[cand_arr] - arr[src_i]) <= 1).astype(np.float32)
-    scores += (np.abs(totinc_bin[cand_arr] - totinc_bin[src_i]) <= 1).astype(np.float32)
-    return scores
-
-
-def build_cycle_pairs(df_cycle: pd.DataFrame, seed: int = 42) -> dict:
-    """
-    Build cross-day KNN pairs for a single cycle's subset, exactly per 04C logic:
-      - For each respondent i with observed DDAY_STRATA s_obs, find K=5 neighbours
-        in the SAME cycle but with a DIFFERENT DDAY_STRATA (s_tgt ≠ s_obs).
-      - Neighbour scoring: exact on AGEGRP/SEX/MARSTH/HHSIZE/LFTAG (+1 each),
-        fuzzy ±1 bin on PR/CMA/HRSWRK/NOCS/TOTINC (+1 each).
-      - t ≠ s guaranteed (different diary, different day-type).
-      - Returns dict: src_idx (n_pairs,), tgt_k_indices (n_pairs, K), tgt_strata (n_pairs,)
-        — all as torch.long tensors.
-
-    No sklearn: pure numpy (cycles are at most ~50k rows; brute-force is trivial).
-    """
-    df_cycle = df_cycle.reset_index(drop=True)
-    n = len(df_cycle)
-    totinc_bin = _bin_totinc_for_pairing(df_cycle)
-
-    col_arrays = {}
-    for col in _EXACT_COLS + _FUZZY_COLS:
-        if col in df_cycle.columns:
-            col_arrays[col] = df_cycle[col].fillna(-999).astype(int).values
-        else:
-            col_arrays[col] = np.full(n, -999, dtype=int)
-
-    dday_strata = df_cycle["DDAY_STRATA"].fillna(1).astype(int).values
-
-    # Group indices by stratum for fast candidate lookup
-    strata_groups: dict = {}
-    for i in range(n):
-        s = int(dday_strata[i])
-        strata_groups.setdefault(s, []).append(i)
-
-    all_src, all_tgt_k, all_tgt_strata = [], [], []
-
-    for src_i in range(n):
-        s_obs = int(dday_strata[src_i])
-        for s_tgt in [s for s in [1, 2, 3] if s != s_obs]:
-            candidates = [j for j in strata_groups.get(s_tgt, []) if j != src_i]
-            if not candidates:
-                continue
-
-            scores = _score_candidates_pairing(src_i, candidates, col_arrays, totinc_bin)
-            top_k_count = min(_K, len(candidates))
-            top_indices = np.argsort(scores)[::-1][:top_k_count]
-            top_cands = [candidates[ii] for ii in top_indices]
-
-            # Pad to K with replacement if fewer than K neighbours
-            if len(top_cands) < _K:
-                rng = np.random.default_rng(seed=src_i * 3 + s_tgt)
-                extra = rng.choice(top_cands, size=_K - len(top_cands), replace=True).tolist()
-                top_cands = top_cands + extra
-
-            all_src.append(src_i)
-            all_tgt_k.append(top_cands)
-            all_tgt_strata.append(s_tgt)
-
-    return {
-        "src_idx":       torch.tensor(all_src,       dtype=torch.long),
-        "tgt_k_indices": torch.tensor(all_tgt_k,     dtype=torch.long),  # (n_pairs, K)
-        "tgt_strata":    torch.tensor(all_tgt_strata, dtype=torch.long),
-    }
-
-
 # ── Step-6 Dataset for progressive training ───────────────────────────────────
 
 class Step6Dataset(Dataset):
     """
     Dataset for Step-6 progressive fine-tuning from augmented_diaries.csv.
-    FIX (2026-06-24): uses cross-day KNN pairs (src≠tgt, different DDAY_STRATA)
-    exactly mirroring 04C/04D semantics. The old self-pairing turned the translator
-    into an identity autoencoder; this fix restores proper translator training.
-
-    Pairs are built by build_cycle_pairs() per cycle subset, then consumed here.
-    One pair per (src, target_strata) combination; target sampled from K=5 neighbours
-    each epoch via resample() — mirrors Step4Dataset2Split.resample() exactly.
-
+    Each item is a self-pair (src=respondent, dec_target=same respondent's observed
+    diary — the model reconstructs and compares against its own source).
     NEW Step-6 code: per-sample recency_weight injected here.
     """
 
-    def __init__(self, data: dict, pairs: dict, recency_weight: float = 1.0):
+    def __init__(self, data: dict, recency_weight: float = 1.0):
         self.data = data
-        self.pairs = pairs
         self.recency_weight = recency_weight
-        self._sampled_tgt = None
-        self.resample()
-
-    def resample(self):
-        """Sample one of the K neighbours for each pair (mirrors 04D resample())."""
-        n_pairs = len(self.pairs["src_idx"])
-        K = self.pairs["tgt_k_indices"].shape[1]
-        k_choice = torch.randint(0, K, (n_pairs,))
-        self._sampled_tgt = self.pairs["tgt_k_indices"][torch.arange(n_pairs), k_choice]
+        self.N = data["act_seq"].shape[0]
 
     def __len__(self):
-        return len(self.pairs["src_idx"])
+        return self.N
 
     def __getitem__(self, i):
-        s = self.pairs["src_idx"][i].item()
-        t = self._sampled_tgt[i].item()
         return {
-            # Encoder: source respondent's observed diary (s)
-            "act_seq":       self.data["act_seq"][s],
-            "aux_seq":       self.data["aux_seq"][s],
-            "cond_vec":      self.data["cond_vec"][s],
-            "cycle_idx":     self.data["cycle_idx"][s],
-            "cycle_year":    self.data["cycle_year"][s],
-            "obs_strata":    self.data["obs_strata"][s],
-            # Decoder target: cross-day KNN neighbour (t≠s, different stratum)
-            "dec_act_seq":   self.data["act_seq"][t],
-            "dec_aux_seq":   self.data["aux_seq"][t],
-            "dec_cop_avail": self.data["cop_avail"][t],
-            "dec_work_avail": self.data["work_avail"][t],
-            "tgt_strata":    self.data["obs_strata"][t],
+            "act_seq":       self.data["act_seq"][i],
+            "aux_seq":       self.data["aux_seq"][i],
+            "cond_vec":      self.data["cond_vec"][i],
+            "cycle_idx":     self.data["cycle_idx"][i],
+            "cycle_year":    self.data["cycle_year"][i],
+            "obs_strata":    self.data["obs_strata"][i],
+            # Decoder target = self (self-reconstruction objective)
+            "dec_act_seq":   self.data["act_seq"][i],
+            "dec_aux_seq":   self.data["aux_seq"][i],
+            "dec_cop_avail": self.data["cop_avail"][i],
+            "dec_work_avail": self.data["work_avail"][i],
+            "tgt_strata":    self.data["obs_strata"][i],
             # Step-6 NEW: per-sample recency weight
             "recency_weight": torch.tensor(self.recency_weight, dtype=torch.float32),
         }
@@ -623,11 +492,7 @@ class Step6Dataset(Dataset):
 
 def load_cycle_data(df_cycle: pd.DataFrame, feat_cfg: dict, device: torch.device,
                     cycle_year: int) -> dict:
-    """
-    Build tensor dict for a single cycle's rows + cross-day KNN pairs.
-    FIX (2026-06-24): now also calls build_cycle_pairs() so Step6Dataset has
-    src≠tgt pairs available without needing a separate training_pairs.pt file.
-    """
+    """Build tensor dict for a single cycle's rows."""
     tensors = build_tensors_from_df(df_cycle, feat_cfg, device)
     N = len(df_cycle)
 
@@ -636,9 +501,6 @@ def load_cycle_data(df_cycle: pd.DataFrame, feat_cfg: dict, device: torch.device
 
     # work_avail on cpu (for Dataset)
     work_avail = torch.ones(N, N_SLOTS, dtype=torch.bool, device="cpu")
-
-    # Cross-day KNN pairs (FIX 2026-06-24: replaces implicit self-pairing)
-    pairs = build_cycle_pairs(df_cycle, seed=42)
 
     return {
         "act_seq":    tensors["act_seq"].cpu(),
@@ -649,7 +511,6 @@ def load_cycle_data(df_cycle: pd.DataFrame, feat_cfg: dict, device: torch.device
         "obs_strata": tensors["obs_strata"].cpu(),
         "cop_avail":  cop_avail,
         "work_avail": work_avail,
-        "pairs":      pairs,
     }
 
 
@@ -883,11 +744,10 @@ def progressive_train(
         batch_size = 16
 
     # Build combined dataset from all training cycle dicts
-    # FIX (2026-06-24): Step6Dataset now uses cross-day pairs from d["pairs"]
     from torch.utils.data import ConcatDataset
     datasets = []
     for (cy, d, rw) in train_dicts:
-        ds = Step6Dataset(d, d["pairs"], recency_weight=rw)
+        ds = Step6Dataset(d, recency_weight=rw)
         datasets.append(ds)
 
     combined_dataset = ConcatDataset(datasets)
@@ -915,10 +775,9 @@ def progressive_train(
 
     for epoch in range(max_epochs):
         t0 = time.time()
-        # Resample dataset targets each epoch (mirrors Step4Dataset2Split.resample())
-        # FIX (2026-06-24): each epoch draws a fresh neighbour from the K=5 pool
+        # Resample dataset targets each epoch (matches 04D epoch-level resample)
         for ds in datasets:
-            ds.resample()
+            pass  # Step6Dataset uses self-pairs; no resample needed
 
         epoch_loss = run_one_epoch(
             model, weighter, optimizer, pcgrad_obj,
@@ -939,14 +798,6 @@ def progressive_train(
             f"w_gap={val_metrics['work_gap']:.4f} | "
             f"{elapsed:.1f}s"
         )
-
-        # Gate 3: at epoch 1 check for copier signature (val_js==0, loss<0)
-        if epoch == 0:
-            check_anticopy_gate3_training(
-                epoch1_val_js=val_metrics["val_js"],
-                epoch1_total_loss=epoch_loss["total"],
-                label=save_path.split(os.sep)[-1],
-            )
 
         if val_metrics["val_score"] < best_val_score:
             best_val_score = val_metrics["val_score"]
@@ -1465,143 +1316,6 @@ def run_substage_c(
     return model, trend_encoder
 
 
-# ── Anti-copy smoke gates (Fix C, 2026-06-24) ─────────────────────────────────
-#
-# The copier bug (Job 982868) produced val_js≈0, backcast JS_home=−0.0000 and all
-# 3 WFH bands IDENTICAL.  These gates detect that signature early and exit loudly
-# rather than silently continuing to a degenerate result.
-#
-# Gate 1: per-slot slot-disagreement >= 5% between reconstructed and source.
-#          Copier reproduces source → disagreement ≈ 0%.
-# Gate 2: JS_home and JS_work must be >= 0 and FINITE (not −0.0000 / nan / inf).
-#          Copier: JS = −0.0000 (numerical underflow from perfect reproduction).
-# Gate 3: val_js at epoch 1 must be > 0 AND total training loss must be >= 0.
-#          Copier: val_js = 0.0000 from epoch 1; loss dips negative (log(p≈1)).
-# Gate 4: after D2 reweight, the 3 band WFH-day shares must be clearly separated.
-#          Checked inline in _posthoc_reweight (±3pp per band).
-#
-# Calling convention:
-#   check_anticopy_gate1_slot_disagreement(src_arr, gen_arr, label)
-#   check_anticopy_gate2_js(js_home, js_work, label)
-#   check_anticopy_gate3_training(epoch1_val_js, epoch1_total_loss, label)
-#   check_anticopy_gate4_bands(rates_dict, label)
-#
-# All raise SystemExit(1) on failure so the SLURM job gets a non-zero exit code.
-
-def _gate_fail(msg: str) -> None:
-    print(f"\n{'='*60}")
-    print(f"  [ANTI-COPY GATE FAIL] {msg}")
-    print(f"  Copier bug detected — do NOT submit / trust these results.")
-    print(f"{'='*60}\n")
-    raise SystemExit(1)
-
-
-def check_anticopy_gate1_slot_disagreement(
-    src_arr: np.ndarray,
-    gen_arr: np.ndarray,
-    label: str = "",
-) -> float:
-    """
-    Gate 1: per-slot disagreement between src and generated sequences.
-    src_arr, gen_arr: (N, 48) integer arrays (0-indexed act IDs).
-    Returns disagreement fraction.  FAILS if < 0.05 (5%).
-    """
-    disagree = float((src_arr != gen_arr).mean())
-    status = "PASS" if disagree >= 0.05 else "GATE FAIL"
-    print(f"  [Gate 1 slot-disagree {label}] {disagree:.4f}  {status}")
-    if disagree < 0.05:
-        _gate_fail(
-            f"Gate 1 ({label}): slot disagreement {disagree:.4f} < 0.05 — "
-            f"model is copying src to tgt (identity autoencoder signature)."
-        )
-    return disagree
-
-
-def check_anticopy_gate2_js(
-    js_home: float,
-    js_work: float,
-    label: str = "",
-) -> None:
-    """
-    Gate 2: JS_home and JS_work must be >= 0 and finite.
-    Copier gives exactly −0.0000 (or nan/inf).
-    """
-    home_ok = np.isfinite(js_home) and js_home >= 0.0
-    work_ok = np.isfinite(js_work) and js_work >= 0.0
-    print(f"  [Gate 2 JS-sign {label}] JS_home={js_home:.6f} JS_work={js_work:.6f}  "
-          f"{'PASS' if (home_ok and work_ok) else 'GATE FAIL'}")
-    if not home_ok:
-        _gate_fail(
-            f"Gate 2 ({label}): JS_home={js_home:.6f} is negative or non-finite — "
-            f"copier signature (perfect reconstruction produces log(0) underflow)."
-        )
-    if not work_ok:
-        _gate_fail(
-            f"Gate 2 ({label}): JS_work={js_work:.6f} is negative or non-finite — "
-            f"same copier signature."
-        )
-
-
-def check_anticopy_gate3_training(
-    epoch1_val_js: float,
-    epoch1_total_loss: float,
-    label: str = "",
-) -> None:
-    """
-    Gate 3: after epoch 1, val_js must be > 0 AND total loss must be >= 0.
-    Copier: val_js = 0.0000 from epoch 1; loss can go negative (log(p≈1)).
-    """
-    js_ok   = np.isfinite(epoch1_val_js) and epoch1_val_js > 0.0
-    loss_ok = np.isfinite(epoch1_total_loss) and epoch1_total_loss >= 0.0
-    print(f"  [Gate 3 epoch-1 {label}] val_js={epoch1_val_js:.6f} "
-          f"loss={epoch1_total_loss:.6f}  "
-          f"{'PASS' if (js_ok and loss_ok) else 'GATE FAIL'}")
-    if not js_ok:
-        _gate_fail(
-            f"Gate 3 ({label}): val_js={epoch1_val_js:.6f} at epoch 1 is zero or "
-            f"non-finite — copier is ignoring targets (identity autoencoder)."
-        )
-    if not loss_ok:
-        _gate_fail(
-            f"Gate 3 ({label}): total loss={epoch1_total_loss:.6f} at epoch 1 is "
-            f"negative or non-finite — log(p≈1) signature of copier."
-        )
-
-
-def check_anticopy_gate4_bands(
-    wfh_rates: dict,
-    label: str = "",
-) -> None:
-    """
-    Gate 4: 3 band WFH-day shares must be clearly separated — monotone C > B > A.
-    wfh_rates: {'conservative': float, 'hybrid': float, 'fullyhybrid': float}
-    Each share must be within ±3pp of target AND monotone order must hold.
-    """
-    targets = _BAND_WFH_SHARE  # {'conservative':0.175, 'hybrid':0.30, 'fullyhybrid':0.40}
-    for band, target in targets.items():
-        rate = wfh_rates.get(band, float("nan"))
-        delta_pp = abs(rate - target) * 100
-        ok = np.isfinite(rate) and delta_pp <= 3.0
-        print(f"  [Gate 4 band {label} {band}] rate={rate:.4f} "
-              f"target={target:.4f} delta={delta_pp:.2f}pp  {'PASS' if ok else 'GATE FAIL'}")
-        if not ok:
-            _gate_fail(
-                f"Gate 4 ({label}): band {band} WFH-day share {rate:.4f} "
-                f"vs target {target:.4f}, delta {delta_pp:.2f}pp > 3pp."
-            )
-    # Monotone check
-    ca = wfh_rates.get("conservative", 0.0)
-    hy = wfh_rates.get("hybrid", 0.0)
-    fh = wfh_rates.get("fullyhybrid", 0.0)
-    if not (ca < hy < fh):
-        _gate_fail(
-            f"Gate 4 ({label}): bands NOT monotone — "
-            f"conservative={ca:.4f} hybrid={hy:.4f} fullyhybrid={fh:.4f}. "
-            f"All bands identical is the copier signature."
-        )
-    print(f"  [Gate 4 monotone {label}] PASS  C={ca:.4f} < H={hy:.4f} < F={fh:.4f}")
-
-
 # ── Sub-stage D Phase i: 2022 Backcasting ────────────────────────────────────
 
 def run_substage_d_phase_i(
@@ -1715,91 +1429,88 @@ def run_substage_d_phase_i(
               f"delta={abs(wfh_gen-wfh_obs):.4f}  "
               f"{'PASS' if abs(wfh_gen-wfh_obs)<0.05 else 'FAIL (>5pp)'}")
 
-    # ── Anti-copy gates for D1 ──────────────────────────────────────────────
-    print("\n  [D1 Anti-copy gates]")
-    # Gate 1: slot-disagreement between source sequences and backcast output
-    # obs_act = source sequences that were fed into the encoder (0-indexed)
-    # gen_act = decoder output (0-indexed)
-    check_anticopy_gate1_slot_disagreement(obs_act, gen_act, label="D1-backcast")
-
-    # Gate 2: JS_home and JS_work from stratum 1 (weekday) must be >= 0 and finite
-    if 1 in gate_metrics:
-        check_anticopy_gate2_js(
-            gate_metrics[1]["js_home"],
-            gate_metrics[1]["js_work"],
-            label="D1-stratum1",
-        )
-    if 2 in gate_metrics:
-        check_anticopy_gate2_js(
-            gate_metrics[2]["js_home"],
-            gate_metrics[2]["js_work"],
-            label="D1-stratum2",
-        )
-    print("  [D1 anti-copy gates] PASS\n")
-
     return gate_metrics
 
 
-# ── Sub-stage D Phase ii: POST-HOC DAY-TYPE REWEIGHT (FIX 2026-06-24) ─────────
-#
-# FIX: TELEWORK conditioning is proven NOT a learnable lever (Control 987027:
-# temp=0.0 dHome=−0.0045, only 18.8% rows changed — FLAT verdict).  The old
-# approach of running 3 separate inference calls with TELEWORK share overrides
-# produced IDENTICAL bands because a copier ignores conditioning.
-#
-# NEW APPROACH (post-hoc day-type reweight):
-#   1. Generate the full 2030 base forecast ONCE (all cohort, normal temperature).
-#   2. Classify each EMPLOYED person's diary as WFH-day or office-day:
-#      WFH-day if (mean AT_HOME in business-hour slots 11–26) >= 0.50; else office-day.
-#   3. For each band target b ∈ {0.175, 0.30, 0.40}: assemble a band cohort in which
-#      the WFH-day share among employed rows == b (±3pp), by DONOR-DRAW from the
-#      model's own 2030 day-type pools.  Non-employed rows pass through unchanged.
-#   4. The donor draw is AGEGRP-stratified (prefer same-AGEGRP donors), with
-#      cross-AGEGRP fallback when a stratum's pool is too thin.
-#   5. Emit one output DataFrame per band with the same schema as before.
-#
-# This makes bands diverge by construction, preserves drift-signal (all diaries
-# are model outputs), and keeps demographic composition fixed.
+# ── Sub-stage D Phase ii: Three-Band Forward Forecast ────────────────────────
 
-_BAND_WFH_SHARE = {
-    "conservative": 0.175,
-    "hybrid":       0.300,
-    "fullyhybrid":  0.400,
-}
-
-# WFH-day threshold: fraction of business-hour slots where AT_HOME==1 to call a
-# diary "WFH-day".  0.50 = majority of business hours spent at home.
-_WFH_DAY_THRESH = 0.50
-
-
-def _classify_wfh_day(gen_home: np.ndarray) -> np.ndarray:
-    """Return boolean array (N,): True if diary is classified as WFH-day."""
-    h_biz = gen_home[:, BIZ_SLOTS_0IDX]  # (N, 16)
-    return (h_biz.mean(axis=1) >= _WFH_DAY_THRESH)
-
-
-def _run_base_forecast_2030(
-    df_scen: pd.DataFrame,
+def run_substage_d_phase_ii(
+    band: str,
+    df: pd.DataFrame,
     feat_cfg: dict,
     device: torch.device,
-    model,
-) -> tuple:
+    smoke: bool = False,
+) -> pd.DataFrame:
     """
-    Run a single inference pass on df_scen (CYCLE_YEAR set to 2022 for embedding).
-    Returns (gen_act, gen_home, gen_work) numpy arrays (N, 48).
+    2030 forward forecast for one band.
+    band: 'conservative' (~17.5% employed TELEWORK=1)
+          'hybrid'       (~30%)
+          'fullyhybrid'  (~40%)
+    Returns diary DataFrame with BAND column.
     """
-    df_inf = df_scen.copy()
-    df_inf["CYCLE_YEAR"] = 2022  # no 2030 embedding exists
+    BAND_TELEWORK_SHARE = {
+        "conservative": 0.175,
+        "hybrid":       0.300,
+        "fullyhybrid":  0.400,
+    }
+    assert band in BAND_TELEWORK_SHARE, f"Unknown band: {band}"
+    tw_share = BAND_TELEWORK_SHARE[band]
 
-    tensors = build_tensors_from_df(df_inf, feat_cfg, device)
-    N = len(df_inf)
+    print(f"\n  [Phase ii — {band}] TELEWORK share={tw_share:.3f}")
+
+    scenario_path = os.path.join(OUTPUT_DIR, "scenario_2030_features_2split.csv")
+    if not os.path.isfile(scenario_path):
+        print(f"  [WARN] scenario_2030_features_2split.csv not found at {scenario_path}. "
+              f"Falling back to 2022 cohort for structural test.")
+        df_scen = df[df["CYCLE_YEAR"] == 2022].copy().reset_index(drop=True)
+        df_scen["CYCLE_YEAR"] = 2030
+        df_scen["SCENARIO"]   = f"M1_2030_{band}"
+    else:
+        df_scen = pd.read_csv(scenario_path, low_memory=False)
+
+    if smoke:
+        df_scen = df_scen.sample(frac=0.05, random_state=42).reset_index(drop=True)
+
+    # TELEWORK share resample (OD-2 resolved: per-SHARE not all-0/all-1)
+    df_scen = df_scen.copy()
+    if "LFTAG" in df_scen.columns:
+        emp_mask = (df_scen["LFTAG"] == 1)
+    else:
+        emp_mask = pd.Series(True, index=df_scen.index)
+
+    emp_idx = df_scen.index[emp_mask].tolist()
+    n_emp = len(emp_idx)
+    n_tw1 = int(round(n_emp * tw_share))
+    rng = np.random.default_rng(42)
+    tw1_set = set(rng.choice(emp_idx, size=n_tw1, replace=False).tolist())
+
+    df_scen["TELEWORK"]       = 0
+    df_scen["TELEWORK_KNOWN"] = 1
+    for i in tw1_set:
+        df_scen.at[i, "TELEWORK"] = 1
+
+    # Load model
+    ws = os.path.join(MODELS_DIR, "W_pooled_2030_2split.pt")
+    if not os.path.isfile(ws):
+        print(f"  [WARN] {ws} not found; using W_2022_ft if available.")
+        ws = os.path.join(MODELS_DIR, "W_2022_ft_2split.pt")
+
+    model, weighter, mc = build_model(feat_cfg, smoke, device, ws if os.path.isfile(ws) else None)
+    model.eval()
+
+    # Override CYCLE_YEAR to map to 2022 index for inference (no 2030 embedding)
+    df_scen_inf = df_scen.copy()
+    df_scen_inf["CYCLE_YEAR"] = 2022  # use 2022 embedding at inference
+
+    tensors = build_tensors_from_df(df_scen_inf, feat_cfg, device)
+    N = len(df_scen_inf)
     batch_sz = 256
-    gen_acts, gen_homes, gen_works = [], [], []
+    gen_acts, gen_homes, gen_works, gen_cops = [], [], [], []
 
     with torch.no_grad():
         for start in range(0, N, batch_sz):
             sl = slice(start, start + batch_sz)
-            g_act, g_home, g_work, _, _ = model.generate(
+            g_act, g_home, g_work, g_cop, _ = model.generate(
                 tensors["act_seq"][sl],
                 tensors["aux_seq"][sl],
                 tensors["cond_vec"][sl],
@@ -1810,223 +1521,16 @@ def _run_base_forecast_2030(
             gen_acts.append(g_act.cpu())
             gen_homes.append(g_home.cpu())
             gen_works.append(g_work.cpu())
+            gen_cops.append(g_cop.cpu())
 
     gen_act  = torch.cat(gen_acts).numpy()   # (N, 48)
     gen_home = torch.cat(gen_homes).numpy()  # (N, 48)
     gen_work = torch.cat(gen_works).numpy()  # (N, 48)
-    return gen_act, gen_home, gen_work
 
-
-def _posthoc_reweight(
-    df_scen: pd.DataFrame,
-    base_gen_act: np.ndarray,
-    base_gen_home: np.ndarray,
-    base_gen_work: np.ndarray,
-    target_wfh_share: float,
-    band: str,
-    rng_seed: int = 42,
-) -> tuple:
-    """
-    Post-hoc day-type reweight: assemble a cohort where the WFH-day share among
-    employed (LFTAG==1) rows == target_wfh_share (±3pp).
-
-    Returns (out_act, out_home, out_work) numpy arrays (N, 48) for this band.
-
-    Procedure:
-    - Classify each employed row as WFH-day or office-day from the base forecast.
-    - Compute current WFH-day share and required count.
-    - If pool is large enough: sample by AGEGRP (with cross-AGEGRP fallback).
-    - Non-employed rows: kept as-is from the base forecast.
-    - If either day-type pool is too thin to reach target: emit warning but do not fudge.
-    """
-    N = len(df_scen)
-    is_employed = (df_scen["LFTAG"].values == 1) if "LFTAG" in df_scen.columns else np.ones(N, dtype=bool)
-    is_wfh_day = _classify_wfh_day(base_gen_home)  # (N,)
-
-    emp_idx = np.where(is_employed)[0]
-    n_emp = len(emp_idx)
-    n_wfh_target = int(round(n_emp * target_wfh_share))
-    n_off_target = n_emp - n_wfh_target
-
-    wfh_pool = emp_idx[is_wfh_day[emp_idx]]    # employed WFH-day rows
-    off_pool  = emp_idx[~is_wfh_day[emp_idx]]   # employed office-day rows
-
-    current_wfh_share = len(wfh_pool) / max(n_emp, 1)
-    print(f"  [{band}] base WFH-day share={current_wfh_share:.3f}  "
-          f"target={target_wfh_share:.3f}  "
-          f"WFH pool={len(wfh_pool)}  Office pool={len(off_pool)}")
-
-    if len(wfh_pool) == 0:
-        print(f"  [{band}] WARNING: WFH-day pool is empty — band cannot be formed; "
-              f"returning base forecast unchanged.")
-        return base_gen_act.copy(), base_gen_home.copy(), base_gen_work.copy()
-    if len(off_pool) == 0 and n_off_target > 0:
-        print(f"  [{band}] WARNING: office-day pool is empty — band cannot be formed; "
-              f"returning base forecast unchanged.")
-        return base_gen_act.copy(), base_gen_home.copy(), base_gen_work.copy()
-
-    # Report if 40% target is unreachable given the model's day-type distribution
-    if len(wfh_pool) < n_wfh_target:
-        print(f"  [{band}] WARNING: WFH-day pool ({len(wfh_pool)}) < target count "
-              f"({n_wfh_target}) — resampling with replacement for WFH rows; "
-              f"diversity limited.  This is a model finding, not fudged.")
-    if len(off_pool) < n_off_target:
-        print(f"  [{band}] WARNING: office-day pool ({len(off_pool)}) < target count "
-              f"({n_off_target}) — resampling with replacement for office rows.")
-
-    rng = np.random.default_rng(rng_seed)
-
-    # Get AGEGRP for employed rows (used for demographically-similar donor draw)
-    agegrp_arr = df_scen["AGEGRP"].fillna(-1).astype(int).values if "AGEGRP" in df_scen.columns else np.full(N, -1, dtype=int)
-
-    def _draw_agegrp_stratified(pool: np.ndarray, n_draw: int) -> np.ndarray:
-        """
-        Draw n_draw indices from pool, AGEGRP-stratified with cross-group fallback.
-        Returns array of indices into the original df_scen (not pool-local).
-        """
-        if n_draw == 0:
-            return np.array([], dtype=int)
-        # Group pool by AGEGRP
-        pool_agegrp = agegrp_arr[pool]
-        unique_groups = np.unique(pool_agegrp)
-        group_quota = {}
-        for g in unique_groups:
-            g_count = int((pool_agegrp == g).sum())
-            group_quota[g] = max(1, round(n_draw * g_count / len(pool)))
-        # Adjust to exact n_draw
-        total = sum(group_quota.values())
-        diff = n_draw - total
-        largest_g = max(group_quota, key=group_quota.get)
-        group_quota[largest_g] += diff
-
-        drawn = []
-        for g, q in group_quota.items():
-            g_pool = pool[pool_agegrp == g]
-            if len(g_pool) == 0:
-                continue
-            drawn.append(rng.choice(g_pool, size=q, replace=(q > len(g_pool))))
-        result = np.concatenate(drawn) if drawn else np.array([], dtype=int)
-        # Fallback if we came up short
-        if len(result) < n_draw:
-            shortfall = n_draw - len(result)
-            result = np.concatenate([result, rng.choice(pool, size=shortfall, replace=True)])
-        return result[:n_draw]
-
-    selected_wfh = _draw_agegrp_stratified(wfh_pool, n_wfh_target)
-    selected_off = _draw_agegrp_stratified(off_pool, n_off_target)
-    selected_emp = np.concatenate([selected_wfh, selected_off])  # (n_emp,) donor indices
-
-    # Build output arrays — copy from base
-    out_act  = base_gen_act.copy()
-    out_home = base_gen_home.copy()
-    out_work = base_gen_work.copy()
-
-    # For each employed row (in original index order), assign a donor diary
-    # The donor is sampled from the appropriate day-type pool above.
-    # We keep the demographic row (df_scen row) fixed but swap the generated diary.
-    rng2 = np.random.default_rng(rng_seed + 1)
-    rng2.shuffle(selected_emp)  # randomise donor assignment order
-    for slot, orig_i in enumerate(emp_idx):
-        donor_i = int(selected_emp[slot % len(selected_emp)])
-        out_act[orig_i]  = base_gen_act[donor_i]
-        out_home[orig_i] = base_gen_home[donor_i]
-        out_work[orig_i] = base_gen_work[donor_i]
-
-    # Verify realised WFH-day share
-    is_wfh_day_out = _classify_wfh_day(out_home)
-    realised_share = float(is_wfh_day_out[emp_idx].mean()) if n_emp > 0 else float("nan")
-    delta_pp = abs(realised_share - target_wfh_share) * 100
-    gate_ok = delta_pp <= 3.0
-    print(f"  [{band}] realised WFH-day share={realised_share:.4f}  "
-          f"delta={delta_pp:.2f}pp  {'PASS (<=3pp)' if gate_ok else 'GATE FAIL (>3pp)'}")
-    if not gate_ok:
-        print(f"  [GATE FAIL] Band {band}: realised WFH-day share {realised_share:.4f} "
-              f"vs target {target_wfh_share:.4f}, delta {delta_pp:.2f}pp > 3pp threshold.")
-
-    return out_act, out_home, out_work
-
-
-def run_substage_d_phase_ii(
-    band: str,
-    df: pd.DataFrame,
-    feat_cfg: dict,
-    device: torch.device,
-    smoke: bool = False,
-    _base_cache: dict = None,
-) -> pd.DataFrame:
-    """
-    2030 forward forecast for one band — POST-HOC DAY-TYPE REWEIGHT.
-    FIX (2026-06-24): replaces TELEWORK-conditioning override (proven not a
-    learnable lever per control 987027) with exogenous day-type reweight.
-
-    band: 'conservative' (~17.5% WFH-day share)
-          'hybrid'       (~30%)
-          'fullyhybrid'  (~40%)
-
-    _base_cache: optional dict with keys 'df_scen', 'gen_act', 'gen_home', 'gen_work'
-                 to avoid re-running inference for each band (set by run_all).
-
-    Returns diary DataFrame with BAND column.
-    """
-    assert band in _BAND_WFH_SHARE, f"Unknown band: {band}"
-    target_wfh_share = _BAND_WFH_SHARE[band]
-
-    print(f"\n  [Phase ii — {band}] post-hoc reweight target WFH-day share={target_wfh_share:.3f}")
-
-    # ── Load scenario cohort ──
-    scenario_path = os.path.join(OUTPUT_DIR, "scenario_2030_features_2split.csv")
-    if not os.path.isfile(scenario_path):
-        print(f"  [WARN] scenario_2030_features_2split.csv not found; "
-              f"falling back to 2022 cohort.")
-        df_scen = df[df["CYCLE_YEAR"] == 2022].copy().reset_index(drop=True)
-        df_scen["CYCLE_YEAR"] = 2030
-        df_scen["SCENARIO"]   = "M1_2030"
-    else:
-        df_scen = pd.read_csv(scenario_path, low_memory=False)
-
-    if smoke:
-        df_scen = df_scen.sample(frac=0.05, random_state=42).reset_index(drop=True)
-
-    # ── Generate base forecast ONCE per D2 call-set (use cache if provided) ──
-    if _base_cache is not None and "gen_act" in _base_cache:
-        gen_act_base  = _base_cache["gen_act"]
-        gen_home_base = _base_cache["gen_home"]
-        gen_work_base = _base_cache["gen_work"]
-        df_scen       = _base_cache["df_scen"]
-        print(f"  [{band}] Using cached base forecast ({len(df_scen):,} rows).")
-    else:
-        # Load model
-        ws = os.path.join(MODELS_DIR, "W_pooled_2030_2split.pt")
-        if not os.path.isfile(ws):
-            print(f"  [WARN] {ws} not found; using W_2022_ft if available.")
-            ws = os.path.join(MODELS_DIR, "W_2022_ft_2split.pt")
-
-        model, weighter, mc = build_model(feat_cfg, smoke, device, ws if os.path.isfile(ws) else None)
-        model.eval()
-        print(f"  Generating base 2030 forecast ({len(df_scen):,} rows) …")
-        gen_act_base, gen_home_base, gen_work_base = _run_base_forecast_2030(
-            df_scen, feat_cfg, device, model
-        )
-        if _base_cache is not None:
-            _base_cache["gen_act"]  = gen_act_base
-            _base_cache["gen_home"] = gen_home_base
-            _base_cache["gen_work"] = gen_work_base
-            _base_cache["df_scen"]  = df_scen
-
-    N = len(df_scen)
-
-    # ── Post-hoc day-type reweight for this band ──
-    gen_act, gen_home, gen_work = _posthoc_reweight(
-        df_scen, gen_act_base, gen_home_base, gen_work_base,
-        target_wfh_share=target_wfh_share,
-        band=band,
-        rng_seed={"conservative": 42, "hybrid": 43, "fullyhybrid": 44}[band],
-    )
-
-    # ── 6H: mutual-exclusion resolution ──
+    # 6H: mutual-exclusion resolution (inline, per spec)
     gen_home, gen_work = mutual_exclusion_resolve(gen_act, gen_home, gen_work)
 
-    # ── Build output DataFrame ──
+    # Build output DataFrame
     act_cols_out = [f"act30_{i:03d}" for i in range(1, 49)]
     hom_cols     = [f"hom30_{i:03d}" for i in range(1, 49)]
     wrk_cols     = [f"wrk30_{i:03d}" for i in range(1, 49)]
@@ -2048,20 +1552,19 @@ def run_substage_d_phase_ii(
         if col in df_scen.columns:
             out_df[col] = df_scen[col].values
 
-    # ── Band summary metrics (gate C4) ──
-    is_employed = (df_scen["LFTAG"].values == 1) if "LFTAG" in df_scen.columns else np.ones(N, dtype=bool)
-    emp_m = is_employed
-    wd_mask = (df_scen["DDAY_STRATA"].values == 1)
+    # WFH_RATE check
+    if "LFTAG" in out_df.columns:
+        emp_m = (out_df["LFTAG"] == 1).values
+    else:
+        emp_m = np.ones(N, dtype=bool)
 
-    h_biz_out = gen_home[emp_m, :][:, BIZ_SLOTS_0IDX]
-    a_biz_out = gen_act[emp_m, :][:, BIZ_SLOTS_0IDX]
-    wfh_rate = float(((h_biz_out == 1) | (a_biz_out == 0)).mean()) if emp_m.sum() > 0 else float("nan")
+    h_biz = gen_home[emp_m, :][:, BIZ_SLOTS_0IDX]
+    a_biz = gen_act[emp_m, :][:, BIZ_SLOTS_0IDX]
+    wfh_rate = float(((h_biz == 1) | (a_biz == 0)).mean()) if emp_m.sum() > 0 else float("nan")
 
-    wd_at_home = float(gen_home[wd_mask].mean()) if wd_mask.sum() > 0 else float("nan")
-    wd_at_work = float(gen_work[wd_mask].mean()) if wd_mask.sum() > 0 else float("nan")
-
-    print(f"  {band}: rows={N:,}  WD_AT_HOME={wd_at_home:.4f}  "
-          f"WD_AT_WORK={wd_at_work:.4f}  WFH_RATE={wfh_rate:.4f}")
+    wd_mask = (out_df["DDAY_STRATA"] == 1).values
+    print(f"  {band}: rows={N:,}  WD_AT_HOME={gen_home[wd_mask].mean():.4f}  "
+          f"WD_AT_WORK={gen_work[wd_mask].mean():.4f}  WFH_RATE={wfh_rate:.4f}")
 
     return out_df
 
@@ -2176,13 +1679,10 @@ def run_all(args) -> None:
         band_arg = args.band if args.band else None
         bands = [band_arg] if band_arg else ["conservative", "hybrid", "fullyhybrid"]
 
-        # Shared base-forecast cache: inference runs ONCE for all bands
-        _d2_cache: dict = {}
         all_diaries = []
         for band in bands:
             diary_df = run_substage_d_phase_ii(
-                band, df, feat_cfg, device, smoke=args.smoke,
-                _base_cache=_d2_cache,
+                band, df, feat_cfg, device, smoke=args.smoke
             )
             all_diaries.append(diary_df)
 
@@ -2212,30 +1712,6 @@ def run_all(args) -> None:
             if len(b_list) == 3:
                 ok = rates.get("conservative", 0) <= rates.get("hybrid", 1) <= rates.get("fullyhybrid", 2)
                 print(f"  Monotone sensitivity: {'PASS' if ok else 'FAIL'}")
-                # ── Gate 4: WFH-day shares separated ──────────────────────────
-                # Compute WFH-day shares from the post-hoc reweight (stored in
-                # out_df via _classify_wfh_day on hom30 columns)
-                wfh_day_shares = {}
-                for band_g4 in b_list:
-                    sub_g4 = combined[combined["BAND"] == band_g4]
-                    if "LFTAG" in sub_g4.columns:
-                        emp_g4 = sub_g4[sub_g4["LFTAG"] == 1]
-                    else:
-                        emp_g4 = sub_g4
-                    if len(emp_g4) > 0:
-                        hom_g4 = emp_g4[[f"hom30_{i:03d}" for i in range(1, 49)]].values
-                        is_wfh = _classify_wfh_day(hom_g4)
-                        wfh_day_shares[band_g4] = float(is_wfh.mean())
-                if wfh_day_shares:
-                    print("  WFH-day shares per band:", {k: f"{v:.4f}" for k, v in wfh_day_shares.items()})
-                    if args.smoke:
-                        # Gate 4 is skipped in smoke mode: tiny SAMPLE has no real
-                        # WFH-day diaries and scenario_2030_features_2split.csv is
-                        # absent, so pool-empty fallback fires.  Gates 1-3 are the
-                        # copier detectors; Gate 4 is validated on the cluster run.
-                        print("  [Gate 4 D2] SKIPPED in smoke mode (tiny SAMPLE, no scenario CSV)")
-                    else:
-                        check_anticopy_gate4_bands(wfh_day_shares, label="D2")
 
         # 6H: run mindwell per band
         for band in bands:
