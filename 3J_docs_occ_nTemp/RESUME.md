@@ -1,90 +1,62 @@
-# RESUME PROMPT — 3J Leg-2 occupancy pipeline (paste into a fresh Opus manager session)
+# RESUME — Opus Manager Session Handoff (Step-6 2-split, job 987039)
 
-You are the **manager (Opus)** in the two-agent workflow for the GSSCanada / eSim occupancy project
-(repo root: `C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main`). Read `CLAUDE.md` and your auto-memory
-(`MEMORY.md`) first — they hold all operating rules. Below is exactly where we left off so you can
-continue without re-deriving anything.
+You are the MANAGER (Opus) in a two-agent workflow: you plan, debug, and write the prompts that spawn cheap Sonnet/Haiku employees who do all execution (monitoring, log peeks, scp, sbatch). You do NOT run monitoring/poll loops yourself. First read CLAUDE.md and memory/MEMORY.md (esp. project_step6_2split_status.md). Resume the task below as if no break happened.
 
----
+## WHAT'S IN FLIGHT
+3J Leg-2 "2-split" **STEP 6** = Model 2, the longitudinal occupancy forecast to 2030 (office/WFH leg). Two-channel (AT_HOME + AT_WORK), 3 WFH sensitivity bands: conservative 17.5% / hybrid 30% / fully-hybrid 40% of employed teleworking.
 
-## Project in one line
-3rd Journal ("3J"), **Leg-2 two-channel split** (residential + office) synthetic time-use diaries from
-GSS/Census, feeding EnergyPlus BEM. Pipeline: Step 4 (augmentation/ML) → Step 5 (census linkage) →
-Step 6 (forecasting) → Step 7 (BEM wiring) → Step 8/9 (simulation). 2J (single residential channel) is
-fully done and in paper-writing; 3J reuses the proven 2J downstream but adds the office channel.
+Prior job 982868 finished clean but **DEGENERATE**: all 3 bands identical, backcast JS = -0.0000, val_js = 0. Root cause: `Step6Dataset` self-paired each diary (encoder src index == decoder tgt index) -> the 04B translator collapsed into an identity-copier. Control probe 987027 verdict was **FLAT** — TELEWORK is NOT learnable as a conditioning signal. So the fix is **BOTH**: (A) cross-day-pairing retrain for valid drift-aware checkpoints + valid backcast, and (B) an exogenous post-hoc day-type reweight to create the 3 bands. Plus (C) anti-copy gates.
 
-## ✅ STATE: Step 4 is LOCKED (2026-06-22)
-**Final augmentation chain:** `R10_fast` (J3-topology MDLM) → `04L` floataware joint rake →
-`04M` min-dwell smoother. **04N (bidirectional peak-shaver/filler) was tested and DROPPED.**
+## JOB 987039 (the fix retrain)
+`step6_2spl`, Speed **pg** partition, `-t 7-00:00:00`. Started ~15:37 EDT 2026-06-24.
 
-- 04N production sweep (job 981749, COMPLETED exit 0:0) moved G4 only 0.1 pp against a 10.33 pp gap →
-  cannot close it. Window size barely matters. Dropped.
-- Final scorecard: **68 PASS / 1 WARN / 2 FAIL.**
-- The 2 FAILs are proven-unfixable, honestly documented limitations:
-  - **G4 ≈ 10.2 pp** — structural work-mass under-fill (obs work-peak 28.72% vs syn 18.39%); the rake
-    forces marginals exact, so it can't add work mass; the constrained intra-day swap can't either.
-  - **OW5 ≈ 63%** — day-type ordering (WD≥Sat≥Sun) is **unobservable** (GSS = 1 diary/person), and the
-    rake destroys per-respondent ordering by forcing observed marginals. No ground truth exists.
-- 2J-vs-3J comparison + the LOCK decision are written into the Progress Log of
-  `3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\3rdJ_04_augmentationGSS_val.md` (two dated 2026-06-22 entries).
-  Net finding: **3J Step 4 is strictly more capable than 2J — full second (office) channel at parity
-  with 2J's residential channel, with two honestly-reported, provably-unfixable work-shape gaps.**
+As of handoff (~09:00 EDT 2026-06-25, ~17.5h elapsed): **RUNNING, HEALTHY**, deep in Phase 4 (W_2015_ft -> W_2022_ft), epoch ~8/30, ~1600-2000s/epoch. This is a **MULTI-DAY run (2-3 days)**, not the original ~8h guess — per-epoch cost of the heavier two-channel joint model + cross-day KNN pairing. The 7-day cap covers it; do not panic at the runtime.
 
-## ▶️ IN PROGRESS: Step 5 (downstream census linkage) for 3J Leg-2
-**Build + smoke + FULL RUN DONE (2026-06-22, Sonnet employees).** New 3J-specific files under
-`Leg2_2-split/Step5_docs/`: `3rdJ_05_censusLinkage_2split.py` (+ `_val.py`, `_val.md`),
-plus `0_Occupancy/processed/office_archetype_lookup.csv`. Uses NEW census `0_Occupancy/Outputs_Aligned/
-Aligned_Census_2025.csv` (30,274 agents; PID/SIM_HH_ID, has NOCS, no NAICS, build cols
-DTYPE/BEDRM/ROOM/CONDO/REPAIR). Office archetype bundled INTO Step 5 (NOCS-keyed buckets:
-1,2=Knowledge / 3,4,5=Public / 6=Sales / 7,8,9=NonOffice / 10,99=Unknown). wrk30 + colleagues30
-+ office cols carry through; Census authoritative on shared cols; NAICS_donor from pool.
-**NOCS 5 → Office_Public** (manager-confirmed 2026-06-22; archetype dist healthy so kept).
+Phase structure: sequential per-year fine-tunes (...->2010->2015->2022->pooled/2030), THEN backcast D1, THEN band D2 reweight.
 
-**FULL RUN (192,183-row pool downloaded, 381 MiB → 30,273 agents linked):** all 5 stages
-(`--full/--aggregate/--bem/--exclusion/--regression`) + val ran clean. Tier 98.39% T2_Core,
-0% FailSafe both WD/WE. DTYPE exact-match PASS. Office archetype: NonOffice 48.16% (<60% ✓),
-Office_Public 28.39%, Office_Knowledge 16.18%, Unknown 5.48% (<10% ✓), Office_Sales 1.79%.
-**Scorecard: 18 PASS / 1 WARN / 5 FAIL.**
+Health so far: Phase 2 (->2010) done val_js=0.0248; Phase 3 (->2015) done val_js=0.0192; Phase 4 (->2022) mid-flight val_js~0.0278. Gate-3 epoch-1 anti-copy PASS every stage. The **NEGATIVE total loss** in fine-tune phases is **BENIGN**: the act/home/work reconstruction heads stay positive (~0.37/0.18/0.14); the negative comes from an unnamed aux/likelihood term; val_js stays small-positive (a copier would force it to 0).
 
-**FAIL triage (manager, 2026-06-22):** 4 of 5 map cleanly to the LOCKED Step-4 structural
-limits — AT_WORK slot 9.60pp & AT_HOME daytime 7.70pp = the G4 work-mass gap (obs 28.72% vs
-syn 18.39% ≈10.33pp) propagated through linkage; night AT_HOME 83.18% & night sleep 61.40% =
-night-shift profiles at 192K scale. WARN (N_HH_MEMBERS 1.50 vs 2.80) = person-view vs HH-view
-gate mismatch (HH view = 2.48, fine). **OPEN:** colleagues co-presence FAIL (all=0.13% vs
-obs=6.91%, 6.77pp) — diagnostic dispatched to confirm COMPOSITIONAL (synthetic mostly
-non-workers, cosmetic) vs DEGENERATE (channel broken for synthetic workers, real) + localize
-to Step-4 source vs Step-5 carry. Awaiting result before final-accept/gate-fix decision.
+**FLAG to watch:** Phase 3's COVID-check printed two WARNs — `WD AT_HOME_drift=-0.0824` ("[WARN] AT_HOME drift < +5pp") and `AT_WORK_drift=+0.1462` ("[WARN] AT_WORK drift not clearly negative"). Phase 3 = 2015 checkpoint (pre-COVID) so likely benign, BUT check the 2022/backcast COVID gate doesn't WARN the same wrong direction.
 
-The original ORIGINAL note (kept for context):
+## THE 3 FIXES (already in the module)
+- **A. `build_cycle_pairs()`** — cross-day KNN pairing replacing self-pairing. EXACT_COLS (AGEGRP/SEX/MARSTH/HHSIZE/LFTAG) + FUZZY_COLS (PR/CMA/HRSWRK/NOCS + TOTINC 6-quantile bins), K=5, t!=s, same CYCLE_YEAR, different DDAY_STRATA; numpy brute-force (NO sklearn — cluster env is torch/numpy/pandas only). `resample()` draws a fresh neighbour each epoch; `__getitem__` uses separate `s` (enc source) and `t` (dec target).
+- **B. `_posthoc_reweight()`** — base 2030 forecast generated ONCE (shared via `_d2_cache`); each employed diary = WFH-day if business-hours (slots 11-26) AT_HOME fraction >= 0.50; AGEGRP-stratified donor draw to hit {17.5,30,40}% WFH-day share; non-employed pass through unchanged. (Replaced the dead TELEWORK-conditioning band override.)
+- **C. 4 anti-copy gates** — Gate1 slot-disagreement>=5% (SystemExit if <5%), Gate2 JS>=0 & finite, Gate3 epoch-1 val_js>0 & loss check, Gate4 band shares +/-3pp & monotone — **Gate4 was SKIPPED in `--smoke`**, so 987039 is the FIRST real test of band divergence.
 
-- 2J Step 5 is COMPLETE and proven (see memory `project_step5_census_linkage.md`): local script
-  `05_census_linkage.py` (`--full/--aggregate/--bem/--exclusion`) + `05_censusLinkageGSS_val.py`,
-  data in `0_Occupancy/`. Step 5 runs **LOCALLY** (Step 6 onward is cluster).
-- For 3J the new wrinkle is the **second (office/AT_WORK) channel** — Step 5 must carry both the
-  residential and office tracks through linkage. Start by reading the 2J Step-5 script + val doc and the
-  3J Leg-2 Step-4 outputs to scope what changes for two channels, THEN write an employee (Sonnet) prompt.
-- Don't auto-execute multi-step implementation yourself — you're the manager. Plan it, then hand a scoped
-  prompt to a Sonnet employee ("You are the employee. Execute the task below and append a Progress Log entry").
+Predecessor archived at `...\Step6_docs\archive\3rdJ_06_longitudinalForecasting_2split.preCrossDayPairing.py`.
 
-## Hard operating rules (do NOT violate — full text in CLAUDE.md)
-- **Cluster:** never blocking `srun` / bare `python` on the login node (`speed-submit2`) — account-ban
-  risk, flagged 3×. Always `sbatch` fire-and-forget, read the output file after. tcsh login shell: no
-  `2>&1`; one-line commands; label every command "locally" or "on the cluster".
-- **Cost:** monitoring/polling/file-scans/log-tails = Haiku/Sonnet employees, never Opus. Background
-  agents silently inherit Opus — always pass `model: haiku`/`sonnet`. Min poll spacing 30 min; prefer
-  not polling at all (you act on terminal results the user relays).
-- **Never scan big files (≈500 MB diaries, big csv/logs) in your own context** — delegate to a cheap employee.
-- Every SLURM wrapper: `--time=48:00:00` minimum.
-- You own all git ops. Casual tone, ≤100 words unless detail asked. Archive predecessor before any
-  architecture edit. Update Progress Logs incrementally.
+## YOUR JOB AT TERMINAL STATE — JUDGE, DO NOT AUTO-PASS
+Do NOT rubber-stamp any in-log "PASS" line (they false-pass). When 987039 finishes, read its `.out` and verify YOURSELF:
+1. Backcast (D1) JS is **REAL & small-but-positive** — NOT 0 / -0.0000. (G14 wants a GOOD fit, so small JS is correct, just nonzero.)
+2. The 3 WFH bands land **~17.5/30/40% (+/-3pp)** AND WD_AT_HOME diverges across bands. (Gate 4 skipped in smoke -> first real divergence test.)
+3. COVID drift gate (2022 backcast): AT_HOME drift UP, AT_WORK drift DOWN.
 
-## Key files / locations
-- Step-4 val doc + Progress Log: `3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\3rdJ_04_augmentationGSS_val.md`
-- Step-4 main doc: `3J_docs_occ_nTemp\Leg2_2-split\Step4_docs\3rdJ_04_augmentationGSS.md`
-- 2J reference (downstream): `2J_docs_occ_nTemp\` ; data: `0_Occupancy\`
-- Cluster: `o_iseri@speed.encs.concordia.ca`, scratch `/speed-scratch/o_iseri/`
+Only when ALL hold do YOU (manager) declare Step-6 done — never an in-log line. Then update memory `project_step6_2split_status.md` + append the Progress Log row. If it fails/degenerates -> audit the FULL chain at once, ship ONE fix bundle (no per-failure patches), resubmit at `-t 7-00:00:00`. Do NOT start Step 7 until Step-6 is truly done.
 
-## First move when I'm back
-Say "starting Step 5" and I'll: (1) read 2J `05_census_linkage.py` + its val doc and the 3J Leg-2
-Step-4 outputs, (2) scope the two-channel changes, (3) write a Sonnet employee prompt for the Step-5
-build. Confirm before I dispatch.
+## HOW TO CHECK STATUS (cheap one-shot employee, NEVER yourself, NEVER a re-arming loop)
+Spawn a Haiku one-shot (`model: haiku`) for a SINGLE peek — the user explicitly killed all continuous monitors; do not recreate them. Login-node-safe, single-file only:
+```
+ssh o_iseri@speed.encs.concordia.ca
+sacct -j 987039 -o JobID,State,Elapsed -P
+tail -n 60 /nfs/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step6_docs/step6_2split_987039.out
+grep -nE "Phase|done|Backcast|BACKCAST|band|WFH|JS|Gate" on that ONE file for structure.
+```
+
+## STANDING CONSTRAINTS (still in force)
+- NEVER blocking/interactive `srun` on login node — always `sbatch`, read the output file after (account-suspension risk, flagged 3x).
+- NO bare `python`/`python3` on login node ever (incl. one-liners). Allowed: `sbatch`/`squeue`/`sacct`/`scancel`/`scontrol`/`cd`/`ls`/`scp`/`module load` + single-file `tail`/`head`/`grep`/`wc -l`/`cat`.
+- Every submission `-t 7-00:00:00` minimum (HARD RULE #3); Speed ps/pg MaxTime = 7 days.
+- Cheap models (Haiku/Sonnet) for ALL monitoring/peeks/scp/sbatch; ALWAYS set `model:` on Agent calls; min 30-min spacing; prefer one-shot checks over poll loops.
+- Speed login shell is tcsh; no `2>&1` (use `>&` or omit); one short line, no backslash continuation.
+- Label every command "locally" or "on the cluster". Bundle uploads (one scp/cycle). Step 4 LOCKED. Never upload the whole GSSCanada-main dir.
+- Communication: casual, <=100 words unless detail requested.
+
+## FILES
+- Module (local): `C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg2_2-split\Step6_docs\3rdJ_06_longitudinalForecasting_2split.py`
+- Progress Log (local): same dir `\3rdJ_06_longitudinalForecasting_2split.md` (table `| Date | Action | Notes |` ~L739)
+- Cluster dir: `/nfs/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step6_docs`
+- Cluster stdout: `step6_2split_987039.out`
+- Memory: `C:\Users\o_iseri\.claude\projects\C--Users-o-iseri-Desktop-GSSCanada\memory\project_step6_2split_status.md`
+
+## MONITORING STATE
+ALL monitors killed at user request; job 987039 untouched and still RUNNING. Do NOT spin up continuous monitors. When you want status: one cheap Haiku peek, then act only on terminal results.

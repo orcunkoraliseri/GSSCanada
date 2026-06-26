@@ -1680,52 +1680,25 @@ def run_substage_d_phase_i(
     gate_metrics = {}
     strata_np = df_2022["DDAY_STRATA"].values
 
-    # ── Backcast metric fix (2026-06-26) ────────────────────────────────────
-    # The previous gate called js_divergence(obs_<ch>[m].flatten(),
-    # gen_<ch>[m].flatten()) on the RAW flattened binary occupancy arrays.
-    # js_divergence (04D:539) normalises each input to sum=1, so on flattened
-    # 0/1 data it measures EXACT per-(person,slot) cell overlap — i.e.
-    # memorisation — not whether the population profiles match.  For sparse,
-    # person-specific channels (WORK) it saturates toward ln2≈0.693 even when
-    # the day-mean is matched: proof from job 987039 — weekend strata had
-    # dWork≈0.0005 (mean nailed) yet JS_work≈0.45, and it failed even the strong
-    # HOME channel.  Replaced with MARGINAL comparisons consistent with the rest
-    # of this file (agg_js / validate()): per-slot mean-occupancy PROFILES
-    # (48-vectors).  Shape via js_divergence, LEVEL via per-slot MAD + day-mean
-    # gap; PASS keys on per-slot MAD (level-aware).  A true copier is still
-    # caught by anti-copy Gate 1 (slot-disagreement, below) which is unchanged.
-    print("  Gate table (per stratum) — marginal per-slot occupancy profiles:")
-    print(f"  {'Stratum':<8} {'JSact':>8} {'JShome':>8} {'JSwork':>8} "
-          f"{'MADhome':>8} {'MADwork':>8} {'dHome':>8} {'dWork':>8} {'PASS?'}")
+    print("  Gate table (per stratum):")
+    print(f"  {'Stratum':<10} {'JS_home':>10} {'JS_work':>10} {'dHome':>8} {'dWork':>8} {'PASS?'}")
     for s in [1, 2, 3]:
         m = (strata_np == s)
         if m.sum() == 0:
             continue
-        # Activity marginal distribution JS (14-bin histogram — correct marginal)
         obs_dist = np.bincount(obs_act[m].flatten(), minlength=N_ACT).astype(float)
         gen_dist = np.bincount(gen_act[m].flatten(), minlength=N_ACT).astype(float)
-        js_act = js_divergence(obs_dist, gen_dist)
 
-        # Per-slot mean-occupancy profiles (48-vectors)
-        obs_h_prof = obs_home[m].mean(axis=0)
-        gen_h_prof = gen_home[m].mean(axis=0)
-        obs_w_prof = obs_work[m].mean(axis=0)
-        gen_w_prof = gen_work[m].mean(axis=0)
+        js_h = js_divergence(obs_home[m].flatten(), gen_home[m].flatten())
+        js_w = js_divergence(obs_work[m].flatten(), gen_work[m].flatten())
 
-        js_h = js_divergence(obs_h_prof, gen_h_prof)   # profile SHAPE
-        js_w = js_divergence(obs_w_prof, gen_w_prof)
-        mad_h = float(np.abs(obs_h_prof - gen_h_prof).mean())  # per-slot LEVEL
-        mad_w = float(np.abs(obs_w_prof - gen_w_prof).mean())
-
-        dh = abs(gen_home[m].mean() - obs_home[m].mean())      # day-mean LEVEL
+        dh = abs(gen_home[m].mean() - obs_home[m].mean())
         dw = abs(gen_work[m].mean() - obs_work[m].mean())
 
-        ok = (mad_h < 0.10) and (mad_w < 0.10)
-        print(f"  {s:<8} {js_act:>8.4f} {js_h:>8.4f} {js_w:>8.4f} "
-              f"{mad_h:>8.4f} {mad_w:>8.4f} {dh:>8.4f} {dw:>8.4f} "
+        ok = (js_h < 0.10) and (js_w < 0.10)
+        print(f"  {s:<10} {js_h:>10.4f} {js_w:>10.4f} {dh:>8.4f} {dw:>8.4f} "
               f"{'PASS' if ok else 'FAIL'}")
-        gate_metrics[s] = {"js_act": js_act, "js_home": js_h, "js_work": js_w,
-                           "mad_home": mad_h, "mad_work": mad_w,
+        gate_metrics[s] = {"js_home": js_h, "js_work": js_w,
                            "dHome": dh, "dWork": dw}
 
     # WFH_RATE reconstruction
