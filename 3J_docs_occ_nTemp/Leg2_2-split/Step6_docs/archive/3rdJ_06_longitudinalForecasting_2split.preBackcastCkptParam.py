@@ -1609,28 +1609,19 @@ def run_substage_d_phase_i(
     feat_cfg: dict,
     device: torch.device,
     smoke: bool = False,
-    ckpt_name: str = "W_pooled_2030_2split.pt",
 ) -> dict:
     """
-    2022 backcasting gate: reconstruct 2022 diaries from a checkpoint.
-    Canonical run uses W_pooled_2030 (the deliverable checkpoint).  Pass
-    ckpt_name="W_2022_ft_2split.pt" for a SUPPLEMENTARY backcast that shows the
-    architecture reconstructs 2022 when NOT forward-leaning toward 2030 — the
-    canonical W_pooled run over-predicts 2022 WFH by ~6pp precisely because it
-    leans to 2030.  Non-default ckpt_name writes a tagged output CSV so it never
-    clobbers the canonical reconstruction.  Returns gate metrics dict.
+    2022 backcasting gate: reconstruct 2022 diaries from W_pooled_2030.
+    Returns gate metrics dict.
     """
     print("\n" + "=" * 60)
     print("SUB-STAGE D PHASE i — 2022 BACKCASTING GATE")
     print("=" * 60)
 
-    # ckpt_name may be a bare filename (looked up in models/) OR an absolute path
-    # (e.g. the locked Step-4 base checkpoint, for a read-only inheritance probe).
-    ws = ckpt_name if os.path.isabs(ckpt_name) else os.path.join(MODELS_DIR, ckpt_name)
+    ws = os.path.join(MODELS_DIR, "W_pooled_2030_2split.pt")
     if not os.path.isfile(ws):
         print(f"  [WARN] {ws} not found — skip backcasting gate.")
         return {}
-    print(f"  Backcast checkpoint: {ws}")
 
     model, weighter, mc = build_model(feat_cfg, smoke, device, ws)
     model.eval()
@@ -1687,9 +1678,7 @@ def run_substage_d_phase_i(
     out_df["CYCLE_YEAR"]   = 2022
     out_df["IS_SYNTHETIC"] = 1
 
-    _stem = os.path.splitext(os.path.basename(ckpt_name))[0]
-    _tag = "" if _stem == "W_pooled_2030_2split" else "_" + _stem
-    out_path = os.path.join(OUTPUT_DIR, f"reconstructed_2022_diaries_2split{_tag}.csv")
+    out_path = os.path.join(OUTPUT_DIR, "reconstructed_2022_diaries_2split.csv")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     out_df.to_csv(out_path, index=False)
     print(f"  Backcast CSV saved: {out_path}  rows={len(out_df):,}")
@@ -2215,9 +2204,7 @@ def run_all(args) -> None:
         run_substage_c(df, feat_cfg, device, smoke=args.smoke)
 
     if stage in ("D1", "all"):
-        ckpt = getattr(args, "backcast_ckpt", "W_pooled_2030_2split.pt")
-        run_substage_d_phase_i(df, feat_cfg, device, smoke=args.smoke,
-                               ckpt_name=ckpt)
+        run_substage_d_phase_i(df, feat_cfg, device, smoke=args.smoke)
 
     if stage in ("D2", "all"):
         band_arg = args.band if args.band else None
@@ -2324,11 +2311,6 @@ def parse_args():
     p.add_argument("--data", default=None,
                    help="Path to augmented_diaries.csv "
                         "(default: R5_lr1e4 raw per OD-1)")
-    p.add_argument("--backcast_ckpt", default="W_pooled_2030_2split.pt",
-                   help="Checkpoint (in models/) used by the D1 backcast gate. "
-                        "Default = W_pooled_2030 (the deliverable checkpoint). "
-                        "Use W_2022_ft_2split.pt for a supplementary 2022-specialised "
-                        "backcast (writes a tagged CSV, does not clobber canonical).")
     return p.parse_args()
 
 
