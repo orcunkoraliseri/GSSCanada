@@ -383,3 +383,17 @@ outside the scope of this BUILD+SMOKE task).
 
 **Files changed:** `3rdJ_05_censusLinkage_2split.py` only (no other src files touched).
 Production pool not repointed. Locked Step-4 generator not modified. Matching/tier logic unchanged.
+
+### 2026-06-26 — Plain-language explanation of the Step-5 linkage FAILs (for the paper / non-specialist readers)
+
+*Added during the J2-vs-J3 cross-step comparison. Mirror copies in `3J_docs_occ_nTemp/compare/leg2_2-split_vs_leg1/generalCompare.md` and the companion Step-5 doc.*
+
+**What Step 5 does:** it takes the synthetic diary *pool* from Step 4 and attaches a matching diary to every real Census person, so each Census household gets an occupancy schedule. **Step 5 invents no new behavior** — it copies Step-4 diaries onto Census people. So any Step-4 imperfection rides along, and the Step-5 validator simply re-measures home/work fidelity on the linked population.
+
+That is why the **3 J3 Step-5 FAILs are not new problems — they are the Step-4 fails seen again at a new station:**
+- **AT_HOME worst-slot 8.59 pp** and **AT_WORK worst-slot 10.18 pp** (gate ≤3 pp) = the same Step-4 work-peak gap (the model labels too little "work" activity at the daytime peak — the `act30` activity "Notebook B" channel), re-measured on linked people. These are *worst single half-hour* numbers; the all-day average AT_HOME match is only ~2 pp. Step 5 cannot fix them because Step 4 is LOCKED — it would have to rewrite the diaries it is only supposed to copy.
+- **Colleagues (W3) 4.37 pp** = the Step-4 synthetic pool has thinner "colleagues present" rates (~12 %) than observed (~21 %). The Rung-I hot-deck fix is built + smoke-tested but not yet production-run — the one genuinely open Step-5 item. Colleagues is NOT a BEM schedule input, so it does not block Step 7/8.
+
+**Why J2 shows 4 FAILs and J3 shows 3:** two of J2's four were a validator bug, not real failures — J2 measured the overnight sleep/home gates on the wrong window (slots 04:00–08:00 instead of 00:00–04:00), and one check was double-counted across two report sections. J3 fixed the window; on the correct overnight window the same data passes at 91–94 %. J3's lower count is honest, not luck.
+
+**Net:** Step 5 adds no new modeling error. Two FAILs are Step-4 re-measured (locked; channels whose aggregate marginals the linkage handles fine), and one (colleagues) has a built-but-unrun fix and is not a BEM input.

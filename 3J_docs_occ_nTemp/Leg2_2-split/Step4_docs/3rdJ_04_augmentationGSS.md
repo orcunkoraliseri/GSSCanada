@@ -1661,3 +1661,34 @@ Both jobs COMPLETED clean (exit 0:0). Baseline for comparison = floataware 67/1/
 4. Then proceed to **Step 5 (archetype linkage)** on the locked base.
 
 Training-loss avenue for G4/OW5 is now CLOSED (aux ablation 981313-6 inert + g4nb 981410 inert + ow5 981420 inert = three independent confirmations of the train/eval-via-rake mismatch). Monitoring cron self-deleted.
+
+---
+
+### 2026-06-26 — Plain-language explanation of the two remaining Step-4 FAILs (for the paper / non-specialist readers)
+
+*Added during the J2-vs-J3 cross-step comparison. Same facts as the LOCKED-base entries above,
+re-stated without jargon. Mirror copies in `3rdJ_04_augmentationGSS_val.md` and
+`3J_docs_occ_nTemp/compare/leg2_2-split_vs_leg1/generalCompare.md`.*
+
+The model fills in each person's day in **two separate notebooks**, half-hour by half-hour:
+- **Notebook A — Location:** "Are you physically at the office right now? yes/no" (`wrk30` / AT_WORK).
+- **Notebook B — Activity:** one word for what you're doing — sleeping, eating, commuting, **working**, … (`act30`, 14-code label).
+
+Different parts of the model write these. The 04L joint rake forces **Notebook A** to match the
+observed marginals *exactly*; Notebook B is not forced that hard.
+
+**FAIL 1 — G4 work-peak, 10.33 pp.** At the daytime peak, real GSS respondents write "working" in
+**Notebook B** ~28.7 % of the time; synthetic ~18.4 % (gate ≤3 pp). The **office BEM schedule is
+built from Notebook A** (physical presence), which is exact (OW1 0.03 pp) — the failing number is in
+**Notebook B (`act30`), which the office schedule never reads.** The 04N filler moved it only 0.1 pp
+(exact-by-rake totals leave no room); training-loss avenue inert (981410). ⇒ **structural floor**,
+documented residual, in a channel the BEM ignores.
+
+**FAIL 2 — OW5 day-type ordering, 63 %.** Gate wants Weekday ≥ Sat ≥ Sun office attendance for ≥90 %
+of respondents. But **GSS samples 1 day/person** — we never see the same person across all three
+day-types, so there is **no ground truth**; the model generates the other two days. Forcing 90 % would
+mean hard-coding a weekday≥weekend assumption (fabrication). Confirmed a **post-rake artifact / data
+limitation** (981420 inert: the rake erases per-respondent ordering). Not a model defect.
+
+**Net:** one fail is in a channel the BEM ignores (and structurally pinned by the exact marginals);
+the other is unobservable with one-day-per-person data. Everything the BEM actually consumes passes.

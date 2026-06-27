@@ -279,3 +279,44 @@ Note 2J's "work-peak PASS" was itself partly the swapped Work/Sleep code bug, so
 **Output files:**
 - `outputs_step4/sweep/R5_reweight/augmented_diaries.csv` (smoke output, 192,183 rows)
 - `outputs_step4/sweep/R5_reweight/04L2_reweight_provenance.json`
+
+---
+
+## Progress Log
+
+### 2026-06-26 — Plain-language explanation of the two remaining Step-4 FAILs (for the paper / non-specialist readers)
+
+*Added during the J2-vs-J3 cross-step comparison. Same facts as the locked-decision entries above,
+re-stated without jargon so a reviewer or co-author can read the two FAILs at a glance. Mirror copy
+lives in `3J_docs_occ_nTemp/compare/leg2_2-split_vs_leg1/generalCompare.md` and the main doc.*
+
+The model fills in each person's day in **two separate notebooks**, half-hour by half-hour:
+- **Notebook A — Location:** "Are you physically at the office right now? yes/no" (this is `wrk30` / AT_WORK).
+- **Notebook B — Activity:** one word for what you're doing — sleeping, eating, commuting, **working**, … (this is `act30`, a 14-code label).
+
+Different parts of the model write these. The 04L joint rake forces **Notebook A** to match the
+observed marginals *exactly*. Notebook B is not forced that hard.
+
+**FAIL 1 — G4 work-peak, 10.33 pp.** At the daytime peak, real GSS respondents write "working" in
+**Notebook B** ~**28.7 %** of the time; synthetic respondents write it ~**18.4 %** — a ~10 pp
+shortfall (gate ≤3 pp). Why it is not a deliverable problem:
+- The **office BEM schedule is built from Notebook A** (physical presence), which is exact
+  (OW1 AT_WORK marginal 0.03 pp). The failing number is in **Notebook B (`act30`), which the office
+  schedule never consumes.**
+- Stage 04N (post-rake filler) moved the gap only **0.1 pp** (job 981749, window sweep w=2/3/4),
+  because the exact-by-rake daily totals leave no room to relocate work mass into the peak without
+  breaking GA/G2/OW1. ⇒ **structural floor**, confirmed unfixable by training-loss (981410 g4nb inert)
+  and post-rake filler. Documented residual, not a regression.
+
+**FAIL 2 — OW5 day-type ordering, 63 %.** Gate asks whether, for ≥90 % of respondents, office
+attendance is Weekday ≥ Saturday ≥ Sunday. The catch: **GSS samples each person on ONE day only.** We
+never observe the same person across weekday + Saturday + Sunday — the model generates the other two
+days — so there is **no ground truth to calibrate against.** 63 % reflects generated days; forcing it
+to 90 % would require hard-coding a weekday≥weekend assumption (fabrication, not modeling). Confirmed
+a **post-rake artifact / data limitation** (981420 ow5-loss inert: the rake destroys per-respondent
+ordering the model learns). Not a model defect.
+
+**Net:** FAIL 1 is in a channel the BEM ignores and is structurally pinned by the exact marginals;
+FAIL 2 is unobservable with one-day-per-person data. Both honestly reported; neither corrupts the
+schedules handed to Step 5/7/8. Everything BEM consumes (OW1/OW3/OW4/OW6 + residential G1/G2/G3)
+PASSES.
