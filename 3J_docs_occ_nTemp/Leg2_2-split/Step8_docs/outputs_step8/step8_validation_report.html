@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Step 8 Validation Report — 3J Leg-2</title>
+<style>
+body{font-family:sans-serif;margin:2em;}
+table{border-collapse:collapse;width:100%;}
+th,td{border:1px solid #ddd;padding:6px 10px;vertical-align:top;}
+th{background:#2c3e50;color:#fff;}
+tr:nth-child(even){background:#f9f9f9;}
+</style></head><body>
+<h1>Step 8 Validation Report — 3J Leg-2 (Two-Channel EnergyPlus)</h1>
+<p>Generated: 2026-06-28 20:54 (elapsed 3.4s)</p>
+<h2 style="color:#c0392b">
+  Scorecard: 6 PASS / 0 WARN / 18 INFO / 3 FAIL
+</h2>
+<div style='color:#c0392b;margin:1em 0'><b>Blocking FAILs (§0/§1/§2):</b><ul><li>§0 0.6-resid-2005: Missing: BEM_Schedules_2split_2005.csv</li><li>§0 0.6-resid-2010: Missing: BEM_Schedules_2split_2010.csv</li><li>§0 0.6-resid-2015: Missing: BEM_Schedules_2split_2015.csv</li></ul></div>
+<table>
+<tr><th>Section</th><th>Gate</th><th>Channel</th><th>Status</th><th>Message</th></tr>
+<tr><td>§0</td><td>0.6-resid-2005</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#c0392b;color:#fff;'>FAIL</span></td><td>Missing: BEM_Schedules_2split_2005.csv</td></tr>
+<tr><td>§0</td><td>0.6-resid-2010</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#c0392b;color:#fff;'>FAIL</span></td><td>Missing: BEM_Schedules_2split_2010.csv</td></tr>
+<tr><td>§0</td><td>0.6-resid-2015</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#c0392b;color:#fff;'>FAIL</span></td><td>Missing: BEM_Schedules_2split_2015.csv</td></tr>
+<tr><td>§0</td><td>0.3</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>04L/04M raking applied per cycle in 3rdJ_08A_gen_historical_schedules.py (rake_cycle() flips IS_SYNTHETIC rows to observed marginal, seed=42)</td></tr>
+<tr><td>§0</td><td>0.4</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Too few historical files to check longitudinal continuity yet</td></tr>
+<tr><td>§0</td><td>0.5</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>AT_WORK gating var differs across cycles: 2005/2010 PLACE=02 vs 2015/2022 LOCATION=301/3301. Historical office multipliers carry documented reconstruction uncertainty. (design doc §0 + builder prompt §1)</td></tr>
+<tr><td>§1</td><td>1.1-resid</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Residential campaign not yet run (0/8400)</td></tr>
+<tr><td>§1</td><td>1.1-office</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Office campaign not yet run (0/252)</td></tr>
+<tr><td>§1</td><td>1.5</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Office IDF transition not yet run (sub-step 8C.0 pending)</td></tr>
+<tr><td>§2</td><td>2.1</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#27ae60;color:#fff;'>PASS</span></td><td>Occupancy_Schedule in [0,1] for all rows in 2022 CSV (source gate, not E+ round-trip)</td></tr>
+<tr><td>§2</td><td>2.5</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#27ae60;color:#fff;'>PASS</span></td><td>AT_WORK_fraction ∈ [0,1] in office_presence_multiplier_2022.csv</td></tr>
+<tr><td>§2</td><td>2.2</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>+4h diary→clock roll applied in Step 7 convert() and 8A gen_historical. Midnight (hour 0 in BEM_Schedules) = 04:00 GSS diary slot. Verify with: peek at Occupancy_Schedule Hour=0 for 2022 (expect ~0.5–0.7 during sleep)</td></tr>
+<tr><td>§2</td><td>2.6</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Lights formula max(0.15, O) verified on 2022 CSV: min=0.150 max=1.000. Full ±0.5% round-trip requires E+ SQL comparison.</td></tr>
+<tr><td>§2</td><td>2.7</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Equipment formula 0.2+(1−0.2)×O verified: min=0.200 max=1.000.</td></tr>
+<tr><td>§2</td><td>2.8</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>NECB density (people/m²) and LPD (W/m²) not modified by office_integration.py: only Schedule_Name fields are updated.</td></tr>
+<tr><td>§2</td><td>2.9</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Interpolate_to_Timestep=No set on all injected Schedule:Compact (OD-8H). Confirmed in integration.py (eSim_bem_utils_3J) and office_integration.py.</td></tr>
+<tr><td>§2</td><td>2.4</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Office People density basis: NECB 0.040 ppl/m² (Number_of_People unchanged). Provenance logged to *.idf.provenance.txt by office_integration.py.</td></tr>
+<tr><td>§2</td><td>2.3</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Residential People count = HHSIZE × schedule (HHSIZE from BEM_Schedules). Verified structurally; per-HH headcount check requires E+ output parsing.</td></tr>
+<tr><td>§3</td><td>3.3</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#27ae60;color:#fff;'>PASS</span></td><td>All (DTYPE×PR) cells have ≥50 HH in 3J 2022 stock. No with-replacement sampling needed.</td></tr>
+<tr><td>§3</td><td>3.4</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#27ae60;color:#fff;'>PASS</span></td><td>Paired design: same N=50 SIM_HH_IDs across all 7 scenarios per cell enforced by _step8_cell_seed() (deterministic SHA-256 per cell_label).</td></tr>
+<tr><td>§3</td><td>3.1-3.2</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Campaign not yet run; gates 3.1/3.2 (CI half-width) check post-campaign.</td></tr>
+<tr><td>§4</td><td>4.all</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>Campaign not yet run; §4 plausibility gates (EUI ranges, arch ordering) check post-campaign.</td></tr>
+<tr><td>§5</td><td>5.all</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>§5 load-shape gates (diurnal peaks, coincidence factor, office WE < WD) require campaign hourly_meters.csv. Run post-campaign.</td></tr>
+<tr><td>§6</td><td>6.2</td><td>Resid</td><td><span style='padding:2px 8px;border-radius:4px;background:#27ae60;color:#fff;'>PASS</span></td><td>2030 WD residential occupancy: cons=0.683 ≤ hyb=0.701 ≤ full=0.711 (WFH↑ → home↑)</td></tr>
+<tr><td>§6</td><td>6.3</td><td>Office</td><td><span style='padding:2px 8px;border-radius:4px;background:#27ae60;color:#fff;'>PASS</span></td><td>Office 2030 WD peak: cons≥full ({'conservative': 0.7015, 'fullyhybrid': 0.6045, 'hybrid': 0.6169})</td></tr>
+<tr><td>§6</td><td>6.1-6.7-rest</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>§6.1/6.4–6.7 (paired Δ CI, COVID break, cross-channel, peak shift, monotonicity) require campaign output. Run post-campaign.</td></tr>
+<tr><td>§7</td><td>7.all</td><td>Both</td><td><span style='padding:2px 8px;border-radius:4px;background:#2980b9;color:#fff;'>INFO</span></td><td>§7 scenario plausibility gates require campaign EUI output. Run post-campaign.</td></tr>
+
+</table>
+<hr>
+<p><em>Threshold provenance: NMBE ±5%/±10% and CV(RMSE) 15%/30% = ASHRAE Guideline 14.
+&lt;0.05 / ±15% / ≤1h = project-chosen thresholds.</em></p>
+</body></html>
