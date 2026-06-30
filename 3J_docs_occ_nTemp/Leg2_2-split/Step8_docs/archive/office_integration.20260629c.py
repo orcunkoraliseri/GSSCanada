@@ -264,9 +264,6 @@ def inject_office_schedules(
 
 def _find_idd(idf_path: str) -> str:
     """Locate Energy+.idd adjacent to or near the IDF; raise if not found."""
-    env_idd = os.environ.get("EPLUS_IDD", "")
-    if env_idd and os.path.exists(env_idd):
-        return env_idd
     candidates = [
         os.path.join(os.path.dirname(idf_path), "Energy+.idd"),
         os.path.join(os.path.dirname(idf_path), "..", "Energy+.idd"),

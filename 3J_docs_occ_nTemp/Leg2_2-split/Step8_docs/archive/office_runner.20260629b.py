@@ -172,7 +172,7 @@ def run_energyplus_via_sif(idf_path: str, epw_path: str, out_dir: str) -> int:
         "--bind", f"{os.path.abspath(out_dir)}:{os.path.abspath(out_dir)}",
         "--bind", f"{os.path.dirname(epw_abs)}:{os.path.dirname(epw_abs)}",
         SIF,
-        "/EnergyPlus-24.2.0-94a887817b-Linux-Ubuntu22.04-x86_64/energyplus",
+        "/EnergyPlus/energyplus",
         "-d", os.path.abspath(out_dir),
         "-w", epw_abs,
         "-r",       # expand objects

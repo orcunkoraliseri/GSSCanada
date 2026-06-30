@@ -165,7 +165,7 @@ def get_region_from_epw(epw_path: str) -> str:
     city_map = {
         'VANCOUVER': "BC",
         'VICTORIA': "BC",
-        'CALGARY': "Alberta",  # STEP-8 WARNING: do NOT route Step-8 pool filter through this fn; use city["region"]="Prairies" — AB folds into Prairies in the 3J stock.
+        'CALGARY': "Alberta",
         'EDMONTON': "Alberta",
         'TORONTO': "Ontario",
         'OTTAWA': "Ontario",

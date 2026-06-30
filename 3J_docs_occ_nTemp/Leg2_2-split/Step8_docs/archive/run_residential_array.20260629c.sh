@@ -28,26 +28,20 @@ mkdir -p "$SCRATCH/logs"
 # Fix 5: dep precheck — fail fast if python env is missing a required package
 $PY -c "import eppy, pandas, numpy" || { echo "MISSING DEP"; exit 1; }
 
-# ---- E+ wrapper: Speed cluster is AlmaLinux 9; the Ubuntu-compiled host binary
-# won't run. Route energyplus + ExpandObjects calls through the Singularity SIF
-# via thin wrapper scripts. simulation.py finds executables + Energy+.idd via
-# ENERGYPLUS_DIR, so we point that to a temp dir with the wrappers.
-EPWRAP=/speed-scratch/o_iseri/step8_2split/epwrap_$$
-mkdir -p "$EPWRAP"
-cat > "$EPWRAP/energyplus" << 'WEOF'
-#!/bin/bash
-singularity exec --bind /speed-scratch --bind /nfs/speed-scratch /speed-scratch/o_iseri/step9_spike/energyplus_24.2.0.sif /EnergyPlus-24.2.0-94a887817b-Linux-Ubuntu22.04-x86_64/energyplus "$@"
-WEOF
-cat > "$EPWRAP/ExpandObjects" << 'WEOF'
-#!/bin/bash
-singularity exec --bind /speed-scratch --bind /nfs/speed-scratch /speed-scratch/o_iseri/step9_spike/energyplus_24.2.0.sif /EnergyPlus-24.2.0-94a887817b-Linux-Ubuntu22.04-x86_64/ExpandObjects "$@"
-WEOF
-chmod +x "$EPWRAP/energyplus" "$EPWRAP/ExpandObjects"
-cp /home/o/o_iseri/ep_install/EnergyPlus-24.2.0-e7ecb2d53b-Linux-Ubuntu22.04-x86_64/Energy+.idd "$EPWRAP/"
-export ENERGYPLUS_DIR="$EPWRAP"
+# ---- E+ path: residential uses host-side ep_install directly (no SIF needed) ----
+# simulation.py reads ENERGYPLUS_DIR to locate the energyplus binary and Energy+.idd.
+# Default is /usr/local/EnergyPlus-24-2-0 which does NOT exist on this cluster.
+export ENERGYPLUS_DIR=/home/o/o_iseri/ep_install/EnergyPlus-24.2.0-e7ecb2d53b-Linux-Ubuntu22.04-x86_64
 export EPLUS_SIF="$SIF"
 export MPLBACKEND=Agg
 export ESIM_WORKERS=8
+
+# IDD extraction from SIF (dead code — simulation.py uses $ENERGYPLUS_DIR/Energy+.idd;
+# kept here with corrected path in case it is wired in future).
+IDD_DIR="/tmp/eplus_idd_$$"
+mkdir -p "$IDD_DIR"
+singularity exec "$SIF" cp /EnergyPlus-24.2.0-94a887817b-Linux-Ubuntu22.04-x86_64/Energy+.idd "$IDD_DIR/" 2>/dev/null || true
+export EPLUS_IDD="$IDD_DIR/Energy+.idd"
 
 echo "=== 8B Residential array task $SLURM_ARRAY_TASK_ID of 167 ==="
 echo "  Node: $(hostname)  Date: $(date)"
@@ -63,4 +57,4 @@ $PY 3rdJ_08B_run_paired_mc.py \
     --out-dir "$SCRATCH/campaign"
 
 echo "  Task $SLURM_ARRAY_TASK_ID done: $(date)"
-rm -rf "$EPWRAP"
+rm -rf "$IDD_DIR"

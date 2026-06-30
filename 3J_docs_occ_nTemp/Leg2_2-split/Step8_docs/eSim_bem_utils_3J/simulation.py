@@ -111,14 +111,18 @@ def run_simulation(idf_path, epw_path, output_dir, ep_path, n_jobs=1, quiet=Fals
         return {'success': True, 'name': name, 'message': msg, 'output_dir': output_dir}
         
     except subprocess.CalledProcessError as e:
-        msg = f"Simulation failed: {name} - {e}"
-        if not quiet:
-            print(msg)
+        stderr_txt = (e.stderr or b"").decode(errors="replace")[:1000].strip()
+        stdout_txt = (e.stdout or b"").decode(errors="replace")[:500].strip()
+        msg = f"Simulation failed: {name} - returncode={e.returncode}"
+        if stderr_txt:
+            msg += f" | stderr: {stderr_txt}"
+        if stdout_txt:
+            msg += f" | stdout: {stdout_txt}"
+        print(f"[SIM-FAIL] {msg}", flush=True)
         return {'success': False, 'name': name, 'message': msg, 'output_dir': output_dir}
     except Exception as e:
         msg = f"Unexpected error for {name}: {e}"
-        if not quiet:
-            print(msg)
+        print(f"[SIM-ERR] {msg}", flush=True)
         return {'success': False, 'name': name, 'message': msg, 'output_dir': output_dir}
 
 

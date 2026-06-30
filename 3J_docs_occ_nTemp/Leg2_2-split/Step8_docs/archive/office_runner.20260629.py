@@ -100,30 +100,16 @@ def _find_one(folder: str, ext: str, substr: str) -> str | None:
 
 def _locate_idf(step8_docs: Path, envelope: str, cz: str) -> str:
     """Find the v24.2 office IDF for this (envelope, CZ) pair."""
-    import glob as _g
     env_family, _ = CZ_MAP[cz]
     idf_dir = step8_docs / "outputs_step8" / "office_idfs_v242" / env_family
-    candidates = _g.glob(os.path.join(str(idf_dir), "*.idf"))
-    if envelope == "Tall":
-        # Fix 6: anchor to filenames that START with TallBuilding to exclude SuperTall matches
-        hits = [p for p in candidates
-                if os.path.basename(p).lower().startswith("tallbuilding")]
-    else:
-        substr = ENVELOPE_IDF_SUBSTR[envelope].lower()
-        hits = [p for p in candidates if substr in os.path.basename(p).lower()]
-    path = hits[0] if hits else None
+    substr   = ENVELOPE_IDF_SUBSTR[envelope]
+    path = _find_one(str(idf_dir), ".idf", substr)
     if path is None:
         raise FileNotFoundError(
             f"Office IDF not found for envelope={envelope}, cz={cz} "
-            f"(family={env_family}) in {idf_dir}\n"
+            f"(family={env_family}, substr='{substr}') in {idf_dir}\n"
             f"Run 3rdJ_08C0_idf_transition.sh first."
         )
-    # Smoke assertion: Tall and SuperTall must resolve to different files
-    if envelope == "Tall":
-        super_hits = [p for p in candidates
-                      if os.path.basename(p).lower().startswith("supertallbuilding")]
-        assert (not super_hits) or (path not in super_hits), \
-            f"Tall and SuperTall resolved to same IDF: {path}"
     return path
 
 
@@ -172,7 +158,7 @@ def run_energyplus_via_sif(idf_path: str, epw_path: str, out_dir: str) -> int:
         "--bind", f"{os.path.abspath(out_dir)}:{os.path.abspath(out_dir)}",
         "--bind", f"{os.path.dirname(epw_abs)}:{os.path.dirname(epw_abs)}",
         SIF,
-        "/EnergyPlus-24.2.0-94a887817b-Linux-Ubuntu22.04-x86_64/energyplus",
+        "/EnergyPlus/energyplus",
         "-d", os.path.abspath(out_dir),
         "-w", epw_abs,
         "-r",       # expand objects

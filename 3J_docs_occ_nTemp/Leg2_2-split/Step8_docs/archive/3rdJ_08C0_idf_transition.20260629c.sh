@@ -11,9 +11,7 @@
 #
 # Transition chain applied: V22-1 → V22-2 → V23-1 → V23-2 → V24-1 → V24-2
 # Each step overwrites the working IDF in place (saves .idfold backup).
-# The Transition binaries look for their version IDD files (e.g. V22-1-0-Energy+.idd)
-# in the CURRENT WORKING DIRECTORY, NOT in their own binary dir. So we copy every
-# version IDD from $IDD_UPDATER into the per-IDF temp dir before running the chain.
+# The Transition binaries look for their IDD files in their own directory (argv[0] dir).
 #
 # Output: mirrored tree outputs_step8/office_idfs_v242/{CAN_CLG,CAN_MTL}/*.idf
 #
@@ -39,10 +37,6 @@ IDD_UPDATER=/home/o/o_iseri/ep_install/EnergyPlus-24.2.0-e7ecb2d53b-Linux-Ubuntu
 
 mkdir -p "$OUT_CLG" "$OUT_MTL" "$SCRATCH/logs"
 
-# Purge any stale/bogus outputs from prior runs so a partial failure can never
-# masquerade as success (the v1 run left v22.1 files disguised with _v242 names).
-rm -f "$OUT_CLG"/*.idf "$OUT_MTL"/*.idf
-
 echo "=== 8C.0: Office IDF v22.1 -> v24.2 transition ==="
 date
 echo "  IDD_UPDATER: $IDD_UPDATER"
@@ -60,8 +54,6 @@ transition_idf() {
     local TMP="$SCRATCH/tmp_transition_${STEM}_$$"
     mkdir -p "$TMP"
     cp "$SRC" "$TMP/working.idf"
-    # The Transition binaries read their IDD from CWD — stage every version IDD here.
-    cp "$IDD_UPDATER"/V*-Energy+.idd "$TMP/" || { echo "  ERROR: could not stage IDDs"; rm -rf "$TMP"; return 1; }
 
     echo "  Transitioning $BASENAME ..."
     (
@@ -73,10 +65,9 @@ transition_idf() {
         "$IDD_UPDATER/Transition-V24-1-0-to-V24-2-0" working.idf || { echo "  ERROR: V24-1->V24-2 failed"; exit 1; }
     ) || { echo "  ERROR: transition chain failed for $BASENAME"; rm -rf "$TMP"; return 1; }
 
-    # Verify the Version object specifically reads 24.2 (not just "24.2" anywhere in the file)
-    if ! grep -iE "24\.2[[:space:]]*;.*Version Identifier|Version,[[:space:]]*24\.2" "$TMP/working.idf" >/dev/null; then
-        echo "  ERROR: output IDF Version object is not 24.2 — transition may have failed"
-        grep -i "Version Identifier" "$TMP/working.idf" | head -2
+    # Verify version string in output
+    if ! grep -q "24\.2" "$TMP/working.idf"; then
+        echo "  ERROR: output IDF does not contain version 24.2 — transition may have failed"
         rm -rf "$TMP"
         return 1
     fi

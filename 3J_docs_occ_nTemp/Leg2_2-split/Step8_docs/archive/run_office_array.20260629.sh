@@ -23,13 +23,11 @@ STEP8_DIR=$SCRATCH/upload/3J_docs_occ_nTemp/Leg2_2-split/Step8_docs
 
 mkdir -p "$SCRATCH/logs"
 
-# Fix 5: dep precheck — fail fast if python env is missing a required package
-$PY -c "import eppy, pandas, numpy" || { echo "MISSING DEP"; exit 1; }
-
-# ---- E+ IDD: office_integration._find_idd checks EPLUS_IDD env var first.
-# Use the host ep_install IDD (NFS-mounted on all nodes; same v24.2.0 format).
-# The previous singularity-cp approach was unreliable on some compute nodes.
-export EPLUS_IDD=/home/o/o_iseri/ep_install/EnergyPlus-24.2.0-e7ecb2d53b-Linux-Ubuntu22.04-x86_64/Energy+.idd
+# ---- E+ IDD extraction (once per node; shared /tmp) ----------------------
+IDD_DIR="/tmp/eplus_idd_$$"
+mkdir -p "$IDD_DIR"
+singularity exec "$SIF" cp /EnergyPlus/Energy+.idd "$IDD_DIR/" 2>/dev/null || true
+export EPLUS_IDD="$IDD_DIR/Energy+.idd"
 export EPLUS_SIF="$SIF"
 export MPLBACKEND=Agg
 
@@ -44,3 +42,4 @@ $PY office_runner.py \
     --out-dir "$SCRATCH/office"
 
 echo "  Task $SLURM_ARRAY_TASK_ID done: $(date)"
+rm -rf "$IDD_DIR"
