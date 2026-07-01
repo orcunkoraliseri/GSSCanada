@@ -99,76 +99,6 @@ def _build_compact_fields(name: str, wd_vals: list, we_vals: list) -> list:
     return fields
 
 
-# ---------------------------------------------------------------------------
-# Output objects (PNNL prototypes omit time-series output → empty SQL ReportData)
-# ---------------------------------------------------------------------------
-# Mirrors the residential hourly-detail set added by
-# idf_optimizer.optimize_idf(meter_frequency='Hourly', enable_hourly_detail=True)
-# so the office hourly_meters.csv carries the same load channels the §1-§8
-# validator sums — WITHOUT the residential-only physics edits (Timestep=4,
-# Solar Distribution→FullExterior, basement OtherSideCoefficients). Office model
-# physics is left untouched.
-_OFFICE_HOURLY_METERS = [
-    "InteriorLights:Electricity",
-    "InteriorEquipment:Electricity",
-    "Heating:EnergyTransfer",
-    "Cooling:EnergyTransfer",
-    "WaterSystems:EnergyTransfer",
-    "Electricity:Facility",
-]
-_OFFICE_HOURLY_VARIABLES = [
-    "Zone Lights Electricity Energy",
-    "Zone Electric Equipment Electricity Energy",
-    "Zone People Occupant Count",
-]
-
-
-def _ensure_output_objects(idf, verbose: bool = True) -> dict:
-    """Guarantee the IDF requests hourly time-series output.
-
-    PNNL Tall/SuperTall prototypes ship with Output:SQLite + tabular reports but
-    NO time-series Output:Meter/Output:Variable, so eplusout.sql has an empty
-    ReportData table → hourly_meters.csv is never written (status=fail). This
-    injects the hourly meters/variables (idempotent — skips any already present
-    at Hourly). Returns counts for the provenance log.
-    """
-    # Output:SQLite (idempotent)
-    if not idf.idfobjects.get("OUTPUT:SQLITE", []):
-        s = idf.newidfobject("Output:SQLite")
-        s.Option_Type = "SimpleAndTabular"
-        if verbose:
-            print("  Added Output:SQLite (SimpleAndTabular)")
-
-    existing_hourly_meters = {
-        m.Key_Name for m in idf.idfobjects.get("OUTPUT:METER", [])
-        if str(getattr(m, "Reporting_Frequency", "")).strip().lower() == "hourly"
-    }
-    n_m = 0
-    for name in _OFFICE_HOURLY_METERS:
-        if name not in existing_hourly_meters:
-            m = idf.newidfobject("Output:Meter")
-            m.Key_Name = name
-            m.Reporting_Frequency = "Hourly"
-            n_m += 1
-
-    existing_hourly_vars = {
-        (v.Variable_Name, str(getattr(v, "Reporting_Frequency", "")).strip().lower())
-        for v in idf.idfobjects.get("OUTPUT:VARIABLE", [])
-    }
-    n_v = 0
-    for name in _OFFICE_HOURLY_VARIABLES:
-        if (name, "hourly") not in existing_hourly_vars:
-            v = idf.newidfobject("Output:Variable")
-            v.Key_Value = "*"
-            v.Variable_Name = name
-            v.Reporting_Frequency = "Hourly"
-            n_v += 1
-
-    if verbose:
-        print(f"  Output objects ensured: +{n_m} hourly meters, +{n_v} hourly variables")
-    return {"meters_added": n_m, "variables_added": n_v}
-
-
 def inject_office_schedules(
     idf_path: str,
     output_path: str,
@@ -299,10 +229,6 @@ def inject_office_schedules(
         if injected_zones:
             print(f"  Injected into: {list(set(injected_zones))}")
 
-    # Ensure hourly time-series output is requested (PNNL prototypes omit it →
-    # empty SQL ReportData → no hourly_meters.csv). Must run before saveas.
-    out_info = _ensure_output_objects(idf, verbose=verbose)
-
     # Provenance log
     log_path = output_path + ".provenance.txt"
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
@@ -317,8 +243,6 @@ def inject_office_schedules(
         f.write(f"n_skip_zones={n_skip}\n")
         f.write(f"ambiguous_zones={list(set(ambiguous))}\n")
         f.write(f"Lmin={_LMIN}  eta=1.0  D=1.0  Pbase={_PBASE}\n")
-        f.write(f"hourly_outputs_injected=Output:SQLite + {out_info['meters_added']} "
-                f"meters + {out_info['variables_added']} variables (Hourly)\n")
         f.write("Note: Daylighting:Controls PRESENT in IDFs -- E+ applies "
                 "daylighting reduction multiplicatively on top of injected schedule.\n")
 

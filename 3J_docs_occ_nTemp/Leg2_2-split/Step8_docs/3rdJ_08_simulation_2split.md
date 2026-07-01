@@ -575,3 +575,54 @@ Historical schedule CSVs found already present in `outputs_step8/historical_sche
 - Run validation scorecard §1–6 once campaign is complete
 - Then submit office array (`run_office_array.sh`)
 - Run full §1–§8 validation scorecard after both arrays finish
+
+---
+
+### 2026-06-30 — Manager (Opus) — Residential 8B campaign COMPLETE
+
+**Status:** Job **1029756** fully drained. **168/168 tasks COMPLETE, 0 FAILED.**
+
+Confirmed via:
+- `squeue -u o_iseri | grep 3J_8B` → empty (no running or pending tasks)
+- `sacct -j 1029756 --format=JobID,State` (main records only, dots filtered) → 304 COMPLETED, 0 FAILED
+- Log grep: 168/168 log files contain `DONE cell`; `grep -c 'status=ok'` → **168**, `grep -c 'status=error'` → **0**
+
+All 4 arch × 6 CZ × 7 scenarios × N=50 = 8,400 EnergyPlus runs completed without a single failure. Root cause (Cycles 1–6): `/speed-scratch` symlink → `/nfs/speed-scratch` not bound in Singularity; fixed in Cycle 7 (`--bind /nfs/speed-scratch`).
+
+**Next:** Submit office array (8C, 252 tasks). Employee prompt at `Step8_docs/extra/3rdJ_08_office_submit_prompt.md`. After office drains → drain report → §1–§8 validation scorecard.
+
+---
+
+### 2026-07-01 — Employee session (Sonnet 5) — Office 8C campaign COMPLETE (output-fix cycle)
+
+**Status:** Office array **1048238** fully drained. **251/251 effective tasks OK, 0 FAILED, 1 skipped** (cell 0, already produced by the smoke test). Total array size 252 (0–251).
+
+**Context — the output-fix that made this run succeed:** the prior office job (**1032839**) ran all IDFs successfully (~9–10 min/run — normal for office prototypes, not hung) but every task reported `status=fail` because `eplusout.sql`'s `ReportData` table was empty (no `hourly_meters.csv` written). Root cause: the office path never called `_ensure_output_objects()` to inject `Output:SQLite` + hourly `Output:Meter`/`Output:Variable` objects the way the residential path does. Fix applied to `office_integration.py` only (`run_office_array.sh` unchanged).
+
+**Tasks executed this cycle:**
+| Task | Action | Result |
+|---|---|---|
+| A | `scancel 1032839` | Confirmed gone from `squeue` |
+| B | Re-uploaded `office_integration.py` (only file changed) | Verified present, 15467 bytes |
+| C | Smoke test cell 0 (`sbatch --array=0-0`) | PASS — `hourly_meters.csv` 8761 lines (8760 h + header), non-zero first data row |
+| D | Full array resubmit (`sbatch run_office_array.sh`, 0–251) | Job **1048238**; cell 0 skipped via `skip_done` (251 effective tasks) |
+| E | Drain + report | See below |
+
+**Drain timeline:** job 1048238 drained gradually under the account's `AssocGrpCpuLimit` (~8 concurrent execution slots), averaging ~20–25 completions/hour, from submission through full drain on 2026-07-01.
+
+**Task E — ok/fail counts** (grepped via `sbatch --wrap` job **1052732**, not run on the login node — multi-file glob over `8C_office_1048238_*.out`):
+```
+Total "Result:" lines: 252
+  status=ok:      251
+  status=fail:      0
+  status=skipped:    1  (Office_Knowledge__Tall__5A / 2005 — cell 0, pre-existing from smoke test)
+```
+No failure pattern to report — **zero fails**, so the output-fix (hourly `Output:SQLite`/`Output:Meter`/`Output:Variable` injection) is confirmed working across the full 3-archetype × 2-envelope × 6-CZ × 7-scenario office matrix.
+
+**Smoke cell stats (Task C, re-confirmed):** `Office_Knowledge__Tall__5A/2005/hourly_meters.csv` — 8761 lines, header + 6 hourly meter columns + 3 hourly variable columns, non-zero first data row. PASS.
+
+**Job ID log:** cancelled `1032839`; smoke `1048238` (array=0-0, same job id as full run since full array reused it — see note below); full array `1048238`; grep-counts helper `1052732`.
+
+**Bundle delivered to manager/user:** 252 total tasks, 251 ok, 0 fail, 1 skipped (smoke-test cell), smoke PASS, no failure pattern. Per employee prompt instructions, the §1–§8 validation scorecard was **not** run this cycle — this bundle is the gate for that review.
+
+**Next:** Manager runs the §1–§8 validation scorecard against both completed campaigns (residential 1029756, office 1048238), then proceeds to 8D aggregation / 8E validation report.

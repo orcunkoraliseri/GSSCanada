@@ -29,6 +29,14 @@ Record the job ID.
 
 The office array is 252 tasks (3 arch × 2 envelope × 6 CZ × 7 scenarios), deterministic (1 EP run per task, not N=50). Logs go to `/speed-scratch/o_iseri/step8_2split/logs/8C_office_<jobid>_<task>.out`. Output cells go to `/speed-scratch/o_iseri/step8_2split/office/`.
 
+### Task A0 — Residential output spot-check (right after submitting office)
+
+The residential array (1029756) reported 168/168 `status=ok`. Before we trust that flag, prove two cells actually produced real EnergyPlus output (not an empty dir behind an `ok` flag).
+
+**On the cluster:** `ls -l` the residential output tree under `/speed-scratch/o_iseri/step8_2split/campaign/` and pick **two cells spanning the scenario range** — one from a **2005** scenario and one from **2030** (any arch / CZ). For each, confirm the cell directory contains a **non-zero** `hourly_meters.csv` (or `eplusout.sql`).
+
+Report: the two cell labels, and the byte size of each output file. If either is missing or zero bytes, STOP and flag it — do not proceed to Task C as "clean."
+
 ### Task B — Confirm one office task produces real output
 
 Wait for at least one office task to finish (each run takes ~38 s EP + overhead, so ~5 min total per task). Then confirm a task's output directory contains `eplusout.eso` or `eplusout.sql` or `hourly_meters.csv`.
