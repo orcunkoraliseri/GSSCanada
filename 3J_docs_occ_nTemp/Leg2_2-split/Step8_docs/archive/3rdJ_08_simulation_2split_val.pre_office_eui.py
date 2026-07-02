@@ -75,19 +75,6 @@ SHEU_EUI_BANDS = {                    # arch -> (central, lo, hi) kWh/m²
     "HighRise":      (130.6, 113.9, 147.2),   # high-rise apartment (≥5 storeys)
 }
 
-# Office EUI plausibility band — CODE-COMPLIANT "as-modelled" reference. Our office
-# IDFs ARE the DOE/PNNL Tall/SuperTall prototypes, and only People/Lights/Equipment
-# were coupled to occupancy (HVAC/DHW stay at the prototype's code baseline), so the
-# right benchmark is the prototype's own expected EUI, NOT the aged measured stock.
-# Total all-fuels SITE energy, kWh/m², CZ 6–7: NECB 2020 / ASHRAE 90.1-2019 prototype
-# trajectory (gas-heated baseline total ≈120–160; all-electric ≈90–190; the 100–200
-# WARN band tolerates both). Source: deepResearch "Office Reference EUI (NECB 2020,
-# ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands". The empirical SCIEU/CEUD
-# large/high-rise office stock sits far higher (~230, range 170–360) because it
-# includes old uninsulated vintages — reported as INFO context, not a pass criterion.
-OFFICE_EUI_BAND      = (135.0, 100.0, 200.0)   # (central, lo, hi) kWh/m² — as-modelled (gate)
-OFFICE_EUI_EMPIRICAL = (230.0, 170.0, 360.0)   # (central, lo, hi) kWh/m² — SCIEU stock (context)
-
 
 def load_agg() -> dict:
     """Read §8D agg tables; empty DataFrames if the aggregator hasn't run yet."""
@@ -443,19 +430,11 @@ def _plot_eui_bands(resid_meds, office_meds):
     ax2 = _style_ax(axes[1])
     if office_meds:
         oa = [a.replace("Office_", "") for a in office_meds]
-        cen, lo, hi = OFFICE_EUI_BAND
-        for i, a in enumerate(office_meds):
-            ax2.bar(i, office_meds[a], color=THEME["peach"], alpha=0.85,
-                    label="sim median" if i == 0 else None)
-            ax2.plot([i, i], [lo, hi], color=THEME["yellow"], lw=7, alpha=0.5,
-                     solid_capstyle="butt", label="as-modelled band" if i == 0 else None)
-            ax2.plot(i, cen, "o", color=THEME["red"], ms=6,
-                     label="central" if i == 0 else None)
+        ax2.bar(range(len(oa)), list(office_meds.values()), color=THEME["peach"], alpha=0.85)
         ax2.set_xticks(range(len(oa)))
         ax2.set_xticklabels(oa, color=THEME["text"], fontsize=8)
-        _legend(ax2)
     ax2.set_ylabel("EUI (kWh/m²·yr)", color=THEME["subtext"])
-    ax2.set_title("Office vs NECB2020/90.1-2019 prototype", color=THEME["text"], fontsize=9)
+    ax2.set_title("Office (reported; SCIEU/NECB band pending)", color=THEME["text"], fontsize=9)
     fig.tight_layout(pad=1.4); return fig
 
 
@@ -976,9 +955,7 @@ def section4():
             G.add("4", "4.2-order", "WARN",
                   f"Unexpected EUI ordering (SingleD < HighRise): {resid_meds}", "Resid")
 
-    # 4.3 office EUI vs CODE-COMPLIANT as-modelled band (NECB2020/90.1-2019 PNNL
-    #     prototype). WARN non-blocking outside, like residential. Empirical SCIEU
-    #     stock (~230) reported as INFO context, NOT a pass criterion for a prototype.
+    # 4.3 office EUI — reported only; numeric SCIEU/NECB band pending deepResearch
     o = ann[ann["channel"] == "office"]
     office_meds: dict = {}
     if not o.empty:
@@ -988,25 +965,10 @@ def section4():
                 office_meds[arch] = float(v.median())
         allo = o["eui_kWh_m2"].dropna()
         if not allo.empty:
-            omed = float(allo.median()); cen, lo, hi = OFFICE_EUI_BAND
-            if lo <= omed <= hi:
-                G.add("4", "4.3-office", "PASS",
-                      f"Office median EUI {omed:.0f} kWh/m² within as-modelled band "
-                      f"[{lo:.0f}–{hi:.0f}] (NECB2020/90.1-2019 PNNL prototype, central "
-                      f"{cen:.0f}; range {allo.min():.0f}–{allo.max():.0f})", "Office")
-            else:
-                G.add("4", "4.3-office", "WARN",
-                      f"Office median EUI {omed:.0f} kWh/m² outside as-modelled band "
-                      f"[{lo:.0f}–{hi:.0f}] (NECB2020/90.1-2019 prototype); range "
-                      f"{allo.min():.0f}–{allo.max():.0f} — non-blocking. Check fuel "
-                      "config (gas-heated 120–160 vs all-electric 90–190) & that the "
-                      "EUI denominator is conditioned floor area.", "Office")
-            ecen, elo, ehi = OFFICE_EUI_EMPIRICAL
-            G.add("4", "4.4-office-empirical", "INFO",
-                  f"Empirical context: SCIEU-2019/CEUD-2023 large & high-rise office "
-                  f"measured EUI ≈{ecen:.0f} kWh/m² (stock range {elo:.0f}–{ehi:.0f}, "
-                  "incl. aged uninsulated vintages). Code-compliant prototypes "
-                  "legitimately sit below measured stock — not the pass criterion.", "Office")
+            G.add("4", "4.3-office", "INFO",
+                  f"Office EUI median {allo.median():.0f} kWh/m² "
+                  f"(range {allo.min():.0f}–{allo.max():.0f}); numeric SCIEU/NECB "
+                  "band pending deepResearch (01_/02_ prompts). Reported, not gated.", "Office")
 
     # 4.5 basis / methodology note
     G.add("4", "4.5", "INFO",
@@ -1297,10 +1259,9 @@ def write_html(G: GateResult, elapsed: str = ""):
          "Source-side occupancy → Lights/Equipment coupling and office AT_WORK presence."),
         ("3", "§3 · Monte-Carlo Convergence",
          "95% CI half-width of the total-energy proxy across completed cells (target < 2%)."),
-        ("4", "§4 · Physical Plausibility (NRCan SHEU / NECB-PNNL)",
-         "Annual EUI vs NRCan SHEU-2019 residential bands; office EUI vs code-compliant "
-         "NECB2020/90.1-2019 PNNL prototype band [100–200], with SCIEU empirical stock "
-         "(~230) as INFO context. Reads §8D agg."),
+        ("4", "§4 · Physical Plausibility (NRCan SHEU / SCIEU)",
+         "Annual EUI vs NRCan SHEU-2019 residential bands; office EUI reported "
+         "(SCIEU/NECB numeric band pending deepResearch). Reads §8D agg."),
         ("5", "§5 · Load-Shape / Time-Series Sanity",
          "Peak-hour timing, office weekday hump, residential coincidence factor, "
          "office weekend < weekday daytime. Reads §8D agg."),

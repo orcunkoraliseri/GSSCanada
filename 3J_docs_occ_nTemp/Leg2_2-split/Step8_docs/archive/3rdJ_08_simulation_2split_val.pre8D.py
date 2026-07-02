@@ -54,52 +54,6 @@ ARCHETYPES_OFFICE = ["Office_Knowledge", "Office_Public", "Office_Sales"]
 ENVELOPES = ["Tall", "SuperTall"]
 N_MC = 50
 
-# --- §8D aggregation tables (produced by 3rdJ_08_simulation_2split_agg.py) ---
-AGG_DIR = OUT_DIR / "agg"
-AGG_FILES = {"diurnal": "agg_diurnal.csv", "peak": "agg_peak.csv",
-             "annual": "agg_annual.csv", "meta": "agg_meta.csv"}
-OFF_ELEC = "office_elec"        # facility-equivalent electricity meter (kW), office diurnal
-OFF_OCC  = "office_occ"         # total occupant-count meter (persons), office diurnal
-RESID_FAC = "Electricity:Facility"
-HIST_ARC   = ["2005", "2010", "2015", "2022"]      # pre-/through-COVID longitudinal arc
-BANDS_2030 = ["2030-conservative", "2030-hybrid", "2030-fullyhybrid"]
-
-# Residential EUI plausibility bands — NRCan SHEU-2019 Table 3.3b (total all-fuels,
-# SITE energy, kWh/m²): national central + regional min–max. Source: 2J deepResearch doc
-# "Canadian Residential Energy-Use Intensity by Dwelling Type (NRCan)". Basis caveat:
-# SHEU excludes basement/garage; our EUI denom = Net Conditioned Area (may read higher).
-SHEU_EUI_BANDS = {                    # arch -> (central, lo, hi) kWh/m²
-    "SingleD":       (155.6, 130.6, 186.1),   # single detached
-    "OtherDwelling": (144.4, 136.1, 186.1),   # single attached / row / duplex
-    "MidRise":       (144.4, 111.1, 216.7),   # low-rise apartment (<5 storeys)
-    "HighRise":      (130.6, 113.9, 147.2),   # high-rise apartment (≥5 storeys)
-}
-
-# Office EUI plausibility band — CODE-COMPLIANT "as-modelled" reference. Our office
-# IDFs ARE the DOE/PNNL Tall/SuperTall prototypes, and only People/Lights/Equipment
-# were coupled to occupancy (HVAC/DHW stay at the prototype's code baseline), so the
-# right benchmark is the prototype's own expected EUI, NOT the aged measured stock.
-# Total all-fuels SITE energy, kWh/m², CZ 6–7: NECB 2020 / ASHRAE 90.1-2019 prototype
-# trajectory (gas-heated baseline total ≈120–160; all-electric ≈90–190; the 100–200
-# WARN band tolerates both). Source: deepResearch "Office Reference EUI (NECB 2020,
-# ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands". The empirical SCIEU/CEUD
-# large/high-rise office stock sits far higher (~230, range 170–360) because it
-# includes old uninsulated vintages — reported as INFO context, not a pass criterion.
-OFFICE_EUI_BAND      = (135.0, 100.0, 200.0)   # (central, lo, hi) kWh/m² — as-modelled (gate)
-OFFICE_EUI_EMPIRICAL = (230.0, 170.0, 360.0)   # (central, lo, hi) kWh/m² — SCIEU stock (context)
-
-
-def load_agg() -> dict:
-    """Read §8D agg tables; empty DataFrames if the aggregator hasn't run yet."""
-    out = {}
-    for k, fn in AGG_FILES.items():
-        p = AGG_DIR / fn
-        try:
-            out[k] = pd.read_csv(p) if p.exists() else pd.DataFrame()
-        except Exception:
-            out[k] = pd.DataFrame()
-    return out
-
 OUT_COLS_RESID = [
     "SIM_HH_ID", "Day_Type", "Hour",
     "HHSIZE", "DTYPE", "BEDRM", "CONDO", "ROOM", "REPAIR", "PR", "MATCH_TIER",
@@ -417,100 +371,6 @@ def _plot_scenario_ordering(resid_means, office_peaks):
         ax2.set_title("Office WD peak AT_WORK (↓ with WFH)", color=THEME["text"], fontsize=9)
         ax2.set_ylabel("Peak AT_WORK fraction", color=THEME["subtext"])
         ax2.tick_params(axis="x", labelrotation=12)
-    fig.tight_layout(pad=1.4); return fig
-
-
-# ---- §4/§5/§7 charts (read §8D agg tables) --------------------------------
-def _plot_eui_bands(resid_meds, office_meds):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§4  Annual EUI vs NRCan benchmark", color=THEME["accent"], fontsize=11)
-    ax = _style_ax(axes[0])
-    archs = [a for a in ARCHETYPES_RESID if a in resid_meds]
-    for i, a in enumerate(archs):
-        c, lo, hi = SHEU_EUI_BANDS[a]
-        ax.bar(i, resid_meds[a], color=THEME["accent"], alpha=0.85,
-               label="sim median" if i == 0 else None)
-        ax.plot([i, i], [lo, hi], color=THEME["yellow"], lw=7, alpha=0.5,
-                solid_capstyle="butt", label="SHEU band" if i == 0 else None)
-        ax.plot(i, c, "o", color=THEME["red"], ms=6,
-                label="SHEU central" if i == 0 else None)
-    ax.set_xticks(range(len(archs)))
-    ax.set_xticklabels(archs, color=THEME["text"], rotation=15, fontsize=8)
-    ax.set_ylabel("EUI (kWh/m²·yr)", color=THEME["subtext"])
-    ax.set_title("Residential vs SHEU-2019 Tbl 3.3b", color=THEME["text"], fontsize=9)
-    _legend(ax)
-    ax2 = _style_ax(axes[1])
-    if office_meds:
-        oa = [a.replace("Office_", "") for a in office_meds]
-        cen, lo, hi = OFFICE_EUI_BAND
-        for i, a in enumerate(office_meds):
-            ax2.bar(i, office_meds[a], color=THEME["peach"], alpha=0.85,
-                    label="sim median" if i == 0 else None)
-            ax2.plot([i, i], [lo, hi], color=THEME["yellow"], lw=7, alpha=0.5,
-                     solid_capstyle="butt", label="as-modelled band" if i == 0 else None)
-            ax2.plot(i, cen, "o", color=THEME["red"], ms=6,
-                     label="central" if i == 0 else None)
-        ax2.set_xticks(range(len(oa)))
-        ax2.set_xticklabels(oa, color=THEME["text"], fontsize=8)
-        _legend(ax2)
-    ax2.set_ylabel("EUI (kWh/m²·yr)", color=THEME["subtext"])
-    ax2.set_title("Office vs NECB2020/90.1-2019 prototype", color=THEME["text"], fontsize=9)
-    fig.tight_layout(pad=1.4); return fig
-
-
-def _diurnal_profile(diur, chan, meter, dt, scen="2022"):
-    d = diur[(diur["channel"] == chan) & (diur["meter"] == meter) &
-             (diur["scenario"].astype(str) == scen) & (diur["season"] == "all") &
-             (diur["daytype"] == dt)]
-    if d.empty:
-        return None
-    return d.groupby("hour")["value"].mean().reindex(range(24))
-
-
-def _plot_loadshape(diur):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§5  Diurnal load shape (2022 ensemble mean)", color=THEME["accent"], fontsize=11)
-    for ax, (chan, meter, ttl, ylab) in zip(
-            axes, [("resid", RESID_FAC, "Residential facility electricity", "kW/dwelling"),
-                   ("office", OFF_ELEC, "Office electricity (WD hump vs WE)", "kW")]):
-        _style_ax(ax)
-        for dt, col in [("weekday", THEME["accent"]), ("weekend", THEME["green"])]:
-            p = _diurnal_profile(diur, chan, meter, dt)
-            if p is not None:
-                ax.plot(range(24), p.values, "o-", color=col, ms=3, label=dt)
-        ax.axvspan(9, 17, color=THEME["yellow"], alpha=0.08)
-        ax.set_title(ttl, color=THEME["text"], fontsize=9)
-        ax.set_xlabel("Hour", color=THEME["subtext"])
-        ax.set_ylabel(ylab, color=THEME["subtext"])
-        ax.set_xlim(0, 23); _legend(ax)
-    fig.tight_layout(pad=1.4); return fig
-
-
-def _plot_scenario_savings(office_rows, resid_rows):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§7  Scenario plausibility", color=THEME["accent"], fontsize=11)
-    ax = _style_ax(axes[0])
-    if office_rows:
-        labs = [r[0].replace("2030-", "") for r in office_rows]
-        x = list(range(len(labs))); w = 0.38
-        ax.bar([i - w / 2 for i in x], [r[1] for r in office_rows], w,
-               color=THEME["peach"], label="occ cut %")
-        ax.bar([i + w / 2 for i in x], [r[2] for r in office_rows], w,
-               color=THEME["accent"], label="energy sav %")
-        ax.set_xticks(x); ax.set_xticklabels(labs, color=THEME["text"], fontsize=8)
-    ax.set_title("Office 2030: occupancy cut → energy saving", color=THEME["text"], fontsize=9)
-    ax.set_ylabel("% vs 2022", color=THEME["subtext"]); _legend(ax)
-    ax2 = _style_ax(axes[1])
-    if resid_rows:
-        labs = [r[0].replace("2030-", "'30 ") for r in resid_rows]
-        ax2.bar(range(len(labs)), [r[1] for r in resid_rows], color=THEME["green"], alpha=0.85)
-        ax2.set_xticks(range(len(labs)))
-        ax2.set_xticklabels(labs, color=THEME["text"], rotation=15, fontsize=7)
-    ax2.set_title("Residential mid-day energy share", color=THEME["text"], fontsize=9)
-    ax2.set_ylabel("Mid-day share of daily energy", color=THEME["subtext"])
     fig.tight_layout(pad=1.4); return fig
 
 
@@ -935,153 +795,28 @@ def _gate_31_32_mc_convergence():
 
 
 # ===========================================================================
-# §4 — Physical Plausibility (EUI vs NRCan benchmark bands; reads §8D agg)
+# §4 — Physical Plausibility (INFO-level stub; full check needs campaign output)
 # ===========================================================================
 def section4():
     print("\n--- §4 Physical Plausibility ---", flush=True)
-    ann = load_agg()["annual"]
-    if ann.empty:
+    if not CAMP.exists() or _count_complete_runs_resid(CAMP) < 10:
         G.add("4", "4.all", "INFO",
-              "§8D agg tables absent — run 3rdJ_08_simulation_2split_agg.py to roll up EUI. "
-              "§4 plausibility gates check post-aggregation.", "Both")
+              "Campaign not yet run; §4 plausibility gates (EUI ranges, arch ordering) "
+              "check post-campaign.", "Both")
         return
-    ann = ann.copy()
-    ann["eui_kWh_m2"] = pd.to_numeric(ann.get("eui_kWh_m2"), errors="coerce")
-
-    # 4.1 residential EUI vs SHEU-2019 regional bands (median over cz/scenario/samples)
-    r = ann[ann["channel"] == "resid"]
-    resid_meds: dict = {}
-    for arch, (cen, lo, hi) in SHEU_EUI_BANDS.items():
-        v = r[r["arch"] == arch]["eui_kWh_m2"].dropna()
-        if v.empty:
-            continue
-        med = float(v.median()); resid_meds[arch] = med
-        if lo <= med <= hi:
-            G.add("4", f"4.1-{arch}", "PASS",
-                  f"{arch} median EUI {med:.0f} kWh/m² within SHEU band "
-                  f"[{lo:.0f}–{hi:.0f}] (central {cen:.0f})", "Resid")
-        else:
-            G.add("4", f"4.1-{arch}", "WARN",
-                  f"{arch} median EUI {med:.0f} kWh/m² outside SHEU band "
-                  f"[{lo:.0f}–{hi:.0f}]; basis differs (conditioned incl. basement vs "
-                  "SHEU heated-excl-basement) — non-blocking.", "Resid")
-
-    # 4.2 residential archetype ordering (detached most intense, high-rise least)
-    if {"SingleD", "HighRise"} <= set(resid_meds):
-        if resid_meds["SingleD"] >= resid_meds["HighRise"]:
-            G.add("4", "4.2-order", "PASS",
-                  f"EUI ordering plausible: SingleD {resid_meds['SingleD']:.0f} ≥ "
-                  f"HighRise {resid_meds['HighRise']:.0f} kWh/m²", "Resid")
-        else:
-            G.add("4", "4.2-order", "WARN",
-                  f"Unexpected EUI ordering (SingleD < HighRise): {resid_meds}", "Resid")
-
-    # 4.3 office EUI vs CODE-COMPLIANT as-modelled band (NECB2020/90.1-2019 PNNL
-    #     prototype). WARN non-blocking outside, like residential. Empirical SCIEU
-    #     stock (~230) reported as INFO context, NOT a pass criterion for a prototype.
-    o = ann[ann["channel"] == "office"]
-    office_meds: dict = {}
-    if not o.empty:
-        for arch in ARCHETYPES_OFFICE:
-            v = o[o["arch"] == arch]["eui_kWh_m2"].dropna()
-            if not v.empty:
-                office_meds[arch] = float(v.median())
-        allo = o["eui_kWh_m2"].dropna()
-        if not allo.empty:
-            omed = float(allo.median()); cen, lo, hi = OFFICE_EUI_BAND
-            if lo <= omed <= hi:
-                G.add("4", "4.3-office", "PASS",
-                      f"Office median EUI {omed:.0f} kWh/m² within as-modelled band "
-                      f"[{lo:.0f}–{hi:.0f}] (NECB2020/90.1-2019 PNNL prototype, central "
-                      f"{cen:.0f}; range {allo.min():.0f}–{allo.max():.0f})", "Office")
-            else:
-                G.add("4", "4.3-office", "WARN",
-                      f"Office median EUI {omed:.0f} kWh/m² outside as-modelled band "
-                      f"[{lo:.0f}–{hi:.0f}] (NECB2020/90.1-2019 prototype); range "
-                      f"{allo.min():.0f}–{allo.max():.0f} — non-blocking. Check fuel "
-                      "config (gas-heated 120–160 vs all-electric 90–190) & that the "
-                      "EUI denominator is conditioned floor area.", "Office")
-            ecen, elo, ehi = OFFICE_EUI_EMPIRICAL
-            G.add("4", "4.4-office-empirical", "INFO",
-                  f"Empirical context: SCIEU-2019/CEUD-2023 large & high-rise office "
-                  f"measured EUI ≈{ecen:.0f} kWh/m² (stock range {elo:.0f}–{ehi:.0f}, "
-                  "incl. aged uninsulated vintages). Code-compliant prototypes "
-                  "legitimately sit below measured stock — not the pass criterion.", "Office")
-
-    # 4.5 basis / methodology note
-    G.add("4", "4.5", "INFO",
-          "EUI = annual site energy ÷ Net Conditioned Area (eplusout.sql calculate_eui). "
-          "Physical-plausibility gate (ASHRAE G14 context), not calibration.", "Both")
-
-    if resid_meds or office_meds:
-        _chart("4", lambda: _plot_eui_bands(resid_meds, office_meds))
+    G.add("4", "4.1-4.5", "INFO",
+          "§4 gates require EUI rollup (§8D aggregation). "
+          "Implement after hourly_meters.csv is complete.", "Both")
 
 
 # ===========================================================================
-# §5 — Load-Shape / Time-Series Sanity (reads §8D agg)
+# §5 — Load-Shape Sanity (INFO stub)
 # ===========================================================================
 def section5():
     print("\n--- §5 Load-Shape Sanity ---", flush=True)
-    agg = load_agg()
-    diur, peak = agg["diurnal"], agg["peak"]
-    if diur.empty or peak.empty:
-        G.add("5", "5.all", "INFO",
-              "§8D agg tables absent — run the aggregator. §5 load-shape gates "
-              "(peak timing, coincidence factor, office WE < WD) check post-aggregation.", "Both")
-        return
-    peak = peak.copy()
-    peak["mean_peak_hour"] = pd.to_numeric(peak.get("mean_peak_hour"), errors="coerce")
-    peak["peak_kW_annual"] = pd.to_numeric(peak.get("peak_kW_annual"), errors="coerce")
-
-    # 5.1 peak-hour tracks occupancy: resid evening-weighted, office work-day
-    rp = peak[peak["channel"] == "resid"]["mean_peak_hour"].dropna()
-    if len(rp):
-        m = float(rp.median())
-        G.add("5", "5.1-resid", "PASS" if 15 <= m <= 22 else "WARN",
-              f"Residential mean daily-peak hour ≈ {m:.1f}h "
-              f"({'evening-weighted, tracks home occupancy' if 15 <= m <= 22 else 'outside evening 15–22h'})",
-              "Resid")
-    op = peak[peak["channel"] == "office"]["mean_peak_hour"].dropna()
-    if len(op):
-        m = float(op.median())
-        G.add("5", "5.1-office", "PASS" if 7 <= m <= 19 else "WARN",
-              f"Office mean daily-peak hour ≈ {m:.1f}h "
-              f"({'work-day, tracks AT_WORK presence' if 7 <= m <= 19 else 'outside work 7–19h'})",
-              "Office")
-
-    # 5.2 office weekday daytime hump vs night trough
-    wd = _diurnal_profile(diur, "office", OFF_ELEC, "weekday")
-    if wd is not None:
-        midday = float(wd.reindex(range(9, 17)).mean())
-        night = float(wd.reindex(list(range(0, 6))).mean())
-        G.add("5", "5.2-office", "PASS" if midday > night else "WARN",
-              f"Office WD midday elec {midday:.2f} kW "
-              f"{'>' if midday > night else '≤'} night {night:.2f} kW "
-              f"({'occupancy-driven daytime hump' if midday > night else 'no hump — check coupling'})",
-              "Office")
-
-    # 5.3 residential coincidence factor < 1 (occupant diversity smooths aggregate peak)
-    rd = _diurnal_profile(diur, "resid", RESID_FAC, "weekday")
-    rpk = peak[peak["channel"] == "resid"]["peak_kW_annual"].dropna()
-    if rd is not None and len(rpk):
-        diversified = float(rd.max())
-        mean_indiv = float(rpk.mean())
-        cf = diversified / mean_indiv if mean_indiv else float("nan")
-        G.add("5", "5.3-cf", "PASS" if 0 < cf < 1 else "WARN",
-              f"Residential coincidence factor {cf:.2f} "
-              f"({'< 1 — diversity smooths the stock peak' if 0 < cf < 1 else 'unexpected ≥1'})",
-              "Resid")
-
-    # 5.4 office weekend load < weekday daytime
-    we = _diurnal_profile(diur, "office", OFF_ELEC, "weekend")
-    if we is not None and wd is not None:
-        we_mid = float(we.reindex(range(9, 17)).mean())
-        wd_mid = float(wd.reindex(range(9, 17)).mean())
-        G.add("5", "5.4-office", "PASS" if we_mid < wd_mid else "WARN",
-              f"Office WE midday {we_mid:.2f} kW "
-              f"{'<' if we_mid < wd_mid else '≥'} WD midday {wd_mid:.2f} kW", "Office")
-
-    _chart("5", lambda: _plot_loadshape(diur))
+    G.add("5", "5.all", "INFO",
+          "§5 load-shape gates (diurnal peaks, coincidence factor, office WE < WD) "
+          "require campaign hourly_meters.csv. Run post-campaign.", "Both")
 
 
 # ===========================================================================
@@ -1127,153 +862,21 @@ def section6():
                 G.add("6", "6.3", "FAIL",
                       f"Office band ordering wrong: {peak_by_band.to_dict()}", "Office")
 
-    _gate_6_campaign(load_agg())
+    G.add("6", "6.1-6.7-rest", "INFO",
+          "§6.1/6.4–6.7 (paired Δ CI, COVID break, cross-channel, peak shift, monotonicity) "
+          "require campaign output. Run post-campaign.", "Both")
 
     if resid_means_plot or office_peaks_plot:
         _chart("6", lambda: _plot_scenario_ordering(resid_means_plot, office_peaks_plot))
 
 
-# ---- §6 campaign-output gates (6.1 / 6.4–6.7) -----------------------------
-def _gate_6_campaign(agg):
-    ann, diur, peak = agg["annual"], agg["diurnal"], agg["peak"]
-    if ann.empty:
-        G.add("6", "6.1-6.7-rest", "INFO",
-              "§6.1/6.4–6.7 (paired Δ CI, COVID break, cross-channel, peak shift, "
-              "monotonicity) require §8D agg tables. Run the aggregator.", "Both")
-        return
-    ann = ann.copy()
-    for c in ("midday_share", "occ_midday_persons", "occ_mean_persons"):
-        if c in ann.columns:
-            ann[c] = pd.to_numeric(ann[c], errors="coerce")
-    r = ann[ann["channel"] == "resid"]
-    o = ann[ann["channel"] == "office"]
-
-    # 6.4 COVID break: 2015→2022 discontinuity ≥ pre-COVID step
-    arc = {s: r[r["scenario"].astype(str) == s]["midday_share"].mean() for s in HIST_ARC}
-    arc = {k: v for k, v in arc.items() if pd.notna(v)}
-    if {"2010", "2015", "2022"} <= set(arc):
-        d_pre, d_cov = arc["2015"] - arc["2010"], arc["2022"] - arc["2015"]
-        G.add("6", "6.4", "PASS" if abs(d_cov) >= abs(d_pre) else "INFO",
-              f"Resid midday-share step 2015→2022 ({d_cov:+.3f}) "
-              f"{'≥' if abs(d_cov) >= abs(d_pre) else '<'} pre-COVID 2010→2015 ({d_pre:+.3f})", "Resid")
-
-    # 6.7 pre-COVID smoothness 2005→2015
-    pre = [arc[y] for y in ["2005", "2010", "2015"] if y in arc]
-    if len(pre) >= 3:
-        jumps = [abs(pre[i + 1] - pre[i]) for i in range(len(pre) - 1)]
-        G.add("6", "6.7", "PASS" if max(jumps) <= 0.05 else "WARN",
-              f"Pre-COVID resid midday-share arc {[round(x, 3) for x in pre]} "
-              f"(max step {max(jumps):.3f} ≤ 0.05)", "Resid")
-
-    # 6.5 cross-channel: 2030 bands — resid midday energy ↑ while office occupancy ↓
-    rb = [r[r["scenario"].astype(str) == b]["midday_share"].mean() for b in BANDS_2030]
-    ob = [o[o["scenario"].astype(str) == b]["occ_midday_persons"].mean() for b in BANDS_2030]
-    if all(pd.notna(rb)) and all(pd.notna(ob)):
-        resid_up = rb[0] <= rb[1] <= rb[2]
-        office_down = ob[0] >= ob[1] >= ob[2]
-        G.add("6", "6.5", "PASS" if (resid_up and office_down) else "WARN",
-              ("Cross-channel WFH signature: resid mid-day energy rises (cons≤hyb≤full) "
-               "as office mid-day occupancy falls (cons≥hyb≥full)."
-               if (resid_up and office_down) else
-               f"Cross-channel ordering imperfect: resid {[round(x, 3) for x in rb]}, "
-               f"office occ {[round(x, 1) for x in ob]}"), "Both")
-
-    # 6.6 residential peak-hour shift 2022 → 2030-fullyhybrid
-    if not peak.empty:
-        pk = peak.copy()
-        pk["mean_peak_hour"] = pd.to_numeric(pk["mean_peak_hour"], errors="coerce")
-        pr = pk[pk["channel"] == "resid"]
-        h22 = pr[pr["scenario"].astype(str) == "2022"]["mean_peak_hour"].median()
-        h30 = pr[pr["scenario"].astype(str) == "2030-fullyhybrid"]["mean_peak_hour"].median()
-        if pd.notna(h22) and pd.notna(h30):
-            G.add("6", "6.6", "INFO",
-                  f"Resid mean peak hour 2022 {h22:.1f}h → 2030-fullyhybrid {h30:.1f}h "
-                  f"(Δ {h30 - h22:+.1f}h)", "Resid")
-
-    # 6.1 paired within-HH Δ midday load (2022 vs 2030-fullyhybrid)
-    _gate_61_paired(diur)
-
-
-def _gate_61_paired(diur):
-    if diur.empty:
-        return
-    d = diur[(diur["channel"] == "resid") & (diur["meter"] == RESID_FAC) &
-             (diur["season"] == "all") & (diur["daytype"] == "weekday") &
-             (pd.to_numeric(diur["hour"], errors="coerce").between(9, 16)) &
-             (diur["scenario"].astype(str).isin(["2022", "2030-fullyhybrid"]))]
-    if d.empty:
-        return
-    g = d.groupby(["cell", "sim_hh_id", "scenario"])["value"].mean().reset_index()
-    piv = g.pivot_table(index=["cell", "sim_hh_id"], columns="scenario", values="value")
-    if "2022" not in piv.columns or "2030-fullyhybrid" not in piv.columns:
-        return
-    piv = piv.dropna(subset=["2022", "2030-fullyhybrid"])
-    if len(piv) < 10:
-        G.add("6", "6.1", "INFO",
-              f"Paired within-HH Δ unavailable: only {len(piv)} HHs shared between 2022 and "
-              "2030-fullyhybrid (scenario HH pools differ); ensemble comparisons used instead.", "Resid")
-        return
-    delta = (piv["2030-fullyhybrid"] - piv["2022"]).to_numpy()
-    mean = float(delta.mean())
-    ci = 1.96 * float(delta.std(ddof=1)) / math.sqrt(len(delta))
-    G.add("6", "6.1", "PASS" if abs(mean) > ci else "INFO",
-          f"Paired within-HH mid-day Δ (2030-full − 2022) = {mean:+.3f} ± {ci:.3f} kW "
-          f"{'excludes' if abs(mean) > ci else 'includes'} 0 (n={len(delta)} HH)", "Resid")
-
-
 # ===========================================================================
-# §7 — Scenario Plausibility (reads §8D agg)
+# §7 — Scenario Plausibility (INFO stub)
 # ===========================================================================
 def section7():
     print("\n--- §7 Scenario Plausibility ---", flush=True)
-    ann = load_agg()["annual"]
-    if ann.empty:
-        G.add("7", "7.all", "INFO",
-              "§8D agg tables absent — run the aggregator. §7 scenario plausibility "
-              "(office occ→energy non-linearity, resid 2030 load) checks post-aggregation.", "Both")
-        return
-    ann = ann.copy()
-    for c in ("elec_total_kWh", "occ_mean_persons", "midday_share"):
-        if c in ann.columns:
-            ann[c] = pd.to_numeric(ann[c], errors="coerce")
-    o = ann[ann["channel"] == "office"]
-    r = ann[ann["channel"] == "resid"]
-
-    # 7.2 office 2030 occupancy cut → sub-proportional energy saving (base loads persist)
-    office_rows = []
-    e22 = o[o["scenario"].astype(str) == "2022"]["elec_total_kWh"].mean()
-    oc22 = o[o["scenario"].astype(str) == "2022"]["occ_mean_persons"].mean()
-    if pd.notna(e22) and pd.notna(oc22) and e22 and oc22:
-        for b in BANDS_2030:
-            eb = o[o["scenario"].astype(str) == b]["elec_total_kWh"].mean()
-            ocb = o[o["scenario"].astype(str) == b]["occ_mean_persons"].mean()
-            if pd.isna(eb) or pd.isna(ocb):
-                continue
-            e_sav = 100 * (1 - eb / e22)
-            occ_cut = 100 * (1 - ocb / oc22)
-            office_rows.append((b, occ_cut, e_sav))
-            nonlinear = e_sav < occ_cut + 1  # energy saving lags the occupancy cut
-            G.add("7", f"7.2-{b.replace('2030-', '')}", "PASS" if nonlinear else "WARN",
-                  f"Office {b}: occupancy −{occ_cut:.0f}% → energy −{e_sav:.0f}% "
-                  f"({'non-linear, base loads persist' if nonlinear else 'energy fell more than occupancy — check'})",
-                  "Office")
-
-    # 7.3 residential 2030 mid-day energy share ≥ 2022 (WFH raises daytime home load)
-    resid_rows = []
-    m22 = r[r["scenario"].astype(str) == "2022"]["midday_share"].mean()
-    if pd.notna(m22):
-        resid_rows.append(("2022", float(m22)))
-        for b in BANDS_2030:
-            mb = r[r["scenario"].astype(str) == b]["midday_share"].mean()
-            if pd.isna(mb):
-                continue
-            resid_rows.append((b, float(mb)))
-            G.add("7", f"7.3-{b.replace('2030-', '')}", "PASS" if mb >= m22 - 1e-4 else "WARN",
-                  f"Residential {b} mid-day share {mb:.3f} "
-                  f"{'≥' if mb >= m22 - 1e-4 else '<'} 2022 {m22:.3f}", "Resid")
-
-    if office_rows or resid_rows:
-        _chart("7", lambda: _plot_scenario_savings(office_rows, resid_rows))
+    G.add("7", "7.all", "INFO",
+          "§7 scenario plausibility gates require campaign EUI output. Run post-campaign.", "Both")
 
 
 # ===========================================================================
@@ -1297,19 +900,14 @@ def write_html(G: GateResult, elapsed: str = ""):
          "Source-side occupancy → Lights/Equipment coupling and office AT_WORK presence."),
         ("3", "§3 · Monte-Carlo Convergence",
          "95% CI half-width of the total-energy proxy across completed cells (target < 2%)."),
-        ("4", "§4 · Physical Plausibility (NRCan SHEU / NECB-PNNL)",
-         "Annual EUI vs NRCan SHEU-2019 residential bands; office EUI vs code-compliant "
-         "NECB2020/90.1-2019 PNNL prototype band [100–200], with SCIEU empirical stock "
-         "(~230) as INFO context. Reads §8D agg."),
+        ("4", "§4 · Physical Plausibility (NRCan SHEU / SCIEU)",
+         "EUI benchmark bands — charts pending §8D EUI aggregation."),
         ("5", "§5 · Load-Shape / Time-Series Sanity",
-         "Peak-hour timing, office weekday hump, residential coincidence factor, "
-         "office weekend < weekday daytime. Reads §8D agg."),
+         "Diurnal peaks, coincidence factor — charts pending §8D aggregation."),
         ("6", "§6 · Longitudinal · COVID-break · WFH-band",
-         "2030 WFH-band ordering, COVID break, cross-channel signature, paired Δ, "
-         "peak-hour shift across residential and office channels."),
+         "2030 WFH-band ordering across residential and office channels."),
         ("7", "§7 · Scenario Plausibility",
-         "Office 2030 occupancy-cut → energy-saving non-linearity; residential 2030 "
-         "mid-day load rise. Reads §8D agg."),
+         "Scenario EUI ordering — charts pending §8D aggregation."),
     ]
     BADGE = {
         "PASS": "background:#a6e3a1;color:#11241a;", "WARN": "background:#f9e2af;color:#3a2f05;",
@@ -1459,24 +1057,11 @@ def main():
         0: section0, 1: section1, 2: section2, 3: section3,
         4: section4, 5: section5, 6: section6, 7: section7,
     }
-    def _run(name, fn):
-        # A bug in a §4–§7 data gate must never sink the report or the blocking
-        # §0/§1/§2 gates: capture, log, record an INFO note, and carry on.
-        try:
-            fn()
-        except Exception as e:
-            import traceback
-            print(f"  [section-error] §{name}: {e}", flush=True)
-            traceback.print_exc()
-            G.add(name, f"{name}.error", "INFO",
-                  f"Section raised {type(e).__name__}: {e} — gate logic skipped "
-                  "(does not block sign-off; see job log).", "Both")
-
     if args.section is not None:
-        _run(str(args.section), sections[args.section])
+        sections[args.section]()
     else:
-        for name, fn in sections.items():
-            _run(str(name), fn)
+        for fn in sections.values():
+            fn()
 
     elapsed = f"(elapsed {time.time()-t0:.1f}s)"
     tally = G.tally()

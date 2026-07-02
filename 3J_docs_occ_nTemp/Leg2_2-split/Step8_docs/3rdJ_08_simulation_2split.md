@@ -626,3 +626,83 @@ No failure pattern to report — **zero fails**, so the output-fix (hourly `Outp
 **Bundle delivered to manager/user:** 252 total tasks, 251 ok, 0 fail, 1 skipped (smoke-test cell), smoke PASS, no failure pattern. Per employee prompt instructions, the §1–§8 validation scorecard was **not** run this cycle — this bundle is the gate for that review.
 
 **Next:** Manager runs the §1–§8 validation scorecard against both completed campaigns (residential 1029756, office 1048238), then proceeds to 8D aggregation / 8E validation report.
+
+---
+
+### 2026-07-01 — Employee session (Sonnet 5) — Step 8E validation scorecard RUN
+
+**Status:** Validation job **1053668** completed (§1–§8 scorecard, `3rdJ_08_simulation_2split_val.py` via `run_validation.sh`, output-path fix applied so `STEP8_CAMP_DIR`/`STEP8_OFFICE_DIR` point at the real scratch dirs).
+
+**Tasks executed:**
+| Task | Action | Result |
+|---|---|---|
+| A | scp `3rdJ_08_simulation_2split_val.py` + `run_validation.sh` to upload dir | Both uploaded, no other files touched |
+| B | `sbatch run_validation.sh` | Job **1053668**; pended briefly (`AssocGrpCpuLimit`), then ran and drained |
+| C | Grepped log, pulled HTML report | See below |
+
+**Scorecard result:** `Scorecard: 27 PASS / 0 WARN / 13 INFO / 0 FAIL`
+
+**§1.1 run counts (env-var path fix confirmed working — no longer 0/8400, 0/252):**
+- `[PASS] §1 1.1-resid: Residential: 8400/8400 runs complete`
+- `[PASS] §1 1.1-office: Office: 252/252 runs complete`
+
+**Blocking FAILs:** none — no FAIL lines anywhere in the log (§0, §1, §2, or elsewhere).
+
+**HTML report:** pulled back to `…\Step8_docs\outputs_step8\step8_validation_report.html`, confirmed locally at 10,293 bytes.
+
+**Not interpreted per instructions** — manager to review the scorecard (27 PASS / 0 WARN / 13 INFO / 0 FAIL) and decide next steps.
+
+**Job ID log:** validation **1053668**.
+
+**Next:** Manager reviews `step8_validation_report.html` + INFO/WARN detail and decides on 8D aggregation / paper reporting.
+
+### 2026-07-01 — Manager (Opus) — Step 8D aggregation + validation refresh (job 1053986)
+
+**Status:** §8D **COMPLETE**. The two-channel EUI / load-shape aggregation + validation refresh job **1053986** finished `COMPLETED` (ExitCode 0:0, Elapsed 01:52:25, MaxRSS ~22.7 GB) on magic-node-04, no queue wait. The deferred validator sections §4/§5/§7 (+§6.1/6.4–6.7) now read real agg tables instead of INFO stubs. Scorecard moved **27 PASS / 0 WARN / 13 INFO / 0 FAIL → 45 PASS / 1 WARN / 13 INFO / 0 FAIL**; embedded plots **5 → 8**.
+
+**What ran:** `run_aggregation.sh` (`-p ps`, `-t 7-00:00:00`, py_compile+dep+plotting-import fast-fail prechecks) — Pass 1 `3rdJ_08_simulation_2split_agg.py --rebuild` (the one heavy two-channel scan) → Pass 2 `3rdJ_08_simulation_2split_val.py` (validation refresh). One job, one refreshed HTML.
+
+**Pass-1 aggregation (all runs clean):**
+| Channel | Runs streamed | ok |
+|---|---|---|
+| Residential | 8,400 | 8,400/8,400 |
+| Office | 252 | 252/252 |
+| **Combined** | **8,652** | **8,652/8,652** |
+
+Agg tables written to `outputs_step8/agg/`:
+| File | Data rows | Bytes |
+|---|---|---|
+| agg_diurnal.csv | 1,282,176 | 180.0 MB |
+| agg_annual.csv | 8,652 | 2.87 MB |
+| agg_meta.csv | 8,652 | 1.62 MB |
+| agg_peak.csv | 8,652 | 1.57 MB |
+
+**Scorecard:** `45 PASS / 1 WARN / 13 INFO / 0 FAIL`. Refreshed `outputs_step8/step8_validation_report.html` = 717,173 bytes, **8** embedded charts; pulled local byte-identical.
+
+**The single WARN (non-blocking, expected):** `§4 4.1-SingleD: SingleD median EUI 213 kWh/m² outside SHEU band [131–186]`. This is the pre-documented basis mismatch — our EUI is site energy ÷ *conditioned* floor area (incl. basement), whereas SHEU-2019 Table 3.3b is heated-area-*excluding*-basement, so a conditioned-basis SingleD reads high. WARN not FAIL by design; the other three archetypes (OtherDwelling / MidRise / HighRise) sit in-band. Office §4 stays reported-INFO pending the SCIEU/NECB deep-research band.
+
+**Clean run:** no `[section-error]`, `[plot-skip]`, `FATAL`, `Traceback`, or `NaN` in the log. (Four benign pandas `DtypeWarning` on agg-CSV read — `low_memory` advisory, not gating.) Done `Wed Jul 1 16:14:50 EDT 2026`.
+
+**Next:** Step 8 is validated end-to-end across both channels (8 charts, 45/1/13/0, zero FAIL). Remaining work = paper reporting + closing the two office deepResearch prompts (`deepResearch/01_office_EUI_empirical_SCIEU_CEUD.md`, `02_office_EUI_reference_NECB_PNNL.md`) so office §4.2 flips from reported-INFO to a numeric EUI gate.
+
+### 2026-07-01 — Manager (Opus) — Step 9 / office EUI benchmark gate wired + re-validation (job 1054800)
+
+**Status:** **DONE.** The 3J Step-9 office half — EUI-magnitude calibration of the office channel against a commercial benchmark — is now a numeric PASS/WARN gate, and it **PASSES**. (The mechanical half of Step 9 — Lights/Equipment scaled by AT_WORK presence — was already folded into Step 8 via OD-8B; residential activity-driven loads are Leg-1 / 2J Step 9, inherited as done.) This closes the last office §4 gap flagged in the §8D refresh.
+
+**Deep-research landed + encoded.** Both office-EUI prompts came back and are now encoded as band constants in `3rdJ_08_simulation_2split_val.py`:
+- `deepResearch/…As-Modelled Bands.md` (NECB2020 / ASHRAE 90.1-2019 / DOE-PNNL Tall+SuperTall prototypes) → **`OFFICE_EUI_BAND = (135, 100, 200)` kWh/m²** (central, lo, hi), all-fuels site EUI, gross-conditioned-area basis. **Our office IDFs ARE these code-compliant prototypes** (only People/Lights/Equipment occupancy-coupled; HVAC/DHW at code baseline), so the prototype's own expected EUI is the correct pass criterion — NOT aged measured stock.
+- `deepResearch/…SCIEU_CEUD Plausibility Bands.md` (NRCan SCIEU-2019 / CEUD-2023 measured stock) → **`OFFICE_EUI_EMPIRICAL = (230, 170, 360)` kWh/m²**, retained as **INFO context only** (measured stock runs higher because it includes aged, uninsulated vintages — not our as-modelled prototypes).
+
+**Validator edits** (predecessor archived `archive/3rdJ_08_simulation_2split_val.pre_office_eui.py`): (1) office band constants; (2) §4.3-office now gates office median EUI against `OFFICE_EUI_BAND` (in-band→PASS, else→WARN non-blocking, message flags gas-heated 120–160 vs all-electric 90–190 fuel-config + conditioned-area denominator); (3) new §4.4-office-empirical INFO carrying the SCIEU ≈230 context; (4) `_plot_eui_bands` office panel now draws per-arch bars + band + central marker, mirroring the residential panel; (5) §4 registry description updated. `run_validation.sh` gained a `py_compile` fast-fail precheck.
+
+**What ran:** fast Pass-2 re-validate only — agg tables from job 1053986 reused, **no re-aggregation**. `sbatch run_validation.sh` → job **1054800**: `COMPLETED`, ExitCode `0:0`, Elapsed **00:08:35**, MaxRSS 776 MB, magic-node-04. `py_compile: OK`, matplotlib OK. Log `logs/8E_val_1054800.out`.
+
+**Result — office EUI gate PASSES:**
+> `[PASS] §4 4.3-office: Office median EUI 180 kWh/m² within as-modelled band [100–200] (NECB2020/90.1-2019 PNNL prototype, central 135; range 160–216)`
+> `[INFO] §4 4.4-office-empirical: … SCIEU-2019/CEUD-2023 large & high-rise office measured EUI ≈230 (stock range 170–360) … not the pass criterion`
+
+Office median site EUI **180 kWh/m²** sits in-band, on the higher side of the prototype central (135) — consistent with Tall/SuperTall towers (high internal loads + envelope) on a gas-heated all-fuels total basis, and correctly **below** the ≈230 empirical stock. Per-archetype range 160–216: the top archetype (216) pokes just above the 200 ceiling, but the gate is on the median so it's non-blocking (worth a sentence in the paper).
+
+**Scorecard: `45 PASS / 1 WARN / 13 INFO / 0 FAIL` → `46 PASS / 1 WARN / 13 INFO / 0 FAIL`** — the +1 PASS is exactly the office §4.3 INFO→PASS flip. Lone WARN unchanged (expected SingleD basis mismatch, 213 kWh/m² vs SHEU [131–186]). Residential §4.1 unchanged: OtherDwelling 140 / MidRise 177 / HighRise 143 all in-band. 8 embedded charts (office EUI panel now drawn with bars + band). Refreshed `outputs_step8/step8_validation_report.html` pulled local. Clean run — no section-error / FATAL / Traceback / NaN (only benign pandas DtypeWarning). Done `Wed Jul 1 19:34:32 EDT 2026`.
+
+**Next:** all Step-8/9 gates green (46/1/13/0). Move to paper reporting — Step 8/9 is the results backbone (load shapes, peak-hour timing, the 2015→2022 COVID break, the 2030 WFH-band energy spread, office vs NECB-prototype EUI).
