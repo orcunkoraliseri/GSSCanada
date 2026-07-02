@@ -84,26 +84,6 @@ def _zone_tag(zone_name: str) -> str:
     return "skip"
 
 
-# E+ v24.2 renamed the People/Lights/ElectricEquipment zone field from
-# "Zone or ZoneList Name" to "Zone or ZoneList or Space or SpaceList Name".
-# Reading the old name on a v24.2 IDF returns "" → every zone was tagged 'skip'
-# (n_office_zones=0) → the injected OFC_* schedules were never wired to a zone.
-# Read the new name first, then fall back so the injector is IDD-version robust.
-_ZONE_NAME_FIELDS = (
-    "Zone_or_ZoneList_or_Space_or_SpaceList_Name",  # E+ v24.2+
-    "Zone_or_ZoneList_Name",                         # E+ <= 9.x
-    "Zone_Name",
-)
-
-
-def _get_zone_name(obj) -> str:
-    for f in _ZONE_NAME_FIELDS:
-        v = getattr(obj, f, "")
-        if v:
-            return str(v)
-    return ""
-
-
 def _build_compact_fields(name: str, wd_vals: list, we_vals: list) -> list:
     """Build the Schedule:Compact field list (Through 12/31, WD + WE 24-h)."""
     fields = [
@@ -272,14 +252,13 @@ def inject_office_schedules(
     all_zone_names = {z.Name for z in idf.idfobjects.get("ZONE", [])}
 
     for obj_class, sch_field, sch_name, interp_field in [
-        # People uses "Number of People Schedule Name"; Lights/Equipment use "Schedule Name".
-        ("PEOPLE",           "Number_of_People_Schedule_Name", ppl_name, None),
-        ("LIGHTS",           "Schedule_Name",                  lgt_name, "Interpolate_to_Timestep"),
-        ("ELECTRICEQUIPMENT","Schedule_Name",                  eq_name,  "Interpolate_to_Timestep"),
+        ("PEOPLE",           "Schedule_Name",           ppl_name, None),
+        ("LIGHTS",           "Schedule_Name",           lgt_name, "Interpolate_to_Timestep"),
+        ("ELECTRICEQUIPMENT","Schedule_Name",            eq_name,  "Interpolate_to_Timestep"),
     ]:
         objs = idf.idfobjects.get(obj_class, [])
         for obj in objs:
-            zone = _get_zone_name(obj)
+            zone = getattr(obj, "Zone_or_ZoneList_Name", "")
             tag_result = _zone_tag(zone)
             if tag_result == "office":
                 try:
@@ -304,11 +283,9 @@ def inject_office_schedules(
                     ambiguous.append(zone)
                     n_skip += 1
 
-    # Set Interpolate=No on People schedule too (OD-8H). Note: the People object has
-    # no Interpolate_to_Timestep field, so this is a no-op — Schedule:Compact defaults
-    # to step-hold (No) anyway, which is the OD-8H intent. Kept for parity/clarity.
+    # Set Interpolate=No on People schedule too (OD-8H)
     for obj in idf.idfobjects.get("PEOPLE", []):
-        zone = _get_zone_name(obj)
+        zone = getattr(obj, "Zone_or_ZoneList_Name", "")
         if _zone_tag(zone) == "office":
             try:
                 setattr(obj, "Interpolate_to_Timestep", "No")
