@@ -114,3 +114,9 @@ PASS / WARN / INFO / FAIL per gate, HTML report `step8_validation_report.html`, 
 ---
 
 *End of validation spec.*
+
+---
+
+## Progress Log
+
+- 2026-07-02 — §7.2 gate reworded direction-agnostic, §8E re-validated (job 1062194): 46P/1W/13I/0F — 2-split closed out.

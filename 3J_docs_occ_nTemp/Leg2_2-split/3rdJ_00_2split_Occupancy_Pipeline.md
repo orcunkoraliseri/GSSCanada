@@ -9,7 +9,7 @@ Extend the existing GSS → BEM residential occupancy pipeline (Leg 1) into a **
 
 > **Three-leg roadmap.** **Leg 1 = Residential (AT_HOME)** — COMPLETE, shipped as the 2nd Journal. **Leg 2 = 2-channel split (Residential + Office)** — *this document*, the middle step where we learn the split process. **Leg 3 = 4-channel split (+ Retail + Hotel)** — the 3rd-Journal target, documented separately.
 >
-> **Status convention.** Residential sub-steps reuse Leg-1 machinery and are tagged **✅ DONE (Leg 1, unchanged)**. The Office delta is tagged **⚠️ PLANNED (Leg 2)**. This is a planning document — no code is written or run in this step. Numbers and thresholds are sourced from `00_research_synthesis.md` and `00_GSS_split_suitability_audit.md`; the format mirrors the Leg-1 pair `00_GSS_Occupancy_Pipeline.md` / `_Overview.md`.
+> **Status convention.** Residential sub-steps reuse Leg-1 machinery and are tagged **✅ DONE (Leg 1, unchanged)**. The Office delta, originally tagged ⚠️ PLANNED (Leg 2), is now **✅ DONE (Leg 2)** — built and validated end-to-end (Steps 1–9, 2026-06-14 → 2026-07-02). This document was authored as the Leg-2 plan and now doubles as the as-built record; where the build deviated from the plan it is noted inline. Validation evidence: Step-7 reports (2022: 32P/0F; 2030: 43P/0F), Step-8 `step8_validation_report.html` (0 FAIL), Step-9 `step9_report.html` (0 FAIL, G8o WFH-modulation live) — acceptance review: `investigation/2split_results_acceptance_review.md` (2026-07-02, verdict paper-ready). Numbers and thresholds are sourced from `00_research_synthesis.md` and `00_GSS_split_suitability_audit.md`; the format mirrors the Leg-1 pair `00_GSS_Occupancy_Pipeline.md` / `_Overview.md`.
 
 ---
 
@@ -40,7 +40,7 @@ The episode selection is reused unchanged from Leg 1 (occID, EPINO, DDAY, start/
 | Derived flag | Source | Logic | Availability |
 |---|---|---|---|
 | `AT_HOME` | `occPRE` | `occPRE == 1` → 1 | All cycles ✅ DONE (Leg 1) |
-| `AT_WORK` | `occPRE` | `occPRE == 2` → 1 | All cycles ⚠️ PLANNED (Leg 2) |
+| `AT_WORK` | `occPRE` | `occPRE == 2` → 1 | All cycles ✅ DONE (Leg 2) |
 
 > **Key finding (audit §A).** `occPRE` already carries the harmonized 18-category location scheme on **every episode row in all four cycles**. AT_WORK is therefore *already present in the data* — no new survey variable is needed. The only build work is tiling it into the per-slot arrays (Step 3).
 
@@ -146,7 +146,7 @@ Naïve equal-weight multi-head training collapses to a smoothed mean and kills p
 ### Residential — ✅ DONE (Leg 1)
 Reuse the Census-GSS probabilistic linkage (K-means archetypes → Random Forest assignment → building-variable aggregation) unchanged.
 
-### Office — ⚠️ PLANNED (Leg 2)
+### Office — ✅ DONE (Leg 2)
 Census dwelling linkage does not apply to office zones. Replace it with a **NOC × NAICS → office-archetype lookup**:
 
 | Bucket | NOC / NAICS family | Office archetype |
@@ -188,7 +188,7 @@ The four-stage progressive fine-tuning (W_2005 → W_2010_ft → W_2015_ft → W
 
 **Residential (✅ DONE, Leg 1):** `schedule_value(t) = presence(t)·default(t) + (1−presence(t))·baseload`; `Number_of_People = HHSIZE`.
 
-**Office (⚠️ PLANNED, Leg 2):** keep NECB17/ASHRAE peak densities intact for code-of-record comparability; multiply the *temporal* schedules by the GSS-derived presence multiplier:
+**Office (✅ DONE, Leg 2 — `Step7_docs/`, validated 2022 + 2030):** keep NECB17/ASHRAE peak densities intact for code-of-record comparability; multiply the *temporal* schedules by the GSS-derived presence multiplier:
 
 ```
 office_schedule(t) = code_baseline(t) × AT_WORK_fraction(t)
@@ -214,14 +214,14 @@ Coupling parameters (verified verbatim from the same report — hard-code these)
 ---
 
 ## STEP 8 — BEM SIMULATION
-*Add office zones to the paired Monte-Carlo design.* ⚠️ PLANNED (Leg 2)
+*Add office zones to the paired Monte-Carlo design.* ✅ DONE (Leg 2 — `Step8_docs/`; resid 8400/8400 + office 252/252 E+ runs; 0 FAIL. Office re-simulated 2026-07-02 after the v24.2 zone-field fix in `office_integration.py` — WFH modulation verified live.)
 
 Extend the Leg-1 paired Monte-Carlo campaign (one archetype IDF × many sampled schedules, frozen frame, hold IDF + TMY weather, vary only occupancy) to the **PNNL Tall / SuperTall office zones**. Office floor-area share of occupiable area: ~30% (SuperTall) / ~24% (Tall). Outputs: 8760 office load profiles + MC bands, peak-hour shift, load-shape metrics; annual EUI secondary.
 
 ---
 
 ## STEP 9 — ACTIVITY-DRIVEN END-USE LOADS
-*Office equipment + lighting driven by AT_WORK presence.* ⚠️ PLANNED (Leg 2)
+*Office equipment + lighting driven by AT_WORK presence.* ✅ DONE (Leg 2 — `Step9_docs/`, bi-channel at aggregate depth; 10P/1W/0F, G8o PASS. Note: built as *both-channel* Step 9 — resid vs SHEU, office vs NECB-PNNL — not office-only as planned here.)
 
 Mirror the Leg-1 activity-driven load method on the office channel: equipment and lighting end-use intensity scaled by the AT_WORK presence track (with the Step-7 Lmin/Pbase floors). Calibrate magnitude against a commercial benchmark (NRCan SCIEU / NECB schedules) analogous to the SHEU calibration used for residential.
 
@@ -268,7 +268,7 @@ Mirror the Leg-1 activity-driven load method on the office channel: equipment an
 *Carried from synthesis §C and the audit — listed here, not silently resolved.*
 
 1. **MDLM vs Transformer — RESOLVED 2026-06-18.** Retain the safe Rank-1 multi-head Transformer (J3/J7 baseline) and reject MDLM discrete diffusion. This is justified by empirical gate failures of MDLM (failing AT_HOME and activity-JS gates) and high inference costs (32-64 forward passes per respondent), as detailed in [dr_S4-03_architecture_choice_REPORT.md](file:///c:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/deepResearch/dr_S4-03_architecture_choice_REPORT.md).
-2. **Interpolate to Timestep (Step 7).** `Yes` (averages, compounds peak loss) vs `No` (preserves the 30-min block) — pick deliberately and document.
-3. **Cross-use lunch transition.** Model office→retail lunch transitions from GSS diaries (potential novelty) or treat channels independently (simpler)? Leg 2 can defer the retail side but should decide how the office lunch dip is represented.
+2. **Interpolate to Timestep — RESOLVED (decision OD-8H, build).** `No` — preserves the 30-min block (averaging compounds peak loss). Set on all injected `Schedule:Compact` in both `integration.py` (eSim_bem_utils_3J) and `office_integration.py`; verified in Step-8 validation §2.9.
+3. **Cross-use lunch transition — RESOLVED (build).** Channels treated independently in Leg 2; the office lunch dip is carried by the AT_WORK diurnal shape itself and gated in Step-7 validation (E.3 lunch-dip ≥ 1.02× for all archetype/band combos, PASS). Office→retail transition modeling deferred to Leg 3 (retail channel).
 4. **Shared-vs-separate backbone ablation.** The shared-encoder claim needs a small internal ablation for reviewer defensibility before the Leg-3 paper.
 5. **Image-locked numbers — RESOLVED 2026-06-13.** Peak densities / LPD / plug W/m² and the office diurnal fractions were verified verbatim from the source PDFs (Standards + Empirical reports) and are now in Steps 4 and 7. **Caveat that remains:** the *validation thresholds* in `Validating Synthetic Occupancy Schedules.pdf` were genuinely blank (never rendered) — so NMBE/CV(RMSE) must be cited to ASHRAE Guideline 14 directly, and the `< 0.05` / ±15% / ≤ 1 h gates are project-chosen, not literature (see Validation Plan provenance note).

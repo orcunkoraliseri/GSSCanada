@@ -9,14 +9,14 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 
 > **Three-leg roadmap.** Leg 1 = Residential (COMPLETE, 2nd Journal). **Leg 2 = Residential + Office (this doc).** Leg 3 = + Retail + Hotel (3rd-Journal target).
 >
-> **Status convention.** Residential portions = **COMPLETE (Leg 1, unchanged)**; Office portions = **PLANNED (Leg 2)**. The single real build delta is tiling AT_WORK into the 48-slot arrays (Step 3); everything else reuses or lightly extends Leg-1 machinery. Companion detail doc: `3rdJ_00_2split_Occupancy_Pipeline.md`.
+> **Status convention.** Residential portions = **COMPLETE (Leg 1, unchanged)**; Office portions = **✅ DONE (Leg 2)** — built and validated end-to-end 2026-06-14 → 2026-07-02 (Step-7 2022/2030, Step-8 and Step-9 reports all 0 FAIL; office WFH-modulation verified live post the 2026-07-02 `office_integration.py` v24.2 zone-field fix; acceptance review: `investigation/2split_results_acceptance_review.md`). The single real build delta was tiling AT_WORK into the 48-slot arrays (Step 3); everything else reused or lightly extended Leg-1 machinery, as planned. Companion detail doc: `3rdJ_00_2split_Occupancy_Pipeline.md`.
 
 ---
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  STEP 1 — DATA COLLECTION & COLUMN SELECTION                                ║
-║  Residential: COMPLETE (Leg 1)   |   Office gating vars: PLANNED (Leg 2)    ║
+║  Residential: COMPLETE (Leg 1)   |   Office gating vars: DONE (Leg 2)       ║
 ║                                                                              ║
 ║  Reuse Leg-1 Main + Episode columns. ADD office employment-gating vars:     ║
 ║    activity-last-week  MAR_Q100 / ACT7DAYS / ACT7DAYC                       ║
@@ -28,7 +28,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║  KEY: occPRE already on every episode row, all 4 cycles                     ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 2 — DATA HARMONIZATION                                                ║
-║  Status: occPRE crosswalk COMPLETE (Leg 1)  |  AT_WORK confirm: PLANNED     ║
+║  Status: occPRE crosswalk COMPLETE (Leg 1)  |  AT_WORK confirm: DONE        ║
 ║                                                                              ║
 ║  AT_HOME = occPRE==1   (Leg 1)                                              ║
 ║  AT_WORK = occPRE==2   ← all 4 cycles                                       ║
@@ -38,7 +38,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║    for office BEM (worker physically absent); WFH recovered via TLWK_01A    ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 3 — MERGE & TILING  ← THE ONE REAL BUILD DELTA                        ║
-║  Status: PLANNED (Leg 2)                                                    ║
+║  Status: DONE (Leg 2)                                                       ║
 ║                                                                              ║
 ║  GAP: Step-3C tiler expands only AT_HOME into the 48-slot arrays;           ║
 ║       occPRE/AT_WORK lives only at episode level                            ║
@@ -52,7 +52,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║    CONSERVATIVE: clone to separate CSV; residential path bit-identical      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 4 — MODEL 1: MULTI-HEAD CONDITIONAL TRANSFORMER                       ║
-║  Status: PLANNED (Leg 2) — shared encoder reuses J3                         ║
+║  Status: DONE (Leg 2)    — shared encoder reuses J3                         ║
 ║                                                                              ║
 ║  ENCODER (shared): token = [occACT(14), AT_HOME, AT_WORK, 9 co-presence]    ║
 ║    conditioning += NOCS, COW, HRSWRK                                        ║
@@ -70,7 +70,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 5 — ARCHETYPE LINKAGE                                                 ║
 ║  Residential (Census linkage): COMPLETE (Leg 1)                            ║
-║  Office (NOC x NAICS lookup): PLANNED (Leg 2)                              ║
+║  Office (NOC x NAICS lookup): DONE (Leg 2)                                 ║
 ║                                                                              ║
 ║  knowledge/professional -> OpenOffice+ClosedOffice, 9-5                     ║
 ║  public/health/education -> +Classroom+Restroom                            ║
@@ -79,7 +79,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║  output: per-respondent office_archetype_ID                                 ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 6 — MODEL 2: FORECAST 2030 + WFH                                      ║
-║  Status: progressive fine-tuning COMPLETE (Leg 1)  |  WFH scalar: PLANNED   ║
+║  Status: progressive fine-tuning COMPLETE (Leg 1)  |  WFH scalar: DONE      ║
 ║                                                                              ║
 ║  reuse 4-stage progressive fine-tuning; DRIFT_MATRIX_1522 = COVID WFH jump  ║
 ║  WFH_RATE scalar:  2019 ~7% -> 2020 ~40% -> 2022 ~30% -> 2023 ~20%         ║
@@ -88,7 +88,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║  energy NON-LINEAR: 20-50% occ cut -> only ~10-30% energy savings          ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 7 — BEM/UBEM INTEGRATION  ← THE CORE ASYMMETRY                        ║
-║  Residential REPLACE: COMPLETE (Leg 1)  |  Office MODULATE: PLANNED         ║
+║  Residential REPLACE: COMPLETE (Leg 1)  |  Office MODULATE: DONE            ║
 ║                                                                              ║
 ║  Residential: schedule = presence*default + (1-presence)*baseload;         ║
 ║               Number_of_People = HHSIZE                                     ║
@@ -102,7 +102,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║                 hotel/retail->skip(Leg3) | MEP/circulation->baseline        ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 8 — BEM SIMULATION                                                    ║
-║  Status: PLANNED (Leg 2)                                                    ║
+║  Status: DONE (Leg 2)                                                       ║
 ║                                                                              ║
 ║  extend Leg-1 paired Monte-Carlo (frozen frame, hold IDF+TMY, vary occ)    ║
 ║  add PNNL Tall/SuperTall OFFICE zones (~30% SuperTall / ~24% Tall area)    ║
@@ -110,7 +110,7 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ║           load-shape metrics; annual EUI = secondary                        ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 9 — ACTIVITY-DRIVEN END-USE LOADS (equipment + lighting)              ║
-║  Status: PLANNED (Leg 2)                                                    ║
+║  Status: DONE (Leg 2)                                                       ║
 ║                                                                              ║
 ║  scale office equipment + lighting by AT_WORK presence (Lmin/Pbase floors)  ║
 ║  calibrate magnitude vs commercial benchmark (NRCan SCIEU / NECB)           ║
@@ -158,9 +158,9 @@ Extend the completed residential GSS → BEM pipeline into a **two-channel gener
 ## OPEN DECISIONS (resolve before/within Leg 2)
 
 1. MDLM vs multi-head Transformer — RESOLVED 2026-06-18 (Transformer baseline retained; MDLM rejected due to validation gate failures and computation overhead; see [dr_S4-03_architecture_choice_REPORT.md](file:///c:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg2_2-split/Step4_docs/deepResearch/dr_S4-03_architecture_choice_REPORT.md)).
-2. Interpolate-to-Timestep `Yes`/`No` in Step 7.
-3. Model office→retail lunch transition, or treat channels independently.
-4. Shared-vs-separate backbone ablation for reviewer defensibility.
+2. Interpolate-to-Timestep — RESOLVED (OD-8H): `No`, preserves the 30-min block; verified §8E §2.9.
+3. Lunch transition — RESOLVED: channels independent in Leg 2; lunch dip carried by the AT_WORK shape (Step-7 gate E.3 PASS). Office→retail transition = Leg 3.
+4. Shared-vs-separate backbone ablation for reviewer defensibility — still open (paper-stage item).
 5. Image-locked numbers RESOLVED 2026-06-13 (densities/LPD/diurnal verified from source PDFs). Remaining caveat: validation thresholds were blank in the source → cite ASHRAE G14 for NMBE/CV(RMSE); the 0.05/±15%/≤1h gates are project-chosen, not literature.
 
 > Graphical abstract `Residential-Office_Pipeline.png` already exists in this folder and may be referenced for the two-track (residential teal / office orange) visual.

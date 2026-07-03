@@ -1,41 +1,43 @@
-# RESUME — Opus Manager Session (3J Leg-2 "2-split")
+# RESUME — Sonnet Manager Session (3J Leg-2 "2-split")
 
-**Paste this whole file as the first message of a fresh Opus session to continue.**
-Last updated: **2026-07-02 — 🔴 OFFICE WFH BUG FOUND + FIXED, RE-SIM IN FLIGHT.** While finishing
-Step 9 we discovered the office channel was simulated WITHOUT working WFH modulation: all 7
-scenarios byte-identical in every metric (peak/occ/shape/energy). Root cause (confirmed, NOT stale
-cache): `office_integration.py` read the pre-v24.2 zone field `Zone_or_ZoneList_Name`, but E+ v24.2
-renamed it → every zone read as "" → all tagged 'skip' (`n_office_zones=0`) → the band-specific
-OFC_* schedules were appended but never wired to a zone → E+ ran the prototype `NECB-A-Occupancy`
-for all scenarios. FIXED (added `_get_zone_name` v24.2-robust helper + corrected the PEOPLE
-`Number_of_People_Schedule_Name` field); SMOKE-VALIDATED (job 1057831: n_office_zones=6,
-HOURLY_DIFFER, People wired to OFC_People). **Re-sim array job 1058490 (`run_office_resim.sh`,
-0-251, `--no-skip`) launched, PENDING on AssocGrpCpuLimit; Sonnet drain-watch running.** So the
-prior "Step 8 VALIDATED 46/1/13/0" and "Step 9 ~80% done, re-source from peak/shape" are SUPERSEDED
-for the office half — see §6. (Residential unaffected: scenario response varies correctly.)
-First read CLAUDE.md and memory/MEMORY.md (esp. `project_step8_office_wfh_bug.md`,
-`project_step9_2split_status.md`), then resume as if no break happened.
+**Paste this whole file as the first message of a fresh Sonnet session to continue.**
+Last updated: **2026-07-02 — 🟢 OFFICE WFH BUG FIXED · AUTONOMOUS CHAIN IN FLIGHT · SONNET CAN DRIVE
+THE TAIL.** The Opus-worthy work is DONE (bug root-caused + fixed, scorecard gates designed, the whole
+job chain wired). What remains is a mechanical runbook — a Sonnet manager can drive it end-to-end and
+only needs to escalate to the user (who can bring Opus back) if something genuinely breaks in a
+non-obvious way. **First read CLAUDE.md and memory/MEMORY.md** (esp. `project_step8_office_wfh_bug.md`,
+`project_step9_2split_status.md`), then continue from §6.
+
+**The bug (for context):** the office channel was simulated with NO working WFH modulation — all 7
+scenarios byte-identical (peak/occ/shape/energy). Root cause: `office_integration.py` read the
+pre-v24.2 zone field `Zone_or_ZoneList_Name`, but E+ v24.2 renamed it → every zone read as "" → all
+tagged 'skip' (`n_office_zones=0`) → OFC_* schedules appended but never wired → E+ ran the prototype
+`NECB-A-Occupancy` for all scenarios. FIXED (`_get_zone_name` v24.2-robust helper + corrected PEOPLE
+`Number_of_People_Schedule_Name`); smoke-validated (job 1057831: n_office_zones 0→6, HOURLY_DIFFER).
+Re-sim confirmed working: building `Office_Knowledge__Tall__5A` now has 7 distinct md5s and a monotone
+occupancy spread (2030 cons 5884 > hyb 5269 > full 4804 occ-h). Residential was never affected.
 
 ---
 
 ## 0. Who you are
 
-You are the **MANAGER (Opus)** in a two-agent workflow for the GSSCanada occupancy
+You are the **MANAGER (Sonnet)** driving the remaining tail of the GSSCanada occupancy
 modeling research (3rd journal = **"3J"**, Leg-2 = **"2-split"** = two-channel
-AT_HOME + AT_WORK joint occupancy model).
+AT_HOME + AT_WORK joint occupancy model). The user explicitly handed this tail to Sonnet because
+the hard design/debug work is finished and what's left is a concrete runbook (§6).
 
-- **You plan / debug / judge / write builder prompts. You do NOT execute, submit cluster
-  jobs, or run live poll loops.** The employee handles execution + relays results; you act
-  only on terminal outcomes.
-- **Cheap Haiku/Sonnet "employees" do ALL execution** — scp, sbatch, log peeks, monitoring,
-  retrieval, large-file scans. ALWAYS set `model:` on every Agent call (bg agents silently
-  inherit Opus). Prefer a silent background `Monitor` bash poll loop over an agent watcher for
-  waiting on a job (zero model tokens while polling); min ~30-min spacing; no live poll loops
-  in Opus.
-- You are "both manager and sometimes employer": if the user hands you a current runbook AND
-  confirms, you may execute that one cycle. Default is plan/debug only.
-- Communication: casual, ≤100 words unless detail requested. End with the literal command to
-  run. Resolve clarifying questions BEFORE printing a builder prompt.
+- **You MAY execute the §6 runbook directly** — it's mechanical (watch a job chain, pull outputs,
+  parse a scorecard, report numbers). This is a sanctioned runbook + the user confirmed Sonnet
+  drives it, so you are "manager-as-employer" for this cycle, not plan-only.
+- **Still offload the truly repetitive/heavy bits to a `model: sonnet` (or haiku) employee** —
+  large-file scans, multi-file scp, long log parsing. Prefer a silent background `Monitor` bash
+  poll loop over an agent for *waiting* on a job (zero model tokens while polling); min ~30-min
+  spacing; never a live poll loop in your own turns.
+- **Escalate to the user (who can re-summon Opus) ONLY for genuine debugging** — a chain job
+  FAILs for a non-obvious reason, a gate flips FAIL unexpectedly, or the office signal still looks
+  wrong after the fix. Don't burn cycles guessing at a hard bug; flag it with the log tail.
+- Communication: casual, ≤100 words unless detail requested. Label commands "locally"/"on the
+  cluster." End with the literal next command when you hand one off.
 
 ## 1. HARD RULES (never violate — account-suspension risk)
 
@@ -148,37 +150,69 @@ channels) is built — job 1055064 just needs its outputs collected + the two pi
 
 ---
 
-## 6. 🔴 DO THIS FIRST — office re-sim (job 1058490) → re-agg → finish Step 9
+## 6. 🟢 DO THIS — wait on the autonomous chain, then pull + report the Step-9 scorecard
 
-> **⚠️ THE OLD PLAN BELOW IS SUPERSEDED.** It assumed office annual metrics were merely
-> "degenerate" and the WFH signal lived in peak/shape — WRONG. A 2026-07-02 probe found the office
-> channel was simulated with **NO working WFH modulation at all** (E+ v24.2 zone-field rename bug;
-> full detail in `memory/project_step8_office_wfh_bug.md`).
+**The whole chain is ALREADY SUBMITTED and self-driving.** You do NOT need to submit anything on the
+happy path — just wait for the watch to ping, then pull + parse + report. Submitted 2026-07-02:
 
-**STATE:** office bug FIXED in `Step8_docs/office_integration.py` (v24.2 zone field via new
-`_get_zone_name` helper + corrected PEOPLE `Number_of_People_Schedule_Name`); smoke-validated
-(job 1057831: n_office_zones 0→6, HOURLY_DIFFER, People wired to OFC_People). Re-sim **array
-1058490** (`Step8_docs/run_office_resim.sh`, `--array=0-251`, `--no-skip`) IN FLIGHT — overwrites
-`/speed-scratch/o_iseri/step8_2split/office`; PENDING on AssocGrpCpuLimit; Sonnet drain-watch
-running (25-min poll). Residential untouched.
+| Job | Role | Gate | Log |
+|---|---|---|---|
+| **1058490** | office re-sim array (0-251, `--no-skip`) → `$SCRATCH/office` | — | `logs/8C_office_resim_1058490_*.out` |
+| **1058661** | §8D re-agg (`run_aggregation.sh`) → `outputs_step8/agg/` | `afterok:1058490` | `logs/8D_agg_1058661.out` |
+| **1058662** | Step-9 scorecard (`run_step9.sh`) → `outputs_step9/` | `afterok:1058661` | `logs/9_step9_1058662.out` |
 
-**WHEN 1058490 DRAINS CLEAN** (sacct: 252 COMPLETED; 252 `hourly_meters.csv`; spot-check
-`Office_Knowledge__SuperTall__6A` 2022 vs 2030-fullyhybrid = DIFFER):
-1. **Re-aggregate §8D** — `sbatch Step8_docs/run_aggregation.sh` (`3rdJ_08_simulation_2split_agg.py`)
-   → fresh `outputs_step8/agg/{agg_annual,agg_peak,agg_diurnal,agg_meta}.csv`. Office now varies by
-   scenario in peak/occ/diurnal (annual energy stays ~flat = HVAC-dominated — expected, fine).
-2. **Refresh §8E scorecard** — re-run `3rdJ_08_simulation_2split_val.py`; office scenario gates
-   (§6.3/§7.2) now pass on REAL sim outputs not inputs; confirm no regressions.
-3. **Finish Step 9** — edit `Step9_docs/3rdJ_09_activityDrivenLoads_2split.py`
-   `build_scenario`/`build_longitudinal`: office rows from `agg_peak` (`peak_kW_annual`,
-   `mean_peak_hour`) + `agg_diurnal` (`office_occ` mid-day) — user chose **ALL THREE metrics**;
-   redraw `fig_scenario_both` office panel. Residential rows already correct. `sbatch run_step9.sh`,
-   collect. Update doc §R3/R4 + §5 ledger + §8 caveats (drop "degenerate/pending" → real signal).
-4. **Reframe the 2 pipeline docs** (archive predecessors first): the STEP-9 boxes in
-   `3rdJ_00_2split_Occupancy_Pipeline_Overview.md` + `3rdJ_00_2split_Occupancy_Pipeline.md`
-   "office-only" → "both channels".
-5. Update `memory/project_step8_office_wfh_bug.md` + `project_step9_2split_status.md` + this RESUME to DONE.
-6. **THEN paper reporting** (2J `readySubmission.md` = style ref).
+**Watch:** model-free Monitor `b4xjufm32` (zero tokens) pings on Step-9 COMPLETED / chain-fail /
+`DependencyNeverSatisfied`. If it's gone (session reset), re-arm an equivalent (poll `sacct -j 1058662
+-X -n -o State` every ≥30 min; also `squeue -h -j 1058661,1058662 -o %E | grep -i Never`).
+Progress at last check: **81/252 array tasks done, ~16/hr, 8-wide cap** → ETA ~5–11 h for the array +
+~1 h agg + ~1 min step9 → results tonight/overnight.
+
+**The Step-9 generator is ALREADY UPGRADED + STAGED** (`3rdJ_09_activityDrivenLoads_2split.py`, remote
+md5 `f6ad1dc4…`): it now emits a **2J-style scorecard report** — verdict banner, PASS/WARN/INFO/FAIL
+pills, an 11-gate bi-channel scorecard (doc §7 → `evaluate_gates()`), and **base64-embedded** figures
+(self-contained HTML). The old "re-source office from peak/shape" edit is **NOT needed** — post-fix the
+office channel varies by scenario in occupancy/mid-day, and gate **G8o** auto-tests that the 2030 bands
+DIFFER. No script edit required on the happy path; if you do edit it, re-`scp` + re-verify md5 before
+1058661 finishes (step9 is gated behind agg, so there's slack).
+
+### WHEN THE WATCH PINGS — three cases
+
+**CASE A · `CHAIN DONE: Step9 1058662 COMPLETED`** (happy path — hand mechanical bits to a
+`model: sonnet` employee):
+1. **On the cluster:** `tail -40 logs/9_step9_1058662.out` → read the console `SCORECARD: PASS n · WARN
+   n · INFO n · FAIL n` line + each `G..` gate line (esp. **G8o**).
+2. **Confirm G8o = PASS** (office 2030 bands non-degenerate). If G8o is **FAIL/WARN** → office still
+   looks flat → the fix didn't fully take → **escalate to the user (Opus-worthy debug)** with the log.
+3. **Locally (scp pull):** `scp -r o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/step8_2split/upload/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/outputs_step9/{step9_report.html,figures} "<local>/Leg2_2-split/Step9_docs/outputs_step9/"`
+   (report is self-contained; figures optional). Open `step9_report.html`.
+4. **Report to the user:** gate tally + G8o verdict + local path. That satisfies the "Step-9 validation
+   report, both channels" ask.
+5. **THEN (optional, ask first):** reframe the 2 pipeline docs (below) + start paper reporting.
+
+**CASE B · `CHAIN STUCK: DependencyNeverSatisfied`** — an office cell (or agg) failed `afterok`, so the
+chain will never fire. Recover:
+1. `sacct -j 1058490 -X -n -o JobID,State | grep -v COMPLETED` → list the failed array indices.
+2. `scancel 1058662 1058661` (clear the stuck dependents).
+3. Re-run only the failed cells: `sbatch --array=<comma,idxs> Step8_docs/run_office_resim.sh` (it's
+   `--no-skip`, overwrites). Verify with `squeue`.
+4. When they drain, re-submit the chain: `sbatch --dependency=afterok:<newarray> …/run_aggregation.sh`
+   → capture id → `sbatch --dependency=afterok:<aggid> …/run_step9.sh`. Re-arm the watch.
+
+**CASE C · `CHAIN FAIL: … agg/step9 state=FAILED`** — `tail -60` the named log. Usual suspects: missing
+dep in `envs/step4`, a path, or an OOM (bump `--mem`). If the cause is obvious + mechanical, fix +
+re-submit that job (agg standalone, or step9 with `--dependency=afterok:1058661` if agg is fine). If
+non-obvious → escalate to the user with the log tail.
+
+---
+
+### After Step 9 is in hand — reframe the 2 pipeline docs (archive predecessors first, HARD RULE #8)
+
+STEP-9 boxes in `Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline_Overview.md` (~L112–117) +
+`3rdJ_00_2split_Occupancy_Pipeline.md` (~L223–226): "office-only" → "both channels: residential (SHEU)
++ office (NECB) activity-driven end-use loads + EUI calibration; deep activity-resolved residential =
+Leg-1 provenance, deep office = Leg-3 candidate." Then update `memory/project_step9_2split_status.md` +
+`project_step8_office_wfh_bug.md` + this RESUME to DONE, and move to **paper reporting** (2J
+`readySubmission.md` = style ref).
 
 ---
 
@@ -204,45 +238,19 @@ candidate). No re-simulation — it reads the existing §8D agg tables.
 - `run_step9.sh` — SLURM (`-p ps`, `-t 7-00:00:00`, py_compile + dep fast-fail), log
   `logs/9_step9_<JOBID>.out`.
 
-**Status: RAN + COLLECTED overnight (job 1055064 COMPLETED, exit 0, 41 s).** Outputs are LOCAL at
-`Step9_docs/outputs_step9/` (4 CSVs + 4 figs + `step9_report.html`). The doc's §R1–R4 tables now hold
-the REAL numbers. **Step 9 is ~80% done — one refinement pass remains before it's "DONE" and before
-the pipeline-doc reframe.**
+> **⚠️ The old "job 1055064 ~80% done · re-source office from peak/shape" status is SUPERSEDED.**
+> That run was built on the FLAT (buggy) office outputs, and its refinement plan assumed office was
+> only annual-degenerate. Post-fix the office channel varies by scenario for real, and the generator
+> now auto-evaluates it via gate **G8o** — no `build_scenario`/`build_longitudinal` re-source edit is
+> needed. The current, live plan is **§6** above. What's still solid & unchanged: residential EUI /
+> scenario / COVID-break, and the office load-shape hump — all re-emitted by the pending 1058662 run.
 
-**What's solid (paper-ready):** both-channel EUI vs benchmark (resid SingleD 212.5 WARN=expected,
-OtherDwelling 140.4 / MidRise 177.3 / HighRise 142.9 in-band; office 179.6 PASS); residential
-scenario response (mid-day 0.252→0.273, energy +2.14% across WFH bands); residential COVID break;
-office load-shape (mid-day hump 146 kW > night 57 kW, WE 48.5 < WD 146).
+**The Step-9 deliverable when 1058662 lands:** `outputs_step9/` = 4 CSVs
+(`step9_{eui_by_channel,loadshape_peaks,scenario_response,longitudinal}.csv`) + 4
+`figures/fig_*_both.png` + **`step9_report.html`** (the 2J-style bi-channel scorecard — verdict,
+pills, 11 gates, embedded figures). That HTML is the "Step-9 validation report, both channels" the
+user asked for.
 
-**🔴 THE ONE REFINEMENT TO DO FIRST (then Step 9 is done):** the office **scenario + longitudinal**
-metrics are degenerate at the ANNUAL level — in `agg_annual` the office `occ_mean_persons` = 163.683
-and annual energy ≈ 19,066 MWh are IDENTICAL across all 7 scenarios (that's the NECB design density +
-an HVAC-dominated annual total, not the AT_WORK-modulated signal). The office WFH story is real but
-lives in **peak / load shape** (§8E §6.3 already showed office 2030 WD peak 0.70→0.62→0.60). Also the
-office **lights/equip end-use split** is absent from agg (residential-only). Both are documented in
-the doc §8 caveats 4–5 + the §5 ledger (flagged, not hidden).
-
-**Runbook to finish (small script edits + one 41 s re-run — NO re-simulation; hand mechanical bits to
-a `model: sonnet` employee):**
-1. **Decide the office scenario/longitudinal metric with the user** (paper-narrative call): feature
-   office **peak kW** and/or **peak-hour** and/or **mid-day office_occ** across scenarios — since
-   annual energy is ~flat (a legit finding: "WFH reshapes office peak/shape, not annual energy").
-2. Edit `3rdJ_09_activityDrivenLoads_2split.py` `build_scenario`/`build_longitudinal` so the OFFICE
-   rows come from `agg_peak` (`peak_kW_annual`, `mean_peak_hour`) and/or `agg_diurnal` (`office_occ`
-   mid-day mean per scenario), not `agg_annual` energy. Re-draw `fig_scenario_both` office panel with
-   the chosen metric. (Residential rows are correct — leave them.)
-3. Archive predecessor `.py` → `Step9_docs/archive/`, re-upload the one file, `sbatch run_step9.sh`,
-   collect (drain-watch or a Sonnet poll ≥30 min), scp `outputs_step9` local, confirm office scenario
-   now shows a real signal.
-4. Update the doc §R3/§R4 + ledger + caveats to reflect the fixed office metric; mark Step 9 DONE.
-5. **THEN reframe the two pipeline docs** (archive predecessors to a sibling `archive/` first, per
-   HARD RULE): `Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline_Overview.md` (STEP 9 box, ~L112–117) +
-   `Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline.md` (STEP 9, ~L223–226): "office-only" → "both
-   channels: residential (SHEU) + office (NECB) activity-driven end-use loads + EUI calibration; deep
-   activity-resolved residential = Leg-1 provenance, deep office = Leg-3 candidate." Keep the
-   "Residential pipeline unchanged" spirit but make Step 9 explicitly bi-channel + equal-weight.
-6. Update memory (`project_step9_2split_status.md`) + this RESUME.md to Step 9 DONE, then paper reporting.
-
-**Then (the real next milestone): paper reporting.** Step 8/9 is the results backbone (load shapes,
+**Then (real next milestone): paper reporting.** Step 8/9 is the results backbone (load shapes,
 peak-hour timing, 2015→2022 COVID break, 2030 WFH-band spread, both-channel EUI vs benchmark).
 2J submission copy `readySubmission.md` is the style reference (memory `project_2j_paper_writing`).

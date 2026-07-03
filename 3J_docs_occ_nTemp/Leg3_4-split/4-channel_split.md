@@ -18,7 +18,7 @@ Drive the four occupiable functional uses inside the PNNL Tall and SuperTall pro
 | **Residential** | GSS `LOCATION == 300` → `AT_HOME` | HighRiseApartment zones | SuperTall 24.1 % · Tall 24.4 % |
 | **Office** | GSS workplace LOCATION codes → `AT_WORK` | OpenOffice / ClosedOffice / Conference / Classroom / Dining / Restroom | SuperTall 30.3 % · Tall 24.4 % |
 | **Retail** | GSS retail / services LOCATION codes + TUI_01 shopping activity → `AT_RETAIL` | Retail Retail / Retail Back_Space / Retail Point_of_Sale / Retail Entry | SuperTall 16.1 % · Tall 24.4 % |
-| **Hotel** | Statistics Canada monthly hotel-occupancy statistics (NOT GSS) | LargeHotel GuestRoom 5/6/7 / Banquet / Cafe / Kitchen / Lobby / Laundry | SuperTall 29.5 % · Tall 26.8 % |
+| **Hotel** | ISQ / CBRE monthly hotel-occupancy statistics (NOT GSS) | LargeHotel GuestRoom 5/6/7 / Banquet / Cafe / Kitchen / Lobby / Laundry | SuperTall 29.5 % · Tall 26.8 % |
 
 > Service / MEP / Circulation (~52 % of *gross* floor area) stays on ASHRAE 90.1 / NECB17 defaults — **not** modulated.
 
@@ -26,7 +26,7 @@ Drive the four occupiable functional uses inside the PNNL Tall and SuperTall pro
 
 ## 1. WHY HOTEL IS A SEPARATE DATA SOURCE
 
-GSS samples Canadian residents at their place of residence. Canadian residents are not GSS-recorded as guests in their own city's hotels, and tourists / international guests are not in the GSS frame at all. Driving hotel zones from `LOCATION` codes would systematically under-estimate occupancy. We therefore route the Hotel channel through **Statistics Canada Tourism / Monthly Hotel-Occupancy statistics** (Table 24-10-0048-01 or successor) and use it as a seasonal multiplier on NECB17 hotel baseline schedules.
+GSS samples Canadian residents at their place of residence. Canadian residents are not GSS-recorded as guests in their own city's hotels, and tourists / international guests are not in the GSS frame at all. Driving hotel zones from `LOCATION` codes would systematically under-estimate occupancy. We therefore route the Hotel channel through **provincial monthly hotel-occupancy statistics** (ISQ for QC; Alberta Economic Dashboard/CBRE for AB, as verified in [dr_L3-01_statcan_hotel_data_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-01_statcan_hotel_data_REPORT.md)) and use it as a seasonal multiplier on NECB17 hotel baseline schedules.
 
 ---
 
@@ -38,9 +38,9 @@ GSS samples Canadian residents at their place of residence. Canadian residents a
 | 2.2 | Identify GSS retail / services LOCATION codes per cycle | extend `workplace_codes.yml` → `location_codes.yml` |
 | 2.3 | Derive `AT_RETAIL` derived column from LOCATION + TUI_01 shopping activity | updated `merged_episodes.csv` |
 | 2.4 | Add a third output head to the Conditional Transformer (AT_RETAIL) | shared encoder, 3 GSS heads |
-| 2.5 | Pull and harmonize Statistics Canada hotel-occupancy monthly series (2005–2022) | `hotel_occupancy_monthly.csv` |
-| 2.6 | Build a 12-month → 30-min seasonal Hotel multiplier from the StatCan series | `hotel_multiplier_lookup.csv` |
-| 2.7 | Forecast 2030 hotel occupancy from the StatCan trend (classical time-series, not the Transformer) | `hotel_multiplier_2030.csv` |
+| 2.5 | Pull and harmonize monthly hotel-occupancy series (ISQ & Alberta Dashboard/CBRE, 2005–2022) | `hotel_occupancy_monthly.csv` |
+| 2.6 | Build a 12-month → 30-min seasonal Hotel multiplier from the historical series | `hotel_multiplier_lookup.csv` |
+| 2.7 | Forecast 2030 hotel occupancy from the historical trend (classical time-series, not the Transformer) | `hotel_multiplier_2030.csv` |
 | 2.8 | Extend `inject_office_schedules()` to `inject_commercial_schedules()` with channel dispatch on Tag 2 | `eSim_bem_utils/commercial_integration.py` |
 | 2.9 | End-to-end run on `SuperTallBuilding_90.1-2019_6A_Buffalo_NECB17_Z6_v221.idf` (Montreal) and `…_Z7A_v221.idf` (Calgary) | one EUI table per scenario × climate × channel |
 
@@ -81,7 +81,7 @@ This is the fraction of the GSS population that is in retail/services at hour `t
 
 ### 3.4 Hotel channel (NEW, non-GSS)
 
-**Source.** Statistics Canada monthly hotel-occupancy rate by province. Schema:
+**Source.** Monthly hotel-occupancy rate by province/market (sourced from ISQ for QC and Alberta Economic Dashboard/CBRE for AB, see [dr_L3-01_statcan_hotel_data_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-01_statcan_hotel_data_REPORT.md)). Schema:
 
 ```
 hotel_occupancy_monthly.csv:
@@ -91,12 +91,12 @@ hotel_occupancy_monthly.csv:
 **Per-month → per-30-min conversion.** Hotel guests are typically present 18:00–10:00 (overnight stays) and partially during the day (business travelers, late checkouts). Use a fixed diurnal *shape* `s(t)` from the NECB17 hotel guest-room schedule, scaled by the monthly StatCan rate:
 
 ```
-hotel_multiplier(t, month, PR) = s(t) × StatCan_occupancy_rate(month, PR)
+hotel_multiplier(t, month, PR) = s(t) × occupancy_rate(month, PR)
 ```
 
-`s(t)` is a unit-normalized 48-slot curve (max = 1.0) representing the diurnal pattern; the StatCan rate scales the amplitude per month per province. This gives the GuestRoom People + Lights + Equipment schedules a longitudinally consistent monthly variation without inventing a synthetic per-guest diary.
+`s(t)` is a unit-normalized 48-slot curve (max = 1.0) representing the diurnal pattern; the occupancy rate scales the amplitude per month per province/market. This gives the GuestRoom People + Lights + Equipment schedules a longitudinally consistent monthly variation without inventing a synthetic per-guest diary.
 
-**Forecast 2030.** Classical time-series on the monthly StatCan series, NOT the Transformer. Recommended: SARIMA(1,1,1)(1,1,1,12) per province with COVID indicator (2020-03 to 2022-06). Output 12 monthly values for 2030 per province, then multiply by `s(t)`.
+**Forecast 2030.** Classical time-series on the monthly occupancy rate series, NOT the Transformer. Recommended: SARIMA(1,1,1)(1,1,1,12) per province/market with COVID indicator (2020-03 to 2022-06). Output 12 monthly values for 2030 per province/market, then multiply by `s(t)`.
 
 **Banquet / Cafe / Kitchen / Lobby zones.** Use NECB17 baseline schedules with no occupant modulation, OR a small day-of-week shape derived from `s(t)`. Default: leave on NECB baseline (these are amenity spaces, weakly coupled to room occupancy).
 
@@ -205,8 +205,8 @@ Confirm via `eSim_bem_utils/config.resolve_epw_path()` — already wired (per `O
 |---|---|---|
 | LOCATION mapping | per-cycle AT_RETAIL rate (weekday, 12:00–14:00) | 0.06–0.10 (matches Canadian retail employment + shopper share) |
 | Transformer | JS(AT_WORK), JS(AT_RETAIL) per stratum | < 0.02 each |
-| Hotel pre-COVID | StatCan QC + AB monthly occupancy 2015–2019 vs reconstructed multiplier | mean absolute error < 0.05 |
-| Hotel COVID dip | 2020-04 occupancy reconstruction | recovers the StatCan low without overshoot |
+| Hotel pre-COVID | Historical QC + AB monthly occupancy 2015–2019 vs reconstructed multiplier | mean absolute error < 0.05 |
+| Hotel COVID dip | 2020-04 occupancy reconstruction | recovers the historical low without overshoot |
 | BEM | end-to-end run of `SuperTallBuilding_…_Z6.idf` Default vs 2022 (Montreal) | EUI delta is positive (more occupancy → more demand) and dominated by Office + Hotel bands |
 | Floor-area sanity | reported per-channel EUI shares | match the parsed occupiable shares within ±2 pp |
 
@@ -218,9 +218,9 @@ Confirm via `eSim_bem_utils/config.resolve_epw_path()` — already wired (per `O
 |---|---|---|
 | 2.2–2.3 | harmonized GSS + `location_codes.yml` | `hetus_30min.csv` with HOME + WORK + RETAIL channels |
 | 2.4 | `hetus_30min.csv` + conditioning vector | model checkpoints `W_2005`, …, `W_2022_ft` (3-head) |
-| 2.5 | StatCan Table 24-10-0048-01 | `0_Occupancy/external/hotel_occupancy_monthly.csv` |
-| 2.6 | NECB17 hotel guest-room schedule + StatCan rates | `0_Occupancy/processed/hotel_multiplier_lookup.csv` |
-| 2.7 | StatCan series → SARIMA | `0_Occupancy/forecasts/hotel_multiplier_2030.csv` |
+| 2.5 | ISQ and Alberta Economic Dashboard (CBRE) monthly data | `0_Occupancy/external/hotel_occupancy_monthly.csv` |
+| 2.6 | NECB17 hotel guest-room schedule + historical rates | `0_Occupancy/processed/hotel_multiplier_lookup.csv` |
+| 2.7 | Monthly occupancy rate series → SARIMA | `0_Occupancy/forecasts/hotel_multiplier_2030.csv` |
 | 2.8 | IDF + per-Space Tag 2 + four channel multipliers | modulated `Schedule:Compact` blocks in `BEM_Setup/Buildings/CAN_CLG/*.idf` and `CAN_MTL/*.idf` |
 | 2.9 | Modulated IDFs + EPW | `eplusout.sql` per scenario; per-channel EUI report |
 
@@ -231,7 +231,7 @@ Confirm via `eSim_bem_utils/config.resolve_epw_path()` — already wired (per `O
 | Decision | Rationale |
 |---|---|
 | Four channels, not one unified "occupant" channel | Each end-use has a distinct underlying population (household members at home, workforce at work, customers in retail, guests in hotel). Conflating them would smear the longitudinal signal that the whole project depends on. |
-| Hotel sourced from StatCan tourism stats, not GSS | GSS frame excludes hotel guests by construction. Substituting GSS data here would systematically under-occupy hotel zones. |
+| Hotel sourced from ISQ / CBRE tourism stats, not GSS | GSS frame excludes hotel guests by construction. Substituting GSS data here would systematically under-occupy hotel zones. |
 | Office / Retail / Hotel modulate, do not replace, NECB schedules | Preserves code-of-record peak densities (W/m², people/m²) for regulatory comparability; injects only the *temporal* GSS signal. |
 | Residential alone replaces baseline | Residential is per-household and idiosyncratic — peak densities are not regulated the same way; per-household replacement is the right semantic. |
 | Tag 2 is the per-Space routing key | PNNL Tall/SuperTall prototypes leave `Space Type` blank; `Tag 2` is the human-readable function string carried by OpenStudio Standards. Verified by parsing both IDFs. |
@@ -263,7 +263,7 @@ LEFT PANEL (shared data source)
 - Stacked icons:
   * Statistics Canada GSS Time-Use cycles 2005 / 2010 / 2015 / 2022
   * Canadian Census PUMF 2006 / 2011 / 2016 / 2021
-  * Statistics Canada Tourism / Hotel-occupancy monthly stats
+  * ISQ and Travel Alberta / CBRE Hotel-occupancy monthly stats
     (separate, smaller source, gold-tinted)
 - One arrow labelled "GSS Episode LOCATION codes" splits into 3
   colored streams (teal, orange, magenta); a 4th stream (gold)
@@ -293,9 +293,7 @@ Each channel is a thin horizontal lane with the same internal stages:
    * Tag: "16 % of occupiable area"
 
 4) GOLD - Hotel channel (different source!)
-   * Driven by Statistics Canada tourism / monthly hotel-occupancy
-     statistics, NOT GSS (Canadian residents are not GSS-sampled
-     as guests in their own city's hotels)
+   * Driven by monthly hotel-occupancy statistics (ISQ / CBRE), NOT GSS (Canadian residents are not GSS-sampled as guests in their own city's hotels)
    * Output: seasonal occupancy multiplier on ASHRAE 90.1 / NECB17
      hotel schedules
    * Tag: "30 % of occupiable area"

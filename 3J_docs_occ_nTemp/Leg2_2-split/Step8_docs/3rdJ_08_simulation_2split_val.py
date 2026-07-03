@@ -497,11 +497,13 @@ def _plot_scenario_savings(office_rows, resid_rows):
         labs = [r[0].replace("2030-", "") for r in office_rows]
         x = list(range(len(labs))); w = 0.38
         ax.bar([i - w / 2 for i in x], [r[1] for r in office_rows], w,
-               color=THEME["peach"], label="occ cut %")
+               color=THEME["peach"], label="occupancy Δ%")
         ax.bar([i + w / 2 for i in x], [r[2] for r in office_rows], w,
-               color=THEME["accent"], label="energy sav %")
+               color=THEME["accent"], label="energy Δ%")
         ax.set_xticks(x); ax.set_xticklabels(labs, color=THEME["text"], fontsize=8)
-    ax.set_title("Office 2030: occupancy cut → energy saving", color=THEME["text"], fontsize=9)
+        ax.axhline(0, color=THEME["subtext"], lw=0.6)
+    ax.set_title("Office 2030: occupancy Δ → damped energy response (vs 2022)",
+                 color=THEME["text"], fontsize=9)
     ax.set_ylabel("% vs 2022", color=THEME["subtext"]); _legend(ax)
     ax2 = _style_ax(axes[1])
     if resid_rows:
@@ -1239,7 +1241,12 @@ def section7():
     o = ann[ann["channel"] == "office"]
     r = ann[ann["channel"] == "resid"]
 
-    # 7.2 office 2030 occupancy cut → sub-proportional energy saving (base loads persist)
+    # 7.2 office 2030 occupancy change → damped energy response (base loads persist).
+    # Signed vs the 2022 baseline: 2022 already carries ~30% real-world WFH, so the
+    # conservative-return band legitimately has MORE office presence than 2022.
+    # The physical gate is direction-agnostic: |energy Δ%| must not exceed
+    # |occupancy Δ%| (+1 pp tolerance) — fixed HVAC/ventilation and plug base loads
+    # damp the response whether occupancy rises or falls.
     office_rows = []
     e22 = o[o["scenario"].astype(str) == "2022"]["elec_total_kWh"].mean()
     oc22 = o[o["scenario"].astype(str) == "2022"]["occ_mean_persons"].mean()
@@ -1249,13 +1256,20 @@ def section7():
             ocb = o[o["scenario"].astype(str) == b]["occ_mean_persons"].mean()
             if pd.isna(eb) or pd.isna(ocb):
                 continue
-            e_sav = 100 * (1 - eb / e22)
-            occ_cut = 100 * (1 - ocb / oc22)
-            office_rows.append((b, occ_cut, e_sav))
-            nonlinear = e_sav < occ_cut + 1  # energy saving lags the occupancy cut
-            G.add("7", f"7.2-{b.replace('2030-', '')}", "PASS" if nonlinear else "WARN",
-                  f"Office {b}: occupancy −{occ_cut:.0f}% → energy −{e_sav:.0f}% "
-                  f"({'non-linear, base loads persist' if nonlinear else 'energy fell more than occupancy — check'})",
+            e_pct = 100 * (eb / e22 - 1)      # signed energy Δ vs 2022
+            occ_pct = 100 * (ocb / oc22 - 1)  # signed occupancy Δ vs 2022
+            office_rows.append((b, occ_pct, e_pct))
+            damped = abs(e_pct) <= abs(occ_pct) + 1
+            if not damped:
+                note = "energy response exceeds occupancy change — check"
+            elif occ_pct >= 0:
+                note = ("damped response, base loads dominate; band sits above the "
+                        "~30%-WFH 2022 baseline (return-to-office vs 2022)")
+            else:
+                note = "non-linear, base loads persist"
+            G.add("7", f"7.2-{b.replace('2030-', '')}", "PASS" if damped else "WARN",
+                  f"Office {b}: occupancy {occ_pct:+.1f}% vs 2022 → energy {e_pct:+.1f}% "
+                  f"({note})",
                   "Office")
 
     # 7.3 residential 2030 mid-day energy share ≥ 2022 (WFH raises daytime home load)
