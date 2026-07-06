@@ -146,6 +146,11 @@ near-identical medians (172.6–172.7) because at the annual EUI level the tower
 by envelope + HVAC (unchanged across archetypes); archetype differences show up in the *shape*, not
 the annual intensity.
 
+The HTML report's Figure 1 caption now also states each archetype's computed **% error vs its
+benchmark's central estimate**: Residential SingleD +36.6%, OtherDwelling −2.8%, MidRise +22.8%,
+HighRise +9.4%; Office +27.9% vs the NECB-PNNL central estimate of 135 — still well inside the
+100–200 as-modelled band.
+
 > **Office end-use split is n/a:** `agg_annual` carries `lights_kWh`/`equip_kWh` only for the
 > residential reader; the office reader captured aggregate `office_elec`, so the office
 > lighting-vs-equipment split is not available here. Residential split is shown; office is
@@ -167,6 +172,23 @@ spike, because annual mean-daily-peak-hour averages summer-AC afternoon peaks wi
 peaks. (Note: the coincidence-factor proxy here, 0.82, is cruder than §8E's diurnal coincidence
 metric, 0.56 — different definitions; both are < 1.)
 
+### §R2a — Per-archetype diurnal shape (new figures)
+
+Three new figures extend §R2's paired load-shape summary down to the archetype level:
+`figures/fig_diurnal_lights_archetype.png` (residential lighting end-use, 4 archetypes —
+SingleD/MidRise/OtherDwelling/HighRise — normalized to daily mean),
+`figures/fig_diurnal_equip_archetype.png` (same, equipment end-use), and
+`figures/fig_diurnal_office_archetype.png` (office, 3 archetypes — Office_Knowledge/Office_Public/
+Office_Sales — TOTAL electricity only).
+
+Two limitations apply to all three, and both are documented scope, not oversights: (1) **no
+baseline arm** — unlike 2J, 3J Leg-2's simulation campaign has no default-schedule-vs-activity-
+schedule comparison arm, so these figures show the simulated shape only, not a baseline-vs-activity
+delta; (2) **no office end-use split** — as noted in §R1, the §8D office aggregation reader captures
+only summed `office_elec` (no separate lights/equipment channels), so the office archetype figure is
+TOTAL electricity only — a data limitation of the aggregator, not a missed lights/equipment
+breakdown.
+
 ### §R3 — Scenario / WFH response (2030 bands)
 
 **Residential — clean signal ✅:**
@@ -178,8 +200,8 @@ metric, 0.56 — different definitions; both are < 1.)
 | 2030-hybrid | 0.266 | +0.014 | +1.79% |
 | 2030-fullyhybrid | 0.273 | +0.021 | +2.14% |
 
-Residential mid-day share and energy both rise monotonically with the WFH band — the expected
-"WFH keeps people home during the day → more daytime home load" signature. **PASS.**
+Residential mid-day share and energy both rise monotonically with the Work From Home (WFH) band —
+the expected "WFH keeps people home during the day → more daytime home load" signature. **PASS.**
 
 **Office — WFH-modulation live (post zone-routing fix), bands non-degenerate ✅ (gate G8o):**
 
@@ -220,6 +242,14 @@ cycles): the historical AT_WORK multipliers differ less across cycles than the 2
 and carry the documented reconstruction uncertainty (§8E §0.5 — gating variable changed between
 cycles). The office longitudinal story is supporting evidence, not a headline result.
 
+A new Figure 5 (`figures/fig_longitudinal_both.png`) renders this table as a 3-panel longitudinal
+chart — mid-day share, mean peak hour, and annual energy, both channels, across the four census
+cycles (2005/2010/2015/2022). Read alongside the table, both channels are essentially flat/stable
+across cycles: residential mid-day share ranges 0.235–0.253 and annual energy 433k–438k kWh; office
+mid-day share ranges 0.438–0.440 and annual energy 18.38M–18.44M kWh. Neither channel shows a strong
+historical trend at this aggregate metric — the residential mid-day-share dip/rebound noted above is
+real but modest against an otherwise flat multi-decade background.
+
 ---
 
 ## 5. EQUAL-TREATMENT LEDGER (the parity check)
@@ -259,8 +289,12 @@ Produced by `3rdJ_09_activityDrivenLoads_2split.py` (reads the §8D agg tables �
 | `step9_longitudinal.csv` | both channels × cycle: mid-day share, peak hour |
 | `figures/fig_eui_both.png` | paired EUI-vs-benchmark bars (resid arch panel + office panel) |
 | `figures/fig_diurnal_both.png` | paired diurnal curves (resid evening vs office work-day) |
+| `figures/fig_diurnal_lights_archetype.png` | residential lighting end-use diurnal shape, 4 archetypes (SingleD/MidRise/OtherDwelling/HighRise), normalized to daily mean — simulated-shape-only |
+| `figures/fig_diurnal_equip_archetype.png` | residential equipment end-use diurnal shape, same 4 archetypes, normalized to daily mean — simulated-shape-only |
+| `figures/fig_diurnal_office_archetype.png` | office diurnal shape, 3 archetypes (Office_Knowledge/Office_Public/Office_Sales), TOTAL electricity only (no lights/equip split for office) — simulated-shape-only |
 | `figures/fig_peakhour_both.png` | paired peak-hour distributions |
 | `figures/fig_scenario_both.png` | paired 2030-band response |
+| `figures/fig_longitudinal_both.png` | 3-panel longitudinal chart (mid-day share / mean peak hour / annual energy), both channels, across census cycles 2005/2010/2015/2022 |
 | `step9_report.html` | stitched tables + figures with the equal-treatment framing |
 
 ---
@@ -305,6 +339,18 @@ bi-channel acceptance table.
 6. **Load-shape metric definitions** — Step-9 numbers (mean-of-per-run-daily-peak-hour 14.8 h resid /
    13.6 h office; CF proxy 0.82) differ from §8E's diurnal-profile-based numbers (16.1 h; CF 0.56).
    Not a contradiction — different estimators. Pick one convention for the paper and state it.
+7. **Residential lights/equipment diurnal shape was never captured (fix in progress)** — the two
+   new §R2a figures (`fig_diurnal_lights_archetype.png` / `fig_diurnal_equip_archetype.png`) first
+   rendered with all 4 residential archetypes showing "no data", for every archetype uniformly (not
+   a tall/super-tall-specific gap). Root cause: `3rdJ_08_simulation_2split_agg.py::summarize_resid_run`
+   computed the hourly grid for `InteriorLights:Electricity`/`InteriorEquipment:Electricity` and
+   summed it into the annual totals (`lights_kWh`/`equip_kWh`, feeding §R1's lights/equip shares),
+   but only ever persisted the hourly *shape* (`_diurnal_rows`) for `Electricity:Facility` —
+   `agg_diurnal.csv` never had lights/equipment rows for residential. Fixed by adding the same
+   `_diurnal_rows` call for both end-use meters; a full §8D re-aggregation (`run_aggregation.sh`,
+   `--rebuild`, all 8,400 residential + 252 office runs) was submitted 2026-07-05 to backfill
+   `agg_diurnal.csv`, followed by a Step-9 re-run to regenerate `step9_report.html` against the
+   refreshed table. See Progress Log entry below for job IDs and status.
 
 ---
 
@@ -380,3 +426,55 @@ artifacts archived to `../investigation/stale_pre_fix_snapshot/`; acceptance rev
 paper-ready) at `../investigation/2split_results_acceptance_review.md`. Ledger rows for
 scenario/longitudinal flipped to ✅ equal; remaining parity gap = office end-use split (caveat 5).
 Pipeline docs reframed (status tags PLANNED → DONE) in the same session.
+
+### 2026-07-05 — Employee (Sonnet) — companion doc synced to new HTML report figures/captions
+
+A parallel employee is updating the generator script (`3rdJ_09_activityDrivenLoads_2split.py`) to
+add new figures and rewrite HTML report captions; this doc was updated in lockstep so the two stay
+consistent, with **no changes made to the .py file**. Specifically: (1) §6 Outputs table gained 4
+new rows — `figures/fig_longitudinal_both.png`, `figures/fig_diurnal_lights_archetype.png`,
+`figures/fig_diurnal_equip_archetype.png`, `figures/fig_diurnal_office_archetype.png` — each with a
+one-line description. (2) §R1 prose gained a sentence stating the HTML Figure 1 caption now reports
+each archetype's % error vs its benchmark's central estimate (resid SingleD +36.6%, OtherDwelling
+−2.8%, MidRise +22.8%, HighRise +9.4%; office +27.9% vs the NECB-PNNL central of 135, still inside
+the 100–200 as-modelled band). (3) §R3 spelled out "Work From Home (WFH)" on its first body-text
+mention. (4) A new **§R2a** subsection was added describing the 3 new per-archetype diurnal figures
+and flagging their two documented limitations: no default-schedule-vs-activity-schedule baseline arm
+(unlike 2J), so shapes are simulated-only; and no office lights/equipment split (aggregator data
+limitation, not an oversight — same n/a already noted in §R1). (5) §R4 gained a closing paragraph on
+the new Figure 5 (`figures/fig_longitudinal_both.png`, 3-panel: mid-day share / mean peak hour /
+annual energy, both channels, 2005–2022), noting both channels read as flat/stable across cycles
+(resid midday share 0.235–0.253, energy 433k–438k kWh; office midday share 0.438–0.440, energy
+18.38M–18.44M kWh) — no strong historical trend. Not touched: Figure 2's "simulated-only, no
+measured hourly dataset" caveat and Figure 3's density-normalization framing were left as-is because
+the existing §R2 text (lines above) already states both points in equivalent language; the report
+layout change (each §R1–R4 table now followed by its own figure, replacing the old bunched-at-end
+figure block) is a presentation change with no prose claim to update. This doc was not re-run against
+new outputs — it is a documentation-consistency sync only; once the .py regenerates
+`outputs_step9/*` the numeric values embedded above should be spot-checked against the actual new
+figure files/captions.
+
+### 2026-07-05 (cont.) — Manager — residential lights/equip diurnal gap found + fix + re-agg cluster run started
+
+User reviewed the new §R2a figures and asked why the lighting/equipment archetype panels were empty,
+and whether it was tall/super-tall-building-specific. Checked the actual PNGs: all 4 residential
+archetypes (SingleD, OtherDwelling, MidRise, HighRise) were empty for both meters, uniformly — not
+a building-height issue. Root cause confirmed in
+`Step8_docs/3rdJ_08_simulation_2split_agg.py::summarize_resid_run` (~L362–369): the hourly grid for
+`InteriorLights:Electricity`/`InteriorEquipment:Electricity` was computed and summed into the annual
+totals, but `_diurnal_rows()` — the function that writes hourly-shape rows into `agg_diurnal.csv` —
+was only ever called for `Electricity:Facility`. This was a deliberate original scoping decision
+("kept lean; only what the val gates consume") from before this Step-9 refresh asked for an end-use
+diurnal split, not an oversight or a building-type limitation. See caveat 7 above.
+
+Fix: added a `for meter in (M_LIGHTS, M_EQUIP): ... _diurnal_rows(...)` loop right after the existing
+facility call in `summarize_resid_run`. `py -m py_compile` clean locally. Archived the remote
+predecessor script (`Step8_docs/archive/3rdJ_08_simulation_2split_agg.20260705_pre_lights_equip_diurnal.py`),
+`scp`'d the fix, md5-verified match. Submitted the existing `run_aggregation.sh` via `sbatch`
+(7-day walltime) — **job 1067688** — which re-scans all 8,400 residential + 252 office runs
+(`--rebuild`) to rebuild all four §8D agg tables, and also refreshes the Step-8 validation report
+as its Pass 2. Once COMPLETED, will re-run `run_step9.sh` to regenerate `step9_report.html` against
+the refreshed `agg_diurnal.csv`, confirm the two archetype panels populate with real curves, and
+confirm both scorecards (Step-8 and Step-9) are unchanged (no new FAIL — no existing gate reads
+these new rows). Job is running; tracked in
+`outputs_step9/step9_report_improvements_TASKS.md` (Task 12).

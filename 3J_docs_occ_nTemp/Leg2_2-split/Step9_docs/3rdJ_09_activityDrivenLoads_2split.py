@@ -100,7 +100,8 @@ def load_diurnal_filtered() -> pd.DataFrame:
     p = AGG_DIR / "agg_diurnal.csv"
     if not p.exists():
         _log(f"MISSING {p}"); return pd.DataFrame()
-    keep_meters = {"Electricity:Facility", "office_elec"}
+    keep_meters = {"Electricity:Facility", "office_elec",
+                   "InteriorLights:Electricity", "InteriorEquipment:Electricity"}
     parts = []
     for chunk in pd.read_csv(p, chunksize=250_000, low_memory=False):
         m = (chunk["meter"].isin(keep_meters) &
@@ -293,15 +294,18 @@ def fig_diurnal(diur: pd.DataFrame):
 
 
 def fig_peakhour(peak: pd.DataFrame):
+    """Density-normalized so residential's far larger (paired-MC) run count doesn't visually
+    dwarf office's (deterministic) bars for a reason unrelated to the physical peak-hour signal."""
     fig, ax = plt.subplots(figsize=(8, 4))
     for channel, colr, lbl in (("resid", THEME["resid"], "Residential"),
                                ("office", THEME["office"], "Office")):
         v = _num(peak.loc[peak["channel"] == channel, "mean_peak_hour"]).dropna()
         if v.empty:
             continue
-        ax.hist(v, bins=range(0, 25), color=colr, alpha=0.55, label=f"{lbl} (mean {v.mean():.1f}h)")
-    ax.set_xlabel("mean daily-peak hour"); ax.set_ylabel("runs")
-    ax.set_title("Step 9 · Peak-hour timing — both channels", fontsize=11)
+        ax.hist(v, bins=range(0, 25), color=colr, alpha=0.55, density=True,
+                label=f"{lbl} (mean {v.mean():.1f}h, n={len(v)})")
+    ax.set_xlabel("mean daily-peak hour"); ax.set_ylabel("share of runs")
+    ax.set_title("Step 9 · Peak-hour timing — both channels (density-normalized)", fontsize=11)
     ax.set_xticks(range(0, 25, 2)); ax.grid(axis="y", color=THEME["grid"]); ax.legend()
     fig.tight_layout(); fig.savefig(FIG_DIR / "fig_peakhour_both.png", dpi=130); plt.close(fig)
 
@@ -326,6 +330,91 @@ def fig_scenario(scen: pd.DataFrame):
     fig.suptitle("Step 9 · 2030 WFH-band response — both channels", fontsize=11)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(FIG_DIR / "fig_scenario_both.png", dpi=130); plt.close(fig)
+
+
+def fig_longitudinal(lon: pd.DataFrame):
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2))
+    x = range(len(CYCLES))
+
+    def _series(channel, col):
+        s = lon[lon["channel"] == channel].set_index("cycle").reindex(CYCLES)
+        return s[col] if col in s else pd.Series([np.nan] * len(CYCLES), index=CYCLES)
+
+    ax = axes[0]
+    for channel, colr, lbl in (("resid", THEME["resid"], "Residential"), ("office", THEME["office"], "Office")):
+        ax.plot(x, _series(channel, "midday_share"), color=colr, marker="o", lw=2, label=lbl)
+    ax.set_ylabel("mid-day share"); ax.set_title("Mid-day occupancy share", fontsize=10)
+
+    ax = axes[1]
+    for channel, colr, lbl in (("resid", THEME["resid"], "Residential"), ("office", THEME["office"], "Office")):
+        ax.plot(x, _series(channel, "mean_peak_hour"), color=colr, marker="o", lw=2, label=lbl)
+    ax.set_ylabel("mean peak hour"); ax.set_title("Mean daily-peak hour", fontsize=10)
+
+    ax = axes[2]
+    ax2 = ax.twinx()
+    r = _series("resid", "energy_kWh"); o = _series("office", "energy_kWh")
+    l1, = ax.plot(x, r, color=THEME["resid"], marker="o", lw=2, label="Residential (left axis)")
+    l2, = ax2.plot(x, o, color=THEME["office"], marker="o", lw=2, label="Office (right axis)")
+    ax.set_ylabel("resid energy (kWh)", color=THEME["resid"])
+    ax2.set_ylabel("office energy (kWh)", color=THEME["office"])
+    ax.set_title("Annual energy (dual axes — scales differ ~40x)", fontsize=10)
+    ax.legend(handles=[l1, l2], fontsize=7, loc="upper left")
+
+    for a in axes:
+        a.set_xticks(x); a.set_xticklabels(CYCLES, rotation=20, ha="right", fontsize=8)
+        a.grid(color=THEME["grid"])
+    axes[0].legend(fontsize=8); axes[1].legend(fontsize=8)
+
+    fig.suptitle("Step 9 · Longitudinal (2005–2022) — both channels", fontsize=11)
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
+    fig.savefig(FIG_DIR / "fig_longitudinal_both.png", dpi=130); plt.close(fig)
+
+
+def fig_archetype_diurnal_resid(diur: pd.DataFrame, meter: str, title: str, fname: str):
+    """Per-residential-archetype diurnal shape for one end-use meter, normalized to daily mean.
+    Simulated shape only — 3J Leg-2 has no default-schedule baseline arm to compare against
+    (unlike 2J's Baseline-vs-Activity S6/S8 plots)."""
+    archs = list(SHEU_EUI_BANDS.keys())
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+    for i, arch in enumerate(archs):
+        ax = axes[i // 2][i % 2]
+        d = diur[(diur["channel"] == "resid") & (diur["meter"] == meter) & (diur["arch"] == arch)]
+        if d.empty:
+            ax.set_title(f"{arch} — no data"); continue
+        wd = d[d["daytype"] == "weekday"].groupby("hour")["value"].mean()
+        we = d[d["daytype"] == "weekend"].groupby("hour")["value"].mean()
+        wd_m = wd.mean() or 1.0; we_m = we.mean() or 1.0
+        ax.plot(wd.index, wd.values / wd_m, color=THEME["resid"], lw=2, label="weekday")
+        ax.plot(we.index, we.values / we_m, color=THEME["resid"], lw=1.4, ls="--", alpha=0.7, label="weekend")
+        ax.axhline(1.0, color="black", lw=0.5, alpha=0.25)
+        ax.set_xlabel("hour"); ax.set_ylabel("load (× daily mean)"); ax.set_title(arch, fontsize=10)
+        ax.set_xticks(range(0, 24, 3)); ax.grid(color=THEME["grid"]); ax.legend(fontsize=8)
+    fig.suptitle(f"Step 9 · {title} — residential, by archetype (simulated, normalized to daily mean)",
+                 fontsize=11)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.savefig(FIG_DIR / fname, dpi=130); plt.close(fig)
+
+
+def fig_archetype_diurnal_office(diur: pd.DataFrame):
+    """Per-office-archetype total-electricity diurnal shape. Office has no separate
+    lights/equipment metering in this pipeline (both are summed into one office_elec value
+    by the aggregation regex), so unlike the residential panels, this cannot be split by end-use."""
+    archs = ["Office_Knowledge", "Office_Public", "Office_Sales"]
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.2))
+    for ax, arch in zip(axes, archs):
+        d = diur[(diur["channel"] == "office") & (diur["meter"] == "office_elec") & (diur["arch"] == arch)]
+        if d.empty:
+            ax.set_title(f"{arch} — no data"); continue
+        wd = d[d["daytype"] == "weekday"].groupby("hour")["value"].mean()
+        we = d[d["daytype"] == "weekend"].groupby("hour")["value"].mean()
+        ax.plot(wd.index, wd.values, color=THEME["office"], lw=2, label="weekday")
+        ax.plot(we.index, we.values, color=THEME["office"], lw=1.4, ls="--", alpha=0.7, label="weekend")
+        ax.set_xlabel("hour"); ax.set_ylabel("mean kW"); ax.set_title(arch, fontsize=10)
+        ax.set_xticks(range(0, 24, 3)); ax.grid(color=THEME["grid"]); ax.legend(fontsize=8)
+    fig.suptitle("Step 9 · Diurnal load shape — office, by archetype (total electricity; "
+                 "no lights/equipment split available for office)", fontsize=11)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.savefig(FIG_DIR / "fig_diurnal_office_archetype.png", dpi=130); plt.close(fig)
 
 
 # ------------------------------------------------------------ gate scorecard --
@@ -481,6 +570,54 @@ _PILL = {"PASS": ("#d4edda", "#155724"), "WARN": ("#fff3cd", "#856404"),
          "INFO": ("#cce5ff", "#004085"), "FAIL": ("#f8d7da", "#721c24")}
 
 
+def _fig_block(title: str, cap: str, fname: str) -> str:
+    src = _embed(fname)
+    if not src:
+        return ""
+    return (f'<h2>{title}</h2><p style="font-size:13px;color:#555"><em>{cap}</em></p>'
+            f'<img src="{src}" alt="{title}" '
+            f'style="max-width:100%;margin:8px 0;border:1px solid #dee2e6">')
+
+
+def _eui_error_caption(eui: pd.DataFrame) -> str:
+    parts = []
+    r = eui[eui["channel"] == "resid"]
+    for _, row in r.iterrows():
+        err = 100 * (row["median_eui"] - row["band_central"]) / row["band_central"]
+        parts.append(f'{row["group"]} {err:+.1f}%')
+    o = eui[(eui["channel"] == "office") & (eui["group"] == "all")]
+    if not o.empty:
+        row = o.iloc[0]
+        err = 100 * (row["median_eui"] - row["band_central"]) / row["band_central"]
+        parts.append(f'office {err:+.1f}%')
+    return ("Prediction vs. benchmark central-estimate error: " + "; ".join(parts) +
+            " (residential vs. NRCan SHEU-2019 archetype central; office vs. the "
+            "NECB2020/90.1-2019 DOE-PNNL as-modelled central of 135 kWh/m² — SingleD's "
+            "large positive error is the documented basis mismatch: our EUI denominator "
+            "is conditioned area including basement, SHEU's is heated area excluding "
+            "basement; office's error is still well inside the 100–200 as-modelled band).")
+
+
+def _wfh_caption(scen: pd.DataFrame) -> str:
+    order = ["2022", "2030-conservative", "2030-hybrid", "2030-fullyhybrid"]
+    r = scen[scen["channel"] == "resid"].set_index("scenario").reindex(order)
+    o = scen[scen["channel"] == "office"].set_index("scenario").reindex(order)
+    r_mid = " → ".join(f'{v:.3f}' for v in r["midday_share"])
+    r_en = " / ".join(f'{v:+.2f}%' for v in r.loc[order[1:], "energy_pct_vs_2022"])
+    o_en = " / ".join(f'{v:+.2f}%' for v in o.loc[order[1:], "energy_pct_vs_2022"])
+    o_occ = " / ".join(f'{v:+.2f}%' for v in o.loc[order[1:], "occ_pct_vs_2022"])
+    return (
+        "Work From Home (WFH) — three 2030 adoption depths (conservative/hybrid/fully-hybrid) "
+        "are compared against the 2022 baseline. Residential mid-day occupancy share rises "
+        f"monotonically with WFH depth (2022→cons→hyb→full: {r_mid}), with energy "
+        f"{r_en} vs. 2022. Office's response is damped and non-monotonic in annual energy "
+        f"({o_en} vs. 2022) because 2022 already embeds today's real-world WFH share and the "
+        "tower's HVAC/plug baseload dominates annual kWh; the real office WFH signal instead "
+        f"shows up in occupancy ({o_occ} vs. 2022) and in load shape/peak timing (gate G8o), "
+        "not in annual energy."
+    )
+
+
 def write_html(eui, ls, scen, lon, gates):
     def tbl(df):
         return df.to_html(index=False, border=0, classes="t", float_format=lambda x: f"{x:g}")
@@ -509,29 +646,60 @@ def write_html(eui, ls, scen, lon, gates):
                  f'<th>Computed value</th><th>Expected (per Step-9 doc §7)</th></tr></thead>'
                  f'<tbody>{rows}</tbody></table>')
 
-    figs = ""
-    for title, cap, fname in [
-        ("Figure 1 — End-use intensity vs benchmark (both channels)",
-         "Residential per-archetype median EUI vs NRCan SHEU-2019 bands (left); office median EUI vs "
-         "NECB2020/90.1-2019 DOE-PNNL as-modelled band (right). Each channel on its own physically-correct "
-         "benchmark, evaluated to equal rigor.", "fig_eui_both.png"),
-        ("Figure 2 — Diurnal load shape (both channels)",
-         "Residential weekday/weekend electricity profile (evening peak, midday away-dip) vs office profile "
-         "(work-day occupancy hump, midday ≫ night). The office hump is the direct visual witness that the "
-         "WFH People-schedule is now wired.", "fig_diurnal_both.png"),
-        ("Figure 3 — Peak-hour timing (both channels)",
-         "Distribution of per-run mean daily-peak hour: residential clusters in the evening, office in the "
-         "work day. Channel-appropriate windows (§7 G4r/G4o).", "fig_peakhour_both.png"),
-        ("Figure 4 — 2030 WFH-band response (both channels)",
-         "Residential mid-day occupancy share rising with WFH depth (left) and office response across the "
-         "three 2030 bands (right). Pre-fix the office bands were byte-identical; a visible spread here is "
-         "gate G8o.", "fig_scenario_both.png"),
-    ]:
-        src = _embed(fname)
-        if src:
-            figs += (f'<h2>{title}</h2><p style="font-size:13px;color:#555"><em>{cap}</em></p>'
-                     f'<img src="{src}" alt="{title}" '
-                     f'style="max-width:100%;margin:8px 0;border:1px solid #dee2e6">')
+    r1_fig = _fig_block(
+        "Figure 1 — End-use intensity vs benchmark (both channels)",
+        "Residential per-archetype median EUI vs NRCan SHEU-2019 bands (left); office median EUI vs "
+        "NECB2020/90.1-2019 DOE-PNNL as-modelled band (right). Each channel on its own physically-correct "
+        "benchmark, evaluated to equal rigor. " + _eui_error_caption(eui),
+        "fig_eui_both.png")
+
+    r2_figs = "".join([
+        _fig_block(
+            "Figure 2 — Diurnal load shape (both channels)",
+            "Residential weekday/weekend electricity profile (evening peak, midday away-dip) vs office profile "
+            "(work-day occupancy hump, midday ≫ night). Both curves are simulated/predicted — this pipeline has "
+            "no measured hourly electricity dataset (2J or 3J) to overlay as an independent real-world curve; "
+            "real-data validation happens at the annual level instead (Figure 1, SHEU/NECB EUI bands). The "
+            "office hump is the direct visual witness that the WFH People-schedule is now wired.",
+            "fig_diurnal_both.png"),
+        _fig_block(
+            "Figure 3 — Peak-hour timing (both channels)",
+            "Distribution (density-normalized, so the two channels' different run counts don't distort the "
+            "comparison) of per-run mean daily-peak hour: residential clusters in the evening (~14.8h, "
+            "evening return-home), office in the work day (~12.9h, midday occupancy hump) — a real timing "
+            "difference, not a magnitude one (no kW is plotted here). Channel-appropriate windows (§7 G4r/G4o).",
+            "fig_peakhour_both.png"),
+        _fig_block(
+            "Figure 3b — Diurnal load shape by residential archetype (lighting)",
+            "Simulated lighting diurnal shape per residential archetype, normalized to each archetype's daily "
+            "mean (no baseline-vs-activity-schedule comparison — 3J Leg-2's simulation campaign has no "
+            "default-schedule baseline arm, unlike 2J).",
+            "fig_diurnal_lights_archetype.png"),
+        _fig_block(
+            "Figure 3c — Diurnal load shape by residential archetype (equipment)",
+            "Simulated equipment diurnal shape per residential archetype, normalized to each archetype's daily "
+            "mean.",
+            "fig_diurnal_equip_archetype.png"),
+        _fig_block(
+            "Figure 3d — Diurnal load shape by office archetype",
+            "Simulated total-electricity diurnal shape per office archetype (Knowledge/Public/Sales). Office "
+            "has no separate lights/equipment metering in this pipeline — both are summed into one "
+            "office_elec value — so, unlike the residential panels above, this shows total electricity only.",
+            "fig_diurnal_office_archetype.png"),
+    ])
+
+    r3_fig = _fig_block(
+        "Figure 4 — 2030 Work From Home (WFH)-band response (both channels)",
+        _wfh_caption(scen) + " Pre-fix the office bands were byte-identical; a visible spread here is gate G8o.",
+        "fig_scenario_both.png")
+
+    r4_fig = _fig_block(
+        "Figure 5 — Longitudinal (2005–2022, both channels)",
+        "Mid-day share, mean peak hour, and annual energy across the four historical census cycles (note: the "
+        "energy panel uses two y-axes — residential and office differ in scale by roughly 40×). Both channels "
+        "are essentially flat/stable across cycles — no strong historical trend — consistent with these being "
+        "pre-2030-scenario years.",
+        "fig_longitudinal_both.png")
 
     stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M")
     html = f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
@@ -559,10 +727,13 @@ table.t th{{background:#f6f6f6;color:#222}}
 <h2>Scorecard — bi-channel acceptance gates</h2>
 {scorecard}
 <h2>§R1 · End-use intensity vs benchmark</h2>{tbl(eui)}
+{r1_fig}
 <h2>§R2 · Load shape &amp; peak timing</h2>{tbl(ls)}
+{r2_figs}
 <h2>§R3 · Scenario / WFH response (vs 2022 baseline)</h2>{tbl(scen)}
+{r3_fig}
 <h2>§R4 · Longitudinal (2005–2022)</h2>{tbl(lon)}
-{figs}
+{r4_fig}
 </body></html>
 """
     (OUT_DIR / "step9_report.html").write_text(html, encoding="utf-8")
@@ -589,7 +760,13 @@ def main():
 
     try:
         fig_eui(eui); fig_diurnal(diur); fig_peakhour(peak); fig_scenario(scen)
-        _log("figures: 4 written")
+        fig_longitudinal(lon)
+        fig_archetype_diurnal_resid(diur, "InteriorLights:Electricity",
+                                     "Lighting diurnal load shape", "fig_diurnal_lights_archetype.png")
+        fig_archetype_diurnal_resid(diur, "InteriorEquipment:Electricity",
+                                     "Equipment diurnal load shape", "fig_diurnal_equip_archetype.png")
+        fig_archetype_diurnal_office(diur)
+        _log("figures: 8 written")
     except Exception as e:  # noqa
         _log(f"WARN figure build: {e}")
 

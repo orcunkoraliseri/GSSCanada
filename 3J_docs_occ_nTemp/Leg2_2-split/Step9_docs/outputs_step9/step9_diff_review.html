@@ -1,0 +1,700 @@
+<title>Step 9 Report — Diff Review</title>
+<style>
+:root{
+  --bg:#f1f4f7; --surface:#ffffff; --surface-alt:#eef2f6; --border:#d8e0e7;
+  --text:#16202a; --text-dim:#56677a; --accent:#1f6fa8; --accent-soft:#e8f1f8;
+  --add-bg:#e6f6ea; --add-text:#187a3a; --add-border:#a9dab8;
+  --del-bg:#fbeceb; --del-text:#b3271e; --del-border:#f0c4c0;
+  --hunk-text:#3d6b8a; --shadow:0 1px 2px rgba(20,30,40,0.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10151b; --surface:#161d24; --surface-alt:#1b232b; --border:#29333c;
+    --text:#e6edf3; --text-dim:#8b9aa8; --accent:#6db3e0; --accent-soft:rgba(109,179,224,0.12);
+    --add-bg:rgba(46,160,67,0.16); --add-text:#5fd489; --add-border:rgba(46,160,67,0.4);
+    --del-bg:rgba(248,81,73,0.16); --del-text:#ff8f87; --del-border:rgba(248,81,73,0.4);
+    --hunk-text:#8ec4e6; --shadow:0 1px 2px rgba(0,0,0,0.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10151b; --surface:#161d24; --surface-alt:#1b232b; --border:#29333c;
+  --text:#e6edf3; --text-dim:#8b9aa8; --accent:#6db3e0; --accent-soft:rgba(109,179,224,0.12);
+  --add-bg:rgba(46,160,67,0.16); --add-text:#5fd489; --add-border:rgba(46,160,67,0.4);
+  --del-bg:rgba(248,81,73,0.16); --del-text:#ff8f87; --del-border:rgba(248,81,73,0.4);
+  --hunk-text:#8ec4e6; --shadow:0 1px 2px rgba(0,0,0,0.4);
+}
+:root[data-theme="light"]{
+  --bg:#f1f4f7; --surface:#ffffff; --surface-alt:#eef2f6; --border:#d8e0e7;
+  --text:#16202a; --text-dim:#56677a; --accent:#1f6fa8; --accent-soft:#e8f1f8;
+  --add-bg:#e6f6ea; --add-text:#187a3a; --add-border:#a9dab8;
+  --del-bg:#fbeceb; --del-text:#b3271e; --del-border:#f0c4c0;
+  --hunk-text:#3d6b8a; --shadow:0 1px 2px rgba(20,30,40,0.06);
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  font-size:14.5px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"Cascadia Code","Cascadia Mono",ui-monospace,"Consolas","SFMono-Regular",Menlo,monospace;}
+a{color:var(--accent);}
+
+.topbar{
+  position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--border);
+  padding:14px 24px; display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  box-shadow:var(--shadow);
+}
+.topbar h1{margin:0; font-size:19px; font-weight:650; text-wrap:balance;}
+.topbar .subtitle{margin:2px 0 0; font-size:12.5px; color:var(--text-dim);}
+.stat-row{display:flex; gap:8px; align-items:center;}
+.chip{
+  display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:100px;
+  font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; border:1px solid var(--border);
+  background:var(--surface-alt); color:var(--text-dim); white-space:nowrap;
+}
+.chip.add{background:var(--add-bg); color:var(--add-text); border-color:var(--add-border);}
+.chip.del{background:var(--del-bg); color:var(--del-text); border-color:var(--del-border);}
+
+.wrap{max-width:1080px; margin:0 auto; padding:20px 24px 64px;}
+
+.intro{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:14px 18px; margin-bottom:20px; font-size:13.5px; color:var(--text-dim);
+}
+.intro strong{color:var(--text);}
+.nav-pills{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+.nav-pill{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 12px; border-radius:8px;
+  background:var(--accent-soft); border:1px solid var(--border); color:var(--text);
+  text-decoration:none; font-size:12.5px;
+}
+.nav-pill .tag{font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:10.5px; font-weight:700; letter-spacing:0.03em; color:var(--accent);}
+
+.file-panel{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  margin-bottom:24px; overflow:hidden;
+}
+.file-head{
+  padding:14px 18px; border-bottom:1px solid var(--border); background:var(--surface-alt);
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px;
+}
+.file-badge{
+  font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace;
+  font-size:11px; font-weight:700; letter-spacing:0.04em; color:#fff; background:var(--accent);
+  padding:3px 8px; border-radius:6px;
+}
+.file-path{font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:12.5px; color:var(--text); word-break:break-all;}
+.file-actions{margin-left:auto; display:flex; gap:6px;}
+.btn-mini{
+  font-size:11.5px; border:1px solid var(--border); background:var(--surface); color:var(--text-dim);
+  border-radius:6px; padding:4px 9px; cursor:pointer;
+}
+.btn-mini:hover{color:var(--text); border-color:var(--accent);}
+.btn-mini:focus-visible, a:focus-visible, summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+.synopsis{padding:12px 18px 16px; font-size:13.3px; color:var(--text-dim); max-width:74ch; border-bottom:1px solid var(--border);}
+.synopsis code{font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:12px; background:var(--surface-alt); padding:1px 5px; border-radius:4px; color:var(--text);}
+
+details.hunk{border-bottom:1px solid var(--border);}
+details.hunk:last-of-type{border-bottom:none;}
+details.hunk > summary{
+  list-style:none; cursor:pointer; padding:7px 18px; background:var(--surface-alt);
+  color:var(--hunk-text); font-size:12px; display:flex; gap:10px; align-items:center;
+  font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace;
+}
+details.hunk > summary::-webkit-details-marker{display:none;}
+details.hunk > summary::before{content:"▾"; font-size:10px; transition:transform .12s ease;}
+details.hunk:not([open]) > summary::before{transform:rotate(-90deg);}
+.hunk-range{font-weight:700; white-space:nowrap;}
+.hunk-ctx{color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.hunk-body{overflow-x:auto;}
+.dline{
+  display:grid; grid-template-columns:3.4em 3.4em 1.3em 1fr; column-gap:0; align-items:start;
+  border-left:3px solid transparent; min-width:max-content;
+}
+.dline .ln{
+  font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:12px;
+  font-variant-numeric:tabular-nums; text-align:right; padding:1px 8px; color:var(--text-dim); user-select:none;
+}
+.dline .marker{
+  font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:12.5px;
+  text-align:center; padding:1px 0; user-select:none;
+}
+.dline .content{
+  font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:12.5px;
+  white-space:pre; padding:1px 10px 1px 0;
+}
+.dline.add{background:var(--add-bg); border-left-color:var(--add-border);}
+.dline.add .marker, .dline.add .ln{color:var(--add-text);}
+.dline.del{background:var(--del-bg); border-left-color:var(--del-border);}
+.dline.del .marker, .dline.del .ln{color:var(--del-text);}
+
+.footnote{font-size:12.5px; color:var(--text-dim); padding:2px 4px;}
+.footnote code{font-family:"Cascadia Code","Cascadia Mono",ui-monospace,Consolas,monospace; font-size:11.5px;}
+
+@media (prefers-reduced-motion:reduce){
+  details.hunk > summary::before{transition:none;}
+}
+</style>
+<div class="topbar">
+  <div>
+    <h1>Step 9 Report — Diff Review</h1>
+    <p class="subtitle">3J Leg-2 · working-tree changes, not yet committed · <span class="mono">3rdJ_09_activityDrivenLoads_2split.{py,md}</span></p>
+  </div>
+  <div class="stat-row">
+    <span class="chip">2 files changed</span>
+    <span class="chip add">+269</span>
+    <span class="chip del">&minus;31</span>
+  </div>
+</div>
+<div class="wrap">
+  <div class="intro">
+    Two files changed implementing the clarity/parity fixes for <code class="mono">step9_report.html</code>
+    (Tasks 1&ndash;8 and 10 in <code class="mono">step9_report_improvements_TASKS.md</code> &mdash; all spot-checked
+    against these diffs before this page was built). <strong>Nothing has been run on the cluster yet</strong> &mdash;
+    that's the next step, pending your go-ahead.
+    <div class="nav-pills">
+      <a class="nav-pill" href="#file-py"><span class="tag">PY</span> 3rdJ_09_activityDrivenLoads_2split.py <span class="chip add" style="padding:1px 7px;">+206</span><span class="chip del" style="padding:1px 7px;">&minus;29</span></a>
+      <a class="nav-pill" href="#file-md"><span class="tag">MD</span> 3rdJ_09_activityDrivenLoads_2split.md <span class="chip add" style="padding:1px 7px;">+63</span><span class="chip del" style="padding:1px 7px;">&minus;2</span></a>
+    </div>
+  </div>
+
+  <section class="file-panel" id="file-py">
+    <div class="file-head">
+      <span class="file-badge">PY</span>
+      <span class="file-path">3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py</span>
+      <span class="chip add">+206</span>
+      <span class="chip del">&minus;29</span>
+      <div class="file-actions">
+        <button class="btn-mini" data-action="collapse" data-target="diff-py">Collapse all</button>
+        <button class="btn-mini" data-action="expand" data-target="diff-py">Expand all</button>
+      </div>
+    </div>
+    <p class="synopsis">
+      Adds three new figure builders (<code>fig_longitudinal</code>, <code>fig_archetype_diurnal_resid</code>
+      &times;2 for lights/equipment, <code>fig_archetype_diurnal_office</code>), three new HTML-caption helpers
+      (<code>_fig_block</code>, <code>_eui_error_caption</code>, <code>_wfh_caption</code>), rewires
+      <code>main()</code> to call all seven figure functions, and restructures <code>write_html()</code> so
+      each &sect;Rx table is immediately followed by its own figure block instead of one block bunched at the
+      end. Also included &mdash; two earlier manager edits: the density-normalized peak-hour histogram in
+      <code>fig_peakhour</code>, and the extended diurnal meter allow-list in <code>keep_meters</code>.
+    </p>
+    <div id="diff-py"></div>
+  </section>
+
+  <section class="file-panel" id="file-md">
+    <div class="file-head">
+      <span class="file-badge">MD</span>
+      <span class="file-path">3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md</span>
+      <span class="chip add">+63</span>
+      <span class="chip del">&minus;2</span>
+      <div class="file-actions">
+        <button class="btn-mini" data-action="collapse" data-target="diff-md">Collapse all</button>
+        <button class="btn-mini" data-action="expand" data-target="diff-md">Expand all</button>
+      </div>
+    </div>
+    <p class="synopsis">
+      Syncs the companion doc to the new HTML report: a % error sentence under &sect;R1, a new &sect;R2a
+      subsection describing the three archetype-diurnal figures (with the no-baseline-arm / no-office-split
+      caveats spelled out), &ldquo;Work From Home (WFH)&rdquo; spelled out on first use in &sect;R3, a closing
+      &sect;R4 paragraph for the new longitudinal figure, four new rows in the &sect;6 outputs table, and an
+      appended Progress Log entry. <strong>No changes were made to the .py file</strong> by this edit.
+    </p>
+    <div id="diff-md"></div>
+  </section>
+
+  <p class="footnote">
+    Generated from <code>git diff</code> against the last commit on <code>main</code> in
+    <code>GSSCanada-main</code>; both files are modified but unstaged &mdash; nothing has been committed.
+    Remaining: Task 9 (cluster round-trip to regenerate the real <code>step9_report.html</code>) and
+    Task 11 (final review against the original 5 questions).
+  </p>
+</div>
+<div class="raw-store" hidden><pre id="raw-py">
+diff --git a/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py b/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py
+index def7d7f..06f8241 100644
+--- a/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py
++++ b/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py
+@@ -100,7 +100,8 @@ def load_diurnal_filtered() -&gt; pd.DataFrame:
+     p = AGG_DIR / "agg_diurnal.csv"
+     if not p.exists():
+         _log(f"MISSING {p}"); return pd.DataFrame()
+-    keep_meters = {"Electricity:Facility", "office_elec"}
++    keep_meters = {"Electricity:Facility", "office_elec",
++                   "InteriorLights:Electricity", "InteriorEquipment:Electricity"}
+     parts = []
+     for chunk in pd.read_csv(p, chunksize=250_000, low_memory=False):
+         m = (chunk["meter"].isin(keep_meters) &amp;
+@@ -293,15 +294,18 @@ def fig_diurnal(diur: pd.DataFrame):
+ 
+ 
+ def fig_peakhour(peak: pd.DataFrame):
++    """Density-normalized so residential's far larger (paired-MC) run count doesn't visually
++    dwarf office's (deterministic) bars for a reason unrelated to the physical peak-hour signal."""
+     fig, ax = plt.subplots(figsize=(8, 4))
+     for channel, colr, lbl in (("resid", THEME["resid"], "Residential"),
+                                ("office", THEME["office"], "Office")):
+         v = _num(peak.loc[peak["channel"] == channel, "mean_peak_hour"]).dropna()
+         if v.empty:
+             continue
+-        ax.hist(v, bins=range(0, 25), color=colr, alpha=0.55, label=f"{lbl} (mean {v.mean():.1f}h)")
+-    ax.set_xlabel("mean daily-peak hour"); ax.set_ylabel("runs")
+-    ax.set_title("Step 9 · Peak-hour timing — both channels", fontsize=11)
++        ax.hist(v, bins=range(0, 25), color=colr, alpha=0.55, density=True,
++                label=f"{lbl} (mean {v.mean():.1f}h, n={len(v)})")
++    ax.set_xlabel("mean daily-peak hour"); ax.set_ylabel("share of runs")
++    ax.set_title("Step 9 · Peak-hour timing — both channels (density-normalized)", fontsize=11)
+     ax.set_xticks(range(0, 25, 2)); ax.grid(axis="y", color=THEME["grid"]); ax.legend()
+     fig.tight_layout(); fig.savefig(FIG_DIR / "fig_peakhour_both.png", dpi=130); plt.close(fig)
+ 
+@@ -328,6 +332,91 @@ def fig_scenario(scen: pd.DataFrame):
+     fig.savefig(FIG_DIR / "fig_scenario_both.png", dpi=130); plt.close(fig)
+ 
+ 
++def fig_longitudinal(lon: pd.DataFrame):
++    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.2))
++    x = range(len(CYCLES))
++
++    def _series(channel, col):
++        s = lon[lon["channel"] == channel].set_index("cycle").reindex(CYCLES)
++        return s[col] if col in s else pd.Series([np.nan] * len(CYCLES), index=CYCLES)
++
++    ax = axes[0]
++    for channel, colr, lbl in (("resid", THEME["resid"], "Residential"), ("office", THEME["office"], "Office")):
++        ax.plot(x, _series(channel, "midday_share"), color=colr, marker="o", lw=2, label=lbl)
++    ax.set_ylabel("mid-day share"); ax.set_title("Mid-day occupancy share", fontsize=10)
++
++    ax = axes[1]
++    for channel, colr, lbl in (("resid", THEME["resid"], "Residential"), ("office", THEME["office"], "Office")):
++        ax.plot(x, _series(channel, "mean_peak_hour"), color=colr, marker="o", lw=2, label=lbl)
++    ax.set_ylabel("mean peak hour"); ax.set_title("Mean daily-peak hour", fontsize=10)
++
++    ax = axes[2]
++    ax2 = ax.twinx()
++    r = _series("resid", "energy_kWh"); o = _series("office", "energy_kWh")
++    l1, = ax.plot(x, r, color=THEME["resid"], marker="o", lw=2, label="Residential (left axis)")
++    l2, = ax2.plot(x, o, color=THEME["office"], marker="o", lw=2, label="Office (right axis)")
++    ax.set_ylabel("resid energy (kWh)", color=THEME["resid"])
++    ax2.set_ylabel("office energy (kWh)", color=THEME["office"])
++    ax.set_title("Annual energy (dual axes — scales differ ~40x)", fontsize=10)
++    ax.legend(handles=[l1, l2], fontsize=7, loc="upper left")
++
++    for a in axes:
++        a.set_xticks(x); a.set_xticklabels(CYCLES, rotation=20, ha="right", fontsize=8)
++        a.grid(color=THEME["grid"])
++    axes[0].legend(fontsize=8); axes[1].legend(fontsize=8)
++
++    fig.suptitle("Step 9 · Longitudinal (2005–2022) — both channels", fontsize=11)
++    fig.tight_layout(rect=[0, 0, 1, 0.93])
++    fig.savefig(FIG_DIR / "fig_longitudinal_both.png", dpi=130); plt.close(fig)
++
++
++def fig_archetype_diurnal_resid(diur: pd.DataFrame, meter: str, title: str, fname: str):
++    """Per-residential-archetype diurnal shape for one end-use meter, normalized to daily mean.
++    Simulated shape only — 3J Leg-2 has no default-schedule baseline arm to compare against
++    (unlike 2J's Baseline-vs-Activity S6/S8 plots)."""
++    archs = list(SHEU_EUI_BANDS.keys())
++    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
++    for i, arch in enumerate(archs):
++        ax = axes[i // 2][i % 2]
++        d = diur[(diur["channel"] == "resid") &amp; (diur["meter"] == meter) &amp; (diur["arch"] == arch)]
++        if d.empty:
++            ax.set_title(f"{arch} — no data"); continue
++        wd = d[d["daytype"] == "weekday"].groupby("hour")["value"].mean()
++        we = d[d["daytype"] == "weekend"].groupby("hour")["value"].mean()
++        wd_m = wd.mean() or 1.0; we_m = we.mean() or 1.0
++        ax.plot(wd.index, wd.values / wd_m, color=THEME["resid"], lw=2, label="weekday")
++        ax.plot(we.index, we.values / we_m, color=THEME["resid"], lw=1.4, ls="--", alpha=0.7, label="weekend")
++        ax.axhline(1.0, color="black", lw=0.5, alpha=0.25)
++        ax.set_xlabel("hour"); ax.set_ylabel("load (× daily mean)"); ax.set_title(arch, fontsize=10)
++        ax.set_xticks(range(0, 24, 3)); ax.grid(color=THEME["grid"]); ax.legend(fontsize=8)
++    fig.suptitle(f"Step 9 · {title} — residential, by archetype (simulated, normalized to daily mean)",
++                 fontsize=11)
++    fig.tight_layout(rect=[0, 0, 1, 0.95])
++    fig.savefig(FIG_DIR / fname, dpi=130); plt.close(fig)
++
++
++def fig_archetype_diurnal_office(diur: pd.DataFrame):
++    """Per-office-archetype total-electricity diurnal shape. Office has no separate
++    lights/equipment metering in this pipeline (both are summed into one office_elec value
++    by the aggregation regex), so unlike the residential panels, this cannot be split by end-use."""
++    archs = ["Office_Knowledge", "Office_Public", "Office_Sales"]
++    fig, axes = plt.subplots(1, 3, figsize=(13, 4.2))
++    for ax, arch in zip(axes, archs):
++        d = diur[(diur["channel"] == "office") &amp; (diur["meter"] == "office_elec") &amp; (diur["arch"] == arch)]
++        if d.empty:
++            ax.set_title(f"{arch} — no data"); continue
++        wd = d[d["daytype"] == "weekday"].groupby("hour")["value"].mean()
++        we = d[d["daytype"] == "weekend"].groupby("hour")["value"].mean()
++        ax.plot(wd.index, wd.values, color=THEME["office"], lw=2, label="weekday")
++        ax.plot(we.index, we.values, color=THEME["office"], lw=1.4, ls="--", alpha=0.7, label="weekend")
++        ax.set_xlabel("hour"); ax.set_ylabel("mean kW"); ax.set_title(arch, fontsize=10)
++        ax.set_xticks(range(0, 24, 3)); ax.grid(color=THEME["grid"]); ax.legend(fontsize=8)
++    fig.suptitle("Step 9 · Diurnal load shape — office, by archetype (total electricity; "
++                 "no lights/equipment split available for office)", fontsize=11)
++    fig.tight_layout(rect=[0, 0, 1, 0.95])
++    fig.savefig(FIG_DIR / "fig_diurnal_office_archetype.png", dpi=130); plt.close(fig)
++
++
+ # ------------------------------------------------------------ gate scorecard --
+ def _f(x):
+     try:
+@@ -481,6 +570,54 @@ _PILL = {"PASS": ("#d4edda", "#155724"), "WARN": ("#fff3cd", "#856404"),
+          "INFO": ("#cce5ff", "#004085"), "FAIL": ("#f8d7da", "#721c24")}
+ 
+ 
++def _fig_block(title: str, cap: str, fname: str) -&gt; str:
++    src = _embed(fname)
++    if not src:
++        return ""
++    return (f'&lt;h2&gt;{title}&lt;/h2&gt;&lt;p style="font-size:13px;color:#555"&gt;&lt;em&gt;{cap}&lt;/em&gt;&lt;/p&gt;'
++            f'&lt;img src="{src}" alt="{title}" '
++            f'style="max-width:100%;margin:8px 0;border:1px solid #dee2e6"&gt;')
++
++
++def _eui_error_caption(eui: pd.DataFrame) -&gt; str:
++    parts = []
++    r = eui[eui["channel"] == "resid"]
++    for _, row in r.iterrows():
++        err = 100 * (row["median_eui"] - row["band_central"]) / row["band_central"]
++        parts.append(f'{row["group"]} {err:+.1f}%')
++    o = eui[(eui["channel"] == "office") &amp; (eui["group"] == "all")]
++    if not o.empty:
++        row = o.iloc[0]
++        err = 100 * (row["median_eui"] - row["band_central"]) / row["band_central"]
++        parts.append(f'office {err:+.1f}%')
++    return ("Prediction vs. benchmark central-estimate error: " + "; ".join(parts) +
++            " (residential vs. NRCan SHEU-2019 archetype central; office vs. the "
++            "NECB2020/90.1-2019 DOE-PNNL as-modelled central of 135 kWh/m² — SingleD's "
++            "large positive error is the documented basis mismatch: our EUI denominator "
++            "is conditioned area including basement, SHEU's is heated area excluding "
++            "basement; office's error is still well inside the 100–200 as-modelled band).")
++
++
++def _wfh_caption(scen: pd.DataFrame) -&gt; str:
++    order = ["2022", "2030-conservative", "2030-hybrid", "2030-fullyhybrid"]
++    r = scen[scen["channel"] == "resid"].set_index("scenario").reindex(order)
++    o = scen[scen["channel"] == "office"].set_index("scenario").reindex(order)
++    r_mid = " → ".join(f'{v:.3f}' for v in r["midday_share"])
++    r_en = " / ".join(f'{v:+.2f}%' for v in r.loc[order[1:], "energy_pct_vs_2022"])
++    o_en = " / ".join(f'{v:+.2f}%' for v in o.loc[order[1:], "energy_pct_vs_2022"])
++    o_occ = " / ".join(f'{v:+.2f}%' for v in o.loc[order[1:], "occ_pct_vs_2022"])
++    return (
++        "Work From Home (WFH) — three 2030 adoption depths (conservative/hybrid/fully-hybrid) "
++        "are compared against the 2022 baseline. Residential mid-day occupancy share rises "
++        f"monotonically with WFH depth (2022→cons→hyb→full: {r_mid}), with energy "
++        f"{r_en} vs. 2022. Office's response is damped and non-monotonic in annual energy "
++        f"({o_en} vs. 2022) because 2022 already embeds today's real-world WFH share and the "
++        "tower's HVAC/plug baseload dominates annual kWh; the real office WFH signal instead "
++        f"shows up in occupancy ({o_occ} vs. 2022) and in load shape/peak timing (gate G8o), "
++        "not in annual energy."
++    )
++
++
+ def write_html(eui, ls, scen, lon, gates):
+     def tbl(df):
+         return df.to_html(index=False, border=0, classes="t", float_format=lambda x: f"{x:g}")
+@@ -509,29 +646,60 @@ def write_html(eui, ls, scen, lon, gates):
+                  f'&lt;th&gt;Computed value&lt;/th&gt;&lt;th&gt;Expected (per Step-9 doc §7)&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;'
+                  f'&lt;tbody&gt;{rows}&lt;/tbody&gt;&lt;/table&gt;')
+ 
+-    figs = ""
+-    for title, cap, fname in [
+-        ("Figure 1 — End-use intensity vs benchmark (both channels)",
+-         "Residential per-archetype median EUI vs NRCan SHEU-2019 bands (left); office median EUI vs "
+-         "NECB2020/90.1-2019 DOE-PNNL as-modelled band (right). Each channel on its own physically-correct "
+-         "benchmark, evaluated to equal rigor.", "fig_eui_both.png"),
+-        ("Figure 2 — Diurnal load shape (both channels)",
+-         "Residential weekday/weekend electricity profile (evening peak, midday away-dip) vs office profile "
+-         "(work-day occupancy hump, midday ≫ night). The office hump is the direct visual witness that the "
+-         "WFH People-schedule is now wired.", "fig_diurnal_both.png"),
+-        ("Figure 3 — Peak-hour timing (both channels)",
+-         "Distribution of per-run mean daily-peak hour: residential clusters in the evening, office in the "
+-         "work day. Channel-appropriate windows (§7 G4r/G4o).", "fig_peakhour_both.png"),
+-        ("Figure 4 — 2030 WFH-band response (both channels)",
+-         "Residential mid-day occupancy share rising with WFH depth (left) and office response across the "
+-         "three 2030 bands (right). Pre-fix the office bands were byte-identical; a visible spread here is "
+-         "gate G8o.", "fig_scenario_both.png"),
+-    ]:
+-        src = _embed(fname)
+-        if src:
+-            figs += (f'&lt;h2&gt;{title}&lt;/h2&gt;&lt;p style="font-size:13px;color:#555"&gt;&lt;em&gt;{cap}&lt;/em&gt;&lt;/p&gt;'
+-                     f'&lt;img src="{src}" alt="{title}" '
+-                     f'style="max-width:100%;margin:8px 0;border:1px solid #dee2e6"&gt;')
++    r1_fig = _fig_block(
++        "Figure 1 — End-use intensity vs benchmark (both channels)",
++        "Residential per-archetype median EUI vs NRCan SHEU-2019 bands (left); office median EUI vs "
++        "NECB2020/90.1-2019 DOE-PNNL as-modelled band (right). Each channel on its own physically-correct "
++        "benchmark, evaluated to equal rigor. " + _eui_error_caption(eui),
++        "fig_eui_both.png")
++
++    r2_figs = "".join([
++        _fig_block(
++            "Figure 2 — Diurnal load shape (both channels)",
++            "Residential weekday/weekend electricity profile (evening peak, midday away-dip) vs office profile "
++            "(work-day occupancy hump, midday ≫ night). Both curves are simulated/predicted — this pipeline has "
++            "no measured hourly electricity dataset (2J or 3J) to overlay as an independent real-world curve; "
++            "real-data validation happens at the annual level instead (Figure 1, SHEU/NECB EUI bands). The "
++            "office hump is the direct visual witness that the WFH People-schedule is now wired.",
++            "fig_diurnal_both.png"),
++        _fig_block(
++            "Figure 3 — Peak-hour timing (both channels)",
++            "Distribution (density-normalized, so the two channels' different run counts don't distort the "
++            "comparison) of per-run mean daily-peak hour: residential clusters in the evening (~14.8h, "
++            "evening return-home), office in the work day (~12.9h, midday occupancy hump) — a real timing "
++            "difference, not a magnitude one (no kW is plotted here). Channel-appropriate windows (§7 G4r/G4o).",
++            "fig_peakhour_both.png"),
++        _fig_block(
++            "Figure 3b — Diurnal load shape by residential archetype (lighting)",
++            "Simulated lighting diurnal shape per residential archetype, normalized to each archetype's daily "
++            "mean (no baseline-vs-activity-schedule comparison — 3J Leg-2's simulation campaign has no "
++            "default-schedule baseline arm, unlike 2J).",
++            "fig_diurnal_lights_archetype.png"),
++        _fig_block(
++            "Figure 3c — Diurnal load shape by residential archetype (equipment)",
++            "Simulated equipment diurnal shape per residential archetype, normalized to each archetype's daily "
++            "mean.",
++            "fig_diurnal_equip_archetype.png"),
++        _fig_block(
++            "Figure 3d — Diurnal load shape by office archetype",
++            "Simulated total-electricity diurnal shape per office archetype (Knowledge/Public/Sales). Office "
++            "has no separate lights/equipment metering in this pipeline — both are summed into one "
++            "office_elec value — so, unlike the residential panels above, this shows total electricity only.",
++            "fig_diurnal_office_archetype.png"),
++    ])
++
++    r3_fig = _fig_block(
++        "Figure 4 — 2030 Work From Home (WFH)-band response (both channels)",
++        _wfh_caption(scen) + " Pre-fix the office bands were byte-identical; a visible spread here is gate G8o.",
++        "fig_scenario_both.png")
++
++    r4_fig = _fig_block(
++        "Figure 5 — Longitudinal (2005–2022, both channels)",
++        "Mid-day share, mean peak hour, and annual energy across the four historical census cycles (note: the "
++        "energy panel uses two y-axes — residential and office differ in scale by roughly 40×). Both channels "
++        "are essentially flat/stable across cycles — no strong historical trend — consistent with these being "
++        "pre-2030-scenario years.",
++        "fig_longitudinal_both.png")
+ 
+     stamp = _dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+     html = f"""&lt;!DOCTYPE html&gt;&lt;html lang="en"&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;
+@@ -559,10 +727,13 @@ table.t th{{background:#f6f6f6;color:#222}}
+ &lt;h2&gt;Scorecard — bi-channel acceptance gates&lt;/h2&gt;
+ {scorecard}
+ &lt;h2&gt;§R1 · End-use intensity vs benchmark&lt;/h2&gt;{tbl(eui)}
++{r1_fig}
+ &lt;h2&gt;§R2 · Load shape &amp;amp; peak timing&lt;/h2&gt;{tbl(ls)}
++{r2_figs}
+ &lt;h2&gt;§R3 · Scenario / WFH response (vs 2022 baseline)&lt;/h2&gt;{tbl(scen)}
++{r3_fig}
+ &lt;h2&gt;§R4 · Longitudinal (2005–2022)&lt;/h2&gt;{tbl(lon)}
+-{figs}
++{r4_fig}
+ &lt;/body&gt;&lt;/html&gt;
+ """
+     (OUT_DIR / "step9_report.html").write_text(html, encoding="utf-8")
+@@ -589,7 +760,13 @@ def main():
+ 
+     try:
+         fig_eui(eui); fig_diurnal(diur); fig_peakhour(peak); fig_scenario(scen)
+-        _log("figures: 4 written")
++        fig_longitudinal(lon)
++        fig_archetype_diurnal_resid(diur, "InteriorLights:Electricity",
++                                     "Lighting diurnal load shape", "fig_diurnal_lights_archetype.png")
++        fig_archetype_diurnal_resid(diur, "InteriorEquipment:Electricity",
++                                     "Equipment diurnal load shape", "fig_diurnal_equip_archetype.png")
++        fig_archetype_diurnal_office(diur)
++        _log("figures: 8 written")
+     except Exception as e:  # noqa
+         _log(f"WARN figure build: {e}")
+ 
+</pre><pre id="raw-md">
+diff --git a/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md b/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md
+index 9f0527c..9e52fe7 100644
+--- a/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md
++++ b/3J_docs_occ_nTemp/Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md
+@@ -146,6 +146,11 @@ near-identical medians (172.6–172.7) because at the annual EUI level the tower
+ by envelope + HVAC (unchanged across archetypes); archetype differences show up in the *shape*, not
+ the annual intensity.
+ 
++The HTML report's Figure 1 caption now also states each archetype's computed **% error vs its
++benchmark's central estimate**: Residential SingleD +36.6%, OtherDwelling −2.8%, MidRise +22.8%,
++HighRise +9.4%; Office +27.9% vs the NECB-PNNL central estimate of 135 — still well inside the
++100–200 as-modelled band.
++
+ &gt; **Office end-use split is n/a:** `agg_annual` carries `lights_kWh`/`equip_kWh` only for the
+ &gt; residential reader; the office reader captured aggregate `office_elec`, so the office
+ &gt; lighting-vs-equipment split is not available here. Residential split is shown; office is
+@@ -167,6 +172,23 @@ spike, because annual mean-daily-peak-hour averages summer-AC afternoon peaks wi
+ peaks. (Note: the coincidence-factor proxy here, 0.82, is cruder than §8E's diurnal coincidence
+ metric, 0.56 — different definitions; both are &lt; 1.)
+ 
++### §R2a — Per-archetype diurnal shape (new figures)
++
++Three new figures extend §R2's paired load-shape summary down to the archetype level:
++`figures/fig_diurnal_lights_archetype.png` (residential lighting end-use, 4 archetypes —
++SingleD/MidRise/OtherDwelling/HighRise — normalized to daily mean),
++`figures/fig_diurnal_equip_archetype.png` (same, equipment end-use), and
++`figures/fig_diurnal_office_archetype.png` (office, 3 archetypes — Office_Knowledge/Office_Public/
++Office_Sales — TOTAL electricity only).
++
++Two limitations apply to all three, and both are documented scope, not oversights: (1) **no
++baseline arm** — unlike 2J, 3J Leg-2's simulation campaign has no default-schedule-vs-activity-
++schedule comparison arm, so these figures show the simulated shape only, not a baseline-vs-activity
++delta; (2) **no office end-use split** — as noted in §R1, the §8D office aggregation reader captures
++only summed `office_elec` (no separate lights/equipment channels), so the office archetype figure is
++TOTAL electricity only — a data limitation of the aggregator, not a missed lights/equipment
++breakdown.
++
+ ### §R3 — Scenario / WFH response (2030 bands)
+ 
+ **Residential — clean signal ✅:**
+@@ -178,8 +200,8 @@ metric, 0.56 — different definitions; both are &lt; 1.)
+ | 2030-hybrid | 0.266 | +0.014 | +1.79% |
+ | 2030-fullyhybrid | 0.273 | +0.021 | +2.14% |
+ 
+-Residential mid-day share and energy both rise monotonically with the WFH band — the expected
+-"WFH keeps people home during the day → more daytime home load" signature. **PASS.**
++Residential mid-day share and energy both rise monotonically with the Work From Home (WFH) band —
++the expected "WFH keeps people home during the day → more daytime home load" signature. **PASS.**
+ 
+ **Office — WFH-modulation live (post zone-routing fix), bands non-degenerate ✅ (gate G8o):**
+ 
+@@ -220,6 +242,14 @@ cycles): the historical AT_WORK multipliers differ less across cycles than the 2
+ and carry the documented reconstruction uncertainty (§8E §0.5 — gating variable changed between
+ cycles). The office longitudinal story is supporting evidence, not a headline result.
+ 
++A new Figure 5 (`figures/fig_longitudinal_both.png`) renders this table as a 3-panel longitudinal
++chart — mid-day share, mean peak hour, and annual energy, both channels, across the four census
++cycles (2005/2010/2015/2022). Read alongside the table, both channels are essentially flat/stable
++across cycles: residential mid-day share ranges 0.235–0.253 and annual energy 433k–438k kWh; office
++mid-day share ranges 0.438–0.440 and annual energy 18.38M–18.44M kWh. Neither channel shows a strong
++historical trend at this aggregate metric — the residential mid-day-share dip/rebound noted above is
++real but modest against an otherwise flat multi-decade background.
++
+ ---
+ 
+ ## 5. EQUAL-TREATMENT LEDGER (the parity check)
+@@ -259,8 +289,12 @@ Produced by `3rdJ_09_activityDrivenLoads_2split.py` (reads the §8D agg tables 
+ | `step9_longitudinal.csv` | both channels × cycle: mid-day share, peak hour |
+ | `figures/fig_eui_both.png` | paired EUI-vs-benchmark bars (resid arch panel + office panel) |
+ | `figures/fig_diurnal_both.png` | paired diurnal curves (resid evening vs office work-day) |
++| `figures/fig_diurnal_lights_archetype.png` | residential lighting end-use diurnal shape, 4 archetypes (SingleD/MidRise/OtherDwelling/HighRise), normalized to daily mean — simulated-shape-only |
++| `figures/fig_diurnal_equip_archetype.png` | residential equipment end-use diurnal shape, same 4 archetypes, normalized to daily mean — simulated-shape-only |
++| `figures/fig_diurnal_office_archetype.png` | office diurnal shape, 3 archetypes (Office_Knowledge/Office_Public/Office_Sales), TOTAL electricity only (no lights/equip split for office) — simulated-shape-only |
+ | `figures/fig_peakhour_both.png` | paired peak-hour distributions |
+ | `figures/fig_scenario_both.png` | paired 2030-band response |
++| `figures/fig_longitudinal_both.png` | 3-panel longitudinal chart (mid-day share / mean peak hour / annual energy), both channels, across census cycles 2005/2010/2015/2022 |
+ | `step9_report.html` | stitched tables + figures with the equal-treatment framing |
+ 
+ ---
+@@ -380,3 +414,30 @@ artifacts archived to `../investigation/stale_pre_fix_snapshot/`; acceptance rev
+ paper-ready) at `../investigation/2split_results_acceptance_review.md`. Ledger rows for
+ scenario/longitudinal flipped to ✅ equal; remaining parity gap = office end-use split (caveat 5).
+ Pipeline docs reframed (status tags PLANNED → DONE) in the same session.
++
++### 2026-07-05 — Employee (Sonnet) — companion doc synced to new HTML report figures/captions
++
++A parallel employee is updating the generator script (`3rdJ_09_activityDrivenLoads_2split.py`) to
++add new figures and rewrite HTML report captions; this doc was updated in lockstep so the two stay
++consistent, with **no changes made to the .py file**. Specifically: (1) §6 Outputs table gained 4
++new rows — `figures/fig_longitudinal_both.png`, `figures/fig_diurnal_lights_archetype.png`,
++`figures/fig_diurnal_equip_archetype.png`, `figures/fig_diurnal_office_archetype.png` — each with a
++one-line description. (2) §R1 prose gained a sentence stating the HTML Figure 1 caption now reports
++each archetype's % error vs its benchmark's central estimate (resid SingleD +36.6%, OtherDwelling
++−2.8%, MidRise +22.8%, HighRise +9.4%; office +27.9% vs the NECB-PNNL central of 135, still inside
++the 100–200 as-modelled band). (3) §R3 spelled out "Work From Home (WFH)" on its first body-text
++mention. (4) A new **§R2a** subsection was added describing the 3 new per-archetype diurnal figures
++and flagging their two documented limitations: no default-schedule-vs-activity-schedule baseline arm
++(unlike 2J), so shapes are simulated-only; and no office lights/equipment split (aggregator data
++limitation, not an oversight — same n/a already noted in §R1). (5) §R4 gained a closing paragraph on
++the new Figure 5 (`figures/fig_longitudinal_both.png`, 3-panel: mid-day share / mean peak hour /
++annual energy, both channels, 2005–2022), noting both channels read as flat/stable across cycles
++(resid midday share 0.235–0.253, energy 433k–438k kWh; office midday share 0.438–0.440, energy
++18.38M–18.44M kWh) — no strong historical trend. Not touched: Figure 2's "simulated-only, no
++measured hourly dataset" caveat and Figure 3's density-normalization framing were left as-is because
++the existing §R2 text (lines above) already states both points in equivalent language; the report
++layout change (each §R1–R4 table now followed by its own figure, replacing the old bunched-at-end
++figure block) is a presentation change with no prose claim to update. This doc was not re-run against
++new outputs — it is a documentation-consistency sync only; once the .py regenerates
++`outputs_step9/*` the numeric values embedded above should be spot-checked against the actual new
++figure files/captions.
+</pre></div>
+<script>
+function parseDiff(text){
+  var lines = text.replace(/\n$/, "").split("\n");
+  var i = 0;
+  while (i < lines.length && lines[i].indexOf("@@") !== 0) i++;
+  var hunks = [];
+  var cur = null, oldNo = 0, newNo = 0;
+  for (; i < lines.length; i++){
+    var line = lines[i];
+    if (line.indexOf("@@") === 0){
+      var m = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@ ?(.*)$/);
+      oldNo = m ? parseInt(m[1], 10) : 0;
+      newNo = m ? parseInt(m[3], 10) : 0;
+      cur = {oldStart:m?m[1]:"?", oldCount:(m&&m[2])?m[2]:"1", newStart:m?m[3]:"?", newCount:(m&&m[4])?m[4]:"1", ctx:(m&&m[5])?m[5]:"", rows:[]};
+      hunks.push(cur);
+      continue;
+    }
+    if (!cur) continue;
+    var type, content;
+    if (line.charAt(0) === "+"){ type = "add"; content = line.slice(1); }
+    else if (line.charAt(0) === "-"){ type = "del"; content = line.slice(1); }
+    else if (line.charAt(0) === " "){ type = "ctx"; content = line.slice(1); }
+    else { type = "ctx"; content = line; }
+    var row = {type:type, content:content};
+    if (type === "add"){ row.newNo = newNo++; row.oldNo = null; }
+    else if (type === "del"){ row.oldNo = oldNo++; row.newNo = null; }
+    else { row.oldNo = oldNo++; row.newNo = newNo++; }
+    cur.rows.push(row);
+  }
+  return hunks;
+}
+
+function renderFile(containerId, hunks){
+  var container = document.getElementById(containerId);
+  var frag = document.createDocumentFragment();
+  hunks.forEach(function(h){
+    var details = document.createElement("details");
+    details.className = "hunk";
+    details.open = true;
+    var summary = document.createElement("summary");
+    summary.innerHTML = '<span class="hunk-range">-' + h.oldStart + ',' + h.oldCount +
+      ' +' + h.newStart + ',' + h.newCount + '</span>' +
+      (h.ctx ? '<span class="hunk-ctx">' + h.ctx + '</span>' : '');
+    details.appendChild(summary);
+    var body = document.createElement("div");
+    body.className = "hunk-body";
+    h.rows.forEach(function(r){
+      var rowEl = document.createElement("div");
+      rowEl.className = "dline " + r.type;
+      var marker = r.type === "add" ? "+" : (r.type === "del" ? "−" : "");
+      rowEl.innerHTML =
+        '<span class="ln old">' + (r.oldNo !== null && r.oldNo !== undefined ? r.oldNo : "") + '</span>' +
+        '<span class="ln new">' + (r.newNo !== null && r.newNo !== undefined ? r.newNo : "") + '</span>' +
+        '<span class="marker">' + marker + '</span>' +
+        '<span class="content">' + (r.content.length ? r.content : " ") + '</span>';
+      body.appendChild(rowEl);
+    });
+    details.appendChild(body);
+    frag.appendChild(details);
+  });
+  container.appendChild(frag);
+}
+
+var rawPy = document.getElementById("raw-py").textContent;
+var rawMd = document.getElementById("raw-md").textContent;
+renderFile("diff-py", parseDiff(rawPy));
+renderFile("diff-md", parseDiff(rawMd));
+
+document.querySelectorAll(".btn-mini").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var open = btn.getAttribute("data-action") === "expand";
+    var target = document.getElementById(btn.getAttribute("data-target"));
+    target.querySelectorAll("details.hunk").forEach(function(d){ d.open = open; });
+  });
+});
+</script>

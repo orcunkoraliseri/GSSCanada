@@ -31,6 +31,7 @@ import os
 import re
 import sys
 import argparse
+import functools
 import sqlite3
 import warnings
 
@@ -57,6 +58,14 @@ AGG_DIR = os.path.join(OUT_DIR, "agg")
 
 CAMP_DEFAULT   = os.environ.get("STEP8_CAMP_DIR")   or os.path.join(OUT_DIR, "campaign_N50")
 OFFICE_DEFAULT = os.environ.get("STEP8_OFFICE_DIR") or os.path.join(OUT_DIR, "office")
+
+# --- residential occupant-count source (input schedules, NOT an E+ output — see Task 13) ---
+# EnergyPlus never wrote "Zone People Occupant Count" for residential runs, so occ_mean_persons
+# is derived instead from the SAME Occupancy_Schedule (fraction) x HHSIZE that was injected into
+# the People object at Step 7/8A -- this is the ground truth the sim itself was driven by.
+SCHED_S7_DIR   = os.path.join(HERE, "..", "Step7_docs", "outputs_step7")
+SCHED_HIST_DIR = os.path.join(OUT_DIR, "historical_schedules")
+_HIST_SCEN     = {"2005", "2010", "2015"}
 
 SCENARIOS = ["2005", "2010", "2015", "2022",
              "2030-conservative", "2030-hybrid", "2030-fullyhybrid"]
@@ -120,6 +129,46 @@ def _daytype_mask(daytype):
     if daytype == "weekend":
         return _WEEKEND
     return np.ones(365, dtype=bool)
+
+
+def _sched_path(scenario):
+    """Map a scenario label to its BEM_Schedules_2split_<suffix>.csv path."""
+    suffix = scenario.replace("-", "_")
+    base = SCHED_HIST_DIR if scenario in _HIST_SCEN else SCHED_S7_DIR
+    return os.path.join(base, f"BEM_Schedules_2split_{suffix}.csv")
+
+
+@functools.lru_cache(maxsize=8)
+def _resid_occ_lookup(scenario):
+    """{sim_hh_id(str): {"Weekday": (24,) frac, "Weekend": (24,) frac}} for one scenario."""
+    path = _sched_path(scenario)
+    if not os.path.exists(path):
+        warnings.warn(f"[occ] residential schedule missing for scenario={scenario}: {path}")
+        return {}
+    df = pd.read_csv(path, usecols=["SIM_HH_ID", "Day_Type", "Hour", "Occupancy_Schedule"])
+    df["SIM_HH_ID"] = df["SIM_HH_ID"].astype(int)
+    out = {}
+    for hh_id, g in df.groupby("SIM_HH_ID"):
+        wd = g.loc[g["Day_Type"] == "Weekday"].sort_values("Hour")["Occupancy_Schedule"].to_numpy()
+        we = g.loc[g["Day_Type"] == "Weekend"].sort_values("Hour")["Occupancy_Schedule"].to_numpy()
+        if wd.shape[0] == 24 and we.shape[0] == 24:
+            out[str(hh_id)] = {"Weekday": wd, "Weekend": we}
+    return out
+
+
+def _resid_occ_grid(sim_hh_id, scenario, hhsize):
+    """(365,24) persons-present grid from the input Occupancy_Schedule x HHSIZE. None if unmatched."""
+    entry = _resid_occ_lookup(scenario).get(str(sim_hh_id))
+    if entry is None:
+        return None
+    try:
+        hh = float(hhsize)
+    except (TypeError, ValueError):
+        return None
+    grid = np.empty((365, 24))
+    grid[~_WEEKEND] = entry["Weekday"]
+    grid[_WEEKEND] = entry["Weekend"]
+    return grid * hh
 
 
 def _circular_mean_hour(hours):
@@ -365,8 +414,12 @@ def summarize_resid_run(rm, df):
             continue
         grids[meter] = _to_grid(df[meter], energy=True)
     fac = grids.get(FACILITY)
-    if fac is not None:                                # diurnal only on the facility load
+    if fac is not None:
         diurnal += _diurnal_rows(key, FACILITY, fac, "kW")
+    for meter in (M_LIGHTS, M_EQUIP):                  # end-use shape for the archetype figures
+        g = grids.get(meter)
+        if g is not None:
+            diurnal += _diurnal_rows(key, meter, g, "kW")
 
     annual = {**key, "hhsize": rm.get("hhsize", "")}
     for meter in RESID_METERS:
@@ -374,8 +427,15 @@ def summarize_resid_run(rm, df):
         annual[_ANN_COL[meter]] = float(np.nansum(g)) if g is not None else np.nan
     area, eui, tot_e = _eui_from_sql(rm["run_dir"])
     annual.update(conditioned_floor_area_m2=area, eui_kWh_m2=eui, total_energy_kWh=tot_e,
-                  elec_total_kWh=annual.get("elec_facility_kWh", np.nan),
-                  occ_peak_persons=np.nan, occ_mean_persons=np.nan, occ_midday_persons=np.nan)
+                  elec_total_kWh=annual.get("elec_facility_kWh", np.nan))
+    occ_grid = _resid_occ_grid(rm.get("sim_hh_id"), rm.get("scenario"), rm.get("hhsize"))
+    if occ_grid is not None:
+        occ_wd = occ_grid[_daytype_mask("weekday")]
+        annual.update(occ_peak_persons=float(np.nanmax(occ_grid)),
+                      occ_mean_persons=float(np.nanmean(occ_grid)),
+                      occ_midday_persons=float(np.nanmean(occ_wd[:, MIDDAY[0]:MIDDAY[1]])))
+    else:
+        annual.update(occ_peak_persons=np.nan, occ_mean_persons=np.nan, occ_midday_persons=np.nan)
     peak_row = None
     if fac is not None:
         peak_row, shape = _peak_and_shape(key, fac)
