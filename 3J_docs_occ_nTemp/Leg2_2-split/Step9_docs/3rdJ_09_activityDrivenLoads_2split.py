@@ -620,7 +620,8 @@ def _wfh_caption(scen: pd.DataFrame) -> str:
 
 def write_html(eui, ls, scen, lon, gates):
     def tbl(df):
-        return df.to_html(index=False, border=0, classes="t", float_format=lambda x: f"{x:g}")
+        return df.to_html(index=False, border=0, classes="t", float_format=lambda x: f"{x:g}",
+                           na_rep="n/a")
 
     n = {k: sum(1 for g in gates if g["status"] == k) for k in _PILL}
     pills = "".join(
@@ -731,6 +732,16 @@ table.t th{{background:#f6f6f6;color:#222}}
 <h2>§R2 · Load shape &amp; peak timing</h2>{tbl(ls)}
 {r2_figs}
 <h2>§R3 · Scenario / WFH response (vs 2022 baseline)</h2>{tbl(scen)}
+<p style="font-size:12px;color:#777"><em>Note: residential <code>occ_mean</code>/
+<code>occ_pct_vs_2022</code> for 2005/2010/2015 are intentionally blank, not a bug. EnergyPlus
+never wrote an occupant-count output for residential runs, so it is derived instead from the
+input Occupancy_Schedule x HHSIZE that drove each simulation. That derivation only recovers
+11.7% of the historical campaign's households (the historical schedule generator is a smaller,
+demographically-matched subset by design, and the original historical schedule files used by
+the real campaign are no longer recoverable) &mdash; reporting a mean over that 11.7% survivor
+subset would misrepresent it as the full-population value, so it is left n/a instead. 2022 and
+all three 2030 bands have 100% coverage and are unaffected. See
+<code>Step9_docs/outputs_step9/task13_occ_mean_gap_report.md</code>.</em></p>
 {r3_fig}
 <h2>§R4 · Longitudinal (2005–2022)</h2>{tbl(lon)}
 {r4_fig}

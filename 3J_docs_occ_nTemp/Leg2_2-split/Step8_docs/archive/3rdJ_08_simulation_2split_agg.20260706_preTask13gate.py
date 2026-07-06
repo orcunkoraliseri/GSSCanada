@@ -157,17 +157,7 @@ def _resid_occ_lookup(scenario):
 
 
 def _resid_occ_grid(sim_hh_id, scenario, hhsize):
-    """(365,24) persons-present grid from the input Occupancy_Schedule x HHSIZE.
-
-    Task 13 Option 1 (decided 2026-07-06): historical scenarios (2005/2010/2015) are gated
-    to None unconditionally, not just "unmatched". Real coverage there is only 11.7% (136/1,163
-    campaign households) -- letting the lookup through would silently average only the 11.7%
-    survivor subset and report it as if it were the full-population occ_mean, which is a biased
-    number from a different population than the one actually simulated. NaN is the honest answer;
-    see Step9_docs/outputs_step9/task13_occ_mean_gap_report.md.
-    """
-    if scenario in _HIST_SCEN:
-        return None
+    """(365,24) persons-present grid from the input Occupancy_Schedule x HHSIZE. None if unmatched."""
     entry = _resid_occ_lookup(scenario).get(str(sim_hh_id))
     if entry is None:
         return None

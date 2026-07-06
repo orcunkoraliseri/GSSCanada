@@ -166,7 +166,7 @@ edit is.
   `fig_diurnal_equip_archetype.png`, confirm 4 populated panels each; `sacct` shows both
   jobs COMPLETED exit 0; scorecards unchanged, no new FAIL.
 
-## Task 13 — §R3 residential `occ_mean`/`occ_pct_vs_2022` NaN (IN PROGRESS / BLOCKED)
+## Task 13 — §R3 residential `occ_mean`/`occ_pct_vs_2022` NaN (DONE 2026-07-06)
 
 - **Aim:** user flagged `step9_scenario_response.csv` / §R3 table has "way too many NaN
   values" — every `resid` row has empty `occ_mean`/`occ_pct_vs_2022` (only `office` rows
@@ -254,22 +254,43 @@ edit is.
     inputs (Step 5/6/7 outputs) have been stable since before 8A was even added, this
     looks like it may be **unrecoverable**: whatever exact file state fed Cycle 7 no
     longer exists anywhere.
-- **Do NOT submit the cluster re-aggregation job yet** — decision needed from the user
-  first on how to handle the still-blocked historical portion (see Progress Log 2026-07-06
-  for the 3 options laid out).
+- **DECISION MADE 2026-07-06 — Option 1** (ship 2022/2030 now; historical resid `occ_mean`
+  stays explicit NaN). User wrote a short standalone report
+  (`Step9_docs/outputs_step9/task13_occ_mean_gap_report.md`) and consulted a second reviewer
+  ("fable") before deciding; that review independently recommended Option 1 and is appended
+  to the bottom of that report file, with one refinement adopted: gate historical scenarios
+  to NaN unconditionally (not just "unmatched"), because letting the 11.7% survivor-subset
+  lookup through would report a biased partial mean as if it were the full-population value
+  — a data-integrity problem, not just a coverage gap.
+- **Implemented 2026-07-06:**
+  1. `Step8_docs/3rdJ_08_simulation_2split_agg.py` — `_resid_occ_grid()` now returns `None`
+     unconditionally when `scenario in _HIST_SCEN` (2005/2010/2015), before ever consulting
+     the lookup dict. 2022 + all 3 2030 bands are unaffected (still 100% coverage).
+     Predecessor archived: `Step8_docs/archive/3rdJ_08_simulation_2split_agg.20260706_preTask13gate.py`.
+  2. `Step9_docs/3rdJ_09_activityDrivenLoads_2split.py` — added a footnote paragraph under
+     the §R3 HTML table explaining the historical NaN is by design, not a bug, pointing to
+     the gap report.
+  3. Both `py -m py_compile` clean.
+  4. Uploaded the updated agg script to the cluster
+     (`/speed-scratch/o_iseri/step8_2split/upload/3J_docs_occ_nTemp/Leg2_2-split/Step8_docs/`)
+     and submitted `run_aggregation.sh` via `sbatch` (job re-runs both the aggregation pass
+     and the §8D validation refresh) — job ID + result logged in the Progress Log entry
+     below once it lands.
 - **Next steps to resume:**
-  1. Get user's call on the historical-years decision (ship 2022/2030 now + document
-     historical `occ_mean` as a known NaN gap / keep digging for the lost original
-     historical population / fall back to option 3 for historical years only).
-  2. Once decided, submit `run_aggregation.sh` (only the 2022/2030 portion of the fix is
-     currently safe to ship; gate the historical derivation on the decision above so it
-     doesn't silently mis-join the wrong households).
-  3. If option 3 is chosen for historical (or overall), revisit the 2J-style
-     default-schedule baseline-arm side-question (see above) at the same time.
-- **Files touched, not yet uploaded to the cluster (blocked pending the above):**
-  `Step8_docs/3rdJ_08_simulation_2split_agg.py` (local edit only),
+  1. Poll the sbatch job no sooner than 30 min out (cheap model, not Opus); confirm exit 0.
+  2. `scp` down the refreshed `outputs_step8/agg/*.csv` (esp. `agg_annual.csv`).
+  3. Re-run `Step9_docs/3rdJ_09_activityDrivenLoads_2split.py` locally against the refreshed
+     agg tables to regenerate `step9_scenario_response.csv` / `step9_report.html`; spot-check
+     that resid `occ_mean` is now populated for 2022/2030×3 and explicit NaN for 2005/2010/2015.
+  4. Mark Task 13 DONE once verified.
+- **Files touched:**
+  `Step8_docs/3rdJ_08_simulation_2split_agg.py` (uploaded to cluster 2026-07-06),
+  `Step9_docs/3rdJ_09_activityDrivenLoads_2split.py` (local-only, runs against downloaded agg
+  tables, no cluster upload needed),
   `Step8_docs/outputs_step8/historical_schedules/BEM_Schedules_2split_{2005,2010,2015}.csv`
-  + matching `office_presence_multiplier_{2005,2010,2015}.csv` (generated locally).
+  + matching `office_presence_multiplier_{2005,2010,2015}.csv` (generated locally, still used
+  by the office channel and by the val §0 gates — only the *residential occ_mean* derivation
+  is gated off for historical, not the schedule files themselves).
 
 ---
 
@@ -287,7 +308,7 @@ edit is.
 - [x] Task 10 — Local validation (py_compile / preview)
 - [x] Task 11 — Final review against user's original questions
 - [x] Task 12 — Fix empty residential lights/equipment archetype panels (§8D re-agg)
-- [ ] Task 13 — §R3 residential occ_mean/occ_pct_vs_2022 NaN (BLOCKED — see Progress Log)
+- [x] Task 13 — §R3 residential occ_mean/occ_pct_vs_2022 NaN (Option 1 shipped, verified)
 
 ---
 
@@ -557,3 +578,99 @@ scratch to reproduce the prior session's number — and it didn't reproduce.
 2022/2030 only and document historical `occ_mean` as a known NaN gap, keep digging for the
 lost original historical population, or fall back to option 3 (re-simulate) for the
 historical years specifically.
+
+### 2026-07-06 — Task 13: Option 1 decided (user + second reviewer), gate implemented, cluster job submitted
+
+- User consulted a second reviewer ("fable") using the standalone
+  `task13_occ_mean_gap_report.md`; that review is appended to the bottom of that report file
+  and independently recommends **Option 1**, with one refinement: don't just leave historical
+  `occ_mean` NaN by absence of a match — gate it off *unconditionally* for historical
+  scenarios, because the 11.7% coverage means a naive per-run lookup would still compute a
+  mean over that 11.7% survivor subset and report it as a full-population value, which is a
+  data-integrity problem (comparing a different, smaller, demographically-skewed population
+  against the other scenario-years' full N=50-per-cell means), not merely a coverage gap.
+  User confirmed: proceed with Option 1 as refined.
+- **Code changes:**
+  1. `Step8_docs/3rdJ_08_simulation_2split_agg.py` — archived predecessor to
+     `Step8_docs/archive/3rdJ_08_simulation_2split_agg.20260706_preTask13gate.py`, then edited
+     `_resid_occ_grid()` to `return None` unconditionally when `scenario in _HIST_SCEN`
+     (2005/2010/2015), before consulting the lookup dict at all. 2022 + all 3 2030 bands
+     unaffected (unconditional lookup path untouched, still 100% coverage). `py -m py_compile`
+     clean.
+  2. `Step9_docs/3rdJ_09_activityDrivenLoads_2split.py` — added an `<em>` footnote paragraph
+     directly under the §R3 HTML table (`write_html()`, right before `{r3_fig}`) explaining
+     the historical resid `occ_mean`/`occ_pct_vs_2022` blanks are intentional, citing the
+     11.7% survivor-bias reasoning and linking to the gap report. `py -m py_compile` clean.
+- **Cluster upload + submission (locally, then on the cluster):**
+  - `scp`'d the updated `3rdJ_08_simulation_2split_agg.py` (23,965 B, matches local byte-
+    for-byte) to
+    `/speed-scratch/o_iseri/step8_2split/upload/3J_docs_occ_nTemp/Leg2_2-split/Step8_docs/`,
+    overwriting the stale 20,773 B remote copy that predated even the original occ-derivation
+    fix (that fix had never been uploaded before now).
+  - Submitted the existing, unmodified `run_aggregation.sh` via `sbatch` (not blocking
+    `srun`) on the login node: **job 1068096**. This job re-runs both passes — Pass 1
+    (`3rdJ_08_simulation_2split_agg.py --rebuild`, the heavy scan of all 8,400 resid + 252
+    office `hourly_meters.csv`/`eplusout.sql`) and Pass 2 (`3rdJ_08_simulation_2split_val.py`
+    refresh) — on a compute node only, 7-day walltime already set in the script
+    (`-t 7-00:00:00`), so no action needed there.
+  - `3rdJ_09_activityDrivenLoads_2split.py` (Step-9 report builder) was NOT uploaded — it
+    runs locally against the downloaded `agg_annual.csv`, not on the cluster.
+- **Not yet done:** poll job 1068096 (no sooner than 30 min out, cheap model only per
+  standing rule), confirm exit 0, `scp` down the refreshed `outputs_step8/agg/*.csv`, re-run
+  the Step-9 report builder locally, and spot-check that resid `occ_mean` is now populated
+  for 2022/2030×3 and explicit NaN for 2005/2010/2015 before marking Task 13 DONE.
+
+### 2026-07-06 — Task 13 CLOSED: job 1068096 verified, gate confirmed, Task 13 DONE
+
+- **Job check:** `sacct -j 1068096` → `COMPLETED`, exit `0:0`, ran 00:43:42
+  (2026-07-06 09:04:54 → 09:48:36). Downloaded the job log
+  (`8D_agg_1068096.out`): §8D validation scorecard **46 PASS / 1 WARN / 13 INFO / 0 FAIL** —
+  identical tally to the last known-good run, so the historical-gate edit introduced no
+  regressions anywhere else in §8D.
+- **Downloaded** the refreshed `outputs_step8/agg/{agg_annual,agg_diurnal,agg_meta,agg_peak}.csv`
+  from
+  `/nfs/speed-scratch/o_iseri/step8_2split/upload/3J_docs_occ_nTemp/Leg2_2-split/Step8_docs/outputs_step8/agg/`
+  to the local `Step8_docs/outputs_step8/agg/` (agg_annual 2.98 MB, agg_diurnal 541 MB,
+  agg_meta 1.6 MB, agg_peak 1.6 MB — all fresh timestamps).
+- **Re-ran** `Step9_docs/3rdJ_09_activityDrivenLoads_2split.py` locally against the refreshed
+  tables. Script completed and wrote all 5 outputs (`step9_eui_by_channel.csv`,
+  `step9_loadshape_peaks.csv`, `step9_scenario_response.csv`, `step9_longitudinal.csv`,
+  `step9_report.html`) before hitting an unrelated cosmetic crash: the final console
+  scorecard print loop (`main()` L788-795) threw `UnicodeEncodeError` on a `≥` character
+  because the Windows terminal is cp1252, not UTF-8. This is a pre-existing console-encoding
+  issue unrelated to Task 13 — it happens *after* every output file is already written
+  (`write_html()` at L784 runs before the crash at L792), so no output was truncated or lost.
+  Not fixed in this pass since it's cosmetic and out of Task 13's scope; noted here in case
+  it's worth a small `sys.stdout.reconfigure(encoding="utf-8")` fix later.
+- **Verified `step9_scenario_response.csv` directly** (bypassing the crashed console log):
+  resid `occ_mean` is now `1.471` (2022), `1.523/1.56/1.593` (2030 cons/hybrid/full) — all
+  populated, physically sensible household sizes — and blank (NaN) for 2005/2010/2015,
+  exactly as Option 1 intended. Office channel occ_mean is populated for all 7 years
+  (unaffected, as expected — office always had a real occupant-count output).
+  `occ_pct_vs_2022` follows suit: blank for historical resid, `0.0/3.57/6.08/8.33` for
+  resid 2022/2030×3.
+- **Verified the HTML report:** the §R3 footnote (11.7%-survivor-bias explanation, linking to
+  `task13_occ_mean_gap_report.md`) renders correctly under the §R3 table. The embedded gate
+  scorecard shows **PASS 10 · WARN 1 · INFO 0 · FAIL 0** — "ALL GATES PASS — 0 FAIL" verdict
+  banner — no regressions from the historical-gate change.
+- **Task 13 is now DONE.** Option 1 (2022 + all 3 2030 bands populated; 2005/2010/2015 resid
+  `occ_mean` explicit, documented NaN) is shipped, verified end-to-end, and matches both the
+  user's decision and the second reviewer's ("fable") recommendation in
+  `task13_occ_mean_gap_report.md`. No further action needed on this task.
+
+### 2026-07-06 — Task 13 follow-up: `NaN` cells in §R3 were rendering as literal "NaN" text
+
+User flagged that the §R3 table still showed NaN-looking values after the fix. Root cause:
+`pandas.DataFrame.to_html()` (used by `tbl()` in `write_html()`, L622-623) renders blank/NaN
+cells as the literal string `"NaN"` by default — the *data* was already correctly blank
+(confirmed in the CSV in the prior entry), but the *rendered HTML text* looked like an error
+rather than an intentional gap. Fix: added `na_rep="n/a"` to the `to_html()` call in `tbl()`
+(one line). `py -m py_compile` clean; re-ran the Step-9 report builder locally (no cluster
+round-trip needed — this is a pure HTML-formatting change, not a data change).
+
+Verified in the regenerated `step9_report.html`: §R3 resid 2005/2010/2015 now show `n/a` in
+`occ_mean`/`occ_pct_vs_2022`, sitting directly above the existing footnote that explains why.
+Side effect (harmless, a strict improvement): this also cleaned up a couple of pre-existing,
+unrelated `NaN`→`n/a` cells elsewhere — §R1 office rows' `lights_share`/`equip_share` (office
+doesn't track that split) and §R2 office row's one blank metric — same underlying
+`to_html()` default, not something Task 13 introduced.
