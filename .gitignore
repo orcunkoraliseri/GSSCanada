@@ -123,4 +123,8 @@ BEM_Setup/SimResults_Step8/
 2J_docs_occ_nTemp/Step9_docs/prototype/baseline/
 2J_docs_occ_nTemp/Step9_docs/prototype/activity/
 
-
+# Large archive files
+*.tar
+*.zip
+*.tar.gz
+*.gz

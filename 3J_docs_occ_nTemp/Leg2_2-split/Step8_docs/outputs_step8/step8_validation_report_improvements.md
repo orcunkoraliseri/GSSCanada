@@ -225,3 +225,100 @@ Per item, now confirmed against real cluster data (not the local partial run):
 `/speed-scratch/o_iseri/step8_2split/upload/.../outputs_step8/` and now shows as
 a **modified, uncommitted** file in `git status` — left as-is for review, per
 instruction not to auto-commit.
+
+### 2026-07-08 — item 2.3's chart (`_plot_enduse_split`) is metering-artifact-affected; added a true end-use-energy companion chart (Fix v3)
+
+The user flagged, while reviewing `step8_validation_report_v3_section4_local.html`,
+that the §4 heating/cooling chart still showed cooling far exceeding heating even
+in the coldest CZ — which is exactly the metering artifact traced in
+`investigation/step8_resid_heating_cooling_dominance_investigation.md` §11/§12:
+`_plot_enduse_split()` (added in the 2.3 item above, 2026-07-07) reads
+`heating_ET_kWh`/`cooling_ET_kWh` from `agg_annual.csv`, i.e. E+'s
+`:EnergyTransfer` zone thermal-load meters — for the two ventilated apartment
+archetypes (MidRise/HighRise), cold ERV ventilation air gets counted as
+"cooling" on that meter with zero compressor electricity behind it, so the chart
+was never wrong about the *data it plots*, but that data isn't a fair
+heating-vs-cooling comparison. This is the same root cause the 2026-07-07 (later)
+entry above flagged as "worth a sanity look before citing in the paper" —
+confirmed and fixed via Fix v3.
+
+**Fix (this session, no re-simulation — see the coolfix investigation/plan docs
+for the full Fix v3 writeup):**
+- Relabeled `_plot_enduse_split()`'s axis/title to say "air-system delivered
+  sensible energy (incl. ventilation air)" instead of "end-use energy transfer" —
+  it's still a legitimate, useful chart, just not an end-use-energy comparison,
+  and should never be captioned as one.
+- Added a new companion chart, `_plot_enduse_energy_split()`, plotting the
+  **true fuel/electricity end-use energy** (heating fuel vs cooling electricity,
+  per archetype × CZ, from `agg_enduse_annual.csv`) that backs gates 4.9/4.10.
+  This is the chart that should be cited for any heating-vs-cooling-dominance
+  claim in the paper — it is not subject to the ERV-artifact.
+- **Found and fixed a second, unrelated bug while building this**: the
+  End-Uses extractors (`extract_enduse_annual.py` for the cluster/sqlite path,
+  `extract_enduse_annual_from_tbl.py` for the local/csv path) assumed every
+  archetype's EnergyPlus output reports energy in GJ. In fact `OutputControl:
+  Table:Style`'s unit-conversion setting differs by archetype family: SingleD
+  and OtherDwelling (house prototypes) report in **kBtu** (IP units), while
+  MidRise and HighRise (apartment prototypes) report in **GJ** (SI units) —
+  confirmed by diffing `eplustbl.csv` headers across archetypes. Treating kBtu
+  values as GJ inflated SingleD/OtherDwelling's absolute heating/cooling GJ
+  figures by ~950× (e.g. one house's true 18.1 GJ annual heating was misread as
+  18,137 "GJ"). Both extractors now read the unit token (`Units` column in
+  sqlite; the `[GJ]`/`[kBtu]` header suffix in the CSV) and convert to GJ.
+  **The gate-4.9 ratio itself was never wrong** — heating and cooling for a
+  given archetype/run share the same unit bug, so it canceled out of the ratio —
+  only the absolute GJ figures shown in the new 4.10 table were affected before
+  this fix. Re-ran the local 600-row extraction + `--section 4` validator after
+  the fix; `step8_validation_report_v3_section4_local.html` regenerated with
+  corrected 4.10 numbers and the new chart (3 images embedded total: EUI bands,
+  the relabeled ET-based split, the new true end-use-energy split).
+
+### 2026-07-08 (later) — v3 merged report independently verified by manager; ACCEPTED by user
+
+The Fix-v3 outputs (`step8_validation_report_v3_section4_local.html` — §4-only,
+from the local 600-run extraction — and `step8_validation_report_v3_merged.html`
+— the full job-1069196-era baseline with the re-based §4 gates merged in) were
+reviewed by the manager session and **accepted by the user (2026-07-08)** as the
+standing validation record until the canonical cluster regen.
+
+**Verification performed (independent, not a read-through):**
+- Every §4 end-use figure was recomputed directly from
+  `outputs_step8/agg/agg_enduse_annual.csv` (600 rows: 4 arch × 3 CZ × 50
+  samples, 2022, no zero/missing rows) — **exact match** against both HTMLs
+  (e.g. table 4.10 MidRise 7A heating 7,798.9 GJ = 50 × 156.0 GJ mean; cooling
+  5,189.4 GJ = 50 × 103.8).
+- Extractor ground truth re-confirmed: the dry-run CSVs in
+  `outputs_step8/coolfix_verify/` reproduce the smoke run's known values to the
+  cent (MidRise HH80741 2022: heating_gas 78.34 GJ, cooling_elec 136.12 GJ).
+- §0–§3 and §5–§7 in the merged report are identical to the previously accepted
+  baseline (the metric fix only touches §4), as expected.
+
+**Outcome — merged scorecard 50 PASS / 2 WARN / 17 INFO / 0 FAIL.** The two
+WARNs are both understood: 4.1-SingleD (pre-existing EUI-basis difference) and
+4.9-heat-dominance. On the corrected end-use metric the physics is right:
+**CZ 7A apartments are heating-dominated** (cooling-elec/heating ratios
+MidRise 0.67×, HighRise 0.71×; houses 0.20–0.33×) — the old 9.8× "dominance"
+is fully attributed to the ET metering artifact. The 4.9 WARN is triggered by
+the 6A/6B apartments (MidRise/HighRise ≈1.4× in 6A, ≈1.7× in 6B), the known
+prototype characteristic (dense ASHRAE internal gains + tight STD2022 envelope
++ ERV recovery) → **paper caveat, not a bug**. Heating rises monotonically
+mild→severe CZ for every archetype; Calgary (6B) heating sitting below
+Montreal (6A) despite higher HDD was queried and **confirmed by the user as a
+real regional weather regime** (sunny/chinook winters), not an anomaly. The
+smoke household's 1.74× ratio sits inside the campaign 7A tail (max 2.80×) —
+smoke and campaign data are mutually consistent.
+
+**Provenance caveat of the accepted report:** §4's re-based gates are backed by
+the 2022-scenario-only 600-run subset (CZ coverage for gate 4.9 is complete —
+it only tests 6A/6B/7A); the merged header still carries the baseline's
+"Generated 2026-07-07" stamp.
+
+**Remaining (owed at canonical full-campaign regen once Speed is back):**
+1. Regenerate on the cluster against all 8,400 resid runs / 7 scenarios (the
+   sqlite extractor + re-based validator path from the Fix-v3 plan).
+2. Three cosmetic report tweaks: (a) gate 4.9's message should print the
+   triggering 6A/6B ratios, not only the healthy 7A ones; (b) label table
+   4.10's GJ values as n=50-sample **sums**, not per-building; (c) refresh the
+   merged header's generation date.
+3. Sequence the same re-aggregation fix for 2J, then refresh any paper numbers
+   that cited ET-based cooling.

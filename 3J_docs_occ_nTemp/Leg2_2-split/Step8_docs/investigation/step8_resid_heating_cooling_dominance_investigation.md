@@ -1,6 +1,6 @@
 # Step 8 — Residential Heating/Cooling Dominance Investigation (§4 Physical Plausibility)
 
-**Authored:** 2026-07-07 · **Status:** **TRUE ROOT CAUSE FOUND 2026-07-08 (§11): metering artifact, not a thermostat/model bug.** `Cooling:EnergyTransfer` is built from `Zone Air System Sensible Cooling Energy`, which counts cold ERV ventilation air delivered to the zone as "cooling" — no compressor involved. The winter "cooling" that triggered this investigation was never mechanical cooling. Mechanism A (frozen 24.0°C setpoint) is hereby RETIRED as the winter-cooling explanation — §8.1's "confirmation" was reading the same artifact meter. Fix direction = metric fix (report/gate on end-use Cooling **Electricity** vs Heating fuel) + revert the fix-v2 injector override. History: fix v1 (IDF-template patch) FAILED smoke — injector bypass (§9); fix v2 (injector-level, §9.1 option 2) executed 2026-07-08 — both 1a and 1b FAILED smoke, DJF cooling unchanged across setpoints 24.0/28.0/40.0 (§10), which is what exposed the artifact.
+**Authored:** 2026-07-07 · **Status:** **FIX v3 VERIFIED LOCALLY 2026-07-08 (§12): gate 4.9 = WARN, not FAIL, as predicted.** `Cooling:EnergyTransfer` is built from `Zone Air System Sensible Cooling Energy`, which counts cold ERV ventilation air delivered to the zone as "cooling" — no compressor involved. The winter "cooling" that triggered this investigation was never mechanical cooling. Mechanism A (frozen 24.0°C setpoint) is RETIRED as the winter-cooling explanation — §8.1's "confirmation" was reading the same artifact meter. Fix = revert the fix-v2 injector override + re-base §4/gate-4.9 on end-use Cooling **Electricity** vs Heating fuel (§11.5), executed and locally re-verified against a 600-run subset since the Speed cluster went unavailable mid-execution (§12). History: fix v1 (IDF-template patch) FAILED smoke — injector bypass (§9); fix v2 (injector-level, §9.1 option 2) executed 2026-07-08 — both 1a and 1b FAILED smoke, DJF cooling unchanged across setpoints 24.0/28.0/40.0 (§10), which is what exposed the artifact.
 **Why this exists:** user flagged, while reviewing the regenerated `step8_validation_report.html`
 (job 1069196, §4 · Physical Plausibility), that residential cooling energy exceeds heating energy —
 physically wrong for Canadian climate zones, where heating should dominate, especially in the
@@ -515,10 +515,126 @@ cooling electricity lands on July 10 — normal summer operation, no winter comp
 
 ---
 
+## 12. Fix v3 executed, then re-verified LOCALLY after the Speed cluster went unavailable (2026-07-08)
+
+Fix v3 (§11.5) was executed per plan: `eSim_bem_utils_3J/integration.py` reverted (hash-verified
+byte-identical to `archive/integration.20260708_preCoolfixInjector.py`), an End-Uses extractor
+authored, and the validator re-based. The extractor and re-based validator were first submitted
+to the Speed cluster (jobs 1070074 / 1070077, chained via `--dependency=afterok`) — but the user
+then reported the cluster would be **unavailable for approximately two weeks starting 2026-07-08**.
+Both jobs were cancelled (confirmed removed from `squeue`) and the same verification was re-run
+entirely locally instead, rather than wait out the outage.
+
+### 12.1 Why a full local re-run of the 8,400-run campaign wasn't possible
+
+Every run's `eplusout.sql` (the file the cluster-side extractor queries via `sqlite3`) is ~41 MB.
+Across the full residential campaign (8,400 runs) that is ~345 GB — infeasible to download to a
+laptop. Gate 4.9 only needs a specific slice, though: scenario `2022`, archetypes
+{SingleD, MidRise, OtherDwelling, HighRise}, CZ {6A, 6B, 7A} (Montreal, Calgary, Winnipeg). A
+directory count on the cluster (`ls .../<cell>/ | grep -c sample_`) confirmed this slice is exactly
+`N_MC=50` samples × 4 archetypes × 3 CZ = **600 runs** — small enough to move.
+
+### 12.2 `eplustbl.csv` substitutes for `eplusout.sql`
+
+Every run also leaves `eplustbl.csv` (EnergyPlus's own tabular-report CSV dump) alongside the sql
+file, at ~1.7 MB instead of ~41 MB — a ~24× size reduction — and it contains the exact same
+`AnnualBuildingUtilityPerformanceSummary → End Uses` table the sqlite query reads. Confirmed:
+MidRise sample_001 2022's `eplustbl.csv` "End Uses" table gives Heating Natural Gas = 78.34 GJ,
+Cooling Electricity = 136.12 GJ — identical to the sqlite-extracted values used to gate-check
+`extract_enduse_annual.py` in §11/plan-doc V3-C.
+
+### 12.3 Local execution
+
+1. Bundled the 600 matching `eplustbl.csv` files into a single tar on the Speed login node
+   (`tar cf ... <cell>/*/2022/eplustbl.csv` for the 12 needed cells) — a one-shot, few-seconds I/O
+   operation, not a lingering computational process, so it does not run afoul of the login-node
+   compute rule the same way a blocking `srun`/python job would. Resulting archive: 600 MB (smaller
+   than expected, since not every archetype's `eplustbl.csv` runs as large as MidRise's).
+2. `scp`'d the single archive down and extracted it locally into
+   `outputs_step8/campaign_subset_v3_enduse/` — one transfer instead of ~600 individual ones.
+3. Authored `investigation/extract_enduse_annual_from_tbl.py`, a local variant of
+   `extract_enduse_annual.py` that parses the `eplustbl.csv` "End Uses" table (stdlib `csv`/`re`)
+   instead of querying `eplusout.sql` via `sqlite3` — same output schema and column semantics.
+   Dry-run against the preserved `campaign_smoke_v2/` tree gave an **exact match** to the
+   sqlite-based extractor (heating_gas_GJ=78.34, cooling_elec_GJ=136.12 for the same run).
+4. Ran it against the full 600-file local subset: `dirs=600 parsed=600 skipped=0`, writing
+   `outputs_step8/agg/agg_enduse_annual.csv`.
+5. Ran the re-based validator locally, scoped to just the affected section:
+   `py 3rdJ_08_simulation_2split_val.py --section 4` — safe to run without the full campaign tree
+   present locally because `section4()` only reads the `agg/` CSVs, never `STEP8_CAMP_DIR`/
+   `STEP8_OFFICE_DIR` (those only matter for the §1 completeness gate, which `--section 4` skips).
+
+### 12.4 Result — gate 4.9 = WARN, not FAIL, confirming the diagnosis
+
+```
+Scorecard: 7 PASS / 2 WARN / 4 INFO / 0 FAIL  (§4 only)
+[WARN] 4.9-heat-dominance: Cooling-electricity/heating end-use-energy ratio by archetype
+  in CZ 7A: SingleD=0.20x, MidRise=0.67x, OtherDwelling=0.33x, HighRise=0.71x
+  (>1.25x in ≥1 of CZ 6A/6B/7A — check)
+```
+
+Every CZ7A (Winnipeg — the coldest zone) ratio is well under 1×: heating fuel dominates cooling
+electricity by 1.4×–5× depending on archetype, exactly as physically expected once the meter is
+end-use energy instead of the ERV-contaminated `Cooling:EnergyTransfer`. The WARN (not a FAIL) is
+triggered by MidRise/HighRise in the milder 6A/6B zones (Montreal/Calgary) sitting at 1.39×–1.76×
+— a plausible prototype characteristic (dense internal gains, tight envelope, less heating demand
+in a milder climate), not a regression, and does not touch the FAIL threshold (which is CZ7A-only,
+>2.0×). New gate 4.10 (end-use HTML table, heating fuel vs cooling electricity by archetype × CZ)
+rendered correctly from the same data.
+
+**Caveat:** this `--section 4`-only local run overwrote `outputs_step8/step8_validation_report.html`
+with a partial report (only §4 gates present). It was renamed to
+`step8_validation_report_v3_section4_local.html` so it is not mistaken for the canonical
+full-campaign report (46 PASS/1 WARN/13 INFO/0 FAIL, job 1062194) — a full, unscoped validator run
+is still needed once the Speed cluster is back (or the full campaign tree is re-synced locally) to
+regenerate a complete canonical HTML with gate 4.9/4.10 included alongside every other section.
+`agg_enduse_annual.csv` currently holds only the 600-row gate-4.9 subset (2022 × CZ 6A/6B/7A), not
+the full campaign's end-use rows for every scenario/CZ.
+
+**Status: Fix v3 gate CONFIRMED (WARN as predicted, not FAIL). No re-simulation was performed or
+needed anywhere.** Remaining open item is cosmetic/completeness: regenerate the full canonical HTML
+report once the cluster is reachable again.
+
+### 12.5 Follow-up: the old ET-based chart still looked wrong, plus a second unrelated unit bug (2026-07-08)
+
+Reviewing `step8_validation_report_v3_section4_local.html`, cooling still visually dwarfed heating
+— because the *pre-existing* §4 chart (`_plot_enduse_split`, from the report-improvements doc's
+item 2.3, 2026-07-07) plots `heating_ET_kWh`/`cooling_ET_kWh` straight from `agg_annual.csv`: the
+same `Cooling:EnergyTransfer`/`Heating:EnergyTransfer` air-system meter this whole investigation
+diagnosed as ERV-contaminated (§11). Fix v3 re-based gate 4.9/4.10 onto true end-use energy but
+never touched that chart, so it kept showing the pre-fix picture. Fixed by relabeling that chart's
+axis/title ("air-system delivered sensible energy, incl. ventilation air") and adding a new
+companion chart, `_plot_enduse_energy_split()`, plotting true heating fuel vs cooling electricity
+by archetype × CZ from `agg_enduse_annual.csv` — this is the chart that should back any
+heating/cooling-dominance claim going forward.
+
+While building that chart, a **second, independent bug** turned up in both End-Uses extractors:
+`OutputControl:Table:Style`'s unit-conversion setting is not uniform across archetype families —
+SingleD and OtherDwelling (the house-family prototypes) report their `eplustbl.csv`/`eplusout.sql`
+End Uses table in **kBtu** (IP units), while MidRise and HighRise (the apartment-family prototypes)
+report in **GJ** (SI units); confirmed directly by diffing the `eplustbl.csv` header row across
+archetypes (`Electricity [kBtu]` vs `Electricity [GJ]`, `Water [gal]` vs `Water [m3]`). Both
+extractors (`extract_enduse_annual.py`, the sqlite/cluster path — which reads a `Units` column in
+`TabularDataWithStrings` that exists but had never been consulted; and
+`extract_enduse_annual_from_tbl.py`, the local/csv path) had implicitly assumed GJ everywhere, so
+SingleD/OtherDwelling's absolute heating/cooling GJ figures were inflated ~950× before this fix
+(e.g. a single house's true 18.1 GJ annual heating was read as "18,137 GJ"). **Gate 4.9's ratio was
+never actually wrong** — heating and cooling for the same run share the identical unit bug, so it
+cancels out of a ratio — only the absolute numbers in the new 4.10 table were affected. Both
+extractors now read the unit token and convert to GJ before returning values. Re-ran the local
+600-row extraction and `--section 4` validator after the fix: same scorecard and gate 4.9 verdict
+(WARN, identical ratios), corrected 4.10 absolute figures, and 3 charts now embedded in the
+regenerated `step8_validation_report_v3_section4_local.html`.
+
+---
+
 ## Progress Log
 
 | Date | Action | Status | Notes |
 |------|--------|--------|-------|
+| 2026-07-08 (merged report — no plots lost) | User caught that `step8_validation_report_v3_section4_local.html` was missing every other section's plots — correctly rejected as unacceptable. Cause: `--section 4` only runs `section4()`, so other sections' gates/charts were never generated in that session, not deleted. Recovered the still-intact full report straight from the cluster (job 1069196's output, untouched since the cancelled fix-v3 jobs never ran) and spliced in only the corrected §4 (gate table + 3 charts) via a purpose-built merge script, recomputing the scorecard tally. **Final: `outputs_step8/step8_validation_report_v3_merged.html`, 50 PASS/2 WARN/17 INFO/0 FAIL, all sections' plots intact.** Full detail: `step8_coolfix_implementation_plan.md` Progress Log (2026-07-08, "merged report"). | **RESOLVED — merged report has everything, nothing lost** | Use `step8_validation_report_v3_merged.html` going forward, not the section4-only file. |
+| 2026-07-08 (chart + unit-bug follow-up, §12.5) | User flagged the still-visually-wrong heating/cooling chart in `step8_validation_report_v3_section4_local.html` — traced to the pre-existing ET-based `_plot_enduse_split` chart (report-improvements item 2.3) never having been updated by Fix v3. Relabeled that chart, added a new true-end-use-energy companion chart backing gate 4.9/4.10. While building it, found and fixed a second, unrelated bug: both End-Uses extractors assumed GJ units everywhere, but SingleD/OtherDwelling report in kBtu (house-family `OutputControl:Table:Style` differs from apartment-family) — inflated their absolute 4.10-table GJ figures ~950x; gate 4.9's ratio was unaffected (bug cancels out of a ratio). Fixed both extractors, re-ran locally: same scorecard/verdict, corrected absolute numbers, 3 charts now embedded. Full detail in §12.5. | **CHART + UNIT BUG FIXED — verdict unchanged, absolute figures now correct** | Canonical full-campaign HTML still needs regeneration once cluster's back, now with the corrected extractor + new chart included. |
+| 2026-07-08 (fix v3 executed, re-verified LOCALLY after cluster outage, §12) | Fix v3 (§11.5) executed: injector reverted (hash-verified), extractor + re-based validator authored and first submitted to the cluster (jobs 1070074/1070077, chained). User then reported Speed would be unavailable for ~2 weeks; both jobs cancelled and the check re-run locally instead of waiting. Full-campaign `eplusout.sql` download was infeasible (41MB × 8,400 runs ≈ 345GB), so scoped to the exact 600-run gate-4.9 slice (2022 × 4 archetypes × CZ 6A/6B/7A) and substituted the ~24× smaller `eplustbl.csv` (same End-Uses numbers, exact-match verified) for the sqlite path — bundled into one 600MB tar on the login node, scp'd down as a single transfer, extracted locally. New local extractor `extract_enduse_annual_from_tbl.py` (parses eplustbl.csv, not sqlite) ran 600/600 clean. Validator run scoped to `--section 4` only (doesn't need the full campaign tree). **Result: gate 4.9 = WARN, not FAIL** — CZ7A ratios all <1x (SingleD 0.20, MidRise 0.67, OtherDwelling 0.33, HighRise 0.71), confirming heating properly dominates the coldest zone once the metering artifact is removed; WARN trigger is MidRise/HighRise in milder 6A/6B at 1.39-1.76x, a plausible prototype characteristic. Full details, commands, and caveats in §12. | **FIX v3 CONFIRMED — WARN as predicted, not FAIL. No re-simulation performed or needed.** | Canonical full-campaign HTML report (all sections, not just §4) still needs regeneration once the cluster is reachable again or the full tree is re-synced locally; the local `--section 4` run overwrote the report file with a partial version, renamed to `step8_validation_report_v3_section4_local.html` (§12.4). |
 | 2026-07-08 (manager diagnosis — TRUE ROOT CAUSE, §11) | Diagnosed entirely from preserved local smoke evidence, no new sims. `eplusout.mtd` proves `Cooling:EnergyTransfer` = Σ `Zone Air System Sensible Cooling Energy` — net air-system sensible cooling, NOT compressor energy. Each apartment zone has a thermostat-independent `ZoneHVAC:EnergyRecoveryVentilator` (24 MidRise / 46 HighRise); in Winnipeg winter its post-HX supply air is below room temp → metered as "cooling" at zero electricity. Confirmations: (i) DJF cooling ET flat across 24/28/40°C setpoints (§10) while annual Cooling *Electricity* DID respond (136.12→118.48 GJ, 1a→1b shoulder lockout) — thermostat path works, just irrelevant to the winter number; (ii) peak cooling elec = July 10 (normal); (iii) SingleD control "clean" because houses have no per-zone ventilation air system. **Mechanism A retired** (§8.1 probe was reading the same artifact meter). Fix direction (§11.5): revert fix-v2 injector override (it measurably perturbs real shoulder cooling), re-base §4/gate-4.9 on end-use Cooling Electricity vs Heating fuel, and — pending a one-`ls` retention check of `eplustbl.csv` in the cluster campaign tree — fix via **re-aggregation only, no re-simulation** (fallback: subset re-sim with added Output:Meter). 2J: same artifact, same likely no-re-sim outcome. | **ROOT-CAUSED — METRIC FIX PENDING USER GO** | Next: user GO → employee prompt for (a) injector revert from `archive/integration.20260708_preCoolfixInjector.py`, (b) cluster `ls` retention check, (c) End-Uses extractor + agg/validator re-base. |
 | 2026-07-08 (fix v2 execution — BOTH 1a and 1b FAILED smoke; new mechanism-level finding) | Executed Phases A-C of `step8_coolfix_employee_prompt.md` v2 (full detail in `step8_coolfix_implementation_plan.md` Progress Log). Injector-level fix implemented in `eSim_bem_utils_3J/integration.py` (new `cooling_seasonal_override` param on `inject_setpoint_schedules()`, reusing `create_monthly_compact_schedule()`, filename-gated in `inject_schedules()`) and independently verified correct via a new static-injection script (`verify_coolfix_injection.py`) and spot-grep of generated `in.idf`s — the `CoolSP_HH_*` Schedule:Compact objects show exactly the intended per-month structure in every test. Despite that, the 4-run local smoke gate (DJF cooling <10% of pre-fix 16,474/34,126 kWh) **FAILED for variant 1a** (28.0°C: MidRise 17,084 / HighRise 34,157 kWh — ~100-104% of pre-fix) **and FAILED again for the pre-authorized fallback 1b** (40.0°C winter lockout: MidRise 16,984 / HighRise 34,157 kWh — still ~100-103% of pre-fix). **Key new finding**: DJF cooling is statistically unchanged across three different winter cooling setpoints (24.0 pre-fix, 28.0, 40.0) even though the injected schedule is confirmed correct each time — meaning the zone `ThermostatSetpoint:DualSetpoint` cooling schedule is not the actual driver of the metered winter `Cooling:EnergyTransfer` for these two archetypes. This falsifies the *injector fix*, not Mechanism A itself (Mechanism A — frozen/inadequate winter cooling relief — remains real, but the fix needs to act on whatever actually drives the meter, which isn't the zone thermostat). Unconfirmed lead for the next diagnosis: MidRise IDF has 24 `Coil:Cooling` / 24 `Controller:OutdoorAir` / 24 `AirTerminal:` objects (~1 per zone) but zero `SetpointManager:` objects — consistent with a DOAS/ventilation-air coil holding a fixed leaving-air-temperature control point independent of the zone thermostat, though this was not confirmed (out of scope for this employee session per the explicit stop rule). No further variants attempted; no cluster upload; no array job submitted. | **BLOCKED — fix v2 mechanism falsified by smoke evidence, needs fresh diagnosis of the actual winter-cooling driver** | STOP. Manager must identify what in the apartment IDFs actually produces the winter `Cooling:EnergyTransfer` (likely not the zone `ThermostatSetpoint:DualSetpoint`) before any further fix attempt. Smoke evidence preserved in `outputs_step8/campaign_smoke_v2/` (1a) and `outputs_step8/campaign_smoke_v2_1b/` (1b). Current `integration.py` state: `COOLFIX_WINTER_COOL_SP` left at 40.0 (last-tested value) locally, not uploaded. |
 | 2026-07-08 (manager design review — §9.1 option 2 CHOSEN, fix v2 spec'd) | Fresh manager session verified every §9 claim directly in `eSim_bem_utils_3J/integration.py` (last-numeric-field read, flat single-block compact builder, call site, Compact path live in campaign) and chose **option 2**, implemented via the **existing `create_monthly_compact_schedule()` helper (integration.py:592)** — per-month Through: blocks, stays Schedule:Compact, already exercised for lighting. Filename-gated inside `inject_schedules()` (ApartmentMidRise/ApartmentHighRise substrings) → single-file change, houses/office provably untouched (param default None). Winter months flat 28.0 (never below the 27.0 absence setback), summer months = today's 24.0/27.0 logic. Full spec, kept-v1-artifacts rationale, and a new static injected-`in.idf` verification step (would have caught v1 pre-sim): `step8_coolfix_implementation_plan.md` "Fix v2" section. Employee prompt rewritten; smoke to run locally. | **FIX v2 READY FOR EXECUTION** | 1b fallback (40.0 lockout) = one-constant change, still pre-authorized once. |

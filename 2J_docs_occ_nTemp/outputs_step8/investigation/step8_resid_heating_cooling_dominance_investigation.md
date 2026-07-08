@@ -1,6 +1,6 @@
 # 2J Step 8 — Residential Heating/Cooling Dominance Investigation (§4 Physical Plausibility)
 
-**Authored:** 2026-07-07 · **Status:** ROOT CAUSE ESTABLISHED (inherited from 3J, confirmed on 2J data) — fix NOT applied; re-sim SEQUENCED AFTER the 3J Leg-2 coolfix is executed and verified (user decision 2026-07-07)
+**Authored:** 2026-07-07 · **Status:** ROOT CAUSE SUPERSEDED 2026-07-08 (see §7) — the 3J coolfix falsified Mechanism A; true cause = metering artifact (thermostat-independent ERV ventilation air on `Cooling:EnergyTransfer`). **NO re-sim needed for 2J** — the planned 3,000-run scope is CANCELLED; revised fix = re-aggregation + validator re-base only (2J-equivalent of 3J Fix v3), sequenced after the 3J canonical full-campaign regen (cluster currently unavailable)
 **Why this exists:** while fixing the same anomaly in the 3J Leg-2 two-channel report, the user
 noticed the 2J (single-channel) `outputs_step8/step8_validation_report.html` §4 shows the same
 signature: residential cooling rivals or exceeds heating in cold Canadian climate zones. Since
@@ -123,8 +123,77 @@ overstated for MidRise/HighRise); either hold those claims or complete the 2J re
 
 ---
 
+## 7. SUPERSEDING UPDATE (2026-07-08) — true root cause is a METERING ARTIFACT; Mechanism A retired; NO 2J re-sim
+
+The 3J coolfix execution **falsified Mechanism A experimentally**: raising the apartment winter
+cooling setpoint 24.0 → 28.0 → 40.0 °C (verified-correct injected schedules) left DJF
+`Cooling:EnergyTransfer` unchanged (~100–104% of pre-fix). The manager then root-caused the
+anomaly from the preserved smoke outputs — full trace in the 3J investigation **§11**
+(`3J_docs_occ_nTemp/Leg2_2-split/Step8_docs/investigation/step8_resid_heating_cooling_dominance_investigation.md`):
+
+- `Cooling:EnergyTransfer` = Σ `Zone Air System Sensible Cooling Energy` per zone (proven from
+  `eplusout.mtd`) — net sensible cooling delivered by **any** air system, NOT compressor energy.
+- Every apartment zone in these templates has a thermostat-independent
+  `ZoneHVAC:EnergyRecoveryVentilator` (24 in MidRise, 46 in HighRise; HX only, no coil, no
+  thermostat link). In a cold-climate winter, post-heat-recovery supply air is below room
+  temperature → metered as "cooling" at **zero electricity**. The compressor never ran in
+  winter, even at the 24.0 °C setpoint. Houses have no per-zone ventilation air system — that,
+  not their thermostat, is why SingleD/OtherDwelling looked "clean".
+- On the true **end-use** metric (ABUPS End Uses: Cooling Electricity vs Heating fuel), 3J's
+  CZ7A apartments came out **heating-dominated** (cooling/heating 0.67× MidRise, 0.71×
+  HighRise); the residual 1.4–1.8× cooling-heaviness in 6A/6B is a code-prototype
+  characteristic (dense ASHRAE gains + tight STD2022 envelope + ERV recovery) → paper caveat,
+  not a bug. 3J's re-based report was verified and accepted 2026-07-08 (0 FAIL).
+
+**Consequences for this doc:**
+
+- **§2 Mechanism A is RETIRED.** The frozen 24.0 °C setpoint drives nothing in winter; the §1
+  table reads `heating_ET_kWh`/`cooling_ET_kWh` — the artifact meter — so it demonstrates the
+  metric asymmetry, not a physical defect. The "implausibly low" Winnipeg apartment heating in
+  §1 is likewise an ET-basis reading, to be re-judged on end-use fuel. Mechanism B (one Z6
+  envelope for all CZs) still stands as a separate, real limitation → paper note.
+- **§4 option 1 (patched IDFs + 3,000-run re-sim) is CANCELLED.** The 2J templates were never
+  broken and were never modified. All 6,000 existing 2J runs remain valid.
+- **§4 option 3 survives, re-based:** the dominance gate must compare **end-use** cooling
+  electricity vs heating fuel (not ET), mirroring 3J's re-based gate 4.9 (FAIL > 2.0× in 7A;
+  WARN > 1.25× in 6A/6B/7A), plus relabeling any ET-based §4 chart as "air-system delivered
+  sensible energy (incl. ventilation air)".
+- **§6 test method is obsolete** (it probes the artifact meter). The 2J acceptance test is the
+  3J one: extractor dry-run against a run with known `eplustbl.csv` End-Uses values, then
+  end-use ratio table per archetype × CZ.
+
+**Revised 2J fix (2J-equivalent of 3J Fix v3 — re-aggregation only):**
+
+1. 2J's runner persists `eplusout.sql` per run by design (`Step8_docs/eSim_bem_utils_2J/main.py:1994`
+   — same docstring/mechanism as 3J), so the ABUPS End Uses table is already on cluster scratch
+   for all 6,000 runs. Port 3J's `extract_enduse_annual.py` (stdlib sqlite,
+   `TabularDataWithStrings` / `AnnualBuildingUtilityPerformanceSummary` / `End Uses`; **keep the
+   3J unit fix — house prototypes report kBtu, apartments GJ**) to the 2J campaign layout →
+   `agg_enduse_annual.csv`.
+2. Add the end-use dominance gate + end-use table to `08_simulation_val.py` §4 and relabel the
+   existing ET-based split; regenerate `outputs_step8/step8_validation_report.html`.
+3. Both steps run on the cluster via `sbatch` (extractor, then validator
+   `--dependency=afterok:`). **Blocked until Speed is back** (unavailable as of 2026-07-08);
+   sequence after the 3J canonical full-campaign regen so the ported extractor is re-verified
+   first.
+4. Expected outcome (to confirm, not assume): 2J's ET ratios (3.36×/1.86×) are milder than 3J's
+   ET ratios were, and 3J's end-use result flipped 7A to heating-dominated — 2J plausibly
+   lands at/below WARN territory. The gate decides.
+
+**Paper implication — materially improved vs §5's warning:** `readySubmission.md`'s EUI /
+site-energy / SHEU numbers were **never affected** (site energy is metered correctly; the
+artifact only affects the ET-based heating-vs-cooling split reading). What remains for the paper
+is (a) re-basing any heating-vs-cooling-dominance claim on the end-use table once extracted, and
+(b) the Mechanism-B and prototype-cooling-heaviness caveats. The "hold the submission for a
+3,000-run re-sim" tension in §5 is dissolved.
+
+---
+
 ## Progress Log
 
 | Date | Action | Status | Notes |
 |------|--------|--------|-------|
 | 2026-07-07 | Investigation opened; anomaly confirmed on 2J data (this doc) | ROOT CAUSE ESTABLISHED — awaiting 3J coolfix verification before 2J re-sim GO | User spotted the same §4 signature in the 2J report during the 3J investigation. Confirmed from local `outputs_step8/agg/agg_annual.csv`: CZ7A 2022 cooling/heating MidRise 3.36x, HighRise 1.86x (houses 0.71x/0.94x — fine); ratio stable across all 5 campaign years → static-input artifact. Root cause = same two template mechanisms as 3J (templates live in THIS tree; 3J borrows them); Mechanism A already probe-proven on the same IDFs+EPW in the 3J investigation §8.1. 2J gates 4.2/4.3 confirmed PASS/WARN-only (`08_simulation_val.py:620-640`) — same validator gap. Scope if GO: 3,000/6,000 runs + agg/val/Step-9 refresh; sequencing per user = 3J first, verify, then 2J. No code/IDF modified. |
+| 2026-07-08 (later) | Execution package authored (manager): `step8_enduse_rebase_implementation_plan.md` + `step8_enduse_rebase_employee_prompt.md` (this folder) | READY FOR EXECUTION — local-first, ZERO sbatch (login-node ls/tar/scp only); fresh Sonnet employee session | Un-blocks §7's plan without waiting for cluster compute: fetch 600-file 2022 `eplustbl.csv` subset (CZ 6A/6B/7A × 4 arch) from scratch via one-shot tar+scp (3J precedent), extract locally (kBtu/GJ unit-aware), add gate 4.9/4.10 + end-use chart + ET relabel + `--section` arg to `08_simulation_val.py`, produce §4-local + merged HTMLs; canonical report untouched until the cluster-era full regen. |
+| 2026-07-08 | Root cause superseded (§7 added): metering artifact, Mechanism A retired | RE-SIM CANCELLED — revised fix = re-aggregation + validator re-base (3J Fix-v3 port); BLOCKED on cluster availability | 3J fix v2 smoke falsified Mechanism A (24/28/40 °C → DJF cooling ET unchanged); true cause = thermostat-independent ERV ventilation air on `Cooling:EnergyTransfer` (3J investigation §11). 3J's re-based end-use report verified & accepted 2026-07-08 (CZ7A apartments heating-dominated 0.67–0.71×; 0 FAIL). 2J templates never broken; all 6,000 runs stay valid; `eplusout.sql` persisted per run (`eSim_bem_utils_2J/main.py:1994`). Revised plan in §7: port `extract_enduse_annual.py` (with kBtu/GJ unit fix) + end-use dominance gate + ET relabel in `08_simulation_val.py`, regen report via chained sbatch — after 3J canonical regen, once Speed is back. Paper: readySubmission.md EUI/site-energy numbers unaffected; only dominance-split claims need re-basing. No code/IDF modified. |
+| 2026-07-08 (later) | §7 revised fix EXECUTED, local-only (2JV3-A…F, employee); full detail logged in `step8_enduse_rebase_implementation_plan.md` | **CLOSED — gate 4.9 PASS, 0 FAIL, ratio table confirms end-use flip on 2J's own data** | Ported the 3J extractors (`eplustbl.csv` variant; dry-run exact-matched the 3J smoke ground truth 78.34/136.12), fetched a 600-file 2022 subset (CZ 6A=Montreal/6B=Calgary/7A=Winnipeg × 4 archetypes × 50 samples) from `/speed-scratch/o_iseri/GSSCanada/SimResults_Step8_corrected_v2/campaign_N50` via one `ls`+one `ls`+one one-shot `tar`+one `scp` (zero sbatch, zero compute), extracted 600/600 rows with 0 skips, hand-verified both unit families (GJ apartment + kBtu house) exactly against raw `eplustbl.csv`. **§1's original ET-basis table is superseded by the true end-use ratios (mean cooling_elec/mean heating_fuel, n=50/cell):** HighRise 6A=0.34×/6B=0.37×/7A=0.26×; MidRise 6A=0.40×/6B=0.32×/7A=0.26×; OtherDwelling 6A=0.35×/6B=0.20×/7A=0.20×; SingleD 6A=0.22×/6B=0.14×/7A=0.15× — every archetype × CZ is heating-dominated (≤0.40×), well under both the 1.25× WARN and 2.0× FAIL thresholds, and more decisively than 3J's 0.67–0.71× CZ7A result. Added gate 4.9 (can FAIL; PASSed) + gate 4.10 (INFO table) + a new true-end-use chart to `08_simulation_val.py` §4, relabeled the ET-based gates 4.2/4.3 and chart as "air-system delivered sensible energy (incl. ventilation air)" without changing their PASS/WARN logic, and added a `--section` CLI flag. Produced `step8_validation_report_v3_section4_local.html` (local §4-only run) and `step8_validation_report_v3_merged.html` (spliced into a copy of canonical; scorecard 24→25 PASS, 3→4 INFO, 0 WARN/FAIL; non-§4 sections verified byte-identical; canonical file untouched, md5-verified). **Paper implication:** the §0/§1 "implausibly low apartment heating" and cooling-exceeds-heating readings were entirely an artifact of the `:EnergyTransfer` metric; on true fuel/electricity end-use energy 2J's residential heating/cooling split is physically unremarkable in every tested cold CZ. `readySubmission.md` EUI/site-energy numbers remain unaffected (as established in §7); any heating-vs-cooling-dominance narrative in the paper should now cite this end-use table, not the §0/§1 ET table. Full-campaign canonical regen (all 6,000 runs via sqlite extractor + full validator, chained sbatch) remains a separate later-phase task once Speed compute is back, sequenced after the 3J canonical regen — out of scope for this pass. |

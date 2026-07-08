@@ -703,40 +703,10 @@ def _plot_enduse_split(shares):
         ax.bar(x, vals, bottom=bottom, color=color, alpha=0.85, label=label)
         bottom += vals
     ax.set_xticks(x); ax.set_xticklabels(shares.index, color=THEME["text"])
-    ax.set_ylabel("Share of air-system delivered sensible energy", color=THEME["subtext"])
-    ax.set_title("§4  Residential heating/cooling/other share by CZ — air-system\n"
-                 "delivered sensible energy incl. ventilation air (2022, all archetypes)",
+    ax.set_ylabel("Share of resid. end-use energy transfer", color=THEME["subtext"])
+    ax.set_title("§4  Residential heating/cooling/other share by CZ (2022, all archetypes)",
                  color=THEME["accent"], fontsize=10)
     _legend(ax, loc="upper right")
-    fig.tight_layout(); return fig
-
-
-def _plot_enduse_energy_split(gd9):
-    """True fuel/electricity end-use energy (Fix v3, 2026-07-08) — heating fuel vs
-    cooling electricity by archetype x CZ, backing gate 4.9/4.10. Unlike
-    _plot_enduse_split (air-system ET, can show cold ERV vent air as "cooling"),
-    this reads agg_enduse_annual.csv and is not subject to that artifact."""
-    archs = [a for a in ARCHETYPES_RESID if any(a == i[0] for i in gd9.index)]
-    czs = [c for c in ["6A", "6B", "7A"] if any(c == i[1] for i in gd9.index)]
-    fig, axes = plt.subplots(1, len(archs), figsize=(3.3 * len(archs), 4.0), squeeze=False)
-    fig.patch.set_facecolor(THEME["bg"])
-    axes = axes[0]
-    for ax, arch in zip(axes, archs):
-        _style_ax(ax)
-        x = np.arange(len(czs)); width = 0.35
-        heat = [gd9.loc[(arch, cz), "heating_total_GJ"] if (arch, cz) in gd9.index else np.nan
-                for cz in czs]
-        cool = [gd9.loc[(arch, cz), "cooling_elec_GJ"] if (arch, cz) in gd9.index else np.nan
-                for cz in czs]
-        ax.bar(x - width / 2, heat, width, color=THEME["red"], alpha=0.85, label="Heating fuel")
-        ax.bar(x + width / 2, cool, width, color=THEME["accent"], alpha=0.85, label="Cooling elec.")
-        ax.set_xticks(x); ax.set_xticklabels(czs, color=THEME["text"])
-        ax.set_title(arch, color=THEME["text"], fontsize=9)
-        if ax is axes[0]:
-            ax.set_ylabel("GJ (summed, all samples)", color=THEME["subtext"])
-    _legend(axes[-1], loc="upper right")
-    fig.suptitle("§4.9/4.10  True end-use energy: heating fuel vs cooling electricity "
-                 "(2022, gate-4.9 CZs)", color=THEME["accent"], fontsize=10)
     fig.tight_layout(); return fig
 
 
@@ -1547,7 +1517,6 @@ def _gate_enduse_split(ann):
                 f"<th>Cooling electricity (GJ)</th></tr></thead><tbody>{tbl_rows}</tbody></table>"
             )
             G.add("4", "4.10-enduse-table", "INFO", table_html, "Resid")
-            _chart("4", lambda: _plot_enduse_energy_split(gd9))
 
     _chart("4", lambda: _plot_enduse_split(shares))
 

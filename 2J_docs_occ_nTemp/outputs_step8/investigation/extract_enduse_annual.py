@@ -1,14 +1,26 @@
-"""extract_enduse_annual.py — Step 8 Fix v3 End-Uses extractor (3J Leg-2).
+"""extract_enduse_annual.py — Step 8 Fix v3 End-Uses extractor (2J port).
 
-Reads AnnualBuildingUtilityPerformanceSummary / End Uses (Heating, Cooling) from every
-campaign run's eplusout.sql and writes one row per run to agg_enduse_annual.csv. Stdlib
+Ported from 3J_docs_occ_nTemp/Leg2_2-split/Step8_docs/investigation/extract_enduse_annual.py
+(2026-07-08). Reads AnnualBuildingUtilityPerformanceSummary / End Uses (Heating, Cooling) from
+every campaign run's eplusout.sql and writes one row per run to agg_enduse_annual.csv. Stdlib
 only (os, glob, csv, re, sqlite3) so it runs under any cluster python module. See
-step8_coolfix_implementation_plan.md "Fix v3" and
-step8_resid_heating_cooling_dominance_investigation.md SS11.
+step8_enduse_rebase_implementation_plan.md and
+step8_resid_heating_cooling_dominance_investigation.md SS7/SS11 (3J companion doc).
+
+Cluster/full-campaign path only — NOT used in this pass (2JV3 runs entirely off the local
+eplustbl.csv variant, extract_enduse_annual_from_tbl.py, per the zero-sbatch constraint). Ported
+now so it's ready for the later full-campaign canonical regen (all 6,000 runs via sbatch) once
+Speed compute is back.
+
+Only the default path resolution changed vs the 3J original: 2J's outputs_step8/ sits directly
+under 2J_docs_occ_nTemp/ (no intermediate Step8_docs/ layer), so OUT_PATH resolves one level
+shallower. Cell/sample regexes unchanged (confirmed identical layout,
+eSim_bem_utils_2J/main.py:2056).
 
 Usage: py investigation/extract_enduse_annual.py
-Env:   STEP8_CAMP_DIR (default /speed-scratch/o_iseri/step8_2split/campaign)
-       STEP8_ENDUSE_OUT (default <this file's Step8_docs>/outputs_step8/agg/agg_enduse_annual.csv)
+Env:   STEP8_CAMP_DIR (default /speed-scratch/o_iseri/step8_2j/campaign — placeholder, confirm
+       actual 2J scratch root before cluster use)
+       STEP8_ENDUSE_OUT (default <outputs_step8>/agg/agg_enduse_annual.csv)
 """
 import csv
 import glob
@@ -17,13 +29,13 @@ import re
 import sqlite3
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))          # Step8_docs/investigation/
-STEP8_DOCS = os.path.dirname(HERE)                          # Step8_docs/
+HERE = os.path.dirname(os.path.abspath(__file__))          # outputs_step8/investigation/
+OUTPUTS_STEP8 = os.path.dirname(HERE)                       # outputs_step8/
 
-CAMP_DIR = os.environ.get("STEP8_CAMP_DIR", "/speed-scratch/o_iseri/step8_2split/campaign")
+CAMP_DIR = os.environ.get("STEP8_CAMP_DIR", "/speed-scratch/o_iseri/step8_2j/campaign")
 OUT_PATH = os.environ.get(
     "STEP8_ENDUSE_OUT",
-    os.path.join(STEP8_DOCS, "outputs_step8", "agg", "agg_enduse_annual.csv"),
+    os.path.join(OUTPUTS_STEP8, "agg", "agg_enduse_annual.csv"),
 )
 
 QUERY = """

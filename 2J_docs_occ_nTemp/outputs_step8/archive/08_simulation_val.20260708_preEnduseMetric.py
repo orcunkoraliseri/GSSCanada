@@ -74,7 +74,6 @@ class SimulationValidator:
         self._annual    = None
         self._diurnal   = None
         self._peak      = None
-        self._enduse    = None
 
         self.results    = {}
         self.gates      = []
@@ -102,15 +101,6 @@ class SimulationValidator:
         if self._peak is None:
             self._peak = pd.read_csv(os.path.join(self.agg_dir, 'agg_peak.csv'))
         return self._peak
-
-    def _load_enduse(self):
-        """agg_enduse_annual.csv (Fix v3 port, gate 4.9/4.10) — a 2022 subset (n=50/cell,
-        CZ 6A/6B/7A x 4 archetypes), NOT the full 6,000-run set. Empty DataFrame if absent
-        (gate degrades to INFO rather than raising)."""
-        if self._enduse is None:
-            p = os.path.join(self.agg_dir, 'agg_enduse_annual.csv')
-            self._enduse = pd.read_csv(p) if os.path.exists(p) else pd.DataFrame()
-        return self._enduse
 
     def _resolve_run_dir(self, rel_path):
         """run_dir in agg_meta is relative to outputs_dir."""
@@ -638,9 +628,7 @@ class SimulationValidator:
         lvl         = 'PASS' if cold_hotter else 'WARN'
         s_str       = ' → '.join([f'{c} {s:.2f}' for c, s in zip(avail, shares)])
         self._gate(lvl, '4.2',
-                   f'Air-system delivered sensible energy (incl. ventilation air) — '
-                   f'heating share rises cold→warm: {s_str}',
-                   f'7A/5C ratio {shares[-1]/shares[0]:.2f}')
+                   f'Heating share rises cold→warm: {s_str}', f'7A/5C ratio {shares[-1]/shares[0]:.2f}')
 
         # 4.3 Cooling present in milder CZ summers
         cool_by_cz = annual.groupby('cz').apply(
@@ -648,8 +636,7 @@ class SimulationValidator:
         cool_min   = float(cool_by_cz.min())
         lvl        = 'PASS' if cool_min > 0.05 else 'WARN'
         self._gate(lvl, '4.3',
-                   f'Air-system delivered sensible energy (incl. ventilation air) — '
-                   f'non-zero cooling present: min CZ cooling share {cool_min:.3f} (>0.05)',
+                   f'Non-zero cooling present: min CZ cooling share {cool_min:.3f} (>0.05)',
                    f'{cool_min:.3f}')
 
         # 4.4 Archetype EUI ordering: SingleD > HighRise
@@ -663,111 +650,15 @@ class SimulationValidator:
 
         fig  = self._plot_eui_benchmark(annual)
         fig2 = self._plot_heat_cool_split(annual)
-        charts.append(self._fig_to_b64(fig))
-        charts.append((
-            '⚠ Known metering artifact, kept for transparency — do NOT cite this chart for a '
-            'heating-vs-cooling claim. This split reads Heating:EnergyTransfer / '
-            'Cooling:EnergyTransfer (air-system delivered sensible energy, incl. ventilation '
-            'air). Every apartment zone has a thermostat-independent ERV that meters cold '
-            'post-heat-recovery supply air as "cooling" at zero electricity in winter, which '
-            'inflates the cooling share shown here in cold CZs. See the true end-use-energy '
-            'chart below (gate 4.9/4.10), which supersedes this one.',
-            self._fig_to_b64(fig2),
-        ))
-
-        # 4.9/4.10 — true end-use energy heat-vs-cool dominance (Fix v3 port, 2026-07-08).
-        # 4.2/4.3 above read heating_ET_kWh/cooling_ET_kWh (:EnergyTransfer, air-system
-        # delivered sensible energy incl. ventilation air) and can only ever PASS/WARN —
-        # every apartment zone here has a thermostat-independent ERV that meters cold
-        # post-heat-recovery supply air as "cooling" at zero electricity in winter, which
-        # is why 4.2/4.3 alone can't catch a real heat/cool dominance regression (see
-        # outputs_step8/investigation/step8_resid_heating_cooling_dominance_investigation.md
-        # §7/§11). Gate 4.9 reads true fuel/electricity end-use energy instead (ABUPS
-        # "End Uses": Cooling Electricity vs Heating fuel), from agg_enduse_annual.csv —
-        # a 2022 subset (n=50/cell) covering CZ 6A/6B/7A x all 4 archetypes, ported via
-        # investigation/extract_enduse_annual_from_tbl.py. This gate CAN FAIL.
-        ARCH_ORDER = ['SingleD', 'MidRise', 'OtherDwelling', 'HighRise']
-        DOMINANCE_CZS = ['6A', '6B', '7A']
-        enduse = self._load_enduse()
-        if enduse.empty:
-            self._gate('INFO', '4.9',
-                       'agg_enduse_annual.csv absent — run '
-                       'investigation/extract_enduse_annual_from_tbl.py (Fix v3 port) to '
-                       'populate the end-use-energy dominance gate.', '')
-        else:
-            e9 = enduse.copy()
-            e9['scenario'] = e9['scenario'].astype(str)
-            e9 = e9[(e9['scenario'] == '2022') & (e9['cz'].isin(DOMINANCE_CZS))]
-            for col in ('heating_gas_GJ', 'heating_elec_GJ', 'heating_district_GJ', 'cooling_elec_GJ'):
-                e9[col] = pd.to_numeric(e9[col], errors='coerce')
-            e9['heating_total_GJ'] = (e9['heating_gas_GJ'] + e9['heating_elec_GJ']
-                                      + e9['heating_district_GJ'])
-            gd9 = e9.groupby(['arch', 'cz'])[['heating_total_GJ', 'cooling_elec_GJ']].sum()
-            archs9 = [a for a in ARCH_ORDER if a in e9['arch'].unique()]
-
-            fail9, warn9 = False, False
-            ratios = {}   # (arch, cz) -> ratio; ALL THREE tested CZs kept, not just 7A
-            for arch in archs9:
-                for cz in DOMINANCE_CZS:
-                    if (arch, cz) not in gd9.index:
-                        continue
-                    h = gd9.loc[(arch, cz), 'heating_total_GJ']
-                    c = gd9.loc[(arch, cz), 'cooling_elec_GJ']
-                    ratio = c / h if h else float('nan')
-                    ratios[(arch, cz)] = ratio
-                    if cz == '7A' and ratio > 2.0:
-                        fail9 = True
-                    if ratio > 1.25:
-                        warn9 = True
-
-            if ratios:
-                lvl9 = 'FAIL' if fail9 else ('WARN' if warn9 else 'PASS')
-                # Message prints ratios for ALL THREE tested CZs (not just 7A) so a
-                # 6A/6B WARN is never hidden behind a 7A-only summary.
-                by_cz_msg = '; '.join(
-                    f'{cz}: ' + ', '.join(f'{a}={ratios[(a, cz)]:.2f}x' for a in archs9
-                                          if (a, cz) in ratios)
-                    for cz in DOMINANCE_CZS)
-                note9 = ('>2.0x in CZ 7A — dominance regression' if fail9 else
-                         '>1.25x in >=1 of CZ 6A/6B/7A — check' if warn9 else
-                         '<=1.25x across CZ 6A/6B/7A')
-                self._gate(lvl9, '4.9',
-                           f'Cooling-electricity/heating end-use-energy ratio by archetype, '
-                           f'2022 subset, n=50/cell: {by_cz_msg} ({note9})', '')
-
-                # 4.10 end-use table — heating fuel vs cooling electricity, archetype x CZ,
-                # from agg_enduse_annual.csv, explicitly labeled as n=50-sample sums (site GJ).
-                tbl_rows = []
-                for arch in archs9:
-                    for cz in DOMINANCE_CZS:
-                        if (arch, cz) not in gd9.index:
-                            continue
-                        h = gd9.loc[(arch, cz), 'heating_total_GJ']
-                        c = gd9.loc[(arch, cz), 'cooling_elec_GJ']
-                        tbl_rows.append(f'{arch}/{cz}: heat={h:.1f} GJ, cool={c:.1f} GJ')
-                self._gate('INFO', '4.10',
-                           '2022 subset heating fuel (gas+elec+district) vs cooling '
-                           'electricity, n=50-sample sums per archetype x CZ: '
-                           + '; '.join(tbl_rows), '')
-                charts.append((
-                    '✓ True fuel/electricity end-use energy (ABUPS End Uses: heating fuel vs '
-                    'cooling electricity) — this is the chart to cite for any heating-vs-cooling '
-                    'dominance claim; it supersedes the ET-based chart above, which the ERV '
-                    'ventilation-air metering artifact makes unreliable for that purpose.',
-                    self._fig_to_b64(self._plot_enduse_energy_split(gd9, archs9)),
-                ))
+        charts.extend([self._fig_to_b64(fig), self._fig_to_b64(fig2)])
 
         return {'charts': charts}
 
     def _plot_eui_benchmark(self, annual):
         archs  = ['SingleD', 'MidRise', 'OtherDwelling', 'HighRise']
         czs    = sorted(annual['cz'].unique())
-        # Deliberately avoids CATPPUCCIN['accent'] (blue) and CATPPUCCIN['red']: the two
-        # charts directly below this one in §4 use blue=Cooling / red=Heating, and reusing
-        # those colors here for archetypes reads as a false color-coding link between the
-        # two unrelated legends (e.g. HighRise in red here vs Heating in red there).
-        colors = [CATPPUCCIN['green'], CATPPUCCIN['yellow'],
-                  CATPPUCCIN['peach'], CATPPUCCIN['mauve']]
+        colors = [CATPPUCCIN['accent'], CATPPUCCIN['green'],
+                  CATPPUCCIN['yellow'], CATPPUCCIN['red']]
         x      = np.arange(len(czs))
         width  = 0.2
 
@@ -817,42 +708,10 @@ class SimulationValidator:
 
         ax.set_xticks(x); ax.set_xticklabels(czs, color=CATPPUCCIN['text'])
         ax.set_ylabel('Fraction of total electricity', color=CATPPUCCIN['subtext'])
-        ax.set_title('Heating / Cooling / Other Split by CZ — air-system delivered\n'
-                     'sensible energy (incl. ventilation air)',
-                     color=CATPPUCCIN['accent'], pad=10)
+        ax.set_title('Heating / Cooling / Other Split by CZ', color=CATPPUCCIN['accent'], pad=10)
         ax.legend(facecolor=CATPPUCCIN['surface2'], labelcolor=CATPPUCCIN['text'])
 
         fig.tight_layout(pad=1.5)
-        return fig
-
-    def _plot_enduse_energy_split(self, gd9, archs9):
-        """True fuel/electricity end-use energy (Fix v3 port, 2026-07-08) — heating fuel
-        vs cooling electricity by archetype x CZ, backing gate 4.9/4.10. Unlike
-        _plot_heat_cool_split (:EnergyTransfer-based — subject to the ERV
-        ventilation-air metering artifact, investigation §7/§11), this reads
-        agg_enduse_annual.csv directly and is the chart to cite in the paper."""
-        czs = ['6A', '6B', '7A']
-        czs = [c for c in czs if any(c == i[1] for i in gd9.index)]
-        fig, axes = plt.subplots(1, len(archs9), figsize=(3.3 * len(archs9), 4.0), squeeze=False)
-        fig.patch.set_facecolor(CATPPUCCIN['bg'])
-        axes = axes[0]
-        for ax, arch in zip(axes, archs9):
-            self._styled_ax(ax)
-            x = np.arange(len(czs)); width = 0.35
-            heat = [gd9.loc[(arch, cz), 'heating_total_GJ'] if (arch, cz) in gd9.index else np.nan
-                    for cz in czs]
-            cool = [gd9.loc[(arch, cz), 'cooling_elec_GJ'] if (arch, cz) in gd9.index else np.nan
-                    for cz in czs]
-            ax.bar(x - width / 2, heat, width, color=CATPPUCCIN['red'], alpha=0.85, label='Heating fuel')
-            ax.bar(x + width / 2, cool, width, color=CATPPUCCIN['accent'], alpha=0.85, label='Cooling elec.')
-            ax.set_xticks(x); ax.set_xticklabels(czs, color=CATPPUCCIN['text'])
-            ax.set_title(arch, color=CATPPUCCIN['text'], fontsize=9)
-            if ax is axes[0]:
-                ax.set_ylabel('GJ (n=50-sample sum)', color=CATPPUCCIN['subtext'])
-        axes[-1].legend(loc='upper right', facecolor=CATPPUCCIN['surface2'], labelcolor=CATPPUCCIN['text'])
-        fig.suptitle('4.9/4.10  True end-use energy: heating fuel vs cooling electricity\n'
-                     '(2022 subset, n=50/cell, gate-4.9 CZs)', color=CATPPUCCIN['accent'], fontsize=10)
-        fig.tight_layout()
         return fig
 
     # -----------------------------------------------------------------------
@@ -1211,18 +1070,13 @@ class SimulationValidator:
         pct    = 100 * n_pass / n_tot if n_tot > 0 else 0
 
         def multi_chart(charts):
-            """Each entry is either a base64 PNG string, or a (caption_html, b64) tuple
-            when the chart needs a callout directly under it (e.g. flagging a superseded
-            metric) — see the §4 ET-artifact / true-end-use pair."""
             if not charts:
                 return '<p style="color:#585b70;font-size:0.8rem">No chart generated.</p>'
             parts = []
             for c in charts:
-                caption, b64 = c if isinstance(c, tuple) else (None, c)
-                cap_html = f'<p class="note" style="margin-top:6px">{caption}</p>' if caption else ''
                 parts.append(f'<div class="chart-wrap" style="margin-bottom:16px">'
-                              f'<img src="data:image/png;base64,{b64}" alt="chart" '
-                              f'style="max-width:100%;height:auto;border-radius:8px">{cap_html}</div>')
+                              f'<img src="data:image/png;base64,{c}" alt="chart" '
+                              f'style="max-width:100%;height:auto;border-radius:8px"></div>')
             return '\n'.join(parts)
 
         def gates_rows(prefix):
@@ -1472,28 +1326,17 @@ class SimulationValidator:
     # -----------------------------------------------------------------------
     # run_all
     # -----------------------------------------------------------------------
-    def run_all(self, section=None):
-        """section: 1-7 to run only that section (for a scoped/local run); None (default)
-        runs all 7. Sections not run leave self.results[key] unset — build_html_report
-        already defaults missing keys to {} (see `s = {k: self.results.get(k, {}) ...}`),
-        so a --section run still produces a valid (partial) report."""
+    def run_all(self):
         t0 = datetime.datetime.now()
         print(f'Step 8 validation started at {t0.strftime("%H:%M:%S")}')
 
-        section_map = {
-            1: ('s1', self.validate_run_integrity),
-            2: ('s2', self.validate_injection_fidelity),
-            3: ('s3', self.validate_mc_convergence),
-            4: ('s4', self.validate_physical_plausibility),
-            5: ('s5', self.validate_load_shape_sanity),
-            6: ('s6', self.validate_shift_effect),
-            7: ('s7', self.validate_longitudinal),
-        }
-        to_run = [section] if section is not None else sorted(section_map)
-        for n in to_run:
-            key, fn = section_map[n]
-            self.results[key] = fn()
-
+        self.results['s1'] = self.validate_run_integrity()
+        self.results['s2'] = self.validate_injection_fidelity()
+        self.results['s3'] = self.validate_mc_convergence()
+        self.results['s4'] = self.validate_physical_plausibility()
+        self.results['s5'] = self.validate_load_shape_sanity()
+        self.results['s6'] = self.validate_shift_effect()
+        self.results['s7'] = self.validate_longitudinal()
         self.generate_summary_table()
 
         out_path = os.path.join(self.out_dir, 'step8_validation_report.html')
@@ -1530,8 +1373,6 @@ if __name__ == '__main__':
     ap.add_argument('--out-dir',
                     default=os.path.join(_repo, '2J_docs_occ_nTemp', 'outputs_step8'),
                     help='output dir for step8_validation_report.html (run_dir paths resolve against this)')
-    ap.add_argument('--section', type=int, default=None, choices=range(1, 8),
-                    help='Run only this section (1-7); omit for all sections')
     args = ap.parse_args()
     validator = SimulationValidator(
         sim_results_dir = args.sim_dir,
@@ -1539,4 +1380,4 @@ if __name__ == '__main__':
         agg_dir         = args.agg_dir,
         outputs_dir     = args.out_dir,
     )
-    validator.run_all(section=args.section)
+    validator.run_all()
