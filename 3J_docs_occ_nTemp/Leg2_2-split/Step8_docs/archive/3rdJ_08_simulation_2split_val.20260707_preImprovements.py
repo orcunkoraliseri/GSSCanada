@@ -16,7 +16,6 @@ report-only: skip heavy scans, just rebuild HTML from cached gate states.
 """
 from __future__ import annotations
 import os
-import re
 import sys
 import csv
 import json
@@ -58,17 +57,12 @@ N_MC = 50
 # --- §8D aggregation tables (produced by 3rdJ_08_simulation_2split_agg.py) ---
 AGG_DIR = OUT_DIR / "agg"
 AGG_FILES = {"diurnal": "agg_diurnal.csv", "peak": "agg_peak.csv",
-             "annual": "agg_annual.csv", "meta": "agg_meta.csv",
-             "enduse": "agg_enduse_annual.csv"}
+             "annual": "agg_annual.csv", "meta": "agg_meta.csv"}
 OFF_ELEC = "office_elec"        # facility-equivalent electricity meter (kW), office diurnal
 OFF_OCC  = "office_occ"         # total occupant-count meter (persons), office diurnal
 RESID_FAC = "Electricity:Facility"
 HIST_ARC   = ["2005", "2010", "2015", "2022"]      # pre-/through-COVID longitudinal arc
 BANDS_2030 = ["2030-conservative", "2030-hybrid", "2030-fullyhybrid"]
-LONG_SCEN_ORDER = HIST_ARC + BANDS_2030            # §6 longitudinal x-axis: arc, then 2030 fork
-LONG_METRICS = [("eui_kWh_m2", "EUI (kWh/m²)"), ("load_factor", "Load factor"),
-                ("midday_share", "Midday share"), ("mean_peak_hour", "Mean peak hour")]
-_RUN_RE = re.compile(r"sample_(\d+)_HH(.+)", re.IGNORECASE)   # matches 08_simulation_2split_agg.py
 
 # Residential EUI plausibility bands — NRCan SHEU-2019 Table 3.3b (total all-fuels,
 # SITE energy, kWh/m²): national central + regional min–max. Source: 2J deepResearch doc
@@ -202,6 +196,24 @@ def _chart(section: str, builder):
         _emit(section, builder())
     except Exception as e:
         print(f"  [plot-skip] §{section}: {e}", flush=True)
+
+
+# ---- §0 longitudinal arc --------------------------------------------------
+def _plot_arc(years, vals):
+    fig, ax = plt.subplots(figsize=(7, 4))
+    fig.patch.set_facecolor(THEME["bg"]); _style_ax(ax)
+    x = list(range(len(years)))
+    ax.plot(x, vals, "o-", color=THEME["accent"], lw=2, ms=7)
+    for xi, v in zip(x, vals):
+        ax.annotate(f"{v:.3f}", (xi, v), textcoords="offset points",
+                    xytext=(0, 9), ha="center", color=THEME["text"], fontsize=8)
+    if len(years) >= 2:
+        ax.axvspan(len(years) - 1.5, len(years) - 0.5, color=THEME["red"], alpha=0.06)
+    ax.set_xticks(x); ax.set_xticklabels(years, color=THEME["text"])
+    ax.set_ylabel("Weekday mean AT_HOME occupancy", color=THEME["subtext"])
+    ax.set_title("§0.4  Longitudinal WD AT_HOME arc (2005 → 2022)",
+                 color=THEME["accent"], pad=8)
+    fig.tight_layout(); return fig
 
 
 # ---- §1 campaign completeness ---------------------------------------------
@@ -504,383 +516,6 @@ def _plot_scenario_savings(office_rows, resid_rows):
     fig.tight_layout(pad=1.4); return fig
 
 
-# ---- §0 office historical arc (paired w/ resid arc) -----------------------
-def _plot_arc2(resid_years, resid_vals, office_years, office_vals):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§0.4/0.5  Longitudinal WD arc (2005 → 2022)", color=THEME["accent"], fontsize=11)
-    panels = [(axes[0], resid_years, resid_vals, "Weekday mean AT_HOME occupancy", "Residential AT_HOME"),
-              (axes[1], office_years, office_vals, "Weekday mean AT_WORK fraction", "Office AT_WORK")]
-    for ax, years, vals, ylab, ttl in panels:
-        _style_ax(ax)
-        if not years:
-            ax.set_title(f"{ttl} — no data", color=THEME["subtext"], fontsize=9)
-            continue
-        x = list(range(len(years)))
-        ax.plot(x, vals, "o-", color=THEME["accent"], lw=2, ms=7)
-        for xi, v in zip(x, vals):
-            ax.annotate(f"{v:.3f}", (xi, v), textcoords="offset points",
-                        xytext=(0, 9), ha="center", color=THEME["text"], fontsize=8)
-        if len(years) >= 2:
-            ax.axvspan(len(years) - 1.5, len(years) - 0.5, color=THEME["red"], alpha=0.06)
-        ax.set_xticks(x); ax.set_xticklabels(years, color=THEME["text"])
-        ax.set_ylabel(ylab, color=THEME["subtext"])
-        ax.set_title(ttl, color=THEME["text"], fontsize=9)
-    fig.tight_layout(); return fig
-
-
-# ---- §6 longitudinal trajectory 2005→2030 (both channels; reads §8D agg) --
-def _plot_longitudinal(ann):
-    fig, axes = plt.subplots(2, 4, figsize=(16, 7.5))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§6  Longitudinal trajectory 2005 → 2030 (2030 = 3-band scenario fork, "
-                 "shaded)", color=THEME["accent"], fontsize=11)
-    palette = [THEME["accent"], THEME["green"], THEME["yellow"], THEME["peach"], THEME["mauve"]]
-    x = list(range(len(LONG_SCEN_ORDER)))
-    for row, (chan, archs) in enumerate([("resid", ARCHETYPES_RESID), ("office", ARCHETYPES_OFFICE)]):
-        sub = ann[ann["channel"] == chan]
-        for col, (metric, ylab) in enumerate(LONG_METRICS):
-            ax = _style_ax(axes[row, col])
-            any_line = False
-            for i, arch in enumerate(archs):
-                a = sub[sub["arch"] == arch]
-                vals = [a[a["scenario"].astype(str) == s][metric].median() for s in LONG_SCEN_ORDER]
-                if all(pd.isna(v) for v in vals):
-                    continue
-                any_line = True
-                label = arch.replace("Office_", "") if row == 1 else arch
-                ax.plot(x, vals, "o-", color=palette[i % len(palette)], ms=4, lw=1.4, label=label)
-            ax.axvspan(3.5, len(x) - 0.5, color=THEME["red"], alpha=0.05)
-            ax.axvline(3.5, color=THEME["subtext"], ls="--", lw=0.8)
-            ax.set_xticks(x)
-            ax.set_xticklabels([s.replace("2030-", "'30\n") for s in LONG_SCEN_ORDER],
-                                color=THEME["text"], fontsize=6.5)
-            if row == 0:
-                ax.set_title(ylab, color=THEME["text"], fontsize=9)
-            if col == 0:
-                ax.set_ylabel("Resid" if row == 0 else "Office", color=THEME["subtext"], fontsize=9)
-            if any_line:
-                _legend(ax)
-    fig.tight_layout(pad=1.3, rect=[0, 0, 1, 0.95]); return fig
-
-
-# ---- §6 paired within-cell Δ, 2022 → 2030-fullyhybrid (both channels) -----
-def _paired_delta_resid(ann, peak):
-    r = ann[ann["channel"] == "resid"].copy()
-    r["scenario"] = r["scenario"].astype(str)
-    out = {}
-    for metric in ("eui_kWh_m2", "midday_share"):
-        piv = r.pivot_table(index=["cell", "sim_hh_id"], columns="scenario", values=metric, aggfunc="mean")
-        if {"2022", "2030-fullyhybrid"} <= set(piv.columns):
-            sub = piv[["2022", "2030-fullyhybrid"]].dropna()
-            if metric == "eui_kWh_m2":
-                d = 100 * (sub["2030-fullyhybrid"] - sub["2022"]) / sub["2022"].replace(0, np.nan)
-            else:
-                d = sub["2030-fullyhybrid"] - sub["2022"]
-            out[metric] = d.dropna().to_numpy()
-    pk = peak[peak["channel"] == "resid"].copy()
-    pk["scenario"] = pk["scenario"].astype(str)
-    piv = pk.pivot_table(index=["cell", "sim_hh_id"], columns="scenario",
-                          values="mean_peak_hour", aggfunc="mean")
-    if {"2022", "2030-fullyhybrid"} <= set(piv.columns):
-        sub = piv[["2022", "2030-fullyhybrid"]].dropna()
-        out["mean_peak_hour"] = (sub["2030-fullyhybrid"] - sub["2022"]).to_numpy()
-    return out
-
-
-def _paired_delta_office(ann):
-    o = ann[ann["channel"] == "office"].copy()
-    o["scenario"] = o["scenario"].astype(str)
-    out = {}
-    for metric in ("elec_total_kWh", "occ_mean_persons"):
-        piv = o.pivot_table(index="cell", columns="scenario", values=metric, aggfunc="mean")
-        if {"2022", "2030-fullyhybrid"} <= set(piv.columns):
-            sub = piv[["2022", "2030-fullyhybrid"]].dropna()
-            d = 100 * (sub["2030-fullyhybrid"] - sub["2022"]) / sub["2022"].replace(0, np.nan)
-            out[metric] = d.dropna().to_numpy()
-    return out
-
-
-def _plot_paired_delta(ann, peak):
-    rd = _paired_delta_resid(ann, peak)
-    od = _paired_delta_office(ann)
-    panels = [
-        ("Resid EUI Δ% (2030-full − 2022)", rd.get("eui_kWh_m2")),
-        ("Resid midday share Δ (abs)", rd.get("midday_share")),
-        ("Resid peak-hour Δ (h)", rd.get("mean_peak_hour")),
-        ("Office energy Δ% (2030-full − 2022)", od.get("elec_total_kWh")),
-        ("Office occupancy Δ% (2030-full − 2022)", od.get("occ_mean_persons")),
-    ]
-    panels = [p for p in panels if p[1] is not None and len(p[1])]
-    if not panels:
-        return None
-    fig, axes = plt.subplots(1, len(panels), figsize=(3.6 * len(panels), 4))
-    if len(panels) == 1:
-        axes = [axes]
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§6  Paired within-cell Δ, 2022 → 2030-fullyhybrid", color=THEME["accent"], fontsize=11)
-    for ax, (ttl, arr) in zip(axes, panels):
-        _style_ax(ax)
-        ax.hist(arr, bins=20, color=THEME["accent"], alpha=0.85)
-        ax.axvline(0, color=THEME["red"], ls="--", lw=1.3)
-        mean = float(np.mean(arr))
-        ax.axvline(mean, color=THEME["yellow"], lw=1.3, label=f"mean {mean:+.2f}")
-        ax.set_title(ttl, color=THEME["text"], fontsize=8)
-        ax.set_ylabel("n", color=THEME["subtext"])
-        _legend(ax)
-    fig.tight_layout(pad=1.3); return fig
-
-
-# ---- §6 Δ by climate zone, 2022 → 2030-fullyhybrid (both channels) --------
-def _delta_by_cz_resid(ann):
-    r = ann[ann["channel"] == "resid"].copy()
-    r["scenario"] = r["scenario"].astype(str)
-    e22 = r[r["scenario"] == "2022"].groupby("cz")["eui_kWh_m2"].mean()
-    e30 = r[r["scenario"] == "2030-fullyhybrid"].groupby("cz")["eui_kWh_m2"].mean()
-    m22 = r[r["scenario"] == "2022"].groupby("cz")["midday_share"].mean()
-    m30 = r[r["scenario"] == "2030-fullyhybrid"].groupby("cz")["midday_share"].mean()
-    czs = [c for c in CZ_LIST if c in e22.index and c in e30.index]
-    eui_pct = {c: 100 * (e30[c] - e22[c]) / e22[c] if e22[c] else np.nan for c in czs}
-    mid_abs = {c: (m30[c] - m22[c]) for c in czs if c in m22.index and c in m30.index}
-    return eui_pct, mid_abs
-
-
-def _delta_by_cz_office(ann):
-    o = ann[ann["channel"] == "office"].copy()
-    o["scenario"] = o["scenario"].astype(str)
-    e22 = o[o["scenario"] == "2022"].groupby("cz")["elec_total_kWh"].mean()
-    e30 = o[o["scenario"] == "2030-fullyhybrid"].groupby("cz")["elec_total_kWh"].mean()
-    czs = [c for c in CZ_LIST if c in e22.index and c in e30.index]
-    return {c: 100 * (e30[c] - e22[c]) / e22[c] if e22[c] else np.nan for c in czs}
-
-
-def _plot_delta_by_cz(ann):
-    r_eui, r_mid = _delta_by_cz_resid(ann)
-    o_e = _delta_by_cz_office(ann)
-    fig, axes = plt.subplots(1, 3, figsize=(13, 4))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§6  2022→2030-fullyhybrid Δ by climate zone", color=THEME["accent"], fontsize=11)
-    panels = [(axes[0], r_eui, "Resid EUI Δ% by CZ", THEME["accent"]),
-              (axes[1], r_mid, "Resid midday-share Δ (abs) by CZ", THEME["green"]),
-              (axes[2], o_e, "Office energy Δ% by CZ", THEME["peach"])]
-    for ax, data, ttl, color in panels:
-        _style_ax(ax)
-        if data:
-            czs = list(data.keys()); vals = [data[c] for c in czs]
-            ax.bar(czs, vals, color=color, alpha=0.85)
-            ax.axhline(0, color=THEME["subtext"], lw=0.6)
-        ax.set_title(ttl, color=THEME["text"], fontsize=8.5)
-    fig.tight_layout(pad=1.3); return fig
-
-
-# ---- §4 heating/cooling/other end-use split by CZ (residential) -----------
-def _enduse_shares_resid(ann):
-    r = ann[ann["channel"] == "resid"].copy()
-    r["scenario"] = r["scenario"].astype(str)
-    r = r[r["scenario"] == "2022"]
-    cols = ["heating_ET_kWh", "cooling_ET_kWh", "lights_kWh", "equip_kWh", "fan_kWh", "water_ET_kWh"]
-    for c in cols:
-        r[c] = pd.to_numeric(r[c], errors="coerce")
-    r = r.copy()
-    r["other_kWh"] = r[["lights_kWh", "equip_kWh", "fan_kWh", "water_ET_kWh"]].sum(axis=1)
-    g = r.groupby("cz")[["heating_ET_kWh", "cooling_ET_kWh", "other_kWh"]].mean()
-    g = g.reindex([c for c in CZ_LIST if c in g.index])
-    tot = g.sum(axis=1)
-    shares = g.div(tot, axis=0)
-    shares.columns = ["heating_share", "cooling_share", "other_share"]
-    return shares
-
-
-def _plot_enduse_split(shares):
-    fig, ax = plt.subplots(figsize=(8, 4.2))
-    fig.patch.set_facecolor(THEME["bg"]); _style_ax(ax)
-    x = list(range(len(shares)))
-    bottom = np.zeros(len(shares))
-    for col, color, label in [("heating_share", THEME["red"], "Heating"),
-                              ("cooling_share", THEME["accent"], "Cooling"),
-                              ("other_share", THEME["subtext"], "Lights+Equip+Fan+DHW")]:
-        vals = shares[col].to_numpy()
-        ax.bar(x, vals, bottom=bottom, color=color, alpha=0.85, label=label)
-        bottom += vals
-    ax.set_xticks(x); ax.set_xticklabels(shares.index, color=THEME["text"])
-    ax.set_ylabel("Share of resid. end-use energy transfer", color=THEME["subtext"])
-    ax.set_title("§4  Residential heating/cooling/other share by CZ (2022, all archetypes)",
-                 color=THEME["accent"], fontsize=10)
-    _legend(ax, loc="upper right")
-    fig.tight_layout(); return fig
-
-
-# ---- §5 seasonal diurnal decomposition (both channels; reads §8D agg) -----
-def _plot_seasonal_loadshape(diur):
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
-    fig.patch.set_facecolor(THEME["bg"])
-    fig.suptitle("§5  Seasonal diurnal load shape (2022, weekday)", color=THEME["accent"], fontsize=11)
-    for ax, (chan, meter, ttl, ylab) in zip(
-            axes, [("resid", RESID_FAC, "Residential facility electricity", "kW/dwelling"),
-                   ("office", OFF_ELEC, "Office electricity", "kW")]):
-        _style_ax(ax)
-        for season, col, ls in [("heating", THEME["accent"], "-"),
-                                 ("cooling", THEME["peach"], "-"),
-                                 ("all", THEME["subtext"], "--")]:
-            d = diur[(diur["channel"] == chan) & (diur["meter"] == meter) &
-                     (diur["scenario"].astype(str) == "2022") & (diur["season"] == season) &
-                     (diur["daytype"] == "weekday")]
-            if d.empty:
-                continue
-            p = d.groupby("hour")["value"].mean().reindex(range(24))
-            ax.plot(range(24), p.values, ls, color=col, ms=3, lw=1.6, label=season)
-        ax.axvspan(9, 17, color=THEME["yellow"], alpha=0.06)
-        ax.set_title(ttl, color=THEME["text"], fontsize=9)
-        ax.set_xlabel("Hour", color=THEME["subtext"])
-        ax.set_ylabel(ylab, color=THEME["subtext"])
-        ax.set_xlim(0, 23); _legend(ax)
-    fig.tight_layout(pad=1.4); return fig
-
-
-# ---- §2 IDF-text round-trip fidelity (both channels) -----------------------
-# Ported from 2J's Step8_docs/roundtrip_analysis.py: this parses the Schedule:Compact
-# block straight out of the injected IDF TEXT (regex, no EnergyPlus run / SQL access
-# needed) and diffs it against the source CSV. Generalised from 2J's exact-name lookup
-# ("Occ_Sch_HH_<id>") to a best-match search across ALL Schedule:Compact objects in the
-# IDF, since 3J's residential/office schedule-naming convention differs from 2J's and a
-# guessed exact name would silently produce a wrong (or missing) match.
-def _parse_all_compact_schedules(idf_text):
-    """{name: {'Weekday': arr24 or None, 'Weekend': arr24 or None}} for every
-    Schedule:Compact object with >=20 Until: pairs on a WD/WE 'For:' line."""
-    out = {}
-    for m in re.finditer(r'Schedule:Compact\s*,\s*\n\s*([^,]+)\s*,', idf_text, re.IGNORECASE):
-        name = m.group(1).strip()
-        block_end = idf_text.find(';', m.start())
-        if block_end < 0:
-            continue
-        block = idf_text[m.start():block_end + 1]
-        wd_arr = we_arr = None
-        for sec in re.split(r'(?i)For\s*:', block)[1:]:
-            label = sec.split('\n')[0].strip().rstrip(',').lower()
-            is_wd = 'weekday' in label
-            is_we = 'weekend' in label or 'allotherdays' in label
-            if not (is_wd or is_we):
-                continue
-            pairs = re.findall(r'Until\s*:\s*(\d+)\s*:\s*\d+\s*,[^\n]*\n\s*([\d.]+)', sec, re.IGNORECASE)
-            if not pairs:
-                pairs = re.findall(r'Until\s*:\s*(\d+)\s*:\s*\d+\s*,\s*([\d.]+)', sec, re.IGNORECASE)
-            if len(pairs) < 20:
-                continue
-            arr = np.zeros(24)
-            for h_str, v_str in pairs:
-                idx = int(h_str) - 1
-                if 0 <= idx < 24:
-                    arr[idx] = float(v_str)
-            if is_wd:
-                wd_arr = arr
-            elif is_we:
-                we_arr = arr
-        if wd_arr is not None or we_arr is not None:
-            out[name] = {"Weekday": wd_arr, "Weekend": we_arr}
-    return out
-
-
-def _best_match(schedules, target_wd):
-    """(name, mean_abs_err) for the Schedule:Compact whose WD array best fits target_wd."""
-    best = None
-    for name, d in schedules.items():
-        wd = d.get("Weekday")
-        if wd is None or len(wd) != len(target_wd):
-            continue
-        err = float(np.mean(np.abs(wd - target_wd)))
-        if best is None or err < best[1]:
-            best = (name, err)
-    return best
-
-
-def _gate_idf_roundtrip():
-    """P2 2.5: sample on-disk injected IDFs (if any are synced/present) and diff their
-    best-matching Schedule:Compact against the 2022 source CSV. Falls back to INFO —
-    same as every other §1-3 gate that depends on campaign output existing — when no
-    per-run *.idf files are found (e.g. campaign lives on cluster scratch, not synced)."""
-    # Residential: sample up to 15 (cell, sample) run dirs.
-    csv22 = S7_OUT / "BEM_Schedules_2split_2022.csv"
-    resid_errs = []
-    if csv22.exists() and CAMP.exists():
-        src = pd.read_csv(csv22, usecols=["SIM_HH_ID", "Day_Type", "Hour", "Occupancy_Schedule"])
-        src["SIM_HH_ID"] = src["SIM_HH_ID"].astype(str)
-        n_checked = 0
-        for cell_dir in sorted(CAMP.glob("*__*")):
-            if n_checked >= 15:
-                break
-            for samp_dir in sorted(cell_dir.glob("sample_*"))[:2]:
-                if n_checked >= 15:
-                    break
-                m = _RUN_RE.match(samp_dir.name)
-                if not m:
-                    continue
-                hh_id = m.group(2)
-                run_dir = samp_dir / "2022"
-                idfs = list(run_dir.glob("*.idf"))
-                if not idfs:
-                    continue
-                wd_src = src[(src["SIM_HH_ID"] == hh_id) & (src["Day_Type"] == "Weekday")] \
-                    .sort_values("Hour")["Occupancy_Schedule"].to_numpy()
-                if wd_src.shape[0] != 24:
-                    continue
-                txt = idfs[0].read_text(errors="replace")
-                match = _best_match(_parse_all_compact_schedules(txt), wd_src)
-                n_checked += 1
-                if match:
-                    _, abs_err = match
-                    resid_errs.append(100 * abs_err / max(float(np.mean(wd_src)), 1e-9))
-    if resid_errs:
-        arr = np.array(resid_errs)
-        G.add("2", "2.10-resid-roundtrip", "PASS" if arr.max() < 5 else "WARN",
-              f"Resid IDF-text round-trip (best-match Schedule:Compact vs 2022 CSV, "
-              f"n={len(arr)} sampled HH): median daily-mean err {np.median(arr):.2f}%, "
-              f"max {arr.max():.2f}% — direct IDF-text parse, no E+ SQL needed "
-              "(ported from 2J roundtrip_analysis.py; corrects gate 2.6's note).", "Resid")
-    else:
-        G.add("2", "2.10-resid-roundtrip", "INFO",
-              "Resid IDF-text round-trip: no on-disk per-run *.idf found to sample "
-              "(campaign IDFs live on cluster scratch, not synced locally) — the check "
-              "runs automatically once *.idf files are present under campaign_N50/.", "Resid")
-
-    # Office: sample up to 15 cells.
-    mult22 = S7_OUT / "office_presence_multiplier_2022.csv"
-    office_errs = []
-    if mult22.exists() and OFFICE.exists():
-        src = pd.read_csv(mult22)
-        n_checked = 0
-        for cell_dir in sorted(OFFICE.glob("*__*__*")):
-            if n_checked >= 15:
-                break
-            toks = cell_dir.name.split("__")
-            if len(toks) != 3:
-                continue
-            arch = toks[0]
-            idfs = list((cell_dir / "2022").glob("*.idf"))
-            if not idfs:
-                continue
-            wd_src = src[(src["office_archetype"] == arch) & (src["Day_Type"] == "Weekday")] \
-                .sort_values("Hour")["AT_WORK_fraction"].to_numpy()
-            if wd_src.shape[0] != 24:
-                continue
-            txt = idfs[0].read_text(errors="replace")
-            match = _best_match(_parse_all_compact_schedules(txt), wd_src)
-            n_checked += 1
-            if match:
-                _, abs_err = match
-                office_errs.append(100 * abs_err / max(float(np.mean(wd_src)), 1e-9))
-    if office_errs:
-        arr = np.array(office_errs)
-        G.add("2", "2.11-office-roundtrip", "PASS" if arr.max() < 5 else "WARN",
-              f"Office IDF-text round-trip (best-match Schedule:Compact vs 2022 CSV, "
-              f"n={len(arr)} sampled cells): median daily-mean err {np.median(arr):.2f}%, "
-              f"max {arr.max():.2f}%", "Office")
-    else:
-        G.add("2", "2.11-office-roundtrip", "INFO",
-              "Office IDF-text round-trip: no on-disk per-run *.idf found to sample "
-              "(office campaign IDFs live on cluster scratch, not synced locally) — the "
-              "check runs automatically once *.idf files are present under office/.", "Office")
-
-
 # ===========================================================================
 # §0 — Historical schedule generation
 # ===========================================================================
@@ -985,33 +620,9 @@ def _check_longitudinal():
             label = "  ".join(f"{y}={means[y]:.4f}" for y in order)
             G.add("0", "0.4", "PASS",
                   f"WD AT_HOME: {label} — smooth pre-COVID arc", "Both")
+        _chart("0", lambda: _plot_arc(order, present))
     else:
         G.add("0", "0.4", "INFO", "Too few historical files to check longitudinal continuity yet", "Both")
-
-    # Office AT_WORK arc (weekday mean) — same 4 years, visualises the gate-0.5
-    # PLACE=02(2005/2010) vs LOCATION=301/3301(2015/2022) gating-variable break.
-    ref_o = S7_OUT / "office_presence_multiplier_2022.csv"
-    off_means = {}
-    for yr in HISTORICAL:
-        f = HIST / f"office_presence_multiplier_{yr}.csv"
-        if f.exists():
-            m = pd.read_csv(f, usecols=["Day_Type", "AT_WORK_fraction"]) \
-                  .query("Day_Type=='Weekday'")["AT_WORK_fraction"].mean()
-            off_means[yr] = round(m, 4)
-    if ref_o.exists():
-        m = pd.read_csv(ref_o, usecols=["Day_Type", "AT_WORK_fraction"]) \
-              .query("Day_Type=='Weekday'")["AT_WORK_fraction"].mean()
-        off_means["2022"] = round(float(m), 4)
-    off_order = [y for y in ["2005", "2010", "2015", "2022"] if y in off_means]
-    off_present = [off_means[y] for y in off_order]
-    if off_order:
-        label_o = "  ".join(f"{y}={off_means[y]:.4f}" for y in off_order)
-        G.add("0", "0.5-arc", "INFO",
-              f"Office WD AT_WORK: {label_o} — visualises the gate-0.5 gating-variable "
-              "break, previously text-only", "Office")
-
-    if order or off_order:
-        _chart("0", lambda: _plot_arc2(order, present, off_order, off_present))
 
 
 # ===========================================================================
@@ -1159,9 +770,6 @@ def section2():
           "Residential People count = HHSIZE × schedule (HHSIZE from BEM_Schedules). "
           "Verified structurally; per-HH headcount check requires E+ output parsing.", "Resid")
 
-    # 2.10/2.11 IDF-text round-trip fidelity (both channels; see gate 2.6 note)
-    _gate_idf_roundtrip()
-
     _chart("2", _plot_injection)
     _chart("2", _plot_office_presence)
 
@@ -1242,11 +850,6 @@ def section3():
               "Campaign not yet run; gates 3.1/3.2 (CI half-width) check post-campaign.", "Resid")
     else:
         _gate_31_32_mc_convergence()
-
-    # 3.5 office channel is intentionally absent above — full-factorial, not MC-sampled
-    G.add("3", "3.5-office", "INFO",
-          "Office campaign is full-factorial (3 arch × 2 env × 6 CZ × 7 scenarios = 252 "
-          "deterministic cells, no resampling) — MC convergence N/A for this channel.", "Office")
 
 
 def _gate_33_pool_audit():
@@ -1415,111 +1018,6 @@ def section4():
     if resid_meds or office_meds:
         _chart("4", lambda: _plot_eui_bands(resid_meds, office_meds))
 
-    # 4.6/4.7 heating/cooling/other end-use split by CZ (residential; reads §8D agg,
-    # which already carries heating_ET_kWh/cooling_ET_kWh/lights_kWh/equip_kWh)
-    _gate_enduse_split(ann)
-
-
-def _gate_enduse_split(ann):
-    shares = _enduse_shares_resid(ann)
-    if shares.empty:
-        return
-    heat = shares["heating_share"]
-    # CZ_LIST runs mild→severe (5A..7A); heating share should not fall as CZ gets colder.
-    # NOTE (Fix v3, 2026-07-08): heating_share/cooling_share come from heating_ET_kWh/
-    # cooling_ET_kWh, i.e. air-system delivered sensible energy (incl. ventilation air) —
-    # NOT true fuel/electricity end-use consumption. See investigation §11.
-    ok_order = all(heat.iloc[i] <= heat.iloc[i + 1] + 0.03 for i in range(len(heat) - 1))
-    G.add("4", "4.6-heat-order", "PASS" if ok_order else "WARN",
-          f"Air-system delivered sensible energy (incl. ventilation air) — heating share "
-          f"by CZ ({', '.join(f'{c}={v:.2f}' for c, v in heat.items())}) "
-          f"{'rises mild→severe as expected' if ok_order else 'not monotonic — check'}", "Resid")
-    cool = shares["cooling_share"]
-    nonzero = bool((cool > 0.01).any())
-    G.add("4", "4.7-cool-floor", "PASS" if nonzero else "WARN",
-          ("Air-system delivered sensible energy (incl. ventilation air) — non-zero "
-           f"cooling share present in ≥1 CZ (max {cool.max():.2f})" if nonzero
-           else "Air-system delivered sensible energy (incl. ventilation air) — no CZ "
-           "shows appreciable cooling share (check cooling setpoints)"), "Resid")
-    G.add("4", "4.8-office-enduse", "INFO",
-          "Office end-use split (heating/cooling/other) not available: the office "
-          "aggregator (3rdJ_08_simulation_2split_agg.py) currently sums only "
-          "Lights+Equipment electricity and occupant count per zone — extending this "
-          "gate to the office channel needs a heating/cooling meter regex added there "
-          "plus a re-run of the office aggregation pass.", "Office")
-
-    # 4.9 heat-vs-cool dominance gate (per-archetype, heating-dominated CZs 6A/6B/7A).
-    # Unlike 4.6/4.7 (PASS/WARN-only by construction), this gate CAN FAIL — that is its
-    # purpose: catch a regression like the apartment cooling-setpoint defect (fixed
-    # 2026-07-07, see investigation/step8_resid_heating_cooling_dominance_investigation.md)
-    # that 4.6/4.7 let through silently.
-    #
-    # Fix v3 (2026-07-08): re-based from Cooling:EnergyTransfer/Heating:EnergyTransfer
-    # (air-system delivered sensible energy incl. the ERV ventilation-air term that made
-    # this gate falsely FAIL — investigation §11) to true fuel/electricity end-use energy
-    # from AnnualBuildingUtilityPerformanceSummary "End Uses" (agg_enduse_annual.csv,
-    # produced by investigation/extract_enduse_annual.py), which the ERV artifact does not
-    # touch since it is metered, not fuel/electricity, consumption.
-    DOMINANCE_CZS = ["6A", "6B", "7A"]
-    enduse = load_agg().get("enduse", pd.DataFrame())
-    if enduse.empty:
-        G.add("4", "4.9-heat-dominance", "INFO",
-              "agg_enduse_annual.csv absent — run investigation/extract_enduse_annual.py "
-              "(Fix v3) to populate the end-use-energy dominance gate.", "Resid")
-    else:
-        e9 = enduse.copy()
-        e9["scenario"] = e9["scenario"].astype(str)
-        e9 = e9[(e9["scenario"] == "2022") & (e9["cz"].isin(DOMINANCE_CZS))]
-        for col in ("heating_gas_GJ", "heating_elec_GJ", "heating_district_GJ", "cooling_elec_GJ"):
-            e9[col] = pd.to_numeric(e9[col], errors="coerce")
-        e9["heating_total_GJ"] = (e9["heating_gas_GJ"] + e9["heating_elec_GJ"]
-                                  + e9["heating_district_GJ"])
-        gd9 = e9.groupby(["arch", "cz"])[["heating_total_GJ", "cooling_elec_GJ"]].sum()
-        fail9, warn9, ratios_7a = False, False, {}
-        for arch in ARCHETYPES_RESID:
-            for cz in DOMINANCE_CZS:
-                if (arch, cz) not in gd9.index:
-                    continue
-                h = gd9.loc[(arch, cz), "heating_total_GJ"]
-                c = gd9.loc[(arch, cz), "cooling_elec_GJ"]
-                ratio = c / h if h else float("nan")
-                if cz == "7A":
-                    ratios_7a[arch] = ratio
-                if cz == "7A" and ratio > 2.0:
-                    fail9 = True
-                if ratio > 1.25:
-                    warn9 = True
-        if ratios_7a:
-            ratio_msg = ", ".join(f"{a}={v:.2f}x" for a, v in ratios_7a.items())
-            status9 = "FAIL" if fail9 else ("WARN" if warn9 else "PASS")
-            note9 = (">2.0x in CZ 7A — dominance regression" if fail9
-                     else ">1.25x in ≥1 of CZ 6A/6B/7A — check" if warn9
-                     else "≤1.25x across CZ 6A/6B/7A")
-            G.add("4", "4.9-heat-dominance", status9,
-                  f"Cooling-electricity/heating end-use-energy ratio by archetype in CZ "
-                  f"7A: {ratio_msg} ({note9})", "Resid")
-
-        # 4.10 end-use table: heating fuel vs cooling electricity, archetype x CZ,
-        # straight from agg_enduse_annual.csv (site GJ, summed across samples).
-        tbl_rows = ""
-        for arch in ARCHETYPES_RESID:
-            for cz in DOMINANCE_CZS:
-                if (arch, cz) not in gd9.index:
-                    continue
-                h = gd9.loc[(arch, cz), "heating_total_GJ"]
-                c = gd9.loc[(arch, cz), "cooling_elec_GJ"]
-                tbl_rows += (f"<tr><td>{arch}</td><td>{cz}</td><td>{h:.1f}</td>"
-                             f"<td>{c:.1f}</td></tr>")
-        if tbl_rows:
-            table_html = (
-                "<table class='mini-table'><thead><tr><th>Archetype</th><th>CZ</th>"
-                "<th>Heating fuel (gas+elec+district, GJ)</th>"
-                f"<th>Cooling electricity (GJ)</th></tr></thead><tbody>{tbl_rows}</tbody></table>"
-            )
-            G.add("4", "4.10-enduse-table", "INFO", table_html, "Resid")
-
-    _chart("4", lambda: _plot_enduse_split(shares))
-
 
 # ===========================================================================
 # §5 — Load-Shape / Time-Series Sanity (reads §8D agg)
@@ -1586,7 +1084,6 @@ def section5():
               f"{'<' if we_mid < wd_mid else '≥'} WD midday {wd_mid:.2f} kW", "Office")
 
     _chart("5", lambda: _plot_loadshape(diur))
-    _chart("5", lambda: _plot_seasonal_loadshape(diur))
 
 
 # ===========================================================================
@@ -1632,18 +1129,10 @@ def section6():
                 G.add("6", "6.3", "FAIL",
                       f"Office band ordering wrong: {peak_by_band.to_dict()}", "Office")
 
-    agg = load_agg()
-    _gate_6_campaign(agg)
+    _gate_6_campaign(load_agg())
 
     if resid_means_plot or office_peaks_plot:
         _chart("6", lambda: _plot_scenario_ordering(resid_means_plot, office_peaks_plot))
-
-    # 2005→2030 longitudinal trajectory + headline shift-effect panels (both channels;
-    # reuses the same §8D agg tables already loaded for _gate_6_campaign above)
-    if not agg["annual"].empty:
-        _chart("6", lambda: _plot_longitudinal(agg["annual"]))
-        _chart("6", lambda: _plot_paired_delta(agg["annual"], agg["peak"]))
-        _chart("6", lambda: _plot_delta_by_cz(agg["annual"]))
 
 
 # ---- §6 campaign-output gates (6.1 / 6.4–6.7) -----------------------------

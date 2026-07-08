@@ -78,10 +78,8 @@ DTYPE_FALLBACK = {
 # MTL archetypes upgraded from EnergyPlus v22.1 -> v24.2 via the official IDFVersionUpdater
 # transition chain (the raw _v221 IDFs fatal-out under the 24.2 IDD: field shift in
 # HeatExchanger:AirToAir:SensibleAndLatent / Coil:Cooling:DX:SingleSpeed). Originals in Buildings_MTL/.
-# Residential IDFs — 3J-only patched copies (apartment cooling-setpoint fix, variant 1a).
-# See investigation/step8_coolfix_implementation_plan.md. 2J's main.py still resolves the
-# original Buildings_MTL_v242 dir; this pipeline no longer shares that template with 2J.
-STEP8_BUILDINGS_DIR = os.path.join(BASE_DIR, "3J_docs_occ_nTemp", "Leg2_2-split", "Step8_docs", "Buildings_MTL_v242_3Jfix")
+# Residential IDFs — same v24.2 stock as J2 (no residential IDF changes for J3)
+STEP8_BUILDINGS_DIR = os.path.join(BASE_DIR, "2J_docs_occ_nTemp", "BEM_setup", "Buildings_MTL_v242")
 # 3J Step8 results land under Step8_docs/outputs_step8/campaign_N50/
 _STEP8_DOCS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Step8_docs/
 STEP8_RESULTS_DIR = os.path.join(_STEP8_DOCS, "outputs_step8", "campaign_N50")

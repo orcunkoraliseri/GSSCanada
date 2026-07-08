@@ -58,8 +58,7 @@ N_MC = 50
 # --- §8D aggregation tables (produced by 3rdJ_08_simulation_2split_agg.py) ---
 AGG_DIR = OUT_DIR / "agg"
 AGG_FILES = {"diurnal": "agg_diurnal.csv", "peak": "agg_peak.csv",
-             "annual": "agg_annual.csv", "meta": "agg_meta.csv",
-             "enduse": "agg_enduse_annual.csv"}
+             "annual": "agg_annual.csv", "meta": "agg_meta.csv"}
 OFF_ELEC = "office_elec"        # facility-equivalent electricity meter (kW), office diurnal
 OFF_OCC  = "office_occ"         # total occupant-count meter (persons), office diurnal
 RESID_FAC = "Electricity:Facility"
@@ -1426,21 +1425,15 @@ def _gate_enduse_split(ann):
         return
     heat = shares["heating_share"]
     # CZ_LIST runs mild→severe (5A..7A); heating share should not fall as CZ gets colder.
-    # NOTE (Fix v3, 2026-07-08): heating_share/cooling_share come from heating_ET_kWh/
-    # cooling_ET_kWh, i.e. air-system delivered sensible energy (incl. ventilation air) —
-    # NOT true fuel/electricity end-use consumption. See investigation §11.
     ok_order = all(heat.iloc[i] <= heat.iloc[i + 1] + 0.03 for i in range(len(heat) - 1))
     G.add("4", "4.6-heat-order", "PASS" if ok_order else "WARN",
-          f"Air-system delivered sensible energy (incl. ventilation air) — heating share "
-          f"by CZ ({', '.join(f'{c}={v:.2f}' for c, v in heat.items())}) "
+          f"Heating share by CZ ({', '.join(f'{c}={v:.2f}' for c, v in heat.items())}) "
           f"{'rises mild→severe as expected' if ok_order else 'not monotonic — check'}", "Resid")
     cool = shares["cooling_share"]
     nonzero = bool((cool > 0.01).any())
     G.add("4", "4.7-cool-floor", "PASS" if nonzero else "WARN",
-          ("Air-system delivered sensible energy (incl. ventilation air) — non-zero "
-           f"cooling share present in ≥1 CZ (max {cool.max():.2f})" if nonzero
-           else "Air-system delivered sensible energy (incl. ventilation air) — no CZ "
-           "shows appreciable cooling share (check cooling setpoints)"), "Resid")
+          (f"Non-zero cooling share present in ≥1 CZ (max {cool.max():.2f})" if nonzero
+           else "No CZ shows appreciable cooling share (check cooling setpoints)"), "Resid")
     G.add("4", "4.8-office-enduse", "INFO",
           "Office end-use split (heating/cooling/other) not available: the office "
           "aggregator (3rdJ_08_simulation_2split_agg.py) currently sums only "
@@ -1453,70 +1446,35 @@ def _gate_enduse_split(ann):
     # purpose: catch a regression like the apartment cooling-setpoint defect (fixed
     # 2026-07-07, see investigation/step8_resid_heating_cooling_dominance_investigation.md)
     # that 4.6/4.7 let through silently.
-    #
-    # Fix v3 (2026-07-08): re-based from Cooling:EnergyTransfer/Heating:EnergyTransfer
-    # (air-system delivered sensible energy incl. the ERV ventilation-air term that made
-    # this gate falsely FAIL — investigation §11) to true fuel/electricity end-use energy
-    # from AnnualBuildingUtilityPerformanceSummary "End Uses" (agg_enduse_annual.csv,
-    # produced by investigation/extract_enduse_annual.py), which the ERV artifact does not
-    # touch since it is metered, not fuel/electricity, consumption.
     DOMINANCE_CZS = ["6A", "6B", "7A"]
-    enduse = load_agg().get("enduse", pd.DataFrame())
-    if enduse.empty:
-        G.add("4", "4.9-heat-dominance", "INFO",
-              "agg_enduse_annual.csv absent — run investigation/extract_enduse_annual.py "
-              "(Fix v3) to populate the end-use-energy dominance gate.", "Resid")
-    else:
-        e9 = enduse.copy()
-        e9["scenario"] = e9["scenario"].astype(str)
-        e9 = e9[(e9["scenario"] == "2022") & (e9["cz"].isin(DOMINANCE_CZS))]
-        for col in ("heating_gas_GJ", "heating_elec_GJ", "heating_district_GJ", "cooling_elec_GJ"):
-            e9[col] = pd.to_numeric(e9[col], errors="coerce")
-        e9["heating_total_GJ"] = (e9["heating_gas_GJ"] + e9["heating_elec_GJ"]
-                                  + e9["heating_district_GJ"])
-        gd9 = e9.groupby(["arch", "cz"])[["heating_total_GJ", "cooling_elec_GJ"]].sum()
-        fail9, warn9, ratios_7a = False, False, {}
-        for arch in ARCHETYPES_RESID:
-            for cz in DOMINANCE_CZS:
-                if (arch, cz) not in gd9.index:
-                    continue
-                h = gd9.loc[(arch, cz), "heating_total_GJ"]
-                c = gd9.loc[(arch, cz), "cooling_elec_GJ"]
-                ratio = c / h if h else float("nan")
-                if cz == "7A":
-                    ratios_7a[arch] = ratio
-                if cz == "7A" and ratio > 2.0:
-                    fail9 = True
-                if ratio > 1.25:
-                    warn9 = True
-        if ratios_7a:
-            ratio_msg = ", ".join(f"{a}={v:.2f}x" for a, v in ratios_7a.items())
-            status9 = "FAIL" if fail9 else ("WARN" if warn9 else "PASS")
-            note9 = (">2.0x in CZ 7A — dominance regression" if fail9
-                     else ">1.25x in ≥1 of CZ 6A/6B/7A — check" if warn9
-                     else "≤1.25x across CZ 6A/6B/7A")
-            G.add("4", "4.9-heat-dominance", status9,
-                  f"Cooling-electricity/heating end-use-energy ratio by archetype in CZ "
-                  f"7A: {ratio_msg} ({note9})", "Resid")
-
-        # 4.10 end-use table: heating fuel vs cooling electricity, archetype x CZ,
-        # straight from agg_enduse_annual.csv (site GJ, summed across samples).
-        tbl_rows = ""
-        for arch in ARCHETYPES_RESID:
-            for cz in DOMINANCE_CZS:
-                if (arch, cz) not in gd9.index:
-                    continue
-                h = gd9.loc[(arch, cz), "heating_total_GJ"]
-                c = gd9.loc[(arch, cz), "cooling_elec_GJ"]
-                tbl_rows += (f"<tr><td>{arch}</td><td>{cz}</td><td>{h:.1f}</td>"
-                             f"<td>{c:.1f}</td></tr>")
-        if tbl_rows:
-            table_html = (
-                "<table class='mini-table'><thead><tr><th>Archetype</th><th>CZ</th>"
-                "<th>Heating fuel (gas+elec+district, GJ)</th>"
-                f"<th>Cooling electricity (GJ)</th></tr></thead><tbody>{tbl_rows}</tbody></table>"
-            )
-            G.add("4", "4.10-enduse-table", "INFO", table_html, "Resid")
+    r9 = ann[ann["channel"] == "resid"].copy()
+    r9["scenario"] = r9["scenario"].astype(str)
+    r9 = r9[(r9["scenario"] == "2022") & (r9["cz"].isin(DOMINANCE_CZS))]
+    r9["heating_ET_kWh"] = pd.to_numeric(r9["heating_ET_kWh"], errors="coerce")
+    r9["cooling_ET_kWh"] = pd.to_numeric(r9["cooling_ET_kWh"], errors="coerce")
+    gd = r9.groupby(["arch", "cz"])[["heating_ET_kWh", "cooling_ET_kWh"]].sum()
+    fail9, warn9, ratios_7a = False, False, {}
+    for arch in ARCHETYPES_RESID:
+        for cz in DOMINANCE_CZS:
+            if (arch, cz) not in gd.index:
+                continue
+            h = gd.loc[(arch, cz), "heating_ET_kWh"]
+            c = gd.loc[(arch, cz), "cooling_ET_kWh"]
+            ratio = c / h if h else float("nan")
+            if cz == "7A":
+                ratios_7a[arch] = ratio
+            if cz == "7A" and ratio > 2.0:
+                fail9 = True
+            if ratio > 1.25:
+                warn9 = True
+    if ratios_7a:
+        ratio_msg = ", ".join(f"{a}={v:.2f}x" for a, v in ratios_7a.items())
+        status9 = "FAIL" if fail9 else ("WARN" if warn9 else "PASS")
+        note9 = (">2.0x in CZ 7A — dominance regression" if fail9
+                 else ">1.25x in ≥1 of CZ 6A/6B/7A — check" if warn9
+                 else "≤1.25x across CZ 6A/6B/7A")
+        G.add("4", "4.9-heat-dominance", status9,
+              f"Cooling/heating ratio by archetype in CZ 7A: {ratio_msg} ({note9})", "Resid")
 
     _chart("4", lambda: _plot_enduse_split(shares))
 
