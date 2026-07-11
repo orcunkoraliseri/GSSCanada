@@ -35,6 +35,13 @@ BASE = HERE.parent                               # GSSCanada-main/
 BEMS = BASE / "BEM_Setup"
 AUG  = BASE / "0_Occupancy" / "Outputs_21CEN22GSS" / "aug_pipeline" / "21CEN22GSS_aug_Full_Aggregated_excl.csv"
 D2030 = BASE / "0_Occupancy" / "Outputs_21CEN22GSS" / "forecast_2030" / "2030_synthetic_diaries.csv"
+# OD-3 (2026-07-10): the shipped BEM_Schedules_2030.csv was built with --joint from the Step-6
+# canonical joint-raked forecast (verified via the metabolic channel: BEM WE met 109.59 W matches
+# the joint diary 109.49 W, not the base 99.90 W). Validate against that same source so §3/§4
+# reference the file the BEM was actually built from. hom30 is byte-identical between base and
+# joint (the joint rake only touches act30), so §3 occupancy is unaffected; §4 metabolic reference
+# becomes correct.
+D2030_JOINT = BASE / "0_Occupancy" / "Outputs_21CEN22GSS" / "forecast_2030" / "2030_synthetic_diaries_joint_raked.csv"
 CLASSIC_SUFFIX = "_CLASSIC_BAK_2026-05-31"
 
 # ── Constants ──────────────────────────────────────────────────────────────────
@@ -48,14 +55,45 @@ ACT_LABELS: dict[int, str] = {
 MET = {0: 0, 1: 125, 2: 175, 3: 190, 4: 195, 5: 70, 6: 105, 7: 170,
        8: 110, 9: 90, 10: 85, 11: 245, 12: 105, 13: 140, 14: 135}
 
+# 2026-07-10: schema raised 13 -> 17 cols. 07_aug_to_bem.py (Step-9) emits the 4 additive
+# internal-gain channels below; the live BEM_Schedules_<year>.csv the consumer reads is 17-col.
+# (The 13-col pre-Step-9 schema is written separately to *_baseline.csv = OUT_COLS_BASELINE.)
 OUT_COLS = ["SIM_HH_ID", "Day_Type", "Hour", "HHSIZE", "DTYPE", "BEDRM", "CONDO",
-            "ROOM", "REPAIR", "PR", "MATCH_TIER", "Occupancy_Schedule", "Metabolic_Rate"]
+            "ROOM", "REPAIR", "PR", "MATCH_TIER", "Occupancy_Schedule", "Metabolic_Rate",
+            "Equipment_Fraction", "Lighting_Fraction", "Equip_Design_W", "Light_Design_W"]
+OUT_COLS_BASELINE = OUT_COLS[:13]     # 13-col pre-Step-9 schema (the *_baseline.csv sibling)
+STEP9_COLS = ["Equipment_Fraction", "Lighting_Fraction", "Equip_Design_W", "Light_Design_W"]
 DTYPE_VALID = {"SingleD", "MidRise", "HighRise", "OtherDwelling", "8"}
 PR_VALID    = {"Atlantic", "Quebec", "Ontario", "Prairies", "Alberta", "BC", "Northern Canada"}
 TIER_VALID  = {"1_Perfect", "2_Core", "3_Constraints", "4_FailSafe"}
-N_HH        = 144_507
-N_ROWS      = N_HH * 2 * 24            # 6,936,336
-OBSERVED_2022_ATHOME = 72.3            # Step 2 confirmed weighted AT_HOME
+# 2026-07-10: frame reduced 144,507 -> 144,465 (-42 HH) by the Jul-9 Step-5 refresh (region-tier
+# relink + joint rake + 5H exclusion). The stock 21CEN22GSS_aug_Full_Aggregated_excl.csv now holds
+# 285,367 person-rows / 144,465 unique HH_ID (verified read). 144,507 was the pre-refresh frame;
+# both BEM_Schedules_{2022,2030}.csv are internally consistent with 144,465 (0 partial-coverage HH,
+# exactly 48 rows/HH). See step7_improvement_notes.md (Improvement 2, frame-size finding).
+N_HH        = 144_465
+N_ROWS      = N_HH * 2 * 24            # 6,934,320
+# OD-2 (2026-07-10): Step-2 GSS-2022 weighted AT_HOME on the dwelling-stock scope. This is NOT
+# the Step-6 "76.93% observed-2022" figure — that is measured on the augmented person-diary
+# population (different denominator/scope) and is not interchangeable with this anchor. 72.3%
+# is the correct reference for the linked dwelling stock. See step7_improvement_notes.md OD-2.
+OBSERVED_2022_ATHOME = 72.3
+
+# Per-figure captions (Improvement 4 — figures over prose)
+CAPTIONS = {
+    "1_schema": "Rows-per-household histogram (single bar at 48 = 2 day-types x 24 h) and the "
+                "loaded analysis-column dtypes / null counts.",
+    "2_daytype": "Day-types per household (all at 2 — integration.py contract) and row balance "
+                 "across Weekday / Weekend.",
+    "3_occupancy": "24-hour occupancy (Weekday vs Weekend, 04:00-origin clock) and BEM per-HH "
+                   "occupancy vs the calibrated per-person diary marginal.",
+    "4_metabolic": "24-hour metabolic rate (W/person) and the source-diary activity mix "
+                   "(top-5, by activity name) that explains the Weekend dip.",
+    "4b_step9": "24-hour Equipment & Lighting load fractions (Weekday solid / Weekend dashed) "
+                "and mean design-W by dwelling type (per-HH-dtype SHEU calibration).",
+    "5_attributes": "Household counts by dwelling type, province / region, and Step-5 match tier.",
+    "6_regression": "Calibrated (J3) vs classic (pre-OP4) mean occupancy, Weekday and Weekend.",
+}
 
 _DARK = {
     "figure.facecolor": "#1e1e2e", "axes.facecolor": "#2a2a3e",
@@ -79,9 +117,9 @@ def _b64(fig: plt.Figure) -> str:
     return base64.b64encode(buf.read()).decode("utf-8")
 
 
-def _clock(h: int) -> int:
-    """BEM Hour index (0..23, 04:00 origin) -> clock hour."""
-    return (4 + h) % 24
+# NOTE: the former _clock(h)=(4+h)%24 helper was removed 2026-07-10. Since the
+# 2026-06-08 +4h diary->clock roll in 07_aug_to_bem.py, the BEM `Hour` column is
+# already real clock time (Hour 0 = 00:00) for every channel — no relabeling applied.
 
 
 # ── Validator ──────────────────────────────────────────────────────────────────
@@ -101,7 +139,7 @@ class BEMIntegrationValidator:
         print(f"Loading {bem_path.name} …")
         self.header_cols = pd.read_csv(bem_path, nrows=0).columns.tolist()
         stat_cols = ["SIM_HH_ID", "Day_Type", "Hour", "DTYPE", "PR",
-                     "MATCH_TIER", "Occupancy_Schedule", "Metabolic_Rate"]
+                     "MATCH_TIER", "Occupancy_Schedule", "Metabolic_Rate"] + STEP9_COLS
         self.bem = pd.read_csv(bem_path, usecols=lambda c: c in set(stat_cols),
                                low_memory=False)
         print(f"  -> {len(self.bem):,} rows x {len(self.header_cols)} cols")
@@ -120,8 +158,10 @@ class BEMIntegrationValidator:
             self.classic_cols = []
             print(f"  (classic backup absent: {classic_path.name})")
 
-        # Calibrated source diaries (calibration reference) — optional
-        diary_path = AUG if year == "2022" else D2030
+        # Calibrated source diaries (calibration reference) — optional.
+        # 2030 uses the joint-raked file (what the BEM was built from — OD-3), not the base.
+        diary_path = AUG if year == "2022" else D2030_JOINT
+        self.diary_source = diary_path.name
         self.diary = None
         if diary_path.exists():
             print(f"Loading {diary_path.name} (calibration reference) …")
@@ -153,8 +193,8 @@ class BEMIntegrationValidator:
 
         ok11 = self.header_cols == OUT_COLS
         self._rec("pass" if ok11 else "fail",
-                  f"1.1 | Column set/order matches OUT_COLS (13): {ok11}")
-        self._sum("Column schema (13 cols)", "exact OUT_COLS",
+                  f"1.1 | Column set/order matches OUT_COLS (17, incl. Step-9 channels): {ok11}")
+        self._sum("Column schema (17 cols)", "exact OUT_COLS",
                   "match" if ok11 else "MISMATCH", "PASS" if ok11 else "FAIL")
 
         n = len(b)
@@ -337,8 +377,8 @@ class BEMIntegrationValidator:
             s = b[b["Day_Type"] == dt].groupby("Hour")["Occupancy_Schedule"].mean()
             ax.plot(s.index, s.values * 100, color=col, linewidth=2, label=dt)
         ax.set_xticks(range(0, 24, 2))
-        ax.set_xticklabels([f"{_clock(h):02d}h" for h in range(0, 24, 2)], fontsize=9)
-        ax.set_xlabel("Hour (04:00 → 03:59 next day)")
+        ax.set_xticklabels([f"{h:02d}h" for h in range(0, 24, 2)], fontsize=9)
+        ax.set_xlabel("Hour of day (clock time)")
         ax.set_ylabel("Mean occupancy (%)")
         ax.set_title("24-hour occupancy: WD vs WE", fontsize=11)
         ax.legend(fontsize=9); ax.yaxis.grid(True, linestyle="--", alpha=0.3)
@@ -397,8 +437,8 @@ class BEMIntegrationValidator:
             sleep_note = f" — sleep share WD {wd_sleep:.1f}% / WE {we_sleep:.1f}%"
         self._rec("pass",
                   f"4.4 | [INFO] WD met {wd_met:.1f} W vs WE met {we_met:.1f} W "
-                  f"(act30 un-calibrated){sleep_note}")
-        self._sum("Metabolic channel", "informational (un-raked)",
+                  f"(act30 joint-raked, calibrated){sleep_note}")
+        self._sum("Metabolic channel", "calibrated (joint-raked)",
                   f"WD {wd_met:.1f} / WE {we_met:.1f} W", "INFO")
 
         fig, axes = plt.subplots(1, 2, figsize=(16, 5))
@@ -409,8 +449,8 @@ class BEMIntegrationValidator:
             s = b[b["Day_Type"] == dt].groupby("Hour")["Metabolic_Rate"].mean()
             ax.plot(s.index, s.values, color=col, linewidth=2, label=dt)
         ax.set_xticks(range(0, 24, 2))
-        ax.set_xticklabels([f"{_clock(h):02d}h" for h in range(0, 24, 2)], fontsize=9)
-        ax.set_xlabel("Hour (04:00 → 03:59 next day)")
+        ax.set_xticklabels([f"{h:02d}h" for h in range(0, 24, 2)], fontsize=9)
+        ax.set_xlabel("Hour of day (clock time)")
         ax.set_ylabel("Mean metabolic (W/person)")
         ax.set_title("24-hour metabolic: WD vs WE", fontsize=11)
         ax.legend(fontsize=9); ax.yaxis.grid(True, linestyle="--", alpha=0.3)
@@ -435,6 +475,101 @@ class BEMIntegrationValidator:
         plt.tight_layout()
         self.plots_b64["4_metabolic"] = _b64(fig)
         return {"wd_met": wd_met, "we_met": we_met}
+
+    # ── Section 4b — Step-9 Internal-Gain Channels (Equipment / Lighting) ────────
+    def validate_step9_channels(self) -> dict:
+        """Validate the 4 additive Step-9 columns EnergyPlus reads as equipment + lighting
+        loads. Reports the inline-assert ranges (07_aug_to_bem.py) with distributions, checks
+        the diurnal shape, and shows design-W by dwelling type."""
+        print("\n--- Section 4b: Step-9 Internal Gains (Equipment / Lighting) -----------")
+        _apply_dark()
+        b = self.bem
+        have = [c for c in STEP9_COLS if c in b.columns]
+        if len(have) < 4:
+            self._rec("warn",
+                      f"4b | Step-9 channels absent ({have}); file predates Step-9 — skipped")
+            self._sum("Step-9 channels present", "4 cols", f"{len(have)}/4", "WARN")
+            return {}
+
+        ef, lf = b["Equipment_Fraction"], b["Lighting_Fraction"]
+        edw, ldw = b["Equip_Design_W"], b["Light_Design_W"]
+
+        ef_ok = (float(ef.min()) >= 0.0) and (float(ef.max()) <= 1.0)
+        lf_ok = (float(lf.min()) >= 0.0) and (float(lf.max()) <= 1.0)
+        self._rec("pass" if (ef_ok and lf_ok) else "fail",
+                  f"4b.1 | Fraction ranges: Equip [{ef.min():.3f}, {ef.max():.3f}], "
+                  f"Light [{lf.min():.3f}, {lf.max():.3f}] within [0, 1]")
+        self._sum("Step-9 fractions range", "[0, 1]",
+                  f"E[{ef.min():.2f},{ef.max():.2f}] L[{lf.min():.2f},{lf.max():.2f}]",
+                  "PASS" if (ef_ok and lf_ok) else "FAIL")
+
+        dw_ok = (float(edw.min()) >= 0.0) and (float(ldw.min()) >= 0.0)
+        self._rec("pass" if dw_ok else "fail",
+                  f"4b.2 | Design-W non-negative: Equip min {edw.min():.1f} W, "
+                  f"Light min {ldw.min():.1f} W (max E {edw.max():.0f} / L {ldw.max():.0f})")
+        self._sum("Step-9 design-W >= 0", ">= 0 W",
+                  f"E {edw.min():.0f}+ / L {ldw.min():.0f}+", "PASS" if dw_ok else "FAIL")
+
+        # Diurnal shape: residential lighting should peak in the evening; equipment non-flat.
+        ef_by_h = b.groupby("Hour")["Equipment_Fraction"].mean()
+        lf_by_h = b.groupby("Hour")["Lighting_Fraction"].mean()
+        l_peak_clock = int(lf_by_h.idxmax())   # BEM Hour is already clock time (post 06-08 roll)
+        l_evening = 17 <= l_peak_clock <= 23
+        self._rec("pass" if l_evening else "warn",
+                  f"4b.3 | Lighting peak at {l_peak_clock:02d}h "
+                  f"({'evening' if l_evening else 'non-evening'}; expect ~18-23h)")
+        self._sum("Lighting evening peak", "17-23h", f"{l_peak_clock:02d}h",
+                  "PASS" if l_evening else "WARN")
+
+        ef_amp = float(ef_by_h.max() - ef_by_h.min())
+        self._rec("pass" if ef_amp > 0.02 else "warn",
+                  f"4b.4 | Equipment diurnal amplitude {ef_amp:.3f} (non-flat profile)")
+
+        # Design-W by DTYPE (per-HH-dtype SHEU calibration -> should differ by dwelling type)
+        dw_by_dt = (b.drop_duplicates("SIM_HH_ID")
+                     .groupby("DTYPE")[["Equip_Design_W", "Light_Design_W"]].mean())
+        n_levels = int(dw_by_dt["Equip_Design_W"].round(0).nunique())
+        self._rec("pass",
+                  f"4b.5 | [INFO] Equip design-W spans {n_levels} distinct DTYPE levels "
+                  f"(per-HH-dtype SHEU targets: HighRise/MidRise/SingleD differ)")
+        self._sum("Step-9 design-W by DTYPE", "informational",
+                  f"{n_levels} DTYPE levels", "INFO")
+
+        # Chart: 24h equip + lighting fraction (WD vs WE) + design-W by DTYPE
+        fig, axes = plt.subplots(1, 2, figsize=(16, 5),
+                                 gridspec_kw={"width_ratios": [2, 1.3]})
+        fig.suptitle(f"Section 4b — Step-9 Internal Gains ({self.year})",
+                     fontsize=13, fontweight="bold")
+        ax = axes[0]
+        for dt, style in [("Weekday", "-"), ("Weekend", "--")]:
+            sub = b[b["Day_Type"] == dt]
+            e = sub.groupby("Hour")["Equipment_Fraction"].mean()
+            l = sub.groupby("Hour")["Lighting_Fraction"].mean()
+            ax.plot(e.index, e.values, style, color="#f9e2af", linewidth=2,
+                    label=f"Equipment {dt}")
+            ax.plot(l.index, l.values, style, color="#89b4fa", linewidth=2,
+                    label=f"Lighting {dt}")
+        ax.set_xticks(range(0, 24, 2))
+        ax.set_xticklabels([f"{h:02d}h" for h in range(0, 24, 2)], fontsize=9)
+        ax.set_xlabel("Hour of day (clock time)")
+        ax.set_ylabel("Mean load fraction")
+        ax.set_title("24-hour Equipment & Lighting fractions", fontsize=11)
+        ax.legend(fontsize=8); ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        ax2 = axes[1]
+        dwv = dw_by_dt.reset_index()
+        x = np.arange(len(dwv))
+        ax2.bar(x - 0.2, dwv["Equip_Design_W"], 0.35, label="Equip design-W",
+                color="#f9e2af", edgecolor="#1e1e2e")
+        ax2.bar(x + 0.2, dwv["Light_Design_W"], 0.35, label="Light design-W",
+                color="#89b4fa", edgecolor="#1e1e2e")
+        ax2.set_xticks(x)
+        ax2.set_xticklabels(dwv["DTYPE"].astype(str), rotation=40, ha="right", fontsize=8)
+        ax2.set_ylabel("Mean design-W (W)"); ax2.legend(fontsize=8)
+        ax2.set_title("Design-W by dwelling type", fontsize=11)
+        ax2.yaxis.grid(True, linestyle="--", alpha=0.3)
+        plt.tight_layout()
+        self.plots_b64["4b_step9"] = _b64(fig)
+        return {"l_peak_clock": l_peak_clock, "ef_amp": ef_amp}
 
     # ── Section 5 — Dwelling / Geography Attribute Integrity ────────────────────
     def validate_attribute_integrity(self) -> dict:
@@ -529,15 +664,19 @@ class BEMIntegrationValidator:
         self._sum("Occupancy Δ vs classic", "reported",
                   f"WD {cal_wd - cl_wd:+.2f} / WE {cal_we - cl_we:+.2f} pp", "INFO")
 
-        ok62 = self.classic_cols == self.header_cols
-        self._rec("pass" if ok62 else "fail",
-                  f"6.2 | Schema parity classic vs calibrated: {ok62}")
+        # The pre-OP4 classic backup is the 13-col baseline schema; the live calibrated file
+        # extends it with the 4 Step-9 channels. Parity is checked against that shared 13-col
+        # baseline (a classic-schema difference is not a live-file defect -> WARN, never FAIL).
+        ok62 = self.classic_cols == OUT_COLS_BASELINE
+        self._rec("pass" if ok62 else "warn",
+                  f"6.2 | Classic == 13-col baseline schema (live file extends it with "
+                  f"{len(self.header_cols) - len(OUT_COLS_BASELINE)} Step-9 cols): {ok62}")
         same = len(c) == len(b)
         cl_hh = len(c) // 48
         self._rec("pass",
                   f"6.3 | [INFO] rows: classic {len(c):,} ({cl_hh:,} HH) vs calibrated "
                   f"{len(b):,} ({N_HH:,} HH)"
-                  + ("" if same else " — 2022 classic = older census frame, not the ML 144,507-HH frame"))
+                  + ("" if same else f" — classic = older census frame, not the ML {N_HH:,}-HH frame"))
         self._sum("Frame vs classic", "informational",
                   f"{cl_hh:,} vs {N_HH:,} HH", "INFO")
 
@@ -578,18 +717,22 @@ class BEMIntegrationValidator:
             ("2_daytype",    "Section 2 — Day-Type Coverage"),
             ("3_occupancy",  "Section 3 — Occupancy Plausibility & Calibration"),
             ("4_metabolic",  "Section 4 — Metabolic Rate Plausibility"),
+            ("4b_step9",     "Section 4b — Step-9 Internal Gains (Equipment / Lighting)"),
             ("5_attributes", "Section 5 — Dwelling / Geography Attribute Integrity"),
             ("6_regression", "Section 6 — Regression vs Classic"),
         ]
         charts_html = ""
         for key, label in chart_sections:
             if key in self.plots_b64:
+                cap = CAPTIONS.get(key, "")
+                cap_html = (f'<p class="caption">{cap}</p>' if cap else "")
                 charts_html += f"""
         <section class="chart-section" id="{key}">
           <h2>{label}</h2>
           <div class="chart-wrap">
             <img src="data:image/png;base64,{self.plots_b64[key]}" alt="{label}">
           </div>
+          {cap_html}
         </section>"""
 
         if self.summary_rows:
@@ -625,8 +768,69 @@ class BEMIntegrationValidator:
         nav_links = "".join(
             f'<a href="#{k}">{lbl.split("—")[0].strip()}</a>'
             for k, lbl in chart_sections if k in self.plots_b64)
+        nav_links += '<a href="#deviations">Deviations</a>'
         nav_links += '<a href="#summary-table">Section 7</a>'
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # ── Provenance banner (Improvement 2) ──────────────────────────────────
+        src = getattr(self, "diary_source", "(unknown)")
+        if self.year == "2030":
+            build_note = ("built with <code>--joint</code> from the Step-6 canonical "
+                          "joint-raked 2030 forecast (metabolic-channel verified)")
+        else:
+            build_note = "the Step-5 calibrated 2022 dwelling stock (region-tier relinked + raked)"
+        provenance_html = f"""
+    <div class="provenance">
+      <strong>Provenance.</strong> Validates the live <code>BEM_Schedules_{self.year}.csv</code>
+      — <b>17-column</b> schema (occupancy + metabolic + the 4 Step-9 Equipment/Lighting channels).
+      Calibration reference / build source: <code>{src}</code> — {build_note}.
+      2022 AT_HOME anchor = <b>72.3%</b> (Step-2 GSS weighted, dwelling-stock scope; distinct from
+      the Step-6 person-diary 76.93%). Regenerated {ts}.
+    </div>"""
+
+        # ── Documented-deviations disposition panel (Improvement 4) ────────────
+        dev_rows = [
+            ("Metabolic / activity channel joint-raked (calibrated)",
+             "act30 is now joint-raked alongside hom30 (05_postlink_rake.py --joint, 2026-07-09); "
+             "Metabolic_Rate rides the calibrated activity mix.",
+             "INFO — both occupancy and internal-gain magnitude are calibrated; per-stratum act30 gaps "
+             "0.59–1.17 pp vs ~12.3 pp pre-rake."),
+            ("Saturday / Sunday pooled → Weekend",
+             "integration.py is 2-day-type; the calibrated ~2.3 pp Sat/Sun split is collapsed.",
+             "ACCEPT — consumer contract; a 3-type variant is a one-line DAYTYPE change if needed."),
+            ("Metabolic 70 W/MET (~60 kg) basis",
+             "Conservative vs ASHRAE 105 / 70 kg (83 W/MET); scales all metabolic gains.",
+             "VERIFIED vs the 2024 Adult Compendium (07_metabolicMap_verification.md); document the "
+             "basis in Methods; optional ×1.19 / ×1.5 sensitivity."),
+            ("MATCH_TIER within-HH variation",
+             "Per-person Step-5 label differs across an HH's two day-type blocks (convert() .first()).",
+             "INFO — DTYPE/PR drift = 0; MATCH_TIER is never consumed by EnergyPlus. BEM-harmless."),
+            ("Classic-frame regression",
+             f"The 2022 classic backup is the older 36,909-HH census frame, not the {N_HH:,}-HH ML frame.",
+             "INFO — row-count 'parity' is not a defect; schema is compared to the 13-col baseline."),
+        ]
+        dev_trs = "".join(
+            f"<tr><td>{d}</td><td>{n}</td><td>{disp}</td></tr>" for d, n, disp in dev_rows)
+        deviations_html = f"""
+        <section class="chart-section" id="deviations">
+          <h2>Documented deviations — disposition</h2>
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead><tr><th>Deviation</th><th>Nature</th><th>Disposition</th></tr></thead>
+              <tbody>{dev_trs}</tbody>
+            </table>
+          </div>
+          <p class="caption" style="margin-top:14px">
+            <strong>Limitations (paper-ready).</strong> The Step-7 BEM schedules calibrate both the
+            occupancy channel (hom30, raked to the Census-linked 2022 stock and the Step-6 2030 forecast)
+            and the activity channel (act30, joint-raked via 05_postlink_rake.py --joint) to within ≤1 pp
+            of the diary marginals. The metabolic and Step-9 internal-gain channels therefore ride the
+            calibrated activity mix, on a conservative 70 W/MET (~60 kg) basis, and Saturday/Sunday are
+            pooled into a single Weekend profile per the EnergyPlus 2-day-type contract. None of these
+            affects the occupancy signal EnergyPlus uses for presence; the metabolic basis and day-type
+            pooling are documented as limitations.
+          </p>
+        </section>"""
 
         html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -677,6 +881,13 @@ class BEMIntegrationValidator:
                          padding-bottom:8px; border-bottom:1px solid var(--border); }}
     .chart-wrap {{ text-align:center; }}
     .chart-wrap img {{ max-width:100%; height:auto; border-radius:8px; }}
+    .caption {{ font-size:0.82rem; color:var(--subtext); margin-top:12px; line-height:1.5;
+                text-align:left; }}
+    .provenance {{ background:var(--surface); border:1px solid var(--border);
+                   border-left:4px solid var(--accent); border-radius:10px;
+                   padding:14px 18px; margin-bottom:28px; font-size:0.85rem;
+                   color:var(--text); line-height:1.55; }}
+    .provenance code {{ color:var(--yellow); }}
     .table-wrap {{ overflow-x:auto; }}
     .summary-table {{ width:100%; border-collapse:collapse; font-size:0.82rem; }}
     .summary-table th {{ background:var(--surface2); color:var(--accent); padding:10px 12px;
@@ -721,6 +932,7 @@ class BEMIntegrationValidator:
         <div class="number">{pct_ok}%</div>
         <div class="label">Pass Rate</div></div>
     </div>
+    {provenance_html}
     <div class="findings">
       <h2>Failures</h2>
       <ul class="badge-list">{_badge_list("fail")}</ul>
@@ -735,17 +947,18 @@ class BEMIntegrationValidator:
     </div>
     {charts_html}
     {summary_html}
+    {deviations_html}
   </main>
   <footer>
     Occupancy Modeling Pipeline &middot; Step 7 BEM/UBEM Integration Validation &middot;
     Input: {BEMS / f"BEM_Schedules_{self.year}.csv"} &middot;
-    Output: {os.path.join(self.outputs_dir, f"step7_validation_report_{self.year}.html")} &middot;
+    Output: {os.path.join(self.outputs_dir, f"step7_validation_report_{self.year}_v2.html")} &middot;
     Generated: {ts}
   </footer>
 </body>
 </html>"""
 
-        out_path = os.path.join(self.outputs_dir, f"step7_validation_report_{self.year}.html")
+        out_path = os.path.join(self.outputs_dir, f"step7_validation_report_{self.year}_v2.html")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"\nHTML Report saved -> {out_path}")
@@ -761,6 +974,7 @@ class BEMIntegrationValidator:
         self.validate_daytype_coverage()
         self.validate_occupancy_calibration()
         self.validate_metabolic()
+        self.validate_step9_channels()
         self.validate_attribute_integrity()
         self.validate_regression_vs_classic()
         self.generate_summary_table()

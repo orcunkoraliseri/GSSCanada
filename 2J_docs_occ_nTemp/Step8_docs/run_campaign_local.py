@@ -106,7 +106,7 @@ def _count_hourly(cell_dir):
     return n
 
 
-def _run_cell(arch, city, n, seed, sim_mode, out_dir, log_dir, ep_workers):
+def _run_cell(arch, city, n, seed, sim_mode, out_dir, log_dir, ep_workers, years=None):
     label = f"{arch}__{city}"
     log_path = os.path.join(log_dir, f"{label}.log")
     t0 = time.time()
@@ -117,12 +117,15 @@ def _run_cell(arch, city, n, seed, sim_mode, out_dir, log_dir, ep_workers):
     # --workers 1 --ep-workers K: only ONE cell's schedule CSVs (~3.7 GB) in RAM.
     # Popen (not run) so the watchdog can kill this process tree on a breach.
     child_env = dict(os.environ, ESIM_WORKERS=str(ep_workers))
+    cmd = [sys.executable, DRIVER,
+           "--archetype", arch, "--city", city,
+           "--n", str(n), "--seed", str(seed), "--sim-mode", sim_mode,
+           "--output-dir", out_dir]
+    if years:
+        cmd += ["--years", ",".join(years)]
     with open(log_path, "w", encoding="utf-8") as lf:
         proc = subprocess.Popen(
-            [sys.executable, DRIVER,
-             "--archetype", arch, "--city", city,
-             "--n", str(n), "--seed", str(seed), "--sim-mode", sim_mode,
-             "--output-dir", out_dir],
+            cmd,
             stdout=lf, stderr=subprocess.STDOUT, cwd=HERE, env=child_env,
         )
         with _ACTIVE_LOCK:
@@ -159,6 +162,12 @@ def main():
                         "the run to a subset; default = all 24. Handy for re-running failures.")
     p.add_argument("--no-resume", action="store_true",
                    help="re-run cells even if they already look complete.")
+    p.add_argument("--years", default=None,
+                   help="comma-separated years to restrict the campaign to (e.g. 2022,2030); "
+                        "default = all 5 (COMPARATIVE_YEARS). Passed through to run_paired_mc.py. "
+                        "NOTE: when a cell dir already holds a full prior campaign, the resume-skip "
+                        "count check is scoped to len(years) and will under-count / false-skip -- "
+                        "pass --no-resume alongside this for a targeted subset re-run.")
     p.add_argument("--dry-run", action="store_true",
                    help="resolve cells + print plan, run nothing.")
     args = p.parse_args()
@@ -171,7 +180,8 @@ def main():
         if missing:
             print(f"ERROR: unknown --cells: {', '.join(sorted(missing))}", flush=True)
             sys.exit(2)
-    nyr = len(COMPARATIVE_YEARS)
+    years = [y.strip() for y in args.years.split(",")] if args.years else None
+    nyr = len(years) if years else len(COMPARATIVE_YEARS)
     expected = args.n * nyr
     root = args.output_root
     log_dir = os.path.join(root, "_logs")
@@ -213,7 +223,7 @@ def main():
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
         futs = {
             ex.submit(_run_cell, a, c, args.n, args.seed, args.sim_mode,
-                      os.path.join(root, f"{a}__{c}"), log_dir, args.ep_workers): f"{a}__{c}"
+                      os.path.join(root, f"{a}__{c}"), log_dir, args.ep_workers, years): f"{a}__{c}"
             for a, c in todo
         }
         for fut in as_completed(futs):

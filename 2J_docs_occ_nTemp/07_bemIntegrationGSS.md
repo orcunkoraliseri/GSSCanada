@@ -26,25 +26,25 @@ Script: **`2J_docs_occ_nTemp/07_aug_to_bem.py`** (OP4). Run-from-anywhere, `seed
 
 | File | Location | Content | Rows | Key Columns |
 |---|---|---|---|---|
-| `21CEN22GSS_aug_Full_Aggregated_excl.csv` | `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/` | **2022 stock** — calibrated (post-link-raked, 8B-5b) linked persons, post-exclusion; one row per person with dwelling vars | 285,419 (WD 203,622 / Sat 40,891 / Sun 40,906) | HH_ID, DDAY_STRATA, act30_001–048, hom30_001–048, HHSIZE, DTYPE, BEDRM, CONDO, ROOM, REPAIR, PR, MATCH_TIER |
-| `2030_synthetic_diaries.csv` | `0_Occupancy/Outputs_21CEN22GSS/forecast_2030/` | **2030 forecast** — calibrated structural-break diaries (activated canonical, hom30 raked to WD 78.44 / Sat 79.15 / Sun 81.48) | 37,008 (12,231 / 12,406 / 12,371) | DDAY_STRATA, CYCLE_YEAR=2030, act30_001–048, hom30_001–048 |
+| `21CEN22GSS_aug_Full_Aggregated_excl.csv` | `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/` | **2022 stock** — calibrated (post-link-raked, 8B-5b) linked persons, post-exclusion; one row per person with dwelling vars | 285,367 (post Jul-9 Step-5 refresh; −52 vs prior 285,419) | HH_ID, DDAY_STRATA, act30_001–048, hom30_001–048, HHSIZE, DTYPE, BEDRM, CONDO, ROOM, REPAIR, PR, MATCH_TIER |
+| `2030_synthetic_diaries_joint_raked.csv` | `0_Occupancy/Outputs_21CEN22GSS/forecast_2030/` | **2030 forecast** — calibrated structural-break diaries (canonical **joint** rake: act30 + hom30; hom30 WD 78.44 / Sat 79.15 / Sun 81.48; read via `--joint`) | 37,008 (12,231 / 12,406 / 12,371) | DDAY_STRATA, CYCLE_YEAR=2030, act30_001–048, hom30_001–048 |
 
 > The 2030 file carries **occupancy + activity only**; dwelling/geography attributes are taken
 > from the 2022 stock via `assemble_2030()` (stratum-matched draw, `seed=42`) so the forecast
-> rides on the same 144,507-household frame.
+> rides on the same 144,465-household frame.
 
 ### Confirmed Data Characteristics
 
 | Property | Value |
 |---|---|
-| Households (both years) | 144,507 |
-| Persons (2022 stock, post-exclusion) | 285,419 (~1.97 per HH) |
+| Households (both years) | 144,465 |
+| Persons (2022 stock, post-exclusion) | 285,367 (~1.98 per HH) |
 | act30 range | {1..14}, 0% NaN both files, all strata |
 | hom30 range | {0, 1}, hard binary (calibrated) |
 | DDAY_STRATA | 1 = Weekday, 2 = Saturday, 3 = Sunday |
 | Activity code 5 | Sleep & Naps & Resting (70 W — metabolic anchor) |
 | Occupancy calibration | hom30 **raked** (8B-5b for 2022; structural-break for 2030) |
-| Activity calibration | act30 **un-raked** (raw J3 / forecast — see Risk Register) |
+| Activity calibration | act30 **joint-raked (calibrated)** — `05_postlink_rake.py --joint` (see Risk Register) |
 
 ---
 
@@ -102,7 +102,7 @@ pairwise co-presence), so the approximation is harmless to the energy model.
 
 | Column | Source | Notes |
 |---|---|---|
-| `SIM_HH_ID` | HH_ID (renamed) | 144,507 unique |
+| `SIM_HH_ID` | HH_ID (renamed) | 144,465 unique |
 | `Day_Type` | DDAY_STRATA → {Weekday, Weekend} | Sat+Sun pooled |
 | `Hour` | 0–23 | 48 half-hour slots averaged in pairs |
 | `HHSIZE`, `DTYPE`, `BEDRM`, `CONDO`, `ROOM`, `REPAIR` | Step 5 linkage (`first()` per HH) | dwelling attributes |
@@ -111,7 +111,7 @@ pairwise co-presence), so the approximation is harmless to the energy model.
 | `Occupancy_Schedule` | mean(hom30) over HH members → hourly | fraction of members home, [0,1], 3 dp |
 | `Metabolic_Rate` | mean(MET[act30]) over HH members → hourly | W/person, 1 dp |
 
-**Row math:** 144,507 HH × 2 day-types × 24 hours = **6,936,336 rows** per file.
+**Row math:** 144,465 HH × 2 day-types × 24 hours = **6,934,320 rows** per file.
 `DTYPE` is relabelled: code 2 (Apartment) → `HighRise` (BEDRM ≤ 1) / `MidRise` (BEDRM ≥ 2);
 1 → `SingleD`; 3 → `OtherDwelling`; 8 → `"8"` (matches classic).
 
@@ -177,8 +177,8 @@ richer Step 7. What was actually built vs. planned:
 
 | File | Location | Content |
 |---|---|---|
-| `BEM_Schedules_2022.csv` | `BEM_Setup/` | 6,936,336 rows; calibrated 2022 stock schedules — EnergyPlus input |
-| `BEM_Schedules_2030.csv` | `BEM_Setup/` | 6,936,336 rows; calibrated 2030 forecast schedules — EnergyPlus input |
+| `BEM_Schedules_2022.csv` | `BEM_Setup/` | 6,934,320 rows; calibrated 2022 stock schedules — EnergyPlus input |
+| `BEM_Schedules_2030.csv` | `BEM_Setup/` | 6,934,320 rows; calibrated 2030 forecast schedules — EnergyPlus input |
 | `BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv` | `BEM_Setup/` | backup of the pre-OP4 (classic-pipeline) 2022 file |
 | `BEM_Schedules_2030_CLASSIC_BAK_2026-05-31.csv` | `BEM_Setup/` | backup of the pre-OP4 2030 file |
 
@@ -192,16 +192,16 @@ Sub-step 7A — Input audit (read-only)
 
 Sub-step 7B–7E — Convert + write (one command per year)
   py 2J_docs_occ_nTemp/07_aug_to_bem.py --year 2022
-  py 2J_docs_occ_nTemp/07_aug_to_bem.py --year 2030
+  py 2J_docs_occ_nTemp/07_aug_to_bem.py --year 2030 --joint   # canonical: joint act30+hom30 rake
 
 Validation report (built — runs per year)
   py 2J_docs_occ_nTemp/07_bemIntegrationGSS_val.py            # both years
   py 2J_docs_occ_nTemp/07_bemIntegrationGSS_val.py --year 2030
-  # → outputs_step7/step7_validation_report_{2022,2030}.html
+  # → outputs_step7/step7_validation_report_{2022,2030}_v2.html
 ```
 
 **Prerequisites:** Step 5 `_excl` aggregated file (calibrated 2022 stock) and Step 6
-activated `2030_synthetic_diaries.csv` (canonical) must both exist and pass their own gates.
+activated `2030_synthetic_diaries_joint_raked.csv` (canonical, `--joint`) must both exist and pass their own gates.
 
 ---
 
@@ -223,7 +223,7 @@ runs are the first true compute step and may go to the cluster.)
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| **Metabolic channel un-calibrated** — `act30` was never raked (only `hom30`); `Metabolic_Rate` rides on raw J3 / forecast activity | Internal-gain inputs to EnergyPlus inherit the model's activity bias | Document as limitation; occupancy (the dominant driver) IS calibrated; consider an activity-side rake if energy results prove sensitive |
+| **Metabolic channel now calibrated** — `act30` is joint-raked (`05_postlink_rake.py --joint`, 2026-07-09), alongside `hom30`; `Metabolic_Rate` rides on raked/calibrated activity | Internal-gain inputs to EnergyPlus inherit the calibrated activity distribution | Verified: per-stratum act30 gaps 0.59–1.17 pp vs ~12.3 pp pre-rake; no further mitigation needed |
 | Metabolic W/person reference basis (70 W/MET ≈ 60 kg) | Conservative vs ASHRAE 105 / 70 kg 83 W/MET; scales all internal gains | **Verified** vs 2024 Adult Compendium (`07_metabolicMap_verification.md`); document the 70 W/MET basis in Methods; optional ×1.19/×1.5 sensitivity run |
 | Sat/Sun pooled → Weekend | Loses calibrated 2.3 pp Sat/Sun distinction | Accept (BEM consumer is 2-day-type); note in paper; a 3-type variant is a small `DAYTYPE` map change if needed |
 | Hourly (24) vs planned 30-min (48) | Sub-hourly transitions smoothed | Accept for EnergyPlus timestep; 48-slot data is preserved upstream in the diaries if finer resolution is needed |
@@ -253,3 +253,4 @@ runs are the first true compute step and may go to the cluster.)
 | 2026-06-01 | Output re-verification (read-only) | ✅ PASS | Both files: 6,936,336 rows, 144,507 HH, all HH have both day-types, Occ ∈ [0,1], Met ∈ [70,245]. **2022:** WD occ 0.703 / WE occ 0.749 (met 108.5). **2030:** WD occ 0.785 / WE occ 0.803 (met 107.4 / 100.0). 2030 occupancy reproduces the calibrated structural-break marginals to ≤ 0.04 pp. |
 | 2026-06-01 | `07_bemIntegrationGSS_val.py` built + run | ✅ 2022 29/0/0 · 2030 28/0/0 | 6-section validator → `outputs_step7/step7_validation_report_{2022,2030}.html`. Confirms schema, day-type coverage (0 partial HH), occupancy calibration (per-HH vs per-person, ≤1 pp; 2030 Δ0.04), metabolic plausibility, attribute integrity (DTYPE/PR 0 within-HH drift; MATCH_TIER varies per-person, BEM-harmless), and regression vs classic. See `07_bemIntegrationGSS_val.md` Progress Log for the three post-run check refinements. |
 | 2026-06-01 | Metabolic-map source verification | ✅ SOURCED | Map grounded in the **2024 Adult Compendium of Physical Activities** (user-provided PDF). Recovered the exact basis `W = MET × 70` from two Compendium hits (Sleeping 1.0→70 W, Eating 1.5→105 W); 9/14 categories land on Compendium central values, 2 exact, 3 minor low-impact flags (Socializing low, Active Leisure conservative, Misc high). 70 W/MET ⇒ ~60 kg reference (conservative vs ASHRAE 105 / 70 kg 83). Full crosswalk → `07_metabolicMap_verification.md`. No map value changed (publishable-results guardrail). |
+| 2026-07-10 | Doc alignment — `--joint` input + frame refresh + report-label fix | ✅ DONE | Input table now names `2030_synthetic_diaries_joint_raked.csv` (read via `--joint`, canonical joint act30+hom30 rake); frame corrected 144,507→144,465 HH / 285,419→285,367 persons / 6,936,336→6,934,320 rows (Jul-9 Step-5 refresh dropped 42 HH / 52 persons). Validator `07_bemIntegrationGSS_val.py` clock-label fix: removed the obsolete `_clock` (+4h) helper — since the 2026-06-08 +4h roll the BEM `Hour` is real clock time, so §3/§4/§4b chart x-axes and the §4b lighting-peak now read true hours (lighting peak 20h, was mislabelled 00h). Data/gates unchanged; `_v2` reports regenerated. Predecessor → `archive/07_bemIntegrationGSS_val.20260710_pre_clockfix.py`. |

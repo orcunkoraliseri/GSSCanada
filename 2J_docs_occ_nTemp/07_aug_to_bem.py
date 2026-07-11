@@ -18,6 +18,7 @@ import activity_loads as _al
 BASE = HERE.parent                         # GSSCanada-main/
 AUG  = BASE/"0_Occupancy"/"Outputs_21CEN22GSS"/"aug_pipeline"/"21CEN22GSS_aug_Full_Aggregated_excl.csv"
 D2030= BASE/"0_Occupancy"/"Outputs_21CEN22GSS"/"forecast_2030"/"2030_synthetic_diaries.csv"
+D2030_JOINT = BASE/"0_Occupancy"/"Outputs_21CEN22GSS"/"forecast_2030"/"2030_synthetic_diaries_joint_raked.csv"
 BEMS = BASE/"BEM_Setup"
 
 ACT = [f"act30_{i:03d}" for i in range(1,49)]
@@ -178,10 +179,11 @@ def complete_day_types(df):
         print(f"  donor-draw {len(we_only):,} WE-only HHs -> Weekday ({len(sub):,} member-rows)", flush=True)
     return pd.concat([df] + extra, ignore_index=True) if extra else df
 
-def assemble_2030():
+def assemble_2030(joint=False):
     rng = np.random.default_rng(42)
     stock = pd.read_csv(AUG, low_memory=False)          # frozen 2022 _excl persons
-    d30   = pd.read_csv(D2030, low_memory=False)         # calibrated 2030 diaries
+    d30_path = D2030_JOINT if joint else D2030
+    d30   = pd.read_csv(d30_path, low_memory=False)      # calibrated 2030 diaries
     out = stock.copy()
     for k in (1,2,3):
         smask = (stock["DDAY_STRATA"].values==k)
@@ -192,8 +194,14 @@ def assemble_2030():
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--year",choices=["2022","2030"],required=True)
-    yr=ap.parse_args().year
-    df = pd.read_csv(AUG, low_memory=False) if yr=="2022" else assemble_2030()
+    ap.add_argument("--joint", action="store_true",
+                     help="2030 only: read 2030_synthetic_diaries_joint_raked.csv (Task B "
+                          "act30-conditional rake output) instead of the default "
+                          "2030_synthetic_diaries.csv. No effect for --year 2022, which "
+                          "already reads Full_Aggregated_excl.csv (reflects whatever the "
+                          "aug_pipeline chain last produced).")
+    args = ap.parse_args(); yr = args.year
+    df = pd.read_csv(AUG, low_memory=False) if yr=="2022" else assemble_2030(joint=args.joint)
     df = complete_day_types(df)
     bem = convert(df)
     # acceptance gates

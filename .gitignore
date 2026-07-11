@@ -88,6 +88,8 @@ tmp/
 # Large PyTorch checkpoint files (>100MB, exceeds GitHub limit)
 2J_docs_occ_nTemp/outputs_step4/checkpoints/last_checkpoint.pt
 2J_docs_occ_nTemp/outputs_step4/step4_train.pt
+2J_docs_occ_nTemp/outputs_step4/model_artifacts/checkpoints/
+2J_docs_occ_nTemp/outputs_step4/model_artifacts/step4_train.pt
 
 # Giant generated schedules and feature files
 0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/*_Schedules*.csv
@@ -104,6 +106,7 @@ tmp/
 2J_docs_occ_nTemp/*.err
 2J_docs_occ_nTemp/*.out
 2J_docs_occ_nTemp/outputs_step4/test/checkpoints/
+2J_docs_occ_nTemp/outputs_step4/runs/**/checkpoints/
 2J_docs_occ_nTemp/step4_Speed-Cluster_docs/cluster_outputs/checkpoints/
 
 # Large intermediate backups and schedules
@@ -122,6 +125,7 @@ BEM_Setup/SimResults_Step8/
 # Step 9 Prototype simulation runs
 2J_docs_occ_nTemp/Step9_docs/prototype/baseline/
 2J_docs_occ_nTemp/Step9_docs/prototype/activity/
+BEM_Setup/SimResults_Step9/
 
 # Large archive files
 *.tar

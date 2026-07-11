@@ -2,8 +2,8 @@
 Total Census agents: 286537
 
   1_Perfect: 128778 (44.94%)
-  2_Core: 61294 (21.39%)
-  3_Constraints: 96465 (33.67%)
+  2_Core: 62646 (21.86%)
+  3_Constraints: 95113 (33.19%)
 
 WD FailSafe rate: 0.00%  (gate <=10%)
 WE FailSafe rate: 0.00%  (gate <=12%)

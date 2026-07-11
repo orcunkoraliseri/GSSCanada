@@ -53,6 +53,24 @@ _PR_MAP = {
     48: "Alberta", 59: "BC", 70: "Northern Canada",
 }
 
+# GSS 5-region <-> Census SGC fold, used for Tier-2 matching when --region-tier is set
+# (folds Tier-2's PR key to REGION for ALL cycles, not just as a 2005 fallback — see
+# run_slot_match()'s region_tier docstring for why the original fallback-tier design
+# couldn't move 2005's matched share).
+# Legacy GSS 2005 PR is already region-coded (1=Atlantic,2=Quebec,3=Ontario,4=Prairies,5=BC)
+# and passes through unchanged; Census/2010+/2022 SGC codes fold onto the same 5 regions.
+# Do NOT reuse _PR_MAP for this: it splits Alberta (48) from the Prairies (46,47) for
+# display labels, which would break the fold since 2005 has no Alberta-vs-Prairies split.
+REGION_FOLD = {
+    10: 1, 11: 1, 12: 1, 13: 1,   # Atlantic (SGC)
+    24: 2,                        # Quebec (SGC)
+    35: 3,                        # Ontario (SGC)
+    46: 4, 47: 4, 48: 4,          # Prairies incl. Alberta (SGC)
+    59: 5,                        # BC (SGC)
+    1: 1, 2: 2, 3: 3, 4: 4, 5: 5,  # legacy 2005 5-region codes, pass through
+}
+REGION_COL = "REGION"
+
 # ── Match configuration ───────────────────────────────────────────────────────
 MATCH_KEYS = ["AGEGRP", "SEX", "MARSTH", "HHSIZE", "LFTAG", "PR", "CMA"]
 DDAY_COL = "DDAY_STRATA"
@@ -95,6 +113,7 @@ def run_slot_match(
     df_pool: pd.DataFrame,
     match_keys: list[str],
     dday_col: str = "DDAY_STRATA",
+    region_tier: bool = False,
 ) -> pd.DataFrame:
     """
     For each Census agent, attempts Tier 1 → 4 match against the diary pool.
@@ -105,13 +124,33 @@ def run_slot_match(
     Pool rows with NaN in any tier's required keys are excluded from that tier
     (pandas groupby dropna=True default) but remain eligible for lower tiers.
     DDAY_STRATA has no NaN, so T4 (stratum-only) always has a non-empty pool.
+
+    region_tier: when True, Tier-2's geography key switches from raw PR
+    (province-level, Census SGC-coded) to REGION (5-region, via REGION_FOLD)
+    for ALL cycles — not just as a fallback for 2005. This lets 2005's legacy
+    5-region PR codes (disjoint from Census SGC PR, so 2005 can never win
+    Tier-1 or a raw-PR Tier-2) compete for a Tier-2 match on equal footing
+    with 2010/2015/2022, instead of being locked out of Tier-1/Tier-2 entirely
+    and reachable only via a private post-hoc fallback tier tried after both
+    fail (the original --region-tier design: that fallback's eligible pool
+    was capped at ~0.5% of agents, mathematically incapable of moving 2005's
+    matched share). Trade-off: Tier-2 geographic precision drops from
+    province-level to 5-region-level for every cycle, not just 2005, whenever
+    this flag is on. Default False reproduces pre-region-tier behaviour
+    bit-for-bit.
     """
     np.random.seed(42)
 
     t1_keys = match_keys + [dday_col]
-    t2_keys = ["AGEGRP", "SEX", "LFTAG", "PR", dday_col]
+    t2_keys = ["AGEGRP", "SEX", "LFTAG", REGION_COL if region_tier else "PR", dday_col]
     t3_keys = ["AGEGRP", "SEX", dday_col]
     t4_keys = [dday_col]
+
+    if region_tier:
+        df_pool = df_pool.copy()
+        df_census = df_census.copy()
+        df_pool[REGION_COL] = df_pool["PR"].map(REGION_FOLD)
+        df_census[REGION_COL] = df_census["PR"].map(REGION_FOLD)
 
     def _build_index(keys: list[str]) -> dict[tuple, np.ndarray]:
         """Map key-tuple → array of pool row labels (df_pool.index values)."""
@@ -243,8 +282,14 @@ def _assign_dday(df_census: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
     return df
 
 
-def _print_tier_report(df_matched: pd.DataFrame) -> dict:
-    """Print and return tier distribution + WD/WE FailSafe rates."""
+def _print_tier_report(df_matched: pd.DataFrame, df_pool: pd.DataFrame | None = None) -> dict:
+    """Print and return tier distribution + WD/WE FailSafe rates.
+
+    When df_pool is given, also prints a per-CYCLE_YEAR x tier share table
+    (which GSS cycle's diary row each agent was matched to, by tier) — used
+    to verify --region-tier moves 2005 out of Tier-3/4 into Tier-2 (REGION-
+    keyed under the flag) without shifting cycles out of Tier-1.
+    """
     n = len(df_matched)
     counts = df_matched["MATCH_TIER"].value_counts().sort_index()
     for t, c in counts.items():
@@ -255,12 +300,19 @@ def _print_tier_report(df_matched: pd.DataFrame) -> dict:
     fs_we = float((df_matched.loc[we, "MATCH_TIER"] == "4_FailSafe").mean()) if we.any() else 0.0
     print(f"  WD FailSafe: {100 * fs_wd:.2f}%  (gate <=10%)")
     print(f"  WE FailSafe: {100 * fs_we:.2f}%  (gate <=12%)")
+
+    if df_pool is not None and "CYCLE_YEAR" in df_pool.columns:
+        cyc = df_pool.loc[df_matched["_pool_idx"].to_numpy(), "CYCLE_YEAR"].to_numpy()
+        by_cycle = pd.crosstab(cyc, df_matched["MATCH_TIER"].to_numpy(), normalize="index") * 100
+        print("\n  Per-cycle tier share (%, row-normalized by matched CYCLE_YEAR):")
+        print(by_cycle.round(2).to_string().replace("\n", "\n  "))
+
     return {"fs_wd": fs_wd, "fs_we": fs_we, "counts": counts, "n": n}
 
 
 # ── Linkage runners ───────────────────────────────────────────────────────────
 
-def run_linkage_smoke(sample_frac: float = 0.01) -> None:
+def run_linkage_smoke(sample_frac: float = 0.01, region_tier: bool = False) -> None:
     """1% Census sample (~2,865 agents). Writes to aug_pipeline/smoke/."""
     SMOKE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -271,8 +323,9 @@ def run_linkage_smoke(sample_frac: float = 0.01) -> None:
     df_census_sample = df_census_full.sample(frac=sample_frac, random_state=42)
     df_census_sample = _assign_dday(df_census_sample, seed=42)
 
-    print(f"\n[smoke] {len(df_census_sample)} Census agents | pool: {len(df_pool)} rows")
-    df_matched = run_slot_match(df_census_sample, df_pool, MATCH_KEYS, DDAY_COL)
+    print(f"\n[smoke] {len(df_census_sample)} Census agents | pool: {len(df_pool)} rows"
+          f"{' | region-tier ON' if region_tier else ''}")
+    df_matched = run_slot_match(df_census_sample, df_pool, MATCH_KEYS, DDAY_COL, region_tier=region_tier)
     df_full = expand_slot_schedules(df_matched, df_pool, df_census_full)
 
     df_matched.drop(columns=["_pool_idx"]).to_csv(
@@ -281,7 +334,7 @@ def run_linkage_smoke(sample_frac: float = 0.01) -> None:
     df_full.to_csv(SMOKE_DIR / "21CEN22GSS_aug_Full_Schedules_smoke.csv", index=False)
 
     print("\n--- Smoke Tier Distribution ---")
-    _print_tier_report(df_matched)
+    _print_tier_report(df_matched, df_pool)
 
     hom_cols = sorted([c for c in df_full.columns if c.startswith("hom30_")])
     if hom_cols:
@@ -308,7 +361,7 @@ def run_linkage_smoke(sample_frac: float = 0.01) -> None:
     print(f"\nSmoke outputs -> {SMOKE_DIR}")
 
 
-def run_linkage_full() -> None:
+def run_linkage_full(region_tier: bool = False) -> None:
     """100% Census sample (286,540 agents). Writes to aug_pipeline/."""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -323,8 +376,9 @@ def run_linkage_full() -> None:
               f"({n_raw} -> {n_deduped} unique agents)")
     df_census_dday = _assign_dday(df_census, seed=42)
 
-    print(f"\n[full] {len(df_census_dday)} Census agents | pool: {len(df_pool)} rows")
-    df_matched = run_slot_match(df_census_dday, df_pool, MATCH_KEYS, DDAY_COL)
+    print(f"\n[full] {len(df_census_dday)} Census agents | pool: {len(df_pool)} rows"
+          f"{' | region-tier ON' if region_tier else ''}")
+    df_matched = run_slot_match(df_census_dday, df_pool, MATCH_KEYS, DDAY_COL, region_tier=region_tier)
     df_full = expand_slot_schedules(df_matched, df_pool, df_census)
 
     # Hard-gate assertions
@@ -338,7 +392,7 @@ def run_linkage_full() -> None:
     df_full.to_csv(OUT_DIR / "21CEN22GSS_aug_Full_Schedules.csv", index=False)
 
     print("\n--- Full Run Tier Distribution ---")
-    stats = _print_tier_report(df_matched)
+    stats = _print_tier_report(df_matched, df_pool)
 
     report_lines = [
         "21CEN22GSS Aug Pipeline - Match Tier Report\n",
@@ -860,12 +914,21 @@ if __name__ == "__main__":
     grp.add_argument(
         "--exclusion", action="store_true", help="Exclude implausible HHs (Sub-step 5H)"
     )
+    parser.add_argument(
+        "--region-tier", action="store_true",
+        help="Fold Tier-2's PR key to REGION (5-region, via REGION_FOLD) for all cycles, "
+             "so 2005 GSS (legacy 5-region PR, disjoint from Census SGC PR) can win a "
+             "Tier-2 match instead of needing an exact Tier-1/2 match its PR encoding can "
+             "never satisfy. Trades province-level for region-level Tier-2 precision on "
+             "ALL cycles. Default off reproduces pre-fix behaviour. Applies to "
+             "--smoke/--full only.",
+    )
     args = parser.parse_args()
 
     if args.smoke:
-        run_linkage_smoke()
+        run_linkage_smoke(region_tier=args.region_tier)
     elif args.full:
-        run_linkage_full()
+        run_linkage_full(region_tier=args.region_tier)
     elif args.aggregate:
         run_aggregate()
     elif args.bem:

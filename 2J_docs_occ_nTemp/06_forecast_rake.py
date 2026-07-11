@@ -48,6 +48,7 @@ _VALIDATOR     = (_BASE / "eSim_occ_utils" / "25CEN22GSS_classification"
 _AUG_PATH      = _STEP4_DIR / "augmented_diaries.csv"
 _DIARIES_2030  = _FORECAST_DIR / "2030_synthetic_diaries.csv"
 _RAKED_OUT     = _FORECAST_DIR / "2030_synthetic_diaries_raked.csv"
+_JOINT_RAKED_OUT = _FORECAST_DIR / "2030_synthetic_diaries_joint_raked.csv"
 
 # Column lists
 N_SLOTS   = 48
@@ -496,5 +497,205 @@ def main():
     print(f"{'='*72}", flush=True)
 
 
+# ── --joint pipeline (Task B / Improvement 1, 2026-07-09) ──────────────────────
+#
+# main() above is left byte-for-byte untouched; --joint dispatches to a fully
+# separate main_joint() below. main_joint() reuses Steps 1-4's existing
+# top-level functions (compute_observed_marginals / project_to_2030 /
+# compare_model_vs_projection / rake_2030) UNCHANGED to get hom30 exact via
+# its existing OLS projection (per spec: "hom30 keeps its existing OLS
+# projection, untouched"), then adds a new act30-conditional rake step whose
+# TARGETS are the 2022 OBSERVED marginals (augmented_diaries.csv,
+# CYCLE_YEAR==2022 & IS_SYNTHETIC==0) -- not the 2030 projection, per spec.
+#
+# Reuses _rake_categorical_slot / _run_act30_conditional_rake from
+# 05_postlink_rake.py via the codebase's existing importlib.util house
+# pattern for numeric-prefixed modules (see 01_readingGSS_val.py,
+# 03_cop_only.py: `spec_from_file_location` + `module_from_spec` +
+# `exec_module` -- this file previously duplicated _boundary_mask/
+# _rake_binary_slot instead of importing; for the NEW joint-rake helpers we
+# import for real, per the plan's explicit instruction).
+#
+# DEVIATION FROM THE PLAN (flagged, not silently done): 2030_synthetic_diaries.csv
+# has only 99 columns (occID/CYCLE_YEAR/DDAY_STRATA/act30_*/hom30_*) -- it
+# carries NEITHER "LFTAG" NOR any of the 9 co-presence channels (confirmed via
+# header check, 2026-07-09). So for --joint on this file:
+#   - act30 rake runs WITHOUT LFTAG conditioning (DDAY_STRATA x slot x
+#     hom-status only) -- _run_act30_conditional_rake now tolerates a missing
+#     LFTAG column structurally (see 05_postlink_rake.py patch).
+#   - the COP step is SKIPPED, not fabricated. Bolting a new 9-channel x 48-slot
+#     co-presence layer onto a file that has never carried one (starting every
+#     synthetic row from an all-zero baseline) would be inventing a new data
+#     product, not "porting" a rake -- out of scope for this session; flagged
+#     for the manager rather than done silently (CLAUDE.md: "Do not invent new
+#     pipeline steps, files, or datasets").
+
+def _load_postlink_rake_module():
+    """importlib house pattern (01_readingGSS_val.py / 03_cop_only.py) --
+    loads 05_postlink_rake.py as a module without executing its
+    `if __name__ == "__main__":` block (module __name__ != "__main__")."""
+    import importlib.util
+    mod_path = str(_HERE / "05_postlink_rake.py")
+    spec = importlib.util.spec_from_file_location("postlink_rake_joint", mod_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _load_2022_obs_reference(aug_path, act_cols, hom_cols):
+    """Chunked read of augmented_diaries.csv (530 MB -- never whole-load, per
+    CLAUDE.md) filtered to CYCLE_YEAR==2022 & IS_SYNTHETIC==0. Returns a
+    DataFrame with DDAY_STRATA + act_cols + hom_cols, original row index
+    preserved (bounded well under the 10,000,000 offset used for the 2030
+    synthetic side in _joint_act30_rake_2030)."""
+    usecols = ["CYCLE_YEAR", "DDAY_STRATA", "IS_SYNTHETIC"] + act_cols + hom_cols
+    parts = []
+    for chunk in pd.read_csv(str(aug_path), usecols=usecols, chunksize=50_000):
+        sub = chunk[(chunk["CYCLE_YEAR"] == 2022) & (chunk["IS_SYNTHETIC"] == 0)]
+        if len(sub):
+            parts.append(sub)
+    if not parts:
+        raise RuntimeError("No 2022 IS_SYNTHETIC==0 rows found in augmented_diaries.csv")
+    obs = pd.concat(parts, axis=0)
+    return obs[["DDAY_STRATA"] + act_cols + hom_cols]
+
+
+def _joint_act30_rake_2030(df_2030_raked, postlink_rake):
+    """act30-conditional rake for the 2030 forecast, targets = 2022 OBSERVED
+    marginals (not the 2030 hom30 projection). hom30 is read-only here and
+    asserted unchanged. Returns (df_out, diagnostics dict)."""
+    print("\n[Step 4b — joint] act30 conditional rake (2022 OBSERVED marginals as "
+          "target; no LFTAG dimension -- 2030_synthetic_diaries.csv does not carry "
+          "LFTAG) ...", flush=True)
+
+    obs_2022 = _load_2022_obs_reference(_AUG_PATH, ACT_COLS, HOM_COLS)
+    print(f"  2022 observed reference rows: {len(obs_2022):,}", flush=True)
+
+    obs_frame = obs_2022.copy()
+    obs_frame["IS_SYNTHETIC"] = 0
+
+    syn_frame = df_2030_raked[["DDAY_STRATA"] + ACT_COLS + HOM_COLS].copy()
+    syn_index = np.arange(len(syn_frame)) + 10_000_000   # non-colliding offset
+    syn_frame.index = syn_index
+    syn_frame["IS_SYNTHETIC"] = 1
+
+    combined  = pd.concat([obs_frame, syn_frame], axis=0)
+    obs_mask  = combined["IS_SYNTHETIC"] == 0
+    syn_mask  = combined["IS_SYNTHETIC"] == 1
+
+    rng = np.random.default_rng(42)
+    total_moves, act_diag = postlink_rake._run_act30_conditional_rake(
+        combined, ACT_COLS, HOM_COLS, obs_mask, syn_mask, rng)
+
+    df_out = df_2030_raked.copy()
+    df_out[ACT_COLS] = combined.loc[syn_index, ACT_COLS].values
+
+    # Invariant: hom30 must be byte-unchanged by the act30 rake.
+    assert df_out[HOM_COLS].equals(df_2030_raked[HOM_COLS]), \
+        "hom30 modified during 2030 act30 rake -- ABORT"
+    # Invariant: act30 stays in its existing valid range.
+    act_flat = df_out[ACT_COLS].values.ravel()
+    act_flat_nn = act_flat[~np.isnan(act_flat)]
+    assert act_flat_nn.min() >= postlink_rake.ACT_MIN and act_flat_nn.max() <= postlink_rake.ACT_MAX, \
+        f"act30 out of valid range [{postlink_rake.ACT_MIN},{postlink_rake.ACT_MAX}] after 2030 joint rake"
+
+    print(f"  Total act30 moves: {total_moves:,}", flush=True)
+    return df_out, act_diag
+
+
+def main_joint():
+    print("=" * 72, flush=True)
+    print("06_forecast_rake.py --joint — Phase 8B-6 JOINT 3-Head 2030 Forecast Raking", flush=True)
+    print("=" * 72, flush=True)
+
+    postlink_rake = _load_postlink_rake_module()
+
+    print("\n[Step 0] Checking inputs ...", flush=True)
+    for p, label in [(_AUG_PATH, "augmented_diaries.csv"),
+                     (_DIARIES_2030, "2030_synthetic_diaries.csv")]:
+        ok = p.exists()
+        print(f"  {'OK' if ok else 'MISSING'}: {label} — {p}", flush=True)
+        if not ok:
+            raise FileNotFoundError(f"Required file not found: {p}")
+
+    df_2030 = pd.read_csv(str(_DIARIES_2030), low_memory=False)
+    print(f"\n  2030 diaries: {len(df_2030):,} rows × {df_2030.shape[1]} cols", flush=True)
+    for req in ["occID", "CYCLE_YEAR", "DDAY_STRATA"] + HOM_COLS[:3]:
+        assert req in df_2030.columns, f"Column '{req}' missing from 2030 diaries"
+    assert set(df_2030["DDAY_STRATA"].unique()) == {1, 2, 3}, "DDAY_STRATA not {1,2,3}"
+    assert set(df_2030["CYCLE_YEAR"].unique()) == {2030}, "CYCLE_YEAR not {2030}"
+    print("  Schema assertions passed.", flush=True)
+
+    # ── Steps 1-4: hom30 exact via the EXISTING (unmodified) OLS-projection
+    #    pipeline -- same functions main() calls, same order, same outputs. ──
+    obs_rates                = compute_observed_marginals(_AUG_PATH)
+    target_2030, slopes, _, proj_reports = project_to_2030(obs_rates)
+    model_rates, daily_deltas, max_slot_deltas = compare_model_vs_projection(df_2030, target_2030)
+    df_hom_raked, total_hom_flips, n_1to0, n_0to1, hom_incoherence = rake_2030(df_2030, target_2030)
+
+    # ── Step 4b: act30 conditional rake, 2022 OBSERVED marginals as target ──
+    df_final, act_diag = _joint_act30_rake_2030(df_hom_raked, postlink_rake)
+
+    # ── COP: explicitly skipped for 2030 -- see module docstring above ──
+    print("\n[Step 4c — joint] COP rake SKIPPED for 2030: 2030_synthetic_diaries.csv "
+          "carries no co-presence columns at all (99 cols total: occID/CYCLE_YEAR/"
+          "DDAY_STRATA/act30_*/hom30_* only — confirmed via header check). Fabricating "
+          "a new 9-channel COP layer from an all-zero baseline is out of scope for this "
+          "session; flagged as a deviation for the manager, not done silently.", flush=True)
+
+    # ── Diagnostics (report-only, reusing postlink_rake's helpers) ──────────
+    print(f"\n{'='*72}", flush=True)
+    print("JOINT 2030 DIAGNOSTICS (report-only -- not gates yet)", flush=True)
+    print(f"{'='*72}", flush=True)
+    act_pre  = df_2030[ACT_COLS].values.astype(float)
+    act_post = df_final[ACT_COLS].values.astype(float)
+    trans_pre  = postlink_rake._transition_matrix(act_pre)
+    trans_post = postlink_rake._transition_matrix(act_post)
+    drift = float(np.abs(trans_post - trans_pre).mean())
+    print(f"  act30 transition-matrix drift (mean |Δ| of 14x14 slot-to-slot "
+          f"frequency matrix, synthetic pre vs post): {drift:.6f}", flush=True)
+    hom_arr = df_final[HOM_COLS].values.astype(float)
+    coh = postlink_rake._coherence_pct(hom_arr, act_post)
+    print(f"  Coherence (hom30==0 slot-records with act30 in HOME_ACTS), post-rake: "
+          f"{coh:.3f}%", flush=True)
+    if act_diag.get("lftag_dropped"):
+        print(f"  LFTAG sparsity-gated cells: {len(act_diag['lftag_dropped'])}", flush=True)
+    else:
+        print("  LFTAG dimension: not present in 2030 file (structural, see deviation note)",
+              flush=True)
+
+    # ── Write deliverable atomically (NEW filename -- does not touch the
+    #    default path's 2030_synthetic_diaries_raked.csv) ──────────────────
+    print(f"\n  Writing joint-raked deliverable → {_JOINT_RAKED_OUT.name} ...", flush=True)
+    tmp_path = str(_JOINT_RAKED_OUT) + ".tmp"
+    df_final.to_csv(tmp_path, index=False)
+    n_written = sum(1 for _ in open(tmp_path, encoding="utf-8")) - 1
+    assert n_written == len(df_final), f"Write row mismatch: {n_written} != {len(df_final)}"
+    os.replace(tmp_path, str(_JOINT_RAKED_OUT))
+    print(f"  WRITTEN: {n_written:,} rows → {_JOINT_RAKED_OUT}", flush=True)
+
+    print(f"\n{'='*72}", flush=True)
+    print("ALL DONE (--joint).", flush=True)
+    print(f"{'='*72}", flush=True)
+
+
+def _parse_cli():
+    import argparse
+    p = argparse.ArgumentParser(
+        description="06_forecast_rake.py -- 2030 forecast raking. Default (no "
+                     "flags) = hom30-only OLS-projection path, unchanged. --joint "
+                     "adds the act30-conditional rake (2022 observed marginals as "
+                     "target); COP is skipped for 2030 (no COP columns in the file)."
+    )
+    p.add_argument("--joint", action="store_true",
+                    help="Run the joint calibration addition (act30-conditional "
+                         "rake on top of the existing hom30 OLS projection).")
+    return p.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    _args = _parse_cli()
+    if _args.joint:
+        main_joint()
+    else:
+        main()

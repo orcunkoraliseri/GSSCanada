@@ -48,7 +48,7 @@ Tick as each item completes. Re-read this list to know what's done and what's ne
 
 | File | Location | Rows | Columns | Description |
 |------|----------|------|---------|-------------|
-| `augmented_diaries.csv` | `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/` | 192,183 | 545+ | Step 4 output: all cycles × 3 DDAY_STRATA; has CYCLE_YEAR, IS_SYNTHETIC, act30_001–048, hom30_001–048, 9 co-presence × 48 slots |
+| `augmented_diaries.csv` | `2J_docs_occ_nTemp/outputs_step4/` *(corrected 2026-07-10 — was wrongly listed under `aug_pipeline/`; the actual `_AUG_PATH` in `06_forecast_rake.py` and `STEP4_DIR` in the validator both resolve here)* | 192,183 | 545+ | Step 4 output: all cycles × 3 DDAY_STRATA; has CYCLE_YEAR, IS_SYNTHETIC, act30_001–048, hom30_001–048, 9 co-presence × 48 slots |
 
 ### Cycle split (confirmed from Steps 2–4)
 
@@ -215,7 +215,7 @@ The matrix is a standalone analytical output for the paper — not just a traini
 model training begins.
 
 **steps:**
-1. Load `augmented_diaries.csv` from `0_Occupancy/Outputs_21CEN22GSS/aug_pipeline/`
+1. Load `augmented_diaries.csv` from `2J_docs_occ_nTemp/outputs_step4/` *(corrected 2026-07-10 — see the file-location table above)*
 2. Assert row count ≈ 192,183 (accept ±10 for Step 5 edge deduplication)
 3. Assert CYCLE_YEAR ∈ {2005, 2010, 2015, 2022}; print per-cycle row counts
 4. Assert DDAY_STRATA ∈ {1, 2, 3}; print per-cycle × per-stratum counts

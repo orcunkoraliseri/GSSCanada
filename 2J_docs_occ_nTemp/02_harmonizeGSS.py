@@ -96,7 +96,10 @@ def recode_lftag(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
 
 
 def recode_pr(df: pd.DataFrame, cycle: int) -> pd.DataFrame:
-    """No remap needed. 2005 stays as REGION (1-5), others as PRV (10-59)."""
+    """No remap needed. 2005 PUMF is region-coded by design (1-5, no province
+    precision available), others carry Census SGC PRV (10-59). The two are
+    folded onto a shared 5-region key at link time (05_census_linkage.py
+    REGION_FOLD, Tier-2b) rather than remapped here."""
     return df
 
 

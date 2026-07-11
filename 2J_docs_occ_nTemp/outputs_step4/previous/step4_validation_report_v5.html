@@ -112,6 +112,48 @@
 </tbody>
 </table>
 
+<div class="summary-box">
+  <p><strong>Why calibration adjusts only <code>hom30</code> — not the other two J3 heads.</strong>
+  The J3 model emits three outputs per slot: <code>act30</code> (14-way activity), <code>hom30</code> (binary AT_HOME occupancy),
+  and <code>cop30</code> (9-channel co-presence). Phase-8B raking is a <em>marginal-correction</em> step. It was applied to <code>hom30</code>
+  alone because that head had a real per-(stratum&times;slot) marginal error (15.37 pp) in the exact space the Step-5/6 validators score,
+  and it sets the People-present fraction that every downstream gain scales by. The other two heads already met their model gates, so raking
+  them would add inter-head coherence risk for little net benefit (see the &ldquo;raking all three&rdquo; discussion below the table).</p>
+  <table>
+    <thead><tr><th>J3 head</th><th>Downstream BEM use</th><th>Model-gate status</th><th>Raked? &amp; why</th></tr></thead>
+    <tbody>
+      <tr><td><code>hom30</code> &mdash; AT_HOME</td><td><code>Occupancy_Schedule</code> &mdash; People-present fraction; <em>all</em> gains scale by it</td><td>Aggregate PASS (4.57 pp) but 15.37 pp per-(stratum&times;slot) max</td><td><strong>Yes</strong> &mdash; real per-cell-slot error in the scored space; raked exact within-stratum</td></tr>
+      <tr><td><code>act30</code> &mdash; activity</td><td>Shape-driver &mdash; <code>Metabolic_Rate</code> (watts/activity map) + Step-9 <code>Equipment</code>/<code>Lighting</code> profiles; equipment/lighting <em>levels</em> re-calibrated to SHEU</td><td>JS 0.0191 PASS; Work-proxy 6.2 = 3.27 pp expected-FAIL</td><td>No &mdash; model gate already passes; a 14-way independent rake would break inter-head coherence for a small BEM gain (load levels absorbed by SHEU)</td></tr>
+      <tr><td><code>cop30</code> &mdash; co-presence</td><td>Minor &mdash; shared-device co-occupancy approx.; pairwise COP not used for metabolic</td><td>Spouse marginal PASS (2.23 pp); raw per-cell-slot max 19.85 pp</td><td>No &mdash; marginal already passed, conditional rake skipped (04L proved joint AT_HOME + COP feasible if a future gate needs it)</td></tr>
+    </tbody>
+  </table>
+  <p>So the residual differences in <strong>Section 2</strong> (per-activity) and <strong>Section 6</strong> (paid-work by LFTAG) are expected:
+  those views read <code>act30</code>, which is deliberately left un-raked. This nudges the metabolic / equipment / lighting <em>shapes</em>
+  slightly, but activity fidelity is already high (JS 0.0191) and equipment/lighting <em>levels</em> are SHEU-calibrated, so the net BEM effect is
+  small; the People-present fraction (<code>hom30</code>) is exact.</p>
+</div>
+
+<div class="note">
+  <strong>Would raking all three heads improve BEM performance?</strong> Measured ceiling &mdash; the realized gap between observed GSS and calibrated J3
+  (64,061 vs 128,316 diary-days), per <code>act30</code>-driven BEM channel. The activity <em>marginal</em> itself carries a real error: paid-work (code 1)
+  over-fires <strong>13.3% &rarr; 25.6% (+12.3 pp)</strong>, mostly displacing sleep and low-load activities. How much of that actually reaches the BEM:
+  <table>
+    <thead><tr><th>Channel (<code>act30</code>-driven)</th><th>Realized obs&rarr;calibrated gap</th><th>Reaches BEM as&hellip;</th></tr></thead>
+    <tbody>
+      <tr><td><code>Metabolic_Rate</code> (people gain)</td><td>+2.1 W/person (<strong>+1.9%</strong>) daily mean; peak 10.5 W (~22:00)</td><td>Level &amp; shape (no rescale) &mdash; small</td></tr>
+      <tr><td>Step-9 <code>Equipment</code> shape</td><td>peak-normalized shape mean |&Delta;| <strong>14.9%</strong>, peak 32% (~08:30)</td><td><em>Shape only</em> &mdash; annual kWh fixed by SHEU; affects load timing / peak, not totals</td></tr>
+      <tr><td>Step-9 <code>Lighting</code> shape</td><td>mean |&Delta;| <strong>3.8 pp</strong>, peak 10.7 pp (~17:00)</td><td><em>Shape only</em> &mdash; annual kWh fixed by SHEU</td></tr>
+    </tbody>
+  </table>
+  <strong>Verdict.</strong> For <em>annual / seasonal energy</em> the headroom is negligible: metabolic moves ~2%, and equipment/lighting <em>levels</em> are
+  SHEU-calibrated (identical totals regardless of <code>act30</code>). For <em>load timing / peak demand</em> the equipment <em>shape</em> is genuinely
+  <code>act30</code>-sensitive (~15% mean, ~32% at the morning peak) &mdash; a study reporting coincident peaks would benefit, a study reporting energy use
+  would not. Either way the cost is real: three <em>independent</em> marginal rakes would worsen inter-head coherence (a home <code>act30</code> under a raked
+  <code>hom30 = 0</code>); the principled fix is a single <strong>joint per-(cell&times;slot) rake</strong> over (activity &times; AT_HOME &times; co-presence)
+  (IPF), preserving temporal transitions &mdash; a substantial step (04L proved only the AT_HOME + COP pair). Since the occupancy that dominates energy
+  (<code>hom30</code>) is already exact, this is recorded as <em>future work</em>, not a blocker for the current release.
+</div>
+
 <h2>Section 4 — Temporal Structure Plausibility</h2>
 <p>Per-slot activity occupancy, observed GSS vs calibrated J3 (Weekday). Night-slot sleep dominance and work-peak timing should track the observed envelope.</p>
 <h3>Activity Heatmap (Weekday: observed vs calibrated)</h3>
@@ -160,12 +202,69 @@
 </table>
 <p>2030 occupancy &ge; 2022 on both day-types (COVID-persists intact). Day-completion by stratum-matched donor-draw (seed 42) preserves the weekend marginal.</p>
 
+<h2>Section 9 — Addendum: 2005 Cycle Under-Representation in the Census Linkage</h2>
+<p>Follow-up investigation into the <strong>Section 7 &ldquo;Work by Stratum&rdquo;</strong> chart, where the <em>calibrated</em> 2005 weekday bar
+(~22% of slots in paid work) sits far below the 2010 / 2015 / 2022 bars (~39%). The root cause is a <strong>demographic key-coding gap in the
+Step-5 census linkage</strong> &mdash; not a model, activity, or calibration defect.</p>
+
+<h3>9.1 — It is a matching (demand) effect, not a supply shortage</h3>
+<p>In the diary pool (<code>augmented_diaries.csv</code>), 2005 is the <em>largest</em> cycle, yet it wins the <em>fewest</em> matches against
+the 286,540 Census-2021 agents. Each Census agent draws one diary via <code>np.random.choice</code> among all diaries matching its demographic
+cell, through a Tier&nbsp;1&rarr;4 fallback hierarchy (<code>05_census_linkage.py</code>).</p>
+<table>
+  <thead><tr><th>GSS cycle</th><th>Pool diaries (supply)</th><th>Tier-1 expected share</th><th>Final synthetic share (matched)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>2005</strong></td><td class="num">57,663 (<strong>30.0%</strong>)</td><td class="num"><strong>0.0%</strong></td><td class="num"><strong>&asymp; 9.0%</strong> (11,514)</td></tr>
+    <tr><td>2010</td><td class="num">45,342 (23.6%)</td><td class="num">37.9%</td><td class="num">32.0% (41,033)</td></tr>
+    <tr><td>2015</td><td class="num">52,170 (27.1%)</td><td class="num">36.9%</td><td class="num">35.5% (45,595)</td></tr>
+    <tr><td>2022</td><td class="num">37,008 (19.3%)</td><td class="num">25.2%</td><td class="num">23.5% (30,174)</td></tr>
+  </tbody>
+</table>
+<p>2005 has ample supply but an <strong>expected Tier-1 selection of 0.0%</strong> &mdash; it never wins an exact match. Its ~9% final share
+comes only from coarse fallback tiers (55.1% of Census agents fall past Tier-1).</p>
+
+<h3>9.2 — Root cause: 2005 <code>PR</code> (province) left in legacy 5-region coding</h3>
+<p>Of the seven match keys (AGEGRP, SEX, MARSTH, HHSIZE, LFTAG, PR, CMA), six overlap the Census for 2005. Only <code>PR</code> is disjoint:</p>
+<table>
+  <thead><tr><th>Source</th><th><code>PR</code> values present</th><th>Overlap with Census</th></tr></thead>
+  <tbody>
+    <tr><td>Census 2021</td><td>10, 24, 35, 46, 48, 59 (StatCan SGC province codes)</td><td>&mdash;</td></tr>
+    <tr><td>Pool 2010 / 2015 / 2022</td><td>10, 11, 12, 13, 24, 35, 46, 47, 48, 59 (SGC)</td><td><span class="pass">MATCH</span></td></tr>
+    <tr><td><strong>Pool 2005</strong></td><td><strong>1, 2, 3, 4, 5</strong> (legacy GSS 5-region grouping)</td><td><span class="fail">DISJOINT</span></td></tr>
+  </tbody>
+</table>
+<div class="note">
+  <strong>Mechanism.</strong> Step-2 harmonization mapped <code>PR</code> to SGC codes for 2010 / 2015 / 2022 but left the 2005 cycle in the old
+  GSS 5-region scheme (1 = Atlantic, 2 = Qu&eacute;bec, 3 = Ontario, 4 = Prairies, 5 = BC). Because <code>PR</code> appears in <em>both</em> the
+  Tier-1 key set (all 7 keys) <em>and</em> the Tier-2 &ldquo;core&rdquo; set (<code>AGEGRP, SEX, LFTAG, PR, DDAY</code>), every 2005 diary fails
+  both &mdash; its <code>PR</code> value (1&ndash;5) can never equal a Census SGC code (10&ndash;59). 2005 diaries become eligible only at
+  <strong>Tier-3</strong> (<code>AGEGRP, SEX, DDAY</code>) and <strong>Tier-4</strong> (day-type only), where province is dropped.
+</div>
+
+<h3>9.3 — Impact and status</h3>
+<ul class="limits">
+  <li><strong>BEM aggregate unaffected.</strong> <code>hom30</code> is raked to the exact per-(stratum&times;slot) AT_HOME marginal after linkage,
+  so occupancy schedules are correct regardless of the cycle mix. <span class="pass">no gate impact</span></li>
+  <li><strong>Two real defects.</strong> 2005 is under-weighted ~3&times; (30% of supply &rarr; 9% of matches), and its diaries are placed
+  without province (age/sex only) &mdash; any province-specific 2005 signal is scrambled. Combined with un-raked <code>act30</code>, this produces
+  the anomalous 2005 paid-work bar in Section 7.</li>
+  <li><strong>Not fully recoverable.</strong> The GSS 2005 PUMF releases only a 5-region variable (not exact province, for confidentiality):
+  Atlantic = NL/PE/NS/NB, Prairies = MB/SK/AB. An exact SGC <code>PR</code> for 2005 cannot be reconstructed &mdash; hence it was left un-mapped.</li>
+  <li><strong>Options.</strong> (a) crosswalk the 5 regions to province groups and relax the <code>PR</code> match to that grouping;
+  (b) drop <code>PR</code> from the match keys for cross-cycle consistency; or (c) document the caveat (recommended pre-submission &mdash;
+  BEM results already hold via the AT_HOME rake).</li>
+</ul>
+<p style="font-size:12px;color:#777"><em>Reproduced locally (2026-07-09) from <code>outputs_step4/augmented_diaries.csv</code> (pool, 192,183 rows) and
+<code>0_Occupancy/Outputs_21CEN22GSS/alignment/Aligned_Census_2022.csv</code> (286,537 agents), replicating the Tier-1&rarr;4 logic of
+<code>eSim_occ_utils/25CEN22GSS_classification/05_census_linkage.py</code> (MATCH_KEYS, seed 42).</em></p>
+
 <h2>Known Limitations (documented, accepted)</h2>
 <ul class="limits">
   <li><strong>Activity not calibrated.</strong> Raking touches <code>hom30</code> only; <code>act30</code> is untouched, so the Work proxy still over-fires (6.2 = 3.27 pp, expected-FAIL). Out of scope for occupancy-marginal calibration.</li>
   <li><strong>Per-cell-slot co-presence not raked.</strong> Raw COP max = 19.85 pp per-cell-slot; the Spouse <em>marginal</em> gate already passed (2.23 pp), so the conditional Spouse rake was skipped. (04L proved joint AT_HOME + COP raking feasible if a future gate requires it.)</li>
   <li><strong>Coherence cost.</strong> Down-flips create <code>hom30 = 0</code> against a home <code>act30</code> in ~1.82% (2022) / ~2.07% (2030) of slot-records. BEM-harmless — BEM keys occupancy off <code>hom30</code>, not <code>act30</code>.</li>
   <li><strong>Composition artefact.</strong> The 4.48 pp raw 2.2/6.1 residual is pure DDAY_STRATA day-type composition (GSS 92.6% WD vs population 71.4%), composition-held to 0.0037 pp — a reporting caveat, not a model error.</li>
+  <li><strong>2005 cycle under-represented in linkage.</strong> The 2005 <code>PR</code> key was left in legacy GSS 5-region coding (disjoint from Census SGC codes), so 2005 diaries fail Tier-1/2 matching and are ~3&times; under-weighted. BEM-harmless (occupancy raked post-link); full analysis in <strong>Section 9</strong>.</li>
 </ul>
 
 <hr>

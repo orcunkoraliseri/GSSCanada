@@ -289,8 +289,8 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 | Leg | Channels | Status |
 |---|---|---|
 | Leg 1 | Residential only (AT_HOME replaces BEM baseline) | ✅ COMPLETE (2nd Journal) |
-| Leg 2 | Residential + Office (AT_WORK modulates code-compliant densities) | 🔄 IN PROGRESS |
-| Leg 3 | + Retail + Hotel (full 4-channel mixed-use) | 📋 PLANNED |
+| Leg 2 | Residential + Office (AT_WORK modulates code-compliant densities) | ✅ COMPLETE — validated end-to-end, paper-ready |
+| Leg 3 | + Retail + Hotel (full 4-channel mixed-use) | 🔄 DESIGN FROZEN — build begins at Step 3 |
 
 #### 4-Channel Architecture (Leg 3 target)
 
@@ -316,9 +316,20 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 - `SuperTallBuilding_90.1-2019_6A_Buffalo_NECB17_Z6_v221.idf` (Montreal, 40,846 m²)
 - `SuperTallBuilding_…_Z7A_v221.idf` (Calgary, 26,750 m²)
 
-**Documentation in progress:**
-- [`3J_docs_occ_nTemp/Leg2_2-split/`](3J_docs_occ_nTemp/Leg2_2-split/) — 2-channel (Residential + Office) pipeline spec
-- [`3J_docs_occ_nTemp/Leg3_4-split/`](3J_docs_occ_nTemp/Leg3_4-split/) — 4-channel (+ Retail + Hotel) pipeline spec
+**Leg 2 (2-split) status — COMPLETE & paper-ready (July 2026):**
+
+All nine pipeline steps are built and validated end-to-end for the two-channel (Residential + Office) model:
+
+- **Two EnergyPlus campaigns drained clean** — residential (8,400 paired Monte Carlo cells: 4 archetypes × 6 climate zones × 7 scenarios × N=50) + office (252 deterministic runs: 3 archetypes × Tall/SuperTall × 6 climate zones × 7 scenarios).
+- **7 scenarios per channel:** `2005 · 2010 · 2015 · 2022 · 2030-conservative · 2030-hybrid · 2030-fullyhybrid`.
+- Residential schedules **replace** the BEM baseline; office presence **modulates** NECB/90.1 code-compliant peak densities (preserving regulatory comparability).
+- **Step-8 simulation scorecard:** 46 PASS / 1 WARN / 13 INFO / 0 FAIL.
+- **Step-9 bi-channel activity-driven loads scorecard:** 10 PASS / 1 WARN / 0 FAIL; gate **G8o** confirms the 2030 WFH bands produce a distinct office energy spread (office median EUI ≈ 173 kWh/m², in-band vs. the as-modelled NECB2020 / 90.1-2019 DOE-PNNL prototype).
+- **Acceptance review verdict:** PAPER-READY — 0 FAIL across all four validation reports.
+
+**Documentation:**
+- [`3J_docs_occ_nTemp/Leg2_2-split/`](3J_docs_occ_nTemp/Leg2_2-split/) — 2-channel (Residential + Office) pipeline spec — **DESIGN FROZEN, pipeline COMPLETE**
+- [`3J_docs_occ_nTemp/Leg3_4-split/`](3J_docs_occ_nTemp/Leg3_4-split/) — 4-channel (+ Retail + Hotel) pipeline spec — **DESIGN FROZEN** (all 13 reports integrated, 15 open decisions resolved; build begins at Step 3)
 
 ---
 
@@ -397,4 +408,4 @@ GitHub: https://github.com/orcunkoraliseri/GSSCanada
 
 ---
 
-*Last updated: July 2026*
+*Last updated: 9 July 2026*

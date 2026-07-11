@@ -467,10 +467,19 @@ class AugmentationValidator:
             return (a == 1).mean()  # raw category 1 = Work & Related
 
         if "LFTAG" in self.obs.columns and "LFTAG" in self.syn.columns:
+            # NILF = max LFTAG category actually present in the observed
+            # (GSS-native) coding. 2026-07-09 Task-B Step-0 fix: hetus_30min.csv
+            # and augmented_diaries.csv (the two files this gate compares) both
+            # confirmed LFTAG in {1,2,3} -- the 3-category GSS PUMF scheme, NOT
+            # the 5-category Census-derived LFTAG that Full_Schedules.csv carries
+            # post-linkage (that 5-cat scheme is a different variable, used only
+            # by 05_postlink_rake.py --joint's own rake dimension). LFTAG==5 here
+            # matched zero obs rows (dead code; obs_sep/syn_sep always vacuous).
+            nilf_code    = int(self.obs["LFTAG"].dropna().max())
             employed_obs = self.obs[self.obs["LFTAG"] == 1]   # LFTAG=1 typically employed
-            nilf_obs     = self.obs[self.obs["LFTAG"] == 5]   # not-in-labour-force
+            nilf_obs     = self.obs[self.obs["LFTAG"] == nilf_code]   # not-in-labour-force (max category)
             employed_syn = self.syn[self.syn["LFTAG"] == 1]
-            nilf_syn     = self.syn[self.syn["LFTAG"] == 5]
+            nilf_syn     = self.syn[self.syn["LFTAG"] == nilf_code]
 
             obs_sep  = work_prop(employed_obs) > work_prop(nilf_obs)
             syn_sep  = work_prop(employed_syn) > work_prop(nilf_syn)
