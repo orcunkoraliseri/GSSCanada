@@ -215,12 +215,12 @@ the Bug-1 manifest-archival mitigation is carried out.
 
 ---
 
-## Remaining tasks (status as of 2026-07-10 ~23:25 — see Progress Log update 4 for detail; Task 1
-now 12/24 cells done — all SingleD + OtherDwelling, 0 failures — MidRise in progress, HighRise not
-started)
+## Remaining tasks (status as of 2026-07-11 ~13:10 — see Progress Log update 6 for detail; Task 1
+now DONE — 24/24 cells ok/exit=0, 0 failures across 2,400 E+ runs, Bug-1 manifest-clobbering
+mitigation executed)
 
-- **Task 2 — Step-9 local re-sim. Status: driver BUILT + smoke-tested; full campaign NOT YET
-  LAUNCHED.** The thin local wrapper now exists —
+- **Task 2 — Step-9 local re-sim. Status: driver BUILT + smoke-tested; full campaign LAUNCHED
+  2026-07-11 ~13:08, IN PROGRESS (not yet complete).** The thin local wrapper now exists —
   `2J_docs_occ_nTemp/Step9_docs/run_step9_local.py` (330 lines) — reusing the `eSim_bem_utils_2J`
   engine and mirroring Step-8's `run_campaign_local.py` memory-watchdog pattern (own code comment at
   L66: "identical pattern to Step 8's run_campaign_local.py"; same `--workers`/`--ep-workers`/
@@ -228,14 +228,19 @@ started)
   (see Progress Log below). Full re-sim scope remains 4,800 runs (24 cells × 50 × 2 yr × 2 arms —
   baseline vs. activity-driven), pointed at the 17-col activity schedules
   (`BEM_Schedules_{2022,2030}.csv`) and the 13-col baseline schedules
-  (`BEM_Schedules_{2022,2030}_baseline.csv`). **Launch is deliberately held** until the Step-8
-  campaign finishes — see Progress Log. Step-8 ETA has widened (see update 4) so this hold likely
-  extends well past the original ~4-5h estimate.
+  (`BEM_Schedules_{2022,2030}_baseline.csv`). Launch was held until the Step-8 campaign finished, then
+  executed once Task 1 reached 24/24 — see Progress Log update 6. Expected wall-clock is roughly
+  double Step-8's ~21h total (same per-cell E+ cost × 2 treatments), i.e. very roughly ~40-45h — this
+  is an estimate pending actual completion data, not yet a confirmed figure.
 - **Task 3 — re-aggregate + re-validate. Status: NOT STARTED.** `Step8_docs/08_simulation_plots.py
   --rebuild-agg --figs all` then `08_simulation_val.py` for Step-8; the Step-9 equivalents
   (`step9_validate_full.py`, `step9_loadshape_aggregate.py`, `09_activityDrivenLoads_val.py`) for
-  Step-9. **Must happen only after** the Bug-1 manifest archival step above, and only after Step-8
-  actually completes (12/24 cells done as of update 4 — see Progress Log for detail).
+  Step-9. The two blocking preconditions from earlier updates are now both satisfied for Step-8: the
+  Bug-1 manifest archival step is done, and Step-8 itself completed 24/24 (see Progress Log update 6)
+  — so the Step-8 half of Task 3 could start now. Open option, not decided here: run it now in
+  parallel with Step-9 (Task 2) still in progress, or hold until Step-9 also finishes so both halves
+  of Task 3 run together — flagged for the project owner/manager to choose. The Step-9 half of Task 3
+  still requires Task 2's full campaign to complete first regardless.
 - **Task 4 — propagate the 144,507 → 144,465 household-frame fix. Status: NOT STARTED.** Across
   remaining downstream docs: `08_simulation.md`, `09_activityDrivenLoads.md`, the `00_*` overview
   docs, a stale code comment in `eSim_bem_utils_2J/main.py` (~L66-72, "share the SAME 144,507
@@ -381,3 +386,99 @@ each cell's "SIMULATION SUMMARY" block directly:
   before any OtherDwelling data existed to reveal the ~4× archetype-to-archetype slowdown now
   confirmed twice (SingleD→OtherDwelling, and suspected again OtherDwelling→MidRise/HighRise).
   Task 1 status: IN PROGRESS, healthy, 12/24 cells done, 0 failures so far.
+
+**2026-07-11 (update 5, ~08:23) — Task 1 campaign: SingleD + OtherDwelling + MidRise archetypes
+complete (20/24 cells), 0 failures across 2,000 E+ runs; HighRise now 2/6 done + 1 in progress; ETA
+sharply narrowed.** Independently re-derived from scratch — did not carry forward update 4's
+11-20+ h range or any other prior figure without re-checking. Ran `Get-ChildItem *.log | Sort-Object
+LastWriteTime -Descending` directly (PowerShell tool, not Bash, to avoid `$_` mangling) to separate
+fresh (this run) vs. stale (2026-06-02 leftover) logs, then tailed every fresh log for its
+`SIMULATION SUMMARY` block or latest `[SIM] Running...` progress line.
+
+- **All 6 MidRise cells done, 0 failures** (new since update 4, which caught it mid-run): Toronto_5A
+  (00:26:03), Kelowna_5B (01:35:19), Vancouver_5C (02:44:46), Montreal_6A (03:54:59), Calgary_6B
+  (05:04:08), Winnipeg_7A (06:13:19) [all 2026-07-11]. Every log confirms `Successful: 100/100`,
+  `Failed: 0/100`. E+-phase "Total time" values: 3945.4s, 3852.7s, 3865.7s, 3910.3s, 3849.0s, 3861.7s
+  → **mean 3880.8s = 64.7 min/cell** — confirms update 4's suspicion that MidRise (27 People zones)
+  would run at or above OtherDwelling's ~53 min/cell pace; it landed ~22% slower. Wall-clock gaps
+  between consecutive cell-log timestamps: 69m09s-70m13s → **mean ~69.4 min/cell wall** (~4.7 min/cell
+  schedule-load/startup overhead on top of the E+ phase, consistent with the overhead seen in
+  SingleD/OtherDwelling).
+- **HighRise: 2/6 done (Kelowna_5B, Toronto_5A), 0 failures; 1 in progress (Vancouver_5C); 3 not
+  started.** `HighRise__Toronto_5A.log` (07:16:37) and `HighRise__Kelowna_5B.log` (08:18:39) both
+  confirm `Successful: 100/100`, `Failed: 0/100`; E+ "Total time" 3496.7s (58.3 min) and 3408.0s
+  (56.8 min) → **mean 57.55 min/cell** — notably *faster* than MidRise despite HighRise being the
+  presumed-largest archetype; this is genuinely new information, not extrapolated (n=2, flagged as
+  the main remaining uncertainty). `HighRise__Vancouver_5C.log` is actively growing (last write
+  08:22:03, current check 08:23:01) with tail `[SIM] Running... [0/100 complete] Elapsed: 01:30` —
+  cell just started (~90s in), consistent with strict sequential `--workers 1` processing. The
+  remaining 3 `HighRise__*.log` files (Winnipeg_7A, Calgary_6B, Montreal_6A) are still frozen at
+  their 2026-06-02 14:42-14:45 leftover timestamps — attempt 2 has not reached them yet.
+- **Zero FAIL anywhere.** All 20 completed cells report `Successful: 100/100, Failed: 0/100` —
+  2,000/2,000 E+ runs clean across SingleD + OtherDwelling + MidRise + the 2 completed HighRise cells.
+- **Memory healthy:** `Get-CimInstance Win32_OperatingSystem` at 08:23 reports **25.8 GB free of
+  63.5 GB total** (~40.6% free) — no sign of the committed-memory pressure that tripped the 80%
+  watchdog and killed launch attempt 1.
+- **Revised completion estimate — sharply narrower than update 4's 11-20+ h range, now that real
+  HighRise data exists.** Per-archetype means (from completed cells only): SingleD 11.92 min/cell,
+  OtherDwelling 53.13 min/cell, MidRise 64.70 min/cell, HighRise 57.55 min/cell (n=2). Remaining work
+  = 1 in-progress HighRise cell (~1.5 min elapsed of an expected ~57.6 min → ~56 min left) + 3
+  not-started HighRise cells (3 × 57.55 ≈ 172.7 min) ≈ **~228.7 min ≈ ~3h 49min remaining**. From the
+  08:23:01 check time, this puts **full 24/24 completion at roughly 12:10-12:15 PM on 2026-07-11
+  (same day)** — assuming HighRise's remaining 3 cells hold near the 57.55 min/cell pace observed in
+  its first 2 completions. This explicitly narrows update 4's wide 11-20+ h band now that MidRise
+  finished (64.7 min/cell, not the unbounded "could run longer" it flagged) and HighRise has real
+  data instead of zero samples. Task 1 status: IN PROGRESS, healthy, 20/24 cells done, 0 failures so
+  far.
+
+**2026-07-11 (update 6, ~13:10) — Task 1 COMPLETE: 24/24 cells ok, 0 failures across 2,400 E+ runs.
+Bug-1 (manifest-clobbering) materialized as predicted and its planned mitigation was executed. Task 2
+(Step-9 full campaign): LAUNCHED.** Independently re-verified from scratch rather than extrapolating
+update 5's ETA.
+
+- **Step-8 2022/2030 campaign confirmed complete.** Freshly read
+  `BEM_Setup/SimResults_Step8/campaign_N50/campaign_status.csv` (timestamped 2026-07-11 13:07): all
+  24/24 cells show `status=ok`, `exit=0`. Cross-checked independently with
+  `grep -r "Failed: [1-9]" _logs/` across all 24 per-cell logs — zero matches, i.e. every cell's
+  SIMULATION SUMMARY block reports `Failed: 0/100`. Confirms 2,400/2,400 E+ runs clean, closing out
+  update 5's projected ~12:10-12:15 PM finish (actual completion landed consistent with that
+  estimate).
+- **Per-cell minutes (sequential run, `--workers 1 --ep-workers 18`, one cell's schedule set in RAM
+  at a time), read directly from `campaign_status.csv`:** SingleD — Toronto 14.1, Kelowna 13.9,
+  Vancouver 13.7, Montreal 13.6, Calgary 14.1, Winnipeg 13.9 (avg ~13.9 min); OtherDwelling — Toronto
+  57.4, Kelowna 56.7, Vancouver 56.9, Montreal 57.1, Calgary 56.5, Winnipeg 57.0 (avg ~56.9 min);
+  MidRise — Toronto 71.6, Kelowna 69.3, Vancouver 69.5, Montreal 70.2, Calgary 69.2, Winnipeg 69.2
+  (avg ~69.8 min); HighRise — Toronto 63.3, Kelowna 62.0, Vancouver 65.9, Montreal 71.2, Calgary 74.8,
+  Winnipeg 76.7 (avg ~69.0 min). **Total wall-clock (sequential sum across all 24 cells): 1257.8
+  minutes ≈ 20.96 hours.**
+- **Bug 1 materialized this run, and its planned mitigation was executed.** Verified
+  `cell_manifest.csv` timestamps for `MidRise__Calgary_6B`, `SingleD__Toronto_5A`, and
+  `HighRise__Winnipeg_7A` were now dated 2026-07-10/11 — freshly overwritten by this campaign, versus
+  the pre-campaign 2026-06-05 / 2026-06-03 dates this doc recorded earlier (Bug 1 section above). Per
+  that section's own prescribed fix, and **before any Task-3 aggregation work**, renamed (not
+  deleted) all 24 `cell_manifest.csv` files under `BEM_Setup/SimResults_Step8/campaign_N50/<cell>/`
+  to `cell_manifest.csv.new_2022_2030_20260711` — confirmed 0 remain at the original path, 24 exist
+  at the archived path. `load_cell_manifest()` will now fall back 100% to directory-name parsing for
+  both old and new sample rows, avoiding the mislabeling risk Bug 1 described. As already noted above,
+  the `hhsize` aggregate column will read blank for all rows as a result — cosmetic/unused, not a
+  validation gate; flagged again here for whoever runs Task 3.
+- **Task 2 — Step-9 full local campaign LAUNCHED.** Driver
+  `2J_docs_occ_nTemp/Step9_docs/run_step9_local.py`, command
+  `py run_step9_local.py --n 50 --workers 1 --ep-workers 18 --no-resume`, run from
+  `2J_docs_occ_nTemp/Step9_docs`, launched 2026-07-11 ~13:08 as a background process — confirmed alive
+  via `tasklist` (active `python.exe` processes) and a growing `_logs/` dir under
+  `BEM_Setup/SimResults_Step9/campaign_N50_2022_2030/`. Before launching, archived (not deleted) the
+  prior smoke-test artifacts (household HH33188 only, cell `SingleD__Toronto_5A`, both treatments —
+  `idfs/`, `_logs/`, `step9_manifest.csv`, `campaign_status.csv`) into
+  `BEM_Setup/SimResults_Step9/campaign_N50_2022_2030/_smoketest_archive_20260711/` to prevent
+  duplicate-household contamination of the full run. Full scope: 24 cells × 2 treatments (baseline,
+  activity) × 50 HH × 2 yr (2022, 2030) = 4,800 EnergyPlus runs across 48 sequential units
+  (`--workers 1`). Expected wall-clock roughly double Step-8's ~21h (same per-cell E+ cost × 2
+  treatments), i.e. very roughly ~40-45h — **this is an estimate pending actual completion data, not
+  a confirmed figure.**
+- **Remaining tasks section updated accordingly** (see above): Task 1 now DONE (24/24, 0 FAIL). Task 2
+  now IN PROGRESS (driver built + smoke-tested previously, full campaign launched today, not yet
+  complete). Task 3 remains NOT STARTED — noted it can now proceed for Step-8 (Bug-1 mitigation done)
+  either once Step-9 also finishes, or in parallel with Step-9 still running if the project
+  owner/manager wants to save time — flagged as an open option, not decided here. Task 4 remains NOT
+  STARTED, unchanged.
