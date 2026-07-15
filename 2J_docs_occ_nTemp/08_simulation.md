@@ -41,8 +41,11 @@ by **Monte-Carlo sampling** over the household population. The headline result i
 
 ### Confirmed assets
 
-- **Dwelling distribution (per-HH, 144,507):** SingleD 76,365 (**52.9%**) · MidRise 30,740 (**21.3%**)
-  · OtherDwelling 18,838 (**13.0%**) · HighRise 18,522 (**12.8%**) · Movable "8" 42 (**0.03%**, dropped).
+- **Dwelling distribution (per-HH, 144,465** — 2022/2030 frame refreshed 2026-07-09 (Step 5 region-tier
+  relink); the completed v1/v2 EnergyPlus campaign below ran pre-refresh on 144,507 HH (per-DTYPE split
+  below not yet reverified against the new frame; see `step7_improvement_notes.md`)**):** SingleD 76,365
+  (**52.9%**) · MidRise 30,740 (**21.3%**) · OtherDwelling 18,838 (**13.0%**) · HighRise 18,522 (**12.8%**)
+  · Movable "8" 42 (**0.03%**, dropped).
 - **Base building model = MTL set** (`BEM_setup/Buildings_MTL/`, Canadian NECB17/NBC936 Z6),
   **held fixed across all 6 climates** so cross-city/cross-year energy variation is occupancy+weather,
   not envelope. Tall variants `ASHRAE_HighRise_ST15/ST20` available for a HighRise height sensitivity.
@@ -61,7 +64,7 @@ by **Monte-Carlo sampling** over the household population. The headline result i
 
 One archetype IDF is run **many times**, each with a different household's occupancy time-series
 drawn from the calibrated population. The **ensemble distribution** of energy outcomes is the
-stock-scale result — capturing occupant **diversity** without simulating all 144,507 dwellings.
+stock-scale result — capturing occupant **diversity** without simulating all 144,465 dwellings.
 
 ### Paired MC over a frozen frame (the key design choice)
 
@@ -129,7 +132,7 @@ exactly the novelty. **Keeping 2005–2015 anchors the "flat-then-break" narrati
 
 **Total annual EnergyPlus runs:** 4 × 6 × 5 × 50 = **6,000** (paired structure: 50 HH × 5 years per
 archetype×CZ). Cloud/HPC batch via `run_batch_hpc.py`. **Stock aggregation:** weight each
-(archetype × region) cell by its empirical `DTYPE × PR` share of the 144,507-HH stock.
+(archetype × region) cell by its empirical `DTYPE × PR` share of the 144,465-HH stock.
 
 ---
 

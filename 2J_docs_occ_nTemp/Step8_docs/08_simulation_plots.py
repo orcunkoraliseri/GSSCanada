@@ -152,23 +152,38 @@ _RUN_RE = re.compile(r"sample_(\d+)_HH(.+)", re.IGNORECASE)
 
 
 def load_cell_manifest(cell_dir):
-    """{sample_int: {sim_hh_id, hhsize, dtype, pr}} or {} if no manifest."""
+    """{(sample, sim_hh_id_str): {hhsize, dtype, pr, source}}, keyed by the exact
+    (sample-index, HH-id) PAIR — not by HH id alone — because the post-refresh 2022/2030
+    re-sim (P1 fresh sampling, 2026-07-10/11) can redraw a household that was ALSO in the
+    original historic sample, but under a DIFFERENT sample index. That produces two
+    physically distinct sample_NNN_HHnnnn directories sharing the same HH id (e.g.
+    sample_030_HH62718 = original/historic, sample_022_HH62718 = new 2022/2030-only), which
+    an HH-id-only key would wrongly conflate. Merges the original cell_manifest.csv
+    ("orig") with cell_manifest.csv.new_2022_2030_* ("new_2022_2030") if present.
+    """
+    out = {}
     path = os.path.join(cell_dir, "cell_manifest.csv")
-    if not os.path.exists(path):
-        return {}
-    try:
-        df = pd.read_csv(path, dtype=str)
-        out = {}
-        for _, r in df.iterrows():
-            out[int(r["sample"])] = {
-                "sim_hh_id": str(r.get("sim_hh_id", "")),
-                "hhsize": r.get("hhsize", ""),
-                "dtype": r.get("dtype", ""),
-                "pr": r.get("pr", ""),
-            }
-        return out
-    except Exception:
-        return {}
+    if os.path.exists(path):
+        try:
+            df = pd.read_csv(path, dtype=str)
+            for _, r in df.iterrows():
+                out[(int(r["sample"]), str(r.get("sim_hh_id", "")))] = {
+                    "hhsize": r.get("hhsize", ""), "dtype": r.get("dtype", ""),
+                    "pr": r.get("pr", ""), "source": "orig",
+                }
+        except Exception:
+            pass
+    for new_path in sorted(glob.glob(os.path.join(cell_dir, "cell_manifest.csv.new_2022_2030_*"))):
+        try:
+            df = pd.read_csv(new_path, dtype=str)
+            for _, r in df.iterrows():
+                out[(int(r["sample"]), str(r.get("sim_hh_id", "")))] = {
+                    "hhsize": r.get("hhsize", ""), "dtype": r.get("dtype", ""),
+                    "pr": r.get("pr", ""), "source": "new_2022_2030",
+                }
+        except Exception:
+            pass
+    return out
 
 
 def discover_runs(results_dir):
@@ -190,17 +205,28 @@ def discover_runs(results_dir):
             samp_dir = os.path.join(cell_dir, samp_name)
             if not os.path.isdir(samp_dir):
                 continue
-            sample = int(m.group(1))
+            sample_from_dir = int(m.group(1))
             hh_from_dir = m.group(2)
-            meta = manifest.get(sample, {})
-            sim_hh_id = meta.get("sim_hh_id") or hh_from_dir
+            meta = manifest.get((sample_from_dir, str(hh_from_dir)), {})
+            sample = sample_from_dir
+            is_new_sample = meta.get("source") == "new_2022_2030"
             for year in YEARS:
                 ydir = os.path.join(samp_dir, year)
                 if not os.path.isdir(ydir):
                     continue
+                # 2022/2030 refreshed via P1 fresh sampling (2026-07-10/11): a directory
+                # only carries CONFIRMED-fresh 2022/2030 data if its (sample, hh) pair
+                # matches the new manifest — otherwise any 2022/2030 folder present is a
+                # pre-refresh leftover and must be excluded. Historic years are untouched by
+                # the re-sim and always kept when present: a directory can legitimately be
+                # BOTH the new-manifest source for 2022/2030 AND still hold valid 2005-2015
+                # data, when the fresh resample happens to land on the same (sample, hh)
+                # slot as the original run (single directory, updated in place).
+                if year in ("2022", "2030") and not is_new_sample:
+                    continue
                 runs.append({
                     "arch": arch, "city": city, "cz": cz, "region": CITY_REGION[city],
-                    "sample": sample, "sim_hh_id": str(sim_hh_id),
+                    "sample": sample, "sim_hh_id": str(hh_from_dir),
                     "hhsize": meta.get("hhsize", ""), "year": year,
                     "run_dir": ydir, "cell": cell_name,
                     "manifest": bool(manifest),
@@ -257,6 +283,42 @@ def _circular_mean_hour(hours):
     s, c = np.sin(ang).mean(), np.cos(ang).mean()
     mean_h = (np.arctan2(s, c) * 24.0 / (2 * np.pi)) % 24.0
     return mean_h, s, c
+
+
+def _circular_sd_hours(s, c):
+    """Circular (angular) standard deviation in hours, from the mean sin/cos returned by
+    _circular_mean_hour (Mardia's circular SD = sqrt(-2 ln R), R = resultant vector length).
+    Appropriate dispersion measure for hour-of-day data; a plain linear std() is invalid
+    once samples split across morning/evening peak modes (23->0 wrap + bimodality)."""
+    R = float(np.hypot(s, c))
+    if not np.isfinite(R) or R <= 0:
+        return np.nan
+    R = min(R, 1.0)  # guard tiny float overshoot past 1.0
+    return float(np.sqrt(-2.0 * np.log(R)) * 24.0 / (2 * np.pi))
+
+
+def _stock_weighted_circular_mean(stock_peak_year):
+    """National, archetype-stock-weighted circular mean (+ circular SD) of the per-cell TRUE
+    stock-aggregate peak hour, for one year's slice of agg['stock_peak'] (one row per cell).
+    Each archetype's STOCK_WEIGHTS share is split equally across its (up to 6) cities, then
+    per-cell (sin, cos) means are weight-averaged and re-angled -- algebraically identical to
+    pooling every city's 365 daily argmax hours (equal per-city day-count) and weighting the
+    pooled per-archetype result by STOCK_WEIGHTS, i.e. reproduces the 17.22h/17.02h 2022/2030
+    figure already validated ad hoc in this doc's Progress Log (2026-07-15, Task #20 row)."""
+    s_acc = c_acc = w_acc = 0.0
+    for arch in ARCH_NAMES:
+        sub = stock_peak_year[stock_peak_year["arch"] == arch]
+        if sub.empty:
+            continue
+        w_each = STOCK_WEIGHTS.get(arch, 0) / len(sub)
+        s_acc += w_each * sub["stock_peak_hour_sin"].sum()
+        c_acc += w_each * sub["stock_peak_hour_cos"].sum()
+        w_acc += w_each * len(sub)
+    if w_acc == 0:
+        return np.nan, np.nan
+    s_m, c_m = s_acc / w_acc, c_acc / w_acc
+    mean_h = (np.arctan2(s_m, c_m) * 24.0 / (2 * np.pi)) % 24.0
+    return float(mean_h), _circular_sd_hours(s_m, c_m)
 
 
 def summarize_run(rm, df):
@@ -338,7 +400,29 @@ def _ann_col(meter):
 
 
 AGG_FILES = {"diurnal": "agg_diurnal.csv", "peak": "agg_peak.csv",
-             "peak_hours": "agg_peak_hours.csv", "annual": "agg_annual.csv", "meta": "agg_meta.csv"}
+             "peak_hours": "agg_peak_hours.csv", "annual": "agg_annual.csv", "meta": "agg_meta.csv",
+             "stock_peak": "agg_stock_peak.csv"}
+
+
+def _stock_peak_rows(stock_accum):
+    """Reduce the (arch, city, year) -> summed-hourly-kW accumulator into one row per
+    cell x year: a TRUE stock-aggregate peak-hour statistic (sum all households' hourly kW
+    into one building-stock profile, argmax per day, circular-mean the 365 argmax hours) --
+    distinct from summarize_run()'s per-household 'mean_peak_hour' (a household-level circular
+    mean). See 08_09_injection_bug_status.md Progress Log, 2026-07-15 (Task #21 continuation)."""
+    rows = []
+    for (arch, city, year), acc in stock_accum.items():
+        grid = acc["kw"].reshape(365, 24)
+        daily_peak_hr = grid.argmax(axis=1)
+        mean_h, ssin, ccos = _circular_mean_hour(daily_peak_hr)
+        rows.append({
+            "arch": arch, "city": city, "cz": acc["cz"], "region": acc["region"], "year": year,
+            "n_hh": acc["n"], "stock_mean_peak_hour": float(mean_h),
+            "stock_circ_sd_hours": _circular_sd_hours(ssin, ccos),
+            "stock_peak_hour_sin": float(ssin), "stock_peak_hour_cos": float(ccos),
+            "stock_evening_frac": float(np.mean((daily_peak_hr >= 15) & (daily_peak_hr <= 21))),
+        })
+    return rows
 
 
 def build_agg_tables(results_dir, out_dir):
@@ -348,6 +432,10 @@ def build_agg_tables(results_dir, out_dir):
     runs = discover_runs(results_dir)
     print(f"[agg] discovered {len(runs)} runs under {results_dir}")
     diurnal, peak, peak_hours, annual, meta = [], [], [], [], []
+    # (arch, city, year) -> {"kw": np.zeros(8760), "n": int, "cz":..., "region":...}: running sum
+    # of every household's hourly Electricity:Facility kW in this cell/year, built for free off
+    # the same `df` each run already reads -- no extra I/O pass. Feeds _stock_peak_rows() below.
+    stock_accum = {}
     for i, rm in enumerate(runs, 1):
         df = load_run_hourly(rm["run_dir"])
         d, p, ph, a, m = summarize_run(rm, df)
@@ -358,18 +446,26 @@ def build_agg_tables(results_dir, out_dir):
         if a:
             annual.append(a)
         meta.append(m)
+        if df is not None and len(df) >= 8760 and FACILITY in df.columns:
+            kw = pd.to_numeric(df[FACILITY], errors="coerce").to_numpy()[:8760] / 3.6e6
+            key = (rm["arch"], rm["city"], rm["year"])
+            acc = stock_accum.setdefault(key, {"kw": np.zeros(8760), "n": 0,
+                                                "cz": rm["cz"], "region": rm["region"]})
+            acc["kw"] += kw
+            acc["n"] += 1
         if i % 50 == 0 or i == len(runs):
             print(f"[agg] {i}/{len(runs)} runs processed")
     tables = {
         "diurnal": pd.DataFrame(diurnal), "peak": pd.DataFrame(peak),
         "peak_hours": pd.DataFrame(peak_hours), "annual": pd.DataFrame(annual),
-        "meta": pd.DataFrame(meta),
+        "meta": pd.DataFrame(meta), "stock_peak": pd.DataFrame(_stock_peak_rows(stock_accum)),
     }
     for k, df in tables.items():
         df.to_csv(os.path.join(agg_dir, AGG_FILES[k]), index=False)
     n_ok = int((tables["meta"]["status"] == "ok").sum()) if len(tables["meta"]) else 0
     print(f"[agg] wrote {agg_dir} | runs ok={n_ok}/{len(meta)} | "
-          f"diurnal rows={len(diurnal)} peak rows={len(peak)}")
+          f"diurnal rows={len(diurnal)} peak rows={len(peak)} | "
+          f"stock_peak cells x years={len(stock_accum)}")
     return tables
 
 
@@ -577,6 +673,10 @@ def plot_fig04_paired_delta(agg, out_dir, rep_cell):
                 (diurnal["daytype"] == "all")]
     if d.empty:
         print("[fig04] no diurnal for rep cell; skipped"); return None
+    # "year" comes back int64 when agg tables are loaded from cached CSV (load_agg_tables()),
+    # but str when freshly built in-memory (build_agg_tables()) -- cast so the "2022"/"2030"
+    # membership check below is dtype-stable regardless of which path populated `agg`.
+    d = d.assign(year=d["year"].astype(str))
     piv = d.pivot_table(index=["sim_hh_id", "hour"], columns="year", values="load_kW").reset_index()
     if "2022" not in piv.columns or "2030" not in piv.columns:
         print("[fig04] need both 2022 & 2030; skipped"); return None
@@ -669,6 +769,9 @@ def plot_fig07_delta_cz(agg, out_dir):
     peak = agg["peak"]
     if peak.empty:
         print("[fig07] no peak table; skipped"); return None
+    # Same cached-CSV-reload dtype issue as fig04 above (year: int64 from disk vs str
+    # in-memory) -- cast before pivoting so the "2022"/"2030" column check is dtype-stable.
+    peak = peak.assign(year=peak["year"].astype(str))
     piv = peak.pivot_table(index=["arch", "city", "cz", "sim_hh_id"], columns="year",
                            values="peak_kW_annual").reset_index()
     if "2022" not in piv.columns or "2030" not in piv.columns:
@@ -744,8 +847,23 @@ def plot_fig08_stock(agg, out_dir):
 
 
 def plot_fig09_longitudinal(agg, out_dir):
-    """Fig 9 - 2005->2030 trajectory of load-shape metrics with the COVID break."""
+    """Fig 9 - 2005->2030 trajectory of load-shape metrics with the COVID break.
+
+    'Mean peak hour' panel reports TWO distinct, both-valid statistics (decision recorded in
+    08_09_injection_bug_status.md Progress Log, 2026-07-15, Task #21 continuation):
+      PRIMARY (plotted line/errorbar)  - stock-aggregate: sum all households' hourly kW into
+        one building-stock profile per cell, argmax per day, circular-mean the 365 argmax
+        hours, archetype-stock-weighted to national (agg['stock_peak'], via
+        _stock_weighted_circular_mean()). Continues the manuscript's existing ~17.5-17.7h
+        narrative; lands ~17.2h/17.0h for 2022/2030.
+      SECONDARY (text annotation only) - household-level circular mean of each dwelling's own
+        already-collapsed daily-peak-hour (agg['annual']['mean_peak_hour'], via
+        _circular_mean_hour()/_circular_sd_hours()); reported for 2022/2030 only, as evidence
+        of growing household-level schedule heterogeneity (WFH-driven) -- NOT discarded, just
+        no longer the panel's headline line.
+    """
     annual = agg["annual"]
+    stock_peak = agg.get("stock_peak", pd.DataFrame())
     if annual.empty:
         print("[fig09] no annual; skipped"); return None
     metrics = [("midday_share", "Mid-day energy share"), ("load_factor", "Load factor"),
@@ -756,8 +874,54 @@ def plot_fig09_longitudinal(agg, out_dir):
             ax.set_visible(False); continue
         g = annual.groupby(annual["year"].astype(str))[col]
         ys = [y for y in YEARS if y in g.groups]
-        mean = [g.get_group(y).mean() for y in ys]
-        sd = [g.get_group(y).std() for y in ys]
+        if col == "mean_peak_hour":
+            # mean_peak_hour is a circular quantity (hour-of-day, wraps at 24h). The household-
+            # level per-run values (via _circular_mean_hour(); a plain arithmetic mean/std
+            # across households is invalid once a real minority of households peak in the
+            # morning, e.g. mixing 5h and 19h arithmetically pulls toward ~12h, nonsensical) and
+            # the TRUE stock-aggregate (agg['stock_peak']) are two different, both-valid
+            # statistics that diverge once the household population is bimodal (see docstring
+            # above) -- plot the stock-aggregate as PRIMARY, keep the household-level circular
+            # mean as a secondary annotation, not discarded.
+            if not stock_peak.empty and {"stock_peak_hour_sin", "stock_peak_hour_cos"} <= set(stock_peak.columns):
+                sp = stock_peak.assign(year=stock_peak["year"].astype(str))  # int64-on-reload guard (see fig04/fig07)
+                mean, sd = [], []
+                for y in ys:
+                    m_h, s_h = _stock_weighted_circular_mean(sp[sp["year"] == y])
+                    mean.append(m_h); sd.append(s_h)
+                primary_is_stock = True
+            else:
+                print("[fig09] agg['stock_peak'] missing/incomplete; falling back to "
+                      "household-level circular mean as primary (stock-aggregate unavailable).")
+                mean, sd = [], []
+                for y in ys:
+                    vals = g.get_group(y).dropna().to_numpy()
+                    mean_h, s, c = _circular_mean_hour(vals)
+                    mean.append(mean_h); sd.append(_circular_sd_hours(s, c))
+                primary_is_stock = False
+
+            # Secondary finding (household-level dispersion), 2022/2030 only -- computed
+            # regardless of which line is primary, so it's always available for the annotation.
+            hh_lines = []
+            for y in ("2022", "2030"):
+                if y not in g.groups:
+                    continue
+                vals = g.get_group(y).dropna().to_numpy()
+                if vals.size == 0:
+                    continue
+                mean_h, s, c = _circular_mean_hour(vals)
+                sd_h = _circular_sd_hours(s, c)
+                morning_frac = float(np.mean((vals >= 0) & (vals < 12))) * 100
+                hh_lines.append(f"{y}: {mean_h:.1f}h (sd {sd_h:.1f}h), {morning_frac:.0f}% morning-leaning")
+            if hh_lines:
+                note = "Household-level dispersion (secondary)" if primary_is_stock else \
+                       "Household-level circular mean (fallback primary)"
+                ax.text(0.98, 0.03, note + "\n" + "\n".join(hh_lines), transform=ax.transAxes,
+                        ha="right", va="bottom", fontsize=8,
+                        bbox=dict(boxstyle="round", fc="#FFF3CC", alpha=0.8))
+        else:
+            mean = [g.get_group(y).mean() for y in ys]
+            sd = [g.get_group(y).std() for y in ys]
         x = list(range(len(ys)))
         ax.errorbar(x, mean, yerr=sd, marker="o", color="#333", capsize=3)
         if "2015" in ys and "2022" in ys:

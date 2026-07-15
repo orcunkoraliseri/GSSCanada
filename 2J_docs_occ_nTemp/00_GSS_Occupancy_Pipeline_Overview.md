@@ -131,7 +131,8 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 5 — CENSUS-GSS PROBABILISTIC LINKAGE (Classical ML)                  ║
 ║  Status: COMPLETE — 286,537 persons matched; 145,589 HH; 5H exclusion        ║
-║          removes 1,082 implausible HH -> 144,507-HH BEM frame                ║
+║          removes 1,082 implausible HH -> 144,507-HH BEM frame (2005-2015)   ║
+║          2022/2030 refreshed 2026-07-09 (region-tier relink) -> 144,465 HH   ║
 ║                                                                              ║
 ║  Stage A: K-means archetype clustering on GSS augmented data (K=20-50)     ║
 ║  Stage B: Random Forest -> assign Census records to GSS archetypes          ║
@@ -169,7 +170,8 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 ║  HPC cost: ~8-13 hrs on 1x GPU node                                         ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 7 — BEM/UBEM INTEGRATION                                              ║
-║  Status: COMPLETE — BEM_Schedules_{2022,2030}.csv, 144,507 HH each;          ║
+║  Status: COMPLETE — BEM_Schedules_{2022,2030}.csv, 144,465 HH each          ║
+║          (refreshed 2026-07-09 region-tier relink; was 144,507);             ║
 ║          4-h injection bug (diary 04:00 origin -> E+ Hour) found             ║
 ║          2026-06-08, FIXED (np.roll +4, all 4 channels); donor-draw          ║
 ║          day-completion preserves the calibrated weekend marginal            ║
@@ -249,6 +251,6 @@ Construct a comprehensive, annually-representative synthetic occupancy dataset �
 | Recency weighting: 2022=0.40 to 2005=0.10 (Step 6) | Correct prior for 2030; recent patterns are stronger predictors |
 | POWST + Episode column mismatches — solved issues (Step 2) | Confirmed pass before full-fidelity pooling and Step 4 training |
 | Time-series occupancy as the BEM driver (Step 8) | Conference + journal-1 used non-time-series occupancy (diversity factors → annual kWh). This paper drives EnergyPlus with the predicted 30-min AT_HOME + metabolic time-series → energy **load shape** and **peak timing** |
-| Single building + Monte-Carlo = stock scale (Step 8) | One archetype IDF run over many sampled household schedules; the ensemble is the stock distribution — avoids simulating all 144,507 dwellings |
+| Single building + Monte-Carlo = stock scale (Step 8) | One archetype IDF run over many sampled household schedules; the ensemble is the stock distribution — avoids simulating all 144,465 dwellings |
 | Paired MC over the frozen 2022 frame (Step 8) | Every SIM_HH_ID exists in all years → run the same household across 2005→2030; within-household Δenergy isolates the occupancy-forecast effect with tight CIs |
 | Hold IDF + TMY weather, vary only occupancy (Step 8) | The cross-year energy delta is purely the predicted behavioural change; future-weather morphing deferred to a sensitivity |

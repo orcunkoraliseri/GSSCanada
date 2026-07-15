@@ -423,7 +423,7 @@ Output: Building profile distribution table per occupant archetype
 ### Output
 A lookup table linking each of the K occupant archetypes (from augmented GSS data) to a probability distribution over building characteristics from Census. This is passed to Step 6 for BEM archetype assignment.
 
-**As-built counts (Step 5 COMPLETE):** 286,537 matched Census individuals (match tiers: 44.94% exact / 21.39% core / 33.67% constrained; FailSafe 0%); 145,589 linked households; Sub-step 5H plausibility exclusion removes 1,082 households (HH mean AT_HOME < 0.30; 1,248 person rows) → final BEM frame **144,507 households** (data-verified 2026-06-10).
+**As-built counts (Step 5 COMPLETE):** 286,537 matched Census individuals (match tiers: 44.94% exact / 21.39% core / 33.67% constrained; FailSafe 0%); 145,589 linked households; Sub-step 5H plausibility exclusion removes 1,082 households (HH mean AT_HOME < 0.30; 1,248 person rows) → final BEM frame **144,507 households** (data-verified 2026-06-10) for the 2005–2015 cycles. **2022/2030 use a refreshed 144,465-household frame** after the 2026-07-09 Step 5 region-tier relink (see `07_bemIntegrationGSS_val.py`).
 
 ### Computational Cost Note
 This step uses classical ML only (clustering + classifier), not deep learning. Training time is negligible (minutes). The key challenge is cross-cycle Census harmonization (2006/2011/2016/2021 → unified schema), which mirrors the GSS harmonization in Step 2.
@@ -639,7 +639,7 @@ and **peak-hour timing** — with Monte-Carlo uncertainty bands, not just annual
 
 ### Design — single building + paired Monte-Carlo (stock scale)
 One **archetype IDF** is run many times over occupancy schedules sampled from the calibrated
-household population; the **ensemble** is the stock-scale result (no need to simulate all 144,507
+household population; the **ensemble** is the stock-scale result (no need to simulate all 144,465
 dwellings). Because the dwelling stock is **frozen at the 2022 frame**, every `SIM_HH_ID` exists in
 every year — so we **sample 50 household IDs once per (archetype × climate-region) and run each
 across all five years** (2005/2010/2015/2022/2030). This gives **paired** per-household
@@ -776,6 +776,6 @@ Full spec: `08_simulation.md`; validation plan: `08_simulation_val.md`.
 | Recency weighting in final pooled model (Step 6) | 2022 data receives 0.40 loss weight vs. 0.10 for 2005. Correct prior for 2030 forecasting: recent behavioral patterns are stronger predictors than 17-year-old patterns |
 | Full five-column flowchart structure NOT adopted (Step 6) | Compute cost assessment: the four extracted elements deliver ~90% of methodological value at ~2× cost. The full structure would be ~5× cost with diminishing marginal return for the forecasting objective |
 | Time-series occupancy as the BEM driver (Step 8) | Conference + journal-1 used non-time-series occupancy (diversity factors → annual kWh). This paper drives EnergyPlus with the predicted 30-min AT_HOME + metabolic time-series → energy **load shape** and **peak timing** |
-| Single building + Monte-Carlo = stock scale (Step 8) | One archetype IDF run over many sampled household schedules; the ensemble is the stock distribution — avoids simulating all 144,507 dwellings |
+| Single building + Monte-Carlo = stock scale (Step 8) | One archetype IDF run over many sampled household schedules; the ensemble is the stock distribution — avoids simulating all 144,465 dwellings |
 | Paired MC over the frozen 2022 frame (Step 8) | Every SIM_HH_ID exists in all years → run the same household across 2005→2030; within-household Δenergy isolates the occupancy-forecast effect with tight CIs |
 | Hold IDF + TMY weather, vary only occupancy (Step 8) | The cross-year energy delta is purely the predicted behavioural change; future-weather morphing deferred to a sensitivity |

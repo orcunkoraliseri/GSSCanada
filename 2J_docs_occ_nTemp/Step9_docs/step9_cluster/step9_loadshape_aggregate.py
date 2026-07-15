@@ -4,17 +4,31 @@ step9_loadshape_aggregate.py — Aggregate hourly_meters.csv across full 24-cell
 
 Pure stdlib (csv, os, glob). Streams one file at a time; never holds all files in RAM.
 
-Output dir: /speed-scratch/o_iseri/step9_run/loadshape/
+Outputs (default --out-dir = 2J_docs_occ_nTemp/Step9_docs, matching 09_activityDrivenLoads_val.py):
   loadshape_profiles.csv   — mean diurnal W per (cell, year, arm, hour_of_day)
   peak_hours.csv           — peak hour-of-day per (cell, year, arm)
   peak_shift_summary.csv   — activity − baseline peak shift per (cell, year)
+
+Usage (local):
+  py step9_loadshape_aggregate.py --root <..\\campaign_N50_2022_2030\\idfs> --out-dir <..\\Step9_docs>
 """
+import argparse
 import csv
 import glob
 import os
 
-ROOT = '/speed-scratch/o_iseri/step9_run/idfs'
-OUT_DIR = '/speed-scratch/o_iseri/step9_run/loadshape'
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))              # .../Step9_docs/step9_cluster
+_STEP9_DOCS = os.path.dirname(_THIS_DIR)                             # .../Step9_docs
+_REPO = os.path.dirname(os.path.dirname(_STEP9_DOCS))                # .../GSSCanada-main
+_DEFAULT_ROOT = os.path.join(_REPO, 'BEM_Setup', 'SimResults_Step9', 'campaign_N50_2022_2030', 'idfs')
+
+ap = argparse.ArgumentParser(description='Aggregate Step-9 hourly_meters.csv into loadshape tables.')
+ap.add_argument('--root', default=_DEFAULT_ROOT, help='idfs/ dir holding <cell>/<arm>/<sample>/<year>/hourly_meters.csv')
+ap.add_argument('--out-dir', default=_STEP9_DOCS, help='output dir for the three loadshape CSVs')
+args = ap.parse_args()
+
+ROOT = args.root
+OUT_DIR = args.out_dir
 PATTERN = os.path.join(ROOT, '*', '*', '*', '*', 'hourly_meters.csv')
 
 # Columns to read (in this order → index 0..4 in sums arrays)
@@ -42,7 +56,7 @@ all_files = sorted(glob.glob(PATTERN))
 print(f'Files found: {len(all_files)}')
 
 for fpath in all_files:
-    parts = fpath.split('/')
+    parts = os.path.normpath(fpath).split(os.sep)
     # parts: ..., idfs, CELL, ARM, SAMPLE, YEAR, hourly_meters.csv
     cell   = parts[-5]
     arm    = parts[-4]

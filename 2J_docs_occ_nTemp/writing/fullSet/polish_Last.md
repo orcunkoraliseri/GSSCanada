@@ -84,10 +84,10 @@ Highlights 2 and 4 sit at exactly 85 characters — zero margin if Elsevier's co
 - H4 (82): `WFH fills the midday valley and flattens load; the evening peak near 17:30 holds.`
 
 ### B4. Spelled-out numbers conflicting with numerals for the same statistic
-- **Line 10 (Abstract):** "Six thousand paired EnergyPlus runs — …" — recast to avoid the sentence-initial numeral while matching "6,000" used everywhere else: *"A campaign of 6,000 paired EnergyPlus runs — the same 50 households across five cycle-years, with archetypes and weather frozen — isolates the pure occupancy effect…"* (note *isolates*, singular, agreeing with *campaign*).
+- **Line 10 (Abstract):** "Six thousand paired EnergyPlus runs — …" — recast to avoid the sentence-initial numeral while matching "6,000" used everywhere else: *"A campaign of 6,000 paired EnergyPlus runs — the same 50 households across five cycle-years, with archetypes and weather frozen — isolates the pure occupancy effect…"* (note *isolates*, singular, agreeing with *campaign*). **[UPDATE 2026-07-13: this suggested rewrite predates the two-panel correction — do NOT apply "the same 50 households across five cycle-years" verbatim. The current canonical wording (`2J_full_manuscript.md` Abstract) is: "fixed 50-household panels held constant within each of two cycle-year spans (2005-2015; 2022-2030), with archetypes and weather frozen throughout" — apply the sentence-initial-numeral fix (if still wanted) against that text instead.]**
 - **Line 114:** "more than forty trials" → "more than 40 trials".
 - **Line 115:** "all forty-eight dwelling-by-year cells" → "all 48 dwelling-by-year cells".
-- **Line 117:** "the same fifty households" → "the same 50 households".
+- **Line 117:** "the same fifty households" → "the same 50 households" (superseded — this phrase itself was replaced by the two-panel wording; see the note above).
 
 ### B5. Internal pipeline jargon leaking into the paper
 - **"Phase 8B calibration" (line 201):** the phase number is meaningless to readers (there is no Phase 1–8A in the paper). Fix: "…marginal raking step — **the post-hoc calibration stage** — snaps the AT_HOME marginals…".

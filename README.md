@@ -258,7 +258,7 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 | 2 | Data Harmonization — TUI_01 crosswalk, AT_HOME derivation, co-presence OR-merge | ✅ 100% (54/54 checks) |
 | 3 | Merge & Temporal Tiling — 10-min HETUS → 30-min downsampling (48 slots/day); 64,061 respondents | ✅ 99% (81/82 checks) |
 | 4 | Model 1: Conditional Transformer — cross-cycle DDAY augmentation; production model = J3 (4/4 gates) | ✅ COMPLETE |
-| 5 | Census–GSS Probabilistic Linkage — 286,537 persons; 144,507 HH BEM frame | ✅ COMPLETE |
+| 5 | Census–GSS Probabilistic Linkage — 286,537 persons; 144,507 HH BEM frame (2005-2015; 2022/2030 refreshed 2026-07-09 to 144,465 HH) | ✅ COMPLETE |
 | 6 | Model 2: Progressive Fine-Tuning + 2030 Forecast — DRIFT_MATRIX captures COVID-19 shift | ✅ COMPLETE |
 | 7 | BEM Integration — schedule injection, metabolic map, HVAC setback | ✅ COMPLETE |
 | 8 | BEM Simulation — HPC Monte Carlo campaigns; 8760-hour load profiles | ✅ COMPLETE |

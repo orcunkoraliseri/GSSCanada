@@ -349,7 +349,8 @@ Added `FRIDGE_KWH_IDF = 448.0` (SHEU 2019 single-detached fridge UEC, DR-1 Table
 double-count fridge electricity. Arithmetic verified: `SHEU_EQUIP_KWH_NET = 3252.0`. STATIC CHECK: PASS.
 
 **RF3 — N ≥ 20 (STRUCTURAL — no code change required)**
-`_compute_hh_activity_fracs()` loops over the full aug CSV groupby (all 144,507 HHs), so any
+`_compute_hh_activity_fracs()` loops over the full aug CSV groupby (all 144,465 HHs — 2022/2030
+frame refreshed 2026-07-09, was 144,507), so any
 sample size is supported. The n=5 prototype instability was purely a sample-size limitation;
 n ≥ 20 will be enforced at the cluster run step.
 

@@ -18,6 +18,11 @@ and regression against the pre-OP4 (classic) schedules. Produce an HTML report
 > `outputs_step7/step7_validation_report_{2022,2030}.html` (dark-theme, base64 charts) and backs
 > the inline acceptance asserts already in `07_aug_to_bem.py`. Checks below are populated from
 > the measured run.
+>
+> **Note (2026-07-13):** the acceptance-gate specs below (Sections 1 and 5) are updated to target
+> the current 144,465-HH frame for 2022/2030 (refreshed 2026-07-09, Step-5 region-tier relink —
+> see `07_bemIntegrationGSS_val.py`). The **Section 7 summary table retains its original 2026-06-01
+> measured values**, taken against the pre-refresh 144,507-HH frame, unchanged as a historical record.
 
 ---
 
@@ -65,8 +70,8 @@ if __name__ == "__main__":
 | Check | Logic | Pass Criterion |
 |---|---|---|
 | 1.1 Column set | 13 cols exactly, in `OUT_COLS` order | exact match |
-| 1.2 Row count | `len(bem)` | == 144,507 × 2 × 24 = 6,936,336 |
-| 1.3 Unique households | `SIM_HH_ID.nunique()` | == 144,507 |
+| 1.2 Row count | `len(bem)` | == 144,465 × 2 × 24 = 6,934,320 |
+| 1.3 Unique households | `SIM_HH_ID.nunique()` | == 144,465 |
 | 1.4 Hour domain | `Hour` values | == {0..23}, all present |
 | 1.5 No NaN | any NaN in output | 0 |
 | 1.6 Float format | Occupancy 3 dp, Metabolic 1 dp | as written |
@@ -139,10 +144,10 @@ if __name__ == "__main__":
 | Check | Logic | Pass Criterion |
 |---|---|---|
 | 5.1 DTYPE labels | unique values | ⊆ {SingleD, MidRise, HighRise, OtherDwelling, "8"} |
-| 5.2 DTYPE per-HH counts sum | Σ DTYPE/HH | == 144,507 |
+| 5.2 DTYPE per-HH counts sum | Σ DTYPE/HH | == 144,465 |
 | 5.3 PR region labels | unique values | valid region set |
-| 5.4 PR per-HH counts sum | Σ PR/HH | == 144,507 |
-| 5.5 MATCH_TIER carried | tier per HH from Step 5 | == 144,507; tiers ∈ {1_Perfect, 2_Core, 3_Constraints} |
+| 5.4 PR per-HH counts sum | Σ PR/HH | == 144,465 |
+| 5.5 MATCH_TIER carried | tier per HH from Step 5 | == 144,465; tiers ∈ {1_Perfect, 2_Core, 3_Constraints} |
 | 5.6 Dwelling attrs constant in HH | DTYPE/PR `nunique` == 1 within each SIM_HH_ID | 0 drift |
 | 5.7 MATCH_TIER within-HH | per-person Step-5 label may differ across an HH's two day-type blocks (`convert()` `.first()`) | informational (BEM-harmless) |
 

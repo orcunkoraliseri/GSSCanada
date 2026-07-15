@@ -66,10 +66,13 @@ DTYPE_FALLBACK = {
 # ---------------------------------------------------------------------------
 # Step 8 (2nd journal) — paired Monte-Carlo over the frozen 2022 frame
 # ---------------------------------------------------------------------------
-# All 5 BEM_Schedules_{2005,2010,2015,2022,2030}.csv share the SAME 144,507
-# SIM_HH_IDs (frozen frame, verified), so one sampled household runs across
-# every year with only its occupancy/metabolic schedule changing -> a clean
-# within-household paired Δ.
+# BEM_Schedules_{2005,2010,2015}.csv share the SAME 144,507 SIM_HH_IDs (frozen
+# frame, verified). BEM_Schedules_{2022,2030}.csv were refreshed 2026-07-09
+# (Step-5 region-tier relink) onto a new 144,465-ID frame (see
+# 07_bemIntegrationGSS_val.py / step7_improvement_notes.md, Improvement 2) --
+# propagating this to the historical years is deferred to the next campaign,
+# so the "one sampled household runs across every year" pairing currently
+# differs by ~42 HH between 2005-2015 and 2022/2030.
 # MTL archetypes upgraded from EnergyPlus v22.1 -> v24.2 via the official IDFVersionUpdater
 # transition chain (the raw _v221 IDFs fatal-out under the 24.2 IDD: field shift in
 # HeatExchanger:AirToAir:SensibleAndLatent / Coil:Cooling:DX:SingleSpeed). Originals in Buildings_MTL/.

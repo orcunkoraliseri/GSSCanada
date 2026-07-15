@@ -240,11 +240,11 @@ Source: `methodology_assessment_and_paper_skeleton.md` (Step-8 / experimental de
 
 Two-section table:
 
-Section A — Held constant: IDF geometry & envelope | TMY weather file | Household IDs (SIM_HH_ID) | n per cell (50 households)
+Section A — Held constant: IDF geometry & envelope (all 5 cycle-years) | TMY weather file (all 5 cycle-years) | Household IDs (SIM_HH_ID) — **two independent fixed panels**, each held constant only *within* its own cycle-years: (i) 2005/2010/2015, N = 50 sampled from the original 144,507-household frame; (ii) 2022/2030, a *separate* N = 50 sampled from the refined 144,465-household frame (2026-07-09 region-tier relink). Household identity is not carried across the two panels. | n per cell (50 households per panel)
 
 Section B — Varied: Occupancy time-series (one per cycle-year) | Cycle-years: 2005 / 2010 / 2015 / 2022 / 2030
 
-Footer: "Total runs = 4 archetypes × 6 cities × 5 years × 50 households = 6,000. Within-household differencing removes between-household MC variance; cross-year Δ is purely the predicted behavioural change."
+Footer: "Total runs = 4 archetypes × 6 cities × 5 years × 50 households = 6,000. Within-household differencing removes between-household MC variance *within each panel*; cross-year Δ is purely the predicted behavioural change for comparisons made within a panel (2005↔2010↔2015 among themselves; 2022↔2030 between themselves). The 2015→2022 transition crosses the panel boundary and is a cross-sectional, not within-household, comparison."
 
 Note DX-coil footnote: "1 of 6,000 runs (OtherDwelling × Kelowna 5B × 2010) required a DX-coil sizing fix (Sub-step 8G); effect ≤ 0.013 kWh/m²."
 

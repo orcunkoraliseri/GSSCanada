@@ -25,6 +25,16 @@ import csv
 import os
 import sys
 
+# Windows console/redirected-file stdout defaults to cp1252, which can't encode the
+# arrow/delta characters in this script's print output — force UTF-8 like the other
+# Step-8/9 validators do.
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except AttributeError:
+        pass
+
 SHEU_EQUIP_NET   = {'SingleD': 3252.0, 'HighRise': 1474.0, 'MidRise': 1718.0, 'OtherDwelling': 2691.0}
 FRIDGE_KWH_IDF   = 448.0
 SHEU_EQUIP_GROSS = {k: v + FRIDGE_KWH_IDF for k, v in SHEU_EQUIP_NET.items()}
