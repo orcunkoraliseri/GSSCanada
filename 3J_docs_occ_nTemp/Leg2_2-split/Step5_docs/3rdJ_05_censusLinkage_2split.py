@@ -43,8 +43,14 @@ SMOKE_POOL = (
 )
 FULL_POOL = (
     BASE / "3J_docs_occ_nTemp" / "Leg2_2-split" / "Step4_docs"
-    / "outputs_step4" / "sweep" / "R5_raked_mindwell" / "augmented_diaries.csv"
+    / "outputs_step4" / "sweep" / "R5_raked_mindwell_actv2" / "augmented_diaries.csv"
 )
+# 2026-07-15 (Task 1, 2J_to_3J_improvement_implementation.md): repointed from
+# R5_raked_mindwell/ to R5_raked_mindwell_actv2/ -- the 3rdJ_04T_act_rake_2split.py
+# output, which re-rakes act30_* conditionally on the final (hom30, wrk30) state to
+# close Gate A (FLOATING-rate excess). hom30/wrk30 are byte-identical to the
+# predecessor; only act30_* differs. Predecessor value archived at
+# 3rdJ_05_censusLinkage_2split.20260715_preFULLPOOLactv2.py.
 
 # Census
 CENSUS_FILE = BASE / "0_Occupancy" / "Outputs_Aligned" / "Aligned_Census_2025.csv"

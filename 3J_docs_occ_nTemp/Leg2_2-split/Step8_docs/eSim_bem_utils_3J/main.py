@@ -71,8 +71,9 @@ DTYPE_FALLBACK = {
 # ---------------------------------------------------------------------------
 # Step 8 (2nd journal) — paired Monte-Carlo over the frozen 2022 frame
 # ---------------------------------------------------------------------------
-# All 5 BEM_Schedules_{2005,2010,2015,2022,2030}.csv share the SAME 144,507
-# SIM_HH_IDs (frozen frame, verified), so one sampled household runs across
+# All 5 BEM_Schedules_{2005,2010,2015,2022,2030}.csv share the SAME 23,150
+# SIM_HH_IDs (3J Leg-2 stock; see 3rdJ_08_simulation_2split_SCOPING.md §OD-8F)
+# (frozen frame, verified), so one sampled household runs across
 # every year with only its occupancy/metabolic schedule changing -> a clean
 # within-household paired Δ.
 # MTL archetypes upgraded from EnergyPlus v22.1 -> v24.2 via the official IDFVersionUpdater

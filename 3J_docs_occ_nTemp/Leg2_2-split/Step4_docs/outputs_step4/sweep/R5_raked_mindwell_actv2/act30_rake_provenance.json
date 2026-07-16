@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "script": "3rdJ_04T_act_rake_2split.py",
+    "in_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg2_2-split\\Step4_docs\\outputs_step4\\sweep\\R5_raked_mindwell\\augmented_diaries.csv",
+    "out_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg2_2-split\\Step4_docs\\outputs_step4\\sweep\\R5_raked_mindwell_actv2\\augmented_diaries.csv",
+    "seed": 42,
+    "smoke": false,
+    "smoke_frac": null,
+    "timestamp": "2026-07-15T19:15:34",
+    "min_obs_for_lftag": 30,
+    "total_act30_moves": 1123623,
+    "hom30_byte_identical": true,
+    "wrk30_byte_identical": true
+  },
+  "lftag_pooling": {
+    "n_cells_total": 36,
+    "n_cells_thin": 1,
+    "pooling_rate_cells_pct": 2.78,
+    "n_syn_rows_seen": 128122,
+    "n_syn_rows_pooled": 2795,
+    "pooling_rate_rows_pct": 2.18,
+    "lftag_dropped": [
+      {
+        "cy": 2022,
+        "s": 3,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 29
+        }
+      }
+    ]
+  },
+  "work_state_decomposition": {
+    "obs_before": {
+      "n": 64061,
+      "n_work": 409388,
+      "atwork_pct": 82.585,
+      "telework_pct": 14.456,
+      "floating_pct": 2.959
+    },
+    "obs_after": {
+      "n": 64061,
+      "n_work": 409388,
+      "atwork_pct": 82.585,
+      "telework_pct": 14.456,
+      "floating_pct": 2.959
+    },
+    "syn_before": {
+      "n": 128122,
+      "n_work": 726991,
+      "atwork_pct": 49.757,
+      "telework_pct": 26.3,
+      "floating_pct": 23.943
+    },
+    "syn_after": {
+      "n": 128122,
+      "n_work": 432746,
+      "atwork_pct": 79.264,
+      "telework_pct": 16.655,
+      "floating_pct": 4.081
+    }
+  }
+}

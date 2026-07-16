@@ -20,7 +20,7 @@ Step 8 delivers EnergyPlus energy simulation results for **both channels** of th
 
 | File | Rows | Schema (13 cols) |
 |---|---|---|
-| `BEM_Schedules_2split_2022.csv` | 1,114,128 (23,211 HH × 2 day-types × 24 h) | `SIM_HH_ID, Day_Type, Hour, HHSIZE, DTYPE, BEDRM, CONDO, ROOM, REPAIR, PR, MATCH_TIER, Occupancy_Schedule, Metabolic_Rate` |
+| `BEM_Schedules_2split_2022.csv` | 1,111,200 (23,150 HH × 2 day-types × 24 h) | `SIM_HH_ID, Day_Type, Hour, HHSIZE, DTYPE, BEDRM, CONDO, ROOM, REPAIR, PR, MATCH_TIER, Occupancy_Schedule, Metabolic_Rate` |
 | `BEM_Schedules_2split_2030_conservative.csv` | 1,114,128 | same schema |
 | `BEM_Schedules_2split_2030_hybrid.csv` | 1,114,128 | same schema |
 | `BEM_Schedules_2split_2030_fullyhybrid.csv` | 1,114,128 | same schema |
@@ -60,7 +60,7 @@ The J2 `integration.py` (`eSim_bem_utils/integration.py` / versioned copy in `2J
 - Injects the schedule into the IDF's `People` object; `Number_of_People = HHSIZE`.
 - The +4 h diary→clock roll is already baked into the Step-7 output (applied in `3rdJ_07_aug_to_bem_2split.py`; clock-aligned to EPW midnight).
 
-For J3, the residential runner needs minor adaptation: four scenarios (2022 + 2030×3 bands) instead of five historical cycles, and the 3J stock has 23,211 HH (not 144,507), but the N=50 per cell pool-size check is still safe (smallest cell in J2 was 853 HH; J3's employed-enriched stock may have thinner cells — verify per archetype × region before the full run).
+For J3, the residential runner needs minor adaptation: four scenarios (2022 + 2030×3 bands) instead of five historical cycles, and the 3J stock has 23,150 HH (not 144,507), but the N=50 per cell pool-size check is still safe (smallest cell in J2 was 853 HH; J3's employed-enriched stock may have thinner cells — verify per archetype × region before the full run).
 
 ### Office MODULATE (new — `office_integration.py`)
 
@@ -111,7 +111,7 @@ The office channel is architecturally distinct. The Step-7 office multiplier tab
 
 **Residential total: 4 × 6 × 4 × 50 = 4,800 EnergyPlus runs.**
 
-Paired design: sample N=50 `SIM_HH_ID`s once per (archetype × climate-zone) cell, then run all 4 scenarios against the same household IDs in the same archetype IDF under the same TMY weather. Per-household 2022→2030 deltas are within-household differences; the WFH band spread is directly attributable to the occupancy multiplier. The 3J residential stock has 23,211 HH; pool sizes by (DTYPE × PR) must be verified to confirm all 24 cells are ≥ 50 before the campaign is launched [OD-8F].
+Paired design: sample N=50 `SIM_HH_ID`s once per (archetype × climate-zone) cell, then run all 4 scenarios against the same household IDs in the same archetype IDF under the same TMY weather. Per-household 2022→2030 deltas are within-household differences; the WFH band spread is directly attributable to the occupancy multiplier. The 3J residential stock has 23,150 HH; pool sizes by (DTYPE × PR) must be verified to confirm all 24 cells are ≥ 50 before the campaign is launched [OD-8F].
 
 ### Office campaign (aggregate schedule — no per-HH MC)
 
@@ -143,7 +143,7 @@ The office multiplier is a population-level aggregate (not per-household), so th
 
 - **SLURM array structure:** one task per (residential archetype × climate-zone × scenario) cell = 24 cells × 4 scenarios = 96 array tasks for residential; separate array for office (48–72 tasks depending on OD-8A). Or combine into a single array with a lookup table in the wrapper script.
 - **Per-task wrapper:** a bash `.sh` wrapper that (1) extracts the IDD from the SIF at task start, (2) creates a per-task `energyplus`/`ExpandObjects` bash script pointing to the SIF, (3) sets `ESIM_WORKERS=8` (cpus-per-task) and `MPLBACKEND=Agg`, (4) calls the Python runner (`run_paired_mc.py` for residential; the new `office_runner.py` for office) via the cluster Python at `/speed-scratch/o_iseri/envs/step4/bin/python`.
-- **Residential runner:** adapt `2J_docs_occ_nTemp/Step8_docs/run_paired_mc.py` — change `COMPARATIVE_YEARS` logic to the 4 scenario labels, point `STEP8_BUILDINGS_DIR` to `Buildings_MTL_v242/`, use the J3 stock (23,211 HH, `BEM_Schedules_2split_*.csv`). Resume-on-restart (check for existing N×scenarios `hourly_meters.csv`).
+- **Residential runner:** adapt `2J_docs_occ_nTemp/Step8_docs/run_paired_mc.py` — change `COMPARATIVE_YEARS` logic to the 4 scenario labels, point `STEP8_BUILDINGS_DIR` to `Buildings_MTL_v242/`, use the J3 stock (23,150 HH, `BEM_Schedules_2split_*.csv`). Resume-on-restart (check for existing N×scenarios `hourly_meters.csv`).
 - **Office runner:** new script that calls `office_integration.py` to produce a modified IDF, then runs EnergyPlus once via the SIF, parses `hourly_meters.csv`.
 - **Output landing:** `/speed-scratch/o_iseri/step8_2split/campaign/<cell>/` for residential; `/speed-scratch/o_iseri/step8_2split/office/<archetype>__<city>/` for office.
 - **Upload checklist before sbatch:** J3 BEM schedule CSVs (4 files × ~300 MB each), office multiplier CSVs (2 small files), archetype IDFs, 6 EPWs, runner scripts, `office_integration.py`. Bundle all into one `scp -r` upload per cycle (never file-by-file uploads).
@@ -259,7 +259,7 @@ The following items could NOT be resolved from the existing docs and require exp
 
 **OD-8E — Climate zone mapping for office archetypes.** The residential campaign maps `PR` (region label) to EPW city. The office multiplier has no geographic dimension — it is a national aggregate per archetype × BAND × day-type × hour. For office simulations, what EPW cities are used? Same 6 as residential (Toronto 5A, Kelowna 5B, Vancouver 5C, Montreal 6A, Calgary 6B, Winnipeg 7A)? Or a representative subset (e.g., Toronto 5A + Montreal 6A as the two dominant Canadian office markets)? This determines whether office runs 6 CZ or fewer.
 
-**OD-8F — J3 residential pool-size check per (DTYPE × PR) cell.** The J3 residential stock is 23,211 HH (vs J2's 144,507). The smallest J2 cell was 853 HH (HighRise × Prairies). The 3J employed-enriched stock may have thinner cells, especially HighRise × Northern Canada or HighRise × Atlantic. Before the campaign is built, need a pool-size audit: for each of the 24 (DTYPE × PR) cells, confirm at least 50 HH are available. If any cell has < 50, either lower N for that cell (and document), use with-replacement sampling, or exclude the cell.
+**OD-8F — J3 residential pool-size check per (DTYPE × PR) cell.** The J3 residential stock is 23,150 HH (vs J2's 144,507). The smallest J2 cell was 853 HH (HighRise × Prairies). The 3J employed-enriched stock may have thinner cells, especially HighRise × Northern Canada or HighRise × Atlantic. Before the campaign is built, need a pool-size audit: for each of the 24 (DTYPE × PR) cells, confirm at least 50 HH are available. If any cell has < 50, either lower N for that cell (and document), use with-replacement sampling, or exclude the cell.
 
 **OD-8G — Commercial EUI validation benchmark.** J2 used NRCan SHEU for the residential EUI plausibility gate. What is the reference for office EUI? Candidates: NRCan Survey of Commercial and Institutional Energy Use (SCIEU), NECB reference schedules (implied EUI from the code-compliant baseline), or ASHRAE 90.1 prototype building benchmarks. This needs a sourced reference before the validator can be written.
 
@@ -282,7 +282,7 @@ The following source documents were read to produce this scoping draft:
 - `3J_docs_occ_nTemp/Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline_Overview.md` — concise flowchart; Step 8 and Step 9 scope boundary; key design decisions table
 - `3J_docs_occ_nTemp/Leg2_2-split/2-channel_split.md` — channel definitions; PNNL Tall/SuperTall floor-area shares; `office_integration.py` named and task-scoped; Tag-2 routing definition; NECB/ASHRAE peak density values
 - `3J_docs_occ_nTemp/compare/leg2_2-split_vs_leg1/Step7_compare.md` — J2 vs J3 Step-7 comparison; confirmed CSV schemas from headers; gate scorecard cross-reference; caveats for the paper
-- `3J_docs_occ_nTemp/compare/leg2_2-split_vs_leg1/README.md` — cross-step summary; green-light statement for Step 8 scope; population-scale gap caveat (23,211 vs 144,507 HH)
+- `3J_docs_occ_nTemp/compare/leg2_2-split_vs_leg1/README.md` — cross-step summary; green-light statement for Step 8 scope; population-scale gap caveat (23,150 vs 144,507 HH; that file itself lives outside `Leg2_2-split/` and was not touched by this pass — flagged for a separate propagation pass)
 
 **J2 Step-8 reference (ported):**
 - `2J_docs_occ_nTemp/08_simulation.md` — full J2 Step-8 design; paired Monte-Carlo design; experimental grid (4 × 6 × 5 × 50 = 6,000 runs); sub-steps 8A–8G; cluster port (SLURM array job 950097 with the nrel E+ 24.2 SIF); campaign runner design; risk register

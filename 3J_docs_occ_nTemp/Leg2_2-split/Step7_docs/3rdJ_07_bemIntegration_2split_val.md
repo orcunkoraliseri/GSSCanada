@@ -62,7 +62,7 @@
 | # | Gate | Target | 2022 | 2030 |
 |---|---|---|---|---|
 | A | Residential schema (13 cols) | exact OUT_COLS | PASS (match) | PASS (match) |
-| A | Row count (N_HH×2×24) | computed | PASS (23,211 HH / 1,114,128 rows) | PASS (23,211 HH / 1,114,128 rows per band) |
+| A | Row count (N_HH×2×24) | computed | PASS (23,150 HH / 1,111,200 rows) | PASS (23,150 HH / 1,111,200 rows per band) |
 | A | Hour domain {0..23} | {0..23} | PASS | PASS |
 | A | Day_Type domain | {Weekday,Weekend} | PASS | PASS |
 | A | 0 NaN in occ/metabolic | 0 | PASS | PASS |

@@ -141,7 +141,7 @@ def fig_s6_diurnal_equip(profiles, out_dir):
         ax.set_xticks(range(0, 24, 4))
         ax.legend(fontsize=7.5, loc='upper left')
 
-    fig.suptitle('Fig S6 - Equipment diurnal load shape, 2022 (normalized to daily mean)\n'
+    fig.suptitle('Fig 7b - Equipment diurnal load shape, 2022 (normalized to daily mean)\n'
                  'Gray = baseline (6-city mean), coloured = activity; dashed = peak hour; '
                  'shape only - calibrated magnitudes in figS1',
                  fontsize=10.5)
@@ -180,7 +180,7 @@ def fig_s7_peak_shift(peak_hours, out_dir):
         ax.scatter(x[i], ac_h, color=col,     s=55,  zorder=5, marker='D')
 
     ax.set_xticks(x)
-    ax.set_xticklabels([_cell_label(c) for c in cells], fontsize=5.5, ha='center')
+    ax.set_xticklabels([_cell_label(c) for c in cells], fontsize=5.5, rotation=45, ha='right')
     ax.set_yticks(range(0, 24, 2))
     ax.set_ylabel('Equipment peak hour-of-day')
     ax.set_title(

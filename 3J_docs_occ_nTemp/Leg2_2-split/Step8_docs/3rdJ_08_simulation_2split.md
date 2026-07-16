@@ -15,7 +15,7 @@
 | **OD-8C** | Historical cycles | **In scope.** Simulate 2005 / 2010 / 2015 in addition to 2022 + 2030×3 → **7 scenarios**. Historical schedules do **not** yet exist for the 3J stock → new gating sub-step **8A** generates them. |
 | **OD-8D** | Office archetype × envelope | **3 archetype schedules (Knowledge/Public/Sales) × 2 envelopes (Tall/SuperTall)** full cross. |
 | **OD-8E** | Office climate zones | **Same 6 CZ as residential** (Toronto 5A, Kelowna 5B, Vancouver 5C, Montreal 6A, Calgary 6B, Winnipeg 7A). |
-| **OD-8F** | Residential pool-size audit | Build task: audit all (DTYPE × PR) cells in the 23,211-HH stock; cells < 50 HH → document + with-replacement sampling for that cell (never silently drop). |
+| **OD-8F** | Residential pool-size audit | Build task: audit all (DTYPE × PR) cells in the 23,150-HH stock; cells < 50 HH → document + with-replacement sampling for that cell (never silently drop). |
 | **OD-8G** | Commercial EUI benchmark | **NRCan SCIEU** (Survey of Commercial and Institutional Energy Use) + **NECB reference** schedules for the office EUI plausibility gate. Residential keeps NRCan SHEU (as J2). |
 | **OD-8H** | Interpolate to Timestep | **`No`** (hold the hourly block value as a step function — preserves the discrete schedule shape and avoids compounding sub-hour peak loss). Documented in Methods. [CONFIRM in Methods] |
 | **OD-8I** | Office statistical design | **Deterministic** — one run per (archetype × envelope × CZ × scenario) cell. The aggregate office multiplier has no per-HH variance; the spread comes from the WFH bands. |
@@ -68,7 +68,7 @@ J3 Step 7 only produced 2022 + 2030×3. The historical cycles (2005/2010/2015) h
 ### 3a. Step-7 deliverables (already exist, schema confirmed)
 
 **Residential REPLACE** — `Step7_docs/outputs_step7/`, 13 cols `SIM_HH_ID, Day_Type, Hour, HHSIZE, DTYPE, BEDRM, CONDO, ROOM, REPAIR, PR, MATCH_TIER, Occupancy_Schedule, Metabolic_Rate`:
-- `BEM_Schedules_2split_2022.csv` (1,114,128 rows = 23,211 HH × 2 day-types × 24 h)
+- `BEM_Schedules_2split_2022.csv` (1,111,200 rows = 23,150 HH × 2 day-types × 24 h)
 - `BEM_Schedules_2split_2030_conservative.csv`, `…_hybrid.csv`, `…_fullyhybrid.csv` (same schema)
 
 **Office MODULATE** — `Step7_docs/outputs_step7/`, 7 cols `office_archetype, BAND, Day_Type, Hour, AT_WORK_fraction, multiplier, n_persons`:
@@ -111,7 +111,7 @@ The J2 `eSim_bem_utils_2J/integration.py` already handles the residential REPLAC
 
 **Full-coupling extension (OD-8B):** the residential consumer now also writes occupancy-coupled `Lights` and `ElectricEquipment` schedules using the presence-weighted form `S(t) = presence(t)·default + (1−presence(t))·baseload`. Magnitudes (design W) stay at the archetype code values; only the temporal shape is occupancy-driven. Step 9 later calibrates magnitudes and adds activity-resolution.
 
-**J3 adaptation:** 7 scenarios (not 5 historical cycles); 3J stock = 23,211 HH (not 144,507) → run the OD-8F pool-size audit before the campaign.
+**J3 adaptation:** 7 scenarios (not 5 historical cycles); 3J stock = 23,150 HH (not 144,507) → run the OD-8F pool-size audit before the campaign.
 
 ### 4b. Office MODULATE (new — `office_integration.py`)
 

@@ -1692,3 +1692,81 @@ limitation** (981420 inert: the rake erases per-respondent ordering). Not a mode
 
 **Net:** one fail is in a channel the BEM ignores (and structurally pinned by the exact marginals);
 the other is unobservable with one-day-per-person data. Everything the BEM actually consumes passes.
+
+---
+
+### 2026-07-15 — Step 4T built: act30 conditional re-rake (3-way state), Gate A CLOSED (employee: Claude Sonnet 5)
+
+**Context:** `2J_to_3J_improvement_implementation.md` Task 1 (audit Item 2). 04L's joint rake carries
+act30 forward untouched (line 22 above), so after 04L+04M many synthetic work-activity slots landed
+on the physically-impossible FLOATING state (act30==Work, hom30=0, wrk30=0). Gate A (added to the
+validator for exactly this) was FAIL at **+20.98 pp** on the mindwell base.
+
+**Deliverable — new script `3rdJ_04T_act_rake_2split.py`** (script inventory: joins 04L/04M as the
+third leg of the raking chain, run order 04L → 04M → **04T**). Ports 2J's proven
+`_round_to_sum` / `_rake_categorical_slot` / `_rake_act_group` / `_run_act30_conditional_rake`
+(`2J_docs_occ_nTemp/05_postlink_rake.py:118-319`), extended from 2J's 2-way hom30 conditioning to a
+**3-way occupancy state** (`WORK` wrk30=1 / `HOME` hom30=1&wrk30=0, includes legitimate TELEWORK /
+`NEITHER` hom30=0&wrk30=0, the FLOATING state when act30==Work), raked per
+(CYCLE_YEAR × DDAY_STRATA × slot × LFTAG-or-pooled) cell against the matching state-conditioned
+observed target. hom30/wrk30 are read-only throughout — only act30_* is ever written; verified
+byte-identical pre/post on every run. Companion synthetic unit test
+`3rdJ_04T_act_rake_2split_test.py` — **27/27 PASS** (round-to-sum, categorical-slot exact
+attainment/boundary-preference/determinism/no-double-touch, 3-way mutual-state respect, TELEWORK
+preservation, FLOATING suppression, LFTAG pooling incl. the NaN-LFTAG extension, full-run
+byte-identical hom/wrk, determinism, no cross-slot contamination, end-to-end schema preservation).
+
+**Real run** (`outputs_step4/sweep/R5_raked_mindwell/augmented_diaries.csv` → `..._actv2/`,
+192,183 rows, seed 42): 1,123,623 act30 moves. LFTAG sparsity pooling: only **2.8% of (cy,s,LFTAG)
+cells** pooled (1/36; 2022×Sunday's LFTAG=2 cell) — well under the 50% manager-escalation threshold,
+no design change triggered. 3J-specific extension: ~2.2% of syn rows (2,795/128,122) carry
+`LFTAG==NaN` (absent from 2J's source data) — folded into the same pooled group rather than left
+silently unraked.
+
+**04P decomposition (work-activity slots, act30==1), OBS / SYN-pre / SYN-post:**
+
+| | AT-WORK (wrk=1) | TELEWORK (wrk=0,hom=1) | FLOATING (wrk=0,hom=0) | n_work |
+|---|---|---|---|---|
+| OBS | 82.58% | 14.46% | **2.96%** | 409,388 |
+| SYN pre-04T | 49.76% | 26.30% | **23.94%** | 726,991 |
+| SYN post-04T | 79.26% | 16.65% | **4.08%** | 432,746 |
+
+**Validator scorecard** (`3rdJ_04_augmentationGSS_2split_val.py`, production thresholds):
+
+| | Pre-04T (`R5_raked_mindwell`) | Post-04T (`R5_raked_mindwell_actv2`) |
+|---|---|---|
+| **GA** FLOATING excess | **+20.98 pp FAIL** | **+1.12 pp PASS** |
+| **GB** Transition-flicker | 1.000× PASS | 1.000× PASS (unchanged) |
+| G4 Night sleep-slot delta | 6.25 pp FAIL | 0.34 pp PASS |
+| G4 Work peak-slot delta | 6.38 pp FAIL | 14.85 pp FAIL (see note) |
+| OW5 Day-type ordering | 61.4% FAIL | 61.4% FAIL (unchanged, pre-existing) |
+| S8 KL(obs‖syn) 14-cat | 0.0370 | 0.0290 (improved) |
+| S8 Work-act-but-AT_WORK=0 | obs 17.4% / syn 50.2% | obs 17.4% / syn 20.7% |
+| **Overall** | 64 PASS / 3 WARN / 4 FAIL | **66 PASS / 3 WARN / 2 FAIL** |
+
+Zero new FAIL: the post-04T FAIL set (`{G4 Work-peak, OW5}`) is a strict subset of the pre-04T FAIL
+set (`{GA, G4 Night, G4 Work-peak, OW5}`) — GA and G4-Night both close.
+
+**G4 Work-peak-slot delta note (not a 04T regression — a pre-existing gate-definition confound
+04T unmasked):** this check (`validate_temporal`, `WORK_PEAK_SLOTS`) pools ALL cycles × ALL
+DDAY_STRATA together **unconditionally**, unlike G2/OW1 which stratify. Root-caused directly: obs
+rows are 71% weekday-weighted (45,638/64,061); syn rows are 86% weekend-weighted (109,699/128,122,
+a structural consequence of each respondent's synthetic strata being the 2 day-types they were
+NOT diaried on — most GSS respondents are diaried on a weekday). Pre-04T, the FLOATING bug happened
+to inflate syn's raw Work-category share broadly (incl. on weekends), which coincidentally offset
+this population-weighting mismatch and made the pooled numbers look closer (6.38 pp). 04T correctly
+suppresses weekend Work-activity share toward its true near-zero observed level, which removes that
+accidental offset and exposes the pre-existing DDAY-pooling confound in the gate itself (14.85 pp).
+Confirmed by direct measurement: obs peak-slot work% = 28.72% unchanged both runs; syn peak-slot
+work% drops from 22.34% (pre) to 13.87% (post) — moving further from 28.72% specifically because
+weekend-dominated syn rows now correctly show low work activity. Flagged for the manager, not
+altered — Task 1 does not touch the validator's gate definitions.
+
+**Downstream wiring:** `3rdJ_05_censusLinkage_2split.py` `FULL_POOL` (line ~44) repointed to
+`R5_raked_mindwell_actv2/augmented_diaries.csv` (Step 5 itself not run — Task 4). Predecessor
+archived `3rdJ_05_censusLinkage_2split.20260715_preFULLPOOLactv2.py`.
+
+**Files:** `3rdJ_04T_act_rake_2split.py`, `3rdJ_04T_act_rake_2split_test.py`,
+`outputs_step4/sweep/R5_raked_mindwell_actv2/{augmented_diaries.csv, act30_rake_provenance.json,
+step4_validation_report.{html,txt}}`. Full Progress Log entry with citations:
+`Leg2_2-split/improvement/2J_to_3J_improvement_implementation.md`.

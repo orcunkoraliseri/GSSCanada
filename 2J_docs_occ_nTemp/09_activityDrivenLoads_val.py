@@ -301,7 +301,7 @@ class Step9Validator:
                 ax.plot(hours, bl, color='gray', lw=2.0,
                         label=f'Default (BL)  peak h{bl_peak}')
                 ax.plot(hours, ac, color=col,    lw=2.0,
-                        label=f'Step-9 (AC)  peak h{ac_peak}')
+                        label=f'Generated (AC)  peak h{ac_peak}')
                 ax.axvline(bl_peak, color='gray', linestyle='--', lw=0.9, alpha=0.8)
                 ax.axvline(ac_peak, color=col,    linestyle='--', lw=0.9, alpha=0.8)
                 ax.set_ylabel('Equipment demand (W)')
@@ -312,7 +312,7 @@ class Step9Validator:
                         transform=ax.transAxes, ha='right', va='top',
                         fontsize=8.5, color='gray')
                 ax.text(0.97, 0.88,
-                        f'Step-9:   {ac_kwh:.0f} kWh/yr',
+                        f'Generated: {ac_kwh:.0f} kWh/yr',
                         transform=ax.transAxes, ha='right', va='top',
                         fontsize=8.5, color=col, fontweight='bold')
                 ax.text(0.97, 0.80,
@@ -333,7 +333,7 @@ class Step9Validator:
                 ax.plot(hours, bl_n, color='gray', lw=2.0,
                         label=f'Default (BL)  peak h{bl_peak}')
                 ax.plot(hours, ac_n, color=col,    lw=2.0,
-                        label=f'Step-9 (AC)  peak h{ac_peak}')
+                        label=f'Generated (AC)  peak h{ac_peak}')
                 ax.axhline(1.0, color='black', lw=0.5, alpha=0.25)
                 ax.axvline(bl_peak, color='gray', linestyle='--', lw=0.9, alpha=0.8)
                 ax.axvline(ac_peak, color=col,    linestyle='--', lw=0.9, alpha=0.8)
@@ -347,7 +347,7 @@ class Step9Validator:
             ax.legend(fontsize=7.5, loc='upper left')
 
         fig.suptitle(
-            'Fig V1 — Default vs Step-9 equipment demand, 2022 (6-city mean per archetype)\n'
+            'Fig 7a — Default vs Generated equipment demand, 2022 (6-city mean per archetype)\n'
             'SingleD: absolute W, annual kWh + SHEU target annotated '
             '(shape reshapes, budget held)\n'
             'Multi-unit: normalized to daily mean (single-unit injection; '

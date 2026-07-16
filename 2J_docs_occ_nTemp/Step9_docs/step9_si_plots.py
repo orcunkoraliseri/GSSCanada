@@ -89,7 +89,7 @@ def fig_s1_equip(rows, out_dir):
         ax.hlines(target,        x[i] - w, x[i] + w, colors="black", linestyles="-",  linewidth=1.0)
 
     ax.set_xticks(x)
-    ax.set_xticklabels([_cell_label(r["cell"]) for r in rows22], fontsize=6.5, ha="center")
+    ax.set_xticklabels([_cell_label(r["cell"]) for r in rows22], fontsize=6.5, rotation=45, ha="right")
     ax.set_ylabel("kWh / HH / year")
     ax.set_title("Fig S1 — Equipment: Baseline (gray) vs Activity (coloured), SHEU ±15% band\n"
                  "Dark bar = 2022, light = 2030; solid line = target, dashed = ±15%")

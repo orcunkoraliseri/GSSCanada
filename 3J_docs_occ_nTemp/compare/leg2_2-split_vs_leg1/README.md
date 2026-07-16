@@ -70,7 +70,7 @@ model, and are recorded honestly.
    as the weekday business-hours home under-prediction in Step 6. They are documented and not gamed,
    but they are the main honest limitation of the two-channel result. Frame as a known floor, not a bug.
 2. **Population-scale gap.** J2 links ~286 K persons / 144,507 HH (Census 2021); J3 Leg-2 links
-   ~30 K persons / 23,211 HH (Census 2025 vintage + employed-enriched 2-split stock). The ~9.5×
+   ~30 K persons / 23,150 HH (Census 2025 vintage + employed-enriched 2-split stock). The ~9.5×
    difference reflects census vintage/extraction and the employed-only enrichment of the office leg —
    **this needs an explicit explanation in the methods** so reviewers don't read it as a coverage loss.
 3. **Calibration-C now modifies *weekend* `wrk30`.** The old "wrk30 never modified" note applied to

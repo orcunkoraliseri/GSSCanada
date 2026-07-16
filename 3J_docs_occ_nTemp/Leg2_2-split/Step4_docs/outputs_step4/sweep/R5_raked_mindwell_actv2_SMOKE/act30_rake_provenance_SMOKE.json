@@ -1,0 +1,167 @@
+{
+  "_meta": {
+    "script": "3rdJ_04T_act_rake_2split.py",
+    "in_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg2_2-split\\Step4_docs\\outputs_step4\\sweep\\R5_raked_mindwell\\augmented_diaries.csv",
+    "out_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg2_2-split\\Step4_docs\\outputs_step4\\sweep\\R5_raked_mindwell_actv2_SMOKE\\augmented_diaries_SMOKE.csv",
+    "seed": 42,
+    "smoke": true,
+    "smoke_frac": 0.05,
+    "timestamp": "2026-07-15T19:14:13",
+    "min_obs_for_lftag": 30,
+    "total_act30_moves": 72322,
+    "hom30_byte_identical": true,
+    "wrk30_byte_identical": true
+  },
+  "lftag_pooling": {
+    "n_cells_total": 36,
+    "n_cells_thin": 12,
+    "pooling_rate_cells_pct": 33.33,
+    "n_syn_rows_seen": 6407,
+    "n_syn_rows_pooled": 627,
+    "pooling_rate_rows_pct": 9.79,
+    "lftag_dropped": [
+      {
+        "cy": 2005,
+        "s": 1,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 27
+        }
+      },
+      {
+        "cy": 2005,
+        "s": 2,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 6
+        }
+      },
+      {
+        "cy": 2005,
+        "s": 3,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 10
+        }
+      },
+      {
+        "cy": 2010,
+        "s": 1,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 21
+        }
+      },
+      {
+        "cy": 2010,
+        "s": 2,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 1
+        }
+      },
+      {
+        "cy": 2010,
+        "s": 3,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 2
+        }
+      },
+      {
+        "cy": 2015,
+        "s": 2,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 5
+        }
+      },
+      {
+        "cy": 2015,
+        "s": 3,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 2
+        }
+      },
+      {
+        "cy": 2022,
+        "s": 1,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 4
+        }
+      },
+      {
+        "cy": 2022,
+        "s": 2,
+        "thin": [
+          2.0,
+          3.0
+        ],
+        "obs_counts": {
+          "2.0": 1,
+          "3.0": 28
+        }
+      },
+      {
+        "cy": 2022,
+        "s": 3,
+        "thin": [
+          2.0
+        ],
+        "obs_counts": {
+          "2.0": 4
+        }
+      }
+    ]
+  },
+  "work_state_decomposition": {
+    "obs_before": {
+      "n": 3204,
+      "n_work": 21267,
+      "atwork_pct": 80.848,
+      "telework_pct": 15.653,
+      "floating_pct": 3.498
+    },
+    "obs_after": {
+      "n": 3204,
+      "n_work": 21267,
+      "atwork_pct": 80.848,
+      "telework_pct": 15.653,
+      "floating_pct": 3.498
+    },
+    "syn_before": {
+      "n": 6407,
+      "n_work": 35132,
+      "atwork_pct": 50.02,
+      "telework_pct": 26.807,
+      "floating_pct": 23.173
+    },
+    "syn_after": {
+      "n": 6407,
+      "n_work": 22442,
+      "atwork_pct": 75.751,
+      "telework_pct": 18.452,
+      "floating_pct": 5.797
+    }
+  }
+}

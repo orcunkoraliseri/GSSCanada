@@ -2,7 +2,7 @@
 
 Headless single-cell driver for the SLURM array.  One invocation = one
 (archetype × city × scenario) cell.  N=50 households are drawn from the 3J
-23,211-HH stock using a deterministic per-cell seed so that all scenario tasks
+23,150-HH stock using a deterministic per-cell seed so that all scenario tasks
 for the same (arch × city) pair draw the SAME 50 households — enforcing the
 paired design within `run_step8_paired_mc()`.
 

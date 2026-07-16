@@ -38,7 +38,7 @@ Build the **Step 8 two-channel EnergyPlus simulation** for the 3J Leg-2 pipeline
 
 ### 8B — Residential campaign
 - Create `eSim_bem_utils_3J/` as a versioned copy of `eSim_bem_utils_2J/` (OD-8J). All Step-8 edits go in the 3J copy; never touch the 2J copy.
-- Adapt `run_paired_mc.py`: 7 scenario labels, `STEP8_BUILDINGS_DIR → 2J_docs_occ_nTemp/BEM_setup/Buildings_MTL_v242/`, 3J stock (`BEM_Schedules_2split_*.csv`, 23,211 HH). Add the Lights/Equipment occupancy-coupling (design §4a). Resume-on-restart.
+- Adapt `run_paired_mc.py`: 7 scenario labels, `STEP8_BUILDINGS_DIR → 2J_docs_occ_nTemp/BEM_setup/Buildings_MTL_v242/`, 3J stock (`BEM_Schedules_2split_*.csv`, 23,150 HH). Add the Lights/Equipment occupancy-coupling (design §4a). Resume-on-restart.
 - Run the **OD-8F pool-size audit** first: for each (DTYPE × PR) cell confirm ≥ 50 HH; any cell < 50 → document + with-replacement sampling (never silently drop).
 
 ### 8C — Office campaign

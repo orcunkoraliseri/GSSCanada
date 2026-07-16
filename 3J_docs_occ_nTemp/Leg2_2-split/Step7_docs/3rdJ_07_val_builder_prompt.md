@@ -34,7 +34,7 @@ paths relative to the script). Do NOT modify the Step-7 producer script or any l
 - 2030 source (calibrated): `…\Step6_docs\outputs_step6\2030_synthetic_diaries_2split_calibrated_mindwell_C.csv`
   (the **_C** file — Step-7 2030 was re-run off this; use it, NOT the pre-_C file). Has `BAND`.
 - **Do not hardcode `N_HH` or row counts** — compute from the actual residential file
-  (`n_HH × 2 day-types × 24 h`); 2022 ≈ 23,211 HH, each 2030 band copies the same stock frame.
+  (`n_HH × 2 day-types × 24 h`); 2022 ≈ 23,150 HH, each 2030 band copies the same stock frame.
 
 ### Sections (map the val-plan A–G; one report per year)
 1. **Schema & structure (A)** — residential: exact loaded-column set + dtypes, row math

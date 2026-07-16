@@ -1549,6 +1549,7 @@ def inject_schedules(
                 _fridge_found = False
                 _fridge_w = round(448.0 * 1000.0 / 8760.0, 2)  # 51.14 W fallback (always-on)
                 _n_eq_neut = 0
+                _s9_equip_zones = set()
                 for _eo in list(idf.idfobjects.get('ELECTRICEQUIPMENT', [])):
                     if _is_fridge(_eo):
                         _fridge_found = True
@@ -1572,11 +1573,15 @@ def inject_schedules(
                         try: _eo.Watts_per_Zone_Floor_Area = 0.0
                         except Exception: pass
                         continue
-                    # Neutralize across ALL zones (not just occ zone) so that
-                    # multi-zone NECB apartments don't leave Watts/Area leaks in
-                    # the 23 non-target unit zones, which would break the precheck
-                    # and inflate the zone-level E+ meter. Carrier is injected in
-                    # the occupancy zone only.
+                    # Neutralize across ALL zones, then re-inject the SHEU-calibrated
+                    # carrier into EVERY zone that had a load (one household-equivalent
+                    # per dwelling unit), not just the occupancy zone. Injecting into a
+                    # single zone collapsed whole-building equipment to ~1/N_units of its
+                    # physical total for multi-zone archetypes (MidRise/HighRise/
+                    # OtherDwelling) — the root cause of the equipment/lighting
+                    # undercount ported from 2J (2026-07-15). Per-zone replication
+                    # restores the legacy broadcast-to-all-zones magnitude while
+                    # keeping the new SHEU-calibrated per-household schedule/level.
                     try: _eo.Design_Level_Calculation_Method = 'EquipmentLevel'
                     except Exception: pass
                     try: _eo.Design_Level = 0.0
@@ -1584,6 +1589,12 @@ def inject_schedules(
                     try: _eo.Watts_per_Zone_Floor_Area = 0.0
                     except Exception: pass
                     _n_eq_neut += 1
+                    _z = _s9_get_zone(_eo)
+                    if _z:
+                        _s9_equip_zones.add(_z)
+
+                if not _s9_equip_zones:
+                    _s9_equip_zones = {_s9_occ_zone}
 
                 _s9e_sch = f"S9_Equip_{hh_id}"
                 _s9e_pd = {dt: list(v) for dt, v in _s9_equip_data.items()}
@@ -1602,21 +1613,23 @@ def inject_schedules(
                                                          {k: fmt_for_compact(v)
                                                           for k, v in _s9e_pd.items()}))
 
-                _ec = idf.newidfobject("ElectricEquipment")
-                _ec.Name = f"STEP9_Equip_{hh_id}"
-                _s9_set_zone(_ec, _s9_occ_zone)
-                _ec.Schedule_Name = _s9e_sch
-                try: _ec.Design_Level_Calculation_Method = 'EquipmentLevel'
-                except Exception: pass
-                try: _ec.Design_Level = round(_s9_equip_dw, 2)
-                except Exception: pass
-                try: _ec.Watts_per_Zone_Floor_Area = ''
-                except Exception: pass
+                for _zi, _zname in enumerate(sorted(_s9_equip_zones)):
+                    _ec = idf.newidfobject("ElectricEquipment")
+                    _ec.Name = f"STEP9_Equip_{hh_id}_{_zi}"
+                    _s9_set_zone(_ec, _zname)
+                    _ec.Schedule_Name = _s9e_sch
+                    try: _ec.Design_Level_Calculation_Method = 'EquipmentLevel'
+                    except Exception: pass
+                    try: _ec.Design_Level = round(_s9_equip_dw, 2)
+                    except Exception: pass
+                    try: _ec.Watts_per_Zone_Floor_Area = ''
+                    except Exception: pass
 
                 if not _fridge_found:
                     # Apartment IDF lumps fridge into Watts/Area â€” after neutralization
                     # the fridge kWh is gone. Inject an explicit always-on baseload
-                    # (~51 W = 448 kWh/yr) so the SHEU net target remains additive-correct.
+                    # (~51 W = 448 kWh/yr) into EVERY unit zone so the SHEU net target
+                    # remains additive-correct at whole-building scale.
                     _fr_w = round(448.0 * 1000.0 / 8760.0, 2)
                     # Use Schedule:Compact (all 1.0) â€” parseable by precheck_calibration.py
                     # and valid for E+ 24.2. 'Always On'/'Always On Discrete' are rejected
@@ -1626,28 +1639,32 @@ def inject_schedules(
                     _fr_sc = idf.newidfobject("Schedule:Compact")
                     _fr_sc.obj = ["Schedule:Compact", _fr_sched_name, "Fraction",
                                   "Through: 12/31", "For: AllDays", "Until: 24:00", "1.0"]
-                    _fr = idf.newidfobject("ElectricEquipment")
-                    _fr.Name = f"STEP9_Fridge_{hh_id}"
-                    _s9_set_zone(_fr, _s9_occ_zone)
-                    _fr.Schedule_Name = _fr_sched_name
-                    try: _fr.Design_Level_Calculation_Method = 'EquipmentLevel'
-                    except Exception: pass
-                    try: _fr.Design_Level = _fr_w
-                    except Exception: pass
-                    try: _fr.Watts_per_Zone_Floor_Area = ''
-                    except Exception: pass
-                    print(f"  [S9 HH {hh_id}]: no named fridge â€” injected {_fr_w} W always-on baseload")
+                    for _zi, _zname in enumerate(sorted(_s9_equip_zones)):
+                        _fr = idf.newidfobject("ElectricEquipment")
+                        _fr.Name = f"STEP9_Fridge_{hh_id}_{_zi}"
+                        _s9_set_zone(_fr, _zname)
+                        _fr.Schedule_Name = _fr_sched_name
+                        try: _fr.Design_Level_Calculation_Method = 'EquipmentLevel'
+                        except Exception: pass
+                        try: _fr.Design_Level = _fr_w
+                        except Exception: pass
+                        try: _fr.Watts_per_Zone_Floor_Area = ''
+                        except Exception: pass
+                    print(f"  [S9 HH {hh_id}]: no named fridge â€” injected {_fr_w} W always-on "
+                          f"baseload into {len(_s9_equip_zones)} zone(s)")
 
                 _fr_log = (f"calibrated@{_fr_target_w}W(sched={_fr_sched})"
                            if _fridge_found else f"injected@{_fridge_w}W(always-on)")
-                print(f"  [S9] Equip: {_n_eq_neut} neutralized; carrier {round(_s9_equip_dw, 1)} W; "
-                      f"fridge={_fr_log}")
+                print(f"  [S9] Equip: {_n_eq_neut} neutralized across {len(_s9_equip_zones)} zone(s); "
+                      f"carrier {round(_s9_equip_dw, 1)} W/zone; fridge={_fr_log}")
 
             # --- Lighting consolidation ---
             if _s9_active_light:
                 _n_li_neut = 0
+                _s9_light_zones = set()
                 for _lo in list(idf.idfobjects.get('LIGHTS', [])):
-                    # Same all-zones neutralization as equipment (see above).
+                    # Same all-zones neutralization as equipment (see above); carrier is
+                    # re-injected per unit zone below (per-unit replication fix, 2026-07-15).
                     try: _lo.Design_Level_Calculation_Method = 'LightingLevel'
                     except Exception: pass
                     try: _lo.Lighting_Level = 0.0
@@ -1655,6 +1672,12 @@ def inject_schedules(
                     try: _lo.Watts_per_Zone_Floor_Area = 0.0
                     except Exception: pass
                     _n_li_neut += 1
+                    _z = _s9_get_zone(_lo)
+                    if _z:
+                        _s9_light_zones.add(_z)
+
+                if not _s9_light_zones:
+                    _s9_light_zones = {_s9_occ_zone}
 
                 _s9l_sch = f"S9_Light_{hh_id}"
                 _s9l_months = {}
@@ -1680,18 +1703,20 @@ def inject_schedules(
                     _sl.obj = (["Schedule:Compact"]
                                + create_monthly_compact_schedule(_s9l_sch, "Fraction", _s9l_months))
 
-                _lc = idf.newidfobject("Lights")
-                _lc.Name = f"STEP9_Lights_{hh_id}"
-                _s9_set_zone(_lc, _s9_occ_zone)
-                _lc.Schedule_Name = _s9l_sch
-                try: _lc.Design_Level_Calculation_Method = 'LightingLevel'
-                except Exception: pass
-                try: _lc.Lighting_Level = round(_s9_light_dw, 2)
-                except Exception: pass
-                try: _lc.Watts_per_Zone_Floor_Area = ''
-                except Exception: pass
+                for _zi, _zname in enumerate(sorted(_s9_light_zones)):
+                    _lc = idf.newidfobject("Lights")
+                    _lc.Name = f"STEP9_Lights_{hh_id}_{_zi}"
+                    _s9_set_zone(_lc, _zname)
+                    _lc.Schedule_Name = _s9l_sch
+                    try: _lc.Design_Level_Calculation_Method = 'LightingLevel'
+                    except Exception: pass
+                    try: _lc.Lighting_Level = round(_s9_light_dw, 2)
+                    except Exception: pass
+                    try: _lc.Watts_per_Zone_Floor_Area = ''
+                    except Exception: pass
 
-                print(f"  [S9] Lights: {_n_li_neut} neutralized; carrier {round(_s9_light_dw, 1)} W")
+                print(f"  [S9] Lights: {_n_li_neut} neutralized across {len(_s9_light_zones)} zone(s); "
+                      f"carrier {round(_s9_light_dw, 1)} W/zone")
     # --------------------------------------------------------------------------
 
     for obj_type, field_name, std_key in load_targets:

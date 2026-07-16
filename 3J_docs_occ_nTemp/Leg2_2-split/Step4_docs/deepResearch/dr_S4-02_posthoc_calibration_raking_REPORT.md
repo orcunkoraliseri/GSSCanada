@@ -70,8 +70,17 @@ We define a violation when a synthetic agent is simulated as doing an activity t
     *   Work activity but `AT_WORK=0`: **61.12%** 🔴 **CRITICAL FAIL**.
     *   Sleep activity but `AT_HOME=0`: **4.23%** (comparable to observed rates).
 
+> [!CAUTION]
+> **⚠️ DO NOT CITE THE 61.12% FIGURE — superseded 2026-07-15.** The heading of this subsection ("Local Sample Run") is literal: **61.12% was measured on a disjoint 2,560-row Jun-18 diagnostic sample**, not on the 128,122-synthetic-row `R5` sweep the pipeline actually uses. (The `R5_raked/` directory it refers to does not exist in the repo.) **The correct pre-04T baseline on the real pool (`Step4_docs/outputs_step4/sweep/R5_raked_mindwell/`) is 50.24%**, which decomposes into **26.30% TELEWORK** (work activity with `hom30=1` — legitimate, and the core signal of the paper) **+ 23.94% FLOATING** (work activity with `hom30=0 & wrk30=0` — physically impossible, the only part that is actually a defect).
+>
+> That decomposition matters more than the headline number: the warning below treats the whole mismatch as an error, but roughly half of it is working-from-home, which must **never** be raked away. This is why the `dr_S4-02` hard-lock proposal was **rejected** — it would have suppressed the telework signal. See `improvement/2J_to_3J_improvement_implementation.md` §0.3 and OD-I1.
+>
+> **Resolved 2026-07-15** by the 04T 3-way state-conditional activity rake (`Step4_docs/3rdJ_04T_act_rake_2split.py`), which runs after 04M and targets only FLOATING: Gate A went **+20.98pp FAIL → +1.12pp PASS**; FLOATING **23.94% → 4.08%** while TELEWORK was preserved at **16.65%** (observed 14.46%). `hom30`/`wrk30` byte-identical throughout.
+
 > [!WARNING]
 > **Semantic Inconsistency**: Over **61% of all generated work activities** in the raked synthetic diaries occur when the agent is marked as `wrk30 = 0`. This means the agent is doing work but is not at their workplace, which violates the core behavioral assumptions of the diary linkage.
+>
+> *(2026-07-15: figure superseded — see the CAUTION above. The real rate is 50.24%, of which only 23.94pp is a genuine violation; the remainder is legitimate work-from-home. The qualitative conclusion — that an un-raked activity channel produces impossible work slots — stands.)*
 
 ---
 

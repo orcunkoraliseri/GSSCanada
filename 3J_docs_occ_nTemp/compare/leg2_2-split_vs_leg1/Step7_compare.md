@@ -36,7 +36,7 @@ The core Step-7 build delta for J3 is the **office MODULATE channel** (`3rdJ_07_
 
 | File | Population | Key columns used |
 |---|---|---|
-| `Step5_docs/outputs_step5/3rdJ_25CEN_aug_Full_Aggregated_excl.csv` | ~29,599 linked persons / 23,211 HH (2022, post AT_HOME<0.30 exclusion, employed-enriched 2-split stock) | All J2 columns **plus** `wrk30_001–048, office_archetype_ID, HH_hom30_001–048, N_HH_MEMBERS, NOCS, NAICS_donor, HRSWRK, TELEWORK, WORK_SCHEDULE, CMA, LFTAG` |
+| `Step5_docs/outputs_step5/3rdJ_25CEN_aug_Full_Aggregated_excl.csv` | 29,538 linked persons / 23,150 HH (2022, post AT_HOME<0.30 exclusion, employed-enriched 2-split stock) | All J2 columns **plus** `wrk30_001–048, office_archetype_ID, HH_hom30_001–048, N_HH_MEMBERS, NOCS, NAICS_donor, HRSWRK, TELEWORK, WORK_SCHEDULE, CMA, LFTAG` |
 | `Step6_docs/outputs_step6/2030_synthetic_diaries_2split_calibrated_mindwell_C.csv` (**calibration-C deliverable**) | 111,024 rows = 3 bands × ~37,008 (BAND column: conservative / hybrid / fullyhybrid) | `act30_001–048, hom30_001–048, wrk30_001–048, BAND, DDAY_STRATA, IS_SYNTHETIC, LFTAG, NOCS, NAICS, PR, CMA` |
 | `0_Occupancy/processed/office_archetype_lookup.csv` | NOCS → archetype mapping | `NOCS, archetype_label, is_office` |
 
@@ -77,7 +77,7 @@ Office channel uses `is_office = True` rows only (Knowledge / Public / Sales), r
 
 | File | Location | Rows | Content |
 |---|---|---|---|
-| `BEM_Schedules_2split_2022.csv` | `Step7_docs/outputs_step7/` | 1,114,128 | 23,211 HH × 2 day-types × 24 h; 2022 stock |
+| `BEM_Schedules_2split_2022.csv` | `Step7_docs/outputs_step7/` | 1,111,200 | 23,150 HH × 2 day-types × 24 h; 2022 stock |
 | `BEM_Schedules_2split_2030_conservative.csv` | same | 1,114,128 | 2030, conservative WFH band (17.5%) |
 | `BEM_Schedules_2split_2030_hybrid.csv` | same | 1,114,128 | 2030, hybrid WFH band (30%) |
 | `BEM_Schedules_2split_2030_fullyhybrid.csv` | same | 1,114,128 | 2030, fullyhybrid WFH band (40%) |
@@ -186,8 +186,8 @@ Same 70 W/MET basis, same Compendium citation. The map was **not re-derived or r
 
 | Gate | 2022 | 2030 |
 |---|---|---|
-| Residential row count | 1,114,128 | 1,114,128 (per band) |
-| HH count | 23,211 | 23,211 |
+| Residential row count | 1,111,200 | 1,111,200 (per band) |
+| HH count | 23,150 | 23,150 |
 | Partial-coverage HH | 0 | 0 |
 | Weekend marginal dilution (≤ 0.5 pp) | Δ+0.118 pp | Δ+0.103 pp (cons band vs cons diary) |
 | WD residential occ fidelity (≤ 1 pp) | Δ0.174 pp | ≤ 0.335 pp all bands |

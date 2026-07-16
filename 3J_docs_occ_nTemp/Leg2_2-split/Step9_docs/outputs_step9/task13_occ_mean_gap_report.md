@@ -29,7 +29,7 @@ possible locally:
 
 - The historical-schedule generator is deterministic and reproducible (re-ran it, got a
   byte-identical result) — so re-running it again won't change anything.
-- It only ever produces occupancy data for ~2,883 of the ~23,211 total households, by
+- It only ever produces occupancy data for ~2,883 of the ~23,150 total households, by
   design (only households with a valid demographic match to a historical survey cycle get
   one) — that part is expected, not a bug.
 - But the code that actually built the real campaign guarantees, by construction, that

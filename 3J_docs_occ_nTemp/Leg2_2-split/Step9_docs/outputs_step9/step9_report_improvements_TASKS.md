@@ -550,7 +550,7 @@ scratch to reproduce the prior session's number — and it didn't reproduce.
      identical**. The generator is fully deterministic given current upstream inputs —
      re-running it again will not produce a different population.
    - Its own console output shows the demographic-tier match only succeeds for ~2,883 of
-     the 23,211-household stock frame (tier 1 AGEGRP/SEX/MARSTH/HHSIZE/LFTAG: ~2,906
+     the 23,150-household stock frame (tier 1 AGEGRP/SEX/MARSTH/HHSIZE/LFTAG: ~2,906
      matched, tiers 2-3 mop up the rest, out of a per-cycle pool) — i.e. a historical
      counterpart legitimately doesn't exist for most households, **by design**, not a bug.
    - But `main.py`'s `run_step8_paired_mc` (L2045-2064) builds its per-cell sampling pool
