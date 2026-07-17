@@ -1239,3 +1239,20 @@ Author: manager (Opus). New session (the prior session's Monitor did not carry o
 **3. Next actions on terminal state** (unchanged from plan): confirm ALL tasks COMPLETED via `sacct` (not just "no longer running"), read a successful task log for content, then `sbatch` Step-8 agg → Step-8 val (expect 46P/1W/13I/0F, gate 4.9 WARN OK) → Task-2 magnitude check (equip/lights kWh fresh-vs-`archive/agg.20260706_pre_actv2` by arch; MidRise/HighRise/OtherDwelling ↑ ~zone-count, DetachedHouse ~1.0×) → Step-9 (expect 10P/1W/0F, watch G8o + office EUI band) → supersede the acceptance-review verdict.
 
 **Blockers:** none. Waiting on the campaign (~300 tasks left at 4 concurrent → several hours). Monitor will notify on completion or failure.
+
+---
+
+### 2026-07-16 — CPU-utilization diagnostic (MANAGER) — answering "why not more CPUs?"
+
+Author: manager (Opus). User asked why the campaign runs on so few CPUs vs. a past project that "used all resources." Delegated read-only SLURM fact-gathering to a sonnet employee (no python/srun/sbatch — `sacctmgr`/`squeue`/`scontrol`/`sacct` only).
+
+**Facts (extracted, verbatim):**
+- Account cap (`chachemv` assoc): **`GrpTRES cpu=32`** (also `GrpCPUs=32`). No QOS-level cap (`normal`/`gcs` GrpTRES empty).
+- CPUs per task: **residential (1126073) = 8 cores/task**; office (1126074) = 4 cores/task.
+- Currently running: 4 residential tasks × 8 = **32 cores = 100% of the account cap.** Office 0 running.
+- Pending reason `AssocGrpCpuLimit` = this 32-core account ceiling (NOT cluster saturation).
+- State counts: **1126073 → 131 COMPLETED / 4 RUNNING / 33 PENDING** (sacct collapses the pending array-range to one row: "PENDING 1"); 1126074 → all PENDING.
+
+**Conclusion (no action taken):** We are already saturating the full 32-core account quota — it only *looks* like 4 tasks because each residential task is 8-wide (internal 50-MC parallelism). The past project likely used 1-core tasks → 32 concurrent, same total cores. Switching to 1 core/task would NOT raise throughput (same 32 core-hours; each task just 8× slower). The only real lever is asking `rt-ex-hpc@encs` to raise the 32-CPU cap — and that would NOT be applied to this campaign (mandated run-once; already 78% through residential). **Decision: leave the campaign exactly as-is.** Offered the user to request a higher cap for *future* campaigns only.
+
+**Progress note:** residential advanced 116→131 COMPLETED since the prior entry. Monitor remains armed.
