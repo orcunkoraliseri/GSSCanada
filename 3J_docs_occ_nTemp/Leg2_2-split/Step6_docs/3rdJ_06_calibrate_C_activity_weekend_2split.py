@@ -414,9 +414,25 @@ def main() -> None:
     out.loc[we_mask, HOM] = hom_we_smooth
     print(f"    Min-dwell: {n_md_changed:,} weekend hom30 slots changed", flush=True)
 
+    # Mutex resolve: wrk30 is authoritative (asserted byte-identical below) — a person
+    # cannot be home while at work. apply_min_dwell smooths hom30 with no knowledge of
+    # wrk30 and can re-raise hom30 on a wrk30==1 weekend slot; clear those conflicts here.
+    hom_we2 = out.loc[we_mask, HOM].values
+    wrk_we2 = out.loc[we_mask, WRK].values
+    conflict_we = (hom_we2 == 1) & (wrk_we2 == 1)
+    n_mx = int(conflict_we.sum())
+    if n_mx:
+        hom_we2[conflict_we] = 0
+        out.loc[we_mask, HOM] = hom_we2
+    print(f"    Mutex resolve: {n_mx:,} weekend hom30=1 & wrk30=1 conflicts cleared (hom30->0)", flush=True)
+
     # ── Stage 1 integrity checks ──────────────────────────────────────────────
     assert (out[WRK].values == wrk_orig).all(), "INTEGRITY FAIL: wrk30 modified in Stage 1!"
     print("  [OK] wrk30 untouched (Stage 1 integrity verified)", flush=True)
+
+    n_conflict_all = int(((out[HOM].values == 1) & (out[WRK].values == 1)).sum())
+    assert n_conflict_all == 0, f"INTEGRITY FAIL: {n_conflict_all} hom30&wrk30 mutex conflicts remain!"
+    print("  [OK] Mutual exclusion enforced (0 hom30 & wrk30 conflicts)", flush=True)
 
     wd_hom_after1 = out.loc[wd_mask_orig, HOM].values
     assert (wd_hom_after1 == hom_wd_orig).all(), "INTEGRITY FAIL: weekday hom30 modified in Stage 1!"

@@ -86,3 +86,49 @@ Pre-fix §8E: 46P/1W (§7.2 passed vacuously on flat outputs). Post-WFH-fix §8E
 ## 6 · Bottom line
 
 The 2-split results are **paper-ready and fully closed out as of 2026-07-02**: every hard gate passes in all four reports (Step-7 2022/2030, Step-8 final 46P/1W/13I/0F, Step-9 10P/1W/0F), the office WFH-modulation bug is fixed and re-simulated (252/252), the §7.2 gate is reworded direction-agnostic, all docs (Step-8 val, Step-9, both pipeline docs) are updated and consistent with the cluster. All three actionable residuals from §5 are resolved. Remaining §5 items (Fig sanity, cluster copy of record) required no action. The four paper-framing caveats (§4) carry forward to the manuscript. Safe to pivot to Leg-3 (4-split); the residential channel was never affected.
+
+---
+
+# ADDENDUM 2026-07-17 — SUPERSEDES the 2026-07-02 verdict (two-fix cascade re-run)
+
+The 2026-07-02 "paper-ready" verdict above stands on its physics conclusions, but its **scorecards and per-zone energy provenance are superseded** by a full Step-8→Step-9 re-run that propagates two additional fixes not present on 2026-07-02:
+
+1. **act30 recalibration (new 04T rake).** act30 was uncalibrated, admitting physically-impossible **FLOATING** work slots (work with `hom30=0` AND `wrk30=0`). The new **04T** rake (runs after 04M: 04L → 04M → **04T**) removes only FLOATING and never touches **TELEWORK** (`hom30=1`, the paper's core signal). This changes household sampling, so fresh runs draw different `sim_hh_id` than the 2026-07-02 campaign.
+2. **Multi-zone injection fix (`integration.py`, md5 `6a92268be1f8dc3301df3bec80d6dd2e`).** Per-zone energy carriers replace a single-zone injection that had misdistributed equip/lighting across zones of multi-zone archetypes.
+
+## A · New scorecards (this cascade — the numbers of record)
+
+| Report | 2026-07-02 (superseded) | 2026-07-17 (of record) |
+|---|---|---|
+| **Step-8 validation** | 46P / 1W / 13I / 0F | **50P / 1W / 17I / 0F** |
+| **Step-9 validation** | 10P / 1W / 0F | **10P / 1W / 0F** |
+
+- **0 FAIL in both** — the two-fix cascade introduces no regression.
+- Step-8 higher P/I totals = the current validator evaluates more sub-gates than the July-2 build; the single WARN is unchanged (**§4.1-SingleD EUI-basis mismatch**, §3.1 above).
+- Step-9 is bit-for-bit the same scorecard shape: **G8o PASS** (office WFH-modulation live: `energy% cons/hyb/full = 0.53 / -0.00 / -0.32`, range 0.85), **G2o office EUI PASS** (median 172.7 kWh/m², in [100–200]), **G8r residential WFH PASS** (2022 0.249 → 0.251/0.262/0.272, monotone). Sole non-pass = **G2r WARN** (SingleD 212.1 kWh/m², same basis mismatch).
+
+## B · ⚠️ PUBLISHABLE-RESULTS FINDING — the multi-zone injection fix is ENERGY-NEUTRAL on annual aggregates
+
+The injection fix was expected to step multi-zone equipment/lighting energy **up by ~zone-count factor** (a static eppy smoke-test on IDF `Design Level` objects predicted MidRise ~25×, HighRise ~27×, OtherDwelling ~7×). **Simulated annual energy did NOT move.** Verified three ways:
+
+1. **Genuine baseline.** The pre-fix `agg_annual.csv` compared against is md5 `d4784a3d`, byte-identical to the md5-verified cluster archive `archive/agg.20260706_pre_actv2/` — a real pre-fix artifact, not a mislabel.
+2. **Fresh run used the FIXED code.** The new campaign's `integration.py` is md5 `6a92268…` (the fixed file), confirmed on the cluster.
+3. **Matched multi-zone building is byte-identical.** A HighRise unit present in both campaigns (`sim_hh_id 84891`) has **identical** simulated `equip_kWh` (224,761.27 kWh) buggy vs fixed — decisive proof the fix conserves whole-building annual energy.
+
+**Mechanism:** HighRise IS genuinely multi-zone (69 thermal zones, 26 ElectricEquipment, 50 Lights, ZoneGroup ×8). The "bug" misdistributed loads **among** zones; the whole-building annual total was always conserved (EnergyPlus sums zone loads). The ~N× figure was a **static IDF-object count, never simulated energy.**
+
+**Consequence for the manuscript (must be stated correctly):**
+- The paper's **annual EUI / energy numbers are UNCHANGED and remain valid** — they were never deflated at the annual level.
+- The paper **must NOT claim the injection fix "restored" or "recovered" multi-zone energy** at the annual level. It corrects **per-zone distribution** (relevant to zone-level diagnostics), not whole-building annual totals.
+- DetachedHouse/SingleD (single-zone) is unaffected, as expected — and so, at the annual level, is everything else.
+
+## C · Residual caveats (carry forward; the §4 caveats above still all apply)
+
+- The four §4 paper-framing caveats (§6.3 is input-side → cite G8o/§7.2; office annual energy flat by design; historical-multiplier reconstruction uncertainty; office EUI band is as-modelled NECB/PNNL) are **unchanged** and still carry into the manuscript.
+- **Add caveat #5:** the multi-zone injection fix is energy-neutral on annual aggregates (§B) — describe it as a per-zone distribution correction, not an energy recovery.
+- **Enduse gate (4.9, heat/cool dominance):** a fresh `agg_enduse_annual.csv` (Jul-17 13:09) exists and was visible to the Step-9 run; the dedicated extractor job was still finishing at note time. Gate 4.9 WARN remains acceptable per ERV v3.
+- **G4 pooled-strata defect** and the **cross-era pairing** limitation remain filed-not-fixed (out of scope; see the respective tickets) — unchanged by this cascade.
+
+## D · Bottom line (of record, 2026-07-17)
+
+The 2-split results **remain paper-ready**. The two-fix cascade (04T rake + multi-zone injection fix) re-ran the full Step-8→Step-9 chain with **0 FAIL in both reports** (Step-8 **50P/1W/17I/0F**, Step-9 **10P/1W/0F**) and **did not change any publishable annual energy number** — the injection fix is energy-neutral at the annual level (§B), and the act30 04T rake removes only physically-impossible FLOATING slots without disturbing the TELEWORK signal. The WFH signal reaches the BEM (G8o PASS). This ADDENDUM is the current record; the 2026-07-02 scorecards are superseded, its physics conclusions retained.

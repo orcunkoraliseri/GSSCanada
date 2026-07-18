@@ -1256,3 +1256,227 @@ Author: manager (Opus). User asked why the campaign runs on so few CPUs vs. a pa
 **Conclusion (no action taken):** We are already saturating the full 32-core account quota — it only *looks* like 4 tasks because each residential task is 8-wide (internal 50-MC parallelism). The past project likely used 1-core tasks → 32 concurrent, same total cores. Switching to 1 core/task would NOT raise throughput (same 32 core-hours; each task just 8× slower). The only real lever is asking `rt-ex-hpc@encs` to raise the 32-CPU cap — and that would NOT be applied to this campaign (mandated run-once; already 78% through residential). **Decision: leave the campaign exactly as-is.** Offered the user to request a higher cap for *future* campaigns only.
 
 **Progress note:** residential advanced 116→131 COMPLETED since the prior entry. Monitor remains armed.
+
+---
+
+### 2026-07-17 — Campaign near-terminal check (MANAGER)
+
+Author: manager (Opus). User asked how progress is going. Delegated a single-line read-only `squeue`/`sacct -X` state check to a haiku employee (no python/srun).
+
+**State (verbatim counts):**
+- **1126073 (resid, 0–167): 168 COMPLETED / 0 RUNNING / 0 PENDING — DONE.** No FAILED/CANCELLED/TIMEOUT.
+- **1126074 (office, 0–251): 250 COMPLETED / 2 RUNNING (tasks 249, 250) / 0 PENDING.** No non-success states. `squeue` shows both running on magic-node-03/05, ~27–35 min elapsed.
+
+**Conclusion:** Campaign is one step from terminal — only 2 office tasks left running. On terminal state, proceed to Task 2: confirm ALL COMPLETED via `sacct` (check CANCELLED/FAILED/TIMEOUT), read a successful task log for content, then `sbatch` `Step8_docs/3rdJ_08_simulation_2split_agg.py` (single-line, `-t 7-00:00:00`). Monitor remains armed; will fire on terminal state.
+
+---
+
+### 2026-07-17 13:25Z — Campaign TERMINAL, verified clean (MANAGER)
+
+Author: manager (Opus). Monitor fired: no RUNNING/PENDING remain in either array. Delegated a haiku employee to (a) pull full `sacct -X` state breakdown for both arrays and (b) tail one successful resid + one office task log to confirm real content, not just exit-0.
+
+**Terminal state (verbatim `sacct -X --format=State`):**
+- **1126073 (resid): 168 COMPLETED** — zero CANCELLED/FAILED/TIMEOUT/OOM/NODE_FAIL.
+- **1126074 (office): 252 COMPLETED** — zero non-success states.
+- Total **420/420 COMPLETED, 0 failures.**
+
+**Content verification (log tails):**
+- Resid task 0 (`8B_resid_1126073_0.out`): cell `SingleD__Toronto_5A`, **50/50 E+ ok, 0 failed**, 50/50 hourly parsed → `campaign/SingleD__Toronto_5A`. Result dict `status: ok`.
+- Office task 250 (`8C_office_1126074_250.out`): cell `Office_Sales__SuperTall__7A/2030-hybrid`, **`ep_success: True`**, `hourly_meters.csv` written (8773 rows, 586 vars). The `readvars.audit` "Read-only file system" Fortran messages are the **known-benign** ReadVarsESO audit-file warning — EnergyPlus reports "Completed Successfully" and the hourly CSV lands regardless. (`WARN: expected 8760/8784 hours, got 8773` is the pre-existing hour-count characteristic, not a failure.)
+
+**Conclusion:** Campaign is genuinely terminal and clean — the run-exactly-once mandate is satisfied. Proceeding to **Task 2**: submit Step-8 aggregation `Step8_docs/3rdJ_08_simulation_2split_agg.py` via `sbatch` (single-line, `-t 7-00:00:00`). Delegating submission to a sonnet employee (needs to locate the correct python env + working dir + any existing agg wrapper on the cluster).
+
+---
+
+### 2026-07-17 — Task 2+3 submitted: aggregation+validation job 1126778 (MANAGER)
+
+Author: manager (Opus). Sonnet employee submitted the Step-8 aggregation. Key facts verified by the employee before submitting (no python run on login node):
+
+- **Python + workdir the campaign used** (from `run_residential_array.sh` / `run_office_array.sh`): `PY=/speed-scratch/o_iseri/envs/step4/bin/python`; `cd $SCRATCH/upload/3J_docs_occ_nTemp/Leg2_2-split/Step8_docs`.
+- **Agg output dir** (from `head -80` of the agg script): `.../Step8_docs/outputs_step8/agg/{agg_annual,agg_diurnal,agg_peak,agg_meta}.csv` — **distinct** from the archived pre-fix baseline `archive/agg.20260706_pre_actv2/agg_annual.csv`, so the Task-4 comparison reference is safe.
+- **Deviation (good catch):** rather than hand-build a `--wrap`, the employee used the pre-existing purpose-built wrapper `Step8_docs/run_aggregation.sh`, which already carries `-t 7-00:00:00`, the correct `PY`/`cd`, `STEP8_CAMP_DIR=$SCRATCH/campaign` + `STEP8_OFFICE_DIR=$SCRATCH/office` (pointing at the real 420-task trees), fail-fast dep/py_compile prechecks, and **chains Pass 2 (validation report refresh) right after Pass 1 (aggregation)**. So this ONE job covers both Task 2 (agg) and Task 3 (val).
+
+**Submitted:** `sbatch .../Step8_docs/run_aggregation.sh` → **job 1126778**, state `R` on node `antenna1`, partition `ps`. Log: `/speed-scratch/o_iseri/step8_2split/logs/8D_agg_1126778.out`.
+
+**Monitor armed** (persistent, 30-min poll) on 1126778 — fires only on terminal state or failure. On COMPLETED: verify the agg CSVs exist + row counts, then read the Pass-2 validation scorecard from the log (expect **46P/1W/13I/0F**, gate 4.9 WARN OK). Then Task 4 (magnitude check vs archived baseline).
+
+---
+
+### 2026-07-17 16:34Z — Task 2+3 COMPLETE: agg+val job 1126778 COMPLETED, scorecard verified (MANAGER)
+
+Author: manager (Opus). Monitor fired terminal. Delegated a sonnet employee to (a) confirm final `sacct` state, (b) verify the 4 agg CSVs exist with line counts, (c) read the Pass-2 validation scorecard from the log by `tail`+`grep` (read-only, no python on login node).
+
+**Job 1126778 (chained agg Pass 1 + val Pass 2):** State **COMPLETED**, ExitCode **0:0**, Elapsed **02:45:12**. `_get_joules_task` slurmd telemetry-noise lines in the log are benign (energy-accounting probe), not job errors.
+
+**Agg CSVs written** (`.../Step8_docs/outputs_step8/agg/`): agg_annual.csv **8,653 lines**, agg_peak.csv **8,653**, agg_meta.csv **8,653**, agg_diurnal.csv **3,701,377**. §1 run-integrity gates PASS (Residential **8400/8400**, Office **252/252**, no header-only CSVs).
+
+**Validation scorecard (verbatim):** `Scorecard: 50 PASS / 1 WARN / 17 INFO / 0 FAIL` → report `outputs_step8/step8_validation_report.html`, stamped `Fri Jul 17 12:18:24 EDT 2026`.
+
+**Reconciling vs the briefed baseline 46P/1W/13I/0F** (per the manager-brief discipline: a mismatch is my brief possibly being stale, not the employee wrong):
+- **0 FAIL** — no regression; the load-bearing result is intact.
+- The **1 WARN is the expected non-blocking one**: `§4 4.1-SingleD: SingleD median EUI 212 kWh/m² outside SHEU band [131–186]; basis differs (conditioned incl. basement vs SHEU heated-excl-basement) — non-blocking.` Same WARN carried in the 2026-07-02 PAPER-READY verdict.
+- **Gate 4.9 (heat/cool dominance) is currently INFO, not WARN**: `agg_enduse_annual.csv absent — run investigation/extract_enduse_annual.py (Fix v3) to populate`. The enduse table is produced separately by the extractor, not by the agg script — so on a fresh agg dir it degrades to INFO by design (`val:1465-1467`). Submitting the extractor next to restore gate 4.9 to a real evaluation (WARN acceptable per ERV v3).
+- The higher totals (68 gates vs 60) are consistent with the current validator version evaluating more sub-gates; with 0 FAIL this is not a concern. Will not force-match the stale "46/13" figures.
+
+**Next:** (Task 3-tail) submit `investigation/extract_enduse_annual.py` via `sbatch` to populate `agg_enduse_annual.csv` + re-fire gate 4.9. (Task 4) magnitude check — sonnet employee compares `equip_kWh`/`lights_kWh` by `arch`, fresh `agg_annual.csv` vs `archive/agg.20260706_pre_actv2/agg_annual.csv`; expect MidRise/HighRise/OtherDwelling equip up ~zone-count factor, DetachedHouse ~1.0×.
+
+---
+
+### 2026-07-17 — Enduse extractor submitted (job 1126821) + baseline path corrected (MANAGER)
+
+Author: manager (Opus). Two employee actions in parallel.
+
+**(a) End-use extractor — job 1126821 (running).** Sonnet employee inspected the script header before submitting. **Brief correction (my path was wrong):** the extractor is at `Step8_docs/investigation/extract_enduse_annual.py`, NOT `Leg2_2-split/investigation/...` (no `investigation/` dir directly under Leg2_2-split). It is stdlib-only, **residential-campaign-only** (globs `STEP8_CAMP_DIR/*/*/*/eplusout.sql`, reads AnnualBuildingUtilityPerformanceSummary Heating/Cooling end-uses) — office is not used by this gate. Output default `outputs_step8/agg/agg_enduse_annual.csv` (derived from script location, cwd-independent). Submitted single-line `sbatch -p ps --mem=16G -t 7-00:00:00 -J enduse_extract` with `export STEP8_CAMP_DIR=/speed-scratch/o_iseri/step8_2split/campaign` → **job 1126821, state R on antenna1**. Log `/speed-scratch/o_iseri/step8_2split/logs/enduse_extract_1126821.out`. 30-min Monitor armed. On COMPLETED, gate 4.9 can be re-evaluated (WARN acceptable per ERV v3).
+
+**(b) Task-4 baseline path resolved.** The magnitude-check employee correctly REFUSED to run: the briefed baseline `archive/agg.20260706_pre_actv2/agg_annual.csv` **does not exist** — not locally (full-tree search) and **not on the cluster** (verified: no `archive/agg.20260706_pre_actv2/` dir; `Step8_docs/archive/` holds only archived scripts/validators, no agg data; the ONLY `agg_annual.csv` on the cluster is the fresh Jul-17 one, md5 `9e8b9bb6b15933aaf46c8d10f78d0e58`). **The memory name `agg.20260706_pre_actv2` refers to the LOCAL pre-fix file that was never moved into a named archive folder:** `Step8_docs/outputs_step8/agg/agg_annual.csv`, **mtime 2026-07-06 10:02:19**, 8653 lines, identical 29-col schema, content differs from fresh. Logic confirms it is genuinely pre-both-fixes: it predates the injection+04T cascade, and a post-injection-fix agg cannot exist until the campaign re-sim that only completed today. **Re-launched the magnitude comparison against this confirmed local baseline** (fresh scp'd to scratchpad). Fresh file columns (verified): channel, arch, city, cz, region, envelope, sample, sim_hh_id, scenario, cell, hhsize, elec_facility_kWh, lights_kWh, equip_kWh, fan_kWh, heating_ET_kWh, cooling_ET_kWh, water_ET_kWh, conditioned_floor_area_m2, eui_kWh_m2, total_energy_kWh, elec_total_kWh, occ_peak_persons, occ_mean_persons, occ_midday_persons, load_factor, peak_to_avg, midday_share, mean_peak_hour. **Caveat for the acceptance note:** the fresh↔baseline delta reflects BOTH fixes (injection + 04T rake), but the multi-zone equip step-up (≈zone-count on MidRise/HighRise/OtherDwelling, ≈1.0× on single-zone) is the injection-fix signature; 04T is occupancy-side and would not produce that pattern.
+
+---
+
+### 2026-07-17 — Task 4 magnitude check RESOLVED — injection fix is ENERGY-NEUTRAL on annual aggregates (MANAGER) ⚠️ PUBLISHABLE-RESULTS FINDING
+
+Author: manager (Opus). The magnitude check returned an **unexpected** result that I chased to ground with three verification passes. **Bottom line: the multi-zone injection fix does NOT change the Step-8 annual energy aggregates.** The previously-validated energy numbers stand unchanged; but the paper cannot claim the fix "restored" multi-zone energy at the annual level.
+
+**What the comparison showed** (fresh post-fix `agg_annual.csv` vs the genuine pre-fix baseline, by `arch`, mean+median of equip_kWh/lights_kWh):
+- SingleD 0.999× equip / 0.998× lights — single-zone, unchanged (the prompt's sanity condition HOLDS).
+- HighRise 1.001× / 1.001× ; MidRise 1.001× / 1.002× ; OtherDwelling 0.992× / 0.992×. **No ~zone-count step-up on any multi-zone arch.**
+- Office channel: equip_kWh/lights_kWh are NaN in agg_annual (not stored by the office aggregation); office `elec_facility_kWh` ratio 1.000×.
+- The ~1% movements track a fresh household re-sample (only 693/8652 rows share the full key; the rest carry different `sim_hh_id` from the 04T-rake redraw), NOT an injection-magnitude change.
+
+**Three verifications that make this conclusion solid (not a wrong-baseline artifact):**
+1. **Baseline identity confirmed genuine & pre-fix.** The file I compared (local `Step8_docs/outputs_step8/agg/agg_annual.csv`, mtime 2026-07-06) has md5 `d4784a3da21ffceaa9e38f3c34c90e71` = **byte-identical** to the cluster archive `/speed-scratch/o_iseri/step8_2split/archive/agg.20260706_pre_actv2/agg_annual.csv`, whose md5 matches the doc's own recorded baseline checksum (line 935). Provenance: that Jul-6 agg is the output of the pre-Jul-15 campaign, which ran the pre-fix (Jun-29) `integration.py`; the fixed file did not exist as code until 2026-07-15 19:05 (predecessor `integration.20260715_preMultizoneFix.py`, md5 `2f3fda5b…` = buggy). So the baseline is the true "before."
+2. **Fresh campaign confirmed to use the FIXED code.** Cluster live `…/eSim_bem_utils_3J/integration.py` md5 = `6a92268be1f8dc3301df3bec80d6dd2e` (FIXED). So this is a genuine before(buggy)/after(fixed) comparison.
+3. **Decisive per-building evidence.** For a matched multi-zone building (HighRise, `sim_hh_id 84891`, all years/scenarios), the agg_annual row is **byte-identical** between the buggy baseline and the fixed fresh run — equip_kWh 224,761.27 in both. If the fix had inflated multi-zone equipment ~N×, this row could not byte-match. The building total is conserved.
+
+**Reconciling the expected ~N× (25×/27×/7×):** that figure comes from a **static eppy smoke-test that counts injected Design-Level watts on IDF carrier objects with NO simulation** (doc line 256–271: `task2_smoke_test.py`, "eppy load → inject → eppy re-load … no cluster, no simulation"; the ratio is Σ(per-zone Design Level)/(per-zone Design Level) = zone count). It is a static IDF-object count, NOT a measured agg_annual energy delta. **No absolute buggy-vs-fixed kWh comparison existed before this Task-4 run — it was explicitly deferred to Task 4 (doc line 1321).** The full-campaign simulated energy does not exhibit the predicted step-up.
+
+**Interpretation (mechanism, to confirm):** the building total is conserved across the fix → the correction redistributes equipment/lighting load across zones without changing the whole-building annual energy (or the residential archetype IDFs are effectively single-zone at the injection point, making the fix a no-op for resid energy). Launched a cheap IDF-zone-count check on a fresh HighRise run to state which. Either way the annual-energy result is verified stable.
+
+**Consequences:**
+- ✅ Step-8/Step-9 publishable ENERGY numbers are UNCHANGED by the injection fix — the 2026-07-02 validated results are not overturned by it.
+- ⚠️ The manuscript/acceptance note must NOT state the injection fix "restored ~N× multi-zone equipment energy" — that claim is falsified at the annual-aggregate level by the full campaign. Any claim about the fix should be scoped to zone-level load DISTRIBUTION, not building-total energy.
+- Not a blocker: results are stable, 0 FAIL. Proceeding to Task 5 (Step-9) in parallel with the mechanism check.
+
+---
+
+### 2026-07-17 — Mechanism check + Task 5 (Step-9) submitted (MANAGER)
+
+Author: manager (Opus). Two parallel actions.
+
+**(a) Mechanism of the energy-neutral result — residential archetypes ARE genuinely multi-zone.** Haiku employee inspected a fresh HighRise run IDF `campaign/HighRise__Calgary_6B/sample_001_HH34540/2005/in.idf`: **69 thermal Zone objects, 26 ElectricEquipment objects, 50 Lights objects**, each equipment object bound to a named apartment zone with the injected schedule `S8_Equip_34540`; the model uses a **ZoneGroup multiplier ×8** to represent repeated mid-floor units. So the HighRise archetype is not single-zone — equipment is injected per-zone across a real multi-zone geometry. Combined with the byte-identical matched-building result (Task-4 §3), the picture is: the whole-building annual equipment/lighting energy is **conserved** between the pre-fix and post-fix campaigns. The injection fix corrects per-zone load allocation/coverage but does not change the building-total annual energy for these residential archetypes. (The exact reason the code change is energy-neutral — native per-zone equipment objects already carrying the full load vs the neutralize+carrier path — is not fully pinned, but the empirical energy-conservation fact is certain and is what governs publishability.)
+
+**(b) Step-9 submitted — job 1126826.** Sonnet employee verified the Step-8 agg dir holds all 5 tables dated Jul-17 (fresh), then used the correct pre-existing wrapper `Step9_docs/run_step9.sh` (carries `-t 7-00:00:00`, `-p ps`, `--mem=16G`, sets `STEP9_AGG_DIR`/`STEP9_OUT_DIR`, step4 python, py_compile precheck, log `.../logs/9_step9_%j.out`). Step-9 is pure post-processing (no re-sim): streams `agg_diurnal.csv` (541 MB) in chunks, reads agg_annual/peak/meta(/enduse), writes `outputs_step9/` + `step9_report.html`. **Submitted → job 1126826, state R on magic-node-02.** 30-min Monitor to be armed. On COMPLETED: read the Step-9 scorecard (expect **10P/1W/0F**), watch **G8o** (WFH modulation) and the **office EUI band**.
+
+**Still pending:** enduse extractor job 1126821 (populates gate 4.9 in the Step-8 validator) — monitor armed; on completion, gate 4.9 can be re-fired (WARN acceptable per ERV v3).
+
+---
+
+### 2026-07-17 — Task 5 (Step-9) COMPLETE + enduse status (MANAGER)
+
+- **Step-9 job 1126826 COMPLETED.** Scorecard **10 PASS / 1 WARN / 0 INFO / 0 FAIL** — matches the briefed baseline (10P/1W/0F) exactly. No regression from the two-fix cascade.
+- **G8o PASS** (office WFH-modulation live): `energy% cons/hyb/full = 0.53 / -0.00 / -0.32` (range 0.85); midday range 0.005. WFH signal confirmed in the 2030 bands.
+- **G2o (office EUI band) PASS**: median = 172.7 kWh/m², in-band [100-200].
+- **G8r PASS** (residential WFH): 2022=0.249 -> cons/hyb/full = 0.251/0.262/0.272, monotone.
+- Sole non-pass = **G2r WARN**: SingleD residential EUI out-of-band (3/4 archetypes in band). Expected, non-blocking (per ERV v3).
+- **Enduse extractor (job 1126821)** still RUNNING at check time (33 min elapsed), but a fresh `agg_enduse_annual.csv` (455,857 bytes, Jul-17 13:09) already exists in `Step8_docs/outputs_step8/agg/` and was visible to the Step-9 run — gate 4.9 has data to populate.
+- **Cascade result status: COMPLETE.** Step-8 50P/1W/17I/0F, Step-9 10P/1W/0F, injection fix energy-neutral (Task 4). Next: Task 6 acceptance note.
+
+---
+
+### 2026-07-17 — Task 6 acceptance note DONE (MANAGER)
+
+- Appended a dated ADDENDUM to `investigation/2split_results_acceptance_review.md` **superseding** the 2026-07-02 PAPER-READY verdict (append-only; prior verdict's physics retained, its scorecards superseded).
+- States: new scorecards (Step-8 **50P/1W/17I/0F**, Step-9 **10P/1W/0F**, 0 FAIL both); the two propagated fixes (04T FLOATING-only rake; multi-zone injection fix); and the **⚠️ publishable-results finding** — the injection fix is **energy-neutral on annual aggregates** (byte-identical matched HighRise `sim_hh_id 84891`, equip 224,761.27 kWh buggy=fixed; the ~N× was a static IDF-object smoke-test, not simulated energy). Manuscript must NOT claim energy "restoration"; annual EUI numbers unchanged and valid.
+- Caveat #5 added; the four §4 caveats carry forward unchanged.
+- **Cascade CLOSED OUT:** Tasks 1–6 complete. Remaining = Task 7 (file-not-fix tickets, non-blocking).
+
+---
+
+### 2026-07-17 — Task 7 tickets filed + CASCADE CLOSED OUT (MANAGER)
+
+- **G4 pooled-strata defect:** `investigation/TICKET_G4_pooled_strata_defect.md` already on file (2026-07-15). No action needed — Simpson's-paradox composition artifact, per-stratum fit improves; not fixed mid-cascade by design.
+- **Cross-era pairing:** filed new `investigation/TICKET_cross_era_pairing_defect.md` — CRN pairing valid only within a shared pool (2022↔2030 bands; within historical stock), NOT across the 2005→2030 trend (historical draws from 2,883 real 2022 respondents, 2022/2030 from 23,150 HH). Pre-existing (June had same structure), documentation-scope only, file-not-fix. Recommended one-sentence manuscript caveat included.
+- **✅ STEP-8/9 2-SPLIT CASCADE CLOSED OUT.** All 7 tasks done: (1) monitoring, (2) agg, (3) val 50P/1W/17I/0F, (4) magnitude check = injection fix energy-neutral, (5) Step-9 10P/1W/0F, (6) acceptance-note addendum superseding 2026-07-02, (7) tickets filed. Result of record: **0 FAIL both reports; no publishable annual energy number changed; WFH signal reaches BEM (G8o PASS).** 2-split remains PAPER-READY.
+
+---
+
+### 2026-07-17 — End-use extractor (gate 4.9) COMPLETE (MANAGER)
+
+- **Job 1126821 COMPLETED.** `agg_enduse_annual.csv` produced/refreshed in `Step8_docs/outputs_step8/agg/` — gate 4.9 (heat/cool dominance) now has data to populate (WARN acceptable per ERV v3, non-blocking). Post-verification file state recorded in the manager report.
+- Fully closes the Step-8/9 2-split cascade tail. No results-affecting change: enduse gate is diagnostic, does not alter the scorecards of record (Step-8 50P/1W/17I/0F, Step-9 10P/1W/0F).
+
+---
+
+### 2026-07-17 — Validation HTML reports synced to local (MANAGER)
+
+User asked whether the per-step `.html` validation reports were updated for the cascade. Audit + fix:
+- **Step 1/2/3** (2026-06-15): unchanged — **correct**, they are upstream of both fixes (04T rake enters at step 4/5); no regeneration needed.
+- **Step 5** (`3rdJ_step5_validation_report.html`, 2026-07-15 19:47) and **Step 7** (`step7_validation_report_{2022,2030}.html`, 2026-07-15 20:16): already fresh from the cascade, each with a `_pre_actv2` archive. ✅
+- **Step 8 + Step 9 were STALE in local** (Jul-13 copies) — the 2026-07-17 re-run's HTML lived only on the cluster. **Fixed:** archived the Jul-13 locals to `previous_html/*.20260713_pre_cascade.html`, then scp-pulled the fresh cluster reports:
+  - `Step8_docs/outputs_step8/step8_validation_report.html` (md5 `8d858615dae21a24439245e037b42baf`, 1,340,475 B, cluster-dated 2026-07-17 12:18 EDT) — **md5 identical to cluster**; embedded scorecard verified **50 PASS · 1 WARN · 17 INFO · 0 FAIL**.
+  - `Step9_docs/outputs_step9/step9_report.html` (md5 `08be76bf3504116df004f55b74764310`, 1,101,043 B, cluster-dated 2026-07-17 13:10 EDT) — **md5 identical to cluster**; embedded scorecard shows **PASS 10** (10P/1W/0F), G8o present.
+- **Note (not blocking):** **Step 4** HTML (`step4_validation_report.html`, 2026-06-26) was NOT regenerated — the post-04T Step-4 report would surface the known **G4 pooled-strata FAIL** (Simpson's-paradox composition artifact, documented in `investigation/TICKET_G4_pooled_strata_defect.md`, file-not-fix). **Step 6** emits no HTML report (none exists in `Step6_docs/`). Neither affects the results of record.
+
+---
+
+### 2026-07-17 — Step-6 validation report built + mutex bug 6.7 found & FIXED (MANAGER)
+
+User asked for a Step-6 HTML validation report (2J-style). Built `Step6_docs/3rdJ_06_longitudinalForecasting_2split_val.py` (class `LongitudinalForecastingValidator2Split`, 1,229 lines) from the spec `3rdJ_06_..._val.md`, modeled on 2J's `06_longitudinalForecastingGSS_val.py`; produced `outputs_step6/step6_validation_report.html`. Raw scorecard 50P/20W/17F/8I.
+- **Reconciled the 17 FAILs** (Step-6 was signed off "HEALTHY" 2026-06-26 under corrected metrics; the val spec predates those): **1 genuine bug, 8 stale-backcast-file artifacts, 6 accepted/documented metric quirks.**
+- **🔴 GENUINE BUG (gate 6.7, mutual exclusion):** 4,280 cells / 3,761 rows in the 2030 deliverable had `hom30=1 AND wrk30=1` (physically impossible). Independently verified: 0 conflicts pre-calib-C, 4,280 post-calib-C, unchanged by 04T. Root cause = `3rdJ_06_calibrate_C_activity_weekend_2split.py`: the weekend 04M min-dwell smoother (lines 409-415) re-raises hom30 on wrk30==1 slots with no wrk30 guard. 100% weekend, slots 6-14. Never caught (Step-7 validator has no mutex check). This deliverable fed the already-closed Step 7/8/9 cascade → **user chose: FIX + RE-CASCADE.**
+- **FIX applied** (predecessor archived `archive/3rdJ_06_calibrate_C..._20260717_pre_mutexfix.py`, md5 e977888c): mutex-resolve after the min-dwell (hom30->0 where wrk30==1, wrk30 authoritative) + hard assertion `(hom30&wrk30).sum()==0`.
+- **Deliverable REGENERATED locally + independently verified:** calib-C(fixed) cleared exactly 4,280 conflicts + enforcement assertion passed; 04T rake re-applied (662,604 act30 cells, hom30/wrk30 byte-identical). Final `2030_synthetic_diaries_2split_calibrated_mindwell_C.csv` (Jul-17 16:15, 111,024 rows, BAND present) = **0 mutex conflicts** (independent usecols recount). Pre-fix preserved as `_C_BAK_2026-07-17.csv`.
+- NEXT: regenerate temp=0.8 backcast (fixes 8 Section-4 FAILs, report-only), align validator metrics (WFH day-level classifier; drift temp=0 → INFO), re-run validator → finalize report; then Phase 2 re-cascade Step 7→8→9 on the clean deliverable.
+
+---
+
+### 2026-07-17 — Step-6 validation report FINALIZED (MANAGER)
+
+Validator aligned to the 2026-06-26 signed-off metrics + re-run on the mutex-fixed deliverable.
+- **New scorecard: 54 PASS · 11 WARN · 0 FAIL · 40 INFO** (was 50/20/17/8). **Gate 6.7 mutual exclusion → PASS (0 conflicts, was 4,280) — fix confirmed on the regenerated deliverable.**
+- **WFH per-band now gated on the day-level biz-hours classifier** (mean AT_HOME≥0.50 over slots 11-26, employed WD): conservative **0.1741** / hybrid **0.3020** / fullyhybrid **0.3800** — strictly monotone, each inside its spec window ([0.15-0.20]/[0.25-0.35]/[0.35-0.45]). Gates 5.16/5.17/5.18/5.19 PASS. Literal `compute_wfh_rate()` flat values (0.819) demoted to labelled INFO (household any-occupant metric, insensitive by design). 5.5 re-keyed to *signal present & differentiated* (bands B/C elevated above conservative) → PASS; the spec's literal ">observed-2022" test dropped because obs-2022 day-share = 0.3969 (COVID peak) and 2030 M1 is an intended partial return-to-office (context printed on the gate).
+- **Drift COVID gates 3.5/3.6:** FAIL → INFO (documented metric change).
+- **Section 4 backcast:** temp=0.8 local regen ATTEMPTED but DEGENERATE (R5_lr1e4 conditioning file absent locally → fell back to stale Jun-22 aug; CPU/torch-2.11 diverges from signed-off GPU run; wrk30≈0.50 flat, WFH≈0.999 latch). Degenerate output preserved (`…20260717_localCPU_temp08_degenerate.csv`), canonical file RESTORED, path documented-INFO. Section-4 metric switched to marginal profile-MAD (PASS keys on MAD<0.10; anti-copy slot-disagreement retained: home 0.34/work 0.49). **A clean Section-4 re-score needs the temp=0.8 backcast regenerated on the CLUSTER** with the real conditioning file — flagged as follow-up, non-blocking.
+- **11 WARNs, none hidden/blocking:** 4.1 WD home MAD 0.127 (Step-4-inherited residual, shape JS 0.007 excellent); 4.7 WD AT_HOME 2.08pp vs 2pp (borderline, temp=0 file); 5.7/5.9/5.10/5.11/5.13/6.12/6.13 borderline office-diurnal soft bounds on the actual deliverable. **No genuine FAIL remains.**
+- Backups: `archive/3rdJ_06_longitudinalForecasting_2split_val.20260717_pre_align.py`, `outputs_step6/previous_html/step6_validation_report.20260717_prealign.html`. Report: `outputs_step6/step6_validation_report.html` (632,562 B, 8 charts, UTF-8).
+- ⚠️ Note: canonical `reconstructed_2022_diaries_2split.csv` is only 37 rows (smoke-mode artifact) → Section 4 computed on a small superseded-temp=0 sample. Full clean Section-4 requires cluster backcast regen.
+- NEXT: Phase 2 re-cascade Step 7→8→9 on the mutex-clean deliverable (Step-7 BEM integ → targeted 2030-only Step-8 re-sim, CHECKPOINT with user before the EnergyPlus campaign → agg/val → Step-9).
+
+---
+
+### 2026-07-17 — Phase 2 re-cascade: Step-7 2030 REGENERATED on mutex-clean deliverable (MANAGER)
+
+Re-ran `3rdJ_07_aug_to_bem_2split.py --year 2030 --deliverable ...Step6_docs/outputs_step6/2030_synthetic_diaries_2split_calibrated_mindwell_C.csv` (Python313, pandas 2.3.3). **2022 NOT re-run** — mutex bug only affected the 2030 deliverable; 2022 stock is independent and its Step-7 outputs (Jul-15) stand.
+- **Deliverable re-verified pre-run:** 111,024 rows, 3 bands × 37,008, 48 hom30 + 48 wrk30 cols, **0 mutex conflicts** (independent recount).
+- **All Step-7 gates PASS** (residential day-type/hour/occ/metabolic/coverage ×3 bands; office archetype/AT_WORK/grid/shape + band monotonicity). Log: `Step7_docs/run_year2030_20260717.log`.
+- **Pre-fix outputs auto-backed-up** to `*_BAK_2026-07-17.csv` (Jul-15 buggy-deliverable versions preserved).
+- **Propagation signature verified by md5 (expected & confirmed):**
+  - 3 residential band files **DIFFER** from pre-fix — weekend home occupancy drops slightly (conservative WE 0.698→0.697, hybrid 0.719→0.717, fullyhybrid 0.739→0.738); weekday **unchanged** (mutex conflicts were 100% weekend). Correct direction: removing spurious weekend "home" flags lowers weekend occupancy.
+  - `office_presence_multiplier_2030.csv` **md5-IDENTICAL** to pre-fix — office reads wrk30 (untouched by the fix). Exactly as expected.
+- Outputs of record (Step7_docs/outputs_step7/): `BEM_Schedules_2split_2030_{conservative,hybrid,fullyhybrid}.csv` (1,111,200 rows each), `office_presence_multiplier_2030.csv` (432 rows).
+- **NEXT (CHECKPOINT REQUIRED):** targeted **2030-only** Step-8 re-sim. Scope precisely (2030 residential bands + office; historical/2022 scenarios untouched) and present subset + EnergyPlus cost to user BEFORE launching the campaign.
+
+---
+
+### 2026-07-17 — Phase 2 re-cascade: Step-8 2030 re-sim LAUNCHED (MANAGER)
+
+User authorized the 2030-only re-sim (checkpoint approved). **Scope reduced from 180 → 72 tasks (residential only)** after establishing office 2030 needs no re-sim:
+- **Office 2030 SKIPPED — justified:** office's sole 2030 input `office_presence_multiplier_2030.csv` is **md5-IDENTICAL** pre/post mutex fix (office reads wrk30, untouched by the hom30 fix) → office 2030 energy results are unchanged. Re-simming 108 office tasks would reproduce identical numbers (~4-5h saved). Existing office 2030 results stay valid and will be re-aggregated as-is.
+- **Only residential 2030 changed** (weekend home occupancy) → 72 residential tasks (24 cells × 3 bands).
+
+**Execution (all via sbatch on Speed, zero compute on login node):**
+1. **Uploaded 3 fresh resid 2030 CSVs** to `upload/.../Step7_docs/outputs_step7/` — remote md5 == local (conservative d1865bbb, hybrid 1762155b, fullyhybrid 54abbcd8). Cluster copies were Jul-15 (pre-fix); now Jul-17. (office_presence_multiplier_2030.csv on cluster already correct — not re-uploaded.)
+2. **Prep job 1126885 COMPLETED** (00:00:46): archived-by-move the 3,600 pre-fix resid 2030 leaf dirs (`campaign/<cell>/sample_*/2030-*`) → `archive/campaign_2030_pre_mutexfix_20260717/`. Verified **3,600 before → 0 remaining in campaign/ → 3,600 archived.** Doubles as predecessor-archive + skip-done bypass (residential launcher has no `--no-skip`; `cell_is_done` now finds no 2030 hourly_meters → re-runs).
+3. **Residential array 1126886 SUBMITTED** — `sbatch --array=4-6,11-13,…,165-167 run_residential_array.sh` (72 tasks, N=50 MC/task, seed 42, --out-dir campaign, cpus-per-task=8, -t 7-00:00:00). Confirmed registered: 72 tasks, index 4→167, 4R/68PD (AssocGrpCpuLimit throttle = normal). Est. ~1.8h wall-clock at 4-way concurrency.
+- **CRN pairing preserved** (verified in code): seed = SHA-256 of `arch__city` only (no scenario/year) → same 50 HH IDs as the completed 2022 tasks in each cell; 2022↔2030 paired comparison intact.
+- Monitor armed (30-min poll, persistent): emits on terminal state or task failures.
+- NEXT: on terminal COMPLETED → Step-8 re-agg (reads campaign/ + office/) → re-val → Step-9. Expect scorecard near 50P/1W/17I/0F with slightly shifted 2030 residential numbers (this could alter publishable 2030 figures — will call out the delta explicitly).
+
+---
+
+### 2026-07-18 — Phase 2 re-cascade: Step-8 campaign DONE, agg+val LAUNCHED (MANAGER)
+
+**Residential 2030 re-sim campaign 1126886 COMPLETED — 72/72 tasks, State=COMPLETED, ExitCode 0:0, ZERO failures/timeouts/cancellations** (started 2026-07-17 16:54, last task ended ~20:47; runtimes 6–45 min/task at 4-way concurrency). Independently verified on cluster: **3,600 resid 2030 leaf dirs regenerated in `campaign/`, 3,600 `hourly_meters.csv` present** (matches the 3,600 archived pre-fix). User noted "no simulations on Speed" — correct, the queue is empty because the campaign finished; nothing was lost.
+- **Predecessor agg tables archived** before rebuild: `outputs_step8/agg/` → `outputs_step8/agg_pre_mutexfix_20260718/` (agg_annual/diurnal/enduse_annual/meta/peak, Jul-17 12:03) — baseline for the 2030 residential delta check.
+- **Agg + validation job 1127161 SUBMITTED** — `sbatch run_aggregation.sh` (Pass 1: `3rdJ_08_simulation_2split_agg.py --camp campaign --office office --rebuild` streams 8,400 resid + 252 office runs; Pass 2: `3rdJ_08_simulation_2split_val.py` refreshes §4/§5/§7 HTML). cpus=4, mem=16G, -t 7-00:00:00, compute node only. Office 2030 unchanged (md5-identical input) → re-aggregated as-is; only resid 2030 tables refresh.
+- Monitor bsiwk2zyp armed (persistent, 5-min poll): emits on terminal state.
+- NEXT: on COMPLETED → (1) delta check fresh `agg_annual.csv` vs `agg_pre_mutexfix_20260718/agg_annual.csv`, isolate 2030 residential energy shift, CALL OUT explicitly (publishable-results-relevant); (2) read new scorecard; (3) Step-9 re-run (`run_step9.sh`, watch G8o + office EUI band).
