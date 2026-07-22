@@ -1,3 +1,4 @@
+# ⚠️ 2026-07-18: this one-off script reads the PRE-04T augmented_diaries.csv (top-level outputs_step4). The current pool is sweep/R5_raked_mindwell_actv2/. Re-point before any reuse.
 """
 Q1-Q4 gap analysis script.
 READ-ONLY.

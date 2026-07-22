@@ -1,5 +1,19 @@
 # Step 6 — Two-Channel Longitudinal Forecasting: Validation Plan (2-Split)
 
+> ## ⚠️ ADDENDUM — 2026-07-18
+>
+> This is a spec/plan doc — it holds no result rows and never picked up the 2026-07-17
+> calibration-C re-run (the mutex-driven regen described in the Step-7 doc). For the current
+> numbers, do not infer results from this doc; go to the live artifacts:
+>
+> - Scorecard of record lives in the HTML report `outputs_step6/step6_validation_report.html`
+>   = **54P / 11W / 0F / 40I**.
+> - Deliverable of record: `outputs_step6/2030_synthetic_diaries_2split_calibrated_mindwell_C.csv`
+>   (the `_C` file — 111,024 data rows, mutex = 0, MD5 `E4E8AEF4278963255040C1B27DA13E14`).
+> - Superseded backups/pre-fix `_C` variants and the non-`_C` June-26 file have been moved to
+>   `outputs_step6/archive_pre_mutexfix/` (2026-07-18 hygiene pass) to remove them as glob hazards;
+>   the file above is the sole live `_C` deliverable in `outputs_step6/`.
+
 ## Goal
 
 Validate the outputs of `3rdJ_06_longitudinalForecasting_2split.py` by verifying training

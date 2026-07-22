@@ -1,5 +1,35 @@
 # 3rdJ Step 4 Validator — Diary Augmentation (Leg-2 Two-Channel Split)
 
+> ## ⚠️ ADDENDUM — 2026-07-18 (stale headline notice, original body below intact)
+>
+> This doc's headline scorecard (68P/1W/2F, dated 2026-06-26) predates two later fixes and is
+> **superseded**. Do not cite 68P/1W/2F or the 61.12% discordance figure as current.
+>
+> - **04T conditional activity rake** (script `3rdJ_04T_act_rake_2split.py`, landed 2026-07-15)
+>   fixed **Gate A** (FLOATING excess): **+20.98 pp FAIL → +1.12 pp PASS** (threshold ≤ 2.0 pp).
+>   The old **"61.12%"** work-act-but-AT_WORK=0 figure was measured on a disjoint 2,560-row
+>   Jun-18 diagnostic sample (`augmented_diaries_SAMPLE.csv`), not the pipeline's actual
+>   128,122-syn-row R5 sweep, and must not be cited as the pre-04T baseline. The correct
+>   pre-04T baseline on the real pool (`R5_raked_mindwell/`) is **50.24%** = 26.30% legitimate
+>   TELEWORK (`hom30=1`, work-from-home — the paper's core signal, preserved not zeroed) +
+>   23.94% impossible FLOATING (`hom30=0 & wrk30=0`). See
+>   `improvement/2J_to_3J_improvement_implementation.md` Task 1 Progress Log (2026-07-15).
+> - **Gate G4** (Work peak-slot delta) was **stratified today, 2026-07-18**, per `DDAY_STRATA`
+>   to fix a Simpson's-paradox pooling defect (ticket `investigation/TICKET_G4_pooled_strata_defect.md`,
+>   filed 2026-07-15, closed 2026-07-18): the old pooled delta mixed per-stratum fit with
+>   day-type composition shift and could fail even as every stratum improved. Per-stratum work-peak
+>   deltas on the live pool are now **weekday 0.33 pp / Saturday 0.03 pp / Sunday 0.01 pp → PASS**
+>   (all ≤ the unchanged 3.0 pp threshold); the night sleep-slot delta got the same treatment.
+> - **Current scorecard of record = 73P / 3W / 1F** (live report
+>   `outputs_step4/sweep/R5_raked_mindwell_actv2/step4_validation_report.{html,txt}`,
+>   regenerated 2026-07-18 17:06; the top-level `outputs_step4/step4_validation_report.{html,txt}`
+>   copy is a stale 2026-07-17 66P/3W/2F snapshot pre-dating the G4 fix — do not read from it).
+>   The sole remaining FAIL is **OW5** (day-type ordering, weekday≥Sat≥Sun; 61.4% of respondents
+>   vs the ≥90% target) — this is an unobservable-by-design, non-blocking gate, not a regression.
+>
+> The narrative doc `3rdJ_04_augmentationGSS.md` (not this `_val.md` spec) already reflects the
+> current 04T/G4 state. This header and the body below remain as the pre-04T validation spec.
+
 ## Goal
 
 Validate the Step-4 augmented diaries for **both** occupancy channels — Residential

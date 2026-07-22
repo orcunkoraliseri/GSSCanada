@@ -1480,3 +1480,96 @@ User authorized the 2030-only re-sim (checkpoint approved). **Scope reduced from
 - **Agg + validation job 1127161 SUBMITTED** — `sbatch run_aggregation.sh` (Pass 1: `3rdJ_08_simulation_2split_agg.py --camp campaign --office office --rebuild` streams 8,400 resid + 252 office runs; Pass 2: `3rdJ_08_simulation_2split_val.py` refreshes §4/§5/§7 HTML). cpus=4, mem=16G, -t 7-00:00:00, compute node only. Office 2030 unchanged (md5-identical input) → re-aggregated as-is; only resid 2030 tables refresh.
 - Monitor bsiwk2zyp armed (persistent, 5-min poll): emits on terminal state.
 - NEXT: on COMPLETED → (1) delta check fresh `agg_annual.csv` vs `agg_pre_mutexfix_20260718/agg_annual.csv`, isolate 2030 residential energy shift, CALL OUT explicitly (publishable-results-relevant); (2) read new scorecard; (3) Step-9 re-run (`run_step9.sh`, watch G8o + office EUI band).
+
+---
+
+### 2026-07-18 — Phase 2 re-cascade: agg+val DONE, 2030 delta measured, Step-9 LAUNCHED (MANAGER)
+
+**Step-8 agg + validation job 1127161 COMPLETED** (Elapsed 02:32:59, ExitCode 0:0). All 5 agg tables rebuilt (Jul-18 11:20; `agg_enduse_annual.csv` stays Jul-17 — produced by the separate `extract_enduse_annual.py`, not this job). **Scorecard: 50 PASS / 2 WARN / 17 INFO / 0 FAIL** (vs July-17 closeout 50P/1W/17I/0F — one extra WARN, no new FAIL).
+- **2 WARN, both pre-existing documented caveats (not regressions):** §4.1-SingleD median EUI 212 outside SHEU band [131–186] (conditioned-incl-basement vs SHEU heated-excl-basement basis mismatch, non-blocking); §4.9-heat-dominance cooling/heating ratio (ERV v3 — WARN acceptable since sign-off). Key signals PASS: §6.5 cross-channel WFH signature, §7.2 office 2030 bands, §6.1 paired within-HH mid-day Δ +4.23±1.16 kW (n=1200) excludes 0.
+
+**2030 residential delta measured** (sonnet employee, jobs 1127320–1127328, all COMPLETED; fresh `agg/agg_annual.csv` vs archived `agg_pre_mutexfix_20260718/agg_annual.csv`). Two lenses:
+- **Per-household matched merge is the WRONG lens here** — ~25% of resid rows carry a different `sim_hh_id`/`hhsize` for the same (arch,city,sample,scenario) slot across ALL scenarios (incl. 2005). Root-caused: the aggregator `3rdJ_08_simulation_2split_agg.py` is **deterministic** (grep confirms NO `sample()/random/choice/seed/head/nlargest/drop_duplicates/cap`; it walks `sorted(os.listdir)` and binds `sample→sim_hh_id/hhsize` straight from each cell's `cell_manifest.csv`). The churn is **upstream** — the two campaign snapshots carry relabeled `cell_manifest.csv` per sample slot ("fresh sampling" at sim time). Benign: n=300/group preserved, aggregate stats stable.
+- **POPULATION-AGGREGATE lens (paper-robust, n=300 in BOTH files for every group):**
+  - **(A) 2030 residential:** energy deltas **small** — total_energy/EUI all **|%Δ|<1%** (worst SingleD-fullyhybrid −0.83%); only end-use topping 2% is heating **+2.91%** at MidRise-hybrid; elec/cooling −1.4%…+0.4%. Direction correct: removing impossible weekend home-occupancy → heating slightly ↑, elec/cooling slightly ↓. Occupancy means move more (occ_midday %Δ −7.5%…+11.1%) — expected for an occupancy fix. `fan_kWh` Δ=0 everywhere.
+  - **(B) Invariance:** **2022 resid, historical 2005/2010/2015, and ALL office = 0.000% energy-mean Δ on every column** — exact. Confirms energy blast radius is **2030-residential-only**. (2022 occupancy-column means shift up to ~7% from the relabeling churn, but energy unchanged → not a leak.)
+- **PUBLISHABLE-RESULTS VERDICT: 2030 residential energy/EUI figures essentially unchanged (<1% on totals); no FAIL; nothing outside 2030-resid moved.** The mutex fix is a weekend-occupancy correction with negligible annual-energy impact — the paper's 2030 headline numbers stand.
+
+**Predecessors archived** before overwrite: agg tables → `outputs_step8/agg_pre_mutexfix_20260718/`; Step-9 outputs → `Step9_docs/outputs_step9_pre_mutexfix_20260718/`.
+
+**Step-9 re-run job 1127329 SUBMITTED** (`sbatch run_step9.sh`; reads fresh agg tables → bi-channel resid/office tables + paired figures + `step9_report.html`; cpus=4, mem=16G, -t 7-00:00:00, compute node). Expect 10P/1W/0F; watching G8o (WFH modulation) + office EUI band. Monitor b00z4l8vc armed.
+- NEXT: on COMPLETED → read Step-9 scorecard (G8o + office EUI), then append the closing ADDENDUM to `investigation/2split_results_acceptance_review.md` (supersede 2026-07-17 addendum: mutex fix propagated, scorecards, 2030 delta magnitude, office/2022/historical invariance) + final Progress Log entry.
+
+---
+
+### 2026-07-18 — Phase 2 re-cascade: Step-9 DONE, mutex-fix cascade CLOSED OUT (MANAGER)
+
+**Step-9 job 1127329 COMPLETED** (Elapsed 00:00:24, ExitCode 0:0). **Scorecard: 10 PASS / 1 WARN / 0 FAIL** — identical shape to the July-17 closeout.
+- **G8o PASS** (office WFH-modulation live): office 2030 energy% vs 2022 = **+0.53 / −0.00 / −0.32** cons/hyb/full — unchanged from July-17 (office not re-simmed, as designed).
+- **G2o office EUI PASS**: median **172.7 kWh/m²**, in-band [100–200] (all three office subtypes 172.5–172.7).
+- **G8r residential WFH PASS**: 2030 energy% +1.2/+1.63/+1.94, occ +4.9/+7.2/+9.9%, midday_share 0.251→0.262→0.270 (monotone).
+- **Sole WARN = G2r** (SingleD median EUI 211.7 outside SHEU [130.6–186.1]) — same EUI-basis caveat as Step-8 §4.1; the other 3 archetypes in-band (OtherDwelling 140.0, MidRise 177.5, HighRise 143.0).
+- Predecessor Step-9 outputs archived to `Step9_docs/outputs_step9_pre_mutexfix_20260718/` before overwrite.
+
+**MUTEX-FIX CASCADE CLOSED OUT.** Full chain re-run on the mutex-clean `_C` deliverable: Step-6 report 54P/11W/0F/40I → Step-7 2030 regen (all PASS) → Step-8 resid 2030 re-sim (72/72) → agg+val **50P/2W/17I/0F** → Step-9 **10P/1W/0F**. **0 FAIL end-to-end.**
+- **Publishable-results verdict:** 2030 residential energy/EUI shifts <1% on totals (worst end-use heating +2.91% MidRise-hybrid); 2022/historical/office **exactly invariant (0.000%)**; WFH signal preserved to BEM (G8o). Paper's 2030 headline numbers stand. Full delta tables + invariance proof + closing verdict appended as **ADDENDUM 2026-07-18** to `investigation/2split_results_acceptance_review.md` (supersedes 2026-07-17 scorecards for the 2030 deliverable; caveat #6 added).
+- New session handoff written: `improvement/prompt-manager/2026-07-18.md`.
+- Non-blocking follow-ups still open (unchanged): clean Section-4 backcast re-score needs cluster temp=0.8 regen with real R5_lr1e4 conditioning; G4 pooled-strata + cross-era-pairing tickets filed-not-fixed.
+
+---
+
+### Progress Log — 2026-07-18 (manager) — FINAL-CHECK investigation prompt authored
+
+Before starting Leg-3 (4-split), user requested a full end-to-end verification pass. Authored a paste-ready manager prompt for a fresh session: `improvement/final-check/2026-07-18_full-pipeline-final-check.md`. Scope = audit-only (no re-sim): re-derive every Step 1→9 scorecard from its own artifact, verify provenance chain (live output dirs vs `.20260715_pre_actv2` / `_pre_mutexfix` archives), hash the 4 headline deliverables (`_C` 2030 diaries + 3 BEM 2030 schedules), sweep frame consistency (must be 23,150), confirm this implementation doc is fully closed (4 tasks DONE, OD-I1..I4 resolved, Progress Log ends on mutex closeout), and re-confirm caveats #5/#6 + the G4 / cross-era-pairing tickets. Deliverable = `FINAL_CHECK_REPORT_2026-07-18.md` with a GO / GO-with-caveats / NO-GO verdict for Leg-3. Session is diagnosis-only: any new defect gets a ticket + user decision, not an in-place fix.
+
+### Progress Log — 2026-07-18 (manager) — FULL-PIPELINE FINAL CHECK executed: **GO-with-caveats for Leg-3**
+
+Audit-only pass per `improvement/final-check/2026-07-18_full-pipeline-final-check.md`; deliverable written to `improvement/final-check/FINAL_CHECK_REPORT_2026-07-18.md`. 11 cheap-model employees (Haiku/Sonnet) ran every scan; manager adjudicated; nothing fixed (diagnosis-only).
+
+- **Every step re-derived from its own artifacts, 0 FAIL end-to-end.** Steps 1–3 139P/73P·1W/91P·1W. Step 4: Gate A +1.12 pp PASS re-derived from 3 independent sources; 04T pool consumed by Step 5 (`3rdJ_05_censusLinkage_2split.py:46`). Step 5: 30,273/29,538/735 re-counted from live CSVs. Step 6: `_C` = 111,024 rows, mutex re-derived = **0 conflicts**, 54P/11W/0F/40I re-parsed from HTML; **MD5 now recorded: E4E8AEF4278963255040C1B27DA13E14** (never hashed before — ledger gap closed). Step 7: 2030 schedules regen on `_C` proven from `run_year2030_20260717.log`, MD5≠BAK ×3, office multiplier MD5-identical, 23,150 HH. Step 8: cluster report Jul-18 11:42 = **50P/2W/17I/0F** (grep on artifact); **<1% delta claim re-derived** from cluster agg_annual pre/post (band deltas −0.021%/−0.079%/+0.017%; non-2030-resid invariance 100% at value level — note: `sample`/`sim_hh_id` labels churn ~40% of rows cosmetically, proven by multiset identity). Step 9: cluster CSVs re-derive 0.53/−0.00/−0.32, office 172.7, SingleD 211.7, 10P/1W/0F.
+- **Frame sweep CLEAN** (no unlabelled 23,211/144,507/144,465 anywhere live; `eSim_bem_utils_3J/main.py:74-75` already fixed to 23,150; `integration.py:17` confirmed never held a frame number). **Provenance chain fully live** (no archive reads). **BEM-schedule hashes match campaign-consumed** (L1467).
+- **Defect-grade finding S8-a/S9-a (silent local staleness):** local `outputs_step8/` (agg Jul 6–8, report Jul-17 12:18 = 50P/1W, no `agg_pre_mutexfix_20260718/`) and local `outputs_step9/` CSVs (Jul-6 → 0.54/−0.01/−0.33, SingleD 212.5) are **pre-mutex**; artifacts of record are cluster-side (Jul-18). Recommended: one scp sync (~1.1 GB, no simulation) — user decides when.
+- **Doc-closure check: FULLY CLOSED** (Tasks 1–4 DONE, OD-I1..4 resolved, Gate A evidenced twice, no dangling states).
+- **Caveats into Leg-3:** #5/#6 verified still true (re-proven quantitatively); G4 ticket non-blocking but **fix when Leg-3 forks the Step-4 validator**; cross-era ticket = one manuscript sentence; backcast re-score still open non-blocking. Hygiene: 4 stale val-doc headlines (S4-a/S5-a/S6-a/S7-a), pre-04T top-level `augmented_diaries.csv` + 2 stale one-off scripts, non-`_C` glob hazard in `outputs_step6/`, `D2030` dead-code default in `3rdJ_07_aug_to_bem_2split.py:52-54` (harden at fork).
+
+**VERDICT: GO-with-caveats — Leg-3 (4-split) may fork from this base.** No published number moves.
+
+### 2026-07-18 — G4 pooled-strata ticket CLOSED (employee)
+
+Fixed per `investigation/TICKET_G4_pooled_strata_defect.md` (full detail + numbers in that ticket's own Progress Log): the Step-4 validator's G4 "Work peak-slot delta" / night sleep-slot delta computations were pooling all `DDAY_STRATA` together, a Simpson's-paradox setup that let the 04T activity rake's per-stratum improvement (14.5/8.0/7.0 pp → 0.3/0.02/0.00 pp) get reported as a pooled FAIL. Restratified both metrics per `DDAY_STRATA` (mirroring G2's idiom), graded against the unchanged thresholds, reporting 3 stratum rows + a worst-stratum roll-up each — predecessor archived first as `3rdJ_04_augmentationGSS_2split_val.py.20260718_preG4fix`. Re-run on both pools confirms the correct direction (pre-04T worse than post-04T in all 6 strata) and that only G4's own lines moved (diffed against saved pre-fix reports); the live pool's scorecard improved from 66P/3W/2F to 73P/3W/1F (FAIL count dropped by exactly one, the sole remaining FAIL being the pre-existing, unrelated OW5). This was validator-only — no pipeline data or published numbers were touched.
+
+### 2026-07-18 — Hygiene backfill: 4 stale val-doc addenda + D2030 hardening + glob-hazard cleanup (employee)
+
+Cleared the remaining hygiene caveats from the FINAL_CHECK report (L1533: "4 stale val-doc headlines (S4-a/S5-a/S6-a/S7-a), pre-04T top-level `augmented_diaries.csv` + 2 stale one-off scripts, non-`_C` glob hazard in `outputs_step6/`, `D2030` dead-code default in `3rdJ_07_aug_to_bem_2split.py:52-54` (harden at fork)"). All edits additive/append-only per the repo's golden rule — no existing doc content deleted or rewritten.
+
+**Task A — 4 stale validation docs backfilled with dated addenda (original bodies preserved):**
+- `Step4_docs/3rdJ_04_augmentationGSS_val.md` (the file matching the task's `_2split_val.md` target — repo has no separate `_2split_val.md`; confirmed by content match on the "68P/1W/2F" headline): addendum records the 04T Gate A fix (+20.98pp FAIL → +1.12pp PASS), the superseded 61.12% figure (true pre-04T baseline 50.24% = 26.30% TELEWORK + 23.94% FLOATING), and today's G4 stratification fix. Current scorecard of record = **73P/3W/1F**, live at `outputs_step4/sweep/R5_raked_mindwell_actv2/step4_validation_report.{html,txt}` (regenerated 2026-07-18 17:06) — noted that the top-level `outputs_step4/step4_validation_report.{html,txt}` copy is a stale pre-G4-fix 66P/3W/2F snapshot and should not be read as current.
+- `Step5_docs/3rdJ_05_censusLinkage_2split_val.md`: addendum records the July-15 re-run scorecard **22P/1W/1F** (`run_val_20260715.log`) and exclusion counts of record **735 excluded / 29,538 post-exclusion** (of 30,273; frame = 23,150 HH), from `run_step5_full_20260715.log`, superseding the June-22 613/29,660 figures.
+- `Step6_docs/3rdJ_06_longitudinalForecasting_2split_val.md`: addendum flags this as a spec/plan doc with no result rows, points to the live scorecard **54P/11W/0F/40I** (`outputs_step6/step6_validation_report.html`, verified by direct read of the scorecard div) and the deliverable of record `2030_synthetic_diaries_2split_calibrated_mindwell_C.csv` (111,024 rows, MD5 `E4E8AEF4278963255040C1B27DA13E14`, re-verified against the live file today).
+- `Step7_docs/3rdJ_07_bemIntegration_2split_val.md`: appended a new Progress-Log row (table format, matching the doc's existing rows) recording the 2026-07-17 mutex-driven 2030 BEM schedule regen on the `_C` deliverable (`run_year2030_20260717.log`, ALL PASS both residential and office gates), MD5 evidence that the 3 residential schedules changed while `office_presence_multiplier_2030.csv` stayed byte-identical (office channel correctly insulated), and re-confirmed the doc's own Gate summary table (2022=22P/2I, 2030=25P/1I, 0W/0F) by direct recount of its 2022/2030 columns. Flagged as a caveat that the HTML reports (`step7_validation_report_{2022,2030}.html`) are timestamped 2026-07-15 20:16 — i.e. predate the 07-17 regen — and should be re-rendered before quoting per-check numbers post-mutex-fix.
+
+**Task B — D2030 default hardened (footgun P-a closed):**
+- Predecessor archived first: `Step7_docs/3rdJ_07_aug_to_bem_2split.py.20260718_preD2030harden`.
+- `Step7_docs/3rdJ_07_aug_to_bem_2split.py:52-54`: default changed from the non-`_C` file
+  (`2030_synthetic_diaries_2split_calibrated_mindwell.csv`) to the `_C` deliverable of record
+  (`2030_synthetic_diaries_2split_calibrated_mindwell_C.csv`), with a one-line comment
+  explaining why. No other behavior touched — `--deliverable` override path, `MIN_2030_ROWS`,
+  and everything else unchanged. Syntax-checked (`ast.parse`) after the edit.
+
+**Task C — hygiene:**
+- **C1:** created `Step6_docs/outputs_step6/archive_pre_mutexfix/` and moved 6 glob-hazard files into it (live `_C` deliverable untouched and verified in place, MD5-checked):
+  `2030_synthetic_diaries_2split_calibrated_mindwell.csv` (non-`_C`, June-26),
+  `2030_synthetic_diaries_2split_calibrated_mindwell_C.preFixBundle_2026-06-26.csv`,
+  `2030_synthetic_diaries_2split_calibrated_mindwell_C.preRake_actv2_20260715.csv`,
+  `2030_synthetic_diaries_2split_calibrated_mindwell_C_BAK_2026-06-26.csv`,
+  `2030_synthetic_diaries_2split_calibrated_mindwell_C_BAK_2026-07-15.csv`,
+  `2030_synthetic_diaries_2split_calibrated_mindwell_C_BAK_2026-07-17.csv`.
+  Other same-directory files with different stems (`2030_diaries_conservative_mindwell.csv`,
+  `2030_synthetic_diaries_2split.csv`, `2030_synthetic_diaries_2split_raw.csv`,
+  `reconstructed_2022_diaries_2split*.csv`) were left in place — they are not variants of the
+  `..._calibrated_mindwell[_C]` deliverable and were out of this task's stated scope.
+- **C2:** added the specified one-line header comment (first line of file) to
+  `Step5_docs/_gap_analysis_tmp.py` and `Step5_docs/_q1234_analysis.py`; no logic changed;
+  both syntax-checked (`ast.parse`) after the edit.
+
+**Nothing left unresolved.** Every file named in the task prompt was found, matched by content, and updated as specified; no ambiguous files were encountered.

@@ -1,0 +1,77 @@
+Step 4 (Leg-2) Augmentation Validation Report -- 2026-07-15 19:17:24
+Mode: PRODUCTION
+============================================================
+PASS: 66  WARN: 3  FAIL: 2  (93% pass rate)
+============================================================
+
+[FAIL] G4 | Work peak-slot delta: 14.85 pp
+[FAIL] OW5 | Day-type ordering wkdy>=Sat>=Sun: 61.4% of 11757 respondents
+[WARN] 1.0 | step4_training_log.csv not found -- Section 1 skipped
+[WARN] G3 | Max per-channel prevalence gap: 4.04 pp (worst: others)
+[WARN] G3 | |dprev| others: 4.04 pp (obs 7.7% / syn 3.7%)
+[PASS] G1 | Activity JS 2005 x Weekday: 0.0001
+[PASS] G1 | Activity JS 2005 x Saturday: 0.0000
+[PASS] G1 | Activity JS 2005 x Sunday: 0.0000
+[PASS] G1 | Activity JS 2010 x Weekday: 0.0001
+[PASS] G1 | Activity JS 2010 x Saturday: 0.0000
+[PASS] G1 | Activity JS 2010 x Sunday: 0.0000
+[PASS] G1 | Activity JS 2015 x Weekday: 0.0000
+[PASS] G1 | Activity JS 2015 x Saturday: 0.0000
+[PASS] G1 | Activity JS 2015 x Sunday: 0.0000
+[PASS] G1 | Activity JS 2022 x Weekday: 0.0000
+[PASS] G1 | Activity JS 2022 x Saturday: 0.0000
+[PASS] G1 | Activity JS 2022 x Sunday: 0.0001
+[PASS] G1 | Overall mean Activity JS: 0.0000
+[PASS] G2 | |dAT_HOME| 2005 x Weekday: 0.59 pp (obs 69.0% / syn 69.6%)
+[PASS] G2 | |dAT_HOME| 2005 x Saturday: 0.54 pp (obs 71.9% / syn 72.4%)
+[PASS] G2 | |dAT_HOME| 2005 x Sunday: 0.56 pp (obs 75.7% / syn 76.2%)
+[PASS] G2 | |dAT_HOME| 2010 x Weekday: 0.56 pp (obs 70.0% / syn 70.6%)
+[PASS] G2 | |dAT_HOME| 2010 x Saturday: 0.54 pp (obs 71.9% / syn 72.4%)
+[PASS] G2 | |dAT_HOME| 2010 x Sunday: 0.50 pp (obs 77.6% / syn 78.1%)
+[PASS] G2 | |dAT_HOME| 2015 x Weekday: 0.65 pp (obs 70.8% / syn 71.5%)
+[PASS] G2 | |dAT_HOME| 2015 x Saturday: 0.62 pp (obs 74.2% / syn 74.8%)
+[PASS] G2 | |dAT_HOME| 2015 x Sunday: 0.60 pp (obs 77.3% / syn 77.9%)
+[PASS] G2 | |dAT_HOME| 2022 x Weekday: 0.62 pp (obs 76.9% / syn 77.6%)
+[PASS] G2 | |dAT_HOME| 2022 x Saturday: 0.52 pp (obs 77.3% / syn 77.8%)
+[PASS] G2 | |dAT_HOME| 2022 x Sunday: 0.57 pp (obs 80.2% / syn 80.7%)
+[PASS] G4 | Transition-rate dev syn/obs: 8.4% (obs 10.43 / syn 9.56 transitions/day)
+[PASS] G4 | Night sleep-slot delta: 0.34 pp
+[PASS] G3 | |dprev| Alone: 0.72 pp (obs 35.3% / syn 34.6%)
+[PASS] G3 | |dprev| Spouse: 2.83 pp (obs 22.4% / syn 25.2%)
+[PASS] G3 | |dprev| Children: 2.02 pp (obs 6.6% / syn 4.5%)
+[PASS] G3 | |dprev| parents: 1.72 pp (obs 1.9% / syn 0.2%)
+[PASS] G3 | |dprev| otherInFAMs: 2.55 pp (obs 2.6% / syn 0.1%)
+[PASS] G3 | |dprev| otherHHs: 1.96 pp (obs 2.7% / syn 0.8%)
+[PASS] G3 | |dprev| friends: 1.06 pp (obs 4.8% / syn 3.7%)
+[PASS] G3 | |dprev| colleagues: 1.06 pp (obs 3.4% / syn 2.3%)
+[PASS] OW1 | AT_WORK presence RMS 2005 x Weekday: 0.02 pp (obs 17.3% / syn 17.2%)
+[PASS] OW1 | AT_WORK presence RMS 2005 x Saturday: 0.02 pp (obs 5.6% / syn 5.5%)
+[PASS] OW1 | AT_WORK presence RMS 2005 x Sunday: 0.01 pp (obs 4.4% / syn 4.4%)
+[PASS] OW1 | AT_WORK presence RMS 2010 x Weekday: 0.02 pp (obs 15.3% / syn 15.3%)
+[PASS] OW1 | AT_WORK presence RMS 2010 x Saturday: 0.02 pp (obs 4.1% / syn 4.1%)
+[PASS] OW1 | AT_WORK presence RMS 2010 x Sunday: 0.03 pp (obs 3.0% / syn 3.0%)
+[PASS] OW1 | AT_WORK presence RMS 2015 x Weekday: 0.01 pp (obs 15.0% / syn 15.0%)
+[PASS] OW1 | AT_WORK presence RMS 2015 x Saturday: 0.03 pp (obs 4.6% / syn 4.6%)
+[PASS] OW1 | AT_WORK presence RMS 2015 x Sunday: 0.03 pp (obs 3.8% / syn 3.7%)
+[PASS] OW1 | AT_WORK presence RMS 2022 x Weekday: 0.02 pp (obs 12.0% / syn 12.0%)
+[PASS] OW1 | AT_WORK presence RMS 2022 x Saturday: 0.00 pp (obs 5.6% / syn 5.6%)
+[PASS] OW1 | AT_WORK presence RMS 2022 x Sunday: 0.03 pp (obs 5.1% / syn 5.1%)
+[PASS] OW2 | Diurnal-shape Pearson r (weekday): 1.000
+[PASS] OW3 | Peak-timing shift (weekday): 0 slots (obs argmax 14, syn 14)
+[PASS] OW4 | Night AT_WORK rate (00:00-05:00): 1.29%
+[PASS] OW6 | Channel exclusivity hom30=1 AND wrk30=1: 0 cells (0.000%)
+[PASS] S8 | [AT_HOME] EMD(daily-presence-count): 1.413 slots
+[PASS] S8 | [AT_HOME] KS(daily-presence-count): 0.082
+[PASS] S8 | [AT_HOME] mean-curve MAE: 4.09 pp
+[PASS] S8 | [AT_HOME] ACF-MAE (lags 1-24): 0.0263
+[PASS] S8 | [AT_HOME] transitions/day: obs 2.433 / syn 2.440
+[PASS] S8 | [AT_WORK] EMD(daily-presence-count): 2.910 slots
+[PASS] S8 | [AT_WORK] KS(daily-presence-count): 0.168
+[PASS] S8 | [AT_WORK] mean-curve MAE: 6.06 pp
+[PASS] S8 | [AT_WORK] ACF-MAE (lags 1-24): 0.0101
+[PASS] S8 | [AT_WORK] transitions/day: obs 0.826 / syn 0.464
+[PASS] S8 | [Semantic] Work activity but AT_WORK=0: obs 17.4% / syn 20.7%
+[PASS] S8 | [Semantic] Sleep activity but AT_HOME=0: obs 3.4% / syn 4.6%
+[PASS] S8 | [Activity] KL(obs||syn) 14-cat: 0.0290
+[PASS] GA | FLOATING rate excess (syn-obs): +1.12 pp (obs 2.96% [12,113/409,388] / syn 4.08% [17,661/432,746]; PASS<=2.0pp, WARN<=5.0pp)
+[PASS] GB | Transition-flicker ratio syn/obs: 1.000x (obs median 2.00/day, syn 2.00/day; PASS<=1.25x, WARN<=1.5x)

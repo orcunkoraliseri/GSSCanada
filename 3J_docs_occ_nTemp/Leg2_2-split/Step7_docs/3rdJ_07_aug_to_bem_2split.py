@@ -51,7 +51,10 @@ AUG = (BASE / "3J_docs_occ_nTemp" / "Leg2_2-split"
 
 D2030 = (BASE / "3J_docs_occ_nTemp" / "Leg2_2-split"
          / "Step6_docs" / "outputs_step6"
-         / "2030_synthetic_diaries_2split_calibrated_mindwell.csv")
+         # 2026-07-18: default hardened to the "_C" file — the mutex-fixed deliverable of
+         # record (see improvement/2J_to_3J_improvement_implementation.md); the non-"_C"
+         # file is stale/mutex-contaminated and has been moved to archive_pre_mutexfix/.
+         / "2030_synthetic_diaries_2split_calibrated_mindwell_C.csv")
 
 LOOKUP = BASE / "0_Occupancy" / "processed" / "office_archetype_lookup.csv"
 

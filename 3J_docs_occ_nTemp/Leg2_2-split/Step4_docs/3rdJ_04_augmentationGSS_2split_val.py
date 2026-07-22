@@ -529,16 +529,42 @@ class AugmentationValidator2Split:
             idx = [i for i in slots if i < arr.shape[1]]
             return float(np.nanmean(arr[:, idx] == cat)) * 100
 
+        # Sleep + work slot deltas, stratified by DDAY_STRATA (mirrors G2's
+        # per-stratum idiom -- see validate_at_home above).
+        #
+        # FIX (TICKET_G4_pooled_strata_defect.md, 2026-07-18): the pooled
+        # obs_arr/syn_arr computed above mix all three day-types together, and
+        # the observed/synthetic pools do not share the same day-type
+        # composition. That makes the pooled delta a Simpson's-paradox trap --
+        # every stratum can improve while the pooled number worsens (which is
+        # exactly what happened after the 04T activity rake). Grade each
+        # DDAY_STRATA separately against the existing (untouched) thresholds,
+        # report all three rows plus a worst-stratum roll-up per ticket step 4.
         if obs_arr.shape[0] > 0:
-            d_sleep = abs(slot_rate(obs_arr, SLEEP_NIGHT_SLOTS, RAW_SLEEP_CAT)
-                          - slot_rate(syn_arr, SLEEP_NIGHT_SLOTS, RAW_SLEEP_CAT))
-            lvl = self._grade(d_sleep, self.thr["g4_slot_pp_pass"], self.thr["g4_slot_pp_warn"])
-            self._rec(lvl, "G4", f"Night sleep-slot delta: {d_sleep:.2f} pp")
-
-            d_work = abs(slot_rate(obs_arr, WORK_PEAK_SLOTS, RAW_WORK_CAT)
-                         - slot_rate(syn_arr, WORK_PEAK_SLOTS, RAW_WORK_CAT))
-            lvl = self._grade(d_work, self.thr["g4_slot_pp_pass"], self.thr["g4_slot_pp_warn"])
-            self._rec(lvl, "G4", f"Work peak-slot delta: {d_work:.2f} pp")
+            for label, slots, cat in [
+                ("Night sleep-slot delta", SLEEP_NIGHT_SLOTS, RAW_SLEEP_CAT),
+                ("Work peak-slot delta", WORK_PEAK_SLOTS, RAW_WORK_CAT),
+            ]:
+                strata_deltas = {}
+                for s in [1, 2, 3]:
+                    osub = self.obs[self.obs.get("DDAY_STRATA") == s]
+                    ssub = self.syn[self.syn.get("DDAY_STRATA") == s]
+                    o_arr_s = (osub[act_obs].to_numpy(dtype=float)
+                               if (len(osub) and act_obs) else np.zeros((0, N_SLOTS)))
+                    s_arr_s = (ssub[act_syn].to_numpy(dtype=float)
+                               if len(ssub) else np.zeros((0, N_SLOTS)))
+                    if o_arr_s.shape[0] == 0 or s_arr_s.shape[0] == 0:
+                        continue
+                    d = abs(slot_rate(o_arr_s, slots, cat) - slot_rate(s_arr_s, slots, cat))
+                    strata_deltas[s] = d
+                    lvl = self._grade(d, self.thr["g4_slot_pp_pass"], self.thr["g4_slot_pp_warn"])
+                    self._rec(lvl, "G4", f"{label} ({STRATA_LABELS[s]}): {d:.2f} pp")
+                if strata_deltas:
+                    worst_s = max(strata_deltas, key=strata_deltas.get)
+                    worst_d = strata_deltas[worst_s]
+                    lvl = self._grade(worst_d, self.thr["g4_slot_pp_pass"], self.thr["g4_slot_pp_warn"])
+                    self._rec(lvl, "G4",
+                              f"{label} (worst stratum: {STRATA_LABELS[worst_s]}): {worst_d:.2f} pp")
 
         # Heatmaps obs vs syn (weekday)
         fig, axes = plt.subplots(1, 2, figsize=(15, 5))

@@ -1,0 +1,668 @@
+# -*- coding: utf-8 -*-
+"""
+3rdJ_04E_inference_4split.py — Step 4E (Leg-3, four-channel split): Three-
+Channel Inference & CSV, with retail calibration + min-dwell + exclusivity
+projection (Deltas F/G of 3rdJ_04_augmentationGSS_4split.md, FROZEN).
+
+Ports 3rdJ_04E_inference_2split.py (Leg-2) and adds the AT_RETAIL channel
+end-to-end. Leg-2 file is READ-ONLY / template only — not imported, not
+modified. 3rdJ_04B_model_4split.py is ALSO READ-ONLY (already built /
+smoke-tested foundation) — not modified here either; see the NUCLEUS-DECODE
+note below for how Delta F's nucleus-sampling requirement is satisfied
+without touching it.
+
+For each respondent x DDAY_STRATA:
+  - DDAY_STRATA == observed -> copy observed act/home/work/retail/cop (IS_SYNTHETIC=0).
+  - else -> model AR generation (IS_SYNTHETIC=1), Deltas F/G applied in this order:
+        1. AR activity arm: temperature 0.7 + NUCLEUS p=0.9 (Delta F #1).
+           NUCLEUS-DECODE NOTE: JSeriesHybrid4Split.generate()/_arm1_generate()
+           (04B, read-only) only implements temperature-scaled multinomial
+           sampling — no top-p truncation. Rather than modify 04B (explicitly
+           out of scope), this file re-implements the identical AR loop
+           (see generate_nucleus() below) using ONLY 04B's existing PUBLIC
+           building blocks (_encode, _build_arm1_cond, arm1_decoder, act_head,
+           _arm2_fuse, the three occupancy heads, cop_head) — same BOS token,
+           causal mask, slot re-embedding as _arm1_generate(), plus a top-p
+           truncation step before the temperature-scaled multinomial draw.
+        2. Retail logit shift -ln(pos_weight) -> calibrated sigmoid (Delta C/F#3).
+           Implemented as the algebraically-equivalent probability transform
+           p_cal = p / (p + k*(1-p))  [ == sigmoid(logit(p) - ln k) ], so the
+           raw model logit never needs to be re-exposed through generate().
+        3. Exclusivity projection (Delta G #4): per-head thresholds
+           theta_home=0.50, theta_work=0.40, theta_retail=0.15; any slot with
+           >1 channel over threshold keeps only argmax_c p_c/theta_c.
+        4. Deterministic activity-based override (ported from Leg-2, extended
+           to zero retail too): work-activity slot -> wrk30=1, hom30=0,
+           ret30=0; sleep-at-night -> hom30=1, wrk30=0, ret30=0. This can only
+           ever set bits to a single winner, so it cannot reintroduce a
+           multi-channel conflict (ISR stays 0 after this step).
+        5. Minimum-dwell >= 2 slots (60 min) for WORK and RETAIL only (Delta
+           F#2) — isolated 1-slot "on" blips are merged back to 0. Applied
+           last: min-dwell only ever flips 1 -> 0, so it cannot reintroduce
+           conflicts either — post-pipeline ISR stays 0.
+
+ISR reporting (Delta G, CONTRACT):
+  - raw ISR = share of generated slots with >1 of {home_sigmoid>0.50,
+    work_sigmoid>0.40, retail_calibrated>0.15} BEFORE projection (hard gate
+    <= 0.5%).
+  - post-projection ISR = share of slots with >1 active channel immediately
+    after step 3 (must be 0% by construction of the projection).
+  - post-pipeline ISR = same check after steps 4-5 too (sanity: still 0%).
+
+Output: outputs_step4/augmented_diaries.csv  (N*3 rows)
+  occID, CYCLE_YEAR, DDAY_STRATA, IS_SYNTHETIC, + merged demographics,
+  act30_001..048 (raw 1..14), hom30_001..048, wrk30_001..048,
+  ret30_001..048 [Leg-3 NEW — CONTRACT: lowercase, distinct from the Step-3
+  tiler's RETL30_* namespace], and 9x {Channel}30_001..048 (float [0,1]).
+
+Usage:
+    py -3 -X utf8 3rdJ_04E_inference_4split.py --smoke
+    py -3 -X utf8 3rdJ_04E_inference_4split.py            (full, cluster GPU or CPU)
+"""
+
+from __future__ import annotations
+
+import argparse
+import importlib
+import json
+import os
+import platform
+import sys
+
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+model_mod = importlib.import_module("3rdJ_04B_model_4split")
+JSeriesHybrid4Split = model_mod.JSeriesHybrid4Split
+
+# ── Platform-detection path block (mirrors Leg-3 04A/04C/04D) ────────────────
+_SYSTEM = platform.system()
+if _SYSTEM == "Windows":
+    _LEG3_BASE = os.path.normpath(
+        r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split"
+    )
+elif os.path.isdir("/speed-scratch/o_iseri"):
+    _LEG3_BASE = "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split"
+else:
+    _LEG3_BASE = os.path.join(
+        os.path.expanduser("~"),
+        "GSSCanada", "GSSCanada-main", "3J_docs_occ_nTemp", "Leg3_4-split",
+    )
+OUTPUT_DIR = os.path.join(_LEG3_BASE, "Step4_docs", "outputs_step4")
+
+N_SLOTS = 48
+N_COP = 9
+COP_COLS = [
+    "Alone", "Spouse", "Children", "parents", "otherInFAMs",
+    "otherHHs", "friends", "others", "colleagues",
+]
+COLLEAGUES_IDX = 8
+
+# ── G3 per-(day-type x slot) co-presence binarization thresholds (2026-07-21
+#    fix — see 3rdJ_04_augmentationGSS_4split.md W3 entry) ───────────────────
+G3_MIN_OBS_CELL = 200   # min non-null observed rows in a (daytype, slot) cell
+G3_MIN_POS_CELL = 20    # min observed positives in a (daytype, slot) cell
+G3_MIN_SYN_CELL = 50    # min non-null synthetic scores in a (daytype, slot) cell
+
+NIGHT_SLOTS = list(range(0, 7)) + list(range(37, 48))
+SLEEP_CAT = 4   # 0-indexed tensor value (raw category 5 = Sleep & Naps & Resting)
+WORK_CAT = 0    # 0-indexed tensor value (raw category 1 = Work & Related)
+
+
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument("--data_dir", default=None)
+    p.add_argument("--checkpoint", default=None)
+    p.add_argument("--output", default=None)
+    p.add_argument("--temperature", type=float, default=0.7, help="Delta F: AR activity arm temperature")
+    p.add_argument("--top_p", type=float, default=0.9, help="Delta F: nucleus truncation mass")
+    p.add_argument("--home_threshold", type=float, default=0.50, help="Delta G: theta_home")
+    p.add_argument("--work_threshold", type=float, default=0.40, help="Delta G: theta_work")
+    p.add_argument("--retail_threshold", type=float, default=0.15, help="Delta G: theta_retail")
+    p.add_argument("--retail_pos_weight", type=float, default=49.0,
+                   help="calibration pos_weight for the -ln(k) logit shift; config value (~50) "
+                        "wins unless this is set away from the documented default of 49")
+    p.add_argument("--min_dwell", type=int, default=2, help="Delta F: minimum dwell (slots) for work+retail")
+    p.add_argument("--smoke", action="store_true", help="tiny CPU sample: first --smoke_n respondents only")
+    p.add_argument("--smoke_n", type=int, default=200)
+    return p.parse_args()
+
+
+def load_all_data(data_dir: str):
+    splits = {}
+    for split in ["train", "val", "test"]:
+        splits[split] = torch.load(
+            os.path.join(data_dir, f"step4_{split}.pt"), map_location="cpu", weights_only=False
+        )
+    keys = list(splits["train"].keys())
+    return {k: torch.cat([splits[s][k] for s in ["train", "val", "test"]], dim=0) for k in keys}
+
+
+# ── Delta F #1: nucleus decode (see module docstring NUCLEUS-DECODE note) ────
+
+@torch.no_grad()
+def generate_nucleus(model, act_seq, aux_seq, cond_vec, cycle_idx, tgt_strata,
+                     temperature: float = 0.7, top_p: float = 0.9):
+    """
+    Re-implements JSeriesHybrid4Split._arm1_generate() + generate()'s Arm-2
+    NAT fusion EXACTLY, using only the model's existing public methods/
+    parameters, with one addition: nucleus (top-p) truncation of the
+    per-step activity logits before the temperature-scaled multinomial draw.
+    3rdJ_04B_model_4split.py is NOT modified.
+
+    Returns an 8-tuple matching model.generate(return_hw_probs=True,
+    return_retail_probs=True):
+        (gen_act, gen_home, gen_work, gen_cop, gen_cop_probs,
+         home_sigmoid, work_sigmoid, retail_sigmoid)
+    gen_home/gen_work use a fixed 0.5 threshold here (informational only —
+    04E applies its OWN Delta G thresholds on the returned sigmoids).
+    """
+    model.eval()
+    device = act_seq.device
+    memory = model._encode(act_seq, aux_seq, cond_vec, cycle_idx)
+    cond_vec_d, cycle_emb_d, strata_oh_d = model._build_arm1_cond(cond_vec, cycle_idx, tgt_strata)
+
+    B = memory.shape[0]
+    bos_tok = model.bos_token.expand(B, 1, -1) + model.dec_pos_enc[:, :1, :]
+    dec_tokens = [bos_tok]
+    act_tokens = []
+
+    for t in range(model.n_slots):
+        dec_seq = torch.cat(dec_tokens, dim=1)
+        causal_mask = nn.Transformer.generate_square_subsequent_mask(dec_seq.shape[1], device=device)
+        dec_out = model.arm1_decoder(dec_seq, memory, cond_vec_d, cycle_emb_d, strata_oh_d, causal_mask)
+        out_t = dec_out[:, -1, :]
+        logits = model.act_head(out_t)   # (B, n_act)
+
+        if temperature and temperature > 0:
+            scaled = logits / temperature
+            if top_p is not None and 0.0 < top_p < 1.0:
+                sorted_logits, sorted_idx = torch.sort(scaled, descending=True, dim=-1)
+                probs_sorted = F.softmax(sorted_logits, dim=-1)
+                cum_probs = torch.cumsum(probs_sorted, dim=-1)
+                # Keep the smallest prefix whose cumulative prob >= top_p (always keep >=1 token).
+                remove_sorted = cum_probs > top_p
+                remove_sorted[:, 1:] = remove_sorted[:, :-1].clone()
+                remove_sorted[:, 0] = False
+                remove_mask = torch.zeros_like(remove_sorted)
+                remove_mask.scatter_(1, sorted_idx, remove_sorted)
+                scaled = scaled.masked_fill(remove_mask, float("-inf"))
+            probs = F.softmax(scaled, dim=-1)
+            act_tok = torch.multinomial(probs, 1).squeeze(-1)
+        else:
+            act_tok = logits.argmax(-1)
+        act_tokens.append(act_tok)
+
+        if t < model.n_slots - 1:
+            act_emb_t = model.act_embedding(act_tok)
+            slot_next = (model.arm1_slot_proj(act_emb_t).unsqueeze(1)
+                        + model.dec_pos_enc[:, t + 1:t + 2, :])
+            dec_tokens.append(slot_next)
+
+    act_tokens = torch.stack(act_tokens, dim=1)   # (B,48)
+
+    act_probs = F.one_hot(act_tokens, num_classes=model.n_act).float()
+    arm2_feat = model._arm2_fuse(memory, act_probs, cond_vec, cycle_idx, tgt_strata)
+
+    home_sigmoid   = torch.sigmoid(model.home_head(arm2_feat).squeeze(-1))
+    work_sigmoid   = torch.sigmoid(model.work_head(arm2_feat).squeeze(-1))
+    retail_sigmoid = torch.sigmoid(model.retail_head(arm2_feat).squeeze(-1))
+    gen_home = (home_sigmoid > 0.5).float()
+    gen_work = (work_sigmoid > 0.5).float()
+    cop_probs = torch.sigmoid(model.cop_head(arm2_feat))
+    cop_bin = (cop_probs > 0.5).float()
+    cop_probs = cop_probs.clone()
+    cop_probs[:, :, model.SPOUSE_IDX] *= gen_home   # apply_safety, mirrors generate()
+
+    return (act_tokens, gen_home, gen_work, cop_bin, cop_probs,
+            home_sigmoid, work_sigmoid, retail_sigmoid)
+
+
+# ── Delta C/F #3: retail calibration (-ln k logit shift, prob-space identity) ─
+
+def calibrate_retail_prob(p: np.ndarray, pos_weight: float) -> np.ndarray:
+    """sigmoid(logit(p) - ln k) == p / (p + k*(1-p)) — avoids re-exposing raw
+    logits through generate(). Applied ONLY here (inference); never in 04D."""
+    k = float(pos_weight)
+    return p / (p + k * (1.0 - p) + 1e-12)
+
+
+# ── Delta G: exclusivity projection (threshold-normalized argmax) ───────────
+
+def exclusivity_projection(home_p: np.ndarray, work_p: np.ndarray, retail_p: np.ndarray,
+                           home_thr: float, work_thr: float, retail_thr: float):
+    """
+    home_p/work_p/retail_p: (n,48) float arrays (retail_p already calibrated).
+    Returns (home_bin, work_bin, retail_bin, raw_isr, post_isr) — all (n,48)
+    except the two ISR scalars.
+    """
+    home_over   = home_p   > home_thr
+    work_over   = work_p   > work_thr
+    retail_over = retail_p > retail_thr
+    active_count = home_over.astype(int) + work_over.astype(int) + retail_over.astype(int)
+    raw_isr = float((active_count > 1).mean())
+
+    score_home   = np.where(home_over,   home_p   / home_thr,   -np.inf)
+    score_work   = np.where(work_over,   work_p   / work_thr,   -np.inf)
+    score_retail = np.where(retail_over, retail_p / retail_thr, -np.inf)
+
+    home_bin   = home_over.astype(np.float32).copy()
+    work_bin   = work_over.astype(np.float32).copy()
+    retail_bin = retail_over.astype(np.float32).copy()
+
+    conflict = active_count > 1
+    idx = np.where(conflict)
+    if idx[0].size > 0:
+        scores = np.stack([score_home[idx], score_work[idx], score_retail[idx]], axis=-1)
+        winner = np.argmax(scores, axis=-1)   # 0=home, 1=work, 2=retail
+        home_bin[idx]   = (winner == 0).astype(np.float32)
+        work_bin[idx]   = (winner == 1).astype(np.float32)
+        retail_bin[idx] = (winner == 2).astype(np.float32)
+
+    post_count = home_bin.astype(int) + work_bin.astype(int) + retail_bin.astype(int)
+    post_isr = float((post_count > 1).mean())
+    return home_bin, work_bin, retail_bin, raw_isr, post_isr
+
+
+def apply_activity_override_3ch(act_seq: np.ndarray, home_bin: np.ndarray,
+                                work_bin: np.ndarray, retail_bin: np.ndarray):
+    """
+    Deterministic activity-based hard override (ported from Leg-2's
+    apply_posthoc_consistency, extended to zero retail too — OD-1's gated
+    OR-rule means AT_HOME/AT_WORK/AT_RETAIL are fully mutually exclusive, no
+    exemptions). Only ever sets exactly one channel to 1 per touched slot,
+    so it cannot reintroduce a multi-channel conflict.
+    """
+    home = home_bin.astype(np.float32).copy()
+    work = work_bin.astype(np.float32).copy()
+    retail = retail_bin.astype(np.float32).copy()
+    for slot in range(N_SLOTS):
+        act = act_seq[slot]
+        if act == WORK_CAT:
+            work[slot] = 1.0; home[slot] = 0.0; retail[slot] = 0.0
+        if act == SLEEP_CAT and slot in NIGHT_SLOTS:
+            home[slot] = 1.0; work[slot] = 0.0; retail[slot] = 0.0
+    return home, work, retail
+
+
+def enforce_min_dwell_row(b: np.ndarray, min_len: int = 2) -> np.ndarray:
+    """Merge (zero out) any run of consecutive 1s shorter than min_len — the
+    flicker countermeasure (Delta F#2). Only ever flips 1 -> 0."""
+    b = b.astype(np.float32).copy()
+    n = len(b)
+    i = 0
+    while i < n:
+        if b[i] == 1.0:
+            j = i
+            while j < n and b[j] == 1.0:
+                j += 1
+            if (j - i) < min_len:
+                b[i:j] = 0.0
+            i = j
+        else:
+            i += 1
+    return b
+
+
+def run_inference(model, data, device, temperature, top_p, home_thr, work_thr, retail_thr,
+                  retail_pos_weight, min_dwell, batch_size=256):
+    model.eval()
+    torch.manual_seed(42)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(42)
+
+    n = len(data["act_seq"])
+    obs_strata_all = data["obs_strata"].numpy()
+    cycle_year_all = data["cycle_year"].numpy()
+    occ_ids_all    = data["occ_ids"].numpy()
+
+    rows = []
+    raw_isr_all, post_isr_all, post_pipeline_isr_all = [], [], []
+
+    for start in range(0, n, batch_size):
+        end = min(start + batch_size, n)
+        chunk = list(range(start, end))
+
+        syn_idx, syn_strata = [], []
+        for i in chunk:
+            s_obs = int(obs_strata_all[i])
+            for s_tgt in [1, 2, 3]:
+                if s_tgt != s_obs:
+                    syn_idx.append(i); syn_strata.append(s_tgt)
+
+        syn_results = {}
+        if syn_idx:
+            act_t  = data["act_seq"][syn_idx].to(device)
+            aux_t  = data["aux_seq"][syn_idx].to(device)
+            cond_t = data["cond_vec"][syn_idx].to(device)
+            cidx_t = data["cycle_idx"][syn_idx].to(device)
+            strat  = torch.tensor(syn_strata, dtype=torch.long, device=device)
+
+            (g_act, _gh, _gw, _gcop, g_cop_probs,
+             home_sig, work_sig, retail_sig) = generate_nucleus(
+                model, act_t, aux_t, cond_t, cidx_t, strat,
+                temperature=temperature, top_p=top_p,
+            )
+            g_act_np    = g_act.cpu().numpy()
+            home_p      = home_sig.cpu().numpy()
+            work_p      = work_sig.cpu().numpy()
+            retail_p_raw = retail_sig.cpu().numpy()
+            g_cop_probs_np = g_cop_probs.cpu().numpy()
+
+            # Delta C/F#3: -ln(k) calibration shift (prob-space identity)
+            retail_p_cal = calibrate_retail_prob(retail_p_raw, retail_pos_weight)
+
+            # Delta G: exclusivity projection (raw ISR + post-projection ISR)
+            home_bin, work_bin, retail_bin, raw_isr, post_isr = exclusivity_projection(
+                home_p, work_p, retail_p_cal, home_thr, work_thr, retail_thr,
+            )
+            raw_isr_all.append(raw_isr)
+            post_isr_all.append(post_isr)
+
+            for k, (i, s_tgt) in enumerate(zip(syn_idx, syn_strata)):
+                cy = int(cycle_year_all[i])
+                # Deterministic activity-based override (extended to retail)
+                home_k, work_k, retail_k = apply_activity_override_3ch(
+                    g_act_np[k], home_bin[k], work_bin[k], retail_bin[k],
+                )
+                # Delta F#2: minimum dwell >= 2 slots for work + retail only
+                work_k   = enforce_min_dwell_row(work_k,   min_dwell)
+                retail_k = enforce_min_dwell_row(retail_k, min_dwell)
+
+                post_count = (home_k.astype(int) + work_k.astype(int) + retail_k.astype(int))
+                post_pipeline_isr_all.append(float((post_count > 1).mean()))
+
+                cop_k = g_cop_probs_np[k].copy()
+                if cy in (2005, 2010):
+                    cop_k[:, COLLEAGUES_IDX] = 0.0
+                syn_results[(i, s_tgt)] = (g_act_np[k], home_k, work_k, retail_k, cop_k)
+
+        for i in chunk:
+            occ_id = int(occ_ids_all[i])
+            cy = int(cycle_year_all[i])
+            s_obs = int(obs_strata_all[i])
+
+            obs_act    = data["act_seq"][i].numpy()
+            obs_aux    = data["aux_seq"][i].numpy()
+            obs_home   = obs_aux[:, 0]
+            obs_work   = obs_aux[:, 1]
+            obs_retail = obs_aux[:, 2]
+            obs_cop    = obs_aux[:, 3:]
+
+            for s_tgt in [1, 2, 3]:
+                row = {
+                    "occID": occ_id, "CYCLE_YEAR": cy, "DDAY_STRATA": s_tgt,
+                    "IS_SYNTHETIC": 0 if s_tgt == s_obs else 1,
+                }
+                if s_tgt == s_obs:
+                    act_out = obs_act.copy(); home_out = obs_home.copy()
+                    work_out = obs_work.copy(); retail_out = obs_retail.copy()
+                    cop_out = obs_cop.copy()
+                else:
+                    act_out, home_out, work_out, retail_out, cop_out = syn_results[(i, s_tgt)]
+
+                act_out_raw = act_out + 1  # 0-indexed -> raw 1..14
+                for s in range(N_SLOTS):
+                    ss = f"{s+1:03d}"
+                    row[f"act30_{ss}"] = int(act_out_raw[s])
+                    row[f"hom30_{ss}"] = int(home_out[s])
+                    row[f"wrk30_{ss}"] = int(work_out[s])
+                    row[f"ret30_{ss}"] = int(retail_out[s])   # [Leg-3 NEW]
+
+                for ci, cn in enumerate(COP_COLS):
+                    for s in range(N_SLOTS):
+                        ss = f"{s+1:03d}"
+                        val = cop_out[s, ci]
+                        if cn == "colleagues" and cy in (2005, 2010) and s_tgt == s_obs:
+                            row[f"{cn}30_{ss}"] = np.nan
+                        else:
+                            row[f"{cn}30_{ss}"] = round(float(val), 4)
+                rows.append(row)
+
+        print(f"  Processed {end}/{n} respondents ({100.0*end/n:.1f}%)", flush=True)
+
+    isr_summary = {
+        "raw_isr_pct":           round(float(np.mean(raw_isr_all)) * 100, 4) if raw_isr_all else float("nan"),
+        "post_projection_isr_pct": round(float(np.mean(post_isr_all)) * 100, 4) if post_isr_all else float("nan"),
+        "post_pipeline_isr_pct":  round(float(np.mean(post_pipeline_isr_all)) * 100, 4) if post_pipeline_isr_all else float("nan"),
+    }
+    return rows, isr_summary
+
+
+def main():
+    args = parse_args()
+    if args.data_dir is None:
+        args.data_dir = OUTPUT_DIR
+    if args.checkpoint is None:
+        args.checkpoint = os.path.join(OUTPUT_DIR, "checkpoints", "best_model.pt")
+    if args.output is None:
+        suffix = "_SMOKE" if args.smoke else ""
+        args.output = os.path.join(OUTPUT_DIR, f"augmented_diaries{suffix}.csv")
+
+    print("=" * 60)
+    print(f"Step 4E (Leg-3, 4-split) — Inference  {'[SMOKE]' if args.smoke else ''}")
+    print("=" * 60)
+    print(f"  data_dir:   {args.data_dir}")
+    print(f"  checkpoint: {args.checkpoint}")
+    print(f"  output:     {args.output}")
+    print(f"  temperature={args.temperature} top_p={args.top_p}")
+    print(f"  theta_home={args.home_threshold} theta_work={args.work_threshold} "
+          f"theta_retail={args.retail_threshold}  min_dwell={args.min_dwell} slots")
+
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"  Device: {device}")
+
+    print("\n[1/4] Loading tensor datasets...")
+    data = load_all_data(args.data_dir)
+    n = len(data["act_seq"])
+    print(f"  Total respondents: {n}")
+
+    if args.smoke:
+        keep = min(args.smoke_n, n)
+        data = {k: v[:keep] for k, v in data.items()}
+        n = keep
+        print(f"  [SMOKE] restricted to first {n} respondents")
+
+    meta = pd.read_csv(os.path.join(args.data_dir, "step4_all_meta.csv"), low_memory=False)
+    print(f"  Metadata: {meta.shape}")
+
+    with open(os.path.join(args.data_dir, "step4_feature_config.json")) as f:
+        feat_cfg = json.load(f)
+
+    if abs(args.retail_pos_weight - 49.0) < 1e-9:
+        retail_pw_val = feat_cfg.get("retail_pos_weight", args.retail_pos_weight)
+    else:
+        retail_pw_val = args.retail_pos_weight
+    print(f"  retail_pos_weight (calibration k) = {retail_pw_val:.4f}"
+          f"{'  [config value]' if abs(args.retail_pos_weight - 49.0) < 1e-9 else '  [CLI override]'}")
+
+    print("\n[2/4] Loading model checkpoint...")
+    if not os.path.isfile(args.checkpoint):
+        raise FileNotFoundError(
+            f"Checkpoint not found: {os.path.abspath(args.checkpoint)}\n"
+            f"  Run 3rdJ_04D_train_4split.py first (--phase warmup then --phase joint)."
+        )
+    ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
+    model = JSeriesHybrid4Split(ckpt["model_config"]).to(device)
+    model.load_state_dict(ckpt["model_state"])
+    model.eval()
+    print(f"  Loaded epoch {ckpt.get('epoch','?')}  phase={ckpt.get('phase','?')}  "
+          f"val_JS={ckpt.get('val_js','?')}  work_gap={ckpt.get('work_gap','?')}  "
+          f"retail_gap={ckpt.get('retail_gap','?')}  alphas={ckpt.get('alphas','?')}")
+
+    print("\n[3/4] Generating synthetic diaries...")
+    rows, isr_summary = run_inference(
+        model, data, device, args.temperature, args.top_p,
+        args.home_threshold, args.work_threshold, args.retail_threshold,
+        retail_pw_val, args.min_dwell,
+    )
+    print(f"\n  ISR summary: raw={isr_summary['raw_isr_pct']}%  "
+          f"post-projection={isr_summary['post_projection_isr_pct']}%  "
+          f"post-pipeline={isr_summary['post_pipeline_isr_pct']}%")
+    print(f"  Hard gate check: raw ISR <= 0.5% -> "
+          f"{'PASS' if isr_summary['raw_isr_pct'] <= 0.5 else 'FAIL'}")
+    print(f"  Post-projection ISR == 0% -> "
+          f"{'PASS' if isr_summary['post_projection_isr_pct'] == 0.0 else 'FAIL'}")
+
+    out_isr_path = os.path.join(os.path.dirname(args.output), "isr_summary.json")
+    with open(out_isr_path, "w") as f:
+        json.dump(isr_summary, f, indent=2)
+    print(f"  ISR summary written -> {out_isr_path}")
+
+    print("\n[4/4] Assembling augmented_diaries.csv...")
+    aug_df = pd.DataFrame(rows)
+    meta_merge = meta.drop(columns=["DDAY_STRATA"], errors="ignore")
+    aug_df = aug_df.merge(meta_merge, on=["occID", "CYCLE_YEAR"], how="left")
+
+    # ── G3 operating-point fix (ported from Leg-2, unchanged — co-presence
+    #    channels are unaffected by the retail delta): per-channel rank-to-
+    #    marginal binarization so synthetic co-presence prevalence matches
+    #    observed prevalence under the validator's exact definition. ────────
+    print("\n[4b/4] Applying per-(day-type x slot) rank-to-marginal binarization (G3 fix)...")
+    syn_mask = aug_df["IS_SYNTHETIC"] == 1
+    obs_mask = aug_df["IS_SYNTHETIC"] == 0
+    wd_mask = aug_df["DDAY_STRATA"] == 1
+    we_mask = aug_df["DDAY_STRATA"].isin([2, 3])
+    daytypes = [("WD", wd_mask), ("WE", we_mask)]
+    thresholds = {}
+    for cn in COP_COLS:
+        cols = [f"{cn}30_{s:03d}" for s in range(1, N_SLOTS + 1)
+                if f"{cn}30_{s:03d}" in aug_df.columns]
+        if not cols:
+            continue
+        thresholds[cn] = {}
+        for dname, d_mask in daytypes:
+            obs_d = aug_df.loc[obs_mask & d_mask, cols].to_numpy(dtype=float)
+            syn_d = aug_df.loc[syn_mask & d_mask, cols].to_numpy(dtype=float)
+            if obs_d.size == 0 or syn_d.size == 0:
+                thresholds[cn][dname] = {
+                    "obs_prev_pct": float("nan"), "syn_prev_pct_after": float("nan"),
+                    "n_per_slot_cells": 0, "n_fallback_cells": 0,
+                    "max_perslot_abs_gap_pp_after": float("nan"),
+                }
+                continue
+
+            # Day-type-pooled fallback threshold (thin-cell safety net)
+            p_obs_pool = float(np.nanmean(obs_d == 1))
+            syn_d_flat = syn_d[~np.isnan(syn_d)]
+            if syn_d_flat.size == 0 or np.isnan(p_obs_pool):
+                thresholds[cn][dname] = {
+                    "obs_prev_pct": round(p_obs_pool * 100, 4) if not np.isnan(p_obs_pool) else float("nan"),
+                    "syn_prev_pct_after": float("nan"),
+                    "n_per_slot_cells": 0, "n_fallback_cells": 0,
+                    "max_perslot_abs_gap_pp_after": float("nan"),
+                }
+                continue
+            q_pool = min(max(1.0 - p_obs_pool, 0.0), 1.0)
+            t_pool = float(np.quantile(syn_d_flat, q_pool))
+
+            binarized = np.zeros_like(syn_d, dtype=float)
+            n_per_slot_cells = 0
+            n_fallback_cells = 0
+            perslot_gaps = []
+            for j in range(N_SLOTS):
+                obs_col = obs_d[:, j]
+                syn_col = syn_d[:, j]
+                n_obs_j = int(np.sum(~np.isnan(obs_col)))
+                n_pos_j = int(np.sum(obs_col == 1))
+                syn_valid = syn_col[~np.isnan(syn_col)]
+
+                if (n_obs_j >= G3_MIN_OBS_CELL and n_pos_j >= G3_MIN_POS_CELL
+                        and syn_valid.size >= G3_MIN_SYN_CELL):
+                    # per-slot threshold: match synthetic prevalence to the observed
+                    # fillna(0) MARGINAL within THIS (day-type, slot) cell — positives
+                    # over ALL day-type rows, NOT over non-null only. This is exactly the
+                    # metric the Step-5 W3 gate computes (col.fillna(0).mean()). The prior
+                    # non-null (conditional) denominator over-fired on the dense synthetic
+                    # head for the sparse-observed `colleagues` channel (syn 9.10% vs obs
+                    # 4.22% marginal WD) while leaving the ~46% off-work coded slots as 0
+                    # in obs; the marginal denominator also aligns this per-slot target with
+                    # the already-marginal pooled fallback (np.nanmean(obs==1)) above.
+                    n_all_j = obs_col.shape[0]
+                    p_obs_j = (n_pos_j / n_all_j) if n_all_j else 0.0
+                    q_j = min(max(1.0 - p_obs_j, 0.0), 1.0)
+                    t_j = float(np.quantile(syn_valid, q_j))
+                    col_bin = (syn_col >= t_j).astype(float)   # NaN >= t_j -> False -> 0.0
+                    binarized[:, j] = col_bin
+                    n_per_slot_cells += 1
+                    perslot_gaps.append(abs(p_obs_j * 100 - float(np.mean(col_bin)) * 100))
+                else:
+                    # thin-cell fallback: day-type-pooled threshold
+                    col_bin = (syn_col >= t_pool).astype(float)   # NaN >= t_pool -> False -> 0.0
+                    binarized[:, j] = col_bin
+                    n_fallback_cells += 1
+
+            aug_df.loc[syn_mask & d_mask, cols] = binarized
+
+            thresholds[cn][dname] = {
+                "obs_prev_pct":       round(p_obs_pool * 100, 4),
+                "syn_prev_pct_after": round(float(np.mean(binarized)) * 100, 4),
+                "n_per_slot_cells":   n_per_slot_cells,
+                "n_fallback_cells":   n_fallback_cells,
+                "max_perslot_abs_gap_pp_after": round(max(perslot_gaps), 4) if perslot_gaps else float("nan"),
+            }
+    out_thresh = os.path.join(os.path.dirname(args.output), "g3_copresence_thresholds.json")
+    with open(out_thresh, "w") as _f:
+        json.dump(thresholds, _f, indent=2)
+    if thresholds:
+        for cn, dvals in thresholds.items():
+            parts = []
+            for dname in ("WD", "WE"):
+                dv = dvals.get(dname, {})
+                obs_p = dv.get("obs_prev_pct", float("nan"))
+                syn_p = dv.get("syn_prev_pct_after", float("nan"))
+                gap = abs(obs_p - syn_p) if not (np.isnan(obs_p) or np.isnan(syn_p)) else float("nan")
+                parts.append(f"{dname}: |obs-syn|={gap:.4f}pp (per_slot={dv.get('n_per_slot_cells', 0)}, "
+                             f"fallback={dv.get('n_fallback_cells', 0)})")
+            print(f"  {cn}: " + "  ".join(parts))
+        print(f"  Written -> {out_thresh}")
+    # ── end G3 fix ─────────────────────────────────────────────────────────
+
+    act_cols = [f"act30_{s:03d}" for s in range(1, N_SLOTS + 1)]
+    hom_cols = [f"hom30_{s:03d}" for s in range(1, N_SLOTS + 1)]
+    wrk_cols = [f"wrk30_{s:03d}" for s in range(1, N_SLOTS + 1)]
+    ret_cols = [f"ret30_{s:03d}" for s in range(1, N_SLOTS + 1)]   # [Leg-3 NEW]
+    cop_cols_f = []
+    for cn in COP_COLS:
+        cop_cols_f.extend([f"{cn}30_{s:03d}" for s in range(1, N_SLOTS + 1)])
+    seq_cols = set(act_cols + hom_cols + wrk_cols + ret_cols + cop_cols_f) | {"IS_SYNTHETIC"}
+    meta_cols = [c for c in aug_df.columns if c not in seq_cols]
+
+    final_cols = meta_cols + act_cols + hom_cols + wrk_cols + ret_cols + cop_cols_f + ["IS_SYNTHETIC"]
+    final_cols = [c for c in final_cols if c in aug_df.columns]
+    aug_df = aug_df[final_cols]
+    aug_df.to_csv(args.output, index=False)
+
+    print(f"\n  === AUGMENTED OUTPUT ===")
+    print(f"  Shape: {aug_df.shape}")
+    print(f"  IS_SYNTHETIC=0: {(aug_df['IS_SYNTHETIC']==0).sum()}  "
+          f"=1: {(aug_df['IS_SYNTHETIC']==1).sum()}")
+    print(f"  Unique occIDs: {aug_df['occID'].nunique()}")
+    print(f"  ret30 columns present: {sum(c in aug_df.columns for c in ret_cols)}/48")
+    bad = 0
+    for s in range(1, N_SLOTS + 1):
+        h = aug_df[f"hom30_{s:03d}"]; w = aug_df[f"wrk30_{s:03d}"]; r = aug_df[f"ret30_{s:03d}"]
+        bad += int((((h == 1).astype(int) + (w == 1).astype(int) + (r == 1).astype(int)) > 1).sum())
+    print(f"  >1-of-3-channel violations (final CSV): {bad} (expect 0)")
+    print(f"\nOK 04E (Leg-3, 4-split) complete. Saved {args.output}")
+    print(f"  Total rows: {len(aug_df)} (expect {n * 3})")
+
+
+if __name__ == "__main__":
+    main()

@@ -132,3 +132,41 @@ The injection fix was expected to step multi-zone equipment/lighting energy **up
 ## D · Bottom line (of record, 2026-07-17)
 
 The 2-split results **remain paper-ready**. The two-fix cascade (04T rake + multi-zone injection fix) re-ran the full Step-8→Step-9 chain with **0 FAIL in both reports** (Step-8 **50P/1W/17I/0F**, Step-9 **10P/1W/0F**) and **did not change any publishable annual energy number** — the injection fix is energy-neutral at the annual level (§B), and the act30 04T rake removes only physically-impossible FLOATING slots without disturbing the TELEWORK signal. The WFH signal reaches the BEM (G8o PASS). This ADDENDUM is the current record; the 2026-07-02 scorecards are superseded, its physics conclusions retained.
+
+---
+
+# ADDENDUM 2026-07-18 — mutex-fix re-cascade (2030 deliverable only; supersedes 2026-07-17 scorecards)
+
+A **third fix** is now propagated: the **2030-deliverable mutex bug**. The 2026-07-17 verdict stands on its physics; only the **2030-residential numbers and the Step-8/9 scorecards** are updated below. **2022, historical (2005/2010/2015), and the entire office channel are unchanged from 2026-07-17** — verified bit-for-bit at the aggregate level (§B below).
+
+## The fix
+- **Bug:** 4,280 cells (3,761 rows), 100% weekends, in the 2030 synthetic deliverable had `hom30==1` **AND** `wrk30==1` simultaneously (physically impossible — home and at-work in the same slot), introduced by the calib-C min-dwell smoother.
+- **Fix:** `wrk30` authoritative, conflicting `hom30`→0. Fixed deliverable = `Step6_docs/outputs_step6/2030_synthetic_diaries_2split_calibrated_mindwell_C.csv` (the **`_C`** file; 111,024 rows, 0 mutex conflicts). Step-6 report re-scored 54P/11W/0F/40I (gate 6.7 mutual-exclusion PASS, 0 conflicts).
+- **Blast radius (by construction):** 2030 **residential weekend** occupancy only. Weekday untouched (conflicts were 100% weekend). Office reads only `wrk30` (untouched) → `office_presence_multiplier_2030.csv` md5-identical pre/post. 2022/historical independent.
+
+## Propagation
+Step-7 2030 regenerated on the `_C` deliverable (all gates PASS; 3 resid band files DIFFER in the correct direction, office multiplier md5-identical). Step-8 **residential 2030-only re-sim** (job 1126886, **72/72 tasks COMPLETED**, 3,600 leaf dirs regenerated; office 2030 NOT re-simmed — justified by md5-identical input; CRN 2022↔2030 pairing preserved). Step-8 agg+val (job 1127161) and Step-9 (job 1127329) re-run over the refreshed campaign.
+
+## A · New scorecards (of record)
+
+| Report | 2026-07-17 (superseded) | 2026-07-18 (of record) |
+|---|---|---|
+| **Step-8 validation** | 50P / 1W / 17I / 0F | **50P / 2W / 17I / 0F** |
+| **Step-9 validation** | 10P / 1W / 0F | **10P / 1W / 0F** |
+
+- **0 FAIL in both.** Step-9 identical shape: **G8o PASS** (office WFH-modulation live, `energy% cons/hyb/full = 0.53 / -0.00 / -0.32` — unchanged, office not re-simmed), **G2o office EUI PASS** (median 172.7 kWh/m², in [100–200]), **G8r residential WFH PASS** (2022 0.249 → 0.251/0.262/0.270 monotone). Sole non-pass = **G2r WARN** (SingleD 211.7, EUI-basis mismatch).
+- **Step-8 gained one WARN** (1→2): both are pre-existing documented caveats, not regressions — **§4.1-SingleD** EUI 212 outside SHEU band (conditioned-incl-basement vs SHEU heated-excl-basement basis mismatch) and **§4.9-heat-dominance** cooling/heating ratio (ERV v3, WARN acceptable since sign-off).
+
+## B · ⚠️ PUBLISHABLE-RESULTS FINDING — mutex fix is 2030-residential-only and negligible on annual energy
+
+Population-aggregate delta, fresh `agg_annual.csv` vs archived pre-fix `agg_pre_mutexfix_20260718/agg_annual.csv` (n=300 per (channel,arch,scenario) group in BOTH files):
+
+1. **2030 residential energy shift is small.** Total-energy / EUI per arch×band all **|%Δ| < 1%** (worst SingleD-fullyhybrid −0.83%). The only end-use exceeding 2% is **heating +2.91%** at MidRise-hybrid; elec/cooling range −1.4%…+0.4%; `fan_kWh` Δ=0 everywhere. Direction is correct: removing impossible weekend home-occupancy lowers internal gains → heating slightly ↑, plug/cooling slightly ↓. Occupancy means move more (occ_midday %Δ −7.5%…+11.1%), as expected for an occupancy correction.
+2. **Everything outside 2030-residential is exactly invariant.** 2022 residential, historical 2005/2010/2015, and **all office** scenarios show **0.000% delta on every energy column**. Office confirmed md5-identical input. This bounds the energy blast radius to 2030-residential.
+3. **Household-identity churn is a benign upstream relabeling, not an aggregation bug.** ~25% of resid rows carry a different `sim_hh_id`/`hhsize` for the same (arch,city,sample,scenario) slot across ALL scenarios — but the aggregator `3rdJ_08_simulation_2split_agg.py` is **deterministic** (code-verified: no `sample/random/choice/seed/head/nlargest/drop_duplicates/cap`; walks `sorted(os.listdir)` and binds `sample→sim_hh_id/hhsize` from each cell's `cell_manifest.csv`). The churn is the "fresh sampling" at simulation time (relabeled manifests per campaign snapshot); n=300/group and aggregate energy are preserved, so it is invisible to the population statistics the paper uses.
+
+**Consequence for the manuscript:** the paper's **2030 residential annual EUI/energy figures are essentially unchanged (<1% on totals)** and remain valid. The mutex fix is a **weekend-occupancy correction with negligible annual-energy impact** — describe it as removing physically-impossible simultaneous home+work weekend slots, not as an energy revision. **Caveat #6.**
+
+## C · Bottom line (of record, 2026-07-18)
+
+The 2-split results **remain paper-ready**. The mutex fix propagates cleanly through Step-7→8→9 with **0 FAIL in both reports** (Step-8 **50P/2W/17I/0F**, Step-9 **10P/1W/0F**), shifts only 2030 residential energy and by <1% on totals, leaves 2022/historical/office bit-for-bit invariant, and preserves the WFH signal to the BEM (G8o PASS). Both Step-8 WARNs are pre-existing documented caveats. This ADDENDUM is the current record; the 2026-07-17 scorecards are superseded for the 2030 deliverable, all prior physics conclusions retained.

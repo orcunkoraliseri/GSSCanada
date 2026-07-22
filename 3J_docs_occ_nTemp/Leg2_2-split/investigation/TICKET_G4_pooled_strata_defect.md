@@ -1,6 +1,6 @@
 # TICKET — G4 "Work peak-slot delta" gate is defective: it pools day-type strata (Simpson's paradox)
 
-**Status:** OPEN · **Severity:** 🟡 MEDIUM (validator-only; no pipeline data is affected) · **Filed:** 2026-07-15
+**Status:** CLOSED (fixed 2026-07-18) · **Severity:** 🟡 MEDIUM (validator-only; no pipeline data is affected) · **Filed:** 2026-07-15
 **Filed by:** manager, during the 2J→3J improvement cascade (`../improvement/2J_to_3J_improvement_implementation.md`)
 **Explicitly OUT OF SCOPE of that plan** — filed separately so it isn't silently carried as a Task-1 regression.
 
@@ -86,3 +86,33 @@ Optionally apply the same treatment to the night-sleep delta (`:533-536`) for co
 
 ### 2026-07-15 — filed
 Filed by the manager during the Task-4 cascade. Not actioned: the plan's §0.2 scope covers the act30 rake and the multi-zone injection fix only, and changing a validator gate mid-cascade would have made the campaign's before/after scorecards incomparable. Deferred deliberately, with the evidence recorded above so the next session doesn't have to re-derive it.
+
+### 2026-07-18 — FIXED (employee)
+
+**Predecessor archived first** (hard repo rule): `Step4_docs/3rdJ_04_augmentationGSS_2split_val.py.20260718_preG4fix`. Pre-fix reports also saved alongside each pool before re-run: `outputs_step4/sweep/R5_raked_mindwell_actv2/step4_validation_report.{txt,html}.20260718_preG4fix` and the `R5_raked_mindwell/` equivalents.
+
+**Change:** in `validate_temporal` (Section 4 / G4), the pooled `d_sleep` / `d_work` block (`:533-541` pre-fix) was replaced with a loop over `DDAY_STRATA ∈ {1,2,3}`, mirroring `validate_at_home`'s (G2) per-stratum idiom. For each of the two metrics (night sleep-slot delta, work peak-slot delta) it now computes the delta on stratum-filtered `obs`/`syn` subsets, grades each of the 3 strata against the **unchanged** `g4_slot_pp_pass`/`g4_slot_pp_warn` thresholds, and records a 4th "worst stratum" roll-up row (max delta, graded the same way) — three rows + a worst-stratum summary per metric, per ticket step 4's preference. Applied the same treatment to the sleep delta too (ticket step 5), since it was cheap and the pre-04T pool turned out to need it (see below). The pooled `obs_arr`/`syn_arr` and the transition-rate gate above them were left untouched.
+
+**Per-stratum results:**
+
+| metric | stratum | pre-04T (`R5_raked_mindwell`) | post-04T (`R5_raked_mindwell_actv2`) |
+|---|---|---|---|
+| Work peak-slot delta | Weekday | 14.53 pp **FAIL** | 0.33 pp **PASS** |
+| Work peak-slot delta | Saturday | 7.97 pp **FAIL** | 0.03 pp **PASS** |
+| Work peak-slot delta | Sunday | 7.00 pp **FAIL** | 0.01 pp **PASS** |
+| Work peak-slot delta | worst (Weekday both) | 14.53 pp **FAIL** | 0.33 pp **PASS** |
+| Night sleep-slot delta | Weekday | 16.41 pp **FAIL** | 0.00 pp **PASS** |
+| Night sleep-slot delta | Saturday | 5.19 pp **WARN** | 0.04 pp **PASS** |
+| Night sleep-slot delta | Sunday | 4.62 pp **WARN** | 0.00 pp **PASS** |
+| Night sleep-slot delta | worst (Weekday both) | 16.41 pp **FAIL** | 0.00 pp **PASS** |
+
+Matches the ticket's evidence table closely (weekday/Sat/Sun 14.5/8.0/7.0 → 0.3/0.02/0.00 pp, argmax unchanged). **Direction test passed**: pre-04T ranks worse than post-04T in every one of the 6 strata (both metrics), not merely "fails while the other passes."
+
+**Scorecards** (both re-run locally against the actual pools):
+- post-04T (`R5_raked_mindwell_actv2`, the live pool): **66P/3W/2F → 73P/3W/1F**. FAIL count dropped by exactly one (the pooled work-peak FAIL is gone; the sole remaining FAIL is OW5, unrelated). Total row count rose from 71→77 because the fix intentionally reports 3 strata + 1 worst-stratum roll-up per metric (8 rows) instead of 1 pooled row per metric (2 rows) — the ticket's "expected 67P/3W/1F" assumed a single roll-up row; the actual design (ticket step 4's stated preference) adds diagnostic rows, so the total-count is higher than that rough guess even though the FAIL-count-drops-by-one criterion holds exactly.
+- pre-04T (`R5_raked_mindwell`): 64P/3W/4F → 64P/5W/8F. This pool got *worse* under the fix, which is correct and expected — its pooled sleep/work deltas (6.25/6.38 pp) happened to land in a similar range to the true per-stratum badness by coincidence; stratifying reveals the real weekday delta is far worse (14.5-16.4 pp) and Sat/Sun are WARN/FAIL too. This is exactly the "untrustworthy in both directions" risk the ticket flagged (§ "Why this matters", point 3).
+- **No other gate's line moved on either pool** — confirmed by diffing each new `step4_validation_report.txt` against its `.20260718_preG4fix` backup; the only lines that differ are the `G4` sleep/work lines and the summary counts they roll into.
+
+**Files touched:** `Step4_docs/3rdJ_04_augmentationGSS_2split_val.py` (G4 block only); both sweep pools' `step4_validation_report.{html,txt}` regenerated in place (pre-fix copies preserved as `.20260718_preG4fix`).
+
+**Status: CLOSED.**

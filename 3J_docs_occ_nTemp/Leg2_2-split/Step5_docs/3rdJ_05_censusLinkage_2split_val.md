@@ -11,6 +11,22 @@
 
 ---
 
+> ## ⚠️ ADDENDUM — 2026-07-18 (stale headline notice, original body below intact)
+>
+> This doc's headline (20P/1W/3F, and 613 excluded / 29,660 post-exclusion, both dated
+> 2026-06-22) is **superseded** by the July-15 re-run on the live actv2 data (post-04T
+> activity rake, day-type-stratified gate logic).
+>
+> - Operative scorecard of record: **22P / 1W / 1F** (source: `Step5_docs/run_val_20260715.log`).
+>   The sole FAIL is gate 2.2 (AT_HOME per-slot max deviation, within-day-type, 3.72 pp vs the
+>   ≤3 pp gate); the sole WARN is gate 5.2 (mean N_HH_MEMBERS 1.500 vs Census ref ~2.80,
+>   a pre-existing per-person-vs-HH aggregation note, not new).
+> - Exclusion counts of record: **735 excluded / 29,538 post-exclusion** (from 30,273 rows)
+>   (source: `Step5_docs/run_step5_full_20260715.log`, `--exclusion` stage). Frame of record =
+>   **23,150 HH**. The 613/29,660 figures in the body below are the superseded June-22 numbers.
+
+---
+
 ## Aim
 
 Validate that the 3J 2-channel Step 5 linkage correctly:
