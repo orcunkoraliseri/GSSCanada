@@ -119,3 +119,166 @@ outputs_step6/                              (checkpoints, DRIFT matrices, 2030 d
 ## Progress Log
 
 *(append entries below — `| Date | Action | Notes |` table rows or dated `###` entries; job IDs; keep the non-closure discipline: "Step 6 NOT declared done" until the validator signs off)*
+
+### 2026-07-22 — Track A builder (Part 1): port + smoke test + submit
+
+**Employee session**, executing `3rdJ_06_trackA_builder_prompt.md`. Built the Leg-2→Leg-3 port, smoke-tested locally, submitted ONE cluster job, stopped (no polling) per cluster discipline.
+
+**Files created** (all under `Step6_docs/`):
+- `3rdJ_06_longitudinalForecasting_4split.py` — main script, `--stage {audit,A,B,C,D1,D2,all} --band ... --smoke --data`. Ported from Leg-2's `3rdJ_06_longitudinalForecasting_2split.py` (2350 lines) with the deltas below.
+- `assemble_scenario_2030_4split.py` — `--verify` dry-run / write mode, writes `outputs_step6/scenario_2030_features_4split.csv`. No retail-conditioning column added (per runbook §6B/6G — the retail lever is post-hoc, downstream, and not built this session).
+- `slurm_06_4split.sh` — `#SBATCH -p pg --gres=gpu:1 -t 7-00:00:00 --mem=32G`.
+
+**Raw-pool decision (seed_3 vs seed_3_g3fix): used `seed_3_g3fix`.** Confirmed on the cluster (`ls -la outputs_step4/`): `seed_3/` mtime 2026-07-19 18:11 vs `seed_3_g3fix/` mtime 2026-07-21 13:04 (later). Step-4's own Progress Log (`3rdJ_04_augmentationGSS_4split.md`, 2026-07-21 entry) records: *"DECISION (user-confirmed 2026-07-21): accept the seed_3_g3fix pool WHOLESALE"* — the G3 co-presence-fix rerun of the winning seed_3 checkpoint supersedes seed_3 (activities 99.9998% identical, co-presence internally consistent post-fix, `seed_3` preserved not deleted). This is a documented, already-resolved decision, not an open ambiguity — used `seed_3_g3fix/augmented_diaries.csv` as the default raw training pool, with fallback `seed_3` → flat `outputs_step4/augmented_diaries.csv` if not found (mirrors Leg-2's fallback-chain pattern). `--data` overrides.
+
+**Key deltas applied vs the Leg-2 fork base** (per builder prompt §1-§9):
+1. Loss/weighting (§3): removed Leg-2's `UncertaintyWeighting`; imported `component_losses`, `diversity_loss`, `exclusivity_loss`, `PCGrad`, `js_divergence`, `TASK_GROUPS`, `LAMBDA_DIV` directly from `3rdJ_04D_train_4split` and reused fixed-alpha (1.0/0.5/0.3) + PCGrad across the 3 task groups (resid=act+home+cop, work, retail), `retail_pos_weight` resolved from `step4_feature_config.json` (50.10556).
+2. Cross-day pairing (§4): `build_cycle_pairs()`/`_score_candidates_pairing()`/`_bin_totinc_for_pairing()` ported verbatim (channel-agnostic); `Step6Dataset` extended with `dec_retail_avail`.
+3. DRIFT_MATRIX (§5): `compute_drift_matrix_4split()` adds `AT_RETAIL_drift`; `TrendEncoder4Split.n_output` set to 9 (3 strata × 3 channels, was 6) and `from_drift_csvs()` pulls the quadruple `[AT_HOME_drift, AT_WORK_drift, AT_RETAIL_drift, aggregate_JS]`. COVID check extended to a triple-signal (home↑, work↓, retail↓), soft-blocker (WARN, not FAIL) per the val plan.
+4. Deliverable decode (§6): new `decode_deliverable()` helper wraps `generate_nucleus()` + `calibrate_retail_prob()` + `exclusivity_projection()` + `apply_activity_override_3ch()` + `enforce_min_dwell_row()` — all imported from `3rdJ_04E_inference_4split`, none reimplemented, `3rdJ_04B_model_4split.py` untouched. Used for both D1 (2022 backcast) and D2 (2030 base forecast) at deliverable settings (T=0.7, nucleus p=0.9, min-dwell=2) — never greedy. Internal diagnostics (DRIFT_MATRIX, `validate_cycle` early-stop signal) intentionally kept greedy (T=0.0) via the model's own `generate()`.
+5. 6H mutex (§ val plan): `mutual_exclusion_resolve()` rewritten as a hard-assertion 3-way verifier (raises `AssertionError`, never warns) — the decode chain already guarantees ISR=0 by construction, this is belt-and-braces per the Leg-2 2026-07-17 mutex-bug lesson.
+
+**Judgment calls / deviations flagged:**
+- **WGHT_PER survey-weighting NOT wired into Step-6's loss** (`component_losses(..., wght_per=None)`), even though Step-4's own `component_losses` signature supports it. Not part of the builder prompt's §3-§9 deltas, and Leg-2's own Step-6 didn't wire it either — kept consistent with the fork base rather than silently adding a new weighting axis.
+- **`lambda_excl=0.05` kept ON throughout every Step-6 fine-tune stage** (no warmup/joint phase split like Step-4 has) — Step-6 has no analogous "retail-head-only" phase since the retail head is already warm from Step-4's own 2-phase schedule by the time Step-6 warm-starts from its checkpoint.
+- **TrendEncoder's 50-iteration fit is still against an all-zero dummy target** (ported as-is from Leg-2, ×3 output dim now 9). Flagging explicitly per §5: this is a known limitation carried forward, NOT a completed distribution-matching improvement — do not read it as one.
+- Anti-copy Gate 2 (JS sign check) left scoped to home/work only (unchanged from Leg-2), matching the builder prompt's silence on extending it to retail — retail-specific backcast gates are validator scope (deferred, out of session).
+
+**Smoke test:** `--stage audit` then `--stage all --smoke` run locally (CPU, `py -3 -X utf8`) against the local 180-row 4-cycle sample (`Step4_docs/outputs_step4/smoke_test_20260719/augmented_diaries_SMOKE.csv` — chosen because the 418 MB `seed_3_g3fix` pool is cluster-only; this file has all 4 cycles × 3 strata present, unlike a random subsample). Result: **exit code 0**, all 5 stages (audit, A, B, C, D1, D2) completed. `DRIFT_MATRIX_{0510,1015,1522}_4split.csv` all written with the new `AT_RETAIL_drift` column populated (verified via `head`). Pairing sanity confirmed — no JS≈0 / no identical bands (Gate 1 slot-disagree=0.656, Gate 2 JS_home=0.108/JS_work=0.210, Gate 3 val_js>0 and loss≥0 at every warm-start, Gate 4 skipped in smoke mode per design since the tiny sample has no real WFH-day pool). 6H mutex guard: 0 violations across all 3 bands. `2030_synthetic_diaries_4split.csv` (6 rows, smoke-scale) written as the final deliverable. One cosmetic-only, non-blocking artifact: `call_mindwell()`'s subprocess capture threw a `UnicodeDecodeError` in the reader thread on Windows local (cp1252 vs utf-8 mismatch decoding 04M's own em-dash prints) — did not affect `returncode` (0) or the min-dwell output files; inherited unchanged from Leg-2's `subprocess.run(..., text=True)` pattern, expected to not reproduce on the cluster's Linux/UTF-8 locale.
+
+**Cluster submission:** files scp'd to `/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/Step6_docs/` (dir did not exist yet, created). `sbatch slurm_06_4split.sh` → **job 1133427**. Not polled per cluster discipline — `.out`/`.err` land in `/speed-scratch/o_iseri/logs/3J_s6_4split_1133427.{out,err}`, to be read in the follow-up post-run session (`3rdJ_06_trackA_postrun_prompt.md`).
+
+**Step 6 NOT declared done** — Part 1 (build/smoke/submit) only. Validator and calibration chain are out of scope for this session.
+
+### 2026-07-22 — Track B: hotel SARIMA side-track (fully local, independent of Track A)
+
+**Employee session**, executing `3rdJ_06_trackB_hotel_builder_prompt.md`. Built and ran
+`3rdJ_06_hotel_sarima_4split.py` locally (`py -3 -X utf8`, statsmodels 0.14.6). No cluster
+dependency.
+
+**Critical pre-check finding (per the prompt's "read the CSV first" instruction):** the
+harmonized `0_Occupancy/external/hotel_occupancy_monthly.csv` does **not** have "AB
+truncated to 2010-2022 / QC full 2005-2022" as the runbook's OD-2 discussion implicitly
+assumed. Actual real (non-blank) coverage is:
+- **AB**: 2011-01 .. 2022-09 (n=141, one internal gap at 2011-12) — this IS the runbook's
+  already-anticipated "truncated AB" fallback branch (line ~117: splice dummy dropped, fit
+  on the available obs), just starting 2011 rather than 2010.
+- **QC**: 2019-01 .. 2022-12 (n=48) — **only 12 pre-COVID months (2019 itself)**. This is
+  a much harder constraint than anything OD-2 discussed (which was AB-only). Confirmed via
+  Step 1's own header comment (`3rdJ_01_hotelIngest_4split.py` line 213: *"Real coverage:
+  2019-2025 (2005-2018 GAP)"*) — a known, pre-existing Step-1 acquisition gap (ISQ's
+  accessible Power-BI dashboard only exposes 2019+), not a bug introduced here.
+
+**6I.1 order selection (frozen):**
+- **AB**: independently fit + BIC-selected on its own pre-COVID segment (2011-01..2019-12,
+  n=108, 33/36 candidate grid cells converged). Grid restricted to **d=1, D=1** by design
+  (see below) with p,q∈{0,1,2}, P,Q∈{0,1}. **Selected order: SARIMA(1,1,0)(0,1,0)₁₂**, BIC
+  = −431.26. Differs from the runbook's stated expectation SARIMA(1,1,1)(1,1,1)₁₂ — treated
+  as "expectation to verify, not hardcode" per the prompt; the simpler order won BIC on the
+  actual 108-obs AB segment.
+- **QC**: pre-COVID segment (n=12, 2019 only) is objectively too short to identify a
+  seasonal SARIMA(P,D,Q)₁₂ term (D=1 alone consumes all 12 obs). **Order BORROWED from
+  AB's independently-selected order** rather than independently fit — flagged as a gate
+  8.1 **FAIL for QC** in the Section-8 table (data-availability limitation, not softened).
+- **d/D grid note**: an open d∈{0,1} grid was tried first; it picked a non-differenced
+  (d=0) AR(1)×SAR(1) model that fit the short pre-COVID window fine by BIC but had no
+  anchored long-run mean once COVID exog terms were added on the full-series refit — see
+  6J note below. Restricted the grid to d=1,D=1 (both structurally justified — occupancy
+  has neither a trend-stationary nor seasonally-stationary level) and reselected within
+  that space; documented in the script's `bic_grid_search()` docstring.
+
+**Splice dummy `D_splice`: omitted for both provinces** (empirically checked, not
+assumed). AB's 2005-2009 CBRE archive splice was never acquired (Step 1's
+`read_cbre_ab_archive()` returns `[]` — "Not acquired"), so AB is single-sourced
+(Alberta Market Monitor) throughout its entire available span — there is no 2010-01
+splice EVENT in the data to test for.
+
+**6I.2 full-series refit + intervention spec:** frozen order re-estimated on the full
+real-observation span per province with exog = `[covid_pulse (2020-03..2022-06),
+level_shift (t≥2020-03, persists through 2030)]` — both pulse-only and level-only were
+rejected per dr_L3-09's own recommendation (pure pulse over-optimistic, pure level
+over-pessimistic). Gate 8.5 PASS for both provinces.
+
+**6I.3 backcast gate (8.3) + COVID dip (8.4):**
+- **AB**: backcast window 2015-01..2019-12 (n=60, full window available) → **MAE = 0.0174**
+  (gate < 0.05) — **PASS**. 2020-04: reconstructed 0.2767 vs actual 0.1120 vs historical
+  low 0.1250 — no overshoot below the historical low — **PASS** (though the reconstruction
+  materially under-estimates the dip's depth; the "no overshoot below" criterion is still
+  literally satisfied).
+- **QC**: **no ground truth exists for 2015-2018** (ISQ real coverage starts 2019-01).
+  Tested only on the available overlap 2019-01..2019-12 (n=12) → MAE = 0.0990 — **FAIL
+  (PARTIAL)**, flagged explicitly as a partial 1-year test standing in for the nominal
+  5-year window, not silently reported as a full pass. 2020-04 dip check: PASS (no
+  overshoot).
+
+**6J — 2030 forecast + central-path methodology (the key engineering decision this
+session):** The fitted intervention-SARIMA model's own raw 96-step-ahead point forecast
+was tried FIRST as the scenario-band central path per the obvious reading of the spec, and
+was **rejected after investigation** (per the prompt's explicit instruction: "if central
+forecast is wildly off anchors, investigate before shipping"). Every (d,D) combination
+tested produced a 2030 central-path annual mean between **0.72 and 2.71** for a series
+bounded in (0,1] — the classic long-horizon ARIMA extrapolation failure mode dr_L3-09
+itself warned about ("if the trend is estimated with a slight bias due to the tail-end
+recovery in 2021-2022, the 2030 forecast will diverge significantly") — with only
+108-141 (AB) / 48 (QC) training observations and a 2020-2022 tail dominated by a sharp
+COVID-recovery ramp, the 96-step extrapolation compounds that ramp's momentum
+unboundedly. **Fix shipped**: the scenario-band central path uses
+`central_2030(month, PR) = normalized_2019_monthly_shape(month, PR) × ANCHOR_2023_2025[PR]`
+— i.e. the last full pre-COVID year's seasonal shape (stable per dr_L3-05/dr_L3-09
+literature), rescaled so its annual mean equals the real 2023-2025 CBRE/STR-reported
+recovery anchor already given in the builder prompt. This is the literal reading of
+dr_L3-09 Table 5's own central-scenario definition ("Full Recovery / Central-Default:
+travel demand stabilizes at its historical 2019 rates"), anchored to the *recovered*
+level (AB's raw 2019 mean in this series, 0.541, sits ~7pp below its own 2023-2025 CBRE
+anchor — Calgary's 2022-2026 travel/convention rebound pushed the market above its
+pre-COVID reference). The raw SARIMA point forecast + 80%/95% PI is still computed and
+reported (per spec — "report SARIMA statistical prediction intervals") but is NOT used as
+the shipped central path; its drift is surfaced as an explicit, separate, honestly-WARN
+sub-check under gate 8.6, not hidden.
+
+**2030 central-path sanity check vs anchors:**
+| PR | Shipped central-path 2030 mean | Anchor (2023-2025) | Diff | Gate 8.6 (shipped) |
+|---|---|---|---|---|
+| QC | 0.6350 | 0.635 | 0.0000 | PASS (by construction) |
+| AB | 0.6150 | 0.615 | 0.0000 | PASS (by construction) |
+
+Raw SARIMA 96-step point forecast (diagnostic only, NOT shipped): QC 2030 mean = 2.7127,
+AB 2030 mean = 2.6007 — both flagged WARN under a separate 8.6 sub-row, documented as the
+long-horizon-extrapolation instability described above.
+
+**Outputs written:**
+- `0_Occupancy/forecasts/hotel_multiplier_2030.csv` (72 rows = 12 months × 2 PR × 3 bands;
+  columns include `band_multiplier`, `occupancy_rate`, `central_path_2030`,
+  `sarima_raw_forecast_2030` for traceability). Rates range AB [0.405, 0.761], QC [0.433,
+  0.897], all within (0,1].
+- `0_Occupancy/processed/hotel_multiplier_lookup.csv` (189 rows = 141 AB + 48 QC real
+  historical months, for Step 7's 2022 hotel product).
+- `0_Occupancy/processed/hotel_diurnal_shape_st.csv` (96 rows = 48 slots × 2 day-types,
+  the dr_L3-05 table hardcoded in the script and cross-checked value-by-value against
+  dr_L3-05_hotel_diurnal_shape_REPORT.md Table 5). **Holidays use the weekend shape** —
+  dr_L3-05 has no separate holiday variant, documented limitation, not invented.
+- `outputs_step6_hotel/section8_hotel_gate_scorecard.csv` — full Section-8 gate table.
+
+**Section-8 scorecard: 15 PASS / 3 WARN / 2 FAIL (20 gate rows across 10 gate IDs × ≤2
+PR/sub-checks each).** FAIL-severity rows that did NOT pass (flagged, not softened):
+- **[8.1] QC FAIL** — order borrowed from AB, not independently selected (pre-COVID n=12
+  insufficient).
+- **[8.3] QC FAIL (PARTIAL)** — backcast tested only on 2019 (n=12), no 2015-2018 ground
+  truth exists for QC.
+
+All other FAIL-severity gates PASS: 8.1 AB, 8.3 AB, 8.4 (both), 8.5 (both), 8.7 (both),
+8.9, 8.10. WARN-severity gates: 8.2 AB (Ljung-Box p=0.0049, mild residual autocorrelation
+remains after intervention), 8.6 raw-SARIMA-path sub-check (both PR, documented drift,
+not the shipped path). 8.2 QC PASS (p=0.6644), 8.6 shipped-path (both PR) PASS, 8.8
+seasonality-preservation PASS (both PR, r=1.000 QC / r=0.974 AB vs pre-COVID profile).
+
+**Per the val doc's additive-safety principle: this hotel-track FAIL (8.1/8.3 QC) does
+NOT block Track A / GSS-channel sign-off**, but per the same doc it DOES block Step-7
+hotel injection specifically for QC's reliability — the fall-back guarantee routes hotel
+Spaces to NECB baseline if this track isn't clean. Given QC's order-selection and backcast
+gates are both data-availability-limited (not process failures — the underlying ISQ data
+for 2015-2018 simply doesn't exist in the acquired series), Step-7 should treat QC hotel
+injection as **usable-with-caveat** (the full-series fit itself is well-behaved: Ljung-Box
+p=0.66, backcast MAE on the only available year is 0.099 — 2× the 0.05 gate, not
+wildly off) rather than as a hard block equivalent to a modeling error — flagging this
+distinction for the Step-7 employee/manager to weigh, not deciding it here.
