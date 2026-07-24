@@ -76,3 +76,7 @@ Cluster GSS stages via sbatch; hotel + validator locally: `py -3 -X utf8 3rdJ_06
 ## Progress Log
 
 *(append entries below — `| Date | Check | Result | Notes |`)*
+
+| Date | Check | Result | Notes |
+|---|---|---|---|
+| 2026-07-23 | Full validator run (Sections 1-8) | GSS(1-6): 66P/15W/**5F**/19I; Hotel(8): 17P/3W/2F | `3rdJ_06_longitudinalForecasting_4split_val.py` built + run. Full scorecard, both discovered validator bugs (Section-5 scenario-loop `lev` binding; hotel status normalization), and per-gate disposition recorded in `3rdJ_06_longitudinalForecasting_4split.md`'s 2026-07-23 Progress Log entry (this doc intentionally does not track result numbers beyond this summary row, per the "defer to the live HTML + this doc won't track result numbers" convention above). Report: `outputs_step6/step6_validation_report.html`. Canonical `_C` deliverable MD5 `7c105ef331b37107d5b605c95028c3ba`. **Step 6 NOT declared done** (5 FAIL on GSS channels, both real evidence-characterized findings, not relaxed). |

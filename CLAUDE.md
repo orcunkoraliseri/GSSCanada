@@ -37,6 +37,14 @@ The user runs a two-agent workflow. Identify which role you are at the start of 
 
 When the user says "an agent" without qualifying, ask which role applies if the answer changes your behaviour. Manager prompts to employees should explicitly state: **"You are the employee. Execute the task below and append a Progress Log entry on completion."**
 
+### Session hygiene — fresh employee sessions, not long resumes
+Do not repeatedly resume the same employee agent session across multiple tasks or sub-investigations. Resuming re-sends the ENTIRE accumulated transcript as context every time — on a long-lived thread (large file reads, multi-MB logs/CSVs/IDFs) this burns a large amount of tokens per resume.
+
+- For each new task, write (or update) an **implementation-plan / task doc** — `.claude/tasks.md`, a task doc under `eSim_docs_*/`, or a dedicated status/TASKS doc — that captures the decisions and state the next session needs.
+- Then spawn a **fresh** employee session for that task and point it at the doc for context, instead of resuming the old thread.
+- Treat the written doc, not the agent's own conversational memory, as the source of truth for handoff context.
+- Only resume an existing agent thread when no written tracking doc exists yet to hand a fresh agent instead.
+
 ### Cost rule — cheap models for cheap work (HARD RULE)
 Monitoring/`squeue`/`sacct`/`scancel` polling loops and any other mechanical, repetitive, or low-reasoning job (status checks, file existence/size peeks, log tails, simple scp uploads, waiting on jobs) are **cheap-model duties — use Haiku or Sonnet, never Opus.**
 
