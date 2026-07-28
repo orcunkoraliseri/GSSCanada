@@ -314,7 +314,9 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
     IDF.setiddname(idd_path)
     idf = IDF(idf_path)
 
-    result = {"office": {"n_spaces": 0}, "retail": {"n_spaces": 0}, "hotel": {"n_spaces": 0},
+    result = {"office": {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
+              "retail": {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
+              "hotel":  {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
               "fallback": [], "ambiguous": [], "modulated_schedule_names": []}
 
     # ---- Load per-channel series (fall-back guarantee, W5) ----
@@ -363,6 +365,15 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         result["modulated_schedule_names"].append(nm)
 
     # ---- Dispatch per Space: PEOPLE via Number_of_People_Schedule_Name (the Leg-2 field bug) ----
+    # NOTE (2026-07-28, AUDIT-W job 1169582): the previous version also wrote
+    # `Interpolate_to_Timestep="No"` on LIGHTS/ELECTRICEQUIPMENT. That field does NOT exist on
+    # Lights/ElectricEquipment (it belongs to Schedule:Day:Interval), so eppy raised on every
+    # commercial load object -- 26 spurious "injection failed" WARN lines per run. The schedule
+    # assignment itself had already landed (it precedes the throw), so the wiring was correct, but
+    # (a) the noise would mask a genuine failure across a 56-run campaign and (b) reordering the two
+    # setattr calls would have silently dropped the LIGHTS/EQUIP wiring -- the Leg-2 bug again.
+    # Removed. Per-class counters added so LIGHTS/EQUIP coverage is now measurable by the W-gates.
+    _COUNTER_KEY = {"PEOPLE": "n_spaces", "LIGHTS": "n_lights", "ELECTRICEQUIPMENT": "n_equip"}
     for obj_class, sch_field in [
         ("PEOPLE", "Number_of_People_Schedule_Name"),
         ("LIGHTS", "Schedule_Name"),
@@ -374,36 +385,13 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             channel = classify_tag2(tag2)
             if channel in ("residential", "residential_common"):
                 continue  # handled by the separate residential injector
-            if channel == "office" and "office" in sch_names:
+            if channel in ("office", "retail", "hotel") and channel in sch_names:
                 try:
-                    setattr(obj, sch_field, sch_names["office"])
-                    if obj_class in ("LIGHTS", "ELECTRICEQUIPMENT"):
-                        setattr(obj, "Interpolate_to_Timestep", "No")
-                    if obj_class == "PEOPLE":
-                        result["office"]["n_spaces"] += 1
+                    setattr(obj, sch_field, sch_names[channel])
+                    result[channel][_COUNTER_KEY[obj_class]] += 1
                 except Exception as e:
                     if verbose:
-                        print(f"  WARN: office injection failed for {tag2}: {e}")
-            elif channel == "retail" and "retail" in sch_names:
-                try:
-                    setattr(obj, sch_field, sch_names["retail"])
-                    if obj_class in ("LIGHTS", "ELECTRICEQUIPMENT"):
-                        setattr(obj, "Interpolate_to_Timestep", "No")
-                    if obj_class == "PEOPLE":
-                        result["retail"]["n_spaces"] += 1
-                except Exception as e:
-                    if verbose:
-                        print(f"  WARN: retail injection failed for {tag2}: {e}")
-            elif channel == "hotel" and "hotel" in sch_names:
-                try:
-                    setattr(obj, sch_field, sch_names["hotel"])
-                    if obj_class in ("LIGHTS", "ELECTRICEQUIPMENT"):
-                        setattr(obj, "Interpolate_to_Timestep", "No")
-                    if obj_class == "PEOPLE":
-                        result["hotel"]["n_spaces"] += 1
-                except Exception as e:
-                    if verbose:
-                        print(f"  WARN: hotel injection failed for {tag2}: {e}")
+                        print(f"  WARN: {channel} injection failed for {tag2} ({obj_class}): {e}")
             elif channel == "unknown" and obj_class == "PEOPLE":
                 result["ambiguous"].append(tag2)
 
@@ -411,9 +399,12 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
     idf.saveas(output_path)
     if verbose:
         print(f"  Saved: {output_path}")
-        print(f"  Injected: office={result['office']['n_spaces']} retail={result['retail']['n_spaces']} "
+        print(f"  Injected PEOPLE: office={result['office']['n_spaces']} retail={result['retail']['n_spaces']} "
               f"hotel={result['hotel']['n_spaces']}; fallback={result['fallback']}; "
               f"ambiguous={len(set(result['ambiguous']))}")
+        print(f"  Injected LIGHTS: office={result['office']['n_lights']} retail={result['retail']['n_lights']} "
+              f"hotel={result['hotel']['n_lights']} | ELECTRICEQUIPMENT: office={result['office']['n_equip']} "
+              f"retail={result['retail']['n_equip']} hotel={result['hotel']['n_equip']}")
 
     # Provenance log
     log_path = output_path + ".provenance.txt"
@@ -424,6 +415,8 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         f.write(f"n_office_spaces={result['office']['n_spaces']}\n")
         f.write(f"n_retail_spaces={result['retail']['n_spaces']}\n")
         f.write(f"n_hotel_spaces={result['hotel']['n_spaces']}\n")
+        for _ch in ("office", "retail", "hotel"):
+            f.write(f"n_{_ch}_lights={result[_ch]['n_lights']} n_{_ch}_equip={result[_ch]['n_equip']}\n")
         f.write(f"ambiguous_tags={sorted(set(result['ambiguous']))}\n")
         f.write("density_basis=NECB baseline densities UNCHANGED for all channels\n")
 
