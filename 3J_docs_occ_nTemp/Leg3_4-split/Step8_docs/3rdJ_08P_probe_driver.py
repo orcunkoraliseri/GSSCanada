@@ -13,7 +13,8 @@ Scope boundary (handoff §1): residential is OUT. No residential channel config 
 built here; residential Spaces stay at NECB baseline in every cell (the injector already
 skips residential Tag-2 unconditionally -- see commercial_integration.py L386-387).
 
-Runs on the cluster only, via sbatch array (3rdJ_08P_probes.sh). Does NOT modify
+Runs on the cluster via sbatch array (3rdJ_08P_probes.sh), OR locally on Windows via
+3rdJ_08P_probes_local.py (LOCAL PORT, 2026-07-28 -- see --engine below). Does NOT modify
 commercial_integration.py, eSim_datapreprocessing.py, eSim_dynamicML_mHead.py, or
 eSim_dynamicML_mHead_alignment.py.
 
@@ -22,6 +23,29 @@ eSim_dynamicML_mHead_alignment.py.
 (zone_to_channel keys vs. SQL KeyValue -- see _build_zone_channel_map / _write_channel_hourly_csv);
 loud unmapped-row reporting + hard-fail on 0 mapped rows; driver_md5 added to manifest; added
 --postprocess-only (re-derive both CSVs + manifest from an existing eplusout.sql, no re-simulation).
+2026-07-28 LOCAL PORT (additive, cluster path unchanged -- see
+3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/3rdJ_08_implementation_improvements.md): added
+--engine {auto,cluster,local} + --outroot + --repo-root. On engine=="local", paths resolve
+against the local repo checkout instead of /speed-scratch, EnergyPlus is invoked directly
+(no Singularity wrapper) via eSim_bem_utils/config.py's ENERGYPLUS_EXE, and every manifest
+now carries PLATFORM (sys.platform) + the EnergyPlus version/build actually used, so
+3rdJ_08P_probe_gates.py can refuse to compare cells simulated on different platforms.
+
+2026-07-28 Defaut-3 fix ("trou d'empreinte", see the reference doc's OPEN structural
+defect): the output path is keyed ONLY by INJ_HASH = md5(commercial_integration.py)[:8],
+so a Step-7 product change (the actual content that determines injected schedules) with
+an unchanged injector leaves the path unchanged too -- a re-simulation would overwrite
+in place with no guard. Added a SEPARATE INPUTS_HASH = md5 over the Step-7 product CSVs
+this cell actually reads (see _compute_inputs_hash), written into every manifest.json.
+Deliberately NOT merged into INJ_HASH: INJ_HASH must keep owning the output directory
+PATH so --postprocess-only recovery (re-derive CSVs from an untouched eplusout.sql,
+seconds instead of tens of minutes) keeps working even when only post-processing code
+changes. Before writing anything into an existing outdir, _check_inputs_hash_guard()
+compares INPUTS_HASH against the manifest already there and refuses (exit 1) on any
+mismatch -- including a missing/legacy INPUTS_HASH (pre-fix manifest), treated as
+UNKNOWN rather than safe -- unless --allow-stale-inputs is passed. Same guard call runs
+identically for engine=="cluster" and engine=="local" (inserted before the
+engine-specific simulate branch, so the verbatim Singularity wrapper is untouched).
 """
 from __future__ import annotations
 
@@ -29,7 +53,9 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sqlite3
+import subprocess
 import sys
 from datetime import datetime, timezone
 
@@ -67,59 +93,93 @@ INJECTOR_PY = UPLOAD + "/eSim_bem_utils/commercial_integration.py"
 
 sys.path.insert(0, UPLOAD)  # fallback in case PYTHONPATH wasn't propagated to the job env
 
+# ---------------------------------------------------------------------------
+# LOCAL (Windows) path defaults -- ADDITIVE, 2026-07-28 port. None of the cluster
+# constants above are modified; --engine (see main()) selects which set is actually
+# used for a given run. Resolved from the repo checkout this script itself lives in
+# (Step8_docs -> Leg3_4-split -> 3J_docs_occ_nTemp -> repo root), so it works from any
+# clone path, not just this machine's.
+# ---------------------------------------------------------------------------
+HERE = os.path.dirname(os.path.abspath(__file__))
+LOCAL_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 
-def _csv(name: str) -> str:
-    return os.path.join(STEP7_OUT, name)
+LOCAL_PROBES_ROOT = os.path.join(
+    LOCAL_REPO_ROOT, "3J_docs_occ_nTemp", "Leg3_4-split", "Step8_docs", "probes_local")
+LOCAL_IDF_SUPERTALL = os.path.join(
+    LOCAL_REPO_ROOT, "3J_docs_occ_nTemp", "Leg2_2-split", "Step8_docs", "outputs_step8",
+    "office_idfs_v242", "CAN_MTL", "SuperTallBuilding_90.1-2019_6A_Buffalo_NECB17_Z6_v242.idf")
+LOCAL_EPW = os.path.join(
+    LOCAL_REPO_ROOT, "BEM_Setup", "WeatherFile",
+    "CAN_QC_Montreal.Center-Jean.Brebeuf-McGill.Univ-McTavish.716120_TMYx_6A.epw")
+LOCAL_STEP7_OUT = os.path.join(
+    LOCAL_REPO_ROOT, "3J_docs_occ_nTemp", "Leg3_4-split", "Step7_docs", "outputs_step7")
+LOCAL_INJECTOR_PY = os.path.join(LOCAL_REPO_ROOT, "eSim_bem_utils", "commercial_integration.py")
 
+# On Windows, eSim_bem_utils lives at LOCAL_REPO_ROOT directly (no /upload mirror like the
+# cluster scratch tree) -- add it so `from eSim_bem_utils...` resolves. Does not touch the
+# cluster sys.path.insert(0, UPLOAD) above; on Linux this block is simply skipped.
+if sys.platform == "win32":
+    sys.path.insert(0, LOCAL_REPO_ROOT)
 
-OFFICE_2022 = _csv("office_presence_multiplier_2022.csv")
-OFFICE_2030 = _csv("office_presence_multiplier_2030.csv")
-RETAIL_2022 = _csv("retail_presence_multiplier_2022.csv")
-RETAIL_2030_CENTRAL = _csv("retail_presence_multiplier_2030_central.csv")
-RETAIL_2030_OPT = _csv("retail_presence_multiplier_2030_opt.csv")
-HOTEL_2022 = _csv("hotel_schedule_multiplier_2022.csv")
-HOTEL_2030_CENTRAL = _csv("hotel_schedule_multiplier_2030_central.csv")
-HOTEL_2030_OPT = _csv("hotel_schedule_multiplier_2030_opt.csv")
-
-# Deliberately nonexistent -- the P4/W5 fall-back trip wire for cell 6. Never create this file.
-RETAIL_NONEXISTENT = _csv("retail_presence_multiplier_2030_DOES_NOT_EXIST.csv")
 
 # ---------------------------------------------------------------------------
-# Probe cell table (handoff §3.2, SuperTall / MTL Z6, one-at-a-time design)
+# Probe cell table (handoff §3.2, SuperTall / MTL Z6, one-at-a-time design).
+# Parametrized on step7_out (2026-07-28 LOCAL PORT) so the same table can be built
+# against either the cluster STEP7_OUT or a local one -- see _resolve_engine_paths().
+# CELLS below (module level) preserves the exact cluster-default value for any code
+# that imports this module and reads CELLS directly, unchanged from before this port.
 # ---------------------------------------------------------------------------
-CELLS = [
-    {"tag": "baseline_necb", "channels": {}},
-    {"tag": "B_central", "channels": {
-        "office": {"csv": OFFICE_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
-        "retail": {"csv": RETAIL_2030_CENTRAL, "pr": "QC"},
-        "hotel": {"csv": HOTEL_2030_CENTRAL, "pr": "QC"},
-    }},
-    {"tag": "var_office", "channels": {
-        "office": {"csv": OFFICE_2030, "archetype": "Office_Knowledge", "band": "fullyhybrid"},
-        "retail": {"csv": RETAIL_2030_CENTRAL, "pr": "QC"},
-        "hotel": {"csv": HOTEL_2030_CENTRAL, "pr": "QC"},
-    }},
-    {"tag": "var_retail", "channels": {
-        "office": {"csv": OFFICE_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
-        "retail": {"csv": RETAIL_2030_OPT, "pr": "QC"},
-        "hotel": {"csv": HOTEL_2030_CENTRAL, "pr": "QC"},
-    }},
-    {"tag": "var_hotel", "channels": {
-        "office": {"csv": OFFICE_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
-        "retail": {"csv": RETAIL_2030_CENTRAL, "pr": "QC"},
-        "hotel": {"csv": HOTEL_2030_OPT, "pr": "QC"},
-    }},
-    {"tag": "cycle_2022", "channels": {
-        "office": {"csv": OFFICE_2022, "archetype": "Office_Knowledge", "band": "observed"},
-        "retail": {"csv": RETAIL_2022, "pr": "QC"},
-        "hotel": {"csv": HOTEL_2022, "pr": "QC"},
-    }},
-    {"tag": "fallback_retail", "channels": {
-        "office": {"csv": OFFICE_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
-        "retail": {"csv": RETAIL_NONEXISTENT, "pr": "QC"},
-        "hotel": {"csv": HOTEL_2030_CENTRAL, "pr": "QC"},
-    }},
-]
+def _build_cells(step7_out: str) -> list:
+    def _csv(name: str) -> str:
+        return os.path.join(step7_out, name)
+
+    office_2022 = _csv("office_presence_multiplier_2022.csv")
+    office_2030 = _csv("office_presence_multiplier_2030.csv")
+    retail_2022 = _csv("retail_presence_multiplier_2022.csv")
+    retail_2030_central = _csv("retail_presence_multiplier_2030_central.csv")
+    retail_2030_opt = _csv("retail_presence_multiplier_2030_opt.csv")
+    hotel_2022 = _csv("hotel_schedule_multiplier_2022.csv")
+    hotel_2030_central = _csv("hotel_schedule_multiplier_2030_central.csv")
+    hotel_2030_opt = _csv("hotel_schedule_multiplier_2030_opt.csv")
+    # Deliberately nonexistent -- the P4/W5 fall-back trip wire for cell 6. Never create this file.
+    retail_nonexistent = _csv("retail_presence_multiplier_2030_DOES_NOT_EXIST.csv")
+
+    return [
+        {"tag": "baseline_necb", "channels": {}},
+        {"tag": "B_central", "channels": {
+            "office": {"csv": office_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
+            "retail": {"csv": retail_2030_central, "pr": "QC"},
+            "hotel": {"csv": hotel_2030_central, "pr": "QC"},
+        }},
+        {"tag": "var_office", "channels": {
+            "office": {"csv": office_2030, "archetype": "Office_Knowledge", "band": "fullyhybrid"},
+            "retail": {"csv": retail_2030_central, "pr": "QC"},
+            "hotel": {"csv": hotel_2030_central, "pr": "QC"},
+        }},
+        {"tag": "var_retail", "channels": {
+            "office": {"csv": office_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
+            "retail": {"csv": retail_2030_opt, "pr": "QC"},
+            "hotel": {"csv": hotel_2030_central, "pr": "QC"},
+        }},
+        {"tag": "var_hotel", "channels": {
+            "office": {"csv": office_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
+            "retail": {"csv": retail_2030_central, "pr": "QC"},
+            "hotel": {"csv": hotel_2030_opt, "pr": "QC"},
+        }},
+        {"tag": "cycle_2022", "channels": {
+            "office": {"csv": office_2022, "archetype": "Office_Knowledge", "band": "observed"},
+            "retail": {"csv": retail_2022, "pr": "QC"},
+            "hotel": {"csv": hotel_2022, "pr": "QC"},
+        }},
+        {"tag": "fallback_retail", "channels": {
+            "office": {"csv": office_2030, "archetype": "Office_Knowledge", "band": "hybrid"},
+            "retail": {"csv": retail_nonexistent, "pr": "QC"},
+            "hotel": {"csv": hotel_2030_central, "pr": "QC"},
+        }},
+    ]
+
+
+CELLS = _build_cells(STEP7_OUT)  # cluster default -- identical to the pre-port literal table
 
 # ---------------------------------------------------------------------------
 # Output objects to ensure on every injected IDF (handoff §3.1 step 3 -- the Leg-2
@@ -142,7 +202,17 @@ VAR_METRIC = {
     "Zone Electric Equipment Electricity Energy": "equip",
 }
 CHANNEL_AGG = {
-    "residential": {"residential", "residential_common"},
+    "residential": {"residential"},
+    # residential_common (corridors/common areas, TAG2_RESIDENTIAL_COMMON) is emitted as its
+    # OWN column, NOT folded into "residential" -- unlike office_support/hotel_support, which
+    # genuinely ARE modulated by their channel's injection, residential_common is injected by
+    # NOBODY: the commercial MODULATE loop skips it (`continue`, commercial_integration.py
+    # ~L640) and inject_residential() iterates only TAG2_RESIDENTIAL (the apartments). Folding
+    # an uninjected constant-NECB-baseline Space into "residential" would dilute the reported
+    # residential level relative to office/hotel (whose *_support counterparts ARE injected),
+    # biasing per-channel attribution. See 3rdJ_08_simulation_4split.md Progress Log,
+    # 2026-07-28 residential_common column split.
+    "residential_common": {"residential_common"},
     "office": {"office", "office_support"},
     "retail": {"retail"},
     "hotel": {"hotel", "hotel_support"},
@@ -172,6 +242,208 @@ def md5_file(path: str) -> str:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _compute_inputs_hash(channels: dict) -> tuple:
+    """INPUTS_HASH -- Defaut-3 fix ("trou d'empreinte", 3rdJ_08_implementation_improvements.md).
+
+    md5 over the Step-7 product CSVs this cell actually reads. Exact, reproducible
+    recipe: for each channel name in the cell's `channels` dict, in SORTED
+    (alphabetical) order -- deliberately NOT the dict's insertion order, which is an
+    incidental property of how _build_cells() happens to list its keys, not a
+    contract -- append one line "<channel>|<csv_path-as-configured>|<md5-or-MISSING>"
+    (csv path exactly as configured, i.e. NOT normalized/resolved -- two cells that
+    read files at different paths must hash differently even if the bytes happen to
+    match; "MISSING" if the path is empty or the file doesn't exist, e.g. cell 6's
+    deliberately-absent retail CSV). Lines are '\\n'-joined and md5'd. A cell with no
+    channels at all (baseline_necb) hashes the empty string -- a fixed, deterministic
+    value, not an error.
+
+    Deliberately a SEPARATE hash from INJ_HASH (which fingerprints only
+    commercial_integration.py and owns the output directory PATH, see main()): a
+    product-only change must be able to change INPUTS_HASH without moving the path
+    (that is exactly the defect being closed), and a post-processing-only change to
+    THIS driver must never change INPUTS_HASH at all (it never touches the Step-7
+    CSVs) -- that is what keeps --postprocess-only recovery working.
+
+    Returns (hash[:8], detail) where detail is a list of
+    {"channel", "csv_path", "csv_md5"} dicts (csv_md5 is None when the file was
+    "MISSING") -- written into the manifest as INPUTS_HASH_DETAIL and used by
+    _diff_inputs() to name exactly which product file(s) changed.
+    """
+    entries = []
+    detail = []
+    for ch in sorted(channels.keys()):
+        csv_path = channels[ch].get("csv", "")
+        exists = bool(csv_path) and os.path.isfile(csv_path)
+        file_md5 = md5_file(csv_path) if exists else "MISSING"
+        entries.append(f"{ch}|{csv_path}|{file_md5}")
+        detail.append({
+            "channel": ch, "csv_path": csv_path,
+            "csv_md5": None if file_md5 == "MISSING" else file_md5,
+        })
+    h = hashlib.md5("\n".join(entries).encode("utf-8")).hexdigest()
+    return h[:8], detail
+
+
+def _diff_inputs(old_detail, new_detail) -> str:
+    """Human-readable list of which product file(s) differ between two
+    INPUTS_HASH_DETAIL lists (existing manifest vs. the current run), for the
+    STALE-INPUTS GUARD refusal message. old_detail may be None (legacy manifest that
+    predates INPUTS_HASH_DETAIL entirely)."""
+    if not old_detail:
+        return "unknown -- existing manifest has no INPUTS_HASH_DETAIL (legacy/pre-Defaut-3-fix run)"
+    old_by_ch = {d.get("channel"): d for d in old_detail}
+    new_by_ch = {d.get("channel"): d for d in new_detail}
+    diffs = []
+    for ch in sorted(set(old_by_ch) | set(new_by_ch)):
+        o, n = old_by_ch.get(ch), new_by_ch.get(ch)
+        o_md5 = (o.get("csv_md5") or "MISSING") if o else "(channel absent)"
+        n_md5 = (n.get("csv_md5") or "MISSING") if n else "(channel absent)"
+        if o_md5 != n_md5:
+            diffs.append(f"{ch}: {o_md5} -> {n_md5}")
+    return "; ".join(diffs) if diffs else "(no per-channel csv_md5 difference found)"
+
+
+def _archive_stale_dir(outdir: str) -> str:
+    """Never overwrite an existing outdir in place -- rename it aside with a
+    timestamp suffix instead. Same '_STALE_<timestamp>' convention as
+    3rdJ_08P_probes_local.py::_archive_stale (reused deliberately, per the reference
+    doc: 'reuse it rather than inventing a second convention'). Archives, never
+    deletes."""
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    dest = outdir.rstrip("\\/") + f"_STALE_{ts}"
+    os.rename(outdir, dest)
+    print(f"[archive] stale-inputs outdir archived -> {dest} (never overwritten in place)")
+    return dest
+
+
+def _check_inputs_hash_guard(outdir: str, inputs_hash: str, inputs_detail: list,
+                              allow_override: bool, postprocess_only: bool) -> None:
+    """Defaut-3 fix -- the actual guard. Called once, early, before ANY write into
+    outdir (before os.makedirs), identically for engine=="cluster" and
+    engine=="local". If outdir doesn't exist yet, or its manifest.json's INPUTS_HASH
+    already equals the current run's, this is a silent no-op (the common case).
+
+    Otherwise it refuses (exit 1) and prints both hashes + which product file(s)
+    differ, UNLESS --allow-stale-inputs was passed -- and even then the remedy
+    differs by mode, because "override" cannot mean the same thing in both:
+
+      * normal simulate path (postprocess_only=False): override ARCHIVES the stale
+        outdir aside (_archive_stale_dir, never deleted) and lets a fresh outdir be
+        created for a real re-simulation. This is the "legitimate re-simulation
+        after a known product fix" case.
+      * --postprocess-only (postprocess_only=True): archiving would delete the very
+        eplusout.sql this mode exists to reuse, so override NEVER archives here.
+        Override is honored ONLY for a LEGACY manifest (no INPUTS_HASH at all,
+        pre-dating this fix) -- there it just adopts the current INPUTS_HASH in
+        place as a one-time operator assertion that the existing sql really was
+        built from today's products. A GENUINE mismatch (manifest has an
+        INPUTS_HASH and it disagrees) is refused unconditionally even with
+        --allow-stale-inputs: postprocess-only never re-simulates, so it can never
+        legitimately resolve a real product mismatch -- that requires a real
+        re-simulation via the normal path.
+
+    A missing/legacy manifest (no INPUTS_HASH key -- predates this fix) is treated
+    as UNKNOWN, not as safe-to-reuse: an old manifest can carry a fully valid
+    ~16-38 min simulation, and "no data recorded" is not evidence that today's
+    products match it. Refuse by default like any other mismatch; the operator
+    opts in via --allow-stale-inputs exactly like a genuine mismatch (see above for
+    the postprocess-only carve-out).
+    """
+    manifest_path = os.path.join(outdir, "manifest.json")
+    if not os.path.isfile(manifest_path):
+        return  # nothing to protect
+
+    existing, read_error = None, None
+    try:
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            existing = json.load(f)
+    except Exception as e:
+        read_error = str(e)
+
+    existing_hash = existing.get("INPUTS_HASH") if existing else None
+    if read_error is None and existing_hash == inputs_hash:
+        return  # identical inputs (or both empty, e.g. baseline_necb) -- safe to reuse in place
+
+    legacy = False
+    if read_error is not None:
+        reason = f"existing manifest.json at {manifest_path} is unreadable ({read_error})"
+        detail_msg = "cannot compare -- treat as UNKNOWN"
+    elif existing_hash is None:
+        legacy = True
+        reason = ("existing manifest predates INPUTS_HASH (legacy/pre-Defaut-3-fix run) -- "
+                  "treated as UNKNOWN, not as safe-to-reuse")
+        detail_msg = _diff_inputs(existing.get("INPUTS_HASH_DETAIL"), inputs_detail)
+    else:
+        reason = f"existing INPUTS_HASH={existing_hash} != current INPUTS_HASH={inputs_hash}"
+        detail_msg = _diff_inputs(existing.get("INPUTS_HASH_DETAIL"), inputs_detail)
+
+    print(f"[FAIL] STALE-INPUTS GUARD ({outdir}):")
+    print(f"       {reason}")
+    print(f"       differing product file(s): {detail_msg}")
+
+    if postprocess_only:
+        if allow_override and legacy:
+            print("       --allow-stale-inputs on a LEGACY manifest under --postprocess-only: "
+                  "adopting the current INPUTS_HASH in place, NOT archiving (archiving would "
+                  "delete the eplusout.sql this mode exists to reuse). One-time operator "
+                  "assertion that the existing simulation output really was built from today's "
+                  "products.")
+            return
+        if allow_override and not legacy:
+            print("       --allow-stale-inputs is NOT honored here: a genuine INPUTS_HASH "
+                  "mismatch under --postprocess-only means the existing eplusout.sql was built "
+                  "from DIFFERENT products than today's -- postprocess-only never re-simulates, "
+                  "so it cannot legitimately fix that. Run a real simulation instead.")
+        print("       Refusing to write.")
+        sys.exit(1)
+    else:
+        if allow_override:
+            _archive_stale_dir(outdir)
+            return
+        print("       Refusing to write. Pass --allow-stale-inputs to archive the existing "
+              "outdir aside (never overwritten in place, never deleted) and proceed with a "
+              "real re-simulation against the current products -- only for a deliberate "
+              "re-simulation after a known product fix.")
+        sys.exit(1)
+
+
+def _energyplus_provenance(engine: str) -> dict:
+    """Platform + EnergyPlus provenance for the manifest (2026-07-28 LOCAL PORT,
+    Contrainte n3): PLATFORM (sys.platform), the EnergyPlus version/build actually
+    used, and the executable path. 3rdJ_08P_probe_gates.py adds a gate that FAILs if
+    cells being compared don't share PLATFORM -- same build hash is NOT proof of
+    bit-identical output across compilers/libm/rounding (win32 vs Linux).
+
+    cluster: derived from the SIF_EXE constant path -- no extra subprocess/singularity
+    call, zero behavioural change to the cluster path.
+    local: derived by actually invoking `energyplus.exe --version` (cheap, ms-scale) so
+    the recorded build hash is verified against what really ran, not assumed.
+    """
+    info: dict = {"PLATFORM": sys.platform, "engine": engine}
+    if engine == "cluster":
+        m = re.search(r"EnergyPlus-([\d.]+)-([0-9a-f]+)-", SIF_EXE)
+        info["energyplus_version"] = m.group(1) if m else None
+        info["energyplus_build"] = m.group(2) if m else None
+        info["energyplus_exe_used"] = f"singularity exec {SIF} {SIF_EXE}"
+    else:
+        try:
+            from eSim_bem_utils.config import ENERGYPLUS_EXE
+            out = subprocess.run([ENERGYPLUS_EXE, "--version"], capture_output=True,
+                                  text=True, timeout=30)
+            text = (out.stdout or "") + (out.stderr or "")
+            m = re.search(r"Version\s+([\d.]+)-([0-9a-f]+)", text)
+            info["energyplus_version"] = m.group(1) if m else None
+            info["energyplus_build"] = m.group(2) if m else None
+            info["energyplus_exe_used"] = ENERGYPLUS_EXE
+            info["energyplus_version_raw"] = text.strip()
+        except Exception as e:
+            info["energyplus_version"] = None
+            info["energyplus_build"] = None
+            info["energyplus_exe_used"] = None
+            info["energyplus_provenance_error"] = str(e)
+    return info
 
 
 def _write_manifest(outdir: str, manifest: dict) -> str:
@@ -402,7 +674,7 @@ def _write_channel_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: 
     pivot = df.pivot_table(index="t", columns="col", values="value", aggfunc="sum")
     pivot = pivot.reindex(sorted(pivot.index))
 
-    channels = ["office", "retail", "hotel", "residential", "service_MEP"]
+    channels = ["office", "retail", "hotel", "residential", "residential_common", "service_MEP"]
     metrics = ["people", "lights", "equip"]
     all_cols = [f"{c}_{m}" for c in channels for m in metrics]
     for c in all_cols:
@@ -471,7 +743,66 @@ def main() -> None:
                           "<outdir>/run/eplusout.sql for this cell, and rewrite manifest.json. "
                           "Errors clearly if that sql file is absent. Lets a post-processing-only "
                           "fix (e.g. job 1169671) be applied to completed sims without re-simulating.")
+    ap.add_argument("--engine", choices=["auto", "cluster", "local"], default="auto",
+                     help="auto (default) = platform-detected: Windows -> local, else cluster. "
+                          "cluster = original Singularity/scratch path, unchanged. local = direct "
+                          "EnergyPlus.exe via eSim_bem_utils/config.py, local repo checkout paths.")
+    ap.add_argument("--outroot", type=str, default=None,
+                     help="override the probes root dir (default: PROBES_ROOT on cluster, "
+                          "LOCAL_PROBES_ROOT locally).")
+    ap.add_argument("--repo-root", type=str, default=None,
+                     help="engine=local only: override the repo checkout root used to derive "
+                          "IDF/EPW/STEP7_OUT/injector paths (default: auto-derived from this "
+                          "script's own location).")
+    ap.add_argument("--allow-stale-inputs", action="store_true",
+                     help="Defaut-3 fix: explicit override for the STALE-INPUTS GUARD. Without "
+                          "this flag, the driver refuses (exit 1) to write into an existing "
+                          "outdir whose manifest.json carries a different INPUTS_HASH (md5 of "
+                          "the Step-7 product CSVs this cell reads) than the current run -- "
+                          "including a missing/legacy INPUTS_HASH, treated as unknown. Normal "
+                          "simulate path: archives the stale outdir aside (_STALE_<timestamp>, "
+                          "never deleted) and proceeds with a real re-simulation. "
+                          "--postprocess-only: only unblocks a LEGACY (no-INPUTS_HASH) manifest, "
+                          "adopted in place without archiving; a genuine mismatch is refused "
+                          "regardless of this flag (postprocess-only cannot fix a real product "
+                          "change -- it never re-simulates). Use only for a deliberate "
+                          "re-simulation after a known Step-7 product fix.")
     args = ap.parse_args()
+
+    # ---- 0. Resolve engine + paths (2026-07-28 LOCAL PORT). Cluster branch reproduces the
+    # pre-port constants EXACTLY (same STEP7_OUT/IDF_SUPERTALL/EPW/INJECTOR_PY/PROBES_ROOT
+    # values unless --outroot is explicitly passed) -- no behavioural change on Linux. ----
+    engine = args.engine
+    if engine == "auto":
+        engine = "local" if sys.platform == "win32" else "cluster"
+    if engine == "cluster":
+        step7_out = STEP7_OUT
+        idf_supertall = IDF_SUPERTALL
+        epw = EPW
+        injector_py = INJECTOR_PY
+        probes_root = args.outroot if args.outroot else PROBES_ROOT
+    elif args.repo_root:
+        # Non-default checkout location -- rebuild every path from the given root.
+        repo_root = args.repo_root
+        step7_out = os.path.join(repo_root, "3J_docs_occ_nTemp", "Leg3_4-split", "Step7_docs",
+                                  "outputs_step7")
+        idf_supertall = os.path.join(
+            repo_root, "3J_docs_occ_nTemp", "Leg2_2-split", "Step8_docs", "outputs_step8",
+            "office_idfs_v242", "CAN_MTL",
+            "SuperTallBuilding_90.1-2019_6A_Buffalo_NECB17_Z6_v242.idf")
+        epw = os.path.join(repo_root, "BEM_Setup", "WeatherFile",
+                            "CAN_QC_Montreal.Center-Jean.Brebeuf-McGill.Univ-McTavish.716120_TMYx_6A.epw")
+        injector_py = os.path.join(repo_root, "eSim_bem_utils", "commercial_integration.py")
+        probes_root = args.outroot if args.outroot else LOCAL_PROBES_ROOT
+    else:
+        # Default local checkout -- the LOCAL_* constants derived at module import time.
+        step7_out = LOCAL_STEP7_OUT
+        idf_supertall = LOCAL_IDF_SUPERTALL
+        epw = LOCAL_EPW
+        injector_py = LOCAL_INJECTOR_PY
+        probes_root = args.outroot if args.outroot else LOCAL_PROBES_ROOT
+    cell_table = _build_cells(step7_out)
+    print(f"[setup] engine={engine} (arg={args.engine}, sys.platform={sys.platform})")
 
     # INJ_HASH fingerprints the *injector* (commercial_integration.py) only, so a
     # post-processing-only change to THIS driver does not (and should not) invalidate the
@@ -480,27 +811,53 @@ def main() -> None:
     # md5 is recorded separately in the manifest (see below).
     driver_md5 = md5_file(os.path.abspath(__file__))
 
-    if not (0 <= args.cell < len(CELLS)):
-        print(f"[FAIL] --cell {args.cell} out of range 0..{len(CELLS) - 1}")
+    if not (0 <= args.cell < len(cell_table)):
+        print(f"[FAIL] --cell {args.cell} out of range 0..{len(cell_table) - 1}")
         sys.exit(1)
-    cell = CELLS[args.cell]
+    cell = cell_table[args.cell]
     tag = cell["tag"]
 
     # ---- 1. Injector fingerprint (the structural stale-output guard, §6b) ----
-    if not os.path.isfile(INJECTOR_PY):
-        print(f"[FAIL] injector not found at {INJECTOR_PY}")
+    if not os.path.isfile(injector_py):
+        print(f"[FAIL] injector not found at {injector_py}")
         sys.exit(1)
-    inj_hash = args.force_inj_hash if args.force_inj_hash else md5_file(INJECTOR_PY)[:8]
-    outdir = os.path.join(PROBES_ROOT, f"campaign_{inj_hash}", tag)
+    inj_hash = args.force_inj_hash if args.force_inj_hash else md5_file(injector_py)[:8]
+    outdir = os.path.join(probes_root, f"campaign_{inj_hash}", tag)
+
+    # ---- 1b. STALE-INPUTS GUARD (Defaut-3 fix) -- runs BEFORE any write into outdir,
+    # identically for both engines. Must run before os.makedirs() below: makedirs is the
+    # first of the four silent-overwrite sites named in the reference doc (:494-495 in the
+    # pre-fix line numbering), and the guard has to see the pre-existing outdir/manifest
+    # (if any) before it gets touched. ----
+    inputs_hash, inputs_detail = _compute_inputs_hash(cell["channels"])
+    _check_inputs_hash_guard(outdir, inputs_hash, inputs_detail,
+                              args.allow_stale_inputs, args.postprocess_only)
+
     os.makedirs(outdir, exist_ok=True)
-    print(f"[setup] cell={args.cell} tag={tag} INJ_HASH={inj_hash}")
+    print(f"[setup] cell={args.cell} tag={tag} INJ_HASH={inj_hash} INPUTS_HASH={inputs_hash}")
     print(f"[setup] outdir={outdir}")
-    print(f"[setup] source IDF={IDF_SUPERTALL}")
+    print(f"[setup] source IDF={idf_supertall}")
 
     eplus_idd = os.environ.get("EPLUS_IDD", "")
+    if engine == "local" and (not eplus_idd or not os.path.isfile(eplus_idd)):
+        # Local-only fallback: config.py already knows how to resolve + version-check the IDD
+        # (config.py:88-124). Cluster keeps requiring the EPLUS_IDD env var exactly as before --
+        # this branch is skipped entirely when engine == "cluster".
+        try:
+            from eSim_bem_utils.config import resolve_idd_path
+            eplus_idd = resolve_idd_path()
+            print(f"[setup] EPLUS_IDD not set; resolved locally via config.py -> {eplus_idd}")
+        except Exception as e:
+            print(f"[FAIL] local IDD resolution via config.py failed: {e}")
+            sys.exit(1)
     if not eplus_idd or not os.path.isfile(eplus_idd):
         print(f"[FAIL] EPLUS_IDD not set or file missing: '{eplus_idd}'")
         sys.exit(1)
+    # commercial_integration.py::_find_idd() reads the EPLUS_IDD env var directly (it has no
+    # explicit-IDD parameter on inject_mixed_use); the local fallback above only resolved a
+    # local variable, so export it too -- otherwise inject_mixed_use() raises FileNotFoundError
+    # even though eplus_idd is valid here. No-op when the cluster/sbatch job already exported it.
+    os.environ["EPLUS_IDD"] = eplus_idd
 
     # ---- --postprocess-only: re-derive the two CSVs + manifest, no injection, no EnergyPlus ----
     if args.postprocess_only:
@@ -530,6 +887,12 @@ def main() -> None:
             }
         manifest["driver_md5"] = driver_md5
         manifest["postprocess_only"] = True
+        # Defaut-3 fix: record the CURRENT INPUTS_HASH. Reached this point only if the
+        # guard above already found it identical to (or explicitly adopted over) whatever
+        # was previously recorded, so this is always an accurate, non-lying value.
+        manifest["INPUTS_HASH"] = inputs_hash
+        manifest["INPUTS_HASH_DETAIL"] = inputs_detail
+        manifest.update(_energyplus_provenance(engine))
 
         rows_hourly, rows_channel = _do_postprocess(sql_path, injected_idf_path, eplus_idd, outdir, manifest)
         manifest["timestamp_utc"] = datetime.now(timezone.utc).isoformat()
@@ -564,10 +927,13 @@ def main() -> None:
         "cell_tag": tag,
         "scenario_label": tag,
         "INJ_HASH": inj_hash,
+        "INPUTS_HASH": inputs_hash,
+        "INPUTS_HASH_DETAIL": inputs_detail,
         "driver_md5": driver_md5,
         "outdir": outdir,
         "channels_requested": {},
     }
+    manifest.update(_energyplus_provenance(engine))
     for ch, cfg in cell["channels"].items():
         csv_path = cfg.get("csv", "")
         exists = bool(csv_path) and os.path.isfile(csv_path)
@@ -585,7 +951,7 @@ def main() -> None:
         "purpose": "P-probe", "cell_index": args.cell, "scenario_label": tag,
     }
     try:
-        inj_result = inject_mixed_use(IDF_SUPERTALL, injected_idf_path, cell["channels"],
+        inj_result = inject_mixed_use(idf_supertall, injected_idf_path, cell["channels"],
                                        building_meta, verbose=True)
     except Exception as e:
         print(f"[FAIL] inject_mixed_use raised: {e}")
@@ -618,20 +984,33 @@ def main() -> None:
     manifest["injected_idf_md5"] = md5_file(injected_idf_path)
 
     # ---- 4. Simulate ----
-    epwrap_dir = os.path.join(outdir, "epwrap")
-    os.makedirs(epwrap_dir, exist_ok=True)
-    wrapper_path = os.path.join(epwrap_dir, "energyplus")
-    with open(wrapper_path, "w") as f:
-        f.write("#!/bin/bash\n")
-        f.write(f"singularity exec --bind /speed-scratch --bind /nfs/speed-scratch {SIF} {SIF_EXE} \"$@\"\n")
-    os.chmod(wrapper_path, 0o755)
-
     run_dir = os.path.join(outdir, "run")
     os.makedirs(run_dir, exist_ok=True)
-    print(f"[sim] launching EnergyPlus: wrapper={wrapper_path}")
-    print(f"[sim] args: -w {EPW} -d {run_dir} {injected_idf_path}")
-    import subprocess
-    proc = subprocess.run([wrapper_path, "-w", EPW, "-d", run_dir, injected_idf_path])
+    if engine == "cluster":
+        # UNCHANGED cluster path: Singularity wrapper script, exactly as before this port.
+        epwrap_dir = os.path.join(outdir, "epwrap")
+        os.makedirs(epwrap_dir, exist_ok=True)
+        wrapper_path = os.path.join(epwrap_dir, "energyplus")
+        with open(wrapper_path, "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write(f"singularity exec --bind /speed-scratch --bind /nfs/speed-scratch {SIF} {SIF_EXE} \"$@\"\n")
+        os.chmod(wrapper_path, 0o755)
+        ep_cmd = [wrapper_path, "-w", epw, "-d", run_dir, injected_idf_path]
+        print(f"[sim] launching EnergyPlus: wrapper={wrapper_path}")
+    else:
+        # Local: no Singularity, no wrapper -- call the resolved energyplus.exe directly.
+        # config.py:12 already points ENERGYPLUS_DIR at the local v24.2 install and
+        # config.py:88-124 (resolve_idd_path) refuses to start on a non-24.2 IDD; the EPLUS_IDD
+        # resolved above already went through that same guard.
+        from eSim_bem_utils.config import ENERGYPLUS_EXE
+        if not os.path.isfile(ENERGYPLUS_EXE):
+            print(f"[FAIL] local EnergyPlus executable not found: {ENERGYPLUS_EXE}")
+            _write_manifest(outdir, manifest)
+            sys.exit(1)
+        ep_cmd = [ENERGYPLUS_EXE, "-w", epw, "-d", run_dir, injected_idf_path]
+        print(f"[sim] launching EnergyPlus directly: exe={ENERGYPLUS_EXE}")
+    print(f"[sim] args: -w {epw} -d {run_dir} {injected_idf_path}")
+    proc = subprocess.run(ep_cmd)
     ep_rc = proc.returncode
     manifest["ep_return_code"] = ep_rc
     print(f"[sim] EnergyPlus return code = {ep_rc}")

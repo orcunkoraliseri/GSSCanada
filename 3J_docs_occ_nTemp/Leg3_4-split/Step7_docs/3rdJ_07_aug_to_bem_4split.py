@@ -150,7 +150,30 @@ BUNDLE_MAP = {
     "central": {"office_band": "hybrid",       "retail_scenario": "plateau",     "hotel_band": "central"},
     "opt":     {"office_band": "fullyhybrid",  "retail_scenario": "renaissance", "hotel_band": "high"},
 }
-RETAIL_LEVER_VALUE = {"shift": 0.90, "plateau": 0.97, "renaissance": 1.05}  # H5/H7 exactness check
+def _derive_retail_lever(retail_scenario):
+    """Derive the Step-6 retail lever scalar at runtime from RETAIL_LEVER_FILES (2026-07-28 fix:
+    replaces the former hardcoded RETAIL_LEVER_VALUE = {"shift": 0.90, "plateau": 0.97,
+    "renaissance": 1.05} dict, a second source of truth that would silently go stale if Step-6
+    were ever regenerated with different levers -- see Step8_docs/3rdJ_08_simulation_4split.md
+    Progress Log). grep confirmed RETAIL_LEVER_VALUE was used ONLY by gate/reporting code
+    (run_retail_gates, _check_h5_monotonicity), never by generation (build_retail_product_2030
+    reads at_retail_fraction_2030_base/_levered directly), so it is safe to remove outright.
+
+    Source picked: the lever file's own `multiplier` column (one row per slot, all identical),
+    NOT the at_retail_fraction_2030_levered/_base ratio -- confirmed numerically equal to that
+    ratio (mean matches to <3e-14 on non-zero-base rows) but strictly more direct: 71/432 rows per
+    file have base==0 (closed hours), which would make the ratio an undefined 0/0 needing masking.
+    """
+    path = RETAIL_LEVER_FILES[retail_scenario]
+    df = pd.read_csv(path, usecols=["multiplier"])
+    lo, hi = float(df["multiplier"].min()), float(df["multiplier"].max())
+    assert (hi - lo) < 1e-9, (
+        f"Retail lever '{retail_scenario}' is NOT a uniform scalar in {path.name} "
+        f"(min={lo:.10f}, max={hi:.10f}, spread={hi - lo:.3e}): a non-uniform lever would change "
+        f"the retail SHAPE, not just the LEVEL, invalidating the 2026-07-28 fix's core assumption "
+        f"(see build_retail_product_2030 / _retail_rows_from_slotarray docstrings)."
+    )
+    return float(df["multiplier"].iloc[0])
 
 # ---------------------------------------------------------------------------
 # NECB retail baseline PROXY (see FLAGGED OPEN ITEM at top of file)
@@ -416,9 +439,61 @@ def build_office_multiplier(df, band_label, lookup_df):
 # ---------------------------------------------------------------------------
 # build_retail_product -- NEW (Leg-3), dr_L3-06 normalization
 # ---------------------------------------------------------------------------
-def _retail_rows_from_slotarray(day_type, pr, arr_clock48, n_persons):
-    """arr_clock48: length-48 float array, CLOCK-origin (already +4h-rolled). Returns row dicts."""
-    peak = float(arr_clock48.max())
+def _retail_rows_from_slotarray(day_type, pr, arr_clock48, n_persons, ref_peak=None):
+    """arr_clock48: length-48 float array, CLOCK-origin (already +4h-rolled). Returns row dicts.
+
+    Normalization reference peak (2026-07-28 fix, see Step8_docs/3rdJ_08_simulation_4split.md
+    Progress Log entry "fix (a) retail multiplier..." for the full before/after numbers)
+    -----------------------------------------------------------------------------------------
+    ref_peak=None (default; used by build_retail_product_2022, the only unchanged caller):
+        self-normalizes by arr_clock48's OWN max. Correct when there is exactly one band to
+        normalize -- 2022 has one. This was ALSO the (buggy) behaviour used for the 2030
+        3-band product before this fix: normalizing every band by its own peak makes any
+        level-rescaling applied upstream (the Step-6B retail lever) cancel out exactly, so all
+        3 bands collapsed to bit-identical `multiplier` columns. dr_L3-06's peak-normalization
+        formula is only safe when the array being normalized is the SOLE band in play.
+
+    ref_peak=<float> (used by build_retail_product_2030): normalizes against a FIXED external
+        peak instead of the array's own peak, so the lever's level-rescale survives into
+        `multiplier`. Two anchor candidates were considered for the 2030 3-band product:
+          (i)  anchor on the 'central'/'plateau' band's own peak, per (Day_Type, PR) -- REJECTED
+               2026-07-28 after tracing the raw Step-6 lever files: renaissance/plateau ==
+               1.05/0.97 == 1.082474... EXACTLY at every slot (uniform scalar lever, confirmed
+               numerically), which forces the 'opt' band's peak multiplier to
+               0.95 * 1.082474 = 1.0284 > 1 -- an invalid EnergyPlus schedule fraction. Central
+               bit-identity was not achievable in any variant without this overshoot, and
+               preserving it bought nothing (the 2030 residential/office cell tied to the same
+               office_band axis was already slated for re-simulation regardless).
+          (ii) anchor on the un-levered `at_retail_fraction_2030_base` column's own peak, per
+               (Day_Type, PR) -- ADOPTED. `base` is confirmed byte-identical across all 3 Step-6
+               lever files (exact equality, not just np.isclose), so it is a single shared,
+               unperturbed reference read directly from the data -- not a hardcoded band
+               constant (option (b), explicitly rejected) and not a second source of truth to
+               keep in sync with Step-6: the band factor emerges as
+               (levered_peak / base_peak) == the Step-6 lever value itself, because
+               levered = base * lever pointwise. Mathematically this is equivalent to
+               "self-normalize x hardcoded band constant" (option (b)) MINUS the hardcoded
+               constant and MINUS the second source of truth -- the two rejected designs merge
+               into one that is provably safe: peak(band) = 0.95 * lever(band) for every band,
+               so cons=0.8550, central=0.9215 (was 0.95 -- a MEANINGFUL, INTENDED -3.0% change,
+               not a regression), opt=0.9975 (<=1, valid). Clipping opt to 1.0 was also
+               considered and rejected: it would flatten the signal exactly at peak retail
+               hours, destroying the modulation the fix exists to preserve.
+
+    This mirrors build_office_multiplier's pattern (~L402-407), which already normalizes by a
+    peak SHARED across bands (there, the Weekday max per office_archetype spans all 3 BAND rows
+    via groupby("office_archetype") without a BAND key) -- which is precisely why the office
+    axis was never bitten by this bug and retail was. The residual asymmetry versus office:
+    office's shared peak is the max OVER ALL BANDS (a moving reference); here ref_peak is the
+    un-levered BASE peak (a fixed reference that predates any band-level rescale), because office
+    has no equivalent "pre-lever" signal to anchor to.
+
+    The `shape` output column uses the SAME normalization as `multiplier` (i.e. ref_peak when
+    supplied) so the two columns stay internally consistent (`multiplier` is just 0.95 * shape).
+    For 2022 (ref_peak=None) this is unchanged. For 2030, `shape` now reflects each band's
+    amplitude relative to the shared base peak instead of a synthetic self-peak of 1.0.
+    """
+    peak = float(ref_peak) if ref_peak is not None else float(arr_clock48.max())
     shape = arr_clock48 / peak if peak > 0 else np.zeros(48)
     multiplier_raw = 0.95 * shape
     rows = []
@@ -440,7 +515,13 @@ def _retail_rows_from_slotarray(day_type, pr, arr_clock48, n_persons):
 
 def build_retail_product_2030(retail_scenario):
     """retail_scenario in {'shift','plateau','renaissance'}. Reads the Step-6 lever file directly
-    (Step-6B amplitude drift already baked into *_levered before this normalization, dr_L3-06)."""
+    (Step-6B amplitude drift already baked into *_levered before this normalization, dr_L3-06).
+
+    2026-07-28 fix: normalizes against the un-levered `at_retail_fraction_2030_base` column's own
+    peak per (Day_Type, PR_GROUP) -- NOT the levered array's own peak (that was the bug: it
+    self-cancels any level-rescale the Step-6 lever applied). `base` is confirmed identical
+    across all 3 lever files, so this reference is shared, unperturbed, and read from the data
+    (see _retail_rows_from_slotarray docstring for the full before/after)."""
     path = RETAIL_LEVER_FILES[retail_scenario]
     df = pd.read_csv(path)
     df = df[df["PR_GROUP"].isin(["QC", "AB"])].copy()
@@ -453,7 +534,10 @@ def build_retail_product_2030(retail_scenario):
         assert len(g) == 48, f"retail lever [{retail_scenario}/{dt}/{pr}]: expected 48 slots, got {len(g)}"
         arr = g["at_retail_fraction_2030_levered"].to_numpy(dtype=float)   # GSS diary-origin (slot1=04:00)
         arr_clock = np.roll(arr, 8)   # +4h roll = 8 half-hour slots (slot-origin discipline)
-        rows.extend(_retail_rows_from_slotarray(dt, pr, arr_clock, n_persons=None))
+        base = g["at_retail_fraction_2030_base"].to_numpy(dtype=float)    # un-levered, shared across bands
+        base_clock = np.roll(base, 8)
+        ref_peak = float(base_clock.max())
+        rows.extend(_retail_rows_from_slotarray(dt, pr, arr_clock, n_persons=None, ref_peak=ref_peak))
     out = pd.DataFrame(rows)[RETAIL_OUT_COLS]
     print(f"  Retail [{retail_scenario}]: {len(out):,} rows (3 Day_Type x 2 PR x 48 slots = 288)", flush=True)
     return out
@@ -587,26 +671,56 @@ def run_office_gates(off, is_2030=False, label=""):
           flush=True)
 
 
-def run_retail_gates(ret, label=""):
-    """H1/H2/H3 product-side gates."""
+def run_retail_gates(ret, label="", retail_scenario=None):
+    """H1/H2/H3 product-side gates.
+
+    2026-07-28 RELABEL (not a loosened threshold -- see Step8_docs/3rdJ_08_simulation_4split.md
+    Progress Log for full before/after): the old H2/R1 check asserted every band's `multiplier`
+    peaks at EXACTLY 0.95, per (Day_Type, PR). That assumption encoded precisely the bug being
+    fixed (self-normalization forces peak==0.95 for ANY band regardless of its Step-6 lever,
+    because the array's own peak always cancels itself out). Post-fix, only 'central' (lever
+    0.97) still legitimately has a distinguished relationship to 0.95's derivation; cons/central/
+    opt now peak at 0.95*lever(band) = 0.8550/0.9215/0.9975 respectively (structurally, since
+    levered = base * lever pointwise and multiplier = 0.95*levered/base_peak).
+    New check is a superset, strictly stronger, of the old one:
+      (1) multiplier in [0,1] (the REAL EnergyPlus physical bound -- old [0,0.95] cap was an
+          artifact of the bug: it can never be violated once self-normalization forces peak==0.95,
+          so it was not actually testing anything beyond the broken invariant it enabled).
+      (2) peak(band) == 0.95 * lever(retail_scenario) for 2030 (lever derived at runtime by
+          _derive_retail_lever() directly from the raw Step-6 lever file's own 'multiplier'
+          column, asserted uniform -- no longer a hardcoded RETAIL_LEVER_VALUE constant, per the
+          2026-07-28 second-source-of-truth fix, see Step8 Progress Log) -- or == 0.95 exactly
+          for 2022 (retail_scenario=None,
+          self-normalizing, unaffected by this fix). This is mathematically EQUIVALENT to
+          "peak(band)/peak(central) == lever(band)/lever(central)" (both sides reduce to
+          peak(x) == 0.95*lever(x) for all x, since 'base' -- and hence the 0.95 anchor -- is
+          shared across all 3 bands) and is STRICTLY STRONGER than the old exact-0.95 check: if
+          today's bug (self-normalizing peak back to a lever-independent 0.95) is ever
+          reintroduced, this assertion fails for every band whose lever != 1.0 (i.e. all of them),
+          making the regression impossible to reproduce silently.
+    (3) staff-shoulder slots still take the NECB baseline exactly (unchanged from before).
+    """
     tag = f" [{label}]" if label else ""
     assert set(ret["Day_Type"].unique()) <= {"Weekday", "Saturday", "Sunday"}, f"Retail Day_Type domain{tag}"
     assert set(ret["PR"].unique()) <= {"QC", "AB"}, f"Retail PR domain{tag}"
     assert ret["Hour"].between(0, 23).all(), f"Retail Hour out of [0,23]{tag}"
-    assert ret["multiplier"].between(0, 0.95 + 1e-9).all(), (
-        f"Retail multiplier out of [0,0.95]{tag}: max={ret['multiplier'].max():.4f}"
+    assert ret["multiplier"].between(0, 1.0 + 1e-9).all(), (
+        f"Retail multiplier out of [0,1]{tag}: max={ret['multiplier'].max():.4f}"
     )
+    expected_peak = 0.95 if retail_scenario is None else 0.95 * _derive_retail_lever(retail_scenario)
     for (dt, pr), g in ret.groupby(["Day_Type", "PR"]):
         peak = g["multiplier"].max()
-        assert abs(peak - 0.95) < 1e-6 or (g["shape"] == 0).all(), (
-            f"H2/R1 peak != 0.95 exactly{tag} [{dt}/{pr}]: {peak:.6f}"
+        assert abs(peak - expected_peak) < 1e-4 or (g["shape"] == 0).all(), (
+            f"H2/R1 peak != expected {expected_peak:.4f} (lever={retail_scenario}){tag} "
+            f"[{dt}/{pr}]: {peak:.6f}"
         )
         sh = g[g["staff_shoulder_flag"] == 1]
         for _, r in sh.iterrows():
             base = necb_retail_baseline_proxy(dt, int(r["Hour"]))
             assert abs(r["multiplier"] - base) < 1e-6, f"H3 staff-shoulder multiplier mismatch{tag}"
-    print(f"  [GATE PASS] Retail{tag}: Day_Type/PR domain, Hour range, multiplier [0,0.95], "
-          f"peak=0.95 exact, staff-shoulder preserved -- ALL PASS", flush=True)
+    print(f"  [GATE PASS] Retail{tag}: Day_Type/PR domain, Hour range, multiplier [0,1], "
+          f"peak={expected_peak:.4f} exact (lever={retail_scenario}), staff-shoulder preserved -- "
+          f"ALL PASS", flush=True)
 
 
 def run_hotel_gates(hot, label=""):
@@ -844,7 +958,7 @@ def cmd_year_2030(bundle, sens=None, deliverable=None):
         for blabel, scenario in retail_states:
             print(f"\n[Retail] bundle={blabel} scenario={scenario}", flush=True)
             retail_out = build_retail_product_2030(scenario)
-            run_retail_gates(retail_out, label=f"2030/{blabel}")
+            run_retail_gates(retail_out, label=f"2030/{blabel}", retail_scenario=scenario)
             out_ret = OUT_DIR / f"retail_presence_multiplier_2030_{blabel}.csv"
             atomic_write(retail_out, out_ret, "%.6f"); written.append(out_ret)
 
@@ -885,7 +999,7 @@ def _check_h5_monotonicity():
               f"opt={means['opt']:.4f}", flush=True)
     ret_files = {b: OUT_DIR / f"retail_presence_multiplier_2030_{b}.csv" for b in ("cons", "central", "opt")}
     if all(p.exists() for p in ret_files.values()):
-        levers = {b: RETAIL_LEVER_VALUE[BUNDLE_MAP[b]["retail_scenario"]] for b in ("cons", "central", "opt")}
+        levers = {b: _derive_retail_lever(BUNDLE_MAP[b]["retail_scenario"]) for b in ("cons", "central", "opt")}
         mono = levers["cons"] < levers["central"] < levers["opt"]
         print(f"  [H5 {'PASS' if mono else 'WARN'}] Retail lever ordering: "
               f"cons={levers['cons']} < central={levers['central']} < opt={levers['opt']}: {mono}", flush=True)

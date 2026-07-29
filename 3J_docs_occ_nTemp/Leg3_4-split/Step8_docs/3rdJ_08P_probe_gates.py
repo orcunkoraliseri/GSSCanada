@@ -17,9 +17,30 @@ authorized only after this scorecard is in hand).
 2026-07-28 built (P1-P4 armament, employee handoff). This script is written and
 uploaded now per handoff §4.1-4.3 but is NOT submitted in this pass -- §4.5 submits
 it, after the probe array lands and the manager authorizes the next step.
+
+2026-07-28 LOCAL PORT (additive, Contrainte n3 -- see 3rdJ_08_implementation_improvements.md):
+added a PLATFORM gate. Same EnergyPlus build does NOT guarantee bit-identical output across
+compilers/libm/rounding (win32 vs Linux); the §P gates compare cells against each other, so
+mixing a Windows-simulated cell with a Linux-simulated cell in the same campaign_* dir would
+inject platform noise into the scenario signal. This is a NEW gate, not a relaxation of any
+existing one -- it makes silent cross-platform comparison impossible. Reads the PLATFORM /
+energyplus_version / energyplus_build fields 3rdJ_08P_probe_driver.py now writes into every
+manifest.json (both engines).
+
+2026-07-28 Defaut-3 companion gate: INPUTS_HASH cross-cell consistency. Same reasoning as
+PLATFORM above, one level down -- P1 isolates ONE channel's effect by comparing a varied
+cell against cell 1 (B_central), which is only a valid isolation if the OTHER (unvaried)
+channels' Step-7 product files are IDENTICAL between the two manifests being compared. This
+is a read-time cross-check over manifests already on disk (it does not re-run the driver's
+write-time STALE-INPUTS GUARD, 3rdJ_08P_probe_driver.py::_check_inputs_hash_guard) -- it
+catches the case where cells were regenerated at different times (e.g. only a subset
+re-simulated after a product fix) and a P1 comparison would otherwise silently mix product
+versions. Uses the per-channel csv_md5 already recorded in channels_requested (no new
+manifest fields needed).
 """
 from __future__ import annotations
 
+import argparse
 import glob
 import hashlib
 import json
@@ -37,6 +58,19 @@ PROBES_ROOT = SCRATCH8 + "/probes"
 LOGS_DIR = SCRATCH8 + "/logs"
 UPLOAD = SCRATCH8 + "/upload"
 INJECTOR_PY = UPLOAD + "/eSim_bem_utils/commercial_integration.py"
+
+# ---------------------------------------------------------------------------
+# LOCAL (Windows) path defaults -- ADDITIVE, 2026-07-28 port, mirrors
+# 3rdJ_08P_probe_driver.py's LOCAL_* block. None of the cluster constants above are
+# touched; main() below selects which set to use via --engine (default: platform-
+# detected). Needed so the PLATFORM gate (and everything else here) is actually
+# runnable off-cluster, not just added dead code.
+# ---------------------------------------------------------------------------
+HERE = os.path.dirname(os.path.abspath(__file__))
+LOCAL_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+LOCAL_PROBES_ROOT = os.path.join(
+    LOCAL_REPO_ROOT, "3J_docs_occ_nTemp", "Leg3_4-split", "Step8_docs", "probes_local")
+LOCAL_INJECTOR_PY = os.path.join(LOCAL_REPO_ROOT, "eSim_bem_utils", "commercial_integration.py")
 
 CELL_TAGS = {
     0: "baseline_necb", 1: "B_central", 2: "var_office", 3: "var_retail",
@@ -84,6 +118,35 @@ def _max_abs_delta(df_a, df_b, col):
 
 
 def main() -> None:
+    global PROBES_ROOT, LOGS_DIR, INJECTOR_PY
+
+    ap = argparse.ArgumentParser(description="Score the Step-8 §P probe cell table.")
+    ap.add_argument("--engine", choices=["auto", "cluster", "local"], default="auto",
+                     help="auto (default) = platform-detected. cluster = original "
+                          "/speed-scratch paths, unchanged. local = local repo checkout paths.")
+    ap.add_argument("--outroot", type=str, default=None,
+                     help="override the probes root dir (default: PROBES_ROOT on cluster, "
+                          "LOCAL_PROBES_ROOT locally).")
+    ap.add_argument("--repo-root", type=str, default=None,
+                     help="engine=local only: override the repo checkout root (default: "
+                          "auto-derived from this script's own location).")
+    args = ap.parse_args()
+
+    engine = args.engine
+    if engine == "auto":
+        engine = "local" if sys.platform == "win32" else "cluster"
+    if engine == "cluster":
+        PROBES_ROOT = args.outroot if args.outroot else PROBES_ROOT
+        # LOGS_DIR / INJECTOR_PY keep their cluster defaults -- unchanged from before this port.
+    else:
+        repo_root = args.repo_root if args.repo_root else LOCAL_REPO_ROOT
+        PROBES_ROOT = args.outroot if args.outroot else os.path.join(
+            repo_root, "3J_docs_occ_nTemp", "Leg3_4-split", "Step8_docs", "probes_local")
+        LOGS_DIR = os.path.join(PROBES_ROOT, "_logs")
+        INJECTOR_PY = os.path.join(repo_root, "eSim_bem_utils", "commercial_integration.py")
+    report("INFO", "setup", f"engine={engine} (arg={args.engine}, sys.platform={sys.platform}), "
+           f"PROBES_ROOT={PROBES_ROOT}")
+
     campaigns = _find_campaign_dirs()
     if not campaigns:
         report("FAIL", "setup", f"no campaign_* directories found under {PROBES_ROOT}")
@@ -112,6 +175,70 @@ def main() -> None:
             csvs_hourly[i] = pd.read_csv(hourly_path)
         if os.path.isfile(channel_path):
             csvs_channel[i] = pd.read_csv(channel_path)
+
+    # =========================================================================
+    # PLATFORM -- cross-platform contamination guard (2026-07-28 LOCAL PORT, Contrainte n3).
+    # NEW gate: FAILs if the cells being compared in this campaign_* dir were not all
+    # simulated on the same platform. Runs before P1/P2 so a platform mismatch is reported
+    # once, up front, rather than as confusing noise scattered through every delta gate.
+    # =========================================================================
+    platforms = {}
+    missing_platform = []
+    for i in range(7):
+        m = manifests.get(i)
+        if m is None:
+            continue
+        p = m.get("PLATFORM")
+        if p is None:
+            missing_platform.append(i)
+        else:
+            platforms[i] = p
+    if missing_platform:
+        report("WARN", "PLATFORM field",
+               f"cell(s) {missing_platform} have no PLATFORM field in manifest.json "
+               f"(pre-LOCAL-PORT run, or driver run before this gate existed)")
+    distinct = set(platforms.values())
+    if len(distinct) > 1:
+        report("FAIL", "PLATFORM consistency",
+               f"mixed platforms across cells in {primary}: {platforms} -- cross-platform "
+               f"comparisons are NOT valid (same EnergyPlus build != bit-identical output "
+               f"across win32/Linux; see 3rdJ_08_implementation_improvements.md Contrainte n3)")
+    elif platforms:
+        report("PASS", "PLATFORM consistency",
+               f"all {len(platforms)} cells with a PLATFORM field agree: {distinct.pop()!r}")
+    else:
+        report("WARN", "PLATFORM consistency", "no cell manifest carries a PLATFORM field -- "
+               "cannot assess cross-platform contamination")
+
+    # =========================================================================
+    # INPUTS_HASH consistency -- Defaut-3 companion gate (2026-07-28). Runs before P1,
+    # same placement rationale as PLATFORM above: report contamination once, up front,
+    # rather than as confusing noise scattered through every P1 delta.
+    # =========================================================================
+    def _channel_csv_md5(manifest, channel):
+        return (manifest.get("channels_requested", {}).get(channel) or {}).get("csv_md5")
+
+    for varied_cell, channel in VARIED_CHANNEL_OF_CELL.items():
+        if varied_cell not in manifests or 1 not in manifests:
+            continue
+        m_v, m_1 = manifests[varied_cell], manifests[1]
+        for other in CHANNELS_COMMERCIAL:
+            if other == channel:
+                continue
+            md5_v, md5_1 = _channel_csv_md5(m_v, other), _channel_csv_md5(m_1, other)
+            if md5_v is None or md5_1 is None:
+                report("WARN", f"INPUTS_HASH {other} (cell {varied_cell} vs cell 1)",
+                       f"csv_md5 missing from channels_requested in one or both manifests "
+                       f"(cell {varied_cell}={md5_v}, cell 1={md5_1})")
+            elif md5_v != md5_1:
+                report("FAIL", f"INPUTS_HASH {other} (cell {varied_cell} vs cell 1)",
+                       f"unvaried channel '{other}' Step-7 product differs between cell "
+                       f"{varied_cell} ({CELL_TAGS[varied_cell]}, csv_md5={md5_v}) and cell 1 "
+                       f"(B_central, csv_md5={md5_1}) -- this comparison is contaminated, the "
+                       f"two manifests were built from different product sets")
+            else:
+                report("PASS", f"INPUTS_HASH {other} (cell {varied_cell} vs cell 1)",
+                       f"unvaried channel '{other}' csv_md5 matches ({md5_v})")
 
     # =========================================================================
     # P1 -- scenario-differentiation per channel
