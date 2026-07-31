@@ -2124,3 +2124,168 @@ unchanged by design — only the campaign driver/cell-table gained residential).
   `3rdJ_08P_probe_driver.py`, `3rdJ_08P_probes_local.py`.
 
 Co-Authored-By: Claude Sonnet 5 (employee session) <noreply@anthropic.com>
+
+---
+
+### 2026-07-30 (manager) — probes re-simulated on `_C_v2`, §P re-scored 32P/0W/0F, residential injector proven for the first time
+
+Step-6 was re-opened and re-closed (bidirectional Stage B + weekend pooling); canonical 2030
+deliverable is now `..._calibrated_mindwell_C_v2.csv` MD5 `5aa74f44` (predecessor `7c105ef3` kept
+intact on disk — the pointer moved, never the file). Step-7 products rebuilt from it. Full decision
+register in `3J_docs_occ_nTemp/improvements/3rdJ_L3_improvements_step5_6_7.md` (D-1…D-19).
+
+**Correction to this log's own framing.** The §P scorecard closed at 25P/0W/0F on 2026-07-28 is
+stale for **two independent reasons**, and "Step-7 changed `INJ_HASH`" is **not** one of them:
+`INJ_HASH = md5(commercial_integration.py)[:8]` owns the output *path*; a product change moves
+`INPUTS_HASH` only — that separation IS the Défaut-3 fix. What actually happened: (a) the injector
+md5 moved `5670f602 → cf69d508` via the concurrent `classify_tag2()` residential fix (a **wiring**
+change), and (b) the Step-7 2030 residential/office products changed. Cluster results stay under
+`campaign_5670f602/`, the local re-run writes `campaign_cf69d508/` — paths self-separate, no
+`--allow-stale-inputs` needed.
+
+**Re-simulation + scorecard.** 7/7 cells `ok` exit=0, **27.7 min** total (12–18 min/cell, 6 workers,
+watchdog armed, no memory event). **§P = 32P / 0W / 0F / 10 INFO.** The 7-point gain over the
+cluster run is real: the **6 `INPUTS_HASH` gates** added by the Défaut-3 fix are exercised here for
+the first time, plus one repaired gate.
+
+**`P4 banner` — local-port gap, fixed and proven both ways.** It globbed `8P_probe_*_6.out`
+(SLURM-only) unconditionally; the Windows orchestrator writes `<tag>.log`. The banner **was**
+printed correctly (`_logs/fallback_retail.log:179`, with `office=6 retail=0 hotel=3;
+fallback=['retail']`). Changed the **glob only** — the assertion is untouched, so no threshold was
+relaxed (same distinction applied earlier to R.1/R.2/R.7: repairing what a gate *looks at* is
+legitimate, moving what it *demands* is not). Seen PASS on the real log, seen **FAIL** with the
+banner line removed, log then restored and md5 re-verified identical (`63f582aa…`).
+
+**🔴 `inject_residential()` had never been executed — and this log's own smoke test masked it.**
+Chased from the `P1 residential -- NOT EXERCISED` INFO line. Probes exclude residential **by
+design** (`3rdJ_08P_probe_driver.py:12-14`), so `office=6 retail=0 hotel=3` in every probe cell is
+correct — but it also means **the probe harness structurally cannot validate the channel that is
+the subject of the research**. Compounding it: the end-to-end smoke test recorded above (`n_spaces`
+office 6 / retail 3 / hotel 3, 20:41) **predates the residential wiring** in
+`3rdJ_08D_campaign_cells.py` (20:51). That entry was accurate when written and stopped covering the
+current code ten minutes later. The 56-run campaign would have been this code path's first
+execution.
+
+Verified before any long run (campaign smoke, 0.8 min): channels requested
+`['office','retail','hotel','residential']`; residential **27 Spaces, 27 distinct households**
+(seed 42 — one household per Space, per OD-8R-L3); **54** schedules
+(`MXU_Residential_Occ/Met_HH<id>`); `n_carriers_neutralized=1` (2J Bug A per-zone carrier fix
+live); `fallback=[]`, `ambiguous=[]`. **§B (residential injector) is CLOSED** — the "specified, not
+implemented" status in `3rdJ_08_implementation_improvements.md` §B is superseded.
+
+**§C also closed, via the consumed columns rather than md5** (Test-method #1). Historical products
+read `step7.AUG` (the Step-5 observed frame filtered by `CYCLE_YEAR`), **never** the Step-6
+calibrated deliverable — so `_C_v2` does not stale them. Era axis verified **alive on all three
+channels**: office `AT_WORK_fraction` 143–144/144 bins differ (max|Δ| 0.052–0.092), retail
+`multiplier` 154–156/288 (max|Δ| 0.458–0.758), residential `Occupancy_Schedule` **48/48** bins
+(max|Δ| 0.046–0.095). Note the residential annual means agree to within 0.005 across eras — a check
+on annual totals would have declared the axis dead. The era signal is in the **shape**.
+
+**Open, for the user (not a blocker):** within the historical arm, 2005/2010/2015 are built from
+`IS_SYNTHETIC == 0` pools (`3rdJ_08A_...py:228`, deliberate) while the **2022** product is built
+from the **unfiltered** Step-5 stock. In the frame itself the synthetic share is flat (~44–45% on
+all four cycles), so the `0% → 44.6% → 100%` ladder in Défaut 4 is a **filter choice**, not a
+property of the data. Harmonising would make the era arm composition-homogeneous but would
+invalidate the 2022 product, its freshly regenerated Step-7 report and the `cycle_2022` probe — a
+method call, not a bug fix.
+
+Next: one **full-annual Calgary cell** (CAN_CLG has never been exercised; 28 of 56 cells depend on
+it), then the 56-run campaign. Open item #2 (Calgary EPW `_6B` vs IDF `Z7A`) is already settled
+with numbers above — near-boundary NECB 6/7A case, file deliberately not renamed.
+
+Files changed: `3rdJ_08P_probe_gates.py` (P4 glob only). Not touched: any Step-7 product CSV,
+`commercial_integration.py`, `3rdJ_08P_probe_driver.py`, `3rdJ_08P_probes_local.py`,
+`3rdJ_08D_campaign_*.py`, the Step-6 deliverables.
+
+## Progress Log — 2026-07-30 (manager) : première cellule annuelle Calgary, campagne 56 runs lancée, D-20
+
+**Ligne 11ter close.** Cellule 17 `B_central__Tall__CLG` — première exécution de l'IDF `CAN_CLG`
+(28 des 56 cellules en dépendent) et premier run **annuel complet** de la campagne.
+**6,6 min** (1 worker), `hourly_meters` et `channel_hourly` à **8760** lignes, `ep_return_code=0`,
+EnergyPlus « Completed Successfully », **0 Severe**, `fallback=[]`, `ambiguous=[]`, `banner_lines=[]`,
+4 canaux injectés (office 6 / retail 3 / hotel 3 / **résidentiel 27 Spaces, 27 ménages distincts**).
+
+Deux points de méthode dans cette vérification :
+
+1. **La tâche de fond est revenue avec un stdout VIDE malgré `exit=0`.** Le statut ne prouvait rien ;
+   tout a été re-dérivé du manifeste et de `eplusout.err`.
+2. **Le manifeste ne consigne pas le chemin EPW.** Une cellule `CLG` lancée par erreur avec le fichier
+   météo de Montréal produirait un manifeste d'apparence identique. Seul le log ferme la question —
+   `epw=…CAN_AB_Calgary-Canadian.Olympic.Park.Upper.712350_TMYx_6B.epw`, périodes de dimensionnement
+   « CALGARY-CANADIAN.OLYMPIC.PARK.UPPER ». **Amélioration à retenir : ajouter l'EPW au manifeste.**
+
+**Le bandeau final annonce « 105 267 351 Warning ».** C'est le cumul *récurrent* d'EnergyPlus compté
+par pas de temps, pas 105 M problèmes : le fichier ne contient que **478** lignes `** Warning **`
+distinctes, dominées par du dimensionnement bénin (débit d'air minimal de zone 75,
+`GetOAControllerInputs` 62, `CalcEquipmentFlowRates` 47, `SizeWaterCoil` 39). 0 Severe.
+
+**Calgary n'est pas plus lente que Montréal.** 6,6 min seule vs 15,5–18,3 min/cellule à 6 workers
+sur les probes → facteur de contention ≈ 2,7×, pas de surcoût climatique. L'hypothèse « même chiffre
+pour CLG que pour MTL » de la doc est donc sûre et l'estimation 2,6–3,5 h tient.
+
+### 🔴 D-20 — le canal résidentiel pilote les PERSONNES seulement
+
+Trouvé dans les **colonnes** de `channel_hourly.csv`, pas dans le manifeste, qui est propre. Le
+décompte de valeurs distinctes sur l'année trahit le câblage : office `nuniq(people)=nuniq(equip)=46`,
+retail `37=37`, hotel 192/156 — signature d'un canal MODULATE. Résidentiel : people **33**, lights
+**12**, equip **5**, c'est-à-dire les niveaux NECB de base. Confirmé à la source :
+`inject_residential()` n'émet que des objets PEOPLE et son dict de retour n'a pas de clés
+`n_lights` / `n_equip` (`eSim_bem_utils/commercial_integration.py:588`).
+
+**C'est `OD-7D`, verrouillé et documenté** dans le docstring de la fonction, et la prémisse tient :
+le produit résidentiel Step-7 est à **13 colonnes** (`Occupancy_Schedule`, `Metabolic_Rate`), et
+**Leg-2 a le même schéma** — donc pas une régression entre jambes ; le « 17 colonnes » des vieilles
+notes est de lignée 2J.
+
+**Conséquence = réserve de manuscrit, pas correctif.** L'occupation commerciale atteint l'énergie par
+**trois** voies (métabolique → CVC, éclairage, prises), la résidentielle par **une**. Toute
+comparaison inter-canaux de la sensibilité énergétique à l'occupation est structurellement
+défavorable au résidentiel — le sujet de la recherche. Les comparaisons **intra-canal** (bandes,
+villes, époques) ne sont pas affectées : l'asymétrie y est en mode commun.
+
+**Campagne 56 runs LANCÉE** — 6 workers, watchdog mémoire 80 %, reprise activée (55 à exécuter, la
+cellule 17 réutilisée). Détail complet et registre de décisions dans
+`improvements/3rdJ_L3_improvements_step5_6_7.md` (D-20, ligne 11ter, ligne 12).
+
+### 2026-07-31 — 🔴 Défauts 5/6/7 : le jeu de sorties ne pouvait pas porter le §8E ni le Step 9 (CORRIGÉ, campagne re-simulée)
+
+Trouvé en préparant le Step 9, **avant** que le moindre EUI n'ait été calculé — donc aucun résultat
+publié n'est en cause. Détail complet et preuves dans `3rdJ_08_implementation_improvements.md`
+(Défauts 5, 6, 7) ; résumé chronologique ici.
+
+1. **Défaut 5 — 53,5 % de l'énergie de site rapportée à zéro.** `REQUIRED_METERS` demandait les noms
+   d'avant EnergyPlus 9.4 (`Gas:Facility`, `Heating:Gas`, `InteriorEquipment:Gas`,
+   `WaterSystems:Gas`), qui **n'existent plus** en 24.2. EnergyPlus a averti quatre fois
+   (`eplusout.err:916-919`) ; le zéro-remplissage de `_write_hourly_meters_csv` a transformé
+   « absent » en « 0,0 ». Le tableau *End Uses* du même run donne **13 884,91 GJ de gaz** (ECS
+   7 726,75 + chauffage 4 082,08 + buanderie hôtel 2 076,08). Trois usages finaux électriques
+   manquaient aussi (éclairage extérieur, rejet et récupération de chaleur = 1 388,64 GJ, soit les
+   11,52 % d'écart de fermeture).
+2. **Défaut 6 — variables de zone non multipliées.** Σ(variables de zone) = **25,4 %** du compteur
+   d'installation ; `Σ(zone × Zones.Multiplier) / compteur = 1,000000`. Les multiplicateurs
+   {1,4,7,8,9,10,28,70} diffèrent **par canal**, donc l'erreur ne s'annulait pas dans les parts.
+3. **Défaut 7 — surfaces documentées fausses.** Tall mesuré : 72 623,1 m² (= ABUPS exactement),
+   bureau 44,65 % / hôtel 24,91 % / résidentiel 22,40 % / **retail 5,53 %** de l'occupiable, contre
+   « 24,4 % » pour trois canaux au document. Service/MEP 21,4 % du brut, pas ~52 %.
+
+**Correctifs livrés.** 15 compteurs (2 totaux + 13 usages finaux) ; `Zones.Multiplier` appliqué à la
+source ; `Zone Air System Sensible Cooling/Heating Energy` ajoutés (sans quoi la répartition horaire
+pondérée par la charge de dr_L3-10 était incalculable), plus `Zone Gas Equipment NaturalGas Energy`
+et `Water Use Equipment Heating Energy` → `dhw_hourly.csv` ; deux gates de fermeture (`fuel_closure`,
+`channel_closure`) **vues échouer sur le vrai défaut** puis sur un manque injecté de 5 %, et passant
+sur un jeu complet ; `OUTPUT_SCHEMA_HASH` intégré à l'empreinte de reprise (sans lui, corriger les
+compteurs laissait les 56 cellules « faites » et la reprise les aurait sautées) ; échec de fermeture
+= échec de **cellule**, visible dans `campaign_status.csv`.
+
+**§8E écrit** (`3rdJ_08E_aggregate_4split.py`) — il n'existait pas ; il refuse d'agréger une cellule
+dont les fermetures échouent. **Step 9 écrit** (`Step9_docs/3rdJ_09_activityDrivenLoads_4split.py`).
+
+**Re-simulation** dans `campaign_local_v2/` (arbre précédent intact). Cellule témoin avant lancement :
+0 compteur absent, `NaturalGas:Facility` = 13 884,9 GJ concordant avec *End Uses*, 5 fermetures à
+0,000000 %, 47/47 équipements ECS résolus, et `Electricity:Facility` **identique** au run précédent —
+contrôle de régression : ajouter des objets `Output:*` ne perturbe pas le modèle. Coût : 7,1 min/cellule
+contre 6,6, soit ~8 %.
+
+**La leçon, à garder.** La gate §6b-4 (« Σ compteurs d'usage final ≈ `Electricity:Facility` ») était
+écrite depuis 2J Bug B et **jamais implémentée**. Une gate déclarée dans un document et absente du
+code est pire qu'une gate manquante : elle occupe la place de celle qui aurait attrapé le défaut.

@@ -23,6 +23,7 @@ import base64
 import hashlib
 import io
 import os
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -43,9 +44,59 @@ OUT_DIR = HERE / "outputs_step7"
 
 AUG2022 = (LEG3 / "Step5_docs" / "outputs_step5"
            / "3rdJ_25CEN_aug_Full_Aggregated_excl.csv")
+# PROMOTED 2026-07-30 (D-11/D-13) -- must stay in lockstep with the same two constants in
+# 3rdJ_07_aug_to_bem_4split.py. Validating a different build than the one the generator consumed
+# is worse than validating nothing, because it reports green on a file nothing was built from.
 D2030_C = (LEG3 / "Step6_docs" / "outputs_step6"
-           / "2030_synthetic_diaries_4split_calibrated_mindwell_C.csv")
-D2030_EXPECTED_MD5 = "7c105ef331b37107d5b605c95028c3ba"
+           / "2030_synthetic_diaries_4split_calibrated_mindwell_C_v2.csv")
+D2030_EXPECTED_MD5 = "5aa74f44cd09a7afa9fa5418864956ed"
+D2030_PREDECESSOR_MD5 = "7c105ef331b37107d5b605c95028c3ba"   # frozen, superseded 2026-07-30
+GENERATOR_PY = HERE / "3rdJ_07_aug_to_bem_4split.py"
+
+
+def assert_d2030_lockstep() -> None:
+    """Hard gate, added 2026-07-30 with the D-11 promotion.
+
+    D2030_EXPECTED_MD5 was previously DECLARED here and never read -- a pinned hash that
+    pinned nothing. Two failure modes it now actually catches:
+      (1) the on-disk 2030 deliverable is not the build this validator was pinned to;
+      (2) the GENERATOR is pinned to a different build than this validator, i.e. the report
+          would certify a file the products were never built from. That is the exact shape of
+          the stale-report defect (B.3.0) -- green ticks describing something else.
+    Hard-fails rather than recording a FAIL row: if this is wrong, every number below it is
+    about the wrong file, so there is nothing worth rendering into a report.
+    """
+    if GENERATOR_PY.exists():
+        m = re.search(r'^D2030_EXPECTED_MD5\s*=\s*"([0-9a-f]{32})"',
+                      GENERATOR_PY.read_text(encoding="utf-8"), re.M)
+        assert m, f"LOCKSTEP: could not read D2030_EXPECTED_MD5 out of {GENERATOR_PY.name}"
+        assert m.group(1) == D2030_EXPECTED_MD5, (
+            f"LOCKSTEP VIOLATION: generator pins {m.group(1)}, validator pins "
+            f"{D2030_EXPECTED_MD5}. The products were built from a different 2030 deliverable "
+            f"than the one being validated -- fix both constants before trusting any report."
+        )
+    if D2030_C.exists():
+        actual = hashlib.md5(D2030_C.read_bytes()).hexdigest()
+        assert actual == D2030_EXPECTED_MD5, (
+            f"H6 VIOLATION: {D2030_C.name} MD5 is {actual}, pinned {D2030_EXPECTED_MD5}"
+            + (" -- this is the SUPERSEDED predecessor build (D-11)"
+               if actual == D2030_PREDECESSOR_MD5 else "")
+        )
+        print(f"  [LOCKSTEP PASS] 2030 deliverable {D2030_C.name} MD5 {actual} "
+              f"matches generator + validator pins", flush=True)
+
+# Retail lever files -- independent source for R.1/R.2's internal-consistency check (2026-07-30,
+# post-2026-07-28 retail-multiplier fix cascade). Deliberately NOT RETAIL_LEVER_VALUE (below):
+# R.1/R.2 are about the PRODUCT's own internal consistency (does its peak survive at whatever
+# lever the raw Step-6 file actually holds), while RETAIL_LEVER_VALUE + R.7 pin the lever's VALUE.
+# A corrupted lever file must fail R.7 while R.1 still passes -- see 3rdJ_07_aug_to_bem_4split.py
+# _derive_retail_lever() (:153) / run_retail_gates() (:674-723), which this mirrors read-only.
+RETAIL_LEVER_DIR = LEG3 / "Step6_docs" / "outputs_step6"
+RETAIL_LEVER_FILES = {
+    "shift":       RETAIL_LEVER_DIR / "at_retail_fraction_2030_shift.csv",
+    "plateau":     RETAIL_LEVER_DIR / "at_retail_fraction_2030_plateau.csv",
+    "renaissance": RETAIL_LEVER_DIR / "at_retail_fraction_2030_renaissance.csv",
+}
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 BUNDLES = ["cons", "central", "opt"]
@@ -75,6 +126,15 @@ RET = [f"ret30_{i:03d}" for i in range(1, 49)]
 ACT = [f"act30_{i:03d}" for i in range(1, 49)]
 
 DTYPE_VALID = {"SingleD", "MidRise", "HighRise", "OtherDwelling", "8"}
+# "8" (literal string, not "Movable") is inherited unchanged from the Leg-2 validator's DTYPE_VALID
+# and never observed in any current 4-split product (confirmed empirically 2026-07-30). Per
+# 3rdJ_05_censusLinkage_4split.py:75-77 (_DTYPE_MAP), raw Census code 8 = "Movable" -- a category
+# that should already be consolidated into "OtherDwelling" by the time data reaches Step 7, so its
+# presence here looks like vestigial/defensive inclusion rather than an expected label. Kept in
+# DTYPE_VALID (ALLOWED, not REQUIRED) rather than dropped outright, since removing it outright
+# would be an unverified guess; G.1 below requires the 4 real archetype labels but still tolerates
+# "8" if it ever appears, without requiring it.
+DTYPE_REQUIRED = {"SingleD", "MidRise", "HighRise", "OtherDwelling"}
 PR_VALID    = {"Atlantic", "Quebec", "Ontario", "Prairies", "BC", "Northern Canada"}
 TIER_VALID  = {"1_Perfect", "2_Core", "3_Constraints", "4_FailSafe"}
 
@@ -104,6 +164,25 @@ _NECB_RETAIL_BASELINE_HOURLY = {
 
 def necb_retail_baseline_proxy(day_type, hour):
     return float(_NECB_RETAIL_BASELINE_HOURLY[day_type][int(hour)])
+
+
+def _derive_retail_lever(retail_scenario, df=None):
+    """Read-only mirror of 3rdJ_07_aug_to_bem_4split.py::_derive_retail_lever() (:153) -- derives
+    the Step-6 retail lever scalar at runtime from the raw lever file's own `multiplier` column,
+    asserted uniform. Independent of RETAIL_LEVER_VALUE (R.7's business, pins the lever's VALUE);
+    this is R.1/R.2's business (the product's own internal consistency against whatever lever the
+    raw file actually holds). `df` param allows Task-3 in-memory-perturbation proof without disk I/O.
+    """
+    if df is None:
+        path = RETAIL_LEVER_FILES[retail_scenario]
+        df = pd.read_csv(path, usecols=["multiplier"])
+    lo, hi = float(df["multiplier"].min()), float(df["multiplier"].max())
+    assert (hi - lo) < 1e-9, (
+        f"Retail lever '{retail_scenario}' is NOT a uniform scalar (min={lo:.10f}, max={hi:.10f}, "
+        f"spread={hi - lo:.3e}): a non-uniform lever would change the retail SHAPE, not just the "
+        f"LEVEL -- see val.py R.1/R.2 and the generator's _derive_retail_lever() docstring."
+    )
+    return float(df["multiplier"].iloc[0])
 
 
 _DARK = {
@@ -137,10 +216,11 @@ def _md5(path: Path) -> str:
 
 # ── Main Validator ────────────────────────────────────────────────────────────
 class BEM4splitValidator:
-    def __init__(self, year: str, bundle: str | None = None) -> None:
+    def __init__(self, year: str, bundle: str | None = None, out_suffix: str = "") -> None:
         self.year = year
         self.bundle = bundle if year == "2030" else "observed"
         self.scenario_label = year if year == "2022" else f"2030_{bundle}"
+        self.out_suffix = out_suffix
         os.makedirs(OUT_DIR, exist_ok=True)
 
         # ── Residential ──────────────────────────────────────────────────────
@@ -187,6 +267,7 @@ class BEM4splitValidator:
         self.input_paths = [res_path, off_path, ret_path, hot_path]
 
         # ── Calibration reference diary ────────────────────────────────────
+        assert_d2030_lockstep()
         self.diary = None
         diary_path = AUG2022 if year == "2022" else D2030_C
         if diary_path.exists():
@@ -229,12 +310,18 @@ class BEM4splitValidator:
         n = len(b); ok = n == self.N_ROWS
         self._rec("pass" if ok else "fail", f"A.2 | Residential row count: {n:,} (N_HH×2×24={self.N_ROWS:,})")
         self._sum("Residential row count", "N_HH×2×24", f"{n:,}", "PASS" if ok else "FAIL")
+        res_row_ok = ok
 
         ok = set(b["Hour"].unique()) == set(range(24))
         self._rec("pass" if ok else "fail", f"A.3 | Hour domain {{0..23}}: {ok}")
 
-        dts = set(b["Day_Type"].unique()); ok = dts <= {"Weekday", "Weekend"}
-        self._rec("pass" if ok else "fail", f"A.4 | Residential Day_Type domain {sorted(dts)}: {ok}")
+        # FIXED 2026-07-30 (SUSPECT sweep finding): was a subset check (`<=`) which would silently
+        # PASS even if "Weekend" (or "Weekday") were entirely absent from the data -- only invalid
+        # extra labels tripped it, a missing expected category vanished instead of failing. Both
+        # day-types are structurally required (A.2's N_HH×2×24 row-count formula assumes exactly
+        # 2), so equality is the correct, safe check here -- not just tighter for its own sake.
+        dts = set(b["Day_Type"].unique()); ok = dts == {"Weekday", "Weekend"}
+        self._rec("pass" if ok else "fail", f"A.4 | Residential Day_Type domain {sorted(dts)} == {{Weekday,Weekend}}: {ok}")
 
         nan_tot = int(b[["Occupancy_Schedule", "Metabolic_Rate"]].isna().sum().sum())
         self._rec("pass" if nan_tot == 0 else "fail", f"A.5 | NaN in Occupancy/Metabolic: {nan_tot}")
@@ -247,6 +334,8 @@ class BEM4splitValidator:
         ok = len(self.office) == exp_grid
         self._rec("pass" if ok else "fail",
                   f"A.7 | Office grid: {len(self.office):,} rows (expected {exp_grid}): {ok}")
+        off_row_ok = ok
+        off_row_formula = f"{len(OFFICE_ARCHETYPES)}×2×24×{len(self.office_bands)}"
 
         ok = list(self.retail.columns) == RETAIL_COLS
         self._rec("pass" if ok else "fail", f"A.8 | Retail column set ({len(RETAIL_COLS)} cols): {ok}")
@@ -258,6 +347,8 @@ class BEM4splitValidator:
         self._rec("pass" if ok else "fail",
                   f"A.9 | Retail rows = 3 Day_Type x {n_pr} PR x 48 slots = {exp_ret}: got {len(self.retail):,}: {ok}")
         self._sum("Retail row count", "3×PR×48", f"{len(self.retail):,}", "PASS" if ok else "FAIL")
+        ret_row_ok = ok
+        ret_row_formula = f"3×{n_pr}×48"
 
         ok = list(self.hotel.columns) == HOTEL_COLS
         self._rec("pass" if ok else "fail", f"A.10 | Hotel column set ({len(HOTEL_COLS)} cols): {ok}")
@@ -268,22 +359,59 @@ class BEM4splitValidator:
         self._rec("pass" if ok else "fail",
                   f"A.11 | Hotel rows = {n_pr_h} PR x 12 mo x 2 DT x 48 = {exp_hot}: got {len(self.hotel):,}: {ok}")
         self._sum("Hotel row count", "PR×12×2×48", f"{len(self.hotel):,}", "PASS" if ok else "FAIL")
+        hot_row_ok = ok
+        hot_row_formula = f"{n_pr_h}×12×2×48"
 
-        # Staleness: report must postdate all 4 product files (checked at report-build time too)
+        # A.12 FIXED 2026-07-30 (triaged in the CAN-FAIL/VACUOUS/SUSPECT sweep): the surrounding
+        # comment ("report must postdate all 4 product files -- checked at report-build time too")
+        # states an unambiguous intent, but no such comparison existed anywhere in the file --
+        # mtimes were collected and printed, never compared to anything. This is exactly the gate
+        # that should have caught B.3.0 (four Step-7 HTML reports validating stale pre-2026-07-28
+        # retail data): a large spread between the 4 input mtimes means they were not built in the
+        # same coherent session, i.e. some channel was regenerated (e.g. a bug fix) without the
+        # others being refreshed to match. Real statistic: max-min mtime spread across the 4
+        # inputs, WARN if > 24h (same-session tolerance). This is not hypothetical -- it currently
+        # WARNs for real: retail was rebuilt 2026-07-28 while residential/office/hotel are still
+        # 2026-07-23, a ~115h spread (see Progress Log).
         mtimes = {p.name: datetime.fromtimestamp(p.stat().st_mtime) for p in self.input_paths if p.exists()}
-        self._rec("pass", f"A.12 | [INFO] Input product mtimes: {mtimes}")
+        if len(mtimes) >= 2:
+            span_h = (max(mtimes.values()) - min(mtimes.values())).total_seconds() / 3600.0
+            a12_ok = span_h <= 24.0
+            lv = "pass" if a12_ok else "warn"
+            self._rec(lv, f"A.12 | Input product vintage spread: {span_h:.1f}h across 4 files (≤24h "
+                          f"expected for a coherent build session): {a12_ok}. mtimes={mtimes}")
+            self._sum("A12 Input product vintage spread", "≤ 24h", f"{span_h:.1f}h", lv.upper())
+        else:
+            self._rec("pass", f"A.12 | [INFO] Input product mtimes: {mtimes}")
 
-        fig, ax = plt.subplots(figsize=(10, 4.5))
-        fig.suptitle(f"Section A — Schema & Structure ({self.scenario_label})", fontsize=13, fontweight="bold")
-        ax.axis("off")
-        tbl_data = [
-            ["Residential rows", f"{n:,}"], ["Unique HH", f"{self.N_HH:,}"],
-            ["Office rows", f"{len(self.office):,}"], ["Office bands", str(self.office_bands)],
-            ["Retail rows", f"{len(self.retail):,}"], ["Retail PR", str(sorted(self.retail['PR'].unique()))],
-            ["Hotel rows", f"{len(self.hotel):,}"],
+        # Horizontal log-scale bar chart replaces the old ax.table() count manifest (B.3.2):
+        # the table was a static-image row/HH manifest carrying no gate verdict of its own --
+        # the real A.1-A.11 checks lived only in the Summary Table far below. Bar colour now
+        # IS that channel's own row-count gate verdict (A.2/A.7/A.9/A.11), and each bar is
+        # annotated with the formula that produced the count, so it is verifiable at a glance.
+        channels = [
+            ("Residential", n, "N_HH×2×24 = {:,}".format(self.N_ROWS), res_row_ok),
+            ("Office", len(self.office), off_row_formula, off_row_ok),
+            ("Retail", len(self.retail), ret_row_formula, ret_row_ok),
+            ("Hotel", len(self.hotel), hot_row_formula, hot_row_ok),
         ]
-        tbl = ax.table(cellText=tbl_data, colLabels=["Item", "Value"], cellLoc="left", loc="center")
-        tbl.auto_set_font_size(False); tbl.set_fontsize(9); tbl.scale(1.2, 1.6)
+        fig, ax = plt.subplots(figsize=(10, 5))
+        fig.suptitle(f"Section A — Schema & Structure ({self.scenario_label})", fontsize=13, fontweight="bold")
+        labels = [c[0] for c in channels]
+        counts = [c[1] for c in channels]
+        colors = ["#a6e3a1" if c[3] else "#f38ba8" for c in channels]
+        y_pos = np.arange(len(channels))
+        ax.barh(y_pos, counts, color=colors, edgecolor="#1e1e2e", height=0.55, log=True)
+        ax.set_yticks(y_pos); ax.set_yticklabels(labels)
+        ax.set_xlabel("Row count (log scale)")
+        ax.invert_yaxis()
+        ax.xaxis.grid(True, linestyle="--", alpha=0.3, which="both")
+        xmax = max(counts)
+        for i, (_, cnt, formula, ok_c) in enumerate(channels):
+            badge = "PASS" if ok_c else "FAIL"
+            ax.text(cnt * 1.15, i, f"{cnt:,}  ({formula})  [{badge}]",
+                    va="center", fontsize=9, color=("#a6e3a1" if ok_c else "#f38ba8"))
+        ax.set_xlim(right=xmax * 20)
         plt.tight_layout()
         self.plots_b64["A_schema"] = _b64(fig)
 
@@ -319,8 +447,15 @@ class BEM4splitValidator:
         self._rec("pass" if ok else "fail", f"B.3 | Retail Day_Type domain (3 types, Sunday load-bearing): {sorted(ret_dts)}: {ok}")
         self._sum("Retail 3 day-types (Sunday load-bearing)", "{Weekday,Saturday,Sunday}",
                   str(sorted(ret_dts)), "PASS" if ok else "FAIL")
+        # FIXED 2026-07-30 (triaged in the sweep): message text said "(non-zero, load-bearing)" --
+        # an unambiguous intended test that was never actually gated on. Real statistic: assert
+        # sun_mean > 0 (small epsilon to avoid float noise), FAIL severity to match B.3's own
+        # severity for Sunday's presence in the domain (this is the numeric half of that claim).
         sun_mean = float(self.retail[self.retail["Day_Type"] == "Sunday"]["at_retail_fraction"].mean())
-        self._rec("pass", f"B.4 | [INFO] Retail Sunday mean at_retail_fraction: {sun_mean:.4f} (non-zero, load-bearing)")
+        b4_ok = sun_mean > 1e-6
+        self._rec("pass" if b4_ok else "fail",
+                  f"B.4 | Retail Sunday mean at_retail_fraction: {sun_mean:.4f} (>0, load-bearing): {b4_ok}")
+        self._sum("B4 Retail Sunday non-zero (load-bearing)", "> 0", f"{sun_mean:.4f}", "PASS" if b4_ok else "FAIL")
 
         fig, ax = plt.subplots(figsize=(8, 4.5))
         fig.suptitle(f"Section B — Day-Type Coverage ({self.scenario_label})", fontsize=13, fontweight="bold")
@@ -489,29 +624,46 @@ class BEM4splitValidator:
         _apply_dark()
         ret = self.retail
 
-        # R1: peak normalization exact
+        # Lever, band-aware (2026-07-30, post-2026-07-28 fix -- see 3rdJ_L3_improvements_step5_6_7.md
+        # B.3 addendum + _val.md Progress Log). 2022 is self-normalizing/unlevered -> lever=1.0
+        # (collapses R.1/R.2 to their pre-2026-07-30 form exactly). 2030 derives the lever at
+        # runtime from the raw Step-6 lever file, mirroring the generator's own gate -- NOT from
+        # the hardcoded RETAIL_LEVER_VALUE dict (that stays R.7's business, kept independent on
+        # purpose: a corrupted lever file must fail R.7 while R.1 still passes).
+        lever = 1.0 if self.year == "2022" else _derive_retail_lever(RETAIL_SCENARIO_OF_BUNDLE[self.bundle])
+
+        # R1: peak normalization exact, band-aware. shape_peak == lever; mult_peak == 0.95*lever
+        # (strictly stronger than the old exact-shape=1.000/mult=0.95 check it replaces: if the
+        # pre-fix bug -- self-normalizing every band's peak back to a lever-independent constant --
+        # is ever reintroduced, this now FAILs for every band whose lever != 1.0).
+        expected_mult_peak = 0.95 * lever
         r1_ok = True
         for (dt, pr), g in ret.groupby(["Day_Type", "PR"]):
             shape_peak = float(g["shape"].max())
             mult_peak = float(g["multiplier"].max())
-            if abs(shape_peak - 1.0) > 1e-6 or abs(mult_peak - 0.95) > 1e-6:
+            if abs(shape_peak - lever) > 1e-6 or abs(mult_peak - expected_mult_peak) > 1e-6:
                 r1_ok = False
-                self._rec("fail", f"R.1 | [{dt}/{pr}] peak norm off: shape_peak={shape_peak:.6f} "
-                                   f"mult_peak={mult_peak:.6f}")
+                self._rec("fail", f"R.1 | [{dt}/{pr}] peak norm off (lever={lever:.4f}): "
+                                   f"shape_peak={shape_peak:.6f} (exp {lever:.6f}) "
+                                   f"mult_peak={mult_peak:.6f} (exp {expected_mult_peak:.6f})")
         if r1_ok:
-            self._rec("pass", "R.1 | Peak normalization exact for all Day_Type×PR: shape=1.000, mult=0.95")
-        self._sum("R1 Peak normalization exact", "shape=1.000, mult=0.95", "all OK" if r1_ok else "violations",
-                  "PASS" if r1_ok else "FAIL")
+            self._rec("pass", f"R.1 | Peak normalization exact for all Day_Type×PR (lever={lever:.4f}): "
+                              f"shape={lever:.4f}, mult={expected_mult_peak:.4f}")
+        self._sum("R1 Peak normalization exact (band-aware)", f"shape=lever={lever:.4f}, mult=0.95×lever",
+                  "all OK" if r1_ok else "violations", "PASS" if r1_ok else "FAIL")
 
-        # R2: shape fidelity -- shape*peak(=at_retail_fraction's own max) reproduces at_retail_fraction
+        # R2: shape fidelity -- anchored on the UN-LEVERED base peak (shape's own peak is now the
+        # lever, not 1.0, so peak_frac must be divided back down by lever before reconstruction).
+        # For 2022 (lever=1.0) this is byte-identical to the pre-2026-07-30 test.
         r2_ok = True
         for (dt, pr), g in ret.groupby(["Day_Type", "PR"]):
             peak_frac = g["at_retail_fraction"].max()
-            recon = g["shape"] * peak_frac
+            recon = g["shape"] * (peak_frac / lever)
             diff = (recon - g["at_retail_fraction"]).abs().max()
             if diff > 1e-4:
                 r2_ok = False
-        self._rec("pass" if r2_ok else "fail", f"R.2 | Shape fidelity (shape×peak reproduces at_retail_fraction): {r2_ok}")
+        self._rec("pass" if r2_ok else "fail",
+                  f"R.2 | Shape fidelity (shape×(peak/lever) reproduces at_retail_fraction, lever={lever:.4f}): {r2_ok}")
         self._sum("R2 Shape fidelity", "exact (float tol)", "OK" if r2_ok else "violations", "PASS" if r2_ok else "FAIL")
 
         # R3: diurnal windows (WARN)
@@ -536,22 +688,43 @@ class BEM4splitValidator:
         self._rec(lv, f"R.3 | Diurnal windows: {'; '.join(r3_notes)}")
         self._sum("R3 Diurnal windows", "WD peak 12-14h, Sat 13-16h, Sat>WD", "; ".join(r3_notes), lv.upper())
 
-        # R4: Sunday province split (WARN)
+        # R4: Sunday province split (WARN) -- RE-SPECIFIED 2026-07-30 (see val.md Progress Log,
+        # and 3rdJ_07_bemIntegration_4split.md for the derivation). The old statistic compared
+        # max_t(multiplier) between QC and AB Sunday, but every (Day_Type,PR) group's multiplier
+        # peak is independently forced to 0.95*lever by R.1's own construction (peak-normalization
+        # per group) -- so QC_peak==AB_peak==0.95*lever ALWAYS, by CONSTRUCTION, regardless of what
+        # the real underlying data says. That gate could never fail; it was VACUOUS (confirmed
+        # degenerate in 2022 too, not just 2030 -- ratio=1.000 in all 4 products).
+        # New statistic: mean_t(at_retail_fraction) / max_t(at_retail_fraction) within a
+        # (Day_Type=Sunday, PR) group -- a mean-to-peak ("load factor") ratio. This is invariant to
+        # ANY positive per-group rescaling (old self-normalizing bug OR the new lever), because a
+        # ratio of two quantities scaled by the same constant cancels that constant -- so it
+        # survives peak-normalization by construction, unlike the old statistic.
+        # WHAT IT DETECTS: how concentrated Sunday retail activity is around its own peak half-hour
+        # -- a lower ratio means a "spikier" day (activity concentrated in a short window relative
+        # to a sustained peak), a higher ratio means a "flatter/broader" day. This is a genuine
+        # proxy for effective trading-hours breadth (Quebec's Sunday retail-hours rules are
+        # historically more restrictive than Alberta's), independent of the demand LEVEL.
+        # WHAT IT DOES NOT DETECT: WHEN in the day the activity happens (timing/peak-hour location
+        # -- that is R.3's job), or the absolute LEVEL of activity (that is R.1/R.7's job). Two
+        # provinces could have the same ratio while differing completely in level or peak-hour
+        # timing; this statistic is blind to both.
         if {"QC", "AB"} <= set(ret["PR"].unique()):
-            qc_sun = ret[(ret["Day_Type"] == "Sunday") & (ret["PR"] == "QC")]["multiplier"].max()
-            ab_sun = ret[(ret["Day_Type"] == "Sunday") & (ret["PR"] == "AB")]["multiplier"].max()
-            qc_sat = ret[(ret["Day_Type"] == "Saturday") & (ret["PR"] == "QC")]["multiplier"].max()
-            ratio = qc_sun / qc_sat if qc_sat > 0 else float("nan")
-            expected = qc_sun < ab_sun
-            in_band = 0.60 <= ratio <= 0.75
-            lv = "pass" if (expected and in_band) else "warn"
-            self._rec(lv, f"R.4 | Sunday province split: QC peak={qc_sun:.4f} vs AB peak={ab_sun:.4f} "
-                          f"(QC<AB expected: {expected}); QC Sun/Sat ratio={ratio:.3f} "
-                          f"(expect 0.60-0.75: {in_band}). "
-                          f"NOTE: observed data shows QC Sunday peak {'<' if expected else '>='} AB -- "
-                          f"reported honestly, not forced.")
-            self._sum("R4 Sunday province split", "QC<AB; QC ratio 0.60-0.75",
-                      f"QC={qc_sun:.4f} AB={ab_sun:.4f} ratio={ratio:.3f}", lv.upper())
+            sun = ret[ret["Day_Type"] == "Sunday"]
+            open_ratio = {}
+            for pr in ["QC", "AB"]:
+                frac = sun[sun["PR"] == pr]["at_retail_fraction"]
+                open_ratio[pr] = float(frac.mean() / frac.max()) if frac.max() > 0 else float("nan")
+            qc_lt_ab = open_ratio["QC"] < open_ratio["AB"]
+            delta = open_ratio["QC"] - open_ratio["AB"]
+            lv = "pass" if qc_lt_ab else "warn"
+            self._rec(lv, f"R.4 | Sunday province shape (mean/peak load factor, survives "
+                          f"peak-normalization): QC={open_ratio['QC']:.4f} vs AB={open_ratio['AB']:.4f} "
+                          f"(Δ{delta:+.4f}, QC<AB expected per QC's historically more-restrictive "
+                          f"Sunday retail hours: {qc_lt_ab}). Detects Sunday activity concentration "
+                          f"(shape), NOT peak timing (R.3) or level (R.1/R.7). Reported honestly, not forced.")
+            self._sum("R4 Sunday province shape (mean/peak, re-specified)", "QC ratio < AB ratio",
+                      f"QC={open_ratio['QC']:.4f} AB={open_ratio['AB']:.4f} Δ{delta:+.4f}", lv.upper())
 
         # R5: staff-shoulder rule
         sh = ret[ret["staff_shoulder_flag"] == 1]
@@ -572,19 +745,37 @@ class BEM4splitValidator:
         self._rec(lv, f"R.6 | Night 00:00-05:00 at_retail_fraction max: {night_max:.4f} (≤0.01): {ok}")
         self._sum("R6 Night floor", "≤ 0.01", f"{night_max:.4f}", lv.upper())
 
-        # R7: 2030 lever exactness (across bundles, if all 3 present)
+        # R7: 2030 lever exactness (across bundles, if all 3 present) -- FIXED 2026-07-30 (see
+        # val.md Progress Log). The old version assigned all_ret[b] = RETAIL_LEVER_VALUE[...]
+        # directly (gated only on the file EXISTING, never reading its content) and then compared
+        # that value to RETAIL_LEVER_VALUE[...] again -- literally x==x, vacuously true whenever
+        # all 3 files exist. It never actually read the shipped product.
+        # Fix: derive each band's REALIZED lever from the shipped product CSV's own `shape` column
+        # (max over the file). Chosen over `mult_peak/0.95` because `shape` is the column the
+        # generator deliberately peak-normalizes to equal the lever exactly (see R.1) -- reading it
+        # directly avoids re-deriving the 0.95 anchor a second time and gives R.7 an independent
+        # data path (the shipped product) rather than re-reading the same raw Step-6 lever file R.1
+        # already reads. This restores the intended split: R.1 = product vs its own raw lever file
+        # (pipeline-execution/internal-consistency check); R.7 = product vs the DESIGN CONSTANTS
+        # 0.90/0.97/1.05 (spec-conformance check). They now fail under different corruptions: a
+        # pipeline that mis-reads its own lever file fails R.1 even if 0.90/0.97/1.05 are untouched;
+        # a hand-edited/stale RETAIL_LEVER_VALUE dict fails R.7 even if the pipeline is internally
+        # perfectly self-consistent.
         if self.year == "2030":
-            all_ret = {}
+            realized = {}
             for b in BUNDLES:
                 p = OUT_DIR / f"retail_presence_multiplier_2030_{b}.csv"
                 if p.exists():
-                    all_ret[b] = RETAIL_LEVER_VALUE[RETAIL_SCENARIO_OF_BUNDLE[b]]
-            if len(all_ret) == 3:
-                exact = all(abs(all_ret[b] - RETAIL_LEVER_VALUE[RETAIL_SCENARIO_OF_BUNDLE[b]]) < 0.01 for b in BUNDLES)
+                    shape_col = pd.read_csv(p, usecols=["shape"])["shape"]
+                    realized[b] = float(shape_col.max())
+            if len(realized) == 3:
+                exact = all(abs(realized[b] - RETAIL_LEVER_VALUE[RETAIL_SCENARIO_OF_BUNDLE[b]]) < 0.01 for b in BUNDLES)
                 self._rec("pass" if exact else "fail",
-                          f"R.7 | 2030 lever exactness: {all_ret} vs expected "
+                          f"R.7 | 2030 lever exactness (realized shape_peak from shipped product vs "
+                          f"design constant): {realized} vs expected "
                           f"{{'cons':0.90,'central':0.97,'opt':1.05}}: {exact}")
-                self._sum("R7 2030 lever exactness", "0.90/0.97/1.05 ± 0.01", str(all_ret), "PASS" if exact else "FAIL")
+                self._sum("R7 2030 lever exactness (reads shipped product)", "0.90/0.97/1.05 ± 0.01",
+                          str(realized), "PASS" if exact else "FAIL")
 
         # R8: density untouched (no People/m2 or Number_of_People columns in product)
         density_cols = [c for c in ret.columns if "people" in c.lower() or "density" in c.lower()]
@@ -680,7 +871,14 @@ class BEM4splitValidator:
                           f"< opt={means['opt']:.4f}: {mono}")
                 self._sum("H4 Band monotonicity", "low<central<high", str(means), "PASS" if mono else "FAIL")
 
-        # H.5: COVID plausibility (2022 only, WARN/INFO)
+        # H.5: COVID plausibility (2022 only, WARN/INFO) -- TRIAGED 2026-07-30, LEFT UNFIXED.
+        # Intended test (stated explicitly in its own message): confirm 2022 hotel rates sit below
+        # a 2019 (pre-COVID) baseline, consistent with a still-recovering pandemic trajectory.
+        # Why it cannot currently fail: no 2019-equivalent baseline file exists ANYWHERE in this
+        # repo to compare against -- this is not a gap in val.py's logic, it is a genuine missing
+        # INPUT. Proposed real statistic: mean(2022 monthly_rate) < mean(2019 monthly_rate) once a
+        # 2019 baseline is sourced. Not fixed: would require pulling in new external data (out of
+        # scope for a validator fix), so left as INFO rather than inventing a substitute target.
         if self.year == "2022":
             self._rec("pass", f"H.5 | [INFO] 2022 mean monthly_rate: {hot['monthly_rate'].mean():.4f} "
                               f"(post-pandemic recovery year; no 2019-equivalent baseline in-repo to compare)")
@@ -728,18 +926,47 @@ class BEM4splitValidator:
             self._rec("pass" if n_conf == 0 else "fail", f"M.1 | Mutex [{label}]: {n_conf} conflicts (0 required)")
         self._sum("M1 Input-mutex (both sources)", "0 conflicts", "OK" if m1_ok else "VIOLATIONS", "PASS" if m1_ok else "FAIL")
 
-        # M.2: retail clock windows post-roll
+        # M.2: retail clock windows post-roll. Window is 11:00-15:00h (unchanged, NOT widened --
+        # see B.3.1 in 3rdJ_L3_improvements_step5_6_7.md). The val doc used to describe this as
+        # "12:00-14:00 ±1 slot" (~30 min); that wording was wrong (doc/code mismatch, fixed in the
+        # doc, 2026-07-30) -- the code has always implemented the wider 11-15h window below.
         wd = self.retail[(self.retail["Day_Type"] == "Weekday")]
         wd_by_pr_peak_h = wd.groupby("PR").apply(lambda g: int(g.loc[g["multiplier"].idxmax(), "Hour"]))
-        # "±1 slot" tolerance per val doc M2 (slot=30min) -- see R3 comment above.
-        m2_ok = all(11 <= h <= 15 for h in wd_by_pr_peak_h)
+        peaks = dict(wd_by_pr_peak_h)
         night = self.retail[self.retail["Hour"].between(0, 4)]["at_retail_fraction"].max()
-        m2_ok = m2_ok and (night <= 0.01)
-        self._rec("pass" if m2_ok else "fail",
-                  f"M.2 | Retail clock windows post-roll: WD peaks {dict(wd_by_pr_peak_h)} (12:00-14:00 ±1 slot), "
-                  f"night(0-5h) max={night:.4f} (≤0.01): {m2_ok}")
-        self._sum("M2 Retail clock windows", "WD peak 12-14h; night≈0", f"peaks={dict(wd_by_pr_peak_h)}",
-                  "PASS" if m2_ok else "FAIL")
+        night_ok = bool(night <= 0.01)
+        out_of_window = {pr: h for pr, h in peaks.items() if not (11 <= h <= 15)}
+
+        # Documented, evidence-carrying exception (B.3.1): QC's observed GSS-2022 retail diary
+        # genuinely peaks at 16:00 -- a real bimodal midday/late-afternoon shape, re-derived from
+        # retail_presence_multiplier_2022.csv (n=5,778 QC / 3,593 AB): QC top-3 = H16(0.9500),
+        # H17(0.9454), H13(0.7701). QC uses the exact-match region (region 2); AB uses a 3-province
+        # Prairies proxy (region 4) -- the sample that PASSES (AB) is the proxy, not QC. This is
+        # isolated to the 2022 report; all three 2030 reports pass with no exception needed. The
+        # window is NOT widened to absorb this -- only the QC-2022 instance is relabeled WARN.
+        qc_2022_exception = (self.year == "2022" and set(out_of_window) == {"QC"}
+                              and 11 <= peaks.get("AB", -1) <= 15)
+        unexplained = {pr: h for pr, h in out_of_window.items() if not (qc_2022_exception and pr == "QC")}
+
+        if not night_ok or unexplained:
+            m2_level = "fail"
+        elif qc_2022_exception:
+            m2_level = "warn"
+        else:
+            m2_level = "pass"
+
+        msg = (f"M.2 | Retail clock windows post-roll: WD peaks {peaks} (window 11:00-15:00h), "
+               f"night(0-5h) max={night:.4f} (≤0.01)")
+        if qc_2022_exception:
+            msg += (" -- QC@16h: WARN accepted-documented (not a roll bug). GSS-2022 QC retail diary "
+                    "is genuinely bimodal (H16=0.9500, H17=0.9454, H13=0.7701; n=5,778, exact-match "
+                    "region 2) vs AB's 3-province Prairies proxy (region 4, n=3,593) -- the PASSING "
+                    "AB sample is the proxy, QC is exact. Window not widened; see B.3.1.")
+        else:
+            msg += f": {m2_level == 'pass'}"
+        self._rec(m2_level, msg)
+        self._sum("M2 Retail clock windows", "WD peak 11-15h; night≈0", f"peaks={peaks}",
+                  m2_level.upper())
 
         # M.3: hotel plateau/trough clock windows (s(t) NOT rolled)
         wdh = self.hotel[(self.hotel["Day_Type"] == "Weekday")].drop_duplicates("slot")
@@ -805,18 +1032,77 @@ class BEM4splitValidator:
             self._rec("pass", "F.1 | [INFO] 2022 is single-scenario -- cross-bundle insulation n/a")
             self._sum("F1 Cross-channel insulation", "n/a (2022)", "n/a", "INFO")
         else:
-            # F-section MD5 insulation check: evidence captured during the 2026-07-23 Step-7
-            # build session via --sens {office,retail,hotel} reruns (idempotent regeneration +
-            # mtime-confirmed non-interference with the other channels' files). See Progress Log.
-            evidence = {
-                "sens=office (cons/opt residential rebuilt)": "retail/hotel files UNCHANGED (mtime + content)",
-                "sens=retail (cons/opt retail rebuilt)": "residential/office/hotel files UNCHANGED",
-                "sens=hotel (cons/opt hotel rebuilt)": "residential/office/retail files UNCHANGED",
-            }
-            self._rec("pass", f"F.1 | MD5 insulation check: {evidence} -- changing one bundle axis "
-                              f"leaves the OTHER channels' products byte-identical, confirmed empirically "
-                              f"during the Step-7 build session (see Progress Log for exact MD5 pairs)")
-            self._sum("F1 Cross-channel MD5 insulation", "byte-identical when off-axis", "CONFIRMED (build-session evidence)", "PASS")
+            # F.1 REWRITTEN 2026-07-30 (see Progress Log): the previous version fed a hardcoded
+            # dict of PROSE describing a human's manual observations from the 2026-07-23 build
+            # session straight into an unconditional self._rec("pass", ...) -- it computed nothing
+            # at runtime and could not fail. A past manual observation laundered into a present
+            # automated PASS. Kept below ONLY as provenance, NOT as what the gate returns:
+            #   sens=office (cons/opt residential rebuilt): retail/hotel files UNCHANGED (mtime+content)
+            #   sens=retail (cons/opt retail rebuilt): residential/office/hotel files UNCHANGED
+            #   sens=hotel (cons/opt hotel rebuilt): residential/office/retail files UNCHANGED
+            # (full MD5 pairs from that session: 3rdJ_07_bemIntegration_4split.md Progress Log,
+            # 2026-07-23 "--sens {office,retail,hotel} off-diagonal builds" entry)
+            #
+            # Real runtime check (this run's actual on-disk files, no --sens re-run needed):
+            #  (a) STRUCTURAL: retail/hotel carry no office-BAND column anywhere from the raw
+            #      Step-6 lever input through the shipped product -- there is no field through
+            #      which office-band information could enter their construction.
+            #  (b) MD5 (hashlib.md5, same primitive as _md5(), applied to an in-memory column since
+            #      the invariant lives at sub-file granularity -- the FULL retail/hotel files
+            #      correctly differ across bundles per F.2/F.3, it's specific columns that must
+            #      not): hotel's diurnal shape s_t is a fixed dr_L3-05 table that should be
+            #      independent of hotel_band -- empirically confirmed BYTE-IDENTICAL (exact, no
+            #      rounding) across all 3 bundles before writing this check. If separability were
+            #      ever violated -- hotel_band leaking into s_t, or a future change coupling s_t to
+            #      the office/retail axes -- this hash would differ and the gate would FAIL.
+            f1_leaks = []
+            if "BAND" in self.retail.columns:
+                f1_leaks.append("retail product carries a BAND column")
+            if "BAND" in self.hotel.columns:
+                f1_leaks.append("hotel product carries a BAND column")
+            for scenario, p in RETAIL_LEVER_FILES.items():
+                if p.exists() and "BAND" in pd.read_csv(p, nrows=0).columns:
+                    f1_leaks.append(f"raw retail lever file [{scenario}] carries a BAND column")
+            f1a_ok = len(f1_leaks) == 0
+
+            hotel_st_md5 = {}
+            for b in BUNDLES:
+                p = OUT_DIR / f"hotel_schedule_multiplier_2030_{b}.csv"
+                if p.exists():
+                    hdf = pd.read_csv(p, usecols=["PR", "MONTH", "Day_Type", "slot", "s_t"])
+                    hdf = hdf.sort_values(["PR", "MONTH", "Day_Type", "slot"]).reset_index(drop=True)
+                    hotel_st_md5[b] = hashlib.md5(hdf["s_t"].to_numpy().tobytes()).hexdigest()
+            f1b_ok = len(hotel_st_md5) == 3 and len(set(hotel_st_md5.values())) == 1
+
+            f1_ok = f1a_ok and f1b_ok
+            self._rec("pass" if f1_ok else "fail",
+                      f"F.1 | Structural + MD5 insulation (runtime-checked): no office-BAND column "
+                      f"reachable by retail/hotel ({'OK' if f1a_ok else 'LEAK: ' + '; '.join(f1_leaks)}); "
+                      f"hotel s_t MD5 identical across bundles {hotel_st_md5} ({f1b_ok}): {f1_ok}")
+            self._sum("F1 Cross-channel structural insulation (runtime-checked)",
+                      "no BAND leak; hotel s_t MD5 exact-identical",
+                      f"structural_ok={f1a_ok} hotel_st_md5_match={f1b_ok}", "PASS" if f1_ok else "FAIL")
+
+            # Retail's un-levered shape (shape/lever) is NOT byte-identical across bundles like
+            # hotel's s_t is -- reported honestly rather than forced into a false claim. Verified
+            # ~1e-6 max diff (independent per-scenario Step-6 file float noise, several orders of
+            # magnitude below any real signal), not gated on.
+            ret_diffs = {}
+            base_unlev = None
+            for b in BUNDLES:
+                p = OUT_DIR / f"retail_presence_multiplier_2030_{b}.csv"
+                if p.exists():
+                    lever_b = _derive_retail_lever(RETAIL_SCENARIO_OF_BUNDLE[b])
+                    rdf = pd.read_csv(p, usecols=["Day_Type", "PR", "slot", "shape"])
+                    rdf = rdf.sort_values(["Day_Type", "PR", "slot"]).reset_index(drop=True)
+                    unlev = rdf["shape"] / lever_b
+                    if base_unlev is None:
+                        base_unlev = unlev
+                    else:
+                        ret_diffs[b] = float((unlev - base_unlev).abs().max())
+            print(f"  [INFO] F.1 supplementary: retail un-levered shape (shape/lever) vs cons, "
+                  f"max diff per bundle: {ret_diffs} (float noise, not byte-identical like hotel's "
+                  f"s_t, not gated)")
 
             # Cheap re-verification: current on-disk retail/hotel bundle files must differ from
             # EACH OTHER (proving each is responsive to its own axis, not stuck/duplicated).
@@ -832,9 +1118,12 @@ class BEM4splitValidator:
                       f"retail_distinct={ret_distinct} hotel_distinct={hot_distinct}",
                       "PASS" if (ret_distinct and hot_distinct) else "FAIL")
 
-        # WFH cross-channel direction (residential vs office), 2030 only
+        # WFH cross-channel direction (residential vs office). home_daytime/office_daytime are
+        # kept alive past the if-block so the figure below (B.3.4) can plot them -- previously
+        # they were computed here and then thrown away, leaving the figure a blank axis.
+        home_daytime, office_daytime = {}, {}
+        home_rise = office_fall = None
         if self.year == "2030" and len(self.res_bundles) == 3:
-            home_daytime, office_daytime = {}, {}
             for b in BUNDLES:
                 df = pd.read_csv(self.res_bundles[b], usecols=["Day_Type", "Hour", "Occupancy_Schedule"])
                 wd_biz = df[(df["Day_Type"] == "Weekday") & (df["Hour"].between(9, 17))]
@@ -850,12 +1139,50 @@ class BEM4splitValidator:
                       f"office Δ{-office_fall:+.3f}pp (<0 exp): {direction_ok}")
             self._sum("F4 WFH cross-channel direction", "home↑ & office↓ cons→opt",
                       f"home Δ{home_rise:+.3f} office Δ{-office_fall:+.3f}", "PASS" if direction_ok else "FAIL")
+        else:
+            # 2022 single-scenario: no bundle axis to compare, but plot the one observed point
+            # so the figure still carries real data instead of a blank/caption-only axis.
+            wd_biz = self.bem[(self.bem["Day_Type"] == "Weekday") & (self.bem["Hour"].between(9, 17))]
+            home_daytime["observed"] = float(wd_biz["Occupancy_Schedule"].mean() * 100)
+            obiz = self.office[(self.office["Day_Type"] == "Weekday") & self.office["Hour"].between(9, 17) &
+                               (self.office["BAND"] == self.office_bands[0])]
+            office_daytime["observed"] = float(obiz["AT_WORK_fraction"].mean() * 100) if len(obiz) else 0.0
 
-        fig, ax = plt.subplots(figsize=(9, 4.5))
-        fig.suptitle(f"Section F — Channel Consistency ({self.scenario_label})", fontsize=13, fontweight="bold")
-        ax.axis("off")
-        ax.text(0.02, 0.6, "F-section: cross-channel insulation + WFH direction check\n"
-                            "(see console/summary table for details)", fontsize=10, color="#cdd6f4")
+        # Grouped bar chart: bundle on x, "Home occupancy %" vs "Office AT_WORK %" side by side,
+        # using the F.4 daytime means computed above (val.py home_daytime/office_daytime) instead
+        # of the old blank axis + caption. Home rising while office falls as WFH increases is the
+        # thing this figure exists to make visible at a glance (B.3.4).
+        bundles_order = [b for b in (BUNDLES if "cons" in home_daytime else ["observed"]) if b in home_daytime]
+        fig, ax = plt.subplots(figsize=(9, 5))
+        fig.suptitle(f"Section F — Channel Consistency: Home vs Office WFH Direction ({self.scenario_label})",
+                     fontsize=12.5, fontweight="bold")
+        x = np.arange(len(bundles_order)); width = 0.35
+        home_vals = [home_daytime[b] for b in bundles_order]
+        office_vals = [office_daytime[b] for b in bundles_order]
+        ymax = max(home_vals + office_vals)
+        ax.set_ylim(0, ymax * 1.28)  # headroom for the Δ-arrow annotations above the bars
+        ax.bar(x - width / 2, home_vals, width, color="#a6e3a1", edgecolor="#1e1e2e", label="Home occupancy % (9-17h WD)")
+        ax.bar(x + width / 2, office_vals, width, color="#89b4fa", edgecolor="#1e1e2e", label="Office AT_WORK % (9-17h WD)")
+        ax.set_xticks(x); ax.set_xticklabels(bundles_order)
+        ax.set_ylabel("Weekday 9-17h mean (%)")
+        ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        ax.legend(fontsize=9, loc="upper left")
+        for xi, v in zip(x, home_vals):
+            ax.text(xi - width / 2, v + ymax * 0.015, f"{v:.1f}", ha="center", fontsize=8.5, color="#a6e3a1")
+        for xi, v in zip(x, office_vals):
+            ax.text(xi + width / 2, v + ymax * 0.015, f"{v:.1f}", ha="center", fontsize=8.5, color="#89b4fa")
+        if home_rise is not None and office_fall is not None and len(bundles_order) == 3:
+            i_cons, i_opt = bundles_order.index("cons"), bundles_order.index("opt")
+            arrow_y_home = ymax * 1.16
+            arrow_y_office = ymax * 1.06
+            ax.annotate("", xy=(i_opt - width / 2, arrow_y_home), xytext=(i_cons - width / 2, arrow_y_home),
+                        arrowprops=dict(arrowstyle="->", color="#a6e3a1", lw=1.8))
+            ax.text((i_cons + i_opt) / 2 - width / 2, arrow_y_home + ymax * 0.02,
+                    f"home Δ{home_rise:+.2f}pp", ha="center", fontsize=9, color="#a6e3a1", fontweight="bold")
+            ax.annotate("", xy=(i_opt + width / 2, arrow_y_office), xytext=(i_cons + width / 2, arrow_y_office),
+                        arrowprops=dict(arrowstyle="->", color="#89b4fa", lw=1.8))
+            ax.text((i_cons + i_opt) / 2 + width / 2, arrow_y_office + ymax * 0.02,
+                    f"office Δ{-office_fall:+.2f}pp", ha="center", fontsize=9, color="#89b4fa", fontweight="bold")
         plt.tight_layout()
         self.plots_b64["F_channel"] = _b64(fig)
 
@@ -868,13 +1195,22 @@ class BEM4splitValidator:
         b = self.bem
         hh = b.drop_duplicates("SIM_HH_ID")
 
+        # FIXED 2026-07-30 (SUSPECT sweep finding): both G.1/G.2 were subset checks (`<=`) that
+        # would silently PASS even if an entire expected category were absent -- only invalid
+        # extra labels tripped them. Now two-tier: REQUIRED categories must all be present
+        # (catches a vanished category) AND the domain must not exceed VALID (catches an invalid
+        # extra, the original check's purpose) -- both failure modes covered, neither silently lost.
         dtypes = set(hh["DTYPE"].astype(str).unique())
-        ok = dtypes <= DTYPE_VALID
-        self._rec("pass" if ok else "fail", f"G.1 | DTYPE labels {sorted(dtypes)}: {ok}")
+        dtype_complete = DTYPE_REQUIRED <= dtypes
+        dtype_valid = dtypes <= DTYPE_VALID
+        ok = dtype_complete and dtype_valid
+        self._rec("pass" if ok else "fail",
+                  f"G.1 | DTYPE labels {sorted(dtypes)}: all required present={dtype_complete}, "
+                  f"no invalid extras={dtype_valid}: {ok}")
 
         prs = set(hh["PR"].astype(str).unique())
-        ok = prs <= PR_VALID
-        self._rec("pass" if ok else "fail", f"G.2 | PR labels {sorted(prs)}: {ok}")
+        ok = prs == PR_VALID
+        self._rec("pass" if ok else "fail", f"G.2 | PR labels {sorted(prs)} == {sorted(PR_VALID)}: {ok}")
 
         nun = b.groupby("SIM_HH_ID")[["DTYPE", "PR", "MATCH_TIER"]].nunique()
         drift = int(((nun["DTYPE"] > 1) | (nun["PR"] > 1)).sum())
@@ -882,7 +1218,15 @@ class BEM4splitValidator:
         self._rec("pass" if ok else "fail", f"G.3 | DTYPE/PR within-HH drift: {drift}: {ok}")
         self._sum("G3 DTYPE/PR within-HH drift", "0", str(drift), "PASS" if ok else "FAIL")
 
-        # G.4: office product MD5 vs Leg-2 (insulation / explainable-diff check)
+        # G.4: office product MD5 vs Leg-2 (insulation / explainable-diff check) -- TRIAGED
+        # 2026-07-30, LEFT UNFIXED. Intended test: cross-reference Leg-3's office product against
+        # Leg-2's as a sanity check. Why it cannot currently fail: its own message says a MISMATCH
+        # is EXPECTED (Leg-3's 23,115-HH pool vs Leg-2's 23,150), so gating on `same` would be
+        # backwards. Why no clean real statistic was substituted: office product row count
+        # (archetypes×2×24×bands) is NOT a function of N_HH at all -- AT_WORK_fraction is an
+        # archetype-level construct, not per-household -- so there is no obvious pool-size-scaled
+        # "expected magnitude of difference" to check the MD5 mismatch against. Genuinely
+        # ambiguous: reported here rather than guessed at.
         leg2_off = HERE.parents[1] / "Leg2_2-split" / "Step7_docs" / "outputs_step7" / f"office_presence_multiplier_{self.year}.csv"
         if leg2_off.exists():
             our_off = OUT_DIR / f"office_presence_multiplier_{self.year}.csv"
@@ -1018,7 +1362,9 @@ footer {{ text-align:center; padding:20px; font-size:0.76rem; color:var(--subtex
 <footer>3J Leg-3 Four-Channel BEM Integration · Step 7 Validation · N_HH={self.N_HH:,} · Generated: {ts}</footer>
 </body></html>"""
 
-        out_path = OUT_DIR / f"step7_validation_report_{self.scenario_label}.html"
+        # out_suffix lets a re-validation run write to a NEW filename (e.g. "_v2") instead of
+        # overwriting the historical stale report -- default "" preserves prior behaviour exactly.
+        out_path = OUT_DIR / f"step7_validation_report_{self.scenario_label}{self.out_suffix}.html"
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"\nHTML Report saved -> {out_path}")
@@ -1052,6 +1398,8 @@ if __name__ == "__main__":
     parser.add_argument("--year", choices=["2022", "2030"], default=None)
     parser.add_argument("--bundle", choices=["cons", "central", "opt"], default=None)
     parser.add_argument("--all", action="store_true", help="Run all 4 scenarios (2022 + 3 bundles)")
+    parser.add_argument("--out-suffix", default="", help="Suffix inserted before .html on the report "
+                         "filename (e.g. '_v2') -- lets a re-run avoid overwriting a prior report.")
     args = parser.parse_args()
 
     scenarios = []
@@ -1068,7 +1416,7 @@ if __name__ == "__main__":
 
     results_by_scn = {}
     for yr, b in scenarios:
-        v = BEM4splitValidator(year=yr, bundle=b)
+        v = BEM4splitValidator(year=yr, bundle=b, out_suffix=args.out_suffix)
         results_by_scn[v.scenario_label] = v.run_all()
 
     print("\n" + "=" * 64)

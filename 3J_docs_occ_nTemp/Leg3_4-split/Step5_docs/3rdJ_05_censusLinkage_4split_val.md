@@ -544,3 +544,94 @@ pareto-optimal (11→4 FAIL, 20→4 FAIL, 30→5 FAIL + W1 breaks).
 
 **Step 5 is CLOSED.** Not advancing to Step 6 (awaiting explicit manager/user go).
 
+### 2026-07-30 — Lot B validation improvements: W2 N/A, PR banner reword, F1/F5 figures [employee]
+
+Executes B.1.1/B.1.2/B.1.3 of `3J_docs_occ_nTemp/improvements/3rdJ_L3_improvements_step5_6_7.md`.
+Three independent, non-threshold-changing fixes to
+`3rdJ_05_censusLinkage_4split_val.py`. Re-ran the validator end-to-end (non-smoke,
+non-excl) to confirm.
+
+**T1 — W2 vacuous gate -> N/A (`:659-684`, was `:577-591`).** `LFTAG` in this census
+extract only has codes `{1, 2, 99->NaN}` — no code 3/4 ("not in labour force") exists,
+so `noninlf_vals` was always empty and `employed_max > 0.0` was trivially true. Fixed:
+when `noninlf_vals` is empty, `_rec("warn", ...)` with the not-in-LF rate shown as
+`N/A` and an explanation, mirroring the existing "check not runnable" WARN pattern
+used elsewhere (5.2 `N_HH_MEMBERS not found`, 6.x `BEM output not available`, R1/R3
+skip-with-N/A) rather than inventing a new one. No threshold touched; PASS is no
+longer possible on this vacuous stratum.
+*Investigation (report only, not acted on):* checked
+`eSim_occ_utils/25CEN22GSS_classification/eSim_dynamicML_mHead_alignment.py::data_alignment()`
+— the function that produces `Aligned_Census_2025.csv`. Its harmonization pipeline
+(`:196-205`) calls `harmonize_agegrp/hhsize/hrswrk/marsth/sex/kol/nocs/pr/cow/mode` —
+**LFTAG is not touched anywhere in that function.** So the `{1,2,99}`-only domain is
+not introduced by the alignment script; it is already present in its input
+(`forecasted_population_2025_LINKED.csv`), one stage further upstream and outside
+this script's scope. Cannot confirm from the alignment script alone whether the
+restriction is an intentional "employed-only" scope decision made even earlier in the
+census-forecast pipeline, or an artifact of that source. Flagging per instructions,
+not resolving.
+
+**T2 — PR banner mis-attribution reworded (`:392-396` print, `:1289-1294` HTML;
+plus new `_KNOWN_DONORLESS` dict and `_section0_cause_note()` helper, `:231-275`).**
+The old banner unconditionally blamed "Leg-2 PR-remap bug class" for any
+`<100%` census⊆pool overlap. Reworded to name **both** possible causes — (a) a
+genuine join-key remap bug, or (b) a structurally absent donor stratum the pool
+could never satisfy by design — and added a small `_KNOWN_DONORLESS` map
+(`{"PR": {6: "territories, GSS never surveyed"}}`) so that when the missing value(s)
+match a confirmed-donorless stratum, the banner names it explicitly instead of
+guessing. Live output for the current data: *"PR missing=[6]: KNOWN donorless
+stratum, not a remap bug (6=Yukon/NWT/Nunavut (territories) — the GSS never surveys
+the territories, so PR=6 can never have a pool donor)"*. Threshold and FAIL
+unchanged — no exemption added for PR=6; the FAIL stays visible (Leg-2 precedent).
+
+**T3 — F1 (x3) and F5 ported from 2J `_gen_step5_v2_plots.py`.** Added inline to the
+existing per-section chart emitters (same `_apply_dark()`/`_b64()` helper, same
+`self.plots_b64[key]` + `chart_sections` anchoring pattern already used by every
+other chart in this validator — no new emitter style introduced):
+- `2f_f1_hom30` — end of `validate_at_home_consistency()`, anchored right after
+  `2_at_home_overlay` (gate 2.2).
+- `3f_f1_wrk30` — end of `validate_at_work_consistency()`, anchored right after
+  `3_at_work` (gate W1).
+- `3rf_f1_ret30` — end of `validate_at_retail_consistency()`, anchored right after
+  `3r_at_retail` (gate R1). Required adding an `obs`/`ret_obs` (IS_SYNTHETIC==0)
+  split that Section 3r didn't previously compute.
+- `5f_f5_hh_athome` — end of `validate_hh_aggregation()`, anchored right after
+  `5_hh_agg`. Deliberately reads `3rdJ_25CEN_aug_Full_Aggregated.csv` (non-`excl`)
+  **directly from disk** rather than `self.agg` (which is the `_excl` file when the
+  validator is run with `--excl`) — required so the pre-exclusion `<0.30` tail is
+  always visible regardless of run mode. No new gate added (this only visualizes the
+  existing `run_exclusion()` threshold, `3rdJ_05_censusLinkage_4split.py:1212`).
+Also added `report_name_suffix` (constructor kwarg + new `--out-suffix` CLI flag,
+default `""`, fully backward-compatible) so a re-run can target a new output
+filename without ever overwriting an existing report.
+
+**Verification.**
+- `py -3 -m py_compile` — clean.
+- Re-ran: `py -3 3rdJ_05_censusLinkage_4split_val.py --out-suffix _v2` (non-smoke,
+  non-excl, all production inputs, 30,273 rows). Wrote
+  `outputs_step5/3rdJ_step5_validation_report_v2.html` (1,192,461 bytes); original
+  `3rdJ_step5_validation_report.html` untouched (796,798 bytes, mtime unchanged from
+  2026-07-21).
+- **Verdict count: 32 PASS / 4 WARN / 3 FAIL -> 31 PASS / 5 WARN / 3 FAIL.** Only W2
+  changed (PASS -> WARN/N/A). All 3 FAILs identical before/after (PR 0.1, gate 2.2,
+  gate R1 — same values: 83.3%/missing=[6], 3.66pp/6 slots, 4.796pp) — confirms no
+  other gate's verdict moved and no threshold was touched.
+- Confirmed all 4 new figures render with real, non-blank data (extracted PNGs from
+  the base64 payloads and visually inspected): `2f_f1_hom30` (82,203 bytes, max
+  |delta|=6.80pp, 19 breaching slots, matches console log exactly), `3f_f1_wrk30`
+  (81,303 bytes, max |delta|=9.65pp, 21 breaching slots), `3rf_f1_ret30` (70,295
+  bytes, max |delta|=1.17pp, 0 breaching slots — correctly small since R1 is a
+  different comparison), `5f_f5_hh_athome` (61,670 bytes, histogram with visible
+  <0.30 tail, "excluded by 5H: 771 rows (2.55% of 30,273)" annotation matches the
+  known `excluded_pids.csv` count). All 4 confirmed anchored in HTML section order
+  immediately after their respective gate sections (`section0-table, 1_tier..,
+  2_at_home_overlay, 2f_f1_hom30, 3_at_work, 3f_f1_wrk30, 3r_at_retail, 3rf_f1_ret30,
+  4_schedule_shape, 5_hh_agg, 5f_f5_hh_athome, 6_bem, summary-table`).
+
+**Not verified / out of scope:** did not trace LFTAG further upstream than the
+alignment script (T1 investigation, explicitly scoped to "do NOT act on it"); did not
+re-run `--smoke` or `--excl` variants against the new code (out of scope — task asked
+for the standard non-excl re-run only); did not touch Lot A (Step-6 calibration bias)
+or the other Lot-B Step-6/Step-7 items — those are separate employees' scope per the
+improvements doc's execution order.
+

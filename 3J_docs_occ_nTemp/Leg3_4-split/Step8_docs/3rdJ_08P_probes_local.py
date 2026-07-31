@@ -88,6 +88,19 @@ def _load_driver_module():
     spec.loader.exec_module(mod)
     return mod
 
+_OUTPUT_SCHEMA_HASH_CACHE = []
+
+
+def _current_output_schema_hash() -> str:
+    """The driver's OUTPUT_SCHEMA_HASH, loaded once. Read from the driver rather than
+    duplicated here so the two can never drift -- a resume guard that guards a stale copy of
+    the thing it is guarding is worse than no guard."""
+    if not _OUTPUT_SCHEMA_HASH_CACHE:
+        _OUTPUT_SCHEMA_HASH_CACHE.append(
+            getattr(_load_driver_module(), "OUTPUT_SCHEMA_HASH", None))
+    return _OUTPUT_SCHEMA_HASH_CACHE[0]
+
+
 CELL_TAGS = {
     0: "baseline_necb", 1: "B_central", 2: "var_office", 3: "var_retail",
     4: "var_hotel", 5: "cycle_2022", 6: "fallback_retail",
@@ -187,6 +200,22 @@ def _cell_complete(outdir: str, expected_inputs_hash: str = None) -> bool:
             return False
     if expected_inputs_hash is not None and m.get("INPUTS_HASH") != expected_inputs_hash:
         return False
+    # Defaut 5, point 5 (2026-07-31) -- the reporting-side twin of the Defaut-3 hole.
+    # INJ_HASH owns the output PATH and catches a wiring change, but is blind to a change in
+    # WHAT WE ASK ENERGYPLUS TO REPORT. When the meter list was fixed (pre-9.4 `Gas:*` names ->
+    # `NaturalGas:*`, plus three missing electricity end uses and the zone HVAC variables),
+    # every existing cell still looked "done" and would have been resume-skipped, leaving the
+    # campaign silently half-old. A cell built under a different output schema is NOT complete.
+    if m.get("OUTPUT_SCHEMA_HASH") != _current_output_schema_hash():
+        return False
+    # A cell whose closure gates failed is not a usable cell, whatever its row counts say.
+    for gate in ("fuel_closure", "channel_closure"):
+        rep = m.get(gate)
+        if rep is None:
+            return False
+        for k, v in rep.items():
+            if isinstance(v, dict) and not v.get("closed", False):
+                return False
     return True
 
 

@@ -141,12 +141,17 @@ class CensusLinkageValidator4CH:
         outputs_dir: str,
         file_suffix: str = "",
         is_smoke: bool = False,
+        report_name_suffix: str = "",
     ) -> None:
         self.aug_dir      = aug_dir
         self.census_path  = census_path
         self.outputs_dir  = outputs_dir
         self.file_suffix  = file_suffix
         self.is_smoke     = is_smoke
+        # Appended to the output HTML filename only (before ".html"). Lets a re-run
+        # write to a NEW file (e.g. "_v2") without overwriting a prior report — never
+        # touches file_suffix, which selects which INPUT files ("" vs "_excl") to load.
+        self.report_name_suffix = report_name_suffix
         os.makedirs(outputs_dir, exist_ok=True)
 
         prefix = "3rdJ_25CEN_aug"
@@ -216,11 +221,58 @@ class CensusLinkageValidator4CH:
         self.plots_b64: dict[str, str] = {}
         self.summary_rows: list[dict] = []
         self.section0_rows: list[dict] = []
+        self.section0_missing: dict[str, list] = {}
 
     def _rec(self, level: str, msg: str) -> None:
         self.results[level].append(msg)
         icon = "[PASS]" if level == "pass" else ("[FAIL]" if level == "fail" else "[WARN]")
         print(f"  {icon} {msg}")
+
+    # Known structurally-absent donor strata: census values that can NEVER have a
+    # GSS pool donor by design (not a join-key remap defect). Used ONLY to word the
+    # Section-0 FAIL banner correctly — it does NOT change any threshold and does NOT
+    # exempt these values from the FAIL (the FAIL stays visible for every join key,
+    # same as before; Leg-2 precedent — never mask a FAIL to green it up).
+    # PR=6 (Yukon/NWT/Nunavut, post _PROVINCE_TO_REGION remap) is donorless because the
+    # GSS never surveys the territories — confirmed 2026-07-30 (24/30,273 census rows,
+    # 0.08%, all resolve gracefully at MATCH_TIER=3_Constraints, the one tier that drops PR).
+    _KNOWN_DONORLESS: dict[str, dict] = {
+        "PR": {6: "Yukon/NWT/Nunavut (territories) — the GSS never surveys the "
+                  "territories, so PR=6 can never have a pool donor"},
+    }
+
+    def _section0_cause_note(self) -> str:
+        """Explain WHY a Section-0 key has <100% census⊆pool overlap.
+
+        Names both possible causes (a genuine join-key remap bug, OR a structurally
+        absent donor stratum the pool could never satisfy) and, for missing values
+        already confirmed donorless (see _KNOWN_DONORLESS), says which — instead of
+        defaulting to the "Leg-2 PR-remap bug class" attribution regardless of cause.
+        Wording only: does not affect any gate's PASS/WARN/FAIL verdict.
+        """
+        def _norm(v):
+            try:
+                return int(float(v))
+            except (TypeError, ValueError):
+                return v
+
+        notes = []
+        for k, miss in self.section0_missing.items():
+            dl = self._KNOWN_DONORLESS.get(k, {})
+            miss_norm = [_norm(v) for v in miss]
+            explained = [v for v in miss_norm if v in dl]
+            if miss and explained and set(miss_norm) <= set(dl.keys()):
+                reasons = "; ".join(f"{v}={dl[v]}" for v in explained)
+                notes.append(f"{k} missing={miss}: KNOWN donorless stratum, not a "
+                             f"remap bug ({reasons})")
+            elif explained:
+                notes.append(f"{k} missing={miss}: PARTIALLY known-donorless "
+                             f"(confirmed {explained}; remainder unverified — check for "
+                             f"a remap bug)")
+            else:
+                notes.append(f"{k} missing={miss}: cause NOT verified — could be a "
+                             f"genuine remap bug or an unverified donorless stratum")
+        return " ".join(notes)
 
     # ── Section 0 (NEW, Leg-3) — Join-Key Connectivity Audit ───────────────────
     # The load-bearing checkpoint: catches the Leg-2-class silent PR-remap
@@ -294,6 +346,7 @@ class CensusLinkageValidator4CH:
             overlap_pct = 100.0 * len(cen_dom & pool_dom) / len(cen_dom) if cen_dom else 100.0
             if not subset_ok:
                 any_fail = True
+                self.section0_missing[k] = sorted(missing, key=str)
             lvl = "pass" if subset_ok else "fail"
             self._rec(lvl, f"0.1 | {k}: census⊆pool={'YES' if subset_ok else 'NO'} "
                            f"(overlap={overlap_pct:.1f}%, census_n={len(cen_dom)}, pool_n={len(pool_dom)})"
@@ -336,8 +389,11 @@ class CensusLinkageValidator4CH:
         })
 
         if any_fail:
-            print("  [Section 0] *** At least one key has <100% census⊆pool overlap — "
-                  "this is the Leg-2 PR-remap bug class ***")
+            print("  [Section 0] *** At least one key has <100% census⊆pool overlap. "
+                  "Two possible causes: (a) a genuine join-key remap bug (the Leg-2 "
+                  "PR-remap bug class), or (b) a structurally absent donor stratum the "
+                  "pool could never satisfy by design. " + self._section0_cause_note()
+                  + " ***")
 
         return {"rows": self.section0_rows, "t1_share": t1_share, "t2_share": t2_share}
 
@@ -505,6 +561,33 @@ class CensusLinkageValidator4CH:
         plt.tight_layout()
         self.plots_b64["2_at_home_overlay"] = _b64(fig)
 
+        # ── F1 (NEW, ported from 2J _gen_step5_v2_plots.py:151-179) — per-slot hom30
+        # residual: mean(all rows)*100 - mean(IS_SYNTHETIC==0)*100, red dots on slots
+        # breaching +/-3pp. Anchored to gate 2.2 (above, this method) — Leg-3 needs
+        # THREE of these (hom30 here, wrk30 in Section 3 / gate W1, ret30 in Section 3r
+        # / gate R1), not 2J's single §2.2/§6.1-labelled instance.
+        breach = np.abs(slot_diffs_raw) > 3
+        fig, ax = plt.subplots(figsize=(14, 5))
+        ax.axhspan(-3, 3, color="#f9e2af", alpha=0.12, label="+-3 pp gate band")
+        ax.axhline(0, color="#555", linewidth=1)
+        ax.axhline(3, color="#f9e2af", linestyle=":", linewidth=1)
+        ax.axhline(-3, color="#f9e2af", linestyle=":", linewidth=1)
+        ax.plot(x, slot_diffs_raw, color="#89b4fa", linewidth=2.2, zorder=3)
+        ax.scatter(x[breach], slot_diffs_raw[breach], color="#f38ba8", s=45, zorder=4,
+                   label=f"{int(breach.sum())} slot(s) breach +-3pp")
+        ax.scatter(x[~breach], slot_diffs_raw[~breach], color="#89b4fa", s=14, zorder=4)
+        imax = int(np.argmax(np.abs(slot_diffs_raw)))
+        ax.annotate(f"max |delta| = {max_diff_raw:.2f} pp", xy=(x[imax], slot_diffs_raw[imax]),
+                    xytext=(x[imax] + 2, slot_diffs_raw[imax] + (1.4 if slot_diffs_raw[imax] < 0 else -1.4)),
+                    color="#f38ba8", fontsize=10, arrowprops=dict(arrowstyle="->", color="#f38ba8"))
+        ax.set_xlabel("30-min slot (1-48, 04:00 origin)")
+        ax.set_ylabel("Delta hom30 (all rows - IS_SYNTHETIC=0, pp)")
+        ax.set_title("F1 - Per-slot hom30 residual (anchored to gate 2.2)", fontsize=12)
+        ax.legend(fontsize=9, loc="best")
+        ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        plt.tight_layout()
+        self.plots_b64["2f_f1_hom30"] = _b64(fig)
+
         return {"aug_overall": aug_overall, "max_diff": max_diff, "night_mean": night_mean}
 
     # ── Section 3 — AT_WORK Consistency (NEW) ──────────────────────────────────
@@ -580,11 +663,26 @@ class CensusLinkageValidator4CH:
             employed_rate = float(wrk_by_lftag[wrk_by_lftag.index.isin([1, 2])].max()) \
                             if any(lf in wrk_by_lftag.index for lf in [1, 2]) else 0.0
             noninlf_vals  = wrk_by_lftag[~wrk_by_lftag.index.isin([1, 2])]
-            noninlf_rate  = float(noninlf_vals.max()) if len(noninlf_vals) > 0 else 0.0
-            lftag_gate = employed_rate > noninlf_rate
-            self._rec("pass" if lftag_gate else "fail",
-                      f"W2 | LFTAG AT_WORK: employed_max={employed_rate:.2f}% "
-                      f"not-in-LF_max={noninlf_rate:.2f}% (employed >> not-in-LF)")
+            if len(noninlf_vals) > 0:
+                noninlf_rate = float(noninlf_vals.max())
+                lftag_gate = employed_rate > noninlf_rate
+                self._rec("pass" if lftag_gate else "fail",
+                          f"W2 | LFTAG AT_WORK: employed_max={employed_rate:.2f}% "
+                          f"not-in-LF_max={noninlf_rate:.2f}% (employed >> not-in-LF)")
+            else:
+                # This census extract's LFTAG domain is {1, 2, 99->NaN} — no code 3/4
+                # ("not in labour force") exists, so the not-in-LF comparison stratum
+                # is structurally empty. The gate can then never fail (employed_max > 0.0
+                # is trivially true), so it must NOT report PASS on data it cannot
+                # actually test. Report N/A instead — same "check not runnable" pattern
+                # used elsewhere in this validator (5.2 N_HH_MEMBERS missing, 6.x BEM
+                # not available, R1/R3 skip-with-N/A) rather than inventing a new one.
+                self._rec("warn",
+                          f"W2 | LFTAG AT_WORK: employed_max={employed_rate:.2f}% "
+                          f"not-in-LF_max=N/A — LFTAG domain in this extract = "
+                          f"{sorted(wrk_by_lftag.index.tolist())}, no not-in-LF code (3/4) "
+                          f"present, so this gate's comparison stratum is empty and it "
+                          f"cannot structurally fail (N/A, not PASS)")
             for lf, rate in wrk_by_lftag.items():
                 print(f"     LFTAG={lf}: {rate:.2f}%")
         else:
@@ -677,6 +775,32 @@ class CensusLinkageValidator4CH:
 
         plt.tight_layout()
         self.plots_b64["3_at_work"] = _b64(fig)
+
+        # ── F1 (NEW, ported from 2J _gen_step5_v2_plots.py:151-179) — per-slot wrk30
+        # residual, anchored to gate W1 (above, this method). Second of the 3 Leg-3
+        # F1 instances (hom30 in Section 2 / gate 2.2, ret30 in Section 3r / gate R1).
+        wrk_diff_signed = wrk_all - wrk_obs
+        breach = np.abs(wrk_diff_signed) > 3
+        fig, ax = plt.subplots(figsize=(14, 5))
+        ax.axhspan(-3, 3, color="#f9e2af", alpha=0.12, label="+-3 pp gate band")
+        ax.axhline(0, color="#555", linewidth=1)
+        ax.axhline(3, color="#f9e2af", linestyle=":", linewidth=1)
+        ax.axhline(-3, color="#f9e2af", linestyle=":", linewidth=1)
+        ax.plot(x, wrk_diff_signed, color="#89b4fa", linewidth=2.2, zorder=3)
+        ax.scatter(x[breach], wrk_diff_signed[breach], color="#f38ba8", s=45, zorder=4,
+                   label=f"{int(breach.sum())} slot(s) breach +-3pp")
+        ax.scatter(x[~breach], wrk_diff_signed[~breach], color="#89b4fa", s=14, zorder=4)
+        imax = int(np.argmax(np.abs(wrk_diff_signed)))
+        ax.annotate(f"max |delta| = {max_diff_wrk_raw:.2f} pp", xy=(x[imax], wrk_diff_signed[imax]),
+                    xytext=(x[imax] + 2, wrk_diff_signed[imax] + (1.4 if wrk_diff_signed[imax] < 0 else -1.4)),
+                    color="#f38ba8", fontsize=10, arrowprops=dict(arrowstyle="->", color="#f38ba8"))
+        ax.set_xlabel("30-min slot (1-48, 04:00 origin)")
+        ax.set_ylabel("Delta wrk30 (all rows - IS_SYNTHETIC=0, pp)")
+        ax.set_title("F1 - Per-slot wrk30 residual (anchored to gate W1)", fontsize=12)
+        ax.legend(fontsize=9, loc="best")
+        ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        plt.tight_layout()
+        self.plots_b64["3f_f1_wrk30"] = _b64(fig)
 
         return {"max_diff_wrk": max_diff_wrk, "lftag_gate": lftag_gate,
                 "col_gate": col_gate, "arch_gate": arch_gate}
@@ -807,6 +931,35 @@ class CensusLinkageValidator4CH:
         ax.yaxis.grid(True, linestyle="--", alpha=0.3)
         plt.tight_layout()
         self.plots_b64["3r_at_retail"] = _b64(fig)
+
+        # ── F1 (NEW, ported from 2J _gen_step5_v2_plots.py:151-179) — per-slot ret30
+        # residual, anchored to gate R1 (above, this method). Third of the 3 Leg-3
+        # F1 instances (hom30 in Section 2 / gate 2.2, wrk30 in Section 3 / gate W1).
+        obs_ret = df[df["IS_SYNTHETIC"] == 0] if "IS_SYNTHETIC" in df.columns else df
+        ret_obs = obs_ret[ret_p].mean(axis=0).values * 100 if len(obs_ret) > 0 else ret_all
+        ret_diff_signed = ret_all - ret_obs
+        breach = np.abs(ret_diff_signed) > 3
+        max_diff_ret = float(np.abs(ret_diff_signed).max())
+        fig, ax = plt.subplots(figsize=(14, 5))
+        ax.axhspan(-3, 3, color="#f9e2af", alpha=0.12, label="+-3 pp gate band")
+        ax.axhline(0, color="#555", linewidth=1)
+        ax.axhline(3, color="#f9e2af", linestyle=":", linewidth=1)
+        ax.axhline(-3, color="#f9e2af", linestyle=":", linewidth=1)
+        ax.plot(x, ret_diff_signed, color="#89b4fa", linewidth=2.2, zorder=3)
+        ax.scatter(x[breach], ret_diff_signed[breach], color="#f38ba8", s=45, zorder=4,
+                   label=f"{int(breach.sum())} slot(s) breach +-3pp")
+        ax.scatter(x[~breach], ret_diff_signed[~breach], color="#89b4fa", s=14, zorder=4)
+        imax = int(np.argmax(np.abs(ret_diff_signed)))
+        ax.annotate(f"max |delta| = {max_diff_ret:.2f} pp", xy=(x[imax], ret_diff_signed[imax]),
+                    xytext=(x[imax] + 2, ret_diff_signed[imax] + (1.4 if ret_diff_signed[imax] < 0 else -1.4)),
+                    color="#f38ba8", fontsize=10, arrowprops=dict(arrowstyle="->", color="#f38ba8"))
+        ax.set_xlabel("30-min slot (1-48, 04:00 origin)")
+        ax.set_ylabel("Delta ret30 (all rows - IS_SYNTHETIC=0, pp)")
+        ax.set_title("F1 - Per-slot ret30 residual (anchored to gate R1)", fontsize=12)
+        ax.legend(fontsize=9, loc="best")
+        ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+        plt.tight_layout()
+        self.plots_b64["3rf_f1_ret30"] = _b64(fig)
 
         return {"r1_max": r1_max, "midday_rate": midday_rate, "night_rate": night_rate,
                 "r3_diff": r3_diff, "has_retail_arch": has_retail_arch}
@@ -954,6 +1107,53 @@ class CensusLinkageValidator4CH:
         plt.tight_layout()
         self.plots_b64["5_hh_agg"] = _b64(fig)
 
+        # ── F5 (NEW, ported from 2J _gen_step5_v2_plots.py:234-250) — per-HH mean
+        # AT_HOME histogram + the 5H exclusion (<0.30) region. MUST read the non-`excl`
+        # Full_Aggregated.csv directly (NOT self.agg, which is the `_excl` file when
+        # this validator is run with --excl) so the tail below 0.30 is visible BEFORE
+        # exclusion -- that is the whole point of the figure. No channel multiplication:
+        # HH_wrk30/HH_ret30 do not exist by design (asserted absent by gate 5.4 above).
+        # The "5H exclusion" this figure documents is run_exclusion() in
+        # 3rdJ_05_censusLinkage_4split.py:1200-1260 (residential-only, <0.30 threshold
+        # on HH_hom30 mean, :1212).
+        nonexcl_path = os.path.join(self.aug_dir, "3rdJ_25CEN_aug_Full_Aggregated.csv")
+        if os.path.exists(nonexcl_path):
+            _hh_want = set(self.HH_HOM_COLS)
+            df_nonexcl = pd.read_csv(nonexcl_path, usecols=lambda c: c in _hh_want, low_memory=False)
+            hh_p_ne = [c for c in self.HH_HOM_COLS if c in df_nonexcl.columns]
+            if hh_p_ne:
+                hh_means_ne = df_nonexcl[hh_p_ne].mean(axis=1).dropna().values
+                n_rows_ne = int(len(hh_means_ne))
+                n_below_ne = int((hh_means_ne < 0.30).sum())
+                pct_below = (n_below_ne / n_rows_ne * 100) if n_rows_ne else 0.0
+                fig, ax = plt.subplots(figsize=(12, 5))
+                bins = np.linspace(0, 1, 51)
+                ax.hist(hh_means_ne, bins=bins, color="#89b4fa", alpha=0.85,
+                        edgecolor="#1e1e2e", linewidth=0.4)
+                ax.axvspan(0, 0.30, color="#f38ba8", alpha=0.16)
+                ax.axvline(0.30, color="#f38ba8", linestyle="--", linewidth=1.6,
+                           label="0.30 plausibility floor (run_exclusion threshold)")
+                ax.set_xlabel("Per-HH mean AT_HOME across 48 slots (non-excl, pre-5H)")
+                ax.set_ylabel("Households (rows)")
+                ax.set_title("F5 - Per-HH mean AT_HOME & the 5H exclusion (pre-exclusion)",
+                              fontsize=12)
+                ax.legend(fontsize=9, loc="upper left")
+                ax.yaxis.grid(True, linestyle="--", alpha=0.3)
+                txt = (f"excluded by 5H (<0.30): {n_below_ne:,} rows "
+                       f"({pct_below:.2f}% of {n_rows_ne:,})")
+                ax.text(0.97, 0.95, txt, transform=ax.transAxes, ha="right", va="top",
+                        fontsize=9.5, color="#cdd6f4",
+                        bbox=dict(boxstyle="round", facecolor="#2a2a3e",
+                                  edgecolor="#f38ba8", alpha=0.9))
+                plt.tight_layout()
+                self.plots_b64["5f_f5_hh_athome"] = _b64(fig)
+                print(f"  [F5] non-excl HH_hom30 mean: {n_below_ne:,}/{n_rows_ne:,} "
+                      f"({pct_below:.2f}%) rows < 0.30 (pre-5H-exclusion tail)")
+            else:
+                print(f"  [F5] WARN: HH_hom30 cols not found in {nonexcl_path} — skip F5")
+        else:
+            print(f"  [F5] WARN: non-excl aggregated file not found ({nonexcl_path}) — skip F5")
+
         return {"n": n, "null_hh": null_hh, "mean_hhsize": mean_hhsize}
 
     # ── Section 6 — BEM Output Format (skipped in smoke) ──────────────────────
@@ -1022,10 +1222,14 @@ class CensusLinkageValidator4CH:
         chart_sections = [
             ("1_tier_distribution", "Section 1 — Match Tier Distribution"),
             ("2_at_home_overlay",   "Section 2 — AT_HOME Consistency"),
+            ("2f_f1_hom30",         "F1 — Per-slot hom30 residual (anchored to gate 2.2)"),
             ("3_at_work",           "Section 3 — AT_WORK Consistency"),
+            ("3f_f1_wrk30",         "F1 — Per-slot wrk30 residual (anchored to gate W1)"),
             ("3r_at_retail",        "Section 3r — AT_RETAIL Consistency (NEW, Leg-3)"),
+            ("3rf_f1_ret30",        "F1 — Per-slot ret30 residual (anchored to gate R1)"),
             ("4_schedule_shape",    "Section 4 — Schedule Shape Plausibility"),
             ("5_hh_agg",            "Section 5 — HH Aggregation Integrity"),
+            ("5f_f5_hh_athome",     "F5 — Per-HH mean AT_HOME & the 5H exclusion"),
             ("6_bem",               "Section 6 — BEM Output Format"),
         ]
 
@@ -1082,8 +1286,11 @@ class CensusLinkageValidator4CH:
                 cls = "pass-row" if st == "PASS" else ("warn-row" if st == "WARN" else "fail-row")
                 tds = "".join(f"<td>{row[c]}</td>" for c in s0_cols)
                 s0_trs += f'<tr class="{cls}">{tds}</tr>'
-            banner = ('<p class="s0-banner s0-fail">*** FAIL: at least one join key has &lt;100% '
-                      'census⊆pool overlap — Leg-2 PR-remap bug class ***</p>') if any_s0_fail else \
+            banner = (f'<p class="s0-banner s0-fail">*** FAIL: at least one join key has '
+                      f'&lt;100% census⊆pool overlap. Two possible causes: (a) a genuine '
+                      f'join-key remap bug (the Leg-2 PR-remap bug class), or (b) a '
+                      f'structurally absent donor stratum the pool could never satisfy by '
+                      f'design. {self._section0_cause_note()} ***</p>') if any_s0_fail else \
                      ('<p class="s0-banner s0-ok">All match keys 100% census⊆pool overlap.</p>')
             section0_html = f"""
     <section class="chart-section" id="section0-table">
@@ -1191,7 +1398,8 @@ class CensusLinkageValidator4CH:
         suffix_str = f"{self.file_suffix}"
         smoke_str  = "_smoke" if self.is_smoke else ""
         out_path   = os.path.join(self.outputs_dir,
-                                  f"3rdJ_step5_validation_report{suffix_str}{smoke_str}.html")
+                                  f"3rdJ_step5_validation_report{suffix_str}{smoke_str}"
+                                  f"{self.report_name_suffix}.html")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"\nHTML Report -> {out_path}")
@@ -1229,6 +1437,11 @@ if __name__ == "__main__":
     parser.add_argument("--excl",  action="store_true", help="Validate _excl files")
     parser.add_argument("--smoke", action="store_true",
                         help="Validate smoke outputs (outputs_step5/smoke/)")
+    parser.add_argument("--out-suffix", default="",
+                        help="Appended to the output HTML filename only (before .html), "
+                             "e.g. --out-suffix _v2 -> 3rdJ_step5_validation_report_v2.html. "
+                             "Does NOT affect which input files are read. Use this to "
+                             "regenerate without overwriting an existing report.")
     args = parser.parse_args()
 
     suf = "_excl" if args.excl else ""
@@ -1242,4 +1455,5 @@ if __name__ == "__main__":
         outputs_dir=str(OUT_DIR),
         file_suffix=suf,
         is_smoke=is_smoke,
+        report_name_suffix=args.out_suffix,
     ).run_all()

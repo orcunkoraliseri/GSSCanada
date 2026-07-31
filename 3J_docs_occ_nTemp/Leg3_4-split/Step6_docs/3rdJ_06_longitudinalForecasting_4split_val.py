@@ -170,13 +170,24 @@ def top5_activities(act_flat: np.ndarray) -> pd.Series:
 
 class LongitudinalForecastingValidator4Split:
 
+    DEFAULT_DELIVERABLE = "2030_synthetic_diaries_4split_calibrated_mindwell_C.csv"
+
     def __init__(self, forecast_dir: str, step5_obs_dir: str, hotel_dir: str,
-                 hotel_processed_dir: str, outputs_dir: str):
+                 hotel_processed_dir: str, outputs_dir: str, out_suffix: str = "",
+                 deliverable: str | None = None):
         self.forecast_dir = Path(forecast_dir)
         self.step5_obs_dir = Path(step5_obs_dir)
         self.hotel_dir = Path(hotel_dir)
         self.hotel_processed_dir = Path(hotel_processed_dir)
         self.outputs_dir = Path(outputs_dir)
+        self.out_suffix = out_suffix
+        # --deliverable lets the caller point Section 5/6 at an arbitrary 2030 CSV
+        # (e.g. a new candidate deliverable under review) WITHOUT touching the
+        # canonical default below -- the frozen file is never written to, only read,
+        # and only when this arg is omitted.
+        deliverable = deliverable or self.DEFAULT_DELIVERABLE
+        dpath = Path(deliverable)
+        self.deliverable_path = dpath if dpath.is_absolute() else (self.forecast_dir / dpath)
         self.checks: dict[str, list[dict]] = {}
         self.charts: dict[str, str] = {}
         self._load_data()
@@ -197,9 +208,9 @@ class LongitudinalForecastingValidator4Split:
     def _load_data(self) -> None:
         print("Loading data ...")
 
-        p = self.forecast_dir / "2030_synthetic_diaries_4split_calibrated_mindwell_C.csv"
+        p = self.deliverable_path
         self.synth_2030 = pd.read_csv(p) if p.exists() else None
-        print(f"  {'Loaded' if self.synth_2030 is not None else '[WARN] missing'} {p.name}"
+        print(f"  {'Loaded' if self.synth_2030 is not None else '[WARN] missing'} {p}"
               + (f" ({len(self.synth_2030):,} rows)" if self.synth_2030 is not None else ""))
 
         p = self.forecast_dir / "reconstructed_2022_diaries_4split.csv"
@@ -533,7 +544,11 @@ class LongitudinalForecastingValidator4Split:
                 f"note for why). Pools the FULL {n_rec:,}-row backcast (all strata, unlabelled) "
                 f"against the Step5 census-linked observed-2022 subset (n={len(self.obs_2022):,}, "
                 "a DIFFERENT, smaller, differently-sourced population -- NOT row-aligned to the "
-                "backcast). Shown for shape-sanity corroboration only."
+                "backcast). Shown for shape-sanity corroboration only. CAUTION [B.2.2]: JS is NOT "
+                "comparable ACROSS these 3 channels because they differ sharply in sparsity -- see "
+                "the 4.secondary.mechanism row below for the numeric demonstration. MAD (not "
+                "renormalized) IS comparable across channels and is the metric to read for "
+                "cross-channel reconstruction-quality comparisons here."
             )
             js_h_pool = js_divergence(oh.mean(0), gh.mean(0))
             js_w_pool = js_divergence(ow.mean(0), gw.mean(0))
@@ -541,15 +556,97 @@ class LongitudinalForecastingValidator4Split:
             mad_h_pool = float(np.abs(oh.mean(0) - gh.mean(0)).mean())
             mad_w_pool = float(np.abs(ow.mean(0) - gw.mean(0)).mean())
             mad_r_pool = float(np.abs(orr.mean(0) - gr.mean(0)).mean())
+
+            # ── B.2.2: positive rate (channel sparsity/density) on BOTH populations ──
+            # Values are already clean 0/1 floats (confirmed by inspection); >0.5 threshold
+            # guards against any float noise without assuming that.
+            pos_rate_h_recon = float((gh > 0.5).mean()); pos_rate_h_obs = float((oh > 0.5).mean())
+            pos_rate_w_recon = float((gw > 0.5).mean()); pos_rate_w_obs = float((ow > 0.5).mean())
+            pos_rate_r_recon = float((gr > 0.5).mean()); pos_rate_r_obs = float((orr > 0.5).mean())
+            avg_density = {"home": 0.5 * (pos_rate_h_recon + pos_rate_h_obs),
+                            "work": 0.5 * (pos_rate_w_recon + pos_rate_w_obs),
+                            "retail": 0.5 * (pos_rate_r_recon + pos_rate_r_obs)}
+
             self.add("s4", "4.secondary.home", "Pooled cross-check (home): shape-JS / MAD",
                       "home", "n/a", f"JS={js_h_pool:.4f} MAD={mad_h_pool:.4f}", "n/a (secondary)",
-                      "INFO", secondary_note)
+                      "INFO", secondary_note +
+                      f" Positive rate (density): recon={pos_rate_h_recon*100:.2f}% "
+                      f"obs={pos_rate_h_obs*100:.2f}% -- the DENSEST of the 3 channels.")
             self.add("s4", "4.secondary.work", "Pooled cross-check (work): shape-JS / MAD",
                       "work", "n/a", f"JS={js_w_pool:.4f} MAD={mad_w_pool:.4f}", "n/a (secondary)",
-                      "INFO", "")
+                      "INFO", f"Positive rate (density): recon={pos_rate_w_recon*100:.2f}% "
+                      f"obs={pos_rate_w_obs*100:.2f}% -- intermediate density. See "
+                      "4.secondary.mechanism: JS is not comparable across channels of differing "
+                      "sparsity; MAD is.")
             self.add("s4", "4.secondary.retail", "Pooled cross-check (retail): shape-JS / MAD",
                       "retail", "n/a", f"JS={js_r_pool:.4f} MAD={mad_r_pool:.4f}", "n/a (secondary)",
-                      "INFO", "")
+                      "INFO", f"Positive rate (density): recon={pos_rate_r_recon*100:.2f}% "
+                      f"obs={pos_rate_r_obs*100:.2f}% -- the SPARSEST of the 3 channels by far. "
+                      f"This is why retail shows the LARGEST JS here despite having the SMALLEST "
+                      f"MAD ({mad_r_pool:.4f}, the best-reconstructed of the 3 channels by the "
+                      "metric that IS comparable across channels) -- see 4.secondary.mechanism.")
+
+            # ── B.2.2 mechanism check: does sparsity, not reconstruction quality, drive the ──
+            # JS ranking? Demonstrated numerically, not merely asserted; verdict is reported
+            # either way (this is a check, not a foregone conclusion).
+            def _toy_js_density_demo(base_rate: float, abs_err: float = 0.005,
+                                      n: int = N_SLOTS) -> float:
+                """Flat n-slot toy profile at a given density; perturb half the slots up and
+                half down by the SAME fixed absolute amount, then measure JS. Isolates the
+                density confound from the error-magnitude confound (real per-channel MAD differ
+                too, so comparing real channels directly would not isolate this)."""
+                p = np.full(n, base_rate)
+                q = p.copy()
+                q[: n // 2] += abs_err
+                q[n // 2:] -= abs_err
+                q = np.clip(q, 1e-9, None)
+                return js_divergence(p, q)
+
+            toy_js = {r: _toy_js_density_demo(r) for r in (0.02, 0.10, 0.30, 0.50)}
+            js_ranking_matches_inverse_density = (
+                (avg_density["retail"] < avg_density["work"] < avg_density["home"])
+                and (js_r_pool > js_w_pool > js_h_pool)
+            )
+            mad_ranking_tracks_density = (
+                (avg_density["retail"] < avg_density["work"] < avg_density["home"])
+                and (mad_r_pool < mad_w_pool < mad_h_pool)
+            )
+            verdict = ("SUPPORTED" if (js_ranking_matches_inverse_density
+                                        and not mad_ranking_tracks_density) else "NOT SUPPORTED")
+            mechanism_note = (
+                f"VERDICT: sparsity-artifact explanation {verdict} by this dataset. "
+                "js_divergence() (module helper, see file top) renormalizes BOTH profiles to "
+                "sum=1 before comparing, so it scores relative SHAPE distortion, not absolute "
+                "error. A fixed absolute per-slot gap is therefore a much larger relative "
+                "perturbation on a low-density channel than a high-density one (perturbation "
+                "scales ~1/density). Toy demonstration: holding the absolute per-slot error "
+                "fixed at 0.005 on a synthetic flat 48-slot profile (perturb half the slots up, "
+                f"half down by 0.005, then measure JS): JS={toy_js[0.02]:.4f} at 2% density, "
+                f"{toy_js[0.10]:.4f} at 10%, {toy_js[0.30]:.4f} at 30%, {toy_js[0.50]:.4f} at "
+                f"50% -- a {toy_js[0.02] / toy_js[0.50]:.0f}x swing from the SAME absolute error, "
+                "density alone. On the real data: avg positive rate (recon+obs)/2 is "
+                f"retail={avg_density['retail']*100:.2f}% < work={avg_density['work']*100:.2f}% "
+                f"< home={avg_density['home']*100:.2f}%, and the pooled JS ordering tracks that "
+                f"EXACTLY inversely (retail {js_r_pool:.4f} > work {js_w_pool:.4f} > home "
+                f"{js_h_pool:.4f} -- {'confirmed' if js_ranking_matches_inverse_density else 'NOT confirmed'} "
+                "monotone). MAD (not renormalized, comparable across channels) gives a "
+                f"DIFFERENT ranking that does NOT track density: retail {mad_r_pool:.4f} "
+                f"(smallest/best) < home {mad_h_pool:.4f} < work {mad_w_pool:.4f} "
+                f"(largest/worst) -- retail is the best-reconstructed channel of the 3, not the "
+                "worst. This dissociation (JS ranking fully explained by density; MAD ranking "
+                "does not follow density and instead reflects actual per-slot reconstruction "
+                "error) is the evidence for the verdict above. Caveat: this is a mechanism check "
+                "on THIS dataset plus a stylized toy example, not a general proof that JS is "
+                "invalid -- it shows why the 4.secondary.* JS numbers should not be read as a "
+                "cross-channel quality ranking, and that MAD is the metric for that here."
+            )
+            self.add("s4", "4.secondary.mechanism", "Sparsity-vs-quality check [B.2.2]: does "
+                      "channel sparsity (not reconstruction quality) explain the JS ranking?",
+                      "home+work+retail", "n/a",
+                      f"density retail({avg_density['retail']*100:.2f}%) < "
+                      f"work({avg_density['work']*100:.2f}%) < home({avg_density['home']*100:.2f}%) "
+                      "-- inverse of JS ranking, NOT the MAD ranking", "n/a (evidence-based)",
+                      "INFO", mechanism_note)
 
             # anti-copy sanity
             disagree_home = float(np.mean(np.abs((oh[:n_rec].clip(0, 1) > 0.5).astype(int)
@@ -1127,7 +1224,8 @@ tr:last-child td{{border-bottom:none}}
 <hr/><p style="font-size:11px;color:#888">
 Step 6 (Leg-3 4-split) GSSCanada Occupancy Pipeline &mdash; Concordia University postdoc project.<br>
 Report generated by 3rdJ_06_longitudinalForecasting_4split_val.py.<br>
-Inputs: 2030_synthetic_diaries_4split_calibrated_mindwell_C.csv, reconstructed_2022_diaries_4split.csv,
+2030 deliverable under test: {self.deliverable_path.name} ({self.deliverable_path}).<br>
+Inputs: [deliverable above], reconstructed_2022_diaries_4split.csv,
 DRIFT_MATRIX_{{0510,1015,1522}}_4split.csv, 2030_diaries_{{band}}_raw.csv x3,
 at_retail_fraction_2030_*.csv (all under Step6_docs/outputs_step6/), Step5_docs/outputs_step5/
 3rdJ_25CEN_aug_Full_Aggregated_excl.csv (observed 2022 baseline), and Track B's
@@ -1149,7 +1247,7 @@ MAD&lt;0.10, hotel MAE&lt;0.05, band bars) &mdash; see the val plan's Threshold 
         tally = self.generate_summary_table()
 
         self.outputs_dir.mkdir(parents=True, exist_ok=True)
-        report_path = self.outputs_dir / "step6_validation_report.html"
+        report_path = self.outputs_dir / f"step6_validation_report{self.out_suffix}.html"
         report_html = self.build_html_report()
         report_path.write_text(report_html, encoding="utf-8")
         print(f"\nReport saved: {report_path}")
@@ -1170,6 +1268,18 @@ def main():
     ap.add_argument("--hotel_processed_dir",
                      default=str(here.parents[2] / "0_Occupancy" / "processed"))
     ap.add_argument("--outputs_dir", default=str(here / "outputs_step6"))
+    ap.add_argument("--out-suffix", default="",
+                     help="Appended to the report filename before .html, e.g. '_v2' -> "
+                          "step6_validation_report_v2.html. Use this instead of overwriting "
+                          "the canonical step6_validation_report.html.")
+    ap.add_argument("--deliverable", default=None,
+                     help="2030 deliverable CSV to validate (Sections 5-6). Accepts a bare "
+                          "filename (resolved under --forecast_dir) or an absolute/relative "
+                          "path. DEFAULT (unchanged if omitted): the frozen canonical "
+                          f"'{LongitudinalForecastingValidator4Split.DEFAULT_DELIVERABLE}'. "
+                          "This flag only changes what is READ; it never writes to the "
+                          "canonical file. Pair with --out-suffix so the report never "
+                          "overwrites step6_validation_report.html.")
     args = ap.parse_args()
 
     # hotel_multiplier_2030.csv lives in 0_Occupancy/forecasts/, not processed/ -- patch dir resolution
@@ -1179,6 +1289,8 @@ def main():
         hotel_dir=args.hotel_dir,
         hotel_processed_dir=args.hotel_processed_dir,
         outputs_dir=args.outputs_dir,
+        out_suffix=args.out_suffix,
+        deliverable=args.deliverable,
     )
     # hotel_multiplier_2030.csv actually lives in 0_Occupancy/forecasts/ per the runbook --
     # reload it from there if the processed/ dir didn't have it.

@@ -366,9 +366,18 @@ def main() -> None:
         else:
             report("FAIL", "P4 FALLBACK_LOUD", f"cell 6 manifest FALLBACK_LOUD={fb}, expected ['retail']")
 
-        log_matches = sorted(glob.glob(os.path.join(LOGS_DIR, "8P_probe_*_6.out")))
+        # 2026-07-30 local-port gap (same class as the PLATFORM gate added during the port):
+        # the run-log filename is engine-specific. On the cluster the orchestrator is SLURM
+        # ("8P_probe_<jobid>_6.out"); the Windows orchestrator (3rdJ_08P_probes_local.py)
+        # writes "<tag>.log" into PROBES_ROOT/_logs instead. Before this fix the gate globbed
+        # the SLURM pattern unconditionally, so on engine=local it reported FAIL for a banner
+        # that HAD been printed correctly -- a gate failing on its own file-resolution rather
+        # than on the property it tests. Only the glob changes here: the assertion below
+        # ('!!! FALLBACK' must appear in the run log) is untouched, so no threshold is relaxed.
+        log_pattern = "8P_probe_*_6.out" if engine == "cluster" else f"{CELL_TAGS[6]}.log"
+        log_matches = sorted(glob.glob(os.path.join(LOGS_DIR, log_pattern)))
         if not log_matches:
-            report("FAIL", "P4 banner", f"no SLURM log matched 8P_probe_*_6.out under {LOGS_DIR}")
+            report("FAIL", "P4 banner", f"no {engine} run log matched {log_pattern} under {LOGS_DIR}")
         else:
             found_banner = False
             hit_file = None

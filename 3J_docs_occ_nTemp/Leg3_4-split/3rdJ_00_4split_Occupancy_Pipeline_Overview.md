@@ -5,7 +5,18 @@
 ---
 
 ## AIM
-Extend the completed 2-channel GSS → BEM pipeline into a **four-channel generator** driving every occupiable use in the PNNL Tall / SuperTall mixed-use prototypes: **Residential (AT_HOME)** *replaces* baseline schedules, **Office (AT_WORK)** *modulates* code densities, **Retail (AT_RETAIL)** — the one new GSS channel — modulates the NECB retail baseline, and **Hotel** — the one non-GSS channel — modulates NECB guest-room schedules with a tourism-statistics-derived seasonal multiplier (ISQ for QC, CBRE for AB; no StatCan table exists — dr_L3-01). Per-Space routing key = IDF `Tag 2`; Service/MEP (~52 % gross) stays on NECB defaults.
+Extend the completed 2-channel GSS → BEM pipeline into a **four-channel generator** driving every occupiable use in the PNNL Tall / SuperTall mixed-use prototypes: **Residential (AT_HOME)** *replaces* baseline schedules, **Office (AT_WORK)** *modulates* code densities, **Retail (AT_RETAIL)** — the one new GSS channel — modulates the NECB retail baseline, and **Hotel** — the one non-GSS channel — modulates NECB guest-room schedules with a tourism-statistics-derived seasonal multiplier (ISQ for QC, CBRE for AB; no StatCan table exists — dr_L3-01). Per-Space routing key = IDF `Tag 2`; Service/MEP stays on NECB defaults.
+
+> 🔴 **Surfaces CORRIGÉES 2026-07-31 (Défaut 7) — les deux tours.** Parsées du modèle
+> (Σ `FloorArea` × `Multiplier` sur `IsPartOfTotalArea = 1`, reproduisant exactement la *Total
+> Building Area* d'EnergyPlus), parts de l'occupiable **SuperTall · Tall** : bureau
+> **44,33 % · 44,65 %**, hôtel **26,37 % · 24,91 %**, résidentiel **22,50 % · 22,40 %**, retail
+> **4,39 % · 5,53 %**. Service/MEP **20,6 % · 21,4 % du brut**, et non les « ~52 % » longtemps
+> cités. Surfaces totales **135 857,6 m² · 72 623,1 m²**, contre *40 846 · 26 750* au document —
+> soit 2,7 à 3,3× trop petites, ce qui déplace tout EUI d'autant. Anciennes valeurs : la colonne
+> Tall répétait 24,4 % pour trois canaux (un gabarit) ; la colonne SuperTall paraissait plausible
+> mais ne correspondait pas non plus au modèle. Détail et conséquences dans
+> `Step8_docs/3rdJ_08_implementation_improvements.md` § Défaut 7.
 
 > **Three-leg roadmap.** Leg 1 = Residential (COMPLETE, 2nd Journal). Leg 2 = Residential + Office (COMPLETE, validated end-to-end 2026-07-01; office People-schedule wiring fix + re-sim is the one open closeout — its lessons are hard gates in Steps 7–8). **Leg 3 = + Retail + Hotel (this doc, 3rd-Journal target).**
 >

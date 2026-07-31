@@ -185,22 +185,83 @@ CELLS = _build_cells(STEP7_OUT)  # cluster default -- identical to the pre-port 
 # Output objects to ensure on every injected IDF (handoff §3.1 step 3 -- the Leg-2
 # office SQL-gap lesson: do this on every path, no exceptions)
 # ---------------------------------------------------------------------------
-REQUIRED_METERS = [
-    "Electricity:Facility", "Gas:Facility", "InteriorLights:Electricity",
-    "InteriorEquipment:Electricity", "InteriorEquipment:Gas", "Fans:Electricity",
-    "Pumps:Electricity", "Cooling:Electricity", "Heating:Electricity", "Heating:Gas",
-    "WaterSystems:Electricity", "WaterSystems:Gas",
-]
+# --- Meters -----------------------------------------------------------------
+# 🔴 FIXED 2026-07-31 (Defaut 5). The previous list asked for `Gas:Facility`, `Heating:Gas`,
+# `InteriorEquipment:Gas`, `WaterSystems:Gas`. EnergyPlus 9.4 renamed the resource `Gas` ->
+# `NaturalGas`; in 24.2 those four names DO NOT EXIST (verified: eplusout.mdd has no
+# `Gas:Facility` at all, and does have `NaturalGas:Facility`). EnergyPlus warned four times --
+# `Output:Meter: invalid Key Name="GAS:FACILITY" - not found.`, eplusout.err:916-919 -- the SQL
+# had no such rows, and the zero-fill in _write_hourly_meters_csv turned "absent" into "0.0".
+# The CLG cell therefore reported 0 J of gas while the End Uses table of the SAME run reported
+# 13,884.91 GJ: DHW 7,726.75 + heating 4,082.08 + hotel laundry 2,076.08 = 53.5 % of site energy.
+# Three electricity end uses were missing too (ExteriorLights 682.88 + HeatRejection 168.28 +
+# HeatRecovery 537.48 GJ), leaving 11.52 % of Electricity:Facility unattributed.
+#
+# This list is NOT claimed to be prophetic. Completeness is proved per run by
+# _check_fuel_closure() -- the §6b-4 unmetered-end-use tripwire, declared since 2J Bug B and
+# never implemented until now, which is exactly why the defect shipped. A building with an end
+# use we did not list makes closure FAIL loudly instead of silently under-reporting.
+FUEL_TOTAL_METERS = ["Electricity:Facility", "NaturalGas:Facility"]
+END_USE_METERS = {
+    "Electricity": [
+        "InteriorLights:Electricity", "ExteriorLights:Electricity",
+        "InteriorEquipment:Electricity", "Fans:Electricity", "Pumps:Electricity",
+        "Cooling:Electricity", "Heating:Electricity", "HeatRejection:Electricity",
+        "HeatRecovery:Electricity", "WaterSystems:Electricity",
+    ],
+    "NaturalGas": [
+        "InteriorEquipment:NaturalGas", "Heating:NaturalGas", "WaterSystems:NaturalGas",
+    ],
+}
+# Relative tolerance on |Sigma(end uses) - <Fuel>:Facility| / <Fuel>:Facility. EnergyPlus
+# end-use meters partition the fuel total exactly; anything above float noise means an end use
+# is missing from the list above.
+FUEL_CLOSURE_TOL = 1e-3
+REQUIRED_METERS = FUEL_TOTAL_METERS + [m for ms in END_USE_METERS.values() for m in ms]
+
 REQUIRED_VARIABLES = [
     "Zone People Occupant Count",
     "Zone Lights Electricity Energy",
     "Zone Electric Equipment Electricity Energy",
+    # Added 2026-07-31 (Defaut 5, point 4). dr_L3-10 locks "hourly load-weighted" central-plant
+    # allocation ("never area-weighted, never unattributed"), but nothing in the campaign
+    # reported a per-zone HVAC load, so that allocation was not computable at all. Both names
+    # verified present in eplusout.rdd of the CLG cell before being requested.
+    "Zone Air System Sensible Cooling Energy",
+    "Zone Air System Sensible Heating Energy",
+    # Gas equipment is 2,076.08 GJ on the Tall tower and lives in exactly two Spaces
+    # (F30 Hotel_bot_Laundry, F38 Hotel_top_Kitchen -- both hotel). Attributing it through the
+    # zone variable rather than hard-coding "it is all hotel" keeps the rule general: another
+    # prototype with a gas kitchen in the office podium still lands in the right channel.
+    "Zone Gas Equipment NaturalGas Energy",
 ]
 VAR_METRIC = {
     "Zone People Occupant Count": "people",
     "Zone Lights Electricity Energy": "lights",
     "Zone Electric Equipment Electricity Energy": "equip",
+    "Zone Air System Sensible Cooling Energy": "syscool",
+    "Zone Air System Sensible Heating Energy": "sysheat",
+    "Zone Gas Equipment NaturalGas Energy": "gasequip",
 }
+# DHW is 7,726.75 GJ of gas on the Tall tower -- ~30 % of site energy, hotel-dominated -- and
+# WaterUse:Equipment objects carry a BLANK `Zone Name`, so they cannot ride the zone->channel
+# map. Their NAMES do carry the channel: every one is "<SpaceName> Service Water Use <x>gpm <T>F"
+# (e.g. "F21 Resi_bot_E_Apartment Service Water Use 0.08gpm 140F"), except two plant-level units
+# ("Booster ...", "Laundry ...") resolved by the prototype token in their flow-fraction schedule.
+# All 47 objects on the Tall tower resolve, none unassigned (validated 2026-07-31).
+DHW_VARIABLE = "Water Use Equipment Heating Energy"
+
+# Defaut 5, point 5 -- the OTHER end of the Defaut-3 fingerprint hole. INJ_HASH =
+# md5(commercial_integration.py) owns the output PATH, so it catches a wiring change but is
+# blind to a change in WHAT WE ASK ENERGYPLUS TO REPORT. Without this, fixing the meter list
+# would leave every existing cell looking "done" and the resume logic would skip them all --
+# the same class of silent staleness, on the reporting side. Written into every manifest by
+# _do_postprocess() and checked by _cell_complete().
+OUTPUT_SCHEMA_HASH = hashlib.md5(
+    json.dumps({"meters": REQUIRED_METERS,
+                "variables": REQUIRED_VARIABLES + [DHW_VARIABLE]},
+               sort_keys=True).encode("utf-8")
+).hexdigest()[:8]
 CHANNEL_AGG = {
     "residential": {"residential"},
     # residential_common (corridors/common areas, TAG2_RESIDENTIAL_COMMON) is emitted as its
@@ -496,7 +557,7 @@ def _ensure_output_objects(idf, verbose: bool = True) -> None:
         name = str(getattr(v, "Variable_Name", "")).strip()
         existing_vars.add((key, name, freq))
     n_added_v = 0
-    for var_name in REQUIRED_VARIABLES:
+    for var_name in REQUIRED_VARIABLES + [DHW_VARIABLE]:
         if ("*", var_name, "hourly") not in existing_vars:
             obj = idf.newidfobject("Output:Variable")
             obj.Key_Value = "*"
@@ -545,7 +606,46 @@ def _ensure_output_objects(idf, verbose: bool = True) -> None:
 # EnvironmentType=3, Hourly), reimplemented here restricted to the requested
 # meters/variables and pivoted to one-column-per-series (stated in the Progress Log).
 # ---------------------------------------------------------------------------
-def _write_hourly_meters_csv(sql_path: str, out_csv: str) -> int:
+def _check_fuel_closure(pivot, absent: list) -> dict:
+    """§6b point 4 -- the unmetered-end-use tripwire, declared since 2J Bug B and never
+    implemented until 2026-07-31 (that is exactly why Defaut 5 shipped).
+
+    EnergyPlus end-use meters PARTITION their fuel total, so Sigma(end uses) == <Fuel>:Facility
+    holds to float noise whenever the requested list is complete. A residual above
+    FUEL_CLOSURE_TOL therefore means one of two things, both fatal to per-channel EUI: an end
+    use exists that REQUIRED_METERS does not list, or a listed meter name is wrong for this
+    EnergyPlus version and was zero-filled.
+
+    Validated 2026-07-31 by being SEEN FAILING on the pre-fix CLG SQL (Electricity residual
+    11.5216 %, NaturalGas total meter absent), failing on an injected 5 % shortfall, and
+    passing on a complete pivot. Returns a per-fuel report; never raises -- the caller decides,
+    so a diagnostic run can still produce its CSVs.
+    """
+    report = {}
+    for fuel, ends in END_USE_METERS.items():
+        total_col = f"{fuel}:Facility"
+        total = float(pivot[total_col].sum()) if total_col in pivot.columns else 0.0
+        parts = float(sum(pivot[c].sum() for c in ends if c in pivot.columns))
+        resid = parts - total
+        rel = 0.0 if total == 0.0 else abs(resid) / abs(total)
+        # A fuel whose TOTAL meter is itself absent closes trivially at 0 == 0 and would sail
+        # through -- which is precisely how Defaut 5 would have survived its own tripwire. An
+        # absent total is never evidence of "no such fuel"; it is evidence of a bad name.
+        total_absent = total_col in absent
+        report[fuel] = {
+            "facility_total_J": total,
+            "sum_end_uses_J": parts,
+            "residual_J": resid,
+            "residual_rel": rel,
+            "facility_meter_absent": total_absent,
+            "closed": bool(rel <= FUEL_CLOSURE_TOL) and not total_absent,
+            "end_use_meters": ends,
+        }
+    report["absent_meters"] = absent
+    return report
+
+
+def _write_hourly_meters_csv(sql_path: str, out_csv: str) -> tuple:
     conn = sqlite3.connect(sql_path)
     try:
         placeholders = ",".join("?" * len(REQUIRED_METERS))
@@ -575,12 +675,103 @@ def _write_hourly_meters_csv(sql_path: str, out_csv: str) -> int:
     data["name"] = data["idx"].map(idx_to_name)
     pivot = data.pivot_table(index="t", columns="name", values="value", aggfunc="sum")
     pivot = pivot.reindex(sorted(pivot.index))
-    for m in REQUIRED_METERS:
-        if m not in pivot.columns:
-            pivot[m] = 0.0
+    # 🔴 This zero-fill is what made Defaut 5 invisible: a meter EnergyPlus never produced
+    # became a column of hard zeros, indistinguishable from a genuine zero. The fill stays (a
+    # missing column would break every downstream reader) but it is now RECORDED and
+    # cross-checked by _check_fuel_closure -- absence must leave a trace.
+    absent = [m for m in REQUIRED_METERS if m not in pivot.columns]
+    for m in absent:
+        pivot[m] = 0.0
+    if absent:
+        print(f"  [hourly_meters] {len(absent)} requested meter(s) ABSENT from the SQL, "
+              f"zero-filled and recorded in the manifest: {absent}")
     pivot = pivot[REQUIRED_METERS]
     pivot.to_csv(out_csv, index=False)
-    return len(pivot)
+    return len(pivot), _check_fuel_closure(pivot, absent)
+
+
+def _write_dhw_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: str, out_csv: str) -> tuple:
+    """Per-channel DHW (Water Use Equipment Heating Energy).
+
+    WaterUse:Equipment carries a blank `Zone Name`, so these series cannot ride the
+    zone->channel map. Two resolution rules, in order, both read off the IDF (never guessed):
+
+      1. The equipment Name is "<SpaceName> Service Water Use <x>gpm <T>F" -- split at
+         " SERVICE WATER USE" and classify the resulting Space through the Tag-2 census.
+      2. Plant-level units with no Space prefix ("Booster ...", "Laundry ...") are resolved by
+         the prototype token in their Flow Rate Fraction Schedule Name (HotelLarge -> hotel,
+         OfficeLarge -> office, RetailStandalone -> retail, *Apartment -> residential).
+
+    On the Tall tower all 47 objects resolve (27 residential, 16 hotel, 2 retail, 2 office);
+    the two schedule-resolved ones are Booster and Laundry, both HOTELLARGE. Anything
+    unresolved goes to an `unassigned` column rather than being dropped, so the total still
+    closes against WaterSystems:*.
+    """
+    from eppy.modeleditor import IDF
+    from eSim_bem_utils.commercial_integration import classify_tag2
+    IDF.setiddname(eplus_idd)
+    idf = IDF(injected_idf_path)
+
+    space_to_channel = {}
+    for sp in idf.idfobjects.get("SPACE", []):
+        agg = _FINE_TO_AGG.get(classify_tag2(_get_space_tag2(sp)))
+        if agg:
+            space_to_channel[str(sp.Name).strip().upper()] = agg
+    SCHED_TOKEN = (("HOTELLARGE", "hotel"), ("OFFICELARGE", "office"),
+                   ("RETAILSTANDALONE", "retail"), ("MIDRISEAPARTMENT", "residential"),
+                   ("HIGHRISEAPARTMENT", "residential"))
+
+    equip_to_channel = {}
+    for we in idf.idfobjects.get("WATERUSE:EQUIPMENT", []):
+        key = str(we.Name).strip().upper()
+        head = key.split(" SERVICE WATER USE")[0].strip()
+        ch = space_to_channel.get(head)
+        if ch is None:
+            sched = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "").upper()
+            ch = next((c for tok, c in SCHED_TOKEN if tok in sched), None)
+        equip_to_channel[key] = ch
+
+    conn = sqlite3.connect(sql_path)
+    try:
+        meta = pd.read_sql_query(
+            "SELECT ReportDataDictionaryIndex, KeyValue, Name FROM ReportDataDictionary "
+            "WHERE (ReportingFrequency = 'Hourly' OR ReportingFrequency = 3) AND Name = ?",
+            conn, params=[DHW_VARIABLE],
+        )
+        if meta.empty:
+            raise RuntimeError(f"no Hourly '{DHW_VARIABLE}' rows in ReportDataDictionary")
+        idx_list = meta["ReportDataDictionaryIndex"].tolist()
+        idx_ph = ",".join("?" * len(idx_list))
+        data = pd.read_sql_query(
+            "SELECT rd.ReportDataDictionaryIndex AS idx, rd.Value AS value, rd.TimeIndex AS t "
+            "FROM ReportData rd "
+            "JOIN Time tm ON rd.TimeIndex = tm.TimeIndex "
+            "JOIN EnvironmentPeriods ep ON tm.EnvironmentPeriodIndex = ep.EnvironmentPeriodIndex "
+            f"WHERE ep.EnvironmentType = 3 AND rd.ReportDataDictionaryIndex IN ({idx_ph}) "
+            "ORDER BY rd.TimeIndex ASC",
+            conn, params=idx_list,
+        )
+    finally:
+        conn.close()
+
+    df = data.join(meta.set_index("ReportDataDictionaryIndex")[["KeyValue"]], on="idx")
+    df["channel"] = (df["KeyValue"].astype(str).str.strip().str.upper()
+                     .map(equip_to_channel).fillna("unassigned"))
+    unresolved = sorted({k for k, v in equip_to_channel.items() if v is None})
+    if unresolved:
+        print(f"  [dhw_hourly] {len(unresolved)} WaterUse:Equipment unresolved -> 'unassigned' "
+              f"(<=5 shown): {unresolved[:5]}")
+    pivot = df.pivot_table(index="t", columns="channel", values="value", aggfunc="sum")
+    pivot = pivot.reindex(sorted(pivot.index))
+    cols = ["office", "retail", "hotel", "residential", "residential_common",
+            "service_MEP", "unassigned"]
+    for c in cols:
+        if c not in pivot.columns:
+            pivot[c] = 0.0
+    pivot = pivot[cols]
+    pivot.columns = [f"dhw_{c}" for c in cols]
+    pivot.to_csv(out_csv, index=False)
+    return len(pivot), unresolved
 
 
 def _build_zone_channel_map(idf) -> tuple[dict, list]:
@@ -618,6 +809,19 @@ def _write_channel_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: 
 
     conn = sqlite3.connect(sql_path)
     try:
+        # 🔴 Defaut 6 (2026-07-31). Zone-level Output:Variables report ONE zone instance and do
+        # NOT include Zones.Multiplier; the facility meters do. On the Tall tower the
+        # multipliers are {1,4,7,8,9,10,28,70} and Sigma(zone vars) came to 25.4 % of the
+        # matching meter. Worse, the mean multiplier differs BY CHANNEL (office F3-F11 x9,
+        # residential F22-F29 x8, retail F1/F2 x1), so it is not a common mode that cancels in
+        # shares -- it silently biased every per-channel share toward the low-multiplier
+        # channels. The multiplier is applied here, at the only place that has the zone
+        # identity, and the result is verified against the facility meters by
+        # _check_channel_closure() (measured: 0.2541 before, 1.000000 after).
+        zmul = pd.read_sql_query("SELECT ZoneName, Multiplier FROM Zones", conn)
+        zmul["KEY"] = zmul["ZoneName"].astype(str).str.strip().str.upper()
+        zone_multiplier = dict(zip(zmul["KEY"], zmul["Multiplier"].astype(float)))
+
         var_names = list(VAR_METRIC.keys())
         placeholders = ",".join("?" * len(var_names))
         meta = pd.read_sql_query(
@@ -669,13 +873,18 @@ def _write_channel_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: 
             f"(sample unmapped KeyValues: {sorted(set(df['KeyValue'].astype(str)))[:10]})"
         )
     df = df.dropna(subset=["channel", "metric"])
+    # Defaut 6: scale each zone's series by its own Multiplier BEFORE summing into channels. A
+    # zone missing from Zones (impossible in practice) defaults to 1.0 rather than dropping the
+    # row -- under-reporting must never be the quiet outcome.
+    df["mult"] = df["KeyValue"].astype(str).str.strip().str.upper().map(zone_multiplier).fillna(1.0)
+    df["value"] = df["value"] * df["mult"]
     df["col"] = df["channel"] + "_" + df["metric"]
 
     pivot = df.pivot_table(index="t", columns="col", values="value", aggfunc="sum")
     pivot = pivot.reindex(sorted(pivot.index))
 
     channels = ["office", "retail", "hotel", "residential", "residential_common", "service_MEP"]
-    metrics = ["people", "lights", "equip"]
+    metrics = ["people", "lights", "equip", "gasequip", "syscool", "sysheat"]
     all_cols = [f"{c}_{m}" for c in channels for m in metrics]
     for c in all_cols:
         if c not in pivot.columns:
@@ -683,6 +892,32 @@ def _write_channel_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: 
     pivot = pivot[all_cols]
     pivot.to_csv(out_csv, index=False)
     return len(pivot)
+
+
+def _check_channel_closure(outdir: str) -> dict:
+    """Prove the Defaut-6 multiplier handling on every run instead of trusting it.
+
+    Sigma over channels of the per-channel lights / electric-equipment / gas-equipment series
+    must equal the matching facility meter, because the zone variables partition the meter once
+    the multiplier is applied. Measured on the CLG cell: unmultiplied, 0.2541 of the meter;
+    multiplied, residual 0.000000 %. This check is what makes that a fact of every run rather
+    than of one spot-check.
+    """
+    hourly = pd.read_csv(os.path.join(outdir, "hourly_meters.csv"))
+    chan = pd.read_csv(os.path.join(outdir, "channel_hourly.csv"))
+    channels = ["office", "retail", "hotel", "residential", "residential_common", "service_MEP"]
+    report = {}
+    for metric, meter in (("lights", "InteriorLights:Electricity"),
+                          ("equip", "InteriorEquipment:Electricity"),
+                          ("gasequip", "InteriorEquipment:NaturalGas")):
+        chan_sum = float(sum(chan[f"{c}_{metric}"].sum() for c in channels))
+        meter_sum = float(hourly[meter].sum()) if meter in hourly.columns else 0.0
+        rel = 0.0 if meter_sum == 0.0 else abs(chan_sum - meter_sum) / abs(meter_sum)
+        report[metric] = {
+            "sum_channels_J": chan_sum, "facility_meter_J": meter_sum,
+            "residual_rel": rel, "closed": bool(rel <= FUEL_CLOSURE_TOL), "meter": meter,
+        }
+    return report
 
 
 SQL_EXTRACTION_METHOD = (
@@ -698,17 +933,38 @@ def _do_postprocess(sql_path: str, injected_idf_path: str, eplus_idd: str, outdi
     """Step 5 (SQL -> hourly_meters.csv + channel_hourly.csv), shared by the normal
     inject-simulate-postprocess path and --postprocess-only. Mutates manifest in place;
     returns (rows_hourly, rows_channel) so the caller can apply the same row-count gate."""
+    manifest["OUTPUT_SCHEMA_HASH"] = OUTPUT_SCHEMA_HASH
     hourly_csv = os.path.join(outdir, "hourly_meters.csv")
     channel_csv = os.path.join(outdir, "channel_hourly.csv")
-    rows_hourly = rows_channel = 0
+    dhw_csv = os.path.join(outdir, "dhw_hourly.csv")
+    rows_hourly = rows_channel = rows_dhw = 0
 
     if os.path.isfile(sql_path):
         try:
-            rows_hourly = _write_hourly_meters_csv(sql_path, hourly_csv)
+            rows_hourly, closure = _write_hourly_meters_csv(sql_path, hourly_csv)
+            manifest["fuel_closure"] = closure
             print(f"[postprocess] hourly_meters.csv: {rows_hourly} rows -> {hourly_csv}")
+            for fuel in END_USE_METERS:
+                r = closure[fuel]
+                verdict = "OK" if r["closed"] else "FAIL"
+                print(f"  [fuel-closure {verdict}] {fuel}: Sigma(end uses) = "
+                      f"{r['sum_end_uses_J']:.6g} J, {fuel}:Facility = "
+                      f"{r['facility_total_J']:.6g} J, residual = {r['residual_rel'] * 100:.4f} %")
+                if not r["closed"]:
+                    print(f"[FAIL] fuel closure ({fuel}): an end use is missing from "
+                          f"REQUIRED_METERS, or a meter name is wrong for this EnergyPlus "
+                          f"version and was zero-filled -- §6b-4 tripwire (Defaut 5).")
         except Exception as e:
             print(f"[FAIL] hourly_meters extraction raised: {e}")
             manifest["hourly_meters_exception"] = str(e)
+        try:
+            rows_dhw, unresolved = _write_dhw_hourly_csv(sql_path, injected_idf_path,
+                                                         eplus_idd, dhw_csv)
+            manifest["dhw_unresolved_equipment"] = unresolved
+            print(f"[postprocess] dhw_hourly.csv: {rows_dhw} rows -> {dhw_csv}")
+        except Exception as e:
+            print(f"[FAIL] dhw_hourly extraction raised: {e}")
+            manifest["dhw_hourly_exception"] = str(e)
         try:
             rows_channel = _write_channel_hourly_csv(sql_path, injected_idf_path, eplus_idd, channel_csv)
             print(f"[postprocess] channel_hourly.csv: {rows_channel} rows -> {channel_csv}")
@@ -726,6 +982,32 @@ def _do_postprocess(sql_path: str, injected_idf_path: str, eplus_idd: str, outdi
         "path": channel_csv, "rows": rows_channel,
         "md5": md5_file(channel_csv) if os.path.isfile(channel_csv) else None,
     }
+    manifest["dhw_hourly_csv"] = {
+        "path": dhw_csv, "rows": rows_dhw,
+        "md5": md5_file(dhw_csv) if os.path.isfile(dhw_csv) else None,
+    }
+    manifest["channel_hourly_convention"] = (
+        "per-zone Output:Variable values MULTIPLIED by Zones.Multiplier before channel "
+        "aggregation (fixed 2026-07-31, Defaut 6). Sigma(channels) therefore closes against "
+        "the matching facility meter -- verified per run by channel_closure. Files written "
+        "BEFORE 2026-07-31 are UNMULTIPLIED and not comparable in magnitude."
+    )
+    if rows_hourly and rows_channel:
+        try:
+            cc = _check_channel_closure(outdir)
+            manifest["channel_closure"] = cc
+            for metric, r in cc.items():
+                verdict = "OK" if r["closed"] else "FAIL"
+                print(f"  [channel-closure {verdict}] {metric}: Sigma(channels) = "
+                      f"{r['sum_channels_J']:.6g} J vs {r['meter']} = "
+                      f"{r['facility_meter_J']:.6g} J, residual = {r['residual_rel'] * 100:.4f} %")
+                if not r["closed"]:
+                    print(f"[FAIL] channel closure ({metric}): per-channel attribution does not "
+                          f"partition the facility meter -- Zones.Multiplier handling or the "
+                          f"Tag-2 census is wrong (Defaut 6).")
+        except Exception as e:
+            print(f"[FAIL] channel closure check raised: {e}")
+            manifest["channel_closure_exception"] = str(e)
     return rows_hourly, rows_channel
 
 

@@ -7,14 +7,45 @@
 ## AIM
 Extend the completed two-channel GSS → BEM pipeline (Leg 2) into a **four-channel generator** that drives every occupiable functional use inside the PNNL Tall / SuperTall mixed-use prototypes (`BEM_Setup/Buildings/CAN_CLG`, `CAN_MTL`), each channel routed per-Space by IDF `Tag 2`:
 
-| Channel | Source | Presence signal | Injection mode | Occupiable share (SuperTall · Tall) |
+| Channel | Source | Presence signal | Injection mode | Part occupiable — **mesurée** (SuperTall · Tall) |
 |---|---|---|---|---|
-| **Residential** | GSS `occPRE == 1` (home) | `AT_HOME` per household | **REPLACE** baseline; `Number_of_People = HHSIZE` | 24.1 % · 24.4 % |
-| **Office** | GSS `occPRE == 2` (workplace) | `AT_WORK` population fraction | **MODULATE** NECB/ASHRAE baseline | 30.3 % · 24.4 % |
-| **Retail** ⚠️ NEW | GSS `occPRE == 5` (shopping) OR `occACT == 4` | `AT_RETAIL` population fraction | **MODULATE** NECB retail baseline | 16.1 % · 24.4 % |
-| **Hotel** ⚠️ NEW | Provincial tourism monthly occupancy stats — ISQ (QC) / CBRE (AB) (**NOT GSS**; no StatCan table exists, dr_L3-01) | `hotel_multiplier(t, month, PR)` | **MODULATE** NECB guest-room baseline, monthly | 29.5 % · 26.8 % |
+| **Residential** | GSS `occPRE == 1` (home) | `AT_HOME` per household | **REPLACE** baseline; `Number_of_People = HHSIZE` | **22,50 % · 22,40 %** |
+| **Office** | GSS `occPRE == 2` (workplace) | `AT_WORK` population fraction | **MODULATE** NECB/ASHRAE baseline | **44,33 % · 44,65 %** |
+| **Retail** ⚠️ NEW | GSS `occPRE == 5` (shopping) OR `occACT == 4` | `AT_RETAIL` population fraction | **MODULATE** NECB retail baseline | **4,39 % · 5,53 %** |
+| **Hotel** ⚠️ NEW | Provincial tourism monthly occupancy stats — ISQ (QC) / CBRE (AB) (**NOT GSS**; no StatCan table exists, dr_L3-01) | `hotel_multiplier(t, month, PR)` | **MODULATE** NECB guest-room baseline, monthly | **26,37 % · 24,91 %** |
+| *Résidentiel commun* | — | — | *non injecté (base NECB)* | *2,40 % · 2,50 %* |
 
-> Service / MEP / Circulation (~52 % of *gross* floor area) stays on ASHRAE 90.1 / NECB17 defaults — **not** modulated. GSS has no signal for elevator shafts or mech rooms.
+> 🔴 **CORRIGÉ 2026-07-31 (Défaut 7) — les DEUX colonnes étaient fausses.** L'ancienne colonne Tall
+> portait **24,4 % pour trois canaux différents** : trois valeurs identiques au dixième sont un
+> gabarit, pas une mesure. L'ancienne colonne SuperTall (24,1 / 30,3 / 16,1 / 29,5) semblait
+> plausible — valeurs distinctes sommant à 100 % — mais ne correspond pas davantage au modèle.
+> Écart sur le retail : **×3,7 en SuperTall, ×4,4 en Tall**.
+>
+> Valeurs parsées de l'IDF injecté + la table `Zones` du SQL, cellule par cellule :
+> Σ(`FloorArea` × `Multiplier`) sur les zones `IsPartOfTotalArea = 1`, ce qui reproduit
+> **exactement** la *Total Building Area* d'EnergyPlus. Identiques sur les 28 cellules de chaque tour.
+>
+> | | **SuperTall** | **Tall** | *au document* |
+> |---|---:|---:|---|
+> | Surface totale du bâtiment | **135 857,6 m²** | **72 623,1 m²** | *40 846 · 26 750* |
+> | dont occupiable | 107 816,0 m² | 57 075,4 m² | — |
+> | Service/MEP, % du brut | **20,64 %** | **21,41 %** | *« ~52 % du brut »* |
+> | Plenums exclus (convention EnergyPlus) | 133 790,4 m² | 70 611,6 m² | — |
+>
+> Les surfaces totales du document sont **2,7 à 3,3× trop petites**, et l'EUI est une division : la
+> même énergie donne 99 kWh/m²/an sur la surface mesurée contre 269 sur celle du document. Aucune
+> bande dr_L3-02/03 n'a de sens tant que la base de surface n'est pas tranchée sur l'artefact.
+> `Step8_docs/outputs_step8/agg/agg_meta.csv` émet désormais ces surfaces par cellule, pour qu'elles
+> ne soient plus jamais retapées à la main.
+>
+> Enjeu au-delà de la prose : la gate **±2 pp** (dr_L3-10, *project-novel*) confronte les parts
+> d'énergie aux parts occupiables **parsées**. Contre le gabarit elle aurait échoué sur le retail et
+> le bureau quoi que fasse le modèle — et le réflexe d'élargir la tolérance en aurait fait une gate
+> vide. Elle a été re-spécifiée (voir Step-9 §7).
+
+> Service / MEP / Circulation reste sur les défauts ASHRAE 90.1 / NECB17 — **non** modulé. Le GSS n'a
+> aucun signal pour les gaines d'ascenseur ni les locaux techniques. **Part mesurée : 20,6 %
+> (SuperTall) et 21,4 % (Tall) du brut**, et non les « ~52 % » longtemps cités.
 
 > **Three-leg roadmap.** **Leg 1 = Residential (AT_HOME)** — COMPLETE, shipped as the 2nd Journal. **Leg 2 = 2-channel split (Residential + Office)** — COMPLETE, validated end-to-end 2026-07-01 (the office People-schedule wiring fix + re-simulation is the one open closeout item; its lessons are encoded as hard gates in Steps 7–8 below). **Leg 3 = 4-channel split (+ Retail + Hotel)** — *this document*, the 3rd-Journal target.
 >

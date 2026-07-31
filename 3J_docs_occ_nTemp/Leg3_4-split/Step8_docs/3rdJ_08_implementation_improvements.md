@@ -332,6 +332,220 @@ diaires distincts (réutilisation ×7,5, contre ×4,6–5,9 déjà acceptée pou
 
 ---
 
+## 🔴 Défaut 5 — le jeu de compteurs est incomplet : **53,5 % de l'énergie du site est rapportée à zéro** (TROUVÉ 2026-07-31, OUVERT)
+
+### Symptôme
+
+Sur la cellule 17 `B_central__Tall__CLG`, `hourly_meters.csv` (12 colonnes, 8760 lignes, manifeste
+parfaitement propre) donne :
+
+| Compteur | Somme annuelle | Heures non nulles |
+|---|---:|---:|
+| `Gas:Facility` | **0** | **0** |
+| `Heating:Gas` | **0** | **0** |
+| `InteriorEquipment:Gas` | **0** | **0** |
+| `WaterSystems:Gas` | **0** | **0** |
+
+Or le tableau **End Uses** de `eplustbl.htm` — produit par le même run — donne **13 884,91 GJ de gaz
+naturel** : chauffage 4 082,08 · équipement intérieur 2 076,08 (buanderie hôtel) · eau chaude
+sanitaire **7 726,75**. Pour 12 052,53 GJ d'électricité, le gaz est **53,5 % de l'énergie de site**.
+
+### Cause — un renommage de version, pas une erreur de conception
+
+EnergyPlus **9.4** a renommé la ressource `Gas` en `NaturalGas`. En 24.2 les noms `Gas:Facility`,
+`Heating:Gas`, `InteriorEquipment:Gas`, `WaterSystems:Gas` **n'existent plus**. Preuve directe sur
+l'artefact — `eplusout.mdd` ne contient aucun `Gas:Facility` (`grep -c` → 0) mais bien
+`Output:Meter,NaturalGas:Facility,hourly`, `InteriorEquipment:NaturalGas`, etc.
+
+`REQUIRED_METERS` (`3rdJ_08P_probe_driver.py:188-193`) demande les anciens noms. EnergyPlus refuse,
+l'extracteur SQL ne trouve rien, et remplit la colonne avec **0** — indiscernable d'un vrai zéro.
+
+### Ce n'était PAS silencieux — et c'est la vraie leçon
+
+`eplusout.err:916-919` :
+
+```
+** Warning ** Output:Meter: invalid Key Name="GAS:FACILITY" - not found.
+** Warning ** Output:Meter: invalid Key Name="INTERIOREQUIPMENT:GAS" - not found.
+** Warning ** Output:Meter: invalid Key Name="HEATING:GAS" - not found.
+** Warning ** Output:Meter: invalid Key Name="WATERSYSTEMS:GAS" - not found.
+```
+
+EnergyPlus a averti quatre fois, explicitement, en clair. La session du 2026-07-30 a classé les
+**478** lignes `** Warning **` distinctes comme « toutes du dimensionnement bénin » — conclusion tirée
+d'un décompte des **5 motifs les plus fréquents**, jamais d'une lecture des 478. Ces quatre lignes-là
+sont apparues **une fois chacune** : exactement la queue que le classement par fréquence écarte.
+**Correction à porter au registre : « 478 warnings, tous bénins » était faux.** Un tri par fréquence
+répond à « qu'est-ce qui est bruyant », jamais à « qu'est-ce qui est grave » — et sur un fichier
+d'erreurs, c'est la seconde question qui compte.
+
+### Second trou, indépendant — 11,52 % de l'électricité non attribuée
+
+Σ(7 compteurs d'usage final électriques) / `Electricity:Facility` = **0,8848**. Manquants, lus au
+tableau End Uses : éclairage **extérieur** 682,88 GJ · rejet de chaleur (tours de refroidissement)
+168,28 GJ · récupération de chaleur 537,48 GJ = **1 388,64 GJ**, soit exactement l'écart de
+12 052,53 − 10 663,9 GJ. Deux voies indépendantes concordent au GJ près.
+
+### Pourquoi ça a passé toutes les gates
+
+La règle **§6b point 4** (« Validator gate : Σ(compteurs d'usage final) ≈ `Electricity:Facility` par
+run — *unmetered-end-use tripwire* ») existe **depuis 2J Bug B**, écrite précisément contre cette
+classe de panne. Elle n'a **jamais été implémentée**. C'est une gate déclarée dans le document et
+absente du code : le cas le plus pur de la règle « une gate doit avoir été **vue échouer** ». Rien
+dans le scorecard §P (32P/0W/0F) ne l'exerce.
+
+### Portée
+
+- **Aucun résultat publié n'est en cause pour l'instant** : le §8E n'existe pas, le Step 9 n'est pas
+  écrit, donc aucun EUI n'a encore été calculé depuis ces colonnes. Le défaut a été trouvé **avant**
+  sa première consommation, pas après.
+- **Si le Step 9 avait été écrit sur ces sorties**, les EUI par canal auraient été confrontés aux
+  bandes dr_L3-02 (retail 80–155) et dr_L3-03 (hôtel 180–300) en manquant la moitié de l'énergie —
+  et l'hôtel, dont l'ECS au gaz est le poste dominant, aurait été le plus faussé. Verdicts inversés
+  garantis.
+- **Lignée partagée** : `eSim_bem_utils/idf_optimizer.py:193,197` porte les mêmes noms pré-9.4
+  (`InteriorEquipment:Gas`, `Gas:Facility`). Ce fichier est commun aux trois legs → voir la question
+  ouverte Leg-2 ci-dessous, qui **n'est pas tranchée unilatéralement**.
+
+### Correctif retenu (à appliquer campagne terminée — voir « pourquoi pas maintenant »)
+
+1. `REQUIRED_METERS` : les 4 noms gaz → `NaturalGas:Facility`, `Heating:NaturalGas`,
+   `InteriorEquipment:NaturalGas`, `WaterSystems:NaturalGas`.
+2. Ajouter les usages finaux électriques manquants : `ExteriorLights:Electricity`,
+   `HeatRejection:Electricity`, `HeatRecovery:Electricity` — plus `Humidifier:Electricity`,
+   `Refrigeration:Electricity`, `ExteriorEquipment:Electricity`, nuls ici mais requis pour que la
+   fermeture soit **structurelle** et non « nulle par chance sur ce bâtiment ».
+3. **Implémenter** la gate de fermeture §6b-4, par combustible, avec le résidu écrit au manifeste —
+   et la faire **échouer une fois** sur l'ancien jeu de compteurs avant de la déclarer bonne.
+4. Ajouter `Zone Air System Sensible Cooling/Heating Energy` (présents au `.rdd`, vérifié) +
+   `Water Use Equipment Heating Energy` : sans eux la répartition **horaire pondérée par la charge**
+   de la centrale — verrouillée par dr_L3-10, « jamais au prorata de surface, jamais non attribuée »
+   — est tout simplement **incalculable**. Le §8E ne peut pas être écrit conformément sans cet ajout.
+5. Rendre la version du schéma de sortie **partie de l'empreinte de reprise** : aujourd'hui
+   `INJ_HASH = md5(commercial_integration.py)` possède le chemin, donc un changement de compteurs
+   ne change rien et la reprise sauterait les cellules comme « faites ». Même faille que le Défaut 3,
+   sur l'autre bord du pipeline.
+
+### Pourquoi le correctif n'est pas appliqué pendant la campagne
+
+`3rdJ_08D_campaign_local.py:91` lance **chaque cellule dans un `subprocess.Popen` distinct**, qui
+ré-importe le driver. Éditer `REQUIRED_METERS` à chaud donnerait une campagne **hétérogène** — les
+cellules déjà faites avec l'ancien jeu, les suivantes avec le nouveau, sous un seul `INJ_HASH`. La
+re-simulation se fera dans un **`--outroot` neuf**, l'arbre actuel restant intact.
+
+**Bénéfice de laisser finir la campagne en cours** : le run 2 doit reproduire `Electricity:Facility`
+**à l'identique**. Ajouter des objets `Output:*` ne doit rien changer au modèle physique ; une
+divergence signalerait une perturbation. On obtient gratuitement une gate de régression forte, sur
+56 cellules, qu'aucune assertion écrite à la main ne remplacerait.
+
+### Question ouverte — **arbitrage utilisateur, non tranché**
+
+Le Step-9 de **Leg 2** ne garde que `Electricity:Facility` / `office_elec`
+(`3rdJ_09_activityDrivenLoads_2split.py:99-107,162`) : **aucun gaz**. La tour Leg-2 est le même IDF,
+qui brûle 13 885 GJ de gaz. Si l'EUI bureau Leg-2 de **172,7 kWh/m²/an** (déclaré « in band »
+[100–200]) est électricité seule, la comparaison à une bande d'énergie **totale** est faussée. Leg 2
+est **fermé et paper-ready** : à vérifier et trancher par l'utilisateur, pas à rouvrir d'office.
+
+---
+
+## 🔴 Défaut 6 — `channel_hourly.csv` est **non multiplié** : les magnitudes par canal valent 25 % du réel (TROUVÉ 2026-07-31, OUVERT)
+
+### Symptôme, mesuré
+
+| Métrique | Σ(variables de zone) | Compteur d'installation | Rapport |
+|---|---:|---:|---:|
+| Éclairage | 6,036 × 10¹¹ J | `InteriorLights:Electricity` 2,375 × 10¹² J | **0,2541** |
+| Équipement | 1,180 × 10¹² J | `InteriorEquipment:Electricity` 4,681 × 10¹² J | **0,2520** |
+
+### Cause, prouvée et non déduite
+
+Les `Output:Variable` de niveau zone rapportent la zone **telle que modélisée, une seule instance** ;
+les compteurs, eux, intègrent le `Multiplier`. La tour est modélisée par étages représentatifs :
+`Zones.Multiplier` ∈ **{1, 4, 7, 8, 9, 10, 28, 70}** (164 zones). Vérification décisive :
+
+```
+Σ(zone_lights)                    = 6,03631e11 J
+Σ(zone_lights × Zones.Multiplier) = 2,37522e12 J
+InteriorLights:Electricity        = 2,37522e12 J
+rapport = 1,000000
+```
+
+À la sixième décimale. Le multiplicateur est **exactement** le facteur manquant.
+
+### Pourquoi c'est pire qu'un facteur d'échelle global
+
+Le multiplicateur moyen diffère **par canal** (bureaux `F3-F11` ×9 et `F12-F20` ×9 ; résidentiel
+`F22-F29` ×8 ; hôtel `_Mult10` ; retail `F1`/`F2` ×1). Ce n'est donc pas un mode commun qui
+s'annulerait dans les parts : toute **part par canal** calculée depuis `channel_hourly.csv` brut est
+biaisée en faveur des canaux à multiplicateur faible — le retail au premier chef.
+
+### Ce que ça n'invalide pas
+
+- **D-20 tient** : il repose sur des **comptes de valeurs distinctes** (`nuniq`), invariants par
+  mise à l'échelle constante par zone.
+- **Les gates §P tiennent** : P1 compare des scénarios sur la **même** colonne ; le facteur est
+  commun aux deux termes de la différence.
+- Ce qui tombe, c'est l'usage **magnitude** et **part** — précisément ce dont le Step 9 a besoin.
+
+### Correctif
+
+Le §8E multiplie par `Zones.Multiplier` (jointure sur `ZoneName` en MAJUSCULES, la casse canonique
+d'EnergyPlus — même piège que le job 1169671). `channel_hourly.csv` reste tel quel : il est correct
+pour ce à quoi les gates l'utilisent, et le renommer ou le changer casserait les scorecards existants.
+**Écrire la convention dans son en-tête de documentation** : *valeurs par zone, non multipliées*.
+
+---
+
+## 🔴 Défaut 7 — les parts de surface documentées sont fausses ; la gate ±2 pp aurait échoué sur du vide (TROUVÉ 2026-07-31, OUVERT)
+
+### Mesure contre document, tour **Tall**
+
+Surface plancher totale EnergyPlus (ABUPS) = **72 623,1 m²**, reproduite exactement par
+Σ(`FloorArea` × `Multiplier`) sur les zones `IsPartOfTotalArea = 1` (155 zones ; 9 plenums exclus,
+70 612 m², exclusion conforme au comportement d'EnergyPlus lui-même).
+
+| Canal | CFA mesurée (m²) | % de l'occupiable | **Doc** (Tall) | Écart |
+|---|---:|---:|---:|---|
+| Bureau | 25 485,6 | **44,65 %** | 24,4 % | **×1,8** |
+| Hôtel | 14 215,4 | 24,91 % | 26,8 % | −1,9 pp |
+| Résidentiel | 12 786,5 | 22,40 % | 24,4 % | −2,0 pp |
+| **Retail** | 3 159,0 | **5,53 %** | 24,4 % | **×4,4** |
+| Résidentiel commun | 1 428,9 | 2,50 % | — | — |
+| Service/MEP | 15 547,7 | **21,41 % du brut** | « ~52 % du brut » | **−30,6 pp** |
+
+La colonne Tall du document donne **24,4 % pour trois canaux différents**. Trois valeurs identiques
+au dixième près ne sont pas une mesure : c'est un gabarit jamais remplacé. (La colonne SuperTall,
+24,1 / 30,3 / 16,1 / 29,5, porte des valeurs distinctes sommant à 100 % — plausible, **à vérifier
+de la même façon** avant usage, pas à supposer correcte.)
+
+### Pourquoi c'est un défaut de gate et pas seulement de prose
+
+La gate **±2 pp** (`§4.10`, dr_L3-10, revendiquée *project-novel*) confronte les parts d'EUI par canal
+aux « parts occupiables **parsées** ». Si la référence est la table du document, la gate compare le
+modèle à un gabarit : elle échouerait sur retail et bureau **quoi que fasse le modèle**. Et le réflexe
+naturel — élargir la tolérance jusqu'à ce que ça passe — la rendrait vacuité pure. C'est le scénario
+exact que la règle « une gate doit avoir été vue échouer » existe pour attraper.
+
+Son nom disait déjà le correctif : **parsées**. Le §8E dérive les parts de l'IDF injecté + la table
+`Zones` du SQL, jamais d'une constante recopiée. Le tableau ci-dessus **est** ce parse.
+
+### Effet sur l'EUI
+
+L'EUI est une division : la base de surface la fixe entièrement. Site total = **25 937,41 GJ** →
+`357,15 MJ/m²` sur 72 623 m² = **99,2 kWh/m²/an** pour l'ensemble de la tour. Sur les 26 750 m²
+cités au document, la même énergie donnerait 269 kWh/m²/an — un facteur **2,7**, assez pour faire
+basculer n'importe quelle bande dr_L3-02/03 dans un sens ou dans l'autre. **Aucune bande d'EUI ne
+doit être invoquée avant que la base de surface soit tranchée sur l'artefact.**
+
+### À faire
+
+Corriger la table de surfaces dans `3rdJ_00_4split_Occupancy_Pipeline.md` (AIM) et
+`_Overview.md` avec les valeurs parsées, **par tour** (Tall ci-dessus ; SuperTall à parser
+identiquement), et faire produire ces valeurs par le §8E dans `agg_meta.csv` pour qu'elles ne soient
+jamais retapées à la main.
+
+---
+
 ## Le travail restant, ordonné
 
 ### A. Re-simulation post-correctif retail — ✅ **FERMÉE 2026-07-28 : 25P / 0W / 0F / 9 INFO**

@@ -352,6 +352,16 @@ def main() -> None:
     if rows_channel != expected_rows:
         print(f"[FAIL] channel_hourly.csv row count = {rows_channel}, expected {expected_rows}")
         exit_rc = 1
+    # 2026-07-31 (Defaut 5/6). A cell that simulated cleanly but cannot account for its own
+    # energy is not a usable cell: Defaut 5 shipped precisely because "ep_return_code == 0 and
+    # 8760 rows" was the whole definition of success. Closure failures now fail the CELL, so
+    # they surface in campaign_status.csv instead of waiting to be noticed at Step 9.
+    for gate in ("fuel_closure", "channel_closure"):
+        for key, rep in (manifest.get(gate) or {}).items():
+            if isinstance(rep, dict) and not rep.get("closed", False):
+                print(f"[FAIL] {gate}[{key}] did not close "
+                      f"(residual {rep.get('residual_rel', float('nan')) * 100:.4f} %)")
+                exit_rc = 1
 
     print(f"[done] cell={args.cell} tag={tag} exit={exit_rc}")
     sys.exit(exit_rc)

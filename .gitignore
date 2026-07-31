@@ -117,7 +117,8 @@ tmp/
 BEM_Setup/SimResults_Step8/
 2J_docs_occ_nTemp/Step8_docs/_bigtest/
 3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/campaign_local/
-3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/probes_local/
+3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/campaign_local*/
+3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/probes_local*/
 
 # Wildcard log and run artifacts
 **/*.log

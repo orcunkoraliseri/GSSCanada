@@ -85,8 +85,24 @@ AUG = (LEG3 / "Step5_docs" / "outputs_step5"
 D2030 = (LEG3 / "Step6_docs" / "outputs_step6"
          # H6: the "_C" file is the ONLY valid 2030 source (Leg-2 hard-learned lesson) --
          # hard-fail below (assert_d2030_is_c) on any non-_C default.
-         / "2030_synthetic_diaries_4split_calibrated_mindwell_C.csv")
-D2030_EXPECTED_MD5 = "7c105ef331b37107d5b605c95028c3ba"
+         #
+         # PROMOTED 2026-07-30 (decision D-11/D-13, improvements/3rdJ_L3_improvements_step5_6_7.md):
+         # canonical source moves from "..._C.csv" (7c105ef3) to "..._C_v2.csv" (5aa74f44), the
+         # build carrying the Stage-B bidirectional fix + the Sat/Sun pooled weekend targets.
+         # The predecessor 7c105ef3 is NOT deleted and NOT overwritten -- it stays on disk beside
+         # this one as the frozen provenance artifact. To roll back, repoint these two constants.
+         / "2030_synthetic_diaries_4split_calibrated_mindwell_C_v2.csv")
+D2030_EXPECTED_MD5 = "5aa74f44cd09a7afa9fa5418864956ed"
+D2030_PREDECESSOR_MD5 = "7c105ef331b37107d5b605c95028c3ba"   # frozen, superseded 2026-07-30
+
+# H6 name allowlist. Was `"_C" in path.stem` -- a substring test that would have accepted
+# "..._C_scratch", "..._C_tmp", any half-built intermediate with a _C anywhere in the name.
+# That is the same can't-really-fail defect class this audit is clearing elsewhere, so the
+# promotion tightens it to an explicit set rather than widening it.
+D2030_ALLOWED_STEMS = {
+    "2030_synthetic_diaries_4split_calibrated_mindwell_C",
+    "2030_synthetic_diaries_4split_calibrated_mindwell_C_v2",
+}
 
 LOOKUP_OFFICE = BASE / "0_Occupancy" / "processed" / "office_archetype_lookup.csv"
 
@@ -225,9 +241,10 @@ def _md5(path: Path) -> str:
 
 
 def assert_d2030_is_c(path: Path) -> None:
-    """H6 hard gate: the 2030 deliverable MUST be the '_C' file with the exact expected MD5."""
-    assert "_C" in path.stem or path.stem.endswith("_C"), (
-        f"H6 VIOLATION: 2030 deliverable is not the '_C' file: {path.name}"
+    """H6 hard gate: the 2030 deliverable MUST be an allowlisted '_C' file with the exact MD5."""
+    assert path.stem in D2030_ALLOWED_STEMS, (
+        f"H6 VIOLATION: 2030 deliverable is not an allowlisted '_C' file: {path.name} "
+        f"(allowed: {sorted(D2030_ALLOWED_STEMS)})"
     )
     if not path.exists():
         return  # existence handled by caller (tolerant PENDING path)
