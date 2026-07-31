@@ -351,7 +351,18 @@ ALL_CHANNELS = {"office", "retail", "hotel", "residential"}
 # docstring / _build_scenarios():
 DELIBERATE_CHANNEL_EXCEPTIONS = {
     "Default_NECB": frozenset(),                          # pure NECB baseline -- no injection at all
-    "Y2005": frozenset(ALL_CHANNELS - {"hotel"}),          # hotel source data starts 2011
+    # Hotel excluded from ALL THREE historical years below (Y2005/Y2010/Y2015). NOT because
+    # "hotel source data starts 2011" -- that half-truth (2011 is the AB start only) is what
+    # made Y2015 look like an arbitrary exclusion, since 2015 postdates 2011. The real reason:
+    # QC hotel ground truth starts in 2019 (3rdJ_06_hotel_sarima_4split.py:24-29 -- AB
+    # 2011-01..2022-09, QC 2019-01..2022-12). A 2005/2010/2015 hotel curve would necessarily be
+    # AB-ONLY, injecting the hotel channel into one of the two historical-arm cities but not the
+    # other -- a province x channel confound that would contaminate all four S9-LONG-* gates,
+    # not just hotel (see 3rdJ_08A_gen_historical_products_4split.py:12-20, same decision, same
+    # reasoning). Reopen only if an open QC hotel source predating 2019 surfaces (S9D-5,
+    # 3rdJ_L3_improvements_step9.md); if it does, treat all three historical years together, not
+    # Y2015 alone.
+    "Y2005": frozenset(ALL_CHANNELS - {"hotel"}),
     "Y2010": frozenset(ALL_CHANNELS - {"hotel"}),
     "Y2015": frozenset(ALL_CHANNELS - {"hotel"}),
 }

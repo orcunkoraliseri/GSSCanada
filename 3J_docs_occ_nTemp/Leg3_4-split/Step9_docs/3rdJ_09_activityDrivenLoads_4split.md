@@ -306,6 +306,17 @@ sur Leg-2 : la bande bureau 135 [100-200] vient du job 1054800, dont le Step 9 n
 `Electricity:Facility` / `office_elec` — donc possiblement **électricité seule** face à une bande
 d'énergie totale. Voir `S9-BASIS`.
 
-**Reste ouvert, sans bloquer** : l'axe d'époque ne porte **aucun signal hôtel** (Y2005/Y2010/Y2015
-sont des `DELIBERATE_CHANNEL_EXCEPTIONS`, « hotel source data starts 2011 »). Y2015 est postérieur à
-2011 — pourquoi l'exclure ? Question à trancher ; l'inclure renforcerait le volet longitudinal.
+**Fermé (S9D-5, 2026-07-31)** : l'axe d'époque ne porte **aucun signal hôtel** (Y2005/Y2010/Y2015
+sont des `DELIBERATE_CHANNEL_EXCEPTIONS`). La question posée ci-dessus dans une version antérieure
+de ce document — « Y2015 est postérieur à 2011, pourquoi l'exclure ? » — reposait sur un
+commentaire qui ne portait que la moitié courte de la raison (« hotel source data starts 2011 »,
+qui ne vaut que pour l'AB). La vraie raison : la vérité-terrain hôtel du **Québec commence en
+2019**, pas en 2011 (`3rdJ_06_hotel_sarima_4split.py:24-29` — AB 2011-01..2022-09, QC
+2019-01..2022-12). Une courbe hôtel 2015 serait donc **AB seule**, et injecter un canal dans une
+seule des deux villes du bras historique introduirait une **confusion province × canal** qui
+contaminerait les quatre gates `S9-LONG-*`, pas seulement l'hôtel
+(`3rdJ_08A_gen_historical_products_4split.py:12-20`, même décision, même raisonnement). L'exclusion
+de Y2015 n'est donc pas arbitraire : elle est symétrique à celle de Y2005/Y2010, pour la même
+raison. **Condition de réouverture** : l'apparition d'une source QC ouverte antérieure à 2019 (cf.
+la piste OGLA/CKAN qui a déjà résolu l'AB) — auquel cas les trois époques historiques deviendraient
+injectables ensemble, des deux côtés à la fois, pas Y2015 seule.
