@@ -3,7 +3,7 @@
     "gate": "S9-EUI-office",
     "name": "EUI in as-modelled band (office)",
     "status": "FAIL",
-    "detail": "0/56 cells inside [100.0-200.0] kWh/m2/yr on the CFA basis; median 71.1, range 61.8-90.3 (NECB/PNNL as-modelled (Leg-2, job 1054800))"
+    "detail": "0/56 cells inside [100.0-200.0] kWh/m2/yr on the CFA basis; median 71.1, range 61.8-90.3 (NECB2020/90.1-2019 DOE-PNNL as-modelled band (Step8_docs/deepResearch/...As-Modelled Bands.md ; repris de Leg-2))"
   },
   {
     "gate": "S9-EUI-retail",
@@ -27,7 +27,19 @@
     "gate": "S9-BASIS",
     "name": "Stacked-tower vs standalone-prototype EUI basis",
     "status": "INFO",
-    "detail": "channel(s) below their as-modelled floor: office, retail, hotel (office 71.1 vs floor 100; retail 75.4 vs floor 80; hotel 178.3 vs floor 180). The locked bands come from STANDALONE prototypes; these channels are floors inside one tower, where most of the envelope is interior partition to other conditioned space and the plant is shared and centrally sized. A lower EUI is the physically expected direction. NO THRESHOLD HAS BEEN CHANGED -- whether the standalone band remains a valid PASS criterion for a stacked-tower channel is a decision to be taken explicitly, and it interacts with the open question of whether the Leg-2 office precedent (135 [100-200], from job 1054800) was itself computed electricity-only."
+    "detail": "channel(s) below their as-modelled floor: office, retail, hotel (office 71.1 vs floor 100; retail 75.4 vs floor 80; hotel 178.3 vs floor 180). The locked bands come from STANDALONE prototypes; these channels are floors inside one tower, where most of the envelope is interior partition to other conditioned space and the plant is shared and centrally sized. A lower EUI is the physically expected direction. NO THRESHOLD HAS BEEN CHANGED -- whether the standalone band remains a valid PASS criterion for a stacked-tower channel is a decision to be taken explicitly. CORRECTED 2026-07-31 (re-derived from code, not taken on faith): the Leg-2 office precedent (135 [100-200], job 1054800) is computed on ALL FUELS, not restricted to any single meter -- _eui_from_sql() (Leg2_2-split/Step8_docs/3rdJ_08_simulation_2split_agg.py:333-345) calls calculate_eui() (Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:257-350), which sums the SQL 'End Uses (By Subcategory)' table over ALL fuel columns, excluding only m3 units (water) -- gas is in it. The Electricity:Facility / office_elec restriction lives on the DIURNAL path (Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py:99-110) and never feeds the EUI at all (contrast :124-158). The real, larger discrepancy is elsewhere: the Leg-2 'office' EUI is a TOWER EUI, not a channel EUI -- its `unit` column literally reads 'tower' (Leg2_2-split/Step9_docs/outputs_step9/step9_eui_by_channel.csv, row office,all,tower,252,172.7), and calculate_eui() returns the energy and area of the WHOLE model. Leg-2 therefore never validated an office CHANNEL -- Leg-3 produces the project's first per-channel EUI."
+  },
+  {
+    "gate": "S9-EUI-EXPOSURE",
+    "name": "Envelope-exposure mechanism test (T9-3) vs band-floor gap",
+    "status": "INFO",
+    "detail": "median exposure_ratio by channel: hotel (0.325) < office (0.382) < retail (0.467) (n=56 cells). Median gap to band floor: office -28.9%; retail -5.7%; hotel -0.9%. Spearman(exposure_ratio, signed gap-to-floor) pooled over the 3 banded channels, rho = -0.171 (p=0.026, n=168). PREDICTED office < retail < hotel (least-exposed channel = largest negative gap); MEASURED hotel < office < retail -- the prediction is CONTRADICTED, in 56/56 cells (hotel is the LEAST-exposed of the three, not the most, and sits CLOSEST to its floor, not furthest) -- the negative pooled rho is the wrong sign for the 'stacked channel buries the envelope' story. TESTED AND REFUTED: the 3 EUI FAIL gates above are not explained by this mechanism and remain unexplained defects. LIMIT: geometry varies only between the Tall and SuperTall archetypes in this campaign, so exposure_ratio takes only 2 distinct values per channel -- the per-cell rho moves because EUI re-orders across scenarios, not because exposure does. The inference is therefore over 2 geometries, not 56 independent ones."
+  },
+  {
+    "gate": "S9-EUI-TOWER-INFO",
+    "name": "Tower-level EUI, both bases (context, NOT scored PASS/FAIL)",
+    "status": "INFO",
+    "detail": "ABUPS gross basis (site_energy_GJ / total_building_area_m2, all 56 cells): median 100.4 kWh/m2/yr (range 90.8-115.3). Tenant-CFA-summed basis (sum of the 4 tenant channels' own energy / sum of their CFA, 56 cells): median 110.3 kWh/m2/yr (range 99.7-127.3). The Leg-2 office precedent band [100-200] (central 135, from NECB2020/90.1-2019 DOE-PNNL literature) is cited here as CONTEXT ONLY, never as a PASS/FAIL criterion. Note the two are different objects: the band is literature and is sound; 172.7 is the value Leg-2 MEASURED against it, and it is that measured number -- not the band -- that is inflated by a factor of ~1.706x by a calculate_eui() defect (Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:293-299 filters on TableName without ever filtering ReportName, so the same-named 'End Uses By Subcategory' table from the DemandEndUseComponentsSummary report -- which is in WATTS -- gets summed in as if it were kWh); 172.7 / 1.706 = 101.2, within ~1% of the ~100 kWh/m2/yr measured here on the same tower once that defect is removed. Leg2_2-split/ was read only, never modified; correcting the Leg-2 number is a user decision outside this task's scope."
   },
   {
     "gate": "S9-SHARE",
@@ -128,14 +140,20 @@
   {
     "gate": "S9-LONG-hotel",
     "name": "Longitudinal 2005->2022 non-degenerate (hotel)",
-    "status": "PASS",
-    "detail": "energy spread across the four cycles = 0.547-0.990 pp per building-city pair"
+    "status": "INFO",
+    "detail": "energy spread across the four cycles = 0.547-0.990 pp per building-city pair -- NOT a hotel-behaviour trajectory: hotel carries no era-varying occupancy product before Y2022 (S9D-5, DELIBERATE_CHANNEL_EXCEPTIONS). Read this residual as a MEASURE OF INTER-CHANNEL THERMAL COUPLING within one tower -- the Y2015->Y2022 injection on/off step plus whatever the other three channels' real changes push through shared partitions/plant -- not as hotel behaviour. See S9-LONG-UNINJECTED for the falsifiable claim that hotel is genuinely absent pre-2022."
   },
   {
     "gate": "S9-LONG-residential",
     "name": "Longitudinal 2005->2022 non-degenerate (residential)",
     "status": "PASS",
     "detail": "energy spread across the four cycles = 0.101-0.489 pp per building-city pair"
+  },
+  {
+    "gate": "S9-LONG-UNINJECTED",
+    "name": "Hotel channel absent from Y2005/Y2010/Y2015 (S9D-5)",
+    "status": "PASS",
+    "detail": "_expected_channels() excludes hotel from all three historical eras (DELIBERATE_CHANNEL_EXCEPTIONS in 3rdJ_08D_campaign_cells.py) and all 12 built historical-era campaign cells confirm it: 0 carry a 'hotel' key in their channels dict. This is the assertion S9-LONG-hotel (now INFO) can no longer make on its own."
   },
   {
     "gate": "S9-PLATFORM",

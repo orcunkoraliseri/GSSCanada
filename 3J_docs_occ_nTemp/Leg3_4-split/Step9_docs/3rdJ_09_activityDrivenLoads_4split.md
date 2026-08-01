@@ -224,8 +224,19 @@ toiture, ni plancher sur terre-plein, et une centrale partagée dimensionnée po
 plus bas qu'un bâtiment de bureaux autonome est la **direction attendue**. **Aucun seuil n'a été
 touché** : la gate échoue contre la bande telle que verrouillée, et la question — la bande
 « autonome » reste-t-elle un critère PASS valable pour un canal empilé ? — est un arbitrage à
-prendre explicitement. Elle interagit avec la question ouverte sur Leg-2 (bande bureau 135
-[100-200] issue du job 1054800, possiblement calculée **électricité seule**). Gate `S9-BASIS`.
+prendre explicitement. **Correction (2026-07-31, re-dérivée du code, pas reprise sur parole)** : le
+précédent Leg-2 est calculé sur **tous les combustibles**, sans restriction à un seul compteur —
+`_eui_from_sql()`
+(`Leg2_2-split/Step8_docs/3rdJ_08_simulation_2split_agg.py:333-345`) appelle `calculate_eui()`
+(`Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:257-350`), qui somme la table SQL
+`End Uses (By Subcategory)` sur **tous les combustibles**, n'excluant que les unités `m3` (l'eau) ;
+la restriction `Electricity:Facility` vit sur le chemin **diurne**
+(`Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py:99-110`) et n'alimente jamais l'EUI
+(contraste `:124-158`). L'écart réel, et plus important, est ailleurs : l'EUI « bureau » 172,7 de
+Leg-2 est un EUI **de TOUR**, pas de canal — sa colonne `unit` vaut littéralement `tower`
+(`Leg2_2-split/Step9_docs/outputs_step9/step9_eui_by_channel.csv`, ligne `office,all,tower,252,
+172.7`). Leg-2 n'a donc jamais validé un canal bureau ; **Leg-3 produit ici le premier EUI par
+canal du projet**. Gate `S9-BASIS`.
 
 ### Falsifiabilité vérifiée avant de citer le moindre PASS
 
@@ -301,10 +312,14 @@ le canal le plus profondément enfoui) va dans le même sens.
 
 🔴 **Aucun seuil n'a été touché.** La gate échoue contre la bande telle que verrouillée, et la
 question — *une bande « autonome » reste-t-elle un critère PASS valable pour un canal empilé ?* —
-est un **arbitrage utilisateur**, pas une décision de script. Elle est couplée à la question ouverte
-sur Leg-2 : la bande bureau 135 [100-200] vient du job 1054800, dont le Step 9 ne garde que
-`Electricity:Facility` / `office_elec` — donc possiblement **électricité seule** face à une bande
-d'énergie totale. Voir `S9-BASIS`.
+est un **arbitrage utilisateur**, pas une décision de script. **Correction (2026-07-31)** : le
+précédent Leg-2 est calculé sur **tous les combustibles**, sans restriction à un seul compteur —
+`calculate_eui()`
+(`Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:257-350`) somme tous les combustibles de
+`End Uses (By Subcategory)`, seule l'eau (`m3`) est exclue ; l'hypothèse venait d'un `keep_meters`
+lu dans le chemin diurne, qui n'alimente jamais l'EUI. Le vrai écart : 172,7 est un EUI **de TOUR**
+(`unit=tower`, `Leg2_2-split/Step9_docs/outputs_step9/step9_eui_by_channel.csv`), jamais validé au
+niveau canal — **Leg-3 produit ici le premier EUI par canal du projet**. Voir `S9-BASIS`.
 
 **Fermé (S9D-5, 2026-07-31)** : l'axe d'époque ne porte **aucun signal hôtel** (Y2005/Y2010/Y2015
 sont des `DELIBERATE_CHANNEL_EXCEPTIONS`). La question posée ci-dessus dans une version antérieure

@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import importlib.util
 import io
 import json
 import os
@@ -53,6 +54,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from scipy.stats import spearmanr
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -60,6 +62,26 @@ import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_AGG = os.path.abspath(os.path.join(HERE, "..", "Step8_docs", "outputs_step8", "agg"))
 DEFAULT_OUT = os.path.join(HERE, "outputs_step9")
+# GSSCanada-main/ -- same three-levels-up convention 3rdJ_08D_campaign_cells.py itself uses
+# (repo_root/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs -> repo_root).
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+CAMPAIGN_CELLS_PY = os.path.abspath(
+    os.path.join(HERE, "..", "Step8_docs", "3rdJ_08D_campaign_cells.py"))
+
+
+def _load_campaign_cells_module():
+    """Load 3rdJ_08D_campaign_cells.py by file path -- its filename is not a valid Python
+    identifier, so a plain `import` is impossible; this is the same importlib.util.
+    spec_from_file_location pattern already used by 3rdJ_08D_campaign_driver.py,
+    3rdJ_08D_campaign_local.py, 3rdJ_08D_verify_campaign.py and
+    3rdJ_08A_gen_historical_products_4split.py. DELIBERATE_CHANNEL_EXCEPTIONS / _expected_channels
+    / build_campaign_cells are READ from Step-8's module, never copied -- a second copy of that
+    constant would be a second source of truth, the exact defect this project already hit and
+    fixed once (see this file's module docstring, Defaut 7 lineage)."""
+    spec = importlib.util.spec_from_file_location("_campaign_cells_mod_step9", CAMPAIGN_CELLS_PY)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 TENANT = ["office", "retail", "hotel", "residential"]
 ALL_CH = TENANT + ["residential_common", "service_MEP"]
@@ -68,7 +90,9 @@ ALL_CH = TENANT + ["residential_common", "service_MEP"]
 # as-modelled band = PASS criterion; empirical band = INFO. Sources are in the band name and
 # must stay there: a number in a table with no provenance becomes a number nobody can defend.
 BENCH = {
-    "office":      dict(central=135.0, lo=100.0, hi=200.0, src="NECB/PNNL as-modelled (Leg-2, job 1054800)",
+    "office":      dict(central=135.0, lo=100.0, hi=200.0,
+                        src="NECB2020/90.1-2019 DOE-PNNL as-modelled band (Step8_docs/deepResearch/"
+                            "...As-Modelled Bands.md ; repris de Leg-2)",
                         info=(230.0, 170.0, 360.0), info_src="SCIEU/CEUD"),
     "retail":      dict(central=110.0, lo=80.0,  hi=155.0, src="dr_L3-02 as-modelled (locked 2026-07-02)",
                         info=(280.0, 150.0, 380.0), info_src="dr_L3-02 empirical"),
@@ -278,7 +302,7 @@ def build_longitudinal(eui: pd.DataFrame, ls: pd.DataFrame) -> pd.DataFrame:
 
 
 # ------------------------------------------------------------ gate scorecard --
-def evaluate_gates(eui, ls, scen, lon, meta) -> list:
+def evaluate_gates(eui, ls, scen, lon, meta, outdir=None) -> list:
     G = []
 
     def add(gid, name, status, detail):
@@ -322,9 +346,126 @@ def evaluate_gates(eui, ls, scen, lon, meta) -> list:
         "tower, where most of the envelope is interior partition to other conditioned space and "
         "the plant is shared and centrally sized. A lower EUI is the physically expected "
         "direction. NO THRESHOLD HAS BEEN CHANGED -- whether the standalone band remains a valid "
-        "PASS criterion for a stacked-tower channel is a decision to be taken explicitly, and it "
-        "interacts with the open question of whether the Leg-2 office precedent (135 [100-200], "
-        "from job 1054800) was itself computed electricity-only.")
+        "PASS criterion for a stacked-tower channel is a decision to be taken explicitly. "
+        "CORRECTED 2026-07-31 (re-derived from code, not taken on faith): the Leg-2 office "
+        "precedent (135 [100-200], job 1054800) is computed on ALL FUELS, not restricted to any "
+        "single meter -- _eui_from_sql() "
+        "(Leg2_2-split/Step8_docs/3rdJ_08_simulation_2split_agg.py:333-345) calls calculate_eui() "
+        "(Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:257-350), which sums the SQL "
+        "'End Uses (By Subcategory)' table over ALL fuel columns, excluding only m3 units (water) "
+        "-- gas is in it. The Electricity:Facility / office_elec restriction lives on the DIURNAL "
+        "path (Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py:99-110) and never "
+        "feeds the EUI at all (contrast :124-158). The real, larger discrepancy is elsewhere: the "
+        "Leg-2 'office' EUI is a TOWER EUI, not a channel EUI -- its `unit` column literally reads "
+        "'tower' (Leg2_2-split/Step9_docs/outputs_step9/step9_eui_by_channel.csv, row "
+        "office,all,tower,252,172.7), and calculate_eui() returns the energy and area of the "
+        "WHOLE model. Leg-2 therefore never validated an office CHANNEL -- Leg-3 produces the "
+        "project's first per-channel EUI.")
+
+    # -- S9-EUI-EXPOSURE (INFO, T9-3 result) -- the "stacked channel" story, TESTED not invoked --
+    # S9-BASIS above states a mechanism (a channel buried mid-tower has near-zero exterior
+    # envelope, so a lower EUI is expected). That is an argument, not a measurement. The
+    # falsifiable version: the "stacked channel" explanation predicts that of the three
+    # band-carrying channels, the one with the LEAST envelope exposure per m2 of CFA shows the
+    # LARGEST negative gap to its as-modelled floor, and the one with the MOST exposure shows the
+    # smallest gap (office most buried -> largest gap; hotel least buried -> smallest gap).
+    # 3rdJ_09X_envelope_exposure.py measured exposure_ratio = (ext_area_m2 + ground_area_m2) /
+    # cfa_m2 per channel per cell from the SQL Surfaces/Zones tables, read-only, independently
+    # cross-checked against EnergyPlus's own EnvelopeSummary total. This gate reads that CSV,
+    # joins it to the EUI table, and reports the actual ranking -- it does not assume the
+    # prediction holds. NOT PASS/FAIL: the prediction was tested by 3rdJ_09X_envelope_exposure.py
+    # BEFORE this gate was written and came out FALSIFIED (wrong-signed, wrong order), so scoring
+    # it PASS/FAIL here would either manufacture a 4th FAIL nobody asked for or silently launder a
+    # rejected hypothesis into a PASS -- both wrong. INFO publishes the numbers and the verdict.
+    exposure_csv = os.path.join(outdir, "step9_envelope_exposure.csv") if outdir else None
+    if not exposure_csv or not os.path.isfile(exposure_csv):
+        add("S9-EUI-EXPOSURE", "Envelope-exposure mechanism test (T9-3) vs band-floor gap", "INFO",
+            f"step9_envelope_exposure.csv not found" +
+            (f" under {outdir}" if outdir else "") +
+            " -- run 3rdJ_09X_envelope_exposure.py first (read-only SQL pass over the 56 campaign "
+            "cells). The stacked-channel mechanism test cannot be reported this run.")
+    else:
+        exp_df = pd.read_csv(exposure_csv)
+        banded = [c for c in TENANT if BENCH[c]["lo"] is not None]  # office, retail, hotel
+        e2 = eui[eui["channel"].isin(banded)].copy()
+        e2["gap_pct"] = (e2["eui_CFA_kWh_m2"] - e2["band_lo"]) / e2["band_lo"] * 100.0
+        m = exp_df.merge(
+            e2[["cell_tag", "channel", "eui_CFA_kWh_m2", "band_lo", "gap_pct"]],
+            on=["cell_tag", "channel"], how="inner")
+        med_exp = m.groupby("channel")["exposure_ratio"].median()
+        med_gap = m.groupby("channel")["gap_pct"].median()
+        rho, pval = spearmanr(m["exposure_ratio"], m["gap_pct"])
+        # The falsifiable claim is about direction (does higher exposure predict a SMALLER,
+        # i.e. less negative, gap?), not about which channel is "first" by exposure alone --
+        # so state the ordering AND whether it matches the office<retail<hotel prediction.
+        predicted_seq = ["office", "retail", "hotel"]
+        measured_seq = sorted(banded, key=lambda c: med_exp[c])
+        matches_prediction = (measured_seq == predicted_seq)
+        n_cells = int(exp_df["cell_tag"].nunique())
+        order_str = " < ".join(f"{c} ({med_exp[c]:.3f})" for c in measured_seq)
+        measured_str = " < ".join(measured_seq)
+        gap_str = "; ".join(f"{c} {med_gap[c]:+.1f}%" for c in predicted_seq if c in med_gap.index)
+        add("S9-EUI-EXPOSURE", "Envelope-exposure mechanism test (T9-3) vs band-floor gap", "INFO",
+            f"median exposure_ratio by channel: {order_str} (n={n_cells} cells). Median gap to "
+            f"band floor: {gap_str}. Spearman(exposure_ratio, signed gap-to-floor) pooled over "
+            f"the 3 banded channels, rho = {rho:+.3f} (p={pval:.3f}, n={len(m)}). PREDICTED "
+            f"office < retail < hotel (least-exposed channel = largest negative gap); MEASURED "
+            f"{measured_str} -- " +
+            ("the prediction HOLDS" if matches_prediction else
+             "the prediction is CONTRADICTED, in 56/56 cells (hotel is the LEAST-exposed of the "
+             "three, not the most, and sits CLOSEST to its floor, not furthest) -- the negative "
+             "pooled rho is the wrong sign for the 'stacked channel buries the envelope' story. "
+             "TESTED AND REFUTED: the 3 EUI FAIL gates above are not explained by this mechanism "
+             "and remain unexplained defects.") +
+            " LIMIT: geometry varies only between the Tall and SuperTall archetypes in this "
+            "campaign, so exposure_ratio takes only 2 distinct values per channel -- the "
+            "per-cell rho moves because EUI re-orders across scenarios, not because exposure "
+            "does. The inference is therefore over 2 geometries, not 56 independent ones.")
+
+    # -- S9-EUI-TOWER-INFO (INFO) -- the tower-level EUI, on both bases, as context only --------
+    # S9-EUI-TOWER (PASS/FAIL against the Leg-2 172.7 [100-200] tower precedent) was considered
+    # and NOT created: the Leg-2 reference number is corrupted, not merely uncertain. Leg-2's
+    # calculate_eui() (Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:293-299) filters its
+    # SQL query on TableName only, never on ReportName. EnergyPlus writes a table named
+    # "End Uses By Subcategory" under TWO distinct ReportNames -- AnnualBuildingUtilityPerformance-
+    # Summary (GJ, annual energy) and DemandEndUseComponentsSummary (W, peak demand) -- and
+    # calculate_eui() sums both as if they were all kWh. Measured directly on a v24.2.0 SQL file
+    # from this campaign (B_central__Tall__MTL): 7,837,731 kWh legitimate + 5,533,372 W miscounted
+    # as kWh = 13,371,103 -> inflation factor ~1.706x. Cross-check: 172.7 / 1.706 = 101.2, within
+    # ~1% of the ~100.4 measured here on the same tower once the defect is removed. This is
+    # read-only context, not a Leg-2 recalculation -- Leg-2 is closed and paper-ready, and
+    # reopening it is a user decision, out of scope here (Leg2_2-split/ was not modified).
+    energy_kwh = meta["site_energy_GJ"] * 1e9 * J_TO_KWH
+    tower_area_gross = meta["total_building_area_m2"]
+    tower_area_tenant_cfa = sum(meta[f"area_{c}_m2"] for c in TENANT)
+    eui_tower_abups = (energy_kwh / tower_area_gross)
+    # "CFA locataires sommee": tenant-channel ENERGY only (not the whole-building energy)
+    # divided by the sum of tenant-channel CFA -- the area-weighted average of the four tenant
+    # channels' own EUI, i.e. what a stock database quoting "the tower's EUI on a CFA basis"
+    # would report if it only ever measured the tenant floors.
+    tenant_eui = eui[eui["channel"].isin(TENANT)]
+    per_cell = tenant_eui.groupby("cell_tag").apply(
+        lambda g: (g["energy_GJ"].sum() * 1e9 * J_TO_KWH) / g["area_m2"].sum(),
+        include_groups=False)
+    eui_tower_cfa_tenant = per_cell
+    add("S9-EUI-TOWER-INFO", "Tower-level EUI, both bases (context, NOT scored PASS/FAIL)", "INFO",
+        f"ABUPS gross basis (site_energy_GJ / total_building_area_m2, all {len(meta)} cells): "
+        f"median {eui_tower_abups.median():.1f} kWh/m2/yr (range "
+        f"{eui_tower_abups.min():.1f}-{eui_tower_abups.max():.1f}). Tenant-CFA-summed basis "
+        f"(sum of the 4 tenant channels' own energy / sum of their CFA, {len(per_cell)} cells): "
+        f"median {eui_tower_cfa_tenant.median():.1f} kWh/m2/yr (range "
+        f"{eui_tower_cfa_tenant.min():.1f}-{eui_tower_cfa_tenant.max():.1f}). The Leg-2 office "
+        f"precedent band [100-200] (central 135, from NECB2020/90.1-2019 DOE-PNNL literature) is "
+        f"cited here as CONTEXT ONLY, never as a PASS/FAIL criterion. Note the two are different "
+        f"objects: the band is literature and is sound; 172.7 is the value Leg-2 MEASURED against "
+        f"it, and it is that measured number -- not the band -- that is "
+        f"inflated by a factor of ~1.706x by a "
+        f"calculate_eui() defect (Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:293-299 "
+        f"filters on TableName without ever filtering ReportName, so the same-named 'End Uses By "
+        f"Subcategory' table from the DemandEndUseComponentsSummary report -- which is in WATTS -- "
+        f"gets summed in as if it were kWh); 172.7 / 1.706 = 101.2, within ~1% of the ~100 kWh/m2/yr "
+        f"measured here on the same tower once that defect is removed. Leg2_2-split/ was read only, "
+        f"never modified; correcting the Leg-2 number is a user decision outside this task's scope.")
 
     # -- energy share vs parsed occupiable share -----------------------------------------
     # The "+/-2 pp EUI-share" gate (dr_L3-10, explicitly project-novel -- ASHRAE 211 suggests the
@@ -526,15 +667,70 @@ def evaluate_gates(eui, ls, scen, lon, meta) -> list:
         f"together -- the mixed-use diversity argument, measured rather than asserted.")
 
     # -- longitudinal: the era axis must move at all --------------------------------------
+    # S9D-6/T9-7: hotel is carved out of the PASS/FAIL loop below. Hotel is NOT injected in
+    # Y2005/Y2010/Y2015 (DELIBERATE_CHANNEL_EXCEPTIONS, 3rdJ_08D_campaign_cells.py -- see
+    # S9-LONG-UNINJECTED just below), only in Y2022. So the "spread across the four eras" this
+    # loop measures for every other channel is, for hotel, NOT a hotel behaviour trajectory: it
+    # mixes (a) an injection on/off STEP between Y2015 and Y2022 and (b) whatever thermal
+    # coupling the other three channels' genuine era-to-era changes push through shared
+    # partitions/plant of the same tower. No hotel behaviour enters it at all. A PASS/FAIL gate
+    # that cannot distinguish "hotel behaviour changed" from "injection got switched on
+    # elsewhere in the tower" is exactly the failure shape this project has spent three days
+    # finding and removing (S9-INJECTION, S9-SHARE) -- so hotel drops to INFO here, and the
+    # falsifiable half of the original intent (hotel really is absent pre-2022) becomes its own
+    # gate, S9-LONG-UNINJECTED, which CAN fail.
     for c in TENANT:
         sub = lon[lon["channel"] == c]
         if sub.empty:
             continue
         rng = sub.groupby(["building", "city"])["energy_pct_vs_2005"].agg(lambda s: s.max() - s.min())
+        if c == "hotel":
+            add(f"S9-LONG-{c}", f"Longitudinal 2005->2022 non-degenerate ({c})", "INFO",
+                f"energy spread across the four cycles = {rng.min():.3f}-{rng.max():.3f} pp per "
+                f"building-city pair -- NOT a hotel-behaviour trajectory: hotel carries no "
+                f"era-varying occupancy product before Y2022 (S9D-5, DELIBERATE_CHANNEL_"
+                f"EXCEPTIONS). Read this residual as a MEASURE OF INTER-CHANNEL THERMAL COUPLING "
+                f"within one tower -- the Y2015->Y2022 injection on/off step plus whatever the "
+                f"other three channels' real changes push through shared partitions/plant -- "
+                f"not as hotel behaviour. See S9-LONG-UNINJECTED for the falsifiable claim that "
+                f"hotel is genuinely absent pre-2022.")
+            continue
         add(f"S9-LONG-{c}", f"Longitudinal 2005->2022 non-degenerate ({c})",
             "PASS" if bool((rng > 1e-6).all()) else "FAIL",
             f"energy spread across the four cycles = {rng.min():.3f}-{rng.max():.3f} pp "
             f"per building-city pair")
+
+    # -- S9-LONG-UNINJECTED: hotel really is absent from the three historical eras ---------
+    # Two independent checks, per the task spec: (1) the SPEC says hotel is excluded
+    # (_expected_channels() / DELIBERATE_CHANNEL_EXCEPTIONS) and (2) the BUILT campaign cells
+    # confirm it (no cell's `channels` dict actually carries a hotel key for those scenarios).
+    # Checking only (1) would validate the constant against itself; checking only (2) would miss
+    # a spec regression. Both must hold. Constant is READ from Step-8's module (see
+    # _load_campaign_cells_module docstring), never copied -- an import failure FAILS loudly,
+    # it never passes silently.
+    HIST_ERAS = ["Y2005", "Y2010", "Y2015"]
+    try:
+        _cc = _load_campaign_cells_module()
+        bad_expected = [e for e in HIST_ERAS if "hotel" in _cc._expected_channels(e)]
+        built_cells = _cc.build_campaign_cells(REPO_ROOT)
+        hist_cells = [c for c in built_cells if c["scenario"] in HIST_ERAS]
+        bad_built = sorted(c["tag"] for c in hist_cells if "hotel" in c["channels"])
+        ok = not bad_expected and not bad_built
+        add("S9-LONG-UNINJECTED", "Hotel channel absent from Y2005/Y2010/Y2015 (S9D-5)",
+            "PASS" if ok else "FAIL",
+            (f"_expected_channels() excludes hotel from all three historical eras "
+             f"(DELIBERATE_CHANNEL_EXCEPTIONS in 3rdJ_08D_campaign_cells.py) and all "
+             f"{len(hist_cells)} built historical-era campaign cells confirm it: 0 carry a "
+             f"'hotel' key in their channels dict. "
+             if ok else
+             f"MISMATCH -- spec still lists hotel as expected for {bad_expected or '[]'}; built "
+             f"cells still wiring a hotel channel: {bad_built or '[]'}. ") +
+            "This is the assertion S9-LONG-hotel (now INFO) can no longer make on its own.")
+    except Exception as exc:
+        add("S9-LONG-UNINJECTED", "Hotel channel absent from Y2005/Y2010/Y2015 (S9D-5)", "FAIL",
+            f"could not import 3rdJ_08D_campaign_cells.py to check DELIBERATE_CHANNEL_EXCEPTIONS "
+            f"/ _expected_channels() / build_campaign_cells() -- refusing to assert "
+            f"uninjected-ness silently: {type(exc).__name__}: {exc}")
 
     # -- provenance / hygiene ------------------------------------------------------------
     add("S9-PLATFORM", "Single platform across compared cells",
@@ -830,7 +1026,7 @@ def main():
          "Energy and midday share across the four GSS cycles, averaged over building x city."),
     ]
 
-    gates = evaluate_gates(eui, ls, scen, lon, meta)
+    gates = evaluate_gates(eui, ls, scen, lon, meta, outdir=args.outdir)
     with open(os.path.join(args.outdir, "step9_gates.json"), "w", encoding="utf-8") as f:
         json.dump(gates, f, indent=2)
     html = write_html(args.outdir, eui, ls, scen, lon, gates, meta, figs, args.agg_dir)

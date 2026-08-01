@@ -267,6 +267,473 @@ def _build_compact_fields_monthly(name: str, monthly_wd48: dict, monthly_we48: d
 
 
 # ---------------------------------------------------------------------------
+# Standby-floor preservation for LIGHTS / ELECTRICEQUIPMENT  (T9-9, 2026-07-31)
+# ---------------------------------------------------------------------------
+# DEFECT (S9D-8, improvements/3rdJ_L3_improvements_step9.md): the dispatch loop below used to
+# write the SAME occupancy Schedule:Compact to PEOPLE *and* LIGHTS *and* ELECTRICEQUIPMENT.
+# People genuinely should follow occupancy; plug and lighting loads must not. Measured on
+# campaign_local_v2/campaign_cf69d508, zone OpenOffice, weekday: the injection overwrote
+# `NECB-A-Electric-Equipment` (mean 0.513, night floor 0.20) and `OfficeLarge
+# BLDG_LIGHT_SCH_2013` (floor 0.0453) with MXU_Office_People_* (mean 0.187, floor 0.0031).
+# Office equipment energy fell 59 % and lighting 45 % while occupancy fell only 48 %; office
+# EUI fell 20 % and retail 23.5 %. The hotel channel was unharmed ONLY because hotel guest-room
+# occupancy never drops below 0.20 by itself -- the injector applied no floor anywhere.
+#
+# FIX: keep the People wiring byte-identical, and give LIGHTS/ELECTRICEQUIPMENT a DERIVED
+# schedule that re-imposes the standby floor of the prototype schedule it replaces:
+#
+#     f_load(t) = floor + (1 - floor) * occ(t)
+#
+# `floor` is READ FROM THE SCHEDULE BEING REPLACED (never hard-coded), so each load object
+# keeps its own prototype's off-hours baseline: office equipment 0.200, office lights 0.0453,
+# retail lights 0.05. occ(t) is the un-normalised GSS occupancy fraction, so the channel levers
+# still move the result and G8o/G8r/G8h keep their signal.
+#
+# NOT chosen, and deliberately left to the user (open modelling question recorded in the
+# improvements doc): whether LIGHTS should also keep its prototype PEAK. Open-plan lighting is
+# largely zone-switched, so real offices at 45 % occupancy do not run 45 % of their lights; the
+# prototype peaks at 0.815 regardless of occupancy. Re-imposing the floor alone leaves lighting
+# still strongly occupancy-coupled. Encoding a lighting-diversity model is a research decision,
+# not a bug fix, so it is NOT baked in here.
+#
+# `preserve_load_standby_floor=False` reproduces the pre-fix behaviour EXACTLY, so the closed
+# campaign_cf69d508 artefacts stay reproducible.
+
+_SCHED_CLASSES = ("SCHEDULE:COMPACT", "SCHEDULE:CONSTANT", "SCHEDULE:YEAR",
+                  "SCHEDULE:WEEK:DAILY", "SCHEDULE:WEEK:COMPACT", "SCHEDULE:DAY:HOURLY",
+                  "SCHEDULE:DAY:INTERVAL", "SCHEDULE:DAY:LIST", "SCHEDULE:FILE")
+
+# Schedule:Week:Daily field order after Name: Sunday, Monday, ..., Saturday, Holiday,
+# SummerDesignDay, WinterDesignDay, CustomDay1, CustomDay2. Indices into obj[] (obj[0]=class,
+# obj[1]=Name) -> the two design-day slots are obj[10] and obj[11].
+_WEEKDAILY_DESIGNDAY_IDX = (10, 11)
+
+
+def _find_schedule(idf, name: str):
+    """Return the schedule object called `name` (any Schedule:* class), or None."""
+    if not name:
+        return None
+    tgt = str(name).strip().lower()
+    for cls in _SCHED_CLASSES:
+        for o in idf.idfobjects.get(cls, []):
+            if len(o.obj) > 1 and str(o.obj[1]).strip().lower() == tgt:
+                return o
+    return None
+
+
+def _floats(seq):
+    out = []
+    for v in seq:
+        try:
+            out.append(float(v))
+        except (TypeError, ValueError):
+            pass
+    return out
+
+
+def _day_schedule_values(obj):
+    """All values of a Schedule:Day:* object. Returns None if unparseable/empty."""
+    cls = obj.obj[0].strip().lower()
+    if cls == "schedule:day:hourly":
+        vals = _floats(obj.obj[3:27])                       # 24 hourly values
+    elif cls == "schedule:day:interval":
+        vals = _floats(obj.obj[5::2])                       # Time_n / Value_n pairs from idx 4
+    elif cls == "schedule:day:list":
+        vals = _floats(obj.obj[5:])                         # values after Minutes_per_Item
+    else:
+        return None
+    return vals or None
+
+
+def _day_schedule_agg(obj, agg):
+    """`agg` (min or max) over a Schedule:Day:* object's values. None if unparseable."""
+    vals = _day_schedule_values(obj)
+    return agg(vals) if vals else None
+
+
+def _schedule_extremum(idf, name: str, agg, _depth: int = 0):
+    """`agg` (min -> standby floor, max -> peak) over `name`'s values, EXCLUDING design days.
+
+    Design days must be excluded or the floor fix silently no-ops: `OfficeLarge
+    BLDG_LIGHT_SCH_2013 Winter Design Day` is a flat 0, so a naive global minimum returns 0.0 and
+    floor + (1-floor)*occ collapses back to occ. Verified against the real prototype IDF. The
+    same exclusion matters for the peak (T9-10): a design day pinned at 1.0 would report a peak
+    the schedule never reaches in an ordinary week.
+
+    Returns (value: float, provenance: str) or (None, reason: str).
+    """
+    if _depth > 6:
+        return None, "schedule reference nesting too deep"
+    if str(name).strip().upper().startswith("MXU_"):
+        # already injected -- the prototype floor is no longer recoverable from this IDF
+        return None, "schedule already injected (MXU_*), prototype floor unrecoverable"
+    obj = _find_schedule(idf, name)
+    if obj is None:
+        return None, f"schedule '{name}' not found in IDF"
+    cls = obj.obj[0].strip().lower()
+
+    if cls == "schedule:constant":
+        vals = _floats(obj.obj[3:4])
+        return (agg(vals), f"{cls}") if vals else (None, "Schedule:Constant has no value")
+
+    if cls == "schedule:file":
+        return None, "Schedule:File -- values live outside the IDF, not resolvable"
+
+    if cls == "schedule:compact":
+        # walk "For: <daytypes>" blocks, skip any block naming a design day
+        vals, skip = [], False
+        for f in obj.obj[3:]:
+            s = str(f).strip()
+            low = s.lower()
+            if low.startswith("for:"):
+                skip = "designday" in low.replace(" ", "")
+                continue
+            if low.startswith(("through:", "until:", "interpolate")):
+                continue
+            if skip:
+                continue
+            try:
+                vals.append(float(s))
+            except ValueError:
+                pass
+        return (agg(vals), f"{cls} (design days excluded)") if vals else \
+               (None, "Schedule:Compact yielded no non-design-day values")
+
+    if cls in ("schedule:day:hourly", "schedule:day:interval", "schedule:day:list"):
+        m = _day_schedule_agg(obj, agg)
+        return (m, cls) if m is not None else (None, f"{cls} unparseable")
+
+    if cls == "schedule:week:daily":
+        vals = []
+        for i, dayname in enumerate(obj.obj[2:14], start=2):
+            if i in _WEEKDAILY_DESIGNDAY_IDX:
+                continue
+            d = _find_schedule(idf, dayname)
+            if d is not None:
+                m = _day_schedule_agg(d, agg)
+                if m is not None:
+                    vals.append(m)
+        return (agg(vals), "schedule:week:daily (design days excluded)") if vals else \
+               (None, "Schedule:Week:Daily resolved no day schedules")
+
+    if cls == "schedule:week:compact":
+        vals = []
+        pairs = obj.obj[2:]
+        for i in range(0, len(pairs) - 1, 2):
+            daytypes, dayname = str(pairs[i]).lower(), pairs[i + 1]
+            if "designday" in daytypes.replace(" ", ""):
+                continue
+            d = _find_schedule(idf, dayname)
+            if d is not None:
+                m = _day_schedule_agg(d, agg)
+                if m is not None:
+                    vals.append(m)
+        return (agg(vals), "schedule:week:compact (design days excluded)") if vals else \
+               (None, "Schedule:Week:Compact resolved no day schedules")
+
+    if cls == "schedule:year":
+        # Name, TypeLimits, then repeating (Week_Name, StartMonth, StartDay, EndMonth, EndDay)
+        vals, prov = [], None
+        for i in range(3, len(obj.obj), 5):
+            f, p = _schedule_extremum(idf, obj.obj[i], agg, _depth + 1)
+            if f is not None:
+                vals.append(f)
+                prov = p
+        return (agg(vals), f"schedule:year -> {prov}") if vals else \
+               (None, "Schedule:Year resolved no week schedules")
+
+    return None, f"unsupported schedule class '{cls}'"
+
+
+def _schedule_standby_floor(idf, name: str, _depth: int = 0):
+    """Off-hours floor of `name`, design days excluded. (floor, provenance) | (None, reason)."""
+    return _schedule_extremum(idf, name, min, _depth)
+
+
+def _schedule_peak(idf, name: str, _depth: int = 0):
+    """Peak of `name`, design days excluded. (peak, provenance) | (None, reason)."""
+    return _schedule_extremum(idf, name, max, _depth)
+
+
+def apply_standby_floor(occ_vals, floor: float):
+    """f_load(t) = floor + (1 - floor) * occ(t), elementwise, clipped to [0, 1].
+
+    occ_vals may be a flat list (office 24h / retail 48-slot) or a {month: [...]} dict (hotel).
+    """
+    if isinstance(occ_vals, dict):
+        return {k: apply_standby_floor(v, floor) for k, v in occ_vals.items()}
+    return [min(1.0, max(0.0, floor + (1.0 - floor) * float(v))) for v in occ_vals]
+
+
+def _floor_key(floor: float) -> str:
+    """Stable, filename-safe token for a floor value -> permille, e.g. 0.0453 -> '045'."""
+    return f"{int(round(floor * 1000)):03d}"
+
+
+# ---------------------------------------------------------------------------
+# Lighting diversity  (T9-10, 2026-07-31) -- LIGHTS only, opt-in, off by default
+# ---------------------------------------------------------------------------
+# T9-9 (above) re-imposed the standby floor, which fixed a defect. It did NOT fix a modelling
+# error that the defect was hiding: after T9-9 lighting is still `floor + (1-floor)*occ`, i.e.
+# strictly proportional to head-count. Real lighting is not. Three channels, three different
+# physics -- treating them uniformly is what produced S9D-8 in the first place:
+#
+#   office  ZONE-COINCIDENCE. Open-plan lighting is switched per ZONE, not per desk. If a
+#           switched zone holds n workstations each occupied with probability occ(t), the
+#           fraction of zones with >=1 occupant is 1 - (1 - occ)^n. This is derived, not fitted,
+#           and the family contains both degenerate cases: n=1 IS the linear model, n->inf is
+#           occupancy-insensitive lighting. n is a SENSITIVITY LEVER, defaulted to 1 so that
+#           enabling the model changes nothing about office lighting until n is chosen
+#           deliberately. ClosedOffice (private office, own switch) is physically n=1.
+#
+#   retail  OPEN/CLOSED *MIXED WITH* head-count -- see T9-12 below. The original T9-10 form was
+#           pure open/closed: g = 1 - staff_shoulder_flag (3rdJ_07_aug_to_bem_4split.py:527,
+#           flag=1 <=> NECB baseline <= 0.10 <=> closed/staff-only), loaded by
+#           load_retail_series() into "<dt>_staff_shoulder". Its provenance was flagged at the
+#           time: the flag comes from the NECB retail baseline PROXY, so the open window is fixed
+#           across scenarios and eras, and retail lighting became scenario-invariant. That was
+#           argued as an intended physical claim (WFH does not change store hours). THE CAMPAIGN
+#           REFUTED IT -- see T9-12. Retained as `retail_mode="open_closed"` for reproducibility
+#           of arm B only; it is NOT the model to use.
+#
+#   hotel   n=1 is already right. One guest room, one occupant, one switch.
+#
+# PEAK. All three now scale to the prototype's own peak instead of 1.0:
+#     f_light(t) = floor + (peak - floor) * g(t)
+# `peak` is read from the replaced schedule the same way `floor` is (design days excluded).
+# This is a change even at n=1: `OfficeLarge BLDG_LIGHT_SCH_2013` peaks at 0.815, so the T9-9
+# form `floor + (1-floor)*occ` lets a fully-occupied office draw MORE lighting power than the
+# NECB prototype ever asks for. Because it is a change, the whole model is opt-in:
+# `lighting_model=None` (the default) reproduces T9-9 exactly.
+#
+# ELECTRICEQUIPMENT is deliberately NOT touched by this: plug loads ARE per-person, so the T9-9
+# floor form is the correct one there.
+#
+# EXPECTED CONSEQUENCE, recorded before any simulation so it can be wrong: with office n>1,
+# office lighting becomes nearly insensitive to WFH (at occ=0.45, n=8 gives 1-0.55^8 = 0.99).
+# That WEAKENS a "WFH cuts office lighting" reading and shifts the WFH signal onto plug loads.
+# Post-COVID metered studies report exactly that asymmetry, so it is a finding, not a loss.
+
+LIGHTING_MODEL_ZONE = {
+    "office_n": 1,          # zone-coincidence exponent for OpenOffice; 1 == linear (no change)
+    "hotel_n": 1,           # one room, one switch -- physically 1, do not raise without reason
+    "retail_mode": "open_closed",   # "open_closed" | "open_hours_mix" (T9-12) | "occupancy"
+    "retail_k_open": 1.0,   # only read when retail_mode == "open_hours_mix"; 1.0 == open_closed
+}
+
+# CALIBRATION of office_n (2026-07-31). n was NOT tuned to make an EUI gate pass -- it was fitted
+# against the NECB prototype schedule itself, on data that predates the WFH bundles:
+#
+#   criterion: run the 2022 OBSERVED office occupancy (office_presence_multiplier_2022.csv,
+#              Office_Knowledge / BAND=observed -- a pre-WFH year) through
+#              floor + (peak - floor) * (1 - (1 - occ)^n) and ask which n reproduces
+#              `OfficeLarge BLDG_LIGHT_SCH_2013`'s own weekday mean of 0.3976.
+#
+#     n = 1    0.2400   -39.6 %          n = 4    0.4350    +9.4 %
+#     n = 2    0.3401   -14.5 %          n = 5    0.4622   +16.2 %
+#     n = 3    0.3976    -0.0 %  <--     n = 8    0.5175   +30.2 %
+#
+# The mean match alone would be one scalar and could be coincidence, so the hourly shape was
+# checked too: Pearson r vs the prototype 0.9743 (n=1: 0.9681), RMSE 0.0875 (n=1: 0.2263, a 61 %
+# reduction), and the four largest residuals fall at hours 6, 7, 8 and 16 -- the shoulders, where
+# a diary-derived arrival ramp is EXPECTED to differ from NECB's step from 0.27 to 0.815.
+#
+# COST, stated plainly: raising n shrinks the WFH lever on lighting. Span from the 2030
+# conservative to the fullyhybrid band -- n=1 -14.7 %, n=2 -11.2 %, n=3 -7.8 %, n=4 -5.0 %,
+# n=6 -1.5 %, n=8 +0.2 % (inverted, i.e. pure noise: the lever is gone). n=8, the textbook
+# open-plan figure, ALSO overshoots the prototype by 30 % -- it is not usable here. n=3 keeps a
+# real, signed WFH signal while matching the prototype. That the WFH response shrinks is the
+# model's substantive claim, not a defect: lighting is switched per zone, so plug loads, not
+# lights, should carry most of the WFH effect.
+LIGHTING_MODEL_CALIBRATED = dict(LIGHTING_MODEL_ZONE, office_n=3)
+
+# ---------------------------------------------------------------------------------------------
+# T9-12 (2026-07-31): RETAIL RE-SPECIFICATION. The open/closed form above is WITHDRAWN.
+#
+# WHY. The 56-cell arm B campaign measured retail `interior_lighting` at 339.0211 GJ in ALL 13
+# injected scenarios -- Y2005, Y2022 and every 2030 bundle and sensitivity lever, identical to
+# 4 dp (arm A, pure occupancy, spread 80.6 % over the same set). Because `staff_shoulder_flag`
+# is a binary flag off the NECB PROXY schedule and carries no occupancy, T9-10 made retail
+# lighting invariant to occupancy, to era, and to every lever this study exists to move. It also
+# sat +31.3 % above NECB's own retail lighting (339.02 vs 258.28 GJ), since "open" was held at
+# full peak with none of NECB's ramps. The retail EUI gate flipped 38/56 -> 56/56 PASS on the
+# back of that -- a gate passing because a signal was deleted, which is rejected on mechanism.
+#
+# THE FORM. One free scalar, and the two behaviours already simulated are its two endpoints:
+#
+#     g(t) = open(t) * [ k + (1 - k) * occ(t) ],        open(t) = 1 - staff_shoulder_flag(t)
+#
+# k is the share of retail lighting switched by STORE HOURS (ambient, merchandising, egress --
+# lit whether or not a shopper is in the aisle); (1-k) is the share tracking activity (task,
+# point-of-sale, back-of-house). k=1 IS the withdrawn open/closed form; k=0 is pure occupancy
+# gated by opening hours. So k is an interpolation between two simulated arms, not a new degree
+# of freedom invented to hit a target.
+#
+# CALIBRATION of k, on the SAME criterion used for office_n and NOT on any EUI gate: run the
+# 2022 observed retail occupancy through the form and ask which k reproduces
+# `RetailStandalone BLDG_LIGHT_SCH_2013`'s own weekday mean of 0.4521 (floor 0.05, peak 0.90).
+#
+#     k = 0.00   0.3139   -30.6 %        k = 0.60   0.4530    +0.2 %  <--
+#     k = 0.25   0.3719   -17.7 %        k = 0.75   0.4878    +7.9 %
+#     k = 0.50   0.4298    -4.9 %        k = 1.00   0.5458   +20.7 %  (the withdrawn form)
+#
+# Shape was checked too, because a mean match is one scalar: RMSE vs the prototype's hourly
+# weekday profile is 0.1572 at k=0.60 against 0.2336 at k=0 and 0.2275 at k=1 -- a 31 % reduction
+# on the withdrawn form, and k=0.60 beats BOTH endpoints. The RMSE optimum is k=0.50 (0.1543);
+# k=0.60 is kept because matching the prototype mean was the PRE-REGISTERED criterion and the
+# difference is 1.9 % on RMSE. Correlation r is NOT usable as evidence here and is recorded only
+# to say so: it peaks at k~0.40 and spans just 0.870-0.918 across the whole family.
+#
+# WHAT IT COSTS AND WHAT IT BUYS: the retail sens_retail_cons -> sens_retail_opt lever comes back
+# from +0.00 % (frozen) to +2.69 % on the schedule weekday mean. That is deliberately smaller
+# than the k=0 value of +12.83 % -- store hours genuinely do damp the retail signal, which is the
+# defensible half of the original T9-10 argument and is kept. What is not kept is the claim that
+# the damping is total.
+#
+# OPEN ITEM, unchanged and now more load-bearing: `open(t)` still comes from the provisional NECB
+# retail occupancy proxy at 3rdJ_07_aug_to_bem_4split.py:20-45. k mixes that proxy with a real
+# occupancy series instead of substituting it, so the proxy's weight drops from 100 % to 60 % --
+# reduced, not resolved.
+LIGHTING_MODEL_CALIBRATED_V2 = dict(LIGHTING_MODEL_ZONE, office_n=3,
+                                    retail_mode="open_hours_mix", retail_k_open=0.60)
+
+
+def apply_lighting_diversity(occ_vals, floor: float, peak: float,
+                             n_zone: int = 1, open_flags=None, k_open: float = 1.0):
+    """f_light(t) = floor + (peak - floor) * g(t), elementwise, clipped to [0, 1].
+
+    g(t) = open_flags[t] * (k_open + (1 - k_open) * occ(t))
+                                       when open_flags is supplied (retail). k_open is the share
+                                       of lighting switched by STORE HOURS; (1 - k_open) tracks
+                                       activity. k_open=1.0 (the default) collapses to the
+                                       withdrawn T9-10 form g == open_flags, so existing callers
+                                       are bit-for-bit unaffected. See T9-12 above.
+         = 1 - (1 - occ(t)) ** n_zone  otherwise (zone coincidence: probability that a switched
+                                       zone of n_zone workstations holds >=1 occupant).
+                                       n_zone=1 -> g == occ, the linear model.
+
+    occ_vals may be a flat list (office 24h / retail 48-slot) or a {month: [...]} dict (hotel);
+    open_flags, when given, must align elementwise with occ_vals.
+    """
+    if isinstance(occ_vals, dict):
+        return {k: apply_lighting_diversity(v, floor, peak, n_zone=n_zone)
+                for k, v in occ_vals.items()}
+    n = max(1, int(n_zone))
+    kk = min(1.0, max(0.0, float(k_open)))
+    out = []
+    for i, v in enumerate(occ_vals):
+        occ = min(1.0, max(0.0, float(v)))
+        if open_flags is not None:
+            g = float(open_flags[i]) * (kk + (1.0 - kk) * occ)
+        else:
+            g = occ if n == 1 else 1.0 - (1.0 - occ) ** n
+        out.append(min(1.0, max(0.0, floor + (peak - floor) * g)))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Occupancy-driven service hot water  (T9-11, 2026-07-31) -- opt-in, off by default
+# ---------------------------------------------------------------------------
+# WHY. The arm-A end-use decomposition (improvements/3rdJ_L3_improvements_step9.md) measured
+# `dhw` at 12.19 kWh/m2 in EVERY office scenario column to 2 dp -- identical for the NECB
+# default, for 2005, for 2022 and for all three 2030 bundles. Checked across the 14 scenarios of
+# Tall__MTL the spread is 0.008-0.014 %, which is the allocation denominator jittering, not a
+# response. The injector modulated PEOPLE / LIGHTS / ELECTRICEQUIPMENT and never touched
+# WATERUSE:EQUIPMENT, so the most canonically occupancy-driven load in the building was the one
+# load that ignored occupancy. Its weight is not marginal: 47.6 % of the residential channel,
+# 36.7 % of hotel, 15.2 % of office, 9.1 % of retail -- 26.8 % of whole-tower site energy. Every
+# lever reported in Steps 8-9 was computed on a base a quarter of which could not move.
+#
+# THE MODEL. Service water draw is a per-capita event rate: unlike lighting (switched per zone,
+# hence T9-10's coincidence exponent), a restroom or a shower serves one person at a time. So DHW
+# takes the LINEAR form, and the same floor/peak discipline as T9-10:
+#
+#     f_dhw(t) = floor + (peak - floor) * occ(t)
+#
+# floor and peak are read from the prototype Flow Rate Fraction Schedule the object already
+# carries, design days excluded, via the same `_schedule_extremum` resolver. Keeping the
+# prototype's own peak matters here more than anywhere else: `Peak_Flow_Rate` was SIZED against
+# that schedule's maximum, so a model that let the fraction reach 1.0 would silently inflate the
+# plant's design draw. Floors are real too (circulation/trickle): OfficeLarge 0.00-0.57,
+# RetailStandalone 0.00-0.62, HotelLarge BLDG 0.15-0.60, HotelLarge GuestRoom 0.15-0.80,
+# ApartmentHighRise APT_DHW 0.01-1.00.
+#
+# LAUNDRY IS EXCLUDED, DELIBERATELY AND VISIBLY. Hotel laundry is 53.8 % of the tower's design
+# DHW flow (`HotelLarge LAUNDRY_SWH_SCH` 49.6 % + `LaundryRoom_SWH_Sch_Post2004` 4.2 %) and it is
+# NOT a per-capita instantaneous load: laundry VOLUME scales with guest-nights, but it is washed
+# in batches whose intra-day shape is an operating decision, not a presence curve. Driving it by
+# instantaneous guest presence would move the wash load to 03:00, when guests are in their rooms.
+# The correct model scales the prototype's batch SHAPE by a daily/monthly occupancy factor
+# against a FIXED cross-scenario reference -- a specification decision (what reference?), not a
+# bug fix, so it is left open rather than guessed. Consequence, stated so nobody reads a
+# partial fix as a complete one: after T9-11 roughly 54 % of design DHW flow -- concentrated in
+# the hotel channel -- still does not respond to occupancy.
+#
+# EXPECTED CONSEQUENCE, recorded before any simulation so it can be wrong: DHW falls in every
+# channel (our occupancy series run below the prototype schedules' own means), office and
+# residential most, and for the FIRST TIME dhw differs between scenarios -- the sens_* levers
+# should now move it. If dhw still comes back identical across scenarios, the model did not land.
+
+DHW_MODEL_PER_CAPITA = {
+    "channels": ("office", "retail", "hotel", "residential"),
+    "exclude_schedule_tokens": ("LAUNDRY",),   # batch process -- see the block comment above
+}
+
+
+def _wateruse_channel_map(idf) -> dict:
+    """{WATERUSE:EQUIPMENT name (upper) -> channel or None}.
+
+    WaterUse:Equipment carries a blank `Zone Name`, so these objects cannot ride the
+    zone->channel map. Two resolution rules, in order, both read off the IDF and never guessed:
+
+      1. the equipment Name is "<SpaceName> Service Water Use <x>gpm <T>F" -- split at
+         " SERVICE WATER USE" and classify the resulting Space through its Tag-2;
+      2. plant-level units with no Space prefix ("Booster", "Laundry") are resolved by the
+         prototype token in their Flow Rate Fraction Schedule Name.
+
+    This is the SAME rule 3rdJ_08P_probe_driver.py:715-732 uses to attribute DHW energy per
+    channel when reporting. It is duplicated rather than imported, deliberately: the reporting
+    side must stay able to attribute a tree produced by any injector version, and the injector
+    must not import a Step-8 driver. If the two ever disagree, injection and attribution would
+    silently describe different buildings -- so the pairing is asserted by the T9-11 tests.
+    """
+    fine_to_agg = {"office": "office", "office_support": "office",
+                   "retail": "retail", "hotel": "hotel", "hotel_support": "hotel",
+                   "residential": "residential", "residential_common": "residential_common",
+                   "service_mep": "service_MEP"}
+    space_to_channel = {}
+    for sp in idf.idfobjects.get("SPACE", []):
+        agg = fine_to_agg.get(classify_tag2(str(getattr(sp, "Tag_2", "") or "").strip()))
+        if agg:
+            space_to_channel[str(sp.Name).strip().upper()] = agg
+    sched_token = (("HOTELLARGE", "hotel"), ("OFFICELARGE", "office"),
+                   ("RETAILSTANDALONE", "retail"), ("MIDRISEAPARTMENT", "residential"),
+                   ("HIGHRISEAPARTMENT", "residential"))
+    out = {}
+    for we in idf.idfobjects.get("WATERUSE:EQUIPMENT", []):
+        key = str(we.Name).strip().upper()
+        ch = space_to_channel.get(key.split(" SERVICE WATER USE")[0].strip())
+        if ch is None:
+            sched = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "").upper()
+            ch = next((c for tok, c in sched_token if tok in sched), None)
+        out[key] = ch
+    return out
+
+
+def _wateruse_space_of(we) -> str:
+    """The Space name embedded in a WaterUse:Equipment name, upper-cased ('' if plant-level)."""
+    key = str(we.Name).strip().upper()
+    head = key.split(" SERVICE WATER USE")[0].strip()
+    return head if head != key else ""
+
+
+def _dhw_excluded(we, dhw_model) -> bool:
+    """True if this object is on the documented exclusion list (batch processes)."""
+    sched = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "").upper()
+    return any(tok.upper() in sched for tok in dhw_model.get("exclude_schedule_tokens", ()))
+
+
+# ---------------------------------------------------------------------------
 # modulate_baseline / modulate_baseline_monthly
 # ---------------------------------------------------------------------------
 def modulate_baseline(idf, space_tag2: str, sch_name: str, wd_vals, we_vals,
@@ -421,7 +888,8 @@ def draw_residential_households(pool: dict, n: int, seed: int = 42) -> list:
 
 
 def inject_residential(idf, csv_path: str, seed: int = 42,
-                        dtype_filter=RESIDENTIAL_DTYPE_APARTMENT, verbose: bool = True) -> dict:
+                        dtype_filter=RESIDENTIAL_DTYPE_APARTMENT, verbose: bool = True,
+                        dhw_model: dict = None) -> dict:
     """OD-8R-L3: inject one DISTINCT household's occupancy (Number_of_People = HHSIZE,
     Occupancy_Schedule, Metabolic_Rate) into EVERY residential apartment Space (Tag-2 exact
     match "HighriseApartment Apartment"), REPLACE semantics -- no baseline multiplication.
@@ -442,12 +910,20 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
     LIGHTS/ELECTRICEQUIPMENT for residential Spaces are NOT touched (OD-7D: no Step-9
     equipment/lighting columns exist in the Step-7 residential product; deferred).
 
+    dhw_model (T9-11, 2026-07-31, opt-in): when supplied, each residential Space's
+    WATERUSE:EQUIPMENT flow-fraction schedule is rebuilt from THAT SPACE'S OWN drawn household
+    occupancy as `floor + (peak - floor) * occ(t)`. This is the only place in the codebase where
+    the per-household series exist, which is why residential DHW is handled here and not in the
+    commercial dispatch. Apartments are per-Space, so unlike office/retail/hotel the schedules
+    cannot be shared across objects -- one derived Schedule:Compact per household, cached by
+    (hh_id, floor, peak) so re-drawn duplicates do not multiply objects.
+
     Returns a dict: n_spaces, n_households_drawn, n_carriers_neutralized,
-    assignment ({space_name: hh_id}), schedule_names (list).
+    assignment ({space_name: hh_id}), schedule_names (list), dhw_applied, dhw_unresolved.
     """
     result = {
         "n_spaces": 0, "n_households_drawn": 0, "n_carriers_neutralized": 0,
-        "assignment": {}, "schedule_names": [],
+        "assignment": {}, "schedule_names": [], "dhw_applied": [], "dhw_unresolved": [],
     }
 
     space_objs = idf.idfobjects.get("SPACE", [])
@@ -532,6 +1008,48 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
 
         result["assignment"][space_name] = hh_id
 
+    # ---- T9-11: residential service hot water follows the SAME drawn household ----
+    if dhw_model:
+        hh_of_space = {str(k).strip().upper(): v for k, v in result["assignment"].items()}
+        dhw_cache = {}                                   # (hh_id, floor_key, peak_key) -> name
+        for we in idf.idfobjects.get("WATERUSE:EQUIPMENT", []):
+            head = _wateruse_space_of(we)
+            hh_id = hh_of_space.get(head)
+            if hh_id is None:
+                continue                                  # not a residential apartment object
+            proto = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "")
+            if _dhw_excluded(we, dhw_model):
+                continue
+            floor, fprov = _schedule_standby_floor(idf, proto)
+            peak, pprov = _schedule_peak(idf, proto)
+            if floor is None or peak is None:
+                result["dhw_unresolved"].append(
+                    {"name": we.Name, "channel": "residential", "schedule": proto,
+                     "reason": f"floor: {fprov} | peak: {pprov}"})
+                continue
+            key = (hh_id, _floor_key(floor), _floor_key(peak))
+            nm = dhw_cache.get(key)
+            if nm is None:
+                nm = f"MXU_Residential_DHW_HH{hh_id}_f{key[1]}p{key[2]}"
+                fields = _build_compact_fields_2dt(
+                    nm,
+                    apply_lighting_diversity(pool[hh_id]["occ_wd"], floor, peak),
+                    apply_lighting_diversity(pool[hh_id]["occ_we"], floor, peak),
+                    type_limit="Fraction")
+                obj = idf.newidfobject("Schedule:Compact")
+                obj.obj = ["Schedule:Compact"] + fields
+                dhw_cache[key] = nm
+                result["schedule_names"].append(nm)
+            we.Flow_Rate_Fraction_Schedule_Name = nm
+            result["dhw_applied"].append(
+                {"name": we.Name, "channel": "residential", "prototype_schedule": proto,
+                 "floor": round(float(floor), 6), "peak": round(float(peak), 6),
+                 "derived_schedule": nm, "provenance": f"{fprov} | peak: {pprov}"})
+        if verbose:
+            print(f"  [inject_residential] DHW: {len(result['dhw_applied'])} WaterUse:Equipment "
+                  f"objects re-wired to their own household series, "
+                  f"{len(result['dhw_unresolved'])} unresolved")
+
     if verbose:
         print(f"  [inject_residential] {n_spaces} residential apartment Spaces <- {n_spaces} "
               f"distinct households (seed={seed}), {len(result['schedule_names'])} Schedule:"
@@ -544,7 +1062,8 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
 # inject_mixed_use -- the main entry point (generalizes inject_office_schedules)
 # ---------------------------------------------------------------------------
 def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_meta: dict,
-                      verbose: bool = True) -> dict:
+                      verbose: bool = True, preserve_load_standby_floor: bool = True,
+                      lighting_model: dict = None, dhw_model: dict = None) -> dict:
     """Inject office + retail + hotel MODULATE schedules into a mixed-use IDF, dispatched by
     exact Tag-2 match. Residential Spaces are left untouched (handled by the separate
     residential REPLACE injector). Densities (People/m2, LPD, plug W/m2) are NEVER scaled.
@@ -566,12 +1085,46 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
                    caller that never mentions "residential" byte-identical to before this key
                    existed (verified, see Step8_docs Progress Log).
     building_meta: free-form dict, echoed into the provenance log.
+    preserve_load_standby_floor
+                 : T9-9 (2026-07-31, defect S9D-8). When True (default), LIGHTS and
+                   ELECTRICEQUIPMENT receive a DERIVED schedule
+                   `floor + (1 - floor) * occ(t)`, where `floor` is read from the prototype
+                   schedule that object currently carries. PEOPLE is unaffected. Set False to
+                   reproduce the pre-fix behaviour exactly (one occupancy schedule written to
+                   all three load classes) -- needed to regenerate the closed
+                   campaign_cf69d508 artefacts. See the S9D-8 comment block above.
+    lighting_model
+                 : T9-10 (2026-07-31). LIGHTS-only diversity model, OFF by default.
+                   None -> lighting keeps the T9-9 form `floor + (1 - floor) * occ`.
+                   A dict (see LIGHTING_MODEL_ZONE) -> LIGHTS instead get
+                   `floor + (peak - floor) * g(t)` with `peak` read from the replaced prototype
+                   schedule, g = zone-coincidence `1 - (1 - occ)^office_n` for office, occ for
+                   hotel, and for retail `open * (k + (1-k)*occ)` under
+                   retail_mode="open_hours_mix" (T9-12, use LIGHTING_MODEL_CALIBRATED_V2) or the
+                   WITHDRAWN pure `open` gate under retail_mode="open_closed", which produces
+                   scenario-invariant retail lighting and exists only to reproduce arm B.
+                   ELECTRICEQUIPMENT is never affected. Requires
+                   preserve_load_standby_floor=True (floor and peak share one resolver);
+                   ignored otherwise. See the T9-10 / T9-12 comment blocks above.
+    dhw_model    : T9-11 (2026-07-31). WATERUSE:EQUIPMENT flow-fraction schedules, OFF by
+                   default. None -> service hot water keeps its prototype schedule and stays
+                   occupancy-invariant, exactly as before. A dict (see DHW_MODEL_PER_CAPITA) ->
+                   every resolved object in `channels` gets `floor + (peak - floor) * occ(t)`,
+                   floor and peak read from the prototype flow-fraction schedule it carries.
+                   Objects whose schedule matches `exclude_schedule_tokens` (hotel laundry) are
+                   left on the prototype and reported. Residential DHW rides each Space's own
+                   drawn household series and therefore requires channels["residential"].
+                   See the T9-11 comment block above.
 
     Returns
     -------
     dict: per-channel injected-Space counts + the W2/W3 wiring-assertion outcome (dry-run-
     compatible: if idf has no PEOPLE/LIGHTS/ELECTRICEQUIPMENT objects matching a channel's
-    Tag-2 set, that channel reports 0 injected and is logged, not raised).
+    Tag-2 set, that channel reports 0 injected and is logged, not raised). Additionally
+    `floor_applied` (one record per LIGHTS/EQUIP object re-floored, with its prototype
+    schedule, resolved floor and provenance) and `floor_unresolved` (objects left on their
+    prototype schedule because the floor could not be read -- these are NOT silently given the
+    defective occupancy schedule).
     """
     try:
         from eppy.modeleditor import IDF
@@ -586,7 +1139,13 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
               "retail": {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
               "hotel":  {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
               "residential": {"n_spaces": 0, "n_households_drawn": 0, "n_carriers_neutralized": 0},
-              "fallback": [], "ambiguous": [], "modulated_schedule_names": []}
+              "fallback": [], "ambiguous": [], "modulated_schedule_names": [],
+              "preserve_load_standby_floor": bool(preserve_load_standby_floor),
+              "floor_applied": [], "floor_unresolved": [],
+              "lighting_model": dict(lighting_model) if lighting_model else None,
+              "light_diversity_applied": [],
+              "dhw_model": dict(dhw_model) if dhw_model else None,
+              "dhw_applied": [], "dhw_unresolved": [], "dhw_excluded": []}
 
     # ---- Load per-channel series (fall-back guarantee, W5) ----
     office_series = retail_series = hotel_series = None
@@ -642,6 +1201,93 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
     # (a) the noise would mask a genuine failure across a 56-run campaign and (b) reordering the two
     # setattr calls would have silently dropped the LIGHTS/EQUIP wiring -- the Leg-2 bug again.
     # Removed. Per-class counters added so LIGHTS/EQUIP coverage is now measurable by the W-gates.
+    # T9-9 (2026-07-31): PEOPLE still gets the raw occupancy schedule -- unchanged, byte-identical.
+    # LIGHTS/ELECTRICEQUIPMENT now get a DERIVED schedule that re-imposes the standby floor of the
+    # prototype schedule each object currently carries (see the S9D-8 block above). One derived
+    # object per (channel, floor) -- object count stays small: distinct floors are few (office
+    # equip 0.200, office lights 0.0453, retail lights 0.05, ...), not one per Space.
+    _raw_series = {"office": office_series, "retail": retail_series, "hotel": hotel_series}
+    _derived_cache = {}      # (channel, floor_key) -> schedule name
+
+    def _derived_schedule_for(channel, floor):
+        """Get-or-create the floor-preserving load schedule for (channel, floor)."""
+        key = (channel, _floor_key(floor))
+        if key in _derived_cache:
+            return _derived_cache[key]
+        series, nm = _raw_series[channel], f"MXU_{channel.capitalize()}_Load_f{_floor_key(floor)}_{tag}"
+        if channel == "office":
+            modulate_baseline(idf, "OpenOffice", nm,
+                              apply_standby_floor(series["wd"], floor),
+                              apply_standby_floor(series["we"], floor), verbose=False)
+        elif channel == "retail":
+            modulate_baseline(idf, "Retail Retail", nm,
+                              apply_standby_floor(series["wd"], floor), None,
+                              sun_vals=apply_standby_floor(series["sun"], floor),
+                              sat_vals=apply_standby_floor(series["sat"], floor), verbose=False)
+        else:  # hotel
+            modulate_baseline_monthly(idf, "LargeHotel GuestRoom5", nm,
+                                      apply_standby_floor(series["monthly_wd"], floor),
+                                      apply_standby_floor(series["monthly_we"], floor), verbose=False)
+        _derived_cache[key] = nm
+        result["modulated_schedule_names"].append(nm)
+        if verbose:
+            print(f"  [standby-floor] {channel}: derived {nm} (floor={floor:.4f})")
+        return nm
+
+    # ---- T9-10 lighting diversity (LIGHTS only, opt-in) ----
+    _light_cache = {}        # (channel, floor_key, peak_key) -> schedule name
+
+    def _derived_light_schedule_for(channel, floor, peak):
+        """Get-or-create the diversity-aware LIGHTS schedule for (channel, floor, peak)."""
+        key = (channel, _floor_key(floor), _floor_key(peak))
+        if key in _light_cache:
+            return _light_cache[key]
+        series = _raw_series[channel]
+        nm = f"MXU_{channel.capitalize()}_Light_f{key[1]}p{key[2]}_{tag}"
+        n_office = int(lighting_model.get("office_n", 1))
+        n_hotel = int(lighting_model.get("hotel_n", 1))
+        retail_mode = str(lighting_model.get("retail_mode", "open_closed"))
+        k_open = float(lighting_model.get("retail_k_open", 1.0))
+        if retail_mode not in ("open_closed", "open_hours_mix", "occupancy"):
+            raise ValueError(f"lighting_model retail_mode={retail_mode!r} not understood "
+                             f"(open_closed | open_hours_mix | occupancy)")
+        if channel == "office":
+            modulate_baseline(idf, "OpenOffice", nm,
+                              apply_lighting_diversity(series["wd"], floor, peak, n_zone=n_office),
+                              apply_lighting_diversity(series["we"], floor, peak, n_zone=n_office),
+                              verbose=False)
+        elif channel == "retail":
+            if retail_mode in ("open_closed", "open_hours_mix"):
+                # staff_shoulder_flag == 1 <=> closed/staff-only  =>  open = 1 - flag
+                g = {dt: [1.0 - float(x) for x in series[f"{dt}_staff_shoulder"]]
+                     for dt in ("wd", "sat", "sun")}
+                # open_closed is the WITHDRAWN T9-10 form and is exactly k_open == 1.0
+                kr = 1.0 if retail_mode == "open_closed" else k_open
+            else:
+                g = {dt: None for dt in ("wd", "sat", "sun")}
+                kr = 1.0
+            modulate_baseline(idf, "Retail Retail", nm,
+                              apply_lighting_diversity(series["wd"], floor, peak,
+                                                       open_flags=g["wd"], k_open=kr), None,
+                              sun_vals=apply_lighting_diversity(series["sun"], floor, peak,
+                                                                open_flags=g["sun"], k_open=kr),
+                              sat_vals=apply_lighting_diversity(series["sat"], floor, peak,
+                                                                open_flags=g["sat"], k_open=kr),
+                              verbose=False)
+        else:  # hotel
+            modulate_baseline_monthly(idf, "LargeHotel GuestRoom5", nm,
+                                      apply_lighting_diversity(series["monthly_wd"], floor, peak,
+                                                               n_zone=n_hotel),
+                                      apply_lighting_diversity(series["monthly_we"], floor, peak,
+                                                               n_zone=n_hotel),
+                                      verbose=False)
+        _light_cache[key] = nm
+        result["modulated_schedule_names"].append(nm)
+        if verbose:
+            print(f"  [light-diversity] {channel}: derived {nm} "
+                  f"(floor={floor:.4f} peak={peak:.4f})")
+        return nm
+
     _COUNTER_KEY = {"PEOPLE": "n_spaces", "LIGHTS": "n_lights", "ELECTRICEQUIPMENT": "n_equip"}
     for obj_class, sch_field in [
         ("PEOPLE", "Number_of_People_Schedule_Name"),
@@ -655,14 +1301,135 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             if channel in ("residential", "residential_common"):
                 continue  # handled by the separate residential injector
             if channel in ("office", "retail", "hotel") and channel in sch_names:
+                target_sch = sch_names[channel]
+                if preserve_load_standby_floor and obj_class in ("LIGHTS", "ELECTRICEQUIPMENT"):
+                    proto = getattr(obj, sch_field, "")
+                    floor, prov = _schedule_standby_floor(idf, proto)
+                    if floor is None:
+                        # Never silently fall back to the defective behaviour: leave the object on
+                        # its prototype schedule and record it, so a W-gate can count it.
+                        result["floor_unresolved"].append(
+                            {"channel": channel, "tag2": tag2, "obj_class": obj_class,
+                             "schedule": str(proto), "reason": prov})
+                        if verbose:
+                            print(f"  WARN: standby floor unresolved for {tag2} ({obj_class}, "
+                                  f"'{proto}'): {prov} -- left on prototype schedule")
+                        continue
+                    # T9-10: LIGHTS may additionally take the diversity model (opt-in). If the
+                    # peak cannot be read we do NOT fall back to the linear form silently --
+                    # the object is recorded as unresolved, same discipline as the floor.
+                    peak = None
+                    if lighting_model and obj_class == "LIGHTS":
+                        peak, pprov = _schedule_peak(idf, proto)
+                        if peak is None:
+                            result["floor_unresolved"].append(
+                                {"channel": channel, "tag2": tag2, "obj_class": obj_class,
+                                 "schedule": str(proto), "reason": f"peak: {pprov}"})
+                            if verbose:
+                                print(f"  WARN: lighting peak unresolved for {tag2} "
+                                      f"('{proto}'): {pprov} -- left on prototype schedule")
+                            continue
+                    if peak is not None:
+                        target_sch = _derived_light_schedule_for(channel, floor, peak)
+                        result["light_diversity_applied"].append(
+                            {"channel": channel, "tag2": tag2,
+                             "prototype_schedule": str(proto), "floor": round(float(floor), 6),
+                             "peak": round(float(peak), 6), "derived_schedule": target_sch,
+                             "provenance": f"{prov} | peak: {pprov}"})
+                    else:
+                        target_sch = _derived_schedule_for(channel, floor)
+                    result["floor_applied"].append(
+                        {"channel": channel, "tag2": tag2, "obj_class": obj_class,
+                         "prototype_schedule": str(proto), "floor": round(float(floor), 6),
+                         "derived_schedule": target_sch, "provenance": prov})
                 try:
-                    setattr(obj, sch_field, sch_names[channel])
+                    setattr(obj, sch_field, target_sch)
                     result[channel][_COUNTER_KEY[obj_class]] += 1
                 except Exception as e:
                     if verbose:
                         print(f"  WARN: {channel} injection failed for {tag2} ({obj_class}): {e}")
             elif channel == "unknown" and obj_class == "PEOPLE":
                 result["ambiguous"].append(tag2)
+
+    # ---- T9-11: occupancy-driven service hot water (WATERUSE:EQUIPMENT), opt-in ----
+    # office/retail/hotel only here; residential DHW rides the per-Space household series and is
+    # handled inside inject_residential, which is the only place those series exist.
+    _dhw_cache = {}          # (channel, floor_key, peak_key) -> schedule name
+
+    def _derived_dhw_schedule_for(channel, floor, peak):
+        """Get-or-create the occupancy-driven DHW flow-fraction schedule for (channel, floor, peak).
+
+        n_zone=1 throughout: water draw is per-capita, so the linear form is the correct one --
+        the zone-coincidence exponent is a LIGHTING concept and must not leak into DHW.
+        """
+        key = (channel, _floor_key(floor), _floor_key(peak))
+        if key in _dhw_cache:
+            return _dhw_cache[key]
+        series = _raw_series[channel]
+        nm = f"MXU_{channel.capitalize()}_DHW_f{key[1]}p{key[2]}_{tag}"
+        if channel == "office":
+            modulate_baseline(idf, "OpenOffice", nm,
+                              apply_lighting_diversity(series["wd"], floor, peak),
+                              apply_lighting_diversity(series["we"], floor, peak), verbose=False)
+        elif channel == "retail":
+            modulate_baseline(idf, "Retail Retail", nm,
+                              apply_lighting_diversity(series["wd"], floor, peak), None,
+                              sun_vals=apply_lighting_diversity(series["sun"], floor, peak),
+                              sat_vals=apply_lighting_diversity(series["sat"], floor, peak),
+                              verbose=False)
+        else:  # hotel
+            modulate_baseline_monthly(idf, "LargeHotel GuestRoom5", nm,
+                                      apply_lighting_diversity(series["monthly_wd"], floor, peak),
+                                      apply_lighting_diversity(series["monthly_we"], floor, peak),
+                                      verbose=False)
+        _dhw_cache[key] = nm
+        result["modulated_schedule_names"].append(nm)
+        if verbose:
+            print(f"  [dhw] {channel}: derived {nm} (floor={floor:.4f} peak={peak:.4f})")
+        return nm
+
+    if dhw_model:
+        _dhw_channels = tuple(dhw_model.get("channels", ()))
+        _we_channel = _wateruse_channel_map(idf)
+        for we in idf.idfobjects.get("WATERUSE:EQUIPMENT", []):
+            key = str(we.Name).strip().upper()
+            channel = _we_channel.get(key)
+            proto = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "")
+            if channel is None:
+                # Never silently leave an unattributed object looking like a success.
+                result["dhw_unresolved"].append(
+                    {"name": we.Name, "schedule": proto, "reason": "channel unresolved"})
+                continue
+            if channel not in _dhw_channels or channel not in sch_names:
+                continue          # residential handled below; channels not requested are skipped
+            if _dhw_excluded(we, dhw_model):
+                result["dhw_excluded"].append(
+                    {"name": we.Name, "channel": channel, "schedule": proto,
+                     "reason": "batch process (exclude_schedule_tokens)"})
+                continue
+            floor, fprov = _schedule_standby_floor(idf, proto)
+            peak, pprov = _schedule_peak(idf, proto)
+            if floor is None or peak is None:
+                # Same discipline as T9-9/T9-10: leave it on the prototype, record it, never
+                # fall back to a form nobody chose.
+                result["dhw_unresolved"].append(
+                    {"name": we.Name, "channel": channel, "schedule": proto,
+                     "reason": f"floor: {fprov} | peak: {pprov}"})
+                if verbose:
+                    print(f"  WARN: DHW floor/peak unresolved for '{we.Name}' ('{proto}') "
+                          f"-- left on prototype schedule")
+                continue
+            target_sch = _derived_dhw_schedule_for(channel, floor, peak)
+            try:
+                we.Flow_Rate_Fraction_Schedule_Name = target_sch
+                result["dhw_applied"].append(
+                    {"name": we.Name, "channel": channel, "prototype_schedule": proto,
+                     "floor": round(float(floor), 6), "peak": round(float(peak), 6),
+                     "derived_schedule": target_sch, "provenance": f"{fprov} | peak: {pprov}"})
+            except Exception as e:
+                result["dhw_unresolved"].append(
+                    {"name": we.Name, "channel": channel, "schedule": proto,
+                     "reason": f"setattr failed: {e}"})
 
     # ---- Residential (OD-8R-L3, REPLACE) -- separate code path, byte-identical guarantee ----
     # Deliberately NOT symmetric with office/retail/hotel above: this block only runs (and only
@@ -673,11 +1440,18 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
     residential_requested = "residential" in channels and channels["residential"].get("csv") \
         and os.path.exists(channels["residential"]["csv"])
     if residential_requested:
+        _resid_dhw = dhw_model if (dhw_model and "residential" in tuple(
+            dhw_model.get("channels", ()))) else None
         result["residential"] = inject_residential(
             idf, channels["residential"]["csv"],
             seed=channels["residential"].get("seed", 42),
             verbose=verbose,
+            dhw_model=_resid_dhw,
         )
+        # Fold the residential DHW records into the top-level lists so one provenance block
+        # describes the whole building rather than two half-buildings.
+        result["dhw_applied"].extend(result["residential"].get("dhw_applied", []))
+        result["dhw_unresolved"].extend(result["residential"].get("dhw_unresolved", []))
     elif "residential" in channels and verbose:
         print("  [FALLBACK] residential channel data missing -- apartment Spaces revert to "
               "whatever the source IDF already had (untouched, REPLACE not applied)")
@@ -692,6 +1466,10 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         print(f"  Injected LIGHTS: office={result['office']['n_lights']} retail={result['retail']['n_lights']} "
               f"hotel={result['hotel']['n_lights']} | ELECTRICEQUIPMENT: office={result['office']['n_equip']} "
               f"retail={result['retail']['n_equip']} hotel={result['hotel']['n_equip']}")
+        if dhw_model:
+            print(f"  Injected DHW: {len(result['dhw_applied'])} WaterUse:Equipment re-wired, "
+                  f"{len(result['dhw_excluded'])} excluded (batch), "
+                  f"{len(result['dhw_unresolved'])} unresolved")
         if residential_requested:
             print(f"  Injected residential: {result['residential']['n_spaces']} apartment Spaces, "
                   f"{result['residential']['n_households_drawn']} distinct households drawn, "
@@ -710,6 +1488,37 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             f.write(f"n_{_ch}_lights={result[_ch]['n_lights']} n_{_ch}_equip={result[_ch]['n_equip']}\n")
         f.write(f"ambiguous_tags={sorted(set(result['ambiguous']))}\n")
         f.write("density_basis=NECB baseline densities UNCHANGED for all channels\n")
+        # T9-9 / S9D-8: standby-floor preservation on LIGHTS + ELECTRICEQUIPMENT
+        f.write(f"preserve_load_standby_floor={result['preserve_load_standby_floor']}\n")
+        f.write(f"n_floor_applied={len(result['floor_applied'])} "
+                f"n_floor_unresolved={len(result['floor_unresolved'])}\n")
+        _floors = sorted({(r["channel"], r["obj_class"], r["prototype_schedule"], r["floor"])
+                          for r in result["floor_applied"]})
+        for _ch, _cls, _proto, _fl in _floors:
+            f.write(f"standby_floor {_ch} {_cls} '{_proto}' -> {_fl}\n")
+        for r in result["floor_unresolved"]:
+            f.write(f"standby_floor_UNRESOLVED {r['channel']} {r['obj_class']} "
+                    f"'{r['schedule']}' reason={r['reason']}\n")
+        # T9-10: LIGHTS-only diversity model
+        f.write(f"lighting_model={result['lighting_model']}\n")
+        f.write(f"n_light_diversity_applied={len(result['light_diversity_applied'])}\n")
+        _lights = sorted({(r["channel"], r["prototype_schedule"], r["floor"], r["peak"])
+                          for r in result["light_diversity_applied"]})
+        for _ch, _proto, _fl, _pk in _lights:
+            f.write(f"light_diversity {_ch} '{_proto}' -> floor={_fl} peak={_pk}\n")
+        # T9-11: occupancy-driven service hot water
+        f.write(f"dhw_model={result['dhw_model']}\n")
+        f.write(f"n_dhw_applied={len(result['dhw_applied'])}\n")
+        f.write(f"n_dhw_excluded={len(result['dhw_excluded'])}\n")
+        f.write(f"n_dhw_unresolved={len(result['dhw_unresolved'])}\n")
+        _dhw = sorted({(r["channel"], r["prototype_schedule"], r["floor"], r["peak"])
+                       for r in result["dhw_applied"]})
+        for _ch, _proto, _fl, _pk in _dhw:
+            f.write(f"dhw {_ch} '{_proto}' -> floor={_fl} peak={_pk}\n")
+        for r in result["dhw_excluded"]:
+            f.write(f"dhw_EXCLUDED {r['channel']} '{r['name']}' ({r['schedule']}): {r['reason']}\n")
+        for r in result["dhw_unresolved"]:
+            f.write(f"dhw_UNRESOLVED '{r['name']}' ({r.get('schedule', '')}): {r['reason']}\n")
         if residential_requested:
             f.write(f"n_residential_spaces={result['residential']['n_spaces']}\n")
             f.write(f"n_residential_households_drawn={result['residential']['n_households_drawn']}\n")

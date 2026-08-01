@@ -106,6 +106,28 @@ def main() -> None:
                      help="SMOKE-TEST ONLY: truncate the RunPeriod to the first N days instead "
                           "of the full year, and adjust the expected row count to N*24. Never "
                           "pass this for a real campaign cell.")
+    # ---- T9-9 / T9-10 arm selection (2026-07-31) ----
+    ap.add_argument("--no-standby-floor", action="store_true",
+                     help="T9-9 OFF: reproduce the pre-fix defect S9D-8 exactly (one occupancy "
+                          "schedule written to PEOPLE + LIGHTS + ELECTRICEQUIPMENT). Only for "
+                          "regenerating the closed campaign_cf69d508 artefacts.")
+    ap.add_argument("--lighting-model", type=str, default="none",
+                     help="T9-10 LIGHTS-only diversity model. 'none' (default) = T9-9 behaviour, "
+                          "lighting stays floor+(1-floor)*occ. 'calibrated' = office_n=3 (fitted "
+                          "to the NECB prototype on 2022 observed occupancy), hotel_n=1, retail "
+                          "driven by the open/closed staff_shoulder_flag -- WITHDRAWN, retail "
+                          "lighting comes out frozen across every scenario; kept only to "
+                          "reproduce arm B. 'calibrated_v2' = THE ONE TO USE: same office_n=3 "
+                          "and hotel_n=1, retail on the T9-12 open-hours mix (k=0.60). 'nK' "
+                          "(e.g. n8) = office_n=K with the withdrawn retail form. See "
+                          "commercial_integration.py's T9-10 / T9-12 blocks.")
+    ap.add_argument("--dhw-model", type=str, default="none",
+                     help="T9-11 occupancy-driven service hot water. 'none' (default) = "
+                          "WaterUse:Equipment keeps its prototype flow-fraction schedule and DHW "
+                          "stays occupancy-invariant (26.8 %% of tower site energy frozen). "
+                          "'per_capita' = floor+(peak-floor)*occ on office/retail/hotel/"
+                          "residential, hotel laundry excluded as a batch process. See "
+                          "commercial_integration.py's T9-11 block.")
     ap.add_argument("--dry-run", action="store_true",
                      help="print the resolved cell (paths, channels, missing inputs) and exit; "
                           "runs nothing, touches no filesystem beyond os.path.isfile checks "
@@ -122,6 +144,31 @@ def main() -> None:
 
     repo_root = args.repo_root
     outroot = args.outroot if args.outroot else DEFAULT_OUTROOT
+
+    # --repo-root must actually win. 3rdJ_08P_probe_driver.py:94 does
+    # `sys.path.insert(0, UPLOAD)` at MODULE-IMPORT time as a cluster fallback, and this file
+    # loads that module at import time (_load_module above) -- so on the cluster the probe
+    # harness's own /speed-scratch/.../step8_4split/upload tree shadowed both PYTHONPATH and
+    # --repo-root, and `import eSim_bem_utils` silently resolved to a STALE injector.
+    # Caught 2026-07-31 by the pre-campaign validation job (ImportError: cannot import name
+    # LIGHTING_MODEL_ZONE ... from .../upload/eSim_bem_utils/commercial_integration.py) --
+    # i.e. it failed loudly only because the new code added a new name. Had T9-9/T9-10 changed
+    # only BEHAVIOUR and not the module's API, all 56 cells would have run to completion
+    # against the old injector and reported success. Re-assert repo_root at the front here, and
+    # drop any eSim_bem_utils already bound, so the resolved path is the one the caller asked
+    # for. The probe driver itself is NOT modified (closed, validated artefact).
+    while repo_root in sys.path:
+        sys.path.remove(repo_root)
+    sys.path.insert(0, repo_root)
+    for _m in [m for m in list(sys.modules) if m == "eSim_bem_utils"
+               or m.startswith("eSim_bem_utils.")]:
+        del sys.modules[_m]
+    import eSim_bem_utils.commercial_integration as _ci_check
+    print(f"[setup] eSim_bem_utils resolved from: {_ci_check.__file__}")
+    if os.path.realpath(repo_root) not in os.path.realpath(_ci_check.__file__):
+        print(f"[FAIL] injector resolved OUTSIDE --repo-root {repo_root}: "
+              f"{_ci_check.__file__} -- refusing to run against an unknown copy of the injector")
+        sys.exit(1)
 
     cells = _cells_mod.build_campaign_cells(repo_root)
     if not (0 <= args.cell < len(cells)):
@@ -283,9 +330,47 @@ def main() -> None:
         "building": cell["building"], "city": cell["city"], "cz": cell["cz"],
         "purpose": "campaign", "cell_index": args.cell, "scenario_label": tag,
     }
+    # T9-9 / T9-10 arm -- resolved here, recorded in the manifest, passed straight through.
+    from eSim_bem_utils.commercial_integration import (LIGHTING_MODEL_ZONE,
+                                                        LIGHTING_MODEL_CALIBRATED_V2)
+    _lm_arg = str(args.lighting_model).strip().lower()
+    if _lm_arg in ("", "none", "off"):
+        lighting_model = None
+    elif _lm_arg == "calibrated":
+        # WITHDRAWN retail form (frozen lighting) -- kept ONLY to reproduce arm B. See T9-12.
+        lighting_model = dict(LIGHTING_MODEL_ZONE, office_n=3)
+    elif _lm_arg in ("calibrated_v2", "v2"):
+        lighting_model = dict(LIGHTING_MODEL_CALIBRATED_V2)
+    elif _lm_arg.startswith("n") and _lm_arg[1:].isdigit():
+        lighting_model = dict(LIGHTING_MODEL_ZONE, office_n=int(_lm_arg[1:]))
+    else:
+        print(f"[FAIL] --lighting-model {args.lighting_model!r} not understood "
+              f"(expected 'none', 'calibrated', 'calibrated_v2', or 'nK')")
+        sys.exit(1)
+    # T9-11 arm -- same discipline: resolved here, recorded, never inferred downstream.
+    from eSim_bem_utils.commercial_integration import DHW_MODEL_PER_CAPITA
+    _dhw_arg = str(args.dhw_model).strip().lower()
+    if _dhw_arg in ("", "none", "off"):
+        dhw_model = None
+    elif _dhw_arg in ("per_capita", "percapita", "linear"):
+        dhw_model = dict(DHW_MODEL_PER_CAPITA)
+    else:
+        print(f"[FAIL] --dhw-model {args.dhw_model!r} not understood "
+              f"(expected 'none' or 'per_capita')")
+        sys.exit(1)
+    manifest["arm"] = {"preserve_load_standby_floor": not args.no_standby_floor,
+                        "lighting_model_arg": args.lighting_model,
+                        "lighting_model": lighting_model,
+                        "dhw_model_arg": args.dhw_model,
+                        "dhw_model": dhw_model}
+    print(f"[arm] preserve_load_standby_floor={not args.no_standby_floor} "
+          f"lighting_model={lighting_model} dhw_model={dhw_model}")
     try:
         inj_result = inject_mixed_use(cell["idf"], injected_idf_path, cell["channels"],
-                                       building_meta, verbose=True)
+                                       building_meta, verbose=True,
+                                       preserve_load_standby_floor=not args.no_standby_floor,
+                                       lighting_model=lighting_model,
+                                       dhw_model=dhw_model)
     except Exception as e:
         print(f"[FAIL] inject_mixed_use raised: {e}")
         manifest["inject_exception"] = str(e)
