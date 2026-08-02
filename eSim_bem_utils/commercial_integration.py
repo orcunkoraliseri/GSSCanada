@@ -70,6 +70,7 @@ in eSim_bem_utils_3J/integration.py (post-multizone-fix, 2026-07-15).
 """
 from __future__ import annotations
 import os
+import re
 from typing import Optional
 
 import numpy as np
@@ -455,6 +456,239 @@ def _schedule_peak(idf, name: str, _depth: int = 0):
     return _schedule_extremum(idf, name, max, _depth)
 
 
+# ---------------------------------------------------------------------------
+# TIME-WEIGHTED day-type profiles  (T9-13, 2026-08-01)
+# ---------------------------------------------------------------------------
+# `_schedule_extremum` above collects a FLAT list of a schedule's values and applies min/max. That
+# is exact for an extremum and WRONG for a mean: a Schedule:Compact `Until:` block holds its value
+# for the whole span since the previous `Until:`, so a value covering 8 h and a value covering 1 h
+# both appear exactly once in that flat list. Any mean taken over it is unweighted and therefore
+# not the schedule's mean. T9-13 modulates DAILY VOLUME, which is a mean, so it needs a real
+# time-weighted expansion. Hence this separate resolver rather than another `agg` passed to
+# `_schedule_extremum` -- a mean cannot be retrofitted onto that collector.
+_DESIGN_DAYTYPES = ("SUMMERDESIGNDAY", "WINTERDESIGNDAY", "CUSTOMDAY1", "CUSTOMDAY2")
+
+
+def _expand_compact_daytypes(obj):
+    """{(daytype tokens): [24 hourly values]} for a Schedule:Compact, design-day blocks skipped.
+
+    Only the FIRST `Through:` period is expanded. Monthly schedules (hotel) therefore report their
+    January block; T9-13 uses this for a day-type RATIO, and the ratio's reference and target are
+    read the same way, so a consistent single-period read is sufficient and is recorded as such in
+    the provenance. Returns {} if nothing parses.
+    """
+    out, cur, hour, until_h = {}, None, 0, None
+    seen_through = 0
+    for f in obj.obj[3:]:
+        s = str(f).strip()
+        if not s:
+            continue
+        low = s.lower()
+        if low.startswith("through:"):
+            seen_through += 1
+            if seen_through > 1:
+                break
+            continue
+        if low.startswith("interpolate"):
+            continue
+        if low.startswith("for:"):
+            toks = [t for t in re.split(r"[\s,]+", s.split(":", 1)[1].strip().upper()) if t]
+            # Skip a block only if it is design-day-ONLY. Prototypes routinely write
+            # "For: Weekdays SummerDesignDay WinterDesignDay" as a single block: those values DO
+            # apply on ordinary weekdays, so dropping the block on the mere presence of a
+            # design-day token would discard the weekday profile entirely. (`_schedule_extremum`
+            # uses the looser any-token rule; it is left exactly as is -- it is validated against
+            # the prototypes for T9-9/T9-10 floors and peaks, and changing it would silently move
+            # numbers in closed campaigns. The two rules differ deliberately.)
+            cur = None if (toks and all(t in _DESIGN_DAYTYPES for t in toks)) else tuple(toks)
+            if cur is not None:
+                out.setdefault(cur, [None] * 24)
+            hour, until_h = 0, None
+            continue
+        if low.startswith("until:"):
+            t = s.split(":", 1)[1].strip()
+            parts = t.split(":")
+            try:
+                hh = int(parts[0])
+                mm = int(parts[1]) if len(parts) > 1 else 0
+            except ValueError:
+                until_h = None
+                continue
+            # "Until: HH:MM" ends the interval; round UP to whole hours for a 24-slot grid
+            until_h = min(24, hh + (1 if mm > 0 else 0))
+            continue
+        if cur is None or until_h is None:
+            continue
+        try:
+            v = float(s)
+        except ValueError:
+            continue
+        for h in range(hour, until_h):
+            out[cur][h] = v
+        hour, until_h = until_h, None
+    return {k: v for k, v in out.items() if all(x is not None for x in v)}
+
+
+def _day_profile_24(obj):
+    """A Schedule:Day:* object expanded to 24 TIME-WEIGHTED hourly values, or None.
+
+    Needed because every DHW flow-fraction schedule in the tower resolves through
+    Schedule:Year -> Schedule:Week:Daily -> Schedule:Day:Interval (measured on the real IDF,
+    job 1171059: 27 residential + 18 commercial WaterUse:Equipment objects, ALL Schedule:Year).
+    A Schedule:Day:Interval holds each value until its stated time, so, exactly as for
+    Schedule:Compact, listing order is not time weighting.
+    """
+    cls = obj.obj[0].strip().lower()
+    if cls == "schedule:day:hourly":
+        v = _floats(obj.obj[3:27])
+        return v if len(v) == 24 else None
+    if cls == "schedule:day:list":
+        v = _floats(obj.obj[5:])
+        if not v:
+            return None
+        try:
+            mpi = float(str(obj.obj[4]).strip() or 60.0)
+        except (ValueError, IndexError):
+            mpi = 60.0
+        per_hour = max(1, int(round(60.0 / mpi))) if mpi > 0 else 1
+        out = []
+        for h in range(24):
+            seg = v[h * per_hour:(h + 1) * per_hour]
+            out.append(sum(seg) / len(seg) if seg else v[-1])
+        return out
+    if cls == "schedule:day:interval":
+        times, vals = obj.obj[4::2], obj.obj[5::2]
+        out, hour = [None] * 24, 0
+        for t, val in zip(times, vals):
+            s = str(t).strip().upper().replace("UNTIL:", "").strip()
+            if not s:
+                continue
+            try:
+                parts = s.split(":")
+                end = min(24, int(parts[0]) + (1 if len(parts) > 1 and int(parts[1]) > 0 else 0))
+                fv = float(str(val).strip())
+            except (ValueError, IndexError):
+                continue
+            for h in range(hour, end):
+                out[h] = fv
+            hour = end
+        if hour < 24 and hour > 0:
+            for h in range(hour, 24):
+                out[h] = out[hour - 1]
+        return out if all(x is not None for x in out) else None
+    return None
+
+
+def _week_profiles(idf, wk_obj, _depth: int = 0):
+    """({'wd': [24], 'we': [24]}, note) from a Schedule:Week:Daily / :Compact object, or (None, r).
+
+    Schedule:Week:Daily field order is Sunday, Monday, ..., Saturday, Holiday, then the design
+    days. Weekday is taken from MONDAY and weekend from SUNDAY (Saturday as fallback) -- the
+    design-day slots are never read.
+    """
+    cls = wk_obj.obj[0].strip().lower()
+    if cls == "schedule:week:daily":
+        names = [str(x).strip() for x in wk_obj.obj[2:14]]
+        if len(names) < 9:
+            return None, "Schedule:Week:Daily has too few day fields"
+        mon, sun, sat = names[1], names[0], names[6]
+        d_wd = _find_schedule(idf, mon)
+        d_we = _find_schedule(idf, sun) or _find_schedule(idf, sat)
+        p_wd = _day_profile_24(d_wd) if d_wd is not None else None
+        p_we = _day_profile_24(d_we) if d_we is not None else None
+        if p_wd is None and p_we is None:
+            return None, "no Monday/Sunday day schedule resolved"
+        return {"wd": p_wd or p_we, "we": p_we or p_wd}, f"week:daily(mon='{mon}', sun='{sun}')"
+    if cls == "schedule:week:compact":
+        wd = we = None
+        i = 2
+        flds = [str(x).strip() for x in wk_obj.obj[2:]]
+        while i - 2 < len(flds) - 1:
+            key, dayname = flds[i - 2].upper(), flds[i - 1]
+            i += 2
+            if not key.startswith("FOR"):
+                continue
+            toks = key.split(":", 1)[1] if ":" in key else key
+            d = _find_schedule(idf, dayname)
+            prof = _day_profile_24(d) if d is not None else None
+            if prof is None:
+                continue
+            if any(t in toks for t in ("DESIGNDAY", "CUSTOMDAY")):
+                continue
+            if "WEEKDAY" in toks or "ALLDAYS" in toks or "ALLOTHERDAYS" in toks:
+                wd = wd or prof
+            if any(t in toks for t in ("WEEKEND", "SUNDAY", "SATURDAY")) or "ALLDAYS" in toks \
+                    or "ALLOTHERDAYS" in toks:
+                we = we or prof
+        if wd is None and we is None:
+            return None, "Schedule:Week:Compact resolved no day profile"
+        return {"wd": wd or we, "we": we or wd}, "week:compact"
+    return None, f"unsupported week class '{cls}'"
+
+
+def _schedule_daytype_profiles(idf, name: str, _depth: int = 0):
+    """({'wd': [24], 'we': [24]}, provenance) | (None, reason) -- time-weighted, design days out.
+
+    'wd' is the Weekdays block, 'we' the Weekends/AllOtherDays block; an AllDays block fills both.
+    Supports Schedule:Compact, :Constant and the Year -> Week:Daily/:Compact -> Day:* chain, which
+    is what the real prototype DHW schedules actually use.
+    """
+    if _depth > 6:
+        return None, "schedule reference nesting too deep"
+    if str(name).strip().upper().startswith("MXU_"):
+        return None, "schedule already injected (MXU_*), prototype profile unrecoverable"
+    obj = _find_schedule(idf, name)
+    if obj is None:
+        return None, f"schedule '{name}' not found in IDF"
+    cls = obj.obj[0].strip().lower()
+    if cls == "schedule:constant":
+        vals = _floats(obj.obj[3:4])
+        if not vals:
+            return None, "Schedule:Constant has no value"
+        return {"wd": [vals[0]] * 24, "we": [vals[0]] * 24}, "schedule:constant"
+    if cls == "schedule:file":
+        return None, "Schedule:File -- values live outside the IDF, not resolvable"
+    if cls in ("schedule:day:hourly", "schedule:day:interval", "schedule:day:list"):
+        p = _day_profile_24(obj)
+        return ({"wd": p, "we": p}, cls) if p else (None, f"{cls} unparseable")
+    if cls in ("schedule:week:daily", "schedule:week:compact"):
+        prof, note = _week_profiles(idf, obj, _depth + 1)
+        return (prof, note) if prof else (None, note)
+    if cls == "schedule:year":
+        # Fields after (Name, TypeLimits) repeat in 5s: WeekName, StartMonth, StartDay, EndMonth,
+        # EndDay. Take the FIRST period, the same single-period convention the compact reader uses;
+        # the ratio's reference and target are both read this way, so the read stays consistent.
+        flds = [str(x).strip() for x in obj.obj[3:]]
+        for i in range(0, len(flds), 5):
+            wk = _find_schedule(idf, flds[i]) if flds[i] else None
+            if wk is None:
+                continue
+            prof, note = _week_profiles(idf, wk, _depth + 1)
+            if prof:
+                return prof, f"schedule:year -> '{flds[i]}' {note}"
+        return None, "Schedule:Year resolved no usable week schedule"
+    if cls != "schedule:compact":
+        return None, f"class '{cls}' not supported by the time-weighted profile resolver"
+    blocks = _expand_compact_daytypes(obj)
+    if not blocks:
+        return None, "Schedule:Compact yielded no complete non-design-day day-type block"
+    wd = we = None
+    for toks, vals in blocks.items():
+        j = " ".join(toks)
+        if "ALLDAYS" in j or "ALLOTHERDAYS" in j:
+            wd = wd if wd is not None else vals
+            we = we if we is not None else vals
+        if "WEEKDAY" in j or "WEEKDAYS" in j:
+            wd = vals
+        if "WEEKEND" in j or "SATURDAY" in j or "SUNDAY" in j:
+            we = we if we is not None else vals
+    if wd is None and we is None:
+        return None, "no Weekday/Weekend/AllDays block resolved"
+    wd = wd if wd is not None else we
+    we = we if we is not None else wd
+    return {"wd": wd, "we": we}, f"schedule:compact (design days excluded, {len(blocks)} blocks)"
+
+
 def apply_standby_floor(occ_vals, floor: float):
     """f_load(t) = floor + (1 - floor) * occ(t), elementwise, clipped to [0, 1].
 
@@ -734,6 +968,236 @@ def _dhw_excluded(we, dhw_model) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# T9-13 (2026-08-01) -- DHW volume scaling. RE-SPECIFICATION of T9-11, which is REFUTED.
+# ---------------------------------------------------------------------------
+# WHY T9-11 IS WITHDRAWN. Measured on campaign 1170771 arm D vs arm C, from `dhw_hourly.csv`
+# (8760 h, cell B_central__Tall__MTL), re-derived in improvements/3rdJ_L3_improvements_step9.md:
+#
+#     residential DHW  +36.5 % annual, hourly max UNCHANGED (-2.4 %)
+#     night 00:00-05:00 share of the daily total   8.34 %  ->  32.86 %   (3.94x)
+#     peak draw hour                                06:00  ->  04:00
+#     diurnal peak-to-mean                          1.907  ->  1.359
+#
+# T9-11's own pre-recorded expectation ("DHW falls in every channel") was falsified by its own
+# simulation. The form `f_dhw(t) = floor + (peak - floor) * occ(t)` makes the instantaneous draw
+# RATE proportional to instantaneous PRESENCE. Showering, handwashing and cooking are scheduled
+# behaviours: being home asleep at 04:00 is presence with no draw. So the residential draw profile
+# flattened onto the occupancy curve and the annual mean rose with it, while office -- occupancy
+# zero at night and weekends -- fell 41.7 % with its peak halved. This is exactly the failure the
+# T9-11 block comment described when it excluded laundry ("would move the wash load to 03:00, when
+# guests are in their rooms"); the argument was correct and its scope was too narrow. It applies to
+# ALL of DHW, not only to batch processes.
+#
+# THE RE-SPECIFICATION. Occupancy sets HOW MUCH is drawn in a day, not WHEN within the day:
+#
+#     f_new(t) = s_proto(t) * r(d) / R          r(d) = mean(occ_d) / mean(occ_ref_d)
+#     Peak_Flow_Rate' = Peak_Flow_Rate * R      R    = max_d r(d)
+#
+# s_proto is the prototype flow-fraction schedule's own time-weighted hourly profile, carried
+# through UNTOUCHED -- so the intra-day shape, the peak hour and the night share are preserved by
+# construction, and that is a testable identity, not a hope (see `audit_dhw_shape_preservation`).
+# Daily volume scales exactly by r(d), because
+#     volume(d) ~ Peak_Flow_Rate' * mean_t f_new = P*R * mean(s)*r(d)/R = P * mean(s) * r(d).
+# Dividing by R and multiplying Peak_Flow_Rate by R keeps max(f_new) = max(s_proto), so the
+# Fraction bound is never violated and the schedule never silently clips -- clipping would have
+# truncated volume and broken the very promise of the model.
+#
+# NO-OP PROPERTY (the reason this form is safe): if our occupancy equals the reference occupancy
+# then r == 1, R == 1, f_new == s_proto and Peak_Flow_Rate is unchanged, so the model reduces to
+# the untouched prototype BIT-FOR-BIT. A model that cannot reproduce its own null case cannot be
+# trusted to report a lever; this one can, and `audit_dhw_shape_preservation` asserts it.
+#
+# THE REFERENCE, and why it is the prototype's own PEOPLE schedule. The injector runs ONE scenario
+# per IDF and has no cross-scenario view, so "relative to Default_NECB" is not computable in-run.
+# Normalising to the injected series' own annual mean is degenerate -- it would force annual DHW to
+# be scenario-invariant, which is the original T9-11 complaint restored. The prototype occupancy
+# schedule is the one anchor that is fixed across scenarios, present in every IDF, and physically
+# the right one: NECB sized this DHW volume against that many person-hours, our scenario supplies a
+# different number of person-hours, and the ratio is per-capita daily volume done correctly.
+# It must be captured BEFORE the PEOPLE rewiring, because afterwards the object carries an MXU_*
+# schedule and `_schedule_daytype_profiles` correctly refuses it.
+#
+# TWO SPECIFICATION CHOICES ARE SURFACED, NOT BURIED:
+#   `peak_policy="rescale"` (default) lets Peak_Flow_Rate rise with R when our occupancy exceeds
+#       NECB's. Physically consistent: more person-hours really is a larger design draw. It DOES
+#       change plant design flow, which T9-11 was rightly careful about -- so it is recorded per
+#       object in the provenance and asserted by the audit.
+#   `peak_policy="cap"` forbids R > 1 (design draw may fall, never rise), preserving the prototype
+#       sizing at the cost of under-serving scenarios busier than NECB.
+#   `r_max` bounds a runaway ratio; it is a guard, not a tuning knob, and any object that hits it
+#       is reported as CLIPPED so a silent saturation cannot be read as a clean result.
+# Neither is chosen by evidence -- both are recorded for the user's decision.
+#
+# LAUNDRY IS NO LONGER A SPECIAL CASE. T9-11 excluded it because a presence-driven rate would move
+# the wash to 03:00. T9-13 never touches intra-day shape, so the batch shape survives untouched and
+# only its daily volume scales with guest-nights -- which is precisely the "correct model" the
+# T9-11 comment described but could not implement. `exclude_schedule_tokens` therefore defaults to
+# EMPTY here. It is kept as a parameter so the exclusion can be reinstated for comparison.
+
+# MEASURED BLOCKER on `reference="prototype_people"` (job 1171061, TallBuilding ... Z6_v242.idf,
+# the PRE-injection tower). The resolver now reads all 7 prototype DHW schedules correctly
+# (Schedule:Year -> Week:Daily -> Day:Interval), but the tower carries exactly ONE PEOPLE schedule
+# for every channel:
+#
+#     NECB-A-Occupancy   mean_wd=0.3583  max_wd=0.9000  peak_h=9  night_share=0.0000
+#                        mean_we=0.0000            <-- ZERO at the weekend
+#
+# Two independent reasons that reference cannot be used as specified:
+#   1. `r_we = mean(occ_we) / 0` is undefined, so all 47 WaterUse:Equipment objects would come back
+#      `dhw_unresolved` -- T9-13 would be a silent whole-building no-op.
+#   2. It is not commensurate. Scaling RESIDENTIAL draw against an office-shaped NECB curve that is
+#      zero on Saturdays compares "fraction of residents at home" with "NECB office occupancy".
+#      Even with the zero patched, the ratio would not mean anything.
+#
+# So the reference must be the SAME SERIES as the target, measured in a designated baseline
+# scenario: `reference="baseline_series"` with a per-channel weekly-mean occupancy supplied in
+# `reference_occ_mean`. That is the "FIXED cross-scenario reference" the T9-11 comment named as a
+# specification decision, and it is well-posed: same units, same construction, computed once
+# offline from the baseline scenario's own Step-7 occupancy CSVs and then held constant, so the
+# per-scenario injector never needs a cross-scenario view. Default_NECB then gets r == 1 exactly
+# (the no-op case), absolute DHW stays at the calibrated NECB prototype level, and every other
+# scenario moves relative to it -- which is precisely the lever T9-11 was trying to create.
+#
+# `reference_occ_mean` is deliberately EMPTY here. Any channel missing from it is reported
+# `dhw_unresolved` with the reason, never silently defaulted to 1.0 -- a defaulted reference would
+# fabricate a no-op and report it as a result.
+
+DHW_MODEL_VOLUME_SCALED = {
+    "channels": ("office", "retail", "hotel", "residential"),
+    "exclude_schedule_tokens": (),      # laundry no longer needs excluding -- see above
+    "reference": "baseline_series",
+    "reference_occ_mean": {},           # {channel: weekly-mean occupancy of the BASELINE scenario}
+    "peak_policy": "rescale",           # "rescale" | "cap"
+    "r_max": 3.0,
+}
+
+# Kept for the record: the form that the tower's own PEOPLE schedule cannot support. Selecting it
+# is legal and will resolve on an IDF whose PEOPLE objects carry per-channel prototype occupancy;
+# on this tower it will report every object unresolved, loudly, with the reason above.
+DHW_MODEL_VOLUME_SCALED_PROTO_PEOPLE = dict(DHW_MODEL_VOLUME_SCALED,
+                                            reference="prototype_people")
+
+
+def apply_dhw_volume_scaling(proto_wd, proto_we, occ_wd, occ_we, ref_wd, ref_we,
+                             peak_policy: str = "rescale", r_max: float = 3.0):
+    """T9-13. Scale DAILY VOLUME by occupancy; carry the intra-day SHAPE through untouched.
+
+    Returns (new_wd, new_we, info). `info` carries every number the audit and the provenance need:
+    r_wd, r_we, R, peak_multiplier, clipped, and the shape-preservation evidence.
+
+    All six inputs are 24-slot (or equal-length) sequences. proto_* is the flow-fraction schedule
+    being replaced; occ_* is our injected occupancy; ref_* is the prototype occupancy that the
+    prototype flow schedule was sized against.
+    """
+    def _mean(v):
+        v = [float(x) for x in v]
+        return sum(v) / len(v) if v else 0.0
+
+    ref_m_wd, ref_m_we = _mean(ref_wd), _mean(ref_we)
+    r_wd = (_mean(occ_wd) / ref_m_wd) if ref_m_wd > 1e-12 else None
+    r_we = (_mean(occ_we) / ref_m_we) if ref_m_we > 1e-12 else None
+    if r_wd is None or r_we is None:
+        return None, None, {"error": "reference occupancy has zero mean -- ratio undefined",
+                            "ref_mean_wd": ref_m_wd, "ref_mean_we": ref_m_we}
+    clipped = bool(r_wd > r_max or r_we > r_max)
+    r_wd, r_we = min(r_max, max(0.0, r_wd)), min(r_max, max(0.0, r_we))
+
+    R = max(r_wd, r_we)
+    if peak_policy == "cap":
+        R = min(1.0, R) if R > 0 else 1.0
+    if R <= 1e-12:
+        R = 1.0
+    # divide the shape by R so max(f_new) == max(s_proto); multiply design flow by R to restore
+    # the volume. Under "cap", R is held at <=1 so the schedule may clip -- reported, not hidden.
+    new_wd = [min(1.0, max(0.0, float(s) * r_wd / R)) for s in proto_wd]
+    new_we = [min(1.0, max(0.0, float(s) * r_we / R)) for s in proto_we]
+
+    def _nightshare(v):
+        t = sum(float(x) for x in v)
+        return (sum(float(x) for x in v[0:6]) / t) if t > 1e-12 else float("nan")
+
+    def _argmax(v):
+        return max(range(len(v)), key=lambda i: float(v[i]))
+
+    info = {
+        "r_wd": round(r_wd, 6), "r_we": round(r_we, 6), "R": round(R, 6),
+        "peak_multiplier": round(R, 6), "peak_policy": peak_policy,
+        "r_clipped_at_r_max": clipped,
+        "proto_mean_wd": round(_mean(proto_wd), 6), "new_mean_wd": round(_mean(new_wd), 6),
+        "proto_max": round(max([float(x) for x in proto_wd] + [float(x) for x in proto_we]), 6),
+        "new_max": round(max(new_wd + new_we), 6),
+        "proto_nightshare_wd": round(_nightshare(proto_wd), 6),
+        "new_nightshare_wd": round(_nightshare(new_wd), 6),
+        "proto_peakhour_wd": _argmax(proto_wd), "new_peakhour_wd": _argmax(new_wd),
+        "is_noop": bool(abs(r_wd - 1.0) < 1e-9 and abs(r_we - 1.0) < 1e-9),
+    }
+    return new_wd, new_we, info
+
+
+def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
+                                 verbose: bool = True) -> dict:
+    """T9-13 gate. Shape preservation is an IDENTITY here, so it must be asserted, not assumed.
+
+    This is the diagnostic that would have caught T9-11: it fails loudly on exactly the signature
+    arm D produced -- night share moved and the peak hour moved. Checks, per applied object:
+
+      D1 night-share (00:00-05:00 of the daily total) IDENTICAL to the prototype's
+      D2 peak hour IDENTICAL to the prototype's
+      D3 max(f_new) <= max(s_proto) + tol   (the Fraction bound was never restored by clipping)
+      D4 volume ratio actually achieved == r(d) as intended
+      D5 no object silently saturated at r_max
+
+    Returns {"pass": bool, "n": int, "violations": [...], "counts": {...}}. A `pass` on an EMPTY
+    list is reported as a FAIL: a gate that never ran is not a gate that passed.
+    """
+    v, counts = [], {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "D5": 0}
+    for rec in applied:
+        i = rec.get("t9_13") or {}
+        if not i or "error" in i:
+            v.append({"obj": rec.get("name"), "check": "D0",
+                      "detail": i.get("error", "no T9-13 info recorded")})
+            continue
+        ns_p, ns_n = i.get("proto_nightshare_wd"), i.get("new_nightshare_wd")
+        if ns_p == ns_p and abs(float(ns_n) - float(ns_p)) > tol_share:   # NaN-safe
+            counts["D1"] += 1
+            v.append({"obj": rec.get("name"), "check": "D1",
+                      "detail": f"night share {ns_p} -> {ns_n}"})
+        if i.get("proto_peakhour_wd") != i.get("new_peakhour_wd"):
+            counts["D2"] += 1
+            v.append({"obj": rec.get("name"), "check": "D2",
+                      "detail": f"peak hour {i.get('proto_peakhour_wd')} -> "
+                                f"{i.get('new_peakhour_wd')}"})
+        if float(i.get("new_max", 0)) > float(i.get("proto_max", 0)) + 1e-9:
+            counts["D3"] += 1
+            v.append({"obj": rec.get("name"), "check": "D3",
+                      "detail": f"max {i.get('proto_max')} -> {i.get('new_max')}"})
+        pm, nm, r_wd, R = (float(i.get("proto_mean_wd", 0)), float(i.get("new_mean_wd", 0)),
+                           float(i.get("r_wd", 0)), float(i.get("R", 1)))
+        if pm > 1e-12:
+            achieved = (nm / pm) * float(i.get("peak_multiplier", 1.0))
+            if abs(achieved - r_wd) > 1e-4:
+                counts["D4"] += 1
+                v.append({"obj": rec.get("name"), "check": "D4",
+                          "detail": f"volume ratio achieved {achieved:.6f} != intended {r_wd:.6f}"
+                                    f" (clipping?)"})
+        if i.get("r_clipped_at_r_max"):
+            counts["D5"] += 1
+            v.append({"obj": rec.get("name"), "check": "D5", "detail": "r saturated at r_max"})
+    ok = (len(v) == 0) and (len(applied) > 0)
+    if verbose:
+        if not applied:
+            print("  [T9-13 audit FAIL] 0 objects audited -- a gate that never ran is not a PASS")
+        elif ok:
+            print(f"  [T9-13 audit PASS] {len(applied)} objects: shape, peak hour, night share "
+                  f"and Fraction bound all preserved; volume ratios achieved as intended")
+        else:
+            print(f"  [T9-13 audit FAIL] {len(v)} violations over {len(applied)} objects: {counts}")
+            for x in v[:8]:
+                print(f"      {x['check']} {x['obj']}: {x['detail']}")
+    return {"pass": ok, "n": len(applied), "violations": v, "counts": counts}
+
+
+# ---------------------------------------------------------------------------
 # modulate_baseline / modulate_baseline_monthly
 # ---------------------------------------------------------------------------
 def modulate_baseline(idf, space_tag2: str, sch_name: str, wd_vals, we_vals,
@@ -889,7 +1353,8 @@ def draw_residential_households(pool: dict, n: int, seed: int = 42) -> list:
 
 def inject_residential(idf, csv_path: str, seed: int = 42,
                         dtype_filter=RESIDENTIAL_DTYPE_APARTMENT, verbose: bool = True,
-                        dhw_model: dict = None) -> dict:
+                        dhw_model: dict = None, dhw_reference: dict = None,
+                        dhw_reference_prov: str = "") -> dict:
     """OD-8R-L3: inject one DISTINCT household's occupancy (Number_of_People = HHSIZE,
     Occupancy_Schedule, Metabolic_Rate) into EVERY residential apartment Space (Tag-2 exact
     match "HighriseApartment Apartment"), REPLACE semantics -- no baseline multiplication.
@@ -924,6 +1389,7 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
     result = {
         "n_spaces": 0, "n_households_drawn": 0, "n_carriers_neutralized": 0,
         "assignment": {}, "schedule_names": [], "dhw_applied": [], "dhw_unresolved": [],
+        "dhw_excluded": [],
     }
 
     space_objs = idf.idfobjects.get("SPACE", [])
@@ -1019,7 +1485,55 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
                 continue                                  # not a residential apartment object
             proto = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "")
             if _dhw_excluded(we, dhw_model):
+                result["dhw_excluded"].append(
+                    {"name": we.Name, "channel": "residential", "schedule": proto,
+                     "reason": "batch process (exclude_schedule_tokens)"})
                 continue
+
+            if dhw_model.get("reference") == "prototype_people":
+                # T9-13: daily volume scaled by this household's occupancy against the prototype
+                # occupancy the prototype DHW schedule was sized against; intra-day shape untouched.
+                sprof, sprov = _schedule_daytype_profiles(idf, proto)
+                if sprof is None or not dhw_reference:
+                    result["dhw_unresolved"].append(
+                        {"name": we.Name, "channel": "residential", "schedule": proto,
+                         "reason": (f"shape: {sprov}" if sprof is None
+                                    else "no prototype reference occupancy captured "
+                                         "(PEOPLE already rewired?)")})
+                    continue
+                new_wd, new_we, info = apply_dhw_volume_scaling(
+                    sprof["wd"], sprof["we"],
+                    pool[hh_id]["occ_wd"], pool[hh_id]["occ_we"],
+                    dhw_reference["wd"], dhw_reference["we"],
+                    peak_policy=dhw_model.get("peak_policy", "rescale"),
+                    r_max=float(dhw_model.get("r_max", 3.0)))
+                if new_wd is None:
+                    result["dhw_unresolved"].append(
+                        {"name": we.Name, "channel": "residential", "schedule": proto,
+                         "reason": info.get("error", "volume scaling failed")})
+                    continue
+                key = (hh_id, round(info["r_wd"], 4), round(info["r_we"], 4))
+                nm = dhw_cache.get(key)
+                if nm is None:
+                    nm = (f"MXU_Residential_DHWv2_HH{hh_id}_"
+                          f"r{int(round(key[1]*1000)):04d}w{int(round(key[2]*1000)):04d}")
+                    obj = idf.newidfobject("Schedule:Compact")
+                    obj.obj = ["Schedule:Compact"] + _build_compact_fields_2dt(
+                        nm, new_wd, new_we, type_limit="Fraction")
+                    dhw_cache[key] = nm
+                    result["schedule_names"].append(nm)
+                we.Flow_Rate_Fraction_Schedule_Name = nm
+                p_before = float(getattr(we, "Peak_Flow_Rate", 0.0) or 0.0)
+                p_after = p_before * float(info["peak_multiplier"])
+                we.Peak_Flow_Rate = p_after
+                info["peak_flow_before"], info["peak_flow_after"] = p_before, p_after
+                result["dhw_applied"].append(
+                    {"name": we.Name, "channel": "residential", "prototype_schedule": proto,
+                     "floor": None, "peak": None, "derived_schedule": nm,
+                     "model": "T9-13_volume_scaled", "t9_13": info,
+                     "provenance": f"shape: {sprov} | ref: {dhw_reference_prov}"})
+                continue
+
             floor, fprov = _schedule_standby_floor(idf, proto)
             peak, pprov = _schedule_peak(idf, proto)
             if floor is None or peak is None:
@@ -1288,6 +1802,58 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
                   f"(floor={floor:.4f} peak={peak:.4f})")
         return nm
 
+    # ---- T9-13: capture the REFERENCE occupancy BEFORE any PEOPLE rewiring happens ----
+    # Ordering is load-bearing. The dispatch loop immediately below overwrites
+    # Number_of_People_Schedule_Name with an MXU_* schedule, and `_schedule_daytype_profiles`
+    # correctly refuses MXU_* (the prototype is no longer recoverable from the IDF). So the
+    # reference must be read here or not at all. One representative PEOPLE object per channel --
+    # the first that resolves -- and which object it was is recorded in the provenance.
+    _t9_13 = bool(dhw_model) and dhw_model.get("reference") in ("prototype_people",
+                                                                "baseline_series")
+    _proto_occ, _proto_occ_prov = {}, {}
+    if _t9_13 and dhw_model.get("reference") == "baseline_series":
+        # A per-channel scalar weekly-mean occupancy from the BASELINE scenario, held flat across
+        # both day types. The prototype DHW schedule keeps its own WD/WE shape; the weekday and
+        # weekend VOLUME ratios still differ, because they come from OUR occupancy's own WD/WE
+        # means divided by this common baseline. Channels absent from the map stay unresolved.
+        for _ch, _v in (dhw_model.get("reference_occ_mean") or {}).items():
+            try:
+                _fv = float(_v)
+            except (TypeError, ValueError):
+                continue
+            if _fv > 1e-12:
+                _proto_occ[_ch] = {"wd": [_fv] * 24, "we": [_fv] * 24}
+                _proto_occ_prov[_ch] = f"baseline_series weekly-mean occupancy = {_fv:.6f}"
+        result["t9_13_reference"] = dict(_proto_occ_prov)
+        if verbose:
+            for _ch in sorted(_proto_occ_prov):
+                print(f"  [T9-13 ref] {_ch}: {_proto_occ_prov[_ch]}")
+            _missing = [c for c in dhw_model.get("channels", ()) if c not in _proto_occ]
+            if _missing:
+                print(f"  WARN: T9-13 baseline reference missing for {_missing} -- those channels "
+                      f"stay on their prototype DHW schedule (recorded, never defaulted to 1.0)")
+    elif _t9_13:
+        _fine2agg = {"office": "office", "office_support": "office", "retail": "retail",
+                     "hotel": "hotel", "hotel_support": "hotel", "residential": "residential"}
+        for obj in idf.idfobjects.get("PEOPLE", []):
+            tag2 = getattr(obj, "Space_Type_Name", "") or _get_zone_name(obj)
+            ch = _fine2agg.get(classify_tag2(tag2))
+            if ch is None or ch in _proto_occ:
+                continue
+            nm = str(getattr(obj, "Number_of_People_Schedule_Name", "") or "")
+            prof, prov = _schedule_daytype_profiles(idf, nm)
+            if prof is not None:
+                _proto_occ[ch] = prof
+                _proto_occ_prov[ch] = f"'{nm}' via {tag2}: {prov}"
+        result["t9_13_reference"] = dict(_proto_occ_prov)
+        if verbose:
+            for ch in sorted(_proto_occ_prov):
+                print(f"  [T9-13 ref] {ch}: {_proto_occ_prov[ch]}")
+            missing = [c for c in dhw_model.get("channels", ()) if c not in _proto_occ]
+            if missing:
+                print(f"  WARN: T9-13 reference occupancy unresolved for {missing} -- those "
+                      f"channels stay on their prototype DHW schedule (recorded, not silent)")
+
     _COUNTER_KEY = {"PEOPLE": "n_spaces", "LIGHTS": "n_lights", "ELECTRICEQUIPMENT": "n_equip"}
     for obj_class, sch_field in [
         ("PEOPLE", "Number_of_People_Schedule_Name"),
@@ -1388,6 +1954,58 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             print(f"  [dhw] {channel}: derived {nm} (floor={floor:.4f} peak={peak:.4f})")
         return nm
 
+    def _to24(vals):
+        """Collapse a 24- or 48-slot series (or a {month: series} dict) to 24 hourly values."""
+        if isinstance(vals, dict):
+            months = [_to24(v) for v in vals.values()]
+            if not months:
+                return None
+            return [sum(m[h] for m in months) / len(months) for h in range(24)]
+        v = [float(x) for x in vals]
+        if len(v) == 24:
+            return v
+        if len(v) == 48:
+            return [(v[2 * h] + v[2 * h + 1]) / 2.0 for h in range(24)]
+        if not v:
+            return None
+        return [v[min(len(v) - 1, int(h * len(v) / 24))] for h in range(24)]
+
+    def _channel_occ_24(channel):
+        """(occ_wd[24], occ_we[24]) of the INJECTED occupancy for a commercial channel."""
+        s = _raw_series.get(channel)
+        if not s:
+            return None, None
+        if channel == "hotel":
+            return _to24(s.get("monthly_wd")), _to24(s.get("monthly_we"))
+        if channel == "retail":
+            sat, sun = s.get("sat"), s.get("sun")
+            we = None
+            if sat is not None and sun is not None:
+                a, b = _to24(sat), _to24(sun)
+                we = [(x + y) / 2.0 for x, y in zip(a, b)]
+            elif s.get("we") is not None:
+                we = _to24(s["we"])
+            return _to24(s.get("wd")), we
+        return _to24(s.get("wd")), _to24(s.get("we"))
+
+    _t9_13_cache = {}
+
+    def _t9_13_schedule_for(channel, r_wd, r_we, new_wd, new_we):
+        """Get-or-create the T9-13 volume-scaled flow-fraction schedule for (channel, r_wd, r_we)."""
+        key = (channel, round(float(r_wd), 4), round(float(r_we), 4))
+        if key in _t9_13_cache:
+            return _t9_13_cache[key]
+        nm = (f"MXU_{channel.capitalize()}_DHWv2_"
+              f"r{int(round(key[1] * 1000)):04d}w{int(round(key[2] * 1000)):04d}_{tag}")
+        obj = idf.newidfobject("Schedule:Compact")
+        obj.obj = ["Schedule:Compact"] + _build_compact_fields_2dt(nm, new_wd, new_we,
+                                                                   type_limit="Fraction")
+        _t9_13_cache[key] = nm
+        result["modulated_schedule_names"].append(nm)
+        if verbose:
+            print(f"  [T9-13] {channel}: derived {nm} (r_wd={key[1]} r_we={key[2]})")
+        return nm
+
     if dhw_model:
         _dhw_channels = tuple(dhw_model.get("channels", ()))
         _we_channel = _wateruse_channel_map(idf)
@@ -1407,6 +2025,53 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
                     {"name": we.Name, "channel": channel, "schedule": proto,
                      "reason": "batch process (exclude_schedule_tokens)"})
                 continue
+            if _t9_13:
+                # T9-13: modulate DAILY VOLUME, carry the intra-day SHAPE through untouched.
+                sprof, sprov = _schedule_daytype_profiles(idf, proto)
+                ref = _proto_occ.get(channel)
+                if sprof is None or ref is None:
+                    result["dhw_unresolved"].append(
+                        {"name": we.Name, "channel": channel, "schedule": proto,
+                         "reason": (f"shape: {sprov}" if sprof is None
+                                    else "no prototype reference occupancy for this channel")})
+                    continue
+                occ_wd, occ_we = _channel_occ_24(channel)
+                if occ_wd is None:
+                    result["dhw_unresolved"].append(
+                        {"name": we.Name, "channel": channel, "schedule": proto,
+                         "reason": "injected occupancy series unavailable for this channel"})
+                    continue
+                new_wd, new_we, info = apply_dhw_volume_scaling(
+                    sprof["wd"], sprof["we"], occ_wd, occ_we, ref["wd"], ref["we"],
+                    peak_policy=dhw_model.get("peak_policy", "rescale"),
+                    r_max=float(dhw_model.get("r_max", 3.0)))
+                if new_wd is None:
+                    result["dhw_unresolved"].append(
+                        {"name": we.Name, "channel": channel, "schedule": proto,
+                         "reason": info.get("error", "volume scaling failed")})
+                    continue
+                target_sch = _t9_13_schedule_for(channel, info["r_wd"], info["r_we"],
+                                                 new_wd, new_we)
+                try:
+                    we.Flow_Rate_Fraction_Schedule_Name = target_sch
+                    # Restore the volume that dividing the shape by R removed. Peak_Flow_Rate is
+                    # the ONLY sizing field touched, and its before/after pair is recorded.
+                    p_before = float(getattr(we, "Peak_Flow_Rate", 0.0) or 0.0)
+                    p_after = p_before * float(info["peak_multiplier"])
+                    we.Peak_Flow_Rate = p_after
+                    info["peak_flow_before"] = p_before
+                    info["peak_flow_after"] = p_after
+                    result["dhw_applied"].append(
+                        {"name": we.Name, "channel": channel, "prototype_schedule": proto,
+                         "floor": None, "peak": None, "derived_schedule": target_sch,
+                         "model": "T9-13_volume_scaled", "t9_13": info,
+                         "provenance": f"shape: {sprov} | ref: {_proto_occ_prov.get(channel, '')}"})
+                except Exception as e:
+                    result["dhw_unresolved"].append(
+                        {"name": we.Name, "channel": channel, "schedule": proto,
+                         "reason": f"setattr failed: {e}"})
+                continue
+
             floor, fprov = _schedule_standby_floor(idf, proto)
             peak, pprov = _schedule_peak(idf, proto)
             if floor is None or peak is None:
@@ -1447,14 +2112,25 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             seed=channels["residential"].get("seed", 42),
             verbose=verbose,
             dhw_model=_resid_dhw,
+            dhw_reference=_proto_occ.get("residential"),
+            dhw_reference_prov=_proto_occ_prov.get("residential", ""),
         )
         # Fold the residential DHW records into the top-level lists so one provenance block
         # describes the whole building rather than two half-buildings.
         result["dhw_applied"].extend(result["residential"].get("dhw_applied", []))
         result["dhw_unresolved"].extend(result["residential"].get("dhw_unresolved", []))
+        result["dhw_excluded"].extend(result["residential"].get("dhw_excluded", []))
     elif "residential" in channels and verbose:
         print("  [FALLBACK] residential channel data missing -- apartment Spaces revert to "
               "whatever the source IDF already had (untouched, REPLACE not applied)")
+
+    # ---- T9-13 diagnostic gate: shape preservation is an identity, so ASSERT it ----
+    # Run before the save so a violation is visible in the same console block as the injection,
+    # and stored on `result` so the campaign driver and the W-gates can read a machine-checkable
+    # verdict rather than re-deriving it from the IDF.
+    if _t9_13:
+        _t913_recs = [r for r in result["dhw_applied"] if r.get("model") == "T9-13_volume_scaled"]
+        result["t9_13_audit"] = audit_dhw_shape_preservation(_t913_recs, verbose=verbose)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)) or ".", exist_ok=True)
     idf.saveas(output_path)
@@ -1511,7 +2187,11 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         f.write(f"n_dhw_applied={len(result['dhw_applied'])}\n")
         f.write(f"n_dhw_excluded={len(result['dhw_excluded'])}\n")
         f.write(f"n_dhw_unresolved={len(result['dhw_unresolved'])}\n")
-        _dhw = sorted({(r["channel"], r["prototype_schedule"], r["floor"], r["peak"])
+        # floor/peak are None under T9-13 (it uses no extremum); -1 keeps the tuple sortable if a
+        # future run ever mixes the two models in one IDF.
+        _dhw = sorted({(r["channel"], r["prototype_schedule"],
+                        -1.0 if r["floor"] is None else r["floor"],
+                        -1.0 if r["peak"] is None else r["peak"])
                        for r in result["dhw_applied"]})
         for _ch, _proto, _fl, _pk in _dhw:
             f.write(f"dhw {_ch} '{_proto}' -> floor={_fl} peak={_pk}\n")
@@ -1519,6 +2199,30 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             f.write(f"dhw_EXCLUDED {r['channel']} '{r['name']}' ({r['schedule']}): {r['reason']}\n")
         for r in result["dhw_unresolved"]:
             f.write(f"dhw_UNRESOLVED '{r['name']}' ({r.get('schedule', '')}): {r['reason']}\n")
+        # T9-13: volume-scaled DHW -- diagnostics, one line per (channel, r_wd, r_we) plus the gate
+        if result.get("t9_13_audit") is not None:
+            a = result["t9_13_audit"]
+            f.write(f"t9_13_audit_pass={a['pass']} n_audited={a['n']} counts={a['counts']}\n")
+            for v in a["violations"]:
+                f.write(f"t9_13_VIOLATION {v['check']} '{v['obj']}': {v['detail']}\n")
+            for _ch, _p in sorted(result.get("t9_13_reference", {}).items()):
+                f.write(f"t9_13_reference {_ch}: {_p}\n")
+            _seen = set()
+            for r in result["dhw_applied"]:
+                i = r.get("t9_13")
+                if not i or "error" in i:
+                    continue
+                k = (r["channel"], i["r_wd"], i["r_we"])
+                if k in _seen:
+                    continue
+                _seen.add(k)
+                f.write(f"t9_13 {r['channel']} '{r['prototype_schedule']}' "
+                        f"r_wd={i['r_wd']} r_we={i['r_we']} R={i['R']} "
+                        f"peak_policy={i['peak_policy']} peak_mult={i['peak_multiplier']} "
+                        f"nightshare={i['proto_nightshare_wd']}->{i['new_nightshare_wd']} "
+                        f"peakhour={i['proto_peakhour_wd']}->{i['new_peakhour_wd']} "
+                        f"max={i['proto_max']}->{i['new_max']} noop={i['is_noop']} "
+                        f"clipped={i['r_clipped_at_r_max']}\n")
         if residential_requested:
             f.write(f"n_residential_spaces={result['residential']['n_spaces']}\n")
             f.write(f"n_residential_households_drawn={result['residential']['n_households_drawn']}\n")

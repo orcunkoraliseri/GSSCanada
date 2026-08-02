@@ -1875,3 +1875,394 @@ Array **1170771** submitted, `--array=0-111%20`, tasks 0–7 running immediately
 
 A manager prompt for the next session, written so it needs no memory of this one, is at
 `improvements/3rdJ_L3_manager_prompt_2026-08-01.md`.
+
+---
+
+## Campaign C/D closed 112/112 — 2026-08-01
+
+`sacct -X -j 1170771` → **112 COMPLETED**, zero FAILED/TIMEOUT, queue empty. Both output roots
+carry exactly 56 cell directories:
+
+| arm | outroot | cells |
+|---|---|---|
+| C (`calibrated_v2`, DHW off) | `campaign/out_C_lm3v2/campaign_39a6e24e` | 56 |
+| D (`calibrated_v2` + `per_capita`) | `campaign/out_D_full/campaign_39a6e24e` | 56 |
+
+Aggregation submitted: **1171043** (arm C → `agg_C_lm3v2`), **1171044** (arm D → `agg_D_full`).
+
+The five predictions recorded 2026-07-31 *before* these runs stand unedited and are the next
+thing to test. The load-bearing one: arm B's retail `interior_lighting` was **339.0211 GJ in all
+13 injected scenarios**; if arm C still shows a zero spread there, T9-12 did not land.
+
+---
+
+## Arms C/D verdict — 4 PASS, 1 FAIL — 2026-08-01
+
+Aggregation `1171043`/`1171044` COMPLETED (12:00 / 17:54, exit 0:0). Integrity clears first:
+56 cells per arm, `INJ_HASH=39a6e24e` for C and D (`898d033a` for A/B), `attribution_closed=True`
+everywhere, `max|attribution_residual_rel| ≤ 3.35e-16`, identical cell tags across all four arms,
+and **`max|area_C − area_B| = max|area_D − area_C| = 0 m²`** — geometry untouched, arms comparable.
+
+### Channel EUI (CFA), median over 56 cells
+
+| channel | armA | armB | armC | armD | C−B % | D−C % | band | in C | in D |
+|---|---|---|---|---|---|---|---|---|---|
+| office | 80.03 | 82.69 | 82.70 | 79.31 | +0.03 | −4.47 | [100,200] | 0/56 **FAIL** | 0/56 **FAIL** |
+| retail | 84.05 | 95.39 | **90.05** | 87.66 | **−6.00** | −2.76 | [80,155] | 56/56 | **47/56 FAIL** |
+| hotel | 180.94 | 179.72 | 179.75 | 173.73 | +0.02 | −3.27 | [180,300] | 28/56 **FAIL** | 28/56 **FAIL** |
+| residential | 120.89 | 120.78 | 120.79 | **145.62** | +0.02 | **+22.29** | — | INFO | INFO |
+| residential_common | 53.72 | 53.47 | 53.48 | 53.49 | +0.06 | 0.00 | — | INFO | INFO |
+| service_MEP | 58.44 | 59.41 | 59.47 | 59.47 | +0.10 | 0.00 | — | INFO | INFO |
+
+### A harness defect found and corrected before any verdict was recorded
+
+The first pass reported P1 and P4 as FAIL on a **vacuous test**. `cell_tag` is
+`<scenario>__<geometry>__<city>`, so pivoting `index=cell_tag, columns=scenario` yields exactly one
+non-NaN per row and every "cross-scenario spread" is 0 **by construction** — it printed
+`spread == 0` for arm B *and* arm C alike, and `nan` levers, with `Mean of empty slice` warnings as
+the tell. This is the same failure class as the earlier vacuous gates: a test that cannot fail is
+also a test that cannot pass. Corrected unit = the **geometry-city group** (4 of them), scenario as
+the varying axis inside it (`analyse_armCD_fix.py`). P2 was **not** re-derived — its 0.05 %
+threshold was written before the runs and stands as written.
+
+### The five predictions, as written 2026-07-31
+
+**P1 — PASS.** Retail EUI 95.39 → **90.05** (−5.61 %), inside the predicted 88–91. The freeze is
+broken: arm B held retail `interior_lighting` at one value in **4/4** geometry-city groups
+(Tall__MTL = 339.0211 GJ in all 13 injected scenarios, as recorded); arm C spreads
+**24.46–46.17 GJ (9.2–11.8 %)** in every group, 0/4 frozen. Arm C's `B_central` retail lighting
+(1278.97 GJ summed) lands on `Default_NECB` (1279.05 GJ) — the k=0.60 calibration reproduces the
+NECB prototype's own weekday mean, which is what it was calibrated to.
+
+**P2 — FAIL as written.** Threshold was "unchanged to within noise", operationalised at 0.05 %.
+Measured `max|C−B|`: office **0.101 %**, hotel **0.081 %**, service_MEP **0.305 %**. The threshold
+is not being relaxed. The mechanism is identified and is *not* injector leakage: in the C-vs-B
+specificity table **every** off-retail delta is `heating`/`cooling`/`pumps`/`fans`/`heat_recovery`/
+`heat_rejection` — there is **no** change to any `interior_lighting` or `equipment` end use outside
+retail. Retail lighting −20.62 % removes internal gain, so retail `heating` NaturalGas **+14.60 %**
+and the shared central plant follows (service_MEP heating +0.50 %). Recorded as a FAIL whose cause
+is thermal coupling through shared plant, not a boundary violation.
+
+**P3 — PASS.** Arm B's 56/56 was bought by the freeze. Arm C is 56/56 but now on a genuinely
+variable quantity (EUI range 80.90–97.16, sd 5.119, vs arm B 87.41–101.97, sd 4.651 — the floor is
+now 0.9 above the band edge, not 7.4), and **arm D falls to 47/56**. The gate has been seen failing,
+so arm C's PASS is a real PASS where arm B's was not.
+
+**P4 — PASS on the claim, wrong on the magnitude.** Office DHW cross-scenario spread
+**0.0086 % → 30.36 %**; the B_opt-vs-B_cons lever goes **−0.004 % → −22.13 %**. Every channel goes
+flat→live (retail 0.008→53.6 %, hotel 0.009→5.83 %, residential 0.011→16.74 %). The prediction said
+"expect a visible but **smaller**" lever than the −18.85 % schedule-level figure; the energy lever is
+**−22.13 %, i.e. larger**. The directional claim holds, the damping expectation does not.
+
+**P5 — PASS.** On the DHW end use itself: hotel **−8.73 %**, retail −28.44 %, office −29.38 %,
+residential **+40.78 %**. Hotel moves least by a factor of 3.3 against the next channel, consistent
+with ~54 % of design DHW flow being the deliberately excluded laundry. (The first pass scored this
+on *channel-total* EUI and returned `retail`; the prediction text is explicit that it is about DHW —
+"if hotel DHW moves as much as residential" — so the DHW basis is the specified one.)
+
+### New open item — residential DHW rises 40.78 % under `per_capita`
+
+The largest single effect in the campaign is not one of the five predictions: arm D raises
+residential DHW NaturalGas **214,298 → 302,166 GJ (+41.0 %)**, pushing the residential channel EUI
+120.79 → **145.62 (+22.3 %)**. All other channels *fall* under `per_capita` (office −29 %,
+retail −28 %, hotel −9 %). This asymmetry needs a specification answer before arm D is usable:
+whether `f_dhw(t) = floor + (peak−floor)·occ(t)` is meant to preserve the annual design flow per
+channel, or whether a residential occupancy profile that is high overnight legitimately integrates
+above the flat design schedule. Until that is settled, **arm C is the defensible product and arm D
+is diagnostic** — and note the retail gate's 56/56 → 47/56 fall is driven entirely by arm D's DHW.
+
+**Gates unchanged: office FAIL 0/56, hotel FAIL 28/56 both stand. No band, threshold or gate has
+been edited.**
+
+---
+
+## T9-11 residential +40.8 % — hypothesis and predictions, written BEFORE the test — 2026-08-01
+
+**Note first that T9-11's own pre-recorded expectation is already falsified.** `commercial_integration.py:672-675`
+says, verbatim: *"DHW falls in every channel (our occupancy series run below the prototype schedules'
+own means), office and residential most"*. Residential rose **+40.78 %**. The prediction was written
+before the simulation, and the simulation refuted it. That is the gate working.
+
+**HYPOTHESIS H.** The map `f_dhw(t) = floor + (peak − floor)·occ(t)` (`:651`) is anchored on the
+prototype schedule's **extrema** — `floor` from `_schedule_standby_floor`, `peak` from
+`_schedule_peak` (`:1023-1024`) — and nothing in it preserves the prototype's **mean**. Annual draw
+volume is proportional to the mean, not the extrema. For `ApartmentHighRise APT_DHW` the documented
+range is **0.01–1.00** (`:659`), so `f ≈ occ(t)` almost exactly. Residential occupancy is high
+overnight, when a DHW *draw* schedule is near its floor — nobody showers at 03:00, but they are
+home. So residential integrates far above the prototype draw shape and volume rises. Office and
+retail have occupancy ≈ 0 nights and weekends against prototype floors up to 0.57, so they fall.
+The error is the same class as the one the laundry exclusion was written to avoid (`:661-670`):
+**instantaneous presence is not draw rate.**
+
+**PREDICTIONS, falsifiable, recorded before running.** `agg_annual.csv` carries `peak_W` alongside
+`energy_J` per (channel, end_use, fuel), so load factor LF = mean/peak is derivable per arm.
+
+- **H1 (the discriminator).** Residential DHW `peak_W` is **essentially unchanged** C→D (|Δ| < 5 %)
+  while energy rises 40.8 %. Both schedules reach the same maximum 1.00, so only the mean moved.
+  *If `peak_W` also rose by ~41 %, H is REFUTED* and the defect is a magnitude/sizing error
+  (`Peak_Flow_Rate` re-scaled) rather than a shape error.
+- **H2.** Residential DHW load factor rises by ~41 % and office/retail LF falls by ~29 %; the LF
+  ratio must reproduce the energy ratio once the peak change is divided out.
+- **H3.** Arm D residential DHW LF ≈ the residential **occupancy** LF taken from the independent
+  `people` metric in `agg_diurnal.csv` (within ~15 %), because floor 0.01 / peak 1.00 makes
+  `f ≈ occ`. Office must NOT match as tightly — its prototype floor (up to 0.57) survives the map
+  and lifts the derived schedule above its own occupancy. *If arm D residential DHW LF is far from
+  the occupancy LF, the schedule being written is not the occupancy series and H is wrong about
+  which term dominates.*
+- **Not a test:** the cross-channel sign split (residential up, office/retail down, hotel least) is
+  already observed and cannot re-confirm the hypothesis that was built to explain it.
+
+### Result: H REFUTED as stated, and H2 was a third vacuous test — 2026-08-01
+
+| channel | energy D/C | peak_W D/C | LF C | LF D | LF D/C |
+|---|---|---|---|---|---|
+| residential | **+40.78 %** | **+31.76 %** | 0.5263 | 0.5623 | +6.85 % |
+| office | −29.38 % | −39.41 % | 0.2576 | 0.3002 | +16.55 % |
+| retail | −28.44 % | +3.12 % | 0.3164 | 0.2196 | −30.61 % |
+| hotel | −8.73 % | −7.64 % | 0.4582 | 0.4528 | −1.18 % |
+
+- **H1 REFUTED.** Residential DHW `peak_W` rose **+31.76 %**, not the predicted <5 %.
+- **H2 was VACUOUS — a third one.** I defined LF = E/(h·P) and then "tested" whether
+  `E_D/E_C = (LF_D/LF_C)·(P_D/P_C)`. Substituting the definition, that is `E_D/E_C = E_D/E_C`. The
+  residual came back `+0.0000 %` for all four channels — the signature of an identity, not of
+  agreement. It cannot fail and confirms nothing. Struck.
+- **H3 NOT CONFIRMED.** Every channel's arm-D DHW LF sits *below* its occupancy LF (residential
+  −27.1 %, office −15.5 %), and the predicted ordering inverted: office was **tighter** than
+  residential, the opposite of the prediction.
+
+**But the H1 refutation is itself confounded, and I am not treating it as the answer.** `peak_W` here
+is summed over 56 cells and over two fuels whose mix shifted under arm D (residential DHW gas
++41.0 %, electricity +17.7 %); a sum of non-coincident per-cell peaks across fuels is not the
+schedule's maximum. Provenance confirms the inputs are exactly as documented — `dhw residential
+'ApartmentHighRise APT_DHW_SCH' -> floor=0.01 peak=1.0`, `n_dhw_applied=45`, `n_dhw_excluded=2`,
+`n_dhw_unresolved=0` — and `apply_lighting_diversity` (`:630`) clamps to `max = peak`, so at
+**schedule** level the maximum cannot have moved. Meter peak and schedule peak are different
+objects; the proxy is what failed, not necessarily the hypothesis.
+
+### Decisive test, predictions written BEFORE running
+
+Arm D's injected IDF contains **both** families — the now-unreferenced prototype `APT_DHW_SCH` and
+the 45 `MXU_Residential_DHW_HH*` schedules that replaced it. Measuring them directly removes every
+meter-side confound. Time-weighted expansion of the `Until:` blocks to 24 hourly values per
+daytype, design days excluded; derived family weighted by how many `WaterUse:Equipment` objects
+reference each.
+
+- **H1b.** `max` of every `MXU_Residential_DHW_*` = **1.00** = `max(APT_DHW_SCH)`. *If any derived
+  schedule exceeds 1.00, `apply_lighting_diversity` is not doing what `:630` says and the defect is
+  in the clamp.*
+- **H2b (the real test).** WD/WE-weighted (5:2) mean of the derived family ÷ mean of `APT_DHW_SCH`
+  = **1.41 ± 0.08**, reproducing the observed +40.78 % energy rise. This is *not* an identity: it is
+  computed from schedule geometry inside the IDF and compared against a meter total from a separate
+  artefact. *If it lands far from 1.41, the annual mean of the schedule is not what is driving the
+  energy change and the cause is elsewhere.*
+
+### MECHANISM CONFIRMED from the hourly artefact — T9-11 is mis-specified for every channel — 2026-08-01
+
+`dhw_hourly.csv` (8760 rows per channel per cell) is the direct artefact and needs no meter-side
+inference. Cell `B_central__Tall__MTL`, arm C vs arm D:
+
+| channel | annual C | annual D | Δ | max MJ/h C → D | Δ peak |
+|---|---|---|---|---|---|
+| residential | 1684.83 GJ | 2299.47 GJ | **+36.48 %** | 394.22 → 384.73 | **−2.41 %** |
+| office | 719.75 | 419.93 | −41.66 % | 315.87 → 142.82 | −54.79 % |
+| hotel | 2572.98 | 2361.29 | −8.23 % | 927.13 → 886.37 | −4.40 % |
+| retail | 56.38 | 31.33 | −44.43 % | 19.75 → 17.92 | −9.24 % |
+
+**Residential DHW hourly shape, share of the daily total:**
+
+| | 00 | 02 | 04 | **06** | 09 | 12 | 15 | 18 | 21 | 23 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| arm C | 0.47 | 0.08 | 1.57 | **7.95** | 6.49 | 4.19 | 4.43 | 5.72 | 4.33 | 1.34 |
+| arm D | 5.02 | 5.54 | 5.66 | 5.45 | 2.94 | 2.53 | 3.72 | 4.09 | 4.19 | 4.56 |
+
+- **Night (00:00–05:00) share: 8.34 % → 32.86 %, a 3.94× rise.**
+- **Peak draw hour moves from 06:00 to 04:00.**
+- Diurnal peak-to-mean collapses 1.907 → 1.359 — the profile flattens toward the occupancy curve.
+- Hourly **max is unchanged (−2.41 %)**, which confirms **H1b at cell level**: the clamp holds and
+  the schedule maximum did not move. It also confirms the earlier `peak_W` +31.76 % was exactly the
+  bad proxy I flagged — a sum of non-coincident per-cell peaks across two fuels whose mix shifted.
+
+**The defect is a specification error, and it is the one T9-11's own comment warned about.**
+`:664-665` excludes laundry because *"driving it by instantaneous guest presence would move the wash
+load to 03:00, when guests are in their rooms."* That is precisely what T9-11 then did to
+residential **showers** — the peak draw hour is now 04:00. `f_dhw(t) = floor + (peak−floor)·occ(t)`
+treats draw rate as proportional to instantaneous presence, but showering, handwashing and cooking
+are *scheduled behaviours*, not presence-proportional. Being home asleep at 04:00 is presence with
+no draw. The reasoning that justified excluding laundry applies to all of DHW.
+
+This is **not** a residential-only problem. Office −41.7 % with its peak halved (−54.8 %) is the same
+error with the sign flipped: zero occupancy nights and weekends drives the office draw below its own
+circulation floor. Residential rises only because residential occupancy is the one channel that is
+high when a draw schedule should be near zero.
+
+**Consequence: arm D is not usable as a product.** Arm C stands as the defensible deliverable
+(T9-12 only, DHW untouched, gates unchanged). T9-11 needs re-specification before any re-run:
+the correct form modulates the prototype's daily **volume** by an occupancy factor while preserving
+its intra-day **shape** — i.e. the treatment `:666-667` already reserved for laundry, applied to all
+four channels. Choosing the cross-scenario reference for that factor remains the open specification
+decision. **No band or gate has been edited; arm D's retail 47/56 is a consequence of this defect,
+not evidence about retail.**
+
+Pre-registered H1b/H2b (direct schedule measurement inside the IDF) submitted as job `1171053`;
+H1b is already corroborated by the unchanged hourly max above.
+
+---
+
+## T9-13 — DHW volume scaling. RE-SPECIFICATION of T9-11 (withdrawn) — 2026-08-01
+
+Implemented in `eSim_bem_utils/commercial_integration.py`, opt-in, off by default. T9-11
+(`DHW_MODEL_PER_CAPITA`) is left in the file untouched so arm D stays reproducible; it is
+**withdrawn as a model**, not deleted as an artefact.
+
+### The form
+
+    f_new(t) = s_proto(t) · r(d) / R          r(d) = mean(occ_d) / mean(occ_ref_d)
+    Peak_Flow_Rate' = Peak_Flow_Rate · R      R    = max_d r(d)
+
+`s_proto` is the prototype flow-fraction schedule's own time-weighted hourly profile, carried
+through **untouched** — intra-day shape, peak hour and night share are preserved *by construction*.
+Daily volume scales exactly by `r(d)`, since
+`volume(d) ∝ P·R · mean(s)·r(d)/R = P·mean(s)·r(d)`. Dividing the shape by `R` and multiplying
+design flow by `R` keeps `max(f_new) = max(s_proto)`, so the Fraction bound is never violated and
+the schedule never silently clips — clipping would truncate volume and break the model's own promise.
+
+**No-op property.** If occupancy equals the reference, `r = R = 1`, `f_new = s_proto` and
+`Peak_Flow_Rate` is unchanged: the model reduces to the untouched prototype bit-for-bit. A model
+that cannot reproduce its own null case cannot be trusted to report a lever. Asserted by T1.
+
+### The reference, and why it is forced
+
+The injector runs **one scenario per IDF** and has no cross-scenario view, so "relative to
+`Default_NECB`" is not computable in-run. Normalising to the injected series' own annual mean is
+degenerate — it forces annual DHW to be scenario-invariant, restoring the original T9-11 complaint.
+The prototype **PEOPLE** schedule is the one anchor that is fixed across scenarios, present in every
+IDF, and physically right: NECB sized this DHW volume against that many person-hours; our scenario
+supplies a different number; the ratio is per-capita daily volume done correctly.
+
+Ordering is load-bearing: the reference is captured **before** the PEOPLE dispatch loop, because
+afterwards the object carries an `MXU_*` schedule and `_schedule_daytype_profiles` correctly refuses
+it. One representative PEOPLE object per channel, and which one is recorded in the provenance.
+
+### Laundry is no longer a special case
+
+T9-11 excluded laundry because a presence-driven *rate* would move the wash to 03:00. T9-13 never
+touches intra-day shape, so the batch shape survives untouched and only its daily volume scales with
+guest-nights — precisely the "correct model" the T9-11 comment described but could not implement.
+`exclude_schedule_tokens` therefore defaults to **empty**; the parameter is kept so the exclusion can
+be reinstated for comparison. This closes the open item "~54 % of design DHW flow still
+occupancy-invariant".
+
+### A real bug the tests caught
+
+The first version of the time-weighted expander skipped any block naming a design day. Prototypes
+write `For: Weekdays SummerDesignDay WinterDesignDay` as **one** block, so that rule discarded the
+weekday profile entirely (T6 failed with `StopIteration`). Corrected to skip **design-day-only**
+blocks. `_schedule_extremum` keeps the looser any-token rule deliberately — it is validated against
+the prototypes for T9-9/T9-10 floors and peaks, and changing it would silently move numbers in
+closed campaigns. The two rules now differ on purpose, and the divergence is commented in both.
+
+Separately, `_schedule_extremum` **cannot** be reused for a mean: it collects a flat list of values,
+so a value spanning 8 h and one spanning 1 h each appear once. T6 measures the error — the
+time-weighted mean of a 1-hour spike is `0.041667`, the unweighted mean is `0.333333`, an **8×**
+overstatement. Hence a separate resolver rather than another `agg`.
+
+### Diagnostics — `audit_dhw_shape_preservation`
+
+Shape preservation is an identity here, so it is **asserted**, not assumed. Per applied object:
+
+| check | asserts |
+|---|---|
+| D1 | night share (00:00–05:00 of the daily total) identical to the prototype's |
+| D2 | peak hour identical to the prototype's |
+| D3 | `max(f_new) ≤ max(s_proto)` — the bound was not restored by clipping |
+| D4 | volume ratio **achieved** equals `r(d)` **intended** |
+| D5 | no object silently saturated at `r_max` |
+
+An **empty** audit reports FAIL, not PASS — a gate that never ran is not a gate that passed (T5).
+Results land on `result["t9_13_audit"]` and in the provenance file as `t9_13_audit_pass=`,
+`t9_13_VIOLATION …`, `t9_13_reference …`, and one `t9_13 <channel> … nightshare=a->b peakhour=x->y
+max=m->n noop= clipped=` line per distinct `(channel, r_wd, r_we)`.
+
+### The gate has been seen failing
+
+Per the standing rule, the audit was run against **T9-11's actual defect** (T4), not a synthetic one:
+fed the `floor + (peak−floor)·occ` output on a realistic residential draw profile it reports
+`night share 0.0354 → 0.3730`, `peak hour 7h → 0h`, and fails **D1, D2 and D4**. This diagnostic
+would have caught arm D before it consumed 56 runs.
+
+**22/22 primitive tests pass** (`test_t9_13.py`): no-op identity, shape preservation, exact volume
+ratio, Fraction-bound safety, audit-passes-on-good, audit-fails-on-T9-11, empty-is-FAIL, and the
+time-weighted expander. T9-9 / T9-10 / T9-11 / T9-12 outputs verified unchanged.
+
+### Two specification choices SURFACED, not buried — your call
+
+1. **`peak_policy`** — default `"rescale"`: `Peak_Flow_Rate` rises with `R` when our occupancy
+   exceeds NECB's. Physically consistent (more person-hours really is a larger design draw) but it
+   **does change plant design flow**, which T9-11 was rightly careful about. Alternative `"cap"`
+   forbids `R > 1`, preserving prototype sizing at the cost of under-serving busier scenarios.
+2. **`r_max = 3.0`** — a runaway guard, not a tuning knob. Any object hitting it is reported CLIPPED
+   (D5) so a silent saturation cannot be read as a clean result.
+
+Neither is chosen by evidence. **Not simulated yet** — T9-13 has been tested at the primitive level
+only. No campaign has been run with it, and no gate has moved. Arm C remains the deliverable.
+
+### Verified against the REAL IDF — the resolver, and a blocker that would have shipped silently
+
+**The prototype DHW schedules are not `Schedule:Compact`.** Job `1171059` on the real tower:
+205 Compact, 9 Constant, 126 **Year**, 147 Week:Daily, 425 Day:Interval — and **all 7** distinct
+WaterUse:Equipment flow-fraction schedules (47 objects) are `SCHEDULE:YEAR`. The first version of
+`_schedule_daytype_profiles` handled only Compact and Constant, so T9-13 would have marked every
+object `dhw_unresolved` and produced a **whole-building no-op** — correctly recorded, and useless.
+Extended to the full `Year → Week:Daily/:Compact → Day:Interval/:Hourly/:List` chain and re-verified
+on the pre-injection tower (job `1171061`, injector md5 `9c2328ef`): **DHW 7/7 resolved, 0
+unresolved.**
+
+| prototype schedule | mean_wd | max_wd | peak_h | night share |
+|---|---|---|---|---|
+| `ApartmentHighRise APT_DHW_SCH` | 0.5242 | 1.0000 | 07 | 0.0358 |
+| `HotelLarge GuestRoom_SWH_Sch` | 0.3333 | 0.8000 | 07 | 0.1500 |
+| `HotelLarge BLDG_SWH_SCH` | 0.3750 | 0.6000 | 07 | 0.1222 |
+| `OfficeLarge BLDG_SWH_SCH` | 0.2100 | 0.5700 | 12 | 0.0000 |
+| `RetailStandalone BLDG_SWH_SCH` | 0.2450 | 0.6200 | 12 | 0.0000 |
+| `HotelLarge LAUNDRY_SWH_SCH` | 0.2917 | 1.0000 | 17 | 0.0000 |
+| `HotelLarge LaundryRoom_SWH_Sch_Post2004` | 0.2917 | 1.0000 | 17 | 0.0000 |
+
+The residential prototype's own night share is **0.0358** — arm D ran it at **0.3286**. That is the
+defect measured against its own source, independently of the hourly artefact.
+
+### The reference had to be re-specified too — `prototype_people` is not viable on this tower
+
+The same probe found the tower carries **exactly one** PEOPLE schedule for every channel:
+
+    NECB-A-Occupancy   mean_wd = 0.3583   peak_h = 9   mean_we = 0.0000
+
+Two independent reasons it cannot serve as the reference:
+
+1. `r_we = mean(occ_we) / 0` is **undefined** → all 47 objects unresolved → silent no-op.
+2. It is **not commensurate**. Scaling residential draw against an office-shaped NECB curve that is
+   zero on Saturdays compares "fraction of residents at home" with "NECB office occupancy". Patching
+   the zero would not make the ratio mean anything.
+
+So the reference is now `reference="baseline_series"`: a per-channel **weekly-mean occupancy of the
+baseline scenario**, i.e. the *same series as the target*, computed once offline and held constant.
+This is the "FIXED cross-scenario reference" the T9-11 comment named as a specification decision.
+Well-posed (same units, same construction), and the per-scenario injector still never needs a
+cross-scenario view. `Default_NECB` then gets `r = 1` exactly — the no-op case — absolute DHW stays
+at the calibrated NECB level, and every other scenario moves relative to it, which is the lever
+T9-11 was trying to create. `DHW_MODEL_VOLUME_SCALED_PROTO_PEOPLE` is kept for IDFs that do carry
+per-channel prototype occupancy; on this tower it reports every object unresolved, loudly.
+
+`reference_occ_mean` ships **empty**. A channel missing from it is reported `dhw_unresolved` with the
+reason and is never defaulted to 1.0 — a defaulted reference would fabricate a no-op and report it
+as a result.
+
+### Blocking next action, and it is a specification decision
+
+**T9-13 cannot run until the four baseline weekly-mean occupancies are computed** from the baseline
+scenario's Step-7 CSVs (`office_presence_multiplier_2030.csv`,
+`hotel_schedule_multiplier_2030_central.csv`, `BEM_Schedules_4split_2030_central.csv`, retail).
+**Which scenario is the baseline is your call** — `Default_NECB` is the natural choice (it makes the
+uninjected cell the exact no-op), but `B_central` is defensible if the levers should be read
+relative to the central 2030 bundle instead. I have not guessed it.
+
+Still open and unchanged: `peak_policy` (`rescale` vs `cap`), `r_max = 3.0`.
