@@ -125,9 +125,14 @@ def main() -> None:
                      help="T9-11 occupancy-driven service hot water. 'none' (default) = "
                           "WaterUse:Equipment keeps its prototype flow-fraction schedule and DHW "
                           "stays occupancy-invariant (26.8 %% of tower site energy frozen). "
-                          "'per_capita' = floor+(peak-floor)*occ on office/retail/hotel/"
-                          "residential, hotel laundry excluded as a batch process. See "
-                          "commercial_integration.py's T9-11 block.")
+                          "'per_capita' = T9-11, floor+(peak-floor)*occ on office/retail/hotel/"
+                          "residential, hotel laundry excluded as a batch process -- REFUTED "
+                          "(residential DHW +40.78 %%, night share 8.34->32.86 %%, peak draw hour "
+                          "06:00->04:00); kept only to reproduce arm D. 'volume_scaled' = THE ONE "
+                          "TO USE: T9-13, daily VOLUME scaled by r(d)=mean(occ_d)/mean(occ_ref_d) "
+                          "with the prototype's intra-day shape carried through untouched, so "
+                          "night share and peak hour are preserved by construction. Laundry no "
+                          "longer excluded. See commercial_integration.py's T9-11/T9-13 blocks.")
     ap.add_argument("--dry-run", action="store_true",
                      help="print the resolved cell (paths, channels, missing inputs) and exit; "
                           "runs nothing, touches no filesystem beyond os.path.isfile checks "
@@ -348,15 +353,34 @@ def main() -> None:
               f"(expected 'none', 'calibrated', 'calibrated_v2', or 'nK')")
         sys.exit(1)
     # T9-11 arm -- same discipline: resolved here, recorded, never inferred downstream.
-    from eSim_bem_utils.commercial_integration import DHW_MODEL_PER_CAPITA
+    from eSim_bem_utils.commercial_integration import (DHW_MODEL_PER_CAPITA,
+                                                        DHW_MODEL_VOLUME_SCALED)
     _dhw_arg = str(args.dhw_model).strip().lower()
     if _dhw_arg in ("", "none", "off"):
         dhw_model = None
     elif _dhw_arg in ("per_capita", "percapita", "linear"):
         dhw_model = dict(DHW_MODEL_PER_CAPITA)
+    elif _dhw_arg in ("volume_scaled", "volumescaled", "t9_13", "t913"):
+        # T9-13 (arm E). Fail LOUD and EARLY if the baseline reference is not filled in: an empty
+        # `reference_occ_mean` makes every WaterUse:Equipment object report `dhw_unresolved` and the
+        # whole arm becomes a silent no-op that still produces 56 plausible-looking result dirs.
+        dhw_model = dict(DHW_MODEL_VOLUME_SCALED)
+        _ref = dhw_model.get("reference_occ_mean") or {}
+        _missing = [c for c in dhw_model.get("channels", ()) if c not in _ref]
+        if _missing:
+            print(f"[FAIL] --dhw-model volume_scaled needs a baseline reference for every declared "
+                  f"channel; missing {_missing}. Fill DHW_MODEL_VOLUME_SCALED['reference_occ_mean'] "
+                  f"in commercial_integration.py -- see the T9-13 block and FINDING 4.")
+            sys.exit(1)
+        _flat = [c for c, v in _ref.items() if not isinstance(v, dict)]
+        if _flat:
+            print(f"[WARN] --dhw-model volume_scaled: channels {_flat} carry a FLAT scalar "
+                  f"reference. That applies our series' weekday/weekend asymmetry on top of the "
+                  f"prototype's (FINDING 4). Intended only for an IDF where flat is genuinely "
+                  f"right; the campaign reference is per-day-type.")
     else:
         print(f"[FAIL] --dhw-model {args.dhw_model!r} not understood "
-              f"(expected 'none' or 'per_capita')")
+              f"(expected 'none', 'per_capita' or 'volume_scaled')")
         sys.exit(1)
     manifest["arm"] = {"preserve_load_standby_floor": not args.no_standby_floor,
                         "lighting_model_arg": args.lighting_model,

@@ -1054,19 +1054,55 @@ def _dhw_excluded(we, dhw_model) -> bool:
 # `reference_occ_mean`. That is the "FIXED cross-scenario reference" the T9-11 comment named as a
 # specification decision, and it is well-posed: same units, same construction, computed once
 # offline from the baseline scenario's own Step-7 occupancy CSVs and then held constant, so the
-# per-scenario injector never needs a cross-scenario view. Default_NECB then gets r == 1 exactly
-# (the no-op case), absolute DHW stays at the calibrated NECB prototype level, and every other
-# scenario moves relative to it -- which is precisely the lever T9-11 was trying to create.
+# per-scenario injector never needs a cross-scenario view.
+#
+# CORRECTION (2026-08-02). An earlier draft of this comment said "Default_NECB then gets r == 1
+# exactly (the no-op case)". That was WRONG, and wrong in a way that made a vacuous property look
+# like an argument. `Default_NECB` is declared `{"tag": "Default_NECB", "channels": {}}` in
+# `3rdJ_08D_campaign_cells.py:234` -- no injection AT ALL. The injector never runs in that cell, so
+# it is a no-op under EVERY choice of reference, which means the property discriminates between
+# zero candidates. Worse, Default_NECB cannot BE the baseline: `reference="baseline_series"` needs
+# a per-channel occupancy series of OUR construction, and Default_NECB has none by definition.
+# The reference must therefore be one of the INJECTED scenarios. `Y2022` ("2022 observed cycle",
+# `3rdJ_08D_campaign_cells.py:236-238`, all four channels present) is the defensible anchor: the
+# prototype's DHW volume is a present-day engineering calibration, so the occupancy it is divided
+# by should be the present-day occupancy from the same series. Every 2030 bundle then reads as
+# "person-hours relative to today" -- the lever T9-11 was trying to create -- and the historical
+# years read as change from today with the correct sign. Y2005/Y2010/Y2015 carry no hotel channel
+# (`DELIBERATE_CHANNEL_EXCEPTIONS`), which is consistent: hotel is simply not injected there.
+# This is still the user's call and is recorded as such; what changed is that the choice is now
+# between injected scenarios, and the "uninjected cell stays exact" argument is struck.
 #
 # `reference_occ_mean` is deliberately EMPTY here. Any channel missing from it is reported
 # `dhw_unresolved` with the reason, never silently defaulted to 1.0 -- a defaulted reference would
 # fabricate a no-op and report it as a result.
 
+# BASELINE = Y2022 ("2022 observed cycle", 3rdJ_08D_campaign_cells.py:236-238). User decision,
+# 2026-08-02, recorded in 3rdJ_L3_improvements_step9.md. Values computed offline by
+# t913_reference_table.py, which mirrors _channel_occ_24 and the three product loaders exactly
+# (48->24 pair-average; retail weekend = mean(sat24, sun24); hotel = mean of the 12 monthly 24-h
+# vectors; residential = pool mean over the 7175 DTYPE-filtered households, per day type).
+#
+# Retail and hotel are PR-dependent and these are the QC (Montreal) values. The AB (Calgary) means
+# differ -- retail AB 0.3554/0.2618 vs QC 0.3104/0.2615, hotel AB 0.3624/0.3735 vs QC 0.3573/0.3682
+# -- so the CLG cells do NOT get r == 1.000 in the baseline year; they get the AB/QC offset instead
+# (retail AB r_wd = 1.145, hotel AB r_wd = 1.014 in Y2022). That is a KNOWN and DELIBERATE limitation
+# of a single national reference per channel: `reference_occ_mean` is one map for the whole campaign,
+# not one per city. It is left this way on purpose so the two cities share one denominator and the
+# city axis stays comparable; the alternative (a per-PR reference) makes each city its own no-op but
+# then r means something different in each. Stated here so nobody reads CLG's r != 1 as a bug.
 DHW_MODEL_VOLUME_SCALED = {
     "channels": ("office", "retail", "hotel", "residential"),
     "exclude_schedule_tokens": (),      # laundry no longer needs excluding -- see above
     "reference": "baseline_series",
-    "reference_occ_mean": {},           # {channel: weekly-mean occupancy of the BASELINE scenario}
+    # {channel: {"wd": mean weekday occupancy, "we": mean weekend occupancy}} of the BASELINE.
+    # Per day type, NOT a scalar -- see FINDING 4 in the comment at the reference-builder site.
+    "reference_occ_mean": {
+        "office":      {"wd": 0.253013, "we": 0.065079},   # office_presence_multiplier_2022.csv
+        "retail":      {"wd": 0.310422, "we": 0.261454},   # retail_presence_multiplier_2022.csv, PR=QC
+        "hotel":       {"wd": 0.357275, "we": 0.368193},   # hotel_schedule_multiplier_2022.csv, PR=QC
+        "residential": {"wd": 0.635497, "we": 0.732074},   # BEM_Schedules_4split_2022.csv, pool mean
+    },
     "peak_policy": "rescale",           # "rescale" | "cap"
     "r_max": 3.0,
 }
@@ -1135,7 +1171,7 @@ def apply_dhw_volume_scaling(proto_wd, proto_we, occ_wd, occ_we, ref_wd, ref_we,
 
 
 def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
-                                 verbose: bool = True) -> dict:
+                                 verbose: bool = True, expect_channels=()) -> dict:
     """T9-13 gate. Shape preservation is an IDENTITY here, so it must be asserted, not assumed.
 
     This is the diagnostic that would have caught T9-11: it fails loudly on exactly the signature
@@ -1146,11 +1182,18 @@ def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
       D3 max(f_new) <= max(s_proto) + tol   (the Fraction bound was never restored by clipping)
       D4 volume ratio actually achieved == r(d) as intended
       D5 no object silently saturated at r_max
+      D6 every channel in `expect_channels` actually contributed at least one audited object
+
+    D6 exists because D1-D5 can only speak about records that reached this list, and this list is
+    filtered on `model == "T9-13_volume_scaled"` by the caller. A channel that quietly ran a
+    DIFFERENT model is therefore invisible to D1-D5 and the gate would pass without it -- exactly
+    what FINDING 3 (residential on the refuted T9-11 rate model) would have produced. Pass the
+    requested channel tuple and the gate can no longer pass by omission.
 
     Returns {"pass": bool, "n": int, "violations": [...], "counts": {...}}. A `pass` on an EMPTY
     list is reported as a FAIL: a gate that never ran is not a gate that passed.
     """
-    v, counts = [], {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "D5": 0}
+    v, counts = [], {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "D5": 0, "D6": 0}
     for rec in applied:
         i = rec.get("t9_13") or {}
         if not i or "error" in i:
@@ -1183,6 +1226,13 @@ def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
         if i.get("r_clipped_at_r_max"):
             counts["D5"] += 1
             v.append({"obj": rec.get("name"), "check": "D5", "detail": "r saturated at r_max"})
+    seen_channels = {rec.get("channel") for rec in applied}
+    for ch in (expect_channels or ()):
+        if ch not in seen_channels:
+            counts["D6"] += 1
+            v.append({"obj": f"<channel:{ch}>", "check": "D6",
+                      "detail": f"channel '{ch}' was requested in dhw_model['channels'] but "
+                                f"contributed 0 audited objects -- it did not run T9-13"})
     ok = (len(v) == 0) and (len(applied) > 0)
     if verbose:
         if not applied:
@@ -1490,9 +1540,21 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
                      "reason": "batch process (exclude_schedule_tokens)"})
                 continue
 
-            if dhw_model.get("reference") == "prototype_people":
+            if dhw_model.get("reference") in ("prototype_people", "baseline_series"):
                 # T9-13: daily volume scaled by this household's occupancy against the prototype
                 # occupancy the prototype DHW schedule was sized against; intra-day shape untouched.
+                #
+                # FINDING 3 (2026-08-02) -- this gate used to test `== "prototype_people"` only,
+                # while the commercial path gates on BOTH values (see `_t9_13`, :1826-1827) and the
+                # shipped DHW_MODEL_VOLUME_SCALED declares "baseline_series". So residential fell
+                # through to the T9-11 rate model below (`apply_lighting_diversity(occ, ...)`) --
+                # the model already refuted at +40.78 % -- while office/retail/hotel ran T9-13.
+                # Silent, and invisible to the audit: `audit_dhw_shape_preservation` filters on
+                # `model == "T9-13_volume_scaled"` and the T9-11 branch writes no `model` key, so
+                # the gate would have PASSED on the commercial objects while the failing channel sat
+                # outside its filter. A gate that passes because the broken objects are not in scope
+                # is the seventh vacuous-test shape on this project. The `expect_channels` argument
+                # added to the audit closes that hole from the other side.
                 sprof, sprov = _schedule_daytype_profiles(idf, proto)
                 if sprof is None or not dhw_reference:
                     result["dhw_unresolved"].append(
@@ -1812,18 +1874,43 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
                                                                 "baseline_series")
     _proto_occ, _proto_occ_prov = {}, {}
     if _t9_13 and dhw_model.get("reference") == "baseline_series":
-        # A per-channel scalar weekly-mean occupancy from the BASELINE scenario, held flat across
-        # both day types. The prototype DHW schedule keeps its own WD/WE shape; the weekday and
-        # weekend VOLUME ratios still differ, because they come from OUR occupancy's own WD/WE
-        # means divided by this common baseline. Channels absent from the map stay unresolved.
+        # Per-channel mean occupancy of the BASELINE scenario, PER DAY TYPE:
+        #     {channel: {"wd": x, "we": y}}
+        #
+        # FINDING 4 (2026-08-02) -- this used to be one scalar held flat across both day types, and
+        # that was wrong twice over. (a) The baseline scenario was then not a no-op: a no-op needs
+        # r_wd == r_we == 1, i.e. mean(occ_wd) == mean(occ_we) == the scalar, which no scalar
+        # satisfies when the two day-type means differ (office Y2022: 0.2530 vs 0.0651).
+        # (b) Worse, with a common denominator r_we/r_wd collapses to mean(occ_we)/mean(occ_wd) --
+        # OUR series' day-type asymmetry -- which then multiplies the PROTOTYPE schedule's own
+        # asymmetry. Measured on this tower: prototype office we/wd = 0.311, our ratio = 0.257,
+        # product = 0.080. Office weekend DHW would have collapsed to 8% of weekday instead of 31%
+        # and been reported as an occupancy result. T9-13's whole premise is that SHAPE (including
+        # the weekday/weekend split) comes from the prototype and only VOLUME comes from occupancy;
+        # a scalar reference breaks that on the day-type axis.
+        #
+        # A bare scalar is still accepted and still means "flat across both day types", for an IDF
+        # where that is genuinely what is wanted -- but it is no longer what this project ships.
+        # Channels absent from the map stay unresolved; never defaulted to 1.0.
         for _ch, _v in (dhw_model.get("reference_occ_mean") or {}).items():
+            if isinstance(_v, dict):
+                try:
+                    _wd, _we = float(_v["wd"]), float(_v["we"])
+                except (TypeError, ValueError, KeyError):
+                    continue
+                if _wd > 1e-12 and _we > 1e-12:
+                    _proto_occ[_ch] = {"wd": [_wd] * 24, "we": [_we] * 24}
+                    _proto_occ_prov[_ch] = (f"baseline_series mean occupancy "
+                                            f"wd={_wd:.6f} we={_we:.6f}")
+                continue
             try:
                 _fv = float(_v)
             except (TypeError, ValueError):
                 continue
             if _fv > 1e-12:
                 _proto_occ[_ch] = {"wd": [_fv] * 24, "we": [_fv] * 24}
-                _proto_occ_prov[_ch] = f"baseline_series weekly-mean occupancy = {_fv:.6f}"
+                _proto_occ_prov[_ch] = (f"baseline_series FLAT weekly-mean occupancy = {_fv:.6f} "
+                                        f"(scalar form -- see FINDING 4)")
         result["t9_13_reference"] = dict(_proto_occ_prov)
         if verbose:
             for _ch in sorted(_proto_occ_prov):
@@ -2130,7 +2217,13 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
     # verdict rather than re-deriving it from the IDF.
     if _t9_13:
         _t913_recs = [r for r in result["dhw_applied"] if r.get("model") == "T9-13_volume_scaled"]
-        result["t9_13_audit"] = audit_dhw_shape_preservation(_t913_recs, verbose=verbose)
+        # `expect_channels` = the channels actually REQUESTED for this cell, i.e. the intersection
+        # of dhw_model["channels"] with the channels this scenario injects at all. A channel the
+        # scenario deliberately omits (hotel in Y2005/Y2010/Y2015, DELIBERATE_CHANNEL_EXCEPTIONS)
+        # must not be demanded here -- that would turn a documented design decision into a FAIL.
+        _expect = tuple(c for c in dhw_model.get("channels", ()) if c in channels)
+        result["t9_13_audit"] = audit_dhw_shape_preservation(_t913_recs, verbose=verbose,
+                                                             expect_channels=_expect)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)) or ".", exist_ok=True)
     idf.saveas(output_path)

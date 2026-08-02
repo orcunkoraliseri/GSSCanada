@@ -2266,3 +2266,378 @@ uninjected cell the exact no-op), but `B_central` is defensible if the levers sh
 relative to the central 2030 bundle instead. I have not guessed it.
 
 Still open and unchanged: `peak_policy` (`rescale` vs `cap`), `r_max = 3.0`.
+
+### CORRECTION to the blocking decision as I stated it — 2026-08-02
+
+The paragraph above is wrong and is struck. It offered `Default_NECB` as the baseline "because it
+makes the uninjected cell the exact no-op". Two errors, and the second one is worse than the first.
+
+**1. The argument was vacuous.** `3rdJ_08D_campaign_cells.py:234` declares
+`{"tag": "Default_NECB", "channels": {}}` — *no injection at all*, confirmed again by
+`DELIBERATE_CHANNEL_EXCEPTIONS = {"Default_NECB": frozenset()}` at `:353`. The injector never runs
+in that cell. It is therefore an exact no-op under **every** candidate reference, so the property
+separates zero candidates. This is the same failure mode as the three vacuous tests already logged
+above (arms C/D P1/P4/P5, and H2): a statement that cannot come out false was presented as evidence.
+It was caught by reading the scenario definition, not by reasoning about it.
+
+**2. `Default_NECB` cannot be the baseline at all.** `reference="baseline_series"` requires a
+per-channel occupancy series *of our construction* to take a weekly mean of. `Default_NECB` has none
+— that is precisely what makes it the control. The choice is between the **injected** scenarios.
+
+**Recommendation, and the reasoning is falsifiable.** `Y2022` — `"2022 observed cycle"`,
+`3rdJ_08D_campaign_cells.py:236-238`, all four channels present. The prototype's DHW volume is a
+*present-day* engineering calibration, so the person-hours it is implicitly divided by should be the
+*present-day* occupancy from the same series. Then `r(d)` for any 2030 bundle reads as "person-hours
+relative to today", which is the lever T9-11 was trying to create, and the historical panel reads as
+change from today with the correct sign. `B_central` is the alternative — it anchors on a *projected*
+future, which makes the observed year Y2022 move and gives the historical years `r != 1` against a
+scenario that has not happened.
+
+Consequence to carry: Y2005/Y2010/Y2015 carry **no hotel channel** (`DELIBERATE_CHANNEL_EXCEPTIONS`,
+QC hotel ground truth starts 2019). Under a Y2022 reference, hotel is simply not injected in those
+three years — consistent, not a gap, but it must be stated when the hotel DHW lever is reported.
+
+Code comment at `eSim_bem_utils/commercial_integration.py` corrected the same day; the struck claim
+is preserved there too rather than deleted.
+
+Still open and unchanged: `peak_policy` (`rescale` vs `cap`), `r_max = 3.0`.
+
+### Next session — handoff written 2026-08-02
+
+Manager prompt for the next session: `improvements/3rdJ_L3_manager_prompt_2026-08-02.md`
+(predecessor `..._2026-08-01.md` archived to `improvements/prompts/`).
+
+First task is deliberately **not** "pick a baseline". It is: compute the per-channel weekly-mean
+occupancy for **every** candidate reference in one pass and print the table. The choice then costs
+one line instead of a re-run, and the sensitivity of `r` to the choice becomes visible *before* it is
+made rather than after.
+
+---
+
+## Task 1 EXECUTED — the reference table, 2026-08-02
+
+Script: `t913_reference_table.py` (scratchpad), run locally with `py -3`. It mirrors
+`commercial_integration.py::_channel_occ_24` and the three product loaders exactly rather than
+re-implementing them from the docs: 48→24 by pair-average, retail weekend = `mean(sat24, sun24)`,
+hotel = unweighted mean of the 12 monthly 24-h vectors, residential = per-household 24-h
+`Occupancy_Schedule` filtered by `RESIDENTIAL_DTYPE_APARTMENT = ['HighRise', 'MidRise']`. Scenario→file
+wiring taken from `3rdJ_08D_campaign_cells.py:_build_scenarios()` (`:194-300`), not guessed.
+7175 eligible households in every residential product, 0 dropped for incomplete 24-h records.
+
+### Weekly-mean occupancy, `mean_wd` / `mean_we`
+
+Office and residential are city-independent; retail and hotel carry a `PR` column, so both are shown.
+
+| scenario | office | retail QC | retail AB | hotel QC | hotel AB | residential |
+|---|---|---|---|---|---|---|
+| Y2022 | 0.2530 / 0.0651 | 0.3104 / 0.2615 | 0.3554 / 0.2618 | 0.3573 / 0.3682 | 0.3624 / 0.3735 | 0.6355 / 0.7321 |
+| B_cons | 0.2070 / 0.1622 | 0.1964 / 0.1769 | 0.1839 / 0.1907 | 0.3696 / 0.3809 | 0.3502 / 0.3609 | 0.7491 / 0.7665 |
+| B_central | 0.1872 / 0.1353 | 0.2117 / 0.1906 | 0.1982 / 0.2055 | 0.4017 / 0.4140 | 0.3891 / 0.4010 | 0.7688 / 0.7871 |
+| B_opt | 0.1680 / 0.1126 | 0.2291 / 0.2064 | 0.2145 / 0.2225 | 0.4298 / 0.4430 | 0.4085 / 0.4210 | 0.7774 / 0.8069 |
+| Y2005 | 0.2605 / 0.0682 | 0.3469 / 0.1869 | 0.3467 / 0.1994 | — absent — | — absent — | 0.6260 / 0.7399 |
+| Y2010 | 0.2449 / 0.0598 | 0.3360 / 0.1939 | 0.3187 / 0.2055 | — absent — | — absent — | 0.6333 / 0.7252 |
+| Y2015 | 0.2720 / 0.0682 | 0.3077 / 0.2286 | 0.2934 / 0.2144 | — absent — | — absent — | 0.6233 / 0.7483 |
+| sens_office_cons | 0.2070 / 0.1622 | 0.2117 / 0.1906 | 0.1982 / 0.2055 | 0.4017 / 0.4140 | 0.3891 / 0.4010 | 0.7491 / 0.7665 |
+| sens_office_opt | 0.1680 / 0.1126 | 0.2117 / 0.1906 | 0.1982 / 0.2055 | 0.4017 / 0.4140 | 0.3891 / 0.4010 | 0.7774 / 0.8069 |
+| sens_retail_cons | 0.1872 / 0.1353 | 0.1964 / 0.1769 | 0.1839 / 0.1907 | 0.4017 / 0.4140 | 0.3891 / 0.4010 | 0.7688 / 0.7871 |
+| sens_retail_opt | 0.1872 / 0.1353 | 0.2291 / 0.2064 | 0.2145 / 0.2225 | 0.4017 / 0.4140 | 0.3891 / 0.4010 | 0.7688 / 0.7871 |
+| sens_hotel_cons | 0.1872 / 0.1353 | 0.2117 / 0.1906 | 0.1982 / 0.2055 | 0.3696 / 0.3809 | 0.3502 / 0.3609 | 0.7688 / 0.7871 |
+| sens_hotel_opt | 0.1872 / 0.1353 | 0.2117 / 0.1906 | 0.1982 / 0.2055 | 0.4298 / 0.4430 | 0.4085 / 0.4210 | 0.7688 / 0.7871 |
+
+### `r` under the recommended `Y2022` reference
+
+| scenario | office `r_wd`/`r_we`/**R** | retail QC **R** | retail AB **R** | hotel QC **R** | hotel AB **R** | residential **R** |
+|---|---|---|---|---|---|---|
+| Y2022 | 1.000 / 1.000 / **1.000** | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| B_cons | 0.818 / 2.493 / **2.493** 🔴 | 0.677 | 0.728 | 1.034 | 0.966 | 1.179 |
+| B_central | 0.740 / 2.079 / **2.079** 🔴 | 0.729 | 0.785 | 1.124 | 1.074 | 1.210 |
+| B_opt | 0.664 / 1.731 / **1.731** 🔴 | 0.789 | 0.850 | 1.203 | 1.127 | 1.223 |
+| Y2005 | 1.030 / 1.049 / **1.049** | 1.117 | 0.975 | n/a | n/a | 1.011 |
+| Y2010 | 0.968 / 0.919 / **0.968** | 1.082 | 0.897 | n/a | n/a | 0.997 |
+| Y2015 | 1.075 / 1.049 / **1.075** | 0.991 | 0.826 | n/a | n/a | 1.022 |
+| sens_office_cons | **2.493** 🔴 | 0.729 | 0.785 | 1.124 | 1.074 | 1.179 |
+| sens_office_opt | **1.731** 🔴 | 0.729 | 0.785 | 1.124 | 1.074 | 1.223 |
+| sens_retail_cons | **2.079** 🔴 | 0.677 | 0.728 | 1.124 | 1.074 | 1.210 |
+| sens_retail_opt | **2.079** 🔴 | 0.789 | 0.850 | 1.124 | 1.074 | 1.210 |
+| sens_hotel_cons | **2.079** 🔴 | 0.729 | 0.785 | 1.034 | 0.966 | 1.210 |
+| sens_hotel_opt | **2.079** 🔴 | 0.729 | 0.785 | 1.203 | 1.127 | 1.210 |
+
+`r_max = 3.0` is never reached at channel level, under any of the 13 candidate baselines.
+
+### 🔴 FINDING 1 — the `R > 1.5` flag fires, and it is office-weekend, under every baseline
+
+The prompt asked for `R > 1.5` to be flagged because a large `R` resizes the water heater and mixes a
+plant-sizing effect into a schedule lever. It fires 89 times across the 13 candidate baselines. The
+pattern is not noise:
+
+- Under `Y2022`, **office R = 1.73–2.49 in all nine 2030-family cells**, and it is `r_we` that does
+  it every time — `r_wd` is 0.66–0.82, i.e. *below* 1. Weekday office presence falls under WFH, as
+  expected; weekend presence *rises* from 0.0651 to 0.113–0.162.
+- The split is between products, not between bands. All four "observed"-band office series
+  (Y2022, Y2005, Y2010, Y2015) sit at `mean_we` 0.060–0.068; all three 2030 bands sit at 0.113–0.162.
+  So `r_we ≈ 2` is a **level shift between the observed and the projected office product on
+  weekends**, and any observed-year baseline inherits it (Y2010 is worst: office R up to 2.71).
+- Choosing a 2030 baseline does not remove the flag, it moves it onto retail: under `B_cons`, retail
+  R = 1.57–1.93 for Y2022 and the three historical years.
+
+**No baseline makes the flag go away.** The honest options are (i) accept the resize and report it,
+(ii) `peak_policy="cap"`, or (iii) exclude office from the T9-13 channel tuple. Note that under
+`"cap"` with `r_we ≈ 2` the weekend flow fraction is multiplied by ~2 with `R` held at 1, so it
+clips at the Fraction bound — `audit_dhw_shape_preservation` D3/D4 would then fire. That is the audit
+working, not a bug, but it means `"cap"` and office-in-scope are close to incompatible on this stock.
+
+**This is a question about the office product, not about T9-13**, and it should be answered before
+the office DHW lever is reported: is a 2.5× rise in weekend at-work fraction from 2022 to the
+conservative 2030 band intended by Step-7, or an artefact? T9-13 will faithfully propagate whichever
+it is.
+
+### FINDING 2 — residential `r` is per-household, and 8.9–28.6 % of apartments exceed 1.5
+
+The channel-level residential `R` (1.00–1.22) is the pool mean and is *not* what the injector
+applies: `inject_residential` scales each apartment by its own drawn household
+(`commercial_integration.py:1519-1524`). Spread of per-household `r_wd` against the Y2022 pool mean:
+
+| scenario | min | p50 | p95 | max | % > 1.5 | % > 3.0 |
+|---|---|---|---|---|---|---|
+| Y2022 | 0.000 | 0.951 | 1.574 | 1.574 | 8.96 | 0.00 |
+| B_cons | 0.000 | 1.213 | 1.574 | 1.574 | 24.10 | 0.00 |
+| B_central | 0.000 | 1.246 | 1.574 | 1.574 | 28.04 | 0.00 |
+| B_opt | 0.000 | 1.279 | 1.574 | 1.574 | 28.56 | 0.00 |
+| Y2005 / Y2010 / Y2015 | 0.000 | 0.918–0.951 | 1.541–1.574 | 1.574 | 6.97–8.25 | 0.00 |
+
+`r_max = 3.0` is never hit — the ceiling is `1/0.6355 = 1.574`, a household home 24/7. But roughly a
+quarter of apartments get `Peak_Flow_Rate × >1.5` in the 2030 cells. Same plant-sizing caveat as
+office, distributed across 47 objects instead of concentrated in one.
+
+**Pre-registered failure mode.** 11 of 7175 households (0.15 %) have `mean_wd == 0` and 9 have
+`mean_we == 0` (none have both). If one of them is drawn, its weekday flow fraction becomes
+identically zero, `argmax` returns hour 0, and **`audit_dhw_shape_preservation` D2 fires** ("peak hour
+p → 0"). Writing this down now so that if the audit FAILs after arm E it is not mistaken for a shape
+bug: with `n_spaces` per tower in the low hundreds the probability of drawing at least one is not
+small. D1 will *not* catch it — night share is `NaN` for an all-zero day and the NaN guard at
+`:1176` tests the prototype, not the new value.
+
+### 🔴 FINDING 3 — DEFECT: residential never takes the T9-13 path under `baseline_series`
+
+Found by reading the call chain, not by running it. `inject_residential` gates T9-13 on
+
+```python
+if dhw_model.get("reference") == "prototype_people":     # commercial_integration.py:1508
+```
+
+but the shipped `DHW_MODEL_VOLUME_SCALED` declares `reference = "baseline_series"`
+(`:1083`). The commercial path gates on **both** values (`_t9_13 = ... in ("prototype_people",
+"baseline_series")`, `:1826-1827`); the residential path gates on one. So as the code stands today,
+arm E would run **office/retail/hotel on T9-13 and residential on the refuted T9-11 rate model**
+(`:1552-1576`, `apply_lighting_diversity(occ, floor, peak)`), silently.
+
+It is worse than a plain no-op: `_proto_occ["residential"]` *is* populated and passed in as
+`dhw_reference` (`:2130`), so the provenance would carry a T9-13 reference that nothing consumed, and
+`audit_dhw_shape_preservation` filters on `model == "T9-13_volume_scaled"` (`:2147`) — the residential
+records carry no `model` key, so they are excluded from the audit and the gate would report **PASS on
+the commercial objects while residential silently ran the model that produced +40.78 %**. That is a
+seventh vacuous-test shape: a gate that passes because the failing objects are outside its filter.
+
+Fix required before arm E — one line at `:1508` to accept both references, plus a check that the
+audit's applied-record filter cannot silently drop a channel. Not applied yet; awaiting the baseline
+decision so both changes go into one build and one md5.
+
+---
+
+## The `R > 1.5` flag, measured against the real IDF — 2026-08-02
+
+The user asked the right question and it overturned the premise: *is office DHW even material, and
+shouldn't the office weekend already be low in the prototype?* Both halves were checked directly on
+`Leg2_2-split/.../office_idfs_v242/CAN_MTL/TallBuilding_90.1-2019_6A_Buffalo_NECB17_Z6_v242.idf`
+(the pre-injection tower, read-only), 47 `WaterUse:Equipment` objects, schedules resolved through
+`Schedule:Year → Week:Daily → Day:Interval`. Script: `dhw_probe.py` (scratchpad).
+
+### How the tower's design DHW actually splits
+
+| channel | n objects | Σ Peak_Flow_Rate (m³/s) | weekday daily volume | we/wd | share of weekday volume |
+|---|---|---|---|---|---|
+| hotel | 15 | 2.579e-3 | 67.36 | 0.998 | **63.0 %** |
+| residential | 27 | 5.301e-4 | 24.01 | **1.000** | 22.5 % |
+| office | 2 | 6.587e-4 | 11.95 | **0.311** | 11.2 % |
+| retail | 2 | 3.785e-5 | 0.80 | 0.781 | 0.7 % |
+| booster (unattributed) | 1 | 8.391e-5 | 2.72 | 1.017 | 2.5 % |
+
+Office DHW is middling — not negligible, not dominant. Retail DHW is **0.7 %**, which is worth
+carrying into how much weight the retail DHW result deserves. The hotel laundry alone
+(`Laundry Service Water Use 30.6gpm 180F`, 1.931e-3 m³/s) is 75 % of hotel design flow.
+
+### The prototype office DHW schedule already has the quiet weekend
+
+`OfficeLarge BLDG_SWH_SCH`:
+
+```
+wd  max=0.570  mean=0.2100   0 0 0 0 0 0 .07 .19 .35 .38 .39 .47 .57 .54 .34 .33 .44 .26 .21 .15 .17 .08 .05 .05
+we  max=0.145  mean=0.0652   0 0 0 0 0 0 .07 .07 .10 .12 .12 .15 .13 .14 .10 .09 .09 .06 .06 .06 .06 .08 .04 .04
+```
+
+we/wd = 0.311. Stable weekday, quiet weekend, exactly as expected. Residential is the opposite —
+**flat, we/wd = 1.000**, no weekend structure at all, so for residential the volume lever is the only
+thing that can move DHW.
+
+### 🔴 The prompt's premise is FALSE on this stock, and is struck
+
+The prompt says *"a large `R` means the water heater is resized, which mixes a plant-sizing effect
+into what is meant to be a schedule lever"*. Measured: the tower's six `WaterHeater:Mixed` objects are
+**hard-sized, not autosized** — tank `1.13562 m³`, capacity `87921.3 W`, plus one 0.0227 m³ / 8000 W
+booster. Nothing in the SWH plant responds to `Peak_Flow_Rate`.
+
+And the `R` in `Peak_Flow_Rate' = P·R` is exactly cancelled by dividing the shape by `R`:
+
+```
+flow(t) = Peak_Flow_Rate' · f_new(t) = (P·R) · (s(t)·r_d/R) = P · s(t) · r_d
+```
+
+`R` does not appear. Peak instantaneous flow as a fraction of `P`, office, Y2022 reference,
+B_central (`r_wd = 0.740`, `r_we = 2.079`):
+
+| day type | prototype max | × r | result |
+|---|---|---|---|
+| weekday | 0.570 | 0.740 | **0.422** |
+| weekend | 0.145 | 2.079 | **0.301** |
+
+Both **below** the prototype's own weekday peak of 0.570. Nothing is oversized, nothing goes unmet,
+and the weekend never overtakes the weekday. The `R > 1.5` flag is real arithmetic but has **no
+physical consequence on this stock**. It would matter on an IDF with an autosized SWH plant; that
+condition is now recorded as the thing to re-check if the stock ever changes.
+
+### DECISION (user, 2026-08-02): baseline = `Y2022`; office `R` = accept and report
+
+Both confirmed by the user. No gate, band or threshold was touched.
+
+Pre-registered consequence, computed before the run (5 weekday / 2 weekend day weighting on the
+prototype volumes 11.95 wd / 3.71 we):
+
+| bundle | r_wd | r_we | predicted annual office DHW change |
+|---|---|---|---|
+| B_cons | 0.818 | 2.493 | **+0.3 %** |
+| B_central | 0.740 | 2.079 | **−11.2 %** |
+| B_opt | 0.664 | 1.731 | **−21.8 %** |
+
+`B_cons` landing flat *despite* a 2.5× weekend ratio is the sharpest of the three — it is not a
+number that could be produced by accident, and it is stated here before arm E runs.
+
+---
+
+## 🔴 FINDING 4 — BLOCKER. The scalar reference double-counts the day-type asymmetry
+
+Found while filling in the Y2022 numbers, i.e. by trying to use the interface rather than by reading
+it. `commercial_integration.py:1840` builds the baseline reference as **one scalar held flat across
+both day types**:
+
+```python
+_proto_occ[_ch] = {"wd": [_fv] * 24, "we": [_fv] * 24}
+```
+
+and `apply_dhw_volume_scaling` then computes `r_wd = mean(occ_wd)/_fv`, `r_we = mean(occ_we)/_fv`
+against that same `_fv`. Two consequences, and the second is disqualifying:
+
+**1. The baseline scenario is not a no-op.** A no-op needs `r_wd = r_we = 1`, i.e.
+`mean(occ_wd) = mean(occ_we) = _fv`. For office Y2022 those are `0.2530` and `0.0651` — no scalar
+satisfies both. With a 5/2-weighted weekly mean `_fv = 0.19932`, the *baseline year itself* would come
+out `r_wd = 1.269`, `r_we = 0.327`. The reference scenario would move.
+
+**2. It applies our occupancy's weekday/weekend asymmetry on top of the prototype's.** With a common
+`_fv`, `r_we / r_wd = mean(occ_we)/mean(occ_wd) = 0.0651/0.2530 = 0.257` for office. The prototype
+schedule *already* carries a we/wd asymmetry of `0.311` (measured above). T9-13 would multiply them:
+`0.311 × 0.257 = 0.080`. Office weekend DHW would collapse to 8 % of weekday instead of the intended
+31 %, and it would be reported as an occupancy result. The whole point of T9-13 is that the intra-day
+and inter-day-type *shape* comes from the prototype and only the *volume* comes from occupancy; a
+scalar reference violates that on the day-type axis.
+
+Note this makes the Part-2 table above the **correct** target semantics, not the code's: it was
+computed with day-type-matched ratios (`r_wd = twd/bwd`, `r_we = twe/bwe`), which is what gives the
+baseline `r = 1.000` exactly and leaves the prototype's day-type asymmetry untouched.
+
+**Fix:** `reference_occ_mean` must accept a per-day-type mapping
+`{channel: {"wd": x, "we": y}}`, with the scalar form kept working (and meaning "flat", for an IDF
+where that is genuinely intended). Applied together with the `:1508` residential-gate fix so arm E
+carries one injector md5.
+
+### Test-suite gap found at the same time
+
+`test_t9_13.py`, the file the 22/22 primitive-test PASS at line 2193 is attributed to, **does not
+exist anywhere in the repo**. It was written to a scratchpad in the 2026-08-01 session and lost with
+it. So the certification of T9-13 is currently an unreproducible claim in this document. It is being
+rewritten into the repo as a tracked file rather than re-created in a scratchpad, and extended to
+cover FINDING 3 and FINDING 4.
+
+---
+
+## Build applied — 2026-08-02, injector md5 `56d6e324`
+
+Four changes, one build, one md5, all in `eSim_bem_utils/commercial_integration.py`:
+
+| # | site | change |
+|---|---|---|
+| 1 | `:1094-1112` | `reference_occ_mean` filled with the **Y2022** per-day-type means (user decision) |
+| 2 | `:1876-1912` | reference builder accepts `{channel: {"wd": x, "we": y}}`; bare scalar still works and is now labelled `FLAT` in the provenance (FINDING 4) |
+| 3 | `:1543` | residential T9-13 gate accepts `baseline_series`, not just `prototype_people` (FINDING 3) |
+| 4 | `:1198-1257`, `:2192` | audit gains **D6** — a channel requested in `dhw_model["channels"]` that contributes 0 audited objects is a FAIL. `expect_channels` is the intersection with the channels the scenario actually injects, so `DELIBERATE_CHANNEL_EXCEPTIONS` (hotel in Y2005/Y2010/Y2015) stays legal |
+
+**Shipped reference (Y2022, `mean_wd` / `mean_we`):**
+
+```
+office       0.253013 / 0.065079     retail       0.310422 / 0.261454   (PR=QC)
+hotel        0.357275 / 0.368193     residential  0.635497 / 0.732074
+```
+
+Retail and hotel are PR-dependent and these are the QC values; `reference_occ_mean` is one national
+map for the whole campaign, so the **CLG cells do not get `r = 1.000` in the baseline year** — they
+get the AB/QC offset (retail AB `r_wd = 1.145`, hotel AB `r_wd = 1.014`). Deliberate: one denominator
+keeps the city axis comparable, where a per-PR reference would make `r` mean something different in
+each city. Recorded in the code comment so nobody reads it as a bug.
+
+**Arms A–D are unaffected.** `DHW_MODEL_PER_CAPITA` (`:911`) carries no `"reference"` key, so
+`.get("reference")` is `None`, which is not in `("prototype_people", "baseline_series")` — the
+residential gate change cannot reach arm D's path. `expect_channels` defaults to `()`, so the audit's
+behaviour for every existing caller is byte-identical.
+
+**`eSim_tests/test_t9_13.py` — 40/40 pass** (`py -3 eSim_tests/test_t9_13.py`, exit 0). Tracked in the
+repo this time. The suite uses the *real* `OfficeLarge BLDG_SWH_SCH` profile rather than a toy one.
+Every audit check is tested in its failing direction: D0, D1, D2, D3, D4, D5, D6 and the empty-list
+case each have a test that makes them fire. T29 is the one that matters most — it shows the same
+input **passes** without `expect_channels` and **fails** with it, which is the proof that D6 closes
+FINDING 3's hole rather than a check that was already implied.
+
+T39/T40 pre-register the all-zero-occupancy household: `r_wd = 0` produces an identically zero
+weekday schedule and the audit fires **D2**. If arm E returns D2 violations naming
+`MXU_Residential_DHWv2_*`, that is this known edge case (11/7175 households), not a shape bug.
+
+One test bug was found and fixed during the run, not carried: T36 initially failed because the test
+rebound `ref` to the office entry and then iterated `ref.values()` over two floats. The config was
+correct; the assertion was not.
+
+### 🔴 FINDING 5 — the driver did not know `volume_scaled`
+
+The handoff prompt's Task 3 says arm E is `--lighting-model calibrated_v2 --dhw-model volume_scaled`.
+It was not runnable: `3rdJ_08D_campaign_driver.py:352-360` accepted only `none` and `per_capita` and
+would have exited 1 on all 56 tasks. Now wired (`:350-378`, driver md5 `8164c10b`), with two guards
+that exist because of how this project fails:
+
+- **Empty `reference_occ_mean` → `[FAIL]` and exit 1, before anything runs.** Without it, every
+  `WaterUse:Equipment` object reports `dhw_unresolved` and the arm becomes a silent whole-building
+  no-op that still produces 56 plausible result directories. That is the arm-D shape exactly.
+- **A flat scalar reference → `[WARN]`** naming FINDING 4, so the double-count cannot re-enter
+  quietly through a hand-edited config.
+
+`--dhw-model per_capita`'s help text now states it is REFUTED and kept only to reproduce arm D.
+
+### Arm E submit script
+
+`3rdJ_08D_campaign_speed_armE.sh` — 56 cells, `--array=0-55%20`, `-t 7-00:00:00`, out
+`campaign/out_E_dhwvol`, modelled on the A/B script. Lighting is pinned to `calibrated_v2`, i.e.
+**arm C's exact setting**, so `E − C` moves one variable. The script echoes the injector md5 into
+every task log so the artefact records which build produced it.
+
+### Status: local work COMPLETE, cluster work NOT STARTED
+
+Done locally: reference table, baseline decision, four injector fixes, driver wiring, submit script,
+40/40 tests. Not done: scp, pre-flight validation, **the falsifiable predictions**, the array, the
+aggregate. The predictions must be written into this document *before* the `sbatch`, not after — the
+office numbers (+0.3 % / −11.2 % / −21.8 %) are already recorded above and are the start of that
+list, not the whole of it.
