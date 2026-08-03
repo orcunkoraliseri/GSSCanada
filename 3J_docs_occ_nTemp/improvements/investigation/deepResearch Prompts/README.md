@@ -1,9 +1,21 @@
-# improvements/deepResearch — external literature inputs for the backward audit
+# improvements/investigation/deepResearch Prompts — external literature inputs for the backward audit
 
 Three prompts, written to answer the three questions raised in
 [`../3rdJ_L3_backward_audit_2026-08-03.md`](../3rdJ_L3_backward_audit_2026-08-03.md) that **cannot be
-answered from project material**. Run them externally, then drop each report back into this folder as
-`R<n>_<topic>_report.md`.
+answered from project material**.
+
+**All three reports were delivered 2026-08-03** and are folded into the audit — see the *Update
+2026-08-03 (evening)* block under the audit's verdict table, the "What R*n* returned" subsection in
+B-1/B-2/B-4/B-5, and the *Verification still owed* table.
+
+| Report | Headline | Effect on the audit |
+|---|---|---|
+| `R1_..._report.md` | 0 of 14 study lines use `any-present × N` — but under perfect synchrony it equals sum-of-members | B-1 confirmed, **mechanism corrected** to synchrony |
+| `R2_..._report.md` | No TUS↔footfall conversion exists — different denominators. GSS level and −25 % decline both internationally normal | B-4 → documentation; **B-5 re-framed as mis-specified** |
+| `R3_..._report.md` | 7 of 8 authorities give no minimum-donor rule; adjustment-cell floors (n ≥ 10–20) retro-justify `MIN_POOL = 15` | **B-2 mostly closes on writing** |
+
+All three headline answers are clean negatives. The reports are secondary syntheses — **a citation is
+not evidence until it has been opened**; the audit lists nine claims owing verification.
 
 Convention borrowed from `idf_reader/docs_ACTIVE/NUs_Journale_Revista Ingeniería de Construcción/v2/deepResearch/`
 (the M and V series): scope guard first, deliverable as a populated table, a clean negative counted as

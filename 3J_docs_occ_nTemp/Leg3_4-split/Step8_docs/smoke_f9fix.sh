@@ -44,8 +44,18 @@ fi
 cd "$REPO/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs" || exit 1
 $PY -m py_compile 3rdJ_09G_score_f9.py || { echo "FATAL: scorer does not compile"; exit 1; }
 echo "  scorer compiles under $($PY -V 2>&1)"
-$PY -u $REPO/eSim_tests/test_t9_13.py | tail -3
-echo "  unit suite exit=$?"
+# VACUOUS-GATE #10 (found 2026-08-03): this line used to be
+#     $PY -u .../test_t9_13.py | tail -3
+#     echo "  unit suite exit=$?"
+# `$?` after a pipeline is the LAST command's status -- tail's -- which is always 0. The line
+# printed "unit suite exit=0" no matter what the suite did. Capture the suite's own status, and
+# refuse to continue on a failure, so the check can actually fail.
+$PY -u $REPO/eSim_tests/test_t9_13.py > /tmp/t9_13_suite_$$.out
+SUITE_RC=$?
+tail -3 /tmp/t9_13_suite_$$.out
+rm -f /tmp/t9_13_suite_$$.out
+echo "  unit suite exit=$SUITE_RC"
+[ "$SUITE_RC" = "0" ] || { echo "FATAL: T9-13 unit suite failed -- smoke aborted"; exit 1; }
 
 cd "$REPO/3J_docs_occ_nTemp/Leg3_4-split/Step8_docs" || exit 1
 for CELL in 0 1; do

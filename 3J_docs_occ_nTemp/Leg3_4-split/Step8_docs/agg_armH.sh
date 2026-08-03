@@ -126,6 +126,29 @@ $PY -u $REPO/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/3rdJ_09H_dhwvol_sweep.py 
     "$CDIR" $CAMP/logs/aggH_dhwvol_$SLURM_JOB_ID.csv
 echo "  dhwvol sweep exit=$?"
 
+echo "### 3c. NEW -- T9-13 volume identity vs ENERGYPLUS's own reported volume, all 56 cells"
+# The pre-registered 3 % gate FAILED on the two cells checked by hand (-36.9 % / -38.5 %) and the
+# cause was located in OUR reader, not in T9-13: 09E's compact_profiles() collapses a `For:` field
+# naming several day types onto one bucket, so the hotel laundry schedules -- the largest DHW draw
+# in the tower -- read at 2/7 of their true volume. The corrected reader closes to +0.01 % on both
+# cells. This step runs BOTH readers over all 56 so the miss and the fix are a population result and
+# not an n=2 anecdote. REPORT-ONLY: a reader defect does not invalidate the energy aggregate.
+$PY -u $REPO/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/3rdJ_09H_volume_identity_indep.py \
+    $CDIR/*/ > $CAMP/logs/aggH_identity_$SLURM_JOB_ID.txt
+echo "  identity sweep exit=$?  (non-zero = at least one cell FAILs the corrected reader too)"
+tail -70 $CAMP/logs/aggH_identity_$SLURM_JOB_ID.txt
+
+echo "### 3d. NEW -- FINDING 9 at the OUTPUT level, all 56 cells (Saturday != Sunday as DELIVERED)"
+# Every existing FINDING 9 check is schedule-level: the smoke compared IDFs, D9 reads the saved IDF,
+# 3rdJ_09F parses IDFs independently. None asks whether EnergyPlus DELIVERED the day-type split.
+# G2 requires office and retail to differ Sat-vs-Sun; G3 requires hotel NOT to (its prototype
+# laundry is one all-day block) -- so a run that flattened every day type and a run that invented a
+# weekend difference everywhere both fail. REPORT-ONLY, same reasoning as 3b/3c.
+$PY -u $REPO/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/3rdJ_09H_daytype_volume_verify.py \
+    $CDIR/*/ > $CAMP/logs/aggH_daytype_$SLURM_JOB_ID.txt
+echo "  daytype sweep exit=$?"
+tail -70 $CAMP/logs/aggH_daytype_$SLURM_JOB_ID.txt
+
 echo "### 4. aggregate"
 cd "$REPO/3J_docs_occ_nTemp/Leg3_4-split/Step8_docs" || exit 1
 $PY -u 3rdJ_08E_aggregate_4split.py \

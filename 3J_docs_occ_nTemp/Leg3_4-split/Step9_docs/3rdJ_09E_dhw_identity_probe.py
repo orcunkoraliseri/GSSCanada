@@ -82,10 +82,37 @@ def _day_from_interval(f):
     return vals
 
 
+def _for_field_is_ambiguous(up):
+    """True when one `For:` field names BOTH a weekday and a weekend day type.
+
+    Guard added 2026-08-03 after `3rdJ_09H_volume_identity_indep.py` measured this reader against
+    EnergyPlus's own reported volume and found it 36.9 % low. The day-type chain below is
+    first-match-wins, so a field written as
+
+        For: Weekdays Saturday Sunday Holidays SummerDesignDay WinterDesignDay AllOtherDays
+
+    (the hotel laundry schedules -- the largest DHW draw in the tower) matches "SATURDAY" first and
+    collapses ALL SEVEN day types onto the weekend bucket, leaving the weekday profile at 0.0. The
+    reader then reports mean 0.0833 for a schedule whose true annual mean is 0.2917: a factor 3.5.
+
+    The reader is NOT silently rewritten -- its published output is the residential-only 0.9647
+    figure, and residential schedules never use this form (verified: residential closes against
+    EnergyPlus at 1.00006 even with the defect live). Instead the ambiguous case is refused, so it
+    surfaces through the existing `n_unres` / WARNING path in main() rather than being mis-read.
+    Anything that needs commercial objects must use the corrected reader in 3rdJ_09H.
+    """
+    weekday = "WEEKDAY" in up
+    weekend = ("WEEKEND" in up) or ("SATURDAY" in up) or ("SUNDAY" in up)
+    return weekday and weekend
+
+
 def compact_profiles(f):
     """Schedule:Compact -> (weekday 24h, weekend 24h). Takes the FIRST Through period; the
     injector writes a single annual Through, and if that ever stops being true this probe should
-    be revisited rather than silently averaging periods that differ."""
+    be revisited rather than silently averaging periods that differ.
+
+    Returns (None, None) on a `For:` field this reader cannot resolve unambiguously -- see
+    _for_field_is_ambiguous()."""
     wd, we = [0.0] * 24, [0.0] * 24
     cur, prev = None, 0
     seen_through = 0
@@ -101,6 +128,8 @@ def compact_profiles(f):
             continue
         if up.startswith("FOR"):
             prev = 0
+            if _for_field_is_ambiguous(up):
+                return None, None
             if "WEEKEND" in up or "SATURDAY" in up or "SUNDAY" in up:
                 cur = "we"
             elif "ALLDAY" in up or "ALLOTHERDAY" in up or "ALL DAY" in up:
@@ -152,6 +181,8 @@ def build_resolver(O):
         k = name.upper()
         if k in comp:
             wd, we = compact_profiles(comp[k])
+            if wd is None:
+                return None, None, "Compact: REFUSED, multi-day-type For: (use 3rdJ_09H reader)"
             return wd, we, "Compact"
         if k in yr:
             wk = yr[k][3]
