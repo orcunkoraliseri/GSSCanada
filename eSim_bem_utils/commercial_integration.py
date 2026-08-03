@@ -69,6 +69,7 @@ in eSim_bem_utils_3J/integration.py (post-multizone-fix, 2026-07-15).
 2026-07-23 built.
 """
 from __future__ import annotations
+import hashlib
 import os
 import re
 from typing import Optional
@@ -209,6 +210,118 @@ def _build_compact_fields_2dt(name: str, wd_vals: list, we_vals: list, type_limi
     fields += ["For: Weekends Holidays AllOtherDays"]
     for h, v in enumerate(we_vals):
         fields += [f"Until: {h+1:02d}:00", f"{v:.4f}"]
+    return fields
+
+
+# ---------------------------------------------------------------------------
+# FINDING 9 (2026-08-02): per-day-type profiles, read AND written
+# ---------------------------------------------------------------------------
+# DEFECT: `_week_profiles` took the weekend profile as `sun or sat` and `_schedule_daytype_profiles`
+# as "first of Weekend/Saturday/Sunday wins", then `_build_compact_fields_2dt` wrote that ONE
+# profile to "For: Weekends Holidays AllOtherDays". So whenever a prototype's Saturday and Sunday
+# differ, Saturday silently received Sunday's curve -- and Holidays received it too. T9-13 is
+# specified to carry the intra-day SHAPE through untouched and to be an exact no-op at r = 1, and
+# it was neither for those prototypes.
+#
+# Measured on the real tower (smoke cells, job 1171438 + diagnosis 1171445), as annual DHW volume
+# at r = 1.000 where the answer must be exactly 1.0000:
+#     RetailStandalone BLDG_SWH_SCH   0.9234      OfficeLarge BLDG_SWH_SCH   0.9524
+#     HotelLarge BLDG_SWH_SCH         0.9953      (Sat == Sun prototypes: 1.0000, unaffected)
+# Predicted from the schedules alone, then confirmed against the simulated energy to three
+# decimals -- so this is the mechanism, not a candidate for it.
+#
+# The fix keeps every day type distinct on the way in and on the way out. `wd`/`we` retain their
+# exact former meaning so nothing outside T9-13 shifts; the new `by_daytype` key is additive.
+_WEEKDAY_DAYTYPES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+_ALL_DAYTYPES = _WEEKDAY_DAYTYPES + ("Saturday", "Sunday", "Holidays")
+
+
+def _daytypes_for_tokens(toks):
+    """EnergyPlus `For:` tokens -> (concrete day types named, is_fill).
+
+    `is_fill` marks AllDays / AllOtherDays: those fill day types no explicit block claimed and
+    must never overwrite one that a specific block did. Design-day-ONLY blocks return ().
+    """
+    toks = [str(t).strip().upper() for t in toks if str(t).strip()]
+    if not toks or all(t in _DESIGN_DAYTYPES for t in toks):
+        return (), False
+    j = " ".join(toks)
+    if "ALLDAYS" in j or "ALLOTHERDAYS" in j:
+        return tuple(_ALL_DAYTYPES), True
+    out = set()
+    if "WEEKDAY" in j:                       # WEEKDAY / WEEKDAYS
+        out |= set(_WEEKDAY_DAYTYPES)
+    if "WEEKEND" in j:                       # WEEKEND / WEEKENDS
+        out |= {"Saturday", "Sunday"}
+    if "HOLIDAY" in j:                       # HOLIDAY / HOLIDAYS
+        out |= {"Holidays"}
+    for d in _ALL_DAYTYPES:
+        if d.upper() in j:
+            out.add(d)
+    return tuple(d for d in _ALL_DAYTYPES if d in out), False
+
+
+def _fill_daytypes(by_daytype, wd_fallback=None, we_fallback=None):
+    """Complete a partial {day type: [24]} map so every one of the 8 day types is present.
+
+    Weekday-class gaps fall back to a resolved weekday, weekend/holiday gaps to a resolved
+    weekend day. Returns (complete_map, filled_daytypes) -- the second element is reported in the
+    provenance so a fallback is never invisible.
+    """
+    out = dict(by_daytype)
+    wd = wd_fallback or out.get("Monday") or next(
+        (out[d] for d in _WEEKDAY_DAYTYPES if d in out), None)
+    we = we_fallback or out.get("Sunday") or out.get("Saturday") or wd
+    if wd is None:
+        wd = we
+    if wd is None:
+        return None, []
+    filled = []
+    for d in _ALL_DAYTYPES:
+        if d not in out or out[d] is None:
+            out[d] = list(wd if d in _WEEKDAY_DAYTYPES else we)
+            filled.append(d)
+    return out, filled
+
+
+def _build_compact_fields_by_daytype(name: str, by_daytype: dict,
+                                     type_limit: str = "Fraction") -> list:
+    """Schedule:Compact carrying ONE block per DISTINCT day-type profile (FINDING 9).
+
+    Day types whose profiles are identical are grouped onto a single `For:` line, so a prototype
+    that genuinely has one weekday and one weekend curve still emits the same two blocks it always
+    did -- the shape only multiplies when the source really does distinguish more days.
+    Design days ride with the weekday group (the convention `_build_compact_fields_2dt` used), and
+    the final block carries `AllOtherDays` so coverage is total.
+    """
+    missing = [d for d in _ALL_DAYTYPES if d not in by_daytype or by_daytype[d] is None]
+    if missing:
+        raise AssertionError(
+            f"_build_compact_fields_by_daytype('{name}'): day types {missing} have no profile. "
+            f"Every day type must be explicit -- falling back silently is FINDING 9.")
+
+    groups = []                                   # [[daytypes], rounded vals]
+    for d in _ALL_DAYTYPES:
+        vals = [round(float(x), 4) for x in by_daytype[d]]
+        for g in groups:
+            if g[1] == vals:
+                g[0].append(d)
+                break
+        else:
+            groups.append([[d], vals])
+
+    fields = [name, type_limit, "Through: 12/31"]
+    for i, (dts, vals) in enumerate(groups):
+        toks = (["Weekdays"] if set(dts) >= set(_WEEKDAY_DAYTYPES)
+                else [d for d in dts if d in _WEEKDAY_DAYTYPES])
+        toks += [d for d in dts if d not in _WEEKDAY_DAYTYPES]
+        if any(d in _WEEKDAY_DAYTYPES for d in dts):
+            toks += ["SummerDesignDay", "WinterDesignDay"]
+        if i == len(groups) - 1:
+            toks += ["AllOtherDays"]
+        fields.append("For: " + " ".join(toks))
+        for h, v in enumerate(vals):
+            fields += [f"Until: {h+1:02d}:00", f"{v:.4f}"]
     return fields
 
 
@@ -591,16 +704,32 @@ def _week_profiles(idf, wk_obj, _depth: int = 0):
         names = [str(x).strip() for x in wk_obj.obj[2:14]]
         if len(names) < 9:
             return None, "Schedule:Week:Daily has too few day fields"
-        mon, sun, sat = names[1], names[0], names[6]
-        d_wd = _find_schedule(idf, mon)
-        d_we = _find_schedule(idf, sun) or _find_schedule(idf, sat)
-        p_wd = _day_profile_24(d_wd) if d_wd is not None else None
-        p_we = _day_profile_24(d_we) if d_we is not None else None
+        # Field order: Sunday, Monday..Friday, Saturday, Holiday, then the design/custom days.
+        slots = {"Sunday": names[0], "Monday": names[1], "Tuesday": names[2],
+                 "Wednesday": names[3], "Thursday": names[4], "Friday": names[5],
+                 "Saturday": names[6], "Holidays": names[7]}
+        by = {}
+        for dt, dn in slots.items():
+            d = _find_schedule(idf, dn) if dn else None
+            p = _day_profile_24(d) if d is not None else None
+            if p is not None:
+                by[dt] = p
+        if not by:
+            return None, "no Sunday..Saturday/Holiday day schedule resolved"
+        p_wd = by.get("Monday")
+        p_we = by.get("Sunday") or by.get("Saturday")
         if p_wd is None and p_we is None:
             return None, "no Monday/Sunday day schedule resolved"
-        return {"wd": p_wd or p_we, "we": p_we or p_wd}, f"week:daily(mon='{mon}', sun='{sun}')"
+        by, filled = _fill_daytypes(by, p_wd, p_we)
+        n_distinct = len({tuple(round(float(x), 6) for x in v) for v in by.values()})
+        note = (f"week:daily(mon='{slots['Monday']}', sat='{slots['Saturday']}', "
+                f"sun='{slots['Sunday']}', hol='{slots['Holidays']}'; "
+                f"{n_distinct} distinct day profiles"
+                + (f"; FILLED {filled}" if filled else "") + ")")
+        return {"wd": p_wd or p_we, "we": p_we or p_wd, "by_daytype": by}, note
     if cls == "schedule:week:compact":
         wd = we = None
+        by, claimed, fills = {}, set(), []
         i = 2
         flds = [str(x).strip() for x in wk_obj.obj[2:]]
         while i - 2 < len(flds) - 1:
@@ -615,15 +744,58 @@ def _week_profiles(idf, wk_obj, _depth: int = 0):
                 continue
             if any(t in toks for t in ("DESIGNDAY", "CUSTOMDAY")):
                 continue
+            dts, is_fill = _daytypes_for_tokens(re.split(r"[\s,]+", toks.strip()))
+            if is_fill:
+                fills.append((dts, prof))          # applied after every explicit block
+            else:
+                for dt in dts:
+                    if dt not in claimed:
+                        by[dt] = prof
+                        claimed.add(dt)
             if "WEEKDAY" in toks or "ALLDAYS" in toks or "ALLOTHERDAYS" in toks:
                 wd = wd or prof
             if any(t in toks for t in ("WEEKEND", "SUNDAY", "SATURDAY")) or "ALLDAYS" in toks \
                     or "ALLOTHERDAYS" in toks:
                 we = we or prof
+        for dts, prof in fills:                    # AllDays/AllOtherDays fill only the gaps
+            for dt in dts:
+                by.setdefault(dt, prof)
         if wd is None and we is None:
             return None, "Schedule:Week:Compact resolved no day profile"
-        return {"wd": wd or we, "we": we or wd}, "week:compact"
+        by, filled = _fill_daytypes(by, wd, we)
+        n_distinct = len({tuple(round(float(x), 6) for x in v) for v in by.values()})
+        return ({"wd": wd or we, "we": we or wd, "by_daytype": by},
+                f"week:compact ({n_distinct} distinct day profiles"
+                + (f"; FILLED {filled}" if filled else "") + ")")
     return None, f"unsupported week class '{cls}'"
+
+
+def _compact_daytype_map(obj):
+    """{day type: [24]} for a Schedule:Compact object, or None.
+
+    Used by D9 to re-expand a schedule the injector WROTE, which `_schedule_daytype_profiles`
+    deliberately refuses (its MXU_* guard exists so a prototype is never read back off an already
+    injected schedule). D9 wants exactly that read, from the file, so it goes through here.
+    """
+    if obj is None or obj.obj[0].strip().lower() != "schedule:compact":
+        return None
+    blocks = _expand_compact_daytypes(obj)
+    if not blocks:
+        return None
+    by, claimed, fills = {}, set(), []
+    for toks, vals in blocks.items():
+        dts, is_fill = _daytypes_for_tokens(toks)
+        if is_fill:
+            fills.append((dts, vals))
+        else:
+            for dt in dts:
+                if dt not in claimed:
+                    by[dt] = vals
+                    claimed.add(dt)
+    for dts, vals in fills:
+        for dt in dts:
+            by.setdefault(dt, vals)
+    return by or None
 
 
 def _schedule_daytype_profiles(idf, name: str, _depth: int = 0):
@@ -645,12 +817,17 @@ def _schedule_daytype_profiles(idf, name: str, _depth: int = 0):
         vals = _floats(obj.obj[3:4])
         if not vals:
             return None, "Schedule:Constant has no value"
-        return {"wd": [vals[0]] * 24, "we": [vals[0]] * 24}, "schedule:constant"
+        flat = [vals[0]] * 24
+        return ({"wd": flat, "we": list(flat),
+                 "by_daytype": {d: list(flat) for d in _ALL_DAYTYPES}}, "schedule:constant")
     if cls == "schedule:file":
         return None, "Schedule:File -- values live outside the IDF, not resolvable"
     if cls in ("schedule:day:hourly", "schedule:day:interval", "schedule:day:list"):
         p = _day_profile_24(obj)
-        return ({"wd": p, "we": p}, cls) if p else (None, f"{cls} unparseable")
+        if not p:
+            return None, f"{cls} unparseable"
+        return {"wd": p, "we": list(p),
+                "by_daytype": {d: list(p) for d in _ALL_DAYTYPES}}, cls
     if cls in ("schedule:week:daily", "schedule:week:compact"):
         prof, note = _week_profiles(idf, obj, _depth + 1)
         return (prof, note) if prof else (None, note)
@@ -673,8 +850,18 @@ def _schedule_daytype_profiles(idf, name: str, _depth: int = 0):
     if not blocks:
         return None, "Schedule:Compact yielded no complete non-design-day day-type block"
     wd = we = None
+    by, claimed, fills = {}, set(), []
     for toks, vals in blocks.items():
         j = " ".join(toks)
+        # FINDING 9: claim each named day type separately instead of collapsing to one weekend.
+        dts, is_fill = _daytypes_for_tokens(toks)
+        if is_fill:
+            fills.append((dts, vals))
+        else:
+            for dt in dts:
+                if dt not in claimed:
+                    by[dt] = vals
+                    claimed.add(dt)
         if "ALLDAYS" in j or "ALLOTHERDAYS" in j:
             wd = wd if wd is not None else vals
             we = we if we is not None else vals
@@ -682,11 +869,19 @@ def _schedule_daytype_profiles(idf, name: str, _depth: int = 0):
             wd = vals
         if "WEEKEND" in j or "SATURDAY" in j or "SUNDAY" in j:
             we = we if we is not None else vals
+    for dts, vals in fills:
+        for dt in dts:
+            by.setdefault(dt, vals)
     if wd is None and we is None:
         return None, "no Weekday/Weekend/AllDays block resolved"
     wd = wd if wd is not None else we
     we = we if we is not None else wd
-    return {"wd": wd, "we": we}, f"schedule:compact (design days excluded, {len(blocks)} blocks)"
+    by, filled = _fill_daytypes(by, wd, we)
+    n_distinct = len({tuple(round(float(x), 6) for x in v) for v in by.values()})
+    return ({"wd": wd, "we": we, "by_daytype": by},
+            f"schedule:compact (design days excluded, {len(blocks)} blocks, "
+            f"{n_distinct} distinct day profiles"
+            + (f"; FILLED {filled}" if filled else "") + ")")
 
 
 def apply_standby_floor(occ_vals, floor: float):
@@ -702,6 +897,50 @@ def apply_standby_floor(occ_vals, floor: float):
 def _floor_key(floor: float) -> str:
     """Stable, filename-safe token for a floor value -> permille, e.g. 0.0453 -> '045'."""
     return f"{int(round(floor * 1000)):03d}"
+
+
+# FINDING 8 CORRECTION (2026-08-02). The T9-13 derived-schedule cache was keyed on
+# (channel, r_wd, r_we) only -- and r_wd/r_we are computed from the CHANNEL's occupancy against
+# the CHANNEL's reference, so they are identical for every WaterUse:Equipment object in a
+# channel. The SOURCE schedule was not in the key, so `new_wd`/`new_we` (the caller's per-object
+# shape) were used only on a cache MISS: every object in a channel collapsed onto ONE schedule,
+# built from whichever object the iteration happened to reach first. That is how
+# 'Laundry Service Water Use 30.6gpm 180F' ended up carrying the hotel guest-room curve while its
+# Peak_Flow_Rate (computed per object) stayed correct.
+#
+# The fix is to put the source schedule in the key AND in the generated name. The name is where
+# it is verifiable after the fact -- D7 re-opens the saved IDF and reads the token back out, so a
+# collision can no longer hide inside a dict nobody serialises.
+_SCHED_TOKEN_MAXLEN = 40
+
+
+def _sched_token(proto) -> str:
+    """Stable, EnergyPlus-name-safe token identifying a SOURCE schedule.
+
+    Upper-cased, [A-Z0-9] kept, everything else collapsed to '_', truncated to
+    `_SCHED_TOKEN_MAXLEN`. Truncation can collide, and a truncation collision would silently
+    recreate the exact bug this token exists to fix, so any name that is at risk of truncation
+    gets a short deterministic hash of the FULL prototype string appended. The hash is of the
+    normalised upper-cased string, i.e. of the same value the cache key uses, so token equality
+    and key equality mean the same thing.
+    """
+    s = str(proto).strip().upper()
+    keep = []
+    prev_us = False
+    for ch in s:
+        if ("A" <= ch <= "Z") or ("0" <= ch <= "9"):
+            keep.append(ch)
+            prev_us = False
+        elif not prev_us:
+            keep.append("_")
+            prev_us = True
+    tok = "".join(keep).strip("_")
+    if not tok:
+        tok = "NOSCHED"
+    if len(tok) <= _SCHED_TOKEN_MAXLEN:
+        return tok
+    h = hashlib.md5(s.encode("utf-8")).hexdigest()[:8].upper()
+    return f"{tok[:_SCHED_TOKEN_MAXLEN - 9].rstrip('_')}_{h}"
 
 
 # ---------------------------------------------------------------------------
@@ -1115,7 +1354,8 @@ DHW_MODEL_VOLUME_SCALED_PROTO_PEOPLE = dict(DHW_MODEL_VOLUME_SCALED,
 
 
 def apply_dhw_volume_scaling(proto_wd, proto_we, occ_wd, occ_we, ref_wd, ref_we,
-                             peak_policy: str = "rescale", r_max: float = 3.0):
+                             peak_policy: str = "rescale", r_max: float = 3.0,
+                             proto_by_daytype: dict = None):
     """T9-13. Scale DAILY VOLUME by occupancy; carry the intra-day SHAPE through untouched.
 
     Returns (new_wd, new_we, info). `info` carries every number the audit and the provenance need:
@@ -1124,6 +1364,14 @@ def apply_dhw_volume_scaling(proto_wd, proto_we, occ_wd, occ_we, ref_wd, ref_we,
     All six inputs are 24-slot (or equal-length) sequences. proto_* is the flow-fraction schedule
     being replaced; occ_* is our injected occupancy; ref_* is the prototype occupancy that the
     prototype flow schedule was sized against.
+
+    FINDING 9 (2026-08-02): `proto_by_daytype` -- {day type: [24]} for all 8 day types -- carries
+    the prototype's OWN Saturday, Sunday and Holiday curves instead of letting one weekend profile
+    stand for all of them. Each day type is scaled by the ratio of its CLASS (weekdays r_wd,
+    Saturday/Sunday/Holidays r_we), so the volume target is unchanged and only the shape stops
+    being lost. `info["new_by_daytype"]` is the result and `info["daytype_ratio"]` is the achieved
+    per-day-type volume ratio, which check D8 asserts against r(class)/R. Omitting the argument
+    reproduces the previous two-day-type behaviour exactly.
     """
     def _mean(v):
         v = [float(x) for x in v]
@@ -1148,6 +1396,23 @@ def apply_dhw_volume_scaling(proto_wd, proto_we, occ_wd, occ_we, ref_wd, ref_we,
     new_wd = [min(1.0, max(0.0, float(s) * r_wd / R)) for s in proto_wd]
     new_we = [min(1.0, max(0.0, float(s) * r_we / R)) for s in proto_we]
 
+    # FINDING 9: scale each day type on its OWN prototype curve, by its class ratio.
+    new_by_daytype, daytype_ratio, proto_daytype_mean = None, None, None
+    if proto_by_daytype:
+        missing = [d for d in _ALL_DAYTYPES if d not in proto_by_daytype]
+        if missing:
+            return None, None, {"error": f"proto_by_daytype is missing day types {missing} -- "
+                                         f"an incomplete map is how FINDING 9 stayed invisible"}
+        new_by_daytype, daytype_ratio, proto_daytype_mean = {}, {}, {}
+        for d in _ALL_DAYTYPES:
+            r_d = r_wd if d in _WEEKDAY_DAYTYPES else r_we
+            src = [float(x) for x in proto_by_daytype[d]]
+            new_by_daytype[d] = [min(1.0, max(0.0, s * r_d / R)) for s in src]
+            m_p = sum(src) / len(src) if src else 0.0
+            m_n = sum(new_by_daytype[d]) / len(new_by_daytype[d]) if new_by_daytype[d] else 0.0
+            proto_daytype_mean[d] = round(m_p, 8)
+            daytype_ratio[d] = round((m_n / m_p) if m_p > 1e-12 else float("nan"), 8)
+
     def _nightshare(v):
         t = sum(float(x) for x in v)
         return (sum(float(x) for x in v[0:6]) / t) if t > 1e-12 else float("nan")
@@ -1166,8 +1431,20 @@ def apply_dhw_volume_scaling(proto_wd, proto_we, occ_wd, occ_we, ref_wd, ref_we,
         "new_nightshare_wd": round(_nightshare(new_wd), 6),
         "proto_peakhour_wd": _argmax(proto_wd), "new_peakhour_wd": _argmax(new_wd),
         "is_noop": bool(abs(r_wd - 1.0) < 1e-9 and abs(r_we - 1.0) < 1e-9),
+        # FINDING 9 evidence. `n_distinct_daytypes` == 1 means the prototype really does have one
+        # curve; > 1 with the old writer is exactly the case that lost volume.
+        "daytype_ratio": daytype_ratio,
+        "proto_daytype_mean": proto_daytype_mean,
+        "n_distinct_daytypes": (
+            len({tuple(round(float(x), 6) for x in v) for v in proto_by_daytype.values()})
+            if proto_by_daytype else None),
     }
-    return new_wd, new_we, info
+    if new_by_daytype is not None:
+        info["new_max"] = round(max(max(v) for v in new_by_daytype.values()), 6)
+        info["proto_max"] = round(max(max(float(x) for x in v)
+                                      for v in proto_by_daytype.values()), 6)
+    return new_wd, new_we, (info if new_by_daytype is None
+                            else dict(info, new_by_daytype=new_by_daytype))
 
 
 def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
@@ -1183,6 +1460,16 @@ def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
       D4 volume ratio actually achieved == r(d) as intended
       D5 no object silently saturated at r_max
       D6 every channel in `expect_channels` actually contributed at least one audited object
+      D8 EVERY day type's volume ratio == r(class)/R  (FINDING 9)
+
+    D8 is D4 applied to the day types D4 could not see. D4 compares one weekday mean against
+    r_wd, so it is blind to what happens on Saturday -- and Saturday was exactly where the volume
+    was going missing: the reader kept `sun or sat` and the writer emitted that single curve to
+    "For: Weekends", so a prototype with a busy Saturday and a quiet Sunday silently lost the
+    difference. D8 requires mean(new_d)/mean(proto_d) == r(class of d)/R for all 8 day types, which
+    the collapsing writer cannot satisfy whenever two day types differ. An object whose source
+    resolved no per-day-type map reports D8 as unchecked (counted in `d8_unchecked`), never as a
+    pass -- the T9-13 path records that same object in `t9_13_daytype_fallback`.
 
     D6 exists because D1-D5 can only speak about records that reached this list, and this list is
     filtered on `model == "T9-13_volume_scaled"` by the caller. A channel that quietly ran a
@@ -1193,7 +1480,8 @@ def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
     Returns {"pass": bool, "n": int, "violations": [...], "counts": {...}}. A `pass` on an EMPTY
     list is reported as a FAIL: a gate that never ran is not a gate that passed.
     """
-    v, counts = [], {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "D5": 0, "D6": 0}
+    v, counts = [], {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "D5": 0, "D6": 0, "D8": 0}
+    d8_unchecked = []
     for rec in applied:
         i = rec.get("t9_13") or {}
         if not i or "error" in i:
@@ -1226,6 +1514,22 @@ def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
         if i.get("r_clipped_at_r_max"):
             counts["D5"] += 1
             v.append({"obj": rec.get("name"), "check": "D5", "detail": "r saturated at r_max"})
+        # D8 (FINDING 9) -- every day type, not just the weekday D4 looks at.
+        dr = i.get("daytype_ratio")
+        if not dr:
+            d8_unchecked.append(rec.get("name"))
+        else:
+            r_we_i = float(i.get("r_we", 0))
+            for d, achieved in sorted(dr.items()):
+                if achieved != achieved:          # NaN: prototype day is all-zero, ratio undefined
+                    continue
+                want = (float(i.get("r_wd", 0)) if d in _WEEKDAY_DAYTYPES else r_we_i) / R
+                if abs(float(achieved) - want) > 1e-4:
+                    counts["D8"] += 1
+                    v.append({"obj": rec.get("name"), "check": "D8",
+                              "detail": f"{d}: volume ratio achieved {float(achieved):.6f} != "
+                                        f"intended {want:.6f} -- this day type is not carrying "
+                                        f"its own prototype shape (FINDING 9)"})
     seen_channels = {rec.get("channel") for rec in applied}
     for ch in (expect_channels or ()):
         if ch not in seen_channels:
@@ -1239,12 +1543,172 @@ def audit_dhw_shape_preservation(applied: list, tol_share: float = 1e-6,
             print("  [T9-13 audit FAIL] 0 objects audited -- a gate that never ran is not a PASS")
         elif ok:
             print(f"  [T9-13 audit PASS] {len(applied)} objects: shape, peak hour, night share "
-                  f"and Fraction bound all preserved; volume ratios achieved as intended")
+                  f"and Fraction bound all preserved; volume ratios achieved as intended, on "
+                  f"every day type")
         else:
             print(f"  [T9-13 audit FAIL] {len(v)} violations over {len(applied)} objects: {counts}")
             for x in v[:8]:
                 print(f"      {x['check']} {x['obj']}: {x['detail']}")
-    return {"pass": ok, "n": len(applied), "violations": v, "counts": counts}
+        if d8_unchecked:
+            print(f"  [T9-13 audit] D8 UNCHECKED on {len(d8_unchecked)} object(s) -- no "
+                  f"per-day-type map resolved; reported, not counted as a pass: "
+                  f"{d8_unchecked[:5]}")
+    return {"pass": ok, "n": len(applied), "violations": v, "counts": counts,
+            "d8_unchecked": d8_unchecked}
+
+
+# D7 name grammar. Both generators write `..._DHWv2_[HH<id>_]<TOKEN>_r####w####[_<tag>]`, and the
+# token alphabet is [A-Z0-9_] while the r/w markers are lower-case, so `_r\d{4}w\d{4}` cannot occur
+# inside a token. `.+` is greedy on purpose: it anchors on the LAST r/w marker, so a scenario tag
+# that happens to look like one cannot steal the split point.
+_DHWV2_NAME_RE = re.compile(
+    r"^MXU_(?P<ch>[A-Za-z]+)_DHWv2_(?:HH(?P<hh>\d+)_)?(?P<tok>.+)_r(?P<r>\d{4})w(?P<w>\d{4})"
+    r"(?:_(?P<tag>.*))?$")
+
+
+def audit_dhw_assignment(saved_idf_path: str, applied: list, proto_before: dict,
+                         verbose: bool = True, idd_path: str = None) -> dict:
+    """D7 (FINDING 8, 2026-08-02). Per WaterUse:Equipment object in the SAVED IDF:
+
+    > its `Flow_Rate_Fraction_Schedule_Name` is either UNCHANGED from the source IDF, or is the
+    > T9-13 derivative OF ITS OWN ORIGINAL SCHEDULE -- never another object's.
+
+    Read from the re-opened output IDF, deliberately. `rec["derived_schedule"]` in
+    `result["dhw_applied"]` records the CACHED name, so a D7 built over `dhw_applied` would
+    inherit exactly the blindness it exists to close: under the collision every record faithfully
+    reported the name it was given, and the audit would have passed on arm E. The only artefact
+    that cannot lie about the assignment is the file EnergyPlus will read.
+
+    Parameters
+    ----------
+    saved_idf_path : the just-written output IDF.
+    applied        : `result["dhw_applied"]` (used for the prototype each object CLAIMS, which is
+                     cross-checked against `proto_before` -- a record that misreports its own
+                     source is itself a D7 violation).
+    proto_before   : {UPPER(object name): original Flow_Rate_Fraction_Schedule_Name}, snapshotted
+                     from the source IDF before any DHW write.
+    """
+    from eppy.modeleditor import IDF
+    if idd_path:
+        IDF.setiddname(idd_path)
+    idf2 = IDF(saved_idf_path)
+
+    by_name = {str(r.get("name", "")).strip().upper(): r for r in applied}
+    v, n_checked, n_derived, n_unchanged = [], 0, 0, 0
+    names_seen = {}
+    d9_unchecked = []
+    for we in idf2.idfobjects.get("WATERUSE:EQUIPMENT", []):
+        key = str(we.Name).strip().upper()
+        assigned = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "").strip()
+        before = str(proto_before.get(key, "")).strip()
+        n_checked += 1
+        rec = by_name.get(key)
+        if rec is None:
+            # Not touched by the injector -> must be byte-identical to the source IDF.
+            if assigned.upper() != before.upper():
+                v.append({"obj": we.Name, "check": "D7",
+                          "detail": f"untouched object's schedule changed: '{before}' -> "
+                                    f"'{assigned}'"})
+            else:
+                n_unchanged += 1
+            continue
+        claimed = str(rec.get("prototype_schedule", "")).strip()
+        if claimed.upper() != before.upper():
+            v.append({"obj": we.Name, "check": "D7",
+                      "detail": f"dhw_applied claims prototype '{claimed}' but the source IDF "
+                                f"had '{before}'"})
+            continue
+        m = _DHWV2_NAME_RE.match(assigned)
+        if m is None:
+            if assigned.upper() == before.upper():
+                n_unchanged += 1
+                continue
+            v.append({"obj": we.Name, "check": "D7",
+                      "detail": f"assigned '{assigned}' is neither unchanged from '{before}' nor "
+                                f"a parseable MXU_*_DHWv2_* derivative"})
+            continue
+        expect_tok = _sched_token(before)
+        got_tok = m.group("tok")
+        if got_tok != expect_tok:
+            v.append({"obj": we.Name, "check": "D7",
+                      "detail": f"assigned '{assigned}' carries source token '{got_tok}' but this "
+                                f"object's own schedule is '{before}' (token '{expect_tok}') -- "
+                                f"it is on ANOTHER object's derived schedule"})
+            continue
+        n_derived += 1
+        names_seen.setdefault(assigned, set()).add(before.upper())
+
+        # ---- D9 (FINDING 9): per-day-type fidelity, read from the FILE ----
+        # D8 compares the injector's own numbers against the injector's own reading of the
+        # prototype, so a defect in the READER is invisible to it -- demonstrated: re-creating the
+        # collapse in `_schedule_daytype_profiles` left D8 at 0 violations, because the corrupted
+        # Saturday was both the reference and the target. That is the same shape as every other
+        # vacuous gate on this project, and it is why D9 exists.
+        #
+        # D9 takes the two schedules out of the SAVED IDF -- the assigned MXU_* derivative and the
+        # object's own prototype, which the injector never deletes -- and requires, for EVERY day
+        # type, mean(assigned_d) / mean(prototype_d) == r(class of d) / R. Neither side is a number
+        # the injector reported about itself.
+        info = rec.get("t9_13") or {}
+        if info and "error" not in info:
+            src_prof, _sp = _schedule_daytype_profiles(idf2, before)
+            got = _find_schedule(idf2, assigned)
+            new_by = _compact_daytype_map(got) if got is not None else None
+            if not (src_prof and src_prof.get("by_daytype")) or not new_by:
+                d9_unchecked.append(we.Name)
+            else:
+                R_i = float(info.get("R", 1.0)) or 1.0
+                for d in _ALL_DAYTYPES:
+                    p, q = src_prof["by_daytype"].get(d), new_by.get(d)
+                    if p is None or q is None:
+                        d9_unchecked.append(f"{we.Name}/{d}")
+                        continue
+                    mp = sum(float(x) for x in p) / len(p)
+                    mq = sum(float(x) for x in q) / len(q)
+                    if mp <= 1e-12:
+                        continue                       # all-zero prototype day: ratio undefined
+                    want = (float(info.get("r_wd", 0)) if d in _WEEKDAY_DAYTYPES
+                            else float(info.get("r_we", 0))) / R_i
+                    if abs((mq / mp) - want) > 1e-3:
+                        v.append({"obj": we.Name, "check": "D9",
+                                  "detail": f"{d}: the SAVED schedule '{assigned}' has mean "
+                                            f"{mq:.6f} against prototype '{before}' mean "
+                                            f"{mp:.6f} = ratio {(mq / mp):.6f}, intended "
+                                            f"{want:.6f} -- this day type is not carrying its own "
+                                            f"prototype shape (FINDING 9)"})
+
+    # One derived name must never serve two different source schedules. Redundant with the token
+    # comparison above under the current name grammar, and kept anyway: it is the check that stays
+    # true if the grammar is ever changed and the token parser silently stops matching.
+    for nm, srcs in names_seen.items():
+        if len(srcs) > 1:
+            v.append({"obj": nm, "check": "D7",
+                      "detail": f"one derived schedule serves {len(srcs)} distinct source "
+                                f"schedules: {sorted(srcs)}"})
+
+    ok = (len(v) == 0) and (n_checked > 0)
+    n_d7 = sum(1 for x in v if x["check"] == "D7")
+    n_d9 = sum(1 for x in v if x["check"] == "D9")
+    if verbose:
+        if not n_checked:
+            print("  [D7 FAIL] 0 WaterUse:Equipment objects in the saved IDF -- nothing audited")
+        elif ok:
+            print(f"  [D7/D9 PASS] {n_checked} WaterUse:Equipment objects in the saved IDF: "
+                  f"{n_derived} on a derivative of their OWN schedule, {n_unchanged} unchanged, "
+                  f"0 pointing at another object's schedule; every day type of every derived "
+                  f"schedule matches its own prototype at the intended ratio")
+        else:
+            print(f"  [D7/D9 FAIL] {len(v)} violations over {n_checked} objects "
+                  f"(D7 {n_d7}, D9 {n_d9})")
+            for x in v[:8]:
+                print(f"      {x['check']} {x['obj']}: {x['detail']}")
+        if d9_unchecked:
+            print(f"  [D9 UNCHECKED] {len(d9_unchecked)} object/day-type(s) could not be "
+                  f"re-expanded from the saved IDF; reported, never counted as a pass: "
+                  f"{d9_unchecked[:5]}")
+    return {"pass": ok, "n": n_checked, "n_derived": n_derived, "n_unchanged": n_unchanged,
+            "violations": v, "derived_names": sorted(names_seen),
+            "n_d7": n_d7, "n_d9": n_d9, "d9_unchecked": d9_unchecked}
 
 
 # ---------------------------------------------------------------------------
@@ -1528,12 +1992,20 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
     if dhw_model:
         hh_of_space = {str(k).strip().upper(): v for k, v in result["assignment"].items()}
         dhw_cache = {}                                   # (hh_id, floor_key, peak_key) -> name
+        dhw_name_owner = {}                              # generated name -> key (uniqueness)
+        # FINDING 8 measurement, not assumption: how many distinct (Space, prototype schedule)
+        # pairs actually exist among the residential objects in THIS IDF. 1:1 means the
+        # residential path was never colliding in practice; anything else means it was.
+        _resid_space_proto = set()
+        _resid_n_objects = 0
         for we in idf.idfobjects.get("WATERUSE:EQUIPMENT", []):
             head = _wateruse_space_of(we)
             hh_id = hh_of_space.get(head)
             if hh_id is None:
                 continue                                  # not a residential apartment object
             proto = str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "")
+            _resid_n_objects += 1
+            _resid_space_proto.add((head, str(proto).strip().upper()))
             if _dhw_excluded(we, dhw_model):
                 result["dhw_excluded"].append(
                     {"name": we.Name, "channel": "residential", "schedule": proto,
@@ -1568,20 +2040,44 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
                     pool[hh_id]["occ_wd"], pool[hh_id]["occ_we"],
                     dhw_reference["wd"], dhw_reference["we"],
                     peak_policy=dhw_model.get("peak_policy", "rescale"),
-                    r_max=float(dhw_model.get("r_max", 3.0)))
+                    r_max=float(dhw_model.get("r_max", 3.0)),
+                    proto_by_daytype=sprof.get("by_daytype"))
+                _new_dt = info.pop("new_by_daytype", None)   # kept out of the provenance
                 if new_wd is None:
                     result["dhw_unresolved"].append(
                         {"name": we.Name, "channel": "residential", "schedule": proto,
                          "reason": info.get("error", "volume scaling failed")})
                     continue
-                key = (hh_id, round(info["r_wd"], 4), round(info["r_we"], 4))
+                # FINDING 8 CORRECTION (2026-08-02): same defect class as the commercial path.
+                # r_wd/r_we are functions of the HOUSEHOLD occupancy only, not of the object's
+                # prototype schedule, so two WaterUse:Equipment objects in one apartment Space
+                # carrying different prototype schedules collided onto the first one's shape.
+                # hh_id narrowed the blast radius; it did not close the hole.
+                key = (hh_id, str(proto).strip().upper(),
+                       round(info["r_wd"], 4), round(info["r_we"], 4))
                 nm = dhw_cache.get(key)
                 if nm is None:
-                    nm = (f"MXU_Residential_DHWv2_HH{hh_id}_"
-                          f"r{int(round(key[1]*1000)):04d}w{int(round(key[2]*1000)):04d}")
+                    nm = (f"MXU_Residential_DHWv2_HH{hh_id}_{_sched_token(proto)}_"
+                          f"r{int(round(key[2]*1000)):04d}w{int(round(key[3]*1000)):04d}")
+                    if len(nm) > 100:
+                        raise AssertionError(
+                            f"T9-13 residential schedule name is {len(nm)} chars (>100, "
+                            f"EnergyPlus alpha-field limit): '{nm}'")
+                    prior = dhw_name_owner.get(nm)
+                    if prior is not None and prior != key:
+                        raise AssertionError(
+                            f"T9-13 residential schedule-name collision: '{nm}' generated for "
+                            f"BOTH {prior} and {key} -- _sched_token truncation re-created "
+                            f"FINDING 8.")
+                    dhw_name_owner[nm] = key
                     obj = idf.newidfobject("Schedule:Compact")
-                    obj.obj = ["Schedule:Compact"] + _build_compact_fields_2dt(
-                        nm, new_wd, new_we, type_limit="Fraction")
+                    if _new_dt:          # FINDING 9: one block per distinct day-type profile
+                        obj.obj = ["Schedule:Compact"] + _build_compact_fields_by_daytype(
+                            nm, _new_dt, type_limit="Fraction")
+                    else:
+                        obj.obj = ["Schedule:Compact"] + _build_compact_fields_2dt(
+                            nm, new_wd, new_we, type_limit="Fraction")
+                        result.setdefault("t9_13_daytype_fallback", []).append(nm)
                     dhw_cache[key] = nm
                     result["schedule_names"].append(nm)
                 we.Flow_Rate_Fraction_Schedule_Name = nm
@@ -1621,10 +2117,15 @@ def inject_residential(idf, csv_path: str, seed: int = 42,
                 {"name": we.Name, "channel": "residential", "prototype_schedule": proto,
                  "floor": round(float(floor), 6), "peak": round(float(peak), 6),
                  "derived_schedule": nm, "provenance": f"{fprov} | peak: {pprov}"})
+        result["dhw_space_proto_pairs"] = len(_resid_space_proto)
+        result["dhw_n_objects_seen"] = _resid_n_objects
         if verbose:
             print(f"  [inject_residential] DHW: {len(result['dhw_applied'])} WaterUse:Equipment "
                   f"objects re-wired to their own household series, "
                   f"{len(result['dhw_unresolved'])} unresolved")
+            print(f"  [FINDING 8 measure] residential objects={_resid_n_objects} "
+                  f"distinct (Space, prototype schedule) pairs={len(_resid_space_proto)} "
+                  f"-> {'1:1, this path was NOT colliding' if len(_resid_space_proto) == _resid_n_objects else 'NOT 1:1, this path WAS colliding'}")
 
     if verbose:
         print(f"  [inject_residential] {n_spaces} residential apartment Spaces <- {n_spaces} "
@@ -1710,6 +2211,15 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
     idd_path = _find_idd(idf_path)
     IDF.setiddname(idd_path)
     idf = IDF(idf_path)
+
+    # D7 (FINDING 8) baseline: which flow-fraction schedule each WaterUse:Equipment object carried
+    # BEFORE anything in this function ran. Taken here, at the top, because both DHW paths
+    # (commercial below, residential inside inject_residential) overwrite the field in place and
+    # there is no way to recover the original afterwards from `idf`.
+    _we_proto_before = {
+        str(we.Name).strip().upper():
+            str(getattr(we, "Flow_Rate_Fraction_Schedule_Name", "") or "").strip()
+        for we in idf.idfobjects.get("WATERUSE:EQUIPMENT", [])}
 
     result = {"office": {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
               "retail": {"n_spaces": 0, "n_lights": 0, "n_equip": 0},
@@ -2076,21 +2586,53 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         return _to24(s.get("wd")), _to24(s.get("we"))
 
     _t9_13_cache = {}
+    _t9_13_name_owner = {}       # generated name -> key that created it (uniqueness assertion)
 
-    def _t9_13_schedule_for(channel, r_wd, r_we, new_wd, new_we):
-        """Get-or-create the T9-13 volume-scaled flow-fraction schedule for (channel, r_wd, r_we)."""
-        key = (channel, round(float(r_wd), 4), round(float(r_we), 4))
+    def _t9_13_schedule_for(channel, proto, r_wd, r_we, new_wd, new_we, new_by_daytype=None):
+        """Get-or-create the T9-13 volume-scaled flow-fraction schedule.
+
+        FINDING 8 CORRECTION (2026-08-02): the key is (channel, SOURCE SCHEDULE, r_wd, r_we).
+        The source schedule was previously absent, which made every object in a channel share the
+        first object's shape -- see the _sched_token comment block. One schedule per
+        (channel, source schedule, r) is the correct cardinality: r is channel-wide, the shape is
+        per source schedule, and objects that genuinely share both genuinely share a schedule.
+        """
+        key = (channel, str(proto).strip().upper(),
+               round(float(r_wd), 4), round(float(r_we), 4))
         if key in _t9_13_cache:
             return _t9_13_cache[key]
-        nm = (f"MXU_{channel.capitalize()}_DHWv2_"
-              f"r{int(round(key[1] * 1000)):04d}w{int(round(key[2] * 1000)):04d}_{tag}")
+        nm = (f"MXU_{channel.capitalize()}_DHWv2_{_sched_token(proto)}_"
+              f"r{int(round(key[2] * 1000)):04d}w{int(round(key[3] * 1000)):04d}_{tag}")
+        # EnergyPlus alpha fields are 100 characters. A silently truncated Name would break the
+        # reference (or, worse, merge two schedules), so refuse rather than emit one.
+        if len(nm) > 100:
+            raise AssertionError(
+                f"T9-13 schedule name is {len(nm)} chars (>100, EnergyPlus alpha-field limit): "
+                f"'{nm}'. Lower _SCHED_TOKEN_MAXLEN -- the hash-suffix form is already applied "
+                f"above that length, so shortening it stays collision-safe.")
+        # A truncation collision in _sched_token would silently recreate FINDING 8. Assert it.
+        prior = _t9_13_name_owner.get(nm)
+        if prior is not None and prior != key:
+            raise AssertionError(
+                f"T9-13 schedule-name collision: '{nm}' generated for BOTH {prior} and {key}. "
+                f"_sched_token truncated two distinct prototype schedules to the same token -- "
+                f"this is the FINDING 8 defect re-created by the fix for it.")
+        _t9_13_name_owner[nm] = key
         obj = idf.newidfobject("Schedule:Compact")
-        obj.obj = ["Schedule:Compact"] + _build_compact_fields_2dt(nm, new_wd, new_we,
-                                                                   type_limit="Fraction")
+        # FINDING 9: write one block per DISTINCT day-type profile. The 2-day-type writer is kept
+        # only as the fallback for a source that genuinely resolved no per-day-type map, and that
+        # case is recorded in the provenance rather than silently taking this path.
+        if new_by_daytype:
+            obj.obj = ["Schedule:Compact"] + _build_compact_fields_by_daytype(
+                nm, new_by_daytype, type_limit="Fraction")
+        else:
+            obj.obj = ["Schedule:Compact"] + _build_compact_fields_2dt(nm, new_wd, new_we,
+                                                                       type_limit="Fraction")
+            result.setdefault("t9_13_daytype_fallback", []).append(nm)
         _t9_13_cache[key] = nm
         result["modulated_schedule_names"].append(nm)
         if verbose:
-            print(f"  [T9-13] {channel}: derived {nm} (r_wd={key[1]} r_we={key[2]})")
+            print(f"  [T9-13] {channel}: derived {nm} (src='{proto}' r_wd={key[2]} r_we={key[3]})")
         return nm
 
     if dhw_model:
@@ -2131,14 +2673,17 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
                 new_wd, new_we, info = apply_dhw_volume_scaling(
                     sprof["wd"], sprof["we"], occ_wd, occ_we, ref["wd"], ref["we"],
                     peak_policy=dhw_model.get("peak_policy", "rescale"),
-                    r_max=float(dhw_model.get("r_max", 3.0)))
+                    r_max=float(dhw_model.get("r_max", 3.0)),
+                    proto_by_daytype=sprof.get("by_daytype"))
                 if new_wd is None:
                     result["dhw_unresolved"].append(
                         {"name": we.Name, "channel": channel, "schedule": proto,
                          "reason": info.get("error", "volume scaling failed")})
                     continue
-                target_sch = _t9_13_schedule_for(channel, info["r_wd"], info["r_we"],
-                                                 new_wd, new_we)
+                # 8 x 24 floats per object -- kept out of the provenance/manifest deliberately.
+                _new_dt = info.pop("new_by_daytype", None)
+                target_sch = _t9_13_schedule_for(channel, proto, info["r_wd"], info["r_we"],
+                                                 new_wd, new_we, new_by_daytype=_new_dt)
                 try:
                     we.Flow_Rate_Fraction_Schedule_Name = target_sch
                     # Restore the volume that dividing the shape by R removed. Peak_Flow_Rate is
@@ -2207,6 +2752,12 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         result["dhw_applied"].extend(result["residential"].get("dhw_applied", []))
         result["dhw_unresolved"].extend(result["residential"].get("dhw_unresolved", []))
         result["dhw_excluded"].extend(result["residential"].get("dhw_excluded", []))
+        # FINDING 9: the residential path has its own `result` dict, so its day-type fallback list
+        # has to be lifted here or it never reaches the provenance -- a fallback nobody can see is
+        # the same failure as no fallback report at all.
+        _rf = result["residential"].get("t9_13_daytype_fallback")
+        if _rf:
+            result.setdefault("t9_13_daytype_fallback", []).extend(_rf)
     elif "residential" in channels and verbose:
         print("  [FALLBACK] residential channel data missing -- apartment Spaces revert to "
               "whatever the source IDF already had (untouched, REPLACE not applied)")
@@ -2222,11 +2773,49 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         # scenario deliberately omits (hotel in Y2005/Y2010/Y2015, DELIBERATE_CHANNEL_EXCEPTIONS)
         # must not be demanded here -- that would turn a documented design decision into a FAIL.
         _expect = tuple(c for c in dhw_model.get("channels", ()) if c in channels)
-        result["t9_13_audit"] = audit_dhw_shape_preservation(_t913_recs, verbose=verbose,
-                                                             expect_channels=_expect)
+        _audit = audit_dhw_shape_preservation(_t913_recs, verbose=verbose,
+                                              expect_channels=_expect)
+        # Open item 5 (2026-08-02): the 4 Default_NECB control cells request NO DHW channels at
+        # all, inject nothing, and were reported `audit_pass=False, n_audited=0` -- a FAIL for
+        # having correctly done nothing. That is N/A, not a failure. The FAIL-on-empty rule is
+        # kept everywhere else: a cell that asked for channels and audited 0 objects is still a
+        # FAIL, which is the case the rule exists for.
+        if not _expect and _audit["n"] == 0 and not _audit["violations"]:
+            _audit["pass"] = None
+            _audit["verdict"] = "N/A"
+            if verbose:
+                print("  [T9-13 audit N/A] this cell requested no DHW channels -- nothing to "
+                      "audit, and nothing was injected")
+        else:
+            _audit["verdict"] = "PASS" if _audit["pass"] else "FAIL"
+        result["t9_13_audit"] = _audit
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)) or ".", exist_ok=True)
     idf.saveas(output_path)
+
+    # ---- D7: the ASSIGNMENT check, read back from the file that was just written ----
+    # Must come after the save (that is the point -- see audit_dhw_assignment's docstring), so its
+    # verdict is folded into the same `t9_13_audit` dict the campaign driver and W-gates read.
+    if _t9_13:
+        _d7 = audit_dhw_assignment(output_path, result["dhw_applied"], _we_proto_before,
+                                   verbose=verbose, idd_path=idd_path)
+        result["t9_13_d7"] = _d7
+        _a = result["t9_13_audit"]
+        _a["counts"]["D7"] = _d7["n_d7"]
+        _a["counts"]["D9"] = _d7["n_d9"]
+        _a["violations"].extend(_d7["violations"])
+        _a["n_wateruse_objects"] = _d7["n"]
+        _a["d7_derived_names"] = _d7["derived_names"]
+        _a["d9_unchecked"] = _d7["d9_unchecked"]
+        if _a.get("pass") is None:
+            # N/A cell: D7 still ran over the untouched objects, and a change there is a real
+            # failure even though there was nothing to inject.
+            if _d7["violations"]:
+                _a["pass"], _a["verdict"] = False, "FAIL"
+        else:
+            _a["pass"] = bool(_a["pass"]) and bool(_d7["pass"])
+            _a["verdict"] = "PASS" if _a["pass"] else "FAIL"
+
     if verbose:
         print(f"  Saved: {output_path}")
         print(f"  Injected PEOPLE: office={result['office']['n_spaces']} retail={result['retail']['n_spaces']} "
@@ -2296,6 +2885,21 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
         if result.get("t9_13_audit") is not None:
             a = result["t9_13_audit"]
             f.write(f"t9_13_audit_pass={a['pass']} n_audited={a['n']} counts={a['counts']}\n")
+            # verdict is the tri-state form: PASS / FAIL / N/A. `pass=None` <=> N/A (the cell
+            # requested no DHW channels), which is NOT the same as pass=False.
+            f.write(f"t9_13_audit_verdict={a.get('verdict', 'FAIL')}\n")
+            if result.get("t9_13_d7") is not None:
+                d7 = result["t9_13_d7"]
+                f.write(f"t9_13_d7_pass={d7['pass']} n_wateruse={d7['n']} "
+                        f"n_own_derivative={d7['n_derived']} n_unchanged={d7['n_unchanged']} "
+                        f"n_violations={len(d7['violations'])} "
+                        f"n_d7={d7['n_d7']} n_d9={d7['n_d9']} "
+                        f"d9_unchecked={len(d7['d9_unchecked'])}\n")
+                for _nm in d7["derived_names"]:
+                    f.write(f"t9_13_derived_name {_nm}\n")
+            # FINDING 9: any schedule that had to fall back to the 2-day-type writer, named.
+            for _nm in sorted(set(result.get("t9_13_daytype_fallback") or [])):
+                f.write(f"t9_13_daytype_FALLBACK {_nm}\n")
             for v in a["violations"]:
                 f.write(f"t9_13_VIOLATION {v['check']} '{v['obj']}': {v['detail']}\n")
             for _ch, _p in sorted(result.get("t9_13_reference", {}).items()):
@@ -2321,6 +2925,10 @@ def inject_mixed_use(idf_path: str, output_path: str, channels: dict, building_m
             f.write(f"n_residential_households_drawn={result['residential']['n_households_drawn']}\n")
             f.write(f"n_residential_carriers_neutralized={result['residential']['n_carriers_neutralized']}\n")
             f.write(f"residential_seed={channels['residential'].get('seed', 42)}\n")
+            # FINDING 8 measurement (1b): is the residential path 1:1 (Space, prototype schedule)?
+            f.write(f"residential_dhw_objects={result['residential'].get('dhw_n_objects_seen')} "
+                    f"residential_dhw_space_proto_pairs="
+                    f"{result['residential'].get('dhw_space_proto_pairs')}\n")
             f.write(f"residential_assignment={result['residential']['assignment']}\n")
 
     return result

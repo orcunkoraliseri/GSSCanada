@@ -107,6 +107,10 @@ D2030_ALLOWED_STEMS = {
 LOOKUP_OFFICE = BASE / "0_Occupancy" / "processed" / "office_archetype_lookup.csv"
 
 RETAIL_LEVER_DIR = LEG3 / "Step6_docs" / "outputs_step6"
+# FINDING 7 (2026-08-02, option B): these files are NO LONGER the source of the 2030 retail
+# SHAPE -- build_retail_product_2030 now pools D2030 (_C_v2) like every other 2030 channel. They
+# remain the source of truth for the uniform amplitude LEVER scalar (_derive_retail_lever), which
+# is what they were built to be.
 RETAIL_LEVER_FILES = {
     "shift":       RETAIL_LEVER_DIR / "at_retail_fraction_2030_shift.csv",        # cons  (0.90)
     "plateau":     RETAIL_LEVER_DIR / "at_retail_fraction_2030_plateau.csv",      # central (0.97)
@@ -120,6 +124,12 @@ HOTEL_ST       = BASE / "0_Occupancy" / "processed" / "hotel_diurnal_shape_st.cs
 OUT_DIR = HERE / "outputs_step7"
 
 MIN_2030_ROWS = 111_024   # 3 bands x 37,008 (matches Leg-2 pattern, confirmed by --audit)
+
+# `_C_v2` carries RAW GSS province codes, NOT the 1-6 region remap the 2022 stock uses. Measured
+# (value_counts on _C_v2.PR: 24 -> 21,087 rows, 48 -> 12,528) and cross-checked against
+# 3rdJ_09E_retail_source_probe.py, which uses the same two codes. Copying
+# build_retail_product_2022's {QC: 2, AB: 4} here would silently select the wrong provinces.
+D2030_RETAIL_PR = {"QC": 24, "AB": 48}
 
 # ---------------------------------------------------------------------------
 # Column groups
@@ -454,6 +464,157 @@ def build_office_multiplier(df, band_label, lookup_df):
 
 
 # ---------------------------------------------------------------------------
+# demo_assemble_2030 -- occupation-matched assembly of the 2030 pool onto the stock frame.
+# ---------------------------------------------------------------------------
+# Ported from 3rdJ_08A_gen_historical_products_4split.py::demo_assemble (which does the same job for
+# the historical cycles) with ONE required change: the D2030 pool does not carry MARSTH or HHSIZE,
+# so 08A's tier ladder cannot be reused verbatim. It does carry NOCS, which matters more here --
+# NOCS is what makes an office worker an office worker.
+#
+# Why not the plain random draw in assemble_2030(): it copies a RANDOM pool row's diary onto each
+# stock row within DDAY_STRATA, with no occupational matching, which destroys the office signal
+# outright. Measured 2026-08-02 -- office-employed WRK mean vs ALL-persons WRK mean:
+#
+#     real stock (2022 diaries)   0.254911  vs  0.245461     <- office workers work more
+#     assemble_2030(hybrid)       0.109950  vs  0.110243     <- identical: signal gone
+#     assemble_2030(fullyhybrid)  0.104492  vs  0.103421     <- identical: signal gone
+#
+# assemble_2030() stays correct for RESIDENTIAL, whose product is a whole-household occupancy
+# aggregate rather than an occupation-conditioned curve. It is simply not a valid frame for office.
+TIERS_2030 = [["AGEGRP", "SEX", "LFTAG", "NOCS"],
+              ["AGEGRP", "SEX", "NOCS"],
+              ["NOCS", "LFTAG"],
+              ["AGEGRP", "SEX", "LFTAG"],
+              []]
+KEYS_2030 = ["AGEGRP", "SEX", "LFTAG", "NOCS"]
+
+
+def _canon_keys(df, cols):
+    """Both frames store these as numeric with different dtypes (stock int64, pool float64), so
+    canonicalise through Int64 -> str before building match keys, or nothing ever matches."""
+    return {k: pd.to_numeric(df[k], errors="coerce").astype("Int64").astype(str).values
+            for k in cols}
+
+
+def demo_assemble_2030(stock, pool, verbose=True):
+    """Match each stock person-row to a 2030 pool row on demographics + occupation + DDAY_STRATA,
+    then copy that pool row's ACT+HOM+WRK+RET block onto the stock row wholesale.
+
+    Returns a copy of `stock` -- same rows, same NOCS/LFTAG/DDAY_STRATA, same day-type composition
+    as the 2022 product -- carrying 2030 diaries. That is what makes an era comparison a comparison
+    of behaviour rather than of populations.
+    """
+    from collections import defaultdict
+
+    rng = np.random.default_rng(42)
+    pool = pool.reset_index(drop=True)
+    allk = sorted(set(KEYS_2030 + ["DDAY_STRATA"]))
+    sc, pc = _canon_keys(stock, allk), _canon_keys(pool, allk)
+
+    def ck(canon, gk):
+        out = canon[gk[0]].astype(object)
+        for k in gk[1:]:
+            out = out + "|" + canon[k]
+        return out
+
+    n = len(stock)
+    chosen = np.full(n, -1, np.int64)
+    tier_of = np.zeros(n, np.int8)
+    remaining = np.ones(n, bool)
+    for ti, ks in enumerate(TIERS_2030, 1):
+        gk = ks + ["DDAY_STRATA"]
+        grp = defaultdict(list)
+        for pos, key in enumerate(ck(pc, gk)):
+            grp[key].append(pos)
+        grp = {k: np.asarray(v) for k, v in grp.items()}
+        sck = ck(sc, gk)
+        for j in np.where(remaining)[0]:
+            arr = grp.get(sck[j])
+            if arr is not None and len(arr):
+                chosen[j] = arr[rng.integers(len(arr))]
+                tier_of[j] = ti
+                remaining[j] = False
+        if verbose:
+            lbl = ",".join(ks) if ks else "strata-only"
+            print(f"    tier {ti} ({lbl}): matched {int((tier_of == ti).sum()):,}, "
+                  f"remaining {int(remaining.sum()):,}", flush=True)
+        if not remaining.any():
+            break
+    assert chosen.min() >= 0, "unmatched stock rows remain after all tiers"
+    out = stock.copy()
+    out[ACT + HOM + WRK + RET] = pool.iloc[chosen][ACT + HOM + WRK + RET].values
+    return out
+
+
+# ---------------------------------------------------------------------------
+# build_office_2030_product -- the all-bands 2030 office file, built on the STOCK frame.
+# ---------------------------------------------------------------------------
+def build_office_2030_product(lookup, d2030_path=None):
+    """FINDING 6 FIX -- 2026-08-02, user decision: "every cycle's schedules must come from the same
+    sample pool". The 2030 office product used to be built from the D2030 pool DIRECTLY:
+
+        band_slice = d30[d30["BAND"] == band].copy()
+        part = build_office_multiplier(band_slice, band, lookup)
+
+    while the 2022 office product is built on the augmented STOCK (`build_office_multiplier(stock,
+    "observed", lookup)`, cmd_year_2022) and the 2030 RESIDENTIAL product -- which shares the same
+    office/WFH BAND axis -- is built on `assemble_2030()`'s output, i.e. the stock with 2030 activity
+    columns drawn into it. Three products on one axis, two frames.
+
+    It is not cosmetic. The D2030 pool is BALANCED BY CONSTRUCTION -- every worker carries a diary
+    for all three DDAY_STRATA, so n_wd:n_we = 1928:3856 = 1:2 -- whereas a GSS respondent has ONE
+    diary day (2022: 3383:1365 = 2.48:1). Measured on the same band by
+    Step9_docs/3rdJ_09E_office_source_probe.py:
+
+        pool vs stock, same band:  weekday +58..+76 %,  weekend +89..+102 %
+        weekend ratio vs 2022:     from pool  x2.49 / x2.08 / x1.73   (cons / hybrid / fullyhybrid)
+                                   from stock x1.23 / x1.10 / x0.89
+
+    Under the stock frame, fully-hybrid weekend office presence FALLS below today -- the sensible
+    reading, and the opposite of what the shipped product said. The WFH lever survives both frames
+    with the same ordering, ~29 % smaller in this one (-18.8 % -> -13.4 % weekday cons->opt).
+
+    `assemble_2030()` returns `stock.copy()` with only ACT+HOM+WRK+RET replaced, so the call below
+    is EXACTLY parallel to the 2022 one: same frame, same NOCS / LFTAG / DDAY_STRATA, only the diary
+    block differs. That parallel is the point -- it is what makes an era comparison a comparison of
+    behaviour rather than of populations.
+
+    NOT day-type-completed, deliberately: the 2022 anchor is not either. `complete_day_types` was
+    measured to shift the office means by +0.10 % (wd) / +3.07 % (we), so it is behaviour-preserving
+    and the choice is about matching the anchor, not about moving numbers.
+
+    CORRECTION 2026-08-02, same day: the first version of this function used `assemble_2030()`, and
+    that was WRONG -- its random within-stratum draw hands office workers other people's diaries and
+    the occupation signal disappears (see the measurement on demo_assemble_2030 above). The band
+    monotonicity guard in 3rdJ_07R_regen_office_2030.py caught it and refused to write the product.
+    It now uses `demo_assemble_2030()`, which matches on NOCS + LFTAG + AGEGRP + SEX + DDAY_STRATA.
+
+    With the valid assembly the frame effect is MUCH smaller than the first (invalid) comparison
+    suggested -- Office_Knowledge, shipped-pool vs matched-stock:
+
+        conservative  0.2070/0.1622 -> 0.2198/0.1694   (+6.2 % / +4.4 %)
+        hybrid        0.1872/0.1353 -> 0.2025/0.1378   (+8.2 % / +1.8 %)
+        fullyhybrid   0.1680/0.1126 -> 0.1759/0.1044   (+4.7 % / -7.3 %)
+
+    So the x2 weekend rise from 2022 is REAL BEHAVIOUR in the 2030 diaries (weekend ratio vs 2022:
+    x2.60 / x2.12 / x1.60 matched, vs x2.49 / x2.08 / x1.73 shipped), not a frame artefact. The fix
+    is about methodological consistency -- every cycle drawn onto the same sample frame -- not about
+    a large numerical error.
+
+    Cost: reads AUG + D2030 once, then one tiered match per band. Built once per Step-7 run.
+    """
+    stock = pd.read_csv(AUG, low_memory=False)
+    _d = Path(d2030_path) if d2030_path is not None else D2030
+    d30 = pd.read_csv(_d, low_memory=False)
+    parts = []
+    for band in BANDS:
+        print(f"  [office/FINDING-6] occupation-matched stock assembly, BAND={band}", flush=True)
+        assembled = demo_assemble_2030(stock, d30[d30["BAND"] == band].copy())
+        parts.append(build_office_multiplier(assembled, band, lookup))
+    return pd.concat(parts, ignore_index=True)
+
+
+# ---------------------------------------------------------------------------
 # build_retail_product -- NEW (Leg-3), dr_L3-06 normalization
 # ---------------------------------------------------------------------------
 def _retail_rows_from_slotarray(day_type, pr, arr_clock48, n_persons, ref_peak=None):
@@ -530,33 +691,71 @@ def _retail_rows_from_slotarray(day_type, pr, arr_clock48, n_persons, ref_peak=N
     return rows
 
 
-def build_retail_product_2030(retail_scenario):
-    """retail_scenario in {'shift','plateau','renaissance'}. Reads the Step-6 lever file directly
-    (Step-6B amplitude drift already baked into *_levered before this normalization, dr_L3-06).
+def build_retail_product_2030(retail_scenario, d2030_path=None):
+    """retail_scenario in {'shift','plateau','renaissance'}.
 
-    2026-07-28 fix: normalizes against the un-levered `at_retail_fraction_2030_base` column's own
-    peak per (Day_Type, PR_GROUP) -- NOT the levered array's own peak (that was the bug: it
-    self-cancels any level-rescale the Step-6 lever applied). `base` is confirmed identical
-    across all 3 lever files, so this reference is shared, unperturbed, and read from the data
-    (see _retail_rows_from_slotarray docstring for the full before/after)."""
-    path = RETAIL_LEVER_FILES[retail_scenario]
-    df = pd.read_csv(path)
-    df = df[df["PR_GROUP"].isin(["QC", "AB"])].copy()
-    day_map = {"weekday": "Weekday", "saturday": "Saturday", "sunday": "Sunday"}
-    df["Day_Type"] = df["day_type"].map(day_map)
+    FINDING 7 FIX -- option B, user ruling 2026-08-02
+    -------------------------------------------------
+    THE SOURCE CHANGED, AND ONLY THE SOURCE. This used to read
+    `at_retail_fraction_2030_{scenario}.csv`, which `3rdJ_06_retail_lever_4split.py` builds from
+    the RAW pool (`2030_diaries_{band}_raw.csv`). Every OTHER 2030 channel reads the CALIBRATED
+    pool `D2030` = `..._C_v2.csv`. Retail alone bypassed the calibration -- a wiring gap, not a
+    modelling decision: Step-6 produced both treatments and it was never decided which one the BEM
+    should consume (see improvements/3rdJ_L3_improvements_step9.md, FINDING 7).
+
+    Everything else is deliberately preserved:
+
+    * POOLED OVER ALL 3 BANDS, exactly as `load_pooled_raw()` did. The retail product is
+      band-independent and differs between scenarios only by the uniform scalar lever, so pooling
+      all 111,024 rows keeps RAW and CAL the *same rows* -- which is the whole point: the
+      difference must be calibration alone, not a different frame. NO band filter.
+    * The lever still comes from `_derive_retail_lever()`, i.e. from the Step-6 lever file's own
+      `multiplier` column, which that function already asserts is a uniform scalar. The lever
+      files remain the source of truth for the SCALAR; they are no longer the source of the SHAPE.
+    * Base / levered discipline unchanged (the 2026-07-28 fix): normalise against the UN-LEVERED
+      pooled base peak per (Day_Type, PR), not the levered array's own peak, so the lever survives
+      into `multiplier` instead of self-cancelling. Structurally
+      peak(band) == 0.95 * lever(band), so `run_retail_gates`' H2/R1 check is untouched.
+    * `np.roll(arr, 8)` (+4 h, diary-origin -> clock-origin). This project has paid for that
+      offset once already.
+
+    PR CODING -- MEASURED, NOT ASSUMED. `_C_v2` carries RAW GSS province codes
+    (QC=24, AB=48; confirmed by value_counts and by 3rdJ_09E_retail_source_probe.py, which uses
+    the same two codes). It is NOT the 1-6 region remap that the 2022 stock uses, so
+    `build_retail_product_2022`'s {QC:2, AB:4} must NOT be copied here.
+    """
+    path = Path(d2030_path) if d2030_path is not None else D2030
+    assert_d2030_is_c(path)                        # H6 md5 guard stays in force on what we read
+    lever = _derive_retail_lever(retail_scenario)
+
+    df = pd.read_csv(path, usecols=["DDAY_STRATA", "PR"] + RET, low_memory=False)
+    assert len(df) >= MIN_2030_ROWS, (
+        f"FINDING 7 rewire: pooled _C_v2 has {len(df):,} rows, expected >= {MIN_2030_ROWS:,} "
+        f"(all 3 bands). A short read means a band filter leaked in -- the rewire's premise is "
+        f"that RAW and CAL are the SAME rows."
+    )
+    df["Day_Type3"] = df["DDAY_STRATA"].map(DAYTYPE3)
 
     rows = []
-    for (dt, pr), g in df.groupby(["Day_Type", "PR_GROUP"]):
-        g = g.sort_values("slot")
-        assert len(g) == 48, f"retail lever [{retail_scenario}/{dt}/{pr}]: expected 48 slots, got {len(g)}"
-        arr = g["at_retail_fraction_2030_levered"].to_numpy(dtype=float)   # GSS diary-origin (slot1=04:00)
-        arr_clock = np.roll(arr, 8)   # +4h roll = 8 half-hour slots (slot-origin discipline)
-        base = g["at_retail_fraction_2030_base"].to_numpy(dtype=float)    # un-levered, shared across bands
-        base_clock = np.roll(base, 8)
-        ref_peak = float(base_clock.max())
-        rows.extend(_retail_rows_from_slotarray(dt, pr, arr_clock, n_persons=None, ref_peak=ref_peak))
+    for pr_label, pr_code in [("QC", D2030_RETAIL_PR["QC"]), ("AB", D2030_RETAIL_PR["AB"])]:
+        sub_pr = df[df["PR"] == pr_code]
+        assert len(sub_pr) > 0, (
+            f"FINDING 7 rewire: no _C_v2 rows for PR={pr_code} ({pr_label}). The pool's PR coding "
+            f"is not what this function assumes -- do not ship a silently empty channel."
+        )
+        for dt in ["Weekday", "Saturday", "Sunday"]:
+            sub = sub_pr[sub_pr["Day_Type3"] == dt]
+            assert len(sub) > 0, f"FINDING 7 rewire: no _C_v2 rows for {pr_label}/{dt}"
+            base48 = sub[RET].mean().to_numpy(dtype=float)     # GSS diary-origin (slot1 = 04:00)
+            base_clock = np.roll(base48, 8)                     # +4h -> clock origin
+            arr_clock = base_clock * lever                      # uniform scalar lever, band level
+            ref_peak = float(base_clock.max())                  # un-levered reference, as before
+            rows.extend(_retail_rows_from_slotarray(dt, pr_label, arr_clock,
+                                                    n_persons=len(sub), ref_peak=ref_peak))
     out = pd.DataFrame(rows)[RETAIL_OUT_COLS]
-    print(f"  Retail [{retail_scenario}]: {len(out):,} rows (3 Day_Type x 2 PR x 48 slots = 288)", flush=True)
+    print(f"  Retail [{retail_scenario}]: {len(out):,} rows (3 Day_Type x 2 PR x 48 slots = 288) "
+          f"| SOURCE = {path.name} (calibrated, all {len(df):,} rows pooled) | lever={lever}",
+          flush=True)
     return out
 
 
@@ -960,12 +1159,11 @@ def cmd_year_2030(bundle, sens=None, deliverable=None):
 
         # Office: rebuild the SINGLE all-bands file whenever any office state changes
         # (idempotent; office does not depend on retail/hotel axes).
-        office_parts = []
-        for band in BANDS:
-            band_slice = d30[d30["BAND"] == band].copy()
-            part = build_office_multiplier(band_slice, band, lookup)
-            office_parts.append(part)
-        office_out = pd.concat(office_parts, ignore_index=True)
+        #
+        # FINDING 6 FIX (2026-08-02): built through the STOCK frame, not the D2030 pool. The whole
+        # rationale lives on build_office_2030_product(); it is a single function so that this call
+        # site and the standalone regeneration script cannot drift apart.
+        office_out = build_office_2030_product(lookup, d2030_path=_d2030)
         run_office_gates(office_out, is_2030=True, label="2030")
         out_off = OUT_DIR / "office_presence_multiplier_2030.csv"
         atomic_write(office_out, out_off, "%.4f"); written.append(out_off)
@@ -974,7 +1172,8 @@ def cmd_year_2030(bundle, sens=None, deliverable=None):
     if "retail" in chans:
         for blabel, scenario in retail_states:
             print(f"\n[Retail] bundle={blabel} scenario={scenario}", flush=True)
-            retail_out = build_retail_product_2030(scenario)
+            # FINDING 7 option B: same _d2030 the residential/office channels use.
+            retail_out = build_retail_product_2030(scenario, d2030_path=_d2030)
             run_retail_gates(retail_out, label=f"2030/{blabel}", retail_scenario=scenario)
             out_ret = OUT_DIR / f"retail_presence_multiplier_2030_{blabel}.csv"
             atomic_write(retail_out, out_ret, "%.6f"); written.append(out_ret)

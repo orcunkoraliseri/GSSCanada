@@ -22,6 +22,9 @@ from eSim_bem_utils.commercial_integration import (      # noqa: E402
     apply_dhw_volume_scaling,
     audit_dhw_shape_preservation,
     DHW_MODEL_VOLUME_SCALED,
+    _ALL_DAYTYPES,
+    _WEEKDAY_DAYTYPES,
+    _build_compact_fields_by_daytype,
 )
 
 _RESULTS = []
@@ -208,6 +211,92 @@ check("T39 a zero-occupancy weekday yields an identically zero weekday schedule"
       z_wd is not None and max(z_wd) == 0.0)
 check("T40 and the audit FAILS it on D2, loudly rather than silently",
       audit_dhw_shape_preservation([rec(z)], verbose=False)["counts"]["D2"] == 1)
+
+# ---------------------------------------------------------------------------
+print("\n-- group 9: FINDING 9 -- Saturday must carry its OWN prototype curve --")
+# ---------------------------------------------------------------------------
+# The real RetailStandalone BLDG_SWH_SCH shape: a busy Saturday and a much quieter Sunday. This is
+# the pair the old reader collapsed (`sun or sat`) and the old writer emitted to "For: Weekends".
+SAT = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.10, 0.30, 0.55, 0.60, 0.62,
+       0.60, 0.58, 0.55, 0.52, 0.48, 0.40, 0.30, 0.20, 0.10, 0.05, 0.0, 0.0]
+SUN = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.10, 0.15, 0.20,
+       0.22, 0.22, 0.20, 0.18, 0.15, 0.10, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+
+def by_dt(wd, sat, sun, hol=None):
+    m = {d: list(wd) for d in _WEEKDAY_DAYTYPES}
+    m["Saturday"], m["Sunday"] = list(sat), list(sun)
+    m["Holidays"] = list(hol if hol is not None else sun)
+    return m
+
+
+PROTO_BY_DT = by_dt(PROTO_WD, SAT, SUN)
+
+# --- the defect itself, reproduced then fixed ---
+_, _, i_old = apply_dhw_volume_scaling(PROTO_WD, SUN, FLAT, FLAT, FLAT, FLAT)
+_, _, i_new = apply_dhw_volume_scaling(PROTO_WD, SUN, FLAT, FLAT, FLAT, FLAT,
+                                       proto_by_daytype=PROTO_BY_DT)
+check("T41 the collapsed weekend really did differ from Saturday (the defect is real)",
+      abs(mean(SAT) - mean(SUN)) > 0.05, f"sat={mean(SAT):.4f} sun={mean(SUN):.4f}")
+check("T42 at r == 1 every day type now reproduces its own prototype exactly",
+      all(abs(i_new["daytype_ratio"][d] - 1.0) < 1e-9 for d in i_new["daytype_ratio"]))
+check("T43 the per-day-type map is reported as multi-profile",
+      i_new["n_distinct_daytypes"] == 3, str(i_new["n_distinct_daytypes"]))
+check("T44 without the map there is no day-type evidence at all (D8 cannot run)",
+      i_old.get("daytype_ratio") is None)
+
+# --- D8 SEEN FAILING: hand it exactly what the old writer produced ---
+# Saturday written with SUNDAY's curve is the FINDING 9 signature. Everything else identical.
+i_bad = dict(i_new)
+i_bad["daytype_ratio"] = dict(i_new["daytype_ratio"])
+i_bad["daytype_ratio"]["Saturday"] = round(mean(SUN) / mean(SAT), 8)   # what collapsing achieves
+a_bad = audit_dhw_shape_preservation([rec(i_bad)], verbose=False)
+a_good = audit_dhw_shape_preservation([rec(i_new)], verbose=False)
+check("T45 D8 FAILS on the collapsed-Saturday signature", a_bad["counts"]["D8"] == 1)
+check("T46 and the violation names Saturday", any(
+    x["check"] == "D8" and "Saturday" in x["detail"] for x in a_bad["violations"]))
+check("T47 the same object PASSES once Saturday carries its own curve",
+      a_good["pass"] and a_good["counts"]["D8"] == 0)
+check("T48 D4 alone does NOT catch it -- which is why D8 had to exist",
+      a_bad["counts"]["D4"] == 0)
+
+# --- D8 is not vacuous: it must also fail when r != 1 and a day type is off ---
+_, _, i_r = apply_dhw_volume_scaling(PROTO_WD, SUN, [0.75] * 24, [0.25] * 24, FLAT, FLAT,
+                                     proto_by_daytype=PROTO_BY_DT)
+check("T49 with r_wd != r_we the weekday/weekend ratios differ as intended",
+      abs(i_r["daytype_ratio"]["Monday"] - i_r["daytype_ratio"]["Sunday"]) > 1e-6)
+check("T50 Saturday and Sunday share the weekend ratio (same class, own shapes)",
+      abs(i_r["daytype_ratio"]["Saturday"] - i_r["daytype_ratio"]["Sunday"]) < 1e-9)
+i_r_bad = dict(i_r, daytype_ratio=dict(i_r["daytype_ratio"]))
+i_r_bad["daytype_ratio"]["Saturday"] *= 1.05
+check("T51 D8 still fails at r != 1 (the gate is not an r == 1 special case)",
+      audit_dhw_shape_preservation([rec(i_r_bad)], verbose=False)["counts"]["D8"] == 1)
+
+# --- an object with no map is UNCHECKED, never a silent pass ---
+a_unk = audit_dhw_shape_preservation([rec(i_old)], verbose=False)
+check("T52 an object with no per-day-type map is reported as D8-unchecked",
+      a_unk["d8_unchecked"] == ["obj"])
+
+# --- the writer ---
+fields = _build_compact_fields_by_daytype("TEST_SCH", PROTO_BY_DT)
+fors = [f for f in fields if str(f).startswith("For:")]
+check("T53 the writer emits one block per distinct profile", len(fors) == 3, str(fors))
+check("T54 Saturday and Sunday are separate blocks",
+      any("Saturday" in f and "Sunday" not in f for f in fors)
+      and any("Sunday" in f and "Saturday" not in f for f in fors), str(fors))
+check("T55 the weekday block still carries the design days",
+      any("Weekdays" in f and "SummerDesignDay" in f for f in fors), str(fors))
+check("T56 the final block carries AllOtherDays so coverage is total",
+      fors[-1].endswith("AllOtherDays"), str(fors))
+one = _build_compact_fields_by_daytype("TEST1", by_dt(PROTO_WD, PROTO_WE, PROTO_WE))
+check("T57 a genuine 2-profile prototype still emits exactly 2 blocks",
+      len([f for f in one if str(f).startswith("For:")]) == 2)
+try:
+    _build_compact_fields_by_daytype("TEST2", {"Monday": PROTO_WD})
+    _raised = False
+except AssertionError:
+    _raised = True
+check("T58 an incomplete day-type map RAISES rather than filling silently", _raised)
 
 # ---------------------------------------------------------------------------
 n_pass = sum(1 for _, ok, _ in _RESULTS if ok)

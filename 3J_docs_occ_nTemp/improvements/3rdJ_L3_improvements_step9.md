@@ -2641,3 +2641,2112 @@ Done locally: reference table, baseline decision, four injector fixes, driver wi
 aggregate. The predictions must be written into this document *before* the `sbatch`, not after — the
 office numbers (+0.3 % / −11.2 % / −21.8 %) are already recorded above and are the start of that
 list, not the whole of it.
+
+## Upload + pre-flight submitted — 2026-08-02, job `1171322`
+
+Five files to `/speed-scratch/o_iseri/step8_4split/campaign/`, all verified byte-size-identical to
+their local originals (md5 is asserted inside the job itself, not on the login node):
+
+`repo/eSim_bem_utils/commercial_integration.py` · `repo/eSim_tests/test_t9_13.py` (new dir) ·
+`repo/.../Step8_docs/3rdJ_08D_campaign_driver.py` · `.../3rdJ_08D_campaign_speed_armE.sh` ·
+`validate_E.sh`
+
+**`validate_E.sh` is built so it can fail, and the failing values are arm D's own artefact.** Arm D's
+smoke provenance (`smoke_D/campaign_39a6e24e/B_central__Tall__MTL`) reads
+`n_dhw_applied=45  n_dhw_excluded=2  n_dhw_unresolved=0`. Arm E must read **47 / 0 / 0** — the two
+`LAUNDRY` objects move from *excluded* to *applied*, because T9-13 never touches intra-day shape and
+so no longer needs to exclude a batch process. If the script prints PASS while showing 45/2, it
+tested nothing. Also asserted, each with a stated expected value:
+
+- injector md5 `== 56d6e324…` **from the file Python actually imported** (the 2026-07-31 shadowing
+  near-miss), and a FATAL if `reference_occ_mean` is empty or holds a flat scalar
+- the 40 primitive tests, re-run on the cluster copy rather than trusted from here
+- `t9_13_audit_pass=True` with `n_audited == 47`
+- a `t9_13_reference` line **and** at least one emitted schedule for **each of the four channels** —
+  this is D6 enforced on the real artefact, the thing that would have caught FINDING 3
+- at least one `noop=False` (cell 3 is `B_central`; if everything is a no-op the lever is dead)
+- zero `t9_13_VIOLATION` lines
+- lighting still `open_hours_mix` at `k_open=0.6`, i.e. **arm C's exact setting** — otherwise
+  `E − C` is not a pure DHW delta
+
+The 56-run array is **not** submitted. Next: read `logs/validate_E_1171322.out`, then write the
+falsifiable predictions here, then `sbatch 3rdJ_08D_campaign_speed_armE.sh`.
+
+### Pre-flight result — `1171322` COMPLETED 2026-08-02 10:54, VALIDATION PASS
+
+| check | expected | measured |
+|---|---|---|
+| imported injector md5 | `56d6e324…` | `56d6e3241df20d45f3831770dbcba5a2` ✅ |
+| primitive tests on the cluster copy | 40/40 | **40/40** ✅ |
+| cells with unresolved inputs | 0/56 | **0/56** ✅ |
+| `n_dhw_applied` / `excluded` / `unresolved` | **47 / 0 / 0** (arm D: 45 / 2 / 0) | **47 / 0 / 0** ✅ |
+| `t9_13_audit_pass`, `n_audited` | True, 47 | **True, 47**, counts `D1..D6 all 0` ✅ |
+| reference + emitted schedule per channel | all 4 | all 4 ✅ |
+| lighting | `open_hours_mix`, `k_open=0.6` | identical to arm C ✅ |
+
+The two `LAUNDRY` objects moved from *excluded* to *applied* exactly as predicted — this is the check
+that arm D's own artefact would have failed.
+
+**Independent confirmation of the offline reference table.** The injector computed its own `r` from
+the shipped reference; those numbers were never given to it. `B_central__Tall__MTL` (PR=QC):
+
+| channel | predicted `r_wd` / `r_we` (offline table) | measured in the provenance |
+|---|---|---|
+| office | 0.7398 / 2.0788 | `0.739834 / 2.078756` |
+| retail | 0.6819 / 0.7292 | `0.68192 / 0.72918` |
+| hotel | 1.1244 / 1.1244 | `1.124391 / 1.124393` |
+| residential | per-household, ceiling `1/0.635497 = 1.5736` | max drawn `r_wd = 1.573572` |
+
+Two things worth recording honestly rather than quietly enjoying:
+
+- **`D1` has no discriminating power on office or retail.** Their prototype DHW night share is
+  identically `0.0`, so `0.0 → 0.0` cannot fail. D1 does bite on hotel (`0.122222`) and residential
+  (`0.035771`), and D2/D3/D4 bite everywhere. Stated so the "counts all zero" line is not read as
+  six independent confirmations when for two channels it is four.
+- The residential per-household spread is live in the artefact: drawn `r_wd` runs `0.458958` to
+  `1.573572` in a single cell. The pool mean is not what any individual apartment gets.
+
+---
+
+## Arm E — PREDICTIONS, written before the array was submitted
+
+Baseline for every comparison is **arm C** (`agg_C_lm3v2`), identical in every respect except that
+its `WaterUse:Equipment` objects keep the prototype flow-fraction schedule. `E − C` is therefore the
+pure T9-13 effect. Each prediction states what result would refute it.
+
+**P1 — the identity T9-11 violated.** In `dhw_hourly.csv` for `B_central__Tall__MTL`, residential
+night 00–05 share stays at the prototype's **0.0358** (arm D drove it to 0.3286) and the peak draw
+hour stays **06:00** (arm D moved it to 04:00). `audit_dhw_shape_preservation` returns
+`pass=True, n_audited=47` on **56/56** cells with zero violations.
+*Refuted by:* any night share above 0.05, any peak-hour move, or any `t9_13_VIOLATION` line — with
+one pre-registered exception: a drawn household with `mean_wd == 0` (11 of 7175) yields an all-zero
+weekday schedule and fires D2 legitimately. That exception is admissible **only** if the violating
+object name matches `MXU_Residential_DHWv2_*` and its `r_wd` is `0.0`.
+
+**P2 — office DHW stops being flat, with sign and magnitude fixed in advance.** Arm C reports office
+DHW `12.19 kWh/m²` in every column to 2 dp. Arm E, relative to arm C: **B_cons +0.3 %,
+B_central −11.2 %, B_opt −21.8 %**, tolerance ±3 pp. Derived from the prototype's own 11.95 wd /
+3.71 we daily volumes at 5/2 day weighting and the measured `r`s — not fitted to anything.
+*Refuted by:* office DHW still flat to 2 dp; or B_cons outside ±3 %; or the ordering
+cons > central > opt breaking. B_cons is the sharp one: it must come out **flat despite
+`r_we = 2.493`**, because the weekday fall and the weekend rise nearly cancel. A model that merely
+"scales DHW with occupancy" cannot produce that.
+
+**P3 — hotel DHW now moves, and this is the direct reversal of arm D's P5.** Laundry is no longer
+excluded, and hotel `r_wd ≈ r_we ≈ 1.1244` is nearly day-type-uniform, so hotel DHW rises
+**+12.4 %** (±2 pp) in `B_central`. Arm D reported hotel DHW **−8.7 %** with laundry frozen.
+*Refuted by:* hotel DHW moving less than +5 %, which would mean the laundry objects are still not
+scaling despite `n_dhw_excluded=0`. This is the prediction most able to fail, and hotel is 63.0 % of
+the tower's design DHW volume, so it also dominates the whole-building number.
+
+**P4 — residential moves with occupancy and does NOT repeat +40.8 %.** Pool means give
+`r_wd = 1.210`, `r_we = 1.075` for `B_central`, so residential DHW rises **+8 % to +18 %**.
+*Refuted by:* a rise above +25 % (the T9-11 signature), a fall, or any residential night-share
+change. Caveat stated in advance: `r` is per-household and the 27 drawn apartments are a sample of
+the pool, so the realised mean may sit off the pool mean; the band is wide for that reason and
+narrowing it after the fact would be cheating.
+
+**P5 — non-DHW end uses move only through thermal coupling, and the bound is stated first.**
+`|Δ| < 0.5 %` on every non-DHW end use in every channel. The mechanism is the gas water heaters'
+tank and distribution losses landing in their zones; there is no path from a flow-fraction schedule
+to lighting or plug loads.
+*Refuted by:* any non-DHW end use moving ≥ 0.5 %, or any lighting/equipment change at all outside
+that coupling — which would mean T9-13 touched something it must not.
+
+**P6 — integrity, checked before any delta is quoted.** Identical 56 cell tags across arms C and E,
+`attribution_closed=True` in all 56, and `max |area_E − area_C| = 0 m²`.
+*Refuted by:* any of the three failing, in which case no `E − C` number is reported at all.
+
+**What is NOT predicted, deliberately.** Whether any EUI gate changes verdict. Office is ~15 kWh/m²
+short on the standalone-prototype band before occupancy enters, and DHW is 11.2 % of that channel's
+water volume; nothing here is expected to rescue `S9-EUI-office`. If a gate does flip, that is a
+result to explain, not a target that was aimed at.
+
+**Array submitted after this section was written:** job `1171323`, `--array=0-55%20`,
+`out_E_dhwvol`, submitted 2026-08-02 at 11:0x.
+
+### `agg_armE.sh` — staged while the array runs
+
+Uploaded to `campaign/agg_armE.sh`, built from `agg_armC.sh`, ready to fire the moment the array
+lands. Two deliberate differences:
+
+1. **The campaign directory is discovered, not hard-coded**, and the job stops with FATAL unless it
+   resolves to exactly one directory whose name is `campaign_56d6e324`. Pre-flight `1170768` died on
+   a hand-written glob that assumed one directory level too few, and the *older* validate script
+   carried the same bug and never noticed — because it asserted nothing. It also refuses to
+   aggregate unless all **56** result dirs exist, so a partial arm cannot be silently averaged.
+2. **P1 is swept over all 56 cells inside the job**, not left as 56 files to read one at a time
+   afterwards: counts of `t9_13_audit_pass=True`, `n_audited=47`, `n_dhw_excluded=0`,
+   `n_dhw_unresolved=0`, `t9_13_VIOLATION` lines and `clipped=True`. If any violation exists it
+   prints every one, so the pre-registered residential zero-occupancy exception (`MXU_Residential_
+   DHWv2_*` with `r_wd=0.0`) can be told apart from a real shape bug rather than assumed to be it.
+
+It also dumps the distinct `r_wd`/`r_we`/`R` triples actually applied per channel across all 56
+cells, which is the direct cross-check of the offline reference table at campaign scale.
+
+### Scoring written BEFORE the results existed — `3rdJ_09E_score_armE.py`
+
+Authored 2026-08-02 while `1171323` was still running, i.e. **before any arm E result existed**.
+That ordering is the whole point: the thresholds in the file cannot have been chosen to fit the
+data, because the data did not exist when they were written. The file says so in its own docstring
+and ends with "A MISS IS RECORDED, NOT REPAIRED."
+
+It scores P1–P6 mechanically and **refuses to quote any `E − C` delta if P6 fails** on cell tags.
+Two decisions fixed in advance rather than after seeing numbers:
+
+- **P5 materiality rule.** A percentage on a tiny end use is noise, so an end use is scored only if
+  it is ≥ 1 % of its channel's total energy in arm C. Smaller ones are reported and the count of
+  skipped ones is printed — chosen now so it cannot become a way to drop an inconvenient mover.
+- **P1 is split.** Its 56-cell half lives in `agg_armE.sh` (provenance sweep); its hourly half needs
+  a `dhw_hourly.csv` pair and reports **UNTESTABLE** if not supplied. UNTESTABLE counts as a failure
+  of the run, never as a pass — same rule as the empty-audit case.
+
+**The scorer has been seen failing.** Run against itself (`--arm-c X --arm-e X`, i.e. "arm E changed
+nothing"), it gives **2 PASS / 3 FAIL / 1 UNTESTABLE**: P6 and P5 pass (identical inputs really are
+identical and really do move 0 %), and **P2, P3, P4 fail** — exactly the predictions that require
+arm E to have done something. A scorer that returned all-PASS on a null comparison would be the
+eighth vacuous test on this project.
+
+Incidentally that run re-confirms the frozen-DHW baseline from a third direction: in the old
+aggregate, office DHW is `6489.37 / 6489.28 / 6489.46 GJ` across cons/central/opt — a spread of
+**0.003 %**, which is the "12.19 kWh/m² in every column" figure seen in energy units.
+
+### Scratchpad scripts moved into the repo
+
+The same failure that lost `test_t9_13.py` was about to repeat with two more files, so both are now
+tracked in `Leg3_4-split/Step9_docs/`:
+
+| was (scratchpad, would have been lost) | now |
+|---|---|
+| `t913_reference_table.py` | `3rdJ_09E_reference_table.py` — builds the per-channel reference table for **every** candidate baseline |
+| `dhw_probe.py` | `3rdJ_09E_dhw_prototype_probe.py` — reads the prototype tower's 47 `WaterUse:Equipment` objects and their resolved day-type profiles; the source of the 63/22.5/11.2/0.7 % split and the `we/wd = 0.311` office figure |
+
+Every number quoted in the two sections above is now re-derivable from the repo rather than from a
+session that no longer exists.
+
+---
+
+## 🔴🔴 FINDING 6 — the 2022 and 2030 office products are built from DIFFERENT POPULATIONS
+
+Found while waiting on `1171323`, by chasing the office `r_we ≈ 2` that the reference table exposed.
+It is a **Step-7 issue, not a T9-13 issue**, and its reach is much wider than DHW.
+
+### The code
+
+`3rdJ_07_aug_to_bem_4split.py`, two call sites of the same builder:
+
+```python
+# 2022 -- from the augmented STOCK                                    (:869)
+office_out = build_office_multiplier(stock, "observed", lookup)
+
+# 2030 -- from the D2030 PROJECTION POOL, directly                    (:964-967)
+for band in BANDS:
+    band_slice = d30[d30["BAND"] == band].copy()
+    part = build_office_multiplier(band_slice, band, lookup)
+```
+
+The residential product **immediately above** the 2030 office block does use the assembled stock
+(`df_band = assemble_2030(office_band, ...)`, `:953`). So the two channels that the code comments
+describe as *"Residential + Office (share the office/WFH BAND axis)"* are, for 2030, built from two
+different frames: residential from the stock with 2030 activity columns drawn into it, office from
+the raw 2030 pool.
+
+### The tell, in the shipped files' own `n_persons` column
+
+`Office_Knowledge`, `DAYTYPE = {1: Weekday, 2: Weekend, 3: Weekend}` (`:155`):
+
+| product | source | `n` weekday | `n` weekend | ratio |
+|---|---|---|---|---|
+| `office_..._2022.csv` observed | augmented stock | 3383 | 1365 | **2.48 : 1** |
+| `office_..._2015.csv` observed | historical stock | 4324 | 4287 | 1.01 : 1 |
+| `office_..._2030.csv` — all three bands | D2030 pool | **1928** | **3856** | **1 : 2** |
+
+`3856 = 2 × 1928` exactly, and the same counts appear for `conservative`, `hybrid` and
+`fullyhybrid`. With Sat and Sun both mapping to Weekend, that means strata 1, 2 and 3 each hold
+exactly 1928 office-employed persons — the 2030 pool is **balanced by construction**, i.e. each
+person carries a diary for every day type. The observed GSS stock is not: a respondent has one diary
+day, so weekend office workers are whoever happened to be surveyed on a weekend.
+
+### What this does and does not contaminate
+
+- **Within-2030 comparisons are CLEAN.** `cons` vs `hybrid` vs `fullyhybrid` all come from the same
+  1928/3856 pool, so the WFH lever — the headline office result, `−16.2 % → −10.5 %` after T9-10 —
+  compares like with like. Nothing above is challenged.
+- **Across-era office comparisons are NOT.** Any 2022→2030 or historical→2030 office statement is
+  partly a difference of populations and estimands, not only of behaviour. That includes the office
+  `r_wd = 0.740 / r_we = 2.079` now driving T9-13, the `S9-LONG-*` era gates for office, and the
+  plain-language claim "office presence falls under WFH" when stated against the observed year.
+- The weekday direction survives inspection (2030 weekday 0.207/0.187/0.168 all *below* 2022's
+  0.253, as WFH predicts). It is the **weekend** that inverts: 0.065 observed → 0.113–0.162
+  projected, in all three bands, with the weekend peak hour identical (14 h) in both.
+
+### What I did NOT do, deliberately
+
+I did not rebuild the office product from `assemble_2030`'s output to "see if the weekend drops".
+That would silently change a frozen Step-7 design and every downstream artefact, mid-campaign, on my
+own initiative. **The honest next step is a measurement, not a fix**: build the office multiplier
+both ways on the same band and report the two weekend means side by side. If they agree, the two
+sources are interchangeable and this is a documentation matter. If they diverge, the 2030 office
+product is measuring pool composition and the era axis needs re-specification — a manuscript-level
+decision, and the user's.
+
+Nor is it established that the projection's weekend behaviour is *wrong*. A balanced pool giving
+every worker a projected weekend diary is a legitimate design; it is simply not the same estimand as
+the observed year's, and the two are currently subtracted from each other as if they were.
+
+**Impact on arm E: none mechanically.** T9-13 propagates whatever the office product says, and the
+predictions recorded above are stated against arm C, which carries the identical office series. But
+if P2 lands, the office DHW result must be reported with this caveat attached, not as a clean
+behavioural finding.
+
+### FINDING 6 MEASURED — the sources DISAGREE, and the era jump is mostly a frame effect
+
+`3rdJ_09E_office_source_probe.py` (read-only; imports the real Step-7 `build_office_multiplier` and
+`assemble_2030` rather than re-implementing them, so it measures the pipeline's logic, not mine).
+It builds the office multiplier **both ways on the same band** and compares. All three bands:
+
+| band | source | `n_wd` | `n_we` | `mean_wd` | `mean_we` | weekend vs 2022 |
+|---|---|---|---|---|---|---|
+| conservative | **pool (shipped)** | 1928 | 3856 | 0.2070 | 0.1622 | **×2.49** |
+| conservative | stock (residential path) | 3383 | 1365 | 0.1228 | 0.0803 | ×1.23 |
+| hybrid | **pool (shipped)** | 1928 | 3856 | 0.1872 | 0.1353 | **×2.08** |
+| hybrid | stock (residential path) | 3383 | 1365 | 0.1064 | 0.0716 | ×1.10 |
+| fullyhybrid | **pool (shipped)** | 1928 | 3856 | 0.1680 | 0.1126 | **×1.73** |
+| fullyhybrid | stock (residential path) | 3383 | 1365 | 0.1064 | 0.0580 | **×0.89** |
+| 2022 observed | stock | 3383 | 1365 | 0.2530 | 0.0651 | — |
+
+Pool vs stock **on the same band**: weekday **+58 % to +76 %**, weekend **+89 % to +102 %**. The
+stock-built version reproduces the 2022 product's own frame exactly (`n = 3383 / 1365`), which is
+what makes it the apples-to-apples comparison.
+
+**So the ×2 weekend jump that produced T9-13's office `r_we = 2.079` is very largely a frame
+effect.** Built through the same path as the 2022 product and as the 2030 *residential* product, the
+weekend rise is ×1.10 for hybrid and **falls to ×0.89 for fullyhybrid** — i.e. under the fully
+hybrid scenario weekend office presence goes *down* relative to today, which is the physically
+sensible reading. The shipped product says it goes up 73 %.
+
+**The WFH lever survives in both frames, with a different magnitude.** Weekday cons → opt:
+pool `0.2070 → 0.1680` = **−18.8 %**; stock `0.1228 → 0.1064` = **−13.4 %**. Direction and ordering
+are preserved, so the within-2030 lever result is not overturned — but it is ~29 % smaller in the
+consistent frame.
+
+**Nobody gains a gate from this, which is worth saying explicitly.** The stock frame gives *lower*
+office occupancy everywhere, so it lowers office internal gains and would push `S9-EUI-office`
+**further below** its 100 floor, not towards it. Whichever frame is chosen, it cannot be chosen
+because it rescues a FAIL — there is nothing to rescue in that direction.
+
+**One observation flagged, not interpreted:** under the stock frame `hybrid` and `fullyhybrid` give
+an identical weekday mean to 4 dp (`0.1064` both) while their weekends differ (0.0716 vs 0.0580).
+That may be a rounding coincidence or it may mean the band axis is weak on weekdays in that frame.
+It needs its own check before anyone relies on it.
+
+### What this changes, and what it does not
+
+- **Unchanged:** everything computed *within* the 2030 family — the T9-10 office `n=3` calibration,
+  the WFH lever's existence and ordering, arms A–E's internal comparisons, and all of arm E.
+- **Now carries a caveat:** every office statement that crosses the era boundary — 2022→2030 and
+  historical→2030 — including T9-13's office `r`, the `S9-LONG-*` office gate, and the narrative
+  sentence "office presence falls under WFH" when said against the observed year.
+- **Still not fixed, deliberately.** Repointing `:964-967` at `assemble_2030`'s output is a one-line
+  change that would alter a frozen Step-7 product and every downstream artefact including four
+  closed campaigns. That is a manuscript-level decision and it is the user's, not mine. The
+  measurement is now on file so the decision can be made on numbers.
+
+### The historical half — measured, and it NARROWS the finding
+
+There are in fact **three** frames on the office era axis, not two. The historical years are built as
+`build_office_multiplier(complete_day_types(assembled), ...)`
+(`3rdJ_08A_gen_historical_products_4split.py:237,247`), while Y2022 is built on the **raw** stock
+with no day-type completion (`3rdJ_07:869`). Three constructions:
+
+| product | frame | `n_wd` / `n_we` |
+|---|---|---|
+| Y2005 / Y2010 / Y2015 | stock → `demo_assemble` → `complete_day_types` | 4324 / 4287 (~1:1) |
+| Y2022 | raw stock | 3383 / 1365 (2.48:1) |
+| 2030 bands | D2030 pool, direct | 1928 / 3856 (1:2) |
+
+Before assuming that makes the historical panel suspect too, I applied **both** frames to the *same*
+2022 data (`--era`), which isolates frame from year:
+
+| frame applied to the same 2022 data | `n_wd` | `n_we` | `mean_wd` | `mean_we` |
+|---|---|---|---|---|
+| raw stock (= shipped Y2022) | 3383 | 1365 | 0.2530 | 0.0651 |
+| completed (= historical years) | 4324 | 4287 | 0.2533 | 0.0671 |
+
+**Weekday +0.10 %, weekend +3.07 %.** The completed frame reproduces the 2015 file's own counts
+exactly (4324 / 4287), confirming the identification — and the means barely move. `complete_day_types`
+donor-draws to fill missing day types, so it changes *n* without changing the *mean*: it is
+behaviour-preserving.
+
+**So the historical ↔ 2022 office comparison is CLEAN**, and `S9-LONG-office` across
+2005/2010/2015/2022 is not challenged. The defect is specific to the **2030 pool bypassing
+`assemble_2030`**, and nothing else. That is a narrower and much better-supported claim than "the era
+axis has three frames", which is what the counts alone would have suggested — and it is the opposite
+of the direction I expected when I started the check.
+
+---
+
+## USER DECISIONS — 2026-08-02, all five open items ruled on
+
+| # | item | decision |
+|---|---|---|
+| 1 | 2030 office frame (FINDING 6) | **FIX.** Every cycle's schedules must come from the same sample pool; the current split is a conflict, not a limitation. Rebuild and re-issue the office product. |
+| 2 | `S9-EUI-office` | **Investigate how to resolve it** — manager's call on method, Progress Log updated as it goes. |
+| 3 | Hotel gate | **SPLIT** by geometry. |
+| 4 | Retail NECB proxy | **FREEZE and DOCUMENT** as a stated limitation. |
+| 5 | Leg-2 office EUI 1.706× | **PUBLISH THE CORRECTION**; Leg-2 stays read-only. |
+
+### 🔴 The collision between decisions 1 and 2, stated before either is acted on
+
+Decision 1 makes decision 2 **harder, not easier**, and this must be on record before any work starts
+so that nobody later reads a worsening number as a regression.
+
+Fixing the office frame moves the 2030 office occupancy *down* — weekday `0.1872 → 0.1064`,
+weekend `0.1353 → 0.0716` for the central band. Lower occupancy means lower internal gains, which
+means office EUI **falls further below** the 100 floor it already misses at ~82. So the correct fix
+to the frame will make `S9-EUI-office` fail *worse*. There is no version of decision 1 that helps
+decision 2, and I will not present it as if there were.
+
+### What "resolve the failure" can and cannot mean here
+
+The instruction is that a research paper cannot present a failing result. Taken literally against a
+band, that would mean widening `[100, 200]` until office fits — which is the one move this project
+has banned all the way through, and the reason six vacuous tests were caught rather than shipped. So
+I am reading it the only way that is compatible with the rest of the work: **the failure must be
+genuinely resolved, not made to disappear.** Three routes exist, and only the third is honest here:
+
+1. *Fix the model until office rises into band* — ruled out by measurement. The pre-injection
+   `Default_NECB` office is already **85.29** against a floor of 100, so ~15 of the 22 kWh/m² gap
+   exists before any occupancy model touches the building. No occupancy work can close it, and
+   decision 1 widens it.
+2. *Widen or drop the band* — banned, and it would invalidate the gate rather than satisfy it.
+3. **Re-derive a band that is valid for the object being measured.** `[100, 200]` is sourced from
+   **standalone** office prototypes; what is being scored is an office *channel stacked inside a
+   mixed-use tower*, sharing a centrally-sized plant and with 3 of 6 façades interior. Those are not
+   the same building, and comparing one to the other is a category error that happens to look like a
+   FAIL. This is exactly the reasoning the user just approved for the hotel gate in decision 3.
+
+Route 3 is the plan, with the same guard the hotel split gets: **the new expectation must be sourced
+independently from the literature, before looking at what our number is.** A band fitted to our own
+82 would be decision 2 solved by cheating, and would be worse than leaving the FAIL standing. If no
+defensible channel-level source exists, the result is reported as a measured limitation with the
+mechanism attached — which is a finding, not a failure.
+
+### Sequencing — arm E is NOT cancelled
+
+## 🔴🔴 CORRECTION — FINDING 6's headline number was WRONG. My control was invalid.
+
+Written 2026-08-02, immediately on discovering it, before any product was written to disk.
+
+**What I claimed:** that pool-vs-stock was worth "+58…+76 % weekday, +89…+102 % weekend", and that
+the ×2 weekend jump from 2022 to 2030 was "very largely a frame effect".
+
+**What is actually true:** that comparison used `assemble_2030()` as the "correct" frame, and
+`assemble_2030()` is not a valid frame for the office channel at all. It draws a **random** pool row
+per stock row within `DDAY_STRATA` and copies its diary block across, with no occupational matching.
+Measured:
+
+| frame | office-employed WRK mean | ALL persons WRK mean |
+|---|---|---|
+| real stock (2022 diaries) | 0.254911 | 0.245461 |
+| `assemble_2030(hybrid)` | 0.109950 | **0.110243** |
+| `assemble_2030(fullyhybrid)` | 0.104492 | **0.103421** |
+
+In the real data office workers work more than the population. After `assemble_2030` the office
+subset and the whole population are **identical to three decimals** — the occupation signal is gone,
+because office workers were handed random people's diaries. So the ~−40 % I attributed to "frame"
+was mostly dilution in my own control, not a defect in the shipped product.
+
+**The guard caught it before anything was written.** `3rdJ_07R_regen_office_2030.py` refuses to write
+unless band monotonicity survives; the refit gave `hybrid` and `fullyhybrid` an identical weekday
+mean (0.1064) and it exited 1. That is the 0.1064 coincidence flagged earlier as "needs its own
+check" — it was not a coincidence, it was the signal being destroyed.
+
+### The valid comparison, and the real answer
+
+The D2030 pool carries `NOCS`, `LFTAG`, `AGEGRP`, `SEX` and `DDAY_STRATA`, so an
+**occupation-matched** assembly onto the stock frame is possible — the same idea the historical years
+use (`demo_assemble`, `3rdJ_08A:180`), with a tier ladder adapted to the columns the 2030 pool has
+(it has no `MARSTH`/`HHSIZE`, which is why `demo_assemble` cannot be reused verbatim):
+
+```
+tiers: [AGEGRP,SEX,LFTAG,NOCS] -> [AGEGRP,SEX,NOCS] -> [NOCS,LFTAG] -> [AGEGRP,SEX,LFTAG] -> []
+       each + DDAY_STRATA
+```
+
+`Office_Knowledge`, stock frame (`n = 3383 / 1365`, i.e. the 2022 frame), monotonic on **both** day
+types:
+
+| band | shipped (pool) wd / we | NOCS-matched stock wd / we | frame effect |
+|---|---|---|---|
+| conservative | 0.2070 / 0.1622 | 0.2198 / 0.1694 | +6.2 % / +4.4 % |
+| hybrid | 0.1872 / 0.1353 | 0.2025 / 0.1378 | +8.2 % / +1.8 % |
+| fullyhybrid | 0.1680 / 0.1126 | 0.1759 / 0.1044 | +4.7 % / −7.3 % |
+
+Weekend ratio vs 2022: shipped ×2.49 / ×2.08 / ×1.73 → matched **×2.60 / ×2.12 / ×1.60**.
+
+**So the ×2 weekend rise is REAL behaviour in the 2030 diaries, not a frame artefact.** The frame
+inconsistency is genuine and still worth fixing — the user's requirement that every cycle come from
+the same sample pool stands on its own — but it is worth **±8 %**, not ±60–100 %.
+
+### Three earlier statements are hereby struck
+
+1. "The ×2 weekend jump is very largely a frame effect." **False.** It is behavioural.
+2. "Fixing the frame moves office occupancy down and makes `S9-EUI-office` fail worse." **False** —
+   the correct fix moves office occupancy *up* by ~5–8 % on weekdays. The collision I flagged between
+   decisions 1 and 2 is real in direction but roughly an order of magnitude smaller than stated, and
+   it now points the other way: slightly *toward* the band, nowhere near enough to reach it.
+3. "Under the consistent frame, fullyhybrid weekend presence falls below today (×0.89)." **False** —
+   that ×0.89 was the diluted control. Matched, it is ×1.60.
+
+The lesson is the one this project keeps re-learning: a comparison is only as good as its control,
+and I did not test my control before trusting it. What saved it was a guard written to fail — the
+monotonicity check — not my own reading of the numbers.
+
+---
+
+## DECISION 1 IMPLEMENTED — office 2030 product re-issued, 2026-08-02
+
+### Code
+
+`3rdJ_07_aug_to_bem_4split.py` gains two functions and one call-site change:
+
+| what | where | note |
+|---|---|---|
+| `demo_assemble_2030(stock, pool)` | new | occupation-matched assembly. Ported from `3rdJ_08A::demo_assemble` with a tier ladder adapted to the 2030 pool's columns — it has **no `MARSTH`/`HHSIZE`**, so 08A's ladder cannot be reused verbatim, but it **has `NOCS`**, which is what matters for an office curve. Ladder: `[AGEGRP,SEX,LFTAG,NOCS] → [AGEGRP,SEX,NOCS] → [NOCS,LFTAG] → [AGEGRP,SEX,LFTAG] → []`, each `+ DDAY_STRATA`. |
+| `build_office_2030_product(lookup, d2030_path)` | new | the all-bands file, built once, called by **both** `main()` and the regeneration script so the two cannot drift |
+| the `d30[d30["BAND"] == band]` slice | `main()` | replaced by a call to the above |
+
+`assemble_2030()` is **unchanged and still correct for residential** — a whole-household occupancy
+aggregate is not an occupation-conditioned curve. The reason it is wrong for office is recorded in
+the code next to the measurement that proves it, not just in this log.
+
+`3rdJ_07R_regen_office_2030.py` — targeted regeneration. It rebuilds *only* the office file, because
+re-running Step-7's full 2030 command would also rewrite the frozen
+`BEM_Schedules_4split_2030_{cons,central,opt}.csv` products that a running campaign depends on and
+that this fix does not affect. It backs up the predecessor, runs Step-7's own office gates, and
+**refuses to write unless band monotonicity survives** — which is exactly what stopped the first,
+invalid version from reaching disk.
+
+### Result
+
+| band | before (pool frame) wd / we | after (matched stock frame) wd / we | Δ |
+|---|---|---|---|
+| conservative | 0.2070 / 0.1622 | **0.2198 / 0.1694** | +6.18 % / +4.43 % |
+| hybrid | 0.1872 / 0.1353 | **0.2025 / 0.1378** | +8.17 % / +1.83 % |
+| fullyhybrid | 0.1680 / 0.1126 | **0.1759 / 0.1044** | +4.71 % / −7.34 % |
+
+- `n_persons` now **3383 / 1365** — the 2022 product's own frame. Same pool, same construction,
+  every cycle comparable.
+- Band monotonicity `cons > hybrid > fullyhybrid`: **True on weekday and weekend** (the first
+  attempt failed this and was refused).
+- Step-7 office gates: **PASS** (archetype domain, `AT_WORK_fraction ∈ [0,1]`, grid completeness).
+- WFH lever, weekday cons → fullyhybrid: **−18.84 % → −19.97 %** — preserved, slightly stronger.
+- `AT_WORK_fraction ∈ [0, 0.5604]`, `multiplier ∈ [0, 1]`, 432 rows, 3 bands × 3 archetypes.
+
+### Provenance
+
+| file | md5 |
+|---|---|
+| `office_presence_multiplier_2030.csv` (new) | `575d17e55f32f8b5ec493ff590833d94` |
+| `office_presence_multiplier_2030_BAK_2026-08-02.csv` (predecessor, kept) | `1536c98c5358ece477290d45f0505e4f` |
+
+The predecessor is preserved on disk beside the new file, not deleted and not overwritten — same
+discipline as the D2030 `_C` → `_C_v2` promotion.
+
+### What is now stale
+
+Every **2030-family** cell's office channel: the 9 scenarios `B_{cons,central,opt}`,
+`sens_office_{cons,opt}`, `sens_retail_{cons,opt}`, `sens_hotel_{cons,opt}` — 36 of the 56 cells.
+`Y2022`, `Y2005`, `Y2010`, `Y2015` are **untouched**; they already used this frame. No 2030 office
+number may be quoted from arms A–E until those cells are re-run.
+
+## Sequencing — arm E is NOT cancelled
+
+Arm E (`1171323`) is running against the *old* office product, and stays. Its purpose is `E − C`,
+and arm C carries the identical office series, so the DHW mechanism result is **frame-independent**:
+P1 (shape preservation), P3 (hotel laundry), P4 (residential) and P5 (coupling bound) are unaffected
+by decision 1. What decision 1 does invalidate is arm E's **office** `r` values and therefore P2's
+specific numbers, which will need re-deriving against the rebuilt product. Cancelling 24+ completed
+runs to avoid re-deriving one prediction would be the more expensive mistake.
+
+---
+
+## 🔴🔴 FINDING 7 — the 2030 RETAIL channel is built from the UNCALIBRATED pool — 2026-08-02
+
+Found while chasing the open lead left by FINDING 6 ("does retail have the same defect class?").
+It does not have the same defect. It has a **worse** one, and the frame question turned out to be
+the smaller half of it.
+
+### How it was found, including the probe that was wrong first
+
+`3rdJ_09E_retail_frame_probe.py` compared the shipped 2030 retail base against a stock-frame control
+and returned an enormous effect — shape deviation 0.69, weekday level ratio 0.42, peak hour moving
+11 → 16. Taken at face value that is a catastrophic frame effect.
+
+It is not, and the FINDING 6 correction is the reason it was checked instead of reported. **The
+control had a confound.** It drew from `D2030` = `..._C_v2.csv`, the *calibrated* 2030 pool, while
+the shipped retail base is built by `3rdJ_06_retail_lever_4split.py::load_pooled_raw()` from
+`2030_diaries_{band}_raw.csv`, the *raw* pool. The probe varied **two** things at once — frame and
+calibration — so it could prove neither.
+
+`3rdJ_09E_retail_source_probe.py` separates them: three sources, one quantity, same treatment, and
+a self-check that the RAW reconstruction reproduces the shipped column before any verdict is quoted
+(`max|diff| = 9.9e-17`, so the probe is measuring what actually ships).
+
+### The measurement
+
+`ret30` mean, per DDAY_STRATA, per PR. RAW and CAL are the **same 111,024 rows** — same frame, same
+construction — so every difference below is calibration, not population.
+
+| day | PR | RAW (ships) | CAL (`_C_v2`) | CAL/RAW | peak RAW (clock) | peak CAL (clock) |
+|---|---|---|---|---|---|---|
+| Weekday | ALL | 0.02396 | 0.00994 | **0.415** | 13 | 16 |
+| Weekday | QC | 0.02387 | 0.00981 | **0.411** | **11** | **16** |
+| Weekday | AB | 0.02316 | 0.00949 | **0.410** | 14 | 16 |
+| Saturday | ALL | 0.02348 | 0.03355 | 1.429 | 13 | 14 |
+| Saturday | QC | 0.02027 | 0.03153 | 1.555 | 14 | 14 |
+| Saturday | AB | 0.02337 | 0.03227 | 1.381 | 13 | 14 |
+| Sunday | ALL | 0.02098 | 0.02233 | 1.064 | 13 | 13 |
+| Sunday | QC | 0.02049 | 0.02149 | 1.049 | 14 | 15 |
+| Sunday | AB | 0.02026 | 0.02115 | 1.044 | 11 | 13 |
+
+Peak hours are **clock** hours (`ret30` slot 1 = 04:00; `np.roll(arr, 8)` applied, as Step-7 does).
+The first version of this probe printed diary-origin indices and was corrected before anything was
+recorded — the +4 h offset is a bug this project has already paid for once.
+
+### The weekly contrast — the tell
+
+Saturday / weekday mean retail presence:
+
+| PR | observed 2022 | RAW (ships) | CAL | RAW/OBS | CAL/OBS |
+|---|---|---|---|---|---|
+| ALL | 2.687 | **0.980** | 3.375 | **0.365** | 1.256 |
+| QC | 2.661 | **0.849** | 3.215 | **0.319** | 1.208 |
+| AB | 2.571 | **1.009** | 3.399 | **0.393** | 1.322 |
+
+In observed Canadian time use, people are at retail ~2.7× more on Saturday than on a weekday. The
+shipped 2030 base says **0.98 — no weekend at all.** The calibrated pool says 3.38, which slightly
+over-shoots the observed anchor but is the right phenomenon. The retail channel's defining weekly
+signal is absent from the artefact the retail channel is built on.
+
+### Why this exists — it is a wiring gap, not a modelling choice gone wrong
+
+Step-6 produced **two** retail treatments, and only one of them is wired to the BEM:
+
+| artefact | built from | retail treatment | consumed by |
+|---|---|---|---|
+| `at_retail_fraction_2030_{shift,plateau,renaissance}.csv` | `2030_diaries_*_raw.csv` | amplitude lever only | **Step-7 `build_retail_product_2030` → the BEM** |
+| `..._C_v2.csv` | the calibration chain | retail-cap stage, targets observed-2022 × lever | every OTHER 2030 channel |
+
+`3rdJ_06_retail_lever_4split.py`'s own docstring states the split plainly: *"This script is a pure
+post-hoc AMPLITUDE LEVER on the RAW model-generated 2030 retail-fraction profile — it does NOT
+modify any diary CSV (that is `3rdJ_06_calibrate_C_4split.py`'s retail-cap stage's job, which
+targets observed-2022 × lever instead)."* Both halves were built as designed. What was never
+decided is **which of the two the BEM should read**, and Step-7 reads the un-calibrated one.
+
+### What actually propagates to EnergyPlus — stated so this is not over-read
+
+`build_retail_product_2030` normalises **each `(Day_Type, PR)` group by its own base peak**, and
+`commercial_integration.py:1311` injects `multiplier` = 0.95 × that normalised shape. Therefore:
+
+- the 0.41–1.56 **level** ratios — **do NOT propagate.** Divided out.
+- the Saturday/weekday **contrast** — **does NOT propagate.** Each day type self-normalises, in both
+  sources. The 0.98-vs-2.69 table above is evidence about which artefact is trustworthy; it is
+  **not** a claim that energy moves. Recorded this way deliberately: a 2.7× number is exactly the
+  kind that gets quoted downstream as an energy effect once it loses its caption.
+- the within-day **shape**, and the weekday **peak hour** — **DO propagate.** QC weekday retail
+  peaks at **11:00** in the shipped product and at **16:00** in the calibrated pool. A five-hour
+  shift in the retail channel's daily peak is material, and it lands in all 2030-family cells.
+
+### Status: DOCUMENTED, NOT FIXED — this is a scope decision, not a manager call
+
+Rewiring `build_retail_product_2030` to the calibrated source would (a) re-open Step 6, which is
+CLOSED, (b) change the retail channel in every 2030 cell, and (c) invalidate the arm-C/arm-E retail
+results that the T9-12 re-spec was just built on. That is a larger move than the office fix, which
+touched one Step-7 product and nothing frozen. **Not doing it unilaterally.**
+
+Two options, with honest costs:
+
+| | option A — leave as is | option B — rewire to `_C_v2` |
+|---|---|---|
+| what it means | the retail channel's 2030 shape is un-calibrated and does not carry the observed weekend pattern | retail joins every other channel on the canonical calibrated source |
+| cost | zero re-simulation; a stated limitation in the manuscript | re-open Step 6's wiring, re-run all 36 2030-family cells (can be merged with the FINDING-6 office re-run — same 36 cells) |
+| risk | a reviewer asks why retail alone bypasses calibration, and there is no answer that is not "it was not noticed" | the T9-12 retail lighting re-spec (k=0.60) was calibrated against the *current* shape and would need re-checking |
+
+The merge in option B's cost row is the thing that makes it cheap **now and only now**: the FINDING-6
+office re-run already has to touch exactly those 36 cells. Doing both in one campaign costs one
+campaign; doing them separately costs two. That window closes as soon as the office re-run is
+launched.
+
+**Recommendation: option B, merged into the FINDING-6 re-run**, because "retail bypasses the
+calibration every other channel uses" is not a limitation that survives review as a stated caveat —
+it reads as an error, and it is one. But this is the user's call, and the office re-run is being
+held until it is made.
+
+### Note on a vacuous check, logged rather than quietly dropped
+
+`3rdJ_09E_retail_frame_probe.py` contains a COMPOSITION CHECK meant to prove its control had not
+homogenised the population (the test that would have caught the FINDING 6 error). It reported:
+
+```
+real stock            : employed 0.015894   all 0.015898
+assemble(conservative): employed 0.015809   all 0.015806
+```
+
+Employed and all-persons are identical **in the real stock too** — retail presence simply is not
+occupation-differentiated. So the discriminator has no signal to lose, and the check **cannot fail**
+whatever the control does. That is vacuous-test kind #7 for this project: *a guard whose
+discriminator is constant in the ground truth.* It is left in the file with this note attached
+rather than deleted, because the pattern is the point — a guard copied from where it worked to
+where it has nothing to measure.
+
+The control was validated instead by the RAW-reproduces-shipped-column check
+(`max|diff| = 9.9e-17`), which **can** fail and which the source probe refuses to report past.
+
+---
+
+## DECISION 3 — splitting the hotel gate. Sourced, and it does NOT go the way it looks — 2026-08-02
+
+User ruling: *"3 — diviser."* Split `S9-EUI-hotel` by geometry, with the same guard the office band
+gets: **the new expectation must be sourced independently, not fitted to our number.**
+
+### Full disclosure before any band is proposed
+
+I already know the current result: `S9-EUI-hotel` = **28/56 cells inside [180, 300]**, median
+**178.3**, range 147.9–209.4 — a 0.9 % miss at the floor. Nothing below can be presented as
+blind. The protection against fitting is therefore not ignorance but **rule-first**: each candidate
+band is derived from a stated selection rule applied to `dr_L3-03_hotel_eui_bands_REPORT.md`
+(locked **2026-07-02**, a month before this question was asked), and every rule is reported —
+including the one that makes the FAIL **much worse**.
+
+### Rule R1 — amenity classification. dr_L3-03 mandates this split in its own words
+
+> *"The validator must distinguish between limited-service hotels (modeled as Small Hotel prototypes
+> with EUI ~180 kWh/m²·yr) and full-service properties (modeled as Large Hotel prototypes with EUI
+> ~240–300 kWh/m²·yr). The inclusion of intensive laundry facilities, commercial kitchens, or
+> swimming pools can shift the EUI by over 100 kWh/m²·yr."* — dr_L3-03 §Caveats, *Amenity Inclusion*
+
+> *"For hotel floors embedded as a podium or zone inside a tall mixed-use tower, the **Large Hotel
+> prototype** is the superior as-modelled anchor."* — dr_L3-03 §C.4, *Prototype Selection*
+
+Which one is our tower? This is a **fact about the IDF**, settled without reference to any EUI.
+`SuperTallBuilding_90.1-2019_6A_Buffalo_NECB17_Z6_v242.idf` contains:
+
+| evidence | line |
+|---|---|
+| `F55 Hotel_bot_Cafe ZN` | 1163 |
+| `F55 Hotel_bot_Laundry ZN` | 1181 |
+| `F72 Hotel_top_Banquet ZN` | 1373 |
+| `F72 Hotel_top_Kitchen ZN` | 1409 |
+| `HotelLarge Kitchen_Elec_Equip_SCH`, `HotelLarge Kitchen_Gas_Equip_SCH` | 4630–4743 |
+| `HotelLarge LAUNDRY_SWH_SCH`, `HotelLarge LaundryRoom_SWH_Sch_Post2004` | 6611–6656 |
+
+Cafe, commercial kitchen, banquet hall and commercial laundry, carrying schedules the prototype
+itself names **`HotelLarge`**. The tower's hotel channel is **unambiguously full-service, and it is
+literally built from the DOE Large Hotel prototype.**
+
+**R1's verdict: the applicable band is [240, 300], not [180, 300].** The floor 180 is, in
+dr_L3-03's own justification, *"a compliant Small Hotel prototype"* — a different building from
+ours. Under R1 the hotel gate goes from **28/56 to 0/56**, and the 0.9 % miss becomes a ~26 % miss.
+
+**This is recorded first, and deliberately.** Decision 3 was granted to make a gate defensible, and
+the first defensible rule found makes the result far worse. Reporting the other rule without this
+one would be exactly the move this project has spent six vacuous-test findings learning not to make.
+
+### Rule R2 — code-vintage and climate-zone matching
+
+The same report insists on basis-matching for fuel coverage and floor area (§Caveats). The identical
+discipline applied to *code vintage* and *climate zone* selects different rows of its Table 2 — and
+they are an unusually exact match to our model:
+
+| source row (dr_L3-03 Table 2) | code | CZ / city | band |
+|---|---|---|---|
+| NECB 2017 Hotel Archetype Study, CanmetENERGY 2020 | **NECB 2017** | **CZ 6 (Montreal)** | **140 – 220** |
+| NECB 2017 Hotel Archetype Study, CanmetENERGY 2020 | **NECB 2017** | **CZ 7 (Calgary)** | **160 – 240** |
+
+Our IDFs are named `..._NECB17_...` and the campaign's two cities are **MTL** and **CLG** —
+Montreal and Calgary. Same code, same country, same two cities. No other row in Table 2 is Canadian
+*and* code-matched; every other row is a US PNNL/ASHRAE prototype.
+
+**R2's verdict: split the gate by climate zone**, which is the "by geometry" split the ruling asked
+for and which the present single band ignores outright — every row of Table 2 shows CZ 7 running
+above CZ 6, yet `S9-EUI-hotel` scores Montreal and Calgary cells against one band.
+
+### The two rules CONFLICT, and I cannot resolve it from what is on file
+
+R1 says [240, 300] (worse). R2 says [140, 220] / [160, 240] (better). The disagreement reduces to
+one unanswered question:
+
+> **Is the CanmetENERGY NECB 2017 hotel archetype a full-service or a limited-service property?**
+
+If full-service, R2 is the better-matched source and supersedes R1 — R1's Small-vs-Large correction
+is a *within-PNNL-family* adjustment that a Canadian NECB archetype does not need. If
+limited-service, R2's band describes a different building too, and R1 stands: [240, 300], 0/56.
+
+dr_L3-03 does not say. Answering it requires the CanmetENERGY *Commercial Archetypes Performance
+Study* (2020) itself, which is not in `deepResearch/`. **Until that is read, adopting R2 would be
+choosing the band that rescues the gate over the band that condemns it, on no evidence.** That is
+the move that is banned.
+
+### What is therefore implemented: the split as INFO, not as the PASS criterion
+
+`S9-EUI-hotel` **keeps** its band [180, 300] and **keeps** its FAIL. Alongside it, two new
+**INFO-only** gates report the climate-split view so the question is visible in every run instead of
+living in this document:
+
+| gate | cells | band | source | role |
+|---|---|---|---|---|
+| `S9-EUI-hotel-CZ6-INFO` | MTL only | 140 – 220 | dr_L3-03 T2, NECB 2017 / CanmetENERGY 2020 | INFO |
+| `S9-EUI-hotel-CZ7-INFO` | CLG only | 160 – 240 | dr_L3-03 T2, NECB 2017 / CanmetENERGY 2020 | INFO |
+| `S9-EUI-hotel-FULLSVC-INFO` | all 56 | 240 – 300 | dr_L3-03 §Caveats + §C.4 (R1) | INFO |
+
+Three views, one of which is much harsher than the status quo, all reported together. **No FAIL is
+erased by this change**, so it cannot be an instance of widening a band to make a failure disappear.
+
+**Blocking item for the user, and it is small:** obtain the CanmetENERGY 2020 archetype study and
+determine whether its hotel archetype is full-service. One answer promotes `-CZ6/-CZ7` to the PASS
+criterion; the other promotes `-FULLSVC` and the hotel gate fails harder than it does today. Both
+outcomes are acceptable; picking without the answer is not.
+
+---
+
+## DECISION 4 — retail NECB proxy: FROZEN and DOCUMENTED — 2026-08-02
+
+User ruling: *"4 — geler et documenter."*
+
+### What is frozen
+
+`necb_retail_baseline_proxy(day_type, hour)` in `3rdJ_07_aug_to_bem_4split.py` supplies the
+open/closed envelope for the retail channel. Where it returns ≤ 0.10 the hour is marked
+`staff_shoulder_flag = 1` and the GSS-derived multiplier is **replaced** by the NECB baseline value
+rather than modulated by it (`:670-672`). It is a hand-written approximation of the NECB retail
+schedule, not the NECB schedule read from a prototype IDF.
+
+**Frozen as of 2026-08-02.** No further tuning. Any future change requires re-running every cell
+that carries a retail channel, and the T9-12 lighting re-spec (`k = 0.60`) is calibrated against
+this exact envelope.
+
+### The limitation, stated for the manuscript
+
+1. **It is a proxy, not a source.** The office and hotel channels take their baselines from the
+   prototype IDF objects themselves (`OfficeLarge BLDG_LIGHT_SCH_2013`, `HotelLarge LAUNDRY_SWH_SCH`
+   and siblings). Retail alone uses a function written to resemble one. The 0.10 threshold that
+   decides open-vs-closed is a modelling choice with no cited source.
+2. **It is load-bearing.** `staff_shoulder_flag` does not merely annotate — it *overrides* the
+   occupancy signal for every hour it fires. Those hours are, by construction, hours in which the
+   GSS diaries have no influence on the retail schedule at all.
+3. **It was nearly load-bearing in the wrong direction.** The T9-12 arm-B analysis found the retail
+   lighting component PASSing *for the wrong reason* — the lighting was frozen, driven by the
+   discarded `staff_shoulder_flag` rather than by the occupancy term the re-spec introduced. The
+   proxy's reach is easy to underestimate; it has already produced one vacuous pass.
+
+### Related but NOT the same thing — do not let this absorb FINDING 7
+
+Decision 4 concerns the **open/closed envelope**. FINDING 7 concerns the **source of the retail
+occupancy signal itself** (raw vs calibrated 2030 pool). They are independent defects in the same
+channel, and FINDING 7 is the larger one. Freezing the proxy does not address it, and the manuscript
+limitation written here must not be allowed to read as if it covers both.
+
+---
+
+## DECISION 5 — the Leg-2 office-EUI correction is PUBLISHED — 2026-08-02
+
+User ruling: *"5 — publier le correction, tu as raison."* Leg-2 stays **read-only**; the correction
+is published as a manuscript caveat, and no file under `Leg2_2-split/` is touched.
+
+### The mechanism — verified, and not in doubt
+
+`calculate_eui()` (`eSim_bem_utils_3J/plotting.py:293-299`) filters EnergyPlus's tabular output on
+`TableName` and **never on `ReportName`**. EnergyPlus writes a table named `End Uses By
+Subcategory` under **two** report names: `AnnualBuildingUtilityPerformanceSummary` (273 rows, **GJ**
+— annual energy) and `DemandEndUseComponentsSummary` (273 rows, **W** — peak demand). The unit guard
+at `:319` skips only `m3`, so every **watt** row is summed as if it were a kWh (`:345`).
+
+Measured on a real v24.2.0 `eplusout.sql`: 7,837,731 kWh of legitimate energy **+ 5,533,372 "kWh"
+that are watts** = 13,371,103 → a **1.706×** inflation. Corroborating signature: Leg-2's three
+office-archetype medians (`Office_Knowledge` 172.6 / `Office_Public` 172.5 / `Office_Sales` 172.7)
+are implausibly tight for three different use profiles across six cities — a systematic artefact
+dominating the real architectural variation.
+
+### 🔴 What CANNOT be published yet, and why — this is the whole difficulty of decision 5
+
+**The 1.706 factor was measured on a Leg-3 run** (`campaign_cf69d508/B_central__Tall__MTL`), not on
+the Leg-2 run that produced 172.7. The improvement log already says so in as many words:
+*"Indicatif seulement — le ratio vient d'un autre run, ce n'est pas une dérivation."*
+
+So `172.7 / 1.706 ≈ 101.2` is an **indication of magnitude, not a corrected value**. The watt
+contamination depends on that run's own peak-demand rows; a different building, city and schedule
+set gives a different ratio. Publishing "101.2" would put a number into the literature that nobody
+derived — and a corrigendum is the last place that is acceptable.
+
+The 100.4 cross-check has a second, separate problem: it is the **whole-tower** EUI on the raw ABUPS
+basis, while 172.7 is the **office channel**. The ~1 % agreement is suggestive, not like-for-like,
+and must not be presented as a validation of a specific corrected office figure.
+
+### What decision 5 therefore requires before the corrigendum can carry a number
+
+One bounded, **read-only** job: run the corrected EUI query against **Leg-2's own** `eplusout.sql`
+files and measure Leg-2's own watt contamination per archetype. This modifies no `Leg2_2-split/`
+file — it reads simulation output that already exists — and it yields the factor and the corrected
+office EUI that the corrigendum can actually stand behind. Estimated cost: one `sbatch`, minutes.
+
+### Draft caveat text — two versions, and which one is honest today
+
+**Version A — publishable NOW, no number:**
+
+> **Corrigendum — office EUI.** The office end-use intensities reported in this work were computed
+> by a routine that merged two identically-named EnergyPlus tabular outputs
+> (`AnnualBuildingUtilityPerformanceSummary`, in GJ, and `DemandEndUseComponentsSummary`, in W),
+> causing peak-demand quantities in watts to be aggregated as annual kilowatt-hours. The reported
+> office EUI values are therefore inflated by a systematic factor. On a comparable building the
+> measured inflation is approximately 1.7×. The error is confined to the EUI post-processing
+> routine: the simulations, schedules, occupancy model, and every occupancy quantity reported in
+> this work are unaffected, and no conclusion of the paper depends on the office EUI level.
+
+**Version B — publishable only AFTER the read-only re-measurement above**, identical to A with the
+final sentences replaced by the measured factor and the corrected per-archetype values.
+
+**Recommendation: version B**, because "inflated by approximately 1.7×" invites precisely the
+question the corrigendum exists to close. But version A is available immediately if the manuscript
+timeline does not allow the re-measurement, and A is honest — it claims only what was measured.
+
+### What must accompany it, and what must not
+
+- **Must:** the statement that occupancy results are untouched. The defect sits in reporting
+  arithmetic downstream of every scientific claim the paper makes.
+- **Must NOT:** any claim that the published **band** was also affected. That hypothesis was formed
+  and then **checked and refuted** (log, 2026-07-31): `OFFICE_EUI_BAND = (135.0, 100.0, 200.0)` is
+  hard-coded from the NECB2020/90.1-2019 literature review, not derived from any simulation. **The
+  band is sound; only the measured value is inflated.** This one is easy to get backwards — it was
+  once, in this very log — and getting it backwards in print would be worse than the original error.
+- **Must NOT:** any edit to a `Leg2_2-split/` file. The corrigendum is authored in the Leg-3
+  improvement record and carried into the manuscript by hand.
+
+### Adjacent discrepancy, logged here so it is not discovered by a reviewer
+
+The label `CAN_CLG` does **not** resolve to the same weather file in the two legs — **Winnipeg (7A)
+in Leg-2, Calgary (Z7A) in Leg-3**. This has no bearing on the EUI defect above, but any text that
+compares a Leg-2 "CLG" result to a Leg-3 "CLG" result is comparing two different cities.
+
+---
+
+# ARM E — RESULT. Scored against the pre-registered predictions — 2026-08-02
+
+Array `1171323`: **56/56 COMPLETED**. Aggregation job `1171404`: exit 0, 56/56 cells, attribution
+closes against site energy on every cell (≤ 1e-6 relative). Aggregate at
+`campaign/agg_E_dhwvol`, campaign dir `out_E_dhwvol/campaign_56d6e324` (hash verified against the
+injector md5 `56d6e324`).
+
+## THE SCORECARD — 2 PASS / 3 FAIL / 1 UNTESTABLE
+
+Produced by `3rdJ_09E_score_armE.py`, written and committed **while the array was still running**.
+No tolerance in that file has been touched since. Reproduce with:
+
+```
+py -3 3rdJ_09E_score_armE.py --arm-c agg_C_lm3v2 --arm-e agg_E_dhwvol
+```
+
+| | prediction | result | verdict |
+|---|---|---|---|
+| **P6** | same 56 cells, identical areas | 56 vs 56, identical; max \|ΔArea\| = **0.0 m²** over 392 (cell,channel) pairs | **PASS** |
+| **P2** | office DHW `B_cons +0.3` / `B_central −11.2` / `B_opt −21.8` %, ±3 pp | **+21.68 / +8.38 / −3.69 %** | **FAIL** |
+| **P3** | hotel DHW `B_central` **+12.4 %** ±2 pp | **+15.31 %** | **FAIL** |
+| **P4** | residential DHW `B_central` **+8…+18 %** | **+51.40 %** | **FAIL** |
+| **P5** | non-DHW end uses bounded at 0.5 % | **0 of 616** material end uses exceed it (70 skipped as < 1 % of channel total) | **PASS** |
+| **P1** | night share + peak hour unchanged | hourly pair not supplied | **UNTESTABLE** |
+
+**A miss is recorded, not repaired.** Nothing below revises a threshold.
+
+## P5 is the strongest result in the arm, and it deserves saying plainly
+
+Every non-DHW end use in the tower moved by less than 0.5 %, across 616 material
+(scenario × channel × end-use) combinations. The largest mover in the entire campaign is
+`residential_common / pumps` at **+0.207 %**. T9-13 changes water volumes and nothing else — the
+thermal coupling bound predicted in advance held everywhere, with two orders of magnitude to spare.
+The materiality rule (≥ 1 % of channel total, 70 skipped) was fixed before the run and is reported,
+not hidden.
+
+## P2 — the office miss is a systematic **offset**, and the mechanism it tested SUCCEEDED
+
+The prediction was wrong by roughly the same amount in all three bundles: **+21.4 / +19.6 / +18.1
+pp**. A uniform offset with the ordering intact is not a failed mechanism, it is a mis-calibrated
+level. What the prediction was actually about:
+
+| | arm C | arm E |
+|---|---|---|
+| office DHW spread across the 3 bundles | **0.004 %** | **23.318 %** |
+| ordering `cons > central > opt` | — | **True** |
+
+Arm C's office DHW was flat to four decimal places — the WFH axis had **no effect whatsoever** on
+office hot water. That was the defect T9-13 exists to fix, and it is fixed: the spread is now
+23.3 % and it runs in the physically correct direction. The pre-registered *numbers* missed; the
+pre-registered *claim* ("office DHW stops being flat") is confirmed.
+
+**And P2's numbers were already known to be superseded before the array finished.** The Sequencing
+note written at the time of DECISION 1 states it: arm E ran against the **pre-FINDING-6** office
+product, so its office `r` values (weekend ratios ×2.49 / ×2.08 / ×1.73) are the old ones. The
+corrected product gives ×2.60 / ×2.12 / ×1.60. P2 must be re-derived against the rebuilt product
+and re-scored. **This is a reason to re-run, not an excuse for the miss** — P2 failed as
+pre-registered, and that stands in the record regardless of what the re-run says.
+
+## P3 — the hotel miss is 0.91 pp, and the mechanism claim is unambiguously confirmed
+
+Predicted +12.4 ± 2.0 (i.e. ≤ +14.4). Measured **+15.31 %**. The scorer's own detail line fixed the
+mechanism threshold in advance: *"Arm D reported −8.7 % with laundry frozen. A move < +5 % means
+laundry still is not scaling."* The move is +15.3 %, three times that threshold, and it reverses
+arm D's sign.
+
+**Hotel laundry is scaling. Arm D's P5 is reversed.** The magnitude tolerance was too tight by
+0.91 pp; the tolerance is not being widened.
+
+## 🔴 P4 — the interesting one. It is NOT the T9-11 blow-up, and the volume identity HOLDS
+
+Residential DHW came in at **+51.40 %** against a predicted +8…+18 %, above even T9-11's +40.8 %.
+The obvious reading — "the blow-up is back" — is **wrong**, and three independent measurements say
+so.
+
+### 1. The `r` distribution cannot produce +51 %
+
+`probe_resid_r.sh` (job `1171406`), per-household residential `r`, arm E:
+
+| cell | r_wd mean | median | p90 | max | frac > 2 | r_we mean |
+|---|---|---|---|---|---|---|
+| `B_cons__Tall__MTL` | 1.0873 | 1.0818 | 1.5736 | 1.5736 | **0.000** | 1.1056 |
+| `B_central__Tall__MTL` | 1.1225 | 1.1474 | 1.5736 | 1.5736 | **0.000** | 1.0898 |
+| `B_opt__Tall__MTL` | 1.1559 | 1.1146 | 1.5736 | 1.5736 | **0.000** | 1.1525 |
+| `Y2022__Tall__MTL` | **0.9841** | 0.9507 | 1.4752 | 1.5736 | **0.000** | **0.9792** |
+
+No tail, no household above 2.0, max 1.574. T9-11's signature was a *shape* break (night share
+8.34 % → 32.86 %, peak hour 06:00 → 04:00); nothing here resembles it, and the 56-cell provenance
+sweep found **0 saturation, 0 exclusions, 0 unresolved**.
+
+### 2. Arm C is not a confound — it had NO DHW modulation at all
+
+| channel | arm C ÷ arm C's own `Default_NECB` |
+|---|---|
+| residential | **1.000** |
+| office | **1.000** |
+| hotel | **1.000** |
+| retail | **1.000** |
+
+Arm C's DHW is bit-identical to the uninjected prototype in every channel and every scenario. So
+`E/C` **is** `E/prototype`, and the r values above should predict it directly.
+
+### 3. The decisive case: `Y2022`, where `r ≈ 1` and scaling must be a no-op
+
+The T9-13 reference **is** Y2022, so `r ≈ 1` there by construction, and the measurement confirms it
+(0.9841 / 0.9792). Yet Y2022 residential DHW **energy** is **1.412 ×** the prototype.
+
+`3rdJ_09E_dhw_identity_probe.py` (job `1171407`) was written to catch an injector defect — it
+parses both injected and uninjected IDFs and computes the quantity annual volume actually follows,
+`Σ Peak_Flow_Rate × (5·mean_wd + 2·mean_we)/7`, over all 27 residential `WaterUse:Equipment`
+objects, 0 unresolved on both sides.
+
+```
+INJECTED   Y2022__Tall__MTL       SUM V = 2.680707e-04
+UNINJECTED Default_NECB__Tall__MTL SUM V = 2.778796e-04
+VOLUME RATIO = 0.9647              (identity requires ~0.98)
+```
+
+**The identity holds.** The probe was built to find a defect and found none: T9-13's construction
+(`Peak' = P·R`, `f = s·r/R`, so `R` cancels and volume ratio = weighted mean of `r`) is implemented
+correctly. The parse is confirmed by the injected schedules' own signature — on each household's
+argmax day type the mean is *exactly* the prototype's 0.5242 (there `r = R`, so `f = s`), and below
+it on the other day type. That is precisely what the formula predicts, object by object.
+
+### So what P4 actually found
+
+> **Residential DHW volume went DOWN 3.5 %. Residential DHW energy went UP 41.2 %.**
+
+The energy change is **not** occupancy, **not** the `r` values, and **not** the volume. It is
+introduced somewhere between the water draw and the fuel meter — the obvious suspect being that
+`Peak_Flow_Rate` rose per household (e.g. 3.919e-06 → 4.907e-06 m³/s, +25 %) against **hard-sized**
+water heaters, but that is a hypothesis and it is **not yet tested**.
+
+This reframes P4 completely. It is not a failed occupancy model; it is a located, quantified,
+unexplained gap between volume and energy in the DHW plant, and it is the single most important
+open item in Step 9. **P4 remains FAIL.** Explaining a number is not the same as passing a
+prediction, and the +51.4 % stands in the scorecard.
+
+### The next probe, specified now so it cannot be shaped by the answer
+
+Decompose the residential DHW **energy** for `Y2022__Tall__MTL`, arm E vs `Default_NECB`, into
+water-heating load, tank/standby losses, pump energy and any recovery/backup term, from
+`eplusout.sql`. **Prediction, written before running it:** if the peak-flow hypothesis is right,
+the *water-heating* component tracks volume (≈ 0.96 ×) and the excess sits almost entirely in
+tank/standby or recovery terms. If instead the water-heating component is itself ≈ 1.41 ×, the
+hypothesis is refuted and the fault is in the draw temperature or the end-use attribution, not the
+plant sizing.
+
+## P1 — the provenance half, and a spec gap in the audit
+
+The hourly half is UNTESTABLE (no `dhw_hourly.csv` pair supplied). The 56-cell provenance sweep in
+`agg_armE.sh` gives the other half:
+
+| check | result |
+|---|---|
+| cells excluded == 0 | **56 / 56** |
+| cells unresolved == 0 | **56 / 56** |
+| `r` saturated at `r_max` | **0** (expect 0) |
+| `t9_13_audit_pass=True` | **50 / 56** |
+| VIOLATION lines | **2** |
+
+The 6 non-passes, enumerated (`1171406`), are **two different things**:
+
+- **4 × `Default_NECB__{Tall,SuperTall}__{MTL,CLG}`, `n_audited=0`, all six counts zero.** These
+  are the **uninjected control cells**. They contain no T9-13 objects, so the audit has nothing to
+  examine, and the "empty audit = FAIL" rule — added deliberately so a silently-skipped audit could
+  never read as a pass — fires on them. **This is the rule working as designed on a case it was
+  not written for.** It is a spec gap, not a defect: the audit should report **N/A** for a cell
+  with no injection, and `n_audited=0` should remain a FAIL everywhere else. Left as-is and logged
+  rather than patched mid-analysis, because loosening an empty-audit guard while reading results is
+  how vacuous tests get born.
+- **2 × `Y2015__SuperTall__{CLG,MTL}`, `n_audited=47`, `D2 = 1`.** One genuine shape violation,
+  the same object in both: `F38 Resi_bot_S_Apartment_4 Service Water Use 0.06gpm 140F`, peak hour
+  **7 → 0**. Real, small (1 object of 47, in 2 cells of 56), and **not** covered by the
+  pre-registered residential zero-occupancy exception, which required `r_wd = 0.0`. **Recorded as
+  an unexplained shape violation**, not waved through.
+
+### Correction to `agg_armE.sh`'s own expectation
+
+The sweep reports `audited==47 objects : 24/56` as though 47 were universal. It is not — the actual
+distribution across the 56 cells is:
+
+```
+26 cells  n_audited=47
+20 cells  n_audited=71
+ 6 cells  n_audited=31
+ 4 cells  n_audited=0     (the Default_NECB controls)
+```
+
+`47` was read off a single smoke cell and generalised. The check is **mis-specified, not failing**:
+different geometries carry different object counts. It should assert *per geometry*, and until it
+does, that line of the sweep output means nothing and must not be quoted.
+
+## Where arm E leaves T9-13
+
+| claim | status |
+|---|---|
+| DHW volume scales exactly as specified, `R` cancels | **VERIFIED** at the IDF level, 0.9647 vs 0.98 |
+| non-DHW end uses are untouched | **VERIFIED**, 0/616 above 0.5 % |
+| office DHW stops being flat and moves with the WFH axis | **VERIFIED**, spread 0.004 % → 23.3 %, correct ordering |
+| hotel laundry scales (arm D's freeze is gone) | **VERIFIED**, −8.7 % → +15.3 % |
+| the predicted magnitudes | **3 of 3 missed** (P2 offset ~+20 pp, P3 by 0.9 pp, P4 by ~33 pp) |
+| residential DHW energy responds to volume | **REFUTED** — volume −3.5 %, energy +41.2 % |
+
+T9-13's **mechanism** is sound and is now demonstrated. T9-13's **energy predictions** are not, and
+the reason is a plant-side effect nobody in this project has yet looked at.
+
+---
+
+# 🔴🔴🔴 FINDING 8 — T9-13 REPLACES specialised DHW schedules instead of scaling them — 2026-08-02
+
+This is the mechanism behind P3 and a large part of P4. It is a real defect, it is proven at the
+IDF level, and it means arm E's DHW numbers cannot be quoted as they stand.
+
+## How it was found
+
+The P4 follow-up probe was written with a hypothesis and both branches of its refutation stated in
+advance (`3rdJ_09E_dhw_energy_probe.py`, job `1171408`):
+
+> *HYPOTHESIS: `Peak_Flow_Rate` rose against hard-sized water heaters, so the plant spends more time
+> in recovery. IF TRUE the water-heating component tracks volume (~0.96×) and the excess sits in
+> tank/standby terms. IF FALSE the water-heating component is itself ~1.41× and the fault is in the
+> draw temperature or the end-use attribution, not plant sizing.*
+
+**The hypothesis was REFUTED.** `Water Use Equipment Heating Energy` totals **×1.389** — the draw
+energy itself moved. And because the probe reported *every* water-related series rather than only
+the ones the hypothesis needed, the culprit was visible in the per-object rows.
+
+## The evidence
+
+`Y2022__Tall__MTL` (arm E) vs `Default_NECB__Tall__MTL`, `Water Use Equipment Heating Energy`:
+
+| object | uninjected (J) | injected (J) | ratio |
+|---|---|---|---|
+| **`LAUNDRY SERVICE WATER USE`** | 9.1147e+11 | 2.7598e+12 | **×3.028** |
+| **`F30 HOTEL_BOT_LAUNDRY SERVICE WATER USE`** | 2.6625e+11 | 3.7251e+11 | **×1.399** |
+| `F31-F37 HOTEL_MID_*_GUESTRM` (all 8) | — | — | ×1.136 (uniform) |
+| `F38 HOTEL_TOP_KITCHEN SERVICE WATER USE` | 4.2705e+11 | 4.2605e+11 | ×0.998 |
+| `BOOSTER SERVICE WATER USE` | 2.9766e+11 | 2.9631e+11 | ×0.995 |
+
+The guest rooms move uniformly at ×1.136 — that is the legitimate `r` effect. The kitchen and the
+booster do not move. **Only the two laundry objects move anomalously.**
+
+## The cause — a schedule SUBSTITUTION, and `Peak_Flow_Rate` proves it
+
+The same `WaterUse:Equipment` object, uninjected vs injected:
+
+| | `Peak_Flow_Rate` | `Flow Rate Fraction Schedule Name` |
+|---|---|---|
+| **NECB** `Laundry Service Water Use 30.6gpm 180F` | `0.00193056` | **`HotelLarge LAUNDRY_SWH_SCH`** |
+| **arm E** same object | `0.001930562` | **`MXU_Hotel_DHWv2_r1000w1000_Y2022__Tall__MTL`** |
+| **NECB** `F30 Hotel_bot_Laundry ... 2.56gpm 140F` | `0.000161725` | **`HotelLarge LaundryRoom_SWH_Sch_Post2004`** |
+| **arm E** same object | `0.0001617252` | **`MXU_Hotel_DHWv2_r1000w1000_...`** |
+
+**`Peak_Flow_Rate` is unchanged to seven significant figures in both cases** — as it must be, since
+this is `Y2022`, where `r = 1.000` and therefore `Peak' = P·R = P`. The provenance line agrees:
+
+```
+t9_13 hotel 'HotelLarge BLDG_SWH_SCH' r_wd=1.0 r_we=1.000001 R=1.000001 peak_mult=1.000001
+            nightshare=0.122222->0.122222 peakhour=7->7 max=0.6->0.599999 clipped=False
+```
+
+The T9-13 *scaling* is a faithful no-op. **100 % of the ×3.028 comes from the object being pointed
+at a different schedule.** A commercial laundry's draw profile — concentrated in a few operating
+hours, low daily mean — was replaced by the hotel channel's generic guest-room DHW curve, whose
+daily mean is roughly three times higher.
+
+The injector's own log shows it knew about these schedules and could not characterise them:
+
+```
+dhw hotel 'HotelLarge LAUNDRY_SWH_SCH'              -> floor=-1.0 peak=-1.0
+dhw hotel 'HotelLarge LaundryRoom_SWH_Sch_Post2004' -> floor=-1.0 peak=-1.0
+```
+
+`floor=-1.0 peak=-1.0` are sentinels: the laundry schedules were recognised as hotel-channel DHW
+schedules but their floor/peak were not derived — and they were then superseded wholesale rather
+than skipped.
+
+## Why the audit could not see it — vacuous-test kind #8
+
+`audit_dhw_shape_preservation` reported **`n_audited=47`, all six counts zero, PASS** on this cell.
+It is not broken and it is not vacuous in the earlier senses. It has a different blind spot:
+
+> **The audit verifies the transformation it performed. It never verifies the assignment it
+> changed.**
+
+D1–D5 compare each schedule T9-13 *wrote* against the schedule it was *derived from*. For the
+laundry objects there is no such pair — T9-13 did not transform `HotelLarge LAUNDRY_SWH_SCH` at
+all; it left that schedule alone and re-pointed the `WaterUse:Equipment` object somewhere else. A
+before/after check on schedules is structurally incapable of seeing a change of *which* schedule an
+object uses. D6 (channel coverage), added this same day, checks that every expected channel appears
+— not that every object kept a schedule of its own kind.
+
+This is kind #8 for the project: *a guard that audits the objects it edited, on a change that
+happens to the objects it did not.*
+
+## 🔴 CORRECTION to what I wrote about P3 earlier today
+
+Earlier in this same log I wrote, of P3:
+
+> *"Hotel laundry is scaling. Arm D's P5 is reversed. The mechanism claim is unambiguously
+> confirmed."*
+
+**That is now shown to be confirmed for the wrong reason, and I am striking it.** Hotel laundry is
+indeed no longer frozen — but it is moving because its schedule was *replaced*, not because `r`
+modulates it. The `Y2022` cell settles it: there `r = 1.000`, so a correctly-implemented T9-13 must
+leave laundry untouched, and instead `F30 Hotel_bot_Laundry` moves ×1.399.
+
+P3's numeric verdict is unchanged (**FAIL**, +15.31 % vs +12.4 ± 2.0). What changes is that the
+consolation — "the magnitude missed but the mechanism worked" — is withdrawn. The mechanism did not
+work. It produced motion by substitution.
+
+This is the seventh time in this project that a PASS-shaped result has turned out to rest on a
+mechanism nobody checked, and the third time I have had to strike a claim of my own within hours of
+writing it. The pattern is consistent enough to be worth naming: **a result that matches the
+predicted direction is the easiest place to stop looking.**
+
+## What FINDING 8 does and does NOT explain
+
+Honest accounting, because the temptation is to let one good mechanism absorb every open number:
+
+- **P3 (hotel, +15.31 %)** — substitution is a direct contributor (`F30` ×1.399), alongside the
+  legitimate ×1.136 on all eight guest-room objects. **Largely explained.**
+- **P4 (residential, +51.40 %)** — the big `Laundry Service Water Use 30.6gpm 180F` is attributed
+  to the **residential** channel by the aggregator (it carries no zone prefix). Its rise is
+  9.11e+11 → 2.76e+12 J = **+1848 GJ**, against a residential channel rise of 15452 → 21819 GJ =
+  **+6366 GJ**. So substitution explains **about 29 %** of P4. **The remaining ~71 % is still
+  unexplained**, and the 27 apartment objects' own volume identity holds at 0.9647. Not claiming
+  more than the arithmetic supports.
+- **The `Y2022` office channel (+28.6 % at `r ≈ 1.0`)** — the office restroom objects moved
+  **×0.952**, i.e. *down*, while the office channel total rose. That is an **attribution** question,
+  not a schedule question, and it is untouched by FINDING 8.
+
+## Consequences
+
+1. **Arm E's DHW numbers must not be quoted.** P2/P3/P4 all sit downstream of this defect.
+2. **The fix is small and local**: an object whose schedule cannot be characterised
+   (`floor=-1.0 peak=-1.0`) must be **skipped and logged**, never re-pointed at the channel's
+   generic curve. Scaling a specialised schedule in place is the correct behaviour; substituting it
+   is not.
+3. **The audit needs an assignment check** (call it D7): for every `WaterUse:Equipment` object,
+   assert that its post-injection `Flow Rate Fraction Schedule Name` is either unchanged or is the
+   T9-13 derivative *of its own original schedule* — never another object's. This is the check that
+   would have caught FINDING 8 on the smoke test, before 56 cells were run.
+4. **Re-run required after the fix.** This merges naturally with the FINDING-6 office re-run and
+   the FINDING-7 retail decision — all three touch the same campaign.
+
+---
+
+## P1 IS TESTABLE AFTER ALL — final scorecard **3 PASS / 3 FAIL / 0 UNTESTABLE** — 2026-08-02
+
+The first scoring run reported P1 UNTESTABLE for want of an hourly file. That was **my error, not a
+missing artefact**: every cell already writes `dhw_hourly.csv` beside `injected.idf`. Found while
+listing a cell directory for the FINDING 8 investigation.
+
+```
+py -3 3rdJ_09E_score_armE.py --arm-c agg_C_lm3v2 --arm-e agg_E_dhwvol \
+       --dhw-hourly-c agg_C_lm3v2/dhw_hourly.csv --dhw-hourly-e agg_E_dhwvol/dhw_hourly.csv
+```
+
+Cell `B_central__Tall__MTL`, residential column:
+
+| | arm D (T9-11) | **arm E (T9-13)** |
+|---|---|---|
+| night 00–05 share | 0.0834 → **0.3286** | 0.0834 → **0.0828** |
+| peak draw hour | 06:00 → **04:00** | 06:00 → **06:00** |
+
+> **P1 PASS.** The identity T9-11 destroyed is preserved by T9-13 to within 0.0006 on the night
+> share, with the peak hour unmoved.
+
+This is the single most important result in arm E, and it is worth separating from everything else
+in this log: **T9-13's re-specification of T9-11 works.** Volume scaling changes how much water is
+drawn without changing when it is drawn — which is exactly what it was written to do, and exactly
+what its predecessor failed to do.
+
+### Final scorecard
+
+| | verdict | one line |
+|---|---|---|
+| P1 | **PASS** | shape preserved — the T9-11 failure does not recur |
+| P5 | **PASS** | 0 of 616 material non-DHW end uses above 0.5 %; worst mover +0.207 % |
+| P6 | **PASS** | 56/56 cells, max \|ΔArea\| = 0.0 m² over 392 pairs |
+| P2 | **FAIL** | office DHW moved +21.7 / +8.4 / −3.7 % vs predicted +0.3 / −11.2 / −21.8 |
+| P3 | **FAIL** | hotel +15.31 % vs +12.4 ± 2.0 — and see FINDING 8, the motion is substitution |
+| P4 | **FAIL** | residential +51.40 % vs +8…+18 % — ~29 % explained by FINDING 8, ~71 % open |
+
+**3 PASS / 3 FAIL / 0 UNTESTABLE.** No tolerance was altered at any point. The three passes are the
+structural claims (shape, isolation, integrity); the three failures are all magnitude predictions,
+and two of the three are now known to sit downstream of a located defect.
+
+---
+
+# 🔴🔴 CORRECTION TO FINDING 8 — the mechanism recorded above is WRONG — 2026-08-02 (evening)
+
+FINDING 8's **conclusion stands**: specialised DHW schedules are replaced, arm E's DHW numbers are
+unquotable, a re-run is required. **Its mechanism does not**, and the fix specified from it (D-A:
+"skip objects whose floor/peak cannot be characterised") would have been a **no-op that looked like
+a fix** — the eighth vacuous shape, arrived at from the other direction.
+
+## What was claimed
+
+> *"The injector logged `floor=-1.0 peak=-1.0` on both — it could not characterise them and
+> superseded them instead of skipping them."*
+
+## Why that is false, from the code
+
+`commercial_integration.py:2151-2155` — the T9-13 branch writes, for **every** applied object:
+
+```python
+result["dhw_applied"].append(
+    {"name": we.Name, "channel": channel, "prototype_schedule": proto,
+     "floor": None, "peak": None, "derived_schedule": target_sch, ...})
+```
+
+`:2283-2288` — the provenance writer, with its own comment saying so:
+
+```python
+# floor/peak are None under T9-13 (it uses no extremum); -1 keeps the tuple sortable if a
+# future run ever mixes the two models in one IDF.
+-1.0 if r["floor"] is None else r["floor"],
+```
+
+So `floor=-1.0 peak=-1.0` is **the T9-13 encoding of "this model uses no extremum"**, emitted for
+the guest rooms as much as for the laundry. It is not a failure sentinel. `_schedule_standby_floor`
+and `_schedule_peak` — the functions that CAN return `None` for a real characterisation failure —
+are at `:2162-2163`, on the **T9-11 branch**, which arm E never took (`continue` at `:2160`).
+
+The laundry objects were never "not characterised". They passed `_schedule_daytype_profiles`
+successfully, produced valid `new_wd/new_we`, and were recorded as applied.
+
+## The actual defect — a cache-key collision, `commercial_integration.py:2080-2094`
+
+```python
+def _t9_13_schedule_for(channel, r_wd, r_we, new_wd, new_we):
+    key = (channel, round(float(r_wd), 4), round(float(r_we), 4))
+    if key in _t9_13_cache:
+        return _t9_13_cache[key]          # <-- new_wd / new_we DISCARDED
+    nm = (f"MXU_{channel.capitalize()}_DHWv2_"
+          f"r{int(round(key[1]*1000)):04d}w{int(round(key[2]*1000)):04d}_{tag}")
+```
+
+**The key does not contain the source schedule.** `new_wd/new_we` are the caller's per-object shape
+and are used **only on a cache miss**. `r_wd`/`r_we` are computed from the *channel's* occupancy
+(`_channel_occ_24`) against the *channel's* reference — they are identical for every object in a
+channel. Therefore:
+
+> **Within one channel, every `WaterUse:Equipment` object collapses onto ONE schedule, built from
+> whichever object the iteration reached first.**
+
+The generated name is itself the proof — `MXU_Hotel_DHWv2_r1000w1000_<tag>` encodes channel and `r`
+and carries **no shape identity**. FINDING 8's own evidence table shows both laundry objects and the
+guest rooms pointing at that one name. That is not a fallback; it is a hash collision by design.
+
+`Peak_Flow_Rate` is correct per object (`:2146-2148`, computed from that object's own `info`) while
+the schedule is wrong — which is exactly the signature observed, and which the
+"could-not-characterise" story cannot explain.
+
+## Residential carries the same defect class — `:1577`
+
+```python
+key = (hh_id, round(info["r_wd"], 4), round(info["r_we"], 4))
+```
+
+`hh_id` narrows it, but `r_wd/r_we` are functions of the **household occupancy only** — not of the
+object's prototype schedule. Two `WaterUse:Equipment` objects in the same apartment Space with
+different prototype schedules collide. The 0.9647 volume identity holding is weak evidence that this
+tower is 1:1 Space-to-object, **not** proof; the fix must cover both paths and the assertion must be
+measured, not assumed.
+
+## Why the audit cannot see it — kind #8, restated correctly
+
+`audit_dhw_shape_preservation:1197` iterates `applied` and reads **only `rec["t9_13"]`**, the `info`
+dict returned by `apply_dhw_volume_scaling`. That dict is computed per object and is always
+internally consistent, whatever schedule was subsequently assigned. D1-D5 therefore audit *the
+arithmetic the injector performed*, never *the object it wrote into the IDF*. The earlier statement
+— "the audit verifies the transformation it performed, never the assignment it changed" — was the
+right diagnosis attached to the wrong cause.
+
+## Consequence for D-A
+
+D-A as put to the user is **withdrawn and replaced**:
+
+| | withdrawn | replacement |
+|---|---|---|
+| fix | skip objects with `floor=-1.0 peak=-1.0` | put the source schedule in the cache key (both paths) |
+| effect | **none** — no object takes that branch under T9-13 | one schedule per (channel, source schedule, r) |
+| audit | D7 "schedule is unchanged or the derivative of its own original" | D7 as stated, but read **from the saved IDF**, not from `dhw_applied` |
+
+D7 must re-open the written IDF and compare each object's `Flow_Rate_Fraction_Schedule_Name` against
+the schedule *derived from that object's own prototype*. A D7 implemented over `dhw_applied` would
+inherit the exact blindness it exists to close: `rec["derived_schedule"]` records the **cached** name,
+so the collision would still read as a pass.
+
+**Falsifiable prediction, written before the fix runs:** on `Y2022__Tall__MTL`, where `r = 1.000`,
+the fixed injector must produce a **bit-identical** DHW result to `Default_NECB__Tall__MTL` for
+every hotel object — `LAUNDRY SERVICE WATER USE` back to ~9.11e+11 J (from 2.76e+12), `F30
+Hotel_bot_Laundry` back to ~2.66e+11 J (from 3.73e+11), guest rooms back to ×1.000 (from ×1.136).
+If the guest rooms do **not** return to ×1.000, the collision was not the whole mechanism and this
+correction is itself incomplete.
+
+Note the guest-room prediction is the discriminating one: the ×1.136 was recorded above as "the
+legitimate `r` effect", but at `r = 1.000` there is no legitimate `r` effect to have. That number
+should not have been accepted as legitimate when it was written.
+
+---
+
+# Progress Log — FINDING 8 fix implemented (cache-key collision) — 2026-08-02 (evening)
+
+**Employee session.** Scope: code fix + upload + smoke test. Campaign NOT launched (cell count is
+the user's open call).
+
+## TASK 1a — commercial path, `commercial_integration.py`
+
+`_t9_13_schedule_for` now takes `proto` and keys on it:
+
+```python
+def _t9_13_schedule_for(channel, proto, r_wd, r_we, new_wd, new_we):
+    key = (channel, str(proto).strip().upper(),
+           round(float(r_wd), 4), round(float(r_we), 4))
+    ...
+    nm = (f"MXU_{channel.capitalize()}_DHWv2_{_sched_token(proto)}_"
+          f"r{int(round(key[2]*1000)):04d}w{int(round(key[3]*1000)):04d}_{tag}")
+```
+
+Call site updated to pass `proto`. New module-level `_sched_token(proto)` (beside `_floor_key`):
+upper-case, keep `[A-Z0-9]`, collapse the rest to `_`, truncate to 40 — and **above 40 chars it
+appends an 8-hex MD5 of the full normalised prototype string**, so a truncation collision cannot
+silently re-create the bug the token exists to fix. Two guards on top of that, both able to fail:
+
+- `_t9_13_name_owner`: same generated name for two different keys → `AssertionError`, not a
+  silent merge.
+- `len(nm) > 100` → `AssertionError` (EnergyPlus alpha-field limit). A truncated Name would
+  either break the reference or merge two schedules; both are worse than an abort.
+
+Token behaviour on the real hotel schedules, verified locally:
+
+| prototype | token | full name length |
+|---|---|---|
+| `HotelLarge LAUNDRY_SWH_SCH` | `HOTELLARGE_LAUNDRY_SWH_SCH` | 58 |
+| `HotelLarge LaundryRoom_SWH_Sch_Post2004` | `HOTELLARGE_LAUNDRYROOM_SWH_SCH_POST2004` | 71 |
+| `HotelLarge BLDG_SWH_SCH` | `HOTELLARGE_BLDG_SWH_SCH` | 55 |
+
+No hash suffix is triggered on any real schedule in this IDF family, and nothing approaches 100
+chars — so the names are of one convention throughout, as required.
+
+## TASK 1b — residential path
+
+Same change at the T9-13 branch of `inject_residential`:
+`key = (hh_id, UPPER(proto), r_wd, r_we)`, name
+`MXU_Residential_DHWv2_HH{hh_id}_{token}_r####w####`, with the same name-owner and length guards.
+
+**Measurement, not assumption** (1b's explicit instruction): the injector now counts distinct
+`(Space, prototype schedule)` pairs against the number of residential objects it saw and writes
+both to the provenance (`residential_dhw_objects=`, `residential_dhw_space_proto_pairs=`) plus a
+console line saying which of the two conclusions the count supports. **The number will be read off
+the smoke-test provenance, not guessed here** — the log's own earlier note that the 0.9647 volume
+identity is "weak evidence, not proof" of 1:1 is exactly why this is measured.
+
+## TASK 1c — D7, read from the SAVED IDF
+
+New `audit_dhw_assignment(saved_idf_path, applied, proto_before, ...)`, deliberately **not**
+implemented over `result["dhw_applied"]`: `rec["derived_schedule"]` stores the *cached* name, so a
+D7 built on it would have passed on arm E — the exact blindness it exists to close.
+
+- `_we_proto_before` is snapshotted at the top of `inject_mixed_use`, before either DHW path
+  writes, because both overwrite `Flow_Rate_Fraction_Schedule_Name` in place.
+- After `idf.saveas`, the output IDF is **re-opened** and every `WaterUse:Equipment` object is
+  checked: its assigned schedule is either **unchanged** from the source, or parses as
+  `MXU_*_DHWv2_[HH<id>_]<TOKEN>_r####w####[_tag]` with `<TOKEN> == _sched_token(its own original
+  schedule)`. Token comparison is **exact**, via `_DHWV2_NAME_RE` — a substring test would let
+  `LAUNDRY_SWH_SCH` pass against `HOTELLARGE_LAUNDRY_SWH_SCH`'s schedule, which is the same
+  family of near-miss the fix is about.
+- A record in `dhw_applied` that claims a `prototype_schedule` the source IDF did not have is
+  itself a D7 violation.
+- Secondary check kept even though it is currently redundant: one derived name serving two
+  distinct source schedules. It survives a change to the name grammar that the token parser
+  would not.
+- Wired into `t9_13_audit["counts"]["D7"]`, into `["violations"]`, into the `pass` verdict, and
+  into the provenance as `t9_13_d7_pass=... n_wateruse=... n_own_derivative=... n_unchanged=...`
+  plus one `t9_13_derived_name <name>` line per distinct derived schedule.
+
+## TASK 1d — empty-audit N/A (open item 5)
+
+`t9_13_audit["pass"]` is now tri-state and `["verdict"]` is `PASS` / `FAIL` / `N/A`. `N/A` is
+emitted **only** when the cell requested no DHW channels at all (`_expect == ()`) *and* audited 0
+objects *and* has no violations — the 4 `Default_NECB` controls. `n_audited == 0` with a non-empty
+`_expect` stays a **FAIL**. D7 still runs on an N/A cell (it has untouched objects to check) and
+can still turn it into a FAIL.
+
+## TASK 1e — `agg_armE.sh` (open item 4)
+
+The universal `n_audited == 47` assertion is **removed**, not widened: it was wrong for 30 of 56
+cells (actual 47×26, 71×20, 31×6, 0×4), so its output line meant nothing. Replaced by a check that
+can actually fail — *two cells with the same geometry and the same `channels_requested` must audit
+the same number of objects* — reported as a full `(geometry, channels) -> n_audited` table with a
+`NBAD` count of non-constant groups. Also added: verdict distribution (PASS/FAIL/N-A separated),
+a D7 pass/fail/**absent** sweep (absent = a cell produced by the pre-fix injector), and the deduped
+list of `MXU_*_DHWv2_*` names created across the arm.
+
+Injector md5 after all of TASK 1: **`456301f5`** (was `56d6e324`).
+
+Local `import` + token/regex round-trip verified. Nothing simulated yet — that is TASK 4.
+
+---
+
+# Progress Log — TASK 2: FINDING 7 option B, retail rewired to the calibrated pool — 2026-08-02
+
+## The change — one thing
+
+`3rdJ_07_aug_to_bem_4split.py::build_retail_product_2030` no longer reads
+`at_retail_fraction_2030_{scenario}.csv` (built by Step-6's lever script from the RAW pool). It now
+pools **`D2030` = `..._C_v2.csv`**, md5 `5aa74f44`, the same calibrated source every other 2030
+channel uses. `assert_d2030_is_c` runs on the file it reads.
+
+Everything else is preserved on purpose:
+
+- **All 111,024 rows, all 3 bands, no band filter.** The lever files pooled all bands; so does
+  this. FINDING 7's premise is that RAW and CAL are the *same rows*, so the difference is
+  calibration and not frame — a band filter would destroy that. Asserted (`>= MIN_2030_ROWS`).
+- **The lever still comes from `_derive_retail_lever()`**, i.e. from the Step-6 lever file's own
+  `multiplier` column, which that function already asserts is a uniform scalar. The lever files
+  remain the source of truth for the *scalar*; they are no longer the source of the *shape*.
+- **Base / levered discipline unchanged**: `ret48 = sub[RET].mean()` → `np.roll(arr, 8)` → uniform
+  lever → normalise against the **un-levered** pooled base peak, mirroring the 2026-07-28 fix.
+- `RETAIL_LEVER_FILES` kept, with a comment stating what it is and is not the source of now.
+
+**One thing the prompt got wrong, corrected by measurement.** The prompt specified
+`PR ∈ {2→QC, 4→AB}`. That is the **2022 stock's** region remap. `_C_v2` carries **raw GSS province
+codes** — `value_counts` gives `24 → 21,087` and `48 → 12,528` rows — and
+`3rdJ_09E_retail_source_probe.py` already used 24/48. Using 2/4 would have selected the wrong
+provinces and produced an empty-or-wrong channel. Coded as `D2030_RETAIL_PR = {"QC": 24, "AB": 48}`
+with the measurement in the comment, and the function hard-fails on an empty PR selection rather
+than shipping a silent zero.
+
+Regeneration is a standalone `3rdJ_07R_regen_retail_2030.py` calling the *same* three functions the
+pipeline call site calls — `--year 2030 --bundle X` would have rewritten four unrelated products,
+and `--sens retail` covers only cons/opt.
+
+## Pre-registered acceptance check — written and snapshotted BEFORE the rewire ran
+
+`Step9_docs/3rdJ_09F_retail_rewire_check.py`. Thresholds taken from the FINDING 7 table already in
+this log, not from the new product. The `--before` snapshot was taken against the shipped files
+first and **reproduced every pre-registered "before" value exactly** — so the check is anchored to
+the artefact, not to a story about it.
+
+### A — what must move
+
+| id | what | before | after | required | verdict |
+|---|---|---|---|---|---|
+| A1 | QC Weekday peak clock hour | 11 | **16** | 11 → 16 | **PASS** (all 3 bands) |
+| A2 | AB Weekday peak clock hour | 14 | **16** | 14 → 16 | **PASS** (all 3 bands) |
+| A3 | QC Saturday/Weekday contrast | 0.849 | **3.215** | 0.849 → 3.215 | **PASS** |
+| A4 | AB Saturday/Weekday contrast | 1.009 | **3.399** | 1.009 → 3.399 | **PASS** |
+| A5 | pooled-ALL Sat/Wd contrast, at source | RAW 0.980 | CAL **3.375** | 0.980 → 3.375 | **PASS** |
+
+A5 is measured at the **source**, not on the product, and said so before it ran: the product only
+carries `PR ∈ {QC, AB}` while the log's 0.98/3.38 row is `PR_GROUP='ALL'`. The 2022 observed anchor
+re-derives at **2.687**, matching the log. The peak did move, so the rewire took effect.
+
+Measured on `at_retail_fraction`, deliberately, not on `multiplier`: `multiplier` is overwritten by
+the NECB proxy baseline wherever `staff_shoulder_flag == 1`, so its argmax can be pinned by the
+proxy instead of by the occupancy source under test. That is the discarded-flag trap this channel
+has already fallen into once (T9-10 retail, arm B).
+
+### B — what must NOT move
+
+| band | peak(multiplier) | required 0.95×lever | rows / PR / Day_Type | mult ∈ [0,1] |
+|---|---|---|---|---|
+| cons | 0.8550 | 0.8550 | 288 / {AB,QC} / 3 | ✓ |
+| central | 0.9215 | 0.9215 | 288 / {AB,QC} / 3 | ✓ |
+| opt | 0.9975 | 0.9975 | 288 / {AB,QC} / 3 | ✓ |
+
+`run_retail_gates` H2/R1 passed unchanged for all three bands, and H5 lever ordering still holds.
+
+**VERDICT: PASS**, 0 of 21 checks failed. No tolerance was touched.
+
+## Artifacts
+
+| file | new md5 | predecessor (`_BAK_2026-08-02`, kept on disk) |
+|---|---|---|
+| `retail_presence_multiplier_2030_cons.csv` | `82b425b5` | `0e3b256e` |
+| `retail_presence_multiplier_2030_central.csv` | `11414644` | `cf8721c6` |
+| `retail_presence_multiplier_2030_opt.csv` | `700398d0` | `f7152e5a` |
+
+## 🔴 FLAG, not fixed — T9-12 `k = 0.60`
+
+The T9-12 retail lighting re-spec calibrated `k = 0.60` **against the shape that just changed**
+(see the k-sweep table earlier in this log: k=0.60 was picked for weekday-mean +0.2 % and lever
++2.69 %). Those two numbers were computed on the RAW-sourced retail shape whose weekday peak sat at
+11:00. With the peak now at 16:00 they no longer describe the configuration that ships. **`k` needs
+re-checking against the calibrated shape before any retail lighting result is quoted.** Per the
+prompt: flagged, deliberately **not** re-tuned — re-tuning it now would be fitting the lever to the
+first shape that appeared after a source change nobody has validated downstream yet.
+
+## Scope note
+
+This invalidates the arm-C/arm-E **retail** results, as FINDING 7 predicted it would. Nothing has
+been re-simulated; the 2030-family campaign is the user's open call.
+
+---
+
+# Progress Log — TASK 3 upload + TASK 4 smoke launched (job 1171438) — 2026-08-02
+
+## TASK 3 — office product uploaded, md5 verified ON the cluster
+
+`squeue -u o_iseri` was empty before overwriting anything — arm E is finished, so the
+mid-array-corruption risk the upload was being held for is gone.
+
+| file | local md5 | cluster md5 after `scp` | was on cluster |
+|---|---|---|---|
+| `office_presence_multiplier_2030.csv` | `575d17e5` | **`575d17e5`** ✓ | `1536c98c` (the predecessor) |
+| `eSim_bem_utils/commercial_integration.py` | `456301f5` | **`456301f5`** ✓ | `56d6e324` (pre-fix) |
+| `retail_presence_multiplier_2030_cons.csv` | `82b425b5` | **`82b425b5`** ✓ | `0e3b256e` |
+| `retail_presence_multiplier_2030_central.csv` | `11414644` | **`11414644`** ✓ | `cf8721c6` |
+| `retail_presence_multiplier_2030_opt.csv` | `700398d0` | **`700398d0`** ✓ | `f7152e5a` |
+
+`office_presence_multiplier_2030_BAK_2026-08-02.csv` (`1536c98c`) stays on disk locally, as
+instructed. Also uploaded: `3rdJ_07_aug_to_bem_4split.py`, `3rdJ_07R_regen_retail_2030.py`,
+`agg_armE.sh`, `3rdJ_09F_smoke_f8fix.py`, `3rdJ_09F_retail_rewire_check.py`, `smoke_f8fix.sh`.
+
+## TASK 4 — smoke test SUBMITTED, job **1171438**
+
+`sbatch smoke_f8fix.sh`, `-p ps`, `--mem=16G`, **`-t 7-00:00:00`**. Nothing ran on the login node.
+
+Two cells into a fresh `out_F_f8fix`:
+
+- **cell 0 = `Default_NECB__Tall__MTL`** — injects nothing. Re-run rather than reused so that
+  open item 5's new **N/A** verdict and D7-over-untouched-objects are actually exercised. A gate
+  has to be seen working.
+- **cell 1 = `Y2022__Tall__MTL`** — the T9-13 reference year, `r = 1.000`, so DHW must be a
+  bit-for-bit no-op.
+
+Two guards, both able to stop the job:
+
+- the wrapper **refuses to run** unless the injector md5 is `456301f5`. A smoke test accidentally
+  run on the pre-fix injector would produce arm-E numbers and read as a reproduction.
+- the scorer FAILs if no `t9_13_d7_pass` line exists (i.e. a pre-fix cell), and FAILs — loudly,
+  as **VACUOUS** — if it cannot find the `F31–F37 *GUESTRM` objects at all, rather than reporting
+  a pass over an empty set.
+
+Predictions are constants inside `3rdJ_09F_smoke_f8fix.py`, transcribed from the table above
+before the run. Tolerance `|ratio − 1| ≤ 0.002`; the guest rooms' arm-E excess is 136× that band,
+so nothing that matters can hide inside it. The scorer also reports **every other**
+`WaterUse:Equipment` object against the same no-op requirement even though no prediction was
+registered for them — at `r = 1.000` a correct T9-13 is a no-op on all of them, and only reporting
+the objects the hypothesis needs is the failure mode this log already has seven names for.
+
+Plus a cross-check the prompt did not ask for: the new `Default_NECB` cell is scored **against the
+old arm-E `Default_NECB`**, to confirm the reference itself did not move under the new injector.
+If it did, every ratio in the main table is measured against a shifted baseline.
+
+Result to follow when the job lands.
+
+---
+
+# Progress Log — IDF-level verification of the FINDING 8 fix (local, pre-simulation) — 2026-08-02
+
+Ran `inject_mixed_use` locally on the smoke cell's own inputs (`Y2022__Tall__MTL`, v242 Tall IDF,
+`calibrated_v2` lighting, `volume_scaled` DHW) — injection only, no EnergyPlus. This settles the
+mechanism question at the IDF level while the cluster job simulates.
+
+## The collision, gone
+
+`MXU_*_DHWv2_*` schedules created, **per channel**:
+
+| channel | before the fix | after the fix | the source schedules now kept apart |
+|---|---|---|---|
+| hotel | **1** | **4** | `HotelLarge BLDG_SWH_SCH`, `HotelLarge GuestRoom_SWH_Sch`, `HotelLarge LAUNDRY_SWH_SCH`, `HotelLarge LaundryRoom_SWH_Sch_Post2004` |
+| office | 1 | 1 | `OfficeLarge BLDG_SWH_SCH` — only one prototype exists |
+| retail | 1 | 1 | `RetailStandalone BLDG_SWH_SCH` — only one prototype exists |
+| residential | 27 | 27 | `ApartmentHighRise Apt_DHW_Sch`, one per household |
+
+**33 distinct schedules, up from 30.** The whole delta is the hotel channel, and it is exactly the
+four prototypes FINDING 8 said were collapsing onto one. `MXU_Hotel_DHWv2_r1000w1000_Y2022` — the
+name with no shape identity in it — no longer exists; the four replacements are
+`MXU_Hotel_DHWv2_HOTELLARGE_LAUNDRY_SWH_SCH_r1000w1000_Y2022` and its siblings. Office and retail
+staying at 1 is not the fix failing: each of those channels genuinely has one prototype, so one
+schedule is the correct cardinality.
+
+## D7 — and it ran on the file, not on the dict
+
+```
+[T9-13 audit PASS] 47 objects: shape, peak hour, night share and Fraction bound all preserved
+[D7 PASS] 47 WaterUse:Equipment objects in the saved IDF: 47 on a derivative of their OWN
+          schedule, 0 unchanged, 0 pointing at another object's schedule
+counts = {D1:0, D2:0, D3:0, D4:0, D5:0, D6:0, D7:0}
+```
+
+Re-read from the saved IDF, token-matched exactly against each object's own original schedule.
+Longest generated name is 71 characters (`..._HOTELLARGE_LAUNDRYROOM_SWH_SCH_POST2004_...`), well
+inside EnergyPlus's 100-character alpha field, so no hash-suffix form was triggered and every name
+follows one convention. No name-collision assertion fired.
+
+## TASK 1b's measurement — answered, and it is the boring answer
+
+```
+[FINDING 8 measure] residential objects=27 distinct (Space, prototype schedule) pairs=27
+                    -> 1:1, this path was NOT colliding
+```
+
+**27 objects, 27 distinct `(Space, prototype)` pairs.** The residential path is 1:1 in this tower,
+so the collision never fired there — the log's earlier caution that the 0.9647 volume identity was
+"weak evidence, not proof" was right to insist on measuring it, and the measurement agrees with the
+weak evidence. The fix is applied to that path anyway: it is 1:1 *in this IDF*, which is a property
+of the building, not of the code.
+
+## What this does NOT yet show
+
+Nothing here is energy. The IDF says the right objects now carry the right schedules; whether
+`LAUNDRY SERVICE WATER USE` returns to ~9.1147e+11 J and whether the guest rooms return to ×1.000
+is what job 1171438 is running, and it is the only thing that closes FINDING 8.
+
+---
+
+# Progress Log — D7 and the N/A verdict SEEN FAILING, not just passing — 2026-08-02
+
+This project has eight recorded kinds of vacuous gate. A new gate that reports PASS on the first
+cell it meets is not evidence of anything, so both new checks were made to fail on purpose before
+either was believed.
+
+## 1. The name-collision assert — first line of defence
+
+Re-created the pre-fix behaviour by forcing `_sched_token` to return one constant for every
+prototype (which is what "the source schedule is not in the key" amounts to). The injector
+**aborted** rather than merging:
+
+```
+T9-13 schedule-name collision: 'MXU_Hotel_DHWv2_COLLAPSED_r1000w1000_BROKEN' generated for BOTH
+  ('hotel', 'HOTELLARGE BLDG_SWH_SCH', 1.0, 1.0)
+  and ('hotel', 'HOTELLARGE LAUNDRYROOM_SWH_SCH_POST2004', 1.0, 1.0)
+```
+
+## 2. D7 itself — against FINDING 8's exact signature
+
+The assert above cannot catch a collision whose *name* does not clash (the pre-fix code, where the
+name carried no shape identity at all), so D7 was tested directly. Took the good injected IDF,
+re-pointed **both** laundry objects at the guest-room derived curve — literally the substitution
+FINDING 8 documented — re-saved, and ran `audit_dhw_assignment` against the uninjected tower as
+`proto_before`:
+
+```
+[D7 FAIL] 2 violations over 47 objects
+  D7 F30 Hotel_bot_Laundry Service Water Use 2.56gpm 140F:
+     assigned 'MXU_Hotel_DHWv2_HOTELLARGE_GUESTROOM_SWH_SCH_r1000w1000_Y2022' carries source token
+     'HOTELLARGE_GUESTROOM_SWH_SCH' but this object's own schedule is
+     'HotelLarge LaundryRoom_SWH_Sch_Post2004' -- it is on ANOTHER object's derived schedule
+  D7 Laundry Service Water Use 30.6gpm 180F:
+     ... own schedule is 'HotelLarge LAUNDRY_SWH_SCH' -- it is on ANOTHER object's derived schedule
+```
+
+**Exactly the two objects in FINDING 8's evidence table, with the correct diagnosis, and 45 clean.**
+D7 would have caught this before 56 cells were run. That is the claim made for it in the FINDING 8
+correction, and it is now demonstrated rather than asserted.
+
+## 3. The N/A verdict — exercised, and it is narrow
+
+`Default_NECB__Tall__MTL` injected locally with `--dhw-model volume_scaled`:
+
+```
+[T9-13 audit FAIL] 0 objects audited -- a gate that never ran is not a PASS
+[T9-13 audit N/A]  this cell requested no DHW channels -- nothing to audit, and nothing injected
+[D7 PASS] 47 WaterUse:Equipment objects: 0 on a derivative of their own schedule,
+          47 unchanged, 0 pointing at another object's schedule
+t9_13_audit_pass=None   t9_13_audit_verdict=N/A   t9_13_d7_pass=True n_unchanged=47
+```
+
+Both lines are printed on purpose. The inner FAIL-on-empty rule still fires and is still visible;
+the N/A is an explicit relabel of that one case, gated on `channels_requested=[]`, not a widening
+of the rule. And the cell is not unchecked: **D7 ran over all 47 objects and required every one to
+be byte-identical to the source IDF.** A control cell that silently modified something would still
+FAIL.
+
+## Verified locally, both cells
+
+| | `Y2022__Tall__MTL` | `Default_NECB__Tall__MTL` |
+|---|---|---|
+| verdict | PASS | **N/A** |
+| n_audited | 47 | 0 |
+| D1–D7 counts | all 0 | all 0 |
+| D7 | PASS, 47 own-derivative | PASS, 47 unchanged |
+
+---
+
+# Progress Log — TASK 4 SMOKE TEST, measured result — 2026-08-02
+
+Jobs: **1171438** (2 cells, simulated) · **1171441/1171442** (rescore) · **1171443** (attribution)
+· **1171445** (residual diagnosis) · **1171446** (peak-flow check). Campaign **NOT** launched.
+
+Both E+ runs completed clean: return code 0, fuel-closure residual 0.0000 % on Electricity and
+NaturalGas, channel-closure 0.0000 % on lights / equip / gasequip.
+
+The scorer in job 1171438 died before printing anything: a multi-line f-string, legal on the local
+Python 3.13 (PEP 701) and a `SyntaxError` on the cluster's 3.10. **My local `py_compile` was not a
+valid check and I had treated it as one.** Fixed, and the rescore job now compiles the scorer under
+the actual interpreter and refuses to score if it does not. No re-simulation was needed — the
+`.sql` files persist.
+
+## The smoke table — predicted vs measured
+
+`Y2022__Tall__MTL` / `Default_NECB__Tall__MTL`, `WATER USE EQUIPMENT HEATING ENERGY`, annual J.
+Predictions are the pre-registered ones from the task prompt; none were altered.
+
+| object | arm E | predicted | measured | verdict |
+|---|---|---|---|---|
+| `LAUNDRY SERVICE WATER USE` | x3.028 (2.7598e+12 J) | x1.000 (~9.1147e+11 J) | **x1.000** (9.1145e+11 J) | **PASS** |
+| `F30 HOTEL_BOT_LAUNDRY` | x1.399 (3.7251e+11 J) | x1.000 (~2.6625e+11 J) | x1.019 (2.7124e+11 J) | **FAIL** |
+| `F31-F37 HOTEL_MID_*_GUESTRM` (all 8) | x1.136 | x1.000 | **x1.000** (worst dev 0.0000) | **PASS** |
+| `F38 HOTEL_TOP_KITCHEN` | x0.998 | x1.000 | x0.995 | **FAIL** |
+| `BOOSTER SERVICE WATER USE` | x0.995 | x1.000 | x0.995 | **FAIL** |
+
+Plus 4 objects that carried no pre-registered prediction and are off the no-op requirement:
+`F1`/`F2 RETAIL_*_BACKSPACE` x0.923, `F3-F11`/`F12-F20 OFFICE_RESTROOM` x0.952.
+
+**Scorer verdict as run: 9 PASS / 7 FAIL.** That is the recorded result. The misses are not
+repaired. What follows is what they are, measured — not an argument for discounting them.
+
+## The discriminating case passed
+
+The prompt named the guest rooms as the case that decides whether the correction is complete:
+*"if they do not return to x1.000 the correction is incomplete."* All 8 went x1.136 -> **x1.000**,
+worst |ratio - 1| = 0.0000. The main laundry went x3.028 -> x1.000. **FINDING 8 is fixed.**
+
+At the IDF level: the hotel channel went from **1** DHWv2 schedule to **4**, one per prototype
+(`BLDG_SWH_SCH`, `GuestRoom_SWH_Sch`, `LAUNDRY_SWH_SCH`, `LaundryRoom_SWH_Sch_Post2004`); 33
+distinct `MXU_*_DHWv2_*` names total. Office and retail stay at 1 because each genuinely has one
+prototype — that is not the collision, and the scorer prints the per-channel count so a channel
+stuck at 1 cannot pass unnoticed.
+
+## Attribution — the fix, or something else? (job 1171443)
+
+Scoring arm-E-Y2022/arm-E-NECB against fixed-Y2022/fixed-NECB per object separates the two:
+
+| group | arm E | fixed | d = fixed/armE | attribution |
+|---|---|---|---|---|
+| 12 guest rooms (F31-F37 + F38) | 1.136 | **1.000** | 0.8800 | moved by the fix |
+| `LAUNDRY` | 3.028 | **1.000** | 0.3303 | moved by the fix |
+| `F30 HOTEL_BOT_LAUNDRY` | 1.399 | 1.019 | 0.7281 | moved by the fix, 95 % of the error removed |
+| `F38 HOTEL_TOP_KITCHEN` | 0.998 | 0.995 | 0.9976 | moved by the fix |
+| `BOOSTER` | 0.995 | 0.995 | **1.0000** | **the fix never touched it** |
+| retail x2, office restroom x2 | 0.923 / 0.952 | 0.923 / 0.952 | **1.0000** | **the fix never touched them** |
+| residential F22-F29 (13) | — | — | ~1.004 | moved by the fix |
+| residential F21 (13) | — | — | 1.0000 | untouched |
+
+29 objects moved, 18 did not. **So three of the seven misses are objects the fix provably did not
+touch** (d = 1.0000 exactly): the pre-registered claim that BOOSTER would return from x0.995 to
+x1.000 was simply a wrong prediction — it was never a collision victim. That is a mis-prediction
+recorded as a FAIL, not a fix that fell short.
+
+Reference-cell sanity: worst |ratio - 1| between the new NECB and the arm-E NECB = **1.6e-5** over
+47 objects. My script labelled that "REFERENCE MOVED" because its threshold was 1e-6; the threshold
+is too tight for E+ re-run reproducibility. Recording the number and the mislabel rather than
+quietly loosening it — 1.6e-5 is four orders below anything discussed here.
+
+## What the residuals actually are — FINDING 9 (job 1171445)
+
+Hypothesis formed before measuring: `_build_compact_fields_2dt` rebuilds every modulated schedule
+on **two** day types (weekday / weekend). Any prototype whose **Saturday and Sunday profiles
+differ** cannot survive that, even at r = 1.000, because two source profiles are folded into one.
+
+Tested by predicting each object's ratio from the **schedules alone** — calendar-weighted annual
+mean of the rebuilt `Schedule:Compact` over the annual mean of the source `Schedule:Year ->
+Week:Daily -> Day:Interval`, never reading the energy results:
+
+| prototype | Sat == Sun? | predicted | measured | agrees? |
+|---|---|---|---|---|
+| `RetailStandalone BLDG_SWH_SCH` | no | 0.9234 | 0.923 | yes |
+| `OfficeLarge BLDG_SWH_SCH` | no | 0.9524 | 0.952 | yes |
+| `HotelLarge BLDG_SWH_SCH` (booster, kitchen) | no | 0.9953 | 0.995 | yes |
+| `HotelLarge GuestRoom_SWH_Sch` | YES | 1.0000 | 1.000 | yes |
+| `HotelLarge LAUNDRY_SWH_SCH` | YES | 1.0000 | 1.000 | yes |
+| `HotelLarge LaundryRoom_SWH_Sch_Post2004` (F30) | YES | 1.0000 | 1.019 | **no** |
+
+**Confirmed for every commercial object but one, to three decimals, from the schedule structure
+alone.** This is a distinct, pre-existing defect — call it **FINDING 9** — and it is *not* caused
+by the FINDING 8 fix (d = 1.0000 for all of these). It has been in every DHW arm run to date:
+retail DHW volume -7.7 %, office -4.8 %, hotel BLDG_SWH_SCH -0.5 %, at r = 1.000 where T9-13 is
+supposed to be a no-op. **Flagged, not fixed** — it is outside this prompt's scope.
+
+Residential is deliberately *not* predicted by that column: peak flow is rescaled per household
+(`peak_policy: rescale`), which the schedule-only predictor excludes by construction. Job 1171446
+confirms the split — commercial peaks change only in the 6th significant figure (x1.000001, a float
+round-trip through eppy) while residential peaks move x0.711...x1.574. Designed behaviour.
+
+## The one residual with no explanation
+
+`F30 HOTEL_BOT_LAUNDRY`, measured x1.019 against a schedule-only prediction of exactly 1.0000 (its
+prototype has Sat == Sun, so the rebuild is lossless) and a peak-flow ratio of 1.000001.
+
+- candidate (a) *the injector rescaled its peak flow* — **excluded by measurement** (job 1171446).
+- candidate (b) *plant-loop coupling*: the main `LAUNDRY` draw on the same service-water system
+  fell 67 %, which can move loop and mains temperatures and hence another object's heating energy
+  at unchanged flow. **Untested. Recorded as the remaining candidate, not as the answer.**
+
+1.9 % on one hotel object. It is a FAIL against a pre-registered 1.000 and it stays a FAIL.
+
+## Audit, D7, names
+
+```
+Y2022__Tall__MTL      t9_13_audit_verdict=PASS  n_audited=47
+                      counts={'D1':0,'D2':0,'D3':0,'D4':0,'D5':0,'D6':0,'D7':0}
+                      t9_13_d7_pass=True n_wateruse=47 n_own_derivative=47 n_unchanged=0 n_violations=0
+                      residential_dhw_objects=27 residential_dhw_space_proto_pairs=27
+                      33 distinct MXU_*_DHWv2_*  ->  Hotel=4, Office=1, Residential=27, Retail=1
+Default_NECB__Tall__MTL  t9_13_audit_verdict=N/A  pass=None  n_audited=0
+                      t9_13_d7_pass=True n_wateruse=47 n_own_derivative=0 n_unchanged=47
+```
+
+The 6 non-residential names: `MXU_Hotel_DHWv2_HOTELLARGE_{BLDG_SWH_SCH, GUESTROOM_SWH_SCH,
+LAUNDRYROOM_SWH_SCH_POST2004, LAUNDRY_SWH_SCH}_r1000w1000_Y2022__Tall__MTL`,
+`MXU_Office_DHWv2_OFFICELARGE_BLDG_SWH_SCH_r1000w1000_...`,
+`MXU_Retail_DHWv2_RETAILSTANDALONE_BLDG_SWH_SCH_r1000w1000_...`. Longest is 71 chars, inside the
+100-char limit, so no hash-suffix form was triggered and all names follow one convention.
+
+The **arm-E** provenance for the same cell records `counts={'D1'..'D6'}` and **zero**
+`t9_13_derived_name` lines — the pre-fix injector recorded neither the derived names nor D7, which
+is precisely why the collision ran 112 cells undetected.
+
+## Gap: the volume identity could not be re-verified
+
+The only water variable in these `.sql` files is `Water Use Equipment Heating Energy` (plus the
+`WaterSystems:` meters). `WATER USE EQUIPMENT TOTAL VOLUME` is not requested, so every volume
+column reads nan and the log's **0.9647 volume identity was not re-checked in this cell**. Stated
+as a gap, not scored as a pass. Residential aggregate energy moved 1.6848e+12 -> 1.6452e+12 J
+(0.9764) — informational, since residential r is per household at Y2022 by design.
+
+## Status
+
+- TASK 1 (FINDING 8 cache-key collision) — **fixed and confirmed at the energy level.**
+- TASK 2 (FINDING 7 retail rewire) — done, 21/21 pre-registered checks PASS.
+- TASK 3 (office product upload) — done, md5 verified on the cluster.
+- TASK 4 (smoke test) — **run; 9 PASS / 7 FAIL recorded as measured.** 3 of the 7 are objects the
+  fix provably never touched, 3 more are FINDING 9, 1 (F30, 1.9 %) is unexplained.
+- **Campaign NOT launched.** The cell count is the user's open call.
+- Open, flagged not fixed: **FINDING 9** (2-day-type rebuild loses Sat != Sun); F30's 1.9 %;
+  T9-12's `k = 0.60` needs re-checking after the retail rewire; volume identity unverified here.
+
+New artefacts (all under `Leg3_4-split/`): `Step9_docs/3rdJ_09F_smoke_delta.py` (attribution),
+`Step9_docs/3rdJ_09F_daytype_loss.py` (FINDING 9 diagnosis), `Step9_docs/3rdJ_09F_peakflow_check.py`,
+`Step8_docs/{rescore,delta,daytype}_f8fix.sh`.
+
+---
+
+# Progress Log — FINDING 9 FIXED (code + gate), smoke LAUNCHED — 2026-08-02
+
+Injector md5 `456301f5` -> **`1601f10f`** (2874 -> 2970 lines). Unit suite 40/40 -> **58/58**.
+Smoke job **1171448** (arm G, `out_G_f9fix`, same two cells as arm F so the comparison is
+object-by-object). Campaign still NOT launched.
+
+## The defect, located
+
+Two halves, and both had to go:
+
+| | file:line | what it did |
+|---|---|---|
+| read | `_week_profiles:595-602` | `d_we = _find_schedule(sun) or _find_schedule(sat)` — **Saturday discarded** whenever Sunday resolved; Holiday (`names[7]`) never read at all; Monday silently stood for all five weekdays |
+| read | `_schedule_daytype_profiles` compact branch | `we = we if we is not None else vals` — first of Weekend/Saturday/Sunday wins, the rest dropped |
+| write | `_build_compact_fields_2dt:210` | emitted that one profile to `For: Weekends Holidays AllOtherDays` |
+
+So a prototype with a busy Saturday and a quiet Sunday had Saturday overwritten with Sunday, and
+T9-13 — specified to carry the intra-day shape through untouched and to be an **exact no-op at
+r = 1** — was neither.
+
+## The fix
+
+- `_ALL_DAYTYPES` = Monday..Friday + Saturday + Sunday + Holidays. `_daytypes_for_tokens()` maps
+  EnergyPlus `For:` tokens onto them, with `AllDays`/`AllOtherDays` treated as **fill-the-gaps**
+  so they can never overwrite a day type an explicit block claimed.
+- `_week_profiles` / `_schedule_daytype_profiles` now return `by_daytype` alongside `wd`/`we`.
+  **`wd` and `we` keep their exact former meaning** — nothing outside T9-13 shifts, and the r
+  values that drive every existing number are untouched. The new key is purely additive.
+- `_fill_daytypes()` completes a partial map and **names what it filled** in the provenance.
+- `_build_compact_fields_by_daytype()` writes one block per DISTINCT profile, grouping identical
+  day types onto one `For:` line — so a genuine two-curve prototype still emits two blocks and the
+  schedule does not bloat. Design days ride with the weekday group; the last block carries
+  `AllOtherDays` so coverage is total. An incomplete map **raises** rather than filling silently.
+- `apply_dhw_volume_scaling(..., proto_by_daytype=)` scales each day type on its own curve by its
+  CLASS ratio (weekdays `r_wd`; Saturday/Sunday/Holidays `r_we`). The volume target is unchanged —
+  only the shape stops being lost. Omitting the argument reproduces the old behaviour exactly, and
+  that path is the named fallback, reported as `t9_13_daytype_FALLBACK`.
+
+## Verified on the real tower, before any simulation
+
+`3rdJ_09G_finding9_verify.py` injects the two cells with the **same call the campaign driver
+makes**, then runs the independent schedule-only predictor (`3rdJ_09F_daytype_loss.py`, its own
+IDF parser) on the result. At r = 1.000 the answer must be exactly 1.0000:
+
+| prototype | Sat == Sun? | before | after |
+|---|---|---|---|
+| `RetailStandalone BLDG_SWH_SCH` | no | 0.9234 | **1.0000** |
+| `OfficeLarge BLDG_SWH_SCH` | no | 0.9524 | **1.0000** |
+| `HotelLarge BLDG_SWH_SCH` | no | 0.9953 | **1.0000** |
+| `HotelLarge GuestRoom_SWH_Sch` | YES | 1.0000 | 1.0000 |
+| `HotelLarge LAUNDRY_SWH_SCH` | YES | 1.0000 | 1.0000 |
+| `HotelLarge LaundryRoom_SWH_Sch_Post2004` | YES | 1.0000 | 1.0000 |
+
+Audit `PASS`, 47 objects, `counts={D1..D6:0, D8:0, D7:0, D9:0}`, `d8_unchecked=[]`,
+`daytype_fallback=None`. FINDING 8's six derived hotel/office/retail schedules are intact, and the
+`Default_NECB` control still reports `N/A`.
+
+## 🔴 The first gate I wrote for this was vacuous, and the falsification is what caught it
+
+**D8** compares the achieved per-day-type volume ratio against `r(class)/R`, using the numbers the
+injector recorded. Re-creating the collapse **in the reader** (`Saturday := Sunday`) on the real
+tower left D8 at **0 violations** — because the corrupted Saturday was simultaneously its
+reference and its target. A gate whose reference is derived from the same source it audits cannot
+fail. That is the **ninth** vacuous-test shape recorded on this project, and it is the one that
+generalises: every previous kind was about scope or reachability; this one is about *provenance of
+the reference*.
+
+So **D9** was added, modelled on D7: it re-opens the **SAVED IDF** and, for each object, expands
+the assigned `MXU_*` schedule and that object's **own prototype** (which the injector never
+deletes) and requires `mean(assigned_d)/mean(prototype_d) == r(class)/R` on every day type.
+Neither side is a number the injector reported about itself.
+
+**D9 seen failing on the real tower.** Patching the *writer* back to its pre-fix form (strip
+`new_by_daytype`, which routes to the documented 2-day-type fallback — byte-for-byte the old
+behaviour) and re-injecting:
+
+```
+verdict=FAIL  D9 violations=6  objects flagged=6
+    Booster Service Water Use 1.33gpm 180F
+    F1 Retail_F1_BackSpace Service Water Use 0.3gpm 140F
+    F12-F20 Office_Restroom Service Water Use 5.22gpm 140F
+    F2 Retail_F2_BackSpace Service Water Use 0.3gpm 140F
+    F3-F11 Office_Restroom Service Water Use 5.22gpm 140F
+    F38 Hotel_top_Kitchen Service Water Use 2.77gpm 140F
+```
+
+Exactly the six pre-registered objects — every prototype with Saturday != Sunday — and **not** the
+12 guest rooms, 2 laundries or 27 apartments, whose prototypes have Saturday == Sunday. The
+prediction was written into the script before it was run.
+
+**Stated limit, not papered over:** neither D8 nor D9 can catch a defect in
+`_schedule_daytype_profiles` itself, since both consult it. The independent check for that is
+`3rdJ_09F_daytype_loss.py`, which parses the IDF with its own parser and is run by the verifier and
+by the smoke job.
+
+Unit suite additions (group 9, T41–T58): the writer's block grouping, Saturday/Sunday separation,
+design-day carriage, total coverage, the raise on an incomplete map, D8 failing on the collapsed
+signature, D8 still failing at r != 1, and **T48 — D4 alone does NOT catch it**, which is the test
+that justifies D8/D9 existing at all.
+
+## Pre-registered for smoke job 1171448 (written before the run, in the scorer)
+
+Arm G vs arm F, each over its own `Default_NECB`:
+
+- **must move to 1.000**: `F1`/`F2 RETAIL_*_BACKSPACE` 0.923, `F3-F11`/`F12-F20 OFFICE_RESTROOM`
+  0.952, `BOOSTER` 0.995, `F38 HOTEL_TOP_KITCHEN` 0.995.
+- **must NOT move**: `F30 HOTEL_BOT_LAUNDRY` stays **1.019**, `LAUNDRY` 1.000, 12 guest rooms
+  1.000, 27 residential objects unchanged from arm F to within 0.002.
+- any other object that moves is counted as a FAIL.
+
+**`F30` is the discriminating one.** The FINDING 8 report attributed its 1.9 % residual to
+something other than the day-type collapse, because its prototype has Saturday == Sunday. If F30
+comes back at 1.000, that attribution was wrong and it will be recorded as wrong, not adjusted.
+
+**Injector md5 correction, same session:** `1601f10f` -> **`233932d7`**. The residential path has its
+own `result` dict, so its `t9_13_daytype_fallback` list was never lifted into the one the provenance
+writer reads — a fallback nobody can see is the same failure as no fallback report. Empty on this
+tower (all residential prototypes have Sat == Sun), so no number moves; fixed anyway. Smoke job
+**1171448 was cancelled 6 minutes in and relaunched as 1171449** rather than shipping a smoke whose
+INJ_HASH does not match the injector the campaign will use.
+
+## FINDING 9 smoke — job 1171449 — **10 PASS / 0 FAIL**, CLOSED
+
+`COMPLETED 00:41:48`, exit 0. Arm G `out_G_f9fix/campaign_233932d7` vs arm F
+`out_F_f8fix/campaign_456301f5`, each over its own `Default_NECB`. Predictions were hard-coded in
+`3rdJ_09G_score_f9.py` and uploaded before the cells ran; none was altered.
+
+| object | arm F | required | arm G | verdict |
+|---|---|---|---|---|
+| `F1 RETAIL_F1_BACKSPACE` | 0.923 | 1.000 | **1.000** | PASS |
+| `F2 RETAIL_F2_BACKSPACE` | 0.923 | 1.000 | **1.000** | PASS |
+| `F3-F11 OFFICE_RESTROOM` | 0.952 | 1.000 | **1.000** | PASS |
+| `F12-F20 OFFICE_RESTROOM` | 0.952 | 1.000 | **1.000** | PASS |
+| `BOOSTER` | 0.995 | 1.000 | **1.000** | PASS |
+| `F38 HOTEL_TOP_KITCHEN` | 0.995 | 1.000 | **1.000** | PASS |
+| `F30 HOTEL_BOT_LAUNDRY` | 1.019 | **stays 1.019** | **1.019** | PASS |
+| `LAUNDRY` | 1.000 | 1.000 | 1.000 | PASS |
+| 12 guest rooms | 1.000 | 1.000 | worst dev **0.0000** | PASS |
+| 27 residential | — | unchanged | worst \|G−F\| **0.0000** | PASS |
+| any other object moving | — | none | **0 moved** | PASS |
+
+Audit: `verdict=PASS n_audited=47 counts={D1..D6:0, D8:0, D7:0, D9:0}`,
+`d7_pass=True n_own_derivative=47 n_d7=0 n_d9=0 d9_unchecked=0`. Control cell still `N/A` with D7
+holding all 47 objects byte-identical. No `t9_13_daytype_FALLBACK` line in either cell.
+
+**The discriminating prediction held.** `F30 HOTEL_BOT_LAUNDRY` was required to stay at **1.019**,
+because its prototype has Saturday == Sunday and FINDING 9 therefore never touched it. It came back
+at 1.019 to three decimals. Had it moved to 1.000, the FINDING 8 attribution of that 1.9 % would
+have been wrong; it did not, so **F30's residual remains a separate, still-unexplained item** with
+peak-flow rescale excluded by measurement and plant-loop coupling the untested candidate. Nothing
+about that was adjusted after the fact.
+
+The independent schedule-only predictor — its own IDF parser, the guard that covers what D8 and D9
+structurally cannot — now returns **1.0000** for all 18 commercial objects across all 6 prototypes,
+including the three with Saturday != Sunday. Residential still spans 0.6706–0.9977 because its `r`
+is per household by design.
+
+### What this means for arms A–E
+
+FINDING 9 was present in **every** DHW arm run to date. The correction is a level shift on the DHW
+channel wherever `--dhw-model volume_scaled` was used, of the size measured here:
+retail **+7.7 %**, office **+4.8 %**, hotel `BLDG_SWH_SCH` objects **+0.5 %**, guest rooms and
+laundries unaffected. Arm E's scorecard has not been re-issued — that is a user decision, recorded
+in the 2026-08-03 manager prompt, not taken here.
+
+### Status at end of session
+
+- FINDING 7 — fixed, 21/21.
+- FINDING 8 — fixed, confirmed at the energy level (9 PASS / 7 FAIL recorded as measured; 3 of the
+  7 were objects the fix never touched, 3 were FINDING 9, 1 is F30).
+- FINDING 9 — fixed, **10 PASS / 0 FAIL**, gate D9 seen failing on the real tower first.
+- **Campaign NOT launched.** Cell count is the user's open call, and FINDING 9 widens it: the fix
+  changes DHW in every `volume_scaled` cell, not only the 36 stale 2030 ones.
+- Still open, flagged not fixed: F30's 1.9 %; T9-12's `k = 0.60` after the retail rewire; the
+  volume identity unverifiable until `WATER USE EQUIPMENT TOTAL VOLUME` is added to the outputs.
+
+Handoff: `improvements/prompts/3rdJ_L3_manager_prompt_2026-08-03.md`.

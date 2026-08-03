@@ -1,0 +1,56 @@
+{
+  "cons": {
+    "QC_peak_hour": 11,
+    "QC_sat_wd": 0.8492657861077791,
+    "AB_peak_hour": 14,
+    "AB_sat_wd": 1.0092640257329608,
+    "peak_multiplier": 0.855,
+    "n_rows": 288,
+    "day_types": [
+      "Saturday",
+      "Sunday",
+      "Weekday"
+    ],
+    "prs": [
+      "AB",
+      "QC"
+    ],
+    "mult_in_01": true
+  },
+  "central": {
+    "QC_peak_hour": 11,
+    "QC_sat_wd": 0.8492674447479511,
+    "AB_peak_hour": 14,
+    "AB_sat_wd": 1.009258580857933,
+    "peak_multiplier": 0.9215,
+    "n_rows": 288,
+    "day_types": [
+      "Saturday",
+      "Sunday",
+      "Weekday"
+    ],
+    "prs": [
+      "AB",
+      "QC"
+    ],
+    "mult_in_01": true
+  },
+  "opt": {
+    "QC_peak_hour": 11,
+    "QC_sat_wd": 0.8492686478588063,
+    "AB_peak_hour": 14,
+    "AB_sat_wd": 1.0092617581918581,
+    "peak_multiplier": 0.9975,
+    "n_rows": 288,
+    "day_types": [
+      "Saturday",
+      "Sunday",
+      "Weekday"
+    ],
+    "prs": [
+      "AB",
+      "QC"
+    ],
+    "mult_in_01": true
+  }
+}
