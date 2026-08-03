@@ -251,6 +251,17 @@ VAR_METRIC = {
 # All 47 objects on the Tall tower resolve, none unassigned (validated 2026-07-31).
 DHW_VARIABLE = "Water Use Equipment Heating Energy"
 
+# Added 2026-08-03 (Step-9 open item 3, before the post-FINDING-9 campaign). Until now the only
+# statement of the T9-13 volume identity came from 3rdJ_09E_dhw_identity_probe.py, which computes
+# Sigma Peak_Flow x (5*mean_wd + 2*mean_we)/7 by PARSING THE IDF WITH OUR OWN READER -- i.e. the
+# quantity being audited and the reference auditing it are both products of code we wrote. That is
+# vacuous-gate kind #9 exactly (the FINDING 9 D8 lesson): a defect in the shared schedule reader
+# corrupts both sides together and the identity still "holds". Asking EnergyPlus for the volume it
+# actually drew makes the reference independent of our parser -- EnergyPlus integrates the schedule
+# it was handed, not the schedule we think we wrote. Requested here so all 56 campaign cells carry
+# it; every volume column read `nan` in arms A-E because the variable was never requested.
+DHW_VOLUME_VARIABLE = "Water Use Equipment Total Volume"
+
 # Defaut 5, point 5 -- the OTHER end of the Defaut-3 fingerprint hole. INJ_HASH =
 # md5(commercial_integration.py) owns the output PATH, so it catches a wiring change but is
 # blind to a change in WHAT WE ASK ENERGYPLUS TO REPORT. Without this, fixing the meter list
@@ -259,7 +270,7 @@ DHW_VARIABLE = "Water Use Equipment Heating Energy"
 # _do_postprocess() and checked by _cell_complete().
 OUTPUT_SCHEMA_HASH = hashlib.md5(
     json.dumps({"meters": REQUIRED_METERS,
-                "variables": REQUIRED_VARIABLES + [DHW_VARIABLE]},
+                "variables": REQUIRED_VARIABLES + [DHW_VARIABLE, DHW_VOLUME_VARIABLE]},
                sort_keys=True).encode("utf-8")
 ).hexdigest()[:8]
 CHANNEL_AGG = {
@@ -557,7 +568,7 @@ def _ensure_output_objects(idf, verbose: bool = True) -> None:
         name = str(getattr(v, "Variable_Name", "")).strip()
         existing_vars.add((key, name, freq))
     n_added_v = 0
-    for var_name in REQUIRED_VARIABLES + [DHW_VARIABLE]:
+    for var_name in REQUIRED_VARIABLES + [DHW_VARIABLE, DHW_VOLUME_VARIABLE]:
         if ("*", var_name, "hourly") not in existing_vars:
             obj = idf.newidfobject("Output:Variable")
             obj.Key_Value = "*"
@@ -690,8 +701,14 @@ def _write_hourly_meters_csv(sql_path: str, out_csv: str) -> tuple:
     return len(pivot), _check_fuel_closure(pivot, absent)
 
 
-def _write_dhw_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: str, out_csv: str) -> tuple:
+def _write_dhw_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: str, out_csv: str,
+                          variable: str = DHW_VARIABLE, col_prefix: str = "dhw") -> tuple:
     """Per-channel DHW (Water Use Equipment Heating Energy).
+
+    `variable`/`col_prefix` were added 2026-08-03 so the SAME channel-resolution logic serves the
+    volume series (DHW_VOLUME_VARIABLE, prefix "dhwvol") without a second copy of the two
+    resolution rules below. Defaults reproduce the original behaviour exactly, so every existing
+    caller is unaffected.
 
     WaterUse:Equipment carries a blank `Zone Name`, so these series cannot ride the
     zone->channel map. Two resolution rules, in order, both read off the IDF (never guessed):
@@ -736,10 +753,10 @@ def _write_dhw_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: str,
         meta = pd.read_sql_query(
             "SELECT ReportDataDictionaryIndex, KeyValue, Name FROM ReportDataDictionary "
             "WHERE (ReportingFrequency = 'Hourly' OR ReportingFrequency = 3) AND Name = ?",
-            conn, params=[DHW_VARIABLE],
+            conn, params=[variable],
         )
         if meta.empty:
-            raise RuntimeError(f"no Hourly '{DHW_VARIABLE}' rows in ReportDataDictionary")
+            raise RuntimeError(f"no Hourly '{variable}' rows in ReportDataDictionary")
         idx_list = meta["ReportDataDictionaryIndex"].tolist()
         idx_ph = ",".join("?" * len(idx_list))
         data = pd.read_sql_query(
@@ -759,8 +776,8 @@ def _write_dhw_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: str,
                      .map(equip_to_channel).fillna("unassigned"))
     unresolved = sorted({k for k, v in equip_to_channel.items() if v is None})
     if unresolved:
-        print(f"  [dhw_hourly] {len(unresolved)} WaterUse:Equipment unresolved -> 'unassigned' "
-              f"(<=5 shown): {unresolved[:5]}")
+        print(f"  [{col_prefix}_hourly] {len(unresolved)} WaterUse:Equipment unresolved -> "
+              f"'unassigned' (<=5 shown): {unresolved[:5]}")
     pivot = df.pivot_table(index="t", columns="channel", values="value", aggfunc="sum")
     pivot = pivot.reindex(sorted(pivot.index))
     cols = ["office", "retail", "hotel", "residential", "residential_common",
@@ -769,7 +786,7 @@ def _write_dhw_hourly_csv(sql_path: str, injected_idf_path: str, eplus_idd: str,
         if c not in pivot.columns:
             pivot[c] = 0.0
     pivot = pivot[cols]
-    pivot.columns = [f"dhw_{c}" for c in cols]
+    pivot.columns = [f"{col_prefix}_{c}" for c in cols]
     pivot.to_csv(out_csv, index=False)
     return len(pivot), unresolved
 
@@ -937,7 +954,8 @@ def _do_postprocess(sql_path: str, injected_idf_path: str, eplus_idd: str, outdi
     hourly_csv = os.path.join(outdir, "hourly_meters.csv")
     channel_csv = os.path.join(outdir, "channel_hourly.csv")
     dhw_csv = os.path.join(outdir, "dhw_hourly.csv")
-    rows_hourly = rows_channel = rows_dhw = 0
+    dhwvol_csv = os.path.join(outdir, "dhw_volume_hourly.csv")
+    rows_hourly = rows_channel = rows_dhw = rows_dhwvol = 0
 
     if os.path.isfile(sql_path):
         try:
@@ -966,6 +984,21 @@ def _do_postprocess(sql_path: str, injected_idf_path: str, eplus_idd: str, outdi
             print(f"[FAIL] dhw_hourly extraction raised: {e}")
             manifest["dhw_hourly_exception"] = str(e)
         try:
+            # Open item 3 (2026-08-03). Deliberately its OWN try/except, like every sibling
+            # extraction here: a new reporting series must never be able to take down a 56-cell
+            # campaign. If the variable is absent the cell still produces every artefact it
+            # produced before, the exception lands in the manifest, and the volume identity is
+            # simply not quotable for that cell -- which is exactly the status quo, not a
+            # regression.
+            rows_dhwvol, unresolved_v = _write_dhw_hourly_csv(
+                sql_path, injected_idf_path, eplus_idd, dhwvol_csv,
+                variable=DHW_VOLUME_VARIABLE, col_prefix="dhwvol")
+            manifest["dhw_volume_unresolved_equipment"] = unresolved_v
+            print(f"[postprocess] dhw_volume_hourly.csv: {rows_dhwvol} rows -> {dhwvol_csv}")
+        except Exception as e:
+            print(f"[FAIL] dhw_volume_hourly extraction raised: {e}")
+            manifest["dhw_volume_hourly_exception"] = str(e)
+        try:
             rows_channel = _write_channel_hourly_csv(sql_path, injected_idf_path, eplus_idd, channel_csv)
             print(f"[postprocess] channel_hourly.csv: {rows_channel} rows -> {channel_csv}")
         except Exception as e:
@@ -985,6 +1018,11 @@ def _do_postprocess(sql_path: str, injected_idf_path: str, eplus_idd: str, outdi
     manifest["dhw_hourly_csv"] = {
         "path": dhw_csv, "rows": rows_dhw,
         "md5": md5_file(dhw_csv) if os.path.isfile(dhw_csv) else None,
+    }
+    manifest["dhw_volume_hourly_csv"] = {
+        "path": dhwvol_csv, "rows": rows_dhwvol,
+        "md5": md5_file(dhwvol_csv) if os.path.isfile(dhwvol_csv) else None,
+        "variable": DHW_VOLUME_VARIABLE, "units": "m3",
     }
     manifest["channel_hourly_convention"] = (
         "per-zone Output:Variable values MULTIPLIED by Zones.Multiplier before channel "

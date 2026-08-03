@@ -4750,3 +4750,270 @@ in the 2026-08-03 manager prompt, not taken here.
   volume identity unverifiable until `WATER USE EQUIPMENT TOTAL VOLUME` is added to the outputs.
 
 Handoff: `improvements/prompts/3rdJ_L3_manager_prompt_2026-08-03.md`.
+
+---
+
+# ARM H — THE POST-FINDING-6/7/8/9 CAMPAIGN. LAUNCHED — job `1171496`, 2026-08-03
+
+## The scope decision — the user's call, made and recorded
+
+Asked as the first action of the session, with the four facts that constrain it. Ruling:
+**"lance la campagne 56 cells avec volume_scaled"** — all 56 cells, one arm, `--dhw-model
+volume_scaled`. Arm E's scorecard is **re-issued after** this campaign lands, not annotated now.
+
+Why 56 and not the 36 stale 2030-family cells: FINDING 9 changes DHW in **every** cell that runs
+`volume_scaled`, not only the 2030 family (retail +7.7 %, office +4.8 %, hotel `BLDG` +0.5 %). The
+2030-only re-run was sufficient for FINDINGS 6 and 7 alone; it stopped being sufficient the moment
+FINDING 9 was found. `Y2022` and the three historical years are in scope for the DHW reason, not
+for the product reason.
+
+## What arm H is
+
+Same two model flags as arm E (`--lighting-model calibrated_v2 --dhw-model volume_scaled`), so
+`H − E` isolates the four fixes and nothing else. Everything that differs is upstream of the flags:
+
+| | fix | carrier | md5 |
+|---|---|---|---|
+| FINDING 6 | office 2030 rebuilt on the matched stock frame | `office_presence_multiplier_2030.csv` | `575d17e5` |
+| FINDING 7 | retail 2030 rewired to the calibrated `_C_v2` pool | 3 × `retail_presence_multiplier_2030_*.csv` | `82b425b5` / `11414644` / `700398d0` |
+| FINDING 8 | DHW schedule cache-key collision | `commercial_integration.py` | `233932d7` |
+| FINDING 9 | per-day-type Saturday/Sunday volume loss | same injector | `233932d7` |
+
+Submit script: `Step8_docs/3rdJ_08D_campaign_speed_armH.sh` (md5 `da7085b9`), array `0-55%20`,
+`-t 7-00:00:00`, outroot `campaign/out_H_allfix`. Nothing ran on the login node: `ls`, `scp`,
+`sbatch` only.
+
+## Open item 3 CLOSED in the same change — and the reason is a vacuous-gate reason
+
+`Water Use Equipment Total Volume` was never requested as an output, so every volume column in
+arms A–E reads `nan`. It is now requested (`DHW_VOLUME_VARIABLE`, `3rdJ_08P_probe_driver.py`) and
+written per channel to `dhw_volume_hourly.csv` by `_do_postprocess()`.
+
+The motive is not convenience. The only existing statement of the T9-13 volume identity (0.9647)
+comes from `3rdJ_09E_dhw_identity_probe.py`, which computes `Σ Peak_Flow × (5·mean_wd + 2·mean_we)/7`
+**by parsing the IDF with our own reader**. Audited quantity and auditing reference are both
+products of code we wrote — a defect in the shared schedule reader corrupts both sides together and
+the identity still "holds". That is **vacuous-gate kind #9 exactly**, the FINDING 9 D8 lesson, and
+it was sitting unnoticed in the one number quoted as proof that T9-13's arithmetic is correct.
+EnergyPlus integrates the schedule it was actually handed, so its own reported volume is a
+reference our parser cannot corrupt.
+
+Implementation notes:
+- `_write_dhw_hourly_csv()` gained `variable`/`col_prefix` keyword arguments so the volume series
+  reuses the **same** channel-resolution rules rather than a second copy of them. Defaults
+  reproduce the previous behaviour byte-for-byte; the existing call site is untouched.
+- The new extraction has its **own** `try/except`, like every sibling extraction. A new reporting
+  series must never be able to take down a 56-cell campaign: if the variable is absent, the cell
+  still produces every artefact it produced before and the exception lands in the manifest. The
+  downside is bounded at the status quo.
+- `OUTPUT_SCHEMA_HASH` **`db4e729f` → `93dd5129`**. This is by design — the hash exists to stop a
+  reporting-side change from leaving old cells looking "done". It is checked for *uniformity*
+  across cells, not against a literal, so the Step-9 gate is unaffected; all 56 arm-H cells share
+  one build. `INJ_HASH` does **not** move (`commercial_integration.py` untouched), so the campaign
+  directory stays `campaign_233932d7` — the same build the FINDING 9 smoke passed on.
+
+## Guards written into the submit script, and why each one exists
+
+1. **Product md5 literals, checked on every task.** `INPUTS_HASH` only protects a cell against a
+   product that changed *under an existing outdir*. A fresh outroot has no prior manifest, so it
+   cannot tell a correct product from a stale one — it would run all 56 cells on the
+   pre-FINDING-6/7 CSVs and record a self-consistent hash for them. These five literals are the
+   only thing between a stale cluster copy and a campaign that looks clean and is wrong. Checked on
+   **every** task, not task 0, because a partially completed `scp` would otherwise pass task 0 and
+   corrupt the rest.
+2. **Compile under `$PY`.** Local Python is 3.13, the cluster env 3.10; a multi-line f-string cost
+   a full round trip on 2026-08-02. All three drivers compile inside the job or the job refuses.
+3. **T9-13 unit suite as a real gate.** 🔴 `smoke_f9fix.sh` ran it as `$PY ... | tail -3` and then
+   reported `$?` — which is **tail's** exit code, always 0. That line could not fail whatever the
+   suite did. Carried over unexamined it would have been another gate that cannot fail; here the
+   suite's own status is captured and the job refuses on it, on all 56 tasks rather than on task 0,
+   because a gate guarding one cell out of 56 does not guard the campaign.
+
+## Status — LAUNCHED, NOT YET VERIFIED
+
+Job `1171496` submitted 2026-08-03. **No cell result has been read yet, and no guard has been
+observed firing.** The first thing to check is that the five product-md5 guards and the unit-suite
+gate actually passed on task 0 — a green campaign whose guards silently no-op'd would be worth
+nothing. Nothing below this line may be quoted until that is confirmed.
+
+## Post-launch correction — two stale claims caught before they reached the handoff — 2026-08-03
+
+Both were caught *after* the arm-H prompt was first written and *before* the session ended. Recorded
+because the near-miss is the point.
+
+**1. A tooling defect made me read the wrong 600 lines.** The standing rule is "read the last ~600
+lines of the step-9 log before acting." PowerShell `Get-Content <file> | Measure-Object -Line`
+reported **3,684** lines; `wc -l` reports **4,837**. `Measure-Object -Line` **counts an empty line
+as zero lines**, so it undercounts by exactly the blank-line count (1,153 here; the injector reads
+2,748 vs 2,976, i.e. 228 blanks — which also explains why this log's "2,970 lines" for
+`commercial_integration.py` never matched a local check). Reading "the last 600" off the PowerShell
+figure landed at lines 3,100–3,700 of a 4,737-line file, leaving the **most recent ~1,000 lines
+unread** — the entire FINDING 8 correction, the D7/D9 falsification records, and the final arm-E
+scorecard. **Never count lines with PowerShell on this project.**
+
+**2. Two superseded numbers were nearly carried into the manager prompt as current.** This log is
+append-only, so an early section can be flatly contradicted by a later one:
+
+| claim I nearly shipped | where it comes from | what actually supersedes it |
+|---|---|---|
+| "arm E: `P1` UNTESTABLE, 2 PASS / 3 FAIL / 1 UNTESTABLE" | the first scoring run | §"P1 IS TESTABLE AFTER ALL" — `P1` **PASSED** (night share 0.0834 → 0.0828, peak hour unmoved at 06:00). Final: **3 PASS / 3 FAIL / 0 UNTESTABLE** |
+| "the P4 peak-flow/tank-standby probe is the pre-registered next step" | the P4 section of the arm-E result | job `1171408` **already ran it and REFUTED it** — `Water Use Equipment Heating Energy` ×1.389, the draw energy itself moved. Re-running it would have re-derived a known answer |
+
+Both are fixed in `prompts/3rdJ_L3_manager_prompt_2026-08-03.md`. The rule that caught them is the
+one already on the books — *verify every number you inherit* — and what it needed extending to is
+numbers inherited **from this log itself**, not only from a predecessor prompt. The prompt now says
+so, and says the last statement wins.
+
+**Nothing in the arm-H launch depends on either.** The campaign's flags, guards and products were
+verified against the artefacts on disk and against task 0's own log lines, not against this
+narrative.
+
+## Pre-registered — the arm-H DHW-volume verification, written BEFORE any cell landed — 2026-08-03
+
+`Step9_docs/3rdJ_09H_dhwvol_verify.py`, authored while the array was still in its first 20 minutes,
+so no threshold below has seen data.
+
+The new `dhw_volume_hourly.csv` extraction is deliberately fail-soft (its own `try/except`, so a new
+reporting series can never take down a 56-cell campaign). **The cost of that choice is that failure
+is silent**: an absent variable, a wrong variable name or an empty join all leave the campaign
+looking green. Fail-soft demands a loud external check.
+
+| gate | requirement | what makes it FAIL |
+|---|---|---|
+| G1 | file exists | extraction raised; manifest carries the reason |
+| G2 | 8760 rows | truncated RunPeriod, or a design-day-only join |
+| G3 | all 7 `dhwvol_*` columns | channel map changed shape |
+| G4 | total annual volume > 0, finite, not all-nan | **the silent-nan mode this script exists for** |
+| G5 | no `dhw_volume_hourly_exception`; manifest rows == file rows | postprocess swallowed an error, or manifest and artefact disagree |
+| G6 | 0 unresolved `WaterUse:Equipment` | an object fell into `dhwvol_unassigned`, leaving a channel short |
+| G7 | **implied ΔT ∈ [20, 80] K per drawing channel** | see below |
+
+**G7 is the reason the script is worth writing.** G1–G6 only prove *something* was written; G7
+proves it is a **volume**. With `ΔT = E / (ρ·c·V)`, `ρ = 1000 kg/m³`, `c = 4186 J/(kg·K)`, `E` from
+`dhw_hourly.csv` (J) and `V` from the new file (m³), the prototypes draw at 140 °F (60 °C) and
+180 °F (82 °C) against 5–20 °C mains, so a genuine volume gives ΔT ≈ 40–70 K. Every realistic
+failure mode lands far outside the band:
+
+- reporting the **flow rate** (m³/s) instead of integrated volume → ΔT off by ~3600×
+- a units slip to litres → ~1000×
+- joining the wrong variable index → arbitrary
+
+A check that merely asked *"is it non-zero"* would pass on all three. That is the difference between
+this gate and the one it replaces.
+
+**Stated limit:** G7 bounds the volume against the energy from the *same* simulation, so it cannot
+detect an error common to both (e.g. EnergyPlus itself mis-integrating a schedule). What it does
+establish is that the new column is the physical quantity it claims to be — which is precisely what
+is needed before it can serve as the independent reference for the 0.9647 identity.
+
+---
+
+## Arm H — DHW-volume verification EXECUTED (2026-08-03, first cell landed)
+
+Pre-registered in the section above, **before any cell finished**. Run against the first cell to
+land, `Y2022__Tall__MTL` (job 1171496, task 0-7 wave), with
+`3rdJ_09H_dhwvol_verify.py`.
+
+### Result: 7 PASS / 0 FAIL — `dhw_volume_hourly.csv` is REAL
+
+| gate | result | measured |
+|---|---|---|
+| G1 file present | PASS | written by the fail-soft branch |
+| G2 8760 rows | PASS | 8760 |
+| G3 all 7 `dhwvol_*` columns | PASS | 7 present, none missing |
+| G4 total volume > 0, finite, not all-nan | PASS | **37,793.5 m3/yr**, all-nan=False |
+| G5 manifest clean + row agreement | PASS | exception=None, manifest 8760 == file 8760 |
+| G6 unresolved WaterUse:Equipment | PASS | 0 |
+| G7 implied delta-T in [20, 80] K | PASS | see below |
+
+G7, `dT = E / (rho * c * V)` with E from `dhw_hourly.csv` (J) and V from the new file (m3):
+
+| channel | V (m3/yr) | E (J/yr) | implied dT (K) |
+|---|---|---|---|
+| office | 3,495 | 7.198e11 | 49.19 |
+| retail | 273.8 | 5.638e10 | 49.19 |
+| hotel | 25,570 | 2.578e12 | **24.08** |
+| residential | 8,453 | 1.645e12 | 46.49 |
+| residential_common / service_MEP / unassigned | 0 | 0 | no draw |
+
+This closes the silent-nan risk that the fail-soft `try/except` created. The T9-13 volume identity
+now has a reference that EnergyPlus produced by integrating the schedule it was actually handed,
+not one our own IDF reader re-derived — which was the point of open item 3 (vacuous-gate kind #9).
+
+### The mixing algebra says G7's band is measuring the TARGET temperature
+
+For `WaterUse:Equipment`, `E = rho*c*V_hot*(T_hot - T_cold)` while the reported Total Volume is the
+MIXED volume, and `V_hot/V_total = (T_target - T_cold)/(T_hot - T_cold)`. The supply term cancels:
+
+    implied dT  =  T_target - T_cold_mains
+
+All 47 objects carry one of two target schedules — `Mixed Water At Faucet Temp - 140F` (60 C, 45
+objects) and `- 180F` (82.2 C, 2 objects: Booster and Laundry). 60 C against Montreal mains gives
+~49 K, which is **exactly** office and retail (49.19 both). So G7 is not a loose plausibility band;
+it reads back a quantity we can predict from the IDF independently.
+
+### NEW OBSERVATION — the hotel DHW plant saturates at peak draw
+
+Hotel's 24.08 K cannot come from its target temperature: its two distinguishing objects are the
+**180 F** ones, which should push it ABOVE 49 K, not to half of it. Splitting the hourly series by
+draw magnitude separates the candidate mechanisms cleanly — a structural/attribution error is
+draw-independent, a capacity shortfall is not:
+
+| channel | hrs>0 | dT p05 | p25 | p50 | p75 | p95 | std |
+|---|---|---|---|---|---|---|---|
+| office | 6570 | 42.67 | 44.52 | 49.18 | 53.88 | 55.71 | 4.67 |
+| retail | 4950 | 42.68 | 44.53 | 49.18 | 53.88 | 55.71 | 4.67 |
+| hotel | 8760 | 16.93 | 22.42 | 48.85 | 55.59 | 59.26 | **16.03** |
+| residential | 8760 | 40.44 | 43.23 | 46.79 | 51.21 | 55.46 | 4.72 |
+
+Hotel, binned by its own draw:
+
+| bin | mean V (m3/h) | mean implied dT (K) |
+|---|---|---|
+| lowest-draw decile | 0.308 | 52.41 |
+| median decile | 0.724 | 53.41 |
+| peak-draw decile | 8.633 | **18.28** |
+
+Draw-dependent, so not attribution. The other three channels' std of ~4.7 K is just the seasonal
+mains swing; hotel's 16.0 K is not that.
+
+**Mechanism, evidenced not assumed.** The six `WaterHeater:Mixed` objects are **hard-sized
+literals, not `Autosize`** — `Tank Volume 1.13562` m3 (300 gal) and `Heater Maximum Capacity
+87921.32` W, five of those plus one 6-gal 7999.96 W electric booster. Installed capacity for the
+**entire tower, all channels** = 5 x 87.92 + 8.00 = **447.6 kW**. The hotel peak-draw decile alone
+would need `rho*c*8.6333*52.4/3600` = **526.0 kW** to reach target — **17.5 % more than the whole
+building's DHW plant** — and actually received `rho*c*8.6333*18.28/3600` = **183.5 kW**. The
+shortfall is arithmetic; it needs no assumption about which heater sits on which loop.
+
+**This cell does NOT implicate T9-13.** All 26 commercial DHW schedules in `Y2022__Tall__MTL` carry
+`r1000w1000`, i.e. the volume ratio applied to office/retail/hotel here is exactly 1.000, so peak
+flows are the prototype's. The saturation is **inherited from the mixed-tower construction**, not
+introduced by the volume-scaling model.
+
+### Vacuity check on T9-13's commercial arm — proposed, and REFUTED
+
+If every commercial object in every cell were `r1000w1000`, T9-13 would change nothing for 3 of the
+4 channels and its volume identity would be vacuous where it matters most. Tested on `injected.idf`
+(written at injection time, so testable on cells still simulating):
+
+| cell | Office | Retail | Hotel |
+|---|---|---|---|
+| `Y2022__Tall__MTL` | r1000w1000 | r1000w1000 | r1000w1000 |
+| `Y2005__Tall__MTL` | r1030w1049 | r1117w0715 | *absent* |
+| `B_opt__Tall__MTL` | r0695w1604 | r0887w0857 | r1203w1203 |
+
+**REFUTED — the commercial arm is live.** Y2022 reads all-1.000 because it is the reference year.
+Hotel absent from Y2005 is the documented era exclusion (QC hotel truth starts 2019), not a defect.
+Residential was never in doubt: Y2022 alone carries r0885w0939 through r1574w0711 per household.
+
+### PRE-REGISTERED for when `B_opt__Tall__MTL` lands
+
+`B_opt` scales hotel volume by **r1203w1203** (+20 %) against the same 447.6 kW of hard-sized
+plant. If the saturation mechanism above is right, the hotel's annual implied dT in `B_opt` must
+come out **BELOW Y2022's 24.08 K**, and its peak-draw-decile dT **below 18.28 K**. If instead it
+holds at ~24 K or rises, the capacity explanation is wrong and the mechanism must be re-opened.
+
+Written before `B_opt` finished. Consequence if confirmed: hotel DHW **energy under-responds to
+volume scaling**, so the T9-13 identity (energy proportional to volume) breaks in the hotel channel
+precisely where the scaling is largest — a caveat on arm H's hotel numbers, not a reason to stop
+the campaign, since the effect is measurable from artefacts every cell already writes.
