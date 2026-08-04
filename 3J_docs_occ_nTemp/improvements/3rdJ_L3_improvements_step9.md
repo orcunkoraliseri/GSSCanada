@@ -5923,3 +5923,965 @@ when the specification is frozen.**
 
 New files: `Step9_docs/3rdJ_09H_autosize_probe.py`, `autosize_probe.sh`, `3rdJ_09H_peak_demand.py`.
 
+
+---
+
+## 2026-08-03 — Uniform plant resize, K = 3.0: the 3-cell probe (job 1171807)
+
+**User decision, 2026-08-03:** uniform hard-size to the grid maximum. The plant becomes a *constant*
+across the 56 cells, so the occupancy lever stays clean — the trap recorded above is avoided by
+construction, not by care.
+
+### The number, measured not assumed (job 1171806, all 56 cells of arm H)
+
+| quantity | value |
+|---|---|
+| grid-max peak hourly draw | 15.8878 m³/h |
+| at the 180 °F target rise (71.4 K) | **1318.4 kW** ← the conservative bound |
+| at the 140 °F target rise (49.2 K) | 908.5 kW |
+| installed | **447.6 kW** (5 × 87,921.3 + 7,999.96) |
+| ratio | 2.95 → **K = 3.0**, ~2 % headroom |
+
+### Why the intervention is energy-neutral by construction
+
+Only `Heater Maximum Capacity` is scaled, on all six `WaterHeater:Mixed`. Three IDF facts checked
+*before* choosing this edit, each of which would otherwise have made a larger burner inflate energy
+on its own:
+
+* **`Part Load Factor Curve Name` is EMPTY** → thermal efficiency is a flat 0.803984 regardless of
+  distance from full load. Oversizing carries no efficiency penalty.
+* **`Off/On Cycle Parasitic Fuel Consumption Rate` = 8,146.58 W is a CONSTANT**, not capacity-scaled.
+  Six of them = 48.9 kW = **1,542 GJ/yr**, which is most of the ~1,860 GJ fixed intercept the
+  saturation discriminator independently measured on `Tall__MTL`. That is a cross-validation of the
+  earlier decomposition: the intercept really was a fixed loss, and the depressed marginal ΔT really
+  was a separate saturation effect.
+* **`Tank Volume` untouched** → the 11.2595 W/K loss coefficient acts on the same storage, so
+  standby losses are identical. The edit refuses to run unless the `Tank Volume` fields survive it.
+
+So the burner can only ever *meet more of the load*; it cannot manufacture energy by being larger.
+
+### Result — 3 cells, `Tall__MTL`, 19 min each, all exit 0
+
+| cell | r | installed | ΔT arm H → resized | gain | energy |
+|---|---|---|---|---|---|
+| `Y2022__Tall__MTL` | 1.0000 | 447.6 → 1342.8 kW | 31.62 → **42.41 K** | +10.79 K | +34.14 % |
+| `B_central__Tall__MTL` | 1.1244 | 447.6 → 1342.8 kW | 29.93 → **40.61 K** | +10.68 K | +35.70 % |
+| `B_opt__Tall__MTL` | 1.2031 | 447.6 → 1342.8 kW | 28.88 → **39.43 K** | +10.55 K | +36.52 % |
+
+*(tower-wide, all 47 `WaterUse:Equipment` objects)*
+
+**[PASS] R1 — CONTROL.** DHW volume moved **+0.0000 %** in all three cells. Draw is schedule-driven
+and a burner resize must not touch it; it did not. Without this the ΔT gains below would be
+uninterpretable, since a volume change would move ΔT = E/(V·ρc) by itself.
+
+**[PASS] R2 — delivered rise moves up in every cell**, by +10.6 to +10.8 K, with energy up 34–37 %.
+That is not new demand: R1 fixes the volume, so every one of those joules is **load the old plant was
+silently failing to serve**. The 447.6 kW burner was dropping roughly a third of the tower's DHW
+energy on the floor, and nothing in the arm-H outputs said so.
+
+### 🔴 An honest miss inside a PASS — R2's ordering sub-clause FAILS
+
+R2 as pre-registered had two clauses. Quoting the pre-registration verbatim:
+
+> R2  Tower-wide implied delivered rise goes UP in every cell, **and goes up MORE in the cells that
+> were more constrained** (… so the ordering of the GAINS must be the reverse of the arm-H levels).
+
+The first clause passes. **The second fails.** The most-constrained cell (`B_opt`, lowest arm-H ΔT at
+28.88 K) gains the **least** (+10.55 K); the least-constrained (`Y2022`, 31.62 K) gains the **most**
+(+10.79 K). The ordering is *with* the arm-H levels, not reversed.
+
+**The coded gate only tested `dTr > dTh`, so it printed PASS.** This is a fresh instance of a known
+family — *the gate whose printed verdict is narrower than the prediction it claims to test* — and it
+is recorded, not repaired. The band is not widened and the PASS is not re-labelled; the sub-clause is
+marked FAILED and carried.
+
+Why it plausibly fails (hypothesis, **not** verified, and not used to excuse anything): the gain is
+bounded by the *unserved* fraction, and at K = 3.0 the burner is no longer binding in any of the
+three cells, so all three converge toward their own target rise. Cells with a higher target-weighted
+mix then show a larger absolute gain regardless of how constrained they were. If that is right the
+ordering clause was mis-specified — it assumed the resize would still be partially binding. **A
+mis-specified clause is re-specified in writing, never quietly dropped**, and that re-specification
+has not been done.
+
+### R3 is NOT answerable from this output — scope mismatch caught before quoting
+
+The probe prints **tower-wide** totals. R3's ≥ 0.90 threshold was written against the **hotel-scoped**
+elasticity (arm H: 0.5617, job 1171767). The two are not the same estimator: the tower includes four
+channels that do not vary with hotel `r`, which dilutes the elasticity toward zero. Tower-wide these
+runs give 0.314 → 0.409 — **an uninformative number that must not be reported as R3.**
+
+Job **1171812** re-scopes both sides to hotel, and does it by *importing* the campaign driver's
+`_write_dhw_hourly_csv` rather than re-deriving the channel map, so the quantity the whole verdict
+rests on has exactly one source of truth in the repo.
+
+An **R0 control was added ahead of R3**: the recomputed arm-H hotel elasticity must reproduce 0.5617
+to within ±0.02. If it does not, this script's estimator is not the one the 0.90 threshold was
+written against and R3's number means nothing — so **R3 is not quoted until R0 passes.**
+
+New files: `Step9_docs/3rdJ_09H_plant_resize_probe.py`, `resize_probe.sh`,
+`Step9_docs/3rdJ_09H_resize_elasticity.py`, `resize_elasticity.sh`.
+
+**Status: no campaign launched.** R3 decides whether K = 3.0 is sufficient; if it misses, K is
+revisited *before* arm I, not after.
+
+---
+
+## 2026-08-03 — R3 hotel-scoped: **FAIL at K = 3.0** (jobs 1171812 crash, 1171835 result)
+
+The 3-cell resize probe (1171807) printed TOWER-WIDE totals; R3's 0.90 threshold and the 0.5617
+baseline are HOTEL-scoped. Tower-wide those runs give 0.314 → 0.409, and that number was explicitly
+**refused** as an R3 answer rather than quoted with a caveat. `3rdJ_09H_resize_elasticity.py`
+re-scopes both arms through the campaign driver's own channel resolver (imported, not re-derived,
+so the quantity the verdict rests on has one source of truth).
+
+### The first run crashed, and the crash was luck — a silent-default defect
+
+Job 1171812 died in LAPACK: `SVD did not converge in Linear Least Squares`. Cause: `hotel_r()`
+guessed three provenance filenames (`provenance.txt`, `provenance.json`, `inject_provenance.txt`);
+the real one is **`injected.idf.provenance.txt`**. Finding none, it returned its documented
+"safe" default `r = 1.0` — for **all three cells**. The regressor had zero variance, so the fit
+was undefined and numpy refused.
+
+**The refusal was accidental, not designed.** Had two cells matched the pattern and one not, the
+default would have silently produced a plausible wrong elasticity, and nothing in the output would
+have looked abnormal. The defect is not the wrong filename; it is that **the fallback value was
+indistinguishable from a legitimately measured one**. `r = 1.0` is a real, expected value in this
+grid (`Y2022`), so "unread" and "read as 1.0" collapsed into the same number.
+
+Add to the vacuous-gate taxonomy, adjacent to the silence entry:
+**the default that cannot be distinguished from a measurement.** A fallback that returns a value
+inside the legal range of the quantity converts a read failure into a data point.
+
+Both fixed in `3rdJ_09H_resize_elasticity.py`:
+* `hotel_r()` has **no default any more** — an unreadable r is a `SystemExit`, and disagreement
+  between the four hotel schedules is also a refusal. r is parsed from the injector's own record,
+  the derived schedule name token `..._r{r_wd*1000:04d}w{r_we*1000:04d}_...`.
+* A guard in `main()` refuses when `len(set(r)) < 2`, in the script's own terms, before any fit.
+  An elasticity w.r.t. a constant regressor is not a weak estimate, it is undefined; that belongs
+  in a pre-fit check, not in a linear-algebra backend's error message.
+
+Recovered r from provenance: `Y2022` **1.000**, `B_central` **1.124**, `B_opt` **1.203** (the token
+carries 3 decimals; the campaign spec's 1.1244 / 1.2031 round to these, a ~0.2 % effect on the
+slope and immaterial against the 0.44-vs-0.90 gap).
+
+### Result, job 1171835
+
+| cell | r | arm H V (m³) | arm H E (GJ) | arm H ΔT | resized E (GJ) | resized ΔT |
+|---|---|---|---|---|---|---|
+| `Y2022__Tall__MTL`     | 1.000 | 25,571.2 | 2,578.0 | 24.10 K | 4,189.2 | 39.15 K |
+| `B_central__Tall__MTL` | 1.124 | 28,752.1 | 2,749.4 | 22.85 K | 4,407.5 | 36.64 K |
+| `B_opt__Tall__MTL`     | 1.203 | 30,764.7 | 2,858.6 | 22.21 K | 4,544.9 | 35.31 K |
+
+```
+hotel ENERGY elasticity   arm H 0.5582 (R2 1.000)   resized 0.4403 (R2 1.000)
+hotel VOLUME elasticity   arm H 1.0007              resized 1.0007
+marginal delivered rise   arm H  12.91 K            resized  16.38 K   (target 49.2 K)
+
+[PASS] R0   arm-H hotel elasticity reproduces the probe's 0.5617: got 0.5582 (|d|=0.0035, tol 0.02)
+[PASS] R3v  hotel VOLUME elasticity ~1.0 in both arms (1.0007 / 1.0007)
+[FAIL] R3   resized hotel ENERGY elasticity >= 0.90: got 0.4403
+[PASS] R4   marginal delivered rise moves up: 12.91 -> 16.38 K (33.3 % of target)
+```
+
+**R0 PASS is what licenses quoting R3 at all.** Recomputed hotel-scoped arm H = 0.5582 against the
+saturation probe's 0.5617, |d| = 0.0035 inside the 0.02 tolerance. Same estimator, so the 0.90
+threshold transfers.
+
+**R3v PASS, and it is exact rather than approximate.** Hotel volumes stand in ratios
+28,752.1 / 25,571.2 = 1.1244 and 30,764.7 / 25,571.2 = 1.2031 — the r values themselves. The draw
+is schedule-driven and provably cannot see the burner, so any ΔT movement is plant-side.
+
+### 🔴 R3 FAILS, and it fails in the wrong direction
+
+Not "insufficiently improved" — **worse**. 0.5582 → 0.4403 under 3× the burner. Because volume
+elasticity is exactly 1.0, the decomposition
+`elasticity_E = elasticity_V + elasticity_ΔT` is clean:
+
+| arm | elasticity_V | elasticity_ΔT | elasticity_E |
+|---|---|---|---|
+| arm H (447.6 kW)  | 1.0007 | **−0.443** | 0.5582 |
+| K = 3.0 (1,342.8 kW) | 1.0007 | **−0.559** | 0.4403 |
+
+Tripling capacity made the temperature sag with occupancy **stronger**. Under the capacity-mediation
+hypothesis that number had to shrink toward zero. Corroborating: K = 3.0 installs 1,342.8 kW against
+the measured grid-max peak requirement of 908.5 kW at the 49.2 K target — already non-binding at the
+worst hour of 8760 — yet delivered ΔT sits at 35–39 K, not 49.2 K.
+
+**This is positive evidence against burner capacity being the binding constraint**, not merely a
+failure to reach a threshold. The threshold is NOT widened and no 56-cell campaign launches at
+K = 3.0.
+
+### R4's PASS is not a pass — it is unresolved
+
+R4 was pre-registered as: the marginal rise *"rises from arm H's 22.66 K toward the 49.2 K target"*.
+The coded gate tests `mR > mH` against the **recomputed** baseline (12.91 K), not the written one
+(22.66 K, job 1171767, never re-scoped). Against the number actually in the pre-registration,
+16.38 K < 22.66 K would **fail**. The verdict flips on which baseline is used, and R4 has no
+R0-style control to settle it — R0 exists precisely because that scope question was anticipated
+for R3 and not for R4.
+
+**R4 is recorded as UNRESOLVED, not PASS.** Third narrow-verdict instance in one day, after R2's
+ordering sub-clause and the silent-default above.
+
+### Next: pre-registered K sweep, K ∈ {6, 10}, same 3 cells (6 runs)
+
+A larger K is proposed *because the user asked for it*, but the evidence above says it is a coin
+flip, so the sweep is specified to make **either** outcome a result:
+
+* **K1  CONTROL** — hotel volume unchanged (≤ 0.1 %) at every K, as R1. If volume moves, the edit
+  is not surgical and nothing downstream is readable.
+* **K2  DECISIVE** — hotel energy elasticity rises **monotonically** with K and reaches ≥ 0.90 at
+  K = 10. Measured so far: K=1 → 0.5582, K=3 → 0.4403 (already non-monotone), so K2 is predicted to
+  fail; it is written down anyway because a prediction only counts if it was made before the run.
+* **K3  DISCRIMINATOR** — delivered ΔT at r = 1.0 (`Y2022`) as a function of K. If capacity-limited,
+  ΔT → 49.2 K: pre-register **ΔT(K=10) ≥ 47 K**. If **ΔT(K=10) < 42 K**, burner capacity is
+  REFUTED as the binding constraint and **no K fixes R3** — the search moves to tank volume,
+  `Use Side Effectiveness`, or plant-loop flow.
+* **K4** — the sag |elasticity_ΔT| shrinks with K. It grew from 0.443 to 0.559 between K=1 and K=3;
+  continued growth or flatness at K=6,10 is further positive evidence against the capacity story.
+
+K3 is the one that carries information regardless of which way it lands, which is why it is the
+discriminator and not K2.
+
+---
+
+## 2026-08-03 — K sweep: **R3 PASSES at K = 10**, capacity confirmed as the binding constraint (jobs 1171837 array, 1171843)
+
+Log: `/speed-scratch/o_iseri/step8_4split/campaign/logs/kelast_1171843.out` (per-cell EnergyPlus in
+`ksweep_1171837_%a.out`). Same three `Tall__MTL` cells, same estimator, same 0.90 threshold. Nothing
+was widened.
+
+### The four points
+
+Installed = 447.6 kW x K on six `WaterHeater:Mixed` burners; nothing else touched (R1/K1 volume
+control holds at every K — hotel volume is identical to arm H in all three cells at all four K).
+
+| K | installed kW | hotel E-elasticity | R2 | dT(Y2022) | dT(B_central) | dT(B_opt) | marginal rise |
+|---|---|---|---|---|---|---|---|
+| 1 (arm H) |   447.6 | 0.5582 | 1.000 | 24.10 K | 22.85 K | 22.21 K | 12.91 K |
+| 3         | 1,342.8 | 0.4403 | 1.000 | 39.15 K | 36.64 K | 35.31 K | 16.38 K |
+| 6         | 2,685.6 | 0.3005 | 1.000 | 61.11 K | 56.27 K | 53.70 K | 17.22 K |
+| **10**    | **4,476.0** | **1.0013** | 1.000 | **65.50 K** | **65.51 K** | **65.51 K** | **65.55 K** |
+
+Hotel VOLUME elasticity is 1.0007 in every arm at every K, so R3v holds throughout and the energy
+elasticity is readable as a plant-mediation measurement, exactly as pre-registered.
+
+R0 was re-derived independently inside each K block and PASSED both times (0.5582 vs the probe's
+0.5617, |d| = 0.0035, tol 0.02). That is what licenses quoting R3 at K = 6 and K = 10 against the
+0.90 threshold — the estimator is demonstrably the one the threshold was written against.
+
+### K3, the discriminator: **PASS**, and it was the right thing to have pre-registered
+
+Written before the run: *"pre-register dT(K=10) >= 47 K. If dT(K=10) < 42 K, burner capacity is
+REFUTED as the binding constraint and NO K fixes R3."* Measured: **65.50 K**. Capacity is confirmed.
+
+At K = 10 the delivered rise is **65.50 / 65.51 / 65.51 K** — identical across three cells whose draw
+volumes differ by 20 %. That is the signature of a plant that is no longer the binding constraint:
+delivered temperature has gone constant, so hotel DHW energy is a pure linear function of hotel draw
+volume, and the elasticity is 1.0013 by consequence rather than by tuning. This is precisely the
+condition the user's "uniform hard-size to grid max" decision was meant to create: the plant is a
+constant across the grid and the occupancy lever is clean.
+
+65.51 K is the model's own unconstrained mains-to-setpoint rise. It is NOT the 49.2 K (140 F) figure
+the sizing calc used as its target — see the correction below.
+
+### K2 and K4 **FAIL as written**. Recorded, not repaired.
+
+- **K2 FAIL.** K2 was a conjunction: *"elasticity rises MONOTONICALLY with K and reaches >= 0.90 at
+  K = 10."* The second clause passes (1.0013). The first fails outright: 0.5582 -> 0.4403 -> 0.3005
+  -> 1.0013. The elasticity falls for three consecutive K and then snaps up. K2 as written is a FAIL,
+  and it is logged as a FAIL even though the outcome it was protecting (R3 >= 0.90) was achieved.
+  It had been pre-registered as PREDICTED TO FAIL; it failed for the predicted reason.
+- **K4 FAIL.** *"the sag |elasticity_dT| shrinks with K."* Decomposed, elasticity_dT = elasticity_E
+  minus elasticity_V: **-0.4425 (K=1) -> -0.5604 (K=3) -> -0.7002 (K=6) -> +0.0006 (K=10)**. The sag
+  grew by 58 % before collapsing to zero. Non-monotone, so K4 fails as written.
+
+**This is the fourth narrow-verdict instance in two days** (after R2's ordering sub-clause, the
+silent-default reader, and R4's baseline mismatch). The pattern is now explicit enough to name: *a
+gate written as a conjunction of a trend clause and a threshold clause reports one verdict for two
+independent claims.* Both K2 and K4 should have been split into `K2a` monotonicity / `K2b`
+threshold. The remedy is re-specification of the clause, not absorption of the failure into the
+passing half.
+
+### Why the elasticity dips before it snaps — and what that does to the K = 3 conclusion
+
+At K = 3 and K = 6 the burner is bigger but **all three cells are still saturating**; the extra
+capacity is absorbed preferentially by the cell with the smallest draw (`Y2022`, r = 1.0), because it
+runs out of load first and can convert the whole increment into delivered temperature. Its energy
+therefore rises fastest in relative terms, which flattens the E-vs-r slope and *lowers* the measured
+elasticity. Only when capacity clears the largest cell's demand does delivered temperature go
+constant and the elasticity jump to 1.0. **The elasticity is non-monotone in K by construction: it
+must dip before it snaps.**
+
+This retro-explains the K = 3 result and **corrects the reading logged earlier today**. The previous
+section recorded the wrong-direction move (0.5582 -> 0.4403, sag growing) as *"positive evidence
+against burner capacity being the binding constraint."* That inference was wrong. It was a partial-
+relief artifact of crossing saturation, not a refutation. The earlier entry is left standing as
+written — a miss is recorded, not repaired — and this paragraph is its correction.
+
+The methodological point worth keeping: **a monotonicity prediction on a quantity that crosses a
+saturation boundary is not a well-formed prediction.** K2 and K4 were both of that kind, which is why
+both failed while the underlying hypothesis they were probing turned out to be true. Do not read a
+non-monotone trend clause as evidence about the mechanism.
+
+### Two corrections to the sizing calculation, both material
+
+1. **The peak-draw sizing calc understated the requirement by ~3.4x.** It concluded K = 3.0 from a
+   grid-max hourly-mean draw of 15.8878 m3/h at a 71.4 K rise = 1,318.4 kW. Full un-saturation in
+   fact required 4,476 kW. The calc was computed on **hourly means**, which cannot see the sub-hourly
+   timestep peak or the tank-recovery dynamics that actually set the burner duty. Any future sizing
+   argument on this plant must be made on the simulation timestep, not on hourly aggregates.
+2. **The 49.2 K "target" is not the model's setpoint.** It was an assumed 140 F rise. The model's
+   unconstrained rise is 65.51 K. That is why R4 at K = 10 reports 133.2 % of target: the
+   denominator is wrong, not the numerator. **R4's target constant `TARGET_K = 49.2` in
+   `3rdJ_09H_resize_elasticity.py:45` is hereby flagged as mis-specified** and must be re-derived
+   from the IDF setpoint before R4 is quoted anywhere. This is a second, independent defect in R4, on
+   top of the baseline-scope mismatch logged this morning — R4 is now UNRESOLVED on two counts.
+
+### Magnitude consequence, and why the campaign is still not launched
+
+Hotel DHW energy at K = 10 rises **2,578 -> 7,008 GJ on `Y2022__Tall__MTL` (x2.72)**, and similarly
+on the other two cells. The resize is *efficiency*-neutral by the flat-PLF / constant-parasitic
+argument (verified: `Part Load Factor Curve Name` empty, parasitics constant, tank volume untouched),
+but it is emphatically **not magnitude-neutral** — meeting more of the load is the entire point. The
+tower EUI will move substantially and will need re-validation against the hotel EUI band.
+
+**Blocking issue before any 56-cell launch: the three swept cells are not representative of the
+grid.** All three are `Tall__MTL`, and `Y2022__Tall__MTL` is the **3rd-LOWEST** peak-draw cell of the
+56 (10.8173 m3/h). The grid extremes, from job 1171806:
+
+| | cell | peak draw m3/h |
+|---|---|---|
+| grid MAX | `sens_hotel_opt__SuperTall__MTL` | 15.8878 |
+| grid MIN | `B_cons__Tall__CLG` | 10.6444 |
+| swept trio | `*__Tall__MTL` | 10.82 - 11.9 |
+
+The grid maximum is **1.47x** the cell K = 10 was verified on. K = 10 un-saturating the low end is no
+evidence that it un-saturates the high end, and if it does not, the plant is not a constant across
+the grid and the whole point of the uniform hard-size is lost. **56-cell campaign remains BLOCKED**
+pending the headroom check below.
+
+### Headroom check — PRE-REGISTERED before running (submitted 2026-08-03)
+
+K = 10 applied to the two grid EXTREME cells, `sens_hotel_opt__SuperTall__MTL` (max) and
+`B_cons__Tall__CLG` (min). Scripts: `Step9_docs/headroom_check.sh` (array 0-1) and
+`Step9_docs/headroom_elast.sh` (dependent).
+
+- **H1 CONTROL** — hotel volume unchanged from arm H (<= 0.1 %) in both cells, as K1/R1. If volume
+  moves, the edit is not surgical and nothing below is readable.
+- **H2 DECISIVE** — hotel-scoped delivered dT at K = 10 reaches the same unconstrained constant in
+  BOTH extremes: **>= 65.0 K**, and the two cells agree with each other to within **0.5 K**. If the
+  grid-max cell lands below 65.0 K, K = 10 does NOT un-saturate the grid, the 56-cell campaign stays
+  blocked, and K must be raised and re-tested. Agreement between the extremes is the actual claim —
+  a uniform plant is only a valid control if it delivers the same temperature everywhere.
+- **H3 FALSIFIER, so that H2 is not vacuous** — the UNRESIZED arm-H dT in these same two cells must
+  be **< 40 K**. If arm H already delivered ~65.5 K at the grid max, H2 could not possibly fail there
+  and would be measuring nothing. H3 is what establishes that H2 has something to detect. Expected
+  ~22 K by analogy with the trio, but it is measured here, not assumed.
+- **H4 INFO** — record each extreme cell's measured peak requirement against the 4,476 kW installed.
+
+**The elasticity block printed by `3rdJ_09H_resize_elasticity.py` on this pair is N/A BY
+CONSTRUCTION and must not be quoted.** The two cells differ in building height (SuperTall vs Tall),
+climate (MTL vs CLG) and scenario, so a 2-point E-vs-r fit across them confounds occupancy with
+geometry. R0 is *expected to FAIL* in this run for exactly that reason — it was calibrated on the
+`Tall__MTL` trio — and that failure is the script correctly refusing to let R3 be read. Only the
+per-cell `dT` lines are in scope for H1-H4.
+
+---
+
+## 2026-08-03 — headroom check attempt 1 REFUSED: **`SuperTall` has 11 heaters, not 6** (job 1171855)
+
+The headroom check was submitted as array 1171855 (K = 10 on the two grid extremes). Task 1
+(`B_cons__Tall__CLG`, the grid MIN) ran normally. **Task 0, the grid-MAX cell
+`sens_hotel_opt__SuperTall__MTL`, refused in 2 seconds:**
+
+    REFUSING: expected 6 Heater Maximum Capacity fields, rewrote 11
+
+**The guard was right and my constant was wrong.** `3rdJ_09H_plant_resize_probe.py` hard-coded
+`N_HEATERS = 6`, measured on the `Tall` geometry. `SuperTall` carries **11** `WaterHeater:Mixed`
+objects. The probe refused rather than half-editing the plant and running anyway, which is the
+outcome the guard was written for.
+
+### What this invalidates
+
+🔴 **"installed = 447.6 kW" is a `Tall`-geometry number and was never a grid-wide constant.** It
+appears throughout the sizing work — in the K-sweep tables, in the `resize_probe` docstring, in the
+"installed 4,476 kW at K = 10 vs a 1,318 kW peak requirement" comparison. **Every one of those
+statements is now scoped to `Tall` cells.** The K-sweep result itself is unaffected: all three swept
+cells are `Tall__MTL`, so the comparison was internally consistent; what is wrong is the extrapolation
+to the other 28 `SuperTall` cells of the grid, which was never measured.
+
+The probe also *labelled* its output lines `arm H (447.6 kW)` / `resized (447.6*K kW)`. On a
+`SuperTall` cell that label would have been wrong by roughly a factor of two **while looking
+authoritative** — a fabricated number printed beside a measured one.
+
+### Fix
+
+`N_HEATERS = 6` is replaced by a **per-IDF measured count**. The guard is reformulated from *"exactly
+six fields were rewritten"* to *"every `Heater Maximum Capacity` field the IDF declares was
+rewritten"*, with the count taken from the file under edit before the substitution:
+
+    declared = len(pat.findall(txt))
+    txt, cnt = pat.subn(sub, txt)
+    if cnt != declared: raise SystemExit(...)
+
+**A guard whose reference encodes an assumption about the stock cannot detect that the assumption is
+wrong.** That is the same shape as vacuous-gate #9 (the gate whose reference comes from the same
+source it audits) with the source displaced one step further — into the author's head. The old form
+would have passed silently on any future `Tall` cell and refused loudly on every `SuperTall` one,
+which is a lucky failure mode, not a designed one.
+
+The installed base is now **printed and machine-readable** (`PLANT_BASE kW_base=... kW_resized=...
+n_heaters=...`), and both summary labels carry the cell's own measured capacity instead of 447.6.
+
+### Does this break the user's "uniform hard-size" decision?
+
+**No, and the reason is worth stating explicitly.** `K` is a multiplier of each cell's own installed
+base, so cells of different **geometry** do not land on the same absolute kW. The user's decision was
+that the **occupancy** axis must not buy capacity — "`B_opt` (r = 1.20) must not get a larger boiler
+than `B_cons` (r = 0.98)". Within any geometry group every scenario gets an identical plant, so that
+requirement holds exactly. Geometry is a design axis that already differs in floors, area and zone
+count; it is not the lever the 56-cell grid exists to measure.
+
+And once the plant is **non-binding** the question dissolves: delivered ΔT goes constant (65.51 K on
+the `Tall` trio) and capacity drops out of the energy answer entirely. Whether the SuperTall plant is
+non-binding at K = 10 is precisely what gate **H2** tests — so the right response is to run the
+check, not to redesign the intervention.
+
+### 🔴 A second defect, in this project's own harness — vacuous-gate #10, again
+
+`headroom_check.sh` ended with
+
+    $PY -u ... 3rdJ_09H_plant_resize_probe.py ...
+    echo "  probe exit=$?  : $(date)"
+
+`echo` is the last command, so **the job exits with `echo`'s status — always 0.** Task 1171855_0
+died on the refusal above and SLURM reported it **COMPLETED in 2 s**, and the `--dependency=afterok`
+dependent job (1171857) was duly released to run against output that did not exist.
+
+This is **vacuous-gate #10 — the gate that reads the wrong process's exit code — for the second time
+on this project**, after `smoke_f9fix.sh:47`. The earlier repo-wide sweep found exactly one
+occurrence and concluded the pattern had not been copied around; that conclusion was correct **for
+the code that existed at the time**, and the pattern was then reintroduced by hand in new scripts
+written the same week. **A sweep certifies a snapshot, not a habit.** The lesson to carry: this
+failure is not found by grepping once, it is prevented by never making a bare `echo` the last line of
+a job script.
+
+Fixed in `headroom_check.sh` and `resize_sweep.sh` (`RC=$?; echo ...; exit $RC`). The K sweep was not
+misled — all six of its tasks genuinely ran — but its harness was unsound while it ran.
+
+### State
+
+- 1171857 **cancelled** (it would have run against a missing SQL).
+- **1171858** — headroom check re-submitted, `--array=0`, grid-max cell only, fixed probe.
+- **1171859** — dependent hotel-scoped ΔT, `--dependency=afterok:1171858,afterany:1171855`, so it
+  waits for both the re-run and the still-running min-side task.
+- `1171855_1` (`B_cons__Tall__CLG`) is left to finish. Its output is valid: on a 6-heater cell the
+  old and new probe produce a byte-identical IDF edit — same regex, same K — and only the printed
+  labels differ.
+- **H1–H4 are unchanged.** The pre-registration was written before any of this and is not revised;
+  a refused run is not a failed gate, it is no measurement at all.
+
+---
+
+## 2026-08-04 — headroom check: both simulations landed, **H2 NOT YET SCORABLE** (jobs 1171858_0 / 1171855_1)
+
+Both EnergyPlus runs of the headroom check completed. The dependent scorer **1171859 has NOT run** —
+it is `PENDING (AssocGrpCpuLimit)`: the account's CPU allocation is fully consumed by a ~100-task
+array (`1171864`) belonging to another workload on the same account. Its dependencies are satisfied;
+it is queued on resources only.
+
+### What the two probes measured
+
+| cell | geometry | heaters | installed | arm H dT | K = 10 dT | gain |
+|---|---|---|---|---|---|---|
+| `sens_hotel_opt__SuperTall__MTL` (grid **MAX** draw) | SuperTall | **11** | 887.2 → 8,872.1 kW | 33.83 K | **57.39 K** | +23.56 K |
+| `B_cons__Tall__CLG` (grid **MIN** draw) | Tall | 6 | 447.6 → 4,476.0 kW | 31.87 K | **59.91 K** | +28.05 K |
+
+Volume in both cells: **+0.0000 %**. Energy +69.63 % / +88.03 %.
+
+### Scoring
+
+- **H1 CONTROL — PASS (provisional).** Volume identical to 8 significant figures in both cells; the
+  edit is surgical. Marked provisional only because H1 is written hotel-scoped and this is the
+  tower-wide read; the hotel-scoped line comes from 1171859.
+- **H3 FALSIFIER — PASS.** Unresized arm-H dT is 33.83 K and 31.87 K, both < 40 K. H2 therefore had
+  something to detect in both cells: neither was sitting at the ceiling before the resize.
+- **H4 INFO — RECORDED.** Installed base is **not** a grid constant: 447.6 kW on `Tall` (6 heaters),
+  **887.2 kW** on `SuperTall` (11). At K = 10, 4,476.0 kW and 8,872.1 kW respectively.
+- **H2 DECISIVE — NOT SCORED.** It is specified on *hotel-scoped* delivered dT and that number is
+  produced by 1171859, which has not run.
+
+### 🔴 Why the tower-wide numbers must NOT be substituted for H2
+
+The obvious temptation is to score H2 off the table above: 57.39 K and 59.91 K are both below the
+65.0 K threshold and 2.5 K apart, so H2 would "fail". **That is a different quantity.** Pulling the
+K-sweep logs for the same script shows the scope gap directly — at K = 10 the `Tall__MTL` trio reads
+
+    Y2022      60.24 K        B_central  60.36 K        B_opt      60.68 K      (tower-wide, probe)
+    Y2022      65.50 K        B_central  65.51 K        B_opt      65.51 K      (hotel-scoped, elast)
+
+The 65.50/65.51/65.51 figures that H2's threshold was built on are **hotel-scoped**; the probe's
+`implied dT` is **tower-wide DHW across all four channels**. Scoring a 65.0 K hotel threshold against
+a tower-wide 57.39 K compares two different measurements and would have produced a confident FAIL out
+of a units mismatch. Recorded because this project's failure mode is precisely the confident
+cross-scope read.
+
+### What the tower-wide series does say, and it is not nothing
+
+Tower-wide dT on the `Tall__MTL` trio, K = 6 → K = 10: **57.26 → 60.24**, **54.04 → 60.36**,
+**52.37 → 60.68**. Still climbing 3–8 K. Hotel-scoped, the same three cells are already pinned at
+65.50/65.51/65.51 — three identical digits across cells whose draw differs 20 %, which is the
+signature of an unconstrained plant.
+
+The two readings are consistent under one explanation: **the hotel channel is un-saturated at K = 10
+on `Tall__MTL`, and some non-hotel channel is not.** The tower-wide average keeps rising because a
+residential / office / retail heater is still binding.
+
+### 🔴 A scope question this exposes, and it is the user's call
+
+`resize_idf()` rewrites **every** `WaterHeater:Mixed` in the IDF — all four channels, not just the
+hotel's. The finding that started this thread was specifically *"hotel DHW plant undersized in every
+arm"*, and the minimal intervention matching it would be a hotel-only resize. The current all-channel
+form means a resized campaign would also move residential, office and retail DHW energy, so it is not
+a hotel-side correction sitting on top of an otherwise-unchanged arm H — it is a new arm for every
+channel. The evidence above suggests those other channels genuinely *are* saturated too, so the
+change would be large rather than cosmetic.
+
+Both readings are defensible; they answer different questions. **Not resolved here, and not resolved
+by fiat.** Flagged for the user alongside the P3 re-specification and the hotel EUI band, since it
+has the same character: it decides what the deliverable claims, not merely how it is computed.
+
+### State
+
+- **1171859 queued**, not lost. H2 is scored the moment it lands; nothing else is blocked on it.
+- **The 56-cell campaign is NOT submitted.** It stays held until H2 is scored on its own scope, and
+  now additionally until the all-channel-vs-hotel-only scope question is answered.
+- H1–H4 are **not** revised. The pre-registration stands as written; the un-scorable clause is
+  recorded as un-scorable rather than re-aimed at the number that happened to be available.
+
+---
+
+## 2026-08-04 02:25 — **H2 FAILS**: K = 10 does not un-saturate the grid maximum (job 1171859)
+
+`1171859` landed. The hotel-scoped lines:
+
+    sens_hotel_opt__SuperTall__MTL  r=1.2030 | armH V=34940.2  E=3704.2 GJ  dT=25.34 K
+                                             | resized V=34940.2  E=9292.5 GJ  dT=63.56 K
+    B_cons__Tall__CLG               r=0.9800 | armH V=25061.8  E=2536.5 GJ  dT=24.19 K
+                                             | resized V=25061.8  E=6868.7 GJ  dT=65.50 K
+
+### Scorecard for the headroom check
+
+| gate | verdict | evidence |
+|---|---|---|
+| **H1** CONTROL | **PASS** | hotel volume identical to 6 s.f. in both cells (34940.2 → 34940.2, 25061.8 → 25061.8). No longer provisional — this is the hotel-scoped read. |
+| **H2** DECISIVE | 🔴 **FAIL** | grid-MAX reaches **63.56 K**, below the 65.0 K threshold; and the two extremes are **1.94 K** apart, against a 0.5 K tolerance. **Both clauses fail, and both fail on the same cell.** |
+| **H3** FALSIFIER | **PASS** | unresized arm-H dT is 25.34 K and 24.19 K, both far below 40 K. H2 had ~40 K of room to move and moved +38.22 / +41.31 K. **H2 was not vacuous — it could have passed, and did not.** |
+| **H4** INFO | recorded | installed base 887.2 kW (`SuperTall`, 11 heaters) vs 447.6 kW (`Tall`, 6). Not a grid constant. |
+
+**The pre-registration is followed as written: the 56-cell campaign stays blocked, K is raised, and
+the grid-max cell is re-probed.** The threshold was not moved to accommodate a 1.94 K miss.
+
+### The elasticity block in the same log is N/A, as pre-declared
+
+`R0 FAIL` (1.8470 against the probe's 0.5617) and `R3v FAIL` (volume elasticity 1.6208, not ~1.0) are
+the *expected* outcome and were written down as expected before the run: the two cells differ in
+height, climate and scenario, so a 2-point E-vs-r fit regresses occupancy against geometry. The
+script's own trailer says it — *"R0 FAILED. The estimator here is NOT the one the 0.90 threshold was
+written against, so R3 above is not the pre-registered test."* **`R3 PASS (1.4742)` and
+`R4 PASS (119.2 % of target)` in that log must not be quoted for anything.** They are arithmetic on a
+confounded fit. Recorded here because the log prints them as PASS in the same block as the real
+gates, and a later reader grepping for `[PASS]` would collect them.
+
+### How close is it, and why that is not a reason to wave it through
+
+The grid-max cell is at **97 %** of the ceiling: 63.56 K against 65.50 K, after a +38.22 K move. It is
+tempting to call 1.94 K noise. It is not noise — the min-side cell landed on **65.50 K**, matching the
+`Tall__MTL` trio's 65.50/65.51/65.51 to the second decimal across four cells that differ in draw by
+20 %. That is a hard ceiling reproduced five times. A cell sitting 1.94 K under a ceiling that
+everything else hits exactly is not scattering around it; it is still being held down.
+
+The physical reading: what remains is an **intermittent** binding — a small number of peak hours whose
+demand is still refused. An annual mean hides that almost completely, which is exactly why the
+residual looks small while the mechanism is fully intact.
+
+### K escalation submitted — jobs 1172028 (array 0-2) and 1172031
+
+Pre-registration, three separately-numbered gates plus a control (the conjunction habit that produced
+vacuous-gate #13 is deliberately avoided — each gate carries one claim):
+
+- **H5 CONTROL** — hotel volume unchanged (≤ 0.1 %) in every task.
+- **H6 DECISIVE** — grid-max cell at **K = 20** reaches ≥ 65.0 K **and** within 0.5 K of 65.50 K.
+  If K = 20 still falls short, the constraint in that cell is **not** burner capacity and no K fixes
+  it — the search moves to `Tank Volume`, `Use Side Effectiveness`, or plant-loop flow.
+- **H7 SATURATION** — grid-max `dT(K=40) − dT(K=20) < 0.5 K`. This is the claim that a ceiling
+  *exists*, separately from where it is. If dT still climbs at 40× capacity, `implied dT` is not
+  tracking a delivered temperature approaching a setpoint and the whole "un-saturate the plant"
+  framing is wrong. **H7 can fail while H6 passes, and that would be the most informative outcome.**
+- **H8 POSITIVE CONTROL, and it is what stops H7 being vacuous** — the grid-MIN cell, already on the
+  ceiling at K = 10, is re-run at K = 20; its gain must be < 0.5 K. If *it* also keeps climbing, then
+  "< 0.5 K gain" is not a property of saturation and H7 would have measured the instrument rather
+  than the plant.
+
+Without H8, *"dT stopped moving"* and *"dT moves slowly at large K for every cell"* are the same
+observation. That is the class of defect this project keeps re-finding, so the control is in the run.
+
+**This probe is unaffected by the open all-channel-vs-hotel-only question (§0.11):** the gates are
+read hotel-scoped, and the hotel's own heaters receive the same multiplier under either resolution.
+So it is worth running while that decision is still with the user.
+
+---
+
+## 2026-08-04 03:25 — K escalation: **H6 FAILS, H7 PASSES** — burner capacity is REFUTED as the remaining constraint (jobs 1172028 / 1172031)
+
+Hotel-scoped, from `hd2elast_1172031.out`:
+
+| task | cell | K | ΔT |
+|---|---|---|---|
+| 0 | `sens_hotel_opt__SuperTall__MTL` (grid MAX) | 20 | **63.55 K** |
+| 1 | `sens_hotel_opt__SuperTall__MTL` (grid MAX) | 40 | **63.55 K** |
+| 2 | `B_cons__Tall__CLG` (grid MIN, control) | 20 | **65.50 K** |
+
+against K = 10: grid-MAX **63.56 K**, grid-MIN **65.50 K**.
+
+### Scorecard
+
+| gate | verdict | evidence |
+|---|---|---|
+| **H5** CONTROL | **PASS** | hotel volume 34940.2 / 34940.2 / 25061.8 — identical to arm H in all three tasks |
+| **H6** DECISIVE | 🔴 **FAIL** | grid-MAX at K = 20 is **63.55 K** — below 65.0 K, and 1.95 K from 65.50 K. It did not rise from K = 10; it fell 0.01 K. |
+| **H7** SATURATION | **PASS** | `dT(K=40) − dT(K=20) = 0.00 K` — dead flat |
+| **H8** POSITIVE CONTROL | **PASS** | grid-MIN gain K = 10 → K = 20 is **0.00 K**; a cell known to be on the ceiling is flat, so flatness discriminates and H7 is not vacuous |
+
+**This is the combination pre-registered as "the most informative outcome": H6 fails while H7 passes.**
+
+### What it means, stated precisely
+
+Across a **4× capacity range** — K = 10, 20, 40, i.e. 8,872 → 35,489 kW installed on a cell whose
+hotel draw is 34,940 m³/yr — the delivered rise does not move by one hundredth of a kelvin. **Burner
+capacity is not binding in the grid-maximum cell, and was not binding at K = 10 either.** No K fixes
+the 1.95 K gap, because the gap is not a capacity gap.
+
+Per H6's own pre-registration, that sends the search to `Tank Volume`, `Use Side Effectiveness` or
+plant-loop flow. But there is a second candidate H6 did not name, and on present evidence it is the
+more likely one: **63.55 K may simply BE that cell's unconstrained ceiling.** `implied dT` is
+`E / (V·ρc)` — a *volume-weighted average* of the per-use temperature rises in the hotel channel. If
+the `SuperTall` hotel channel carries a different mix of hot-water end-uses than `Tall` — a larger
+share of a lower-target use such as `HOTEL_BOT_LAUNDRY` — then its weighted ceiling is legitimately
+lower, and there is no defect at all.
+
+### 🔴 Which means H2's and H6's second clause was mis-specified — and this is NOT a licence to widen
+
+Both gates required the two extremes to agree **with each other** within 0.5 K, on the premise that
+*"a uniform plant is a valid control only if it delivers the same temperature everywhere."* That
+premise assumes a **single grid-wide ceiling**. H7 and H8 together falsify it: each cell has a stable
+ceiling, and the two ceilings differ by 1.95 K for a reason that 4× capacity cannot touch.
+
+**H2 and H6 stand as FAILED. They are not re-scored, not re-aimed, and not widened.** What changes is
+what may be *inferred* from them: they were built on a premise now shown to be false, so their FAIL
+is evidence about the premise, not about the plant. That distinction is the whole content of this
+entry — a gate that fails because its reference was wrong has still failed, and the honest record is
+"failed, and here is why the reference was wrong", never "passes once the reference is corrected".
+
+The same defect is already sitting in the campaign pre-registration: **`C3` requires hotel ΔT constant
+to within 0.5 K across all 56 cells, explicitly "across geometry groups".** On this evidence C3 would
+fail for a non-plant reason. It must be re-specified **before** the campaign runs, and re-specified
+on an independent measurement rather than on the convenience of passing — see the next entry.
+
+### What is now established about the original question
+
+**K = 10 does un-saturate the plant.** That was what the headroom check existed to determine, and
+three independent readings agree: the grid-MIN cell sits on the same 65.50 K as the whole `Tall__MTL`
+trio; the grid-MAX cell is invariant to a 4× capacity increase; and neither cell's volume moved.
+The plant is non-binding everywhere at K = 10, which is *stronger* than "the plant is a constant" —
+a non-binding plant drops out of the answer entirely.
+
+What is **not** established is the cause of the 1.95 K inter-cell spread. Until it is, the campaign
+stays blocked, because C3 cannot be re-specified on a guess.
+
+### Still N/A, as pre-declared
+
+`R0 FAIL` / `R3v FAIL` / `R3 PASS 1.4737` / `R4 PASS 119.1 %` in the same log are the expected N/A
+block — here the "pairs" are not even distinct cells, two of them being the same cell at two K, so
+the `r` axis has a repeated point. Do not quote any of them.
+
+---
+
+## 2026-08-04 03:57 — decomposition: **H9 PASS, H10 PASS, H11 PASS.** The 1.95 K gap is a use-MIX effect. **The plant question is CLOSED** (job 1172033)
+
+`3rdJ_09H_hotel_dT_decompose.py` on the two cells, both read at a K where the plant is provably
+non-binding (grid-MAX K = 40, grid-MIN K = 20).
+
+### The hotel channel has exactly two target temperatures, and every use hits its own exactly
+
+| use class | target schedule | grid-MAX ΔT | grid-MIN ΔT | Δ |
+|---|---|---|---|---|
+| `LAUNDRY` | Mixed Water At Faucet Temp – **180F** | 71.43 K | 71.43 K | **0.00** |
+| `BOOSTER` | Mixed Water At Faucet Temp – **180F** | 71.34 K | 71.34 K | **0.00** |
+| 9 shared faucet types (`*GPM140F`) | Mixed Water At Faucet Temp – **140F** | 49.17–49.23 K | 49.17–49.23 K | **0.00** every one |
+
+**Not one object is short of its own design rise, in either cell, to two decimal places.** Mechanism
+(B) THROTTLE is dead: there is no tank-volume, use-side-effectiveness or plant-loop-flow constraint
+left to find.
+
+### The gap is the 180 F volume share, and it reproduces to the second decimal by hand
+
+| cell | 180 F volume (laundry + booster) | share | 140 F share | weighted ΔT |
+|---|---|---|---|---|
+| grid-**MAX** `sens_hotel_opt__SuperTall__MTL` | 22,563.3 m³ | **64.57 %** | 35.43 % | **63.55 K** |
+| grid-**MIN** `B_cons__Tall__CLG` | 18,380.8 m³ | **73.34 %** | 26.66 % | **65.50 K** |
+
+    (0.7334 - 0.6457) x (71.40 - 49.19)  =  0.0877 x 22.21  =  1.95 K
+
+**That is the observed gap exactly.** This hand-check is deliberately computed by a different route
+than the script's own reconstruction — two 180 F/140 F shares and two design rises, no per-type
+table, no reweighting — so it is not the script agreeing with itself.
+
+### Scorecard
+
+| gate | verdict | evidence |
+|---|---|---|
+| **H11** CONTROL | **PASS** | the duplicated channel map reproduces the driver's hotel volume to **0.00000 %** in both cells (34,940.2 and 25,061.8 m³). The second source of truth is byte-identical to the first. |
+| **H9** PARTS | **PASS** | all 11 shared types agree to 0.00 K |
+| **H10** WHOLE | **PASS** | MIN's per-type rises re-weighted by MAX's volume shares = **63.55 K** against a measured 63.55 K, `\|d\| = 0.00 K` |
+
+**Mechanism (A) MIX is established. It required both H9 and H10 and got both.**
+
+#### The one caveat in H10, stated rather than buried
+
+11.95 % of the grid-MAX volume (5 faucet types: `0.17/0.18/0.67/1.58/1.67 GPM140F`) has no
+counterpart in the grid-MIN cell and therefore borrowed its **own** rise in the reconstruction — that
+share cannot, by itself, be evidence for the mix story. It does not weaken the conclusion, and the
+reason is checkable: every one of those five is a **140 F faucet measuring 49.17–49.22 K**, i.e. the
+same value the nine *shared* faucet types measure. Substituting the shared-faucet 49.19 K for all
+five moves the reconstruction by under 0.01 K. The hand-check above already does exactly that — it
+uses only two design rises — and lands on 1.95 K.
+
+### 🔴 What this closes, and what it re-opens
+
+**CLOSED — the plant.** `K = 10` un-saturates the DHW plant across the whole grid. Every hotel use
+delivers its full design rise; four times the capacity changes nothing (H7); the cell believed to be
+on its ceiling is flat (H8); and the two cells' ceilings differ only because their use mix differs
+(H9/H10). **There is no plant defect left, and no reason to raise K further.**
+
+**RE-OPENED — `TARGET_K = 49.2`, and this finally explains it.** `3rdJ_09H_resize_elasticity.py:45`
+carries `TARGET_K = 49.2`, long flagged as a wrong denominator without knowing what the right one
+was. It is now identified precisely: **49.2 K is the 140 F FAUCET design rise** — the measured faucet
+types come in at 49.17–49.23 K, so the constant is not invented, it is simply *scoped to one use
+class*. The hotel channel's aggregate rise is **63.55–65.50 K**, because the 180 F laundry and
+booster carry 65–73 % of the volume at 71.4 K.
+
+Consequences, both material:
+
+1. **R4's "133.2 % / 119.2 % of target" is an aggregate over a faucet-only denominator.** Every
+   quotation of R4 anywhere in this log is wrong by that factor and must not be repeated. The correct
+   denominator is either **per-use** (49.19 K for 140 F, 71.40 K for 180 F) or **per-cell aggregate**
+   (63.55 K for the grid max, 65.50 K elsewhere measured) — never a single grid-wide 49.2.
+2. **The original hotel finding was UNDERSTATED, not overstated.** The standing entry reads *"marginal
+   m³ served at 22.66 K vs a 49.2 K target"*. The real aggregate target is ~65 K, so arm H was
+   serving its marginal cubic metre at roughly **35 %** of the delivered rise, not 46 %. The finding
+   that started this whole thread is stronger than it was written, not weaker. (22.66 K is a marginal
+   OLS slope and ~65 K an average, so this is a direction, not a new coefficient — the re-derivation
+   is owed before the number is quoted.)
+
+### 🔴 `C3` must be re-specified — here is the successor, and why it is not a widening
+
+Campaign gate `C3` as written requires *"hotel delivered ΔT constant across all 56 cells to within
+0.5 K … it must hold ACROSS geometry groups"*. That is now known to be **false by construction**: the
+180 F share is a property of the tower's use mix, and it varies with geometry. C3 would fail in every
+run for a reason that has nothing to do with the plant.
+
+**C3 as written stands recorded as mis-specified. H2 and H6 stand recorded as FAILED.** Neither is
+re-scored. The successor gate tests the claim C3 was *trying* to make, against the quantity that is
+actually invariant:
+
+> **C3′ DECISIVE** — in all 56 cells, **every hotel WaterUse:Equipment type delivers its own design
+> rise**: 140 F types within 0.5 K of 49.19 K, 180 F types within 0.5 K of 71.40 K. Additionally the
+> per-cell aggregate must equal the 180 F/140 F volume-share reconstruction within 0.5 K, so that a
+> cell whose aggregate drifts for a *third* reason is still caught.
+
+This is **stricter than C3, not looser**: C3 checked one aggregate per cell, C3′ checks every object
+in every cell *and* the aggregate. It also has a defined failure mode — any object short of its
+design rise is a throttle — where C3 had one it could not distinguish from a mix difference. The
+justification comes from an independent measurement (H9/H10/H11 + the hand-check), not from the
+convenience of passing, which is the standard this project holds a re-specification to.
+
+### Campaign status — still HELD, and now for exactly one reason
+
+The plant blocker is gone. **The remaining blocker is the open question in §0.11, which is the
+user's call: does the resize apply to the hotel's heaters only, or to all four channels?**
+`resize_idf()` currently rewrites every `WaterHeater:Mixed` in the IDF. Launching 56 cells under the
+wrong resolution produces 56 runs that answer the wrong question. That decision is not the manager's
+to take, so the campaign is not submitted.
+
+---
+
+## 2026-08-04 — **§0.11 ANSWERED: ALL-CHANNEL RESIZE.** The campaign's last decision blocker is gone
+
+**User decision, verbatim: "je voudrais continuer avec 'all-channel resize'".**
+
+`resize_idf()` stays exactly as written — it rewrites **every** `WaterHeater:Mixed` in the IDF, all
+four channels. **No code change implements this decision.** What changes is what the campaign
+*claims*, and therefore what it is obliged to *report*.
+
+### 🔴 The claim this commits the deliverable to
+
+The resized campaign is **not** a hotel-side correction sitting on top of an otherwise-unchanged
+arm H. It is a **new arm for residential, office, retail AND hotel simultaneously.** Every comparison
+of a resized cell against arm H moves four channels at once, and every such comparison must say so in
+writing. §0.10 already gives direct evidence the non-hotel channels are saturated too — tower-wide ΔT
+on the `Tall__MTL` trio was still climbing 3–8 K from K = 6 → 10 (57.26 → 60.24, 54.04 → 60.36,
+52.37 → 60.68) at a K where the hotel-scoped reading was already pinned to three identical digits
+across cells whose draw differs 20 %. So the non-hotel movement is expected to be **large, not
+cosmetic**, and the write-up does not get to treat it as a rounding detail.
+
+### Three consequences carried into `resize_campaign.sh`, none optional
+
+1. 🔴 **`C1` widens from hotel-only to all four channels.** As pre-registered it checks *hotel* volume
+   unchanged ≤ 0.1 %. Under an all-channel resize, residential/office/retail draw is equally exposed
+   to an accidental change and nothing would catch it. A gate that cannot fail for three quarters of
+   what the intervention touches is the same defect this log has now recorded thirteen times.
+   **This is a strengthening of C1, not a re-aim of it** — the original clause survives verbatim as
+   the hotel sub-case, and three more channels are added to it.
+2. 🔴 **`C6 INFO` is added: per-channel resized − arm H DHW energy and volume, all four channels, all
+   56 cells.** It is **INFO and not a gate**, deliberately: there is no pre-registered expectation for
+   how far residential/office/retail *should* move, so the honest position is to measure it, not to
+   score it against a threshold invented after seeing it. **It must not be promoted to a gate later
+   on the strength of what it happens to show** — that is precisely how a gate becomes unfalsifiable.
+3. 🔴 **The magnitude warning is now tower-wide.** Hotel DHW alone went 2,578 → 7,008 GJ (×2.72) on
+   `Y2022__Tall__MTL`. With three further channels un-saturating, **tower EUI moves further than that
+   figure implies**, and the still-open hotel EUI band is no longer the only band this has to be
+   re-validated against.
+
+### What the decision does NOT settle
+
+K stays at **10** — evidenced by the sweep (R3 = 1.0013, K3 PASS) and shown non-binding by H7/H8, not
+by this decision. The hotel EUI band, the P3 re-specification and the Leg-2 corrigendum remain parked
+with the user. `H2`, `H6` and `C3`-as-written stay recorded as FAILED / mis-specified; none is
+re-scored, and this decision does not touch them.
+
+### Campaign status — the hold is now purely mechanical
+
+For the first time since the resize thread opened, **nothing about the campaign is waiting on a
+judgement call.** What remains is three script edits — `C3` → `C3′`, `C1` widened, `C6 INFO` added —
+and one discipline requirement: **the pre-registration block in the script header must be re-read
+against the code it claims to describe before submission.** A pre-registration that no longer matches
+what the script evaluates is not a pre-registration, and this campaign is about to change three of
+its five clauses at once.
+
+---
+
+## 2026-08-04 — 56-cell RESIZED campaign SUBMITTED (jobs 1172037 + 1172045), all-channel, K = 10
+
+**State change: the campaign is no longer held.** The plant thread closed with H7/H8/H9/H10/H11
+(the 1.94 K that failed H2 is use-mix, not throttling), and the user answered the open scope
+question on 2026-08-04: **all-channel resize**. What remained was script work, done here.
+
+### Jobs
+
+| job | what | log |
+|---|---|---|
+| `1172037` | 56-cell resized campaign, `--array=0-55%20`, K = 10 | `logs/resizecamp_1172037_*.out` |
+| `1172045` | scorecard, `--dependency=afterany:1172037` | `logs/resizescore_1172045.out` |
+
+`afterany`, not `afterok`, and deliberately: if a cell dies the scorer must still run and name the
+missing cells. A scorer that silently never runs leaves 56 verdicts absent with nothing to explain
+them — the quietest failure mode available.
+
+### What changed in the code, and why each change is a strengthening
+
+**1. `3rdJ_09H_resize_campaign_cell.py` — each cell now writes `hotel_dT_by_type.csv`.**
+This is the evidence `C3a` is scored on, produced *in the run* rather than reconstructed later by a
+second job re-opening 56 `eplusout.sql` files. The per-type reduction is **imported** from
+`3rdJ_09H_hotel_dT_decompose.py` — the module H9/H10/H11 were scored with (job 1172033) — so there
+is no third copy of the channel-resolution rules. It carries H11's own self-check per cell: the
+per-type hotel volume must reproduce the driver's `dhwvol_hotel` column to 0.01 % or the cell
+**refuses**. Design temperature is read from the *target temperature schedule name*
+(`Mixed Water At Faucet Temp - 140F` / `- 180F`), which is the causal input, and an object whose
+schedule carries no readable `F` is reported as `None` and itemised — never defaulted to 140,
+because 140 is a legitimate measured value and a default colliding with a real value is
+vacuous-gate #12.
+
+**2. `C1` → `C1′`: widened from hotel-only to all four channels.** The resize rewrites every
+`WaterHeater:Mixed`, so residential/office/retail draw is equally exposed to an accidental change.
+A hotel-only control could not fail for three quarters of what the intervention touches. Channels
+with zero draw in both arms are reported `no-draw`, never counted as agreement.
+
+**3. `C2` → `C2′`: re-specified, because as written it was unscoreable.** The original read
+"`INJ_HASH` identical to arm H in all 56 manifests, and area delta 0 m²". Two defects, both found
+by trying to code it:
+- the resized manifest is a **copy** of arm H's, so comparing its `INJ_HASH` with arm H's compares
+  a value with itself — **vacuous-gate #9 exactly**, a gate whose reference comes from the source
+  it audits;
+- **no area key exists anywhere in the manifest** (checked against
+  `out_H_allfix/campaign_233932d7/B_cons__Tall__CLG/manifest.json`, 2026-08-04 — `grep -i area`
+  returns nothing). The clause referred to a quantity the artefact does not carry.
+
+`C2′` tests the thing that can actually differ: `injected_resized.idf` differs from arm H's
+`injected.idf` **only** on `!- Heater Maximum Capacity` lines — exactly `PLANT_N_HEATERS` of them,
+each scaled by exactly K — plus the appended `Output:Variable` block. It subsumes the area claim: a
+geometry change would appear as a differing line.
+
+**4. `C3` → `C3a` + `C3b`: re-specified and SPLIT.** `C3` ("hotel ΔT constant across all 56 cells
+within 0.5 K, across geometry groups") is false by construction — the 180 F volume share is a
+use-mix property that varies with geometry (64.57 % vs 73.34 % between the measured grid extremes)
+— so it would have failed every run for a non-plant reason.
+
+- `C3a` DECISIVE — every hotel use-type delivers its own design rise: 140 F within 0.5 K of
+  49.19 K, 180 F within 0.5 K of 71.40 K. Reference = the H9/H10 measurement (job 1172033:
+  49.17–49.23 K and 71.34–71.43 K, both grid extremes, both cities). **Failure mode defined:** any
+  object short of its design rise is a throttle. Stricter than `C3`, which checked one aggregate
+  per cell and could not tell a throttle from a mix difference.
+- `C3b` CONTROL — the per-type table must reconcile with the driver's own hotel channel: volume to
+  0.01 % of `dhwvol_hotel`, energy to 0.01 % of `dhw_hotel`.
+
+🔴 **Why the split, and an admission about the pre-registration as it stood this morning.** The
+handoff's `C3′` bundled the per-type clause with "the per-cell aggregate equals its own 180 F/140 F
+volume-share reconstruction within 0.5 K". **That second clause is arithmetically implied by the
+first and cannot fail once it passes** — a weighted mean of values each within 0.5 K of their design
+rise is necessarily within 0.5 K of the weighted design mean. It would have printed a PASS that
+carried no information, in a gate advertised as "stricter than C3, with a defined failure mode".
+It is now **printed as a derived quantity and not scored**; `C3b` is the independent check it was
+reaching for. Bundling a measurement clause with a reconciliation clause under one verdict is
+vacuous-gate #13, recorded yesterday on `K2`/`K4` and repeated here in the very re-specification
+written to avoid it.
+
+**5. `C4c` added, a discriminator control on `C4`.** Arm H's own per-group elasticity must be below
+0.90 in every group where `C4` passes; a group already at ≥ 0.90 before the resize is a group where
+`C4`'s pass discriminates nothing. Arm H measured 0.5582 on `Tall__MTL`, so it is expected to pass
+— expected is not measured.
+
+**6. `C6 INFO` added** — per-channel resized − arm H DHW energy and volume, four channels, 56 cells,
+plus `C6_per_channel_delta.csv`. INFO and it stays INFO: no expectation was pre-registered for the
+non-hotel channels, and a number scored against an expectation invented after seeing it is not a
+test. `C5 INFO` is now all-fuel site energy shift, whole tower (the Leg-2 precedent); floor area is
+unchanged by construction (`C2′`), so the % shift *is* the EUI shift.
+
+### Order of work, so the pre-registration is one
+
+`3rdJ_09H_resize_campaign_score.py` and `resize_campaign_score.sh` were **written before the
+campaign was submitted**, and the gate texts in the scorer's docstring and in
+`resize_campaign.sh`'s header were reconciled against each other first. A pre-registration that
+does not match the code that evaluates it is not a pre-registration.
+
+Every gate itemises what it could not read: incomplete cells are listed and excluded, unreadable
+channels are counted separately from violations, unparseable design targets are named. A reader
+returning 0.0 for input it cannot parse blames the simulation for its own gap — that cost 16
+spurious FAILs in job 1171607.
+
+### What is NOT re-scored
+
+`H2` and `H6` stand **FAILED**. `C3` stands **mis-specified**. None is re-aimed, none is widened.
+What changed is what may be *inferred* from them, which is written up in the 2026-08-04 sections
+above.
+
+### Expected reading order when 1172045 lands
+
+`C3a` first. `C4` is only meaningful if `C3a` holds — an elasticity of 1.0 in a group whose plant is
+still binding is a coincidence, not a clean lever. Then `C1′`/`C2′`/`C3b`/`C4c` as the controls that
+license reading either, then `C5`/`C6` as INFO.
+
+🔴 **Every comparison in this campaign moves four channels at once.** It is not a hotel-side
+correction on top of an otherwise-unchanged arm H; it is a **new arm** for residential, office,
+retail and hotel. Anything written up from it must say so.

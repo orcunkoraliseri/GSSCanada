@@ -52,7 +52,16 @@ import sys
 SIF = "/speed-scratch/o_iseri/step9_spike/energyplus_24.2.0.sif"
 SIF_EXE = "/EnergyPlus-24.2.0-94a887817b-Linux-Ubuntu22.04-x86_64/energyplus"
 RHO_C = 4.184e6
-N_HEATERS = 6
+
+# The heater count is a PROPERTY OF THE CELL, measured per IDF -- it is NOT a constant.
+# This was hard-coded to 6 until 2026-08-03, when the headroom check on the grid-maximum cell
+# (`sens_hotel_opt__SuperTall__MTL`, job 1171855_0) refused with "expected 6, rewrote 11".
+# SuperTall carries 11 `WaterHeater:Mixed`, Tall carries 6, so the "installed = 447.6 kW"
+# figure quoted throughout the K sweep is a Tall number and was never a grid-wide constant.
+# The guard below is therefore reformulated: it no longer asserts a magic number, it asserts
+# that EVERY heater the IDF declares was rewritten and that nothing else moved. A guard that
+# encodes an assumption about the stock cannot detect that the assumption is wrong.
+MIN_HEATERS = 1
 
 EXTRA_OUTPUTS = """
 Output:Variable,*,Water Use Equipment Total Volume,Hourly;
@@ -76,19 +85,28 @@ def resize_idf(src, dst, K):
         return "    %.6f,%s" % (new, m.group(2))
 
     pat = re.compile(r"([0-9.eE+-]+),(\s*!- Heater Maximum Capacity\b)")
+    # Count what the IDF actually declares BEFORE rewriting, then require that the rewrite hit
+    # every one of them. This is the same guard as before -- "no heater was left behind" -- but
+    # its reference now comes from the file under edit rather than from a number I believed.
+    declared = len(pat.findall(txt))
     txt, cnt = pat.subn(sub, txt)
-    if cnt != N_HEATERS:
-        raise SystemExit("REFUSING: expected %d Heater Maximum Capacity fields, rewrote %d"
-                         % (N_HEATERS, cnt))
+    if declared < MIN_HEATERS:
+        raise SystemExit("REFUSING: no Heater Maximum Capacity field found in %s" % src)
+    if cnt != declared:
+        raise SystemExit("REFUSING: IDF declares %d Heater Maximum Capacity fields, rewrote %d"
+                         % (declared, cnt))
     if "!- Tank Volume" not in txt:
         raise SystemExit("REFUSING: Tank Volume fields vanished -- the edit is not surgical")
     open(dst, "w").write(txt + "\n" + EXTRA_OUTPUTS)
-    print("  K = %.4f, rewrote %d burners:" % (K, cnt))
+    base_kW = sum(o for o, _ in seen) / 1000.0
+    new_kW = sum(n for _, n in seen) / 1000.0
+    print("  K = %.4f, rewrote %d burners (IDF declared %d):" % (K, cnt, declared))
     for old, new in seen:
         print("      %14.2f W -> %14.2f W" % (old, new))
-    print("      installed total %.1f kW -> %.1f kW"
-          % (sum(o for o, _ in seen) / 1000.0, sum(n for _, n in seen) / 1000.0))
-    return seen
+    print("      installed total %.1f kW -> %.1f kW" % (base_kW, new_kW))
+    # Emitted so the per-cell installed base is on the record rather than assumed to be 447.6 kW.
+    print("PLANT_BASE kW_base=%.4f kW_resized=%.4f n_heaters=%d" % (base_kW, new_kW, cnt))
+    return seen, base_kW, new_kW
 
 
 def sql_totals(sql_path):
@@ -128,7 +146,7 @@ def main():
     print("=" * 88)
 
     dst = os.path.join(outdir, "injected_resized.idf")
-    resize_idf(os.path.join(cell, "injected.idf"), dst, K)
+    _, base_kW, new_kW = resize_idf(os.path.join(cell, "injected.idf"), dst, K)
 
     run_dir = os.path.join(outdir, "run")
     os.makedirs(run_dir, exist_ok=True)
@@ -147,8 +165,11 @@ def main():
             print("".join(open(err, errors="replace").readlines()[-25:]))
         sys.exit(1)
 
-    Vh, Eh, dTh = summarise("arm H  (447.6 kW)", os.path.join(cell, "run", "eplusout.sql"))
-    Vr, Er, dTr = summarise("resized(%6.1f kW)" % (447.6 * K), os.path.join(run_dir, "eplusout.sql"))
+    # Both labels carry the cell's OWN measured installed capacity. They used to print
+    # `447.6` and `447.6 * K`, which are Tall-geometry numbers -- on a SuperTall cell that
+    # label would have been wrong by a factor of ~2 while looking authoritative.
+    Vh, Eh, dTh = summarise("arm H  (%7.1f kW)" % base_kW, os.path.join(cell, "run", "eplusout.sql"))
+    Vr, Er, dTr = summarise("resized(%7.1f kW)" % new_kW, os.path.join(run_dir, "eplusout.sql"))
     dv = 100.0 * (Vr / Vh - 1.0) if Vh else float("nan")
     de = 100.0 * (Er / Eh - 1.0) if Eh else float("nan")
     r1 = abs(dv) <= 0.1
