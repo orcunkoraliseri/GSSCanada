@@ -169,7 +169,8 @@ def _shares(frame: pd.DataFrame, cols: list, fallback: np.ndarray) -> tuple:
     return out, int(zero.sum())
 
 
-def aggregate_cell(cell_dir: str, eplus_idd: str, strict: bool = True) -> dict | None:
+def aggregate_cell(cell_dir: str, eplus_idd: str, strict: bool = True,
+                   idf_name: str = "injected.idf") -> dict | None:
     name = os.path.basename(cell_dir.rstrip("\\/"))
     mpath = os.path.join(cell_dir, "manifest.json")
     if not os.path.isfile(mpath):
@@ -217,7 +218,18 @@ def aggregate_cell(cell_dir: str, eplus_idd: str, strict: bool = True) -> dict |
         print(f"  [FAIL] {name}: row counts hourly={n} channel={len(chan)}, expected 8760")
         return None
 
-    areas = parse_channel_areas(os.path.join(cell_dir, "injected.idf"),
+    # `idf_name` exists only because the RESIZED arm writes `injected_resized.idf` -- it is the file
+    # EnergyPlus actually ran, so it is the one whose areas must be parsed. The default is
+    # `injected.idf`, so every arm aggregated before 2026-08-04 is byte-identical. Deliberately NOT
+    # solved with a symlink named `injected.idf`: in every other arm that name means "arm H's
+    # injected IDF", and a later reader diffing `injected.idf` across arms would silently compare a
+    # resized IDF against an unresized one and read the burner capacity change as an injection
+    # difference. A flag says what is happening; a same-named symlink hides it.
+    idf_path = os.path.join(cell_dir, idf_name)
+    if not os.path.isfile(idf_path):
+        print(f"  [FAIL] {name}: no {idf_name} in {cell_dir}")
+        return None
+    areas = parse_channel_areas(idf_path,
                                 os.path.join(cell_dir, "run", "eplusout.sql"), eplus_idd)
     area_vec = np.array([areas[c] for c in CHANNELS], dtype=float)
     area_share = area_vec / area_vec.sum() if area_vec.sum() > 0 else np.full(len(CHANNELS), 1 / len(CHANNELS))
@@ -446,6 +458,25 @@ def build_peak(res: dict) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+def _aggregate_and_build(task: tuple) -> dict | None:
+    """One cell, start to finish, in whatever process picks it up.
+
+    `build_diurnal` / `build_peak` are called HERE rather than back in `main` so a worker returns
+    only the three small frames plus meta. `aggregate_cell`'s raw result carries several 8760-row
+    frames per cell (`chan`, `hourly`, `cal`, `hourly_channel_total`) which would otherwise be
+    pickled back across the process boundary for nothing.
+
+    Calling them here also keeps `--jobs 1` byte-identical to the pre-2026-08-04 sequential loop:
+    same functions, same order, same arguments -- only the process they run in can differ.
+    """
+    cell_dir, eplus_idd, strict, idf_name = task
+    res = aggregate_cell(cell_dir, eplus_idd, strict=strict, idf_name=idf_name)
+    if res is None:
+        return None
+    return {"annual": res["annual"], "diurnal": build_diurnal(res),
+            "peak": build_peak(res), "meta": res["meta"]}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Step 8E -- per-channel aggregation (dr_L3-10)")
     ap.add_argument("--campaign-dir", required=True)
@@ -454,6 +485,16 @@ def main() -> None:
     ap.add_argument("--no-strict", dest="strict", action="store_false",
                     help="aggregate cells whose closure gates fail (diagnostic only -- the "
                          "resulting EUIs are NOT publishable; default refuses them)")
+    ap.add_argument("--idf-name", default="injected.idf",
+                    help="per-cell IDF whose areas are parsed. Default `injected.idf`, which is "
+                         "every arm through H. The RESIZED arm writes `injected_resized.idf`.")
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="cells aggregated concurrently, one process each. Default 1 = the "
+                         "original sequential loop, so every arm aggregated before 2026-08-04 "
+                         "reproduces exactly. Each cell is an independent read of its own "
+                         "~160 MB eplusout.sql, so this scales with cores until disk-bound; it "
+                         "changes NO arithmetic -- results are collected with `map`, which "
+                         "preserves submission order, so the output row order is identical too.")
     ap.set_defaults(strict=True)
     args = ap.parse_args()
 
@@ -467,14 +508,22 @@ def main() -> None:
     print(f"=== Step 8E aggregation | {len(cells)} cell(s) in {args.campaign_dir} | "
           f"strict={args.strict} ===")
 
+    tasks = [(cd, args.eplus_idd, args.strict, args.idf_name) for cd in cells]
+    if args.jobs > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        print(f"  aggregating {args.jobs} cells at a time")
+        with ProcessPoolExecutor(max_workers=args.jobs) as ex:
+            results = list(ex.map(_aggregate_and_build, tasks))
+    else:
+        results = [_aggregate_and_build(t) for t in tasks]
+
     annual, diurnal, peak, meta = [], [], [], []
-    for cd in cells:
-        res = aggregate_cell(cd, args.eplus_idd, strict=args.strict)
+    for res in results:
         if res is None:
             continue
         annual.append(res["annual"])
-        diurnal.append(build_diurnal(res))
-        peak.append(build_peak(res))
+        diurnal.append(res["diurnal"])
+        peak.append(res["peak"])
         meta.append(res["meta"])
         m = res["meta"]
         print(f"  [ok] {m['cell_tag']:<34} site {m['site_energy_GJ']:9.1f} GJ | "

@@ -1265,16 +1265,19 @@ class AugmentationValidator4Split:
             return float(np.nanmean(arr[:, idx])) if idx else float("nan")
 
         def _grade_band(v, lo, hi, hard=True):
-            # RW6 is a WARN-severity gate per the val doc's "RETAIL channel"
-            # table (outside-band -> WARN column; no FAIL column). Call with
-            # hard=False so a real (non-NaN) out-of-band value -- e.g. the
-            # Step-3-documented weekday signal-strength gap where the OBSERVED
-            # tiled rate is itself ~half the dr_L3-06 foot-traffic target --
-            # degrades to WARN, and a missing stratum (NaN, e.g. 2005 Sunday)
-            # is WARN not FAIL. NOT a threshold relaxation: the band [lo,hi] and
-            # the 30% WARN buffer are unchanged; only the severity floor matches
-            # the pre-existing spec. hard=True keeps the strict behaviour for any
-            # future caller that wants an out-of-band FAIL.
+            # [V2-D1, 2026-08-04] hard=True is the correct default and is no
+            # longer overridden at the call sites below. Prior code called
+            # this with hard=False on the claim that RW6's val-doc table has
+            # "no FAIL column" -- but RW1/RW3/RW4/RW5/RW8 have the identical
+            # table shape (Gate/Metric/PASS/WARN, no explicit FAIL column)
+            # and all FAIL via self._grade() when they miss the WARN buffer;
+            # the section is titled "Hard gates -- RETAIL channel". hard=False
+            # made an out-of-band value structurally incapable of failing --
+            # e.g. weekday 0.0453 against the 0.06 floor (24.5% short, and
+            # outside the 30% WARN buffer's 0.048 floor) reported WARN instead
+            # of FAIL. Catalogue class #14, severity-vacuous gate (Codex C-3).
+            # Sibling RW7 QC<AB Sunday genuinely IS a documented-derivation
+            # WARN cap (sampling SE analysis, job 1128112) -- that one stays.
             if np.isnan(v):
                 return "fail" if hard else "warn"
             if lo <= v <= hi:
@@ -1293,23 +1296,23 @@ class AugmentationValidator4Split:
         peaks = {}
         for cy in self.cycles:
             v_wd = _rate(syn, 1, weekday_win)
-            lvl = _grade_band(v_wd, 0.06, 0.10, hard=False)
+            lvl = _grade_band(v_wd, 0.06, 0.10)
             self._rec(lvl, "RW6", f"Weekday 12:00-14:00 rate {cy}: {v_wd:.4f} (target 0.06-0.10)")
 
             v_sat = _rate(syn, 2, sat_win)
-            lvl = _grade_band(v_sat, 0.09, 0.12, hard=False)
+            lvl = _grade_band(v_sat, 0.09, 0.12)
             self._rec(lvl, "RW6", f"Saturday 13:00-16:00 rate {cy}: {v_sat:.4f} (target 0.09-0.12)")
 
             v_qc = _rate(syn, 3, qc_sun_win, pr_code=PR_QC)
-            lvl = _grade_band(v_qc, 0.04, 0.07, hard=False)
+            lvl = _grade_band(v_qc, 0.04, 0.07)
             self._rec(lvl, "RW6", f"Sunday QC (PR=24) 12:00-17:00 rate {cy}: {v_qc:.4f} (target 0.04-0.07)")
 
             v_ab = _rate(syn, 3, ab_sun_win, pr_code=PR_AB)
-            lvl = _grade_band(v_ab, 0.06, 0.10, hard=False)
+            lvl = _grade_band(v_ab, 0.06, 0.10)
             self._rec(lvl, "RW6", f"Sunday AB (PR=48) 12:00-16:00 rate {cy}: {v_ab:.4f} (target 0.06-0.10)")
 
             v_night = _rate(syn, 1, night_win)  # night window applies across day-types; weekday used as proxy pool
-            lvl = _grade_band(v_night, 0.000, 0.003, hard=False)
+            lvl = _grade_band(v_night, 0.000, 0.003)
             self._rec(lvl, "RW6", f"Night 00:00-05:00 rate {cy} (weekday pool): {v_night:.4f} (target 0.000-0.003)")
 
             peaks[cy] = {"weekday": v_wd, "sat": v_sat, "qc_sun": v_qc, "ab_sun": v_ab}

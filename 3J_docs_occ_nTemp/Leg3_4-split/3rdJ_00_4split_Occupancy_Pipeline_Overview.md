@@ -74,7 +74,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  "4 heads" in the PNG = diagram shorthand; 3 GSS heads is authoritative      ║
 ║  retail targets (dr_L3-06): wkday 12-14h 0.06-0.10 CONFIRMED (~0.079);       ║
 ║    Sat 13-16h 0.09-0.12 | Sun AB 0.06-0.10 | Sun QC 0.04-0.07 (regulated)    ║
-║    night 0.000-0.003 | episode-time share ~2.1-2.3% stable                   ║
+║    night 0.000-0.003 | episode-time share 1.50-2.14%, -25% (not stable)      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 5 — ARCHETYPE LINKAGE                                                  ║
 ║  Residential Census linkage: DONE (Leg 1) | Office NOCxNAICS: DONE (Leg 2)   ║
@@ -108,11 +108,12 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  Tag-2 exact-match dispatch:                                                 ║
 ║    apartment tags -> residential REPLACE (Number_of_People = HHSIZE)         ║
 ║    office tags    -> NECB office  x AT_WORK_fraction(t)                      ║
-║    Retail tags    -> People = 0.95 x peak-normalized shape_cd(t) in          ║
+║    Retail tags    -> People = 0.95* x peak-normalized shape_cd(t) in         ║
 ║                      customer hours; staff-only slots (<=0.10) = baseline    ║
-║                      (dr_L3-06; density ~3.7 m2/person NEVER scaled)         ║
+║                      (dr_L3-06; density 25.0 m2/person NEVER scaled)         ║
 ║    GuestRoom5/6/7 -> NECB hotel   x hotel_multiplier(t,month,PR) monthly     ║
-║    hotel amenity + service/MEP (~52% gross) -> NECB baseline, untouched      ║
+║    hotel amenity + service/MEP -> NECB baseline, untouched (measured         ║
+║    20.6%/21.4% of gross -- see header note above for the superseded value)   ║
 ║  missing channel -> falls back to NECB baseline (additive-safe)              ║
 ║  !! HARD WIRING GATE (Leg-2 bug): assert modulated schedules referenced      ║
 ║     by the CORRECT field (Number_of_People_Schedule_Name, NOT                ║
@@ -122,7 +123,9 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  Status: PLANNED (Leg 3)                                                     ║
 ║                                                                              ║
 ║  2-city sweep: CAN_MTL Z6 (6A) + CAN_CLG Z7A -- geometry-identical IDFs      ║
-║    (SuperTall 40,846 / Tall 26,750 m2) -> EUI deltas isolate climate         ║
+║    (SuperTall 135,857.6 / Tall 72,623.1 m2, measured -- see header note      ║
+║     above for the superseded value + agg_meta.csv) -> EUI deltas isolate     ║
+║     climate                                                                  ║
 ║  scenarios: Default vs cycles 2005-2022 vs 2030 bands (WFH x in-store x      ║
 ║    hotel SARIMA) -> EUI table per scenario x climate x channel               ║
 ║  EUI gates per channel: as-modelled band = PASS, empirical band = INFO       ║
@@ -143,6 +146,24 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  calibrate vs NRCan SCIEU (commercial analogue of the SHEU anchoring)        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
+
+> 🔴 **Box corrections 2026-08-04 (V2-C3/C4/C5) — three inline numbers above are wrong, retired here
+> to keep the box unreflowed (full derivation + parse command in the companion doc):**
+> - **Retail episode-time share** (STEP 4 lane) was "~2.1-2.3% stable"; measured per cycle it is
+>   **1.50-2.14%, declining ~25% (2005→2022)**, not stable — `Step2_docs/3rdJ_02_harmonizeGSS_4split_val.md:77-82`.
+>   The near-flat 0.97 2030 lever is **not** contradicted by this decline: R2's saturation argument
+>   (2005–2022 = the steep phase of e-commerce displacement, now plateaued) reconciles the two — see
+>   `3rdJ_00_4split_Occupancy_Pipeline.md` Step 2A.
+> - **`0.95*`** (STEP 7 lane, retail injection) is the injected model's *office* schedule peak, not an
+>   independently sourced NECB retail/sales peak fraction — a stated limitation (V2-F citation work
+>   owed), not a bug; the 0.9215 = 0.95×0.97 injector output is separately verified exact.
+> - **Retail density** (STEP 7 lane) was "~3.7 m2/person"; parsed from the injected IDF it is
+>   **25.0 m2/person, identical to office** — not an intended retail value. It is one symptom of a
+>   wider pattern: occupant density and plug density (`7.5028 W/m²`) are each **one blanket office
+>   value across all 17 space types in both towers**, while lighting **is** per-space-type. Consequence:
+>   office is the one channel these two constants are plausibly right for, so correcting them cannot
+>   move office — which *strengthens* the office band-applicability argument (V2-B1). Source:
+>   `improvements/investigation/investigation_v2/3rdJ_L3_backward_audit_2026-08-04.md` §B-11.
 
 ---
 
@@ -195,7 +216,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 | Retail = customer presence only | Staff are AT_WORK in GSS; worker density already lives in the NECB baseline being modulated. |
 | Hotel forecast via SARIMA, not the Transformer | Population-aggregate monthly series, no respondents behind it; 3 GSS heads + SARIMA side-track is authoritative over the PNG's "4 heads". |
 | Tag 2 = per-Space routing key | PNNL prototypes leave Space Type blank; Tag 2 is the verified function string (exact match, not substring). |
-| Service / MEP (~52 % gross) untouched | No occupant-driven demand worth modelling; no GSS signal. |
+| Service / MEP (20.6 % · 21.4 % of gross, measured — see header note above) untouched | No occupant-driven demand worth modelling; no GSS signal. |
 | Additive on Leg 2 | Missing channel → NECB fallback; residential + office injection unchanged → no prior figure invalidated. |
 | One scenario lever per channel | WFH (office), in-store share (retail), SARIMA trend (hotel) — re-runnable sensitivity bands, the Leg-2 reviewer-defusing pattern. |
 | Wiring + differentiation gates mandatory | The Leg-2 People-field bug passed every input-side check; only output-side differentiation catches this failure class. |
@@ -217,7 +238,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 8. Interpolate-to-Timestep — RESOLVED 2026-07-02 (user-confirmed): inherit the Leg-2 choice; apply uniformly to retail + hotel schedules; record the inherited value in the Step-7 doc.
 9. Restaurant channel (`occPRE==7`) — available all cycles, explicitly out of scope (no prototype Space to drive).
 10. Transformer rare head training recipe (dr_L3-08) — RESOLVED 2026-07-02. Sourced from deep-research report [dr_L3-08_rare_head_extension_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-08_rare_head_extension_REPORT.md). Head-only Warmup (5 epochs) followed by Joint Fine-Tuning (15 epochs) with PCGrad. Rarity is addressed using BCE loss with $pos\_weight = 49$, corrected post-hoc by subtracting $\ln(49) \approx 3.89$ from raw logits during inference. The old heads are protected using regression gates ($\Delta JS \le 0.002$ bits), and the toothless JS gate is augmented with PR-AUC $\ge 0.15$ and F1 $\ge 0.25$ gates to catch all-zeros failure.
-11. Retail multiplier normalization + diurnal targets — RESOLVED 2026-07-02 ([dr_L3-06_retail_diurnal_targets_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-06_retail_diurnal_targets_REPORT.md)): peak-normalized shape-only injection, `retail_schedule_multiplier(t,c,d) = 0.95 × shape_c_d(t)` (Richardson 2010 lineage; raw-fraction injection REJECTED); staff-only slots (baseline ≤ 0.10) keep code; 2005→2022 level drift routed to the Step-6B lever applied before normalization. Weekday 0.06–0.10 gate CONFIRMED (≈ 0.079); NEW Saturday 0.09–0.12 @ 13–16h; Sunday AB 0.06–0.10 / QC 0.04–0.07; night 0.000–0.003; + QC-Sunday sub-axis on the 2030 lever.
+11. Retail multiplier normalization + diurnal targets — RESOLVED 2026-07-02 ([dr_L3-06_retail_diurnal_targets_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-06_retail_diurnal_targets_REPORT.md)): peak-normalized shape-only injection, `retail_schedule_multiplier(t,c,d) = 0.95 × shape_c_d(t)` (Richardson 2010 lineage; raw-fraction injection REJECTED); staff-only slots (baseline ≤ 0.10) keep code; 2005→2022 level drift routed to the Step-6B lever applied before normalization. 🔴 **CORRECTED 2026-08-04 (V2-C4):** 0.95 is the office-baseline peak, inherited — not independently retail-sourced; stated limitation, re-sourcing owed to V2-F citation work; method unaffected. 🔴 **CORRECTED 2026-08-04 (V2-C5):** the 2005→2022 level drift is **1.50–2.14 %, a ~25 % decline** (not "~2.1–2.3 % stable"), reconciled with the near-flat 0.97 2030 lever via the saturation argument (see companion doc Step 2A). Weekday 0.06–0.10 gate CONFIRMED (≈ 0.079); NEW Saturday 0.09–0.12 @ 13–16h; Sunday AB 0.06–0.10 / QC 0.04–0.07; night 0.000–0.003; + QC-Sunday sub-axis on the 2030 lever. 🔴 **CORRECTED 2026-08-04 (V2-C8):** the ~~Richardson 2010 lineage~~ citation above is corrected. Richardson, Thomson & Infield (2008, *Energy and Buildings* 40(8), 1560–1566) and the 2010 follow-on (Richardson, Thomson, Infield & Clifford, *Energy and Buildings* 42(10), 1878–1887) were opened and read (V2-F1): they establish a **household-level first-order Markov chain over the active-occupant count S(t) ∈ {0…N}** at ten-minute resolution, with separate weekday/weekend calibration — **not** the any-present×N-style shape/amplitude model this project had cited them as supporting. Full text is paywalled; correction rests on abstracts + methods, not a page reference. Method and verdict unaffected — only the attribution changes.
 12. Step-8/9 per-channel EUI reporting basis + paper novelty positioning — RESOLVED 2026-07-02 ([dr_L3-10_mixeduse_reporting_positioning_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-10_mixeduse_reporting_positioning_REPORT.md)): dual-basis EUI (CFA primary + occupiable GFA share for SCIEU comparison), hourly load-weighted central-plant allocation, service/MEP prorated by area; ±2 pp EUI-share gate confirmed project-novel. Novelty matrix: the TUS→4-channel→single-stacked-tower→2030 combination is unclaimed; differentiate vs Doma & Ouf (2023/2024), Buttitta & Finn (2020), Widén & Wäckelgård (2010).
 13. Step-4 backbone keep/augment/replace at 3 heads vs 2023–2026 alternatives — RESOLVED 2026-07-02. Sourced from deep-research report [dr_L3-11_architecture_pressure_test_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-11_architecture_pressure_test_REPORT.md). Keep + targeted upgrades (Warmup + PCGrad + Logit-Adjusted BCE + Raking). MDLM rejection stands due to latency and transition noise.
 14. Step-4 output representation — RESOLVED 2026-07-02. Sourced from deep-research report [dr_L3-12_output_representation_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-12_output_representation_REPORT.md). Keep independent binary heads calibrated using logit-adjusted sigmoid outputs, paired with a decode-time Threshold-Normalized Argmax Projection to enforce mutual exclusivity (100% physical consistency) without distorting individual marginals. Validation enforces an Impossible-State Rate (ISR) gate of ≤ 0.5% before projection.

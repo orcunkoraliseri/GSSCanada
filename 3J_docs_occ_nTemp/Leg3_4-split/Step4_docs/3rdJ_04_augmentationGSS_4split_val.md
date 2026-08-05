@@ -57,7 +57,7 @@ OW1–OW6 unchanged from Leg 2 (presence RMS ≤ 5 pp / diurnal r ≥ 0.95 / pea
 
 | Gate | Metric | PASS | Severity |
 |---|---|---|---|
-| ISR-raw | Impossible-State Rate on **raw** model outputs (slots with > 1 of {home, work, retail} over threshold) | **≤ 0.5 %** | FAIL (encoder failed to learn negative location correlation) |
+| ISR-raw | Impossible-State Rate on **raw** model outputs (slots with > 1 of {home, work, retail} over threshold) | **≤ 0.5 %** | ~~FAIL (encoder failed to learn negative location correlation)~~ → **WARN** [V2-D2, 2026-08-04]. **Deviation record:** original bar was ≤ 0.5 % (Leg-2 2-channel threshold); relaxed to a 1.5 % soft, never-FAIL bar on **2026-07-20** (validator build entry, this doc, §Progress Log) on the argument that a 3rd co-active channel raises pre-projection collisions by construction; **actually observed 0.7031 %** on the locked production pool (`step4_validation_report.txt`, both `seed_3_raked3_mindwell_actv` and `seed_3_g3fix_...` runs) — i.e. **above the original 0.5 % bar**, and the code (`_grade_isr_raw`) reported it `[PASS]`, not even `[WARN]`, against the relaxed bar. Binding gate remains ISR-**final** (= 0 % by construction, unaffected by this correction). |
 | ISR-final | ISR on final projected/raked schedules | **= 0 %** by construction | FAIL |
 | GA-3 | Activity↔occupancy FLOATING discordance, extended to the 3-way state (WORK/HOME/RETAIL/NEITHER) | ≤ obs + 2 pp | WARN ≤ +5 / FAIL > +5 |
 | GB-3 | Transition flicker ratio per channel (home, work, retail) vs obs | ≤ 1.25× | WARN ≤ 1.5× / FAIL > 1.5× |

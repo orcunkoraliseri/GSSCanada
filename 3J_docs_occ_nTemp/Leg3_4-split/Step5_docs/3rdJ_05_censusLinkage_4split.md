@@ -1114,3 +1114,111 @@ version** — expected, since MIN_POOL=15's more-broadened candidate pools chang
 which donor diary each census agent draws.
 
 Not advancing to Step 6 per instructions.
+
+### 2026-08-04 — MIN_POOL=15 justification rewritten (V2-C9): the R3-attributed Andridge & Little anchor does not exist (employee)
+
+**Premise refuted.** V2-C9 was originally scoped to re-justify `MIN_POOL=15`
+using "the adjustment-cell floor convention of n≥10-20" that internal report
+R3 attributed to Andridge & Little (2010). **That anchor does not exist.**
+V2-F1/F3 opened Andridge & Little (2010), *A Review of Hot Deck Imputation for
+Survey Non-response* (PMC3130338), in full: its only numeric threshold is in
+§8.3, describing the authors' own NHANES III simulation design ("We required a
+minimum of five respondents in each imputation cell to proceed with hot deck
+imputation; this minimum was met in all runs") — their own study's choice
+(n=5), not a cited convention. §3.1 (donor reuse / cell collapsing) treats the
+issue qualitatively ("the optimal choice of *d* is an interesting topic for
+research") with no numeric floor anywhere. This entry replaces the refuted
+justification with (a) a literature search for a real anchor and (b) an
+honest analyst-judgement justification that does not depend on it, written
+**independently of gate W1**, per the task's own acceptance test.
+
+**Anchors searched, access status, and result:**
+
+| Source | Access | Numeric floor found? |
+|---|---|---|
+| Andridge & Little (2010), PMC3130338 | Full text, open access | Only §8.3: n=5, the authors' own NHANES III simulation setting, not a stated convention. §3.1 discusses the bias-variance tradeoff qualitatively; no numeric floor. |
+| Kalton & Kasprzyk (1986), "The Treatment of Missing Survey Data," *Survey Methodology* 12:1-16 | Not accessible — StatCan catalogue page (12-001-X198600114404) returns metadata/citation only; a guessed direct-PDF path 404'd; no other free full text located | Not found (primary text unreachable) |
+| Kalton (1983), *Compensating for Missing Survey Data* (ISR, Univ. of Michigan) | Not accessible — book, no free full text or excerpt located | Not found (primary text unreachable) |
+| Cox (1980), "The Weighted Sequential Hot Deck Imputation Procedure," ASA Proceedings | Not accessible in the original; only secondary descriptions (RTI summary; Andridge & Little's own citation) located, describing the donor-reuse-limiting mechanism, not a minimum-cell-size rule | Not found in the secondary sources available |
+| Little & Rubin (2002), *Statistical Analysis with Missing Data*, 2nd ed., §4 | Not accessible — paywalled book, no excerpt located | Not found (primary text unreachable) |
+| US Census Bureau Technical Papers TP-63 / TP-66 | Not accessible — primary documents not locatable; secondary Census sources (CPS/SIPP imputation methodology pages, 2020 Census imputation memo) discuss adjustment-cell collapsing qualitatively ("complications arise... many small or empty adjustment cells") with no stated numeric floor | Not found in the sources reachable |
+| General search for a "minimum donor/cell size ~10-20" hot-deck convention | Multiple open queries | No source located naming this as a convention — consistent with this project's earlier finding that the US Census CPS "collapse below n=10" anchor was also unconfirmable |
+
+**Conclusion: no numeric minimum-donor / adjustment-cell-size convention was
+located in any of the six named sources, nor in general search.** Recorded
+here as a real negative result (several primary sources — Kalton & Kasprzyk
+1986, Kalton 1983, Cox 1980, Little & Rubin 2002 — were paywalled/unreachable
+by the tools available this session, so absence of evidence in the reachable
+subset is not proof the convention is absent from the literature entirely;
+only that it could not be located and should not be cited as if verified).
+
+---
+
+**Justification for `MIN_POOL = 15` (independent of any downstream validator
+gate):**
+
+Andridge & Little (2010) frame adjustment-cell size as a bias-variance
+tradeoff, not a threshold rule: smaller cells reduce bias from
+donor-recipient mismatch on unobserved characteristics correlated with the
+imputed variable, while larger cells reduce variance by drawing on more
+distinct donors and limiting how often any single donor diary is reused. The
+one number the paper gives (§8.3, n=5) is sized to their own NHANES III
+design, not offered as a portable rule, and no source checked for this task —
+Andridge & Little in full, Kalton & Kasprzyk (1986), Kalton (1983), Cox
+(1980), Little & Rubin (2002) §4, Census TP-63/TP-66 — was found to state a
+general numeric convention for minimum donor-pool or adjustment-cell size.
+
+In the absence of a citable numeric convention, `MIN_POOL = 15` is an analyst
+judgement call, not a literature-derived threshold, and is documented as
+such. It is set above the n=5 floor that appears in Andridge & Little's own
+simulation (a demonstrated lower bound at which hot-deck imputation was
+judged workable in that specific design), on the qualitative reasoning of
+their §3.1: a "resolved" cell should draw on more than a handful of distinct
+donor diaries, so that no single diary is reused often enough to dominate the
+imputed distribution, while staying narrow enough that match-cell homogeneity
+— and therefore bias control — is not given away. Only the lower bound has
+external support. **No upper bound is asserted**, and none can be:
+
+> 🔴 **[MANAGER CORRECTION, 2026-08-04 — V2-C9 review]** The first draft of
+> this paragraph bounded the range at "~20", citing *"this pipeline's own
+> `MIN_POOL` sweep (2026-07-21 entries above)"* as showing over-broadening
+> beginning there, and placed 15 "near the middle of that practical n=5-to-~20
+> span". **That upper bound is withdrawn.** The 2026-07-21 sweep IS the
+> sweep-and-pick mechanism that selected 15 in the first place; reading a
+> bound off it and then calling 15 "mid-range" re-derives the value from its
+> own selection criterion under a different name. Checked against the sweep
+> table directly: at MIN_POOL=20 the AT_WORK per-slot gate still reads PASS
+> and the colleague gate reads its *best* value (0.200), so the only channel
+> that degrades at 20 is gate 2.2 — one gate reading, non-monotonically — and
+> the relapse at 30 is the AT_WORK gate itself. There is no non-circular
+> upper bound in this evidence. Constraint met in letter (the token never
+> appears) but not in substance; corrected here rather than left standing.
+
+The honest statement is therefore narrower than the first draft's: `MIN_POOL`
+is bounded below by a published (if design-specific) floor and above by
+nothing citable. 15 was arrived at by the sweep, is disclosed as such below,
+and is defended only as a value comfortably clear of the n=5 floor. Any
+manuscript text must describe it that way, and must not imply a range within
+which 15 was centred.
+
+---
+
+**Disclosure of the original selection process (not hidden):** report R3
+found that the AT_WORK per-slot gate is non-monotonic across the `MIN_POOL`
+sweep (FAIL at 10, PASS at 11-20, FAIL again at 30) and confirmed this
+non-monotonicity is draw noise rather than a signal that scales meaningfully
+with pool breadth. Because a selection criterion that is non-monotonic in the
+thing it selects cannot itself justify a specific value, the mechanism by
+which `MIN_POOL=15` was originally arrived at — sweeping the threshold and
+picking a value inside the range where that gate happened to read PASS,
+recorded verbatim in the 2026-07-21 "MIN_POOL sweep + finalize" and "Winner
+switched to MIN_POOL=15" entries above — is disclosed here as exactly what it
+was, not presented as a validated derivation. Going forward, that sweep table
+is carried as a **sensitivity check** (MIN_POOL=15 does not regress the gate,
+and sits inside the same PASS band as 11-20) rather than as the criterion
+that selected 15; the value itself is justified independently above, and the
+sweep's PASS/FAIL pattern is reported for transparency, not cited as
+supporting evidence.
+
+Not advancing to Step 6 per instructions. Shipped value unchanged
+(`MIN_POOL=15`); this entry is a justification rewrite only, no code touched.

@@ -1035,6 +1035,11 @@ def run_aggregate() -> None:
     hom_cols = [f"hom30_{i:03d}" for i in range(1, 49)]
 
     print("[5E] Computing HH-level occupancy per slot (max across HH members, hom30 only)...")
+    # NOTE: this max-based HH_hom30_* is deliberately NOT the BEM residential occupancy
+    # schedule -- Step 7 reads mean(hom30) per OD-7A instead (see 3rdJ_07_aug_to_bem_4split.py:309
+    # for the rationale). HH_hom30_* is kept because it has its own real consumer: the Step-5H
+    # 0.30 exclusion filter below (run_exclusion(), ~line 1211), which needs a "was anyone home"
+    # binary, not an expected-headcount fraction.
     hh_occ = df.groupby("SIM_HH_ID")[hom_cols].max()
     hh_occ.columns = [f"HH_{c}" for c in hom_cols]
     hh_occ = hh_occ.reset_index()

@@ -389,6 +389,12 @@ To support the computational demands of urban-scale simulations, I have access t
   - trained models under `0_Occupancy/saved_models_cvae/`
   - large generated result trees under `0_BEM_Setup/` (git-ignored)
 - Commit messages follow `[type]: Brief description`, where `type` ∈ `data · ml · pipeline · bem · fix · docs`.
+- **Deep research is done externally, not by the in-repo assistant.** Literature searches, citation
+  verification and reference-band derivation are run in an external deep-research tool (Gemini
+  Antigravity). The assistant's role is to **author the prompt documents**, never to perform the
+  research itself. Prompts live beside their results in `3J_docs_occ_nTemp/deepResearch_Resources/`
+  (`00_MASTER_BRIEF_V2.md`, `_RESPONSE_TEMPLATE.md`, `V<NN>_<topic>.md` → `RV<NN>_<topic>.md`).
+  See [`CLAUDE.md`](CLAUDE.md) for the full rule.
 - Agent/workflow conventions are documented in [`AGENTS.md`](AGENTS.md) and [`CLAUDE.md`](CLAUDE.md).
 
 ---

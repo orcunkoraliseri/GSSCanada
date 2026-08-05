@@ -97,20 +97,67 @@ retail / hotel). Work in `C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\`.
 The single live thread is the **hotel DHW plant resize**. Everything else on the project is parked
 behind it, because the plant distorts every hotel and residential DHW number in Steps 8–9.
 
-**STATE (updated 2026-08-04, morning): the campaign is SUBMITTED and RUNNING. Nothing is blocked.**
+**STATE (updated 2026-08-04, 10:41 EDT): the campaign RAN, LANDED 56/56, and SCORED 6/6 PASS.**
+**Nothing is in flight. Nothing is blocked. There is no job to poll.**
 
 # 🟢 **THE PLANT QUESTION IS CLOSED. K = 10 un-saturates the DHW plant across the whole grid.**
 # 🟢 **§0.11 ANSWERED by the user, 2026-08-04: ALL-CHANNEL RESIZE.**
-# 🟢 **THE THREE SCRIPT EDITS ARE DONE (four, in the end) AND THE CAMPAIGN IS IN FLIGHT.**
+# 🟢 **CAMPAIGN EXECUTED AND SCORED — see §0.17 for the scorecard and its two caveats.**
 
-| job | what | reads |
+| job | what | outcome |
 |---|---|---|
-| 🕐 `1172037` | **56-cell resized campaign, K = 10, all-channel**, `--array=0-55%20`, ~4 h wall | `logs/resizecamp_1172037_*.out` |
-| 🕐 `1172045` | **scorecard**, `--dependency=afterany:1172037` | `logs/resizescore_1172045.out` |
+| ✅ `1172037` | 56-cell resized campaign, K = 10, all-channel, `--array=0-55%20` | **56/56 COMPLETED**, zero FAILED/CANCELLED/TIMEOUT/NODE_FAIL; 20–60 min/cell, long pole `_45` 1:00:15 |
+| ❌ `1172045` | scorecard, `--dependency=afterany:1172037` | FAILED 1:0 — `r` reader had no case for `Default_NECB__*` |
+| ❌ `1172108` | scorecard, re-submit | FAILED 1:0 — fix asserted **whole-cell** untreatedness, refused on `Y2005__*` |
+| ✅ `1172109` | hotel-DHW census of all 56 cells (pure grep) | COMPLETED — population exactly bimodal, 40 injected / 16 not |
+| ✅ **`1172110`** | **scorecard, final** | **COMPLETED 0:0 — `C1' C2' C3a C3b C4 C4c` ALL PASS, 56/56 cells** |
 
-**First action of the session: `ssh speed "sacct -j 1172037,1172045 -n -X -o JobID,State,Elapsed"`.**
-Do not poll tighter than 30 min. When 1172045 lands, read `C3a` first (see §0.15 for why), then
-`C4`, then the controls. Full write-up in the Progress Log, **6,887 lines** (`wc -l`, 2026-08-04).
+Progress Log now **7,003 lines** (`wc -l`, 2026-08-04); the full entry is the last section of
+`improvements/3rdJ_L3_improvements_step9.md`.
+
+### 0.17 🟢 THE SCORECARD, AND WHAT IT DOES *NOT* LICENSE
+
+```
+  SCORECARD  C1' PASS   C2' PASS   C3a PASS   C3b PASS   C4 PASS   C4c PASS     56 / 56 cells
+```
+
+`C3a` — every hotel use-type in every cell delivers its design rise (49.19 / 71.40 K, tol 0.5 K),
+0 violations, 0 unreadable targets. **The 22.66 K marginal-rise defect is closed.**
+`C4` — hotel energy elasticity 1.0013 / 1.0014 / 1.0014 / 1.0015 by group, against arm H's
+0.6470 / 0.6431 / 0.5830 / 0.5779 (`C4c`, so the resize moved it rather than finding it there).
+
+**Two caveats. Do not quote the 1.00 clean.**
+
+1. **`C4` is only weakly independent of `C3a`.** Once every use-type delivers design rise and volume
+   scales exactly with r, E = V·ρc·ΔT ∝ r follows arithmetically. `C3a`'s 0.5 K tolerance leaves
+   room for ≈ ±0.06 of slope over a log-r span of 0.18, so `C4` *could* have landed 0.94–1.06 — the
+   window where `C3a` passes and `C4` fails is real but narrow. `C4` is a confirmation; its
+   DECISIVE standing comes from `C4c`, not from orthogonality to `C3a`.
+2. **`n_r` = 4–5 distinct r per group, not 14.** `sens_office_*`/`sens_retail_*` inherit their base
+   scenario's hotel r, and 4 cells sit at exactly r = 1.0. R² = 1.000 is across 4–5 distinct x with
+   replication. The `n_r` column exists so this cannot hide behind an n = 14 label.
+
+**`C6` INFO — the undersizing was NOT hotel-only.** Median ΔE: hotel **+170.79 %**, residential
+**+11.30 %**, office −0.03 %, retail −0.00 %; ΔV = 0.0000 % in all four channels, so this is pure
+delivered-energy recovery, not extra draw. **Residential DHW was plant-limited by 4–14 % — new, and
+not part of the hotel 22.66 K diagnosis.** `C6` STAYS INFO: no non-hotel expectation was
+pre-registered, and a number scored against an expectation invented after seeing it is not a test.
+
+**`C5` INFO — whole-tower all-fuel +10.95 / +18.93 / +24.69 % (min/median/max) vs arm H.** Floor area
+is unchanged by construction (`C2'`), so the % shift IS the EUI shift. A ~19 % median move makes this
+a materially different building and reinforces the standing scope warning: 🔴 **every comparison in
+this campaign moves four channels at once — it is a NEW ARM for residential, office, retail and
+hotel, not a hotel-side correction on top of arm H. Anything written up from it must say so.** It
+also bears on the still-open hotel EUI band decision (§ parked items).
+
+**The `r` reader was fixed twice; NO gate, threshold, tolerance or grouping was touched.**
+`C1'`/`C2'`/`C3a`/`C3b` do not call it and were byte-identical across all three scorer runs. The 16
+never-injected-hotel cells (4 `Default_NECB__*` + 12 `Y2005`/`Y2010`/`Y2015__*`, the hotel-era
+exclusion) run the untouched NECB schedule, which IS the `baseline_series` r is measured against, so
+r = 1.0 is a fact read off the provenance and they are each group's anchor point. Because 1.0 is
+*also* a legitimate measured r, that state is asserted positively on six hotel-specific conditions —
+`hotel NOT in channels_requested` AND `hotel IS in fallback_channels` — and every such cell is NAMED
+on the scorecard. Anything neither tokened nor fully asserted still hard-refuses.
 
 ### 0.15 🔴 WHAT THE PRE-REGISTRATION SAYS NOW — it was edited before submission, on measurement
 
@@ -148,14 +195,16 @@ this morning.** Read this before quoting any of them:
 `hotel_dT_by_type.csv` using the module H9/H10/H11 were scored with, and **refuses** if its per-type
 hotel volume does not reconcile with the driver's `dhwvol_hotel` to 0.01 %.
 
-### 0.16 What is owed when the scorecard lands
+### 0.16 ✅ DISCHARGED 2026-08-04 — what was owed when the scorecard landed
 
-- Score it as written. **Do not widen a tolerance to erase a FAIL** — `H2`, `H6` and `C3` are all
-  standing on the record as failed/mis-specified and none was re-aimed.
-- `C6` is INFO and **must stay INFO**. Do not promote it to a gate on the strength of what it shows.
-- §0.3.1's magnitude warning is now tower-wide. If `C5` shows a large site-energy shift, that is
-  expected — the hotel EUI band (§2, still with the user) is what it has to be re-validated against,
-  and that question is **not** settled by this run.
+- ✅ Scored as written. No tolerance was widened; nothing was re-aimed. `H2`, `H6` and `C3` still
+  stand on the record as failed/mis-specified. The only code touched after results existed was the
+  hotel `r` **reader** — see §0.17; no gate, threshold, tolerance or grouping moved.
+- ✅ `C6` stayed INFO, and it is the run's most substantive finding (residential was plant-limited
+  too). It was **not** promoted to a gate on the strength of what it showed.
+- ✅ `C5` came in at **+18.93 % median, tower-wide** — a large shift, as §0.3.1 anticipated. The
+  hotel EUI band (§2, **still with the user**) is what this has to be re-validated against, and that
+  question is **NOT settled by this run.**
 
 Every hotel water use delivers its **exact design rise** in both grid extremes, to two decimals:
 

@@ -71,6 +71,31 @@ still binding would be a coincidence, not a clean lever.
 EVERY GATE ITEMISES WHAT IT COULD NOT READ. A reader that returns 0.0 for input it cannot parse
 blames the simulation for its own gap -- that cost 16 spurious FAILs in job 1171607.
 
+READER FIX 2026-08-04, after jobs 1172045 and 1172108 both exited 1 at C4. NO GATE, THRESHOLD,
+TOLERANCE OR GROUPING WAS TOUCHED, and C1'/C2'/C3a/C3b had already PASSED under the previous code --
+they do not call the r reader and are unaffected. What changed is `hotel_r` in
+`3rdJ_09H_resize_elasticity.py`, which had no case for cells whose HOTEL channel was never injected
+and which therefore carry no `MXU_Hotel_DHWv2_..._r####w####` token. The census in job 1172109 shows
+the 56 cells are exactly bimodal on this, with `n_dhw_unresolved=0` throughout and no third state:
+
+    40  hotel injected           4 MXU schedules, one `t9_13 hotel` line, r read from the token
+    16  hotel never injected     hotel absent from channels_requested, present in fallback_channels
+        = 4 Default_NECB__* (nothing injected at all) + 12 Y2005/Y2010/Y2015__* (hotel-era
+          exclusion -- QC hotel truth starts 2019 -- with the other three channels injected)
+
+Those 16 run the untouched NECB hotel schedule, which IS the `baseline_series` that every other
+cell's r is measured against, so r = 1.0 is a fact read off the provenance. They are the anchor
+point of each group's regression (4 per group, 14 cells per group) rather than cells to drop.
+Because 1.0 is also a legitimate measured r, the never-injected state is asserted POSITIVELY on six
+hotel-specific conditions -- crucially `hotel NOT in channels_requested` AND `hotel IN
+fallback_channels`, which is what separates a deliberate non-injection from an injection that ran
+and produced nothing -- and every cell taking that path is NAMED on the scorecard. 1172108 refused
+because it asserted whole-cell untreatedness, which is false for a Y2005 cell that injected 47 DHW
+schedules; the scope, not the strictness, was wrong. Adding these 16 points changes C4's fit, which
+is why it is written down here rather than left as a silent reader repair. The C4 table also now
+prints n_r, the distinct-r count per group, so a fit resting on few distinct x values is visible
+rather than hidden behind n=14.
+
     python 3rdJ_09H_resize_campaign_score.py <armH_campaign_dir> <resized_dir>
 """
 import importlib.util
@@ -328,21 +353,34 @@ def main():
     print("\n" + "-" * 100)
     print("C4 DECISIVE -- hotel DHW energy elasticity >= %.2f in each (geometry, city) group"
           % C4_THRESHOLD)
-    groups = {}
+    groups, r_untreated = {}, []
     for c in cells:
         m = c["manifest"]
         key = (m.get("building", "?"), m.get("city", "?"))
-        r = el.hotel_r(os.path.join(armh_root, c["name"]))
+        r, src = el.hotel_r_with_source(os.path.join(armh_root, c["name"]))
+        if src != el.R_SOURCE_TOKEN:
+            r_untreated.append("%s (r=%.4f, %s)" % (c["name"], r, src))
         groups.setdefault(key, []).append((r, c["EH_hotel"], c["ER_hotel"], c["name"]))
+    # Name every cell whose r did NOT come from its own injected schedule token. r = 1.0 is a
+    # legitimate measured value as well as the control's value, so the only thing that keeps the
+    # two apart on the record is printing which cells took which path.
+    print("      r source: %d of %d cells from the injected schedule token%s"
+          % (len(cells) - len(r_untreated), len(cells),
+             "" if not r_untreated else "; the rest asserted untreated:"))
+    for s in r_untreated:
+        print("        - %s" % s)
     c4_fail, c4c_fail, c4_undef = [], [], []
-    print("      %-22s %5s %10s %10s   %s" % ("group", "n", "armH e", "resized e", "R2"))
+    print("      %-22s %5s %6s %10s %10s   %s"
+          % ("group", "n", "n_r", "armH e", "resized e", "R2"))
     for key in sorted(groups):
         pts = groups[key]
         rs = [p[0] for p in pts]
+        # n_r is INFO, not a gate: a group whose r variance rests on one or two distinct values is
+        # a 2-point fit wearing an n=14 label, and the reader should be able to see that.
         if len(set(rs)) < 2 or any(p[1] is None or p[2] is None for p in pts):
             c4_undef.append("%s__%s" % key)
-            print("      %-22s %5d   UNDEFINED (r constant or hotel series unreadable)"
-                  % ("%s__%s" % key, len(pts)))
+            print("      %-22s %5d %6d   UNDEFINED (r constant or hotel series unreadable)"
+                  % ("%s__%s" % key, len(pts), len(set(rs))))
             continue
         eH, _ = el.elasticity(rs, [p[1] for p in pts])
         eR, r2R = el.elasticity(rs, [p[2] for p in pts])
@@ -351,8 +389,8 @@ def main():
             c4_fail.append("%s__%s (%.4f)" % (key + (eR,)))
         if ok and eH >= C4_THRESHOLD:
             c4c_fail.append("%s__%s (armH %.4f)" % (key + (eH,)))
-        print("      %-22s %5d %10.4f %10.4f   %.3f  %s"
-              % ("%s__%s" % key, len(pts), eH, eR, r2R, "ok" if ok else "XX"))
+        print("      %-22s %5d %6d %10.4f %10.4f   %.3f  %s"
+              % ("%s__%s" % key, len(pts), len(set(rs)), eH, eR, r2R, "ok" if ok else "XX"))
     c4 = not c4_fail and not c4_undef
     print("  [%s] C4  -- %d group(s), %d below threshold, %d undefined"
           % ("PASS" if c4 else "FAIL", len(groups), len(c4_fail), len(c4_undef)))

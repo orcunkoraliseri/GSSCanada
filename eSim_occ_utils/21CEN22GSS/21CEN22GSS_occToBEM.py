@@ -1,4 +1,30 @@
 """
+🔴 DEPRECATED 2026-08-04 (V2-D7) — SUPERSEDED, DO NOT USE FOR NEW WORK.
+This script is superseded by `2J_docs_occ_nTemp/07_aug_to_bem.py`, whose
+`convert()` (see its line ~97: `occ48 = df.groupby(keys, sort=True)[HOM].mean()`)
+is the production converter behind the live `BEM_Setup/BEM_Schedules_2022.csv`
+(dated 2026-07-09). This module's own output survives only as the frozen
+snapshot `BEM_Setup/BEM_Schedules_2022_CLASSIC_BAK_2026-05-31.csv`.
+
+Reason for deprecation: the occupancy formula below (lines ~144-145:
+`estimated_count = hourly["occPre"] * (hourly["occDensity"] + 1)`, then
+`.clip(upper=1.0)`) is KNOWN to over-count co-residents, because
+`occDensity` is built as a per-timestep SUM over household members'
+`ind_density` values (see `21CEN22GSS_HH_aggregation.py:177-178`:
+`dens_stack.sum(axis=0)` → `hh_df["occDensity"]`) rather than a per-person
+rate — so every additional co-resident present at a timestep adds to
+`occDensity` again on top of already being counted via `occPre`,
+double-counting occupancy density for multi-occupant households. Measured
+this session (2026-08-04) to differ from the shipped/production rule
+(07_aug_to_bem.py's `groupby(...)[HOM].mean()`) by 32.55% of annual
+person-hours.
+
+No code in this file has been changed as part of this deprecation notice —
+banner only. The formula and its output are left intact because a historical
+reproduction of the CLASSIC_BAK output may still require running this exact
+script as-is.
+------------------------------------------------------------------------
+
 21CEN22GSS Occupancy to BEM Conversion Module
 
 Converts 5-minute household profiles into hourly BEM schedules for

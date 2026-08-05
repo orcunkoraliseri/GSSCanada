@@ -100,6 +100,37 @@ Do not modify these files unless explicitly instructed:
 - Be explicit about assumptions, risks, and validation gaps
 - Use exact file references with line numbers when citing code
 
+## Deep research is EXTERNAL — author the prompt, never run the search (HARD RULE)
+
+**The assistant does not perform deep research.** Literature searches, citation and DOI verification,
+reference-band derivation and any other "go read the sources and come back with numbers" task are run
+by the user in an **external deep-research tool (Gemini Antigravity)**, not in this session and not by
+sub-agents.
+
+The assistant's job is to **write the prompt document** that gets pasted into that tool, and later to
+read, verify and act on the report that comes back.
+
+- **Do not spawn research agents.** No `Agent` calls to search the web for sources, verify DOIs, chase
+  report numbers, or compile reference tables. If a task needs external evidence, the deliverable is a
+  prompt file, not an answer.
+- **Where prompts and results live:** `3J_docs_occ_nTemp/deepResearch_Resources/`. Prompts and their
+  results sit in the **same directory**.
+  - `00_MASTER_BRIEF_V2.md` — shared context, pasted ahead of every prompt
+  - `_RESPONSE_TEMPLATE.md` — the response schema (Sections A to H) the external tool must follow
+  - `V<NN>_<topic>.md` — one prompt per topic
+  - `RV<NN>_<topic>.md` — the returned report for that prompt
+- **Prompt house style** (modelled on `idf_reader/docs_ACTIVE/LMN-1983/DeepResearch/NUs/`):
+  `# V<NN>. Title`, then a pointer line to the master brief and response template, then
+  `## Why we are asking` (the concrete situation that makes this worth asking),
+  `## What we need` (numbered, specific, each item answerable),
+  `## Named leads` (real institutions, databases and document families to try), and
+  `## Deliverable` (what the answer's key section must contain, including what to write if the
+  evidence does not settle it).
+- **Rules to restate inside every prompt:** a citation is not evidence until opened; verify DOIs via
+  `https://api.crossref.org/works/<DOI>` and report numbers by opening the PDF; `NOT FOUND` beats an
+  invented number; never propose relaxing a band because our model fails it; keep as-modelled and
+  empirical figures strictly separate; no em dashes or en dashes in the returned text.
+
 ## Speed HPC Cluster
 
 - Host: `o_iseri@speed.encs.concordia.ca`; login node `speed-submit2` is for job submissions only — do not run any computation, builds, or interactive workloads on it (admin warning: "this node is for job submissions only: no compute").

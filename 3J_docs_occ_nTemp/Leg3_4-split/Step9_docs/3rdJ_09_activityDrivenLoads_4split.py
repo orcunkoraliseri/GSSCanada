@@ -89,14 +89,35 @@ ALL_CH = TENANT + ["residential_common", "service_MEP"]
 # ---------------------------------------------------------------- benchmarks --
 # as-modelled band = PASS criterion; empirical band = INFO. Sources are in the band name and
 # must stay there: a number in a table with no provenance becomes a number nobody can defend.
+#
+# V2-D4 (2026-08-04) -- PROVENANCE ONLY, no band value changed. Every `src=` below now names a path
+# that resolves from the repo root. The office `src=` previously read "Step8_docs/deepResearch/...",
+# which resolves to NOTHING: `Leg3_4-split/Step8_docs/deepResearch/` does not exist. The document is
+# in the FROZEN Leg-2 tree. A provenance string that does not resolve is the same defect as no
+# provenance at all -- it just takes longer to discover.
+#
+# 🔴 OPEN, do not read these bands as settled: the office band's source document contradicts itself
+# three ways on its own floor (Table 7.1 = 100.0, line 21 = "80 to 140", Table 2.1 = "85.0 to 115.0"),
+# and the DOE-PNNL prototype tables behind it are the ASHRAE **90.1-2004** baseline set, while the
+# building being scored is 90.1-2019 / NECB 2017. That vintage mismatch is under external review
+# (deepResearch_Resources/V05). Band VALUES stay frozen until WP-B decides them; see V2-B2/V2-C6.
 BENCH = {
     "office":      dict(central=135.0, lo=100.0, hi=200.0,
-                        src="NECB2020/90.1-2019 DOE-PNNL as-modelled band (Step8_docs/deepResearch/"
-                            "...As-Modelled Bands.md ; repris de Leg-2)",
+                        # the em dash in the filename below is the FILE's own byte (U+2014). It is a
+                        # path, not prose, so it is reproduced literally -- changing it to "--" to
+                        # satisfy the house dash rule would silently break the path again.
+                        src="NECB2020/90.1-2019 DOE-PNNL as-modelled band -- 3J_docs_occ_nTemp/"
+                            "Leg2_2-split/Step8_docs/deepResearch/Office Reference EUI (NECB 2020, "
+                            "ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands.md, Table 7.1 "
+                            "(repris de Leg-2; floor CONTESTED, see header note)",
                         info=(230.0, 170.0, 360.0), info_src="SCIEU/CEUD"),
-    "retail":      dict(central=110.0, lo=80.0,  hi=155.0, src="dr_L3-02 as-modelled (locked 2026-07-02)",
+    "retail":      dict(central=110.0, lo=80.0,  hi=155.0,
+                        src="dr_L3-02 as-modelled (locked 2026-07-02) -- 3J_docs_occ_nTemp/"
+                            "Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md",
                         info=(280.0, 150.0, 380.0), info_src="dr_L3-02 empirical"),
-    "hotel":       dict(central=240.0, lo=180.0, hi=300.0, src="dr_L3-03 as-modelled (locked 2026-07-02)",
+    "hotel":       dict(central=240.0, lo=180.0, hi=300.0,
+                        src="dr_L3-03 as-modelled (locked 2026-07-02) -- 3J_docs_occ_nTemp/"
+                            "Leg3_4-split/deepResearch/dr_L3-03_hotel_eui_bands_REPORT.md",
                         info=(350.0, 220.0, 480.0), info_src="dr_L3-03 empirical"),
     "residential": dict(central=None, lo=None, hi=None, src="no as-modelled band (tower apartments)",
                         info=(130.6, 113.9, 147.2), info_src="SHEU-2019 HighRise (context only -- tower != SHEU stock basis)"),

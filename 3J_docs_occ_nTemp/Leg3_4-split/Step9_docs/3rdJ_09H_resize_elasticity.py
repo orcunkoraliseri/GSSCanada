@@ -42,33 +42,107 @@ ARM_H_ELASTICITY = 0.5617      # saturation probe, job 1171767 -- the number R0 
 ARM_H_MARGINAL_K = 22.66       # discriminator, job 1171767
 R0_TOL = 0.02
 R3_THRESHOLD = 0.90
-TARGET_K = 49.2
+
+# TARGET_K -- DHW plant marginal rise target, re-derived 2026-08-04 (V2-D8).
+#
+# SUPERSEDED: TARGET_K = 49.2  (Step-9 log flagged this as mis-specified: "an
+# assumed 140F rise", not read off the model's actual setpoint or mains temp.)
+# ALSO NOT SUPPORTED: 65.51 K -- this is a simulated E/V ratio from one arm,
+# not backed by any IDF design object; it is unstable at low draw volume and
+# must not be used as a target.
+#
+# Re-derivation from the IDF (confirmed four independent ways):
+#   Setpoint = 60.0 degC, agreeing across:
+#     (1) Sizing:Plant Design Loop Exit Temperature
+#     (2) SetpointManager:Scheduled
+#     (3) the "Service Water Loop Temp - 140F" schedule (140F = 60.0 degC)
+#     (4) WaterHeater:Mixed Maximum Temperature Limit
+#   Mains temperature: Site:WaterMainsTemperature is a Correlation object;
+#   evaluated by running EnergyPlus 24.2.0 itself (not hand-computed):
+#     annual mean mains temp  = 9.71 degC
+#     winter minimum mains temp = 3.10 degC
+#   -> annual-mean-basis rise = 60.0 - 9.71  = 50.29 K
+#   -> winter-worst-case-basis rise = 60.0 - 3.10 = 56.90 K
+#
+# TARGET_K is set to the WINTER-WORST-CASE basis (56.90 K), because that is
+# the convention DHW plants are actually sized against (peak/worst-case
+# demand, not an annual average) -- consistent with how Sizing:Plant and
+# WaterHeater:Mixed capacity are dimensioned in this IDF.
+TARGET_K = 56.9
 
 
-def hotel_r(cell_dir):
-    """Mean hotel draw multiplier r = (5*r_wd + 2*r_we)/7, read off the cell's own provenance.
+R_SOURCE_TOKEN = "injected schedule token"
+R_SOURCE_UNTREATED = "hotel channel never injected (fallback) -> schedule is the baseline series"
 
-    The first version of this function guessed three filenames, none of which was the real one
-    (`injected.idf.provenance.txt`), and returned 1.0 when it found nothing -- so all three cells
-    came back r = 1.0, the regressor had zero variance, and the fit blew up in LAPACK (job 1171812).
-    That crash was luck. Had two cells matched and one not, the default would have produced a
-    plausible wrong elasticity in silence. So there is NO default here any more: a cell whose r
-    cannot be read is a hard refusal, not a 1.0.
 
-    r is carried in the injected schedule names, `..._r{r_wd*1000:04d}w{r_we*1000:04d}_...`, which
-    is the injector's own record of what it wrote rather than a second-hand table.
+def hotel_r_with_source(cell_dir):
+    """(mean hotel draw multiplier r, provenance of that number) for one cell.
+
+    r = (5*r_wd + 2*r_we)/7, read off the cell's own `injected.idf.provenance.txt`.
+
+    The first version of this function guessed three filenames, none of which was the real one,
+    and returned 1.0 when it found nothing -- so all three cells came back r = 1.0, the regressor
+    had zero variance, and the fit blew up in LAPACK (job 1171812). That crash was luck. Had two
+    cells matched and one not, the default would have produced a plausible wrong elasticity in
+    silence. So there is NO default here: a cell whose r cannot be read is a hard refusal.
+
+    There is, however, a whole class of cells where the ABSENCE of the token is itself the
+    measurement: those whose HOTEL channel was never injected, so their hotel DHW schedule IS the
+    `baseline_series` that every other cell's r is measured against (identical `reference_occ_mean`
+    hotel wd/we in the treated and untreated provenances alike). r = 1.0 there is a fact recoverable
+    from the file, not a fallback -- and those cells are the anchor point of each group's regression
+    rather than cells to drop. The census in job 1172109 found the population exactly bimodal,
+    40 injected / 16 not, no third state and `n_dhw_unresolved=0` throughout:
+
+        4  Default_NECB__*        channels_requested=[]                    nothing injected at all
+        12 Y2005/Y2010/Y2015__*   channels_requested=[office,retail,resi]  hotel-era exclusion,
+                                                                           other 3 channels injected
+
+    That second family is why this test is scoped to the HOTEL CHANNEL and not to the cell. Job
+    1172045 refused on the first family, and job 1172108 -- asserting whole-cell untreatedness --
+    then refused on the second, correctly both times, since a cell that injected 47 DHW schedules is
+    plainly not untreated. What makes hotel's r knowable is narrower: hotel absent from
+    `channels_requested` AND present in `fallback_channels`, i.e. the injector recorded a deliberate
+    decision not to touch it, rather than trying and producing nothing.
+
+    The trap is that 1.0 is ALSO a perfectly legitimate measured r, so a silent 1.0 here would be
+    indistinguishable from a real one -- the fallback-that-is-also-a-value failure. The fallback
+    state therefore has to be ASSERTED POSITIVELY, on six independent hotel-specific conditions, and
+    the caller is handed the source string so the scorecard can name every cell that took this path.
+    Anything that is neither a readable token nor a fully-asserted fallback still refuses.
     """
     p = os.path.join(cell_dir, "injected.idf.provenance.txt")
     if not os.path.isfile(p):
         raise SystemExit("REFUSING: no provenance at %s -- cannot establish r" % p)
     txt = open(p, errors="replace").read()
     toks = set(re.findall(r"MXU_Hotel_DHWv2_\S*?_r(\d{4})w(\d{4})", txt))
-    if not toks:
-        raise SystemExit("REFUSING: no hotel r token in %s -- cannot establish r" % p)
     if len(toks) > 1:
         raise SystemExit("REFUSING: hotel schedules disagree on r in %s: %s" % (p, sorted(toks)))
-    wd, we = (int(v) / 1000.0 for v in toks.pop())
-    return (5.0 * wd + 2.0 * we) / 7.0
+    if toks:
+        wd, we = (int(v) / 1000.0 for v in toks.pop())
+        return (5.0 * wd + 2.0 * we) / 7.0, R_SOURCE_TOKEN
+
+    req = re.search(r"^channels_requested=(.*)$", txt, re.M)
+    fbk = re.search(r"^fallback_channels=(.*)$", txt, re.M)
+    checks = [
+        ("no MXU_Hotel_DHWv2 schedule", "MXU_Hotel_DHWv2" not in txt),
+        ("no t9_13 hotel line", re.search(r"^t9_13 hotel ", txt, re.M) is None),
+        ("no dhw hotel line", re.search(r"^dhw hotel ", txt, re.M) is None),
+        ("hotel NOT in channels_requested", req is not None and "'hotel'" not in req.group(1)),
+        ("hotel IS in fallback_channels", fbk is not None and "'hotel'" in fbk.group(1)),
+        ("n_dhw_unresolved=0", re.search(r"^n_dhw_unresolved=0\s*$", txt, re.M) is not None),
+    ]
+    if all(ok for _, ok in checks):
+        return 1.0, R_SOURCE_UNTREATED
+    raise SystemExit(
+        "REFUSING: no hotel r token in %s, and its hotel channel is not an assertable "
+        "never-injected fallback (%s) -- cannot establish r"
+        % (p, ", ".join("%s:%s" % (n, "yes" if ok else "NO") for n, ok in checks)))
+
+
+def hotel_r(cell_dir):
+    """Back-compatible float-only view of `hotel_r_with_source`."""
+    return hotel_r_with_source(cell_dir)[0]
 
 
 def hotel_series(sql_path, idf_path, idd, tmp_prefix):

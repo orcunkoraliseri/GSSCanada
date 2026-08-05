@@ -1,3 +1,51 @@
+<!-- ══════════════════════════════════════════════════════════════════════════════════════════════ -->
+<!--  NAVIGATION BANNER — added 2026-08-04. Nothing below this banner has been edited or removed.  -->
+<!-- ══════════════════════════════════════════════════════════════════════════════════════════════ -->
+
+> # 🧭 START HERE — do not read this file front-to-back
+>
+> **This is an append-only chronological lab notebook, 7,600+ lines, bilingual (French to line ~790,
+> English after). It records what was believed at each moment — including beliefs later shown wrong
+> and struck _in place_.**
+>
+> ## → Read `3rdJ_L3_step9_READER_GUIDE.md` first (same folder).
+>
+> It gives, in ~6 pages: the project in 10 lines, the vocabulary, the current state, the 8-arm table,
+> the 8 open questions, a **register of every claim that was later reversed**, and a section map.
+>
+> ### The three things a cold reader most needs to know
+>
+> 1. **Current score: 17 PASS / 0 WARN / 3 FAIL / 10 INFO.** The three FAILs — `S9-EUI-office`,
+>    `S9-EUI-retail`, `S9-EUI-hotel` — are all *absolute EUI level vs an external band*, and have been
+>    FAIL across all eight simulated arms. The other 27 gates are stable and passing, **including all
+>    four that test the paper's actual claim** (`S9-INJECTION`, `G8o/G8r/G8h`, `S9-COINC`, `S9-D20`).
+>
+> 2. **🔴 None of the three FAILs is an occupancy problem.** The `Default_NECB` control — same
+>    building, **no GSS injection at all** — measures office at **85.45** against a band floor of
+>    **100**. The code's own reference implementation fails the band by 15 %, and injection moves
+>    office *down*. Retail misses by **0.06 %** and **0.23 %** on 2 of 56 cells under an all-56 rule.
+>    Hotel's resize moved the *uninjected* control too, so it is a plant effect. **See `§0.21`.**
+>
+> 3. **🔴 About one claim in twenty in this log was later reversed.** `T9-1`, `T9-2`, `T9-11` and
+>    `T9-10`'s retail rule were cancelled or withdrawn; `FINDING 6`'s headline number and `FINDING 8`'s
+>    mechanism were both wrong and corrected; the `R > 1.5` premise and the "stacked tower" explanation
+>    were struck by measurement. **Check §2 of the reader's guide before quoting any paragraph.**
+>
+> ### Fast paths
+>
+> | you want | search for |
+> |---|---|
+> | current state + open questions | `§0.21` |
+> | the latest result | `§0.19` (predictions) then `§0.20` (result) |
+> | what each arm changed | `0.21.2` |
+> | what was reversed | reader's guide §2 |
+>
+> _Sections `§0.18`–`§0.21` (2026-08-04) are the newest and the most self-contained._
+
+---
+
+<!-- ═════════════════════════════ ORIGINAL DOCUMENT BEGINS BELOW ══════════════════════════════════ -->
+
 # 3J Leg-3 — Améliorations Step 9 : document d'implémentation
 
 **Créé le 2026-07-31.** Doc de référence autoportant. Il traite **les trois arbitrages laissés
@@ -6885,3 +6933,762 @@ license reading either, then `C5`/`C6` as INFO.
 🔴 **Every comparison in this campaign moves four channels at once.** It is not a hotel-side
 correction on top of an otherwise-unchanged arm H; it is a **new arm** for residential, office,
 retail and hotel. Anything written up from it must say so.
+
+---
+
+### 2026-08-04 — 56-cell RESIZED campaign SCORED: 6/6 PASS (job 1172110), and the undersizing was not hotel-only
+
+**Campaign landed 56/56 COMPLETED, zero FAILED/CANCELLED/TIMEOUT/NODE_FAIL** (array `1172037`, per-cell
+wall 20–60 min, long pole `_45` at 1:00:15). Scorer `1172110`, exit 0, 56/56 cells scored.
+
+```
+  SCORECARD  C1' PASS   C2' PASS   C3a PASS   C3b PASS   C4 PASS   C4c PASS
+```
+
+| gate | verdict | measured |
+|---|---|---|
+| C1′ control — DHW volume unchanged (≤ 0.1 %), all four channels | PASS | 56 × 4, 0 violations, 0 unreadable |
+| C2′ control — resized IDF differs from arm H ONLY on `Heater Maximum Capacity` | PASS | 56 cells, 0 violations |
+| **C3a DECISIVE** — every hotel use-type delivers its design rise (49.19 / 71.40 K, tol 0.5 K) | PASS | 56 cells, 0 type violations, 0 unreadable targets |
+| C3b control — per-type table reconciles with the driver's hotel channel (≤ 0.01 %) | PASS | 0 violations |
+| **C4 DECISIVE** — hotel DHW energy elasticity ≥ 0.90 per (geometry, city) group | PASS | 1.0013 / 1.0014 / 1.0014 / 1.0015, R² 1.000 |
+| C4c control — no group already ≥ 0.90 in arm H | PASS | arm H 0.6470 / 0.6431 / 0.5830 / 0.5779 |
+
+Derived, NOT scored (implied by C3a): worst |aggregate − mix reconstruction| = 0.0324 K on `B_opt__Tall__MTL`.
+
+**The 22.66 K marginal-rise defect is closed.** Arm H delivered its marginal hotel m³ at 22.66 K against a
+49.2 K target; under `K = 10` every hotel use-type in every cell delivers its design rise, and C4c confirms
+the elasticity moved from 0.58–0.65 to ~1.00 rather than having been there already.
+
+#### TWO CAVEATS ON C4 — it is a confirmation, not a second independent measurement
+
+1. **C4 is only weakly independent of C3a.** Once every use-type delivers its design rise, and volume scales
+   exactly with r (C1′ shows volume identical across arms; the draw is schedule-driven and cannot see the
+   burner), then E = V·ρc·ΔT_design ∝ r follows arithmetically. C3a's 0.5 K tolerance on a 49.19 K target is
+   ~1 %, which over a log-r span of ~0.18 leaves room for roughly ±0.06 of slope — so C4 *could* have landed
+   0.94–1.06 with C3a still passing. The window where C3a passes and C4 fails is real but narrow. C4 earns
+   its DECISIVE label from C4c (it discriminates resized from arm H), not from being orthogonal to C3a.
+2. **`n_r` = 4–5 distinct r values per group, not 14.** Each group holds 14 cells, but only 4–5 distinct
+   hotel r: `sens_office_*` and `sens_retail_*` vary office/retail and inherit their base scenario's hotel r,
+   and 4 cells sit at exactly r = 1.0. R² = 1.000 is across 4–5 distinct x with replication, not 14 free
+   points. The `n_r` column was added to the C4 table precisely so this is visible rather than hidden behind
+   an n = 14 label.
+
+#### C6 INFO — the plant undersizing was NOT hotel-only
+
+| channel | ΔE min % | ΔE median % | ΔE max % | ΔV max % |
+|---|---|---|---|---|
+| hotel | +134.70 | **+170.79** | +194.99 | 0.0000 |
+| residential | +4.39 | **+11.30** | +13.91 | 0.0000 |
+| office | −0.04 | −0.03 | −0.01 | 0.0000 |
+| retail | −0.04 | −0.00 | −0.00 | 0.0000 |
+
+Full table → `out_R_resize/K10/C6_per_channel_delta.csv`. Volume is flat to 4 decimals in every channel, so
+all of this is delivered-energy recovery, not extra draw.
+
+**NEW FINDING: residential DHW was plant-limited too, by 4–14 %.** That was not part of the hotel 22.66 K
+diagnosis and had not been predicted. Office and retail were never binding (≈ 0 %, and the tiny negative sign
+is cycling noise at the 0.04 % level, not a real reduction). C6 stays INFO and must not be scored: no
+expectation for the non-hotel channels was pre-registered, and a number scored against an expectation
+invented after seeing it is not a test.
+
+#### C5 INFO — whole-tower all-fuel site energy vs arm H
+
+min **+10.95 %** (`Default_NECB__SuperTall__MTL`) · median **+18.93 %** · max **+24.69 %** (`B_opt__Tall__CLG`).
+
+Floor area is unchanged by construction (C2′), so the % shift IS the EUI shift. A ~19 % median whole-tower
+move makes the resized arm a materially different building, which reinforces the scope warning already on
+file: 🔴 **every comparison in this campaign moves four channels at once.** It is a new arm for residential,
+office, retail and hotel — not a hotel-side correction on top of an otherwise-unchanged arm H. Anything
+written up from it must say so. It also bears on the still-open hotel EUI band decision.
+
+#### READER FIX — two refusals before the scorecard, NO gate touched
+
+The scorer was submitted with the campaign as an `afterany` dependent, so the gate code was frozen before any
+result existed. It then refused twice at C4, both times correctly, on the hotel `r` reader:
+
+- **Job `1172045`** — `REFUSING: no hotel r token in Default_NECB__SuperTall__CLG` . Those cells were never
+  DHW-injected (`channels_requested=[]`, `n_dhw_applied=0`), so they carry no
+  `MXU_Hotel_DHWv2_..._r####w####` token. The reader had no case for them.
+- **Job `1172108`** — first fix asserted **whole-cell** untreatedness, which then refused on
+  `Y2005__SuperTall__CLG`: hotel absent from `channels_requested`, but `n_dhw_applied=47` for the other three
+  channels. A cell that injected 47 DHW schedules is plainly not untreated. **The scope was wrong, not the
+  strictness.**
+
+Rather than patch one refusal per job cycle, job **`1172109`** (pure grep, no python) censused the hotel-DHW
+state of all 56 cells. The population is exactly bimodal, `n_dhw_unresolved=0` throughout, no third state:
+
+```
+40  hotel injected        4 MXU schedules + one `t9_13 hotel` line -> r from the token
+16  hotel never injected  hotel absent from channels_requested, present in fallback_channels
+    = 4 Default_NECB__*   (nothing injected at all, n_dhw_applied=0)
+    + 12 Y2005/Y2010/Y2015__*  (hotel-era exclusion, QC hotel truth starts 2019;
+                                other three channels injected, n_dhw_applied=47 or 31)
+```
+
+Those 16 run the untouched NECB hotel schedule, which **is** the `baseline_series` that every other cell's r
+is measured against — identical `reference_occ_mean` hotel wd=0.357275 we=0.368193 in the treated and
+untreated provenances alike. So r = 1.0 there is a fact read off the file, and they are each group's anchor
+point (4 per group), not cells to drop.
+
+Because **1.0 is also a perfectly legitimate measured r**, a silent 1.0 fallback would be indistinguishable
+from a real one — the fallback-that-is-also-a-value failure (vacuous-gate kind #12). The never-injected state
+is therefore asserted POSITIVELY on six hotel-specific conditions — crucially `hotel NOT in
+channels_requested` **AND** `hotel IS in fallback_channels`, which is what separates a deliberate
+non-injection from an injection that ran and produced nothing — and every cell taking that path is **NAMED**
+on the scorecard. Anything neither tokened nor fully asserted still hard-refuses.
+
+**No gate, threshold, tolerance or grouping was touched.** C1′/C2′/C3a/C3b do not call the r reader and had
+already PASSED under the original code, byte-identical across all three scorer runs. Adding the 16 anchor
+points does change C4's fit, which is why it is written into the script header rather than left as a silent
+reader repair.
+
+Files changed: `Step9_docs/3rdJ_09H_resize_elasticity.py` (`hotel_r_with_source`, `hotel_r` now a thin
+wrapper), `Step9_docs/3rdJ_09H_resize_campaign_score.py` (C4 names every non-token r source, new `n_r`
+column, header note), new `Step9_docs/resize_hotel_r_census.sh`.
+
+Jobs: `1172037` (array 0-55%20, 56/56 COMPLETED) · `1172045` FAILED 1:0 (reader) · `1172108` FAILED 1:0
+(reader, wrong scope) · `1172109` census COMPLETED · **`1172110` COMPLETED 0:0, the scorecard above.**
+
+---
+
+### 2026-08-04 (late morning) — four user decisions taken; §8E aggregation of the resized arm LAUNCHED (job 1172148)
+
+**Decisions, put to the user after the 6/6 scorecard landed:**
+
+1. **Which arm is the deliverable → DECIDE AFTER SEEING R's STEP-9 GATES.** Deliberately deferred.
+   Arm H carries all Step-8/9 analysis and a known physical plant defect; arm R fixes it but is a new
+   arm for four channels moving the tower ~19 %. The user declined to choose on the resize scorecard
+   alone. 🔴 **Neither arm may be written up as primary until R's own `S9-EUI-*` / `G8*` /
+   `S9-LONG-*` results exist.**
+2. **What runs next → §8E aggregation + Step-9 re-score on R.** Aggregation launched (below). The
+   **re-score was deliberately NOT launched**: it scores gates, so its falsifiable predictions must be
+   written into this log *before* it runs. That is the next session's first task.
+3. **Hotel EUI band → find and read the CanmetENERGY study first.** R2's `[140,220]`/`[160,240]` may
+   not be adopted until the *Commercial Archetypes Performance Study* (2020) settles whether the NECB
+   2017 hotel archetype is full- or limited-service. Not in `deepResearch/`. Until then
+   `S9-EUI-hotel` stays on R1 `[240,300]` and stays FAIL — **adopting R2 first would be choosing the
+   band that rescues the gate.**
+4. **P3 re-specification → predict VOLUME.** Score what T9-13 actually delivers (volume, elasticity
+   1.0000) rather than energy through a saturated plant. Band not widened; the re-spec must be
+   written down before it is scored.
+
+Still open with the user: **Decision 5**, the Leg-2 office-EUI corrigendum.
+
+#### §8E aggregation of the resized arm — job `1172148`, `Step9_docs/agg_armR.sh` → `agg_R_resize`
+
+🔴 **Verified by `ls` before writing anything: there was no `agg_R_*`.** Every other arm has one
+(`agg_A_t99`, `agg_B_lm3`, `agg_C_lm3v2`, `agg_D_full`, `agg_E_dhwvol`, `agg_H_allfix`); the resized
+arm had never been through §8E, so **no Step-9 gate had ever been scored on it.** The 6/6 scorecard
+read cells directly and touched no Step-9 gate.
+
+Three deliberate departures from `agg_armE.sh`, all in the script header:
+
+- **No `campaign_<hash>/` level.** `out_R_resize/K10/<cell>/` directly — each cell is a post-process
+  of arm H, not a fresh injection. Arm E's hash guard cannot apply; §1 asserts the arm-H tree
+  (`campaign_233932d7`) the cells were built *from*, which is the provenance that matters.
+- **No T9-13 audit sweep.** Every `injected.idf.provenance.txt` in the resized tree is **copied from
+  arm H** — the resize does not re-inject. Re-running the P1 shape sweep here would re-measure arm H
+  and report it as a property of arm R: **vacuous-gate #9**, the gate whose reference comes from the
+  source it audits. Arm H's sweep already passed and stands on its own record.
+- **`--idf-name`, new in `3rdJ_08E_aggregate_4split.py`.** Default `injected.idf`, so all six earlier
+  arms aggregate byte-identically; the resized cells write `injected_resized.idf` and `injected.idf`
+  does not exist there. Cells missing the named IDF now `[FAIL]` by name instead of raising.
+  🔴 **Deliberately NOT solved with a symlink named `injected.idf`:** in every other arm that name
+  means "arm H's injected IDF", so a later reader diffing `injected.idf` across arms would silently
+  compare a resized IDF against an unresized one and read the burner-capacity change as an injection
+  difference. A flag says what is happening; a same-named symlink hides it.
+
+The job pre-checks all 56 cells for `injected_resized.idf`, `manifest.json`, `hourly_meters.csv`,
+`channel_hourly.csv`, `dhw_hourly.csv` and `run/eplusout.sql`, and FATALs on any shortfall rather
+than aggregating a partial arm — a missing input would otherwise drop cells silently.
+
+**Handoff for the next session: `improvements/prompts/3rdJ_L3_manager_prompt_2026-08-05.md`**
+(296 lines, self-contained). Predecessor `..._2026-08-04_progress.md` retains the full resize thread
+(§§0.1–0.17, the K sweep, H1–H11, and why `H2`/`H6`/`C3` stand failed).
+
+---
+
+## §0.18 — arm R §8E aggregation: run LOCALLY, not on Speed (2026-08-04)
+
+**Status: DONE. 56/56 cells, attribution residual 0.000000 % on every cell, exit 0.**
+No Step-9 gate has been scored on these tables yet — see §0.18.6.
+
+### 0.18.1 Why the cluster was abandoned
+
+`agg_armR.sh` was submitted twice and never started:
+
+| job | request | outcome |
+|---|---|---|
+| 1172148 | `--cpus-per-task=4` | cancelled — waiting on four simultaneous free slots |
+| 1172151 | `--cpus-per-task=1` | cancelled — still never started |
+
+I had claimed 1172151 would "backfill the moment a single `qc1983nu` task ends." **That was wrong**, and
+`squeue -t PENDING` with priorities is what falsified it:
+
+- `1172111_[32-75]` — 44 pending tasks, **priority 9362**
+- `1172112_[0-75]` — 76 pending tasks, **priority 9362**
+- ours (1172151) — **priority 9356**
+
+120 higher-priority tasks queue ahead of us, each with a 7-day walltime, against an account cap of
+`cpu=32`. Every freed slot goes to one of them; there is no backfill window. Also corrected: `qc1983nu`
+is **the user's own** account (`UserId=o_iseri(30315)`, `Account=chachemv`), not a foreign job — so it
+is not a queue accident that will clear on its own.
+
+**User's call: stop proposing Speed workarounds; compute locally.** Recorded here because it changes
+the provenance of an arm-level deliverable, which is not a thing a reader should have to infer.
+
+### 0.18.2 Proving the local run is the same computation — not assuming it
+
+A local run is only admissible if the code is the same code. Both files were pulled from the cluster
+repo and `diff -q`'d against the working tree:
+
+| file | result |
+|---|---|
+| `3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/3rdJ_08E_aggregate_4split.py` | **identical** |
+| `eSim_bem_utils/commercial_integration.py` (supplies `classify_tag2`) | **identical** |
+
+🔴 **One provenance difference remains and is NOT waved away: the interpreter.**
+The cluster env is **Python 3.10.20**; this run executed under **Python 3.13.5** (pandas 2.3.3,
+numpy 2.3.5, eppy 0.5.63), EnergyPlus IDD `C:\EnergyPlusV24-2-0\Energy+.idd` (24.2.0, same version as
+the cluster's). Arm R's tables are therefore the only §8E output in this project produced off-cluster.
+Note also that the standing rule *"a local `py_compile` is not a valid syntax check for cluster code"*
+does not bite here for the opposite reason than usual — local 3.13 **is** the runtime, so compiling
+locally checks the thing that actually ran.
+
+### 0.18.3 Moving the inputs down: 336 files, 11.63 GB
+
+§8E reads six files per cell (`injected_resized.idf`, `manifest.json`, `hourly_meters.csv`,
+`channel_hourly.csv`, `dhw_hourly.csv`, `run/eplusout.sql` — the last ~161 MB each).
+56 × 6 = **336 files, 11.63 GB** (this corrects an earlier 9.2 GB estimate).
+
+Transfer script: `scratchpad/fetch_armR.sh`, 8 parallel `scp` streams. No `rsync` locally, and `tar` is
+forbidden on the login node, so a tar-pipe was not available. Made **idempotent** by comparing each
+local file's byte size to a manifest captured in **one** remote `ls` — a per-file remote `stat` would
+have been 336 ssh handshakes — so an interrupted transfer resumes instead of restarting.
+
+Two failures worth recording, both silent-in-principle:
+
+1. **Fabricated cell names.** `awk -F/ '{print $1}'` was applied to the whole manifest line
+   `<size> <path>`, not to field 2, yielding cell names like `10212105 B_opt__SuperTall__MTL`. The
+   symptom was "82 cells started, 0 sql landed" — i.e. it looked like *progress*. Fixed to
+   `awk '{print $2}' | awk -F/ '{print $1}'`, with the failure written into the script as a comment so
+   the next reader does not re-derive it.
+2. **`TaskStop` does not kill a process tree on Windows.** Stopping the first run left its `xargs` and
+   `scp` descendants alive, still creating bogus directories and competing with the relaunch (73 dirs,
+   65 space-named, 15 live `scp`). Cleared with a `Win32_Process` command-line match → 36 processes
+   killed, **survivors verified 0**. The 83 space-named dirs were confirmed to contain **0 files**
+   before `rm -rf`, so the 10 already-valid cells were preserved.
+
+Final verification: **336/336 files present, every byte count equal to the remote manifest, 0
+`SCPFAIL`.** An earlier verification pass flagged 3 `eplusout.sql` as short — they were still in
+flight and matched on recheck; recorded because a size check that is run too early *looks* like
+corruption.
+
+### 0.18.4 `--jobs`, new in `3rdJ_08E_aggregate_4split.py`
+
+Added so the 56 cells use the local box's 20 cores. Constraints it was written to respect:
+
+- **Default `--jobs 1` is the pre-2026-08-04 sequential loop, byte-for-byte.** All six previously
+  aggregated arms therefore still reproduce exactly.
+- Results are collected with `ProcessPoolExecutor.map`, which **preserves submission order**, so even
+  the output *row order* is unchanged. `--jobs` changes no arithmetic.
+- `build_diurnal` / `build_peak` were moved **into** the worker rather than left in `main`. Each cell's
+  raw `aggregate_cell` result carries several 8760-row frames (`chan`, `hourly`, `cal`,
+  `hourly_channel_total`) that would otherwise be pickled back across the process boundary for nothing;
+  the worker now returns three small frames plus meta.
+
+### 0.18.5 Result
+
+```
+PYTHONPATH=<repo> python -u 3rdJ_08E_aggregate_4split.py \
+    --campaign-dir <local>/_local_armR_cache/K10 \
+    --outdir       <local>/_local_armR_cache/agg_R_resize \
+    --idf-name injected_resized.idf --jobs 10 \
+    --eplus-idd C:\EnergyPlusV24-2-0\Energy+.idd
+```
+
+| table | rows (excl. header) |
+|---|---|
+| `agg_annual.csv` | 4088 |
+| `agg_annual_by_channel.csv` | 392 = 56 × 7 (6 channels + `core_exterior`) |
+| `agg_diurnal.csv` | 129024 |
+| `agg_peak.csv` | 2072 |
+| `agg_meta.csv` | 56 |
+
+`cells aggregated : 56 / 56`; **attribution closes against site energy on every cell (≤ 1e-6
+relative)** — the printed residual is `0.000000 %` for all 56, matching arm H.
+
+**`--idf-name` was load-bearing, not cosmetic:** `ls K10/*/injected.idf` returns **0**. Had the flag
+not been added, the default would have failed outright — which is the desired behaviour, and the
+reason the alternative (a symlink named `injected.idf`) was rejected in §0.17: a symlink would have
+made a resized IDF answer to the name every other arm uses for an unresized one.
+
+### 0.18.6 🔴 What has NOT been done
+
+**No Step-9 gate has been scored on arm R.** The aggregation was deliberately run *without* the
+re-score, because the re-score scores gates and **the falsifiable predictions must be written into this
+log first** — scoring first and recording predictions afterwards is how a gate becomes unfalsifiable
+(the failure mode catalogued repeatedly in this project). The predictions are the next writing task.
+
+One observation is already visible in the tables and is recorded here **as an observation, not a
+verdict**: `B_central__SuperTall__CLG` hotel EUI = **216.2 kWh/m²·CFA**, still below the `S9-EUI-hotel`
+R1 band `[240, 300]`. That band is itself pending — the CanmetENERGY *Commercial Archetypes Performance
+Study* (2020) has not been located and read, and until it is, `S9-EUI-hotel` stays on R1 and stays
+**FAIL**. The band is not to be widened to absorb this number.
+
+---
+
+## §0.19 — Step-9 re-score on arm R: PREDICTIONS, WRITTEN BEFORE THE SCORER IS RUN (2026-08-04)
+
+Nothing in this section was written after seeing an arm-R gate result. The re-score command is at
+§0.19.7 and had not been executed when §§0.19.1–0.19.6 were committed.
+
+### 0.19.1 What is being tested
+
+Arm R differs from arm H in **exactly one thing**: `Heater Maximum Capacity` on the tower's six
+`WaterHeater:Mixed` objects (K = 10). That is not an assumption here — it is the C2' control already
+recorded in §0.17: *"resized IDF differs from arm H ONLY on `Heater Maximum Capacity` — 56 cells, 0
+violations."* Every difference the scorer reports must therefore trace to DHW. A difference that
+cannot be routed through DHW **falsifies the resize's provenance**, not the gate.
+
+Both arms are scored by the **same instrument on the same machine**:
+`3rdJ_09_activityDrivenLoads_4split.py` (unmodified; `--agg-dir` is its only relevant input), run
+locally on `agg_H_allfix` and `agg_R_resize`. Arm H's tables were pulled from Speed for this purpose;
+arm H's numbers below are **measurements**, arm R's are **predictions**.
+
+### 0.19.2 Arm H reference — measured, from `agg_H_allfix`
+
+| channel | dhw share of own energy | median EUI | SuperTall / Tall | in band |
+|---|---|---|---|---|
+| hotel | **36.94 %** | 182.39 | 158.24 / 205.15 | 28/56 in `[180,300]`, **0/56 in `[240,300]`** |
+| residential | **48.88 %** | 123.45 | — | no band |
+| office | **14.39 %** | 81.63 | — | 0/56 in `[100,200]` |
+| retail | **7.34 %** | 89.91 | — | 55/56 in `[80,155]` |
+| residential_common | **0.00 %** | 53.48 | — | no band |
+| service_MEP | **0.00 %** | 59.49 | — | no band |
+
+Whole-tower DHW = **26.98 %** of site energy, and it is **99.0 % NaturalGas** (591.1 of 596.9 TJ).
+That fuel split is load-bearing for P6 below.
+
+### 0.19.3 🔴 The scorer's hotel band is STALE relative to user decision (3)
+
+`BENCH["hotel"]` in the Step-9 scorer is `lo=180, hi=300` (file dated 2026-07-31). R1's verdict, taken
+2026-08-03, is that **the applicable band is `[240,300]`, not `[180,300]`** — the 180 floor is a
+limited-service figure and this tower is not that building. Decision (3) then froze `S9-EUI-hotel` on
+R1 `[240,300]` pending the CanmetENERGY study.
+
+**The scorer will therefore report the hotel gate against a band the standing decision has already
+superseded.** This is recorded rather than fixed: editing `BENCH` now would be moving a band on the
+same day its result is read, which is the banned move regardless of which direction it moves. So:
+
+- the scorer's hotel line is to be read as **"the pre-R1 band"** and is not the governing verdict;
+- the **R1 verdict is computed separately** (P5) and is the one that governs;
+- the band is **not widened, narrowed, or re-sourced** by this run.
+
+### 0.19.4 🔴 Disclosure — what I have already seen of arm R
+
+Predictions are only worth writing if the writer could still be wrong. Two arm-R quantities are
+already in my context from the §0.18 aggregation and its schema check:
+
+1. **All 56 `site_energy_GJ`** (printed per cell by the aggregation). **No prediction is made about
+   site energy** — I could not be wrong about it, so it is not evidence.
+2. **One hotel EUI**: `B_central__SuperTall__CLG` = **216.22** vs arm H's **154.10** (+40.31 %).
+   P3's hotel range and the hotel counts in P4/P5 are informed by this single cell. Everything else —
+   all other channel EUIs, every count, every peak, every diurnal and longitudinal statistic, and
+   **every gate status in both arms** — is unseen.
+
+### 0.19.5 Predictions
+
+Mechanism: a channel's EUI can only rise by `dhw_share × (f_dhw − 1)`, where `f_dhw` is how much more
+DHW energy the unsaturated plant delivers. Share is measured (§0.19.2); `f_dhw` is what the resize
+buys.
+
+**P1 — CONTROL, the sharpest falsifier.** `residential_common` and `service_MEP` have **0.00 %** DHW.
+Their median EUI must move by **< 2 %** R vs H. This gate discriminates by *end use*, not magnitude:
+if it fails with the change concentrated in `pumps`/`fans`, the mechanism is SWH-loop plant energy
+attributed to `service_MEP` — legitimate coupling, report it; if it fails in `interior_equipment` or
+`interior_lighting`, the resize touched something it must not have and the arm is not a clean
+one-variable contrast.
+
+**P2 — ORDERING.** `ΔEUI%(hotel) > ΔEUI%(residential) > ΔEUI%(office) > ΔEUI%(retail)`.
+Residential carries the *larger* DHW share (48.88 % vs 36.94 %) yet is predicted to move *less*,
+because hotel is the channel that was saturated (§0.17: marginal m³ served at 22.66 K against a
+49.2 K target). So P2 is a claim about **saturation, not share** — if it fails by residential
+overtaking hotel, share won and the "hotel was the saturated one" story is wrong.
+
+**P3 — MAGNITUDES** (median over 56 cells, R vs H):
+
+| channel | predicted ΔEUI | basis |
+|---|---|---|
+| hotel | **+18 % … +45 %** | one seen cell at +40.31 %; Tall was less saturated than SuperTall |
+| residential | **+3 % … +9 %** | 48.88 % × the +11.3 % residential DHW rise of §0.17 ≈ +5.5 % |
+| office | **0 % … +6 %** | 14.39 % share, saturation unknown |
+| retail | **0 % … +4 %** | 7.34 % share |
+
+**P4 — GATE FLIPS under the scorer's (pre-R1) band.**
+
+- `S9-EUI-hotel`: **FAIL → PASS**, in-band **≥ 50/56** (H = 28/56). Mechanism: SuperTall median
+  158.24 rises through the 180 floor; Tall (205.15) was already inside.
+- `S9-EUI-office`: **stays FAIL, 0/56.** H's *maximum* is 90.33; at the top of P3's office range that
+  is 95.7, still under the 100 floor. This is the prediction that says the resize does not rescue
+  office — and it is cheap to falsify: one office cell ≥ 100 kills it.
+- `S9-EUI-retail`: **stays PASS**, in-band **56/56** (H = 55/56; the one miss is the 79.87 minimum,
+  just under the 80 floor, and any positive move carries it in).
+
+**P5 — 🔴 THE VERDICT THAT ACTUALLY GOVERNS.** Against R1's `[240,300]`, hotel in-band is
+**≤ 30/56** and `S9-EUI-hotel` **remains FAIL**. Arithmetic: Tall 205.15 × 1.18–1.45 = 242–297 (in
+band), SuperTall 158.24 × 1.18–1.45 = 187–229 (still out). So the resize is predicted to fix the
+*Tall* half only. **The DHW undersizing defect being closed does not close the hotel EUI gate.**
+
+**P6 — LEVERS AND PEAKS UNTOUCHED.** `G8o`/`G8r`/`G8h` stay **PASS** with the same non-degeneracy and
+monotonicity; the coincidence factor moves **< 0.02** absolute (H = 0.966). Burner capacity is not an
+occupancy lever, and DHW is 99.0 % gas, so the electric peak has almost no route to move.
+
+**P7 — SCORECARD DELTA.** R's scorecard equals H's with **exactly one status change**: hotel EUI
+FAIL → PASS (under the scorer's stale band). PASS +1, FAIL −1, every other gate identical in status.
+Any *second* status change is a finding to chase, not a rounding difference.
+
+### 0.19.6 How this section can be wrong
+
+P1 failing in `interior_*` would mean arm R is not a one-variable contrast — that outranks every other
+result here and would suspend P2–P7. P2 failing means the saturation story is wrong and the effect is
+just DHW share. P4-office failing means office EUI is recoverable by plant sizing, which contradicts
+§0.17's decomposition (~15 of office's 22 kWh/m² shortfall is the standalone-prototype band). P5
+failing in the *optimistic* direction would be the only result that could retire the hotel gate — and
+it may not be obtained by touching the band.
+
+### 0.19.7 Command
+
+    python -u 3rdJ_09_activityDrivenLoads_4split.py --agg-dir <...>/agg_H_allfix --outdir outputs_step9_H
+    python -u 3rdJ_09_activityDrivenLoads_4split.py --agg-dir <...>/agg_R_resize  --outdir outputs_step9_R
+
+Same binary, same interpreter (local Python 3.13.5 — see §0.18.2), arms differing only in `--agg-dir`.
+
+---
+
+## §0.20 — Step-9 re-score on arm R: RESULT vs the §0.19 predictions (2026-08-04)
+
+**Both arms score 17 PASS / 0 WARN / 3 FAIL / 10 INFO. Across all 30 gates there is NOT ONE status
+change.** The three FAILs are the same three in both arms: `S9-EUI-office`, `S9-EUI-retail`,
+`S9-EUI-hotel`.
+
+**Prediction scorecard: 5 PASS / 8 FAIL** (13 sub-claims). The failures are the informative part.
+
+### 0.20.1 🔴🔴 HEADLINE — the hotel gate count is IDENTICAL and it means the opposite of what it looks like
+
+`S9-EUI-hotel` reads **28/56 in arm H and 28/56 in arm R**. It is a *completely different 28*.
+
+| | arm H | arm R |
+|---|---|---|
+| hotel median, SuperTall | 158.24 (below the 180 floor) | **216.25** (inside) |
+| hotel median, Tall | 205.15 (inside) | **323.43** (above the 300 ceiling) |
+| cells above the 300 ceiling | 0 | **28** |
+| in band `[180,300]` | 28/56 | 28/56 |
+
+The 28 SuperTall cells came **up** into the band; the 28 Tall cells went **out the top**. The count is
+stable because the two halves swapped, not because nothing happened. Reading the unchanged 28/56 as
+"the resize did nothing to hotel" would be exactly backwards: hotel DHW delivered energy rose
+**+124.09 %**.
+
+**New vacuous-reading class — provisionally #12** (verify numbering against the catalogue): *the gate
+whose count is stable while its membership turns over completely.* Every previous class concerned a
+gate that could not fail; this one is a gate that failed identically for opposite reasons on either
+side of a change. The defence is to report **which** cells pass, not how many — and here the geometry
+split (`SuperTall`/`Tall`) was already the known bimodality, so the check was available and simply
+not asked for.
+
+### 0.20.2 P1 CONTROL — PASS, and it is the result that licenses everything else
+
+Predicted: the two channels with **0.00 %** DHW move **< 2 %**. Measured:
+
+- `residential_common` **+0.0007 %**, `service_MEP` **+0.0015 %**
+- tower-wide, **every non-DHW end use** moves within **±0.005 %**: cooling −0.000, interior_lighting
+  +0.000, interior_equipment +0.000, fans +0.001, heating +0.002, heat_recovery +0.002, pumps +0.005
+
+So arm R really is a one-variable contrast: **only DHW moved.** The alternative failure mode named in
+§0.19.5 (movement landing in `interior_*`) did not occur, and the pump/fan coupling that would have
+been the *legitimate* failure is present only at the 0.005 % level.
+
+### 0.20.3 Mechanism — the undersizing was very nearly hotel-only
+
+DHW delivered energy, 56 cells pooled, R vs H:
+
+| channel | dhw share (arm H) | H → R | Δ |
+|---|---|---|---|
+| **hotel** | 36.94 % | 276.5 → **619.6 TJ** | **+124.09 %** |
+| residential | 48.88 % | 227.5 → 241.0 TJ | **+5.94 %** |
+| office | 14.39 % | 87.7 → 86.5 TJ | **−1.42 %** |
+| retail | 7.34 % | 5.2 → 5.1 TJ | **−0.75 %** |
+| tower | 26.98 % | 596.9 → **952.3 TJ** | **+59.53 %** |
+
+🔴 **This contradicts §0.17 and must be reconciled, not quietly dropped.** §0.17 concluded *"undersizing
+was NOT hotel-only — residential DHW +11.3 % too, tower all-fuel +18.9 % median, so this is a NEW ARM
+for all 4 channels."* On the aggregated arm, residential DHW is **+5.94 %**, and office and retail move
+**negatively** — they were never saturated, despite office carrying a 14.39 % DHW share. The two
+numbers may be measuring different things (§0.17 read cells directly, possibly volume served rather
+than delivered energy). **Which is right is an open item**; what is now on file is that the aggregated
+arm does not support "all 4 channels".
+
+### 0.20.4 Prediction scorecard
+
+| # | claim | verdict | measured |
+|---|---|---|---|
+| **P1** | zero-DHW channels move < 2 % | **PASS** | +0.0007 % / +0.0015 % |
+| **P2** | hotel > residential > office > retail | **FAIL** | hotel +47.16 > residential +3.55 > retail −0.05 > **office −0.17** |
+| **P3a** | hotel ΔEUI +18…+45 % | **FAIL** | **+47.16 %** (overshoot) |
+| **P3b** | residential ΔEUI +3…+9 % | **PASS** | +3.55 % |
+| **P3c** | office ΔEUI 0…+6 % | **FAIL** | **−0.17 %** (wrong sign) |
+| **P3d** | retail ΔEUI 0…+4 % | **FAIL** | **−0.05 %** (wrong sign) |
+| **P4a** | `S9-EUI-hotel` FAIL→PASS, ≥ 50/56 | **FAIL** | stays FAIL, **28/56** |
+| **P4b** | `S9-EUI-office` stays FAIL 0/56 | **PASS** | FAIL, 0/56, max 90.2 |
+| **P4c** | `S9-EUI-retail` stays PASS 56/56 | **FAIL** | **baseline mis-stated** — retail was already FAIL in H (55/56); R is **54/56**, worse |
+| **P5** | R1 `[240,300]`: ≤ 30/56, stays FAIL | **PASS, wrong reason** | 0/56 → **2/56**, stays FAIL |
+| **P6a** | `G8o`/`G8r`/`G8h` stay PASS | **PASS** | all three PASS in both arms |
+| **P6b** | coincidence moves < 0.02 absolute | **FAIL** | 0.967 → **0.937** (−0.030); range 0.952–0.979 → **0.818–0.967** |
+| **P7** | exactly one status change | **FAIL** | **zero** status changes across all 30 gates |
+
+**P5 passed for the wrong reason and is recorded as such.** The predicted arithmetic was "Tall lands
+inside `[240,300]`, SuperTall stays below" — reality is that Tall *overshot past 300* (323.43) and
+SuperTall stopped at 216.25, below the 240 floor. Both halves are out of the R1 band, for opposite
+reasons. The verdict I predicted is right; the mechanism I gave for it is wrong.
+
+**P4c is my error, not a model result.** §0.19 asserted retail "stays PASS"; arm H's retail gate was
+already **FAIL** at 55/56. The baseline was mis-stated in the prediction section. Recorded as a miss.
+
+### 0.20.5 What this settles and what it opens
+
+**Settles:** closing the DHW undersizing does **not** close the hotel EUI gate, under either band. Under
+the scorer's pre-R1 `[180,300]` the count is unchanged (28/56, inverted membership); under R1's
+`[240,300]` — the band user decision (3) put it on — it goes 0/56 → **2/56** and stays **FAIL**. No band
+was touched, widened, or re-sourced.
+
+**Opens — 🔴 K = 10 now looks like an over-correction.** Arm R's Tall hotel median is **323.43**, above
+the 300 ceiling of the band it was supposed to reach, and 28/56 cells now exceed it. Arm H under-served
+hotel DHW; arm R over-serves it. Neither arm puts hotel in band, and "which arm is the deliverable"
+(user decision 1, deferred pending exactly this scorecard) now has a third possible answer: **neither,
+until the hotel draw itself is examined.** The resize fixed the plant; the remaining gap is in the
+draw or in the band.
+
+**Also open:** the §0.17 reconciliation in §0.20.3; and P6b — the coincidence factor fell 0.030 with its
+range widening to 0.818–0.967, which is a real change to the mixed-use diversity number the manuscript
+quotes, driven by a hotel gas peak that more than doubled. `S9-COINC` still PASSes, so the gate did not
+catch it; the number moved anyway and should be re-quoted from whichever arm becomes the deliverable.
+
+Outputs: `outputs_step9_H/` and `outputs_step9_R/` (each: `step9_gates.json`, four CSVs, five figures,
+`step9_report.html`), both produced by the unmodified scorer under local Python 3.13.5.
+
+---
+
+# §0.21 — OPEN QUESTIONS AND PROBLEMS: state of play for external review (2026-08-04)
+
+**This section is written to be read COLD, by a reviewer with no access to the rest of this log or to
+the project's history.** It states what the project is, what has been run, what is blocking, and what
+I believe the blockage actually is. It is deliberately self-critical: the question it was written to
+answer is *"two weeks and ~10 re-simulations later, are we on the right path?"*
+
+## 0.21.1 What the project is, in one paragraph
+
+3J Leg-3 builds a four-channel mixed-use high-rise energy model (office / retail / hotel /
+residential) in EnergyPlus 24.2.0. The scientific contribution is **occupancy**: Canadian General
+Social Survey (GSS) time-use diaries are converted into per-channel occupancy schedules and injected
+into the building model, replacing the code-standard (NECB 2020) schedules. The claim under test is
+that behaviour-derived occupancy changes building energy in ways a rescaled code schedule cannot
+reproduce. Step 9 is the validation layer: **30 gates** scored on the aggregated simulation output.
+A campaign is **56 cells** = 14 scenarios × 2 geometries (`Tall`, `SuperTall`) × 2 cities
+(`CLG` = Calgary, `MTL` = Montréal).
+
+## 0.21.2 The record: 8 simulated arms, and what each one moved
+
+Every arm is a full 56-cell EnergyPlus campaign. Per-channel EUI in kWh/m²·yr, CFA basis, median of
+56 cells.
+
+| arm | what changed | office | retail | hotel | gate outcome |
+|---|---|---|---|---|---|
+| `cf69d508` pre-fix | baseline | 71.08 | 75.43 | 178.29 | 3 FAIL |
+| **A** `out_A_t99` | T9-9: restore the plug/light standby floor the injector destroyed | 80.03 | 84.05 | 180.94 | 3 FAIL |
+| **B** `out_B_lm3` | T9-10: lighting zone-coincidence, office `n=3` | 82.69 | frozen — **rejected on mechanism** | 179.72 | 3 FAIL |
+| **C** `out_C_lm3v2` | T9-12: retail lighting re-spec, `k=0.60` | — | 90.05 | — | 3 FAIL |
+| **D** `out_D_full` | T9-11: DHW per-capita | — | — | — | **arm REFUTED and withdrawn** |
+| **E** `out_E_dhwvol` | T9-13: DHW volume scaling | — | — | — | 4P/2F vs H |
+| **H** `out_H_allfix` | FINDINGS 7/8/9 fixed (injector, cache-key collision) | 81.63 | 89.91 | 182.39 | 3 FAIL |
+| **R** `out_R_resize` | DHW burner capacity ×10 (undersizing fix) | 81.52 | 89.87 | 271.40 | 3 FAIL |
+
+Net over eight arms: office **71.08 → 81.52**, retail **75.43 → 89.87**, hotel **178.29 → 271.40**.
+The same three gates — `S9-EUI-office`, `S9-EUI-retail`, `S9-EUI-hotel` — have been FAIL throughout.
+The other 27 gates have been stable and passing.
+
+**Real defects were found and fixed along the way, and they were worth finding** (an injector writing
+one occupancy schedule over PEOPLE+LIGHTS+EQUIPMENT and destroying the 22 % plug standby floor; a
+cache-key collision; a Leg-2 EUI inflated 1.706× by a `ReportName` filter bug; DHW plant undersizing).
+That work is sound. **The question is whether it was ever going to move the three gates — and the
+controls say no.**
+
+## 0.21.3 🔴🔴 THE CENTRAL PROBLEM: none of the three blocking gates is an occupancy problem
+
+This is the assessment. It rests on one control that has been available since 2026-07-31 and was not
+acted on: the **`Default_NECB` cell — a cell with NO GSS injection at all, running pure NECB code
+schedules, identical geometry / envelope / climate / plant.**
+
+### office — the band is unreachable, and our contribution is not the reason
+
+| | arm H | arm R |
+|---|---|---|
+| `Default_NECB` (NO injection, NECB's own schedules) | **85.45** | **85.34** |
+| `B_central` (GSS injected) | 81.27 | 81.09 |
+| band floor | **100** | **100** |
+| `Default_NECB` cells in band | **0/4** | **0/4** |
+
+**The code's own reference implementation fails this band by 15 %.** A band that the uninjected NECB
+building cannot reach is not measuring our occupancy model — it is measuring a mismatch between the
+band and the building. Injection then moves office *down* by ~4 kWh/m² (81 vs 85), so the best case
+available from any correction to the occupancy model is roughly the uninjected 85 — **still 15 %
+below the floor.** The median needs **+22.7 %** to reach 100.
+
+Across eight arms office moved +14.7 %. It needs +22.7 % more, and its own no-injection control sits
+below the floor. **More arms cannot close this.**
+
+### retail — the gate fails on 0.06 % and 0.23 %
+
+Arm R retail: **54/56 cells in band `[80,155]`**. The two misses:
+
+| cell | EUI | short of the 80.00 floor by |
+|---|---|---|
+| `B_cons__SuperTall__CLG` | 79.82 | 0.18 = **0.23 %** |
+| `sens_retail_cons__SuperTall__CLG` | 79.96 | 0.04 = **0.06 %** |
+
+The gate is FAIL because it requires **56/56**. `Default_NECB` retail is **4/4 in band**. This is a
+**gate-threshold artefact**, not a modelling failure — and note it is *not* a licence to widen the
+band; it is a question about whether "all 56 cells" is the right rule (see Q3).
+
+### hotel — the plant, not the occupancy
+
+Arm R raised hotel EUI +47 % by changing **burner capacity only**. The `Default_NECB` (uninjected)
+hotel moved with it: **178.03 → 260.87**. A change that moves the *uninjected control* by the same
+mechanism is a plant effect with no occupancy content. And it over-shot: `Tall` hotel is now
+**323.43**, above the band's 300 ceiling, while `SuperTall` is 216.25, below R1's 240 floor. Both
+halves are out, in opposite directions. See §0.20 for the full scorecard.
+
+### Conclusion I draw
+
+**Of the three blocking gates: one is a band-applicability problem (office, proven by the uninjected
+control), one is a gate-threshold problem (retail, 0.06–0.23 % misses under an all-56 rule), one is a
+plant-and-band problem (hotel).** None is an occupancy-modelling problem — and occupancy is what the
+paper is about. Arms C, E, H and R were, in hindsight, attempts to fix through the occupancy channel
+three failures that the controls locate outside it. **That is the wrong loop, and I stayed in it.**
+
+The unblocking action was already decided and never executed: **user decision #2, taken 2026-08-02 —
+"office EUI gate → re-derive a band valid for a *stacked channel*, sourced independently from
+literature BEFORE looking at our number."** Four more arms were run instead. The same decision applies
+to hotel (decision #3, the CanmetENERGY study, still not located and read).
+
+## 0.21.4 Open questions
+
+Each is stated as: what is known / what is missing / what would settle it.
+
+**Q1 — Is a per-channel EUI band from a STANDALONE prototype applicable to a channel stacked inside a
+mixed-use tower?**
+*Known:* every band in use (`office [100,200]`, `retail [80,155]`, `hotel [180,300]`) comes from
+standalone prototype buildings (NECB2020 / 90.1-2019 DOE-PNNL, and dr_L3-02/03). The uninjected NECB
+control fails the office band by 15 %. A stacked channel has less envelope exposure, shares a
+centrally-sized plant, and has different infiltration and internal-gain neighbours.
+*Missing:* a band derived for, or validated on, stacked channels.
+*Settles it:* decision #2's independent literature re-derivation — done **before** looking at our
+numbers, and written down before scoring. If no such band exists, the honest outcome is that
+`S9-EUI-*` cannot be a PASS/FAIL gate at all and must become INFO with the measurement published.
+*Note:* a prior attempt to explain the deficit by envelope exposure was **measured and refuted**
+(exposure rank came out the wrong way round, 56/56 cells). So "stacked ⇒ lower EUI" is a hypothesis
+that has already failed once by the obvious mechanism; it needs a better one or a different band.
+
+**Q2 — Is the office deficit real, or is the office channel itself mis-specified?**
+*Known:* office is the outlier — retail and hotel sit near or inside their bands, office is 19 % below
+its floor even uninjected. A separate audit (B-11) found **retail zones are 25.0 m²/person, identical
+to office**, while the documentation claims ~3.7 m²/person — a 6.8× gap — and that the "0.95 NECB
+retail peak" in our docs is actually the **office** peak. If channel occupant densities are wrong,
+per-channel EUI is wrong at the source.
+*Missing:* an audit of office (and retail) occupant density, lighting power density and equipment
+power density against NECB 2020 tables, independent of anything we have injected.
+*Settles it:* that audit. It is cheap — it reads the IDF, no simulation.
+
+**Q3 — Is "all 56 cells in band" the right gate rule?**
+*Known:* retail FAILs at 54/56 on misses of 0.06 % and 0.23 %. Office FAILs at 0/56. The rule cannot
+distinguish "the model is wrong" from "two cells grazed a threshold".
+*Missing:* a stated rule for what fraction constitutes agreement, **written before it is applied**.
+*Settles it:* pre-registering the rule. 🔴 **Constraint: this must not be chosen by looking at which
+threshold makes retail pass.** If the rule is decided now, it is decided knowing the answer — so the
+defensible move is to publish both (54/56 in band; 2 cells short by <0.25 %) and let the reader judge.
+
+**Q4 — Which arm is the deliverable?** *(user decision 1, deferred since 2026-08-04 pending the arm-R
+scorecard, which now exists — §0.20)*
+*Known:* arm H under-serves hotel DHW; arm R over-serves it (Tall 323 vs a 300 ceiling). Neither puts
+hotel in band. Every other gate is identical between them.
+*Missing:* whether the correct burner capacity is between H's and R's — i.e. whether `K` should be
+calibrated rather than set to 10.
+*Settles it:* the existing K-sweep data may already answer it without new simulation. **Check the sweep
+before running anything.**
+
+**Q5 — Is the hotel DHW *draw* right, independent of plant capacity?**
+*Known:* with an unsaturated plant, hotel DHW delivered energy is **+124 %** vs arm H, pushing hotel
+EUI above its ceiling. Hotel is 63 % of prototype DHW volume, and laundry alone is 75 % of hotel
+design flow.
+*Missing:* validation of the hotel draw (L/person/day) against a published hotel benchmark.
+*Settles it:* one literature figure, no simulation.
+
+**Q6 — §0.17 vs §0.20 contradiction on who was undersized.**
+*Known:* §0.17 concluded the undersizing affected all four channels ("residential DHW +11.3 %, tower
+all-fuel +18.9 %"). The aggregated arm gives hotel **+124.09 %**, residential **+5.94 %**, office
+**−1.42 %**, retail **−0.75 %** — very nearly hotel-only, with office *falling* despite a 14.39 % DHW
+share.
+*Missing:* whether §0.17 measured volume served rather than delivered energy.
+*Settles it:* re-deriving §0.17's number from the same tables. No simulation.
+
+**Q7 — The scorer's hotel band is stale.**
+`BENCH["hotel"]` in `3rdJ_09_activityDrivenLoads_4split.py` is `[180,300]`; R1's verdict and user
+decision #3 put the gate on `[240,300]`. The code has not been updated. 🔴 **It was deliberately not
+edited on the day its result was read** — changing a band while looking at the number it judges is the
+banned move in either direction. It must be fixed and re-run **before** any hotel result is quoted.
+
+**Q8 — Backward-audit item B-3, still open.** The residential occupancy model uses `HHSIZE × any-present`
+with **zero intra-household diversity**, and this reaches the **already-submitted 2J paper**. It is the
+only high-severity backward-audit finding still needing compute. It has been open since 2026-08-03.
+
+## 0.21.5 Problems with the instrument, not the model
+
+1. **`S9-EUI-*` gates are being used as if they validate the occupancy model. They do not.** They
+   compare an absolute EUI level against an external band. Occupancy affects *shape* and, at the
+   margin, level. Every gate that actually tests the scientific claim — `S9-INJECTION` (occupancy
+   flips midday-dominant → evening-dominant), `G8o`/`G8r`/`G8h` (levers non-degenerate and monotonic),
+   `S9-COINC` (0.937–0.967, channels do not peak together), `S9-D20` (energy-vs-occupancy lag: office
+   0.26 h, residential 10.56 h) — **passes, and has passed in every arm.**
+2. **A gate count can be stable while its membership completely turns over** — `S9-EUI-hotel` read
+   28/56 in both arms H and R, a *different* 28 (§0.20.1). Counts alone are not a safe summary.
+3. **Eight arms, one moving target.** No arm was launched with a pre-registered numeric prediction for
+   the gate it was meant to fix until arm E. Predictions were added late (§0.19 is the first full
+   pre-registered set) — which is why the earlier arms could not distinguish "the fix worked" from
+   "something moved".
+
+## 0.21.6 What I would stop doing, and what I would do instead
+
+**Stop:** running campaign arms to move `S9-EUI-*`. Eight arms have moved office by +14.7 % against a
+required +22.7 %, and its own uninjected control is below the floor. There is no reason to expect a
+ninth to differ.
+
+**Do instead — all of it is desk work, no simulation:**
+1. Q2's IDF audit of occupant / lighting / equipment power density per channel vs NECB 2020 (cheapest,
+   and it could invalidate or explain the office deficit outright).
+2. Decision #2's independent band re-derivation for stacked channels; decision #3's CanmetENERGY
+   study for hotel. Both were taken and neither executed.
+3. Q6 and Q4 from existing tables and the existing K-sweep.
+4. If Q1 concludes no valid stacked-channel band exists: **convert `S9-EUI-*` to INFO, publish the
+   measurement, and state the limitation.** That is the honest outcome and it does not weaken the
+   paper — the paper's claims rest on shape, lever response, diversity and lag, all of which pass.
+   🔴 It must be reached by the band being shown inapplicable, **never** by widening it to absorb a
+   FAIL.
+
+## 0.21.7 What is NOT in doubt
+
+So the reviewer can calibrate: attribution closes to ≤ 1e-6 on every cell of every arm; 56/56 cells
+complete; the injector's provenance is hash-tracked; arm R was verified as a strict one-variable
+contrast (every non-DHW end use moved < 0.005 %); and 27 of 30 gates pass consistently, including all
+four that test the paper's actual claim. **The pipeline is sound. The dispute is entirely about three
+absolute-level EUI bands and whether they apply to this building.**

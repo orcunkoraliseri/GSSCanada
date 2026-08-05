@@ -38,6 +38,7 @@ reconcile with the driver is not a weaker breakdown, it is a different quantity.
     python 3rdJ_09H_resize_campaign_cell.py <armH_cell_dir> <out_dir> <epw> <K>
 """
 import csv
+import datetime as _dt
 import importlib.util
 import json
 import os
@@ -55,6 +56,24 @@ from importlib.machinery import SourceFileLoader
 
 RHO_C = 4.184e6
 TOL_VOLUME_PCT = 0.01          # same tolerance H11 refused on (job 1172033)
+
+
+def _energyplus_version_raw(exe):
+    """Ask the executable that ACTUALLY ran what it is. Returns '' if it cannot be asked.
+
+    Deliberately non-fatal: a missing version banner must not kill a cell whose simulation already
+    succeeded. But it must also never silently leave arm H's build hash in place pretending to be
+    this run's -- the caller only overwrites the version fields when this returns something.
+    """
+    try:
+        out = subprocess.run([exe, "--version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             timeout=60).stdout.decode("utf-8", "replace")
+    except Exception:
+        return ""
+    for line in out.splitlines():
+        if "EnergyPlus" in line and "Version" in line:
+            return line.strip()
+    return ""
 _DESIGN_F_RE = re.compile(r"([0-9.]+)\s*F\s*$")
 
 
@@ -183,13 +202,31 @@ def main():
     # --- 2. re-simulate -----------------------------------------------------------------------
     run_dir = os.path.join(outdir, "run")
     os.makedirs(run_dir, exist_ok=True)
-    wrap = os.path.join(outdir, "energyplus")
-    with open(wrap, "w") as f:
-        f.write("#!/bin/bash\nsingularity exec --bind /speed-scratch --bind /nfs/speed-scratch "
-                "%s %s \"$@\"\n" % (probe.SIF, probe.SIF_EXE))
-    os.chmod(wrap, 0o755)
+    # LOCAL-RUN PORT (2026-08-04, V2-B4). `EPLUS_EXE` names an EnergyPlus binary to call directly,
+    # for running this campaign off-cluster. It is DEFAULT-OFF: with the variable unset the
+    # singularity branch below is byte-identical to the one arms H and R ran under, so every earlier
+    # cell reproduces unchanged. The local binary must be 24.2.0 -- the same version as the SIF --
+    # or the resized cells are not comparable to the arm-H cells they are differenced against.
+    #
+    # A SET-BUT-MISSING `EPLUS_EXE` REFUSES rather than falling back to singularity. A silent
+    # fallback would let a mistyped path run the wrong engine (or, off-cluster, fail 56 times with
+    # "singularity: not found") and report it as a campaign result. That silent-default shape is the
+    # defect recorded at job 1171812 and it is not being reintroduced here.
+    local_exe = os.environ.get("EPLUS_EXE", "").strip()
+    if local_exe:
+        if not os.path.isfile(local_exe):
+            raise SystemExit("REFUSING: EPLUS_EXE set but not a file: %s" % local_exe)
+        cmd = [local_exe]
+        print("  EnergyPlus: local binary %s" % local_exe)
+    else:
+        wrap = os.path.join(outdir, "energyplus")
+        with open(wrap, "w") as f:
+            f.write("#!/bin/bash\nsingularity exec --bind /speed-scratch --bind /nfs/speed-scratch "
+                    "%s %s \"$@\"\n" % (probe.SIF, probe.SIF_EXE))
+        os.chmod(wrap, 0o755)
+        cmd = [wrap]
     print("  running EnergyPlus ...")
-    rc = subprocess.run([wrap, "-w", epw, "-d", run_dir, dst_idf],
+    rc = subprocess.run(cmd + ["-w", epw, "-d", run_dir, dst_idf],
                         stdout=subprocess.DEVNULL).returncode
     print("  EnergyPlus exit=%d" % rc)
     sql = os.path.join(run_dir, "eplusout.sql")
@@ -223,6 +260,46 @@ def main():
     manifest["RESIZE_NOTE"] = ("Heater Maximum Capacity x K on every WaterHeater:Mixed; tank volume, "
                                "parasitics and loss coefficients untouched. INJ_HASH/INPUTS_HASH "
                                "inherited from arm H because the injection did not change.")
+
+    # --- 4b. RE-STAMP the fields that describe THIS run, not arm H's ----------------------------
+    # Defect found 2026-08-04 by the local (win32) port and fixed here. The manifest is inherited
+    # wholesale from arm H, which is right for INJ_HASH / INPUTS_HASH (the injection genuinely did
+    # not change) but WRONG for anything describing the execution: this script re-runs EnergyPlus,
+    # so PLATFORM, the executable, the timestamp and the output directory are properties of the
+    # resize run and must be measured, not copied.
+    #
+    # 🔴 Why it went unseen for eight arms: on Speed the inherited value was `linux` and the actual
+    # value was `linux`, so the field was ACCIDENTALLY CORRECT and no gate could distinguish a
+    # measured stamp from a copied one. The PLATFORM comparability guard
+    # (`Step8_docs/3rdJ_08P_probe_gates.py:202`) reads this field to refuse cross-platform diffs --
+    # so before this fix that guard was comparing a value inherited FROM the arm it audits, and
+    # could not fail. Running the same code on win32 is what made a copied stamp visibly wrong.
+    # This is the catalogue's "gate whose reference comes from the same source it audits" class.
+    #
+    # Arm H's values are preserved under ARMH_* rather than discarded, so the inheritance is still
+    # auditable and nothing that was true of the source run is lost.
+    for _k in ("PLATFORM", "engine", "energyplus_exe_used", "energyplus_version",
+               "energyplus_version_raw", "energyplus_build", "timestamp_utc", "outdir",
+               "ep_return_code"):
+        if _k in manifest:
+            manifest["ARMH_" + _k] = manifest[_k]
+    manifest["PLATFORM"] = sys.platform
+    manifest["engine"] = "local"
+    manifest["energyplus_exe_used"] = os.path.abspath(cmd[0])
+    manifest["outdir"] = os.path.abspath(outdir)
+    manifest["timestamp_utc"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+    manifest["ep_return_code"] = rc
+    _ver_raw = _energyplus_version_raw(cmd[0])
+    if _ver_raw:
+        manifest["energyplus_version_raw"] = _ver_raw
+        _m = re.search(r"Version\s+([0-9.]+)-([0-9a-f]+)", _ver_raw)
+        if _m:
+            manifest["energyplus_version"], manifest["energyplus_build"] = _m.group(1), _m.group(2)
+    manifest["RESIZE_PROVENANCE_NOTE"] = (
+        "PLATFORM/engine/exe/version/timestamp/outdir/ep_return_code describe THIS resize run and "
+        "are measured here. The arm-H values they replaced are kept verbatim under ARMH_*. Cells "
+        "written before 2026-08-04 carry arm H's execution stamp for all of these fields and must "
+        "not be read as evidence of the platform they actually ran on.")
     drv._write_manifest(outdir, manifest)
 
     print("  [OK] %s : base %.1f kW -> %.1f kW, hourly=%d rows, channel=%d rows"

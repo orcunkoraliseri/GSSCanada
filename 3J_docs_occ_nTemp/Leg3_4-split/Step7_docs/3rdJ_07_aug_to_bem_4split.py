@@ -306,6 +306,11 @@ def convert(df):
     df["Day_Type"] = df["DDAY_STRATA"].map(DAYTYPE)
     keys = ["SIM_HH_ID", "Day_Type"]
 
+    # OD-7A (decided, locked 2026-06-26, Leg-2): schedule = MEAN(hom30) across HH members,
+    # NOT HH_hom30/max. EnergyPlus computes occupants(t) = Number_of_People(=HHSIZE) x schedule(t)
+    # (commercial_integration.py:1980); with mean, schedule = fraction-of-members-home, so the
+    # product is expected headcount present. max would count the whole HH whenever any one
+    # member is home. See Leg2_2-split/Step7_docs/3rdJ_07_bemIntegration_2split.md:309-316.
     occ48 = df.groupby(keys, sort=True)[HOM].mean()
     wdf = df[keys].copy()
     for c in ACT:
