@@ -172,13 +172,7 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `ACCEPTED-A
 
 ### 🔴 WHERE WE ARE RIGHT NOW — read this block, not the table
 
-*Updated **2026-08-06** (option C adopted **and executed** — E7, E6, E8 closed the same day). **49 done · 0 in progress · 0 ready · 0 decision · 0 blocked · 49 total.***
-
-> 🔴 **Nothing is blocked any more, and nothing is waiting on the cluster.** The four tasks that had been blocked on WP-C/WP-D/WP-E compute all closed on local win32 between 21:55 and 00:05: **V2-G2** (§0.29), **V2-G5** (§0.30), **V2-E5** (§0.31, the 56-cell deliverable arm, 126 min), **V2-G1** (§0.32). **Speed was never touched.**
->
-> 🟢 **ANSWERED 2026-08-06 — the user chose option C.** See **§0.33**. R1 keeps its FAIL at 4.796 pp and its 2026-07-21 disposition is untouched; a **new gate R5** (retail generation fidelity, synthetic vs observed within day type, **1.615 pp**) is *added* beside it. **Purely additive: it clears no FAIL, reverses no decision, and moves no band.** The optional scale-relative bar was **declined** — rebasing the shared 3.0 pp bar would retroactively change W1 and 2.2 as well, which is a band change wearing additive clothes.
->
-> **Three tasks follow from that choice — V2-E6 (reopened), V2-E7, V2-E8** — all local desk work, **no simulation, no cluster, and the frozen deliverable is not reopened** (`V2-G1_FROZEN_DELIVERABLE.md` does not reference Step 5 at any point; checked, not assumed).
+*Updated 2026-08-05 (late, final + R1 diagnosis). **42 done · 0 in progress · 1 decision · 4 blocked · 47 total.***
 
 > 🔴 **Struck, forty minutes after I wrote it:** ~~*"Every task that can be done without the cluster is now
 > done. There is nothing left for a local session to pick up."*~~ The user asked whether R1's structural
@@ -192,24 +186,16 @@ Status vocabulary: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `ACCEPTED-A
 > my own diagnosis without reading the validator doc — the primary record for the gate I was changing.
 > **The validator is byte-identical to its predecessor again and R1 is FAIL at 4.796 pp.**
 
-~~**V2-E6 is now a USER DECISION, not a ready task.**~~ **Answered 2026-08-06: option C.** V2-E6
-is a **ready implementation task** again — but for the *additive* gate, not for the re-specification
-that was reverted. ~~The four blocked tasks are still blocked on WP-C / WP-D / WP-E compute.~~ **All four
-closed 08-06.**
+**V2-E6 is now a USER DECISION, not a ready task** — recommendation **C** in §0.27 (keep R1, *add*
+a new retail generation-fidelity gate; purely additive, reverses nothing). The four blocked tasks are
+still blocked on WP-C / WP-D / WP-E compute.
 
 ```
-DONE        ████████████████████████████████████████████  49 / 49
+DONE        █████████████████████████████████████████░░░░░  42 / 47
 IN PROGRESS                                                 0
-READY                                                       0   ← E7/E6/E8 closed 08-06 (§0.34)
-DECISION                                                    0   ← E6 answered 08-06: option C
-BLOCKED                                                     0
+DECISION    █                                               1   ← V2-E6 (user's call, §0.27)
+BLOCKED     ████                                            4   ← E5, G1, G2, G5 (all on compute)
 ```
-
-> 🔴 **An empty board is not proof the work is finished — that lesson is 24 hours old.**
-> On 2026-08-05 this panel read *"nothing left for a local session"* and lasted **forty minutes**: one
-> question about a failing gate produced a task, a reverted change, four findings and eventually the
-> decision recorded in §0.33. **Three items remain owed by the user** (below the summary table);
-> none is a V2 task, and none of them will surface by itself.
 
 **🔴🔴 A RETRACTION SITS AT THE TOP OF THIS PANEL, not buried in the log.** V2-E1 reported that the
 shipped seed-3 checkpoint *"does not exist on either machine"*. **It exists — and so do the other
@@ -243,7 +229,7 @@ artefacts are updated in the same response — this Progress Log with its succes
 directeur prompt, and the board HTML republished.** ~~Here the successor set is empty.~~ **It is not:
 **V2-E6** is READY.**
 
-**⬜ DECIDED — V2-E6, R1: the user chose option C on 2026-08-06 (§0.33).** *(§0.27 supersedes §0.26; §0.33 records the choice.)* **R1 is not touched.** The evidence below is what justified *adding* R5 — it is retained because it is sound, and it is explicitly **not** a licence to change R1, which is the exact error §0.27 records. ~~READY — re-specify R1.~~ **Struck: the
+**🔵 USER DECISION — V2-E6, R1.** *(§0.27 supersedes §0.26.)* ~~READY — re-specify R1.~~ **Struck: the
 re-specification was implemented and reverted.** *(Original §0.26 reasoning kept below because the
 evidence is sound; only the conclusion that it licensed a change was wrong.)* 🔴 **R1 compares the matched output against the donor
 pool — the one thing the linkage exists to change.** Run R1's own statistic on the two channels whose
@@ -326,32 +312,25 @@ of ln E against ln V: **0.0182 → 0.9848**. Deliverable for WP-E is
 **`Laundry Service Water Use 30.6gpm 180F=8.5`**, all other heaters at K = 1 — **not** the K ≈ 7 in
 V2-B4's text, which clears only 28 of 56 cells.
 
-**✅ READY QUEUE — empty, and this time for the ordinary reason**
+**⬜ READY TO START — unblocked, in the order I would do them**
 
-~~Three tasks, all created by the option-C decision.~~ **All three closed 2026-08-06 (§0.34):**
+**Nothing.** The ready queue is empty: E4 is in progress and everything else is blocked or done.
 
-| ID | Result |
-|---|---|
-| **V2-E7** | INFO channel built. Both latent defects **reproduced before the fix and shown gone after it**. INFO deliberately excluded from the scorecard arithmetic. |
-| **V2-E6** | **R5 = 1.615 pp ⇒ WARN**, reproducing WD 1.567 / WE 1.615 exactly. **Falsifier 4/4.** R1 byte-identical at 4.796 pp FAIL. |
-| **V2-E8** | Scorecard **31P/5W/3F → 31P/6W/3F** — *a WARN gained, no FAIL cleared*. Paper caveat now **computed by the validator** as an INFO line, not asserted in prose. |
+> 🔴 **Speed was unavailable on 2026-08-05 and D10 ran entirely on local win32.** E1 and E4 are
+> written as cluster jobs; if Speed is still down when they come up, E2 is the one that proceeds
+> regardless.
 
 **⛔ BLOCKED — and by what, precisely**
 
 | ID | Waiting on |
 |---|---|
-| ~~**V2-E5**~~ | ~~WP-C + WP-D landing first~~ — **CLOSED 2026-08-06 (§0.31)**, 56/56 on local win32, 126 min |
-| ~~**V2-G1**~~ | ~~WP-E finishing~~ — **CLOSED 2026-08-06 (§0.32)** once E5 landed |
-| ~~**V2-G2**~~ | ~~WP-C finishing~~ — **UNBLOCKED and CLOSED 08-05 (§0.29)**: WP-C completed on 08-05 and nothing noticed |
-| ~~**V2-G5**~~ | ~~everything above~~ — **CLOSED 08-05 (§0.30)**: its 24 dispositions do not depend on E5's numbers |
+| **V2-E5** | WP-C + WP-D landing first (it re-scores them) |
+| **V2-G1** | WP-E finishing |
+| **V2-G2** | WP-C finishing |
+| **V2-G5** | everything above |
 
-**✋ Waiting on the user — and this line was itself wrong before today.** ~~*Nothing.*~~ It read
-*"nothing"* while three decisions were owed; a status line that cannot say *something is owed* is not a
-status line. **V2-E6 is now answered (option C, §0.33).** Still open and still not mine:
-
-1. **The `val_score` selection rule (V2-E4).** The doc mandates *argmax retail F1, never a single composite*; the code selects on a composite containing neither `pr_auc` nor `f1`. **Fix the doc or fix the code** — the latter means re-running selection.
-2. **X-3 — should it FAIL rather than WARN?**
-3. **The hotel gate's `all_cells`-vs-`median` rule (§0.31).** 🔴 **Do not resolve this by picking the rule that passes** — the scorer discloses that `median` would clear `S9-EUI-hotel`, and choosing on that basis is what §0.27 records as the error. If the rule changes it must change for retail too, or on a stated principle.
+**✋ Waiting on the user: nothing.** B2, B3 and B4 were all decided 2026-08-05. The only optional
+item is V2-A2's extra clarifying clause, and A2 is already marked DONE.
 
 ---
 
@@ -396,10 +375,8 @@ the Progress Log at the end of this file.*
 | ✅ | **V2-E3** | The retail density + plug sensitivity cell, pre-registered | 1 simulation | B-11, B-12 | DONE 08-04 · 112/112 · retail median moved −0.05 % and flipped a cell: **the gate is decided at 0.15 % of its floor** |
 | ✅ | **V2-E4** | Validator across seeds 0–4; publish mean ± sd | ~~4 CPU jobs~~ **0 jobs — local CPU on existing artefacts** | B-7 | **CLOSED (steps 1–2) 08-05 late · 3P/3F · §0.24** · ⚠️ **no retraining was ever needed** — the "5 training runs / allocation decision" framing rested on E1's false premise, now retracted · **B-7 deliverable published**: mean ± sd over 5 seeds for 8 metrics; `f1` rel sd **3.71 %** (doc claims 1–2 % — half right, PR-AUC is 1.40 %) · 🔴 **THE FINDING: `best_model.pt` is selected by `val_score = mean_js + 0.5·(home+work+retail)/3` (`04D:499,881`) — a composite containing NEITHER `pr_auc` NOR `f1`**, while the doc (`:157`) mandates *"gate survivors → argmax retail F1, **never a single composite score**"*. The docstring defers to a *"separate checkpoint-selection step"* that **does not exist** — `grep` for `seed_0`/`range(5)`/`for SEED` across all Step-4 `.py`+`.sh` = **0 hits** · rules disagree in **4 of 5 seeds**, mean **+0.0218 F1** (5.6 % rel) given up · 🔴 **seed 3 is 4th/5th on retail F1 and 1st/5 on `val_score`** ⇒ retrospective rationale = *selected by the forbidden composite* · cross-seed F1 margin **0.16 sd** ⇒ no seed distinguishable · **P4 clean: spread threatens no gate** (margins 9.5/51/165 sd) ⇒ B-7 is a *reporting* omission for gates, a *selection* defect for the checkpoint · new vacuous class **#15** · 🔴 **NOT answered**: W3 / midday / transitions spread for seeds 0,1,2,4 — needs 4×418 MB pools that live only on Speed (**transfer constraint, not compute**; user instruction = don't touch Speed) ⇒ **5 of 8 gated metrics have their spread, 3 do not** · **step 3 (`MIN_POOL` sweep) split out as V2-E4c** |
 | ✅ | **V2-E4c** | Multi-seed `MIN_POOL` sweep → mean ± CI over [10, 20] | **26 local CPU runs, ~20 min, 0 cluster** | rest of **B-2** | **CLOSED 08-05 late · 4P/2F · §0.25** · pre-registered E1–E6 before the first run; both failures are mine and both favour the pipeline · **E1/E2 guards PASS** (md5 `989c4ff4` + all 4 gate values reproduced exactly; determinism to 1e-9) · 🔴 **E3: the 0.16 pp crossing that moved the sweep off `MIN_POOL=10` sits inside 0.363 pp of draw noise — 2.27×**; `MIN_POOL=10` FAILs in **1 of 5 draws and that is the shipped draw** (seed 42 is rank 5/5 at both `MIN_POOL` 10 and 11) ⇒ **the event that triggered the sweep is a property of the draw, not the knob** · **F(4,20)=0.692** (crit 2.87), **η²=0.122**, within-level MS 0.143 **>** between-level MS 0.099 · **E5 PASS** curve flat (gap 0.346 vs pooled CI 0.650) · **E4 FAIL — good news**: `MIN_POOL=15` is 0/5 over the gate, band [1.97, 2.41], **+0.59 pp** worst-case headroom, lowest mean *and* smallest sd of the grid · **E6 FAIL**: the knob is inert on gate 2.2 too (range 0.742 vs sd 0.793) ⇒ my "right knob, wrong gate" story is refuted · **B-2 SPLIT: upheld on procedure, refuted on consequence — nothing downstream is at risk** · **no threshold moved, no new `MIN_POOL` picked** (re-tuning on the same gate is the defect itself) · **R1 FAILs 25/25 cells** ⇒ its standing FAIL is **structural, invariant to knob and draw** (first evidence either way) · new vacuous class **#16** · scope stated: donor draw only (`_assign_dday` fixed ⇒ **lower bound**), and **[10,20] only** — `MIN_POOL=30` not re-run · shipped Step-5 outputs backed up, overwritten 26×, **restored and re-verified 4/4 against md5** |
-| ✅ | **V2-E5** | Re-score Step 9 after WP-B/WP-D — the deliverable arm | **56 local cells, 126 min, 0 cluster** | closes the loop | **DONE 08-06 · 7P/3F · §0.31** · deliverable = base + **D9** (retail `NECB-C`) + **D10** (`…180F=8.5`, every other burner K=1) · 56/56, attribution residual **0.000000 %** everywhere · **17P/0W/3F/10I — identical counts to base**, and 🔴 **base had to be RE-SCORED first**: the on-file scorecard was 31 July, predating D1/D2/D4/D6 · 🔴🔴 **THE RESULT — class #12 fired, pre-registered**: `S9-EUI-hotel` reads **28/56 in BOTH arms and all 28 turned over** — base 28 *below* the floor / 0 above, deliverable **0 below / 28 ABOVE the ceiling**, median **178.29 → 260.54**; *the failing end inverted while the count held still* · **P1 PASS** hotel DHW **+120.09 %** (predicted +112, band [95,135]) · **P3 PASS — all three blocking gates still FAIL** · **P10 PASS: 0 gates changed status** · **P2/P4/P5 FAIL** — P2 under-predicted the overshoot (28 above, predicted ≤20); **P4+P5 failed for one unmodelled reason: the per-object resize is NOT channel-confined** — residential DHW **−2.76 %**, office −0.66 %, retail −0.27 % (the pinned burner was *cross-subsidised*; reported, **not scored**) · **P6 N/A and it is MY defect** — the base IDF never requests `Water Use Equipment Total Volume`, so the control had no reference; **C2′ run instead (it was pre-registered in the campaign header, not invented after)**: **56/56**, exactly one burner ×8.5, held burners drift `6.139e-11` · 🔴 **the scorer itself discloses the hotel verdict is set by the RULE, not the model** — under the `median` rule it would PASS; **not proposed, recorded** |
-| ✅ | **V2-E6** | **ADD gate R5** — retail generation fidelity (R1 itself untouched) | ~~user decision~~ **~2 h local, 0 cluster** | **B-9**, R1 | 🔴🔴 **ATTEMPTED → REVERTED 08-05 late · §0.27** · the re-specification was written, run and verified (R1 4.796 FAIL → 1.615 WARN, all other gates byte-identical) **and then backed out**: it was **already decided against 2026-07-21** — *"R1 reference NOT redefined … redefining a gate to clear a FAIL immediately before publication reads as gate-shopping"* (`..._val.md`, Step-5 CLOSURE) · I opened this task without reading the validator doc, the primary record for the gate · **validator restored, md5 `46b0eb22`, scorecard back to 31P/5W/3F** · **§0.26's diagnosis was NOT new** — July had the mechanism, a bootstrap null (p ≤ 0.012) and the re-weighted reference computed (all 12 groups < 3 pp, 2005-d2 4.796 → 2.268 = my "option 2", already declined) · **genuinely new and surviving**: (1) the cross-channel test — R1's basis gives `hom30` **22.969** / `wrk30` **27.263** pp while both gates PASS, simpler than July's re-weighting argument and it should replace the paper caveat; (2) normalised by own peak, retail is **105.1 %**, the *worst* channel; (3) the shared **absolute** 3.0 pp bar = 3 % of `hom30`'s signal vs **66 %** of retail's; (4) **retail generation fidelity is unmeasured** — the sibling-basis number is **1.615 pp = 35.3 %** of its peak vs 3.9 %/4.4 % for its siblings, **~8× worse**; (5) two latent code defects (`_rec("info")` → `KeyError` at `:220`; summary renderer falls through to `[FAIL]` for unknown status at `:1271`) · pre-registration **P1/P5/P6 PASS, P2/P4 FAIL** — P4 predicted the new gate would be vacuous-because-green and it would **not** have been (headroom 0.9×), *which is why adopting it quietly would have been worse, not better* · **recommendation C: keep R1 FAIL, ADD gate R5 (retail generation fidelity, 1.615 pp) — purely additive, clears no FAIL, reverses no decision** · 🟢 **DECIDED 2026-08-06 — the user chose option C (§0.33)**: R1 keeps its FAIL at 4.796 pp and its July disposition; **R5 is added beside it**, not in place of it · **reopened as a ready task**, prerequisite **V2-E7** · 🔴 **re-implement from the spec** — the reverted code was overwritten and the archive is the *baseline* (md5 identical to the shipped file), so only the attempt's **output** survives; reproduce **WD 1.567 pp** / **WE 1.615 pp** · the optional scale-relative bar was **declined**: rebasing 3.0 pp would retroactively move W1 and 2.2 too |
-| ✅ | **V2-E7** | Two latent validator defects: INFO status crashes, and prints as `[FAIL]` | ~1 h local | §0.27 finding 5 | **READY — prerequisite for V2-E6, not a companion to it (§0.33)** · `self.results` holds only `pass`/`fail`/`warn`, so `_rec("info", …)` raises `KeyError` at `..._val.py:220`; the summary renderer at `:1271` falls through to `[FAIL]` for any status it does not recognise, so an INFO row prints **as a failure** · both were *observed* on §0.27's first run, not inferred · option C keeps the old R1-POOL statistic as INFO, so **R5 cannot be added safely until these land** · test method: add an INFO row, assert it neither raises nor renders as `[FAIL]`, and assert the 49 existing gate lines are byte-identical |
-| ✅ | **V2-E8** | Cascade R5 through the Step-5 scorecard, docs and the paper caveat | ~1 h local | §0.33 | **READY — last of the three, and only after R5's number is real** · Step-5 scorecard **31P/5W/3F → 31P/6W/3F** (a WARN is *gained*; **no FAIL is cleared** — that is the whole point of additive) · the shipped validator md5 moves off **`46b0eb22`**, so every doc citing it must move with it · the paper caveat switches to §0.27 finding 1 (**R1's own basis gives `hom30` 22.969 pp / `wrk30` 27.263 pp while both gates PASS**), which is simpler and stronger than the re-weighting argument now in place · READER_GUIDE gate list + Step-5 step doc updated in the same pass |
+| ⛔ | **V2-E5** | Re-score Step 9 after WP-B/WP-D — **no new arm** | 1 CPU job | closes the loop | BLOCKED by WP-C + WP-D |
+| 🔵 | **V2-E6** | R1: keep as-is, redefine, or **add** a retail generation-fidelity gate | **user decision** | **B-9**, R1 | 🔴🔴 **ATTEMPTED → REVERTED 08-05 late · §0.27** · the re-specification was written, run and verified (R1 4.796 FAIL → 1.615 WARN, all other gates byte-identical) **and then backed out**: it was **already decided against 2026-07-21** — *"R1 reference NOT redefined … redefining a gate to clear a FAIL immediately before publication reads as gate-shopping"* (`..._val.md`, Step-5 CLOSURE) · I opened this task without reading the validator doc, the primary record for the gate · **validator restored, md5 `46b0eb22`, scorecard back to 31P/5W/3F** · **§0.26's diagnosis was NOT new** — July had the mechanism, a bootstrap null (p ≤ 0.012) and the re-weighted reference computed (all 12 groups < 3 pp, 2005-d2 4.796 → 2.268 = my "option 2", already declined) · **genuinely new and surviving**: (1) the cross-channel test — R1's basis gives `hom30` **22.969** / `wrk30` **27.263** pp while both gates PASS, simpler than July's re-weighting argument and it should replace the paper caveat; (2) normalised by own peak, retail is **105.1 %**, the *worst* channel; (3) the shared **absolute** 3.0 pp bar = 3 % of `hom30`'s signal vs **66 %** of retail's; (4) **retail generation fidelity is unmeasured** — the sibling-basis number is **1.615 pp = 35.3 %** of its peak vs 3.9 %/4.4 % for its siblings, **~8× worse**; (5) two latent code defects (`_rec("info")` → `KeyError` at `:220`; summary renderer falls through to `[FAIL]` for unknown status at `:1271`) · pre-registration **P1/P5/P6 PASS, P2/P4 FAIL** — P4 predicted the new gate would be vacuous-because-green and it would **not** have been (headroom 0.9×), *which is why adopting it quietly would have been worse, not better* · **recommendation C: keep R1 FAIL, ADD gate R5 (retail generation fidelity, 1.615 pp) — purely additive, clears no FAIL, reverses no decision** |
 | ✅ | **V2-F1** | Open the IEA Annex 66/79 and Richardson sources | 2 h | B-1 provenance | DONE 08-04 · Annex silent, Richardson confirmed |
 | ✅ | **V2-F2** | Pull ATUS / HETUS / UK midday rates from primary tables | 1 h | B-5's new reference | DONE 08-04 · BLS only; refs disagree in **direction** |
 | ✅ | **V2-F3** | Open Andridge & Little (2010) + R1's four "not stated" rows | 1–2 h | B-1, B-2 | DONE 08-04 · anchor **REFUTED** |
@@ -408,11 +385,11 @@ the Progress Log at the end of this file.*
 | ✅ | **V2-F6** | Walk the `RV05` retrieval route ourselves | 30 min | the vintage mismatch | DONE 08-05 · prediction **PASSED at 0.00 %, 10/10 rows** · Large Hotel 90.1-2019 = **284.44 / 299.28** · my checks 3+4 **withdrawn**, 1+2 stand · `f6_prototype_evidence/` |
 | ✅ | **V2-F7** | `V06` — NECB retail schedule + Canadian archetype existence | prompt + user run | V2-C4, archetype line | DONE **(negative, ACCEPTED)** 08-05 · `NOT FOUND` + **5/5 `NO RETRIEVABLE FILE`** · **first round in six with zero fabrication** |
 | ✅ | **V2-F8** | Read BTAP for NECB schedule definitions shipped as data | 30 min | V2-C4's re-source | DONE 08-05 · `RV06`'s URL is a **404**; real route `NatLabRockies/openstudio-standards` · file's `refs` = the exact NECB table · **both my predictions FAILED** · `f8_necb_schedule_evidence/` |
-| ✅ | **V2-G1** | Freeze the deliverable: MD5, job IDs, code hash, manifest | 1 h | reproducibility | **DONE 08-06 · §0.32** · `V2-G1_FROZEN_DELIVERABLE.md` (88 lines) · md5 of **6 code components** + all **5 aggregate tables**, EnergyPlus **24.2.0 `94a887817b`**, host, OS, interpreter, resize spec, `INJ_HASH cf69d508` inherited · **no SLURM ids, and the absence is STATED** — local win32 run; a placeholder job id would be a fabricated provenance field · **test method executed**: hotel EUI median **re-derived from the artefact's own columns = 260.5411** vs the scorer's independent 260.5 · 🔴 surfaced a real difference — `OUTPUT_SCHEMA_HASH` **`db4e729f` → `93dd5129`**, the deliverable emits 2 extra per-cell tables · **predecessor intact, pointer moved**; 847 MB kept, the 23 GB of regenerable `run/` output deliberately not |
-| ✅ | **V2-G2** | Flip the master docs' status convention PLANNED → DONE | 1 h | the docs' honesty | **DONE 08-05 night · 3P/0F · §0.29** · **22 tags** flipped across both master docs (8 in the fixed-width diagram, 14 prose), each now **naming the artefact that proves it** · new `g2_status_tag_check.py`, **falsifier seen failing 3/3**, 19 artefact references all resolve · 🔴 **the check's first real run failed twice and only ONE was the document's**: C1's "missing" `3rdJ_00_2split_Occupancy_Pipeline.md` **exists** (the checker walked only the Leg-3 tree — *a checker that cannot see half the repo reports true statements as false*), C3's bare `DONE` was real and **the document was changed to satisfy the check, not the check loosened to excuse the document** |
+| ⛔ | **V2-G1** | Freeze the deliverable: MD5, job IDs, code hash, manifest | 1 h | reproducibility | BLOCKED by WP-E |
+| ⛔ | **V2-G2** | Flip the master docs' status convention PLANNED → DONE | 1 h | the docs' honesty | BLOCKED by WP-C |
 | ✅ | **V2-G3** | Write the consolidated limitations section | writing | the paper | **DONE 08-05** · **16 limitations, 15 with a bounding number**, L15 declared unquantified · test method **executed** (`g3_limitations_check.py`, seen failing **5/5**) · 🔴 caught its own check **passing when it should have failed** (F2) and tightened it |
 | ✅ | **V2-G4** | Cross-leg consistency pass (2J ↔ Leg-2 ↔ Leg-3) | 2 h | B-13, inheritance | DONE 08-04 · 2 recorded claims overturned |
-| ✅ | **V2-G5** | Close the audit: mark every finding closed/accepted/withdrawn | 1 h | all 13 + C/G | **DONE 08-05 night · 4P/0F · §0.30** · **24/24 terminal**: **12 FIXED** (each naming its task) · **8 ACCEPTED-AS-DOCUMENTED** (true, unrepaired, and that is a *decision* — each names where the limitation is written) · **4 WITHDRAWN** (each names its falsifier) · B/C/G **never merged** — C-4≡B-3 and G-1≡B-8 stay separate rows because *found twice, blind* is the evidence · new `g5_audit_closure_check.py` · 🔴 **the falsifier did NOT falsify and running it is what showed that** — it dropped `B-9` then re-added it, so C1 passed and the mutation tested C2 twice; **a falsifier that does not fail is the same defect as a gate that does not fail** · **catalogue reconciled to 16 classes across 4 documents**, 1–12 unchanged, the `#13` collision settled (severity-vacuous = **#14**) · **no band, threshold or verdict moved** |
+| ⛔ | **V2-G5** | Close the audit: mark every finding closed/accepted/withdrawn | 1 h | all 13 + C/G | BLOCKED by all of the above |
 
 ---
 
@@ -5177,15 +5154,7 @@ recommendation is **C**:
   (78,483 B, verified non-empty before use); post-revert md5 matches the archive exactly.
 - Verified by re-running the validator: **zero diff** against the shipped baseline across all
   PASS/WARN/FAIL lines; scorecard back to **31/5/3**.
-- ~~The archive copy is **kept**, not deleted — it is the only artefact of the attempt.~~
-  🔴 **STRUCK 2026-08-06, and it matters for whoever implements option C.** The archive is the
-  **pre-edit baseline, not the attempt**: `md5(archive/..._pre_r1respec.py)` = `46b0eb222f88f802e149647c82c1b726`
-  = `md5(3rdJ_05_censusLinkage_4split_val.py)`, byte-identical to the shipped file. **The re-specified
-  code was overwritten by the revert and no patch or diff of it was kept.** What survives of the attempt is
-  its *output*, in `scratchpad/e6/val_final.log` (`[R1-WD] max_diff=1.567pp` / `[R1-WE] max_diff=1.615pp`,
-  `syn=6052 obs=15506` weekday, `syn=7448 obs=1267` weekend) and the four before/after gate dumps beside it.
-  **R5 must be re-implemented from the specification, not restored from a file.** Reading this line the other
-  way would cost an implementer an hour hunting for a patch that does not exist.
+- The archive copy is **kept**, not deleted — it is the only artefact of the attempt.
 - ⚠️ Note for anyone re-running `scratchpad/e4c_sweep.py`: it regex-matches `[R1] cycle=`. That string
   is unchanged by the revert, so the sweep still parses. *(Under the reverted-out edit it would have
   returned `PARSE_FAIL_r1` rather than 0.0 — the refuse-on-parse-failure design working as intended.)*
@@ -5248,504 +5217,3 @@ world it was reverted from.
 - Plan / board / prompt all read **42 done · 0 in progress · 1 decision · 4 blocked · 47 total**.
 - **Three decisions remain owed:** V2-E6 (gate R1 — recommendation **C**, additive), the `val_score`
   selection rule, and whether X-3 should FAIL rather than WARN.
-
----
-
-### §0.29 — V2-G2 CLOSED: the master documents said "PLANNED" about work that had already shipped
-
-**2026-08-05, night. Local, no compute. 3 PASS / 0 FAIL, falsifier seen failing 3/3.**
-
-Both master documents still tagged the entire Leg-3 delta **⚠️ PLANNED (Leg 3)** — the retail head,
-the hotel side-track, and Steps 3 through 9. All of it had been built, run and scored. **22 tags**
-across the two files: 8 inside the Overview's fixed-width ASCII diagram, 14 in prose.
-
-#### What makes this more than a find-and-replace
-
-Flipping `PLANNED` to `DONE` would have been worth nothing. **Both are unfalsifiable claims about a
-document.** What makes the new tag better than the old one is that it can be *wrong*, so every
-replacement names the artefact that proves it, and `improvements/v2/g2_status_tag_check.py` re-reads
-the written documents and stats every path it finds.
-
-| check | what it catches |
-|---|---|
-| **C1** | a `DONE` tag naming an artefact that does not exist |
-| **C2** | a live `PLANNED (Leg 3)` tag surviving **outside struck-through text** — a superseded convention is kept visible under `~~…~~`, so the check has to distinguish *still claimed* from *recorded as withdrawn* rather than counting a substring |
-| **C3** | a `DONE` tag that names **nothing** — it would pass C1 vacuously, there being nothing to stat, and it is exactly the tag this task exists to remove. Without C3, replacing every `PLANNED` with a bare `DONE` would score 100 % |
-
-**Falsifier run first: 3/3 FAIL as designed.**
-
-#### Two defects the check found on its first real run, and only one of them was the document's
-
-1. 🔴 **C1 reported `3rdJ_00_2split_Occupancy_Pipeline.md` missing. It is not missing** — it is in
-   `Leg2_2-split/`, and the master doc cites it correctly as a cross-leg reference. **The checker was
-   walking only the Leg-3 tree.** A checker that cannot see half the repository reports true
-   statements as false, which is worse than not checking: it spends the reader's trust on a defect
-   that is the checker's own. Search root widened to the whole 3J tree, and `resolve()` now tries
-   `Leg3_4-split/`-relative, root-relative and by-name in that order — most specific first, the walk
-   last.
-2. **C3 was right.** One `✅ DONE (Leg 3)` — a comment inside a code block — named no artefact. **The
-   document was changed to satisfy the check, not the check to excuse the document.** The comment now
-   reads `# ✅ DONE (Leg 3) -- 3rdJ_03_mergingGSS_4split.py`.
-
-> The distinction is the point. Loosening C3 to skip fenced code blocks would have been a defensible
-> scoping refinement *and* a change made after seeing the check fail. The rule this project runs
-> under is that you do not re-specify a gate to clear it, so the one that was genuinely the
-> checker's error was fixed and the one that was genuinely the document's was fixed in the document.
-
-**Result: 19 artefact references checked, all resolve; 0 live `PLANNED` tags; 0 bare `DONE` tags.**
-Box-width preservation asserted per line (80 chars) rather than typed to length, so a mis-measured
-replacement fails loudly instead of skewing the diagram by one character.
-
----
-
-### §0.30 — V2-G5 CLOSED: 24 findings, 24 terminal statuses, and the numbering collision settled
-
-**2026-08-05, night. 4 PASS / 0 FAIL, falsifier seen failing 4/4 — after it was caught not
-falsifying.**
-
-#### The closure
-
-Appended to `3rdJ_L3_backward_audit_2026-08-04.md` (2,363 → 2,447 lines; predecessor kept at
-`improvements/v2/audit_preG5.md`). Every finding carries one of three **terminal** words:
-
-| status | meaning | count |
-|---|---|---|
-| **FIXED** | repaired in code or in a document, **naming the task that did it** | **12** |
-| **ACCEPTED-AS-DOCUMENTED** | **true and unrepaired, and that is a decision** — names where the limitation is written for the reader | **8** |
-| **WITHDRAWN** | **false** — names what falsified it | **4** |
-
-**13 B + 5 C + 6 G = 24, parsed and counted by `improvements/v2/g5_audit_closure_check.py`.**
-
-**Numbering stays separate; B, C and G never merge**, even where two rows are the same defect
-(**C-4 ≡ B-3**, **G-1 ≡ B-8**). The three-way comparison *is* the result: a finding reproduced blind
-by an independent auditor is stronger evidence than the same finding counted once, and merging the
-rows would destroy exactly that information.
-
-#### 🔴 The falsifier did not falsify, and running it is what showed that
-
-First version: drop `B-9`'s row, then append a replacement `B-9` row carrying a non-terminal status.
-**C1 passed** — a `B-9` row was still present — so the mutation tested C2 twice and C1 not at all.
-**A falsifier that does not fail is the same defect as a gate that does not fail**, and it was two
-minutes from being recorded as "4/4 holds". Each mutation now hits exactly one check: `B-9` is
-removed and *not* replaced, and a *different* finding (`B-2`) carries the non-terminal status.
-
-#### What the three-way comparison showed, now that it can be counted
-
-- **Reproduced blind: 2 of 13** (C-4 ≡ B-3, G-1 ≡ B-8). Both are the best-evidenced findings in the
-  set, and neither earned that from being argued better — only from being found twice.
-- **Found by the auditors, missed internally: 4** (C-2, C-3, C-5, G-2). **C-3 and G-2 paid for the
-  exercise**: C-3 added a class to a catalogue that already had twelve and still lacked that one;
-  G-2 landed on a *blocking* gate.
-- **Falsified: 3** — B-13, G-4, and the headline of B-1 — **plus** the self-refuting G-3/G-5. Two of
-  the three were mine, and both were killed by falsifiers written before the answer was known.
-
-🔴 **The most useful outcome is not on any of those lists.** B-1 was the audit's headline finding, it
-reached a **submitted** manuscript, and it was **wrong**. An audit that only reported findings,
-without running the tests that could destroy them, would have sent an erratum for a defect that does
-not exist.
-
-#### The catalogue, reconciled across four documents
-
-The Reader's Guide §4 listed **12** classes; the manager handoffs were already using **#13** for the
-conjunction / monotonicity-across-a-saturation-boundary gate; and the audit plus its README had
-*both* proposed the severity-vacuous gate as "#13" — **a number already taken**. Two further classes
-(#15, #16) had never reached the canonical list at all. **The guide was four behind, not two.**
-
-**Now 16 classes, and 1–12 are UNCHANGED** — which is what keeps every earlier citation of them
-resolving:
-
-- **#13** the conjunction gate — a verdict bundling a measurement clause with a monotonicity clause,
-  so a PASS cannot say which clause carried it
-- **#14** the severity-vacuous gate (C-3 → **V2-D1**) — computes the right answer, declines to call
-  it a failure
-- **#15** the selection criterion documented but never implemented (**V2-E4**)
-- **#16** the sensitivity analysis with n = 1 per level (**V2-E4c**)
-
-**Nothing in this closure moved a band, a threshold or a gate verdict.**
-
----
-
-### §0.31 — V2-E5 CLOSED: the deliverable arm scored. 7 PASS / 3 FAIL, and the failure that matters is the gate reading 28/56 in both arms over a completely different 28
-
-**2026-08-05 night → 2026-08-06 00:02. 56/56 cells, local win32, 126 minutes, 0 failures. Speed not
-touched.** Predictions written to `improvements/v2/V2-E5_PREREGISTRATION.md` **before the arm was
-built**, and scored without amendment.
-
-#### First: why this run does not violate the 2026-08-04 direction change
-
-The user's instruction stands — **stop running arms to move `S9-EUI-*`.** This is not that. E5 scores
-the **deliverable**, under two corrections decided on other grounds and already measured in
-isolation: **V2-D9** (retail was running the *office* occupant density; D9 recorded that fixing it
-makes the gate **worse**) and **V2-B4/D10** (`LAUNDRY`'s own ln E–ln V slope was **0.0182** — the
-burner, not the occupancy, was setting the energy). **The factor 8.5 was fixed by D10's peak-draw
-sizing before this run and without reference to any band.** I pre-registered that all three blocking
-gates would still fail. **They do.**
-
-#### The deliverable
-
-Base arm + D9 + D10, `INJ_HASH cf69d508` inherited unchanged, so *deliverable − base* moves exactly
-the two decided corrections. **Aggregation 56/56, attribution residual `0.000000 %` on every cell.**
-
-**Scorecard 17 PASS / 0 WARN / 3 FAIL / 10 INFO — identical counts to the base arm.**
-
-> 🔴 **The base arm had to be re-scored to say that.** The scorecard on file was written **31 July**,
-> by a scorer that predates **V2-D1, D2, D4 and D6** — all four of which changed gate code. Diffing
-> the new arm against that file would have attributed *scorer* changes to the *arm*. The base was
-> re-scored with tonight's scorer first, and every number below is like-for-like. (It also has two
-> different schemas: the old file keys gates as `id`, the current one as `gate`.)
-
-#### Predictions, scored
-
-| # | prediction | verdict | measured |
-|---|---|---|---|
-| **P1** | hotel DHW **+112 %**, interval [+95, +135] | ✅ **PASS** | **+120.09 %** (median) |
-| **P2** | `S9-EUI-hotel` FAIL, **1–20** cells above 300, 0 below 180 | 🔴 **FAIL** | FAIL, **28** above, 0 below — direction and verdict right, **magnitude short** |
-| **P3** | office and retail both stay FAIL | ✅ **PASS** | office FAIL, retail FAIL, hotel FAIL |
-| **P4** | office median moves **< 0.05 %** | 🔴 **FAIL** | **−0.0851 %**, i.e. **1.7×** my bound |
-| **P5** | retail median **+0.06 … +0.12** kWh/m² | 🔴 **FAIL** | **+0.1973** (75.4288 → 75.6260), **~2×** |
-| **P6** | DHW **volume** unchanged ≤ 0.1 %, four channels | ⚪ **N/A — and the reason is my defect** (below) |
-| **P7** | structural gates identical, residual 0 | ✅ **PASS** | 4/4 identical, max residual **0.00000000** |
-| **P8** | shape / longitudinal gates hold status | ✅ **PASS** | 11 gates, **0** changed |
-| **P9** | G8o/G8r/G8h all PASS | ✅ **PASS** | all PASS |
-| **P10** | ≤ 3 status changes, no FAIL→PASS | ✅ **PASS** | **0 gates changed status** |
-| **P11** | `S9-BASIS` drops hotel from its below-floor list | ✅ **PASS** | now lists office, retail only |
-
-#### 🔴 The result: class #12 fired, pre-registered, on the same gate that produced the class
-
-`S9-EUI-hotel` reads **28 / 56 in band in BOTH arms.** A diff that read counts would report *no
-change*.
-
-| | base | deliverable |
-|---|---|---|
-| in band [180, 300] | **28** | **28** |
-| below the 180 floor | **28** | **0** |
-| above the 300 ceiling | **0** | **28** |
-| median | **178.29** | **260.54** |
-| range | 147.9 – 209.4 | 203.3 – 318.4 |
-| **cells entered / left the band** | — | **28 in, 28 out** |
-
-**Every one of the 28 turned over, and the failing end inverted.** The gate went from *the hotel is
-too cold* to *the hotel is too hot* while reporting the identical number. This is the second time
-this exact gate has done this — arm H vs arm R was the first, and is what put class **#12** in the
-catalogue. **It was pre-registered as the thing to check, and it fired.**
-
-#### 🔴 And the scorer says the quiet part itself
-
-> *"THE TWO RULES DISAGREE HERE, so this gate's status is set by the RULE CHOICE and not by the
-> model."*
-
-Under `all_cells` the hotel gate **FAILs**. Under the `median` rule — the one **V2-B3 adopted for
-retail** — the median is **260.54**, comfortably inside [180, 300], and it would **PASS**. That
-disclosure is emitted by the gate itself (V2-D4's work), not added here.
-
-**I am not proposing the rule change, and it should not be made on this evidence.** Picking the rule
-that clears a gate, after seeing which rule clears it, is precisely what the 2026-07-21 decision
-refused for R1 and what §0.27 reverted. It is recorded because a reader is entitled to know the
-verdict rests on a rule choice — **and because the honest reading cuts against us:** the deliverable
-overshoots the ceiling on half its cells.
-
-#### The three failed predictions, and what each says
-
-- **P2 — I under-predicted the overshoot.** My propagation assumed a uniform DHW increase; the true
-  +120 % combined with `corr(hotel EUI, DHW share) = 0.717` — the highest-EUI cells are also the
-  DHW-heaviest — pushed 28 over, not ≤ 20. **The arithmetic was directionally right and
-  quantitatively short.**
-- **P4 and P5 — both failed for the same unmodelled reason, and it is the run's second finding.**
-
-#### 🔴 The per-object resize is NOT confined to the channel it targets
-
-Hotel DHW **+120.09 %**, and in the same cells: **residential DHW −2.76 %, office −0.66 %, retail
-−0.27 %.** On `B_central__Tall__MTL` the residential shift is **entirely** in DHW — interior lighting
-and equipment moved **0.00 %** — so it is a plant effect, not an occupancy one.
-
-**Mechanism.** The pinned `LAUNDRY` burner was being **cross-subsidised** by the other heaters on the
-loop. Once it can serve its own draw, theirs falls back. It is not a re-allocation: total DHW rose
-**+70 %** on that cell, so the resize overwhelmingly creates energy the plant previously could not
-deliver, with a small transfer on top.
-
-That transfer is what broke **P4** (office moved 1.7× my bound) and contributed to **P5**. Both
-bounds were written on the assumption that a hotel-loop edit is hotel-confined. **It is not.**
-
-> **Reported, not scored.** No threshold is attached to the cross-channel movement. Inventing a
-> criterion after seeing the number is how a test gets built to pass. It is written down so the next
-> session can pre-register it properly.
-
-#### 🔴 P6 could not be run, and that is a defect in my pre-registration
-
-P6 was the **surgical-edit control** — the one prediction designed to fail if the resize were not
-surgical. **It has no reference.** The base arm's IDF never requests `Water Use Equipment Total
-Volume` (`grep` = 0); the variable is appended *by the resize script itself*. I tried to recover it
-from the base arm's own `eplusout.sql` — **it is not in there either**, because it was never
-reported. 15 cells refused before I stopped the job.
-
-**I predicted against a quantity I had not confirmed existed on both sides.** P6 is reported **N/A**
-with that reason and **not quietly replaced**.
-
-**C2′ was run instead — and it is not a substitute invented afterwards.** It is pre-registered in the
-resize campaign's own header, where it was re-specified on 2026-08-04 precisely because the original
-clause was unscoreable. It tests the edit *directly*:
-
-**56/56 cells — exactly the declared burners rewritten, exactly ONE scaled by exactly ×8.5, nothing
-else altered, plus the appended `Output:Variable` block. Worst relative change on a held (K = 1)
-burner: `6.139e-11`** (12-significant-figure reformatting, not a capacity change).
-
-> **My first version of C2′ FAILED all 12 cells, and the criterion was wrong, not the arm.** I wrote
-> *"exactly ONE capacity line changed"*; `resize_idf` rewrites **every** declared burner, 5 of them
-> at ×1.0. The corrected criterion checks **all** of them and requires the untouched ones to be
-> numerically unchanged — **stricter than what it replaced**, not looser.
-
-#### Housekeeping
-
-- **A duplicate driver corrupted the first launch.** A `nohup` that appeared not to start had in fact
-  started; a second driver then wrote the same output tree, and 16 cells died with Windows exit
-  `0xC0000409` — a crash code that reads like an EnergyPlus bug and is nothing of the kind.
-  An `O_EXCL` lock now makes a second driver **refuse** instead.
-- Base arm untouched. `campaign_local_v2` and `outputs_step8/agg` are byte-identical to what they
-  were.
-
----
-
-### §0.32 — V2-G1 CLOSED: the deliverable frozen, and one headline number re-derived rather than restated
-
-**2026-08-06.** `improvements/v2/V2-G1_FROZEN_DELIVERABLE.md` (88 lines).
-
-Records the resize spec, the burner moved (**1 of 11** on SuperTall, **1 of 6** on Tall), plant
-**887.2 → 1546.6 kW**, `INJ_HASH cf69d508` inherited, EnergyPlus **24.2.0 build `94a887817b`**, host,
-OS, interpreter, md5 of **6 code components** and of all **5 aggregate tables**.
-
-**No SLURM job IDs — and the absence is stated rather than filled.** The plan's step list asks for
-them; this arm ran on local win32 because Speed is unavailable by standing instruction. **A
-placeholder job id would be a fabricated provenance field.** What is recorded instead is the identity
-a local run actually has.
-
-**Test method executed, not asserted.** The plan asks to *re-derive one headline number from the
-frozen artefact's own columns*. Hotel EUI median, recomputed from `agg_annual.energy_GJ` ÷
-`agg_meta.area_hotel_m2`:
-
-```
-median = 260.5411 kWh/m2/yr   (min 203.2660, max 318.3717, n = 56)
-```
-
-The scorer, reading the same tree independently, reports **260.5**. A provenance block that only
-restated the scorer could not catch a scorer reading the wrong tree.
-
-🔴 **A real provenance difference the freeze surfaced:** `OUTPUT_SCHEMA_HASH` is **`93dd5129`** on the
-deliverable against **`db4e729f`** on the base — the deliverable cells emit two additional per-cell
-tables (`dhw_volume_hourly.csv`, `hotel_dT_by_type.csv`). The schema genuinely differs; the gate
-asserts one hash *across cells*, which still holds.
-
-**Predecessor intact, pointer moved.** Base arm stays at `campaign_local_v2/campaign_cf69d508/`,
-aggregate at `outputs_step8/agg/`, scorecard at `outputs_step9/`. Nothing overwritten.
-
-**What is not kept, said so its absence is not mistaken for loss:** each cell's `run/` directory —
-**311 MB per cell, 23 GB for the arm** — is regenerable from `injected_resized.idf` + the EPW named
-in the manifest, by the hashed EnergyPlus build. Everything the aggregate and scorecard were derived
-*from* is kept (**847 MB**).
-
----
-
-### §0.33 — V2-E6 ANSWERED: option C adopted. R1 keeps its FAIL; a new gate is added beside it
-
-**2026-08-06.** The user chose **option C**. This section is the decision record; it changes no code
-and no number by itself. It creates three tasks and closes the last open decision on the board.
-
-**What was chosen.** R1 stays exactly as it is — **FAIL at 4.796 pp**, on the basis it has always
-used, with its 2026-07-21 disposition untouched. A **new gate R5** is *added*: retail generation
-fidelity, synthetic vs observed within day type, **1.615 pp** (WD 1.567 / WE 1.615). The scorecard
-**gains a WARN**; it does not lose a FAIL.
-
-**Why this is not the reverted change wearing a different hat.** §0.27's revert was about a
-*substitution*: replacing R1's basis so a FAIL became a WARN. That reverses a documented manager
-decision and reads as gate-shopping. **Adding a second gate on the sibling basis does the opposite —
-it puts a number on the wall that nobody had, on the channel that had no such check, and it leaves the
-uncomfortable one in place.** The test of the distinction is simple and it holds: *after* this work,
-Step 5 still reports three FAILs and R1 is still one of them.
-
-> 🔴 **The strongest argument for option C is one that failed as a prediction.** I predicted
-> the re-specified gate would be near-unfalsifiable — vacuous-because-green, headroom > 4× the
-> observed value. Measured, the headroom is **0.9×**: retail would need to roughly double its
-> deviation to fail it. **My reason for believing the re-spec was safe was wrong, and the gate is
-> better than I claimed.** That is exactly why it belongs as an addition rather than a replacement:
-> a good gate adopted against a standing decision is still adopted against a standing decision.
-
-**What R5 measures, in one line.** Do synthetic retail rows look like observed retail rows? Every
-sibling channel has that check; retail never did. **Normalised by channel peak, retail is 35.3 % against
-`hom30`'s 3.9 % and `wrk30`'s 4.4 % — roughly 8× worse than its siblings.** The gate is
-being added because retail looks bad on it, not because it looks good.
-
-**What was declined, and why.** §0.27 offered to pair option C with a **scale-relative bar**
-(finding 3: the shared **absolute** 3.0 pp bar is 3 % of `hom30`'s signal and **66 %** of retail's).
-**Declined.** The observation is correct, but rebasing the bar would retroactively re-evaluate **W1 and
-2.2** as well — gates that currently pass on the absolute bar. **A change that alters existing
-verdicts is a band change however it is motivated**, and it is a separate decision that should not ride
-along inside an additive one. It stays on file as an open observation, not a pending task.
-
-**What this does NOT touch — checked, not assumed:**
-
-| | |
-|---|---|
-| the frozen deliverable | **not reopened.** `V2-G1_FROZEN_DELIVERABLE.md` contains no reference to Step 5, the validator, or its md5 (`grep` for `Step5` / `censusLinkage` / `46b0eb22` = 0 hits) |
-| Step-9 | **not re-scored.** R5 is a Step-5 gate; nothing downstream reads it |
-| simulation | **none.** Zero cells, zero cluster contact. Speed remains untouched |
-| R1's verdict | **unchanged**, and that is the point |
-
-**The three tasks, in strict order.** **V2-E7 first** — it is a prerequisite, not a companion:
-option C keeps the old R1-POOL statistic as an **INFO** line, and INFO is exactly what the validator
-cannot currently express (`KeyError` at `:220`, renders as `[FAIL]` at `:1271`). **V2-E6** then
-implements R5. **V2-E8** cascades the scorecard, the md5 and the paper caveat.
-
-🔴 **One correction folded in on the way, because it would have cost the implementer an hour.**
-§0.27's housekeeping said the archive copy was *"the only artefact of the attempt."* **It is the
-pre-edit baseline**: its md5 is `46b0eb222f88f802e149647c82c1b726`, byte-identical to the currently
-shipped validator. **The re-specified code was overwritten by the revert and no diff of it was kept.**
-R5 must be re-implemented from its specification. What survives is the attempt's *output* —
-`scratchpad/e6/val_final.log` — which is enough to check the re-implementation against
-(**WD 1.567 pp on `syn=6052` / `obs=15506`; WE 1.615 pp on `syn=7448` / `obs=1267`**), and that makes
-it a usable target rather than a lost result. The claim is **struck in place, not deleted**.
-
-**Board arithmetic.** 47 → **49 tasks**: 46 done, 3 ready, **0 decisions outstanding on this
-board**. The three items still owed by the user (the `val_score` rule, X-3, and the hotel gate's
-`all_cells`-vs-`median` choice) are recorded above the summary table — they are not V2 tasks and
-they are not counted here.
-
-
----
-
-### §0.34 — V2-E7 / V2-E6 / V2-E8 CLOSED: R5 added, R1 untouched, and one prediction of mine was wrong before I wrote a line of code
-
-**2026-08-06, same day as the decision.** Option C implemented end to end on local win32. **No
-simulation, no cluster, Step 9 not re-scored, the frozen deliverable not reopened.** Predictions
-written first, in `V2-E7E6E8_PREREGISTRATION.md`, before the validator was opened.
-
-## 🔴 The correction that came before any code: **V2-E7 was never a prerequisite**
-
-§0.33, the new directeur prompt, the board and memory all said **V2-E7 blocks V2-E6** — that
-option C keeps the old R1-POOL statistic as an INFO line, so the INFO channel had to exist first.
-
-**That is wrong, and I found it by reading the code rather than by re-reading what I had written.**
-It is a leftover from the **reverted** design: in §0.27 R1 was *re-specified* onto the sibling
-basis, so the displaced pool statistic had to be demoted to INFO. **Option C demotes nothing.** R1
-keeps the pool basis *as a gate*; R5 is added on the sibling basis *as a gate*. Two gates, no INFO
-required. **E6 never depended on E7 at all.**
-
-E7 was done first anyway, and it earned its place for a different reason — see R1-XCH below.
-**The dependency claim is struck in all four artefacts, not quietly dropped.**
-
-## Scored honestly: 9 PASS / 2 FAIL / 1 ill-posed
-
-| | prediction | outcome | |
-|---|---|---|---|
-| **P1** | `_rec("info", …)` raises `KeyError` on the shipped file | **`KeyError: 'info'`**, observed | **PASS** |
-| **P2** | a `Status="INFO"` row renders `fail-row` and prints `[FAIL]` | printed **`[FAIL] probe: 1.615 pp — INFO`** | **PASS** |
-| **P3** | after the fix, all gate lines byte-identical, scorecard still 31P/5W/3F | **zero diff across 49 lines**, 31/5/3 | **PASS** |
-| **P4** | the E7 fix is ≤ 15 changed lines | **41** | **FAIL** |
-| **P5** | R5 = WD **1.567** / WE **1.615** pp ⇒ WARN | **exact, to 3 dp** | **PASS** |
-| **P6** | row counts `syn=6052`/`obs=15506`, `syn=7448`/`obs=1267` | **exact** | **PASS** |
-| **P7** | R1 completely unmoved at 4.796 pp FAIL | **byte-identical** | **PASS** |
-| **P8** | no existing gate changes status; **31P/5W/3F → 31P/6W/3F** | **exactly that** | **PASS** |
-| **P9** | falsifier: corrupted retail drives R5 over 3.0 pp ⇒ FAIL | **4/4**, control included | **PASS** |
-| **P10** | summary-table gate count 49 → 50 | **ill-posed — my error** | **N/A** |
-| **P11** | cross-channel INFO reproduces `hom30` 22.969 / `wrk30` 27.263 | **exact** | **PASS** |
-| **P12** | validator md5 moves; every citing document updated | md5 **`46b0eb22` → `f71a9714`** | **PASS** |
-
-**P4 failed and it is a fair loss:** I estimated the INFO fix at ≤ 15 lines and it took **41**,
-because teaching a fourth outcome means touching five separate status expressions, two CSS rules and
-a render block — not one dictionary. The number is reported as measured.
-
-**P10 was ill-posed, which is worse than wrong.** I predicted "49 → 50" while conflating two
-different counts: the **49** was console gate *lines*, not summary-table *rows*. The measured
-outcomes are gate lines **49 → 51** (R5's gate line + R5's summary line + the INFO line, minus
-overlap) and summary-table rows **15 → 16**. **A prediction that cannot be scored is not a
-prediction**, and it is recorded as N/A rather than quietly matched to whichever count happened to
-land on 50.
-
-## R5 — what was added
-
-| | synthetic | observed | max slot deviation | slots > 3 pp |
-|---|---|---|---|---|
-| weekday | 6,052 | 15,506 | **1.567 pp** | 0 |
-| weekend | 7,448 | 1,267 | **1.615 pp** | 0 |
-
-**R5 = 1.615 pp ⇒ WARN.** 🔴 **Band choice, disclosed:** R5 uses **R1's** banding
-(PASS ≤ 1 / WARN 1–3 / FAIL > 3). Its siblings W1 and 2.2 gate on the **count of slots over
-3 pp** instead — and under *that* rule **R5 would read PASS** (0 slots over, both day types).
-**The stricter band was chosen deliberately and the looser one was available.** Retail's channel peak
-is 4.57 %, so 1.615 pp is about a third of the entire signal and headroom is 0.9× the observed
-value. Recorded in the gate's own text, not left in a commit message.
-
-**Seen failing, 4/4** (`falsify_r5.py`, in-memory mutation, nothing on disk touched): control
-**1.615 WARN**; +2 pp → 2.200 WARN; **+5 pp → 4.933 FAIL**; +20 pp → 19.032 FAIL. The
-control is the load-bearing row — without it the other three prove only that the harness can
-produce large numbers.
-
-## R1-XCH — and this is what E7 was actually for
-
-The paper's R1 caveat is now **computed on every run** as a non-scoring INFO line rather than
-asserted in prose:
-
-> **R1's own basis applied to the PASSING channels: `hom30` 22.969 pp, `wrk30` 27.263 pp —
-> against AT_RETAIL's 4.796 pp.**
-
-The worst channel by R1's own measure is one whose gate **PASSES**, so R1's FAIL is not evidence of a
-retail-specific defect. **A caveat the tool prints beats a caveat the author asserts**: if the claim
-stops being true, the report says so instead of the manuscript quietly staying wrong. That is the
-justification E7 has that survives — not the prerequisite story I wrote yesterday.
-
-⚖️ **The other half is retained and it runs against us:** normalised by its own peak,
-retail's R1 deviation is **105 %**, the worst of the three. R1-XCH disqualifies the *basis*; it does
-not exonerate retail.
-
-## Guards, and what did not move
-
-- **All 49 pre-existing gate lines byte-identical.** The full-run diff has **additions only** —
-  no removals, no modifications, R1's line included.
-- **31 PASS / 6 WARN / 3 FAIL (+1 INFO, not scored).** A WARN was gained. **No FAIL was cleared** —
-  the falsifiable test of whether option C was really additive, stated in advance and met.
-- INFO is excluded from `n_pass`/`n_warn`/`n_fail` **and from the pass-rate denominator**: an
-  informational line that could move a percentage is a way to make a scorecard look better without
-  fixing anything.
-- **The scale-relative bar stays declined.** It would retroactively re-judge W1 and 2.2.
-- Validator md5 **`46b0eb222f88f802e149647c82c1b726` → `f71a97142e9f420f73a6f874bc11d496`**.
-  ⚠️ **Every mention of the old hash dated before 2026-08-06 describes the pre-R5 file and
-  remains true as history** — they are not errors and were not rewritten.
-- Shipped report regenerated; the 2026-07-21 original kept as
-  `outputs_step5/3rdJ_step5_validation_report.2026-07-21_pre_R5.html` (md5 `b261d5d5`).
-- Pre-change validator kept at `archive/3rdJ_05_censusLinkage_4split_val.2026-08-06_pre_R5.py`.
-- **The READER_GUIDE was checked and deliberately NOT edited.** Its `R1…R4` mention is a note
-  about per-experiment prediction letters in Step 9, not Step 5's Section 3r. Editing it to `R1…R5`
-  would have looked like diligence and been wrong.
-
-## Addendum, same day: the tests moved into the repo, and one of them was caught lying
-
-**`falsify_r5.py` and `probe_defects.py` were written in a scratchpad directory.** A test that lives
-in a temp directory is a test nobody runs again, so both now sit beside the validator in
-`Leg3_4-split/Step5_docs/` and both were **re-run from there**: falsifier **4/4**, probe **0 of 2
-defects** against the shipped file.
-
-🔴 **`probe_defects.py` was rewritten before being committed, and the reason matters more
-than the file.** Its first version decided one of its two checks by **regex-matching the ternary in
-the source**. The E7 fix replaced that ternary with a dict — so the scraper silently stopped
-matching and printed `?`, **while a hardcoded summary line underneath still announced the old
-verdict**. It would have gone on reporting "defect present" after the defect was gone, and reported
-it confidently. **A checker that states a result it did not measure is worse than no checker.** Both
-checks now read captured output, and the probe takes a path argument so it can be pointed at either
-file:
-
-| target | defects found |
-|---|---|
-| shipped `..._val.py` | **0 of 2** |
-| `archive/..._2026-08-06_pre_R5.py` | **2 of 2** |
-
-**Both directions were run.** A probe that only ever reports "clean" has not been shown to detect
-anything — the same standard applied to R5 itself.
-
-*(Staging note: the archived validator resolves its sibling main script relative to its own
-directory, so loading it straight out of `archive/` dies with `FileNotFoundError` before the probe
-runs. The probe now stages a copy beside the main script and deletes it afterwards, rather than
-leaving the next reader to work that out from a stack trace.)*
-
-## Still owed by the user — unchanged by this work
-
-The `val_score` selection rule (V2-E4), **X-3** FAIL-vs-WARN, and the hotel gate's
-`all_cells`-vs-`median` rule (§0.31). 🔴 **The last one must not be resolved by picking
-the rule that passes.**

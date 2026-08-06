@@ -20,14 +20,14 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 
 > **Three-leg roadmap.** Leg 1 = Residential (COMPLETE, 2nd Journal). Leg 2 = Residential + Office (COMPLETE, validated end-to-end 2026-07-01; office People-schedule wiring fix + re-sim is the one open closeout — its lessons are hard gates in Steps 7–8). **Leg 3 = + Retail + Hotel (this doc, 3rd-Journal target).**
 >
-> **Status convention.** ~~Reused Legs 1–2 machinery = **DONE**; Retail delta = **PLANNED (Leg 3)**; Hotel side-track = **PLANNED (Leg 3, non-GSS)**.~~ **SUPERSEDED 2026-08-05 (V2-G2): every Leg-3 delta in this document has been built and run. The convention is now ✅ DONE (Leg 3) wherever an artefact exists on disk, and each tag names that artefact. Nothing in Steps 1–9 remains PLANNED.** The GSS build delta is one tiler list entry + one Transformer head; the genuinely new machinery is the non-GSS hotel side-track. Companion detail doc: `3rdJ_00_4split_Occupancy_Pipeline.md`; spec: `4-channel_split.md`; unresolved numbers = **pending deep research** (`deepResearch/00_deep_research_prompts_Leg3.md`). **DESIGN FREEZE 2026-07-02: all 13 reports delivered and integrated, all 15 OPEN DECISIONS resolved — the build starts at Step 3.**
+> **Status convention.** Reused Legs 1–2 machinery = **DONE**; Retail delta = **PLANNED (Leg 3)**; Hotel side-track = **PLANNED (Leg 3, non-GSS)**. The GSS build delta is one tiler list entry + one Transformer head; the genuinely new machinery is the non-GSS hotel side-track. Companion detail doc: `3rdJ_00_4split_Occupancy_Pipeline.md`; spec: `4-channel_split.md`; unresolved numbers = **pending deep research** (`deepResearch/00_deep_research_prompts_Leg3.md`). **DESIGN FREEZE 2026-07-02: all 13 reports delivered and integrated, all 15 OPEN DECISIONS resolved — the build starts at Step 3.**
 
 ---
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  STEP 1 — DATA COLLECTION & COLUMN SELECTION                                 ║
-║  GSS columns + hotel source: DONE (Leg 3) -- 3rdJ_01_hotelIngest_4split.py   ║
+║  GSS columns: DONE (Legs 1-2)   |   Hotel external source: PLANNED (Leg 3)   ║
 ║                                                                              ║
 ║  NO new GSS variables: AT_RETAIL derives from occPRE/occACT already carried  ║
 ║  retail STAFF invisible in GSS (logged as AT_WORK) -> stay in NECB baseline  ║
@@ -36,7 +36,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║    (StatCan has no monthly occupancy; use ISQ and Alberta Economic/CBRE)     ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 2 — DATA HARMONIZATION                                                 ║
-║  crosswalk + OR-rule + hotel: DONE -- 3rdJ_02_hotelHarmonize_4split.py       ║
+║  occPRE crosswalk: DONE (Leg 1)  |  OR-rule + hotel series: PLANNED (Leg 3)  ║
 ║                                                                              ║
 ║  AT_RETAIL = (occPRE==5) | (occACT==4 "Purchasing Goods & Services")         ║
 ║    2005/2010 PLACE=06+07 | 2015 LOCATION=306 | 2022 LOCATION=3306 (all 4)    ║
@@ -48,7 +48,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  hotel series: QC+AB monthly 2005-2022 (ISQ/CBRE; keep COVID months as signal║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 3 — MERGE & TILING  <- THE ONE REAL GSS BUILD DELTA                    ║
-║  Status: DONE (Leg 3) -- 3rdJ_03_mergingGSS_4split.py, one list entry        ║
+║  Status: PLANNED (Leg 3) -- one list entry                                   ║
 ║                                                                              ║
 ║  Leg 2 already made tiling list-driven (tile_work_to_30min, cloned from      ║
 ║    the 9-channel co-presence tiler) -> appending AT_RETAIL = one entry       ║
@@ -57,7 +57,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  CONSERVATIVE: separate CSV; residential + office paths bit-identical        ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 4 — MODEL 1: THREE-GSS-HEAD CONDITIONAL TRANSFORMER                    ║
-║  Backbone + Head 3: DONE (Leg 3) -- 3rdJ_04B_model_4split.py | hotel NOT in  ║
+║  Backbone: DONE (Leg 2, AUGMENT) | Head 3: PLANNED (Leg 3) | hotel NOT in    ║
 ║  model                                                                       ║
 ║                                                                              ║
 ║  ENCODER (shared): token = [occACT(14), AT_HOME, AT_WORK, AT_RETAIL, 9 coP]  ║
@@ -84,7 +84,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║  hotel: NO respondent archetype -> province-level multiplier (QC | AB)       ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 6 — MODEL 2: FORECAST 2030 + THE HOTEL SIDE-TRACK                      ║
-║  Fine-tune + retail lever + hotel: DONE -- 3rdJ_06_retail_lever_4split.py    ║
+║  Fine-tuning: DONE (Leg 2) | retail lever + hotel track: PLANNED (Leg 3)     ║
 ║                                                                              ║
 ║  GSS channels: reuse W_2005->W_2010_ft->W_2015_ft->W_2022_ft + DRIFT_MATRIX  ║
 ║  office keeps WFH bands (conservative / hybrid / fullyhybrid)                ║
@@ -102,7 +102,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║    backcast gate: QC+AB 2015-2019 MAE < 0.05; COVID dip w/o overshoot        ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 7 — BEM/UBEM INTEGRATION  <- MODULATE, NOT REPLACE                     ║
-║  Resid + office + retail + hotel: DONE -- 3rdJ_07_aug_to_bem_4split.py       ║
+║  Resid REPLACE + office MODULATE: DONE (Leg 2) | retail+hotel: PLANNED       ║
 ║                                                                              ║
 ║  office_integration.py -> commercial_integration.py :: inject_mixed_use()    ║
 ║  Tag-2 exact-match dispatch:                                                 ║
@@ -121,7 +121,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║     Schedule_Name) -- the silent failure that flattened Leg-2 office         ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 8 — BEM SIMULATION                                                     ║
-║  Status: DONE (Leg 3) -- 3rdJ_08D_campaign_cells.py, 56/56 cells             ║
+║  Status: PLANNED (Leg 3)                                                     ║
 ║                                                                              ║
 ║  2-city sweep: CAN_MTL Z6 (6A) + CAN_CLG Z7A -- geometry-identical IDFs      ║
 ║    (SuperTall 135,857.6 / Tall 72,623.1 m2, measured -- see header note      ║
@@ -139,7 +139,7 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 ║     2 stale-output guard: a wiring fix invalidates skip_done completions     ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  STEP 9 — ACTIVITY-DRIVEN END-USE LOADS (equipment + lighting)               ║
-║  Status: DONE (Leg 3) -- 3rdJ_09_activityDrivenLoads_4split.py, 30 gates     ║
+║  Status: PLANNED (Leg 3) -- extend the unified 2-channel analysis to 4       ║
 ║                                                                              ║
 ║  retail: lighting/HVAC follow OPENING HOURS; plug follows STAFF (stays       ║
 ║    baseline); customer presence modulates People gains; Lmin/Pbase floors    ║

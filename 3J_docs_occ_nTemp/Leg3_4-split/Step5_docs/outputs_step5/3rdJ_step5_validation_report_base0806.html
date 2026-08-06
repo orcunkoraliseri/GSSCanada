@@ -33,7 +33,6 @@
     .badge.pass { background:#1c2e22; border:1px solid #2d5a35; color:var(--green); }
     .badge.warn { background:#2e2a1c; border:1px solid #5a4e1f; color:var(--yellow); }
     .badge.fail { background:#2e1c1e; border:1px solid #5a2428; color:var(--red); }
-    .badge.info { background:#1c242e; border:1px solid #2d465a; color:var(--accent); }
     .chart-section { background:var(--surface); border:1px solid var(--border);
                       border-radius:14px; padding:24px; margin-bottom:28px; }
     .chart-section h2 { font-size:1.0rem; color:var(--accent); margin-bottom:16px; }
@@ -46,7 +45,6 @@
     .summary-table tr.pass-row td { color:var(--green); }
     .summary-table tr.warn-row td { color:var(--yellow); }
     .summary-table tr.fail-row td { color:var(--red); }
-    .summary-table tr.info-row td { color:var(--accent); }
     .s0-banner { font-weight:600; padding:10px 14px; border-radius:8px; margin-bottom:14px; }
     .s0-banner.s0-ok { background:#1c2e22; border:1px solid #2d5a35; color:var(--green); }
     .s0-banner.s0-fail { background:#2e1c1e; border:1px solid #5a2428; color:var(--red); }
@@ -57,17 +55,17 @@
 <body>
   <header>
     <h1>3J Leg-3 Step 5 — 4-Channel Census-GSS Linkage Validation</h1>
-    <p>Residential AT_HOME + Office AT_WORK + Retail AT_RETAIL channels | Generated: 2026-08-06 01:51:52</p>
+    <p>Residential AT_HOME + Office AT_WORK + Retail AT_RETAIL channels | Generated: 2026-08-06 01:44:02</p>
   </header>
   <main>
     <div class="scorecard" id="scorecard">
       <div class="score-card ok"><div class="number">31</div>
         <div class="label">Checks Passed</div></div>
-      <div class="score-card warn"><div class="number">6</div>
+      <div class="score-card warn"><div class="number">5</div>
         <div class="label">Warnings</div></div>
       <div class="score-card fail"><div class="number">3</div>
         <div class="label">Failures</div></div>
-      <div class="score-card pct"><div class="number">78%</div>
+      <div class="score-card pct"><div class="number">79%</div>
         <div class="label">Pass Rate</div></div>
     </div>
     
@@ -85,16 +83,11 @@
     </div>
     <div class="findings">
       <h2>Warnings</h2>
-      <ul class="badge-list"><li class='badge warn'>[WARN] 0.2 | Tier-1 (8-key) pool reachable share: 27.89% (>=95% gate)</li><li class='badge warn'>[WARN] 0.2 | Tier-2 (5-key) pool reachable share: 56.77% (>=95% gate)</li><li class='badge warn'>[WARN] W2 | LFTAG AT_WORK: employed_max=19.97% not-in-LF_max=N/A — LFTAG domain in this extract = [1.0, 2.0], no not-in-LF code (3/4) present, so this gate's comparison stratum is empty and it cannot structurally fail (N/A, not PASS)</li><li class='badge warn'>[WARN] R5 | AT_RETAIL generation fidelity (synthetic vs observed, within-day-type): 1.615pp (FAIL>3, WARN 1-3) — channel peak 4.57%, so the 3.0pp bar is 66% of the signal; headroom 1.385pp = 0.9x the observed value. Interpret a PASS accordingly.</li><li class='badge warn'>[WARN] R2a | Weekday 12:00-14:00 AT_RETAIL rate: 0.0251 (band 0.06-0.10)</li><li class='badge warn'>[WARN] 5.2 | Mean N_HH_MEMBERS: 1.500 (Census ref ~2.80)</li></ul>
+      <ul class="badge-list"><li class='badge warn'>[WARN] 0.2 | Tier-1 (8-key) pool reachable share: 27.89% (>=95% gate)</li><li class='badge warn'>[WARN] 0.2 | Tier-2 (5-key) pool reachable share: 56.77% (>=95% gate)</li><li class='badge warn'>[WARN] W2 | LFTAG AT_WORK: employed_max=19.97% not-in-LF_max=N/A — LFTAG domain in this extract = [1.0, 2.0], no not-in-LF code (3/4) present, so this gate's comparison stratum is empty and it cannot structurally fail (N/A, not PASS)</li><li class='badge warn'>[WARN] R2a | Weekday 12:00-14:00 AT_RETAIL rate: 0.0251 (band 0.06-0.10)</li><li class='badge warn'>[WARN] 5.2 | Mean N_HH_MEMBERS: 1.500 (Census ref ~2.80)</li></ul>
     </div>
     <div class="findings">
       <h2>Passed</h2>
       <ul class="badge-list"><li class='badge pass'>[PASS] 0.1 | AGEGRP: census⊆pool=YES (overlap=100.0%, census_n=7, pool_n=7)</li><li class='badge pass'>[PASS] 0.1 | SEX: census⊆pool=YES (overlap=100.0%, census_n=2, pool_n=2)</li><li class='badge pass'>[PASS] 0.1 | MARSTH: census⊆pool=YES (overlap=100.0%, census_n=3, pool_n=6)</li><li class='badge pass'>[PASS] 0.1 | HHSIZE: census⊆pool=YES (overlap=100.0%, census_n=5, pool_n=5)</li><li class='badge pass'>[PASS] 0.1 | LFTAG: census⊆pool=YES (overlap=100.0%, census_n=2, pool_n=3)</li><li class='badge pass'>[PASS] 0.1 | CMA: census⊆pool=YES (overlap=100.0%, census_n=2, pool_n=2)</li><li class='badge pass'>[PASS] 0.1 | DDAY_STRATA: census⊆pool=YES (overlap=100.0%, census_n=3, pool_n=3)</li><li class='badge pass'>[PASS] 1.1 | Row count: 30,273 (expected 30,273)</li><li class='badge pass'>[PASS] 1.2 | WD FailSafe rate: 0.00% (<=10% gate)</li><li class='badge pass'>[PASS] 1.3 | WE FailSafe rate: 0.00% (<=12% gate)</li><li class='badge pass'>[PASS] 1.4 | Tier1+2 proportion: 99.74% (>=60% gate)</li><li class='badge pass'>[PASS] 1.5 | Duplicate PIDs: 0</li><li class='badge pass'>[PASS] 1.6 | Null occIDs: 0</li><li class='badge pass'>[PASS] 2.1 | Overall mean AT_HOME: aug=65.00% base=63.20% diff=1.80pp</li><li class='badge pass'>[PASS] 2.3 | WD AT_HOME=62.35% < WE AT_HOME=71.57%</li><li class='badge pass'>[PASS] 2.4 | Slots 41-48 (00:00-04:00) mean AT_HOME: 93.87% (>=85%)</li><li class='badge pass'>[PASS] W1 | AT_WORK per-slot max diff (within-day-type): 2.05pp — 0 slot(s) >+-3pp</li><li class='badge pass'>[PASS] W3 | Colleagues co-presence (within-day-type): max_diff=0.888pp (<=3pp)</li><li class='badge pass'>[PASS] W4 | Archetype: NonOffice=48.16% (<60%) Unknown_NOCS=5.48% (<10%)</li><li class='badge pass'>[PASS] R2b | Night (00:00-04:00) AT_RETAIL rate: 0.0001 (band 0.000-0.003)</li><li class='badge pass'>[PASS] R3 | ret30 per-person mean: Full_Schedules=0.015918 Full_Aggregated=0.015918 diff=0.00e+00 (exact match required)</li><li class='badge pass'>[PASS] R4 | retail_archetype column present: False (should be absent in v1 — deferred decision guard)</li><li class='badge pass'>[PASS] 4.1 | Out-of-range act30 values: 0</li><li class='badge pass'>[PASS] 4.2 | Top-5 act share max diff: 4.28pp (0 > +-5pp)</li><li class='badge pass'>[PASS] 4.3 | Night sleep dominance slots 41-48 (00:00-04:00): 92.85% (>=70%)</li><li class='badge pass'>[PASS] 5.1 | Null SIM_HH_IDs: 0</li><li class='badge pass'>[PASS] 5.3 | Aggregated row count: 30,273 (expected 30,273)</li><li class='badge pass'>[PASS] 5.4 | HH_wrk30 columns absent (wrk30 per-person only): PASS — no HH_wrk30 cols</li><li class='badge pass'>[PASS] 6.1 | Schema: act30=48/48 hom30=48/48 wrk30=48/48</li><li class='badge pass'>[PASS] 6.2 | office_archetype_ID in BEM: YES</li><li class='badge pass'>[PASS] 6.3 | BEM row count: 30,273 (expected 30,273)</li></ul>
-    </div>
-    <div class="findings">
-      <h2>Informational &mdash; not scored</h2>
-      <p style="color:var(--subtext);font-size:0.85rem;margin-bottom:8px">These lines are reference numbers, not gates. They carry no PASS/WARN/FAIL verdict and are excluded from the scorecard and the pass rate above.</p>
-      <ul class="badge-list"><li class='badge info'>[INFO] R1-XCH | R1's own basis applied to the PASSING channels: hom30 22.969pp, wrk30 27.263pp vs AT_RETAIL 4.796pp. The worst is 27.263pp on a channel whose gate PASSES, so this basis condemns every channel and R1's FAIL is not evidence of a retail-specific defect. NOT a gate: no verdict, excluded from the scorecard. R1 is unchanged (V2-E8).</li></ul>
     </div>
     
         <section class="chart-section" id="1_tier_distribution">
@@ -168,10 +161,10 @@
           <h2>Summary Table</h2>
           <table class="summary-table">
             <thead><tr><th>Gate / Check</th><th>Threshold</th><th>Observed</th><th>Status</th></tr></thead>
-            <tbody><tr class="pass-row"><td>Row count</td><td>== 30,273</td><td>30,273</td><td>PASS</td></tr><tr class="fail-row"><td>AT_HOME max slot deviation</td><td><= +-3 pp</td><td>3.66 pp</td><td>FAIL</td></tr><tr class="pass-row"><td>Night AT_HOME rate (slots 41-48, 00:00-04:00)</td><td>>= 85%</td><td>93.87%</td><td>PASS</td></tr><tr class="pass-row"><td>AT_WORK max slot deviation</td><td><= +-3 pp</td><td>2.05 pp</td><td>PASS</td></tr><tr class="pass-row"><td>Office archetype distribution</td><td>NonOffice<60%, Unknown<10%</td><td>NonOffice=48.2%, Unknown=5.5%</td><td>PASS</td></tr><tr class="fail-row"><td>R1 AT_RETAIL max slot deviation (matched vs pool)</td><td><= 3.0 pp (WARN 1-3)</td><td>4.796 pp</td><td>FAIL</td></tr><tr class="warn-row"><td>R5 AT_RETAIL generation fidelity (synthetic vs observed)</td><td><= 3.0 pp (WARN 1-3)</td><td>1.615 pp</td><td>WARN</td></tr><tr class="warn-row"><td>R2 AT_RETAIL population sanity (weekday 12-14h / night)</td><td>0.06-0.10 / 0.000-0.003</td><td>0.0251 / 0.0001</td><td>WARN</td></tr><tr class="pass-row"><td>Top-5 activity deviation</td><td><= +-5 pp</td><td>4.28 pp</td><td>PASS</td></tr><tr class="pass-row"><td>Night sleep dominance (slots 41-48, 00:00-04:00)</td><td>>= 70%</td><td>92.85%</td><td>PASS</td></tr><tr class="pass-row"><td>BEM schema (act/hom/wrk 48 cols each)</td><td>48/48/48</td><td>48/48/48</td><td>PASS</td></tr></tbody>
+            <tbody><tr class="pass-row"><td>Row count</td><td>== 30,273</td><td>30,273</td><td>PASS</td></tr><tr class="fail-row"><td>AT_HOME max slot deviation</td><td><= +-3 pp</td><td>3.66 pp</td><td>FAIL</td></tr><tr class="pass-row"><td>Night AT_HOME rate (slots 41-48, 00:00-04:00)</td><td>>= 85%</td><td>93.87%</td><td>PASS</td></tr><tr class="pass-row"><td>AT_WORK max slot deviation</td><td><= +-3 pp</td><td>2.05 pp</td><td>PASS</td></tr><tr class="pass-row"><td>Office archetype distribution</td><td>NonOffice<60%, Unknown<10%</td><td>NonOffice=48.2%, Unknown=5.5%</td><td>PASS</td></tr><tr class="fail-row"><td>R1 AT_RETAIL max slot deviation (matched vs pool)</td><td><= 3.0 pp (WARN 1-3)</td><td>4.796 pp</td><td>FAIL</td></tr><tr class="warn-row"><td>R2 AT_RETAIL population sanity (weekday 12-14h / night)</td><td>0.06-0.10 / 0.000-0.003</td><td>0.0251 / 0.0001</td><td>WARN</td></tr><tr class="pass-row"><td>Top-5 activity deviation</td><td><= +-5 pp</td><td>4.28 pp</td><td>PASS</td></tr><tr class="pass-row"><td>Night sleep dominance (slots 41-48, 00:00-04:00)</td><td>>= 70%</td><td>92.85%</td><td>PASS</td></tr><tr class="pass-row"><td>BEM schema (act/hom/wrk 48 cols each)</td><td>48/48/48</td><td>48/48/48</td><td>PASS</td></tr></tbody>
           </table>
         </section>
   </main>
-  <footer>3J Leg-3 Occupancy Pipeline &middot; Step 5 4-Channel Validation &middot; 2026-08-06 01:51:52</footer>
+  <footer>3J Leg-3 Occupancy Pipeline &middot; Step 5 4-Channel Validation &middot; 2026-08-06 01:44:02</footer>
 </body>
 </html>

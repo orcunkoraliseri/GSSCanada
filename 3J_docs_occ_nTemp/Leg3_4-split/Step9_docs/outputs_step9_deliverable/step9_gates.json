@@ -1,0 +1,182 @@
+[
+  {
+    "gate": "S9-EUI-office",
+    "name": "EUI in as-modelled band (office, rule = all_cells)",
+    "status": "FAIL",
+    "detail": "RULE IN FORCE = all_cells -> FAIL. Median 71.0 kWh/m2/yr vs [100.0-200.0]; 0/56 cells inside, 56 below the 100.0 floor / 0 above the 200.0 ceiling; range 61.7-90.2. COUNTERFACTUAL: the median-in-band rule would return FAIL on this same data. (NECB2020/90.1-2019 DOE-PNNL as-modelled band -- 3J_docs_occ_nTemp/Leg2_2-split/Step8_docs/deepResearch/Office Reference EUI (NECB 2020, ASHRAE 90.1, DOE-PNNL prototypes) \u2014 As-Modelled Bands.md, Table 7.1 (repris de Leg-2). *** FLOOR CONTESTED AND UNSOURCED (V2-B1, decided 2026-08-05): the source document gives three different floors for it (Table 7.1 = 100.0, line 21 = 80-140, Table 2.1 = 85.0-115.0), and the UNINJECTED Default_NECB control fails this gate at 85.45 -- a floor no untreated control can clear is measuring the band, not the model. The value is NOT moved; it is published as contested. Limitation -> V2-G3)"
+  },
+  {
+    "gate": "S9-EUI-retail",
+    "name": "EUI in as-modelled band (retail, rule = median)",
+    "status": "FAIL",
+    "detail": "RULE IN FORCE = median -> FAIL. Median 75.6 kWh/m2/yr vs [80.0-155.0]; 12/56 cells inside, 44 below the 80.0 floor / 0 above the 155.0 ceiling; range 63.6-96.8. COUNTERFACTUAL: the all-cells rule would return FAIL on this same data. (dr_L3-02 as-modelled (locked 2026-07-02) -- 3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md. RULE = median-in-band (V2-B3, 2026-08-05), replacing 56-of-56: V2-E3 moved the median by -0.05 % and that alone flipped a cell, so an all-cells rule on a spread smaller than its own uncertainty reports noise as a verdict. Band VALUES unchanged)"
+  },
+  {
+    "gate": "S9-EUI-hotel",
+    "name": "EUI in as-modelled band (hotel, rule = all_cells)",
+    "status": "FAIL",
+    "detail": "RULE IN FORCE = all_cells -> FAIL. Median 260.5 kWh/m2/yr vs [180.0-300.0]; 28/56 cells inside, 0 below the 180.0 floor / 28 above the 300.0 ceiling; range 203.3-318.4. COUNTERFACTUAL: the median-in-band rule would return PASS on this same data -- *** THE TWO RULES DISAGREE HERE, so this gate's status is set by the RULE CHOICE and not by the model; read the decision in band_src before quoting it. (ASHRAE 90.1-2019 Large Hotel prototype, retrieved first-party by V2-F6 from the prototype ZIP's own .table.htm: 284.44 kWh/m2/yr at CZ 6A, 299.28 at CZ 7 (evidence: improvements/v2/f6_prototype_evidence/). *** SUPERSEDES dr_L3-03 as the CITATION for these values (V2-B2, 2026-08-05): V2-F4 chased dr_L3-03's two primaries to the end and NEITHER EXISTS (one NOT FOUND; PNNL-28543 resolves to a nuclear-fuel report). The band was unsupported, not wrong -- the 300 ceiling rested on the 90.1-2004 lineage's 302.21 and the vintage-matched 2019 value is 1.0 % from it, so the 'a 2004 band scores a 2019 building' objection is dead. Values unchanged; gate still FAILs. Residual archetype gap (NECB-2017 MTL/Calgary vs 90.1-2019 Rochester / International Falls) is a LIMITATION -> V2-G3, NOT a tolerance)"
+  },
+  {
+    "gate": "S9-EUI-residential",
+    "name": "EUI in as-modelled band (residential)",
+    "status": "INFO",
+    "detail": "no as-modelled band defined; CFA median 119.1 kWh/m2/yr, SHEU HighRise context 130.6 [113.9-147.2] on the GFA-share basis (median 107.2)"
+  },
+  {
+    "gate": "S9-BASIS",
+    "name": "Stacked-tower vs standalone-prototype EUI basis",
+    "status": "INFO",
+    "detail": "channel(s) below their as-modelled floor: office, retail (office 71.0 vs floor 100; retail 75.6 vs floor 80). The locked bands come from STANDALONE prototypes; these channels are floors inside one tower, where most of the envelope is interior partition to other conditioned space and the plant is shared and centrally sized. A lower EUI is the physically expected direction. NO THRESHOLD HAS BEEN CHANGED -- whether the standalone band remains a valid PASS criterion for a stacked-tower channel is a decision to be taken explicitly. CORRECTED 2026-07-31 (re-derived from code, not taken on faith): the Leg-2 office precedent (135 [100-200], job 1054800) is computed on ALL FUELS, not restricted to any single meter -- _eui_from_sql() (Leg2_2-split/Step8_docs/3rdJ_08_simulation_2split_agg.py:333-345) calls calculate_eui() (Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:257-350), which sums the SQL 'End Uses (By Subcategory)' table over ALL fuel columns, excluding only m3 units (water) -- gas is in it. The Electricity:Facility / office_elec restriction lives on the DIURNAL path (Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py:99-110) and never feeds the EUI at all (contrast :124-158). The real, larger discrepancy is elsewhere: the Leg-2 'office' EUI is a TOWER EUI, not a channel EUI -- its `unit` column literally reads 'tower' (Leg2_2-split/Step9_docs/outputs_step9/step9_eui_by_channel.csv, row office,all,tower,252,172.7), and calculate_eui() returns the energy and area of the WHOLE model. Leg-2 therefore never validated an office CHANNEL -- Leg-3 produces the project's first per-channel EUI."
+  },
+  {
+    "gate": "S9-EUI-EXPOSURE",
+    "name": "Envelope-exposure mechanism test (T9-3) vs band-floor gap",
+    "status": "INFO",
+    "detail": "step9_envelope_exposure.csv not found under C:/Users/o_iseri/AppData/Local/Temp/claude/C--Users-o-iseri-Desktop-GSSCanada/2b1c2b5f-9e13-4c3c-9ac7-822dd5f9f291/scratchpad/e5/step9_D -- run 3rdJ_09X_envelope_exposure.py first (read-only SQL pass over the 56 campaign cells). The stacked-channel mechanism test cannot be reported this run."
+  },
+  {
+    "gate": "S9-EUI-TOWER-INFO",
+    "name": "Tower-level EUI, both bases (context, NOT scored PASS/FAIL)",
+    "status": "INFO",
+    "detail": "ABUPS gross basis (site_energy_GJ / total_building_area_m2, all 56 cells): median 119.2 kWh/m2/yr (range 102.0-136.4). Tenant-CFA-summed basis (sum of the 4 tenant channels' own energy / sum of their CFA, 56 cells): median 134.3 kWh/m2/yr (range 114.2-154.8). The Leg-2 office precedent band [100-200] (central 135, from NECB2020/90.1-2019 DOE-PNNL literature) is cited here as CONTEXT ONLY, never as a PASS/FAIL criterion. Note the two are different objects: the band is literature and is sound; 172.7 is the value Leg-2 MEASURED against it, and it is that measured number -- not the band -- that is inflated by a factor of ~1.706x by a calculate_eui() defect (Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py:293-299 filters on TableName without ever filtering ReportName, so the same-named 'End Uses By Subcategory' table from the DemandEndUseComponentsSummary report -- which is in WATTS -- gets summed in as if it were kWh); 172.7 / 1.706 = 101.2, within ~1% of the ~100 kWh/m2/yr measured here on the same tower once that defect is removed. Leg2_2-split/ was read only, never modified; correcting the Leg-2 number is a user decision outside this task's scope."
+  },
+  {
+    "gate": "S9-SHARE",
+    "name": "Energy share vs parsed occupiable share (dr_L3-10 +/-2 pp)",
+    "status": "INFO",
+    "detail": "82/224 channel-cells within +/-2 pp; worst hotel on B_opt__Tall__CLG at +30.19 pp (energy 49.77 % vs area 19.57 %). NOT scored PASS/FAIL: energy share can equal area share only if all channels share one EUI, and the as-modelled bands themselves span 110-240 kWh/m2/yr. Median energy/area ratio per channel: office 0.63x; retail 0.62x; hotel 2.16x; residential 1.01x -- these ARE the relative EUIs, and they are judged against their own bands by the S9-EUI-* gates. Shares are PARSED per cell from the IDF + SQL (Defaut 7), never the doc constants."
+  },
+  {
+    "gate": "S9-AREA",
+    "name": "Parsed channel areas account for the whole building",
+    "status": "PASS",
+    "detail": "56/56 cells: Sigma(channel areas) + unclassified == ABUPS total building area within 0.1 %, and unclassified < 1 % of gross. This fails if the Tag-2 census misses a Space -- the part of the +/-2 pp intent that is actually falsifiable. "
+  },
+  {
+    "gate": "S9-PEAK-office",
+    "name": "Weekday OCCUPANCY peak hour (office, 9-18 h)",
+    "status": "PASS",
+    "detail": "56/56 cells inside; circular mean 11.64 h (range 11.19-12.21), argmax 13 h, concentration R = 0.646 (>= 0.3 required before a mean hour means anything; 0 cells below). Same channel ENERGY peak: 11.86 h."
+  },
+  {
+    "gate": "S9-PEAK-retail",
+    "name": "Weekday OCCUPANCY peak hour (retail, 10-20 h)",
+    "status": "PASS",
+    "detail": "56/56 cells inside; circular mean 13.15 h (range 12.51-14.22), argmax 13 h, concentration R = 0.775 (>= 0.3 required before a mean hour means anything; 0 cells below). Same channel ENERGY peak: 12.55 h."
+  },
+  {
+    "gate": "S9-PEAK-hotel",
+    "name": "Weekday occupancy shape (hotel)",
+    "status": "INFO",
+    "detail": "hotel guest rooms are occupied overnight by construction (s(t) plateau 22-06 h), so no daytime window applies; argmax 22 h, R = 0.321, evening/midday ratio 1.84, energy peak 18.73 h"
+  },
+  {
+    "gate": "S9-PEAK-residential",
+    "name": "Weekday residential occupancy: evening (17-22 h) above midday (11-14 h), injected cells",
+    "status": "PASS",
+    "detail": "52/52 injected cells; evening/midday ratio median 2.41 (range 1.56-7.37); the un-injected NECB baseline sits at 0.22 (midday-dominant, argmax 09 h) -- see S9-INJECTION. Deliberately NOT scored on a mean hour: AT_HOME occupancy is near-antipodal (maximum overnight while people sleep at home, minimum around 10 h), so R = 0.267 and the mean hour wanders over almost the whole clock across behaviourally identical cells. The doc's 'resid 15-22 h' describes the evening RISE, and that is what this measures."
+  },
+  {
+    "gate": "S9-INJECTION",
+    "name": "Residential injection changes the occupancy SHAPE, not just its level",
+    "status": "PASS",
+    "detail": "NECB code baseline: evening/midday occupancy ratio 0.22 (midday-dominant, argmax 9 h). GSS-injected cells: 2.41 (range 1.56-7.37, argmax 4 h). The injection flips the channel from midday-dominant to evening-dominant -- a change of SHAPE, which a level-only rescaling of the code schedule could not produce. This is the cleanest sim-side evidence that the residential channel carries behaviour and not merely a magnitude, and it is exactly the claim the thesis rests on."
+  },
+  {
+    "gate": "S9-RESID-EVENING",
+    "name": "Residential evening ENERGY peak (the Legs 1-2 headline)",
+    "status": "INFO",
+    "detail": "NOT REPRODUCIBLE IN LEG 3, by construction. Residential energy peaks at 12.04 h (circular mean, R = 0.298), not in the evening, because OD-7D leaves residential lights and plug loads on the flat NECB baseline -- the very loads that produced the evening peak in Legs 1 and 2. The OCCUPANCY still shows the evening rise (see S9-PEAK-residential), so the behavioural signal is intact upstream; it simply has no route into energy. This is D-20 at its sharpest, and it belongs in the manuscript: any Leg-3 claim about residential evening ENERGY demand would be unsupported by this model."
+  },
+  {
+    "gate": "S9-D20",
+    "name": "Energy-vs-occupancy peak lag per channel (D-20 evidence)",
+    "status": "INFO",
+    "detail": "office 0.25 h; retail 0.60 h; hotel 4.86 h; residential 10.51 h. The three commercial channels modulate People + Lights + Equipment, so their energy timing tracks their occupancy. Residential modulates People only (OD-7D), so its energy timing is set by the flat NECB baseline instead. That gap is the asymmetry D-20 predicted, here as a measured number rather than an argument."
+  },
+  {
+    "gate": "S9-WE-office",
+    "name": "Weekend structure: office WE < WD",
+    "status": "PASS",
+    "detail": "56/56 cells have weekend mean below weekday mean (median ratio 0.412)"
+  },
+  {
+    "gate": "G8o",
+    "name": "G8o -- office lever non-degenerate + monotonic",
+    "status": "PASS",
+    "detail": "spread |opt-cons|/central = 3.129-4.643 % over 4 building-city pairs; monotonic in 4/4; lever ('conservative', 'hybrid', 'fullyhybrid'). Degenerate cells: 0. Sim-side evidence, not input-side (caveat 7)."
+  },
+  {
+    "gate": "G8r",
+    "name": "G8r -- retail lever non-degenerate + monotonic",
+    "status": "PASS",
+    "detail": "spread |opt-cons|/central = 3.480-4.601 % over 4 building-city pairs; monotonic in 4/4; lever (0.9, 0.97, 1.05). Degenerate cells: 0. Sim-side evidence, not input-side (caveat 7)."
+  },
+  {
+    "gate": "G8h",
+    "name": "G8h -- hotel lever non-degenerate + monotonic",
+    "status": "PASS",
+    "detail": "spread |opt-cons|/central = 0.765-1.157 % over 4 building-city pairs; monotonic in 4/4; lever (0.92, 1.0, 1.05). Degenerate cells: 0. Sim-side evidence, not input-side (caveat 7)."
+  },
+  {
+    "gate": "S9-COINC",
+    "name": "Coincidence factor < 1 (diversity)",
+    "status": "PASS",
+    "detail": "392/392 cells; median 0.936, range 0.833-0.969. Below 1 means the four channels do not peak together -- the mixed-use diversity argument, measured rather than asserted."
+  },
+  {
+    "gate": "S9-LONG-office",
+    "name": "Longitudinal 2005->2022 non-degenerate (office)",
+    "status": "PASS",
+    "detail": "energy spread across the four cycles = 1.646-2.657 pp per building-city pair"
+  },
+  {
+    "gate": "S9-LONG-retail",
+    "name": "Longitudinal 2005->2022 non-degenerate (retail)",
+    "status": "PASS",
+    "detail": "energy spread across the four cycles = 0.713-8.254 pp per building-city pair"
+  },
+  {
+    "gate": "S9-LONG-hotel",
+    "name": "Longitudinal 2005->2022 non-degenerate (hotel)",
+    "status": "INFO",
+    "detail": "energy spread across the four cycles = 0.347-0.727 pp per building-city pair -- NOT a hotel-behaviour trajectory: hotel carries no era-varying occupancy product before Y2022 (S9D-5, DELIBERATE_CHANNEL_EXCEPTIONS). Read this residual as a MEASURE OF INTER-CHANNEL THERMAL COUPLING within one tower -- the Y2015->Y2022 injection on/off step plus whatever the other three channels' real changes push through shared partitions/plant -- not as hotel behaviour. See S9-LONG-UNINJECTED for the falsifiable claim that hotel is genuinely absent pre-2022."
+  },
+  {
+    "gate": "S9-LONG-residential",
+    "name": "Longitudinal 2005->2022 non-degenerate (residential)",
+    "status": "PASS",
+    "detail": "energy spread across the four cycles = 0.106-0.494 pp per building-city pair"
+  },
+  {
+    "gate": "S9-LONG-UNINJECTED",
+    "name": "Hotel channel absent from Y2005/Y2010/Y2015 (S9D-5)",
+    "status": "PASS",
+    "detail": "_expected_channels() excludes hotel from all three historical eras (DELIBERATE_CHANNEL_EXCEPTIONS in 3rdJ_08D_campaign_cells.py) and all 12 built historical-era campaign cells confirm it: 0 carry a 'hotel' key in their channels dict. This is the assertion S9-LONG-hotel (now INFO) can no longer make on its own."
+  },
+  {
+    "gate": "S9-PLATFORM",
+    "name": "Single platform across compared cells",
+    "status": "PASS",
+    "detail": "PLATFORM = ['win32']; cross-platform comparison is blocked by design (Step-8 C-bis)"
+  },
+  {
+    "gate": "S9-CELLS",
+    "name": "All 56 campaign cells aggregated",
+    "status": "PASS",
+    "detail": "56/56 cells present in agg_meta.csv"
+  },
+  {
+    "gate": "S9-SCHEMA",
+    "name": "All cells share one output schema",
+    "status": "PASS",
+    "detail": "OUTPUT_SCHEMA_HASH = ['93dd5129']"
+  },
+  {
+    "gate": "S9-FALLBACK",
+    "name": "Allocation fallback hours (area share) are rare",
+    "status": "INFO",
+    "detail": "cool=0; heat=43396; hvac=0; dhw=0 summed over 56 cells x 8760 h. Non-zero is expected at hours with no coil load; it is reported rather than hidden."
+  }
+]

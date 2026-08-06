@@ -217,11 +217,7 @@ class CensusLinkageValidator4CH:
                 self.expected_rows = self.n_census - n_excl
                 print(f"  [--excl] expected={self.n_census:,} - {n_excl:,} = {self.expected_rows:,}")
 
-        # "info" is a NON-SCORING channel (V2-E7). It is deliberately absent from the
-        # scorecard arithmetic below: n_pass/n_warn/n_fail and the pass-rate denominator
-        # never count it, so an informational line can never move the pass rate.
-        self.results: dict[str, list[str]] = {"pass": [], "fail": [], "warn": [],
-                                              "info": []}
+        self.results: dict[str, list[str]] = {"pass": [], "fail": [], "warn": []}
         self.plots_b64: dict[str, str] = {}
         self.summary_rows: list[dict] = []
         self.section0_rows: list[dict] = []
@@ -229,8 +225,7 @@ class CensusLinkageValidator4CH:
 
     def _rec(self, level: str, msg: str) -> None:
         self.results[level].append(msg)
-        icon = {"pass": "[PASS]", "fail": "[FAIL]", "warn": "[WARN]",
-                "info": "[INFO]"}[level]
+        icon = "[PASS]" if level == "pass" else ("[FAIL]" if level == "fail" else "[WARN]")
         print(f"  {icon} {msg}")
 
     # Known structurally-absent donor strata: census values that can NEVER have a
@@ -828,11 +823,7 @@ class CensusLinkageValidator4CH:
         # Load pool ret30 + CYCLE_YEAR + DDAY_STRATA for R1 (matched-output vs pool,
         # per cycle x stratum) and R2 (population-level retail sanity uses matched
         # frame only, no pool needed).
-        # hom30/wrk30 are read here ONLY for the non-scoring cross-channel INFO line
-        # below (V2-E8). Widening this one read is cheaper than opening the 418 MB pool
-        # a second time; no gate reads these columns.
-        pool_usecols = (set(ret_p) | {"CYCLE_YEAR", "DDAY_STRATA"}
-                        | set(self.HOM_COLS) | set(self.WRK_COLS))
+        pool_usecols = set(ret_p) | {"CYCLE_YEAR", "DDAY_STRATA"}
         df_pool = None
         try:
             df_pool = pd.read_csv(POOL_FILE, usecols=lambda c: c in pool_usecols, low_memory=False)
@@ -871,104 +862,6 @@ class CensusLinkageValidator4CH:
                       else ("WARN" if r1_max == r1_max and r1_max <= 3.0
                             else ("FAIL" if r1_max == r1_max else "WARN")),
         })
-
-        # ── R5 (V2-E6, option C — ADDED 2026-08-06, R1 deliberately untouched) ────
-        # Retail GENERATION fidelity: do synthetic retail rows look like observed
-        # ones, within day type? This is the question W1 asks of wrk30 and gate 2.2
-        # asks of hom30. Retail was the only channel with no sibling-basis check —
-        # R1 compares the matched output against the DONOR POOL, which is the one
-        # thing the linkage exists to change, so it answers a different question.
-        #
-        # 🔴 Why this is ADDITIVE and not the reverted change: on 2026-08-05 R1 was
-        # re-specified onto this basis (FAIL 4.796 → WARN 1.615) and REVERTED — that
-        # substitution had already been refused on 2026-07-21 as gate-shopping. R5
-        # adds a number nobody had; it clears nothing. R1's line is unchanged.
-        #
-        # BAND CHOICE, DISCLOSED: R5 uses R1's banding (PASS <=1, WARN 1-3, FAIL >3)
-        # on the max deviation. Its siblings W1/2.2 instead gate on the COUNT of
-        # slots over 3 pp — and under that rule R5 would read PASS (0 slots over).
-        # The stricter band was chosen deliberately: retail's channel peak is only
-        # ~4.6 %, so 1.6 pp is about a third of the entire signal and should not
-        # report as a clean pass. Stated here rather than left for a reader to find.
-        r5_max = float("nan")
-        if "IS_SYNTHETIC" in df.columns and "DDAY_STRATA" in df.columns:
-            syn_wd = df[(df["IS_SYNTHETIC"] == 1) & (df["DDAY_STRATA"] == 1)]
-            obs_wd = df[(df["IS_SYNTHETIC"] == 0) & (df["DDAY_STRATA"] == 1)]
-            syn_we = df[(df["IS_SYNTHETIC"] == 1) & (df["DDAY_STRATA"].isin([2, 3]))]
-            obs_we = df[(df["IS_SYNTHETIC"] == 0) & (df["DDAY_STRATA"].isin([2, 3]))]
-            diffs_r5 = []
-            if len(syn_wd) > 0 and len(obs_wd) > 0:
-                d_wd = np.abs(syn_wd[ret_p].mean(axis=0).values
-                              - obs_wd[ret_p].mean(axis=0).values) * 100
-                diffs_r5.append(d_wd)
-                print(f"  [R5-WD] syn={len(syn_wd)}, obs={len(obs_wd)}, "
-                      f"max_diff={d_wd.max():.3f}pp, slots>3pp={int((d_wd > 3).sum())}")
-            if len(syn_we) > 0 and len(obs_we) > 0:
-                d_we = np.abs(syn_we[ret_p].mean(axis=0).values
-                              - obs_we[ret_p].mean(axis=0).values) * 100
-                diffs_r5.append(d_we)
-                print(f"  [R5-WE] syn={len(syn_we)}, obs={len(obs_we)}, "
-                      f"max_diff={d_we.max():.3f}pp, slots>3pp={int((d_we > 3).sum())}")
-            if diffs_r5:
-                r5_max = float(np.concatenate(diffs_r5).max())
-                lvl5 = "pass" if r5_max <= 1.0 else ("warn" if r5_max <= 3.0 else "fail")
-                ret_peak = float(df[ret_p].mean(axis=0).max()) * 100
-                self._rec(lvl5, f"R5 | AT_RETAIL generation fidelity (synthetic vs observed, "
-                                f"within-day-type): {r5_max:.3f}pp (FAIL>3, WARN 1-3) — channel "
-                                f"peak {ret_peak:.2f}%, so the 3.0pp bar is "
-                                f"{300.0 / ret_peak:.0f}% of the signal; headroom "
-                                f"{3.0 - r5_max:.3f}pp = {(3.0 - r5_max) / r5_max:.1f}x the "
-                                f"observed value. Interpret a PASS accordingly.")
-            else:
-                self._rec("warn", "R5 | No synthetic/observed rows within a day type — skip")
-        else:
-            self._rec("warn", "R5 | IS_SYNTHETIC/DDAY_STRATA unavailable — skip generation "
-                              "fidelity check")
-        self.summary_rows.append({
-            "Gate / Check": "R5 AT_RETAIL generation fidelity (synthetic vs observed)",
-            "Threshold": "<= 3.0 pp (WARN 1-3)",
-            "Observed": f"{r5_max:.3f} pp" if r5_max == r5_max else "N/A",
-            "Status": "PASS" if r5_max == r5_max and r5_max <= 1.0
-                      else ("WARN" if r5_max == r5_max and r5_max <= 3.0
-                            else ("FAIL" if r5_max == r5_max else "WARN")),
-        })
-
-        # ── R1-XCH (V2-E8) — NON-SCORING. The paper's caveat, computed rather than
-        # asserted. R1's basis (matched output vs donor pool, per cycle x stratum) is
-        # applied UNCHANGED to the two channels whose own gates PASS comfortably. If
-        # those numbers come out far worse than retail's, R1's basis condemns every
-        # channel and cannot be read as a retail-specific defect.
-        #
-        # This is an INFO line on purpose: it carries no verdict, it is excluded from
-        # the scorecard and the pass rate, and it changes nothing about R1, which
-        # keeps its basis and its FAIL. It exists so that a claim in the manuscript
-        # is re-derived on every run instead of being frozen in prose.
-        if df_pool is not None and have_cyc and "CYCLE_YEAR" in df_pool.columns \
-           and "DDAY_STRATA" in df_pool.columns:
-            xch = {}
-            for name, cols in (("hom30", self.HOM_COLS), ("wrk30", self.WRK_COLS)):
-                cp = [c for c in cols if c in df.columns and c in df_pool.columns]
-                if not cp:
-                    continue
-                ds = []
-                for (cyc, dday), grp_out in df.groupby(["CYCLE_YEAR", "DDAY_STRATA"]):
-                    grp_pool = df_pool[(df_pool["CYCLE_YEAR"] == cyc)
-                                       & (df_pool["DDAY_STRATA"] == dday)]
-                    if len(grp_out) == 0 or len(grp_pool) == 0:
-                        continue
-                    ds.append(float((np.abs(grp_out[cp].mean().values
-                                            - grp_pool[cp].mean().values) * 100).max()))
-                if ds:
-                    xch[name] = max(ds)
-            if xch:
-                parts = ", ".join(f"{k} {v:.3f}pp" for k, v in xch.items())
-                worst = max(xch.values())
-                self._rec("info",
-                          f"R1-XCH | R1's own basis applied to the PASSING channels: {parts} "
-                          f"vs AT_RETAIL {r1_max:.3f}pp. The worst is {worst:.3f}pp on a channel "
-                          f"whose gate PASSES, so this basis condemns every channel and R1's FAIL "
-                          f"is not evidence of a retail-specific defect. NOT a gate: no verdict, "
-                          f"excluded from the scorecard. R1 is unchanged (V2-E8).")
 
         # ── R2: population-level retail sanity on the matched frame ──────────────
         # Unrotated 04:00-origin 48x30min diary: slot 17-20 = 12:00-14:00 (weekday);
@@ -1313,8 +1206,7 @@ class CensusLinkageValidator4CH:
         print("\n--- Summary Table ---")
         for row in self.summary_rows:
             st = row["Status"]
-            icon = {"PASS": "[PASS]", "WARN": "[WARN]", "FAIL": "[FAIL]",
-                    "INFO": "[INFO]"}.get(st, "[FAIL]")
+            icon = "[PASS]" if st == "PASS" else ("[WARN]" if st == "WARN" else "[FAIL]")
             print(f"  {icon} {row['Gate / Check']}: {row['Observed']} — {st}")
         return self.summary_rows
 
@@ -1358,8 +1250,7 @@ class CensusLinkageValidator4CH:
             trs = ""
             for row in self.summary_rows:
                 st  = row["Status"]
-                cls = {"PASS": "pass-row", "WARN": "warn-row", "INFO": "info-row"}.get(
-                    st, "fail-row")
+                cls = "pass-row" if st == "PASS" else ("warn-row" if st == "WARN" else "fail-row")
                 tds = "".join(f"<td>{row[c]}</td>" for c in cols)
                 trs += f'<tr class="{cls}">{tds}</tr>'
             summary_html = f"""
@@ -1373,26 +1264,12 @@ class CensusLinkageValidator4CH:
         else:
             summary_html = ""
 
-        # Rendered only when something was recorded: an always-present "Informational
-        # (0)" heading trains the reader to skip the section on the day it is not empty.
-        def _info_block() -> str:
-            if not self.results["info"]:
-                return ""
-            return ('<div class="findings">\n      <h2>Informational &mdash; not scored</h2>\n'
-                    '      <p style="color:var(--subtext);font-size:0.85rem;margin-bottom:8px">'
-                    'These lines are reference numbers, not gates. They carry no PASS/WARN/FAIL '
-                    'verdict and are excluded from the scorecard and the pass rate above.</p>\n'
-                    '      <ul class="badge-list">' + _badge_list("info") + '</ul>\n    </div>')
-
         def _badge_list(level: str) -> str:
-            icon = {"pass": "[PASS]", "fail": "[FAIL]", "warn": "[WARN]",
-                    "info": "[INFO]"}[level]
+            icon = "[PASS]" if level == "pass" else ("[FAIL]" if level == "fail" else "[WARN]")
             items = self.results[level]
             if not items:
                 return f"<li class='badge {level}'>{icon} None</li>"
             return "".join(f"<li class='badge {level}'>{icon} {m}</li>" for m in items)
-
-        info_html = _info_block()
 
         # Section 0 — join-key connectivity table (load-bearing; surfaced prominently
         # right after the scorecard, before the pass/warn/fail badge lists).
@@ -1406,8 +1283,7 @@ class CensusLinkageValidator4CH:
                 st = row["Status"]
                 if st == "FAIL":
                     any_s0_fail = True
-                cls = {"PASS": "pass-row", "WARN": "warn-row", "INFO": "info-row"}.get(
-                    st, "fail-row")
+                cls = "pass-row" if st == "PASS" else ("warn-row" if st == "WARN" else "fail-row")
                 tds = "".join(f"<td>{row[c]}</td>" for c in s0_cols)
                 s0_trs += f'<tr class="{cls}">{tds}</tr>'
             banner = (f'<p class="s0-banner s0-fail">*** FAIL: at least one join key has '
@@ -1464,7 +1340,6 @@ class CensusLinkageValidator4CH:
     .badge.pass {{ background:#1c2e22; border:1px solid #2d5a35; color:var(--green); }}
     .badge.warn {{ background:#2e2a1c; border:1px solid #5a4e1f; color:var(--yellow); }}
     .badge.fail {{ background:#2e1c1e; border:1px solid #5a2428; color:var(--red); }}
-    .badge.info {{ background:#1c242e; border:1px solid #2d465a; color:var(--accent); }}
     .chart-section {{ background:var(--surface); border:1px solid var(--border);
                       border-radius:14px; padding:24px; margin-bottom:28px; }}
     .chart-section h2 {{ font-size:1.0rem; color:var(--accent); margin-bottom:16px; }}
@@ -1477,7 +1352,6 @@ class CensusLinkageValidator4CH:
     .summary-table tr.pass-row td {{ color:var(--green); }}
     .summary-table tr.warn-row td {{ color:var(--yellow); }}
     .summary-table tr.fail-row td {{ color:var(--red); }}
-    .summary-table tr.info-row td {{ color:var(--accent); }}
     .s0-banner {{ font-weight:600; padding:10px 14px; border-radius:8px; margin-bottom:14px; }}
     .s0-banner.s0-ok {{ background:#1c2e22; border:1px solid #2d5a35; color:var(--green); }}
     .s0-banner.s0-fail {{ background:#2e1c1e; border:1px solid #5a2428; color:var(--red); }}
@@ -1514,7 +1388,6 @@ class CensusLinkageValidator4CH:
       <h2>Passed</h2>
       <ul class="badge-list">{_badge_list("pass")}</ul>
     </div>
-    {info_html}
     {charts_html}
     {summary_html}
   </main>
@@ -1553,9 +1426,7 @@ class CensusLinkageValidator4CH:
         n_w = len(self.results["warn"])
         n_f = len(self.results["fail"])
         print(f"\n{'=' * 60}")
-        n_i = len(self.results["info"])
-        print(f"Validation complete: {n_p} PASS / {n_w} WARN / {n_f} FAIL"
-              + (f"  (+{n_i} INFO, not scored)" if n_i else ""))
+        print(f"Validation complete: {n_p} PASS / {n_w} WARN / {n_f} FAIL")
         print(f"{'=' * 60}")
 
 

@@ -38,7 +38,7 @@ before quoting anything from the log.**
 - **injection** — writing GSS-derived schedules into the IDF. The `Default_NECB` scenario is **uninjected** and is the control.
 - **`K`** — the multiplier applied to DHW `Heater Maximum Capacity` in the resize work. Arm R uses **K = 10**.
 - **`r`** — T9-13's per-day DHW volume scaling ratio, `mean(occ_day) / mean(occ_reference_day)`.
-- **"vacuous gate"** — a project-specific term of art: a check that *cannot fail*, or that fails/passes for a reason unrelated to what it claims to test. ~~**12 classes catalogued.**~~ **16 classes catalogued** (13–16 added 2026-08-05 by **V2-G5**, which also settled the #13 numbering collision). Finding them is treated as a first-class result; several sections are devoted to gates that turned out vacuous. See §4.
+- **"vacuous gate"** — a project-specific term of art: a check that *cannot fail*, or that fails/passes for a reason unrelated to what it claims to test. **12 classes catalogued.** Finding them is treated as a first-class result; several sections are devoted to gates that turned out vacuous. See §4.
 - **"seen failing"** — a standing methodological requirement: a gate is not trusted until it has been *observed* to fail on a deliberately broken input.
 - **"pre-registered"** — predictions written into the log with numeric thresholds **before** the run that tests them. Anything not pre-registered is weaker evidence and the log usually says so.
 
@@ -199,8 +199,8 @@ Search the log by these header strings (line numbers shift; headers do not).
 ## 4. The vacuous-gate catalogue
 
 A recurring theme, and the project's most transferable methodological output. A "vacuous gate" is a
-check that cannot fail, or that passes/fails for a reason unrelated to its claim. ~~**12 classes**~~ **16 classes**,
-each found the hard way. **Reconciled 2026-08-05 by V2-G5**: this list was four behind the manager handoffs, and the severity-vacuous gate had been proposed twice as "#13", a number already used for the conjunction gate. Classes 1–12 are UNCHANGED, so every earlier citation of them still resolves:
+check that cannot fail, or that passes/fails for a reason unrelated to its claim. **12 classes**,
+each found the hard way:
 
 1. the gate written as PASS-or-INFO (no failing branch)
 2. the gate declared but never coded
@@ -214,10 +214,6 @@ each found the hard way. **Reconciled 2026-08-05 by V2-G5**: this list was four 
 10. the harness defect that makes the gate silently a no-op
 11. the gate measuring a quantity the deliverable discards
 12. **(new, §0.20.1)** **the gate whose count is stable while its membership turns over completely** — `S9-EUI-hotel` read **28/56 in both arms H and R**, a *different* 28: SuperTall came up into the band, Tall went out past the ceiling. Reading "unchanged" as "nothing happened" is exactly backwards; hotel DHW rose **+124 %**
-13. **the conjunction gate** — a verdict that bundles a measurement clause with a monotonicity clause across a saturation boundary, so a PASS cannot say which clause carried it and a FAIL cannot say which one broke
-14. **the severity-vacuous gate** (Codex **C-3**, fixed by **V2-D1**) — it computes the right answer and then declines to call it a failure. `RW6` called `_grade_band(hard=False)`, so an out-of-band value could only ever `WARN`. Distinct from class 2 ("declared but never coded"): this one *runs*, and is wrong only in what it is willing to conclude
-15. **the selection criterion that is documented but never implemented** (**V2-E4**, §0.24) — the Step-4 method doc mandates *"argmax retail F1, never a single composite score"*; the code selects `best_model.pt` on `val_score`, a composite containing neither `pr_auc` nor `f1`. The docstring defers to a "separate checkpoint-selection step" that does not exist. The rules disagree in **4 of 5 seeds**. A documented rule nothing executes cannot fail
-16. **the sensitivity analysis with n = 1 per level** (**V2-E4c**, §0.25) — a knob swept while the noise source is held fixed is one realisation drawn as a curve, so the curve cannot fail. The `MIN_POOL` sweep moved off 10 on a **0.16 pp** crossing while across-seed sd is **0.363 pp**; **F(4,20) = 0.692**. **Detection: are the step-to-step differences bigger than re-running a single point?** — and the fix is *not* to re-tune, because re-selecting on the same gate with better statistics is still selecting on that gate
 
 Two related **non**-kinds, also recorded: check which counterfactual a gate discriminates by reading
 the **untreated control**; and **silence** — a reader returning 0.0 for what it cannot parse blames

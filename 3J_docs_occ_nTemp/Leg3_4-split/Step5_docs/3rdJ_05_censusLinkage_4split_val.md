@@ -31,6 +31,8 @@ Unchanged thresholds; compare against this pool's own observed marginals. W1/W3-
 | R2 | Population-level retail sanity on the matched frame: weekday 12–14h rate 0.06–0.10 · night 0.000–0.003 | in band | WARN outside |
 | R3 | Aggregation semantics: `ret30` never HH-maxed — per-person mean of matched persons equals the 5E aggregate within float tolerance | exact | FAIL |
 | R4 | Archetype: N/A in v1 (single "Retail Retail") — assert **no** `retail_archetype` column exists (deferred decision guard) | absent | WARN if present |
+| **R5** | **AT_RETAIL generation fidelity** — per-slot max deviation, **synthetic vs observed within day type** (the basis W1 uses for `wrk30` and gate 2.2 for `hom30`) | ≤ 3.0 pp | FAIL > 3, WARN 1–3 |
+| *R1-XCH* | *R1's basis applied to the two channels whose gates PASS — reference only* | *none* | ***INFO, not a gate*** |
 
 ### Section 0 — Join-key connectivity audit (⚠️ NEW, Leg 3 — the PR-remap lesson)
 
@@ -635,3 +637,100 @@ for the standard non-excl re-run only); did not touch Lot A (Step-6 calibration 
 or the other Lot-B Step-6/Step-7 items — those are separate employees' scope per the
 improvements doc's execution order.
 
+
+---
+
+## Progress Log — 2026-08-06: R5 ADDED (V2-E6 / E7 / E8, option C). R1 unchanged.
+
+**Scorecard: 31 PASS / 5 WARN / 3 FAIL → 31 PASS / 6 WARN / 3 FAIL (+1 INFO, not scored).**
+**A WARN was gained. No FAIL was cleared. R1 is byte-identical.**
+
+### Why this entry exists, and what it is NOT
+
+On **2026-08-05** gate **R1** was re-specified onto the sibling basis (FAIL 4.796 pp → WARN
+1.615 pp), verified, and then **reverted** — because the **2026-07-21 CLOSURE entry in this very
+document** had already refused that change: *"R1 reference NOT redefined … redefining a gate to
+clear a FAIL immediately before publication reads as gate-shopping."* The task was opened without
+reading this file first. **That decision stands and is not disturbed here.**
+
+On **2026-08-06** the user chose the additive option instead: **keep R1 exactly as it is and ADD a
+new gate beside it.** R1 keeps its matched-vs-pool basis, its **4.796 pp** and its **FAIL**.
+
+### R5 — AT_RETAIL generation fidelity
+
+Retail was the only channel with **no sibling-basis check**. `hom30` has gate 2.2 and `wrk30` has
+W1, both asking *do synthetic rows look like observed rows, within day type?* R1 asks a different
+question — matched output vs **donor pool**, which is the one thing the linkage exists to
+change.
+
+| | synthetic | observed | max slot deviation | slots > 3 pp |
+|---|---|---|---|---|
+| weekday (`DDAY_STRATA` = 1) | 6,052 | 15,506 | **1.567 pp** | 0 |
+| weekend (`DDAY_STRATA` ∈ {2,3}) | 7,448 | 1,267 | **1.615 pp** | 0 |
+
+**R5 = 1.615 pp ⇒ WARN** (PASS ≤ 1, WARN 1–3, FAIL > 3).
+
+🔴 **Band choice, disclosed rather than left to be discovered.** R5 uses **R1's banding** on
+the max deviation. Its siblings W1 and 2.2 instead gate on the **count of slots over 3 pp** — and
+under *that* rule R5 would read **PASS** (0 slots over, both day types). The stricter band was chosen
+deliberately: retail's channel peak is **4.57 %**, so 1.615 pp is about **a third of the entire
+signal**, and headroom is **1.385 pp = 0.9×** the observed value. A number that large relative to
+its channel should not report as a clean pass. **The looser rule was available and was not taken.**
+
+**Seen failing, 4/4.** A gate nobody has watched fail is not evidence. `falsify_r5.py` pushes
+increasing corruption into the synthetic retail rows in memory and reads R5 back:
+
+| | mutation | R5 | verdict | predicted |
+|---|---|---|---|---|
+| **F0** | none (control) | **1.615 pp** | WARN | WARN ✓ |
+| **F1** | +2 pp on 4 midday slots | 2.200 pp | WARN | WARN ✓ |
+| **F2** | +5 pp on 4 midday slots | **4.933 pp** | **FAIL** | FAIL ✓ |
+| **F3** | +20 pp on 8 slots | 19.032 pp | **FAIL** | FAIL ✓ |
+
+F0 is the control that matters: if it had not reproduced the shipped 1.615 pp, the harness would not
+be measuring what the validator measures and F1–F3 would mean nothing.
+
+### R1-XCH — the paper's caveat, computed instead of asserted (INFO, not a gate)
+
+The manuscript currently argues R1's FAIL away with a re-weighting exercise. The **shorter and
+stronger** argument is that R1's own basis condemns the channels that comfortably pass:
+
+> **R1's basis applied to the PASSING channels: `hom30` 22.969 pp, `wrk30` 27.263 pp — against
+> AT_RETAIL's 4.796 pp.**
+
+The worst offender by this measure is a channel whose own gate **PASSES**. So R1's FAIL is not
+evidence of a retail-specific defect. This is now emitted by the validator on **every run** as a
+**non-scoring INFO line** — excluded from the scorecard and the pass rate — so that if the
+claim ever stops being true, the report says so instead of the manuscript quietly staying wrong.
+
+⚖️ **The honest other half, retained:** normalised by its own channel peak, retail's R1
+deviation is **105 %** — the *worst* of the three. Both halves are true and both belong in the
+write-up. R1-XCH does not exonerate retail; it disqualifies the basis.
+
+### V2-E7 — the INFO channel had to be built first
+
+`self.results` held only `pass`/`fail`/`warn`, so `_rec("info", …)` raised **`KeyError`**; and
+every status expression fell through to the FAIL branch, so an INFO row **printed as `[FAIL]`** and
+would have rendered with the `fail-row` CSS class. Both were **reproduced by probe before the fix and
+shown gone after it.** INFO is deliberately excluded from `n_pass`/`n_warn`/`n_fail` and from the
+pass-rate denominator: an informational line that could move a percentage would be a way to make a
+scorecard look better without fixing anything.
+
+### Guards
+
+- **Every one of the 49 pre-existing gate lines is byte-identical.** The full-run diff contains
+  additions only — no removals, no modifications.
+- **R1's line is unchanged**, character for character.
+- Shipped report regenerated; the 2026-07-21 original is kept as
+  `outputs_step5/3rdJ_step5_validation_report.2026-07-21_pre_R5.html` (md5 `b261d5d5`).
+- Validator md5 **`46b0eb22…` → `f71a9714…`**; pre-change copy kept at
+  `archive/3rdJ_05_censusLinkage_4split_val.2026-08-06_pre_R5.py`.
+
+### What was NOT done, and why
+
+- **The scale-relative bar was declined.** The shared **absolute** 3.0 pp bar is 3 % of `hom30`'s
+  signal and 66 % of retail's — true, but rebasing it would retroactively re-judge **W1 and
+  2.2**, which currently PASS on it. **A change that moves existing verdicts is a band change however
+  it is motivated.** Separate decision, deliberately not bundled in here.
+- **R1 was not touched** — no basis, no threshold, no verdict.
+- Step 8 and Step 9 were not re-run; R5 is a Step-5 gate and nothing downstream reads it.

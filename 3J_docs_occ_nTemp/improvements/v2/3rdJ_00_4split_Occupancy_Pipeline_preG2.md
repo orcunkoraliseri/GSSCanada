@@ -49,7 +49,7 @@ Extend the completed two-channel GSS → BEM pipeline (Leg 2) into a **four-chan
 
 > **Three-leg roadmap.** **Leg 1 = Residential (AT_HOME)** — COMPLETE, shipped as the 2nd Journal. **Leg 2 = 2-channel split (Residential + Office)** — COMPLETE, validated end-to-end 2026-07-01 (the office People-schedule wiring fix + re-simulation is the one open closeout item; its lessons are encoded as hard gates in Steps 7–8 below). **Leg 3 = 4-channel split (+ Retail + Hotel)** — *this document*, the 3rd-Journal target.
 >
-> **Status convention.** Machinery reused from Legs 1–2 is tagged **✅ DONE (Leg 2, unchanged)**. ~~The Retail delta is tagged **⚠️ PLANNED (Leg 3)**; the Hotel side-track is tagged **⚠️ PLANNED (Leg 3, non-GSS)**.~~ **SUPERSEDED 2026-08-05 (V2-G2): both are BUILT AND RUN. Every former PLANNED tag below now reads ✅ DONE (Leg 3) and names the artefact that proves it.** This is a planning document — no code is written or run in this step. Numbers are sourced from `4-channel_split.md` (the Leg-3 spec), `../investigation/00_GSS_split_suitability_audit.md` (the feasibility audit), and the Leg-2 pair `../Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline.md` / `_Overview.md`, whose format this document mirrors. Anything not yet verifiable is marked **pending deep research** (prompts: `deepResearch/00_deep_research_prompts_Leg3.md`) — never assumed. **DESIGN FREEZE 2026-07-02: all 13 deep-research reports are delivered and integrated, and all 15 OPEN DECISIONS are resolved — the build starts at Step 3 (the tiler delta).**
+> **Status convention.** Machinery reused from Legs 1–2 is tagged **✅ DONE (Leg 2, unchanged)**. The Retail delta is tagged **⚠️ PLANNED (Leg 3)**; the Hotel side-track is tagged **⚠️ PLANNED (Leg 3, non-GSS)**. This is a planning document — no code is written or run in this step. Numbers are sourced from `4-channel_split.md` (the Leg-3 spec), `../investigation/00_GSS_split_suitability_audit.md` (the feasibility audit), and the Leg-2 pair `../Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline.md` / `_Overview.md`, whose format this document mirrors. Anything not yet verifiable is marked **pending deep research** (prompts: `deepResearch/00_deep_research_prompts_Leg3.md`) — never assumed. **DESIGN FREEZE 2026-07-02: all 13 deep-research reports are delivered and integrated, and all 15 OPEN DECISIONS are resolved — the build starts at Step 3 (the tiler delta).**
 
 ---
 
@@ -66,11 +66,11 @@ The Leg-1 residential column set and the Leg-2 office employment-gating addition
 |---|---|---|---|
 | `AT_HOME` | `occPRE` | `occPRE == 1` → 1 | All cycles ✅ DONE (Leg 1) |
 | `AT_WORK` | `occPRE` | `occPRE == 2` → 1 (employment-gated) | All cycles ✅ DONE (Leg 2) |
-| `AT_RETAIL` | `occPRE` + `occACT` | `(occPRE == 5) OR (occACT == 4)` → 1 | All cycles ✅ DONE (Leg 3) — `Step3_docs/3rdJ_03_mergingGSS_4split.py` |
+| `AT_RETAIL` | `occPRE` + `occACT` | `(occPRE == 5) OR (occACT == 4)` → 1 | All cycles ⚠️ PLANNED (Leg 3) |
 
 > **Key finding (audit §3).** The harmonized 18-category `occPRE` scheme already carries **Shopping (code 5)** — and Restaurant/bar/club (code 7) — on **every episode row in all four cycles**. Like AT_WORK in Leg 2, AT_RETAIL is *already present in the data*; the only build work is the OR-rule derivation (Step 2) and tiling into the slot arrays (Step 3). No new survey variable, no new crosswalk sheet.
 
-### 1C. NEW — external hotel data ✅ DONE (Leg 3, non-GSS) — `Step1_docs/3rdJ_01_hotelIngest_4split.py`
+### 1C. NEW — external hotel data ⚠️ PLANNED (Leg 3, non-GSS)
 
 GSS samples Canadian residents at their place of residence: residents are not recorded as guests in their own city's hotels, and tourists / international guests are not in the GSS frame at all (audit §7: **no hotel location code exists in any cycle**). The Hotel channel is therefore driven by **provincial statistical/tourism body monthly hotel-occupancy series** (Tourisme Québec / ISQ for Quebec and Travel Alberta / CBRE for Alberta, as verified in [dr_L3-01_statcan_hotel_data_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-01_statcan_hotel_data_REPORT.md); no Statistics Canada table contains monthly occupancy rates, ADR, or RevPAR by province):
 
@@ -91,7 +91,7 @@ GSS samples Canadian residents at their place of residence: residents are not re
 ## STEP 2 — DATA HARMONIZATION
 *Confirm the retail crosswalk per cycle; handle the online-shopping wrinkle; harmonize the StatCan hotel series.*
 
-### 2A. AT_RETAIL location-code crosswalk ✅ DONE (Leg 3) — `Step2_docs/3rdJ_02_harmonizeGSS_4split_val.py`
+### 2A. AT_RETAIL location-code crosswalk ⚠️ PLANNED (Leg 3)
 
 `occPRE == 5` is the harmonized "Shopping" code, already produced by the Leg-1 harmonizer's presence crosswalk (`3rdJ_02_harmonizeGSS_2split.py` + the execution Excel under `references_Pre_coPre_Codes/`):
 
@@ -134,7 +134,7 @@ AT_RETAIL = (occPRE == 5) | (occACT == 4)   # occACT 4 = "Purchasing Goods & Ser
 
 `occPRE == 7` (Restaurant / bar / club ← `PLACE 04` / `LOCATION 309` / `3309`) exists in all four cycles (audit §2) and would be one more list entry in the Step-3 tiler. It is **explicitly out of scope for Leg 3**: the PNNL prototypes route `Dining` to the Office channel and `LargeHotel Cafe` to hotel-amenity baseline, so a restaurant channel has no Space to drive. Recorded here so the exclusion is a decision, not an oversight.
 
-### 2D. Hotel series harmonization ✅ DONE (Leg 3, non-GSS) — `Step2_docs/3rdJ_02_hotelHarmonize_4split.py`
+### 2D. Hotel series harmonization ⚠️ PLANNED (Leg 3, non-GSS)
 
 - **Geography:** monthly occupancy rate for **QC and AB** (the two simulated cities: Montreal Z6, Calgary Z7A); national series kept as fallback.
 - **Window:** 2005–2022 to parallel the GSS cycles; keep all months (the COVID collapse 2020-03 onward is signal for the forecast's COVID indicator, not a gap to fill).
@@ -155,7 +155,7 @@ episodes_sorted["AT_RETAIL"] = (
     (episodes_sorted["occPRE"] == 5) |               # location: Shopping
     ((episodes_sorted["occACT"] == 4) &
      episodes_sorted["occPRE"].isin({5, 9}))         # activity arm — FROZEN 2B gate (OD-1, 2026-07-02)
-).astype(float)                    # ✅ DONE (Leg 3) -- 3rdJ_03_mergingGSS_4split.py
+).astype(float)                                       # ⚠️ PLANNED (Leg 3)
 
 BINARY_CHANNELS = ["AT_WORK", "AT_RETAIL"]           # restaurant (occPRE == 7) = one more entry, if ever
 
@@ -261,19 +261,19 @@ These are **validation targets, not training inputs** — same discipline as the
 
 - **Residential — ✅ DONE (Leg 1, unchanged).** Census-GSS probabilistic linkage (K-means archetypes → RF assignment → building-variable aggregation).
 - **Office — ✅ DONE (Leg 2, unchanged).** NOC × NAICS → `office_archetype_ID` lookup.
-- **Retail — ✅ DONE (Leg 3), `Step7_docs/3rdJ_07_aug_to_bem_4split.py`.** The PNNL prototypes carry a **single "Retail Retail" archetype**, so v1 needs no lookup: one population-level `at_retail_fraction(t)` per cycle × DDAY_STRATA drives all retail Spaces. If grocery-vs-merchandise separation is ever wanted, introduce a `retail_archetype_ID` analogous to the office lookup — blocked anyway by the 2015/2022 single shopping bucket (Step 2A), so explicitly deferred.
-- **Hotel — ✅ DONE (Leg 3, non-GSS), `Step6_docs/3rdJ_06_hotel_sarima_4split.py`.** No respondent, no archetype: the multiplier is **province-level** (`PR ∈ {QC, AB}`), applied per guest-room Space via Tag 2.
+- **Retail — ⚠️ PLANNED (Leg 3).** The PNNL prototypes carry a **single "Retail Retail" archetype**, so v1 needs no lookup: one population-level `at_retail_fraction(t)` per cycle × DDAY_STRATA drives all retail Spaces. If grocery-vs-merchandise separation is ever wanted, introduce a `retail_archetype_ID` analogous to the office lookup — blocked anyway by the 2015/2022 single shopping bucket (Step 2A), so explicitly deferred.
+- **Hotel — ⚠️ PLANNED (Leg 3, non-GSS).** No respondent, no archetype: the multiplier is **province-level** (`PR ∈ {QC, AB}`), applied per guest-room Space via Tag 2.
 
 ---
 
 ## STEP 6 — MODEL 2: FORECAST 2030 (+ THE HOTEL SIDE-TRACK)
 *GSS channels reuse progressive fine-tuning; retail gets its own scenario lever; hotel is forecast by classical time-series, outside the Transformer.*
 
-### 6A. GSS channels — ✅ DONE (Leg 3), retail head included — `Step6_docs/3rdJ_06_longitudinalForecasting_4split.py`
+### 6A. GSS channels — ✅ machinery DONE (Leg 2), ⚠️ retail head PLANNED (Leg 3)
 
 The four-stage progressive fine-tuning (`W_2005 → W_2010_ft → W_2015_ft → W_2022_ft`, per-transition DRIFT_MATRIX, pooled recency-weighted 2030 inference) is reused with the 3-head model. The office channel keeps its **WFH sensitivity bands** (conservative / hybrid / fullyhybrid, as built in Leg-2 Step 6/7).
 
-### 6B. The retail scenario lever ✅ DONE (Leg 3) — `Step6_docs/3rdJ_06_retail_lever_4split.py`
+### 6B. The retail scenario lever ⚠️ PLANNED (Leg 3)
 
 The office channel's dominant 2030 lever is WFH; the retail channel's is **in-store vs e-commerce share**. DRIFT_MATRIX_1522 will absorb the COVID shopping shock, but 2030 retail presence must be reported with scenario bands exactly as office is:
 
@@ -281,7 +281,7 @@ The office channel's dominant 2030 lever is WFH; the retail channel's is **in-st
 - Mechanics mirror WFH: a derived scalar (in-store shopping share during opening hours), sensitivity bands = re-run, not retrain. The lever multiplies `at_retail_fraction_2030(t)` **before** the Step-7 peak-normalization, so amplitude scenarios survive the shape-only injection (dr_L3-06 §C.3).
 - **Two-province Sunday sub-axis (dr_L3-06 §C.4).** Quebec's trading-hours Act historically closes most non-exempt retail by 17:00 on Sundays (a voluntary one-year pilot from 2026-03-11 extends eligible retailers to 21:00); Alberta has been deregulated since 1985 (*R. v. Big M Drug Mart*, 1985). The 2005–2022 QC Sunday shapes encode the restriction naturally through QC respondents — no manual adjustment. For 2030, the retail lever gains a Quebec-Sunday option: **default = restricted (Sunday ≈ 0.60–0.75 × Saturday peak); optimistic = deregulated (Alberta-like uplift on the QC Sunday shape)**.
 
-### 6C. The hotel side-track ✅ DONE (Leg 3, non-GSS) — `Step6_docs/3rdJ_06_hotel_sarima_4split.py`
+### 6C. The hotel side-track ⚠️ PLANNED (Leg 3, non-GSS)
 
 ```
 hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # ISQ (QC) / CBRE (AB)
@@ -374,7 +374,7 @@ hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # I
 ---
 
 ## STEP 8 — BEM SIMULATION
-*Add retail + hotel zones to the 2-city sweep; two mandatory probes before any campaign.* ✅ DONE (Leg 3) — `Step8_docs/3rdJ_08D_campaign_cells.py`, 56/56 cells run
+*Add retail + hotel zones to the 2-city sweep; two mandatory probes before any campaign.* ⚠️ PLANNED (Leg 3)
 
 - **Design:** end-to-end runs of the geometry-identical prototypes — `CAN_MTL/*Z6_v221.idf` (Montreal 6A, McTavish EPW) and `CAN_CLG/*Z7A_v221.idf` (Calgary 7A, Olympic Park EPW); SuperTall **135,857.6 m²** / Tall **72,623.1 m²** (parsed; superseded legacy values in the blockquote below) verified identical across cities, so EUI deltas isolate climate. Scenarios: Default (NECB baseline) vs per-cycle (2005/2010/2015/2022) vs 2030 bands (office WFH × retail in-store × hotel SARIMA).
 
@@ -469,7 +469,7 @@ hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # I
 ---
 
 ## STEP 9 — ACTIVITY-DRIVEN END-USE LOADS
-*Extend the unified activity-driven analysis from 2 to 4 channels — equal importance ≠ identical parameters.* ✅ DONE (Leg 3) — `Step9_docs/3rdJ_09_activityDrivenLoads_4split.py`, 30 gates scored
+*Extend the unified activity-driven analysis from 2 to 4 channels — equal importance ≠ identical parameters.* ⚠️ PLANNED (Leg 3)
 
 - **Retail:** lighting and HVAC follow **opening hours** (near-flat while open, off overnight); plug loads follow **staff**, not footfall — customer presence (our GSS signal) modulates People-driven gains, while the staff-driven plug baseload stays in the NECB baseline. Keep the Leg-2 floors: `Lmin` egress lighting, `Pbase` never-zero plug loads.
 - **Hotel:** guest-room equipment + lighting scaled by `s(t) ×` monthly amplitude; amenity zones stay baseline (consistent with Step 7 v1).

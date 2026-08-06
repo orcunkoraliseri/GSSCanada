@@ -1,3 +1,10 @@
+> 🔴 **SUPERSEDED 2026-08-06 by `3rdJ_L3_manager_prompt_2026-08-06_v2_close.md`.** Kept intact, per the archive-predecessor rule.
+> Its state section is stale in one respect: the **four tasks it lists as blocked on compute (V2-E5, V2-G1,
+> V2-G2, V2-G5) all CLOSED overnight on local win32**, 2026-08-05 21:55 → 2026-08-06 00:05. The project is now
+> **46 done / 1 decision / 0 blocked of 47**. Its §4 (the V2-E6 decision) and its traps list remain correct.
+
+---
+
 # Manager prompt — 3J Leg-3 **v2 finalisation**, 2026-08-06 (LIVING HANDOFF)
 
 > **You are the manager (Agent1).** You plan, debug, and write the prompts that spawn employee

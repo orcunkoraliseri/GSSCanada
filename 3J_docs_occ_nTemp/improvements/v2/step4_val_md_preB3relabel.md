@@ -18,8 +18,6 @@
 Validate the three-head augmented pool: the new AT_RETAIL channel against the dr_L3-06/08 gate battery (built to **fail an all-zeros head**), the shipped residential + office channels against **regression gates** vs their Leg-2 baselines, and the joint physical consistency (ISR, floating, flicker) across the full three-channel occupancy state. Emit the house-style dark-theme HTML + TXT report.
 
 > **The toothless-JS lesson (dr_L3-08), encoded here:** an all-zeros retail head scores JS = 0.010 bits and *passes* a bare < 0.02 JS gate. JS is therefore **secondary** for AT_RETAIL — evaluated only if RW1–RW2 pass.
->
-> 🔴 **AND RW1–RW2 CANNOT CARRY THAT WEIGHT — measured 2026-08-05 (V2-E1, §0.23; audit findings B-3 / C-4).** Both read `step4_training_log.csv`, which **no edit to the shipped pool can reach**. They report byte-identical values across a baseline pool, a within-cell person-shuffled pool and an **all-zeros** pool — the exact failure this note was written to prevent, one level up. All **10** RW/RETM gates are blind to a within-cell person shuffle (per-column marginal drift `0.000e+00` while 40.6 % of rows changed). Only `ISR-final` (FAIL) and `X-3` (WARN) catch it, and **neither is a retail gate**. Treat RW1/RW2 as *training diagnostics*, not as evidence about the deliverable, until a person-level gate reading the pool exists.
 
 ## Reference
 
@@ -46,8 +44,8 @@ OW1–OW6 unchanged from Leg 2 (presence RMS ≤ 5 pp / diurnal r ≥ 0.95 / pea
 
 | Gate | Metric | PASS | WARN | Provenance |
 |---|---|---|---|---|
-| RW1 | **PR-AUC** on positive AT_RETAIL slots — 🔴 **read from `step4_training_log.csv`, i.e. a TEACHER-FORCED number, not a measurement on the shipped pool** (V2-E1, §0.23) | **≥ 0.15** | 0.10–0.15 (relax only if diary noise demands it — and say so in the paper) | dr_L3-08 heuristic |
-| RW2 | **F1** on positive slots (θ_retail = 0.15 operating point) — 🔴 **same basis as RW1: teacher-forced, from the training log** | **≥ 0.25** | 0.20–0.25 | dr_L3-08 heuristic |
+| RW1 | **PR-AUC** on positive AT_RETAIL slots | **≥ 0.15** | 0.10–0.15 (relax only if diary noise demands it — and say so in the paper) | dr_L3-08 heuristic |
+| RW2 | **F1** on positive slots (θ_retail = 0.15 operating point) | **≥ 0.25** | 0.20–0.25 | dr_L3-08 heuristic |
 | RW3 | Midday rate error, 11:00–14:00 band, syn vs obs | **≤ 3.0 pp** | 3.0–5.0 pp | dr_L3-08 |
 | RW4 | Transitions per day (retail channel, post-decode) | **≥ 0.05/day** | — (catches frozen/all-zeros output) | dr_L3-08 |
 | RW5 | JS(AT_RETAIL) per (cycle × stratum) — **secondary; only if RW1–RW2 PASS** | < 0.02 bits | 0.02–0.04 | pipeline (toothless alone) |

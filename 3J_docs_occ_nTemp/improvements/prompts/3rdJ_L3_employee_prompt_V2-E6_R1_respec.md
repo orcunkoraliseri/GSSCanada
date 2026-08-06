@@ -4,6 +4,12 @@
 > The manager executed it directly, and the change it specifies was **already decided against on
 > 2026-07-21** in the Step-5 closure entry (*"R1 reference NOT redefined … reads as gate-shopping"*).
 > It was implemented, verified and **reverted**; the validator is byte-identical to its predecessor.
+>
+> 🟢 **What replaced it: the user chose option C on 2026-08-06.** R1 stays exactly as it is;
+> a **new** gate **R5** is *added* on the sibling basis. The live instructions are in
+> `3rdJ_L3_manager_prompt_2026-08-06_v2_optionC.md` and plan **§0.33**. 🔴 **The numbers in this
+> file are still correct and still useful** — 1.567 pp weekday / 1.615 pp weekend are the values R5
+> must reproduce. **Read it for the arithmetic; do not run it for the change.**
 > **V2-E6 is now a user decision** — see plan §0.27 and the 2026-08-06 manager prompt §4.
 > This file is kept as the record of what was proposed, not as an instruction.
 
