@@ -382,13 +382,9 @@ def run_slot_match(
     """
     4-tier demographic fallback match.
     Returns DataFrame: [PID, SIM_HH_ID, occID, DDAY_STRATA, MATCH_TIER, _pool_idx].
-    Seed: np.random.seed(42) at function entry; env-overridable via STEP5_MATCH_SEED
-    for the V2-E4c multi-draw sweep. Default 42 => byte-identical to every run
-    made before 2026-08-05. Only the DONOR DRAW is reseeded here; _assign_dday()
-    keeps its own hardcoded 42, so the census side is held fixed and the spread
-    measured is conditional on it (i.e. a LOWER bound on total draw noise).
+    Seed: np.random.seed(42) at function entry.
     """
-    np.random.seed(int(os.environ.get("STEP5_MATCH_SEED", "42")))
+    np.random.seed(42)
 
     t1_keys = match_keys + [dday_col]
     t2_keys = ["AGEGRP", "SEX", "LFTAG", "PR", dday_col]

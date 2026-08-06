@@ -96,30 +96,62 @@ ALL_CH = TENANT + ["residential_common", "service_MEP"]
 # in the FROZEN Leg-2 tree. A provenance string that does not resolve is the same defect as no
 # provenance at all -- it just takes longer to discover.
 #
-# 🔴 OPEN, do not read these bands as settled: the office band's source document contradicts itself
-# three ways on its own floor (Table 7.1 = 100.0, line 21 = "80 to 140", Table 2.1 = "85.0 to 115.0"),
-# and the DOE-PNNL prototype tables behind it are the ASHRAE **90.1-2004** baseline set, while the
-# building being scored is 90.1-2019 / NECB 2017. That vintage mismatch is under external review
-# (deepResearch_Resources/V05). Band VALUES stay frozen until WP-B decides them; see V2-B2/V2-C6.
+# V2-D4 (values half, 2026-08-05) -- WP-B has now decided every band, and the decisions are in
+# Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline.md. *** READ THIS FIRST: **not one threshold moved.**
+# WP-B changed WHERE the numbers come from and, for retail, WHICH RULE reads them -- it did not widen
+# anything. All three EUI gates were failing before these decisions and all three still fail after
+# them. If a future reader finds a band value here that differs from the four listed below, it was
+# changed by someone else, not by WP-B.
+#
+#   office 100/135/200  -- V2-B1: value UNCHANGED, floor recorded CONTESTED AND UNSOURCED (see src).
+#   retail  80/110/155  -- V2-B3: values UNCHANGED, decision RULE changed to median-in-band.
+#   hotel  180/240/300  -- V2-B2: values UNCHANGED, ceiling RE-CITED to a first-party 90.1-2019 read.
+#   residential         -- no as-modelled band, unchanged.
+#
+# `rule` is per channel and is the criterion the S9-EUI-* gate applies:
+#   "all_cells" -- every cell must sit inside [lo, hi] (the original rule; office and hotel keep it).
+#   "median"    -- the channel's CFA median must sit inside [lo, hi] (retail only, V2-B3).
+# The gate publishes BOTH readings whatever the rule, precisely so a rule-induced status change is
+# visible in the artefact and cannot be mistaken for the model having improved.
 BENCH = {
-    "office":      dict(central=135.0, lo=100.0, hi=200.0,
+    "office":      dict(central=135.0, lo=100.0, hi=200.0, rule="all_cells",
                         # the em dash in the filename below is the FILE's own byte (U+2014). It is a
                         # path, not prose, so it is reproduced literally -- changing it to "--" to
                         # satisfy the house dash rule would silently break the path again.
                         src="NECB2020/90.1-2019 DOE-PNNL as-modelled band -- 3J_docs_occ_nTemp/"
                             "Leg2_2-split/Step8_docs/deepResearch/Office Reference EUI (NECB 2020, "
                             "ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands.md, Table 7.1 "
-                            "(repris de Leg-2; floor CONTESTED, see header note)",
+                            "(repris de Leg-2). *** FLOOR CONTESTED AND UNSOURCED (V2-B1, decided "
+                            "2026-08-05): the source document gives three different floors for it "
+                            "(Table 7.1 = 100.0, line 21 = 80-140, Table 2.1 = 85.0-115.0), and the "
+                            "UNINJECTED Default_NECB control fails this gate at 85.45 -- a floor no "
+                            "untreated control can clear is measuring the band, not the model. The "
+                            "value is NOT moved; it is published as contested. Limitation -> V2-G3",
                         info=(230.0, 170.0, 360.0), info_src="SCIEU/CEUD"),
-    "retail":      dict(central=110.0, lo=80.0,  hi=155.0,
+    "retail":      dict(central=110.0, lo=80.0,  hi=155.0, rule="median",
                         src="dr_L3-02 as-modelled (locked 2026-07-02) -- 3J_docs_occ_nTemp/"
-                            "Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md",
+                            "Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md. "
+                            "RULE = median-in-band (V2-B3, 2026-08-05), replacing 56-of-56: V2-E3 "
+                            "moved the median by -0.05 % and that alone flipped a cell, so an "
+                            "all-cells rule on a spread smaller than its own uncertainty reports "
+                            "noise as a verdict. Band VALUES unchanged",
                         info=(280.0, 150.0, 380.0), info_src="dr_L3-02 empirical"),
-    "hotel":       dict(central=240.0, lo=180.0, hi=300.0,
-                        src="dr_L3-03 as-modelled (locked 2026-07-02) -- 3J_docs_occ_nTemp/"
-                            "Leg3_4-split/deepResearch/dr_L3-03_hotel_eui_bands_REPORT.md",
+    "hotel":       dict(central=240.0, lo=180.0, hi=300.0, rule="all_cells",
+                        src="ASHRAE 90.1-2019 Large Hotel prototype, retrieved first-party by V2-F6 "
+                            "from the prototype ZIP's own .table.htm: 284.44 kWh/m2/yr at CZ 6A, "
+                            "299.28 at CZ 7 (evidence: improvements/v2/f6_prototype_evidence/). "
+                            "*** SUPERSEDES dr_L3-03 as the CITATION for these values (V2-B2, "
+                            "2026-08-05): V2-F4 chased dr_L3-03's two primaries to the end and "
+                            "NEITHER EXISTS (one NOT FOUND; PNNL-28543 resolves to a nuclear-fuel "
+                            "report). The band was unsupported, not wrong -- the 300 ceiling rested "
+                            "on the 90.1-2004 lineage's 302.21 and the vintage-matched 2019 value "
+                            "is 1.0 % from it, so the 'a 2004 band scores a 2019 building' "
+                            "objection is dead. Values unchanged; gate still FAILs. Residual "
+                            "archetype gap (NECB-2017 MTL/Calgary vs 90.1-2019 Rochester / "
+                            "International Falls) is a LIMITATION -> V2-G3, NOT a tolerance",
                         info=(350.0, 220.0, 480.0), info_src="dr_L3-03 empirical"),
-    "residential": dict(central=None, lo=None, hi=None, src="no as-modelled band (tower apartments)",
+    "residential": dict(central=None, lo=None, hi=None, rule=None,
+                        src="no as-modelled band (tower apartments)",
                         info=(130.6, 113.9, 147.2), info_src="SHEU-2019 HighRise (context only -- tower != SHEU stock basis)"),
 }
 
@@ -339,13 +371,36 @@ def evaluate_gates(eui, ls, scen, lon, meta, outdir=None) -> list:
                 f"[{BENCH[c]['info'][1]}-{BENCH[c]['info'][2]}] on the GFA-share basis "
                 f"(median {sub['eui_GFAshare_kWh_m2'].median():.1f})")
             continue
+        # V2-D4: the criterion is now per channel (BENCH[c]["rule"]). Both readings are computed
+        # and BOTH are printed whatever the rule is in force, for one reason: V2-B3 changed the
+        # retail rule while the data stayed put, and a rule that changes a verdict on unchanged
+        # data is indistinguishable from a widened band unless the counterfactual is published
+        # next to the status. So the gate says what the OTHER rule would have returned, every run.
+        lo, hi = BENCH[c]["lo"], BENCH[c]["hi"]
+        rule = BENCH[c].get("rule", "all_cells")
+        vals = sub["eui_CFA_kWh_m2"]
         n_fail = int((sub["verdict_asmodelled"] == "FAIL").sum())
-        add(f"S9-EUI-{c}", f"EUI in as-modelled band ({c})",
-            "PASS" if n_fail == 0 else "FAIL",
-            f"{len(sub) - n_fail}/{len(sub)} cells inside [{BENCH[c]['lo']}-{BENCH[c]['hi']}] "
-            f"kWh/m2/yr on the CFA basis; median {sub['eui_CFA_kWh_m2'].median():.1f}, "
-            f"range {sub['eui_CFA_kWh_m2'].min():.1f}-{sub['eui_CFA_kWh_m2'].max():.1f} "
-            f"({BENCH[c]['src']})")
+        n_below = int((vals < lo).sum())
+        n_above = int((vals > hi).sum())
+        med = float(vals.median())
+        st_all = "PASS" if n_fail == 0 else "FAIL"
+        st_med = "PASS" if lo <= med <= hi else "FAIL"
+        status, other = ((st_med, st_all) if rule == "median" else (st_all, st_med))
+        other_name = "all-cells" if rule == "median" else "median-in-band"
+        # Which END a channel fails at is not cosmetic: the hotel gate has held the same 28/56
+        # count across two arms while every failing cell moved from below the floor to above the
+        # ceiling. A gate reporting only a count would have called that "no change".
+        ends = (f"{n_below} below the {lo} floor / {n_above} above the {hi} ceiling"
+                if (n_below or n_above) else "none outside")
+        add(f"S9-EUI-{c}", f"EUI in as-modelled band ({c}, rule = {rule})", status,
+            f"RULE IN FORCE = {rule} -> {status}. Median {med:.1f} kWh/m2/yr vs "
+            f"[{lo}-{hi}]; {len(sub) - n_fail}/{len(sub)} cells inside, {ends}; range "
+            f"{vals.min():.1f}-{vals.max():.1f}. COUNTERFACTUAL: the {other_name} rule would "
+            f"return {other} on this same data" +
+            ("" if status == other else
+             f" -- *** THE TWO RULES DISAGREE HERE, so this gate's status is set by the RULE "
+             f"CHOICE and not by the model; read the decision in band_src before quoting it") +
+            f". ({BENCH[c]['src']})")
 
     # -- why a stacked-tower channel may sit below a standalone-prototype band ------------
     # Not a remedy, an explanation, and it changes no threshold. The as-modelled bands were set

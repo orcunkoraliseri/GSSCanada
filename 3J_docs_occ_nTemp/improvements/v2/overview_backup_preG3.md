@@ -235,31 +235,6 @@ Extend the completed 2-channel GSS → BEM pipeline into a **four-channel genera
 
 ---
 
-## LIMITATIONS — pointer, not a copy
-
-**The consolidated limitations section lives in the companion document**,
-[`3rdJ_00_4split_Occupancy_Pipeline.md` → **LIMITATIONS — CONSOLIDATED**](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline.md).
-Written 2026-08-05 (V2-G3). **It is deliberately not duplicated here** — two copies of a limitations
-list drift apart, and the drifted one is always the one a reviewer reads.
-
-**Sixteen limitations, in five groups.** Each is stated with the measurement that bounds it;
-**fifteen of sixteen carry a number**, and the one that does not (L15, ground-level EPW on a supertall)
-is explicitly marked *not quantified* rather than given an invented bound.
-
-| Group | Items | The headline number |
-|---|---|---|
-| **A. Frame** | L1–L3 | hotel guests are **entirely** out of the GSS frame; residential intra-household diversity measured at **21.38 %** of multi-person households |
-| **B. Reference bands** | L4–L8 | the **uninjected** control fails the office band at **85.45 vs a floor of 100**; the stacked-channel explanation is **refuted in 56/56 cells** |
-| **C. Internal gains** | L9–L11 | retail runs on the **office** density (24.97 vs NECB's 29.97 m²/person) and an **unsourced 0.95** peak where NECB retail peaks at **0.80** |
-| **D. Method conventions** | L12–L14 | `MIN_POOL = 15` is a judgement call — its gate is **non-monotonic** (FAIL@10, PASS@11–20, FAIL@30) |
-| **E. Physical model** | L15–L16 | hotel `LAUNDRY` is capacity-pinned at slope **−0.98**, so a global plant resize moved **shares, not physics** |
-
-⚠️ **Three of these record a gate that is still failing** (L4 office, L5 hotel, L7 retail), and in all
-three cases **the band value was left exactly where it was.** That is the point of the section: the
-failures are documented at full strength rather than dissolved into a tolerance.
-
----
-
 ## OPEN DECISIONS (resolve before/within Leg 3)
 
 1. AT_RETAIL OR-rule — RESOLVED 2026-07-02 (user decision): activity arm gated, `AT_RETAIL = (occPRE==5) | ((occACT==4) & occPRE∈{5,9})`; the per-cycle leak cross-tab is still reported as verification, and the LOCATION-mapping + co-presence gates stay fully in force. Consequence: AT_HOME∧AT_RETAIL is not a legitimate overlap → the dr_L3-12 projection covers the full three-channel set.

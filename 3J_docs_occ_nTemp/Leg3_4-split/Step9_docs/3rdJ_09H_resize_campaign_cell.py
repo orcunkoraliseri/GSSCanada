@@ -160,10 +160,59 @@ def _load(name, relpath):
     return mod
 
 
+def resolve_equip_spec(spec, idf_path, topo):
+    """'<equipment substring>=<K>,...' -> {heater name: K}, resolved through the plant topology.
+
+    V2-D10. The spec is written in terms of the object the DECISION is about (`LAUNDRY`, a
+    WaterUse:Equipment) and translated here into the objects the EDIT is about (WaterHeater:Mixed),
+    per IDF. It has to be per IDF: the heater serving `LAUNDRY` is `300gal ... 4` on `Tall` and
+    `... 9` on `SuperTall`, and its 180F setpoint schedule is shared with the electric booster on a
+    different loop -- so neither the name nor the setpoint identifies it. The dedicated
+    `Laundry Service Water Loop` does.
+
+    Refuses on a substring that matches no equipment, or more than one. Either would silently
+    resize the wrong set (or nothing) and still report a completed cell.
+    """
+    heaters, loops, equipment, equip_loop = topo.build(topo.load(idf_path))
+    out, report = {}, []
+    for pair in [p for p in spec.split(",") if p.strip()]:
+        if "=" not in pair:
+            raise SystemExit("REFUSING: malformed spec item %r (want '<equip substring>=<K>')" % pair)
+        sub, _, kv = pair.rpartition("=")
+        sub = sub.strip().lower()
+        factor = float(kv)
+        matches = [e for e in equipment if sub in e.lower()]
+        if len(matches) != 1:
+            raise SystemExit("REFUSING: equipment substring %r matched %d objects (want exactly 1)"
+                             ": %s" % (sub, len(matches), matches[:6]))
+        eq = matches[0]
+        info = equip_loop.get(eq)
+        if not info or not info["heaters"]:
+            raise SystemExit("REFUSING: %r resolves to no WaterHeater:Mixed" % eq)
+        for h in info["heaters"]:
+            if h in out and out[h] != factor:
+                raise SystemExit("REFUSING: heater %r assigned two different factors (%s, %s) -- "
+                                 "two spec entries share a plant loop" % (h, out[h], factor))
+            out[h] = factor
+        report.append((eq, info["loop"], list(info["heaters"]), factor))
+    print("  RESIZE SPEC resolved through the plant topology:")
+    for eq, loop, hs, factor in report:
+        print("      %s" % eq)
+        print("          loop   %s" % loop)
+        print("          x%.4f on %d heater(s): %s" % (factor, len(hs), hs))
+    return out, report
+
+
 def main():
-    if len(sys.argv) != 5:
-        raise SystemExit("usage: %s <armH_cell_dir> <out_dir> <epw> <K>" % sys.argv[0])
+    if len(sys.argv) not in (5, 6):
+        raise SystemExit("usage: %s <armH_cell_dir> <out_dir> <epw> <K> [equip_spec]"
+                         % sys.argv[0])
     cell, outdir, epw, K = sys.argv[1], sys.argv[2], sys.argv[3], float(sys.argv[4])
+    # PER-OBJECT RESIZE (V2-D10), DEFAULT-OFF. Absent this 5th argument the call below is the same
+    # scalar call arms H and R ran, so every earlier cell reproduces byte-identically. Present, it
+    # names WaterUse:Equipment -- e.g. "Laundry Service Water Use 30.6gpm 180F=7" -- and only the
+    # heaters that actually serve them move; everything else stays at <K>.
+    equip_spec = sys.argv[5].strip() if len(sys.argv) == 6 else ""
     idd = os.environ["EPLUS_IDD"]
     name = os.path.basename(cell.rstrip("/"))
     os.makedirs(outdir, exist_ok=True)
@@ -174,9 +223,12 @@ def main():
                 "3J_docs_occ_nTemp/Leg3_4-split/Step8_docs/3rdJ_08P_probe_driver.py")
     dec = _load("hotel_dT_decompose",
                 "3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/3rdJ_09H_hotel_dT_decompose.py")
+    topo = _load("dhw_plant_topology",
+                 "3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/3rdJ_09H_dhw_plant_topology.py")
 
     print("=" * 88)
-    print("RESIZED CAMPAIGN CELL  %s  K=%.4f" % (name, K))
+    print("RESIZED CAMPAIGN CELL  %s  K=%.4f%s"
+          % (name, K, ("  spec=%s" % equip_spec) if equip_spec else ""))
     print("=" * 88)
 
     src_idf = os.path.join(cell, "injected.idf")
@@ -187,7 +239,10 @@ def main():
 
     # --- 1. surgical resize -------------------------------------------------------------------
     dst_idf = os.path.join(outdir, "injected_resized.idf")
-    seen, base_kW, new_kW = probe.resize_idf(src_idf, dst_idf, K)
+    per_object, spec_report = ({}, [])
+    if equip_spec:
+        per_object, spec_report = resolve_equip_spec(equip_spec, src_idf, topo)
+    seen, base_kW, new_kW = probe.resize_idf(src_idf, dst_idf, K, per_object or None)
     n_heaters = len(seen)
 
     prov = os.path.join(cell, "injected.idf.provenance.txt")
@@ -260,6 +315,14 @@ def main():
     manifest["RESIZE_NOTE"] = ("Heater Maximum Capacity x K on every WaterHeater:Mixed; tank volume, "
                                "parasitics and loss coefficients untouched. INJ_HASH/INPUTS_HASH "
                                "inherited from arm H because the injection did not change.")
+    # V2-D10. Written whether or not a spec was given, so a scalar cell is positively marked as
+    # scalar instead of being identified by the ABSENCE of a field -- a missing key is also what a
+    # cell written by the older code looks like, and those two must stay distinguishable.
+    manifest["RESIZE_MODE"] = "per_object" if per_object else "scalar"
+    manifest["RESIZE_EQUIP_SPEC"] = equip_spec
+    manifest["RESIZE_PER_OBJECT"] = per_object
+    manifest["RESIZE_SPEC_RESOLUTION"] = [
+        {"equipment": eq, "loop": loop, "heaters": hs, "factor": f} for eq, loop, hs, f in spec_report]
 
     # --- 4b. RE-STAMP the fields that describe THIS run, not arm H's ----------------------------
     # Defect found 2026-08-04 by the local (win32) port and fixed here. The manifest is inherited

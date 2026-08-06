@@ -1234,9 +1234,27 @@ not have. Fix the lines. Note also that a 216/216 grid *count* passing in Step 2
 
 ---
 
-# 🟠 B-11 — The NECB constants are transcribed, not parsed — **and two of them are wrong**
+# ~~🟠 B-11~~ — ⚫ **RETIRED 2026-08-05.** The NECB constants are transcribed, not parsed — ~~**and two of them are wrong**~~
 
 > **Upgraded 🔵 Low → 🟠 Med-high on 2026-08-03.** The check below was run. It found the next Défaut 7.
+>
+> 🔴🔴 **RETIRED 2026-08-05 by V2-C3 / V2-F8. The density half of this finding was a unit-label error
+> in our own documentation, not a defect in the model.** NECB states occupancy as **occupants per
+> 1000 ft²**. Office = **3.72 occ/1000 ft²**, and `(1000 / 10.7639) / 3.72 = ` **24.97 m²/person** —
+> the value the IDF carries. **The "6.8× gap" this finding reported IS the conversion factor**
+> (`25.0 / 3.7 = 6.76`). The two numbers were never in conflict; the doc lost the unit. Verified
+> against NECB's own table, `improvements/v2/f8_necb_schedule_evidence/space_types_NECB2011.json`
+> (md5 `b2cb54a8`).
+>
+> **Why it survived three rounds of checking:** both numbers were individually correct, so every
+> consistency check passed. **A unit-label error cannot be caught by comparing values** — only by
+> asking what each value is denominated in. Logged as a method rule.
+>
+> **What survives, as a new and smaller finding:** retail runs the **office** density 24.97 where NECB
+> gives **3.10 occ/1000 ft² = 29.97 m²/person** for `Retail - sales` — ~20 % over-crowded — and NECB's
+> retail **schedule type C** is never loaded (`grep -c "NECB-C-" injected.idf` = 0) → **V2-D9**.
+> The blanket-constant observation (occupancy + plug blanket, lighting per-space-type) is **unaffected
+> and still stands**, as does its consequence for V2-B1: correcting these cannot move office.
 
 Office 25.0 m²/person; retail ~3.7 m²/person; the 0.95 NECB retail peak fraction; hotel guest-room
 density. All four appear in the master doc as given values, sourced to the spec rather than to a

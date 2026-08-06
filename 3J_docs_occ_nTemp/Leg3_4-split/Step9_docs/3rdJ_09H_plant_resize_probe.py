@@ -69,19 +69,79 @@ Output:Variable,*,Water Use Equipment Heating Energy,Hourly;
 """
 
 
-def resize_idf(src, dst, K):
-    """Copy `src` to `dst` with Heater Maximum Capacity scaled by K on all six heaters.
+_OBJ_START_RE = re.compile(r"^WaterHeater:Mixed,\s*$", re.MULTILINE)
 
-    Refuses unless exactly six fields were rewritten, and prints every before/after pair so the
-    edit is auditable rather than trusted. Tank Volume is NOT touched.
+
+def _heater_name_spans(txt):
+    """[(start, end, name)] for every WaterHeater:Mixed object, in file order.
+
+    Added for V2-D10. The scalar path never needed to know which object a capacity field belonged
+    to; a per-object path is nothing but that question. The span ends at the next object header (or
+    EOF), which is enough to attribute a field because `Heater Maximum Capacity` is declared once
+    per object.
+    """
+    starts = [m.start() for m in _OBJ_START_RE.finditer(txt)]
+    spans = []
+    for i, s in enumerate(starts):
+        e = starts[i + 1] if i + 1 < len(starts) else len(txt)
+        body = txt[s:e]
+        # field 1 of WaterHeater:Mixed is Name; take the first line after the header
+        lines = [ln.strip() for ln in body.splitlines()[1:] if ln.strip()]
+        nm = lines[0].split("!")[0].strip().rstrip(",;").strip() if lines else ""
+        spans.append((s, e, nm))
+    return spans
+
+
+def resize_idf(src, dst, K, per_object=None):
+    """Copy `src` to `dst` with Heater Maximum Capacity scaled on every WaterHeater:Mixed.
+
+    `K` is the factor applied to every heater NOT named in `per_object`; `per_object` is an optional
+    {heater name -> factor} mapping, matched case-insensitively against the object's Name field.
+
+    PER-OBJECT MODE IS DEFAULT-OFF (V2-D10, 2026-08-05). With `per_object` unset this function takes
+    the same substitution over the same regex and emits the same formatting as before, so arms H and
+    R reproduce BYTE-FOR-BYTE -- that equivalence is checked, not asserted, by
+    `3rdJ_09H_resize_spec_check.py` against the artefacts already on disk. The same default-off
+    discipline as the `EPLUS_EXE` local-run port, and for the same reason: eight arms have already
+    been differenced against these files.
+
+    WHY A NAME MAPPING RATHER THAN A RULE. The caller passes explicit heater names because the
+    heater that serves `LAUNDRY` is named `300gal ... - 300kBtu/hr 4` on `Tall` and
+    `... 9` on `SuperTall`, and its Setpoint schedule (180F) is shared with the electric booster on
+    a different loop. No property of the object identifies it; only the plant topology does. So the
+    selection is resolved once, per IDF, by `3rdJ_09H_dhw_plant_topology.py`, and arrives here as
+    names. Encoding a name pattern or a setpoint rule in this function would bake one geometry's
+    accident into every cell.
+
+    Refuses unless every declared capacity field was rewritten (K = 1 counts as a rewrite), and
+    unless every name in `per_object` matched exactly one heater. A per-object spec that matched
+    nothing would resize nothing and report success -- the silent-default shape of job 1171812.
+    Tank Volume is NOT touched.
     """
     txt = open(src, errors="replace").read()
     seen = []
 
+    spans = _heater_name_spans(txt) if per_object else []
+    want = {k.strip().lower(): float(v) for k, v in (per_object or {}).items()}
+    hits = {k: 0 for k in want}
+
+    def _factor_at(pos):
+        if not want:
+            return K, ""
+        for s, e, nm in spans:
+            if s <= pos < e:
+                f = want.get(nm.lower())
+                if f is not None:
+                    hits[nm.lower()] += 1
+                    return f, nm
+                return K, nm
+        return K, ""
+
     def sub(m):
         old = float(m.group(1))
-        new = old * K
-        seen.append((old, new))
+        factor, nm = _factor_at(m.start())
+        new = old * factor
+        seen.append((old, new, factor, nm))
         return "    %.6f,%s" % (new, m.group(2))
 
     pat = re.compile(r"([0-9.eE+-]+),(\s*!- Heater Maximum Capacity\b)")
@@ -97,12 +157,23 @@ def resize_idf(src, dst, K):
                          % (declared, cnt))
     if "!- Tank Volume" not in txt:
         raise SystemExit("REFUSING: Tank Volume fields vanished -- the edit is not surgical")
+    missed = [k for k, n in hits.items() if n != 1]
+    if missed:
+        raise SystemExit("REFUSING: per-object spec names %d heater(s) that did not match exactly "
+                         "one WaterHeater:Mixed in %s: %s -- declared names are %s"
+                         % (len(missed), src, missed, [nm for _, _, nm in spans]))
     open(dst, "w").write(txt + "\n" + EXTRA_OUTPUTS)
-    base_kW = sum(o for o, _ in seen) / 1000.0
-    new_kW = sum(n for _, n in seen) / 1000.0
-    print("  K = %.4f, rewrote %d burners (IDF declared %d):" % (K, cnt, declared))
-    for old, new in seen:
-        print("      %14.2f W -> %14.2f W" % (old, new))
+    base_kW = sum(o for o, _, _, _ in seen) / 1000.0
+    new_kW = sum(n for _, n, _, _ in seen) / 1000.0
+    if want:
+        print("  per-object resize, default K = %.4f, %d named override(s), rewrote %d burners "
+              "(IDF declared %d):" % (K, len(want), cnt, declared))
+        for old, new, factor, nm in seen:
+            print("      %14.2f W -> %14.2f W  (x%.4f)  %s" % (old, new, factor, nm))
+    else:
+        print("  K = %.4f, rewrote %d burners (IDF declared %d):" % (K, cnt, declared))
+        for old, new, _, _ in seen:
+            print("      %14.2f W -> %14.2f W" % (old, new))
     print("      installed total %.1f kW -> %.1f kW" % (base_kW, new_kW))
     # Emitted so the per-cell installed base is on the record rather than assumed to be 447.6 kW.
     print("PLANT_BASE kW_base=%.4f kW_resized=%.4f n_heaters=%d" % (base_kW, new_kW, cnt))
