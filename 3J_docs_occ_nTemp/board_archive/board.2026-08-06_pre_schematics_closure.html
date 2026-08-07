@@ -1,0 +1,504 @@
+<title>3J Leg-3 — the draft was read, and it contradicted itself</title>
+<style>
+  :root{
+    --paper:#f6f7f9; --card:#ffffff; --ink:#151a21; --ink-2:#4c5766; --ink-3:#7c8798;
+    --rule:#dde2ea; --rule-2:#eceff4;
+    --blue:#0b6e99; --blue-soft:#e6f1f6;
+    --done:#2f6b4a; --done-soft:#e6f1ea;
+    --hold:#9a6208; --hold-soft:#fbf1e0;
+    --stop:#a8322c; --stop-soft:#f9e9e8;
+    --idle:#66707e; --idle-soft:#eef0f3; --call:#6b4bb0; --call-soft:#efeaf8;
+    --shadow:0 1px 2px rgba(21,26,33,.06),0 8px 24px -16px rgba(21,26,33,.28);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#0e1218; --card:#151b23; --ink:#e8ecf2; --ink-2:#a3aebd; --ink-3:#6f7b8b;
+      --rule:#242d38; --rule-2:#1c242d;
+      --blue:#5cb8e0; --blue-soft:#122c3a;
+      --done:#63c294; --done-soft:#122a1f;
+      --hold:#e0a94f; --hold-soft:#2c2314;
+      --stop:#e88a84; --stop-soft:#2e1917;
+      --idle:#8b95a3; --idle-soft:#1b222a; --call:#b49af0; --call-soft:#231c33;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#f6f7f9; --card:#ffffff; --ink:#151a21; --ink-2:#4c5766; --ink-3:#7c8798;
+    --rule:#dde2ea; --rule-2:#eceff4;
+    --blue:#0b6e99; --blue-soft:#e6f1f6;
+    --done:#2f6b4a; --done-soft:#e6f1ea; --hold:#9a6208; --hold-soft:#fbf1e0;
+    --stop:#a8322c; --stop-soft:#f9e9e8; --idle:#66707e; --idle-soft:#eef0f3;
+    --call:#6b4bb0; --call-soft:#efeaf8;
+    --shadow:0 1px 2px rgba(21,26,33,.06),0 8px 24px -16px rgba(21,26,33,.28);
+  }
+  :root[data-theme="dark"]{
+    --paper:#0e1218; --card:#151b23; --ink:#e8ecf2; --ink-2:#a3aebd; --ink-3:#6f7b8b;
+    --rule:#242d38; --rule-2:#1c242d;
+    --blue:#5cb8e0; --blue-soft:#122c3a;
+    --done:#63c294; --done-soft:#122a1f; --hold:#e0a94f; --hold-soft:#2c2314;
+    --stop:#e88a84; --stop-soft:#2e1917; --idle:#8b95a3; --idle-soft:#1b222a;
+    --call:#b49af0; --call-soft:#231c33;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace}
+  .wrap{max-width:1180px; margin:0 auto; padding:40px 24px 80px; display:flex; flex-direction:column; gap:28px}
+
+  header{display:flex; flex-direction:column; gap:10px; padding-bottom:22px; border-bottom:2px solid var(--ink)}
+  .eyebrow{
+    font-family:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--blue); font-weight:600;
+  }
+  h1{margin:0; font-size:clamp(26px,4vw,40px); line-height:1.08; letter-spacing:-.02em;
+     text-wrap:balance; font-weight:650}
+  .sub{margin:0; color:var(--ink-2); max-width:70ch}
+  .sub b{color:var(--ink)}
+  .stamp{font-size:12px; color:var(--ink-3)}
+
+  .counts{display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:10px}
+  .count{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:14px 16px; display:flex; flex-direction:column; gap:2px; box-shadow:var(--shadow);
+    border-left:3px solid var(--c,var(--idle));
+  }
+  .count b{font-size:28px; font-weight:600; letter-spacing:-.02em;
+           font-variant-numeric:tabular-nums; color:var(--c,var(--ink))}
+  .count span{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+    font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+
+  .bar{display:flex; height:9px; border-radius:99px; overflow:hidden;
+       border:1px solid var(--rule); background:var(--card)}
+  .bar i{display:block}
+
+  .callout{
+    border:2px solid var(--stop); border-radius:6px; padding:18px 20px;
+    background:var(--stop-soft); display:flex; flex-direction:column; gap:12px;
+  }
+  .callout h2{margin:0; font-size:15px; letter-spacing:.01em; color:var(--stop)}
+  .callout ol{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:12px}
+  .callout li{color:var(--ink)}
+  .callout .why{display:block; color:var(--ink-2); font-size:13.5px; margin-top:3px}
+
+  .decisions{
+    background:var(--call-soft); border:1px solid var(--call); border-left-width:4px; border-radius:3px;
+    padding:20px 22px; display:flex; flex-direction:column; gap:14px;
+  }
+  .decisions h2{margin:0; font-size:15px; letter-spacing:.02em; color:var(--call)}
+  .decisions ol{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:12px}
+  .decisions .why{display:block; color:var(--ink-2); font-size:13.5px; margin-top:3px}
+
+  .wp{display:flex; flex-direction:column; gap:0; background:var(--card);
+      border:1px solid var(--rule); border-radius:3px; overflow:hidden; box-shadow:var(--shadow)}
+  .wp > h3{
+    margin:0; padding:13px 18px; font-size:12px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--ink-2); background:var(--rule-2); border-bottom:1px solid var(--rule);
+    font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-weight:600;
+    display:flex; justify-content:space-between; gap:12px; align-items:baseline;
+  }
+  .wp > h3 em{font-style:normal; color:var(--ink-3); letter-spacing:0; text-transform:none; font-size:12px}
+
+  .row{display:grid; grid-template-columns:74px 1fr; gap:0 16px; padding:13px 18px;
+       border-bottom:1px solid var(--rule-2); align-items:start}
+  .row:last-child{border-bottom:0}
+  .id{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:12.5px;
+      font-weight:600; color:var(--ink); padding-top:1px; letter-spacing:-.01em}
+  .body{display:flex; flex-direction:column; gap:5px; min-width:0}
+  .task{font-weight:520}
+  .note{font-size:13px; color:var(--ink-2); overflow-wrap:anywhere}
+  .note code, .mono-i{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:12px;
+    background:var(--rule-2); padding:1px 4px; border-radius:2px}
+  .meta{display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-top:1px}
+  .pill{
+    font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;
+    font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; font-weight:600;
+    padding:2.5px 8px; border-radius:2px; white-space:nowrap;
+  }
+  .s-done{background:var(--done-soft); color:var(--done)}
+  .s-flag{background:var(--stop-soft); color:var(--stop)}
+  .s-note{background:var(--hold-soft); color:var(--hold)}
+  .s-tool{background:var(--blue-soft); color:var(--blue)}
+  .s-call{background:var(--call-soft); color:var(--call)}
+
+  table.checks{width:100%; border-collapse:collapse; background:var(--card);
+    border:1px solid var(--rule); border-radius:3px; box-shadow:var(--shadow); overflow:hidden}
+  .tscroll{overflow-x:auto}
+  table.checks th, table.checks td{padding:11px 14px; text-align:left; border-bottom:1px solid var(--rule-2);
+    font-size:13.5px; vertical-align:top}
+  table.checks th{background:var(--rule-2); font-size:11px; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--ink-2); font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-weight:600}
+  table.checks tr:last-child td{border-bottom:0}
+  table.checks td.num{font-variant-numeric:tabular-nums; white-space:nowrap;
+    font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:12.5px}
+
+  section > h2.sec{margin:0 0 2px; font-size:13px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--ink-3); font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-weight:600}
+  section{display:flex; flex-direction:column; gap:12px}
+
+  footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--ink-3); font-size:12.5px;
+         display:flex; flex-direction:column; gap:6px}
+  @media (max-width:560px){
+    .row{grid-template-columns:1fr; gap:6px}
+    .wrap{padding:28px 16px 60px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">3J Leg-3 &middot; four-split occupancy to BEM &middot; writing phase</div>
+  <h1>The draft has now been <span style="color:#2f6b4a">read end to end</span> &mdash; and it <span style="color:#a3352b">contradicted itself</span>.</h1>
+  <p class="sub"><b>Nobody had ever read the assembled manuscript as one document.</b> The first reader
+     found the paper stating its own headline retail number two different ways, a deleted table caption
+     that four checks had passed over, and a broken figure pointer. Separately, the returned research
+     says <b>two DOIs in the reference list point at the wrong papers entirely</b>.<br><br>
+     Earlier: v4 closed this morning; this afternoon built the paper. <b>Nine chapters, ten tables,
+     seven relocated figures, eight schematic prompts, one assembler.</b> Both files in
+     <span class="mono">fullSet/</span> <b>no longer carry the same md5, by your decision</b>: the
+     submission copy is now the working draft put through one deterministic strip. The 2J divergence hazard
+     stays closed by a different argument &mdash; the difference is a function that prints a manifest of
+     every removal on every build, not an edit somebody made by hand.<br><br>
+     🔴 <b>Six things this build changed about what the paper may claim</b>, and none of them came from
+     re-reading a summary. They came from opening the artefacts the summaries describe. The largest is
+     that <b>the additive claim, as written in the pipeline overview, is not supported</b> &mdash; scored
+     on file evidence, one pipeline step of nine is provably bit-identical.<br><br>
+     <b>No band value moved. No gate verdict changed.</b> Verified against the frozen deliverable at
+     closure, not asserted: still 30 gates, 17 pass / 10 info / 3 fail, the same three EUI failures.</p>
+  <div class="stamp mono">State as of <b>2026-08-06 night</b> &middot; <b>12 build tasks: 12 done, 0 blocked</b>
+     &middot; <b>19 marks of</b> <span class="mono-i">&#9888; check source</span> &middot; <b>2 DOIs disputed, one click each to settle</b>
+     &middot; zero simulation cells, no cluster contact</div>
+</header>
+
+<section class="counts">
+  <div class="count" style="--c:var(--done)"><b>12</b><span>tasks closed</span></div>
+  <div class="count" style="--c:var(--done)"><b>9</b><span>chapters drafted</span></div>
+  <div class="count" style="--c:var(--done)"><b>10</b><span>tables authored</span></div>
+  <div class="count" style="--c:var(--blue)"><b>7</b><span>figures relocated</span></div>
+  <div class="count" style="--c:var(--stop)"><b>2</b><span>DOIs disputed</span></div>
+  <div class="count" style="--c:var(--hold)"><b>19</b><span>check-source marks</span></div>
+  <div class="count" style="--c:var(--stop)"><b>3</b><span>EUI gates still failing</span></div>
+  <div class="count" style="--c:var(--hold)"><b>412</b><span>apparatus lines stripped</span></div>
+</section>
+<div class="bar" aria-label="12 of 12 tasks closed">
+  <i style="flex:12;background:var(--done)"></i>
+</div>
+
+
+<section class="callout">
+  <h2>&#128308; Round 2, overnight &mdash; what the first end-to-end read found</h2>
+  <ol>
+    <li><strong>Two DOIs in the reference list point at the wrong papers.</strong>
+      <span class="why">The returned research says <span class="mono">10.1016/j.apenergy.2023.122247</span>
+      (Doma &amp; Ouf, our closest prior work) actually resolves to a paper on <b>hydrogen production via
+      anion exchange membrane electrolysis</b>, and <span class="mono">10.1016/j.enbuild.2019.109562</span>
+      (Buttitta &amp; Finn) to one on <b>sleep and thermoregulation</b>.
+      <b>Checked offline before believing it:</b> <span class="mono">dr_L3-10</span> really does cite both,
+      so the error was not invented by the report. What cannot be settled from inside the project is which
+      DOI is right &mdash; <b>both citation forms are internally consistent</b>, so consistency cannot
+      discriminate and only opening the DOI can. <b>Not swapped</b> on one unverified report; both are
+      flagged in the manuscript as <span class="mono">DOI DISPUTED, DO NOT SUBMIT</span>.
+      <b>Ten seconds of your time each.</b></span></li>
+    <li><strong>The paper stated its own headline retail median twice, differently.</strong>
+      <span class="why">Abstract, Results and Discussion said <b>75.63</b>, 5.47&thinsp;% below the floor.
+      Limitations and Table 7 said <b>75.4</b>, 5.7&thinsp;% below. <b>Both were internally consistent
+      arithmetic</b>, which is exactly why neither looked wrong on its own. Re-derived from the frozen CSV:
+      56 retail rows, median <b>75.6260</b>, <b>5.4675&thinsp;%</b> below. Corrected.
+      <b>No band moved and no verdict changed</b> &mdash; retail was under its floor before and after.
+      The finding is not that the number mattered; it is that <b>no check in this project compares a number
+      in one chapter against the same number in another</b>.</span></li>
+    <li><strong>My own strip deleted a table caption, and every check passed.</strong>
+      <span class="why">Making the clean submission copy removed the <span class="mono">Table 4.</span>
+      caption: a <span class="mono">## Sources</span> section was dropped by running from its heading to the
+      next heading, and the caption sat in that span. The post-condition asked <em>did any apparatus
+      survive?</em>, which is structurally blind to <em>did any content disappear?</em>
+      <b>A residue check and a loss check are different checks.</b> Both now exist and both were seen
+      failing. A near-miss the same night: a strip rule deleted a paragraph headed <em>"Source of truth, and
+      what is explicitly not the source of truth"</em> &mdash; a <b>caveat</b> &mdash; caught only because
+      every removal was diffed by hand.</span></li>
+    <li><strong><span class="mono">L8</span>'s residential central 130.6 is the midpoint of its own range.</strong>
+      <span class="why">(113.9 + 147.2) / 2 = 130.55. The value appears <b>nowhere</b> in the deliverable
+      CSV, which has no central column at all &mdash; and <b>Table 5 explicitly declines to state that same
+      quantity</b> for exactly that reason, while Table 7 prints it. Left in place, because Table 7 is a
+      declared transcription and the source document does say it; documented with a reopen trigger. Nothing
+      operational depends on it. <b>A number that is exactly the midpoint of its own range, absent from the
+      data, and declined by a sibling table, is the shape of an invented figure.</b></span></li>
+    <li><strong>A blocked item turned out to be answered.</strong>
+      <span class="why"><span class="mono">V4-C3</span> is no longer blocked: the returned research gives a
+      documented <b>NOT FOUND</b> &mdash; no open, machine-readable Quebec hotel-occupancy series covering
+      any part of 2011&ndash;2018 exists, with six portals searched and listed. The manuscript's existing
+      statement now has a citable negative behind it. The only route to the data is a paid custom extraction
+      from ISQ, which is your call, not a block.</span></li>
+    <li><strong>The two returned reports disagree with each other.</strong>
+      <span class="why">One says the Alberta series starts <b>2011</b> (matching our own record), the other
+      <b>2010</b>, and the second proposes splitting the citation at that boundary &mdash; which would leave
+      2010 unsourced. One also contradicts <span class="mono">dr_L3-10</span> on whether Buttitta &amp; Finn
+      used four dwelling archetypes or multi-unit residential ones. Four annual Quebec occupancy figures were
+      volunteered without being asked for, carry no resolvable locator, and <b>are not being cited</b>.
+      One report proposes "zero uncharacterised cells" as a target; <b>that framing is rejected</b> &mdash;
+      NOT FOUND is a publishable result here.</span></li>
+  </ol>
+</section>
+<section class="callout">
+  <h2>Six things the earlier build changed about what the manuscript may claim</h2>
+  <ol>
+    <li><strong>The additive claim is weakened to what the evidence supports.</strong>
+      <span class="why">The pipeline overview says <em>"residential + office injection unchanged, no prior
+      figure invalidated"</em>. Scored on file-level evidence across nine pipeline steps: <b>one is
+      provably bit-identical</b> (the four prototype IDFs, md5-matched on disk), <b>three are explicitly
+      not</b>, and <b>five carry no cross-leg comparison at all</b>. The injector
+      <span class="mono">integration.py</span> exists in <b>three copies that do not match each other</b>.
+      The paper now claims <b>additive by construction</b> &mdash; NECB fallback for a missing channel,
+      retail written to its own file, shared geometry &mdash; and does not claim bit-identity of outputs.
+      Settling it would need a simulation, which this phase forbids. <b>Reopen trigger:</b> an authorised
+      cross-leg comparison re-scores this in <em>either</em> direction.</span></li>
+    <li><strong>Leg-2's published office EUI of 172.7 is superseded.</strong>
+      <span class="why"><span class="mono">V4-B2</span> recomputed it to <b>106.56</b> this morning.
+      The verdict does not change &mdash; band [100, 200], IN before and IN after, no gate moved &mdash;
+      but the magnitude cannot be quoted. Same hazard the brief already flags for 2J's residential table,
+      now applying to the office channel too.</span></li>
+    <li><strong>The consolidated limitations section numbers <span class="mono">L8</span> twice.</strong>
+      <span class="why">Enumerated from the headings rather than from the prose, the section holds
+      <b>seventeen statements under sixteen IDs</b>. Two readers found it independently. Its own
+      self-check says "16 / 16" and its group span says B = L4 to L8. Table 7 adopts sixteen, the
+      collision is documented, nothing is deleted, and a reopen trigger is recorded.
+      <b>No manuscript sentence may claim the count was verified.</b></span></li>
+    <li><strong>The shipped model checkpoint was selected by a composite score.</strong>
+      <span class="why">Which this project's own standing principle forbids &mdash; "never a single
+      composite score" is a Leg-1 lesson promoted to a Leg-2 principle. Already a decided item
+      (<span class="mono">V3-H1</span>, option C, with three reopen triggers), but it was living in the
+      SI. It is now disclosed in <b>Methods &sect;3.2</b>, where a reader meets the model.</span></li>
+    <li><strong>Hotel is deliberately uninjected in 2005, 2010 and 2015.</strong>
+      <span class="why">QC ground truth starts 2019, so a pre-2019 hotel curve would have to be invented.
+      Its flatness across cycles is therefore a <b>campaign-design artefact, not measured behaviour</b>.
+      The employee drafting Results refused the section title it was given rather than present hotel as
+      "flat by cycle" beside the other three. Confirmed at
+      <span class="mono">3rdJ_08D_campaign_cells.py:100,357-362</span>.</span></li>
+    <li><strong>The retail median is 5.47 % below its floor, not 0.15 %.</strong>
+      <span class="why">75.63 against a floor of 80. The 0.15 % is a different quantity &mdash; the
+      decision margin on which the <em>retired</em> all-cells rule was turning. A first draft conflated
+      them and plain arithmetic caught it. Both numbers now appear, with the distinction stated.</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2 class="sec">Checks, all re-run at closure</h2>
+  <div class="tscroll">
+  <table class="checks">
+    <thead><tr><th>check</th><th>result</th><th>what it actually covers</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">f1 frozen input</td><td class="num" style="color:var(--done)">4 PASS / 0 FAIL</td>
+        <td>&#9888; scans <span class="mono">improvements/v4</span> scripts. <b>Green about something else</b> &mdash;
+            it does not read a line of the manuscript.</td></tr>
+      <tr><td class="mono">f2 no-reopen</td><td class="num" style="color:var(--done)">4 PASS / 0 FAIL</td>
+        <td>&#9888; reads the v4 plan. Same scope caveat.</td></tr>
+      <tr><td class="mono">f3 asset provenance</td><td class="num" style="color:var(--hold)">4 PASS / 1 FAIL</td>
+        <td>C1 PASS. The C2 hit names exactly the two root-level pipeline diagrams, which are not Step-9
+            outputs and were never in the registry &mdash; while the brief tells you to copy them.
+            <b>Explained and pre-registered before closure, not waved through.</b> f3 was not modified:
+            narrowing C2 would silence the arm that catches a genuinely edited figure.</td></tr>
+      <tr><td class="mono">f4 prose rules <span class="pill s-tool">new</span></td>
+        <td class="num" style="color:var(--done)">6 PASS / 0 FAIL</td>
+        <td>Written this round. Dashes, the forbidden 2J phrase, citations of the superseded directory,
+            source attribution, a <b>vacuity guard</b> that fails if fewer than ten files are scanned, and
+            abstract figures that must appear elsewhere in the manuscript.
+            <span class="mono">--falsify</span> proves two arms still fail on injection.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note" style="max-width:80ch">🔴 <b>f4 exists because a check failed silently.</b> A
+     <span class="mono">grep -P</span> sweep for em dashes returned <b>exit code 2</b> &mdash; the flag is
+     unsupported in this shell &mdash; and two separate employees read that as "clean". <b>96 dashes were
+     present.</b> A reported grep is not a check.</p>
+</section>
+
+<section>
+  <div class="wp">
+    <h3>The build <em>12 tasks, 12 closed, 0 blocked</em></h3>
+
+    <div class="row"><div class="id">T1</div><div class="body">
+      <div class="task">Asset verification</div>
+      <div class="note">Five deliverable figures, two root pipeline diagrams, all filenames confirmed rather than
+        assumed. Source directory recorded per asset, including
+        <span class="mono">fig_diurnal_4ch.png</span>, whose provenance cannot be recovered after the copy.</div>
+      <div class="meta"><span class="pill s-done">done</span></div></div></div>
+
+    <div class="row"><div class="id">T2</div><div class="body">
+      <div class="task">Bucket C &mdash; relocate the seven figures</div>
+      <div class="note">All seven copied and md5-verified pairwise against their sources on disk, full 32-hex,
+        none truncated. f3's C2 hit explained rather than suppressed.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-note">expectation amended</span></div></div></div>
+
+    <div class="row"><div class="id">T3</div><div class="body">
+      <div class="task">Tables 2, 3, 6 &mdash; channels, simulation domain, the additive ledger</div>
+      <div class="note">Areas read from <span class="mono">agg_meta.csv</span>, EPW names from the campaign driver
+        rather than the spec doc. <b>Table 6 is where the additive claim came apart</b> &mdash; and where the
+        superseded 172.7 was caught.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-flag">2 findings</span></div></div></div>
+
+    <div class="row"><div class="id">T4</div><div class="body">
+      <div class="task">Tables 4, 5 &mdash; validation gates and EUI bands</div>
+      <div class="note">28 threshold rows classified by provenance: <b>2</b> to ASHRAE Guideline 14, <b>1</b> heuristic,
+        <b>25</b> project-chosen. Hotel direction independently re-derived from the frozen CSV: 28 fail,
+        all above the ceiling, all <span class="mono">Tall</span>. <b>The V4-A1 trap was not fallen into.</b></div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-flag">arithmetic error caught</span></div></div></div>
+
+    <div class="row"><div class="id">T5</div><div class="body">
+      <div class="task">Tables 1, 7 &mdash; gap matrix and the limitations</div>
+      <div class="note">Transcribed, not rewritten. L15 still reads <em>not quantified</em>. The duplicate
+        <span class="mono">L8</span> was found here and independently by the manager.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-flag">L8 collision</span></div></div></div>
+
+    <div class="row"><div class="id">T6</div><div class="body">
+      <div class="task">SI &mdash; model card, retail codebook, v0 to v5 ledger, Appendix C</div>
+      <div class="note"><b>Bands moved reads 0 in every one of the six rounds</b>, and so does gates moved:
+        the 30-gate scorecard is identical from v1's close to v4's. 98 items, six rounds, and the target never
+        moved once. This also surfaced the composite-score disclosure.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-flag">composite disclosure</span></div></div></div>
+
+    <div class="row"><div class="id">T7</div><div class="body">
+      <div class="task">Bucket A &mdash; eight schematic prompts</div>
+      <div class="note">Prompt text only, no images. Figure 3 is labelled <b>"3 GSS heads + 1 non-GSS side-track"</b>
+        in three places; the string "4 heads" appears only inside instructions not to render it.</div>
+      <div class="meta"><span class="pill s-done">done</span></div></div></div>
+
+    <div class="row"><div class="id">T8</div><div class="body">
+      <div class="task">Chapters 2, 3, 4 &mdash; Datasets, Methods, Experimental Design</div>
+      <div class="note">The 14-scenario list read out of the campaign driver, not inferred from prose.
+        Leg-2 confined to the construction stage and the wiring-bug gate. The composite-score disclosure was
+        added to &sect;3.2 at review.</div>
+      <div class="meta"><span class="pill s-done">done</span></div></div></div>
+
+    <div class="row"><div class="id">T9</div><div class="body">
+      <div class="task">Chapter 5 &mdash; Results</div>
+      <div class="note">Each failing gate stated with its number in the sentence that states it.
+        <b>The employee refused a section title I gave it</b>, correctly: hotel is uninjected before 2019.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-flag">caveat added</span></div></div></div>
+
+    <div class="row"><div class="id">T10</div><div class="body">
+      <div class="task">Chapters 1, 6, 7, 8 and the front matter</div>
+      <div class="note">Two manager corrections: an <b>unsupported pre-registration claim</b> removed from the
+        Discussion (a claim about a timestamp is only as good as the record of it), and twelve dashes the
+        employee's own grep had reported as zero.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-flag">2 corrections</span></div></div></div>
+
+    <div class="row"><div class="id">T11</div><div class="body">
+      <div class="task">Assembly</div>
+      <div class="note">One assembly pass into one in-memory string, written to both files, both
+        md5 <span class="mono">c68924293b636061398154d9e31de948</span>, plus a campaign-identifier block in each.
+        All 10 tables and all 7 figures inlined; the leftovers appendix is empty.</div>
+      <div class="meta"><span class="pill s-done">done</span><span class="pill s-tool">assemble_3J.py</span></div></div></div>
+
+    <div class="row"><div class="id">T12</div><div class="body">
+      <div class="task">Build report and closure</div>
+      <div class="note">All four checks re-run <b>at closure</b>, not at authoring. Deliverable timestamps confirmed
+        untouched at the 00:05 freeze; the eleven files modified earlier in the window all belong to the
+        <em>previous</em> session.</div>
+      <div class="meta"><span class="pill s-done">done</span></div></div></div>
+  </div>
+</section>
+
+<section class="decisions">
+  <h2>Decided by you overnight, and executed</h2>
+  <ol>
+    <li><strong>The submission copy is now a plain paper. Done.</strong>
+      <span class="why">Your call: <em>"le document de soumettre doit etre simple, pas de note technical"</em>.
+      <b>412 lines of apparatus removed</b> &mdash; ten "Sources" sections of internal repository paths, two
+      "Manager notes" blocks, the campaign stamp. The honesty markers were <b>kept and renamed</b>
+      <span class="mono">n/r</span> with a footnote, because a cell with no source that <em>looks</em>
+      sourced is worse than an ugly one. <b>Nothing in chapters/ or tables/ was edited</b> &mdash; the strip
+      happens at assembly, so every source file keeps everything and reverting is deleting one function
+      call. Superseded copies in <span class="mono">fullSet/previous/</span>.</span></li>
+    <li><strong>The schematics are being generated as code figures, not by an image model.</strong>
+      <span class="why">Reproducible, vector, and decisively: <b>Figure 3 must never render the string
+      "4 heads"</b> &mdash; it is three GSS heads plus one non-GSS side-track &mdash; and a generated image
+      cannot be guaranteed on that. Figure S1 also carries real data, and a drawn approximation of a data
+      figure is a fabricated figure.</span></li>
+    <li><strong>Still 225 words, still waiting on a journal.</strong>
+      <span class="why">2J's own shipped abstract runs 240 despite claiming ~185, so this is in house style.
+      The real constraint is the target journal's limit, which is not chosen yet.</span></li>
+  </ol>
+  <p class="why" style="margin:0"><b>Left standing on purpose:</b> Table 6's Evidence column, nine cells
+     of hashes and repository paths &mdash; and also <b>the only thing stopping "additive by construction"
+     from being an unsupported assertion</b>. A blind strip would have deleted the caveat and kept the
+     claim. A relocation spec is written and untouched.<br><br>
+     <b>Still open from v4, unchanged:</b> sign-off on the interpretive sentence
+     in 2J's rewritten &sect;5.2, and the decision on
+     <span class="mono">2ndOcc_Journal.docx</span>, which still carries the stale table.
+     <b>Still blocked, correctly:</b> <span class="mono">V4-C2</span> needs an authorised
+     <span class="mono">sbatch</span> run; <span class="mono">V4-C3</span> awaits an external round.</p>
+</section>
+
+<section>
+  <h2 class="sec">The nineteen <span class="mono-i">&#9888; check source</span> marks &mdash; what would close them</h2>
+  <div class="tscroll">
+  <table class="checks">
+    <thead><tr><th>where</th><th class="num">cells</th><th>what it would take</th></tr></thead>
+    <tbody>
+      <tr><td>Table 6, bit-identity on Steps 1, 2, 3, 5, 8</td><td class="num">5</td>
+        <td>A cross-leg byte or column comparison. <b>Needs a simulation</b>, so it cannot happen in a writing phase.</td></tr>
+      <tr><td>Table 6, the measured &Delta;JS for the Step-4 regression gate</td><td class="num">1</td>
+        <td>The value was not located in the artefacts read. A targeted read of the Step-4 validation output.</td></tr>
+      <tr><td>Table 1, Doma &amp; Ouf and Buttitta &amp; Finn characterisations</td><td class="num">6</td>
+        <td>An <b>external</b> deep-research round. Not answerable from dr_L3-10 or the 2J matrix, and not something
+            this session may look up.</td></tr>
+      <tr><td>Table 5, office and residential empirical-band <em>central</em></td><td class="num">2</td>
+        <td><span class="mono">info_central</span> is not a column in the deliverable CSV. A midpoint was not invented.</td></tr>
+      <tr><td>Chapter 2, ISQ and CBRE catalogue identifiers</td><td class="num">2</td>
+        <td>Citation work, external round.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <tr><td>Chapter 4, a pointer that 85.45 belongs in Table 5</td><td class="num">1</td>
+        <td>Editorial. The value itself is in Table 5 and Chapter 5.</td></tr>
+      <tr><td>Figure 2 prompt, Leg-1 to Leg-2 bit-identity</td><td class="num">1</td>
+        <td>The prompt declines to draw that path as bit-identical because only the Leg-2 to Leg-3 reuse is
+            sourced. <b>That instinct anticipated what Table 6 then found at file level.</b></td></tr>
+      <tr><td><b>total</b></td><td class="num"><b>19</b></td><td></td></tr>
+</section>
+
+<section>
+  <h2 class="sec">What a next round could pick up &mdash; nothing is owed</h2>
+  <div class="wp">
+    <div class="row"><div class="id">R1</div><div class="body">
+      <div class="task">Read the manuscript end to end as one document</div>
+      <div class="note">Four employees drafted the chapters in parallel. <b>Nobody has read the assembled file
+        straight through.</b> Argument flow and repetition are the likely findings.</div>
+      <div class="meta"><span class="pill s-call">manager would rank first</span></div></div></div>
+    <div class="row"><div class="id">R2</div><div class="body">
+      <div class="task">Generate the eight schematics</div>
+      <div class="note">The prompts exist; the PNGs do not. The manuscript has eight figure-shaped holes until
+        this happens. Mechanical and delegable.</div>
+      <div class="meta"><span class="pill s-note">delegable</span></div></div></div>
+    <div class="row"><div class="id">R3</div><div class="body">
+      <div class="task">The editorial strip pass on the submission copy</div>
+      <div class="note">Blocked on your call above.</div>
+      <div class="meta"><span class="pill s-call">your call first</span></div></div></div>
+    <div class="row"><div class="id">R4</div><div class="body">
+      <div class="task">One <span class="mono">V&lt;NN&gt;</span> deep-research prompt</div>
+      <div class="note">Covering Table 1's six competitor cells and the two catalogue identifiers, so an external
+        round closes <b>eight cells at once</b>.</div>
+      <div class="meta"><span class="pill s-note">prompt, not an answer</span></div></div></div>
+    <div class="row"><div class="id">R5</div><div class="body">
+      <div class="task">Choose a target journal</div>
+      <div class="note">It sets the abstract limit, the reference style and the figure count &mdash; three
+        constraints currently guessed.</div>
+      <div class="meta"><span class="pill s-call">your call</span></div></div></div>
+  </div>
+</section>
+
+<footer>
+  <div>Ledger <span class="mono">writing/implementation/3rdJ_paper_TASKS.md</span> &middot;
+       report <span class="mono">writing/implementation/3rdJ_build_status_report.md</span> &middot;
+       handoff <span class="mono">Prompts/3rdJ_paper_manager_prompt_2026-08-06_build_complete.md</span></div>
+  <div>Predecessor board archived at <span class="mono">board_archive/board.2026-08-06_pre_manuscript_build.html</span>.
+       Every measured number traces to <span class="mono">outputs_step9_deliverable/</span>, frozen 2026-08-06 00:05,
+       arm base + V2-D9 + V2-D10.</div>
+</footer>
+
+</div>

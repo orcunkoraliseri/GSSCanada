@@ -1004,7 +1004,11 @@ class AugmentationValidator4Split:
         print("\n--- Section 5b: AT_RETAIL marginals + diurnal [headline] ---")
         _apply_dark()
         if not self._retail_ok:
-            self._rec("warn", "RETM", "retail presence gate failed -- Section 5b skipped")
+            # V4-C1 (2026-08-06): the retail quarantine is ONE cause, and it is
+            # graded FAIL on every line it silences.  Was "warn" -- the split
+            # severity (RW1 fail, everything else warn) was never a decision,
+            # only an accident of the order the lines were written.
+            self._rec("fail", "RETM", "retail presence gate failed -- Section 5b skipped")
             return
         ret_syn = present_cols(self.syn, "ret30")
         ret_obs = present_cols(self.obs, "ret30")
@@ -1247,6 +1251,60 @@ class AugmentationValidator4Split:
         ax2.set_title("All-day episode-time share vs dr_L3-06 target")
         plt.tight_layout()
         self.plots_b64["6_retail_sanity"] = _b64(fig)
+
+
+    # ── Section 6b: RW9 -- the person-level retail gate (V3-J1) ──────────────
+    def validate_person_retail(self):
+        """RW9 -- does the generated retail day belong to the PERSON it was
+        generated for?
+
+        V2-E1 showed all ten RW/RETM gates report identical statuses on a pool
+        whose retail vectors were permuted between people: the battery measures
+        marginals, not person-level skill.  This gate is the stratified-shuffle
+        null promoted into a check, and its bands were pre-registered in
+        improvements/v3/V3-J1_PREREGISTRATION.md BEFORE any statistic was run.
+
+        The statistic and the null live in person_retail_gate.py, beside this
+        file, so the falsifier and the gate cannot drift apart.
+
+        NOTE, and it is deliberate: no line here is recorded at INFO level.
+        This validator's _rec() indexes self.results, which holds only
+        pass/warn/fail (:288), and its icon map (:459) has no fallback -- so
+        _rec("info", ...) raises KeyError.  That is the same latent defect
+        V2-E7 fixed in the STEP-5 validator; it is recorded here rather than
+        fixed, because fixing it is a scorecard change and this task is not.
+        """
+        if not self._retail_ok:
+            # V4-C1 (2026-08-06): same cause as RW1/RETM/GA-3, same severity.
+            self._rec("fail", "RW9",
+                      "retail presence gate failed -- person-level gate skipped")
+            return
+        try:
+            import person_retail_gate as PRG
+        except Exception as exc:                      # pragma: no cover
+            self._rec("warn", "RW9", f"person_retail_gate.py not importable: {exc}")
+            return
+        if "IS_SYNTHETIC" not in self.aug.columns:
+            self._rec("warn", "RW9",
+                      "pool carries no IS_SYNTHETIC column -- observed rows cannot "
+                      "be identified, so no person-level pair exists")
+            return
+        try:
+            res = PRG.run(None, df=self.aug, n_perm=PRG.N_PERM, channel="ret30")
+        except Exception as exc:
+            self._rec("warn", "RW9", f"person-level gate could not be computed: {exc}")
+            return
+
+        lines = PRG.format_lines(res, "RW9")
+        cov = next((m for l, _g, m in lines if l == "info"), "")
+        scored = [(l, g, m) for l, g, m in lines if l != "info"]
+        for k, (lvl, gate, msg) in enumerate(scored):
+            # The coverage line is FOLDED INTO the first scored line, not
+            # recorded on its own.  My first wiring recorded it at PASS, which
+            # put a non-gate into the scorecard's pass count -- exactly what
+            # V2-E7 forbade for INFO lines in the Step-5 validator.  RW9 adds
+            # EXACTLY TWO scored lines.
+            self._rec(lvl, gate, msg + (f" [{cov}]" if k == 0 and cov else ""))
 
     def _validate_rw6_rw7(self, ret_syn):
         """RW6 (in-band diurnal targets) and RW7 (population-level ordering)."""
@@ -1697,7 +1755,11 @@ class AugmentationValidator4Split:
                           f"[{syn_d['floating']:,}/{syn_d['n_work']:,}]; "
                           f"PASS<={self.GA3_PASS_PP}pp, WARN<={self.GA3_WARN_PP}pp)")
         else:
-            self._rec("warn", "GA-3", "retail presence gate failed -- 4-way GA-3 decomposition skipped")
+            # V4-C1 (2026-08-06): the FOURTH line sharing this cause.  The v4 plan
+            # named three; this one was found by grepping the guard rather than
+            # trusting the count, and grading only the named three would have
+            # rebuilt the same defect one line smaller.
+            self._rec("fail", "GA-3", "retail presence gate failed -- 4-way GA-3 decomposition skipped")
 
         # ── GB-3: per-channel transition-flicker ratio (home, work, retail) ──
         def _median_transitions(df, cols):
@@ -1715,8 +1777,19 @@ class AugmentationValidator4Split:
         ]:
             obs_med = _median_transitions(self.obs, ocols)
             syn_med = _median_transitions(self.syn, scols)
+            # V4-C1 (2026-08-06): the FIFTH line carrying the retail quarantine,
+            # and the only one that did not say so.  When the presence gate fails
+            # the retail columns are blanked at the loop header above, so GB-3's
+            # generic "no observed data" warn IS the quarantine wearing different
+            # wording.  Graded with the other four.  Deliberately narrow: home and
+            # work reaching this branch is a genuine missing-data warn and keeps
+            # its severity -- "no observed data is always FAIL" is a different and
+            # larger decision than the one taken here.
+            quarantined = (ch_name == "retail" and not self._retail_ok)
             if np.isnan(obs_med):
-                self._rec("warn", "GB-3", f"[{ch_name}] no observed data -- cannot compute obs baseline")
+                self._rec("fail" if quarantined else "warn", "GB-3",
+                          f"[{ch_name}] no observed data -- cannot compute obs baseline"
+                          + (" [retail presence gate failed]" if quarantined else ""))
                 continue
             if np.isnan(syn_med):
                 self._rec("warn", "GB-3", f"[{ch_name}] no synthetic data -- cannot compute syn transitions")
@@ -2167,6 +2240,7 @@ class AugmentationValidator4Split:
         _safe(self.validate_retail_presence, "RET-PRESENCE")
         _safe(self.validate_retail_marginals, "RETM")
         _safe(self.validate_retail_sanity, "RW1")
+        _safe(self.validate_person_retail, "RW9")
         _safe(self.validate_exclusivity, "ISR-raw")
         _safe(self.validate_copresence, "G3")
         _safe(self.validate_secondary, "S9")

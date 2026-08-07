@@ -1,0 +1,128 @@
+{
+ "task": "V4-B2 (residential sample)",
+ "date": "2026-08-06",
+ "n_runs": 400,
+ "n_missing": 0,
+ "seed": 20260806,
+ "n_per_archetype_target": 100,
+ "P3_pass": {
+  "HighRise": true,
+  "MidRise": true,
+  "OtherDwelling": true,
+  "SingleD": true
+ },
+ "P1_confirmed": false,
+ "factor_min": 1.000544,
+ "factor_median": 1.090527,
+ "factor_max": 1.754079,
+ "rows": [
+  {
+   "row": "HighRise",
+   "n": 100,
+   "published": 143.0,
+   "shipped_median": 145.46,
+   "reproduces_published": true,
+   "corrected_median": 101.23,
+   "published_verdict": "IN",
+   "corrected_verdict": "BELOW",
+   "band": [
+    113.9,
+    147.2
+   ],
+   "factor_min": 1.2038,
+   "factor_max": 1.7541,
+   "ci95": [
+    99.38,
+    104.77
+   ],
+   "ci_order_stats": [
+    40,
+    61
+   ],
+   "ci_coverage": 0.9648,
+   "ci_verdict_lo": "BELOW",
+   "ci_verdict_hi": "BELOW"
+  },
+  {
+   "row": "MidRise",
+   "n": 100,
+   "published": 177.5,
+   "shipped_median": 178.38,
+   "reproduces_published": true,
+   "corrected_median": 128.21,
+   "published_verdict": "IN",
+   "corrected_verdict": "IN",
+   "band": [
+    111.1,
+    216.7
+   ],
+   "factor_min": 1.1785,
+   "factor_max": 1.74,
+   "ci95": [
+    125.05,
+    131.18
+   ],
+   "ci_order_stats": [
+    40,
+    61
+   ],
+   "ci_coverage": 0.9648,
+   "ci_verdict_lo": "IN",
+   "ci_verdict_hi": "IN"
+  },
+  {
+   "row": "OtherDwelling",
+   "n": 100,
+   "published": 140.0,
+   "shipped_median": 140.11,
+   "reproduces_published": true,
+   "corrected_median": 139.88,
+   "published_verdict": "IN",
+   "corrected_verdict": "IN",
+   "band": [
+    136.1,
+    186.1
+   ],
+   "factor_min": 1.0007,
+   "factor_max": 1.0024,
+   "ci95": [
+    135.47,
+    145.48
+   ],
+   "ci_order_stats": [
+    40,
+    61
+   ],
+   "ci_coverage": 0.9648,
+   "ci_verdict_lo": "BELOW",
+   "ci_verdict_hi": "IN"
+  },
+  {
+   "row": "SingleD",
+   "n": 100,
+   "published": 211.7,
+   "shipped_median": 211.1,
+   "reproduces_published": true,
+   "corrected_median": 210.86,
+   "published_verdict": "ABOVE",
+   "corrected_verdict": "ABOVE",
+   "band": [
+    130.6,
+    186.1
+   ],
+   "factor_min": 1.0005,
+   "factor_max": 1.0026,
+   "ci95": [
+    207.15,
+    217.11
+   ],
+   "ci_order_stats": [
+    40,
+    61
+   ],
+   "ci_coverage": 0.9648,
+   "ci_verdict_lo": "ABOVE",
+   "ci_verdict_hi": "ABOVE"
+  }
+ ]
+}

@@ -1,0 +1,111 @@
+{
+ "task": "V4-B2 residential, both defects",
+ "date": "2026-08-06",
+ "n_runs": 400,
+ "seed": 20260806,
+ "unclassified_units": [],
+ "post_hoc": true,
+ "note": "P1/P2/P3 were scored in b2_resid_corrected.py against the defect-1-only correction and are not rescored here",
+ "rows": [
+  {
+   "row": "HighRise",
+   "n": 100,
+   "published": 143.0,
+   "band": [
+    113.9,
+    147.2
+   ],
+   "shipped_median": 145.46,
+   "reproduces_published": true,
+   "corrected_defect1_only": 101.23,
+   "corrected_both_defects": 101.23,
+   "published_verdict": "IN",
+   "verdict_defect1_only": "BELOW",
+   "verdict_both_defects": "BELOW",
+   "water_share_of_defect1_total": 0.0,
+   "ci95_both_defects": [
+    99.38,
+    104.77
+   ],
+   "ci95_verdicts": [
+    "BELOW",
+    "BELOW"
+   ]
+  },
+  {
+   "row": "MidRise",
+   "n": 100,
+   "published": 177.5,
+   "band": [
+    111.1,
+    216.7
+   ],
+   "shipped_median": 178.38,
+   "reproduces_published": true,
+   "corrected_defect1_only": 128.21,
+   "corrected_both_defects": 128.21,
+   "published_verdict": "IN",
+   "verdict_defect1_only": "IN",
+   "verdict_both_defects": "IN",
+   "water_share_of_defect1_total": 0.0,
+   "ci95_both_defects": [
+    125.05,
+    131.18
+   ],
+   "ci95_verdicts": [
+    "IN",
+    "IN"
+   ]
+  },
+  {
+   "row": "OtherDwelling",
+   "n": 100,
+   "published": 140.0,
+   "band": [
+    136.1,
+    186.1
+   ],
+   "shipped_median": 140.12,
+   "reproduces_published": true,
+   "corrected_defect1_only": 139.88,
+   "corrected_both_defects": 124.98,
+   "published_verdict": "IN",
+   "verdict_defect1_only": "IN",
+   "verdict_both_defects": "BELOW",
+   "water_share_of_defect1_total": 10.66,
+   "ci95_both_defects": [
+    121.56,
+    130.42
+   ],
+   "ci95_verdicts": [
+    "BELOW",
+    "BELOW"
+   ]
+  },
+  {
+   "row": "SingleD",
+   "n": 100,
+   "published": 211.7,
+   "band": [
+    130.6,
+    186.1
+   ],
+   "shipped_median": 211.1,
+   "reproduces_published": true,
+   "corrected_defect1_only": 210.86,
+   "corrected_both_defects": 130.57,
+   "published_verdict": "ABOVE",
+   "verdict_defect1_only": "ABOVE",
+   "verdict_both_defects": "BELOW",
+   "water_share_of_defect1_total": 38.08,
+   "ci95_both_defects": [
+    126.6,
+    134.86
+   ],
+   "ci95_verdicts": [
+    "BELOW",
+    "IN"
+   ]
+  }
+ ]
+}

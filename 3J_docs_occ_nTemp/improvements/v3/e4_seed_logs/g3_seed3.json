@@ -1,0 +1,47 @@
+{
+  "Alone": {
+    "obs_prev_pct": 35.3206,
+    "threshold": 0.5004,
+    "syn_prev_pct_after": 35.3219
+  },
+  "Spouse": {
+    "obs_prev_pct": 22.3704,
+    "threshold": 0.5947,
+    "syn_prev_pct_after": 22.3705
+  },
+  "Children": {
+    "obs_prev_pct": 6.5578,
+    "threshold": 0.3819,
+    "syn_prev_pct_after": 6.5595
+  },
+  "parents": {
+    "obs_prev_pct": 1.9001,
+    "threshold": 0.2637,
+    "syn_prev_pct_after": 1.9013
+  },
+  "otherInFAMs": {
+    "obs_prev_pct": 2.6173,
+    "threshold": 0.2083,
+    "syn_prev_pct_after": 2.6192
+  },
+  "otherHHs": {
+    "obs_prev_pct": 2.7244,
+    "threshold": 0.3548,
+    "syn_prev_pct_after": 2.7257
+  },
+  "friends": {
+    "obs_prev_pct": 4.7983,
+    "threshold": 0.4064,
+    "syn_prev_pct_after": 4.8002
+  },
+  "others": {
+    "obs_prev_pct": 7.7048,
+    "threshold": 0.1735,
+    "syn_prev_pct_after": 7.7064
+  },
+  "colleagues": {
+    "obs_prev_pct": 3.3746,
+    "threshold": 0.0568,
+    "syn_prev_pct_after": 3.3756
+  }
+}

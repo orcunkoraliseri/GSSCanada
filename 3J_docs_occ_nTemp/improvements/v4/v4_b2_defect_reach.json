@@ -1,0 +1,199 @@
+{
+ "task": "V4-B2",
+ "date": "2026-08-06",
+ "note": "residential smoke cells only; no Leg-2 office SQL exists on this machine",
+ "cells": [
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke/HighRise__Winnipeg_7A/sample_001_HH1439/2022/eplusout.sql",
+   "area_m2": 7059.89,
+   "eui_shipped": 162.205,
+   "eui_corrected": 92.533,
+   "factor": 1.75294,
+   "kwh_legitimate": 653272.7,
+   "watts_read_as_kwh": 491875.4,
+   "unit_tally_unfiltered": {
+    "GJ": 13,
+    "W": 11
+   },
+   "unit_tally_filtered": {
+    "GJ": 13
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke/HighRise__Winnipeg_7A/sample_002_HH45612/2022/eplusout.sql",
+   "area_m2": 7059.89,
+   "eui_shipped": 177.004,
+   "eui_corrected": 109.846,
+   "factor": 1.611387,
+   "kwh_legitimate": 775500.6,
+   "watts_read_as_kwh": 474131.0,
+   "unit_tally_unfiltered": {
+    "GJ": 13,
+    "W": 11
+   },
+   "unit_tally_filtered": {
+    "GJ": 13
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke/MidRise__Winnipeg_7A/sample_001_HH80741/2022/eplusout.sql",
+   "area_m2": 2823.98,
+   "eui_shipped": 219.483,
+   "eui_corrected": 147.625,
+   "factor": 1.48676,
+   "kwh_legitimate": 416889.2,
+   "watts_read_as_kwh": 202925.0,
+   "unit_tally_unfiltered": {
+    "GJ": 9,
+    "W": 8
+   },
+   "unit_tally_filtered": {
+    "GJ": 9
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke/MidRise__Winnipeg_7A/sample_002_HH49904/2022/eplusout.sql",
+   "area_m2": 2823.98,
+   "eui_shipped": 211.955,
+   "eui_corrected": 138.454,
+   "factor": 1.530866,
+   "kwh_legitimate": 390992.0,
+   "watts_read_as_kwh": 207564.3,
+   "unit_tally_unfiltered": {
+    "GJ": 9,
+    "W": 8
+   },
+   "unit_tally_filtered": {
+    "GJ": 9
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2/HighRise__Winnipeg_7A/sample_001_HH1439/2022/eplusout.sql",
+   "area_m2": 7059.89,
+   "eui_shipped": 161.754,
+   "eui_corrected": 92.082,
+   "factor": 1.756627,
+   "kwh_legitimate": 650089.4,
+   "watts_read_as_kwh": 491875.4,
+   "unit_tally_unfiltered": {
+    "GJ": 13,
+    "W": 11
+   },
+   "unit_tally_filtered": {
+    "GJ": 13
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2/HighRise__Winnipeg_7A/sample_002_HH45612/2022/eplusout.sql",
+   "area_m2": 7059.89,
+   "eui_shipped": 175.83,
+   "eui_corrected": 108.69,
+   "factor": 1.617717,
+   "kwh_legitimate": 767342.3,
+   "watts_read_as_kwh": 474000.2,
+   "unit_tally_unfiltered": {
+    "GJ": 13,
+    "W": 11
+   },
+   "unit_tally_filtered": {
+    "GJ": 13
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2/MidRise__Winnipeg_7A/sample_001_HH80741/2022/eplusout.sql",
+   "area_m2": 2823.98,
+   "eui_shipped": 216.944,
+   "eui_corrected": 144.612,
+   "factor": 1.500184,
+   "kwh_legitimate": 408380.9,
+   "watts_read_as_kwh": 204265.5,
+   "unit_tally_unfiltered": {
+    "GJ": 9,
+    "W": 8
+   },
+   "unit_tally_filtered": {
+    "GJ": 9
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2/MidRise__Winnipeg_7A/sample_002_HH49904/2022/eplusout.sql",
+   "area_m2": 2823.98,
+   "eui_shipped": 209.776,
+   "eui_corrected": 136.573,
+   "factor": 1.536005,
+   "kwh_legitimate": 385678.1,
+   "watts_read_as_kwh": 206725.5,
+   "unit_tally_unfiltered": {
+    "GJ": 9,
+    "W": 8
+   },
+   "unit_tally_filtered": {
+    "GJ": 9
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2_1b/HighRise__Winnipeg_7A/sample_001_HH1439/2022/eplusout.sql",
+   "area_m2": 7059.89,
+   "eui_shipped": 161.334,
+   "eui_corrected": 91.662,
+   "factor": 1.760093,
+   "kwh_legitimate": 647125.5,
+   "watts_read_as_kwh": 491875.4,
+   "unit_tally_unfiltered": {
+    "GJ": 13,
+    "W": 11
+   },
+   "unit_tally_filtered": {
+    "GJ": 13
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2_1b/HighRise__Winnipeg_7A/sample_002_HH45612/2022/eplusout.sql",
+   "area_m2": 7059.89,
+   "eui_shipped": 174.28,
+   "eui_corrected": 107.141,
+   "factor": 1.626652,
+   "kwh_legitimate": 756400.6,
+   "watts_read_as_kwh": 474000.2,
+   "unit_tally_unfiltered": {
+    "GJ": 13,
+    "W": 11
+   },
+   "unit_tally_filtered": {
+    "GJ": 13
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2_1b/MidRise__Winnipeg_7A/sample_001_HH80741/2022/eplusout.sql",
+   "area_m2": 2823.98,
+   "eui_shipped": 213.993,
+   "eui_corrected": 142.199,
+   "factor": 1.504888,
+   "kwh_legitimate": 401567.0,
+   "watts_read_as_kwh": 202746.3,
+   "unit_tally_unfiltered": {
+    "GJ": 9,
+    "W": 8
+   },
+   "unit_tally_filtered": {
+    "GJ": 9
+   }
+  },
+  {
+   "cell": "Leg2_2-split/Step8_docs/outputs_step8/campaign_smoke_v2_1b/MidRise__Winnipeg_7A/sample_002_HH49904/2022/eplusout.sql",
+   "area_m2": 2823.98,
+   "eui_shipped": 208.901,
+   "eui_corrected": 135.432,
+   "factor": 1.542481,
+   "kwh_legitimate": 382455.9,
+   "watts_read_as_kwh": 207475.0,
+   "unit_tally_unfiltered": {
+    "GJ": 9,
+    "W": 8
+   },
+   "unit_tally_filtered": {
+    "GJ": 9
+   }
+  }
+ ]
+}

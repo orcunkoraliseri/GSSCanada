@@ -1,0 +1,298 @@
+{
+ "task": "V4-A4",
+ "date": "2026-08-06",
+ "source_of_truth": "C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/outputs_step9_deliverable/step9_eui_by_channel.csv",
+ "superseded_comparison": "C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/Step9_docs/outputs_step9/step9_eui_by_channel.csv",
+ "deliverable": {
+  "basis": "outputs_step9_deliverable (FROZEN DELIVERABLE)",
+  "channels": {
+   "office": {
+    "pooled": {
+     "n": 56,
+     "median": 71.02,
+     "min": 61.72,
+     "max": 90.21,
+     "in_band": 0,
+     "below_floor": 56,
+     "above_ceiling": 0,
+     "band_lo": 100.0,
+     "band_hi": 200.0,
+     "rule": "all_cells",
+     "verdict": "FAIL"
+    },
+    "per_geometry": {
+     "SuperTall": {
+      "n": 28,
+      "median": 73.85,
+      "min": 64.16,
+      "max": 90.21,
+      "in_band": 0,
+      "below_floor": 28,
+      "above_ceiling": 0,
+      "band_lo": 100.0,
+      "band_hi": 200.0,
+      "rule": "all_cells",
+      "verdict": "FAIL"
+     },
+     "Tall": {
+      "n": 28,
+      "median": 70.47,
+      "min": 61.72,
+      "max": 88.43,
+      "in_band": 0,
+      "below_floor": 28,
+      "above_ceiling": 0,
+      "band_lo": 100.0,
+      "band_hi": 200.0,
+      "rule": "all_cells",
+      "verdict": "FAIL"
+     }
+    }
+   },
+   "retail": {
+    "pooled": {
+     "n": 56,
+     "median": 75.63,
+     "min": 63.63,
+     "max": 96.84,
+     "in_band": 12,
+     "below_floor": 44,
+     "above_ceiling": 0,
+     "band_lo": 80.0,
+     "band_hi": 155.0,
+     "rule": "median",
+     "verdict": "FAIL"
+    },
+    "per_geometry": {
+     "SuperTall": {
+      "n": 28,
+      "median": 74.99,
+      "min": 63.63,
+      "max": 94.8,
+      "in_band": 6,
+      "below_floor": 22,
+      "above_ceiling": 0,
+      "band_lo": 80.0,
+      "band_hi": 155.0,
+      "rule": "median",
+      "verdict": "FAIL"
+     },
+     "Tall": {
+      "n": 28,
+      "median": 76.47,
+      "min": 63.63,
+      "max": 96.84,
+      "in_band": 6,
+      "below_floor": 22,
+      "above_ceiling": 0,
+      "band_lo": 80.0,
+      "band_hi": 155.0,
+      "rule": "median",
+      "verdict": "FAIL"
+     }
+    }
+   },
+   "hotel": {
+    "pooled": {
+     "n": 56,
+     "median": 260.54,
+     "min": 203.33,
+     "max": 318.42,
+     "in_band": 28,
+     "below_floor": 0,
+     "above_ceiling": 28,
+     "band_lo": 180.0,
+     "band_hi": 300.0,
+     "rule": "all_cells",
+     "verdict": "FAIL"
+    },
+    "per_geometry": {
+     "SuperTall": {
+      "n": 28,
+      "median": 210.45,
+      "min": 203.33,
+      "max": 218.22,
+      "in_band": 28,
+      "below_floor": 0,
+      "above_ceiling": 0,
+      "band_lo": 180.0,
+      "band_hi": 300.0,
+      "rule": "all_cells",
+      "verdict": "PASS"
+     },
+     "Tall": {
+      "n": 28,
+      "median": 310.15,
+      "min": 302.86,
+      "max": 318.42,
+      "in_band": 0,
+      "below_floor": 0,
+      "above_ceiling": 28,
+      "band_lo": 180.0,
+      "band_hi": 300.0,
+      "rule": "all_cells",
+      "verdict": "FAIL"
+     }
+    }
+   }
+  }
+ },
+ "superseded": {
+  "basis": "outputs_step9 (2026-07-31, superseded)",
+  "channels": {
+   "office": {
+    "pooled": {
+     "n": 56,
+     "median": 71.08,
+     "min": 61.77,
+     "max": 90.33,
+     "in_band": 0,
+     "below_floor": 56,
+     "above_ceiling": 0,
+     "band_lo": 100.0,
+     "band_hi": 200.0,
+     "rule": "all_cells",
+     "verdict": "FAIL"
+    },
+    "per_geometry": {
+     "SuperTall": {
+      "n": 28,
+      "median": 73.97,
+      "min": 64.27,
+      "max": 90.33,
+      "in_band": 0,
+      "below_floor": 28,
+      "above_ceiling": 0,
+      "band_lo": 100.0,
+      "band_hi": 200.0,
+      "rule": "all_cells",
+      "verdict": "FAIL"
+     },
+     "Tall": {
+      "n": 28,
+      "median": 70.54,
+      "min": 61.77,
+      "max": 88.47,
+      "in_band": 0,
+      "below_floor": 28,
+      "above_ceiling": 0,
+      "band_lo": 100.0,
+      "band_hi": 200.0,
+      "rule": "all_cells",
+      "verdict": "FAIL"
+     }
+    }
+   },
+   "retail": {
+    "pooled": {
+     "n": 56,
+     "median": 75.43,
+     "min": 63.48,
+     "max": 97.05,
+     "in_band": 12,
+     "below_floor": 44,
+     "above_ceiling": 0,
+     "band_lo": 80.0,
+     "band_hi": 155.0,
+     "rule": "median",
+     "verdict": "FAIL"
+    },
+    "per_geometry": {
+     "SuperTall": {
+      "n": 28,
+      "median": 74.78,
+      "min": 63.49,
+      "max": 95.2,
+      "in_band": 6,
+      "below_floor": 22,
+      "above_ceiling": 0,
+      "band_lo": 80.0,
+      "band_hi": 155.0,
+      "rule": "median",
+      "verdict": "FAIL"
+     },
+     "Tall": {
+      "n": 28,
+      "median": 76.23,
+      "min": 63.48,
+      "max": 97.05,
+      "in_band": 6,
+      "below_floor": 22,
+      "above_ceiling": 0,
+      "band_lo": 80.0,
+      "band_hi": 155.0,
+      "rule": "median",
+      "verdict": "FAIL"
+     }
+    }
+   },
+   "hotel": {
+    "pooled": {
+     "n": 56,
+     "median": 178.29,
+     "min": 147.87,
+     "max": 209.43,
+     "in_band": 28,
+     "below_floor": 28,
+     "above_ceiling": 0,
+     "band_lo": 180.0,
+     "band_hi": 300.0,
+     "rule": "all_cells",
+     "verdict": "FAIL"
+    },
+    "per_geometry": {
+     "SuperTall": {
+      "n": 28,
+      "median": 154.97,
+      "min": 147.87,
+      "max": 162.76,
+      "in_band": 0,
+      "below_floor": 28,
+      "above_ceiling": 0,
+      "band_lo": 180.0,
+      "band_hi": 300.0,
+      "rule": "all_cells",
+      "verdict": "FAIL"
+     },
+     "Tall": {
+      "n": 28,
+      "median": 201.12,
+      "min": 193.83,
+      "max": 209.43,
+      "in_band": 28,
+      "below_floor": 0,
+      "above_ceiling": 0,
+      "band_lo": 180.0,
+      "band_hi": 300.0,
+      "rule": "all_cells",
+      "verdict": "PASS"
+     }
+    }
+   }
+  }
+ },
+ "preregistration_check": {
+  "preregistered": {
+   "Tall": "PASS",
+   "SuperTall": "FAIL"
+  },
+  "measured": {
+   "SuperTall": "PASS",
+   "Tall": "FAIL"
+  },
+  "agreement": {
+   "Tall": false,
+   "SuperTall": false
+  },
+  "all_predictions_held": false,
+  "R1_at_least_one_hotel_subgate_still_FAILs": true,
+  "largest_empty_gap_kWh_m2": 84.64,
+  "gap_between": [
+   218.22,
+   302.86
+  ],
+  "gap_pct_of_band_width": 70.5,
+  "ceiling_300_inside_the_gap": true,
+  "pooled_median_describes_no_cell": true
+ }
+}

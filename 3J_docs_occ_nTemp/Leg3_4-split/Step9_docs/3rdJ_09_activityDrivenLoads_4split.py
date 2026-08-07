@@ -109,7 +109,40 @@ ALL_CH = TENANT + ["residential_common", "service_MEP"]
 #   residential         -- no as-modelled band, unchanged.
 #
 # `rule` is per channel and is the criterion the S9-EUI-* gate applies:
-#   "all_cells" -- every cell must sit inside [lo, hi] (the original rule; office and hotel keep it).
+#   "all_cells" -- every cell must sit inside [lo, hi] (Leg-3's own rule since this scorer was
+#                  written; office and hotel keep it).
+#     *** PROVENANCE CORRECTED 2026-08-06 (V3-H3 desk check, no rule changed): "all_cells" is NOT
+#     inherited from Leg-2 and was never "the original rule" for the office band. Leg-2 scored the
+#     SAME band values on the CHANNEL MEDIAN and graded a miss WARN, in both places it appears:
+#       Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py:462-470  (G2o, median, WARN)
+#       Leg2_2-split/Step8_docs/3rdJ_08_simulation_2split_val.py:1420-1431     (4.3-office, median,
+#                                                                              WARN, "non-blocking")
+#     Leg-3 inherited the band VALUES (135/100/200 -- identical) and then applied a stricter rule AND
+#     a stricter severity without recording that it had changed either. Correcting the citation is
+#     not a licence to adopt Leg-2's rule: that package is median AND WARN together, and taking half
+#     of it is a third rule invented at the moment it would clear a gate. See V3-H3.
+#
+# THE RULE PRINCIPLE, written down 2026-08-06 (V3-H3, option A -- status quo made explicit).
+# Until now `rule` was a per-channel value with no stated criterion for choosing it, which is how a
+# "uniform rule" could be proposed as housekeeping when it would in fact clear exactly one FAIL.
+#   DEFAULT = "all_cells".
+#   "median" applies to a channel ONLY where the channel's across-cell spread is small enough that a
+#   re-run's own noise can flip the verdict -- V2-B3's condition, verbatim: "an all-cells rule on a
+#   spread smaller than its own uncertainty reports noise as a verdict" (retail: V2-E3 moved the
+#   median by -0.05 % and that alone flipped a cell, 55/56 -> 54/56).
+#   Measured on the shipped deliverable, across-cell range / band width:
+#       office 28.50/100.0 = 0.285 | retail 33.22/75.0 = 0.443 | hotel 115.09/120.0 = 0.959
+#   Hotel's cells span 96 % of its own band: they differ genuinely, they are not clustered inside
+#   their uncertainty, so an all-cells rule on them reports signal. Hotel is the channel LEAST
+#   eligible for median under the principle that put retail there.
+#   *** DISCLOSURE: these spreads were measured AFTER it was known which rule clears hotel. That is
+#   why no numeric boundary is written here -- a boundary chosen with the answer in hand is not
+#   blind. The principle is the condition above; the arithmetic is published so a reader can check
+#   that applying it changes NOTHING (office and retail FAIL under both rules; hotel keeps all_cells).
+#   A principled rule that changes no status is the one thing gate-shopping cannot produce.
+#   REOPENS IF: (T1) the user accepts the precedent-restoration argument above; (T2) any channel's
+#   across-cell spread falls below the demonstrated re-run noise of its own median; (T3) the frozen
+#   deliverable is reopened for another reason, at which point re-publication costs nothing extra.
 #   "median"    -- the channel's CFA median must sit inside [lo, hi] (retail only, V2-B3).
 # The gate publishes BOTH readings whatever the rule, precisely so a rule-induced status change is
 # visible in the artefact and cannot be mistaken for the model having improved.
@@ -121,7 +154,11 @@ BENCH = {
                         src="NECB2020/90.1-2019 DOE-PNNL as-modelled band -- 3J_docs_occ_nTemp/"
                             "Leg2_2-split/Step8_docs/deepResearch/Office Reference EUI (NECB 2020, "
                             "ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands.md, Table 7.1 "
-                            "(repris de Leg-2). *** FLOOR CONTESTED AND UNSOURCED (V2-B1, decided "
+                            "(VALUES repris de Leg-2; the RULE is NOT -- V3-H3, 2026-08-06: Leg-2 "
+                            "scored these same values on the channel MEDIAN and graded a miss WARN "
+                            "[Leg2 Step9 :462-470, Leg2 Step8 :1420-1431]. Leg-3 chose all_cells + "
+                            "FAIL without recording the change. Rule NOT altered by this "
+                            "correction). *** FLOOR CONTESTED AND UNSOURCED (V2-B1, decided "
                             "2026-08-05): the source document gives three different floors for it "
                             "(Table 7.1 = 100.0, line 21 = 80-140, Table 2.1 = 85.0-115.0), and the "
                             "UNINJECTED Default_NECB control fails this gate at 85.45 -- a floor no "

@@ -156,6 +156,53 @@ Everything above is fixed by citation; the single ablation worth its cost is **s
 
 Keep only checkpoints passing **every hard gate** (ΔJS ≤ 0.002 bits on Heads 1–2, ISR ≤ 0.5 %, PR-AUC ≥ 0.15 ∧ F1 ≥ 0.25, midday error ≤ 3.0 pp, transitions ≥ 0.05/day), then **maximize retail F1** among survivors. Early stopping on the gate set (patience 10). Report **mean ± sd over 5 seeds** (normal: 1–2 % sd on F1/PR-AUC, 0.001–0.002 bits on JS). Never a single composite score (the Leg-1 lesson; `val_score` retained only as a logging curiosity, not for selection).
 
+> 🔴🔴 **THE SHIPPED ARTEFACT WAS NOT SELECTED BY THE RULE ABOVE — recorded 2026-08-06 (V3-H1, option C).**
+> **The rule above is NOT amended. It stays the specification, and the Leg-1/Leg-2 "never a single
+> composite score" lesson stays with it.** What is recorded here is that the shipped pool deviates
+> from it, knowingly, with the reason — because rewriting the rule to describe what the code does
+> would delete a principle that three documents carry (the Leg-1 lesson, `Leg2_2-split/3rdJ_00_2split_Occupancy_Pipeline.md:262`
+> *"Pareto model selection, never composite — the Leg-1 composite chose a 2/4-gate model"*, and
+> dr_L3-13 here), and would do it at the moment it is inconvenient.
+>
+> **What actually selected the shipped weights.** `3rdJ_04D_train_4split.py:881` saves
+> `best_model.pt` on `val_score = mean_js + 0.5·(home_gap + work_gap + retail_gap)/3` (`:499`) —
+> a composite containing **neither `pr_auc` nor `f1`**. The two rules pick different epochs in **4 of
+> 5 seeds**; seed 3 ships as the **argmin of the composite** (1st of 5 on `val_score`, 4th of 5 on
+> the metric this section names). Gap to the documented rule's global winner (seed 0, epoch 15):
+> **+0.0218 retail F1**, 5.6 % relative, **0.16 sd** of the cross-seed spread.
+>
+> **Why it was not re-selected (the reason, not the cost).** Both rules rank epochs on the
+> **teacher-forced** `pr_auc`/`f1` columns of the training log, and **V2-E1 + V3-J1 showed those
+> numbers are blind to person-level retail skill**: all ten RW/RETM gates are byte-identical on a
+> pool whose retail vectors have been permuted between people, and the person-level gate RW9 reads
+> **+0.0179** against a 0.10 bar on the shipped pool. Re-selecting would buy +0.0218 of a statistic
+> already shown not to measure the thing. *Cost is the weaker argument and is not the one on record*
+> — and it is smaller than v2 claimed: epoch 15 is the **final** epoch and `:876` writes
+> `last_checkpoint.pt` every joint epoch, so "fix the code" is one inference + rake cascade, not five
+> retrainings. The expensive part is the Step 5→9 re-cascade, which reopens a frozen deliverable.
+>
+> **Second reason, stated because it constrains any future attempt:** the documented rule was
+> **never implementable as written**. Two of its five hard-gate families (midday error, transitions)
+> are **pool-level** — computable only after inference + rake + validator, absent from all 21 training-log
+> columns — so evaluating its own first clause costs **75 inference+rake cascades**. On this data the
+> clause is also **inert**: over all 75 epochs min `pr_auc` **0.518213** (bar 0.15), min `f1`
+> **0.282362** (bar 0.25), max `isr_raw` **0.014245 %** (bar 0.5), so *survivors → argmax F1* reduces
+> to **global argmax F1**. Anyone implementing this rule must first make its first clause affordable
+> or drop it explicitly.
+>
+> 🔴 **REOPEN TRIGGER (this is the operative half of option C).** This entry is superseded and the
+> code fix is back on the table **if any one of these becomes true**:
+> **(T1)** a **person-level** gate — RW9 or a successor — ranks the five seeds and the ranking
+> disagrees with `val_score`'s; **(T2)** the retail F1 gap between the two rules exceeds **1 sd** of
+> the cross-seed spread (today 0.16 sd); **(T3)** Steps 5→9 are reopened for any other reason, at
+> which point the re-cascade is no longer a cost this decision has to carry.
+> *A decision without a trigger is a decision that gets re-litigated in four weeks — which is what
+> happened to R1 between 2026-07-21 and 2026-08-05.*
+>
+> Evidence and the per-seed table: `improvements/v3/3rdJ_L3_v3_implementation.md` §0.1 / §2.1,
+> reproduction command in its appendix A1; the five training logs are in
+> `improvements/v3/e4_seed_logs/`.
+
 ## CONTRACT — shared schema across Step-4 files (Leg-3 revision)
 
 - `aux_seq (n,48,12) float32` = `[AT_HOME | AT_WORK | AT_RETAIL | 9 cop]`; `retail_avail (n,48) bool`

@@ -41,6 +41,34 @@
 | `agg_meta.csv` | `9cd67667548b15469b8c73ed600b607b` | 56 |
 | `agg_peak.csv` | `a65aaca4d2cd9fe88512b9396dcf3011` | 2072 |
 
+## Step-9 deliverable assets (added 2026-08-06 -- the manuscript reads these)
+
+Every figure and table the 3rd-journal manuscript cites is copied from
+`Leg3_4-split/Step9_docs/outputs_step9_deliverable/`. Their md5s are registered here for the same
+reason the aggregate tables above are: so a copy can be verified by content after it has been
+renamed. `improvements/v5/f3_asset_provenance_check.py` reads this section.
+
+| asset | md5 |
+|---|---|
+| `figures/fig_diurnal_4ch.png` | `5117cfabf0a252738d36a9cd00c68ba4` |
+| `figures/fig_eui_4ch.png` | `b17ca5e2c65331ee624d1f52213bf5f0` |
+| `figures/fig_longitudinal_4ch.png` | `4e32389ff3ac42ac551e01d52558a76c` |
+| `figures/fig_peakhour_4ch.png` | `83ebb7de79398205c9df088d729dfdc0` |
+| `figures/fig_scenario_4ch.png` | `6e94a2332d67e505f30283dcbf86bcf2` |
+| `step9_eui_by_channel.csv` | `9f2367ddda83ca5351a3fb077b3d9994` |
+| `step9_gates.json` | `e5ea569e7f072b700bc771dda9870757` |
+| `step9_loadshape_peaks.csv` | `7722369e3de7493036a70ff880524ff8` |
+| `step9_longitudinal.csv` | `735f19a98982228616bece8af06d7658` |
+| `step9_report.html` | `259b104aa0f6e87b8d3ee0607500d407` |
+| `step9_scenario_response.csv` | `8e927778362ed50885f8f9a4db5de810` |
+
+> 🔴 **One collision this manifest cannot resolve.** The superseded sibling
+> `Step9_docs/outputs_step9/` (2026-07-31 11:42) carries **the same 11 filenames**. Ten differ, and
+> **`fig_diurnal_4ch.png` is byte-identical in both** -- so for that one file a content check has no
+> signal and both directories are correct answers. Its provenance must be recorded at copy time.
+> The sibling is **not** deletable: `step9_envelope_exposure.csv` and the three `finding9_verify/`
+> IDFs exist nowhere else. Both directories carry a `_PROVENANCE.md` stating which is which.
+
 ## Scorecard
 
 `{'FAIL': 3, 'INFO': 10, 'PASS': 17}` over **30** gates.

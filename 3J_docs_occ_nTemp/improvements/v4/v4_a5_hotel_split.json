@@ -1,0 +1,27 @@
+{
+ "task": "V4-A5",
+ "date": "2026-08-06",
+ "source": "Leg3_4-split/Step8_docs/outputs_step8/agg_deliverable (frozen deliverable)",
+ "ceiling": 300.0,
+ "supertall_range": [
+  203.33,
+  218.22
+ ],
+ "tall_range": [
+  302.86,
+  318.42
+ ],
+ "empty_gap": 84.64,
+ "separating_end_use": "dhw",
+ "separation_kwh_m2": 79.04,
+ "separation_pct_of_gap": 93.4,
+ "occupancy_swing_max_kwh_m2": 4.34,
+ "control_over_ceiling": {
+  "SuperTall__CLG": false,
+  "SuperTall__MTL": false,
+  "Tall__CLG": true,
+  "Tall__MTL": true
+ },
+ "area_ratio": 2.0,
+ "separating_load_abs_ratio": 1.161
+}

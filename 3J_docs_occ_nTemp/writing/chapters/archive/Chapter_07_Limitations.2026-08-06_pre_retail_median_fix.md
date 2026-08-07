@@ -1,0 +1,60 @@
+# 7 Limitations
+
+Sixteen limitations bound the interpretation of the results, transcribed here from the same consolidated source as Table 7 rather than re-derived or re-worded, in the same five groups and the same order: Frame (§7.A, L1-L3), Reference bands (§7.B, L4-L8), Internal gains (§7.C, L9-L11), Method conventions (§7.D, L12-L14), and Physical model (§7.E, L15-L16). Fifteen of the sixteen carry a bounding measurement; the sixteenth, L15, carries none and is marked accordingly rather than given an invented figure. A sixteenth topic, a reproducibility point about a defect found in a related codebase and this pipeline's structural immunity to it, closes the chapter (§7.F) without being folded into the sixteen or given an L-number of its own.
+
+---
+
+### 7.A Frame: What the Source Data Can and Cannot See (L1-L3)
+
+**L1.** Hotel guests are outside the General Social Survey frame by construction; the hotel channel is driven by a non-GSS provincial tourism series (Step 6, the SARIMA side-track), not by time-use data. GSS observes 0% of hotel occupancy. The consequence for this paper's own framing is direct: the "one longitudinal time-use source to four channels" contribution is, precisely, three of four channels time-use-survey-driven and one of four series-driven.
+
+**L2.** Retail sees customers only; staff are excluded by construction, because GSS logs retail workers as `AT_WORK`, not as shopping. 0% of retail staff presence enters the occupancy signal, and 0% of retail plug load is modulated by it, since plug load follows staff and staff stay on the untouched code baseline.
+
+**L3.** Residential intra-household presence diversity is partial, not complete; an earlier, stronger internal claim that it was exactly zero is falsified by direct measurement. 3,499 of 16,367 multi-person households, 21.38%, carry at least one slot value outside {0, 0.5, 1}. A surviving defect behind this number is that one pipeline stage computes a household maximum that a later stage never reads, while the aggregation actually applied downstream is the mean.
+
+### 7.B Reference Bands: What "Plausible" Is Being Measured Against (L4-L8)
+
+**L4.** The office band's floor is contested and unsourced; the gate is a band-applicability finding, not a model defect. The uninjected `Default_NECB` control scores 85.45 kWh/m2/yr against a floor of 100, failing by 15% before this study's occupancy model touches it. Two candidate mechanisms were tested and refuted: modelled heating share is approximately 17% against the band's implied 35-45%, and rebasing the metric on service/MEP area moves all 56 of 56 cells further down, not up. The band's own source document gives three different floors for itself across its own tables (100.0; 80-140; 85.0-115.0). The value is not moved to make the gate pass (§6.2 develops this argument in full).
+
+**L5.** The hotel band is archetype- and city-mismatched, and that mismatch is stated rather than absorbed into a tolerance; this study's tower is NECB-2017 Montreal/Calgary, while the reference is the DOE/PNNL Large Hotel prototype at ASHRAE 90.1-2019. The first-party reference value is 284.44 kWh/m2/yr (Rochester, Minnesota, climate zone 6A) and 299.28 (International Falls, Minnesota, climate zone 7). The gate fails on 28 of 56 cells, all on the `Tall` prototype, every one over the 300 ceiling; the deliverable-sourced measured range is 203.33-318.42 kWh/m2/yr. A vintage-matched alternative value (the 90.1-2004 lineage, 302.21) is only 1.0% away from the current ceiling, so the archetype/city mismatch, not a vintage mismatch, is the limitation that remains (§6.3 develops the resolving-power argument this failure motivates).
+
+**L6.** The "stacked channel" explanation once offered for the hotel channel's low measured values, that a mid-tower channel carries little roof, ground or facade load and should therefore read low, was tested and refuted; it is not cited as an explanation anywhere in this paper. It is wrong in sign and order in all 56 of 56 cells: hotel is the least thermally exposed of the three banded channels and sits closest to its floor, not furthest from it. A second bound on the same claim is that geometry varies only between the `Tall` and `SuperTall` prototypes, so the exposure ratio this explanation would need takes only two distinct values across the whole campaign, not 56 independent ones; the corresponding gate is reported as informational only, never as a pass or fail criterion.
+
+**L7.** The retail channel is validated on shape, not on level; no population-denominated in-store presence reference exists at time-of-day resolution in the American, harmonized European or United Kingdom time-use surveys this project checked. The energy-use-intensity gate rule in force is median-in-band, not a 56-of-56 count, because the measured spread is smaller than the quantity's own re-run uncertainty: a single re-derivation moved the median by 0.05% and flipped one cell's individual verdict. The retail median is 75.4 kWh/m2/yr against a floor of 80, 5.7% below, with 44 of 56 cells under the floor. The corresponding presence-rate gate was separately demoted to informational status, because the one time-of-day reference available (BLS ATUS table A-3B) reports retail activity running roughly 44% high while an earlier reference band said 24.5% low; the two references disagree in direction, not only in magnitude.
+
+**L8.** The residential channel carries no as-modelled band at all; the SHEU-2019 HighRise figure is carried as context only and is never used as a pass criterion, because a residential channel inside a mixed-use tower is not the housing stock SHEU sampled. The SHEU-2019 HighRise reference is 130.6 kWh/m2/yr (113.9-147.2), context only.
+
+### 7.C Internal Gains That Were Never Parameterised (L9-L11)
+
+**L9.** Retail zones run the code's office occupant density, not the code's own retail figure. The model uses 24.97 m2/person (the NECB whole-building office value), while NECB's own `Retail - sales` space type gives 29.97 m2/person; retail is therefore modelled roughly 20% over-crowded relative to the code's own retail reference.
+
+**L10.** Equipment power density is a single blanket value applied to every space type in both tower prototypes (7.5028 W/m2), while lighting is differentiated per space type. Occupant density and equipment power density are the two internal-gain fields never parameterised by use in this pipeline.
+
+**L11.** The retail occupancy peak of 0.95 has no independent source, and the code's own retail schedule (type C) was never loaded into the injected model. NECB's retail type-C schedule peaks at 0.80 on weekdays at 16:00 with no midday dip, 0.90 on Saturday and 0.40 on Sunday; the tower instead carries the code's office schedule (type A) byte for byte, which peaks at 0.90 with a 0.50 lunch-hour dip, and the injector applies a further 0.95 multiplier on top of that curve. Retail therefore runs approximately 18.75% hot at peak, and on the wrong-shaped curve; no NECB type-C schedule string is present anywhere in the injected model.
+
+### 7.D Method Conventions That Are Judgement, Not Derivation (L12-L14)
+
+**L12.** The minimum adjustment-cell pool size (15 respondents) is an analyst judgement call, presented here as one; no numeric convention for this kind of minimum cell size was located in the literature this project checked. The anchor previously cited for it in fact gives a value of 5 as that source's own study design, not as a general recommendation, and the corresponding validation gate is measured to be non-monotonic in the pool size (failing at 10, passing at 11-20, failing again at 30), which rules it out as a principled selection criterion.
+
+**L13.** Household aggregation is the mean, and this is a decision, not an inheritance, because the three construction stages behind this project do not agree with one another: the earlier residential-only converter, the two-channel construction stage's converter, and this pipeline each aggregate household presence differently. This pipeline's own choice of the mean was verified against its own code, not against another stage's documentation.
+
+**L14.** The retail episode-time share declines across survey cycles; an earlier internal claim that it was stable across cycles was a documentation defect, not a measurement. The measured share is 2.00%, 2.14%, 1.66% and 1.50% across the four cycles used, an approximately 25% decline overall, a direction and rough magnitude that comparable American, European and United Kingdom time-use series independently confirm as internationally normal rather than a coding artefact specific to this project.
+
+### 7.E Physical Model (L15-L16)
+
+**L15.** The building's weather file is applied at ground level on a supertall tower; this is the one limitation in this list with no bounding measurement. **Not quantified.** No altitudinal temperature or wind-speed gradient is represented over a tower of this height; establishing one would require either a vertical weather profile or an instrumented tall building, and this study has neither. It is listed here with an explicit "not quantified" rather than a plausible-sounding invented bound.
+
+**L16.** The hotel domestic-hot-water plant is capacity-pinned on a single object, and a global correction does not correct it. The `LAUNDRY` heater's delivered-energy slope against draw volume is -0.98 in both tested arms, meaning delivered energy is almost completely insensitive to how much water is actually drawn. Raising a single global sizing factor to 6 drove every other heater's slope to exactly 0.000 and moved `LAUNDRY`'s own share of hotel domestic-hot-water demand from 26.7% to 65.4%, a share-reweighting effect that alone reproduces the resulting 0.334 elasticity measured against this correction. The instrument that actually addresses the defect is a per-object resize, `LAUNDRY` alone raised to a sizing factor near 7 against an internal reference heater, with the other fifteen heaters left at a sizing factor of 1, not a single building-wide multiplier.
+
+---
+
+### 7.F Reproducibility: A Shared Extraction Defect, and Why This Pipeline Is Structurally Immune to It
+
+One further point belongs in this chapter, not as a seventeenth item in the numbered list above but as a reproducibility caveat about the codebase this project descends from. The residential energy-use-intensity table published in the authors' prior single-channel study (2J) was found, during this project's own review process, to have been computed by a shared extraction function carrying two compounding defects: a demand-summary table double-counted into an annual energy total as though it were an energy quantity rather than a power quantity, and a water-heating guard that correctly zeroes water energy on SI-unit runs but fails to recognise imperial units, so that on imperial-unit runs a water volume is summed directly into the reported energy-use intensity as if it were electricity. Every run in that prior study's campaign carried exactly one of the two defects, decided by which unit system the run happened to use, and correcting both moved three of the four reported SHEU band verdicts in that prior study.
+
+This pipeline is verified immune to that specific defect, and the reason is structural rather than incidental: the present study's energy-use-intensity values, reported in Table 5 and discussed throughout §5 and §6, are read from hourly EnergyPlus meter streams, never from the tabular demand-summary extraction function the prior study's defect lived inside. The two pipelines share a lineage and, at points, shared code, but they do not share this particular extraction path, and that structural difference, not a targeted fix, is what protects this study's own reported values. This is recorded here as a reproducibility point about the family of pipelines this project belongs to, not as a limitation of the results reported in this paper.
+
+---
+
+**Table 7.** *(insert `Table_07_limitations.md` here)*
+

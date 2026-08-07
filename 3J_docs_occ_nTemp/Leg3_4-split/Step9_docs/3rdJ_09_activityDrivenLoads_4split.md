@@ -102,14 +102,65 @@ re-specifications made 2026-07-31 and their reasons, is below it.)*
 8. Cross-era comparability: each cycle's channel products derive from that cycle's GSS pool (different underlying respondents by construction) — the longitudinal comparison is population-level, not a paired design; one manuscript sentence (the Leg-2 cross-era-pairing ticket, generalized).
 9. If the multi-zone residential injection fix is ever cited: it is **energy-neutral on annual aggregates** (2J/Leg-2 verified — building totals conserved); claims scope to zone-level load distribution only, never "restored energy".
 10. Report regeneration: after any data/rake change, re-render **every** embedded figure and stamp a regen token — a report built as an additive copy of its predecessor can carry stale charts under fresh prose (2J v6 shipped 7 pre-fix charts).
+11. 🔴 **The hotel channel is not one population, and `S9-EUI-hotel`'s band was set as if it were.** The two geometries separate into 203.3–218.2 and 302.9–318.4 with an **84.64 kWh/m² empty gap** that contains the 300 ceiling. **93.4 % of that separation is `dhw` alone** (109.39 vs 188.43 kWh/m²), and `dhw` moves by **0.01 kWh/m² across all 14 scenarios** — it does not answer to occupancy at all. `Tall` has **exactly half** `SuperTall`'s hotel floor area and **86 %** of its DHW energy, so the load is sized per building and divided by an area that halved. **The EUI difference is a denominator artefact, not a difference in use.** Same shape as the `LAUNDRY` finding: one object that does not scale with what it is normalised by. Evidence: `improvements/v4/V4-A5_hotel_archetype_separation.md`. ⚠️ **Do not write this as bimodality** — with two geometries, "the distribution has two modes" and "we ran two archetypes" are not distinguishable.
+12. **Read the uninjected control before reading any EUI gate — and it does not say the same thing for all three.** `Default_NECB` is the same building with stock NECB schedules and **no occupancy model injected at all**; its four cells in the frozen deliverable measure: **hotel `Tall` 304.41 / 315.82** (over the 300 ceiling) and `SuperTall` 204.83 / 216.06; **office 81.65 – 90.21** (all four under the contested 100 floor; the `S9-EUI-office` gate text records 85.45); **retail 87.21 – 96.84 — all four INSIDE its [80, 155] band.** ⇒ hotel and office fail before our work is in the building and **cannot be cleared or blamed by anything done to the occupancy model** (hotel moves ≤ ~4 kWh/m² on a ~310 total, 1.4 %). 🔴 **Retail is the opposite case and must not be excused by the same sentence**: its control passes and its scored median (75.6) is below the floor, so **the retail FAIL is attributable to the model and is reported as such** (§10).
 
 ## 9. REFERENCES
 
 Pipeline STEP 9; dr_L3-02/03/05/06/10; Leg-2 `3rdJ_09_activityDrivenLoads_2split.md` (template + G8o precedent); NRCan SCIEU 2019; SHEU 2019.
 
+## 10. CLOSURE — **DELIVERED WITH DOCUMENTED LIMITATIONS**, 2026-08-06
+
+**Step 9 closes with three gates reading FAIL, and they are left reading FAIL.**
+
+`S9-EUI-office`, `S9-EUI-retail` and `S9-EUI-hotel` are **not** converted to WARN, **not** re-based,
+**not** re-scored under a different rule, and **no band value, floor or ceiling moves.** The scorecard
+target stated under *Script* below — *"0 FAIL"* — is **not met and is not going to be met**, and that
+is the closure, not a deferral.
+
+**What changes at closure is what the three gates are claimed to test, not their verdicts.**
+
+**The reason for two of the three, and it is a measurement, not a judgement.** The **uninjected
+`Default_NECB` control** — the same buildings with stock schedules and no occupancy model in them —
+**already fails hotel (`Tall` 304.41 / 315.82 vs a 300 ceiling) and already fails office (81.65–90.21
+vs a contested 100 floor)**. A gate that a completely untreated control cannot pass is not reporting on
+the treatment. For hotel, `V4-A5` names the mechanism outright: **one DHW load, sized per building,
+divided by a floor area that halved** — 93.4 % of the between-geometry separation, and inert to
+occupancy at 0.01 kWh/m².
+
+🔴 **The third one is not excused, and saying so is the test of the argument.** The **retail control
+passes**: 87.21–96.84, all four cells inside [80, 155]. The scored median is 75.6, **below the floor**,
+so `S9-EUI-retail` fails on cells the model produced and **the control offers it no defence**. It stays
+FAIL for the ordinary reason — the model puts retail below its band — and it is reported that way. A
+control argument that acquitted all three gates at once would not be evidence; it would be a blanket.
+
+**Why they are not cleared, stated plainly.** Every available route to clearing them — re-basing hotel
+EUI on rooms instead of floor area, adopting the office band's lower published floor, moving to the
+rule that passes — changes the criterion until the result changes. **A basis change that turns a FAIL
+into a WARN is a band change wearing a different hat**, and it is the exact move the gate-shopping
+prohibition forbids (R1, 2026-07-21). **A correct input is never withheld because it deepens a FAIL,
+and a failing gate is never softened because it is inconvenient.** Three declared failures with a named
+cause are a stronger result than a green scorecard whose criterion was chosen after the fact.
+
+**What is delivered.** The frozen deliverable arm (`V2-G1`), 56/56 cells, all gates scored, the three
+EUI failures documented with their mechanism and their controls, and the limitations written where a
+reader meets the numbers (§8 caveats 11 and 12).
+
+🔁 **Reopen triggers.**
+1. **A third hotel geometry is simulated** — the population claim in caveat 11 becomes testable at
+   n = 3 rather than merely defensible, and its wording must be revisited either way.
+2. **The hotel DHW object is re-sized per floor area** — `V4-A5` predicts `Tall` falls by roughly
+   79 kWh/m² toward the `SuperTall` cluster; the gate is then re-scored against that prediction, which
+   is written down in advance.
+3. **The office band floor is settled by a source** — `V2-B1` found the same document giving three
+   different floors (100 / 80–140 / 85–115). A sourced floor reopens `S9-EUI-office` on evidence; **an
+   unsourced one does not.**
+4. **Anyone proposes moving a band on this evidence** — this section is the reason not to. The evidence
+   says the numerator and the denominator disagree, not that the band is wrong.
+
 ## Script
 
-`3rdJ_09_activityDrivenLoads_4split.py` (reads agg tables; no re-simulation) + `run_step9_4split.sh` (sbatch, 7-day walltime). Report scorecard target: 0 FAIL, WARNs documented.
+`3rdJ_09_activityDrivenLoads_4split.py` (reads agg tables; no re-simulation) + `run_step9_4split.sh` (sbatch, 7-day walltime). Report scorecard target: 0 FAIL, WARNs documented. 🔴 **Superseded at closure — see §10: the step ships with 3 FAILs, deliberately.**
 
 ## Progress Log
 

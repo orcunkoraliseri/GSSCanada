@@ -399,7 +399,7 @@ hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # I
   > four tenant channels, so GFA-share EUIs move *less* than the old prose implied.
   - **Figure set:** stacked diurnal load curves (winter + summer, weekday + weekend, all four channels coincident — the load-timing story) and per-channel end-use EUI stacked bars (heating, cooling, fans, pumps, interior lighting, equipment, DHW).
 - **EUI plausibility gates**, following the Leg-2 office pattern (as-modelled prototype band = pass criterion; empirical survey band = INFO):
-  - 🔴 **Office EUI Bands — ADDED 2026-08-05 (V2-D4). This band has been live in the scorer since Leg-2 and was never written down here.** That is exactly backwards for the one band whose floor is contested and whose citation was found unresolvable: the blocking gate was the *only* one a reader could not check against a document. Inherited from Leg-2 (`Leg2_2-split/Step8_docs/deepResearch/Office Reference EUI (NECB 2020, ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands.md`, Table 7.1): as-modelled band **(low 100, central 135, high 200) kWh/m²/yr** = **PASS criterion**; empirical band **(low 170, central 230, high 360) kWh/m²/yr** = **INFO criterion** (SCIEU/CEUD). **`rule: all-cells`.** ⚠️ **The floor of 100 is CONTESTED AND UNSOURCED** — see decision 3 in the blockquote below; the value is published as contested and is **not** moved.
+  - 🔴 **Office EUI Bands — ADDED 2026-08-05 (V2-D4). This band has been live in the scorer since Leg-2 and was never written down here.** That is exactly backwards for the one band whose floor is contested and whose citation was found unresolvable: the blocking gate was the *only* one a reader could not check against a document. Inherited from Leg-2 (`Leg2_2-split/Step8_docs/deepResearch/Office Reference EUI (NECB 2020, ASHRAE 90.1, DOE-PNNL prototypes) — As-Modelled Bands.md`, Table 7.1): as-modelled band **(low 100, central 135, high 200) kWh/m²/yr** = **PASS criterion**; empirical band **(low 170, central 230, high 360) kWh/m²/yr** = **INFO criterion** (SCIEU/CEUD). **`rule: all-cells`.** 🔴 **PROVENANCE CORRECTED 2026-08-06 (V3-H3): the VALUES are inherited from Leg-2; the RULE and the SEVERITY are not.** Leg-2 scored these same numbers on the **channel median**, and graded a miss **WARN** — twice, independently: `Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.py:462-470` (gate `G2o`, `med = o["eui_kWh_m2"].median()`, `PASS if okb else WARN`) and `Leg2_2-split/Step8_docs/3rdJ_08_simulation_2split_val.py:1420-1431` (gate `4.3-office`, median, WARN, the text says *"non-blocking"*). Leg-3 applied `all_cells` **and** FAIL without recording that it had changed either. **Nothing here changes the rule** — the correction is to the citation, and adopting Leg-2's convention is V3-H3's open decision, with the caveat that Leg-2's convention is *median AND WARN together*: taking only the median half is neither leg's rule. ⚠️ **The floor of 100 is CONTESTED AND UNSOURCED** — see decision 3 in the blockquote below; the value is published as contested and is **not** moved.
   - **Retail EUI Bands:** Locked via [dr_L3-02_retail_eui_bands_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md) (2026-07-02): as-modelled band **(low 80, central 110, high 155) kWh/m²/yr** = **PASS criterion**; empirical band **(low 150, central 280, high 380) kWh/m²/yr** = **INFO criterion**. **`rule: median-in-band`** (V2-B3, 2026-08-05 — values unchanged, criterion changed).
   - **Hotel EUI Bands:** Locked via [dr_L3-03_hotel_eui_bands_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-03_hotel_eui_bands_REPORT.md) (2026-07-02): as-modelled band **(low 180, central 240, high 300) kWh/m²/yr** = **PASS criterion**; empirical band **(low 220, central 350, high 480) kWh/m²/yr** = **INFO criterion**. **`rule: all-cells`.** ⚠️ The *citation* for the as-modelled band moved on 2026-08-05 (V2-B2) — see decision 1 below; **the values did not**.
 
@@ -419,8 +419,32 @@ hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # I
 > in `improvements/v2/f6_prototype_evidence/`). The old ceiling rested on the 90.1-2004 lineage's
 > **302.21**; the vintage-matched value is **299.28**, **1.0 % away**. **So the standing objection —
 > "a 2004 band is being used to score a 2019/NECB-2017 building" — is dead, and `S9-EUI-hotel` is not
-> a vintage artefact.** It still **FAILs on 21 of 56 cells, all over the ceiling, all `Tall`, zero
-> `SuperTall`.** ⚠️ **Stated limitation, not a tolerance:** our tower is **NECB-2017,
+> a vintage artefact.** It still **FAILs on ~~21~~ 28 of 56 cells, all over the ceiling, all `Tall`,
+> zero `SuperTall`.**
+>
+> ~~🔴 **CORRECTION 2026-08-06 (V4-A2/A3, struck not deleted): that sentence describes the K=6
+> DHW-resize arm, not the Step-9 artefact this document scores.** In `outputs_step9/step9_gates.json`
+> the hotel gate reads **28 of 56 failing, every one of them UNDER the 180 floor, all `SuperTall`,
+> zero `Tall`** — range **147.9–209.4** against a ceiling of 300, so **no cell is over the ceiling at
+> all.** The two arms fail at **opposite ends** and the count differs; quoting one under the other's
+> heading is the same defect as the office `band_src` and the `all_cells` rule citation.~~
+>
+> 🔴🔴 **RETRACTION 2026-08-06, later the same day (V4-A4). The correction immediately above is wrong
+> and the original sentence was right.** It was computed from `Step9_docs/outputs_step9/`
+> (**2026-07-31 11:42**), which is **not** the artefact this document scores. The frozen deliverable is
+> `Step9_docs/outputs_step9_deliverable/` (**2026-08-06 00:05**), named as such in
+> `improvements/v2/V2-G1_FROZEN_DELIVERABLE.md`, and in it the hotel cells run **203.33–318.42** with
+> **28 above the 300 ceiling, 0 below the 180 floor**, and `verdict_asmodelled` tallying **`Tall` 28
+> FAIL / `SuperTall` 28 PASS**. **Over the ceiling, `Tall`-only, zero `SuperTall` — exactly as
+> originally written.** The superseded directory predates `V2-D10`, the per-object `LAUNDRY` resize
+> that moved this channel, and the inversion **was already recorded** in
+> `3rdJ_L3_manager_prompt_2026-08-06_v2_close.md` §V2-E5 (*"the failing end inverted while the count
+> held still"*). **The count is the one part genuinely wrong: 28, not 21** — 21 matches neither the CFA
+> basis (28 out) nor the GFA-share basis (14 out), and its provenance is not established.
+> ⚠️ **This retraction is the same defect the correction accused this document of** — a number
+> imported from a neighbouring artefact without its label — committed in the correction itself.
+> Full derivation: `improvements/v4/V4-A4_split_scorecard.md` §5.
+> ⚠️ **Stated limitation, not a tolerance:** our tower is **NECB-2017,
 > Montréal/Calgary**; the reference prototype is **90.1-2019, Rochester / International Falls**. The
 > archetype and city sets do not match, and that goes in the limitations section (V2-G3) rather than
 > into a widened band.
@@ -443,6 +467,23 @@ hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # I
 > seen failing 3/3). **The floor is therefore recorded as contested and unsourced**; the gate is
 > written up as a **band-applicability limitation**, not as a model defect, and **the value is not
 > moved to make it pass.**
+>
+> **4. THE RULE PRINCIPLE — written down 2026-08-06 (V3-H3), because until now `rule` was a
+> per-channel value with no stated criterion for choosing it.** Default = **`all_cells`**.
+> **`median` applies only where a channel's across-cell spread is small enough that a re-run's own
+> noise can flip the verdict** — V2-B3's condition, verbatim. Measured across-cell range / band
+> width on the shipped deliverable: **office 0.285 · retail 0.443 · hotel 0.959.** Retail is the one
+> channel where V2-E3 demonstrated that noise (a −0.05 % median move flipped a cell); **hotel's cells
+> span 96 % of its own band**, so they differ genuinely and `all_cells` reports signal there.
+> **Applying the principle changes NOTHING** — office and retail FAIL under both rules, hotel keeps
+> `all_cells`. ⚖️ **Disclosure:** the spreads were measured *after* it was known which rule clears
+> hotel, so **no numeric boundary is written** — only the condition. 🔴 **And the case against this
+> choice is on file too**: Leg-2 scored the office band on the **median** and graded a miss **WARN**,
+> so "restore the precedent" is an honest argument — but Leg-2's convention is *median **and** WARN
+> together*, and adopting it whole turns the EUI block from **3 FAILs into 1 PASS + 2 WARNs**. A
+> basis change that turns FAIL into WARN is a band change in disguise (the 2026-07-21 R1 decision,
+> re-affirmed 2026-08-05). Reopens if the user accepts the precedent argument, if a channel's spread
+> ever falls below its own re-run noise, or if the frozen deliverable is reopened for another reason.
 >
 > **4. Hotel DHW plant (V2-B4) — per-object resize, not a global K.** At K = 6 every heater except
 > `LAUNDRY` has slope exactly 0.000, and `LAUNDRY` is capacity-pinned in both arms, so the sweep sized
@@ -547,8 +588,8 @@ hotel_multiplier(t, month, PR) = s(t) × monthly_occupancy_rate(month, PR)   # I
 2. **Retail 2030 scenario band values — RESOLVED 2026-07-02.** Sourced from deep-research report [dr_L3-04_instore_share_2030_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-04_instore_share_2030_REPORT.md). The three named scenarios for 2030 retail presence (relative to 2022 = 1.00) are defined as: Plateau/Resilient Central = 0.97 (default), Continued-Shift (Conservative) = 0.90, and In-Store Renaissance (Optimistic) = 1.05. These multipliers scale the customer occupancy presence fraction, leaving baseline peak densities intact. The lever scales presence amplitude only, keeping the diurnal shape fixed, with a more resilient central scenario justified for grocery-anchored podium retail.
 3. **StatCan hotel table ID, coverage and breaks — RESOLVED 2026-07-02.** Verified in [dr_L3-01_statcan_hotel_data_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-01_statcan_hotel_data_REPORT.md) that Table 24-10-0048-01 does not exist. No Statistics Canada table provides monthly occupancy rates, ADR, or RevPAR by province. Sourced instead from Tourisme Québec / ISQ (for QC, 2005–2022 monthly) and Travel Alberta / Alberta Economic Dashboard (sourced from CBRE, for AB, 2010–2022 monthly), with 2005–2009 for AB spliced from CBRE National Market Report archives.
 4. **Hotel diurnal shape `s(t)` numbers — RESOLVED 2026-07-02.** Sourced from deep-research report [dr_L3-05_hotel_diurnal_shape_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-05_hotel_diurnal_shape_REPORT.md). Recommended unit-normalized 48-slot curve (max = 1.0) derived from the PNNL Large Hotel prototype guest-room schedule, with distinct weekday and weekend variants. The weekday shape has an overnight plateau of 1.00 (22:00-06:00), morning checkout ramp down to a trough of 0.200 (09:00-15:00), and evening return. The weekend shape has an overnight plateau of 1.00 (19:00-21:00 and 00:00-06:00) and a shallower trough of 0.308 (09:00-17:00). A fixed shape scaled by the monthly occupancy rate is defensible due to human circadian stability, and the trough depth deviation from the flat 0.80 NECB baseline is highly energy-material.
-5. **Retail + hotel EUI plausibility bands.** Retail EUI bands RESOLVED (2026-07-02, [dr_L3-02_retail_eui_bands_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md)): as-modelled band **(low 80, central 110, high 155) kWh/m²/yr** = **PASS criterion**; empirical band **(low 150, central 280, high 380) kWh/m²/yr** = **INFO criterion**. Hotel EUI bands RESOLVED (2026-07-02, [dr_L3-03_hotel_eui_bands_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-03_hotel_eui_bands_REPORT.md)): as-modelled band **(low 180, central 240, high 300) kWh/m²/yr** = **PASS criterion**; empirical band **(low 220, central 350, high 480) kWh/m²/yr** = **INFO criterion**. 🔴🔴 **SUPERSEDED IN PART, 2026-08-05 (V2-C6) — see the full band-decision blockquote in §"EUI plausibility gates" above.** In one line each: **hotel** — `dr_L3-03`'s two primaries do not exist (V2-F4), the **300 ceiling stands** and is re-cited to the first-party **Large Hotel 90.1-2019 = 284.44 (CZ 6A) / 299.28 (CZ 7)** we retrieved ourselves (V2-F6), which is **1.0 %** from the 302.21 the ceiling was built on, so the vintage objection is dead and the gate still **FAILs 21/56**; **retail** — the rule is now **median-in-band**, not 56-of-56, and the *rate* gate is demoted to **INFO**; **office** — the floor of 100 is **contested and its `src=` does not resolve**, so the gate is a **band-applicability limitation**. **No band value was widened.**
-6. **Hotel amenity-zone modulation — RESOLVED 2026-07-02 (user-confirmed).** v1 leaves Banquet/Cafe/Kitchen/Lobby on NECB baseline (weakly coupled to room occupancy); revisit only if the Step-8 hotel EUI gate (as-modelled 180–300 kWh/m²/yr) fails. ⚠️ **Update 2026-08-05: it did fail** — 21 of 56 cells sit over the 300 ceiling. The trigger condition written here is therefore met, but the located mechanism is the **DHW plant** (V2-B4 → V2-D10, `LAUNDRY` capacity-pinned), not amenity modulation, and the failures are `Tall`-only with zero `SuperTall`, which points at the geometry axis rather than at amenity zones. **Revisiting amenity modulation is deliberately NOT on the task list**; recorded here so the unmet trigger is not mistaken for an oversight.
+5. **Retail + hotel EUI plausibility bands.** Retail EUI bands RESOLVED (2026-07-02, [dr_L3-02_retail_eui_bands_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-02_retail_eui_bands_REPORT.md)): as-modelled band **(low 80, central 110, high 155) kWh/m²/yr** = **PASS criterion**; empirical band **(low 150, central 280, high 380) kWh/m²/yr** = **INFO criterion**. Hotel EUI bands RESOLVED (2026-07-02, [dr_L3-03_hotel_eui_bands_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-03_hotel_eui_bands_REPORT.md)): as-modelled band **(low 180, central 240, high 300) kWh/m²/yr** = **PASS criterion**; empirical band **(low 220, central 350, high 480) kWh/m²/yr** = **INFO criterion**. 🔴🔴 **SUPERSEDED IN PART, 2026-08-05 (V2-C6) — see the full band-decision blockquote in §"EUI plausibility gates" above.** In one line each: **hotel** — `dr_L3-03`'s two primaries do not exist (V2-F4), the **300 ceiling stands** and is re-cited to the first-party **Large Hotel 90.1-2019 = 284.44 (CZ 6A) / 299.28 (CZ 7)** we retrieved ourselves (V2-F6), which is **1.0 %** from the 302.21 the ceiling was built on, so the vintage objection is dead and the gate still **FAILs ~~21/56~~ 28/56, all `Tall`, all over the ceiling** (count corrected 2026-08-06 by V4-A4 against the frozen deliverable; the direction was always right); **retail** — the rule is now **median-in-band**, not 56-of-56, and the *rate* gate is demoted to **INFO**; **office** — the floor of 100 is **contested and its `src=` does not resolve**, so the gate is a **band-applicability limitation**. **No band value was widened.**
+6. **Hotel amenity-zone modulation — RESOLVED 2026-07-02 (user-confirmed).** v1 leaves Banquet/Cafe/Kitchen/Lobby on NECB baseline (weakly coupled to room occupancy); revisit only if the Step-8 hotel EUI gate (as-modelled 180–300 kWh/m²/yr) fails. ⚠️ **Update 2026-08-05: it did fail** — ~~21~~ **28** of 56 cells sit over the 300 ceiling. The trigger condition written here is therefore met, but the located mechanism is the **DHW plant** (V2-B4 → V2-D10, `LAUNDRY` capacity-pinned), not amenity modulation, and **the failures are `Tall`-only with zero `SuperTall`**, which points at the geometry axis rather than at amenity zones. **Revisiting amenity modulation is deliberately NOT on the task list**; recorded here so the unmet trigger is not mistaken for an oversight. ~~🔴 **CORRECTION 2026-08-06 (V4-A2/A3): the two struck clauses describe the K=6 resize arm, not Step 9.** In the Step-9 artefact the hotel failures are **28 of 56, all UNDER the 180 floor, `SuperTall`-only with zero `Tall`** — **the exact inverse of the sentence above**, at the opposite end of the band. **The conclusion drawn here survives and is in fact strengthened**: the failure still sits on the geometry axis rather than on amenity zones, and the Step-9 artefact shows it more sharply — hotel EUI moves by **≤0.70 %** when occupancy is injected, so amenity modulation could not plausibly reach it either. **But the conclusion was reached through an inverted reading of the evidence**, and a resolved open decision resting on a number from the wrong arm is recorded as such rather than quietly re-justified.~~ 🔴🔴 **RETRACTED the same day (V4-A4): the correction above is wrong and this decision never argued from a wrong arm.** It compared against `Step9_docs/outputs_step9/` (2026-07-31) rather than the frozen `Step9_docs/outputs_step9_deliverable/` (2026-08-06 00:05). In the deliverable the hotel failures are **28 of 56, `Tall`-only, every one OVER the 300 ceiling**, range **203.33–318.42** — **as this entry originally said.** Only the count 21 was wrong. **This resolved decision therefore stands on the evidence it actually cited, and its footing is restored.** The supporting point holds and is stronger on the deliverable: injection moves hotel EUI by **≤1.00 %** (−1.55 to +2.60 kWh/m²/yr) against an empty gap of **84.64** between the two geometry clusters, so amenity modulation could not plausibly reach it either. Derivation: `improvements/v4/V4-A4_split_scorecard.md` §4–§5.
 7. **Office→retail lunch cross-use transition — RESOLVED 2026-07-02.** Keep the simulation channels independent (Option a) to prevent frame mismatch, double-counting, and identifiability issues, but calculate and present the GSS-derived conditional transition probability as an offline diagnostic figure (Option b) to capture cross-use novelty. This choice is justified by building energy simulation studies (e.g., Feng et al., 2020) showing that schedule coupling has negligible energy materiality (< 1.5% retail cooling load delta), as detailed in [dr_L3-07_crossuse_lunch_coupling_REPORT.md](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/3J_docs_occ_nTemp/Leg3_4-split/deepResearch/dr_L3-07_crossuse_lunch_coupling_REPORT.md).
 8. **Interpolate-to-Timestep (`Yes`/`No`) — RESOLVED 2026-07-02 (user-confirmed).** Inherit whatever Leg 2 chose for `Schedule:File` @ 30-min; apply uniformly to retail + hotel schedules; record the inherited value in the Step-7 doc when the injector is built.
 9. **Restaurant channel (`occPRE == 7`).** Explicitly out of scope for Leg 3 (Step 2C) — no prototype Space to drive; revisit only with a different building archetype.
@@ -623,8 +664,84 @@ at **ASHRAE 90.1-2019**, which is **Rochester MN (CZ 6A) = 284.44** and **Intern
 (CZ 7) = 299.28 kWh/m²·yr**, read first-party from the prototype's own packaged table. The **vintage**
 half of this objection is now dead — the 300 ceiling rested on the 90.1-2004 lineage's **302.21**, and
 the vintage-matched value is **1.0 %** away — but the **archetype and city gap remains** and is
-recorded here instead of being converted into a tolerance. The gate still **FAILs on 21 of 56 cells.**
+recorded here instead of being converted into a tolerance. The gate still ~~**FAILs on 21 of 56
+cells**~~ ~~**FAILs on 28 of 56 cells, all under the floor** (corrected 2026-08-06 — the struck figure
+is the K=6 resize arm; see L8)~~ **FAILs on 28 of 56 cells, all `Tall`, every one of them OVER the 300
+ceiling** — 🔴 **re-corrected the same day (V4-A4): the count 28 was right, the direction was not.**
+The middle clause read `outputs_step9/` (2026-07-31) instead of the frozen
+`outputs_step9_deliverable/` (2026-08-06 00:05); the deliverable range is **203.33–318.42**. See
+`improvements/v4/V4-A4_split_scorecard.md` §5.
 *Evidence:* V2-F6, `improvements/v2/f6_prototype_evidence/`; V2-B2.
+
+---
+
+**L8 — The three EUI failures are three different findings, and only one of them is about the
+occupancy model.** Derived 2026-08-06 (V4-A2/A3) and 🔴 **re-derived the same day (V4-A4) on the
+correct file** — ~~`outputs_step9/step9_eui_by_channel.csv`~~ **`outputs_step9_deliverable/step9_eui_by_channel.csv`**,
+the frozen deliverable (`improvements/v2/V2-G1_FROZEN_DELIVERABLE.md`). The first derivation read the
+superseded **2026-07-31** sibling directory, which predates `V2-D10`; **office and retail were
+unaffected to ~0.1 %, hotel was wrong in both magnitude and direction.** No simulation, no re-scoring,
+no gate or band touched. The decomposition compares each of the four `building × city` groups against
+**its own uninjected `Default_NECB` cell**, which holds geometry, envelope, climate and plant fixed and
+varies only the schedules.
+
+| channel | uninjected control | what the injection then does | reading |
+|---|---|---|---|
+| **office** | **81.65 – 90.21**, all four **below** the 100 floor (−9.79 to −18.35) | a further **−12.98 to −19.93** | **roughly half and half** |
+| **retail** | **87.21 – 96.84**, all four **inside** [80, 155] (+7.21 to +16.84) | **−10.63 to −25.04** | **entirely the injection** |
+| **hotel** | **204.83 / 216.06 `SuperTall` (in band)** · **304.41 / 315.82 `Tall` (already over the 300 ceiling)** | **−1.55 to +2.60, i.e. ≤ 1.00 %** | **not occupancy at all** |
+
+~~Superseded row values, kept for traceability: office 81.70–90.33 / −15.21 to −18.48; retail
+87.60–97.05 / −19.65 to −23.94; hotel 149.36 / 160.65 `SuperTall` · 195.41 / 206.79 `Tall`, +0.06 to
++1.45.~~
+
+**Office — the band is unreachable by this configuration, not merely missed.** The strongest form of
+L4: across all 56 cells and all 14 scenarios the **highest office value in the entire set is ~~90.33~~
+90.21**, still **~~9.67~~ 9.79 % below the floor**, and the uninjected control is already below it. **No cell reaches the
+band under any scenario, including the untreated one.** ⚠️ **Correction to an earlier figure:** the
+often-quoted *"~15 of the 22 kWh/m² predates the injection"* comes from the **arm-A** artefact, not
+from Step 9. On the Step-9 artefact the split is closer to **half and half** and the total gap is
+**26–37**, not 22. *A number carried across arms without its arm label is how L5 above went wrong.*
+
+**Retail — the only one of the three that is a statement about our model.** Its uninjected control
+**passes in all four groups**, so nothing here predates the injection; the injection removes
+**~~20–24~~ 11–25 kWh/m² (≈12–26 %)** and pushes it under. The gate's 12 passing cells are exactly the
+**4 control cells plus the 8 Montréal cells of the four observed eras** — every Calgary cell fails,
+every 2030 bundle fails, every sensitivity cell fails. **The survivors clear the floor by
+~~0.57 %–3.3 %~~ 0.82 %–3.53 %** (the four control cells aside, which clear it by 9–21 %), the thinnest
+margin on the scorecard, which is why this gate has already been seen to flip on a −0.05 % DHW-driven
+move. **The gate is not widened and stays FAIL.** *(Digits re-derived on the frozen deliverable by
+V4-A4; the structural claim — survivors = 4 controls + 8 Montréal era cells — is unchanged.)*
+
+🔴 **Hotel — `S9-EUI-hotel` has no resolving power about occupancy, and a band boundary lies in a
+region where no building exists.** The 56 cells form **two disjoint clusters**: `SuperTall`
+**203.33–218.22** and `Tall` **302.86–318.42**. The largest gap between consecutive values is
+**84.64 kWh/m² — 70.5 % of the band's own width — and the 300 ceiling sits inside it.** So no cell can
+land near the threshold, the median (**260.54**) describes **no building in the set**, and the verdict
+is decided entirely by which of the two geometries a cell has. Injecting occupancy moves the channel by
+**−1.55 to +2.60 kWh/m² (≤ 1.00 %)** against that 84.64 gap, and 🔴 **both `Tall` uninjected controls
+are already over the ceiling (304.41 / 315.82) while both `SuperTall` controls are already in band
+(204.83 / 216.06) — every sub-verdict is set before any occupancy is injected.** **The gate returns the
+same answer with and without the occupancy model**, which is the condition this project calls a vacuous
+reading — here in a gate that is currently *blocking*.
+
+~~Superseded statement of the same finding (computed on `outputs_step9/`, 2026-07-31): clusters
+147.87–162.76 and 193.83–209.43, gap 31.07 = 25.9 % of the band, the **180 floor** inside it, median
+178.29, injection ≤1.45.~~ 🔴 **Re-derived on the frozen deliverable by V4-A4: the finding holds and is
+substantially larger, but the failing end is the opposite one.** The struck figures were the reason
+`V4-A4`'s two pre-registered sub-verdicts came out inverted — see
+`improvements/v4/V4-A4_split_scorecard.md`.
+
+✅ **`V4-A1` decided 2026-08-06 — score per geometry — and `V4-A4` executed it.** Under the split:
+`SuperTall` **PASS** (28/28 in band, median 210.45) and `Tall` **FAIL** (28/28 over the ceiling, median
+310.15). **At least one sub-gate still FAILs, so the split does not clear a blocker** (R1). The same
+split was applied to office and retail and **changes nothing there** — both sub-gates FAIL in both
+channels. ⚖️ **The limitation above survives the decision:** a better unit improves *attribution*; it
+does not make this gate informative about occupancy.
+
+*Evidence:* `outputs_step9_deliverable/step9_eui_by_channel.csv`; V4-A2, V4-A3, **V4-A4** in
+`improvements/v4/` (`3rdJ_L3_v4_implementation.md`, `V4-A4_split_scorecard.md`,
+`v4_a4_split_scorecard.json`).
 
 **L6 — The "stacked channel" explanation for low EUIs was tested and REFUTED; do not cite it.** The
 intuitive story — a channel buried mid-tower has almost no roof, ground or facade load, so a low EUI

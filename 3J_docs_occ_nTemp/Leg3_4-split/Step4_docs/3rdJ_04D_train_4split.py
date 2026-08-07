@@ -362,6 +362,28 @@ def validate(model, val_data, device, n_sample=2000):
     control signal here (Delta E: "never on training loss") — it is NOT the
     gate-first -> lexicographic selection criterion (that happens later,
     across the 5-seed sweep, in a separate checkpoint-selection step).
+
+    *** CORRECTED 2026-08-06 (V3-H1). THE PARAGRAPH ABOVE IS WRONG AND IS KEPT
+    ONLY SO THE CORRECTION HAS SOMETHING TO POINT AT. ***
+      (a) val_score is NOT only a logging curiosity here: line 881 selects
+          best_model.pt on it (`if score < best_val_score`), and best_model.pt
+          is what 04E loads. It IS the selection criterion in this file.
+      (b) The "separate checkpoint-selection step ... across the 5-seed sweep"
+          DOES NOT EXIST. grep for seed_0 / range(5) / 'for SEED' across
+          Step4_docs/*.py and *.sh returns zero hits. Nothing ever compared the
+          five seeds under the documented rule.
+      (c) The documented rule (3rdJ_04_augmentationGSS_4split.md, "Checkpoint
+          selection -- gate-first -> lexicographic") was in any case not
+          implementable from this file: two of its five hard-gate families
+          (midday error, transitions) are POOL-level and appear in none of the
+          21 training-log columns, so its first clause needs inference + rake +
+          validator per epoch.
+    The shipped pool therefore deviates from the documented rule. That
+    deviation, its cost (+0.0218 retail F1 = 0.16 sd), the reason it was not
+    re-selected, and the three conditions that reopen it are recorded in the
+    doc's own "Checkpoint selection" section -- NOT here, because a comment is
+    not a decision record. Comment-only edit: no behaviour change, no
+    checkpoint moves, no artefact regenerated.
     """
     model.eval()
     n_val = len(val_data["act_seq"])

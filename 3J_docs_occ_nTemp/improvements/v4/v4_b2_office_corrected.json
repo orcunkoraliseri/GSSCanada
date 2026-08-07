@@ -1,0 +1,77 @@
+{
+ "task": "V4-B2 (corrected half)",
+ "date": "2026-08-06",
+ "n_runs": 252,
+ "n_retried": 3,
+ "n_missing": 0,
+ "band": [
+  100.0,
+  200.0
+ ],
+ "factor_min": 1.518237,
+ "factor_median": 1.651386,
+ "factor_max": 1.907496,
+ "corrected_run_range": [
+  93.51,
+  117.91
+ ],
+ "runs_below_floor": 50,
+ "rows": [
+  {
+   "row": "office all",
+   "n": 252,
+   "shipped_median": 172.66,
+   "published": 172.7,
+   "reproduces_published": true,
+   "corrected_median": 106.56,
+   "published_verdict": "IN",
+   "corrected_verdict": "IN",
+   "band": [
+    100.0,
+    200.0
+   ]
+  },
+  {
+   "row": "office Knowledge",
+   "n": 84,
+   "shipped_median": 172.62,
+   "published": 172.6,
+   "reproduces_published": true,
+   "corrected_median": 106.66,
+   "published_verdict": "IN",
+   "corrected_verdict": "IN",
+   "band": [
+    100.0,
+    200.0
+   ]
+  },
+  {
+   "row": "office Public",
+   "n": 84,
+   "shipped_median": 172.54,
+   "published": 172.5,
+   "reproduces_published": true,
+   "corrected_median": 106.71,
+   "published_verdict": "IN",
+   "corrected_verdict": "IN",
+   "band": [
+    100.0,
+    200.0
+   ]
+  },
+  {
+   "row": "office Sales",
+   "n": 84,
+   "shipped_median": 172.72,
+   "published": 172.7,
+   "reproduces_published": true,
+   "corrected_median": 106.56,
+   "published_verdict": "IN",
+   "corrected_verdict": "IN",
+   "band": [
+    100.0,
+    200.0
+   ]
+  }
+ ]
+}
