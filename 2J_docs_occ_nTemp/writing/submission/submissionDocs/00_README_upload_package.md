@@ -1,21 +1,25 @@
-# Upload package — Building Simulation
+# Upload package — Building Simulation ✅ SUBMITTED 2026-08-07
 
 Built 2026-08-07 against the journal's own instructions
-(`../JournalOfBuildingSimulation/00_REQUIREMENTS_verified.md`). Submit at
+(`../JournalOfBuildingSimulation/00_REQUIREMENTS_verified.md`) and **submitted the same day** at
 **https://www.editorialmanager.com/buil**.
+
+**This folder is now the record of what the journal holds. Do not edit it.** A revision starts by
+copying these files elsewhere, so the submitted version stays diffable against the reviewers' copy.
+Manuscript ID and acknowledgement date to be added here when the confirmation email arrives.
 
 ## What is in this folder
 
 | File | What it is | Status |
 |---|---|---|
-| `Title_Page_and_Cover_Letter.docx` | The cover letter to the Editor-in-Chief plus title, authors, affiliations, corresponding email, ORCID, author contributions, competing interest, ethical approval, acknowledgements and funding | **ready** — dated 7 August 2026 |
-| `Blinded_Manuscript.docx` | The full manuscript with every piece of author information removed | **ready** |
-| `Supplementary_Material/Supplementary_Material.docx` | Tables A1–A3, B1, B2, C1, C2 and Appendix D, plus the data-file index and column dictionary | **ready** — blinded |
-| `Supplementary_Material/data/*.csv` | 8 derived data files, 2.8 MB total | **ready** — no microdata |
+| `Title_Page_and_Cover_Letter.docx` | The cover letter to the Editor-in-Chief plus title, authors, affiliations, corresponding email, ORCID, author contributions, competing interest, ethical approval, acknowledgements and funding | **submitted** — dated 7 August 2026 |
+| `Blinded_Manuscript.docx` | The full manuscript with every piece of author information removed | **submitted** |
+| `Supplementary_Material/Supplementary_Material.docx` | Tables A1–A3, B1, B2, C1, C2 and Appendix D, plus the data-file index and column dictionary | **submitted** — blinded |
+| `Supplementary_Material/data/*.csv` | 8 derived data files, 2.8 MB total | **submitted** — no microdata |
 | `*.md` | The markdown sources everything was generated from | working files |
 
-**Upload order in Editorial Manager:** Title Page → Blinded Manuscript → Supplementary Material
-(the `.docx` and the 8 CSVs, or a single zip of the `Supplementary_Material` folder).
+**Upload order used in Editorial Manager:** Title Page → Blinded Manuscript → Supplementary Material
+(the `.docx` and the 8 CSVs).
 
 **Why two files:** Building Simulation is double-blind. The instructions require "the entire manuscript
 without any author information and acknowledgements" as one upload, and a separate title page carrying
@@ -56,20 +60,25 @@ all of it — including the cover letter, which goes *inside* the title page rat
   that "the Journal may not use the suggestions" — it is an invitation, not a requirement. The upside is
   that it also removes the obligation to supply a verified institutional email for each name.
 
-## Before you upload
+## Carried into review — two items to settle before the revision
 
-The three upload files are complete and can go as they stand. Two things to do, one to know:
+Neither blocked the upload. Both are live now that the manuscript is with the journal.
 
-1. 🔴 **Re-export the figures at 600 dpi** before uploading the figure set. 13 of 16 fall short —
-   detailed below.
-2. 🔴 **Settle the crosswalk count** (182 / 265 / 64 / 123 in the file against 182 / 264 / 64 / 121 in
-   §3.1) before adding the crosswalk to the SI — detailed below. Nothing currently uploaded contradicts
-   anything; the file is held back precisely so it stays that way.
-3. **One Concordia name sits on the editorial board:** Prof. Liangzhu (Leon) Wang is an Associate Editor
-   of Building Simulation. Not a conflict you must declare under double-blind review, but worth knowing
-   in case Editorial Manager offers an editor-exclusion field.
+1. 🟠 **Figure resolution.** 13 of 16 figures are below 600 dpi at the printed width and went up as
+   they stand. That is acceptable for a review copy — the 600 dpi rule bites on the **separate figure
+   files** the journal requests at acceptance. Re-export from the plotting scripts before then. Pixel
+   widths are tabulated below; nothing about them has changed since the check.
+2. 🟠 **The crosswalk count.** 182 / 265 / 64 / 123 in the spreadsheet against 182 / 264 / 64 / 121 in
+   §3.1 and Table B2 — detailed below. The crosswalk was deliberately held out of the SI, so **nothing
+   submitted contradicts anything submitted.** But §3.1's figures are now in a manuscript under review,
+   so the discrepancy has to be resolved in the authors' favour before a reviewer or the revision
+   forces the question.
 
-Nothing else in the formatting list is left to do.
+**One Concordia name sits on the editorial board:** Prof. Liangzhu (Leon) Wang is an Associate Editor
+of Building Simulation. Not a conflict declarable under double-blind review, but worth remembering if
+the handling-editor assignment comes back.
+
+Nothing in the formatting list was left undone at submission.
 
 ## Formatting — applied 2026-08-07
 
@@ -96,8 +105,8 @@ Two defects were found and fixed in the same pass:
   16 stray paragraphs gone.
 - **The blinded `.docx` on disk was missing content** — Table 3's *TMY weather file* column, Table 5's
   two *Within band?* columns, and five figure labels. It had been built from a stale source. Rebuilt
-  and diffed against the master: the only remaining differences are the 9 author blocks and the 7
-  third-person §1.4 rewrites.
+  and diffed against the master: the only remaining differences are **10 author-information lines
+  removed and 6 lines rewritten in the third person** (16 master-only / 6 blinded-only on a line diff).
 
 ## Supplementary Material — added 2026-08-07
 
@@ -132,7 +141,7 @@ every load-shape statistic in the paper:
 **Data availability has been rewritten** in both manuscripts accordingly — it no longer rests on
 "available from the corresponding author on reasonable request" for the results-bearing data.
 
-## 🔴 Blocker before you upload the SI: two counts do not reconcile
+## 🟠 Open item 1: two counts do not reconcile — why the crosswalk was not submitted
 
 The activity harmonization crosswalk (`references_activityCodes/Data Harmonization_activityCategories
 - execution.xlsx`) is the most useful thing in the whole package, and it is **deliberately held back**.
@@ -147,20 +156,23 @@ The extra rows sit out of numeric order at the end of each sheet — `712.0` and
 like codes added to the sheet after the count was taken. But that is an inference, not a finding,
 and I have not verified which mapping the pipeline actually consumed.
 
-**Resolve it before shipping the crosswalk**, because a reviewer holding both can count. Either the
-sheet has rows the pipeline never used, or §3.1 needs to say 265 and 123. Once it is settled the
-crosswalk drops straight into `Supplementary_Material/data/` as `S0_activity_harmonization_crosswalk.csv`.
+**It was not shipped, and that was the right call** — a reviewer holding both files can count. Either
+the sheet has rows the pipeline never used, or §3.1 and Table B2 need to say 265 and 123. Once it is
+settled the crosswalk drops straight into `Supplementary_Material/data/` as
+`S0_activity_harmonization_crosswalk.csv` with the revision, and it is a genuinely useful addition to
+offer reviewers.
 
 Related: **Table B2's "Raw-code magnitudes" column was 14 cells of `⚠ check source`** and could not
 be submitted as it stood. That column has been removed rather than filled, for the same reason — the
 per-category counts are derivable from the crosswalk, and publishing them commits to the disputed
 totals. B2 now reads Code / Category / Notes and carries the manuscript's own headline figures.
 
-## 🔴 The other item that is not fixable from here: figure resolution
+## 🟠 Open item 2: figure resolution
 
 The instructions require **600 dpi relative to final printed size**. At the 5.83-inch text width, that
 means **≥ 3,498 pixels wide**. **13 of the 16 figures fall short** and must be re-exported from their
-plotting scripts (`savefig(..., dpi=600)` or a wider `figsize`):
+plotting scripts (`savefig(..., dpi=600)` or a wider `figsize`). Re-checked 2026-08-07 after
+submission: unchanged, so the manuscript went up with these widths.
 
 | Figure | px wide | effective dpi |
 |---|---|---|
@@ -174,9 +186,9 @@ plotting scripts (`savefig(..., dpi=600)` or a wider `figsize`):
 Passing already: `Figure_06_loadshape` (6,836 px), `Figure_S09_eui` (4,691 px),
 `Figure_07_activity_equipment` (3,964 px).
 
-This is a review-copy manuscript, so it is not a desk-reject risk on its own — but Building Simulation
-asks for the figures **as separate files** at 600 dpi, and those are the ones that matter. Re-export
-before uploading the figure set.
+This was not a desk-reject risk for a review copy — but Building Simulation asks for the figures **as
+separate files** at 600 dpi, and those are the ones that matter at acceptance. Re-export before the
+figure set is requested.
 
 ## Other norms, deliberately not changed
 

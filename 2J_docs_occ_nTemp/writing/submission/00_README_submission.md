@@ -37,7 +37,9 @@ single-spaced. `submit_check.py` is the pre-upload gate — **run it against the
 the build output.** All three live in the session scratchpad; copy them here if you want them kept.
 
 **Any edit to the master must be mirrored in `submissionDocs/Blinded_Manuscript.md`.** The two are
-kept in sync except for 9 author-information paragraphs and 7 third-person rewrites in §1.4.
+kept in sync except for **10 author-information lines removed and 6 lines rewritten in the third
+person** (§1 funnel paragraph, the Table 1 note, the §1.4 heading and opener, §1.5, §6). A multiset
+line diff must return exactly **16 master-only / 6 blinded-only** — anything else is drift.
 
 ---
 
@@ -55,14 +57,24 @@ kept in sync except for 9 author-information paragraphs and 7 third-person rewri
    - its entry in the master reference list;
    - the note under Table 1 explaining that the gap matrix scores **external** competitors only.
 
-## Status, 2026-08-07 end of day
+## ✅ SUBMITTED — 2026-08-07
 
-**Target journal fixed: Building Simulation** (Springer / Tsinghua University Press), double-blind,
-submitted at `editorialmanager.com/buil`. The upload package is assembled in `submissionDocs/` —
-**read `submissionDocs/00_README_upload_package.md` before uploading anything**, it is the operative
-document. This file describes the working directory; that one describes what gets uploaded.
+**Submitted to Building Simulation** (Springer / Tsinghua University Press), double-blind, via
+`editorialmanager.com/buil`. What went up is what is in `submissionDocs/`: Title Page and Cover
+Letter, Blinded Manuscript, and the Supplementary Material document with its 8 derived data files.
+`submissionDocs/00_README_upload_package.md` records the package exactly as uploaded.
 
-Closed since this file was first written:
+**Do not edit these files further.** They are now the record of what the journal holds. Any revision
+starts by copying them, so that the submitted version stays diffable against whatever comes back.
+
+Two things still to record here when they arrive: the **Editorial Manager manuscript ID**, and the
+date of the editor's acknowledgement.
+
+**When the decision arrives, start from `../Prompts/2J_manager_prompt_ON_REVISION_DECISION.md`** —
+a standing handoff written the day of submission. Fill its §0, paste it into a new session with the
+reviewer reports, and let it triage before anything is edited.
+
+Closed before submission:
 
 - **Reference status.** The prior journal paper is *under review* and has been **removed from the
   reference list**, per the journal's rule that the list carries published or accepted work only. It
@@ -73,12 +85,18 @@ Closed since this file was first written:
 - **Abstract.** One paragraph, ~237 words against a 100–250 cap. Nothing to cut.
 - **Formatting.** All journal export rules are now inside the `.docx`. See the upload README.
 
-Still open, both flagged in the upload README:
+Carried past submission — neither blocked the upload, both need settling before the revision:
 
-1. 🔴 13 of the 16 figures are **below 600 dpi** at the printed width and need re-exporting.
-2. 🔴 The activity crosswalk's leaf-code counts (**182 / 265 / 64 / 123**) disagree with §3.1 and
-   Table B2 (**182 / 264 / 64 / 121**) for 2010 and 2022. The crosswalk is held out of the
-   Supplementary Material until that is settled.
+1. 🟠 **13 of the 16 figures are below 600 dpi** at the printed width. They went up as they stand,
+   which is fine for a review copy; the journal asks for 600 dpi in the **separate figure files**
+   requested at acceptance. Re-export from the plotting scripts before that point. Table of pixel
+   widths in the upload README.
+2. 🟠 **The activity crosswalk's leaf-code counts (182 / 265 / 64 / 123) disagree with §3.1 and
+   Table B2 (182 / 264 / 64 / 121)** for 2010 and 2022. The crosswalk was held out of the
+   Supplementary Material, so **nothing submitted contradicts anything submitted** — but the
+   §3.1 figures are now in a manuscript under review. Settle which is right before the revision:
+   either the sheet carries rows the pipeline never used, or §3.1 and Table B2 need to say
+   265 and 123.
 
 **`sharingCHV/2ndOcc_Journal.docx` is stale** (2026-08-04) and superseded by
 `2J_manuscript_submission.docx`.
