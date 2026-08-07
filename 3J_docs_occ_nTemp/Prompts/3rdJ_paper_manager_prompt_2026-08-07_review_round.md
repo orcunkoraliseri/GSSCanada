@@ -3,6 +3,75 @@
 **Paste this whole file as the first message of a fresh session.**
 Predecessor archived at
 `Prompts/archive/3rdJ_paper_manager_prompt_2026-08-06_build_complete.2026-08-07_pre_review_round.md`.
+This file's own pre-pause copy is at
+`Prompts/archive/3rdJ_paper_manager_prompt_2026-08-07_review_round.2026-08-07_pre_pause.md`.
+
+---
+
+## P. PAUSE MARKER - read this before anything else
+*(unnumbered on purpose so the section numbers every cross-reference below relies on do not shift)*
+
+**2026-08-07, ~10:45. The user moved to a different project. This round was opened and then paused
+with ZERO manuscript edits made.** Nothing below has been executed. Everything in sections 1 to 9 is
+still exactly as true as it was when the round opened, with the four corrections in 0.2.
+
+### P.1 The two user decisions in section 1 are STILL OPEN
+
+Neither was answered. **Ask again in the first message, then proceed on the rest without waiting** -
+both are decoupled from the mechanical work.
+
+1. **The two disputed DOIs** (section 1.1). Still carrying `**DOI DISPUTED, DO NOT SUBMIT UNTIL
+   RESOLVED**` in `Chapter_01_Introduction.md`. Still not swapped. Ten seconds of user clicking.
+2. **SI Tables B1 / C1 - keep, cut, or rewrite** (section 1.2).
+
+A third, from section 6 item 4: **the front-matter `[confirm]` placeholders** (department, ORCIDs,
+CRediT split, funding) also need the user and were not asked for. Ask for all three at once.
+
+### P.2 🔴 State on disk at pause - what went stale, measured today
+
+Measured 2026-08-07 10:45, not carried forward from a report:
+
+| artefact | recorded where | value at pause |
+|---|---|---|
+| `writing/fullSet/3J_full_manuscript.md` | build report said 2,186 lines / `c68924293b...` | **2,276 lines**, md5 `53abd5f6875dc8e2bf51882b2044a101`, mtime 2026-08-06 22:29:37 |
+| `writing/fullSet/readySubmission.md` | R1 said 1,733 lines / `fcb14eda...` | **1,785 lines**, md5 `f65161de8d255e50e3be2991d2c184de`, mtime 2026-08-06 22:29:37 |
+| Step-9 frozen gates | quoted as 17/10/3 | **confirmed from `outputs_step9_deliverable/step9_gates.json` itself: 30 gates, PASS 17 / INFO 10 / FAIL 3** |
+
+Verification commands, so the next session can re-measure rather than trust this table:
+`(Get-FileHash <file> -Algorithm MD5).Hash` locally, `wc -l` for lines (**never** PowerShell
+`Measure-Object -Line`), and for the gate tally
+`py -3 -c "import json,collections;d=json.load(open(r'<path>\step9_gates.json'));print(collections.Counter(g['status'] for g in d))"`.
+
+Three consequences, and the first one costs real time if missed:
+
+- 🔴 **EVERY LINE NUMBER IN `3rdJ_R1_readthrough_review.md` IS STALE.** It read a 1,733-line file;
+  the file is now 1,785 lines. The figure-placement and double-caption fixes in section 5 landed
+  *after* R1 was written. **Locate R1's findings by their quoted text, never by its line numbers.**
+  The findings themselves are unaffected - only the coordinates moved.
+- **R1's scope-note complaint is resolved.** R1 flagged that someone had edited `readySubmission.md`
+  without its sibling. Both files now carry the **same mtime to the second**, which is consistent with
+  one `assemble_3J.py` pass. They are still intentionally different in content (the strip); that is
+  section 3's design, not drift.
+- **Two R1 findings are already DONE. Confirmed on disk at pause, not taken from a report:**
+  `grep -c '!\['` on `readySubmission.md` returns **15**, so 5.3 (seven schematics absent from the
+  body) is closed; `grep -n '^\*\*Table '` returns all ten captions **including `**Table 4.**`**, so
+  5.1 is closed by the loss check in section 4. Do not re-open either. Read R1 with section 5 of this
+  file open beside it.
+- **R1 5.4 is still open and the same grep shows why:** Table 6 is captioned at line **587**, Tables 3,
+  4 and 5 at **791 / 823 / 1091**. Three chapters early, exactly as section 6 item 3 says.
+
+### P.3 What did NOT change while paused
+
+No manuscript file, no figure, no check script, no gate, no band. The closure state described in the
+predecessor round still holds: **no band moved, no gate verdict changed.** The board at the fixed URL
+in section 8 is current; there is nothing new to publish until work resumes.
+
+### P.4 Start here on resume
+
+**Section 9's N6 (the figure renumbering) is the first thing to do, before any other edit touches a
+chapter.** It is listed sixth there for historical reasons only; the ranking in section 6 item 2 is the
+operative one. Nothing else in section 9 is safe to start in parallel with it, because it rewrites
+captions and in-prose references across every results chapter.
 
 ---
 
@@ -283,6 +352,8 @@ building. That is the answer we wanted, which is exactly why it should be read s
   checks green" without that sentence.
 - **Speed:** `ssh`/`scp` to *fetch* is allowed. **Never `srun`, never bare python, never a login-node
   computation. Always `sbatch`, always `-t 7-00:00:00`.** One stream at a time.
+- **Frozen Step-9 gates: 30 total, PASS 17 / INFO 10 / FAIL 3.** Re-counted from
+  `outputs_step9_deliverable/step9_gates.json` on 2026-08-07, not carried forward from a report.
 - **This is still a writing phase: zero simulation cells.**
 - **Deep research is EXTERNAL.** The deliverable is a `V<NN>` prompt; the user runs it.
 - **Archive the predecessor before editing; corrections are additive.**
@@ -299,7 +370,10 @@ building. That is the answer we wanted, which is exactly why it should be read s
 
 ## 9. Suggested next round
 
-Nothing is owed. Ranked as the manager would:
+Nothing is owed. Ranked as the manager would.
+🔴 **Execution order is not list order: do N6 FIRST, alone.** It rewrites captions and in-prose
+references across every results chapter, so anything else editing a chapter at the same time will
+conflict with it or be silently reverted by it. N1 through N5 all assume the renumbering has landed.
 
 - **N1. Work `3rdJ_R1_readthrough_review.md` top to bottom.** It is the only end-to-end read this
   manuscript has had. Everything in §6 above comes from it.
