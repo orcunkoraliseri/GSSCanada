@@ -368,7 +368,16 @@ def main():
     clean, manifest = strip_for_submission(doc)
 
     # ONE string, TWO files, ONE transform between them. This is mechanism 1.
-    draft = os.path.join(BASE, "3J_full_manuscript.md")     # working copy, apparatus intact
+    #
+    # User decision, 2026-08-08: fullSet/ shows ONE document and it is the final one.
+    # The working draft is not final, so it is written to fullSet/previous/ instead of
+    # beside the submission copy. This is a PATH change only -- both files are still
+    # written from the same in-memory string on every build, so the loss check, the
+    # residue check and the manifest all still compare the same two things.
+    prev = os.path.join(BASE, "previous")
+    if not os.path.isdir(prev):
+        os.makedirs(prev)
+    draft = os.path.join(prev, "3J_full_manuscript.md")     # working copy, apparatus intact
     subm = os.path.join(BASE, "readySubmission.md")         # submission copy, apparatus stripped
     for path, text in ((draft, doc), (subm, clean)):
         with io.open(path, "w", encoding="utf-8", newline="\n") as fh:
