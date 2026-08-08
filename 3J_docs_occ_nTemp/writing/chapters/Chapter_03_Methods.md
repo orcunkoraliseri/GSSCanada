@@ -19,7 +19,7 @@ this paper is the derivation of the Retail channel, AT_RETAIL, from columns the 
 in every cycle: `occPRE` (location) and `occACT` (activity). No new GSS variable was collected or coded
 for this addition.
 
-The derivation rule, frozen 2026-07-02 (decision OD-1), is:
+The derivation rule, frozen 2026-07-02 before any training run, is:
 
 ```
 AT_RETAIL = (occPRE == 5) | ((occACT == 4) & occPRE in {5, 9})
@@ -55,7 +55,10 @@ grown directly from the two-channel construction stage's architecture, not desig
 shared encoder is unchanged; the decoder side gains one head. The decoder therefore carries three heads
 in total: Head 1 (Residential presence), Head 2 (AT_WORK / Office), and Head 3 (AT_RETAIL / Retail, the
 one addition for this paper). Hotel has no head and never passes through this model at all; it is
-produced by an entirely separate side-track described in §3.4.
+produced by an entirely separate side-track described in §3.4. Figure 3 draws the resulting topology,
+with the hotel side-track placed beside the encoder and connected to nothing inside it, because the
+distinction between three GSS heads plus one non-GSS side-track and a four-head model is the one
+reading of this architecture that must not be got wrong.
 
 The three heads are trained under fixed-weight scalarization with loss weights 1.0 : 0.5 : 0.3
 (Residential : Office : Retail) combined with PCGrad pairwise gradient-conflict correction. This
@@ -80,7 +83,14 @@ downstream. Table 4 reports this as the Impossible-State Rate (ISR) gate: raw IS
 rejected, because it would crush the roughly 2%-positive Retail class and would also break bit-compatible
 continuity with the two-channel construction stage's own Head-1/Head-2 outputs; the chosen
 projection-after-independent-heads design preserves per-head calibration while still guaranteeing
-one-channel-at-a-time occupancy.
+one-channel-at-a-time occupancy. Figure 4 traces one slot through that projection, from the three
+independent sigmoid outputs that may conflict to the mutually exclusive decode, with the
+impossible-state rate reported on both sides of it.
+
+The complete hyperparameter set behind the paragraphs above, including the encoder fields carried
+unchanged from the two-channel construction stage and the one line that could not be confirmed against
+either the design document or the code, is reported as a model card in Table A1 rather than scattered
+through this section.
 
 Residential and Office are not left to drift freely as the third head is added: a regression gate
 (Table 4) bounds how far the two reused heads' output may move relative to the two-channel construction
@@ -168,11 +178,13 @@ weekends. The side-track's own backcast validation gate (Table 4) requires QC an
 reconstructions for 2015-2019 to reach a mean absolute error below 0.05, and requires the 2020-04
 COVID-dip reconstruction to recover without overshoot. The 2030 forecast is expressed as three named
 bands (0.92, 1.00, 1.05) around the central SARIMA projection, mirroring the scenario-lever pattern used
-for the Office WFH band and the Retail in-store-share band (§3.5, §4).
+for the Office WFH band and the Retail in-store-share band (§3.5, §4). Figure 5 follows the side-track
+end to end, from the provincial monthly series through the SARIMA fit and its COVID indicator to the
+half-hourly multiplier that reaches the guest-room schedules.
 
 ---
 
-**Figure 6.** *(insert `Figure_06_hotel_sidetrack.png` here)* - The hotel side-track end to end: provincial monthly tourism statistics, the SARIMA forecast with its COVID indicator, the diurnal shape function, and the resulting multiplier applied to guest-room schedules. The channel never touches the Transformer.
+**Figure 5.** *(insert `Figure_05_hotel_sidetrack.png` here)* - The hotel side-track end to end: provincial monthly tourism statistics, the SARIMA forecast with its COVID indicator, the diurnal shape function, and the resulting multiplier applied to guest-room schedules. The channel never touches the Transformer.
 
 ---
 
@@ -180,7 +192,10 @@ for the Office WFH band and the Retail in-store-share band (§3.5, §4).
 
 Injection into the building energy model is dispatched per Space using the IDF `Tag 2` field as an
 exact-match routing key, because the PNNL Tall/SuperTall prototypes leave the standard EnergyPlus Space
-Type field blank. Four dispatch outcomes follow from the tag match, and they are not interchangeable:
+Type field blank. Figure 6 shows the dispatch for every Space in the tower, including the branch that
+matters most for the additivity claim in §6.1: an unrecognised tag falls back to the untouched code
+baseline rather than to an undefined state. Four dispatch outcomes follow from the tag match, and they
+are not interchangeable:
 
 - **Apartment tags -> Residential, REPLACE.** The code default `People` schedule is fully substituted by
   the modelled schedule (`Number_of_People` driven by household size). Replacement is appropriate here
@@ -221,7 +236,7 @@ construction stage itself does not receive a results narrative here.
 
 ---
 
-**Figure 5.** *(insert `Figure_05_tag2_dispatch.png` here)* - Tag-2 exact-match dispatch for every Space in the tower: apartment tags are replaced, office, retail and guest-room tags are modulated, amenity and service/MEP tags are left at the untouched code baseline, and an unrecognised tag falls back to that baseline rather than to an undefined state. The hard wiring gate applies to the modulated branch.
+**Figure 6.** *(insert `Figure_06_tag2_dispatch.png` here)* - Tag-2 exact-match dispatch for every Space in the tower: apartment tags are replaced, office, retail and guest-room tags are modulated, amenity and service/MEP tags are left at the untouched code baseline, and an unrecognised tag falls back to that baseline rather than to an undefined state. The hard wiring gate applies to the modulated branch.
 
 ---
 

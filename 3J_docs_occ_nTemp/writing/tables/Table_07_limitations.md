@@ -1,7 +1,7 @@
 # Table 7 - Limitations (transcribed from the consolidated section)
 
 *Transcribed, not rewritten, from `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline.md` §
-"LIMITATIONS - CONSOLIDATED" (written 2026-08-05, V2-G3). Sixteen items, fifteen carry a number;
+"LIMITATIONS - CONSOLIDATED" (written 2026-08-05). Sixteen items, fifteen carry a number;
 L15 carries none and is marked accordingly rather than given an invented figure. Wording is trimmed to
 fit a table cell; no number or verdict is paraphrased.*
 

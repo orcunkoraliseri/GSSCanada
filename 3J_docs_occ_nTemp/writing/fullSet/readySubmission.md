@@ -7,7 +7,7 @@
 
 ## Abstract
 
-*Context.* Tall buildings increasingly stack residential, office, retail and hospitality uses inside one structure, yet the occupancy schedules driving their energy models remain single-channel, borrowed from one use and held at code default everywhere else. *Gap.* No published occupancy generator produces multiple independent, jointly-trained presence channels for one mixed-use building, and the energy-use-intensity references used to judge such channels were built for single-use stock, not stacked towers. *Aim.* This study jointly trains one model to generate four independent time-use presence channels and injects them into a mixed-use tower. *Methodology.* A three-head conditional Transformer, trained on four Canadian General Social Survey time-use cycles, generates residential, office and retail presence; a SARIMA side-track driven by provincial tourism statistics generates hotel presence; a per-space Tag-2 dispatch injects all four into PNNL Tall and SuperTall prototypes across two Canadian cities, forecast 2005-2030 (56 cells: four channels, two prototypes, two cities). *Key quantified results.* Three of four channel EUI gates fail: the uninjected office control alone scores 85.45 kWh/m2/yr against a floor of 100; the hotel gate splits into two prototype clusters 84.64 kWh/m2/yr apart, 70.5% of the band width, with the 300 ceiling inside that gap; the retail median sits 5.47% below its floor. *Impact.* These failures are findings about reference-band applicability to mixed-use towers, not model error, reported at full strength with no band widened to pass them.
+*Context.* Tall buildings increasingly stack residential, office, retail and hospitality uses inside one structure, yet the occupancy schedules driving their energy models remain single-channel, borrowed from one use and held at code default everywhere else. *Gap.* No published occupancy generator produces multiple independent, jointly-trained presence channels for one mixed-use building, and the energy-use-intensity references used to judge such channels were built for single-use stock, not stacked towers. *Aim.* This study jointly trains one model to generate four independent time-use presence channels and injects them into a mixed-use tower. *Methodology.* A three-head conditional Transformer, trained on four Canadian General Social Survey time-use cycles, generates residential, office and retail presence; a SARIMA side-track driven by provincial tourism statistics generates hotel presence; a per-space Tag-2 dispatch injects all four into PNNL Tall and SuperTall prototypes across two Canadian cities, forecast 2005-2030 (56 cells: four channels, two prototypes, two cities). *Key quantified results.* The four populations do not behave as one occupant: they peak at four different hours, hotel at 18.91 h against a midday cluster near 12 h for the other three, and the resulting whole-building coincidence factor stays below 1 in all four building-city cells (median 0.941), so use-type diversity attenuates the aggregate peak inside a single building. Three of four channel EUI gates fail: the uninjected office control alone scores 85.45 kWh/m2/yr against a floor of 100; the hotel gate splits into two prototype clusters 84.64 kWh/m2/yr apart, 70.5% of the band width, with the 300 ceiling inside that gap; the retail median sits 5.47% below its floor. *Impact.* These failures are findings about reference-band applicability to mixed-use towers, not model error, reported at full strength with no band widened to pass them.
 
 ---
 
@@ -16,7 +16,7 @@
 
 ## Keywords
 
-Multi-Channel Occupancy; Mixed-Use Buildings; Time-Use Survey; Joint Multi-Task Transformer; Retail Occupancy; Hotel Occupancy; Tourism Statistics; Building Energy Simulation; Energy Use Intensity Reference Bands; Canadian General Social Survey (GSS); National Energy Code for Buildings (NECB); PNNL Prototype Buildings; Longitudinal Forecasting
+Multi-channel occupancy; Mixed-use tall building; Time-use survey; Joint multi-task transformer; Building energy simulation; Energy use intensity band
 
 ---
 
@@ -24,9 +24,9 @@ Multi-Channel Occupancy; Mixed-Use Buildings; Time-Use Survey; Joint Multi-Task 
 
 *(5 bullets, each <=85 characters.)*
 
+- Four occupant populations in one tower peak at four different hours.
+- Coincidence factor below 1 in all four cells: use diversity flattens the peak.
 - One Transformer jointly generates four independent occupancy channels.
-- Tag-2 dispatch injects residential, office, retail and hotel into one tower.
-- 56-cell campaign spans four channels, two prototypes, two cities, 2005-2030.
 - Uninjected office control fails its own band, 85.45 kWh/m2/yr vs a floor of 100.
 - Hotel gate splits into two clusters 84.64 kWh/m2/yr apart, deciding the verdict.
 
@@ -36,27 +36,29 @@ Multi-Channel Occupancy; Mixed-Use Buildings; Time-Use Survey; Joint Multi-Task 
 
 **Orcun Koral Iseri**\textsuperscript{1,\*} · **Caroline Hachem-Vermette**\textsuperscript{1}
 
-1 Concordia University, Montreal, Quebec, Canada - *(department/institute to confirm)*
+1 Gina Cody School of Engineering and Computer Science, Concordia University, 1455 De Maisonneuve Blvd. W., Montréal, Québec, H3G 1M8, Canada
 
 \* *Corresponding author:* orcunkoral.oseri@concordia.ca
 
-*ORCID:* Iseri - [confirm]; Hachem-Vermette - [confirm]
+*ORCID:* Orcun Koral Iseri - https://orcid.org/0000-0001-7735-3363
 
 ---
 
 ## Declarations
 
-**Funding.** This postdoctoral research was financially supported by the Natural Sciences and Engineering Research Council of Canada (NSERC) and the Voltage-Age Seed fund. *(reused from the 2J front matter; confirm still accurate for this manuscript before submission)*
+**Funding.** This postdoctoral research was financially supported by the Natural Sciences and Engineering Research Council of Canada (NSERC) and the Voltage-Age Seed fund. The authors gratefully acknowledge this support.
 
 **Data availability.** The General Social Survey Time-Use microdata and the provincial tourism-statistics series (ISQ for Quebec, CBRE/Travel Alberta for Alberta) analysed in this study are publicly available under the catalogue numbers listed in §2. The derived four-channel occupancy schedules, the injected IDFs, and the analysis code are available from the corresponding author on reasonable request.
 
 **Declaration of competing interest.** The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
 
-**CRediT authorship contribution statement.** *(draft - confirm/adjust the split)* **Orcun Koral Iseri:** Conceptualization, Methodology, Software, Formal analysis, Investigation, Data curation, Validation, Visualization, Writing - original draft. **Caroline Hachem-Vermette:** Conceptualization, Supervision, Funding acquisition, Resources, Writing - review & editing.
+**CRediT authorship contribution statement.** **Orcun Koral Iseri:** Conceptualization, Methodology, Software, Formal analysis, Investigation, Data curation, Validation, Visualization, Writing - original draft. **Caroline Hachem-Vermette:** Conceptualization, Supervision, Funding acquisition, Resources, Writing - review and editing. Both authors read and approved the final manuscript.
+
+**Ethical approval.** This study does not contain any studies with human or animal subjects performed by any of the authors. The analysis uses anonymized public-use microdata files released by Statistics Canada, together with published provincial tourism-occupancy statistics.
 
 ---
 
-*Front-matter notes for the author: items marked **[confirm]** need input before submission (department/institute, ORCIDs, exact CRediT split, funding-line accuracy for this manuscript). No result or magnitude from the two-channel construction stage this paper builds on appears anywhere above; that stage is a construction step for this paper and is discussed only in Methods and in the Introduction's departure-point narrative (§1.4).*
+*Front-matter note: no result or magnitude from the two-channel construction stage this paper builds on appears anywhere above; that stage is a construction step for this paper and is discussed only in Methods and in the Introduction's departure-point narrative (§1.4).*
 
 ---
 
@@ -84,7 +86,7 @@ Two literatures bear on this problem, and between them sits a cell that Table 1 
 
 **Table 1.** - Seven-column competitor positioning matrix scoring Doma and Ouf (2023/2024), Buttitta and Finn (2020) and Widén and Wäckelgård (2010) against time-series occupancy, multi-channel (more than one use), calibrated behavioural model, forecast to a future year, mixed-use single building, activity/end-use resolution and stock-scale, with this study's Leg-3 and 2J rows bolded to show the increment.
 
-*Differentiation targets named in dr_L3-10 §2.4 "Closest Prior Works & Differentiation": Doma & Ouf,
+*Differentiation targets named in this project's own positioning review, "Closest Prior Works and Differentiation": Doma & Ouf,
 Buttitta & Finn, Widen & Wackelgard. Both "this study" rows are listed separately so the increment
 from 2J to Leg-3 is visible.*
 
@@ -102,23 +104,23 @@ snapshots, not a time-use survey, and at district scale, not inside one building
 Widen & Wackelgard both drive occupancy from a time-use survey but stay single-channel, residential
 only, single-wave, with no forecast. **The cell none of the three occupies is a time-use-survey-driven,
 multi-channel, forecast-to-a-future-year model inside a single mixed-use building** - that is the
-Leg-3 cell dr_L3-10's positioning verdict names as "genuinely unclaimed in the literature." The 2J row
+Leg-3 cell that review's positioning verdict names as "genuinely unclaimed in the literature." The 2J row
 is carried alongside Leg-3 to show the increment is additive: 2J already cleared time-series,
 calibration, forecast, activity-resolution and stock-scale on the residential-only, single-channel
 problem; Leg-3 trades stock-scale representativeness (2 tower prototypes, not a housing stock) for
 multi-channel and mixed-use-single-building resolution, which 2J did not attempt.
 
-**Cells marked `n/r`.** dr_L3-10's Novelty Matrix (Table 3) and Reporting Survey (Table 1)
+**Cells marked `n/r`.** That review's own novelty matrix and reporting survey
 do not use the same six axes as this table, so several cells are not directly stated in the two
 permitted sources and are left as `n/r` rather than inferred:
-- Doma & Ouf - *Time-series occupancy*: dr_L3-10 states the occupancy source is "Mobile positioning
+- Doma & Ouf - *Time-series occupancy*: the review states the occupancy source is "Mobile positioning
   data (SafeGraph snapshots)" and separately that the study is **not** longitudinal (2019-2021
   snapshot); neither statement confirms or denies within-day temporal resolution.
 - Doma & Ouf - *Calibrated behavioural model*: not characterised as calibrated or uncalibrated in
   either source.
-- Doma & Ouf - *Stock-scale*: dr_L3-10 Table 1 says occupancy is "modeled as separate buildings at a
+- Doma & Ouf - *Stock-scale*: the review says occupancy is "modeled as separate buildings at a
   district scale"; district-scale is not the same claim as stock-scale and no building count is given.
-- Buttitta & Finn - *Calibrated behavioural model*, *Activity/end-use resolved*, *Stock-scale*: dr_L3-10
+- Buttitta & Finn - *Calibrated behavioural model*, *Activity/end-use resolved*, *Stock-scale*: the review
   states only that the study is time-use-survey-driven (Irish TUS), residential-only, and uses MURB
   archetypes; it does not characterise calibration, activity/end-use resolution, or scale.
 
@@ -132,20 +134,20 @@ The authors' prior residential work established that occupant behaviour is not s
 
 ### 1.4 The Authors' Prior Line: Leg-1 to 2J to Leg-2, the Departure Point
 
-The present study departs from a specific prior line of work by the authors, built in three stages. Leg-1, published as the second journal in this line (2J), established a single-channel, residential-only occupancy pipeline: General Social Survey time-use cycles harmonized and augmented by a calibrated conditional generator, linked to the Census dwelling stock, and forecast to 2030 through the COVID/work-from-home break, together with the paired stock-scale simulation design used to isolate the behavioural signal (Iseri and Hachem-Vermette, under review; Iseri and Hachem-Vermette, 2026). That line is treated here as established, not re-claimed: the premise that survey-grounded, time-series occupancy can be generated for Canadian building energy models, and that it changes both magnitude and load shape, is the foundation this paper builds on rather than a result this paper repeats. A second, intermediate construction stage, referred to in this paper as Leg-2, extended that single-channel machinery to two channels, residential and office, growing the generator from one decoder head to two and establishing the modulate-versus-replace distinction that the present pipeline reuses: residential presence replaces baseline schedules per household, while office presence modulates a code-of-record density rather than overriding it. Leg-2 is a construction step in this project, not a second headline result, and it is discussed further, on its own terms, only in the Methods chapter, where its two-channel machinery and one hard-won wiring-verification lesson are the direct ancestors of the present design.
+The present study departs from a specific prior line of work by the authors, built in three stages. Leg-1, published as the second journal in this line (2J), established a single-channel, residential-only occupancy pipeline: General Social Survey time-use cycles harmonized and augmented by a calibrated conditional generator, linked to the Census dwelling stock, and forecast to 2030 through the COVID/work-from-home break, together with the paired stock-scale simulation design used to isolate the behavioural signal (Iseri and Hachem-Vermette, under review; Iseri and Hachem-Vermette, 2026). That line is treated here as established, not re-claimed: the premise that survey-grounded, time-series occupancy can be generated for Canadian building energy models, and that it changes both magnitude and load shape, is the foundation this paper builds on rather than a result this paper repeats. A second, intermediate construction stage, referred to in this paper as Leg-2, extended that single-channel machinery to two channels, residential and office, growing the generator from one decoder head to two and establishing the modulate-versus-replace distinction that the present pipeline reuses: residential presence replaces baseline schedules per household, while office presence modulates a code-of-record density rather than overriding it. Leg-2 is a construction step in this project, not a second headline result, and it is discussed further, on its own terms, only in the Methods chapter, where its two-channel machinery and one hard-won wiring-verification lesson are the direct ancestors of the present design. Figure 2 draws the three stages as nested rather than sequential, so that what each stage carries forward into the next is visible on a single connector; Figure S3 gives the two-channel construction stage's own pipeline in full, for a reader who needs that stage's internals rather than the summary given here.
 
 ---
 
 ### 1.5 Contributions and Aim of the Study
 
-This paper makes four advances over the two-channel construction stage it is built on.
+This paper makes four advances over the two-channel construction stage it is built on. They are stated behaviour first, because the occupancy signal is the object of this study and the building energy model is the instrument that tests it, not the other way round.
 
-1. **Architecture.** A shared-encoder Transformer with three General Social Survey decoder heads (residential, office, retail) is jointly trained alongside a non-GSS hotel side-track driven by provincial tourism statistics, with a decode-time exclusivity projection that drives the raw impossible-state rate from at most 0.5% down to 0% without distorting the individual channel marginals.
-2. **Injection.** A per-space Tag-2 exact-match dispatch routes all four channels into the same physical tower geometry: apartment tags replace baseline schedules, office/retail/guest-room tags modulate code densities, and any missing channel falls back to the untouched code baseline, so the injection is additive by construction rather than by assertion.
-3. **Experimental design.** A 56-cell campaign (four channels, two tower prototypes, two Canadian cities) forecasts all four channels from 2005 to 2030 under one scenario lever per channel, isolating channel-specific sensitivity inside a single stacked building rather than across a housing stock.
-4. **Validation stance.** Three of the four channel-level energy-use-intensity gates are reported failing, at full strength, together with the evidence bearing on whether the reference band or the model is at fault, most notably an uninjected control that fails the office band on its own and two explanatory mechanisms refuted in every one of 56 cells; no band is widened, and no scoring rule is chosen because it happens to pass.
+1. **Four populations, resolved separately inside one envelope.** Households, a workforce, customers and overnight guests are carried as four independent presence channels through one stacked tower, and the campaign shows they do not behave as one occupant: the four channels peak at different hours of the day, hotel roughly seven hours after the midday cluster of the other three, and they move in different directions across the four survey cycles, retail reversing its own trend while residential stays close to flat. The whole-building coincidence factor stays below 1 in all four building-city cells under the central 2030 scenario, so use-type diversity inside one building attenuates the aggregate peak in the same way household diversity does inside one archetype.
+2. **Validation stance.** Three of the four channel-level energy-use-intensity gates are reported failing, at full strength, together with the evidence bearing on whether the reference band or the model is at fault, most notably an uninjected control that fails the office band on its own and two explanatory mechanisms refuted in every one of 56 cells; no band is widened, and no scoring rule is chosen because it happens to pass.
+3. **Architecture and injection.** A shared-encoder Transformer with three General Social Survey decoder heads (residential, office, retail) is jointly trained alongside a non-GSS hotel side-track driven by provincial tourism statistics, with a decode-time exclusivity projection that drives the raw impossible-state rate from at most 0.5% down to 0% without distorting the individual channel marginals; a per-space Tag-2 exact-match dispatch then routes all four channels into the same physical tower geometry, where apartment tags replace baseline schedules, office/retail/guest-room tags modulate code densities, and any missing channel falls back to the untouched code baseline, so the injection is additive by construction rather than by assertion.
+4. **Experimental design.** A 56-cell campaign (four channels, two tower prototypes, two Canadian cities) forecasts all four channels from 2005 to 2030 under one scenario lever per channel, isolating channel-specific sensitivity inside a single stacked building rather than across a housing stock.
 
-The aim of the study follows directly. *This paper asks whether one jointly-trained occupancy model can drive four functionally distinct uses inside a single stacked building, and where the energy-use-intensity references built for single-use stock do, and do not, still apply.* The full pipeline that operationalises this question is summarised in Figure 1, with each stage detailed in the sections that follow: the datasets (§2), the methods spanning harmonization through the four-channel injection (§3), the paired experimental design (§4), the results from per-channel behaviour to the three failing gates (§5), the discussion of what a multi-channel model buys and why the band failures are findings about applicability rather than error (§6), the limitations (§7), and the conclusion (§8).
+The aim of the study follows directly. *This paper asks what four functionally distinct occupant populations do to a single stacked building when each is carried on its own behavioural signal rather than blended into one, whether a single jointly-trained occupancy model can generate all four, and where the energy-use-intensity references built for single-use stock do, and do not, still apply to the result.* The full pipeline that operationalises this question is summarised in Figure 1, with each stage detailed in the sections that follow: the datasets (§2), the methods spanning harmonization through the four-channel injection (§3), the paired experimental design (§4), the results from per-channel behaviour to the three failing gates (§5), the discussion of what a multi-channel model buys and why the band failures are findings about applicability rather than error (§6), the limitations (§7), and the conclusion (§8).
 
 **Figure 1.** - End-to-end Steps 1-9 for the four-channel pipeline, each block annotated with its section reference; the two channels inherited from the construction stage (residential, office) are marked in one colour and the two Leg-3 additions (retail, hotel) in another, with the hotel side-track marked as bypassing the Transformer entirely.
 
@@ -159,8 +161,6 @@ The aim of the study follows directly. *This paper asks whether one jointly-trai
 
 ## References (this chapter)
 
-*Full bibliographic entries below are taken directly from `Leg3_4-split/deepResearch/dr_L3-10_mixeduse_reporting_positioning_REPORT.md` (the source cited throughout Table 1), which is the only citation-lookup already performed for this project; no new literature search was run to produce this chapter.*
-
 **Self-citations (the departure point, §1.4)**
 
 - Iseri, O. and Hachem-Vermette, C. (under review) *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials.* Journal of Building Performance Simulation. - *(verify final citation form / status against master bibliography)*
@@ -168,9 +168,9 @@ The aim of the study follows directly. *This paper asks whether one jointly-trai
 
 **Positioning literature (§1.2, Table 1)**
 
-- Doma, A. and Ouf, M. (2024) Bottom-up framework for modelling occupancy-based demand-side management strategies in a mixed-use district. *Applied Energy*, 355, 122247. https://doi.org/10.1016/j.apenergy.2023.122247 - **DOI DISPUTED, DO NOT SUBMIT UNTIL RESOLVED.** `RV08` reports this DOI resolves to an unrelated paper on hydrogen production, and gives the citation instead as Doma, A., Padsala, R., Ouf, M. M. and Eicker, U. (2024), *Applied Energy*, 375, 124081, https://doi.org/10.1016/j.apenergy.2024.124081. Both forms are internally consistent, so only opening the DOI can decide. Not swapped on one unverified report.
+- Doma, A., Padsala, R., Ouf, M.M. and Eicker, U. (2024) Bottom-up framework for modelling occupancy-based demand-side management strategies in a mixed-use district. *Applied Energy*, 375, 124081. https://doi.org/10.1016/j.apenergy.2024.124081
 - Doma, A. and Ouf, M. (2023) Leveraging mobile positioning data to model building occupant behaviour in a mixed-use district. *Proceedings of Building Simulation 2023: 18th Conference of IBPSA*, pp. 1671-1678. https://publications.ibpsa.org/proceedings/bs/2023/papers/bs2023_1671.pdf
-- Buttitta, G. and Finn, D.P. (2020) A high-temporal resolution residential building occupancy model to generate high-temporal resolution heating load profiles of occupancy-integrated archetypes. *Energy and Buildings*, 206, 109562. https://doi.org/10.1016/j.enbuild.2019.109562 - **DOI DISPUTED, DO NOT SUBMIT UNTIL RESOLVED.** `RV08` reports this DOI resolves to an unrelated paper on sleep and thermoregulation, and gives the article number instead as 109577, https://doi.org/10.1016/j.enbuild.2019.109577. Volume 206 is agreed by both. Not swapped on one unverified report.
+- Buttitta, G. and Finn, D.P. (2020) A high-temporal resolution residential building occupancy model to generate high-temporal resolution heating load profiles of occupancy-integrated archetypes. *Energy and Buildings*, 206, 109577. https://doi.org/10.1016/j.enbuild.2019.109577
 - Widén, J. and Wäckelgård, E. (2010) A Swedish time-use survey and its utility for building energy modeling. *Energy and Buildings*, 42(5), pp. 706-714. https://doi.org/10.1016/j.enbuild.2009.11.010
 
 **Statistics Canada and provincial tourism data sources** - full catalogue metadata for the General Social Survey Time-Use cycles and the ISQ/CBRE monthly hotel-occupancy series is given with the dataset descriptions in §2 and is not duplicated here.
@@ -235,7 +235,7 @@ therefore systematically under-occupy hotel zones, since the survey simply never
 in a hotel room. This is a frame limitation, not a data-quality one, and it forces the Hotel channel to
 be built from an entirely separate, non-survey data family: monthly provincial tourism statistics.
 
-No StatCan table of monthly hotel-occupancy rates exists (finding dr_L3-01); the paper therefore draws
+No StatCan table of monthly hotel-occupancy rates exists (a data-availability check run for this study); the paper therefore draws
 on the two provincial data sources available for the cities in the simulation domain. For Quebec, the
 source is the Institut de la statistique du Québec (ISQ) monthly hotel-occupancy series. For Alberta,
 the source is CBRE / Travel Alberta market reporting, with the 2005-2009 span of the Alberta series
@@ -306,11 +306,11 @@ channel; Hotel is the one non-GSS, tourism-statistics side-track.
 | Residential (AT_HOME) | GSS Time-Use, Leg-1 | Household matched via Census PUMF linkage; `Number_of_People_Schedule` = `HHSIZE`, drawn per residential Space | REPLACE (full substitution of the code schedule) | none |
 | Office (AT_WORK) | GSS Time-Use, Leg-2 | AT_WORK presence from Transformer Head 2; archetype linkage NOCxNAICS (Leg-2) | MODULATE - NECB office density x AT_WORK_fraction(t) | WFH band (conservative / hybrid / fullyhybrid) |
 | Retail (AT_RETAIL) | GSS Time-Use, Leg-3 - the one new GSS channel | AT_RETAIL derived from `occPRE`/`occACT` already carried in the survey (see footnote 1); Transformer Head 3 (new); single PNNL "Retail Retail" archetype, population-level fraction, no per-household lookup (grocery/merchandise not separable in 2015/2022) | MODULATE - People = 0.95 x peak-normalized shape_cd(t) in customer hours; staff-only slots (<= 0.10) keep the NECB baseline (see footnote 2) | In-store share, 2030 bands (0.97 default / 0.90 / 1.05) + QC-Sunday sub-axis |
-| Hotel | non-GSS - ISQ (Quebec) monthly series + CBRE / Travel Alberta (Alberta) monthly series | ISQ/CBRE monthly occupancy rate to SARIMA(1,1,1)(1,1,1,12) per province + COVID indicator (2020-03 to 2022-06) to `hotel_multiplier(t,month,PR) = s(t) x monthly rate`; `s(t)` = unit-normalized 48-slot guest-room shape (dr_L3-05) | MODULATE - NECB guest-room schedule x `hotel_multiplier(t,month,PR)` | SARIMA 2030 bands (0.92 / 1.00 / 1.05) |
+| Hotel | non-GSS - ISQ (Quebec) monthly series + CBRE / Travel Alberta (Alberta) monthly series | ISQ/CBRE monthly occupancy rate to SARIMA(1,1,1)(1,1,1,12) per province + COVID indicator (2020-03 to 2022-06) to `hotel_multiplier(t,month,PR) = s(t) x monthly rate`; `s(t)` = unit-normalized 48-slot guest-room shape (fixed by a diurnal-shape review run for this study) | MODULATE - NECB guest-room schedule x `hotel_multiplier(t,month,PR)` | SARIMA 2030 bands (0.92 / 1.00 / 1.05) |
 
 ## Footnotes
 
-**1. AT_RETAIL rule, frozen 2026-07-02 (OD-1).**
+**1. AT_RETAIL rule, frozen 2026-07-02.**
 
 ```
 AT_RETAIL = (occPRE == 5) | ((occACT == 4) & occPRE in {5, 9})
@@ -352,7 +352,7 @@ this paper is the derivation of the Retail channel, AT_RETAIL, from columns the 
 in every cycle: `occPRE` (location) and `occACT` (activity). No new GSS variable was collected or coded
 for this addition.
 
-The derivation rule, frozen 2026-07-02 (decision OD-1), is:
+The derivation rule, frozen 2026-07-02 before any training run, is:
 
 ```
 AT_RETAIL = (occPRE == 5) | ((occACT == 4) & occPRE in {5, 9})
@@ -388,7 +388,10 @@ grown directly from the two-channel construction stage's architecture, not desig
 shared encoder is unchanged; the decoder side gains one head. The decoder therefore carries three heads
 in total: Head 1 (Residential presence), Head 2 (AT_WORK / Office), and Head 3 (AT_RETAIL / Retail, the
 one addition for this paper). Hotel has no head and never passes through this model at all; it is
-produced by an entirely separate side-track described in §3.4.
+produced by an entirely separate side-track described in §3.4. Figure 3 draws the resulting topology,
+with the hotel side-track placed beside the encoder and connected to nothing inside it, because the
+distinction between three GSS heads plus one non-GSS side-track and a four-head model is the one
+reading of this architecture that must not be got wrong.
 
 The three heads are trained under fixed-weight scalarization with loss weights 1.0 : 0.5 : 0.3
 (Residential : Office : Retail) combined with PCGrad pairwise gradient-conflict correction. This
@@ -413,7 +416,14 @@ downstream. Table 4 reports this as the Impossible-State Rate (ISR) gate: raw IS
 rejected, because it would crush the roughly 2%-positive Retail class and would also break bit-compatible
 continuity with the two-channel construction stage's own Head-1/Head-2 outputs; the chosen
 projection-after-independent-heads design preserves per-head calibration while still guaranteeing
-one-channel-at-a-time occupancy.
+one-channel-at-a-time occupancy. Figure 4 traces one slot through that projection, from the three
+independent sigmoid outputs that may conflict to the mutually exclusive decode, with the
+impossible-state rate reported on both sides of it.
+
+The complete hyperparameter set behind the paragraphs above, including the encoder fields carried
+unchanged from the two-channel construction stage and the one line that could not be confirmed against
+either the design document or the code, is reported as a model card in Table A1 rather than scattered
+through this section.
 
 Residential and Office are not left to drift freely as the third head is added: a regression gate
 (Table 4) bounds how far the two reused heads' output may move relative to the two-channel construction
@@ -505,13 +515,15 @@ weekends. The side-track's own backcast validation gate (Table 4) requires QC an
 reconstructions for 2015-2019 to reach a mean absolute error below 0.05, and requires the 2020-04
 COVID-dip reconstruction to recover without overshoot. The 2030 forecast is expressed as three named
 bands (0.92, 1.00, 1.05) around the central SARIMA projection, mirroring the scenario-lever pattern used
-for the Office WFH band and the Retail in-store-share band (§3.5, §4).
+for the Office WFH band and the Retail in-store-share band (§3.5, §4). Figure 5 follows the side-track
+end to end, from the provincial monthly series through the SARIMA fit and its COVID indicator to the
+half-hourly multiplier that reaches the guest-room schedules.
 
 ---
 
-**Figure 6.** - The hotel side-track end to end: provincial monthly tourism statistics, the SARIMA forecast with its COVID indicator, the diurnal shape function, and the resulting multiplier applied to guest-room schedules. The channel never touches the Transformer.
+**Figure 5.** - The hotel side-track end to end: provincial monthly tourism statistics, the SARIMA forecast with its COVID indicator, the diurnal shape function, and the resulting multiplier applied to guest-room schedules. The channel never touches the Transformer.
 
-![Figure 6](../figures/Figure_06_hotel_sidetrack.png)
+![Figure 5](../figures/Figure_05_hotel_sidetrack.png)
 
 ---
 
@@ -519,7 +531,10 @@ for the Office WFH band and the Retail in-store-share band (§3.5, §4).
 
 Injection into the building energy model is dispatched per Space using the IDF `Tag 2` field as an
 exact-match routing key, because the PNNL Tall/SuperTall prototypes leave the standard EnergyPlus Space
-Type field blank. Four dispatch outcomes follow from the tag match, and they are not interchangeable:
+Type field blank. Figure 6 shows the dispatch for every Space in the tower, including the branch that
+matters most for the additivity claim in §6.1: an unrecognised tag falls back to the untouched code
+baseline rather than to an undefined state. Four dispatch outcomes follow from the tag match, and they
+are not interchangeable:
 
 - **Apartment tags -> Residential, REPLACE.** The code default `People` schedule is fully substituted by
   the modelled schedule (`Number_of_People` driven by household size). Replacement is appropriate here
@@ -560,9 +575,9 @@ construction stage itself does not receive a results narrative here.
 
 ---
 
-**Figure 5.** - Tag-2 exact-match dispatch for every Space in the tower: apartment tags are replaced, office, retail and guest-room tags are modulated, amenity and service/MEP tags are left at the untouched code baseline, and an unrecognised tag falls back to that baseline rather than to an undefined state. The hard wiring gate applies to the modulated branch.
+**Figure 6.** - Tag-2 exact-match dispatch for every Space in the tower: apartment tags are replaced, office, retail and guest-room tags are modulated, amenity and service/MEP tags are left at the untouched code baseline, and an unrecognised tag falls back to that baseline rather than to an undefined state. The hard wiring gate applies to the modulated branch.
 
-![Figure 5](../figures/Figure_05_tag2_dispatch.png)
+![Figure 6](../figures/Figure_06_tag2_dispatch.png)
 
 ---
 
@@ -586,82 +601,24 @@ construction stage and in the authors' residential-only prior work.
 
 **Table 6.**
 
-This table carries the paper's additive claim: Leg-3 adds Retail and Hotel without invalidating a
-prior Leg-2 figure. Per the standing hard rule, a **Bit-identical? = Yes** cell is entered only where
-this task located file-level evidence (a shared file path, or an md5 computed in this task) - never
-from the pipeline overview's prose alone. Where no such evidence was located, both the verdict and the
-Evidence cell read `n/r`; that is treated as a successful, honest outcome, not a gap to be
-papered over.
+This table carries the paper's additive claim, and it carries the limits of that claim in the same
+place. A **Bit-identical? = Yes** cell is entered only where file-level evidence was located, meaning
+a shared file path or a hash computed directly on the files themselves, and never from a design
+document's own prose. Where no such evidence exists, the verdict cell reads `n/r` and the
+basis cell says plainly what was not compared. An unexamined step is reported as unexamined, which is
+a result about the strength of the claim rather than a gap to be filled with an assumption.
 
-| Pipeline step | Leg-2 artefact | Leg-3 change | Bit-identical? | Evidence |
+| Pipeline step | Two-channel stage artefact | Four-channel change | Bit-identical? | Basis for the verdict |
 |---|---|---|---|---|
-| Step 1 - Data collection | `3rdJ_01_readingGSS_2split.py` - GSS column selection for AT_HOME / AT_WORK | `3rdJ_01_hotelIngest_4split.py` (new, non-GSS: `hotel_occupancy_monthly.csv` from ISQ/CBRE) + `3rdJ_01_readingGSS_4split_val.py`; no new GSS variables added for AT_RETAIL (derives from `occPRE`/`occACT` already carried) | n/r | Script renamed `2split` -> `4split` (`Leg2_2-split/Step1_docs/3rdJ_01_readingGSS_2split.py` vs `Leg3_4-split/Step1_docs/3rdJ_01_readingGSS_4split_val.py`); no byte-level or column-level comparison of GSS-column output was performed in this task |
-| Step 2 - Data harmonization | `3rdJ_02_harmonizeGSS_2split.py` - crosswalk + OR-rule for AT_HOME / AT_WORK | `3rdJ_02_hotelHarmonize_4split.py` (new) + the AT_RETAIL OR-rule (frozen OD-1, see Table 2 footnote 1) | n/r | Script renamed; no byte-level or column-level comparison performed in this task |
-| Step 3 - Merge and tiling | List-driven `tile_work_to_30min` tiler (cloned from the 9-channel co-presence tiler), residential + office 30-min output | `3rdJ_03_mergingGSS_4split.py` appends one list entry (AT_RETAIL); retail kept in a **separate CSV** (`retail_30min.csv`) specifically so it cannot overwrite the residential/office columns | n/r | The pipeline overview asserts "residential + office paths bit-identical" (`Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md`, STEP 3 box, line 57) - this is the design **intent** (separate CSV, additive list entry), but per the standing hard rule this prose claim is not itself acceptable evidence; no independent file/column comparison of the tiler's residential/office output was performed in this task |
-| Step 4 - Three-GSS-head Transformer | 2-head Transformer (Head 1 resid, Head 2 AT_WORK), `3rdJ_04B_model_2split.py` | 3rd head (AT_RETAIL) added, `3rdJ_04B_model_4split.py`; backbone is "keep + targeted upgrades" (warmup + PCGrad + logit-adjusted BCE + raking), not a frozen copy (dr_L3-11, OD item 13) | No | `3rdJ_00_4split_Occupancy_Pipeline_Overview.md` VALIDATION GATES table, row "Transformer (Regression) \| Old head (Head 1 & Head 2) JS drift \| ΔJS ≤ 0.002 bits vs Leg-2 validation baseline" (line 205) - a **tolerance-based regression gate**, not a bit-identity claim; Head 1/2 outputs are expected to drift by up to 0.002 bits of JS divergence, not to reproduce Leg-2 bit for bit. The measured ΔJS value for this gate was not located in this task - n/r for the number itself |
-| Step 5 - Archetype linkage | Residential Census linkage (Leg-1, `3rdJ_05_censusLinkage_2split.py`); Office NOCxNAICS linkage (Leg-2) | Retail: single PNNL "Retail Retail" archetype, population-level fraction, no lookup; Hotel: province-level multiplier (QC / AB), no respondent archetype | n/r | `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md` STEP 5 box (lines 79-84) states residential/office linkage is reused ("DONE (Leg 1)" / "DONE (Leg 2)"), but no file/column-level comparison of the Leg-3 linkage output against the Leg-2 linkage output was performed in this task |
-| Step 6 - Forecast to 2030 + hotel side-track | `W_2005->W_2010_ft->W_2015_ft->W_2022_ft` GSS raking chain + `DRIFT_MATRIX`; office WFH bands (conservative/hybrid/fullyhybrid) | Same raking chain code reused for GSS channels; retail lever (3 named 2030 bands) added; hotel SARIMA(1,1,1)(1,1,1,12) side-track added, bypassing the Transformer entirely | No | `Leg3_4-split/Step8_docs/3rdJ_08_implementation_improvements.md` "Defaut 4" (lines 267-332, OPEN as of this task): a measured Step-6 calibration bias - post-calibration 2030 work-presence is **-10.51 pp** vs OBS2022 (Cohen's d -0.649), 4-5x the ~2.4 pp WFH signal the campaign exists to detect. This is a documented, measured divergence in the Step-6 output magnitude, not a reproduction of a stable Leg-2-equivalent value; it directly contradicts a "residential/office Step-6 output is unchanged" reading for the 2005-2030 axis (the bias is reported as near-common-mode across the 3 WFH bands, so cross-band deltas are less affected, but the level itself has moved) |
-| Step 7 - BEM/UBEM integration | `office_integration.py`, 2-channel Tag-based injection into the same PNNL Tall/SuperTall geometry | `commercial_integration.py::inject_mixed_use()`, Tag-2 exact-match dispatch across 4 channels; missing channel falls back to NECB baseline (additive-safe) | **Yes, for the base prototype geometry only** | Leg-3's own campaign driver reads the **same physical IDF files** from Leg-2's own Step-8 output directory, unmodified, with no copy made (`Leg3_4-split/Step8_docs/3rdJ_08D_campaign_cells.py:121`, `.../office_idfs_v242/{CAN_MTL,CAN_CLG}/`). Md5 computed in this task confirms the 4 files are byte-identical to the values recorded in `3rdJ_08_implementation_improvements.md` §C-bis: `CAN_MTL/TallBuilding_..._Z6_v242.idf` = `a2a4817624289d581c92e70d676ef78a`; `CAN_MTL/SuperTallBuilding_..._Z6_v242.idf` = `0365e7a0f1ddb7079a799c51f42d48ef`; `CAN_CLG/TallBuilding_..._Z7A_v242.idf` = `9390293b90c10fa36308d285a24e635b`; `CAN_CLG/SuperTallBuilding_..._Z7A_v242.idf` = `8c136554d3c369522e2bdbc8176ad9ad`. This is evidence for the shared **geometry**, not for the injector code: three copies of the related residential injector `eSim_bem_utils/integration.py` (live repo, the 2J snapshot, the Leg-2 frozen snapshot) were md5'd in this task and **do not match each other** (`9f886fb9427e6bbc4adb7599cbcf3600`, `537183b443846adeb20a0fc191c32159`, `6a92268be1f8dc3301df3bec80d6dd2e` respectively) - the injector code is not a frozen, bit-identical asset across legs, only the base building geometry is |
-| Step 8 - BEM simulation | 72-run residential 2030 re-sim + office campaign; final scorecard **50 PASS / 2 WARN / 17 INFO / 0 FAIL** | 56-cell campaign (2 buildings x 2 cities x 14 scenarios), all 4 channels injected per cell | n/r (channel-isolation shown, cross-leg output not compared) | Leg-2 scorecard: `Leg2_2-split/improvement/2J_to_3J_improvement_implementation.md:1514` - "Full chain re-run on the mutex-clean `_C` deliverable ... agg+val **50P/2W/17I/0F** -> Step-9 **10P/1W/0F**. 0 FAIL end-to-end." Leg-3 channel-isolation evidence (a narrower, Leg-3-internal claim, not a cross-leg reproduction): `Leg3_4-split/Step8_docs/3rdJ_08_implementation_improvements.md`, "Etat verrouille" table row "Cloisonnement inter-canaux" (line 62, PASS, Δ = 0.0 exactly for any non-varied channel between cell pairs) and the "Trois recoupements quantitatifs independants" section (lines 573-583): "Δ office et hôtel rigoureusement inchangés ... désormais prouvé par simulation, pas déduit" against probe job `1169804`. This proves office/hotel are unperturbed **within Leg-3's own retail-fix re-simulation**, not that Leg-3's office/residential numbers reproduce Leg-2's own published Step-8 figures bit for bit - that cross-leg comparison was not performed in this task |
-| Step 9 - Activity-driven end-use loads | Bi-channel (resid vs SHEU, office vs NECB-PNNL); final scorecard **10 PASS / 1 WARN / 0 FAIL**; Office EUI **172.7 kWh/m2/yr**, PNNL band [100, 200], PASS | Four-channel (resid, office, retail, hotel), 30 gates; scorecard `{PASS: 17, INFO: 10, FAIL: 3}`; 3 gates (office, retail, hotel EUI) left failing on purpose (see Table 5) | No | Leg-2: `Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md:140` - "Office · Knowledge / Public / Sales \| tower \| 84 each \| 172.7 / 172.6 / 172.6 \| PNNL 100-200 \| **PASS**". Leg-3: `Leg3_4-split/Step9_docs/outputs_step9_deliverable/_PROVENANCE.md:15-19` - scorecard `{'PASS': 17, 'INFO': 10, 'FAIL': 3}` over 30 gates, arm = base + V2-D9 + V2-D10. 🔴 Comparability caveat, not resolved: `3rdJ_08_implementation_improvements.md` "Defaut 5" (lines 441-447) records an **open, user-untranscribed question** - Leg-2's Step-9 office EUI reads `Electricity:Facility` only (no gas), while the same shared tower IDF burns 13,884.91 GJ of natural gas per run; whether the Leg-2 172.7 figure is electricity-only or all-fuel, and therefore whether it is even the same **basis** as Leg-3's dual-basis all-fuel EUI, is explicitly unresolved in the source document |
-
----
-
-| Bit-identical? | steps | count |
-|---|---|---|
-| **Yes** (evidence located) | Step 7, and only for the base prototype geometry | **1** |
-| **No** (evidence located, and it shows a change) | Steps 4, 6, 9 | **3** |
-| `n/r` (no file-level evidence located in this task) | Steps 1, 2, 3, 5, 8 | **5** |
-
-**Two of the three explicit "No" rows matter for what the paper may claim.** Step 4 is a
-*tolerance* gate (`ΔJS <= 0.002 bits`), which is a bounded-drift guarantee and not bit-identity.
-Step 6 carries a **measured -10.51 pp** post-calibration 2030 work-presence bias against OBS2022
-(Cohen's d -0.649), recorded as OPEN in `3rdJ_08_implementation_improvements.md` "Defaut 4" - four to
-five times the ~2.4 pp WFH signal the campaign exists to detect.
-
-**Manager decision.** The additive claim is **rewritten, not dropped, and not upgraded.** The
-manuscript may claim exactly this, and no more:
-
-> Leg-3 is additive **by construction** - a missing channel falls back to the NECB baseline, retail is
-> written to a separate CSV rather than into the residential/office columns, and Leg-3's campaign reads
-> **the same four prototype IDF files Leg-2 used, byte for byte** (md5s in the Step 7 row, recomputed
-> independently at review on disk, all four confirmed). What has **not** been demonstrated is
-> **bit-identity of the residential and office outputs across the two legs**; five of nine steps carry
-> no cross-leg byte comparison at all, and the residential injector `integration.py` exists in three
-> non-matching copies (`9f886fb9427e6bbc4adb7599cbcf3600` live repo, `537183b443846adeb20a0fc191c32159`
-> 2J snapshot, `6a92268be1f8dc3301df3bec80d6dd2e` Leg-2 snapshot - all three recomputed at review).
-
-**Recorded reason.** *Additive by construction* is a design property this project can evidence.
-*No prior figure invalidated* is an empirical claim about two legs' outputs, and running the
-comparison that would settle it needs a simulation, which this writing phase forbids. Stating the
-weaker claim costs the paper nothing it can defend and removes a sentence a reviewer can falsify with
-one diff. **The band and gate rule (R1) is untouched here: nothing was widened, and no verdict moved.**
-
-**Written reopen trigger.** If a future authorised round runs a cross-leg byte or column comparison
-of the Leg-2 and Leg-3 residential/office Step-3, Step-5 and Step-8 outputs, replace the five
-`n/r` cells with its result and re-score this decision - **in either direction**. A
-confirming result upgrades the claim; a contradicting one is a finding in its own right.
-
-### 2. 🔴 The Leg-2 office EUI of 172.7 in the Step 9 row is a PUBLISHED value that V4-B2 superseded
-
-The Step 9 row cites Leg-2's published office EUI **172.7 kWh/m2/yr** from
-`Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md:140`. That citation is accurate as a
-statement about what was *published*, and it stays. But the value itself was **recomputed on
-2026-08-06 by `V4-B2` and is superseded**:
-
-- corrected office median **106.56 kWh/m2/yr** (`improvements/v4/V4-B2_corrected.md`, lines 47 and 111;
-  `improvements/v4/v4_b2_office_corrected.json`, `"corrected_median": 106.56` against
-  `"published": 172.7`), the four corrected values being **106.56 / 106.66 / 106.71 / 106.56**.
-- The **verdict does not change**: [100, 200] band, **IN before and IN after**. No gate moved.
-- V4-B2 explicitly forbids re-deriving the corrected values by scaling the published ones
-  (`V4-B2_corrected.md`, lines 228-229).
-
-**Rule for the manuscript.** Any 3J sentence that quotes a Leg-2 or 2J EUI **magnitude** uses the
-corrected value; the published figure appears only where the sentence is *about* the publication
-history. This is the same hazard brief §1.2 raises for the 2J residential Table 5, applied to the
-office channel. It also reinforces the Step 9 row's own unresolved caveat: whether Leg-2's office
-figure is electricity-only while Leg-3's is all-fuel is **still open** ("Defaut 5"), so the two are
-not yet known to share a basis and **must not be differenced in the prose**.
+| Step 1 - Data collection | Survey column selection for the residential and office channels | A new, non-survey hotel ingest of the provincial monthly occupancy series, alongside the survey reader; no new survey variable is added for retail, which derives from location and activity columns the survey already carries | n/r | Nothing was compared. The two stages' collection scripts differ in name and the four-channel side adds a reader the two-channel side never had, but no byte-level or column-level comparison of the survey-column output was run, so no verdict is entered |
+| Step 2 - Data harmonization | Crosswalk and OR-rule for the residential and office channels | A new hotel harmonization step, plus the retail OR-rule frozen 2026-07-02 (Table 2, footnote 1) | n/r | Nothing was compared. As at Step 1, the scripts differ in name and no byte-level or column-level comparison of their output was run |
+| Step 3 - Merge and tiling | List-driven tiler producing residential and office 30-minute output | One additional list entry for retail, whose output is written to a **separate file** specifically so it cannot overwrite or reshape the residential and office columns | n/r | The design intends the two reused paths to be untouched, and the separate-file arrangement is what would make that true. That intent is documented, but it was never tested against the tiler's own output, and a design statement about a program is not evidence about what the program wrote |
+| Step 4 - Three-head Transformer | Two-head Transformer, residential and office presence | A third head for retail; the backbone is kept with targeted upgrades (warmup, gradient-conflict correction, logit-adjusted loss, raking) rather than frozen and copied | No | The gate that governs the two reused heads is a **tolerance**, bounding their drift at 0.002 bits of Jensen-Shannon divergence against the two-channel stage's own validation baseline. A bounded-drift guarantee is not bit-identity, and the two reused heads are expected to move within it, so the verdict is No on the evidence that exists. The measured drift value itself was not located and is left unreported rather than estimated |
+| Step 5 - Archetype linkage | Residential dwelling-stock linkage and office workforce linkage | Retail is driven by a single retail archetype applied as a population-level fraction, hotel by a province-level multiplier; neither receives a respondent-level linkage | n/r | The two reused linkages are documented as carried over unchanged, but no file-level or column-level comparison of their output across the two stages was run, so no verdict is entered |
+| Step 6 - Forecast to 2030 and the hotel side-track | Survey-cycle raking chain with a demographic drift matrix, plus the office work-from-home bands | The same raking chain is reused for the survey-derived channels; a retail scenario lever is added, and the hotel SARIMA side-track is added, bypassing the Transformer entirely | No | The code is reused but the **level has moved**, so this is a verdict on measured output rather than on an untested step. Post-calibration 2030 work presence sits 10.51 percentage points below observed 2022 (Cohen's d -0.649), an open, recorded bias that is four to five times the roughly 2.4 percentage-point work-from-home signal the campaign exists to detect. The bias is close to common-mode across the three work-from-home bands, so contrasts between bands are less affected than the level itself, but a reading of "the reused channels' Step-6 output is unchanged" is directly contradicted |
+| Step 7 - Building-model integration | Two-channel tag-based injection into the tower prototypes | Four-channel exact-match dispatch, with a missing channel falling back to the untouched code baseline | **Yes, for the base prototype geometry only** | The strongest evidence in this table, and also the narrowest. Both campaigns read the **same four physical prototype model files** from one directory, with no copy taken, and all four were confirmed byte-identical by hash at review. That establishes the **geometry** and nothing wider: the injector code is not a shared frozen asset, since three copies of the related residential injector were hashed and do not match one another. The tower the two stages simulate is the same building; the code that writes schedules into it is not the same code |
+| Step 8 - Building simulation | 72-run residential re-simulation plus the office campaign | The 56-cell campaign, two prototypes by two cities by fourteen scenarios, with all four channels injected per cell | n/r | Channel isolation was demonstrated **inside this study's own campaign**, where any channel not varied between a pair of cells moves by exactly zero, confirmed by simulation rather than inferred. That is a within-study result about interference between channels. The two stages' simulation outputs were never compared with one another, so no cross-stage verdict is entered |
+| Step 9 - Activity-driven end-use loads | Two-channel end-use validation against national survey and prototype references | Four-channel validation over thirty gates, three of which are left failing on purpose (Table 5) | No | The two stages are scored on different gate sets, and, more seriously, may not share a **basis** at all. Whether the two-channel stage's office figure counts electricity only while this study's counts all fuels is an open question in that stage's own record, and the shared tower burns natural gas in every run. Until that is settled the two figures cannot be differenced, and a claim of reproduction cannot be entered |
 
 ---
 
@@ -685,7 +642,11 @@ EnergyPlus's own Total Building Area exactly (Table 3). Both towers stack the sa
 - residential, office, retail, hotel - inside one building envelope, plus amenity and service/MEP space
 that carries no occupant-driven channel. This is the concrete meaning of "four channels driving four
 uses inside one building": the campaign does not compare four separate archetype buildings, it compares
-two buildings that each already contain all four uses.
+two buildings that each already contain all four uses. Figure S1 gives the measured occupiable-area
+share carried by each channel in each prototype, with the service and mechanical share shown separately
+because it is a share of gross floor area rather than of occupiable area; the two prototypes do not
+divide their floor area between the four uses in the same proportions, which is what makes the
+prototype axis a genuine experimental factor rather than a size rescaling.
 
 ---
 
@@ -743,6 +704,8 @@ Hotel's SARIMA band (0.92 / 1.00 / 1.05) - and each lever is exercised both join
 bundles, and in isolation, in the corresponding pair of sens_* scenarios (Table 2). Residential carries
 no independent lever of its own; its 2030 product moves only as a consequence of the Office WFH band, a
 design choice made explicit in the campaign's own scenario-construction code rather than left implicit.
+Figure S2 lays the four channels' levers side by side, so that Residential's deliberate absence of an
+independent axis is legible as a design decision rather than as an omission.
 
 ---
 
@@ -791,7 +754,7 @@ implementation record cited below.
 **Table 3.**
 
 The 56-cell Step-8 campaign: two tower prototypes x two cities x 14 scenarios. Surfaces below are the
-**corrected, parsed** values (Defaut 7, 2026-07-31) - Sigma(`FloorArea` x `Multiplier`) on
+**corrected, parsed** values (an implementation correction recorded 2026-07-31) - Sigma(`FloorArea` x `Multiplier`) on
 `IsPartOfTotalArea = 1` zones, reproducing EnergyPlus's own *Total Building Area* exactly. The two
 IDFs per prototype (Montreal / Calgary) differ by **36 bytes only** - geometry is identical, the
 climate tag is the sole difference, so EUI deltas isolate climate.
@@ -846,16 +809,16 @@ Applied per day-type, to AT_RETAIL exactly as to AT_WORK in Leg-2.
 
 | Layer | Check | Target | Provenance |
 |---|---|---|---|
-| LOCATION mapping | AT_RETAIL rate, weekday 12:00-14:00, per cycle | 0.06-0.10 (confirmed by dr_L3-06, central ≈ 0.079) | project-chosen (set before tuning) |
+| LOCATION mapping | AT_RETAIL rate, weekday 12:00-14:00, per cycle | 0.06-0.10 (confirmed by a retail presence-rate review, central ≈ 0.079) | project-chosen (set before tuning) |
 | LOCATION mapping | Saturday peak rate, 13:00-16:00 | 0.09-0.12 | project-chosen (set before tuning) |
 | LOCATION mapping | Sunday peak rate, per city | Calgary 0.06-0.10 / Montreal 0.04-0.07 | project-chosen (set before tuning) |
 | LOCATION mapping | Night slots 00:00-05:00, all day-types | 0.000-0.003 | project-chosen (set before tuning) |
-| OR-rule leak | `occACT==4 & occPRE==1` (online-shopping) share per cycle, excluded from AT_RETAIL | rule FROZEN (OD-1, 2026-07-02); cross-tab still reported as verification | project-chosen (set before tuning) |
+| OR-rule leak | `occACT==4 & occPRE==1` (online-shopping) share per cycle, excluded from AT_RETAIL | rule FROZEN 2026-07-02; cross-tab still reported as verification | project-chosen (set before tuning) |
 | Transformer (JS) | JS(AT_WORK), JS(AT_RETAIL) per stratum | < 0.02 each (JS alone is toothless for AT_RETAIL; paired with PR-AUC / F1 below) | project-chosen (set before tuning) |
 | Transformer (Resolution) | PR-AUC and F1 on positive slots, AT_RETAIL | PR-AUC ≥ 0.15, F1 ≥ 0.25 (catches all-zeros failure) | **heuristic** |
 | Transformer (Dynamics) | Midday (11-14 h) rate error + transitions/day, AT_RETAIL | Midday error ≤ 3.0 pp, transitions ≥ 0.05/day | project-chosen (set before tuning) |
 | Transformer (Regression) | Old-head (Head 1, Head 2) JS drift | ΔJS ≤ 0.002 bits vs Leg-2 validation baseline | project-chosen (set before tuning) |
-| Transformer (Exclusivity) | Impossible-State Rate: slots with > 1 of {AT_HOME, AT_WORK, AT_RETAIL} active | ISR ≤ 0.5 % raw; = 0 % after decode-time projection (dr_L3-12) | project-chosen (set before tuning) |
+| Transformer (Exclusivity) | Impossible-State Rate: slots with > 1 of {AT_HOME, AT_WORK, AT_RETAIL} active | ISR ≤ 0.5 % raw; = 0 % after decode-time projection | project-chosen (set before tuning) |
 | Hotel backcast | QC + AB monthly 2015-2019 vs reconstruction | MAE < 0.05 | project-chosen (set before tuning) |
 | Hotel COVID dip | 2020-04 reconstruction | recovered without overshoot | project-chosen (set before tuning) |
 | BEM end-to-end | Default vs 2022, Montreal SuperTall | EUI delta positive; Office + Hotel dominant | project-chosen (set before tuning) |
@@ -885,7 +848,7 @@ Made mandatory because the Leg-2 People-field wiring bug (`Number_of_People_Sche
   and scenario-differentiation gates, and the ± 2 pp EUI-share gate. All were set before tuning and
   are project acceptance bars, not literature values.
 - **heuristic** - PR-AUC ≥ 0.15 and F1 ≥ 0.25, adopted to catch an all-zeros failure mode, flagged by
-  dr_L3-11/dr_L3-13 as heuristic rather than literature-derived.
+  this project's own architecture and training reviews as heuristic rather than literature-derived.
 
 n/r - the decode-time thresholds (0.50 / 0.40 / 0.15) named in the pipeline overview's
 provenance blockquote are not broken out as individual gate rows in the VALIDATION GATES / VALIDATION
@@ -934,6 +897,8 @@ occupancy signal. The first cycle at which Hotel is actually injected is 2022, a
 tourism-statistics product; even there the median change against the uninjected-2005 baseline is small,
 +0.09 % (four-cell range -0.39 % to +0.73 %). Hotel's real year-to-year movement is carried by the SARIMA
 2030 band rather than by the historical GSS-cycle axis, and is examined directly in Section 5.4.
+Figure 7 plots all four trajectories on the same cycle axis, with Hotel's 2005 to 2015 segment marked as the
+uninjected NECB baseline so that its flatness is not read off the figure as a measured hotel signal.
 
 The four channels also carry very different weight inside the same building envelope. Aggregated across
 all four cycles and all four building-city cells (`step9_longitudinal.csv`, `energy_share_pct` and
@@ -942,11 +907,11 @@ above its median share of building floor area (20.25 %), while Office's median e
 runs 13.72 points below its area share (35.14 %); Residential (energy 18.27 % vs area 17.73 %) and Retail
 (2.56 % vs 3.92 %) sit close to proportional. This asymmetry between one high-intensity, low-footprint
 channel and one low-intensity, high-footprint channel is the structural backdrop for the per-channel band
-verdicts in Section 5.2 (Figure 7).
+verdicts in Section 5.2 (Figure 8).
 
-**Figure 10.** - four-channel EUI trajectory across the 2005, 2010, 2015
+**Figure 7.** - four-channel EUI trajectory across the 2005, 2010, 2015
 
-![Figure 10](../figures/Figure_10_longitudinal_4ch.png)
+![Figure 7](../figures/Figure_07_longitudinal_4ch.png)
 
 and 2022 GSS Time-Use cycles, one panel or series per channel, Hotel's 2005-2015 segment marked as the
 uninjected NECB baseline rather than a measured hotel signal.
@@ -981,8 +946,7 @@ CZ 7), which is 1.0 % from the ceiling's original 90.1-2004-lineage anchor of 30
 objection does not hold; what remains is that the reference archetype's own city set (Rochester /
 International Falls) does not match this study's NECB-2017 Montreal / Calgary towers.
 
-**Retail** fails under the gate rule actually in force, median-in-band rather than all-cells (decided at
-V2-B3, in advance of the numbers): the measured median is 75.63 kWh/m2/yr, which is 5.47 % below the 80
+**Retail** fails under the gate rule actually in force, median-in-band rather than all-cells (decided in advance of the numbers): the measured median is 75.63 kWh/m2/yr, which is 5.47 % below the 80
 kWh/m2/yr floor. Under an all-cells count, 12 of 56 cells sit inside the band and 44 of 56 sit below the
 floor (0 above the ceiling); that per-cell tally is reported for transparency but is not the rule that
 scores the gate. This 5.47 % median-to-floor gap must not be confused with a different, smaller quantity:
@@ -993,11 +957,14 @@ the median and the floor, which is the 5.47 % reported above.
 
 No band value was moved and no gate verdict was changed to produce these results; all three failures are
 reported as findings about band applicability, not resolved by widening a band or by selecting whichever
-rule happens to pass (Table 5).
+rule happens to pass (Table 5). Figure 8 plots all 56 cells per channel against their own band, which is
+where the three failures' different geometries are visible at once: office below its floor across the
+whole cell set, hotel split into two prototype clusters on either side of its ceiling, and retail
+straddling its floor with the median on the failing side.
 
-**Figure 7.** - per-channel EUI across all 56 cells, CFA basis, as-modelled bands
+**Figure 8.** - per-channel EUI across all 56 cells, CFA basis, as-modelled bands
 
-![Figure 7](../figures/Figure_07_eui_4ch.png)
+![Figure 8](../figures/Figure_08_eui_4ch.png)
 
 marked, the three failing channels' cells shown against their respective floor/ceiling.
 
@@ -1013,7 +980,9 @@ at 12.04 h (range 12.01-12.10 h), and Retail at 12.37 h (range 12.11-12.62 h) - 
 midday - while Hotel peaks at 18.91 h (range 18.84-18.94 h), roughly seven hours later, in the early
 evening. The whole-building peak (`_BUILDING` channel, `peak_hour_circular`) lands at a median of 14.95 h
 (range 14.11-15.70 h across the four cells): between the midday cluster of Office/Residential/Retail and
-Hotel's evening peak, and coincident with none of the four channels' own peaks exactly.
+Hotel's evening peak, and coincident with none of the four channels' own peaks exactly. Figure 10 places
+the four channel peaks and the whole-building peak on one clock face for all four building-city cells,
+and Figure 9 gives the underlying weekday and weekend load-shape curves the peaks are read from.
 
 The weekday midday-to-night contrast (`wd_midday_kW` against `wd_night_kW`) also differs sharply by
 channel, and one channel inverts it. Retail shows the sharpest daytime concentration: median weekday
@@ -1033,15 +1002,15 @@ imply, the same attenuation effect reported for household diversity within a sin
 Leg-2 construction stage, here operating across four different uses sharing one envelope instead of across
 households sharing one archetype.
 
-**Figure 8.** - weekday and weekend diurnal load shape, one curve per channel
+**Figure 9.** - weekday and weekend diurnal load shape, one curve per channel
 
-![Figure 8](../figures/Figure_08_diurnal_4ch.png)
+![Figure 9](../figures/Figure_09_diurnal_4ch.png)
 
 plus the whole-building total, `B_central` scenario, midday and night reference bands marked.
 
-**Figure 9.** - per-channel and whole-building peak hour (circular-mean),
+**Figure 10.** - per-channel and whole-building peak hour (circular-mean),
 
-![Figure 9](../figures/Figure_09_peakhour_4ch.png)
+![Figure 10](../figures/Figure_10_peakhour_4ch.png)
 
 `B_central` scenario, all four building-city cells, coincidence factor annotated.
 
@@ -1077,7 +1046,9 @@ The three jointly-varying 2030 bundles (`B_cons`, `B_opt`) reproduce this same p
 all three levers move together - Office -2.05 % to +2.20 %, Retail -2.42 % to +2.66 %, Hotel -0.73 % to
 +0.45 % against `B_central` - close to the sum of the isolated single-lever effects above, which is the
 cross-check this section relies on: each lever's effect is close to additive rather than interacting with
-the other two.
+the other two. Figure 11 shows the three isolated levers and the two jointly-varying bundles on one
+panel per channel, which is where that near-additivity is read directly rather than inferred from the
+percentages above.
 
 **Figure 11.** - per-channel energy response to each of the three isolated
 
@@ -1090,7 +1061,7 @@ bundles overlaid for the additivity cross-check.
 
 **Table 5.**
 
-Dual-basis EUI reporting per dr_L3-10: **CFA** (Conditioned Floor Area of the zones assigned to that
+Dual-basis EUI reporting, as recommended by this project's own positioning review: **CFA** (Conditioned Floor Area of the zones assigned to that
 use) is the primary thermodynamic metric; **GFA-share** (whole-building Gross Floor Area times the
 parsed occupiable-area fraction for that channel) is reported for stock/SCIEU comparability. The two
 bases are never averaged.
@@ -1124,15 +1095,15 @@ bases are never averaged.
   90.1-2004-lineage anchor of 302.21, so the vintage-mismatch objection does not hold; the remaining
   limitation is that the reference archetype (90.1-2019 Rochester/International Falls) and city set do
   not match this study's NECB-2017 Montreal/Calgary tower.
-- **Retail.** The gate rule in force is **median-in-band**, not all-cells (decided at V2-B3, in
+- **Retail.** The gate rule in force is **median-in-band**, not all-cells (decided in
   advance of the numbers). The retail band spans 80-155 kWh/m2/yr; the measured median is **75.63,
   which is 5.47 % below the 80 floor** (re-derived from the 56 CFA values in the deliverable CSV).
   Under the median rule the gate is FAIL. Under an all-cells count, 12/56 cells sit inside the band and
   44/56 sit below the floor (0 above the ceiling); this per-cell tally is reported for transparency but
   is not the rule that scores the gate.
   The rule change itself was justified by a *different* quantity, and the two must not be conflated:
-  V2-B3 records that the all-cells gate **was turning on 0.15 % of its floor**, meaning the per-cell
-  verdict count was decided by a margin that narrow, so that a **-0.05 %** median shift in the V2-E3
+  The decision record states that the all-cells gate **was turning on 0.15 % of its floor**, meaning the per-cell
+  verdict count was decided by a margin that narrow, so that a **-0.05 %** median shift in a separate improvement round's
   arm flipped one cell (55/56 to 54/56). That 0.15 % is the decision margin of the retired all-cells
   rule; it is **not** the distance between the median and the floor, which is 5.47 %.
 
@@ -1168,10 +1139,9 @@ the CSV/JSON independently.
   held in the sibling `outputs_step9/` directory, which `_PROVENANCE.md` states is retained
   specifically because it is not reproducible elsewhere.
 - The as-modelled band values themselves (retail 80/110/155; hotel 180/240/300; office 100/135/200)
-  and the empirical/INFO bounds are sourced to `dr_L3-02_retail_eui_bands_REPORT.md` and
-  `dr_L3-03_hotel_eui_bands_REPORT.md` (Table 5 in each report) and, for office, to the Leg-2-inherited
-  `Office Reference EUI ... As-Modelled Bands.md` Table 7.1, cited via the `band_src` field in the CSV
-  itself (also deliverable-sourced, confirmed).
+  and the empirical/INFO bounds are sourced to this project's own retail and hotel reference-band
+  reviews, and, for office, to the office reference document inherited from the two-channel
+  construction stage, Table 7.1, cited via the `band_src` field in the results file itself.
 
 No band value was moved and no gate verdict was changed to produce this table.
 
@@ -1185,9 +1155,11 @@ The findings of §5 are interpreted here against the gap they were designed to c
 
 ### 6.1 What a Multi-Channel Model Buys, and What It Does Not Yet Prove
 
-Jointly training one model to output four independent, per-use presence channels, then dispatching them through a per-space, exact-match routing key, lets a single stacked tower carry four functionally distinct populations, households, a workforce, customers and overnight guests, each on its own signal, instead of one blended "occupant" trend applied uniformly across every floor. That design choice is not incidental: a single composite channel would smear the four populations' genuinely different temporal behaviour into one curve that represents none of them (§1.3), and the decode-time exclusivity projection exists precisely so that four independently generated channels do not collide inside the same tower before they reach the building model.
+The first thing the campaign establishes is behavioural rather than architectural: inside one envelope, on one plant, the four populations do not behave as one occupant, and the ways they differ are large enough to matter to the building rather than only to the occupancy model. They peak at different hours, with hotel at 18.91 h against a midday cluster of 11.90 to 12.37 h for office, residential and retail, and the whole-building peak at 14.95 h coincides with none of the four. They differ in day-to-night structure by an order of magnitude and in one case by sign, from retail's weekday midday-to-night ratio near 34 to 1 down to residential's 3.9 to 1 and hotel's outright inversion. They move in different directions across the four survey cycles, retail declining and then reversing past its own 2005 baseline while residential stays close to flat (§5.1, §5.3). The consequence for the building is measurable and not merely descriptive: because the four peaks fall at different hours, the whole-building coincidence factor stays below 1 in every one of the four cells, median 0.941, so use-type diversity inside one stacked building attenuates the aggregate peak in the same way household diversity attenuates it inside a single archetype. A single-channel schedule applied uniformly across every floor cannot represent any of this, because the quantity it would have to represent is a difference between populations, not a level.
 
-This design is additive on the two-channel construction stage it grew from, and it is additive in a specific, demonstrable sense: a missing channel falls back to the untouched code baseline rather than to an undefined state, retail presence is written to its own file rather than into the residential or office columns, and the campaign reads the same four prototype geometry files the two-channel stage used, confirmed byte for byte at the point they enter the campaign. What the design does not demonstrate, and what this paper does not claim, is bit-identity of the residential and office outputs across the two construction stages. Five of the nine pipeline steps carry no cross-stage byte or column comparison at all, and the injector code itself exists in three non-matching copies across the live repository and the two stages' own frozen snapshots; only the base tower geometry, not the code that writes schedules into it, is confirmed unchanged. Table 6 records this step by step, with the md5 evidence behind each verdict and an explicit marker on every cell where no comparison was located. The paper is therefore precise about what "additive" means here: additive by construction, evidenced at the one step where geometry reuse was checked, and not yet an empirically demonstrated claim that no residential or office figure from the construction stage would move if the comparison were run.
+The architecture is what makes that observation available. Jointly training one model to output four independent, per-use presence channels, then dispatching them through a per-space, exact-match routing key, lets a single stacked tower carry four functionally distinct populations, households, a workforce, customers and overnight guests, each on its own signal, instead of one blended "occupant" trend applied uniformly across every floor. That design choice is not incidental: a single composite channel would smear the four populations' genuinely different temporal behaviour into one curve that represents none of them (§1.3), and the decode-time exclusivity projection exists precisely so that four independently generated channels do not collide inside the same tower before they reach the building model.
+
+This design is additive on the two-channel construction stage it grew from, and it is additive in a specific, demonstrable sense: a missing channel falls back to the untouched code baseline rather than to an undefined state, retail presence is written to its own file rather than into the residential or office columns, and the campaign reads the same four prototype geometry files the two-channel stage used, confirmed byte for byte at the point they enter the campaign. What the design does not demonstrate, and what this paper does not claim, is bit-identity of the residential and office outputs across the two construction stages. Five of the nine pipeline steps carry no cross-stage byte or column comparison at all, and the injector code itself exists in three non-matching copies across the live repository and the two stages' own frozen snapshots; only the base tower geometry, not the code that writes schedules into it, is confirmed unchanged. Table 6 records this step by step, stating for each of the nine steps what was compared, what was found, and, on the five steps where nothing was compared, saying so in place of a verdict. The paper is therefore precise about what "additive" means here: additive by construction, evidenced at the one step where geometry reuse was checked, and not yet an empirically demonstrated claim that no residential or office figure from the construction stage would move if the comparison were run.
 
 ---
 
@@ -1278,7 +1250,7 @@ This pipeline is verified immune to that specific defect, and the reason is stru
 **Table 7.**
 
 *Transcribed, not rewritten, from `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline.md` §
-"LIMITATIONS - CONSOLIDATED" (written 2026-08-05, V2-G3). Sixteen items, fifteen carry a number;
+"LIMITATIONS - CONSOLIDATED" (written 2026-08-05). Sixteen items, fifteen carry a number;
 L15 carries none and is marked accordingly rather than given an invented figure. Wording is trimmed to
 fit a table cell; no number or verdict is paraphrased.*
 
@@ -1305,9 +1277,9 @@ fit a table cell; no number or verdict is paraphrased.*
 
 # 8 Conclusion
 
-This paper asked whether one jointly-trained occupancy model can drive four functionally distinct uses inside a single stacked building, and where the energy-use-intensity references built for single-use building stock do, and do not, still apply to such a building. Answering the first half of that question required building a shared-encoder Transformer with three time-use-survey decoder heads and a separate, non-survey side-track for the one use the source survey cannot see, then dispatching all four resulting channels into the same tower geometry through a per-space, exact-match routing key so that a missing channel falls back safely to the untouched code baseline rather than to an undefined state. Answering the second half required taking the resulting failing gates seriously rather than resolving them, which is where this paper's central contribution sits.
+This paper asked what four functionally distinct occupant populations do to a single stacked building when each is carried on its own behavioural signal rather than blended into one, whether one jointly-trained occupancy model can generate all four, and where the energy-use-intensity references built for single-use building stock do, and do not, still apply to the result. Answering the first two parts of that question required building a shared-encoder Transformer with three time-use-survey decoder heads and a separate, non-survey side-track for the one use the source survey cannot see, then dispatching all four resulting channels into the same tower geometry through a per-space, exact-match routing key so that a missing channel falls back safely to the untouched code baseline rather than to an undefined state. Answering the third required taking the resulting failing gates seriously rather than resolving them, which is where this paper's central contribution sits.
 
-The evidence supports a clear pair of answers. First, four independent, per-use occupancy channels can be jointly trained and injected into one mixed-use tower without collapsing into one blended signal, and doing so is additive on the two-channel construction stage this project grew from in the specific, evidenced sense that a missing channel is handled safely and the underlying tower geometry is confirmed unchanged, without claiming a bit-identity between construction stages that was not tested. Second, three of the four channel-level energy-use-intensity gates fail, and in each case the failure is a finding about whether a reference band built for single-use stock applies to a stacked mixed-use tower, not a defect in the occupancy model that produced the injected schedules. The office gate fails alongside its own uninjected, occupancy-free control, which fails the same floor on its own. The hotel gate's 56 cells separate into two prototype-driven clusters with a gap wide enough, relative to the band's own width, to decide most of the verdict before any occupancy signal is injected. The retail gate fails a median-in-band rule chosen in advance of the numbers, on a channel this study's own review found has no population-level, time-of-day presence reference to validate against at all. In every one of the three cases, the reference value was left exactly where it started, and no scoring rule was swapped once it was known which rule would pass.
+The evidence supports a clear set of answers. First, the four populations do not behave as one occupant inside one envelope, and the difference reaches the building rather than stopping at the occupancy model: the four channels peak at four different hours, with the hotel channel roughly seven hours after the midday cluster formed by the other three and the whole-building peak coincident with none of them; their weekday day-to-night structure differs by an order of magnitude across channels and inverts outright for hotel; and they move in different directions across the four survey cycles rather than along one shared trend. Because those peaks do not coincide, the whole-building coincidence factor stays below 1 in all four building-city cells tested, so use-type diversity inside one stacked building attenuates the aggregate peak in the same way household diversity does inside a single archetype. Second, four independent, per-use occupancy channels can be jointly trained and injected into one mixed-use tower without collapsing into one blended signal, and doing so is additive on the two-channel construction stage this project grew from in the specific, evidenced sense that a missing channel is handled safely and the underlying tower geometry is confirmed unchanged, without claiming a bit-identity between construction stages that was not tested. Third, three of the four channel-level energy-use-intensity gates fail, and in each case the failure is a finding about whether a reference band built for single-use stock applies to a stacked mixed-use tower, not a defect in the occupancy model that produced the injected schedules. The office gate fails alongside its own uninjected, occupancy-free control, which fails the same floor on its own. The hotel gate's 56 cells separate into two prototype-driven clusters with a gap wide enough, relative to the band's own width, to decide most of the verdict before any occupancy signal is injected. The retail gate fails a median-in-band rule chosen in advance of the numbers, on a channel this study's own review found has no population-level, time-of-day presence reference to validate against at all. In every one of the three cases, the reference value was left exactly where it started, and no scoring rule was swapped once it was known which rule would pass.
 
 Taken together, these results establish that jointly-trained, per-use occupancy injection into a stacked mixed-use building is feasible with the architecture and dispatch mechanism this paper describes, and that the more immediate barrier to a clean validation story is not the occupancy model but the reference bands available to judge it, none of which were built with a stacked mixed-use tower in mind. The limitations set out in §7, an occupancy frame that cannot see hotel guests or retail staff, internal-gain parameters carried over unchanged from a single office reference, and a domestic-hot-water plant whose capacity pinning defeats a global correction, bound how far the present results generalise, and several of them point directly at what a following study would need to build: reference bands constructed for, and validated against, buildings that stack more than one use, rather than borrowed from single-use stock and applied to a tower they were never designed to score.
 
@@ -1443,342 +1415,11 @@ restaurant channel to drive (OD-9).
 
 **Episode-time share (validation target, not a training input).** Note. **The value in the Step-2 doc
 itself (`:43`, "~2.1-2.3%, stable across cycles") is superseded.** The corrected, measured figure is
-**1.50-2.14%, an approximately 25% decline across cycles** - see `Appendix_C_corrections.md` entry 4
-for the full correction and its sourcing (`B-4`/`V2-C5`).
-
-**Table B1.**
-
-Source: each round's own plan doc and its Progress Log / status panel, read directly (not from
-conversational memory). Counts are quoted from each document's own summary table where one exists;
-where a round does not use the same vocabulary as the others (v0, v1), the mapping is stated in a
-footnote rather than silently forced into the others' columns.
-
-**"Bands moved" reads 0 in every row below.** Six rounds, one directly-cited "no band value moved /
-not one" statement per round (or the equivalent explicit statement), zero exceptions found. No round's
-own log contradicts this - the table stops here and is reported as such, per the task's stop
-condition, because it did not need to.
-
-**A second, unrequested but equally load-bearing fact fell out of the same reading: "Gates moved"
-also reads 0 in every row.** The 30-gate Step-9 scorecard carries the identical tally - 17 PASS / 10
-INFO / 3 FAIL, the same three gates (`S9-EUI-office`, `S9-EUI-retail`, `S9-EUI-hotel`) FAILing
-throughout - from the end of v1 (`3rdJ_L3_step9_READER_GUIDE.md:26`) through the v2 frozen deliverable
-(`V2-G1_FROZEN_DELIVERABLE.md:74-80`) to the end of v4 (`3rdJ_L3_v4_implementation.md:995,1065`,
-"`step9_gates.json` untouched in either directory"). Six rounds of disclosed, sometimes hard, findings
-never once changed a PASS to a FAIL or a FAIL to a PASS.
-
-| Round | Items | Done | Withdrawn | Blocked | Gates moved | Bands moved | Headline finding |
-|---|--:|--:|--:|--:|--:|--:|---|
-| **v0** - backward audit (diagnostic; not a fix log) | 24 [^v0-items] | 0 [^v0-done] | 0 [^v0-withdrawn] | 0 | 0 | 0 | "The road is right; the pipeline is not broken" - 13 internal findings (3 high severity) plus 11 blind-replication findings from two independent auditors (Codex, Gemini); one finding (B-13) briefly reached the submitted 2J manuscript before its falsifier, run in v2, retired it. |
-| **v1** - Step-9 fix log (T9-9…T9-13, arms A-R) | 5 [^v1-items] | 4 | 1 [^v1-withdrawn] | 0 | 0 | 0 | None of the three EUI FAILs is an occupancy problem: the **uninjected** `Default_NECB` control fails office by 15% on its own (85.45 vs. floor 100), with zero GSS injection - measured across 8 arms / 56-cell campaigns each. |
-| **v2** - WP-A/B/C/D/E/F/G execution (49-item board) | 49 [^v2-items] | 49 | 0 [^v2-withdrawn-note] | 0 | 0 | 0 | All four WP-B band-provenance decisions (office/retail/hotel/hotel-DHW) executed with zero band widening; the hotel band's cited primary `PNNL-28543` **does not exist** (resolves to a nuclear-fuel report) and is replaced by a first-party ASHRAE 90.1-2019 retrieval; all 24 backward-audit findings reach a terminal status (12 FIXED / 8 ACCEPTED-AS-DOCUMENTED / 4 WITHDRAWN). |
-| **v3** - three open decisions + their build prerequisites | 6 [^v3-items] | 6 | 0 | 0 | 0 [^v3-gates-note] | 0 | Two of three decisions were taken **against** a first-draft recommendation after reading Leg-2 precedent (`val_score` selection kept as the written spec; `X-3` stays WARN); building the missing person-level retail gate (`RW9`) produced a genuine **new** FAIL (+0.0179 lift vs. a 0.10 bar) showing the generator reproduces demographic strata, not individuals - and the same statistic collapses identically on `wrk30`, so it is not retail-specific. |
-| **v4** - close-out of the 11 remaining v2/v3 open items | 11 | 7 | 2 [^v4-withdrawn] | 2 [^v4-blocked] | 0 | 0 | Four of the round's own sub-tasks (hotel/office/retail rescoring) had been computed from the **superseded** `outputs_step9/` directory instead of the frozen deliverable - the hotel result **inverted** (28 cells below the floor read as 28 above the ceiling) even though the naive count "28 of 56" was identical in both directories. Separately: Leg-2's published EUI table is corrected on all 8 rows (3 of 8 verdicts move), and the **submitted** 2J paper's own Table 5 is corrected on all 6,000 published runs (3 of 4 band verdicts move; all four archetypes now sit below their NRCan SHEU ranges). |
-| **v5** - tooling round (produces checks, not findings) | 3 [^v5-items] | 3 | 0 | 0 | 0 | 0 [^v5-bands-note] | Built specifically to catch the two process errors v4 made (reading a superseded directory; reopening an already-closed item). Its own tool, `f1_frozen_input_check.py`, was then found genuinely FAILING between its own validation (14:59) and the round's close (16:15), on lines of code written *after* the check had already passed: "a check validated once is a claim with an expiry date." |
-
-[^v0-items]: 13 internal findings `B-1…B-13` plus 11 blind-replication findings (5 Codex `C-1…C-5`, 6
-Gemini `G-1…G-6`) = 24, parsed and counted by `improvements/v2/g5_audit_closure_check.py`.
-[^v0-done]: v0 is explicitly diagnostic, not an execution round: "This folder is the audit and its
-external inputs. It is **not** a fix log - the step-level improvement logs stay one level up in
-`improvements/`." Source: `improvements/v0/investigation/README.md:7-8`. Every finding's terminal
-disposition (FIXED / ACCEPTED-AS-DOCUMENTED / WITHDRAWN) is executed and counted under **v2**
-(`V2-G5`, `V2-A1`, `V2-C1…C10`, `V2-D1…D9`, `V2-F1…F8`), not under v0, to avoid double-counting the
-same 24 findings on two rows of this table.
-
-[^v0-withdrawn]: Terminal `WITHDRAWN` status for 4 of the 24 findings (`B-13`, `G-3`, `G-4`, `G-5`) is
-recorded by `V2-G5`, a v2 task - counted in v2's row, not here. Within v0's own document, one finding's
-*headline half* is struck as wrong during the 2026-08-04 blind-audit update (`B-1`, "≥21.38% of
-multi-person households carry non-identical co-resident vectors"), but its terminal status is
-`ACCEPTED-AS-DOCUMENTED`, not `WITHDRAWN` - see the terminal-status table at
-`3rdJ_L3_backward_audit_2026-08-04.md:2388`.
-
-[^v1-items]: `T9-9` (injector standby floor, `:962`), `T9-10` (lighting zone-coincidence, `:1075`),
-`T9-11` (occupancy-driven DHW, first spec `:1506`, re-spec `:2027`, counted once), `T9-12` (retail
-lighting re-spec, `:1724`), `T9-13` (DHW volume scaling, re-specification of T9-11, `:2159`). Source:
-`improvements/v1/3rdJ_L3_improvements_step9.md`.
-
-[^v1-withdrawn]: `T9-11`'s original DHW-per-capita spec (arm D) - "**arm REFUTED and withdrawn**".
-[^v2-items]: Status panel: `DONE 49/49, IN PROGRESS 0, READY 0, DECISION 0, BLOCKED 0`. Source:
-`improvements/v2/V2-G1_FROZEN_DELIVERABLE.md` cross-referenced against
-`improvements/v2/3rdJ_L3_v2_implementation.md:201-205`.
-
-[^v2-withdrawn-note]: v2's own 49-item task board carries no `WITHDRAWN` task (all 49 reached `DONE`).
-`WITHDRAWN` appears as a terminal status on the upstream **findings** ledger (4 of 24, see
-[^v0-withdrawn]) that several v2 tasks (`V2-A1`, `V2-G5`) resolved - a different ledger from the
-49-item task board, not double-counted here.
-
-[^v3-items]: `V3-H1`, `V3-H2`, `V3-H3` (the three open decisions) + `V3-J1`, `V3-J2`, `V3-J3` (their
-build prerequisites) = 6. Status panel: "**6 done · 0 in progress · 0 ready · 0 decision of 6.**"
-[^v3-gates-note]: No *existing* gate's PASS/FAIL/WARN verdict changed (`V3-H3`: "rule values
-unchanged... **0 statuses moved**", `:117`; `V3-H1`/`V3-H3` both state "No band moves; no gate status
-changes", `:199`). `V3-J1` **built** a new person-level gate (`RW9`) that ships FAILing - this is a
-new check added to the scorecard, not an existing published verdict flipping, so it is not counted as
-a moved gate. Source: `improvements/v3/3rdJ_L3_v3_implementation.md:84,118`.
-
-[^v4-withdrawn]: `V4-B1` and `V4-B3` - both put to the user as open decisions on 2026-08-06, both
-discovered to have **already been decided and closed** in v2 (`V2-B4`/`V2-D10` for B1 on 2026-08-05;
-`V2-A1` for B3 on 2026-08-04) before v4 ever opened them. Source:
-`improvements/v4/3rdJ_L3_v4_implementation.md:56-60,68,70`.
-
-[^v4-blocked]: `V4-C2` (`RW9` exists in code but not in the shipped Step-4 report - re-checked, block
-survived) and `V4-C3` (Quebec hotel occupancy pre-2019, Power-BI-locked; prompt `V07` written, still
-blocked). Source: `improvements/v4/3rdJ_L3_v4_implementation.md:73-74`.
-
-[^v5-items]: `f1_frozen_input_check.py`, `f2_no_reopen_check.py`, `f3_asset_provenance_check.py` - all
-three built, all three run live and under `--falsify` on 2026-08-06. Source:
-`improvements/v5/3rdJ_L3_v5_tooling.md` (§V5-F1/F2/F3, "Test method" lines under each).
-
-[^v5-bands-note]: "**No band, threshold, gate verdict or published number moved.** Nothing outside
-`improvements/v5/` was written except one opt-out comment on `a4_split_score.py:27`." Source:
-`improvements/v5/3rdJ_L3_v5_tooling.md:184-185`.
-
-**Table C1.**
-
-Every correction below is read from the artefact that made it, not from a summary. Each entry states
-what the defect was, why it needed correcting, how it was resolved, and whether any reported result
-moved. No band value or gate verdict is changed by this appendix itself - every "how resolved" line
-either points to a decision already taken and cited elsewhere, or states plainly that nothing has
-moved yet.
-
----
-
-## C.1 - Défaut 7: the tower floor-area table was 2.7-3.3x too small, and it shifted every EUI proportionally
-
-**What it was.** The master pipeline document's per-channel "part occupiable" table carried floor
-areas that were never parsed from the model: the old Tall column gave **24.4%** for three different
-channels (office, retail, residential-implied) - three identical values to one decimal place, "a
-template, not a measurement" - and the old SuperTall column (24.1/30.3/16.1/29.5) looked plausible
-(distinct values summing to 100%) but corresponded to the model no better. Total building area was
-given as **40,846 m² (SuperTall) / 26,750 m² (Tall)**.
-
-**Why it needed correcting.** EUI is a division; the floor-area denominator fixes it entirely. The
-pipeline's own **±2 pp** EUI-share gate compares modelled per-channel EUI shares against these
-"parsed occupiable shares" - if the reference is a template rather than a parse, the gate compares the
-model to nothing, and would fail on retail and office regardless of what the model does. This is
-precisely the scenario the project's "a gate must be seen failing" rule exists to catch, and widening
-the tolerance to make it pass would have been pure gate-shopping.
-
-**How it was resolved.** Parsed directly from the injected IDF plus the EnergyPlus SQL `Zones` table:
-`Σ(FloorArea × Multiplier)` over zones with `IsPartOfTotalArea = 1`, which reproduces EnergyPlus's own
-*Total Building Area* exactly, identical across all 28 cells of each tower. Corrected totals:
-**SuperTall 135,857.6 m² / Tall 72,623.1 m²** - occupiable **107,816.0 m² / 57,075.4 m²**,
-Service/MEP **20.64% / 21.41% of gross** (not "~52% of gross" as the old doc claimed). Corrected
-occupiable shares: office **44.33% / 44.65%**, hotel **26.37% / 24.91%**, residential
-**22.50% / 22.40%**, retail **4.39% / 5.53%**, residential-common **2.40% / 2.50%**.
-
-**Did any reported result move?** Yes, by construction: the old total areas were **2.7-3.3x too
-small** (retail specifically off by ×3.7 SuperTall / ×4.4 Tall), and because EUI is energy divided by
-this area, every channel's EUI moved proportionally when the correct denominator was substituted. The
-correction is a documentation-and-derivation fix (the table is now derived from `agg_meta.csv` via
-Step 8E, never hand-retyped) - **no band value was widened or moved** to absorb this; the EUI values
-downstream were computed on the corrected area from the point this was found (2026-07-31) forward.
-
----
-
-## C.2 - The retail density conversion-factor error: `B-11` is RETIRED, and the real, smaller defect that survives
-
-**What it was.** The backward audit's finding `B-11` originally reported that the model's retail
-occupant density (25.0 m²/person, parsed from the injected IDF) contradicted the master document's
-stated "~3.7 m²/person" for retail - a "6.8x gap" reported as a modelling defect.
-
-**Why it needed correcting.** The "6.8x gap" was not a defect in the model. NECB states occupancy in
-occupants per 1000 ft², not m²/person. Office = **3.72 occ/1000 ft²**, and converting units - 
-`(1000 / 10.7639) / 3.72 = 24.97 m²/person` - reproduces the value the IDF actually carries. The two
-numbers (25.0 and 3.7) were never in conflict; the "6.8x" was the unit-conversion factor itself
-(`25.0 / 3.7 = 6.76`), and the finding as originally written was a unit-label error in the project's
-own documentation, not a defect in the model. **Why it survived three rounds of checking:** both
-numbers were individually correct, so every consistency check that compares the two values passes - 
-only asking what each value is *denominated in* catches a unit-label error.
-
-**How it was resolved.** `B-11` is **RETIRED** as originally stated. What survives, as a new and
-smaller finding: the retail zones run the **office** occupant density (**24.97 m²/person**) where
-NECB's own `Retail - sales` space type gives **3.10 occ/1000 ft² = 29.97 m²/person** - retail is
-therefore modelled roughly **20% over-crowded** relative to its own NECB reference. Separately, NECB's
-retail **schedule type C** is never loaded in the injected IDF (`grep -c "NECB-C-" injected.idf` = 0).
-The correct value was loaded via `V2-D9` (NECB-C retail conversion); the blanket-constant observation
-(occupancy and plug load both run one office-derived number across every space type, while lighting
-*is* differentiated per space type) is unaffected by the retirement and still stands as a documented
-limitation.
-
-**Did any reported result move?** The retail occupant density and its NECB-C schedule were corrected
-in the model (`V2-D9`, part of the frozen deliverable arm). **No EUI band value moved** to accommodate
-this - `S9-EUI-retail` was already failing before and after, under the median-in-band rule (see C.3
-below for the companion decision on that gate's rule basis).
-
----
-
-## C.3 - The unsourced 0.95 retail peak fraction against NECB retail's actual 0.80
-
-**What it was.** The master document's retail injection formula cited a "0.95 NECB retail peak
-fraction" as the multiplier basis for retail schedule injection
-(`retail_schedule_multiplier = 0.95 × peak-normalised shape`).
-
-**Why it needed correcting.** Parsed directly from the injected IDF: the retail zones run the
-`NECB-A-Occupancy` schedule, which peaks at **0.9**, not 0.95. The file's own `RetailStandalone`
-schedule - the one that would actually apply a retail-specific peak - exists but is **inert** (never
-referenced by any retail zone) and peaks at **0.80**. The only 0.95 anywhere in the file is the
-**office** schedule's peak. So "0.95, NECB retail peak" was not a retail number in this model at all;
-it was an office peak fraction, reused and mislabelled. Two further consequences follow directly: the
-injector formula is implemented exactly as specified (`0.95 × shape × lever` produces an injected peak
-of 0.9215, confirmed against the artefact - the amplitude effect of getting this constant wrong is a
-modest **+2.4%** at peak), but the *baseline the retail channel replaces* is `NECB-A-Occupancy`, an
-office-shaped curve that **dips to 0.5 at 12:00-14:00** - a lunch trough where retail's actual peak
-should be. The retail channel is therefore a shape intervention, and a larger one than the old
-documentation described.
-
-**How it was resolved.** The 0.95 is re-sourced in both master documents as what it actually is (an
-office-schedule peak fraction reused as a retail cap), with the office-shaped-baseline point added as
-methods documentation. `dr_L3-06`'s original NECB table citation for the 0.95 could not be verified
-from public sources and is recorded as unconfirmed.
-
-**Did any reported result move?** No band value moved. The retail rate gate this constant feeds was
-independently demoted from a hard all-cells rule to INFO for an unrelated reason (see the `S9-EUI-retail`
-median-in-band decision, `V2-B3`) - the 0.95/0.80 correction is a provenance and documentation fix, not
-a re-simulation.
-
----
-
-## C.4 - The retail episode-time share: 1.50-2.14%, an approximately 25% decline, not "stable"
-
-**What it was.** The master document's validation-target line for retail read "~2.1-2.3%, stable
-across cycles" - stated as a target the synthetic diaries must reproduce.
-
-**Why it needed correcting.** The measured weighted episode-time share in shopping locations is
-**1.50-2.14%**, and it **declines by approximately 25% across the 2005-2022 GSS cycles**, not stable.
-"Stable across cycles" is not merely imprecise; it is false, and it was listed as a validation target
-the synthetic model must hit - a fabricated target is worse than an inaccurate description. An
-external deep-research pass (`R2`) subsequently corroborated the decline independently: Canada GSS
+**1.50-2.14%, an approximately 25% decline across cycles**. The decline is not a coding artefact: it
+is corroborated independently across four national time-use series over comparable spans - Canada GSS
 2005-2022 **-25.0%**, US ATUS 2003-2022 **-20.8%**, UK TUS/CTUR 2000-2022 **-34.4%**, Eurostat HETUS
-2000-2020 **-21.4%** - the Canadian decline is internationally normal in both magnitude and direction,
-not a coding artefact, and roughly three-quarters of the drop is attributable to real behavioural
-change with the remainder linked to a 2022 GSS coding-concentration effect the project had already
-found on its own. The measured level (1.50-2.14%) is also internationally normal - every national
-series examined falls in the 1.5-2.2% range.
-
-**How it was resolved.** Both master documents were corrected to state "**1.50-2.14%, declining ~25%
-across cycles**" in place of "~2.1-2.3%, stable across cycles." A reconciliation paragraph was added
-explaining that the 0.97 in-store-share scenario lever survives this correction because it encodes
-saturation of the e-commerce displacement curve (post-2022 footfall stabilising near 88-94% of 2019
-levels) rather than linear extrapolation of the 2005-2022 trend - the two had appeared incompatible
-only because the model behind the lever had never been written down.
-
-**Did any reported result move?** The corrected level and trend are documentation fixes; the retail
-rate gate this anchor partly feeds was independently reclassified (see C.3). No EUI band value moved.
-
----
-
-## C.5 - The Richardson attribution correction (`V2-C8`)
-
-**What it was.** Six sites across the master documents and `dr_L3-06` attributed the project's
-peak-normalisation decode-time decision to Richardson et al. (2010), describing their model as
-`any-present × N` - a shape-extraction / amplitude-anchoring construction.
-
-**Why it needed correcting.** Richardson et al. (2010) does not use `any-present × N`. What they
-actually implement is a **household-level first-order Markov chain over the active-occupant count
-S(t) ∈ {0…N}** at 10-minute resolution - a materially different model class from what was cited. The
-citation was checked against the paper's abstract and methods (the full text is paywalled, and this
-limit is stated at each corrected site rather than hidden).
-
-**How it was resolved.** The citation was corrected at all six sites it appears - 
-`3rdJ_00_4split_Occupancy_Pipeline.md:332` and `:486`, `..._Overview.md:241`,
-`dr_L3-06_retail_diurnal_targets_REPORT.md:55`, `:106`, `:185` - struck-not-deleted, plus a new `:186`
-entry for the 2008 companion paper (its DOI explicitly flagged as unverified). Every one of the six
-sites explicitly states that **the peak-normalisation decision itself is unaffected**: the attribution
-was wrong, the decision it was cited to support was not.
-
-**Did any reported result move?** No. This is a citation-accuracy correction only; no band, gate, or
-numeric result changed.
-
----
-
-## C.6 - The `dr_L3-03` hotel-band primaries that do not exist, and the first-party replacement
-
-**What it was.** The hotel EUI band `[180, 240, 300]` (as-modelled floor/central/ceiling) was cited to
-`dr_L3-03_hotel_eui_bands_REPORT.md`, whose own Table 2 in turn cited two primary sources for the 300
-ceiling, including a document identified as `PNNL-28543`.
-
-**Why it needed correcting.** Both `dr_L3-03` primaries were chased to the document itself, and
-**neither exists as cited**. One returns `NOT FOUND`. `PNNL-28543` resolves to a nuclear-fuel report - 
-confirmed **twice, independently** - not an energy-simulation prototype document. The band was
-therefore **unsupported, not wrong**: a citation is not evidence until it has been opened, and this one
-could not be opened into what it claimed to be.
-
-**How it was resolved.** A first-party replacement was retrieved directly from the ASHRAE 90.1-2019
-prototype building ZIP's own `.table.htm`: **DOE/PNNL Large Hotel, ASHRAE 90.1-2019 = 284.44 kWh/m²·yr
-at CZ 6A, 299.28 kWh/m²·yr at CZ 7**. A pre-registered prediction that this retrieval route would
-reproduce a companion report's numbers (`RV05`) was tested and **passed at 0.00% disagreement on
-10/10 rows**. The **300 ceiling was kept, not moved** - it sits **1.0%** from the vintage-matched
-90.1-2019 CZ 7 value (299.28), so the objection that "a 2004-vintage band is scoring a 2019 building"
-does not hold once the citation is corrected to the right vintage. The residual archetype gap (the
-project's NECB-2017 Montréal/Calgary geometry vs. the 90.1-2019 prototype's own Rochester/International
-Falls climate stations) is recorded as a limitation, not folded into a tolerance.
-
-**Did any reported result move?** The **citation moved; the number and the gate verdict did not.**
-`S9-EUI-hotel` remains **FAIL** before and after this correction - the band values `[180, 240, 300]`
-are unchanged, only their sourcing changed from a non-existent document to a verified first-party
-retrieval.
-
----
-
-## C.7 - The `V4-B4` 2J EUI extraction defect, and the argument for Leg-3's immunity
-
-**What it was.** The **submitted** 2J manuscript's Table 5 residential EUI values (SingleDetached,
-OtherDwelling, MidRise, HighRise) were computed by a shared `calculate_eui()` function carrying two
-defects: (1) a double-counted peak-demand table - a power quantity, summed into an annual energy total
-as if it were an energy quantity - and (2) a water-heating guard (`if 'm3' in str(units)`) that
-correctly zeroes water energy on SI runs but fails to recognise IP units (`gal`), so on IP runs water
-volume is summed directly into the EUI as if it were kWh.
-
-**Why it needed correcting.** All 6,000 published run directories behind 2J's Table 5 were recomputed
-(a full census, not a sample, because the raw outputs turned out to be present locally rather than
-cluster-only). The recomputed electricity total was cross-checked against a path the defect cannot
-reach - `elec_facility_kWh`, built from the raw hourly EnergyPlus meter stream by a separate script - 
-with **maximum disagreement 0.067%** across 400 cross-checked runs, confirming the corrected numbers
-are right and the published numbers are not.
-
-**How it was resolved - the corrected residential EUI (2022, kWh/m²·yr, rounded as reported in the
-live submission table):**
-
-| Archetype | Published (2022) | **Corrected (2022)** | Band (NRCan SHEU-2019) | Verdict change |
-|---|--:|--:|---|---|
-| SingleDetached | 200.0 | **115** | 130.6-186.1 | above upper (+7%) → **below lower (≈12%)** |
-| OtherDwelling | 114.9 | **100** | 136.1-186.1 | below lower (16%) → below lower, deeper (≈27%) |
-| MidRise | 169.6 | **108** | 111.1-216.7 | within band ("Yes") → **below lower (≈3%)** |
-| HighRise | 127.8 | **78** | 113.9-147.2 | within band ("Yes") → **below lower (≈31%)** |
-
-(Pooled five-year-mean figures, a different basis reported alongside the 2022 column in the same
-source, are larger still for the published side - e.g. SingleDetached pooled published 200.40 vs.
-corrected 118.44 - and show the identical direction and all-four-below-band pattern; the 2022 column
-above is the one reproduced in the live submission table cited below.)
-
-The mechanism is a unit-system split, not a uniform bug: on **SI** runs the water guard correctly
-zeroes water energy, so the double-counted demand table is the operative defect (dominant on
-MidRise/HighRise, apartment archetypes, 34-37% of the published total); on **IP** runs the water
-volume is summed as if it were energy, so the water-unit defect dominates (SingleDetached/OtherDwelling,
-up to 40.8% of the published total). Every run carries both mechanisms; the unit system decides which
-one is negligible and which is decisive. All four archetypes fall **below** their SHEU regional-average
-ranges once corrected - the published table had reported one archetype above its band, one below, and
-two inside; the corrected table reports all four below.
-
-**The Leg-3 immunity argument.** Leg-3 (this paper) is verified immune to this defect because its EUI
-values are read from **hourly meter streams**, never from the tabular demand-summary table
-`calculate_eui()` reads. This is worth one sentence in Leg-3's own Limitations as a reproducibility
-point: the same class of extraction defect exists in the codebase this project descends from, and
-Leg-3's pipeline structurally does not route through the vulnerable function.
-
-**Did any reported result move?** Yes, in the 2J manuscript directly: **three of the four SHEU band
-verdicts change**, and both archetypes previously reported "within band" (MidRise, HighRise) now read
-below their lower bound. **No SHEU band value itself moved** - the correction is entirely in the
-simulated column; the NRCan reference ranges are unchanged. The corrected values are live in the 2J
-submission copy's Table 5, not in an archived pre-correction copy.
-
-**Source of truth, and what is explicitly not the source of truth.** Corrected values verified present
-at `../2J_docs_occ_nTemp/writing/fullSet/readySubmission.md:367` (SingleDetached row reads **115** /
-**116** for 2022/2030). **Not** the archived pre-`V4-B4` copies, and **not**
-`writing/sharingCHV/2ndOcc_Journal.docx`, which still carries the stale (published, uncorrected) table.
-A second, independent defect was found while tracing this one: `2J_full_manuscript.md` (as opposed to
-`readySubmission.md`) reproduces from a **different, superseded** simulation campaign entirely - both
-files share the same modification timestamp, so the divergence is invisible from the filesystem and
-was only found by reproducing each table from its own underlying data.
+2000-2020 **-21.4%** - and the measured level sits inside the 1.5-2.2% range every one of those series
+occupies.
 
 **Figure S3.**
 

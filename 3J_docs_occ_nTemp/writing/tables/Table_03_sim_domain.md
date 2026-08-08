@@ -1,7 +1,7 @@
 # Table 3 - Simulation domain
 
 The 56-cell Step-8 campaign: two tower prototypes x two cities x 14 scenarios. Surfaces below are the
-**corrected, parsed** values (Defaut 7, 2026-07-31) - Sigma(`FloorArea` x `Multiplier`) on
+**corrected, parsed** values (an implementation correction recorded 2026-07-31) - Sigma(`FloorArea` x `Multiplier`) on
 `IsPartOfTotalArea = 1` zones, reproducing EnergyPlus's own *Total Building Area* exactly. The two
 IDFs per prototype (Montreal / Calgary) differ by **36 bytes only** - geometry is identical, the
 climate tag is the sole difference, so EUI deltas isolate climate.

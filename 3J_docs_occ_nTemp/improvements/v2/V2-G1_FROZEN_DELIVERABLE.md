@@ -61,6 +61,36 @@ renamed. `improvements/v5/f3_asset_provenance_check.py` reads this section.
 | `step9_longitudinal.csv` | `735f19a98982228616bece8af06d7658` |
 | `step9_report.html` | `259b104aa0f6e87b8d3ee0607500d407` |
 | `step9_scenario_response.csv` | `8e927778362ed50885f8f9a4db5de810` |
+| `figures_hires/fig_diurnal_4ch.png` | `e1d6e0c712e7dce3256382ce122d4cc6` |
+| `figures_hires/fig_eui_4ch.png` | `15af64b6d1cf9bd3b42e6cfb131ed156` |
+| `figures_hires/fig_longitudinal_4ch.png` | `474314e9d455ef6acf237f94eea8f870` |
+| `figures_hires/fig_peakhour_4ch.png` | `ae4d14cc14beec07c7d05c7e80d8915a` |
+| `figures_hires/fig_scenario_4ch.png` | `6f4a6703147335bc714e52920f594c39` |
+
+> **Why `figures_hires/` at 600 dpi and not the 300 dpi set registered here earlier the same day.**
+> The first re-render targeted 300 dpi, on the assumption that 300 is *the* publisher minimum. `RV10`
+> item 7 then reported Elsevier's minimums as **300 dpi for halftones, 500 dpi for combination art,
+> and 1000 dpi for bitmapped line drawings**. These five are line plots carrying text, which is
+> combination art, so **the 300 dpi set would have shipped still failing the stated minimum.** It was
+> replaced, not supplemented, and a vector PDF is now written beside each PNG. This is the second
+> time in one day that a number was acted on before its source was read; the first was the abstract.
+
+**The `figures_hires/` rows are an ADDITION, made 2026-08-08. Nothing above them changed.** The
+140 dpi figures in `figures/` remain the frozen render and keep the md5s registered above; the
+manuscript now carries the 300 dpi copies because 140 dpi is below the publisher's artwork minimum.
+
+The two renders are the same figure. That claim is not asserted, it is tested by
+`improvements/v5/f6_figure_replot_equivalence.py`, whose load-bearing arm re-renders at the
+**original** 140 dpi and requires byte-identity with the frozen files. All five reproduce exactly,
+which isolates the pipeline from the resolution: the same code reading the same aggregates returns
+the same image, so a dpi change can only add pixels.
+
+🔴 **The input that produces them is not the Step-9 script's own default.** `DEFAULT_AGG` at
+`3rdJ_09_activityDrivenLoads_4split.py:63` points at `outputs_step8/agg`, which is the **superseded**
+arm; the canonical deliverable was built from `outputs_step8/agg_deliverable`. Rendering on the
+default reproduces only 1 of 5 figures, and the tables rebuilt from it differ from the shipped ones
+in EUI, in peak hour, and in **16 `verdict_asmodelled` cells**. A default inside a pipeline script is
+not provenance.
 
 > 🔴 **One collision this manifest cannot resolve.** The superseded sibling
 > `Step9_docs/outputs_step9/` (2026-07-31 11:42) carries **the same 11 filenames**. Ten differ, and

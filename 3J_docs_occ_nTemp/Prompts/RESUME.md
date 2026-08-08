@@ -1,5 +1,16 @@
 # RESUME — Sonnet Manager Session (3J Leg-2 "2-split")
 
+> 🔴 **STALE. DO NOT PASTE THIS TO START A SESSION.** Banner added 2026-08-08. This file describes
+> **Leg-2 (2-split)**, which was completed and then **superseded by Leg-3 (4-split)**; its runbook
+> targets a simulation campaign that is finished, and the project has since moved into the writing
+> and submission phase where simulation is forbidden. The instruction on the next line was true on
+> 2026-07-02 and is not true now.
+>
+> **The current entry point is the file beside this one:**
+> `3rdJ_employee_N6_figure_renumbering_2026-08-08.md` - the standing 3J manager handoff, kept
+> up to date every round at that fixed path. Kept here, not deleted, because the Leg-2 bug write-up
+> below (the v24.2 `Zone_or_ZoneList_Name` rename) is still the record of that fix.
+
 **Paste this whole file as the first message of a fresh Sonnet session to continue.**
 Last updated: **2026-07-02 — 🟢 OFFICE WFH BUG FIXED · AUTONOMOUS CHAIN IN FLIGHT · SONNET CAN DRIVE
 THE TAIL.** The Opus-worthy work is DONE (bug root-caused + fixed, scorecard gates designed, the whole

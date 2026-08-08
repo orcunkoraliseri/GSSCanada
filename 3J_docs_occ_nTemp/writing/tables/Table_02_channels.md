@@ -9,11 +9,11 @@ channel; Hotel is the one non-GSS, tourism-statistics side-track.
 | Residential (AT_HOME) | GSS Time-Use, Leg-1 | Household matched via Census PUMF linkage; `Number_of_People_Schedule` = `HHSIZE`, drawn per residential Space | REPLACE (full substitution of the code schedule) | none |
 | Office (AT_WORK) | GSS Time-Use, Leg-2 | AT_WORK presence from Transformer Head 2; archetype linkage NOCxNAICS (Leg-2) | MODULATE - NECB office density x AT_WORK_fraction(t) | WFH band (conservative / hybrid / fullyhybrid) |
 | Retail (AT_RETAIL) | GSS Time-Use, Leg-3 - the one new GSS channel | AT_RETAIL derived from `occPRE`/`occACT` already carried in the survey (see footnote 1); Transformer Head 3 (new); single PNNL "Retail Retail" archetype, population-level fraction, no per-household lookup (grocery/merchandise not separable in 2015/2022) | MODULATE - People = 0.95 x peak-normalized shape_cd(t) in customer hours; staff-only slots (<= 0.10) keep the NECB baseline (see footnote 2) | In-store share, 2030 bands (0.97 default / 0.90 / 1.05) + QC-Sunday sub-axis |
-| Hotel | non-GSS - ISQ (Quebec) monthly series + CBRE / Travel Alberta (Alberta) monthly series | ISQ/CBRE monthly occupancy rate to SARIMA(1,1,1)(1,1,1,12) per province + COVID indicator (2020-03 to 2022-06) to `hotel_multiplier(t,month,PR) = s(t) x monthly rate`; `s(t)` = unit-normalized 48-slot guest-room shape (dr_L3-05) | MODULATE - NECB guest-room schedule x `hotel_multiplier(t,month,PR)` | SARIMA 2030 bands (0.92 / 1.00 / 1.05) |
+| Hotel | non-GSS - ISQ (Quebec) monthly series + CBRE / Travel Alberta (Alberta) monthly series | ISQ/CBRE monthly occupancy rate to SARIMA(1,1,1)(1,1,1,12) per province + COVID indicator (2020-03 to 2022-06) to `hotel_multiplier(t,month,PR) = s(t) x monthly rate`; `s(t)` = unit-normalized 48-slot guest-room shape (fixed by a diurnal-shape review run for this study) | MODULATE - NECB guest-room schedule x `hotel_multiplier(t,month,PR)` | SARIMA 2030 bands (0.92 / 1.00 / 1.05) |
 
 ## Footnotes
 
-**1. AT_RETAIL rule, frozen 2026-07-02 (OD-1).**
+**1. AT_RETAIL rule, frozen 2026-07-02.**
 
 ```
 AT_RETAIL = (occPRE == 5) | ((occACT == 4) & occPRE in {5, 9})

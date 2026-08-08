@@ -964,3 +964,454 @@ an arm that recognises script-generated provenance. Do not relax C2.
 `75.6260`, `5.4675 %` below the 80 floor. Manuscript md5 `53abd5f6875dc8e2bf51882b2044a101`,
 submission copy `f65161de8d255e50e3be2991d2c184de`. **No band value moved and no gate verdict
 changed.**
+
+---
+
+## 2026-08-08 #1 — N6 figure renumbering + `fullSet/` single-document layout — DONE
+
+**Aim.** Make caption order equal numeric order. All 15 figures were placed on 2026-08-06, but two
+pairs had been numbered before their placements were known, so the assembled document ran
+`1 2 3 4 6 5 S1 S2 10 7 8 9 11 S3`.
+
+**Ground truth measured before editing** (not carried forward from a report):
+`grep -rn "Figure S\?[0-9]\+" chapters/Chapter_0[1-8]*.md` returned **16** hits, exit 0. Those 16 are
+**15 caption placeholders plus exactly 2 in-prose references**. That is a finding in itself, recorded
+separately below.
+
+**The permutation applied** (via temporary names, because it is a permutation and a direct rename
+would have overwritten a live file):
+
+| was | now | figure | placeholder |
+|---|---|---|---|
+| 6 | 5 | hotel side-track | `Chapter_03_Methods.md` |
+| 5 | 6 | tag-2 dispatch | `Chapter_03_Methods.md` |
+| 10 | 7 | longitudinal | `Chapter_05_Results.md` |
+| 7 | 8 | per-channel EUI | `Chapter_05_Results.md` |
+| 8 | 9 | diurnal | `Chapter_05_Results.md` |
+| 9 | 10 | peak hour | `Chapter_05_Results.md` |
+
+Figures 1, 2, 3, 4, 11, S1, S2, S3 and the graphical abstract did not move.
+
+**Files touched.** Assets `Figure_05_*`/`Figure_06_*` (`.md`, `.pdf`, `.png`) and
+`Figure_07..10_*.png`; generators renamed `fig05_tag2dispatch.py` -> `fig06_tag2dispatch.py` and
+`fig06_hotel.py` -> `fig05_hotel.py`, with their docstrings and `OUT` paths; `make_all_figures.py`;
+`f5_figure_check.py`'s `FIGURES` registry; the two chapters; `3rdJ_schematics_implementation_plan.md`
+line 103; `3rd_Occ_Journal_BuildInstructions.md` (mapping table and the two figure specs).
+Every one archived first with the suffix `.2026-08-08_pre_figure_renumber`.
+
+🔴 **The one prose reference that changes, and the trap in it.** `Chapter_05_Results.md` read
+"verdicts in Section 5.2 (Figure 7)." Section 5.2 does **not** move; its figure does. The per-channel
+EUI figure became Figure 8, so the line now reads "(Figure 8)". Applying the permutation table
+mechanically to this line would have produced "(Figure 6)" and pointed §5.1 at a Methods schematic.
+The other prose reference, Figure 1 in `Chapter_01_Introduction.md`, is unaffected.
+
+**Superseded provenance mapping.** The table in the 2026-08-06 #2 entry above names the pre-rename
+destinations and is left intact as the record of what was true that day. The current mapping for the
+four Step-9 figures that moved is, source md5s unchanged because only the filename changed:
+
+| manuscript label | file now | source (`outputs_step9_deliverable/figures/`) | md5 |
+|---|---|---|---|
+| Figure 7 | `figures/Figure_07_longitudinal_4ch.png` | `fig_longitudinal_4ch.png` | `4e32389ff3ac42ac551e01d52558a76c` |
+| Figure 8 | `figures/Figure_08_eui_4ch.png` | `fig_eui_4ch.png` | `b17ca5e2c65331ee624d1f52213bf5f0` |
+| Figure 9 | `figures/Figure_09_diurnal_4ch.png` | `fig_diurnal_4ch.png` | `5117cfabf0a252738d36a9cd00c68ba4` |
+| Figure 10 | `figures/Figure_10_peakhour_4ch.png` | `fig_peakhour_4ch.png` | `83ebb7de79398205c9df088d729dfdc0` |
+
+**Test method — all four run at closure, not at authoring.**
+
+1. Caption order in `readySubmission.md`, `grep -o "^\*\*Figure S\?[0-9]\+\.\*\*"`, exit **0**:
+   `1 2 3 4 5 6 S1 S2 7 8 9 10 11 S3`. Correct. (The unfiltered `grep -o "Figure S\?[0-9]\+"` shows an
+   extra `8` before the Figure 7 caption; that is the §5.1 forward reference to §5.2's figure, not a
+   mis-ordering.)
+2. `f5_figure_check.py`: **7 PASS / 0 FAIL** before and after, all seven arms named and identical.
+   C7 did not fire; Table 6 was not touched.
+3. `f4_prose_rules_check.py`: **6 PASS / 0 FAIL** before and after, 28 files scanned both times.
+4. `make_all_figures.py`: 8/8 built under the new names, each by its renamed script. Assembler:
+   `figures inlined at a placeholder: 15`, `figures appended to the appendix: 0`, leftovers appendix
+   still empty, all ten `**Table N.**` captions and all fourteen `**Figure N.**` captions survive the
+   strip.
+
+**Layout change, same day, user decision.** `writing/fullSet/` now holds **one** document,
+`readySubmission.md`. The working draft is written to `writing/fullSet/previous/3J_full_manuscript.md`.
+This is a path change inside `assemble_3J.py` only: both files are still written from the same
+in-memory string on every build, so the residue check, the loss check and the removal manifest all
+still compare the same two things. Verified byte-neutral at the time of the move — both md5s were
+unchanged (`53abd5f6…` / `f65161de…`) across the rebuild that followed it.
+
+**Closure state.** After the renumbering the build hashes are
+`3J_full_manuscript.md` `301617e7ef19d362831c405f5910c361`, `readySubmission.md`
+`c6c7a1dfce8200b0f7a65f3e523be370`. 2,277 -> 1,786 lines, 463 apparatus lines removed.
+**No band value moved and no gate verdict changed. No number in the paper changed.**
+
+**Noticed, deliberately not fixed in this task:**
+
+- 🔴 **Only 2 of the 15 figures are cited in the body prose** (Figure 1 in `Chapter_01_Introduction.md`,
+  and the §5.1 reference to Figure 8). Thirteen figures are captioned and placed but never pointed at
+  from the text. Most journals require every figure to be referenced in order in the text; this is a
+  desk-reject class problem and is larger than the renumbering that surfaced it.
+- The `**DOI DISPUTED, DO NOT SUBMIT UNTIL RESOLVED**` banner survives the strip and is present in
+  `readySubmission.md` at the two competitor references. The submission copy is meant to be a plain
+  paper.
+- The 2026-08-06 #2 provenance table above still names the pre-rename filenames. Left intact by the
+  append-only rule; superseded by the table in this entry.
+
+---
+
+## 2026-08-08 #2 — SI Tables B1 and C1 cut from the paper — DONE
+
+**Authors' decision, 2026-08-08:** *"si ces sont tableaux detailles et aussi sont relies avec des
+rapports pas de papier, exclure."* Table B1 (the v0-v5 improvement-round disclosure ledger) and
+Appendix C / Table C1 (the documented-corrections appendix) are this project's internal sprint board,
+with columns like "Gates moved / Bands moved" and round labels. They are development apparatus, not
+supplementary material for a journal.
+
+🔴 **Removing the placeholder is NOT how you cut a table, and finding that out first is what made
+this safe.** The leftovers appendix in `assemble_3J.py` is built by **diffing `tables/` against what
+was inlined**. Deleting the two placeholders in `Chapter_08_Conclusion.md` would therefore not have
+removed the tables at all - it would have moved them, in full, into an appendix titled "tables not
+inlined at a placeholder". That default is right in general (nothing is ever lost silently) and
+exactly wrong here. It was caught by reading the assembler before editing the chapter, not by the
+build output, which would have looked plausible either way.
+
+🔴 **Neither file was deleted from disk, on purpose.** `Appendix_C_corrections.md` is a **live source
+for `f5_figure_check.py`'s C4 and C6 arms**, which cross-foot Figure S1's occupiable shares against
+it - the check that already caught two real defects in that figure. Cutting a table from the
+**submission** is not the same as deleting a **project artefact**. The exclusion is therefore by name
+inside the assembler, not by moving or removing files.
+
+**What changed.**
+
+1. `assemble_3J.py`: new `EXCLUDED_TABLES` set, applied to `all_tables` before the leftovers diff.
+   The build now prints `tables EXCLUDED from the paper : 2 [...]`, because a cut the build does not
+   announce is a cut nobody can audit. A **vacuity guard** prints a red line if any name in the set
+   matches nothing on disk - otherwise an exclusion set could silently exclude nothing and still read
+   as effective, which is the same failure class as a check that passes on zero items.
+2. `Chapter_08_Conclusion.md`: the two placeholders removed. The SI now lists Table A1 and Figure S3.
+3. `Table_A1_A2.md`: one **dangling cross-reference repaired**. Its retail episode-time-share note
+   pointed at "`Appendix_C_corrections.md` entry 4 for the full correction and its sourcing", which no
+   SI reader could resolve once C1 was cut. The claim is load-bearing and was kept; the pointer was
+   replaced with the corroborating evidence stated inline (Canada GSS 2005-2022 -25.0 %, US ATUS
+   2003-2022 -20.8 %, UK TUS/CTUR 2000-2022 -34.4 %, Eurostat HETUS 2000-2020 -21.4 %, all inside the
+   1.5-2.2 % level range), taken from C.4 itself. **No number changed.**
+
+Archived first: `Chapter_08_Conclusion.2026-08-08_pre_SI_B1C1_cut.md`,
+`Table_A1_A2.2026-08-08_pre_SI_B1C1_cut.md`.
+
+**Test method, run at closure.**
+
+- Build: `tables inlined at a placeholder: 8` (was 10), `tables appended to the appendix: 0`,
+  `tables EXCLUDED from the paper: 2`. The zero in the middle is the one that matters - it proves the
+  two tables did not reappear in the leftovers appendix.
+- Loss check: surviving captions are `Table 1 2 6 3 4 5 7 A1`, exactly the eight intended. All 14
+  figure captions unaffected.
+- Dangling-reference grep for `Table B1|Table C1|Appendix C|Appendix_C|Table_B1` over
+  `readySubmission.md`: **no hits, exit 1**. Nothing in the paper now points at a cut table.
+- `f5_figure_check.py` **7 PASS / 0 FAIL**, `f4_prose_rules_check.py` **6 PASS / 0 FAIL**, both
+  unchanged. C4 and C6 still read `Appendix_C_corrections.md` from disk, confirming the file was
+  correctly kept.
+- Internal task-ID sweep: occurrences of `dr_L3-NN` / `VN-XN` / `OD-N` / "this task" / `Defaut` in
+  `readySubmission.md` fell from **95 to 70**. The cut removed a quarter of them; **70 remain and
+  still need a sweep.**
+
+**Closure state.** `3J_full_manuscript.md` `4dd14c6b41bc7ba5137cd87a6a45088d`, `readySubmission.md`
+`e803e6f536ffc99ff1a7da45323f7fe0`. 1,903 -> 1,455 lines, 432 apparatus lines removed.
+**No band value moved, no gate verdict changed, no number in the paper changed.**
+
+**Noticed, not fixed:** `Table_A1_A2.md` contains two tables (`# Table A2 - AT_RETAIL codebook per
+GSS cycle` at line 113) but the manuscript carries only a `**Table A1.**` caption for the whole file.
+A2 is visible as a heading, so nothing is lost, but it is outside the caption convention the loss
+check counts.
+
+---
+
+## 2026-08-08 #3 — Target journal decided: Building and Environment
+
+Decision sheet at `writing/submission/02_journal_options.md`, modelled on the 2J sheet. **No search
+was run and no journal metrics are quoted**, per the 2J lesson that roughly half the citations in the
+returned reports were fabricated and that every metric came back identical to the claim it audited.
+
+**The decision reversed inside one session, and the sheet records the reversal rather than
+overwriting it.** First choice was Journal of Building Engineering, ranked first on
+collision-avoidance: 1J is under review at JBPS and 2J at Building Simulation, so JBE was the only
+venue where 3J would be judged on itself. Two things then landed:
+
+1. The **unattributed Building and Environment rejection was attributed by the author to 0J**
+   (`2J_docs_occ_nTemp/examples/JournalZero/`), the paper later published in Energy and Buildings.
+   That **unblocked a venue the sheet had parked without ever assessing** - a bookkeeping omission,
+   not a judgement.
+2. The author stated **3J is the strongest paper of the line**, which changed what the sheet was
+   optimising for. A collision-avoidance argument is weak for the best paper you have.
+
+**Chosen: Building and Environment.** It is the only candidate where the occupancy model is the
+*subject* rather than an input to a simulation study, it carries the highest standing of the four, and
+it has no venue collision and no disclosure obligation.
+
+**What the choice commits the manuscript to, recorded because it is not optional:** the
+uninjected-control result (`Default_NECB` scoring 85.45 against a floor of 100 with nothing injected)
+must lead the cover letter's first paragraph; the abstract's "findings about reference-band
+applicability, not model error" sentence must not be softened; and the introduction and §6.1 need a
+framing pass putting the behavioural claim ahead of the architecture.
+
+**Reopen triggers:** a B&E desk reject sends the paper to JBPS, by which time the 1J decision will
+likely have removed that collision; or evidence that 0J's B&E rejection was about quality rather than
+scope, which **is recorded nowhere in this project and has never been looked up**.
+
+**Honest risk on the record:** B&E is the most selective option and the paper's headline is that three
+of four validation gates failed. If the uninjected-control argument does not land, the rejection comes
+fast. JBE would very likely have taken the paper.
+
+---
+
+## Progress Log - 2026-08-08 #4: the submission round (figures cited, apparatus out, B&E framing in)
+
+**Who.** Manager, executed directly rather than handed off, at the user's instruction
+("continue jusqu'a la fin").
+
+### 1. The 13 uncited figures, and a new gate that was seen failing first
+
+**The check was written before the fix.** `f4_prose_rules_check.py` gained a **C7** arm: every
+numbered Figure and Table must be cited from the running text. Caption lines do not count, and
+neither do `## Sources` / `## References` blocks, because the submission transform deletes the
+Sources blocks outright, so a "citation" living there does not exist in the submitted paper at all.
+
+First run: **6 PASS / 1 FAIL**, C7 naming all 13 uncited exhibits (12 figures, plus Table A1, which
+had never been cited either and was not on the known list). After the fix: **7 PASS / 0 FAIL**, 22
+exhibits, all cited. The falsifier plants a captioned-but-never-cited `Figure 99` and C7 still fails
+on it, so the arm is not passing vacuously.
+
+**C7 failed once on a false positive and that is worth recording.** It reported Figure 7 uncited
+after the citation had been written, because the chapters are hard-wrapped and the reference had
+fallen as `Figure\n7`. A per-line scan cannot see a wrapped reference. This is the same wrap trap
+already documented for the `check source` marker in `assemble_3J.py`. C7 now scans the body as one
+string. The prose was unwrapped as well, so both sides are fixed.
+
+Citations added: Figure 2 and Figure S3 in §1.4, Figure 3 and Figure 4 in §3.2, Table A1 in §3.2,
+Figure 5 in §3.4, Figure 6 in §3.5, Figure S1 in §4.1, Figure S2 in §4.3, Figure 7 in §5.1, Figure 8
+in §5.2, Figures 9 and 10 in §5.3, Figure 11 in §5.4. Every added sentence says what the figure shows
+that the prose does not; none introduces a number that was not already in the chapter.
+
+### 2. A leak found while sweeping: a Manager-notes block was partly IN the submitted paper
+
+Not on any list. `CONTENT_RESUMES` in `assemble_3J.py` treated a bare markdown table row as "the
+paper has resumed", and the `## Manager notes` block under Table 6 opens with a three-row verdict
+tally. **The drop therefore ended at that tally**, and "Manager decision", "Recorded reason", a
+"Written reopen trigger" and five internal decision IDs were written into `readySubmission.md`.
+
+The residue check did not catch it, and could not have: it looked for the surviving **heading**, and
+the heading is the one line that had been removed correctly. Fixed two ways, both additive: the drop
+terminator now honours only a caption (the strong signal, and the one the original `**Table 4.**`
+bug was actually about), and a residue check was added on the block's **body** phrases. Apparatus
+lines removed rose 436 to 493; `readySubmission.md` 1,489 to 1,427 lines. Caption count 22 before
+and 22 after, on both files, so nothing was over-dropped.
+
+### 3. The DOI banner is out of the paper without the problem being hidden
+
+New `BUILD NOTE` mechanism in `assemble_3J.py`: an HTML comment, invisible in any rendered view,
+preserved verbatim in the working draft, removed from the submission copy by one named rule and
+counted in the manifest. The two `DOI DISPUTED, DO NOT SUBMIT UNTIL RESOLVED` banners became BUILD
+NOTEs, and the residue check now refuses any build where `BUILD NOTE` or `DO NOT SUBMIT` survives.
+
+**The point is that a note removed from the paper is not a problem solved**, so the build now ends
+with an `UNRESOLVED BUILD NOTES` report: **5 open, and readySubmission.md is CLEAN but NOT READY**.
+The five are the two DOIs, the unverified abstract cap, the missing co-author ORCID, and the fact
+that Table 1's novelty claim has never been searched.
+
+`V09_disputed_dois_and_gap_matrix.md` written to `deepResearch_Resources/`. It resolves both DOIs by
+opening them, and, in Part B, **tries to break the gap matrix**, with a mandatory search log,
+because an empty competitor list is evidence of no search far more often than of no competitor.
+
+### 4. Front matter filled, and the B&E framing pass the venue choice committed us to
+
+Affiliation, address, funding, CRediT and Iseri's ORCID transfer verbatim from the 2J title page.
+Hachem-Vermette's ORCID is **absent from 2J too**, so it is omitted rather than invented; an ORCID is
+an identifier and a guessed one points at a real stranger.
+
+Framing pass, all three commitments met: §1.5's contributions now lead with the behavioural finding
+and the validation stance, with architecture demoted to third; §6.1 opens with what the four
+populations do to the building before describing the model that produced them; the aim sentence, and
+the matching sentence in §8, now ask what four populations do to a stacked building first. The
+abstract gained the behavioural result and the "not model error" sentence is untouched.
+`Title_Page_and_Cover_Letter.md` written for B&E, with the uninjected-control result in the first
+substantive paragraph as required, and a closing section stating what is deliberately NOT disclosed
+and why.
+
+**One correction inside my own new text, made before it propagated.** I wrote that the coincidence
+factor stays below 1 "in every campaign cell". It is measured on the **four building-city cells under
+`B_central`**, not on all 56. Fixed in the abstract, the highlights, §1.5 and §8.
+
+### 5. Table 6 restructured, and an identifier sweep that had to be reverted
+
+Table 6's `Evidence` column became a `Basis` column written for a reader outside this project. The
+spec's SI Table B2 was **not** created, and the deviation is recorded in the spec file itself: a new
+SI table of md5s and job numbers is the same class of artefact the authors had just cut as B1/C1.
+Nothing is lost, the trail is in the archive copy. Verdict token invariance holds on all nine rows.
+
+**The identifier sweep was attempted as a blind mapping and it was wrong.** A token map applied
+across nine files rewrote 58 occurrences and produced garbled prose ("decision a design decision
+frozen before training") and, worse, **corrupted file paths inside the Sources blocks**
+(`deepResearch/the mixed-use positioning review`). It was reverted in full from the archive copies
+taken in the same pass, then redone site by site, in context, on the text that actually survives the
+strip. `at this task count` was left alone: that is ordinary English about a multi-task loss, and
+matching it was a false positive of the pattern, not a finding.
+
+Internal identifiers surviving into the submission copy: **73 to 19**.
+
+### Verification
+
+`f4` **7 PASS / 0 FAIL** (falsifier still fails C1, C6, C7). `f5` **7 PASS / 0 FAIL**. `f3`
+**4 PASS / 1 FAIL**, unchanged and correct. Build clean, both md5s OK, 22 captions on both sides.
+**No band moved, no gate verdict changed, and no measured number in the paper changed.**
+
+### Left open, deliberately, with the reason
+
+- **19 internal identifiers remain**, almost all in Table A1's `Confirmed against` column, which is
+  a whole column of repository file paths. That is a structural decision like Table 6's, not a
+  rename, and it deserves the same treatment rather than a rushed swap. Inventory is in the next
+  manager prompt.
+- **The five BUILD NOTEs.** Four need an answer from outside this session (two DOIs via `V09`, the
+  B&E abstract cap from the journal's own guide, the co-author's ORCID from the co-author).
+- **Table 1's novelty claim is untested.** `V09` Part B is written and has not been run.
+
+---
+
+## Progress Log - 2026-08-08 #5 (manager session): figure resolution, the B&E requirements prompt, and a fired reopen trigger
+
+**Asked for:** a deep-research prompt covering everything Building and Environment requires of a
+submission; progress on the figure question at the manager's discretion; and answers recorded for
+three questions the authors returned.
+
+### The finding this round exists for
+
+The figure question was posed as "15 figures is a lot". Measuring the figures first showed the count
+is not the problem. **Figures 7 to 11, the paper's only data figures, were all at 140 dpi**
+(`3rdJ_09_activityDrivenLoads_4split.py:870`, `dpi=140` hard-coded). Everything else was already at
+300. The paper before this one went into review with 13 of 16 figures under 600 dpi; this was the
+same defect about to repeat.
+
+### 🔴 The defect the re-render found, which is bigger than the dpi it was fixing
+
+The obvious equivalence check is to downsample the new 300 dpi PNG and compare it to the old one.
+That check was written first, run first, and **it passed on figures built from the wrong data.** For
+every one of the five, the difference against its own original was the smallest of the five, which
+reads exactly like a match. Re-rendering the wrong arm still produces the same layout, the same
+palette and the same axis labels, so most pixels agree no matter what the bars say.
+
+The check that decided it was different in kind: **re-render at the ORIGINAL 140 dpi and require
+byte-identity with the shipped file.** That isolates the pipeline from the resolution. It failed, on
+4 of 5 figures, and the reason was the point:
+
+> **The Step-9 script's own `DEFAULT_AGG` (`:63`) points at `outputs_step8/agg`, which is the
+> SUPERSEDED arm.** The canonical deliverable was built from `outputs_step8/agg_deliverable`. The
+> tables rebuilt from the default differed from the shipped ones in EUI, in peak hour, and in **16
+> `verdict_asmodelled` cells**.
+
+Re-pointed at `agg_deliverable`, all **5 of 5 reproduce byte for byte**, so the only thing the dpi
+change can alter is the number of pixels. **A default inside a pipeline script is not provenance.**
+
+### What was done
+
+- `writing/implementation/3rdJ_figures_replot_300dpi.py` - re-renders the five figures at 300 dpi
+  using the Step-9 module's own plotting functions, imported not copied. It re-simulates nothing,
+  evaluates no gates, writes no CSV, and writes to a **new** directory,
+  `outputs_step9_deliverable/figures_300dpi/`. Nothing frozen was overwritten.
+- `improvements/v5/f6_figure_replot_equivalence.py` - **new gate, 5 arms**, C1 the byte-identity
+  reproduction above, C4 the falsifiability arm, C5 confirming what ships is what passed. Seen
+  failing before being trusted, on a real defect rather than a planted one.
+- The 140 dpi manuscript copies archived to `writing/figures/archive/*.2026-08-08_140dpi.png`; the
+  300 dpi copies installed as Figures 7 to 11.
+- Five new md5 rows **added** to `improvements/v2/V2-G1_FROZEN_DELIVERABLE.md`. Nothing above them
+  changed, so `f3`'s C2 list stayed at 10 rather than growing to 15, and C4 verifies the new files
+  against the tree.
+- `deepResearch_Resources/V10_building_and_environment_author_requirements.md` - **written, not
+  run.** 32 numbered items across manuscript limits, artwork, blinding, declarations, scope, editors
+  and the CRKN agreement. Its deliverable table has a mandatory `STATED / NOT STATED` column, because
+  the failure it exists to prevent already happened once: 2J cut its abstract to a 200-word limit no
+  source ever stated.
+
+### 🔴 A reopen trigger fired, and it was written before the fact
+
+`writing/submission/02_journal_options.md` carried reopen trigger (b): *evidence that the 0J
+rejection at B&E was about quality rather than scope*. **The authors supplied exactly that: 0J was
+rejected for insufficient quality.** Recorded additively under Option D, with the sheet's status line
+changed from green to amber and the earlier "carries no weight either way" paragraph annotated rather
+than rewritten. **The decision is not reversed here** - that is the authors' call - but the sheet is
+no longer allowed to read as though the question were open. Still unknown, and cheap to answer if the
+decision letter survives: *which* kind of insufficiency.
+
+### Verification
+
+`f6` **5 PASS / 0 FAIL**, and **1 PASS / 4 FAIL under `--falsify`** with C1 among the failures.
+`f3` **4 PASS / 1 FAIL**, C2's list unchanged at 10. `f4` **7 PASS / 0 FAIL**. `f5` **7 PASS /
+0 FAIL**. Build clean, both md5s OK, `readySubmission.md` **1,426 lines, md5 `8ca261c3...`,
+byte-identical to before this round** - no prose was touched. Still **5 open BUILD NOTES**.
+
+### Left open, deliberately
+
+- **The figure COUNT question is unanswered and is now V10's job**, item 8. Measuring dpi answered a
+  different question than the one asked, and saying so is part of the answer.
+- Table A1's `Confirmed against` column, unchanged from the previous entry: the authors asked what
+  the question even was, so it is restated in the manager prompt as three concrete options rather
+  than as a request for a decision.
+- The five BUILD NOTES. `V09` and `V10` are both written and neither has been run.
+
+---
+
+## Progress Log - 2026-08-08 #6: RV09 and RV10 returned, vetted, and applied
+
+**What arrived:** both prompts written earlier in the same session were run externally and came back
+as `RV09_disputed_dois_and_gap_matrix.md` and `RV10_building_and_environment_author_requirements.md`.
+
+**Vetting record:** `deepResearch_Resources/VETTING_RV09_RV10_2026-08-08.md`. Neither report was
+accepted wholesale. What was acted on, what was refused, and the arithmetic that checked out are
+listed there separately, because "the report says so" is not a verification.
+
+### 🔴 The finding that reversed work done two hours earlier
+
+`RV10` item 7 reports Elsevier's artwork minimums as **300 dpi for halftones, 500 dpi for combination
+art, 1000 dpi for bitmapped line drawings**. The five result figures are line plots carrying text,
+which is combination art. **The 300 dpi set produced earlier in this same session would have shipped
+still failing the stated minimum.** Re-rendered at **600 dpi** with a **vector PDF** beside each PNG,
+`figures_300dpi/` replaced by `figures_hires/`, registry rows updated, `f6` re-run green.
+
+That is the second time in one day that a number was acted on before its source was read. The first
+was the abstract, where refusing to act is what saved it. Both are recorded rather than smoothed.
+
+### BUILD NOTES: 5 open to 1 open
+
+| note | outcome |
+|---|---|
+| Abstract 272 words | **CLOSED.** `RV10` item 1: the guide states **no** numeric cap, marked `NOT STATED`. Not cut. |
+| Co-author ORCID | **CLOSED.** `RV10` item 21: ORCID is mandatory for the corresponding author only. |
+| Doma and Ouf DOI | **CLOSED, corrected.** Author list, volume, article number and DOI were all wrong. |
+| Buttitta and Finn DOI | **CLOSED, corrected.** 109562 to 109577. |
+| Table 1 novelty never searched | **CLOSED.** `RV09` Part B ran 20 queries with strings, ranges and hit counts, evaluated 9 candidates, and none occupies the cell. |
+| **NEW, and now the only one open** | `RV09`'s matrix marks **this study** "No" on *calibrated behavioural model*; Table 1 marks it a tick. A disagreement about our own paper, which the report did not flag. The claimed unoccupied cell is defined partly by that axis. |
+
+The build gained a `BUILD NOTE RESOLVED` form: an answered note keeps the words "BUILD NOTE" so the
+strip and the residue check still catch it, and stops counting as blocking. **Deleting the note would
+delete the reason**, which is the part worth keeping.
+
+### The other compliance failure, found by checking rather than by being told
+
+**Keywords were 13; the cap is 6.** Cut to 6, and every dropped term was verified to still appear in
+the manuscript text before it was dropped, with where it survives recorded in the note. Highlights
+were checked at the same time against the 85-character cap: 5 bullets, longest 80. Compliant already.
+
+### Refused, and why
+
+- **The CRKN 100 percent APC waiver is NOT acted on.** `RV10` says B&E is covered and Section D says
+  to select Gold at $0. That is the same shape of claim that was wrong for 2J and Springer. It blocks
+  nothing, because the subscription route is free, but ticking Gold is an irreversible commitment
+  against a **$3,690** list APC. Confirm on Concordia Library's own page first.
+- **Item 29 is incomplete, not clear.** The prompt asked for the subject editors and a Concordia
+  conflict flag. `RV10` named two Editors-in-Chief and stopped. An unlisted board is not an empty
+  board, and this author line already found one such conflict at another venue.
+- **`RV09` reference 5 fails its own check**: it states one Yamaguchi title and reports a different
+  one as the Crossref return. That is the closest competitor row in the matrix. Not relied on.
+
+### Verification
+
+`f3` **4 PASS / 1 FAIL** (unchanged, correct) · `f4` **7 PASS / 0 FAIL** · `f5` **7 PASS / 0 FAIL** ·
+`f6` **5 PASS / 0 FAIL** and C1 still fails under `--falsify`. Build clean, both md5s OK.
+`readySubmission.md` **1,426 lines**. Every shipped figure is now **300 dpi with a vector PDF** or
+**600 dpi with a vector PDF**; nothing is below 300. **No band moved, no gate verdict changed, and no
+measured number in the paper changed.**

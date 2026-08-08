@@ -151,5 +151,8 @@ restaurant channel to drive (OD-9).
 
 **Episode-time share (validation target, not a training input).** ⚠ **The value in the Step-2 doc
 itself (`:43`, "~2.1-2.3%, stable across cycles") is superseded.** The corrected, measured figure is
-**1.50-2.14%, an approximately 25% decline across cycles** - see `Appendix_C_corrections.md` entry 4
-for the full correction and its sourcing (`B-4`/`V2-C5`).
+**1.50-2.14%, an approximately 25% decline across cycles**. The decline is not a coding artefact: it
+is corroborated independently across four national time-use series over comparable spans - Canada GSS
+2005-2022 **-25.0%**, US ATUS 2003-2022 **-20.8%**, UK TUS/CTUR 2000-2022 **-34.4%**, Eurostat HETUS
+2000-2020 **-21.4%** - and the measured level sits inside the 1.5-2.2% range every one of those series
+occupies.

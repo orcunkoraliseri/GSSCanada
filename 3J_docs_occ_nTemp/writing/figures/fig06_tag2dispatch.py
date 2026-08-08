@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-fig05_tag2dispatch.py -- Figure 5: Tag-2 Dispatch Inside One Tower.
+fig06_tag2dispatch.py -- Figure 6: Tag-2 Dispatch Inside One Tower.
 
-Source annotation block: Figure_05_tag2_dispatch.md.
+Source annotation block: Figure_06_tag2_dispatch.md.
 
-Run:  py -3 writing/figures/fig05_tag2dispatch.py
-Output: writing/figures/Figure_05_tag2_dispatch.pdf / .png
+Run:  py -3 writing/figures/fig06_tag2dispatch.py
+Output: writing/figures/Figure_06_tag2_dispatch.pdf / .png
 """
 import os
 import sys
@@ -15,10 +15,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fig_style import (SLATE, AMBER, GREY, INK, WHITE, GATE_RED,
                         new_fig, box, diamond, arrow, save_both, wrap_text)
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Figure_05_tag2_dispatch")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Figure_06_tag2_dispatch")
 
 # ---------------------------------------------------------------------------
-# LABELS -- every string drawn, verbatim from Figure_05_tag2_dispatch.md's
+# LABELS -- every string drawn, verbatim from Figure_06_tag2_dispatch.md's
 # "Annotations to overlay afterward" block. Checked by f5_figure_check.py C4.
 # ---------------------------------------------------------------------------
 LABELS = [

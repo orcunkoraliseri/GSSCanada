@@ -24,16 +24,16 @@ Applied per day-type, to AT_RETAIL exactly as to AT_WORK in Leg-2.
 
 | Layer | Check | Target | Provenance |
 |---|---|---|---|
-| LOCATION mapping | AT_RETAIL rate, weekday 12:00-14:00, per cycle | 0.06-0.10 (confirmed by dr_L3-06, central ≈ 0.079) | project-chosen (set before tuning) |
+| LOCATION mapping | AT_RETAIL rate, weekday 12:00-14:00, per cycle | 0.06-0.10 (confirmed by a retail presence-rate review, central ≈ 0.079) | project-chosen (set before tuning) |
 | LOCATION mapping | Saturday peak rate, 13:00-16:00 | 0.09-0.12 | project-chosen (set before tuning) |
 | LOCATION mapping | Sunday peak rate, per city | Calgary 0.06-0.10 / Montreal 0.04-0.07 | project-chosen (set before tuning) |
 | LOCATION mapping | Night slots 00:00-05:00, all day-types | 0.000-0.003 | project-chosen (set before tuning) |
-| OR-rule leak | `occACT==4 & occPRE==1` (online-shopping) share per cycle, excluded from AT_RETAIL | rule FROZEN (OD-1, 2026-07-02); cross-tab still reported as verification | project-chosen (set before tuning) |
+| OR-rule leak | `occACT==4 & occPRE==1` (online-shopping) share per cycle, excluded from AT_RETAIL | rule FROZEN 2026-07-02; cross-tab still reported as verification | project-chosen (set before tuning) |
 | Transformer (JS) | JS(AT_WORK), JS(AT_RETAIL) per stratum | < 0.02 each (JS alone is toothless for AT_RETAIL; paired with PR-AUC / F1 below) | project-chosen (set before tuning) |
 | Transformer (Resolution) | PR-AUC and F1 on positive slots, AT_RETAIL | PR-AUC ≥ 0.15, F1 ≥ 0.25 (catches all-zeros failure) | **heuristic** |
 | Transformer (Dynamics) | Midday (11-14 h) rate error + transitions/day, AT_RETAIL | Midday error ≤ 3.0 pp, transitions ≥ 0.05/day | project-chosen (set before tuning) |
 | Transformer (Regression) | Old-head (Head 1, Head 2) JS drift | ΔJS ≤ 0.002 bits vs Leg-2 validation baseline | project-chosen (set before tuning) |
-| Transformer (Exclusivity) | Impossible-State Rate: slots with > 1 of {AT_HOME, AT_WORK, AT_RETAIL} active | ISR ≤ 0.5 % raw; = 0 % after decode-time projection (dr_L3-12) | project-chosen (set before tuning) |
+| Transformer (Exclusivity) | Impossible-State Rate: slots with > 1 of {AT_HOME, AT_WORK, AT_RETAIL} active | ISR ≤ 0.5 % raw; = 0 % after decode-time projection | project-chosen (set before tuning) |
 | Hotel backcast | QC + AB monthly 2015-2019 vs reconstruction | MAE < 0.05 | project-chosen (set before tuning) |
 | Hotel COVID dip | 2020-04 reconstruction | recovered without overshoot | project-chosen (set before tuning) |
 | BEM end-to-end | Default vs 2022, Montreal SuperTall | EUI delta positive; Office + Hotel dominant | project-chosen (set before tuning) |
@@ -63,7 +63,7 @@ Made mandatory because the Leg-2 People-field wiring bug (`Number_of_People_Sche
   and scenario-differentiation gates, and the ± 2 pp EUI-share gate. All were set before tuning and
   are project acceptance bars, not literature values.
 - **heuristic** - PR-AUC ≥ 0.15 and F1 ≥ 0.25, adopted to catch an all-zeros failure mode, flagged by
-  dr_L3-11/dr_L3-13 as heuristic rather than literature-derived.
+  this project's own architecture and training reviews as heuristic rather than literature-derived.
 
 ⚠ check source - the decode-time thresholds (0.50 / 0.40 / 0.15) named in the pipeline overview's
 provenance blockquote are not broken out as individual gate rows in the VALIDATION GATES / VALIDATION

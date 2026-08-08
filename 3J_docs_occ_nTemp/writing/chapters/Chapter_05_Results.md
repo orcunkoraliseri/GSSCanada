@@ -38,6 +38,8 @@ occupancy signal. The first cycle at which Hotel is actually injected is 2022, a
 tourism-statistics product; even there the median change against the uninjected-2005 baseline is small,
 +0.09 % (four-cell range -0.39 % to +0.73 %). Hotel's real year-to-year movement is carried by the SARIMA
 2030 band rather than by the historical GSS-cycle axis, and is examined directly in Section 5.4.
+Figure 7 plots all four trajectories on the same cycle axis, with Hotel's 2005 to 2015 segment marked as the
+uninjected NECB baseline so that its flatness is not read off the figure as a measured hotel signal.
 
 The four channels also carry very different weight inside the same building envelope. Aggregated across
 all four cycles and all four building-city cells (`step9_longitudinal.csv`, `energy_share_pct` and
@@ -46,9 +48,9 @@ above its median share of building floor area (20.25 %), while Office's median e
 runs 13.72 points below its area share (35.14 %); Residential (energy 18.27 % vs area 17.73 %) and Retail
 (2.56 % vs 3.92 %) sit close to proportional. This asymmetry between one high-intensity, low-footprint
 channel and one low-intensity, high-footprint channel is the structural backdrop for the per-channel band
-verdicts in Section 5.2 (Figure 7).
+verdicts in Section 5.2 (Figure 8).
 
-**Figure 10.** *(insert `Figure_10_longitudinal_4ch.png` here)* - four-channel EUI trajectory across the 2005, 2010, 2015
+**Figure 7.** *(insert `Figure_07_longitudinal_4ch.png` here)* - four-channel EUI trajectory across the 2005, 2010, 2015
 and 2022 GSS Time-Use cycles, one panel or series per channel, Hotel's 2005-2015 segment marked as the
 uninjected NECB baseline rather than a measured hotel signal.
 
@@ -82,8 +84,7 @@ CZ 7), which is 1.0 % from the ceiling's original 90.1-2004-lineage anchor of 30
 objection does not hold; what remains is that the reference archetype's own city set (Rochester /
 International Falls) does not match this study's NECB-2017 Montreal / Calgary towers.
 
-**Retail** fails under the gate rule actually in force, median-in-band rather than all-cells (decided at
-V2-B3, in advance of the numbers): the measured median is 75.63 kWh/m2/yr, which is 5.47 % below the 80
+**Retail** fails under the gate rule actually in force, median-in-band rather than all-cells (decided in advance of the numbers): the measured median is 75.63 kWh/m2/yr, which is 5.47 % below the 80
 kWh/m2/yr floor. Under an all-cells count, 12 of 56 cells sit inside the band and 44 of 56 sit below the
 floor (0 above the ceiling); that per-cell tally is reported for transparency but is not the rule that
 scores the gate. This 5.47 % median-to-floor gap must not be confused with a different, smaller quantity:
@@ -94,9 +95,12 @@ the median and the floor, which is the 5.47 % reported above.
 
 No band value was moved and no gate verdict was changed to produce these results; all three failures are
 reported as findings about band applicability, not resolved by widening a band or by selecting whichever
-rule happens to pass (Table 5).
+rule happens to pass (Table 5). Figure 8 plots all 56 cells per channel against their own band, which is
+where the three failures' different geometries are visible at once: office below its floor across the
+whole cell set, hotel split into two prototype clusters on either side of its ceiling, and retail
+straddling its floor with the median on the failing side.
 
-**Figure 7.** *(insert `Figure_07_eui_4ch.png` here)* - per-channel EUI across all 56 cells, CFA basis, as-modelled bands
+**Figure 8.** *(insert `Figure_08_eui_4ch.png` here)* - per-channel EUI across all 56 cells, CFA basis, as-modelled bands
 marked, the three failing channels' cells shown against their respective floor/ceiling.
 
 ---
@@ -111,7 +115,9 @@ at 12.04 h (range 12.01-12.10 h), and Retail at 12.37 h (range 12.11-12.62 h) - 
 midday - while Hotel peaks at 18.91 h (range 18.84-18.94 h), roughly seven hours later, in the early
 evening. The whole-building peak (`_BUILDING` channel, `peak_hour_circular`) lands at a median of 14.95 h
 (range 14.11-15.70 h across the four cells): between the midday cluster of Office/Residential/Retail and
-Hotel's evening peak, and coincident with none of the four channels' own peaks exactly.
+Hotel's evening peak, and coincident with none of the four channels' own peaks exactly. Figure 10 places
+the four channel peaks and the whole-building peak on one clock face for all four building-city cells,
+and Figure 9 gives the underlying weekday and weekend load-shape curves the peaks are read from.
 
 The weekday midday-to-night contrast (`wd_midday_kW` against `wd_night_kW`) also differs sharply by
 channel, and one channel inverts it. Retail shows the sharpest daytime concentration: median weekday
@@ -131,10 +137,10 @@ imply, the same attenuation effect reported for household diversity within a sin
 Leg-2 construction stage, here operating across four different uses sharing one envelope instead of across
 households sharing one archetype.
 
-**Figure 8.** *(insert `Figure_08_diurnal_4ch.png` here)* - weekday and weekend diurnal load shape, one curve per channel
+**Figure 9.** *(insert `Figure_09_diurnal_4ch.png` here)* - weekday and weekend diurnal load shape, one curve per channel
 plus the whole-building total, `B_central` scenario, midday and night reference bands marked.
 
-**Figure 9.** *(insert `Figure_09_peakhour_4ch.png` here)* - per-channel and whole-building peak hour (circular-mean),
+**Figure 10.** *(insert `Figure_10_peakhour_4ch.png` here)* - per-channel and whole-building peak hour (circular-mean),
 `B_central` scenario, all four building-city cells, coincidence factor annotated.
 
 ---
@@ -169,7 +175,9 @@ The three jointly-varying 2030 bundles (`B_cons`, `B_opt`) reproduce this same p
 all three levers move together - Office -2.05 % to +2.20 %, Retail -2.42 % to +2.66 %, Hotel -0.73 % to
 +0.45 % against `B_central` - close to the sum of the isolated single-lever effects above, which is the
 cross-check this section relies on: each lever's effect is close to additive rather than interacting with
-the other two.
+the other two. Figure 11 shows the three isolated levers and the two jointly-varying bundles on one
+panel per channel, which is where that near-additivity is read directly rather than inferred from the
+percentages above.
 
 **Figure 11.** *(insert `Figure_11_scenario_4ch.png` here)* - per-channel energy response to each of the three isolated
 2030 scenario levers, against `B_central`, one panel per channel, the jointly-varying `B_cons`/`B_opt`

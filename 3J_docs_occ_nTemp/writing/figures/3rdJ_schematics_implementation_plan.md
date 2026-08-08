@@ -100,7 +100,7 @@ able to fail:
   `/ModDate` so output is build-deterministic (verified: two consecutive
   `make_all_figures.py` runs produce byte-identical md5 on every PDF and PNG).
 - Eight generator scripts: `fig01_pipeline.py`, `fig02_roadmap.py`, `fig03_transformer.py`,
-  `fig04_exclusivity.py`, `fig05_tag2dispatch.py`, `fig06_hotel.py`,
+  `fig04_exclusivity.py`, `fig05_hotel.py`, `fig06_tag2dispatch.py`,
   `SI/figS01_shares.py`, `SI/figS02_levers.py`. Each writes both `.pdf` and 300-dpi `.png`
   at the exact filenames the assembler expects (step 2 list). Each declares a
   module-level `LABELS` registry -- the canonical, un-wrapped text handed to every

@@ -18,7 +18,11 @@ EnergyPlus's own Total Building Area exactly (Table 3). Both towers stack the sa
 - residential, office, retail, hotel - inside one building envelope, plus amenity and service/MEP space
 that carries no occupant-driven channel. This is the concrete meaning of "four channels driving four
 uses inside one building": the campaign does not compare four separate archetype buildings, it compares
-two buildings that each already contain all four uses.
+two buildings that each already contain all four uses. Figure S1 gives the measured occupiable-area
+share carried by each channel in each prototype, with the service and mechanical share shown separately
+because it is a share of gross floor area rather than of occupiable area; the two prototypes do not
+divide their floor area between the four uses in the same proportions, which is what makes the
+prototype axis a genuine experimental factor rather than a size rescaling.
 
 ---
 
@@ -74,6 +78,8 @@ Hotel's SARIMA band (0.92 / 1.00 / 1.05) - and each lever is exercised both join
 bundles, and in isolation, in the corresponding pair of sens_* scenarios (Table 2). Residential carries
 no independent lever of its own; its 2030 product moves only as a consequence of the Office WFH band, a
 design choice made explicit in the campaign's own scenario-construction code rather than left implicit.
+Figure S2 lays the four channels' levers side by side, so that Residential's deliberate absence of an
+independent axis is legible as a design decision rather than as an omission.
 
 ---
 

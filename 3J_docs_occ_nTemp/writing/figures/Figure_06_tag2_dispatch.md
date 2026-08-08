@@ -1,4 +1,4 @@
-# Figure 5 -- Tag-2 Dispatch Inside One Tower
+# Figure 6 -- Tag-2 Dispatch Inside One Tower
 **Target:** web image-generation LLM · **Style family:** flat-2D horizontal (shared across all schematics)
 **Purpose:** show the Tag-2 exact-match routing that decides REPLACE vs MODULATE vs untouched-baseline vs fallback for every Space in the tower, with the Leg-2 wiring-bug gate called out.
 **Source:** `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md` STEP 7 box ("Tag-2 exact-match dispatch" + "HARD WIRING GATE")

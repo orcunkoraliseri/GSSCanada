@@ -56,7 +56,7 @@ therefore systematically under-occupy hotel zones, since the survey simply never
 in a hotel room. This is a frame limitation, not a data-quality one, and it forces the Hotel channel to
 be built from an entirely separate, non-survey data family: monthly provincial tourism statistics.
 
-No StatCan table of monthly hotel-occupancy rates exists (finding dr_L3-01); the paper therefore draws
+No StatCan table of monthly hotel-occupancy rates exists (a data-availability check run for this study); the paper therefore draws
 on the two provincial data sources available for the cities in the simulation domain. For Quebec, the
 source is the Institut de la statistique du Québec (ISQ) monthly hotel-occupancy series. For Alberta,
 the source is CBRE / Travel Alberta market reporting, with the 2005-2009 span of the Alberta series

@@ -5,7 +5,7 @@ Source for all measured values: `Leg3_4-split/Step9_docs/outputs_step9_deliverab
 sibling `outputs_step9/` (2026-07-31, superseded) is NOT used anywhere in this table; it inverts the
 hotel result.
 
-Dual-basis EUI reporting per dr_L3-10: **CFA** (Conditioned Floor Area of the zones assigned to that
+Dual-basis EUI reporting, as recommended by this project's own positioning review: **CFA** (Conditioned Floor Area of the zones assigned to that
 use) is the primary thermodynamic metric; **GFA-share** (whole-building Gross Floor Area times the
 parsed occupiable-area fraction for that channel) is reported for stock/SCIEU comparability. The two
 bases are never averaged.
@@ -39,15 +39,15 @@ bases are never averaged.
   90.1-2004-lineage anchor of 302.21, so the vintage-mismatch objection does not hold; the remaining
   limitation is that the reference archetype (90.1-2019 Rochester/International Falls) and city set do
   not match this study's NECB-2017 Montreal/Calgary tower.
-- **Retail.** The gate rule in force is **median-in-band**, not all-cells (decided at V2-B3, in
+- **Retail.** The gate rule in force is **median-in-band**, not all-cells (decided in
   advance of the numbers). The retail band spans 80-155 kWh/m2/yr; the measured median is **75.63,
   which is 5.47 % below the 80 floor** (re-derived from the 56 CFA values in the deliverable CSV).
   Under the median rule the gate is FAIL. Under an all-cells count, 12/56 cells sit inside the band and
   44/56 sit below the floor (0 above the ceiling); this per-cell tally is reported for transparency but
   is not the rule that scores the gate.
   The rule change itself was justified by a *different* quantity, and the two must not be conflated:
-  V2-B3 records that the all-cells gate **was turning on 0.15 % of its floor**, meaning the per-cell
-  verdict count was decided by a margin that narrow, so that a **-0.05 %** median shift in the V2-E3
+  The decision record states that the all-cells gate **was turning on 0.15 % of its floor**, meaning the per-cell
+  verdict count was decided by a margin that narrow, so that a **-0.05 %** median shift in a separate improvement round's
   arm flipped one cell (55/56 to 54/56). That 0.15 % is the decision margin of the retired all-cells
   rule; it is **not** the distance between the median and the floor, which is 5.47 %.
 
@@ -83,10 +83,9 @@ the CSV/JSON independently.
   held in the sibling `outputs_step9/` directory, which `_PROVENANCE.md` states is retained
   specifically because it is not reproducible elsewhere.
 - The as-modelled band values themselves (retail 80/110/155; hotel 180/240/300; office 100/135/200)
-  and the empirical/INFO bounds are sourced to `dr_L3-02_retail_eui_bands_REPORT.md` and
-  `dr_L3-03_hotel_eui_bands_REPORT.md` (Table 5 in each report) and, for office, to the Leg-2-inherited
-  `Office Reference EUI ... As-Modelled Bands.md` Table 7.1, cited via the `band_src` field in the CSV
-  itself (also deliverable-sourced, confirmed).
+  and the empirical/INFO bounds are sourced to this project's own retail and hotel reference-band
+  reviews, and, for office, to the office reference document inherited from the two-channel
+  construction stage, Table 7.1, cited via the `band_src` field in the results file itself.
 
 No band value was moved and no gate verdict was changed to produce this table.
 

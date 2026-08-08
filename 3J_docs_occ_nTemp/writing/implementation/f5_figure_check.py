@@ -65,8 +65,8 @@ FIGURES = [
     ("fig02_roadmap.py", "Figure_02_three_leg_roadmap.md", "Figure_02_three_leg_roadmap", FIG, []),
     ("fig03_transformer.py", "Figure_03_three_head_transformer.md", "Figure_03_three_head_transformer", FIG, []),
     ("fig04_exclusivity.py", "Figure_04_exclusivity_projection.md", "Figure_04_exclusivity_projection", FIG, []),
-    ("fig05_tag2dispatch.py", "Figure_05_tag2_dispatch.md", "Figure_05_tag2_dispatch", FIG, []),
-    ("fig06_hotel.py", "Figure_06_hotel_sidetrack.md", "Figure_06_hotel_sidetrack", FIG, []),
+    ("fig05_hotel.py", "Figure_05_hotel_sidetrack.md", "Figure_05_hotel_sidetrack", FIG, []),
+    ("fig06_tag2dispatch.py", "Figure_06_tag2_dispatch.md", "Figure_06_tag2_dispatch", FIG, []),
     ("figS01_shares.py", "Figure_S01_occupiable_shares.md", "Figure_S01_occupiable_shares", FIG_SI, [APPENDIX_C]),
     ("figS02_levers.py", "Figure_S02_scenario_levers.md", "Figure_S02_scenario_levers", FIG_SI, []),
 ]

@@ -209,13 +209,13 @@ and is not authoritative.**
 **Figure 4 — `Figure_04_exclusivity_projection.png`** — independent binary heads → threshold-normalized
 argmax projection. Show ISR ≤ 0.5 % raw → 0 % after projection. Source: dr_L3-12.
 
-**Figure 5 — `Figure_05_tag2_dispatch.png`** — Tag-2 exact-match routing inside one tower: apartment
+**Figure 6 — `Figure_06_tag2_dispatch.png`** — Tag-2 exact-match routing inside one tower: apartment
 tags → **REPLACE**; office / retail / guest-room tags → **MODULATE**; amenity + service/MEP →
 untouched NECB baseline; missing channel → NECB fallback. Include the **hard wiring gate**
 (`Number_of_People_Schedule_Name`, not `Schedule_Name`) as a call-out — this is the Leg-2 bug that
 passed every input-side check.
 
-**Figure 6 — `Figure_06_hotel_sidetrack.png`** — ISQ (QC) / CBRE (AB) monthly series → SARIMA(1,1,1)(1,1,1,12)
+**Figure 5 — `Figure_05_hotel_sidetrack.png`** — ISQ (QC) / CBRE (AB) monthly series → SARIMA(1,1,1)(1,1,1,12)
 + COVID indicator (2020-03…2022-06) → `hotel_multiplier(t, month, PR) = s(t) × monthly rate`.
 Show `s(t)`: overnight plateau **1.00** (22:00–06:00), day trough **0.200** weekday / **0.308** weekend.
 Backcast gate QC+AB 2015–2019 **MAE < 0.05**. 2030 bands 0.92 / 1.00 / 1.05.
@@ -339,10 +339,10 @@ confirmed in STEP 1** — into `writing/figures/`:
 
 | Manuscript label | Source file | Destination |
 |---|---|---|
-| Figure 7 | `fig_eui_4ch.png` | `figures/Figure_07_eui_4ch.png` |
-| Figure 8 | `fig_diurnal_4ch.png` | `figures/Figure_08_diurnal_4ch.png` |
-| Figure 9 | `fig_peakhour_4ch.png` | `figures/Figure_09_peakhour_4ch.png` |
-| Figure 10 | `fig_longitudinal_4ch.png` | `figures/Figure_10_longitudinal_4ch.png` |
+| Figure 7 | `fig_longitudinal_4ch.png` | `figures/Figure_07_longitudinal_4ch.png` |
+| Figure 8 | `fig_eui_4ch.png` | `figures/Figure_08_eui_4ch.png` |
+| Figure 9 | `fig_diurnal_4ch.png` | `figures/Figure_09_diurnal_4ch.png` |
+| Figure 10 | `fig_peakhour_4ch.png` | `figures/Figure_10_peakhour_4ch.png` |
 | Figure 11 | `fig_scenario_4ch.png` | `figures/Figure_11_scenario_4ch.png` |
 | Graphical abstract | `Leg3_4-split/Residential-Office-Retail-Hotel_Pipeline.png` | `figures/graphicalAbstract.png` |
 | Figure S3 | `Leg2_2-split/Residential-Office_Pipeline.png` | `figures/SI/Figure_S03_leg2_pipeline.png` |

@@ -1,4 +1,4 @@
-# Figure 6 -- Hotel Side-Track (Tourism Statistics to SARIMA to Guest-Room Multiplier)
+# Figure 5 -- Hotel Side-Track (Tourism Statistics to SARIMA to Guest-Room Multiplier)
 **Target:** web image-generation LLM · **Style family:** flat-2D horizontal (shared across all schematics)
 **Purpose:** show the non-GSS hotel channel end to end: monthly tourism-statistics series, SARIMA forecast with a COVID indicator, the diurnal shape function s(t), and the resulting hotel_multiplier used to modulate guest-room schedules.
 **Source:** `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md` STEP 6 box ("HOTEL SIDE-TRACK"); `deepResearch/dr_L3-05_hotel_diurnal_shape_REPORT.md`

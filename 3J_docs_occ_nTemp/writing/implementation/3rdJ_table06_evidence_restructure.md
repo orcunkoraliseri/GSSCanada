@@ -1,6 +1,37 @@
 # Table 6 - move the evidence apparatus to the SI (task spec)
 
-**Created:** 2026-08-06 · **Status:** SPEC WRITTEN, not yet executed
+**Created:** 2026-08-06 · **Status:** 🟢 **EXECUTED 2026-08-08, with one deviation from step 2, stated below**
+
+> **DEVIATION FROM THIS SPEC, taken deliberately and recorded rather than absorbed.**
+> Step 2 called for a new SI table, `Table_B2_crossleg_evidence.md`, carrying the evidence column
+> verbatim. **It was not created.** On 2026-08-08, between this spec being written and being
+> executed, the authors decided to CUT SI Tables B1 and C1 from the paper on the grounds that a
+> table of internal round labels and repository detail is this project's sprint board, not
+> supplementary material for a journal. A new SI table of repository paths, md5 hashes and SLURM
+> job numbers is the same class of artefact, and creating it would have re-added, under a new
+> number, exactly what had just been cut.
+>
+> **Nothing was lost.** The full evidence column survives verbatim in
+> `writing/tables/archive/Table_06_leg2_leg3_delta.2026-08-08_pre_evidence_relocation.md`, which is
+> where a repository-level trail belongs, and the `## Sources` and `## Manager notes` blocks under
+> Table 6 still carry every md5 and every path in the working draft. What moved is only where the
+> trail lives; what changed in the paper is that the main-text column now reads as prose.
+>
+> **Result against this spec's own test method:** verdict token invariance holds on all nine rows
+> (five `⚠ check source`, three `No`, one `Yes, for the base prototype geometry only`); the one
+> textual change in that column was a parenthetical gloss on the Step 8 row, which now appears in
+> full in that row's Basis cell instead. Apparatus absence in the main table: zero hits for md5, a
+> 32-hex string, `.py`, `.md`, the two repository roots, `in this task`, `standing hard rule`,
+> `job `, and every internal identifier pattern. The Step 9 comparability caveat survives in plain
+> language in its Basis cell, as step 5 required.
+>
+> **One thing this execution found that the spec did not anticipate.** Table 6's `## Manager notes`
+> block was **not fully stripped from the submission copy**: the section-drop in `assemble_3J.py`
+> ended at the first markdown table row inside the block, so "Manager decision", "Recorded reason",
+> a "Written reopen trigger" and five internal decision IDs were in `readySubmission.md`. Fixed at
+> the same time by narrowing the drop terminator to captions only, and a residue check on the
+> block's body phrases was added, because the existing residue check looked for the surviving
+> *heading* and the heading was the one line that had been removed correctly.
 **Follows from:** the user's decision that the submission copy must be a plain paper with no notes
 added during the build process.
 

@@ -25,8 +25,8 @@ MODULES = [
     ("fig02_roadmap", HERE, "Figure_02_three_leg_roadmap"),
     ("fig03_transformer", HERE, "Figure_03_three_head_transformer"),
     ("fig04_exclusivity", HERE, "Figure_04_exclusivity_projection"),
-    ("fig05_tag2dispatch", HERE, "Figure_05_tag2_dispatch"),
-    ("fig06_hotel", HERE, "Figure_06_hotel_sidetrack"),
+    ("fig05_hotel", HERE, "Figure_05_hotel_sidetrack"),
+    ("fig06_tag2dispatch", HERE, "Figure_06_tag2_dispatch"),
     ("figS01_shares", SI, "Figure_S01_occupiable_shares"),
     ("figS02_levers", SI, "Figure_S02_scenario_levers"),
 ]

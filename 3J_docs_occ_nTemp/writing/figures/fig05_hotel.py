@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-fig06_hotel.py -- Figure 6: Hotel Side-Track (Tourism Statistics to SARIMA to
+fig05_hotel.py -- Figure 5: Hotel Side-Track (Tourism Statistics to SARIMA to
 Guest-Room Multiplier).
 
-Source annotation block: Figure_06_hotel_sidetrack.md. Box labels not covered by the
+Source annotation block: Figure_05_hotel_sidetrack.md. Box labels not covered by the
 annotation block ("Monthly Rate", "Hotel Multiplier", "to Guest-Room Schedule") are
 quoted verbatim from that same file's SCENE paragraph.
 
-Run:  py -3 writing/figures/fig06_hotel.py
-Output: writing/figures/Figure_06_hotel_sidetrack.pdf / .png
+Run:  py -3 writing/figures/fig05_hotel.py
+Output: writing/figures/Figure_05_hotel_sidetrack.pdf / .png
 """
 import os
 import sys
@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fig_style import SLATE, AMBER, GREY, INK, WHITE, new_fig, box, arrow, footnote, save_both, wrap_text
 from matplotlib.patches import Rectangle, Ellipse
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Figure_06_hotel_sidetrack")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Figure_05_hotel_sidetrack")
 
 ICON_Z = 6
 
 # ---------------------------------------------------------------------------
-# LABELS -- every string drawn, verbatim from Figure_06_hotel_sidetrack.md's
+# LABELS -- every string drawn, verbatim from Figure_05_hotel_sidetrack.md's
 # "Annotations to overlay afterward" block (plus SCENE-quoted structural names).
 # Checked by f5_figure_check.py C4.
 # ---------------------------------------------------------------------------

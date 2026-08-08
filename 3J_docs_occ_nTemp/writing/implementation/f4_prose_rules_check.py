@@ -20,6 +20,16 @@ C2  the 2J phrase "four building archetypes" appears only inside a negation
 C3  no scanned file cites the superseded outputs_step9/ as a source
 C4  every scanned file names at least one source (a path, or a "Sources" block)
 C5  vacuity guard: the scan actually saw files, and C1 is demonstrably falsifiable
+C6  the exempt files state no number that appears nowhere else in the manuscript
+C7  every numbered Figure and Table is cited in the body prose, not only captioned
+
+C7 was added 2026-08-08 because it was failing at the time: 15 figures carried a
+caption and only 2 of them were ever referred to from the text. A figure a reader is
+never sent to is, to an editor, an unused figure, and this is a common desk-reject
+trigger. The arm counts a citation only where a reader would actually meet it: caption
+lines do not count, and neither do the `## Sources` / `## References` blocks, because
+the submission transform in assemble_3J.py deletes the Sources blocks outright, so a
+"citation" living there does not exist in the submitted paper at all.
 """
 
 import io
@@ -30,6 +40,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # .../writing
 SCAN = ["chapters", "tables", "figures"]
 EM, EN = "—", "–"
+
+# A caption line, as written in the chapter sources and honoured by assemble_3J.py.
+CAPTION_LINE = re.compile(r"^\*\*(Figure|Table)\s+([A-Z]?\d+)\.\*\*")
 
 # "four building archetypes" is legitimate inside a sentence that rejects it.
 NEG = re.compile(r"(not|never|rather than|instead of|is wrong|avoid|no longer)[^.\n]{0,80}four building archetypes", re.I)
@@ -120,6 +133,51 @@ def run(extra_text=None, orphan_number=None):
     results.append(("C6", not bad,
                     "every number in the front matter and conclusion is stated somewhere else too", bad))
 
+    # C7 -- every numbered exhibit is referred to from the running text.
+    #
+    # Scope is chapters/ only: a caption lives in a chapter and so must its citation.
+    # A table file that mentions "Table 5" inside its own notes is not the paper
+    # sending a reader to Table 5.
+    captioned, cited = {}, set()
+    for p, t in docs:
+        if "chapters" not in rel(p) and "__falsifier__" not in rel(p):
+            continue
+        in_apparatus = False
+        body = []
+        for ln, line in enumerate(t.split("\n"), 1):
+            if re.match(r"^##\s+(Sources|References)\b", line, re.I):
+                in_apparatus = True
+                continue
+            if in_apparatus:
+                # The apparatus block ends at the next rule or heading; a caption line
+                # is also plainly the paper again (see the same lesson in assemble_3J).
+                if line.strip() == "---" or re.match(r"^#{1,2}\s", line) or CAPTION_LINE.match(line):
+                    in_apparatus = False
+                else:
+                    continue
+            m = CAPTION_LINE.match(line)
+            if m:
+                # The caption declares the exhibit; it never counts as citing it.
+                captioned.setdefault("%s %s" % (m.group(1), m.group(2)), (rel(p), ln))
+                rest = line[m.end():]
+            else:
+                rest = line
+            body.append(rest)
+        # Scan the body as ONE string, not line by line. "Figure\n7" is the same
+        # reference as "Figure 7" to a reader, and the chapters are hard-wrapped, so a
+        # per-line scan reports a cited figure as uncited purely because of where the
+        # wrap fell. This is the same wrap trap documented for the `check source`
+        # marker in assemble_3J.py, and it bit this arm on its first real run.
+        for kind, num in re.findall(r"\b(Figure|Table)\s+([A-Z]?\d+)\b(?!\.\*\*)", "\n".join(body)):
+            cited.add("%s %s" % (kind, num))
+
+    uncited = sorted(k for k in captioned if k not in cited)
+    results.append(("C7", not uncited,
+                    "every numbered figure and table is cited in the body prose (%d exhibit(s))"
+                    % len(captioned),
+                    ["%s  captioned at %s:%d, never referred to from the text"
+                     % (k, captioned[k][0], captioned[k][1]) for k in uncited]))
+
     # C5 -- vacuity guard
     n = len(paths)
     results.append(("C5", n >= 10, "the scan saw files (%d found; a real build has 10+)" % n,
@@ -131,9 +189,12 @@ def main():
     falsify = "--falsify" in sys.argv
     print("V5-F4 -- manuscript prose rules")
     if falsify:
-        print("  FALSIFY MODE: one em dash into a synthetic chapter (C1 must fail), and one")
-        print("  drifted figure into the front matter that appears nowhere else (C6 must fail).\n")
-        results, n = run(extra_text="A synthetic line with an em dash %s here. See Table 1." % EM,
+        print("  FALSIFY MODE: one em dash into a synthetic chapter (C1 must fail), one")
+        print("  drifted figure into the front matter that appears nowhere else (C6 must fail),")
+        print("  and one captioned-but-uncited synthetic figure (C7 must fail).\n")
+        results, n = run(extra_text=("A synthetic line with an em dash %s here. See Table 1.\n\n"
+                                     "**Figure 99.** *(insert `Figure_99_synthetic.png` here)* - a figure "
+                                     "this synthetic chapter captions and never sends a reader to.\n" % EM),
                          orphan_number="777.77")
     else:
         results, n = run()
@@ -151,7 +212,7 @@ def main():
     print("\n  %d PASS / %d FAIL" % (npass, len(results) - npass))
     if falsify:
         by = dict((r[0], r[1]) for r in results)
-        want_fail = ["C1", "C6"]
+        want_fail = ["C1", "C6", "C7"]
         still_passing = [c for c in want_fail if by.get(c, True)]
         for c in want_fail:
             print("  falsifier: %s %s" % (c, "failed as required -- it has teeth"

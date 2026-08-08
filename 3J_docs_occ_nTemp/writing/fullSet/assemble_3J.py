@@ -137,8 +137,38 @@ REPO_PATH = re.compile(r"(Leg2_2-split|Leg3_4-split|improvements/v[0-9]|deepRese
                        r"Step[0-9]_docs|eSim_bem_utils|\.py\b|\.md\b)")
 
 
+# BUILD NOTES. A note addressed to us, sitting inside a line that IS paper content.
+#
+# The case that forced this: two entries in the Chapter 1 reference list carried a
+# "DOI DISPUTED, DO NOT SUBMIT UNTIL RESOLVED" banner. The reference line itself is
+# literature and must ship; the banner is a note to ourselves and must not. Neither
+# DROP_HEADINGS (which works on whole sections) nor the `check source` marker (which
+# is a cell value) could separate them, so the banner rode into readySubmission.md.
+#
+# An HTML comment is the right carrier: it is invisible in any rendered view of the
+# working draft, it survives verbatim in the draft's source for us to read, and it is
+# removed here by one named rule. It is NOT a way to hide an unresolved problem -- see
+# the unresolved-notes report printed at the end of main(), which is loud on purpose.
+BUILD_NOTE_RE = re.compile(r"[ \t]*<!--\s*BUILD NOTE\b.*?-->", re.S)
+
+
 # A line that means the source list is over and the paper has resumed.
-CONTENT_RESUMES = re.compile(r"^(\*\*(Table|Figure|Graphical)\b|\||!\[)")
+#
+# 🔴 THIS PATTERN WAS TOO WIDE AND IT LEAKED A WHOLE SECTION, 2026-08-08.
+# It used to also accept a bare markdown table row (`|`) and an image (`![`). But an
+# apparatus section is perfectly entitled to contain a table: the `## Manager notes`
+# block under Table 6 opens with a three-row verdict tally. The drop therefore ENDED at
+# that tally, and everything after it -- "Manager decision", "Recorded reason", a
+# "Written reopen trigger", and five references to an internal decision ID -- was
+# written straight into readySubmission.md. The residue check did not catch it, because
+# the check looked for the surviving *heading*, and the heading is exactly the one line
+# that had been removed correctly.
+#
+# A CAPTION is a strong signal that the paper has resumed, and a caption is what the
+# original bug (a deleted `**Table 4.**` line) was actually about. A table row is a weak
+# one. Only the strong signal is honoured now. Anything inside a dropped section stays
+# dropped until a heading, a rule, or a caption.
+CONTENT_RESUMES = re.compile(r"^\*\*(Table|Figure|Graphical)\b")
 
 # Content markers that must survive the strip intact. Counted before and after.
 CAPTION = re.compile(r"^\*\*(?:Table|Figure) [A-Z]?\d+\.\*\*", re.M)
@@ -216,6 +246,11 @@ def strip_for_submission(doc):
             manifest.append(("CAMPAIGN IDENTIFIER block", clean[:end].count("\n") + 1))
             clean = clean[end + 1:].lstrip("\n")
 
+    n_notes = len(BUILD_NOTE_RE.findall(clean))
+    if n_notes:
+        clean = BUILD_NOTE_RE.sub("", clean)
+        manifest.append(("BUILD NOTE comments (notes to ourselves inside paper content)", n_notes))
+
     n_marks = len(MARK_RE.findall(clean))
     clean = MARK_RE.sub(MARK_SUB, clean)
     if n_marks:
@@ -254,7 +289,15 @@ def strip_for_submission(doc):
     residue = []
     if u"⚠" in clean:
         residue.append("warning glyph still present")
-    for pat, label in ((re.compile(r"^##\s+Sources\b", re.I | re.M), "a Sources heading"),
+    # Dropping a section's HEADING is not dropping the section. These phrases live in the
+    # BODY of the apparatus blocks, so they catch a truncated drop that the heading-level
+    # residue checks below are structurally unable to see.
+    for pat, label in ((re.compile(r"Manager decision|Manager notes|Recorded reason|"
+                                   r"Written reopen trigger|flagged to the manager"),
+                        "the body of a manager-notes block"),
+                       (re.compile(r"BUILD NOTE"), "a BUILD NOTE"),
+                       (re.compile(r"DO NOT SUBMIT"), "a DO NOT SUBMIT banner"),
+                       (re.compile(r"^##\s+Sources\b", re.I | re.M), "a Sources heading"),
                        (re.compile(r"^##\s+Manager notes\b", re.I | re.M), "a Manager notes heading"),
                        (re.compile(r"CAMPAIGN IDENTIFIER"), "the campaign stamp"),
                        (re.compile(r"^---\s*\n---\s*$", re.M), "two horizontal rules in a row")):
@@ -340,6 +383,29 @@ def main():
         [f for f in os.listdir(TBL) if f.endswith(".md")]
         + [f for f in os.listdir(TBL_SI) if f.endswith(".md")]
     )
+    # Files that live in tables/ but are deliberately NOT part of the manuscript.
+    #
+    # 🔴 Removing a placeholder is not enough to cut a table. The leftovers appendix is
+    # built by DIFFING the directory against what was inlined, so a table whose
+    # placeholder is deleted does not disappear -- it reappears in the appendix, in full.
+    # That is the correct default (nothing is lost silently) and exactly wrong here.
+    #
+    # These two files stay on disk on purpose. Appendix_C_corrections.md is a live source
+    # for f5_figure_check.py's C4 and C6 arms, which cross-foot Figure S1's occupiable
+    # shares against it; deleting it would break a check that has already caught two real
+    # defects. Cutting a table from the SUBMISSION is not the same as deleting a project
+    # artefact, and this distinction is the whole reason the exclusion is by name here
+    # rather than by moving files around.
+    EXCLUDED_TABLES = {
+        # Authors' decision, 2026-08-08: the v0-v5 improvement-round ledger and the
+        # corrections appendix are this project's internal sprint board, not supplementary
+        # material for a journal. Columns like "Gates moved / Bands moved" and round labels
+        # are development apparatus.
+        "Table_B1_improvement_rounds.md",
+        "Appendix_C_corrections.md",
+    }
+    excluded_present = sorted(t for t in all_tables if t in EXCLUDED_TABLES)
+    all_tables = [t for t in all_tables if t not in EXCLUDED_TABLES]
     left_tables = [t for t in all_tables if t not in inlined_tables]
     if left_tables:
         parts.append("\n# Appendix: tables not inlined at a placeholder\n")
@@ -386,6 +452,15 @@ def main():
     print("assembled %d chapters" % len(ORDER))
     print("  tables inlined at a placeholder : %d  %s" % (len(inlined_tables), inlined_tables))
     print("  tables appended to the appendix : %d  %s" % (len(left_tables), left_tables))
+    # Printed, not silent: a cut the build does not announce is a cut nobody can audit.
+    print("  tables EXCLUDED from the paper   : %d  %s" % (len(excluded_present), excluded_present))
+    # Vacuity guard. If a name in EXCLUDED_TABLES matches nothing on disk it is excluding
+    # nothing, and the set reads as effective when it is not -- the same failure class as a
+    # check that passes because it looked at zero items.
+    missing_excl = sorted(EXCLUDED_TABLES - set(excluded_present))
+    if missing_excl:
+        print("  !! EXCLUDED_TABLES names %d file(s) that do not exist: %s"
+              % (len(missing_excl), missing_excl))
     print("  figures inlined at a placeholder: %d  %s" % (len(inlined_figs), inlined_figs))
     print("  figures appended to the appendix: %d  %s" % (len(left_figs), left_figs))
 
@@ -403,6 +478,33 @@ def main():
             got = hashlib.md5(fh.read().encode("utf-8")).hexdigest()
         exp = hashlib.md5(text.encode("utf-8")).hexdigest()
         print("  %-24s %s  %s" % (os.path.basename(path), got, "OK" if got == exp else "MISMATCH"))
+
+    # A note removed from the paper is not a problem solved. The strip makes the
+    # submission copy clean; this report makes sure that cleanliness is never mistaken
+    # for readiness. Every BUILD NOTE is an open item blocking submission, listed here.
+    # A note that has been ANSWERED is rewritten in place as `BUILD NOTE RESOLVED <date> by <what>`
+    # and keeps the words "BUILD NOTE", deliberately: the strip regex and the residue check both key
+    # on that phrase, so a resolved note is still removed from the submission copy and still refused
+    # if it survives. What changes is only whether it is counted as blocking. Deleting the note
+    # instead would delete the reason, which is the part worth keeping.
+    all_notes = BUILD_NOTE_RE.findall(doc)
+    notes = [n for n in all_notes if not re.match(r"[ \t]*<!--\s*BUILD NOTE RESOLVED\b", n)]
+    n_resolved = len(all_notes) - len(notes)
+    if n_resolved:
+        print("\n  %d BUILD NOTE(s) marked RESOLVED, not counted as blocking:" % n_resolved)
+        for note in all_notes:
+            if re.match(r"[ \t]*<!--\s*BUILD NOTE RESOLVED\b", note):
+                one = " ".join(note.split()).replace("<!--", "").replace("-->", "").strip()
+                print("     + %s" % (one[:120] + (" ..." if len(one) > 120 else "")))
+    print("\nUNRESOLVED BUILD NOTES -- each one blocks submission:")
+    if not notes:
+        print("  none. Nothing in the manuscript is waiting on an external answer.")
+    else:
+        print("  !! %d open. readySubmission.md is CLEAN but NOT READY." % len(notes))
+        for note in notes:
+            one = " ".join(note.split())
+            one = one.replace("<!-- BUILD NOTE:", "").replace("-->", "").strip()
+            print("     - %s" % (one[:150] + (" ..." if len(one) > 150 else "")))
     return 0
 
 
