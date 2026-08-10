@@ -79,7 +79,7 @@ as contested and unsourced, not merely missed.
 **Hotel** fails on the opposite side of its band: 28 of 56 cells FAIL, every one above the 300 kWh/m2/yr
 ceiling and every one on the `Tall` prototype (`SuperTall` clears the ceiling in all 28 of its own cells),
 over a measured range of 203.33 to 318.42 kWh/m2/yr (median 260.54). The band ceiling rests on the
-first-party DOE/PNNL Large Hotel, ASHRAE 90.1-2019 prototype value (284.44 kWh/m2/yr at CZ 6A, 299.28 at
+first-party DOE/PNNL Large Hotel, ASHRAE 90.1-2019 (ASHRAE, 2019) prototype value (284.44 kWh/m2/yr at CZ 6A, 299.28 at
 CZ 7), which is 1.0 % from the ceiling's original 90.1-2004-lineage anchor of 302.21, so a vintage-mismatch
 objection does not hold; what remains is that the reference archetype's own city set (Rochester /
 International Falls) does not match this study's NECB-2017 Montreal / Calgary towers.

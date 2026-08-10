@@ -1415,3 +1415,448 @@ were checked at the same time against the 85-character cap: 5 bullets, longest 8
 `readySubmission.md` **1,426 lines**. Every shipped figure is now **300 dpi with a vector PDF** or
 **600 dpi with a vector PDF**; nothing is below 300. **No band moved, no gate verdict changed, and no
 measured number in the paper changed.**
+
+---
+
+## Progress Log - 2026-08-09 #1: the three authorial decisions taken, the last RV09/RV10 note closed, and the submission .docx built
+
+The three items the previous handoff parked as "the authors' call" were put to the authors and answered
+in one pass. All three were executed the same session. The build went to **zero open BUILD NOTES for
+the first time**, and then a new defect was found in the package and it is back to one. That sequence
+is the entry, not an embarrassment in it.
+
+### The three decisions, as answered
+
+1. **Venue: Building and Environment RECONFIRMED.** Reopen trigger (b) had fired on 2026-08-08 (0J was
+   rejected there for insufficient quality, not scope). The trigger was put back in front of the
+   authors with the bar restated, and the venue was chosen again. `02_journal_options.md` returns to
+   green with a `RECONFIRMED BY THE AUTHORS - 2026-08-09` block, and the three commitments under "My
+   recommendation" are now recorded as **binding** rather than advisory, which is what the amber block
+   said reconfirmation would cost.
+2. **The calibrated-behavioural-model axis: keep the tick, define the axis.**
+3. **Table A1's `Confirmed against` column: option (c)** - keep it, retitle it, declare the convention.
+
+### The fact that actually settled the calibration dispute, and it was in RV09 all along
+
+`RV09` marks THIS STUDY **No** on *calibrated behavioural model* while `Table_01_gap_matrix.md` marks
+it with a tick, and the report never flagged the disagreement. Reading the column instead of the cell
+settles it: **RV09 marks all TEN rows of its own matrix "No" on that axis**, including Widen and
+Wackelgard and Yamaguchi, which it separately certifies as time-use-survey-driven, and its own
+parenthetical for this study is "gate-tested control" - a statement about validation, not a denial
+that the model is fit to microdata.
+
+**A column with zero variance across ten studies cannot un-tick this study specifically.** It is a
+different axis under the same name. It was recorded and not adopted.
+
+Two further things fell out of looking at the column rather than the cell:
+
+- **The novelty claim never rested on that axis at all.** It rests on four - time-use-survey-driven,
+  multi-channel, forecast to a future year, mixed-use single building - and the BUILD NOTE's premise
+  ("the unoccupied cell is defined partly by that axis") was simply wrong.
+- 🔴 **One of those four load-bearing axes was not a column in Table 1.** The matrix scored seven axes
+  and *time-use-survey-driven* was not among them, so the table did not show the axis the claim most
+  depends on. It has been added. The matrix is now eight axes, and §1.2's "six positioning axes" (which
+  was already wrong against a seven-axis table) and the caption's "Seven-column" are corrected to
+  eight.
+
+### What was done
+
+- **`Table_01_gap_matrix.md`**: new `Time-use-survey-driven` column, scored for all five rows; a
+  **`What the axes mean`** block defining *calibrated behavioural model* (parameters estimated from
+  observed microdata on the modelled population, NOT agreement with a measured energy series) and
+  *stock-scale*; the five previously `check source` cells settled from RV09 full-text readings with the
+  fact each rests on; and three disagreements recorded rather than resolved.
+- **The five `check source` cells**, settled: Doma time-series ✓ (1 h), calibrated ✗ (positioning trace,
+  no behavioural model estimated from it), stock-scale ✗ (district of 221 individually modelled
+  buildings); Buttitta calibrated ✓ (national TUS), activity/end-use ✗ (presence-state counts),
+  stock-scale ✓ (four archetypes standing for a stock).
+- **NOT adopted from RV09**, and named in Table 1's Sources so nobody re-imports them: its calibration
+  column (10/10 No, cannot discriminate) and its *activity/end-use* verdict for Doma, which contradicts
+  `dr_L3-10` on a cell `dr_L3-10` does state. The `dr_L3-10` verdict is kept.
+- **§1.2**: the vendor name dropped from "mobile-positioning (SafeGraph) snapshots" rather than asserted
+  unverified, since RV09 says Telus and `dr_L3-10` says SafeGraph and the axis verdict is identical
+  either way; the four load-bearing axes named as such; "calibrated behavioural time-series" rewritten
+  as "behavioural time-series whose parameters are estimated from national time-use microdata", so the
+  claim states itself instead of leaning on a contested word.
+- **`Table_A1_A2.md`**: `Confirmed against` retitled to **`Source in the project repository`** in all
+  three sub-tables, with a paragraph above the tables declaring what the column is - internal paths,
+  not expected to resolve, printed so every number is attributable to a place in the build rather than
+  restated from a summary. 19 stray identifiers become a declared appendix convention.
+- Four predecessors archived before editing.
+
+### 🔴 The defect found while verifying the .docx, which is why the build is back to 1 open
+
+`Table_A1_A2.md` carries **two** tables under two `# ` headings. `Chapter_08_Conclusion.md:13` has
+**one** placeholder for the file, and `assemble_3J.py`'s `inline_table()` strips every `^# ` line. A1's
+label comes from the placeholder; **A2's is deleted.** The AT_RETAIL codebook therefore ships as an
+unlabelled continuation of the model card, under no number, and **no chapter cites "Table A2"
+anywhere.** Verified in the built docx: "Table A1" 3 times, "Table A2" and "AT_RETAIL codebook" zero,
+while A2's body ships in full (codebook rows, granularity note, excluded-channel note, episode-time
+share).
+
+**f4's C7 is structurally blind to this.** It checks that every caption it FINDS is cited in prose, so
+it reports 22/22 while a 23rd exhibit rides along unnumbered - the caption was destroyed before C7 ever
+saw the document. Same shape as the 2026-08-08 leak, inverted: there a heading was dropped and the body
+survived as content; here a heading is dropped and the body survives as an orphan.
+
+Recorded as a BUILD NOTE with two options (split A2 into its own SI table and cite it from §2 or §3;
+or fold it in as `### A1.6`), because which one is right is an editorial judgment about whether the
+codebook is data or model. **Not patched.**
+
+### Verification
+
+- Build: **8 BUILD NOTEs RESOLVED, 1 open.** Between the three decisions and the A2 discovery it read
+  `none. Nothing in the manuscript is waiting on an external answer.` for the first time.
+- `f4` **7 PASS / 0 FAIL** · `f5` **7 PASS / 0 FAIL** · `f3` **4 PASS / 1 FAIL, unchanged and correct.**
+- `check source` markers 22 to 14; readySubmission.md 1,427 to 1,467 lines; 22 captions both sides.
+- **Submission .docx built and verified against the INSTALLED file, not the build output** (the 2J
+  lesson, where a table column had silently vanished from the shipped docx): 22 captions, 15 images,
+  15 media parts, 14 tables, zero BUILD NOTE residue, zero warning glyphs, zero `check source`, no
+  campaign stamp, no `Confirmed against` column title. The single `Confirmed against` hit is Table 5's
+  own prose about `_PROVENANCE.md` and is paper content.
+- Package at `writing/submission/`: `3J_manuscript_submission.{md,docx}`, `figures/` (12 PNG + 11
+  vector PDF, `SI/` alongside), `tables/`, and the 2J toolchain copied into `extra/build_scripts/`
+  (`ref_submit.docx`, `post.py`, `submit_check.py`) so the render is reproducible here. Zero broken
+  image links. **No blinded build**: review is single-anonymized (RV10 item 14).
+
+### Left open
+
+1. **The Table A2 label** (the one BUILD NOTE, above).
+2. **Do NOT tick Gold open access** on RV10's CRKN 100 percent waiver claim. $3,690 USD, irreversible,
+   same shape as the 2J/Springer claim that was wrong.
+3. **The subject editors are still unlisted**, so the Concordia conflict is unanswered, not cleared.
+4. **RV09 reference 5 (Yamaguchi 2017)** states one title and reports another as its Crossref return.
+   It does not enter Table 1 and fails the cell on two axes under either title, so it blocks nothing
+   here, but the row is unverified.
+5. **The generative-AI declaration** - the authors' statement to make.
+6. **Cover letter placeholders**: handling editor's name and submission date.
+7. Deferred, unchanged: N7 (`f3` C2, do not relax) and N8 (`f5` C4 converse gap).
+
+---
+
+## Progress Log - 2026-08-09 #2: the submission .docx made to read like a paper, references consolidated, 2J cross-cited, image prompts collected
+
+Seven changes asked for in one message, all executed against the sources and the build, none by hand
+editing the built artefacts. Every one is verified against the **installed** `.docx`, not the pandoc
+output.
+
+### 1. The "Horizontal Line" shapes are gone, and they were never a style setting
+
+Word was showing sixty objects named "Horizontal Line". They are markdown thematic breaks: pandoc
+renders each `---` as a **VML rectangle** (`<v:rect>`), and Word names that shape. No style change
+could have removed them, because they are not styled text - they are drawings. `strip_for_submission()`
+now drops every thematic break, and the built file carries **0 `<v:rect>`** against 60 before.
+
+The drop runs **last**, after the residue and loss checks, on purpose: the strip's own section-drop
+loop uses `---` as a terminator, and the residue check tests for two rules in a row. Removing the rules
+earlier would have quietly disarmed both.
+
+Note. A second defect was written into that code comment and then **falsified by testing it**: a rule
+at line 1420 sits directly under a paragraph with no blank line, which is the shape that makes a setext
+heading, and the comment claimed the whole paragraph was rendering as an H2. Running that fragment
+through pandoc shows a `<p>`: pandoc reads setext only from a *single-line* header, and this is a
+six-line paragraph. The comment now records the wrong claim and how it was killed.
+
+### 2. Four report-style notes removed from the paper, and none of them deleted
+
+The four the authors quoted, plus one more found alongside them:
+
+| Removed from the paper | Where it came from | Where it went |
+|---|---|---|
+| the `n/r` legend blockquote after the abstract | inserted by the assembler | no longer inserted; see below |
+| `(5 bullets, each <=85 characters.)` | drafting instruction in Chapter 00 | `<!-- APPARATUS NOTE -->` |
+| `Front-matter note: no result or magnitude...` | Chapter 00 | `<!-- APPARATUS NOTE -->` |
+| `Differentiation targets named in this project's own positioning review...` | Table 1 | `<!-- APPARATUS NOTE -->` |
+| `Carried from the two-channel construction stage; to be merged into the master bibliography` | Chapter 02 | obsolete - the merge is what this round did |
+| `- (verify final citation form / status against master bibliography)` x2 | Chapter 01 references | obsolete, same reason |
+
+The mechanism matters more than the list. Three of them became `<!-- APPARATUS NOTE ... -->` comments
+rather than deletions, and `strip_for_submission()` grew **one new named rule** that removes every HTML
+comment that is not already a BUILD NOTE. The working draft keeps the note in its source; the submitted
+paper never sees it. **Deleting the note would have deleted the reason**, which is the same argument
+that put BUILD NOTES in HTML comments in the first place.
+
+**The `n/r` legend was solved by making the legend unnecessary**, not by deleting it. `MARK_SUB` is now
+`not reported` instead of `n/r`, so the 17 substituted cells read as English and the blockquote that
+declared the symbol is gone. The marker is still fully **visible**, which is the entire point of the
+convention: an unfilled cell that looks filled is worse than an ugly one. Two cells in Table 5 that read
+`check source (central not reported)` lost the now-redundant parenthetical.
+
+### 3. Line spacing, double to single
+
+`ref_submit.docx` carries `w:line="480"` in `docDefaults` - double. The authors asked for single. A
+derived reference document `ref_submit_single.docx` sets `240` and is now what the build uses;
+`ref_submit.docx` is left untouched so the 2J toolchain stays byte-identical to 2J's.
+
+Note. Elsevier's own guidance for Building and Environment asks for double-spaced manuscripts at
+submission. The authors asked for single and that is what is built; if the desk check bounces it, the
+fix is one flag on the build line, not a rebuild.
+
+### 4. All references collected at the end, as bullets - and the list grew by nine entries
+
+The paper had **two** per-chapter reference blocks (Chapter 1 and Chapter 2) and nothing at the end.
+They are now one `# References` chapter after the Conclusion and before the Supplementary material,
+alphabetised, rendered as a real bulleted list in Word (`numPr`, verified in the built XML).
+
+Chapter 08 was split into three files so the order comes out right and no file does two jobs:
+`Chapter_08_Conclusion.md` (prose only), `Chapter_09_References.md` (new), `Chapter_10_Supplementary.md`
+(the Table A1 and Figure S3 placeholders, moved out of Chapter 08).
+
+**Nine sources were cited in the text with no reference entry anywhere in the paper.** They are now
+entered: ASHRAE 90.1-2019, ASHRAE Guideline 14, NRCan SHEU 2019, NRCan SCIEU, and - the two that matter
+- **Kurin et al. 2022 and Menon et al. 2020**, cited by name in the SI architecture table since it was
+written. Statistics Canada, NECB and EnergyPlus entries were replaced with the fuller, already-vetted
+forms used in the 2J submission, so the two papers now agree on their shared sources.
+
+🔴 **Kurin and Menon are the only two references in the paper whose details have never been opened.**
+Both come from the deep-research report family in which roughly half of all citations have been found
+fabricated. The Kurin entry is `dr_L3-13` reference 5 minus two fields that were self-evidently
+placeholders in that report and were deliberately not carried (a page range `35, 1234-1246` and an
+OpenReview URL `id=e-58pB58p`). This session does not run literature searches and did not run one here.
+It is an **open BUILD NOTE**, so the build reports it every time until someone opens both.
+
+### 5. The 2J paper is now cross-cited, and it was missing from its own successor
+
+`§1.4` describes, in detail, a single-channel residential pipeline "linked to the Census dwelling stock,
+and forecast to 2030 through the COVID/work-from-home break, together with the paired stock-scale
+simulation design used to isolate the behavioural signal". That is 2J's abstract almost word for word.
+**2J was not in the reference list at all**, and the sentence cited the JBPS *Longitudinal Analysis*
+paper and the eSim companion instead.
+
+2J is entered as `Iseri and Hachem-Vermette (under review b)`, *From "How Much" to "When": Forecasting
+the Residential Energy Load Shape from a Calibrated Behavioural Occupancy Time-Series (Canada,
+2005-2030)*, Building Simulation, and cited at five sites: §1.4 (the departure point), §2.1 (the GSS
+cycles), §3.6 (the SHEU anchoring), §7.F (the shared extraction defect, which is *about* 2J), and the
+reference list. The JBPS entry became `under review a` so the two are distinguishable in text.
+
+⚠ **Left for the authors, because it is a naming question and not a citation question:** §1.4 opens
+"Leg-1, published as the second journal in this line (2J)", which reads as though Leg-1 and 2J are the
+same paper. The citation is now correct either way; the sentence is not this session's to rewrite.
+
+### 6. Image prompts collected at `submission/figures/Prompts_Images/`
+
+The eight schematic prompt files are copied there, plus a **new prompt for the graphical abstract**,
+which never had one, plus a `README.md` that does the part the authors will actually need: it separates
+the **nine figures that can be prompted** from the **six that carry measured numbers and must not be**
+(Figures 7-11 and S1 - a drawn approximation of a measured result is a fabricated figure), and it lists
+the three rules any generated image has to satisfy before it can replace a figure, each of which is an
+`f5` arm and each of which exists because it was wrong once.
+
+Note. This partly reverses the 2026-08-06 decision to build the schematics as matplotlib. The README
+names what that costs rather than arguing about it: `f5` arm C2 re-runs each script and compares md5, so
+an image-model output makes that arm unable to fail; the vector PDF goes away; and `f3` needs its
+registered md5 updated or it fails on a hash mismatch.
+
+### Verification
+
+- Build: **1979 to 1326 lines**, 566 apparatus lines removed, every removal named in the manifest.
+  New manifest entries: `other HTML comments` **3**, `horizontal rules` **59**, `check source rewritten
+  as not reported` **17**.
+- **22 captions on both sides of the strip**, unchanged. The loss check is what proves the reference
+  restructuring did not eat one.
+- `f3` **4 PASS / 1 FAIL** (correct, unchanged, not modified) · `f4` **7 PASS / 0 FAIL**, 31 files
+  scanned, 22 exhibits · `f5` **7 PASS / 0 FAIL**.
+- **Installed .docx**: 22 captions, 15 images, 15 media parts, 14 tables, **0 `<v:rect>`**, 0 HTML
+  comments, 0 `BUILD NOTE`, 0 `check source`, 0 warning glyphs, `docDefaults` line spacing **240**, and
+  the References heading renders as `Heading1` with its entries as a numbered-bullet list.
+- The paragraph at old line 1420 renders as `BodyText`, not a heading - checked in the built XML, after
+  the setext claim about it was falsified.
+
+### Left open
+
+1. **The Table A2 label** - unchanged from entry #1, still the authors' editorial call.
+2. **Kurin and Menon** - open BUILD NOTE, above.
+3. **§1.4's "Leg-1 ... (2J)" wording** - above.
+4. The one remaining report-like element in the paper is Table A1's `Source in the project repository`
+   column, kept because the authors chose it on 2026-08-09 in entry #1. It goes on one word.
+5. Unchanged: do NOT tick Gold OA on the CRKN claim · subject editors unlisted · cover-letter
+   placeholders · the generative-AI declaration · N7 / N8 deferred.
+
+---
+
+## Progress Log - 2026-08-09 #3: the standing handoff rebuilt as a full ledger, with a table of contents
+
+Author's request, in one line: *"mettre a jour ce prompt pour toutes des taches nous avons completer
+jusqu'a la maintenant et aussi des taches prochaines, mais, veuillez creer une content."* Two things,
+so both were done: the handoff now carries **every** completed round rather than only the last one,
+and it opens with a **twelve-entry table of contents**.
+
+Nothing in the paper, the build or any gate was touched. This entry exists so the change is on the
+record, not because state moved.
+
+### What changed in the handoff
+
+`Prompts/3rdJ_employee_N6_figure_renumbering_2026-08-08.md`, **336 to 421 lines**, edited in place at
+its fixed address; the predecessor is
+`Prompts/archive/3rdJ_manager_prompt_2026-08-09_round2.SUPERSEDED_by_full_ledger_round.md`, copied
+before the edit and verified non-empty.
+
+1. **A `## Contents` section**, twelve linked entries, immediately after the fixed-address block. The
+   file had grown past the point where a fresh session could find a specific rule by scrolling.
+2. **A new section, `Everything completed, round by round`** - four tables covering the build phase
+   (T1 to T12), round 2 (R1 to R4 plus entries #17 to #19), the submission phase (2026-08-08 #1 to
+   #6) and the decision and rendering phase (2026-08-09 #1 to #2). Twenty-five rounds in twenty-five
+   rows, sourced from this ledger's own headings.
+   **The third column is the point of the table**: what each round found that it was *not* sent to
+   find. Table 6 changing what the paper may claim, the strip's own guard catching it lying, the
+   strip deleting content with no check noticing, a schematic contradicting Table 6, a Manager-notes
+   block partly inside the submitted paper, `DEFAULT_AGG` pointing at the superseded arm, the RV09
+   fact that settled the calibration dispute, 2J missing from its own successor. Every one of those
+   is a hazard that is still live; the ledger is where a fresh session sees that they are a pattern
+   and not a run of bad luck.
+3. **The state of the paper pulled into one table** at the top - line count, docx size, the four gate
+   scores, figure resolution, open notes - so the first screen answers "where is this" without prose.
+4. **`The work that is left` rewritten as a nine-row table** with a `Whose call` column and a
+   `Blocking?` column. It previously ran six items as a prose list, which hid the fact that **five of
+   the nine are the authors' to answer, not mine**, and that only two of the nine actually block the
+   submission. Three items that had been buried in the old "Left open" prose are now rows in their
+   own right: §1.4's Leg-1 / 2J wording, Table A1's repository column, and reading the 0J decision
+   letter.
+5. **One hard rule added**, from this project's own history rather than from a style guide: *never
+   edit a built artefact by hand; every change goes into the sources or the build, and is then
+   verified against the installed file.* It has been followed all along and was never written down.
+6. **Two shell hazards added** to the standing list: `py -3 -c "..."` one-liners have returned empty
+   output under Git Bash more than once, and the fix is to write the probe to the scratchpad and run
+   the file.
+
+### Verification
+
+- 421 lines, 12 level-2 headings, 12 table-of-contents entries, all pointing at headings that exist.
+- **Zero em dashes and zero en dashes** in the file, checked in Python over the decoded text rather
+  than with `grep`. The first `grep` attempt used `$'[—–]'`, which bash does not expand as
+  an escape, so it built a character class out of the literal letters and reported **281 matches**.
+  A number that looks like an answer is not one; the check was rewritten before the number was used.
+- Predecessor archived and non-empty before the edit, guarded with `[ -s "$BK" ]`.
+- No source file, no build script, no gate and no figure was opened for writing this round. The
+  manuscript is unchanged at 1,325 lines and the open BUILD NOTE count is unchanged at 2.
+
+### Left open
+
+Unchanged from entry #2, and now all nine are rows in the handoff's own table. The two that block
+submission are still the Table A2 label (authors' editorial call) and the `V<NN>` prompt for the
+Kurin and Menon citations (mine to write, the author's to run).
+
+---
+
+## Progress Log - 2026-08-09 #4: author-generated images installed, a standing rule written down, and prompts written for the five results figures
+
+Three requests in one session, and the middle one changed how this project works from here.
+
+### 1. The nine generated images were audited BEFORE installing, and three came back defective
+
+The author generated images from the prompts written in entry #2 and asked for them to replace the
+matplotlib figures. All nine were opened and measured first.
+
+- **Resolution.** Every generated image is **1376 x 768 px** (S1 is 1200 x 896). At the 190 mm full
+  page width that is about **184 dpi**, against Elsevier's **500 dpi** for combination art. The files
+  they replace are **5400 to 6600 px** at 300 or 600 dpi.
+- 🔴 **Figure S1 is a data figure and came back fabricated.** One bar is labelled **`4.0.1`**, which
+  is not a share; the other `0.37`; there is no axis; and the footnote reads *"Mechanical, etelorgical
+  ancr of coherotyl electrical and plumbingnoing) as a share of GROSS floor area"*. The caption above
+  it still says "Measured occupiable-area share", so caption and artwork disagree.
+- **Figure 4**'s lower "raw / after projection" panel renders as two empty boxes; **Figure 6**'s "Hard
+  Wiring Gate" box renders two blank grey bars where its labels should be.
+- Clean and correct: **1, 2, 3, 5, S2** and the graphical abstract. Figure 3 gets the architecture
+  right - *"3 GSS heads + 1 non-GSS side-track"*, the exact wording `f5`'s C3 arm enforces.
+- **Figures 7 to 11 had no generated version at all**, so nothing was at risk there.
+
+All of that was put to the author with the numbers, and the answer was to install all nine anyway
+(*"juste utiliser ces images, vas-y"*, *"utiliser seulement ces images"*). Done, and recorded rather
+than argued: a **single consolidated open BUILD NOTE** now sits on Figure S1's caption in
+`Chapter_04_ExperimentalDesign.md` naming all four defects, so none of them can be forgotten at
+submission. Open notes 2 to 3.
+
+### 2. The install, and what it cost
+
+Nine PNGs copied into **both** `writing/figures/` and `writing/submission/figures/`. The seventeen
+superseded files - nine PNGs and the eight vector PDFs that went with them - are archived twice, at
+`writing/figures/archive_matplotlib_2026-08-09/` and at
+`writing/submission/figures/archive/superseded_matplotlib/`, so the revert is a copy back.
+
+The **stale vector PDFs were removed from the live trees** rather than left in place: a PDF showing
+the old artwork beside a PNG showing the new one is two different figures under one name. Figures 1
+to 6, S1 and S2 therefore have **no vector version** any more.
+
+### 3. 🔴 The gate reverted the install, and only the order of operations saved it
+
+`f5` was run afterwards to record the damage. It went 7 PASS / 0 FAIL to **5 PASS / 2 FAIL**, which is
+correct. But its C2 determinism arm **re-runs every figure script, and those scripts write to the real
+output paths**. The FAIL text reads backwards until you see it:
+
+```
+fig01_pipeline.py: md5 changed on re-run (b3eea0a9 -> d09d7b8d) -- NOT deterministic
+```
+
+`b3eea0a9` is the generated image; `d09d7b8d` is matplotlib's. **The gate was not reporting
+non-determinism, it was reporting that it had just overwritten the file**, and it regenerated the
+deleted PDFs too. `writing/figures/` was silently back to matplotlib.
+
+It cost nothing **only because of the order**: the `.docx` had already been built and verified from
+the submission tree, which `f5` does not touch. Run the gate first and the paper would have shipped
+matplotlib artwork under a report saying the generated images were installed. The install was
+re-applied and re-verified. `f6` was then checked the same way - md5s of the whole figure tree
+snapshotted before and after - and is **genuinely read-only**. New failure class **#42**.
+
+A second blindness in the same run: **`f5`'s C6 data-figure integrity arm PASSED** - *"figS01 segments
+sum to ~100% of occupiable"* - while the shipped S1 says `4.0.1`. C6 parses the plotting script's data
+literals, not the PNG. The arithmetic in `figS01_shares.py` is still perfect; the file it produces is
+no longer the file the paper contains. New failure class **#43**.
+
+### 4. A standing rule, at the author's instruction
+
+*"tu ne jamais creer des images."* Written into **`GSSCanada-main/CLAUDE.md`** as its own hard-rule
+section after the deep-research rule, and into **`GSSCanada-main/README.md`** under Repository
+Conventions. The assistant writes the prompt; the author generates; the assistant installs, verifies
+and audits. **Plotting is not drawing** - a matplotlib figure rendered from a frozen aggregate is
+computation and stays with the assistant. Both files backed up first.
+
+### 5. Prompts now exist for every image in the manuscript, and the five data prompts carry their data
+
+Six new prompt files: **Figures 7, 8, 9, 10, 11 and S3**. `Prompts_Images/` now holds **15 prompts for
+15 images**, which is all of them.
+
+The five results prompts do not describe their figures in words. Each carries **the actual series in
+tables**, pulled from the frozen deliverable by re-implementing the plotting code's own filters, with
+the file, the column and the source line named:
+
+- **Figure 7** - 32 values, `step9_longitudinal.csv`, mean over building x city, four eras.
+- **Figure 8** - four box summaries and the three reference bands parsed out of `BENCH` rather than
+  retyped. Office's maximum 90.21 is under its 100.0 floor; retail's median 75.63 is under 80.0;
+  hotel's box 203.33 to 318.42 straddles its 300 ceiling. The prompt says never widen a band to fit.
+- **Figure 9** - **288 hourly kW values**, six channels x two seasons, from `agg_diurnal.csv` filtered
+  to `metric == "energy_W"`. That filter is at `:331` of the Step-9 script and is easy to miss: without
+  it every channel returns 48 rows, the plotting code's `len(y) != 24` guard skips it, and the figure
+  comes out empty.
+- **Figure 10** - **all 224 per-cell peak hours**, individually. This is the figure the abstract
+  quotes, and the prompt says so.
+- **Figure 11** - 36 values across three panels; the prompt states that the **sign** is the finding and
+  that office's lever runs opposite to retail's and hotel's on purpose.
+
+`Figure_S03_leg2_pipeline.md` is a schematic prompt, with an explicit instruction that **no number may
+appear on it** - Leg-2 magnitudes are deliberately absent from this paper.
+
+### 6. Archive
+
+`writing/submission/figures/archive/` created, with a README that tabulates every replaced file, its
+old and new pixel size, and the prompt that produced the replacement. It holds
+`superseded_matplotlib/` (17 files) and `generated_jpg_duplicates/` (the nine `.jpg` copies moved out
+of `Prompts_Images/` so that folder holds one image per prompt). `Prompts_Images/README.md` rewritten
+around the two kinds of prompt and the `f5` trap.
+
+### Verification
+
+- Rebuilt: `readySubmission.md` 1,326 lines; `3J_manuscript_submission.docx` **10,598,395 bytes**.
+- **All nine generated PNGs verified byte-identical inside the shipped docx** by md5 against
+  `word/media/`, not by trusting the build. 15 media parts, 15 drawings, 14 tables, 0 `<v:rect>`,
+  0 HTML comments, 0 `BUILD NOTE`, 0 `check source`.
+- `f3` **4 PASS / 1 FAIL** (unchanged and correct; the generated images now appear in its unregistered
+  list, which is right) · `f4` **7 PASS / 0 FAIL** · `f5` **5 PASS / 2 FAIL** · `f6` **5 PASS / 0 FAIL**.
+- Figure tree md5s snapshotted before and after `f6`: identical.
+
+### Left open
+
+1. **The four generated-image defects** - S1's `4.0.1` and garbled footnote, Figure 4's empty panel,
+   Figure 6's blank labels, and 184 dpi across all nine. One consolidated BUILD NOTE. The authors have
+   the numbers and chose to proceed; regenerating at 4000 px or more closes all four at once.
+2. Unchanged: **Table A2**, **Kurin and Menon**, §1.4's Leg-1/2J wording, cover-letter placeholders,
+   the generative-AI declaration, no Gold OA on the CRKN claim, N7 / N8 deferred.

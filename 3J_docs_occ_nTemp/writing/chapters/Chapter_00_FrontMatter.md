@@ -20,7 +20,7 @@ Multi-channel occupancy; Mixed-use tall building; Time-use survey; Joint multi-t
 
 ## Highlights
 
-*(5 bullets, each <=85 characters.)*
+<!-- APPARATUS NOTE: house rule for this section - 5 bullets, each <= 85 characters. Checked by f4. Not reader-facing; stripped from the submission copy. -->
 
 - Four occupant populations in one tower peak at four different hours.
 - Coincidence factor below 1 in all four cells: use diversity flattens the peak.
@@ -56,7 +56,7 @@ Multi-channel occupancy; Mixed-use tall building; Time-use survey; Joint multi-t
 
 ---
 
-*Front-matter note: no result or magnitude from the two-channel construction stage this paper builds on appears anywhere above; that stage is a construction step for this paper and is discussed only in Methods and in the Introduction's departure-point narrative (§1.4).*
+<!-- APPARATUS NOTE: no result or magnitude from the two-channel construction stage this paper builds on appears anywhere above; that stage is a construction step for this paper and is discussed only in Methods and in the Introduction's departure-point narrative (section 1.4). This is a standing check on the front matter, not a statement to the reader; stripped from the submission copy. -->
 
 ---
 

@@ -131,6 +131,38 @@ read, verify and act on the report that comes back.
   invented number; never propose relaxing a band because our model fails it; keep as-modelled and
   empirical figures strictly separate; no em dashes or en dashes in the returned text.
 
+
+## The assistant NEVER creates images — it writes the prompt (HARD RULE)
+
+**Instruction from the author, 2026-08-09: *"tu ne jamais creer des images."*** The assistant does not
+generate, draw, synthesise or render any figure, schematic, diagram, icon or graphical abstract that
+will appear in a paper. This is the same division of labour as the deep-research rule above: **the
+assistant's deliverable is a prompt document, not the artefact.**
+
+- **What the assistant produces:** a prompt file under
+  `<paper>_docs_*/writing/submission/figures/Prompts_Images/`, one `.md` per image, written so that
+  someone else can generate the image from it without asking a follow-up question.
+- **What the author produces:** the image itself, in their own image tool, saved next to the prompt.
+- **What the assistant then does:** install it, verify it is byte-identical inside the shipped
+  document, and report every defect it can see in the rendered artwork.
+
+**This does not apply to plots computed from data.** Matplotlib figures rendered by a script from a
+frozen aggregate are *computation*, not image creation, and remain the assistant's job. The line is
+between **drawing** something and **plotting** something.
+
+🔴 **A prompt for a figure that carries measured numbers must carry those numbers.** Figures 7 to 11
+of the 3J paper are the paper's results. A prompt that describes such a figure in words invites an
+image generator to invent the values, and it will: the 2026-08-09 round shipped a generated Figure S1
+labelling a share as `4.0.1` with a garbled footnote, while the gate that checks that figure's
+arithmetic still passed, because it reads the plotting script and not the PNG. So for any data
+figure, the prompt must state the **actual series, in a table, taken from the frozen deliverable**,
+and must say that no value may be altered, rounded or added.
+
+**Verification is not optional and is not read-only.** After installing any supplied image, verify it
+against the *installed* document, and remember that a gate which re-runs a figure script **writes to
+the real output path** and will silently revert the install (`f5`'s C2 arm did exactly that). Snapshot
+md5s before and after any gate whose write behaviour is unaudited.
+
 ## Speed HPC Cluster
 
 - Host: `o_iseri@speed.encs.concordia.ca`; login node `speed-submit2` is for job submissions only — do not run any computation, builds, or interactive workloads on it (admin warning: "this node is for job submissions only: no compute").

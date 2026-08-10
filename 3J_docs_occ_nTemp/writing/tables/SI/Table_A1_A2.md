@@ -7,9 +7,18 @@ deep-research playbooks that froze the design (`dr_L3-11`, `dr_L3-12`, `dr_L3-13
 copied from the brief; the one line that could not be independently confirmed is marked `⚠ check
 source`.
 
+**About the `Source in the project repository` column.** The right-hand column of the three tables
+below gives, for each hyperparameter, the file and line in the authors' own project repository from
+which that value was read. These are internal paths and internal document identifiers; they are not
+expected to resolve for a reader, and nothing in this model card depends on opening them. They are
+printed so that every number in the card is attributable to a specific place in the build rather than
+restated from a summary, and so that a value which was read from code can be told apart from one that
+was read from a design document. Where the two disagreed, the disagreement is disclosed in the notes
+beneath the table rather than reconciled silently.
+
 ### A1.1 - Architecture
 
-| Component | Specification | Confirmed against |
+| Component | Specification | Source in the project repository |
 |---|---|---|
 | Backbone | Shared multi-head Transformer encoder-decoder, "J3 lineage"; **AUGMENT** verdict (keep incumbent, graft targeted upgrades) - no 2023-2026 challenger (discrete diffusion MDLM/SEDD, decoder-only AR, SSM/Mamba, discrete flow matching, non-AR iterative) passed the project's gates at this scale | `dr_L3-11_architecture_pressure_test_REPORT.md` Table 5; `3rdJ_04_augmentationGSS_4split.md:61` |
 | Encoder | 6-layer Transformer, `d_model=256`, `n_heads=8`, `d_ff` per layer config, ~29M parameters | `3rdJ_04B_model_4split.py:86-92` (`PROD_CONFIG`: `d_model=256, n_heads=8, N_enc=6, N_dec=6, d_act=32, d_cycle=32`); `dr_L3-13_training_regimen_REPORT.md:4` ("~29M parameters") |
@@ -39,7 +48,7 @@ Source: `3rdJ_04_augmentationGSS_4split.md:298` (2026-07-19 entry, "Step 0" para
 
 ### A1.3 - Training regimen
 
-| Item | Value | Confirmed against |
+| Item | Value | Source in the project repository |
 |---|---|---|
 | Loss weights (`α_resid : α_work : α_retail`) | **1.0 : 0.5 : 0.3** | `3rdJ_04_augmentationGSS_4split.md` Delta D; `dr_L3-13` §"Fix-vs-Ablate" item 1 |
 | Scalarization | **Unitary/fixed-weight scalarization** (Kurin et al. 2022) - dynamic weighters (SLAW/UW/GradNorm/DWA/CAGrad) explicitly rejected; they destabilize on a ~2%-positive task | `3rdJ_04_augmentationGSS_4split.md` Delta D: "`WEIGHT_MODE=fixed`... Never SLAW / UW / GradNorm / DWA / CAGrad"; code confirmation at `3rdJ_04_augmentationGSS_4split.md:302` ("No `UW`/`SLAW`/`equal`/`GradNorm`/`DWA`/`CAGrad` code path exists anywhere in the new file") |
@@ -66,7 +75,7 @@ Source: `3rdJ_04_augmentationGSS_4split.md:274`.
 
 ### A1.4 - Decoding
 
-| Item | Value | Confirmed against |
+| Item | Value | Source in the project repository |
 |---|---|---|
 | AR sampling | Temperature **T = 0.7** + nucleus **p = 0.9** | `3rdJ_04_augmentationGSS_4split.md` Delta F item 1 |
 | Min-dwell constraint | **≥ 2 slots (60 min)** for work and retail events, applied AFTER the exclusivity projection and the activity override (so it can only flip 1→0) | `3rdJ_04_augmentationGSS_4split.md` Delta F item 2; `:309` |
@@ -122,7 +131,7 @@ Source: `Leg3_4-split/Step2_docs/3rdJ_02_harmonizeGSS_4split.md` Delta A (`:34-4
 | 2015 (C29) | `LOCATION` | `306` | ✅ confirmed |
 | 2022 (GSSP) | `LOCATION` | `3306` | ✅ confirmed |
 
-**Granularity note.** 2005/2010's `PLACE = 06 + 07` combines two source codes (grocery, other
+**Granularity note.**<!-- BUILD NOTE: TABLE A2 SHIPS UNLABELLED AND UNCITED, and this is a build-mechanism defect, not a content one. This file carries TWO tables under two `# ` headings, but `Chapter_08_Conclusion.md:13` has ONE placeholder for it (`**Table A1.** *(insert `Table_A1_A2.md` here)*`), and `assemble_3J.py`'s `inline_table()` strips every `^# ` line. So A1's label is supplied by the placeholder and A2's is deleted: everything from the AT_RETAIL codebook down ships as an unlabelled continuation of the model card, under no number, and no chapter cites "Table A2" anywhere. Verified in the built docx: "Table A1" appears 3 times, "Table A2" and "AT_RETAIL codebook" zero times, while A2's BODY is present in full (the codebook rows, this granularity note, the excluded-channel note and the episode-time-share note all ship). f4's C7 is structurally blind to this: it checks that every caption it FINDS is cited in prose, and this exhibit's caption is destroyed before C7 ever sees the document, so 22/22 passes while a 23rd exhibit rides along unnumbered. THE FIX IS EDITORIAL AND BELONGS TO THE AUTHORS, which is why it is a note and not a patch. Two options. (a) A2 is its own SI table: split this file into `Table_A1_model_card.md` and `Table_A2_retail_codebook.md`, add a `**Table A2.**` placeholder plus a caption, and cite it once in prose - the natural site is section 3 where the AT_RETAIL rule is defined, or section 2 with the GSS cycles, NOT section 8. (b) A2 is part of the model card: fold it in as a numbered subsection `### A1.6 - AT_RETAIL codebook per GSS cycle`, which needs no new citation because A1 is already cited, and drop the "Table A2" name entirely. Option (a) is the recommendation, because the codebook is about the DATA and the model card is about the MODEL, and because a reader sent to a model card will not look there for a variable crosswalk. Whichever is chosen, re-run f4 afterwards and expect the exhibit count to move off 22. --> 2005/2010's `PLACE = 06 + 07` combines two source codes (grocery, other
 store/mall) into one unified value; 2015/2022's single `LOCATION` code (`306`/`3306`) is already a
 merged grocery/general-merchandise bucket at the source. **Grocery vs. general merchandise is
 therefore not separable in 2015 or 2022** - the harmonization keeps all four cycles on one unified

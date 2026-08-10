@@ -12,10 +12,10 @@ bases are never averaged.
 
 | Channel | As-modelled band, low/central/high (PASS criterion) | Empirical band, low/central/high (INFO criterion) | Measured range, CFA basis (median) | Measured range, GFA-share basis (median) | Cells passing (as-modelled) | Verdict |
 |---|---|---|---|---|---|---|
-| Office | 100 / 135 / 200 kWh/m2/yr | 170 / ⚠ check source (central not reported) / 360 kWh/m2/yr | 61.72-90.21 (median 71.02) | 63.27-85.51 (median 71.53) | 0/56 | **FAIL, all 56 cells below the 100 floor** |
+| Office | 100 / 135 / 200 kWh/m2/yr | 170 / ⚠ check source / 360 kWh/m2/yr | 61.72-90.21 (median 71.02) | 63.27-85.51 (median 71.53) | 0/56 | **FAIL, all 56 cells below the 100 floor** |
 | Retail | 80 / 110 / 155 kWh/m2/yr | 150 / 280 / 380 kWh/m2/yr | 63.63-96.84 (median 75.63) | 62.88-91.95 (median 73.27) | 12/56 individually in-band; gate scored on the **median** (75.63, below the 80 floor) | **FAIL under the median-in-band rule in force** (all-cells count: 12 PASS / 44 FAIL) |
 | Hotel | 180 / 240 / 300 kWh/m2/yr | 220 / 350 / 480 kWh/m2/yr | 203.33-318.42 (median 260.54) | 171.07-261.18 (median 215.96) | 28/56 | **FAIL, 28/56 above the 300 ceiling, 0/56 below the 180 floor, all failures on `Tall`** |
-| Residential | no as-modelled band defined | 113.9 / ⚠ check source (central not reported) / 147.2 kWh/m2/yr (SHEU HighRise context) | 111.57-128.77 (median 119.10) | 101.54-115.05 (median 107.24) | n/a (INFO only) | INFO, 55/56 outside the empirical band (1/56 IN) |
+| Residential | no as-modelled band defined | 113.9 / ⚠ check source / 147.2 kWh/m2/yr (SHEU HighRise context) | 111.57-128.77 (median 119.10) | 101.54-115.05 (median 107.24) | n/a (INFO only) | INFO, 55/56 outside the empirical band (1/56 IN) |
 
 ## The three failing gates, at full strength
 

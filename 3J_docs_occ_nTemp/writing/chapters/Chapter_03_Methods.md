@@ -253,8 +253,9 @@ diurnal shape and monthly amplitude used for occupancy (§3.4), while amenity-zo
 NECB baseline, matching the amenity-zone occupancy treatment in §3.5.
 
 The activity-driven end-use layer is calibrated against the NRCan Survey of Commercial and Institutional
-Energy Use (SCIEU), the commercial analogue of the residential SHEU anchoring used in the two-channel
-construction stage and in the authors' residential-only prior work.
+Energy Use (SCIEU; Natural Resources Canada), the commercial analogue of the residential SHEU anchoring
+(Natural Resources Canada, 2019) used in the two-channel construction stage and in the authors'
+residential-only prior work (Iseri and Hachem-Vermette, under review b).
 
 ---
 

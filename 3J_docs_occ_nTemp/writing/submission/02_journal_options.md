@@ -3,7 +3,7 @@
 
 **Manuscript:** *From One Channel to Four: A Jointly-Trained Time-Use Occupancy Model for Mixed-Use
 Building Energy Simulation (Canada, 2005-2030)*
-**Prepared:** 2026-08-08 · **Status:** 🟡 **DECIDED 2026-08-08 - Building and Environment (Option D), and reopen trigger (b) FIRED the same day - see the block under Option D**
+**Prepared:** 2026-08-08 · **Status:** 🟢 **DECIDED - Building and Environment (Option D). Reopen trigger (b) fired 2026-08-08 and the authors RECONFIRMED the venue on 2026-08-09 with the higher bar on the record - see both blocks under Option D. The three commitments under "My recommendation" are binding as a result.**
 **Modelled on:** `2J_docs_occ_nTemp/writing/submission/02_journal_options.md`
 
 > **DECISION.** Target venue is **Building and Environment** (Elsevier). Taken by the authors
@@ -255,6 +255,29 @@ scope rather than quality, that is worth knowing before choosing this option.**
 > from a decision letter can mean the contribution was thin, the validation was weak, or the writing
 > was unclear, and those point at completely different fixes. If the 0J decision letter still exists,
 > reading it is cheap and it is the only direct evidence anyone has about this venue's bar.
+
+> ## ✅ RECONFIRMED BY THE AUTHORS - 2026-08-09
+>
+> The question this block put in front of the authors was asked and answered at the top of the next
+> session: **Building and Environment stands.** The trigger fired, the evidence was restated, the bar
+> was assumed higher, and the venue was chosen again with that on the record. The sheet returns to
+> **decided**; the amber was about an unanswered question, and the question is answered.
+>
+> **What reconfirmation costs, and this is the part that is now binding.** The block above says that
+> if the venue is reconfirmed the three commitments under "My recommendation" become more
+> load-bearing, not less. They are therefore no longer optional framing choices:
+>
+> 1. The **uninjected-control** result leads the cover letter's first paragraph. It is what separates
+>    "three of four energy-use-intensity gates failed" from a desk reject, because it shows the office
+>    band failing on a model with no occupancy injection at all - the band's applicability is the
+>    finding, not our error.
+> 2. The **abstract's** first move is the behavioural claim, not the pipeline.
+> 3. The **§1 and §6.1 pass** described under Option D stands as written.
+>
+> **Still not looked up, and still cheap:** why 0J was judged insufficient. Reconfirming the venue does
+> not answer that question, it only decides that the answer is not required before submitting. If the
+> 0J decision letter surfaces before upload, read it - it is the only direct evidence about this bar,
+> and the three commitments above are exactly the things it could tell you to sharpen.
 
 ---
 

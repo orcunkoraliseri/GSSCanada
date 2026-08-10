@@ -6,11 +6,4 @@ The evidence supports a clear set of answers. First, the four populations do not
 
 Taken together, these results establish that jointly-trained, per-use occupancy injection into a stacked mixed-use building is feasible with the architecture and dispatch mechanism this paper describes, and that the more immediate barrier to a clean validation story is not the occupancy model but the reference bands available to judge it, none of which were built with a stacked mixed-use tower in mind. The limitations set out in §7, an occupancy frame that cannot see hotel guests or retail staff, internal-gain parameters carried over unchanged from a single office reference, and a domestic-hot-water plant whose capacity pinning defeats a global correction, bound how far the present results generalise, and several of them point directly at what a following study would need to build: reference bands constructed for, and validated against, buildings that stack more than one use, rather than borrowed from single-use stock and applied to a tower they were never designed to score.
 
----
-
-## Supplementary material
-
-**Table A1.** *(insert `Table_A1_A2.md` here)*
-
-**Figure S3.** *(insert `Figure_S03_leg2_pipeline.png` here)*
 

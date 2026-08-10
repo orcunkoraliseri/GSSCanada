@@ -55,6 +55,8 @@ ORDER = [
     "Chapter_06_Discussion.md",
     "Chapter_07_Limitations.md",
     "Chapter_08_Conclusion.md",
+    "Chapter_09_References.md",
+    "Chapter_10_Supplementary.md",
 ]
 
 # The arm the paper reports. Read from
@@ -113,11 +115,12 @@ RENAME_HEADINGS = [
 MARK = u"⚠ check source"
 MARK_RE = re.compile(u"⚠\\s+check\\s+source", re.UNICODE)
 GLYPH_RE = re.compile(u"⚠\\s*")
-MARK_SUB = "n/r"
-MARK_FOOTNOTE = (
-    "\n> `n/r` marks a cell for which the sources consulted state no value. It is left\n"
-    "> explicitly unreported rather than inferred or interpolated.\n"
-)
+# USER DECISION 2026-08-09: the substitution is now self-explanatory prose, and the
+# legend that used to be inserted after the abstract is gone. `n/r` needed a legend --
+# a blockquote at the top of the paper explaining a symbol -- and a legend reads as an
+# internal report, not as a paper. "not reported" needs nothing. The marker is still
+# VISIBLE, which is the whole point of the convention; only the apparatus around it went.
+MARK_SUB = "not reported"
 
 
 # An inline source pointer, as opposed to a `## Sources` heading. These sit in the SI
@@ -150,6 +153,10 @@ REPO_PATH = re.compile(r"(Leg2_2-split|Leg3_4-split|improvements/v[0-9]|deepRese
 # removed here by one named rule. It is NOT a way to hide an unresolved problem -- see
 # the unresolved-notes report printed at the end of main(), which is loud on purpose.
 BUILD_NOTE_RE = re.compile(r"[ \t]*<!--\s*BUILD NOTE\b.*?-->", re.S)
+
+# Any other HTML comment. Runs AFTER BUILD_NOTE_RE so the BUILD NOTE count stays its own
+# number in the manifest and in the unresolved-notes report.
+HTML_COMMENT_RE = re.compile(r"[ \t]*<!--.*?-->", re.S)
 
 
 # A line that means the source list is over and the paper has resumed.
@@ -251,14 +258,20 @@ def strip_for_submission(doc):
         clean = BUILD_NOTE_RE.sub("", clean)
         manifest.append(("BUILD NOTE comments (notes to ourselves inside paper content)", n_notes))
 
+    # Every OTHER html comment. Same carrier, same reason, different name: an
+    # `<!-- APPARATUS NOTE ... -->` records why a line is the way it is, survives in the
+    # working draft's source for us to read, and has no business in a submitted paper.
+    # This rule exists because the alternative was to DELETE those notes from the source
+    # files, and deleting the note deletes the reason.
+    n_html = len(HTML_COMMENT_RE.findall(clean))
+    if n_html:
+        clean = HTML_COMMENT_RE.sub("", clean)
+        manifest.append(("other HTML comments (apparatus notes in the source files)", n_html))
+
     n_marks = len(MARK_RE.findall(clean))
     clean = MARK_RE.sub(MARK_SUB, clean)
     if n_marks:
         manifest.append(("'check source' marker rewritten as '%s'" % MARK_SUB, n_marks))
-        # One footnote, once, right after the abstract, so the convention is declared.
-        anchor = "\n## Keywords"
-        if anchor in clean:
-            clean = clean.replace(anchor, MARK_FOOTNOTE + anchor, 1)
 
     # The bare warning glyph is used elsewhere to open a disclosure note. Keep the note,
     # drop the glyph: a submitted paper does not carry our console symbols.
@@ -316,6 +329,31 @@ def strip_for_submission(doc):
     lost = sorted(before - after)
     if lost:
         raise AssertionError("submission strip DELETED content: %s" % ", ".join(lost))
+
+    # USER DECISION 2026-08-09: no thematic breaks in the submission copy.
+    # pandoc renders a markdown `---` as a VML rectangle, and Word names that shape
+    # "Horizontal Line" -- 60 of them in the built .docx, one per section separator. They
+    # are a drafting device for reading the working draft, not typography a journal wants.
+    #
+    # This runs LAST, after the residue and loss checks, on purpose. The strip's
+    # section-drop loop uses `---` as a terminator and the residue check tests for two
+    # rules in a row; removing the rules earlier would quietly disarm both.
+    #
+    # One rule in this document sits directly under a paragraph with no blank line above
+    # it. That is the shape that makes a SETEXT heading, and it was written up as a second
+    # bug found here -- wrongly. Pandoc's markdown only reads setext from a SINGLE-line
+    # header, and this is a six-line paragraph, so pandoc renders it as a `<p>` and a rule.
+    # Checked by running that fragment through pandoc rather than by reading the spec.
+    # Recorded because the claim was in this comment for an hour before it was tested.
+    n_rules = sum(1 for l in clean.split("\n") if l.strip() == "---")
+    if n_rules:
+        clean = "\n".join(l for l in clean.split("\n") if l.strip() != "---")
+        clean = re.sub(r"\n{3,}", "\n\n", clean)
+        manifest.append(("horizontal rules (Word renders each as a 'Horizontal Line' shape)",
+                         n_rules))
+    if "\n---\n" in clean:
+        raise AssertionError("a horizontal rule survived the thematic-break strip")
+
     return clean, manifest
 
 

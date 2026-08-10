@@ -36,7 +36,7 @@ Multi-channel occupancy; Mixed-use tall building; Time-use survey; Joint multi-t
 
 ## Highlights
 
-*(5 bullets, each <=85 characters.)*
+<!-- APPARATUS NOTE: house rule for this section - 5 bullets, each <= 85 characters. Checked by f4. Not reader-facing; stripped from the submission copy. -->
 
 - Four occupant populations in one tower peak at four different hours.
 - Coincidence factor below 1 in all four cells: use diversity flattens the peak.
@@ -72,7 +72,7 @@ Multi-channel occupancy; Mixed-use tall building; Time-use survey; Joint multi-t
 
 ---
 
-*Front-matter note: no result or magnitude from the two-channel construction stage this paper builds on appears anywhere above; that stage is a construction step for this paper and is discussed only in Methods and in the Introduction's departure-point narrative (§1.4).*
+<!-- APPARATUS NOTE: no result or magnitude from the two-channel construction stage this paper builds on appears anywhere above; that stage is a construction step for this paper and is discussed only in Methods and in the Introduction's departure-point narrative (section 1.4). This is a standing check on the front matter, not a statement to the reader; stripped from the submission copy. -->
 
 ---
 
@@ -99,21 +99,35 @@ Occupant behaviour is now widely recognised as a dominant, unexplained driver of
 
 ### 1.2 Two Literatures That Rarely Meet, Now With the Mixed-Use Axis
 
-Two literatures bear on this problem, and between them sits a cell that Table 1 shows to be unoccupied. The first develops calibrated, time-use-survey-driven occupancy models with genuine behavioural grounding, but stays single-channel and residential: Buttitta and Finn (2020) use the Irish time-use survey to generate high-resolution residential heating-load occupancy, and Widén and Wäckelgård (2010) do the same from a single-wave Swedish time-use survey; neither extends the method to a second use, and neither forecasts to a future year. The second develops genuinely multi-channel, mixed-use occupancy, but not from a time-use survey and not inside one stacked building: Doma and Ouf (2023, 2024) model office, retail and residential occupancy together from mobile-positioning (SafeGraph) snapshots, at a district scale, with each use represented as a separate building rather than as stacked floors sharing one plant, and without a forecast horizon. Read across Table 1's six positioning axes, none of the three named studies combines a time-use-survey-driven behavioural model, more than one occupancy channel, a forecast to a future year, and a single mixed-use building in one design. That is the cell this paper's Leg-3 row occupies, and it is the cell the present pipeline was built to fill: four occupancy channels driving four uses inside one building, forecast forward from a calibrated behavioural time-series.
+Two literatures bear on this problem, and between them sits a cell that Table 1 shows to be unoccupied. The first develops calibrated, time-use-survey-driven occupancy models with genuine behavioural grounding, but stays single-channel and residential: Buttitta and Finn (2020) use the Irish time-use survey to generate high-resolution residential heating-load occupancy, and Widén and Wäckelgård (2010) do the same from a single-wave Swedish time-use survey; neither extends the method to a second use, and neither forecasts to a future year. The second develops genuinely multi-channel, mixed-use occupancy, but not from a time-use survey and not inside one stacked building: Doma and Ouf (2023, 2024) model office, retail and residential occupancy together from mobile-positioning snapshots, at a district scale, with each use represented as a separate building rather than as stacked floors sharing one plant, and without a forecast horizon. Read across Table 1's eight positioning axes, none of the three named studies combines a time-use-survey-driven behavioural model, more than one occupancy channel, a forecast to a future year, and a single mixed-use building in one design. Those four axes are what the claim rests on, and they are the four on which the three named studies are unanimous in the sources consulted; the remaining four axes, including the sense in which a behavioural model is called *calibrated*, are defined under Table 1 and are scored there for completeness rather than because the claim turns on them. That is the cell this paper's Leg-3 row occupies, and it is the cell the present pipeline was built to fill: four occupancy channels driving four uses inside one building, forecast forward from a behavioural time-series whose parameters are estimated from national time-use microdata.
 
-**Table 1.** - Seven-column competitor positioning matrix scoring Doma and Ouf (2023/2024), Buttitta and Finn (2020) and Widén and Wäckelgård (2010) against time-series occupancy, multi-channel (more than one use), calibrated behavioural model, forecast to a future year, mixed-use single building, activity/end-use resolution and stock-scale, with this study's Leg-3 and 2J rows bolded to show the increment.
+**Table 1.** - Eight-column competitor positioning matrix scoring Doma and Ouf (2023/2024), Buttitta and Finn (2020) and Widén and Wäckelgård (2010) against time-series occupancy, time-use-survey-driven, multi-channel (more than one use), calibrated behavioural model, forecast to a future year, mixed-use single building, activity/end-use resolution and stock-scale, with this study's Leg-3 and 2J rows bolded to show the increment; the four axes on which the novelty claim rests and the sense given to *calibrated* are defined beneath the matrix.
 
-*Differentiation targets named in this project's own positioning review, "Closest Prior Works and Differentiation": Doma & Ouf,
-Buttitta & Finn, Widen & Wackelgard. Both "this study" rows are listed separately so the increment
-from 2J to Leg-3 is visible.*
+<!-- APPARATUS NOTE: differentiation targets named in this project's own positioning review, "Closest Prior Works and Differentiation": Doma & Ouf, Buttitta & Finn, Widen & Wackelgard. Both "this study" rows are listed separately so the increment from 2J to Leg-3 is visible. This records where the three competitor rows came from; it is not a statement to the reader, and it is stripped from the submission copy. -->
 
-| Study | Time-series occupancy | Multi-channel (>1 use) | Calibrated behavioural model | Forecast to a future year | Mixed-use single building | Activity/end-use resolved | Stock-scale |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Doma & Ouf (2023/2024) | ⚠ check source | ✓ | ⚠ check source | ✗ | ✗ | ✓ | ⚠ check source |
-| Buttitta & Finn (2020) | ✓ | ✗ | ⚠ check source | ✗ | ✗ | ⚠ check source | ⚠ check source |
-| Widen & Wackelgard (2010) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
-| **This study (Leg-3)** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** | **✗** |
-| **This study (2J)** | **✓** | **✗** | **✓** | **✓** | **✗** | **✓** | **✓** |
+
+
+| Study | Time-series occupancy | Time-use-survey-driven | Multi-channel (>1 use) | Calibrated behavioural model | Forecast to a future year | Mixed-use single building | Activity/end-use resolved | Stock-scale |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Doma & Ouf (2023/2024) | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ |
+| Buttitta & Finn (2020) | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ | ✓ |
+| Widen & Wackelgard (2010) | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
+| **This study (Leg-3)** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** | **✗** |
+| **This study (2J)** | **✓** | **✓** | **✗** | **✓** | **✓** | **✗** | **✓** | **✓** |
+
+**What the axes mean.** Two of the seven are read in more than one way in this literature, so both are
+defined here and every cell in the column is scored against the definition given, this study's row
+included.
+
+- ***Calibrated behavioural model*** - presence is produced by a behavioural model whose parameters are
+  estimated from observed microdata on the population being modelled, rather than assumed from a
+  standard schedule or read off a sensor or positioning trace of one particular building. The axis is
+  about **where the model's parameters come from**, not about how accurately its output reproduces a
+  measured energy series; the latter is what §5's energy-use-intensity gates test, and three of those
+  gates are reported failing.
+- ***Stock-scale*** - the study's result is intended to represent a building population rather than a
+  named set of buildings. A district of individually modelled buildings is not scored as stock-scale;
+  a small set of archetypes weighted to stand for a national dwelling stock is.
 
 **Reading of the matrix.** The three named competitors each hold one axis Leg-3 combines: Doma & Ouf
 put multiple uses (office, retail, residential) in one modelling framework but from mobile-positioning
@@ -127,22 +141,50 @@ calibration, forecast, activity-resolution and stock-scale on the residential-on
 problem; Leg-3 trades stock-scale representativeness (2 tower prototypes, not a housing stock) for
 multi-channel and mixed-use-single-building resolution, which 2J did not attempt.
 
-**Cells marked `⚠ check source`.** That review's own novelty matrix and reporting survey
-do not use the same six axes as this table, so several cells are not directly stated in the two
-permitted sources and are left as `⚠ check source` rather than inferred:
-- Doma & Ouf - *Time-series occupancy*: the review states the occupancy source is "Mobile positioning
-  data (SafeGraph snapshots)" and separately that the study is **not** longitudinal (2019-2021
-  snapshot); neither statement confirms or denies within-day temporal resolution.
-- Doma & Ouf - *Calibrated behavioural model*: not characterised as calibrated or uncalibrated in
-  either source.
-- Doma & Ouf - *Stock-scale*: the review says occupancy is "modeled as separate buildings at a
-  district scale"; district-scale is not the same claim as stock-scale and no building count is given.
-- Buttitta & Finn - *Calibrated behavioural model*, *Activity/end-use resolved*, *Stock-scale*: the review
-  states only that the study is time-use-survey-driven (Irish TUS), residential-only, and uses MURB
-  archetypes; it does not characterise calibration, activity/end-use resolution, or scale.
+**The five cells that this table previously left unscored.** An earlier version of this matrix carried
+five cells the primary positioning review does not state, marked as unscored rather than inferred. All
+five have since been read out of the competitors' full texts, and each is recorded with the fact it
+rests on: *Doma & Ouf* resolve occupancy at one hour (**time-series ✓**), read presence from a
+mobile-positioning trace with no behavioural model estimated from it (**calibrated ✗**), and model a
+district of 221 individually represented buildings, which under the definition above is not a stock
+(**stock-scale ✗**); *Buttitta & Finn* estimate their presence model from a national time-use survey
+(**calibrated ✓**), report presence-state counts rather than activity categories (**activity/end-use
+✗**), and apply four archetypes standing for a dwelling stock (**stock-scale ✓**).
+
+**Two disagreements between sources, recorded rather than resolved, because neither changes a
+verdict.** The competitor axes were cross-checked against a second, independent reading of the same
+nine studies, and it differs from the sources used here in two places. It gives Doma & Ouf's
+positioning data as a different vendor than the one this table's primary source names, and it records
+Buttitta & Finn's survey as a different country's than the one §1.2 names. Both are attribute
+disagreements inside a cell whose verdict is the same under either reading (mobile positioning either
+way; a national time-use survey either way), so both are noted here and neither has been adopted on a
+single unverified report.
+
+**A third disagreement, on this study's own row, and why the tick stands.** That same independent
+reading marks *this study* **No** on *calibrated behavioural model*. It marks **all ten rows of its own
+matrix No on that axis**, including the two rows it separately certifies as time-use-survey-driven, and
+its parenthetical for this study is "gate-tested control" - a statement about validation, not a denial
+that the model's parameters are estimated from microdata. A column with no variation across ten studies
+separates nothing, in either direction. Under the definition given above the tick stands for this study
+and for the three competitors that also estimate from survey microdata; under a stricter reading that
+requires agreement with a measured energy series, no row in either matrix would be ticked, this study
+included, and §5 reports three such gates failing rather than claiming otherwise. **The axis is
+therefore not one of the four this paper's novelty claim rests on**, which are time-use-survey-driven,
+multi-channel, forecast to a future year, and mixed-use single building.
 
 ## Sources
 
+- `deepResearch_Resources/RV09_disputed_dois_and_gap_matrix.md` Part B (10-row competitor matrix, all
+  rows marked full text read) and Section B rows B5-B10, vetted in
+  `deepResearch_Resources/VETTING_RV09_RV10_2026-08-08.md`:
+  - the new `Time-use-survey-driven` column for all five rows;
+  - the five previously unscored cells (Doma time-series 1 h / district 221 buildings; Buttitta
+    presence-state count / four stock archetypes);
+  - the two recorded disagreements (Telus vs the SafeGraph naming in `dr_L3-10`; UK TUS 2000 vs the
+    Irish TUS named in §1.2) and the third on this study's own calibration row.
+  - **Not adopted from RV09:** its `Calibrated behavioural model` column, which reads No on 10 of 10
+    rows and so cannot discriminate; and its `Activity/end-use resolved` verdict for Doma & Ouf, which
+    contradicts `dr_L3-10` on a cell `dr_L3-10` does state. The `dr_L3-10` verdict is kept.
 - `Leg3_4-split/deepResearch/dr_L3-10_mixeduse_reporting_positioning_REPORT.md`:
   - Table 1 (Mixed-Use Tall-Building Energy Studies), lines 10-18 - Doma & Ouf occupancy source and
     per-use reporting basis.
@@ -174,7 +216,7 @@ The authors' prior residential work established that occupant behaviour is not s
 
 ### 1.4 The Authors' Prior Line: Leg-1 to 2J to Leg-2, the Departure Point
 
-The present study departs from a specific prior line of work by the authors, built in three stages. Leg-1, published as the second journal in this line (2J), established a single-channel, residential-only occupancy pipeline: General Social Survey time-use cycles harmonized and augmented by a calibrated conditional generator, linked to the Census dwelling stock, and forecast to 2030 through the COVID/work-from-home break, together with the paired stock-scale simulation design used to isolate the behavioural signal (Iseri and Hachem-Vermette, under review; Iseri and Hachem-Vermette, 2026). That line is treated here as established, not re-claimed: the premise that survey-grounded, time-series occupancy can be generated for Canadian building energy models, and that it changes both magnitude and load shape, is the foundation this paper builds on rather than a result this paper repeats. A second, intermediate construction stage, referred to in this paper as Leg-2, extended that single-channel machinery to two channels, residential and office, growing the generator from one decoder head to two and establishing the modulate-versus-replace distinction that the present pipeline reuses: residential presence replaces baseline schedules per household, while office presence modulates a code-of-record density rather than overriding it. Leg-2 is a construction step in this project, not a second headline result, and it is discussed further, on its own terms, only in the Methods chapter, where its two-channel machinery and one hard-won wiring-verification lesson are the direct ancestors of the present design. Figure 2 draws the three stages as nested rather than sequential, so that what each stage carries forward into the next is visible on a single connector; Figure S3 gives the two-channel construction stage's own pipeline in full, for a reader who needs that stage's internals rather than the summary given here.
+The present study departs from a specific prior line of work by the authors, built in three stages. Leg-1, published as the second journal in this line (2J), established a single-channel, residential-only occupancy pipeline: General Social Survey time-use cycles harmonized and augmented by a calibrated conditional generator, linked to the Census dwelling stock, and forecast to 2030 through the COVID/work-from-home break, together with the paired stock-scale simulation design used to isolate the behavioural signal (Iseri and Hachem-Vermette, under review a; Iseri and Hachem-Vermette, under review b; Iseri and Hachem-Vermette, 2026). That line is treated here as established, not re-claimed: the premise that survey-grounded, time-series occupancy can be generated for Canadian building energy models, and that it changes both magnitude and load shape, is the foundation this paper builds on rather than a result this paper repeats. A second, intermediate construction stage, referred to in this paper as Leg-2, extended that single-channel machinery to two channels, residential and office, growing the generator from one decoder head to two and establishing the modulate-versus-replace distinction that the present pipeline reuses: residential presence replaces baseline schedules per household, while office presence modulates a code-of-record density rather than overriding it. Leg-2 is a construction step in this project, not a second headline result, and it is discussed further, on its own terms, only in the Methods chapter, where its two-channel machinery and one hard-won wiring-verification lesson are the direct ancestors of the present design. Figure 2 draws the three stages as nested rather than sequential, so that what each stage carries forward into the next is visible on a single connector; Figure S3 gives the two-channel construction stage's own pipeline in full, for a reader who needs that stage's internals rather than the summary given here.
 
 ---
 
@@ -200,25 +242,7 @@ The aim of the study follows directly. *This paper asks what four functionally d
 ![Figure 2](../figures/Figure_02_three_leg_roadmap.png)
 
 
----
-
-## References (this chapter)
-
-<!-- BUILD NOTE RESOLVED 2026-08-08 by RV09 Part B: a search HAS now been run, and the novelty claim survived it. 20 queries across OpenAlex and Crossref, with the exact query strings, date ranges and hit counts reported, plus citation walks from Doma/Ouf, Buttitta/Finn and Widen/Wackelgard. Nine candidate studies were found and matrix-evaluated; every one fails at least two axes, and none occupies the cell. The two failure modes are consistent: multi-channel models work at district or city scale from mobile-positioning data rather than time-use surveys (Doma, Fonseca, Cerezo Davila), while time-use-survey models stay single-channel residential with no forward projection (Buttitta, Aerts, Wilke, Widen). The search log is what makes this usable, because it is what distinguishes "no competitor found" from "no search run", which is exactly what went wrong in the 2J round. --><!-- BUILD NOTE: RV09's competitor matrix marks THIS STUDY as "No" on the "calibrated behavioural model" axis, while Table 1 marks the same axis for the same study as a tick. That disagreement is about our own paper, not about the literature, and it is unresolved. It matters because the unoccupied cell Table 1 claims is defined partly by that axis: if the axis reads "No" for us, the cell is not ours either, and the novelty sentence has to be rewritten around the four axes that are not in dispute (time-use-survey-driven, multi-channel, forecast to a future year, mixed-use single building), which RV09 does support. Decide which reading of "calibrated" the paper means, then make Table 1 and the text agree. Two smaller conflicts to settle at the same time: RV09 gives Doma and Ouf's occupancy source as Telus mobile data while Table 1's own source says SafeGraph, and RV09's reference 5 (Yamaguchi 2017) states one title and reports a different one as the Crossref return, so that row is not verified whatever the report says. -->
-
-**Self-citations (the departure point, §1.4)**
-
-- Iseri, O. and Hachem-Vermette, C. (under review) *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials.* Journal of Building Performance Simulation. - *(verify final citation form / status against master bibliography)*
-- Iseri, O. and Hachem-Vermette, C. (2026) *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials* (companion conference paper). eSim 2026, IBPSA-Canada. - *(verify final citation form / venue against master bibliography)*
-
-**Positioning literature (§1.2, Table 1)**
-
-- Doma, A., Padsala, R., Ouf, M.M. and Eicker, U. (2024) Bottom-up framework for modelling occupancy-based demand-side management strategies in a mixed-use district. *Applied Energy*, 375, 124081. https://doi.org/10.1016/j.apenergy.2024.124081<!-- BUILD NOTE RESOLVED 2026-08-08 by RV09 Part A. Corrected. The old form (Applied Energy 355, 122247, doi 10.1016/j.apenergy.2023.122247) was wrong in the author list, the volume, the article number and the DOI; RV09 opened that DOI through both the Crossref API and the ScienceDirect landing page (PII S0306261923016112) and it resolves to Schropp et al. (2024) on anion exchange membrane electrolysis. It also opened the replacement (PII S0306261924014648), which resolves to this paper. Two independent reports, RV08 and RV09, agree on the same replacement, and RV09 names the specific unrelated paper rather than only asserting a mismatch, which is the evidence RV08 lacked. -->
-- Doma, A. and Ouf, M. (2023) Leveraging mobile positioning data to model building occupant behaviour in a mixed-use district. *Proceedings of Building Simulation 2023: 18th Conference of IBPSA*, pp. 1671-1678. https://publications.ibpsa.org/proceedings/bs/2023/papers/bs2023_1671.pdf
-- Buttitta, G. and Finn, D.P. (2020) A high-temporal resolution residential building occupancy model to generate high-temporal resolution heating load profiles of occupancy-integrated archetypes. *Energy and Buildings*, 206, 109577. https://doi.org/10.1016/j.enbuild.2019.109577<!-- BUILD NOTE RESOLVED 2026-08-08 by RV09 Part A. Corrected: article number 109562 to 109577, and the DOI with it. RV09 opened the old DOI through both the Crossref API and ScienceDirect (PII S0378778819317256) and it resolves to Tsuzuki et al. (2020) on sleep and thermoregulation in a cold environment, published in volume 207, not 206. The replacement (PII S0378778819322170) resolves to this paper in volume 206, which is the volume both forms always agreed on. RV08 and RV09 agree. -->
-- Widén, J. and Wäckelgård, E. (2010) A Swedish time-use survey and its utility for building energy modeling. *Energy and Buildings*, 42(5), pp. 706-714. https://doi.org/10.1016/j.enbuild.2009.11.010
-
-**Statistics Canada and provincial tourism data sources** - full catalogue metadata for the General Social Survey Time-Use cycles and the ISQ/CBRE monthly hotel-occupancy series is given with the dataset descriptions in §2 and is not duplicated here.
+<!-- BUILD NOTE RESOLVED 2026-08-08 by RV09 Part B: a search HAS now been run, and the novelty claim survived it. 20 queries across OpenAlex and Crossref, with the exact query strings, date ranges and hit counts reported, plus citation walks from Doma/Ouf, Buttitta/Finn and Widen/Wackelgard. Nine candidate studies were found and matrix-evaluated; every one fails at least two axes, and none occupies the cell. The two failure modes are consistent: multi-channel models work at district or city scale from mobile-positioning data rather than time-use surveys (Doma, Fonseca, Cerezo Davila), while time-use-survey models stay single-channel residential with no forward projection (Buttitta, Aerts, Wilke, Widen). The search log is what makes this usable, because it is what distinguishes "no competitor found" from "no search run", which is exactly what went wrong in the 2J round. --><!-- BUILD NOTE RESOLVED 2026-08-09 by the authors' decision on what "calibrated" means in this paper, plus one fact read out of RV09 itself. THE DECISION: keep the tick and define the axis. "Calibrated behavioural model" means the presence model's parameters are estimated from observed microdata on the population being modelled, rather than assumed from a standard schedule or read off a sensor or positioning trace; it is not a claim that the output agrees with a measured energy series, which is what the section 5 gates test and where three are reported failing. That definition is now written under Table 1 and every cell in the column is scored against it, this study's row included. THE FACT THAT SETTLED THE DISAGREEMENT: RV09 marks "No" on that axis for ALL TEN rows of its own matrix, including Widen and Wackelgard and Yamaguchi, which it separately certifies as time-use-survey-driven, and its parenthetical for this study is "gate-tested control", which is a validation statement rather than a denial that the model is fit to microdata. A column with zero variance across ten studies cannot un-tick this study specifically; it is a different axis under the same name, and it was not adopted. Recorded in Table 1's Sources block. THE UNDERLYING WORRY IS ALSO GONE: the novelty claim never rested on this axis. It rests on four (time-use-survey-driven, multi-channel, forecast to a future year, mixed-use single building), and one of those four, time-use-survey-driven, was not a column in this matrix at all until this round; it has been added, so the table now scores the axes the claim actually names. The two smaller conflicts are recorded under Table 1 and neither moves a verdict: the positioning-data vendor (RV09 says Telus, dr_L3-10 says SafeGraph, mobile positioning either way, and the vendor name is now dropped from the section 1.2 prose rather than asserted unverified) and Buttitta and Finn's survey country (RV09 says UK TUS 2000, section 1.2 says Irish, a national time-use survey either way). STILL OPEN, and deliberately not closed here because it is a literature question this session cannot run: RV09 reference 5 (Yamaguchi 2017) states one title and reports a different one as its Crossref return, so that row is unverified whatever the report says. It is the closest competitor row in the matrix. It does not enter Table 1, which scores three named competitors only, and it fails the cell on two axes under either title, so it blocks nothing here. -->
 
 
 ---
@@ -236,7 +260,8 @@ domain built from the weather and prototype inputs described below is summarized
 ### 2.1 General Social Survey Time-Use Microdata (2005-2022)
 
 The behavioural backbone for three of the four channels is the same four cross-sectional waves of the
-Statistics Canada General Social Survey (GSS) Time-Use program used in the authors' prior work: Cycle
+Statistics Canada General Social Survey (GSS) Time-Use program used in the authors' prior work
+(Statistics Canada, 2022; Iseri and Hachem-Vermette, under review b): Cycle
 19 (2005), Cycle 24 (2010), Cycle 29 (2015), and the GSS Time Use 2022 cycle (GSSP). Residential
 (AT_HOME) and Office (AT_WORK) presence are read from the harmonized diary exactly as in the two-channel
 construction stage (Leg-2; see Chapter 3). The one new GSS-derived channel added for this paper is
@@ -258,8 +283,8 @@ presence only (Table 2, footnote 2).
 
 ### 2.2 Census Public-Use Microdata for Dwelling-Stock and Workforce Linkage
 
-The Statistics Canada Census Public-Use Microdata File (PUMF) provides the dwelling-stock and workforce
-variables used to situate Residential and Office diary respondents within a representative building and
+The Statistics Canada Census Public-Use Microdata File (PUMF; Statistics Canada, 2021) provides the
+dwelling-stock and workforce variables used to situate Residential and Office diary respondents within a representative building and
 labour-force population. This linkage stage is unchanged from the two-channel construction stage
 (Chapter 3, §3.3): dwelling type, tenure, and household-size variables anchor the Residential channel,
 and NOC-by-NAICS occupation/industry crosswalks anchor the Office channel. Retail and Hotel do not use
@@ -283,9 +308,10 @@ be built from an entirely separate, non-survey data family: monthly provincial t
 
 No StatCan table of monthly hotel-occupancy rates exists (a data-availability check run for this study); the paper therefore draws
 on the two provincial data sources available for the cities in the simulation domain. For Quebec, the
-source is the Institut de la statistique du Québec (ISQ) monthly hotel-occupancy series. For Alberta,
-the source is CBRE / Travel Alberta market reporting, with the 2005-2009 span of the Alberta series
-spliced from CBRE National Market Report archives. Both provincial series carry YEAR, MONTH, province
+source is the Institut de la statistique du Québec (ISQ) monthly hotel-occupancy series (Institut de la
+statistique du Québec). For Alberta, the source is CBRE / Travel Alberta market reporting, with the
+2005-2009 span of the Alberta series spliced from CBRE National Market Report archives (CBRE Limited
+and Travel Alberta). Both provincial series carry YEAR, MONTH, province
 (PR), occupancy rate, average daily rate (ADR), and RevPAR fields and span 2005-2022. This
 tourism-statistics series is converted to a monthly multiplier by a SARIMA model with an explicit
 COVID-19 indicator (Chapter 3, §3.4); it never passes through the three-head Transformer used for the
@@ -295,8 +321,10 @@ three GSS channels, because it has no respondent-level structure to condition on
 
 ### 2.4 NECB / PNNL Prototype Building Stock
 
-The building domain is the U.S. DOE / PNNL Tall and SuperTall mixed-use tower prototypes, built to the
-NECB-2017 standard, reused from the two-channel construction stage without modification to their
+The building domain is the U.S. DOE / PNNL Tall and SuperTall mixed-use tower prototypes (U.S.
+Department of Energy and Pacific Northwest National Laboratory), built to the NECB-2017 standard
+(National Research Council Canada, 2017), reused from the two-channel construction stage without
+modification to their
 geometry. Total occupiable floor area, measured directly from the model geometry rather than assumed,
 is reported per prototype in Table 3. Each prototype's Space objects carry an IDF `Tag 2` field that
 functions as the per-Space routing key for occupancy injection (Chapter 3, §3.5): apartment tags,
@@ -313,31 +341,8 @@ the campaign: Montréal (ASHRAE climate zone 6A) and Calgary (ASHRAE climate zon
 Meteorological Year EnergyPlus weather file (EPW) is used per city. The two prototype IDFs (Montréal,
 Calgary) differ from one another by geometry-preserving, climate-tag-only edits, so that EUI differences
 between the two cities can be attributed to climate rather than to any building-geometry covariate
-(Table 3). All simulations run in EnergyPlus v24.2. The full two-prototype-by-two-city-by-fourteen-
+(Table 3). All simulations run in EnergyPlus v24.2 (U.S. Department of Energy, 2024). The full two-prototype-by-two-city-by-fourteen-
 scenario, 56-cell campaign built from these weather and prototype inputs is defined in Chapter 4.
-
----
-
-## References (this chapter)
-
-*Carried from the two-channel construction stage; to be merged into the manuscript master
-bibliography.*
-
-- Statistics Canada, General Social Survey - Time Use: Public Use Microdata Files (Series Catalogue
-  no. 45-25-0001). Individual cycles: 12M0019X (Cycle 19, 2005), 12M0024X (Cycle 24, 2010), 89M0034X
-  (Cycle 29, 2015), and 45-25-0001 issue 2025001 (Time Use, 2022).
-- Statistics Canada, Census of Population: Public Use Microdata Files (Series Catalogue no.
-  98M0001X).
-- Institut de la statistique du Québec (ISQ), monthly hotel-occupancy statistics. ⚠ check source
-  (exact table/catalogue identifier).
-- CBRE / Travel Alberta market reporting, Alberta hotel-occupancy and ADR series, including CBRE
-  National Market Report archives for the 2005-2009 span. ⚠ check source (exact report/catalogue
-  identifier).
-- National Research Council Canada, National Energy Code of Canada for Buildings 2017.
-- U.S. Department of Energy / Pacific Northwest National Laboratory, Tall and SuperTall mixed-use
-  prototype building models.
-- U.S. Department of Energy (2024) EnergyPlus (Version 24.2.0). National Renewable Energy Laboratory
-  (NREL).
 
 ---
 
@@ -666,8 +671,9 @@ diurnal shape and monthly amplitude used for occupancy (§3.4), while amenity-zo
 NECB baseline, matching the amenity-zone occupancy treatment in §3.5.
 
 The activity-driven end-use layer is calibrated against the NRCan Survey of Commercial and Institutional
-Energy Use (SCIEU), the commercial analogue of the residential SHEU anchoring used in the two-channel
-construction stage and in the authors' residential-only prior work.
+Energy Use (SCIEU; Natural Resources Canada), the commercial analogue of the residential SHEU anchoring
+(Natural Resources Canada, 2019) used in the two-channel construction stage and in the authors'
+residential-only prior work (Iseri and Hachem-Vermette, under review b).
 
 ---
 
@@ -848,7 +854,7 @@ prototype axis a genuine experimental factor rather than a size rescaling.
 
 ---
 
-**Figure S1.** - Measured occupiable-area share per channel for both tower prototypes, with the service and mechanical share shown separately because it is a share of gross floor area rather than of occupiable area.
+**Figure S1.** - Measured occupiable-area share per channel for both tower prototypes, with the service and mechanical share shown separately because it is a share of gross floor area rather than of occupiable area.<!-- BUILD NOTE: the nine schematic and abstract images were replaced on 2026-08-09 with author-generated images from writing/submission/figures/Prompts_Images/, on the author's explicit instruction after the following was put in front of them and reaffirmed ("juste utiliser ces images, vas-y"). The matplotlib originals and their vector PDFs are archived at writing/figures/archive_matplotlib_2026-08-09/ and the revert is a copy back. Three things are recorded here because they are visible in the shipped artwork and a reader or an editor will see them. FIRST, and the only one that touches a number: THIS figure, S1, is a data figure. The generated version reports the SuperTall bar as "4.0.1" and the Tall bar as "0.37", neither of which is a share, draws no axis, and carries a footnote that reads "Mechanical, etelorgical ancr of coherotyl electrical and plumbingnoing) as a share of GROSS floor area", which is not English. The caption above still says "Measured occupiable-area share", so the caption and the artwork disagree, and the artwork states a value the study does not. SECOND: Figure 4's lower "raw / after projection" panel renders as two empty boxes, and Figure 6's "Hard Wiring Gate" box renders two blank grey bars where its two labels should be. Neither is wrong, both are incomplete. THIRD: every generated image is 1376 x 768 px, which at the 190 mm full page width is about 184 dpi against Elsevier's 500 dpi minimum for combination art; the figures they replaced were 5400 to 6600 px at 300 or 600 dpi. The stale vector PDFs were removed from both trees rather than left to disagree with the new PNGs, so there is now no vector version of Figures 1 to 6, S1 and S2. Figures 7 to 11 and S3 were NOT touched: no generated version exists for them and they carry the paper's measured results. -->
 
 ![Figure S1](../figures/SI/Figure_S01_occupiable_shares.png)
 
@@ -1208,7 +1214,7 @@ as contested and unsourced, not merely missed.
 **Hotel** fails on the opposite side of its band: 28 of 56 cells FAIL, every one above the 300 kWh/m2/yr
 ceiling and every one on the `Tall` prototype (`SuperTall` clears the ceiling in all 28 of its own cells),
 over a measured range of 203.33 to 318.42 kWh/m2/yr (median 260.54). The band ceiling rests on the
-first-party DOE/PNNL Large Hotel, ASHRAE 90.1-2019 prototype value (284.44 kWh/m2/yr at CZ 6A, 299.28 at
+first-party DOE/PNNL Large Hotel, ASHRAE 90.1-2019 (ASHRAE, 2019) prototype value (284.44 kWh/m2/yr at CZ 6A, 299.28 at
 CZ 7), which is 1.0 % from the ceiling's original 90.1-2004-lineage anchor of 302.21, so a vintage-mismatch
 objection does not hold; what remains is that the reference archetype's own city set (Rochester /
 International Falls) does not match this study's NECB-2017 Montreal / Calgary towers.
@@ -1369,10 +1375,10 @@ bases are never averaged.
 
 | Channel | As-modelled band, low/central/high (PASS criterion) | Empirical band, low/central/high (INFO criterion) | Measured range, CFA basis (median) | Measured range, GFA-share basis (median) | Cells passing (as-modelled) | Verdict |
 |---|---|---|---|---|---|---|
-| Office | 100 / 135 / 200 kWh/m2/yr | 170 / ⚠ check source (central not reported) / 360 kWh/m2/yr | 61.72-90.21 (median 71.02) | 63.27-85.51 (median 71.53) | 0/56 | **FAIL, all 56 cells below the 100 floor** |
+| Office | 100 / 135 / 200 kWh/m2/yr | 170 / ⚠ check source / 360 kWh/m2/yr | 61.72-90.21 (median 71.02) | 63.27-85.51 (median 71.53) | 0/56 | **FAIL, all 56 cells below the 100 floor** |
 | Retail | 80 / 110 / 155 kWh/m2/yr | 150 / 280 / 380 kWh/m2/yr | 63.63-96.84 (median 75.63) | 62.88-91.95 (median 73.27) | 12/56 individually in-band; gate scored on the **median** (75.63, below the 80 floor) | **FAIL under the median-in-band rule in force** (all-cells count: 12 PASS / 44 FAIL) |
 | Hotel | 180 / 240 / 300 kWh/m2/yr | 220 / 350 / 480 kWh/m2/yr | 203.33-318.42 (median 260.54) | 171.07-261.18 (median 215.96) | 28/56 | **FAIL, 28/56 above the 300 ceiling, 0/56 below the 180 floor, all failures on `Tall`** |
-| Residential | no as-modelled band defined | 113.9 / ⚠ check source (central not reported) / 147.2 kWh/m2/yr (SHEU HighRise context) | 111.57-128.77 (median 119.10) | 101.54-115.05 (median 107.24) | n/a (INFO only) | INFO, 55/56 outside the empirical band (1/56 IN) |
+| Residential | no as-modelled band defined | 113.9 / ⚠ check source / 147.2 kWh/m2/yr (SHEU HighRise context) | 111.57-128.77 (median 119.10) | 101.54-115.05 (median 107.24) | n/a (INFO only) | INFO, 55/56 outside the empirical band (1/56 IN) |
 
 ## The three failing gates, at full strength
 
@@ -1571,7 +1577,7 @@ Sixteen limitations bound the interpretation of the results, transcribed here fr
 
 ### 7.F Reproducibility: A Shared Extraction Defect, and Why This Pipeline Is Structurally Immune to It
 
-One further point belongs in this chapter, not as a seventeenth item in the numbered list above but as a reproducibility caveat about the codebase this project descends from. The residential energy-use-intensity table published in the authors' prior single-channel study (2J) was found, during this project's own review process, to have been computed by a shared extraction function carrying two compounding defects: a demand-summary table double-counted into an annual energy total as though it were an energy quantity rather than a power quantity, and a water-heating guard that correctly zeroes water energy on SI-unit runs but fails to recognise imperial units, so that on imperial-unit runs a water volume is summed directly into the reported energy-use intensity as if it were electricity. Every run in that prior study's campaign carried exactly one of the two defects, decided by which unit system the run happened to use, and correcting both moved three of the four reported SHEU band verdicts in that prior study.
+One further point belongs in this chapter, not as a seventeenth item in the numbered list above but as a reproducibility caveat about the codebase this project descends from. The residential energy-use-intensity table published in the authors' prior single-channel study (2J; Iseri and Hachem-Vermette, under review b) was found, during this project's own review process, to have been computed by a shared extraction function carrying two compounding defects: a demand-summary table double-counted into an annual energy total as though it were an energy quantity rather than a power quantity, and a water-heating guard that correctly zeroes water energy on SI-unit runs but fails to recognise imperial units, so that on imperial-unit runs a water volume is summed directly into the reported energy-use intensity as if it were electricity. Every run in that prior study's campaign carried exactly one of the two defects, decided by which unit system the run happened to use, and correcting both moved three of the four reported SHEU band verdicts in that prior study.
 
 This pipeline is verified immune to that specific defect, and the reason is structural rather than incidental: the present study's energy-use-intensity values, reported in Table 5 and discussed throughout §5 and §6, are read from hourly EnergyPlus meter streams, never from the tabular demand-summary extraction function the prior study's defect lived inside. The two pipelines share a lineage and, at points, shared code, but they do not share this particular extraction path, and that structural difference, not a targeted fix, is what protects this study's own reported values. This is recorded here as a reproducibility point about the family of pipelines this project belongs to, not as a limitation of the results reported in this paper.
 
@@ -1762,9 +1768,38 @@ The evidence supports a clear set of answers. First, the four populations do not
 
 Taken together, these results establish that jointly-trained, per-use occupancy injection into a stacked mixed-use building is feasible with the architecture and dispatch mechanism this paper describes, and that the more immediate barrier to a clean validation story is not the occupancy model but the reference bands available to judge it, none of which were built with a stacked mixed-use tower in mind. The limitations set out in §7, an occupancy frame that cannot see hotel guests or retail staff, internal-gain parameters carried over unchanged from a single office reference, and a domestic-hot-water plant whose capacity pinning defeats a global correction, bound how far the present results generalise, and several of them point directly at what a following study would need to build: reference bands constructed for, and validated against, buildings that stack more than one use, rather than borrowed from single-use stock and applied to a tower they were never designed to score.
 
+
+
+
 ---
 
-## Supplementary material
+# References
+
+- ASHRAE (2019) *ANSI/ASHRAE/IES Standard 90.1-2019: Energy Standard for Buildings Except Low-Rise Residential Buildings*. Atlanta, GA: American Society of Heating, Refrigerating and Air-Conditioning Engineers.
+- ASHRAE, *ASHRAE Guideline 14: Measurement of Energy, Demand and Water Savings*. Atlanta, GA: American Society of Heating, Refrigerating and Air-Conditioning Engineers. Edition ⚠ check source.
+- Buttitta, G. and Finn, D.P. (2020) A high-temporal resolution residential building occupancy model to generate high-temporal resolution heating load profiles of occupancy-integrated archetypes. *Energy and Buildings*, 206, 109577. https://doi.org/10.1016/j.enbuild.2019.109577<!-- BUILD NOTE RESOLVED 2026-08-08 by RV09 Part A. Corrected: article number 109562 to 109577, and the DOI with it. RV09 opened the old DOI through both the Crossref API and ScienceDirect (PII S0378778819317256) and it resolves to Tsuzuki et al. (2020) on sleep and thermoregulation in a cold environment, published in volume 207, not 206. The replacement (PII S0378778819322170) resolves to this paper in volume 206, which is the volume both forms always agreed on. RV08 and RV09 agree. -->
+- CBRE Limited and Travel Alberta, Alberta hotel-occupancy and average-daily-rate series, including CBRE National Market Report archives for the 2005-2009 span. ⚠ check source (exact report/catalogue identifier).
+- Doma, A. and Ouf, M. (2023) Leveraging mobile positioning data to model building occupant behaviour in a mixed-use district. *Proceedings of Building Simulation 2023: 18th Conference of IBPSA*, pp. 1671-1678. https://publications.ibpsa.org/proceedings/bs/2023/papers/bs2023_1671.pdf
+- Doma, A., Padsala, R., Ouf, M.M. and Eicker, U. (2024) Bottom-up framework for modelling occupancy-based demand-side management strategies in a mixed-use district. *Applied Energy*, 375, 124081. https://doi.org/10.1016/j.apenergy.2024.124081<!-- BUILD NOTE RESOLVED 2026-08-08 by RV09 Part A. Corrected. The old form (Applied Energy 355, 122247, doi 10.1016/j.apenergy.2023.122247) was wrong in the author list, the volume, the article number and the DOI; RV09 opened that DOI through both the Crossref API and the ScienceDirect landing page (PII S0306261923016112) and it resolves to Schropp et al. (2024) on anion exchange membrane electrolysis. It also opened the replacement (PII S0306261924014648), which resolves to this paper. Two independent reports, RV08 and RV09, agree on the same replacement, and RV09 names the specific unrelated paper rather than only asserting a mismatch, which is the evidence RV08 lacked. -->
+- Institut de la statistique du Québec, monthly hotel-occupancy statistics for Quebec. ⚠ check source (exact table/catalogue identifier).
+- Iseri, O. and Hachem-Vermette, C. (2026) *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials* (companion conference paper). eSim 2026, IBPSA-Canada.
+- Iseri, O. and Hachem-Vermette, C. (under review a) *Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials.* Journal of Building Performance Simulation.
+- Iseri, O. and Hachem-Vermette, C. (under review b) *From "How Much" to "When": Forecasting the Residential Energy Load Shape from a Calibrated Behavioural Occupancy Time-Series (Canada, 2005-2030).* Building Simulation.
+- Kurin, V., De Witt, C.S. and Whiteson, S. (2022) In defense of the unitary scalarization for deep multi-task learning. *Advances in Neural Information Processing Systems 35 (NeurIPS 2022)*.<!-- BUILD NOTE 2026-08-09, OPEN. This entry and the Menon entry below are the only two references in the paper whose bibliographic details have never been opened. Both were cited in the SI as "Kurin et al. 2022" and "Menon et al. 2020" with NO reference entry anywhere in the paper, which is why they are added here. Both forms come from the deep-research report family in which roughly half of all citations have been found fabricated. This entry is dr_L3-13 reference 5 MINUS two fields that were self-evidently placeholders in that report and were deliberately not carried: a page range "35, 1234-1246" and an OpenReview URL "id=e-58pB58p". The Menon entry is dr_L3-08 reference 9 verbatim. WHAT CLOSES THIS: open both through Crossref or the publisher landing page and confirm author list, venue and year. This session does not run literature searches and did not run one here. -->
+- Menon, A.K., Jayasumana, S., Rawat, A.S., Liang, H., Veit, A. and Kumar, S. (2020) Long-tail learning via logit adjustment. *International Conference on Learning Representations (ICLR 2021)*. https://arxiv.org/abs/2007.10738
+- National Research Council Canada (2017) *National Energy Code of Canada for Buildings 2017*, Fourth Edition. Ottawa: Canadian Commission on Building and Fire Codes (Cat. NR24-24/2017E-PDF; ISBN 0-660-24321-4). https://doi.org/10.4224/40002011
+- Natural Resources Canada (2019) *Survey of Household Energy Use (SHEU), 2019 - Data Tables*. Office of Energy Efficiency, Natural Resources Canada (comparative energy-intensity series: CODR table 25-10-0061-01). https://oee.nrcan.gc.ca/corporate/statistics/neud/dpa/menus/sheu/2019/tables.cfm
+- Natural Resources Canada, *Survey of Commercial and Institutional Energy Use (SCIEU)*. Office of Energy Efficiency, Natural Resources Canada. ⚠ check source (survey year and table identifier).
+- Statistics Canada (2021) *Census of Population, 2021: Public Use Microdata Files* (Series Catalogue no. 98M0001X). Individuals File: 98M0001X2021001; Hierarchical File: 98M0001X2021002. https://www150.statcan.gc.ca/n1/en/catalogue/98M0001X
+- Statistics Canada (2022) *General Social Survey - Time Use: Public Use Microdata Files* (Series Catalogue no. 45-25-0001; series DOI https://doi.org/10.25318/45250001-eng). Individual cycles: 12M0019X (Cycle 19, 2005), 12M0024X (Cycle 24, 2010), 89M0034X (Cycle 29, 2015), and 45-25-0001 issue 2025001 (Time Use, 2022). https://www150.statcan.gc.ca/n1/pub/45-25-0001/index-eng.htm
+- U.S. Department of Energy (2024) *EnergyPlus (Version 24.2.0)*. National Renewable Energy Laboratory (NREL). https://energyplus.net/
+- U.S. Department of Energy and Pacific Northwest National Laboratory, *Commercial Prototype Building Models: Tall and SuperTall mixed-use prototypes*. ⚠ check source (exact release and version).
+- Widén, J. and Wäckelgård, E. (2010) A Swedish time-use survey and its utility for building energy modeling. *Energy and Buildings*, 42(5), pp. 706-714. https://doi.org/10.1016/j.enbuild.2009.11.010
+
+
+---
+
+# Supplementary material
 
 **Table A1.**
 
@@ -1775,9 +1810,18 @@ deep-research playbooks that froze the design (`dr_L3-11`, `dr_L3-12`, `dr_L3-13
 copied from the brief; the one line that could not be independently confirmed is marked `⚠ check
 source`.
 
+**About the `Source in the project repository` column.** The right-hand column of the three tables
+below gives, for each hyperparameter, the file and line in the authors' own project repository from
+which that value was read. These are internal paths and internal document identifiers; they are not
+expected to resolve for a reader, and nothing in this model card depends on opening them. They are
+printed so that every number in the card is attributable to a specific place in the build rather than
+restated from a summary, and so that a value which was read from code can be told apart from one that
+was read from a design document. Where the two disagreed, the disagreement is disclosed in the notes
+beneath the table rather than reconciled silently.
+
 ### A1.1 - Architecture
 
-| Component | Specification | Confirmed against |
+| Component | Specification | Source in the project repository |
 |---|---|---|
 | Backbone | Shared multi-head Transformer encoder-decoder, "J3 lineage"; **AUGMENT** verdict (keep incumbent, graft targeted upgrades) - no 2023-2026 challenger (discrete diffusion MDLM/SEDD, decoder-only AR, SSM/Mamba, discrete flow matching, non-AR iterative) passed the project's gates at this scale | `dr_L3-11_architecture_pressure_test_REPORT.md` Table 5; `3rdJ_04_augmentationGSS_4split.md:61` |
 | Encoder | 6-layer Transformer, `d_model=256`, `n_heads=8`, `d_ff` per layer config, ~29M parameters | `3rdJ_04B_model_4split.py:86-92` (`PROD_CONFIG`: `d_model=256, n_heads=8, N_enc=6, N_dec=6, d_act=32, d_cycle=32`); `dr_L3-13_training_regimen_REPORT.md:4` ("~29M parameters") |
@@ -1807,7 +1851,7 @@ Source: `3rdJ_04_augmentationGSS_4split.md:298` (2026-07-19 entry, "Step 0" para
 
 ### A1.3 - Training regimen
 
-| Item | Value | Confirmed against |
+| Item | Value | Source in the project repository |
 |---|---|---|
 | Loss weights (`α_resid : α_work : α_retail`) | **1.0 : 0.5 : 0.3** | `3rdJ_04_augmentationGSS_4split.md` Delta D; `dr_L3-13` §"Fix-vs-Ablate" item 1 |
 | Scalarization | **Unitary/fixed-weight scalarization** (Kurin et al. 2022) - dynamic weighters (SLAW/UW/GradNorm/DWA/CAGrad) explicitly rejected; they destabilize on a ~2%-positive task | `3rdJ_04_augmentationGSS_4split.md` Delta D: "`WEIGHT_MODE=fixed`... Never SLAW / UW / GradNorm / DWA / CAGrad"; code confirmation at `3rdJ_04_augmentationGSS_4split.md:302` ("No `UW`/`SLAW`/`equal`/`GradNorm`/`DWA`/`CAGrad` code path exists anywhere in the new file") |
@@ -1834,7 +1878,7 @@ Source: `3rdJ_04_augmentationGSS_4split.md:274`.
 
 ### A1.4 - Decoding
 
-| Item | Value | Confirmed against |
+| Item | Value | Source in the project repository |
 |---|---|---|
 | AR sampling | Temperature **T = 0.7** + nucleus **p = 0.9** | `3rdJ_04_augmentationGSS_4split.md` Delta F item 1 |
 | Min-dwell constraint | **≥ 2 slots (60 min)** for work and retail events, applied AFTER the exclusivity projection and the activity override (so it can only flip 1→0) | `3rdJ_04_augmentationGSS_4split.md` Delta F item 2; `:309` |
@@ -1889,7 +1933,7 @@ Source: `Leg3_4-split/Step2_docs/3rdJ_02_harmonizeGSS_4split.md` Delta A (`:34-4
 | 2015 (C29) | `LOCATION` | `306` | ✅ confirmed |
 | 2022 (GSSP) | `LOCATION` | `3306` | ✅ confirmed |
 
-**Granularity note.** 2005/2010's `PLACE = 06 + 07` combines two source codes (grocery, other
+**Granularity note.**<!-- BUILD NOTE: TABLE A2 SHIPS UNLABELLED AND UNCITED, and this is a build-mechanism defect, not a content one. This file carries TWO tables under two `# ` headings, but `Chapter_08_Conclusion.md:13` has ONE placeholder for it (`**Table A1.** *(insert `Table_A1_A2.md` here)*`), and `assemble_3J.py`'s `inline_table()` strips every `^# ` line. So A1's label is supplied by the placeholder and A2's is deleted: everything from the AT_RETAIL codebook down ships as an unlabelled continuation of the model card, under no number, and no chapter cites "Table A2" anywhere. Verified in the built docx: "Table A1" appears 3 times, "Table A2" and "AT_RETAIL codebook" zero times, while A2's BODY is present in full (the codebook rows, this granularity note, the excluded-channel note and the episode-time-share note all ship). f4's C7 is structurally blind to this: it checks that every caption it FINDS is cited in prose, and this exhibit's caption is destroyed before C7 ever sees the document, so 22/22 passes while a 23rd exhibit rides along unnumbered. THE FIX IS EDITORIAL AND BELONGS TO THE AUTHORS, which is why it is a note and not a patch. Two options. (a) A2 is its own SI table: split this file into `Table_A1_model_card.md` and `Table_A2_retail_codebook.md`, add a `**Table A2.**` placeholder plus a caption, and cite it once in prose - the natural site is section 3 where the AT_RETAIL rule is defined, or section 2 with the GSS cycles, NOT section 8. (b) A2 is part of the model card: fold it in as a numbered subsection `### A1.6 - AT_RETAIL codebook per GSS cycle`, which needs no new citation because A1 is already cited, and drop the "Table A2" name entirely. Option (a) is the recommendation, because the codebook is about the DATA and the model card is about the MODEL, and because a reader sent to a model card will not look there for a variable crosswalk. Whichever is chosen, re-run f4 afterwards and expect the exhibit count to move off 22. --> 2005/2010's `PLACE = 06 + 07` combines two source codes (grocery, other
 store/mall) into one unified value; 2015/2022's single `LOCATION` code (`306`/`3306`) is already a
 merged grocery/general-merchandise bucket at the source. **Grocery vs. general merchandise is
 therefore not separable in 2015 or 2022** - the harmonization keeps all four cycles on one unified
@@ -1928,7 +1972,6 @@ occupies.
 **Figure S3.**
 
 ![Figure S3](../figures/SI/Figure_S03_leg2_pipeline.png)
-
 
 
 
