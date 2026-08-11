@@ -44,6 +44,7 @@ __pycache__/
 ._*
 .Spotlight-V100
 .Trashes
+~$*
 
 # Model files
 *.keras
