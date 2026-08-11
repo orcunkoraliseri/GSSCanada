@@ -8,66 +8,39 @@
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | Doma & Ouf (2023/2024) | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ |
 | Buttitta & Finn (2020) | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ | ✓ |
-| Widen & Wackelgard (2010) | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
-| **This study (Leg-3)** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** | **✗** |
-| **This study (2J)** | **✓** | **✓** | **✗** | **✓** | **✓** | **✗** | **✓** | **✓** |
+| Widén and Wäckelgård (2010) | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
+| This study (four channels) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ |
+| Authors' prior study (single channel) | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✓ |
 
-**What the axes mean.** Two of the seven are read in more than one way in this literature, so both are
-defined here and every cell in the column is scored against the definition given, this study's row
-included.
+Two of the axes are read in more than one way in this literature, so both are defined here and every
+cell in the column is scored against the definition given, this study's row included. A calibrated
+behavioural model is one whose parameters are estimated from observed microdata on the population being
+modelled, rather than assumed from a standard schedule or read off a sensor or positioning trace of one
+particular building; the axis is about where the parameters come from, not about how accurately the
+output reproduces a measured energy series, which is what the gates of Chapter 5 test and where three
+failures are reported. Stock-scale means the result is intended to represent a building population
+rather than a named set of buildings: a district of individually modelled buildings is not scored as
+stock-scale, while a small set of archetypes weighted to stand for a national dwelling stock is.
 
-- ***Calibrated behavioural model*** - presence is produced by a behavioural model whose parameters are
-  estimated from observed microdata on the population being modelled, rather than assumed from a
-  standard schedule or read off a sensor or positioning trace of one particular building. The axis is
-  about **where the model's parameters come from**, not about how accurately its output reproduces a
-  measured energy series; the latter is what §5's energy-use-intensity gates test, and three of those
-  gates are reported failing.
-- ***Stock-scale*** - the study's result is intended to represent a building population rather than a
-  named set of buildings. A district of individually modelled buildings is not scored as stock-scale;
-  a small set of archetypes weighted to stand for a national dwelling stock is.
+Each of the three named competitors holds one axis this study combines. Doma and Ouf put multiple uses
+in one modelling framework, but from mobile-positioning snapshots rather than a time-use survey, and at
+district rather than single-building scale. Buttitta and Finn, and Widén and Wäckelgård, both drive
+occupancy from a time-use survey but stay single-channel, residential only, single-wave and without a
+forecast. The cell none of them occupies is a time-use-survey-driven, multi-channel,
+forecast-to-a-future-year model inside a single mixed-use building. The authors' prior single-channel
+row is carried alongside to show the increment: that study already cleared time-series, calibration,
+forecast, activity resolution and stock scale on the residential-only problem, and the present study
+trades stock-scale representativeness, two tower prototypes rather than a housing stock, for
+multi-channel and mixed-use resolution the prior study did not attempt.
 
-**Reading of the matrix.** The three named competitors each hold one axis Leg-3 combines: Doma & Ouf
-put multiple uses (office, retail, residential) in one modelling framework but from mobile-positioning
-snapshots, not a time-use survey, and at district scale, not inside one building. Buttitta & Finn and
-Widen & Wackelgard both drive occupancy from a time-use survey but stay single-channel, residential
-only, single-wave, with no forecast. **The cell none of the three occupies is a time-use-survey-driven,
-multi-channel, forecast-to-a-future-year model inside a single mixed-use building** - that is the
-Leg-3 cell that review's positioning verdict names as "genuinely unclaimed in the literature." The 2J row
-is carried alongside Leg-3 to show the increment is additive: 2J already cleared time-series,
-calibration, forecast, activity-resolution and stock-scale on the residential-only, single-channel
-problem; Leg-3 trades stock-scale representativeness (2 tower prototypes, not a housing stock) for
-multi-channel and mixed-use-single-building resolution, which 2J did not attempt.
-
-**The five cells that this table previously left unscored.** An earlier version of this matrix carried
-five cells the primary positioning review does not state, marked as unscored rather than inferred. All
-five have since been read out of the competitors' full texts, and each is recorded with the fact it
-rests on: *Doma & Ouf* resolve occupancy at one hour (**time-series ✓**), read presence from a
-mobile-positioning trace with no behavioural model estimated from it (**calibrated ✗**), and model a
-district of 221 individually represented buildings, which under the definition above is not a stock
-(**stock-scale ✗**); *Buttitta & Finn* estimate their presence model from a national time-use survey
-(**calibrated ✓**), report presence-state counts rather than activity categories (**activity/end-use
-✗**), and apply four archetypes standing for a dwelling stock (**stock-scale ✓**).
-
-**Two disagreements between sources, recorded rather than resolved, because neither changes a
-verdict.** The competitor axes were cross-checked against a second, independent reading of the same
-nine studies, and it differs from the sources used here in two places. It gives Doma & Ouf's
-positioning data as a different vendor than the one this table's primary source names, and it records
-Buttitta & Finn's survey as a different country's than the one §1.2 names. Both are attribute
-disagreements inside a cell whose verdict is the same under either reading (mobile positioning either
-way; a national time-use survey either way), so both are noted here and neither has been adopted on a
-single unverified report.
-
-**A third disagreement, on this study's own row, and why the tick stands.** That same independent
-reading marks *this study* **No** on *calibrated behavioural model*. It marks **all ten rows of its own
-matrix No on that axis**, including the two rows it separately certifies as time-use-survey-driven, and
-its parenthetical for this study is "gate-tested control" - a statement about validation, not a denial
-that the model's parameters are estimated from microdata. A column with no variation across ten studies
-separates nothing, in either direction. Under the definition given above the tick stands for this study
-and for the three competitors that also estimate from survey microdata; under a stricter reading that
-requires agreement with a measured energy series, no row in either matrix would be ticked, this study
-included, and §5 reports three such gates failing rather than claiming otherwise. **The axis is
-therefore not one of the four this paper's novelty claim rests on**, which are time-use-survey-driven,
-multi-channel, forecast to a future year, and mixed-use single building.
+One independent reading of the same literature marks this study No on the calibration axis. It marks all
+ten rows of its own matrix No on that axis, including the two it separately certifies as
+time-use-survey-driven, and a column with no variation across ten studies separates nothing in either
+direction. Under the definition given above the tick stands, for this study and for the competitors that
+also estimate from survey microdata; under a stricter reading requiring agreement with a measured energy
+series, no row in either matrix would be ticked, this study included. The axis is in any case not one of
+the four the novelty claim rests on, which are time-use-survey-driven, multi-channel, forecast to a
+future year, and mixed-use single building.
 
 ## Sources
 
@@ -79,7 +52,7 @@ multi-channel, forecast to a future year, and mixed-use single building.
     presence-state count / four stock archetypes);
   - the two recorded disagreements (Telus vs the SafeGraph naming in `dr_L3-10`; UK TUS 2000 vs the
     Irish TUS named in §1.2) and the third on this study's own calibration row.
-  - **Not adopted from RV09:** its `Calibrated behavioural model` column, which reads No on 10 of 10
+  - Not adopted from RV09: its `Calibrated behavioural model` column, which reads No on 10 of 10
     rows and so cannot discriminate; and its `Activity/end-use resolved` verdict for Doma & Ouf, which
     contradicts `dr_L3-10` on a cell `dr_L3-10` does state. The `dr_L3-10` verdict is kept.
 - `Leg3_4-split/deepResearch/dr_L3-10_mixeduse_reporting_positioning_REPORT.md`:

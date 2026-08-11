@@ -1860,3 +1860,265 @@ around the two kinds of prompt and the `f5` trap.
    the numbers and chose to proceed; regenerating at 4000 px or more closes all four at once.
 2. Unchanged: **Table A2**, **Kurin and Menon**, §1.4's Leg-1/2J wording, cover-letter placeholders,
    the generative-AI declaration, no Gold OA on the CRKN claim, N7 / N8 deferred.
+
+---
+
+## Progress Log - 2026-08-11 #2: captions cut to five words, figure captions moved below the figure, bold out of the prose, table cells condensed
+
+Author request, one message, five items: shorten every legend to about five words, put figure captions
+below the figure and table captions above the table, condense the table cells, and stop using bold text
+inside paragraphs. All five done against the sources and the build, never by editing a built artefact,
+and verified against the installed `.docx`.
+
+### 1. A caption was being cut in half by its own figure, and nothing caught it
+
+`assemble_3J.py` matched only the placeholder LINE. The chapter sources are hard-wrapped, so any caption
+longer than one line continued on the following lines, and those lines were appended as ordinary chapter
+text, which put them AFTER the inserted image. Figure 7 shipped as:
+
+```
+Figure 7. - four-channel EUI trajectory across the 2005, 2010, 2015
+[the figure]
+and 2022 GSS Time-Use cycles, one panel or series per channel, ...
+```
+
+Five of the fifteen figures were in that state in the shipped `.docx`. Nothing failed: the caption count
+was right on both sides, the loss check compares caption LABELS, and the residue check looks for
+apparatus, not for a caption with a picture in the middle of it. The assembler now reads the whole
+caption block (placeholder line plus every non-blank line under it), and the build PRINTS
+`captions that wrapped onto a second line`, so a caption drifting past one line is visible rather than
+silently reassembled. It reports **0** now, because of item 2.
+
+### 2. Caption placement, by user decision
+
+- **Figure**: image first, caption underneath.
+- **Table**: caption first, table underneath (already the case; now explicit in the code).
+
+Both are one named branch in the assembler, keyed on the inlined file's extension.
+
+### 3. Twenty-three captions rewritten to about five words
+
+Every `Figure N` and `Table N` caption in `chapters/` is now a single short line. Seven tables had NO
+caption text at all and shipped as a bare number; each was given a short title taken from that table
+file's own H1 heading, which `inline_table()` strips. Longest caption is now five words after the label,
+shortest three.
+
+**Nothing load-bearing was deleted, checked caption by caption before cutting.** Figure 3's "three GSS
+heads plus one non-GSS side-track, not four heads" is in §3.2 prose; Figure 7's uninjected-hotel warning
+is in §5.1 prose in full; Figure S1's gross-versus-occupiable basis is in §4.1; Table 1's axis
+definitions are in the table's own body. The one thing that had no prose home, Figure 1's colour key for
+inherited versus added channels, is drawn inside the figure.
+
+### 4. Bold out of the prose
+
+**330 bold runs in the built document, now 24 - exactly the 24 caption labels.** Removed from the
+declarations block, the contribution list, the L1 to L16 limitation labels, the Office/Hotel/Retail
+lead-ins in §5.2, the dispatch and probe lead-ins, and from every table cell and table note. Kept: the
+`**Figure N.**` / `**Table N.**` labels, which the assembler, the loss check and `f4`'s C7 all key on.
+
+A line-by-line strip is not enough - bold spans wrapped across two source lines, and a per-line regex
+leaves those behind while reporting a clean count. Done in two passes, the second over the whole file
+with `re.S`, then verified by counting `**` per file and asserting it equals twice the caption count.
+The `figures/**/` glob inside a BUILD NOTE was protected explicitly.
+
+### 5. Table cells condensed
+
+Tables 2, 3, 4, 5, 6, 7 and A1. The pattern was the same everywhere: a cell carrying a paragraph.
+Examples: Table 3 repeated both full EPW filenames in both rows, now named once in the footnote;
+Table 4 said `project-chosen (set before tuning)` fifteen times, now `project-chosen`, with the
+"set before tuning" statement kept in the provenance key below the table; Table 6's basis cells were
+four-sentence paragraphs, now one or two sentences each.
+
+**No verdict token moved in Table 6** (Yes / No / `check source`, all nine rows unchanged) and no band,
+gate verdict or measured number moved anywhere. Table 7's header note previously claimed "no number is
+paraphrased"; the condensed cells do drop three apparatus asides (the retired 6.8x density claim, the
+`BOOSTER` reference temperature, a `grep -c` result), so the note now says what is actually true.
+
+### 6. Two findings that were not part of the request
+
+- 🔴 **`f4`'s C4 was failing, and it had been passing for the wrong reason.** C4 requires every scanned
+  file to name a source, and every accepted pattern was a REPOSITORY artefact. `Chapter_09_References.md`
+  is nothing but sources and matched none of them - it was passing only because two of its entries
+  carried a `dr_L3-` identifier inside a BUILD NOTE, apparatus the submission strip deletes. Removing
+  those two unverified entries earlier the same day dropped the accidental match and the arm failed.
+  Fixed additively: a DOI or a URL is now an accepted source form. Seen failing first, and the falsifier
+  still fails C1/C6/C7 as required.
+- **One en dash was in the shipped `.docx` and in every previous one**, from a ` -- ` in Table 5's prose
+  that pandoc's smart extension converts. `f4`'s C1 reads the SOURCES, where there is no dash, so it
+  cannot see this. Source rewritten to "and"; the built file now carries zero.
+
+### Verification, against the installed file
+
+- Build: 0 wrapped captions, **0 unresolved BUILD NOTES**, 11 marked RESOLVED.
+- `readySubmission.md` **1,319 lines**; `3J_manuscript_submission.docx` **5,763,996 bytes**.
+- In the installed `.docx`: 15 media parts, 15 image paragraphs, 14 tables, 24 caption labels,
+  **every one of the 15 images immediately followed by its own caption**, every table preceded by a
+  Table caption, 0 `<v:rect>`, 0 `check source`, 0 em or en dashes, 24 bold runs.
+- `f4` **7 PASS / 0 FAIL**; falsifier still has teeth.
+- `f3` **3 PASS / 2 FAIL**, unchanged by this round and NOT caused by it: both failing arms are asset
+  hashes (unregistered figures in the submission tree, and `figures_hires/fig_diurnal_4ch.png`
+  disagreeing with the registry), left over from the 2026-08-11 figure replot. `f5` and `f6` were NOT
+  run: they are figure gates, this round touched no figure, and `f5` is not read-only (failure class
+  #42, its C2 arm re-runs the plotting scripts against the real paths).
+
+### Left open
+
+1. `f3`'s two failing arms - the figure registry has not been updated since the 2026-08-11 replot.
+2. Unchanged from the previous round: §1.4's Leg-1/2J wording, cover-letter placeholders (handling
+   editor, date), the generative-AI declaration, no Gold OA on the CRKN claim, N7 / N8 deferred.
+
+---
+
+## Progress Log - 2026-08-11 #3: a paper, not a report
+
+Author instruction, one message: exclude the "Footnotes" sections, stop writing build dates into the
+prose, put the formulas in as Word equations, stop naming directories and files, one serif font
+throughout, no bullets, one chapter each for Discussion and Limitations with no subsections and shorter,
+no table inside Discussion / Limitations / Conclusion, no explanation essays around the appendix tables,
+and shorten generally by deleting repetition. Plan written first at
+`writing/implementation/3rdJ_paper_not_report_pass.md`, then executed. Everything below was done in the
+SOURCES and rebuilt; no built artefact was hand-edited, and verification is against the INSTALLED docx.
+
+### 1. 🔴 A figure was being deleted by the submission strip, and the loss check could not see it
+
+The one defect of this round, and my change surfaced it rather than caused it in isolation. When
+Figure S3 came to sit directly after a table file that ends in a `## Sources` block, the section-drop
+loop ran past the image line and stopped only at the caption below it. The submission copy carried
+"**Figure S3.**" with no figure above it: 14 images against 15 captions.
+
+Nothing failed. `CONTENT_RESUMES` had been narrowed on 2026-08-08 to a caption only, because the wide
+version had leaked a whole apparatus section; `![` was removed in the same edit as the bare table row,
+though the two are not the same strength of signal. An apparatus block is prose and repository paths and
+never contains a figure. And the LOSS CHECK counts CAPTIONS, so it is structurally blind here: the
+caption is precisely the line that survived.
+
+Two changes. `![` is re-admitted as a resume signal, with the history written above it. And the loss
+check now counts IMAGES as well, by path, so a figure that disappears is refused rather than absorbed.
+**Seen failing before being trusted**: replaying the 2026-08-08 pattern in memory against the same
+document makes the new arm refuse it by name, and the repaired pattern passes. The build now prints
+`captions 23, images 15, both counted after the strip`.
+
+### 2. One serif font, and the document had three
+
+The reference document put the title and headings 1 and 2 on the theme font, Aptos Display, and every
+backticked identifier on Consolas 11 pt. Both are fixed at the source: the four heading styles and
+`VerbatimChar` are pinned to Times New Roman in `ref_submit_single.docx`, AND the 321 inline code spans
+are removed from the manuscript itself, because an identifier in backticks still reads as code however
+it is typeset. The installed file now carries zero explicit non-Times runs.
+
+### 3. Formulas are Word equations now
+
+The retail derivation rule, the hotel multiplier and the checkpoint composite were fenced code blocks,
+which pandoc renders as grey monospace paragraphs. Written as TeX, pandoc's docx writer converts them to
+native OMML, editable in Word's own equation editor. **6 `<m:oMath>` elements, 3 of them displayed**,
+counted in the installed file, so a formula that had shipped as a picture or as text would count zero.
+
+### 4. Report apparatus out
+
+Both `## Footnotes` sections are gone. Every build date is gone from reader-facing text; where the POINT
+was that the rule preceded training, the point is kept in words and the date is not. Every repository
+file and directory name is gone: **0 build dates and 0 repository paths** in the installed file, against
+9 and 31 before. Two blocks were deleted outright rather than shortened: Table 5's "three failing gates
+at full strength", which restated Section 5.2 sentence for sentence, and its verification block, which
+was internal quality assurance written in file names. Table 1 lost its record of which cells this
+project had left unscored and later filled. The SI model card lost its source column and its five
+explanatory blocks.
+
+**Every disclosure was checked for a surviving home before its block was cut.** The checkpoint-selection
+deviation is stated in Chapter 3 in full prose, with the 0.0218 F1 gap, the four-of-five seed
+disagreement and the reason for not re-selecting. The hotel cluster bounds are in Chapter 6. The retail
+44-of-56 tally is in Chapter 5. The conditioning-width drift and the frozen-versus-measured positive
+weight are in the model card's own rows.
+
+### 5. Bullets, chapters, exhibits
+
+Lists in the built document: **51 -> 5**, and the five are the Highlights, which Elsevier requires as a
+bulleted list and rejects as a paragraph. The reference list was 18 bullets and is now 18 paragraphs,
+entry for entry. Chapters 6 and 7 are continuous prose with no subsections; Chapter 7 also drops the
+L-number addressing, which is a register's scheme, not a paper's. Table 7 moved out of the Limitations
+chapter into the supplementary material, so no exhibit now sits inside Discussion, Limitations or
+Conclusion. Chapter 7 still cites it, so C7 stays satisfied.
+
+One rendering hazard caught on the way: a hard wrap put "56." at the start of a line in Chapter 7, which
+markdown reads as an ordered list. Reflowed.
+
+### 6. Shortened
+
+**20,025 -> 15,398 words, a 23 % cut**, with no band, gate verdict or measured number moved anywhere.
+
+### Verification, against the installed file
+
+- Build: 8 tables and 15 figures inlined, 0 appended to an appendix, 0 wrapped captions,
+  **0 unresolved BUILD NOTES**, `captions 23, images 15`.
+- `3J_manuscript_submission.docx` **5,747,703 bytes**; **15 media parts, all byte-identical by md5 to
+  the files on disk**; 15 drawings; every image immediately followed by its own caption; 24 captions;
+  24 bold runs, all of them caption labels; 14 tables; 6 equations; 5 list paragraphs; 0 explicit
+  non-Times runs; 0 Consolas; 0 theme-font headings; 0 dates; 0 repository paths; 0 "Footnote";
+  0 "check source"; 0 em or en dashes; 0 horizontal-line shapes.
+- `f4` **7 PASS / 0 FAIL**, and the falsifier still fails C1, C6 and C7 as required.
+- `f3` **3 PASS / 2 FAIL**, the same two arms as this morning and not caused by this round: unregistered
+  figures in the submission tree, and one registry hash stale since the replot. Fix the registry, never
+  the gate. `f5` and `f6` were NOT run: figure gates, no figure touched, and `f5` writes to real paths.
+
+### Left open
+
+1. The Highlights stay bulleted. If the author wants them as prose, the journal will refuse the
+   submission form, so this needs their word rather than my judgement.
+2. `f3`'s two failing arms, unchanged.
+3. Unchanged from the previous rounds: §1.4's wording on the prior line, the cover-letter placeholders,
+   the generative-AI declaration, no Gold OA on the CRKN claim.
+
+---
+
+## 2026-08-11 #4: Table 4 to the appendix, Limitations merged into Discussion, 49 % cut
+
+Author's request, three items.
+
+### 1. Table 4 moved to the appendix
+
+The `**Table 4.**` placeholder was removed from the end of Chapter 4 and inserted at the head of the
+Supplementary material, ahead of Table 7. The table keeps its number, which is the same convention
+Table 7 was moved under in the previous round. Chapter 3 and Chapter 4 still cite Table 4 in prose, so
+f4's C7 stays satisfied. **Consequence, stated rather than hidden:** the main text now runs Table 1, 2,
+6, 3, 5 and the appendix carries 4, 7, A1, A2. The main text was already out of numeric order before
+this round, because Table 6 sits in Methods. A renumbering to first-citation order is a separate,
+cross-cutting edit and was not done unasked.
+
+### 2. Limitations merged into Discussion
+
+`Chapter_07_Limitations.md` is archived as `Chapter_07_Limitations.2026-08-11_merged_into_discussion.md`
+and dropped from the assembler's ORDER. Its content is now the last four paragraphs of Chapter 6, in
+continuous prose with no sub-headings. Chapter 8 became **# 7 Conclusion** and its "§7" reference now
+reads "the limitations set out above". Three stale cross-references to "Chapter 7" were repointed to
+Table 7 (Chapter 4, Chapter 5, and two lines inside Table 7's own apparatus).
+
+### 3. The merged chapter shortened
+
+**2,656 -> 1,367 words, a 49 % cut.** Every deciding number survives: 18.91 h against the 11.90 to
+12.37 h cluster, whole-building peak 14.95 h, coincidence median 0.941, 34 to 1 and 3.9 to 1, the 85.45
+against 100 control, 17 % heating share against 35 to 45 %, the three stated floors, median 71.02,
+203.33 to 218.22 against 302.86 to 318.42, the 84.64 gap at 70.5 % of band width, 21.38 % of 16,367,
+24.97 against 29.97, 7.5028 W/m2, 0.95 and 18.75 %, the -0.98 slope, and the prior-study correction that
+moved three of four verdicts. What was cut is restatement: the limitations that only repeat a Table 7
+row now point at Table 7 instead of re-narrating it.
+
+### Verification, against the installed file
+
+- Build: 8 tables and 15 figures inlined, 0 appended, 0 wrapped captions, `captions 23, images 15`,
+  **0 unresolved BUILD NOTES**.
+- `3J_manuscript_submission.docx`: 15 media parts, 15 drawings, 23 captions, 14 tables, 6 equations
+  (3 displayed), 5 list paragraphs (the Highlights), 0 Consolas, 0 theme-font headings, 0 "Footnote",
+  0 "check source", 0 em or en dashes, 0 horizontal-line shapes.
+- **No table falls between the Discussion heading and the Supplementary heading**, so Discussion,
+  Conclusion and References carry none; nine tables sit in the Supplementary.
+- Headings: 1 Introduction, 2 Datasets, 3 Methods, 4 Experimental Design, 5 Results, 6 Discussion,
+  7 Conclusion, References, Supplementary material. No Limitations chapter.
+- **15,398 -> 14,359 words.**
+- `f4` **7 PASS / 0 FAIL**; the falsifier still fails C1, C6 and C7.
+
+### Left open
+
+1. Table numbering is not in first-citation order (pre-existing, now more visible). Renumbering is
+   offered, not done.
+2. The Highlights stay bulleted, unchanged from the previous round.
+3. `f3`'s two failing arms, unchanged and not touched by this round.

@@ -34,11 +34,11 @@ PALE_GREY = "#DCD5C8"
 # "Annotations to overlay afterward" block. Checked by f5_figure_check.py C4.
 # ---------------------------------------------------------------------------
 LABELS = [
-    "Leg 1 -- Residential (AT_HOME) -- COMPLETE, 2nd Journal",
-    "Leg 2 -- + Office (AT_WORK) -- COMPLETE, validated end-to-end 2026-07-01; "
+    "Residential (AT_HOME) -- complete, published separately",
+    "+ Office (AT_WORK) -- complete, validated end-to-end 2026-07-01; "
     "People-schedule wiring-bug lesson learned here",
-    "Leg 3 -- + Retail (AT_RETAIL, GSS) + Hotel (non-GSS, tourism statistics) -- this paper",
-    "Carried forward into Leg 3: the Step 7 base tower geometry is md5-verified "
+    "+ Retail (AT_RETAIL, GSS) + Hotel (non-GSS, tourism statistics) -- this paper",
+    "Carried forward into the four-channel stage: the Step 7 base tower geometry is md5-verified "
     "byte-identical (4 IDF files); the Step 3 residential + office tiler paths are "
     "additive by design (retail kept in a separate CSV) but byte-equality was not "
     "verified -- see Table 6",
@@ -94,7 +94,7 @@ def main():
 
     # Leg 1: narrow, pale grey
     l1_x, l1_w, l1_h = 0.7, 2.6, 3.2
-    box(ax, l1_x, y0, l1_w, l1_h, wrap_text("Leg 1", 20), facecolor=PALE_GREY, edgecolor=INK,
+    box(ax, l1_x, y0, l1_w, l1_h, wrap_text("Residential only", 20), facecolor=PALE_GREY, edgecolor=INK,
         textcolor=INK, fontsize=11)
     icon_person(ax, l1_x + l1_w / 2.0, y0 + l1_h * 0.68, s=0.55, color=INK)
 
@@ -102,7 +102,7 @@ def main():
 
     # Leg 2: medium, slate-blue, contains Leg 1's person icon plus new briefcase icon
     l2_x, l2_w, l2_h = 5.0, 6.0, 4.8
-    box(ax, l2_x, y0, l2_w, l2_h, wrap_text("Leg 2", 20), facecolor=SLATE, textcolor=WHITE, fontsize=12)
+    box(ax, l2_x, y0, l2_w, l2_h, wrap_text("Residential + Office", 20), facecolor=SLATE, textcolor=WHITE, fontsize=12)
     icon_person(ax, l2_x + l2_w * 0.32, y0 + l2_h * 0.72, s=0.55, color=WHITE)
     icon_briefcase(ax, l2_x + l2_w * 0.62, y0 + l2_h * 0.72, s=0.55, color=WHITE)
 
@@ -114,7 +114,7 @@ def main():
     outline = FancyBboxPatch((l3_x, y0), l3_w, l3_h, boxstyle="round,pad=0.0,rounding_size=0.35",
                               linewidth=3.4, edgecolor=AMBER, facecolor=WHITE, zorder=3)
     ax.add_patch(outline)
-    ax.text(l3_x + l3_w / 2.0, y0 + l3_h - 0.5, "Leg 3", ha="center", va="center",
+    ax.text(l3_x + l3_w / 2.0, y0 + l3_h - 0.5, "Residential + Office + Retail + Hotel", ha="center", va="center",
              fontsize=13, color=AMBER, weight="bold", zorder=5)
 
     # Leg 2's content, unchanged, replicated inside Leg 3 (small slate box)
@@ -134,14 +134,14 @@ def main():
 
     # Full leg labels (verbatim), placed under each container in a shared caption band
     ax.text(l1_x + l1_w / 2.0, y0 - 0.20,
-             wrap_text("Leg 1 -- Residential (AT_HOME) -- COMPLETE, 2nd Journal", 22),
+             wrap_text("Residential (AT_HOME) -- complete, published separately", 22),
              ha="center", va="top", fontsize=8.0, color=INK, linespacing=1.25)
     ax.text(l2_x + l2_w / 2.0, y0 - 0.20,
-             wrap_text("Leg 2 -- + Office (AT_WORK) -- COMPLETE, validated end-to-end 2026-07-01; "
+             wrap_text("+ Office (AT_WORK) -- complete, validated end-to-end 2026-07-01; "
                        "People-schedule wiring-bug lesson learned here", 42),
              ha="center", va="top", fontsize=8.0, color=INK, linespacing=1.25)
     ax.text(l3_x + l3_w / 2.0, y0 - 0.20,
-             wrap_text("Leg 3 -- + Retail (AT_RETAIL, GSS) + Hotel (non-GSS, tourism statistics) -- this paper", 40),
+             wrap_text("+ Retail (AT_RETAIL, GSS) + Hotel (non-GSS, tourism statistics) -- this paper", 40),
              ha="center", va="top", fontsize=8.0, color=INK, linespacing=1.25)
 
     # Chain-link "carried forward bit-identical" connector: Leg 2 into Leg 3 ONLY
@@ -151,7 +151,7 @@ def main():
     for lx in (l2_x + l2_w * 0.5, (l2_x + l2_w + l3_x) / 2.0, l3_x + l3_w * 0.35, l3_x + l3_w * 0.75):
         icon_link(ax, lx, conn_y, s=0.14)
     ax.text((l2_x + l3_x + l3_w) / 2.0, conn_y - 0.18,
-             wrap_text("Carried forward into Leg 3: the Step 7 base tower geometry is md5-verified "
+             wrap_text("Carried forward into the four-channel stage: the Step 7 base tower geometry is md5-verified "
                        "byte-identical (4 IDF files); the Step 3 residential + office tiler paths are "
                        "additive by design (retail kept in a separate CSV) but byte-equality was not "
                        "verified -- see Table 6", 100),

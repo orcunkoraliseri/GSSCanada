@@ -112,10 +112,21 @@ def run(extra_text=None, orphan_number=None):
     # C4 -- every file names a source, except two declared summary sections.
     # The exemption is NOT a way to let those two off: C6 below holds them to a
     # STRICTER rule, so narrowing C4 here cannot silence a real case.
+    #
+    # 🔴 A LITERATURE REFERENCE LIST IS A SOURCE LIST, and this arm could not see one.
+    # Every accepted pattern below was a REPOSITORY artefact (a file extension, an internal
+    # report id, a table number). Chapter_09_References.md is nothing but sources, and it
+    # was passing only because two of its entries carried a `dr_L3-` id inside a BUILD NOTE
+    # comment -- apparatus that the submission strip deletes. Removing those two unverified
+    # entries on 2026-08-11 dropped the accidental match and the arm failed, correctly in
+    # form and wrongly in substance. A DOI or a URL is added as an accepted source form.
+    # Additive: a chapter that names neither a repository artefact nor a published locator
+    # still fails, which is what this arm exists to catch.
     EXEMPT = {"chapters/Chapter_00_FrontMatter.md", "chapters/Chapter_08_Conclusion.md"}
     bad = [rel(p) for p, t in docs
            if rel(p) not in EXEMPT
-           and not re.search(r"(^|\n)#+\s*Sources|\.md|\.csv|\.json|\.py|\.png|dr_L3-|Table \d", t)]
+           and not re.search(r"(^|\n)#+\s*Sources|\.md|\.csv|\.json|\.py|\.png|dr_L3-|Table \d"
+                             r"|https?://|doi\.org/", t)]
     results.append(("C4", not bad,
                     "every scanned file names a source (front matter and conclusion exempt, see C6)", bad))
 

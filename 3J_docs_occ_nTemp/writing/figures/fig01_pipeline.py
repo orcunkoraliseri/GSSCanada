@@ -37,7 +37,7 @@ LABELS = [
     "Three-GSS-Head Transformer",
     "heads = resid / AT_WORK / AT_RETAIL; hotel NOT in model",
     "Archetype Linkage",
-    "residential Census linkage (Leg 1); office NOCxNAICS (Leg 2)",
+    "residential Census linkage (single-channel stage); office NOCxNAICS (two-channel stage)",
     "Forecast 2030 + Hotel Side-Track",
     "GSS channels via drift matrix; hotel SARIMA(1,1,1)(1,1,1,12)",
     "BEM/UBEM Integration",
@@ -46,8 +46,8 @@ LABELS = [
     "56/56 cells; 2-city sweep CAN_MTL 6A + CAN_CLG 7A",
     "Activity-Driven End-Use Loads",
     "equipment + lighting; calibrated vs NRCan SCIEU",
-    "Leg-2 inherited (Residential AT_HOME, Office AT_WORK)",
-    "Leg-3 added (Retail AT_RETAIL, Hotel non-GSS)",
+    "Inherited from the two-channel stage (Residential AT_HOME, Office AT_WORK)",
+    "Added by this study (Retail AT_RETAIL, Hotel non-GSS)",
     "Hotel side-track bypasses the Transformer entirely -- SARIMA, not the 3-head model",
     "Hotel Side-Track",
 ]
@@ -125,7 +125,7 @@ def main():
         "crosswalk + OR-rule; AT_RETAIL derivation; hotel series harmonization",
         "one tiler list entry appends AT_RETAIL; retail kept in a separate CSV (byte-equality not verified, Table 6)",
         "heads = resid / AT_WORK / AT_RETAIL; hotel NOT in model",
-        "residential Census linkage (Leg 1); office NOCxNAICS (Leg 2)",
+        "residential Census linkage (single-channel stage); office NOCxNAICS (two-channel stage)",
         "GSS channels via drift matrix; hotel SARIMA(1,1,1)(1,1,1,12)",
         "Tag-2 dispatch: apartment REPLACE; office/retail/guest-room MODULATE",
         "56/56 cells; 2-city sweep CAN_MTL 6A + CAN_CLG 7A",
@@ -191,8 +191,8 @@ def main():
              fontsize=8.2, color=AMBER)
 
     legend_swatches(ax, x0, 0.30,
-                     [(SLATE, "Leg-2 inherited (Residential AT_HOME, Office AT_WORK)"),
-                      (AMBER, "Leg-3 added (Retail AT_RETAIL, Hotel non-GSS)")],
+                     [(SLATE, "Inherited from the two-channel stage (Residential AT_HOME, Office AT_WORK)"),
+                      (AMBER, "Added by this study (Retail AT_RETAIL, Hotel non-GSS)")],
                      sw=0.26, sh=0.20, gap_x=9.6, fontsize=8.4)
 
     save_both(fig, OUT)

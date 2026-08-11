@@ -1,23 +1,22 @@
 # Table 6 - What Leg-3 added (the additive ledger)
 
-This table carries the paper's additive claim, and it carries the limits of that claim in the same
-place. A **Bit-identical? = Yes** cell is entered only where file-level evidence was located, meaning
-a shared file path or a hash computed directly on the files themselves, and never from a design
-document's own prose. Where no such evidence exists, the verdict cell reads `⚠ check source` and the
-basis cell says plainly what was not compared. An unexamined step is reported as unexamined, which is
-a result about the strength of the claim rather than a gap to be filled with an assumption.
+This table carries the paper's additive claim and the limits of that claim in the same place. A Yes is
+entered only where file-level evidence was located, meaning a hash computed on the files themselves
+rather than a design document's prose. Where no such evidence exists the verdict is left unreported and
+the basis cell says what was not compared: an unexamined step is reported as unexamined rather than
+filled in with an assumption.
 
 | Pipeline step | Two-channel stage artefact | Four-channel change | Bit-identical? | Basis for the verdict |
 |---|---|---|---|---|
-| Step 1 - Data collection | Survey column selection for the residential and office channels | A new, non-survey hotel ingest of the provincial monthly occupancy series, alongside the survey reader; no new survey variable is added for retail, which derives from location and activity columns the survey already carries | ⚠ check source | Nothing was compared. The two stages' collection scripts differ in name and the four-channel side adds a reader the two-channel side never had, but no byte-level or column-level comparison of the survey-column output was run, so no verdict is entered |
-| Step 2 - Data harmonization | Crosswalk and OR-rule for the residential and office channels | A new hotel harmonization step, plus the retail OR-rule frozen 2026-07-02 (Table 2, footnote 1) | ⚠ check source | Nothing was compared. As at Step 1, the scripts differ in name and no byte-level or column-level comparison of their output was run |
-| Step 3 - Merge and tiling | List-driven tiler producing residential and office 30-minute output | One additional list entry for retail, whose output is written to a **separate file** specifically so it cannot overwrite or reshape the residential and office columns | ⚠ check source | The design intends the two reused paths to be untouched, and the separate-file arrangement is what would make that true. That intent is documented, but it was never tested against the tiler's own output, and a design statement about a program is not evidence about what the program wrote |
-| Step 4 - Three-head Transformer | Two-head Transformer, residential and office presence | A third head for retail; the backbone is kept with targeted upgrades (warmup, gradient-conflict correction, logit-adjusted loss, raking) rather than frozen and copied | No | The gate that governs the two reused heads is a **tolerance**, bounding their drift at 0.002 bits of Jensen-Shannon divergence against the two-channel stage's own validation baseline. A bounded-drift guarantee is not bit-identity, and the two reused heads are expected to move within it, so the verdict is No on the evidence that exists. The measured drift value itself was not located and is left unreported rather than estimated |
-| Step 5 - Archetype linkage | Residential dwelling-stock linkage and office workforce linkage | Retail is driven by a single retail archetype applied as a population-level fraction, hotel by a province-level multiplier; neither receives a respondent-level linkage | ⚠ check source | The two reused linkages are documented as carried over unchanged, but no file-level or column-level comparison of their output across the two stages was run, so no verdict is entered |
-| Step 6 - Forecast to 2030 and the hotel side-track | Survey-cycle raking chain with a demographic drift matrix, plus the office work-from-home bands | The same raking chain is reused for the survey-derived channels; a retail scenario lever is added, and the hotel SARIMA side-track is added, bypassing the Transformer entirely | No | The code is reused but the **level has moved**, so this is a verdict on measured output rather than on an untested step. Post-calibration 2030 work presence sits 10.51 percentage points below observed 2022 (Cohen's d -0.649), an open, recorded bias that is four to five times the roughly 2.4 percentage-point work-from-home signal the campaign exists to detect. The bias is close to common-mode across the three work-from-home bands, so contrasts between bands are less affected than the level itself, but a reading of "the reused channels' Step-6 output is unchanged" is directly contradicted |
-| Step 7 - Building-model integration | Two-channel tag-based injection into the tower prototypes | Four-channel exact-match dispatch, with a missing channel falling back to the untouched code baseline | **Yes, for the base prototype geometry only** | The strongest evidence in this table, and also the narrowest. Both campaigns read the **same four physical prototype model files** from one directory, with no copy taken, and all four were confirmed byte-identical by hash at review. That establishes the **geometry** and nothing wider: the injector code is not a shared frozen asset, since three copies of the related residential injector were hashed and do not match one another. The tower the two stages simulate is the same building; the code that writes schedules into it is not the same code |
-| Step 8 - Building simulation | 72-run residential re-simulation plus the office campaign | The 56-cell campaign, two prototypes by two cities by fourteen scenarios, with all four channels injected per cell | ⚠ check source | Channel isolation was demonstrated **inside this study's own campaign**, where any channel not varied between a pair of cells moves by exactly zero, confirmed by simulation rather than inferred. That is a within-study result about interference between channels. The two stages' simulation outputs were never compared with one another, so no cross-stage verdict is entered |
-| Step 9 - Activity-driven end-use loads | Two-channel end-use validation against national survey and prototype references | Four-channel validation over thirty gates, three of which are left failing on purpose (Table 5) | No | The two stages are scored on different gate sets, and, more seriously, may not share a **basis** at all. Whether the two-channel stage's office figure counts electricity only while this study's counts all fuels is an open question in that stage's own record, and the shared tower burns natural gas in every run. Until that is settled the two figures cannot be differenced, and a claim of reproduction cannot be entered |
+| Step 1 - Data collection | Survey column selection for residential and office | A non-survey hotel ingest of the provincial monthly series is added; retail needs no new survey variable | ⚠ check source | Nothing was compared across the two stages |
+| Step 2 - Data harmonization | Crosswalk and OR-rule for residential and office | A hotel harmonization step is added, plus the retail derivation rule of §3.1 | ⚠ check source | Nothing was compared, as at Step 1 |
+| Step 3 - Merge and tiling | List-driven tiler producing 30-minute residential and office output | One added list entry for retail, written to a separate file so it cannot reshape the reused columns | ⚠ check source | Design intent only. The separate-file arrangement was never tested against the tiler's own output |
+| Step 4 - Three-head Transformer | Two-head Transformer, residential and office presence | A third head for retail; the backbone is kept with targeted upgrades rather than frozen and copied | No | The gate is a tolerance of 0.002 bits, which is bounded drift rather than bit-identity; the measured drift is not reported |
+| Step 5 - Archetype linkage | Residential dwelling-stock and office workforce linkage | Retail is driven by one archetype as a population-level fraction, hotel by a province-level multiplier | ⚠ check source | Documented as unchanged, but no comparison was run |
+| Step 6 - Forecast to 2030 and the hotel side-track | Survey-cycle raking chain, demographic drift matrix, office work-from-home bands | The raking chain is reused; a retail lever and the hotel SARIMA side-track are added | No | The level has moved: 2030 work presence sits 10.51 percentage points below observed 2022, four to five times the signal the campaign exists to detect |
+| Step 7 - Building-model integration | Two-channel tag-based injection into the tower prototypes | Four-channel exact-match dispatch, a missing channel falling back to the code baseline | Yes, base prototype geometry only | The same four prototype files, confirmed byte-identical. Geometry only: the injector exists in three non-matching copies, so the building is shared and the code writing into it is not |
+| Step 8 - Building simulation | 72-run residential re-simulation plus the office campaign | The 56-cell campaign, all four channels injected per cell | ⚠ check source | Channel isolation was demonstrated inside this campaign, but the two stages' outputs were never compared |
+| Step 9 - Activity-driven end-use loads | Two-channel end-use validation against survey and prototype references | Four-channel validation over thirty gates, three left failing on purpose (Table 5) | No | Different gate sets, and possibly a different basis: whether the earlier office figure is electricity only is open, so the two cannot be differenced |
 
 ---
 
@@ -62,61 +61,61 @@ No em dashes or en dashes.
 
 The pipeline overview's KEY DESIGN DECISIONS table asserts *"Additive on Leg 2 ... residential +
 office injection unchanged -> no prior figure invalidated"*
-(`3rdJ_00_4split_Occupancy_Pipeline_Overview.md`, line 229). **Scored on file-level evidence, that
-sentence is not currently supported.** Of the nine pipeline steps in the table above:
+(`3rdJ_00_4split_Occupancy_Pipeline_Overview.md`, line 229). Scored on file-level evidence, that
+sentence is not currently supported. Of the nine pipeline steps in the table above:
 
 | Bit-identical? | steps | count |
 |---|---|---|
-| **Yes** (evidence located) | Step 7, and only for the base prototype geometry | **1** |
-| **No** (evidence located, and it shows a change) | Steps 4, 6, 9 | **3** |
-| `⚠ check source` (no file-level evidence located in this task) | Steps 1, 2, 3, 5, 8 | **5** |
+| Yes (evidence located) | Step 7, and only for the base prototype geometry | 1 |
+| No (evidence located, and it shows a change) | Steps 4, 6, 9 | 3 |
+| `⚠ check source` (no file-level evidence located in this task) | Steps 1, 2, 3, 5, 8 | 5 |
 
-**Two of the three explicit "No" rows matter for what the paper may claim.** Step 4 is a
+Two of the three explicit "No" rows matter for what the paper may claim. Step 4 is a
 *tolerance* gate (`ΔJS <= 0.002 bits`), which is a bounded-drift guarantee and not bit-identity.
-Step 6 carries a **measured -10.51 pp** post-calibration 2030 work-presence bias against OBS2022
+Step 6 carries a measured -10.51 pp post-calibration 2030 work-presence bias against OBS2022
 (Cohen's d -0.649), recorded as OPEN in `3rdJ_08_implementation_improvements.md` "Defaut 4" - four to
 five times the ~2.4 pp WFH signal the campaign exists to detect.
 
-**Manager decision.** The additive claim is **rewritten, not dropped, and not upgraded.** The
+Manager decision. The additive claim is rewritten, not dropped, and not upgraded. The
 manuscript may claim exactly this, and no more:
 
-> Leg-3 is additive **by construction** - a missing channel falls back to the NECB baseline, retail is
+> Leg-3 is additive by construction - a missing channel falls back to the NECB baseline, retail is
 > written to a separate CSV rather than into the residential/office columns, and Leg-3's campaign reads
-> **the same four prototype IDF files Leg-2 used, byte for byte** (md5s in the Step 7 row, recomputed
-> independently at review on disk, all four confirmed). What has **not** been demonstrated is
-> **bit-identity of the residential and office outputs across the two legs**; five of nine steps carry
+> the same four prototype IDF files Leg-2 used, byte for byte (md5s in the Step 7 row, recomputed
+> independently at review on disk, all four confirmed). What has not been demonstrated is
+> bit-identity of the residential and office outputs across the two legs; five of nine steps carry
 > no cross-leg byte comparison at all, and the residential injector `integration.py` exists in three
 > non-matching copies (`9f886fb9427e6bbc4adb7599cbcf3600` live repo, `537183b443846adeb20a0fc191c32159`
 > 2J snapshot, `6a92268be1f8dc3301df3bec80d6dd2e` Leg-2 snapshot - all three recomputed at review).
 
-**Recorded reason.** *Additive by construction* is a design property this project can evidence.
+Recorded reason. *Additive by construction* is a design property this project can evidence.
 *No prior figure invalidated* is an empirical claim about two legs' outputs, and running the
 comparison that would settle it needs a simulation, which this writing phase forbids. Stating the
 weaker claim costs the paper nothing it can defend and removes a sentence a reviewer can falsify with
-one diff. **The band and gate rule (R1) is untouched here: nothing was widened, and no verdict moved.**
+one diff. The band and gate rule (R1) is untouched here: nothing was widened, and no verdict moved.
 
-**Written reopen trigger.** If a future authorised round runs a cross-leg byte or column comparison
+Written reopen trigger. If a future authorised round runs a cross-leg byte or column comparison
 of the Leg-2 and Leg-3 residential/office Step-3, Step-5 and Step-8 outputs, replace the five
-`⚠ check source` cells with its result and re-score this decision - **in either direction**. A
+`⚠ check source` cells with its result and re-score this decision - in either direction. A
 confirming result upgrades the claim; a contradicting one is a finding in its own right.
 
 ### 2. 🔴 The Leg-2 office EUI of 172.7 in the Step 9 row is a PUBLISHED value that V4-B2 superseded
 
-The Step 9 row cites Leg-2's published office EUI **172.7 kWh/m2/yr** from
+The Step 9 row cites Leg-2's published office EUI 172.7 kWh/m2/yr from
 `Leg2_2-split/Step9_docs/3rdJ_09_activityDrivenLoads_2split.md:140`. That citation is accurate as a
-statement about what was *published*, and it stays. But the value itself was **recomputed on
-2026-08-06 by `V4-B2` and is superseded**:
+statement about what was *published*, and it stays. But the value itself was recomputed on
+2026-08-06 by `V4-B2` and is superseded:
 
-- corrected office median **106.56 kWh/m2/yr** (`improvements/v4/V4-B2_corrected.md`, lines 47 and 111;
+- corrected office median 106.56 kWh/m2/yr (`improvements/v4/V4-B2_corrected.md`, lines 47 and 111;
   `improvements/v4/v4_b2_office_corrected.json`, `"corrected_median": 106.56` against
-  `"published": 172.7`), the four corrected values being **106.56 / 106.66 / 106.71 / 106.56**.
-- The **verdict does not change**: [100, 200] band, **IN before and IN after**. No gate moved.
+  `"published": 172.7`), the four corrected values being 106.56 / 106.66 / 106.71 / 106.56.
+- The verdict does not change: [100, 200] band, IN before and IN after. No gate moved.
 - V4-B2 explicitly forbids re-deriving the corrected values by scaling the published ones
   (`V4-B2_corrected.md`, lines 228-229).
 
-**Rule for the manuscript.** Any 3J sentence that quotes a Leg-2 or 2J EUI **magnitude** uses the
+Rule for the manuscript. Any 3J sentence that quotes a Leg-2 or 2J EUI magnitude uses the
 corrected value; the published figure appears only where the sentence is *about* the publication
 history. This is the same hazard brief §1.2 raises for the 2J residential Table 5, applied to the
 office channel. It also reinforces the Step 9 row's own unresolved caveat: whether Leg-2's office
-figure is electricity-only while Leg-3's is all-fuel is **still open** ("Defaut 5"), so the two are
-not yet known to share a basis and **must not be differenced in the prose**.
+figure is electricity-only while Leg-3's is all-fuel is still open ("Defaut 5"), so the two are
+not yet known to share a basis and must not be differenced in the prose.

@@ -896,7 +896,15 @@ def fig_diurnal(diur, outdir, cell=None):
     cell = cell or sorted(diur["cell_tag"].unique())[0]
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.2), sharey=True)
     for ax, season in zip(axes, ("winter", "summer")):
-        d = diur[(diur["cell_tag"] == cell) & (diur["season"] == season) & (diur["daytype"] == "WD")]
+        # 🔴 `metric` MUST be filtered here. agg_diurnal.csv carries two metrics per
+        # cell/season/daytype/channel -- `energy_W` and `people` -- so an unfiltered slice returns
+        # 48 rows, not 24, and the `len(y) != 24` guard below then skips EVERY channel silently.
+        # The figure saved without error and shipped into the manuscript completely empty: axes,
+        # grid and an empty legend box, no data. `build_loadshape` already filters this way
+        # (see :331); only this figure did not. Fixing it changes no reported number, because every
+        # table and gate reads `build_loadshape`, never this function.
+        d = diur[(diur["cell_tag"] == cell) & (diur["season"] == season) & (diur["daytype"] == "WD")
+                 & (diur.get("metric", "energy_W") == "energy_W")]
         bottom = np.zeros(24)
         for c in ALL_CH:
             y = d[d["channel"] == c].sort_values("hour")["W"].to_numpy() / 1000.0

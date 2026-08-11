@@ -1,6 +1,6 @@
 # RESUME - THE 3J director prompt. Start every session here.
 
-**Last updated: 2026-08-09, generated-images round.**
+**Last updated: 2026-08-11, "Table 4 to the appendix, Limitations merged into Discussion" round.**
 
 > 🔴 **THIS FILE IS THE FIXED ADDRESS OF THE 3J HANDOFF. There is no second one.**
 > Instruction from the author, 2026-08-09: *"je veux seulement cet prompt RESUME.md, comme un prompt
@@ -62,12 +62,12 @@ Reply in English. The author writes in French. Keep replies short unless detail 
 - Venue: **Building and Environment (Elsevier)**, reconfirmed 2026-08-09, which made three
   commitments binding.
 - **This is a WRITING phase. Zero simulation.** No `sbatch`, no cells, no re-runs.
-- **Three open BUILD NOTES block submission.** The build prints them on every run.
+- **Zero open BUILD NOTES.** The build prints the count on every run; it reads `none` as of 2026-08-11.
 - 2J was submitted to Building Simulation on 2026-08-07 and is frozen pending its decision letter.
 
 ---
 
-## Where the paper stands, 2026-08-09
+## Where the paper stands, 2026-08-11
 
 **Target venue: Building and Environment (Elsevier). RECONFIRMED by the authors 2026-08-09.** The
 sheet `writing/submission/02_journal_options.md` is **green again**. Reopen trigger (b) fired on
@@ -90,13 +90,57 @@ front of the authors with the bar restated and the venue was chosen again, recor
 
 | | |
 |---|---|
-| `readySubmission.md` | **1,326 lines**, 22 captions |
-| `3J_manuscript_submission.docx` | **4,852,608 bytes** · 22 captions · **15 images** · 14 tables · **single** spaced |
-| `f3` asset provenance | 4 PASS / 1 FAIL - **correct, do not modify `f3`** |
+| `readySubmission.md` | **1,086 lines**, 23 caption labels + the graphical abstract |
+| `3J_manuscript_submission.docx` | **5,744,124 bytes** · 23 captions · **15 images** · 14 tables · **14,359 words** · **single** spaced |
+| equations | **6 native Word (OMML)**, 3 of them displayed. Formulas are no longer code blocks |
+| lists in the document | **5**, and all five are the Highlights. Everything else is prose |
+| `f3` asset provenance | **3 PASS / 2 FAIL** - the figure registry is stale since the 2026-08-11 replot, see below. **Do not modify `f3` itself** |
 | `f4` prose rules | 7 PASS / 0 FAIL (31 files, 22 exhibits) |
-| `f5` figures | **5 PASS / 2 FAIL** - correct since the image swap, see below |
-| `f6` replot equivalence | 5 PASS / 0 FAIL |
-| open BUILD NOTES | **3** - Table A2 · Kurin/Menon · the generated-image defects |
+| `f5` figures | not run this round - it is NOT read-only, see below |
+| `f6` replot equivalence | 5 PASS / 0 FAIL as of 2026-08-09 |
+| open BUILD NOTES | **0** |
+
+🔴 **`f3`'s two FAILs are asset bookkeeping, not a manuscript defect, and they are real.** C2 lists
+figures present in the submission tree that are not in the registry, and C4 reports
+`figures_hires/fig_diurnal_4ch.png` disagreeing with its registered hash. Both date from the
+2026-08-11 figure replot, which did not update the registry. Fix the REGISTRY, never the gate.
+
+**House rules for exhibits, set by the author 2026-08-11 and now enforced by the build:**
+a figure caption goes **below** the figure, a table caption goes **above** the table, every caption is
+**about five words** on **one line**, and **bold is not used inside a paragraph** - the only bold left
+in the document is the 24 `**Figure N.**` / `**Table N.**` labels, which the assembler, the loss check
+and `f4`'s C7 all key on. The build prints `captions that wrapped onto a second line`; it must stay 0,
+because a wrapped caption used to be split in half by its own figure.
+
+**House rules for the PROSE, set by the author 2026-08-11 in the same day's second message. It is a
+paper, not a report, and every one of these is countable in the built file:**
+
+- **One serif font.** Times New Roman everywhere. `ref_submit_single.docx` pins the four heading styles
+  and `VerbatimChar`; the sources carry **no inline code spans at all**. An identifier in backticks
+  reads as code however it is typeset, so both halves are needed. Installed file: 0 explicit non-Times
+  runs, 0 Consolas.
+- **Formulas are Word equations.** Written as TeX in the sources, converted by pandoc to native OMML.
+  Count `<m:oMath>` in the installed file; a formula that shipped as text or as a picture counts zero.
+- **No build dates, no repository paths, no "Footnotes" sections** in reader-facing text. Currently
+  0 / 0 / 0.
+- **No bullets and no numbered lists**, except the five Highlights, which Elsevier requires as a list.
+- **No exhibit inside Discussion or Conclusion.** Table 4 and Table 7 live in the supplementary
+  material and are cited from the body.
+- **There is no Limitations chapter.** It was merged into Chapter 6 on 2026-08-11 and the chapter was
+  cut by 49 %, 2,656 to 1,367 words. The Conclusion is now Chapter 7. Continuous prose, no
+  subsections, no L-numbers.
+- **Table numbering is not in first-citation order** (main text 1, 2, 6, 3, 5; appendix 4, 7, A1, A2).
+  Pre-existing, flagged to the author, renumbering not done unasked.
+- **The appendix carries tables, not essays.** No explanatory blocks around an SI table.
+
+🔴 **Before cutting any block, find the surviving home of every number in it.** The disclosures that
+were deleted from the SI model card this round are all stated in Chapter 3 prose; that was checked
+disclosure by disclosure, not assumed. A cut that loses a measurement is a defect, not a shortening.
+
+⚠ **The `f5` paragraph below describes the state as of 2026-08-09, when the shipped art was
+author-generated. The 2026-08-11 replot put the script-drawn figures back, which may have changed both
+arms; `f5` has not been run since, so its current verdict is UNKNOWN rather than 5 PASS / 2 FAIL.
+Snapshot the figure tree's md5s before running it - see the read-only warning underneath.**
 
 🔴 **`f5`'s two FAILs are the correct answer and must not be "fixed".** C1 fails because the vector
 PDFs for the swapped figures were deliberately removed rather than left disagreeing with the new
@@ -121,7 +165,7 @@ they differ only by `strip_for_submission()`, which prints a manifest of every r
 ```
 writing/submission/
   3J_manuscript_submission.md     <- readySubmission.md, figure paths rebased ../figures/ -> figures/
-  3J_manuscript_submission.docx   <- 4.85 MB, 22 captions, 15 images, 14 tables, SINGLE spaced
+  3J_manuscript_submission.docx   <- 5.76 MB, 24 captions, 15 images, 14 tables, SINGLE spaced
   figures/  figures/SI/           <- the 15 shipped PNG (+ vector PDF for figures 7-11 only)
   figures/Prompts_Images/         <- 15 image-generation prompts + README
   figures/archive/                <- superseded matplotlib art · jpg duplicates · the 3 refused figures
@@ -153,7 +197,8 @@ the files on disk. **No blinded build is needed**: review is single-anonymized (
 **The build tells you whether the paper is ready:**
 
 ```
-!! 3 open. readySubmission.md is CLEAN but NOT READY.
+UNRESOLVED BUILD NOTES -- each one blocks submission:
+  none. Nothing in the manuscript is waiting on an external answer.
 ```
 
 An answered note is rewritten in place as `BUILD NOTE RESOLVED <date> by <what>`. It keeps the words
@@ -446,6 +491,13 @@ Read `deepResearch_Resources/VETTING_RV09_RV10_2026-08-08.md` before using eithe
   check: if someone swapped the output file, would this notice?
 - 🔴 **A pattern that does not compile as intended does not error, it matches something else.** A dash
   check written as `grep -c [—–]'` reported **281 matches on a file containing zero**, and exited 0.
+- 🔴 **Two signals removed in one edit are not two decisions.** `CONTENT_RESUMES` was narrowed on
+  2026-08-08 because a bare table row let an apparatus section leak; `![` was dropped in the same edit,
+  though a figure never appears inside an apparatus block. On 2026-08-11 that cost a figure: the
+  section drop ran past Figure S3's image and stopped at its caption, and the submission copy shipped
+  a caption with nothing above it. **The loss check counts CAPTIONS, so it was structurally blind** -
+  the caption is exactly what survived. The assembler now counts IMAGES too, and the build prints
+  `captions N, images M`. When you narrow a pattern, narrow one thing.
 - 🔴 **A check that counts what it FINDS cannot see what was destroyed before it looked.** `f4`'s C7
   verifies every caption is cited and passed 22/22 while Table A2 shipped with no caption at all. When
   a check enumerates from the artefact, ask what the artefact would look like if an item had been

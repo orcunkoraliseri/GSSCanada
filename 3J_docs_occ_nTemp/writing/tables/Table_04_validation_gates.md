@@ -1,74 +1,70 @@
 # Table 4 - Validation gate set
 
-Gates applied across Steps 4-9 of the Leg-3 (4-split) pipeline. The **Provenance** column classifies
+Gates applied across Steps 4-9 of the four-channel pipeline reported here. The Provenance column classifies
 every threshold as exactly one of three kinds. This distinction is load-bearing for the paper's
-honesty: a **project-chosen** threshold is not literature, and must never be cited as if it were.
+honesty: a project-chosen threshold is not literature, and must never be cited as if it were.
 
 ## (a) Tiered gates - Tier 1 distributional / Tier 2 structural / Tier 3 ASHRAE G14
 
-Applied per day-type, to AT_RETAIL exactly as to AT_WORK in Leg-2.
+Applied per day-type, to AT_RETAIL exactly as to AT_WORK in the two-channel stage.
 
 | Tier | Metric | Threshold | Provenance |
 |---|---|---|---|
-| 1 Distributional | KL divergence (arrival / departure) | < 0.05 | project-chosen (set before tuning) |
-| 1 Distributional | 1-Wasserstein / EMD on hourly presence CDF | < 0.05 | project-chosen (set before tuning) |
-| 1 Distributional | Presence-rate RMS error | ≤ 5 pp per day-type | project-chosen (set before tuning) |
-| 2 Structural | Transition-matrix Frobenius / MAE | < 0.05 | project-chosen (set before tuning) |
-| 2 Structural | Dwell-time KS test | p > 0.05 (fail to reject H₀) | project-chosen (set before tuning) |
-| 2 Structural | Autocorrelation MAE, lags 1-24 h | < 0.05 | project-chosen (set before tuning) |
-| 3 Downstream | NMBE | monthly ±5 %, hourly ±10 % | **ASHRAE Guideline 14** |
-| 3 Downstream | CV(RMSE) | monthly 15 %, hourly 30 % | **ASHRAE Guideline 14** |
-| 3 Downstream | Peak demand magnitude + timing | magnitude ±15 %; timing ≤ 1 h | project-chosen (set before tuning) |
+| 1 Distributional | KL divergence (arrival / departure) | < 0.05 | project-chosen |
+| 1 Distributional | 1-Wasserstein / EMD on hourly presence CDF | < 0.05 | project-chosen |
+| 1 Distributional | Presence-rate RMS error | ≤ 5 pp per day-type | project-chosen |
+| 2 Structural | Transition-matrix Frobenius / MAE | < 0.05 | project-chosen |
+| 2 Structural | Dwell-time KS test | p > 0.05 (fail to reject H₀) | project-chosen |
+| 2 Structural | Autocorrelation MAE, lags 1-24 h | < 0.05 | project-chosen |
+| 3 Downstream | NMBE | monthly ±5 %, hourly ±10 % | ASHRAE Guideline 14 |
+| 3 Downstream | CV(RMSE) | monthly 15 %, hourly 30 % | ASHRAE Guideline 14 |
+| 3 Downstream | Peak demand magnitude + timing | magnitude ±15 %; timing ≤ 1 h | project-chosen |
 
 ## (b) Channel-specific gates
 
 | Layer | Check | Target | Provenance |
 |---|---|---|---|
-| LOCATION mapping | AT_RETAIL rate, weekday 12:00-14:00, per cycle | 0.06-0.10 (confirmed by a retail presence-rate review, central ≈ 0.079) | project-chosen (set before tuning) |
-| LOCATION mapping | Saturday peak rate, 13:00-16:00 | 0.09-0.12 | project-chosen (set before tuning) |
-| LOCATION mapping | Sunday peak rate, per city | Calgary 0.06-0.10 / Montreal 0.04-0.07 | project-chosen (set before tuning) |
-| LOCATION mapping | Night slots 00:00-05:00, all day-types | 0.000-0.003 | project-chosen (set before tuning) |
-| OR-rule leak | `occACT==4 & occPRE==1` (online-shopping) share per cycle, excluded from AT_RETAIL | rule FROZEN 2026-07-02; cross-tab still reported as verification | project-chosen (set before tuning) |
-| Transformer (JS) | JS(AT_WORK), JS(AT_RETAIL) per stratum | < 0.02 each (JS alone is toothless for AT_RETAIL; paired with PR-AUC / F1 below) | project-chosen (set before tuning) |
-| Transformer (Resolution) | PR-AUC and F1 on positive slots, AT_RETAIL | PR-AUC ≥ 0.15, F1 ≥ 0.25 (catches all-zeros failure) | **heuristic** |
-| Transformer (Dynamics) | Midday (11-14 h) rate error + transitions/day, AT_RETAIL | Midday error ≤ 3.0 pp, transitions ≥ 0.05/day | project-chosen (set before tuning) |
-| Transformer (Regression) | Old-head (Head 1, Head 2) JS drift | ΔJS ≤ 0.002 bits vs Leg-2 validation baseline | project-chosen (set before tuning) |
-| Transformer (Exclusivity) | Impossible-State Rate: slots with > 1 of {AT_HOME, AT_WORK, AT_RETAIL} active | ISR ≤ 0.5 % raw; = 0 % after decode-time projection | project-chosen (set before tuning) |
-| Hotel backcast | QC + AB monthly 2015-2019 vs reconstruction | MAE < 0.05 | project-chosen (set before tuning) |
-| Hotel COVID dip | 2020-04 reconstruction | recovered without overshoot | project-chosen (set before tuning) |
-| BEM end-to-end | Default vs 2022, Montreal SuperTall | EUI delta positive; Office + Hotel dominant | project-chosen (set before tuning) |
-| Floor-area sanity | Per-channel EUI share vs parsed occupiable share | ± 2 pp | project-chosen (set before tuning) |
+| LOCATION mapping | AT_RETAIL rate, weekday 12:00-14:00, per cycle | 0.06-0.10 (central ≈ 0.079) | project-chosen |
+| LOCATION mapping | Saturday peak rate, 13:00-16:00 | 0.09-0.12 | project-chosen |
+| LOCATION mapping | Sunday peak rate, per city | Calgary 0.06-0.10 / Montreal 0.04-0.07 | project-chosen |
+| LOCATION mapping | Night slots 00:00-05:00, all day-types | 0.000-0.003 | project-chosen |
+| OR-rule leak | Online shopping, excluded from AT_RETAIL | rule fixed before training; cross-tab still reported | project-chosen |
+| Transformer (JS) | JS(AT_WORK), JS(AT_RETAIL) per stratum | < 0.02 each, paired with PR-AUC / F1 below | project-chosen |
+| Transformer (Resolution) | PR-AUC and F1 on positive slots, AT_RETAIL | PR-AUC ≥ 0.15; F1 ≥ 0.25 | heuristic |
+| Transformer (Dynamics) | Midday (11-14 h) rate error and transitions/day | error ≤ 3.0 pp; transitions ≥ 0.05/day | project-chosen |
+| Transformer (Regression) | Head 1 and Head 2 JS drift | $\Delta\mathrm{JS} \leq 0.002$ bits vs the two-channel baseline | project-chosen |
+| Transformer (Exclusivity) | Impossible-State Rate (ISR), slots with more than one channel active | ≤ 0.5 % raw; 0 % after projection | project-chosen |
+| Hotel backcast | QC and AB monthly 2015-2019 vs reconstruction | MAE < 0.05 | project-chosen |
+| Hotel COVID dip | 2020-04 reconstruction | recovered without overshoot | project-chosen |
+| BEM end-to-end | Default vs 2022, Montreal SuperTall | EUI delta positive; office and hotel dominant | project-chosen |
+| Floor-area sanity | Per-channel EUI share vs parsed occupiable share | ± 2 pp | project-chosen |
 
-## (c) Wiring + differentiation gates (the Leg-2 lesson gates)
+## (c) Wiring and differentiation gates
 
-Made mandatory because the Leg-2 People-field wiring bug (`Number_of_People_Schedule_Name`, not
-`Schedule_Name`) passed every input-side check and was caught only output-side.
+Made mandatory because the two-channel stage's occupancy-field wiring defect passed every input-side
+check and was caught only on the output side (§3.5).
 
 | Layer | Check | Target | Provenance |
 |---|---|---|---|
-| Wiring | Post-injection field-reference assertion | 100 % of modulated Spaces pass | project-chosen (set before tuning) |
-| Simulation | Scenario-differentiation probe | Outputs differ per channel across ≥ 2 scenarios (byte-identical results = automatic FAIL) | project-chosen (set before tuning) |
+| Wiring | Post-injection field-reference assertion | 100 % of modulated Spaces pass | project-chosen |
+| Simulation | Scenario-differentiation probe | Outputs differ across ≥ 2 scenarios; byte-identical = FAIL | project-chosen |
 
 ---
 
 ## Provenance key (do not cite a project-chosen threshold to the literature)
 
-- **ASHRAE Guideline 14** - NMBE (±5 % monthly / ±10 % hourly) and CV(RMSE) (15 % monthly / 30 %
-  hourly) only. Cite the standard.
-- **project-chosen (set before tuning)** - every `< 0.05` gate (KL, EMD, transition-matrix
-  Frobenius/MAE, autocorrelation MAE), the presence-rate RMS ≤ 5 pp, the dwell-time KS p > 0.05, the
-  peak ±15 % / ≤ 1 h gate, the 0.06-0.10 retail rate family (weekday/Saturday/Sunday/night), the OR-rule
-  freeze, the JS < 0.02 pairing, the midday-dynamics and JS-drift gates, the ISR ≤ 0.5 % bar, the
-  hotel MAE < 0.05 and COVID-recovery checks, the decode thresholds (0.50 / 0.40 / 0.15), the wiring
-  and scenario-differentiation gates, and the ± 2 pp EUI-share gate. All were set before tuning and
-  are project acceptance bars, not literature values.
-- **heuristic** - PR-AUC ≥ 0.15 and F1 ≥ 0.25, adopted to catch an all-zeros failure mode, flagged by
-  this project's own architecture and training reviews as heuristic rather than literature-derived.
-
-⚠ check source - the decode-time thresholds (0.50 / 0.40 / 0.15) named in the pipeline overview's
-provenance blockquote are not broken out as individual gate rows in the VALIDATION GATES / VALIDATION
-PLAN tables of either source document; they are recorded here only inside the provenance key, per the
-source text itself.
+Only two thresholds in this set are literature values, and only they may be cited as such: the NMBE
+limits of 5 % monthly and 10 % hourly, and the CV(RMSE) limits of 15 % monthly and 30 % hourly, both
+from ASHRAE Guideline 14. Two more are heuristic, the PR-AUC bar of 0.15 and the F1 bar of 0.25, adopted
+to catch an all-zeros failure mode and flagged as heuristic rather than literature-derived by this
+project's own architecture and training reviews. Every other threshold above is project-chosen and was
+set before any tuning: the family of 0.05 tolerances on divergence, transition-matrix and
+autocorrelation error, the presence-rate limit of 5 percentage points, the dwell-time test level, the
+peak magnitude and timing gate, the retail rate family, the OR-rule freeze, the Jensen-Shannon pairing
+and drift gates, the midday-dynamics gate, the impossible-state bar, the hotel backcast and
+COVID-recovery checks, the decode thresholds of 0.50, 0.40 and 0.15, the wiring and differentiation
+gates, and the EUI-share gate of 2 percentage points. These are project acceptance bars, not literature
+values.
 
 ---
 

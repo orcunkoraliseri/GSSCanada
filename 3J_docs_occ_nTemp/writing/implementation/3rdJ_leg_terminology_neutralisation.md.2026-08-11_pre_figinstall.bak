@@ -1,0 +1,324 @@
+# Leg terminology neutralisation — making the manuscript readable without the project's internal names
+
+Opened 2026-08-11 on the author's instruction: *"je voudrais transformer la terminologie comme ça
+('the two-channel construction stage', 'the present pipeline')."*
+
+---
+
+## Aim
+
+`Leg-1`, `Leg-2` and `Leg-3` are **this project's internal names for its own construction stages**.
+They are not names a reader of the submitted paper has ever seen, they are not defined anywhere in the
+manuscript except by one aside in §1.4, and they invite exactly the misreading the author flagged on
+2026-08-11: that `Leg-2` is a *separate submitted paper* whose acceptance this manuscript depends on.
+It is not. It is a construction stage **inside this paper**, described in this paper's own Methods
+chapter.
+
+The manuscript must therefore describe every stage by **what it is**, not by **what we call it in the
+repository**. The paper stands alone.
+
+This is an editorial change. **No number moves, no verdict moves, no claim is added or withdrawn.**
+
+---
+
+## The one rule that governs the whole edit
+
+> **Rename the prose. Never rename a path.**
+
+`Leg-` appears in the sources in two completely different roles, and they must not be treated alike:
+
+| Role | Example | Action |
+|---|---|---|
+| **Prose** — the paper's own voice naming a stage | "Residential and Office are the Leg-2 channels, reused" | **Rename.** |
+| **Identifier** — a directory, filename or code path that exists on disk | `` `Leg2_2-split/Step9_docs/...` ``, `` `3rdJ_04B_model_4split.py` `` | **Never touch.** |
+
+Renaming an identifier would break reproducibility: those strings are literal paths a reader (or a
+reviewer, or the authors in two years) uses to find the artefact. `Table A1`'s whole `Source in the
+project repository` column is built from them. A token map that "cleans up" `Leg2_2-split/` corrupts
+the provenance apparatus while looking tidy — the failure recorded as class **#34** in
+`gates_must_be_seen_failing` (a blind token map corrupts what it was not looking at).
+
+Measured before the edit:
+
+```
+prose tokens to change : 77
+path tokens to protect : 48
+```
+
+Any script that touches all 125 is wrong.
+
+---
+
+## The terminology map
+
+| Internal name | Manuscript term (first use) | Short form (tables, repeat use) |
+|---|---|---|
+| `Leg-1` / `2J` (as a *stage*) | "the authors' prior single-channel study" | "the single-channel study" |
+| `2J` (as a *citation*) | "(Iseri and Hachem-Vermette, under review b)" | unchanged — it is a real reference |
+| `Leg-2` | "the two-channel construction stage" | "the two-channel stage" |
+| `Leg-3` | "the present pipeline" / "this study" / "the four-channel pipeline" | "this study" |
+| "the three legs" | "the three stages" | — |
+| "Leg-3 (4-split) pipeline" | "the four-channel pipeline" | — |
+
+**This vocabulary is not new.** §1.5 already opens *"This paper makes four advances over the
+two-channel construction stage it is built on"*, and Table 6's column headers already read
+*"Two-channel stage artefact"* / *"Four-channel change"*. The edit finishes a migration the manuscript
+had already started and left half-done.
+
+### The `2J` extension, and why it is in scope
+
+`2J` means "second journal" and is as opaque to a reader as `Leg-2`. It is the *same defect* — an
+internal name in reader-facing prose — so it is neutralised under the same rule. The distinction that
+matters:
+
+- `2J` used as a **stage name** ("the 2J converter", "2J already cleared time-series") → renamed.
+- `2J` used as a **citation** → kept, as a citation, because that paper is real, is under review, and
+  is cited five times on purpose.
+
+---
+
+## What is deliberately NOT changed
+
+Recorded here so a later reader does not "finish the job" and delete a claim by accident.
+
+1. **Table 1 keeps both "this study" rows.** The prior study's row is what makes the increment legible
+   — remove it and the novelty claim becomes an assertion instead of a comparison. Row labels are
+   relabelled, the ticks are untouched.
+2. **§6 / Appendix C keep the prior study's EUI extraction defect.** That passage reports a real
+   reproducibility finding about the authors' own prior work. It is a claim, not vocabulary. Deleting
+   it would be a scientific decision, not an editorial one, and it is not this round's business.
+3. **Table 6 continues to exist,** and continues to be the additive ledger. Only its title and prose
+   change. Its filename `Table_06_leg2_leg3_delta.md` stays as it is: it is referenced by
+   `assemble_3J.py`'s placeholder mechanism, and renaming a source file to fix a *word* is how a
+   chapter goes missing (failure class **#33** — dropping a heading is not dropping the section; the
+   inverse holds too).
+4. **Every `Leg2_2-split/` and `Leg3_4-split/` path.** See the rule above.
+5. **Figure filenames** (`Figure_01_pipeline_4split.png`, `Figure_02_three_leg_roadmap.png`). The
+   *image content* changes; the filename does not, or every placeholder in every chapter breaks.
+
+---
+
+## Steps
+
+### Step 1 — Archive the current sources
+
+Copy each file about to be edited to `chapters/archive/` or `tables/archive/` with the suffix
+`.2026-08-11_pre_leg_neutralisation.md`, per the archive-predecessor convention. Nine live files are
+touched.
+
+### Step 2 — Edit the prose, file by file, by hand
+
+Not by token map. Each site is read in context and rewritten so the sentence still reads as English,
+because several sites need more than a substitution:
+
+- `Chapter_01_Introduction.md:27` — the §1.4 **heading** currently reads "The Authors' Prior Line:
+  Leg-1 to 2J to Leg-2, the Departure Point". Becomes a heading naming the stages.
+- `Chapter_01_Introduction.md:29` — the §1.4 paragraph, which is where the internal names were
+  *defined*. Once the names are gone, the "referred to in this paper as Leg-2" clause has nothing to
+  define and is removed rather than translated.
+- `Table_06:1` — table title.
+- `Table_01:12-13` — the two bolded row labels.
+- `Table_02:9-11` — the provenance column, where "GSS Time-Use, Leg-1 / Leg-2 / Leg-3" is a
+  *stage* attribution, not a dataset name.
+
+Sites, counted from the live sources:
+
+| File | Prose tokens | Notes |
+|---|---:|---|
+| `chapters/Chapter_01_Introduction.md` | 8 | includes the §1.4 heading + defining paragraph |
+| `chapters/Chapter_02_Datasets.md` | 1 | |
+| `chapters/Chapter_03_Methods.md` | 2 | |
+| `chapters/Chapter_04_ExperimentalDesign.md` | 1 | |
+| `chapters/Chapter_05_Results.md` | 1 | |
+| `tables/Table_01_gap_matrix.md` | 7 | 2 row labels + reading paragraph |
+| `tables/Table_02_channels.md` | 5 | provenance column |
+| `tables/Table_03_sim_domain.md` | 1 | inside a French-language source note |
+| `tables/Table_04_validation_gates.md` | 5 | includes the "(the Leg-2 lesson gates)" subheading |
+| `tables/Table_06_leg2_leg3_delta.md` | 17 | title + ledger prose |
+| `tables/Table_07_limitations.md` | 3 | L13, the three-implementations row |
+| `tables/SI/Appendix_C_corrections.md` | 5 | C.7, the immunity argument |
+| `tables/SI/Table_A1_A2.md` | 19 | model card, head-by-head provenance |
+| `tables/SI/Table_B1_improvement_rounds.md` | 2 | |
+| **Total** | **77** | |
+
+### Step 3 — Rebuild
+
+```
+py -3 writing/fullSet/assemble_3J.py
+cd writing/submission
+sed 's|\.\./figures/|figures/|g' ../fullSet/readySubmission.md > 3J_manuscript_submission.md
+pandoc 3J_manuscript_submission.md -o raw.docx --reference-doc=extra/build_scripts/ref_submit_single.docx --resource-path=.
+py -3 extra/build_scripts/post.py raw.docx 3J_manuscript_submission.docx
+```
+
+🔴 **The shipped `.docx` carries an author edit that a rebuild will destroy.** The file was re-saved in
+Word on 2026-08-11 14:53. Diffed against a clean rebuild, the author's change is one thing: the front
+matter's *"Front Matter - Abstract, Keywords, Highlights"* heading and the *"Manuscript: … Authors: O.
+Iseri and C. Hachem-Vermette · Concordia Univ…"* line were deleted and replaced by the bare title.
+**That edit is re-applied at the source**, in `Chapter_00_FrontMatter.md`, so the rebuild reproduces it
+instead of losing it. Nothing else in the shipped file differs from the rebuild.
+
+### Step 4 — Figures whose *content* carries the terminology
+
+Per the standing rule, the assistant does not create these. It writes the prompt; the author generates.
+
+- **Figure 1** (`Figure_01_pipeline_4split.png`) — its legend reads **"Leg-2 inherited / Leg-3 added"**.
+  That legend is the terminology, printed. Needs regeneration with "Inherited from the two-channel
+  stage / Added by this study".
+- **Figure 2** (`Figure_02_three_leg_roadmap.png`) — titled "the three-leg roadmap" and drawn as three
+  named legs.
+- Both prompts are updated under `submission/figures/Prompts_Images/`.
+
+---
+
+## Expected result
+
+A manuscript in which no reader-facing sentence contains `Leg-1`, `Leg-2` or `Leg-3`; every stage is
+named by what it does; every repository path is byte-identical to what it was; and no measured value,
+gate verdict or claim differs from the frozen deliverable.
+
+## Test method
+
+1. `grep -c` for `Leg-[123]` outside code spans in `3J_manuscript_submission.md` → **0**.
+2. `grep -c` for `Leg2_2-split|Leg3_4-split` in the built `.md` → **unchanged from before the edit**.
+   A drop means the map ate a path.
+3. Diff the built `.md` before/after, restricted to lines **not** containing a renamed token → **empty**.
+   This is the check that proves nothing else moved.
+4. Every number, gate verdict and table cell identical: diff all digit-bearing lines before/after → **empty**.
+5. Verify against the **installed** `.docx`, not `raw.docx`, and confirm the 15 images are md5-identical
+   to the files on disk.
+
+---
+
+# Progress Log
+
+## 2026-08-11 - executed, and one blank results figure found on the way
+
+### What was done
+
+**The text.** 77 reader-facing occurrences of `Leg-1`/`Leg-2`/`Leg-3` and 3 of `2J` were rewritten
+across 11 live source files. 16 files were archived first with the suffix
+`.2026-08-11_pre_leg_neutralisation.md`. The built manuscript now contains **zero** internal stage
+names in prose; the two that remain are repository paths inside code spans, which is the point.
+
+**Two plan items turned out to need no work, and that is a result, not an omission:**
+
+- **Table 6 was already clean where it counts.** Its title (`# Table 6 - What Leg-3 added`) and its
+  entire `## Sources` block are stripped at assembly and never reach the reader; its column headers
+  already read *"Two-channel stage artefact"* / *"Four-channel change"*. Checked by grepping the
+  **built** manuscript, not the source. The plan had scheduled 17 edits there; the right number was 0.
+- **Apparatus notes and `Sources` blocks keep the internal names deliberately.** They are stripped
+  from the submission and they are how the authors navigate the repository. The manuscript is
+  neutralised; the project's own record is not.
+
+**The author's Word edit was preserved, not overwritten.** The shipped `.docx` had been re-saved in
+Word at 14:53 with the front matter cut down to the bare title. Rather than rebuild over it, the diff
+was taken first, the edit identified, and re-applied at source in `Chapter_00_FrontMatter.md` so the
+rebuild reproduces it. Everything else in that file was identical to a clean rebuild.
+
+### 🔴 Figure 9 shipped into the manuscript completely blank, and every gate passed
+
+Not part of this round's brief. Found because the author asked why the figure had no data in it.
+
+`fig_diurnal` (`3rdJ_09_activityDrivenLoads_4split.py:895`) filtered `cell_tag`, `season` and
+`daytype` but **not `metric`**. `agg_diurnal.csv` carries two metrics per group, `energy_W` and
+`people`, so the slice returned 48 rows where the code expected 24. The next line is
+`if len(y) != 24: continue` - so **every one of the six channels was skipped silently**, the figure
+saved without error, and what shipped was a pair of empty axes with an empty legend box.
+
+Three things made it survive to a submission-ready document:
+
+1. **The guard swallowed the symptom.** `continue` on a wrong-length series turns a data fault into a
+   blank panel. An `assert len(y) in (0, 24)` would have stopped the run.
+2. **No number depended on it.** Every table and gate reads `build_loadshape`, which filters `metric`
+   correctly at `:331`. So no verdict was ever wrong - which is also why nothing else flagged it.
+3. **The figure gate reads the generator, not the artefact.** This is failure class **#43** again,
+   exactly as with Figure S1's `4.0.1`: `f5` certifies the plotting script's arithmetic and is
+   therefore blind to what the PNG actually contains. A blank PNG is the strongest possible case: the
+   script is *correct* about everything it was checked for.
+
+Fixed at source with the `metric` filter, archived first. The replot was re-run and the discipline
+that matters was applied: **the other four figures' PNGs came back byte-identical**
+(`fig_eui` `15af64b6`, `fig_longitudinal` `474314e9`, `fig_peakhour` `ae4d14cc`, `fig_scenario`
+`6f4a6703`), proving the change touched only `fig_diurnal`. All five PDFs changed - matplotlib stamps
+a creation time into PDF output, so PDF md5 is not a content test and was not treated as one.
+
+### The caption described a figure that had never been drawn
+
+With data on the axes, the caption became checkable for the first time, and it was wrong in four ways:
+it said *weekday and weekend* (the figure is winter weekday / summer weekday), *one curve per channel*
+(it is a stacked area), *plus the whole-building total* (there is no separate total series), and
+*midday and night reference bands marked* (there are none). It had been written from intent. Rewritten
+to describe the artefact.
+
+### The figure prompts
+
+The author confirmed mid-round that the words must not appear **inside the images**. They did:
+Figure 2's three containers are labelled `Leg 1`, `Leg 2`, `Leg 3`, and Figure 1's legend reads
+`Leg-2 inherited` / `Leg-3 added`.
+
+`Figure_01` and `Figure_02` prompts were rewritten in full; 06, S02 and S03 were patched; a naming
+banner was added to the eight remaining schematic prompts. **All 11 pasteable fenced blocks are now
+free of stage names** - the fenced block is the only text that reaches a generator, so that is the
+check that decides it, not a grep over the whole file.
+
+Figure 2 is relabelled by *content* rather than by a renamed stage: `Residential only` /
+`Residential + Office` / `Residential + Office + Retail + Hotel`. The nesting then explains itself and
+needs no legend.
+
+**Two defects in the 2026-08-11 regenerated Figure 1 were traced to the prompt, not the generator.**
+It printed the literal word **`amber`** inside two boxes (`amber (retail addition)`, `amber (retail)`)
+and Step 4 read `two heads, two heads, third head`. The old prompt wrote the fill colour and the label
+in the same phrase, so the generator could not tell an instruction from a string. Every rewritten
+prompt now separates a verbatim **LABEL TEXT** list from a **STYLING** block that is never drawn.
+
+### Whitespace, measured
+
+The author's report of too much space between figure and caption is baked into the PNGs, not a Word
+setting. Measured against each image's own background value:
+
+| figure | empty top | empty bottom | content height |
+|---|---:|---:|---:|
+| Figure 1 | 264 px | 26 px | 62% |
+| Figure 4 | 217 px | 49 px | 65% |
+| Figure 5 | 164 px | 133 px | 61% |
+| Figure 2 | 106 px | 84 px | 75% |
+| graphical abstract | 100 px | 43 px | 81% |
+
+The five data figures are 94-95% used, which is normal matplotlib padding. **The problem is confined
+to the generated schematics.** A crop instruction is now in each prompt. Cropping the existing files
+is possible and mechanical, but it would make the effective resolution problem worse rather than
+better - these are ~184 dpi against a 500 dpi minimum for combination art - so regeneration is the
+right fix, not a crop.
+
+### Verification
+
+| check | result |
+|---|---|
+| internal stage names in the built `.md`, prose | 0 |
+| internal stage names in the installed `.docx`, prose | 0 |
+| repository paths surviving | 2 before, 2 after |
+| numeric tokens changed | only the `2` of `2J` and the `4` of `4-split`; every measured value identical |
+| Table 1 ticks / crosses | 27 / 19 before and after |
+| embedded images vs disk | 15/15 byte-identical (12 top-level + 3 under `figures/SI/`) |
+| the empty Figure 9 still embedded | no |
+
+### Open, for the author
+
+1. **Regenerate Figure 1 and Figure 2** from the rewritten prompts. Nothing else clears the stage
+   names from the artwork.
+2. **Regenerate the schematics with the crop and dpi rules** (Figures 1, 4, 5 worst).
+3. The 3 pre-existing BUILD NOTES are unchanged by this round: Table A2 unlabelled, the Kurin/Menon
+   references never opened, the generated-image defect note.
+
+### A note for `gates_must_be_seen_failing`
+
+**Candidate class: a `python -c` string is not a quoting-safe way to carry markdown.** Bash performs
+command substitution on backticks inside a double-quoted `-c` argument. Two edits in this round wrote
+text with the code spans **deleted** - `120`, `MARSTH`, `-1` and the decode-temperature span all
+vanished - and the script reported `ok` for both, because the *search* strings had escaped backticks
+and matched fine while the *replacement* strings did not. No error, no failed assertion. It was caught
+only by diffing every code span in the file against the archived original, which is now the standard
+check after any scripted edit to a document containing code spans. Same shape as **#41**: a pattern
+that does not compile as intended does not error, it does something else quietly. The same quoting
+then broke the heredoc that was meant to append this very log, which is at least consistent.

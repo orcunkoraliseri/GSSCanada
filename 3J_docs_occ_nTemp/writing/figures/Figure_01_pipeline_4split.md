@@ -18,12 +18,12 @@ SCENE: Horizontal left-to-right chain of nine boxes: (1) "Data Collection" -- wa
 
   🔴 CORRECTION 2026-08-06 night: this line originally ended "residential + office paths bit-identical". That is the pipeline overview's prose statement of design intent, and `Table_06_leg2_leg3_delta.md` grades the same claim `⚠ check source` because no file or column comparison of the tiler's output was ever run. Only Step 7 carries an affirmative evidence verdict in Table 6, and only for the base prototype geometry. Enforced by `f5_figure_check.py` arm C7.
 - STEP 4: "Three-GSS-Head Transformer" -- heads = resid / AT_WORK / AT_RETAIL; hotel NOT in model
-- STEP 5: "Archetype Linkage" -- residential Census linkage (Leg 1); office NOCxNAICS (Leg 2); retail population-level fraction; hotel province-level multiplier (Leg 3)
+- STEP 5: "Archetype Linkage" -- residential Census linkage (single-channel stage); office NOCxNAICS (two-channel stage); retail population-level fraction; hotel province-level multiplier (Leg 3)
 - STEP 6: "Forecast 2030 + Hotel Side-Track" -- GSS channels via drift matrix; hotel SARIMA(1,1,1)(1,1,1,12) + COVID indicator, bypasses the Transformer entirely
 - STEP 7: "BEM/UBEM Integration" -- Tag-2 dispatch: apartment REPLACE; office/retail/guest-room MODULATE; amenity + service/MEP untouched NECB
 - STEP 8: "BEM Simulation" -- 56/56 cells; 2-city sweep CAN_MTL 6A + CAN_CLG 7A
 - STEP 9: "Activity-Driven End-Use Loads" -- equipment + lighting; calibrated vs NRCan SCIEU
-- Legend: slate-blue/teal = "Leg-2 inherited (Residential AT_HOME, Office AT_WORK)"; amber = "Leg-3 added (Retail AT_RETAIL, Hotel non-GSS)"
+- Legend: slate-blue/teal = "Inherited from the two-channel stage (Residential AT_HOME, Office AT_WORK)"; amber = "Added by this study (Retail AT_RETAIL, Hotel non-GSS)"
 - Bypass callout on the hotel lane: "Hotel side-track bypasses the Transformer entirely -- SARIMA, not the 3-head model"
 
 ## Layout notes

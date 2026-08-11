@@ -20,7 +20,7 @@ SCENE: "Tag 2 Match" diamond forks into four lanes as above, each terminating in
 - Gate card title: "HARD WIRING GATE"
 - Gate card correct field (checkmark): "Number_of_People_Schedule_Name"
 - Gate card wrong field (cross): "Schedule_Name"
-- Gate card note: "the Leg-2 bug that passed every input-side check and was only caught output-side; Leg-3 runs a mandatory scenario-differentiation probe because of it"
+- Gate card note: "the two-channel stage bug that passed every input-side check and was only caught output-side; this study runs a mandatory scenario-differentiation probe because of it"
 
 ## Layout notes
 - Aspect ratio: wide landscape (16:9), reading direction left to right

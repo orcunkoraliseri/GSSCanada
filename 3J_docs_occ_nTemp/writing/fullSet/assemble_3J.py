@@ -53,7 +53,6 @@ ORDER = [
     "Chapter_04_ExperimentalDesign.md",
     "Chapter_05_Results.md",
     "Chapter_06_Discussion.md",
-    "Chapter_07_Limitations.md",
     "Chapter_08_Conclusion.md",
     "Chapter_09_References.md",
     "Chapter_10_Supplementary.md",
@@ -174,11 +173,24 @@ HTML_COMMENT_RE = re.compile(r"[ \t]*<!--.*?-->", re.S)
 # A CAPTION is a strong signal that the paper has resumed, and a caption is what the
 # original bug (a deleted `**Table 4.**` line) was actually about. A table row is a weak
 # one. Only the strong signal is honoured now. Anything inside a dropped section stays
-# dropped until a heading, a rule, or a caption.
-CONTENT_RESUMES = re.compile(r"^\*\*(Table|Figure|Graphical)\b")
+# dropped until a heading, a rule, a caption, or an image.
+#
+# 🔴 AN IMAGE IS A STRONG SIGNAL TOO, AND NARROWING THIS PATTERN DELETED ONE, 2026-08-11.
+# `![` was removed from this pattern together with the bare table row, because the two were
+# taken out in one edit. They are not the same strength of signal. An apparatus block is
+# prose and repository paths; it never contains a figure. When Figure S3 came to sit
+# directly after a table whose file ends in a `## Sources` block, the section drop ran past
+# the image and stopped only at the caption below it, so the submission copy carried
+# "Figure S3." with no figure above it -- 14 images against 15 captions. NOTHING FAILED:
+# the loss check counts CAPTIONS, and the caption is exactly the line that survived. The
+# image is re-admitted here as a resume signal, and counted below.
+CONTENT_RESUMES = re.compile(r"^(\*\*(Table|Figure|Graphical)\b|!\[)")
 
 # Content markers that must survive the strip intact. Counted before and after.
 CAPTION = re.compile(r"^\*\*(?:Table|Figure) [A-Z]?\d+\.\*\*", re.M)
+# An image is content too, and counting captions does not count images: the one defect
+# this file has now produced twice was a caption surviving while its figure did not.
+IMAGE = re.compile(r"^!\[[^\]]*\]\(([^)]+)\)", re.M)
 
 
 def _drop_inline_source_blocks(lines):
@@ -330,6 +342,14 @@ def strip_for_submission(doc):
     if lost:
         raise AssertionError("submission strip DELETED content: %s" % ", ".join(lost))
 
+    # The same check, on images. A caption with no figure above it is not a caption.
+    lost_img = sorted(set(IMAGE.findall(doc)) - set(IMAGE.findall(clean)))
+    if lost_img:
+        raise AssertionError("submission strip DELETED %d image(s): %s"
+                             % (len(lost_img), ", ".join(lost_img)))
+    n_cap, n_img = len(CAPTION.findall(clean)), len(IMAGE.findall(clean))
+    manifest.append(("captions %d, images %d, both counted after the strip" % (n_cap, n_img), 0))
+
     # USER DECISION 2026-08-09: no thematic breaks in the submission copy.
     # pandoc renders a markdown `---` as a VML rectangle, and Word names that shape
     # "Horizontal Line" -- 60 of them in the built .docx, one per section separator. They
@@ -392,28 +412,56 @@ def main():
 
     parts = [CAMPAIGN_STAMP]
     inlined_tables, inlined_figs = [], []
+    wrapped_captions = []
 
     for chapter in ORDER:
-        for line in read(os.path.join(CH, chapter)).splitlines():
-            mt = TBL_PAT.match(line)
-            if mt:
-                p, body = inline_table(mt.group("f"))
-                if p:
-                    inlined_tables.append(mt.group("f"))
-                parts.append("**%s.**%s\n\n%s\n" % (mt.group("lbl"), mt.group("rest"), body))
+        lines = read(os.path.join(CH, chapter)).splitlines()
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            m = TBL_PAT.match(line) or FIG_PAT.match(line)
+            if not m:
+                parts.append(line)
+                i += 1
                 continue
-            mf = FIG_PAT.match(line)
-            if mf:
-                fname = mf.group("f")
+
+            # 🔴 A CAPTION IS ONE BLOCK, AND IT USED TO BE CUT IN HALF.
+            # The chapter sources are hard-wrapped, so a caption longer than one line
+            # continued on the lines after the placeholder. The old loop matched only the
+            # placeholder line and appended the continuation as ordinary chapter text --
+            # which landed it AFTER the inserted image, i.e. the figure was inserted into
+            # the middle of its own caption. Nothing failed: the caption count was right,
+            # the residue check was clean, and the built .docx read "Figure 7. four-channel
+            # EUI trajectory across the 2005, 2010, 2015", then the image, then "and 2022
+            # GSS Time-Use cycles ...". Read the whole block here instead.
+            j = i + 1
+            cont = []
+            while j < len(lines) and lines[j].strip():
+                cont.append(lines[j])
+                j += 1
+            caption = ("**%s.**%s" % (m.group("lbl"), m.group("rest"))).rstrip()
+            if cont:
+                wrapped_captions.append("%s (%s, %d line(s) of continuation)"
+                                        % (m.group("lbl"), chapter, len(cont)))
+                caption = caption + "\n" + "\n".join(cont)
+            i = j
+
+            fname = m.group("f")
+            if fname.endswith(".md"):
+                # USER DECISION 2026-08-11: a TABLE caption sits ABOVE its table.
+                p, body = inline_table(fname)
+                if p:
+                    inlined_tables.append(fname)
+                parts.append("%s\n\n%s\n" % (caption, body))
+            else:
+                # USER DECISION 2026-08-11: a FIGURE caption sits BELOW its figure.
                 p = find(fname, [FIG, FIG_SI])
                 if p:
                     inlined_figs.append(fname)
                     rel = os.path.relpath(p, BASE).replace("\\", "/")
-                    parts.append("**%s.**%s\n\n![%s](%s)\n" % (mf.group("lbl"), mf.group("rest"), mf.group("lbl"), rel))
+                    parts.append("![%s](%s)\n\n%s\n" % (m.group("lbl"), rel, caption))
                 else:
-                    parts.append("**%s.**%s\n\n*(figure file %s NOT FOUND)*\n" % (mf.group("lbl"), mf.group("rest"), fname))
-                continue
-            parts.append(line)
+                    parts.append("*(figure file %s NOT FOUND)*\n\n%s\n" % (fname, caption))
         parts.append("\n\n---\n")
 
     # Anything not inlined goes into an explicit appendix. Nothing is dropped silently.
@@ -501,6 +549,11 @@ def main():
               % (len(missing_excl), missing_excl))
     print("  figures inlined at a placeholder: %d  %s" % (len(inlined_figs), inlined_figs))
     print("  figures appended to the appendix: %d  %s" % (len(left_figs), left_figs))
+    # Printed because a wrapped caption is the shape that used to be split by its own
+    # figure. It is handled correctly now, but a caption that needs a second line is also
+    # a caption that is drifting past the house limit, so it is reported rather than absorbed.
+    print("  captions that wrapped onto a second line: %d  %s"
+          % (len(wrapped_captions), wrapped_captions))
 
     print("\nSUBMISSION STRIP -- every removal named, nothing dropped silently:")
     total = 0

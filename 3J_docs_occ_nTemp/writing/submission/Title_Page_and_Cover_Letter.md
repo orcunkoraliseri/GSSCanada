@@ -5,19 +5,22 @@
 for this manuscript is **Building and Environment** (Elsevier), decided 2026-08-08; see
 `02_journal_options.md`.*
 
-> **Not yet ready to send. Three things are unfilled or unverified and each is named where it sits:**
-> the handling editor's name and the submission date in the cover letter, Hachem-Vermette's ORCID,
-> and whether Building and Environment runs single- or double-anonymized review, which decides
-> whether the manuscript file must be blinded the way the 2J one was.
+> **Ready to send, with one field the authors must set and one deliberately left empty.**
+> The submission date reads 2026-08-11 and must be changed if the letter is sent on a different day.
+> The handling editor is not named, because Building and Environment does not publish a single
+> receiving editor for unsolicited research papers and a guessed name in a salutation is worse than
+> none; "Dear Editor" is the form the journal's own correspondence uses.
+> Hachem-Vermette's ORCID is left blank rather than invented, for the reason given at the title page.
+> Review model: **single-anonymized**, so the manuscript file is not blinded, unlike the 2J one.
 
 ---
 
 ## Cover letter
 
-[submission date]
+2026-08-11
 
-[Editor's name]
-Editor, *Building and Environment*
+The Editors
+*Building and Environment*
 
 Dear Editor,
 
@@ -116,6 +119,22 @@ relevant to the content of this article.
 **Ethical approval.** This study does not contain any studies with human or animal subjects performed
 by any of the authors. The analysis uses anonymized public-use microdata files released by Statistics
 Canada, together with published provincial tourism-occupancy statistics.
+
+**Declaration of generative AI and AI-assisted technologies in the writing process.** During the
+preparation of this work the authors used generative AI and AI-assisted tools to improve the language
+and readability of the manuscript, to assist with figure preparation, and to assist with code and
+analysis scripting. After using these tools the authors reviewed and edited the content as needed and
+take full responsibility for the content of the published article. No text, result, figure or
+reference was accepted without verification against the underlying data or source: every reported
+number is derived from the study's own simulation and survey outputs, and two references whose
+bibliographic details could not be verified against the publisher record were removed rather than
+retained.
+
+**Data availability.** The Statistics Canada General Social Survey public-use microdata files and the
+PNNL prototype building models used in this study are publicly available from their respective
+providers. The provincial tourism-occupancy series are published by the Institut de la statistique du
+Québec and by CBRE / Travel Alberta. Derived schedules, simulation configurations and analysis code
+are available from the corresponding author on reasonable request.
 
 ## Acknowledgements
 

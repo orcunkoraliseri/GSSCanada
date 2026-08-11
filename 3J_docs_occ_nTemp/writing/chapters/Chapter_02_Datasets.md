@@ -15,20 +15,17 @@ Statistics Canada General Social Survey (GSS) Time-Use program used in the autho
 (Statistics Canada, 2022; Iseri and Hachem-Vermette, under review b): Cycle
 19 (2005), Cycle 24 (2010), Cycle 29 (2015), and the GSS Time Use 2022 cycle (GSSP). Residential
 (AT_HOME) and Office (AT_WORK) presence are read from the harmonized diary exactly as in the two-channel
-construction stage (Leg-2; see Chapter 3). The one new GSS-derived channel added for this paper is
-Retail (AT_RETAIL): a customer-presence indicator constructed from the `occPRE` (location) and `occACT`
-(activity) columns that were already carried in every cycle, so no new GSS variable was collected.
-`occPRE`/`occACT` location-mapping coverage is per cycle: 2005 and 2010 use `PLACE = 06+07`; 2015 uses
-`LOCATION = 306`; 2022 uses `LOCATION = 3306`. Grocery and general-merchandise shopping are not
-separable in the 2015 and 2022 cycles, which record a single combined shopping-location bucket; the
-AT_RETAIL derivation and its frozen OR-rule are given in full in Chapter 3 (§3.1) and in Table 2's
-footnote.
+construction stage (see Chapter 3). The one new GSS-derived channel added for this paper is
+Retail (AT_RETAIL): a customer-presence indicator constructed from the location and activity columns
+already carried in every cycle, so no new GSS variable was collected. The location coding differs by
+cycle, and in 2015 and 2022 grocery and general-merchandise shopping are not separable, both cycles
+recording a single combined shopping bucket. The derivation rule is given in §3.1 and the per-cycle
+codebook in Table A2.
 
-One population that the GSS records but that this paper's Retail channel deliberately does not model
-is retail staff: workers present in a store are coded by the survey as engaged in `AT_WORK`, not as a
-retail-specific activity, so no GSS signal distinguishes a shopper from a cashier. Retail worker density
-therefore stays on the NECB code baseline being modulated, and the Retail channel models customer
-presence only (Table 2, footnote 2).
+One population the survey records but this paper's Retail channel deliberately does not model is retail
+staff: workers present in a store are coded as at work rather than as a retail-specific activity, so no
+survey signal distinguishes a shopper from a cashier. Retail worker density therefore stays on the NECB
+code baseline being modulated, and the Retail channel models customer presence only (Table 2).
 
 ---
 
@@ -77,8 +74,8 @@ Department of Energy and Pacific Northwest National Laboratory), built to the NE
 (National Research Council Canada, 2017), reused from the two-channel construction stage without
 modification to their
 geometry. Total occupiable floor area, measured directly from the model geometry rather than assumed,
-is reported per prototype in Table 3. Each prototype's Space objects carry an IDF `Tag 2` field that
-functions as the per-Space routing key for occupancy injection (Chapter 3, §3.5): apartment tags,
+is reported per prototype in Table 3. Each prototype's Space objects carry a tag field that functions as
+the per-Space routing key for occupancy injection (Chapter 3, §3.5): apartment tags,
 office tags, retail tags, and guest-room tags each resolve to a distinct one of the four channels,
 while amenity and service/MEP tags carry no occupant-driven channel and remain on the untouched NECB
 default schedule.
@@ -97,5 +94,5 @@ scenario, 56-cell campaign built from these weather and prototype inputs is defi
 
 ---
 
-**Table 2.** *(insert `Table_02_channels.md` here)*
+**Table 2.** *(insert `Table_02_channels.md` here)* - The four occupancy channels.
 

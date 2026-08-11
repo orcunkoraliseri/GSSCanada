@@ -1,39 +1,64 @@
 # 6 Discussion
 
-The findings of §5 are interpreted here against the gap they were designed to close. The discussion moves from what a jointly-trained, multi-channel model buys and what it does not yet prove (§6.1), through the central argument of this paper, that the office gate's failure is a finding about reference-band applicability rather than a model defect (§6.2), to a second, independent illustration of the same point in the hotel gate's own geometry (§6.3), and closes with the lesson that spans all three failing gates and what it implies for how mixed-use reference bands should be built next (§6.4).
+Inside one envelope, on one plant, the four populations do not behave as one occupant. They peak at
+different hours, hotel at 18.91 h against a midday cluster of 11.90 to 12.37 h, and the whole-building
+peak at 14.95 h coincides with none of them. Weekday day-to-night structure differs by an order of
+magnitude and in one case by sign, from retail's 34 to 1 to residential's 3.9 to 1 and hotel's outright
+inversion. Because the peaks fall apart, the whole-building coincidence factor stays below 1 in every
+cell, median 0.941: use-type diversity attenuates the aggregate peak as household diversity does inside a
+single archetype. A single-channel schedule cannot carry a difference between populations.
 
----
+The architecture is what makes that observation available. One model trained jointly to output four
+independent presence channels, dispatched through a per-space exact-match routing key, lets one tower
+carry households, a workforce, customers and guests each on its own signal, with the decode-time
+exclusivity projection keeping them from colliding before the building model. The design is additive on
+the two-channel construction stage in a demonstrable sense, a missing channel falling back to the
+untouched code baseline. Bit-identity of the residential and office outputs across stages is not claimed:
+five of the nine steps carry no cross-stage comparison, and Table 6 says so in place of a verdict.
 
-### 6.1 What a Multi-Channel Model Buys, and What It Does Not Yet Prove
+The office channel fails its energy-use-intensity gate in all 56 cells, and the natural reading, that the
+model under-predicts office demand, is not what the evidence supports. The strongest piece is a control
+the model never touches: the uninjected reference implementation, carrying no occupancy signal at all,
+scores 85.45 against the same 100 kWh/m2/yr floor, failing by 15 % before this study contributes a single
+schedule. Two mechanisms that would put the model rather than the band at fault were refuted across the
+cell set: measured heating share is about 17 % against the band's implied 35 to 45 %, in the wrong
+direction to close the gap, and re-basing on service and mechanical area moves every cell further down.
+The band's own source document states three different floors for itself. Nothing was moved: the floor
+stays at 100 and all 56 cells stay FAIL, median 71.02 kWh/m2/yr.
 
-The first thing the campaign establishes is behavioural rather than architectural: inside one envelope, on one plant, the four populations do not behave as one occupant, and the ways they differ are large enough to matter to the building rather than only to the occupancy model. They peak at different hours, with hotel at 18.91 h against a midday cluster of 11.90 to 12.37 h for office, residential and retail, and the whole-building peak at 14.95 h coincides with none of the four. They differ in day-to-night structure by an order of magnitude and in one case by sign, from retail's weekday midday-to-night ratio near 34 to 1 down to residential's 3.9 to 1 and hotel's outright inversion. They move in different directions across the four survey cycles, retail declining and then reversing past its own 2005 baseline while residential stays close to flat (§5.1, §5.3). The consequence for the building is measurable and not merely descriptive: because the four peaks fall at different hours, the whole-building coincidence factor stays below 1 in every one of the four cells, median 0.941, so use-type diversity inside one stacked building attenuates the aggregate peak in the same way household diversity attenuates it inside a single archetype. A single-channel schedule applied uniformly across every floor cannot represent any of this, because the quantity it would have to represent is a difference between populations, not a level.
+Hotel fails differently, and the geometry of the failure is itself informative. The 56 measured
+intensities form two disjoint clusters tracking the tower prototype and nothing else: 28 cells at 203.33
+to 218.22 kWh/m2/yr, comfortably inside the band, and 28 at 302.86 to 318.42, entirely above the 300
+ceiling. The largest gap between consecutive values falls exactly between them, 84.64 kWh/m2/yr, 70.5 %
+of the band's own width, with the ceiling inside it. A ceiling placed anywhere in a gap that wide splits
+the cells the same way, so the gate cannot distinguish correct hotel modelling from a prototype whose
+hotel zones simply run hotter. Those 28 cells remain FAIL at their full measured values.
 
-The architecture is what makes that observation available. Jointly training one model to output four independent, per-use presence channels, then dispatching them through a per-space, exact-match routing key, lets a single stacked tower carry four functionally distinct populations, households, a workforce, customers and overnight guests, each on its own signal, instead of one blended "occupant" trend applied uniformly across every floor. That design choice is not incidental: a single composite channel would smear the four populations' genuinely different temporal behaviour into one curve that represents none of them (§1.3), and the decode-time exclusivity projection exists precisely so that four independently generated channels do not collide inside the same tower before they reach the building model.
+Retail fails a third way, a median narrowly short of a floor under a rule fixed in advance of the
+numbers. What the three share is discipline rather than outcome: no reference value was moved and no
+scoring rule was changed once it was known which rule would pass. Together they point at reference bands
+built for single-use stock lacking the resolving power to judge a channel inside a stacked mixed-use
+tower.
 
-This design is additive on the two-channel construction stage it grew from, and it is additive in a specific, demonstrable sense: a missing channel falls back to the untouched code baseline rather than to an undefined state, retail presence is written to its own file rather than into the residential or office columns, and the campaign reads the same four prototype geometry files the two-channel stage used, confirmed byte for byte at the point they enter the campaign. What the design does not demonstrate, and what this paper does not claim, is bit-identity of the residential and office outputs across the two construction stages. Five of the nine pipeline steps carry no cross-stage byte or column comparison at all, and the injector code itself exists in three non-matching copies across the live repository and the two stages' own frozen snapshots; only the base tower geometry, not the code that writes schedules into it, is confirmed unchanged. Table 6 records this step by step, stating for each of the nine steps what was compared, what was found, and, on the five steps where nothing was compared, saying so in place of a verdict. The paper is therefore precise about what "additive" means here: additive by construction, evidenced at the one step where geometry reuse was checked, and not yet an empirically demonstrated claim that no residential or office figure from the construction stage would move if the comparison were run.
+Sixteen limitations bound how far these results generalise, and Table 7 gives each one against its
+bounding measurement. Three concern what the source data can see at all: hotel guests are outside the
+time-use survey frame by construction, so that channel is driven by a provincial tourism series; retail
+sees customers only, the survey logging retail workers as at work; and residential intra-household
+diversity is partial, 3,499 of 16,367 multi-person households, 21.38 %. Five concern what plausibility is
+measured against, and they are why the three failing gates are reported as band-applicability findings:
+the office floor is contested and unsourced, the hotel reference is a large-hotel prototype normalized to
+a city set this study does not share, retail is validated on shape rather than level, and the residential
+channel carries no as-modelled band at all. Three concern internal gains never parameterised by use,
+retail zones running the code's office occupant density of 24.97 m2/person against its own retail figure
+of 29.97 and equipment power staying a blanket 7.5028 W/m2 across every space type. Two concern the
+physical model: the weather file is applied at ground level on a supertall tower, the one limitation with
+no bounding measurement, and the hotel domestic-hot-water plant is capacity-pinned on a single object
+whose delivered-energy slope against draw volume is -0.98, so only a per-object resize corrects it.
 
----
-
-### 6.2 Why the Office Band Failure Is a Finding About Band Applicability, Not a Model Error
-
-The office channel fails its energy-use-intensity gate in every one of the 56 campaign cells, and the natural first reading of that result is that the model under-predicts office demand. The evidence does not support that reading, and the strongest piece of it is a control the model never touches. The uninjected `Default_NECB` reference implementation, the code's own baseline with no occupancy signal applied to it at all, scores 85.45 kWh/m2/yr against the same 100 kWh/m2/yr floor the injected cells are judged against, and fails by 15% before this study's occupancy model contributes a single schedule. A gate that no untreated control can pass is not measuring whether the occupancy injection is correct; it is measuring the floor itself against a code-default tower that has nothing to do with the occupancy question this paper asks.
-
-Two candidate mechanisms were tested to see whether the model, rather than the band, could still be at fault, and both were refuted, not left unresolved. The first candidate was that the band's floor implicitly assumes a heating share the injected tower does not carry: measured heating share across the campaign is approximately 17%, against the band's own implied 35 to 45%, in the wrong direction to close the gap. The second candidate was that the office EUI should be re-based on a different denominator, service and mechanical/electrical/plumbing area rather than office-conditioned floor area: rebasing on service/MEP area moves every one of the 56 cells further down, away from the floor, not toward it. Both failed in all 56 cells, not in a majority or a subset. The record does not describe either mechanism as pre-registered, and this paper does not claim they were: they were candidate explanations proposed and then tested, and what carries weight is that both were refuted across the full cell set rather than left open. The band's own source document additionally states three different floors for itself across its own tables (100.0, 80-140, and 85.0-115.0), which is independent evidence that the number being failed against is contested even on its own terms. The gate values and bands quoted in this section are those of Table 5 and Section 5.2; the sixteen limitations they feed are itemised in Table 7.
-
-None of this is used to move the band or to change the verdict. The floor stays at 100, the gate stays FAIL for all 56 cells (median 71.02 kWh/m2/yr, range 61.72 to 90.21 on the CFA basis), and the finding this paper reports is not "the office channel passes once the right comparison is made." It is that an untreated control already fails the same gate, by a margin larger than any plausible occupancy effect could close, which relocates the question from "is the injected model wrong" to "does this reference band apply to this building at all."
-
----
-
-### 6.3 The Hotel Gate's Lack of Resolving Power
-
-The hotel channel fails a different way, and the failure geometry is itself informative. Across the 56 campaign cells the measured energy-use intensity does not form one continuous distribution; it separates cleanly into two disjoint clusters that track the tower prototype and nothing else. The `SuperTall` prototype's 28 cells sit at 203.33 to 218.22 kWh/m2/yr, comfortably inside the as-modelled band; the `Tall` prototype's 28 cells sit at 302.86 to 318.42 kWh/m2/yr, entirely above the band's 300 kWh/m2/yr ceiling. The largest gap between any two consecutive measured values in the whole 56-cell set falls exactly between these two clusters, at 84.64 kWh/m2/yr, which is 70.5% of the band's own 120 kWh/m2/yr width (180 to 300); the cluster bounds and the band are those reported in Table 5. The 300 ceiling sits inside that gap, not near either cluster's edge.
-
-The consequence is that the pass/fail verdict for any given cell is decided almost entirely by which prototype it belongs to, before the occupancy channel contributes anything cell-specific. A ceiling placed anywhere inside an 84.64 kWh/m2/yr gap between two tight, well-separated prototype clusters will always split the 56 cells the same way the current one does, because there is essentially no continuous variation across that gap for the occupancy signal to move a cell through. This is not a claim that the `Tall` prototype's hotel demand is wrong; it is a claim that this particular gate, as constructed, has very little power to distinguish "hotel occupancy is being modelled correctly on `Tall`" from "the `Tall` prototype's hotel zones simply run hotter than the `SuperTall` prototype's, for reasons the ceiling was never designed to separate from an occupancy effect." The gate's own reference archetype, the DOE/PNNL Large Hotel prototype at ASHRAE 90.1-2019, is itself Rochester/International Falls climate-normalized and city-mismatched against this study's NECB-2017 Montreal/Calgary tower, which is a second, independent reason the same 28-cell split does not automatically indict the occupancy model.
-
-As with the office channel, none of this moves the ceiling. `S9-EUI-hotel` remains FAIL on all 28 `Tall` cells, at their full measured values, and the finding is that the gate's resolving power is limited by geometry it did not design for, not that the failing cells should be read as passing under a different rule.
-
----
-
-### 6.4 A Common Lesson Across Three Failing Gates, and What It Implies Going Forward
-
-The office, hotel and retail energy-use-intensity gates fail for three different reasons, an uncontested but suspect floor with a failing untreated control behind it, a ceiling that sits inside a prototype-driven gap rather than a continuum, and a median that falls narrowly short of a floor under a rule chosen in advance of the numbers (§5). What the three share is discipline rather than outcome: in every case the reference value was left exactly where it was, no scoring rule was changed after the fact because a different rule happened to pass, and each failure is reported here with the specific evidence that bears on whether the model or the reference is responsible. That evidence points the same direction in the two cases examined closely in this chapter. It does not point toward "these gates are wrong and should be discarded"; it points toward reference bands built for single-use building stock not yet having the resolving power, or in the office case the sourcing discipline, to judge a channel that lives inside a stacked mixed-use tower rather than inside a building of its own. Building that resolving power, an as-modelled band with a floor an untreated control can pass, and a hotel reference stratified by the same prototype geometry the tower campaign varies, is future work this paper's failing gates motivate rather than something this paper's writing phase is positioned to deliver.
+One reproducibility caveat belongs here rather than in that count. This project's own review found that
+the residential intensity table published in the authors' prior single-channel study (Iseri and
+Hachem-Vermette, under review b) rests on an extraction function carrying two compounding defects, a
+demand summary double-counted into an annual energy total and a water-heating guard that zeroes water
+energy on SI-unit runs but not on imperial ones; correcting both moved three of the four band verdicts
+reported there. The present study is immune for a structural reason: its intensities, reported in Table
+5, are read from hourly meter streams and never from the extraction path the defect lived inside.

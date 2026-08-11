@@ -28,7 +28,7 @@ LABELS = [
     "conservative", "hybrid", "fullyhybrid",
     "0.90", "0.97 (default)", "1.05",
     "0.92", "1.00", "1.05",
-    "one lever per channel -- re-runnable sensitivity bands, the Leg-2 reviewer-defusing pattern",
+    "one lever per channel -- re-runnable sensitivity bands, the reviewer-defusing pattern",
     "Residential has no lever.",
     "Residential", "Office", "Retail", "Hotel",
 ]
@@ -84,7 +84,7 @@ def main():
         ax.text(x, 5.71, name, ha="center", va="center", fontsize=9.4, color=WHITE, weight="bold", zorder=6)
 
     footnote(ax, W, 0.30,
-             wrap_text("one lever per channel -- re-runnable sensitivity bands, the Leg-2 "
+             wrap_text("one lever per channel -- re-runnable sensitivity bands, the "
                        "reviewer-defusing pattern", 90),
              fontsize=8.4, color=INK)
 

@@ -31,8 +31,8 @@ LABELS = [
     "HARD WIRING GATE",
     "Number_of_People_Schedule_Name",
     "Schedule_Name",
-    "the Leg-2 bug that passed every input-side check and was only caught output-side; "
-    "Leg-3 runs a mandatory scenario-differentiation probe because of it",
+    "the two-channel stage bug that passed every input-side check and was only caught output-side; "
+    "this study runs a mandatory scenario-differentiation probe because of it",
 ]
 
 
@@ -88,8 +88,8 @@ def main():
     ax.text(wx + 1.75, fy, "✗", ha="center", va="center", fontsize=20, color=GATE_RED, weight="bold", zorder=6)
 
     ax.text(gate_x + gate_w / 2.0, gate_y + 0.18,
-             wrap_text("the Leg-2 bug that passed every input-side check and was only caught "
-                       "output-side; Leg-3 runs a mandatory scenario-differentiation probe "
+             wrap_text("the two-channel stage bug that passed every input-side check and was only caught "
+                       "output-side; this study runs a mandatory scenario-differentiation probe "
                        "because of it", 92),
              ha="center", va="bottom", fontsize=6.9, color=INK, linespacing=1.25)
 

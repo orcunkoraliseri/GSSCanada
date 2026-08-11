@@ -16,7 +16,7 @@ SCENE: Four lanes left to right: "Residential" (grey, fixed-dot "no lever" glyph
 - Office lane, slider positions: "conservative" · "hybrid" · "fullyhybrid" (WFH band)
 - Retail lane, slider positions: "0.90" · "0.97 (default)" · "1.05" (in-store share)
 - Hotel lane, slider positions: "0.92" · "1.00" · "1.05" (SARIMA 2030 band)
-- Caption line: "one lever per channel -- re-runnable sensitivity bands, the Leg-2 reviewer-defusing pattern"
+- Caption line: "one lever per channel -- re-runnable sensitivity bands, the reviewer-defusing pattern"
 - Explicit statement to render as overlay text under the Residential lane: "Residential has no lever."
 
 ## Layout notes

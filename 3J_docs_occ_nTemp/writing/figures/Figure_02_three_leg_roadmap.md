@@ -35,10 +35,10 @@ by `f5_figure_check.py` arm **C7**, which reads Table 6 from disk and fails any 
 "bit-identical" for a step whose evidence cell is not an affirmative Yes.
 
 ## Annotations to overlay afterward (exact text/numbers -- keep OUT of the AI image)
-- Leg 1 label: "Leg 1 -- Residential (AT_HOME) -- COMPLETE, 2nd Journal"
-- Leg 2 label: "Leg 2 -- + Office (AT_WORK) -- COMPLETE, validated end-to-end 2026-07-01; People-schedule wiring-bug lesson learned here"
-- Leg 3 label: "Leg 3 -- + Retail (AT_RETAIL, GSS) + Hotel (non-GSS, tourism statistics) -- this paper"
-- Chain-link connector callout: "Carried forward into Leg 3: the Step 7 base tower geometry is md5-verified byte-identical (4 IDF files); the Step 3 residential + office tiler paths are additive by design (retail kept in a separate CSV) but byte-equality was not verified -- see Table 6"
+- Leg 1 label: "Residential (AT_HOME) -- complete, published separately"
+- Leg 2 label: "+ Office (AT_WORK) -- complete, validated end-to-end 2026-07-01; People-schedule wiring-bug lesson learned here"
+- Leg 3 label: "+ Retail (AT_RETAIL, GSS) + Hotel (non-GSS, tourism statistics) -- this paper"
+- Chain-link connector callout: "Carried forward into the four-channel stage: the Step 7 base tower geometry is md5-verified byte-identical (4 IDF files); the Step 3 residential + office tiler paths are additive by design (retail kept in a separate CSV) but byte-equality was not verified -- see Table 6"
 - Small footnote under Leg 3: "four occupancy channels driving four uses inside one building -- not four building archetypes"
 - Do not label ANY leg-to-leg reuse "bit-identical" unless Table 6's evidence cell for that step is an affirmative Yes. Today that is Step 7 alone, and only for the base prototype geometry. Step 3 is graded ⚠ check source, so the Leg-2-to-Leg-3 tiler reuse may be called additive by design but never bit-identical. This applies to the Leg-1-to-Leg-2 arm and the Leg-2-to-Leg-3 arm equally.
 
