@@ -1,7 +1,21 @@
 # Figure 5 -- Hotel Side-Track (Tourism Statistics to SARIMA to Guest-Room Multiplier)
+
+> ⚠ **Paste ONLY the fenced code block below into the image tool.** Everything outside the
+> fence is authoring notes, corrections and provenance. Pasting the whole file hands the
+> generator text it is not supposed to draw.
+
 **Target:** web image-generation LLM · **Style family:** flat-2D horizontal (shared across all schematics)
 **Purpose:** show the non-GSS hotel channel end to end: monthly tourism-statistics series, SARIMA forecast with a COVID indicator, the diurnal shape function s(t), and the resulting hotel_multiplier used to modulate guest-room schedules.
 **Source:** `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md` STEP 6 box ("HOTEL SIDE-TRACK"); `deepResearch/dr_L3-05_hotel_diurnal_shape_REPORT.md`
+
+> 🔴 **Naming rule, 2026-08-11.** The project's internal stage names -- the word "Leg" followed by a digit,
+in any spelling or punctuation -- must
+> not appear anywhere in the generated image. They are this project's internal names for its own
+> construction stages; the manuscript was rewritten on 2026-08-11 to remove them from every sentence,
+> so a reader has no way to resolve them. Use "the two-channel construction stage" and "this study".
+> Colour names are styling instructions and must never be drawn as label text -- the 2026-08-11
+> Figure 1 printed the literal word "amber" inside two boxes. Crop tight: no large empty band on any
+> side, even margin of roughly 2% of image width, 500 dpi or better for the printed width.
 
 ## Prompt (paste into the image LLM)
 

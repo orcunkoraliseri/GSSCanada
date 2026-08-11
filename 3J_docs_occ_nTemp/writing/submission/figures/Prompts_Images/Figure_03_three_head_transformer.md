@@ -1,7 +1,21 @@
 # Figure 3 -- Three-Head Transformer + Non-GSS Hotel Side-Track
+
+> ⚠ **Paste ONLY the fenced code block below into the image tool.** Everything outside the
+> fence is authoring notes, corrections and provenance. Pasting the whole file hands the
+> generator text it is not supposed to draw.
+
 **Target:** web image-generation LLM · **Style family:** flat-2D horizontal (shared across all schematics)
 **Purpose:** shared encoder with three GSS decoder heads, explicitly labelled "3 GSS heads + 1 non-GSS side-track" -- the existing PNG's "4 heads" shorthand is not authoritative and must not be reproduced.
 **Source:** `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md` STEP 4 box + dr_L3-11/dr_L3-12/dr_L3-13 design-freeze notes
+
+> 🔴 **Naming rule, 2026-08-11.** The project's internal stage names -- the word "Leg" followed by a digit,
+in any spelling or punctuation -- must
+> not appear anywhere in the generated image. They are this project's internal names for its own
+> construction stages; the manuscript was rewritten on 2026-08-11 to remove them from every sentence,
+> so a reader has no way to resolve them. Use "the two-channel construction stage" and "this study".
+> Colour names are styling instructions and must never be drawn as label text -- the 2026-08-11
+> Figure 1 printed the literal word "amber" inside two boxes. Crop tight: no large empty band on any
+> side, even margin of roughly 2% of image width, 500 dpi or better for the printed width.
 
 ## Prompt (paste into the image LLM)
 

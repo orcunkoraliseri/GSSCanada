@@ -1,7 +1,37 @@
+> # 🔴🔴 DO NOT GENERATE THIS FIGURE. RETIRED 2026-08-11.
+>
+> Figure S1 is a **data figure** and is now **plotted**, not drawn, by
+> `writing/figures/SI/figS01_shares.py`, from `writing/tables/SI/Appendix_C_corrections.md` §C.1.
+> Run the script; do not paste anything below into an image tool.
+>
+> Two generated versions were produced and **both invented the bar totals**: the 2026-08-09 file
+> labelled them `4.0.1` and `0.37`, the 2026-08-11 file labelled them `3,610` and `2,071`. The true
+> values are gross **135,857.6 / 72,623.1 m2** and occupiable **107,816.0 / 57,075.4 m2**. Note that
+> this prompt already said, in its own words, to keep the numbers out of the image and overlay them
+> afterward -- and the generator drew numbers regardless, twice. A prompt cannot stop an image model
+> from writing digits into a chart; only not asking it for a chart can.
+>
+> Kept for the record, and because the annotation block below is a correct transcription of the
+> shares and is cited by `f5_figure_check.py` arm C4.
+
 # Figure S1 -- Measured Occupiable-Area Shares per Tower
+
+> ⚠ **Paste ONLY the fenced code block below into the image tool.** Everything outside the
+> fence is authoring notes, corrections and provenance. Pasting the whole file hands the
+> generator text it is not supposed to draw.
+
 **Target:** web image-generation LLM · **Style family:** flat-2D horizontal (shared across all schematics)
 **Purpose:** show the corrected (Defaut 7, 2026-07-31) occupiable-area share per channel for both tower prototypes, with a footnote flagging the superseded figures it replaces.
 **Source:** `Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md` header note ("Surfaces CORRIGEES 2026-07-31 (Defaut 7)"); `Leg3_4-split/Step8_docs/3rdJ_08_implementation_improvements.md` section Defaut 7
+
+> 🔴 **Naming rule, 2026-08-11.** The project's internal stage names -- the word "Leg" followed by a digit,
+in any spelling or punctuation -- must
+> not appear anywhere in the generated image. They are this project's internal names for its own
+> construction stages; the manuscript was rewritten on 2026-08-11 to remove them from every sentence,
+> so a reader has no way to resolve them. Use "the two-channel construction stage" and "this study".
+> Colour names are styling instructions and must never be drawn as label text -- the 2026-08-11
+> Figure 1 printed the literal word "amber" inside two boxes. Crop tight: no large empty band on any
+> side, even margin of roughly 2% of image width, 500 dpi or better for the printed width.
 
 ## Prompt (paste into the image LLM)
 

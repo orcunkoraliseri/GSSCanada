@@ -89,6 +89,7 @@ CHANNEL_COLOR = {"office": SLATE, "hotel": TEAL, "residential": AMBER, "retail":
 CHANNEL_LABEL = {"office": "Office", "hotel": "Hotel", "residential": "Residential", "retail": "Retail",
                   "residential_common": "residential-common"}
 
+SERVICE_MEP_TITLE = "Service/MEP"  # verbatim from Appendix_C_corrections.md section C.1
 FOOTNOTE = ("Corrected 2026-07-31 (Defaut 7) parse, from Sigma FloorArea x Multiplier on "
             "IsPartOfTotalArea = 1, reproducing EnergyPlus Total Building Area exactly. "
             "Superseded figures (40,846 m2 SuperTall / 26,750 m2 Tall) were 2.7 to 3.3x too "
@@ -99,23 +100,44 @@ LABELS = [
     "107,816.0 m2", "57,075.4 m2", "135,857.6 m2", "72,623.1 m2",
     "office 44.33%", "hotel 26.37%", "residential 22.50%", "retail 4.39%", "residential-common 2.40%",
     "office 44.65%", "hotel 24.91%", "residential 22.40%", "retail 5.53%", "residential-common 2.50%",
-    SERVICE_MEP,
+    SERVICE_MEP, SERVICE_MEP_TITLE,
     "Office", "Hotel", "Residential", "Retail", "residential-common",
     FOOTNOTE, CAPTION,
 ]
 
+# Segments thinner than this (inches) cannot hold their own label legibly, so they are
+# labelled outside the bar on a leader line instead of being left blank. The archived
+# 2026-08-09 render left retail (4.39%) and residential-common (2.40%) with no visible
+# value at all, because the old h > 0.35 test simply skipped them.
+INSIDE_MIN_H = 0.30
+# Fixed anchor heights (inches above the bar base) for the two outside labels. The two
+# thin segments' true mid-points are only ~0.10 in apart, which is less than one line of
+# 6.2 pt type, so the anchors are staggered and the leader line does the pointing.
+OUTSIDE_ANCHOR = {"retail": 0.30, "residential_common": 0.03}
+
 
 def stacked_bar(ax, cx, bw, base_y, height_per_pct, data):
+    """Draw one stacked bar. Every segment gets its value: thick ones inside in white,
+    thin ones outside on a leader line, so no channel is silently unlabelled."""
+    right = cx + bw / 2.0
     y = base_y
     for ch in reversed(CHANNEL_ORDER):  # smallest-drawn-first so the stack reads largest-on-top
         pct = data[ch]
         h = pct * height_per_pct
         ax.add_patch(Rectangle((cx - bw / 2.0, y), bw, h, facecolor=CHANNEL_COLOR[ch], edgecolor=WHITE,
-                                linewidth=1.2, zorder=3))
-        if h > 0.35:
-            name = "residential-common" if ch == "residential_common" else ch
-            ax.text(cx, y + h / 2.0, "%s %.2f%%" % (name, pct), ha="center", va="center",
-                     fontsize=7.2, color=WHITE, weight="bold", zorder=4)
+                                linewidth=1.0, zorder=3))
+        name = "residential-common" if ch == "residential_common" else ch
+        label = "%s %.2f%%" % (name, pct)
+        if h >= INSIDE_MIN_H:
+            ax.text(cx, y + h / 2.0, label, ha="center", va="center",
+                     fontsize=7.0, color=WHITE, weight="bold", zorder=4)
+        else:
+            mid = y + h / 2.0
+            anchor = base_y + OUTSIDE_ANCHOR[ch]
+            ax.plot([right, right + 0.13, right + 0.20], [mid, anchor, anchor],
+                    color=CHANNEL_COLOR[ch], linewidth=0.9, solid_capstyle="round", zorder=4)
+            ax.text(right + 0.25, anchor, label, ha="left", va="center", fontsize=6.2,
+                    color=INK, zorder=4)
         y += h
     return y  # top of stack
 
@@ -130,56 +152,58 @@ def main():
             raise AssertionError("%s: five segments sum to %.2f%%, not ~100%% -- BLOCKED, not drawn"
                                   % (name, seg_sum))
 
-    W, H = 9.5, 10.7
+    # Canvas. The 2026-08-09 render was 9.5 x 10.7 in for two bars, which left roughly a
+    # third of the page empty above and below the artwork -- the author's own complaint
+    # about "beaucoup d'espaces entre figure et legende". Re-laid out at page width with
+    # every band sized to its content.
+    W, H = 7.2, 5.8
     fig, ax = new_fig(W, H)
 
-    ax.text(W / 2.0, H - 0.35, wrap_text(CAPTION, 60), ha="center", va="top", fontsize=10.5, color=INK,
+    ax.text(W / 2.0, H - 0.16, wrap_text(CAPTION, 70), ha="center", va="top", fontsize=10.0, color=INK,
              weight="bold")
 
-    base_y = 2.9
-    hp = 0.058  # inches per percentage point
-    bw = 2.4
+    base_y = 1.75
+    hp = 0.0305  # inches per percentage point -> a full 100% stack is 3.05 in tall
+    bw = 1.5
+    cx1, cx2 = 1.35, 4.35
 
-    cx1, cx2 = 2.7, 6.6
     top1 = stacked_bar(ax, cx1, bw, base_y, hp, SUPERTALL)
     top2 = stacked_bar(ax, cx2, bw, base_y, hp, TALL)
 
     # Primary total = OCCUPIABLE (the denominator the five segments are shares of).
     # Secondary total = GROSS, shown smaller and clearly labelled, kept not dropped.
-    ax.text(cx1, top1 + 0.46, "occupiable %s" % SUPERTALL["occupiable"], ha="center", va="bottom",
-             fontsize=9.5, color=INK, weight="bold")
-    ax.text(cx1, top1 + 0.22, "gross %s" % SUPERTALL["gross"], ha="center", va="bottom",
-             fontsize=7.2, color="#5A5F64")
-    ax.text(cx1, base_y - 0.22, "SuperTall", ha="center", va="top", fontsize=9.5, color=INK, weight="bold")
+    for cx, top, d, name in ((cx1, top1, SUPERTALL, "SuperTall"), (cx2, top2, TALL, "Tall")):
+        ax.text(cx, top + 0.30, "occupiable %s" % d["occupiable"], ha="center", va="bottom",
+                 fontsize=8.6, color=INK, weight="bold")
+        ax.text(cx, top + 0.11, "gross %s" % d["gross"], ha="center", va="bottom",
+                 fontsize=6.8, color="#5A5F64")
+        ax.text(cx, base_y - 0.13, name, ha="center", va="top", fontsize=9.0, color=INK, weight="bold")
 
-    ax.text(cx2, top2 + 0.46, "occupiable %s" % TALL["occupiable"], ha="center", va="bottom",
-             fontsize=9.5, color=INK, weight="bold")
-    ax.text(cx2, top2 + 0.22, "gross %s" % TALL["gross"], ha="center", va="bottom",
-             fontsize=7.2, color="#5A5F64")
-    ax.text(cx2, base_y - 0.22, "Tall", ha="center", va="top", fontsize=9.5, color=INK, weight="bold")
+    # Legend -- one row under the two category labels, sized to the text it holds.
+    leg_y = 1.16
+    leg_x = 0.30
+    for ch in CHANNEL_ORDER:
+        ax.add_patch(Rectangle((leg_x, leg_y), 0.20, 0.15, facecolor=CHANNEL_COLOR[ch], edgecolor=INK,
+                                linewidth=0.7, zorder=4))
+        ax.text(leg_x + 0.27, leg_y + 0.075, CHANNEL_LABEL[ch], ha="left", va="center", fontsize=7.0, color=INK)
+        leg_x += 1.36
 
     # Service/MEP band -- visually separated, different shading, distinct label, clear gap.
-    # Share of GROSS floor area, NOT stacked into the same 100% as the five occupiable segments.
-    band_y = base_y - 1.55
-    band_h = 0.55
-    ax.add_patch(Rectangle((0.6, band_y), W - 1.2, band_h, facecolor=LIGHT_GREY, edgecolor=INK,
-                            linewidth=1.0, zorder=2))
-    ax.text(W / 2.0, band_y + band_h / 2.0, wrap_text(SERVICE_MEP, 74), ha="center", va="center",
-             fontsize=6.6, color=INK, linespacing=1.2)
+    # Share of GROSS floor area, NOT stacked into the same 100% as the five occupiable
+    # segments; the band now names itself instead of opening on a bare percentage.
+    band_y, band_h = 0.52, 0.44
+    ax.add_patch(Rectangle((0.30, band_y), W - 0.60, band_h, facecolor=LIGHT_GREY, edgecolor=INK,
+                            linewidth=0.9, zorder=2))
+    ax.text(0.44, band_y + band_h / 2.0, SERVICE_MEP_TITLE, ha="left", va="center", fontsize=7.2,
+             color=INK, weight="bold", zorder=3)
+    ax.text(1.30, band_y + band_h / 2.0, wrap_text(SERVICE_MEP, 88), ha="left", va="center",
+             fontsize=6.4, color=INK, linespacing=1.25, zorder=3)
 
-    # Legend -- placed in the gap between the category labels and the service/MEP band,
-    # well clear of the total-area labels above the bars.
-    leg_y = 2.05
-    leg_x = 0.55
-    for ch in CHANNEL_ORDER:
-        ax.add_patch(Rectangle((leg_x, leg_y), 0.24, 0.19, facecolor=CHANNEL_COLOR[ch], edgecolor=INK,
-                                linewidth=0.8, zorder=4))
-        ax.text(leg_x + 0.33, leg_y + 0.095, CHANNEL_LABEL[ch], ha="left", va="center", fontsize=7.4, color=INK)
-        leg_x += 1.75
+    footnote(ax, W, 0.10, wrap_text(FOOTNOTE, 118), fontsize=5.8, color=INK)
 
-    footnote(ax, W, 0.15, wrap_text(FOOTNOTE, 95), fontsize=6.0, color=INK)
-
-    save_both(fig, OUT)
+    # 500 dpi at a 7 in placed width is the Elsevier minimum for combination art;
+    # this canvas is 7.2 in wide, so 500 * 7 / 7.2 = 486 is the floor. Rendered at 520.
+    save_both(fig, OUT, dpi=520)
 
 
 if __name__ == "__main__":

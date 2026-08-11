@@ -182,15 +182,22 @@ def footnote(ax, w, y, text, fontsize=6.6, color=INK, ha="center", x=None):
             color=color, wrap=True)
 
 
-def save_both(fig, out_path_no_ext):
-    """Write <out_path_no_ext>.pdf and .png (300 dpi), both build-deterministic."""
+def save_both(fig, out_path_no_ext, dpi=300):
+    """Write <out_path_no_ext>.pdf and .png, both build-deterministic.
+
+    `dpi` applies to the PNG only (the PDF is vector). It defaults to 300 so every
+    existing caller is byte-unchanged; pass a higher value for figures that must
+    clear a journal's raster minimum at printed width. Elsevier asks 500 dpi for
+    combination art, so a figure drawn W inches wide and placed at ~7 in on the
+    page needs dpi >= 500 * 7 / W.
+    """
     os.makedirs(os.path.dirname(out_path_no_ext), exist_ok=True)
     pdf_path = out_path_no_ext + ".pdf"
     png_path = out_path_no_ext + ".png"
     # Suppress PDF /CreationDate and /ModDate so the byte stream (and its md5) is
     # a pure function of the drawing code, not of wall-clock time.
     fig.savefig(pdf_path, metadata={"CreationDate": None, "ModDate": None})
-    fig.savefig(png_path, dpi=300)
+    fig.savefig(png_path, dpi=dpi)
     plt.close(fig)
     return pdf_path, png_path
 
