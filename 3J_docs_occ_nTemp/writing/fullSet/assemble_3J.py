@@ -377,6 +377,42 @@ def strip_for_submission(doc):
     return clean, manifest
 
 
+# ---------------------------------------------------------------------------
+# USER DECISION 2026-08-11: the supplementary material ships as its OWN document.
+# It is split off AFTER strip_for_submission(), not before, on purpose: the strip's
+# residue check, caption loss check and image loss check all run over the whole
+# document, and splitting first would halve what each of them can see.
+#
+# The split is a partition, never a copy: every caption and every image in the stripped
+# document lands in exactly one of the two halves, and that is asserted here rather than
+# trusted. A supplementary table that silently stayed in both files, or in neither, is
+# the same failure class as the caption the strip used to delete.
+# ---------------------------------------------------------------------------
+SI_HEADING = "# Supplementary material"
+
+
+def split_supplementary(clean):
+    """Return (main, si). Partitions the stripped document at the SI heading."""
+    lines = clean.split("\n")
+    hits = [i for i, l in enumerate(lines) if l.strip() == SI_HEADING]
+    if len(hits) != 1:
+        raise AssertionError("expected exactly one '%s' heading, found %d"
+                             % (SI_HEADING, len(hits)))
+    cut = hits[0]
+    main = "\n".join(lines[:cut]).rstrip("\n") + "\n"
+    si = "\n".join(lines[cut:]).rstrip("\n") + "\n"
+
+    # A partition conserves content. Count on both sides and name the difference.
+    for pat, what in ((CAPTION, "caption"), (IMAGE, "image")):
+        a, b, whole = len(pat.findall(main)), len(pat.findall(si)), len(pat.findall(clean))
+        if a + b != whole:
+            raise AssertionError("SI split did not conserve %ss: %d + %d != %d"
+                                 % (what, a, b, whole))
+    if SI_HEADING in main:
+        raise AssertionError("the SI heading survived in the main document")
+    return main, si
+
+
 def find(name, dirs):
     for d in dirs:
         p = os.path.join(d, name)
@@ -530,8 +566,11 @@ def main():
     if not os.path.isdir(prev):
         os.makedirs(prev)
     draft = os.path.join(prev, "3J_full_manuscript.md")     # working copy, apparatus intact
-    subm = os.path.join(BASE, "readySubmission.md")         # submission copy, apparatus stripped
-    for path, text in ((draft, doc), (subm, clean)):
+    subm = os.path.join(BASE, "readySubmission.md")         # submission copy, main document
+    subm_si = os.path.join(BASE, "readySubmission_SI.md")   # submission copy, supplementary
+    main_txt, si_txt = split_supplementary(clean)
+    outputs = ((draft, doc), (subm, main_txt), (subm_si, si_txt))
+    for path, text in outputs:
         with io.open(path, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)
 
@@ -564,7 +603,16 @@ def main():
           % (total, doc.count("\n") + 1, clean.count("\n") + 1))
     print("  Source files in chapters/ and tables/ were NOT modified; they keep everything.")
 
-    for path, text in ((draft, doc), (subm, clean)):
+    print("\nSUPPLEMENTARY MATERIAL -- split off as its own document:")
+    print("  main document  %5d lines, %2d captions, %2d images"
+          % (main_txt.count("\n") + 1, len(CAPTION.findall(main_txt)),
+             len(IMAGE.findall(main_txt))))
+    print("  supplementary  %5d lines, %2d captions, %2d images"
+          % (si_txt.count("\n") + 1, len(CAPTION.findall(si_txt)),
+             len(IMAGE.findall(si_txt))))
+    print("  partition conserved every caption and every image (asserted, not assumed).")
+
+    for path, text in outputs:
         with io.open(path, encoding="utf-8") as fh:
             got = hashlib.md5(fh.read().encode("utf-8")).hexdigest()
         exp = hashlib.md5(text.encode("utf-8")).hexdigest()

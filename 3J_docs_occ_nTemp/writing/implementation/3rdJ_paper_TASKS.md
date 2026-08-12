@@ -2122,3 +2122,163 @@ row now point at Table 7 instead of re-narrating it.
    offered, not done.
 2. The Highlights stay bulleted, unchanged from the previous round.
 3. `f3`'s two failing arms, unchanged and not touched by this round.
+
+---
+
+## 2026-08-11 #5: Discussion cut a second time, supplementary material split into its own document
+
+Author's request, two items, both delivered.
+
+### 1. The Discussion is cut by half again
+
+`chapters/Chapter_06_Discussion.md`, **1,367 to 697 words, a 49.0 % cut** (74 % against the 2,656 words
+it held before the Limitations merge earlier the same day). Seven paragraphs, continuous prose, no
+sub-headings, no L-numbers.
+
+Every deciding number survives in the chapter: the 18.91 h hotel peak against the 11.90 to 12.37 h
+cluster and the 14.95 h whole-building peak; the 34 to 1 and 3.9 to 1 day-to-night ratios and the hotel
+inversion; the 0.941 median coincidence factor; five of nine steps with no cross-stage comparison; the
+85.45 uninjected control against the 100 kWh/m2/yr floor and the 15 % shortfall; the ~17 % heating share
+against the implied 35 to 45 %; the three stated floors; median 71.02 and 56 / 56 FAIL; the hotel
+clusters 203.33 to 218.22 and 302.86 to 318.42, the 84.64 kWh/m2/yr gap at 70.5 % of band width and the
+28 FAIL cells; 3,499 of 16,367 households, 21.38 %; and the prior-study extraction defect moving three of
+four band verdicts.
+
+What was cut is restatement of Table 7, which the chapter now points at explicitly for all sixteen
+limitations. The four numbers dropped from the prose are the 24.97 against 29.97 m2/person occupant
+density, the 7.5028 W/m2 blanket equipment power, the retail 0.95 peak and the DHW -0.98 slope. **All
+four still stand in Table 7**, which ships in the supplementary document. Nothing was left without a
+home; this was checked per number before the cut, not after.
+
+### 2. The supplementary material is now a separate document
+
+`assemble_3J.py` gained `split_supplementary()`. It partitions the stripped document at the single
+`# Supplementary material` heading and writes a third output, `fullSet/readySubmission_SI.md`, with
+`readySubmission.md` keeping the main document only. The working draft in `fullSet/previous/` is
+unchanged and still holds everything.
+
+Two properties were designed in rather than hoped for:
+
+* **The split runs AFTER `strip_for_submission()`.** The strip's residue check, caption loss check and
+  image loss check all reason over the whole document. Splitting first would have halved what each of
+  them could see, which is the vacuity failure class this project has already been bitten by.
+* **The split asserts it is a partition.** Captions and images are counted in both halves and against
+  the whole; `a + b != whole` raises. It also refuses to proceed if the SI heading survives in the main
+  document, or if the heading is absent or duplicated. A supplementary table quietly present in both
+  files, or in neither, would otherwise look exactly like a correct build.
+
+The docx recipe is now two pandoc runs and two `post.py` runs. The second produces
+`submission/Supplementary material.docx`, the filename the author asked for.
+
+### Verification, against the installed files
+
+Build: 8 tables and 15 figures inlined, 0 appended, 0 wrapped captions, `captions 23, images 15` after
+the strip, **0 unresolved BUILD NOTES**. Split: main 873 lines / 18 captions / 14 images, supplementary
+171 lines / 5 captions / 1 image; 18 + 5 = 23 and 14 + 1 = 15, so the partition conserved everything.
+
+`3J_manuscript_submission.docx`, 5,590,673 bytes: Heading sequence **1 Introduction, 2 Datasets,
+3 Methods, 4 Experimental Design, 5 Results, 6 Discussion, 7 Conclusion, References** and nothing after
+it. 14 images, 14 drawings, 5 tables, 11,935 words. The string "Supplementary material" appears **0**
+times.
+
+`Supplementary material.docx`, 163,105 bytes: 5 exhibit captions, exactly Table 4, Table 7, Table A1,
+Table A2 and Figure S3. 1 image, 1 drawing, 9 tables, 1,515 words. The string appears once, as its own
+title.
+
+Both files: 0 em dashes, 0 en dashes, 0 `check source`, 0 `BUILD NOTE`, 0 `<v:rect>`.
+
+`f4` prose rules **7 PASS / 0 FAIL**, 30 files, 22 exhibits. C7 still green: the five exhibits that moved
+out of the main document are all still cited by number in body prose, which is what C7 measures. The gate
+scans `chapters/` and `tables/`, not the built output, so the split cannot flatter it.
+
+### Left open
+
+Unchanged from #4. Table numbering is still not in first-citation order, main text 1, 2, 6, 3, 5 and
+supplementary 4, 7, A1, A2; flagged again, renumbering not done unasked. `f3` still 3 PASS / 2 FAIL on
+the stale figure registry, not run this round. `f5` not run, it is not read-only.
+
+---
+
+## 2026-08-11 #6: the handoff brought up to date, and a stale figure tree found while doing it
+
+Author asked for `Prompts/RESUME.md` to be updated for future sessions. Predecessor archived to
+`Prompts/archive/RESUME.2026-08-11_pre_si_split_round.md` (604 lines, guarded before the edit), then the
+file edited in place by two assert-guarded scripts, 8 substitutions and 5 section rewrites, each of
+which had to match exactly once. 604 to 598 lines.
+
+**What was stale, and it was stale in a way that would have cost a session:**
+
+* Three sections headed **Open BUILD NOTE 1 / 2 / 3 of 3** described blockers that had all closed. A
+  fresh session would have chased three phantom items. Replaced by one section recording how each
+  closed, because the reason is what stops a closed item being reopened by accident.
+* The hard rule read **"Do not modify `f3`. Its 4 PASS / 1 FAIL is the correct answer"** while the
+  numbers table three screens above read 3 PASS / 2 FAIL. Rewritten so the rule is about the gate, not
+  about a verdict that moves.
+* `fullSet/` was still described as holding one file; the rebuild recipe, the tree listing, the caption
+  counts and the ledger line count all predated the SI split.
+* The round-by-round ledger stopped at 2026-08-09 #5. Six rounds of 2026-08-11 added.
+* The work-that-is-left table led with three closed items.
+
+### 🔴 The finding: the submission figure tree was never re-synced
+
+Checked while rewriting the figures section rather than copied forward, and the numbers did not agree
+with the text.
+
+The 2026-08-11 replot corrected the nine schematics and re-rendered them from their scripts, 4500 to
+6600 px with a vector PDF each, into `writing/figures/`. `pandoc` reads
+`writing/submission/figures/`. **The copy never happened.** Measured: Figures 1 to 6, the graphical
+abstract, S2 and S3 are **1376 x 768 with no PDF** in the submission tree against 4500 to 6600 px with
+a PDF in the source tree. Figure S1 was copied; Figures 7 to 11 were never touched.
+
+Verified against the installed files: md5 of every `word/media/` part against both trees returns **14 of
+15 from the submission tree and 6 of 15 from the source tree**, and the fifteenth, Figure S3 in the
+supplementary document, is also the submission tree's copy. **Nine superseded images ship across the two
+documents**, at about 184 dpi at the 190 mm page width against Elsevier's 500 dpi minimum for
+combination art.
+
+**No gate can see this.** `f3`, `f5` and `f6` all read the source tree, where the fix is real. The
+assembler counts how many images survive the strip, which is presence, not version. Both trees carry the
+same fifteen filenames, so every path resolves. New failure class **#47**: *a file existing at the path
+the build reads is not evidence that it is the file this round produced*, and *a note is resolved when
+the SHIPPED artefact changes, not when the source does*.
+
+**Not fixed this round.** It changes the shipped deliverable and the author has previously made an
+explicit call on this artwork, so it is offered rather than done: copy nine PNGs and their PDFs, rebuild
+both `.docx`, re-verify by md5, re-run `f3` and update the registry. It is item 0 of the work list.
+
+### Left open
+
+Everything in the work-that-is-left table of `Prompts/RESUME.md`, item 0 first. No manuscript content,
+band, gate verdict or measured number was touched this round.
+
+---
+
+## 2026-08-11 #7: the stale figures replaced, both documents rebuilt
+
+The defect logged in #6, fixed on the author's word. **No figure was regenerated and no image was
+created** - the corrected files already existed; this was a copy.
+
+**What moved.** Nine PNGs and their vector PDFs copied from `writing/figures/` into
+`writing/submission/figures/` (S1, S2, S3 into `SI/`): Figures 1 to 6, the graphical abstract, S2 and
+S3, plus S1's PDF which was also absent. The superseded 1376 x 768 generated art was archived first, to
+`writing/submission/figures/archive/generated_1376x768_replaced_2026-08-11/`, before anything was
+overwritten.
+
+**Verification, against the installed files.** md5 of every PNG in `writing/figures/` against the
+`word/media/` parts of both documents: **15 of 15 found**, against 6 of 15 before the copy. Every
+figure in the paper is now between about **500 and 880 dpi** at the 190 mm page width, Figure S1 the
+smallest at ~500, against Elsevier's 500 dpi minimum for combination art. Nine of fifteen were at ~184
+dpi before.
+
+`3J_manuscript_submission.docx` **5,590,673 to 4,261,337 bytes**, 14 media parts; `Supplementary
+material.docx` **163,105 to 138,764 bytes**, 1 media part. The files got smaller while the artwork got
+larger, because the replaced images were photographic-style renders and the corrected ones are
+script-drawn line art.
+
+Build unchanged otherwise: 8 tables and 15 figures inlined, `captions 23, images 15`, split 18+5 and
+14+1 conserved, **0 unresolved BUILD NOTES**. No chapter, table, band, gate verdict or measured number
+was touched.
+
+**Not done, and it is now the top of the work list:** `f3` still reads 3 PASS / 2 FAIL. Both arms are
+the 2026-08-11 replot that the figure REGISTRY never recorded. Now that the two trees agree, updating
+the registry is bookkeeping with nothing else in the way. **Fix the registry, never the gate.**

@@ -1,6 +1,6 @@
 # RESUME - THE 3J director prompt. Start every session here.
 
-**Last updated: 2026-08-11, "handoff refreshed, stale submission figures replaced" round.**
+**Last updated: 2026-08-11, "Discussion cut again, supplementary material split into its own file" round.**
 
 > 🔴 **THIS FILE IS THE FIXED ADDRESS OF THE 3J HANDOFF. There is no second one.**
 > Instruction from the author, 2026-08-09: *"je veux seulement cet prompt RESUME.md, comme un prompt
@@ -32,17 +32,19 @@
 ## Contents
 
 1. [Your role](#your-role)
-2. [Where the paper stands, 2026-08-11](#where-the-paper-stands-2026-08-11)
+2. [Where the paper stands, 2026-08-09](#where-the-paper-stands-2026-08-09)
 3. [The document, and how to rebuild it](#the-document-and-how-to-rebuild-it)
-4. [The figures, and how the trees are kept honest](#the-figures-and-how-the-trees-are-kept-honest)
+4. [The figures, and who owns them](#the-figures-and-who-owns-them)
 5. [Everything completed, round by round](#everything-completed-round-by-round)
-6. [The three BUILD NOTES that used to be open, and how each closed](#the-three-build-notes-that-used-to-be-open-and-how-each-closed)
-7. [What is settled, so nobody reopens it](#what-is-settled-so-nobody-reopens-it)
-8. [The work that is left, in the order I would do it](#the-work-that-is-left-in-the-order-i-would-do-it)
-9. [Refusals still standing](#-refusals-still-standing-the-first-one-costs-money-if-it-is-forgotten)
-10. [Standing hazards](#standing-hazards-and-every-one-of-them-has-already-bitten-this-project)
-11. [Hard rules for this phase](#hard-rules-for-this-phase)
-12. [The closure ritual, every round, unprompted](#the-closure-ritual-every-round-unprompted)
+6. [Open BUILD NOTE 1 of 3: Table A2 ships unlabelled and uncited](#open-build-note-1-of-3-table-a2-ships-unlabelled-and-uncited)
+7. [Open BUILD NOTE 2 of 3: two references have never been opened](#open-build-note-2-of-3-two-references-have-never-been-opened)
+8. [Open BUILD NOTE 3 of 3: the generated-image defects](#open-build-note-3-of-3-the-generated-image-defects)
+9. [What is settled, so nobody reopens it](#what-is-settled-so-nobody-reopens-it)
+10. [The work that is left, in the order I would do it](#the-work-that-is-left-in-the-order-i-would-do-it)
+11. [Refusals still standing](#-refusals-still-standing-the-first-one-costs-money-if-it-is-forgotten)
+12. [Standing hazards](#standing-hazards-and-every-one-of-them-has-already-bitten-this-project)
+13. [Hard rules for this phase](#hard-rules-for-this-phase)
+14. [The closure ritual, every round, unprompted](#the-closure-ritual-every-round-unprompted)
 
 ---
 
@@ -57,13 +59,10 @@ Reply in English. The author writes in French. Keep replies short unless detail 
 **In five lines, for the impatient:**
 
 - The 3J paper is **written, built, rendered and gate-clean**. It is **not submitted**.
-- It now ships as **TWO documents**: the manuscript and `Supplementary material.docx`. Build both,
-  every time.
 - Venue: **Building and Environment (Elsevier)**, reconfirmed 2026-08-09, which made three
   commitments binding.
 - **This is a WRITING phase. Zero simulation.** No `sbatch`, no cells, no re-runs.
-- **Zero open BUILD NOTES**, all eleven resolved, and **zero known defects** in the shipped files.
-  The stale-figure problem found earlier on 2026-08-11 is fixed and verified inside both `.docx`.
+- **Zero open BUILD NOTES.** The build prints the count on every run; it reads `none` as of 2026-08-11.
 - 2J was submitted to Building Simulation on 2026-08-07 and is frozen pending its decision letter.
 
 ---
@@ -93,9 +92,8 @@ front of the authors with the bar restated and the venue was chosen again, recor
 |---|---|
 | `readySubmission.md` | **873 lines**, 18 exhibit captions. The supplementary half is now a separate file |
 | `readySubmission_SI.md` | **171 lines**, 5 exhibit captions (Tables 4, 7, A1, A2 and Figure S3) |
-| `3J_manuscript_submission.docx` | **4,261,337 bytes** · **14 images** · 5 tables · **11,935 words** · **single** spaced |
-| `Supplementary material.docx` | **138,764 bytes** · 1 image · 9 tables · **1,515 words**, built by the same recipe |
-| figures inside those two files | **15 of 15** md5-identical to `writing/figures/`, checked 2026-08-11 |
+| `3J_manuscript_submission.docx` | **5,590,673 bytes** · **14 images** · 5 tables · **11,935 words** · **single** spaced |
+| `Supplementary material.docx` | **163,105 bytes** · 1 image · 9 tables · **1,515 words**, built by the same recipe |
 | equations | **6 native Word (OMML)**, 3 of them displayed. Formulas are no longer code blocks |
 | lists in the document | **5**, and all five are the Highlights. Everything else is prose |
 | `f3` asset provenance | **3 PASS / 2 FAIL** - the figure registry is stale since the 2026-08-11 replot, see below. **Do not modify `f3` itself** |
@@ -112,8 +110,8 @@ figures present in the submission tree that are not in the registry, and C4 repo
 **House rules for exhibits, set by the author 2026-08-11 and now enforced by the build:**
 a figure caption goes **below** the figure, a table caption goes **above** the table, every caption is
 **about five words** on **one line**, and **bold is not used inside a paragraph** - the only bold left
-in the document is the `**Figure N.**` / `**Table N.**` labels - **23 of them, 18 in the manuscript
-and 5 in the supplementary document** - which the assembler, the loss check and `f4`'s C7 all key on. The build prints `captions that wrapped onto a second line`; it must stay 0,
+in the document is the 24 `**Figure N.**` / `**Table N.**` labels, which the assembler, the loss check
+and `f4`'s C7 all key on. The build prints `captions that wrapped onto a second line`; it must stay 0,
 because a wrapped caption used to be split in half by its own figure.
 
 **House rules for the PROSE, set by the author 2026-08-11 in the same day's second message. It is a
@@ -170,27 +168,16 @@ and after, and is genuinely read-only.
 
 ## The document, and how to rebuild it
 
-`writing/fullSet/` holds **two** files since 2026-08-11: `readySubmission.md`, the manuscript, and
-`readySubmission_SI.md`, the supplementary material. The working draft, which still holds both halves
-and every apparatus block, lives in `writing/fullSet/previous/`.
-
-All three come from **one** in-memory string built by `assemble_3J.py`. The draft is that string
-verbatim; the two submission files are that string put through `strip_for_submission()` and then
-**partitioned** by `split_supplementary()`. 🔴 **The split runs AFTER the strip, and the order is
-load-bearing:** the strip's residue check, caption loss check and image loss check all reason over the
-whole document, and splitting first would halve what each of them can see. The split then asserts it is
-a partition - every caption and every image lands in exactly one half, and a missing, duplicated or
-surviving `# Supplementary material` heading raises. Both the strip's manifest and the split's counts
-are printed on every build.
+`writing/fullSet/` holds **one** file, `readySubmission.md`, the submission copy. The working draft
+lives in `writing/fullSet/previous/`. Both are written from one in-memory string by `assemble_3J.py`;
+they differ only by `strip_for_submission()`, which prints a manifest of every removal on every build.
 
 ```
 writing/submission/
   3J_manuscript_submission.md     <- readySubmission.md, figure paths rebased ../figures/ -> figures/
-  3J_manuscript_submission.docx   <- 5.59 MB, 18 captions, 14 images, 5 tables, SINGLE spaced
-  3J_supplementary_material.md    <- readySubmission_SI.md, same rebase
-  Supplementary material.docx     <- 163 kB, 5 captions, 1 image, 9 tables. The author named this file
-  figures/  figures/SI/           <- the 15 shipped PNG, each with its vector PDF. Re-synced 2026-08-11
-  figures/Prompts_Images_v3/      <- the image-generation prompts (note the _v3 suffix)
+  3J_manuscript_submission.docx   <- 5.76 MB, 24 captions, 15 images, 14 tables, SINGLE spaced
+  figures/  figures/SI/           <- the 15 shipped PNG (+ vector PDF for figures 7-11 only)
+  figures/Prompts_Images/         <- 15 image-generation prompts + README
   figures/archive/                <- superseded matplotlib art · jpg duplicates · the 3 refused figures
   tables/   tables/SI/
   extra/build_scripts/            <- ref_submit.docx, ref_submit_single.docx, post.py, submit_check.py
@@ -236,56 +223,36 @@ blocking. **Deleting the note would delete the reason.** **Clean is not ready.**
 
 ---
 
-## The figures, and how the trees are kept honest
+## The figures, and who owns them
 
-**All 15 figures in both documents are the corrected 2026-08-11 set, verified inside the installed
-files.** md5 of every PNG in `writing/figures/` against the `word/media/` parts of the two `.docx`
-returns **15 of 15**. Each also has a vector PDF beside it in the submission tree.
+**All 15 images in the `.md` are present in the `.docx`, verified byte-identical by md5 against
+`word/media/` on 2026-08-09.** This is the current, correct state of the artwork:
 
-| | px | about, at the 190 mm page width |
-|---|---|---|
-| Figures 1 to 6, graphical abstract, S2, S3 | 4500 to 6600 wide | 600 to 880 dpi |
-| Figures 7 to 11, the measured results | 4622 to 6597 wide | 620 to 880 dpi |
-| Figure S1 | 3744 x 3016 | about 500 dpi, the smallest in the paper |
+| figure | file | px | origin |
+|---|---|---|---|
+| graphical abstract | `graphicalAbstract.png` | 1376 x 768 | **author-generated** |
+| 1 to 6 | `Figure_01..06_*.png` | 1376 x 768 | **author-generated** |
+| S1 | `SI/Figure_S01_occupiable_shares.png` | 1200 x 896 | **author-generated** - 🔴 defective, see BUILD NOTE 3 |
+| S2 | `SI/Figure_S02_scenario_levers.png` | 1376 x 768 | **author-generated** |
+| S3 | `SI/Figure_S03_leg2_pipeline.png` | 1376 x 768 | **author-generated**, clean |
+| **7 to 11** | `Figure_07..11_*.png` | 4622 to 6597 | 🔴 **matplotlib, 600 dpi + vector PDF. These are the measured results. They were NOT replaced and must not be, absent a decision** |
 
-Elsevier asks **500 dpi** for combination art, so the whole set clears it, S1 by the narrowest margin.
+The generated images are about **184 dpi** at the 190 mm page width, against Elsevier's **500** for
+combination art; the files they replaced were 5400 to 6600 px. Figures 1-6, S1, S2 and S3 now have
+**no vector PDF**. That, and three visible rendering defects, is BUILD NOTE 3.
 
-🔴 **THE HAZARD THIS SECTION EXISTS FOR, because it already bit once.** There are **two figure trees**:
-`writing/figures/` is the source that the plotting scripts and every gate read, and
-`writing/submission/figures/` is what `pandoc` actually reads at build time. They hold the **same
-fifteen filenames**. On 2026-08-11 the nine schematics were corrected and re-rendered into the source
-tree, the BUILD NOTE was marked RESOLVED, the build printed zero open notes - and **the copy into the
-submission tree never happened**, so three further rounds shipped `.docx` files carrying the superseded
-1376 x 768 artwork at about 184 dpi. Nothing failed: every gate reads the source tree where the fix was
-real, every path resolved because both trees carry the filename, and the build's image count asks how
-many images survive the strip, not which version each one is.
-
-**After touching any figure, do both of these:**
-
-```
-cp writing/figures/<name>.png writing/submission/figures/<name>.png      # SI figures -> figures/SI/
-cp writing/figures/<name>.pdf writing/submission/figures/<name>.pdf
-```
-
-then rebuild and **md5 every part in `word/media/` of the INSTALLED files against the source tree**.
-That comparison is the only check that can tell the two trees apart. The superseded generated art is
-kept at `writing/submission/figures/archive/generated_1376x768_replaced_2026-08-11/`.
-
-**Figures 7 to 11 are the measured results and must not be replaced** absent an explicit decision. All
-15 have a prompt at `writing/submission/figures/Prompts_Images_v3/`; the six that carry measured
-numbers - 7, 8, 9, 10, 11, S1 - have prompts that **embed the actual series in a table** from the frozen
-deliverable, with file, column and source line named. S1's prompt is marked **DO NOT GENERATE**: two
-separate generation rounds returned invented shares, so it is plotted by
-`writing/figures/SI/figS01_shares.py` instead. Figure 9's series needs `metric == "energy_W"` (Step-9
-script `:331`); without that filter every channel returns 48 rows and the plotting code's
-`len(y) != 24` guard silently skips it.
+**Every one of the 15 has a prompt** at `writing/submission/figures/Prompts_Images/`. The six that
+carry measured numbers - 7, 8, 9, 10, 11, S1 - have prompts that **embed the actual series in a
+table**, from the frozen deliverable, with file, column and source line named. Figure 9's series needs
+`metric == "energy_W"` (Step-9 script `:331`); without that filter every channel returns 48 rows and
+the plotting code's `len(y) != 24` guard silently skips it.
 
 ---
 
 ## Everything completed, round by round
 
 The full detail is in `writing/implementation/3rdJ_paper_TASKS.md`, one Progress Log entry per line
-below. This table exists so a fresh session knows what is **done and closed** without reading 2,198
+below. This table exists so a fresh session knows what is **done and closed** without reading 1,862
 lines. The third column is what the round found that was not what it was sent to do - that column is
 the reason the ledger is worth keeping.
 
@@ -339,18 +306,6 @@ the reason the ledger is worth keeping.
 | #4 | author-generated images installed; the never-create-images rule written into `CLAUDE.md` and `README.md`; prompts written for all six remaining figures | 🔴 **`f5` reverted the install while checking it**; **C6 passed on a figure whose shipped PNG reads `4.0.1`**; **three generated results figures came back fabricated and were refused** - 3 open |
 | #5 | the handoff and this file merged into one director prompt at this path; the 15 installed images re-verified inside the shipped `.docx` | - |
 
-### The paper-not-a-report phase - 2026-08-11
-
-| # | What was delivered | What it also found |
-|---|---|---|
-| #1 | figures corrected and re-rendered from their scripts; BUILD NOTE 3 answered in the sources | 🔴 the correction **never reached `submission/figures/`** - not noticed until 2026-08-11 #6 |
-| #2 | the exhibit house rules: five-word captions, figure captions below, table captions above, no bold in paragraphs | 🔴 **five of fifteen figures shipped INSIDE their own caption** - the assembler matched only the placeholder line |
-| #3 | *"ceci n'est pas un rapport, c'est une papier"*: one serif font, native Word equations, no dates or paths, lists 51 to 5, Table 7 to the SI, 20,025 to 15,398 words | 🔴 **the strip deleted a figure and the loss check was blind**, because it counts captions and the caption survived |
-| #4 | Table 4 to the appendix, Limitations merged into Discussion, that chapter cut 2,656 to 1,367 words | table numbering is no longer in first-citation order; flagged, not fixed |
-| #5 | the Discussion cut again to **697 words**; **the supplementary material split into its own `.docx`** | - |
-| #6 | this file brought up to date for the next session | 🔴 **the stale submission figure tree** - nine superseded images were in the shipped manuscript |
-| #7 | the nine figures re-synced and both `.docx` rebuilt; **15 of 15 verified inside the installed files** | - |
-
 ### What the 2026-08-09 round 2 changed, in detail
 
 **No thematic breaks in the submission copy.** Word was showing 60 objects named "Horizontal Line";
@@ -380,37 +335,95 @@ and the eSim companion instead. 2J is now `Iseri and Hachem-Vermette (under revi
 
 ---
 
-## The three BUILD NOTES that used to be open, and how each closed
+## Open BUILD NOTE 1 of 3: Table A2 ships unlabelled and uncited
 
-**All eleven BUILD NOTES are RESOLVED and the build prints `none`.** These three were the blocking ones
-for most of the paper's life, and each is kept here with the reason it closed, because the reason is
-what stops it being reopened by accident.
+This is a build-mechanism defect, not a content one, and it was found while verifying the .docx.
 
-**1. Table A2 shipped unlabelled and uncited. CLOSED 2026-08-11.**
-`Table_A1_A2.md` carries two tables, `inline_table()` strips every `^# ` line, and A2's `# ` heading was
-its only label - so the AT_RETAIL codebook shipped as an unnumbered tail of the model card. Closed by
-replacing that heading with a **bold caption line**, which the assembler does not strip. 🔴 **Keep the
-lesson:** `f4`'s C7 reported 22/22 the whole time, because C7 checks that every caption it FINDS is
-cited, and this caption had been destroyed before C7 ever saw the document. A check that enumerates
-from the artefact cannot see what was deleted upstream.
+> `writing/tables/SI/Table_A1_A2.md` carries **two** tables under two `# ` headings.
+> `Chapter_10_Supplementary.md:3` has **one** placeholder for the file, and `assemble_3J.py`'s
+> `inline_table()` strips every `^# ` line. A1's label is supplied by the placeholder; **A2's is
+> deleted.** The AT_RETAIL codebook ships as an unlabelled continuation of the model card, under no
+> number, and **no chapter cites "Table A2" anywhere.** In the built docx: "Table A1" 3 times,
+> "Table A2" and "AT_RETAIL codebook" zero, while A2's body ships in full.
+>
+> 🔴 **`f4`'s C7 is structurally blind to it.** C7 checks that every caption it FINDS is cited in
+> prose, so it reports 22/22 while a 23rd exhibit rides along unnumbered - the caption was destroyed
+> before C7 ever saw the document.
+>
+> **Two options, and the choice is editorial, which is why it was not patched.**
+> **(a, recommended)** A2 is its own SI table: split the file into `Table_A1_model_card.md` and
+> `Table_A2_retail_codebook.md`, add a `**Table A2.**` placeholder and caption, and cite it once in
+> prose - the natural site is **§3** where the AT_RETAIL rule is defined, or **§2** with the GSS
+> cycles, **not §8**. The codebook is about the DATA and the model card is about the MODEL, and a
+> reader sent to a model card will not look there for a variable crosswalk.
+> **(b)** A2 is part of the model card: fold it in as `### A1.6 - AT_RETAIL codebook per GSS cycle`,
+> which needs no new citation because A1 is already cited, and drop the "Table A2" name.
+>
+> Re-run `f4` afterwards and **expect the exhibit count to move off 22**. If it does not, the fix did
+> not take.
 
-**2. Kurin et al. 2022 and Menon et al. 2020 had never been opened. CLOSED 2026-08-11 BY REMOVAL.**
-Both came from the deep-research report family in which roughly half of all citations have been found
-fabricated, and the Kurin entry was `dr_L3-13` reference 5 minus two fields that were self-evidently
-placeholders. Neither was load-bearing, so they were **removed rather than verified**. 🔴 **Do not
-re-add either from a report.** If one is wanted back, it is a `V<NN>` prompt for the author to run
-externally - never a search from this session.
+---
 
-**3. The generated-image defects. CLOSED 2026-08-11 in the sources, and this is the one that is only
-half-true.** The nine author-generated schematics were reverted to a corrected script-drawn set:
-Figure 1 draws nine boxes on one row (the generated replacement drew twelve, with STEP 5, 6 and 7 each
-twice), Figures 4 and 6 carry their previously blank labels, S2 carries all nine scenario-lever values,
-and the graphical abstract places the four channel peaks at 12.1, 11.9, 12.3 and 18.9 h with the whole
-building near 15 h, which is what §5.3 and Figure 10 report. **S1 was taken out of the
-generate-from-a-prompt route entirely** after a second generated version repeated the defect with
-different digits. 🔴 **But that correction never reached the submission tree - see the figures section
-above. The BUILD NOTE is marked resolved and the shipped `.docx` still carries the old artwork.**
-*Generalises:* a note is resolved when the SHIPPED artefact changes, not when the source does.
+## Open BUILD NOTE 2 of 3: two references have never been opened
+
+`Kurin et al. 2022` and `Menon et al. 2020` have been cited by name in the SI architecture table since
+it was written, and until 2026-08-09 **neither had a reference entry anywhere in the paper**. They are
+now entered in `Chapter_09_References.md`.
+
+> Both forms come from the deep-research report family in which **roughly half of all citations have
+> been found fabricated**, and neither has been opened through Crossref or a publisher page. The Kurin
+> entry is `dr_L3-13` reference 5 **minus** two fields that were self-evidently placeholders in that
+> report and were deliberately not carried: a page range `35, 1234-1246` and an OpenReview URL
+> `id=e-58pB58p`. The Menon entry is `dr_L3-08` reference 9 verbatim.
+>
+> **What closes it:** open both and confirm author list, venue and year. That is a deep-research task,
+> so it is a `V<NN>` prompt for the author to run externally - **do not search from this session.**
+
+---
+
+## Open BUILD NOTE 3 of 3: the generated-image defects
+
+Recorded on Figure S1's caption in `Chapter_04_ExperimentalDesign.md`. The authors were shown all of
+this with the numbers and chose to install anyway (*"juste utiliser ces images, vas-y"*), so it is
+recorded, not argued. Regenerating at 4000 px or more would close all four at once.
+
+> 1. 🔴 **Figure S1 is a data figure and its artwork is fabricated.** One bar reads `4.0.1`, which is
+>    not a share; the other `0.37`; there is no axis; the footnote reads *"Mechanical, etelorgical
+>    ancr of coherotyl electrical and plumbingnoing"*. The caption still says "Measured
+>    occupiable-area share", so caption and artwork disagree.
+> 2. **Figure 4**'s lower "raw / after projection" panel renders as two empty boxes.
+> 3. **Figure 6**'s "Hard Wiring Gate" box renders two blank grey bars where its labels should be.
+> 4. **Every generated image is 1376 x 768 px**, about **184 dpi** at the 190 mm page width, against
+>    Elsevier's **500 dpi** for combination art. The files replaced were 5400 to 6600 px.
+> 5. Figures 1-6, S1, S2 and S3 now have **no vector PDF**; the stale matplotlib PDFs were archived
+>    rather than left disagreeing with the new PNGs.
+
+**Revert path:** `writing/submission/figures/archive/superseded_matplotlib/` and
+`writing/figures/archive_matplotlib_2026-08-09/`, two independent copies. Copy back and rebuild.
+
+### 🔴 And three generated RESULTS figures were refused
+
+Figures 7, 8 and 9 were generated from the data-carrying prompts and **came back with invented
+numbers**. They are quarantined at
+`writing/submission/figures/archive/generated_NOT_INSTALLED_data_figures/` and were **not** installed.
+
+| | the frozen deliverable says | the generated image drew |
+|---|---|---|
+| **Fig 8** office | box 65.4 to 74.8, **max 90.21, entirely below the 100.0 floor** | box about 210 to 367 sitting **inside** a band drawn 168 to 410 |
+| **Fig 8** bands | office 100/135/200, retail 80/110/155, hotel 180/240/300 - all different | **one identical band** behind all three |
+| **Fig 8** retail | median **75.63, below its 80.0 floor** | median about 240, inside |
+| **Fig 7** energy | every value within **plus or minus 2.4%** | a fan from **-34% to +14%** |
+| **Fig 9** winter | total peaks about **4200 kW at hour 7** | about **330 kW**, peaking at 18 |
+
+**Figure 8 reverses three of the paper's four headline gate verdicts.** It shows office and hotel
+comfortably inside bands the paper reports them failing, which contradicts the abstract, section 5 and
+the cover letter's first paragraph. That is why it was not installed on the strength of the earlier
+instruction: it is not a rendering defect, it is a different result.
+
+**Figures 10 and 11 needed nothing.** The files supplied for them are byte-identical to the plots
+already shipped (md5 `ae4d14cc` and `6f4a6703`), so those two are still the correct 600 dpi figures.
+
+**Figure S3 WAS installed** - it is a schematic, it is clean and correct, and it carries no number.
 
 ---
 
@@ -451,16 +464,16 @@ figure renumbering, and the whole 2026-08-09 docx cleanup listed in the ledger a
 
 | # | Item | Whose call | Blocking? |
 |---|---|---|---|
-| 0 | **Re-run `f3` and update the figure REGISTRY**, never the gate. Its 2 FAILs are the 2026-08-11 replot, which the registry never recorded. Now that both trees agree, this is bookkeeping with nothing else in the way | mine | yes, for submission |
-| 2 | **Renumber the tables into first-citation order** if wanted. Main text runs 1, 2, 6, 3, 5 and the supplementary 4, 7, A1, A2. Table 6 was already out of place before the SI moves. Offered twice, not done unasked | authors | no |
-| 3 | **Fill the cover letter's placeholders** - handling editor's name, submission date - in `writing/submission/Title_Page_and_Cover_Letter.md`, then render it the same way. 2J shipped the title page and cover letter as **one** document | authors supply, I render | yes, for submission |
+| 0 | **Decide on the three refused results figures** (BUILD NOTE 3). Either accept the shipped 600 dpi plots as final, or regenerate 7, 8 and 9 with the data prompts and have them checked against the tables again. **Figure 8 as generated contradicts the paper's own abstract** | authors | **yes, if they are to change** |
+| 1 | **Settle the Table A2 label** (BUILD NOTE 1). Then rebuild the .md and the .docx and re-run `f4`, expecting the exhibit count to move off 22 | authors choose (a) or (b); execution is mine | **yes** |
+| 2 | **Author a `V<NN>` prompt for Kurin and Menon** (BUILD NOTE 2). Two entries, four fields each. The prompt is mine, the search is the author's, run externally | mine to write | **yes** |
+| 3 | **Fill the cover letter's placeholders** - handling editor's name, submission date - in `writing/submission/Title_Page_and_Cover_Letter.md`, then render it to .docx the same way. 2J shipped the title page and cover letter as **one** document | authors supply, I render | yes, for submission |
 | 4 | **Check the three binding commitments are actually in the cover letter and abstract.** Reconfirming B&E is what made them binding. Check, do not assume | mine | yes, for submission |
 | 5 | **The generative-AI declaration.** RV10 item 18 gives Elsevier's prescribed wording; it goes in a dedicated section before the references, required only if such a tool assisted drafting. Whether one did is the authors' statement to make, so nothing was written | authors | yes, for submission |
-| 6 | **Decide whether the supplementary material needs its own title block** - author list, corresponding author, a "Supplementary material for:" line with the manuscript title. It currently opens straight on `# Supplementary material`. Most Elsevier journals accept that; some ask for the pairing to be explicit | authors | no |
-| 7 | **§1.4's "Leg-1, published as the second journal in this line (2J)"** reads as though Leg-1 and 2J are the same paper. The citations are right either way, so this is wording, not correctness | authors | no |
-| 8 | **Table A1's `Source in the project repository` column** is the last report-like element left in the paper. Kept because the authors chose it. It goes on one word | authors | no |
-| 9 | **Deferred and still deferred:** N7 (`f3`'s C2 failure list - **do not relax C2**) and N8 (`f5`'s C4 converse gap) | mine, when asked | no |
-| 10 | **Read the 0J decision letter** if it exists. Cheap, never done, and it tells you which kind of "insufficient quality" B&E meant | authors | no |
+| 6 | **§1.4's "Leg-1, published as the second journal in this line (2J)"** reads as though Leg-1 and 2J are the same paper. The citations are right either way, so this is wording, not correctness | authors | no |
+| 7 | **Table A1's `Source in the project repository` column** is the last report-like element left in the paper. Kept because the authors chose it. It goes on one word | authors | no |
+| 8 | **Deferred and still deferred:** N7 (`f3`'s C2 failure list - **do not relax C2**; the 10 entries are the paper-authored schematics and the fix is scope, not threshold) and N8 (`f5`'s C4 converse gap) | mine, when asked | no |
+| 9 | **Read the 0J decision letter** if it exists. Cheap, never done, and it tells you which kind of "insufficient quality" B&E meant | authors | no |
 
 ---
 
@@ -518,14 +531,6 @@ Read `deepResearch_Resources/VETTING_RV09_RV10_2026-08-08.md` before using eithe
   Re-render at the ORIGINAL resolution and demand byte-identity.
 - **Verify the INSTALLED file, not the build output.** In 2J a table column had silently vanished from
   the shipped docx.
-- 🔴 **A file existing at the path the build reads is not evidence that it is the file this round
-  produced.** The 2026-08-11 replot corrected nine figures in `writing/figures/` and the submission tree
-  was never re-synced, so the shipped `.docx` kept the superseded artwork for three further rounds while
-  a BUILD NOTE recorded the defect as resolved. **Fixed the same day it was found**, but it survived
-  three rounds of verification first. Every figure gate reads the source tree; the build's
-  image count asks how many images survive, not which version each one is. **When two trees hold the
-  same filenames, the only check that means anything is md5 against `word/media/` of the installed
-  file.** A note is resolved when the SHIPPED artefact changes.
 - 🔴 **Something the reader sees may not be text at all.** Sixty "Horizontal Line" objects in Word were
   markdown `---` rules rendered as VML rectangles. Every attempt to fix that in a style or a font would
   have failed, because the thing on the page was a drawing. Before treating a rendering complaint as a
@@ -571,9 +576,7 @@ Read `deepResearch_Resources/VETTING_RV09_RV10_2026-08-08.md` before using eithe
 - **Archive the predecessor before editing.** Corrections are additive. Guard the copy with
   `[ -s "$BK" ]` in the same command before truncating anything.
 - **A reported grep result is not a check.** Read exit codes, and check the pattern compiled.
-- **Do not modify `f3`.** Its verdict is the correct answer, whatever it currently reads. It was
-  4 PASS / 1 FAIL until the 2026-08-11 replot left the registry stale; it is **3 PASS / 2 FAIL**
-  now. Fix the REGISTRY, never the gate.
+- **Do not modify `f3`.** Its 4 PASS / 1 FAIL is the correct answer.
 - **The assistant NEVER creates images.** Author instruction 2026-08-09, now a hard-rule section in
   `GSSCanada-main/CLAUDE.md` and a bullet in `README.md`. Write the prompt; the author generates; you
   install, verify against the INSTALLED file, and report every defect. **Plotting is not drawing** - a
