@@ -29,12 +29,21 @@ Not "acquire as much time-use data as possible". The corpus is fixed; this step 
 | **Four countries, one wave each** | Author decision 6 |
 | **Italy 2013-14, Spain 2009-10, UK 2014-15, France 2009-10** | Author decision 6, from `RL17` Part B1 |
 | Earlier waves are **held-out validation, never training data** | Author decision 6, parent 1B |
+| **Newer waves are excluded too** — UK 2020-21, Italy 2022-23, Spain 2024-25, France 2024-25 | Parent 1B-bis |
 | Track A (Eurostat SUF) runs in parallel, never on the critical path | `RL01`, parent 1C |
 | The parser tolerates **both** reported file shapes | Parent 2A-bis; `RL17` A1 adjudicated for relational but the file is not in hand |
 
 🔴 **The one thing that would reopen decision 6** is a delivered file that does not match its
 inventory row — for example a UK 2014-15 file that turns out to be 15-minute slots. That is a
 finding, not a reason to add a wave.
+
+🔴 **Do not "upgrade" a country to its most recent wave during acquisition.** It is the obvious thing
+to do when a newer file is sitting next to the one on the list, and it would silently break the
+corpus: UK 2020-21 is online lockdown fieldwork at 16+, Italy 2022-23 is ACL 2020 plus web/app
+collection, and Spain 2024-25 and France 2024-25 have no released microdata at all. The four waves on
+the list are **all paper self-completion under one coding generation**, which is what keeps `ACT` at
+three digits for Step 9. **The Eurostat HETUS 2020 round will not release microdata before 2027**, so
+there is no newer obtainable corpus to be tempted by either.
 
 ---
 
@@ -170,3 +179,11 @@ Append-only. Never delete or reformat an existing entry.
   adjudicated for the relational one. **The parser still handles both.** A verdict from a report is
   not a file, and the cost of being agnostic is a few hours against a defect discovered in month
   three.
+
+### 2026-08-14 — newer waves recorded as excluded
+
+* Added the "do not upgrade a country to its most recent wave" instruction and the decision row for
+  UK 2020-21, Italy 2022-23, Spain 2024-25 and France 2024-25. Source: parent 1B-bis.
+* 🔴 The failure this guards against is not a judgement call at a meeting. It is an acquisition-time
+  reflex: a newer file sits beside the listed one, it looks like a free upgrade, and the mode change
+  it carries is invisible until Step 3 tokenises a coding list nobody expected.

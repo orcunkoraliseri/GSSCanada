@@ -91,6 +91,12 @@ question: narrow, factual, and settled by opening a document.
 | **L16** | `L16_longitudinal_and_forecasting_axis.md` | Can the 2005 to 2030 story survive with only two or three HETUS waves | Whether paper 4 keeps the series' signature | Narrows scope |
 | **L17** | `L17_contradiction_adjudication_and_multiwave.md` | Which side of each of the 8 inter-report contradictions is right, and what waves exist for the 5 chosen countries | The parser, the model choice, the corpus depth | No, but it can invalidate earlier answers |
 | **L18** | `L18_model_family_final_selection.md` | Which model family, now that we cannot release weights, do release the output under CC BY 4.0, and have a full A100 80 GB | Closes open decision 3 | Licence could, for the dataset |
+| **L19** | `L19_corpus_expansion_national_routes.md` | Which other HETUS 2010-round countries are obtainable through a **national** route, and admissible unchanged (10-minute slots, 3-digit ACL 2008/2010, paper diary) | Limitation C4: leave-one-country-out currently trains on three | No. The four-country corpus stands whatever it returns |
+
+🔴 **`L19` carries a corrections block at the top that overrides the master brief** on four points
+(HETUS only, one wave per country, the four chosen waves, no forecast). The brief predates author
+decisions 5 and 6 and would otherwise steer the report to the wrong question. **Any prompt written
+after 2026-08-14 needs the same block** until the brief itself is reissued.
 
 ## Vetting a returned report, BEFORE any value enters a document
 

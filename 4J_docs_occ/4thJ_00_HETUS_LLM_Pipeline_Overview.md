@@ -558,12 +558,17 @@ split-half divergence. That last comparison is the honest one.
 
 ---
 
-## OPEN DECISIONS — 9 of 14 fully closed as of 2026-08-14
+## OPEN DECISIONS — 9 of 15 fully closed as of 2026-08-14
 
 The list grew rather than shrank, and that is the honest record. Decisions 1 and 3 closed; decision 9
-partly reopened when the HETUS-only scope removed the ATUS reproduction path; and **two genuinely new
-items, 13 and 14, appeared as consequences of decisions already taken.** Neither was visible before
-`RL17` and the scope narrowing.
+partly reopened when the HETUS-only scope removed the ATUS reproduction path; and **three genuinely
+new items, 13, 14 and 15, appeared as consequences of decisions already taken.** None was visible
+before `RL17`, the scope narrowing and `RL19`.
+
+🔴 **Decision 15 is the one to watch, because it can quietly reverse decision 6.** Adding Norway is
+attractive and would repair limitation C4. It is also the only item on this list that could
+reintroduce a cross-survey activity crosswalk into the training corpus, which is the thing decision 6
+exists to prevent. **It is a corpus decision wearing the clothes of an acquisition detail.**
 
 | # | Decision | State | Settled by |
 |---|---|---|---|
@@ -578,6 +583,7 @@ items, 13 and 14, appeared as consequences of decisions already taken.** Neither
 | 9 | **What we may release** | ✅ **CLOSED on the artefacts:** synthetic dataset (CC BY 4.0, Parquet, Zenodo + Hugging Face) plus code (Apache 2.0). **Weights withheld, stated plainly, not apologised for.** 🔴 **REOPENED on the reproduction path**: the ATUS stand-in that made the pipeline runnable without credentials is gone with the HETUS-only decision, and what replaces it is undecided | `RL10` (overriding `RL04` and `RL15`) + author |
 | 13 | 🔴 **NEW — what replaces the ATUS reproduction path** | **OPEN.** `RL10` forbids releasing weights, so a reader needs *some* way to run the pipeline. Spain's INE is an open download requiring no registration and is the obvious candidate for a minimal public path; the other three need a free academic registration. Decide before the Data Availability statement is written |
 | 14 | 🔴 **NEW — the day-to-year chaining rule** | **OPEN**, from `RL17` Part D. Nothing says how 365 generated days become one household's simulated year. Independent daily resampling damps peak demand, static repetition exaggerates it, and the choice may move the result more than transfer quality does. Must close before the Step 8 campaign is designed |
+| 15 | 🔴 **NEW — Norway as a fifth country** | **OPEN**, opened by the author 2026-08-14 after `RL19`. Norway passes on slot length (10 minutes, 2 diary days, ages 9-79, paper diary, confirmed against SSB directly) and is the only reachable Nordic candidate. It fails screen B2 as things stand: the SSB file uses a ~170-code **national** list, not ACL 2008. **Turns on one checkable fact — does the Sikt delivery ship an official SSB-produced Eurostat/ACL recode?** If not, admitting Norway means hand-building the 3-digit crosswalk `RL17` B3 says cannot be defended. Must close before Step 1 acquisition finishes |
 | 10 | **Venue** | ✅ **CLOSED.** *Energy and Buildings* primary, *Building and Environment* co-equal secondary, framed on transfer. Optional paired data descriptor | `RL14` |
 | 11 | **Which country is held out** | 🔴 **STILL OPEN, and it must close before the first training run.** Blocked on the corpus landing. Rotation across several is stronger than one. A country chosen after seeing results is not held out | — |
 | 12 | **Household-joint generation** | 🔴 **STILL OPEN.** Now known to be *feasible*: a 4-person household week is about 7,000 tokens, well inside context. Deferred as scope, not excluded as impossible | `RL07` |

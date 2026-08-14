@@ -245,6 +245,102 @@ the model. This is not yet anywhere in Steps 7 to 9 and it should be.
 
 ---
 
+## 🔴 REPORT VETTING RECORD, THIRD ROUND — `RL19`, AND WHY ITS RECOMMENDATION IS NOT TAKEN
+
+`L19` asked one question: can the corpus be widened past four countries through **national** routes,
+without the Eurostat entity recognition we do not have? The round was commissioned because
+leave-one-country-out currently trains on **three**, which limitation C4 names as the weakest part of
+the design.
+
+**`RL19` recommends acquiring Norway. We are not acting on that recommendation, and the reason is in
+V10.** What we *are* acting on is its negative result, which is the more valuable half.
+
+### V9. ✅ What `RL19` establishes, and it answers the commissioning question
+
+* **The candidate set is right, and it checks out against Eurostat's own framing.** The HETUS 2010
+  round is **18 countries: 15 EU member states plus Norway, Serbia and Türkiye**. `RL19`'s list of 15
+  reproduces that split exactly, which is a consistency an invented list would be unlikely to hold.
+  Removing our four leaves 14 candidates.
+* 🔴 **There is no second Spain.** Across all 14 candidates, **not one is Tier 0 or Tier 1**. Two are
+  Tier 2, eight are Tier 3 (per-project written application), two are Tier 4 (the applicant
+  *institution* must be pre-accredited), and **two — Finland and Hungary — are Tier 5, secure enclave
+  only, where the file never leaves the facility.**
+* **Therefore national routes do not scale, and that is the finding.** Tier 4 reintroduces exactly the
+  institutional barrier the national route existed to avoid, and Tier 5 is incompatible with training
+  a model on our own cluster at all. **The Eurostat application is not the slow path to more
+  countries; it is the only path.** That raises the priority of the Track A enquiry (1C) rather than
+  providing an alternative to it.
+* **A second, unasked-for finding worth keeping:** national archives do **not** distribute the
+  Eurostat-harmonised file. Each ships its own variable names, its own file shape and, in several
+  cases, its own activity classification. **"HETUS country" and "file harmonised to HETUS" are not the
+  same object** — which is precisely what V10 turns on.
+
+### V10. 🔴 Why Norway is not accepted, on our own screen
+
+`RL19` recommends Norway (SSB, via Sikt) as a single high-stress Nordic addition. **The country facts
+hold** — I confirmed against Statistics Norway directly that the 2010-11 survey uses **10-minute
+intervals**, **two diary days**, ages **9 to 79**, paper diary. On slot length, B1, it passes.
+
+**It fails B2.** `RL19`'s own row B6 states the national file carries the **SSB national
+classification of roughly 170 categories**, not ACL 2008, and that a crosswalk would be required. It
+asserts that a documented one-to-one recode table is provided. **Statistics Norway's own methodology
+page names no coding list at all**, and I could not confirm the recode exists.
+
+🔴 **If that recode does not exist, Norway forces the exact thing decision 6 was taken to prevent.**
+`RL17` B3 states that a defensible cross-survey activity mapping exists **only at 2-digit ACL or MTUS
+69**, and that full 3-digit cannot be mapped across heterogeneous surveys without arbitrary
+one-to-many heuristics. A hand-built SSB-170 → ACL-2008 3-digit crosswalk **is** that heuristic. It
+would sit inside the training corpus, unauditable, and it would land on Step 9, which is the step that
+3-digit codes were preserved for.
+
+**So Norway is conditional, not accepted.** The condition is a single checkable fact: **does the Sikt
+delivery include an official Eurostat/ACL recode variable, produced by SSB rather than by us?** If yes,
+Norway is admissible and worth taking. If no, it is rejected, and rejected for the same reason UK
+2000-01 and Italy 2022-23 are.
+
+✅ **The author opened this as decision 15 on 2026-08-14**, rather than leaving it as a conditional
+note inside a vetting record. That is the right place for it: a conditional buried in V10 would be
+read as settled, and this one can reverse decision 6 if it is taken casually.
+
+Two further defects in the Norway case, neither fatal but both diagnostic: the Sikt landing URL is
+given in a `study/NSD1849` form while Surveybanken now addresses studies by UUID, and the SSB
+documentation report is cited as **Vaage 2012, Rapporter 2012/36**, where the documentation report for
+this survey appears to be **Holmøy, Lillegård and Löfgren (2012)**. **That is the Widén failure class
+again**: a real author from the right institution attached to the wrong document.
+
+### V11. 🔴 Where `RL19` reports verification it did not perform
+
+Recorded in full, because this is the third round in a row where the negative controls are the part
+that fails.
+
+1. **The Netherlands is falsified, at the point of its own strongest claim.** `RL19` places DANS TBO
+   2011 at **Tier 2, free, 1 to 5 working days, "Confirmed reachable: Yes"**, lists its codebook among
+   the documents it **opened in full**, and states under negative control 1 that it personally opened
+   2 of 2 Tier-2 landing pages with a **guess count of 0**. **I opened that DOI. The files are
+   restricted, no user access requests are permitted, and the record is a superseded version that
+   cannot be downloaded.** The codebook it reports reading is not reachable, and its slot length —
+   given as 10 minutes — is stated nowhere on the record.
+2. **Part B is one template repeated ten times.** Ten countries return *identical* values: 10-minute
+   slots, ACL 2008, full 3-digit released, paper self-completion booklet, 2 days, age 10+. The HETUS
+   guidelines **recommend** those properties, so this is the guidelines restated per country as though
+   each had been observed. Its own negative control 3 concedes only three candidate codebooks were
+   opened, and four rows cite the Eurostat guidelines document as their source basis. 🔴 **A report
+   that returns what we already supplied has told us nothing** — and it is the same defect that would
+   let a 15-minute file onto an admissible list, which is the failure B1 exists to catch.
+3. **The convenience control was gamed.** `RL19` defines a "convenient" country as one meeting **all
+   seven** properties at once, then reports **0 of 14** convenient. No country could meet that
+   definition; Norway meets five. **A control with an unreachable threshold cannot fire**, which is
+   the same vacuity we screen our own gates for.
+4. **It answers questions about our hardware.** Section D asserts that Sikt files fit our RAM and that
+   our directory permissions satisfy the licence terms. It cannot see our cluster. Ignored.
+
+**Net:** `RL19` is accepted for its landscape and rejected for its recommendation. **Its most useful
+sentence is the one it did not intend as the answer** — that no reachable country ships a
+Eurostat-harmonised file — because that is what makes national expansion cost a bespoke crosswalk per
+country rather than a parser branch.
+
+---
+
 ## STEP 0 — FEASIBILITY GATE
 
 **Status: ✅ CLEARED 2026-08-14.**
@@ -365,6 +461,36 @@ invalidate a trained tokenizer's expectations. **They are not year tokens and mu
 naming the instrument is a different thing from naming the time, and only one of them can be
 extrapolated.
 
+### 1B-bis. 🔴 The *newer* waves, and why none of them is in the corpus either
+
+Decision 6 is usually read as a decision about older waves. It is equally a decision about newer ones,
+and that half needs stating explicitly, because "why not just use the most recent data?" is the first
+question a reviewer asks of any survey-based paper.
+
+| Wave | Why it is not training data |
+|---|---|
+| **UK 2020-21** | Lockdown fieldwork, collected **online**, minimum age raised to 16+. A crisis regime **and** a mode change inside the same wave, so neither effect can be separated from the other. A model trained on it learns the lockdown, not the country |
+| **Italy 2022-23** | **ACL 2020** coding list **and** web/app collection. Different codes and different diary behaviour — web and app diaries capture more short fragments and fewer secondary activities than paper booklets |
+| **Spain 2024-25** | **Microdata not released.** The wave exists; the file does not |
+| **France 2024-25** | Postponed round-3 fieldwork. Nothing to obtain within this paper's horizon |
+
+**The common cause, and it is one cause rather than four.** Our four training waves are all **paper
+self-completion under one coding-list generation**. That is precisely what lets the `ACT` field keep
+three digits (1A-bis, finding 2) and what Step 9's appliance mapping depends on. Admitting any web or
+app wave would reintroduce the cross-instrument pooling that decision 6 exists to prevent, and the
+mode effect would arrive disguised as behavioural diversity.
+
+🔴 **And the round that would supersede all of this is not available.** The Eurostat **HETUS 2020
+round** — 20 countries, 15 EU Member States plus Norway and four candidate countries — has fieldwork
+concluding in **2026**, and **Eurostat states microdata will not be released before 2027**. Verified
+against Eurostat's own microdata page and its 2024 UNSD presentation on 2026-08-14. **There is no
+newer obtainable corpus, and this paper is not waiting for one.**
+
+*Consequence for 1B:* held-out validation therefore runs **backwards in time only**. The newer waves
+are not a forward held-out set, because we cannot obtain three of the four. If Italy 2022-23 is
+acquired later it becomes a second held-out instrument, never a fifth training country, and `MODE` and
+`SCHEME` in the prefix are what make that admission cost nothing structurally.
+
 ### 1C. Track A, running in parallel — and it now carries more weight than it did
 
 Eurostat HETUS 2010 Scientific Use File, reported as 17 countries. Two actions, neither of which blocks
@@ -377,6 +503,15 @@ change at all** — same coding list, same slot length, same round — so the in
 zero. And with only four countries, leave-one-country-out trains on three, which limitation C4 names as
 the weakest part of the design. **Track A is still not on the critical path, but it has stopped being a
 nice-to-have.** It remains unfiled, which is why it is the second item on the next-actions list.
+
+🔴 **What changed again on 2026-08-14, later: `RL19` closed the alternative.** We commissioned a round
+to ask whether national routes could widen the corpus without Eurostat. **They cannot.** Of the 14
+candidate countries in the HETUS 2010 round, **none is Tier 0 or Tier 1**, two are Tier 4 (the
+institution must be pre-accredited, which is the same barrier Track A has), and **two are secure
+enclave only**. Worse, no national archive ships the Eurostat-harmonised file, so each country costs a
+bespoke parser **and** an activity crosswalk rather than a parser branch. **Track A is therefore not
+the slow route to more countries; it is the only route**, and the enquiry moves from second on the
+next-actions list to first. See V9 to V11 for the vetting.
 
 ### 1D. 🔴 Track C is gone, and what replaces it is undecided
 
@@ -1296,9 +1431,9 @@ Reproduced from the overview, with the reasoning that did not fit there.
 
 ## OPEN DECISIONS
 
-**Nine of fourteen fully closed as of 2026-08-14**; the table with the settling source for each is in
+**Nine of fifteen fully closed as of 2026-08-14**; the table with the settling source for each is in
 the overview. The list grew rather than shrank: decisions 1 and 3 closed, decision 9 partly reopened
-when the HETUS-only scope removed the ATUS reproduction path, and **two new items appeared as
+when the HETUS-only scope removed the ATUS reproduction path, and **three new items appeared as
 consequences of decisions already taken.**
 
 **What closed since the sixteen-report round:**
@@ -1336,6 +1471,28 @@ consequences of decisions already taken.**
   generated days are chained into one household's simulated year. Independent daily resampling damps
   peak demand, static repetition exaggerates it, and the choice may move the result more than transfer
   quality does. See V8 and Step 7E. **Must close before the Step 8 campaign is designed.**
+* 🔴 **Decision 15 — Norway as a fifth country.** Opened by the author on 2026-08-14 after `RL19`, and
+  it is the only decision on this list that can **reverse decision 6 without appearing to**.
+
+  **What is in its favour.** Norway is the only reachable Nordic candidate in the round, and it is a
+  genuinely hard held-out target rather than a fifth neighbour: high-latitude photoperiod, an early
+  end to the working day, an early main meal. It also repairs limitation C4, since leave-one-country-out
+  would train on four instead of three. On slot length it passes cleanly — **10-minute intervals, two
+  diary days, ages 9 to 79, paper diary**, confirmed against Statistics Norway rather than taken from
+  the report.
+
+  **What is against it.** The national file carries the **SSB classification of roughly 170
+  categories**, not ACL 2008. `RL17` B3 states that a defensible cross-survey activity mapping exists
+  only at 2-digit ACL or MTUS 69, and that full 3-digit cannot be mapped without arbitrary one-to-many
+  heuristics. **A crosswalk we build ourselves is that heuristic**, it would sit inside the training
+  corpus where no gate can see it, and it lands on Step 9 — the step 3-digit codes were preserved for.
+
+  🔴 **The decision turns on one checkable fact, and not on judgement: does the Sikt delivery ship an
+  official Eurostat/ACL recode variable produced by SSB?** If it does, Norway is admissible and worth
+  taking. If it does not, Norway is rejected for the same reason as UK 2000-01 and Italy 2022-23, and
+  the four-country corpus stands. **Establish the fact before weighing the benefit** — the benefit is
+  real enough to make the crosswalk look acceptable, which is exactly how a corpus decision gets taken
+  by accident. **Must close before Step 1 acquisition finishes.** See V10.
 
 ---
 
@@ -1638,3 +1795,65 @@ left standing rather than rewritten, because the reversal and its reason are the
 * **Where the step documents disagree with nothing, they say so.** Each carries the same decisions as
   this document, sourced to it, so that a step executed from its own folder cannot drift from the
   plan without the drift being visible.
+
+### 2026-08-14 (sixth entry) — the newer waves are written in as excluded, with the Eurostat date
+
+* **New section 1B-bis.** Decision 6 was documented only on its backward side. The author asked
+  whether newer cycles exist; they do, and the document did not say why they are out. It does now:
+  UK 2020-21 (online, lockdown, 16+), Italy 2022-23 (ACL 2020 and web/app), Spain 2024-25 and France
+  2024-25 (no released microdata). **One cause, not four: our four waves are all paper
+  self-completion under one coding generation, which is what keeps `ACT` at three digits.**
+* 🔴 **Checked, not assumed:** the Eurostat **HETUS 2020 round** concludes fieldwork in 2026 and
+  **Eurostat states microdata will not be released before 2027** — after this paper. Verified against
+  Eurostat's microdata page and its January 2024 UNSD presentation. **There is no newer obtainable
+  corpus.** This is now the answer to "why not the most recent data?", which is the first question a
+  survey-based paper is asked.
+* **A consequence 1B did not state:** held-out validation runs **backwards only**. Three of the four
+  newer waves cannot be obtained, so there is no forward held-out set. If Italy 2022-23 is acquired
+  later it is a second held-out instrument, never a fifth training country — and `MODE` and `SCHEME`
+  in the prefix are what make that admission structurally free.
+* **`Step1_docs/4thJ_01_corpusAcquisition.md` updated in the same pass** with an explicit instruction
+  not to upgrade a country to its newest wave during acquisition. That is the moment the mistake
+  would actually be made, by someone holding a newer file and no reason not to use it.
+
+### 2026-08-14 (seventh entry) — `RL19` returned, vetted, half accepted
+
+* **Round commissioned:** can the corpus be widened past four countries through national routes,
+  without Eurostat entity recognition? **Answer: no.** Recorded as V9 to V11.
+* ✅ **Accepted: the landscape.** 18 countries in the HETUS 2010 round (15 EU plus Norway, Serbia,
+  Türkiye), 14 candidates after ours, and **no Tier 0 or Tier 1 among them**. Two Tier 4, two Tier 5
+  enclave-only. **National routes do not scale, and Track A moves to first on the next-actions list**
+  because it is now the only route to a wider corpus, not the slow one.
+* 🔴 **Rejected: the recommendation.** `RL19` proposes acquiring Norway. Its country facts hold — I
+  confirmed 10-minute intervals, two diary days and ages 9 to 79 against Statistics Norway directly —
+  but the national file carries the **SSB ~170-code list, not ACL 2008**. Building the 3-digit
+  crosswalk ourselves is exactly the arbitrary one-to-many mapping `RL17` B3 says cannot be defended,
+  and it would sit unauditable inside the training corpus. **Norway is conditional on one checkable
+  fact: does the Sikt delivery ship an official SSB-produced ACL recode variable?**
+* 🔴 **Two fabrications found, both at the point where the report claims verification.** The
+  Netherlands is placed at Tier 2 with its codebook "opened in full" and a guess count of zero; the
+  DANS record is in fact restricted, unrequestable and superseded. And Part B returns **identical
+  values for ten countries** — the HETUS guidelines restated per country as though observed — while
+  its own negative control concedes three codebooks were opened.
+* **The convenience control was gamed**, by defining convenient as all seven properties at once so
+  that nothing could score. **This is the same vacuity class we screen our own gates for**, and it is
+  worth noting that a control can be present, well-worded and still unable to fire.
+* **Net effect on the plan: no country is added, and the four-country corpus stands.** Limitation C4
+  is unchanged and now has a documented reason rather than an untested hope of repair.
+
+### 2026-08-14 (eighth entry) — decision 15 opened: Norway as a fifth country
+
+* The author opened it rather than leaving Norway as a conditional note inside V10. **Correct call: a
+  conditional recorded only in a vetting record reads as settled to the next person.**
+* Count moves to **9 of 15 closed**. Both plan documents and `Prompts/RESUME.md` updated.
+* 🔴 **Framing written into the decision, because it is the part that can go wrong quietly.** The
+  benefit is real — Norway is the only reachable Nordic candidate, it is a hard held-out target rather
+  than a fifth neighbour, and it lets leave-one-country-out train on four instead of three, which is
+  limitation C4. That benefit is large enough to make a hand-built SSB-170 → ACL-2008 crosswalk look
+  like an acceptable price. **It is not. It would sit inside the training corpus where no gate can see
+  it.**
+* **Therefore the decision is ordered: establish the fact first, weigh the benefit second.** The fact
+  is whether Sikt ships an official SSB-produced ACL recode. **Decision 15 is a corpus decision
+  wearing the clothes of an acquisition detail**, and taken in the other order it reverses decision 6
+  without anyone deciding to.
+* Must close before Step 1 acquisition finishes.
