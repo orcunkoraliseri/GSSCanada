@@ -65,6 +65,7 @@ against it is information, not a failure. **Reporting both and grading only one 
 | **G8.12** Schedule ingestion | The presence schedule EnergyPlus actually used, read back from the **saved IDF**, matches the Step 7 file by md5 |
 | **G8.13** Interpolation setting | `Interpolate to Timestep = No` on every schedule object, asserted from the saved IDF |
 | **G8.14** Manifest completeness | Every cell has schedule md5, IDF md5, weather md5, EnergyPlus version **and build hash**, and a **measured** platform field |
+| **G8.16** 🔴 Fold correctness | Every cell's `fold` field names the fold that **held out that cell's country**. Count of cells simulating a country under another country's fold: **0**. Checked against the Step 7 schedule provenance, not against the cell's own filename |
 | **G8.15** Convergence and warnings | Zero severe errors; warning classes itemised and triaged **by kind, not by frequency** |
 
 ---
@@ -99,6 +100,7 @@ DHW draw across all 56 cells while every value check reported zero violations.
 | Point a `People` object at a different schedule | 🔴 **G8.12's assignment arm** | G8.12's value arm — *which is exactly why the assignment arm exists* |
 | Set `Interpolate to Timestep = Yes` | G8.13 | G8.12 |
 | Copy another cell's manifest wholesale | **G8.14** (platform/timestamp arm) | G8.12 |
+| 🔴 **Drive one country's cells with a fold that did not hold that country out** | **G8.16** | G8.12, G8.14 — *the schedule is a real Step 7 artefact with a correct md5 and a complete manifest; only the fold is wrong, and the energy result would look entirely normal* |
 | Shift the modelled profile 2 h later | G8.6 | G8.5 |
 | Scale annual energy by 1.2 | G8.1, G8.3 — coverage | G8.6 |
 | Run with an archetype whose floor area is from a different geometry | G8.7 | G8.1 — *a 1.5× area error survives a read-through; only an explicit geometry assertion catches it* |
@@ -127,6 +129,9 @@ count-only diff calls "no change".
 * **V8.e** — every gate's severity is **hard**. Grep for `hard=False` before trusting a PASS count.
 * **V8.f** — warnings are triaged by **kind**. 🔴 Ranking them by frequency buries the single
   occurrence of "invalid" or "not found" under ten thousand benign repeats.
+* **V8.g** — G8.16 FAILs rather than passing if any cell's manifest carries **no** `fold` field. A
+  correctness check over a field that does not exist finds zero violations for the wrong reason, and
+  reports the same number as a clean campaign.
 
 ---
 
@@ -158,3 +163,14 @@ Append-only.
   property was covered. **A gate that exists only in a document is worse than a missing one.** When
   auditing this step, grep the code for every gate this document claims, not just the gates the code
   runs.
+
+### 2026-08-14 (second entry) — G8.16, fold correctness
+
+* **Seventeen gates plus G8.0, twelve perturbations, none run.**
+* 🔴 **A cell driven by the wrong fold passes every other gate in this document.** The schedule is a
+  genuine Step 7 artefact, its md5 matches, the manifest is complete, the platform was measured, and
+  the EUI is plausible. **Nothing in the energy result can distinguish a transfer schedule from a
+  held-in one**, which is the whole reason the check has to read the fold from Step 7's provenance and
+  refuse to infer it from the cell's filename.
+* **V8.g** guards the usual way a provenance gate passes for the wrong reason: no `fold` field means
+  zero violations found.

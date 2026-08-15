@@ -52,6 +52,15 @@ The series is not a flat list. `L01` gates everything and `L03` can end the proj
 
   WAVE 6 -- CLOSING A DECISION (run after RL17)
     L18  model family, final ............ re-ask L04 under the constraints L04 did not have
+    L19  corpus expansion, national ..... can we widen past four countries without Eurostat
+
+  WAVE 7 -- ONE QUESTION EACH (run 2026-08-14, both returned)
+    L20  Norway admissibility ........... does the Sikt file carry an SSB-made ACL variable
+    L21  day-to-year chaining ........... has anyone measured what the chaining rule costs
+
+  WAVE 8 -- THE TWO NEWER WAVES (written 2026-08-14, not yet run)
+    L22  UK 2020-21 admissibility ....... what file exists, and is it the 2014-15 coding list
+    L23  Italy 2022-23 admissibility .... is it released, and can ACL 2020 meet ACL 2008
 ```
 
 ## Wave 5 is a different kind of prompt
@@ -92,8 +101,27 @@ question: narrow, factual, and settled by opening a document.
 | **L17** | `L17_contradiction_adjudication_and_multiwave.md` | Which side of each of the 8 inter-report contradictions is right, and what waves exist for the 5 chosen countries | The parser, the model choice, the corpus depth | No, but it can invalidate earlier answers |
 | **L18** | `L18_model_family_final_selection.md` | Which model family, now that we cannot release weights, do release the output under CC BY 4.0, and have a full A100 80 GB | Closes open decision 3 | Licence could, for the dataset |
 | **L19** | `L19_corpus_expansion_national_routes.md` | Which other HETUS 2010-round countries are obtainable through a **national** route, and admissible unchanged (10-minute slots, 3-digit ACL 2008/2010, paper diary) | Limitation C4: leave-one-country-out currently trains on three | No. The four-country corpus stands whatever it returns |
+| **L20** | `L20_norway_admissibility.md` | One question: does the Norwegian file delivered by Sikt carry an **ACL-coded activity variable produced by SSB**, or only SSB's national list | Closes open decision 15 | No. A short negative was the expected and actual outcome |
+| **L21** | `L21_day_to_year_chaining.md` | How the literature turns 1-2 diary days into 8,760 hours, and above all whether anyone has ever **measured** the difference between chaining rules on the same building | Open decision 14, and the Step 7 to Step 9 chain | No, but a `zero` answer forces an experiment — and that is what it returned |
+| **L22** | `L22_uk_2020_21_admissibility.md` | What file the UK 2020-21 time-use collection actually deposited, whether it uses the UKTUS 2014-15 coding list, and whether **mode and fieldwork date are variables** in it | Nothing on the critical path. It decides only whether the file is worth obtaining now for a **later, optional** held-out instrument check | **No.** Neither wave can enter training, by author decision |
+| **L23** | `L23_italy_2022_23_admissibility.md` | Whether the Italian 2022-23 microdata is released at all, and whether an **official** correspondence exists between its coding list and ACL 2008/2010 | Same. Plus it settles whether a newer Italian wave can ever be compared to our 2013-14 wave without a crosswalk we built | **No**, same reason |
 
-🔴 **`L19` carries a corrections block at the top that overrides the master brief** on four points
+**Wave 8 — the two newer waves (`L22`, `L23`), written 2026-08-14, not yet run.** 🔴 **Both prompts
+forbid the recommendation that would otherwise be their natural conclusion.** Adding either wave to
+training is a closed author decision, so each prompt states the ban, states the reasons, and makes
+"did you recommend it anyway" a mandatory negative control. What they are actually for is narrower and
+optional: obtaining a file now that could later serve as a **held-out instrument**, never as a fifth
+or sixth training wave. Both are written so that "not released" or "a reduced activity list" is a
+complete and successful answer.
+
+**Wave 7 — the single-question rounds (`L20`, `L21`), run 2026-08-14.** Both were written to close one
+decision each and both were told, in their own text, what a negative answer would look like. 🔴 **That
+is deliberate and it has a cost: a report that returns the answer the prompt said it expected must be
+believed on its checkable details, not on its conclusion.** `RL20`'s verdict is accepted because 167
+categories, `akt1` to `akt144` and Notater 2012/03 are falsifiable; `RL21`'s zero is accepted for the
+same reason its percentages are not.
+
+🔴 **`L19` to `L23` each carry a corrections block at the top that overrides the master brief** on four points
 (HETUS only, one wave per country, the four chosen waves, no forecast). The brief predates author
 decisions 5 and 6 and would otherwise steer the report to the wrong question. **Any prompt written
 after 2026-08-14 needs the same block** until the brief itself is reissued.

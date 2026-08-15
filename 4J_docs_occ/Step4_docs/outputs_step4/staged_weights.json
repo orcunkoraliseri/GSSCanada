@@ -1,0 +1,40 @@
+{
+  "written_by": "4thJ_stage_weights.py",
+  "hf_home": "/speed-scratch/o_iseri/hf_cache",
+  "huggingface_hub_version": "1.27.0",
+  "repos": [
+    {
+      "repo_id": "allenai/Olmo-3-1025-7B",
+      "role": "leg5_primary",
+      "status": "OK",
+      "revision": "a81bae42db3975be1671e27b9c9a56da1a9f980f",
+      "local_path": "/nfs/speed-scratch/o_iseri/hf_cache/hub/models--allenai--Olmo-3-1025-7B/snapshots/a81bae42db3975be1671e27b9c9a56da1a9f980f",
+      "bytes": 14605776647,
+      "gib": 13.603,
+      "seconds": 206.0,
+      "n_safetensors": 3
+    },
+    {
+      "repo_id": "allenai/OLMo-2-0425-1B",
+      "role": "leg4_pilot",
+      "status": "OK",
+      "revision": "a1847dff35000b4271fa70afc5db10fd29fedbdf",
+      "local_path": "/nfs/speed-scratch/o_iseri/hf_cache/hub/models--allenai--OLMo-2-0425-1B/snapshots/a1847dff35000b4271fa70afc5db10fd29fedbdf",
+      "bytes": 5949385410,
+      "gib": 5.541,
+      "seconds": 93.9,
+      "n_safetensors": 2
+    },
+    {
+      "repo_id": "Qwen/Qwen2.5-7B",
+      "role": "comparison_arm",
+      "status": "OK",
+      "revision": "d149729398750b98c0af14eb82c78cfe92750796",
+      "local_path": "/nfs/speed-scratch/o_iseri/hf_cache/hub/models--Qwen--Qwen2.5-7B/snapshots/d149729398750b98c0af14eb82c78cfe92750796",
+      "bytes": 15242791828,
+      "gib": 14.196,
+      "seconds": 188.1,
+      "n_safetensors": 4
+    }
+  ]
+}

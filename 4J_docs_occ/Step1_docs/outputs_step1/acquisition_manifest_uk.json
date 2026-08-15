@@ -1,0 +1,68 @@
+{
+  "_note": "FRAGMENT ONLY. This is the 'uk' entry for acquisition_manifest.json, written to a separate file per the work order so the parallel Italy employee is not overwritten. The manager merges this into acquisition_manifest.json under a top-level 'uk' key alongside the existing 'es' entry. Shape copied from the existing Spanish entry; not identical in every respect because the UK delivery arrived as a single nested archive, not a set of separately-downloaded files -- see 'shape_deviation_note'.",
+  "uk": {
+    "step": "Step 1, work item 1.1 (row B), 1.2, 1.3",
+    "country": "UK",
+    "wave": "2014-2015",
+    "survey": "United Kingdom Time Use Survey, 2014-2015 (UKTUS); UK Data Service SN 8128",
+    "route": "UK Data Service, End User Licence, free registration (author downloaded in person on 2026-08-14 per the work order; not re-acquired by this employee session)",
+    "acquired_utc": "2026-08-14",
+    "acquired_by": "author, in person, per End User Licence acceptance; archive handed to employee session for Step 1 work items 1.2-1.3, task doc Prompts/4thJ_employee_step1_uk_2026-08-14.md",
+    "hash_policy": "every md5 below was computed by the employee session at unpack time, from the archive as delivered in Datasets/UK-TUS-20260815T031737Z-1-001.zip. This is a hash of the file as received by this session, not necessarily at the author's original download instant -- recorded as such rather than implying the stronger 'download-time' guarantee Spain's entry states.",
+    "citation_and_licence": {
+      "study_number": "8128",
+      "doi": "http://doi.org/10.5255/UKDA-SN-8128-1",
+      "doi_source": "mrdoc/UKDA/UKDA_Study_8128_Information.htm, 'Citation for this data' section, printed verbatim in the delivered file",
+      "citation_text": "Sullivan, O., Gershuny, J. (2023). United Kingdom Time Use Survey, 2014-2015. [data collection]. UK Data Service. SN: 8128, DOI: http://doi.org/10.5255/UKDA-SN-8128-1",
+      "principal_investigators": "Sullivan, O.; Gershuny, J.",
+      "sponsor": "Economic and Social Research Council",
+      "distributor": "UK Data Service (distribution note in the delivered file: 'August 2023')",
+      "download_url": "NOT FOUND -- the delivered files print the study's DOI/citation landing page (above), not a literal download or API URL. UKDA_Study_8128_Information.htm and read8128.htm were both checked; neither prints a download endpoint.",
+      "licence": "End User Licence (UKDS EUL)",
+      "licence_citation_1": "mrdoc/UKDA/UKDA_Study_8128_Information.htm: '(c) Crown copyright. The use of these data is subject to the UK Data Service End User Licence Agreement.'",
+      "licence_citation_2": "read8128.htm, section 'INFORMATION ON CONDITION OF USE': 'The Data Collection is available to UK Data Service registered users subject to the End User Licence Agreement. Commercial use of the data requires approval from the data owner or their nominee.'",
+      "licence_note": "Name and citation only recorded here, per the work order -- terms not paraphrased. This licence is release-relevant for Step 5 and is not decided or interpreted by this entry."
+    },
+    "shape_deviation_note": "Spain's entry lists each of eight separately-downloaded INE files as a top-level 'files' array member with its own url/downloaded_utc. The UK delivery is a single nested archive (a Google Drive export wrapper around the actual UKDS zip, itself containing the study's tab/ and mrdoc/ tree), so there is one meaningful top-level provenance object (the outer archive) plus a full md5 list of every file it unpacks to. Both levels are recorded below rather than forced into Spain's flat per-file url shape, since only the outer archive has a URL/date at all.",
+    "local_root": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk",
+    "outer_archive": {
+      "name": "UK-TUS-20260815T031737Z-1-001.zip",
+      "what": "Google Drive export wrapper around the UKDS delivery for study 8128, as handed to the employee session",
+      "url": "NOT FOUND -- this is a Google Drive export filename (timestamped 20260815T031737Z), not the original UKDS download URL",
+      "bytes": 21465300,
+      "md5": "2aa4ee7c746b91233f45a70097a334c2",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk/UK-TUS-20260815T031737Z-1-001.zip"
+    },
+    "inner_archive": {
+      "name": "8128tab_A34C0A6B082B45E8CAE4D1795D786CEEBF43FD6766C98E10DD13D81B2F586CE4_V1.zip",
+      "what": "the actual UKDS delivery for SN 8128, tab-delimited format, unpacks to UKDA-8128-tab/",
+      "note": "UKDA content-addresses this filename: the hex string in the name is the file's own SHA-256. Recomputed independently by this session and confirmed to match: a34c0a6b082b45e8cae4d1795d786ceebf43fd6766c98e10dd13d81b2f586ce4 -- a strong integrity signal that does not depend on our own md5 computation.",
+      "md5": "caac5d15c2950d0e4aa571e97460973d",
+      "sha256_from_filename": "a34c0a6b082b45e8cae4d1795d786ceebf43fd6766c98e10dd13d81b2f586ce4",
+      "sha256_recomputed_matches_filename": true,
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk/unpacked/UK-TUS/8128tab_A34C0A6B082B45E8CAE4D1795D786CEEBF43FD6766C98E10DD13D81B2F586CE4_V1.zip"
+    },
+    "delivered_files_md5": [
+      {"path": "UKDA-8128-tab/8128_file_information.rtf", "md5": "c19e2f565df0cd26a8b614bb8e70ef1e"},
+      {"path": "UKDA-8128-tab/mrdoc/UKDA/UKDA_Study_8128_Information.htm", "md5": "d4a54109327b70e0318aa93f0b9b2472"},
+      {"path": "UKDA-8128-tab/mrdoc/allissue/uktus15_diary_ep_long_ukda_data_dictionary.rtf", "md5": "dda74bb0640cba0e47dba888512736dc"},
+      {"path": "UKDA-8128-tab/mrdoc/allissue/uktus15_diary_wide_ukda_data_dictionary.rtf", "md5": "9e25c67774e65cc1f36a88eb40fc0344"},
+      {"path": "UKDA-8128-tab/mrdoc/allissue/uktus15_dv_time_vars_ukda_data_dictionary.rtf", "md5": "a80e81c17ead8437535f3e894306bfc7"},
+      {"path": "UKDA-8128-tab/mrdoc/allissue/uktus15_household_ukda_data_dictionary.rtf", "md5": "6cfa78e5f7b973c1fc026ceb79d642a5"},
+      {"path": "UKDA-8128-tab/mrdoc/allissue/uktus15_individual_ukda_data_dictionary.rtf", "md5": "749191aad5c581698f4a99745601fc2d"},
+      {"path": "UKDA-8128-tab/mrdoc/allissue/uktus15_wksched_ukda_data_dictionary.rtf", "md5": "4a66891c7974a68d1d5f0e09e38cacfa"},
+      {"path": "UKDA-8128-tab/mrdoc/pdf/8128_ctur_report.pdf", "md5": "d9081335016781377d0c744784d2e6ed"},
+      {"path": "UKDA-8128-tab/mrdoc/pdf/8128_natcen_reports.pdf", "md5": "ee6cbc7699c21d5358557d9fab426ef8"},
+      {"path": "UKDA-8128-tab/read8128.htm", "md5": "f33a1d5d82f12a5c8a04bb94111d0841"},
+      {"path": "UKDA-8128-tab/tab/uktus15_diary_ep_long.tab", "md5": "83ddd4966e8e6d22c898feeb012722da", "bytes": 105801344, "rows_excl_header": 587632},
+      {"path": "UKDA-8128-tab/tab/uktus15_diary_wide.tab", "md5": "55bf2849decdda133149fe0244717807", "bytes": 95617606, "rows_excl_header": 16533},
+      {"path": "UKDA-8128-tab/tab/uktus15_dv_time_vars.tab", "md5": "e77157c71034b2465037ae0e84b9ff0c", "bytes": 13986212, "rows_excl_header": 16533},
+      {"path": "UKDA-8128-tab/tab/uktus15_household.tab", "md5": "2e50241ab608780fe7d531e6c239a3cf", "bytes": 3940088, "rows_excl_header": 4733},
+      {"path": "UKDA-8128-tab/tab/uktus15_individual.tab", "md5": "1fafe9d060cc09ed501a231a93ef57ff", "bytes": 19063468, "rows_excl_header": 11421},
+      {"path": "UKDA-8128-tab/tab/uktus15_wksched.tab", "md5": "255e82a8896c8fa41f120b5584765da4", "bytes": 5859469, "rows_excl_header": 3523}
+    ],
+    "wrapper_extras_note": "The outer Google Drive export also contains top-level duplicates of the RTF/PDF documentation (ldJson_8128.json, DCAT_2000054.json, 'Read 8128.pdf', 'Title Page.pdf', 'UK Data Service.pdf') sitting beside the inner zip. These were confirmed by md5 to be byte-identical to the corresponding files inside UKDA-8128-tab/ and are Google-Drive/export-level metadata, not additional study content; not separately catalogued here and not read for any fact in codebook_facts_uk.md.",
+    "storage_note": "The archives are on the local workstation only, at local_root above. This task ran entirely on the local workstation per the work order; nothing was copied to /speed-scratch and the cluster was not touched.",
+    "not_downloaded_by_this_session": "Nothing was acquired, downloaded or registered for by this employee session, per the work order's hard rule. The archive at Datasets/UK-TUS-20260815T031737Z-1-001.zip was already present and was only unpacked, hashed and read."
+  }
+}

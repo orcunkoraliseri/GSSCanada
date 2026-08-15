@@ -341,6 +341,292 @@ country rather than a parser branch.
 
 ---
 
+## 🔴 REPORT VETTING RECORD, FOURTH ROUND — `RL20` AND `RL21`, RETURNED 2026-08-14
+
+Two single-question rounds, commissioned to close the last two open decisions. **Both returned the
+inconvenient answer on the question they were asked**, which is the first time in this series that has
+happened twice in one round. Both still carry defects, and in `RL21`'s case the defect is in the
+number the report is most likely to be quoted for.
+
+### V12. ✅ `RL20` — Norway is rejected, and the report earned that verdict
+
+`L20` asked one thing: does the delivered Norwegian file carry an ACL-coded activity variable produced
+by SSB. **The answer is no**, and it closes decision 15.
+
+**What it establishes, and why it is credible.**
+
+* **`A1.1` is a clean negative.** The Sikt delivery carries only SSB's national classification —
+  reported as **exactly 167 categories in 5 main groups**, released at full national code depth — with
+  **no ACL variable at any depth.** `RL19` said "roughly 170"; 167 is consistent with it and sharper.
+* 🔴 **`RL19`'s recode table is formally retracted.** `RL20` searched SSB publications, the SSB `Klass`
+  classification database and the Sikt metadata and returned `NOT FOUND` for any official correspondence
+  table, and states plainly that it found **neither the table nor an official statement that one is
+  published.** That is the distinction the prompt asked for and most reports blur.
+* **The citation defect is confirmed and corrected.** The documentation report for the 2010-11 survey is
+  **Holmøy, Lillegård and Löfgren (2012), Notater 2012/03**, not Vaage 2012 Rapporter 2012/36. Vaage
+  (2012) exists but is *Tidene skifter: Tidsbruk 1971-2010*, **Statistiske analyser 125** — a trend
+  analysis, not survey documentation. **This is the Widén failure class, diagnosed and fixed.**
+* **`D2` returns `NOT FOUND` for a published third-party crosswalk**, and correctly notes that MTUS
+  harmonises Norway only at 69 or 41 activities, which is below the resolution Step 9 needs. So there
+  is no citable route either.
+* **It obeyed the skip instruction.** Part A came back negative, so Part B was skipped rather than
+  filled in for completeness. A report that declines to produce content it was told not to produce is
+  worth noticing, because most do not.
+* **One detail that reads like a real file rather than a description:** it names the diary variables as
+  `akt1` to `akt144` plus `hovedaktivitet`. **144 slots at 10 minutes is 1440**, so the variable list
+  is internally consistent with the slot length, and it also confirms the Norwegian national release is
+  a **wide slot file**, not an episode file. An invented variable list is unlikely to land on exactly
+  144. Not load-bearing, since Norway is out, but it is the kind of corroboration we look for.
+
+**Where it must not be believed.**
+
+1. 🔴 **Part E's "decisive flaw" was quoted from our own prompt.** `L20` was asked to name the one thing
+   most likely to be wrong that we had *not* thought of. It answered: the sampling frame stops at age
+   79. **Our prompt states, in its own text, that the survey covers ages 9 to 79 and that we confirmed
+   it ourselves.** The standing rule applies exactly: *a report that returns what you supplied has told
+   you nothing.* Part E is empty.
+2. **And the comparison inside Part E is unsourced.** It claims our four countries "sample the full
+   adult and elderly population without an upper age ceiling (or up to 90+)". **Every source it cites in
+   that section is Norwegian.** The upper age limits of the Italian, Spanish, French and UK waves are
+   not established anywhere in this project and are not established by `RL20` either.
+3. 🔴 **Section D answers questions about our hardware and our agreements, again.** It states our folds
+   fit "within standard GPU memory and 7-day walltime limits". It cannot see our cluster. Ignored, and
+   noted as the third consecutive round to do this.
+4. **It claims to have skipped Part B and then answers parts of it.** Section F and negative control 3
+   report Norway as Tier 2, cost EUR 0, turnaround "1 to 3 days". **The turnaround is exactly the kind of
+   unpublished estimate the prompt said to return `NOT FOUND` for**, and it is asserted with no source.
+   Harmless here only because the decision does not turn on it.
+5. **`C1` says the licence is silent and then reasons past its own finding.** Correctly labels the Sikt
+   terms **silent** on synthetic data, then adds an assessment that release "complies with standard
+   statistical disclosure control principles". **Silence is not permission**, that assessment is the
+   report's opinion rather than a licence finding, and legal reading is `RL10`'s job. Moot, since Norway
+   is out.
+6. **It assigns tiers to our own four countries in `D3`** — UK, France and Italy all at "Tier 2 / 2 / 2-3"
+   — which does not match what we already hold: UK is a free End User Licence registration, Italy is a
+   per-project application of two to eight weeks. Not used.
+
+🔴 **The honest caveat on the whole report.** `L20` told it, in writing, that a short negative report
+was the expected outcome. It returned a short negative report. **We asked for the answer we got**, and
+that is a reason to hold the verdict at the confidence its checkable details support rather than at the
+confidence the report claims. Those details — 167 categories, `akt1` to `akt144`, Notater 2012/03,
+`Klass` searched — are specific and falsifiable, which is why the verdict is accepted. **If Norway is
+ever reconsidered, the one thing to open is the Sikt variable list itself.**
+
+**Net: decision 15 closes NO. The four-country corpus stands and limitation C4 stands with it.**
+
+### V13. 🔴 `RL21` — the negative result is accepted, every number in it is not
+
+`L21` asked what the literature does about chaining one or two diary days into a year, and above all
+whether anyone has ever **measured** the difference between rules. **It answered zero**, which is the
+answer that creates work rather than saving it.
+
+**What is accepted.**
+
+* 🔴 **`B1`: zero published studies compare two or more chaining rules on the same building, weather and
+  archetype, holding the daily generator fixed.** It distinguishes this from the many studies comparing
+  *static versus stochastic schedules*, which conflate within-day stochasticity with cross-day assembly.
+  **Decision 14 therefore cannot close by citation. It closes by experiment or not at all.**
+* **`B13` and `C2`: no published threshold exists** for when a modelling convention dominates a
+  simulation result. The 25 % figure from `RL17` Part D has **zero literature basis** and is permanently
+  labelled project-chosen, joining the ±12-18 min margin and the U > 0.98 benchmark. The nearest citable
+  neighbours are ASHRAE Guideline 14 calibration tolerances, which are a **different quantity** — model
+  versus measurement, not convention versus convention — and may be quoted only as context, never as a
+  bar.
+* **`A3` and `B5`: there is no standard practice.** No ASHRAE, ISO or IBPSA document defines a chaining
+  protocol. Consequence for us: **our assembly rule is an explicit modelling choice and the methods
+  section must defend it**, because there is no default to inherit.
+* **`B4`: IEA EBC Annex 66 and Annex 79 are silent** on day-to-year concatenation and treat schedule
+  generation as an upstream boundary condition. An authoritative source that is silent is a useful
+  finding, and it is the one we would otherwise have been asked about in review.
+* 🔴 **`B11`: a two-day design of one weekday plus one weekend day cannot identify consecutive-day
+  transition probabilities.** This is arithmetic rather than literature — the two observed days are not
+  adjacent and straddle a regime change — so it can be accepted on its face. **It is the most
+  consequential thing in the report**, and see the design consequence below.
+* **Widén and Wäckelgård (2010) resolved: *Applied Energy* 87(6):1880-1892**, `10.1016/j.apenergy.2009.11.006`.
+  This matches `RL06` and `RL13` and confirms `RL08` was wrong, which is what V2 already recorded.
+
+**What is rejected, and it is every quantity in the report.**
+
+1. 🔴 **The headline number contradicts the headline finding.** `B7` states that peak demand varies by
+   **15 to 35 %** between static repetition and independent resampling, labelled **Fact**, Tier 2,
+   confidence **High**, sourced to McKenna and Thomson, Fischer and Deru. **But `B1` says no study has
+   ever compared chaining rules.** Both cannot be true. `B7` is an assembly from coincidence-factor
+   theory wearing a measurement's label, and it is attached to real papers that did not make the claim —
+   **the same failure class as the Widén citation, one level up.**
+2. **The same quantity appears three times with three values.** Section A and `B7` say 15 to 35 %
+   between rules; Part B2 says static overestimates by **15 to 40 %** against substation measurements
+   while resampling damps by **10 to 25 %** against the same; Section G says 15 to 40 %. Those are two
+   different comparisons that do not compose into either range. **A number that changes when the section
+   changes was never measured.**
+3. **`B6`, annual energy insensitive at under 3 %, is honestly labelled `Inference`** — and then Section
+   A and Section E restate it as established and instruct us to put it in the discussion. **An inference
+   may not enter the manuscript as a finding.** Cheap fix, below.
+4. 🔴 **`B10`'s persistence value violates the prompt's own rule.** The lag-1 autocorrelation of
+   **0.15 to 0.35** is labelled Fact with High confidence and sourced to Pas and to Hanson and Huff —
+   both of which the report's own negative control 1 places in the **"seen described / secondary"** list
+   and whose reference entries read `[Read summary]`. `L21` required every quantitative value in Part B
+   to come from a paper opened in full. **It is the only numeric persistence figure in the report and it
+   comes from papers the report says it did not open.**
+5. **Dangling citations, six of them.** Pas (1986), Widén et al. (2012), Widén et al. (2009), Clevenger
+   and Haymaker (2006), Sun and Hong (2017), Rusck (1956) and Saltelli et al. (2008) are cited in text
+   and **none has a reference entry**. `B8` tags Widén et al. (2012) as `[R14]`, which is D'Oca and Hong
+   on window opening.
+6. 🔴 **Negative control 1 lists a paper the report never uses.** **Page et al. (2008)** appears in the
+   "opened in full" list and appears **nowhere else in the report and in no reference entry.** An
+   opened-in-full list padded with an unused citation is the same control failure as `RL19`'s, and it is
+   the control specifically meant to be un-fakeable.
+7. **D'Oca and Hong (2014), a window-opening data-mining paper, is given as a representative paper for
+   whole-year archetype clustering.** Real paper, wrong role.
+8. **The Mobidrive description should be checked before any of it is cited.** The report places the
+   study in "Zurich and Karlsruhe" and gives a variance split of "40 to 60 % intrapersonal and 40 to
+   60 % interpersonal" — **two ranges that need not sum to 100 %**, which is not how a variance
+   decomposition is reported. Sample size and person-days are at least internally consistent
+   (361 × 42 ≈ 15,000). 🔴 **Verification of the site names and the split is the author's, not ours.**
+9. **The ASCII coincidence-factor plot is a drawing, not data.** Its three `CF_inf` bands
+   (0.45-0.55, 0.25-0.35, 0.15-0.22) carry no source. **It must never become a figure**, and it is
+   exactly the shape of thing that survives into a manuscript because it looks like a result.
+10. **`C3`'s diagnostic is worth keeping and its guarantee is not.** The schedule-level coincidence
+    index is cheap and computable. The claim that a 20 % shift in it **"guarantees"** a corresponding
+    shift in simulated peak power is an unsupported causal statement with an invented threshold.
+11. 🔴 **Section D answers about our hardware, and this time it is wrong on a fact.** It states that
+    private home directories "satisfy Eurostat academic confidentiality agreements". **We hold no
+    Eurostat agreement** — that is Track A, unfiled. It also predicts 300 annual EnergyPlus runs in 45
+    to 60 minutes, which depends entirely on a model it has never seen.
+
+**On negative control 3.** `RL21` reports **0 of 4 convenient**, where `RL19` reported 0 of 14 by making
+the threshold unreachable. This one is the opposite shape and needs stating: the prompt told the report
+we half expected zero comparison studies, and it returned zero on every axis. The findings that create
+work for us are credible; **the one axis scored inconvenient on an unverifiable number is `B7`, and
+`B7` is the number that makes the rest of the report consequential.** Read that as the report's
+incentive rather than as its evidence.
+
+### V14. What `RL21` changes in the work, which is more than its recommendation
+
+* 🔴 **Decision 14's shape has changed even though it has not closed.** It is now established that it
+  **cannot** close by citation. The remaining question is not *which rule does the literature endorse*
+  but *what does our own experiment show*, and that experiment is now the only route.
+* 🔴 **`B11` removes a rule we were about to build.** If a two-day design cannot identify consecutive-day
+  transitions, then the habit-coupled Markovian rule `RL17` proposed **cannot be parameterised from our
+  own corpus.** Its persistence parameter would be chosen by us, which means comparing it against the
+  other two rules would compare our choice against itself. **Recommended consequence: rule 3 is run as a
+  sweep over the persistence parameter rather than as a single fitted rule**, so that what is reported
+  is the sensitivity band, not a fitted value. That is the manager's recommendation, not `RL21`'s.
+* **The insensitivity claim gets tested for free rather than believed.** `B6` says annual energy moves
+  under 3 % while peak moves much more. **Record annual energy in the same 100-household campaign.** It
+  costs nothing, and it converts the report's inference into our own measurement — which is the pattern
+  that settled open decision 3.
+* ✅ **`RL21`'s Part D is the one Part D in this series that answered the question it was asked.** Not
+  the two failure modes we excluded, but a third: under independent resampling a synthetic individual
+  walks the whole conditional distribution, so a full-time worker accumulates an implausible number of
+  distinct activities per month and a household loses role coherence between days. **The test is cheap
+  and computable on generated schedules alone.** Its `> 15 distinct 2-digit codes` criterion is
+  project-chosen like everything else here, but **the diagnostic is real and the empirical value is
+  computable on the ISTAT data we already hold** — which is where the criterion should come from.
+* **It connects to decision 12.** Role incoherence between days is a household-level defect, and
+  household-joint generation is the deferred decision that would address it. Recorded so the link is
+  not rediscovered later.
+
+**Net: `RL20` closes decision 15 as NO. `RL21` does not close decision 14, and establishes that nothing
+except our own experiment can.**
+
+---
+
+## 🔴 REPORT VETTING RECORD, FIFTH ROUND — `RL22` AND `RL23`, RETURNED 2026-08-14
+
+Two single-question rounds on the two newer waves that are obtainable in principle: UK 2020-21 and
+Italy 2022-23. **Both returned negative on the deciding question, and neither pushed in the rescuing
+direction** — the first round in this series where that is true of both reports at once. Both are
+still wrong about our own corpus in the same place, and both pad their evidence lists the same way.
+
+### V15. ✅ `RL22` — the UK 2020-21 file is obtainable, and it is not a HETUS diary
+
+The commissioning question was whether the file uses the UKTUS 2014-15 coding list. The answer is no,
+and the reason is larger than the one we had.
+
+* **What we thought.** UK 2020-21 was excluded for being online, lockdown-era and age 16+. That is a
+  confound argument, and it implicitly assumed a HETUS-style diary underneath the confound.
+* **What the report establishes.** The accessible file is not a national HETUS wave at all. It is the
+  **CTUR CaDDI six-wave COVID sequence**, an online instrument with a **closed drop-down list of about
+  36 activity categories**, against roughly 250 three-digit codes in UKTUS 2014-15. A reduced menu is
+  not a coding-list *edition* difference; it is a different instrument answering a different question.
+* ✅ **Accepted, because it is checkable in the open literature.** CaDDI's design is described in two
+  open-access papers the report cites with resolvable DOIs (PNAS 2021, PLOS ONE 2021). We are not
+  taking this from the archive documentation, which the report almost certainly could not open.
+* 🔴 **The second finding is the one that would have cost us most, and it needs confirming before it
+  is used:** the report states the sample is **individual panelists from a commercial online panel,
+  with no household clustering**. If true, the file carries no whole-dwelling co-presence at all,
+  which removes the only property that would have made it interesting for building energy work. It is
+  checkable in the same open-access papers. **Confirm before quoting.**
+* **Route, believed on its checkable parts:** UK Data Service, SN 8741, End User Licence, free, and
+  reachable by a Canadian academic. Contrast: the ONS Online Time Use Survey is secure-access only and
+  **is not reachable by us at all**, which is a useful negative in its own right.
+
+### V16. ✅ `RL23` — Italy 2022-23 does not exist as a file, and that ends the question
+
+* **The deciding fact is release status, and it is negative.** No diary-level microdata has been
+  released in any channel, and **no release date is published**. What was released on 10 February 2026
+  is the **voluntary-work module only**, with documentation the report quotes as stating explicitly
+  that the daily diaries are excluded. That quotation is a checkable identity and is the single most
+  useful line in the report.
+* **Consequence: there is nothing to acquire, so there is nothing to decide.** The wave cannot be a
+  held-out instrument, cannot be requested, and does not need a licence review.
+* **The coding finding is secondary but survives.** Even once released, the wave uses the newer ACL
+  generation, and the report places the official correspondence table in **Annex VII of the Eurostat
+  HETUS 2018 guidelines, re-edition 2020**, describing the mapping as one-to-one at 1 and 2 digits and
+  **one-to-many at 3 digits**. If that holds, a newer Italian wave can never be placed against our
+  2013-14 wave at the depth Step 9 needs without a crosswalk we would have to build ourselves, which
+  we refuse.
+
+### V17. 🔴 What both reports get wrong, and it is the same failure class as every round before
+
+* 🔴 **Both make a claim about our own corpus that our own file falsifies.** `RL23`'s Part F asserts
+  that the UK, France **and Spain** each field a two-day diary and that Italy's single day is the
+  outlier. **We measured Spain: one diary day per respondent**, G1.9 PASS on 19,295 diaries, and
+  INE's methodology says the same. Rule 1 of the vetting checklist exists for exactly this: a report
+  cannot see our data, so anything it says about our data was quoted from the prompt or invented, and
+  this was invented.
+* 🔴 **`RL23`'s "108 codes in ACL 2008" cannot be adopted.** Our Spanish file, a 2008-generation wave,
+  uses **116** three-digit codes, enumerated in INE's own annex and measured in the delivered file
+  (F-ES-5). The report restates the same 108/116 pair that `RL02` gave us, as though it were an
+  independent finding. **Whether that pair describes the editions at all is now a Step 2 question**,
+  and it is one more reason the activity crosswalk is built from codebooks rather than from reports.
+* **Both pad their opened-in-full lists with our own paper**, which is irrelevant to either question
+  and which they cite with **two different initials for the same third author**. Padding plus an
+  inconsistent citation of the same reference across two reports is the cheapest fabrication signal
+  there is, and it is the third round in a row where the evidence list is the part that fails.
+* 🔴 **Every variable name in both reports is unverified.** `RL22` gives archive variable names for a
+  file behind a registration wall it could not have passed, and writes several of them with a slash
+  (`survey_device` / `device_type`), which is uncertainty presented as fact. `RL23` sources its entire
+  instrument description — location codes, co-presence flags, 04:00 origin, minimum age — to a **paper
+  questionnaire model with no URL**, claimed as opened in full. That is `RL19`'s Netherlands failure
+  class exactly. **No variable name from either report may enter a document or a reader.**
+* **Minor, recorded so it is not rediscovered:** `RL22` gives the ONS secure-access study as
+  *2020-2024* in its tables and *2020-2023* in its reference list.
+
+### V18. What this changes in the work
+
+* **Neither file is acquired.** Italy 2022-23 cannot be — it does not exist as a research artefact.
+  UK 2020-21 could be, in about an hour, and **the recommendation is not to**: every acquisition adds
+  a licence with destruction and reporting obligations, and a 36-category instrument without household
+  structure supports no test we have. Revisit only if a deliberately coarse comparison is ever wanted.
+* ✅ **Decision 6 is reinforced on stronger grounds than it was taken on.** The exclusion of UK 2020-21
+  no longer rests on a mode-plus-lockdown confound argument; it rests on the file not being a
+  HETUS-coded household diary. That is a better sentence for the limitations section, and it is one a
+  reviewer can check.
+* **The `MODE` and `SCHEME` prefix fields keep their justification and lose one use case.** They were
+  written so a newer wave could be admitted later without changing the record format. `RL23` shows
+  there is no newer wave to admit for the foreseeable term, so the fields are now insurance rather
+  than preparation. They cost a handful of tokens and they stay.
+* 🔴 **The age of the UK 2020-21 respondents is now disputed, and we do not adopt either number.** Our
+  1B-bis table says 16+, `RL22` says 18+, and both are unverified. **The exclusion does not depend on
+  it**, so the disputed figure is marked rather than replaced. Swapping one unverified number for
+  another would look like a correction and would not be one.
+
+**Net: `RL22` and `RL23` close the newer-waves question with two negatives. Nothing is acquired,
+nothing enters training, and decision 6 stands on better evidence than before.**
+
+---
+
 ## STEP 0 — FEASIBILITY GATE
 
 **Status: ✅ CLEARED 2026-08-14.**
@@ -469,8 +755,8 @@ question a reviewer asks of any survey-based paper.
 
 | Wave | Why it is not training data |
 |---|---|
-| **UK 2020-21** | Lockdown fieldwork, collected **online**, minimum age raised to 16+. A crisis regime **and** a mode change inside the same wave, so neither effect can be separated from the other. A model trained on it learns the lockdown, not the country |
-| **Italy 2022-23** | **ACL 2020** coding list **and** web/app collection. Different codes and different diary behaviour — web and app diaries capture more short fragments and fewer secondary activities than paper booklets |
+| **UK 2020-21** | ~~Lockdown fieldwork, collected **online**, minimum age raised to 16+.~~ 🔴 **Restated 2026-08-14 on stronger grounds (V15): the accessible file is not a HETUS-coded national diary at all.** It is the CTUR CaDDI online instrument with a closed menu of about **36 activity categories** against roughly 250 three-digit codes in UKTUS 2014-15, sampled from **individual panelists with no household clustering**. The lockdown and mode confound is still true and is now the second reason, not the first. **The minimum age is disputed — 16+ here, 18+ in `RL22`, neither verified — and the exclusion does not depend on it** |
+| **Italy 2022-23** | ~~**ACL 2020** coding list **and** web/app collection.~~ 🔴 **Superseded 2026-08-14 (V16): the diary microdata has never been released and no release date is published.** There is no file to exclude. The coding argument survives as a second reason for whenever it does appear: the newer ACL generation maps **one-to-many at 3 digits** against ours. The web/app claim was `RL02`-era and `RL23` states the wave was fielded on paper; **both are unverified and neither is load-bearing** |
 | **Spain 2024-25** | **Microdata not released.** The wave exists; the file does not |
 | **France 2024-25** | Postponed round-3 fieldwork. Nothing to obtain within this paper's horizon |
 
@@ -534,9 +820,15 @@ What is left, ranked by how little a reader has to do:
 
 The obvious candidate is therefore **a minimal public path built on Spain alone**: one country, one
 wave, no credentials, running the whole pipeline end to end. It would not demonstrate transfer — one
-country cannot — but it would let a reader execute every stage and reproduce the machinery. Whether
-that is enough to carry the Data Availability statement is **open decision 13, and it must close before
-that statement is written.**
+country cannot — but it would let a reader execute every stage and reproduce the machinery.
+
+✅ **Decision 13 closed on 2026-08-14 and it took the candidate plus one more.** The author's call is
+**Spain alone as the first route, with a cross-country route alongside it**, on the ground that a
+single-country path reproduces the machinery and cannot reproduce the claim. Tier 1 is Spain, zero
+credentials. Tier 2 is Spain plus UK 2014-15, two free registrations, which is the cheapest pair that
+can actually execute a leave-one-country-out against the reweighted null. The full statement, including
+what tier 1 cannot exercise because Spain fields one diary day per respondent, is in **OPEN
+DECISIONS**. **The Data Availability statement is written from that entry and from nothing else.**
 
 ### 1E. What is not available, stated once so it is not rediscovered
 
@@ -567,11 +859,18 @@ that statement is written.**
   ITS THREE DIGITS.** The 2-digit rule is retained only for the earlier waves used in validation. This
   is the decision that protects Step 9, whose appliance triggering needs to distinguish laundry from
   cooking from washing, and which 2-digit codes would have collapsed.
-* **Location codes.** 10 to 19 stationary, 20 to 39 transport modes, in one field. 11 = Home.
+* **Location codes.** ~~10 to 19 stationary, 20 to 39 transport modes, in one field.~~ 🔴 **Retracted
+  2026-08-14 by the Spanish codebook (F-ES-3): in Spain `21-29` are places, not transport, and `41` is
+  public transport — above the range, and present in the delivered file.** `11 = Home` stands. **No
+  step may test a location code by numeric range**; membership comes from an explicit code-by-code
+  crosswalk. Step 2 decision D-S2-3.
 * **Co-presence.** Not one code but **five parallel binary flags**: alone, with partner, with children,
   with other household members, with other persons. This matters directly, because paper 1 names
   co-presence handling as the source of load **over**estimation when shared activities are counted as
   independent loads, and five flags let us distinguish household from non-household presence properly.
+  🔴 **Five is the shared core, not the ceiling (F-ES-2): Spain fields six.** The extra, `PADRES`
+  (*with a parent*), is kept as a country-extra column and never folded into "other household
+  members". Step 2 decision D-S2-2.
 
 ### 2A-bis. The file shape and the weight names, adjudicated by `RL17`
 
@@ -610,6 +909,12 @@ indoor_presence = (LOC == 11) AND (ACT not in {gardening, outdoor construction, 
 The exclusion list is finalised against the transcribed ACL, not guessed, and the rule is stated in the
 methods section rather than buried in code. A reviewer who knows HETUS will look for it.
 
+🔴 **Confirmed on the Spanish file and widened (F-ES-4).** METH p. 124 defines `11` as house, garage,
+vegetable plot, garden or grounds attached to the dwelling, **and codes working from home as `11` as
+well.** Work-at-home is indoor presence and is *not* excluded, but it means `LOC == 11` alone cannot
+separate "at home, not working" from "working at home" — a distinction Step 9 needs for equipment
+load, and one only the 3-digit `ACT` carries. Step 2 decision D-S2-4.
+
 ### 2C. Where countries actually diverge, and the filter it forces
 
 | Dimension | Standard | Divergence found |
@@ -617,12 +922,18 @@ methods section rather than buried in code. A reviewer who knows HETUS will look
 | Slot length | 10 min, 144 slots | UK 2000 used 15 min |
 | Diary days per respondent | 2 (one weekday, one weekend) | Germany fielded 3; Spain and France 1998 fielded 1 |
 | Minimum age | 10+ | UK 8+, France 11+ |
-| Diary start hour | 04:00 | Spain originally 06:00 or 00:00 before re-indexing |
+| Diary start hour | ~~04:00~~ 🔴 **OPEN** | **Measured: Spain runs 06:00 to 06:00, and no 04:00 day can be built from it (F-ES-1).** The 04:00 value was `RL02`'s standard, never measured |
 | Fieldwork spread | 52 continuous weeks | Some early accession rounds compressed into 2 to 6 months, which distorts seasonal comparisons |
 | Code depth | 3-digit ACL | Some public files collapse to 2-digit for disclosure control |
 
-**Filter adopted:** age ≥ 11, 04:00 origin, 10-minute grid, and a per-country flag for diary-days-per-
+**Filter adopted:** age ≥ 11, 10-minute grid, and a per-country flag for diary-days-per-
 respondent so that multi-day structure is only claimed where it exists.
+
+🔴 **The origin clause is withdrawn, not replaced** (Step 2 decision D-S2-1, author, 2026-08-14). It
+is chosen once all four codebooks are transcribed, from four measured origins. Setting it to 06:00
+because Spain is the only country we have measured would be the same error as `RL02`'s 04:00, in the
+other direction. Step 2 work item 2.4 is blocked until it closes. The harmonised day is 24 hours of
+10-minute slots with **one origin shared by all four countries**, never a per-country field.
 
 ### 2D. The crosswalk
 
@@ -677,10 +988,14 @@ The failure mode is bounded rather than catastrophic.
 
 * `DUR` — duration in minutes, multiples of 10, and `start` is dropped because it is the running sum.
 * `ACT` — 3-digit ACL code.
-* `LOC` — **the real HETUS location code (10 to 39), not `RL07`'s invented 1 to 6.**
-* `COP` — **the five co-presence flags from `RL02`, not a single digit.** Packed form to be fixed at
+* `LOC` — **the real HETUS location code, not `RL07`'s invented 1 to 6.** 🔴 **Not "10 to 39":** the
+  Spanish file carries `41`, public transport (F-ES-3). The serialised alphabet is whatever the Step 2
+  location crosswalk emits, and it is read from that file rather than written as a range here.
+* `COP` — **the five shared co-presence flags, not a single digit.** Packed form to be fixed at
   implementation; discarding four of the five flags to save tokens would throw away exactly the field
-  paper 1 identified as load-bearing.
+  paper 1 identified as load-bearing. **Country-extra flags (D-S2-2) are carried in the harmonised
+  table but are not serialised into `COP`** — a symbol only one country can emit would leak country
+  identity into a leave-one-country-out design.
 
 * `ACT` **keeps its three digits.** Decision 6 removed the cross-wave pooling that would have forced
   2-digit codes, and the OLMo tokenizer writes a 3-digit code in one token anyway, so the resolution
@@ -688,6 +1003,19 @@ The failure mode is bounded rather than catastrophic.
 
 Reversibility is exact: each episode unpacks to `DUR / 10` identical slots. Validity is
 `sum(DUR) == 1440`.
+
+### 3B-bis. 🔴 Secondary activity — kept in the data, kept out of the record, decided 2026-08-14
+
+Spain records a secondary activity on **12.2 %** of slots (F-ES-6) and the Step 1 record had no field
+for it. `act2_raw` is now carried through Steps 1 and 2 — nothing recorded is discarded — but **it is
+not serialised into the episode tuple**, because coverage has been measured on one country out of
+four and a field only Spain can emit would leak country identity into a leave-one-country-out design.
+That is the same argument that keeps country-extra co-presence flags out of `COP`.
+
+**The decision closes on a measurement, not on a preference:** four coverage rates in
+`outputs_step3/act2_coverage.md`. All four usable, serialising becomes a token-cost question; any
+country missing it, the field stays out permanently and the reason enters the limitations. Until that
+file exists, **no step conditions on `act2` and no gate tests it.** Full text in Step 3, item 3.2-bis.
 
 🔴 **Two prefix fields that are constant today and exist for tomorrow.** The conditioning prefix
 carries, alongside country, demographics, season and day type:
@@ -943,6 +1271,33 @@ country token in the prefix.** Per-country adapters over a shared base are the c
 primary. This also removes most of the forgetting gate in Tier 4 by construction, which is the right way
 to pass a gate.
 
+### 4D-bis. 🔴 Step 4 is ten training jobs, and the ceiling run sits on one pre-named fold
+
+Decision 11 holds every country out in turn, so **a fold is a separate model** and this step's unit of
+work is the fold. The step document was written for one Leg-5 run and is corrected 2026-08-14.
+
+| Run | Leg | Count |
+|---|---|---|
+| Primary, rsLoRA r=32 all linear | Leg-4 **and** Leg-5 | **4 each**, one per held-out country |
+| Ceiling, full fine-tune with 8-bit AdamW | Leg-5 | **1**, pre-named fold |
+| Comparison arm, `Qwen/Qwen2.5-7B` | Leg-5 | **1**, same pre-named fold |
+
+**Author decision, 2026-08-14: the ceiling run and the comparison arm are single-fold.** The ceiling
+answers one question — does LoRA underfit a target this far from the pretraining distribution — and one
+measurement settles it. **Six Leg-5 jobs, four Leg-4 jobs.**
+
+🔴 **Naming that fold is a new opportunity to choose late, and it is closed the same way decision 11
+was.** ✅ **The fold is held-out SPAIN, confirmed by the author 2026-08-14**, by a rule fixed in advance
+— alphabetical ISO code — and taken **while no fold had been trained and no result existed**. It goes
+into `Step6_docs/outputs_step6/prereg.md` and freezes with it before the first Leg-5 submission; no
+change after that. Choosing it afterwards would let the full fine-tune be pointed at whichever fold the
+primary run did worst on, which is selecting on the outcome.
+
+**A deadline that was missing:** `prereg.md` is frozen before the first *training submission*, not
+merely before Step 6 scores anything. Once a model exists, a pre-registration written afterwards is a
+description of it. New gate **G4.14** carries its md5 in every run manifest; new gate **G4.13** asserts,
+from the shard the trainer actually loaded, that the held-out country contributed **zero** records.
+
 ### 4E. Hardware, measured
 
 Queried on Speed on **2026-08-13** with `sinfo -N -o '%N|%P|%f|%G|%m|%T'`. Not an estimate.
@@ -979,9 +1334,13 @@ What is adopted unchanged, because it is specific and checkable:
   physical GPU. One instance, one job.
 * 🔴 **Never request multi-GPU on the Tesla P6 nodes** (`speed-01`, `speed-05`, `speed-17`). `RL11`
   reports that `DataParallel` there crashes the physical node.
-* **Everything offline.** `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `HF_HOME` and `TORCH_HOME` on
-  `/speed-scratch`, weights pre-staged. Compute nodes have no outbound network, and the default cache
-  location will blow the home quota.
+* **Training runs offline.** `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `HF_HOME` and `TORCH_HOME`
+  on `/speed-scratch`, weights pre-staged. The default cache location will blow the home quota.
+  🔴 **Corrected 2026-08-14: compute nodes on `ps` DO have outbound network.** This line said they did
+  not. Jobs 1234176, 1234177, 1234192 and 1234199 ran `pip install` and pulled from Hugging Face from
+  inside `sbatch`, and job **1245620** stages the three checkpoints the same way. **Offline is a
+  discipline imposed on training runs, not a property of the node** — and the wrong version of this
+  sentence implied the weights had to come down on the login node, which the top rule forbids.
 * **Singularity, not Conda on NFS.** A Conda tree is hundreds of thousands of small files on a network
   filesystem.
 * **`--signal=B:SIGUSR1@600`** with a checkpoint-and-exit handler, plus periodic stateful checkpoints
@@ -1366,6 +1725,33 @@ because when one specific person runs the washing machine is irreducibly stochas
 predicting one household's day.** Every mapping is labelled VALIDATED or NOT VALIDATED with the scale at
 which it was validated. An unvalidated mapping is a caveat, not a method.
 
+### 9D. 🔴 The secondary-activity field this step was promised and does not receive. Resolved 2026-08-14
+
+3B-bis keeps `act2_raw` in the corpus and names **Step 9** as the reason: an appliance triggered by an
+activity that is only ever *secondary* — a television on while eating, a washing machine running while
+the respondent does something else — is exactly the load paper 1 got wrong by construction.
+
+🔴 **But Step 9 does not consume the real corpus. It consumes Step 7's generated diaries, and those
+carry no secondary activity**, because `act2` is not serialised into the episode tuple. The two
+sections were consistent about keeping the field and inconsistent about who receives it, and the gap is
+invisible in code: **a trigger that reads an absent column does not fail, it just never fires.**
+
+**Resolution.** The trigger fires from the **primary** code alone, on generated and real diaries alike
+— which is also what CREST, Widén, LPG and RAMP do, so adapting their logic unchanged is the
+conservative reading of "do not invent the mapping". `act2` enters this step in exactly one place, as a
+**calibration input**: `P(appliance | primary activity)` is estimated on the real corpus with secondary
+activity visible, so appliance use respondents recorded as secondary is absorbed into the trigger
+probability instead of dropped. New gate **G9.14** asserts the trigger's runtime columns are a subset
+of what `generated_<country>.parquet` actually contains, and that `act2` is not among them.
+
+**The cost, stated rather than assumed:** a load whose activity is *always* secondary and never primary
+for anyone is invisible to the generated path, and calibration recovers its rate but never its timing.
+That belongs in the methods beside limitation E1.
+
+🔴 **If all four coverage rates come back usable and Step 3 serialises `act2` after all, that decision
+has to be taken before the corpus is emitted.** Adding a fifth tuple element afterwards invalidates the
+corpus, the grammar and every trained fold.
+
 ---
 
 ## VALIDATION PLAN
@@ -1431,10 +1817,14 @@ Reproduced from the overview, with the reasoning that did not fit there.
 
 ## OPEN DECISIONS
 
-**Nine of fifteen fully closed as of 2026-08-14**; the table with the settling source for each is in
-the overview. The list grew rather than shrank: decisions 1 and 3 closed, decision 9 partly reopened
-when the HETUS-only scope removed the ATUS reproduction path, and **three new items appeared as
-consequences of decisions already taken.**
+**Twelve of fifteen fully closed as of 2026-08-14**; the table with the settling source for each is in
+the overview. The list grew before it shrank: decisions 1 and 3 closed, decision 9 partly reopened
+when the HETUS-only scope removed the ATUS reproduction path, **three new items appeared as
+consequences of decisions already taken**, then decisions 11 and 13 closed on author calls the same
+day, and **decision 15 closed the same evening when `RL20` returned a clean negative.**
+
+🔴 **Only decision 14 is genuinely open, and `RL21` established that it cannot be closed by reading.**
+Decision 12 remains deferred as scope rather than open as a question. See V12 to V14.
 
 **What closed since the sixteen-report round:**
 
@@ -1451,28 +1841,85 @@ consequences of decisions already taken.**
 * ✅ **Decision 1 is fully closed.** Author decisions 5 and 6: **HETUS only, four countries, one wave
   each** — Italy 2013-14, Spain 2009-10, UK 2014-15, France 2009-10. `RL17` recommended two waves and
   its own inventory is what argued against it. The `ACT` field keeps its three digits.
-* 🔴 **Decision 11, which country is held out.** Unchanged and still the cheapest to get wrong. **Now
-  a choice among four rather than five, which makes it both easier and more consequential.**
-  Blocked on the corpus landing, and **it must close before the first training run**, because a
-  held-out country chosen after results have been seen is not held out at all and no amount of later
-  care repairs it.
+* ✅ **Decision 11, which country is held out, is CLOSED. Author, 2026-08-14: none of them, and all of
+  them.** The evaluation is **four-fold rotation** — every country is held out in turn, so the reported
+  transfer result is four leave-one-country-out runs rather than one.
+
+  **Why this is the stronger answer rather than the expensive one.** The hazard the decision existed to
+  prevent was a held-out country chosen after results have been seen. Rotation removes the choice
+  instead of timing it: there is nothing left to select, so there is nothing to select favourably.
+  It also converts the single most fragile number in the paper into a distribution over four, which is
+  what lets us say whether transfer works or whether it works *for Spain*.
+
+  🔴 **Two conditions, pre-registered, without which rotation gives back what it bought.**
+  **All four folds are reported, always, including the worst.** Reporting the best fold, or dropping a
+  fold as anomalous, is the same defect as choosing the country late, arriving by a different door.
+  And **no fold's result may change the design** — architecture, prompt format, gates or hyperparameters
+  — once any fold has been evaluated; a change made after seeing fold 1 contaminates folds 2 to 4.
+
+  **Cost.** Four fine-tuning runs at Leg-5 instead of one, and four at Leg-4, where the 1B pilot makes
+  the rotation nearly free. This is the reason the decision was previously framed as a choice, and the
+  cost is accepted.
+
+  **A second, weaker hold-out is retained and must never be confused with this one.** A random sample of
+  households is held out from *within* the training countries as an ordinary test set. It measures
+  whether the model reproduces data whose country it has already seen, which is what papers 1 to 3
+  measure. 🔴 **It is a sanity check and is never reported as transfer.**
 * **Decision 12, household-joint generation.** Now known to be feasible: a four-person household week is
   about 7,000 tokens, comfortably inside context — and more comfortably still at 200 tokens per diary
   on the adopted tokenizer. Deferred as scope rather than excluded as impossible, and it remains the
   natural fix for paper 1's co-presence weakness.
 
-**And two new open items that no earlier decision covered.**
+**And three items that no earlier decision covered, one of which has since closed.**
 
-* 🔴 **Decision 13 — what replaces the ATUS reproduction path.** Decision 5 removed Track C, and with
-  it the only way a reader without credentials could run the pipeline. Spain's INE needs no
-  registration and is the obvious minimal public path. **Must close before the Data Availability
-  statement is written.** See 1D.
-* 🔴 **Decision 14 — the day-to-year chaining rule**, from `RL17` Part D. Nothing says how 365
-  generated days are chained into one household's simulated year. Independent daily resampling damps
-  peak demand, static repetition exaggerates it, and the choice may move the result more than transfer
-  quality does. See V8 and Step 7E. **Must close before the Step 8 campaign is designed.**
-* 🔴 **Decision 15 — Norway as a fifth country.** Opened by the author on 2026-08-14 after `RL19`, and
-  it is the only decision on this list that can **reverse decision 6 without appearing to**.
+* ✅ **Decision 13 — what replaces the ATUS reproduction path — is CLOSED. Author, 2026-08-14: Spain
+  alone as the first route, and a cross-country route alongside it.** Two tiers rather than one,
+  because the single-country path reproduces the machinery and cannot reproduce the claim.
+
+  | Tier | What a reader needs | What it reproduces |
+  |---|---|---|
+  | **1. Spain 2009-10 alone** | **Nothing. INE open download, no registration** | Every stage end to end: parse, harmonise, serialise, fine-tune, constrained generation, schedule assembly, EnergyPlus. **Not transfer** — one country cannot |
+  | **2. Spain 2009-10 + UK 2014-15** | Two free registrations, no institutional accreditation | The transfer machinery itself: train on one, hold out the other, against the reweighted real-diary null |
+
+  **Why UK is the second country.** Of the three credentialled sources it is the only one whose
+  registration is free, individual and immediate. France needs academic registration through
+  Progedo/ADISP and Italy needs a per-project application taking two to eight weeks, so neither is a
+  route a reader can walk in an afternoon. 🔴 **This pairing is the manager's implementation of the
+  author's decision, not the author's own selection, and it is the part to correct if it is wrong.**
+
+  🔴 **What tier 1 cannot do, stated in the Data Availability statement rather than left to be
+  discovered.** Spain fields **one diary day per respondent**, so the single-country path has no
+  within-person multi-day structure at all, and any day-to-year chaining rule that depends on
+  persistence (decision 14) cannot be exercised on it. Tier 2 is what carries that.
+
+  **The loss is still recorded as a loss.** Neither tier restores what Track C had, which was a
+  zero-credential path that also demonstrated the claim. See 1D.
+* 🔴 **Decision 14 — the day-to-year chaining rule — is the only decision still open**, and after
+  `RL21` it is open in a different way than it was. Nothing says how 365 generated days are chained
+  into one household's simulated year. Independent daily resampling damps peak demand, static
+  repetition exaggerates it, and the choice may move the result more than transfer quality does.
+  See V8, V13, V14 and Step 7E. **Must close before the Step 8 campaign is designed.**
+
+  ✅ **`RL21` returned on 2026-08-14 and answered the commissioning question: zero.** No published study
+  has compared two or more chaining rules on the same building with the daily generator held fixed, no
+  standard defines a protocol, and no citable threshold exists for when a modelling convention dominates
+  a result. 🔴 **Therefore decision 14 cannot close by citation. It closes by our own experiment or it
+  does not close.** Every percentage in `RL21` is rejected, including the 15 to 35 % peak divergence it
+  is most likely to be quoted for — that number contradicts its own `B1` and is sourced to papers that
+  did not make the claim. See V13.
+
+  🔴 **One `RL21` finding changes the experiment before it is designed.** A two-day survey of one
+  weekday plus one weekend day **cannot identify consecutive-day transition probabilities**, so the
+  habit-coupled Markovian rule cannot be parameterised from our own corpus. **Run it as a sweep over the
+  persistence parameter rather than as a fitted rule**, and report the sensitivity band. A fitted value
+  we chose ourselves would be our bookkeeping compared against itself, which is the exact failure this
+  decision exists to prevent.
+
+  **And record annual energy in the same campaign.** `RL21` infers it moves under 3 % while peak moves
+  far more. It costs nothing to measure both, and measuring is what settled open decision 3.
+* ✅ **Decision 15 — Norway as a fifth country — is CLOSED. NO.** Opened by the author on 2026-08-14
+  after `RL19`, closed the same day by `RL20`. It was the only decision on this list that could
+  **reverse decision 6 without appearing to**, and it did not.
 
   **What is in its favour.** Norway is the only reachable Nordic candidate in the round, and it is a
   genuinely hard held-out target rather than a fifth neighbour: high-latitude photoperiod, an early
@@ -1493,6 +1940,24 @@ consequences of decisions already taken.**
   the four-country corpus stands. **Establish the fact before weighing the benefit** — the benefit is
   real enough to make the crosswalk look acceptable, which is exactly how a corpus decision gets taken
   by accident. **Must close before Step 1 acquisition finishes.** See V10.
+
+  ✅ **`RL20` returned and the fact came back negative.** The Sikt delivery carries **only SSB's
+  167-category national classification**, no ACL variable at any depth, and **no official recode table
+  exists** — `NOT FOUND` in SSB publications, in the SSB `Klass` database and in the Sikt metadata.
+  `RL19`'s claim that a documented one-to-one recode is supplied is **formally retracted**, and no
+  published third-party crosswalk exists either; MTUS harmonises Norway only at 69 or 41 activities,
+  which is below what Step 9 needs.
+
+  **So Norway is rejected for exactly the reason UK 2000-01 and Italy 2022-23 are: it is not admissible
+  to the machinery without something we would have to invent.** The four-country corpus stands and
+  **limitation C4 stands with it, now with a documented reason rather than an untested hope of repair.**
+
+  🔴 **The one caveat, stated because the closure is otherwise clean.** `L20` told the report that a
+  short negative was the expected outcome, and a short negative is what came back. The verdict is
+  accepted on its checkable details — 167 categories, diary variables `akt1` to `akt144`, Notater
+  2012/03, `Klass` searched — not on the report's own confidence. **If Norway is ever reconsidered, open
+  the Sikt variable list itself and nothing else.** Its Part E answer was quoted from our prompt and its
+  Section D invents facts about our cluster; both are discarded. See V12.
 
 ---
 
@@ -1857,3 +2322,320 @@ left standing rather than rewritten, because the reversal and its reason are the
   wearing the clothes of an acquisition detail**, and taken in the other order it reverses decision 6
   without anyone deciding to.
 * Must close before Step 1 acquisition finishes.
+
+### 2026-08-14 (ninth entry) — decisions 11 and 13 closed; two prompts written for 14 and 15
+
+* ✅ **Decision 11 closed. Four-fold rotation: every country is held out in turn.** The author was
+  asked which country to hold out and answered by removing the question. **This is a stronger closure
+  than any single choice would have been**, because the hazard was never which country was picked, it
+  was that a picked country can be picked late; rotation leaves nothing to pick. It also turns the
+  paper's single most fragile number into a distribution over four, which is what distinguishes
+  "transfer works" from "transfer works for Spain".
+* 🔴 **Two pre-registered conditions travel with it, and without them rotation gives back what it
+  bought.** All four folds are reported including the worst — reporting the best fold is choosing the
+  country late by a different door — and **no fold's result may change the design once any fold has
+  been evaluated**, or folds 2 to 4 are contaminated by fold 1.
+* **Cost accepted: four Leg-5 fine-tuning runs instead of one**, four at Leg-4 where the 1B pilot makes
+  rotation nearly free. This cost is why the decision was framed as a choice in the first place.
+* **The author also proposed holding out a sample of households rather than a country.** Recorded
+  because the reasoning matters: that measures whether the model reproduces data whose country it has
+  already seen, which is what papers 1 to 3 measure and is not this paper's claim. **It is retained as
+  an ordinary test set and is never reported as transfer.** Both hold-outs now exist and are named
+  differently on purpose.
+* ✅ **Decision 13 closed. Two reproduction tiers: Spain alone, and Spain plus UK.** The author took the
+  candidate minimal path and added a cross-country one, on the ground that one country reproduces the
+  machinery and cannot reproduce the claim. Tier 1 is zero-credential. Tier 2 needs two free
+  registrations and is the cheapest pair that can execute a real leave-one-country-out against the
+  reweighted null. **The Data Availability statement is now writable.**
+* 🔴 **The UK pairing is the manager's implementation, not the author's selection**, chosen because it
+  is the only credentialled source whose registration is free, individual and immediate. Flagged in
+  the decision entry as the part to correct if it is wrong.
+* **Stated rather than left to be found:** Spain fields one diary day per respondent, so tier 1 cannot
+  exercise any chaining rule that depends on day-to-day persistence. Tier 2 carries that.
+* **`L20_norway_admissibility.md` and `L21_day_to_year_chaining.md` written and handed to the author.**
+  `L20` is a one-question round on whether the Norwegian delivery carries an SSB-produced ACL recode,
+  and it re-derives the three `RL19` items that failed vetting rather than repeating them. `L21` asks
+  what the literature does about day-to-year chaining and, more importantly, **whether anyone has ever
+  measured the difference between rules on the same building** — a `zero` there is the expected answer
+  and would mean the experiment must be run rather than cited.
+* **Count: 11 of 15 closed.** The four-country corpus, the model family, the serialisation and now the
+  evaluation design are fixed. **The two that remain are the two that need evidence we do not have**,
+  and neither can be closed by thinking about it harder.
+* **Still nothing is built. No file has been downloaded.**
+
+### 2026-08-14 (tenth entry) — `RL20` and `RL21` returned and were vetted; decision 15 closes NO
+
+* ✅ **Decision 15 is CLOSED. Norway is rejected.** `RL20` returned a clean negative on the one fact the
+  decision turned on: the Sikt delivery carries **only SSB's 167-category national classification**, no
+  ACL variable at any depth, and **no official recode table exists** in SSB publications, the SSB
+  `Klass` database or the Sikt metadata. `RL19`'s recode claim is formally retracted, and no published
+  third-party crosswalk exists either.
+* **The `RL19` citation defect is confirmed and corrected.** The documentation report is **Holmøy,
+  Lillegård and Löfgren (2012), Notater 2012/03**. Vaage (2012) is real but is *Tidene skifter*,
+  Statistiske analyser 125 — a trend analysis, not survey documentation. **Right author, right
+  institution, wrong document: the failure class this project has now been caught by three times, and
+  the first time we have caught it before it reached a document.**
+* 🔴 **`RL20`'s Part E was quoted from our own prompt.** Asked for the one thing we had not thought of,
+  it answered "the sample stops at age 79" — which `L20` states in its own text as something we
+  confirmed ourselves. **A report that returns what we supplied has told us nothing**, and Part E is
+  therefore empty. Section D again invents facts about our cluster. Both discarded; the verdict stands
+  on its checkable details.
+* ✅ **`RL21` answered its commissioning question: zero.** No published study has compared two or more
+  day-to-year chaining rules on the same building with the daily generator held fixed. No standard
+  defines a protocol. No citable threshold exists for when a modelling convention dominates a result.
+  🔴 **Decision 14 therefore cannot close by citation — it closes by our own experiment or not at all.**
+  That is a real change in the decision's shape even though it did not close.
+* 🔴 **Every number in `RL21` is rejected, and the worst of them is its headline.** `B7` gives 15 to 35 %
+  peak divergence between rules as a **Fact** with **High** confidence — while `B1` in the same report
+  says nobody has ever made that comparison. **Both cannot be true.** The same quantity also appears as
+  15 to 40 % and as 10 to 25 % elsewhere in the report. **A number that changes when the section changes
+  was never measured.**
+* **Its persistence figure breaks the prompt's own rule.** The lag-1 autocorrelation of 0.15 to 0.35 is
+  labelled Fact and sourced to Pas and to Hanson and Huff, both of which the report's own negative
+  control lists as **seen described, not opened**. It is the only numeric persistence value in the
+  report.
+* **Its opened-in-full list is padded.** **Page et al. (2008)** appears there and appears nowhere else
+  in the report and in no reference entry. Six further citations are dangling. **This is the third round
+  in a row where the negative controls are the part that fails.**
+* 🔴 **One accepted `RL21` finding changes the experiment before it is designed.** A two-day survey of
+  one weekday plus one weekend day **cannot identify consecutive-day transition probabilities** — that
+  is arithmetic, not literature, and it can be accepted on its face. So the habit-coupled Markovian rule
+  cannot be parameterised from our own corpus. **It will be run as a sweep over the persistence
+  parameter and reported as a sensitivity band**, not as a fitted rule. A fitted value we chose would be
+  our bookkeeping compared against itself.
+* **Annual energy gets measured rather than believed.** `RL21` infers it moves under 3 % while peak
+  moves far more. Recording both in the same 100-household campaign costs nothing, and measuring is what
+  settled open decision 3.
+* ✅ **`RL21`'s Part D is the first in this series to answer the question it was asked.** Under
+  independent resampling a synthetic individual walks the whole conditional distribution, so a
+  full-time worker accumulates an implausible number of distinct monthly activities and a household
+  loses role coherence between days. **The diagnostic is computable on generated schedules alone, and
+  the realistic value is computable on the ISTAT data we already hold** — which is where the criterion
+  must come from, not from the report. It also links to decision 12, since role incoherence is a
+  household-level defect.
+* **Count: 12 of 15 closed. Only decision 14 is genuinely open.** Decision 12 is deferred scope, not an
+  open question.
+* **Still nothing is built. No file has been downloaded.**
+
+### 2026-08-14 — Step 2: four decisions taken after the Spanish file, D-S2-1 to D-S2-4
+
+The entry above closes with "still nothing is built". That sentence was true when it was written and
+is left standing, as this log is append-only. **Step 1 has since been executed on Spain** and
+`episodes_spain.parquet` exists — 19,295 diaries, 2,778,480 slots, 430,754 episodes, zero unparsed
+rows. The four decisions below are what the delivered file forced. Full findings in
+`Step1_docs/outputs_step1/codebook_facts_spain.md`, full decisions in
+`Step2_docs/4thJ_02_harmonisation.md`.
+
+* 🔴 **Three of the four overturn a line this plan listed as decided, and all three came from `RL02`
+  rather than from a file.** The first country we measured broke the standard in three of the handful
+  of places it could touch. Every remaining `RL02` value about file content is now a hypothesis until
+  a codebook confirms it.
+* **D-S2-1 — the 04:00 day origin is withdrawn, not replaced.** Spain runs 06:00 to 06:00 and no
+  04:00 day is constructible from it. Author call: the origin is chosen from four measured codebooks
+  or not at all. Choosing 06:00 now would repeat `RL02`'s error in the other direction. Step 2 work
+  item 2.4 is blocked until it closes; the Spanish reader keeps its native 06:00 indexing meanwhile.
+* **D-S2-2 — co-presence keeps the five shared flags and adds country extras beside them.** Spain
+  fields six; `PADRES` survives as `cop_extra_es_padres` and is never folded into "other household
+  members". `MENOR` is mapped to the shared "with children" flag **with its national definition
+  recorded**, because Spain defines it as minors under 10 living with you, which is a household test
+  rather than a parenthood test. Extras are not conditioning variables (Step 5) and are not
+  serialised into `COP` (Step 3): a symbol only one country can emit leaks country identity into a
+  leave-one-country-out design.
+* **D-S2-3 — `RL02`'s "10-19 stationary, 20-39 transport" is retracted and no range test replaces
+  it.** Spanish `21-29` are places and `41` is public transport, above the range and present in the
+  file. A `10 <= LOC <= 39` filter drops every public-transport episode. Membership is now
+  code-by-code from the Step 2 crosswalk, cited to a codebook page, into four target classes with
+  public transport as a class in its own right.
+* **D-S2-4 — code `11` is confirmed and widened.** It merges dwelling, garage, garden and plot, **and
+  INE codes working from home as `11` too**. The indoor rule stands and its exclusion list carries
+  more weight than before; work-at-home is indoor presence, but only the 3-digit `ACT` can tell it
+  from being at home not working, which Step 9 needs.
+* **Spain is the first measurement, not the new standard.** UK, France and Italy origins, flags and
+  location ranges are measured from their own codebooks, and are not assumed to match Spain either.
+* **Open decision count is unchanged: 12 of 15 closed, only 14 open.** D-S2-1 to D-S2-4 are step
+  decisions, not numbered author decisions. D-S2-1 remains unresolved as a *value* and is tracked in
+  Step 2.
+
+### 2026-08-14 (later) — `RL22` and `RL23` vetted; F-ES-6 decided; the specification is complete to Step 3
+
+* **Two negatives, and they are the useful kind.** `RL22`: the accessible UK 2020-21 file is the CTUR
+  CaDDI online instrument, about 36 activity categories, individual panel, no household clustering.
+  `RL23`: the Italian 2022-23 diary microdata **has never been released and has no published release
+  date**. 🔴 **Nothing is acquired.** Italy cannot be; UK could be in an hour and the recommendation is
+  not to, because every acquisition adds a licence with destruction and reporting obligations for a
+  file that supports no test we have. Full record in V15 to V18.
+* 🔴 **Both reports asserted something about our own corpus that our own file falsifies** — `RL23` says
+  Spain fields a two-day diary; we measured one, and INE says one. Fifth round in a row where the
+  evidence list is the part that fails, and the first where two reports failed in the same place.
+* ✅ **Decision 6 now rests on better evidence than it was taken on.** UK 2020-21 is excluded because
+  the file is not a HETUS-coded household diary, not because of a mode-plus-lockdown confound. That is
+  a sentence a reviewer can check.
+* ✅ **F-ES-6 decided, on the author's instruction to favour precision.** `act2_raw` is **carried**
+  through Steps 1 and 2 and is **not serialised** at Step 3. Carrying costs a column; serialising a
+  field only Spain is known to record would leak country identity into a leave-one-country-out design,
+  which is the same argument that keeps the country-extra co-presence flags out of `COP`. **The
+  decision closes on four measured coverage rates, not on a preference** — Step 3, item 3.2-bis.
+* **Gate added: `G1.11`, secondary-activity three-state integrity.** A reader that collapses *recorded
+  and blank* into *not recorded* moves no rows and emits no illegal code, so it is invisible to the
+  other ten gates. Its reference is a **recount from the raw fixed-width file**, not the reader's own
+  report, and its perturbation is the collapse itself. Step 1 now has twelve gates.
+* **Where the specification stands: complete and mutually consistent through Step 3.** Step 1 is
+  executed on Spain and waits on a runner update and a re-run; Step 2 is fully specified and waits on
+  three countries; Step 3 is specified and waits on Step 2. **No further manager decision is needed to
+  reach Step 3** — what is needed is the UK and France registrations, which only the author can do.
+
+### 2026-08-14 (twelfth entry) — Steps 4 to 9 audited against the closed decisions; three gaps closed and the weights staged
+
+The author moved the target from "complete through Step 3" to **"complete up to the point where Speed
+is used for training"**, and the remaining steps were read against the decisions rather than against
+themselves. **Three defects, and all three lived between two documents that were each correct alone.**
+
+* 🔴 **Step 4 was written for ONE Leg-5 run while decision 11 had already made it four.** Worse, Step 6
+  asserted that "Step 4's output contract already said one adapter per leave-one-out fold" when the
+  contract read `outputs_step4/leg5_adapter/`, singular. **A cross-reference stated as fact about
+  another document is not a check on that document**, and this is the second time in this project that
+  a claim about an artefact was believed instead of opened.
+* ✅ **Author decision, 2026-08-14: the ceiling run and the Qwen comparison arm are single-fold.** Four
+  primary folds at each leg, one ceiling, one comparison arm — **six Leg-5 jobs and four Leg-4 jobs**.
+  Section 4D-bis. 🔴 **Naming that fold is a fresh chance to choose late**, so it is frozen into
+  `prereg.md` before the first Leg-5 submission by a rule that has nothing to do with any result
+  (alphabetical ISO code, so **Spain**), and the author may name another before the freeze and none
+  after.
+* **A missing deadline is now written down.** `prereg.md` freezes before the *first training
+  submission*, not merely before Step 6 scores anything. **Once a model exists, a pre-registration
+  written afterwards is a description of it.** Gates `G4.13` (fold isolation, counted from the shard
+  the trainer loaded) and `G4.14` (pre-registration precedence, md5 recomputed from disk) with `V4.f`
+  to `V4.h`. Step 4 now has fourteen gates.
+* 🔴 **Step 9 was promised a field it never receives.** 3B-bis keeps `act2_raw` and names Step 9 as the
+  reason; Step 9 reads Step 7's *generated* diaries, which carry no secondary activity. Resolved in
+  9D: the trigger fires from the primary code, `act2` calibrates the probability on the real corpus,
+  and `G9.14` asserts it is never a runtime column — **because a trigger reading an absent column does
+  not raise, it silently never fires.** If serialisation is ever chosen, it must happen **before
+  `corpus.jsonl` is emitted**.
+* **Step 8's campaign is bound to the folds:** each country's schedules come from the adapter that held
+  that country out. Four populations, not sixteen. `G8.16` checks it against Step 7's provenance,
+  because **a cell driven by the wrong fold has a real schedule, a correct md5 and a plausible EUI** —
+  it has merely turned a transfer result into a held-in one.
+* 🔴 **Corrected on measurement: compute nodes on `ps` have outbound network.** 4F said they did not,
+  which implied the weights had to come down on the login node — an act the project's top rule forbids.
+  The tokenizer jobs pip-installed and pulled from Hugging Face inside `sbatch`, and **job 1245620**
+  now stages all three checkpoints the same way. **Offline is a discipline imposed on training runs,
+  not a property of the node.**
+* ▶ **Step 4.1 is submitted and is the project's first Speed action for training** — three checkpoints
+  and, the actual deliverable, `staged_weights.json` recording each resolved commit hash. It needed no
+  corpus, no decision and no acquisition, which is why it could go first.
+* **What is deliberately NOT written yet: `prereg.md` itself.** Its second hold-out's stratification
+  depends on a corpus that does not exist. Drafting it now and editing it later is precisely the defect
+  `G4.14` was added to catch.
+
+### 2026-08-14 (thirteenth entry) — 4.1 complete, the pre-named fold confirmed, and the Step 1 employee prompt written
+
+* ✅ **Job 1245620 finished: 3 of 3, 33.34 GiB, eight minutes.** `Olmo-3-1025-7B` at
+  `a81bae42…`, `OLMo-2-0425-1B` at `a1847dff…`, `Qwen2.5-7B` at `d1497293…`, recorded in
+  `Step4_docs/outputs_step4/staged_weights.json`. **The hashes are the artefact.** `/speed-scratch`
+  purges after 90 days, so the job is re-run before the first training submission and the hashes
+  compared — a repo that moved in the interval is exactly what the file exists to reveal.
+* ✅ **Pre-named fold confirmed by the author: held-out SPAIN**, while nothing had been trained and no
+  result existed to be influenced by. **The timing is the part that matters**, and it is dated in
+  three documents so a reviewer can check it.
+* ✅ **The Step 1 employee prompt is written**:
+  `Prompts/4thJ_employee_step1_gates_rerun_2026-08-14.md`. It is **three tasks, not one** — the
+  redesigned gates were the known item, but the reader also has to start carrying `act2_raw`, which its
+  own parse report currently marks `NOT CARRIED`. Without that, `G1.11` would run against a column that
+  does not exist and report zero disagreements.
+* 🔴 **The prompt's load-bearing instruction is what the gate runner may not import.** `G1.7c`,
+  `G1.7d` and `G1.11` re-read the raw fixed-width files with offsets transcribed a second time, and
+  both transcriptions are printed. **Two independent transcriptions that agree are evidence; one
+  transcription used twice is not** — and reusing the reader's would rebuild G1.7b's circularity in a
+  new place.
+* 🔴 **The three-state `act2_raw` representation is specified down to the dtype** — `pd.NA` versus `""`
+  on a pandas `string` column — because an object column round-tripped through parquet is precisely
+  where *not recorded* and *recorded and blank* merge, and a reader that merges them moves no row,
+  drops nothing and emits no illegal code.
+* **The prompt forbids the obvious repair:** if the coverage clause FAILs again, that is the
+  deliverable. A perturbation invented afterwards to make a gate fall defeats the one thing the clause
+  does.
+
+### 2026-08-14 (fourteenth entry) — Step 1 closes on Spain, and the round's real yield was three defects in our own specification
+
+The employee round from `Prompts/4thJ_employee_step1_gates_rerun_2026-08-14.md` ran. Reader:
+`tools/4thJ_read_spain.py`. Runner: `tools/4thJ_gates_step1_spain.py`. Output:
+`Step1_docs/outputs_step1/gate_report_step1_spain.txt`, re-derived by the manager rather than accepted
+from the employee's summary.
+
+**Result: fourteen gates, thirteen scored, thirteen PASS, `G1.7b` permanently `NOT CHECKED`, coverage
+clause SATISFIED** — every scored gate was made to fall by at least one perturbation. `act2_raw` is now
+carried in a nullable pandas `string` column with the three states separable through the parquet
+round-trip (ES: not recorded 0, recorded-and-blank 349,954, recorded-with-value 80,800 of 430,754
+episodes), `cop_padres` is `cop_extra_es_padres`, and **19,295 / 2,778,480 / 430,754 did not move**.
+
+🔴 **Everything that went wrong this round went wrong in the specification, not in the data — and each
+one was a check that would have passed while measuring nothing.** That is the same class as `G1.7b`,
+found three more times in one afternoon:
+
+* **The gate count was twelve in four documents and is actually fourteen.** `G1.1`-`G1.6`,
+  `G1.7a`-`G1.7d`, `G1.8`-`G1.11`. It was written when `G1.11` was added and the `G1.7` split was
+  counted as two parts rather than four. The danger is not the arithmetic: **"twelve of twelve seen
+  failing" reads as complete coverage of a set that has fourteen members.**
+* **`G1.11`'s threshold could not be satisfied by any correct reader.** It required a count of *slots*
+  to equal a count in the *episode* table. Measured: **11,216 episodes mix a blank and a non-blank
+  `ASECU`, and 13,009 carry more than one distinct value**, so the slot-level 340,269 and the
+  episode-level 80,800 are different quantities, not two measurements of one. Corrected to the
+  episode-level identity, recorded as a **basis change**. What it still proves: the three states
+  survived the round-trip and the aggregation is reproducible from the raw file through a path the
+  reader cannot reach. What it does not prove: **that first-of-run is the right rule for `ASECU` — and
+  for those 13,009 episodes it is not.** That is a Step 3 question about what `act2` is for.
+* 🔴 **The out-of-list sentinel `999` is a real INE code** (row 117, *"Otro empleo del tiempo no
+  especificado"*). The pre-registered `G1.4` perturbation therefore set a **legal** code and tested
+  nothing. Now `99Z`. **Each country's sentinel must be checked against that country's own transcribed
+  list before use** — a sentinel that is secretly valid is a perturbation that cannot fire, which is
+  the coverage clause's own failure mode one level down, invisible to the clause itself.
+
+**One implementation defect, caught by the null case, which is what the null case is for.** A first
+draft of `G1.7d` read `MHOGAR`'s full 25,895 rows including the 6,600 non-respondent household members
+whose `FACTORF` is an all-zero placeholder, and so **failed on unperturbed data**. Restricted to the
+19,295 respondents, the population `G1.7c` already used. **Accepted as the correct population, not a
+loosened bound**: those rows carry no diary and enter no corpus. No threshold was moved anywhere in
+this round.
+
+**Five perturbations did not attribute cleanly**, all row-removal or row-rewrite collateral through
+`G1.5`, now also reaching `G1.2` and `G1.11`. Correct checks, poor attributors, for a structural
+reason — each compares a count from the emitted table against a fixed external reference, so any
+disappearing row moves all of them. **Recorded, not tuned away.** `weight × 10` is struck from the set
+as specified, with its reason, so it is not helpfully reinstated.
+
+**Step 1 is NOT done, and now for exactly one reason: `V1.a` fires on one country of four.** It must
+fire until the UK, France and Italy files exist. 🔴 **A green battery on Spain is not a partial pass of
+Step 1; it is a full pass of the part of Step 1 that has data.**
+
+**Where the project stands.** The specification is complete and mutually consistent to the first Speed
+training job; Spain is built and validated; the three model checkpoints are staged and hashed (job
+1245620); the pre-named fold is Spain, confirmed before anything trained. **Everything remaining on the
+path to training is a file the author fetches in person** — UKDS SN 8128, Progedo/ADISP, and confirming
+the held Italian copy is the same wave and extract. Decision 14 stays open and closes by our own
+experiment in Step 7 item 7.6, not by reading.
+
+### 2026-08-14 (fifteenth entry) — the METH citation behind `G1.7b` was opened, and it narrowed `G1.8` too
+
+`G1.7b` was retired on a citation nobody had opened: *"METH p. 34, step 3"*. The document is our own
+delivered archive (`_local_runs/4J/raw/spain/meth_t25304471.pdf`, 127 pp., hashed at download), so
+checking it needed no external source and no research round. ✅ **The retirement is confirmed
+verbatim:** step 3 of the estimator is *"Estimador de razón separado, para ajustar a la proyección de
+población en cada estrato h"*.
+
+🔴 **And the next two printed pages carried something we had not noticed.** Step 4, the *final*
+estimator, uses **CALMAR** to force the estimated population *by age group and sex in each autonomous
+community* to equal the demographic projection. **That is `G1.8`'s reference.** So `G1.8`'s agreement
+on the complete file is imposed, not earned, and its tight numbers (worst cell 0.30 pp against a 1.0 pp
+tolerance) are calibration residual between two vintages of the same projection.
+
+**`G1.8` is narrowed, not retired**, and the difference matters: the calibration cannot rescue a
+changed **row set**, so the gate still detects the one thing its own description names — a subsample
+presented as the full file. `drop_over_65` fells it for exactly that reason. What the gate row now
+states out loud is that it detects **nothing else**, and in particular cannot see a misread weight
+column, which is what `G1.7c` and `G1.7d` exist for. No threshold moved.
+
+**The transferable point: a citation inside our own document is a claim until someone opens the page.**
+Two of Step 1's fourteen gates rest on this single methodology section; one retirement was already
+right and one provenance column was overstated, and both were settled in ten minutes from a file we
+had held since the download.

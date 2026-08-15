@@ -8,6 +8,13 @@ follow-up question.
 **Source of truth for the content:** `4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline_Overview.md`, the ASCII
 box diagram, Steps 0 to 9, as it stood on 2026-08-14.
 
+> 🔴 **Revised 2026-08-14. The installed image is out of date and must be regenerated from this file.**
+> Author decision 6 fixed the corpus at **one wave per country**, which retired two strings the
+> installed figure still shows: Step 1's `several waves per country` / `how many waves earn their
+> place`, and Step 2's `pooling level across waves` — cross-wave pooling cannot be an open question
+> when there is one wave. Step 2's open line is now the **shared day origin** (decision D-S2-1), which
+> is the question that actually blocks that step. Sections 4, 6, 9 and 10 carry the change.
+
 > **This is the second figure of paper 4 and it is not the graphical abstract.**
 > `4thJ_graphical_abstract.md` shows *what flows into what*: five bands, left to right, countries
 > converging into one model. **This figure shows how the work is organised**: ten sequential steps, the
@@ -118,8 +125,8 @@ The cards, top to bottom, with the exact text each carries:
 | # | Title | Decision line | Open line | State |
 |---|---|---|---|---|
 | 0 | `Feasibility gate` | `data reachable, prior art clear, method justified, release limits known` | — | `cleared` |
-| 1 | `Corpus` | `national time-use series, several waves per country` | `how many waves earn their place` | `open` |
-| 2 | `Harmonisation` | `common activity, location and co-presence coding` | `pooling level across waves` | `open` |
+| 1 | `Corpus` | `national time-use series, one wave per country` | `acquisition outstanding for the countries not yet held` | `open` |
+| 2 | `Harmonisation` | `common activity, location and co-presence coding` | `the shared day origin` | `open` |
 | 3 | `Serialisation` | `episode form: duration, activity, location, co-presence` | — | `decided` |
 | 4 | `Fine-tuning` | `open-weight base model, low-rank adapter, all countries trained jointly` | `which model family` | `open` |
 | 5 | `Population linkage` | `synthetic population first, then one generated day per person` | — | `decided` |
@@ -186,10 +193,10 @@ Step titles:
 Step body lines, exactly as written in the Section 4 table:
 
 * `data reachable, prior art clear, method justified, release limits known`
-* `national time-use series, several waves per country`
-* `how many waves earn their place`
+* `national time-use series, one wave per country`
+* `acquisition outstanding for the countries not yet held`
 * `common activity, location and co-presence coding`
-* `pooling level across waves`
+* `the shared day origin`
 * `episode form: duration, activity, location, co-presence`
 * `open-weight base model, low-rank adapter, all countries trained jointly`
 * `which model family`
@@ -254,7 +261,11 @@ Do not use red and green as the only distinguishing pair anywhere in the figure.
 ## 9. Explicit do-nots
 
 1. **No invented numbers.** Step numbers `0` to `9` and the symbol `N-1` are the entire permitted set.
-   No thresholds, no percentages, no token counts, no wave counts, no country counts, no model sizes.
+   No thresholds, no percentages, no token counts, no country counts, no model sizes.
+   🔴 **One exception, added 2026-08-14: the words `one wave per country`.** It is a closed author
+   decision, not an estimate, it is written as a word and never as a digit, and it appears only inside
+   the Step 1 body line in Section 6. The ban still covers every other count, the number of countries
+   included.
 2. **No real country names and no real flags.** The corpus is not final.
 3. **No named model** — no `Gemma`, no `Llama`, no `Qwen`, no `Mistral`, no parameter count. Step 4 is
    still open on exactly this question and a figure that names a model will outlive the decision.
@@ -286,7 +297,10 @@ Handled by the assistant, not by the image tool:
 2. Verify it byte-identical inside the shipped document after any conversion step, and record the md5
    before and after.
 3. Read the **installed** image and check it against Section 6 string by string. Any string in the image
-   that is not in Section 6 is a defect and is reported, not silently accepted.
+   that is not in Section 6 is a defect and is reported, not silently accepted. 🔴 **Specifically
+   reject `several waves per country`, `how many waves earn their place` and `pooling level across
+   waves`** — the installed `HETUS_LLM_Pipeline_Steps.png` carries all three, and they are why this
+   figure is being regenerated.
 4. Check the state chips specifically: Step 0 `cleared`; Steps 3, 5 and 7 `decided`; Steps 1, 2, 4, 6, 8
    and 9 `open`. A figure that shows more closed steps than the plan does overstates the project's
    position and must be regenerated.

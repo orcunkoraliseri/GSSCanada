@@ -24,8 +24,8 @@ Turn one harmonised episode table into text the model reads, and back again **ex
 |---|---|
 | Episode form, not slot form | `RL07`, measured: 196-326 tokens against 924-1310 |
 | Tuple is `DUR,ACT,LOC,COP` — **no `START`** | `RL07`. Start is the running sum; carrying it is redundant and misdescribes what the model emits |
-| `LOC` is the real HETUS code 10-39 | `RL02`, correcting `RL07`'s invented 1-6 |
-| `COP` is **five flags**, not one digit | `RL02`, correcting `RL07` |
+| `LOC` is the real HETUS code, **not** `RL07`'s invented 1-6 | `RL02`. 🔴 **But not "10-39":** Spain carries `41`, public transport (F-ES-3, D-S2-3). The serialised alphabet is whatever `crosswalk_location.csv` emits, read from that file, never written here as a range |
+| `COP` is **five shared flags**, not one digit | `RL02`. 🔴 **Country-extra flags are carried in `harmonised.parquet` and are not serialised** (D-S2-2) — a symbol only one country can emit leaks country identity into a leave-one-country-out design |
 | `ACT` keeps **3 digits** | Author decision 6 |
 | **No tokens are added to the vocabulary** | `RL05`. LoRA freezes embeddings; unfreezing costs ~16.8 GB of optimizer state and breaks GGUF and vLLM export |
 | 🔴 **No mnemonic code remapping** | Our own measurement. It saves 12.9 % on Qwen and **costs 5.5 %** on the OLMo tokenizer we adopted |
@@ -91,6 +91,76 @@ handling as the source of load overestimation, and the flags are why we can fix 
 
 **Definition of done:** the packing is chosen by measuring token cost on the real tokenizer, and the
 measurement is in `outputs_step3/cop_packing_measurement.md`.
+
+### 3.2-bis — 🔴 Secondary activity: **kept in the data, not in the record. Decided 2026-08-14**
+
+Finding F-ES-6: Spain records a secondary activity on **340,269 of 2,778,480 slots, 12.2 %**, and the
+Step 1 record originally had nowhere to put it. Author call, on the manager's recommendation, taken
+for precision:
+
+* **`act2_raw` is carried** through Step 1 and Step 2, in the intermediate record and in
+  `harmonised.parquet`. Nothing recorded is discarded, and **three states stay distinguishable**: not
+  recorded by the instrument, recorded and blank, recorded with a value.
+* **It is not serialised into the `DUR,ACT,LOC,COP` tuple today.** Two reasons, and only the first is
+  about tokens:
+  1. 🔴 **Coverage is measured on one country out of four.** A field that Spain records and the other
+     three may not becomes a symbol only Spain can emit, which leaks country identity into a
+     leave-one-country-out design. That is the same argument that keeps the country-extra co-presence
+     flags out of `COP` (D-S2-2), and it is the stronger of the two.
+  2. It would add a fifth element to every episode tuple, on a record whose whole justification in 3A
+     is its token economy.
+* **The decision to serialise it closes when, and only when, all four coverage rates are measured.**
+  Write them into `outputs_step3/act2_coverage.md`, per country, as a share of episodes. Then:
+  * if **all four** record it at a usable rate, serialising it becomes a real option and is decided by
+    a token-cost measurement, exactly as `COP` packing is in 3.2;
+  * if **any country does not record it**, it stays out of the record permanently and the reason is
+    written into the limitations, not left implicit.
+* 🔴 **Until that file exists, no step may condition on `act2`, and no gate may test it as though the
+  corpus carried it.** Carrying a field is not the same as using it, and the difference has to stay
+  visible in the documents or a later session will find the column and assume it was blessed.
+
+**Where it is already load-bearing:** Step 9. An appliance triggered by an activity that is only ever
+*secondary* — a television on while eating, a washing machine running while the respondent does
+something else — is exactly the load paper 1 got wrong by construction. That is why the field is kept
+even though it is not serialised.
+
+🔴 **And Step 9 does not receive it, which this section originally implied it would.** Step 9 consumes
+Step 7's **generated** diaries, and those carry no `act2` precisely because it is not serialised.
+Resolved 2026-08-14 in `../Step9_docs/4thJ_09_enduseLoads.md`: the appliance trigger fires from the
+primary code alone, and `act2` is used only to **calibrate** `P(appliance | primary activity)` on the
+real corpus, never as a runtime field. Gate `G9.14` asserts that. **Read the two sections together —
+separately, each looks complete.**
+
+🔴 **If the four coverage rates come back usable and this field is serialised after all, that has to
+happen before `corpus.jsonl` is emitted.** A fifth tuple element added later invalidates the corpus,
+the Step 7 grammar and every trained fold.
+
+🔴 **The coverage rate is not one number, and Step 1 measured why. Added 2026-08-14.** `act2_raw` is
+carried at **episode** level, and the episode split key does not include `ASECU`, so a single episode
+can span several different secondary activities. Measured on Spain: of 430,754 episodes, **11,216 mix
+a blank and a non-blank `ASECU` across their own slots and 13,009 carry more than one distinct
+value.** The reader keeps **first-of-run**, the same rule it uses for `act_raw`, and `G1.11` proves
+that rule is reproducible from the raw file — **it does not prove it is the right rule, and for those
+13,009 episodes it is not.**
+
+Consequences this item must settle, not Step 1:
+
+* **`act2_coverage.md` records BOTH accountings per country** — the slot-level share (Spain: 340,269
+  of 2,778,480, 12.2 %) and the episode-level share (Spain: 80,800 of 430,754, 18.8 %) — **and never
+  quotes one as the other.** They differ by a factor that depends on episode length, so a
+  cross-country comparison drawn from mixed bases would compare instrument design, not behaviour.
+* **If this field is ever serialised, first-of-run is a decision that has to be taken deliberately.**
+  The alternatives are splitting episodes on `ACT2` as well, which raises the episode count and the
+  token cost that 3A exists to control, or carrying a "mixed" symbol. 🔴 **Choosing by inheriting
+  Step 1's convenience default is how a modelling choice gets made without anyone deciding it.**
+* **Step 9's calibration is affected before any of that.** `P(appliance | primary activity)` is
+  calibrated from the real corpus, and if it is calibrated from first-of-run `act2` it is calibrated
+  from a lossy summary of the secondary stream. **Measure it on slots, not episodes** — Step 9 needs
+  a rate, not a timing, and the slot-level accounting is the one that has not thrown information away.
+
+**Definition of done for this item:** `outputs_step3/act2_coverage.md` exists with four measured
+rates **on both bases**, and this section records the decision those rates forced, including the
+aggregation rule if the field is serialised.
 
 ### 3.3 — The encoder and the decoder
 
@@ -173,3 +243,55 @@ Append-only.
   It would have made every diary 5.5 % *longer* on the tokenizer we actually adopted. Recorded
   because the near-miss is the useful part: a workaround devised for one tokenizer was about to be
   written into the serialisation schema for another.
+
+### 2026-08-14 (later) — F-ES-6 decided. Item 3.2-bis added
+
+* **Secondary activity is kept in the data and kept out of the record**, on the author's instruction
+  to favour precision. Carrying it costs a column; serialising it costs a fifth tuple element and,
+  more importantly, risks a symbol only Spain is known to emit.
+* 🔴 **The leak argument is the reason, not the token budget.** A field present for one country and
+  absent for three is a country marker, and a country marker inside a leave-one-country-out design
+  measures our bookkeeping rather than transfer. Same argument as the country-extra co-presence flags
+  in D-S2-2, and it should be quoted together with it.
+* **The decision closes on a measurement.** Four coverage rates in `outputs_step3/act2_coverage.md`.
+  All four usable, serialisation becomes a token-cost question decided the way `COP` packing is; any
+  country missing it, the field stays out permanently and the reason goes into the limitations rather
+  than staying implicit.
+* **Until that file exists, no step conditions on `act2` and no gate tests it.** Written down because
+  a later session will find the column in `harmonised.parquet` and reasonably assume it was blessed.
+
+### 2026-08-14 (third entry) — the Step 9 half of F-ES-6 was missing, and is now written
+
+* 🔴 **This document said `act2` is "already load-bearing in Step 9". Step 9 never receives it.** Step 9
+  consumes Step 7's *generated* diaries, which carry no secondary activity precisely because it is not
+  serialised. Both documents were internally consistent; the defect lived **between** them.
+* **Found by reading the two steps against each other**, which is the only way this class of gap is
+  found. Neither document is wrong on its own, and neither would have failed a review of itself.
+* **Resolved without changing the record format**: the trigger fires from the primary code, `act2`
+  calibrates the trigger probability on the real corpus, and `G9.14` asserts `act2` never appears among
+  the trigger's runtime columns. 🔴 **A trigger reading an absent column raises nothing — it silently
+  never fires**, which is why that gate exists rather than a comment.
+* **A deadline is now explicit:** if the four coverage rates make serialisation the right call, it has
+  to happen **before `corpus.jsonl` is emitted.** A fifth tuple element added afterwards invalidates
+  the corpus, the grammar and every trained fold.
+
+### 2026-08-14 (third entry) — 3.2-bis extended after Step 1 measured `act2` at episode level
+
+The Step 1 gate re-run on Spain (`../Step1_docs/outputs_step1/gate_report_step1_spain.txt`) produced a
+fact this item needed and did not have: **the secondary-activity coverage rate is different at slot
+level and at episode level, and the gap is not a rounding artefact.** 340,269 of 2,778,480 slots
+(12.2 %) against 80,800 of 430,754 episodes (18.8 %), because **11,216 episodes mix blank and
+non-blank `ASECU` and 13,009 carry more than one distinct value.**
+
+Three things added to 3.2-bis, none of which changes the decision F-ES-6 already took:
+
+* **`act2_coverage.md` must carry both bases per country**, and never quote one as the other. Mixed
+  bases across four countries would compare episode length, which is instrument design, rather than
+  the behaviour the rate is supposed to describe.
+* 🔴 **First-of-run is Step 1's aggregation convenience, not a modelling decision.** If `act2` is ever
+  serialised, the rule is chosen here, deliberately, against the token cost of splitting episodes on
+  `ACT2`. Inheriting the default silently is how a choice gets made without anyone making it.
+* **Step 9 calibrates `P(appliance | primary activity)` on SLOTS, not episodes.** It needs a rate, not
+  a timing, and the slot accounting has not discarded the multi-value runs.
+
+No threshold moved and nothing was serialised. The item's Definition of done now requires both bases.

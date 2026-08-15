@@ -47,6 +47,7 @@ document that also carries corrections will contain the right *kind* of token in
 | **G9.9** 🔴 DHW **assignment** check | Re-open the saved IDF and assert every `WaterUse:Equipment` object still points at the schedule it was built with. **A value check cannot see a re-pointed object** — in 3J that hid a ×3.028 draw increase across 56 cells with zero violations reported |
 | **G9.10** | Energy closure | Σ end-use loads reconciles with the total injected internal gain, within **0.5 %** |
 | **G9.11** | 3-digit dependence | The mapping actually **uses** the third digit: the number of distinct ACL codes with distinct appliance rows must exceed the number of distinct 2-digit groups. 🔴 A mapping that resolves only at 2-digit did not need the corpus decision that preserved 3-digit codes, and that should be known |
+| **G9.14** 🔴 Trigger inputs exist in the generated record | A trigger reading a column the generated diaries do not carry | The set of columns the trigger reads at runtime is a **subset** of the columns present in `../Step7_docs/outputs_step7/generated_<country>.parquet`, asserted against the file, not against a schema constant. 🔴 **`act2` is calibration-only and must not appear in this set.** A trigger reading an absent column does not raise — it silently never fires |
 
 ---
 
@@ -78,6 +79,7 @@ not support.
 | 🔴 **Re-point one `WaterUse:Equipment` at another schedule, leaving its values untouched** | **G9.9** | G9.7 — *the value check sees nothing, which is the whole point* |
 | Drop one end use from the sum | G9.10 | G9.6 |
 | Replace the mapping with a 2-digit one | **G9.11** | G9.10 |
+| 🔴 **Add `act2` to the trigger's runtime input columns** | **G9.14** | G9.10, G9.6 — *the appliance simply never fires on that rule and every total still reconciles, which is why nothing else sees it* |
 | Zero the load on 20 % of dwellings | G9.12 | G9.10 |
 | Add a per-dwelling prediction figure | G9.13 | all others |
 | 🔴 **Null perturbation: change nothing** | **nothing** | everything |
@@ -134,3 +136,13 @@ Append-only.
   worth taking. Author decision 6 preserved 3-digit activity codes partly so that the appliance
   trigger could distinguish laundry from cooking. If the delivered mapping resolves only at 2-digit,
   that decision bought nothing here — and it is better to know that than to assume it.
+
+### 2026-08-14 (second entry) — G9.14, the gate for a rule that fails by staying silent
+
+* **Fourteen gates, fifteen perturbations, none run.**
+* 🔴 **G9.14 exists because the failure it catches produces no error and no wrong number.** A trigger
+  rule reading `act2`, a column the generated diaries do not carry, does not raise: the appliance
+  simply never fires. Energy closure (G9.10) still reconciles, trigger rates (G9.6) still fall inside
+  the source model's range for every rule that *did* fire, and the load is missing rather than wrong.
+* **It asserts against the file, not against a schema constant.** A schema constant is written by the
+  same hand as the trigger and would agree with it about a column neither has checked exists.

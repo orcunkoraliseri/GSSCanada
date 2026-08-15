@@ -95,13 +95,33 @@ available **temporal** formulation and there is no longer a temporal claim.
 |---|---|
 | Leave-one-country-out, rotating | `RL06`, author |
 | The raked-donor null is the pre-registered bar | `RL06`, author decision 4 |
-| 🔴 **The held-out country must be chosen BEFORE the first training run** | Open decision 11 |
+| ✅ **No country is chosen: all four are held out in turn** | **Decision 11, CLOSED by the author 2026-08-14** |
 | No forecast, no year token | Author decision 3, `RL16` |
 | The privacy audit runs here | `RL10` |
 
-🔴 **Open decision 11 is still open and it is the cheapest thing in this project to get wrong.** A
-country chosen after seeing results is not held out, and no amount of later care repairs it. **Rotation
-across all four is stronger than picking one**, and with four countries it is affordable.
+✅ **Decision 11 is CLOSED, 2026-08-14, and it closed by removing the choice rather than by making
+it.** The author was asked which country to hold out and answered: **all four, in turn.** Four
+leave-one-country-out folds, four adapters, four reported results.
+
+**Why that is the stronger closure.** The hazard was never which country got picked. It was that a
+picked country can be picked *late*, after results are visible, and nothing repairs that afterwards.
+**Rotation leaves nothing to pick.** It also turns the paper's single most fragile number into a
+distribution over four folds, which is what separates "transfer works" from "transfer works for Spain".
+
+🔴 **Two conditions are pre-registered in work item 6.1 and are not optional.**
+
+1. **All four folds are reported, including the worst.** Reporting the best fold, or dropping one as
+   anomalous, is choosing the held-out country late by a different door. **A fold may be *explained*;
+   it may not be *removed*.**
+2. **No fold's result may change the design.** Once any fold has been evaluated, architecture, prompt
+   format, hyperparameters, gates and thresholds are frozen for the remaining folds. A change made
+   after seeing fold 1 contaminates folds 2 to 4, and the contamination is invisible in the output.
+
+**A second hold-out exists and must never be confused with this one.** A random sample of households is
+held out from *within* the training countries as an ordinary test set. It measures whether the model
+reproduces data whose country it has already seen — which is what papers 1 to 3 measure. 🔴 **It is a
+sanity check. It is never reported as transfer, and it never appears in the same table as the fold
+results.**
 
 ---
 
@@ -127,6 +147,22 @@ Pre-registered FAIL criteria, any one of which fails the claim:
 * MAE ≥ the raked-donor null; **or**
 * MAPE > 20 %; **or**
 * the **sign** of the country's divergence from the European mean is inverted.
+
+🔴 **Two clauses that decision 11 puts here, and the pre-registration is incomplete without them.**
+
+* **Reporting clause.** All four folds are reported, including the worst. A fold may be explained; it
+  may not be removed, averaged away, or relegated to an appendix. **Selecting a fold after the fact is
+  choosing the held-out country late by a different door**, which is the exact defect rotation was
+  adopted to prevent.
+* **Freeze clause.** Once **any** fold has been evaluated, the design is frozen for the rest:
+  architecture, prompt format, hyperparameters, decoding constraints, gates and thresholds. A change
+  made after seeing fold 1 contaminates folds 2 to 4 and **the contamination does not show up anywhere
+  in the output.** If a change is unavoidable, every fold is re-run from the new design and the old
+  results are discarded, not mixed.
+
+**Also pre-registered here: the second hold-out.** A random household sample inside the training
+countries, its size and stratification fixed in advance, kept as an ordinary test set. 🔴 **Named in
+the pre-registration precisely so it cannot later be presented as evidence of transfer.**
 
 **Output:** `outputs_step6/prereg.md`, frozen with an md5 before the first fold runs.
 
@@ -176,7 +212,7 @@ why `RL10` forbids releasing the adapter.
 
 ## WHAT BLOCKS THIS STEP
 
-Steps 4, 5 and 7. **And open decision 11, which must close first.**
+Steps 4, 5 and 7. ✅ **Decision 11 no longer blocks it: closed 2026-08-14, four-fold rotation.**
 
 ---
 
@@ -200,3 +236,20 @@ Append-only.
 * 🔴 Open decision 11 blocks this step and is still open. Recorded here as well as in the parent
   because a held-out country chosen late is the one defect in this project that cannot be repaired
   afterwards by any amount of care.
+
+### 2026-08-14 (second entry) — decision 11 closed, and the step is no longer blocked by it
+
+* ✅ **Four-fold rotation. Every country held out in turn.** The author closed decision 11 by removing
+  the choice rather than making it, which is the stronger closure: **a country that is never picked
+  cannot be picked late.**
+* **Two conditions written into "WHAT IS ALREADY DECIDED" and into work item 6.1**: all four folds are
+  reported including the worst, and no fold's result may change the design once any fold has been
+  evaluated. 🔴 **Both exist because rotation without them gives back exactly what it bought** — the
+  freedom to select is simply moved from before the runs to after them.
+* **A second hold-out is now named separately**: a random household sample inside the training
+  countries, kept as an ordinary test set. It answers a different question and **never appears in the
+  same table as the fold results.** The author proposed it as an alternative to holding out a country;
+  it is retained as a companion instead.
+* **Cost accepted: four Leg-5 fine-tuning runs instead of one**, four at Leg-4 where the 1B pilot makes
+  rotation nearly free. Step 4's output contract already said "one adapter per leave-one-out fold", so
+  nothing downstream changes shape.

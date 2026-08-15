@@ -58,6 +58,52 @@ input**, and it should say so loudly at the time rather than quietly degrade.
 
 ---
 
+## 🔴 SECONDARY ACTIVITY: THE FIELD THIS STEP WAS PROMISED AND DOES NOT GET. RESOLVED 2026-08-14
+
+Step 3's item 3.2-bis keeps `act2_raw` in the corpus and names **this step** as the reason: an
+appliance triggered by an activity that is only ever *secondary* — a television on while eating, a
+washing machine running while the respondent does something else — is exactly the load paper 1 got
+wrong by construction.
+
+🔴 **But this step does not consume the real corpus. It consumes Step 7's generated diaries, and those
+carry no secondary activity at all**, because `act2` is not serialised into the `DUR,ACT,LOC,COP`
+tuple. Written down because the two documents were consistent about the field and inconsistent about
+who receives it, and the gap is invisible in code: a trigger that reads a column which is simply
+absent does not fail, it just never fires.
+
+**The resolution, and it costs the step nothing it actually had:**
+
+* **The trigger fires from the primary code alone**, on generated and real diaries alike. That is also
+  what CREST, Widén, LPG and RAMP do — they drive from a single activity stream — so adapting their
+  logic unchanged is the *conservative* reading of "do not invent the mapping", not a compromise.
+* **`act2` is used where it exists, to estimate the probability rather than to fire it.**
+  `P(appliance | primary activity)` is calibrated on the **real** corpus with secondary activity
+  visible, so appliance use that respondents recorded as secondary is absorbed into the trigger
+  probability instead of being dropped. 🔴 **This is the only place `act2` enters Step 9, and it enters
+  as a calibration input, never as a runtime field.**
+* **Per country, and only where coverage supports it.** Until `outputs_step3/act2_coverage.md` exists
+  with four measured rates, no calibration uses `act2` at all — Step 3's rule that no step conditions
+  on it before then applies here without exception.
+* 🔴 **The calibration reads SLOTS, not episodes. Added 2026-08-14, from Step 1's measurement.**
+  `act2_raw` is stored per episode under a first-of-run rule, and Step 1 measured on Spain that
+  **13,009 of 430,754 episodes carry more than one distinct secondary activity and 11,216 mix blank
+  with non-blank.** Calibrating from the episode column would therefore estimate the probability from
+  a lossy summary of the very stream it is trying to recover. **Step 9 needs a rate, not a timing, and
+  the slot-level accounting is the one that has not discarded anything.** Spain: 340,269 of 2,778,480
+  slots (12.2 %) is the number this calibration uses; 80,800 of 430,754 episodes (18.8 %) is a
+  different quantity and is not interchangeable with it.
+
+**What this costs, stated rather than assumed:** a load whose activity is *always* secondary and never
+primary for anyone is invisible to the generated path, and no amount of calibration recovers the
+*timing* of such a load — only its rate. That is a real bound on the appliance claim and it belongs in
+the methods next to limitation E1.
+
+**If all four countries turn out to record `act2` at a usable rate**, Step 3 may serialise it, and
+this step is the reason to. 🔴 **That decision has to be taken before the corpus is emitted**, because
+adding a fifth tuple element afterwards invalidates the corpus, the grammar and every trained fold.
+
+---
+
 ## DOMESTIC HOT WATER
 
 The load that matters most in a well-insulated dwelling, and **3J found the DHW plant load-bearing in
@@ -172,3 +218,39 @@ Append-only.
   source acquires a plausible number during implementation, and by the time anyone audits it, the
   number is in three artefacts and reads as corroborated. **A claim repeated across artefacts is not
   corroborated; it is copied.**
+
+### 2026-08-14 (second entry) — the secondary-activity gap, found between two correct documents
+
+* 🔴 **Step 3 keeps `act2_raw` and names this step as the reason. This step never receives it**, because
+  it reads Step 7's generated diaries and `act2` is not serialised. **Neither document was wrong on its
+  own**; the gap existed only in the join, and it would have surfaced as an appliance rule that quietly
+  never fired.
+* **Resolved by demoting the field from a runtime input to a calibration input.** The trigger fires
+  from the primary code — the same single-stream design CREST, Widén, LPG and RAMP use — and `act2`
+  estimates `P(appliance | primary activity)` on the real corpus so that secondary-recorded appliance
+  use is absorbed into the probability rather than lost.
+* **`G9.14` added**, asserting the trigger's runtime columns are a subset of what the generated file
+  actually carries, and that `act2` is not among them. Its perturbation is adding `act2` to that set:
+  the rule stops firing, every energy total still reconciles, and **no other gate moves**.
+* **The bound is stated rather than assumed**: a load that is always secondary and never primary for
+  anyone is invisible to the generated path, and calibration recovers its rate but not its timing.
+  That sits beside limitation E1 in the methods.
+
+### 2026-08-14 (third entry) — the `act2` calibration is pinned to slots, not episodes
+
+Step 1's gate re-run on Spain measured something this step needed. `act2_raw` is stored **per episode**
+under a first-of-run rule, and the episode split key does not include the secondary activity, so
+**13,009 of 430,754 Spanish episodes carry more than one distinct `ASECU` value and 11,216 mix blank
+with non-blank.** Slot-level and episode-level coverage are therefore different quantities: 340,269 of
+2,778,480 slots (12.2 %) against 80,800 of 430,754 episodes (18.8 %).
+
+🔴 **The calibration of `P(appliance | primary activity)` reads the slot-level stream.** Calibrating
+from the episode column would estimate the probability from a lossy summary of the stream it exists to
+recover, and it would do so silently — the number would look right and be systematically wrong in a
+direction set by episode length. This step needs a **rate**, not a timing, and the slot accounting has
+discarded nothing.
+
+Nothing else changes: `act2` remains a calibration input and never a runtime field, `G9.14` still
+asserts it is absent from the generated record, and no calibration uses it at all until
+`../Step3_docs/outputs_step3/act2_coverage.md` carries four measured rates — now required on **both**
+bases.

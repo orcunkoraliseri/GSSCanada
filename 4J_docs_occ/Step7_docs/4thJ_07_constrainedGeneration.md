@@ -113,7 +113,48 @@ resampling — compared on annual peak electrical power and on heating and cooli
 
 🔴 **If peak demand moves by more than about 25 % between rules, the chaining method dominates the
 downstream result regardless of transfer quality**, and Step 8 would be measuring our convention
-rather than the model. **This is open decision 14.**
+rather than the model. **This is open decision 14, and it is the only decision in the project still
+open.**
+
+### What `RL21` settled on 2026-08-14, and what it did not
+
+`L21` asked the literature this exact question. **The answer is that the literature does not have one.**
+
+* 🔴 **Zero published studies** compare two or more chaining rules on the same building, same weather,
+  same archetype, with the daily generator held fixed. Studies comparing *static versus stochastic*
+  schedules all conflate within-day stochasticity with cross-day assembly. **So this experiment cannot
+  be replaced by a citation.**
+* **No standard defines a protocol.** No ASHRAE, ISO or IBPSA document, and **IEA EBC Annex 66 and
+  Annex 79 are silent** — they treat schedule generation as an upstream boundary condition. Practice
+  splits between static repetition in compliance modelling and Markov chains with midnight state
+  carryover in academic work, and is almost never justified in methods sections.
+* 🔴 **The 25 % threshold above has no basis in the literature and is permanently labelled
+  project-chosen.** `RL21` searched ASHRAE Guideline 14, IPMVP and FEMP and found nothing defining when
+  a modelling convention dominates a result. Guideline 14's tolerances are model-versus-measurement, a
+  different quantity, and may be quoted as context but never as our bar.
+* 🔴 **Every percentage in `RL21` is rejected**, including its headline claim that peak moves 15 to 35 %
+  between rules. That number is labelled a measured fact while the same report says nobody has measured
+  it, and it appears elsewhere in the same report as 15 to 40 % and as 10 to 25 %. **Do not carry any
+  `RL21` number into this document or into the manuscript.** See parent V13.
+
+### 🔴 The one `RL21` finding that changes the experiment
+
+**A two-day survey of one weekday plus one weekend day cannot identify consecutive-day transition
+probabilities.** The two observed days are not adjacent and they straddle a day-type regime change.
+This is arithmetic rather than literature, so it is accepted on its face.
+
+**Consequence: rule 3 cannot be fitted from our own corpus.** Its persistence parameter would be chosen
+by us, and comparing a rule we parameterised against two rules we did not is comparing our bookkeeping
+against itself — the exact failure this decision exists to detect.
+
+**So rule 3 is run as a sweep over the persistence parameter and reported as a sensitivity band**, not
+as a single fitted rule. What a two-day design *can* identify is individual baseline propensity and
+weekday-to-weekend covariance, and those are used for household archetype assignment instead.
+
+**Also measure annual energy in the same campaign.** `RL21` infers it moves under 3 % while peak moves
+far more. If true, it is the reason peak is the discriminating metric and annual energy would give a
+falsely reassuring answer. **It costs nothing to record both, and measuring is what settled open
+decision 3.**
 
 ---
 
@@ -151,6 +192,27 @@ Generate without the mask, reject invalid records, compare marginals against the
 ### 7.6 — Decide the chaining rule (open decision 14)
 
 Run the three-rule experiment above. Record the peak-demand spread. **Decide, and write down why.**
+
+**Definition of done, sharpened after `RL21`:**
+
+1. Three rules run: independent daily resampling, static repetition, and habit-coupled resampling
+   **swept over its persistence parameter** rather than fitted.
+2. **Both** metrics recorded per rule: aggregate coincident peak power and ramp rates, **and** annual
+   heating and cooling energy. The second is what tests `RL21`'s inference that annual energy is
+   insensitive, and it is free.
+3. **A cheap pre-screen before the full campaign:** compute schedule-level aggregate coincidence and
+   mean pairwise cross-correlation on the assembled 8,760-hour arrays. It costs seconds. 🔴 It is a
+   **screen, not a substitute** — `RL21` claims a shift in it "guarantees" a shift in simulated peak,
+   which is an unsupported causal claim with an invented threshold.
+4. **The activity-vocabulary check**, from `RL21` Part D and the one genuinely new thing it returned:
+   count distinct activity codes per synthetic individual per month, and check household role coherence
+   across consecutive days. Under independent resampling a synthetic full-time worker walks the whole
+   conditional distribution and accumulates an implausible activity vocabulary; a household can have a
+   spouse commuting on Tuesday and not on Wednesday for no reason. 🔴 **The realistic value is computed
+   on the held ISTAT data, not taken from `RL21`**, whose criterion is project-chosen like everything
+   else in it.
+5. The threshold used is stated as **project-chosen**, with ASHRAE Guideline 14 named as context and
+   explicitly not as the bar.
 
 ### 7.7 — Emit schedules
 
@@ -208,3 +270,29 @@ Append-only.
 * 🔴 Item 7.2 is the one that could still reverse a settled decision. The KV-cache figure is
   arithmetic from measured config values, **not a benchmark**, and it is the only number in the
   backbone argument that has not been run.
+
+### 2026-08-14 (second entry) — `RL21` returned; decision 14 stays open but changes shape
+
+* ✅ **The commissioning question came back zero.** No published study compares chaining rules on the
+  same building with the daily generator held fixed; no standard defines a protocol; Annex 66 and
+  Annex 79 are silent; no citable threshold exists for convention dominance. **Item 7.6 can no longer
+  be replaced by a citation — it is the only way this decision closes.**
+* 🔴 **The 25 % threshold in section 7E is now permanently labelled project-chosen.** `RL21` searched
+  ASHRAE Guideline 14, IPMVP and FEMP and found nothing. Guideline 14 is model-versus-measurement, a
+  different quantity, and is context only.
+* 🔴 **No `RL21` percentage may enter this document.** Its headline 15-35 % peak divergence is labelled
+  a measured fact in a report whose own `B1` says the measurement has never been made, and the same
+  quantity appears elsewhere in it as 15-40 % and as 10-25 %. Parent V13 has the full list.
+* 🔴 **Rule 3 changed from fitted to swept.** A two-day design of 1 weekday + 1 weekend cannot identify
+  consecutive-day transitions, so its persistence parameter cannot come from our corpus. Fitting it
+  ourselves and then comparing it against two rules we did not fit would compare our bookkeeping
+  against itself.
+* **Item 7.6 gained four clauses:** record annual energy alongside peak so `RL21`'s insensitivity claim
+  is measured rather than believed; a seconds-cheap coincidence pre-screen that is a screen and not a
+  substitute; the activity-vocabulary and household-role-coherence check from `RL21` Part D, with its
+  realistic value computed on held ISTAT data rather than taken from the report; and an explicit
+  project-chosen label on whatever threshold is used.
+* **`RL21` Part D is the one genuinely new failure mode in the round** and it belongs to this step:
+  independent resampling inflates a synthetic individual's activity vocabulary and breaks household
+  role coherence between days. It also links to open decision 12, since role coherence is a
+  household-level property.

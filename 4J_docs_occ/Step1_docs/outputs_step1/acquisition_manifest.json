@@ -1,0 +1,104 @@
+{
+  "step": "Step 1, work item 1.1",
+  "country": "ES",
+  "wave": "2009-2010",
+  "survey": "Encuesta de Empleo del Tiempo 2009-2010 (INE)",
+  "route": "INEbase open microdata download, no registration and no credential",
+  "acquired_utc": "2026-08-14",
+  "acquired_by": "employee session, task doc Prompts/4thJ_employee_step1_spain_2026-08-14.md",
+  "hash_policy": "every md5 below was computed at download time, before the archive was opened, unzipped or moved",
+  "entry_point_used": "https://www.ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736176815&menu=resultados&idp=1254735976608",
+  "entry_point_note": "RL01 gave cid=1254736176860 under /INEbase/es/. That URL returns HTTP 404. The working operation id is cid=1254736176815 and the path carries no /es/ segment. Navigated from the INEbase category page 'Condiciones de vida' (cid=1254735976608).",
+  "storage_note": "The archives are on the local workstation, not yet on /speed-scratch/o_iseri/4J/raw/spain/. Transfer by scp is outstanding and is recorded as such rather than assumed.",
+  "local_root": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain",
+  "files": [
+    {
+      "name": "datos_emptiem0910.zip",
+      "what": "microdata, fixed-width ASCII, all eight files",
+      "url": "https://www.ine.es/ftp/microdatos/emptiem/datos_emptiem0910.zip",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 8623518,
+      "md5": "b38d01933e8d2cecec1b652c855fd64d",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/datos_emptiem0910.zip"
+    },
+    {
+      "name": "disreg_emptiem0910.zip",
+      "what": "record layout and valid values, XLSX",
+      "url": "https://www.ine.es/ftp/microdatos/emptiem/disreg_emptiem0910.zip",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 165012,
+      "md5": "59af0472dae16cd657a289071f9ea20a",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/disreg_emptiem0910.zip"
+    },
+    {
+      "name": "meth_t25304471.pdf",
+      "what": "methodology, 127 pages, including Annex I the activity list and section 7 the location list",
+      "url": "https://www.ine.es/metodologia/t25/t25304471.pdf",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 3214165,
+      "md5": "0d360d282e6df2fb91d2948d218e8a8c",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/meth_t25304471.pdf"
+    },
+    {
+      "name": "cues_dactividad10.pdf",
+      "what": "diary questionnaire as fielded in 2010",
+      "url": "https://www.ine.es/daco/daco42/empleo/cues_dactividad10.pdf",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 164658,
+      "md5": "ecd78bdee59ec97e0b99424d6e7c0aee",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/docs/cues_dactividad10.pdf"
+    },
+    {
+      "name": "cues_individual10.pdf",
+      "what": "individual questionnaire",
+      "url": "https://www.ine.es/daco/daco42/empleo/cues_individual10.pdf",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 54295,
+      "md5": "57524753193982586a0d81beb8de7c66",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/docs/cues_individual10.pdf"
+    },
+    {
+      "name": "cues_hogar10.pdf",
+      "what": "household questionnaire",
+      "url": "https://www.ine.es/daco/daco42/empleo/cues_hogar10.pdf",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 76124,
+      "md5": "0cd0e66afb0d3538428702fb448466c9",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/docs/cues_hogar10.pdf"
+    },
+    {
+      "name": "evalfr09.pdf",
+      "what": "non-response and fieldwork evaluation",
+      "url": "https://www.ine.es/daco/daco42/empleo/evalfr09.pdf",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 81042,
+      "md5": "ccfff27e4063abc83710d8a7d7a3f2d6",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/docs/evalfr09.pdf"
+    },
+    {
+      "name": "anexo.doc",
+      "what": "methodology annex",
+      "url": "https://www.ine.es/metodologia/t25/anexo.doc",
+      "downloaded_utc": "2026-08-14",
+      "bytes": 20480,
+      "md5": "23eecddf7876f8236af3b1f40bbf7f6f",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/spain/docs/anexo.doc"
+    }
+  ],
+  "external_references": [
+    {
+      "name": "reference_es_population_ecp_20100701.json",
+      "what": "resident population by single year of age and sex, 1 July 2010, used as the independent reference for gate G1.8",
+      "source": "INE Estadistica Continua de Poblacion, table 56934, Tempus3 JSON API",
+      "url": "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/56934?date=20100701",
+      "downloaded_utc": "2026-08-14",
+      "md5": "d348e01a15782fea7502a95124583c38",
+      "independence_note": "This series is demographic accounting, not a re-tabulation of the EET public-use file, so for the age x sex composition it is a reference the survey file cannot have produced. See the gate report for why the population TOTAL is nevertheless not an admissible check."
+    }
+  ],
+  "not_downloaded": {
+    "UK": "UKDS SN 8128 requires an End User Licence accepted in a named person's account. Out of scope for this round.",
+    "France": "Progedo/ADISP requires academic registration. Out of scope for this round.",
+    "Italy": "Held from paper 1. Must be located and confirmed as the same wave and the same extract by the author."
+  }
+}

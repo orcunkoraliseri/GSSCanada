@@ -41,6 +41,8 @@ Three things, in order of how badly they would hurt:
 | **G4.9** Per-country probe stability | Catastrophic forgetting | Per-country held-in probe loss at final checkpoint within **+5 %** of its own best value during training | **project-chosen** |
 | **G4.10** Memory and walltime | A run that cannot be repeated | Peak VRAM recorded; run completes inside 7 days. **Reported, not thresholded** | operational |
 | **G4.11** Checkpoint provenance | An unreproducible model | Base repo **revision hash**, corpus md5, config and seed recorded per run. 🔴 A checkpoint named without a revision is not a reproducible checkpoint | **project-chosen** |
+| **G4.13** 🔴 **Fold isolation** | The held-out country reaching its own fold's training data | Per fold, the count of training records whose `country` equals the held-out country is **exactly 0**, counted **from the shard the trainer actually loaded**, never from the config or the filename. Run at training start, not at scoring time | **derived from decision 11** |
+| **G4.14** 🔴 **Pre-registration precedence** | A pre-registration written after a model exists | Every run manifest carries the `prereg.md` md5, all manifests carry the **same** value, and that value equals the md5 recorded **before the first Leg-5 submission**. Missing field, mismatched field, or a changed file: **FAIL** | **derived from decision 11's freeze clause** |
 
 ---
 
@@ -78,6 +80,8 @@ Each perturbation must break **exactly one** gate. Run them on Leg-4, where a tr
 | Swap the tokenizer | G4.8 | — |
 | Train country-by-country sequentially | G4.9 | G4.1 |
 | Delete the revision hash from the run manifest | G4.11 | all others |
+| 🔴 **Put 1 % of the held-out country's records into that fold's training shard** | **G4.13** | G4.1, G4.3 — *and the fold's downstream score will IMPROVE. Every gate that could see this one is a provenance gate, which is the same shape as Step 6's contamination perturbation* |
+| Edit `prereg.md` after fold 1 has been evaluated | **G4.14** | all others — *nothing in the model changes, which is exactly why no other gate can see it* |
 | 🔴 **Within-stratum shuffle** | **G4.3 and G4.4 must degrade** | G4.1 **must stay clean** — the shuffle preserves within-stratum variance, and that is exactly why G4.1 cannot substitute for G4.12 |
 | 🔴 **Null perturbation: change nothing** | **nothing** | everything |
 
@@ -102,6 +106,14 @@ coverage only — a perturbation that moves three gates cannot attribute what it
   not be satisfiable by nothing moving.
 * **V4.e** — the validator **imports** its thresholds from a single module. A second copy of a band
   drifts invisibly from the first.
+* **V4.f** — G4.13 FAILs, rather than passing, if it could not open the training shard or found **zero
+  records of any country** in it. 🔴 An isolation check over an empty shard finds zero held-out records
+  for the wrong reason, and reports the same number as a clean fold.
+* **V4.g** — G4.14 recomputes `prereg.md`'s md5 **from the file on disk** at every run. Reading the
+  value the manifest already claims and comparing it to itself is the circularity that retired G1.7b.
+* **V4.h** — the runner prints **which fold it is scoring** and which country that fold holds out,
+  before any verdict. 🔴 Four folds' metrics in one directory is how a fold's numbers get read under
+  another fold's name, and nothing in the numbers themselves would say so.
 
 ---
 
@@ -130,8 +142,24 @@ Append-only.
 ### 2026-08-14 — validation document created
 
 * Twelve gates, thirteen perturbations, none run.
+
 * 🔴 G4.12, the within-stratum shuffle, is here because of a 3J finding worth restating: **for any
   gate over per-entity data, ask what a within-stratum shuffle of the thing you claim to validate
   would do to the number. If the answer is nothing, the gate validates the aggregate, not the
   model.** In 3J that question turned ten green retail gates into ten gates that had never measured
   skill.
+
+### 2026-08-14 (second entry) — two gates added at the fold boundary
+
+* **Fourteen gates, fifteen perturbations, none run.** `G4.13` fold isolation and `G4.14`
+  pre-registration precedence, with `V4.f` to `V4.h`.
+* 🔴 **Both new gates guard things that leave no trace in the model.** A fold trained on 1 % of its own
+  held-out country produces a *better* score and a normal-looking loss curve; a `prereg.md` edited
+  after fold 1 changes no weight at all. **Every check that could catch either is a provenance check**,
+  which is the same shape as Step 6's "train including the held-out country" perturbation and the
+  reason that one is singled out there.
+* **G4.13 counts from the shard the trainer loaded**, not from the config that says which shard it
+  should have loaded. A fold whose file list was built wrong is exactly the defect a config-side check
+  cannot see, and it is cheap to get right at training start and expensive to discover at Step 6.
+* **V4.h exists because four folds now share one output directory.** Nothing in a metrics row says
+  which country it held out, so the runner has to say it before it says anything else.

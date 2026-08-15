@@ -68,6 +68,16 @@ a **band-applicability limitation** and its value is **not moved to make it pass
 
 Axes: **country × construction period × day type × scenario.**
 
+🔴 **Country means the country's OWN fold, and this is four populations rather than sixteen.** Decision
+11 produces four adapters, and each country's schedules come from **the fold that held that country
+out** — that is the whole point: the diaries driving Italy's buildings must come from the model that
+never saw Italy. Simulating every country under every fold would be a 4× larger campaign whose extra
+cells answer no question the paper asks, and mixing folds within one country's cells would quietly turn
+a transfer result into a held-in one.
+
+**Written into every cell's `manifest.json` as an explicit `fold` field**, so that a schedule file
+cannot be read under the wrong fold's name — nothing in the schedule numbers themselves would say.
+
 🔴 **Two mandatory probes before any campaign cell**, both inherited from Leg-2 and Leg-3 at real cost:
 
 1. **Scenario differentiation.** Byte-identical outputs across scenarios is an **automatic FAIL**. The
@@ -118,7 +128,7 @@ firing** on a deliberately broken cell.
 
 One cell per (country × period × day type × scenario). Each cell writes a `manifest.json` recording:
 
-* the schedule file md5 and its Step 7 provenance;
+* the schedule file md5 and its Step 7 provenance, **including the `fold` the schedule came from**;
 * the IDF md5;
 * the weather file name and md5;
 * the EnergyPlus version **and build hash**;
@@ -179,3 +189,14 @@ Append-only.
 ### 2026-08-14 — step document created
 
 * 🔴 The order of items 8.3 and 8.5 is not a preference. Reversing it is what cost 3J eight campaigns.
+
+### 2026-08-14 (second entry) — the campaign is bound to the folds
+
+* **"Country" in the campaign axes now means the country's own fold.** Four populations, not sixteen:
+  each country's schedules come from the adapter that **held that country out**, which is the entire
+  point of decision 11 and was nowhere in this document.
+* 🔴 **The failure it prevents leaves no trace in the energy.** A cell driven by the wrong fold has a
+  real schedule file, a correct md5 and a complete manifest, and its EUI looks entirely normal — it has
+  simply turned a transfer result into a held-in one. **Gate G8.16** checks it against the Step 7
+  provenance rather than against the cell's own filename, with **V8.g** so a missing `fold` field FAILs
+  instead of finding zero violations.

@@ -136,3 +136,5 @@ BEM_Setup/SimResults_Step9/
 *.zip
 *.tar.gz
 *.gz
+*.bak
+*.bak*
