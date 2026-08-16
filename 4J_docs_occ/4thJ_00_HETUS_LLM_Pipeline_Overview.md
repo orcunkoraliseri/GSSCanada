@@ -23,6 +23,35 @@ loads for European residential archetypes, so the paper ends in simulated energy
 
 ---
 
+## 🔴🔴 AMENDMENT 2026-08-15 — READ THIS BEFORE ANY COUNT BELOW. **THE CORPUS IS THREE COUNTRIES.**
+
+**Author decision 16, 2026-08-15: FRANCE IS EXCLUDED.** Progedo demande n°38663 has no arrival date
+and the project will not wait on it. **Everywhere this document says four countries, read THREE —
+Italy 2013-14, Spain 2009-10, UK 2014-15**, all three already built. The rows below are kept unedited
+because this document's style is to make reversals visible, not to rewrite history.
+
+| Reads below | Now |
+|---|---|
+| four countries, LOCO trains on three | 🔴 **three countries, LOCO trains on TWO** |
+| four-fold rotation, four adapters, four reported results | 🔴 **three-fold rotation** |
+| 6 Leg-5 + 4 Leg-4 jobs | 🔴 **5 Leg-5 + 3 Leg-4** |
+| Step 8: four populations | 🔴 **three populations** |
+| `V1.a`/`V2.a` FAIL below 4 countries | 🔴 **below 3** |
+| Track A widens 4 → 17 | 🔴 **3 → 17**, so it is worth more, not less |
+
+✅ **The pre-named fold does not move: it is still held-out SPAIN**, because the alphabetical ISO rule
+(ES, FR, GB, IT) returns ES with or without France. **Nothing about the pre-registration was re-taken.**
+
+🔴 **If France arrives later:** before any fold is **scored** it may be re-admitted in full and every
+count reverts. After the first fold is scored the design is frozen — France can then only be an extra
+held-out country reported separately, never a fourth fold. Full text in the parent plan's progress log.
+
+**Also amended the same day, earlier:** Step 1 is now a **sixteen-gate** specification (M-1 to M-5;
+`G1.6` split into `G1.6a`/`G1.6b`, new `G1.12`), and Step 2's day origin is **decided — 04:00, cyclic
+rotation, D-S2-5**, with the age floor moving 11 → **10** because 11 was France's minimum.
+
+---
+
 ## 🔴 STATUS 2026-08-14 — ALL SIXTEEN REPORTS ARE BACK AND VETTED
 
 > **Superseded in part.** `RL17` and `RL18` returned later the same day; open decision 3 was closed by
@@ -609,7 +638,7 @@ documented reason rather than an untested hope of repair.
 | **C1** | ~~Two waves is not a trend~~ | 🔴 **No longer a limitation, because there is no longer a temporal claim.** Forecasting is out of scope by decision. The waves are training data and a possible second held-out axis. Nothing in the paper extrapolates, so nothing needs defending |
 | **C2** | ~~The most recent waves straddle the pandemic, unevenly by country~~ | 🔴 **No longer a limitation, because those waves are not in the corpus.** All four training waves are pre-pandemic paper self-completion diaries. The COVID-era and app-era waves were the ones decision 6 discarded |
 | 🔴 ~~**C3**~~ | ~~**Pooling waves may teach the model that instrument changes are behaviour changes**~~ | 🔴 **REMOVED on 2026-08-14, because the pooling it described no longer happens.** One wave per country means one collection mode, one slot length and one coding-list generation. **Removing a limitation by removing the practice it constrained is legitimate**, the same move that removed C1. It is struck through rather than deleted so the reasoning stays visible |
-| 🔴 **C4** | **The corpus is four countries, and they are all Western or Southern European** | **NEW, and it is the cost of the HETUS-only decision.** Leave-one-country-out trains on three, and Italy, Spain, France and the UK are not a demanding spread — a reviewer can fairly ask whether transfer across four neighbours demonstrates transfer across a framework. **Track A is the only thing that fixes it**, and until it lands the claim is stated at the scale the corpus supports. 🔴 **Tested twice and it held.** `RL19` found no Tier 0 or Tier 1 national route among the 14 remaining countries; `RL20` then tested the single best candidate, Norway, and found no ACL-coded file and no official recode. **The limitation is not a gap we have failed to close, it is a property of what is distributed** |
+| 🔴 **C4** | 🔴 **REWRITTEN 2026-08-15: the corpus is THREE countries — Italy, Spain, the UK — all Western or Southern European, and leave-one-country-out trains on TWO.** France was excluded by decision 16 because its delivery had no arrival date, and **the paper states that as a scheduling decision, not as a design choice** — nothing about France failed a screen. The superseded four-country text follows | *(superseded)* **The corpus is four countries, and they are all Western or Southern European** | **NEW, and it is the cost of the HETUS-only decision.** Leave-one-country-out trains on three, and Italy, Spain, France and the UK are not a demanding spread — a reviewer can fairly ask whether transfer across four neighbours demonstrates transfer across a framework. **Track A is the only thing that fixes it**, and until it lands the claim is stated at the scale the corpus supports. 🔴 **Tested twice and it held.** `RL19` found no Tier 0 or Tier 1 national route among the 14 remaining countries; `RL20` then tested the single best candidate, Norway, and found no ACL-coded file and no official recode. **The limitation is not a gap we have failed to close, it is a property of what is distributed** |
 | **D1** | Constrained decoding renormalises over allowed tokens, which is not neutral | Unchanged. Reported via the constraint-firing rate and audited against an unconstrained rejection-sampled batch |
 | **D2** | Post-hoc raking would fix marginals while weakening the claim | **Resolved into a rule:** we do not rake our output at all |
 | **E1** | Any activity-to-load mapping may itself be unvalidated | **Sharpened.** The published mappings validate at aggregate scale (100 to 500 dwellings), not per dwelling. The downstream claim is therefore about load shapes and distributions |

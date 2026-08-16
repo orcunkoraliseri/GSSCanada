@@ -1437,10 +1437,20 @@ from scope by author decision 2026-08-14.**
 Train on N-1 countries. Generate a population for the held-out country conditioned **only on its
 published demographic marginals**, with none of its diaries seen.
 
-🔴 **N = 4 after decision 5, so training is on three.** Italy, Spain, UK, France, one held out and
-three in. That is thin, it is named as limitation C4, and **Track A is the only thing that raises it**
-— to seventeen, with no harmonisation change, because our four waves are the HETUS 2010 round. Until
-then the claim is stated at the scale the corpus supports rather than at the scale we would like. Score against its published aggregate
+🔴 **N = 3 after author decision 16, 2026-08-15, so training is on TWO.** Italy, Spain, UK — one held
+out and two in. **France is excluded from the corpus; see decision 16 in the progress log.** That is
+thinner than the four-country design it replaces, it is named as limitation C4, and **Track A is the
+only thing that raises it** — to seventeen, with no harmonisation change, because our three waves are
+part of the HETUS 2010 round. Until then the claim is stated at the scale the corpus supports rather
+than at the scale we would like.
+
+🔴 **Two-in-one-out is the floor of what this test can be, and the paper says so.** With N = 3 the
+leave-one-country-out claim is *"a model trained on two European time-use corpora generates a third it
+has never seen"* — still a real test of paper 1's untested sentence, still falsifiable against the
+hardened null, and **not** the framework-scale claim the four-country design would have carried.
+
+*Superseded, kept because the reasoning is the reusable part: "N = 4 after decision 5, so training is
+on three. Italy, Spain, UK, France, one held out and three in."* Score against its published aggregate
 tables (`tus_00age`, `tus_00educ`, `tus_00selfstat`, `tus_00hh`, and `tus_20startime` for the
 time-of-day curve).
 
@@ -1993,11 +2003,17 @@ The ones most likely to be argued with in review:
   with the fictional-country control.
 * **B2**, that transfer is scored against aggregates, which cannot detect a wrong joint structure hiding
   behind right marginals.
-* 🔴 **C4**, that the corpus is four Western and Southern European countries and leave-one-country-out
-  therefore trains on three. **This is the new one and it is the cost of narrowing to HETUS with one
-  wave each.** A reviewer can fairly ask whether transfer across four neighbours demonstrates transfer
-  across a framework, and the only honest answers are that the corpus is what is obtainable today and
-  that Track A would widen it to seventeen with no harmonisation change. (~~C3~~, pooling waves, was
+* 🔴 **C4, REWRITTEN 2026-08-15 by author decision 16: the corpus is THREE Western and Southern
+  European countries — Italy, Spain, the UK — and leave-one-country-out therefore trains on TWO.**
+  France was excluded because its Progedo delivery has no arrival date and the project would not wait
+  on it. **This is the cost of narrowing to HETUS with one wave each, and then of not waiting.** A
+  reviewer can fairly ask whether transfer across three neighbours demonstrates transfer across a
+  framework, and the only honest answers are that the corpus is what was obtainable on the project's
+  own timetable and that Track A would widen it to seventeen with no harmonisation change. 🔴 **The
+  exclusion is stated in the paper as a scheduling decision, not dressed up as a design choice** —
+  France is a HETUS 2010 member with a usable wave and nothing about it failed a screen.
+  *(Superseded wording: "the corpus is four Western and Southern European countries and
+  leave-one-country-out therefore trains on three.")* (~~C3~~, pooling waves, was
   removed the same day along with the pooling it described.)
 * **F1**, that we do not release the model — stated in one sentence and not revisited.
 
@@ -2639,3 +2655,60 @@ column, which is what `G1.7c` and `G1.7d` exist for. No threshold moved.
 Two of Step 1's fourteen gates rest on this single methodology section; one retirement was already
 right and one provenance column was overstated, and both were settled in ten minutes from a file we
 had held since the download.
+
+### 2026-08-15 — 🔴 AUTHOR DECISION 16: **FRANCE IS EXCLUDED. THE CORPUS IS THREE COUNTRIES.**
+
+**Author's words, 2026-08-15:** *"maintenant nous n'avons pas la France, et aussi quand elle va venir
+je ne sais pas — exclure France sur les plans et continuer. Je ne veux pas attendre une ou deux
+semaines de plus."* Progedo demande n°38663 was submitted 2026-08-14 and has **no published turnaround
+and no arrival date**. The project will not hold on it.
+
+**This amends decisions 6 and 11. It does not reopen 5, 13 or 15.**
+
+| Was | Is |
+|---|---|
+| Four countries: Italy 2013-14, Spain 2009-10, UK 2014-15, **France 2009-10** | 🔴 **Three: Italy 2013-14, Spain 2009-10, UK 2014-15.** All three are already built |
+| Four-fold rotation, LOCO trains on three | 🔴 **Three-fold rotation, LOCO trains on TWO** |
+| 6 Leg-5 jobs (4 folds + ceiling + Qwen), 4 Leg-4 | 🔴 **5 Leg-5 jobs (3 folds + ceiling + Qwen), 3 Leg-4** |
+| Step 8: four populations, each under the adapter that held it out | 🔴 **Three populations**, same rule |
+| `V1.a` FAILs below **4** countries | 🔴 **FAILs below 3** |
+| C4: four countries, trains on three | 🔴 **C4: three countries, trains on two** |
+
+🔴 **`V1.a`'s threshold moving from 4 to 3 is the one change on this list that must not be mistaken for
+a gate fix.** `V1.a` is not an independent bar — it is a restatement of decision 6 in executable form,
+and it moves **only** because decision 6 moved, by the author, in writing, on a dated line. It is not
+a `--single-country` flag, it is not a tolerance, and **the next session must not read this precedent
+as permission to move a vacuity guard when it fires inconveniently.** Every other guard in this
+project keeps its threshold.
+
+✅ **The pre-named fold does NOT move, and this is the most important sentence in the entry.** Decision
+11 fixed it in advance by alphabetical ISO code: **ES, FR, GB, IT** → Spain was first with France in the
+set, and **ES is still first without it**. So held-out **Spain** survives the corpus change untouched,
+by the rule that was written down before anything was trained. 🔴 **Had the rule selected France, the
+honest move would have been to re-run the rule and say so loudly, not to pick the next-best fold.**
+
+🔴 **What happens if France arrives later — decided now, because deciding it later is the defect.**
+
+* **Before any fold has been evaluated:** France may be re-admitted in full, the corpus returns to
+  four, and every count above reverts. This is the only window in which it can become training data.
+* **After the first fold has been evaluated:** 🔴 **France can never enter training.** Decision 11
+  freezes the design at that moment, and adding a fourth fold afterwards would change the design after
+  seeing an outcome. If it arrives then, it becomes an **extra held-out country, reported separately**
+  as an out-of-design transfer test — the same status the plan already gives earlier waves. That is a
+  bonus result, not a fold, and it is never averaged into the reported rotation.
+* **The window closes at Step 6's first score, not at Step 4's first submission.** Recorded because
+  the two dates are weeks apart and the tempting reading is the later one.
+
+**What this unblocks, and it is the point of the decision:** Step 2 consumed *all* the corpus's
+`episodes_<country>.parquet` and there are now three, all built. 🔴 **`V1.a` stops firing and Step 1
+becomes closable** as soon as the sixteen-gate re-run passes on the three. **The critical path is no
+longer an external queue** — it is Step 1 re-run → Step 2 → Step 3 → training, all of it ours.
+
+**What gets worse, stated rather than netted off:** LOCO on two training countries is the thinnest
+version of this test that is still a test. Limitation C4 is rewritten accordingly, and **Track A rises
+in value again** — it would take the corpus from three to seventeen with no harmonisation change,
+which is now a larger multiple than it was.
+
+**Not changed by this decision:** decision 5 (HETUS only), decision 13 (two reproduction tiers — Spain
+alone, and Spain + UK; both countries are still in), decision 15 (Norway rejected), and every Step 1
+gate threshold including the five M-1..M-5 decisions taken earlier the same day.

@@ -23,6 +23,8 @@
       "licence_citation_2": "read8128.htm, section 'INFORMATION ON CONDITION OF USE': 'The Data Collection is available to UK Data Service registered users subject to the End User Licence Agreement. Commercial use of the data requires approval from the data owner or their nominee.'",
       "licence_note": "Name and citation only recorded here, per the work order -- terms not paraphrased. This licence is release-relevant for Step 5 and is not decided or interpreted by this entry."
     },
+    "provenance_source": "author_attested",
+    "provenance_source_note": "M-2, 2026-08-15: the author downloaded/registered for this archive in person (acquired_utc above) and the DOI/citation printed inside the delivery's own documentation (UKDA_Study_8128_Information.htm) is the recorded landing-page citation, per the work order -- the delivery ships no literal per-file download URL. 'author_attested' rather than 'fetched_by_us' because this employee session did not perform the download.",
     "shape_deviation_note": "Spain's entry lists each of eight separately-downloaded INE files as a top-level 'files' array member with its own url/downloaded_utc. The UK delivery is a single nested archive (a Google Drive export wrapper around the actual UKDS zip, itself containing the study's tab/ and mrdoc/ tree), so there is one meaningful top-level provenance object (the outer archive) plus a full md5 list of every file it unpacks to. Both levels are recorded below rather than forced into Spain's flat per-file url shape, since only the outer archive has a URL/date at all.",
     "local_root": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk",
     "outer_archive": {
@@ -31,7 +33,9 @@
       "url": "NOT FOUND -- this is a Google Drive export filename (timestamped 20260815T031737Z), not the original UKDS download URL",
       "bytes": 21465300,
       "md5": "2aa4ee7c746b91233f45a70097a334c2",
-      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk/UK-TUS-20260815T031737Z-1-001.zip"
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk/UK-TUS-20260815T031737Z-1-001.zip",
+      "hashed_at": "receipt_from_author",
+      "hashed_at_note": "M-2, 2026-08-15: md5 computed at unpack time by the employee session (hash_policy above), not necessarily at the author's original download instant -- see the project rule that a hash taken after a file has been touched is a hash of what we have, not of what they sent."
     },
     "inner_archive": {
       "name": "8128tab_A34C0A6B082B45E8CAE4D1795D786CEEBF43FD6766C98E10DD13D81B2F586CE4_V1.zip",
@@ -40,7 +44,9 @@
       "md5": "caac5d15c2950d0e4aa571e97460973d",
       "sha256_from_filename": "a34c0a6b082b45e8cae4d1795d786ceebf43fd6766c98e10dd13d81b2f586ce4",
       "sha256_recomputed_matches_filename": true,
-      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk/unpacked/UK-TUS/8128tab_A34C0A6B082B45E8CAE4D1795D786CEEBF43FD6766C98E10DD13D81B2F586CE4_V1.zip"
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/uk/unpacked/UK-TUS/8128tab_A34C0A6B082B45E8CAE4D1795D786CEEBF43FD6766C98E10DD13D81B2F586CE4_V1.zip",
+      "hashed_at": "receipt_from_author",
+      "hashed_at_note": "M-2, 2026-08-15: same basis as outer_archive; also corroborated by the SHA-256-in-filename match above, which IS independent of our own hash computation."
     },
     "delivered_files_md5": [
       {"path": "UKDA-8128-tab/8128_file_information.rtf", "md5": "c19e2f565df0cd26a8b614bb8e70ef1e"},

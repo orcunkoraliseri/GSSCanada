@@ -20,7 +20,9 @@
       "bytes": 18144298,
       "md5": "58817df9ee59eaf1e5b16f62dbe65798",
       "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/uso_tempo_2013_IT.zip",
-      "used": true
+      "used": true,
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
     },
     {
       "name": "Nota_metodologica-2013.pdf",
@@ -30,7 +32,9 @@
       "bytes": 1989814,
       "md5": "e4347e74f6980f48568192682fb5b36c",
       "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/Nota_metodologica-2013.pdf",
-      "used": true
+      "used": true,
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
     },
     {
       "name": "Nota_metodologica.pdf",
@@ -41,7 +45,9 @@
       "md5": "256b39648ff9f9d711bc405bd8e8059e",
       "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/Nota_metodologica.pdf",
       "used": false,
-      "exclusion_reason": "2023 wave, volunteering module, not the corpus wave; not opened beyond its filename and page count per the work order"
+      "exclusion_reason": "2023 wave, volunteering module, not the corpus wave; not opened beyond its filename and page count per the work order",
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
     },
     {
       "name": "UsoTempo_2023_IT.zip",
@@ -52,9 +58,13 @@
       "md5": "34d50c22128ab5f9c2d940b956083c50",
       "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/UsoTempo_2023_IT.zip",
       "used": false,
-      "exclusion_reason": "2023 wave, no time-use diary in it at all (volunteering module only); not the corpus wave"
+      "exclusion_reason": "2023 wave, no time-use diary in it at all (volunteering module only); not the corpus wave",
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
     }
   ],
+  "hashed_at_note": "M-2, 2026-08-15: every archive's md5 was computed on the employee's local copy after the author had already delivered the files directly (hash_policy above), never at a download instant this project controlled -- 'receipt_from_author' for all four, honestly, not 'download'.",
+  "provenance_source_note": "M-2, 2026-08-15: 'NOT FOUND' for all four archives, per the work order's explicit instruction -- no per-file download URL is printed anywhere in this hand-delivered archive (entry_point_note above already recorded this; these two new fields make it visible to G1.6b without inventing a URL).",
   "external_references": [],
   "external_reference_note": "No independent published Italian age x sex population table for the 2013-2014 wave was found anywhere in this delivery (see codebook_facts_italy.md, finding F-IT-10). Not searched for online, per hard project rule. G1.8 is NOT CHECKED for Italy for this reason, in addition to the calibration circularity in finding F-IT-9.",
   "not_downloaded": {

@@ -41,6 +41,8 @@ model learns four dialects and the transfer claim measures our mapping rather th
 Four manager decisions forced by `../Step1_docs/outputs_step1/codebook_facts_spain.md`, findings
 F-ES-1 to F-ES-4. Each one overrides a line that came from `RL02` and was never measured.
 
+### ✅ D-S2-1 is CLOSED, 2026-08-15, as **D-S2-5 below**. The text that follows is kept as the record of why it was reopened; read D-S2-5 for the decided value.
+
 ### D-S2-1 — the day origin is **reopened**, and it does not close until all four codebooks are in hand
 
 Spain's diary runs **06:00 to 06:00** (F-ES-1). No 04:00-origin day can be built from it: the two
@@ -57,6 +59,51 @@ one country and extending it by assumption, which is the defect this step exists
   origin we have measured.
 * What is already fixed: the harmonised day is **24 hours of 10-minute slots**, and the origin is a
   single constant shared by all four countries, not a per-country field.
+
+### ✅ D-S2-5 — the day origin is **04:00**, reached by treating each diary as a CYCLIC day. Decided 2026-08-15.
+
+D-S2-1 said the origin is chosen from every measured codebook **or not at all**. Author decision 16
+excluded France, so **three is now every country in the corpus** and all three codebooks are in hand.
+The measured origins:
+
+| Country | Origin | Source |
+|---|---|---|
+| Spain | **06:00** | F-ES-1, INE `INTERVALO` 1 = 06:00-06:10 |
+| Italy | **04:00** | QUEST-DG p.2, *"il diario inizia alle 4.00 del mattino"* |
+| UK | **04:00** | F-UK-5, CTUR p. 2, `tid` 1 = 04:00-04:10 |
+
+🔴 **A shared origin is not a preference, it is a requirement of leave-one-country-out.** If Spanish
+days are serialised two hours out of phase with the others, the model learns "the shifted dialect is
+Spain" and the transfer claim measures our indexing, not HETUS's. This is the same argument that keeps
+country-extra co-presence flags out of `COP` in D-S2-2.
+
+**No re-basing is possible, so the diary is treated as a cyclic 24-hour day.** Spain's respondent never
+reported 04:00-06:00 *of the diary's own calendar day*; rotating a 06:00-origin diary to a 04:00 origin
+takes those two hours from the **tail of the same diary** — the same respondent's following early
+morning. That is a real splice and it is written down as one, not hidden in an index arithmetic.
+
+**Origin = 04:00. Three reasons, in order of weight.**
+
+1. 🔴 **It splices one country instead of two.** Rotating to 06:00 would require the same cyclic move on
+   both the UK and Italy; rotating to 04:00 requires it on Spain alone.
+2. **The splice lands in the sleep block.** At 04:00-06:00 the overwhelming majority of respondents in
+   every one of the three countries are asleep, so the discontinuity falls at the least informative
+   point of the day. **This is the whole reason both UK and Italy chose 04:00 natively**, and it is
+   HETUS's own guideline origin.
+3. Two of three deliveries already use it, so two of three need no transformation at all.
+
+🔴 **Three consequences that must be implemented and checked, not assumed away.**
+
+* **Spain's episode count will change.** The episode straddling 04:00 is split in two by the rotation.
+  Spain's 430,754 is a Step 1 quantity pinned by `G1.1`; the Step 2 count is a **different quantity**
+  and must be reported as such, exactly the way slot-level and episode-level `act2` counts were kept
+  apart. **A Step 2 gate must assert `sum(DUR) == 1440` survives the rotation for 100 % of diaries.**
+* **The rotation must be invertible.** The runner keeps the native origin per country as metadata, and
+  a round-trip test rotates back and compares to the Step 1 table byte for byte.
+* 🔴 **`origin_hour` is metadata, never a serialised field.** A per-country origin column reaching Step
+  3 would leak country identity into LOCO by the front door after we closed the back one.
+* **The Spanish reader is still not re-indexed.** Rotation happens in Step 2, on the harmonised table,
+  where it is visible and testable. Step 1 keeps native indexing per country.
 
 ### D-S2-2 — co-presence: **five shared flags, plus country extras kept as named columns**
 
@@ -186,8 +233,16 @@ extras exist, and how each national definition differs from the shared flag it m
 
 ### 2.4 — Apply the filter and emit the harmonised table
 
-Age ≥ 11, 10-minute grid, per-country `diary_days` flag carried through. **The day origin is open
-(D-S2-1)** and this work item cannot run until it is decided from all four codebooks.
+10-minute grid, per-country `diary_days` flag carried through. ✅ **The day origin is DECIDED —
+04:00, cyclic rotation, D-S2-5 — and this work item is no longer blocked on it.**
+
+🔴 **The age floor moves from 11 to 10, and it is derived, not chosen.** The rule is *the harmonised
+floor is the highest of the participating countries' minimum ages*, so that every country can supply
+every age the corpus contains. **11 was France's minimum.** With France excluded (decision 16) the
+participating minima are Spain **10**, the UK **8** and Italy **3**, so the binding floor is **10**.
+Filter: **age ≥ 10**. *(Superseded: "Age ≥ 11".)* 🔴 **This is not a widened band** — it is the same
+rule evaluated over a different country set, and it must be re-evaluated again if France ever returns,
+in which case it goes back to 11.
 
 **Output:** `outputs_step2/harmonised.parquet`, one row per episode, plus
 `outputs_step2/filter_report.md` counting exactly how many respondents and diaries each filter clause
@@ -218,9 +273,16 @@ removed, per country.
 
 ## WHAT BLOCKS THIS STEP
 
-Step 1.3 must have emitted all four episode tables. **And D-S2-1 blocks work item 2.4 specifically:**
-the day origin is chosen from four measured codebooks, so 2.4 waits on UK, France and Italy even
-after their parquet files exist.
+🔴 **Rewritten 2026-08-15.** Step 1.3 must have emitted **all three** episode tables — Spain, the UK
+and Italy — and they all exist. ✅ **D-S2-1 no longer blocks work item 2.4**; the origin is decided
+(D-S2-5, 04:00, cyclic rotation).
+
+**What still blocks this step: nothing external.** The one remaining precondition is the
+**sixteen-gate Step 1 re-run** on the three countries (M-1..M-5 changed the record contract, so Step 2
+must consume parquets written to the current contract, not the previous one). 🔴 **That is our own
+work on our own cluster, not a queue in another institution** — which is the whole point of decision
+16. *(Superseded: "Step 1.3 must have emitted all four episode tables… 2.4 waits on UK, France and
+Italy.")*
 
 **What this step blocks:** Steps 3 onward. Also Step 9 — the appliance mapping needs 3-digit codes,
 and this is the step that either preserves them or does not.
@@ -268,3 +330,36 @@ Append-only.
   defect stays silent; an explicit code-by-code crosswalk is how it cannot.
 * The other three countries' origins, flags and location ranges are **measured, not assumed to match
   Spain either.** Spain is the first measurement, not the new standard.
+
+### 2026-08-15 — 🔴 **STEP 2 IS UNBLOCKED. D-S2-1 closes as D-S2-5. The age floor moves 11 → 10.**
+
+**Author decision 16 excluded France**, so the corpus is Spain, the UK and Italy — three countries, all
+built, all with transcribed codebooks. Three things follow, and the first is the one that mattered.
+
+* ✅ **D-S2-1 closes as D-S2-5: the day origin is 04:00, reached by treating each diary as a cyclic
+  24-hour day.** D-S2-1's own condition was *"chosen from every measured codebook or not at all"*, and
+  three is now every country. Measured: Spain **06:00**, Italy **04:00**, UK **04:00**. 🔴 **No
+  re-basing is possible in either direction** — a 06:00 diary contains no 04:00-06:00 of its own
+  calendar day — so the rotation takes those two hours from the tail of the same diary, and **that
+  splice is written down rather than hidden in index arithmetic.** 04:00 wins because it splices **one**
+  country instead of two, because the splice lands in the sleep block (which is exactly why the UK and
+  Italy chose it natively, and it is HETUS's own guideline origin), and because two of three deliveries
+  then need no transformation at all.
+* 🔴 **Three consequences that are implementation work, not notes:** Spain's episode count *will* change
+  (the episode straddling 04:00 splits), so the Step 2 count is a different quantity from Step 1's
+  pinned 430,754 and must be reported as one; the rotation must be **invertible**, with a round-trip
+  test back to the Step 1 table; and **`origin_hour` is metadata, never a serialised field** — a
+  per-country origin column reaching Step 3 would leak country identity into LOCO by the front door
+  after D-S2-2 closed the back one.
+* **The age floor moves from 11 to 10, and it is derived, not chosen.** The rule is *the highest of the
+  participating countries' minimum ages*. **11 was France's.** Without France the minima are Spain 10,
+  UK 8, Italy 3, so the floor is **10**. 🔴 **Not a widened band** — the same rule over a different
+  country set, and it returns to 11 if France is ever re-admitted.
+* **`V2.a` moves 4 → 3** and **`G2.9` now compares three countries.** 🔴 **`G2.9`'s threshold was NOT
+  touched, and note which way it moves:** three countries give **3 pairs instead of 6**, so there are
+  half as many chances to clear 20 min/day on 3 of 10 categories. **The gate gets harder, not easier**,
+  which is precisely why the numbers stay where they were pre-registered.
+
+🔴 **What still blocks Step 2, and it is ours:** the **sixteen-gate Step 1 re-run**. M-1 to M-5 changed
+the record contract (three-state `loc_raw`, nullable weights), so Step 2 must consume parquets written
+to the current contract. **Step 2 does not start on stale parquets.**

@@ -1,7 +1,60 @@
 # 4J — MANAGER RESUME PROMPT
 
 ### Hand this to the next session as its first message. Fixed path, edited in place, never duplicated.
-#### Last updated: 2026-08-15, after the Steps 4-9 audit, the four-fold Step 4 rewrite, Speed job 1245620, the Step 1 gate re-run that closed Spain, the arrival of the UK and Italian data, and **both parallel Step 1 rounds returning — three of four countries now have a reader, an episode table and a fourteen-gate battery**.
+#### Last updated: 2026-08-15, after the Steps 4-9 audit, the four-fold Step 4 rewrite, Speed job 1245620, the Step 1 gate re-run that closed Spain, the arrival of the UK and Italian data, both parallel Step 1 rounds returning, and **the M-1 to M-5 decision round — Step 1 is now a SIXTEEN-gate specification and the next employee round is written and ready to run on Speed**.
+
+---
+
+## 🔴🔴 AUTHOR DECISION 16, 2026-08-15: **FRANCE IS EXCLUDED. THE CORPUS IS THREE COUNTRIES.**
+
+*"Maintenant nous n'avons pas la France, et quand elle va venir je ne sais pas — exclure France sur les
+plans et continuer. Je ne veux pas attendre une ou deux semaines de plus."* Progedo demande n°38663 has
+no published turnaround and no arrival date. **The project does not wait on it.**
+
+**The corpus is Italy 2013-14, Spain 2009-10, UK 2014-15. All three are built.** This amends decisions
+6 and 11; it does not reopen 5, 13 or 15. Full text in the parent plan's progress log, last entry.
+
+| Was | Is |
+|---|---|
+| Four countries | 🔴 **Three** |
+| Four-fold rotation, LOCO trains on three | 🔴 **Three-fold, LOCO trains on TWO** |
+| 6 Leg-5 + 4 Leg-4 jobs | 🔴 **5 Leg-5 + 3 Leg-4** |
+| Step 8: four populations | 🔴 **three** |
+| `V1.a` / `V2.a` FAIL below 4 | 🔴 **below 3** |
+| C4: four countries, trains on three | 🔴 **C4: three, trains on two** |
+| Step 2 age floor 11 (France's minimum) | 🔴 **10** (Spain's), by the same rule re-evaluated |
+
+🔴 **`V1.a` moving 4 → 3 is the one change that must not be read as a gate fix.** It is decision 6 in
+executable form and it moved **only** because the author moved decision 6, in writing, on a dated line.
+**It is not a `--single-country` flag and it is not a precedent.** Every other guard keeps its
+threshold.
+
+✅ **The pre-named fold does NOT move: still held-out SPAIN.** The alphabetical-ISO rule (ES, FR, GB,
+IT) returns ES with or without France, so the pre-registration written before anything was trained
+survives untouched. 🔴 Had the rule selected France, the honest move would have been to re-run the rule
+and say so loudly — never to slide to the next-best fold.
+
+🔴 **If France arrives later — decided now, because deciding it later is the defect.**
+
+* **Before any fold has been SCORED:** re-admit it in full, the corpus returns to four, every count
+  above reverts. **This is the only window in which France can become training data.**
+* **After the first fold is scored:** the design is frozen by decision 11. France becomes an **extra
+  held-out country, reported separately** as an out-of-design transfer test. Never a fourth fold, never
+  averaged into the rotation.
+* **The window closes at Step 6's first score, not Step 4's first submission.** The two dates are weeks
+  apart and the tempting reading is the later one.
+
+**What this unblocks, and it is the point:** `V1.a` stops firing, **Step 1 becomes closable** as soon
+as the sixteen-gate re-run passes, and **Step 2 is no longer blocked**. 🔴 **The critical path is now
+entirely ours** — Step 1 re-run → Step 2 → Step 3 → training — with no queue in another institution on
+it.
+
+**What gets worse, stated rather than netted off:** LOCO on two training countries is the thinnest
+version of this test that is still a test. C4 is rewritten. Track A rises in value again: 3 → 17 is a
+larger multiple than 4 → 17.
+
+**And still true:** there is no `corpus.jsonl` yet, because Steps 2 and 3 have not run. **Free capacity
+on Speed does not shorten the path. Do not start a training job to use up an allocation.**
 
 ---
 
@@ -30,7 +83,12 @@ is this paper.
 
 ---
 
-## 🔴 STATE: SPAIN, THE UK AND ITALY ARE BUILT. FRANCE IS NOT.
+## 🔴 STATE: SPAIN, THE UK AND ITALY ARE BUILT — **AND THAT IS NOW THE WHOLE CORPUS**
+
+🔴 **Read the decision-16 block above first.** Everything below this line was written while France was
+still expected, and where it says *"`V1.a` fires on three of four"* or *"France is the only acquisition
+left"*, **that is superseded**. It is kept because the reasoning about the deliveries, the gates and
+the heterogeneities is all still live — only France's status changed.
 
 Updated 2026-08-14. **Step 1 has been executed on Spain, end to end.** The INE *Encuesta de Empleo del
 Tiempo* 2009-2010 is downloaded and hashed, its codebooks are transcribed with citations, the reader
@@ -132,26 +190,55 @@ layout to check magnitudes against.
 `G1.2`/`G1.11` arithmetic, and every codebook citation beyond the two above. They are read from the
 artefacts, which is the standard, but they were not re-derived.
 
-### 🔴 FIVE OPEN MANAGER ITEMS THE TWO ROUNDS CREATED. None is an employee's to decide.
+### ✅ 2026-08-15 — THE FIVE MANAGER ITEMS ARE DECIDED. M-1 to M-5. **Step 1 is now SIXTEEN gates.**
 
-* **M-1, the `-9` sentinel.** The record contract has a three-state provision for `act2_raw` and none
-  for `loc_raw`, so the UK reader handles the same sentinel inconsistently and `G1.4` fails for it.
-  **Fix the contract, then the reader — not the gate.** Findings F-UK-9 (the `4276` half, which is a
-  real defect and must survive whatever M-1 decides) and F-UK-15.
-* **M-2, `G1.6`'s threshold assumes a download.** Italy FAILs it because a hand-delivered file has no
-  per-file source URL, and the employee correctly refused to invent one. 🔴 **A consequence worth more
-  than the verdict: because `G1.6` already FAILs at baseline, the byte-corruption perturbation could
-  not fire, so Italy's md5 arm is UNTESTED.** France arrives the same way and will land in the same
-  hole. Decide what provenance means for an attested delivery **before** France.
-* **M-3, `G1.7a`'s "zero missing" threshold.** The UK FAILs it on 2 of 16,533 diaries and 23 of 8,274
-  people carrying the delivery's own blank-weight sentinel. A survey is allowed to ship unweighted
-  cases. 🔴 **This is a threshold question, and the rule is that moving it is a basis change** — decide
-  it explicitly and write down which population is in scope, exactly as Spain's `G1.7d` needed.
-* **M-4, `G1.7d`'s `>= 1.0` clause is wrong for normalised weights.** UK weights are normalised to
-  mean ≈ 1.000 and **60.3 % sit below 1.0**. The employee flagged it and did **not** move it, which was
-  right. Spain's raw expansion factors and the UK's normalised ones cannot share one bound.
-* **M-5, the UK's two diary weights.** `dia_wt_a` / `dia_wt_b`, both calibrated, `dia_wt_a` documented
-  as the diary-level default. Still **unmade**, still pre-registration-relevant.
+Written into `../Step1_docs/4thJ_01_corpusAcquisition.md` (new section "CONTRACT CHANGES M-1 to M-5")
+and its validation document (gate table, perturbation table, progress log). 🔴 **Do not reopen them
+and do not re-derive them.**
+
+🔴 **The reason none could be left standing as a red FAIL, and it is the load-bearing sentence of the
+whole round:** a gate that FAILs at baseline **cannot be seen falling**, so every perturbation aimed at
+it reads `DID NOT FIRE`. The three baseline FAILs had silenced **five arms** — Italy's md5 arm
+entirely, three of the UK's code-list arms, and the UK's **entire weight arm**. 🔴 **That is also the
+most seductive argument in the file, because "clearing the FAIL restores detection power" is what
+gate-shopping sounds like from the inside.** Each decision was taken on whether the *threshold was
+wrong*; the restored arm is recorded as a consequence, never as the reason. **Where the threshold was
+right it did not move: `G1.6b` still FAILs on Italy.**
+
+* **M-1, the `-9` sentinel — contract fixed, gate not.** `loc_raw` gains `act2_raw`'s three states.
+  `G1.4` accepts a value as not-a-code **only if the delivery's own value label declares it a
+  missingness sentinel**, cited in `codebook_facts`. No rule that negative values are sentinels.
+  **`4276` (F-UK-9) still FAILs, which is the test of whether the amendment disarmed anything.** New
+  gate **`G1.12`** is the compensating recount, built exactly like `G1.11`.
+* **M-2, `G1.6` splits.** **`G1.6a` integrity** (md5, scored everywhere, no URL needed) + **`G1.6b`
+  provenance** (URL + date, **threshold unchanged, Italy still FAILs**). The FAIL is a defect in our
+  own custody record, not in the file — it clears when the author supplies the URL and date the
+  Italian archive came from. Manifest gains `hashed_at` and `provenance_source`. 🔴 **An attested URL
+  is as good as ours; an attested hash is not.** France: record URL, date and md5 in the browser.
+* **M-3, `G1.7a` re-scoped**, not widened. Positive/finite/non-constant **on rows the delivery
+  weighted**, **plus** a new clause: a missing weight on a row the delivery calls **productive** is a
+  FAIL. 🔴 **Spain's `G1.7d` population precedent does NOT transfer** — Spain excluded rows carrying no
+  diary; the 2 UK person-days carry one that sums to 1,440. **Step 1's population is every diary the
+  survey collected; nothing is dropped for lacking a weight.** Weights become nullable.
+* **M-4, `G1.7d` conditioned on the declared weighting convention.** *expansion* → `[1.0, 10^width)`;
+  *normalised* → `> 0` and **mean within ±1 % of 1.0**; *not declared* → `NOT CHECKED`. Not a
+  loosening — `>= 1.0` is true only of an expansion weight and **false** of a normalised one. 🔴 The
+  upper-bound half still needs a layout width, so it **stays `NOT CHECKED` for the UK**.
+* **M-5, `weight_dia` = `dia_wt_a`.** Our unit is the person-day, which is exactly what NatCen
+  documents `dia_wt_a` for and the grain CTUR's own worked example uses it at; and it is the only one
+  of the two that balances **day of week**, which is load-bearing for an occupancy paper. `dia_wt_b`
+  carried as `weight_dia_b`. **Freezes into `prereg.md`.** One named reopen trigger: if the unit of
+  analysis ever moves from the person-day to the person, `dia_wt_b` becomes correct and the choice is
+  re-taken in writing **before** anything is trained.
+
+**Six perturbations added, and two of them audit the decisions themselves:** `loc_undeclared_sentinel`
+must fell `G1.4` or M-1 disarmed the membership test; `weight_blank_on_productive_row` must fell
+`G1.7a` or M-3 removed power instead of redirecting it. 🔴 **If either does not fire, the decision it
+audits is reversed — not the perturbation adjusted.**
+
+🔴 **Nothing has been re-run.** All three countries were scored against fourteen gates. **All three
+batteries must be re-run against sixteen**, and no country's report may be quoted against the current
+validation document until then.
 
 **Two more UK facts that bear on Step 2, both measured:** the diary origin hour is **04:00, not
 Spain's 06:00** (F-UK-5), which is live input to the still-withdrawn D-S2-1; and `diary_day` must be
@@ -175,10 +262,11 @@ done.
 | — | **The trained model will never be released.** Weights and adapters both. The releasable artefact is the synthetic diary corpus (CC BY 4.0) plus code (Apache 2.0) | `RL10` |
 | — | **No forecast, no temporal claim, anywhere** | Author |
 | 5 | **HETUS only. No Canada, no United States** | Author, 2026-08-14 |
-| 6 | **Four countries, one wave each:** Italy 2013-14, Spain 2009-10, UK 2014-15, France 2009-10 | Author, 2026-08-14 |
+| 6 | ~~Four countries~~ 🔴 **AMENDED by decision 16: THREE countries, one wave each — Italy 2013-14, Spain 2009-10, UK 2014-15. France excluded** | Author, 2026-08-14; amended by the author 2026-08-15 |
+| 16 | 🔴 **France is excluded. The corpus is three countries and the rotation is three-fold.** Re-admittable only before the first fold is **scored** | Author, 2026-08-15 |
 | 3 | **Backbone: OLMo 3 7B.** Leg-4 is the 1B pilot (correctness only), Leg-5 is the reported model | Our own tokenizer measurement, which overruled `RL18` |
 | — | **`ACT` keeps 3 digits.** All four waves share one coding generation, so nothing forces 2-digit pooling | 1A-bis |
-| 11 | **No country is held out. All four are, in turn** — four-fold rotation. All four folds reported including the worst; **design frozen once any fold is evaluated** | Author, 2026-08-14 |
+| 11 | **No country is held out. All are, in turn** — 🔴 **THREE-fold rotation after decision 16**. All three folds reported including the worst; **design frozen once any fold is evaluated**. Pre-named fold **unchanged: held-out Spain** | Author, 2026-08-14; length amended 2026-08-15 |
 | 13 | **Two reproduction tiers:** Spain alone with no credentials, and Spain + UK with two free registrations for the transfer machinery | Author, 2026-08-14 |
 | 15 | **Norway is rejected.** No ACL variable and no official recode in the Sikt delivery, only SSB's 167-code national list | `RL20`, vetted V12 |
 
@@ -191,6 +279,11 @@ before 2027**. There is no newer obtainable corpus. See 1B-bis.
 ## NEXT ACTIONS, IN ORDER
 
 **1. File the Eurostat entity-recognition enquiry with Concordia's Office of Research.**
+🔴 **AUTHOR-ONLY, and as of 2026-08-15 it is the ONE item in Step 1's definition of done that nobody
+here can execute.** It goes to the Office of Research in the author's own name. Everything else in
+Step 1 is either done or is the sixteen-gate re-run. **Step 1 cannot be signed off until this is sent
+and the date recorded** — and after decision 16 it matters more, not less: with three countries
+instead of four, Track A is the only route that widens the corpus, and it now widens it 3 → 17.
 It was second on the list until `RL19` came back. It is now **first**, because `RL19` established that
 national routes cannot widen the corpus: of 14 candidate countries, none is Tier 0 or 1, two need the
 same institutional accreditation Eurostat does, and two are secure-enclave only. **Track A is not the
@@ -198,7 +291,10 @@ slow path to more countries; it is the only one.** With four countries, leave-on
 three, which is limitation C4. Send the enquiry, record the date. *"A report says Concordia is not
 recognised"* is already known and is not the same as having asked.
 
-**2. ✅ Spain, the UK and Italy are done. France is the only acquisition left.** UKDS SN 8128 arrived
+**2. ✅ ACQUISITION IS COMPLETE. Spain, the UK and Italy are done and France is out (decision 16).**
+🔴 **There is no acquisition left. Do not chase Progedo and do not open a new source.** The paragraph
+below is kept for its findings about the Italian delivery, which still bear on Step 5's release
+decision. *(Superseded opening: "France is the only acquisition left.")* UKDS SN 8128 arrived
 2026-08-14 and is built. Italy came as ISTAT's own **mIcro.STAT public-use file** — 🔴 **not** the paper-1
 copy and **not** the mFR research file (F-IT-1); it carries statistical disclosure control including
 **deliberately injected missingness**, and ISTAT itself warns tabulations may differ from published
@@ -333,7 +429,17 @@ the plan, V15 to V18.
 * **Do not adopt `RL23`'s "108 codes in ACL 2008".** Our Spanish 2008-generation file uses **116**
   (F-ES-5), and the report is restating `RL02` rather than measuring.
 
-**5. Step 2 still cannot start.** Harmonisation consumes all four `episodes_<country>.parquet`. A
+**5. ✅ STEP 2 IS UNBLOCKED, 2026-08-15.** Harmonisation consumes **every** country's
+`episodes_<country>.parquet` and after decision 16 that is three, all built. ✅ **D-S2-1 is also closed
+— the day origin is decided as D-S2-5: 04:00, reached by treating each diary as a cyclic day**, which
+splices only Spain and splices it inside the sleep block. The age floor moves 11 → **10**, because 11
+was France's minimum and the rule is *the highest of the participating minima*.
+
+🔴 **One precondition remains and it is ours: the sixteen-gate Step 1 re-run.** M-1..M-5 changed the
+record contract, so Step 2 must consume parquets written to the current contract, not the previous one.
+**Step 2 does not start on stale parquets.**
+
+*(Superseded text follows.)* ~~**5. Step 2 still cannot start.** Harmonisation consumes all four `episodes_<country>.parquet`.~~ A
 four-column crosswalk built from one country and extended by assumption is precisely the defect Step 2
 exists to prevent. Step 0 is closed and is a record, not a work plan. **D-S2-1 to D-S2-4 changed what
 Step 2 will do; they did not unblock it.**
@@ -545,15 +651,24 @@ how all three defects were found — each lived between two documents that were 
 **What is deliberately NOT written: `prereg.md`.** Its second hold-out's stratification depends on a
 corpus that does not exist. Drafting it now and editing it later is the exact defect `G4.14` catches.
 
-**What is still needed to reach training:** the **France acquisition**, then Step 1 on France, then
-Step 2, then Step 3. ✅ **Step 1's machinery is finished and has now been through three countries**, and
-what remains of Step 1 is one more country plus the contract questions the other two exposed.
+🔴 **What is still needed to reach training, REWRITTEN 2026-08-15 after decision 16 — and every item
+on it is ours:**
 
-🔴 **That is no longer "blocked on the author and nothing else", and this paragraph used to say so.**
-France is still the author's, in Progedo's queue. But the UK and Italian rounds put **five manager
-decisions back on the table (M-1 to M-5 in the STATE block)**, four of which are threshold or contract
-questions that must be settled **before** France arrives — because France arrives by the same
-hand-delivered route that made Italy's `G1.6` fail, and it will land in the same hole.
+1. **The sixteen-gate Step 1 re-run on the three countries** (prompt written, runs on Speed).
+2. The two manager merges, and the Eurostat enquiry sent with a date.
+3. **Step 2** — crosswalks, the 04:00 cyclic rotation (D-S2-5), the age-10 filter, eleven gates.
+4. **Step 3** — serialisation to `corpus.jsonl`.
+5. **`prereg.md` frozen**, then the first Leg-5 submission.
+
+✅ **Step 1's machinery is finished and has been through all three countries.** *(Superseded: "the
+France acquisition, then Step 1 on France, then Step 2, then Step 3.")*
+
+🔴 **Updated 2026-08-15: the five manager decisions M-1 to M-5 are TAKEN**, so the specification is
+ready for France before France arrives — which was the point of settling them first, since France comes
+by the same hand-delivered route that made Italy's `G1.6` fail and will land in the same hole. **M-2
+is what France needs**: URL, date and md5 recorded in the browser at download time, `hashed_at` and
+`provenance_source` filled in. What remains outstanding is **execution, not decision** — the
+sixteen-gate re-run on three countries, then France, then Step 2.
 
 **12** (household-joint generation) remains deferred as scope rather than open as a question: it is
 known to be feasible, about 7,000 tokens for a four-person household week. `RL21` gave it a second
@@ -564,9 +679,10 @@ per-person generation cannot enforce.
 
 ## FIRST THING TO SAY IN THE NEXT SESSION
 
-Say in one sentence that **Spain, the UK and Italy are all built, and France is still with Progedo**,
-then ask the author what they want next. **Do not begin acquisition, and do not commission another
-research round without being asked.**
+Say in one sentence that **France is excluded (decision 16), the corpus is Spain + UK + Italy and all
+three are built, and the sixteen-gate Step 1 re-run is the only thing between here and Step 2**, then
+ask the author what they want next. **Do not begin acquisition, do not chase France, do not start a
+training job, and do not commission another research round without being asked.**
 
 ### ✅ Both employees finished, 2026-08-15. All deliverables exist and were checked on disk:
 
@@ -581,29 +697,68 @@ the parent of `GSSCanada-main\`.
 **Merge 3 of 3 is DONE — the reports were verified against the artefacts**, see the STATE block for
 exactly what was re-derived and what was not. **Merges 1 and 2 are still owed and neither is optional:**
 
-1. Append both `proglog_entries_<country>.md` into `4thJ_01_corpusAcquisition_val.md` and
-   `4thJ_01_corpusAcquisition.md` — **append-only**, and the employees were forbidden from doing it
-   themselves precisely so the two parallel runs could not overwrite each other.
-2. Merge `acquisition_manifest_uk.json` and `acquisition_manifest_italy.json` into
-   `acquisition_manifest.json`.
+1. ✅ **MERGE 1 IS DONE, 2026-08-15.** Both `proglog_entries_<country>.md` appended verbatim into
+   `4thJ_01_corpusAcquisition.md` and `4thJ_01_corpusAcquisition_val.md`, each under a manager's note
+   recording that (a) they appear **after** the M-1..M-5 and decision-16 entries although they describe
+   earlier work — the log is append-only and was not reordered — and (b) which of their statements are
+   already superseded. 🔴 **The note also records what was NOT independently verified:** the
+   perturbation batteries, Italy's `G1.2`/`G1.11` arithmetic, and every codebook citation except the
+   two the manager opened personally.
+2. 🔴 **MERGE 2 IS DEFERRED ON PURPOSE, not forgotten.** The sixteen-gate employee round is **editing
+   the two manifest fragments right now** — M-2 adds `hashed_at` and `provenance_source` to every
+   archive entry. Merging them into `acquisition_manifest.json` before that round returns would
+   produce a merged file that is stale the moment it is written. **Do merge 2 after the round reports,
+   from the updated fragments.**
 
-### Then M-1 to M-5 and the three heterogeneities are the real work
+### ✅ M-1 to M-5 are DONE, 2026-08-15. The employee round is written and ready to run on Speed.
 
-M-1 to M-5 are in the STATE block: the `-9` sentinel, `G1.6`'s provenance threshold, `G1.7a`'s
-zero-missing threshold, `G1.7d`'s `>= 1.0` clause, and the UK's two diary weights. On top of them sit
-the three heterogeneities — slot-vs-episode basis, secondary-activity arity and granularity, and the
-co-presence sets. **All eight are Step 1/2/3 specification decisions and all eight are the manager's.**
-Both employees were instructed to carry every recorded field and decide none of it, so the material is
-in `codebook_facts_uk.md` and `codebook_facts_italy.md`.
+**Prompt: `4thJ_employee_step1_gates16_rerun_2026-08-15.md`, in this folder.** Scope: `4thJ_read_uk.py`
+(M-1 only), all three `4thJ_gates_step1_<country>.py`, and one full sixteen-gate re-run on Spain, the
+UK and Italy. Hand it to a **fresh** employee session.
 
-🔴 **M-1 to M-4 are threshold or contract changes, so read `feedback_read_the_gates_own_doc.md` first:
-additive fixes only, and a basis change is written down as a basis change.** Three of the four are
-tempting to close by editing the gate, which is the one move that is forbidden.
+🔴 **This round is also what closes the outstanding half of work item 1.1**: TASK 0 `scp`s the three
+raw trees (145 + 320 + 145 MB) from `_local_runs/4J/raw/` to `/speed-scratch/o_iseri/4J/raw/`,
+**re-verifies every md5 after the transfer**, and runs **one `sbatch -p ps -t 7-00:00:00` job per
+country** — three jobs, never chained, so a country that crashes does not take the other two with it.
 
-🔴 **`V1.a` still fires and Step 1 still is not done**, whatever the UK and Italian batteries say.
-France has to land. Step 2 consumes four `episodes_<country>.parquet`, and **a crosswalk built from
-some countries and extended by assumption is precisely the defect Step 2 exists to prevent**, so it
-does not start on three.
+**This is the only Speed work available today**, and it is not a training job. See the "what is safe on
+three countries" block at the top of this file before anyone reaches for the allocation.
 
-🔴 **Do not re-derive a closed decision because the list looks short**, and do not chase France — it is
-Progedo's queue and the author's account.
+🟡 **STATUS 2026-08-16, 00:30 — the round is RUNNING on Speed. Do not resubmit it.** The employee did
+TASK 0 (three raw trees copied to `/speed-scratch/o_iseri/4J/raw/`, md5s re-verified after transfer)
+and submitted **three jobs, one per country, unchained**: **`1251980` = `4J_g16_es`, `1251981` =
+`4J_g16_it`, `1251982` = `4J_g16_uk`**. All three were `RUNNING` at 00:01:08 elapsed. Check them with
+one `sacct -j 1251980,1251981,1251982 --format=JobID,JobName,State,ExitCode,Elapsed` — **one call, not
+a loop.** The first poller was killed by exactly that mistake: a bash `while ... done` loop was sent to
+the login shell, which is **tcsh**, and it died on "Illegal variable name" / "done: Command not found".
+The jobs were never affected. 🔴 **Read the results in this order when they land:** the two audit
+perturbations (`loc_undeclared_sentinel`, `weight_blank_on_productive_row`) first, then `V1.a`, then the
+sixteen gates. **If either audit perturbation reports `DID NOT FIRE`, the decision it audits is
+REVERSED — M-4 or M-3 respectively — and the perturbation is not touched.**
+
+### Still the manager's, still open: the three heterogeneities
+
+Slot-vs-episode basis, secondary-activity arity and granularity, and the co-presence sets. **All three
+are Step 2/3 specification decisions.** Both employees were instructed to carry every recorded field
+and decide none of it, so the material is in `codebook_facts_uk.md` and `codebook_facts_italy.md`.
+🔴 **They are Step 2 questions — and after decision 16, Step 2 DOES start on three countries**, because
+three is the corpus. Decide them on paper first; they are inputs to Step 2's crosswalk, not
+afterthoughts to it. *(Superseded: "Step 2 does not start on three countries.")*
+
+🔴 **Before touching any gate again, read `feedback_read_the_gates_own_doc.md`: additive fixes only,
+and a basis change is written down as a basis change.** M-2, M-3 and M-4 were each recorded as basis
+changes on 2026-08-15 rather than folded in quietly; do the same for whatever comes next.
+
+🔴 **Step 1 is still not done — but the reason has changed, and this is the last paragraph that used to
+say otherwise.** `V1.a` no longer fires: three of three, after decision 16. What is outstanding is the
+**sixteen-gate re-run**, the two merges and the Eurostat enquiry. **Nothing external blocks it.**
+
+🔴 **The crosswalk warning still stands and is not repealed by decision 16.** *"A crosswalk built from
+some countries and extended by assumption is precisely the defect Step 2 exists to prevent"* — that
+means all **three** must be transcribed from their own codebooks, which they are. It never meant "four
+or nothing".
+
+🔴 **Do not re-derive a closed decision because the list looks short**, and **do not chase France.** It
+is excluded. If it turns up unasked, read the re-admission window in the decision-16 block before doing
+anything with it — before the first fold is **scored**, it can come back; after, it can only ever be an
+extra held-out test.

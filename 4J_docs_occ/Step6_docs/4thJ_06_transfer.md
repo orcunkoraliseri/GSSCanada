@@ -100,8 +100,21 @@ available **temporal** formulation and there is no longer a temporal claim.
 | The privacy audit runs here | `RL10` |
 
 ✅ **Decision 11 is CLOSED, 2026-08-14, and it closed by removing the choice rather than by making
-it.** The author was asked which country to hold out and answered: **all four, in turn.** Four
-leave-one-country-out folds, four adapters, four reported results.
+it.** The author was asked which country to hold out and answered: **all of them, in turn.** 🔴 **Three
+leave-one-country-out folds, three adapters, three reported results, from 2026-08-15** — author
+decision 16 excluded France, so the rotation is over Spain, the UK and Italy. *(Was four and four.)*
+**Rotation is what closed the decision and rotation is unchanged; only its length moved.**
+
+🔴 **The pre-named fold did NOT move, and that is the part that matters.** It was fixed in advance by
+alphabetical ISO code — **ES, FR, GB, IT** — so Spain was first with France in the set and **is still
+first without it**. Held-out Spain survives the corpus change by the rule written down before anything
+was trained. Had the rule selected France, the honest move would have been to re-run the rule and say
+so loudly, never to slide to the next-best fold.
+
+🔴 **And the window closes here, not at Step 4.** If France arrives before **any fold has been
+scored**, it can be re-admitted in full and the rotation returns to four. **Once the first fold is
+scored, the design is frozen** and France can only ever be an extra held-out country reported
+separately as an out-of-design test — never a fourth fold, never averaged into the rotation.
 
 **Why that is the stronger closure.** The hazard was never which country got picked. It was that a
 picked country can be picked *late*, after results are visible, and nothing repairs that afterwards.
@@ -110,7 +123,7 @@ distribution over four folds, which is what separates "transfer works" from "tra
 
 🔴 **Two conditions are pre-registered in work item 6.1 and are not optional.**
 
-1. **All four folds are reported, including the worst.** Reporting the best fold, or dropping one as
+1. **All **three** folds are reported, including the worst *(was four; author decision 16, 2026-08-15, excluded France — the reporting clause itself is unchanged and still forbids dropping or explaining away the worst)*.** Reporting the best fold, or dropping one as
    anomalous, is choosing the held-out country late by a different door. **A fold may be *explained*;
    it may not be *removed*.**
 2. **No fold's result may change the design.** Once any fold has been evaluated, architecture, prompt
@@ -150,7 +163,7 @@ Pre-registered FAIL criteria, any one of which fails the claim:
 
 🔴 **Two clauses that decision 11 puts here, and the pre-registration is incomplete without them.**
 
-* **Reporting clause.** All four folds are reported, including the worst. A fold may be explained; it
+* **Reporting clause.** All **three** folds are reported, including the worst *(was four; author decision 16, 2026-08-15, excluded France — the reporting clause itself is unchanged and still forbids dropping or explaining away the worst)*. A fold may be explained; it
   may not be removed, averaged away, or relegated to an appendix. **Selecting a fold after the fact is
   choosing the held-out country late by a different door**, which is the exact defect rotation was
   adopted to prevent.

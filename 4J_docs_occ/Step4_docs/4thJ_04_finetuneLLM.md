@@ -48,11 +48,16 @@ until this section was written.
 
 | Run | Legs | Count | Why |
 |---|---|---|---|
-| **Primary** — rsLoRA r=32, all linear | Leg-4 **and** Leg-5 | **4 each**, one per held-out country | The reported models. Step 6 scores four folds and Step 7 generates per fold |
+| **Primary** — rsLoRA r=32, all linear | Leg-4 **and** Leg-5 | 🔴 **3 each**, one per held-out country — **was 4 until author decision 16 excluded France, 2026-08-15** | The reported models. Step 6 scores **three** folds and Step 7 generates per fold |
 | **Ceiling** — full fine-tune, 8-bit AdamW | Leg-5 | **1**, on a pre-named fold | Answers "does LoRA underfit a far-from-pretraining target". One measurement settles that; four would settle it four times |
 | **Comparison arm** — `Qwen/Qwen2.5-7B`, same recipe | Leg-5 | **1**, the **same** pre-named fold | States what the alternative backbone cost. The training-side backbone argument is already closed by measurement |
 
-**Six Leg-5 jobs and four Leg-4 jobs.** Leg-4 rotation is nearly free at 1.48 B and is run in full
+🔴 **FIVE Leg-5 jobs and THREE Leg-4 jobs** — three primary folds per leg, one ceiling, one Qwen
+comparison arm. *(Was six and four; author decision 16, 2026-08-15, excluded France, so the rotation
+is three-fold. The ceiling and Qwen arms are still single-fold and still on the pre-named fold, which
+is still held-out **Spain** — the alphabetical-ISO rule that chose it returns the same answer with
+France removed, so nothing about the pre-registration moved.)* Leg-4 rotation is nearly free at 1.48 B
+and is run in full
 because the detectors in 4.4 are what the pilot exists to exercise, per fold.
 
 ### 🔴 The pre-named fold is named before the first fold trains, never after
@@ -199,11 +204,12 @@ decision and no acquisition, which is why it went first.
 
 ### 4.2 — Leg-4 pilot runs, one per fold
 
-Full pipeline, small model, short schedule, **four folds**. **The success criterion is not a metric —
-it is that every detector in 4.4 fires when it should and stays silent when it should not.**
+Full pipeline, small model, short schedule, 🔴 **three folds** *(was four; decision 16)*. **The success
+criterion is not a metric — it is that every detector in 4.4 fires when it should and stays silent
+when it should not.**
 
-🔴 **Run fold 1 of Leg-4 to completion and read it before submitting the other three.** The pilot
-exists to find wiring defects, and finding one after four jobs have run costs four jobs.
+🔴 **Run fold 1 of Leg-4 to completion and read it before submitting the other two.** The pilot
+exists to find wiring defects, and finding one after three jobs have run costs three jobs.
 
 ### 4.2-bis — 🔴 The pre-registration is frozen before the first Leg-5 job, not before Step 6
 
@@ -295,10 +301,12 @@ easy to miss.
 
 1. `prereg.md` frozen and its md5 recorded **before the first Leg-5 job is submitted**, naming the
    pre-named fold.
-2. All four Leg-4 folds complete and every detector in 4.4 has been **seen firing** on a deliberately
-   broken input.
-3. Four Leg-5 primary folds complete inside the seven-day walltime, each asserted to have trained on
-   three countries and not four.
+2. All **three** Leg-4 folds complete and every detector in 4.4 has been **seen firing** on a
+   deliberately broken input.
+3. **Three** Leg-5 primary folds complete inside the seven-day walltime, each asserted to have trained
+   on **two** countries and not three. 🔴 *(Was four folds trained on three countries; author decision
+   16, 2026-08-15, excluded France. `G4.13` counts this from the shard the trainer actually loaded, and
+   its threshold — exactly 0 records of the held-out country — does not move.)*
 4. Ceiling and comparison-arm runs complete on the pre-named fold, and are reported as single-fold.
 5. Conditioning diagnostics run and reported, **per fold**, including the evening-slot check.
 6. All Step 4 gates PASS and each has been seen failing.

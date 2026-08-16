@@ -379,6 +379,15 @@ def main():
     # countries later.
     ep["act2_raw"] = ep["act2_raw"].astype("string")
 
+    # loc_raw (M-1, 2026-08-15): the contract's loc_raw is now a three-state
+    # nullable pandas "string" column, on the same terms as act2_raw. Spain
+    # fields LUGAR on every DIARIO2 slot (no declared missingness sentinel --
+    # see codebook_facts_spain.md sentinel table), so no Spanish episode is
+    # ever pd.NA or blank; every episode is state 3, "recorded with a value".
+    # This cast makes the emitted dtype match the current contract exactly,
+    # the same reason act2_raw was already cast -- no reader LOGIC changes.
+    ep["loc_raw"] = ep["loc_raw"].astype("string")
+
     # a run must be contiguous in INTERVALO; assert it rather than assume it
     ep["last_slot"] = ep["first_slot"] + ep["n_slots"] - 1
     check = d2.groupby("episode_id", sort=True)["INTERVALO"].max().values
@@ -413,6 +422,19 @@ def main():
                   f"act2_raw is a first-of-run summary of the slot-level field, the same "
                   f"way act_raw itself summarises its run; the two counts are not the "
                   f"same quantity and are not expected to agree.")
+
+    # loc_raw three-state count (M-1). Spain has no declared missingness
+    # sentinel for LUGAR (codebook_facts_spain.md sentinel table), so this is
+    # expected to be all state 3 -- printed anyway so G1.12's independent
+    # recount has an emitted figure to compare against, on the same terms as
+    # every other country.
+    loc_not_recorded = int(ep["loc_raw"].isna().sum())
+    loc_blank = int((ep["loc_raw"] == "").sum())
+    loc_valued = int(len(ep) - loc_not_recorded - loc_blank)
+    report.append(f"  loc_raw (LUGAR, M-1): not recorded {loc_not_recorded}, "
+                  f"recorded and blank {loc_blank} (no declared sentinel for "
+                  f"Spain), recorded with a value {loc_valued} (of {len(ep)} "
+                  f"episodes)")
 
     # ---- join person-level facts ------------------------------------------
     mh = frames["MHOGAR"].copy()
@@ -478,6 +500,11 @@ def main():
             "not_recorded": n_not_recorded,
             "recorded_and_blank": n_blank,
             "recorded_with_value": n_valued,
+        },
+        "loc_raw_states": {
+            "not_recorded": loc_not_recorded,
+            "recorded_and_blank": loc_blank,
+            "recorded_with_value": loc_valued,
         },
         "secondary_activity_nonblank_slots_reference_only": sec_nonblank_slots,
         "copresence_flags": COPRESENCE,

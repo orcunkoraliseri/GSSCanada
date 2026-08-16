@@ -7,8 +7,23 @@
 
 ## STATUS
 
-**RUN ON SPAIN, 2026-08-14. Fourteen gates: thirteen scored, thirteen PASS, `G1.7b` permanently
-`NOT CHECKED`. Every scored gate has been seen failing and the coverage clause is SATISFIED.**
+🔴 **THE GATE COUNT IS SIXTEEN as of 2026-08-15** — `G1.1`-`G1.5`, **`G1.6a`, `G1.6b`**, `G1.7a`-`G1.7d`,
+`G1.8`-`G1.11`, **`G1.12`**. The M-1..M-5 round split `G1.6` in two and added `G1.12`. **The live gate
+table below is the authority; earlier progress-log entries are append-only and keep the number that was
+right when they were written.** Nothing has been re-run against the sixteen-gate specification — Spain,
+the UK and Italy were all scored against fourteen, and **all three batteries must be re-run** before any
+of them may be quoted against this document.
+
+**RUN ON SPAIN, 2026-08-14, and on the UK and Italy, 2026-08-15 — all three against the FOURTEEN-gate
+specification.** Spain: thirteen scored, thirteen PASS, `G1.7b` `NOT CHECKED`, coverage SATISFIED.
+Italy: eleven scored, ten PASS, **`G1.6` FAIL**, `G1.7b`/`G1.7c`/`G1.8` `NOT CHECKED`. UK: eleven
+scored, nine PASS, **`G1.4` and `G1.7a` FAIL on real unperturbed data**, `G1.7b`/`G1.7d`/`G1.8`
+`NOT CHECKED`. 🔴 **Those three baseline FAILs cost five perturbation arms, which is what the M-1..M-5
+decisions of 2026-08-15 exist to recover** — see the progress log.
+
+**Superseded status line, kept because the document is append-only in spirit:** *Run on Spain,
+2026-08-14. Fourteen gates: thirteen scored, thirteen PASS, `G1.7b` permanently `NOT CHECKED`. Every
+scored gate has been seen failing and the coverage clause is SATISFIED.*
 Output: `outputs_step1/gate_report_step1_spain.txt`. 🔴 **The step is still not done: `V1.a` fires on
 one country of four**, and it must fire until the UK, France and Italy files exist. A green battery on
 one country is not a partial pass of Step 1; it is a full pass of the part of Step 1 that has data.
@@ -42,17 +57,19 @@ Nothing about behaviour, nothing about the model. This step validates *custody a
 | **G1.1** Row-count reconciliation | A truncated download, a partial extract, a silently skipped file | Episode-row count per country equals the count stated in that country's own codebook or published methodology report, **exactly**. No tolerance | **project-chosen**, and exactness is the point |
 | **G1.2** Duration closure | Episodes that do not tile the day; a reconstruction bug | For every diary: `sum(duration_min) == 1440`. **100 % of diaries**, no exceptions | **derived from the instrument** — a time-use diary covers a day by construction |
 | **G1.3** Quantisation | A wave whose slot length is not what the inventory claims | 100 % of durations are multiples of **10**. 🔴 **If any country fails this, that country's wave is not admissible to the Step 7 tally automaton and the finding is escalated, not resampled away** | **derived from the Step 7 grammar** |
-| **G1.4** Code-list membership | Codes outside the declared coding list; an off-by-one column read | 100 % of `act_raw`, **`act2_raw`** and `loc_raw` inside the edition declared in `codebook_facts_<country>.md`. 🔴 **A blank `act2_raw` is not a code and is not tested against the list**; the runner prints, separately, how many episodes are *not recorded*, *recorded and blank*, and *recorded with a value*, per country | **project-chosen** |
+| **G1.4** Code-list membership | Codes outside the declared coding list; an off-by-one column read | 100 % of `act_raw`, **`act2_raw`** and `loc_raw` is either **(a)** inside the edition declared in `codebook_facts_<country>.md`, or **(b)** a value that country's own delivery declares a **missingness sentinel**, quoted with its citation in `codebook_facts_<country>.md`. **Anything else FAILs.** 🔴 **A blank is not a code and is not tested against the list**; the runner prints, separately, how many episodes are *not recorded*, *recorded and blank*, and *recorded with a value*, per country and per field. 🔴 **Amended 2026-08-15, M-1, and the amendment is deliberately narrow.** Case (b) rests on the *delivery's own value label* — the UK data dictionary calls `-9` "No answer/refused", so the file itself says it is not a place — never on our convenience, and **there is no rule that negative values are sentinels.** An out-of-list value with no such citation still FAILs: **`4276` (F-UK-9) fails this gate after M-1 exactly as it did before**, which is the test of whether the amendment disarmed anything | **project-chosen** |
 | **G1.5** Parse completeness | 🔴 The reader silently swallowing what it does not understand | `parse_report` names **every** dropped or unparsed row, and the count of unexplained drops is **0**. A drop with a written reason is allowed; a drop without one is a FAIL | **project-chosen**, from 3J's most expensive reader lesson |
-| **G1.6** Provenance | A file that cannot be traced to a source, or a hash computed after the fact | Every archive has an md5, a URL and a download date in the manifest, and the md5 recomputed from disk **matches** | **project-chosen** |
-| **G1.7a** Weight presence and sign | A weight column absent, null, or read as text | Weight variables present on every declared file, **finite and strictly positive on 100 % of rows**, and **more than one distinct value** — a constant weight column is a column that was not read | **derived from the design** — an unequal-probability sample cannot have a constant weight |
+| **G1.6a** Archive integrity | 🔴 A corrupted, truncated or substituted archive | Every archive has an md5 **recorded at receipt** and the md5 recomputed from disk **matches**. Scored for every country, **independently of whether any URL exists**. The runner prints each archive's `hashed_at` (`download` or `receipt_from_author`) before the verdict | **project-chosen**. 🔴 **Split out of `G1.6` on 2026-08-15, M-1..M-5 round, as a BASIS CHANGE recorded as one.** Integrity and traceability are two claims and were scored as one, so Italy's missing URL took the byte-corruption arm down with it and **Italy's md5 arm was never tested at all** |
+| **G1.6b** Provenance | A file that cannot be traced to a source | Every archive has a source URL and a date in the manifest. 🔴 **Threshold UNCHANGED by the split.** A hand-delivered archive with no URL **FAILs** — it is not `NOT CHECKED`, because the record could have been kept and was not. It clears when the author supplies the URL and date, recorded as `provenance_source: author_attested` with the attestation date; if they cannot, it stays FAIL and the limitation is written into the Data Availability statement | **project-chosen**. 🔴 An attested URL is as good as one we typed; **an attested hash is not**, which is why `hashed_at` is printed by `G1.6a` and never averaged into a verdict |
+| **G1.7a** Weight presence and sign | A weight column absent, null, or read as text | Weight variables present on every declared file, **finite and strictly positive**, and **more than one distinct value** — a constant weight column is a column that was not read — **on every row for which the delivery computed a weight**; **and** every row *without* a weight carries a **delivery-declared non-productive status code**. 🔴 **A missing weight on a row the delivery flags as productive is a FAIL.** The count of corpus rows with no weight is printed per country on every run | **derived from the design** — an unequal-probability sample cannot have a constant weight. 🔴 **Re-scoped 2026-08-15, M-3, as a BASIS CHANGE recorded as one.** The pre-registered "100 % of rows" was written against Spain, where every corpus row has a weight, and silently assumed a survey always weights every diary it collects; NatCen documents that it does not (F-UK-8, 2 of 16,533 person-days, `DMFlag=-6`/`HhOut=598`). 🔴 **Spain's `G1.7d` population precedent does NOT transfer:** Spain excluded rows carrying no diary, and these rows carry one, summing to 1,440 minutes. **The bar is not widened — it is made conditional, and the condition can fail where the old one could not** |
 | **G1.7b** ~~Weighted total vs published population~~ | — | 🔴 **RETIRED 2026-08-14. Permanently `NOT CHECKED`, never scored.** INE's estimator (METH p. 34, step 3) is ratio-adjusted to the population projection, so the weights are calibrated to the exact figure this compared them against. The estimate and the published total are still **printed** as a diagnostic, labelled as evidence of nothing | **circular** — the reference derives from the source it audits |
 | **G1.7c** Cross-file weight identity | 🔴 **The defect G1.7 was named for: a weight column read from the wrong position** | The same respondent's weight is **bit-identical across every delivered file that carries it** (Spain: `FACTORF` in `CINDIV`, `DIARIO1`, `DIARIO2`, `MHOGAR`), for **100 %** of respondents. Recomputed by the gate runner **from the raw fixed-width files using the layout offsets**, never from the reader's own output. A country whose delivery carries weights in only one file is **`NOT CHECKED`, printed, never a pass** | **derived from the delivery** — one survey weight per person, restated in several files, is an identity the file must satisfy whatever its values are |
-| **G1.7d** Weight magnitude vs the declared layout | A decimal point read in the wrong place; a field width misdeclared | Every weight strictly **below the maximum the layout's integer width allows** (Spain: 6 integer digits, so `< 1e6`) and **at or above 1.0** — a weight under 1 represents less than one person, which no design produces. The runner prints observed **min, max and distinct count** before any verdict | **derived** — the reference is the layout document, which is a different artefact from the microdata being audited |
+| **G1.7d** Weight magnitude vs the declared reference | A decimal point read in the wrong place; a field width misdeclared | 🔴 **Conditioned on the weighting convention `codebook_facts_<country>.md` states, with a citation, 2026-08-15, M-4.** **expansion** (the weight counts population units): `[1.0, 10^declared_integer_width)` — Spain, `[1.0, 1e6)`. **normalised** (mean 1 by construction): `> 0` **and mean within ±1 % of 1.0**; the `>= 1.0` clause **does not apply**. **not declared**: `NOT CHECKED`, printed, never a pass. The upper-bound half needs a declared layout width and stays `NOT CHECKED` where none is shipped (the UK). The runner prints observed **min, max, mean and distinct count** before any verdict | **derived** — the reference is a document (the layout, or the methodology's normalisation statement), a different artefact from the microdata being audited. 🔴 **Not a loosening: `>= 1.0` was derived from "a weight under 1 represents less than one person", which is true only of an expansion weight and simply false of a normalised one** (UK: 60.3 % below 1.0, F-UK-13). 🔴 **Recorded honestly: the UK's means were measured before the ±1 % band was written**, so the band is not blind — its headroom is ~30× the observed deviation, and the only defect a mean-vs-1 test can catch is an order-of-magnitude misread, which lands 900 % away |
 | **G1.8** Demographic marginals | The wrong extract, or **a subsample presented as the full file** — 🔴 **and nothing else. Narrowed 2026-08-14 after the METH text was read.** | Weighted age × sex distribution within **±1.0 pp** per cell of the country's own published table for that wave. 🔴 **This gate cannot detect a wrong weight, and the tolerance is not an accuracy claim.** INE's step 4 (METH p. 35-36) uses CALMAR to force the estimated population *by age group and sex in each autonomous community* to equal the demographic projection, so on the **complete** file the agreement is imposed, not earned — the observed 0.02-0.30 pp is calibration residual between two vintages of the same projection. What survives is real and is the whole reason to keep it: **the weights belong to the full respondent set, so any subsample of rows stops reproducing the marginals.** That is a property of the ROW SET, which the calibration cannot rescue | **project-chosen** tolerance |
 | **G1.9** Diary-days-per-respondent | Assuming multi-day structure a country does not have | Recorded per country and asserted against `codebook_facts`. **Spain must read 1.** A country whose measured value disagrees with its codebook is a FAIL, not a note | **derived from the codebook** |
 | **G1.10** Constant-field invariance | `mode` or `scheme` varying inside a wave, which would mean the extract mixes instruments | Exactly one distinct value of each per country | **derived from decision 6** |
 | **G1.11** Secondary-activity three-state integrity | 🔴 A reader collapsing *recorded and blank* into *not recorded*, or filling blanks with a code | 🔴 **Corrected 2026-08-14, second entry below — this is an EPISODE-level identity, not a slot-level one.** The count of **episodes** carrying a **non-blank** secondary activity in the emitted table equals the count obtained by **rebuilding the episodes from the raw fixed-width file inside the gate runner, with its own transcribed layout offsets and its own implementation of the split key and the first-of-run rule**, importing nothing from the reader. **Exact, no tolerance.** 🔴 The Spanish figure of **340,269 of 2,778,480 slots is the reader's own count, and it is a slot-level quantity that is not the reference for anything** — episode-level and slot-level accounting are genuinely different numbers here, because 11,216 episodes mix a blank and a non-blank `ASECU` across their own slots. The reference is the independent episode-level recount, and the two must agree. A country that does not field the variable is `NOT CHECKED`, printed, never a pass | **derived from the raw delivery** — the reference is recounted through a path the reader cannot reach, so a reader that miscollapses cannot also move the reference |
+| **G1.12** `loc_raw` three-state integrity and sentinel inventory | 🔴 A reader collapsing a **declared missingness sentinel** into a location code, or a code into a blank — invisible to everything else once `G1.4` accepts the sentinel | 🔴 **Added 2026-08-15 with M-1, and it is the compensating check without which M-1 would be a pure loosening.** Exactly `G1.11`'s construction, applied to `loc_raw`: the counts of *not recorded*, *recorded and blank* and *recorded with a value* in the emitted table equal the counts obtained by **recounting from the raw file inside the gate runner, with its own column resolution and its own sentinel mapping**, importing nothing from the reader. **Exact, no tolerance.** The runner additionally **prints the full inventory** — every distinct out-of-list value per field, with its count — so a sentinel that appears and was never declared is visible on the page even before `G1.4` fails on it | **derived from the raw delivery**, same property as `G1.11`. 🔴 **Stated plainly rather than dressed up:** the *counts* in `codebook_facts` came from our own measurement, so agreeing with them proves little; **what is non-circular is the independent raw recount, and the declared-sentinel citation, which is the delivery's own value label** |
 
 ---
 
@@ -72,7 +89,12 @@ perturbation that moves two gates cannot attribute what it broke.
 | 🔴 **Why not `999`:** `999` is a **valid INE code** (row 117 of the transcribed activity list, *"Otro empleo del tiempo no especificado"*), so the original perturbation set a legal code and tested nothing. Found by the runner 2026-08-14. **Every country's out-of-list sentinel is checked against that country's own transcribed list before it is used** — a sentinel that turns out to be a real code is a perturbation that silently cannot fire | — | — |
 | 🔴 **Rewrite every blank `act2_raw` as a code, or every code as blank** | **G1.11** | all others — *no row moves and every code stays inside the list, so the defect is invisible to the rest of the battery* |
 | Make the reader skip a malformed row without logging it | G1.5 | all others |
-| Corrupt one byte of an archive after hashing | G1.6 | all others |
+| Corrupt one byte of an archive after hashing | **G1.6a** (retargeted 2026-08-15 by the M-2 split) | all others, **`G1.6b` included** — the manifest is untouched. 🔴 **This is the arm that was dark on Italy**, and the split is what lets it fire on a hand-delivered file |
+| 🔴 **Remove one archive's URL from the manifest** | **G1.6b** | **`G1.6a`** — the bytes and the hash are untouched. *Proves the split did not make provenance unfalsifiable, which is the one thing a split of a failing gate is suspected of* |
+| 🔴 **Rewrite every declared `loc_raw` sentinel as a valid location code** | **G1.12** | all others — *no row moves and every value is now in the list, so `G1.4`, `G1.1`, `G1.2` and `G1.5` all stay green. This is the defect M-1 created the room for* |
+| 🔴 **Set one `loc_raw` to an out-of-list value that is NOT a declared sentinel** (`-8`) | **G1.4** | all others. 🔴 **This is M-1's own audit**: if it does not fire, the sentinel exclusion disarmed the membership test and M-1 must be reversed |
+| 🔴 **Blank one weight on a row the delivery flags as PRODUCTIVE** | **G1.7a** | all others — *the row count, the codes and the archives are untouched. This is the clause that replaces "100 % of rows", and it must be seen firing or M-3 removed power instead of redirecting it* |
+| 🔴 **Multiply the WHOLE normalised weight column by 10** (normalised-convention countries only) | **G1.7d** (mean-vs-1 clause) | `G1.7a` (still positive, still non-constant), `G1.7c` (applied consistently across files). 🔴 **This is not the struck `weight_times_10` reinstated** — that one multiplied *a single* weight and broke nothing. This is the whole column under a convention where the mean is the reference, and it has real power. Recorded explicitly so it is not read as a helpfully resurrected perturbation |
 | ~~Multiply one weight column by 10~~ **RETIRED** — it broke nothing. It cannot change a sign, and the only gate it moved was `G1.7b`, which cannot fail | — | — |
 | **Set one respondent's weight to `-1`** | **G1.7a** | G1.7c, G1.7d, G1.8 |
 | **Overwrite the whole weight column with a single constant** | **G1.7a** (distinct-count clause) | G1.6 — the archives are untouched |
@@ -107,8 +129,14 @@ disappeared from the report instead would take its hole with it.
 
 Checks on the checks. Each **fails** rather than passing quietly.
 
-* **V1.a** — the gate runner FAILs if it scanned fewer than **4** countries. A battery that runs over
-  an empty or partial set must report, not go green.
+* **V1.a** — the gate runner FAILs if it scanned fewer than **3** countries. A battery that runs over
+  an empty or partial set must report, not go green. 🔴 **Threshold moved from 4 to 3 on 2026-08-15,
+  and this is the only threshold in this document that moved for a reason outside it.** `V1.a` is not
+  an independent bar; it is **decision 6 written in executable form**, and decision 6 was amended by
+  the author (decision 16, France excluded) on a dated line. It is not a `--single-country` flag and it
+  is not a tolerance. 🔴 **Do not read this as permission to move a vacuity guard that fires
+  inconveniently** — every other guard in this project keeps its threshold, and `V1.a` fired correctly
+  on every run it ever made.
 * **V1.b** — the runner prints the row count, file list and md5 of everything it read, **before** any
   verdict. A summary line that did not read the measurement may not print a conclusion.
 * **V1.c** — every gate's exit status is read from the process that computed it, never from a pipe
@@ -530,3 +558,254 @@ question later: a citation in our own document is a claim until someone opens th
 fourteen gates rest on this one methodology section, the retirement of one of them was already
 correct, and the reading also revealed that a second gate's provenance column was overstated. No
 threshold was moved and no gate was removed.
+
+### 2026-08-15 (manager) — M-1 to M-5 decided. `G1.6` split, `G1.12` added, **sixteen gates**
+
+The UK and Italian rounds returned with three gates FAILing on real, unperturbed data — Italy `G1.6`,
+UK `G1.4` and `G1.7a` — and every one of them was reported honestly rather than tuned away, which is
+the employees doing exactly the right thing. **This entry is the manager's half.** Decisions in full
+in `4thJ_01_corpusAcquisition.md`, section "CONTRACT CHANGES M-1 to M-5".
+
+🔴 **The reason none of these could be left standing is not the red ink. It is that a gate FAILing at
+baseline cannot be seen falling, so every perturbation aimed at it reads `DID NOT FIRE`.** Measured
+across the two reports, **five arms were dark**:
+
+| Country | Gate FAILing at baseline | Perturbations it silenced |
+|---|---|---|
+| Italy | `G1.6` | `corrupt_archive_byte` — **Italy's md5 arm was never tested at all** |
+| UK | `G1.4` | `act_to_outside_list`, `act2_to_outside_list`, `act2_extra_2_to_outside_list` |
+| UK | `G1.7a` | `weight_negative_one`, `weight_constant` — **the whole weight arm dark on one of three countries** |
+
+That is the cost of a standing FAIL, and it is why "leave it red and write a limitation" was not
+available here. 🔴 **It is also the most seductive argument in this document, because "clearing the
+FAIL restores detection power" is what gate-shopping sounds like from the inside.** Each decision was
+therefore taken on whether the *threshold was wrong*, and the restored arm recorded as a consequence,
+never as the reason. Where the threshold was right, it did not move: **`G1.6b` keeps failing on Italy**.
+
+**What changed, and under which heading.**
+
+| | Change | Class |
+|---|---|---|
+| **M-1** | `loc_raw` gains `act2_raw`'s three states; `G1.4` accepts a **declared, cited** missingness sentinel as not-a-code; **`G1.12` added** as the compensating recount | **contract change**, plus an additive gate |
+| **M-2** | `G1.6` → `G1.6a` integrity + `G1.6b` provenance. `G1.6b`'s threshold **unchanged** | **basis change**, recorded |
+| **M-3** | `G1.7a` re-scoped to rows the delivery weighted, **plus** a new clause failing a missing weight on a productive row | **basis change**, recorded |
+| **M-4** | `G1.7d` conditioned on the declared weighting convention | **basis change**, recorded |
+| **M-5** | `weight_dia` = `dia_wt_a` for the UK | contract, pre-registration-relevant |
+
+**Six perturbations added**, and two of them exist only to audit the decisions above: `loc_undeclared_sentinel`
+must fell `G1.4` or M-1 disarmed the membership test, and `weight_blank_on_productive_row` must fell
+`G1.7a` or M-3 removed power instead of redirecting it. 🔴 **If either does not fire, the decision it
+audits is reversed, not the perturbation adjusted.**
+
+**What this entry does NOT claim.** Nothing has been re-run. Spain, the UK and Italy were all scored
+against the fourteen-gate specification and **all three batteries must be re-run against sixteen** — the
+UK and Italian readers also need M-1's `loc_raw` change first, which is an employee round. Until then no
+country's report may be quoted against this document. `V1.a` still fires and Step 1 is still not done.
+
+---
+
+## 🔴 MERGE 1 of 2, done by the manager 2026-08-15 — the two parallel employees' entries, appended verbatim
+
+The UK and Italian rounds ran **concurrently** and were forbidden from writing to this file so neither
+could overwrite the other. The two sections below are their fragments
+(`outputs_step1/proglog_entries_uk.md`, `..._italy.md`), appended unedited.
+
+🔴 **They appear after the manager's M-1..M-5 entry although they describe work that preceded it.** The
+log is append-only and may not be reordered, so the ordering is stated rather than repaired. **Read
+them as the record of the FOURTEEN-gate rounds they were written about.** Everything in them about
+`V1.a` firing "on one country of four", about `G1.4`/`G1.6`/`G1.7a` FAILing, and about the five
+perturbations that `DID NOT FIRE`, was true when written — and M-1 to M-5 plus author decision 16 are
+this document's response to exactly those findings.
+
+---
+
+### ⬇ appended verbatim from `outputs_step1/proglog_entries_uk.md`
+
+### 2026-08-14/15 — first run on the UK. Eleven gates scored, nine PASS, two FAIL on real data, three NOT CHECKED. Coverage clause SATISFIED for the nine PASSing gates.
+
+Runner: `../tools/4thJ_gates_step1_uk.py`, importing nothing from `4thJ_read_uk.py`; both scripts'
+column declarations are printed side by side at the top of every run for a human to compare by eye.
+Full output in `outputs_step1/gate_report_step1_uk.txt`. One country, so `V1.a` fires, as it must.
+
+**Baseline: 11 scored (9 PASS, 2 FAIL), 3 NOT CHECKED.**
+
+| Gate | Result | Detail |
+|---|---|---|
+| G1.1 | PASS | 587,632 episode rows against UKDA's own "Number of cases" (587,632) |
+| G1.2 | PASS | 0 of 16,533 (person, diary_day) diaries fail to sum to 1,440 min |
+| G1.3 | PASS | 0 of 587,632 durations are not multiples of 10 |
+| G1.4 | 🔴 **FAIL** | genuine, on real data: one undocumented activity code (`4276`, F-UK-9) in `act2_raw`, and the `-9` location sentinel (F-UK-15) surfacing in `loc_raw` since it is outside the transcribed location list |
+| G1.5 | PASS | parse report states zero unexplained drops; 587,632 represented against 587,632 delivered |
+| G1.6 | PASS | outer + inner archive + 17 delivered files, every md5 recomputed from disk matches |
+| G1.7a | 🔴 **FAIL** | genuine, on real data: 2 of 16,533 diaries and 23 of 8,274 people have the delivery's own blank-weight sentinel (F-UK-8), so presence is not 100 % |
+| G1.7b | NOT CHECKED | NATCEN p. 31 confirms both diary weights are calibrated to age/sex margins — same circularity as Spain's retired G1.7b, established independently for the UK, not inherited (F-UK-11); no population table is shipped either way |
+| G1.7c | PASS | `dia_wt_a`/`dia_wt_b` bit-identical (raw strings) between `uktus15_diary_ep_long.tab` and `uktus15_dv_time_vars.tab`, both read independently by the gate runner, 0 mismatches across 16,533 person-days — **live and checkable for the UK**, unlike the "single-file" case the spec anticipated |
+| G1.7d | NOT CHECKED | no fixed-width layout exists anywhere in the UK delivery for any weight (tab-delimited free-text decimals) — no reference to check the upper bound against. Diagnostic printed: UK weights are **normalised, mean ≈ 1.000**, 60.3 % below 1.0 — the pre-registered "≥ 1.0" clause would misfire on a normalised weighting convention, a specification question flagged for the manager (F-UK-13), not a threshold moved here |
+| G1.8 | NOT CHECKED | no published UK age × sex table is shipped in the delivery (two independent, both-sufficient reasons recorded: no table at all, and calibration circularity if one existed) |
+| G1.9 | PASS | measured max 2 diary days per respondent (8,259 of 8,274 complete both), codebook states 2 |
+| G1.10 | PASS | 1 distinct `mode`, 1 distinct `scheme` |
+| G1.11 | PASS | independent recount from raw `uktus15_diary_ep_long.tab` (own column resolution, own `-9`→blank mapping) matches the emitted table exactly for all three secondary-activity columns: 163,105 / 15,968 / 1,353 |
+
+#### Coverage clause: **SATISFIED**, scoped correctly
+
+Every gate that PASSes on the real data was made to fall by at least one perturbation:
+
+| Gate | Made to fall by |
+|---|---|
+| G1.1 | drop_last_5pct_rows, delete_one_episode |
+| G1.2 | drop_last_5pct_rows, delete_one_episode, duration_30_to_25 |
+| G1.3 | duration_30_to_25 |
+| G1.5 | drop_last_5pct_rows, delete_one_episode, reader_skips_silently |
+| G1.6 | corrupt_archive_byte |
+| G1.7c | dv_time_vars_weight_swap (isolated — no other gate moves) |
+| G1.9 | declare_uk_1_day |
+| G1.10 | second_mode_value |
+| G1.11 | drop_last_5pct_rows, act2_rewrite_nonblank_to_blank |
+
+`G1.7b`, `G1.7d`, `G1.8` are exempt (`NOT CHECKED`, printed on every run, never counted as a pass).
+
+🔴 **`G1.4` and `G1.7a` are outside the clause's literal scope for a different, stated reason: they
+do not PASS on real data to begin with.** They are excluded from "PASS on the real data" by
+construction, not by an invented exemption — printed as such on every run, never silently dropped
+from the report the way a retired gate would be.
+
+#### 🔴 A genuine limitation this round could not avoid: five perturbations "DID NOT FIRE"
+
+Because `G1.4` and `G1.7a` already FAIL on real, unperturbed UK data, the five perturbations
+pre-registered to demonstrate their detection power (`act_to_outside_list`, `act2_to_outside_list`,
+`act2_extra_2_to_outside_list` for `G1.4`; `weight_negative_one`, `weight_constant` for `G1.7a`)
+cannot be observed to *newly* break a gate that was already broken. Each is reported honestly as
+`DID NOT FIRE` in the perturbation table rather than credited for something it could not
+demonstrate. This is a property of the real baseline data (two genuine, cited defects), not a defect
+in the perturbation design, and it is not patched by pre-cleaning the input before perturbing it —
+that would test a hypothetical file, not this one. Recorded as a real limitation of this round.
+
+#### The null perturbation's literal wording needed a stated reinterpretation
+
+"Nothing may fail" presumes a clean (all-PASS-or-NOT-CHECKED) baseline, which Spain had and the UK
+does not. Implemented instead as: the null perturbation's gate verdicts must be **identical to the
+baseline's**, gate by gate — which they are. The reinterpretation is stated here rather than applied
+silently, per the work order's instruction that a specification/data conflict is a finding, not
+something to route around quietly.
+
+#### What did not attribute
+
+Five perturbations moved more than the gate they were pre-registered for, all row-removal/row-rewrite
+collateral, the same structural reason recorded for Spain (`drop_last_5pct_rows` → also G1.2, G1.5,
+G1.11; `delete_one_episode` → also G1.1, G1.5; `duration_30_to_25` → also G1.2). None of this is
+tuned away.
+
+**Where this leaves Step 1 for the UK:** the reader and gate battery both run clean in the sense that
+matters — every check computes, nothing crashes, nothing is assumed, and two real defects were found
+and reported rather than hidden. `V1.a` fires on one country of four. Two specification gaps are
+flagged for the manager (F-UK-2's already-known three-secondary-activities gap, plus the new
+F-UK-15 location-sentinel gap) and are not resolved by this employee session.
+
+---
+
+### ⬇ appended verbatim from `outputs_step1/proglog_entries_italy.md`
+
+### 2026-08-15 — Italy executed. Fourteen gates: eleven scored (ten PASS, one FAIL), three `NOT CHECKED`. Coverage clause **SATISFIED** on the ten PASSing gates
+
+Runner: `../tools/4thJ_gates_step1_italy.py`. Reader: `../tools/4thJ_read_italy.py`. Full output in
+`outputs_step1/gate_report_step1_italy.txt`. One country, so this is a partial round by
+construction (`V1.a` fires, correctly — Italy alone, per the work order's scope).
+
+**Baseline: 11 scored, 10 PASS, 1 FAIL (`G1.6`), 3 `NOT CHECKED` (`G1.7b`, `G1.7c`, `G1.8`).**
+
+| Gate | Result | Detail |
+|---|---|---|
+| G1.1 | PASS | 1,077,657 episodes against ISTAT's own stated 1,077,657 (`!Leggimi.html`, "Totale record" — this delivery, unlike what the task prompt assumed, does print its own count) |
+| G1.2 | PASS | 0 of 41,229 diaries fail to sum to 1,440 min |
+| G1.3 | PASS | 0 of 1,077,657 episode durations are not multiples of 10 |
+| G1.4 | PASS | no `catpri`/`cluogo`/`catcon` code outside its own transcribed list; `act2_raw` states (IT): not_recorded 0, recorded_and_blank 819,659, recorded_with_value 257,998 |
+| G1.5 | PASS | 1,077,657 episodes represented against 1,077,657 delivered, zero unexplained drops |
+| **G1.6** | 🔴 **FAIL** | every archive's md5 matches on recomputation, but **no per-file source URL is printed anywhere in this delivery** (the files were handed to the author by ISTAT directly, not fetched by an employee session from a live link) — `url` is honestly recorded `NOT FOUND` rather than fabricated, and `G1.6`'s literal threshold requires one. This is a real gate failure, not a bug: see the finding below |
+| G1.7a | PASS | all present weights strictly positive and finite; distinct values weight_dia 18,045, weight_ind 16,199 (both > 1); 0 respondents unmatched |
+| G1.7b | 🔴 NOT CHECKED | permanently — Nota_metodologica-2013.pdf p.12 calibrates to 32 known regional totals including sex × 9 age classes, same circularity family as Spain |
+| G1.7c | 🔴 NOT CHECKED | `coefin`/`coefi2` exist only in `Individui.txt`; no cross-file restatement exists to check |
+| G1.7d | PASS | observed min 21.1595, max 35,070.5290, 34,240 distinct values, bounds [1.0, 1e8) |
+| G1.8 | 🔴 NOT CHECKED | two independent reasons: (1) same sex×age calibration circularity as `G1.7b`; (2) no published Italian age×sex population table for 2013-14 exists anywhere in this delivery at all — a stronger absence than Spain's, which at least had a narrowing reference |
+| G1.9 | PASS | measured 1 diary day per respondent, codebook states 1 |
+| G1.10 | PASS | 1 distinct `mode`, 1 distinct `scheme` |
+| G1.11 | PASS | independent recount from raw `DiarioGiornaliero.txt` (own column resolution, no episode reconstruction needed — Italy ships native episodes): 257,998 non-blank `catcon`; emitted table: 257,998 non-blank `act2_raw` |
+
+#### Coverage clause: SATISFIED
+
+Every gate that PASSes on the real data (all 10) was made to fall by at least one perturbation.
+`G1.6` (baseline FAIL) and the three `NOT CHECKED` gates are outside the clause by construction —
+the clause only binds gates that PASS.
+
+| Gate | Made to fall by |
+|---|---|
+| G1.1 | drop_last_5pct_rows, delete_one_episode, drop_over_65 |
+| G1.2 | drop_last_5pct_rows, delete_one_episode, duration_30_to_25 |
+| G1.3 | duration_30_to_25 |
+| G1.4 | act_to_99Z, act2_to_99Z |
+| G1.5 | drop_last_5pct_rows, delete_one_episode, reader_skips_silently, drop_over_65 |
+| G1.7a | weight_negative_one, weight_constant |
+| G1.7d | weight_divide_1e4 |
+| G1.9 | declare_italy_2_days |
+| G1.10 | second_mode_value |
+| G1.11 | drop_last_5pct_rows, drop_over_65, act2_rewrite_nonblank_to_blank |
+
+The null perturbation moved nothing (failing set unchanged from baseline — the one baseline FAIL,
+`G1.6`, stayed failed for the same reason, not a new one). `act_to_99Z`/`act2_to_99Z`,
+`reader_skips_silently`, `weight_negative_one`, `weight_constant`, `weight_divide_1e4`,
+`declare_italy_2_days`, `second_mode_value` and `act2_rewrite_nonblank_to_blank` each attributed
+cleanly to exactly the gate named for them. `drop_last_5pct_rows`, `delete_one_episode`,
+`duration_30_to_25` and `drop_over_65` each moved more than their named gate, all by the same
+row-removal/row-rewrite collateral mechanism the Spanish round already documented (any row that
+disappears moves `G1.5` and, here, `G1.11` too, since `G1.11`'s reference is fixed against the
+unperturbed raw file). `corrupt_archive_byte` could not demonstrate anything: `G1.6` was already
+FAILing at baseline for an unrelated reason (missing URL), so a perturbation aimed at it has
+nowhere to shake it from — recorded, not hidden.
+
+#### 🔴 The `G1.6` finding: this delivery has no per-file source URL to record, and it was not invented
+
+`acquisition_manifest_italy.json` records every archive's md5 (all four recomputed matches) and a
+date, but `url = "NOT FOUND"` for every entry, per the work order's explicit instruction: *"If the
+delivery does not print its own source URL, record what it does print and mark the rest `NOT
+FOUND` — do not reconstruct a plausible ISTAT URL from memory."* Unlike Spain, these four files were
+never downloaded by an employee session from a live link — they were provided to the author
+directly and placed on this workstation. Two general (non-per-file) URLs the delivery *does* print
+are recorded in the manifest's `entry_point_note`. `G1.6`'s threshold, read literally, requires a
+URL, and none exists to give it honestly. **This is reported as a real `FAIL`, not worked around**
+— the alternative (fabricating a plausible URL, or quietly exempting `G1.6` the way `G1.7b`/`G1.7c`/
+`G1.8` are exempted) would each be a threshold move this employee was told not to make.
+
+#### What did not attribute (row-removal/row-rewrite collateral, same mechanism as Spain)
+
+| Perturbation | Expected | Also moved |
+|---|---|---|
+| drop_last_5pct_rows | G1.1 | G1.2, G1.5, G1.11 |
+| delete_one_episode | G1.2 | G1.1, G1.5 |
+| duration_30_to_25 | G1.3 | G1.2 |
+| drop_over_65 | G1.8 (pre-registered coverage case; G1.8 NOT CHECKED for Italy) | G1.1, G1.5, G1.11 |
+
+#### Vacuity guards
+
+`V1.a` fired, as it must: one country of four. `V1.b`/`V1.c`/`V1.d` behaved as specified (see the
+full report for the printed inputs and the reader's own refusal log).
+
+---
+
+### 🔴 Manager's note on the two appended entries, 2026-08-15
+
+**Both are accepted as the record of their rounds. Four things in them are already superseded:**
+
+* **"`V1.a` fires on one country of four"** — the threshold is now **3**, by author decision 16.
+* **The UK's `G1.4` FAIL** — half of it (the `-9` location sentinel) was **our contract's gap, not the
+  file's**, and is closed by **M-1**. 🔴 **The other half, `4276`, is a real data defect and must still
+  FAIL after M-1** — that is the explicit test of whether M-1 disarmed the gate.
+* **The UK's `G1.7a` FAIL and Italy's `G1.6` FAIL** — addressed by **M-3** and **M-2**. 🔴 **`G1.6b`
+  still FAILs for Italy and is meant to.**
+* **The UK's `G1.7d` diagnostic on normalised weights** — closed as **M-4**, by conditioning the bound
+  on the declared weighting convention rather than by moving it.
+
+🔴 **The most valuable thing in either entry is the UK's own account of the five perturbations that
+`DID NOT FIRE`, and the reason it gives: a gate already FAILing at baseline has nowhere to be shaken
+from.** The employee reported that honestly instead of crediting the perturbations, and **that report
+is what specified M-1 to M-5.** Italy's entry says the same of `corrupt_archive_byte`. Recorded here
+because the reusable lesson is not the five decisions — it is that **an honest `DID NOT FIRE` is worth
+more than a green battery.**

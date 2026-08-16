@@ -68,12 +68,15 @@ a **band-applicability limitation** and its value is **not moved to make it pass
 
 Axes: **country × construction period × day type × scenario.**
 
-🔴 **Country means the country's OWN fold, and this is four populations rather than sixteen.** Decision
-11 produces four adapters, and each country's schedules come from **the fold that held that country
-out** — that is the whole point: the diaries driving Italy's buildings must come from the model that
-never saw Italy. Simulating every country under every fold would be a 4× larger campaign whose extra
-cells answer no question the paper asks, and mixing folds within one country's cells would quietly turn
-a transfer result into a held-in one.
+🔴 **Country means the country's OWN fold, and this is THREE populations rather than nine.** Decision
+11 as amended by decision 16 (2026-08-15, France excluded) produces **three** adapters, and each
+country's schedules come from **the fold that held that country out** — that is the whole point: the
+diaries driving Italy's buildings must come from the model that never saw Italy. Simulating every
+country under every fold would be a 3× larger campaign whose extra cells answer no question the paper
+asks, and mixing folds within one country's cells would quietly turn a transfer result into a held-in
+one. *(Was four populations rather than sixteen. **`G8.16`'s threshold is unchanged** — it asserts each
+cell was driven by the fold that held its country out, which is a per-cell identity and does not depend
+on how many folds there are.)*
 
 **Written into every cell's `manifest.json` as an explicit `fold` field**, so that a schedule file
 cannot be read under the wrong fold's name — nothing in the schedule numbers themselves would say.

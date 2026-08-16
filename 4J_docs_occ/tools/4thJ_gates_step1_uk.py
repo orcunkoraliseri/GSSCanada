@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-4J Step 1 validation -- gates G1.1 to G1.11 and the perturbation battery, UK.
+4J Step 1 validation -- gates G1.1 to G1.12 (SIXTEEN IDs: G1.1-G1.5, G1.6a,
+G1.6b, G1.7a-G1.7d, G1.8-G1.12) and the perturbation battery, UK.
 
-Implements Step1_docs/4thJ_01_corpusAcquisition_val.md exactly as pre-registered
-(the 2026-08-14 fourteen-gate specification), against the UK delivery.
+Implements Step1_docs/4thJ_01_corpusAcquisition_val.md exactly as
+pre-registered as of the 2026-08-15 M-1..M-5 round (sixteen-gate
+specification), against the UK delivery.
 
 🔴 This file does NOT import anything from 4thJ_read_uk.py. Every column this
 gate runner needs is resolved BY NAME, independently, from its own copy of the
@@ -35,6 +37,47 @@ DAY_MINUTES = 1440
 UK_DIARY_DAYS = 2               # NATCEN p.3/p.16: two 24-hour diary days
 SECONDARY_BLANK_SENTINEL = "-9"
 
+# 🔴 M-1, 2026-08-15: loc_raw (WhereWhen) also carries the "-9" sentinel
+# (F-UK-15, DD's own value label "No answer/refused" for WhereWhen), on
+# 7,117 of 587,632 episodes. Re-declared here independently of the reader,
+# exactly the same shape as SECONDARY_BLANK_SENTINEL. "4276" (F-UK-9) is
+# NOT this sentinel and must keep failing G1.4.
+LOCATION_BLANK_SENTINEL = "-9"
+LOCATION_UNDECLARED_TEST_VALUE = "-8"   # loc_undeclared_sentinel perturbation
+
+# 🔴 M-3, 2026-08-15: DMFlag/HhOut are the delivery's own non-productive
+# status codes (F-UK-8), re-transcribed here from the DD independently of
+# 4thJ_read_uk.py (which does not read them at all -- they are gate-runner-
+# only, per the work order). uktus15_diary_ep_long_ukda_data_dictionary.rtf:
+#   DMFlag value label -6.0 = "Partial Ind from non-prod HH"
+#   DMFlag value label  4.0 = "Non-productive, from part prod HH"
+#   HhOut  value label 598.0 = "Other reasons why unproductive"
+# Measured directly from the raw files this round (not copied from the
+# codebook without re-checking): of the 2 UK person-days with a blank
+# dia_wt_a/dia_wt_b, both carry DMFlag=-6 and HhOut=598. Of the 23
+# diary-completing persons with a blank ind_wt, 1 carries DMFlag=-6/HhOut=598
+# (the same household) and 22 carry DMFlag=4/HhOut=210 -- HhOut=210 itself
+# means "Productive: at least one individual interview but not from all
+# eligible household members" (a HOUSEHOLD-level code), so it is DMFlag=4,
+# the INDIVIDUAL-level status, that is this session's own non-productive
+# label for those 22, not HhOut. Accepted codes, per grain:
+#   diary-level (per pid, diary_day): DMFlag == "-6"  OR  HhOut == "598"
+#   individual-level (per pid):        DMFlag == "-6"  OR  DMFlag == "4"
+UK_DIA_NONPRODUCTIVE_DMFLAG = {"-6"}
+UK_DIA_NONPRODUCTIVE_HHOUT = {"598"}
+UK_IND_NONPRODUCTIVE_DMFLAG = {"-6", "4"}
+
+# M-4, 2026-08-15: UK weighting convention is "normalised" (NATCEN p.31,
+# section 7.4(c)/(d): both diary weights and the individual weight are
+# calibrated to mean ~1; F-UK-13 measured means 1.000322/1.000182/1.000000).
+# G1.7d's mean-vs-1 clause is now SCORED (not permanently NOT CHECKED) for
+# the UK. The magnitude-vs-layout-width half stays NOT CHECKED (no declared
+# fixed-width layout ships anywhere in this tab-delimited delivery, F-UK-13)
+# -- M-4 does not rescue that half and this runner does not make it look
+# rescued.
+UK_WEIGHTING_CONVENTION = "normalised"
+G17D_MEAN_TOL = 0.01   # +/- 1 %, M-4
+
 # ---------------------------------------------------------------------------
 # INDEPENDENT column declaration for this gate runner. 1:1 with the reader's
 # own declaration at the top of 4thJ_read_uk.py -- printed side by side at
@@ -52,10 +95,12 @@ GATE_COLUMNS = {
                         "WithNA"],
         "weight_dia_a": "dia_wt_a", "weight_dia_b": "dia_wt_b",
         "diary_day_ordinal": "daynum", "diary_day_of_week": "DiaryDay_Act",
+        "nonproductive_dia": ["DMFlag", "HhOut"],
     },
     "individual": {
         "key": ["serial", "pnum"],
         "age": "DVAge", "sex": "DMSex", "weight_ind": "ind_wt",
+        "nonproductive_ind": ["DMFlag"],
     },
     "dv_time_vars": {
         "key": ["serial", "pnum", "daynum"],
@@ -68,11 +113,14 @@ GATE_COLUMNS = {
 READER_COLUMNS_AS_DECLARED = """
     diary_ep_long: key=[serial,pnum,daynum], start=tid, duration=eptime,
       act_raw=whatdoing, act2_raw=What_Oth1, act2_extra_uk_2=What_Oth2,
-      act2_extra_uk_3=What_Oth3, loc_raw=WhereWhen,
+      act2_extra_uk_3=What_Oth3, loc_raw=WhereWhen (M-1: -9 -> "" sentinel,
+      same as act2_raw's -9 mapping),
       copresence=[WithAlone,WithSpouse,WithMother,WithFather,WithChild,
                    WithOther,WithOtherYK,WithMiss,WithNA],
       weight_dia_a=dia_wt_a, weight_dia_b=dia_wt_b,
       diary_day=daynum, DiaryDay_Act=DiaryDay_Act
+      (DMFlag/HhOut are NOT read by the reader at all -- gate runner only,
+       for G1.7a's non-productive-status clause, M-3)
     individual: key=[serial,pnum], DVAge=DVAge, DMSex=DMSex, weight_ind=ind_wt
     (dv_time_vars.tab is not read by the reader at all -- gate runner only)
 """
@@ -109,8 +157,34 @@ def secondary_state(series):
     return series.where(series != SECONDARY_BLANK_SENTINEL, "")
 
 
+def location_state(series):
+    """M-1: independent re-implementation of the loc_raw -9 -> blank mapping
+    (F-UK-15), NOT imported from 4thJ_read_uk.py. Same shape as
+    secondary_state, own sentinel constant."""
+    return series.where(series != LOCATION_BLANK_SENTINEL, "")
+
+
 def nonblank_count(series):
     return int((series.notna() & (series != "")).sum())
+
+
+def build_nonproductive_lookup(raw_diary, raw_ind):
+    """M-3: independent construction of the delivery-declared non-productive
+    status, per diary (pid, diary_day) and per individual (pid), from the
+    raw files this gate runner already reads. Never touches 4thJ_read_uk.py
+    -- DMFlag/HhOut are not even in the reader's output."""
+    tmp = raw_diary.groupby(["serial", "pnum", "daynum"], sort=False)[
+        ["DMFlag", "HhOut"]].first()
+    dia_nonprod = {}
+    for (s, p, d), row in tmp.iterrows():
+        key = (s + "_" + p, d)
+        dia_nonprod[key] = (row["DMFlag"] in UK_DIA_NONPRODUCTIVE_DMFLAG or
+                             row["HhOut"] in UK_DIA_NONPRODUCTIVE_HHOUT)
+    ind_nonprod = {}
+    for _, row in raw_ind.iterrows():
+        pid = row["serial"] + "_" + row["pnum"]
+        ind_nonprod[pid] = row["DMFlag"] in UK_IND_NONPRODUCTIVE_DMFLAG
+    return dia_nonprod, ind_nonprod
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +216,13 @@ def gate_g13(ep):
 
 
 def gate_g14(ep, ctx):
+    """M-1 amendment: loc_raw's blank state ("") is excluded from the
+    membership test (a blank is not a code); case (b) -- a declared,
+    cited sentinel -- is likewise not tested against the list, because it
+    is never stored as a code string in the first place, it is stored as
+    "". Anything else outside the list, including "4276" (F-UK-9) and the
+    perturbation value "-8" (loc_undeclared_sentinel), FAILs exactly as
+    before M-1."""
     acts, locs = ctx["act_codes"], ctx["loc_codes"]
     detail_parts = []
     any_bad = False
@@ -149,11 +230,19 @@ def gate_g14(ep, ctx):
     a_bad = sorted(set(ep["act_raw"].unique()) - acts)
     if a_bad:
         any_bad = True
-    l_bad = sorted(set(ep["loc_raw"].unique()) - locs)
+    loc_col = ep["loc_raw"]
+    loc_not_recorded = int(loc_col.isna().sum())
+    loc_blank = int((loc_col == "").sum())
+    loc_valued_mask = loc_col.notna() & (loc_col != "")
+    loc_valued = int(loc_valued_mask.sum())
+    l_bad = sorted(set(loc_col[loc_valued_mask].unique()) - locs)
     if l_bad:
         any_bad = True
     detail_parts.append(f"act_raw codes outside list: {a_bad[:10]}")
-    detail_parts.append(f"loc_raw codes outside list: {l_bad[:10]}")
+    detail_parts.append(
+        f"loc_raw: not_recorded={loc_not_recorded} recorded_and_blank="
+        f"{loc_blank} (sentinel '{LOCATION_BLANK_SENTINEL}') "
+        f"recorded_with_value={loc_valued} codes_outside_list={l_bad[:10]}")
 
     for col in ["act2_raw", "act2_extra_uk_2", "act2_extra_uk_3"]:
         c = ep[col]
@@ -185,34 +274,57 @@ def gate_g15(ep, ctx):
             f"{UKDA_DIARY_EP_ROWS} delivered")
 
 
-def gate_g16(ctx):
+def gate_g16a(ctx):
+    """M-2 split: integrity only, independent of any URL. Prints hashed_at
+    per archive before the verdict."""
     man = ctx["manifest"]
     if man is None:
         return NOT_CHECKED, "no acquisition manifest fragment on disk"
     uk = man.get("uk", {})
     problems = []
+    hashed_at_lines = []
 
-    def check_entry(label, entry):
+    def check_entry(label, entry, hashed_at):
         p = entry.get("local_path")
+        hashed_at_lines.append(f"{label}: hashed_at={hashed_at}")
         if not p or not os.path.exists(p):
             problems.append(f"{label}: missing on disk")
             return
         if md5_of(p) != entry.get("md5"):
             problems.append(f"{label}: md5 recomputed does not match")
 
-    check_entry("outer_archive", uk.get("outer_archive", {}))
-    check_entry("inner_archive", uk.get("inner_archive", {}))
+    check_entry("outer_archive", uk.get("outer_archive", {}),
+                ctx["hashed_at"].get("outer_archive", "NOT FOUND"))
+    check_entry("inner_archive", uk.get("inner_archive", {}),
+                ctx["hashed_at"].get("inner_archive", "NOT FOUND"))
     n_delivered = 0
     for entry in uk.get("delivered_files_md5", []):
         n_delivered += 1
-        # delivered_files_md5 paths are relative to UK-TUS/ (the inner
-        # archive's unpack root), matching acquisition_manifest_uk.json.
         alt = os.path.join(uk.get("local_root", ""), "unpacked", "UK-TUS", entry["path"])
         if not os.path.exists(alt):
             problems.append(f"{entry['path']}: missing on disk at expected location")
             continue
         if md5_of(alt) != entry["md5"]:
             problems.append(f"{entry['path']}: md5 recomputed does not match")
+    ok = not problems
+    detail = (f"outer+inner archive + {n_delivered} delivered files, md5 "
+              f"recomputed from disk vs recorded, independent of any URL; "
+              f"{' | '.join(hashed_at_lines)}; problems: {problems}")
+    return ("PASS" if ok else "FAIL"), detail
+
+
+def gate_g16b(ctx):
+    """M-2 split: provenance only. Threshold UNCHANGED. UK's delivery prints
+    no literal download URL (see codebook_facts_uk.md); the DOI/citation
+    landing page printed inside the delivered file itself is accepted, with
+    provenance_source='author_attested' and the attestation date -- this is
+    what the pre-split G1.6 already accepted for the UK, so the threshold is
+    unchanged, only the label is now explicit."""
+    man = ctx["manifest"]
+    if man is None:
+        return NOT_CHECKED, "no acquisition manifest fragment on disk"
+    uk = man.get("uk", {})
+    problems = []
     doi = uk.get("citation_and_licence", {}).get("doi")
     acquired = uk.get("acquired_utc")
     if not doi or not acquired:
@@ -220,34 +332,50 @@ def gate_g16(ctx):
                          "no literal download URL; DOI is the recorded "
                          "landing-page citation per the work order)")
     ok = not problems
-    return ("PASS" if ok else "FAIL",
-            f"outer+inner archive + {n_delivered} delivered files checked; "
-            f"problems: {problems}")
+    detail = (f"provenance_source={ctx['provenance_source'].get('uk', 'NOT FOUND')}, "
+              f"doi={doi!r}, acquired_utc={acquired!r}; problems: {problems}")
+    return ("PASS" if ok else "FAIL"), detail
 
 
-def gate_g17a(ep):
+def gate_g17a(ep, ctx):
+    """M-3 re-scope: present/finite/positive/>1-distinct on rows the delivery
+    weighted; every missing-weight row must carry a delivery-declared
+    non-productive status (DMFlag/HhOut, independently re-read -- see
+    build_nonproductive_lookup). A missing weight on a row NOT flagged
+    non-productive is a FAIL."""
+    dia_nonprod, ind_nonprod = ctx["dia_nonproductive"], ctx["ind_nonproductive"]
+
     per_dia = ep.groupby(["pid", "diary_day"], sort=False)["weight_dia_a"].first()
     per_ind = ep.groupby("pid", sort=False)["weight_ind"].first()
 
-    dia_nan = int(per_dia.isna().sum())
-    ind_nan = int(per_ind.isna().sum())
-    dia_ok_vals = per_dia.dropna()
-    ind_ok_vals = per_ind.dropna()
-    dia_pos = bool((dia_ok_vals > 0).all())
-    ind_pos = bool((ind_ok_vals > 0).all())
-    ndist_dia = int(dia_ok_vals.nunique())
-    ndist_ind = int(ind_ok_vals.nunique())
+    dia_missing = per_dia[per_dia.isna()]
+    dia_missing_bad = [k for k in dia_missing.index if not dia_nonprod.get(k, False)]
+    ind_missing = per_ind[per_ind.isna()]
+    ind_missing_bad = [k for k in ind_missing.index if not ind_nonprod.get(k, False)]
 
-    ok = (dia_nan == 0 and ind_nan == 0 and dia_pos and ind_pos
-          and ndist_dia > 1 and ndist_ind > 1)
-    return ("PASS" if ok else "FAIL",
-            f"weight_dia_a: {dia_nan} of {len(per_dia)} diaries missing "
-            f"(blank sentinel, F-UK-8), all present values positive: "
-            f"{dia_pos}, {ndist_dia} distinct values; "
-            f"weight_ind: {ind_nan} of {len(per_ind)} persons missing, "
-            f"all present values positive: {ind_pos}, {ndist_ind} distinct "
-            f"values (both distinct-counts must be > 1 and both missing "
-            f"counts must be 0 for PASS)")
+    dia_present = per_dia.dropna()
+    ind_present = per_ind.dropna()
+    dia_pos = bool((dia_present > 0).all()) and bool(np.isfinite(dia_present).all())
+    ind_pos = bool((ind_present > 0).all()) and bool(np.isfinite(ind_present).all())
+    ndist_dia = int(dia_present.nunique())
+    ndist_ind = int(ind_present.nunique())
+
+    ok = (len(dia_missing_bad) == 0 and len(ind_missing_bad) == 0
+          and dia_pos and ind_pos and ndist_dia > 1 and ndist_ind > 1)
+    detail = (
+        f"weight_dia_a: {len(dia_missing)} of {len(per_dia)} diaries missing "
+        f"({len(dia_missing_bad)} with NO delivery-declared non-productive "
+        f"status -- FAIL if >0), all present values positive/finite: "
+        f"{dia_pos}, {ndist_dia} distinct values; "
+        f"weight_ind: {len(ind_missing)} of {len(per_ind)} persons missing "
+        f"({len(ind_missing_bad)} with NO delivery-declared non-productive "
+        f"status -- FAIL if >0), all present values positive/finite: "
+        f"{ind_pos}, {ndist_ind} distinct values "
+        f"(accepted non-productive codes: diary DMFlag in "
+        f"{sorted(UK_DIA_NONPRODUCTIVE_DMFLAG)} or HhOut in "
+        f"{sorted(UK_DIA_NONPRODUCTIVE_HHOUT)}; individual DMFlag in "
+        f"{sorted(UK_IND_NONPRODUCTIVE_DMFLAG)})")
+    return ("PASS" if ok else "FAIL"), detail
 
 
 def gate_g17b(ep):
@@ -280,6 +408,11 @@ def gate_g17c(raw_diary, raw_dv):
 
 
 def gate_g17d(raw_diary, raw_ind):
+    """M-4: UK's declared convention is 'normalised' (see
+    UK_WEIGHTING_CONVENTION). Scored: positive/finite AND mean within
+    +/-1% of 1.0. The magnitude-vs-layout-width half stays NOT CHECKED (no
+    declared fixed-width layout ships in this delivery) -- printed as such,
+    not folded into the pass/fail verdict."""
     diary_vals = []
     for name in ["dia_wt_a", "dia_wt_b"]:
         raw = raw_diary[name]
@@ -294,20 +427,24 @@ def gate_g17d(raw_diary, raw_ind):
     ndist = int(allv.nunique())
     n_below_1 = int((allv < 1.0).sum())
     pct_below_1 = 100.0 * n_below_1 / len(allv)
-    return (NOT_CHECKED,
-            f"no declared fixed-width layout exists anywhere in the UK "
-            f"delivery for hh_wt/ind_wt/dia_wt_a/dia_wt_b/wks_wt (tab-"
-            f"delimited free-text decimals) -- magnitude-vs-layout half is "
-            f"NOT CHECKED for lack of an independent reference (F-UK-13). "
-            f"Diagnostic only, printed as evidence of nothing: observed "
-            f"min={vmin:.4f} max={vmax:.4f} mean={vmean:.6f} "
-            f"n_distinct={ndist} across dia_wt_a+dia_wt_b+ind_wt; "
-            f"{n_below_1} of {len(allv)} ({pct_below_1:.1f} %) are strictly "
-            f"below 1.0 -- consistent with a normalised (mean~1) weighting "
-            f"convention, not raw expansion factors; applying the "
-            f"pre-registered >=1.0 clause literally would fail on the "
-            f"majority of real UK weights for that reason, not a magnitude-"
-            f"read defect (F-UK-13).")
+
+    positive = bool((allv > 0).all())
+    finite = bool(np.isfinite(allv).all())
+    mean_ok = abs(vmean - 1.0) <= G17D_MEAN_TOL
+    ok = positive and finite and mean_ok
+
+    detail = (
+        f"convention={UK_WEIGHTING_CONVENTION!r} (NATCEN p.31 section "
+        f"7.4(c)/(d), cited codebook_facts_uk.md). Magnitude-vs-layout-width "
+        f"half: NOT CHECKED (no declared fixed-width layout in this "
+        f"tab-delimited delivery, F-UK-13) -- M-4 does not rescue this half. "
+        f"Mean clause (SCORED): observed min={vmin:.4f} max={vmax:.4f} "
+        f"mean={vmean:.6f} n_distinct={ndist} across dia_wt_a+dia_wt_b+"
+        f"ind_wt pooled; positive={positive}, finite={finite}, "
+        f"|mean-1.0|<= {G17D_MEAN_TOL}: {mean_ok}; {n_below_1} of "
+        f"{len(allv)} ({pct_below_1:.1f} %) strictly below 1.0 (expected "
+        f"under a normalised convention, not a defect)")
+    return ("PASS" if ok else "FAIL"), detail
 
 
 def gate_g18():
@@ -363,6 +500,43 @@ def gate_g111(ep, raw_diary):
     return ("PASS" if all_ok else "FAIL"), " | ".join(detail_parts)
 
 
+def gate_g112(ep, raw_diary, ctx):
+    """G1.12: loc_raw three-state integrity and sentinel inventory. Built
+    exactly as G1.11 is: independent recount from the raw file (own column
+    resolution, own sentinel mapping -- location_state(), not
+    secondary_state()), compared against the emitted parquet, exact, no
+    tolerance. Also prints the full out-of-list-value inventory."""
+    raw_loc = raw_diary[GATE_COLUMNS["diary_ep_long"]["loc_raw"]]
+    raw_state = location_state(raw_loc)
+    raw_not_recorded = 0  # UK fields WhereWhen on every episode row
+    raw_blank = int((raw_state == "").sum())
+    raw_valued = int(len(raw_state) - raw_blank)
+
+    loc_col = ep["loc_raw"]
+    emitted_not_recorded = int(loc_col.isna().sum())
+    emitted_blank = int((loc_col == "").sum())
+    emitted_valued = int(len(loc_col) - emitted_not_recorded - emitted_blank)
+
+    ok = (raw_not_recorded == emitted_not_recorded and
+          raw_blank == emitted_blank and raw_valued == emitted_valued)
+
+    locs = ctx["loc_codes"]
+    valued_mask = raw_state != ""
+    inventory = raw_state[valued_mask].value_counts()
+    out_of_list = {k: int(v) for k, v in inventory.items() if k not in locs}
+
+    detail = (
+        f"raw recount (own column resolution 'WhereWhen', own sentinel "
+        f"'{LOCATION_BLANK_SENTINEL}' mapping): not_recorded={raw_not_recorded} "
+        f"recorded_and_blank={raw_blank} recorded_with_value={raw_valued}; "
+        f"emitted parquet: not_recorded={emitted_not_recorded} "
+        f"recorded_and_blank={emitted_blank} recorded_with_value="
+        f"{emitted_valued}; {'MATCH' if ok else 'MISMATCH'} (exact, no "
+        f"tolerance). Full out-of-list inventory (value: count): "
+        f"{out_of_list}")
+    return ("PASS" if ok else "FAIL"), detail
+
+
 def run_gates(ep, raw_diary, raw_ind, raw_dv, ctx):
     R = Result()
 
@@ -371,8 +545,9 @@ def run_gates(ep, raw_diary, raw_ind, raw_dv, ctx):
     s, d = gate_g13(ep); R.add("G1.3", s, d)
     s, d = gate_g14(ep, ctx); R.add("G1.4", s, d)
     s, d = gate_g15(ep, ctx); R.add("G1.5", s, d)
-    s, d = gate_g16(ctx); R.add("G1.6", s, d)
-    s, d = gate_g17a(ep); R.add("G1.7a", s, d)
+    s, d = gate_g16a(ctx); R.add("G1.6a", s, d)
+    s, d = gate_g16b(ctx); R.add("G1.6b", s, d)
+    s, d = gate_g17a(ep, ctx); R.add("G1.7a", s, d)
     s, d = gate_g17b(ep); R.add("G1.7b", s, d)
     s, d = gate_g17c(raw_diary, raw_dv); R.add("G1.7c", s, d)
     s, d = gate_g17d(raw_diary, raw_ind); R.add("G1.7d", s, d)
@@ -380,6 +555,7 @@ def run_gates(ep, raw_diary, raw_ind, raw_dv, ctx):
     s, d = gate_g19(raw_diary, ctx); R.add("G1.9", s, d)
     s, d = gate_g110(ep); R.add("G1.10", s, d)
     s, d = gate_g111(ep, raw_diary); R.add("G1.11", s, d)
+    s, d = gate_g112(ep, raw_diary, ctx); R.add("G1.12", s, d)
 
     return R
 
@@ -433,8 +609,18 @@ def perturb(name, ep, raw_diary, raw_ind, raw_dv, ctx):
             "unexplained drops : 0", "unexplained drops : 1")
 
     elif name == "corrupt_archive_byte":
+        # 🔴 retargeted to G1.6a by the M-2 split (2026-08-15).
         man = json.loads(json.dumps(ctx["manifest"]))
         man["uk"]["delivered_files_md5"][0]["md5"] = "0" * 32
+        ctx["manifest"] = man
+
+    elif name == "strip_url_from_manifest":
+        # 🔴 NEW, M-2. Remove the DOI (the UK's own recorded "URL" -- the
+        # delivery prints no literal download URL) from the manifest
+        # fragment. Must fell G1.6b alone; the bytes and their hashes (and
+        # hashed_at) are untouched, so G1.6a stays clean.
+        man = json.loads(json.dumps(ctx["manifest"]))
+        man["uk"]["citation_and_licence"]["doi"] = None
         ctx["manifest"] = man
 
     elif name == "weight_negative_one":
@@ -445,6 +631,56 @@ def perturb(name, ep, raw_diary, raw_ind, raw_dv, ctx):
 
     elif name == "weight_constant":
         ep["weight_dia_a"] = 1234.5
+
+    elif name == "weight_blank_on_productive_row":
+        # 🔴 NEW, M-3, THE AUDIT PERTURBATION. Pick a (pid, diary_day) the
+        # delivery does NOT flag non-productive (DMFlag/HhOut re-read
+        # independently in ctx) and blank its weight_dia_a. Must fell G1.7a
+        # alone -- no row moves, no code changes, no archive touched.
+        prod_key = None
+        for key, is_nonprod in ctx["dia_nonproductive"].items():
+            if not is_nonprod:
+                prod_key = key
+                break
+        if prod_key is None:
+            raise SystemExit("weight_blank_on_productive_row: no productive "
+                              "(pid, diary_day) found to perturb -- cannot fire")
+        pid0, day0 = prod_key
+        m = (ep["pid"] == pid0) & (ep["diary_day"] == day0)
+        ep.loc[m, "weight_dia_a"] = np.nan
+
+    elif name == "weight_scale_10x_normalised":
+        # 🔴 NEW, M-4. UK is normalised-convention. Multiply the WHOLE
+        # dia_wt_a column by 10, consistently in BOTH raw sources G1.7c
+        # compares (raw_diary and raw_dv), so G1.7c's cross-file identity
+        # stays satisfied and only G1.7d's mean-vs-1 clause is exercised.
+        # G1.7a reads from `ep`, not from these raw frames, so it is
+        # untouched by this perturbation.
+        def scale10(df):
+            df = df.copy()
+            blank = df["dia_wt_a"] == " "
+            vals = df.loc[~blank, "dia_wt_a"].astype(float) * 10.0
+            df.loc[~blank, "dia_wt_a"] = vals.map(repr)
+            return df
+        raw_diary = scale10(raw_diary)
+        if raw_dv is not None:
+            raw_dv = scale10(raw_dv)
+
+    elif name == "loc_sentinel_to_code":
+        # 🔴 NEW, M-1/G1.12. Rewrite every declared loc_raw sentinel
+        # (state 2, "") as a valid location code. No row moves and every
+        # value is now in-list, so G1.1, G1.2, G1.4, G1.5 all stay green;
+        # only G1.12 (which independently recounts from the RAW file, where
+        # the sentinel is still present) is fooled by the emitted table.
+        code = ctx["loc_sentinel_replacement_code"]
+        mask = ep["loc_raw"] == ""
+        ep.loc[mask, "loc_raw"] = code
+
+    elif name == "loc_undeclared_sentinel":
+        # 🔴 NEW, M-1's OWN AUDIT. Set one loc_raw to an out-of-list value
+        # that is NOT a declared sentinel. Must fell G1.4 alone.
+        i = ep.index[ep["loc_raw"].notna() & (ep["loc_raw"] != "")][0]
+        ep.loc[i, "loc_raw"] = ctx["loc_undeclared_value"]
 
     elif name == "dv_time_vars_weight_swap":
         t = raw_dv.copy()
@@ -473,14 +709,19 @@ PERTURBATIONS = [
     ("act_to_outside_list", "G1.4"),
     ("act2_to_outside_list", "G1.4"),
     ("act2_extra_2_to_outside_list", "G1.4"),
+    ("loc_undeclared_sentinel", "G1.4"),
     ("reader_skips_silently", "G1.5"),
-    ("corrupt_archive_byte", "G1.6"),
+    ("corrupt_archive_byte", "G1.6a"),
+    ("strip_url_from_manifest", "G1.6b"),
     ("weight_negative_one", "G1.7a"),
     ("weight_constant", "G1.7a"),
+    ("weight_blank_on_productive_row", "G1.7a"),
     ("dv_time_vars_weight_swap", "G1.7c"),
+    ("weight_scale_10x_normalised", "G1.7d"),
     ("declare_uk_1_day", "G1.9"),
     ("second_mode_value", "G1.10"),
     ("act2_rewrite_nonblank_to_blank", "G1.11"),
+    ("loc_sentinel_to_code", "G1.12"),
 ]
 
 
@@ -539,6 +780,13 @@ def main():
     if act_sentinel in act_code_set:
         raise SystemExit(f"chosen sentinel {act_sentinel} IS a real UK "
                           f"activity code -- perturbation cannot fire")
+    if LOCATION_UNDECLARED_TEST_VALUE in loc_code_set:
+        raise SystemExit(f"chosen sentinel {LOCATION_UNDECLARED_TEST_VALUE} "
+                          f"IS a real UK location code -- "
+                          f"loc_undeclared_sentinel cannot fire")
+    # a valid, in-list location code, for loc_sentinel_to_code -- any code
+    # other than the sentinel itself.
+    loc_replacement_code = sorted(loc_code_set - {LOCATION_BLANK_SENTINEL})[0]
 
     parse_report = None
     if os.path.exists(inputs["parse report"]):
@@ -574,6 +822,30 @@ def main():
             f"(read only by this gate runner, for G1.7c)")
     say()
 
+    dia_nonprod, ind_nonprod = build_nonproductive_lookup(raw_diary, raw_ind)
+    n_dia_nonprod = sum(1 for v in dia_nonprod.values() if v)
+    n_ind_nonprod = sum(1 for v in ind_nonprod.values() if v)
+    say("=" * 78)
+    say("M-3: NON-PRODUCTIVE STATUS (DMFlag/HhOut), independently re-read")
+    say("=" * 78)
+    say(f"  diary-level (pid, diary_day): {n_dia_nonprod} of {len(dia_nonprod)} "
+        f"flagged non-productive by DMFlag in {sorted(UK_DIA_NONPRODUCTIVE_DMFLAG)} "
+        f"or HhOut in {sorted(UK_DIA_NONPRODUCTIVE_HHOUT)}")
+    say(f"  individual-level (pid): {n_ind_nonprod} of {len(ind_nonprod)} "
+        f"flagged non-productive by DMFlag in {sorted(UK_IND_NONPRODUCTIVE_DMFLAG)}")
+    say()
+
+    # hashed_at / provenance_source (M-2): read from the manifest fragment
+    # itself (acquisition_manifest_uk.json), which now carries these two
+    # fields per archive, filled in by this M-2 round from what is actually
+    # known -- not invented here at runtime.
+    uk_frag = (manifest or {}).get("uk", {})
+    hashed_at = {
+        "outer_archive": uk_frag.get("outer_archive", {}).get("hashed_at", "NOT FOUND"),
+        "inner_archive": uk_frag.get("inner_archive", {}).get("hashed_at", "NOT FOUND"),
+    }
+    provenance_source = {"uk": uk_frag.get("provenance_source", "NOT FOUND")}
+
     ctx = {
         "act_codes": act_code_set,
         "loc_codes": loc_code_set,
@@ -581,6 +853,12 @@ def main():
         "manifest": manifest,
         "codebook_diary_days": UK_DIARY_DAYS,
         "act_sentinel": act_sentinel,
+        "loc_undeclared_value": LOCATION_UNDECLARED_TEST_VALUE,
+        "loc_sentinel_replacement_code": loc_replacement_code,
+        "dia_nonproductive": dia_nonprod,
+        "ind_nonproductive": ind_nonprod,
+        "hashed_at": hashed_at,
+        "provenance_source": provenance_source,
     }
 
     say(f"  episodes loaded        : {len(ep)} rows, {ep['pid'].nunique()} people, "
@@ -589,19 +867,35 @@ def main():
     say(f"  location codes loaded  : {len(loc_code_set)}")
     say(f"  chosen out-of-list activity sentinel: '{act_sentinel}' "
         f"(confirmed absent from the transcribed list)")
+    say(f"  chosen out-of-list, non-declared location sentinel: "
+        f"'{LOCATION_UNDECLARED_TEST_VALUE}' (confirmed absent from the "
+        f"transcribed list; loc_undeclared_sentinel perturbation)")
+    say(f"  chosen in-list replacement location code for "
+        f"loc_sentinel_to_code: '{loc_replacement_code}'")
     say()
 
-    # ---- V1.a: single-country round ----------------------------------------
-    countries = sorted(ep["country"].unique())
-    v1a = "FIRED" if len(countries) < 4 else "clear"
+    # ---- V1.a: evaluated against the corpus, not this script's own table --
+    # 🔴 This runner is inherently single-country-scoped, so
+    # `ep["country"].unique()` would always read exactly 1, structurally,
+    # regardless of corpus size -- not what V1.a is for. Per the work order
+    # ("V1.a must NOT fire -- three of three... if it fires, the runner is
+    # still carrying the old threshold and you fix the runner"), V1.a checks
+    # whether `outputs_step1/episodes_<country>.parquet` exists for all
+    # three countries (sibling files, existence only, never read for a gate).
+    sibling_files = {"ES": "episodes_spain.parquet", "UK": "episodes_uk.parquet",
+                      "IT": "episodes_italy.parquet"}
+    present = [c for c, f in sibling_files.items()
+               if os.path.exists(os.path.join(out, f))]
+    v1a = "FIRED" if len(present) < 3 else "clear"
     say("=" * 78)
     say("VACUITY GUARDS")
     say("=" * 78)
-    say(f"  V1.a  countries scanned: {countries} ({len(countries)} of 4) -> {v1a}")
-    say("        This is a one-country round by design. V1.a firing is the")
-    say("        correct behaviour and the battery below is reported under")
-    say("        it, not instead of it. The guard was not lowered and no")
-    say("        --single-country escape flag exists.")
+    say(f"  V1.a  countries with an episodes_<country>.parquet present in "
+        f"{out}: {sorted(present)} ({len(present)} of 3) -> {v1a}")
+    say("        🔴 Threshold moved 4 -> 3 on 2026-08-15 (author decision 16,")
+    say("        France excluded). Evaluated against the corpus (sibling")
+    say("        output files), not against this script's own single-")
+    say("        country episode table, which would always read 1.")
     say("  V1.b  inputs, sizes and md5s printed above, before any verdict.")
     say("  V1.c  every status below comes from the computation that produced")
     say("        it; a gate that could not run prints NOT CHECKED.")
@@ -620,24 +914,15 @@ def main():
     baseline_fails = [g for g, s, _ in base.rows if s == "FAIL"]
     if baseline_fails:
         say(f"  🔴 NOTE: {baseline_fails} FAIL on real, UNPERTURBED UK data.")
-        say("  This is reported as a true property of the delivered file")
-        say("  (F-UK-8, F-UK-9 in codebook_facts_uk.md), not smoothed over.")
-        say("  Because these gates do not PASS at baseline, they are outside")
-        say("  the coverage clause's scope (which applies to PASSing gates),")
-        say("  exactly as a NOT CHECKED gate is -- but for a different,")
-        say("  stated reason: they have already been seen failing, on real")
-        say("  data, before any perturbation is applied.")
+        say("  This is reported as a true property of the delivered file,")
+        say("  not smoothed over. Because these gates do not PASS at")
+        say("  baseline, they are outside the coverage clause's scope.")
     say()
 
     # ---- perturbations -------------------------------------------------
     say("=" * 78)
     say("PERTURBATION BATTERY (a gate is trusted once it has been seen failing)")
     say("=" * 78)
-    # `fell` only records a gate as "made to fall" by a perturbation that
-    # NEWLY broke it relative to baseline -- G1.4 and G1.7a already FAIL on
-    # real data, so every perturbation's failed-list trivially contains them
-    # without any perturbation having "broken" anything; crediting a
-    # perturbation for a gate that was already fallen would misattribute.
     fell = {gid: [] for gid in base.ids()}
     base_status = {g: s for g, s, _ in base.rows}
     for name, expected in PERTURBATIONS:
@@ -705,8 +990,8 @@ def main():
     say(f"  gates FAIL            : {sum(1 for g, s, _ in base.rows if s == 'FAIL')}")
     say(f"  gates FAIL at baseline (outside coverage clause, see note): "
         f"{baseline_fails}")
-    say(f"  V1.a                  : {v1a} (expected to fire on a "
-        f"one-country round)")
+    say(f"  V1.a                  : {v1a} (fires below 3 countries, post "
+        f"decision 16)")
 
     txt = "\n".join(log) + "\n"
     with open(os.path.join(out, "gate_report_step1_uk.txt"), "w",

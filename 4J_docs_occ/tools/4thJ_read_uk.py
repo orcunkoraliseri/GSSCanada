@@ -60,6 +60,17 @@ UKDA_STATED = {
 # (V1.d) -- it would be a code this reader was not told about.
 SECONDARY_BLANK_SENTINEL = "-9"
 
+# 🔴 M-1, 2026-08-15 (contract change, codebook_facts_uk.md sentinel table):
+# WhereWhen (location) fields the SAME "-9" = "No answer/refused" sentinel
+# (DD's own value label for WhereWhen), on 7,117 of 587,632 episodes
+# (1.211 %, F-UK-15). loc_raw is now a three-state field on the same terms as
+# act2_raw -- "-9" maps to state 2 ("recorded and blank", ""). This is the
+# ONLY value treated as a sentinel here; there is no rule that negative
+# values in general are sentinels and none is invented. In particular
+# "4276" (F-UK-9, one episode) is NOT this sentinel and is passed through
+# unchanged as a value -- it must keep failing G1.4, exactly as before M-1.
+LOCATION_BLANK_SENTINEL = "-9"
+
 # Co-presence flags, in the order the dictionary declares them (positions
 # 40-48 of uktus15_diary_ep_long). WithMiss and WithNA are missingness /
 # concordance flags, not people-present categories (F-UK-4), but per the
@@ -137,6 +148,24 @@ def three_state_from_uk_secondary(series):
             f"integer code, examples {list(bad.unique()[:10])}. Refused "
             f"rather than assumed harmless (V1.d)."
         )
+    return out.astype("string")
+
+
+def three_state_from_uk_location(series):
+    """M-1: independent mapping for WhereWhen (loc_raw), exactly the same
+    shape as three_state_from_uk_secondary but with its OWN sentinel
+    (LOCATION_BLANK_SENTINEL) and NO membership check against a code list --
+    that is G1.4's job, deliberately kept out of the reader. Any value other
+    than the sentinel is passed through unchanged as 'recorded with a value',
+    including out-of-list values like '4276' (F-UK-9), which is not this
+    sentinel and must keep failing G1.4 after this change exactly as before
+    it. The UK fields WhereWhen on every episode row, so 'not recorded'
+    (pd.NA) never occurs for this country -- only "" (the sentinel) or a
+    code, in a nullable 'string' dtype so the parquet round-trip cannot
+    merge pd.NA and "" (exactly act2_raw's treatment)."""
+    out = series.copy()
+    is_sentinel = out == LOCATION_BLANK_SENTINEL
+    out = out.where(~is_sentinel, "")
     return out.astype("string")
 
 
@@ -297,7 +326,6 @@ def main():
         "start_min": (tid_i - 1) * SLOT_MINUTES,
         "duration_min": ept.astype("int64"),
         "act_raw": ep["whatdoing"],
-        "loc_raw": ep["WhereWhen"],
         "mode": MODE,
         "scheme": SCHEME,
     })
@@ -311,13 +339,26 @@ def main():
     out["act2_extra_uk_2"] = three_state_from_uk_secondary(ep["What_Oth2"])
     out["act2_extra_uk_3"] = three_state_from_uk_secondary(ep["What_Oth3"])
 
+    # loc_raw (M-1, 2026-08-15): three-state on the same terms as act2_raw.
+    # "-9" (F-UK-15) -> state 2 (""); anything else, including "4276"
+    # (F-UK-9), passed through unchanged as a value for G1.4 to judge.
+    out["loc_raw"] = three_state_from_uk_location(ep["WhereWhen"])
+
     for c in COPRESENCE:
         out[f"cop_extra_uk_{c}"] = ep[c]
 
     # weights: both diary weights carried by name (F-UK-3); the contract's
-    # single weight_dia is populated from dia_wt_a because the documentation
-    # (CTUR p.13, NATCEN p.31) names it the default for diary/event-level
-    # analysis -- printed and cited, never invented.
+    # single weight_dia is populated from dia_wt_a. 🔴 M-5, CONFIRMED: this
+    # was already the reader's behaviour; this round only adds the explicit
+    # citation the manager's decision asks for. dia_wt_a is the documented
+    # default for diary/event-level (person-day) analysis -- NATCEN p. 31,
+    # section 7.4(c)/(d): "The diary weight - day level balances the sample
+    # for each month and day of the week"; CTUR p. 13's own worked example,
+    # `svyset psu [pw=dia_wt_a], strata(strata)`, declares a person-day-level
+    # survey design using dia_wt_a. dia_wt_b (no day-of-week adjustment,
+    # NATCEN p.31 §7.4(d)) is carried alongside as weight_dia_b and never
+    # silently substituted; see codebook_facts_uk.md F-UK-3 for the reopen
+    # trigger (Step 5/6 moving the unit of analysis to the person).
     out["weight_dia_a"] = ep["dia_wt_a"]
     out["weight_dia_b"] = ep["dia_wt_b"]
     out["weight_dia"] = ep["dia_wt_a"]
@@ -346,6 +387,23 @@ def main():
             "recorded_and_blank": n_blank,
             "recorded_with_value": n_valued,
         }
+
+    # loc_raw three-state count (M-1). Printed the same way act2_raw's states
+    # are, so G1.12's independent recount has an emitted figure to compare
+    # against.
+    loc_col = out["loc_raw"]
+    loc_not_recorded = int(loc_col.isna().sum())
+    loc_blank = int((loc_col == "").sum())
+    loc_valued = int(len(loc_col) - loc_not_recorded - loc_blank)
+    report.append(f"  loc_raw (WhereWhen, M-1): not recorded {loc_not_recorded}, "
+                   f"recorded and blank {loc_blank} (sentinel "
+                   f"'{LOCATION_BLANK_SENTINEL}', F-UK-15), recorded with a "
+                   f"value {loc_valued} (of {len(loc_col)} episodes)")
+    facts["loc_raw_states"] = {
+        "not_recorded": loc_not_recorded,
+        "recorded_and_blank": loc_blank,
+        "recorded_with_value": loc_valued,
+    }
 
     # ---- join individual demographics and weight_ind -----------------------
     ind2 = ind.copy()

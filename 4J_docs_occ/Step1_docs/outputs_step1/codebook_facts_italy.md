@@ -277,6 +277,43 @@ the 3,637 `Individui` rows that are *not* diary respondents are exactly the comp
 before the reader was written, so the reader's join-failure path (TASK 2: "report the unmatched
 count and do not drop the rows silently") is expected to report zero, and does.
 
+### M-1, 2026-08-15 — `loc_raw` sentinel table (required by the sixteen-gate specification)
+
+`cluogo` is never blank on any of the 1,077,657 `DiarioGiornaliero` episodes (established above,
+required-facts table and finding F-IT-5: `catpri` and `cluogo` are never blank). **There is no
+delivery-declared missingness sentinel for `cluogo`.** No value is added to this table without a
+citation to ISTAT's own text, and none has been found.
+
+| Field | Sentinel value | Delivery's own label | Citation | Measured count |
+|---|---|---|---|---|
+| `cluogo` (`loc_raw`) | *(none declared)* | — | — | 0 of 1,077,657 episodes |
+
+Consequence: `loc_raw` is state 3 ("recorded with a value") on all 1,077,657 Italian episodes, confirmed
+independently by `G1.12`'s raw recount from `DiarioGiornaliero.txt` (own column resolution, no episode
+reconstruction needed since Italy ships native episodes), which matches the emitted parquet exactly.
+
+### M-4, 2026-08-15 — weighting convention (required by the sixteen-gate specification)
+
+**Convention: expansion.** Established from ISTAT's own text, `Nota_metodologica-2013.pdf` p. 10,
+section 5 ("La metodologia di calcolo dei pesi campionari"), the paragraph immediately following the
+section heading:
+
+> *"Questo principio viene realizzato attribuendo a ogni unità campionaria un peso che indica il
+> numero di unità della popolazione rappresentate dall'unità medesima. Se, per esempio, a un'unità
+> campionaria viene attribuito un peso pari a 30, allora questa unità rappresenta se stessa e altre 29
+> unità della popolazione che non sono state incluse nel campione."*
+
+("This principle is realised by assigning each sample unit a weight that indicates the number of
+population units represented by that unit. For example, if a sample unit is assigned a weight of 30,
+this unit represents itself and another 29 population units not included in the sample.") This is the
+textbook definition of an expansion weight, matching `coefin`/`coefi2`'s own field names
+("coefficiente di **riporto all'universo**" — "coefficient of **expansion to the universe**
+[population]", TRACC-IND rows 18-19). 🔴 **Established from this text, not inferred from the observed
+magnitudes and not copied from Spain's finding**, per the work order's explicit instruction — the
+observed range (`coefin`+`coefi2` pooled: 21.16 to 35,070.53, `G1.7d`) is corroborating, not the basis
+for the decision. `G1.7d`'s bound is `[1.0, 10^8)`, from the 12-character field's declared 4
+implied-decimal digits (8 integer digits).
+
 ### F-IT-14 — `uso_tempo_2013_IT.zip` archive vs. the two excluded 2023-wave files
 
 `Nota_metodologica.pdf` (7 pp., the 2023 volunteering module) and `UsoTempo_2023_IT.zip` were

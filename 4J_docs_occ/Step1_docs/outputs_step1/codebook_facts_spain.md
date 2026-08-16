@@ -114,6 +114,33 @@ vocabulary and refuse one real code.
 Step 1 carries `act_raw` only. Nothing was dropped silently — the count is in the parse report — but
 the contract has no field for it and the manager has to decide whether Step 3 wants one.
 
+### M-1, 2026-08-15 — `loc_raw` sentinel table (required by the sixteen-gate specification)
+
+Spain fields `LUGAR` on every one of the 2,778,480 `DIARIO2` slots (measured directly; the reader's
+own V1.d refusal would raise if any slot's `LUGAR` were blank, and it never has). **There is no
+delivery-declared missingness sentinel for `LUGAR`.** Per the sixteen-gate specification, "there is no
+rule that negative values are sentinels and none may be invented" — no value is added to this table
+without a citation to INE's own text, and none has been found.
+
+| Field | Sentinel value | Delivery's own label | Citation | Measured count |
+|---|---|---|---|---|
+| `LUGAR` (`loc_raw`) | *(none declared)* | — | — | 0 of 2,778,480 slots / 0 of 430,754 episodes |
+
+Consequence: `loc_raw` is state 3 ("recorded with a value") on all 430,754 Spanish episodes, confirmed
+independently by `G1.12`'s raw recount from `DIARIO2` (own offsets, own first-of-run rule), which
+matches the emitted parquet exactly.
+
+### M-4, 2026-08-15 — weighting convention (required by the sixteen-gate specification)
+
+**Convention: expansion.** METH p. 37 (the estimator definition, section on population estimation):
+*"y d_j es el peso o factor de elevación"* — "and d_j is the weight or **expansion factor**." This is
+the textbook definition of an expansion weight (a count of population units the sampled unit
+represents), not a weight normalised to mean 1. Corroborated, not derived from, the observed
+magnitudes: `FACTORF` ranges 264.94 to 113,238.82 (G1.7d), consistent with representing thousands of
+real people per weighted respondent — but the convention is established from INE's own text, per the
+work order's instruction, not inferred from this range. `G1.7d`'s bound is `[1.0, 10^6)`, from
+`FACTORF`'s declared 6-integer-digit layout width (LAYOUT, sheet *F DIARIO2*, row 63).
+
 ### F-ES-7 — the entry point in `RL01` does not exist
 
 `RL01` gives `cid=1254736176860` under `/dyngs/INEbase/es/operacion.htm`. That URL returns **HTTP

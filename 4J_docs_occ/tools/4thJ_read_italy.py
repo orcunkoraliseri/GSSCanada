@@ -329,7 +329,15 @@ def main():
 
     # ---- act_raw (catpri, right-stripped -- see codebook finding F-IT-5) --
     d2["act_raw"] = d2["catpri"].str.rstrip()
-    d2["loc_raw"] = d2["cluogo"].str.strip()
+
+    # loc_raw (M-1, 2026-08-15): three-state nullable pandas "string" column,
+    # on the same terms as act2_raw. Italy fields cluogo on every episode (no
+    # declared missingness sentinel -- see codebook_facts_italy.md sentinel
+    # table; catpri/cluogo are never blank per finding F-IT-5), so no
+    # Italian episode is ever pd.NA or blank; every episode is state 3. Cast
+    # to "string" for dtype conformance with the current contract, no reader
+    # logic changed.
+    d2["loc_raw"] = d2["cluogo"].str.strip().astype("string")
 
     # ---- co-presence: every field its own named column, none folded -------
     # None of Italy's 8 fields maps unambiguously onto Spain's 5-slot
@@ -394,6 +402,17 @@ def main():
     ep["weight_dia"] = to_weight(ep["weight_dia_raw"])
     report.append("")
 
+    # loc_raw three-state count (M-1). Printed for parity with the other two
+    # countries and so G1.12's independent recount has an emitted figure to
+    # compare against.
+    loc_not_recorded = int(ep["loc_raw"].isna().sum())
+    loc_blank = int((ep["loc_raw"] == "").sum())
+    loc_valued = int(len(ep) - loc_not_recorded - loc_blank)
+    report.append(f"  loc_raw (cluogo, M-1): not recorded {loc_not_recorded}, "
+                   f"recorded and blank {loc_blank} (no declared sentinel "
+                   f"for Italy), recorded with a value {loc_valued} (of "
+                   f"{len(ep)} episodes)")
+
     cols = [
         "country", "wave", "wave_file_anno", "hid", "pid", "diary_day", "episode_index",
         "start_min", "duration_min", "act_raw", "act2_raw", "loc_raw",
@@ -434,6 +453,11 @@ def main():
             "not_recorded": n_not_recorded,
             "recorded_and_blank": n_blank,
             "recorded_with_value": n_valued,
+        },
+        "loc_raw_states": {
+            "not_recorded": loc_not_recorded,
+            "recorded_and_blank": loc_blank,
+            "recorded_with_value": loc_valued,
         },
         "copresence_fields": COPRESENCE,
         "istat_stated_records": ISTAT_STATED_RECORDS,

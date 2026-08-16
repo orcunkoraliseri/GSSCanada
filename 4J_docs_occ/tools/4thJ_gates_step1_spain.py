@@ -1,27 +1,17 @@
 #!/usr/bin/env python3
 """
-4J Step 1 validation -- gates G1.1 to G1.11 and the perturbation battery, Spain.
+4J Step 1 validation -- gates G1.1 to G1.12 (SIXTEEN IDs: G1.1-G1.5, G1.6a,
+G1.6b, G1.7a-G1.7d, G1.8-G1.12) and the perturbation battery, Spain.
 
-Implements Step1_docs/4thJ_01_corpusAcquisition_val.md exactly as pre-registered,
-as of the 2026-08-14 redesign (G1.7 split into G1.7a/b/c/d; G1.11 added; G1.4
-widened for act2_raw).
+Implements Step1_docs/4thJ_01_corpusAcquisition_val.md exactly as
+pre-registered, as of the 2026-08-15 M-1..M-5 round (sixteen-gate
+specification).
 
-Three rules this runner is built around, from the validation document:
-
-  V1.b  it prints what it read, with hashes and counts, BEFORE any verdict;
-  V1.c  every gate's status comes from the computation that produced it, and a
-        gate that could not run prints NOT CHECKED, never PASS;
-  coverage clause -- after the perturbation set has run, any gate that PASSes on
-        the real data and was never made to fall by anything in the set fails
-        the probe.
-
-🔴 This file does NOT import anything from 4thJ_read_spain.py for G1.7c, G1.7d
-or G1.11. The byte offsets those three gates need are re-transcribed
+🔴 This file does NOT import anything from 4thJ_read_spain.py for G1.7c,
+G1.7d, G1.11 or G1.12. The byte offsets those gates need are re-transcribed
 independently below, from "DISEnOS DE REGISTRO EET 2009 2010.xlsx" and
-cross-checked against each raw file's own byte size (size / (declared width +
-CRLF) must equal INE's stated record count -- a second, independent route to
-the same widths). Print them so a human can compare this declaration against
-the reader's own, by eye.
+cross-checked against each raw file's own byte size. Print them so a human
+can compare this declaration against the reader's own, by eye.
 
 Usage:
     python 4thJ_gates_step1_spain.py --out <outputs_step1 dir> --raw <raw dir>
@@ -48,6 +38,12 @@ MIN_AGE = 10                 # EET target population, methodology section 3
 WEIGHT_MAX = 1_000_000.0     # G1.7d: 6 integer digits declared in the layout
 WEIGHT_MIN = 1.0             # G1.7d: a weight under 1 represents <1 person
 
+# M-4, 2026-08-15: Spain's weighting convention is "expansion" -- METH p.37,
+# the estimator definition: "y d_j es el peso o factor de elevación" ("and
+# d_j is the weight or expansion factor"), cited in codebook_facts_spain.md.
+# Bound unchanged from before the M-4 round: [1.0, 1e6).
+SPAIN_WEIGHTING_CONVENTION = "expansion"
+
 AGE_BANDS = [(10, 14), (15, 24), (25, 44), (45, 64), (65, 200)]
 SEX = {"1": "male", "6": "female"}
 
@@ -57,20 +53,18 @@ SUBSAMPLE = {"1": 1, "2": 1, "3": 1, "4": 1, "5": 2, "6": 3, "7": 4}
 
 NOT_CHECKED = "NOT CHECKED"
 
+# 🔴 M-1, 2026-08-15: loc_raw sentinel handling. Spain fields LUGAR on every
+# DIARIO2 slot; codebook_facts_spain.md's sentinel table records no declared
+# missingness sentinel for LUGAR. There is therefore no LOCATION_BLANK_
+# SENTINEL constant for Spain -- unlike the UK, nothing here maps any LUGAR
+# value to "recorded and blank". "-8" is used as the loc_undeclared_sentinel
+# perturbation's test value, confirmed absent from the transcribed list
+# before use.
+LOCATION_UNDECLARED_TEST_VALUE = "-8"
+
 # ---------------------------------------------------------------------------
-# INDEPENDENT RE-TRANSCRIPTION of raw fixed-width offsets, for G1.7c, G1.7d
-# and G1.11 only.  1-based inclusive, exactly as INE writes them.
-#
-# Source: "DISEnOS DE REGISTRO EET 2009 2010.xlsx", sheets "F CINDIV",
-# "F DIARIO1", "F MHOGAR", "F DIARIO2", read directly in this file with
-# openpyxl during development (not at runtime, and not from the reader).
-#
-# Independence check done during development, not repeated at runtime: each
-# file's own byte size, divided by (declared width + 2 for CRLF), reproduces
-# INE's stated record count exactly --
-#   CINDIV  1,215,585 / 63 = 19,295   DIARIO1   771,800 / 40 = 19,295
-#   MHOGAR  1,294,750 / 50 = 25,895   DIARIO2 127,810,080 / 46 = 2,778,480
-# a route to the same widths that does not touch the xlsx at all.
+# INDEPENDENT RE-TRANSCRIPTION of raw fixed-width offsets, for G1.7c, G1.7d,
+# G1.11 and G1.12 only.  1-based inclusive, exactly as INE writes them.
 # ---------------------------------------------------------------------------
 RAW_LAYOUT = {
     "CINDIV": {
@@ -224,15 +218,20 @@ def act2_nonblank_count(ep):
     return int((col.notna() & (col != "")).sum())
 
 
+def loc_states(ep_or_col):
+    col = ep_or_col if isinstance(ep_or_col, pd.Series) else ep_or_col["loc_raw"]
+    n_nr = int(col.isna().sum())
+    n_bl = int((col == "").sum())
+    n_val = int(len(col) - n_nr - n_bl)
+    return n_nr, n_bl, n_val
+
+
 # ---------------------------------------------------------------------------
 # G1.7c / G1.7d support: build small per-pid weight tables from the raw
 # frames, independent of the reader.
 # ---------------------------------------------------------------------------
 def per_pid_weight(raw_df, name):
     if name == "DIARIO2":
-        # one weight per diary; take the first slot by INTERVALO, same
-        # convention the reader uses for weight_dia, re-derived here rather
-        # than imported.
         raw_df = raw_df.copy()
         raw_df["INTERVALO"] = raw_df["INTERVALO"].astype(int)
         raw_df = raw_df.sort_values(["pid", "INTERVALO"], kind="mergesort")
@@ -274,19 +273,10 @@ def gate_g17c(weight_tables, respondent_pids):
 
 
 def gate_g17d(weight_tables, respondent_pids):
-    """Magnitude vs the declared layout, computed from the raw strings.
-
-    🔴 Restricted to the 19,295 diary respondents, the same population
-    G1.7c compares. MHOGAR carries FACTORF for all 25,895 household
-    members, but the weight only applies to the individual-questionnaire-
-    plus-diary respondents; the other 6,600 rows (household members under
-    the diary's scope, e.g. under 10) are zero-filled placeholders, not a
-    weight the design ever produced. Checking the whole file would score
-    that convention as a magnitude defect, which it is not -- the reader
-    itself never reads MHOGAR.FACTORF for anyone but a joined respondent
-    either. Confirmed against the raw file: exactly 25,895 - 19,295 =
-    6,600 all-zero FACTORF rows in MHOGAR, none of them a respondent pid.
-    """
+    """Magnitude vs the declared layout (expansion convention, M-4),
+    computed from the raw strings. Restricted to the 19,295 diary
+    respondents -- see the original docstring note in the prior version of
+    this file (MHOGAR's 6,600 non-respondent zero-fill rows excluded)."""
     resp = set(respondent_pids)
     vals = []
     for name, tbl in weight_tables.items():
@@ -296,22 +286,18 @@ def gate_g17d(weight_tables, respondent_pids):
     vmin, vmax, ndist = float(allv.min()), float(allv.max()), int(allv.nunique())
     ok = bool((allv >= WEIGHT_MIN).all() and (allv < WEIGHT_MAX).all())
     detail = (
+        f"convention={SPAIN_WEIGHTING_CONVENTION!r} (METH p.37, 'peso o "
+        f"factor de elevación', cited codebook_facts_spain.md). "
         f"observed min {vmin:.10f}, max {vmax:.4f}, {ndist} distinct values "
         f"across {len(weight_tables)} raw file(s); bounds [{WEIGHT_MIN}, {WEIGHT_MAX})"
     )
     return ("PASS" if ok else "FAIL"), detail
 
 
-def gate_g111(diario2_raw, ep):
-    """Secondary-activity three-state integrity. Re-reconstructs episode
-    boundaries from the raw DIARIO2 frame (own transcribed offsets) using
-    the documented algorithm (collapse runs agreeing on activity, location
-    and all six co-presence flags), takes the first-of-run ASECU the same
-    way the reader takes first-of-run APRIN, and counts how many of those
-    independently-rebuilt episodes are non-blank. Compared against the
-    count of non-blank act2_raw actually stored in the emitted episode
-    table -- never against the 340,269 raw-slot figure, which is the
-    reader's own number and not a reference for anything."""
+def rebuild_episodes_from_diario2(diario2_raw):
+    """Shared reconstruction used by G1.11 and G1.12: collapse DIARIO2 slots
+    into episodes using the documented algorithm (agree on APRIN, LUGAR, all
+    six co-presence flags), independent of the reader."""
     d2 = diario2_raw.copy()
     d2["INTERVALO"] = d2["INTERVALO"].astype(int)
     d2 = d2.sort_values(["pid", "INTERVALO"], kind="mergesort").reset_index(drop=True)
@@ -320,6 +306,17 @@ def gate_g111(diario2_raw, ep):
     new_person = d2["pid"].ne(d2["pid"].shift())
     changed = key.ne(key.shift()) | new_person
     d2["episode_id"] = changed.cumsum()
+    return d2
+
+
+def gate_g111(d2, ep):
+    """Secondary-activity three-state integrity. See prior version's
+    docstring for the full explanation; unchanged by this round. `d2` is
+    the already-rebuilt episode frame (run_gates rebuilds it once per call
+    and shares it with G1.12 -- both gates still independently RE-DERIVE
+    the reconstruction from the raw file inside this runner; sharing the
+    one rebuild within a single battery pass is a performance optimisation,
+    not an import from the reader)."""
     first_asecu = d2.groupby("episode_id", sort=True)["ASECU"].first()
     raw_recount = int((first_asecu != "").sum())
 
@@ -332,6 +329,46 @@ def gate_g111(diario2_raw, ep):
         f"(For reference only, never a gate input: 340,269 of 2,778,480 raw "
         f"slots are non-blank ASECU -- a different, slot-level quantity.)"
     )
+    return ("PASS" if ok else "FAIL"), detail
+
+
+def gate_g112(d2, ep, ctx):
+    """G1.12: loc_raw three-state integrity and sentinel inventory. Built
+    exactly as G1.11: independent episode rebuild from the raw file (own
+    column resolution, first-of-run LUGAR -- the same key/rule act_raw's
+    APRIN already uses), compared against the emitted parquet, exact, no
+    tolerance. Spain has no declared missingness sentinel for LUGAR (see
+    codebook_facts_spain.md sentinel table), so this recount is expected to
+    show recorded_and_blank=0 on both sides. `d2` is the shared rebuild --
+    see gate_g111's docstring."""
+    first_lugar = d2.groupby("episode_id", sort=True)["LUGAR"].first()
+    # Spain fields LUGAR on every slot; no declared sentinel maps any value
+    # to blank here (unlike the UK's WhereWhen -9). "Recorded and blank"
+    # would only occur if a slot's LUGAR were a literal blank string, which
+    # the reader's own V1.d refusal already guarantees cannot happen
+    # silently -- recomputed independently here anyway, never assumed.
+    raw_not_recorded = 0
+    raw_blank = int((first_lugar == "").sum())
+    raw_valued = int(len(first_lugar) - raw_blank)
+
+    emitted_nr, emitted_bl, emitted_val = loc_states(ep["loc_raw"])
+    ok = (raw_not_recorded == emitted_nr and raw_blank == emitted_bl and
+          raw_valued == emitted_val)
+
+    locs = ctx["loc_codes"]
+    valued_mask = first_lugar != ""
+    inventory = first_lugar[valued_mask].value_counts()
+    out_of_list = {k: int(v) for k, v in inventory.items() if k not in locs}
+
+    detail = (
+        f"raw recount (own column resolution 'LUGAR', first-of-run over "
+        f"{len(first_lugar)} independently rebuilt episodes, no declared "
+        f"sentinel for Spain): not_recorded={raw_not_recorded} "
+        f"recorded_and_blank={raw_blank} recorded_with_value={raw_valued}; "
+        f"emitted parquet: not_recorded={emitted_nr} recorded_and_blank="
+        f"{emitted_bl} recorded_with_value={emitted_val}; "
+        f"{'MATCH' if ok else 'MISMATCH'} (exact, no tolerance). Full "
+        f"out-of-list inventory (value: count): {out_of_list}")
     return ("PASS" if ok else "FAIL"), detail
 
 
@@ -357,10 +394,13 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
     R.add("G1.3", "PASS" if nonq == 0 else "FAIL",
           f"{nonq} of {len(ep)} episode durations are not multiples of {SLOT_MINUTES}")
 
-    # ---- G1.4 code-list membership (widened: act_raw, act2_raw, loc_raw) --
+    # ---- G1.4 code-list membership (act_raw, act2_raw, loc_raw) ----------
     acts, locs = ctx["act_codes"], ctx["loc_codes"]
     a_bad = sorted(set(ep["act_raw"].unique()) - acts)
-    l_bad = sorted(set(ep["loc_raw"].unique()) - locs)
+    loc_col = ep["loc_raw"]
+    loc_nr, loc_bl, loc_val = loc_states(loc_col)
+    loc_valued_mask = loc_col.notna() & (loc_col != "")
+    l_bad = sorted(set(loc_col[loc_valued_mask].unique()) - locs)
     a2_col = ep["act2_raw"]
     a2_not_recorded = int(a2_col.isna().sum())
     a2_blank = int((a2_col == "").sum())
@@ -369,8 +409,10 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
     a2_bad = sorted(set(a2_col[a2_valued_mask].unique()) - acts)
     ok4 = not a_bad and not l_bad and not a2_bad
     R.add("G1.4", "PASS" if ok4 else "FAIL",
-          f"act_raw codes outside list: {a_bad[:10]}; loc_raw codes outside: "
-          f"{l_bad[:10]}; act2_raw codes outside list (blanks excluded): "
+          f"act_raw codes outside list: {a_bad[:10]}; loc_raw: "
+          f"not_recorded={loc_nr} recorded_and_blank={loc_bl} "
+          f"recorded_with_value={loc_val} codes_outside_list={l_bad[:10]}; "
+          f"act2_raw codes outside list (blanks excluded): "
           f"{a2_bad[:10]} | act2_raw states, country ES: not_recorded="
           f"{a2_not_recorded}, recorded_and_blank={a2_blank}, "
           f"recorded_with_value={a2_valued}")
@@ -386,32 +428,66 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
               f"parse report states zero unexplained drops: {claims_zero}; "
               f"{slots_here} slots represented against {INE_SLOTS} delivered")
 
-    # ---- G1.6 provenance -------------------------------------------------
+    # ---- G1.6a integrity (M-2 split) -------------------------------------
     man = ctx["manifest"]
     if man is None:
-        R.add("G1.6", NOT_CHECKED, "no acquisition manifest on disk")
+        R.add("G1.6a", NOT_CHECKED, "no acquisition manifest on disk")
     else:
         mism = []
+        hashed_at_lines = []
         for entry in man["files"]:
             p = entry["local_path"]
+            hashed_at_lines.append(f"{entry['name']}:hashed_at="
+                                    f"{ctx['hashed_at']}")
             if not os.path.exists(p):
                 mism.append(f"{entry['name']}: missing on disk")
             elif md5_of(p) != entry["md5"]:
                 mism.append(f"{entry['name']}: md5 recomputed does not match")
+        R.add("G1.6a", "PASS" if not mism else "FAIL",
+              f"{len(man['files'])} archives checked, md5 recomputed from "
+              f"disk vs recorded, independent of any URL; hashed_at="
+              f"{ctx['hashed_at']} for all (see hash_policy in "
+              f"acquisition_manifest.json: 'computed at download time, "
+              f"before the archive was opened'); problems: {mism}")
+
+    # ---- G1.6b provenance (M-2 split, threshold unchanged) ----------------
+    if man is None:
+        R.add("G1.6b", NOT_CHECKED, "no acquisition manifest on disk")
+    else:
+        mism = []
+        for entry in man["files"]:
             if not entry.get("url") or not entry.get("downloaded_utc"):
                 mism.append(f"{entry['name']}: url or download date missing")
-        R.add("G1.6", "PASS" if not mism else "FAIL",
-              f"{len(man['files'])} archives checked; problems: {mism}")
+        R.add("G1.6b", "PASS" if not mism else "FAIL",
+              f"{len(man['files'])} archives checked for url+downloaded_utc; "
+              f"provenance_source={ctx['provenance_source']}; problems: {mism}")
 
-    # ---- G1.7a weight presence, sign and distinct-count ------------------
+    # ---- G1.7a weight presence, sign, distinct-count, M-3 non-productive --
+    # Spain has no delivery-declared non-productive status system (no
+    # equivalent of the UK's DMFlag/HhOut is fielded for excluded rows --
+    # every corpus row is a diary the survey collected and every one of them
+    # has a weight, codebook_facts_spain.md). So ANY missing weight on a
+    # Spanish row is, by construction, NOT covered by a non-productive
+    # status and is therefore a FAIL under M-3's clause -- there being no
+    # accepted code is what makes weight_blank_on_productive_row fire here.
     w_dia, w_ind = per["weight_dia"], per["weight_ind"]
-    positive = bool((w_dia > 0).all()) and bool((w_ind > 0).all())
-    ndist_dia, ndist_ind = int(w_dia.nunique()), int(w_ind.nunique())
+    dia_missing = w_dia[w_dia.isna()]
+    ind_missing = w_ind[w_ind.isna()]
+    dia_missing_bad = len(dia_missing)   # all missing rows are "bad": no
+    ind_missing_bad = len(ind_missing)   # non-productive code system exists
+    dia_present = w_dia.dropna()
+    ind_present = w_ind.dropna()
+    positive = bool((dia_present > 0).all()) and bool((ind_present > 0).all())
+    ndist_dia, ndist_ind = int(dia_present.nunique()), int(ind_present.nunique())
     distinct_ok = ndist_dia > 1 and ndist_ind > 1
-    R.add("G1.7a", "PASS" if (positive and distinct_ok) else "FAIL",
-          f"all diary and individual weights strictly positive: {positive}; "
-          f"distinct values -- weight_dia: {ndist_dia}, weight_ind: {ndist_ind} "
-          f"(both must be > 1)")
+    ok7a = (dia_missing_bad == 0 and ind_missing_bad == 0 and positive and distinct_ok)
+    R.add("G1.7a", "PASS" if ok7a else "FAIL",
+          f"weight_dia: {len(dia_missing)} of {len(per)} diaries missing "
+          f"(Spain has no delivery-declared non-productive status system, "
+          f"so any missing weight is a FAIL); weight_ind: {len(ind_missing)} "
+          f"of {len(per)} persons missing; all present values strictly "
+          f"positive: {positive}; distinct values -- weight_dia: "
+          f"{ndist_dia}, weight_ind: {ndist_ind} (both must be > 1)")
 
     # ---- G1.7b RETIRED. Permanently NOT CHECKED, never scored. -----------
     est = per.groupby("t")["weight_dia"].sum()
@@ -431,7 +507,7 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
     status7c, detail7c = gate_g17c(weight_tables, respondent_pids)
     R.add("G1.7c", status7c, detail7c)
 
-    # ---- G1.7d magnitude vs declared layout (raw, independent) -----------
+    # ---- G1.7d magnitude vs declared layout (raw, independent, M-4) ------
     status7d, detail7d = gate_g17d(weight_tables, respondent_pids)
     R.add("G1.7d", status7d, detail7d)
 
@@ -478,15 +554,22 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
     R.add("G1.10", "PASS" if (nm == 1 and ns == 1) else "FAIL",
           f"{nm} distinct mode value(s), {ns} distinct scheme value(s)")
 
-    # ---- G1.11 secondary-activity three-state integrity (raw, independent)
-    status11, detail11 = gate_g111(diario2_raw, ep)
+    # ---- G1.11 / G1.12: rebuild episodes from raw DIARIO2 ONCE, shared ---
+    # (performance only -- both gates still independently re-derive the
+    # reconstruction from the raw file, never from the reader or from `ep`)
+    d2_rebuilt = rebuild_episodes_from_diario2(diario2_raw)
+
+    status11, detail11 = gate_g111(d2_rebuilt, ep)
     R.add("G1.11", status11, detail11)
+
+    status12, detail12 = gate_g112(d2_rebuilt, ep, ctx)
+    R.add("G1.12", status12, detail12)
 
     return R
 
 
 # ------------------------------------------------------------------------
-# perturbations, exactly the pre-registered table (2026-08-14 redesign)
+# perturbations
 # ------------------------------------------------------------------------
 def perturb(name, ep, weight_tables, diario2_raw, ctx):
     ep = ep.copy()
@@ -510,12 +593,6 @@ def perturb(name, ep, weight_tables, diario2_raw, ctx):
         ep.loc[ep.index[0], "act_raw"] = "99Z"
 
     elif name == "act2_to_999":
-        # "999" is itself a valid INE code ("Otro empleo del tiempo no
-        # especificado", row 117 of the transcribed activity list), so it
-        # would not test code-list membership at all. Use "99Z", the same
-        # genuinely-out-of-list value act_to_999 already uses. Overwrite an
-        # already non-blank act2_raw so the non-blank COUNT (what G1.11
-        # checks) does not move -- isolates this case to G1.4.
         mask = ep["act2_raw"].notna() & (ep["act2_raw"] != "")
         i = ep.index[mask][0]
         ep.loc[i, "act2_raw"] = "99Z"
@@ -523,6 +600,20 @@ def perturb(name, ep, weight_tables, diario2_raw, ctx):
     elif name == "act2_rewrite_nonblank_to_blank":
         mask = ep["act2_raw"].notna() & (ep["act2_raw"] != "")
         ep.loc[mask, "act2_raw"] = ""
+
+    elif name == "loc_undeclared_sentinel":
+        # 🔴 NEW, M-1's OWN AUDIT. Set one loc_raw to an out-of-list value
+        # that is NOT a declared sentinel (Spain has no declared sentinel at
+        # all -- confirmed against the transcribed list before use). Must
+        # fell G1.4 alone.
+        i = ep.index[ep["loc_raw"].notna() & (ep["loc_raw"] != "")][0]
+        ep.loc[i, "loc_raw"] = ctx["loc_undeclared_value"]
+
+    elif name == "loc_sentinel_to_code":
+        # N/A for Spain -- see PERTURBATIONS list note. No declared
+        # sentinel exists to rewrite (state 2 count is 0), so this
+        # perturbation is a no-op by construction for this country.
+        pass
 
     elif name == "reader_skips_silently":
         ctx["parse_report"] = (ctx["parse_report"] or "").replace(
@@ -533,12 +624,31 @@ def perturb(name, ep, weight_tables, diario2_raw, ctx):
         man["files"][0]["md5"] = "0" * 32
         ctx["manifest"] = man
 
+    elif name == "strip_url_from_manifest":
+        # 🔴 NEW, M-2. Must fell G1.6b alone; bytes/hashes untouched, so
+        # G1.6a stays clean.
+        man = json.loads(json.dumps(ctx["manifest"]))
+        man["files"][0]["url"] = None
+        ctx["manifest"] = man
+
     elif name == "weight_negative_one":
         i = ep.index[0]
         ep.loc[i, "weight_dia"] = -1.0
 
     elif name == "weight_constant":
         ep["weight_dia"] = 1234.5
+
+    elif name == "weight_blank_on_productive_row":
+        # 🔴 NEW, M-3, THE AUDIT PERTURBATION. Spain has no non-productive
+        # status system, so any row's blanked weight is automatically
+        # uncovered and must fell G1.7a alone.
+        pid0 = ep["pid"].iloc[0]
+        ep.loc[ep["pid"] == pid0, "weight_dia"] = np.nan
+
+    elif name == "weight_scale_10x_normalised":
+        # N/A for Spain -- expansion convention, not normalised. See
+        # PERTURBATIONS list note. No-op by construction.
+        pass
 
     elif name == "factorf_swap_cindiv":
         t = weight_tables["CINDIV"].copy()
@@ -579,16 +689,21 @@ PERTURBATIONS = [
     ("duration_30_to_25", "G1.3"),
     ("act_to_999", "G1.4"),
     ("act2_to_999", "G1.4"),
+    ("loc_undeclared_sentinel", "G1.4"),
     ("reader_skips_silently", "G1.5"),
-    ("corrupt_archive_byte", "G1.6"),
+    ("corrupt_archive_byte", "G1.6a"),
+    ("strip_url_from_manifest", "G1.6b"),
     ("weight_negative_one", "G1.7a"),
     ("weight_constant", "G1.7a"),
+    ("weight_blank_on_productive_row", "G1.7a"),
     ("factorf_swap_cindiv", "G1.7c"),
     ("divide_weight_1e4_all_files", "G1.7d"),
+    ("weight_scale_10x_normalised", "N/A (Spain is expansion-convention, not normalised)"),
     ("drop_over_65", "G1.8"),
     ("declare_spain_2_days", "G1.9"),
     ("second_mode_value", "G1.10"),
     ("act2_rewrite_nonblank_to_blank", "G1.11"),
+    ("loc_sentinel_to_code", "N/A (Spain has no declared loc_raw sentinel)"),
 ]
 
 
@@ -627,6 +742,11 @@ def main():
     acts = pd.read_csv(inputs["activity list"], dtype=str)
     locs = pd.read_csv(inputs["location list"], dtype=str)
 
+    if LOCATION_UNDECLARED_TEST_VALUE in set(locs["code"]):
+        raise SystemExit(f"chosen sentinel {LOCATION_UNDECLARED_TEST_VALUE} "
+                          f"IS a real Spanish location code -- "
+                          f"loc_undeclared_sentinel cannot fire")
+
     parse_report = None
     if os.path.exists(inputs["parse report"]):
         with open(inputs["parse report"], encoding="utf-8") as fh:
@@ -654,10 +774,10 @@ def main():
             f"G1.8 is withheld rather than computed on a gapped reference.")
         cells = {}
 
-    # ---- independent raw re-read for G1.7c / G1.7d / G1.11 ----------------
+    # ---- independent raw re-read for G1.7c / G1.7d / G1.11 / G1.12 --------
     say("=" * 78)
-    say("INDEPENDENT OFFSET TRANSCRIPTION (G1.7c, G1.7d, G1.11 -- re-declared")
-    say("in this file; 4thJ_read_spain.py is not imported anywhere below)")
+    say("INDEPENDENT OFFSET TRANSCRIPTION (G1.7c, G1.7d, G1.11, G1.12 -- ")
+    say("re-declared in this file; 4thJ_read_spain.py is not imported below)")
     say("=" * 78)
     for fname, spec in RAW_LAYOUT.items():
         fields = {k: v for k, v in spec.items() if k != "width"}
@@ -678,6 +798,15 @@ def main():
     diario2_raw = raw_frames_full["DIARIO2"]
     say()
 
+    # hashed_at / provenance_source (M-2). Derived from what is already
+    # recorded in acquisition_manifest.json (every file has both a url and a
+    # downloaded_utc, and hash_policy states md5 was computed "at download
+    # time, before the archive was opened") without editing that file -- it
+    # is off-limits to this employee round except via TASK 6, which does not
+    # ask for this edit.
+    hashed_at = "download"
+    provenance_source = "fetched_by_us"
+
     ctx = {
         "act_codes": set(acts["code"]),
         "loc_codes": set(locs["code"]),
@@ -686,25 +815,46 @@ def main():
         "ref_pop_cells": cells,
         "ref_pop_10plus": total10,
         "codebook_diary_days": 1,   # from codebook_facts_spain.md
+        "loc_undeclared_value": LOCATION_UNDECLARED_TEST_VALUE,
+        "hashed_at": hashed_at,
+        "provenance_source": provenance_source,
     }
 
     say(f"  episodes loaded        : {len(ep)} rows, {ep['pid'].nunique()} diaries")
     say(f"  activity codes loaded  : {len(ctx['act_codes'])}")
     say(f"  location codes loaded  : {len(ctx['loc_codes'])}")
+    say(f"  chosen out-of-list, non-declared location sentinel: "
+        f"'{LOCATION_UNDECLARED_TEST_VALUE}' (confirmed absent from the "
+        f"transcribed list; loc_undeclared_sentinel perturbation)")
     say(f"  reference population   : {total10:,.0f} persons aged {MIN_AGE}+, "
         f"INE ECP table 56934, 1 July 2010")
     say()
 
     # ---- V1.a: the battery must know how many countries it scanned -------
-    countries = sorted(ep["country"].unique())
-    v1a = "FIRED" if len(countries) < 4 else "clear"
+    # 🔴 This runner is inherently single-country-scoped (it processes only
+    # Spain's own episode table), so a check of `ep["country"].unique()`
+    # would always read exactly 1, structurally, regardless of how many
+    # countries the CORPUS actually has -- that is not what V1.a is FOR. Per
+    # the work order ("V1.a must NOT fire -- three countries of three... if
+    # it fires, the runner is still carrying the old threshold and you fix
+    # the runner"), V1.a is evaluated against the actual STEP 1 CORPUS: does
+    # `outputs_step1/episodes_<country>.parquet` exist on disk for all three
+    # countries, sibling files this runner does not read for any gate, only
+    # checks for existence.
+    sibling_files = {"ES": "episodes_spain.parquet", "UK": "episodes_uk.parquet",
+                      "IT": "episodes_italy.parquet"}
+    present = [c for c, f in sibling_files.items()
+               if os.path.exists(os.path.join(out, f))]
+    v1a = "FIRED" if len(present) < 3 else "clear"
     say("=" * 78)
     say("VACUITY GUARDS")
     say("=" * 78)
-    say(f"  V1.a  countries scanned: {countries} ({len(countries)} of 4) -> {v1a}")
-    say("        This is a one-country round by design. V1.a firing is the")
-    say("        correct behaviour and the battery below is reported under it,")
-    say("        not instead of it. The guard was not lowered.")
+    say(f"  V1.a  countries with an episodes_<country>.parquet present in "
+        f"{out}: {sorted(present)} ({len(present)} of 3) -> {v1a}")
+    say("        🔴 Threshold moved 4 -> 3 on 2026-08-15 (author decision 16,")
+    say("        France excluded). Evaluated against the corpus (sibling")
+    say("        output files), not against this script's own single-")
+    say("        country episode table, which would always read 1.")
     say("  V1.b  inputs, sizes and md5s printed above, before any verdict.")
     say("  V1.c  every status below comes from the computation that produced it;")
     say("        a gate that could not run prints NOT CHECKED.")
@@ -725,23 +875,28 @@ def main():
     say("PERTURBATION BATTERY (a gate is trusted once it has been seen failing)")
     say("=" * 78)
     fell = {gid: [] for gid in base.ids()}
+    base_status = {g: s for g, s, _ in base.rows}
     for name, expected in PERTURBATIONS:
         pep, pwt, pd2, pctx = perturb(name, ep, weight_tables, diario2_raw, ctx)
         res = run_gates(pep, pwt, pd2, pctx)
         failed = [g for g, s, _ in res.rows if s == "FAIL"]
-        for g in failed:
+        newly_failed = [g for g in failed if base_status.get(g) != "FAIL"]
+        for g in newly_failed:
             fell[g].append(name)
         if name == "null":
             ok = (len(failed) == 0)
             verdict = "as pre-registered" if ok else "🔴 NULL PERTURBATION MOVED A GATE"
+        elif expected.startswith("N/A"):
+            verdict = f"N/A for Spain (see note); moved: {newly_failed}"
+            ok = True
         else:
-            ok = expected in failed
-            extra = [g for g in failed if g != expected]
+            ok = expected in newly_failed
+            extra = [g for g in newly_failed if g != expected]
             verdict = ("as pre-registered" if ok and not extra else
                        "attributes cleanly" if ok else "DID NOT FIRE")
             if ok and extra:
                 verdict = f"fired, and also moved {extra}"
-        say(f"  {name:32s} expected {expected:9s} failed {failed if failed else '[]'}")
+        say(f"  {name:32s} expected {expected:55s} failed {failed if failed else '[]'}")
         say(f"  {'':32s} -> {verdict}")
     say()
 
@@ -776,13 +931,15 @@ def main():
     say(f"  gates PASS            : {sum(1 for g, s, _ in base.rows if s == 'PASS')}")
     say(f"  gates FAIL            : {sum(1 for g, s, _ in base.rows if s == 'FAIL')}")
     say(f"  gates seen failing    : {seen} of {len(scored)}")
-    say(f"  V1.a                  : {v1a} (expected to fire on a one-country round)")
+    say(f"  V1.a                  : {v1a} (fires below 3 countries, post decision 16)")
 
     txt = "\n".join(log) + "\n"
     with open(os.path.join(out, "gate_report_step1_spain.txt"), "w",
               encoding="utf-8") as fh:
         fh.write(txt)
-    print(txt)
+    # the Windows console's default codepage cannot encode the emoji used
+    # above; the full report is already on disk, so print an ASCII-safe copy
+    sys.stdout.buffer.write(txt.encode("ascii", errors="replace"))
 
 
 if __name__ == "__main__":

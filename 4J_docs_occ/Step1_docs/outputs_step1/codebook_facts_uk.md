@@ -155,6 +155,11 @@ row as an episode-event or as a person.
 🔴 **Both weights are calibrated to age/sex and Government Office Region (NATCEN p. 31, quoted
 above).** This is the same circularity structure as Spain's retired `G1.7b` — see F-UK-11 below.
 
+🔴 **M-5 CONFIRMED, 2026-08-15: `weight_dia = dia_wt_a` in `4thJ_read_uk.py`, unchanged by this round.**
+This was already the reader's behaviour before M-5; the manager's decision only required the citation
+above to be stated explicitly in the reader's own comment (done) and here (already was). Nothing in the
+reader's weight-column logic was touched.
+
 ### F-UK-4 — `WithMiss` and `WithNA` are missingness/concordance flags, not people-present categories
 
 * **`WithMiss` ("No co-presence reported")** is a genuine missingness flag: *"Co-presence data is
@@ -218,6 +223,17 @@ diary-completing persons in `uktus15_individual.tab` (0.28 %), only one of whom 
 `uktus15_individual.tab` with a valid `DVAge`, so the join itself is complete — the gap is
 specifically in weight coverage, not in demographic coverage.
 
+🔴 **[measured, 2026-08-15, M-3 round]: the 23 blank-`ind_wt` persons carry TWO different
+non-productive `DMFlag` codes, not one.** Re-measured directly, restricted to the 8,274 diary-completing
+persons: 1 of the 23 is the same household as the `dia_wt` gap above (`DMFlag=-6`, `HhOut=598`); the
+other **22 carry `DMFlag=4`** ("Non-productive, from part prod HH") with `HhOut=210` ("Productive: at
+least one individual interview but not from all eligible household members" — a **household**-level
+code; `DMFlag=4` is the **individual**-level status that actually explains why *this* person's own
+`ind_wt` is blank while their household is otherwise productive). `G1.7a`'s non-productive-status
+clause (M-3) therefore accepts, **for the individual grain only**, `DMFlag` in `{-6, 4}`; for the
+diary grain it accepts `DMFlag=-6` **or** `HhOut=598`, exactly as originally measured. Both DD value
+labels: DD:diary_ep_long / DD:individual, `DMFlag` value-label list.
+
 This is reported as a real, measured property of the delivered file, not smoothed over: **G1.7a as
 literally specified ("finite and strictly positive on 100 % of rows") genuinely fails on real,
 unperturbed UK data**, and that failure is scored honestly below rather than excluded or explained
@@ -236,6 +252,20 @@ with (but does not prove) a documentation omission on UKDA's side rather than a 
 `crosswalk_source_uk_activity.csv`. Consequence, stated plainly: **`G1.4` genuinely fails on real,
 unperturbed baseline data** for `act2_raw`, by exactly this one row. This is not a specification
 conflict to resolve — it is a true, rare data/documentation mismatch, reported as the gate found it.
+
+🔴 **CONFIRMED STILL TRUE, 2026-08-15, M-1 round: `4276` is not a sentinel and `G1.4` keeps failing
+because of it, exactly as the sixteen-gate specification requires** ("`4276` fails this gate after M-1
+exactly as it did before, which is the test of whether the amendment disarmed anything"). **Consequence
+for perturbation attribution, flagged here because it is easy to misread:** because `G1.4` never PASSes
+at baseline for the UK (this one row alone keeps it FAILing), none of the four perturbations aimed at
+`G1.4` (`act_to_outside_list`, `act2_to_outside_list`, `act2_extra_2_to_outside_list`, the new
+`loc_undeclared_sentinel`) can be observed as *newly* failing it under the standard PASS→FAIL
+attribution used throughout this battery — the same masking mechanism M-1/M-2 exist to fix, but driven
+here by an unrelated, pre-existing, and deliberately-preserved defect this round's scope did not
+include repairing. Verified directly (not merely inferred): each of the four perturbations correctly
+introduces its own out-of-list value into the gate's own computed `codes_outside_list` for its targeted
+field, confirming the amendment did **not** disarm the membership test — only that the standing `4276`
+FAIL continues to mask the *attribution*, not the *detection*.
 
 ### F-UK-10 — the coding list is the UK's own, not a verbatim Eurostat HETUS list; G1.4 tests membership in the UK's list only
 
@@ -307,6 +337,39 @@ Two separate reasons, both recorded because the work order asks that they not be
 🔴 **[measured]**, found by the gate battery, not anticipated while drafting this codebook: `WhereWhen` (location) is `-9` ("No answer/refused") on **7,117 of 587,632 episodes (1.211 %)**. Unlike `whatdoing` (primary activity, never negative in this delivery, confirmed above), the UK's location field **is** sometimes unreported, exactly the same way the secondary-activity columns are — but the intermediate record's `loc_raw` field, unlike `act2_raw`, has no three-state allowance in the Step 1 contract; it is specified as a single code per episode.
 
 The reader passes `WhereWhen` through unfiltered (it is not told to treat `-9` as anything other than "the value the file contains"), so these 7,117 episodes carry the literal string `"-9"` in `loc_raw`. `-9` is correctly **not** in `crosswalk_source_uk_location.csv` (it is a missingness sentinel, not a place), so `G1.4` correctly reports it as a code outside the declared list. 🔴 **This is reported as a true result, not patched by quietly adding `-9` to the location crosswalk or by inventing a `loc_raw` three-state field the specification does not define.** Per the work order's own instruction for the analogous secondary-activity gap (F-UK-2 above): **this is a specification gap and it is the manager's to close, not the employee's.** Options the manager may choose between are not decided here (e.g. widen `G1.4` to exclude the sentinel from location membership the same way blanks are excluded from `act2_raw`, or give `loc_raw` its own three-state treatment) — both would be a basis change to a gate or a contract change, either of which is outside this employee's authority.
+
+🔴 **CLOSED, 2026-08-15, M-1: `loc_raw` gains the three-state treatment `act2_raw` already had.** `-9`
+now maps to state 2 ("recorded and blank", `""`), the same 7,117 episodes, re-measured and unchanged.
+`G1.4` no longer tests the blank state against the location list. **`G1.4` still FAILs on the UK at
+baseline after this fix — see F-UK-9's amendment below — for an entirely separate, unrelated reason
+this round's scope did not include (`4276`, a single undocumented code in `act2_raw`, not `loc_raw`).**
+The re-run's own `G1.4` detail line, confirmed directly: `loc_raw ... codes_outside_list=[]`, `act2_raw
+... codes_outside_list=['4276']` — the loc_raw component of the FAIL is gone; the act2_raw component
+is not, and was never in this round's scope to fix.
+
+### M-1, 2026-08-15 — `loc_raw` sentinel table (required by the sixteen-gate specification)
+
+| Field | Sentinel value | Delivery's own label | Citation | Measured count |
+|---|---|---|---|---|
+| `WhereWhen` (`loc_raw`) | `-9` | "No answer/refused" | DD:diary_ep_long, `WhereWhen` value labels | 7,117 of 587,632 episodes (1.211 %) |
+| `What_Oth1` (`act2_raw`) | `-9` | "No answer/refused" | DD:diary_ep_long, `What_Oth1` value labels | 424,527 of 587,632 (F-UK-2) |
+| `What_Oth2` (`act2_extra_uk_2`) | `-9` | "No answer/refused" | DD:diary_ep_long, `What_Oth2` value labels | 571,664 of 587,632 (F-UK-2) |
+| `What_Oth3` (`act2_extra_uk_3`) | `-9` | "No answer/refused" | DD:diary_ep_long, `What_Oth3` value labels | 586,279 of 587,632 (F-UK-2) |
+
+🔴 **`4276` (F-UK-9) is deliberately excluded from this table.** It has no delivery-declared label
+anywhere in the DD; it is a genuine out-of-list code, not a sentinel, and inventing a citation for it
+would be exactly the fabrication M-1 forbids.
+
+### M-4, 2026-08-15 — weighting convention (required by the sixteen-gate specification)
+
+**Convention: normalised.** Established in F-UK-13 above: NATCEN p. 31, section 7.4(c)/(d), documents
+both diary weights and the individual weight as calibrated so *"the distribution of age/sex groups
+matches the population distribution"* — a normalisation statement, not an expansion-factor one — and
+`[measured]` means confirm it: `dia_wt_a` mean 1.000322, `dia_wt_b` mean 1.000182, `ind_wt` mean
+1.000000, with 59.2–60.7 % of values strictly below 1.0. Under M-4's bound (`> 0` and mean within
+±1 % of 1.0, the `>= 1.0` clause not applying), `G1.7d` is now **scored** for the UK, not permanently
+`NOT CHECKED` — the magnitude-vs-layout-width half stays `NOT CHECKED` (no declared fixed-width layout
+ships in this tab-delimited delivery), but the mean clause is a real, failable check.
 
 ### F-UK-14 — files not read, and why
 

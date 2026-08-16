@@ -14,8 +14,10 @@ Nothing is downloaded. This is the first step in the project that produces a fil
 
 ## AIM
 
-Get four national HETUS microdata files onto `/speed-scratch`, in a documented state, with their
-codebooks, and know exactly what each one contains before anything is harmonised.
+🔴 **THREE national HETUS microdata files, not four, from 2026-08-15 (author decision 16 — France is
+excluded).** Get them onto `/speed-scratch`, in a documented state, with their codebooks, and know
+exactly what each one contains before anything is harmonised. *(Superseded: "Get four national HETUS
+microdata files…".)*
 
 Not "acquire as much time-use data as possible". The corpus is fixed; this step executes it.
 
@@ -61,7 +63,7 @@ None. This is the head of the pipeline.
 |---|---|---|---|---|---|
 | A | INE *Encuesta de Empleo del Tiempo* (Spain) | 2009-10 | direct microdata download | **none** | Download. Start here: it is the only source that needs nothing |
 | B | UK Data Service, SN 8128 | 2014-15 | End User Licence | free registration | Register, accept EUL, download |
-| C | Progedo / ADISP (France) | 2009-10 | academic registration | free registration | Register, request, download |
+| ~~C~~ | ~~Progedo / ADISP (France)~~ | ~~2009-10~~ | — | — | 🔴 **STRUCK 2026-08-15 by author decision 16. France is excluded from the corpus.** Demande n°38663 was submitted 2026-08-14 with no published turnaround; the project will not hold on it. **The row is struck, not deleted** — if France arrives before any fold is evaluated it can still be re-admitted in full, and after that point it can only ever be an extra held-out country. See decision 16 in the parent plan's progress log |
 | D | ISTAT Micro.dati (Italy) | 2013-14 | free application | application, 2-8 weeks | **HELD already from paper 1** — confirm the held copy is the same wave and the same extract before assuming it is |
 
 **Definition of done:** four archives on `/speed-scratch/o_iseri/4J/raw/<country>/`, each with its
@@ -128,6 +130,145 @@ a recorded field is never discarded at Step 1.**
 Step 3 decides what is *written into the token stream*, and those are different questions with
 different costs. See Step 3, 3B-bis.
 
+---
+
+### 🔴 CONTRACT CHANGES M-1 to M-5, decided 2026-08-15 after the UK and Italian rounds
+
+Five things the two parallel rounds put on the manager's desk. All five are decided here. **Three are
+contract changes, two are gate-basis changes, and every basis change is written down as one** in
+`4thJ_01_corpusAcquisition_val.md`. None of them was closed by editing a gate to clear a FAIL.
+
+#### M-1 — `loc_raw` gains the same three-state provision `act2_raw` has
+
+**The defect was ours, not the delivery's.** The UK fields `-9` ("No answer/refused", DD value label)
+in both `What_Oth1/2/3` and in `WhereWhen`. The reader maps it to *recorded and blank* for the three
+secondary-activity columns — because the contract gives them three states — and passes it through
+raw for `loc_raw`, because the contract gives `loc_raw` only one. One sentinel, two treatments, and
+`G1.4` fails on 7,117 of 587,632 UK episodes (1.211 %) for the inconsistency (F-UK-15).
+
+**Decision: fix the contract, then the reader. `G1.4`'s threshold is not moved.**
+
+* **`loc_raw` is now a three-state field on the same terms as `act2_raw`** — *not recorded by the
+  instrument*, *recorded and blank*, *recorded with a value* — in a nullable pandas `string` column,
+  the three states separable through the parquet round-trip. Spain and Italy field a location on
+  every episode and emit state 3 throughout, so nothing about either changes.
+* **A value enters the "recorded and blank" state only if that country's own delivery declares it a
+  missingness sentinel, with a citation, in `codebook_facts_<country>.md`.** The UK's `-9` qualifies
+  on the data dictionary's own value label. 🔴 **There is no rule that negative values are sentinels
+  and none may be invented.** An out-of-list value with no declared-sentinel citation stays a `G1.4`
+  FAIL — which is exactly what keeps **`4276`** (F-UK-9, one episode of 587,632, labelled nowhere in
+  the delivery) failing after this decision, as it must.
+* **Each country's `codebook_facts` gains a sentinel table**: field, sentinel value, the delivery's
+  own label for it, the citation, and the measured count. New gate **`G1.12`** checks the reader's
+  `loc_raw` three-state emission against an independent recount from the raw file, exactly as
+  `G1.11` does for `act2_raw`.
+
+🔴 **Consequence for Step 2, flagged and not decided here:** 1.211 % of UK episodes have no location.
+An episode with no location cannot emit a `LOC` symbol, and Spain and Italy have no equivalent hole.
+That is Step 2's to close, and it now has a field to close it in.
+
+#### M-2 — `G1.6` splits: integrity and provenance are two different claims
+
+Italy FAILs `G1.6` because a hand-delivered archive has no per-file source URL and the employee
+correctly refused to invent one. 🔴 **The verdict is not the expensive part. Because `G1.6` already
+FAILs at baseline, `corrupt_archive_byte` could not fire, so Italy's md5 arm is UNTESTED** — a whole
+detection arm lost to a bookkeeping gap. France arrives by the same hand-delivered route.
+
+**Decision: split the gate. Do not move the provenance threshold.**
+
+* **`G1.6a`, integrity** — every archive has an md5 recorded at receipt and the md5 recomputed from
+  disk matches. Scored for every country, independently of any URL. This is what `corrupt_archive_byte`
+  tests, and it can now fire for Italy and for France.
+* **`G1.6b`, provenance** — every archive has a source URL and a date. **Threshold unchanged.** Italy
+  FAILs it today and will keep failing it until the record is filled in.
+* 🔴 **The Italian FAIL is a defect in our own custody record, not in the file.** The fix is the
+  author supplying the URL and date the Italian archive was downloaded from, recorded in the manifest
+  as `provenance_source: author_attested` with the attestation date. If the author cannot supply it,
+  it stays `NOT FOUND`, `G1.6b` keeps failing, and that goes into the Data Availability statement.
+* **The manifest gains `hashed_at`**, one of `download` or `receipt_from_author`, per archive, printed
+  by `G1.6a` on every run. An attested URL is as good as one we typed ourselves; **an attested hash is
+  not** — the project's own rule is that a hash taken after a file has been touched is a hash of what
+  we have, not of what they sent. The two tiers are printed, never silently equal.
+* **France's prompt must record the URL, the date and the md5 at the moment of download**, in the
+  browser, before the file is moved.
+
+#### M-3 — `G1.7a`'s "zero missing" bar is replaced by a conditional one, not widened
+
+The UK ships `dia_wt_a`/`dia_wt_b` as a blank on 89 of 587,632 episode rows (2 of 16,533 person-days)
+and `ind_wt` as a blank on 23 of 8,274 persons. All carry the delivery's own non-productive status
+codes, `DMFlag = -6` and `HhOut = 598` (F-UK-8).
+
+🔴 **Spain's `G1.7d` population precedent does not transfer, and it is worth saying why.** Spain
+excluded `MHOGAR`'s 6,600 non-respondent members because **those rows carry no diary and enter no
+corpus**. The 2 UK person-days *do* carry a diary — their episodes are present and sum to 1,440
+minutes — so they enter the corpus. The population argument that rescued Spain is unavailable here.
+
+**Decision, and the population is written down as the rule requires.**
+
+* **Step 1's population is every diary the survey collected. Nothing is dropped for lacking a weight.**
+  Step 1 is custody, not selection.
+* **`G1.7a` is re-scoped** (basis change, recorded): present, finite, strictly positive and
+  **more than one distinct value** on every row *for which the delivery computed a weight*, **and**
+  every row without a weight must carry a delivery-declared non-productive status code. 🔴 **A missing
+  weight on a row the delivery flags as productive is a FAIL.** This is not the old bar loosened — it
+  is a strictly harder condition to satisfy by accident, because a reader that failed to parse a
+  weight column would blank rows the delivery calls productive, and that now fails where "100 % of
+  rows" would merely have failed for the wrong reason.
+* **`weight_ind` and `weight_dia` are nullable**, and the count of corpus rows carrying no weight is
+  printed per country on every run. Step 8's population construction may not silently treat an absent
+  weight as zero.
+* Recorded because it is the whole reason this could not be left standing: with `G1.7a` FAILing at
+  baseline, **`weight_negative_one` and `weight_constant` both DID NOT FIRE on the UK.** The entire
+  weight-check arm was dark on one of three built countries.
+
+#### M-4 — `G1.7d`'s `>= 1.0` clause is conditioned on the declared weighting convention
+
+UK weights are normalised to mean ≈ 1.000 and **60.3 % sit below 1.0** (F-UK-13). The `>= 1.0` clause
+was derived from *"a weight under 1 represents less than one person, which no design produces"* — and
+that reasoning is **only true of an expansion weight**. For a normalised weight it is simply false.
+The clause is not being loosened; it was **wrong for that class of weight** and never should have been
+applied to one.
+
+**Decision: `codebook_facts_<country>.md` must state the weighting convention, cited, as one of**
+
+| Convention | `G1.7d` bound |
+|---|---|
+| **expansion** — the weight is a count of population units represented | `[1.0, 10^declared_integer_width)`. Spain: `[1.0, 1e6)` |
+| **normalised** — the weight has mean 1 by construction | `> 0`, and **mean within ±1 % of 1.0**. The `>= 1.0` clause does not apply |
+| **not declared** | `NOT CHECKED`, printed, never a pass |
+
+* 🔴 **The upper-bound half stays keyed to a declared layout width, so it remains `NOT CHECKED` for
+  the UK** — the delivery is tab-delimited free text and ships no layout. M-4 does not rescue that,
+  and does not pretend to.
+* The ±1 % band is derived, not fitted: the only defect a mean-vs-1 comparison can catch is an
+  order-of-magnitude misread of the decimal point, which lands 900 % away. **Recorded honestly: the
+  UK's means (1.000322, 1.000182, 1.000000) were measured before this band was written**, so the band
+  is not blind — but its headroom is roughly 30× the observed deviation and its reference is NatCen's
+  normalisation statement, a different artefact from the microdata, which is the property `G1.7d`
+  exists to have.
+
+#### M-5 — the UK's `weight_dia` is `dia_wt_a`
+
+`dia_wt_a` ("diary weight — analysis at diary level/event level") balances the sample by month **and
+day of week** and matches age/sex to the population within each; `dia_wt_b` ("analysis at individual
+level") balances by month only and **has no day-of-week adjustment** (NATCEN p. 31 §7.4 c and d).
+
+**Decision: `weight_dia` = `dia_wt_a`.** Three reasons, in order of weight:
+
+1. **Our unit is the person-day.** One corpus row is one diary. That is exactly the grain NatCen
+   documents `dia_wt_a` for, and exactly the grain CTUR's own worked example uses it at
+   (`svyset psu [pw=dia_wt_a], strata(strata)`, CTUR p. 13).
+2. **Day of week is load-bearing for this paper.** The corpus deliberately mixes weekdays and weekend
+   days and the output is an occupancy schedule. A weight with no day-of-week adjustment would carry
+   whatever day-type imbalance the fieldwork left, straight into the thing we are modelling.
+3. It is the delivery's own documented default for diary-level analysis.
+
+`dia_wt_b` stays carried as `weight_dia_b` and is never silently substituted. **This freezes into
+`prereg.md` before the first Leg-5 submission.** 🔴 **Named reopen trigger, and only this one:** if
+Step 5 or Step 6 ever moves the unit of analysis from the person-day to the person — pooling a
+respondent's two days into one record, which only the UK can even pose — `dia_wt_b` becomes the
+correct field and the choice is re-taken then, in writing, before anything is trained.
+
 **Definition of done:** `outputs_step1/episodes_<country>.parquet` plus a per-country parse report
 naming every dropped or unparsed row.
 
@@ -177,12 +318,24 @@ Nothing blocks 1.1 to 1.3. Item 1.4 is independent.
 
 ## DEFINITION OF DONE FOR THE WHOLE STEP
 
-1. Four archives on disk with recorded md5s and provenance.
-2. Four codebook-fact documents, every fact cited or marked `NOT FOUND`.
-3. Four episode parquets, plus parse reports naming every unparsed row.
-4. All Step 1 gates in the validation document PASS, **and each has been seen failing** on a
-   deliberately broken input.
+🔴 **Rewritten 2026-08-15 for the three-country corpus (author decision 16).**
+
+1. **Three** archives on `/speed-scratch` with md5s recorded at receipt and re-verified after transfer,
+   plus `hashed_at` and `provenance_source` per archive (M-2).
+2. **Three** codebook-fact documents, every fact cited or marked `NOT FOUND`, each now also carrying
+   the **sentinel table** (M-1) and the **weighting convention** (M-4).
+3. **Three** episode parquets, plus parse reports naming every unparsed row.
+4. All **sixteen** Step 1 gates PASS, **and each has been seen failing** on a deliberately broken
+   input, coverage clause SATISFIED, per country. 🔴 **`G1.6b` is expected to FAIL on Italy** until the
+   author supplies the download URL, and that FAIL is not a reason to hold the step open — it is
+   recorded in the Data Availability statement.
 5. The Eurostat enquiry sent, with a date.
+6. Both manager merges done: the per-country progress-log fragments appended, and the manifest
+   fragments merged into `acquisition_manifest.json`.
+
+🔴 **`V1.a` now FAILs below THREE countries, not four**, because decision 6 moved. That is the *only*
+reason it moved, it moved by a dated author decision, and it is not a precedent for touching any other
+guard. *(Superseded: four archives, four codebook documents, four parquets, fourteen gates.)*
 
 ---
 
@@ -329,3 +482,267 @@ did not touch the cluster).
   the parse.
 * The full twelve-gate battery was re-run against this reader; see the progress log in
   `4thJ_01_corpusAcquisition_val.md` for the result.
+
+### 2026-08-15 — the UK and Italy executed in parallel; **M-1 to M-5 decided by the manager**
+
+**1.1, 1.2 and 1.3 are done for three of four countries.** UKDS SN 8128 (UKTUS 2014-15) and ISTAT
+*Uso del Tempo* 2013-14 were built by two employees running concurrently against
+`../Prompts/4thJ_employee_step1_uk_2026-08-14.md` and `..._italy_2026-08-14.md`. Artefacts in
+`outputs_step1/`; counts, findings and gate results in the two `codebook_facts_<country>.md` files and
+the two gate reports. **France is still with Progedo (demande n°38663) and `V1.a` still fires, 3 of 4.**
+
+🔴 **Because they ran concurrently, neither employee wrote to `acquisition_manifest.json` or to either
+Step 1 progress log.** Each emitted a fragment. **Both merges are still outstanding**, and this entry
+is not one of them — it is the manager's decision round, written on the same day.
+
+**The two rounds forced five decisions, and all five are now taken: M-1 to M-5**, in the new section
+"CONTRACT CHANGES M-1 to M-5" above. Summary of what moves in *this* document:
+
+* **The intermediate record gains a three-state `loc_raw`** (M-1), on the same terms as `act2_raw`.
+* **`weight_ind` and `weight_dia` become nullable** (M-3), and no later step may read an absent weight
+  as zero.
+* **The manifest gains `hashed_at` and `provenance_source`** per archive (M-2).
+* **`codebook_facts_<country>.md` gains two required facts**: a **sentinel table** (field, value, the
+  delivery's own label, citation, measured count — M-1) and the **weighting convention**, cited, as
+  *expansion* / *normalised* / *not declared* (M-4).
+* **The UK's `weight_dia` is `dia_wt_a`** (M-5), with `dia_wt_b` carried alongside and one named
+  reopen trigger.
+
+🔴 **What this costs, stated up front:** the UK reader must change (M-1) and all three gate runners
+must be rebuilt to the sixteen-gate specification, then **all three batteries re-run**. Spain and Italy
+field a location on every episode, so neither reader changes for M-1 — but both are re-run, because a
+country is scored against the current specification or it is not scored.
+
+**Still outstanding on 1.1, and now the first thing that can use the cluster:** the raw archives for
+all three countries are on the local workstation under `_local_runs/4J/raw/`, **not** on
+`/speed-scratch/o_iseri/4J/raw/`. The `scp` has not been done and the manifest says so rather than
+implying otherwise.
+
+### 2026-08-15 (later) — 🔴 **AUTHOR DECISION 16: FRANCE EXCLUDED. Acquisition is COMPLETE at three.**
+
+The author excluded France because Progedo demande n°38663 has no arrival date and the project will not
+wait on it. Row C of work item 1.1 is **struck** (not deleted), and the AIM and definition of done above
+are rewritten for three countries. **`V1.a`'s threshold moves from 4 to 3.**
+
+🔴 **`V1.a` moved for one reason and it must not be generalised.** It is decision 6 expressed as code;
+the author amended decision 6 in writing, on a dated line, so the guard follows. **It is not a flag, not
+a tolerance, and not a precedent** — every other threshold in Step 1, including the five taken earlier
+the same day, is untouched.
+
+**What is left of Step 1:** the sixteen-gate re-run on the three countries, the two manager merges, and
+the Eurostat enquiry (1.4). 🔴 **None of it waits on anyone outside this project**, which is the whole
+point of the decision. The re-admission window, if France ever turns up, is in the parent plan's
+progress log: full re-admission is possible only **before the first fold is scored**.
+
+---
+
+## 🔴 MERGE 1 of 2, done by the manager 2026-08-15 — the two parallel employees' entries, appended verbatim
+
+The UK and Italian Step 1 rounds ran **concurrently** on 2026-08-14/15 and were forbidden from writing
+to this file, precisely so neither could overwrite the other. Each emitted a fragment
+(`outputs_step1/proglog_entries_uk.md`, `..._italy.md`) and **the two sections below are those
+fragments, appended unedited.**
+
+🔴 **They appear AFTER the manager's M-1..M-5 and decision-16 entries even though they describe work
+that happened before them.** The log is append-only and may not be reordered, so the ordering is stated
+here rather than repaired. **Read them as the record of the fourteen-gate rounds they were written
+about** — everything they say about `V1.a` firing at "one country of four", about `G1.4`/`G1.6`/`G1.7a`
+FAILing, and about specification gaps "left for the manager" was true when written and has since been
+superseded by M-1 to M-5 and by decision 16.
+
+---
+
+### ⬇ appended verbatim from `outputs_step1/proglog_entries_uk.md`
+
+### 2026-08-14/15 — UK executed. 1.2 and 1.3 done, 1.1 executed for the archive already in hand
+
+Employee task: `../Prompts/4thJ_employee_step1_uk_2026-08-14.md`. Scope: UKTUS 2014-15 (UKDA SN
+8128), work items 1.2 and 1.3 plus the full Step 1 validation battery on the archive the author had
+already downloaded and delivered to the workstation. Nothing was acquired, downloaded or registered
+for by this session.
+
+**1.1 (partial, as scoped).** The delivery
+(`Datasets/UK-TUS-20260815T031737Z-1-001.zip`, a Google Drive export wrapper around the actual UKDS
+zip) was unpacked to `_local_runs/4J/raw/uk/`, mirroring Spain's `raw/spain/` layout (archives kept,
+`unpacked/` beside them). Every archive and every one of the 17 delivered files was md5'd; the inner
+UKDS zip's filename is itself a content-addressed SHA-256 and this session's independent SHA-256
+recomputation matches it, a second, stronger integrity signal on top of md5. Recorded in
+`outputs_step1/acquisition_manifest_uk.json` — a **fragment**, not a write to the shared
+`acquisition_manifest.json`, so the parallel Italy session was not overwritten; the manager merges
+it. DOI `http://doi.org/10.5255/UKDA-SN-8128-1` and licence (End User Licence, UKDS EUL) are both
+taken verbatim from the delivered `UKDA_Study_8128_Information.htm` and `read8128.htm`; no literal
+download URL is printed anywhere in the delivery and is recorded `NOT FOUND` rather than guessed.
+
+**1.2 — codebooks read.** `outputs_step1/codebook_facts_uk.md`, every fact cited to a UKDA data
+dictionary, the CTUR processing report or the NatCen/NISRA technical report, by printed page.
+Fifteen findings recorded in full there. The four the manager flagged in advance were all confirmed,
+measured, and in one case corrected:
+
+* **`eptime` is minutes, `tid` is the START slot** (F-UK-1) — established two independent ways
+  (a documented Stata-code equivalence and a direct row-level cross-check), not assumed.
+* **Three secondary activities exist** (`What_Oth1/2/3`, F-UK-2), coverage 27.75 % / 2.72 % / 0.23
+  %. All three carried (`act2_raw`, `act2_extra_uk_2`, `act2_extra_uk_3`), none merged, none dropped.
+* **Two diary weights**, both carried (`weight_dia_a`, `weight_dia_b`); the contract's single
+  `weight_dia` is populated from `dia_wt_a`, the documented default for diary/event-level analysis
+  (CTUR p. 13, NATCEN p. 31, both cited), and the choice is flagged pre-registration-relevant per
+  the work order.
+* **Nine co-presence fields**, all emitted as named columns. `WithMiss` is genuine missingness;
+  🔴 **`WithNA` turned out NOT to be a missingness flag for this wave** — it is a UK2000-01
+  backward-compatibility concordance marker, since 2014-15 (unlike 2000-01) *does* code co-presence
+  for sleep/work/education episodes (F-UK-4). Recorded so Step 2/3 do not misread it.
+
+Two findings the work order did not anticipate, both surfaced by measurement rather than assumed
+away: a single undocumented activity code (`4276`) appears once in 587,632 episodes with no label
+anywhere in the delivered dictionary (F-UK-9); and the location field (`WhereWhen`) carries its own
+missingness sentinel (`-9`, 1.211 % of episodes) that the intermediate-record contract has no
+three-state provision for, the same shape of gap as the secondary-activity one but for `loc_raw`
+(F-UK-15) — **both left for the manager to close, not resolved here.**
+
+UK weights turned out to be **normalised (mean ≈ 1.000)**, not raw expansion factors like Spain's
+`FACTORF` — roughly 60 % of real UK diary and individual weights are strictly below 1.0 (F-UK-13),
+which matters directly for `G1.7d` below.
+
+The activity and location code lists were transcribed from the UKDA data dictionary's own value
+labels into `crosswalk_source_uk_activity.csv` (277 codes) and `crosswalk_source_uk_location.csv`
+(35 codes), matching the Spanish files' shape.
+
+**1.3 — reader written and run.** `../tools/4thJ_read_uk.py`.
+
+* File shape is **six flat tab-delimited files**, not relational in Spain's sense. The UK ships
+  **native episodes** (`tid` = start slot, `eptime` = duration in minutes) — the reader reconstructs
+  nothing, the opposite of the Spanish reader's slot-collapsing.
+* Two files read: `uktus15_diary_ep_long.tab` (587,632 episodes) and `uktus15_individual.tab`
+  (11,421 people, demographics and `ind_wt`). Four files deliberately not read, with reasons
+  (F-UK-14): `uktus15_household.tab`, `uktus15_diary_wide.tab`, `uktus15_wksched.tab`, and
+  `uktus15_dv_time_vars.tab` (read only by the gate runner, independently, for `G1.7c`).
+* **8,274 distinct people, 16,533 (person, diary_day) diaries, 587,632 episodes.** Every diary sums
+  to exactly 1,440 minutes, 0 exceptions. Diary days per respondent measured at max 2 (design), with
+  8,259 of 8,274 people completing both.
+* 🔴 `diary_day` is populated from the survey's own 1st/2nd-day ordinal (`daynum`), **not** a
+  day-of-week code as it is for Spain — 3 of 8,259 two-day respondents land on the same day of week
+  on both their days, so only `daynum` is collision-free (F-UK-6). This means `diary_day` carries a
+  different *kind* of value across the two countries' emitted tables; flagged for Step 2/3.
+* Three-state secondary-activity handling implemented with a pandas nullable `string` dtype, exactly
+  as the reconstructed-vs-native distinction requires. Weight columns converted to `float64`, with
+  the delivery's own literal blank-space sentinel (not `-9`, not empty string) mapped to `NaN` and
+  counted, never silently coerced (F-UK-8): 89 episode rows / 2 person-days for the diary weights,
+  1,551 episode rows / 23 people for the individual weight.
+* `outputs_step1/episodes_uk.parquet` (587,632 rows, 32 columns) and
+  `outputs_step1/parse_report_uk.txt`. **Zero rows dropped, zero unparsed, zero unexplained** — the
+  reader raises and emits nothing on any condition it cannot explain.
+
+**1.1, remainder — not this session's to do.** Transfer to `/speed-scratch` was not attempted; this
+task ran entirely on the local workstation per the work order, and the cluster was not touched at
+all.
+
+**1.4 — not done, and not this employee's.**
+
+---
+
+### ⬇ appended verbatim from `outputs_step1/proglog_entries_italy.md`
+
+### 2026-08-15 — Italy executed. Work items 1.1 (Italy row only), 1.2 and 1.3 done. **The second country file in paper 4 exists.**
+
+**1.1 — registered, not acquired by this session.** `uso_tempo_2013_IT.zip` and
+`Nota_metodologica-2013.pdf` (38 pp. as delivered) were provided directly to the author by ISTAT on
+2026-08-14 and copied into `_local_runs/4J/raw/italy/` by this employee session on 2026-08-15, all
+four archives hashed on the local copy and reconciled byte-for-byte against the originals in
+`4J_docs_occ/Datasets/IT TUS/` before unpacking. Fragment written to
+`outputs_step1/acquisition_manifest_italy.json` (Italy entry only; `acquisition_manifest.json`
+itself was not touched, per the work order, because the UK employee is working in the same file in
+parallel). 🔴 **No per-file download URL exists anywhere in this delivery** — these files were never
+fetched by a live download, so `url` is recorded `NOT FOUND` rather than invented; this is why
+`G1.6` fails (see the validation entry above).
+
+🔴 **Licence finding: this is ISTAT's mIcro.STAT public-use file, not the mFR.**
+`Nota_metodologica.pdf` (the excluded 2023 volunteering module) describes an *mFR* (*File di
+microdati per la ricerca*) release; the 2013-14 diary is a **different and more restricted
+product**, ISTAT's own open mIcro.STAT public-use file — stated on the cover pages of
+`Nota_metodologica-2013.pdf` and `uso_tempo_DescrizioneFile_Individuo__Anno 2013.pdf`, and
+explained on the latter's p.3: the mFR carries higher informational content and requires a
+justified request and the President of ISTAT's authorisation; mIcro.STAT does not. This bears on
+Step 5's release decision and is recorded in `codebook_facts_italy.md`, finding F-IT-1.
+
+The 2023 volunteering pair (`Nota_metodologica.pdf`, `UsoTempo_2023_IT.zip`) was hashed, copied
+into the workspace, and recorded as present and explicitly excluded — not unpacked, not read.
+
+**1.2 — codebook read.** `outputs_step1/codebook_facts_italy.md`, every fact cited to a Tracciato
+HTML row, a classification file, a questionnaire page, or a methodology page. **Fourteen findings**,
+`F-IT-1` through `F-IT-14`, recorded in full in the codebook. The five things the work order flagged
+as "already measured" were all confirmed independently from ISTAT's own documentation: tab-delimited
+with a header row (not fixed-width); native episodes with explicit clock start/end times and a
+04:00 diary-day wrap (measured: exactly one wrap-episode per diary, all 41,229 diaries then sum to
+exactly 1,440 minutes); `catcon` is a genuinely separate, coarser 2-digit/34-modality classification
+from `catpri`'s 3-digit/146-code list (`F-IT-3`); eight co-presence fields, whose value domain
+(blank, or the field's own fixed ordinal) had to be established by direct inspection because no
+classification list documents them (`F-IT-4`); and blank is literally recorded spaces matching the
+field's declared width, established the same way (`F-IT-6`, which also records that
+`HelpTracciato_DELIMITED.html` does not in fact state a blank-field convention for this survey's
+variables, contrary to what the task prompt assumed — read first, as instructed, and found not to
+say what it was expected to say).
+
+Two further findings change what later steps can rely on: **ISTAT's own weighting methodology is
+calibrated to sex × nine age-class regional population totals** (Nota_metodologica-2013.pdf p.12),
+putting `G1.7b` in the same circular family as Spain's, and narrowing what `G1.8` could ever detect
+even with a reference (`F-IT-9`); and **no published Italian age×sex population table for 2013-14
+exists anywhere in this delivery** — the methodology PDF is itself an incomplete excerpt (its own
+page numbers jump from printed p.26 to printed p.95) — so `G1.8` cannot even run the narrowed check
+(`F-IT-10`). Minimum age is **3**, not Spain's 10, with parent-proxy completion permitted for ages
+3-10 (`F-IT-11`). Diary origin hour is **04:00** (QUEST-DG p.2), diary days per respondent measured
+and asserted at **1**.
+
+The activity, secondary-activity and location lists were transcribed out of ISTAT's own
+classification HTML files into `crosswalk_source_italy_activity.csv` (146 leaf codes — 145
+three-digit plus one genuine two-digit leaf, `90`, stored in the field as `"90 "` with a trailing
+space rather than zero-padded, finding `F-IT-5`), `crosswalk_source_italy_activity2.csv` (34 codes,
+`catcon`'s own list), and `crosswalk_source_italy_location.csv` (53 codes), so that gate `G1.4` has
+a reference ISTAT wrote. All three lists were verified to cover the delivered file's observed
+alphabet exactly (after the `catpri` right-strip finding `F-IT-5` is applied).
+
+**1.3 — reader written and run.** `../tools/4thJ_read_italy.py`.
+
+* File shape is **two flat tab-delimited files with a header row** (`DiarioGiornaliero`,
+  `Individui`), joined on `profam`+`proind`. Not relational in Spain's eight-file sense, and not
+  fixed-width — the parser was written to resolve every column by name, never by position, and to
+  refuse (not assume) any unrecognised value.
+* The diary is delivered as **native episodes** with explicit `oraini`/`minini`/`orafin`/`minfin`.
+  No slot reconstruction. `duration_min` is computed with an explicit 04:00 wrap: exactly one
+  episode per diary (41,229 of 41,229) wraps past midnight in naive clock arithmetic, and adding
+  1,440 minutes to that one episode alone closes every diary to exactly 1,440.
+* **41,229 diary respondents, 1,077,657 episodes**, 26.14 episodes per diary.
+* Every respondent has exactly one diary day, measured, not assumed.
+* `outputs_step1/episodes_italy.parquet` and `outputs_step1/parse_report_italy.txt`.
+* **Zero rows dropped, zero unparsed, zero unexplained.** `act2_raw` (from `catcon`) is carried in a
+  nullable pandas `string` column: not_recorded 0, recorded_and_blank 819,659, recorded_with_value
+  257,998 — Italy fields `catcon` on every row, so (as for Spain) no Italian episode is ever "not
+  recorded."
+* All eight co-presence fields are carried as their own named columns
+  (`cop_extra_it_daso` … `cop_extra_it_aperco`), following the Spanish precedent of never folding a
+  recorded flag into another — none of Italy's eight maps unambiguously onto Spain's five-slot
+  scheme, so all eight are carried as country-extras rather than a partial, guessed mapping.
+* The join against `Individui` for `weight_ind` (`coefin`) and `weight_dia` (`coefi2`) is measured
+  clean: **0 episodes unmatched to a non-blank diary weight**, of 1,077,657.
+
+**1.4 — not done, and not ours.** Unchanged from the Spanish entry: the Eurostat entity-recognition
+enquiry is the author's, in person.
+
+---
+
+### 🔴 Manager's note on the two appended entries, 2026-08-15
+
+**Both are accepted as the record of their rounds. Two things in them are already superseded and one
+line in each is now wrong, and saying so here is cheaper than a later session re-deriving it:**
+
+* **"`V1.a` fires on one country of four"** — `V1.a`'s threshold is now **3**, by author decision 16.
+* **"left for the manager to close"** (F-UK-15, the `loc_raw` sentinel; F-UK-2's three secondary
+  activities) — **closed the same day as M-1 and F-ES-6 respectively.**
+* **The UK's "`weight_dia` populated from `dia_wt_a`… flagged pre-registration-relevant"** — confirmed
+  as **M-5**, with the reasoning written down rather than left as a default inherited from the
+  delivery's documentation.
+* **Italy's `G1.6` FAIL** — the gate has since been **split** (M-2). The integrity half (`G1.6a`) will
+  score for Italy; the provenance half (`G1.6b`) **still FAILs and is meant to.**
+
+🔴 **What was NOT verified independently and is recorded as such:** the perturbation batteries
+themselves, Italy's `G1.2`/`G1.11` arithmetic, and every codebook citation except the two the manager
+opened personally (ISTAT `!Leggimi.html`'s stated counts, and the UK's `4276` and `-9` frequencies).
+They are read from the artefacts, which is the standard — but they were not re-derived.
