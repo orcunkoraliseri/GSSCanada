@@ -1,0 +1,26 @@
+## es
+
+- age floor used: 11
+- compiled age expression: `EDAD >= 11`
+- age clause removed: 155 respondents, 155 diaries, 3122 episodes
+- native origin hour: 06:00 (asserted against codebook_facts_spain.md)
+- rotation offset applied: 120 min
+- split_at_origin count: 18915
+- act2_raw three states: not_recorded(null)=0, recorded_and_blank('')=366053, recorded_with_value=80494
+- act2 unmapped-with-value codes (act2=null despite a raw value): 57
+- act2=null overload: D-S2-12 says null means 'not recorded', but in this delivery act2=null ALWAYS means 'the recorded act2_raw code did not map' (57 episode(s) here) -- the literal 'not recorded' state never occurs for any country (act2_raw three states above: not_recorded(null)=0 everywhere). Resolve downstream via act2_raw: a non-empty, non-null act2_raw paired with act2 IS NULL is the unmapped case; act2_raw=='' always pairs with act2=='' (recorded-and-blank), never with act2=null.
+- act unmapped (act=null): 3786
+- loc_class unmapped, non-blank raw (loc_class=null): 0
+- loc_raw recorded-and-blank episodes: 0
+- indoor_presence null count: 290 (null, never False, wherever we cannot evaluate the rule: loc_class unknown -- loc_raw recorded-and-blank or an unmapped code -- or loc_class=='at_home' but act is unmapped so the outdoor-at-home exclusion cannot be checked; 'we don't know' is never collapsed into False)
+- co-presence missingness-flagged episodes (six shared flags set null): 0
+- input episodes: 430754
+- output episodes: 446547
+- reconciliation: 430754 - 3122 + 18915 = 446547 (output 446547), OK
+- Spain cop_alone share True (of non-null): 0.3502 (sanity check against D-S2-8's 1=yes/6=no truthy-cast bug)
+  - cop_alone: null=0, True=156399, False=290148
+  - cop_partner: null=0, True=116253, False=330294
+  - cop_children: null=0, True=48352, False=398195
+  - cop_parent: null=0, True=24535, False=422012
+  - cop_other_hh: null=0, True=54246, False=392301
+  - cop_other_persons: null=0, True=70653, False=375894

@@ -876,3 +876,96 @@ textual and no python was run anywhere, per the login-node rule. A parse error w
 round-3 job rather than as a bad result, which is the acceptable failure mode, but it is recorded rather
 than assumed. Also unverified: md5 identity of the scp'd run-stamped directory (byte sizes only were
 compared, 32 of 32 matching), and whether any now-unused import became dead code in the three runners.
+
+### 2026-08-16 (later) — D-S1-6 executed: the union manifest is built, verified and round 3 is submitted
+
+Merged from `outputs_step1/run_20260816-2140/proglog_manifest_union_and_round3.md`.
+
+**The union was built and checked twice, not once.** Spain's pre-merge flat file was copied to
+`acquisition_manifest_spain.json` (the name it should always have had), the existing backup was
+confirmed non-empty and byte-identical before anything was written, and the union
+`{"es":…, "it":…, "uk":…}` was written with **no shape normalisation**: Spain and Italy keep `files[]`,
+the UK keeps `outer_archive`/`inner_archive`/`delivered_files_md5`. Entry counts matched
+fragment-to-merged on all three (es 8/8, it 4/4, uk 19/19 = 1 outer + 1 inner + 17 delivered), and
+`local_path`/`local_root` were compared **both on the parsed JSON and on the raw file text**, 17 strings
+in total, 0 differences and 0 missing. The UK fragment's `_note` was dropped and quoted in full in the
+fragment, so the wrong assumption it recorded is preserved rather than deleted.
+
+🔴 **The runner edits refuse rather than fall back, and that is the load-bearing detail.** Each of the
+three gate runners now indexes its own country key and `raise SystemExit` if the key is absent. The
+tempting alternative — fall back to reading the file flat when the key is missing — would let `G1.6a`
+keep passing forever on the old Spain-only shape, which is exactly the class of silent success this
+round exists to remove. Nothing downstream of the unwrapping was touched: the md5 logic,
+`resolve_manifest_path()` and both M-6 problem strings are byte-for-byte unchanged, and the UK runner's
+existing `man.get("uk", {})` call sites were left alone rather than rewritten.
+
+**All three files `py_compile` cleanly**, which also closes the "never syntax-checked" hole recorded
+against the previous employee.
+
+**Round 3 submitted**, stamp `run_20260816-2210`, `-p ps -t 7-00:00:00` throughout: ES 1252724,
+IT 1252726, UK 1252727, vacuity 1252728 on `afterok` of the three. The `--raw` convention from round 2
+(country root, not `unpacked/`) is unchanged; the only content change to the job scripts is that Italy
+and the UK now copy the union `acquisition_manifest.json` into the run directory instead of their old
+per-country fragment filename.
+
+**What the employee explicitly did not verify, carried forward rather than dropped:** no round-3 report
+was read by that employee, so nothing in its "what the manager will check" section is a result; the
+edited runners were never *executed* anywhere before submission; the recorded md5s were not
+independently recomputed against the files on disk, which is `G1.6a`'s own job; and the UK's `G1.6a`
+loop body was not re-read line by line to confirm it iterates exactly outer + inner + delivered and
+nothing else, so the UK entry-count check rests on an assumed counting rule. The Spanish and Italian
+counting rules **were** read from source (`4thJ_gates_step1_spain.py:471`,
+`4thJ_gates_step1_italy.py:321`).
+
+### 2026-08-16 (later) — round 3 read for Italy and the UK: the merge held
+
+Read directly from `run_20260816-2210/gate_report_step1_italy.txt` and `..._uk.txt`, not from a summary.
+Four of the five acceptance points already hold on these two countries:
+
+* **`G1.6a` PASS on both, reading the union.** Italy resolves 4 archives under
+  `--raw=/speed-scratch/o_iseri/4J/raw/italy`, `problems: []`; the UK resolves outer + inner + 17
+  delivered files, `problems: []`.
+* **`corrupt_archive_byte` still fells `G1.6a`** on both — Italy `newly-failed ['G1.6a']`, the UK
+  `failed ['G1.4','G1.6a']` with `already failing at baseline, not newly moved: ['G1.4']`, which is the
+  M-7 attribution doing its job.
+* **`strip_url_from_manifest` still fells the UK's `G1.6b`.**
+* 🔴 **Both expected baseline FAILs are still there** — Italy `gates FAIL: 1` (`G1.6b`), the UK
+  `gates FAIL at baseline: ['G1.4']`. Either of them clearing would have meant the merge broke something
+  and the round would have been rejected.
+* **The per-country `V1.a` verdict line is gone** on both, replaced by the one-line pointer to
+  `vacuity_report_step1.txt`.
+
+Spain (1252724) was still RUNNING and the vacuity job (1252728) still PENDING on its dependency when
+this was written, so **the round is not yet accepted**: point 5 needs `V1.a` PASS 3 of 3 from the
+round-level report, and Spain's own report is unread.
+
+### 2026-08-16 (later still) — 🟢 **Step 1 round 3 is ACCEPTED**, `run_20260816-2210`
+
+Spain (1252724, 00:18:21) and the round-level vacuity job (1252728, on `afterok` of all three) both
+COMPLETED. All five acceptance points recorded before the round was submitted were checked against the
+reports themselves, not against a summary.
+
+1. **`G1.6a` PASS on all three, reading the union manifest.** Spain: *"8 archives checked, resolved
+   under `--raw=/speed-scratch/o_iseri/4J/raw/spain` (M-6, never `local_path` taken literally), md5
+   recomputed from disk vs recorded, independent of any URL; problems: []"*. Italy 4 archives, the UK
+   outer + inner + 17 delivered, both `problems: []`. **D-S1-6's merge did not cost a single md5.**
+2. **`corrupt_archive_byte` still fells `G1.6a`** on all three.
+3. **`strip_url_from_manifest` still fells `G1.6b`** — Spain and the UK.
+4. 🔴 **Both expected baseline FAILs survived the merge**: Italy's `G1.6b` and the UK's `G1.4`
+   (`4276`). This was the point that could have rejected the round. A merge that silently *fixed* a
+   known FAIL would have meant the runner had stopped reading the thing it audits, and the round would
+   have been thrown away rather than celebrated.
+5. **`V1.a` PASS 3 of 3 at round level** — `countries with an episodes_<country>.parquet present:
+   ['ES','IT','UK'] (3 of 3)`, `missing: []`, threshold *FAIL below 3 of 3*, scan restricted to this
+   run's own `--out` dir. And the per-country reports carry **no `V1.a` verdict line**, only the
+   pointer (Spain, line 37: *"scored once per round in `vacuity_report_step1.txt`; deliberately not
+   computed here"*). The round-2 defect — one guard printed in two places with two answers — is gone,
+   and it was fixed by deletion, not by relabelling.
+
+**Spain's own battery is unchanged by the merge**: 15 gates scored, 15 PASS, 0 FAIL, **15 of 15 seen
+failing**, coverage clause satisfied. `G1.7b` remains `NOT CHECKED` and is excluded from the scored
+set — unchanged from round 2, and still not a pass.
+
+**Standing Step-1 state after this round: `G1.6b` FAILs for Italy and `G1.4` FAILs for the UK. Neither
+is a defect in the battery; both are real properties of the delivered data and are quoted as such
+wherever Step 1 is cited. Step 1 is closed for Step 2's purposes.**

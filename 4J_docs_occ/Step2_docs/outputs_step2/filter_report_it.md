@@ -1,0 +1,32 @@
+## it
+
+- age floor used: 11
+- compiled age expression: `claseta2 >= "04"`
+- Italy's age clause was evaluated on a BAND, not an exact age: claseta2 >= "04" (band 04 = 11-14; the floor 11 is exactly this band's lower bound). No exact age variable exists in Italy's delivery (F-IT-2).
+- age clause removed: 2969 respondents, 2969 diaries, 67517 episodes
+- native origin hour: 04:00 (asserted against codebook_facts_italy.md)
+- reference_minutes (D-S2-14): 0 (wall-clock time that start_min==0 denotes)
+- rotation offset applied: 1200 min
+- first-episode start_min assertion: PASS, all diaries start at 240
+- tiling assertion: PASS, every diary's rotated intervals partition [0,1440) exactly once
+- split_at_origin count: 0
+- act2_raw three states: not_recorded(null)=0, recorded_and_blank('')=767859, recorded_with_value=242281
+- act2 unmapped-with-value codes (act2=null despite a raw value): 0
+- act2=null overload: D-S2-12 says null means 'not recorded', but in this delivery act2=null ALWAYS means 'the recorded act2_raw code did not map' (0 episode(s) here) -- the literal 'not recorded' state never occurs for any country (act2_raw three states above: not_recorded(null)=0 everywhere). Resolve downstream via act2_raw: a non-empty, non-null act2_raw paired with act2 IS NULL is the unmapped case; act2_raw=='' always pairs with act2=='' (recorded-and-blank), never with act2=null.
+- act unmapped (act=null): 333
+- loc_class unmapped, non-blank raw (loc_class=null): 8007
+- loc_raw recorded-and-blank episodes: 0
+- indoor_presence null count: 8112 (null, never False, wherever we cannot evaluate the rule: loc_class unknown -- loc_raw recorded-and-blank or an unmapped code -- or loc_class=='at_home' but act is unmapped so the outdoor-at-home exclusion cannot be checked; 'we don't know' is never collapsed into False)
+- co-presence missingness-flagged episodes (six shared flags set null): 0
+- input episodes: 1077657
+- output episodes: 1010140
+- reconciliation: 1077657 - 67517 + 0 = 1010140 (output 1010140), OK
+  - cop_alone: null=0, True=343002, False=667138
+  - cop_partner: null=0, True=245031, False=765109
+  - cop_children: null=0, True=156040, False=854100
+  - cop_parent: null=0, True=65084, False=945056
+  - cop_other_hh: null=0, True=10834, False=999306
+  - cop_other_persons: null=0, True=195309, False=814831
+  - cop_extra_it_madre: null=0, True=58070, False=952070
+  - cop_extra_it_padre: null=0, True=37038, False=973102
+  - cop_extra_it_siblings: null=0, True=38913, False=971227

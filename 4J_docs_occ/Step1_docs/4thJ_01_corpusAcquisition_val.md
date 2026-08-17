@@ -879,3 +879,34 @@ chained fourth job precisely to stop that, and the old print was left behind.
 
 **Round 2 is ACCEPTED.** Sixteen gates, both expected FAILs preserved, coverage satisfied, `V1.a` PASS
 on the run-stamped directory, `M-6` and `M-7` confirmed working on the cluster's own output.
+
+### 2026-08-16 (later still) — 🟢 **Step 1 round 3 is ACCEPTED**, `run_20260816-2210`
+
+Spain (1252724, 00:18:21) and the round-level vacuity job (1252728, on `afterok` of all three) both
+COMPLETED. All five acceptance points recorded before the round was submitted were checked against the
+reports themselves, not against a summary.
+
+1. **`G1.6a` PASS on all three, reading the union manifest.** Spain: *"8 archives checked, resolved
+   under `--raw=/speed-scratch/o_iseri/4J/raw/spain` (M-6, never `local_path` taken literally), md5
+   recomputed from disk vs recorded, independent of any URL; problems: []"*. Italy 4 archives, the UK
+   outer + inner + 17 delivered, both `problems: []`. **D-S1-6's merge did not cost a single md5.**
+2. **`corrupt_archive_byte` still fells `G1.6a`** on all three.
+3. **`strip_url_from_manifest` still fells `G1.6b`** — Spain and the UK.
+4. 🔴 **Both expected baseline FAILs survived the merge**: Italy's `G1.6b` and the UK's `G1.4`
+   (`4276`). This was the point that could have rejected the round. A merge that silently *fixed* a
+   known FAIL would have meant the runner had stopped reading the thing it audits, and the round would
+   have been thrown away rather than celebrated.
+5. **`V1.a` PASS 3 of 3 at round level** — `countries with an episodes_<country>.parquet present:
+   ['ES','IT','UK'] (3 of 3)`, `missing: []`, threshold *FAIL below 3 of 3*, scan restricted to this
+   run's own `--out` dir. And the per-country reports carry **no `V1.a` verdict line**, only the
+   pointer (Spain, line 37: *"scored once per round in `vacuity_report_step1.txt`; deliberately not
+   computed here"*). The round-2 defect — one guard printed in two places with two answers — is gone,
+   and it was fixed by deletion, not by relabelling.
+
+**Spain's own battery is unchanged by the merge**: 15 gates scored, 15 PASS, 0 FAIL, **15 of 15 seen
+failing**, coverage clause satisfied. `G1.7b` remains `NOT CHECKED` and is excluded from the scored
+set — unchanged from round 2, and still not a pass.
+
+**Standing Step-1 state after this round: `G1.6b` FAILs for Italy and `G1.4` FAILs for the UK. Neither
+is a defect in the battery; both are real properties of the delivered data and are quoted as such
+wherever Step 1 is cited. Step 1 is closed for Step 2's purposes.**

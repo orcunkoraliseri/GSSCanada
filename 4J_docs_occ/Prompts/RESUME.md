@@ -1,7 +1,7 @@
 # 4J — MANAGER RESUME PROMPT
 
 ### Hand this to the next session as its first message. Fixed path, edited in place, never duplicated.
-#### Last updated: 2026-08-15, after the Steps 4-9 audit, the four-fold Step 4 rewrite, Speed job 1245620, the Step 1 gate re-run that closed Spain, the arrival of the UK and Italian data, both parallel Step 1 rounds returning, and **the M-1 to M-5 decision round — Step 1 is now a SIXTEEN-gate specification and the next employee round is written and ready to run on Speed**.
+#### Last updated: 2026-08-17, after the overnight run that **CLOSED STEP 1 (round 3 accepted) and CLOSED STEP 2 (`harmonised.parquet` = 2,024,068 episodes, 15 of 15 scored gates PASS, all 15 seen failing)**. 🔴 **Step 3 is unblocked and was deliberately NOT started — four things are waiting on the author, and the first of them (D-S2-13, the age floor) would change the population `harmonised.parquet` was built on.** Read the last section of this file first; everything before it is the road that got here.
 
 ---
 
@@ -679,10 +679,16 @@ per-person generation cannot enforce.
 
 ## FIRST THING TO SAY IN THE NEXT SESSION
 
-Say in one sentence that **France is excluded (decision 16), the corpus is Spain + UK + Italy and all
+🔴 **UPDATED 2026-08-17 — the sentence below is superseded. Say instead:** *"Steps 1 and 2 are closed;
+`harmonised.parquet` holds 2,024,068 episodes from three countries and its fifteen scored gates all
+passed and were all seen failing; Step 3 is unblocked but I have not started it, because D-S2-13 moves
+the age floor to 11 and awaits your ruling."* Then ask for the ruling. **Do not begin acquisition, do
+not chase France, do not start a training job, and do not commission another research round without
+being asked.**
+
+*(Superseded text.)* ~~Say in one sentence that **France is excluded (decision 16), the corpus is Spain + UK + Italy and all
 three are built, and the sixteen-gate Step 1 re-run is the only thing between here and Step 2**, then
-ask the author what they want next. **Do not begin acquisition, do not chase France, do not start a
-training job, and do not commission another research round without being asked.**
+ask the author what they want next.~~
 
 ### ✅ Both employees finished, 2026-08-15. All deliverables exist and were checked on disk:
 
@@ -712,7 +718,8 @@ exactly what was re-derived and what was not. **Merges 1 and 2 are still owed an
 
 ### ✅ M-1 to M-5 are DONE, 2026-08-15. The employee round is written and ready to run on Speed.
 
-**Prompt: `4thJ_employee_step1_gates16_rerun_2026-08-15.md`, in this folder.** Scope: `4thJ_read_uk.py`
+**Prompt: `previous/4thJ_employee_step1_gates16_rerun_2026-08-15.md`** (archived 2026-08-17; it was in
+this folder when this block was written). Scope: `4thJ_read_uk.py`
 (M-1 only), all three `4thJ_gates_step1_<country>.py`, and one full sixteen-gate re-run on Spain, the
 UK and Italy. Hand it to a **fresh** employee session.
 
@@ -887,7 +894,8 @@ close Step 1 properly and stop there — a Step 2 built on an unaccepted Step 1 
 Author instruction, 2026-08-16: *finish Step 1, then Step 2, then continue to the end, updating each
 document's Progress Log at every step*, and **use a fresh cheap employee agent for each round**.
 
-**Prompt written: `4thJ_employee_step1_gates16_round2_2026-08-16.md`, in this folder.** It is deliberately
+**Prompt written: `previous/4thJ_employee_step1_gates16_round2_2026-08-16.md`** (archived 2026-08-17).
+It is deliberately
 narrow — it points the employee at the UK reference implementation and the acceptance tests only, and
 forbids reading the pipeline document, the step specifications and this file. The previous employee burned
 517k tokens re-reading the tree and was stopped mid-work.
@@ -1342,3 +1350,759 @@ across 127 pages.
 4. Then Step 3 builds, then `prereg.md` freezes, then the first Leg-5 submission, then Steps 4-9.
 
 **Item 1.4, the Eurostat entity-recognition enquiry, is still AUTHOR-ONLY and still does not block.**
+
+---
+
+## 🟢 STEP 2 IS BUILDING — 2026-08-16, overnight. D-S2-11 and G2.16
+
+### 🔴 D-S2-11 — the activity crosswalk's TARGET is decided, and it is not Eurostat's list
+
+Work item 2.1 had said "one target list" since the document was written and never said which. It could
+not survive contact with the build, because **every mapping row must cite a page and a row cannot cite
+a page in a document we do not hold.**
+
+**The finding that forced it.** Step 1's own emitted source lists were read directly:
+
+| Country | Codes | Sleep is | Its division |
+|---|---|---|---|
+| Spain | 116 | `011 Dormir` | `0` |
+| Italy | 146 | `011 Dormire` | `0` |
+| **UK** | **277** | **`110 Sleep`** | **`1`** |
+
+Spain and Italy share a numbering. **The UK does not.** F-UK-10 had already said so in words - the UK
+list is NATCEN Appendix H, *"the UK's own, not a verbatim Eurostat HETUS list"*, built for continuity
+with UKTUS 2000-01. So work item 2.1's expectation that the crosswalk "should be close to the identity
+map" is **true for two countries and false for the third**, which by that work item's own sentence is a
+finding about the corpus rather than a licence to improvise.
+
+**Decided.** The target is a shipped file, `outputs_step2/activity_target_list.csv`, 3-digit, and a code
+enters it only when **two of the three deliveries carry it with agreeing meaning**, each row carrying
+both citations. Single-sourced codes are still targets, flagged `single_source`. Same-code disagreements
+go to the unmapped document as conflicts and are resolved explicitly, never averaged. `act_level1` is
+always the first digit of the **target** code.
+
+🔴 **The two rejected alternatives are the part worth keeping.** Declaring *"the Eurostat HETUS 2008
+ACL"* the target would make every row cite a document nobody here has read, so `G2.2` would be satisfied
+by uncheckable citations and **the gate written to catch an invented mapping row would be passing on
+invented provenance.** Adopting *one country's list* would crosswalk two countries and give the third a
+free pass, making that country's distribution the centre the other two are pulled toward - the
+over-harmonisation failure `G2.9` exists to detect, installed deliberately at design time so that
+`G2.9` would have to catch our own decision.
+
+**Consequence:** the UK is the only country whose activity crosswalk is real work. 277 codes mapped by
+label, each cited both sides, anything unmappable listed and never guessed.
+
+### 🔴 G2.16 and V2.h added, because G2.9 is a FLOOR and floors do not catch this
+
+The defect D-S2-11 creates: the UK's own `group1` carried through as the harmonised `act_level1` files
+about **eight hours a day of British sleep under Employment**, because UK division `1` is Employment in
+the target numbering.
+
+**Every existing gate lets it through, and one of them for an instructive reason.** `G2.1` and `G2.2`
+clean, every code still maps and cites. `G2.3` and `G2.4` clean, a relabelling conserves time and closes
+the day. And 🔴 **`G2.9` is not merely blind to it, it is made happier by it** - `G2.9` is a *floor* on
+cross-country disagreement, and the defect increases the disagreement. **A gate that becomes easier to
+pass in the presence of the defect is worse than no gate, because it reads as evidence.** `G2.10` would
+see it, but only once a published national table is actually obtained, which has not happened.
+
+**`G2.16`** - `act_level1 == act[0]` for 100 % of episodes, every country, 0 violations, and every `act`
+present in the shipped target list. **Derived**, not chosen. Perturbation: carry the UK's `group1`
+through. **`V2.h`** - the third instance of the `V2.e`/`V2.f` argument: `G2.16` imports the target list
+from the shipped file, never derives it from the data it audits.
+
+**Not covered, said plainly:** `G2.16` proves the Level-1 column is consistent with the 3-digit target.
+It does **not** prove the target is the right one for a given UK label. **The 277-row UK mapping is the
+largest piece of unverified judgement in this step** and is recorded as such.
+
+**Step 2 is now SIXTEEN gates, SEVENTEEN perturbations, `V2.a`-`V2.h`.**
+
+### 🔵 WHAT IS BUILDING RIGHT NOW
+
+Two employees, local (no cluster - crosswalks come from codebooks, not from parquets), writing into
+`Step2_docs/outputs_step2/`:
+
+* **Activity employee** - `activity_target_list.csv`, `crosswalk_activity.csv`,
+  `crosswalk_activity_secondary.csv`, `crosswalk_unmapped_activity.md`,
+  `proglog_step2_activity_crosswalk.md`.
+* **Location + co-presence employee** - `crosswalk_location.csv`, `outdoor_at_home.csv`,
+  `crosswalk_copresence.csv` (with `bit_position` 0-5), `crosswalk_unmapped_location.md`,
+  `copresence_availability.md`, `proglog_step2_location_copresence.md`.
+
+🔴 **Both write `crosswalk_unmapped_*.md` under separate names on purpose.** `G2.1` reads a single
+`crosswalk_unmapped.md`, so **the manager concatenates the two into it** once both land. Do not let a
+runner read only one half.
+
+Neither employee may edit `4thJ_02_harmonisation.md` or `4thJ_02_harmonisation_val.md`. Progress Log
+fragments are merged by the manager.
+
+### ▶️ WHAT COMES AFTER THEM
+
+1. Merge both fragments into the Step 2 Progress Log; concatenate the two unmapped files into
+   `crosswalk_unmapped.md`.
+2. Cross-check the two employees against each other: **every `target_code` in `outdoor_at_home.csv` must
+   exist in `activity_target_list.csv`.** They were built in parallel from the same source lists, so
+   this is exactly where a silent divergence would be.
+3. Work item **2.4** - the harmonisation runner: Spanish cyclic rotation to 04:00, 10-minute grid,
+   age >= 10 filter, `harmonised.parquet` + `filter_report.md`. **This one needs the accepted Step 1
+   parquets and runs on Speed by `sbatch`.**
+4. The Step 2 gate runner - sixteen gates, seventeen perturbations, `V2.a`-`V2.h`, coverage clause.
+
+---
+
+## 🟢 STEP 1 IS CLOSED — round 3 ACCEPTED, 2026-08-16 overnight
+
+**`run_20260816-2210`. All four reports are now local at
+`Step1_docs/outputs_step1/run_20260816-2210/` — quote those, not the flat
+`outputs_step1/gate_report_step1_*.txt`, which are round-2 artefacts.**
+
+All five acceptance points hold:
+
+1. `G1.6a` **PASS on all three**, reading the union manifest through `resolve_manifest_path()`.
+   Spain 8 archives, Italy 4, the UK outer + inner + 17 delivered. `problems: []` everywhere.
+2. `corrupt_archive_byte` still fells `G1.6a` on all three.
+3. `strip_url_from_manifest` still fells `G1.6b`.
+4. 🔴 **Both expected baseline FAILs survived** — Italy `G1.6b`, the UK `G1.4` (`4276`). This is the
+   point that could have rejected the round: a merge that silently *fixed* a known FAIL would mean the
+   runner stopped reading the thing it audits.
+5. `V1.a` **PASS 3 of 3** at round level, `missing: []`, scan restricted to this run's own `--out`
+   dir; and **no `V1.a` verdict line in any per-country report** — round 2's two-answers-one-guard
+   contradiction was fixed by deletion, not relabelling.
+
+Spain: 15 gates scored, 15 PASS, 0 FAIL, **15 of 15 seen failing**, coverage clause satisfied.
+`G1.7b` stays `NOT CHECKED` and outside the scored set.
+
+🔴 **Standing state to quote whenever Step 1 is cited: Italy's `G1.6b` FAILs and the UK's `G1.4`
+FAILs. Neither is a battery defect; both are real properties of the delivered data.**
+
+**Item 1.4 (the Eurostat entity-recognition enquiry) remains AUTHOR-ONLY and is not a blocker.**
+
+### ▶️ Step 2 correction to an earlier line in this file
+
+An earlier block here says the Step 2 gate runner covers `V2.a`-`V2.h`. **`V2.i` was added after that
+line was written. The guard range is `V2.a`-`V2.i`**, sixteen gates, seventeen perturbations.
+
+---
+
+## ✅ STEP 2 — work items 2.2 and 2.3 ACCEPTED, 2026-08-16 overnight
+
+Shipped in `Step2_docs/outputs_step2/`: `crosswalk_location.csv` (102 rows),
+`outdoor_at_home.csv` (4), `crosswalk_copresence.csv` (54),
+`crosswalk_unmapped_location.md` (6 unmapped codes), `copresence_availability.md`.
+Every number was re-derived by the manager from the CSVs before acceptance.
+
+* **Location**: 108 source codes → 102 mapped + 6 unmapped, reconciling exactly per country.
+  `target_class` holds only the four permitted strings; **no (country × class) cell is empty**
+  (ES 1/11/6/1, UK 1/12/10/10, IT 2/34/7/7). No numeric-range rule anywhere (D-S2-3).
+* **Co-presence**: `bit_position` is exactly `{0..5}`, one-to-one with the six shared flags —
+  this is what `V2.f` tests. Spain's **`1=yes / 6=no`** map is on every Spanish row. UK
+  `WithMother`/`WithFather` and IT `cmadre`/`cpadre` each survive as *both* a `cop_parent` row
+  and their own `EXTRA:` row.
+* **`outdoor_at_home.csv` stays at four codes** (322, 341, 342, 344). The absence of 351 / 352 /
+  354 is **argued in a codes-considered-and-rejected table**, not an oversight: IT `352` reads
+  *"riparazioni **nella** propria abitazione"*, explicitly indoor. All four codes verified present
+  in `activity_target_list.csv`.
+
+🔴 **Carry this limitation forward.** The employee had only `codebook_facts_*.md`, not the Spanish
+LAYOUT workbook / METH PDF / Italian TRACC-DG. **UK `national_definition_verbatim` cells are genuine
+DD quotes; most Spanish and Italian cells are a verbatim field name plus an attributed gloss, each
+labelled as such.** Do not cite those cells as codebook quotations without opening the primary source.
+
+### ▶️ Next, in order
+
+1. **Work item 2.1 is in flight** (`crosswalk_activity.csv`, `crosswalk_activity_secondary.csv`,
+   `crosswalk_unmapped_activity.md`). `activity_target_list.csv` has already landed: **158 target
+   codes**, all exactly 3 digits, `level1 == code[0]` and `level2 == code[:2]` on every row — which
+   already satisfies `G2.16`'s condition on its own vocabulary. Evidence split is
+   **86 `two_source` / 55 `single_source` / 17 `conflict_resolved`**; 🔴 **the 17 conflict rows need
+   their written resolution rule before 2.1 can be accepted**, and **every UK source code must be
+   shown to land inside these 158**.
+2. **Concatenate `crosswalk_unmapped_activity.md` + `crosswalk_unmapped_location.md` into the single
+   `crosswalk_unmapped.md` that `G2.1` reads.** Neither employee could do this alone.
+3. 🔴 **Delete `_es_it_cw_rows.json` and `_helper_sets.json` from `outputs_step2/`** once work item
+   2.1 reports — they are the activity employee's scratch and must not ship.
+4. **Work item 2.4**, the harmonisation runner. Input is confirmed present on Speed at
+   `/speed-scratch/o_iseri/4J/outputs_step1/run_20260816-2210/` (all three accepted
+   `episodes_<country>.parquet`). Spanish cyclic rotation to 04:00, 10-minute grid, age floor 10,
+   emit `harmonised.parquet` (D-S2-12) + `filter_report.md` counting removals **per clause per
+   country**. Runs by `sbatch -p ps -t 7-00:00:00`, CPU only.
+5. **The Step 2 gate runner** — sixteen gates, seventeen perturbations, `V2.a`-`V2.i`, coverage
+   clause, every gate seen failing.
+
+
+---
+
+## 🔴🔴 AUTHOR MUST READ — D-S2-13 REVERSES YOUR AGE FLOOR, 10 → 11 (2026-08-16 overnight)
+
+**Decision 16 moved the age floor 11 → 10. I have moved it back to 11 and started Step 2's work item
+2.4 on that basis. Full reasoning is in `Step2_docs/4thJ_02_harmonisation.md`, section D-S2-13.
+Overturn it in one line if you disagree — the runner takes the floor as a parameter, so nothing has
+to be rewritten.**
+
+**Why.** *Age ≥ 10 is not evaluable on Italy.* F-IT-2 records that ISTAT's disclosure control
+collapsed age into `claseta2`'s eleven bands and that **no exact age variable exists in that delivery
+at all**. I read the bands from the delivered metadata: band `03` is **`6-10`**. The floor of 10
+falls **strictly inside** it, so Italy cannot separate a 10-year-old from a 6-year-old. Spain's
+`EDAD` and the UK's `DVAge` are exact.
+
+Both obvious patches leak country identity into a leave-one-country-out design: dropping band `03`
+starts Italy at 11 while ES/UK keep their 10-year-olds; keeping it lets Italy contribute 6-9
+year-olds that **Spain structurally cannot supply**. Either way our own filter, not the surveys,
+makes the countries differ at the boundary.
+
+**So the floor rule gained one clause**: *the lowest age every country can both supply **and express
+exactly**.* Highest minimum is 10 (Spain); 10 sits inside Italy's `6-10` band; Italy's next band
+begins at **11**; floor = **11**, exactly expressible everywhere (`claseta2 >= "04"`, `EDAD >= 11`,
+`DVAge >= 11`).
+
+**This is not the France rule coming back** — 11 being France's old minimum is arithmetic
+coincidence; this 11 comes from Italian banding and holds with France permanently gone. **It is not
+a relaxed threshold** — it is stricter, it removes respondents, and no gate has yet run on
+harmonised data, so it cannot have been fitted to a result.
+
+`filter_report.md` will print the floor used, the per-country expression it compiled to, the
+respondents each clause removed, and a line naming Italy's band so nobody later reads Italy's age
+filter as exact.
+
+
+---
+
+## ✅ STEP 2 — work item 2.1 ACCEPTED. **All four crosswalks are now built.** 2026-08-16 overnight
+
+`activity_target_list.csv` (158 target codes), `crosswalk_activity.csv` (531 rows),
+`crosswalk_activity_secondary.csv` (421), `crosswalk_unmapped_activity.md`. Every number
+re-derived by the manager from the shipped CSVs.
+
+* **All 531 target codes exist in `activity_target_list.csv`.** Zero one-to-many. All codes exactly
+  3 characters. 16 rows `ambiguous=1`, each with a written rule.
+* **`G2.15` holds with zero violations across all 387 ES/UK secondary rows.**
+* **`G2.13`'s opposite requirement also holds**: Italy's 34 `CLS-var13` secondary codes share
+  **exactly zero** codes with Italy's 144 primary source codes. D-S2-7 is demonstrated, not asserted.
+* Counts reconcile per country: ES 116 = 114 + 2, IT 146 = 144 + 2, UK 277 = 273 + 4.
+* `activity_target_list.csv` already satisfies **`G2.16`** on its own vocabulary — `level1 ==
+  code[0]` and `level2 == code[:2]` on all 158 rows.
+
+🔴 **One correction was forced before acceptance**, and it is the kind worth remembering. The first
+delivery mapped UK `1310` "Lunch break" to `139` but left Spain's `121` "Pausa para la comida"
+**unmapped** — the same concept, two different fates. Shipped as-is, **Spain would have lost its
+lunch breaks while the UK kept them**: a country-correlated difference created by our own crosswalk,
+landing in a LOCO design. Fixed to ES `121` → `139`, matching the UK. **Watch for this shape
+elsewhere** — two countries' equivalent codes given different treatments, each defensible alone.
+
+🔴 **Evidence quality is declared per row and is not uniform**: 86 `two_source`, **55
+`single_source`**, **17 `conflict_resolved`**. The 55 are a deviation from D-S2-11 as literally
+written ("two citations per row"), declared rather than hidden. The 17 conflicts each carry both
+national labels and a written resolution.
+
+**`outputs_step2/crosswalk_unmapped.md` was assembled by the manager** from the two employee
+documents (which remain in place as the citable originals). It is the single register `G2.1` reads:
+**8 unmapped activity codes + 6 unmapped location codes = 14**, each with a reason. Each yields a
+`null` in `act` or `loc_class`, and the null is readable *because* the code is listed there.
+
+### ▶️ Where Step 2 stands
+
+1. ✅ 2.1 activity crosswalks — accepted.
+2. ✅ 2.2 location crosswalk + indoor rule — accepted.
+3. ✅ 2.3 co-presence — accepted.
+4. ⏳ **2.4 harmonisation runner — IN FLIGHT.** *(Since ACCEPTED and CLOSED — see the two blocks below.)*
+   Task doc: `Prompts/previous/4thJ_employee_step2_24_harmonise_2026-08-16.md`. Input
+   `/speed-scratch/o_iseri/4J/outputs_step1/run_20260816-2210/`; three unchained `sbatch` jobs,
+   partition `ps`, `-t 7-00:00:00`; age floor **11** per D-S2-13, passed as a parameter with no
+   default. Emits `harmonised.parquet` + `filter_report.md`.
+5. ⬜ **The Step 2 gate runner** — sixteen gates, seventeen perturbations, `V2.a`-`V2.i`, coverage
+   clause, every gate seen failing. Not yet written.
+
+**Manager checks still owed once `harmonised.parquet` exists** (none of these can be done before it):
+`G2.11` on **episodes**, not source codes — the crosswalk's non-empty (country × class) cells are
+necessary but not sufficient; Spain's `cop_alone` share, to confirm the `1=yes / 6=no` map was
+actually applied and not truthy-cast; and Italy's `act2` coverage, still unmeasured.
+
+
+---
+
+## ⏳ STEP 2 — the gate runner is now in flight too, 2026-08-16 overnight
+
+Task doc: `Prompts/previous/4thJ_employee_step2_gates_2026-08-16.md` (archived 2026-08-17). Builds
+`tools/4thJ_gates_step2.py` — **sixteen gates, seventeen perturbations, nine guards `V2.a`-`V2.i`,
+one coverage clause.**
+
+It is deliberately sequenced **behind** 2.4 but started **now**: the employee writes the whole
+runner, unit-tests it against a small synthetic parquet built by hand to the D-S2-12 contract,
+**demonstrates it can make each gate fail on demand**, then waits for the manager to clear it against
+the real `harmonised.parquet`. A gate nobody has seen fail is not known to work, and that can be
+established before the data exists.
+
+**Two things the task doc pins down that are easy to get wrong later:**
+
+* 🔴 **`G2.10` has no published national reference table in our hands.** It is `NOT CHECKED` with that
+  one-line reason and stays **outside the scored set**. The employee is forbidden to substitute a
+  re-tabulation of our own data — a gate whose reference derives from the source it audits cannot
+  fail, so a green `G2.10` built that way would be worse than an unchecked one.
+* 🔴 **`G2.13` and `G2.15` are opposites and both must hold.** Italy's `act2` must resolve *only*
+  through the secondary crosswalk; Spain's and the UK's secondary rows must *agree* with the primary
+  table truncated. A single "the secondary crosswalk is consistent" gate would silently pick one and
+  drop the other.
+
+The recurring instruction across `V2.d`/`V2.e`/`V2.f`/`V2.h` — **import the shipped list, never
+restate it in the validator** — is the one that matters most, and the shipped files are all in place
+to be imported: `outdoor_at_home.csv`, `crosswalk_location.csv`'s `target_class`,
+`crosswalk_copresence.csv`'s six flags + value map + `bit_position`, `activity_target_list.csv`.
+
+
+---
+
+## 🔴 DECIDED 2026-08-16 (overnight) — D-S2-14: `start_min` HAS A PER-COUNTRY REFERENCE POINT, AND STEP 1 NEVER STATED IT
+
+### The finding, raised by the 2.4 employee and re-measured by the manager
+
+D-S2-5 gives the rotation as `offset = (native_origin_hour - 4) * 60`, which is **0 for Italy**
+because Italy's diary origin is 04:00. That formula silently assumes `start_min == 0` means the
+diary's own origin. **For Italy it does not.**
+
+Measured directly on `episodes_italy.parquet`, and confirmed by the manager on all three countries:
+
+| country | first episode's `start_min`, every diary | max `start_min` | max `start + duration` | rows ending past 1440 | diaries summing to 1440 |
+|---|---|---|---|---|---|
+| Spain | **0** (19,295 / 19,295) | 1430 | 1440 | **0** | 19,295 / 19,295 |
+| UK | **0** (16,533 / 16,533) | 1430 | 1440 | **0** | 16,533 / 16,533 |
+| **Italy** | **240** (41,229 / 41,229) | 1430 | **1680** | **35,060** | 41,229 / 41,229 |
+
+🔴 **Italy's `start_min` is wall-clock minutes since midnight**, carried through from the raw
+`oraini*60 + minini`, and never re-based to the diary's own 04:00 start. `240` is 04:00. The 1680
+maximum is 04:00 the following day. The 35,060 rows ending past 1440 are the one-per-diary episode
+that crosses midnight. Spain and the UK are diary-relative; Italy is not.
+
+**With D-S2-5's formula as written, the runner produced 32,161 spurious Italian "splits"** and stopped
+on its own guard rather than absorbing them — which is the guard working. Every Italian diary still
+sums to exactly 1440, so **no time was lost at Step 1 and nothing already accepted is invalidated**:
+`G1.1`'s Spanish 430,754 is untouched, and Italy's duration closure holds under either reading. The
+information is intact; only its reference point was unstated.
+
+### Why this was invisible until now
+
+Step 1's record contract names `start_min` and never says **what minute zero means**. A convention
+that is never written down cannot be checked, so no Step 1 gate could have failed on this — it is the
+same shape as a gate whose reference derives from the source it audits. **This is recorded as a real
+gap in the Step 1 contract**, and it is exactly the sort of thing that only surfaces when a second
+step tries to use the field for arithmetic.
+
+### The decision
+
+**The reference point is a declared per-country property, and the rotation offset is derived from it
+rather than from the diary origin alone.** Let `reference_minutes` be the wall-clock time that
+`start_min == 0` denotes:
+
+```
+reference_minutes:  ES 360 (06:00)   UK 240 (04:00)   IT 0 (00:00)
+offset      = (reference_minutes - 240) mod 1440
+new_start   = (start_min + offset)     mod 1440
+```
+
+which yields **ES +120, UK 0, IT +1200 (equivalently −240)**. The two countries D-S2-5 got right stay
+exactly as they were — this **generalises** D-S2-5, it does not overturn it. D-S2-5's arithmetic was
+correct wherever the reference happened to coincide with the diary origin, which was true for Spain
+and the UK and false for Italy.
+
+🔴 **The correction is self-testing, and that is why it is safe to make.** It predicts **exactly zero
+Italian splits**: Italy's diary runs 240 → 1680, which maps to 0 → 1440 and therefore straddles
+nothing. If the corrected runner reports any Italian split at all, the correction is wrong and must
+come back here. Spain still splits — its 06:00 origin genuinely straddles 04:00 — and the UK still
+does not.
+
+**The runner asserts the reference rather than trusting this table**: for each country it checks that
+every diary's `episode_index == 0` episode starts at the declared `reference`-relative value
+(ES 0, UK 0, **IT 240**), and 🔴 **that the rotated intervals tile `[0, 1440)` exactly once per
+diary**. That tiling assertion is the general invariant; it would have caught this at Step 1 had the
+contract stated a reference at all.
+
+*(Generalises, does not supersede, D-S2-5's offset formula.)*
+
+---
+
+## 🔴 DECIDED 2026-08-16 (overnight) — D-S2-15: `V2.i` AS WRITTEN REJECTS THE RECORD CONTRACT'S OWN COLUMN
+
+`V2.i` says it **"FAILs if any column name contains `origin`."** D-S2-12 requires the column
+**`split_at_origin`**. As written, the guard fails the contract it is guarding — and `G2.12`'s round
+trip is only mechanically possible because `split_at_origin` exists, so obeying `V2.i` literally
+would take out the rotation gate with it. Found by the 2.4 employee against its own pre-write
+assertion.
+
+**Decision.** `V2.i` fails on any column name containing `origin` **other than the exact name
+`split_at_origin`**, and 🔴 **it additionally FAILs if `split_at_origin` is absent.** The exception is
+turned into a positive requirement so it cannot become a hole.
+
+**This is a correction, not a relaxation, and the distinction is checkable.** What `V2.i` exists to
+stop is a **per-country origin value** reaching Step 3 and leaking country identity into
+leave-one-country-out — `origin_hour` and anything like it. `split_at_origin` is a per-episode boolean
+that carries no country-specific value and is required by the contract. The leak stays closed;
+`origin_hour` is still refused. Nothing was widened to make a failing thing pass — the guard had
+never been run.
+
+*(Amends `V2.i` in `4thJ_02_harmonisation_val.md`. The Step 2 gate runner implements the amended
+form.)*
+
+
+---
+
+### 2026-08-16 (overnight) — 🟢 **Work item 2.4 ACCEPTED**, with one column set reversed and the UK re-running
+
+`harmonised.parquet` exists: **2,024,068 episodes** — ES 446,547, UK 567,381, IT 1,010,140 — plus
+`filter_report.md` and `tools/4thJ_harmonise_step2.py`. Three unchained `sbatch` jobs, age floor
+**11** passed as a parameter with no default. **Every figure below was re-derived by the manager from
+the parquet itself, not read off the report.**
+
+**The reconciliation closes exactly**: input 2,096,043 − age-removed 90,890 + splits 18,915 =
+**2,024,068 = output**.
+
+🔴 **D-S2-14's self-test passed on the first attempt, and this is the load-bearing result of the
+night.** The correction predicted **exactly zero Italian splits**, and Italy returned zero — with
+37,830 Spanish split half-rows and zero for the UK, which is precisely the pattern a 06:00 origin
+rotated to 04:00 produces and a 04:00 origin does not. Italy's two new assertions both passed:
+**all 38,260 diaries start at `start_min` 240**, and **every diary's rotated intervals partition
+`[0, 1440)` once, no gaps and no overlaps.** The manager independently confirmed the tiling across
+**all 73,254 diaries in all three countries**, with `min(start_min) = 0` and
+`max(start_min + duration_min) = 1440`. A correction that stakes itself on a number and then hits it
+is worth more than one that is merely argued.
+
+**Gate conditions already satisfiable on the shipped table** (checked by the manager, though the
+battery has not run):
+
+* **`G2.16`** — `act_level1 == act[0]` and `act_level2 == act[:2]` on **all 2,015,359 non-null `act`
+  episodes, zero mismatches**, every code exactly three characters, every value a member of the
+  shipped `activity_target_list.csv`.
+* **`G2.11`** — 🔴 **zero empty (country × class) cells on *episodes***, which is the gate's actual
+  condition. The crosswalk-level check recorded when 2.2 was accepted was necessary but not
+  sufficient; this is the sufficient one. The smallest cell is Spanish public transport at 3,808
+  episodes — small, and not zero.
+* **`G2.14`** — **zero alone-and-accompanied contradictions in all three countries.** 🔴 And the
+  number that proves the gate was worth writing: **Spain's `cop_alone` is `True` on 0.350 of
+  episodes**, not the near-1.0 that `bool(6)` would have produced. The value map was read from the
+  shipped crosswalk and applied; it was not truthy-cast.
+* **`V2.i`** (amended form, D-S2-15) — the only column containing `origin` is `split_at_origin`, and
+  it is present.
+* **Nullable booleans behaved**: the UK carries **68,464 episodes null across all six shared flags**
+  — `WithMiss` expressed as missingness rather than as a presence category — while Spain and Italy,
+  which field all six, carry none. Missing was not collapsed into absent.
+
+**Two employee judgement calls confirmed by the manager.** `indoor_presence` is `null` wherever `act`
+is null, because `act NOT IN OUTDOOR_AT_HOME` is not evaluable on an unknown activity and `False`
+would assert "not indoors" on no evidence. `WithMiss` stays missingness and does not become a
+`cop_extra` column, since the shipped crosswalk tags it `NOT_A_PRESENCE_FLAG`.
+
+🔴 **One employee decision was reversed: four recorded UK columns must not be dropped.** The runner
+excluded `act2_extra_uk_2`, `act2_extra_uk_3`, `weight_dia_a` and `weight_dia_b` on the reading that
+D-S2-12's column list is a closed enumeration, and flagged the tension with D-S2-7's prose rather
+than burying it. **The list is not closed** — it already ends `cop_extra_<country>_<field> ...`, a
+pattern rather than a name — and the principle underneath it is the one this project has now invoked
+three times: **a transform that discards its inputs cannot be audited.** It is why the three `*_raw`
+columns ride along at all. Dropping four recorded fields at the Step 2 boundary also **pre-empts a
+question D-S2-7 explicitly reserves for Step 3**: Step 1 decides what is kept, Step 3 decides what is
+serialised, and Step 2 is not the place to answer the second. The UK alone re-runs carrying them;
+Spain and Italy are untouched. **The re-run must return exactly 567,381 rows and exactly 0 splits —
+adding columns may not move a single row.**
+
+🔴 **A state overload to record before anyone reads `act2` as documented.** D-S2-12 says `act2` null
+means *not recorded*. In the shipped table **587 episodes (57 Spanish, 530 UK) are null because a
+recorded secondary code did not map** — a different state wearing the same value. No fourth state is
+being added: the distinction is recoverable from `act2_raw`, which is carried for exactly this
+purpose, so D-S2-12's own argument is doing its job. But it is written down here because a later
+reader treating `act2 IS NULL` as "the instrument did not field it" would be wrong 587 times.
+
+**Also inherited from Step 1 and disclosed rather than patched**: `act2_raw`'s *not recorded* state
+occurs **zero times in all three countries**. Spain's `ASECU` and Italy's `catcon` are fixed-width
+fields with a blank convention only, and the UK's genuine `-9` sentinel was already folded into the
+blank state by Step 1's own documented choice — zero literal `-9` values survive in 587,632 UK rows.
+**Acceptance test 5 is therefore a partial pass, and is reported as one rather than as a pass.**
+
+**The age floor cost, now measured** (D-S2-13): the age clause removed **155 Spanish respondents /
+3,122 episodes**, **340 UK respondents / 20,251 episodes**, and **2,969 Italian respondents / 67,517
+episodes**. Italy's larger loss is the band effect and is exactly what D-S2-13 predicted it would be —
+`claseta2 >= "04"` removes the whole `6-10` band, and `filter_report.md` carries the required line
+saying so in terms, so no later reader mistakes Italy's age filter for an exact one.
+
+
+### 2026-08-16 (overnight, later) — the UK re-run landed; **2.4 is closed** and the gate runner is cleared
+
+The UK re-ran alone (job 1252983) carrying `act2_extra_uk_2`, `act2_extra_uk_3`, `weight_dia_a` and
+`weight_dia_b`. Manager re-verification of the rebuilt `harmonised.parquet`:
+
+* **2,024,068 rows, 40 columns** — ES 446,547, **UK 567,381 (unchanged to the row)**, IT 1,010,140.
+* **Splits ES 37,830 / IT 0 / UK 0** — unchanged.
+* **All 73,254 diaries still tile `[0,1440)`**; `G2.16` still zero mismatches; `act2` nulls still 587.
+* All four columns present; the only column containing `origin` is still `split_at_origin`.
+
+🔴 **That is the point of the check: adding four columns moved zero rows.** A re-run that had shifted
+a single episode would have meant the column set was entangled with the transform, and the whole
+delivery would have gone back.
+
+Disclosure lines were added to every `filter_report_*.md` fragment for the `indoor_presence` nulls
+(**ES 290, UK 18,325, IT 8,112**) and for the `act2` overload, plus a dedicated section in
+`filter_report.md` stating that **all 587 `act2 = null` episodes are the unmapped-code case and none
+is the not-recorded case**, with the instruction to separate them via `act2_raw`.
+
+**Work item 2.4 is closed. Step 2's only remaining work is the validation battery**, which has been
+cleared against this table with the six baseline measurements above handed over **as independent
+targets to reproduce, not as numbers to reconcile to** — a battery that agrees with the manager
+because it was told the answer is not a battery.
+
+
+---
+
+### 2026-08-16 (overnight) — 🟢 **THE STEP 2 BATTERY RAN. 15 of 15 scored gates PASS, 15 of 15 SEEN FAILING, coverage satisfied.**
+
+`tools/4thJ_gates_step2.py`, run against the real 2,024,068-row `harmonised.parquet`. Reports in
+`Step2_docs/gates_step2_out/real_run/`. **The manager read the reports directly rather than a
+summary.**
+
+**Baseline: all nine vacuity guards PASS, all fifteen scored gates PASS, `G2.10` `NOT CHECKED`.**
+
+| | |
+|---|---|
+| `G2.3` mass conservation | max relative diff **1.3e-16** — exact to floating point |
+| `G2.4` day closure | **0** diaries off 1440; **0** failing the D-S2-14 tiling invariant |
+| `G2.6` indoor-rule reachability | fires in **all three** countries — ES 1,704, UK 3,883, IT 4,849 |
+| `G2.7` attrition | **0** escalations; removed ES 0.803 %, UK 4.107 %, IT 7.201 % |
+| `G2.9` cross-country divergence | **6 of 10** Level-1 categories exceed 20 min/day, floor is 3 |
+| `G2.11` location coverage | **0** empty (country × class) cells, 0 escalations |
+| `G2.12` Spanish round-trip | **0** mismatching diaries and episodes |
+| `G2.14` co-presence integrity | **0** contradictory episodes |
+| `G2.16` Level-1 derivation | **0** mismatches, **0** `act` values outside the shipped target list |
+
+🔴 **`G2.9` is the one to read twice.** It is a *floor* on disagreement, and 6 of 10 categories clear
+20 min/day against a requirement of 3. **Harmonisation did not smooth three European countries into
+each other** — which is the failure this project would most easily have shipped without noticing,
+because every other gate here asks whether we got it right and only `G2.9` asks whether we got it
+right *without making it up*.
+
+🔴 **`G2.12` deserves its own line for what it declined to do.** It reports 0 mismatches *and*
+separately reports that **155 whole Spanish diaries present in Step 1 are absent from
+`harmonised.parquet`** — the age filter — and refuses to count them as rotation mismatches. A
+round-trip gate that had counted a filtered diary as a bug would have produced 155 phantom failures
+and taught us to distrust it.
+
+**The perturbation sweep: 17 ran, the null one moved nothing, and every scored gate was made to
+fall.**
+
+```
+gates that PASS at baseline and were NEVER made to fall: []
+coverage clause: PASS
+```
+
+`shift_sleep_budget` reports **`DID NOT FIRE`** against `G2.10`, correctly: a perturbation cannot
+fell a gate that is not being scored. **That is the honest reading and it is recorded as `DID NOT
+FIRE`, not quietly dropped** — the same discipline that keeps `G2.10` itself at `NOT CHECKED` rather
+than green.
+
+🔴 **`G2.10` stays `NOT CHECKED`, with its reason, outside the fifteen-gate tally.** We hold no
+published national time-use table. A re-tabulation of our own harmonised data would share an ancestor
+with the thing it audits and could not fail, so it was not substituted. **An unchecked gate is worth
+more than a gate that cannot fail.**
+
+### 🔴 What the sweep found out about the perturbation table itself
+
+**One clean-violation, and the spec asked for it.** The `scale_duration` row predicts `G2.3` falls
+while `G2.4` stays clean, with the parenthetical *"(it stays proportional — verify)"*. **Verified,
+and the prediction is wrong**: scaling a country's durations by 1.01 puts the day at 1454.4, so
+`G2.4`'s closure must break — 38,260 diaries on real data, and the same result on synthetic fixtures.
+
+**The perturbation was NOT adjusted.** The standing rule is that a perturbation is never edited
+because of its result, and this is exactly the case it protects. **The consequence is recorded
+instead: `G2.3` is never demonstrated to fall independently of `G2.4`.** Every scenario in the table
+that breaks mass conservation also breaks day closure, so `G2.3`'s detection power is real but not
+isolated. A perturbation corrupting **weights** rather than durations would isolate it — it would
+change total weighted minutes while leaving every day summing to 1440. 🔴 **That is a recommendation
+for the author, not a change made here**: adding a row to a pre-registered table is the author's call.
+
+**Three further side effects, visible in the cross-tab and not caught by the acceptance tests
+because the table does not list them as must-stay-clean.** They are recorded so nobody later reads
+them as defects:
+
+* **`shift_sleep_budget` also fells `G2.4`** — moving a sleep budget by 40 min/day breaks the 1440
+  closure. Second perturbation in the table whose blast radius was not anticipated.
+* **`pool_modal_code` also fells `G2.6`** — mapping every activity to the pooled modal code means the
+  `OUTDOOR_AT_HOME` list can never fire, so the vacuity guard on the rule correctly reports that the
+  rule has stopped doing anything. The guard is working, not failing.
+* **`spain_cop_bool` also fells `G2.12`** — the round-trip compares every co-presence flag, so
+  corrupting Spain's co-presence necessarily breaks it. By design.
+
+**`V2.g` FAILs under both duration perturbations** (Italian durations stop being multiples of 10).
+A guard firing under a perturbation aimed elsewhere is information about blast radius, **not a gate
+failure**, and is recorded here so it is not misread as one.
+
+**Step 2's definition of done is met on all five points.** Four crosswalks cited and complete; the
+indoor rule implemented with its exclusion list stored as data and imported by the validator rather
+than restated; co-presence availability documented with missing distinguished from absent;
+`harmonised.parquet` and `filter_report.md` emitted; and **all gates PASS with each one seen
+failing.**
+
+
+---
+
+## 🔴 DECIDED 2026-08-16 (overnight) — D-S2-16: `country` IS LOWERCASE FROM STEP 3 ONWARD, AND THE JOIN MUST ASSERT IT MATCHED
+
+### The near-miss
+
+The gate employee disclosed it rather than absorbing it, which is the only reason it is here:
+**`harmonised.parquet`'s `country` column holds `ES` / `UK` / `IT`, and every crosswalk file holds
+`es` / `uk` / `it`.** The validator lowercases both sides before any comparison.
+
+🔴 **Un-normalised, every gate would have found zero rows for every country and PASSED VACUOUSLY.**
+That is a far worse failure than the mismatch itself: sixteen green gates, a clean coverage cross-tab,
+and nothing actually checked. It would have looked exactly like the result we got.
+
+**No vacuity guard would have caught it.** `V2.a` counts the countries present in
+`harmonised.parquet` — three, correctly — and says nothing about whether the *join* matched anything.
+`V2.b` prints crosswalk counts, also correct on their own. Every guard we wrote checks an artefact in
+isolation; **none checks that two artefacts actually met.**
+
+### The decision
+
+1. **`country` is lowercase — `es`, `uk`, `it` — in every artefact from Step 3 onward.** Step 2's
+   shipped `harmonised.parquet` keeps `ES`/`UK`/`IT` rather than being rewritten: the file is
+   validated, and a cosmetic rewrite would invalidate a battery result that took the whole night to
+   earn. **Step 3's loader lowercases on read**, and this line is why.
+2. 🔴 **Any join between a national artefact and a crosswalk must assert it matched.** The rule, and
+   it generalises past this instance: *after joining, the number of distinct join-key values that
+   matched must be non-zero for every country, and the runner FAILs if it is not.* A join that
+   silently matches nothing is the vacuity failure mode our guards were not built to see, and it is
+   cheaper to assert than to detect after the fact.
+3. **Recommended for the Step 3 battery: a guard of the `V3.x` family stating exactly that.** 🔴 Not
+   added to Step 2's `V2.a`-`V2.i` here — Step 2's battery has run and its guard set is closed;
+   reopening it retroactively to add a guard that would have passed anyway buys nothing and costs the
+   result its provenance.
+
+### Two smaller carries from the same fragment
+
+* 🔴 **`G2.12`'s Spanish co-presence column lookup is hardcoded** (`cop_solo`, `cop_pareja`,
+  `cop_menor`, `cop_extra_es_padres`, `cop_otmh`, `cop_otcon`) and **fails silently**: if Step 1 ever
+  renames those columns, the reconstruction produces all-null flags and `G2.12` reports spurious
+  mismatches rather than an error. It is a column-address lookup, not a value map — the `1=yes/6=no`
+  map is still imported from the shipped crosswalk — but it is the one place in the battery where a
+  rename degrades into a wrong answer instead of a loud one.
+* **`G2.11`'s escalation share uses `weight_dia`.** The val doc says only "weighted"; the employee
+  chose the diary-level weight to match every other diary-level aggregate in the runner, and flagged
+  it rather than assuming. **Author's call if it should be `weight_ind`** — it changes no verdict at
+  baseline, where the escalation count is 0.
+
+---
+
+### 2026-08-16 (overnight) — 🟢 **STEP 2 IS CLOSED**
+
+All five points of the definition of done are met, and the evidence for each is in this log above:
+four crosswalks with every row cited and every unmapped code registered; the indoor rule implemented
+with its exclusion list stored as data and **imported** by the validator rather than restated;
+co-presence availability documented with missing distinguished from absent; `harmonised.parquet`
+(2,024,068 episodes) and `filter_report.md` emitted with removals counted per clause per country; and
+**fifteen scored gates PASS with all fifteen seen failing.**
+
+🔴 **Standing Step-2 state to quote wherever Step 2 is cited:**
+
+* **`G2.10` is `NOT CHECKED`**, not passed — we hold no published national time-use table, and a
+  re-tabulation of our own data would share an ancestor with the thing it audits.
+* **`G2.3` is not demonstrated independently of `G2.4`** — the `scale_duration` perturbation fells
+  both, and the pre-registered table has no perturbation that isolates mass conservation.
+* **The age floor is 11, not 10** (D-S2-13), because Italy's disclosure-control banding cannot express
+  10. This reverses decision 16's 11 → 10 move and is **awaiting the author's confirmation**.
+* **`act2 IS NULL` is overloaded** for 587 episodes, resolvable from `act2_raw`.
+* **`act2_raw`'s *not recorded* state occurs zero times** in all three countries, inherited from
+  Step 1.
+
+**Step 3 is unblocked.** It consumes `harmonised.parquet`, and `crosswalk_copresence.csv`'s
+`bit_position` column is present and verified `{0,...,5}` one-to-one, which is what `G3.14 (b)` needs
+as a reference the encoder did not author.
+
+---
+
+## 🔴🔴 2026-08-17 — WHERE THIS STANDS, AND THE FOUR THINGS WAITING ON THE AUTHOR
+
+**Steps 1 and 2 are both closed.** Step 1 by round 3 (`run_20260816-2210`), Step 2 by the sixteen-gate
+battery against the real table. `harmonised.parquet` holds **2,024,068 episodes** — ES 446,547,
+UK 567,381, IT 1,010,140 — over 73,254 diaries that each tile `[0, 1440)` exactly once. **Fifteen
+scored gates PASS and all fifteen were seen falling; `G2.10` is `NOT CHECKED` with its reason and sits
+outside the tally.** Everything is written into `4thJ_02_harmonisation.md`, its `_val` twin, this file
+and memory. **Nothing is running on Speed. No job is queued.**
+
+### 🔴 Read this before the four items — the near-miss, because it is the transferable part
+
+`harmonised.parquet` holds `ES` / `UK` / `IT`; every crosswalk holds `es` / `uk` / `it`. The validator
+lowercases both sides, so it worked. **Un-normalised, every gate would have found zero rows for every
+country and PASSED VACUOUSLY** — sixteen green gates, a clean coverage cross-tab, nothing actually
+checked, and **it would have looked exactly like the result we got.**
+
+🔴 **No vacuity guard we own would have caught it, and the reason generalises.** `V2.a` counts the
+countries in the file (three, correctly). `V2.b` counts crosswalk rows (also correct). **Every guard in
+this project checks one artefact in isolation; not one checks that two artefacts actually met.** That
+is now D-S2-16: `country` is lowercase from Step 3 onward, and **any crosswalk join must assert it
+matched** — non-zero matched keys per country, or the runner FAILs.
+
+**It was deliberately NOT retrofitted into Step 2's guard set.** Reopening a battery that has already
+run, to add a guard that would have passed anyway, costs the result its provenance and buys nothing.
+
+**Watch for one more shape in Step 3**, the one the lunch-break correction had: **two countries'
+equivalent codes given different treatments, each defensible alone.** UK `1310` was mapped and Spain's
+`121` was left unmapped; shipped as-is, Spain would have lost its lunch breaks while the UK kept
+theirs — a country-correlated difference manufactured by our own crosswalk, landing in a LOCO design.
+Three of the four new Step 2 decisions came from an employee stopping on something odd instead of
+coding around it. That is the behaviour to keep asking for.
+
+### The four open items, in order of how much they matter
+
+1. 🔴 **D-S2-13, the age floor 10 → 11. THIS REVERSES YOUR DECISION-16 MOVE AND IT IS THE ONE THAT
+   BLOCKS STEP 3.** Italy's `claseta2` band `03` is `6-10`, so a floor of 10 falls strictly inside a
+   band and cannot be expressed; the rule gained the clause *"the lowest age every country can both
+   supply and express exactly"*, which gives 11. **Cost, now measured: 2,969 Italian respondents /
+   67,517 episodes** (plus ES 155 / 3,122 and UK 340 / 20,251). **One line overturns it — the floor is
+   a runner parameter with no default.** Full reasoning in `4thJ_02_harmonisation.md`, D-S2-13.
+2. **`G2.3` is never demonstrated to fall independently of `G2.4`.** Every scenario in the
+   pre-registered table that breaks mass conservation also breaks day closure. A **weight-corruption**
+   perturbation would isolate it — it changes total weighted minutes while every day still sums to
+   1440. 🔴 **Adding a row to a pre-registered table is the author's call, which is why it was not
+   added.** The perturbation that mispredicted (`scale_duration`) was **not** edited; the consequence
+   was recorded instead.
+3. **`G2.11`'s escalation share uses `weight_dia`** where the validation document said only
+   *"weighted"*. The employee chose the diary-level weight to match every other diary-level aggregate
+   and flagged it rather than assuming. **Author's call whether it should be `weight_ind`** — it
+   changes no verdict at baseline, where the escalation count is 0.
+4. **Item 1.4, the Eurostat entity-recognition enquiry, is still AUTHOR-ONLY** and still does not block
+   anything. It is the only item in Step 1's definition of done that nobody here can execute.
+
+### 🔴 Why Step 3 was NOT started, and why that is the right call
+
+Step 3 emits `corpus.jsonl` **from `harmonised.parquet`**. If D-S2-13 is overturned, that table is
+rebuilt on a different population and the corpus goes in the bin with it — and Step 3's own
+specification warns that a fifth tuple element added after `corpus.jsonl` exists **invalidates the
+corpus, the Step 7 grammar and every trained fold.** Better to have the ruling first. The scope given
+was Step 2; Step 2 is what was delivered.
+
+### State of this folder
+
+**All four executed employee prompts are archived in `Prompts/previous/`** — `..._step1_gates16_rerun_2026-08-15.md`,
+`..._step1_gates16_round2_2026-08-16.md`, `..._step2_24_harmonise_2026-08-16.md`,
+`..._step2_gates_2026-08-16.md`. All four ran to completion and every deliverable they name exists on
+disk; their Progress Log fragments are merged into the Step 1 and Step 2 documents. `RESUME.md` is the
+only live file left in `Prompts/`. **No scratch files shipped** — the activity employee's
+`_es_it_cw_rows.json` and `_helper_sets.json` are deleted, as required.
+
+### ▶️ What the next session does, in order
+
+1. **Get the D-S2-13 ruling.** If it stands, nothing moves. If it is overturned, re-run work item 2.4
+   with `--age-floor 10` and **re-run the Step 2 battery on the rebuilt table** — a validated result
+   does not transfer to a different population.
+2. **Then Step 3 builds** — `corpus.jsonl`, episode form, tuple `DUR,ACT,LOC,COP` with **no `START`**,
+   `COP` a single decimal integer 0-63 (D-S3-1), `ACT` 3-digit and `ACT2` 2-digit (D-S2-7), no
+   vocabulary additions, no mnemonic remapping. 🔴 **The loader lowercases `country` on read, and every
+   crosswalk join asserts it matched** (D-S2-16); recommend the matching `V3.x` guard to the author
+   with the battery.
+3. 🔴 **If `ACT2` is ever to enter the tuple, it must happen BEFORE `corpus.jsonl` is emitted.** The
+   leak argument is retired — all three countries record a secondary activity — so only token cost
+   survives, and that is a measurement, decided the way `COP` packing was.
+4. Still carried and **not** blockers: Italy's `act2` coverage is unmeasured and `act2_coverage.md` is
+   incomplete without it; no gate checks that `cop_parent`'s OR uses both national components;
+   `WithOtherYK`'s scope regarding 8+ children is `NOT STATED IN CODEBOOK`; Spain's within-episode
+   `ACT2` disagreement rate is unmeasurable downstream because Step 1 already took first-of-run.
+5. Then `prereg.md` freezes, then the first Leg-5 submission, then Steps 4-9.
+
+🔴 **Standing state to quote wherever these steps are cited:** Italy's `G1.6b` FAILs and the UK's
+`G1.4` FAILs — both real properties of the delivered data, neither a battery defect. `G2.10` is
+`NOT CHECKED`, not passed. `act2 IS NULL` is overloaded for 587 episodes, resolvable from `act2_raw`.
+`act2_raw`'s *not recorded* state occurs zero times in all three countries.
+

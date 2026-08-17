@@ -1,0 +1,31 @@
+## uk
+
+- age floor used: 11
+- compiled age expression: `DVAge >= 11`
+- age clause removed: 340 respondents, 679 diaries, 20251 episodes
+- native origin hour: 04:00 (asserted against codebook_facts_uk.md)
+- reference_minutes (D-S2-14): 240 (wall-clock time that start_min==0 denotes)
+- rotation offset applied: 0 min
+- first-episode start_min assertion: PASS, all diaries start at 0
+- tiling assertion: PASS, every diary's rotated intervals partition [0,1440) exactly once
+- split_at_origin count: 0
+- act2_raw three states: not_recorded(null)=0, recorded_and_blank('')=408079, recorded_with_value=159302
+- act2 unmapped-with-value codes (act2=null despite a raw value): 530
+- act2=null overload: D-S2-12 says null means 'not recorded', but in this delivery act2=null ALWAYS means 'the recorded act2_raw code did not map' (530 episode(s) here) -- the literal 'not recorded' state never occurs for any country (act2_raw three states above: not_recorded(null)=0 everywhere). Resolve downstream via act2_raw: a non-empty, non-null act2_raw paired with act2 IS NULL is the unmapped case; act2_raw=='' always pairs with act2=='' (recorded-and-blank), never with act2=null.
+- act unmapped (act=null): 4590
+- loc_class unmapped, non-blank raw (loc_class=null): 9946
+- loc_raw recorded-and-blank episodes: 6847
+- indoor_presence null count: 18325 (null, never False, wherever we cannot evaluate the rule: loc_class unknown -- loc_raw recorded-and-blank or an unmapped code -- or loc_class=='at_home' but act is unmapped so the outdoor-at-home exclusion cannot be checked; 'we don't know' is never collapsed into False)
+- co-presence missingness-flagged episodes (six shared flags set null): 68464
+- input episodes: 587632
+- output episodes: 567381
+- reconciliation: 587632 - 20251 + 0 = 567381 (output 567381), OK
+  - cop_alone: null=68464, True=186142, False=312775
+  - cop_partner: null=68464, True=171375, False=327542
+  - cop_children: null=68464, True=60298, False=438619
+  - cop_parent: null=68464, True=25829, False=473088
+  - cop_other_hh: null=68464, True=65885, False=433032
+  - cop_other_persons: null=68464, True=92205, False=406712
+  - cop_extra_uk_father: null=0, True=13747, False=553634
+  - cop_extra_uk_mother: null=0, True=21389, False=545992
+  - cop_extra_uk_na: null=0, True=107970, False=459411
