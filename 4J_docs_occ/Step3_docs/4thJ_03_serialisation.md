@@ -25,7 +25,7 @@ Turn one harmonised episode table into text the model reads, and back again **ex
 | Episode form, not slot form | `RL07`, measured: 196-326 tokens against 924-1310 |
 | Tuple is `DUR,ACT,LOC,COP` — **no `START`** | `RL07`. Start is the running sum; carrying it is redundant and misdescribes what the model emits |
 | `LOC` is the real HETUS code, **not** `RL07`'s invented 1-6 | `RL02`. 🔴 **But not "10-39":** Spain carries `41`, public transport (F-ES-3, D-S2-3). The serialised alphabet is whatever `crosswalk_location.csv` emits, read from that file, never written here as a range |
-| `COP` is **five shared flags**, not one digit | `RL02`. 🔴 **Country-extra flags are carried in `harmonised.parquet` and are not serialised** (D-S2-2) — a symbol only one country can emit leaks country identity into a leave-one-country-out design |
+| `COP` is ~~five~~ 🔴 **SIX** shared flags, not one digit, **packed as a single decimal integer 0-63** (D-S3-1, measured — 8 tokens/episode, no worse than the old single digit) | `RL02`, **widened by D-S2-8, 2026-08-16**: all three countries record parent co-presence (Spain `PADRES`; UK `WithMother` OR `WithFather`; Italy `cmadre` OR `cpadre`), so `cop_parent` is shared, not a Spanish extra. 🔴 **Country-extra flags are carried in `harmonised.parquet` and are not serialised** (D-S2-2) — a symbol only one country can emit leaks country identity into a leave-one-country-out design |
 | `ACT` keeps **3 digits** | Author decision 6 |
 | **No tokens are added to the vocabulary** | `RL05`. LoRA freezes embeddings; unfreezing costs ~16.8 GB of optimizer state and breaks GGUF and vLLM export |
 | 🔴 **No mnemonic code remapping** | Our own measurement. It saves 12.9 % on Qwen and **costs 5.5 %** on the OLMo tokenizer we adopted |
@@ -77,20 +77,80 @@ adding a wave, or seventeen Track A countries, never changes the record format.
 🔴 **There is no `YEAR` field and there never will be.** Naming the instrument cannot be
 extrapolated; naming the time invites exactly the projection this paper does not make.
 
-### 3.2 — The `COP` packing decision
+### 3.2 — The `COP` packing decision — 🔴 **DECIDED 2026-08-16, D-S3-1**
 
-Five binary flags must reach the model without costing five tokens per episode. Options, to be
-decided at implementation and **recorded with the measurement that decided it**:
+**`COP` is serialised as a single decimal integer, 0-63.** Measured, not asserted: Speed job
+**1252633**, OLMo/dolma2 BPE (`allenai/OLMo-2-0425-1B`, stated stand-in for the 7B backbone's vocab),
+every candidate measured in situ inside `DUR,ACT,LOC,<COP>;` and inside a full 25-episode diary, with
+all 64 values swept. Full table and the exact strings: `outputs_step3/cop_packing_measurement.md`.
 
-* a single 0-31 integer (one token on this tokenizer if the value is a single small number — verify);
-* two digits;
-* five characters.
+| Candidate | Worst case, tokens/episode | 25-episode diary |
+|---|---|---|
+| **decimal 0-63 — CHOSEN** | **8**, all 64 values | **200** |
+| two octal digits | 8, all 64 values | 200 |
+| two hex characters | 9, whenever a hex digit is a-f | 210 |
+| six characters `010110` | 9, all 64 values | 225 |
+| six comma-separated digits (do-nothing baseline) | 18 | 450 |
+
+Three things this measurement settles, and they are worth separating:
+
+* **Six flags cost nothing.** 8 tokens per episode is exactly what the *old single-digit* `COP` field
+  cost. Widening the flag set from one digit to six packed bits is **free**, so D-S2-8 imposed no
+  token penalty and no gate needs relaxing on its account.
+* **The do-nothing baseline more than doubles the corpus.** 450 against 200 tokens per diary. That is
+  the number that justifies packing at all, and it is now quantified rather than assumed.
+* 🔴 **Six-character binary was rejected on a pre-registered threshold, not on taste.** At 225 tokens
+  per diary it sits **above `G3.5`'s median band of 220** before a single real record is serialised.
+  Choosing it would have meant moving `G3.5`, which is the one move this project does not make.
+
+Decimal was taken over octal — they tie at 8 — because a raw corpus a human can read without an
+octal-to-binary step is cheaper to audit, and no measurement separates them.
+
+🔴 **The bit order is part of the decision and must be frozen where the flags are defined, not here.**
+`crosswalk_copresence.csv` (D-S2-8) gains a `bit_position` column, 0-5, and the encoder reads the
+order from that file rather than hard-coding it. Two encoders disagreeing about which bit is
+`cop_alone` produce a corpus that round-trips perfectly through `G3.1` and means something else —
+the failure mode `G3.13` exists for.
+
+**Open, and honestly open:** this was commissioned as a *token-cost* measurement and it answers only
+that. Whether a packed integer is as **learnable** as six positional characters is unmeasured; a model
+must recover 64 arbitrary codes rather than read six aligned slots. It is not free to revisit — the
+packing is fixed once `corpus.jsonl` exists — so if it is to be tested, the place is a Step 4 ablation
+on a subset, before the full corpus is emitted.
+
+---
+
+*The original statement of the problem, retained because the reasoning is the record:*
+
+🔴 **SIX** binary flags must reach the model without costing six tokens per episode *(superseded:
+"five"; D-S2-8 promoted `cop_parent` to the shared core on 2026-08-16, so the packed range is **0-63**,
+not 0-31)*. Options, to be decided at implementation and **recorded with the measurement that decided
+it**:
+
+* a single **0-63** integer;
+* six characters, `010110`;
+* two octal digits, or two hex characters;
+* six comma-separated digits — the do-nothing baseline, measured so the saving is quantified rather
+  than asserted.
+
+🔴 **Measure each candidate IN SITU, inside a complete episode tuple and a complete 25-episode diary
+— never as a bare string.** BPE merges across the comma and the semicolon, so the cost of `45` alone
+is not its cost inside `20,311,11,45;`. **`RL18` reached the wrong recommendation by exactly this
+error**, counting a bare fragment at 8 tokens when in context it was 11. That near-miss is recorded in
+this document's first Progress Log entry and it applies here verbatim.
+
+🔴 **Sweep all 64 values and report the worst case, not a lucky example.** A packing that costs 1 token
+for `7` and 2 for `63` costs 2. The value range is small enough that there is no excuse for sampling it.
 
 **Whatever is chosen, discarding flags to save tokens is forbidden.** Paper 1 identifies co-presence
 handling as the source of load overestimation, and the flags are why we can fix it.
 
 **Definition of done:** the packing is chosen by measuring token cost on the real tokenizer, and the
-measurement is in `outputs_step3/cop_packing_measurement.md`.
+measurement is in `outputs_step3/cop_packing_measurement.md`. 🔴 **No `COP` gate is pre-registered
+before that file exists** — a threshold written ahead of the measurement is a threshold chosen to be
+passed.
+**✅ DONE 2026-08-16.** The file exists, the packing is decimal 0-63, and `G3.14` was pre-registered
+*after* the number, in that order.
 
 ### 3.2-bis — 🔴 Secondary activity: **kept in the data, not in the record. Decided 2026-08-14**
 
@@ -103,18 +163,32 @@ for precision:
   recorded by the instrument, recorded and blank, recorded with a value.
 * **It is not serialised into the `DUR,ACT,LOC,COP` tuple today.** Two reasons, and only the first is
   about tokens:
-  1. 🔴 **Coverage is measured on one country out of four.** A field that Spain records and the other
+  1. ~~🔴 **Coverage is measured on one country out of four.** A field that Spain records and the other
      three may not becomes a symbol only Spain can emit, which leaks country identity into a
-     leave-one-country-out design. That is the same argument that keeps the country-extra co-presence
-     flags out of `COP` (D-S2-2), and it is the stronger of the two.
+     leave-one-country-out design.~~ 🔴 **THIS REASON IS RETIRED, 2026-08-16.** All three countries in
+     the corpus record a secondary activity — Spain `ASECU`, the UK `What_Oth1`, Italy `catcon` — so
+     it is **not** a symbol only one country can emit and the leak argument does not apply to it.
+     *(It still applies, unchanged, to the country-extra co-presence flags and to the UK's second and
+     third secondary columns, per D-S2-2 and D-S2-7.)*
   2. It would add a fifth element to every episode tuple, on a record whose whole justification in 3A
-     is its token economy.
-* **The decision to serialise it closes when, and only when, all four coverage rates are measured.**
-  Write them into `outputs_step3/act2_coverage.md`, per country, as a share of episodes. Then:
-  * if **all four** record it at a usable rate, serialising it becomes a real option and is decided by
-    a token-cost measurement, exactly as `COP` packing is in 3.2;
-  * if **any country does not record it**, it stays out of the record permanently and the reason is
-    written into the limitations, not left implicit.
+     is its token economy. **This is now the only surviving reason**, and it is a measurement question,
+     not a principle.
+* ~~**The decision to serialise it closes when, and only when, all four coverage rates are measured.**~~
+  🔴 **Rewritten 2026-08-16 for the three-country corpus.** The branch that would have kept the field
+  out permanently — *"if any country does not record it"* — is **CLOSED: every country records it.**
+  What remains is the token-cost branch. Write the rates into `outputs_step3/act2_coverage.md`, per
+  country, **on both bases** (see below), then decide by measuring token cost exactly as `COP` packing
+  is decided in 3.2.
+* 🔴 **D-S2-7 changed what would be serialised, and it is not what this section assumed.** Italy's
+  `catcon` is `CLS-var13` — 34 flat 2-digit modalities, *a different and coarser classification, not a
+  truncation of `catpri`* (F-IT-3). So the harmonised `ACT2` is **2-digit, arity 1, and carries its own
+  crosswalk**, while `ACT` stays 3-digit. If `ACT2` is ever serialised it enters the tuple as a
+  **2-digit** symbol, and the asymmetry with `ACT` must be stated in the record format rather than
+  discovered by whoever writes the encoder.
+* **Measured so far, and the bases are not interchangeable:** Spain **12.2 % of slots / 18.8 % of
+  episodes**; the UK **27.75 % of episodes** (`What_Oth1`; the UK ships episodes natively, so it has no
+  slot base at all); **Italy is not yet measured.** 🔴 **`act2_coverage.md` is not complete until Italy
+  is measured**, and a rate quoted without its denominator is not a rate.
 * 🔴 **Until that file exists, no step may condition on `act2`, and no gate may test it as though the
   corpus carried it.** Carrying a field is not the same as using it, and the difference has to stay
   visible in the documents or a later session will find the column and assume it was blessed.
@@ -158,9 +232,11 @@ Consequences this item must settle, not Step 1:
   from a lossy summary of the secondary stream. **Measure it on slots, not episodes** — Step 9 needs
   a rate, not a timing, and the slot-level accounting is the one that has not thrown information away.
 
-**Definition of done for this item:** `outputs_step3/act2_coverage.md` exists with four measured
-rates **on both bases**, and this section records the decision those rates forced, including the
-aggregation rule if the field is serialised.
+**Definition of done for this item:** `outputs_step3/act2_coverage.md` exists with **three** measured
+rates *(superseded: "four", decision 16)* **on both bases where both bases exist** — 🔴 **the UK and
+Italy ship episodes natively and have no slot base, so for them the episode share is the only rate and
+must be labelled as such, never silently compared to Spain's slot share** — and this section records
+the decision those rates forced, including the aggregation rule if the field is serialised.
 
 ### 3.3 — The encoder and the decoder
 
@@ -295,3 +371,91 @@ Three things added to 3.2-bis, none of which changes the decision F-ES-6 already
   a timing, and the slot accounting has not discarded the multi-value runs.
 
 No threshold moved and nothing was serialised. The item's Definition of done now requires both bases.
+
+### 2026-08-16 — 🔴 `COP` is SIX flags, not five. The `act2` leak argument is retired. The packing measurement is commissioned
+
+Step 2 closed its three heterogeneities today (D-S2-6, D-S2-7, D-S2-8) and three of those consequences
+land here, in the record format, before anything is built.
+
+* 🔴 **`COP` packs SIX flags, so the packed range is 0-63, not 0-31.** D-S2-8 found that `PADRES` was
+  never a Spanish extra: all three countries record parent co-presence, Spain in one flag, the UK in
+  two (`WithMother`, `WithFather`) and Italy in two (`cmadre`, `cpadre`). A shared flag every country
+  records belongs in the serialised tuple; the two-column national forms stay as extras and stay out,
+  under the same rule as before. **This is a widening of the shared core forced by measurement, not a
+  format change of convenience** — and it had to reach this document before the packing was measured,
+  because a five-flag measurement would have been the right answer to the wrong question.
+* 🔴 **The `act2` leak argument is RETIRED, and it was the stronger of the two reasons.** 3.2-bis kept
+  secondary activity out of the tuple mainly because it was measured on one country of four and might
+  have become a symbol only Spain could emit. **All three countries record it** — Spain `ASECU`, the
+  UK `What_Oth1`, Italy `catcon` — so that argument no longer applies to this field. **The branch that
+  would have excluded it permanently is closed.** What survives is the token-cost argument alone, and
+  that is a measurement, not a principle. It is decided the way `COP` packing is.
+* 🔴 **But D-S2-7 changed what would be serialised.** Italy's `catcon` is `CLS-var13`: 34 flat 2-digit
+  modalities, a *different and coarser* classification, **not a truncation of `catpri`** (F-IT-3). So
+  the harmonised `ACT2` is arity 1, 2-digit, with its own crosswalk, while `ACT` keeps 3 digits. **If
+  `ACT2` ever enters the tuple it enters as a 2-digit symbol**, and that asymmetry is written here
+  rather than left for whoever writes the encoder to discover.
+* **`act2_coverage.md` now needs three rates, not four, and the bases are not interchangeable.**
+  Spain 12.2 % of slots / 18.8 % of episodes; the UK 27.75 % of episodes; **Italy still unmeasured.**
+  🔴 **The UK and Italy ship episodes natively and have no slot base at all**, so for them the episode
+  share is the only rate that exists and must be labelled as one. Comparing it to Spain's slot share
+  would compare instrument design.
+* **The `COP` packing measurement is commissioned on Speed**, five candidates for the six bits, each
+  measured **in situ** inside a full episode tuple and a full 25-episode diary, **sweeping all 64
+  values and reporting the worst case.** 🔴 **In situ and worst case are both deliberate.** `RL18`
+  reached the wrong recommendation on this project by counting a bare fragment — 8 tokens for an
+  episode that costs 11 in context — and the near-miss is recorded in this document's first entry. A
+  packing that is 1 token for `7` and 2 for `63` costs 2, and 64 values is small enough that sampling
+  it has no excuse.
+* 🔴 **No `COP` gate is pre-registered until that measurement exists.** A threshold written before the
+  measurement is a threshold chosen to be passed.
+
+**Nothing was serialised, no threshold moved, and the tuple is still `DUR,ACT,LOC,COP`.** Step 3 stays
+blocked on `harmonised.parquet`, which is blocked on the Step 1 sixteen-gate round now running as Speed
+jobs 1252522 / 1252523 / 1252524 / 1252525.
+
+### 2026-08-16 (later) — 🔴 **D-S3-1: `COP` IS A DECIMAL INTEGER 0-63. The measurement came back**
+
+The measurement commissioned earlier today returned. Speed job **1252633** (COMPLETED, 42 s,
+`sbatch -p ps --mem=16G -t 7-00:00:00`), tokenizer `allenai/OLMo-2-0425-1B` as the stated stand-in for
+the backbone's OLMo/dolma2 vocabulary, script `tools/4thJ_cop_measure.py`, report at
+`outputs_step3/cop_packing_measurement.md`. All five candidates measured **in situ** inside a full
+episode tuple and a full 25-episode diary, and **all 64 values swept** — both conditions were met, so
+the `RL18` failure mode is closed for this measurement.
+
+**Result, worst case per episode / per 25-episode diary:** decimal 0-63 → **8 / 200**; two octal
+digits → 8 / 200; two hex chars → 9 / 210 (whenever a hex digit is a-f); six characters → 9 / 225;
+six comma-separated digits, the do-nothing baseline → 18 / 450.
+
+**Decision: candidate 1, a single decimal integer 0-63.** Three findings, kept separate because they
+are separate:
+
+* **Widening `COP` from one digit to six packed flags is free.** 8 tokens per episode is what the old
+  single-digit field already cost. **D-S2-8 therefore imposed no token penalty**, and no threshold
+  anywhere needs relaxing on its account. Had this come back at 10, the six-flag decision would have
+  had to be re-argued against the budget; it did not.
+* **The do-nothing baseline more than doubles the corpus** — 450 against 200 tokens per diary. The
+  saving is now quantified rather than asserted, which is the whole reason the baseline was measured.
+* 🔴 **Six-character binary was rejected by a pre-registered threshold, not by preference.** At 225
+  tokens per diary it exceeds `G3.5`'s median band of **220** before a single real record exists.
+  Adopting it would have required moving `G3.5`, and moving a threshold to admit a choice is the
+  failure this project spends most of its effort avoiding. Decimal beat octal only on auditability —
+  they tie at 8, and nothing measured separates them.
+
+**Consequence written into Step 2, not left implicit:** `crosswalk_copresence.csv` gains a
+`bit_position` column, 0-5, and the encoder **reads the bit order from that file**. A hard-coded order
+in the encoder is a defect `G3.1` cannot see — encoder and decoder would agree perfectly and mean
+something else. That is precisely the class `G3.13` exists for.
+
+🔴 **Recorded as open, because it is:** this was commissioned as a token-cost question and answers only
+that. Whether a packed integer is as **learnable** as six positional characters is unmeasured — the
+model must recover 64 arbitrary codes instead of reading six aligned slots. The packing is frozen once
+`corpus.jsonl` exists, so if it is ever to be tested the place is a **Step 4 ablation on a subset,
+before the full corpus is emitted**. Not a blocker; a decision with a known unmeasured edge.
+
+Order of operations was observed: **the file existed, then the packing was chosen, then `G3.14` was
+pre-registered in the validation document.** The gate followed the number.
+
+Also carried over from the employee's report, unverified here and flagged as such: the claimed vocabulary
+identity between `OLMo-2-0425-1B` and `Olmo-3-1025-7B` was a **premise of the task, not re-derived**,
+and the earlier 200-token reference from jobs 1234177 / 1234199 / 1234216 was quoted, not re-run.

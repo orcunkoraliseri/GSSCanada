@@ -97,9 +97,12 @@ RAW_FILES = {
 class Result:
     def __init__(self):
         self.rows = []
+        self.subclauses = {}   # gid -> dict, M-7, only populated where a gate supplies one
 
-    def add(self, gid, status, detail):
+    def add(self, gid, status, detail, subclauses=None):
         self.rows.append((gid, status, detail))
+        if subclauses is not None:
+            self.subclauses[gid] = subclauses
 
     def status(self, gid):
         for g, s, _ in self.rows:
@@ -133,6 +136,18 @@ def read_raw_fixed(path, spec):
         df[c] = df[c].str.strip()
     df["pid"] = df["IDHOGAR"] + "_" + df["NPERS"]
     return df
+
+
+def resolve_manifest_path(local_path, local_root, raw_root):
+    """M-6, 2026-08-16, ported verbatim from 4thJ_gates_step1_uk.py: resolve
+    a manifest-recorded archive to its actual on-disk location under --raw
+    (the country's raw dir at invocation time), using the RELATIVE sub-path
+    the manifest itself records (local_path relative to local_root) -- never
+    local_path taken literally, which is a workstation-specific provenance
+    record and was never portable. local_path/local_root are read ONLY
+    here, never rewritten -- they stay in the manifest as provenance."""
+    rel = os.path.relpath(local_path, local_root)
+    return os.path.normpath(os.path.join(raw_root, rel))
 
 
 def weight_float(raw_str_series):
@@ -408,6 +423,16 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
     a2_valued = int(a2_valued_mask.sum())
     a2_bad = sorted(set(a2_col[a2_valued_mask].unique()) - acts)
     ok4 = not a_bad and not l_bad and not a2_bad
+    # 🔴 M-7, 2026-08-16, ported from the UK reference implementation:
+    # per-field codes_outside_list, so the perturbation loop can compare
+    # baseline vs perturbed at sub-clause level if G1.4 ever FAILs at
+    # baseline for an unrelated, pre-registered reason. Additive only --
+    # never turns a FAIL into a PASS.
+    subclauses4 = {
+        "act_raw_codes_outside_list": a_bad,
+        "loc_raw_codes_outside_list": l_bad,
+        "act2_raw_codes_outside_list": a2_bad,
+    }
     R.add("G1.4", "PASS" if ok4 else "FAIL",
           f"act_raw codes outside list: {a_bad[:10]}; loc_raw: "
           f"not_recorded={loc_nr} recorded_and_blank={loc_bl} "
@@ -415,7 +440,8 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
           f"act2_raw codes outside list (blanks excluded): "
           f"{a2_bad[:10]} | act2_raw states, country ES: not_recorded="
           f"{a2_not_recorded}, recorded_and_blank={a2_blank}, "
-          f"recorded_with_value={a2_valued}")
+          f"recorded_with_value={a2_valued}",
+          subclauses4)
 
     # ---- G1.5 parse completeness ----------------------------------------
     slots_here = int(ep["duration_min"].sum() // SLOT_MINUTES)
@@ -428,27 +454,44 @@ def run_gates(ep, weight_tables, diario2_raw, ctx):
               f"parse report states zero unexplained drops: {claims_zero}; "
               f"{slots_here} slots represented against {INE_SLOTS} delivered")
 
-    # ---- G1.6a integrity (M-2 split) -------------------------------------
+    # ---- G1.6a integrity (M-2 split; M-6, 2026-08-16, ported from the UK
+    # reference implementation: every entry resolved under --raw at
+    # invocation time, preserving the manifest's own relative sub-path --
+    # local_path/local_root read only, never rewritten, never taken
+    # literally. Two distinct problem strings so a corrupted byte and a bad
+    # deployment can never be confused.) --------------------------------
     man = ctx["manifest"]
     if man is None:
         R.add("G1.6a", NOT_CHECKED, "no acquisition manifest on disk")
     else:
-        mism = []
+        problems = []
         hashed_at_lines = []
+        local_root = man.get("local_root", "")
+        raw_root = ctx["raw_root"]
         for entry in man["files"]:
-            p = entry["local_path"]
+            lp = entry.get("local_path")
             hashed_at_lines.append(f"{entry['name']}:hashed_at="
                                     f"{ctx['hashed_at']}")
-            if not os.path.exists(p):
-                mism.append(f"{entry['name']}: missing on disk")
-            elif md5_of(p) != entry["md5"]:
-                mism.append(f"{entry['name']}: md5 recomputed does not match")
-        R.add("G1.6a", "PASS" if not mism else "FAIL",
-              f"{len(man['files'])} archives checked, md5 recomputed from "
-              f"disk vs recorded, independent of any URL; hashed_at="
-              f"{ctx['hashed_at']} for all (see hash_policy in "
-              f"acquisition_manifest.json: 'computed at download time, "
-              f"before the archive was opened'); problems: {mism}")
+            if not lp:
+                problems.append(f"{entry['name']}: recorded location not "
+                                 f"resolvable under --raw (no local_path "
+                                 f"recorded)")
+                continue
+            resolved = resolve_manifest_path(lp, local_root, raw_root)
+            if not os.path.exists(resolved):
+                problems.append(f"{entry['name']}: recorded location not "
+                                 f"resolvable under --raw (resolved to "
+                                 f"{resolved})")
+                continue
+            if md5_of(resolved) != entry["md5"]:
+                problems.append(f"{entry['name']}: md5 mismatch (at {resolved})")
+        R.add("G1.6a", "PASS" if not problems else "FAIL",
+              f"{len(man['files'])} archives checked, resolved under "
+              f"--raw={raw_root} (M-6, never local_path taken literally), "
+              f"md5 recomputed from disk vs recorded, independent of any "
+              f"URL; hashed_at={ctx['hashed_at']} for all (see hash_policy "
+              f"in acquisition_manifest.json: 'computed at download time, "
+              f"before the archive was opened'); problems: {problems}")
 
     # ---- G1.6b provenance (M-2 split, threshold unchanged) ----------------
     if man is None:
@@ -706,13 +749,40 @@ PERTURBATIONS = [
     ("loc_sentinel_to_code", "N/A (Spain has no declared loc_raw sentinel)"),
 ]
 
+# 🔴 M-7, 2026-08-16, ported from the UK reference implementation: which
+# G1.4 sub-clause each masked perturbation targets, so the perturbation loop
+# can compare that ONE field's codes_outside_list between baseline and
+# perturbed run and report "FIRED (sub-clause level)" even while the gate's
+# overall status stays FAIL both times, for whatever pre-registered,
+# unrelated reason caused the baseline FAIL. Additive only -- never flips
+# the gate's own PASS/FAIL, only recovers observability a baseline FAIL
+# would otherwise hide. Spain's G1.4 is not known to FAIL at baseline (no
+# UK-4276-equivalent defect measured), so this mapping is not expected to
+# engage this round; ported for shape parity with the UK file and so a
+# future baseline defect is not masked silently.
+SUBCLAUSE_FIELD_FOR_PERTURBATION = {
+    "act_to_999": "act_raw_codes_outside_list",
+    "act2_to_999": "act2_raw_codes_outside_list",
+    "loc_undeclared_sentinel": "loc_raw_codes_outside_list",
+}
+
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
-    ap.add_argument("--raw", required=True)
+    ap.add_argument("--raw", required=True,
+                     help="M-6, 2026-08-16: Spain's COUNTRY-ROOT raw dir "
+                          "(e.g. .../4J/raw/spain), containing the archives "
+                          "the manifest records (datos_emptiem0910.zip, "
+                          "docs/*.pdf, ...) plus unpacked/DIARIO2.TXT etc -- "
+                          "NOT the unpacked/ dir directly. This is what "
+                          "G1.6a resolves manifest-recorded archives under.")
     args = ap.parse_args()
     out = args.out
+    # M-6: the deep dir the reader's own --raw always meant (kept unchanged
+    # for the reader itself); derived HERE, internally, from the new
+    # country-root --raw, only for this gate runner's own raw re-reads.
+    unpacked_dir = os.path.join(args.raw, "unpacked")
     log = []
 
     def say(s=""):
@@ -754,7 +824,15 @@ def main():
     manifest = None
     if os.path.exists(inputs["manifest"]):
         with open(inputs["manifest"], encoding="utf-8") as fh:
-            manifest = json.load(fh)
+            manifest_root = json.load(fh)
+        # M-6/round-3, 2026-08-16: acquisition_manifest.json is now the
+        # root-keyed union of all three countries -- index into "es",
+        # never fall back to reading the file flat.
+        if "es" not in manifest_root:
+            raise SystemExit(f"acquisition_manifest.json has no 'es' key -- "
+                              f"cannot locate Spain's entry in the union "
+                              f"manifest")
+        manifest = manifest_root["es"]
 
     refpop, ref_skipped = load_reference_population(inputs["population reference"])
     cells = {}
@@ -790,7 +868,7 @@ def main():
     raw_frames_full = {}
     weight_tables = {}
     for fname, fn in RAW_FILES.items():
-        p = os.path.join(args.raw, fn)
+        p = os.path.join(unpacked_dir, fn)
         df = read_raw_fixed(p, RAW_LAYOUT[fname])
         raw_frames_full[fname] = df
         weight_tables[fname] = per_pid_weight(df, fname)
@@ -818,6 +896,7 @@ def main():
         "loc_undeclared_value": LOCATION_UNDECLARED_TEST_VALUE,
         "hashed_at": hashed_at,
         "provenance_source": provenance_source,
+        "raw_root": args.raw,   # M-6: G1.6a resolves archives under this
     }
 
     say(f"  episodes loaded        : {len(ep)} rows, {ep['pid'].nunique()} diaries")
@@ -830,31 +909,11 @@ def main():
         f"INE ECP table 56934, 1 July 2010")
     say()
 
-    # ---- V1.a: the battery must know how many countries it scanned -------
-    # 🔴 This runner is inherently single-country-scoped (it processes only
-    # Spain's own episode table), so a check of `ep["country"].unique()`
-    # would always read exactly 1, structurally, regardless of how many
-    # countries the CORPUS actually has -- that is not what V1.a is FOR. Per
-    # the work order ("V1.a must NOT fire -- three countries of three... if
-    # it fires, the runner is still carrying the old threshold and you fix
-    # the runner"), V1.a is evaluated against the actual STEP 1 CORPUS: does
-    # `outputs_step1/episodes_<country>.parquet` exist on disk for all three
-    # countries, sibling files this runner does not read for any gate, only
-    # checks for existence.
-    sibling_files = {"ES": "episodes_spain.parquet", "UK": "episodes_uk.parquet",
-                      "IT": "episodes_italy.parquet"}
-    present = [c for c, f in sibling_files.items()
-               if os.path.exists(os.path.join(out, f))]
-    v1a = "FIRED" if len(present) < 3 else "clear"
+    # ---- V1.a is scored once per round (4thJ_vacuity_step1.py), not here --
     say("=" * 78)
     say("VACUITY GUARDS")
     say("=" * 78)
-    say(f"  V1.a  countries with an episodes_<country>.parquet present in "
-        f"{out}: {sorted(present)} ({len(present)} of 3) -> {v1a}")
-    say("        🔴 Threshold moved 4 -> 3 on 2026-08-15 (author decision 16,")
-    say("        France excluded). Evaluated against the corpus (sibling")
-    say("        output files), not against this script's own single-")
-    say("        country episode table, which would always read 1.")
+    say("  V1.a  scored once per round in vacuity_report_step1.txt; deliberately not computed here.")
     say("  V1.b  inputs, sizes and md5s printed above, before any verdict.")
     say("  V1.c  every status below comes from the computation that produced it;")
     say("        a gate that could not run prints NOT CHECKED.")
@@ -896,6 +955,26 @@ def main():
                        "attributes cleanly" if ok else "DID NOT FIRE")
             if ok and extra:
                 verdict = f"fired, and also moved {extra}"
+
+        # 🔴 M-7, 2026-08-16: additive sub-clause attribution, ported from
+        # the UK reference implementation. Only engages when the standard
+        # PASS->FAIL attribution says DID NOT FIRE AND this perturbation is
+        # known to target one sub-clause of a gate that already FAILs at
+        # baseline for an unrelated, pre-registered reason. Compares the
+        # gate's OWN computed per-field detail between baseline and
+        # perturbed run -- never the overall status. Additive only: may
+        # never turn a FAIL into a PASS, never feeds `fell`.
+        if verdict == "DID NOT FIRE" and name in SUBCLAUSE_FIELD_FOR_PERTURBATION:
+            field = SUBCLAUSE_FIELD_FOR_PERTURBATION[name]
+            base_sc = base.subclauses.get(expected, {}).get(field)
+            pert_sc = res.subclauses.get(expected, {}).get(field)
+            if base_sc is not None and pert_sc is not None and base_sc != pert_sc:
+                verdict = (f"FIRED (sub-clause level, M-7): {expected}."
+                           f"{field} went {base_sc} -> {pert_sc}. Overall "
+                           f"gate status unchanged ({base_status.get(expected)} "
+                           f"both times) -- recovers observability the "
+                           f"baseline FAIL hides; does not flip the gate.")
+
         say(f"  {name:32s} expected {expected:55s} failed {failed if failed else '[]'}")
         say(f"  {'':32s} -> {verdict}")
     say()
@@ -931,7 +1010,6 @@ def main():
     say(f"  gates PASS            : {sum(1 for g, s, _ in base.rows if s == 'PASS')}")
     say(f"  gates FAIL            : {sum(1 for g, s, _ in base.rows if s == 'FAIL')}")
     say(f"  gates seen failing    : {seen} of {len(scored)}")
-    say(f"  V1.a                  : {v1a} (fires below 3 countries, post decision 16)")
 
     txt = "\n".join(log) + "\n"
     with open(os.path.join(out, "gate_report_step1_spain.txt"), "w",

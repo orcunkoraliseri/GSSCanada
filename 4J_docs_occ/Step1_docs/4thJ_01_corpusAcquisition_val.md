@@ -809,3 +809,73 @@ from.** The employee reported that honestly instead of crediting the perturbatio
 is what specified M-1 to M-5.** Italy's entry says the same of `corrupt_archive_byte`. Recorded here
 because the reusable lesson is not the five decisions — it is that **an honest `DID NOT FIRE` is worth
 more than a green battery.**
+
+### 2026-08-16 — 🟢 **ROUND 2 IS READ FROM THE CLUSTER'S OWN REPORTS AND ACCEPTED**
+
+Speed jobs **1252522** (ES), **1252523** (IT), **1252524** (UK) and **1252525** (round-level vacuity,
+`--dependency=afterok:1252522:1252523:1252524`) all COMPLETED, exit `0:0`. Run stamp
+`run_20260816-2140`. 🔴 **Everything below was read by the manager directly from
+`gate_report_step1_<country>.txt` and `vacuity_report_step1.txt` in the run-stamped directory, in the
+order this document mandates, and not from any employee summary.**
+
+**First, the two audit perturbations — the ones that decide whether M-1 and M-3 stand:**
+
+| Perturbation | Spain | Italy | UK |
+|---|---|---|---|
+| `loc_undeclared_sentinel` → G1.4 | `failed ['G1.4']` | `newly-failed ['G1.4']` | already FAIL at baseline → **M-7 sub-clause**: `G1.4.loc_raw_codes_outside_list` `[] -> ['-8']` |
+| `weight_blank_on_productive_row` → G1.7a | `failed ['G1.7a']` | `newly-failed ['G1.7a']` | `failed ['G1.4','G1.7a']`, G1.4 already failing → **G1.7a newly moved** |
+
+**Neither reports `DID NOT FIRE` anywhere. M-1 and M-3 are NOT reversed.** The UK's case is the one
+that mattered: its `G1.4` FAILs at baseline on the real `4276` defect, so the perturbation had nowhere
+to shake the gate from — and **M-7 recovered the observability the baseline FAIL was hiding**, printing
+per-field movement on all four masked arms (`act_raw`, `act2_raw`, `act2_extra_uk_2`, `loc_raw`) with
+the status honestly stated as *unchanged, FAIL both times*. 🔴 **M-7 does not flip a gate and did not
+flip one.** That is the whole design: it restores attribution without manufacturing a pass.
+
+🔴 **This retires round 1's `NULL PERTURBATION MOVED A GATE` alarm.** It was baseline-FAIL masking
+throughout, not a defect in the gates. Spain's `null` row reads `failed []`.
+
+**Second, `V1.a`, from the round-level report:** three parquets found — `['ES','IT','UK']`, 3 of 3 —
+**PASS**, and the report states in its own words that the scan is restricted to this run's `--out`
+directory, *"never a shared/leftover `outputs_step1/`"*. 🔴 **It did not pass by finding stale files**,
+which was the specific way it could have passed and meant nothing.
+
+**Third, the gates.** Coverage clause satisfied in all three countries: *every gate that PASSes on the
+real data was made to fall by at least one perturbation.*
+
+| | scored | PASS | FAIL | NOT CHECKED |
+|---|---|---|---|---|
+| Spain | 15 | 15 | 0 | `G1.7b` |
+| Italy | 13 | 12 | **1 — `G1.6b`, expected** | `G1.7b`, `G1.7c`, `G1.8` |
+| UK | 14 | 13 | **1 — `G1.4`, expected** | `G1.7b`, `G1.8` |
+
+**Both baseline FAILs are the ones that were required to survive**, and they did: Italy's `G1.6b` and
+the UK's `G1.4` on `4276`. A round that had cleared them would have been evidence that M-1 and M-2
+disarmed their gates. Every `NOT CHECKED` carries its own reason on the same line — none is bare — and
+each says why the comparison **cannot** fail rather than why it was skipped. `G1.7b` is now permanently
+NOT CHECKED in all three countries for the same measured reason: the weights are calibrated to the very
+population figure the gate would compare them against.
+
+### 🔴 One defect found in the round, and it is a reporting defect
+
+**The three per-country reports and the round-level report disagree about `V1.a`.** Italy's and the
+UK's say `FIRED (2 of 3)`; Spain's, which ran last, says `clear (3 of 3)`; the round-level report says
+`PASS`. All four are describing the same guard.
+
+The cause is not a race in the guard — it is that **each country's runner still computes and prints
+`V1.a` itself**, at a moment when the other countries' jobs have not finished. `V1.a` moved to the
+chained fourth job precisely to stop that, and the old print was left behind.
+
+* **The authority is `vacuity_report_step1.txt`.** The per-country `V1.a` lines in this round's three
+  gate reports are **stale artefacts and must not be quoted.**
+* The per-country print is being **removed** from all three runners, not relabelled. A guard printed in
+  two places with two answers is worse than not printed at all — it is the same "second copy of the
+  truth" failure that `V2.f` bans in Step 2, and here it produced a live contradiction inside one
+  accepted round.
+* 🔴 **The battery is NOT being re-run for it.** Nothing scored is wrong; no gate verdict, threshold or
+  perturbation result changes. Re-running a twenty-minute three-country battery to correct a printed
+  line would be a churn, and the contradiction is instead recorded here so the archive explains itself.
+  `V1.b`, `V1.c` and `V1.d` stay inside the per-country runners and are untouched.
+
+**Round 2 is ACCEPTED.** Sixteen gates, both expected FAILs preserved, coverage satisfied, `V1.a` PASS
+on the run-stamped directory, `M-6` and `M-7` confirmed working on the cluster's own output.

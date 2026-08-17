@@ -1,0 +1,36 @@
+{
+  "diary_days_per_respondent": 1,
+  "episodes_unmatched_to_individui_weight": 0,
+  "respondents_unmatched_to_individui_weight": 0,
+  "n_respondents": 41229,
+  "n_episodes": 1077657,
+  "origin_hour": 4,
+  "mode": "paper_papi_self_or_parent_proxy_age3to10",
+  "scheme": "UsoDelTempo_2013_2014",
+  "wave_emitted": "2013-2014",
+  "wave_file_anno": "2013",
+  "act2_raw_episode_states": {
+    "not_recorded": 0,
+    "recorded_and_blank": 819659,
+    "recorded_with_value": 257998
+  },
+  "loc_raw_states": {
+    "not_recorded": 0,
+    "recorded_and_blank": 0,
+    "recorded_with_value": 1077657
+  },
+  "copresence_fields": [
+    "daso",
+    "cmadre",
+    "cpadre",
+    "cconiu",
+    "cfigli",
+    "cfrate",
+    "afacon",
+    "aperco"
+  ],
+  "istat_stated_records": {
+    "DiarioGiornaliero": 1077657,
+    "Individui": 44866
+  }
+}

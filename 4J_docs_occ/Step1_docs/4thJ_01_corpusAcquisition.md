@@ -746,3 +746,133 @@ line in each is now wrong, and saying so here is cheaper than a later session re
 themselves, Italy's `G1.2`/`G1.11` arithmetic, and every codebook citation except the two the manager
 opened personally (ISTAT `!Leggimi.html`'s stated counts, and the UK's `4276` and `-9` frequencies).
 They are read from the artefacts, which is the standard — but they were not re-derived.
+
+### 2026-08-16 — second sixteen-gate round PREPARED BUT NOT SUBMITTED; runner fixes M-6 and M-7
+
+The first sixteen-gate round completed (`0:0`; ES 18m32s, IT 1m39s, UK 2m24s) but its `G1.6a` result is
+**VOID**: the gate trusted the manifest's `local_path` literally, and those are Windows workstation paths
+that do not exist on the cluster, so all 13 archives — PDFs and a `.doc` among them — reported "missing on
+disk". The archives are intact; TASK 0's own `md5sum` on the cluster matched every file before any job ran.
+Because `G1.6a` FAILed at baseline it could not be seen falling, so `corrupt_archive_byte` reported
+`newly-failed []` and Spain's `null` perturbation printed `🔴 NULL PERTURBATION MOVED A GATE`.
+
+Three manager decisions for the second round: **M-6**, `G1.6a` resolves each archive under `--raw` at
+invocation time while `local_path` stays in the manifest as provenance, with two distinct problem strings
+(`md5 mismatch` vs `recorded location not resolvable under --raw`); **M-7**, sub-clause attribution so a
+gate FAILing at baseline for a pre-registered unrelated reason no longer masks perturbations — this is why
+M-1 was **not** reversed despite `DID NOT FIRE` on the UK; and the `V1.a` race fix — run-stamped output
+directories plus the vacuity guards moved into a fourth job under `--dependency=afterok:`.
+
+🔴 **State at close of day: `4thJ_gates_step1_uk.py` carries M-6 and M-7 but is untested; the Spain and
+Italy runners are untouched; no job was submitted.** Full hand-off, including the acceptance tests that
+decide whether the round is accepted, is in `Prompts/RESUME.md` under the 2026-08-16 21:30 block.
+
+### 2026-08-16 — Round 2: M-6 and M-7 ported, `V1.a` moved out of the per-country runners, round ACCEPTED
+
+Employee fragment merged from `outputs_step1/run_20260816-2140/proglog_entries_round2.md`. The gate
+results and their acceptance are in `4thJ_01_corpusAcquisition_val.md`; what follows is the
+implementation record.
+
+**M-6 ported into Spain and Italy** from the UK reference implementation, which had carried it
+untested. `resolve_manifest_path()` resolves every manifest entry relative to the manifest's own
+`local_root`, **under `--raw` at invocation time**, never taking `local_path` literally, and keeps the
+two problem strings verbatim: `md5 mismatch` and `recorded location not resolvable under --raw`. 🔴
+`local_path` and `local_root` are read, never rewritten — they are provenance, and a manifest that
+rewrites its own recorded location cannot testify about anything.
+
+**M-7 ported for shape parity.** It did not engage for Spain or Italy this round and was not expected
+to: neither country's `G1.4` FAILs at baseline, so there was no masked arm to recover. It engaged on
+the UK, on all four arms, and the cluster's own report confirms it.
+
+**One finding the employee reached from a dry run rather than from any document, and it is the useful
+kind.** Spain's and Italy's raw trees keep unpacked files under an `unpacked/` sub-directory of the
+country root — the layout the UK already had. M-6 needs `--raw` to be the **country root** (to match
+`local_root`), while the runners' own raw re-reads need the **`unpacked/`** directory. Both runners now
+split the two the way the UK file already did. 🔴 **This changes the invocation convention for Spain and
+Italy** — round 1 passed the `unpacked/` directory as `--raw`, round 2 passes the country root. It is
+the same class of bug M-6 exists to fix, and it was invisible in round 1 only because neither runner
+had M-6 code yet to be wrong about `--raw` with.
+
+**`tools/4thJ_vacuity_step1.py` written.** It scores `V1.a` **once per round** from the run-stamped
+`--out` directory and writes `vacuity_report_step1.txt`. 🔴 **`V1.b`, `V1.c` and `V1.d` were deliberately
+NOT moved** — they are properties of one country's own battery, and centralising them would make them
+unfalsifiable.
+
+**Run-stamped output directory adopted:** `outputs_step1/run_20260816-2140/`. Static reference inputs
+are copied read-only into it; nothing is copied back into the flat `outputs_step1/` and nothing already
+there was overwritten. This is what let `V1.a` pass on **this round's own parquets** rather than on
+leftovers.
+
+🔴 **A defect found in the round, fixed in code, not by re-running.** The per-country runners still
+computed and printed `V1.a` themselves, at a moment when the other countries' jobs had not finished —
+so Italy's and the UK's reports say `FIRED (2 of 3)` while the round-level report says `PASS (3 of 3)`.
+The print is being removed from all three runners; `vacuity_report_step1.txt` is the authority. **The
+battery is not re-run for it**, because no scored result changes. See the validation document for the
+full reasoning.
+
+**What was not independently verified**, carried forward from the employee's own account and not
+resolved here: byte-identity between the cluster copies of the four tools and the local repo copies (no
+md5 was run); byte-identity of the static reference files already sitting in the cluster's flat
+`outputs_step1/`. Both are worth closing before Step 2 consumes these parquets, and neither affects the
+gate verdicts read this round.
+
+### 2026-08-16 — 🔴 **Merge 2 of 2 was REFUSED, correctly. D-S1-6: the manifest becomes a root-keyed union**
+
+The employee sent to perform merge 2 of 2 **stopped and refused**, and it was the right call. Recorded
+here in full because the refusal is more useful than the merge would have been.
+
+**What it found.** The three files do not share a shape, on two independent grounds:
+
+* `acquisition_manifest.json` is **Spain's manifest, flat at the JSON root** — there is no `"es"` key and
+  there never was. `acquisition_manifest_italy.json` is flat in the same way.
+* `acquisition_manifest_uk.json` is `{"_note": ..., "uk": {...}}`, and its own `_note` **assumes** the
+  root manifest is already `{"es": ..., "uk": ...}`. It never was. The note documented a merge that
+  could not be performed as written.
+* Worse, the UK's per-file provenance is **not a `files[]` array at all**: it is `outer_archive`,
+  `inner_archive` and `delivered_files_md5[17]`, because that delivery arrived as one nested archive
+  rather than a set of separately downloaded files. Its own `shape_deviation_note` says so deliberately.
+  **"Number of archive entries" is therefore not a common quantity**, and the verification the task
+  asked for — input counts summing to the output count — was not defined.
+
+Counts observed, for the record and **not summed**: Spain `files[]` 8 (+1 external reference); Italy
+`files[]` 4; the UK 1 outer + 1 inner + 17 delivered md5s.
+
+🔴 **A merge performed here would have invented a reconciliation, and the invented part would have been
+the provenance.** That is the one thing this manifest exists to carry.
+
+**D-S1-6, the manager's decision.** `acquisition_manifest.json` becomes a **root-keyed union**,
+`{"es": ..., "it": ..., "uk": ...}`, with **each country's entry carried across unchanged, including its
+own field names.** The UK keeps `outer_archive`/`inner_archive`/`delivered_files_md5`; Spain and Italy
+keep `files[]`. **No shape normalisation, none at all**, and every `local_path` and `local_root` survives
+verbatim. Spain's flat file is copied to `acquisition_manifest_spain.json`, which is what it should have
+been called from the start, and the three fragments remain the per-country record.
+
+**Three consequences, and the third is the expensive one.**
+
+1. Each gate runner reads `acquisition_manifest.json` and indexes into its own country key. Everything
+   downstream of the unwrapping is untouched — this changes *where the entry is found*, not *how it is
+   read*.
+2. 🔴 **A runner that cannot find its country key must raise and stop, never fall back to reading the
+   file flat.** A silent fallback would let `G1.6a` keep passing on the old shape forever, which is the
+   quiet form of the defect and the harder one to notice.
+3. 🔴 **The battery is re-run as round 3, and that is not optional.** `G1.6a`'s input file changed shape,
+   so its basis changed, and **a basis change is not an additive fix.** Shipping a manifest no gate has
+   read in its new shape would be exactly the "gate that cannot fail" this project keeps writing guards
+   against. The `V1.a` print fix rides along for free — which incidentally reverses the earlier decision
+   *not* to re-run for it, and removes the contradiction from the archive rather than annotating it.
+
+**What round 3 must show, or it is rejected:** `G1.6a` still PASSes on all three countries reading the
+merged manifest; `corrupt_archive_byte` still fells `G1.6a` on all three; `strip_url_from_manifest` still
+fells `G1.6b` on the UK; **Italy's `G1.6b` and the UK's `G1.4` `4276` baseline FAILs are both still
+there**; `V1.a` PASSes 3 of 3 from the round-level report; and the three per-country reports contain **no
+`V1.a` verdict line at all**.
+
+**The `V1.a` print removal is done** (fragment `run_20260816-2140/proglog_merge2_and_v1a_fix.md`), with
+the computation and both print sites gone from all three runners — `grep -n "v1a"` returns nothing — and
+`V1.b`/`V1.c`/`V1.d` verified untouched.
+
+**Carried forward, not verified:** the three edited runners were **never syntax-checked** — the edits are
+textual and no python was run anywhere, per the login-node rule. A parse error would surface as a failed
+round-3 job rather than as a bad result, which is the acceptable failure mode, but it is recorded rather
+than assumed. Also unverified: md5 identity of the scp'd run-stamped directory (byte sizes only were
+compared, 32 of 32 matching), and whether any now-unused import became dead code in the three runners.

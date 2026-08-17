@@ -1,0 +1,74 @@
+{
+  "step": "Step 1, work item 1.1",
+  "country": "IT",
+  "wave": "2013-2014",
+  "survey": "Multiscopo sulle famiglie: Uso del Tempo 2013-2014 (ISTAT)",
+  "route": "delivered to the author directly by ISTAT; not downloaded by this employee session",
+  "author_acquired_utc": "2026-08-14",
+  "employee_copied_into_workspace_utc": "2026-08-15",
+  "acquired_by": "author (route), employee session task doc Prompts/4thJ_employee_step1_italy_2026-08-14.md (workspace copy, hash, unpack)",
+  "hash_policy": "every md5 below was computed on the employee's local copy immediately after copying from 4J_docs_occ/Datasets/IT TUS/ and before unpacking; recomputed against the original files in that folder and confirmed identical, byte for byte",
+  "entry_point_note": "NOT FOUND: no per-file download URL is printed anywhere in this delivery (the files were provided directly, not fetched by this session). Two related URLs ARE printed inside the delivery's own documentation and are recorded below as what the delivery prints, not reconstructed from memory: http://www.istat.it/it/archivio/5723 (survey information page, from !Leggimi.html) and http://www.istat.it/it/archivio/microdati-ad-uso-pubblico (the mIcro.STAT public-use microdata archive, from uso_tempo_DescrizioneFile_Individuo__Anno 2013.pdf p.3).",
+  "licence_note": "This delivery is ISTAT's mIcro.STAT PUBLIC USE FILE (\"File ad uso pubblico\"), not the mFR (\"File di microdati per la ricerca\") that Nota_metodologica.pdf (the excluded 2023 volunteering module) describes. Stated on the cover pages of Nota_metodologica-2013.pdf and uso_tempo_DescrizioneFile_Individuo__Anno 2013.pdf, and explained in the latter's p.3: the mFR carries higher informational content and requires a justified request and prior authorisation from ISTAT's President; the mIcro.STAT product used here does not. See codebook_facts_italy.md, finding F-IT-1.",
+  "local_root": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy",
+  "files": [
+    {
+      "name": "uso_tempo_2013_IT.zip",
+      "what": "THE DATA. Microdata (MICRODATI/, tab-delimited, header row) plus record layouts and code lists (METADATI/), 2013-14 wave. Used.",
+      "url": "NOT FOUND (see entry_point_note)",
+      "downloaded_utc": "NOT FOUND (see author_acquired_utc / employee_copied_into_workspace_utc above)",
+      "bytes": 18144298,
+      "md5": "58817df9ee59eaf1e5b16f62dbe65798",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/uso_tempo_2013_IT.zip",
+      "used": true,
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
+    },
+    {
+      "name": "Nota_metodologica-2013.pdf",
+      "what": "THE METHODOLOGY, 38 pp. as delivered (own printed page numbers jump 26 -> 95; pp.27-94 not present in this delivery, see codebook finding F-IT-10). Byte-identical to METADATI/uso_tempo_NotaMetodologicaIndagine_Anno 2013.pdf inside the zip. Used.",
+      "url": "NOT FOUND (see entry_point_note)",
+      "downloaded_utc": "NOT FOUND (see author_acquired_utc / employee_copied_into_workspace_utc above)",
+      "bytes": 1989814,
+      "md5": "e4347e74f6980f48568192682fb5b36c",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/Nota_metodologica-2013.pdf",
+      "used": true,
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
+    },
+    {
+      "name": "Nota_metodologica.pdf",
+      "what": "7 pp. Methodology note for the 2023 volunteering module (a LATER wave's supplementary module, not a time-use diary). Present, hashed, copied into the workspace, and explicitly EXCLUDED: not opened for any fact in codebook_facts_italy.md, not unpacked, not read. Decision 6 fixes one wave per country (2013-14 for Italy).",
+      "url": "NOT FOUND (see entry_point_note)",
+      "downloaded_utc": "NOT FOUND (see author_acquired_utc / employee_copied_into_workspace_utc above)",
+      "bytes": 452420,
+      "md5": "256b39648ff9f9d711bc405bd8e8059e",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/Nota_metodologica.pdf",
+      "used": false,
+      "exclusion_reason": "2023 wave, volunteering module, not the corpus wave; not opened beyond its filename and page count per the work order",
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
+    },
+    {
+      "name": "UsoTempo_2023_IT.zip",
+      "what": "2023 wave archive. Its own filename lists only UsoTempo_Microdati_Anno_2023_Volontariato inside (not opened to confirm further, per the work order's explicit instruction not to read this archive into anything). Present, hashed, copied into the workspace, and explicitly EXCLUDED: not unpacked, not read.",
+      "url": "NOT FOUND (see entry_point_note)",
+      "downloaded_utc": "NOT FOUND (see author_acquired_utc / employee_copied_into_workspace_utc above)",
+      "bytes": 5297692,
+      "md5": "34d50c22128ab5f9c2d940b956083c50",
+      "local_path": "C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/4J/raw/italy/UsoTempo_2023_IT.zip",
+      "used": false,
+      "exclusion_reason": "2023 wave, no time-use diary in it at all (volunteering module only); not the corpus wave",
+      "hashed_at": "receipt_from_author",
+      "provenance_source": "NOT FOUND"
+    }
+  ],
+  "hashed_at_note": "M-2, 2026-08-15: every archive's md5 was computed on the employee's local copy after the author had already delivered the files directly (hash_policy above), never at a download instant this project controlled -- 'receipt_from_author' for all four, honestly, not 'download'.",
+  "provenance_source_note": "M-2, 2026-08-15: 'NOT FOUND' for all four archives, per the work order's explicit instruction -- no per-file download URL is printed anywhere in this hand-delivered archive (entry_point_note above already recorded this; these two new fields make it visible to G1.6b without inventing a URL).",
+  "external_references": [],
+  "external_reference_note": "No independent published Italian age x sex population table for the 2013-2014 wave was found anywhere in this delivery (see codebook_facts_italy.md, finding F-IT-10). Not searched for online, per hard project rule. G1.8 is NOT CHECKED for Italy for this reason, in addition to the calibration circularity in finding F-IT-9.",
+  "not_downloaded": {
+    "note": "Nothing was downloaded by this employee session. This fragment records the local workspace copy and hash of files the author already obtained from ISTAT on 2026-08-14, per the work order's Task 0."
+  },
+  "paper1_comparison_note": "The work order's plan (work item 1.1) says the Italian copy is 'HELD already from paper 1 -- confirm the held copy is the same wave and the same extract.' This 2026-08-14/15 delivery is a fresh copy provided for this task, not a located paper-1 extract. No paper-1 Italian extract was found on this workstation to compare against, and per the work order this was not searched for further; the comparison could not be performed and is recorded as such rather than assumed to be moot."
+}
