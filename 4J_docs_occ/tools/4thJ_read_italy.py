@@ -54,7 +54,35 @@ DIARIO_COLS = [
     "daso", "cmadre", "cpadre", "cconiu", "cfigli", "cfrate", "afacon",
     "aperco", "causi", "bestus", "pc_internet1", "pc_internet2",
 ]
-INDIVIDUI_KEY_COLS = ["profam", "proind", "coefin", "coefi2", "sesso", "claseta2"]
+INDIVIDUI_KEY_COLS = ["profam", "proind", "coefin", "coefi2", "sesso", "claseta2",
+                       "tipfa2m", "newcondm"]
+
+# M-8 / D-S2-18 / D-S2-19: tipfa2m's documented codes (CLS-var16), condensed
+# to the structure codebook_facts_italy_strata.md transcribes in full. Codes
+# 12, 13, 17, 18, 26, 27, 31, 32 are gaps in CLS-var16's own enumeration --
+# not documented anywhere in this delivery -- and are deliberately absent
+# from this set. This reader does NOT refuse on them (that decision belongs
+# to Step 2's crosswalk mapping, per D-S2-18/19's Task B ruling: "if any of
+# them is observed in the raw file, the run FAILs" is enforced in the
+# harmoniser, where crosswalk_unmapped.md is written); this list is carried
+# here only so the reader's own report can flag the same finding early.
+# 🔴 CORRECTED after the raw file itself: tipfa2m is a zero-padded 2-digit
+# field, same convention as claseta2 ("08", not "8") -- measured directly
+# from uso_tempo_Microdati_Anno_2013_Individui.txt, not assumed from the
+# codebook's unpadded prose listing. The first sbatch run (job 1254922)
+# FAILed loudly on exactly this ("01".."09" unrecognised), which is the
+# V1.d refusal doing its job -- corrected here, not coded around silently.
+TIPFA2M_DOCUMENTED_CODES = {
+    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "14",
+    "15", "16", "19", "20", "21", "22", "23", "24", "25", "28",
+    "29", "30", "33", "34", "35", "36", "37", "38", "39", "40",
+}
+TIPFA2M_UNDOCUMENTED_GAP_CODES = {"12", "13", "17", "18", "26", "27", "31", "32"}
+
+# newcondm's documented codes (CLS-var23): 3 and 6 are a genuine gap in the
+# published list (F-IT-18), not a transcription error. Recorded here so the
+# reader's report can state observed-vs-documented rather than assume.
+NEWCONDM_DOCUMENTED_CODES = {"1", "2", "4", "5", "7", "8"}
 
 COPRESENCE = ["daso", "cmadre", "cpadre", "cconiu", "cfigli", "cfrate", "afacon", "aperco"]
 # Each co-presence field's own fixed ordinal (its position in the header),
@@ -362,7 +390,8 @@ def main():
     report.append("=" * 78)
     ind2 = ind.copy()
     ind2["pid"] = ind2["profam"] + "_" + ind2["proind"]
-    ind2 = ind2[["pid", "coefin", "coefi2", "sesso", "claseta2"]].rename(
+    ind2 = ind2[["pid", "coefin", "coefi2", "sesso", "claseta2",
+                 "tipfa2m", "newcondm"]].rename(
         columns={"coefin": "weight_ind_raw", "coefi2": "weight_dia_raw"})
     if ind2["pid"].duplicated().any():
         ndupe = int(ind2["pid"].duplicated().sum())
@@ -402,6 +431,82 @@ def main():
     ep["weight_dia"] = to_weight(ep["weight_dia_raw"])
     report.append("")
 
+    # ---- M-8 / D-S2-18 / D-S2-19: the six conditioning-strata raw carriers -
+    # National values only, no mapping, no banding, no collapsing (that is
+    # Step 2's job -- see codebook_facts_italy_strata.md and strata_proposal.md).
+    # tipfa2m and newcondm come from the same Individui join already performed
+    # above for sesso/claseta2 -- no second join, one household/person file.
+    report.append("=" * 78)
+    report.append("CONDITIONING STRATA (M-8 / D-S2-18 / D-S2-19)")
+    report.append("=" * 78)
+
+    # tipfa2m (household type): report the CLS-var16 documentation gap here,
+    # early, even though the FAIL-if-observed enforcement is Step 2's job
+    # (the harmoniser, where crosswalk_unmapped.md is written) -- this
+    # reader only carries the raw value and reports what it saw.
+    tipfa2m_seen = set(ep["tipfa2m"].str.strip().dropna().unique()) - {""}
+    tipfa2m_gap_observed = sorted(tipfa2m_seen & TIPFA2M_UNDOCUMENTED_GAP_CODES,
+                                   key=lambda s: int(s))
+    tipfa2m_gap_freq = {
+        code: int((ep["tipfa2m"].str.strip() == code).sum())
+        for code in sorted(TIPFA2M_UNDOCUMENTED_GAP_CODES, key=lambda s: int(s))
+    }
+    tipfa2m_undocumented_other = sorted(
+        tipfa2m_seen - TIPFA2M_DOCUMENTED_CODES - TIPFA2M_UNDOCUMENTED_GAP_CODES,
+        key=lambda s: int(s))
+    report.append(f"  tipfa2m observed alphabet: {len(tipfa2m_seen)} distinct non-blank codes")
+    report.append(f"  tipfa2m CLS-var16 gap codes (12,13,17,18,26,27,31,32) observed "
+                  f"frequencies: {tipfa2m_gap_freq}")
+    if tipfa2m_gap_observed:
+        report.append(f"  🔴 GAP CODE(S) OBSERVED IN THE RAW FILE: {tipfa2m_gap_observed} -- "
+                      f"per D-S2-19, this must FAIL Step 2's harmonisation run, not fold into "
+                      f"other_complex. Reported here; enforced in tools/4thJ_harmonise_step2.py.")
+    if tipfa2m_undocumented_other:
+        raise ParseFailure(
+            f"tipfa2m: {tipfa2m_undocumented_other} are neither a CLS-var16-documented "
+            f"code nor a known enumeration gap -- unrecognised entirely, refused rather "
+            f"than assumed harmless (V1.d)."
+        )
+    facts["tipfa2m_gap_codes_observed_frequency"] = tipfa2m_gap_freq
+
+    # 🔴 CORRECTED after the raw file itself (job 1254934's FAIL, harmoniser
+    # side): newcondm's blank sentinel is a literal single SPACE (" "), the
+    # same class of defect as the UK's dhhtype/deconact (F-UK-8-style), not
+    # an empty string. Measured directly: newcondm " " count = 6067, matching
+    # the 13.5% codebook figure exactly. Normalised to "" here -- the
+    # project's "recorded and blank" convention -- before strat_econ_status_raw
+    # is set, so the crosswalk's declared blank->unknown row (source_value="")
+    # matches. tipfa2m carries no such sentinel (measured: 0 blank/space rows).
+    ep["newcondm"] = ep["newcondm"].where(ep["newcondm"] != " ", "")
+
+    # newcondm (economic status): codes 3 and 6 are a documented gap (F-IT-18),
+    # not enforced as a FAIL condition (unlike tipfa2m) -- newcondm's blank
+    # state already maps to `unknown` and no D-S2-19 risk was raised for it.
+    newcondm_seen = set(ep["newcondm"].str.strip().dropna().unique()) - {""}
+    newcondm_undocumented = sorted(newcondm_seen - NEWCONDM_DOCUMENTED_CODES,
+                                    key=lambda s: int(s))
+    if newcondm_undocumented:
+        raise ParseFailure(
+            f"newcondm: {newcondm_undocumented} are not in CLS-var23's documented "
+            f"code list {sorted(NEWCONDM_DOCUMENTED_CODES)} -- refused rather than "
+            f"assumed harmless (V1.d)."
+        )
+    report.append(f"  newcondm observed alphabet: {len(newcondm_seen)} distinct non-blank "
+                  f"codes, all inside CLS-var23's documented list (codes 3, 6 are a known "
+                  f"gap, F-IT-18, and are not expected/observed)")
+
+    ep["strat_age_band_raw"] = ep["claseta2"]
+    ep["strat_sex_raw"] = ep["sesso"]
+    ep["strat_hh_type_raw"] = ep["tipfa2m"]
+    ep["strat_econ_status_raw"] = ep["newcondm"]
+    ep["strat_day_type_raw"] = ep["gsett"]             # already carried as diary_day
+    ep["strat_season_raw"] = ep["meseri"]              # dropped from the prefix (D-S2-19) but still shipped
+    report.append("  CARRIED: strat_age_band_raw (claseta2), strat_sex_raw (sesso), "
+                  "strat_hh_type_raw (tipfa2m), strat_econ_status_raw (newcondm), "
+                  "strat_day_type_raw (gsett), strat_season_raw (meseri) -- six national "
+                  "values, unbanded.")
+    report.append("")
+
     # loc_raw three-state count (M-1). Printed for parity with the other two
     # countries and so G1.12's independent recount has an emitted figure to
     # compare against.
@@ -421,6 +526,8 @@ def main():
         "cop_extra_it_afacon", "cop_extra_it_aperco",
         "mode", "scheme", "weight_ind", "weight_dia",
         "sesso", "claseta2", "meseri",
+        "strat_age_band_raw", "strat_sex_raw", "strat_hh_type_raw",
+        "strat_econ_status_raw", "strat_day_type_raw", "strat_season_raw",
     ]
     ep = ep[cols]
 

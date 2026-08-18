@@ -2,8 +2,16 @@
 """
 4thJ_gates_step2.py -- Step 2 validation battery.
 
-Sixteen gates (G2.1-G2.16), seventeen perturbations, nine vacuity guards
-(V2.a-V2.i), one coverage clause. One script.
+Eighteen gates (G2.1-G2.18), twenty-one perturbations, eleven vacuity guards
+(V2.a-V2.k), one coverage clause. One script.
+
+D-S2-18/D-S2-19 (2026-08-17): the additive round added eleven columns to
+harmonised.parquet -- five harmonised strata (strat_age_band, strat_sex,
+strat_hh_type, strat_econ_status, strat_day_type; season dropped by D-S2-19)
+plus six _raw carriers (including strat_season_raw). G2.17, G2.18, V2.j, V2.k
+and four perturbations audit this addition. G2.1-G2.16 and their thirteen
+original perturbations, and V2.a-V2.i, are UNTOUCHED -- the only acceptable
+diff to them is none.
 
 Governing spec (read verbatim, not paraphrased):
     4J_docs_occ/Step2_docs/4thJ_02_harmonisation_val.md   -- gate table, perturbation table, guards
@@ -87,11 +95,21 @@ EXTRA_COP_COLUMNS = [
     "cop_extra_it_madre", "cop_extra_it_padre", "cop_extra_it_siblings",
 ]
 
+# D-S2-18/D-S2-19: the five harmonised conditioning strata (G2.17, G2.18 audit
+# these -- season was dropped from the prefix, so it is NOT in this list) and
+# their six raw carriers (season's raw still ships, per D-S2-19).
+STRATA_COLUMNS = ["strat_age_band", "strat_sex", "strat_hh_type", "strat_econ_status", "strat_day_type"]
+STRATA_RAW_COLUMNS = [
+    "strat_age_band_raw", "strat_sex_raw", "strat_hh_type_raw",
+    "strat_econ_status_raw", "strat_day_type_raw", "strat_season_raw",
+]
+
 PERTURBATIONS = [
     "null", "del_activity_row", "strip_citation", "scale_duration", "round_duration",
     "add_one_to_many", "empty_outdoor", "drop_spain_age", "zero_missing_flag",
     "pool_modal_code", "shift_sleep_budget", "remap_spain_transport", "wrong_rotation",
     "italy_catcon_swap", "spain_cop_bool", "spain_secondary_repoint", "uk_group1_carry",
+    "null_strat_econ_status", "strat_day_type_wrong_grain", "italy_hh_type_prefix", "italy_age_band_split",
 ]
 # Val doc's own table: which gate each perturbation must fell, and which gates
 # its row explicitly requires to stay clean. Empty list under "clean" = the row
@@ -115,8 +133,34 @@ PERTURBATION_SPEC = {
                                                                           "G2.6", "G2.7", "G2.9", "G2.10", "G2.11"]},
     "spain_secondary_repoint": {"must_fail": "G2.15", "must_stay_clean": ["G2.13", "G2.1"]},
     "uk_group1_carry":       {"must_fail": "G2.16", "must_stay_clean": ["G2.1", "G2.2", "G2.3", "G2.4", "G2.9", "G2.10"]},
+    # D-S2-18/D-S2-19 additive round -- G2.17/G2.18 carry two sub-clauses each
+    # and M-7 attribution applies (val doc row + task doc): "must_fail" is the
+    # WHOLE-GATE verdict the existing coverage/fire-report machinery checks
+    # (unchanged shape); "must_fail_subclause"/"must_stay_clean_subclause" are
+    # the ADDITIVE, field-level M-7 checks below, needed because G2.18's own
+    # baseline verdict is expected to be FAIL already (D-S2-19's escalation
+    # clause fires on real data), which would otherwise mask whether a
+    # perturbation's own targeted defect (the leak count, or the Italian
+    # one-to-many count) actually moved.
+    "null_strat_econ_status": {
+        "must_fail": "G2.17", "must_fail_subclause": ("G2.17", "a"),
+        "must_stay_clean": ["G2.18", "G2.3", "G2.4"],
+    },
+    "strat_day_type_wrong_grain": {
+        "must_fail": "G2.17", "must_fail_subclause": ("G2.17", "b"),
+        "must_stay_clean": ["G2.3", "G2.4"],
+        "must_stay_clean_subclause": [("G2.17", "a")],
+    },
+    "italy_hh_type_prefix": {
+        "must_fail": "G2.18", "must_fail_subclause": ("G2.18", "a"),
+        "must_stay_clean": ["G2.17", "G2.3", "G2.4"],
+    },
+    "italy_age_band_split": {
+        "must_fail": "G2.18", "must_fail_subclause": ("G2.18", "b"),
+        "must_stay_clean": ["G2.17"],
+    },
 }
-ALL_GATE_IDS = [f"G2.{i}" for i in range(1, 17)]
+ALL_GATE_IDS = [f"G2.{i}" for i in range(1, 19)]
 
 
 def gr(gate_id, passed, checked=True, summary="", detail=None):
@@ -141,6 +185,12 @@ def load_crosswalks(cw_dir):
     d["cw_cop"] = pd.read_csv(cw_dir / "crosswalk_copresence.csv", dtype=str, keep_default_na=True)
     d["outdoor"] = pd.read_csv(cw_dir / "outdoor_at_home.csv", dtype=str, keep_default_na=True)
     d["target_list"] = pd.read_csv(cw_dir / "activity_target_list.csv", dtype=str, keep_default_na=True)
+    # D-S2-18: fifth crosswalk, added by the additive round. G2.17/G2.18/V2.j
+    # read it; V2.j itself is the one that FAILs if it is missing, so this
+    # loader stays permissive (None, not a raised error) rather than crashing
+    # the whole battery before the guard gets a chance to report the absence.
+    strata_path = cw_dir / "crosswalk_strata.csv"
+    d["cw_strata"] = pd.read_csv(strata_path, dtype=str, keep_default_na=True) if strata_path.exists() else None
     unmapped_path = cw_dir / "crosswalk_unmapped.md"
     d["unmapped"] = parse_unmapped_md(unmapped_path.read_text(encoding="utf-8")) if unmapped_path.exists() else {"activity": set(), "location": set()}
     avail_path = cw_dir / "copresence_availability.md"
@@ -908,11 +958,153 @@ def gate_G2_16(ws):
               detail={"n_mismatch": int(len(mismatch)), "n_not_in_target": int(len(not_in_target))})
 
 
+# --------------------------------------------------------------------------
+# GATES G2.17 -- G2.18 -- D-S2-18/D-S2-19 additive round. Two sub-clauses each,
+# M-7 attribution: the report states which clause fell, independently of the
+# other, via detail['subclauses']['a'/'b']['passed'] and a per-side 'counter'
+# (the specific field a perturbation is meant to move -- not the whole-gate
+# verdict, which for G2.18 is expected to be FAIL already on real data; see
+# subclause_counter() / run_sweep's acceptance test 2b below).
+# --------------------------------------------------------------------------
+
+def gate_G2_17(ws):
+    """Conditioning-strata completeness and constancy (D-S2-18).
+    (a) zero nulls in every shipped strat_* column, every country -- a
+    national value missing at row level must already have resolved to the
+    declared 'unknown' band in crosswalk_strata.csv, never to null.
+    (b) zero (country, hid, pid, diary_day) groups carrying more than one
+    distinct value of any strat_* column -- a design stratum is a property of
+    the person-day, not the episode; (b) exists because (a) cannot see a
+    stratum that is fully populated but read off the wrong grain."""
+    h = ws["harm"]
+    group_cols = ["country", "hid", "pid", "diary_day"]
+
+    null_counts = {}
+    for col in STRATA_COLUMNS:
+        if col not in h.columns:
+            null_counts[col] = None
+            continue
+        null_counts[col] = {country: int(h.loc[h.country == country, col].isna().sum()) for country in COUNTRIES}
+    missing_cols_a = [c for c, v in null_counts.items() if v is None]
+    total_nulls = sum(v for col in null_counts.values() if col is not None for v in col.values())
+    a_passed = (total_nulls == 0) and not missing_cols_a
+
+    bad_group_counts = {}
+    for col in STRATA_COLUMNS:
+        if col not in h.columns:
+            bad_group_counts[col] = None
+            continue
+        nun = h.groupby(group_cols)[col].nunique(dropna=False)
+        bad_group_counts[col] = int((nun > 1).sum())
+    missing_cols_b = [c for c, v in bad_group_counts.items() if v is None]
+    total_bad_groups = sum(v for v in bad_group_counts.values() if v is not None)
+    b_passed = (total_bad_groups == 0) and not missing_cols_b
+
+    passed = a_passed and b_passed
+    fell = ([] if a_passed else ["(a)"]) + ([] if b_passed else ["(b)"])
+    summary = (f"(a) null episodes={total_nulls} missing_cols={missing_cols_a} [{'PASS' if a_passed else 'FAIL'}]; "
+               f"(b) non-constant (country,hid,pid,diary_day) groups={total_bad_groups} missing_cols={missing_cols_b} "
+               f"[{'PASS' if b_passed else 'FAIL'}]" + (f" -- FELL: {', '.join(fell)}" if fell else ""))
+    return gr("G2.17", passed, summary=summary,
+              detail={"subclauses": {
+                          "a": {"passed": a_passed, "counter": total_nulls, "null_counts": null_counts,
+                                "missing_columns": missing_cols_a},
+                          "b": {"passed": b_passed, "counter": total_bad_groups, "bad_group_counts": bad_group_counts,
+                                "missing_columns": missing_cols_b},
+                      }})
+
+
+def gate_G2_18(ws):
+    """Conditioning-strata leak and Italian expressibility (D-S2-18, D-S2-19).
+    (a) count of band values declared in crosswalk_strata.csv for exactly one
+    of the three countries: 0 (declared AVAILABILITY, per D-S2-19 -- not
+    observed prevalence). PLUS the D-S2-19 escalation: the 'unknown' band's
+    weighted share in one country must not exceed ten times the smallest
+    share among the other two literally (no zero-filtering) -- this is the
+    clause D-S2-19 says fires by design on strat_econ_status, and it is
+    reported, not silenced, so a real-data FAIL on (a) via this clause alone
+    (leak_count==0) is an EXPECTED result, not evidence the crosswalk is
+    broken.
+    (b) count of Italian source bands in crosswalk_strata.csv mapping to more
+    than one target band: 0, for every stratum Italy delivers pre-banded.
+    Reads the crosswalk, not the parquet -- fires at design time."""
+    cw = ws.get("cw_strata")
+    h = ws["harm"]
+    cw_ok = cw is not None and len(cw) > 0
+
+    leak_bands = []
+    if cw_ok:
+        for s in STRATA_COLUMNS:
+            sub = cw[cw["stratum"] == s]
+            grp = sub.groupby("target_band")["country"].nunique()
+            for band, n in grp.items():
+                if pd.isna(band) or str(band).strip() == "":
+                    continue
+                if n == 1:
+                    leak_bands.append((s, band, int(n)))
+    leak_count = len(leak_bands)
+
+    escalations = []
+    unknown_shares = {}
+    for s in STRATA_COLUMNS:
+        if s not in h.columns:
+            continue
+        shares = {}
+        for country in COUNTRIES:
+            hc = h[h.country == country]
+            diary_first = hc.drop_duplicates(subset=["hid", "pid", "diary_day"])
+            total_w = float(diary_first["weight_dia"].sum())
+            unk_w = float(diary_first.loc[diary_first[s] == "unknown", "weight_dia"].sum())
+            shares[country] = (unk_w / total_w) if total_w else 0.0
+        unknown_shares[s] = shares
+        # D-S2-19, literal reading: "the smallest share among the other two" --
+        # NOT filtered to nonzero, which is exactly what makes it fire by
+        # design whenever one country's own declared-availability row carries
+        # zero observed prevalence (e.g. Spain's 0.0% strat_econ_status
+        # unknown) while another does not.
+        for country in COUNTRIES:
+            others = [shares[c] for c in COUNTRIES if c != country]
+            smallest_other = min(others)
+            if shares[country] > smallest_other * 10.0:
+                escalations.append((s, country, shares[country], smallest_other))
+    escalation_count = len(escalations)
+
+    a_passed = cw_ok and (leak_count == 0) and (escalation_count == 0)
+
+    it_conflicts = []
+    if cw_ok:
+        cw_it = cw[cw["country"] == "it"]
+        for s in STRATA_COLUMNS:
+            sub = cw_it[cw_it["stratum"] == s]
+            sub = sub[sub["source_value"].notna() & (sub["source_value"].astype(str).str.strip() != "")]
+            grp = sub.groupby("source_value")["target_band"].nunique()
+            for source_val, n in grp.items():
+                if n > 1:
+                    it_conflicts.append((s, source_val, int(n)))
+    b_passed = cw_ok and (len(it_conflicts) == 0)
+
+    passed = a_passed and b_passed
+    fell = ([] if a_passed else ["(a)"]) + ([] if b_passed else ["(b)"])
+    summary = (f"(a) leak_bands(declared-availability)={leak_count}, escalations(prevalence, D-S2-19)={escalation_count} "
+               f"[{'PASS' if a_passed else 'FAIL'}]; "
+               f"(b) Italian source bands mapping to >1 target={len(it_conflicts)} [{'PASS' if b_passed else 'FAIL'}]"
+               + (f" -- FELL: {', '.join(fell)}" if fell else "") + (" -- crosswalk_strata.csv missing/empty" if not cw_ok else ""))
+    return gr("G2.18", passed, summary=summary,
+              detail={"subclauses": {
+                          "a": {"passed": a_passed, "counter": leak_count, "leak_count": leak_count,
+                                "leak_bands": leak_bands, "escalation_count": escalation_count,
+                                "escalations": escalations, "unknown_shares": unknown_shares},
+                          "b": {"passed": b_passed, "counter": len(it_conflicts), "n_conflicts": len(it_conflicts),
+                                "conflicts": it_conflicts},
+                      }, "crosswalk_present": cw_ok})
+
+
 GATE_FUNCS = {
     "G2.1": gate_G2_1, "G2.2": gate_G2_2, "G2.3": gate_G2_3, "G2.4": gate_G2_4,
     "G2.5": gate_G2_5, "G2.6": gate_G2_6, "G2.7": gate_G2_7, "G2.8": gate_G2_8,
     "G2.9": gate_G2_9, "G2.10": gate_G2_10, "G2.11": gate_G2_11, "G2.12": gate_G2_12,
     "G2.13": gate_G2_13, "G2.14": gate_G2_14, "G2.15": gate_G2_15, "G2.16": gate_G2_16,
+    "G2.17": gate_G2_17, "G2.18": gate_G2_18,
 }
 
 
@@ -1018,9 +1210,90 @@ def guard_V2_i(ws):
               detail={"disallowed_origin_columns": bad, "split_at_origin_present": not missing_required})
 
 
+def guard_V2_j(ws):
+    """D-S2-18/D-S2-19: G2.17 and G2.18 read the stratum vocabulary from the
+    shipped crosswalk_strata.csv, never restated. FAILs if the file is
+    missing/empty, if any strat_* column in harmonised.parquet has no rows in
+    it, if any band value in the parquet is absent from it, or if any
+    stratum's rows do not cover all three countries. Also builds (for
+    print_report to dump BEFORE any verdict, per the val doc) the full
+    country x band weighted cross-tab for all five harmonised strata --
+    season is excluded by construction (D-S2-19: not harmonised, no crosswalk
+    rows, and this guard must not demand any)."""
+    cw = ws.get("cw_strata")
+    h = ws["harm"]
+    if cw is None or len(cw) == 0:
+        return gr("V2.j", False, summary="crosswalk_strata.csv is missing or empty", detail={"cross_tab": {}})
+
+    missing_stratum_rows = [s for s in STRATA_COLUMNS if not (cw["stratum"] == s).any()]
+    coverage_gaps = []
+    for s in STRATA_COLUMNS:
+        countries_seen = set(cw.loc[cw["stratum"] == s, "country"].dropna().astype(str).str.strip())
+        missing_c = sorted(set(COUNTRIES) - countries_seen)
+        if missing_c:
+            coverage_gaps.append((s, missing_c))
+
+    cross_tab = {}
+    bands_absent_from_crosswalk = []
+    for s in STRATA_COLUMNS:
+        vocab = set(cw.loc[cw["stratum"] == s, "target_band"].dropna().astype(str).str.strip()) - {""}
+        tab = {}
+        for country in COUNTRIES:
+            hc = h[h.country == country]
+            if s not in hc.columns or hc.empty:
+                tab[country] = {}
+                continue
+            diary_first = hc.drop_duplicates(subset=["hid", "pid", "diary_day"])
+            total_w = float(diary_first["weight_dia"].sum())
+            band_w = diary_first.groupby(s, dropna=False)["weight_dia"].sum()
+            tab[country] = {("<null>" if pd.isna(b) else str(b)): (float(w) / total_w if total_w else 0.0)
+                             for b, w in band_w.items()}
+            parquet_vals = set(b for b in tab[country] if b != "<null>")
+            for band in sorted(parquet_vals - vocab):
+                bands_absent_from_crosswalk.append((s, country, band))
+        cross_tab[s] = tab
+
+    passed = (not missing_stratum_rows) and (not coverage_gaps) and (not bands_absent_from_crosswalk)
+    return gr("V2.j", passed,
+              summary=f"missing_stratum_rows={missing_stratum_rows}, coverage_gaps={coverage_gaps}, "
+                      f"parquet_bands_absent_from_crosswalk={bands_absent_from_crosswalk[:20]}",
+              detail={"cross_tab": cross_tab, "missing_stratum_rows": missing_stratum_rows,
+                      "coverage_gaps": coverage_gaps, "bands_absent_from_crosswalk": bands_absent_from_crosswalk})
+
+
+# D-S2-18: the previous accepted table's four fixed counts (val doc V2.k row).
+# Hard-coded from the val doc, per its own instruction -- NOT read out of the
+# parquet under audit, because the reference is the run that did NOT author
+# this table.
+V2_K_REFERENCE_EPISODES = {"es": 446547, "uk": 567381, "it": 1010140}
+V2_K_REFERENCE_SPLITS = {"es": 37830, "uk": 0, "it": 0}
+
+
+def guard_V2_k(ws):
+    """D-S2-18: the additive round may not move a row. FAILs unless the
+    rebuilt table reproduces the accepted 2026-08-16 table's per-country
+    episode counts and split-half-row counts (split_at_origin==True) exactly.
+    A guard, not a gate -- needs no perturbation, per the val doc."""
+    h = ws["harm"]
+    ep_counts = {c: int((h.country == c).sum()) for c in COUNTRIES}
+    split_counts = {}
+    for c in COUNTRIES:
+        hc = h[h.country == c]
+        split_counts[c] = int((hc["split_at_origin"] == True).sum()) if "split_at_origin" in hc.columns else None  # noqa: E712
+    ep_ok = all(ep_counts[c] == V2_K_REFERENCE_EPISODES[c] for c in COUNTRIES)
+    split_ok = all(split_counts[c] == V2_K_REFERENCE_SPLITS[c] for c in COUNTRIES)
+    passed = ep_ok and split_ok
+    return gr("V2.k", passed,
+              summary=f"episodes={ep_counts} (reference={V2_K_REFERENCE_EPISODES}); "
+                      f"splits={split_counts} (reference={V2_K_REFERENCE_SPLITS})",
+              detail={"episodes": ep_counts, "splits": split_counts,
+                      "reference_episodes": V2_K_REFERENCE_EPISODES, "reference_splits": V2_K_REFERENCE_SPLITS})
+
+
 GUARD_FUNCS = {
     "V2.a": guard_V2_a, "V2.b": guard_V2_b, "V2.c": guard_V2_c, "V2.d": guard_V2_d,
     "V2.e": guard_V2_e, "V2.f": guard_V2_f, "V2.g": guard_V2_g, "V2.h": guard_V2_h, "V2.i": guard_V2_i,
+    "V2.j": guard_V2_j, "V2.k": guard_V2_k,
 }
 
 
@@ -1192,6 +1465,78 @@ def apply_perturbation(name, ws):
             idx = w["cw_act_sec"][w["cw_act_sec"].country == "es"].index[:1]
         cur = w["cw_act_sec"].loc[idx[0], "target_code_2d"]
         w["cw_act_sec"].loc[idx[0], "target_code_2d"] = "99" if str(cur) != "99" else "98"
+        return w
+
+    if name == "null_strat_econ_status":
+        # Val doc: "Null one respondent's strat_econ_status" -> G2.17 (a).
+        # strat_* is a per-person-day CONSTANT (D-S2-18), so nulling one
+        # respondent's value means nulling it on every episode of that one
+        # diary -- not one row -- which is also what keeps this perturbation
+        # from tripping G2.17 (b) (a fully-null group is still constant).
+        w = ws_copy(ws, ["harm"])
+        h = w["harm"]
+        diaries = h.loc[h.country == "es", ["hid", "pid", "diary_day"]].drop_duplicates()
+        if len(diaries):
+            t = diaries.iloc[0]
+            mask = (h.country == "es") & (h.hid == t["hid"]) & (h.pid == t["pid"]) & (h.diary_day == t["diary_day"])
+            h.loc[mask, "strat_econ_status"] = None
+        w["harm"] = h
+        return w
+
+    if name == "strat_day_type_wrong_grain":
+        # Val doc: "Give one respondent's second half-day a different
+        # strat_day_type" -> G2.17 (b), and (a) must stay clean. No null is
+        # introduced -- only the SECOND half (start_min >= 720) of one
+        # diary's episodes gets a different (but still valid, declared)
+        # strat_day_type value than the diary's first half, which is exactly
+        # the "read off the wrong grain" defect (b) exists to catch.
+        w = ws_copy(ws, ["harm"])
+        h = w["harm"]
+        diaries = h.loc[h.country == "es", ["hid", "pid", "diary_day"]].drop_duplicates()
+        if len(diaries):
+            t = diaries.iloc[0]
+            mask_diary = (h.country == "es") & (h.hid == t["hid"]) & (h.pid == t["pid"]) & (h.diary_day == t["diary_day"])
+            current = h.loc[mask_diary, "strat_day_type"].dropna()
+            current_val = current.iloc[0] if len(current) else "weekday"
+            alt_val = "saturday" if current_val != "saturday" else "sunday"
+            mask_second_half = mask_diary & (h["start_min"] >= 720)
+            h.loc[mask_second_half, "strat_day_type"] = alt_val
+        w["harm"] = h
+        return w
+
+    if name == "italy_hh_type_prefix":
+        # Val doc: "Prefix Italy's household-type bands with it_" -> G2.18
+        # (a), G2.17/G2.3/G2.4 clean. Operates ONLY on the crosswalk_strata.csv
+        # copy, never on harmonised.parquet -- G2.17 reads the parquet, so it
+        # cannot see this, exactly as the row requires.
+        w = ws_copy(ws, ["cw_strata"])
+        cw = w["cw_strata"]
+        if cw is not None:
+            mask = (cw["stratum"] == "strat_hh_type") & (cw["country"] == "it")
+            cw.loc[mask, "target_band"] = "it_" + cw.loc[mask, "target_band"].astype(str)
+        w["cw_strata"] = cw
+        return w
+
+    if name == "italy_age_band_split":
+        # Val doc: "Split the Italian age band 04 into two target bands" ->
+        # G2.18 (b), G2.17 clean. Adds a second crosswalk_strata.csv row for
+        # Italy's source_value '04' pointing at a DIFFERENT target band --
+        # chosen as one already declared by all three countries (15-24, or
+        # 25-34 if '04' already targets 15-24), so this isolates (b) alone
+        # and does not also trip (a)'s single-country leak count as a side
+        # effect.
+        w = ws_copy(ws, ["cw_strata"])
+        cw = w["cw_strata"]
+        if cw is not None:
+            mask = (cw["stratum"] == "strat_age_band") & (cw["country"] == "it") & \
+                   (cw["source_value"].astype(str).str.strip() == "04")
+            rows = cw[mask]
+            if len(rows):
+                newrow = rows.iloc[0].copy()
+                other_band = "15-24" if str(rows.iloc[0]["target_band"]).strip() != "15-24" else "25-34"
+                newrow["target_band"] = other_band
+                cw = pd.concat([cw, pd.DataFrame([newrow])], ignore_index=True)
+        w["cw_strata"] = cw
         return w
 
     if name == "uk_group1_carry":
@@ -1445,10 +1790,30 @@ def format_gate_line(res):
     return f"{res['id']:<7} {status:<12} -- {res['summary']}"
 
 
+def print_v2j_cross_tab(result, fh):
+    """V2.j: 'prints, before any verdict, the full country x band cross-tab
+    for all five harmonised strata.' Printed here, immediately before V2.j's
+    own PASS/FAIL line in the guards loop below -- additive to print_report,
+    not a change to any of V2.a-V2.i's own lines."""
+    detail = result["guards"].get("V2.j", {}).get("detail", {})
+    cross_tab = detail.get("cross_tab", {})
+    if not cross_tab:
+        return
+    print("  -- V2.j country x band cross-tab (weighted share of diaries), before verdict --", file=fh)
+    for stratum, by_country in cross_tab.items():
+        print(f"  {stratum}:", file=fh)
+        all_bands = sorted({b for tab in by_country.values() for b in tab})
+        for band in all_bands:
+            row = {c: f"{by_country.get(c, {}).get(band, 0.0):.3%}" for c in COUNTRIES}
+            print(f"    {band:<28} " + "  ".join(f"{c}={row[c]}" for c in COUNTRIES), file=fh)
+
+
 def print_report(label, result, fh=sys.stdout):
     print(f"\n===== {label} =====", file=fh)
     print("-- vacuity guards --", file=fh)
     for gid in sorted(result["guards"], key=lambda x: x):
+        if gid == "V2.j":
+            print_v2j_cross_tab(result, fh)
         print(format_gate_line(result["guards"][gid]), file=fh)
     print("-- gates --", file=fh)
     for gid in ALL_GATE_IDS:
@@ -1459,6 +1824,19 @@ def gate_status(res):
     if not res["checked"]:
         return "NOT_CHECKED"
     return "PASS" if res["passed"] else "FAIL"
+
+
+def subclause_counter(result, gate_id, letter):
+    """M-7 attribution for G2.17/G2.18: the field-level count a given
+    sub-clause is actually about (nulls, non-constant groups, leak bands,
+    Italian one-to-many rows) -- NOT the sub-clause's own passed boolean and
+    NOT the whole gate's verdict. G2.18's whole-gate verdict is expected FAIL
+    on real data (D-S2-19's escalation clause), so comparing verdicts alone
+    would hide whether a perturbation's own targeted defect moved at all."""
+    sc = result["gates"].get(gate_id, {}).get("detail", {}).get("subclauses", {})
+    if letter not in sc:
+        return None
+    return sc[letter].get("counter")
 
 
 # --------------------------------------------------------------------------
@@ -1476,7 +1854,7 @@ def run_selftest(out_dir, real_crosswalks_dir, real_step1_dir, n_diaries=1200, r
 
 
 def run_sweep(base_ws, report_fh=None):
-    """Baseline + all seventeen perturbations, in-process, against whatever
+    """Baseline + all twenty-one perturbations, in-process, against whatever
     workspace it is handed -- synthetic (self-test) or real. Prints every
     acceptance test the task document requires and returns the full result
     set. This is the one place both --selftest and a real run's full sweep
@@ -1492,8 +1870,8 @@ def run_sweep(base_ws, report_fh=None):
         all_results[pert] = res
         print_report(f"PERTURBATION: {pert}", res, fh)
 
-    # -------------------- acceptance test 1: all 17 ran, null moved nothing
-    print("\n===== ACCEPTANCE TEST 1: all seventeen perturbations ran; null moved nothing =====", file=fh)
+    # -------------------- acceptance test 1: all 21 ran, null moved nothing
+    print(f"\n===== ACCEPTANCE TEST 1: all {len(PERTURBATIONS)} perturbations ran; null moved nothing =====", file=fh)
     null_ok = True
     for gid in ALL_GATE_IDS:
         b = gate_status(baseline_result["gates"][gid])
@@ -1501,7 +1879,7 @@ def run_sweep(base_ws, report_fh=None):
         if b != n:
             null_ok = False
             print(f"  NULL PERTURBATION MOVED {gid}: baseline={b} null={n}", file=fh)
-    print(f"  17 perturbations ran: {len(all_results) - 1 == 17}", file=fh)
+    print(f"  {len(PERTURBATIONS)} perturbations ran: {len(all_results) - 1 == len(PERTURBATIONS)}", file=fh)
     print(f"  null perturbation moved nothing: {null_ok}", file=fh)
 
     # -------------------- acceptance test 2: every perturbation felled its gate, or DID NOT FIRE
@@ -1518,6 +1896,30 @@ def run_sweep(base_ws, report_fh=None):
         fire_report[pert] = {"gate": target, "baseline": base_status, "perturbed": pert_status, "fired": fired}
         tag = "FIRED" if fired else "DID NOT FIRE"
         print(f"  {pert:<26} -> {target:<7} baseline={base_status:<12} perturbed={pert_status:<12} [{tag}]", file=fh)
+
+    # -------------------- acceptance test 2b: M-7 sub-clause attribution for G2.17/G2.18
+    # Additive to test 2. G2.18's WHOLE-GATE verdict is expected FAIL already
+    # at baseline (D-S2-19's escalation clause), so "perturbed status == FAIL"
+    # alone cannot tell whether a perturbation's own targeted defect (the
+    # specific field its row names) actually moved. Compare that field's own
+    # counter instead, per M-7 ("compare the gate's own computed detail per
+    # field instead of its verdict").
+    print("\n===== ACCEPTANCE TEST 2b: M-7 sub-clause attribution (G2.17/G2.18) =====", file=fh)
+    subclause_fire_report = {}
+    for pert in PERTURBATIONS:
+        spec = PERTURBATION_SPEC[pert]
+        target = spec.get("must_fail_subclause")
+        if target is None:
+            continue
+        gid, letter = target
+        base_ctr = subclause_counter(baseline_result, gid, letter)
+        pert_ctr = subclause_counter(all_results[pert], gid, letter)
+        fired = (base_ctr == 0) and (pert_ctr is not None) and (pert_ctr > 0)
+        subclause_fire_report[pert] = {"gate": gid, "clause": letter, "baseline_counter": base_ctr,
+                                        "perturbed_counter": pert_ctr, "fired": fired}
+        tag = "FIRED" if fired else "DID NOT FIRE"
+        print(f"  {pert:<26} -> {gid} ({letter})  baseline_counter={base_ctr} perturbed_counter={pert_ctr} [{tag}]",
+              file=fh)
 
     # -------------------- acceptance test 3: no perturbation felled a "must stay clean" gate
     print("\n===== ACCEPTANCE TEST 3: no perturbation felled a gate under 'must stay clean' =====", file=fh)
@@ -1536,6 +1938,23 @@ def run_sweep(base_ws, report_fh=None):
                 clean_violations.append((pert, gid, b, p))
                 print(f"  VIOLATION: {pert} felled {gid} (baseline={b}, perturbed={p}) but its row lists {gid} as must-stay-clean", file=fh)
     print(f"  clean violations = {len(clean_violations)}", file=fh)
+
+    # -------------------- acceptance test 3b: M-7 sub-clause "must stay clean"
+    # Additive to test 3, same reasoning as 2b: a sub-clause can "stay clean"
+    # even while its parent gate's OTHER sub-clause is failing, so this checks
+    # the specific field's own counter, not the whole-gate verdict.
+    print("\n===== ACCEPTANCE TEST 3b: no perturbation moved a sub-clause listed 'must stay clean' =====", file=fh)
+    subclause_clean_violations = []
+    for pert in PERTURBATIONS:
+        spec = PERTURBATION_SPEC[pert]
+        for (gid, letter) in spec.get("must_stay_clean_subclause", []):
+            b_ctr = subclause_counter(baseline_result, gid, letter)
+            p_ctr = subclause_counter(all_results[pert], gid, letter)
+            if b_ctr == 0 and p_ctr not in (0, None):
+                subclause_clean_violations.append((pert, gid, letter, b_ctr, p_ctr))
+                print(f"  VIOLATION: {pert} moved {gid} ({letter}) from {b_ctr} to {p_ctr}, "
+                      f"but its row lists {gid} ({letter}) as must-stay-clean", file=fh)
+    print(f"  sub-clause clean violations = {len(subclause_clean_violations)}", file=fh)
 
     # -------------------- acceptance test 4: coverage cross-tab
     print("\n===== ACCEPTANCE TEST 4: coverage cross-tab =====", file=fh)
@@ -1573,8 +1992,9 @@ def run_sweep(base_ws, report_fh=None):
 
     return {
         "baseline": baseline_result, "perturbations": all_results, "fire_report": fire_report,
-        "clean_violations": clean_violations, "coverage_fail": coverage_fail,
-        "not_checked": not_checked, "null_ok": null_ok,
+        "subclause_fire_report": subclause_fire_report,
+        "clean_violations": clean_violations, "subclause_clean_violations": subclause_clean_violations,
+        "coverage_fail": coverage_fail, "not_checked": not_checked, "null_ok": null_ok,
     }
 
 
@@ -1583,8 +2003,8 @@ def run_sweep(base_ws, report_fh=None):
 # --------------------------------------------------------------------------
 
 def main():
-    ap = argparse.ArgumentParser(description="Step 2 validation battery: sixteen gates, "
-                                              "seventeen perturbations, nine vacuity guards.")
+    ap = argparse.ArgumentParser(description="Step 2 validation battery: eighteen gates, "
+                                              "twenty-one perturbations, eleven vacuity guards.")
     ap.add_argument("--harmonised", help="path to harmonised.parquet (file or directory of parts)")
     ap.add_argument("--crosswalks", help="directory holding the shipped crosswalk_*.csv / outdoor_at_home.csv / "
                                           "activity_target_list.csv / crosswalk_unmapped.md / copresence_availability.md")
@@ -1594,7 +2014,11 @@ def main():
                                             "(required unless --selftest)")
     ap.add_argument("--filter-report", help="override path to filter_report.md (default: next to --harmonised)")
     ap.add_argument("--selftest", action="store_true",
-                     help="build synthetic fixtures and run baseline + all seventeen perturbations in-process")
+                     help="build synthetic fixtures and run baseline + all twenty-one perturbations in-process. "
+                          "NOTE (2026-08-17): the synthetic fixture was NOT extended with strat_* columns for the "
+                          "D-S2-18 round, so G2.17 always reports missing-column FAILs under --selftest; G2.18/V2.j "
+                          "still read the REAL crosswalk_strata.csv (from the default Step2_docs/outputs_step2 dir) "
+                          "and are meaningful. The real, non-selftest run against harmonised.parquet is authoritative.")
     ap.add_argument("--n-diaries", type=int, default=1200, help="selftest only: diaries per country in the fixture")
     args = ap.parse_args()
 

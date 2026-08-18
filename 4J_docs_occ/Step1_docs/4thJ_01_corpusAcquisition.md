@@ -969,3 +969,190 @@ set — unchanged from round 2, and still not a pass.
 **Standing Step-1 state after this round: `G1.6b` FAILs for Italy and `G1.4` FAILs for the UK. Neither
 is a defect in the battery; both are real properties of the delivered data and are quoted as such
 wherever Step 1 is cited. Step 1 is closed for Step 2's purposes.**
+
+---
+
+### 2026-08-17 — 🔴 **CONTRACT CHANGE M-8: the readers carry the six conditioning strata, unharmonised**
+
+**Issued by the manager under D-S2-18** (`../Step2_docs/4thJ_02_harmonisation.md`), which found that
+`harmonised.parquet` supplies three of the nine fields Step 3's conditioning prefix requires. The
+missing six — **age, sex, household type, economic status, day type, season** — are respondent
+properties, and **Step 1 is where respondent properties are read from a delivery.** They were never
+in this document's record contract because Step 1 was written to carry the *diary*, and nothing had
+asked for anything else until Step 3's record was read against Step 2's.
+
+**Two work items, and the second may not start before the first is accepted.**
+
+**M-8-a — `codebook_facts_<country>.md` gains a strata section.** For each of the six, per country:
+the variable name, its file, its value list, and 🔴 **the document and page or sheet it came from**,
+exactly as every other fact in those files is carried. A variable that does not exist in a delivery is
+written **`NOT FOUND`** and stays that way. **No stratum may be named from `RL02`, from `RL17`, or from
+another country's delivery** — that is the rule three of the four D-S2-1..4 findings were created by
+breaking, and this round touches precisely the kind of variable those reports were confident about.
+
+**M-8-b — the three readers emit the national source values, unbanded.** One column per stratum, the
+delivery's own value, no mapping and no collapsing. 🔴 **Step 1 decides what is kept; Step 2 decides
+what is harmonised; Step 3 decides what is serialised.** The 2.4 employee was reversed on 2026-08-16
+for pre-empting the second of those boundaries; this note exists so the first is not pre-empted now.
+
+**What is already carried and needs no re-read** — measured from the shipped parquets, not assumed:
+Spain `EDAD`, `SEXO`, `HRELACTIV`, `trim`; Italy `sesso`, `claseta2`, `meseri`; the UK `DVAge`,
+`DMSex`, `DiaryDay_Act`. 🔴 **No country carries a household-type variable of any kind**, and the
+delivered household files — Spain's `DHOGAR`/`MHOGAR`, the UK's `uktus15_household.tab`, Italy's
+`Individui.txt` at family grain — **have not been read by any round so far.**
+
+🔴 **The re-run acceptance test is the same one the UK's four-column re-run passed on 2026-08-16:**
+every gate verdict, every count and every `G1.x` result must be **unchanged to the row**. Adding
+columns may not move an episode. Step 1's standing FAILs — Italy's `G1.6b`, the UK's `G1.4` — must
+**still FAIL**; a round that quietly repairs one has stopped reading the thing it audits and is thrown
+away rather than accepted.
+
+---
+
+### 2026-08-17 (night) — MANAGER'S MERGE NOTE: Task B's Step 1 fragment, appended verbatim below
+
+Merged from `Step1_docs/outputs_step1/proglog_strata_step1.md`, written by the Task B employee of the
+D-S2-18 / D-S2-19 additive round. 🔴 **Appended verbatim and unedited. The log is append-only and was
+not reordered**, so this entry sits after entries describing work that came later in wall-clock time.
+
+**What the manager verified, rather than trusting the fragment:** the emitted table's shape, through
+two independent Speed jobs that consumed it — job 1255349 and job 1255620 both read
+`harmonised.parquet` and printed per-country row and diary counts matching **446,547 / 1,010,140 /
+567,381** and **19,140 / 38,260 / 15,854**, with **zero rows and zero diaries dropped**. The eight
+prefix fields the strata round exists to supply were all present and all serialised into the Step 3
+corpus, which is the strongest available evidence that the columns are real and populated.
+
+🔴 **What the manager did NOT verify, and it is the larger half:** every codebook citation in this
+fragment, the Spanish `DHOGAR.TIPOHOG` household join, the correctness of any individual band
+assignment, and the claim that no mapping or collapsing happened at Step 1. Those are read from the
+artefact, which is the standard, but they were not re-derived. **A column being present and populated
+is not the same as it holding the right value**, and nothing in Step 3 could have caught a
+mis-banded but well-formed stratum.
+
+**One carry that survives into the paper:** `season` is in this fragment as `strat_season_raw` and is
+**not** in the prefix. D-S2-19 dropped it for all three countries. The raw column still ships; anyone
+reading the fragment alone would conclude otherwise.
+
+---
+
+## Progress Log fragment — Task B, Step 1 (M-8 / D-S2-18 / D-S2-19 additive round)
+
+**Fragment for the manager to merge. Not the Progress Log itself.**
+
+### What was built
+
+Extended all three readers (`tools/4thJ_read_spain.py`, `4thJ_read_italy.py`, `4thJ_read_uk.py`) to
+carry the six conditioning-strata raw values, per D-S2-18 M-8-b / D-S2-19, exactly as approved in
+`Step1_docs/outputs_step1/strata_proposal.md` (Task A, already accepted). No mapping, no banding, no
+collapsing at Step 1 — six new columns per country, `strat_<name>_raw`.
+
+* **Spain**: `strat_age_band_raw` (EDAD), `strat_sex_raw` (SEXO), `strat_hh_type_raw` (TIPOHOG, new
+  household join), `strat_econ_status_raw` (HRELACTIV), `strat_day_type_raw` (DDIASEM),
+  `strat_season_raw` (TRIM). 🔴 **New household-type join**: `DHOGAR.TIPOHOG` on `hid` — the first time
+  any round has read `DHOGAR.TXT` (F-ES-10). Join asserted non-zero and zero-unmatched (D-S2-16):
+  9,541 distinct households matched, 0 unmatched episodes of 430,754.
+* **Italy**: `strat_age_band_raw` (claseta2), `strat_sex_raw` (sesso), `strat_hh_type_raw` (tipfa2m),
+  `strat_econ_status_raw` (newcondm), `strat_day_type_raw` (gsett), `strat_season_raw` (meseri).
+  `tipfa2m` and `newcondm` added to the existing `Individui.txt` join (no second file, no second join
+  — both already live in the person file already joined for sesso/claseta2).
+* **UK**: `strat_age_band_raw` (DVAge), `strat_sex_raw` (DMSex), `strat_hh_type_raw` (dhhtype),
+  `strat_econ_status_raw` (deconact), `strat_day_type_raw` (ddayw — 🔴 **not** `DiaryDay_Act`, per
+  F-UK-17/D-S2-19), `strat_season_raw` (dmonth). `dhhtype` and `deconact` both live in
+  `uktus15_individual.tab` (DD:individual pos. 588, 598) — **not** `uktus15_household.tab`, which
+  still is not read (F-UK-14 stands unchanged).
+
+### Three defects found and fixed during this round, none a policy question
+
+All three were caught by the pipeline's own refuse-rather-than-assume design on a first sbatch
+attempt — the mechanism worked as designed — and were corrected against the raw file, not assumed
+from the codebook's prose. The first two below were caught by the readers' own V1.d refusal
+(`ParseFailure`); the third (below, its own subsection) was caught one step downstream, by the
+harmoniser's crosswalk-join assertion.
+
+1. **Italy `tipfa2m` is zero-padded 2-digit** (`"08"`, not `"8"`), the same convention as `claseta2`.
+   `codebook_facts_italy_strata.md`'s condensed code table (and `strata_proposal.md`/
+   `crosswalk_strata.csv`, both built from it) used the codebook's unpadded prose listing. First
+   sbatch run (job 1254922) FAILed loudly: `tipfa2m: ['01','02',...,'09'] are neither a
+   CLS-var16-documented code nor a known enumeration gap`. Corrected in the reader's
+   `TIPFA2M_DOCUMENTED_CODES` set and in `crosswalk_strata.csv`'s `strat_hh_type`/it rows
+   (zero-padded to match); re-run succeeded.
+2. **UK `dhhtype`/`deconact`'s blank sentinel is a literal single space (`" "`)**, the same
+   convention already documented for the weight columns (F-UK-8), not an empty string. First sbatch
+   run (job 1254923) FAILed loudly: `individual.dhhtype: unrecognised values [' ']`. Measured directly
+   against the raw file: `dhhtype` `" "` count = 411 (matches the codebook's 3.6 % exactly);
+   `deconact` `" "` count = 25 (matches the "25 blank" component of its 722-row breakdown exactly).
+   Normalised `" "` → `""` in the reader before the domain check and before `strat_hh_type_raw`/
+   `strat_econ_status_raw` are set, so the crosswalk's declared blank→`unknown` row matches; re-run
+   succeeded.
+
+### A third defect, found only when the reader's downstream (Step 2) consumer ran it
+
+3. **Italy `newcondm`'s blank sentinel is also a literal single space (`" "`)**, same class as fix #2,
+   not caught by the reader's own alphabet check because that check used `.str.strip()` (which
+   silently normalises `" "` to `""` before comparison) while the emitted `strat_econ_status_raw`
+   column used the unstripped raw value. Surfaced one step downstream, in the Step 2 harmoniser
+   (job 1254934 FAILed: `strat_econ_status (it): 39515 episode(s) have a raw value not in
+   crosswalk_strata.csv: [' ']`), not in the reader itself. Measured directly: `newcondm` `" "` count
+   = 6,067, matching the codebook's 13.5 % exactly. Normalised `" "` → `""` in the reader (Italy
+   reader re-run, job 1254940) before `strat_econ_status_raw` is set. `tipfa2m` carries no such
+   sentinel (measured: 0 blank/space rows), so it needed no equivalent fix.
+
+### B2 acceptance test
+
+Three unchained `sbatch` jobs re-ran the readers (1254921 Spain; 1254922 Italy FAILed on the
+zero-padding defect, 1254927 re-run FAILed on the `newcondm` space-sentinel defect two steps later in
+Step 2, 1254940 final re-run succeeded; 1254923 UK FAILed on the space-sentinel defect, 1254928 re-run
+succeeded), then the sixteen-gate battery ran on all three against a fresh run-stamped directory
+`outputs_step1/run_20260817-strata`, copying in the reference inputs (`crosswalk_source_*`,
+`acquisition_manifest.json`, `codebook_facts_<country>.md`, `parse_report_<country>.txt`) the same way
+the accepted `run_20260816-2210` round did.
+
+* **Episode counts, unchanged**: ES **430,754** / UK **587,632** / IT **1,077,657** — verified against
+  `episodes_<country>.parquet` row counts and each reader's own parse-completeness section, all three.
+* **Column counts**: ES 31, IT 33, UK 40 (25/27/34 original + 6 new `strat_*_raw` each).
+* **Sixteen gate verdicts, verdict-for-verdict identical to `run_20260816-2210`**:
+  - Italy: 13 gates scored (`G1.1,G1.2,G1.3,G1.4,G1.5,G1.6a,G1.6b,G1.7a,G1.7d,G1.9,G1.10,G1.11,G1.12`),
+    NOT CHECKED `{G1.7b,G1.7c,G1.8}`, **PASS 12 / FAIL 1** — same set, same per-gate verdicts, same
+    perturbations-that-fell-it, as the reference report.
+  - UK: 14 gates scored (adds `G1.7c`), NOT CHECKED `{G1.7b,G1.8}`, **PASS 13 / FAIL 1** — identical
+    to the reference report.
+  - Spain: 15 gates scored, NOT CHECKED `{G1.7b}`, **PASS 15 / FAIL 0** — every one of the fifteen
+    per-gate lines (verdict, perturbations that felled it) checked byte-for-byte identical to the
+    reference report.
+* **Standing FAILs, confirmed unrepaired**: Italy's `G1.6b` **still FAILs** (`never fell` —
+  acquisition-manifest provenance URL gap, unrelated to strata) and the UK's `G1.4` **still FAILs**
+  (activity/location code-list membership, unrelated to strata). Neither round quietly repaired a
+  known FAIL.
+* 🔴 **A process mistake, not a data defect, that cost two extra gate re-runs**: my first Italy and
+  UK gate-battery jobs (1254932, 1254931) were pointed at a run-stamped directory I had seeded with
+  `episodes_<country>.parquet` and every reference file the wrapper scripts copy — **except
+  `parse_report_<country>.txt`**, which `G1.5` reads from disk. Both runs scored `G1.5` as
+  `NOT CHECKED ("no parse report on disk")` instead of `PASS`, a real mismatch against the reference
+  report's gate count (13→12 for Italy, 14→13 for UK). Caught by comparing gate counts against
+  `run_20260816-2210` rather than only checking pass/fail totals; fixed by copying the three
+  `parse_report_<country>.txt` files into the run dir and re-running all three gate batteries
+  (1254938 Italy, 1254939 UK, 1254949 Spain).
+
+### WHAT I DID NOT VERIFY
+
+* I did not independently re-derive `codebook_facts_<country>_strata.md` or `strata_proposal.md` —
+  Task A was completed and accepted (D-S2-19) before this round started; I read them, transcribed the
+  approved band set literally, and treated a value mismatch (see the two fixes above) as a defect in
+  my own crosswalk/reader code to fix against the raw file, not as licence to re-open Task A's
+  transcription.
+* I did not verify `weight_ind`/`weight_dia` or any pre-existing Step 1 column beyond confirming the
+  new join and new columns did not disturb them — this round is additive by construction and the B2
+  acceptance test (all sixteen gate verdicts unchanged) is the check that matters for that claim.
+* Whether `dhhtype`'s, `deconact`'s and `newcondm`'s `" "` sentinels are the *only* undocumented
+  formatting quirks among the newly-read fields, versus three coincidences I happened to catch — not
+  independently re-audited beyond what the domain-refusal check (readers) and the crosswalk-join
+  assertion (harmoniser) surfaced. `tipfa2m`, `claseta2`, `sesso`, `gsett`, `meseri`, `EDAD`, `SEXO`,
+  `HRELACTIV`, `DDIASEM`, `TRIM`, `DVAge`, `DMSex`, `ddayw`, `dmonth`, `TIPOHOG` were all measured
+  clean (0 unrecognised values on the real run) but not exhaustively re-audited byte-for-byte beyond
+  what the reader's own domain checks already assert.
+* I did not check whether the fifteen/sixteen gates unrelated to the two standing FAILs would have
+  caught any of the three defects above if they had gone unfixed — all three were caught by the
+  pipeline's own refuse-rather-than-assume design (reader `ParseFailure` for two, harmoniser
+  `SystemExit` for one) before or instead of any gate running, which is a stronger check than a gate
+  would have been: a `ParseFailure`/`SystemExit` means nothing downstream is trusted at all, not just
+  one gate's verdict.

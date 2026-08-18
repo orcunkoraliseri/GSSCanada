@@ -9,6 +9,17 @@
 
 **OPEN. Nothing built, no gate run, none seen failing.** All thresholds pre-registered.
 
+🔴 **Updated 2026-08-17.** The battery ran on 2026-08-16 and **15 of 15 scored gates passed with all
+15 seen failing** (`G2.10` `NOT CHECKED`). **D-S2-18 then reopened Step 2**: `harmonised.parquet`
+carries none of the six conditioning strata Step 3's prefix needs, so the table is rebuilt with
+**eleven** added columns — **D-S2-19 dropped `season` from the prefix** (Spain's and Italy's own
+pre-banded quarters are mutually irreconcilable), leaving five harmonised strata plus six `_raw`
+carriers, 40 → 51 columns — and **the battery re-runs against it — eighteen gates, twenty-one perturbations, eleven
+vacuity guards `V2.a` to `V2.k`.** 🔴 **The 2026-08-16 result is not carried forward.** It was earned
+against a narrower table; it is re-earned or it is not claimed. `G2.17`, `G2.18`, `V2.j` and `V2.k`
+were written **before the columns exist**, which is the same order `G3.14` followed and the only order
+that makes a threshold worth anything.
+
 ---
 
 ## WHAT THIS STEP MUST PROVE
@@ -47,6 +58,8 @@ prohibition instead: **no cross-country comparison of episode count or mean epis
 | **G2.13** Secondary-crosswalk separateness | 🔴 **Italy's `catcon` resolved through the *primary* activity table** — the silent form of the defect D-S2-7 was written against | **0** Italian `act2` source codes may be resolved through `crosswalk_activity.csv`. Every one comes from `crosswalk_activity_secondary.csv`, and every row of the latter carries a `source_list` column naming `CLS-var13` for Italy | **derived from the codebook** — F-IT-3 states `catcon` is a different and coarser classification, *not* a truncation of `catpri`, so a mapping that resolves it through the primary list is wrong by the delivery's own documentation, not by our preference |
 | **G2.15** Secondary-crosswalk agreement, Spain and the UK | 🔴 **A hand edit to one of two files the codebook says must agree.** D-S2-10 confirmed Spain's `ASECU` and the UK's `What_Oth1` are coded in their countries' **primary** activity lists, so their secondary rows are truncations of primary rows, not independent mappings | For **Spain and the UK only**: every row of `crosswalk_activity_secondary.csv` must map its source code to the same 2-digit target that `crosswalk_activity.csv` gives that code, truncated. Disagreeing rows: **0**. 🔴 **Italy is excluded from this gate by construction** — `catcon` is a different list and `G2.13` requires it to disagree | **derived from the codebook** — LAYOUT `F DIARIO2` rows 32/37 and METH p. 49 / p. 65-66 for Spain, F-UK-2 for the UK. 🔴 **This gate and `G2.13` are opposites and both must hold**: Spain and the UK must agree with the primary table, Italy must never touch it |
 | **G2.16** Level-1 is derived from the target, not from the source | 🔴 **The UK's own division carried through as the harmonised Level-1.** D-S2-11: the UK codes sleep as `110`, division `1`, which in the target numbering is *Employment*. Carrying the source `group1` through puts about eight hours a day of British sleep into Employment | In `harmonised.parquet`, `act_level1 == act[0]` for **100 %** of episodes, in every country, where `act` is the 3-digit target code. Violating episodes: **0**. Additionally every `act` value must appear in the shipped `activity_target_list.csv` (`V2.h`) | **derived** — Level-1 *is* the first digit of the target code by construction, so any disagreement is a bug and not a judgement. 🔴 **It exists because `G2.9` cannot catch this**: mis-filing one country's sleep into another division makes the countries differ *more*, and `G2.9` is a floor on disagreement. `G2.10` would catch it only if a published reference table is actually obtained, which is not yet true |
+| **G2.17** Conditioning-strata completeness and constancy — **two sub-clauses, M-7 attribution applies** | 🔴 **A design stratum missing, or varying inside one diary.** D-S2-18: Step 3's prefix carries the design strata and Step 5's unweighted-loss argument depends on it containing them — **six after D-S2-19 dropped `season`: `country` plus the five `strat_*` columns.** A null stratum is a record that cannot be serialised; a stratum that moves inside a person-day is a stratum that was read off the wrong grain | **(a)** for every shipped `strat_*` column, count of episodes with a null value: **0**, in every country. 🔴 **A national value that is missing at row level resolves to the `unknown` band declared in `crosswalk_strata.csv` for all three countries, never to null and never to a country-specific symbol.** **(b)** count of `(country, hid, pid, diary_day)` groups carrying more than one distinct value of any `strat_*` column: **0** | **derived** — a design stratum is a property of the person-day, not of the episode, so variation inside a diary is a bug and not a judgement call |
+| **G2.18** Conditioning-strata leak and expressibility — **two sub-clauses, M-7 attribution applies** | 🔴 **(a) a band only one country can emit**, which is a country marker inside a leave-one-country-out design — D-S2-2's argument applied to the prefix rather than to co-presence. 🔴 **(b) a target band that no Italian record can express**, which is D-S2-13's finding generalised from one threshold to a whole classification | **(a)** count of band values **declared in `crosswalk_strata.csv` for exactly one** of the three countries: **0**. 🔴 **If this fails, the repair is to coarsen the classification, never to relax the count** — a rare band is still a country marker. 🔴 **Amended by D-S2-19: the FAIL is scored on declared availability, not on observed prevalence**, because the only repairs available on a prevalence basis are imputation or dropping rows, and this round's acceptance test forbids moving a single row. **The observed emission cross-tab is still printed by `V2.j` and every band emitted by fewer than three countries is listed in the report as a residual leak risk** — `strat_hh_type = unknown` is expected there, at ES 0.0 % / IT 0.0 % / UK 3.6 %. Additionally, escalate if the `unknown` band's weighted share in one country exceeds **ten times** the smallest share among the other two — **this fires by design on `strat_econ_status` (ES 0.0 %, UK 6.3 %, IT 13.5 %) and is reported, not silenced.** **(b)** in `crosswalk_strata.csv`, count of Italian source bands mapping to more than one target band: **0**, for every stratum Italy delivers pre-banded | **(a)** derived from D-S2-2 and decision 11 — the design is leave-one-country-out, so a symbol that identifies a country is a defect by construction. **(b)** derived from the Italian codebook: `claseta2` delivers age in eleven bands, so a target band that splits one of them cannot be produced from the Italian file and would be produced anyway, wrongly |
 | **G2.14** Co-presence value-map integrity | 🔴 **Spain's `1 = yes, 6 = no` recoded by truthiness** — `bool(6)` is `True`, so a bare cast makes every Spanish respondent co-present with everybody at once | Count of episodes where `cop_alone` is set **and** any other shared flag is also set: **0**, in every country. Additionally, every national co-presence value encountered must appear in the shipped `crosswalk_copresence.csv` value map; an unrecognised value is printed and refused (`V2.c`), never coerced | **derived from the instrument** — a respondent cannot be alone and accompanied in the same episode. 🔴 If a country's delivery genuinely permits both, that is a **finding to report before this gate is touched**, not a reason to relax it |
 
 ---
@@ -88,6 +101,10 @@ Each perturbation applies to a copy, and must break **exactly one** gate.
 | 🔴 **Recode Spain's co-presence with `bool(x)`** (so `6`, meaning "no", becomes `True`) | **G2.14** | G2.1 through G2.11 — *no code is unmapped, time is conserved, days close, no activity budget moves and no location class empties. Every Spanish respondent is simply alone **and** with everyone at once. This is the perturbation that proves the gate was worth writing* |
 | 🔴 **Re-point one Spanish secondary-crosswalk row at a different 2-digit target from the one its primary row gives** | **G2.15** | G2.13 — *Italy is untouched and still resolves through its own list*; G2.1, because the code is still mapped and still cited. **The only thing wrong is that two files the codebook says must agree no longer do** |
 | 🔴 **Carry the UK's source `group1` into `act_level1` instead of deriving it from the target code** | **G2.16** | G2.1, G2.2, G2.3, G2.4, G2.9, G2.10 — *every code still maps and is still cited, time is conserved, days close, and the countries now differ **more**, so the floor-on-disagreement gate is happier, not unhappier. That inversion is the entire reason this gate exists* |
+| 🔴 **Null one respondent's `strat_econ_status`** | **G2.17 (a)** | G2.18, G2.3, G2.4 — *no minute moves, every day still closes, no band changes meaning. The record simply cannot be serialised, and only a completeness check sees that* |
+| 🔴 **Give one respondent's second half-day a different `strat_day_type`** | **G2.17 (b)** | **G2.17 (a)** — *nothing is null*; G2.3, G2.4. **This perturbation exists because (a) cannot see it**: a stratum read at the wrong grain is fully populated and simply wrong |
+| 🔴 **Prefix Italy's household-type bands with `it_`** so no other country emits them | **G2.18 (a)** | G2.17, G2.3, G2.4 — *every episode still carries a value, every value is still constant within the diary, every minute is conserved. The only thing wrong is that the model can now read the country off the prefix, which is invisible to every other gate here* |
+| 🔴 **Split the Italian age band `04` into two target bands**, so one delivered band maps to two targets | **G2.18 (b)** | G2.17 — *nothing is null and nothing varies within a diary; the mapping is simply unproducible from the Italian file, and produced anyway* |
 | 🔴 **Null perturbation: change nothing** | **nothing** | everything |
 
 ### Coverage clause
@@ -141,6 +158,26 @@ print a complete-looking tally while a headline gate has never been exercised.
   existed only in prose, where no runner could read it. The native origin belongs in `filter_report.md`
   and in file-level metadata, never in a row. Printing the whole column list is the `V2.b` half: a
   column that should not be there is easiest to see next to the ones that should.
+* **V2.j** — 🔴 **`G2.17` and `G2.18` read the stratum vocabulary from the shipped
+  `crosswalk_strata.csv`, and FAIL if that file is missing, if any `strat_*` column in
+  `harmonised.parquet` has no rows in it, if any band value in the parquet is absent from it, or if
+  any stratum's rows do not cover all three countries.** Fourth instance of the same rule as `V2.e`,
+  `V2.f` and `V2.h`, and the reason has not changed: **a gate that checks membership in a list it
+  built itself out of the data it is auditing cannot fail.** The band set is imported, never derived
+  from the parquet and never restated inside the validator. 🔴 **It also prints, before any verdict,
+  the full country × band cross-tab for all five harmonised strata** (`season` is not harmonised after
+  D-S2-19; `strat_season_raw` ships but has no crosswalk rows and no band vocabulary, and `V2.j` must
+  not demand any). Two bands with equal per-country prevalence
+  make a swap between them invisible to `G2.18 (a)`, and only the printed table shows whether the gate
+  had the resolution to see anything at all — `V3.f`'s argument, transplanted.
+* **V2.k** — 🔴 **The additive round may not move a row.** The runner FAILs if the rebuilt table's
+  per-country episode counts are not exactly **ES 446,547 / UK 567,381 / IT 1,010,140** and its split
+  counts are not exactly **ES 37,830 / UK 0 / IT 0**, the figures the accepted 2026-08-16 table
+  carried. 🔴 **Its reference is the previous accepted table, which the new run did not author** — the
+  same independence property that makes `G2.12` and `G3.14 (b)` worth having. A rebuild that shifted
+  a single episode would mean the column set is entangled with the transform, and the whole delivery
+  goes back. **This is a guard rather than a gate because it needs no perturbation to be believed:**
+  it either reproduces four fixed numbers or it does not.
 * **V2.g** — 🔴 **Italy's durations are asserted, not assumed.** `catcon`'s delivery imposes no slot and
   it is only an *observation* that every measured Italian duration is a multiple of 10 minutes
   (D-S2-6). Any Italian duration that is not a multiple of 10 is **printed and refused**, never
@@ -986,6 +1023,54 @@ co-presence availability documented with missing distinguished from absent; `har
 (2,024,068 episodes) and `filter_report.md` emitted with removals counted per clause per country; and
 **fifteen scored gates PASS with all fifteen seen failing.**
 
+---
+
+### 2026-08-17 — 🔴 **`G2.17`, `G2.18`, `V2.j` and `V2.k` added. The battery re-runs, and the 2026-08-16 result is not carried forward**
+
+D-S2-18 reopened Step 2: `harmonised.parquet` carries none of the six conditioning strata that
+Step 3's nine-field prefix requires, and Step 5's unweighted-loss argument depends on the prefix
+containing them. Twelve columns are being added — six harmonised strata and six `_raw` carriers — and
+**a new column with no gate on it is an unaudited column.**
+
+**Two gates, four perturbations, two guards. Written before the columns exist**, which is the same
+order `G3.14` followed after the `COP` measurement and the only order in which a threshold means
+anything.
+
+* **`G2.17` is completeness and grain, and its two clauses catch different things.** (a) no null in
+  any shipped `strat_*` column. (b) no stratum varying inside a `(country, hid, pid, diary_day)`
+  group. 🔴 **(b) exists because (a) cannot see it:** a stratum read at the episode grain instead of
+  the person-day grain is fully populated and simply wrong, and its perturbation — one respondent's
+  second half-day given a different `strat_day_type` — leaves (a) clean by construction.
+* 🔴 **`G2.18` (a) is the leak gate, and it is D-S2-2's argument moved from co-presence to the
+  prefix.** A band value only one of three countries emits is a country marker, and a country marker
+  in a leave-one-country-out design measures our bookkeeping rather than transfer. **The repair when
+  it fires is to coarsen the classification, never to relax the count**, and that sentence is in the
+  threshold rather than in prose because the cheap fix is so obviously available.
+* 🔴 **`G2.18` (b) is D-S2-13 generalised from one threshold to a whole classification.** Italy
+  delivers age pre-banded in `claseta2`'s eleven bands. A target band that splits one of them cannot
+  be produced from the Italian file — and *would* be produced anyway, wrongly, by whoever writes the
+  mapping. The gate reads the crosswalk, not the data, so it fires at design time rather than after a
+  rebuild.
+* **`V2.j` is the fourth instance of one rule**, after `V2.e`, `V2.f` and `V2.h`: the band vocabulary
+  is **imported from `crosswalk_strata.csv`**, never rebuilt inside the validator from the data it is
+  auditing. It also prints the country × band cross-tab before any verdict, on `V3.f`'s reasoning —
+  two bands with equal prevalence make a swap between them invisible, and only the printed table shows
+  whether the gate could have seen anything.
+* 🔴 **`V2.k` is a guard, not a gate, and deliberately so.** It asserts the rebuilt table's four fixed
+  numbers — ES 446,547 / UK 567,381 / IT 1,010,140 episodes, ES 37,830 / 0 / 0 splits — against the
+  accepted 2026-08-16 table, **a reference the new run did not author.** It needs no perturbation to
+  be believed: it either reproduces those numbers or it does not. **A rebuild that moved one episode
+  would mean the column set is entangled with the transform**, which is exactly what the UK's
+  four-column re-run tested and passed on 2026-08-16.
+
+🔴 **One thing this pair of gates does NOT cover, recorded now rather than discovered later.** Neither
+says the harmonised bands are *good* bands. `G2.18` proves no band is a country marker and that every
+band is expressible in Italy; it says nothing about whether "economic status" means the same social
+fact in three countries. That is the same limit `G2.9` and `G2.10` carry for the activity crosswalk,
+and it is answered the same way — by citation per row, and by an author who reads the crosswalk.
+
+**Step 2 is now eighteen gates, twenty-one perturbations, `V2.a` to `V2.k`, none of them re-run.**
+
 🔴 **Standing Step-2 state to quote wherever Step 2 is cited:**
 
 * **`G2.10` is `NOT CHECKED`**, not passed — we hold no published national time-use table, and a
@@ -1002,3 +1087,221 @@ co-presence availability documented with missing distinguished from absent; `har
 `bit_position` column is present and verified `{0,...,5}` one-to-one, which is what `G3.14 (b)` needs
 as a reference the encoder did not author.
 
+
+---
+
+### 2026-08-17 (later) — 🔴 **D-S2-19: `season` dropped, band set approved, `G2.18 (a)` scored on declared availability**
+
+Task A of the additive round returned the six transcriptions and the band proposal. The manager ruled
+(D-S2-19 in `4thJ_02_harmonisation.md`). Three amendments land here, and none of them moved a
+threshold:
+
+* **`season` is dropped from the prefix for all three countries.** Spain's `TRIM` and Italy's `meseri`
+  are each delivered pre-banded, offset by one month at every edge, sharing no boundary, and neither
+  country ships anything finer — so the only band expressible in all three is the whole year, and a
+  degenerate single-valued stratum is not carried. **Eleven added columns, not twelve; 40 → 51.**
+  `strat_season_raw` still ships and `V2.j` must not demand a band vocabulary for it.
+* **`G2.18 (a)` now counts bands declared for exactly one country in `crosswalk_strata.csv`, not bands
+  emitted by exactly one country.** 🔴 **This is a change of basis and it is written down as one.** On
+  the emitted basis the gate would fail on `strat_hh_type = unknown` (ES 0.0 %, IT 0.0 %, UK 3.6 %),
+  and the only repairs available would be imputing a band or dropping the affected rows — and dropping
+  rows is closed off by `V2.k`, which forbids moving a single episode. **The observed cross-tab is
+  still printed and every band emitted by fewer than three countries is reported as a residual leak
+  risk.** The `it_` prefix perturbation still fells the gate, because those bands are declared for
+  Italy alone.
+* **The `unknown`-share escalation fires by design on `strat_econ_status`** — ES 0.0 %, UK 6.3 %,
+  IT 13.5 %. It is reported and carried into the limitations. 🔴 **An escalation that was predicted
+  before the run is still an escalation; it is not a reason to widen the clause.**
+
+**Unchanged: eighteen gates, twenty-one perturbations, `V2.a` to `V2.k`, none run.** The four fixed
+counts `V2.k` checks are untouched — dropping a stratum drops a column, never a row.
+
+---
+
+### 2026-08-17 (night) — MANAGER'S MERGE NOTE: the eighteen-gate battery fragment, appended verbatim below
+
+Merged from `Step2_docs/outputs_step2/proglog_step2_gates18.md`. 🔴 **Appended verbatim and unedited,
+append-only, not reordered.**
+
+🔴 **Read this before quoting any number from it: the run was LOCAL, not on Speed.** The fragment says
+so itself, and says it plainly, which is the right behaviour. It ran on the author's own Windows
+desktop against the already-accepted `harmonised.parquet`, in under a minute of compute, and it was
+therefore **not** a submission governed by the cluster rules. **That is a provenance difference, not a
+defect** — the inputs were the same artefacts and the gate code is the same file — but a local run has
+no `.out` on `/speed-scratch` and no `sacct` record, so **it cannot be re-read later the way every
+other result in this project can.** Anyone re-deriving this battery should re-run it under `sbatch` and
+expect to reproduce it, not assume it.
+
+**What the manager verified independently:** the row count the battery ran over, **2,024,068 across
+three countries**, which two later Speed jobs re-derived from the same table fresh from disk. Nothing
+else in the fragment was re-derived.
+
+🔴 **NOT verified, and this is the important part:** the twenty-one perturbations themselves, the
+per-gate arithmetic, and the coverage cross-tab. **A gate battery is exactly the artefact whose own
+report is least able to vouch for it** — that is the reason this project runs batteries in a session
+separate from the one that built the code under test, and the reason Step 3's battery was handed to a
+fresh agent that imports nothing from `encoder.py` or `decoder.py`.
+
+**Two Step 2 items remain open on the author's ruling**, both raised by this round and neither
+blocking Step 3:
+
+* whether `G2.18`'s escalation clause should carry a **whole-gate FAIL** when `leak_bands = 0`, and
+  whether D-S2-19's quoted **6.3 % / 13.5 %** should be corrected to **0.519 % / 4.243 %**;
+* whether to repair the `scale_duration` → `G2.4` **clean violation** — a perturbation that moved
+  without felling the gate aimed at it.
+
+**And one older item still stands:** `G2.3` has never been demonstrated independently of `G2.4`. A
+gate that only ever falls alongside another gate has not been shown to have power of its own.
+
+---
+
+# Progress Log fragment — Step 2, eighteen-gate battery (2026-08-17)
+
+*Fragment only — for the manager to merge into `4thJ_02_harmonisation.md` /
+`4thJ_02_harmonisation_val.md`. Not itself a Progress Log entry.*
+
+## What ran
+
+The full eighteen-gate battery (`tools/4thJ_gates_step2.py --perturbation all`) ran over the real,
+already-accepted `harmonised.parquet` (2,024,068 rows, 3 countries: ES/UK/IT) — 22 sweeps (1 baseline
++ 21 perturbations), 18 gates each. This was **a local run on the author's own Windows desktop**, not
+a Speed HPC job: the machine already had all required inputs (crosswalks, Step 1 episodes/codebooks,
+`filter_report.md`) and a working local `pandas`/`numpy` environment, and the job ran in well under a
+minute of compute. It was **not** a submission governed by the Speed cluster rules.
+
+Caveat on record: the first attempt at this same run, launched the same way, **died mid-battery when
+the employee agent's session ended** — the local background process does not survive its agent. It
+stopped after 10 of 22 sweeps (`gates18_run_20260817/full_sweep_report.txt`, truncated, kept as
+evidence, not used for any number below). The manager re-launched the identical command from the
+manager's own shell (which survives across turns) into a fresh output directory,
+`gates18_run_20260817b/`, which completed all 22 sweeps and is the authoritative artefact for
+everything below. The lesson recorded for future full-table batteries: **a `sbatch` job on Speed would
+have survived the session where the local run did not** — prefer Speed for anything of this size going
+forward.
+
+## Baseline verdict per gate
+
+18 gates scored per sweep, every sweep, all 22 sweeps (confirmed by direct count — no sweep silently
+scored 17). At baseline: **17 scored gates** (`G2.10` excluded), **16 PASS, 1 FAIL**.
+
+| Gate | Baseline | Note |
+|---|---|---|
+| G2.1–G2.9 | PASS | |
+| G2.10 | NOT CHECKED | no published national time-use table held by the project; excluded from the scored tally (never a pass) |
+| G2.11–G2.17 | PASS | |
+| G2.18 | **FAIL** | sub-clause (a) only — see Finding 1 |
+
+## The 21 perturbations — did each fell its named gate
+
+20 of the 21 perturbations carry a named target gate; `null` is the no-op control (confirmed: moved
+nothing).
+
+| Perturbation | Target gate | Result |
+|---|---|---|
+| null | (control) | moved nothing — confirmed |
+| del_activity_row | G2.1 | FIRED |
+| strip_citation | G2.2 | FIRED |
+| scale_duration | G2.3 | FIRED (see Finding 2 — also felled G2.4) |
+| round_duration | G2.4 | FIRED |
+| add_one_to_many | G2.5 | FIRED |
+| empty_outdoor | G2.6 | FIRED |
+| drop_spain_age | G2.7 | FIRED |
+| zero_missing_flag | G2.8 | FIRED |
+| pool_modal_code | G2.9 | FIRED |
+| shift_sleep_budget | G2.10 | DID NOT FIRE — expected: G2.10 is never scored (NOT CHECKED at baseline and under perturbation alike) |
+| remap_spain_transport | G2.11 | FIRED |
+| wrong_rotation | G2.12 | FIRED |
+| italy_catcon_swap | G2.13 | FIRED |
+| spain_cop_bool | G2.14 | FIRED |
+| spain_secondary_repoint | G2.15 | FIRED |
+| uk_group1_carry | G2.16 | FIRED |
+| null_strat_econ_status | G2.17 | FIRED |
+| strat_day_type_wrong_grain | G2.17 | FIRED |
+| italy_hh_type_prefix | G2.18 | FIRED (whole-gate; see M-7 sub-clause note below) |
+| italy_age_band_split | G2.18 | FIRED (whole-gate; see M-7 sub-clause note below) |
+
+19 of 20 named mappings FIRED as designed. The one non-firer (`shift_sleep_budget -> G2.10`) is
+expected by construction, since G2.10 can never score PASS or FAIL.
+
+## M-7 sub-clause attribution — G2.17 / G2.18
+
+Because `G2.18` already reads FAIL at baseline (see Finding 1), whole-gate PASS/FAIL cannot tell
+whether the two perturbations that target `G2.18` actually fired their own specific defect. The
+battery's field-level `subclause_counter()` mechanism (acceptance test 2b) is what's authoritative
+here — counter value at baseline vs. under the targeting perturbation:
+
+| Perturbation | Sub-clause | Baseline counter | Perturbed counter | Result |
+|---|---|---|---|---|
+| null_strat_econ_status | G2.17 (a) | 0 | 19 | FIRED |
+| strat_day_type_wrong_grain | G2.17 (b) | 0 | 1 | FIRED |
+| italy_hh_type_prefix | G2.18 (a) | 0 | 6 | FIRED |
+| italy_age_band_split | G2.18 (b) | 0 | 1 | FIRED |
+
+All four fired cleanly at the field level, independent of G2.18's pre-registered whole-gate FAIL.
+
+## Coverage cross-tab
+
+Acceptance test 4 builds the full 18-gate x 22-sweep cross-tab. Result: **coverage clause PASS** —
+the list of gates that PASS at baseline and were never made to fall anywhere across the 21
+perturbations is **empty (`[]`)**. Every gate that can PASS was demonstrated failing somewhere in the
+sweep.
+
+## Finding 1 — G2.18 FAILs at baseline (reported, not repaired)
+
+Sub-clause (a): `leak_bands(declared-availability) = 0` but `escalations(prevalence, D-S2-19) = 3`.
+**Zero leaks is the substantive result** — no band is emitted by exactly one country. The whole-gate
+FAIL comes from the escalation clause alone.
+
+The three escalations (derived by applying the escalation rule already on record — literal
+"share > 10x smallest of the other two," no zero-filtering — to the `unknown`-band shares printed in
+the baseline country x stratum cross-tab; not itself printed as a labelled list by the report):
+- `strat_hh_type`, `unknown` share es=0.000% / uk=3.514% / it=0.000% — escalates once, on **UK**.
+- `strat_econ_status`, `unknown` share es=0.000% / uk=0.519% / it=4.243% — escalates twice, on **UK**
+  and **IT**.
+
+1 + 2 = 3, matching the printed count exactly.
+
+Whether an escalation driven by `unknown`'s own share should carry a whole-gate FAIL, or be reported
+as a flagged note beside an otherwise-passing leak clause, is a band/threshold question — the
+author's call, not the employee's or the manager's. Not repaired, not silenced, nothing moved.
+
+## Finding 2 — Acceptance test 3 reports one clean violation
+
+`scale_duration` (targeting `G2.3`) also felled `G2.4`, but `G2.4` is listed in `scale_duration`'s row
+as "must stay clean." Test 3's own output: `"VIOLATION: scale_duration felled G2.4 (baseline=PASS,
+perturbed=FAIL) but its row lists G2.4 as must-stay-clean"`, `clean violations = 1`.
+
+This is the same entanglement as the standing limitation that **`G2.3` is not demonstrated
+independently of `G2.4`** — previously a note, now visible as a hard, measured violation rather than
+a note. Reported as found; no perturbation was added, removed, or adjusted to repair it (adding a row
+to a pre-registered table is the author's call).
+
+## Standing limitations restated
+
+- **`G2.3` is still not demonstrated independently of `G2.4`.** `scale_duration` (G2.3's own
+  perturbation) also moves G2.4 (Finding 2), so the two gates are not shown falling independently of
+  one another in this battery.
+- **`G2.10` remains `NOT CHECKED`.** No published national time-use table is held by the project; a
+  re-tabulation of the project's own harmonised data would share an ancestor with the reference and
+  cannot fail, so it is not substituted. `NOT CHECKED` is never a pass, and G2.10 is excluded from
+  every scored tally in this report (17 of 18 gates scored, everywhere).
+
+## WHAT I DID NOT VERIFY
+
+- The three baseline `G2.18(a)` escalations (Finding 1) are not printed as a labelled per-stratum
+  list anywhere in the report — the aggregate count (3) is printed; the per-stratum/per-country
+  breakdown above is this agent's derivation from the printed `V2.j` cross-tab and the already-agreed
+  escalation formula, not a number the runner itself emitted.
+- The employee's earlier `Decision 4` note in the implementation doc quotes `strat_econ_status`
+  `unknown` shares as "ES 0.0%, UK 6.3%, IT 13.5%"; the actual `_b` baseline report prints
+  es=0.000%, uk=0.519%, it=4.243%. The discrepancy is not reconciled here — flagged for the
+  author/manager. The numbers used above are the ones printed in the authoritative `_b` report.
+- `crosswalk_strata.csv` was not opened directly to independently confirm the raw rows behind
+  `G2.18(a)`'s `leak_bands`/`(b)`'s `it_conflicts` counters — only the runner's printed counts and
+  the before/after deltas under the two targeting perturbations were read.
+- The 21 x 18 = 378 individual gate cells across all perturbation sweep bodies were not each
+  hand-re-verified line by line beyond what the coverage cross-tab (generated from the same run)
+  already tabulates.
+- `V2.k`'s reference numbers (446,547 / 567,381 / 1,010,140 episodes; 37,830 / 0 / 0 splits) were
+  confirmed to match the report's printed numbers exactly, but were not independently re-derived from
+  `harmonised.parquet` in this task.

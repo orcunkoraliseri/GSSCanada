@@ -4,7 +4,10 @@
 - compiled age expression: `EDAD >= 11`
 - age clause removed: 155 respondents, 155 diaries, 3122 episodes
 - native origin hour: 06:00 (asserted against codebook_facts_spain.md)
+- reference_minutes (D-S2-14): 360 (wall-clock time that start_min==0 denotes)
 - rotation offset applied: 120 min
+- first-episode start_min assertion: PASS, all diaries start at 0
+- tiling assertion: PASS, every diary's rotated intervals partition [0,1440) exactly once
 - split_at_origin count: 18915
 - act2_raw three states: not_recorded(null)=0, recorded_and_blank('')=366053, recorded_with_value=80494
 - act2 unmapped-with-value codes (act2=null despite a raw value): 57
@@ -14,6 +17,13 @@
 - loc_raw recorded-and-blank episodes: 0
 - indoor_presence null count: 290 (null, never False, wherever we cannot evaluate the rule: loc_class unknown -- loc_raw recorded-and-blank or an unmapped code -- or loc_class=='at_home' but act is unmapped so the outdoor-at-home exclusion cannot be checked; 'we don't know' is never collapsed into False)
 - co-presence missingness-flagged episodes (six shared flags set null): 0
+- conditioning strata (D-S2-18/D-S2-19, Task B): crosswalk join matched, of 446547 output episodes:
+  - strat_age_band: 446547 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_sex: 446547 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_day_type: 446547 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_econ_status: 446547 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_hh_type: 446547 matched, 0 unmapped (asserted, D-S2-16)
+- strat_season_raw ships unharmonised, no strat_season column (D-S2-19: `season` dropped from the prefix for all three countries)
 - input episodes: 430754
 - output episodes: 446547
 - reconciliation: 430754 - 3122 + 18915 = 446547 (output 446547), OK

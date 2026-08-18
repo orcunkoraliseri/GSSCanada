@@ -101,6 +101,111 @@ COUNTRY_EXTRA_RAW_COLUMNS = {
     "it": [],
 }
 
+# D-S2-18 / D-S2-19 (Task B): the conditioning strata. `season` is dropped
+# from the prefix -- strat_season_raw ships without a harmonised partner.
+STRATA_HARMONISED = [
+    "strat_age_band", "strat_sex", "strat_hh_type", "strat_econ_status", "strat_day_type",
+]
+STRATA_RAW = [
+    "strat_age_band_raw", "strat_sex_raw", "strat_hh_type_raw",
+    "strat_econ_status_raw", "strat_day_type_raw", "strat_season_raw",
+]
+
+# D-S2-19 section 4.1: tipfa2m codes not enumerated in CLS-var16. Never
+# folded into other_complex. If observed, the run FAILs (checked below).
+ITALY_TIPFA2M_GAP_CODES = {"12", "13", "17", "18", "26", "27", "31", "32"}
+
+
+def load_strata_crosswalk(xw_dir, country_tag):
+    sx = pd.read_csv(f"{xw_dir}/crosswalk_strata.csv", dtype=str, keep_default_na=False)
+    sx_c = sx[sx["country"] == country_tag].copy()
+    if sx_c.empty:
+        fail(f"crosswalk_strata.csv has no rows for country={country_tag}")
+    return sx_c
+
+
+def map_stratum_categorical(df, stratum, raw_col, target_col, sx_c, country):
+    """Exact-value crosswalk join for one stratum. FAILs loudly on any raw
+    value not present in crosswalk_strata.csv -- D-S2-19 declares `unknown`
+    for exactly the strata/countries that need it (strat_econ_status,
+    strat_hh_type); a value outside the declared vocabulary is refused, not
+    silently dropped (D-S2-16's join-must-assert rule, applied here)."""
+    rows = sx_c[sx_c["stratum"] == stratum]
+    if rows.empty:
+        fail(f"crosswalk_strata.csv has no rows for stratum={stratum} country={country}")
+    if rows["source_value"].duplicated().any():
+        fail(f"crosswalk_strata.csv has duplicate source_value rows for stratum={stratum} country={country}")
+    mapping = dict(zip(rows["source_value"], rows["target_band"]))
+
+    raw = df[raw_col]
+    raw_norm = raw.where(raw.notna(), "").astype(str)
+    mapped = raw_norm.map(mapping)
+    unmapped_mask = mapped.isna()
+    if unmapped_mask.any():
+        offenders = sorted(raw_norm[unmapped_mask].unique())
+        if stratum == "strat_hh_type" and country == "it":
+            reserved = sorted(set(offenders) & ITALY_TIPFA2M_GAP_CODES, key=lambda s: int(s))
+            if reserved:
+                fail(f"Italy tipfa2m: undocumented CLS-var16 gap code(s) OBSERVED in the raw file: "
+                     f"{reserved} -- per D-S2-19 this FAILs the run rather than folding into "
+                     f"other_complex (see crosswalk_unmapped.md PART E).")
+        fail(f"{stratum} ({country}): {int(unmapped_mask.sum())} episode(s) have a raw value not in "
+             f"crosswalk_strata.csv: {offenders[:20]} -- a national value missing at row level must "
+             f"resolve to the declared 'unknown' band, never to null (D-S2-19); an unrecognised value "
+             f"is refused, not silently dropped.")
+    n_matched = int((~unmapped_mask).sum())
+    if n_matched == 0:
+        fail(f"{stratum} ({country}): crosswalk join matched ZERO rows -- a join that matches nothing "
+             f"must FAIL loudly, not produce nulls (D-S2-16).")
+    df[target_col] = mapped.astype("string")
+    return n_matched
+
+
+def parse_age_range(s):
+    if s.endswith("+"):
+        return int(s[:-1]), float("inf")
+    lo, hi = s.split("-")
+    return int(lo), int(hi)
+
+
+def map_age_band(df, country, sx_c):
+    """strat_age_band. Italy ships age pre-banded (claseta2) -- exact
+    categorical join, same as every other stratum. Spain and the UK ship
+    exact ages, so their crosswalk rows are numeric RANGES ("11-14", "75+");
+    parsed into bin edges here and applied with pd.cut, on the same
+    boundaries Italy's own bands define (D-S2-19 rule 2 / D-S2-18 rule 2)."""
+    raw_col, target_col = "strat_age_band_raw", "strat_age_band"
+    if country == "it":
+        return map_stratum_categorical(df, "strat_age_band", raw_col, target_col, sx_c, country)
+
+    rows = sx_c[sx_c["stratum"] == "strat_age_band"]
+    if rows.empty:
+        fail(f"crosswalk_strata.csv has no strat_age_band rows for country={country}")
+    bands = sorted(
+        (parse_age_range(sv) + (tb,) for sv, tb in zip(rows["source_value"], rows["target_band"])),
+        key=lambda t: t[0],
+    )
+    edges = [b[0] for b in bands] + [float("inf")]
+    labels = [b[2] for b in bands]
+
+    raw = df[raw_col].astype(str).str.strip()
+    n_blank = int((raw == "").sum())
+    if n_blank:
+        fail(f"strat_age_band ({country}): {n_blank} episode(s) have a blank age value -- no unknown "
+             f"band is declared for strat_age_band (D-S2-19), refusing rather than dropping")
+    ages = raw.astype(int)
+    if (ages < edges[0]).any():
+        bad = sorted(ages[ages < edges[0]].unique().tolist())
+        fail(f"strat_age_band ({country}): age value(s) below the youngest declared band {edges[0]}: "
+             f"{bad} -- should be impossible after the D-S2-13/17 age floor filter")
+    band = pd.cut(ages, bins=edges, labels=labels, right=False, include_lowest=True)
+    if band.isna().any():
+        bad = sorted(ages[band.isna()].unique().tolist())
+        fail(f"strat_age_band ({country}): {int(band.isna().sum())} age value(s) did not fall inside any "
+             f"declared band: {bad}")
+    df[target_col] = band.astype("string")
+    return len(ages)
+
 
 def log(msg):
     print(msg, flush=True)
@@ -523,8 +628,33 @@ def main():
     if missing_extra_raw:
         fail(f"expected extra raw column(s) {missing_extra_raw} not found in input for country={country}")
 
+    # ---- TASK B4 (D-S2-18 / D-S2-19): the five harmonised conditioning strata ----
+    # `strat_season_raw` ships without a harmonised partner -- season is dropped
+    # from the prefix for all three countries (D-S2-19 section 1).
+    missing_strata_raw = [c for c in STRATA_RAW if c not in df.columns]
+    if missing_strata_raw:
+        fail(f"expected strata raw column(s) {missing_strata_raw} not found in input for country={country} "
+             f"-- Step 1's reader (M-8/B1) must carry all six before Step 2 can harmonise them")
+
+    sx_c = load_strata_crosswalk(args.xw_dir, COUNTRY_CROSSWALK_TAG[country])
+    strata_matched = {}
+    strata_matched["strat_age_band"] = map_age_band(df, country, sx_c)
+    strata_matched["strat_sex"] = map_stratum_categorical(
+        df, "strat_sex", "strat_sex_raw", "strat_sex", sx_c, country)
+    strata_matched["strat_day_type"] = map_stratum_categorical(
+        df, "strat_day_type", "strat_day_type_raw", "strat_day_type", sx_c, country)
+    strata_matched["strat_econ_status"] = map_stratum_categorical(
+        df, "strat_econ_status", "strat_econ_status_raw", "strat_econ_status", sx_c, country)
+    strata_matched["strat_hh_type"] = map_stratum_categorical(
+        df, "strat_hh_type", "strat_hh_type_raw", "strat_hh_type", sx_c, country)
+    for stratum, n_matched in strata_matched.items():
+        log(f"{stratum} ({country}): crosswalk join matched {n_matched} of {len(df)} episodes "
+            f"(non-zero, per D-S2-16)")
+    report["strata_matched"] = strata_matched
+
     # ---- TASK 1, step 9: emit ----
-    columns = list(BASE_COLUMNS_HEAD) + cop_extra_cols + list(BASE_COLUMNS_TAIL) + extra_raw_cols
+    columns = (list(BASE_COLUMNS_HEAD) + cop_extra_cols + list(BASE_COLUMNS_TAIL)
+               + STRATA_HARMONISED + STRATA_RAW + extra_raw_cols)
     for c in ["act", "act2", "act2_level1", "loc_class"]:
         df[c] = df[c].astype("string")
     for c in ["act_level1", "act_level2"]:
@@ -614,6 +744,12 @@ def main():
                   f"cannot be checked; 'we don't know' is never collapsed into False)\n")
         fh.write(f"- co-presence missingness-flagged episodes (six shared flags set null): "
                   f"{report['cop_missing_flag_rows']}\n")
+        fh.write(f"- conditioning strata (D-S2-18/D-S2-19, Task B): crosswalk join matched, "
+                  f"of {n_output_episodes} output episodes:\n")
+        for stratum, n_matched in strata_matched.items():
+            fh.write(f"  - {stratum}: {n_matched} matched, 0 unmapped (asserted, D-S2-16)\n")
+        fh.write(f"- strat_season_raw ships unharmonised, no strat_season column (D-S2-19: `season` "
+                  f"dropped from the prefix for all three countries)\n")
         fh.write(f"- input episodes: {n_input_episodes}\n")
         fh.write(f"- output episodes: {n_output_episodes}\n")
         fh.write(f"- reconciliation: {n_input_episodes} - {removed_episodes} + {n_splits} = "

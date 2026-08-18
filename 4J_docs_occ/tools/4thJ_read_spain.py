@@ -283,6 +283,16 @@ def main():
     report.append("  TRIM, DDIASEM, AP_INT, AS_INT and the six co-presence flags")
     report.append("  are all inside the domains the layout workbook declares.")
 
+    # M-8 / D-S2-18 / D-S2-19: TIPOHOG (household type stratum), from DHOGAR,
+    # LAYOUT sheet F DHOGAR rows 35-43. allow_blank=True even though the
+    # measured prevalence is 0.0 % (codebook_facts_spain_strata.md) --
+    # refused rather than assumed if an unexpected code ever appears.
+    refuse_unknown(frames["DHOGAR"], "TIPOHOG",
+                    {"1", "2", "3", "4", "5", "6", "7", "8"}, "DHOGAR",
+                    allow_blank=True)
+    report.append("  TIPOHOG (DHOGAR, household-type stratum) is inside the domain "
+                  "the layout workbook declares.")
+
     bad_int = d2.loc[(d2["INTERVALO"] < 1) | (d2["INTERVALO"] > SLOTS_PER_DIARY)]
     if len(bad_int):
         raise ParseFailure(f"DIARIO2.INTERVALO: {len(bad_int)} values outside 1..144")
@@ -459,12 +469,61 @@ def main():
     report.append(f"  demographics and individual weights joined on pid, "
                   f"0 unmatched of {len(ep)}")
 
+    # ---- M-8 / D-S2-18: household-type join (DHOGAR.TIPOHOG on hid) -------
+    # 🔴 No prior round has read DHOGAR.TXT at all (codebook_facts_spain_strata.md,
+    # F-ES-10). A join that matches nothing must FAIL loudly, not produce nulls
+    # (D-S2-16's rule, restated for this Step 1 join).
+    dh = frames["DHOGAR"].copy()
+    if dh["IDHOGAR"].duplicated().any():
+        ndupe = int(dh["IDHOGAR"].duplicated().sum())
+        raise ParseFailure(f"DHOGAR.TXT has {ndupe} duplicate IDHOGAR keys; "
+                            f"household identity is not unique")
+    dh = dh[["IDHOGAR", "TIPOHOG"]].rename(
+        columns={"IDHOGAR": "hid", "TIPOHOG": "strat_hh_type_raw"})
+
+    before_h = len(ep)
+    ep = ep.merge(dh, on="hid", how="left")
+    if len(ep) != before_h:
+        raise ParseFailure("the household-type join changed the episode count")
+    n_matched_hh = int(ep.loc[ep["strat_hh_type_raw"].notna(), "hid"].nunique())
+    if n_matched_hh == 0:
+        raise ParseFailure(
+            "household-type join (DHOGAR.TIPOHOG on hid) matched ZERO distinct "
+            "households -- a join that matches nothing must FAIL loudly, not "
+            "produce nulls (D-S2-16)."
+        )
+    n_unmatched_hh_rows = int(ep["strat_hh_type_raw"].isna().sum())
+    if n_unmatched_hh_rows:
+        raise ParseFailure(
+            f"{n_unmatched_hh_rows} episodes have no matching DHOGAR household "
+            f"row for TIPOHOG (household-type stratum). Refusing to emit a "
+            f"table with unexplained gaps."
+        )
+    report.append(f"  household type (TIPOHOG, DHOGAR) joined on hid: "
+                  f"{n_matched_hh} distinct households matched, "
+                  f"0 unmatched episodes of {len(ep)}")
+
+    # ---- M-8 / D-S2-18 / D-S2-19: the six conditioning-strata raw carriers -
+    # National values only, no mapping, no banding, no collapsing (that is
+    # Step 2's job -- see codebook_facts_spain_strata.md and strata_proposal.md).
+    ep["strat_age_band_raw"] = ep["EDAD"].astype(str)
+    ep["strat_sex_raw"] = ep["SEXO"]
+    ep["strat_econ_status_raw"] = ep["HRELACTIV"]
+    ep["strat_day_type_raw"] = ep["diary_day"]        # DDIASEM, already carried as diary_day
+    ep["strat_season_raw"] = ep["trim"]                # TRIM, dropped from the prefix (D-S2-19) but still shipped
+    report.append("  CARRIED (M-8/D-S2-18/D-S2-19): strat_age_band_raw (EDAD), "
+                  "strat_sex_raw (SEXO), strat_hh_type_raw (TIPOHOG, joined), "
+                  "strat_econ_status_raw (HRELACTIV), strat_day_type_raw (DDIASEM), "
+                  "strat_season_raw (TRIM) -- six national values, unbanded.")
+
     cols = [
         "country", "wave", "hid", "pid", "diary_day", "episode_index",
         "start_min", "duration_min", "act_raw", "act2_raw", "loc_raw",
         "cop_solo", "cop_pareja", "cop_extra_es_padres", "cop_menor", "cop_otmh", "cop_otcon",
         "mode", "scheme", "weight_ind", "weight_dia",
         "SEXO", "EDAD", "HRELACTIV", "trim",
+        "strat_age_band_raw", "strat_sex_raw", "strat_hh_type_raw",
+        "strat_econ_status_raw", "strat_day_type_raw", "strat_season_raw",
     ]
     ep = ep[cols]
 

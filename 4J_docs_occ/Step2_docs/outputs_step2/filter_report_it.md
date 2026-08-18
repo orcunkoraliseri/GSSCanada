@@ -18,6 +18,13 @@
 - loc_raw recorded-and-blank episodes: 0
 - indoor_presence null count: 8112 (null, never False, wherever we cannot evaluate the rule: loc_class unknown -- loc_raw recorded-and-blank or an unmapped code -- or loc_class=='at_home' but act is unmapped so the outdoor-at-home exclusion cannot be checked; 'we don't know' is never collapsed into False)
 - co-presence missingness-flagged episodes (six shared flags set null): 0
+- conditioning strata (D-S2-18/D-S2-19, Task B): crosswalk join matched, of 1010140 output episodes:
+  - strat_age_band: 1010140 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_sex: 1010140 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_day_type: 1010140 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_econ_status: 1010140 matched, 0 unmapped (asserted, D-S2-16)
+  - strat_hh_type: 1010140 matched, 0 unmapped (asserted, D-S2-16)
+- strat_season_raw ships unharmonised, no strat_season column (D-S2-19: `season` dropped from the prefix for all three countries)
 - input episodes: 1077657
 - output episodes: 1010140
 - reconciliation: 1077657 - 67517 + 0 = 1010140 (output 1010140), OK

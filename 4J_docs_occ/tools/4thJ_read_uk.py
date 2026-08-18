@@ -80,6 +80,17 @@ COPRESENCE = ["WithAlone", "WithSpouse", "WithMother", "WithFather",
               "WithChild", "WithOther", "WithOtherYK", "WithMiss", "WithNA"]
 COP_DOMAIN = {"0", "1"}
 
+# M-8 / D-S2-18 / D-S2-19: the four remaining conditioning-strata sources.
+# dhhtype and deconact live in uktus15_individual.tab (DD:individual pos.588,
+# 598) -- NOT in uktus15_household.tab, which stays unread (F-UK-14 stands).
+# ddayw and dmonth live in uktus15_diary_ep_long.tab (DD:diary_ep_long
+# pos.19, 17). codebook_facts_uk_strata.md cites all four.
+DHHTYPE_DOMAIN = {str(i) for i in range(1, 9)}          # 1..8
+DECONACT_DOMAIN = {"1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "13"}
+DECONACT_SENTINELS = {"-9", "-8", "-7", "-1"}
+DDAYW_DOMAIN = {"1", "2", "3"}
+DMONTH_DOMAIN = {str(i) for i in range(1, 13)}           # 1..12
+
 
 class ParseFailure(Exception):
     pass
@@ -220,6 +231,12 @@ def main():
     for c in COPRESENCE:
         refuse_unknown(ep[c], COP_DOMAIN, f"diary_ep_long.{c}", report)
     report.append("  All nine co-presence flags are inside {0,1}.")
+
+    # M-8 / D-S2-18 / D-S2-19: day-type and season strata sources.
+    refuse_unknown(ep["ddayw"], DDAYW_DOMAIN, "diary_ep_long.ddayw", report)
+    refuse_unknown(ep["dmonth"], DMONTH_DOMAIN, "diary_ep_long.dmonth", report)
+    report.append("  ddayw (day-type stratum) and dmonth (season stratum) are "
+                   "inside the domains the data dictionary declares.")
 
     tid_i = ep["tid"].astype(int)
     bad_tid = ep.loc[(tid_i < 1) | (tid_i > SLOTS_PER_DIARY)]
@@ -366,6 +383,14 @@ def main():
     out["DiaryDay_Act"] = ep["DiaryDay_Act"]  # extra, F-UK-6
     out["daynum"] = ep["daynum"]              # extra, same key as diary_day
 
+    # M-8 / D-S2-18 / D-S2-19: day-type and season strata raw carriers.
+    # strat_day_type_raw is ddayw, NOT DiaryDay_Act (F-UK-17): ddayw is UKDA's
+    # own pre-collapsed weekday/Saturday/Sunday field, the harmonisation
+    # source; DiaryDay_Act (7-way) rides along unchanged above, as it always
+    # has.
+    out["strat_day_type_raw"] = ep["ddayw"]
+    out["strat_season_raw"] = ep["dmonth"]
+
     report.append(f"  {len(out)} episodes (native, one row per delivered "
                    f"episode -- no reconstruction, no rows added or dropped)")
 
@@ -406,9 +431,14 @@ def main():
     }
 
     # ---- join individual demographics and weight_ind -----------------------
+    # M-8 / D-S2-18: dhhtype (household type) and deconact (economic status)
+    # both live in uktus15_individual.tab -- DD:individual pos.588 and 598 --
+    # not in uktus15_household.tab, which this reader still does not read
+    # (F-UK-14 stands; see codebook_facts_uk_strata.md). Same join as
+    # DVAge/DMSex, no second join required.
     ind2 = ind.copy()
     ind2["pid"] = ind2["serial"] + "_" + ind2["pnum"]
-    ind2 = ind2[["pid", "DVAge", "DMSex", "ind_wt"]].rename(
+    ind2 = ind2[["pid", "DVAge", "DMSex", "ind_wt", "dhhtype", "deconact"]].rename(
         columns={"DVAge": "DVAge", "DMSex": "DMSex", "ind_wt": "weight_ind"})
 
     before = len(out)
@@ -421,8 +451,39 @@ def main():
             f"{miss_age} episodes have no individual.tab DVAge match. "
             f"Refusing to emit a table with unexplained gaps."
         )
+    n_matched_strata = int(out.loc[out["dhhtype"].notna(), "pid"].nunique())
+    if n_matched_strata == 0:
+        raise ParseFailure(
+            "household-type/economic-status join (individual.tab on pid) matched "
+            "ZERO distinct respondents -- a join that matches nothing must FAIL "
+            "loudly, not produce nulls (D-S2-16)."
+        )
     report.append(f"  demographics and individual weight joined on pid, "
                    f"0 unmatched of {len(out)}")
+    report.append(f"  household-type/economic-status (dhhtype, deconact) joined on "
+                   f"pid: {n_matched_strata} distinct respondents matched")
+
+    # 🔴 CORRECTED after the raw file itself (job 1254923's FAIL): dhhtype and
+    # deconact's blank sentinel is a literal single SPACE (" "), the same
+    # sentinel convention already documented for the weight columns (F-UK-8),
+    # not an empty string. Measured directly: dhhtype " " count = 411 (matches
+    # the 3.6% codebook figure exactly); deconact " " count = 25 (matches the
+    # "25 blank" component of the 722-row breakdown exactly). Normalised to ""
+    # here -- the project's "recorded and blank" convention -- before the
+    # domain check and before strat_hh_type_raw/strat_econ_status_raw are set,
+    # so the crosswalk's declared blank->unknown row (source_value="") matches.
+    out["dhhtype"] = out["dhhtype"].where(out["dhhtype"] != " ", "")
+    out["deconact"] = out["deconact"].where(out["deconact"] != " ", "")
+
+    # M-8 / D-S2-19: dhhtype and deconact domain checks. dhhtype fields blank
+    # for missing (3.6 %, F-UK-18 context); deconact fields blank or one of
+    # four declared sentinels (-9/-8/-7/-1, 6.3 % combined). Both allow_blank.
+    refuse_unknown(out["dhhtype"], DHHTYPE_DOMAIN, "individual.dhhtype", report,
+                    allow_blank=True)
+    refuse_unknown(out["deconact"], DECONACT_DOMAIN | DECONACT_SENTINELS,
+                    "individual.deconact", report, allow_blank=True)
+    report.append("  dhhtype and deconact are inside the domains the data "
+                   "dictionary declares (including declared sentinels).")
 
     # weight columns: convert raw strings to float64, mapping the literal
     # blank-space sentinel (F-UK-8) to NaN -- a genuine missing weight, not a
@@ -453,6 +514,19 @@ def main():
         out[wname] = parse_weight_column(wname)
     out["weight_dia"] = out["weight_dia_a"]
 
+    # M-8 / D-S2-18 / D-S2-19: the remaining conditioning-strata raw carriers.
+    # National values only, no mapping, no banding, no collapsing (Step 2's
+    # job -- see codebook_facts_uk_strata.md and strata_proposal.md).
+    out["strat_age_band_raw"] = out["DVAge"]
+    out["strat_sex_raw"] = out["DMSex"]
+    out["strat_hh_type_raw"] = out["dhhtype"]
+    out["strat_econ_status_raw"] = out["deconact"]
+    report.append("  CARRIED (M-8/D-S2-18/D-S2-19): strat_age_band_raw (DVAge), "
+                   "strat_sex_raw (DMSex), strat_hh_type_raw (dhhtype), "
+                   "strat_econ_status_raw (deconact), strat_day_type_raw (ddayw, "
+                   "already carried above), strat_season_raw (dmonth, already "
+                   "carried above) -- six national values, unbanded.")
+
     cols = [
         "country", "wave", "hid", "pid", "diary_day", "episode_index",
         "start_min", "duration_min", "act_raw", "act2_raw",
@@ -461,6 +535,9 @@ def main():
         "mode", "scheme", "weight_ind", "weight_dia",
         "weight_dia_a", "weight_dia_b",
         "DVAge", "DMSex", "DiaryDay_Act", "daynum",
+        "dhhtype", "deconact",
+        "strat_age_band_raw", "strat_sex_raw", "strat_hh_type_raw",
+        "strat_econ_status_raw", "strat_day_type_raw", "strat_season_raw",
     ]
     out = out[cols]
 

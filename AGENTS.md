@@ -53,6 +53,26 @@
 - Use `occ_config.py` and `eSim_bem_utils/config.py` for path logic instead of hardcoding new absolute paths.
 - Scripts are usually run one at a time. Do not assume there is a single automated end-to-end command.
 
+## Agent Execution Rules (no parking, fresh agent per task)
+
+These are binding. They exist because an employee agent once reached 359.7k context in a 43-minute
+run — almost all of it re-reading its own transcript while waiting for cluster jobs that had already
+finished. See `CLAUDE.md` for the full rule and the implementation-doc template.
+
+- **Never wait.** Submit the `sbatch` job, record the JobID in the task's implementation doc, and end
+  the turn. No background polls, no sleeps, no no-op commands held open, no "waiting for the
+  notification". The manager polls the queue; employees do not.
+- **A new agent per task.** Do not resume a finished employee to carry on — resuming replays the whole
+  transcript. Spawn a fresh agent and hand it the task doc plus the implementation doc.
+- **State goes to disk, not to context.** JobIDs and exit codes, output paths, counts actually read,
+  decisions and assumptions, failures and what superseded them — write them to the implementation doc
+  as they happen, so a cold agent can resume from the file alone.
+  - Durable decisions → the step's working doc, e.g. `4J_docs_occ/Step2_docs/4thJ_02_harmonisation.md`.
+  - Per-task execution state → `<Step>_docs/impl/<YYYY-MM-DD>_<task-slug>.md`, one per task.
+  - The job ledger is append-only; a failed job stays in it next to the line that superseded it.
+- **Guard the context.** Never read a multi-MB file into context — use `wc -l`, `grep -n`, `tail -c`,
+  `head`. Past roughly 150k tokens, stop, write state, and say a handoff is needed.
+
 ## Prompt Intake Rule
 - Before acting on any user request, normalize it into this shape:
   - `Setting the stage`: who is acting, what the objective is, and any relevant context

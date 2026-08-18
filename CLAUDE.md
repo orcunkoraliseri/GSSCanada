@@ -54,6 +54,53 @@ Two-agent workflow: **Manager** (Opus — plans, debugs, writes employee prompts
 - **Cheap models for cheap work:** polling, file peeks, log tails, big-file scans → Haiku/Sonnet employee, never Opus. Always pass an explicit model to sub-agents. Poll ≥30 min apart, or not at all — SLURM doesn't need watching.
 - Never scan big files (multi-MB logs/CSVs) in the manager's context — delegate.
 
+## 🔴 NO PARKING — state lives on disk, never in an agent's context (hard rule)
+
+*"ne laisse pas parker, pour chaque fois demarrer la nouvelle agent"* (author, 2026-08-17), after one
+employee reached **359.7k context** across a 43-minute run — 358k of it cache re-reads — by submitting
+jobs and then waiting five times for work that was already finished.
+
+**The failure mode.** An employee submits `sbatch`, spawns a background poll, and stops. Every wake
+re-sends its whole transcript, produces nothing, and grows the transcript again. The transcript file
+hit 1.9 MB. **Waiting is the most expensive thing an agent can do.**
+
+**The four rules — they bind employees and manager alike:**
+
+1. **An employee never waits.** Submit the job, write the JobID to its implementation doc, **end the
+   turn** with "job N submitted, state written to `<path>`". No background polls, no `sleep`, no
+   "I'll wait for the notification", no no-op `Bash true` to hold the turn open. Polling is the
+   **manager's** job and the manager's alone.
+2. **One agent, one task, one turn.** Never `SendMessage` a finished employee back to life to
+   continue work — resuming replays the entire transcript. **Spawn a new agent** with a fresh
+   context, handed the task doc and the implementation doc. A completed employee is done forever.
+3. **Write state before you stop, not after you finish.** Anything the next agent needs — JobIDs and
+   their exit codes, output paths, row and column counts actually read, decisions taken, what failed
+   and whether a re-run superseded it — goes into the **implementation doc on disk** as it happens.
+   Nothing of value may exist only in an agent's context. If an agent dies mid-task, the doc is the
+   only thing that survives, and the replacement agent must be able to resume from it cold.
+4. **Guard the context.** Never read a multi-MB file into context — use `wc -l`, `grep -n`,
+   `tail -c N`, `head`. If an employee passes roughly **150k tokens**, it stops, writes state, and
+   says "handoff needed" rather than pushing on.
+
+**Implementation docs.** Long-lived decisions go in the step's own working doc (e.g.
+`4J_docs_occ/Step2_docs/4thJ_02_harmonisation.md`). Per-task execution state gets its own file,
+created when a task starts and named for the task, not the agent:
+`<Step>_docs/impl/<YYYY-MM-DD>_<task-slug>.md`. Minimum contents:
+
+```
+# <task> — implementation state
+Task doc:   <path to the employee prompt>
+Status:     IN PROGRESS | BLOCKED | DONE
+## Ledger        <- one line per cluster job: JobID · what · state · exit · output path
+## Verified      <- numbers actually read, with where they were read from
+## Decisions     <- anything the task doc did not decide, and what was assumed
+## Next          <- the exact next action, written so a cold agent can start there
+## WHAT I DID NOT VERIFY
+```
+
+The ledger is append-only. **A failed job is never dropped from it** — it stays with the line that
+supersedes it, or the gap gets repaired.
+
 ## 🔴 Deep research is EXTERNAL (hard rule)
 
 The assistant never searches literature, verifies citations/DOIs, or spawns research agents. Deliverable = a prompt file the user runs in Gemini Antigravity. Prompts + results live in `3J_docs_occ_nTemp/deepResearch_Resources/` (`V<NN>_*.md` prompts, `RV<NN>_*.md` reports, `00_MASTER_BRIEF_V2.md`, `_RESPONSE_TEMPLATE.md`). Every prompt restates: open sources before citing; verify DOIs via crossref; `NOT FOUND` beats an invented number; never relax a band because our model fails it; no em/en dashes.

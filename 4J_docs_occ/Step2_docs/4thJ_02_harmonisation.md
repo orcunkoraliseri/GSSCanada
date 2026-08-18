@@ -1622,3 +1622,511 @@ co-presence availability documented with missing distinguished from absent; `har
 `bit_position` column is present and verified `{0,...,5}` one-to-one, which is what `G3.14 (b)` needs
 as a reference the encoder did not author.
 
+*(Superseded 2026-08-17 by D-S2-18: Step 3 is **not** unblocked. The table carries no conditioning
+strata, so Step 3's nine-field prefix has no source. See below.)*
+
+---
+
+## ✅ DECIDED 2026-08-17 — D-S2-17: **THE AGE FLOOR IS 11. THE AUTHOR HAS RULED.**
+
+D-S2-13 moved the floor from 10 to 11 on a measured property of the Italian delivery — `claseta2`
+band `03` is `6-10`, so a floor of 10 falls strictly inside a band and cannot be expressed — and it
+did so by **reversing the author's own decision-16 move**. That reversal was carried as an open item
+awaiting the author from 2026-08-16 to 2026-08-17.
+
+**Ruling, 2026-08-17: the floor stays at 11.** The choice put to the author was not 10 against 11; it
+was *an exact floor of 11 in all three countries* against *a floor of 10 that is exact for Spain and
+the UK and a band edge for Italy*. The author took exactness.
+
+🔴 **A deep-research round was offered and was declined, on the manager's recommendation, and the
+reason is worth keeping.** The age floor is not a literature question. It is a property of a file we
+hold, and an external report cannot see our data — anything it stated about our corpus would have
+been quoted back from the prompt or invented. That is failure mode 1 of the eight in `RESUME.md`'s
+"how to read a returned report", and commissioning a round here would have manufactured exactly the
+kind of citable-looking support a decision like this does not need.
+
+**Consequence: nothing rebuilds on this account.** `harmonised.parquet` was built at floor 11, the
+battery ran against it, and both stand. The measured cost stays as recorded: **ES 155 respondents /
+3,122 episodes, UK 340 / 20,251, IT 2,969 / 67,517**, Italy's larger loss being the band effect
+D-S2-13 predicted. `filter_report.md` already carries the line that says so in terms.
+
+**The standing-state line changes from "awaiting the author's confirmation" to "confirmed by the
+author 2026-08-17."** It is no longer an open item anywhere.
+
+---
+
+## 🔴🔴 DECIDED 2026-08-17 — D-S2-18: **THE CONDITIONING STRATA ARE STEP 2 COLUMNS, AND `harmonised.parquet` HAS NONE OF THEM**
+
+### What was found, and how
+
+Step 3 was about to be handed to an employee. Before writing the prompt the manager checked that
+Step 3's inputs exist, and they do not.
+
+**Step 3's record is a nine-field conditioning prefix plus the episode tuple** (`4thJ_03_serialisation.md`,
+work item 3.1): `country`, `age band`, `sex`, `household type`, `economic status`, `day type`,
+`season`, `MODE`, `SCHEME`.
+
+🔴 **`harmonised.parquet` supplies three of the nine.** Read directly from the shipped file's schema,
+40 columns: `country`, `mode`, `scheme` are there. **`age band`, `sex`, `household type`,
+`economic status`, `day type` and `season` are not, in any form.** The age variable was used by the
+D-S2-13 filter and then discarded rather than carried.
+
+**This is the same shape as the `ES`/`es` near-miss recorded in D-S2-16, and it is worth naming as a
+class.** D-S2-12 specified the record contract and is correct about everything it lists. Work item
+3.1 specifies the record format and is correct about everything it requires. **Neither document is
+wrong; the defect lives between them**, and it was found by reading one against the other rather than
+by reviewing either. That is now the third defect of this class in this project, after `G9.14`'s
+missing half of F-ES-6 and the Step 4 / Step 6 fold-contract mismatch.
+
+🔴 **`G3.7` would have caught it — after `corpus.jsonl` was built.** Prefix completeness is a
+pre-registered Step 3 gate with a threshold of zero records missing a field, so the corpus would have
+been emitted, the gate would have failed on 100 % of records, and the rebuild would have cost Step 3
+in full. The gate was doing its job; it just sits downstream of the cheapest place to fix this.
+
+### Why the fields cannot simply be dropped
+
+The obvious cheap move is to cut the prefix to what we hold. **It is not available**, and the reason
+is in the parent plan rather than in this step:
+
+> **5B.** *"`RL09` resolves it rather than picking a side: because the conditioning prefix contains
+> the design strata (country, age, sex, household type, economic status, day type, season), the
+> sampling mechanism is conditionally ignorable for `P(diary | X)`."*
+
+**Step 5's unweighted-loss argument is carried by the prefix containing the design strata.** Remove
+household type and economic status and the argument for training without design weights no longer
+holds, which reopens a decision that `RL09` closed and that Step 5, Step 6 and the methods section
+all stand on. The seven strata are load-bearing, not decorative.
+
+### The decision
+
+**An additive round rebuilds the strata into Step 1's readers and Step 2's harmoniser.** Four parts,
+in this order, and the order is not negotiable:
+
+1. **Step 1's `codebook_facts_<country>.md` gains the six strata sources**, each with its document and
+   page or sheet citation, exactly as every other fact in those files is carried. A variable that
+   does not exist in a delivery is written **`NOT FOUND`** and stays that way. 🔴 **No stratum source
+   may be named from `RL02`, `RL17` or from the other two countries** — each country is established
+   from its own codebook, which is the rule three of the four D-S2-1..4 findings were created by
+   breaking.
+2. **Step 1's three readers carry the national source values**, unharmonised, one column per stratum.
+   Nothing is banded, mapped or collapsed at Step 1. **Step 1 decides what is kept; Step 2 decides
+   what is harmonised; Step 3 decides what is serialised** — the same three-way split D-S2-7 reserved
+   and the 2.4 employee was reversed for pre-empting.
+3. **Step 2 gains a fifth crosswalk, `crosswalk_strata.csv`**, and the six harmonised columns below.
+   Every row carries its citation, and every unmapped source value is registered in
+   `crosswalk_unmapped.md` exactly as the other four crosswalks do.
+4. **Work item 2.4 re-runs, and the Step 2 battery re-runs on the rebuilt table.** 🔴 **A validated
+   result does not transfer to a table with a different column set.** The re-run must return
+   **exactly 2,024,068 rows** — ES 446,547, UK 567,381, IT 1,010,140 — **and exactly 37,830 / 0 / 0
+   splits.** Adding columns may not move a single row. That is the same acceptance test the UK
+   column-set re-run passed on 2026-08-16, and it is the test that proves the column set is not
+   entangled with the transform.
+
+### The six new columns, and their raw carriers
+
+Added to the D-S2-12 record contract:
+
+```
+strat_age_band,  strat_sex,  strat_hh_type,  strat_econ_status,  strat_day_type,  strat_season,
+strat_age_band_raw, strat_sex_raw, strat_hh_type_raw, strat_econ_status_raw,
+strat_day_type_raw, strat_season_raw
+```
+
+🔴 **Every harmonised stratum ships beside the national value it was derived from.** This is the
+D-S2-8 argument reused for the third time — **a transform that discards its inputs cannot be
+audited** — and it is why `act_raw`, `act2_raw` and `loc_raw` ride along already. The `_raw` columns
+are **not** serialised into the prefix; they exist so the mapping can be re-derived from the shipped
+table alone.
+
+**All twelve are per-person or per-diary-day constants**, repeated on every episode of that diary.
+They are not episode properties and no gate may treat them as ones.
+
+### 🔴 Three rules that must be fixed **now**, before the measurement, or they will be decided by convenience later
+
+**Rule 1 — a stratum any country cannot supply is dropped from the prefix for ALL countries, never
+for one.** If the UK has no season variable, the answer is not "the UK emits `unknown`" and it is not
+"the UK's prefix has eight fields". A symbol only one country can emit is a country marker, and a
+country marker inside a leave-one-country-out design measures our bookkeeping rather than transfer.
+**This is D-S2-2's leak argument applied to the prefix**, and it is written here rather than left to
+whoever hits the missing variable. The loss goes into the limitations, and if the dropped stratum is
+`household type` or `economic status`, **Step 5's 5B has to be re-argued before anything is trained.**
+
+**Rule 2 — the harmonised bands must be expressible in every country's own delivery, and Italy is the
+binding constraint.** Italy's age arrives pre-banded in `claseta2`'s eleven bands, so **every target
+age band must be a union of `claseta2` bands.** This is D-S2-13's rule generalised from one threshold
+to a whole classification: *the finest banding any country can express exactly.* A target band that
+splits an Italian band cannot be produced from the Italian file and would be produced anyway, wrongly,
+by whoever writes the mapping.
+
+**Rule 3 — the band set is proposed from the three codebooks and approved by the manager before it is
+built.** The employee transcribes, proposes and **stops**. It does not choose the bands. A
+classification chosen by the person implementing it, against the data in front of them, is chosen to
+be easy to produce.
+
+### What was verified for this decision, and what was not
+
+**Verified directly by the manager**, from the files rather than from any report:
+
+* `harmonised.parquet`'s 40 column names, read from the parquet schema. The six strata are absent.
+* The three Step 1 parquets' column names. They carry **some** national sources already — ES `EDAD`,
+  `SEXO`, `HRELACTIV`, `trim`; IT `sesso`, `claseta2`, `meseri`; UK `DVAge`, `DMSex`, `DiaryDay_Act`
+  — **and none of the three carries a household-type variable of any kind.**
+* `codebook_facts_spain.md` in full: its required-facts table covers the diary fields and **has no
+  entry for household type, economic status, day of week or season.** The Spanish delivery does hold
+  the sources — `DHOGAR` and `MHOGAR` are named under *File shape*, `DDIASEM` under *Diary days per
+  respondent* — but they are not transcribed and not read.
+* Italy's `codebook_facts_italy.md` names `gsett` as a **day-type** variable and `meseri` as a
+  **quarter**, both measured as one distinct value per respondent. The UK's names
+  `uktus15_household.tab` and `uktus15_individual.tab` as delivered files.
+
+**NOT verified, and it is the employee's first task, not an assumption to inherit:** which variable
+in each delivery carries **household type** and **economic status**, whether the UK ships a **month or
+season** variable at all, and what `claseta2`'s eleven bands actually are. 🔴 **Nothing above may be
+treated as a variable name to code against.** They are the places to look.
+
+### Two new gates, pre-registered here **before** the columns exist
+
+Written into `4thJ_02_harmonisation_val.md` as **`G2.17`** (completeness and grain, two sub-clauses)
+and **`G2.18`** (leak and Italian expressibility, two sub-clauses), with **four** perturbations and
+two guards — **`V2.j`**, which imports the band vocabulary from `crosswalk_strata.csv` and prints the
+country × band cross-tab, and **`V2.k`**, which asserts the rebuilt table reproduces the accepted
+table's four fixed counts. 🔴 **The order is the point and it is the same order `G3.14` followed:**
+the columns do not exist yet, so no threshold here can have been chosen to be passed.
+
+**Step 2 goes from sixteen gates to eighteen, from seventeen perturbations to twenty-one, and from
+nine vacuity guards to eleven.** The
+previous battery result is not carried forward: it was earned against a sixteen-column-narrower table
+and it is re-earned or it is not claimed.
+
+---
+
+### 2026-08-17 — 🔴 **STEP 2 IS REOPENED, AND STEP 3 IS BLOCKED AGAIN**
+
+Two decisions today. One closes an open item at no cost; the other costs a rebuild.
+
+* **D-S2-17 — the age floor is confirmed at 11 by the author.** Nothing rebuilds. The last open item
+  from the overnight round is closed, and a deep-research round offered for it was declined because
+  the question is a property of a file we hold and no external report can see it.
+* 🔴 **D-S2-18 — `harmonised.parquet` carries none of the six conditioning strata Step 3's prefix
+  needs.** Found by reading Step 3's work item 3.1 against D-S2-12's record contract before writing
+  the Step 3 employee prompt. Both documents are correct alone. **Step 2 reopens for an additive
+  round, and the Step 2 battery re-runs on the rebuilt table.**
+
+🔴 **What this changes about the claim "Step 2 is closed", stated plainly rather than netted off:**
+the definition of done was met on all five points on 2026-08-16 and the battery result was real.
+**It was met against a record contract that was missing something Step 3 needs**, which is a defect in
+the contract, not in the execution. The 2026-08-16 closure entry is left standing and is not rewritten
+— this log is append-only — and this entry is what supersedes it.
+
+**What does NOT reopen, and must not be re-derived:** the four crosswalks, the indoor rule, the
+co-presence value map, D-S2-5's 04:00 cyclic rotation, D-S2-13's age floor, D-S2-14's `start_min`
+reference point, and every row count above. The additive round **adds columns and changes nothing
+else**, and its acceptance test is exactly that: 2,024,068 rows and 37,830 / 0 / 0 splits, unchanged
+to the row.
+
+**Cost, stated before it is spent:** one codebook-transcription and reader round on three countries,
+one harmoniser round, one 2.4 re-run, one battery re-run of eighteen gates and twenty-one
+perturbations. **Against the alternative**, which is emitting `corpus.jsonl`, failing `G3.7` on 100 %
+of records, and rebuilding Step 3 as well.
+
+---
+
+## 🔴 DECIDED 2026-08-17 — D-S2-19: **THE BAND SET IS APPROVED, AND `season` IS DROPPED FROM THE PREFIX FOR ALL THREE COUNTRIES**
+
+Task A of the additive round returned: six strata transcribed from each country's own codebook, none
+`NOT FOUND`, and a proposed band set with one stratum stopped and referred up. Deliverables:
+`Step1_docs/outputs_step1/codebook_facts_{spain,italy,uk}_strata.md` and `strata_proposal.md`. The
+manager rules below on each of the six. **Rule 3 of D-S2-18 is discharged by this entry** — the band
+set is now approved and may be built.
+
+### 1. `season` — DROPPED. The prefix is eight fields, not nine.
+
+**The finding, which is a property of the deliveries and not of our mapping:** Spain delivers season
+pre-banded as `TRIM`, calendar quarters (Jan-Mar / Apr-Jun / Jul-Sep / Oct-Dec) and ships **no
+month-level field anywhere** to re-bin from (F-ES-9). Italy delivers `meseri` pre-banded as Nov-Jan /
+Feb-Apr / May-Jul / Aug-Oct, coarsened by ISTAT's own protective recoding (F-IT-2) and not readable
+any finer. **The two schemes are offset by exactly one month at every edge and share no boundary.**
+Any target band must be a union of whole bands on both sides; since the two boundary sets are
+disjoint, the only such band is the whole fieldwork year. The UK's native `dmonth` is irrelevant to
+this — it can be aggregated to either scheme, but no aggregation of it makes Spain's and Italy's
+schemes reconcilable to each other.
+
+**The ruling: `season` is dropped from the conditioning prefix for all three countries.** A
+single-valued `any_season` band is rejected: it costs prefix tokens on every record, carries zero
+conditioning information by construction, and would put a field in the frozen prefix that a later
+reader would reasonably assume was informative. **A stratum that cannot be measured is dropped, not
+spelled as a constant.**
+
+🔴 **This is a Rule-1 drop by consequence rather than by letter.** D-S2-18's Rule 1 names the case
+where a country cannot supply the stratum at all; here all three supply one and no two of them can be
+reconciled. The consequence is identical — no shared non-trivial classification exists — and the
+repair is the one Rule 1 prescribes: **drop for all three, never keep it for the two that happen to
+agree.** Keeping season for Spain and the UK on a calendar-quarter basis and giving Italy `unknown`
+would be a country marker of exactly the kind D-S2-2 forbids.
+
+**Does this reopen Step 5's `5B`?** No. `RL09`'s conditional-ignorability argument is carried by the
+design strata, and D-S2-18 named **household type and economic status** as the two whose loss would be
+consequential. Both survive. Season is a fieldwork-timing variable, not a sampling-design stratum in
+any of the three deliveries. **It goes into the limitations** — the model is not conditioned on season
+and cannot be asked for a seasonal contrast — and `5B` is not re-argued.
+
+🔴 **`strat_season_raw` is still built and still shipped.** The national value rides along unmapped, in
+the table and never in the prefix, so that the irreconcilability above can be re-derived from the
+shipped table alone and so that a future round can re-band it if a finer Spanish or Italian delivery
+is ever obtained. This is D-S2-8's argument in its weakest form: **we keep the input to a transform we
+decided not to perform.**
+
+### 2. The five surviving strata — APPROVED as proposed
+
+| Stratum | Approved bands | Binding constraint |
+|---|---|---|
+| `strat_age_band` | `11-14, 15-24, 25-34, 35-44, 45-54, 55-64, 65-74, 75+` | Italy's eight populated `claseta2` bands at and above the D-S2-17 floor; Spain's `EDAD` and the UK's `DVAge` are exact ages and hit every boundary |
+| `strat_sex` | `male, female` | none; `SEXO=6` is female in Spain, which is the kind of code that is wrong if assumed |
+| `strat_day_type` | `weekday, saturday, sunday` | Italy's own `gsett` split; **the UK source is `ddayw`, not `DiaryDay_Act`** |
+| `strat_econ_status` | `employed, unemployed, student, retired, homemaker, other_inactive, unknown` | Rule 3: Spain's incapacity-pension, widow/orphan-pension and volunteering codes are folded into `other_inactive` rather than kept as Spain-only bands |
+| `strat_hh_type` | `one_person, couple_no_children, couple_with_children, single_parent_with_children, other_complex, unknown` | Rule 2: Italy's `tipfa2m` carries no child-age qualifier, so **no band may split on child age** even though Spain's `TIPOHOG` (cutoff 25) and the UK's `dhhtype` (cutoff 15) could each support one alone |
+
+**The prefix, frozen, eight fields:** `country` · `strat_age_band` · `strat_sex` · `strat_hh_type` ·
+`strat_econ_status` · `strat_day_type` · `mode` · `scheme`.
+
+### 3. How the `unknown` band is scored, pre-registered here before it is measured again
+
+`unknown` prevalence is not even across the three countries — economic status: **ES 0.0 %, UK 6.3 %,
+IT 13.5 %**; household type: **ES 0.0 %, IT 0.0 %, UK 3.6 %**. A band two countries emit and the third
+never does is a partial country marker, and the question of whether that fails D-S2-18's Rule 3 has to
+be settled **before** the gate runs rather than by whoever reads its output.
+
+🔴 **The ruling: `G2.18`'s leak clause scores band *availability*, not band *prevalence*.** A band that
+is declared for all three countries and producible from all three deliveries is not a country marker,
+even where its observed prevalence is zero. **Rejecting `unknown` on prevalence would leave only two
+repairs — impute, or drop the affected rows — and dropping rows is closed off by this round's own
+acceptance test, which forbids moving a single row.** The per-country prevalence table is printed by
+`V2.j` and carried into the limitations, where the asymmetry belongs; it is not netted off.
+
+### 4. Three risks carried into Task B, each with its required behaviour
+
+1. 🔴 **Italy's `tipfa2m` codes not enumerated in CLS-var16** — `12, 13, 17, 18, 26, 27, 31, 32` are
+   gaps in the documented code list. **If any of them is observed in the raw file, the run FAILs and
+   the code is registered in `crosswalk_unmapped.md`. It is never folded into `other_complex` because
+   that is where unrecognised codes look like they belong.** This is the D-S2-1..4 class again: a
+   value mapped from a neighbouring country's shape rather than from its own codebook.
+2. **UK `dhhtype = 3` cannot distinguish a childless couple from a couple whose children are all 16+**
+   (F-UK-18), where Spain's `TIPOHOG` separates `2` from `4`. This is a real measurement mismatch
+   between the UK's field design and the other two, it cannot be closed from the delivered
+   documentation, and it is **recorded as a limitation, not repaired.** `strat_hh_type_raw` ships so
+   the affected rows remain identifiable.
+3. **UK `deconact = -1` maps to `unknown`** on the generic "not applicable" reading, which is the only
+   reading the delivered dictionary supports. Stated as an assumption, not as an established fact.
+
+### 5. What this changes about the additive round's arithmetic
+
+**Eleven new columns, not twelve: five harmonised strata plus six `_raw` carriers.** `strat_season` is
+not built; `strat_season_raw` is. `harmonised.parquet` goes **40 → 51 columns.**
+
+🔴 **The four fixed row counts do not move.** 2,024,068 rows, ES 446,547 / UK 567,381 / IT 1,010,140,
+splits 37,830 / 0 / 0, 73,254 diaries tiling `[0, 1440)` exactly once, `act2` nulls 587. Dropping a
+stratum from the prefix drops a column, never a row. **Every acceptance test of D-S2-18 stands
+unchanged except the column count.**
+
+`4thJ_03_serialisation.md`'s work item 3.1 and its `G3.7` field list are amended to the eight-field
+prefix. `V3.h` in `4thJ_03_serialisation_val.md` anticipated exactly this — it was written to count
+the fields the corpus actually ships against the frozen list rather than against the number nine — and
+needs no amendment.
+
+
+---
+
+## Additive round — Task B outcome (2026-08-17, late)
+
+The build landed. Recorded here rather than left in an agent's context, per the no-parking /
+state-on-disk rule now in `CLAUDE.md`.
+
+### 1. The rebuilt table, as read from the file
+
+**2,024,068 rows and 51 columns.** ES 446,547 / UK 567,381 / IT 1,010,140; splits 37,830 / 0 / 0;
+`act2` nulls 587; 73,254 diaries tiling `[0, 1440)` exactly once; eleven `strat_*` columns present and
+**no `strat_season`**, `strat_season_raw` shipping as D-S2-19 requires. Every one of the four frozen
+counts held. The column count is the only thing that moved.
+
+Step 1 gates re-ran verdict-for-verdict identical to the accepted run `run_20260816-2210`: Spain 15
+scored / 15 PASS / 15 seen failing / `G1.7b` NOT CHECKED, Italy 13 scored with `G1.6b` still FAILing,
+the UK 14 scored with `G1.4` still FAILing. **Both standing FAILs are confirmed unrepaired** — they
+are the same two we already carry, not new damage from the additive round.
+
+### 2. Three build failures, and what they were
+
+All three were repaired and superseded; none is an open gap. They are kept here because each is a
+class of defect the next reader should expect, not because any is outstanding.
+
+1. **Italy `tipfa2m` is zero-padded in the raw file** (`08`, not `8`) while the codebook prose is
+   unpadded. The reader built from the prose and matched nothing.
+2. **UK `dhhtype` / `deconact` spell blank as a literal single space**, `" "`, not `""`.
+3. 🔴 **Italy `newcondm` carried the same space sentinel, and the reader's own alphabet check could
+   not see it** — the check called `.str.strip()` before comparing, which silently repaired the value
+   it was supposed to catch. The defect surfaced one step downstream as a crosswalk-join failure with
+   39,515 unmapped rows. **A validator that normalises its input before testing it cannot fail**, and
+   this is the same family as the gates that cannot fail because their reference derives from the
+   source they audit. It was caught only because D-S2-16's join assertion exists.
+
+A fourth, non-data mistake: the first Italy and UK gate batteries ran in a directory missing
+`parse_report_<country>.txt`, which scored `G1.5` as `NOT CHECKED` instead of PASS. **It was caught by
+comparing gate *counts* against the reference run, not pass/fail totals** — a battery that silently
+scores one gate fewer looks clean. Worth keeping as a check on every future battery.
+
+### 3. Three assumptions the task doc did not decide — all three ACCEPTED
+
+1. **Run-stamped provenance directory `run_20260817-strata`**, mirroring the accepted round. Accepted.
+2. **Step 1's household-type join hard-FAILs on any unmatched row** (Spain), rather than only
+   asserting the match is non-zero. Accepted — strictly stronger than D-S2-16 asks, and additive.
+3. **An unmapped `strat_*` value FAILs the harmoniser rather than being nulled, for every stratum.**
+   Accepted, and it is not optional: `G2.17 (a)` requires zero nulls in every shipped `strat_*`
+   column, so nulling an unmapped value would only move the failure downstream into a gate. This
+   generalises risk 1 above from `tipfa2m` to all six strata.
+
+### 4. What is not done
+
+The Step 2 battery — `G2.17`, `G2.18`, `V2.j`, `V2.k`, eighteen gates and twenty-one perturbations —
+**has not run.** It is deliberately a different session from the one that built these columns.
+
+---
+
+### 2026-08-17 (night) — MANAGER'S MERGE NOTE: Task B's Step 2 fragment, appended verbatim below
+
+Merged from `Step2_docs/outputs_step2/proglog_strata_step2.md`, the D-S2-18 / D-S2-19 additive round.
+🔴 **Appended verbatim and unedited, append-only, not reordered.**
+
+**What the manager verified independently:** that `harmonised.parquet` carries the eleven new columns
+and that all eight prefix fields resolve for every record — established not from this fragment but
+from two downstream Speed jobs (1255349, 1255620) that read the table fresh and serialised all eight
+into 73,254 corpus records with a 100 % exact round-trip. **Zero rows and zero diaries were dropped by
+either loader**, which is the check `V3.i` exists for and is the reason the table's row counts are
+trustworthy: 446,547 / 1,010,140 / 567,381.
+
+🔴 **NOT verified:** the 127 rows of `crosswalk_strata.csv` one by one, any single band assignment
+against its source codebook, or the `unknown` declarations for the country/stratum pairs measured at
+0.0 % prevalence. The fragment's own reasoning for those — **availability, not prevalence** (D-S2-19
+§3) — is accepted as the decision it implements, not as a verified fact about the data.
+
+**Two things a later reader will be tempted to get wrong.**
+
+1. **`season` carries no rows in `crosswalk_strata.csv`, and that is correct, not a gap.** D-S2-19
+   dropped it because Spain's `TRIM` and Italy's `meseri` are each delivered pre-banded and **offset
+   by one month at every edge, sharing no boundary**, so the only band expressible in all three
+   countries is the whole year. A degenerate `any_season` band was rejected: **a stratum that cannot
+   be measured is dropped, not spelled as a constant.**
+2. **`country` is `ES`/`UK`/`IT` in the parquet and `es`/`uk`/`it` in every crosswalk** (D-S2-16).
+   Lowercase before any join, and FAIL loudly on a zero-match join rather than returning an empty
+   result set. This has already been a near-miss once.
+
+**Still open on Step 2 and awaiting the author, neither of them a blocker to Step 3:** whether
+`G2.18`'s escalation clause should carry a whole-gate FAIL when `leak_bands = 0` (and whether
+D-S2-19's quoted 6.3 % / 13.5 % should be corrected to **0.519 % / 4.243 %**), and whether to repair
+the `scale_duration` → `G2.4` clean violation.
+
+---
+
+## Progress Log fragment — Task B, Step 2 (M-8 / D-S2-18 / D-S2-19 additive round)
+
+**Fragment for the manager to merge. Not the Progress Log itself.**
+
+### What was built
+
+* `Step2_docs/outputs_step2/crosswalk_strata.csv` — the fifth crosswalk, 127 rows,
+  `stratum, country, source_value, source_label, target_band, citation`. Built from
+  `strata_proposal.md` and the three `codebook_facts_<country>_strata.md` files (Task A, accepted),
+  against D-S2-19's approved band set. `season` carries **no rows** (dropped from the prefix,
+  D-S2-19 §1). `unknown` is declared for `strat_econ_status` and `strat_hh_type` **for all three
+  countries**, including the two country/stratum pairs measured at 0.0 % prevalence (Spain, both
+  strata; Italy, household type) — per D-S2-19 §3, availability, not prevalence, is what matters.
+  `strat_age_band`/`strat_sex`/`strat_day_type` carry no `unknown` row for any country (0.0 %
+  measured, all three, all three strata; not part of the approved band set).
+* Extended `tools/4thJ_harmonise_step2.py`: reads `crosswalk_strata.csv`, emits the five harmonised
+  columns (`strat_age_band`, `strat_sex`, `strat_hh_type`, `strat_econ_status`, `strat_day_type`)
+  beside the six `_raw` carriers. `strat_season_raw` ships with no harmonised partner. Age mapping is
+  an exact categorical crosswalk join for Italy (already banded, `claseta2`) and a numeric-range
+  `pd.cut` for Spain/UK, with bin edges parsed directly from the crosswalk's own `"11-14"`/`"75+"`
+  style rows rather than hardcoded separately. Every stratum join asserts a non-zero match count and
+  FAILs loudly (raises `SystemExit`) on any raw value not present in the crosswalk (D-S2-16) — no
+  stratum may resolve to a silent null. `country` is lowercased via the existing
+  `COUNTRY_CROSSWALK_TAG` mechanism already in the harmoniser (unchanged from D-S2-16's original fix).
+* Italy's `tipfa2m` gap-code guard: if any of the eight undocumented CLS-var16 codes
+  (`12,13,17,18,26,27,31,32`) is observed unmapped for `strat_hh_type`/it, the harmoniser FAILs
+  explicitly rather than folding it into `other_complex`. **Measured this round: all eight occur 0
+  times** in `uso_tempo_Microdati_Anno_2013_Individui.txt` (44,866 rows; 32 distinct non-blank
+  `tipfa2m` codes observed, exactly the CLS-var16-documented set). The guard did not fire. Recorded
+  in `crosswalk_unmapped.md` PART E with the measured frequency either way, per the task's explicit
+  instruction.
+
+### Three defects found and fixed, all caught by the pipeline's own refuse-rather-than-assume design
+### (full detail in the Step 1 fragment)
+
+1. Italy `tipfa2m` is zero-padded 2-digit — caught by the Step 1 reader's own domain check (job
+   1254922 FAILed). Corrected in `crosswalk_strata.csv`'s `strat_hh_type`/it rows and the reader.
+2. UK `dhhtype`/`deconact`'s blank sentinel is a literal single space, not an empty string — caught
+   by the Step 1 reader's own domain check (job 1254923 FAILed). Corrected in the reader; the
+   crosswalk's declared blank→`unknown` rows already used `""`, so no crosswalk change was needed.
+3. **Italy `newcondm`'s blank sentinel is also a literal single space** — caught one step later, by
+   **this harmoniser's own crosswalk-join assertion** (job 1254934 FAILed: `strat_econ_status (it):
+   39515 episode(s) have a raw value not in crosswalk_strata.csv: [' ']`), not by the Step 1 reader,
+   because the reader's own alphabet check used `.str.strip()` (which silently normalises `" "` to
+   `""`) while the emitted raw column did not. This is the exact class of near-miss D-S2-16 exists to
+   catch: a join that would otherwise have produced 39,515 silent nulls instead FAILed loudly.
+   Corrected in the Step 1 reader (re-run, job 1254940), then the Italy harmoniser re-ran clean
+   (job 1254952).
+
+None was a policy question — all three were data-format mistakes in the crosswalk/reader I built,
+fixed against the measured raw file rather than coded around.
+
+### B5 acceptance test — the four fixed numbers, all confirmed exactly
+
+| | ES | UK | IT |
+|---|---|---|---|
+| **episodes (target / measured)** | 446,547 / **446,547** ✅ | 567,381 / **567,381** ✅ | 1,010,140 / **1,010,140** ✅ |
+| **splits (target / measured)** | 37,830 / **37,830** ✅ | 0 / **0** ✅ | 0 / **0** ✅ |
+
+🔴 **Note on the "splits" unit**: the harmoniser's own log line ("splits at origin for es: 18915")
+counts split *events* (one 04:00-crossing Spanish episode → two output rows). The task's acceptance
+figure (37,830) counts *rows carrying `split_at_origin=True`* — two per event, `18,915 × 2 = 37,830`
+— confirmed directly on the combined table (`combined.groupby("country")["split_at_origin"].sum()`).
+Same underlying result, two different units; not a discrepancy.
+
+**Combined `harmonised.parquet`**, built locally (`py`, not the cluster — a concatenation of three
+already-computed parquets, same precedent as the 2026-08-16 combine): **2,024,068 rows, 51 columns**
+(40 → 51, eleven new: five harmonised `strat_*` + six `strat_*_raw`, no `strat_season`). **73,254
+diaries**, every one tiling `[0,1440)` exactly once (0 gap/overlap rows, 0 diaries not summing to
+1440, checked directly on the combined table, not assumed from the per-country logs). **`act2` nulls
+= 587** (exact). **Only `split_at_origin` contains "origin"** in any column name (checked directly:
+`[c for c in combined.columns if "origin" in c.lower()] == ['split_at_origin']`). Age floor 11, passed
+explicitly (`--age-floor 11`, no default) to all three harmoniser jobs.
+
+Every stratum's crosswalk join matched 100 % of episodes for all three countries (printed by the
+harmoniser and re-checked against the per-country `filter_report_<country>.md` addenda): ES 446,547/
+446,547, UK 567,381/567,381, IT 1,010,140/1,010,140, for all five harmonised strata.
+
+### Deliverables
+
+`crosswalk_strata.csv`, updated `tools/4thJ_harmonise_step2.py`, `harmonised_{es,it,uk}.parquet`,
+combined `harmonised.parquet` (51 columns), this fragment, plus a strata-specific addendum written
+into each per-country `filter_report_<country>.md` (crosswalk join match counts per stratum).
+
+### WHAT I DID NOT VERIFY
+
+* I did **not** run the Step 2 gate battery (`G2.17`/`G2.18`/`V2.j`/`V2.k`) — per the task document,
+  that is explicitly a different employee session's job, and running it here would make the
+  column-build and the gate-scoring the same session, which the task forbids.
+* I did not re-derive the other four crosswalks (activity, secondary activity, location, co-presence)
+  or touch anything in the D-S2-12 base record contract — this round is additive by construction and
+  the acceptance test (four fixed row counts, 51 columns, unchanged) is the check that the rest of
+  the table was not disturbed.
+* I did not independently verify that `crosswalk_strata.csv`'s citations resolve to the exact page/
+  sheet named — they are copied from `codebook_facts_<country>_strata.md`'s own citation column,
+  which I did not re-derive from the source documents myself (Task A's job, already accepted).
+* Whether the `strat_econ_status`/`strat_hh_type` `unknown`-band prevalence asymmetry
+  (ES 0.0 %/UK 6.3 %/IT 13.5 % for econ status; ES 0.0 %/IT 0.0 %/UK 3.6 % for household type) is
+  missing-at-random or structurally concentrated — not investigated here; D-S2-19 §3 already rules
+  that this is scored on availability, not prevalence, so it does not gate this round, but the
+  underlying data question is still open per `strata_proposal.md`'s own "WHAT I DID NOT VERIFY".
+* The two named limitations D-S2-19 §4 requires carrying rather than repairing: UK `dhhtype=3`
+  cannot separate a childless couple from one whose children are all 16+ (F-UK-18), and UK
+  `deconact=-1` → `unknown` is the generic "not applicable" reading, an assumption. Both are recorded
+  in `crosswalk_strata.csv`'s `source_label`/`citation` fields for the affected rows, not resolved.

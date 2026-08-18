@@ -312,3 +312,38 @@ flag loudly here for G2.11 at the source-crosswalk level. This is a necessary bu
 condition for G2.11 to pass once `harmonised.parquet` is built (episode weights, not source-code
 counts, are what the actual gate checks), but a zero cell at this stage would have meant G2.11 could
 not possibly pass downstream, and none of the twelve cells are zero.
+
+---
+
+# PART E — STRATA (Task B, D-S2-18/D-S2-19, additive round 2026-08-17)
+
+### Companion to `crosswalk_strata.csv`. Not a new work item -- appended to the single unmapped
+### register per the same rule PART A-D follow: every source value that maps to nothing is listed here.
+
+## Italy `tipfa2m` (household-type stratum) -- CLS-var16 enumeration gap codes
+
+🔴 **Codes `12, 13, 17, 18, 26, 27, 31, 32` are not enumerated anywhere in CLS-var16**
+(codebook_facts_italy_strata.md, F-IT-16; strata_proposal.md "WHAT I DID NOT VERIFY"). They are
+**never folded into `other_complex`** -- that is where an unrecognised code looks like it belongs,
+and D-S2-19 section 4.1 forbids it explicitly. `crosswalk_strata.csv` carries no row for any of the
+eight. Per D-S2-19: **if any of them is observed in the raw file, the Step 2 harmonisation run FAILs**
+rather than emitting a table with a silently-dropped or silently-folded household-type value.
+
+| country | code | label | reason | observed frequency (this round) |
+|---|---|---|---|---|
+| it | 12 | NOT FOUND (gap in CLS-var16) | code number falls inside `tipfa2m`'s declared 1-40 range but is not assigned a label anywhere in CLS-var16's own enumeration | 0 |
+| it | 13 | NOT FOUND (gap in CLS-var16) | same | 0 |
+| it | 17 | NOT FOUND (gap in CLS-var16) | same | 0 |
+| it | 18 | NOT FOUND (gap in CLS-var16) | same | 0 |
+| it | 26 | NOT FOUND (gap in CLS-var16) | same | 0 |
+| it | 27 | NOT FOUND (gap in CLS-var16) | same | 0 |
+| it | 31 | NOT FOUND (gap in CLS-var16) | same | 0 |
+| it | 32 | NOT FOUND (gap in CLS-var16) | same | 0 |
+
+**Measured 2026-08-17** from the Step 1 Italy re-run (job 1254927, `tools/4thJ_read_italy.py`),
+`italy_reader_facts.json`'s `tipfa2m_gap_codes_observed_frequency`: all eight gap codes occur **0**
+times in `uso_tempo_Microdati_Anno_2013_Individui.txt` (44,866 person rows, 32 distinct non-blank
+`tipfa2m` codes observed, exactly the CLS-var16-documented set). The Step 2 harmonisation run
+(`tools/4thJ_harmonise_step2.py`) therefore did not FAIL on this condition. This does not resolve
+whether the eight gaps are unused code points or undocumented categories (strata_proposal.md,
+"WHAT I DID NOT VERIFY") -- it only establishes that none of them appears in this delivery.

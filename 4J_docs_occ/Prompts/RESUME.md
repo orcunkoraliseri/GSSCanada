@@ -1,7 +1,55 @@
 # 4J — MANAGER RESUME PROMPT
 
 ### Hand this to the next session as its first message. Fixed path, edited in place, never duplicated.
-#### Last updated: 2026-08-17, after the overnight run that **CLOSED STEP 1 (round 3 accepted) and CLOSED STEP 2 (`harmonised.parquet` = 2,024,068 episodes, 15 of 15 scored gates PASS, all 15 seen failing)**. 🔴 **Step 3 is unblocked and was deliberately NOT started — four things are waiting on the author, and the first of them (D-S2-13, the age floor) would change the population `harmonised.parquet` was built on.** Read the last section of this file first; everything before it is the road that got here.
+#### Last updated: **2026-08-18 (later)** — 🟢 **STEP 3'S GATE WORK IS DONE AND ALL FOUR DECISIONS ARE CLOSED.** Speed job `1257441` rebuilt the corpus at the six-field prefix and re-ran the whole battery: **19 of 20 gates PASS at baseline, all 19 were seen falling, `COVERAGE CLAUSE VERDICT: PASS`, and 21 of 21 perturbations felled their named gate.** The single baseline FAIL is `G3.9` on the **UK fold alone**, and it is **red by ruling, not by defect** — **D-S3-14 was ruled (a) on 2026-08-18**. 🔴 **Never write this result as 20 of 20.**
+
+### 🔴 FIRST THING TO SAY IN THE NEXT SESSION
+
+> *"Step 3's gate work is finished. Nineteen of twenty gates pass at baseline, every one of them was seen failing, the coverage clause passes, and all twenty-one perturbations worked. One gate is red on purpose — `G3.9` on the UK fold — because you ruled D-S3-14 as (a). What's left is the Progress-Log merge, freezing `prereg.md`, and then Step 4."*
+>
+> 🔴 **Do not begin acquisition, do not chase France, do not start a training job, and do not commission another research round without being asked.**
+
+**Where to read, in this order:** `Step3_docs/impl/2026-08-17_step3-gates.md` (the live state — ledger, `## Results — job 1257441`, all four decisions with D-S3-14 ruled, and a `## Next` written for a cold agent), then `Step3_docs/outputs_step3/proglog_step3_gates.md` (**three** dated entries: 1256012, 1257441, D-S3-14), then the two newest Progress Log entries in `Step3_docs/4thJ_03_serialisation_val.md`. Raw evidence sits in `Step3_docs/outputs_step3/gates_out/` (job 1256012) and `gates_out_v2/` (job 1257441) — both kept, neither overwriting the other. Everything below in *this* file is the road that got here.
+
+**The three rulings held up on the real corpus, and each was demonstrated rather than asserted:**
+
+| ruling | what it did | how it was proved |
+|---|---|---|
+| **D-S3-11** | prefix 8 fields → 6 (`mode`, `scheme` dropped) | `G3.10` now PASSes at baseline **with its regex untouched**, having FAILed before — one field, two red gates, confirmed by removal |
+| **D-S3-12** | `G3.9` re-pointed at fold-aware vocabulary over *observed* values | ES PASS, IT PASS, UK FAIL at baseline; the new perturbation moves the **Italy** fold PASS → FAIL on 38,260 diaries |
+| **D-S3-13** | `G3.3` re-specified CHARACTER-level; swap partner `gpt2` → `bert-base-uncased` | baseline 73,254 / 73,254 → **0 / 73,254** under the swap, while the old idempotency count sits beside it at 73,254 / 73,254 under **both** tokenizers |
+
+### 🔴 D-S3-14 — RULED (a) on 2026-08-18. The author's instruction was *"(b) if possible, otherwise (a)"*, and **(b) was checked against the sources and is not available.**
+
+`strat_hh_type = unknown` **stays**. No row imputed, no row dropped, `G3.9` not touched — not re-pointed, not relaxed, not exempted. Three reasons, each read off a document:
+
+1. **It is missing data, not a residual category.** `crosswalk_strata.csv` maps it from a *blank* `dhhtype`; the Step 1 codebook measures **411 blank of 11,421 UK persons, 3.6 %**. `dhhtype` is UKDA's own **derived**, household-level variable — a blank means **UKDA's derivation declined to classify that household.** Folding it into `other_complex` asserts a household type the data provider itself would not assert, on the most predictive conditioning field this corpus has.
+2. **No better source exists in the delivery.** Step 1 evaluates alternative fields for *economic status* (`WorkSta`, `dilodefr`, F-UK-16) and records **none** for household type. Re-deriving it from the household grid is the "invented proxy" that note rules out.
+3. **It contradicts D-S2-19**, which named this exact cell in advance (ES 0.0 % / IT 0.0 % / UK 3.6 %) and ruled that the gate scores *declared availability, not observed prevalence*, **"because the only repairs available on a prevalence basis are imputation or dropping rows"** — with the sanctioned repair being **to coarsen the classification, never to relax the count**. Coarsening cannot reach `unknown`. Taking (b) would reopen Step 2 and force the eighteen-gate battery to be re-run.
+
+**The limitation at its true size:** 551 diaries of the UK's 15,854 — **3.5 % of one fold**, and only that fold. 🔴 **The literal symbol is NOT unseen by the model**: `unknown` also occurs in `strat_econ_status`, which **Italy emits**, so under UK-held-out the ES + IT training pair does put the token in front of the model inside the same prefix. **What is novel at test time is the field position, not the symbol** — report it as the weaker failure mode it is, not the stronger one. 🔴 **Step 6 now owes a split report**: the UK fold's scores for `strat_hh_type = unknown` versus the rest, so this is quantified against outcomes rather than asserted.
+
+**Corpus as it now stands:** `4J_step3_corpus.jsonl`, **73,254 records**, six-field prefix, 0 rows and 0 diaries dropped out of 2,024,068 rows, encode→decode 100 % exact, token stats **median 256.0 / p99 632.0 / max 1178** inside the `G3.5` band (≤ 300 / ≤ 700 / ≤ 1200). 🔴 **The band was NOT re-tightened** when the prefix shrank — headroom simply went from 9 tokens to 22. The eight-field corpus is preserved as `4J_step3_corpus_1255620_8field.jsonl`.
+
+🔴 **Two things must travel with any future quotation of these results.** First: `G3.9`'s top-line verdict is FAIL both before *and* after its perturbation, so its coverage-cross-tab column is uninformative — only *the Italy fold* was seen moving, and it must be written that way. Second: `EXPECTED_EFFECT` in `4thJ_gates_step3.py` still declares `G3.1` clean under four perturbations where it demonstrably FAILs, so the run prints four `UNEXPECTED FALL -- FINDING` lines. **That was left deliberately** — the table is the pre-registration, and editing it after seeing the result would erase the findings from every future report.
+
+### What is actually next
+
+1. **Merge the five Progress Log fragments** into their step docs.
+2. **Freeze `prereg.md`.**
+3. **Step 4**, then the first Leg-5 submission.
+4. Carried, not blockers: the **Step 2 eighteen-gate battery still needs re-running under `sbatch`** (it ran locally, so it has no `.out` and no `sacct` record); the two Step 2 items awaiting the author (`G2.18`'s escalation clause when `leak_bands = 0`; whether D-S2-19's quoted 6.3 % / 13.5 % should read 0.519 % / 4.243 %); `scale_duration` → `G2.4`; `G2.3` not demonstrated independently of `G2.4`; standing FAILs Italy `G1.6b` and UK `G1.4`; decision 14 (day-to-year chaining) closes only via work item 7.6.
+
+---
+
+#### Previously: **2026-08-18** — 🟢 the re-run reported and the battery came back green; D-S3-14 was still open at that point. Superseded by the block above.
+
+
+#### Previously: **2026-08-17 (night, close)** — 🔴 **THE BATTERY REPORTED AND THE STEP 3 SPEC DID NOT SURVIVE IT.** Job `1256012` ran clean (`COMPLETED`, `0:0`, 03:07:55) but two gates FAILed at baseline, the coverage clause FAILed, four `G3.1` cells fell that the val doc said would stay clean, and a fifth defect was found off-run. Four decisions raised; **D-S3-11, D-S3-12 and D-S3-13 ruled by the author the same night**, applied, verified 10/10 on a local fixture, and resubmitted as job `1257441` — which is the run reported above. **D-S3-14 was raised that night and is still open.**
+
+---
+
+#### Previously: **2026-08-17 (night, later)** — 🟢 **STEP 2 IS CLOSED AGAIN AND THE STEP 3 CORPUS EXISTS.** `4J_step3_corpus.jsonl`, **73,254 records**, 100 % exact round-trip, emitted by Speed job **1255620**. Six Step 3 decisions closed in one night (D-S3-4 … D-S3-10), including the author's `000` code for null activity and the author's override raising `G3.5`'s max band a second time. 🟡 **The independent sixteen-gate battery is SUBMITTED AND RUNNING — Speed job `1256012` — and has reported nothing yet.** 🔴 **Read the LAST TWO sections of this file first**, the newest one (`night, later` — the battery) before the one above it (`night` — the corpus); everything before those is the road that got here, and several middle sections describe blockers that are now cleared. 🔴 **All six employee prompts have moved to `Prompts/previous/`; `Prompts/` now holds only this file.**
 
 ---
 
@@ -679,12 +727,20 @@ per-person generation cannot enforce.
 
 ## FIRST THING TO SAY IN THE NEXT SESSION
 
-🔴 **UPDATED 2026-08-17 — the sentence below is superseded. Say instead:** *"Steps 1 and 2 are closed;
+🔴 **UPDATED 2026-08-17 (night). Every sentence below is superseded, including the afternoon one. Say
+instead:** *"The Step 3 corpus is built — 73,254 records, exact round-trip — and the only thing left in
+Step 3 is the independent gate battery."* Then say whether that battery has reported yet. **Do not
+begin acquisition, do not chase France, do not start a training job, and do not commission another
+research round without being asked.**
+
+*(Superseded 2026-08-17 night.)* ~~The age floor is confirmed at 11. Step 2 is reopened by D-S2-18 —
+`harmonised.parquet` carries none of the six conditioning strata Step 3's prefix needs — and four
+employee prompts are written and ready to run.~~
+
+*(Superseded 2026-08-17 afternoon.)* ~~Say: "Steps 1 and 2 are closed;
 `harmonised.parquet` holds 2,024,068 episodes from three countries and its fifteen scored gates all
 passed and were all seen failing; Step 3 is unblocked but I have not started it, because D-S2-13 moves
-the age floor to 11 and awaits your ruling."* Then ask for the ruling. **Do not begin acquisition, do
-not chase France, do not start a training job, and do not commission another research round without
-being asked.**
+the age floor to 11 and awaits your ruling." Then ask for the ruling.~~
 
 *(Superseded text.)* ~~Say in one sentence that **France is excluded (decision 16), the corpus is Spain + UK + Italy and all
 three are built, and the sixteen-gate Step 1 re-run is the only thing between here and Step 2**, then
@@ -2106,3 +2162,490 @@ only live file left in `Prompts/`. **No scratch files shipped** — the activity
 `NOT CHECKED`, not passed. `act2 IS NULL` is overloaded for 587 episodes, resolvable from `act2_raw`.
 `act2_raw`'s *not recorded* state occurs zero times in all three countries.
 
+---
+
+# 🔴🔴 2026-08-17 (AFTERNOON) — **THE AGE FLOOR IS RULED. STEP 2 IS REOPENED. STEP 3 IS BLOCKED.**
+
+### This section supersedes the four-open-items block above. Read it first.
+
+## 1. ✅ D-S2-17 — the author confirmed the age floor at **11**
+
+The question was never 10 against 11. It was *an exact floor of 11 in all three countries* against *a
+floor of 10 that is exact for Spain and the UK and a band edge for Italy*, because `claseta2`'s band
+`03` is `6-10`. **The author took exactness.** Nothing rebuilds on this account; the measured cost
+stands at ES 155 / UK 340 / IT 2,969 respondents.
+
+🔴 **A deep-research round was offered for it and was declined, on the manager's recommendation.** The
+age floor is a property of a file we hold, and an external report cannot see our data — anything it
+said about our corpus would have been quoted back from the prompt or invented. **That is failure mode
+1 of the eight above.** Recorded because "let's commission a round" is always available and here it
+would have manufactured citable-looking support for a decision that needed none.
+
+## 2. 🔴 D-S2-18 — the conditioning prefix has no source, and Step 2 reopens
+
+Step 3 was about to be handed to an employee. The manager checked its inputs first.
+
+**Step 3's record is a nine-field prefix plus the episode tuple:** `country`, `age band`, `sex`,
+`household type`, `economic status`, `day type`, `season`, `MODE`, `SCHEME`.
+
+🔴 **`harmonised.parquet` supplies three of the nine.** Read from the shipped file's schema, 40
+columns: `country`, `mode`, `scheme`. **Age, sex, household type, economic status, day type and season
+are not there in any form.** Age was used by the D-S2-13 filter and then discarded. **No country's
+Step 1 parquet carries a household-type variable at all**, and the delivered household files — Spain's
+`DHOGAR`/`MHOGAR`, the UK's `uktus15_household.tab`, Italy's `Individui.txt` at family grain — **have
+never been read by any round.**
+
+**This is the third defect of one class on this project**, after `G9.14`'s missing half of F-ES-6 and
+the Step 4 / Step 6 fold-contract mismatch. D-S2-12's record contract is correct about everything it
+lists. Work item 3.1 is correct about everything it requires. 🔴 **The defect lives between them, and
+it was found by reading one against the other rather than by reviewing either.**
+
+🔴 **`G3.7` would have caught it — after `corpus.jsonl` was built**, failing on 100 % of records and
+costing Step 3 in full. The gate was working. It just sits downstream of the cheapest place to fix it.
+
+**Why the prefix cannot simply be cut**, and this is the part a later session will be tempted to redo:
+the parent plan's **5B** says the sampling mechanism is conditionally ignorable *because the prefix
+contains the design strata*. **That is the whole argument for training with an unweighted loss.** Drop
+household type and economic status and `RL09`'s resolution collapses, taking Step 5, Step 6 and the
+methods section with it.
+
+## 3. What was decided, so nobody re-decides it
+
+* **D-S2-17** — age floor 11, author, 2026-08-17.
+* **D-S2-18** — additive round on Steps 1 and 2. Twelve new columns: six `strat_*` and six
+  `strat_*_raw` carriers. Step 2 goes to **eighteen gates, twenty-one perturbations, `V2.a`-`V2.k`.**
+* **M-8** in the Step 1 document — the readers carry the national values **unbanded**. Step 1 decides
+  what is kept, Step 2 what is harmonised, Step 3 what is serialised.
+* **New gates, written BEFORE the columns exist** — `G2.17` completeness and grain, `G2.18` leak and
+  Italian expressibility, `V2.j` import-the-vocabulary + print the cross-tab, `V2.k` the four fixed
+  counts. Step 3 gains `V3.g` (lowercase + assert the join matched) and `V3.h` (`G3.7` counts shipped
+  fields, not the number nine).
+
+🔴 **Three rules fixed now, before the measurement, because otherwise they get decided by
+convenience:**
+
+1. **A stratum any country cannot supply is dropped from the prefix for ALL three.** Never carried by
+   two and blanked for the third. That is D-S2-2's leak argument moved to the prefix.
+2. **Every target band must be expressible in every delivery, and Italy binds** — every age band is a
+   union of whole `claseta2` bands. D-S2-13 generalised from one threshold to a classification.
+3. **The band set is proposed by the employee and approved by the manager.** A classification chosen
+   by the person implementing it, against the data in front of them, is chosen to be easy to produce.
+
+🔴 **The acceptance test for the whole additive round is four fixed numbers:** ES 446,547 /
+UK 567,381 / IT 1,010,140 episodes and ES 37,830 / 0 / 0 splits, **2,024,068 rows, 52 columns.**
+**Adding columns may not move a row.** Step 1's re-run must likewise reproduce every count and every
+gate verdict, **including both standing FAILs** — Italy's `G1.6b` and the UK's `G1.4`. A round that
+quietly repairs a known FAIL has stopped reading the thing it audits and is thrown away.
+
+## 4. ▶️ FOUR PROMPTS ARE WRITTEN AND READY. Run them in this order
+
+All in `Prompts/`. Each goes to a **fresh** employee session.
+
+| # | Prompt | What it does |
+|---|---|---|
+| 1 | `4thJ_employee_strata_additive_2026-08-17.md` | Transcribe the six strata from three codebooks, **propose the band set and STOP**; then readers, `crosswalk_strata.csv`, harmoniser, Step 1 re-run, 2.4 re-run |
+| 2 | `4thJ_employee_step2_gates18_2026-08-17.md` | Step 2 battery re-run: `G2.17`, `G2.18`, four perturbations, `V2.j`, `V2.k`. 🔴 **Do not touch `G2.1`-`G2.16`** |
+| 3 | `4thJ_employee_step3_build_2026-08-17.md` | Measure Italy's `act2` coverage and the 5-element tuple's token cost, **STOP for the `ACT2` ruling**; then encoder, decoder, `corpus.jsonl`, `token_stats.md` |
+| 4 | `4thJ_employee_step3_gates_2026-08-17.md` | Step 3 battery: fourteen gates, fifteen perturbations, `V3.a`-`V3.h` |
+
+🔴 **Prompt 1 stops in the middle and waits for the manager. Prompt 3 stops in the middle and waits for
+the author.** Both stops are decisions, not checkpoints, and an employee that walks through one has
+made a modelling choice nobody took.
+
+🔴 **Prompts 3 and 4 go to different sessions.** The employee who wrote the encoder may not write the
+battery that audits it — that separation is what `G3.13` and `G3.14 (b)` exist to enforce in code, and
+it is worth enforcing in people too.
+
+**Of the four items the previous section listed as waiting on the author, one is closed (the age
+floor), two are still open and still not blockers** — `G2.3`'s isolation and `G2.11`'s `weight_dia` /
+`weight_ind` choice — **and item 1.4, the Eurostat enquiry, remains AUTHOR-ONLY and still blocks
+nothing.** The blocker is now D-S2-18, and it is ours.
+
+**Nothing is running on Speed. No job is queued.**
+
+
+---
+
+# 🔴 2026-08-17 (evening) — D-S2-19: THE BAND SET IS APPROVED, `season` IS DROPPED, TASK B IS RUNNING
+
+**Read this section first. It supersedes the four-prompt table above on two points: prompt 1's Task A
+is done, and the column count is 51, not 52.**
+
+## What happened
+
+Prompt 1's **Task A** ran and stopped where it was told. It transcribed all six strata from each
+country's own codebook — **none `NOT FOUND`** — and proposed a band set with **one stratum referred
+up**. Deliverables: `Step1_docs/outputs_step1/codebook_facts_{spain,italy,uk}_strata.md` and
+`strata_proposal.md`.
+
+Sources found, per country: **Spain** `EDAD`, `SEXO`, `TIPOHOG` (in `DHOGAR`, household grain),
+`HRELACTIV`, `DDIASEM`, `TRIM`. **Italy** `claseta2`, `sesso`, `tipfa2m` (household grain — `tipnu2`
+was rejected because it varies inside 742 of 19,093 households), `newcondm`, `gsett`, `meseri`.
+**UK** `DVAge`, `DMSex`, `dhhtype`, `deconact`, `ddayw`, `dmonth`.
+
+## The manager's ruling — D-S2-19, written in full at the end of `Step2_docs/4thJ_02_harmonisation.md`
+
+* 🔴 **`season` is DROPPED from the prefix for all three countries. The prefix is EIGHT fields.**
+  Spain's `TRIM` (calendar quarters) and Italy's `meseri` (Nov-Jan / Feb-Apr / May-Jul / Aug-Oct) are
+  each delivered pre-banded, offset by one month at every edge, sharing **no** boundary; Spain ships no
+  month field at all (F-ES-9) and Italy's coarsening is ISTAT disclosure control (F-IT-2). The only
+  band expressible in all three is the whole year. **A degenerate single-valued stratum was rejected**
+  — it costs prefix tokens, carries no information, and lies to the next reader. `strat_season_raw`
+  still ships so the finding can be re-derived from the shipped table.
+* **Step 5's `5B` does NOT reopen.** D-S2-18 named household type and economic status as the two whose
+  loss would be consequential; both survive. Season goes into the limitations.
+* **The five surviving strata are approved as proposed:** age = Italy's eight populated `claseta2`
+  bands (`11-14 … 75+`); sex; day type = `weekday/saturday/sunday` with **the UK sourced from `ddayw`,
+  not `DiaryDay_Act`**; economic status = six bands + `unknown`; household type = five bands +
+  `unknown`, **splitting on child age nowhere**, because Italy's `tipfa2m` has no age qualifier.
+* 🔴 **`G2.18 (a)` is amended to score declared availability, not observed prevalence.** On the emitted
+  basis it would fail on `strat_hh_type = unknown` (ES 0.0 % / IT 0.0 % / UK 3.6 %), and the only
+  repairs would be imputation or dropping rows — and `V2.k` forbids moving a row. The emission
+  cross-tab is still printed and every band emitted by fewer than three countries is reported as a
+  residual leak risk. **The `unknown`-share escalation fires by design on economic status**
+  (ES 0.0 % / UK 6.3 % / IT 13.5 %) and is reported, not silenced.
+* **Eleven new columns, not twelve. `harmonised.parquet` goes 40 → 51.** Five harmonised strata plus
+  six `_raw` carriers. 🔴 **The four fixed row counts are untouched** — dropping a stratum drops a
+  column, never a row.
+
+## Three risks carried into the build, none of them repaired
+
+1. 🔴 Italy's `tipfa2m` codes **12, 13, 17, 18, 26, 27, 31, 32** are not enumerated in CLS-var16. If
+   any is observed, **the run FAILs and the code goes to `crosswalk_unmapped.md`** — never folded into
+   `other_complex`, which is where an unrecognised code looks like it belongs.
+2. UK `dhhtype = 3` cannot separate a childless couple from a couple whose children are all 16+
+   (F-UK-18), where Spain's `TIPOHOG` separates `2` from `4`. Documentation-confirmed measurement
+   mismatch, recorded as a limitation.
+3. UK `deconact = -1` maps to `unknown` on the generic "not applicable" reading. **An assumption,
+   stated as one.**
+
+## Documents amended by this ruling
+
+`Step2_docs/4thJ_02_harmonisation.md` (D-S2-19 appended) · `4thJ_02_harmonisation_val.md` (header,
+`G2.17`, `G2.18 (a)`, `V2.j`, and a dated entry at the end) · `Step3_docs/4thJ_03_serialisation.md`
+(work item 3.1 is now an eight-field prefix table) · prompts 1, 2 and 3. **`V3.h` needed no amendment
+— it was written to count the fields the corpus ships rather than the number nine, and that is exactly
+the case that arrived.**
+
+## ▶️ WHERE IT STANDS
+
+**Prompt 1 Task B is RUNNING** — readers, `crosswalk_strata.csv`, harmoniser, Step 1 re-run, 2.4
+re-run. Its acceptance is unchanged except the column count: ES 446,547 / UK 567,381 / IT 1,010,140,
+splits 37,830 / 0 / 0, **2,024,068 rows and 51 columns**, and Step 1 reproducing every count and both
+standing FAILs (Italy `G1.6b`, UK `G1.4`).
+
+**Then, in order:** prompt 2 (Step 2 battery, eighteen gates — **a different session from the one that
+built the columns**), prompt 3 (Step 3 build, stops for the author's `ACT2` ruling), prompt 4 (Step 3
+battery, **a different session from prompt 3**).
+
+**Still open, still not blockers:** `G2.3`'s isolation from `G2.4`, `G2.11`'s `weight_dia` /
+`weight_ind` choice, and item 1.4's Eurostat enquiry (AUTHOR-ONLY).
+
+---
+
+# 🟢🔴 2026-08-17 (night) — STEP 3. THE CORPUS EXISTS. READ THIS SECTION FIRST.
+
+### It supersedes every "Step 3 is blocked" line above it, and the four-prompts block at the end of the afternoon section.
+
+Prompts 1, 2 and 3 all ran. **Step 2 closed a second time** (18 gates, the additive strata round), and
+Step 3 went from unstarted to a corpus on disk in one night, through **six decisions and two failed
+attempts that were worth more than the successes.**
+
+## What exists
+
+**`/speed-scratch/o_iseri/4J_step3_corpus.jsonl` — 73,254 records.** Speed job **1255620**, COMPLETED
+`0:0`, 08:18. Output `/speed-scratch/o_iseri/4J_step3_build_1255620.out`. Also
+`4J_step3_token_stats.txt`.
+
+| Check | Result |
+|---|---|
+| Loader accounting | 446,547 / 1,010,140 / 567,381 rows, 19,140 / 38,260 / 15,854 diaries, **0 dropped** |
+| `decode(encode(d)) == d` | 🟢 **100 % exact, 73,254 / 73,254 diaries** |
+| `LOC == unknown` per country | 0 / 8,007 / 16,793 — matches parquet exactly |
+| `COP == 64` per country | 0 / 0 / 68,464 — matches exactly |
+| `ACT == 000` per country | 3,786 / 333 / 4,590 — matches exactly |
+| `000` token cost | 🟢 **exactly 1 token** — `G3.4` holds, no fallback code needed |
+| All `ACT` codes 1 token | 159 / 159 |
+| `len(tokenizer)` | 100278, no tokens added (`RL05`) |
+| `tokenize(detokenize(ids)) == ids` | 73,254 / 73,254 |
+| Ends `<eor>` | 73,254 / 73,254 |
+| Split integrity | 58,801 train / 6,533 heldout respondents, **intersection 0** |
+| Token distribution | median **275.0**, p99 **647.0**, max **1191** (ES 755, IT 1024, UK 1191) |
+
+**The record format, frozen:** `<8-field prefix> | DUR,ACT,ACT2,LOC,COP … <eor>`. Prefix is
+`country`, `strat_age_band`, `strat_sex`, `strat_hh_type`, `strat_econ_status`, `strat_day_type`,
+`mode`, `scheme` — **eight fields, `season` dropped by D-S2-19**. Worked example of one episode:
+`30,311,,at_home,22;` — `ACT2` absent is **two adjacent commas**, never a sentinel.
+
+## The six Step 3 decisions, all closed
+
+| # | Decision |
+|---|---|
+| **D-S3-3** | Token band re-based; **then re-based AGAIN — see D-S3-10** |
+| **D-S3-4** | Null `LOC` becomes a fifth class **`unknown`**. Imputation was measured and **refused by the pre-registered rule**: only **17.26 %** of null-`LOC` episodes sit between two agreeing neighbours, against a 99 % bar |
+| **D-S3-5** | Null `COP` becomes **`64`**, deliberately one greater than the largest legal 6-bit pattern so it cannot collide. Imputation refused the same way, **29.04 %** against 99 %. 🔴 This also repaired a **UK fingerprint** — those rows were previously being written as `0`, i.e. "alone" |
+| **D-S3-6** | `strat_age_band` serialised **VERBATIM** (`11-14`, `75+`). The build agent's two-way transliteration was refused: an encoder and decoder that agree about a wrong mapping round-trip perfectly and mean something else |
+| **D-S3-7** | 90/10 held-out split **by respondent**, seed 42. 🔴 **Not the LOCO fold** |
+| **D-S3-8** | Delimiters: pipe between prefix and body, comma within the prefix |
+| **D-S3-9** | 🔴 **AUTHOR'S CALL: null `act` becomes the explicit code `000`.** Keeps all 73,254 diaries |
+| **D-S3-10** | 🔴 **AUTHOR'S CALL: `G3.5`'s max band raised 1024 to 1200**, overriding the manager's own pre-registered refusal to move it twice |
+
+## 🔴 The three things a later session will be tempted to get wrong
+
+**1. `G3.5`'s max is now a FIT, not a budget, and it has nine tokens of headroom.** It started as
+`RL05`'s 2048-token packing window halved. The corpus measured **1191**; the author raised the clause
+to **1200**. The safety property survives — nothing approaches 2048, so no record is silently
+truncated — but the factor-of-two margin is gone. **A fourth country, a wider prefix, an extra field,
+or a tokenizer that is not the dolma2 vocabulary will breach this clause and it has no reserve.**
+Both the refusal and the override are written in `4thJ_03_serialisation.md`, in that order, and
+neither is edited out. 🔴 **This belongs in the paper's validation section in the same plain terms: it
+is the one Step 3 threshold set after seeing its own data, and it was set twice.**
+
+**2. My pre-registered rule on null `act` was WRONG, and the record says so.** I wrote that if any
+null `act` came from a source code the crosswalk failed to map, Step 2 had a coverage hole and would
+reopen. **All 8,709 came back exactly that way** — and Step 2 had refused those eight codes *on
+purpose*: they are diary-quality markers ("illegible activity", "queryable", "a phrase that does not
+describe an activity"), each registered with a reason in `crosswalk_unmapped.md` and documented at
+`Step2_docs/4thJ_02_harmonisation.md:1219-1226`. 🔴 **Step 2 did NOT reopen.** The transferable
+lesson: *a mechanical test cannot see intent — a deliberate refusal and an accidental omission look
+identical to "is `act_raw` present but unmapped?". Read the earlier step's own documentation before
+writing a rule about that step's behaviour.*
+
+**3. A moved threshold disarms its own perturbation, silently.** When `G3.5` was re-based the first
+time, the "inject one 60-episode diary" row (~685 tokens) fell **comfortably inside** the new max —
+it would have run, passed, and reported a green `G3.5` that was never made to fall. Raised to **150
+episodes**, and re-checked again against 1200 (~1,650-1,950 tokens, still fires, ~40 % margin).
+🔴 **If `G3.5` ever moves a third time, re-check that row BEFORE the battery runs, not after.**
+
+## 🔴 The loader-level blind spot, and the gates built around it
+
+`G3.1` audits the **encoder against the decoder** over whatever the **loader** handed them. If the
+loader drops rows or a column, corpus and frame agree and **`G3.1` passes — a loader-level defect is
+invisible to it by construction.** This is not hypothetical: `4thJ_cop_reverify.py` dropped 8,873
+diaries from its own sample and the only reason anyone knows is that it printed the count.
+
+Three things now cover it: **`G3.15 (b)`** and **`G3.16`** read `harmonised.parquet` **fresh from
+disk** per country and are the only gates that can see a record never offered to the encoder;
+**`V3.i`** makes the loader print and FAIL on any drop, up front. `V3.i` passed on its first real
+outing in job 1255349, **which is precisely what made the null-`act` finding trustworthy.**
+
+## ▶️ WHAT IS RUNNING AND WHAT IS LEFT
+
+**The Step 3 gate battery is IN FLIGHT** — a fresh session against
+`Prompts/4thJ_employee_step3_gates_2026-08-17.md`: **sixteen gates, twenty-one perturbations,
+`V3.a` to `V3.i`, one coverage clause.** Its implementation doc is
+`Step3_docs/impl/2026-08-17_step3-gates.md`. 🔴 **`G3.13`, `G3.14 (b)`, `G3.15 (b)` and `G3.16` must
+import NOTHING from `encoder.py` / `decoder.py`.** Expected: `G3.5` PASSes at 1191 against 1200.
+
+**Then, in order:**
+
+1. **Merge the Progress Log fragments** — `outputs_step3/proglog_step3_build.md`,
+   `outputs_step3/proglog_step3_gates.md`, `outputs_step2/proglog_step2_gates18.md`,
+   `Step1_docs/outputs_step1/proglog_strata_step1.md`, `Step2_docs/outputs_step2/proglog_strata_step2.md`.
+   **Append-only. Never reorder or reformat an existing entry.**
+2. **Freeze `prereg.md`**, then the first Leg-5 submission.
+
+**🔴 Two Step 2 items still need the AUTHOR's ruling** (neither blocks Step 3):
+
+* whether `G2.18`'s escalation clause should carry a whole-gate FAIL when `leak_bands = 0`, and
+  whether D-S2-19's quoted 6.3 % / 13.5 % should be corrected to **0.519 % / 4.243 %**;
+* whether to repair the `scale_duration` to `G2.4` clean violation.
+
+**Still open, still not blockers:** `G2.3` not demonstrated independently of `G2.4`; the standing
+FAILs Italy `G1.6b` and UK `G1.4`; `G2.11`'s `weight_dia` vs `weight_ind`; item 1.4's Eurostat
+enquiry (**AUTHOR-ONLY**); and the unverified lead that `act` 999/972/900 may be travel codes, which
+would make location partly recoverable from activity.
+
+## 🔴 Premise carried, not verified
+
+Every token number in this section — **including the 1191 that moved a threshold** — was measured with
+`allenai/OLMo-2-0425-1B` as a stand-in for `allenai/Olmo-3-1025-7B`, on the premise of an **identical
+dolma2 BPE vocabulary**, because it is far smaller to download. `len(tokenizer) = 100278` is
+consistent with that premise. **The premise was assumed, not re-derived.**
+
+---
+
+# 🟡 2026-08-17 (night, later) — THE GATE BATTERY IS SUBMITTED AND STILL RUNNING. READ THIS BEFORE THE SECTION ABOVE.
+
+**Speed job `1256012`, `4J_gates_step3`, state RUNNING at the time of writing (1 m 22 s elapsed, exit
+`0:0` so far).** It is the independent sixteen-gate / twenty-one-perturbation battery for Step 3.
+**Nothing about its result is known.** No gate has passed. No gate has failed. Anyone reading this
+must go and check, not infer.
+
+**Where everything is:**
+
+| Thing | Path |
+|---|---|
+| Implementation state (read this first) | `Step3_docs/impl/2026-08-17_step3-gates.md` — has a `## Next` section written for a cold agent |
+| Battery script (~1,540 lines, this project's own) | `4J_docs_occ/tools/4thJ_gates_step3.py` |
+| Launcher | `4J_docs_occ/tools/4thJ_gates_step3_setup_and_run.sh` (copied from the null-structure launcher, per the cluster rule) |
+| Job output | `/speed-scratch/o_iseri/4J_gates_step3_1256012.out` |
+| Per-variant reports | `/speed-scratch/o_iseri/4J_step3_gates_out/gate_report_<name>.txt` — 22 files (`baseline` + 21 perturbations), plus `coverage_crosstab.txt` and `battery_summary.json` |
+| The employee prompt that produced it | 🔴 **moved** to `Prompts/previous/4thJ_employee_step3_gates_2026-08-17.md` |
+
+**How to collect it — one `sacct` call, never a poll loop, never `cat` the `.out` blind:**
+
+```
+ssh o_iseri@speed.encs.concordia.ca "sacct -j 1256012 --format=JobID,State,Elapsed,ExitCode"
+```
+
+If COMPLETED, follow `## Next` steps 2-4 in the implementation doc: size-check the `.out`, then `grep`
+for `FATAL`, `Traceback`, `DONE.`, `COVERAGE CLAUSE VERDICT`, `ACCEPTANCE-TEST-3-STYLE`. Then `scp`
+`4J_step3_gates_out/` back to `Step3_docs/outputs_step3/gates_out/` and write
+`outputs_step3/proglog_step3_gates.md`.
+
+## 🔴 One finding is already on the record, before the run reports
+
+The agent that built the battery read `decoder.py`'s actual validation logic and predicted, **on
+paper and before submitting**, that **three perturbations will fell `G3.1` even though the val doc's
+table lists `G3.1` under "must stay clean"** for them:
+
+* **`zero_pad_act4`** — `decode_episode` hard-asserts `len(act) == 3`; a 4-digit code raises `DecodeError`.
+* **`zero_pad_cop2`** — it hard-asserts `cop_s == str(int(cop_s))`, so `"07"` raises `DecodeError`.
+* **`spell_unknown_two_ways`** — it does **not** case-fold, so `LOC == "UNKNOWN"` falls through to the
+  generic branch and returns the literal string, not `None`.
+
+🔴 **Nothing was adjusted to make these go away** — not the gate, not the perturbation, not the
+decoder. If the real run reproduces them, that is an **Acceptance-Test-3 finding: the shipped decoder
+is stricter than the val doc's narrative assumed**, and it is written up as such. It is not a bug in
+the battery. **Do not "fix" it by relaxing the decoder or by editing the val doc's table to match the
+outcome** — the whole point of pre-registering the expected column is that a surprise there is
+information.
+
+**A second thing the battery already caught, before the cluster ever ran it.** A local synthetic-fixture
+smoke test found that `add_tokens_act311` was mutating the **shared cached tokenizer in place**, so every
+one of the nine perturbations sequenced after it would have inherited the extra `<act311>` token and
+failed its own `G3.12` for the wrong reason. Fixed before submission (private uncached tokenizer for
+that one variant). Recorded because it is exactly the ordering bug that a "one job, reuse the loaded
+tokenizer" design invites.
+
+## What is assumed, not verified, in this battery
+
+* **`gpt2`** is the substitute for the tokenizer-swap perturbation — neither doc names one.
+* **`G3.13`'s "Level-1 category"** is operationalised as the **first digit of the 3-digit `ACT` code**,
+  with `"000"` held out as its own NULL category (several real codes start with `0`). Neither doc
+  defines Level-1 precisely.
+* The pre-registered hard counts were **copied** from the val doc, not re-derived before the run — the
+  battery re-derives them itself at runtime, which is the point.
+* **`V3.i` is expected to PASS on every variant**, including the loader-level ones, because no
+  perturbation mutates `harmonised.parquet` itself. That is not a contradiction; report it plainly.
+
+## Housekeeping done at the same time
+
+* 🔴 **All six completed employee prompts were moved to `Prompts/previous/`** (author's instruction).
+  `Prompts/` now contains **only this file**. Any doc that still cites a prompt at
+  `Prompts/4thJ_employee_*` means `Prompts/previous/4thJ_employee_*`.
+* **Three Progress Log fragments were merged**, each appended verbatim under a manager's note stating
+  what was re-derived and what was not: `proglog_strata_step1.md` → `4thJ_01_corpusAcquisition.md`;
+  `proglog_strata_step2.md` → `4thJ_02_harmonisation.md`; `proglog_step2_gates18.md` →
+  `4thJ_02_harmonisation_val.md`.
+* 🔴 **Carry this one:** that Step 2 eighteen-gate battery **ran locally on the author's Windows
+  desktop, not on Speed.** Same inputs, same gate code, and the fragment says so itself — but it has
+  **no `.out` on `/speed-scratch` and no `sacct` record**, so unlike every other result in this
+  project it cannot be re-read later. Re-run it under `sbatch` and expect to reproduce it; do not
+  assume it.
+* **Still unmerged:** `outputs_step3/proglog_step3_gates.md`, which does not exist yet — the battery
+  writes it.
+
+## The state of Step 3 in one line
+
+The corpus is built and its own self-report is clean; **the independent check is in flight and has
+reported nothing**. Step 3 is not DONE until `4thJ_03_serialisation.md`'s Definition-of-Done item 6
+can be ticked from that battery's output, and **a corpus that exists is still not a corpus that
+passed.**
+
+---
+
+# 🔴 2026-08-17 (night, close) — THE BATTERY REPORTED. FOUR DECISIONS. THE CORPUS IS BEING REBUILT.
+
+**This section supersedes the one above it.** The battery that was "in flight" has landed. It ran
+cleanly and it found real defects — in the spec, not in the job.
+
+## What job `1256012` did
+
+`COMPLETED`, exit `0:0`, elapsed **3 h 07 m 55 s**. No `FATAL`, no `Traceback`, all 22 variants
+reported, `DONE.` printed. Its 25 artefacts and its `.out` file are now in the repo at
+`Step3_docs/outputs_step3/gates_out/` — collected **before** the rebuild, so the evidence survives the
+corpus it describes. Full numbers: `Step3_docs/outputs_step3/proglog_step3_gates.md`.
+
+**18 of 20 scored gate names PASSed at baseline. Three things went wrong:**
+
+1. **`G3.9` and `G3.10` FAILed at BASELINE, one root cause: the `scheme` prefix field.** It varied by
+   country (`eet_2009_2010` / `uktus_2014_2015` / `usodeltempo_2013_2014`) and it embedded its
+   survey's field years. `G3.10` hit **all 73,254 records**. A gate that FAILs at baseline cannot be
+   seen falling, so both perturbation rows printed "AS EXPECTED (fell)" and **both of those lines are
+   worthless.** The doc's claim that `MODE` and `SCHEME` are constant across the corpus was true of
+   the corpus as conceived and never true of the corpus Step 2 shipped.
+2. **The coverage clause FAILed on `G3.3`**, which was never felled and could not be: it tested
+   tokenizer *idempotency*, a property of every sane BPE tokenizer and of nothing we built.
+3. **Four `UNEXPECTED FALL`s, all on `G3.1`** — `zero_pad_act4`, `strip_eor_1pct`, `zero_pad_cop2`,
+   `spell_unknown_two_ways`. **Three of the four were pre-registered as predictions before the run and
+   the predictions held.** `G3.1` compares against the frozen source in `harmonised.parquet`, not
+   against a re-encode, so any text mutation falls. Acceptance-Test-3 finding: **the shipped decoder
+   is stricter than the val doc's narrative.** The four table cells are corrected to FAIL, dated. The
+   decoder was **not** relaxed.
+
+**And one defect the battery never looked for (Finding 4).** Measured directly from
+`harmonised.parquet` while checking whether a proposed replacement gate would pass:
+**`strat_hh_type = unknown` is emitted by the UK only, 18,449 episodes**; `strat_econ_status =
+unknown` by IT and UK but never ES. `crosswalk_strata.csv` declares `unknown` legal for all three "for
+cross-country parity", so no declared-vocabulary check would ever see it.
+
+## The four decisions
+
+| | ruling |
+|---|---|
+| **D-S3-11** | 🟢 **RULED: DROP both `mode` and `scheme` from the prefix. 8 fields → SIX.** Both are hard-coded per-country constants in the readers (`4thJ_read_spain.py:130`, `4thJ_read_uk.py:42`, `4thJ_read_italy.py:108`) — never read from a respondent — so they carried exactly what `country` already carries. Collapsing them to one invented constant was **refused**: `hetus_acl2008` exists in no source file. Both columns stay in `harmonised.parquet`, unserialised, like the `strat_*_raw` carriers. |
+| **D-S3-12** | 🟢 **RULED: RE-POINT `G3.9`** at fold-aware cross-country vocabulary — *for each LOCO fold, every prefix value emitted by the held-out country must appear in the union of the two training countries*, over **observed** values. The first proposal (declared-vocabulary containment) was **disproved by Finding 4** before it was adopted. Perturbation: a national raw value into one country's field, replacing `mode_second_value`. |
+| **D-S3-13** | 🟢 **RULED: RE-SPECIFY `G3.3`** as `decode(encode(text)) == text`, exact, 100 %. Guards what nothing else does: `<eor>`, the literal `+` in `75+`, and absent fields written as **two adjacent commas**. Swap partner moved off `gpt2` (byte-level, lossless — it would leave the new gate green a second time) to `bert-base-uncased`. |
+| **D-S3-14** | 🔴 **OPEN. The only open decision, and it blocks Step 4.** Hold out the UK and it trains on ES+IT, neither of which ever emits `strat_hh_type = unknown` — an unseen symbol at test time in one of the three folds. This is a Step 2 data question, not a Step 3 serialisation question. |
+
+🔴 **`G3.10` is the one to point at in the paper.** It FAILed, and it was **not touched** — not its
+regex, not its threshold. The corpus changed instead. That is the difference between a gate working
+and a gate being made to agree.
+
+🔴 **Registration discipline.** `G3.9`'s and `G3.3`'s new thresholds were written **after** seeing the
+data. They are recorded in the val doc before the rebuild, with their perturbation rows, and **must be
+seen failing** in the re-run. They may not be presented as though they had been pre-registered.
+**Net: still sixteen gates. None retired. Two now measure something that can fail.**
+
+## What was applied, and where
+
+All three rulings are **in code and in both specs**, and verified on a 10-record synthetic fixture
+(three countries sharing one vocabulary, the UK holding the one extra `unknown`) that exercises the
+real `encoder.py`/`decoder.py` and the real gate functions: **10 / 10 checks pass** — six-field round
+trip, `G3.10` PASS with its regex untouched, `G3.7` PASS at width 6, `G3.9` reproducing Finding 4
+exactly (UK fold FAIL alone, ES and IT PASS), and the new perturbation moving the **IT** fold
+PASS → FAIL with `G3.7` clean.
+
+Changed: `tools/encoder.py`, `tools/decoder.py`, `tools/4thJ_step3_build.py`,
+`tools/4thJ_gates_step3.py`, `Step3_docs/4thJ_03_serialisation.md`,
+`Step3_docs/4thJ_03_serialisation_val.md`. New: `tools/4thJ_step3_rebuild_and_gates.sh`,
+`Step3_docs/outputs_step3/proglog_step3_gates.md`, `Step3_docs/outputs_step3/gates_out/`.
+
+## 🟡 Speed job `1257441` — RUNNING, NOTHING KNOWN
+
+`sbatch 4thJ_step3_rebuild_and_gates.sh`. **One job, two phases**, so nothing waits between them:
+phase 1 rebuilds the corpus, phase 2 re-runs the full battery, and **phase 2 runs only if phase 1
+exits 0** — a stale corpus is never gated. Output `/speed-scratch/o_iseri/4J_step3_rebuild_1257441.out`;
+reports land in **`4J_step3_gates_out_v2/`**, a new directory, so job 1256012's evidence on Speed is
+untouched. The launcher backs up the old corpus and **aborts if the backup is empty**.
+
+🔴 **Written down BEFORE the result arrives, so it cannot be rationalised afterwards** — the full list
+is in the implementation doc's ledger entry, but the two that matter most:
+
+* **If `G3.3` PASSes under the `bert-base-uncased` swap, the repair FAILED** and goes back to the
+  author. It does not get written up as a pass.
+* **`G3.9` is expected to FAIL at baseline on the UK fold** (that is D-S3-14, unruled), with ES and IT
+  PASSing, and its perturbation must move the **IT** fold. A sub-verdict that is already red cannot be
+  seen falling and must not be reported as if it were.
+* `G3.5`'s median/p99/max all drop, because the prefix lost two fields. **The 1200 max band is NOT
+  re-tightened to match.** Moving a threshold to fit a new measurement is the move this project does
+  not make.
+
+## The state of Step 3 in one line, revised
+
+The corpus that existed has been superseded by its own gate battery; **the rebuilt corpus and the
+re-run battery are in flight and have reported nothing.** Step 3 is not DONE until Definition-of-Done
+item 6 can be ticked from job 1257441's output, and **a corpus that exists is still not a corpus that
+passed.**

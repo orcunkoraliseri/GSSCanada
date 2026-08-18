@@ -7,7 +7,25 @@
 
 ## STATUS
 
-**OPEN. Nothing built.** All thresholds pre-registered.
+**RUN, TWICE. 19 of 20 gates PASS at baseline, all 19 seen falling, coverage clause PASS, 21 of 21
+perturbations felled their named gate** (Speed job `1257441`, 2026-08-18; the earlier job `1256012`
+is what forced D-S3-11/12/13). Sixteen gates, twenty-one perturbations, `V3.a` to `V3.i`.
+🔴 **The one baseline FAIL is `G3.9`, on the UK fold alone. It is RED BY RULING, not by defect:
+D-S3-14 was ruled (a) on 2026-08-18 — the UK's `strat_hh_type = unknown` stays, no row is imputed and
+no row is dropped, and the gate is not touched.** Two vacuity guards, `V3.d` and `V3.h`, remain
+`NOT CHECKED` and are not reported as passes. **All four Step 3 decisions are closed and this
+document is closed with them.** 🔴 **Never write this result as 20 of 20.**
+*(The line this replaces read "OPEN. Nothing built. … none run." — kept here so the change of state
+is visible rather than silent.)*
+
+🔴 **All thresholds pre-registered, with ONE exception, declared here rather than buried: `G3.5`'s band.
+It has now been moved TWICE, both times after a measurement.** First by D-S3-3 (2026-08-17), re-basing
+the whole band; then by **D-S3-10** (2026-08-17), raising the max clause from **1024 to 1200** after the
+emitted corpus measured **1191**. 🔴 **The second move overrode this document's own written refusal to
+move it again, and was taken by the author, not by the manager.** Read both Progress Log entries before
+quoting this row: the first says why the old band could not be met, the second says that `max` is no
+longer a derived budget but a fit with nine tokens of headroom. **No other threshold in this document
+has been touched after a measurement.**
 
 ---
 
@@ -27,17 +45,19 @@ place to miss one: every downstream number is computed on this text.
 |---|---|---|---|
 | **G3.1** Round-trip exactness | Any lossy encoding | `decode(encode(d)) == d` **field by field**, 100 % of the corpus. Not string equality — a comparison of decoded structures | **project-chosen**, and exactness is not a tolerance |
 | **G3.2** Duration closure in the serialised text | An encoder that drops or merges an episode | Parsing `corpus.jsonl` back out, `sum(DUR) == 1440` for 100 % of records | **derived from the instrument** |
-| **G3.3** Tokenizer round-trip | A vocabulary mismatch that silently mangles codes | `tokenize(detokenize(ids)) == ids` on **100 %** of the corpus, not a 1,000-record sample | `RL05` failure mode 4 |
-| **G3.4** One-token codes | The tokenizer advantage we chose the backbone for failing to materialise | **100 %** of 3-digit `ACT` codes encode to exactly 1 token | **measured** — Speed jobs 1234177, 1234199 |
-| **G3.5** Diary token budget | Records that will not pack | Median diary ≤ **220** tokens, p99 ≤ **400**. 🔴 Report the **distribution**, and report which end any exceedance sits at | **project-chosen**, anchored on the measured 200-token benchmark |
+| **G3.3** Tokenizer round-trip — 🔴 **RE-SPECIFIED 2026-08-17 by D-S3-13** | A tokenizer that silently normalises our text away | ~~`tokenize(detokenize(ids)) == ids`~~ — that is tokenizer **idempotency**, true of essentially every well-formed BPE tokenizer and of nothing we built; it measured PASS under the swap and the coverage clause FAILed on it (job 1256012). **NOW: `detokenize(tokenize(text)) == text`, exact string equality, 100 % of the corpus.** A statement about *our text* — `<eor>`, the literal `+` in `75+`, the underscores, and absent fields written as two **adjacent commas** | `RL05` failure mode 4, re-instrumented |
+| **G3.4** One-token codes | The tokenizer advantage we chose the backbone for failing to materialise | **100 %** of 3-digit `ACT` codes encode to exactly 1 token. 🔴 **`000` is in scope** — D-S3-9 added it and it has never been tokenised. **If it costs two tokens this gate FAILs and the code changes**, to another verified-free 3-digit string; the gate does not | **measured** — Speed jobs 1234177, 1234199 |
+| **G3.5** Diary token budget | Records that will not pack | 🔴 **Re-based TWICE — by D-S3-3 (2026-08-17) and again by D-S3-10 (2026-08-17, author override). Read both Progress Log entries before quoting this row.** Median diary ≤ **300** tokens, p99 ≤ **700**, **max ≤ 1200** — the max is the binding clause. 🔴 Report the **distribution**, and report which end any exceedance sits at | **max**: 🔴 **no longer derived — it is now fitted.** It began as `RL05`'s 2048-token packing window halved (1024); the corpus measured **1191** and the author raised the clause to **1200**. It retains the property it was built for — no record reaches 2048, so nothing is truncated — but it has **9 tokens of headroom** and is a fit to the observed maximum. **median / p99**: measured (238.0 / 580.0, job 1255237) plus declared headroom for the `unknown`, `64` and `000` codes, which postdate that measurement; the corpus measured **275.0 / 647.0**, both inside. 🔴 **Re-measured at the six-field prefix (D-S3-11, job 1257441, 2026-08-18): 256.0 / 632.0 / 1178 — headroom on the binding max clause is now 22 tokens, not 9. The BAND IS UNCHANGED and was not re-tightened. See the 2026-08-18 Progress Log entry; the three numbers earlier in this cell are the eight-field measurement and are superseded.** |
 | **G3.6** Terminator presence | A model that never stops generating | **100 %** of records end with `<eor>` | `RL05` failure mode 7 |
-| **G3.7** Prefix completeness | A stratum silently missing from the conditioning | Every record carries all nine prefix fields; count of records with a missing or empty field: **0** | **project-chosen** |
+| **G3.7** Prefix completeness | A stratum silently missing from the conditioning | Every record carries all **six** prefix fields; count of records with a missing or empty field: **0**. 🔴 **Six, not eight — D-S3-11 dropped `mode` and `scheme`** (and before that D-S2-19 dropped `season`, nine → eight). The threshold counts **the shipped fields, not a number**, which is why it has absorbed two format changes without being rewritten — the order `V3.h` exists to enforce | **project-chosen**, following the frozen record format |
 | **G3.8** Prefix honesty | Conditioning on a flag a country never recorded | No record asserts a co-presence flag that `copresence_availability.md` marks "not recorded" for that country. 🔴 **The flag set is SIX after D-S2-8, not five**, and the sixth (`cop_parent`) is the one every country records — so if it is ever marked "not recorded" for a country, that is a crosswalk bug, not a data fact | **derived from Step 2** |
-| **G3.9** Constant-field invariance | `MODE` or `SCHEME` varying, which would mean the corpus mixes instruments | Exactly **one** distinct value of each across the whole corpus | **derived from decision 6** |
-| **G3.10** No `YEAR` token | A temporal axis creeping back in | The string `YEAR`, and any four-digit year, appears **zero** times in any prefix | **derived from author decision 3** |
+| **G3.9** ~~Constant-field invariance~~ → 🔴 **Cross-country vocabulary, FOLD-AWARE. RE-POINTED 2026-08-17 by D-S3-12** | A symbol appearing at test time that training never showed the model | ~~Exactly one distinct value of `MODE` and `SCHEME` across the whole corpus~~ — both fields were removed from the prefix by D-S3-11, so that threshold lost its subject. **NOW: for each of the three LOCO folds, every prefix value emitted by the HELD-OUT country must also appear in the union of the two TRAINING countries.** Per prefix field, over **observed** values, `country` itself excluded. 🔴 **Observed, not declared** — `crosswalk_strata.csv` declares `unknown` legal for all three "for cross-country parity" (D-S2-19 §3) while only the UK emits it in `strat_hh_type`, so a declared-vocabulary check passes a corpus with a real defect in it | **specified after seeing the data** — see the registration note below |
+| **G3.10** No `YEAR` token | A temporal axis creeping back in | The string `YEAR`, and any four-digit year, appears **zero** times in any prefix. 🔴 **UNCHANGED, deliberately.** It FAILed at baseline in job 1256012 on all 73,254 records because `scheme` embedded its survey's field years. D-S3-11 removed `scheme`; the regex was **not** narrowed. The gate now passes because the corpus stopped carrying years | **derived from author decision 3** |
 | **G3.11** Split integrity | A respondent's two diary days straddling train and held-out | Intersection of respondent IDs across splits: **0** | **project-chosen**, and it is the leakage that would inflate every downstream number |
 | **G3.12** Vocabulary containment | A silent vocabulary extension | The set of token IDs used by the corpus is a subset of the base tokenizer's vocabulary, and `len(tokenizer)` equals the published base value | **derived from the no-added-tokens decision** |
-| **G3.14** `COP` packing integrity — **two sub-clauses, M-7 attribution applies** | (a) a `COP` field that is out of range or has two spellings; (b) 🔴 **an encoder and decoder that agree with each other and disagree with the crosswalk about which bit is which flag** | **(a)** every serialised `COP` parses as an integer in **0-63** written with **no leading zeros** — a corpus carrying both `7` and `07` holds two spellings of one value and the measured 8-token cost no longer holds. Violations: **0**. **(b)** per country and per flag, the count of episodes with that bit set — decoded using the `bit_position` column of `crosswalk_copresence.csv` — equals the count of that flag set in `harmonised.parquet`. Discrepancy: **0** episodes | **(a)** derived from D-S3-1, the measured packing, job 1252633. **(b)** 🔴 **derived from Step 2's crosswalk, and the gate MUST read the bit order from that file — never import it from `encoder.py` or `decoder.py`.** A gate that takes the order from the encoder is auditing the encoder against itself |
+| **G3.14** `COP` packing integrity — **two sub-clauses, M-7 attribution applies** | (a) a `COP` field that is out of range or has two spellings; (b) 🔴 **an encoder and decoder that agree with each other and disagree with the crosswalk about which bit is which flag** | **(a)** every serialised `COP` parses as an integer in **0-64** written with **no leading zeros** — a corpus carrying both `7` and `07` holds two spellings of one value and the measured 8-token cost no longer holds. Violations: **0**. 🔴 **0-64, not 0-63, since D-S3-5: `64` is the "co-presence not collected" code and is deliberately one greater than the largest legal bit pattern, so it cannot collide with any of the 64 real combinations.** **(b)** per country and per flag, the count of episodes with that bit set — decoded using the `bit_position` column of `crosswalk_copresence.csv` — equals the count of that flag set in `harmonised.parquet`. Discrepancy: **0** episodes. 🔴 **Episodes serialised as `64` are excluded from both sides of (b)** — they carry no bits, and comparing them against `pd.NA` would compare nothing to nothing. The number excluded on the corpus side must equal the number of all-six-null rows in `harmonised.parquet`, **per country**; that reconciliation is `G3.16 (b)` and it is a separate gate precisely so this exclusion cannot be used to make (b) pass vacuously | **(a)** derived from D-S3-1, the measured packing, job 1252633. **(b)** 🔴 **derived from Step 2's crosswalk, and the gate MUST read the bit order from that file — never import it from `encoder.py` or `decoder.py`.** A gate that takes the order from the encoder is auditing the encoder against itself |
+| **G3.15** `ACT2` field integrity — **two sub-clauses, M-7 attribution applies** | The fifth element admitted by D-S3-2 being emitted as something other than what was decided | **(a)** every episode's `ACT2` slot is either **truly empty** — two adjacent commas, no space, no sentinel, no `98` — or one of the **43 shipped `ACT2` target codes**. Count of episodes carrying a value outside that set, or carrying whitespace as the absent form: **0**. **(b)** the number of episodes with a **non-empty** `ACT2`, per country, equals the number of non-null `act2` rows in `harmonised.parquet` for that country. Discrepancy: **0** episodes | **(a)** derived from D-S3-2 — the empty-field form was chosen *because* 77 % of episodes are absent, so a sentinel creeping back in costs the +50 tokens/diary that decision refused. **(b)** 🔴 derived from `harmonised.parquet`, not from the encoder |
+| **G3.16** Explicit-null code reconciliation — **two sub-clauses, M-7 attribution applies** | 🔴 The D-S3-4 / D-S3-5 codes silently standing in for something they are not | **(a)** `LOC` is one of exactly **five** strings — `at_home`, `other_place`, `private_transport`, `public_transport`, `unknown` — in **one spelling each**, and the count of `unknown` per country equals the count of null `loc_class` rows in `harmonised.parquet`: **0 / 8,007 / 16,793** for ES / IT / UK. **(b)** the count of `COP == 64` per country equals the count of all-six-null `cop_*` rows: **0 / 0 / 68,464**. **(c)** the count of `ACT == 000` per country equals the count of null `act` rows: **3,786 / 333 / 4,590** (D-S3-9). Discrepancy on any: **0** episodes | 🔴 **derived from `harmonised.parquet`, which the encoder does not author.** The failure this exists for is the one D-S3-5 was written to repair: a "not collected" episode written as a value that means something — and its mirror, a genuine value quietly relabelled `unknown`. Both round-trip through `G3.1` perfectly. The three per-country counts are quoted from job **1255285** and are **hard numbers, not a shape check** |
 
 ---
 
@@ -49,19 +69,34 @@ Each perturbation applies to a copy and must break **exactly one** gate.
 |---|---|---|
 | Drop `LOC` from the decoder's parse | G3.1 | G3.2 |
 | Merge two adjacent episodes, summing their durations | G3.2 must stay **clean** (the sum is preserved) and **G3.1** must fail | 🔴 *This is the case that shows why G3.2 alone is insufficient* |
-| Swap in a tokenizer with a different vocabulary | G3.3, G3.4, G3.12 — a **coverage** case, scored as such | — |
-| Zero-pad codes to 4 digits (`0311`) | G3.4 | G3.1 |
-| Inject one 60-episode diary | G3.5 at the **upper** end, and the report must say *upper* | G3.2 |
-| Strip `<eor>` from 1 % of records | G3.6 | G3.1 |
+| Swap in a tokenizer with a different vocabulary — 🔴 **`bert-base-uncased`, NOT `gpt2`, after D-S3-13** | G3.3, G3.4, G3.12 — a **coverage** case, scored as such | — |
+| Zero-pad codes to 4 digits (`0311`) | G3.4 | ~~G3.1~~ 🔴 **G3.1 FALLS — measured, job 1256012. See the 2026-08-17 correction below** |
+| 🔴 **Inject one 150-episode diary** (durations still summing to 1440) | G3.5 at the **upper** end, and the report must say *upper* | G3.2 |
+| Strip `<eor>` from 1 % of records | G3.6 | ~~G3.1~~ 🔴 **G3.1 FALLS — measured, job 1256012** |
 | Blank one prefix field on 10 records | G3.7 | G3.8 |
 | Assert "with partner" on a country that does not record it | G3.8 | G3.7 |
-| Set `MODE` to a second value on one record | G3.9 | all others |
+| 🔴 **Write a national raw value into one field for one country — Italy's `tipfa2m_05` into `strat_hh_type`** *(replaces "set `MODE` to a second value", whose field D-S3-11 removed)* | G3.9, **via its ITALY fold sub-verdict** | G3.7 — the field is still present and non-empty, only its value became national |
 | Add `YEAR=2013` to the prefix | G3.10 | G3.7 — *the record is still complete, which is the point* |
 | Split by diary instead of by respondent | G3.11 | all others |
 | Call `tokenizer.add_tokens(["<act311>"])` | G3.12 | G3.1 |
-| Zero-pad `COP` to two digits (`07` for `7`) | G3.14 **(a)** | G3.1 — *it still round-trips, which is the point*; G3.4, which is about `ACT` |
+| Zero-pad `COP` to two digits (`07` for `7`) | G3.14 **(a)** | ~~G3.1 — *it still round-trips, which is the point*~~ 🔴 **G3.1 FALLS — measured, job 1256012**; G3.4 stays clean, which is about `ACT` |
 | 🔴 **Reverse the bit order in the encoder AND the decoder together, leaving `crosswalk_copresence.csv` untouched** | G3.14 **(b)** | **G3.1 must stay clean** — encoder and decoder agree perfectly and mean something else. *This is the symmetric-defect class, and it is why (b) reads the order from the crosswalk* |
+| 🔴 **Fill the absent `ACT2` slot with `'98'` in the encoder AND the decoder together** | G3.15 **(a)** | **G3.1 must stay clean** — the two agree, and the corpus is simply 50 tokens/diary more expensive than the decision that admitted it. *Symmetric-defect class again* |
+| 🔴 **Have the loader drop the `act2` column for Italy only** | G3.15 **(b)** | **G3.1 must stay clean** — see the note below on why a loader-level defect is invisible to it; G3.7, the prefix is untouched |
+| 🔴 **Have the loader silently drop Italy's 3,388 null-`loc_class` diaries** *(the defect `4thJ_cop_reverify.py` actually shipped)* | G3.16 **(a)** — IT `unknown` count falls from 8,007 to 0 | **G3.1 and G3.2 must stay clean**; **G3.16 (b) must stay clean**, since Italy has zero null `cop_*` |
+| 🔴 **Have the loader silently drop the UK's 9,298 null-`cop_*` diaries** | G3.16 **(b)** | G3.1, G3.2. 🔴 **G3.16 (a) will ALSO fall and that is expected** — 4,804 rows are null in both fields, so the drop removes null-`loc_class` episodes too. **This row cannot attribute between the two clauses** and is scored for coverage on (a); M-7 attribution must name both |
+| 🔴 **Have the loader silently drop Spain's 2,306 null-`act` diaries** | G3.16 **(c)** — ES `000` count falls from 3,786 to 0 | **G3.1 and G3.2 must stay clean**; **G3.16 (a) must stay clean**, since Spain has zero null `loc_class`, and **(b)**, since Spain has zero null `cop_*`. *Spain is chosen precisely because it is the one country where this clause can be exercised alone* |
+| 🔴 **Spell `unknown` two ways — `unknown` on some records, `UNKNOWN` on others** | G3.16 **(a)**, single-spelling clause | ~~G3.1 — *it still round-trips if the decoder case-folds*~~ 🔴 **G3.1 FALLS — measured, job 1256012. The shipped decoder does NOT case-fold** |
 | 🔴 **Null perturbation: change nothing** | **nothing** | everything |
+
+🔴 **Why the four loader-level rows above leave `G3.1` clean, and why that is the whole reason G3.15 (b)
+and G3.16 exist.** `G3.1` audits the **encoder against the decoder**, over whatever dataframe the loader
+handed them. If the loader drops rows, or drops a column, the corpus and the loader's frame agree
+perfectly and `G3.1` passes — **a loader-level defect is invisible to it by construction.** `G3.15 (b)`
+and `G3.16` read `harmonised.parquet` **fresh from disk**, per country, and compare counts. They are the
+only gates in this step that can see a record that was never offered to the encoder at all. This is not
+hypothetical: `4thJ_cop_reverify.py` dropped 8,873 diaries from its own sample, and the only reason we
+know is that it printed the number.
 
 ### Coverage clause
 
@@ -101,13 +136,48 @@ being an independent check and becomes a restatement of G3.1. Two gates now depe
   that scans a subset it chose itself is the same failure as a vacuous gate, one level up.
 * **V3.b** — it prints record count, token count, distinct `MODE`/`SCHEME` values and vocabulary size
   **before** any verdict.
-* **V3.c** — any character in the serialised corpus that is not in the declared alphabet (digits,
-  comma, semicolon, the prefix delimiters, `<eor>`) is **printed and refused**.
+* **V3.c** — any character in the serialised corpus that is not in the declared alphabet is **printed
+  and refused**. 🔴 **The declared alphabet is: digits, comma, semicolon, lowercase `a-z`, underscore,
+  hyphen `-`, plus `+`, the prefix delimiters (`|` between prefix and body, comma within it), and
+  `<eor>`.** The hyphen and plus are in it for **`strat_age_band` alone** — `11-14` … `75+`, frozen by
+  D-S2-19 and serialised **verbatim** per **D-S3-6**, because a transliteration such as `75+ → 75plus`
+  is a mapping the encoder authors and the decoder must invert, and an encoder and decoder that agree
+  about a wrong mapping round-trip perfectly and mean something else. That is the symmetric-defect
+  class, volunteered into a field no gate is watching. 🔴 **The alphabet is not widened again. The next
+  character that does not fit is a stop, not an amendment.** Letters and the underscore are in it
+  because `LOC` is a
+  `target_class` **string** and always was — `at_home`, and now `unknown` — while every earlier
+  statement of this guard listed digits only. That omission would have refused the whole corpus on its
+  first character, or, worse, been quietly widened at the moment it fired. **It is corrected here,
+  before the corpus exists, and not after.** No whitespace is in the alphabet, which is what makes
+  `G3.15 (a)`'s "truly empty, not a space" clause checkable.
 * **V3.d** — G3.5 must report which **end** it fails at. A band gate quoted only as "how many are
   inside" hides an inversion in which the failing end has flipped.
 * **V3.e** — G3.14 **FAILs, rather than skipping**, if `crosswalk_copresence.csv` is missing, has no
   `bit_position` column, carries fewer than **six** flag rows, or its bit positions are not exactly
   `{0,1,2,3,4,5}`. 🔴 A gate whose reference file is absent has not passed; it has not run.
+* **V3.g** — 🔴 **the loader lowercases `country` on read, and every join between the corpus and a
+  Step 2 crosswalk FAILs unless it matched.** Per country, the number of distinct join-key values that
+  matched must be non-zero; zero matches is a FAIL, never an empty result set. **This is D-S2-16 in
+  executable form** and it exists because of a near-miss: `harmonised.parquet` holds `ES`/`UK`/`IT`
+  and every crosswalk holds `es`/`uk`/`it`, so an un-normalised join would have found zero rows for
+  every country and **passed every gate vacuously** — sixteen green gates, a clean coverage cross-tab,
+  nothing checked, and it would have looked exactly like a good result. 🔴 **No guard we owned would
+  have caught it:** `V2.a` counted the countries in the file and `V2.b` counted crosswalk rows, both
+  correctly. **Every guard on this project checks one artefact in isolation; this is the first that
+  checks two artefacts actually met.**
+* **V3.h** — 🔴 **`G3.7` counts the prefix fields the corpus actually ships, against the field list
+  frozen in the record format — not against the number nine.** If D-S2-18's additive round drops a
+  stratum, the prefix is eight fields **for every country**, and the guard FAILs if any record carries
+  a field another record omits. A prefix whose width varies by country is a country marker, which is
+  the leak `G3.8` polices for co-presence.
+* **V3.i** — 🔴 **the loader prints, per country, the number of rows and diaries it read and the number
+  it dropped for any reason, BEFORE any gate runs, and FAILs if it dropped any.** `G3.15 (b)` and
+  `G3.16` catch a loader-level drop after the fact by reconciling counts; this guard refuses one up
+  front. It exists because the drop is not hypothetical — `4thJ_cop_reverify.py` excluded 8,873 diaries
+  with a null `loc_class` episode from its own sample, and the only reason that is known is that it
+  printed the number rather than passing quietly. **A gate battery that silently chooses its own subset
+  is `V3.a` one level up**, and every number in this step is computed on whatever the loader handed it.
 * **V3.f** — G3.14 prints the **per-country, per-flag prevalence from both sides** — corpus-decoded and
   `harmonised.parquet` — **before** any verdict. Two flags with equal prevalence make a swap between
   them invisible to sub-clause (b), and only the printed table shows whether the gate had the
@@ -119,14 +189,23 @@ being an independent check and becomes a restatement of G3.1. Two gates now depe
 
 * It does **not** validate that the format is a *good* format. `RL07` measured that; this step checks
   we implemented what was decided.
-* It does **not** check secondary activities, because the tuple does not carry them. If a later step
-  needs them, Step 2 is where they were dropped and Step 3 is where that became irreversible.
-  🔴 **Amended 2026-08-16: that exclusion is no longer settled.** 3.2-bis's leak argument — the
-  stronger of its two — is retired now that all three countries are known to record a secondary
-  activity, so only the token-cost argument stands and it is a measurement. **If the measurement puts
-  `ACT2` into the tuple, it must happen before `corpus.jsonl` is emitted**, and this validation
-  document gains the gates for a five-element tuple at that moment. A fifth element added afterwards
-  invalidates the corpus, the Step 7 grammar and every trained fold.
+* ~~It does **not** check secondary activities, because the tuple does not carry them.~~ 🔴 **RETIRED
+  2026-08-17. The exclusion is gone, because the tuple now carries them.** D-S3-2 admitted `ACT2` on
+  the measurement — empty-field form, +13 tokens/diary against +50 for the `'98'` sentinel — and this
+  document gained `G3.15` at that moment rather than later, as it said it would. The condition it set
+  for itself was met in the order it set: **measurement → decision → gate → corpus.** Nothing had been
+  serialised, so the fifth element cost nothing; a fifth element added after `corpus.jsonl` would have
+  invalidated the corpus, the Step 7 grammar and every trained fold.
+* 🔴 It does **not** establish that `unknown` and `64` are **learnable** as classes, only that they are
+  present in the right count. D-S3-4 and D-S3-5 were decided on a missingness structure — 17 % and 29 %
+  coverage against a 99 % bar — not on any downstream accuracy. The model must now learn that
+  `unknown` is a location and `64` is not a bit pattern, and **no gate here can say what that costs.**
+  Like the `COP` packing, the only place to find out is a **Step 4 ablation on a subset**, and the
+  codes freeze when `corpus.jsonl` is emitted.
+* 🔴 It does **not** test whether the elevated null rates on `act` 999, 972 and 900 mean the location is
+  recoverable **from the activity**. Job 1255285 had no activity-code label mapping, so whether those
+  are travel codes is **unverified**, and Step 3 acts on none of it. If they are, a better mechanism
+  than either imputation or `unknown` exists and this step did not look for it.
 * It does **not** test the grammar. Whether a generated string is legal is Step 7; whether a *real*
   record serialises legally is here, and the two are different questions with different failure modes.
 * 🔴 It does **not** catch a `COP` bit swap between two flags of **equal prevalence**. G3.14 (b)
@@ -223,3 +302,411 @@ pre-registered threshold can pay for itself.
 
 **Now fourteen gates and fifteen perturbations, none run.** Step 3 remains blocked on
 `harmonised.parquet`, which is blocked on the Step 1 sixteen-gate round.
+
+### 2026-08-17 — **`V3.g` and `V3.h` added. No gate added, and no threshold moved**
+
+Two guards, both from decisions taken elsewhere, both about a failure mode this document could not
+see.
+
+* **`V3.g` is D-S2-16 made executable**, and it is the first guard on this project that checks **two
+  artefacts actually met** rather than checking one in isolation. The near-miss it comes from is worth
+  restating because it is the most dangerous shape we have hit: `harmonised.parquet` holds `ES`/`UK`/
+  `IT`, every crosswalk holds `es`/`uk`/`it`, and an un-normalised join would have returned zero rows
+  per country and **passed every gate vacuously.** Sixteen green gates and nothing checked. 🔴 **It
+  would have looked exactly like the result we got.**
+* **`V3.h` protects `G3.7` from its own number.** `G3.7`'s threshold is "every record carries all nine
+  prefix fields", and D-S2-18 opened the possibility that the prefix is legitimately **eight** — a
+  stratum no country can supply is dropped for all three. Without this guard, an honest eight-field
+  prefix would read as a `G3.7` failure and the tempting repair would be to blank the missing field
+  for the country that lacks it, which is precisely the leak D-S2-2 and `G3.8` exist to prevent.
+  **The guard counts against the frozen field list and refuses a prefix whose width varies by record.**
+
+🔴 **The `G3.7` row's threshold is not edited.** Its "all nine" is the current record format; if the
+additive round drops a stratum, the **record format** changes and `G3.7` follows it, in that order —
+the threshold does not get loosened to accommodate a shortfall discovered later. That distinction is
+the difference between a spec change and gate-shopping, and it is written here because from the inside
+they look identical.
+
+**Fourteen gates, fifteen perturbations, `V3.a` to `V3.h`, none run.** Step 3 is blocked on the
+D-S2-18 additive round and on its own `act2` measurement.
+
+### 2026-08-17 (night) — 🔴 **Two gates added, one threshold moved and recorded as moved, and a perturbation caught disarming itself**
+
+Three measurements closed the four open Step 3 decisions — jobs **1255223** (`COP` re-verification),
+**1255237** (`ACT2` tuple cost) and **1255285** (null structure). Every change below follows a number
+that already existed.
+
+**`G3.15` and `G3.16` added.** `G3.15` is the five-element tuple's gate, written the moment D-S3-2 put
+`ACT2` in and not later — the condition this document set for itself on 2026-08-16, met in order.
+`G3.16` reconciles the two explicit-null codes decided by D-S3-4 and D-S3-5 against
+`harmonised.parquet`, per country, on hard counts (**8,007 / 16,793** `unknown`; **68,464** `COP == 64`).
+
+🔴 **Both new gates read the parquet fresh from disk, and that is their whole point.** `G3.1` audits the
+encoder against the decoder over whatever the **loader** handed them; if the loader drops rows or a
+column, corpus and frame agree and `G3.1` passes. **A loader-level defect is invisible to it by
+construction.** This is not a hypothetical failure mode — `4thJ_cop_reverify.py` dropped 8,873 diaries
+from its own sample, and the only reason anyone knows is that it printed the count. `V3.i` now refuses
+such a drop up front; `G3.15 (b)` and `G3.16` catch it after the fact. Three of the five new
+perturbations are loader-level and must leave `G3.1` **clean**, which is the assertion that proves the
+point rather than asserting it.
+
+**`G3.5`'s band was moved, on the author's ruling (D-S3-3), and is recorded as moved.** Median 220 → 300,
+p99 400 → 700, and a new **max ≤ 1024**. The old band was anchored on **one hand-made 25-episode diary
+measured at 200 tokens** — a point, never a distribution — and real diaries break it at 225.0 / 559.0
+**with no `ACT2` at all**, so no encoding choice available to us could have satisfied it. 🔴 **The
+binding clause is now the max, and it is a budget rather than a fit**: `RL05` packs to 2048 tokens, a
+longer record is silently truncated, and 1024 is that window halved for margin. The median and p99 keep
+declared headroom over the measured 238.0 / 580.0 for the `unknown` and `64` codes, which postdate the
+measurement. **A second move would be gate-shopping**, and the only thing distinguishing the two is that
+this reason was written down first.
+
+🔴 **Moving the band silently disarmed its own perturbation, and that is the finding worth keeping.**
+"Inject one 60-episode diary" was written to break `G3.5` under the old band. At the measured ~11
+tokens per episode a 60-episode diary is roughly 685 tokens — **comfortably inside the new max of 1024,
+and one diary cannot move a median or a p99 across 73,254 records.** The perturbation would have run,
+passed, and reported a green `G3.5` that had never been made to fall. The coverage clause would have
+caught it *only* because it FAILs on a gate that was never seen failing. **It is raised to 150
+episodes.** The general rule this is an instance of: **when a threshold moves, every perturbation
+aimed at it must be re-checked against the new number, because a perturbation is calibrated to the
+band it was written for and nothing in a battery announces when it has gone slack.**
+
+**`G3.7` follows the record format to eight prefix fields**, D-S2-19 having dropped `season` for all
+three countries. That is the sequence `V3.h` exists to enforce — **format changed, then threshold** —
+and not the reverse.
+
+**`V3.c` was wrong and is corrected before it could fire.** Its declared alphabet listed digits only,
+while `LOC` has always been a `target_class` **string**. Left alone it would have refused the corpus on
+its first `at_home`, and the tempting repair at that moment would have been to widen the alphabet to
+whatever the corpus contained — a guard rewritten by the artefact it guards.
+
+**It was widened once more, deliberately, and then closed.** The build employee stopped on
+`strat_age_band`'s `11-14` and `75+` — the only characters in the record outside `[a-z0-9_,;|]` — and
+proposed a two-way lookup table. 🔴 **Refused (D-S3-6): a transliteration is a mapping the encoder
+authors and the decoder must invert, which is precisely the defect the bit-order perturbation exists to
+catch, reintroduced by choice into a field no gate is watching.** The band labels are frozen upstream,
+so shipping them verbatim leaves no mapping to get wrong. Two characters admitted, one failure class
+removed, **and the alphabet is now closed** — the next character that does not fit is a stop.
+
+**The `G3.5` band's headroom is smaller than D-S3-3 implied, and the band still holds.** The same
+employee pointed out that 238.0 / 580.0 / 751 were measured on **bare episode chains with no prefix and
+no `<eor>`**, while a real record carries both — 20 to 30 tokens more. The declared headroom was for
+the `unknown` and `64` codes; it absorbs the prefix too, at ~263 / ~605 / ~776 against 300 / 700 / 1024.
+🔴 **The median's spare room is roughly 12 %, not 26 %.** Recorded now rather than discovered when the
+gate fires, because a band whose margin is smaller than its author believed is how a threshold gets
+moved a second time.
+
+### 2026-08-17 (night, close) — **D-S3-9: a third explicit code, and `G3.4` acquires a member it has never measured**
+
+The first build refused to emit a corpus — `act` is null on 8,709 episodes in 5,248 diaries, and
+round-trip must be exact on 100 %. 🔴 **That refusal is the correct outcome and is recorded as one.**
+The alternative, emitting 92.8 % of a corpus and reporting a rate, is how a partial corpus becomes the
+corpus. In the same run **`V3.i` passed on its first outing** — 2,024,068 rows and 73,254 diaries read,
+0 dropped, matching per country — which is what makes the finding a fact about the table rather than
+about the reader.
+
+**`G3.16` gains sub-clause (c)** — `ACT == 000` per country equals the null-`act` count, **3,786 / 333
+/ 4,590** — and one perturbation: **the loader silently drops Spain's 2,306 null-`act` diaries.** Spain
+is chosen deliberately: it has zero null `loc_class` and zero null `cop_*`, so it is **the one country
+where (c) can be felled without moving (a) or (b)**. Everything the val doc says about (a) and (b)
+applies to (c) verbatim — it reads the parquet fresh and can see a record the encoder was never offered.
+
+🔴 **`G3.4` now has a member nobody has tokenised.** Its threshold is 100 % of 3-digit `ACT` codes at
+exactly one token, and `000` is a 3-digit `ACT` code from tonight. **If it costs two tokens, `G3.4`
+FAILs and the code changes** — to another 3-digit string verified free the way `000` was — **and the
+gate does not move.** `998` and `999` are both already taken, each a legal target code *and* present in
+the data, so either would have repeated the `999` failure class exactly: Step 1 pre-registered `999` as
+an out-of-list perturbation for Spain and it turned out to be a real INE code.
+
+**A note on how D-S3-9 was nearly mis-routed, kept because it is about this document's own method.**
+The measurement was pre-registered with a rule: if the raw code was present and unmapped, Step 2 has a
+coverage hole and reopens. Every one of the 8,709 came back exactly that way — and the rule was still
+wrong. Step 2 refused those eight codes **on purpose**, recorded them in `crosswalk_unmapped.md` as
+diary-quality markers rather than activities, and `G2.1` reads that register. 🔴 **A deliberate refusal
+and an accidental omission are indistinguishable to a mechanical test, and the rule had no third
+bucket.** The fix is not a better test: it is to **read the earlier step's own documentation before
+writing a rule about that step's behaviour** — the discipline this project applies to gates, applied to
+itself.
+
+**Sixteen gates, twenty-one perturbations, `V3.a` to `V3.i`, none run.** 🔴 **Step 3 is no longer blocked.**
+The record format is frozen at `<8-field prefix> | DUR,ACT,ACT2,LOC,COP … <eor>`, `LOC` has five
+classes, `COP` is an integer in 0-64, and `corpus.jsonl` may be emitted.
+
+### 2026-08-17 (night, corpus emitted) — `G3.5`'s max clause moved a second time, by the author
+
+Job **1255620** emitted the corpus and `G3.5` failed on its binding clause: **max 1191 against ≤ 1024**,
+four records of 73,254, all UK. Median 275.0 and p99 647.0 are both inside. The full accounting is in
+`4thJ_03_serialisation.md`; the part that belongs here is what it does to the gate.
+
+🔴 **The band was raised to `max ≤ 1200` on the author's ruling (D-S3-10), overriding this document's
+own pre-registered refusal to move it a second time.** Both facts go on the record together, in that
+order. The alternatives were shipping with the FAIL standing, or dropping the four diaries; dropping
+was declined because deleting 0.005 % of the corpus to turn a red gate green is the same act as moving
+the threshold, wearing different clothes, and it would have felled the loader-drop clause instead.
+
+**What the row now is, stated plainly so nobody later mistakes it for a derivation.** 1024 was a
+budget: half of `RL05`'s 2048-token packing window, chosen so no record could be truncated and two
+records could share a sequence. **1200 is a fit.** It keeps the property that actually protects the
+data — no record approaches 2048, so nothing is silently truncated — and abandons the factor-of-two
+margin. 🔴 **It has nine tokens of headroom above the observed maximum.** Any change that lengthens the
+longest record — a fourth country, a wider prefix, an extra field, a tokenizer that is not the dolma2
+vocabulary this was measured on — will breach it, and at that point the clause has no reserve left to
+absorb the change. That is the cost of a fitted threshold and it is being recorded now, not discovered
+later.
+
+**🔴 The perturbation was re-checked against the new number, because the last move disarmed one.**
+When D-S3-3 re-based this row, the "inject one 60-episode diary" perturbation silently went slack —
+roughly 685 tokens, comfortably inside the new max — and would have reported a green `G3.5` never made
+to fall. It was raised to **150 episodes**. Against 1200: the corpus measures a median record of 275.0
+tokens, and at the corpus's own ~11-13 tokens per episode a 150-episode diary is roughly **1,650-1,950
+tokens plus the prefix and `<eor>`**, which clears 1200 with room. **The row still fires, and its
+margin is now roughly 40 % rather than 60 %.** It is not raised again — a perturbation that fires is a
+perturbation that works, and inflating it further would only hide the next move. 🔴 **If this threshold
+is ever moved a third time, this check is repeated before the battery runs, not after.**
+
+**The four over-length records are not removed and not marked.** They are ordinary UK diaries that are
+long, they round-trip exactly like every other record, and `G3.2` holds on them. Nothing about them is
+defective; they were merely longer than a number I chose.
+
+---
+
+### 2026-08-17 (night, later) — THE BATTERY IS SUBMITTED. Speed job `1256012`. No result yet.
+
+**State at the time of writing: RUNNING**, 1 m 22 s elapsed, exit `0:0`. Sixteen gates, twenty-one
+perturbations, `V3.a`–`V3.i`, one coverage clause — baseline plus all 21 variants in **one** job
+(22 runs of the full battery), which is a deliberate choice to avoid 22 separate submissions and 22
+separate waits. 🔴 **Nothing below this line is a result. No gate has passed and none has failed.**
+
+* Script: `4J_docs_occ/tools/4thJ_gates_step3.py`, ~1,540 lines, written for this battery.
+* Output: `/speed-scratch/o_iseri/4J_gates_step3_1256012.out`; 22 `gate_report_*.txt` files plus
+  `coverage_crosstab.txt` and `battery_summary.json` under `/speed-scratch/o_iseri/4J_step3_gates_out/`.
+* Implementation state, written for a cold agent: `Step3_docs/impl/2026-08-17_step3-gates.md`.
+* **Independence held where it matters:** `G3.13`, `G3.14 (b)`, `G3.15 (b)` and `G3.16` each have their
+  own parser, their own crosswalk loaders and their own fresh `pd.read_parquet` call. **None of them
+  imports `encoder.py` or `decoder.py`** — which is the entire reason those four gates exist.
+
+### 2026-08-17 (night, close) — 🔴 **THE BATTERY REPORTED. It ran clean; this DOCUMENT did not survive it. Two gates re-specified, one gate's subject deleted, four table cells corrected.**
+
+Job `1256012`: **COMPLETED**, exit `0:0`, elapsed **3 h 07 m 55 s**. No `FATAL`, no `Traceback`, all
+22 variants reported, `DONE.` printed. Full numbers in
+`outputs_step3/proglog_step3_gates.md`; artefacts in `outputs_step3/gates_out/`. What the run did to
+this document:
+
+**Two gates FAILed at BASELINE — `G3.9` and `G3.10` — and a gate that FAILs at baseline cannot be
+seen falling.** Their perturbation rows printed "AS EXPECTED (fell)" and both of those lines are
+worthless. **One root cause for both:** the `scheme` prefix field. It varied by country
+(`eet_2009_2010` / `uktus_2014_2015` / `usodeltempo_2013_2014`, felling `G3.9`'s constancy threshold)
+**and** embedded its survey's field years (felling `G3.10` on all 73,254 records). The claim at
+`4thJ_03_serialisation.md:110` that `MODE` and `SCHEME` are constant across the corpus was true of the
+corpus as conceived and **never true of the corpus Step 2 shipped**.
+
+**The coverage clause FAILed on `G3.3`**, which was never felled and, as written, could not be: it
+tested tokenizer idempotency, which every sane tokenizer satisfies.
+
+**Four `UNEXPECTED FALL`s, all on `G3.1`** — `zero_pad_act4`, `strip_eor_1pct`, `zero_pad_cop2`,
+`spell_unknown_two_ways`. Three were pre-registered as predictions in the section immediately below,
+**and the predictions held on the real corpus**. `strip_eor_1pct` was a fourth, unpredicted. The
+common cause is one design fact: `gate_g31` compares the decoded text against the **frozen canonical
+structure from `harmonised.parquet`**, not against a re-encode of the perturbed pipeline, so any text
+mutation falls. **The four "must stay clean" cells in the perturbation table above are corrected to
+FAIL, dated, with the reason.** The decoder was **not** relaxed and `G3.1` was **not** softened —
+this is an Acceptance-Test-3 finding: the shipped decoder is stricter than this document's narrative.
+
+**And one defect the battery did not look for.** Checking whether a proposed replacement threshold
+would pass at baseline, the per-country prefix vocabulary was measured directly from
+`harmonised.parquet`: `strat_hh_type = unknown` is emitted by the **UK only** (18,449 episodes), and
+`strat_econ_status = unknown` by IT and UK but never ES. `crosswalk_strata.csv` declares `unknown`
+legal for all three "for cross-country parity", so **no declared-vocabulary check would ever see
+this**. Fold by fold, exactly one cell bites: **hold out the UK and it trains on ES+IT, neither of
+which ever emits `strat_hh_type = unknown`.** Carried as open item **D-S3-14**; it blocks Step 4.
+
+**Four author rulings, same day.** Grounds and application list in
+`impl/2026-08-17_step3-gates.md`:
+
+| | ruling |
+|---|---|
+| **D-S3-11** | **DROP both `mode` and `scheme` from the prefix.** 8 fields → **6**. Collapsing them to one invented constant was refused — `hetus_acl2008` exists in no source file. Corpus rebuilt. |
+| **D-S3-12** | **RE-POINT `G3.9`** at fold-aware cross-country vocabulary, over **observed** values. Its perturbation replaces `mode_second_value`. |
+| **D-S3-13** | **RE-SPECIFY `G3.3`** as a character-level round trip, and move the swap partner off `gpt2` (byte-level, lossless — it would leave the new gate green a second time) to `bert-base-uncased`. |
+| **D-S3-14** | **OPEN.** The UK-only `strat_hh_type = unknown` cell. |
+
+🔴 **Registration discipline, stated plainly because it matters for the paper.** `G3.9`'s new
+threshold was written **after** seeing this data. It is recorded here before the rebuild, with its own
+perturbation row, and it **must be seen failing** on that row in the re-run. It may not be presented
+as though it had been pre-registered from the start. `G3.3`'s re-specification is in the same
+position. **`G3.10` is the counter-example and the one to point at:** it FAILed, and it was **not**
+touched — the corpus changed instead.
+
+**Net: still sixteen gates. None retired.** Two now measure something that can fail.
+
+**Local verification before the rebuild** (synthetic 10-record fixture, three countries, shared
+vocabulary): six-field prefix round-trips through the real encoder/decoder; `G3.10` PASS with its
+regex untouched; `G3.7` PASS at width 6; the re-pointed `G3.9` reproduces Finding 4 exactly — **UK
+fold FAIL on `strat_hh_type = unknown` alone, ES and IT folds PASS** — and its perturbation moves the
+**Italy** fold PASS → FAIL while `G3.7` stays clean. Ten of ten checks. **A fixture is not the corpus;
+the cluster re-run is the measurement.**
+
+### 2026-08-18 — **THE RE-RUN REPORTED. The document survived it. Coverage clause PASS, 19/19 seen falling, one open decision left standing**
+
+Speed job `1257441`, `COMPLETED`, exit `0:0`, elapsed `02:23:19`. Corpus rebuilt at the six-field
+prefix and the full battery re-run in one job, phase 2 gated on phase 1 exiting 0. Evidence:
+`outputs_step3/gates_out_v2/` (25 reports + the `.out`); numbers written up in
+`outputs_step3/proglog_step3_gates.md`, second dated entry. Nothing here is re-derived from that
+write-up — both were read off the same `.out`.
+
+**The headline, against the run that produced the re-specifications:**
+
+| | job 1256012 | job 1257441 |
+|---|---|---|
+| gates PASSing at baseline | 18 / 20 | **19 / 20** |
+| of those, seen falling | 17 | **19 — every one** |
+| coverage clause | **FAIL** | **PASS** |
+| "must fail" cells that fired | — | **21 / 21** |
+
+**Both re-specifications are demonstrated, not asserted.**
+
+`G3.3` (D-S3-13) — at baseline `n_char_roundtrip_ok = 73,254 / 73,254`, PASS. Under the
+`bert-base-uncased` swap it is **0 / 73,254**, `n_eor_ok_detok` **0 / 73,254**, FAIL. The idempotency
+count this gate used to score is still computed, still 73,254 / 73,254 under *both* tokenizers, and
+now sits in the report under the key `n_idempotency_ok_REPORTED_NOT_SCORED`. The tautology and its
+replacement are printed side by side: the number that could not move, unmoved, next to the number
+that moved from 73,254 to 0. **This is what "seen failing" is supposed to look like, and the old
+`G3.3` could never have produced it.**
+
+`G3.9` (D-S3-12) — per-fold at baseline: **es PASS, it PASS, uk FAIL** on `strat_hh_type = unknown`,
+551 diaries. Under `national_raw_hh_type_it` the **Italy** fold moves PASS → FAIL on 38,260 diaries
+(unseen value `tipfa2m_05`) while ES stays PASS; `n_violations` 1 → 2.
+
+🔴 **A qualifier that must travel with every future quotation of that row.** `G3.9`'s *top-line*
+verdict is FAIL at baseline and FAIL under every perturbation, so its column in the coverage
+cross-tab is uninformative and the gate **cannot be "seen falling" in the ordinary sense**. What was
+demonstrated is narrower: *the Italy fold* moves. Write it that way or do not write it.
+
+`G3.10` — PASSes at baseline here, with **its regex untouched**, having FAILed at baseline in
+1256012. The only thing that changed is that `scheme` left the prefix. That is the single-cause
+diagnosis (one field, two red gates) confirmed by removal rather than by argument.
+
+**`G3.5`'s numbers move, its band does not.** The corpus now measures **median 256.0, p99 632.0,
+max 1178** (was 275.0 / 647.0 / 1191 at eight fields), all inside `median ≤ 300, p99 ≤ 700,
+max ≤ 1200`. The headroom on the binding max clause therefore widens from 9 tokens to **22**. The
+band was **not** re-tightened to match the smaller prefix. Re-fitting a threshold to a new
+measurement is the move this project does not make, and it does not become acceptable because the
+new measurement is more comfortable than the old one. The row at `## GATES` still quotes the
+eight-field figures and the 9-token headroom; **this entry supersedes those three numbers and the
+band itself is unchanged.**
+Under `tokenizer_swap`, `G3.5` reads 323.0 / 779.47 / 1453 — outside on all three. The band
+discriminates; it is not merely wide enough to pass everything.
+
+`G3.7` — `v3h_width_distribution = {6: 73254}`, `v3h_frozen_field_count = 6`, uniform across records.
+The six-field prefix is confirmed on the corpus, not only on the fixture.
+
+**The four corrected table cells reproduced exactly**, as this document predicted before the run:
+`G3.1` FAILs under `zero_pad_act4`, `strip_eor_1pct`, `zero_pad_cop2` and `spell_unknown_two_ways`.
+The prediction section below stands as written and is now confirmed on the real corpus.
+🔴 `EXPECTED_EFFECT` inside `4thJ_gates_step3.py` **was deliberately left declaring `G3.1` clean on
+those four**, which is why the run still prints four `UNEXPECTED FALL -- FINDING` lines. That table
+is the pre-registration. Editing it after seeing the result would delete the four findings from every
+future report and make the run look cleaner than it was. The divergence between the script's table
+and this document's table is the audit trail.
+
+**What this run did NOT settle.** `G3.9` is red at baseline and stays red: **D-S3-14 is open and it
+is now the only thing blocking Step 3's close.** The UK emits `strat_hh_type = unknown` on 551
+diaries (18,449 episodes) and neither ES nor IT ever does, so under LOCO the UK fold's training pair
+has never seen the symbol it will be tested on. The gate is doing precisely what D-S3-12 told it to
+do. **This is not to be repaired in code**, and in particular not by exempting declared-but-unobserved
+values — that wording was measured and disproved once already (`crosswalk_strata.csv` declares
+`unknown` legal for all three countries while only the UK emits it, so such a gate would pass a
+defective corpus).
+
+**One documentation defect, found and fixed.** `4thJ_step3_build.py` still printed the superseded
+band `max<=1024` and so announced `max EXCEEDS band (upper end)` for a max of 1178 that is inside the
+ruled 1200. The gate used 1200 correctly throughout and PASSed; only the build script's console text
+was stale against D-S3-10. Fixed in place and re-copied to Speed — display text only, no rebuild, no
+gate result changed. Recorded because a stale band statement in a build log is exactly the kind of
+number that gets quoted into a paper.
+
+### 2026-08-18 (later) — **D-S3-14 RULED: the UK `unknown` cell STAYS. `G3.9` remains red on the UK fold, by ruling and not by defect. This document is now closed.**
+
+The author ruled conditionally: *take (b) if it is available, otherwise (a).* **(b) — folding
+`strat_hh_type = unknown` into an existing category for all three countries — was checked against the
+sources and is not available.** Three reasons, each read off a document:
+
+1. **It is missing data, not a residual category.** `crosswalk_strata.csv` maps it from a *blank*
+   `dhhtype`: `strat_hh_type,uk,,blank dhhtype (3.6% observed),unknown`. The Step 1 codebook measures
+   it directly — **411 blank of 11,421 UK persons, 3.6 %** — and `dhhtype` is UKDA's own **derived**
+   household-level variable (0 of 4,733 `serial` groups carry more than one distinct value). Blank
+   means **UKDA's derivation declined to classify that household.** Folding it into `other_complex`
+   would assert a household type for households the data provider itself would not type.
+2. **No better source exists in the delivery.** The Step 1 codebook evaluates alternative fields for
+   *economic status* (`WorkSta`, `dilodefr`, F-UK-16) and records none for household type.
+   Re-deriving it ourselves from the household grid is precisely the "invented proxy" that same note
+   rules out.
+3. **It contradicts D-S2-19.** `G2.18 (a)` was amended to score on *declared availability* rather
+   than observed prevalence, and gave the reason in writing: *"the only repairs available on a
+   prevalence basis are imputation or dropping rows, and this round's acceptance test forbids moving
+   a single row."* That amendment names this exact cell in advance — *"`strat_hh_type = unknown` is
+   expected there, at ES 0.0 % / IT 0.0 % / UK 3.6 %"* — and states that the repair for a one-country
+   band is **to coarsen the classification, never to relax the count**. Coarsening cannot reach
+   `unknown`: it is not one of the substantive categories being coarsened.
+
+**Ruling: (a). No row is imputed, no row is dropped, and `G3.9` is not touched** — not re-pointed,
+not relaxed, not exempted. A gate correctly reporting a real property of the data is not a gate to be
+edited. In particular option **(d)**, exempting declared-legal-but-unobserved values, stays rejected:
+`crosswalk_strata.csv` declares `unknown` legal for all three countries while only the UK emits it,
+so that gate would pass a defective corpus. That was measured, not argued.
+
+**What the limitation actually is, stated at the size it actually has.** 551 diaries of the UK's
+15,854 — **3.5 % of one fold**, and only that fold; ES and IT PASS at baseline.
+🔴 **And the literal symbol is not unseen by the model.** `unknown` also occurs in
+`strat_econ_status`, where **Italy emits it** (IT + UK, never ES; 1,712 diaries corpus-wide). Under
+UK-held-out the training pair is ES + IT, so Italy puts the token `unknown` in front of the model
+inside the same six-field prefix. **What is novel at test time is the field position, not the
+symbol.** That is a materially weaker failure mode than "a token the model has never seen", and it
+must be written that way rather than the stronger way.
+
+**Consequences.** Step 3 closes at **19 of 20 gates PASSing at baseline with one gate red by ruling**,
+never as 20 of 20. The paper carries the limitation with all four numbers attached: 551 diaries,
+18,449 episodes, 3.5 % of the UK fold, 3.6 % of UK persons at source. 🔴 **Step 6 owes a split
+report** — the UK fold's scores for `strat_hh_type = unknown` versus the rest — so the limitation is
+quantified against outcomes instead of asserted; if that split cannot be produced, it is reported as
+un-quantified and said to be so.
+
+## 🔴 A prediction was pre-registered before the run, and it contradicts this document's own table
+
+Reading `decoder.py`'s actual validation logic — not its narrative — three perturbations are expected
+to **fell `G3.1`**, although the perturbation table above lists `G3.1` under **"must stay clean"** for
+each of them:
+
+| Perturbation | Why `G3.1` is expected to fall |
+|---|---|
+| **Zero-pad `ACT` to 4 digits** | `decode_episode` hard-asserts `len(act) == 3`; a 4-digit code raises `DecodeError` on every affected episode. |
+| **Zero-pad `COP` to 2 digits (`07`)** | it hard-asserts `cop_s == str(int(cop_s))`, so a leading zero raises `DecodeError`. |
+| **Spell `unknown` two ways** | it does **not** case-fold; `LOC == "UNKNOWN"` falls through to the generic `else` branch and returns the literal string, never `None`, mismatching the canonical `None`. |
+
+🔴 **No gate, threshold, perturbation or decoder line was edited to avoid these outcomes.** If the run
+reproduces them, they are reported as **Acceptance-Test-3 findings — the shipped decoder is stricter
+than this document's narrative assumed** — and this table is what gets corrected, in a new entry, with
+the old text left standing. **The expected column is only worth writing down if a surprise in it is
+allowed to mean something.**
+
+## One real bug, caught before the cluster ran
+
+A local synthetic-fixture smoke test (5 rows, 4 diaries, real functions imported by path — not
+re-implemented) found that the `add_tokens_act311` perturbation called `add_tokens()` on the **shared,
+cached** tokenizer object. Since it is variant 12 of 21 and `add_tokens()` mutates in place, **all nine
+variants sequenced after it would have inherited the extra token and failed `G3.12` for the wrong
+reason** — a green-looking battery with nine silently corrupted rows. Fixed before submission by
+loading a private, uncached tokenizer for that one variant. **Found by re-reading the code while
+writing the expected-value assertions, not by an assertion firing.**
+
+## Assumptions this battery carries, recorded before its numbers arrive
+
+* **`G3.13`'s "Level-1 category"** = the **first digit of the 3-digit `ACT` code**, with the literal
+  `"000"` held out as its own NULL category rather than folded in with real codes that begin `0`
+  (`011`, `012`, `021` …). Neither this document nor the task doc defines Level-1 precisely.
+* **`gpt2`** is the substitute tokenizer for the swap perturbation; neither document names one.
+* **`V3.i` is expected to PASS on every variant**, loader-level ones included, because no perturbation
+  mutates `harmonised.parquet` — the guard protects against *this battery* silently scanning a subset.
+  That is not a contradiction and must not be reported as one.
+* The pre-registered per-country hard counts were **copied** from this document, not re-derived before
+  the run. The battery re-derives them itself at runtime; **a disagreement is a finding, not a typo to
+  reconcile.**

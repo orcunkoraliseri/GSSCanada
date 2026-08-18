@@ -1,0 +1,120 @@
+{
+  "baseline_pass_gates": [
+    "G3.1",
+    "G3.11",
+    "G3.12",
+    "G3.13",
+    "G3.14a",
+    "G3.14b",
+    "G3.15a",
+    "G3.15b",
+    "G3.16a",
+    "G3.16b",
+    "G3.16c",
+    "G3.2",
+    "G3.3",
+    "G3.4",
+    "G3.5",
+    "G3.6",
+    "G3.7",
+    "G3.8"
+  ],
+  "felled_by": {
+    "G3.1": [
+      "drop_loc_decoder",
+      "merge_episodes",
+      "zero_pad_act4",
+      "strip_eor_1pct",
+      "blank_prefix_field10",
+      "assert_flag_not_recorded",
+      "mode_second_value",
+      "add_year2013",
+      "zero_pad_cop2",
+      "spell_unknown_two_ways"
+    ],
+    "G3.13": [
+      "merge_episodes",
+      "zero_pad_act4",
+      "strip_eor_1pct"
+    ],
+    "G3.14b": [
+      "merge_episodes",
+      "strip_eor_1pct",
+      "assert_flag_not_recorded",
+      "reverse_bitorder",
+      "loader_drop_it_null_loc",
+      "loader_drop_uk_null_cop",
+      "loader_drop_es_null_act"
+    ],
+    "G3.15b": [
+      "merge_episodes",
+      "strip_eor_1pct",
+      "act2_98_fill",
+      "loader_drop_act2_italy",
+      "loader_drop_it_null_loc",
+      "loader_drop_uk_null_cop",
+      "loader_drop_es_null_act"
+    ],
+    "G3.16a": [
+      "merge_episodes",
+      "strip_eor_1pct",
+      "loader_drop_it_null_loc",
+      "loader_drop_uk_null_cop",
+      "spell_unknown_two_ways"
+    ],
+    "G3.16b": [
+      "merge_episodes",
+      "strip_eor_1pct",
+      "loader_drop_uk_null_cop"
+    ],
+    "G3.16c": [
+      "merge_episodes",
+      "zero_pad_act4",
+      "strip_eor_1pct",
+      "loader_drop_it_null_loc",
+      "loader_drop_uk_null_cop",
+      "loader_drop_es_null_act"
+    ],
+    "G3.4": [
+      "tokenizer_swap",
+      "zero_pad_act4"
+    ],
+    "G3.5": [
+      "tokenizer_swap",
+      "zero_pad_act4",
+      "inject_150ep_diary",
+      "act2_98_fill"
+    ],
+    "G3.12": [
+      "tokenizer_swap",
+      "add_tokens_act311"
+    ],
+    "G3.2": [
+      "strip_eor_1pct"
+    ],
+    "G3.6": [
+      "strip_eor_1pct"
+    ],
+    "G3.7": [
+      "strip_eor_1pct",
+      "blank_prefix_field10"
+    ],
+    "G3.14a": [
+      "strip_eor_1pct",
+      "zero_pad_cop2"
+    ],
+    "G3.8": [
+      "assert_flag_not_recorded"
+    ],
+    "G3.11": [
+      "split_by_diary"
+    ],
+    "G3.15a": [
+      "act2_98_fill"
+    ]
+  },
+  "never_felled": [
+    "G3.3"
+  ],
+  "coverage_verdict": "FAIL"
+}

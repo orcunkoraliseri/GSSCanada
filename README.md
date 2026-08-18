@@ -403,6 +403,17 @@ To support the computational demands of urban-scale simulations, I have access t
   drawing**, and matplotlib figures rendered from a frozen aggregate stay with the assistant.
   A prompt for a figure that carries measured numbers must carry those numbers in a table, because an
   image generator asked to describe a result will invent one. See [`CLAUDE.md`](CLAUDE.md).
+- **Agents never wait, and never carry state in their context.** Work on this repo is split between a
+  planning *manager* session and short-lived *employee* sessions. An employee submits its cluster job,
+  writes the JobID to the task's implementation doc, and stops — it does not poll, sleep, or hold a
+  turn open waiting for SLURM. Each task gets a **new agent**; finished employees are never resumed,
+  because resuming replays the entire transcript. Everything the next agent needs lives on disk:
+  durable decisions in the step's working doc (e.g.
+  `4J_docs_occ/Step2_docs/4thJ_02_harmonisation.md`), per-task execution state in
+  `<Step>_docs/impl/<YYYY-MM-DD>_<task-slug>.md` — job ledger (append-only, failures kept beside
+  whatever superseded them), numbers actually read, assumptions, and the exact next action. The rule
+  was written after one employee accumulated 359.7k tokens of context in 43 minutes, nearly all of it
+  re-reading itself while waiting on jobs that had already finished. See [`CLAUDE.md`](CLAUDE.md).
 - Agent/workflow conventions are documented in [`AGENTS.md`](AGENTS.md) and [`CLAUDE.md`](CLAUDE.md).
 
 ---
