@@ -163,3 +163,75 @@ Append-only.
   cannot see, and it is cheap to get right at training start and expensive to discover at Step 6.
 * **V4.h exists because four folds now share one output directory.** Nothing in a metrics row says
   which country it held out, so the runner has to say it before it says anything else.
+
+---
+
+## 🔴 RULINGS ON GATE DESIGN, RECORDED IN THIS DOC (2026-08-19)
+
+D-S4-1 and D-S4-2 (2026-08-18) were applied in code and recorded only in
+`outputs_step4/proglog_step4_gates.md`. They are cross-referenced here so that this doc,
+which is what a reader checks a verdict against, does not describe a gate that no longer
+exists. **D-S4-4 below is a change of MEASUREMENT BASIS and is registered here BEFORE the
+run that reports under it, per the discipline set in Step 3 for `G3.9` and `G3.3`.**
+
+| | ruling | effect on this doc |
+|---|---|---|
+| **D-S4-1** (2026-08-18) | `G4.6` is measured in **float32**. Band UNCHANGED at `1e-4` | none — the arithmetic precision of the comparison moved, not the threshold |
+| **D-S4-2** (2026-08-18) | `G4.8` asserts tokenizer **identity against the base checkpoint** and *then* round-trip | the "Swap the tokenizer / must fail `G4.8`" row is now reachable before generation |
+| **D-S4-3** (2026-08-19) | `G4.6`'s residual is measured by an **α-sweep** before anything is ruled. **Nothing is decided by this entry** | none. The band stays `1e-4` and `G4.6` stays a standing FAIL until the sweep reports |
+| **D-S4-4** (2026-08-19) | 🔴 `G4.2`'s **first arm is re-based onto FORCED delimiters only.** Band UNCHANGED at `0.05` | the paragraph below replaces the tacit definition of "delimiter loss" |
+
+### D-S4-4 — what "delimiter loss" now means, and why it changed
+
+`G4.2`'s first arm is `delimiter loss < 0.05`: *the model has learned the record format
+almost perfectly.* It was scored over every token whose decoding is entirely delimiter
+characters — **which includes the two-comma token that encodes an absent `ACT2`.** Whether
+a respondent recorded a secondary activity is a **content** decision, not a format one, and
+scoring it in this arm made the arm a statement about the corpus rather than about the
+model.
+
+Measured on the corpus the trainer read (`4J_step3_corpus.jsonl`, md5
+`ca89d2295603c547f2384a40dd1909ba`; scripts `tools/4thJ_step4_g42_*`), an oracle that
+predicts `P(act2 empty | country, act)` as well as the data allows — fitted on 80 % of the
+`uk`+`it` records, scored on the held-out 20 % — still pays **0.0480 nats per delimiter
+token, 96 % of the 0.05 band**, before the model predicts a single real delimiter. Richer
+conditioning does not rescue it (`(country, act, loc, dur band)` → 0.0477). **The arm was
+therefore unsatisfiable by construction, for any model and any training budget** — which is
+the true reason behind FINDING 25's extrapolation to 10¹² records.
+
+**The band is NOT moved.** What moves is the token set:
+
+* `delimiter_loss` — scored over delimiters whose presence the record grammar **forces**.
+  This is the number the arm reads. Any delimiter token containing `,,` is excluded.
+* `delimiter_loss_all_basis` — the pre-ruling number over every delimiter token, still
+  computed and still printed, so every reading before 2026-08-19 (`0.1094`, `0.1022`, …)
+  stays comparable.
+* `act2_slot_loss` — the excluded tokens, reported on their own line. They are **not**
+  moved into the content bucket: `content_loss` is `G4.9`'s input, `G4.9` has been seen
+  falling and is credited in DoD item 6, and re-basing a working gate's input to repair a
+  different gate is not a repair.
+
+🔴 **Two costs, declared rather than absorbed.** (1) Dropping the `,,` token also drops the
+`ACT`-terminating comma fused into it, which *is* forced — the exclusion is slightly wider
+than the defect. It makes the arm **harder** to pass, so the error runs in the conservative
+direction, but it is an error and it is written down. (2) The premise that `,,` is one pure
+delimiter token was reached arithmetically (122.3 measured delimiter tokens per record
+against 124.0 predicted by a merged `,,` and 145.8 by standalone commas) and is being
+**measured** by `tools/4thJ_step4_g42_token_census.py` on the tokenizer itself. **If that
+census fails, D-S4-4 is withdrawn, not adjusted.**
+
+🔴 **REGISTRATION.** This basis was chosen **after** seeing the `0.1094` readings. It may
+never be presented as pre-registered. It must be **seen failing** before it is credited.
+
+| Perturbation | Must fail | Must stay clean |
+|---|---|---|
+| 🔴 **`collapse_content` — flatten `ACT`/`ACT2` to one constant, leave `DUR`/`LOC`/`COP` real** | **`G4.2`**, both arms together (`V4.d` is strict `AND`) | `G4.5`, `G4.7`, `G4.11`, `G4.13`, `G4.14` — but **`G4.9` is a KNOWN collateral fall at 4,000 records and above** (FINDING 26), dose-dependent, and must be quoted with any use of this lever |
+
+**Pre-registered outcome, written before the run.** Arm two is already nailed
+(`gen_entropy = 0.000` at every budget). Arm one now depends on whether the **forced-basis**
+clean delimiter loss crosses `0.05`. Removing the `act2` share from the last reading leaves
+roughly `0.075`, which is **still above the band**. So: if the clean baseline does not cross
+`0.05` on the forced basis, **the demonstration is VOID and is reported VOID**, `G4.2`
+remains in `never made to fall`, and the coverage clause stays `FAIL`. D-S4-4 makes the arm
+**satisfiable in principle**; it does not make it pass, and a re-point that is followed by a
+pass it did not earn would be the band change this project refuses, wearing a different name.

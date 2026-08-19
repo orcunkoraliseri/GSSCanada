@@ -375,10 +375,26 @@ record format, so a format change here is a Step 7 change.
 3. ✅ Round-trip exact on 100 % of the corpus — **73,254 / 73,254 diaries, job 1255620.**
 4. ✅ All four tokenizer assertions pass on the full corpus, not a sample.
 5. ✅ Corpus emitted with a respondent-level split — **58,801 / 6,533, intersection 0.**
-6. 🔴 **NOT DONE.** All Step 3 gates PASS **and each has been seen failing**. Sixteen gates,
-   twenty-one perturbations, `V3.a`-`V3.i`; the battery has not run. 🔴 **This is the only item
-   outstanding, and it is the one that cannot be satisfied by the build's own report** — `G3.13`,
-   `G3.14 (b)`, `G3.15 (b)` and `G3.16` must import nothing from `encoder.py` or `decoder.py`.
+6. ✅ **DONE, and it must be quoted with its qualifier: 19 of 20 gates PASS at baseline, all 19 were
+   seen failing, `COVERAGE CLAUSE VERDICT: PASS`, and 21 of 21 perturbations felled their named
+   gate — with one gate red by ruling, not by defect.** 🔴 **Never write this as 20 of 20.** The
+   battery ran twice under `sbatch`: job `1256012` on the eight-field corpus (two baseline FAILs, a
+   FAILing coverage clause, four unexpected `G3.1` falls, and a fifth defect found off-run — it is
+   the run that found the defects, and its numbers are superseded for every prefix-dependent gate),
+   then job `1257441` on the six-field rebuild after D-S3-11 / D-S3-12 / D-S3-13 were ruled and
+   applied. The single remaining baseline FAIL is `G3.9` on the **UK fold alone** —
+   `strat_hh_type = unknown`, 551 diaries — which **D-S3-14 ruled (a)**: it stays, as a declared and
+   quantified limitation. `G3.13`, `G3.14 (b)`, `G3.15 (b)` and `G3.16` import nothing from
+   `encoder.py` or `decoder.py`, as required. Evidence: `outputs_step3/gates_out/` (1256012) and
+   `outputs_step3/gates_out_v2/` (1257441), both kept whole, neither overwriting the other.
+
+🔴 **Items 1-5 above were re-established on the rebuilt corpus, not carried over on trust.** Job
+`1257441` re-read all 2,024,068 rows and re-emitted from scratch: 73,254 records again, 0 rows and 0
+diaries dropped, encode→decode 73,254 / 73,254 exact, `detokenize(tokenize(text)) == text` 73,254 /
+73,254 at **character** level (D-S3-13), `<eor>` present on 73,254 / 73,254, 0 of 159 `ACT` codes
+failing the one-token assertion, and the same respondent-level split under seed 42. Token stats moved
+with the shorter prefix — **median 256.0 / p99 632.0 / max 1178** — and 🔴 **the `G3.5` band was NOT
+re-tightened to match**; headroom against the ruled 1200 simply went from 9 tokens to 22.
 
 ---
 
@@ -1002,3 +1018,96 @@ Step 1 and Step 2 Progress Log fragments were merged into their working docs und
 `outputs_step3/proglog_step3_gates.md` does not exist yet — the battery writes it. There is no
 `proglog_step3_build.md`; the build's Progress Log entries were written directly into this file, which
 is why they are here and not in `outputs_step3/`.
+
+---
+
+### 2026-08-18 — 🟢 **STEP 3 IS DONE. The battery reported twice, this document did not survive the first run, and it did survive the second.**
+
+**Definition-of-Done item 6 is now ticked from the battery's own output**, which is the only way it
+was ever allowed to be ticked. The record, in order:
+
+* **Job `1256012`** (eight-field prefix) — `COMPLETED`, `0:0`, 03:07:55. **Two gates FAILed at
+  baseline, the coverage clause FAILed, four `G3.1` cells fell that `4thJ_03_serialisation_val.md`
+  had pre-registered as clean, and a fifth defect was found off-run.** Four decisions were raised.
+  🔴 **This run's numbers are superseded for every prefix-dependent gate** — the prefix itself
+  changed underneath them — but the run is not superseded: it is the run that found the defects, and
+  its 25 reports plus its `.out` are kept whole in `outputs_step3/gates_out/`.
+* **D-S3-11, D-S3-12, D-S3-13 ruled by the author the same night**, applied to
+  `encoder.py`, `decoder.py`, `4thJ_step3_build.py` and `4thJ_gates_step3.py`, and verified 10/10 on
+  a synthetic three-country fixture **before** the cluster was touched. A fixture is not the corpus,
+  and it was not treated as one.
+* **Job `1257441`** (six-field rebuild) — `COMPLETED`, `0:0`, 02:23:19.
+  **19 of 20 gates PASS at baseline, all 19 were seen falling,
+  `Gates that PASS at baseline and were NEVER felled by any perturbation: []`,
+  `COVERAGE CLAUSE VERDICT: PASS`, and 21 of 21 "must fail" cells fired.** Reports and `.out` in
+  `outputs_step3/gates_out_v2/`.
+* **D-S3-14 ruled (a)** — the one remaining baseline FAIL stays. Details below.
+
+**The corpus this document describes was rebuilt, and every figure above it was re-established rather
+than carried.** 2,024,068 rows read (es 446,547 · it 1,010,140 · uk 567,381), **0 rows and 0 diaries
+dropped**, **73,254 records** written, encode→decode 73,254 / 73,254 exact, `<eor>` on 73,254 /
+73,254, 0 of 159 `ACT` codes failing the one-token assertion. Prefix vocabularies as emitted:
+country 3, age band 8, sex 2, household type 6 (including `unknown`), economic status 7 (including
+`unknown`), day type 3. The eight-field corpus is preserved beside it as
+`4J_step3_corpus_1255620_8field.jsonl`; nothing was overwritten.
+
+🔴 **Each of the three rulings was demonstrated on the real corpus, not asserted.** `D-S3-11`:
+`G3.10` now PASSes **with its regex untouched**, having FAILed before — one field removed, two red
+gates resolved, which is what confirms the diagnosis rather than the patch. `D-S3-12`: `G3.9` reads
+ES PASS, IT PASS, UK FAIL, and its new perturbation moves the **Italy** fold PASS → FAIL on 38,260
+diaries. `D-S3-13`: `G3.3` goes 73,254 / 73,254 → **0 / 73,254** under the tokenizer swap, while the
+retired idempotency count sits beside it at 73,254 / 73,254 under **both** tokenizers — which is
+precisely the tautology the re-specification was meant to remove, still visible, still reported, and
+no longer scored.
+
+### 🔴 D-S3-14 — ruled (a). One gate is red on purpose, and Step 3 closes with it red.
+
+The author's instruction was *"(b) if possible, otherwise (a)"*. **(b) — folding
+`strat_hh_type = unknown` into an existing category — was checked against the sources and is not
+available.** Three reasons, each read off a document rather than argued: `crosswalk_strata.csv` maps
+the value from a **blank `dhhtype`**, and the Step 1 codebook measures it at **411 blank of 11,421 UK
+persons, 3.6 %** — `dhhtype` being UKDA's own *derived*, household-level variable, a blank means
+**UKDA's derivation declined to classify that household**, so folding it in asserts a household type
+the data provider itself would not assert. Step 1 documents alternative fields for *economic status*
+only and **none** for household type, and re-deriving one from the household grid is the "invented
+proxy" that note rules out. And **D-S2-19 already named this exact cell in advance** — ES 0.0 % /
+IT 0.0 % / UK 3.6 % — ruling that the only repairs available on a prevalence basis are imputation or
+dropping rows, with the sanctioned repair being **to coarsen the classification, never to relax the
+count**; coarsening cannot reach `unknown`.
+
+**No row was imputed, no row was dropped, and `G3.9` was not touched** — not re-pointed, not relaxed,
+not exempted. **The limitation at its true size: 551 diaries of the UK's 15,854 — 3.5 % of one fold,
+and only that fold.** 🔴 **And the literal symbol is not unseen by the model:** `unknown` also occurs
+in `strat_econ_status`, which **Italy emits**, so under UK-held-out the ES + IT training pair does put
+that token in front of the model inside the same six-field prefix. **What is novel at test time is
+the field position, not the symbol** — materially weaker than "a token never seen", and it must be
+written the weaker way. 🔴 **Step 6 now owes a split report:** the UK fold's scores for
+`strat_hh_type = unknown` versus the rest, so this is quantified against outcomes rather than
+asserted; if that split cannot be produced, it is reported as un-quantified and said to be so.
+
+### What must travel with this result, every time it is quoted
+
+* 🔴 **"19 of 20", never "20 of 20."** The tally is not rounded up because the twentieth gate is red
+  by a ruling we made deliberately and can defend.
+* 🔴 **`G3.9`'s coverage cross-tab column is uninformative.** Its top-line verdict is FAIL both
+  before *and* after its perturbation, so it cannot be reported as "felled" — **only the Italy fold
+  was seen moving**, and that is the claim to make.
+* 🔴 **The four `G3.1` `UNEXPECTED FALL -- FINDING` lines are deliberate.** `EXPECTED_EFFECT` in
+  `4thJ_gates_step3.py` still declares `G3.1` clean under `zero_pad_act4`, `strip_eor_1pct`,
+  `zero_pad_cop2` and `spell_unknown_two_ways`, where it demonstrably FAILs. **That table is the
+  pre-registration.** Editing it after seeing the result would erase four findings from every future
+  report, so it was left alone and the mismatch is carried as a finding instead.
+* **`G3.5` was not re-tightened** when the prefix shrank. The band stays median ≤ 300 / p99 ≤ 700 /
+  max ≤ 1200 as ruled in D-S3-10; the measured max fell 1191 → 1178, so headroom went 9 → 22 tokens.
+  A band moved to fit a result it was written to test is not a band.
+
+**One documentation defect found and fixed this session**, recorded because it is the kind that
+survives: `4thJ_step3_build.py` still printed the superseded `max<=1024` band and therefore announced
+"max EXCEEDS band" for a max of 1178 that is comfortably inside the ruled 1200. **The gate itself used
+1200 and PASSed** — this was display text only, in the build's self-report, and no result depended on
+it. Fixed in place and the script re-copied to `/speed-scratch/o_iseri/`.
+
+**Merged the same day:** `outputs_step3/proglog_step3_gates.md` was appended verbatim to
+`4thJ_03_serialisation_val.md` under a manager's note, completing the five-fragment merge named in
+`Prompts/RESUME.md`. There is no `proglog_step3_build.md` and there never was — the build's entries
+were written straight into this file.

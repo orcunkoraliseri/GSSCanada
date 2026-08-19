@@ -231,7 +231,7 @@ Steps 4, 5 and 7. ✅ **Decision 11 no longer blocks it: closed 2026-08-14, four
 
 ## DEFINITION OF DONE
 
-1. Pre-registration frozen and hashed **before** the first fold.
+1. ✅ **DONE 2026-08-18.** Pre-registration frozen and hashed **before** the first fold — md5 `e4243e07cdd80c9c846b91f40e3e8c45`, sidecar `outputs_step6/prereg.md.md5`, and no training run of any leg existed at the time.
 2. Three nulls built, the raked-donor null built from real diaries.
 3. All folds run, all scored against Tier 4.
 4. All three reviewer attacks answered with an experiment.
@@ -266,3 +266,169 @@ Append-only.
 * **Cost accepted: four Leg-5 fine-tuning runs instead of one**, four at Leg-4 where the 1B pilot makes
   rotation nearly free. Step 4's output contract already said "one adapter per leave-one-out fold", so
   nothing downstream changes shape.
+
+---
+
+### 2026-08-18 — 🟡 **`prereg.md` is WRITTEN. It is NOT FROZEN, and one open decision is the reason.**
+
+`outputs_step6/prereg.md` now exists. **Work item 6.1 is drafted, not discharged** — the deliverable
+is a *frozen* file with a recorded md5, and this one carries the literal string `NOT YET FROZEN` in
+its freeze block. 🔴 **`G4.14` must FAIL against it in its present state, and that is correct
+behaviour, not an outstanding bug.**
+
+**Why it could be written at all today.** The blocker was named precisely in
+`4thJ_00_HETUS_LLM_Pipeline.md` — *"its second hold-out's stratification depends on a corpus that does
+not exist"* — and that corpus now exists: `4J_step3_corpus.jsonl`, 73,254 records, emitted by Speed
+job `1257441` and checked by a twenty-gate battery. Nothing else was waiting on anything.
+
+**Why it was not frozen.** Two reasons, and neither is caution for its own sake:
+
+* **The deadline is not now.** §4.2-bis of `4thJ_04_finetuneLLM.md` freezes this file **before the
+  first Leg-5 training job**, not before Step 6 scores anything. No training job has been submitted.
+  **Freezing early buys nothing. Freezing late is fatal** — after a model exists, a pre-registration
+  is a description of it.
+* 🔴 **One item in it is genuinely open — D-S6-1 — and a pre-registration frozen with an open item is
+  a pre-registration that will be edited.** That is the precise defect `G4.14` was added to catch, so
+  freezing over it would have been the document defeating its own gate.
+
+### 🔴 D-S6-1 — the second hold-out is specified in HOUSEHOLDS and was built in RESPONDENTS
+
+**The finding.** This document specifies the second hold-out as *"a random sample of **households**"*.
+The corpus was split by **respondent**, keyed `(country, hid, pid)` — 65,334 respondents, 10 %, seed
+42, giving **6,533 held out / 58,801 train** with `SPLIT INTEGRITY: intersection = 0`.
+
+🔴 **The build script flagged this itself and was not read.** `4thJ_step3_build.py` line 20 records
+the respondent split as *"ASSUMPTION, not"* decided. It declared its own uncertainty in the right
+place instead of presenting a choice as a specification — **the disclosure worked and the reading of
+it did not.** That is the useful half of this finding.
+
+**Why it is not cosmetic.** Household members share a dwelling, a day and most of a routine. A
+respondent-level split puts one member in train and another in test, so **the in-country test set is
+easier than it looks**. This hold-out's entire job is to be an honest in-country baseline against
+which the transfer folds are read. An inflated baseline does not flatter the transfer result — it
+makes it look *worse*, which is the direction least likely to be questioned and therefore least
+likely to be caught.
+
+**Both options are live today and neither rebuilds `harmonised.parquet`.** `hid` is a column of the
+D-S2-12 record contract **and is written onto every corpus record**, so a household split is
+recomputable from `4J_step3_corpus.jsonl` alone.
+
+* **(a)** keep the respondent split, and record the leak as a stated limitation with the
+  household-level figure measured and reported beside it;
+* **(b)** re-split by `(country, hid)`, 10 %, seed 42, re-emitting **the `split` label only**.
+
+🔴 **Recommended: (b).** It is what this document already says; it is the stricter of the two; the
+change is a **re-label, not a rebuild**, so no record text moves and the Step 3 twenty-gate battery
+does not need re-running; and it is being made **before any model exists**, which is the only moment
+at which changing a hold-out definition costs nothing and means anything.
+
+**§7 of `prereg.md` freezes the moment D-S6-1 is ruled**, with the measured per-country counts written
+in from the split's own output. They are deliberately absent now: **a pre-registration containing an
+unmeasured number is worse than one containing an open question.**
+
+### Two stale cross-references found while drafting, recorded and not silently fixed
+
+* 🔴 **`4thJ_04_finetuneLLM.md` §4.3 still reads "Primary, four runs … Each trains on the other three
+  countries."** Decision 16 made that **three runs, each training on the other two**. §4.2 of the same
+  document was updated for decision 16 and §4.3 was not, so the file disagrees with itself two
+  sections apart. `prereg.md` §2 carries the correct table and says explicitly that it is the
+  authority over any older wording.
+* **This document's own EXPERIMENT section still opens "N = 4 … Italy, Spain, UK, France."** It is
+  corrected further down the same file, so the document is self-inconsistent in the same direction.
+  **Both are left in place** — a spec is amended by its author, and a session that quietly harmonises
+  two documents to each other destroys the evidence that they ever disagreed. The correct reading is
+  recorded here and in `prereg.md` §2 instead.
+
+**What this step now owes, and it is new:** 🔴 **a split report for the UK fold** — its scores for
+`strat_hh_type = unknown` versus the rest — created by **D-S3-14** on 2026-08-18. 551 UK diaries carry
+a value neither training country emits. If the split cannot be produced, it is reported as
+un-quantified **and said to be so**, never omitted.
+
+**What was NOT verified while drafting this.** The published Eurostat aggregate tables named in the
+EXPERIMENT section (`tus_00age`, `tus_00educ`, `tus_00selfstat`, `tus_00hh`, `tus_20startime`) were
+**not opened, not downloaded and not checked to exist** for the three countries at the waves we hold.
+`prereg.md` names them because this document names them. 🔴 **Every threshold in §6 is expressed
+against tables nobody in this project has yet confirmed we can obtain** — that is a real dependency,
+it is not a Step 3 or Step 4 problem, and it will be one here if it is left until scoring time.
+
+---
+
+### 2026-08-18 (later) — 🟢 **D-S6-1 RULED (b) BY THE AUTHOR, APPLIED, AND `prereg.md` IS FROZEN. Work item 6.1 is DONE.**
+
+**md5 `e4243e07cdd80c9c846b91f40e3e8c45`**, recorded in `outputs_step6/prereg.md.md5` and here, in an
+append-only log, on **2026-08-18**. At the moment of freezing `outputs_step4/` held exactly one
+artefact — `staged_weights.json` from job `1245620` — and **no training run of any leg existed**, so
+the §4.2-bis deadline was met with room rather than met narrowly.
+
+🔴 **The md5 is deliberately NOT printed inside `prereg.md`: a file cannot contain its own hash.**
+Writing the value in changes the value. It lives in the sidecar and in this entry, and `G4.14`
+recomputes it **from the file on disk** (`V4.g`) and compares. Reading the value out of the manifest
+being checked is the circularity that retired `G1.7b` in Step 1, and it has not been reintroduced.
+
+### The re-split: Speed job `1266814`, `COMPLETED`, `0:0`, 00:00:48
+
+`tools/4thJ_resplit_household.py` moved the second hold-out from respondent `(country, hid, pid)` to
+household `(country, hid)`, keeping seed 42 and fraction 0.10 and **mirroring the build's selection
+procedure line for line** — a different shuffle would have confounded *"we changed the unit"* with
+*"we changed the draw"*.
+
+| | before (respondent) | after (household) |
+|---|---|---|
+| units | 65,334 respondents | **32,205 households → 3,220 / 28,985** |
+| diaries held out / train | 7,343 / 65,911 | **7,328 / 65,926** |
+| held-out record fraction | 0.1002 | **0.1000** |
+
+Per country after the change — es 17,332 / 1,808 diaries (8,640 / 901 households), it 34,366 / 3,894
+(16,532 / 1,903), uk 14,228 / 1,626 (3,813 / 416).
+
+### 🔴 The leak was far larger than the argument for fixing it assumed
+
+It was measured **before** it was removed, which is the only order in which the number means anything:
+
+* **4,900 households straddled the old split** — members on both sides — **15.22 % of all households
+  and 23.30 % of the 21,031 multi-respondent households**;
+* **15,429 records, 21.06 % of the corpus**, sat inside a straddling household;
+* per country: es 1,448 · it 2,883 · uk 569.
+
+**A fifth of the corpus.** The case for (b) was argued from principle — household members share a
+dwelling, a day and most of a routine — and the measurement came back an order of magnitude more
+serious than "a technicality worth tidying". 🔴 **And the direction is the one that hides:** an
+inflated in-country baseline does not flatter the transfer result, it makes transfer look *worse*, so
+nobody reading the output would have had a reason to question it.
+
+### It was a re-label, and that was proved rather than asserted
+
+Verified from disk against a size-matched backup taken before the write, record for record:
+
+```
+records compared              : 73254
+records whose TEXT differs    :     0
+records whose KEY  differs    :     0
+records whose LABEL changed   : 13149   (the intended change)
+households straddling the new split : 0
+respondents straddling the new split : 0   (65334 respondents)
+```
+
+🔴 **No record text moved, so no Step 3 gate is disturbed and the twenty-gate battery does not need
+re-running.** The respondent-split corpus is preserved at
+`/speed-scratch/o_iseri/4J_step3_corpus_respondent_split.jsonl`; the script refuses to run at all if
+that backup already exists or fails its size check. Report:
+`outputs_step6/4J_split_report_household.md`.
+
+**Stratification: unstratified by design**, and said so in `prereg.md` §7. This hold-out is a sanity
+check, not an estimator, so a simple random draw of households is the honest description of it — and
+the per-country counts are reported so the draw can be *seen* rather than a balancing step being
+trusted.
+
+### What the freeze now binds
+
+**`G4.14` is live.** Every run manifest carries this md5, all manifests carry the same value, and it
+is recomputed from disk at every run. 🔴 **If `prereg.md` is ever edited, `G4.14` fails every run in
+the project simultaneously, including runs that had already passed.** That is intended — a
+pre-registration whose breach fails only future runs is not a pre-registration.
+
+**What was NOT verified, unchanged from the drafting entry and now carried past a freeze:** the
+Eurostat aggregate tables every FAIL threshold is expressed against — `tus_00age`, `tus_00educ`,
+`tus_00selfstat`, `tus_00hh`, `tus_20startime` — have still **not been opened, downloaded or confirmed
+to exist** for these three countries at our waves. 🔴 **Freezing the thresholds did not make the
+tables exist.** This is Step 6's dependency and it is now recorded on both sides of the freeze.
