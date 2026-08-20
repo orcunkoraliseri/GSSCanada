@@ -14,7 +14,13 @@ the author. ✅ FOLD SCOPE DECIDED 2026-08-14 by the author. Implementation OPEN
 
 ## AIM
 
-One model, fine-tuned once, that emits a serialised diary conditioned on a person.
+One open-weight base model and one recipe, applied once per held-out country, each fold emitting a
+serialised diary conditioned on a person.
+
+🔴 **Reworded 2026-08-19. It read "One model, fine-tuned once".** With the decision-11 rotation there
+is one base model and one recipe but **one adapter per fold** — "fine-tuned once" describes a single
+joint fine-tune, which would put the held-out country into the training set and make Step 6
+unscoreable. The same wording had to be corrected in both submission figures on the same day.
 
 Not the best possible generative model of a diary — `RL06` is explicit that a from-scratch 10 M
 conditional Transformer beats it on fidelity, cost, throughput and structural validity. **The LLM has
@@ -39,10 +45,13 @@ does the conditioning bite.
 
 ---
 
-## 🔴 THIS STEP IS FOUR TRAINING RUNS, NOT ONE. DECIDED 2026-08-14
+## 🔴 THIS STEP IS THREE TRAINING RUNS, NOT ONE. DECIDED 2026-08-14, COUNT CORRECTED 2026-08-19
+
+*(The heading read FOUR until author decision 16 excluded France on 2026-08-15. The argument below is
+unchanged and is the part that matters; only the count moved.)*
 
 Decision 11 holds every country out in turn, and **a fold is a separate model.** A single adapter
-trained on all four countries has seen every country's diaries and can be scored on none of them. So
+trained on all three countries has seen every country's diaries and can be scored on none of them. So
 the unit of work in this step is the **fold**, not the run, and the document said "one Leg-5 run"
 until this section was written.
 
@@ -223,15 +232,20 @@ does not show up anywhere in the output.
 
 ### 4.3 — Leg-5 runs
 
-* **Primary, four runs**: rsLoRA r=32, all linear, 3 epochs, packed, bf16. One per held-out country.
-  Each trains on the **other three** countries only, asserted per run, not assumed from a filename.
+* **Primary, three runs**: rsLoRA r=32, all linear, 3 epochs, packed, bf16. One per held-out country.
+  Each trains on the **other two** countries only, asserted per run, not assumed from a filename.
+  🔴 **CORRECTED 2026-08-19. This read "four runs … the other three countries", which was true before
+  author decision 16 EXCLUDED FRANCE on 2026-08-15.** The corpus is Italy, Spain and the UK. **The
+  "asserted per run, not assumed from a filename" clause is the part that matters and it is unchanged
+  — `G4.13` checks it, and on the `uk` fold it reported `heldout-country records in train = 0` with
+  `by_country={'es': 17332, 'it': 34366}`, which is the assertion doing its job.**
 * **Ceiling, one run**: full fine-tune, 8-bit AdamW, same data, same schedule, **on the pre-named
   fold**.
 * **Comparison arm, one run**: `Qwen/Qwen2.5-7B`, same recipe, **same pre-named fold**, so the paper
   can state what the alternative cost.
 
 🔴 **The ceiling and the comparison arm are single-fold measurements and must be reported as such.**
-Quoting either as a general result across the corpus would be quoting one fold as four.
+Quoting either as a general result across the corpus would be quoting one fold as three (corrected from "as four", 2026-08-19, decision 16).
 
 ### 4.4 — In-run detectors, wired before the first run
 

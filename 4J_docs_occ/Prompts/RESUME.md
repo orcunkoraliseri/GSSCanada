@@ -1,8 +1,1127 @@
+#### Last updated: **2026-08-20 (overnight, author asleep) — 🔴 FINDING 36: THE D-S4-5 `es` RE-RUN TURNS OUT TO BE AN ACCIDENTAL EXACT REPLICATE OF THE CLOSED `es` FOLD, AND `G4.1` DOES NOT REPRODUCE. Same shard, same base commit, same 1.5982 % trainable, same 2,980,205 pad positions, **same `ep0 step0 loss 2.0767`** — then GPU non-determinism over 24,297 steps. At epoch 0 every aggregate reproduces to 3–4 decimals (`delim(all)` **0.1020 vs 0.1020**, content 0.9034 vs 0.9039, entropy 3.284 vs 3.282) but 🔴 **`G4.1` goes from 4 strata above / worst 1.664 to 2 above / worst 1.553**, and `worst_low` moves `1.100` → `0.970`, i.e. **out of band → inside it**, with nothing changed. `worst_high` moved 25 % of the band's own width. **Nothing is retracted** — both FAIL `end=upper` — but 🔴 **no `G4.1` count or worst-ratio may be compared across folds at a finer resolution than this spread**, and a mid-epoch PASS within ~`0.13` of a band edge is NOT reportable as a PASS. Registered BEFORE frac 0.50 printed. `n = 1`; quote no standard deviation. Probe rows verified so far: frac 0.25 printed `[DESCRIPTIVE]` with its restatement clause. Log 2072 → 2184. Headers below are history.**
+#### Previously: **2026-08-20 (overnight, author asleep) — 🟢 THE D-S4-5 PROBE SCHEDULE IS VERIFIED ON REAL HARDWARE. Job `1284898` (`es`) printed it at **line 175** of its log: three checkpoints `{6071: 0.25, 12143: 0.5, 18215: 0.75}` over a 24,297-step epoch, **frac 0.50 named as the verdict**, and 🟢 **no `SKIPPED` and no `D-S4-5 COLLISION` anywhere in the file.** The snap-back was checked arithmetically, not eyeballed: `6071+1`, `12143+1`, `18215+1` are each an exact multiple of `grad_accum = 8`, so every probe reads a model with **no partial gradient pending**. That is the safety condition the two `PENDING` folds were held against, so `uk` **`1284911`** and `it` **`1284912`** STAY QUEUED. 🔴 **Step 1 is only HALF done — the probe ROWS have not printed yet** (run was at `ep1 step5800`, first probe at `6071`); each row must still print `VERDICT` or `DESCRIPTIVE`. Headers below are history.**
+#### Previously: **2026-08-20 00:20 (overnight, author asleep) — 🟢 THE D-S4-5 CHAIN IS FULLY SUBMITTED. All three folds are now on the scheduler back-to-back: `es` **`1284898`** RUNNING on `speed-39`, `uk` **`1284911`** PENDING `afterany:1284898`, `it` **`1284912`** PENDING `afterany:1284911`. `afterany` so one failure does not strand the rest, and the dependency chain enforces FINDING 2's one-job-at-a-time rule by scheduler rather than by hand. 🔴 **This does NOT skip the probe verification** — `uk`/`it` are `PENDING` and can be killed with `scancel 1284911 1284912` the moment the `es` schedule prints anything other than three checkpoints at 0.250/0.500/0.750. `es` was still in **epoch 0** at 25 min, so the schedule line (final epoch only) is ~2 h out. Everything else is unchanged from the entry below — read FINDING 35 before quoting any `G4.1` number. Headers below are history.**
+#### Previously: **2026-08-19 23:55 (overnight, author asleep) — 🟢 ALL THREE STEPS OF THE OVERNIGHT ORDER ARE DONE. Fold `it` CLOSED (`1281612`, `COMPLETED`, 03:36:10) and **all three LOCO folds are now reported under the epoch-end basis**; the three patched files are **on Speed, md5 verified both sides**; and the D-S4-5 `es` re-run is job **`1284898`**, submitted ALONE so the never-before-run mid-epoch probe is verified on real hardware before `uk`/`it` are committed. 🔴 **FINDING 32 IS FALSIFIED — the epoch-1 collapse is NOT systematic.** `es`/`uk` crossed the band `upper→lower`; **`it` did not cross at all**, going 2 strata above (1.311) → **all 6 above (2.010)**, the worst ratio in the campaign. Recorded as **FINDING 35**, corrected forward. Log 1855 → 2034. `G4.4` credited seen falling **on fold `it`**; coverage clause FAIL on 3/3; `G4.6` FAIL on 3/3. 🔴 This changes what the `it` probe can show — read the section below BEFORE reading any probe output. Headers below are history.**
+#### Previously: **2026-08-19 22:40 (overnight, author asleep) — 🟢 THE FINDING 30 REPAIR NOW HAS A **REAL-DATA** CONTROL, NOT ONLY A FIXTURE: the twelve `detectors_*.json` of the real `es` train-side battery were pulled off Speed and scored by the pre-repair file and the repaired file in turn — **`diff` EMPTY, 64 lines each, and BOTH EXIT `1` for the same reason.** Log 1834 → 1855. Fold `it` (job `1281612`) is **still `RUNNING`**, past its epoch-0 checkpoint: 🔴 **`G4.1` FAIL, `G4.2` PASS — the halt did NOT fire, so `it` will score its end-of-run gates, which `es` and `uk` also did.** Speed re-verified to still hold the PRE-patch files, so nothing leaked out early. Overnight order is in the section below and it CHANGED one step: `es` is submitted ALONE and its D-S4-5 probe verified on real hardware BEFORE `uk`/`it` are committed. Headers below are history.**
+#### Previously: **2026-08-19 20:35 — 🟢 ALL FOUR RULINGS LANDED AND ARE APPLIED (D-S4-3 (b), D-S6-2 (a), D-S4-5 (b), D-S4-6 (a)). NOTHING WAITS ON THE AUTHOR. Fold `it` is still `RUNNING` (job `1281612`, `speed-39`, `01:03:18`, `ep0 step11600`), so nothing is shipped. Local work done under the rulings: the Step 6 table names corrected in ONE edit; D-S4-5's mid-epoch basis REGISTERED in the progress log and then implemented (`4thJ_step4_train.py` 1614 → 1808, 194 added / ZERO removed); and 🔴 FINDING 30 repaired — which showed it was WORSE than written up: the same predicate sat in the TARGET arm, where an unscored gate would have been CREDITED as seen falling. Reproduced on a fixture first, and controlled byte-identical on a fully-scored one. Headers below are history.**
+#### Previously: **2026-08-19 19:40 (new session) — 🟢 FOLD `it` IS CONFIRMED `RUNNING` (job `1281612`, `speed-39`, 30:56 elapsed at the check, `sacct` read directly). Its FIVE PRE-FLIGHT GATES ARE ALREADY GREEN in the live log — `G4.14` `G4.13` `G4.7` `G4.8` `G4.5` all PASS — and `G4.13` confirms the held-out country: `by_country={'es': 17332, 'uk': 14228}` = 31,560, so `it` is genuinely absent from training. No epoch checkpoint has printed yet. Folds `es` and `uk` are CLOSED. FOUR rulings wait on the author. Headers below are history.**
+
+
+
+# 🔴 THE ORDER FROM HERE — 2026-08-20, supersedes every earlier "ORDER" block below
+
+**First command of the session:**
+```
+ssh speed "squeue -u o_iseri"
+```
+
+**1 — Finish reading the `es` probe (`1284898`).** Three rows must exist, each printing its role:
+
+```
+ssh speed "grep -n -E 'D-S4-5|VERDICT|DESCRIPTIVE|SKIPPED|COLLISION' /speed-scratch/o_iseri/4J_step4_ds45_1284898.out"
+```
+
+| frac | role that MUST print | status at last check |
+|---|---|---|
+| 0.25 | `[DESCRIPTIVE]` + the restatement clause | 🟢 printed, correct |
+| 0.50 | `[VERDICT]` | ⏳ not yet |
+| 0.75 | `[DESCRIPTIVE]` + the restatement clause | ⏳ not yet |
+
+🔴 **Any `SKIPPED` or `D-S4-5 COLLISION` line is a FINDING**, voids that fold's verdict, and means
+`ssh speed "scancel 1284911 1284912"` immediately.
+
+**2 — Apply FINDING 36's resolution rule to whatever frac 0.50 reads.** A reading inside
+`[0.8, 1.25]` but within ~`0.13` of an edge is **not** a PASS on its own — it is a reading inside the
+band with a margin smaller than the measured replicate spread. Do not soften this because the number
+is convenient.
+
+**3 — Read the re-run's END-OF-EPOCH-1 line against the closed `es` run** (`FAIL, 2 below / 0 above,
+worst 0.537/0.964, end=lower`). This is the campaign's **second** replicate point and the expectation
+is already registered: FAIL, `end=lower`, differing by about the epoch-0 spread. 🔴 **`end=upper`
+would destabilise FINDING 35's direction claim** and must be corrected forward.
+
+**4 — Read out `uk` (`1284911`) then `it` (`1284912`)** as the chain releases them. Recall FINDING 35:
+on `it` a mid-epoch FAIL is the **expected** result and a PASS would be genuinely unanticipated.
+
+**5 — Write the D-S4-5 entry** covering all three folds. 🔴 State plainly that a PASS on this basis is
+**post-hoc-registered** and must never be presented as pre-registered from the start of Step 4.
+
+# 🟢 2026-08-20 (OVERNIGHT) — STEP 1, FIRST HALF: THE D-S4-5 PROBE SCHEDULE IS VERIFIED ON REAL HARDWARE
+
+## Say this first
+
+The mid-epoch probe is code that **had never run on a GPU** — only against a schedule simulation. It
+has now printed a schedule on the real `es` run, and the schedule is **correct**. This is the gate the
+two `PENDING` folds were being held against, so they were **left queued, not cancelled**.
+
+Line 175 of `/speed-scratch/o_iseri/4J_step4_ds45_1284898.out`:
+
+```
+D-S4-5 mid-epoch probe schedule, epoch 1 (24297 steps, grad_accum 8): {6071: 0.25, 12143: 0.5, 18215: 0.75}   verdict checkpoint = frac 0.50
+```
+
+Checked against the three things step 1 demanded:
+
+| requirement | result |
+|---|---|
+| three checkpoints at **0.250 / 0.500 / 0.750** | 🟢 `6071/24297 = 0.24986`, `12143/24297 = 0.49977`, `18215/24297 = 0.74968` |
+| **frac 0.50** named as the verdict | 🟢 printed verbatim, `verdict checkpoint = frac 0.50` |
+| no `SKIPPED`, no `D-S4-5 COLLISION` | 🟢 `grep -n -E 'SKIPPED\|COLLISION'` returns **nothing** in the whole file |
+
+🔴 **The printed keys are NOT the naïve products** — `0.25 × 24297 = 6074.25`, not `6071`. Each
+fraction snaps **back** to an optimiser-step boundary. Verified arithmetically rather than trusted:
+`6071+1 = 6072`, `12143+1 = 12144`, `18215+1 = 18216`, and `6072/8 = 759`, `12144/8 = 1518`,
+`18216/8 = 2277` — all exact. **Every probe therefore reads a model with no partial gradient
+pending.** A probe landing mid-accumulation would report a checkpoint nobody could reproduce, which is
+exactly the failure this arithmetic rules out.
+
+## 🔴 WHAT IS STILL NOT VERIFIED — step 1 is HALF done
+
+`grep -n -E 'VERDICT|DESCRIPTIVE|SKIPPED|COLLISION'` returns **line 175 and nothing else.** The probe
+**rows** have not printed. That is **expected, not a defect**: the run was at `ep1 step5800` and the
+first probe fires at step `6071`.
+
+**Do not read the absence of rows as a pass.** Step 1 completes only when each row prints its role —
+**`VERDICT`** (frac 0.50 only) or **`DESCRIPTIVE`** — and every descriptive row restates that it
+cannot supply the verdict. 🔴 **A `SKIPPED` or `D-S4-5 COLLISION` on any row is a FINDING, voids the
+verdict for that fold, and means `ssh speed "scancel 1284911 1284912"` immediately.**
+
+## Chain state at this check
+
+| job | fold | state |
+|---|---|---|
+| `1284898` | `es` | RUNNING on `speed-39`, `2:58:18`, `ep1 step5800` |
+| `1284911` | `uk` | PENDING `(Dependency)` — `afterany:1284898` |
+| `1284912` | `it` | PENDING `(Dependency)` — `afterany:1284911` |
+
+Throughput measured at ~2.7 optimiser-visible steps/s from the elapsed time and step counter, so the
+three probes land roughly 100 s, 40 min and 78 min after this check, and the fold finishes shortly
+after the third.
+
+## Observed, recorded, NOT yet a finding
+
+Epoch-1 per-step loss on `es` is noisy **upward** off the epoch boundary: `step0 0.4750`,
+`step400 0.6973`, `step5000 0.5063`, `step5800 0.5468`. This is per-batch scatter on a single sampled
+batch, **not** the epoch-mean content loss that `G4.2` reads, so it says nothing about the run yet.
+Written down so that if the epoch-mean also rises it is not discovered as a surprise.
+
+---
+
+
+
+### 🟢 UPDATE — THE FIRST PROBE ROW HAS PRINTED AND ITS FORMAT IS CORRECT
+
+Lines 208-209 of the `es` log:
+
+```
+---- D-S4-5 mid-epoch probe: epoch 1, frac 0.25, step 6072/24297 [DESCRIPTIVE] ----
+    🔴 DESCRIPTIVE ONLY. This checkpoint is NOT eligible to supply G4.1's verdict, whatever it reads. The verdict checkpoint is frac 0.50.
+```
+
+Both halves of the row requirement are met on this row: it **prints its role** (`[DESCRIPTIVE]`) and
+it **restates that it cannot supply the verdict**, and it does so *before* reading anything — so the
+role cannot be assigned after the number is known. 🔴 Note `step 6072`, not `6071`: the row reports the
+**boundary** step it actually probes at, one past the snapped key. Consistent with the schedule, not a
+discrepancy.
+
+🔴 **Still outstanding:** the frac 0.25 *reading* (the probe was mid-computation at this check), and
+the frac 0.50 `[VERDICT]` and frac 0.75 `[DESCRIPTIVE]` rows. Step 1 is not complete until all three
+have printed with no `SKIPPED` and no `COLLISION`.
+
+
+# 🔴 2026-08-20 — FINDING 36: THE `es` RE-RUN IS AN ACCIDENTAL REPLICATE, AND `G4.1` DOES NOT REPRODUCE
+
+## Read this before you quote any `G4.1` count or worst-ratio, on any fold
+
+Job `1284898` was submitted to test the D-S4-5 probe. Nobody planned it as a replicate. But its
+command line differs from the **closed** `es` job `1274884` in exactly two tokens — `--g41-midepoch`
+(inert before epoch 1) and `--out .../runs_ds45` — and the logs confirm identity independently: same
+shard 48,594/5,520, same `by_country={'it': 34366, 'uk': 14228}`, same base commit
+`a1847dff`, same 1.5982 % trainable, same 2,980,205 pad positions, same `prereg` md5, and
+**`ep0 step0 loss 2.0767` in both.** They are bit-identical at step 0 and diverge from step 200
+onward — GPU floating-point non-determinism over 24,297 steps. **This is the campaign's only
+replicate pair.**
+
+| end of epoch 0 | `1274884` | `1284898` | Δ |
+|---|---|---|---|
+| `delim` (all / pre-ruling basis) | 0.1020 | 0.1020 | **0.0000** |
+| content loss | 0.9034 | 0.9039 | +0.0005 |
+| entropy | 3.284 | 3.282 | −0.002 |
+| `ep1 step0 loss` | 0.4744 | 0.4750 | +0.0006 |
+| 🔴 `G4.1` strata above band | **4** | **2** | **−2 of 6** |
+| 🔴 `G4.1` worst_low | **1.100** | **0.970** | **−0.130** |
+| 🔴 `G4.1` worst_high | **1.664** | **1.553** | **−0.111** |
+
+**Everything aggregate reproduces to 3–4 decimals. `G4.1`'s per-stratum panel does not.** The
+out-of-band count halved and `worst_high` moved by `0.111` — **25 % of the band's own width** (0.45).
+`worst_low` went from `1.100` (out of band) to `0.970` (**inside** it) with nothing changed.
+
+**Nothing is retracted.** `G4.1` FAILs `end=upper` at epoch 0 in both runs; no verdict moves.
+🔴 What is lost is *precision*: `G4.1` counts and worst-ratios must not be compared across folds at a
+resolution finer than this spread. FINDING 35's *direction* claim survives (`it` at `2.010`, all 6
+above, is far outside a `0.11` spread); its finer orderings do not. 🔴 `n = 1` — this shows the
+variability is **at least** this large, it does not estimate it. Quote no standard deviation.
+
+## 🔴 What it means for the D-S4-5 verdict — registered BEFORE frac 0.50 printed
+
+- **A mid-epoch `G4.1` inside `[0.8, 1.25]` but within ~`0.13` of either edge is NOT distinguishable
+  from the replicate spread and must NOT be reported as a PASS on its own.**
+- A reading that clears both edges by more than that is a genuine PASS.
+- A mid-epoch FAIL is unaffected — noise this size cannot turn a comfortable PASS into a FAIL.
+
+Same discipline as `G4.6`, where the measured repeat floor was `0.000e+00` and the drift was therefore
+declared real. **Here the floor is large relative to the band and the honest consequence runs the other
+way.** No band is changed; what is recorded is the resolution at which it can be read.
+
+## 🔴 A second replicate point is coming — the expectation is registered
+
+`1284898` also gives an **end-of-epoch-1** reading on the same basis. Closed run: **FAIL, 2 below /
+0 above, worst 0.537/0.964, `end=lower (collapse)`**.
+
+- **Expected:** FAIL, `end=lower`, counts/worsts differing by about the epoch-0 spread.
+- 🔴 **If it comes back `end=upper`, FINDING 35's direction claim is itself unstable** and must be
+  corrected forward exactly as it corrected FINDING 32. Named here so it cannot later be waved off.
+
+🟢 **D-S4-4 also closes on `es` for the first time:** `delim(forced) 0.0591` / 555,651 tok +
+`act2-slot 0.3018` / 119,518 tok → `555,651 + 119,518 = 675,169` exactly, and
+`(0.0591·555651 + 0.3018·119518)/675169 = 0.102063` vs logged `0.1020` — which also reproduces the
+closed run's headline `0.1020` to four decimals, a third independent confirmation the two runs are the
+same run.
+
+Full entry: `proglog_step4_gates.md`, **2072 → 2184 lines**.
+
+# 🟢 2026-08-19 23:55 (OVERNIGHT) — FOLD `it` CLOSED, ALL THREE FOLDS REPORTED, THE PATCHED FILES ARE ON SPEED, AND THE D-S4-5 `es` RE-RUN IS SUBMITTED
+
+## Say this first, if you read nothing else
+
+**All three steps of last night's order are done.** Fold `it` closed and is written up; the three
+patched files are on Speed with md5 verified both sides; the D-S4-5 `es` re-run is job **`1284898`**,
+submitted **alone** so the never-before-run mid-epoch probe is verified on real hardware before `uk`
+and `it` are committed.
+
+🔴 **The one thing you need to know before you quote any `G4.1` number: FINDING 32 IS FALSIFIED.**
+It said the epoch-1 collapse was *systematic* — written on two folds. **Fold `it` went the other way.**
+`es` and `uk` both crossed the band `end=upper → end=lower`. `it` did **not** cross: it went from 2
+strata above (worst 1.311) to **all 6 above (worst 2.010)** — the worst ratio anywhere in the campaign.
+Recorded as **FINDING 35**, corrected forward; FINDING 32's original text stays on disk at line 1310.
+
+**First command of the session:**
+```
+ssh speed "sacct -j 1284898 --format=JobID%14,State%12,Elapsed,ExitCode -X; squeue -u o_iseri"
+```
+
+## What fold `it` actually returned (job `1281612`, `COMPLETED`, 03:36:10)
+
+🔴 **The `G4.2` halt never fired**, so this fold reached and scored **every** end-of-run gate — unlike
+the perturbation arms. Full chain ran: trainer → diagnostics → genperturb → `G4.14` md5 re-check.
+
+| | `es` | `uk` | **`it`** |
+|---|---|---|---|
+| `G4.1` ep0 | FAIL 4 above, 1.664 | FAIL 2 above, 1.441 | FAIL 2 above, **1.311** (mildest) |
+| `G4.1` ep1 | FAIL 2 below, `end=lower` | FAIL 1 below, `end=lower` | 🔴 **FAIL 6 above, 2.010, `end=upper`** |
+| `G4.3` | FAIL 0.0929 | FAIL 0.0755 | **FAIL 0.0682** |
+| `G4.4` | PASS (0.831 / 0.606) | **FAIL** (0.614 / **0.474**) | **PASS (1.144 / 1.123)** |
+| `G4.6` | FAIL 3.471e-04 | FAIL 3.223e-04 | **FAIL 3.853e-04** (largest) |
+| `G4.12` | FAIL | FAIL | **FAIL** (CE arm; MI drop 0.199 clears) |
+| coverage clause | FAIL | FAIL | **FAIL** (`G4.7` never felled) |
+
+- **`G4.4` is credited SEEN FALLING on fold `it`** via `blank_evening`. 🔴 D-S4-6 → (a): the fold is
+  named every time; this does **not** transfer to `uk`.
+- 🔴 The `it` shard was pre-registered as the **predicted weakest** fold. It is the worst at epoch 1
+  and the **mildest** at epoch 0 — the prediction is written up as **not cleanly borne out**, because
+  the ordering depends entirely on which checkpoint you read. That is the D-S4-5 problem restated.
+- 🟢 **The D-S4-4 token decomposition CLOSES EXACTLY on this fold** — first time it has been checked
+  arithmetically rather than reported side by side. 344,579 + 76,997 = 421,576, and both epochs'
+  rates reconstruct to four decimals. It also shows D-S4-4 is load-bearing: on the pre-ruling basis
+  the delimiter rate **rises** 0.0947 → 0.0954 while on the ruled basis it **falls** 0.0720 → 0.0670.
+
+`proglog_step4_gates.md`: **1855 → 2034 lines** (fold entry + the D-S4-5 static pre-flight).
+
+## 🔴 What FINDING 35 changes about D-S4-5 — read before reading the probe output
+
+D-S4-5 was argued to the author on the grounds that **`G4.1` crosses its band inside epoch 1**. That
+is now known to be true on `es` and `uk` and **false on `it`**. The ruling stands (it was given for
+all three folds and the basis is registered), but the *expectation* is corrected here, **before** the
+runs report:
+
+- On `es`/`uk` a mid-epoch reading may land inside `[0.8, 1.25]`.
+- 🔴 **On `it` there is no crossing to find** — expect three points on a monotone climb. **A mid-epoch
+  FAIL on `it` is the expected result**, not a sign the probe is broken.
+- 🔴 **If `it`'s verdict checkpoint comes back PASS, that is genuinely unanticipated** and must be
+  reported as such, not absorbed as a convenient PASS.
+
+## Where things stand right now
+
+| | |
+|---|---|
+| queue | clear except job **`1284898`** (D-S4-5, fold `es`) |
+| Speed now holds | `4thJ_step4_train.py` `f6746949271e0164de0fa31de66499c0` (1808) · `4thJ_step4_perturbtable.py` `8a5277b18073055798fc352992faa9b4` (295) · `4thJ_step4_ds45_midepoch_fold.sh` `6e6183011337d58ee9785304eb2e9606` (73) — **all three md5-verified both sides** |
+| output | `/speed-scratch/o_iseri/4J_step4_ds45_1284898.out` |
+| writes to | `4J_step4/runs_ds45` — 🔴 **never `runs`**; the closed folds are evidence |
+| `prereg.md` | md5 `e4243e07cdd80c9c846b91f40e3e8c45`, intact on Speed, re-verified by fold `it`'s own `G4.14` |
+
+## 🔴 THE ORDER FROM HERE
+
+**1 — Verify the `es` probe on real hardware.** The schedule prints **before** the final epoch runs,
+so it appears roughly halfway through the job. Look for:
+```
+ssh speed "grep -A3 'mid-epoch probe schedule' /speed-scratch/o_iseri/4J_step4_ds45_1284898.out"
+```
+It must show three checkpoints landing at **0.250 / 0.500 / 0.750** and name **frac 0.50** as the
+verdict. Then each probe row must print its role — **`VERDICT`** or **`DESCRIPTIVE`** — and every
+descriptive row must restate that it cannot supply the verdict. 🔴 **If a `SKIPPED` or
+`D-S4-5 COLLISION` line appears, that is a FINDING and the run does not report a verdict.**
+
+**2 — 🟢 DONE. THE CHAIN IS SUBMITTED** (author's instruction, 2026-08-20 00:20). Both remaining folds
+are queued behind `es` and will run with nobody awake:
+
+| job | fold | state | dependency |
+|---|---|---|---|
+| `1284898` | `es` | RUNNING on `speed-39` | — |
+| **`1284911`** | `uk` | PENDING | `afterany:1284898` |
+| **`1284912`** | `it` | PENDING | `afterany:1284911` |
+
+`afterany`, not `afterok`, so one fold failing does not silently strand the rest. The dependency
+chain **is** FINDING 2's one-at-a-time rule, enforced by the scheduler rather than by a person
+watching a queue.
+
+🔴 **Queueing them early does NOT weaken step 1.** The `es` probe verification still gates them,
+because a `PENDING` job can be cancelled before it ever touches a GPU:
+
+    ssh speed "scancel 1284911 1284912"
+
+**If the `es` schedule prints `SKIPPED`, `D-S4-5 COLLISION`, or anything other than three checkpoints
+at 0.250 / 0.500 / 0.750, cancel both immediately** — do not let `uk` and `it` spend ~10 GPU-hours
+reporting under a probe that has been shown not to work. That escape hatch is the whole reason the
+chain is safe to submit ahead of the verification.
+
+**3 — Then write the D-S4-5 entry** covering all three folds, and state plainly that a PASS on this
+basis is **post-hoc-registered** and must never be presented as pre-registered from the start of
+Step 4. The trainer prints that reminder itself if the verdict checkpoint PASSes.
+
+## Still owed, unchanged
+
+- `G4.3` / `G4.12` scored on the **base model with no adapter** — FINDING 33's floor measurement.
+  Not a band change. Needs a GPU.
+- The `G4.1` genperturb probe-design question — **author's**, it is a basis change.
+- Re-running the training-side battery under the new trainer — a **cost** question, author's call.
+- The ceiling run — needs `nvidia_a100_7g.80gb` **and** `bitsandbytes`; has neither.
+- Step 6's D-S3-14 **UK-fold split report** — blocked on Step 6 scoring outputs.
+- Re-check §6 thresholds against the **real** Eurostat published numbers — unblocked by D-S6-2 → (a).
+  🔴 `tus_00hh` does not exist (use `tus_00hhstatus`); `tus_20startime` is the 2020 wave and covers
+  none of ES/IT/UK (use `tus_00startime`). Italy's ISTAT 2013-14 is in **no** Eurostat table — the
+  `it` fold scores against Italy's 2008-09 marginals and the ~5-year gap is a declared,
+  fold-specific limitation.
+
+
+# 🟢 2026-08-19 22:40 (OVERNIGHT) — THE REPAIR IS CONTROLLED ON REAL DATA, FOLD `it` IS PAST ITS EPOCH-0 CHECKPOINT AND DID NOT HALT
+
+> **Say this first:** *"While `it` held the GPU I did the one thing the FINDING 30 repair was still
+> missing: a control on **real** data. The earlier control was a fixture we wrote ourselves, which
+> proves the logic but not that nothing else moved. I pulled the twelve real detector files of the
+> `es` train-side battery off Speed and scored them with the old file and the new one — the diff is
+> empty, byte for byte, and both exit `1` for the same reason. So the repair changes what the harness
+> is willing to **claim** about gates it never measured, and nothing about what it **decides**. Fold
+> `it` is past its epoch-0 checkpoint: `G4.1` FAILs, as on both other folds, but `G4.2` PASSes — the
+> halt did not fire, so `it` will score its end-of-run gates."*
+
+**FIRST COMMAND OF THE SESSION — run it before anything else:**
+
+```
+ssh speed-submit2 "squeue -u o_iseri; sacct -j 1281612 --format=JobID,JobName%22,State,Elapsed,ExitCode -X"
+```
+
+🔴 **Never trust a watcher that says a job left the queue. `sacct` is read directly before every
+action.** Queue entries `1280049_*` / `1283129_*` (`ps`, `openubem`) are **another project's CPU
+arrays** and do not violate FINDING 2 — that finding is about two of *our* GPU jobs on one shared
+slice.
+
+## FOLD `it`, LIVE — WHAT IS ALREADY KNOWN AND MUST NOT BE RE-DERIVED
+
+Job `1281612`, `speed-39`. Epoch 0 checkpoint printed at ~01:45 elapsed; epoch 1 under way.
+
+```
+[epoch 0] delim=0.0720 content=0.9492 entropy=3.309
+          G4.1 FAIL [6 strata, 0 below / 2 above band [0.8, 1.25], worst 0.996/1.311, end=upper]
+          G4.2 PASS   gen-terminated 600/600
+   D-S4-4 delim(forced)=0.0720 over 344579 tok | delim(all, pre-ruling)=0.0947 over 421576 tok
+          | act2-slot=0.1963 over 76997 tok
+```
+
+* 🟢 **`G4.2` PASS = the halt did NOT fire**, so unlike the perturbation arms this fold will reach and
+  score its end-of-run gates. Nothing will come back `NOT CHECKED` for that reason.
+* **`G4.1` FAILs at epoch 0 on all three folds, `end=upper` on all three** — and `it` is the
+  *mildest* of the three: `es` 4 strata above / worst `1.664`, `uk` 2 above / worst `1.441`,
+  `it` **2 above / worst `1.311`**. The small shard is the *closest* to the band at epoch 0, which is
+  the opposite of the "weakest fold" prediction and is worth saying in the fold entry.
+* **Epoch 1 is the one that matters**: on `es` and `uk` it flipped to `end=lower (collapse)`
+  (FINDING 32). If `it` flips too, the collapse is 3 folds of 3 and is definitively the schedule.
+* Generation terminated **600/600**, so no vacuity concern on this checkpoint.
+
+## 🔴 THE OVERNIGHT ORDER — STEP 3 HAS CHANGED, READ IT
+
+**1 — Close fold `it`.** Read `/speed-scratch/o_iseri/4J_step4_leg4_1281612.out` — 🔴 **the fold is
+NOT in the filename.** Append its entry to `Step4_docs/outputs_step4/proglog_step4_gates.md` in the
+same shape as the `uk` entry: full gate table, comparison against **both** prior folds, coverage-clause
+verdict, D-S4-4 token reconciliation. **That closes all three LOCO folds under the epoch-end basis.**
+🔴 Apply D-S4-6: **a seen-falling credit is fold-specific and the fold is named every time.**
+
+**2 — Ship the three files**, only after `squeue` shows the queue clear of our GPU jobs, md5 verified
+**both sides**. 🟢 **Re-verified 2026-08-19 22:30: Speed still holds the PRE-patch versions**
+(`4thJ_step4_train.py` `610cd7659001ffe4aaa6720a99ea90a2` / 1614 lines, `4thJ_step4_perturbtable.py`
+`df47f30e42ea215d5afae686ed46dc4a` / 237 lines), so nothing leaked out early and the diffs quoted in
+the log are against what is actually there.
+
+| file | local md5 | lines |
+|---|---|---|
+| `4thJ_step4_train.py` | `f6746949271e0164de0fa31de66499c0` | 1808 |
+| `4thJ_step4_perturbtable.py` | `8a5277b18073055798fc352992faa9b4` | 295 |
+| `4thJ_step4_ds45_midepoch_fold.sh` | `6e6183011337d58ee9785304eb2e9606` | 73 (new) |
+
+🟢 `4J_step4/runs_ds45` does **not** exist on Speed — correct, the launcher creates it, and the closed
+folds in `runs/` cannot be overwritten by the re-runs. All 15 shards present.
+
+**3 — 🔴 CHANGED: submit `es` ALONE and VERIFY THE PROBE BEFORE COMMITTING THE OTHER TWO.**
+`sbatch 4thJ_step4_ds45_midepoch_fold.sh es`. The mid-epoch probe is a **code path that has never
+executed on real hardware** — the schedule was verified on a simulation, not on a GPU. Committing
+~10 more GPU-hours to `uk` and `it` before seeing one real probe row print is how a whole night is
+wasted on a defect visible in the first one. **What to check in the `es` log before going on:**
+
+* the schedule prints **before** the epoch runs, and lands at `0.250 / 0.500 / 0.750`;
+* three probe rows, each labelled **`VERDICT`** or **`DESCRIPTIVE`**, and the `0.50` row is the
+  `VERDICT` one;
+* neither `🔴 SKIPPED` nor `🔴 D-S4-5 COLLISION` appears;
+* training resumes normally after each probe (loss continues, no gradient-checkpointing crash — the
+  probe restores `model.train()` and `use_cache = False`, and that is the part a simulation cannot test);
+* `detectors_*.json` carries `D_S4_5_midepoch_basis`.
+
+Then, and only then, chain the other two so they run without anyone awake:
+`sbatch --dependency=afterany:<es_jobid> 4thJ_step4_ds45_midepoch_fold.sh uk`, then the same with
+`--dependency=afterany:<uk_jobid>` for `it`. 🟢 **A dependency chain IS "one at a time"** — the
+scheduler enforces the serialisation FINDING 2 asks for, more reliably than a person watching a
+queue. `afterany` rather than `afterok` so one fold's failure does not silently strand the other.
+Expect roughly a doubling of each fold's wall-clock (`es` `05:17:27`, `uk` `05:08:26`, `it` ~`03:30`
+under the old basis).
+
+## 🟢 WHAT WAS ADDED TO THE LOG OVERNIGHT — THE REAL-DATA CONTROL (log 1834 → 1855)
+
+The FINDING 30 repair was demonstrated on a fixture (defect reproduced, then killed) and controlled on
+a **second, synthetic** fixture in which every gate carried a real verdict. That control proves the
+logic but not that nothing else moved on real artefacts. It has now been repeated on the **real
+training-side battery**: the twelve `detectors_*.json` of `4J_step4/runs_perturb` — the `es` train-side
+`null` arm plus its eleven perturbations — pulled off Speed and scored **locally** by
+`/tmp/pt_bk.py` (pre-repair, md5 `df47f30e42ea215d5afae686ed46dc4a`) and by the repaired file
+(`8a5277b18073055798fc352992faa9b4`).
+
+🟢 **`diff` is empty. 64 lines each, byte-identical, and both exit `1` for the same reason** — the
+coverage clause is `FAIL` on that battery because `G4.2` is still in `never made to fall`. **The
+identical exit code matters as much as the identical text.**
+
+🔴 **It does NOT retract FINDING 30.** The arm that produced the false flag is a `uk`-fold arm where
+the `G4.2` halt fired, and that arm is not in this tree — which is exactly why the fixture had to
+exist alongside it. The two tests answer different questions and both were needed.
+
+Real-battery state, for reference: `gates seen falling: ['G4.11','G4.13','G4.14','G4.5','G4.7','G4.8','G4.9']`,
+`never made to fall: ['G4.2']`, `COVERAGE CLAUSE VERDICT: FAIL`, `FINDINGS: 0`.
+
+---
+
+
+# 🟢 2026-08-19 20:35 — ALL FOUR RULINGS LANDED AND ARE APPLIED. FOLD `it` IS STILL RUNNING. NOTHING IS BLOCKED ON THE AUTHOR.
+
+> **Say this first:** *"All four rulings are in and applied — D-S4-3 (b), D-S6-2 (a), D-S4-5 (b),
+> D-S4-6 (a) — so nothing waits on you any more. The last fold `it` is still training as job
+> `1281612`, healthy, past 11,600 steps of epoch 0. While it held the GPU I did the local work the
+> rulings unlocked: the Step 6 table names are corrected in one edit, D-S4-5's mid-epoch basis is
+> registered in the progress log and implemented in the trainer (194 lines added, zero removed), and
+> FINDING 30 is repaired — and repairing it showed it was worse than written up: the same predicate
+> sat in the target arm, where an unscored gate would have been CREDITED as seen falling. I proved
+> that on a fixture before fixing it. Nothing is shipped to Speed yet, because `it` is still running."*
+
+**FIRST COMMAND OF THE SESSION — run it before anything else:**
+
+```
+ssh speed-submit2 "squeue -u o_iseri; sacct -j 1281612 --format=JobID,JobName%22,State,Elapsed,ExitCode -X"
+```
+
+**Last confirmed state, 2026-08-19 20:35:** `RUNNING`, `speed-39`, elapsed `01:03:18`,
+`ep0 step11600 loss 0.7479`. Loss trajectory is healthy (`0.62` → `0.52`–`0.75` band, noisy as
+expected at batch 2). Queue entries `1280049_*` / `1283129_*` (`ps`, `openubem`) are **another
+project's CPU arrays** and do not violate FINDING 2.
+
+🔴 **Never trust a watcher that says a job left the queue. Four have now reported it falsely on an
+empty `sacct` state. `sacct` was read directly before every action in this session.**
+
+## 🔴 THE THREE-STEP ORDER, THE MOMENT THE QUEUE IS CLEAR
+
+Everything below is prepared, verified locally, and deliberately **not shipped** — `bash` reads a
+running script by byte offset, and the `it` chain still has `4thJ_step4_diagnostics.py` and
+`4thJ_step4_genperturb.py` ahead of it.
+
+**1 — Close fold `it`.** Read `/speed-scratch/o_iseri/4J_step4_leg4_1281612.out` — 🔴 **the fold is
+NOT in the filename.** Append its entry to `Step4_docs/outputs_step4/proglog_step4_gates.md` in the
+same shape as the `uk` entry: full gate table, comparison against **both** prior folds, coverage-clause
+verdict, D-S4-4 token reconciliation. **That closes all three LOCO folds under the epoch-end basis.**
+🔴 Apply D-S4-6 when writing it: **a seen-falling credit is fold-specific and the fold is named every
+time.** 🔴 Do not quote `G4.1`/`G4.2`/`G4.3`/`G4.4`/`G4.6`/`G4.12` for `it` from the other folds — they
+are unknown until its epoch checkpoints print. `it` is the **small shard** (31,560 records / 97 strata)
+and was **predicted the weakest fold**, so worse readings are expected and are not a new defect.
+
+**2 — Ship the three files**, only after `squeue` shows the queue clear of our GPU jobs, md5 verified
+**both sides**:
+
+| file | local md5 | lines |
+|---|---|---|
+| `4thJ_step4_train.py` | `f6746949271e0164de0fa31de66499c0` | 1808 |
+| `4thJ_step4_perturbtable.py` | `8a5277b18073055798fc352992faa9b4` | 295 |
+| `4thJ_step4_ds45_midepoch_fold.sh` | `6e6183011337d58ee9785304eb2e9606` | 73 (new) |
+
+**3 — Run the D-S4-5 folds, ONE AT A TIME** (FINDING 2):
+`sbatch 4thJ_step4_ds45_midepoch_fold.sh es`, then `uk`, then `it`. Roughly a doubling of each fold's
+wall-clock; `uk` ran `05:08:26` and `es` `05:17:27` under the old basis.
+
+## THE FOUR RULINGS, AND WHAT EACH ONE CHANGED ON DISK
+
+Full text of all four is in `proglog_step4_gates.md` (now **1834 lines**).
+
+| decision | ruling | applied |
+|---|---|---|
+| **D-S4-3** | **(b)** re-state what `G4.6` is for | recorded; **basis change, declared post-hoc** |
+| **D-S6-2** | **(a)** both renames + `it` scored vs 2008-09 | **one edit** to `4thJ_06_transfer.md` + full errata entry |
+| **D-S4-5** | **(b)** mid-epoch checkpoint basis, re-run all three folds | **registered in the log, then implemented** |
+| **D-S4-6** | **(a)** one-fold credit counts, fold named every time | reporting rule, now mandatory in every document |
+
+### D-S4-3 (b) — `G4.6` is re-stated, not re-banded
+
+**`G4.6` at `1e-4` is a binary detector for whether the adapter is exactly zero.** Not a measure of
+merge arithmetic, not a measure of how much the adapter trained. The α-sweep killed the argument
+behind option (a): `drift/alpha` varies **1,850×** (a proportional residual moves 1000×), the curve is
+**non-monotonic** — it peaks at `alpha = 0.01` and the *largest* α gives the *smallest* drift — and
+**every non-zero α FAILs**, including `alpha = 0.001` at **6.4× over the band**.
+
+🔴 **Consequences to carry:** the band **stays** at `1e-4`; `perturb_merged_weight` stays **VOID
+project-wide**; `G4.6` **cannot be credited as seen falling**; the `EXPECTED` row no longer describes
+the gate and every appearance of the old wording needs the post-hoc declaration beside it; and
+**never quote one number as "the drift"** — report the range with its **six adapters between `2.6e-04`
+and `4.4e-04`**, the `freeze_adapter` zero and the `0.000e+00` repeat-noise floor.
+
+### D-S6-2 (a) — renames applied in one edit, Italy's gap declared
+
+`tus_00hh` → **`tus_00hhstatus`**; `tus_20startime` → **`tus_00startime`**. Both are corrections of
+fact — the quantity is published under the corrected name and the thresholds are written against the
+quantity, not the string. The EXPERIMENT paragraph in `Step6_docs/4thJ_06_transfer.md` now reads the
+corrected list, with the old names and the reason preserved directly beneath it.
+
+🔴 **The limitation this does NOT remove:** Eurostat's `2010` column for **Italy** is the **2008-09**
+survey; our Italian microdata is ISTAT **2013-14**, which appears in **no Eurostat HETUS aggregate
+table at all**. Ruled (a): score `it` against 2008-09 and declare the ~5-year gap **on that fold only**.
+🔴 **The LOCO result is therefore not basis-uniform across its folds — report the folds separately and
+NEVER average the gap away.**
+
+🔴 **Two passages in `4thJ_06_transfer.md` still print the old table names and were left alone on
+purpose** — the *"What was NOT verified while drafting this"* paragraph and the D-S6-2 investigation
+entry. Both are records of what was believed at the time; harmonising them would destroy the evidence
+that the project ever held the wrong names.
+
+🔴 **`prereg.md` is untouched: md5 `e4243e07cdd80c9c846b91f40e3e8c45`, re-verified against its sidecar
+after every write tonight.** It still names `tus_00hh` and `tus_20startime` and it will continue to.
+
+### 🔴 D-S4-5 (b) — the mid-epoch basis is REGISTERED, and the registration is the important half
+
+The basis is written in `proglog_step4_gates.md` **before** the trainer was modified and **before**
+any run reports under it. In one line: **during the final epoch only, `G4.1` is additionally evaluated
+at 0.25, 0.50 and 0.75 — and the verdict comes from `0.50` ONLY, named in advance.**
+
+🔴 **The rule that keeps this from being a band change in costume:** probing several mid-points and
+quoting whichever lands inside the band is **selecting an artefact because it passes**. `0.25` and
+`0.75` are **descriptive context only and are NOT eligible to supply the verdict, on any fold,
+whatever they read.** The grid and the verdict point are **module constants, deliberately not flags**,
+so no launcher can move either — changing them requires a **new registered basis in the log**.
+
+🔴 **THE PRE-REGISTERED NEGATIVE, ON THE RECORD BEFORE THE RUNS EXIST:** *if the `0.50` checkpoint is
+outside `[0.8, 1.25]` on a fold, `G4.1` is a standing EXPLAINED FAIL on that fold and what we report
+is D-S4-5 option (a) — the outcome the ruling declined. The grid is not refined, the mid-point is not
+re-chosen, and the band is not touched.* A second negative is registered too: the trajectory may pass
+through the band **between** two probes, and that is also an answer, not licence for a finer grid.
+
+**Implementation, `4thJ_step4_train.py` 1614 → 1808 lines: `diff` says 194 added, ZERO removed.** With
+the flag absent the schedule is empty and the probe is never entered — which is exactly why the closed
+`es`/`uk`/`it` results still stand. The schedule is printed **before** the epoch runs; each fraction
+snaps **back** to an optimiser-step boundary (probing mid-accumulation reads a partial gradient and is
+not a reproducible checkpoint); collisions and skips print `🔴 FINDING` rather than passing silently;
+every probe row prints `VERDICT` or `DESCRIPTIVE`; and the basis travels inside `detectors_<run>.json`
+so a later reader cannot mistake a mid-epoch number for an epoch-end one.
+
+🔴 **The launcher writes to `4J_step4/runs_ds45`, never `runs`** — the closed folds and their adapters
+are evidence. 🔴 **It runs the trainer ONLY**, no diagnostics and no genperturb: D-S4-5 concerns
+`G4.1`'s checkpoint basis and a second set of `G4.3`/`G4.4`/`G4.12` readings would put two numbers for
+one gate on the record with nothing to choose between them.
+
+**The free control, and its known limit:** each re-run's epoch-end readings should land near the closed
+fold's. 🔴 **They will not be identical and that is not a defect** — the forward pass is bit-deterministic
+(floor `0.000e+00`) but training is not bit-reproducible across jobs. **A large divergence invalidates
+the re-run's mid-epoch numbers; a small one corroborates them.** No threshold is pre-set for "large",
+because none can be justified from two folds.
+
+### D-S4-6 (a) — the fold is named, every time
+
+**`G4.4` was seen falling on the `es` fold.** The unqualified form *"`G4.4` was seen falling"* is
+**forbidden** — on `uk` the gate is FAIL at baseline (morning `0.474`), so the demonstration was
+**impossible there, not unsuccessful**. 🔴 **A seen-falling credit is fold-specific from here on, for
+every gate** — FINDING 34 promoted from an observation to a reporting rule. **DoD item 6 stands at
+NINE: `G4.2 G4.4 G4.5 G4.7 G4.8 G4.9 G4.11 G4.13 G4.14`**, with `G4.4` carrying its fold name and
+`G4.2` carrying its D-S4-4 forced-basis limitation.
+
+## 🔴 FINDING 30 REPAIRED — AND IT WAS WORSE THAN IT WAS WRITTEN UP
+
+Recorded on `uk` as a false FINDING flag. **Reading the file to repair it showed the predicate
+`v.get(g) not in (None, "PASS")` governs THREE sites, and one of them is the target arm.**
+
+🔴 **A target gate returning `NOT CHECKED` — which is exactly what the `G4.2` halt produces — would
+have entered `gates seen falling` on a fold where it PASSes at baseline. That is a gate credited with
+a demonstration that never ran.** It has not fired to date **only because the halt happened to land on
+a collateral gate rather than a target** — luck, and recorded as luck.
+
+**Demonstrated before it was fixed.** A four-run fixture reproducing all three failure modes, scored
+by the pre-repair file, printed `gates seen falling: ['G4.11', 'G4.2', 'G4.9']` with
+`sequential_countries` reading `OK  target G4.9 -> NOT CHECKED`, and `FINDINGS: 2` — both false. The
+repaired file on the same fixture: `gates seen falling: ['G4.11', 'G4.2']`, `G4.9` back in
+`never made to fall`, `FINDINGS: 0`, and every unscored gate **named** rather than dropped.
+
+🟢 **The control that makes it safe to ship: a second fixture in which every gate carries a real
+`PASS`/`FAIL` verdict (including `G4.6` FAILing at baseline, as it really does) produces
+BYTE-IDENTICAL output from both files.** The repair touches unscored gates and nothing else, so
+nothing already reported needs re-running.
+
+**The rule now implemented:** a perturbation MOVED a gate only if the gate has an actual verdict and
+that verdict is `FAIL`. `NOT CHECKED` / `NOT RUN` / `VOID` / `REPORTED_NOT_THRESHOLDED` / absence are
+not verdicts and are not evidence **in either direction**; unscored gates are printed as unscored,
+because *"we did not measure it"* and *"it was fine"* must never look the same in this table.
+
+🔴 **No table already produced is retro-fitted.** The `uk` table with the false flag stays on disk as
+evidence, exactly as FINDING 29's broken table was preserved in `genperturb_f29/`.
+
+## WHAT STEP 4 STILL OWES
+
+* 🟡 **Fold `it` under the epoch-end basis** — running, job `1281612`. Closes the three LOCO folds.
+* 🟡 **The three D-S4-5 re-runs**, one at a time, after the ship. This is the only thing that can
+  answer `G4.1`.
+* 🔴 **A cheap measurement that is NOT a band change and still has not been done:** score `G4.3` and
+  `G4.12` on the **base model with no adapter**, to establish the floor the `0.15` band was implicitly
+  claimed to sit above. Without it, **FINDING 33** cannot distinguish *"the adapter conditions weakly"*
+  from *"the band was never measured against a null"* — and the two probes agree with each other and
+  miss the band on **all four readings** (`G4.3` 0.0929/0.0755, `G4.12` 0.0053/0.0037).
+* 🔴 **A probe-design question, raised and deliberately NOT taken:** `G4.1` cannot be scored at all by
+  `4thJ_step4_genperturb.py` at the current generation budget (`N >= 100` on *both* sides, and the
+  generated set holds exactly 100 per stratum before any parsing loss). Raising the per-stratum count
+  or scoring the two sides asymmetrically are **basis** changes to the eligibility rule and belong to
+  the author.
+* **The training-side battery has not been re-run under the 1614-line trainer**, so its own table still
+  prints `G4.2` in `never made to fall`. The honest sentence until then: *`G4.2` has been seen falling,
+  on the D-S4-4 forced basis, in a dedicated pre-registered two-run control, and the battery table has
+  not yet been re-scored to show it.* **Cost question, author's call** — and it would now also pick up
+  the FINDING 30 repair.
+* The **ceiling run** needs `nvidia_a100_7g.80gb` **and** `bitsandbytes`, and has neither.
+* 🔴 **Step 6 owes the D-S3-14 UK-fold split report** — `strat_hh_type = unknown`, 551 UK diaries.
+  **Unblocked**: the `uk` adapter exists at
+  `/speed-scratch/o_iseri/4J_step4/runs/leg4_primary_fold_uk/adapter`.
+* 🟡 **Newly unblocked by D-S6-2:** the five Eurostat tables were confirmed to exist, be reachable and
+  cover our countries, but their **contents** have not been compared against anything we hold and **no
+  §6 threshold has been re-checked for achievability** against the real published numbers.
+
+## 🔴 STANDING CONSTRAINTS THAT DO NOT LAPSE
+
+* **`sbatch` only. Never blocking `srun`, never python on `speed-submit2`.** Flagged three times; one
+  more is account suspension.
+* **One of our GPU jobs at a time** (FINDING 2), **named GRES** `nvidia_a100_2g.20gb` (FINDING 9).
+  CPU-only work on `pt` does not contend.
+* **Every job ≥ 7-day walltime.** A hang is handled by `scancel`, which is a decision — not by a
+  deadline that also truncates a slow but healthy run.
+* **Do not edit `Step6_docs/outputs_step6/prereg.md`** (md5 `e4243e07cdd80c9c846b91f40e3e8c45`, in a
+  sidecar). Editing it fails `G4.14` on every run in the project at once, including runs that already
+  passed.
+* **No band is relaxed because our own artefact fails it.** A gate FAILing at baseline cannot be seen
+  falling. A basis change is registered **before** the run that reports under it.
+
+---
+
+# ⬛ SUPERSEDED 2026-08-19 20:35 — the 19:40 cold-start block. Its four rulings have all LANDED and its instructions are spent. KEPT AS HISTORY ONLY; every number in it still holds.
+
+# 🔴 2026-08-19 19:40 — COLD-START HANDOFF. TWO FOLDS ARE CLOSED. THE LAST FOLD `it` IS RUNNING AND ITS PRE-FLIGHT GATES ARE GREEN. FOUR RULINGS ARE WAITING.
+
+> **Say this first:** *"Folds `es` and `uk` are both closed clean, and the last fold `it` is training
+> right now as job `1281612` — I checked `sacct` directly, it is `RUNNING` on `speed-39`, and its five
+> pre-flight gates have already printed PASS in the live log. The `uk` fold settled the open question:
+> `G4.1`'s epoch-1 collapse reproduced exactly, two folds out of two, so it is the training schedule
+> and not the fold — `G4.1` passes at no checkpoint anywhere and stays VOID on both. Three more things
+> came out of it: `G4.3` and `G4.12` agree with each other and miss their shared band on all four
+> readings; `G4.4` is the first gate to disagree across folds, which makes a seen-falling credit
+> fold-specific; and FINDING 29's repair prevented five false credits on a fold that needed it. Four
+> rulings now wait on you — D-S4-3, D-S6-2, and the two new ones, D-S4-5 and D-S4-6."*
+
+**THE ONE THING THAT DECIDES WHAT HAPPENS NEXT** — run this and read it before doing anything else:
+
+```
+ssh speed-submit2 "squeue -u o_iseri; sacct -j 1281612 --format=JobID,JobName%22,State,Elapsed,ExitCode -X"
+```
+
+**Last confirmed state, 2026-08-19 19:40:** `RUNNING`, `speed-39`, elapsed `00:30:56`, log 69 lines.
+The other queue entry (`1280049_454`, partition `ps`, `openubem`) is a **different project's CPU
+array** and does not violate FINDING 2. In the log so far:
+
+```
+G4.14 PASS  live=e4243e07cdd80c9c846b91f40e3e8c45 recorded=e4243e07cdd80c9c846b91f40e3e8c45
+G4.13 PASS  heldout-country records in train = 0  by_country={'es': 17332, 'uk': 14228}
+G4.7  PASS  31560/31560 completions terminate with <eor>
+G4.8  PASS  identity=True  round-trip 1000/1000 exact
+G4.5  PASS  2050053 pad positions, 0 not masked
+      D-S4-4 forced-delimiter basis: 11 of 15 ids kept
+```
+
+🟢 **`G4.13` is the one that matters here: `es 17332 + uk 14228 = 31,560`, and `it` appears nowhere.
+The held-out country really is held out, and the shard size matches the predicted small fold exactly.**
+🔴 **No epoch checkpoint has printed yet**, so `G4.1`/`G4.2`/`G4.3`/`G4.4`/`G4.6`/`G4.12` are all still
+unknown on this fold. Do not quote them from the other two folds.
+
+* **Still `RUNNING`** → local-only work. It holds the one GPU we may occupy (FINDING 2). `uk` took
+  `05:08:26`; `it` is the **small shard** (31,560 records / 97 strata) so expect **less**, but do not
+  treat a short run as a failure without reading the log.
+* **`COMPLETED 0:0`** → read `/speed-scratch/o_iseri/4J_step4_leg4_1281612.out` — 🔴 **the fold is
+  NOT in the filename**, that trap already cost time on `es`. **That closes all three LOCO folds and
+  Step 4's per-fold training is done.** Append the entry to
+  `Step4_docs/outputs_step4/proglog_step4_gates.md` and update this file. What is then owed is listed
+  under "WHAT STEP 4 STILL OWES", and nothing in it can start until the four open rulings land,
+  because three of them change how the results are written.
+* **`FAILED` / `TIMEOUT`** → read the log before resubmitting. Every chain failure in this project so
+  far has been a distinct defect, never bad luck. **`it` is the fold predicted weakest at shard-build
+  time**, so a defect here is more likely than on the other two, not less.
+
+🔴 **Never trust a watcher that says a job left the queue. Three have now reported it falsely on an
+empty `sacct` state. `sacct` was consulted directly before every action in this session.**
+
+🔴 **Training the `it` fold is NOT scoring it.** D-S6-2 blocks the **Eurostat scoring** of `it` in
+Step 6, not the fine-tune. This submission does not pre-empt that ruling.
+
+## 🔴 RULING 1 OF 4 WAITING ON THE AUTHOR — D-S4-3
+
+Nothing has been touched pending it: no band, no basis, no `EXPECTED` row.
+
+**The α-sweep (job `1274944`, `COMPLETED 00:21:23 0:0`) came back on neither pre-registered branch.**
+Controls first, as the ruling requires. **`alpha = 0` returned exactly `0.000000e+00`** — the script
+is sound, and `freeze_adapter`'s PASS is reproduced from the other direction. **`alpha = 1` twice:
+`3.471375e-04` and `3.623962e-04`**, spread `1.53e-05` = 4.4 % of the reading and **1.7 % of the span
+being resolved**, so the contamination is ~58x smaller than the effect and **the sweep is conclusive
+at that precision** — reported as two rows, never averaged. The `alpha = 1` row also reproduces the
+fold's own `G4.6` to four significant figures, a third control nobody asked for.
+
+| alpha | 1 | 0.1 | 0.01 | 0.001 | 0 | 1 (repeat) |
+|---|---|---|---|---|---|---|
+| max_logit_diff | `3.471e-04` | `1.034e-03` | `1.238e-03` | `6.428e-04` | **`0.000e+00`** | `3.624e-04` |
+| verdict | FAIL | FAIL | FAIL | FAIL | **PASS** | FAIL |
+
+**Proportional is dead** — over three decades of α a proportional residual moves 1000x; `drift/alpha`
+instead varies by **1,850x**, the signature of the opposite. **Plateau is the branch**, roughly:
+`drift` varies by only **3.6x** across α from 1 to 0.001. It is not flat and **not monotonic** — it
+peaks at `alpha = 0.01` and the *largest* α gives the *smallest* drift. **No mechanism on the record
+explains that shape and none was invented for it**, so no single number may be quoted as "the floor";
+what is on the record is roughly `3.5e-04` to `1.2e-03`, with `3.5e-04` the deployment case.
+
+🔴 **THE CONSEQUENCE, AND IT CHANGES THE SHAPE OF THE RULING.** Every non-zero α FAILs, including
+`alpha = 0.001` where the adapter is scaled to one-thousandth and the drift is still **6.4x over the
+band**. So `G4.6` at `1e-4` does not measure how much the adapter trained, and does not measure merge
+arithmetic quality: **it is a binary detector for whether the adapter is exactly zero.** Its only PASS
+state is the state the project exists to prove it is not in. That kills the argument standing behind
+option (a) — "the residual is proportional to how much it learned, so an explained FAIL is honest" —
+because it is not proportional. **Corroborated since:** job `1274954` added two more adapters at
+`2.632e-04` and `4.425e-04`, so four independent adapters now sit between `2.6e-04` and `4.4e-04`,
+none near the band.
+
+* **(a)** keep `1e-4` and report `G4.6` as a standing **EXPLAINED FAIL**, explained now by the sweep
+  rather than by the dead bf16 story (FINDING 27), with `perturb_merged_weight` staying VOID
+  project-wide.
+* **(b)** **re-state what the gate is for** — a binary is-the-adapter-zero detector is not what its
+  `EXPECTED` row describes. A **basis** change, so it must be registered *before* the run that
+  reports under it and declared post-hoc, never presented as pre-registered.
+* **(c) re-band to ~`1.2e-03` so a trained adapter passes — FLAGGED AGAINST ITSELF AND REJECTED ON
+  THE RECORD.** It is a band relaxed because our own artefact fails it, the one move this project
+  forbids. Listed only so it is visible as considered.
+
+## 🔴 RULING 2 OF 4 — D-S6-2. THE EUROSTAT SCORING TABLES WERE OPENED AND TWO OF THE FIVE NAMES ARE WRONG.
+
+**This was the standing red flag nobody had cleared: `prereg.md` and `4thJ_06_transfer.md` both
+declare, on both sides of the freeze, that the five Eurostat tables every §6 threshold is written
+against had *"not been opened, downloaded or confirmed to exist."* The `uk` fold needs the GPU for
+five hours and this check needs none, so it was taken in that window. It took under an hour and it
+found real defects.** Verified against **Eurostat's own dissemination API and catalogue** — DBnomics
+was tried and is **not admissible for absence** (it denied `tus_00startime`, which Eurostat lists, and
+answered HTTP `200` with an empty payload for `tus_00hh`).
+
+* ✅ **`tus_00age`, `tus_00educ`, `tus_00selfstat` are correct** — all exist, all cover ES/IT/UK at
+  `time = 2010`.
+* 🔴 **`tus_00hh` DOES NOT EXIST.** Eurostat returns
+  `ERR_NOT_FOUND_4: TUS_00HH ... is not available for dissemination`, and it is absent from the
+  official catalogue. **The intended table is `tus_00hhstatus`** (household composition), which does
+  cover all three countries.
+* 🔴 **`tus_20startime` IS THE WRONG WAVE.** `tus_20` is HETUS **2020**; its coverage is
+  `AT BG DE EE FI NO RS` and **none of ES, IT or UK appear anywhere in it.** The whole 2020 wave
+  excludes our three countries. **The correct table is `tus_00startime`** — *"Participation rate in
+  the main activity (wide groups) by sex and time of the day (2000 and 2010)"*, `time = {2000, 2010}`,
+  **145 start-time slots = 10-minute resolution**, ES/IT/UK all returning data. This is the
+  time-of-day curve, the most load-bearing table in an occupancy paper.
+* 🔴 **ITALY'S TABLES DESCRIBE A DIFFERENT SURVEY FROM ITALY'S MICRODATA.** Eurostat's ESMS gives the
+  fieldwork behind the `2010` column per country: **Spain 2009-2010** (= ours ✅), **UK 2014-2015**
+  (= ours ✅), **Italy 2008-2009** — but our Italian microdata is ISTAT **2013-14**, ~5 years apart.
+  Confirmed independently: Italy's contribution to the European 2010 wave is the *Uso del Tempo
+  2008-2009* edition. **ISTAT 2013-14 appears in no Eurostat HETUS aggregate table at all** (the 2020
+  wave has no `IT`). It is a national wave sitting between two European rounds.
+
+**What it breaks:** nothing in Steps 1–4 — no corpus, no gate, no shard, and nothing already run
+needs re-running. Exactly one thing, for one fold: **when Italy is held out, "score against its
+published aggregate tables" scores 2013-14 diaries against 2008-09 marginals.** `es` and `uk` are
+exact. 🔴 **A basis is registered before the run that reports under it, so this must be ruled before
+the `it` fold is scored, not after.**
+
+🔴 **`prereg.md` HAS NOT BEEN EDITED AND MUST NOT BE** — md5 re-verified `e4243e07cdd80c9c846b91f40e3e8c45`
+after the write, still matching its sidecar, so `G4.14` is safe and the running `uk` fold is
+unaffected. The corrections are recorded in `Step6_docs/4thJ_06_transfer.md` as **declared post-hoc
+errata**, never by editing the frozen file.
+
+* **(1) The two renames** — `tus_00hh` → `tus_00hhstatus`, `tus_20startime` → `tus_00startime`.
+  Corrections of fact; the quantity is published under the corrected name in both cases and the
+  thresholds are expressed against the quantity, not the string. **Recommend accepting both.**
+* **(2) Italy's basis — the real decision.** (a) score `it` against the 2008-09 tables and declare the
+  five-year gap as a named limitation on that fold only; (b) drop published-marginal scoring for `it`
+  and report it un-quantified **and say so**, as D-S3-14 handled `strat_hh_type = unknown`; (c) re-open
+  decision 6 and swap Italy to the 2008-09 wave — 🔴 **flagged against itself: it invalidates the
+  corpus, every Step 1–4 gate result and the frozen pre-registration. Not recommended.**
+* **(3) Whether `es`/`uk` may be reported exact-basis while `it` is not.** They can, but the LOCO
+  result is then not basis-uniform across its folds and that must be stated, not averaged away.
+
+**Not settled by this check:** the tables were confirmed to exist, be reachable and cover our
+countries; their **contents** were not compared against anything we hold, and no §6 threshold has been
+re-checked for achievability against the real numbers. Smaller question, now unblocked.
+
+## 🟢 THE RESULT OF THE SESSION — `G4.2` IS SEEN FALLING, AND IT WAS PRE-REGISTERED TO FAIL
+
+**Job `1274954`, `COMPLETED 00:50:24 0:0`.** 🔴 **Say the falsification before the credit.** The
+launcher header and the previous handoff both pre-registered the negative outcome: *"removing the
+`act2` share leaves roughly `0.075` on the forced basis, still above `0.05`, so the expectation is
+ABOVE the band → the demonstration is VOID."* **The perturbed arm came in at `0.011058`** — off by a
+factor of about seven, in the direction that makes the demonstration work. **Nothing was tuned to get
+it:** the basis (D-S4-4), the band (`0.05`, untouched), the budget and the expected outcome were all
+on the record before submission. **It must never be written as though it went to plan.** The estimate
+was wrong because it assumed the `act2` slot carried roughly its baseline loss; under
+`collapse_content` that slot's loss is `3.1617`, so removing those tokens takes far more out than
+allowed for.
+
+`halt_rule` is `delimiter_loss < 0.05 AND activity_entropy < 1.50`, strict on both arms (`V4.d`):
+
+| arm | delim (forced, D-S4-4) | delim (all, pre-ruling) | act2-slot | entropy | `G4.2` |
+|---|---|---|---|---|---|
+| ctrl ep0 | `0.06526` | `0.10800` | `0.3067` | `2.945` | **PASS** |
+| ctrl ep1 | `0.07223` | `0.10200` | `0.2404` | `3.254` | **PASS** |
+| `collapse_content` ep0 | **`0.011058`** | `0.56878` | `3.1617` | **`0.000`** | **FAIL** |
+
+Token counts are constant on every row (`555,651` forced / `675,169` all / `119,518` act2), so the
+bases differ by exactly the tokens D-S4-4 named — `11 of 15 ids kept; dropped {10856: "',,'",
+27856: "',,,,'", 57082: "',,,,,,,,'", 61823: "',,,'"}` — and by nothing else.
+
+🔴 **THE LINE THAT JUSTIFIES D-S4-4, AND IT SHOULD BE QUOTED WHEREVER THE RULING IS DEFENDED.** On
+the **all** basis the perturbed arm reads `0.5688`, which is *not* `< 0.05`, the `AND` does not close,
+and **`G4.2` would have returned PASS on a run whose activity entropy was exactly zero** — a model
+collapsed to one activity token, called healthy by the detector built to catch precisely that. That
+is FINDING 28 as a measurement instead of an argument. The band did not move; only which tokens arm
+one is computed over. The trainer stopped itself: `🔴 G4.2 HALT CONDITION MET -- stopping. Loss fell
+while content collapsed, which is the failure this detector exists for.`
+
+🟢 **DoD ITEM 6 IS AT NINE: `G4.2 G4.4 G4.5 G4.7 G4.8 G4.9 G4.11 G4.13 G4.14`.** What is still
+uncredited — `G4.1 G4.3 G4.6 G4.10 G4.12` — is uncredited because it does not PASS at baseline (or is
+not thresholded), **not because a lever missed.**
+
+🔴 **THE LIMITATION ON THE `G4.2` CREDIT, DECLARED.** It is scored on the **forced** basis, and the
+main table `perturb_table_train_side_es.txt` was produced by the 1505-line trainer, which wrote no
+forced-basis field. **That table therefore still prints `G4.2` in `never made to fall`, and it is not
+retro-fitted from here** — the runner said so in its own last two lines. The old detector JSONs
+cannot be re-scored offline either: they carry no `act2_slot_loss`. **Printing the credit inside the
+battery's own table means re-running the eleven-perturbation training-side battery under the
+1614-line trainer — a cost question for the author.** Until then the honest sentence is: *`G4.2` has
+been seen falling, on the D-S4-4 forced basis, in a dedicated pre-registered two-run control, and the
+battery table has not yet been re-scored to show it.*
+
+## THE REST OF WHAT HAPPENED, IN ORDER
+
+**1 — Fold `es`, job `1274884`, `COMPLETED 05:17:27 0:0`.** First **full-fold** chain to run train →
+diagnostics → genperturb to the end. 48,594 train records, loss `2.08 → 0.45`, peak VRAM 7.67 GiB.
+Log: `/speed-scratch/o_iseri/4J_step4_leg4_1274884.out`.
+
+| gate | verdict | reading |
+|---|---|---|
+| `G4.1` | FAIL both epochs | ep0 **4 strata above** band, worst_high `1.664`, `end=upper`; ep1 **2 below**, worst_low `0.537`, `end=lower (collapse)` |
+| `G4.2` | PASS both epochs | delim `0.1020 / 0.0974` (all-basis), entropy `3.284 / 3.282` |
+| `G4.3` | FAIL | rise `0.0929` against `0.15` (pilot read `0.0616`) |
+| `G4.4` | PASS | evening `0.831`, morning `0.606`, band `0.5` |
+| `G4.12` | FAIL | MI drop `0.085` against `0.10`; CE rise `0.0053` against `0.15` |
+| `G4.6` | FAIL | `3.471e-04` against `1e-4`, repeat-noise floor `0.000e+00` |
+
+🔴 **`G4.1` IS THE READING THAT SHOULD DECIDE SOMETHING AND CANNOT BE DECIDED FROM ONE FOLD.** It
+**changed which end it failed at**, from over-predicting at-home share at epoch 0 to the `V4.a`
+**collapse** branch at epoch 1 (`n_below_band_COLLAPSE_END` 0 → 2). Every earlier reading in the
+project was the band branch. The whole distribution moved down together, which is more consistent
+with a real training effect than with sampling noise, **but the generation budget is still 600
+diaries — the budget that made every `G4.4` reading unquotable in FINDING 24 — so it is recorded, not
+concluded.** A third epoch is not obviously an improvement. **Fold `uk` is what decides it.**
+
+🟢 **`G4.2` at full budget replaced FINDING 25's power-law fit with a measurement, as promised.**
+`0.0974` at 48,594 records against `0.1022` at 4,000 and `0.1094` at 600; the fit predicted ~`0.093`
+and over-predicted. **Quote `0.0974`. The fit is retired.** 🔴 `es` is scored on the **all-basis**
+(Speed still held the 1505-line trainer), so its delimiter loss is **not** line-for-line comparable
+with what `uk` and `it` will print under D-S4-4. The verdict is unaffected — D-S4-4 moves the clean
+number *up*, further from the `< 0.05` arm (`0.0653 → 0.1080` on the ctrl arm above, the same
+direction).
+
+**2 — 🔴 FINDING 29, found by reading the fold's own JSON.** `G4.1`'s verdict inside
+`4thJ_step4_genperturb.py` was **identical on all five arms including `null`** —
+`n_scorable_strata: 0`, `V4.a` vacuity, because that probe requires `N >= 100` on *both* sides and the
+600-diary generated set cannot reach it. Not a model reading at all. The report nevertheless credited
+`modal_day` and `duplicate_500` with felling it (**FINDING 18**, repaired in
+`4thJ_step4_perturbtable.py` on 2026-08-18 and never ported to this file) **and** called the same gate
+an `UNEXPECTED FALL` on the `null` arm, whose own info reads `{'changed': 0}` (**FINDING 23**, same
+story). Repaired additively — attribution moved into a second pass that runs **after** the baseline is
+known — and **re-scored on CPU as job `1274945`, `COMPLETED 00:00:49 0:0`**, into a **new** directory
+`4J_step4/genperturb_f29/` so the broken table survives as evidence. The coverage clause is
+byte-identical before and after (`never_felled: ['G4.7']`, `FAIL`) — the control proving the repair
+touched attribution only.
+
+🟢 That is where **`G4.4`** came from: the first **generation-side** credit in the project, printed by
+the repaired harness itself (`GATES CREDITED AS SEEN FALLING on this probe: ['G4.4']`). Two things
+declared with it, never buried: its lever `blank_evening` reports `changed: 0` and acts on the **MI
+estimator's** evening label association, not on the model or the text; and the baseline margin is not
+large. The credit is that the gate has **power**, not that the diurnal shape is settled.
+
+**3 — 🔴 FINDING 30, in the training-side table this time.** `4thJ_step4_perturbtable.py` printed
+`UNEXPECTED FALL -- FINDING: also moved ['G4.9']` for `collapse_content`, but `G4.9`'s verdict on that
+arm is **`NOT CHECKED`** — the `G4.2` halt fired at the end of epoch 0 and stopped the run before
+`G4.9` was ever scored. The attribution asks "is this verdict different from baseline" and treats
+`NOT CHECKED` as a move. **Not a false seen-falling credit** (the coverage clause filters on
+`PASS`/`FAIL` and correctly leaves `G4.9` uncredited) **but a false FINDING flag that would put a
+defect in the paper the run does not support.** Same class as FINDINGS 18/23/29. **Not repaired
+here**, deliberately: the fix would change the file that produced the `G4.2` credit above, and the
+credit is better left standing on the code that printed it. Recorded for the next additive round.
+**Coincidence, stated so it is not read as confirmation:** FINDING 26 established that
+`collapse_content` *does* fell `G4.9` at ≥4,000 records. The flag points at a real phenomenon on the
+wrong evidence.
+
+## WHAT IS RUNNING, AND WHAT TO EXPECT FROM IT
+
+**Job `1281612` — `sbatch 4thJ_step4_leg4_fold.sh it`.** Submitted 2026-08-19 after `sacct` confirmed
+`1274964` `COMPLETED 0:0` and `squeue` showed zero of our GPU jobs. **This is the LAST of the three
+LOCO folds.** It is the small shard — **31,560 records / 97 strata, predicted the weakest fold at
+shard-build time** — so expect the worst readings of the three and do not read them as a new defect.
+Log is `/speed-scratch/o_iseri/4J_step4_leg4_1281612.out` — 🔴 **the fold is NOT in the filename.**
+
+**Live state re-verified 2026-08-19 19:40 by `sacct` directly:** `RUNNING` on `speed-39`, elapsed
+`00:30:56`, exit `0:0`, log 69 lines. Command line as launched:
+
+```
+python -u 4thJ_step4_train.py --fold it --leg 4 --run-type primary --epochs 2 \
+  --gen-stratified-k 6 --gen-batch 8 --batch-size 2 --grad-accum 8 \
+  --eval-batch-size 4 --max-len 1280 --out /speed-scratch/o_iseri/4J_step4/runs
+```
+
+🟢 **The five pre-flight gates are already GREEN and one of them is the important one:**
+
+| gate | reading on `it` |
+|---|---|
+| `G4.14` | PASS — `live=e4243e07cdd80c9c846b91f40e3e8c45 recorded=` same. `prereg.md` intact. |
+| `G4.13` | PASS — heldout-country records in train = **0**, `by_country={'es': 17332, 'uk': 14228}` |
+| `G4.7` | PASS — **31560/31560** completions terminate with `<eor>` |
+| `G4.8` | PASS — `identity=True` (holding and base both `allenai/OLMo-2-0425-1B`), round-trip 1000/1000 exact |
+| `G4.5` | PASS — 2050053 pad positions, 0 not masked |
+
+**`G4.13` is the one that matters: `17332 + 14228 = 31,560` and `it` appears nowhere in the training
+mix.** The held-out country really is held out, and the shard size matches the small fold predicted at
+build time to the record. `G4.7`'s denominator is the same 31,560, so the two agree independently.
+
+🔴 **No epoch checkpoint has printed yet.** `G4.1`, `G4.2`, `G4.3`, `G4.4`, `G4.6`, `G4.12` are all
+**unknown on this fold** and must not be quoted from `es` or `uk`. `uk` took `05:08:26` end to end on
+roughly 1.6x the data, so budget under that here — but a short run is not a failure until the log says
+so.
+
+🔴 **Training `it` is not scoring `it`.** D-S6-2 blocks the **Eurostat scoring** of the `it` fold in
+Step 6, not the fine-tune. Submitting this job does not pre-empt that ruling and does not touch it.
+
+**When it closes:** append the fold entry to `Step4_docs/outputs_step4/proglog_step4_gates.md`
+(currently 1476 lines) in the same shape as the `uk` entry — full gate table, comparison against both
+prior folds, coverage-clause verdict, D-S4-4 token reconciliation — then re-head this file. **That
+closes all three LOCO folds and Step 4's per-fold training is DONE.**
+
+### 🟢 FOLD `uk` IS CLOSED — job `1274964`, `COMPLETED 0:0`, `05:08:26`, peak VRAM 5.99 GiB
+
+Full entry with all four new findings and both new decisions is appended to
+`Step4_docs/outputs_step4/proglog_step4_gates.md` (now 1476 lines). `G4.14` verified live both sides,
+`e4243e07cdd80c9c846b91f40e3e8c45`, so `prereg.md` is intact. `G4.13 PASS  heldout-country records in
+train = 0  by_country={'es': 17332, 'it': 34366}`.
+
+| reading | `es` (1274884) | `uk` (1274964) |
+|---|---|---|
+| `G4.1` ep0 | FAIL, 0 below / **4 above**, worst 1.100/1.664, `end=upper` | FAIL, 0 below / **2 above**, worst 0.894/1.441, `end=upper` |
+| `G4.1` ep1 | FAIL, **2 below** / 0 above, worst 0.537/0.964, **`end=lower (collapse)`** | FAIL, **1 below** / 0 above, worst 0.674/1.234, **`end=lower (collapse)`** |
+| content ep0 → ep1 | 0.9034 → 0.8887 | 0.8705 → 0.8522 |
+| `delim` ep0 → ep1 | 0.1020 → 0.0974 (all-basis) | **0.0538 → 0.0666 forced**; all-basis 0.0895 → 0.0868 |
+| `G4.3` | FAIL, rise 0.0929 (need 0.15) | FAIL, rise 0.0755 (need 0.15) |
+| `G4.4` | **PASS** — evening 0.831, morning 0.606 | **FAIL** — evening 0.614 PASS, morning **0.474** FAIL |
+| `G4.6` | FAIL, 3.471e-04 | FAIL, 3.223e-04 |
+| `G4.12` | FAIL, CE rise 0.0053, MI drop 0.085 (need 0.10) | FAIL, CE rise 0.0037, MI drop **0.161 clears** |
+| `G4.2` `G4.5` `G4.7` `G4.8` `G4.9` `G4.11` `G4.13` `G4.14` | PASS | PASS |
+| `G4.10` | `REPORTED_NOT_THRESHOLDED` | `REPORTED_NOT_THRESHOLDED` |
+| coverage clause | FAIL (credited `G4.4`) | FAIL (**credited nothing**) |
+
+🔴 **FINDING 32 — the epoch-1 collapse IS systematic. The question the fold was run to settle is
+answered.** `uk` flipped exactly as `es` did: `end=upper` at epoch 0 → `end=lower (collapse)` at
+epoch 1. Two folds of two, disjoint training sets, different shard sizes, different held-out country.
+**It is not the fold, it is the schedule — `G4.1` is measuring training length.** It does *not* mean
+epoch 1 is worse: content loss falls on both folds and `G4.2` PASSes at every checkpoint. What flips
+is the *direction* of the miss — too spread at ep0, too concentrated at ep1 — so the run crosses the
+`[0.8, 1.25]` band rather than converging into it. **`G4.1` PASSes at no checkpoint on any fold, so it
+stays VOID and uncreditable on both. Two failing folds are not one unlucky fold, and they are not a
+licence to re-band.** → **D-S4-5, open.**
+
+🔴 **FINDING 33 — `G4.3` and `G4.12` agree with each other and disagree with their band, four
+readings out of four**: `G4.3` 0.0929/0.0755, `G4.12` 0.0053/0.0037, all against a shared 0.15 CE-rise
+band. The ordering between the two probes is the physically sensible one (global shuffle > within-
+stratum move, by ~20x, on both folds), which is evidence they measure what they claim. **Whether the
+finding is "the adapter conditions weakly" or "the 0.15 band was never measured against a null" is
+not decidable from the logs.** The distinguishing measurement is cheap and is *not* a band change:
+score `G4.3`/`G4.12` on the **base model with no adapter** to get the floor. Recorded, not repaired.
+
+🔴 **FINDING 34 — `G4.4` is the first gate to disagree across folds, and a seen-falling credit is
+therefore FOLD-SPECIFIC.** `G4.4` PASSes on `es` and was felled by `blank_evening` → credit stands.
+On `uk` it is FAIL at baseline (morning 0.474) so the same perturbation printed `VOID`. **Write it as
+*"`G4.4` was seen falling on the `es` fold"*, never unqualified.** → **D-S4-6, open.**
+
+**`uk`'s coverage clause credits nothing** — two of the three reachable gates are down before the
+probe starts and `G4.7` survives all five perturbations, which is FINDING 29's clause working as
+designed. **The `VOID` / `NOT ASSESSABLE` distinction fired five times and prevented five false
+credits.** FINDING 29's repair is confirmed on a fold that needed it.
+
+**`G4.6`: six independent adapters now sit between `2.6e-04` and `4.4e-04`**, none within 3x of the
+`1e-4` band, repeat-noise floor exactly `0.000e+00`. Corroboration for D-S4-3, not a new argument.
+**D-S4-3 is still the author's and the band is not touched.**
+
+**D-S4-4 reconciles on the second fold:** `489900 + 112073 = 601973` exactly at both epochs. 🔴 **Only
+the forced number is comparable; `es`'s `0.0974` is all-basis and must never be set beside `uk`'s
+`0.0666`.**
+
+### 🔴 TWO NEW OPEN DECISIONS FROM THIS FOLD — D-S4-5 AND D-S4-6
+
+Both are in full in the proglog. In one line each:
+
+* **D-S4-5** — `G4.1` crosses its band inside epoch 1 on both folds. (a) standing EXPLAINED FAIL,
+  (b) register a mid-epoch checkpoint basis and re-run all three folds, (c) re-band — **flagged
+  against itself and recommended against**. **Recommendation (a).**
+* **D-S4-6** — does a one-fold seen-falling credit satisfy DoD item 6? (a) yes, with the fold named
+  every time, (b) required on every fold where the gate PASSes at baseline, (c) required on all
+  folds. **Recommendation (a), with the qualification made mandatory in the text.**
+
+**Step 6's owed D-S3-14 UK-fold split report is now unblocked** — the `uk` adapter exists at
+`/speed-scratch/o_iseri/4J_step4/runs/leg4_primary_fold_uk/adapter`.
+
+
+## SHIP STATE — EVERYTHING IS ON SPEED, md5 VERIFIED BOTH SIDES
+
+| file | md5 | note |
+|---|---|---|
+| `4thJ_step4_train.py` | `610cd7659001ffe4aaa6720a99ea90a2` | 1614 lines, carries D-S4-4 |
+| `4thJ_step4_genperturb.py` | `bd2df2f3e9f11e237b6d5a0d4b1a895f` | 366 lines, FINDING 29 repair |
+| `4thJ_step4_g46_alpha_sweep.py` | `d403cecc6b5f714a60c40b4e983dbc12` | |
+| `4thJ_step4_g46_alpha_sweep.sh` | `6d4f1f60d271794584c9c261ff60678d` | |
+| `4thJ_step4_g42_rerun_ds44.sh` | `ac95e75a90201da2ffac9ddb6512596d` | |
+| `4thJ_step4_g42_token_census.sh` | `d095068a9830085542af0234fc8b7376` | |
+
+🔴 **One discrepancy recorded, not absorbed:** an earlier handoff listed the sweep launcher as
+`3bea9e672837562770f25d68dc47b476` and the file on disk hashes `6d4f1f60...`. The **content** is
+correct (`--time=7-00:00:00` present, replaced comment present), so the recorded hash was stale;
+`4thJ_step4_g42_token_census.sh` is in the same position. This table supersedes the old one.
+
+**The sweep was run with the adapter given explicitly** as `runs/leg4_primary_fold_es/adapter`, not
+the script's 600-record default — a deliberate departure, recorded, and vindicated by the `alpha = 1`
+row reproducing the fold's own `G4.6`.
+
+## 🔴 STANDING CONSTRAINTS THAT DO NOT LAPSE
+
+* **`sbatch` only. Never blocking `srun`, never python on `speed-submit2`.** Flagged three times; one
+  more is account suspension.
+* **One of our GPU jobs at a time** (FINDING 2), **named GRES** `nvidia_a100_2g.20gb` (FINDING 9).
+  CPU-only work on `pt` does not contend — that is how job `1274945` ran beside the sweep.
+* **Every job ≥ 7-day walltime.** Both partitions are exactly 7 days. A hang is handled by `scancel`,
+  which is a decision — not by a deadline that also truncates a slow but healthy run.
+* **Do not edit `Step6_docs/outputs_step6/prereg.md`** (md5 `e4243e07cdd80c9c846b91f40e3e8c45`, in a
+  sidecar). Editing it fails `G4.14` on every run in the project at once, including runs that already
+  passed. It verified PASS again on every run tonight.
+* **No band is relaxed because our own artefact fails it.** A gate FAILing at baseline cannot be seen
+  falling. A basis change is registered **before** the run that reports under it.
+
+## WHAT STEP 4 STILL OWES
+
+* 🟢 **Fold `it` IS RUNNING as job `1281612`** (submitted after `sacct` closed `uk`). It is the small
+  shard (31,560 records / 97 strata) and was predicted the weakest. When it closes, **all three LOCO
+  folds are trained and Step 4's per-fold training is DONE.**
+* 🟢 **`G4.3`, `G4.4` and `G4.12` HAVE NOW RUN on two folds** — this line used to say they were owed.
+  All three FAIL on `uk`; `G4.4` PASSes on `es` and is the one gate that disagrees across folds
+  (FINDING 34). `G4.3`/`G4.12` miss their shared `0.15` band on all four readings (FINDING 33).
+* 🔴 **`G4.1` is settled as a question and open as a decision.** The epoch-1 collapse reproduced on
+  `uk`, 2 folds of 2 (FINDING 32), so it is the schedule, not the fold. It PASSes at no checkpoint
+  anywhere, stays VOID, and cannot be credited. **D-S4-5 is the author's.**
+* 🔴 **D-S4-6 — whether `G4.4`'s one-fold credit satisfies DoD item 6.** Until it is ruled, every
+  mention of that credit must name the fold.
+* **The training-side battery has not been re-run under the 1614-line trainer**, so its own table
+  still prints `G4.2` in `never made to fall` — see the limitation declared above. Author's call.
+* `G4.6` is a standing explained FAIL pending D-S4-3, now with **six** adapters between `2.6e-04` and
+  `4.4e-04` and none within 3x of the band.
+* 🔴 **A cheap measurement that is NOT a band change and has not been done:** score `G4.3` and `G4.12`
+  on the **base model with no adapter**, to establish the floor the `0.15` band was implicitly claimed
+  to sit above. Without it, FINDING 33 cannot distinguish "the adapter conditions weakly" from "the
+  band was never measured against a null".
+* 🔴 **A probe-design question, raised and deliberately NOT repaired:** `G4.1` cannot be scored at all
+  by `4thJ_step4_genperturb.py` at the current generation budget (`N >= 100` on *both* sides, and the
+  generated set holds exactly 100 per stratum before any parsing loss). Raising the per-stratum count
+  or scoring the two sides asymmetrically are both **basis** changes to the eligibility rule and
+  belong to the author.
+* 🔴 **FINDING 30 is written up but not fixed** — one condition in `4thJ_step4_perturbtable.py`'s
+  attribution pass, to be shipped in the next additive round, not while the `G4.2` credit is fresh.
+* The **ceiling run** needs `nvidia_a100_7g.80gb` **and** `bitsandbytes`, and has neither.
+* 🟢 **BOTH STALE CROSS-REFERENCES FIXED 2026-08-19 16:15, while the `uk` fold held the GPU.** They had
+  been recorded-not-fixed for a day. What changed, all of it France-exclusion staleness from decision 16
+  and none of it a basis change:
+  * `4thJ_04` §4.3 — *"Primary, four runs … the other three countries"* → **three runs, the other two**,
+    with `G4.13`'s live `uk` reading quoted as the assertion doing its job; *"quoting one fold as four"*
+    → **as three**; the §heading *"THIS STEP IS FOUR TRAINING RUNS"* → **THREE**; *"a single adapter
+    trained on all four countries"* → **all three**.
+  * `4thJ_04` AIM — 🔴 *"One model, fine-tuned once"* → **one base model and one recipe, applied once
+    per held-out country**. **This is the same defect that had to be corrected in BOTH submission
+    figures on the same day**, which is why it is called out separately: the phrase describes a joint
+    fine-tune, and a joint fine-tune makes Step 6 unscoreable.
+  * Step 6 EXPERIMENT — *"Train on N-1 countries"* → **the other two**; *"N = 4 … Italy, Spain, UK,
+    France"* → **N = 3**, France excluded; and the trailing claim *"our four waves are the HETUS 2010
+    round"* removed, because D-S6-2 established **Italy's 2013-14 wave is in no Eurostat round at all**.
+* 🔴 **The Step 6 EXPERIMENT table list STILL names `tus_00hh` and `tus_20startime` and was deliberately
+  NOT edited.** A pointer to the D-S6-2 entry now sits directly beneath it so the list cannot be used
+  without seeing the warning. **The renames are D-S6-2's to rule, and the same ruling carries Italy's
+  basis question, so the list is corrected in ONE edit after the ruling — not piecemeal.**
+* 🔴 **Step 6 owes `it`-fold basis resolution (D-S6-2) before the `it` fold is scored**, and still owes
+  🟢 the D-S3-14 UK-fold split report, which is now UNBLOCKED — the `uk` adapter exists at `/speed-scratch/o_iseri/4J_step4/runs/leg4_primary_fold_uk/adapter`.
+
+**Full detail, with every number and its source, is in
+`Step4_docs/outputs_step4/proglog_step4_gates.md` (append-only, now 1476 lines) and — for the Eurostat
+tables — `Step6_docs/4thJ_06_transfer.md` (append-only, now 561 lines).**
+
+---
+
 #### Last updated: **2026-08-19 (late)** — 🔴 **BOTH GATE-DESIGN DECISIONS BELOW HAVE SINCE BEEN RULED (D-S4-3, D-S4-4) — READ THE COLD-START BLOCK IMMEDIATELY AFTER THIS PARAGRAPH FIRST; THIS PARAGRAPH IS THE HISTORY BEHIND IT.** 🔴 **STEP 4'S PILOT HAS NOW FOUND TWENTY-THREE DEFECTS. THE FIRST CHAIN THAT RAN TO THE END, JOB `1266855`, `COMPLETED 0:0` WITH SIX GATES RED — AND FIVE OF THE SIX WERE THE HARNESS, NOT THE MODEL.** Training is sound (loss 2.08 → 0.56, seven gates PASS, adapter written, `prereg.md` provably untouched). Everything downstream of training was broken: `G4.6` OOMed, `G4.1` was unsatisfiable on **all three folds**, and `G4.4` / `G4.12` were then scored on an empty file and returned `nan`. Fixed; job **`1266877`** then PROVED the `G4.1` fix (eligible strata 0 -> **166**, 600 diaries drawn) and exposed FINDING 12 as a HALF FIX -- `<eor>` is a THREE-token string `[27, 24274, 29]`, which `eos_token_id` cannot express, so every diary still ran the full 1,280-token budget. Rewired to `stop_strings` and resubmitted as job **`1266881`**. 🔴 **FINDING 13 was then found by READING the battery rather than running it: `G4.3` and `G4.12` appear in NEITHER coverage map, and their only lever -- the `no_prefix` adapter -- was being deliberately thrown away, so DoD item 6 could never have been met for either. Both that adapter and the null baseline are now saved and the battery ends in a TWO-ARM demonstration.** 🟢 **Job `1266881` then closed FINDING 12 with a number -- `gen-terminated 600/600`, every diary ending at `<eor>` instead of running the 1,280-token budget -- and produced the FIRST `G4.1` verdict in this project that is about the MODEL rather than the harness: `[epoch 0] delim=0.1082 content=1.0064 entropy=3.273 G4.1 FAIL G4.2 PASS`. That FAIL exposed FINDING 14.** 🟢 **The JSON then SETTLED which branch it was: the BAND branch, not `V4.a` -- 6 scorable strata at both epochs, `n_below_band_COLLAPSE_END = 0`, and the upper end closing with training (3 strata out of band -> 1, worst_high 1.503 -> 1.312 against a 1.25 ceiling). So `G4.1` is a real model reading, the model over-predicts at-home share, and it is improving -- no harness fault.** 🔴 **`G4.6` then produced FINDING 15: `max_logit_diff = 13.71875` (exactly representable in bf16) against a `1e-4` threshold. The gate applies a float32 tolerance to a bf16 merge and ALSO compares padded positions, so it CANNOT PASS -- which makes `perturb_merged_weight`, the one perturbation written to fell it, VOID. The band is NOT being relaxed; the author must rule.** 🟢 **JOB `1266881` THEN RAN ALL FOUR STAGES TO THE END -- `COMPLETED 01:22:24`, the first chain in this project to do so.** Baseline: EIGHT gates PASS (`G4.2 G4.5 G4.7 G4.8 G4.9 G4.11 G4.13 G4.14`), FIVE FAIL (`G4.1 G4.3 G4.4 G4.6 G4.12`), `G4.10` unthresholded by design. 🔴 **FINDING 16: the eight that pass are MECHANICAL (round-trip, pad mask, leak, md5, `<eor>`) and the five that fail are MODEL-QUALITY -- and a model-quality gate cannot be demonstrated against a model trained on 6.8 % of the corpus. The generation-side battery said so itself: `COVERAGE CLAUSE VERDICT: FAIL`, because `G4.1`/`G4.4` were already down at baseline and nothing could fell `G4.7`. That battery must RE-RUN against a full Leg-4 fold adapter.** 🟢 **The training battery is a different case -- eight of its nine gates are mechanical and pass even at 600 records -- so it was submitted as job `1266911`, and it is what finally moves DoD item 6 off zero.** 🟢 **JOB `1266911` THEN COMPLETED (`03:43:00`, exit `0:0`) AND DoD ITEM 6 IS OFF ZERO: SIX GATES WERE SEEN FALLING, EACH FELLED BY ITS OWN PERTURBATION AND NOTHING ELSE** -- `G4.5` by `pad_labels_1pct`, `G4.7` by `strip_eor_1pct`, `G4.9` by `sequential_countries`, `G4.11` by `drop_revision`, `G4.13` by `leak_1pct`, `G4.14` by `edit_prereg`. 🔴 **The coverage clause still returns FAIL: `G4.2` and `G4.8` were never made to fall.** That produced FINDING 17 (`G4.8` PASSED `600/600` while holding BERT's tokenizer -- a round-trip is self-consistent, so the gate is structurally blind to a tokenizer swap, and its perturbation then crashed on `token_type_ids` anyway) and FINDING 18 (the report credits `G4.6` as *seen falling* two lines after excluding it; the credited count is SIX, not seven). 🟢 **`freeze_adapter` -> `G4.6 PASS` is the control FINDING 15 needed: zero adapter movement, zero merge drift, so the baseline `13.71875` really is bf16 re-rounding of a TRAINED adapter, not a code fault.** The two-arm `G4.3`/`G4.12` demo was VOID exactly as pre-registered -- but the statistics separate cleanly (CE rise `0.0181` ctrl vs `-0.0004` nopfx; MI drop `0.095` vs `0.020`), so the instrumentation is sound and what is missing is training signal. 🟢 **LEG-4 FOLD `es` IS NOW RUNNING AS JOB `1269370`** (full 58,801 records, named GPU profile, GPU verified free of our jobs first). 🟢 **AUTHOR RULED BOTH OPEN GATE QUESTIONS (a) ON 2026-08-18 AND BOTH ARE IMPLEMENTED AND SHIPPED.** **D-S4-1**: `G4.6` is now measured in **float32**, band UNCHANGED at `1e-4` -- the ruling moved the arithmetic precision of the comparison, not the band. **D-S4-2**: `G4.8` now asserts **tokenizer IDENTITY against the base checkpoint and THEN round-trip**, so `swap_tokenizer` fells it before generation is reached and the `token_type_ids` crash needs no separate repair. Both rulings are recorded in the NEW Step 4 progress log `Step4_docs/outputs_step4/proglog_step4_gates.md` (append-only, 150 lines). Three additive repairs went with them, no ruling needed: **FINDING 18 fixed** (a target already FAIL at baseline now prints `VOID` and is NOT credited as seen falling), **`collapse_content` added** to fell `G4.2` (the only other gate in `never made to fall` -- it flattens every episode to one constant while leaving every delimiter and every `<eor>` in place), and **`--perturbation` is now whitelisted** (a misspelled name used to train a CLEAN run and be scored as `DID NOT FELL ITS GATE`, indistinguishable from a real negative). 🔴 **Fold `es` job `1269370` was CANCELLED while still `PENDING`** -- nothing computed, nothing discarded -- so that all three folds are scored by ONE gate code rather than `es` under the old and `uk`/`it` under the new. 🟢 **REPAIRED BATTERY IS JOB `1270491`**, run first because it exercises every line of the new fp32 `G4.6` path for 3-4 h where a fold would take an order of magnitude longer to reach the same code. 🔴 **JOB `1270491` IS MID-RUN AND HAS ALREADY PRODUCED THREE MORE FINDINGS. D-S4-2 WORKED ON ITS FIRST ATTEMPT** -- `swap_tokenizer` printed `G4.8 FAIL identity=False (holding bert-base-uncased, base allenai/OLMo-2-0425-1B)` -- **but the run then died at generation on the old `token_type_ids` `ValueError`, and because `detectors_<run>.json` is written only in the last block of `main()`, the gate that had just been felled was DISCARDED and the row reads `NOT RUN` again (FINDING 19).** 🔴 **`collapse_content` did NOT fell `G4.2`: `delim=1.7315` against a `< 0.05` arm and `entropy=0.000` against a `< 1.5` arm -- one arm crossed, `V4.d` requires both, so the gate correctly PASSed. The delimiter loss is measured on the UNPERTURBED validation set, so flattening the durations as well as the activities made the model WORSE at real delimiters (`0.109 -> 1.73`), the opposite of the condition the halt encodes (FINDING 20).** 🟢🔴 **D-S4-1 IS CONFIRMED AND STILL NOT ENOUGH: `G4.6` baseline went `13.71875` -> `3.204e-04` in fp32 against the unchanged `1e-4` band -- bf16 storage rounding was ~99.998 % of the drift, exactly as ruled -- but the residual still FAILs. It is the size of fp32/TF32 accumulation-order noise on an A100, so the band may be below the hardware's own reproducibility floor. NOT re-banded: a noise-floor control (two IDENTICAL unmerged forward passes) is measured and reported first, and the AUTHOR rules second (FINDING 21).** All three repairs are written but **NOT shipped while `1270491` is still running** -- the battery re-reads the same `.py` for every remaining perturbation, so editing it mid-run would score one battery under two code versions. 🔴 **FINDING 22, read off the SAME job before it finished: the clean delimiter loss is pinned at `0.1094` to four decimals across five different perturbations -- a training FLOOR -- while `G4.2`s first arm needs `< 0.05`. `G4.2` was MIS-CLASSIFIED as a mechanical gate; it belongs to FINDING 16s model-quality class and is demonstrable only at a larger budget. A two-arm demonstration at `--limit-train 4000` in a SEPARATE run dir is pre-registered here BEFORE it runs, with VOID declared in advance as the outcome if the control arm does not cross `0.05`.** 🟢🔴 **JOB `1270491` HAS NOW SCORED ITS ELEVEN PERTURBATIONS AND THE TABLE IS A LINE-FOR-LINE REPRODUCTION OF JOB `1266911` -- which is the useful result: it is the PRE-REPAIR BASELINE, taken under the code actually on Speed, and it proves all four repairs are still needed and none was silently already in effect.** `never made to fall: ['G4.2','G4.8']`, `COVERAGE CLAUSE VERDICT: FAIL`, `FINDINGS: 0`, `prereg.md` md5 `e4243e07...` matching its sidecar; `swap_tokenizer` again `NOT RUN` (FINDING 19), `collapse_content` again `DID NOT FELL ITS GATE` (FINDING 20/22), `perturb_merged_weight` now correctly `VOID` (FINDING 18 repair visible), `freeze_adapter` again `G4.6 PASS` (FINDING 15 control). 🔴 **Reading that table produced FINDING 23** -- the `STAY CLEAN` arm has the same missing baseline condition FINDING 18 removed from the target arm, so three perturbations that never touch `G4.6` were each printed as having broken it. Fixed additively; `4thJ_step4_perturbtable.py` now 237 lines, md5 `df47f30e42ea215d5afae686ed46dc4a`. 🔴 **NOTHING IS SHIPPED YET: `1270491` is still executing its tail (the `G4.3`/`G4.12` two-arm demo), and `bash` reads a running script by byte offset -- overwriting `4thJ_step4_perturb_battery.sh` mid-run can corrupt execution. Ship only after it leaves the queue.** 🔴 **STATUS 2026-08-18, third poll: `1270491` is STILL RUNNING at `03:24:28`, in the `nopfx` arm of the two-arm demo, `generated 168/600`. CORRECTION 2026-08-18: I earlier attributed `rise=-0.0004` to the `ctrl` arm. WRONG. The two arms SEPARATE: `ctrl` (line 734) `G4.3 FAIL CE true=0.6779 permuted=0.6967 rise=+0.0188`; `nopfx` (line 771) `G4.3 FAIL CE true=0.7495 permuted=0.7491 rise=-0.0004`. Removing the prefix collapses the conditioning signal by a factor of ~47, which is the DIRECTION the demonstration predicted. But BOTH arms FAIL the 0.15 band, so the `ctrl` arm cannot serve as a baseline and the demonstration is VOID exactly as pre-registered in the battery comment. ctrl also printed `G4.12 FAIL moved=595 CE rise 0.0023 MI drop 0.015` and `G4.4 FAIL evening 0.494 morning 0.202`. G4.3 / G4.4 / G4.12 therefore move to the Leg-4 folds. 🔴 **TWO stale watchers (`bibzeyzu2`, `b0p027lgs`) have now each reported `JOB 1270491 LEFT THE QUEUE` FALSELY** -- both carry the pre-fix until-loop that reads an empty `sacct` state as `finished`. `sacct` was consulted directly before every action; nothing was shipped or submitted on either false signal. The honest watcher is `b1xbruz1g` (empty-state retry). Ship order once the queue clears, md5 both sides: `4thJ_step4_train.py` 1505 `661b11e74ac38b9d29ecc5d875cc87fc`, `4thJ_step4_perturb_battery.sh` 150 `a2d99e15...`, `4thJ_step4_perturbtable.py` 237 `df47f30e...` -- Speed currently holds 1360 / 108 / 221, so all three are stale there.** 🟢 **JOB `1270491` IS CLOSED: `COMPLETED 04:01:57 0:0`, verified with `sacct` (a third stale watcher, `b0p027lgs`, again reported it left the queue on an empty state after `Connection closed by 132.205.2.12 port 22` -- again ignored).** The two-arm demonstration finished: `G4.3` ctrl `+0.0188` vs nopfx `-0.0004`; `G4.12` ctrl CE `+0.0023` MI `+0.015` vs nopfx `-0.0008` MI `-0.085`. Direction correct on all four readings, ~47x separation on `G4.3` -- **both arms below their bands, so the control cannot baseline the demonstration and it is VOID as pre-registered. `G4.3` and `G4.12` are NOT credited and move to the Leg-4 folds.** 🔴 **FINDING 24: `G4.4` read BETTER on the prefix-stripped arm (evening 2.279 morning 0.819 PASS) than on the control (0.494 / 0.202 FAIL). No mechanism connects prefix removal to a better diurnal shape, so every 600-record `G4.4` reading is generator sampling noise and NEITHER may be quoted, in EITHER direction. The undertrained-gate list of FINDING 16 is now FIVE: `G4.1 G4.2 G4.3 G4.4 G4.12`.** 🟢 **ALL THREE FILES SHIPPED, md5 identical on both sides (1505 / 150 / 237), after the queue was confirmed empty; `1270491`s table preserved as `perturb_table_train_side_es_1270491.txt` before the re-run overwrote the path.** 🟢 **RE-RUN IS JOB `1274838`, RUNNING.** It must deliver: `G4.8` credited (FINDING 19 crash-flush), `G4.2` felled by the redesigned `collapse_content` (FINDING 20), **the `G4.6` noise floor measured (FINDING 21 -- this is the ONE number the author ruling waits on)**, the 4000-record two-arm `G4.2` demonstration (FINDING 22, absent from Speeds old 108-line battery so it has NEVER run), and an honest STAY CLEAN report (FINDING 23). Expected ~7 h. **Then the three Leg-4 folds, ONE AT A TIME (FINDING 2), via `sbatch 4thJ_step4_leg4_fold.sh es|uk|it` -- they are the only route to the five undertrained gates.** 🔴 **STEP 3 HAS NO RUNNABLE TASK: it is closed, and its one residual -- the D-S3-14 UK-fold split report for `strat_hh_type = unknown` -- is owed by STEP 6 and needs UK-fold MODEL SCORES that do not exist until the `uk` fold trains. Nothing can be done for it tonight and nothing was invented in its place.** 🟢🔴 **FINDING 21 IS RESOLVED BY MEASUREMENT AND MY HYPOTHESIS WAS WRONG. `G4.6 repeat-noise floor = 0.000e+00`** -- two identical unmerged forward passes over 20,103 positions agree BIT-FOR-BIT, TF32 matmul off. The `1e-4` band is therefore fully resolvable on this hardware and the drift (`2.498e-04` this job) is a REAL signal, not accumulation noise. **The only argument that could have justified re-banding `G4.6` is dead, so the band STAYS at `1e-4` and the ruling I had queued for you on that question is no longer needed.** What the residual IS, bracketed by four measurements: `freeze_adapter` (BA=0) -> drift 0 PASS; trained adapter bf16 compare -> `13.71875`; trained adapter fp32 compare -> `2.5e-4`..`3.2e-4`; no merge at all -> `0`. D-S4-1 moved the COMPARISON to fp32 but not the STORAGE -- the model is loaded bf16, so `merge_adapter()` writes `W + 8BA` back into bf16 and re-rounds every weight. That is deterministic QUANTISATION, which is exactly what a zero floor proves. **So `G4.6` at `1e-4` is unsatisfiable for any adapter that actually trained and satisfiable only for one that did not: as banded it rewards a frozen adapter and penalises a trained one.** 🔴 **THE ONE REMAINING QUESTION IS A BASIS QUESTION AND IT IS YOURS -- (a) keep `1e-4` and report `G4.6` as a standing EXPLAINED FAIL with the four readings and the `freeze_adapter` control, accepting that `perturb_merged_weight` stays VOID project-wide; or (b) upcast weights to fp32 FOR THE MERGE so the gate measures merge ARITHMETIC rather than merge STORAGE -- a change of basis, so the `EXPECTED` row would have to be re-stated, not silently reinterpreted. Nothing touched pending your call.** Also from the same block: `delim=0.1094` reproduced a THIRD time (FINDING 22 floor confirmed), and `max_logit_diff` moved `3.204e-04` -> `2.498e-04` between jobs -- with the forward pass proven deterministic that can only be TRAINING not being bit-reproducible across jobs, which is normal for CUDA and is NOT claimed as a defect, but it does mean no entry may ever quote either number as THE drift. 🟢 **JOB `1274838` IS CLOSED (`COMPLETED 05:08:01 0:0`) AND DoD ITEM 6 MOVED FROM SIX GATES TO SEVEN.** `gates seen falling: G4.5 G4.7 G4.8 G4.9 G4.11 G4.13 G4.14`. **FINDING 19 IS FIXED AND IT IS THE WIN OF THIS BATTERY** -- the `swap_tokenizer` row now reads `G4.8 FAIL` instead of `NOT RUN`, because the crash-flush writes the detectors BEFORE the `token_type_ids` crash kills the run; the row honestly prints `-` for the four gates the dead run never reached. **FINDING 23 IS FIXED, VISIBLE THREE TIMES** (`G4.6 NOT ASSESSABLE as STAY CLEAN -- already FAIL at baseline`), FINDING 18 still holds (`perturb_merged_weight VOID`), FINDING 15's control still holds (`freeze_adapter` is the only `G4.6 PASS`). 🔴 **ONLY `G4.2` REMAINS IN `never made to fall`, AND THE 4000-RECORD TWO-ARM DEMONSTRATION CAME BACK VOID -- EXACTLY AS PRE-REGISTERED AND FOR THE PRE-REGISTERED REASON: the CLEAN arm's delimiter loss reached only `0.1022`, against an arm needing `< 0.05`.** 🔴 **FINDING 25 is the diagnosis, and it is worth more than a successful demonstration would have been: `G4.2`s FIRST ARM IS NOT A PERTURBATION TARGET AT ALL, IT IS A PRECONDITION OUR MODEL NEVER MEETS.** Arm two (`gen_entropy < 1.5`) is NAILED -- the redesigned `collapse_content` gives `0.000` at every budget and epoch, and FINDING 20's redesign worked (`1.7315` -> `0.5024`, 3.4x, by collapsing only `ACT`/`ACT2` and leaving durations alone). Arm one (`delimiter_loss < 0.05`) is never satisfied BY THE CLEAN BASELINE, so no perturbation is responsible. **The two arms are in MECHANICAL OPPOSITION under any training-side content perturbation** -- delimiter loss is measured on the UNPERTURBED validation set, so killing generated entropy in training costs `0.10` -> `0.50` on real delimiters; that is structural, not tuning. **And budget is not closing the gap:** `600` -> `4000` records moved it 6.6 % (`0.1094` -> `0.1022`); a TWO-POINT power-law fit (flagged as a weak instrument, not a forecast) puts the full fold at ~`0.093` and `0.05` at ~10^12 records, seven orders of magnitude past the whole corpus. 🔴 **FINDING 26: `collapse_content` ALSO fells `G4.9` at 4000 records** (`UNEXPECTED FALL -- FINDING: also moved ['G4.9']`, printed by the collateral check unprompted) -- mechanistically sensible (content flattened to a constant causes forgetting) but UNDECLARED, and absent at 600 records, so dose-dependent; it must be quoted alongside any future use of `collapse_content`. 🟢 **LEG-4 FOLD `es` IS NOW RUNNING AS JOB `1274884`** -- full 58,801 records, named GRES `nvidia_a100_2g.20gb`, submitted only after `squeue` showed ZERO of our GPU jobs (FINDING 2). **It is the only route to `G4.1`, `G4.3`, `G4.4`, `G4.12`, AND it replaces FINDING 25's extrapolation with a MEASUREMENT -- quote the measurement, never the fit.** 🔴 **THE AUTHOR NOW HAS TWO GATE-DESIGN DECISIONS WAITING, BOTH THE SAME CLASS, BOTH WITH THE NUMBERS ALREADY IN HAND, NOTHING TOUCHED PENDING EITHER: (1) `G4.6` -- (a) keep `1e-4` as a standing EXPLAINED FAIL or (b) upcast for the merge, a basis change; (2) `G4.2` -- (a) declare it permanently NOT DEMONSTRABLE the way `G2.10` was in Step 2, (b) fell arm two alone with a GENERATION-side lever and re-state the gate as demonstrating its arms separately, or (c) re-base arm one, WHICH I FLAG AGAINST ITSELF as a band change justified by our own artefact failing -- the exact move the project forbids, listed only so it is on the record as considered and rejected.**
 
 ---
 
-# 🔴 2026-08-19 (late) — COLD-START HANDOFF. THE AUTHOR IS AWAY ON OTHER PROJECTS. READ THIS BLOCK, THEN STOP AND CHECK THE QUEUE.
+# ⬛ SUPERSEDED 2026-08-19 (night) — 2026-08-19 (late) COLD-START HANDOFF. ITS INSTRUCTIONS ARE SPENT: job `1274884` finished `COMPLETED 0:0` and its three-step order was executed in full. KEPT AS HISTORY ONLY.
 
 > **Say this first:** *"Fold `es` (job `1274884`) was still running when you left. Nothing was
 > shipped to Speed and nothing was submitted, on purpose — one GPU job at a time. Everything that
@@ -122,8 +1241,10 @@ All five startup gates were clean.
   and `G4.6` is a standing explained FAIL pending D-S4-3.
 * Folds `uk` and `it` have not started. One at a time: `sbatch 4thJ_step4_leg4_fold.sh uk`.
 * The **ceiling run** needs `nvidia_a100_7g.80gb` **and** `bitsandbytes`, and currently has neither.
-* Two stale cross-references recorded and deliberately **not** fixed: `4thJ_04` §4.3 still says four
-  runs / other three countries, and Step 6's EXPERIMENT section still says N=4. Step 6 also owes the
+* ~~Two stale cross-references recorded and deliberately **not** fixed: `4thJ_04` §4.3 still says four
+  runs / other three countries, and Step 6's EXPERIMENT section still says N=4.~~ 🟢 **BOTH FIXED
+  2026-08-19 16:15 — see the entry higher up for exactly what changed, including a third occurrence
+  found while fixing them (`4thJ_04`'s AIM said "One model, fine-tuned once").** Step 6 still owes the
   D-S3-14 UK-fold split report, which cannot be written until the `uk` fold has scores.
 
 ---

@@ -136,6 +136,34 @@ def main():
     w()
 
     # ---- attribution ----
+    # 🔴 FINDING 30 (fold uk, job 1274964; recorded 2026-08-19, repaired in the additive
+    # round that followed the four rulings). Every "did it move?" test in this function
+    # asked `verdict not in (None, "PASS")` -- so ANY non-PASS string counted as a move,
+    # and `NOT CHECKED` is a non-PASS string. On the `collapse_content` arm the G4.2 halt
+    # fired at the end of epoch 0 and stopped the run before G4.9 was ever scored; G4.9
+    # therefore read `NOT CHECKED`, the attribution pass read that as a change, and the
+    # table printed `UNEXPECTED FALL -- FINDING: also moved ['G4.9']` about a gate that had
+    # never been measured. That is a defect the run does not support, printed in the voice
+    # the paper quotes findings in.
+    #
+    # 🔴 THE DEFECT WAS WIDER THAN IT WAS FIRST WRITTEN UP. The same predicate governs the
+    # TARGET arm (`target_down`) and the STAY CLEAN loop, not just the collateral list. In
+    # the target arm it is worse than a false flag: a target gate coming back `NOT CHECKED`
+    # on a fold where it PASSes at baseline would have been credited as SEEN FALLING -- a
+    # gate credited with a demonstration that never ran. It did not fire on any run so far
+    # only because the halt happened to land on a collateral gate rather than a target.
+    #
+    # THE RULE. A perturbation MOVED a gate only if the gate has an actual verdict and that
+    # verdict is FAIL. `NOT CHECKED`, `REPORTED_NOT_THRESHOLDED`, `VOID` and absence are not
+    # verdicts and cannot be evidence of anything -- in either direction. Unscored gates are
+    # PRINTED as unscored rather than dropped, because "we did not measure it" and "it was
+    # fine" must never look the same in this table.
+    def _is_fail(x):
+        return x == "FAIL"
+
+    def _unscored(x):
+        return x is None or x in ("NOT CHECKED", "NOT RUN", "VOID", "-")
+
     w("ATTRIBUTION -- what each perturbation actually moved, against baseline:")
     findings = []
     felled = set()
@@ -145,7 +173,12 @@ def main():
             continue
         v = found[p]
         moved = [g for g in base
-                 if base[g] == "PASS" and v.get(g) not in (None, "PASS")]
+                 if base[g] == "PASS" and _is_fail(v.get(g))]
+        # FINDING 30: named, not silently excluded. A gate that was up at baseline and came
+        # back without a verdict is a GAP in this probe's evidence, and a reader has to see
+        # it to know the row is not a clean bill of health.
+        unscored = [g for g in base
+                    if base[g] == "PASS" and g in v and _unscored(v.get(g))]
         if target is None:
             if moved:
                 w("  %-24s UNEXPECTED FALL -- FINDING: the null perturbation changed "
@@ -169,7 +202,12 @@ def main():
         # printed evidence overstated itself by one gate, and had G4.6 ever been repaired
         # without this line being repaired the error would have survived into a GREEN
         # report. Being seen falling requires PASSing at baseline AND failing here.
-        target_down = v.get(target) not in (None, "PASS")
+        # 🔴 FINDING 30, target arm. This read `not in (None, "PASS")`, so a target gate
+        # returning NOT CHECKED -- because the run halted before it was scored -- would have
+        # been read as down and, where the gate PASSes at baseline, CREDITED AS SEEN
+        # FALLING. A credit for a demonstration that never ran is the worst failure this
+        # table can produce, and it is exactly the class DoD item 6 exists to prevent.
+        target_down = _is_fail(v.get(target))
         base_ok = base.get(target) == "PASS"
         hit = target_down and base_ok
         extra = [g for g in moved if g != target]
@@ -186,9 +224,18 @@ def main():
             w("      %-20s VOID -- %s was already %s at baseline, so it cannot be SEEN "
               "FALLING here and this row is NOT credited. The perturbation may well have "
               "worked; this run cannot show it." % ("", target, base.get(target, "?")))
+        if _unscored(v.get(target)) and target in v:
+            w("      %-20s TARGET NOT SCORED -- %s came back %s, so this row demonstrates "
+              "NOTHING about it and is not credited. FINDING 30: an unscored gate is a gap "
+              "in the evidence, never a fall and never a pass."
+              % ("", target, v.get(target)))
         if extra:
             w("      %-20s UNEXPECTED FALL -- FINDING: also moved %s" % ("", extra))
             findings.append((p, extra))
+        if unscored:
+            w("      %-20s NOT SCORED on this arm: %s. These gates PASS at baseline and "
+              "have no verdict here -- the run did not reach them. Stated, not counted as "
+              "moved and not counted as clean (FINDING 30)." % ("", unscored))
         # 🔴 FINDING 23 (job 1270491). This loop had NO baseline condition -- the exact
         # twin of FINDING 18 above, in the other half of the same function. G4.6 FAILs at
         # baseline in this configuration, and G4.6 is listed as a STAY CLEAN requirement for
@@ -206,7 +253,18 @@ def main():
                 w("      %-20s %s NOT ASSESSABLE as STAY CLEAN -- already %s at baseline. "
                   "Stated, not silently dropped." % ("", g, base.get(g, "absent")))
                 continue
-            if v[g] not in ("PASS", "REPORTED_NOT_THRESHOLDED"):
+            # 🔴 FINDING 30, STAY CLEAN arm -- the third site of the same predicate. A
+            # gate the run never reached would have been reported as having failed a
+            # STAY CLEAN requirement it was never measured against.
+            if _unscored(v[g]):
+                w("      %-20s %s NOT SCORED -- STAY CLEAN cannot be assessed on a gate "
+                  "this run never reached. Stated, not counted either way (FINDING 30)."
+                  % ("", g))
+            elif not _is_fail(v[g]) and v[g] not in ("PASS", "REPORTED_NOT_THRESHOLDED"):
+                w("      %-20s %s returned an UNRECOGNISED verdict %r -- STAY CLEAN not "
+                  "assessed. A status this table does not know is a FINDING about the "
+                  "harness, not a reading." % ("", g, v[g]))
+            elif _is_fail(v[g]):
                 w("      %-20s was required to STAY CLEAN and did not: %s = %s"
                   % ("", g, v[g]))
     w()

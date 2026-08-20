@@ -23,14 +23,36 @@ Answer one sentence, and the paper has to earn it:
 
 ## THE EXPERIMENT
 
-Train on N-1 countries. Generate a population for the held-out country conditioned **only on its
-published demographic marginals**, with none of its diaries seen. Score against its published
-aggregate tables: `tus_00age`, `tus_00educ`, `tus_00selfstat`, `tus_00hh`, and `tus_20startime` for
-the time-of-day curve.
+Train on the other two countries. Generate a population for the held-out country conditioned **only on
+its published demographic marginals**, with none of its diaries seen. Score against its published
+aggregate tables: `tus_00age`, `tus_00educ`, `tus_00selfstat`, `tus_00hhstatus`, and `tus_00startime`
+for the time-of-day curve.
 
-🔴 **N = 4 after author decision 5, so training is on three.** Italy, Spain, UK, France. That is thin,
-it is limitation C4, and **Track A is the only thing that raises it** — to seventeen, with no
-harmonisation change, because our four waves are the HETUS 2010 round.
+🟢 **THE TABLE LIST ABOVE WAS CORRECTED IN ONE EDIT ON 2026-08-19, UNDER D-S6-2 RULED (a). It
+originally read `tus_00hh` and `tus_20startime`.** `tus_00hh` **does not exist** — Eurostat returns
+`ERR_NOT_FOUND_4` and it is absent from the catalogue; the intended table is `tus_00hhstatus`.
+`tus_20startime` is the HETUS **2020** wave, whose coverage is `AT BG DE EE FI NO RS` and which
+contains **none of Spain, Italy or the UK**; the correct table is `tus_00startime` (`{2000, 2010}`,
+145 start-time slots = 10-minute resolution, all three countries returning data). **Both are
+corrections of fact: the quantity each threshold is written against is published under the corrected
+name, and the thresholds are expressed against the quantity, not the string.**
+
+🔴 **THE SAME RULING CARRIES A LIMITATION THIS PARAGRAPH DOES NOT REMOVE.** Eurostat's `2010`
+column for **Italy** is the **2008-09** survey, while our Italian microdata is ISTAT **2013-14** — a
+wave that appears in **no Eurostat HETUS aggregate table at all**. D-S6-2 ruled **(a)**: the `it` fold
+is scored against the 2008-09 tables and the ~5-year gap is declared as a limitation **on that fold
+only**. `es` and `uk` are exact-basis. **The LOCO result is therefore not basis-uniform across its
+folds; report the folds separately and never average the gap away.** Full entry at the end of this
+file, dated 2026-08-19 (evening).
+
+🔴 **N = 3, NOT 4. CORRECTED 2026-08-19.** This paragraph read *"N = 4 after author decision 5, so
+training is on three. Italy, Spain, UK, France."* **Author decision 16, taken 2026-08-15, EXCLUDED
+FRANCE.** The corpus is **Italy, Spain and the UK**, each fold trains on **two**, and the rotation is
+three folds rather than four. That is thinner than the sentence it replaces, it is limitation C4, and
+**Track A is the only thing that raises it.** 🔴 **The old sentence's closing clause — "our four waves
+are the HETUS 2010 round" — was also wrong on a second count and must not be recycled: D-S6-2
+established that Italy's 2013-14 wave is in NO Eurostat HETUS round at all.** Spain's 2009-10 and the
+UK's 2014-15 are the 2010 round; Italy's is a national wave sitting between two European rounds.
 
 ---
 
@@ -432,3 +454,191 @@ Eurostat aggregate tables every FAIL threshold is expressed against — `tus_00a
 `tus_00selfstat`, `tus_00hh`, `tus_20startime` — have still **not been opened, downloaded or confirmed
 to exist** for these three countries at our waves. 🔴 **Freezing the thresholds did not make the
 tables exist.** This is Step 6's dependency and it is now recorded on both sides of the freeze.
+
+---
+
+### 2026-08-19 — 🔴 **THE EUROSTAT SCORING TABLES WERE FINALLY OPENED. TWO OF THE FIVE NAMES ARE WRONG, AND ONE OF THE THREE COUNTRIES HAS A WAVE MISMATCH.** New: **FINDING 31**, and **D-S6-2** for the author.
+
+**Why this was done now.** Both this file and `prereg.md` carry the same declared omission on both
+sides of the freeze — the five tables *"have not been opened, downloaded or confirmed to exist"* —
+and this file added the warning *"it will be one here if it is left until scoring time."* Step 4's
+`uk` fold (job `1274964`) occupies the GPU for roughly five hours and this check needs no GPU, so it
+was taken in that window. 🔴 **It was left until now, and it should not have been: the check took
+under an hour and it found real defects in a FROZEN pre-registration.**
+
+**Every claim below was verified against Eurostat's own dissemination API and its own catalogue, not
+against a summary and not against DBnomics.** DBnomics was tried first and **is not admissible for
+absence**: it reported `tus_00startime` as non-existent when Eurostat's official table-of-contents
+lists it, and it answered HTTP `200` for `tus_00hh` with an empty `num_found: 0` payload. Both traps
+are recorded because the wrong reading of either would have produced the opposite conclusion.
+
+#### What is correct, and stays
+
+| table | exists | ES | IT | UK | `time` |
+|---|---|---|---|---|---|
+| `tus_00age` | ✅ | ✅ | ✅ | ✅ | `{2000, 2010}` |
+| `tus_00educ` | ✅ | ✅ | ✅ | ✅ | `{2000, 2010}` |
+| `tus_00selfstat` | ✅ | ✅ | ✅ | ✅ | `{2000, 2010}` |
+
+Three of the five names are right, exist, and cover all three countries at the `2010` reference year.
+Titles as published: *"Time spent, participation time and participation rate in the main activity by
+sex and age group / educational attainment level / self-declared labour status."*
+
+#### 🔴 DEFECT 1 — `tus_00hh` DOES NOT EXIST
+
+Eurostat's dissemination API returns a hard 404 for it, for all three countries:
+
+```
+ERR_NOT_FOUND_4: TUS_00HH (DATA_FLOW:ALL,1.0) is not available for dissemination
+```
+
+It is **absent from Eurostat's official catalogue** (`/api/dissemination/catalogue/toc/txt`), which
+lists 20 `tus_00*` codes and 23 `tus_20*` codes and no `tus_00hh` among them. **The intended table
+exists under a different code: `tus_00hhstatus`** — *"…by sex and household composition"* — which
+does cover ES, IT and UK at `2010`. This is a naming error, not a missing dependency: the quantity
+the threshold is expressed against is published, under a name this project never used.
+
+#### 🔴 DEFECT 2 — `tus_20startime` IS THE WRONG WAVE AND COVERS NONE OF OUR COUNTRIES
+
+`tus_20startime` exists, but the `tus_20` prefix is the **HETUS 2020** round. Its coverage is:
+
+```
+geo = AT, BG, DE, EE, FI, NO, RS      time = {2020}
+```
+
+🔴 **Spain, Italy and the United Kingdom are all absent from it — the string `ES`/`IT`/`UK` does not
+occur anywhere in the dataset descriptor.** The whole 2020 wave excludes our three countries
+(`tus_20age` geo = BG, DE, EE, HR, HU, NL, AT, PL, FI, NO, RS). **The time-of-day curve is the single
+most load-bearing table for an occupancy paper, and the code named for it in a frozen
+pre-registration returns nothing for any country we hold.**
+
+**The correct table is `tus_00startime`**, and it is a good fit — better than the one it replaces:
+
+```
+label : "Participation rate in the main activity (wide groups) by sex and time of the day (2000 and 2010)"
+id    : [freq, unit, sex, startime, acl00, geo, time]
+size  : [1, 1, 1, 145, 9, 1, 2]          time = {2000, 2010}
+```
+
+ES, IT and UK all return data. **145 start-time slots** is 10-minute resolution across the day, which
+is the same grid the corpus is built on — the tally automaton's "multiples of 10" constraint was
+already chosen to be compatible with it, by accident rather than by design.
+
+#### 🔴 DEFECT 3 — ITALY'S AGGREGATE TABLES DESCRIBE A DIFFERENT SURVEY FROM ITALY'S MICRODATA
+
+This one is not a naming error and cannot be repaired by renaming. Eurostat's ESMS metadata for the
+`tus_00` collection gives the fieldwork years behind the `2010` column, per country:
+
+| country | our microdata (decision 6) | Eurostat `2010` column | verdict |
+|---|---|---|---|
+| Spain | INE **2009-10** | **2009-2010** | ✅ same survey |
+| United Kingdom | ONS **2014-15** | **2014-2015** | ✅ same survey |
+| **Italy** | ISTAT **2013-14** | **2008-2009** | 🔴 **different survey, ~5 years apart** |
+
+Confirmed independently of the ESMS page: Italy's contribution to the European 2010 wave is the
+*Indagine Multiscopo sulle Famiglie — Uso del Tempo 2008-2009* edition, conducted February 2008 to
+January 2009. **The ISTAT 2013-14 wave we hold appears in no Eurostat HETUS aggregate table at
+all** — it is not in the 2010 round (which took 2008-09 from Italy) and not in the 2020 round (which
+has no `IT` at all; Italy's 2020-round wave is 2022-23). Italy's 2013-14 is a national wave that sits
+between two European rounds.
+
+**What this does and does not break.** It does **not** touch Steps 1–4: the corpus, the gates and the
+`it` training shard are unaffected, and nothing already run needs re-running. It breaks exactly one
+thing, and only for one fold: **when Italy is the held-out country, "score against its published
+aggregate tables" scores 2013-14 diaries against 2008-09 published marginals.** For `es` and `uk` the
+basis is exact. 🔴 **This is a basis question, not a band question, and by this project's own rule a
+basis is registered before the run that reports under it — so it must be ruled before the `it` fold
+is scored, not after.**
+
+#### 🔴 D-S6-2 — FOR THE AUTHOR. `prereg.md` IS FROZEN AND HAS **NOT** BEEN EDITED.
+
+`prereg.md` §"What this pre-registration does NOT cover" names all five tables, `tus_00hh` and
+`tus_20startime` among them. **It has not been touched and must not be** — its md5
+`e4243e07cdd80c9c846b91f40e3e8c45` is what `G4.14` checks on every run in the project, and editing it
+would fail every run at once, including the `uk` fold currently on the GPU. **The corrections above
+are therefore recorded here, post-hoc and declared as post-hoc, exactly as a basis change is required
+to be.** They are not presented as though the pre-registration had them right.
+
+Three things need an author ruling:
+
+1. **The two renames** — `tus_00hh` → `tus_00hhstatus`, `tus_20startime` → `tus_00startime`. These
+   are corrections of fact: the intended quantity is published under the corrected name in both
+   cases, and the thresholds are expressed against the quantity, not against the string. Recommend
+   accepting both as **declared errata against a frozen file**, recorded here and never by editing
+   `prereg.md`.
+2. **Italy's basis**, and this is the real decision. (a) Score the `it` fold against the
+   **2008-09** tables and declare the five-year gap as a named limitation on that fold only;
+   (b) drop the published-marginal scoring for `it` and report it as un-quantified **and say so**,
+   the way D-S3-14 handled `strat_hh_type = unknown`; (c) re-open decision 6 and swap Italy's
+   microdata to the **2008-09** wave so the basis is exact for all three — 🔴 **listed for
+   completeness and flagged against itself: it invalidates the entire corpus, every Step 1–4 gate
+   result, and the frozen pre-registration. It is not recommended.** No option is taken here.
+3. **Whether `es`/`uk` may be reported as exact-basis while `it` is not.** They can, and the
+   asymmetry should be stated rather than averaged away — but it means the LOCO result is not
+   basis-uniform across its three folds, and a reviewer will find that if we do not say it.
+
+**One thing this check did not settle.** The tables were confirmed to **exist, be reachable, and
+cover our countries**; their *contents* were not compared against anything we hold, and no threshold
+in §6 has been re-checked for whether it is achievable against the real published numbers. **That is
+still open, it is a smaller question than the one just closed, and it is now unblocked.**
+
+---
+
+### 2026-08-19 (evening) — 🟢 **D-S6-2 RULED (a) BY THE AUTHOR. BOTH RENAMES ACCEPTED; ITALY IS SCORED AGAINST 2008-09 WITH THE GAP DECLARED.**
+
+Ruled while fold `it` (job `1281612`) was still training. 🔴 **Training `it` is not scoring `it`** —
+this ruling governs the Step 6 scoring of that fold, and it is now in place **before** the fold is
+scored, which is the order a basis question requires.
+
+**Ruling, against the three questions raised in the entry above:**
+
+1. **Both renames ACCEPTED as declared errata.** `tus_00hh` → **`tus_00hhstatus`**;
+   `tus_20startime` → **`tus_00startime`**.
+2. **Italy's basis: option (a).** The `it` fold is scored against Italy's published **2008-09**
+   Eurostat marginals, and the ~5-year gap is declared as a named limitation **on that fold only**.
+   Option (c) stays rejected as flagged.
+3. **`es` and `uk` are reported exact-basis, `it` is not, and the asymmetry is stated.**
+
+#### What changed in this file, and it was one edit
+
+The EXPERIMENT paragraph's table list now reads `tus_00age`, `tus_00educ`, `tus_00selfstat`,
+**`tus_00hhstatus`**, **`tus_00startime`**. The warning block beneath it, which had said the list was
+"deliberately left unchanged", has been replaced by the correction and by the limitation the ruling
+does **not** remove. 🔴 **Two other passages in this file still print the old names and were left
+alone on purpose:** the *"What was NOT verified while drafting this"* paragraph and the D-S6-2
+investigation entry itself. Both are **historical records of what was believed at the time**, and
+harmonising them would destroy the evidence that the project ever held the wrong names. The rule is
+the same one applied to the two self-inconsistent §-spec sentences recorded earlier in this file: a
+document is amended forward, not retro-fitted.
+
+#### 🔴 `prereg.md` IS UNTOUCHED AND STAYS UNTOUCHED
+
+md5 **`e4243e07cdd80c9c846b91f40e3e8c45`**, held in `outputs_step6/prereg.md.md5`. Its
+§"What this pre-registration does NOT cover" still names `tus_00hh` and `tus_20startime`, and it will
+continue to. **These corrections exist only as declared post-hoc errata, here.** Editing the frozen
+file would fail `G4.14` on every run in the project at once, including every run that has already
+passed it.
+
+#### 🔴 THE LIMITATION, IN THE WORDS IT IS TO BE WRITTEN IN
+
+Eurostat's ESMS gives the fieldwork behind the `2010` column per country: **Spain 2009-2010**
+(= our microdata ✅), **UK 2014-2015** (= our microdata ✅), **Italy 2008-2009** — but our Italian
+microdata is ISTAT **2013-14**. Italy's contribution to the European 2010 wave is the *Uso del Tempo
+2008-2009* edition, confirmed independently; **ISTAT 2013-14 appears in no Eurostat HETUS aggregate
+table at all**, the 2020 wave having no `IT`. It is a national wave sitting between two European
+rounds. **When Italy is held out, "score against its published aggregate tables" therefore scores
+2013-14 diaries against 2008-09 marginals, and every `it` transfer number carries a ~5-year basis
+gap.**
+
+🔴 **THE LOCO RESULT IS NOT BASIS-UNIFORM ACROSS ITS FOLDS.** A three-fold mean hides the one thing a
+reader needs to know about the third. **Report the folds separately, with `it` carrying the gap in
+the same sentence as its number.** This is a limitation of the same class as D-S3-14's UK-only
+`strat_hh_type = unknown`: declared, not repaired, and never omitted.
+
+#### What this ruling does not close
+
+The tables were confirmed to **exist, be reachable and cover our countries**. Their **contents** have
+still not been compared against anything we hold, and **no §6 threshold has been re-checked for
+achievability against the real published numbers.** That question is smaller than the one just
+closed, it is unblocked, and it is still owed. Also still owed, and unblocked since the `uk` adapter
+exists: **the D-S3-14 UK-fold split report** for `strat_hh_type = unknown`.

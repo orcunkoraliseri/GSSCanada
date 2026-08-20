@@ -264,28 +264,80 @@ def main():
 
         exp = EXPECTED[name]
         fell = [g for g, v in verdicts.items() if v == "FAIL"]
-        attribution = []
-        for g in exp["must_fail"]:
-            attribution.append("%s expected FAIL -> %s %s"
-                               % (g, verdicts.get(g),
-                                  "AS EXPECTED" if verdicts.get(g) == "FAIL"
-                                  else "🔴 DID NOT FALL"))
-        for g in exp["must_stay_clean"]:
-            attribution.append("%s expected clean -> %s %s"
-                               % (g, verdicts.get(g),
-                                  "AS EXPECTED" if verdicts.get(g) == "PASS"
-                                  else "🔴 UNEXPECTED FALL -- FINDING"))
         results[name] = {"info": info, "verdicts": verdicts, "fell": fell,
-                         "expected": exp, "attribution": attribution,
+                         "expected": exp,
                          "G4.1": g1, "G4.4": g4, "G4.7": g7}
+
+    # ------------------------------------------------------------------
+    # ATTRIBUTION -- SECOND PASS, AFTER THE BASELINE IS KNOWN (FINDING 29).
+    #
+    # This used to be inside the scoring loop above, which meant every arm was
+    # attributed WITHOUT knowing what the null arm had done. On fold `es` that
+    # printed two falsehoods at once, in opposite directions:
+    #
+    #   * `G4.1` was FAIL on the `null` arm itself -- V4.a vacuity, 0 scorable
+    #     strata, identical on all five arms -- and `modal_day` / `duplicate_500`
+    #     were nevertheless credited "expected FAIL -> FAIL AS EXPECTED". A gate
+    #     that is already down before the perturbation cannot be seen falling.
+    #     This is FINDING 18, repaired in 4thJ_step4_perturbtable.py on
+    #     2026-08-18 and never ported here.
+    #   * the same `G4.1` was ALSO printed as "🔴 UNEXPECTED FALL -- FINDING" on
+    #     the STAY CLEAN arms -- including on `null`, which changes nothing at
+    #     all. This is FINDING 23, repaired in the same file on the same day and
+    #     likewise never ported here.
+    #
+    # Nothing about how a gate is SCORED changes here. Only what the report is
+    # allowed to claim about it changes. No band moves.
+    # ------------------------------------------------------------------
+    base = results.get("null", {}).get("verdicts", {})
+    for name in names:
+        r = results[name]
+        exp, verdicts = r["expected"], r["verdicts"]
+        attribution, credited = [], []
+        for g in exp["must_fail"]:
+            if base.get(g) == "FAIL":
+                attribution.append("%s VOID -- already FAIL at baseline (null); a gate "
+                                   "down before the perturbation cannot be seen falling" % g)
+            elif verdicts.get(g) == "FAIL":
+                attribution.append("%s expected FAIL -> FAIL AS EXPECTED" % g)
+                credited.append(g)
+            else:
+                attribution.append("%s expected FAIL -> %s 🔴 DID NOT FALL"
+                                   % (g, verdicts.get(g)))
+        for g in exp["must_stay_clean"]:
+            if base.get(g) == "FAIL":
+                attribution.append("%s NOT ASSESSABLE as STAY CLEAN -- already FAIL "
+                                   "at baseline (null)" % g)
+            elif verdicts.get(g) == "PASS":
+                attribution.append("%s expected clean -> PASS AS EXPECTED" % g)
+            else:
+                attribution.append("%s expected clean -> %s 🔴 UNEXPECTED FALL -- FINDING"
+                                   % (g, verdicts.get(g)))
+        # collateral: a gate that fell while being in NEITHER list was never
+        # declared either way. `4thJ_step4_perturbtable.py` prints this; this
+        # file did not, and that is how `within_stratum_shuffle` felling `G4.4`
+        # went unremarked on fold es.
+        undeclared = [g for g in r["fell"]
+                      if g not in exp["must_fail"] and g not in exp["must_stay_clean"]
+                      and base.get(g) == "PASS" and name != "null"]
+        if undeclared:
+            attribution.append("🔴 UNDECLARED COLLATERAL -- also fell, in neither list: %s"
+                               % undeclared)
+        r["attribution"], r["credited"] = attribution, credited
         print()
-        print("-- %s -- %s" % (name, info))
+        print("-- %s -- %s" % (name, r["info"]))
         for line in attribution:
             print("   " + line)
         print("   verdicts: %s" % verdicts)
 
+    seen_falling = sorted({g for n, r in results.items() if n != "null"
+                           for g in r["credited"]})
+    vacuous = sorted({g for g, v in base.items() if v == "FAIL"})
+    print()
+    print("GATES CREDITED AS SEEN FALLING on this probe: %s" % (seen_falling or "none"))
+    print("Gates already FAIL at baseline, so NOT creditable here: %s" % (vacuous or "none"))
+
     # coverage clause
-    base = results.get("null", {}).get("verdicts", {})
     passing_at_baseline = [g for g, v in base.items() if v == "PASS"]
     never_felled = [g for g in passing_at_baseline
                     if not any(g in r["fell"] for n, r in results.items() if n != "null")]

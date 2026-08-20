@@ -46,6 +46,37 @@ PREREG_SIDECAR = os.path.join(STEP4, "prereg.md.md5")
 MANIFEST_IN = os.path.join(STEP4, "shard_manifest.json")
 STAGED = os.path.join(STEP4, "staged_weights.json")
 
+# ---------------------------------------------------------------------------
+# 🔴 D-S4-5, RULED (b) BY THE AUTHOR 2026-08-19 -- THE MID-EPOCH CHECKPOINT BASIS
+# FOR G4.1. Registered in Step4_docs/outputs_step4/proglog_step4_gates.md BEFORE this
+# code was written and BEFORE any run reported under it.
+#
+# WHY IT EXISTS. On two folds of two -- es (1274884) and uk (1274964), disjoint training
+# sets, different shard sizes, different held-out countries -- G4.1's miss INVERTS between
+# the only two points anyone ever looked at: `end=upper` at the end of epoch 0, `end=lower
+# (collapse)` at the end of epoch 1, while content loss falls and G4.2 PASSes throughout
+# (FINDING 32). The run CROSSES the [0.8, 1.25] band inside the final epoch rather than
+# converging into it, and the epoch boundary is simply the wrong place to read it.
+#
+# 🔴 WHY THESE TWO NUMBERS ARE CONSTANTS AND NOT COMMAND-LINE FLAGS. Probing several
+# mid-points and then quoting whichever one lands inside the band is SELECTING AN ARTEFACT
+# BECAUSE IT PASSES -- the same move as re-banding, wearing different clothes. The grid is
+# uniform, not a search, and THE CHECKPOINT THAT SUPPLIES THE VERDICT IS NAMED IN ADVANCE.
+# A flag would let a launcher move either one silently, which is exactly the failure this
+# design exists to prevent. If they ever need to change, the change is a NEW registered
+# basis in the progress log, not an edit here.
+#
+# 🔴 THE PRE-REGISTERED NEGATIVE, RECORDED BEFORE THE FIRST RUN. If the 0.50 checkpoint is
+# outside the band on a fold, G4.1 is a standing EXPLAINED FAIL on that fold and what gets
+# reported is D-S4-5 option (a) -- the outcome the ruling declined. The grid is NOT
+# refined, the mid-point is NOT re-chosen, and the band is NOT touched. It is also
+# entirely possible that no checkpoint is inside the band and the trajectory passes
+# through it between two probes; that is an answer too, and 0.25/0.75 are what make it
+# visible.
+# ---------------------------------------------------------------------------
+G41_MIDEPOCH_FRACS = (0.25, 0.50, 0.75)
+G41_MIDEPOCH_VERDICT_FRAC = 0.50
+
 MODEL_FOR = {
     "pilot":   "allenai/OLMo-2-0425-1B",
     "primary": "allenai/Olmo-3-1025-7B",
@@ -728,6 +759,54 @@ def _flush_detectors_on_crash(exc):
 
 
 
+def g41_midepoch_probe(model, tokenizer, val_dl, val_recs, real_ref, delim_ids,
+                       forced_ids, device, args, ep, step, n_steps, frac):
+    """One D-S4-5 mid-epoch checkpoint: the same G4.1 measurement as the epoch boundary,
+    taken inside the final epoch.
+
+    Strictly ADDITIVE. It reads the model, records a row and hands training back exactly
+    as it found it -- nothing about the end-of-epoch scoring, the band, the statistic or
+    any other gate moves. The reading is taken with the SAME generator settings as the
+    epoch-end call, because a probe measured differently from the thing it is compared
+    against measures nothing.
+    """
+    is_verdict = abs(frac - G41_MIDEPOCH_VERDICT_FRAC) < 1e-9
+    role = "VERDICT" if is_verdict else "DESCRIPTIVE"
+    print()
+    print("  ---- D-S4-5 mid-epoch probe: epoch %d, frac %.2f, step %d/%d [%s] ----"
+          % (ep, frac, step + 1, n_steps, role), flush=True)
+    if not is_verdict:
+        print("      🔴 DESCRIPTIVE ONLY. This checkpoint is NOT eligible to supply "
+              "G4.1's verdict, whatever it reads. The verdict checkpoint is frac %.2f."
+              % G41_MIDEPOCH_VERDICT_FRAC, flush=True)
+
+    dv = detector_delim_vs_content(model, val_dl, delim_ids, device, forced_ids)
+    gen_texts = generate_samples(
+        model, tokenizer, val_recs, device, args.gen_n,
+        max_new_tokens=args.max_len, stratified_k=args.gen_stratified_k,
+        gen_batch=args.gen_batch, ref_recs=real_ref)[1]
+    gen_entropy = activity_entropy_nats(gen_texts)
+    g1 = gate_g4_1([r["text"] for r in real_ref], gen_texts)
+
+    detail = ("V4.a: only %s scorable strata" % g1.get("n_scorable_strata")
+              if "reason" in g1 else
+              "%s strata, %s below / %s above band %s, worst %.3f/%.3f, end=%s"
+              % (g1.get("n_scorable_strata"), g1.get("n_below_band_COLLAPSE_END"),
+                 g1.get("n_above_band"), g1.get("band"),
+                 g1.get("worst_low") or float("nan"),
+                 g1.get("worst_high") or float("nan"), g1.get("which_end")))
+    print("  [ep %d frac %.2f] G4.1 %s [%s]  delim=%.4f content=%.4f entropy=%.3f  %s"
+          % (ep, frac, g1["verdict"], detail, dv["delimiter_loss"], dv["content_loss"],
+             gen_entropy, role), flush=True)
+
+    return {"basis": "D-S4-5 mid-epoch checkpoint", "epoch": ep, "frac": frac,
+            "step": step, "n_steps_in_epoch": n_steps,
+            "role": role, "supplies_verdict": is_verdict,
+            "G4.1": g1, "delim_vs_content": dv,
+            "activity_entropy_nats": gen_entropy,
+            "generated_n": len(gen_texts)}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fold", required=True, choices=["es", "uk", "it"])
@@ -752,6 +831,12 @@ def main():
                     help="pilot only: cap training records, for a short schedule")
     ap.add_argument("--perturbation", default=None,
                     help="deliberately break one thing, for the seen-failing battery")
+    ap.add_argument("--g41-midepoch", action="store_true",
+                    help="D-S4-5 (b): additionally evaluate G4.1 at the registered "
+                         "0.25/0.50/0.75 points of the FINAL epoch. The grid and the "
+                         "verdict point are module constants, NOT settable here -- see "
+                         "G41_MIDEPOCH_FRACS. Off by default, so every run that does not "
+                         "pass it behaves exactly as before.")
     ap.add_argument("--out", default=os.path.join(STEP4, "runs"))
     args = ap.parse_args()
 
@@ -1107,6 +1192,26 @@ def main():
                                     "G4.8": g8, "G4.5": g5},
                  "epochs": []}
 
+    # 🔴 D-S4-5: the basis travels WITH the readings. A run's JSON has to say which basis
+    # it was taken under, or a later reader cannot tell a mid-epoch number from an
+    # epoch-end one -- and the whole point of the registration is that the two are not
+    # interchangeable.
+    if args.g41_midepoch:
+        detectors["D_S4_5_midepoch_basis"] = {
+            "ruled": "D-S4-5 (b), author, 2026-08-19",
+            "registered_in": "Step4_docs/outputs_step4/proglog_step4_gates.md",
+            "fracs": list(G41_MIDEPOCH_FRACS),
+            "verdict_frac": G41_MIDEPOCH_VERDICT_FRAC,
+            "scope": "final epoch only",
+            "descriptive_fracs_not_eligible_for_verdict":
+                [f for f in G41_MIDEPOCH_FRACS if f != G41_MIDEPOCH_VERDICT_FRAC],
+            "pre_registered_negative":
+                "If the verdict checkpoint is outside the band, G4.1 is a standing "
+                "EXPLAINED FAIL on this fold and D-S4-5 option (a) is what is reported. "
+                "The grid is not refined and the mid-point is not re-chosen.",
+            "epoch_end_scoring": "UNCHANGED and still reported"}
+        detectors["midepoch_probes"] = []
+
     # 🔴 FINDING 19, job 1270491. `detectors_<run>.json` used to be written only in the LAST
     # block of main(), so ANY exception after this point discarded every gate already scored.
     # That is how `swap_tokenizer` was lost twice: D-S4-2 worked on its first attempt and
@@ -1149,6 +1254,39 @@ def main():
         ep_dl = train_dl if seq_loaders is None else seq_loaders[ep % len(seq_loaders)][1]
         if seq_loaders is not None:
             print("  epoch %d trains on country %s ONLY" % (ep, seq_loaders[ep % len(seq_loaders)][0]))
+        # 🔴 D-S4-5: work out WHERE the probes land before the epoch starts, and print it,
+        # so the schedule is on the record ahead of the readings rather than inferred from
+        # them afterwards. Final epoch only -- that is the interval the band is crossed in.
+        probe_at = {}
+        if getattr(args, "g41_midepoch", False) and ep == epochs - 1 and opt is not None:
+            n_steps_ep = len(ep_dl)
+            for fr in G41_MIDEPOCH_FRACS:
+                s_t = int(round(fr * n_steps_ep)) - 1
+                # snap BACK to an optimiser-step boundary: probing mid-accumulation would
+                # read a model with a partial gradient pending, which is not a checkpoint
+                # anyone could reproduce.
+                while s_t >= 0 and (s_t + 1) % args.grad_accum != 0:
+                    s_t -= 1
+                if s_t < 0:
+                    print("  🔴 D-S4-5: frac %.2f snaps below step 0 on this epoch "
+                          "(%d steps, grad_accum %d). Probe SKIPPED and the gap is "
+                          "recorded, not silently dropped." % (fr, n_steps_ep,
+                                                               args.grad_accum))
+                    continue
+                if s_t in probe_at:
+                    # two fracs colliding means the epoch is too short for the grid. That
+                    # is a FINDING about the schedule, not a detail to absorb quietly.
+                    print("  🔴 D-S4-5 COLLISION: frac %.2f snaps to step %d, already "
+                          "taken by frac %.2f. The epoch is too short for the registered "
+                          "grid; this is a FINDING, and the later frac is not probed."
+                          % (fr, s_t, probe_at[s_t]))
+                    continue
+                probe_at[s_t] = fr
+            print("  D-S4-5 mid-epoch probe schedule, epoch %d (%d steps, grad_accum %d): "
+                  "%s   verdict checkpoint = frac %.2f"
+                  % (ep, n_steps_ep, args.grad_accum,
+                     {k: v for k, v in sorted(probe_at.items())},
+                     G41_MIDEPOCH_VERDICT_FRAC), flush=True)
         for step, (input_ids, labels, attn) in enumerate(ep_dl):
             if opt is None:
                 break
@@ -1163,6 +1301,18 @@ def main():
             nb += 1
             if step % 200 == 0:
                 print("  ep%d step%d loss %.4f" % (ep, step, float(out.loss)), flush=True)
+
+            if step in probe_at:
+                detectors["midepoch_probes"].append(
+                    g41_midepoch_probe(model, tokenizer, val_dl, val_recs, real_ref,
+                                       delim_ids, forced_ids, device, args, ep, step,
+                                       len(ep_dl), probe_at[step]))
+                # hand training back exactly as the probe found it: generation re-enabled
+                # the KV cache and put the model in eval, both of which break gradient
+                # checkpointing if they are left on.
+                model.train()
+                if hasattr(model, "config"):
+                    model.config.use_cache = False
 
         # ---- validation epoch: every detector, every epoch ----
         dv = detector_delim_vs_content(model, val_dl, delim_ids, device, forced_ids)
@@ -1263,6 +1413,50 @@ def main():
                   "collapsed, which is the failure this detector exists for.")
             halted = True
             break
+
+    # 🔴 D-S4-5: report the trajectory AND the verdict in one place, with the descriptive
+    # probes clearly not carrying it. The pre-registered negative is printed whether or not
+    # it fired, so a reader can see the rule was in force rather than take it on trust.
+    if getattr(args, "g41_midepoch", False):
+        probes = detectors.get("midepoch_probes", [])
+        print()
+        print("  ================ D-S4-5 MID-EPOCH BASIS, FOLD %s ================"
+              % args.fold)
+        if not probes:
+            print("  🔴 NO PROBE RAN. Either the run halted before the final epoch or the "
+                  "schedule was empty. G4.1 has NO mid-epoch reading on this fold and "
+                  "must not be reported as though it did.")
+        for pr in probes:
+            g = pr["G4.1"]
+            print("    frac %.2f  step %d/%d  G4.1 %-4s  %-11s  %s"
+                  % (pr["frac"], pr["step"] + 1, pr["n_steps_in_epoch"], g["verdict"],
+                     pr["role"],
+                     ("V4.a, %s strata" % g.get("n_scorable_strata")) if "reason" in g
+                     else ("%s below / %s above, end=%s"
+                           % (g.get("n_below_band_COLLAPSE_END"), g.get("n_above_band"),
+                              g.get("which_end")))))
+        vp = [pr for pr in probes if pr["supplies_verdict"]]
+        if len(vp) == 1:
+            gv = vp[0]["G4.1"]
+            print("  G4.1 ON THE D-S4-5 BASIS (frac %.2f, the checkpoint named in advance)"
+                  ": %s" % (G41_MIDEPOCH_VERDICT_FRAC, gv["verdict"]))
+            if gv["verdict"] != "PASS":
+                print("  🔴 THE PRE-REGISTERED NEGATIVE HAS FIRED. G4.1 is a standing "
+                      "EXPLAINED FAIL on fold %s and D-S4-5 option (a) is what gets "
+                      "reported. The grid is NOT refined, the mid-point is NOT re-chosen, "
+                      "and the band is NOT touched." % args.fold)
+            else:
+                print("  🔴 A PASS HERE IS A PASS ON A POST-HOC-REGISTERED BASIS AND MUST "
+                      "BE WRITTEN AS ONE. The basis was registered after the epoch-end "
+                      "readings were seen; it was registered before this run, which is "
+                      "what makes it admissible, and it is never to be presented as "
+                      "pre-registered from the start of Step 4.")
+        else:
+            print("  🔴 the verdict checkpoint did not run (%d found). G4.1 has no "
+                  "D-S4-5 verdict on this fold." % len(vp))
+        print("  🔴 EPOCH-END SCORING IS UNCHANGED AND STILL STANDS: the rows above do "
+              "not replace the end-of-epoch G4.1 readings, they sit beside them.")
+        print("  ==============================================================")
 
     elapsed = time.time() - t0
 
