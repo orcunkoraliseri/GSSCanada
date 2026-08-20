@@ -2182,3 +2182,416 @@ decomposition closes on `es` as it did on `it`, and the all-basis rate `0.1020` 
 run's headline number to four decimals** — which is a third, independent confirmation that the two runs
 really are the same run, and that D-S4-4 re-partitioned the same token population rather than changing
 what was measured.
+
+---
+
+## 🟢 2026-08-20 (overnight) — D-S4-5, FOLD `es`, FRAC 0.25 REPORTED: A **NEGATIVE**, AND THE EXPECTATION FOR FRAC 0.50 / 0.75 IS REGISTERED **BEFORE** EITHER PRINTS
+
+Job `1284898`, fold `es`, still `RUNNING`. Two structural facts and one result, in the order the log
+produced them.
+
+**Structural — the role label precedes the number, demonstrated twice on real hardware.** Line 208
+opened the frac 0.25 checkpoint with `[DESCRIPTIVE]` and line 252 opened frac 0.50 with `[VERDICT]`,
+each *before* its 600 diaries were generated and therefore before any number existed. The descriptive
+row also carried its restatement clause (*"NOT eligible to supply `G4.1`'s verdict, whatever it
+reads"*). The snapped boundaries are exact: `6072 = 8 × 759`, `12144 = 8 × 1518`. 🟢 **No `SKIPPED`
+and no `D-S4-5 COLLISION` line anywhere in the file.** This is the anti-post-hoc property of the
+D-S4-5 implementation observed rather than asserted from the source.
+
+**Result — frac 0.25, stamped `DESCRIPTIVE` at both ends of the row:**
+```
+[ep 1 frac 0.25] G4.1 FAIL [6 strata, 0 below / 4 above band [0.8, 1.25], worst 1.104/1.622, end=upper]
+                 delim=0.0604 content=0.8985 entropy=3.339  DESCRIPTIVE
+```
+
+🔴 **This must be read against FINDING 36's replicate spread, and when it is, it is a negative.**
+Against this run's *own* epoch 0 (`0 below / 2 above, worst 0.970/1.553`) the frac-0.25 point moved
+`worst_low` **+0.134**, `worst_high` **+0.069**, and the out-of-band count `2 → 4`. FINDING 36
+measured the run-to-run spread at fixed configuration as **0.130** on `worst_low`, **0.111** on
+`worst_high`, and **2 strata** on the count. The movement is the same size as the noise. The claim
+this log will make is therefore the weak one, which is the only one the data supports:
+
+> **After 25 % of the final epoch, `G4.1` on `es` has not moved by more than the replicate spread.**
+> No movement toward the band is detectable, and whatever produces the end-of-epoch-1 collapse to
+> `end=lower (collapse)` happens **later than the first quarter of that epoch.**
+
+Equivalently, the frac-0.25 point lies inside the envelope spanned by the two epoch-0 replicates on
+every one of the three numbers (`4 ∈ {2,4}`; `1.104` against `1.100` and `0.970`; `1.622` between
+`1.553` and `1.664`).
+
+**Aggregates.** `delim(forced)` `0.0591 → 0.0604`, content `0.9039 → 0.8985`, entropy `3.282 →
+3.339`. 🔴 The content loss **falls** while `G4.1` does not improve. The loss/`G4.1` divergence
+recorded at the epoch boundary on 3/3 folds is now seen **within** a single epoch as well, which
+removes "the epoch boundary does something special" as an explanation for it.
+
+### 🔴 REGISTERED NOW, BEFORE FRAC 0.50 AND FRAC 0.75 PRINT
+
+On `es` the two endpoints are known (`end=upper` at epoch 0, `end=lower (collapse)` at epoch 1) and
+frac 0.25 is now known to be indistinguishable from the epoch-0 endpoint. The crossing therefore lies
+in `(0.25, 1.0]` of epoch 1. Written down before the readings exist:
+
+- **Expected:** frac 0.50 and frac 0.75 trace the crossing — at least one of them differs from
+  epoch 0 by **more** than the `0.13` spread, and frac 0.75 is at or below frac 0.50.
+- 🔴 **If frac 0.50 AND frac 0.75 are BOTH still indistinguishable from epoch 0**, then the entire
+  `es` collapse occurs in the **last quarter** of epoch 1, and a three-point schedule at
+  0.25/0.50/0.75 is **too coarse to locate it**. That is a limitation of the D-S4-5 basis as ruled,
+  it would be reported as one, and it is registered here rather than discovered afterwards.
+- 🔴 **A frac 0.50 reading inside `[0.8, 1.25]` but within ~`0.13` of either edge is NOT a PASS**
+  (FINDING 36's resolution rule). This is restated here so that it cannot be quietly dropped when the
+  number arrives.
+- Nothing in this entry changes a band, a basis, or any fold's verdict.
+
+---
+
+## 🔴 2026-08-20 (overnight) — D-S4-5 VERDICT CHECKPOINT, FOLD `es`: **`G4.1` FAIL.** THE MID-EPOCH BASIS DOES NOT RESCUE `G4.1` ON THIS FOLD, AND THE PRE-REGISTERED "TOO COARSE" BRANCH IS THE ONE THE DATA IS TAKING.
+
+Line 263 of `/speed-scratch/o_iseri/4J_step4_ds45_1284898.out`, stamped `VERDICT` at the end of the
+row as well as in its header:
+
+```
+[ep 1 frac 0.50] G4.1 FAIL [6 strata, 0 below / 1 above band [0.8, 1.25], worst 0.850/1.650, end=upper]
+                 delim=0.0816 content=0.8926 entropy=3.209  VERDICT
+```
+
+🔴 **The verdict checkpoint registered under D-S4-5 for fold `es` is a FAIL.** D-S4-5 was granted so
+that `G4.1` would get a reading that was not an artefact of stopping at an epoch boundary. On `es`
+that reading is still a FAIL. This is stated plainly and is not softened anywhere in this project's
+outputs.
+
+### The FAIL is ROBUST under FINDING 36's resolution rule — the rule is applied, not waived
+
+| quantity | value | band edge | margin | FINDING 36 spread | margin / spread |
+|---|---|---|---|---|---|
+| `worst_high` | **1.650** | 1.25 (upper) | **0.400 outside** | 0.111 | **3.6×** — resolvable |
+| `worst_low` | 0.850 | 0.80 (lower) | 0.050 inside | 0.130 | 0.38× — 🔴 **NOT resolvable** |
+
+- **The FAIL stands on `worst_high`**, which is outside the band by 3.6× the measured replicate
+  spread. There is no reading of FINDING 36 under which this becomes a PASS.
+- 🔴 **The corollary must not be dropped: the claim "the low end has entered the band" CANNOT be
+  made.** `0.850` sits `0.050` inside a lower edge whose own resolution is `0.130`. That sub-claim is
+  unresolvable and is not asserted.
+
+### 🔴 THE PRE-REGISTERED EXPECTATION IS **NOT** CONFIRMED — the second branch is what happened
+
+Registered in this log before frac 0.50 printed: *"at least one of frac 0.50 / frac 0.75 differs from
+epoch 0 by MORE than the `0.13` spread"*, with the alternative that if both are indistinguishable
+then the schedule is **too coarse to locate the `es` collapse**. Measured against this run's own
+epoch 0 (`0 below / 2 above, worst 0.970/1.553, end=upper`):
+
+| frac 0.50 vs its own epoch 0 | Δ | spread | resolvable? |
+|---|---|---|---|
+| `worst_low` `0.970 → 0.850` | **−0.120** | 0.130 | **no** |
+| `worst_high` `1.553 → 1.650` | **+0.097** | 0.111 | **no** |
+| strata above `2 → 1` | −1 | 2 strata | **no** |
+| `end=` | `upper → upper` | — | unchanged |
+
+**Not one of the three is resolvable.** Halfway through the final epoch, `G4.1` on `es` is still not
+distinguishable from where it was at the end of epoch 0 — and the epoch-1 endpoint of the replicate
+run is `0 above / 2 below, worst 0.537/0.964, end=lower (collapse)`, which is nowhere near this. So
+unless frac 0.75 moves resolvably, **the entire `es` band crossing occurs in the last quarter of
+epoch 1 and the 0.25/0.50/0.75 schedule cannot locate it.** That limitation was written down before
+the data arrived; it is now the live branch, and it will be reported as a limitation of the D-S4-5
+basis as ruled — not quietly absorbed.
+
+### 🔴 The more damaging observation: within-epoch fluctuation is as large as between-run fluctuation
+
+The three mid-epoch points do **not** trace a monotone path. Taking the panel width `worst_high −
+worst_low` as a crude dispersion measure:
+
+| checkpoint | below / above | `worst_low` | `worst_high` | width | `end=` |
+|---|---|---|---|---|---|
+| epoch 0 | 0 / 2 | 0.970 | 1.553 | 0.583 | upper |
+| frac 0.25 | 0 / **4** | 1.104 | 1.622 | 0.518 | upper |
+| **frac 0.50 (VERDICT)** | 0 / **1** | **0.850** | **1.650** | **0.800** | upper |
+| epoch 1 END (replicate `1274884`) | **2** / 0 | 0.537 | 0.964 | 0.427 | **lower** |
+
+`worst_low` moves `1.104 → 0.850` between frac 0.25 and frac 0.50 — **−0.254, about 2× the replicate
+spread and therefore resolvable** — while neither point is resolvably displaced from epoch 0. The
+out-of-band count goes `2 → 4 → 1`. 🔴 **`G4.1` fluctuates within a single epoch by more than the
+run-to-run spread, without making resolvable net progress toward its band.** For a gate that is meant
+to carry a verdict, that is a worse property than a simple drift would be, and it is recorded here as
+an observation about the *gate*, not about the model.
+
+🔴 **Honesty about the yardstick:** the `0.130` / `0.111` spread comes from **one** replicate pair at
+**one** checkpoint (FINDING 36, `n = 1`). Using it at mid-epoch checkpoints is an extrapolation. It is
+used here only to say what is **not** resolvable — the conservative direction — and no standard
+deviation is quoted anywhere.
+
+### Aggregates along epoch 1, for the record
+
+| checkpoint | `delim(forced)` | content | entropy |
+|---|---|---|---|
+| epoch 0 | 0.0591 | 0.9039 | 3.282 |
+| frac 0.25 | 0.0604 | 0.8985 | 3.339 |
+| frac 0.50 | **0.0816** | 0.8926 | 3.209 |
+
+The forced-basis delimiter rate rises monotonically and the last step is large (+0.021, ~35 % of its
+own value) while the content loss falls monotonically. 🔴 The loss/`G4.1` divergence recorded at the
+epoch boundary on 3/3 folds is confirmed **within** an epoch: content loss improves at every one of
+these checkpoints and `G4.1` does not.
+
+### What this does and does not change
+
+- **Does not change:** any band, any basis, any earlier fold's verdict, or `G4.1`'s **VOID** status
+  for DoD item 6 (it is FAIL at baseline everywhere, and a gate already down cannot be seen falling).
+- **Adds:** `G4.1` is now FAIL at **three** checkpoints on `es` in this run (epoch 0, frac 0.25,
+  frac 0.50) on top of 3 folds × 2 epochs = 6 epoch-end FAILs. **`G4.1` has never PASSed at any
+  checkpoint, on any fold, under any basis, in this campaign.**
+- 🔴 **Says explicitly:** the D-S4-5 mid-epoch basis, which was argued for and granted on the strength
+  of a real phenomenon, **does not turn `G4.1` into a passing gate on `es`.** Folds `uk` (`1284911`)
+  and `it` (`1284912`) are still queued; `it` was already pre-registered as expected-FAIL (FINDING 35).
+
+---
+
+## 🔴 2026-08-20 (overnight) — FINDING 37: `G4.1` **PASSES** AT FRAC 0.75 ON `es` — THE FIRST PASS IN THE CAMPAIGN. IT IS A `DESCRIPTIVE` CHECKPOINT, IT DOES NOT SUPPLY THE VERDICT, AND IT IS NOT ROBUST EITHER. THE VERDICT FOR `es` REMAINS **FAIL**.
+
+Line 308 of `/speed-scratch/o_iseri/4J_step4_ds45_1284898.out`:
+
+```
+[ep 1 frac 0.75] G4.1 PASS [6 strata, 0 below / 0 above band [0.8, 1.25], worst 0.974/1.182, end=none]
+                 delim=0.0603 content=0.8916 entropy=3.195  DESCRIPTIVE
+```
+
+**`G4.1` has passed. For the first time anywhere in this campaign, all six strata are inside
+`[0.8, 1.25]` and `end=none`.** And it changes **nothing** about fold `es`'s verdict, for two
+independent reasons, each of which was written down **before** the number existed.
+
+### 🔴 REASON 1 — it is a `DESCRIPTIVE` checkpoint. This is exactly the case D-S4-5 was built to stop.
+
+D-S4-5 registered **frac 0.50 as the sole verdict checkpoint** and 0.25/0.75 as descriptive, and the
+trainer stamps the role into the log **when the checkpoint opens, before the 600 diaries are
+generated** — observed three times in this run (lines 208, 252, 296). The frac 0.75 row carried its
+restatement clause: *"NOT eligible to supply `G4.1`'s verdict, whatever it reads."*
+
+🔴 **The verdict for fold `es` is the frac 0.50 reading: `G4.1` FAIL, 1 stratum above, worst
+0.850/1.650, `end=upper`.** The frac 0.75 PASS is reported, in full, and is **not** promoted to a
+verdict. Had the verdict fraction been chosen after seeing these three numbers, `es` would read PASS.
+It was not, and it does not.
+
+**This is the entry that shows the pre-registration was load-bearing rather than ceremonial.** Every
+prior pre-registration in this project cost nothing to honour, because the result went the way the
+registration expected. This one costs a PASS — the only one the campaign has produced — and it is
+still honoured. That is the whole value of having written it down first.
+
+### 🔴 REASON 2 — even ignoring reason 1, the PASS is NOT robust under FINDING 36
+
+| quantity | value | nearest edge | margin **inside** | spread (FINDING 36) | margin / spread |
+|---|---|---|---|---|---|
+| `worst_high` | **1.182** | 1.25 | **0.068** | 0.111 | 🔴 **0.61× — NOT resolvable** |
+| `worst_low` | 0.974 | 0.80 | 0.174 | 0.130 | 1.34× — marginally resolvable |
+
+FINDING 36's rule, registered before frac 0.50 printed: *a reading inside `[0.8, 1.25]` but within
+~`0.13` of an edge is not reportable as a PASS on its own.* **`worst_high` clears its edge by
+`0.068`, roughly six-tenths of the measured replicate spread.** So even if this had been the verdict
+checkpoint, the correct report would have been *"inside the band, with a margin smaller than the
+run-to-run spread"* — not a PASS. Both pre-registered rules point the same way, independently.
+
+### 🔴 CORRECTION FORWARD — the "schedule is too coarse" branch is FALSIFIED
+
+The previous entry registered two branches and said the second was live: *"unless frac 0.75 moves
+resolvably, the entire `es` crossing sits in the last quarter and the 0.25/0.50/0.75 schedule cannot
+locate it."* **Frac 0.75 moved.** Against this run's own epoch 0 (`0.970/1.553`):
+
+| frac 0.75 vs epoch 0 | Δ | spread | resolvable? |
+|---|---|---|---|
+| `worst_high` `1.553 → 1.182` | **−0.371** | 0.111 | 🟢 **yes, 3.3×** |
+| `worst_low` `0.970 → 0.974` | +0.004 | 0.130 | no |
+| strata above `2 → 0` | −2 | 2 strata | at the spread |
+
+🔴 **The pre-registered expectation is therefore CONFIRMED, at frac 0.75, and the "too coarse"
+limitation is withdrawn.** The schedule *does* locate the movement: on `es` the upper crossing
+happens **between frac 0.50 and frac 0.75**, and the lower crossing to `end=lower (collapse)` happens
+**after frac 0.75**. The previous entry's text stays on disk as written; this is the correction,
+forward, in the same form used for FINDING 32 → 35.
+
+### What the four checkpoints actually show: `G4.1` **transits** the band
+
+| checkpoint | below / above | `worst_low` | `worst_high` | `end=` | role |
+|---|---|---|---|---|---|
+| epoch 0 | 0 / 2 | 0.970 | 1.553 | upper | epoch-end |
+| frac 0.25 | 0 / **4** | 1.104 | 1.622 | upper | DESCRIPTIVE |
+| **frac 0.50** | 0 / 1 | 0.850 | 1.650 | upper | 🔴 **VERDICT — FAIL** |
+| frac 0.75 | **0 / 0** | 0.974 | **1.182** | **none** | DESCRIPTIVE — **PASS**, not robust |
+| epoch 1 END (replicate `1274884`) | **2** / 0 | 0.537 | 0.964 | **lower** | epoch-end |
+
+**`G4.1` on `es` starts above its band, stays above through half the final epoch, passes *through* the
+band around three-quarters, and exits below it by the end.** The gate is satisfied only **transiently**,
+in a window the run passes through, and the epoch-end basis that Step 4 was originally specified on
+lands on the far side of it. That is the strongest statement this campaign can make about `G4.1`, and
+it is only visible because D-S4-5 was ruled and implemented.
+
+🔴 **It also means `G4.1`'s reading is a function of where you stop**, which is precisely the criticism
+D-S4-5 was raised to answer — the answer turns out to be *yes, and severely*. A gate whose verdict
+depends on the stopping point to this degree cannot carry a headline claim on its own, and the paper
+must say so.
+
+### Correction forward, second item
+
+The previous entry stated *"the forced-basis delimiter rate rises monotonically"*, on three points.
+**Falsified by the fourth:** `0.0591 → 0.0604 → 0.0816 → 0.0603`. It is **not** monotone; frac 0.50 is
+a spike. Content loss remains monotone-falling across all four (`0.9039 → 0.8985 → 0.8926 → 0.8916`)
+and entropy is `3.282 → 3.339 → 3.209 → 3.195`. 🔴 The loss/`G4.1` relationship is now clearly not a
+simple one: the content loss improves smoothly and monotonically while `G4.1` goes above-band →
+in-band → below-band across the same four points.
+
+### Standing after this finding
+
+- **`es` D-S4-5 verdict: `G4.1` FAIL** (frac 0.50). Unchanged by the PASS at 0.75.
+- 🔴 The campaign-wide claim *"`G4.1` has never PASSed at any checkpoint"* — written one entry ago —
+  **is now false and is retracted here.** It passed once, at a descriptive checkpoint, non-robustly.
+  The claim that survives is: **`G4.1` has never PASSed at a checkpoint eligible to supply a verdict.**
+- `G4.1` remains **VOID** for DoD item 6 (FAIL at baseline on every fold; a gate already down cannot
+  be seen falling).
+- No band, no basis, and no earlier fold verdict is changed.
+- Folds `uk` (`1284911`) and `it` (`1284912`) are queued. 🔴 **FINDING 35 pre-registered `it` as
+  expected-FAIL mid-epoch; that stands, and this `es` transit does not license expecting a transit
+  on `it`, whose two endpoints are BOTH above the band.**
+
+---
+
+## 🔴 2026-08-20 (overnight) — FINDING 38: THE SECOND REPLICATE POINT. THE EPOCH-1 SPREAD IS **LARGER** THAN THE EPOCH-0 SPREAD, `G4.6`'s FOLD ORDERING IS NOT RESOLVABLE, AND `G4.1` STILL HAS NO REPEAT-NOISE FLOOR.
+
+Job `1284898` **`COMPLETED`, `06:01:06`, exit `0:0`**, trainer `21569.3 s`, peak VRAM `7.67 GiB`,
+adapter written to `runs_ds45/leg4_primary_fold_es/adapter` (🟢 **not** `runs`; the closed folds are
+untouched). `G4.14` re-verified at the end of the run: live md5 `e4243e07cdd80c9c846b91f40e3e8c45` =
+the sidecar. `uk` `1284911` was released by the dependency and is now `RUNNING` on `speed-43`.
+
+### The trainer's own summary block — machine-written, quoted verbatim
+
+```
+================ D-S4-5 MID-EPOCH BASIS, FOLD es ================
+  frac 0.25  step 6072/24297   G4.1 FAIL  DESCRIPTIVE  0 below / 4 above, end=upper
+  frac 0.50  step 12144/24297  G4.1 FAIL  VERDICT      0 below / 1 above, end=upper
+  frac 0.75  step 18216/24297  G4.1 PASS  DESCRIPTIVE  0 below / 0 above, end=none
+G4.1 ON THE D-S4-5 BASIS (frac 0.50, the checkpoint named in advance): FAIL
+```
+
+**The verdict line is produced by the code, not by this log's prose**, and it names the fraction as
+*the checkpoint named in advance*. FINDING 37's conclusion is therefore not an interpretation imposed
+after the fact.
+
+### 🔴 STEP 3 OF THE ORDER — THE REGISTERED PREDICTION IS ONLY PARTLY CONFIRMED
+
+Registered before the reading: *FAIL, `end=lower`, differing by about the epoch-0 spread*, with the
+trigger *if it comes back `end=upper`, FINDING 35's direction claim is unstable*.
+
+| end of epoch 1 | closed `1274884` | re-run `1284898` | Δ | vs epoch-0 spread |
+|---|---|---|---|---|
+| `delim(all, pre-ruling)` | 0.0974 | **0.0974** | **0.0000** | — |
+| content loss | 0.8887 | **0.8887** | **0.0000** | — |
+| entropy | 3.282 | 3.302 | +0.020 | — |
+| `G4.2` | PASS | PASS | — | — |
+| gen-terminated | 600/600 | 600/600 | — | — |
+| `G4.1` strata **below** | 2 | **2** | 0 | — |
+| `G4.1` strata **above** | 0 | **1** | **+1** | — |
+| 🔴 `worst_low` | 0.537 | **0.731** | **+0.194** | **1.5×** |
+| 🔴 `worst_high` | 0.964 | **1.325** | **+0.361** | **3.3×** |
+| 🔴 `end=` | `lower (collapse)` | **`both`** | changed | — |
+| `G4.6` | 3.471e-04 | **3.090e-04** | −0.381e-04 | — |
+
+- 🟢 **FAIL: confirmed.** Both runs FAIL, and `2 below` reproduces exactly.
+- 🔴 **`end=lower`: NOT confirmed — it is `end=both`**, a state this campaign has not seen before
+  (`es` and `uk` were `end=lower`, `it` was `end=upper`).
+- 🔴 **"about the epoch-0 spread": NOT confirmed.** The epoch-1 deltas are **1.5×** and **3.3×** the
+  epoch-0 ones. **The replicate spread is larger at the later checkpoint.**
+
+**FINDING 35's trigger did not fire** — `end=both` is not `end=upper`, and the two strata below the
+band reproduce exactly, so the claim that `es` crosses to the low side stands and is **not** retracted.
+What is refined is the *descriptor*: "the panel crosses the band" is too tidy. On this replicate the
+panel ends with strata on **both** sides at once. It **disperses across** the band rather than
+translating through it as a block.
+
+### 🔴 CONSEQUENCE 1 — FINDING 36's YARDSTICK UNDERSTATES THE SPREAD, WHICH ONLY HARDENS FINDING 37
+
+FINDING 36 measured `0.130` / `0.111` at the **epoch-0** checkpoint. The epoch-1 pair gives
+`0.194` / `0.361` on the same two quantities. 🔴 **The `0.13` figure quoted throughout the last three
+entries is a LOWER bound on the relevant spread at late-epoch checkpoints, not an estimate of it.**
+
+Checked rather than assumed, against every conclusion already drawn:
+
+- **FINDING 37's refusal of the frac 0.75 PASS gets stronger.** `worst_high 1.182` clears its edge by
+  `0.068`. Against `0.111` that was `0.61×`; against the epoch-1 spread `0.361` it is **`0.19×`**. The
+  PASS is *less* resolvable than stated, not more.
+- **The frac 0.50 FAIL stays robust, but by less.** `worst_high 1.650` is `0.400` outside the band =
+  **1.1×** even the larger spread. 🔴 **The `3.6×` figure in the previous entry is corrected forward
+  here to ~`1.1×`.** The verdict does not change; the confidence attached to it must.
+- 🔴 **No `G4.1` count or worst-ratio may be compared across folds at all** until a proper floor
+  exists. FINDING 36 said "not at a finer resolution than `0.13`". With `n = 2` pairs disagreeing by a
+  factor of three on the same quantity, the honest position is that **the resolution is unknown.**
+
+### 🔴 CONSEQUENCE 2 — `G4.6`'s FOLD ORDERING IS NOT RESOLVABLE, AND AN EARLIER CLAIM IS CORRECTED
+
+`G4.6` is the one gate with a measured *within-run* repeat-noise floor (`0.000e+00`, two identical
+unmerged forward passes). This replicate gives it a **between-run** spread for the first time:
+**`|3.471 − 3.090| = 3.81e-05`.** These are different quantities, and only the second is the right one
+for comparing runs to each other.
+
+| comparison | difference | vs the `3.81e-05` spread | resolvable? |
+|---|---|---|---|
+| `it` 3.853e-04 vs `es` 3.471e-04 | 3.82e-05 | **1.00×** | 🔴 **no** |
+| `es` 3.471e-04 vs `uk` 3.223e-04 | 2.48e-05 | 0.65× | 🔴 **no** |
+| `it` 3.853e-04 vs `uk` 3.223e-04 | 6.30e-05 | 1.65× | marginal at best |
+| every fold vs the `1e-4` band | 2.2–2.9e-04 | 5.8–7.6× | 🟢 **yes — the FAILs are real** |
+
+🔴 **CORRECTION FORWARD.** The fold-`it` entry states that `G4.6` on `it` is *the largest drift of the
+three*. **That claim is not supported** — `it` exceeds `es` by exactly one replicate spread. The
+original text stays on disk. What survives: **`G4.6` FAILs its `1e-4` band on 3/3 folds by 5–8× the
+between-run spread, and the three folds cannot be ranked against one another.**
+
+### 🔴 CONSEQUENCE 3 — WHERE `G4.1`'s NOISE COMES FROM
+
+Look at what reproduces and what does not, at **both** epoch checkpoints:
+
+| quantity | basis | epoch 0 | epoch 1 | reproduces? |
+|---|---|---|---|---|
+| `delim(all)` | 675,169 teacher-forced tokens | 0.1020 vs 0.1020 | 0.0974 vs 0.0974 | 🟢 **exactly, 4 dp** |
+| content loss | held-in val set | 0.9034 vs 0.9039 | 0.8887 vs 0.8887 | 🟢 **3–4 dp** |
+| `G4.1` panel | **600 stochastically generated diaries, 100 per stratum** | 4 above vs 2 above | `end=lower` vs `end=both` | 🔴 **no** |
+
+**Token-level aggregates over 675k tokens are stable to four decimals across the replicate. The
+six-stratum `G4.1` panel, built from 100 sampled diaries per cell, is not.** The natural reading is
+that `G4.1`'s instability is **sampling variance in the generation step**, not instability in the
+weights — the same weights produce identical aggregates. 🔴 **This is a hypothesis, not a result.** It
+is recorded as one, and it is directly testable.
+
+### 🔴 OWED, AND THIS ENTRY IS WHY: `G4.1` HAS NO REPEAT-NOISE FLOOR
+
+`G4.6` has one because someone asked whether its drift was real, and the trainer now measures it every
+run. **`G4.1` — the gate this entire D-S4-5 decision was about — has never had one.** The measurement
+is cheap and exactly analogous: **regenerate the 600 diaries at fixed merged weights under a second
+seed and re-score `G4.1`.** No training, one generation pass. It would convert every
+"resolvable / not resolvable" judgement in FINDINGS 36–38 from an `n = 1` or `n = 2` extrapolation
+into a measured floor, and it would settle whether the source is sampling or weights.
+
+🔴 **It is a NEW MEASUREMENT, not a band change and not a basis change** — `G4.1`'s band `[0.8, 1.25]`
+and its per-stratum definition are untouched by it, exactly as `G4.6`'s floor left `1e-4` untouched.
+On that reading it needs no author ruling. **It is nevertheless recorded as an open item for the
+author to confirm that reading**, because this project registers a basis change before the run that
+reports under it, and the line between "new measurement" and "new basis" is the author's to draw.
+
+### D-S4-4 closes arithmetically on `es` at epoch 1, and confirms the replicate a fourth time
+
+```
+D-S4-4 delim(forced)=0.0732 over 555651 tok | delim(all, pre-ruling)=0.0974 over 675169 tok | act2-slot=0.2096 over 119518 tok
+```
+
+`555,651 + 119,518 = 675,169` exactly, and `(0.0732·555651 + 0.2096·119518)/675169 = 0.09734` against
+the logged `0.0974`. 🔴 The all-basis value is **identical to the closed run's headline `delim=0.0974`**
+— a fourth independent confirmation that `1284898` and `1274884` are the same run, and the reason the
+`0.0732` figure must **never** be compared to the closed run's `0.0974`: different bases, D-S4-4 having
+been ruled after the closed run reported.
+
+Across all four checkpoints the forced basis reads `0.0591 → 0.0604 → 0.0816 → 0.0732` — 🔴 **not
+monotone in either direction**, which confirms FINDING 37's retraction and extends it: frac 0.50 is a
+spike and epoch 1 comes back down.
+
+### Standing
+
+- **Fold `es`, D-S4-5 verdict: `G4.1` FAIL.** Printed by the trainer itself.
+- Gates scored in this run: `G4.14` `G4.13` `G4.7` `G4.8` `G4.5` `G4.9` `G4.11` PASS; `G4.6` **FAIL**;
+  `G4.10` `REPORTED_NOT_THRESHOLDED`. 🔴 `G4.3` `G4.4` `G4.12` are **absent by design** — the D-S4-5
+  launcher runs the trainer only, no diagnostics and no genperturb. They are **NOT CHECKED** for this
+  run, which under the coverage clause is a gap in **either** direction and is recorded as one.
+- `G4.1` remains **VOID** for DoD item 6.
+- No band, no basis and no earlier fold verdict is changed by this entry. Two claims are corrected
+  forward: `G4.6`'s fold ordering, and the `3.6×` robustness figure for the frac 0.50 FAIL.
