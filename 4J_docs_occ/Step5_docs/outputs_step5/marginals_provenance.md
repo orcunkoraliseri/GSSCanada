@@ -12,6 +12,13 @@ these files.** Sections 7, 8 and 9 record what each ruling changed and what it c
 three rulings changed the basis of a field, so no number in sections 1 and 2 below survives unchanged
 — read section 7 onward before quoting anything.**
 
+🔴 **A SECOND ROUND was ruled the same night — see PART III (sections 12-15).** It closes §9.2
+(Spain's age and sex stay on the microdata basis), applies `FINDING 51` (`es` is fitted on **five**
+economic bands, which surfaced `FINDING 52` in the raking engine) and applies `D-S5-3`, which
+produces two NEW files, `econ_11plus_uk.csv` and `econ_11plus_es.csv`. 🔴 **Step 5.2 rakes economic
+status on THOSE, not on the `strat_econ_status` rows of `marginals_<c>.csv` — the two are on
+different bases and are not interchangeable.**
+
 ---
 
 ## STATUS, 2026-08-20 (after the three rulings)
