@@ -2595,3 +2595,544 @@ spike and epoch 1 comes back down.
 - `G4.1` remains **VOID** for DoD item 6.
 - No band, no basis and no earlier fold verdict is changed by this entry. Two claims are corrected
   forward: `G4.6`'s fold ordering, and the `3.6×` robustness figure for the frac 0.50 FAIL.
+
+---
+
+## 2026-08-20 — Fold `uk` closed on the D-S4-5 mid-epoch basis (job `1284911`)
+
+`1284911` `COMPLETED`, elapsed `05:33:22`, 19,780.1 s of trainer time, peak VRAM 5.985 GiB, log 399
+lines. The dependency released `it` `1284912`, now `RUNNING`. The trainer printed its own verdict, so
+nothing below is an interpretation of raw numbers:
+
+```
+================ D-S4-5 MID-EPOCH BASIS, FOLD uk ================
+  frac 0.25  step 6456/25849  G4.1 FAIL  DESCRIPTIVE  1 below / 2 above, end=both
+  frac 0.50  step 12920/25849 G4.1 FAIL  VERDICT      1 below / 1 above, end=both
+  frac 0.75  step 19384/25849 G4.1 PASS  DESCRIPTIVE  0 below / 0 above, end=none
+G4.1 ON THE D-S4-5 BASIS (frac 0.50, the checkpoint named in advance): FAIL
+```
+
+Snap-back exact at all three probes (`6456/8 = 807`, `12920/8 = 1615`, `19384/8 = 2423`), so every
+probe read a model with no partial gradient pending. No `SKIPPED`, no `D-S4-5 COLLISION`.
+
+### 🔴 The frac 0.75 PASS is a transient excursion, not an endpoint — and this is now 2/2 folds
+
+| checkpoint | `G4.1` on `es` | `G4.1` on `uk` |
+|---|---|---|
+| ep1 frac 0.25 `DESCRIPTIVE` | FAIL 0 below / 4 above, `end=upper` | FAIL 1 below / 2 above, `end=both` |
+| ep1 frac 0.50 **`VERDICT`** | **FAIL** 0 / 1, `end=upper` | **FAIL** 1 / 1, `end=both` |
+| ep1 frac 0.75 `DESCRIPTIVE` | **PASS** 0 / 0, `end=none` | **PASS** 0 / 0, `end=none` |
+| epoch-1 END (epoch-end basis) | FAIL 2 / 1, 0.731/1.325, `end=both` | FAIL 1 / 0, 0.766/1.210, `end=lower (collapse)` |
+
+**On both folds the sequence is FAIL → FAIL(verdict) → PASS → FAIL(end).** The PASS at frac 0.75 does
+not survive to the end of its own epoch. 🔴 This kills the post-hoc move twice over: choosing the
+reporting checkpoint after the numbers were in ("take the last probe of the epoch") would have
+reported a `G4.1` PASS **that the very next scored checkpoint contradicts**. The `[DESCRIPTIVE]` stamp
+was written at log line 310, before the 600 diaries of that probe existed. Show the frac-0.50 and
+frac-0.75 rows as a **pair**; a single row from this fold is not an honest summary of it.
+
+`(collapse)` in `end=lower (collapse)` is only the printed label for that state
+(`4thJ_step4_train.py:609`, `"lower (collapse)" if low and not high`), not a separate alarm.
+
+### Neither `uk` reading is resolved — the noise was measured in-fold
+
+`1284911` is an exact replicate of the closed fold `1274964` (same shard, same seed,
+`by_country={'es': 17332, 'it': 34366}`, token counts `489900`/`112073`/`601973` to the digit), so the
+epoch-0 comparison gives an **in-fold** spread of `0.131` (`worst_low`) and `0.391` (`worst_high`).
+
+- frac 0.50 **FAIL**: excursions `0.096` below and `0.040` above → `0.73×` and `0.10×` the spread.
+- frac 0.75 **PASS**: margins `0.013` inside the lower edge and `0.096` inside the upper → `0.10×`
+  and `0.25×`.
+
+FINDING 37 refused a PASS at `0.61×`. Applied symmetrically, **neither the FAIL nor the PASS on `uk`
+is resolvable.** The fold's honest description: `G4.1` sits within its own noise of the band edge at
+every epoch-1 checkpoint, and the pre-registered checkpoint lands on the FAIL side. The FAIL is the
+reading; it is not evidence that `G4.1` is far from its band.
+
+### 🔴 A claim from the three-point entry is withdrawn
+
+Written earlier from the first three checkpoints: *"both extremes fall monotonically"*. **False at the
+fourth point.** `worst_low` runs `1.025 → 0.790 → 0.704 → 0.813` — it turns and rises by `0.109`. Only
+`worst_high` is monotone (`1.832 → 1.521 → 1.290 → 1.154`). Same failure mode as the `delim(forced)`
+monotonicity claim withdrawn in the `es` entry; the lesson repeats: **three points do not establish a
+direction in a quantity whose noise is unmeasured.**
+
+The two ends also behave opposite to what their noise predicts. `worst_high` moved `0.678` over the
+epoch against a spread of `0.391` — resolvable. `worst_low` moved `+0.023` from frac 0.25 to frac 0.75,
+and its last three readings (`0.704`, `0.813`, and the epoch-1 end `0.766`) span `0.109` — **inside** its
+own `0.131` spread, i.e. no resolvable movement at all. So `uk` must **not** be written up as "failing
+on both edges and improving": the lower edge is neither improving nor worsening, it is noise.
+
+`delim(forced)` across the four scored checkpoints reads `0.0590 → 0.0668 → 0.0651 → 0.0645` —
+**not monotone**, peaking at frac 0.50. `es` was also non-monotone but peaked at frac 0.75
+(`0.0591 → 0.0604 → 0.0816 → 0.0732`). The spike is real on both folds; its position is not shared.
+
+### The delimiter-basis cancellation reproduces on a second pair
+
+| epoch-1 END | closed `1274964` | D-S4-5 `1284911` |
+|---|---|---|
+| `delim(forced)` over 489,900 tok | 0.0666 | 0.0645 |
+| `act2-slot` over 112,073 tok | 0.1748 | 0.1842 |
+| **`delim(all)` over 601,973 tok** | **0.0868** | **0.0868** |
+
+The two sub-buckets move in **opposite** directions and cancel in the combined mean:
+`(489900×0.0645 + 112073×0.1842)/601973 = 0.08679` and
+`(489900×0.0666 + 112073×0.1748)/601973 = 0.08674`, both `0.0868`. Checked, not asserted. 🔴 So an
+identical `delim(all)` is **not** evidence that two runs agree — it is the basis hiding a
+`0.0021`/`0.0094` disagreement in its parts. Same conclusion as the `es` entry reached from the other
+direction, now with the cancellation shown explicitly.
+
+### 🔴 `G4.6`: status unchanged, but its "between-run spread" is a LOWER BOUND
+
+`G4.6 FAIL  max_logit_diff=7.019e-04 threshold=1e-04 over 16554 positions`, repeat-noise floor
+`0.000e+00` from two identical unmerged forward passes, so the drift is a real signal.
+
+Status is **unchanged**: under D-S4-3 (b), `G4.6` at `1e-4` is a binary detector for whether the
+adapter is exactly zero, it FAILs on 3/3 folds, and it is a standing **EXPLAINED FAIL**. What is new
+is the size. The `es` replicate pair differed by `3.471e-04 − 3.090e-04 = 3.81e-05`, and that single
+number was quoted as *the* between-run spread. The `uk` pair differs by
+`7.019e-04 − 3.223e-04 = 3.796e-04` — **9.96× larger**. 🔴 **`3.81e-05` is therefore a lower bound from
+n = 1, not a spread**, and the existing refusal to rank the folds by `G4.6` is reinforced, not
+weakened. Do not quote `3.81e-05` as a resolution again.
+
+### 🔴 FINDING 38's "second replicate point is worse" is fold-specific
+
+On `es` the epoch-1 end did **not** reproduce: `end=` went `lower (collapse)` → `both`, with
+`worst_low` +`0.194` and `worst_high` +`0.361`. On `uk` it **did** reproduce — `end=lower (collapse)`
+both times, `1 below / 0 above` both times, `worst_low` `0.674 → 0.766` (+`0.092`) and `worst_high`
+`1.234 → 1.210` (−`0.024`). Both comparisons remain contaminated by the RNG displacement the probes
+introduce (the seed is set once, `4thJ_step4_train.py:865–867`, and each probe consumes ~600 diaries
+of draws), so neither is a clean replicate. **What is corrected forward: replicate quality varies by
+fold, and FINDING 38 must not be generalised from `es` to the campaign.**
+
+### Standing
+
+- **Fold `uk`, D-S4-5 verdict: `G4.1` FAIL.** Printed by the trainer. Option (a) is what gets
+  reported: the grid is not refined, the mid-point is not re-chosen, the band is not touched.
+- Epoch-end scoring is unchanged and still stands beside the mid-epoch rows.
+- Gates scored in this run: `G4.14` `G4.13` `G4.7` `G4.8` `G4.5` `G4.9` `G4.11` **PASS**; `G4.6`
+  **FAIL**; `G4.10` `REPORTED_NOT_THRESHOLDED`. `G4.14` re-verified live, md5
+  `e4243e07cdd80c9c846b91f40e3e8c45` on both sides.
+- 🔴 `G4.3` `G4.4` `G4.12` are **absent by design** — the D-S4-5 launcher runs the trainer only. They
+  are **NOT CHECKED** for this run, a coverage-clause gap in either direction, recorded as one.
+- `G4.1` remains **VOID** for DoD item 6.
+- No band, no basis and no earlier fold verdict is changed by this entry. Three claims are corrected
+  forward: the `worst_low` monotonicity claim, `G4.6`'s `3.81e-05` spread, and the scope of FINDING 38.
+- Next: `it` `1284912` `RUNNING`. Per FINDING 35, a mid-epoch FAIL on `it` is the **expected** result
+  and a PASS would be genuinely unanticipated.
+
+---
+
+## 2026-08-20 — 🔴 **THE D-S4-5 CROSS-FOLD ENTRY, WRITTEN AT 2 FOLDS OF 3 SO THE THIRD IS PREDICTED AND NOT DESCRIBED.** ORDER item 5.
+
+**This entry is written deliberately while `it` (`1284912`) is still on the GPU.** Everything about
+`es` and `uk` below is measured; everything about `it` is a **prediction, stamped before its numbers
+exist**, in the same way the trainer stamps `[DESCRIPTIVE]` on a checkpoint before it generates. An
+entry written after all three folds print cannot demonstrate that, and the demonstration is the point.
+
+### 🔴 1. What D-S4-5 IS pre-registered for, and what it must NEVER be claimed to be
+
+This has to be stated exactly, because the two readings are one sentence apart and only one of them is
+true.
+
+**TRUE, and defensible:** the mid-epoch basis was registered on **2026-08-19 20:02**, in this file,
+naming **frac 0.50 as the sole verdict checkpoint** and 0.25/0.75 as descriptive; the trainer was
+modified afterwards; the three runs that report under it were submitted on **2026-08-20 00:20**. The
+ordering is `registration → implementation → submission → numbers`, and every step is timestamped
+here. **Relative to the runs that report under it, D-S4-5 is genuinely pre-registered.**
+
+🔴 **FALSE, and it must never appear in the paper, a slide, or a reply to a reviewer:** that the
+mid-epoch basis was part of Step 4's design. **It was not.** It was introduced *after* three folds had
+already been scored at the epoch boundary and *because* `G4.1` was failing there. A basis proposed in
+response to a result is post-hoc **in motivation** however clean its registration is. The correct
+sentence, and the one to reuse verbatim:
+
+> `G4.1`'s mid-epoch checkpoint basis was introduced after the epoch-end results were known, and was
+> pre-registered — verdict checkpoint named, negative outcome named, band untouched — before any run
+> reported under it.
+
+**What makes it legitimate rather than a rescue** is four properties, all checkable in this file and
+none of them optional: (i) the reporting checkpoint was named **before** the runs, not chosen from
+among them; (ii) the failing outcome was written down **in advance**, including "if 0.50 misses, the
+answer is not 0.375"; (iii) **no band moved**; (iv) epoch-end scoring was kept and still reported
+beside it. Remove any one and this becomes re-banding in costume.
+
+### 🔴 2. The basis was granted on an argument that was PARTLY FALSE, and that is recorded, not buried
+
+The case put to the author was *"`G4.1` crosses its band inside epoch 1"*, resting on `es` and `uk`.
+**FINDING 35 falsified it on `it` before the re-runs reported** — `it` does not cross, it runs away
+from the band and ends at `2.010`, the campaign's worst single-stratum ratio. The ruling stands: the
+basis applies to all three folds regardless of the motivating story, and the correction was entered
+**before** any D-S4-5 number printed. 🔴 **But the honest description is that a basis change was
+granted on a two-fold generalisation that the third fold contradicted.** A reviewer who reads FINDING
+32 and FINDING 35 in sequence will see it, so we say it first.
+
+### 🟢 3. What the two closed folds actually show — and it is the strongest evidence in Step 4 that the pre-registration is load-bearing
+
+| checkpoint | role | `es` (`1284898`) | `uk` (`1284911`) |
+|---|---|---|---|
+| ep1 frac 0.25 | `DESCRIPTIVE` | FAIL 0 below / 4 above, `end=upper` | FAIL 1 / 2, `end=both` |
+| **ep1 frac 0.50** | **`VERDICT`** | **FAIL** 0 / 1, `end=upper` | **FAIL** 1 / 1, `end=both` |
+| ep1 frac 0.75 | `DESCRIPTIVE` | **PASS** 0 / 0, `end=none` | **PASS** 0 / 0, `end=none` |
+| epoch-1 END | epoch-end basis | FAIL 2 / 1, 0.731/1.325, `end=both` | FAIL 1 / 0, 0.766/1.210, `end=lower` |
+
+🔴 **On 2 folds of 2 the sequence is FAIL → FAIL(verdict) → PASS → FAIL(end).** Two things follow, and
+they are separate claims:
+
+1. **A post-hoc choice of reporting checkpoint would have produced a reportable `G4.1` PASS on both
+   folds.** "Take the last probe of the epoch" is not an obviously dishonest rule — it is the kind of
+   rule someone writes in good faith after seeing the numbers. It yields PASS/PASS. The registered
+   rule yields FAIL/FAIL. **The entire difference between those two campaign-level outcomes is that
+   one checkpoint was named in advance.**
+2. **The PASS is refuted by the run itself, so it was never real.** The next scored checkpoint fails
+   on both folds. The frac 0.75 PASS is **a transient excursion into the band, not an endpoint** — the
+   trajectory passes through `[0.8, 1.25]` and keeps going. This is the second pre-registered
+   negative of §D-S4-5 ("it is entirely possible that no checkpoint anywhere is inside the band and
+   the trajectory simply passes through it between two probes") **observed, on both folds.**
+
+🔴 **Report the frac-0.50 and frac-0.75 rows as a PAIR, always.** A single row from either fold
+misrepresents it in whichever direction the row was chosen.
+
+**And neither `uk` reading is resolved against its own noise** — FAIL excursions `0.096`/`0.040` and
+PASS margins `0.013`/`0.096` against an in-fold epoch-0 replicate spread of `0.131`/`0.391`
+(`0.73×`, `0.10×`, `0.10×`, `0.25×`); FINDING 37 refused a PASS at `0.61×`. Applied symmetrically the
+FAIL is the reading but it is **not** evidence that `G4.1` is far from its band. `es` is the same story
+with a different arithmetic. **The campaign verdict does not rest on resolution — it rests on the fact
+that the registered checkpoint FAILed — but the paper must not imply the FAILs are comfortable.**
+
+### 🔴 4. The `it` prediction, stamped now, before `1284912` prints a single probe
+
+Per FINDING 35, `it` has **no crossing to find**: both epoch endpoints are above the band
+(`1.311` → `2.010`) and the second is further out. **Registered expectation, in advance:**
+
+- **Expected:** three probes on a monotone climb, all above the band, `end=upper` at each;
+  **`G4.1` FAIL at the frac-0.50 verdict checkpoint.** This is the *predicted* result and, if it
+  arrives, it is **not** evidence about D-S4-5 either way — a basis that fails where failure was
+  predicted has told us nothing new.
+- 🔴 **Genuinely unanticipated, and the outcome to watch for:** a **PASS** at any `it` checkpoint. The
+  epoch-end readings do not anticipate it at all. If it happens at frac 0.50 it is the verdict and it
+  must be reported as one; if it happens at 0.25 or 0.75 it is `DESCRIPTIVE` and **ineligible**,
+  exactly as on `es` and `uk`.
+- **Also unanticipated:** a *non-monotone* `it` trajectory, which would mean `G4.1` moves inside an
+  epoch on a fold where the endpoints suggest it does not — and would make the campaign's read
+  "`G4.1` is unstable within every epoch on every fold", not "on the two that cross".
+- **Whatever prints, the mid-point is not re-chosen and the grid is not refined.** Registered at
+  ruling time, restated here.
+
+### 5. What is reported for Step 4, as it stands at two folds
+
+- **`G4.1` on the D-S4-5 basis: FAIL on `es`, FAIL on `uk`.** `it` pending.
+- **D-S4-5 option (a) is the live branch** — the outcome the ruling declined is what the data is
+  taking. The mid-epoch basis is written up as **a reachability question asked and answered in the
+  negative**, which is a result.
+- **`G4.1` remains VOID for DoD item 6** on all folds. It is FAIL at baseline everywhere and a gate
+  already down cannot be seen falling. Nothing in this entry touches that.
+- 🔴 **`G4.1` still has no measured noise floor.** Every "resolved / not resolved" call in this entry
+  leans on replicate spreads taken from pairs contaminated by the probes' own RNG displacement. The
+  owed measurement — regenerate 600 diaries from **one frozen adapter** under a second seed, no
+  training — is still owed and still needs no training run.
+- `G4.3` `G4.4` `G4.12` are **NOT CHECKED** on every D-S4-5 run by design; the launcher runs the
+  trainer only. A coverage-clause gap in either direction, recorded as one on each fold.
+
+---
+
+## 2026-08-20 — 🟢 **TWO OWED MEASUREMENTS ARE NOW WRITTEN AND STATICALLY CHECKED. NEITHER HAS BEEN RUN, AND THIS ENTRY SAYS SO IN ITS FIRST LINE.**
+
+Written in the `it` (`1284912`) GPU window, alongside the Step 6 threshold check. **Four new
+files, none of them shipped to Speed, none of them executed, no gate verdict anywhere in Step 4
+changed by this entry.** They exist so that the two measurements this step keeps declaring as owed can
+be submitted as one command each when the GPU is free.
+
+| file | lines | md5 | checked |
+|---|---|---|---|
+| `4thJ_step4_g41_seedfloor.py` | 244 | `409945ba930a72900d7c8a7a1ae9bf38` | `py_compile` clean (Python 3.13.5), AST pre-flight |
+| `4thJ_step4_g41_seedfloor.sh` | 81 | `c63620e5833f2114f4dab2e311d4362b` | `bash -n` clean |
+| `4thJ_step4_g47_coverage.py` | 199 | `655f1b89a90632f928f7fb3bac0a7ae2` | `py_compile` clean, AST pre-flight |
+| `4thJ_step4_g47_coverage.sh` | 56 | `4bca0f8cf2df228929b360c093a68c5d` | `bash -n` clean |
+
+🔴 **`py_compile` is a syntax check and nothing more.** Neither script has touched a manifest, an
+adapter or a GPU. Every attribute they import was verified to exist by parsing the source of the
+modules that define them (`TR.generate_samples`, `TR.gate_g4_1`, `DIAG.read_jsonl`,
+`DIAG.prefix_dict`, `DIAG.MODEL_FOR`, `DIAG.STAGED`, `GP.gate_g4_7`, `GP.gate_g4_1`,
+`TH.G4_7_EOR`, `TH.G4_7_REQUIRED_FRACTION`), and `4thJ_step4_train.py` was confirmed to have **no
+module-level side effects** beyond a `sys.path.insert` and its `__main__` guard, and **not** to import
+the diagnostics module — so importing the trainer is safe and non-circular. **That is a static
+pre-flight, in the same class as the one run before the D-S4-5 probe was given a GPU. It is not
+evidence that either script works.**
+
+### 1. `G4.1`'s sampling-noise floor — the measurement every "resolved" claim in Step 4 is missing
+
+**The gap.** FINDING 37 refused a `G4.1` PASS at `0.61×` "the spread". The D-S4-5 entries refused both
+the FAIL and the PASS on `uk` against `0.131` / `0.391`. **Every one of those spreads came from a pair
+of TRAINING runs**, which confounds two things that have to be separated:
+
+1. **sampling variance** — `G4.1` is computed on ancestrally sampled text (`do_sample=True`,
+   `temperature=1.0`, `top_p=1.0`), so two reads of the *same* weights differ;
+2. **weight divergence** — two GPU training runs at one seed are not bit-identical.
+
+🔴 **`G4.6` has a repeat-noise floor (`0.000e+00`). `G4.1` — the gate this entire D-S4-5 decision was
+about — has never had one.** The script holds (2) at **exactly zero**: one adapter, loaded once, never
+trained, generation repeated under five seeds fixed in the source. Whatever spread comes out is (1)
+alone, and is therefore a **LOWER BOUND** on the spread of two trained replicates — the same
+correction already forced on `G4.6`'s `3.81e-05`.
+
+**Three properties that make the number mean what it claims, each enforced at run time rather than
+assumed:**
+
+- **It reuses the trainer's own `gate_g4_1` and `generate_samples`**, imported, not reimplemented. A
+  reimplementation would measure a different gate and the resolution would not apply to the readings
+  it is meant to calibrate.
+- 🔴 **The prefix draw is asserted identical across seeds.** `generate_samples` opens with
+  `rng = random.Random(TH.SEED)` — a *fresh* generator on every call — so `torch.manual_seed` cannot
+  reach the draw. The script records the first seed's draw and **hard-FAILs** if a later seed's
+  differs, because a moving draw would confound sampling noise with draw noise.
+- 🔴 **Vacuity guard with teeth.** If two seeds return byte-identical text, the seed is not reaching
+  the sampler, and a spread of `0.000` would be an artefact of the harness. That case **FAILs**; it is
+  never reported as "`G4.1` has no sampling noise".
+
+**The outcome that would matter most is named in the source before it can be seen:** if the five seeds
+do not all return the same verdict, then **the same frozen adapter both PASSES and FAILS `G4.1` on the
+sampler's seed alone** — a property of the gate, not of any fold, and it would mean no single `G4.1`
+reading anywhere in Step 4, *including every D-S4-5 verdict checkpoint*, is reportable without this
+spread beside it. The script prints that sentence itself.
+
+**Cost:** generation only, ~600 diaries × 5 seeds. No optimiser, no checkpoints. 🔴 **It wants the same
+`nvidia_a100_2g.20gb` slice as the D-S4-5 chain and must not be submitted while `1284912` or a
+successor is `RUNNING`** — FINDING 2 is about exactly that contention. The launcher refuses to start
+if the adapter directory is absent, because a missing adapter would send `PeftModel.from_pretrained`
+down a path that can silently yield a base-model run, and a base-model sampling floor is not the
+quantity being measured.
+
+### 2. `G4.7` — the only gate the coverage clause has never seen fall, on any fold
+
+**The gap, exactly.** The coverage clause FAILs on `es`, `uk` and `it`, all three for one reason:
+`Gates that PASS at baseline and were NEVER felled by any perturbation: ['G4.7']`. `G4.7` *does* have
+a lever, `strip_eor_1pct`, and it *is* credited there — **but on the 600-record pilot battery, not on
+any LOCO fold.** D-S4-6 was ruled (a): one-fold credit counts and the fold is named every time. **A
+credit earned on the pilot is not a credit on `es`, `uk` or `it`.** The three folds the paper reports
+carry a gate that passes and has never been shown to have power on them.
+
+**Why a script and not three re-runs.** Felling `G4.7` by the training-side lever costs a full ~5-hour
+training run per fold to exercise a detector whose rule is `n_terminated == n`. `G4.7` is scored on
+generated text, so it can be felled on the generation side for **zero GPU**: strip the terminator from
+the already-persisted generated set and re-score. `G4_7_REQUIRED_FRACTION` is `1.0`, so **one**
+unterminated diary is sufficient; at `--rate 0.01` of 600 it is six. This is the same class of
+demonstration as `modal_day` and `duplicate_500`, which are also post-hoc edits of generated text.
+
+🔴 **What it does NOT claim, and the script says so in its own header:** it does not show that
+*training* can break termination. It shows that `G4.7`'s detector responds to the failure it is
+written to catch, on that fold's own generated set. **If the author wants the stronger training-side
+demonstration on a full fold, that is a GPU cost decision and this script does not take it.**
+
+🔴 **Why it is a separate file rather than a row in `4thJ_step4_genperturb.py`.** That module's
+`EXPECTED` map carries the comment *"pre-registered here and never edited after a result"*. The results
+are in. Adding a row to it now would edit a pre-registered structure after the fact — the exact move
+forbidden everywhere else in this project. The lever is declared in the new file instead, and
+**folding it into the genperturb map is an author decision, not a tidy-up.**
+
+The pre-declaration is written before any run: `must_fail = [G4.7]`, `must_stay_clean = [G4.1]`. The
+`must_stay_clean` arm is **measured, not asserted** — `G4.1` is re-scored on the perturbed set and any
+movement prints as UNDECLARED COLLATERAL (the FINDING 26 class). Two vacuity guards: a baseline-FAIL
+`G4.7` makes the credit **VOID** (FINDING 29's rule), and a perturbation that changes zero diaries is
+a **FAIL of the script**, never a negative result about the gate. The launcher runs on partition `pt`,
+**no GPU**, so it is safe to submit while the chain is running — and it **names** any fold whose
+generated set is missing rather than skipping it, because a fold silently absent from a coverage
+demonstration is indistinguishable in the output from a fold that passed it.
+
+### Standing after this entry
+
+- **Nothing is claimed as measured.** Two scripts exist, statically checked, not run, not shipped.
+- **`G4.1` still has no noise floor** and every resolution claim in Step 4 still rests on a
+  contaminated replicate pair. That is unchanged until `4thJ_step4_g41_seedfloor.sh` actually runs.
+- **The coverage clause still FAILs on 3/3 folds.** It will keep failing until
+  `4thJ_step4_g47_coverage.sh` runs, and — if the author declines the generation-side route — until a
+  training-side lever is run on a real fold.
+- No band moved, no gate was re-scored, no verdict was changed, and `prereg.md` was not touched: md5
+  `e4243e07cdd80c9c846b91f40e3e8c45` verified intact against its sidecar while this entry was written.
+
+---
+
+## 2026-08-20 — Fold `it` closed on the D-S4-5 mid-epoch basis (job `1284912`), and 🔴 **`FINDING 46`: `G4.7` DOES NOT MEASURE THE MODEL**
+
+`1284912 COMPLETED 04:07:13`, peak VRAM `7.633542537689209 GiB`, `14,752.8 s`. **The D-S4-5 chain is
+finished: all three folds are closed.** No `SKIPPED` line and no `D-S4-5 COLLISION` anywhere in the
+log, so the standing abort condition was never met.
+
+### The registered checkpoints, and the prediction held
+
+The cross-fold entry written on 2026-08-19 **predicted** this fold before it reported: *"a mid-epoch
+FAIL is the expected result and tells us nothing new; a PASS at any `it` checkpoint is the genuinely
+unanticipated outcome."* It failed at every checkpoint.
+
+| checkpoint | role | `it` (`1284912`) |
+|---|---|---|
+| ep1 frac 0.25, step 3944/15780 | `DESCRIPTIVE` | FAIL, 5 strata, **0 below / 2 above**, worst `0.955`/`1.531`, `end=upper` |
+| **ep1 frac 0.50, step 7888/15780** | **`VERDICT`** | **FAIL**, 6 strata, **0 below / 1 above**, worst `0.810`/`1.331`, `end=upper` |
+| ep1 frac 0.75, step 11832/15780 | `DESCRIPTIVE` | FAIL, 6 strata, **0 below / 2 above**, worst `0.816`/`1.480`, `end=upper` |
+| epoch-0 END | epoch-end | FAIL, 6 strata, 0 below / 1 above, worst `0.804`/`1.458`, `end=upper` |
+| **epoch-1 END** | epoch-end | **FAIL, 6 strata, 0 below / 6 ABOVE**, worst `1.511`/`2.205`, `end=upper` |
+
+🔴 **At epoch-1 end every single stratum is above the ceiling.** Not a band crossing — a runaway, in the
+direction `FINDING 35` said `it` would run. `end=upper` at all five readings, no reading below the floor
+anywhere in the fold.
+
+### 🟢 The cross-fold argument is now complete, and it is stronger than at two folds
+
+`ep1 frac 0.75` **PASSED on `es` and on `uk`** and **FAILS on `it`**. So the post-hoc rule someone might
+reach for — *"take the last probe of the epoch"* — **is not even self-consistent across folds**: it
+would report PASS, PASS, FAIL. The **registered** rule, frac 0.50, reports **FAIL, FAIL, FAIL**.
+
+**The sentence stands as written and now covers three folds of three:** `G4.1`'s mid-epoch checkpoint
+basis was introduced after the epoch-end results were known, and was pre-registered — verdict
+checkpoint named, negative outcome named, band untouched — before any run reported under it. **Both
+halves travel together.**
+
+### The rest of `it`'s gate block
+
+| gate | result |
+|---|---|
+| `G4.14` prereg md5 | PASS — `live=e4243e07cdd80c9c846b91f40e3e8c45 recorded=e4243e07cdd80c9c846b91f40e3e8c45` |
+| `G4.13` fold isolation | PASS — held-out-country records in train = **0**, `by_country={'es': 17332, 'uk': 14228}` |
+| `G4.7` `<eor>` termination | PASS — **see `FINDING 46` below; this is not what it looks like** |
+| `G4.8` base identity | PASS — round-trip 1000/1000 exact |
+| `G4.5` pad masking | PASS |
+| **`G4.6` adapter-nonzero** | **FAIL** — `max_logit_diff=4.063e-04` vs threshold `1e-04` over 16,706 positions. The standing **EXPLAINED FAIL**, now **3 of 3 folds** |
+| `G4.9` per-country probe stability | PASS |
+| `G4.10` | REPORTED_NOT_THRESHOLDED |
+| `G4.11` | PASS, `missing=none` |
+| `G4.2` format collapse | PASS at both epochs — `delim=0.0727/0.0641`, `entropy=3.344/3.255` |
+
+`G4.3`, `G4.4` and `G4.12` are NOT CHECKED on a D-S4-5 run by design; the coverage gap is recorded per
+fold and is unchanged.
+
+---
+
+## 🔴 `FINDING 46` — `G4.7` scores the TRAINING CORPUS, before training starts. It has never looked at generated text.
+
+Found by reading `1284912`'s log rather than by running anything. **It applies to all three folds and to
+the pilot, and it changes what the coverage clause's complaint means.**
+
+**The evidence, from `/speed-scratch/o_iseri/4J_step4_ds45_1284912.out`:**
+
+```
+line 29:  train records loaded: 31560   held-in val: 3434
+line 31:  G4.7 PASS  31560/31560 completions terminate with <eor>
+line 32:  base allenai/OLMo-2-0425-1B @ a1847dff...        <- base model not even loaded yet
+...
+line 263: [epoch 1] ... G4.2 PASS  gen-terminated 599/600
+line 285:   G4.7   PASS
+```
+
+**`31,560` is the it-fold training shard size**, printed two lines above. `G4.7` counts `<eor>` over the
+**training records**, and it does so **before the base model is loaded**. It is a corpus
+well-formedness check wearing a model gate's name.
+
+🔴 **And the model-side quantity exists, is printed, and is failing.** At epoch 1, `gen-terminated
+599/600`: **one generated diary did not terminate.** It is a diagnostic on the epoch line. **No gate
+reads it.** `G4_7_REQUIRED_FRACTION = 1.0`, so had `G4.7` been scored on that sample it would have
+FAILED — and that would have been the first time any Step 4 gate detected a real model-side structural
+defect.
+
+### Three consequences, none of them cosmetic
+
+1. **`G4.7` PASS on `es`, `uk` and `it` says nothing about the model.** It says the corpus is
+   well-formed, which Step 3's `G3.*` battery already established. Quoting it as evidence that the
+   fine-tuned model terminates its output would be wrong, and the natural reading of the gate's own
+   name invites exactly that.
+2. 🔴 **The coverage clause's standing complaint is about a gate that training could not have felled.**
+   Every fold reports *"Gates that PASS at baseline and were NEVER felled by any perturbation:
+   ['G4.7']"*. A training-side perturbation cannot move a number computed from the shard before
+   training. **The clause was right to complain and wrong about why.**
+3. 🔴 **My own `tools/4thJ_step4_g47_coverage.py`, written earlier today and never run, may be aimed at
+   the wrong function.** It strips `<eor>` from the persisted **generated** set and calls
+   `4thJ_step4_genperturb.gate_g4_7`. The trainer has its **own** `G4.7`, computed on the shard. **Two
+   scorers, one gate ID, different quantities** — the `V6.b` class, which cost 3J a 26.5 % disagreement
+   between adjacent scorers. **Do not submit that script until it is established which `G4.7` the
+   coverage clause actually reads.**
+
+### `D-S4-7` — for the author
+
+| | ruling | note |
+|---|---|---|
+| **(a)** | 🔴 **Recommended. Re-point `G4.7` at the generated sample** and keep the shard check under a new ID (`G4.15`, corpus well-formedness). | The model-side failure already exists in the `it` log at 1/600, so the re-pointed gate would be **seen failing on real output on its first run**, with no perturbation needed. It also makes the coverage clause's complaint answerable. |
+| **(b)** | Keep `G4.7` as-is, rename it to say what it measures, and add a separate generated-side termination gate. | Same information, more IDs, and the existing `G4.7` credit from the pilot battery stays meaningful for what it actually tested. |
+| **(c)** | Leave it. | 🔴 **Rejected here**: it leaves a gate whose name asserts a model property it never measures, in a paper whose entire method is that gates mean what they say. |
+
+**Nothing was re-scored and no verdict was changed by this entry.** `prereg.md` untouched, md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar.
+
+---
+
+## 2026-08-20 (evening) — 🟢 **`D-S4-7` RULED (a) BY THE AUTHOR. `G4.7` IS RE-POINTED AT GENERATED OUTPUT — AND THE RE-POINTED GATE'S VALUE FOR ALL THREE FOLDS ALREADY EXISTS IN THE LOGS. IT FAILS ON `it`.**
+
+**The ruling.** `G4.7` scores the **generated sample**. The shard check keeps living, under the new ID
+**`G4.15` (corpus well-formedness)**. Rejected: (b), which buys the same information for more IDs, and
+(c), which leaves a gate whose name asserts a model property it never measured.
+
+### 🟢 The ruling paid for itself immediately: no GPU, no re-run, three folds scored
+
+`FINDING 46` established that the model-side quantity **is printed on every epoch line and read by no
+gate**. Under the ruling that quantity **is** `G4.7`. It was retrieved from the three fold logs by
+`grep` alone — login-node retrieval, zero compute — and with `G4_7_REQUIRED_FRACTION = 1.0`:
+
+| fold | job | epoch 0 | epoch 1 | re-pointed `G4.7` |
+|---|---|---|---|---|
+| `es` | `1284898` | `600/600` | `600/600` | PASS, PASS |
+| `uk` | `1284911` | `600/600` | `600/600` | PASS, PASS |
+| **`it`** | **`1284912`** | `600/600` | 🔴 **`599/600`** | PASS, **FAIL** |
+
+🔴 **This is the first model-side structural defect any Step 4 gate has detected on a LOCO fold**, and
+it required no perturbation, no lever and no compute — only pointing the gate at the quantity its own
+name always claimed.
+
+**Three things this table earns, and one it does not.**
+
+1. 🟢 **The re-pointed gate is not vacuous and not trivially failing.** Five of six epoch-readings
+   PASS. A gate that failed everywhere would be as uninformative as one that passed everywhere; this
+   one discriminates, and it discriminates **between folds**, which is the axis the paper is about.
+2. 🟢 **It is seen failing on real output on its first reading**, which is the standing requirement
+   this project applies to every gate. `G4.7` has never met that requirement before today: its only
+   credit was `strip_eor_1pct` on the 600-record pilot, and under `D-S4-6` a pilot credit is not a
+   fold credit.
+3. 🔴 **The single unterminated diary co-occurs with the `it` epoch-1 runaway** — the same epoch in
+   which all six strata went above the `G4.1` ceiling (worst `2.205`). **Co-occurrence is recorded,
+   not causation.** One diary out of 600 is a single event; it is consistent with structural
+   degradation and it is equally consistent with a sampling tail. **Do not write it as evidence that
+   the runaway broke termination** without a second observation.
+4. **What it does NOT earn:** it says nothing about the three folds' *reported* `G4.7` PASS lines.
+   Those lines scored the shard. Under this ruling they are **`G4.15` results, mislabelled**, and the
+   correction is an erratum here — **not a re-score, and not an edit to any completed fold's output.**
+
+### 🔴 The coverage clause's complaint is now answerable, and its target has moved
+
+Every fold prints *"Gates that PASS at baseline and were NEVER felled by any perturbation:
+`['G4.7']`"*. That complaint was **about the shard check**, which no training-side perturbation could
+ever move — the clause was right to complain and wrong about why (`FINDING 46`). Under the ruling:
+
+* the complaint transfers to **`G4.15`**, where it is **correct and permanent**: a corpus check
+  computed before training genuinely cannot be felled by a training-side lever, and `G4.15` should
+  **declare** that rather than be listed as a coverage failure every run;
+* **`G4.7` itself now has a fold-level failure** on `it`, so the clause's original grievance —
+  a gate with no demonstrated power on any LOCO fold — **is discharged for `G4.7` by the ruling
+  alone.**
+
+### `tools/4thJ_step4_g47_coverage.py` — the `DO NOT SUBMIT` block is LIFTED, with one condition
+
+The block asked one question: *"establish which `G4.7` the coverage clause actually reads before
+running this."* **The ruling answers it by decision.** `4thJ_step4_genperturb.gate_g4_7` was inspected
+here and scores generated text (`t.rstrip().endswith(TH.G4_7_EOR)` over `gen_texts`) — it is the
+**correct** scorer under (a), and the V6.b two-scorers-one-ID collision is dissolved because the other
+scorer is now `G4.15`.
+
+🔴 **The condition: the script is no longer needed to *discharge* the coverage complaint** — the `it`
+FAIL above does that at zero cost. Running it now demonstrates that the detector **responds to an
+injected failure** as well as catching a spontaneous one, which is a weaker and still worthwhile
+claim. **Submit it as a demonstration, not as the answer to the coverage clause**, and say which it
+is.
+
+### What the trainer still owes
+
+The trainer has **not** been changed. It still computes the shard check and prints it as `G4.7`. Until
+that is edited, any new run reproduces the mislabelling. **This is a code change to make before the
+next fold is run, not a re-run of anything already done.** `prereg.md` untouched — md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar while this entry was written.

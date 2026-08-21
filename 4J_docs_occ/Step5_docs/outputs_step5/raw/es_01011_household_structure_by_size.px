@@ -1,0 +1,32 @@
+AXIS-VERSION="2006";
+CREATION-DATE="20250920";
+CHARSET="ANSI";
+SUBJECT-AREA="Resultados nacionales";
+SUBJECT-CODE="01";
+MATRIX="01011";
+TITLE="Hogares según su tamaño por estructura del hogar";
+CONTENTS="Hogares según su tamaño";
+CODEPAGE="iso-8859-15";
+DESCRIPTION="";
+COPYRIGHT=YES;
+DECIMALS=6;
+SHOWDECIMALS=0;
+STUB="Estructura del hogar";
+HEADING="Tamaño del hogar";
+VALUES("Estructura del hogar")="Total (estructura del hogar)","Hogar con una mujer sola menor de 65 años",
+"Hogar con un hombre solo menor de 65 años",
+"Hogar con una mujer sola de 65 años o más",
+"Hogar con un hombre solo de 65 años o más",
+"Hogar con padre o madre que convive con algún hijo menor de 25 años",
+"Hogar con padre o madre que convive con todos sus hijos de 25 años o más",
+"Hogar formado por pareja sin hijos",
+"Hogar formado por pareja con hijos en donde algún hijo es menor de 25 años",
+"Hogar formado por pareja con hijos en donde todos los hijos de 25 años o más",
+"Hogar formado por pareja o padre/madre que convive con algún hijo menor de 25 años y otra(s) persona(s)",
+"Otro tipo de hogar";
+VALUES("Tamaño del hogar")="Total (tamaño del hogar)","1 persona","2 personas","3 personas","4 personas",
+"5 personas","6 o más personas";
+SOURCE="Instituto Nacional de Estadística";
+UNITS="hogares";
+DATA=1.8083692311348E7 4193319.335492 5441839.950334 3916573.685652 3353076.107405 857861.427638 321021.805113 1054512.599895 1054512.599895 ".." ".." ".." ".." ".." 1429620.687972 1429620.687972 ".." ".." ".." ".." ".." 1279486.075847 1279486.075847 ".." ".." ".." ".." ".." 429699.971803 429699.971803 ".." ".." ".." ".." ".." 873993.610448 ".." 469879.035731 337269.410848 56305.530031 8426.262942 2113.370897 819264.085043 ".." 669507.327307 128968.604608 17474.218834 2788.188653 525.745641 3804677.385241
+ ".." 3804677.385241 ".." ".." ".." ".." 5114363.894173 ".." ".." 2023841.185602 2552052.202978 451737.310775 86733.194833 1207558.484339 ".." ".." 919634.103105 252662.685756 31089.698201 4171.997279 894955.626764 ".." ".." 102928.326913 286247.849986 299809.27074 205970.179125 1175559.89016 ".." 497776.202072 403932.054597 188333.619828 64010.696327 21507.317338;

@@ -44,6 +44,13 @@ ones exist would be indefensible.
 **41(7)**:780-788. `RL06`, `RL13` and `RL17` all give 87(6):1880-1892 for the 2010 paper, and that is
 the correct one. **Two distinct real papers; cite each for its own contribution.**
 
+> 🔴 **SUPERSEDED 2026-08-20 — `FINDING 47`: THIS NOTE IS ITSELF A CONFLATION.** `41(7):780-788` names
+> no real paper. `41(7):781-789` is **Richardson** et al., *Domestic lighting*; the real Widén lighting
+> paper is **41(10):1001-1012**; and the Widén 2009 paper Step 9 actually needs is **41(7):753-768**,
+> *Constructing load profiles for household electricity and hot water from time-use data*. The DOI
+> `RL17` "CrossRef-verified" for it resolves to a paper on **passive cooling in Brazil**. See the
+> `2026-08-20` progress-log entry for the four corrected references.
+
 ---
 
 ## 🔴 THIS STEP IS WHY THE `ACT` FIELD KEPT THREE DIGITS
@@ -82,7 +89,7 @@ absent does not fail, it just never fires.
   probability instead of being dropped. 🔴 **This is the only place `act2` enters Step 9, and it enters
   as a calibration input, never as a runtime field.**
 * **Per country, and only where coverage supports it.** Until `outputs_step3/act2_coverage.md` exists
-  with four measured rates, no calibration uses `act2` at all — Step 3's rule that no step conditions
+  with four measured rates, no calibration uses `act2` at all — Step 3's rule that no step conditions 🔴 *(see `D-S9-1`, 2026-08-20: "four" is stale and the slot basis is Spain-only.)*
   on it before then applies here without exception.
 * 🔴 **The calibration reads SLOTS, not episodes. Added 2026-08-14, from Step 1's measurement.**
   `act2_raw` is stored per episode under a first-of-run rule, and Step 1 measured on Spain that
@@ -97,6 +104,8 @@ absent does not fail, it just never fires.
 primary for anyone is invisible to the generated path, and no amount of calibration recovers the
 *timing* of such a load — only its rate. That is a real bound on the appliance claim and it belongs in
 the methods next to limitation E1.
+
+🔴 *(2026-08-20: "all four countries" is pre-decision-16. There are **three**. See `D-S9-1`.)*
 
 **If all four countries turn out to record `act2` at a usable rate**, Step 3 may serialise it, and
 this step is the reason to. 🔴 **That decision has to be taken before the corpus is emitted**, because
@@ -254,3 +263,330 @@ Nothing else changes: `act2` remains a calibration input and never a runtime fie
 asserts it is absent from the generated record, and no calibration uses it at all until
 `../Step3_docs/outputs_step3/act2_coverage.md` carries four measured rates — now required on **both**
 bases.
+
+> 🔴 **SUPERSEDED 2026-08-20 — THIS PRECONDITION CAN NEVER BE SATISFIED.** There is no fourth country
+> (decision 16), and the **slot basis does not exist for the UK or Italy at all** — both ship episodes
+> natively. See the `2026-08-20` progress-log entry and **`D-S9-1`**. Note that the status quo is not
+> "blocked pending a measurement"; it is option **(d)** — `act2` unused — in force by default.
+
+### 2026-08-20 — 🔴 **THE `act2` PRECONDITION THIS STEP SET ITSELF CAN NEVER BE SATISFIED. `D-S9-1` FOR THE AUTHOR.**
+
+Found by reading, not by running. Nothing in Step 9 has been built, so nothing failed — but the
+precondition is a **gate on a gate**, and one that can never open is indistinguishable, in its own
+output, from one that is simply still waiting.
+
+**The clause, unchanged above, the last sentence of the third entry:**
+
+> *"no calibration uses it at all until `../Step3_docs/outputs_step3/act2_coverage.md` carries four
+> measured rates — now required on **both** bases."*
+
+**`act2_coverage.md` exists and is complete.** It cannot ever carry four rates on both bases, for two
+independent reasons, and only the first is a bookkeeping error.
+
+#### Reason 1 — there is no fourth country. Bookkeeping.
+
+Author decision 16 (2026-08-15) excluded France. The corpus is **ES, UK, IT**. `act2_coverage.md`'s
+own title is *"three countries, two bases, never mixed"*. **"Four" is a survivor of the pre-decision-16
+design**, in the same class as `V6.d`'s four-fold assertion corrected in
+`../Step6_docs/4thJ_06_transfer_val.md` on the same day. Read as **three**, it is satisfiable.
+
+#### 🔴 Reason 2 — the slot basis does not exist for two of the three countries, and never will.
+
+This one is **not** a bookkeeping error and does not go away by changing a number. The third entry
+above pins this calibration to **slots, not episodes**, on a correct argument: the episode column is a
+lossy first-of-run summary of the very stream the calibration is trying to recover. But
+`act2_coverage.md` §2 measures a slot share for **Spain only**, and states why:
+
+> *"The UK and Italy ship episodes natively and have no slot base at all."*
+
+Confirmed there from Step 1's own reader documentation — the UK reader *"reconstructs nothing"* and
+Italy's diary arrives with explicit `oraini`/`minini`/`orafin`/`minfin`, *"no slot reconstruction"*.
+Spain's slot share exists **because Spain's episodes are reconstructed from 10-minute slots**; the
+other two have no slots to count. `act2_coverage.md` §4 makes the same structural point for the
+mixing counts, and is careful that these are **inapplicable by construction, not zero**.
+
+**So "both bases, all countries" is not a measurement anyone has failed to take. It is a quantity
+that does not exist**, and no amount of Step 3 work produces it.
+
+#### What this actually costs, stated rather than assumed
+
+The rates that **do** exist, from `act2_coverage.md`'s own summary table:
+
+| Country | episode share (`act2` mapped, post-filter) | slot share |
+|---|---:|---:|
+| ES | 18.02 % | **12.24 %** |
+| UK | 27.98 % | **no slot base** |
+| IT | 23.99 % | **no slot base** |
+
+🔴 **On the one country where both exist, they differ by roughly `1.5×`** (18.02 % vs 12.24 %) — and
+`act2_coverage.md` warns explicitly that the two *"differ by a factor that depends on episode length,
+i.e. instrument design, not respondent behaviour."* That is exactly why the third entry chose slots.
+**Calibrating ES on slots and UK/IT on episodes would put a country-dependent instrument artefact
+straight into `P(appliance | activity)`** — the same class of defect as the country-dependent MAPE
+rounding floor recorded as `FINDING 39` in Step 6, and it would land invisibly, since a trigger
+probability has no units that would look wrong.
+
+#### `D-S9-1` — four options, none of which this step may take on its own
+
+| | ruling | what it costs |
+|---|---|---|
+| **(a)** | Calibrate `act2` on the **episode** basis for all three countries, uniformly. | Abandons the third entry's slot argument. The Spain number becomes `18.02 %`, a **lossy** rate — but lossy *identically* for all three, so no country-dependent artefact. **Recommended** if `act2` is used at all. |
+| **(b)** | Calibrate on slots where they exist, episodes elsewhere. | 🔴 **Rejected here as written** — it is the country-dependent artefact above, and it is invisible downstream. |
+| **(c)** | Calibrate `act2` on **Spain only** and apply the Spanish trigger probabilities to all three. | Honest about the basis, but silently assumes secondary-activity behaviour transfers across countries — in a paper whose entire claim is that behaviour does **not** transfer trivially. |
+| **(d)** | **Drop `act2` from the calibration entirely.** | The trigger fires from the primary code alone — which is what CREST, Widén, LPG and RAMP all do. Costs the *rate* absorption the third entry wanted; costs **nothing** the step ever had, since `act2` was never a runtime field. Cleanest, and already the documented fallback. |
+
+**Nothing above touches `G9.14`**, which asserts `act2` is absent from the *generated* record. That
+gate is correct under every option, including (d), and its perturbation is unaffected.
+
+🔴 **Until `D-S9-1` is ruled, this step's own rule stands and no calibration uses `act2` at all** —
+which, note, is operationally identical to option (d). **The current state is not "blocked pending a
+measurement"; it is option (d) in force by default, undeclared.** That is the part worth ruling
+deliberately rather than inheriting.
+
+### 2026-08-20 — 🔴 **`FINDING 47`. THE CITATION CORRECTION THAT DEFINES `G9.4` IS ITSELF A CONFLATION, ON THREE COUNTS, AND THE DOI IT RESTS ON RESOLVES TO A PAPER ABOUT PASSIVE COOLING IN BRAZIL.**
+
+`RL25` came back and was vetted. It did not flag this; it simply reported the correct bibliographic
+data, and the error surfaced when that data was compared against our own note. **Every claim below was
+re-derived from the CrossRef API in this session, not taken from the report.**
+
+#### What this document says, above, in the "Citation note, from the vetting record"
+
+> *"`RL08` gave Widén and Wäckelgård (2010) as Applied Energy 87(3):780-789. That is a conflation with
+> Widén et al. 2009, Energy and Buildings **41(7):780-788**."*
+
+`../Step9_docs/4thJ_09_enduseLoads_val.md`'s `G9.4` row repeats it, and names it as **the example the
+gate exists to catch**: *"41(7):780-788 is the different 2009 lighting paper"*.
+
+#### What CrossRef actually returns
+
+| DOI | resolves to | journal, vol(iss):pages |
+|---|---|---|
+| `10.1016/j.apenergy.2009.11.006` | *A high-resolution stochastic model of domestic activity patterns and electricity demand* — **Widén & Wäckelgård** | *Applied Energy* **87(6):1880-1892** |
+| `10.1016/j.enbuild.2009.02.013` | *Constructing load profiles for household electricity and hot water from time-use data* — **Widén**, Lundh, Vassileva, Dahlquist | *Energy and Buildings* **41(7):753-768** |
+| `10.1016/j.enbuild.2009.02.010` | *Domestic lighting: A high-resolution energy demand model* — 🔴 **RICHARDSON**, Thomson, Infield, Delahunty | *Energy and Buildings* **41(7):781-789** |
+| `10.1016/j.enbuild.2009.05.002` | *A combined Markov-chain and bottom-up approach to modelling of domestic lighting demand* — **Widén**, Nilsson, Wäckelgård | *Energy and Buildings* 🔴 **41(10):1001-1012** |
+| 🔴 `10.1016/j.enbuild.2009.02.006` | 🔴 *Estimation of passive cooling efficiency for environmental design in Brazil* — Oliveira, Hagishima, Tanimoto | *Energy and Buildings* **41(8):809-813** |
+
+#### The three errors, separately, because they have different causes
+
+1. 🔴 **Wrong author.** `41(7):781-789` is **Richardson et al.**, not Widén. Our note attributes a
+   Richardson paper to Widén — the *same* class of error the note was written to fix, one issue over.
+2. 🔴 **Wrong issue and wrong pages for the real Widén lighting paper.** It exists, but it is
+   **41(10):1001-1012**, not 41(7):780-788. The page range `780-788` in our note belongs to **no paper
+   in this set**; it is one off from Richardson's `781-789`.
+3. 🔴 **The DOI the correction was "verified" against is fabricated.** `RL17`'s `B9` row tabled
+   `10.1016/j.enbuild.2009.02.006` as *"Fact / CrossRef API and Elsevier ScienceDirect / Tier 1 / H"*
+   for the Widén lighting paper. **It resolves to a paper about passive cooling in Brazil.** A DOI
+   presented as CrossRef-verified, that CrossRef contradicts, is the strongest possible signal in the
+   vetting record and it sat unexamined for six days.
+
+#### The corrected entries — use these, and nothing above them
+
+* **Widén, J. & Wäckelgård, E. (2010).** *A high-resolution stochastic model of domestic activity
+  patterns and electricity demand.* **Applied Energy 87(6): 1880-1892.**
+  `10.1016/j.apenergy.2009.11.006`
+* **Widén, J., Lundh, M., Vassileva, I. & Dahlquist, E. (2009).** *Constructing load profiles for
+  household electricity and hot water from time-use data.* **Energy and Buildings 41(7): 753-768.**
+  `10.1016/j.enbuild.2009.02.013` — 🔴 **this is the Widén paper Step 9 actually needs**, because it is
+  the one that builds loads *and hot water* from time use.
+* **Widén, J., Nilsson, A. M. & Wäckelgård, E. (2009).** *A combined Markov-chain and bottom-up
+  approach to modelling of domestic lighting demand.* **Energy and Buildings 41(10): 1001-1012.**
+  `10.1016/j.enbuild.2009.05.002`
+* **Richardson, I., Thomson, M., Infield, D. & Delahunty, A. (2009).** *Domestic lighting: A
+  high-resolution energy demand model.* **Energy and Buildings 41(7): 781-789.**
+  `10.1016/j.enbuild.2009.02.010`
+
+**Four distinct real papers, three authors' names in play, two of them in the same issue.** Cite each
+for its own contribution. `G9.4`'s example text must be rewritten against this table.
+
+#### 🔴 What this changes about `G9.4` itself, and it is not just the example
+
+`G9.4` reads *"every cited DOI resolves to the title it is cited under."* **That test would have
+PASSED our own note**, because the note carried no DOI — only a journal, volume, issue and page range.
+`RL17`'s fabricated DOI would have failed it, but `RL17` is a research report, not a citation in our
+bibliography.
+
+**So `G9.4` as written cannot see the error it was created to describe.** It must additionally require
+that **volume, issue, page range and first author** match what CrossRef returns for the DOI, not only
+the title. Recorded as an amendment to make before `activity_appliance_map.csv` is built, not after.
+
+#### Where else the wrong claim propagated, all corrected forward on 2026-08-20
+
+* `4thJ_09_enduseLoads.md` — the citation note above.
+* `4thJ_09_enduseLoads_val.md` — the `G9.4` row.
+* `../DeepResearchPrompts/L25_activity_to_appliance_mapping.md` Part C — which passed the wrong claim
+  **into the prompt**, though it did instruct the assistant to *"verify both independently and say so
+  if our own correction is wrong"*. 🟢 **That instruction is the reason this was caught**, and it is
+  worth keeping in every future prompt.
+* `../DeepResearchPrompts/README.md` — the Wave 9 note.
+* `../4thJ_00_HETUS_LLM_Pipeline.md` lines 102-103 carry only the *Applied Energy* half, which is
+  **correct** and needs no change.
+
+### 2026-08-20 — 🟡 **`RL25` VETTED. THE STRONGEST ROUND THIS SERIES HAS HAD ON CITATIONS, AND IT KILLS `G9.11`'s PREMISE: ZERO OF THE FOUR MODELS RESOLVE AT THREE DIGITS, OR EVEN TWO.**
+
+Vetted by re-deriving, not by reading. Every bibliographic claim was re-queried against CrossRef in
+this session and **all eight DOIs resolved to the exact title, volume, issue, page range and first
+author `RL25` gave.** That is unprecedented in this series and it is the reason `FINDING 47` above
+exists at all: the report's data was right, and comparing it with our own note is what exposed ours.
+
+#### 🔴 The finding that changes a corpus decision's justification: `G9.11` cannot pass
+
+`G9.11` requires the mapping to **actually use** the third digit — *"the number of distinct ACL codes
+with distinct appliance rows must exceed the number of distinct 2-digit groups"*, with the note that
+*"a mapping that resolves only at 2-digit did not need the corpus decision that preserved 3-digit
+codes, and that should be known"*.
+
+**Now it is known.** `RL25` reports the resolution of each source model:
+
+| model | activity states it resolves | keys on |
+|---|---|---|
+| CREST (Richardson 2010) | **6** activity profiles + active occupancy | UK 2000 TUS |
+| Widén et al. | **9-10** discrete states | Swedish SCB 1996 TUS |
+| LoadProfileGenerator | 500+ bespoke *Affordances*, **0 TUS codes** | German bespoke ontology |
+| RAMP | **0** — no activity mapping at all | user-defined time-of-use windows |
+
+🔴 **Zero of the four use HETUS. Zero resolve at three digits. Two do not resolve on TUS codes at all.**
+
+**What this does and does not mean.** It does **not** mean the corpus decision was wrong: three-digit
+codes cost nothing to keep and the corpus is richer for them. It **does** mean the stated
+justification — *"this step is why the `ACT` field kept three digits"* — **cannot be supported by the
+downstream mapping**, because no published mapping consumes that depth. Any three-digit resolution in
+`activity_appliance_map.csv` would be **ours**, which is precisely what *"do not invent the mapping"*
+forbids. **`G9.11` as written will FAIL, and it should be allowed to fail rather than be reworded.**
+It was written to make this discoverable and it worked.
+
+#### What else `RL25` settles
+
+* **Only 2 of 4 publish an actual mapping table**: CREST (Richardson 2010, Table 1, 33 appliances) and
+  Widén (2009 Tables 1-2; 2010 Table 1). LPG's mapping lives inside `profilegenerator.db3`; **RAMP has
+  none** — a clean `NOT FOUND` where one was possible.
+* **`B2`'s single-stream question came back as we expected: 0 of 4 use concurrent secondary streams.**
+  🔴 **Low diagnostic value — the prompt told them we believed this**, so the confirmation is worth
+  less than it looks. `RL25` nevertheless claims *"exactly 0 convenient findings"*; **that count is
+  wrong by at least one**, and it is the one place the report flatters itself.
+* 🔴 **A correction to OUR document, which is what a good round does.** This step says the DHW model is
+  *"roughly 30 to 50 L/person/day at 60 °C"*. `RL25` reports Jordan & Vajen as a base of **50
+  L/person/day at 60 °C**, with the 30-50 L figure belonging to the **shower event at 40 °C** — a
+  different quantity at a different reference temperature. **Our range appears to be two numbers from
+  different rows collapsed into one.** Not yet verified against the IEA Task 26 report itself, which is
+  the next check, but the sentence in this document should not be quoted until it is.
+* **Licences, verified here against the GitHub API rather than taken from the report:**
+
+| repo | `RL25` says | actually | verdict |
+|---|---|---|---|
+| `RAMP-project/RAMP` | EUPL-1.2 | **EUPL-1.2** | ✅ |
+| `FZJ-IEK3-VSA/LoadProfileGenerator` | MIT | **MIT** | ✅ |
+| `RWTH-EBC/richardsonpy` (CREST) | *"Academic / MIT in richardsonpy"* | 🔴 **GPL-3.0** | ❌ **WRONG** |
+
+🔴 **`richardsonpy` is GPL-3.0, not MIT, and the difference is copyleft versus permissive.** If CREST
+logic is vendored from that repository believing it MIT, the obligation is misjudged. **Adapting the
+*published table* from the paper is a different act from copying the code**, and only the second
+triggers the licence. Recorded before anything is vendored.
+
+#### The one part of `RL25` that is not evidence
+
+`B14` — *"naive occupant-level mapping duplicates shared appliances, inflating coincident peak by
+**30 % to 75 %**"* — is marked `Inference`, source *"Behavioral load aggregation dynamics in shared
+housing archetypes"*, which is not a document. **The mechanism is real and worth acting on** (one
+dwelling should not run two dishwashers because two occupants both cooked); **the range is unsourced
+and must not be quoted.** Same shape as `RL24`'s `B19`. Also unsourced: `B9`'s media-load figures
+(*"25-45 % of viewing time, ~50-120 kWh/year, 1.5-3.5 % of electricity"*), attributed to three authors
+without a table.
+
+`B1`'s *"Table 1 listing 33 appliances"* and `B12`'s *"CV(RMSE) > 80 % at single-dwelling scale"* were
+**not** verified here — the papers are paywalled and reconstructing a paywalled table is forbidden.
+Recorded as **UNVERIFIED**, not as accepted.
+
+#### What Step 9 owes next, in order
+
+1. 🔴 **Ruling on `D-S9-1`** (the `act2` basis) — still open, still blocking, and `RL25` does not touch
+   it.
+2. **Decide what `G9.11` failing means.** Recommendation: **let it FAIL and report it**, and re-word
+   this step's "why the `ACT` field kept three digits" section so the corpus decision is justified by
+   corpus fidelity rather than by a downstream consumer that does not exist.
+3. **Open the Jordan & Vajen IEA Task 26 report** and settle the 30-50 versus 50 L/person/day question
+   at its stated reference temperature before either number enters a document.
+4. **Amend `G9.4`** per `FINDING 47`: title-matching is not enough; volume, issue, pages and first
+   author must all match CrossRef.
+
+---
+
+### 2026-08-20 (evening) — 🟢 **`D-S9-1` RULED (d): `act2` IS DROPPED FROM THE CALIBRATION. THE UNSATISFIABLE PRECONDITION IS DISSOLVED, AND THE STEP'S UNDECLARED DEFAULT BECOMES A DECLARED DECISION.**
+
+**Ruled by the author 2026-08-20.** The appliance trigger fires from the **primary activity code
+alone**.
+
+#### What the ruling actually changes, which is less than it looks and matters more
+
+🔴 **Option (d) was already in force — undeclared.** This step's own rule was *"no calibration uses
+`act2` until `act2_coverage.md` carries four measured rates, on both bases"*, and that precondition can
+**never** be satisfied: there is no fourth country after DECISION 16, and **the slot basis does not
+exist for the UK or Italy at all** — they ship episodes natively, and only Spain reconstructs episodes
+from slots. So the step has been operating as (d) by default since the precondition was written.
+**The ruling does not change behaviour; it changes the behaviour from an accident into a decision**,
+which is the only version that can be defended in a paper.
+
+**The unsatisfiable precondition is now retired.** It is not "still blocking", it is **superseded**.
+`act2_coverage.md` is no longer owed.
+
+#### 🟢 The ruling is corroborated by the external literature, independently of our own reasoning
+
+`RL25` established, per model and from the sources: **zero of CREST, Widén, LoadProfileGenerator and
+RAMP drive from more than one concurrent activity stream.** All four use a single primary stream. So
+adopting them unchanged is **the conservative choice, not a compromise** — which is what B2 was written
+to find out, and it came back the way we expected.
+
+🔴 **B2's diagnostic value is limited and this must be said with the result**: our prompt told the
+report what we believed, so the confirmation is worth less than a blind finding would have been. The
+ruling does not rest on it alone; it rests on the precondition being unsatisfiable.
+
+**Rejected:** (a) episode-basis-for-all was the right answer *if `act2` were used at all*, and it is
+not; (b) was already rejected as a country-dependent artefact invisible downstream; (c) assumes
+secondary-activity behaviour transfers across countries, in a paper whose entire claim is that
+behaviour does **not** transfer trivially — the one option that would have contradicted the thesis in
+its own machinery.
+
+#### What is untouched
+
+**`G9.14` is correct under this ruling**, as it was under every other: it asserts `act2` is absent from
+the **generated** record, which remains true, and its perturbation is unaffected.
+
+🔴 **The limitation does not disappear with the field.** A load that is only ever recorded as a
+*secondary* activity — a television on while eating, a washing machine running while the respondent
+does something else — is **invisible to a primary-only stream**. That is now a **declared limitation of
+the method**, in the same class as CREST's and Widén's, rather than a gap we intended to close. `RL25`
+found **no published measurement** of how much energy such loads represent, so the limitation is
+bounded by nothing and must be stated as unbounded.
+
+#### The interaction with today's Step 7 ruling, which is small and worth being explicit about
+
+`D-S7-1(c)` was ruled the same day: `000` is carried as its own state. `000` has a duration but **no
+activity**, so under (d) it has **no appliance trigger** — there is no secondary code left to rescue it
+from. Measured today from the corpus: `000` is **`0.1417 %` of modelled time** (not the `0.43 %` of
+*episodes* this document has been quoting), ranging `es 0.304 %` to `it 0.018 %`, a **17x** per-fold
+spread. **Report it per fold on the time basis.**
+
+#### 🔴 Still open in Step 9, in order — the ruling closes one item and not the others
+
+1. 🟢 **`D-S9-1` — CLOSED (d).**
+2. **`G9.11` — still open, and my recommendation is unchanged: let it FAIL and report it.** `RL25`
+   settled the premise by measurement: **zero of the four models resolve at three digits, or even at
+   two** — CREST **6** activity profiles, Widén **9-10** states, LPG **0** TUS codes (bespoke
+   ontology), RAMP **0** (no activity mapping at all). So the stated justification, *"this step is why
+   the `ACT` field kept three digits"*, **cannot be supported by the downstream mapping**, because no
+   published mapping consumes that depth. 🔴 **The corpus decision itself was not wrong** — three-digit
+   codes cost nothing and the corpus is richer for them — **but it must be re-justified on corpus
+   fidelity, not on a consumer that does not exist.** Any three-digit resolution we invented in
+   `activity_appliance_map.csv` would be **ours**, which is precisely what *"do not invent the
+   mapping"* forbids. The gate was written to make this discoverable and it worked.
+3. **Jordan & Vajen, IEA Task 26 — still owed.** This document says DHW is *"roughly 30 to 50
+   L/person/day at 60 °C"*. `RL25` reports the base as **50 L/person/day at 60 °C**, with **30-50 L
+   belonging to the shower event at 40 °C** — a different quantity at a different reference
+   temperature. 🔴 **Our range looks like two numbers from different rows collapsed into one. Do not
+   quote the sentence in this document until the report itself is opened.**
+4. **`G9.4` — still owed, per `FINDING 47`.** Title-matching is not enough: the gate must match
+   **volume, issue, pages and first author** against CrossRef. As written it **would have passed our
+   own wrong note**, because that note carried no DOI.
+
+**`prereg.md` not touched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar while
+this entry was written.

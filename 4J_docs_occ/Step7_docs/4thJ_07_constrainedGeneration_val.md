@@ -27,8 +27,8 @@ Two things that are easy to confuse, and the confusion is the failure:
 | ID | Check | Target | Provenance |
 |---|---|---|---|
 | **G7.1** | Episode durations sum to 1440 | **100 %**, enforced by the 145-state tally automaton | `RL12`, derived |
-| **G7.2** | All codes inside the coding list | **100 %** | `RL12` |
-| **G7.3** | Transition legality (no workplace-to-home with no travel episode) | **100 %**, encoded as an FSM transition table | `RL12` |
+| **G7.2** | All codes inside the coding list | **100 %**<br>🔴 **2026-08-20 `FINDING 43`: the alphabet is the 158 `activity_target_list.csv` codes ∪ `{000}` = 159. `000` (D-S3-9, 8,709 episodes) is NOT in that file; a grammar built from it alone would forbid a code the corpus defines.** | `RL12` |
+| **G7.3** | Transition legality (no workplace-to-home with no travel episode) | **100 %**, encoded as an FSM transition table<br>🔴 **2026-08-20 `FINDING 45`: MEASURED — enforcing this rejects 21,210 of 73,254 real diaries (28.95 %), unevenly by country (ES 43.18 %, UK 24.64 %, IT 23.63 %, a 1.83× spread that `G7.8` cannot see because it stratifies demographically, not by country). And `LOC` has no "workplace" class at all — every non-home, non-transport place is `other_place`. `D-S7-2` open; recommend (a) drop the travel requirement and report the rate instead.** | `RL12` |
 | **G7.4** | Co-presence consistent with the conditioning household | **100 %**, via pre-compiled grammar variants indexed by household type | `RL02` + `RL12` |
 | **G7.5** | 🔴 **Unconstrained well-formedness, before any masking** | ≥ **99.90 %** — **this one measures the model** | **project-chosen** |
 | **G7.6** | Round-trip through the Step 3 decoder | 100 % of generated strings decode to a valid diary structure | derived |
@@ -56,7 +56,7 @@ step, and the parent document says so in the same words.
 
 | ID | Check | Target |
 |---|---|---|
-| **G7.13** | Indoor rule applied | Presence derived via `(LOC == 11) AND (ACT not in OUTDOOR_AT_HOME)`, reading the **shipped** exclusion list from Step 2, not a copy |
+| **G7.13** | Indoor rule applied | Presence derived via `(LOC == 11)` 🔴 *(2026-08-20 `FINDING 42`: must be `LOC == "at_home"` — the serialised LOC is a string, `== 11` is silently always False)* `AND (ACT not in OUTDOOR_AT_HOME)`, reading the **shipped** exclusion list from Step 2, not a copy |
 | **G7.14** | `Schedule:File` used, not `Schedule:Compact` | Asserted by parsing the emitted IDF fragments |
 | **G7.15** | 🔴 `Interpolate to Timestep = No` | Asserted per schedule object. A step-wise presence signal interpolated linearly invents fractional occupants and smears appliance peaks |
 | **G7.16** | Schedule length and resolution | 8,760 h × the declared timestep, no gaps, no duplicated timestamps |

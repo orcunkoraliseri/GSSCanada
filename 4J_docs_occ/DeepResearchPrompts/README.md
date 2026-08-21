@@ -61,6 +61,13 @@ The series is not a flat list. `L01` gates everything and `L03` can end the proj
   WAVE 8 -- THE TWO NEWER WAVES (written 2026-08-14, not yet run)
     L22  UK 2020-21 admissibility ....... what file exists, and is it the 2014-15 coding list
     L23  Italy 2022-23 admissibility .... is it released, and can ACL 2020 meet ACL 2008
+
+  WAVE 9 -- DOWNSTREAM UNBLOCKING (written 2026-08-20, both RETURNED and VETTED)
+    L24  marginals + archetype sources .. what can we actually open, for ES/UK/IT
+    L25  activity to appliance mapping .. what do CREST/Widen/LPG/RAMP publish as TABLES
+
+  WAVE 10 -- FOLLOW-THROUGH (written 2026-08-20, not yet run)
+    L26  ES and IT census marginals ..... the UK is BUILT; these two are not, and the UK is the calibration target
 ```
 
 ## Wave 5 is a different kind of prompt
@@ -105,6 +112,33 @@ question: narrow, factual, and settled by opening a document.
 | **L21** | `L21_day_to_year_chaining.md` | How the literature turns 1-2 diary days into 8,760 hours, and above all whether anyone has ever **measured** the difference between chaining rules on the same building | Open decision 14, and the Step 7 to Step 9 chain | No, but a `zero` answer forces an experiment — and that is what it returned |
 | **L22** | `L22_uk_2020_21_admissibility.md` | What file the UK 2020-21 time-use collection actually deposited, whether it uses the UKTUS 2014-15 coding list, and whether **mode and fieldwork date are variables** in it | Nothing on the critical path. It decides only whether the file is worth obtaining now for a **later, optional** held-out instrument check | **No.** Neither wave can enter training, by author decision |
 | **L23** | `L23_italy_2022_23_admissibility.md` | Whether the Italian 2022-23 microdata is released at all, and whether an **official** correspondence exists between its coding list and ACL 2008/2010 | Same. Plus it settles whether a newer Italian wave can ever be compared to our 2013-14 wave without a crosswalk we built | **No**, same reason |
+| **L24** | `L24_marginals_and_archetype_sources.md` | Which published sources can we actually reach, open and use, for (a) census marginals on age / sex / household type / economic status and (b) TABULA residential archetype parameters, for ES, UK and IT | 🔴 **Critical path of the HEADLINE CLAIM.** `G6.1`'s raked-donor null rakes onto the held-out country's PUBLISHED marginals, and `outputs_step5/` is empty, so the bar cannot be computed until Step 5.1 exists. Also unblocks Step 8.1, the longest-lead downstream item | **No** |
+| **L25** | `L25_activity_to_appliance_mapping.md` | What CREST, Widen, LoadProfileGenerator and RAMP actually publish as activity-to-appliance TABLES: resolution, trigger form, rated powers, cycle durations, validation scale, licence | Step 9 cannot start without it. `G9.1` FAILs any row citing only a paper rather than a table or figure; `G9.2` FAILs any `VALIDATED` label with no scale. Also settles `G9.11`, whether the mapping needs our 3-digit codes at all | **No** |
+| **L26** | `L26_es_it_census_marginals.md` | For **Spain and Italy only**: which 2011 census tables actually deliver age, sex, household composition and economic status, at what published category boundaries, reachable at what URL | 🔴 **The remaining two thirds of Step 5.1**, which is on the critical path of the headline claim. The UK was built directly from Nomis on 2026-08-20; the ES and IT census systems did not respond to the same treatment (INE `wstempus` does not list the 2011 census; the ISTAT census SDMX host returns HTTP 302) | **No** |
+
+
+**Wave 10 — the follow-through round (`L26`), written 2026-08-20 after `RL24` and `RL25` were vetted.**
+Different in kind from every earlier prompt: it is written **after** part of its own question was
+answered by doing the work. The United Kingdom marginals were built directly from Nomis the same day,
+so `L26` asks only about Spain and Italy, and it carries the **finished UK numbers as a calibration
+target**. 🔴 **"Did you reproduce our UK figures" is its third mandatory negative control**, on the
+reasoning that a report which cannot reproduce a value we have already verified against a downloaded
+file should not be believed on the two countries we could not reach. It also states, at the top, that
+the route and basis decisions are **closed**, and makes "did you recommend Eurostat or an annual series
+anyway" a negative control of its own — the first prompt in the series to guard a ruling rather than
+ask for one.
+
+**Wave 9 — the two downstream-unblocking rounds (`L24`, `L25`), written 2026-08-20, not yet run.**
+Different in kind from waves 7 and 8: those asked what the literature knows, these ask **what can
+actually be opened**. Both were written after a session in which a landing page returning HTTP 200 was
+mistaken for reachable data, so both make **"list every URL you actually opened, separated from URLs
+you named but did not open"** the first mandatory negative control, and both forbid reconstructing a
+paywalled table. 🔴 **`L24` expects three awkward answers and says so in advance**: that no census year
+matches any of our diary waves, that our age floor of 11 will not match published bands, and that the
+United Kingdom may not appear in Eurostat census data at all. Each is named as a question to answer
+plainly rather than smooth over. 🔴 **`L25` carries the Widen conflation** (`Applied Energy` 87(6):
+1880-1892 for the 2010 paper, `Energy and Buildings` 41(10): 1001-1012 for the different 2009 Widen lighting (🔴 CORRECTED 2026-08-20, FINDING 47: the 41(7):780-788 in the original L25 text was wrong)
+paper) and asks the assistant to verify our own correction rather than accept it.
 
 **Wave 8 — the two newer waves (`L22`, `L23`), written 2026-08-14, not yet run.** 🔴 **Both prompts
 forbid the recommendation that would otherwise be their natural conclusion.** Adding either wave to

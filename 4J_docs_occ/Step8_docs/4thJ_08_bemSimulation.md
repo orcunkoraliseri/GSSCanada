@@ -203,3 +203,74 @@ Append-only.
   simply turned a transfer result into a held-in one. **Gate G8.16** checks it against the Step 7
   provenance rather than against the cell's own filename, with **V8.g** so a missing `fold` field FAILs
   instead of finding zero violations.
+
+### 2026-08-20 — 🟢 **`RL24` VETTED. WORK ITEM 8.1 IS UNBLOCKED, AND MY OWN EARLIER CONCLUSION WAS WRONG: TABULA PUBLISHES AN OPEN STATIC WORKBOOK. 22 OF 22 CONSTRUCTION-PERIOD BANDS VERIFIED AGAINST THE FILE.**
+
+Earlier the same day this document recorded that TABULA *"serves its data through an ExtJS back-end,
+not a documented export"*, and that scraping it would put unverifiable numbers into a provenance file.
+**That was correct about the web tool and wrong about TABULA.** `RL24` found the static master
+workbook, which the web tool is merely a front end for.
+
+#### What was verified, by download, not by reading the report
+
+| claim | check run here | verdict |
+|---|---|---|
+| `tabula-values.xlsx` is downloadable | `curl` → **HTTP 200, 4,028,656 B**, `application/…spreadsheetml.sheet`, md5 `7347b2cae3c4d9f5ce78221e9d5fb832` | ✅ |
+| `tabula-calculator.xlsx` is downloadable | **HTTP 200, 34,383,251 B** | ✅ |
+| ES / GB / IT national brochures | **HTTP 200**, 10.9 MB / 3.1 MB / 5.0 MB, all `application/pdf` | ✅ |
+| the workbook contains sheet `Tab.ConstrYearClass` | opened with `openpyxl`: **65 sheets, the sheet exists** | ✅ |
+| Spain has **6** construction periods | read from the file: `ES.01`–`ES.06` | ✅ |
+| Great Britain has **8** | `GB.01`–`GB.08` | ✅ |
+| Italy has **8** | `IT.01`–`IT.08` | ✅ |
+| the period boundaries themselves | **all 22 year-boundaries match `RL24` exactly** | ✅ |
+
+**The verbatim bands, read from `Tab.ConstrYearClass`, which are now the campaign's construction-period
+axis and must be quoted from here and not re-typed:**
+
+| Spain | Great Britain | Italy |
+|---|---|---|
+| `ES.01` ≤1900 *XIX century* | `GB.01` ≤1918 | `IT.01` ≤1900 |
+| `ES.02` 1901-1936 *Beginning of the century* | `GB.02` 1919-1944 | `IT.02` 1901-1920 |
+| `ES.03` 1937-1959 *Civil war* | `GB.03` 1945-1964 | `IT.03` 1921-1945 |
+| `ES.04` 1960-1979 *Improvement in the Spanish economy* | `GB.04` 1965-1980 | `IT.04` 1946-1960 |
+| `ES.05` 1980-2006 *CTE-79* | `GB.05` 1981-1990 | `IT.05` 1961-1975 |
+| `ES.06` ≥2007 *CTE 2006* | `GB.06` 1991-2003 | `IT.06` 1976-1990 |
+| | `GB.07` 2004-2009 | `IT.07` 1991-2005 |
+| | `GB.08` ≥2010 | `IT.08` ≥2006 |
+
+🔴 **One small correction to `RL24`, from the file itself.** It gives `ES.05` as
+*"1980-2006 (NBE-CT-79)"*. The workbook's own label is **`CTE-79`**. `NBE-CT-79` is the historically
+correct name of the Spanish standard and `RL24` is arguably being helpful, but **`archetype_parameter_
+provenance.md` must carry the label the file carries**, or a later reader cannot match our table to the
+source. Cite `CTE-79`, and note the historical name separately if it is worth saying.
+
+🔴 **`GB` is Great Britain, not the United Kingdom.** TABULA's country code is `GB`. Northern Ireland
+is outside it. That is a limitation for a fold labelled `uk`, and it must be stated rather than
+absorbed silently — the same class as the D-S6-2 wave gap.
+
+#### What this changes
+
+* **Work item 8.1 is unblocked and needs no author decision on the source.** The route is: download
+  `tabula-values.xlsx`, pin its md5, read `Tab.ConstrYearClass`, `Tab.Building.Constr`,
+  `Tab.U.Class.Constr`, `Tab.U.Class.Window`, `Tab.System.*`, and cite sheet plus row code per
+  parameter. That satisfies *"every parameter carries its TABULA table reference"* by construction.
+* **The 65-sheet structure is itself the answer to "what does a row contain".** `RL24`'s B16 named
+  `Calc.Set.Building` in `tabula-calculator.xlsx`; the 34 MB calculator was **not** opened here, so
+  that specific claim is **UNVERIFIED** and is recorded as such. The 4 MB values file was opened and
+  is verified.
+* 🔴 **B17 — what TABULA does not supply — was NOT verified** and is the item that matters most for
+  `archetype_parameter_provenance.md`'s honesty clause. `RL24` lists sub-hourly occupant schedules,
+  appliance draw profiles, DHW tapping series, window-opening behaviour, thermostat setbacks and 3D
+  zoning geometry. **Plausible and consistent with a steady-state monthly-balance method, but check it
+  against the workbook before writing it down as fact** — the file is on disk now and the check is one
+  script.
+* **`RL24`'s licence claim (IEE / IWU, redistribution of derived tables permitted with attribution)
+  was NOT independently verified.** Quoted terms were not located in this session. 🔴 **Verify before
+  any derived parameter table is published**, not before it is used internally.
+
+#### `D-S8-1` is unaffected
+
+`FINDING 44` stands: `G8.1`–`G8.4` still name no reference series, and nothing in `RL24` supplies one.
+`RL24` confirms there is no library of European residential EnergyPlus models and no measured dataset
+for our archetypes, which **strengthens** the case against Guideline 14 as a bar and therefore against
+option (b). The recommendation remains **(a)**, recast as reproducibility gates.

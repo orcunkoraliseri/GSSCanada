@@ -83,7 +83,7 @@ not moved.
 ## DIARIES TO SCHEDULES
 
 * Presence fraction per slot per dwelling, from location codes **with the code-11 indoor rule from
-  Step 2B applied**.
+  Step 2B applied**. 🔴 *(2026-08-20 `FINDING 42`: the record carries `LOC` as a STRING; the rule is `LOC == "at_home"`, which also picks up Italy's merged code 12 that a literal `11` would drop.)*
 * **Activity-resolved internal gains**, which is the part a presence fraction throws away.
 * 🔴 **`Schedule:File`, not `Schedule:Compact`.** At urban scale, compact blocks bloat the IDF past
   twenty thousand lines per schedule.
@@ -296,3 +296,320 @@ Append-only.
   independent resampling inflates a synthetic individual's activity vocabulary and breaks household
   role coherence between days. It also links to open decision 12, since role coherence is a
   household-level property.
+
+### 2026-08-20 — 🔴 **TWO GATES IN THIS STEP READ FIELDS THE RECORD FORMAT DOES NOT CONTAIN. `FINDING 42`, `FINDING 43`, `D-S7-1`.**
+
+Written as parallel work while Step 4's `it` fold holds the GPU. Nothing here was run — Step 7 has
+never been run, `outputs_step7/` is empty, and no grammar has been compiled. Everything below comes
+from reading this step against the **frozen record format** in `../tools/encoder.py` and the shipped
+Step 2 crosswalks.
+
+#### 🔴 `FINDING 42` — `G7.13`'s indoor rule tests `LOC == 11`. The serialised `LOC` is a **string**, and `11` is not one of its values.
+
+`G7.13` requires presence be derived via **`(LOC == 11) AND (ACT not in OUTDOOR_AT_HOME)`**, and the
+implementation doc's *"DIARIES TO SCHEDULES"* section repeats it as *"location codes with the code-11
+indoor rule from Step 2B applied"*.
+
+`encoder.py` serialises `LOC` as **one of five lowercase strings** — `at_home`, `other_place`,
+`private_transport`, `public_transport`, `unknown` (`D-S3-4`). The raw national code `11` is consumed
+by Step 2's crosswalk and **never reaches the record**.
+
+🔴 **`"at_home" == 11` is `False`, and it does not raise.** A schedule builder written literally to
+`G7.13` produces **presence identically zero for every occupant of every dwelling**, in every country,
+and the gate that is supposed to catch a wrong indoor rule is the same expression, so it agrees. This
+is the failure mode Step 9's own `G9.14` names in its threshold column — *"a trigger reading an absent
+column does not raise, it silently never fires"* — arriving one step earlier and in the load-bearing
+direction.
+
+**The correct rule, and it is strictly better than the code-based one:**
+
+```
+presence = (LOC == "at_home") AND (ACT not in OUTDOOR_AT_HOME)
+```
+
+`crosswalk_location.csv` row `es,11,Casa,at_home` confirms `at_home` is exactly what source code 11
+maps to. **And the string is more correct than `11` ever was:** `D-S2-4` merges Italy's codes **11 and
+12** into `at_home`, so a literal `LOC == 11` would silently drop part of Italian at-home time while
+looking right for Spain. The class absorbs that; the code does not. `OUTDOOR_AT_HOME` is the shipped
+`../Step2_docs/outputs_step2/outdoor_at_home.csv` — **four codes**, `322`, `341`, `342`, `344` — which
+`G7.13` already correctly requires be read from the file *"not a copy"*.
+
+#### 🔴 `FINDING 43` — `G7.2` demands 100 % of codes be *"inside the coding list"*. The corpus contains a code that is not in it.
+
+`D-S3-9` emits the literal `ACT` value **`000`** for a null activity — *"the diary entry here was not a
+usable activity"* — **8,709 episodes** (ES 3,786 / IT 333 / UK 4,590), from eight source codes Step 2
+declined to map on purpose. `encoder.py` hard-codes it as `ACT_NULL_CODE = "000"`.
+
+`../Step2_docs/outputs_step2/activity_target_list.csv` holds **158 target codes and `000` is not one
+of them** (checked: no row matches).
+
+**Two things follow, and the second is the damaging one.**
+
+1. `G7.2` as written FAILs at baseline on any batch containing `000`, for a code the corpus format
+   defines. That is merely wrong.
+2. 🔴 **If the grammar's `ACT` vocabulary is built from `activity_target_list.csv` — the obvious
+   source, and what work item 7.1 says — then the mask FORBIDS `000`.** The model was trained on a
+   corpus where `000` is legal and carries real duration; at generation the mask would push every one
+   of those attempts onto some *real* activity code instead. **Unusable diary time would be silently
+   converted into real activity**, inflating whatever activity absorbs it, and no structural gate can see
+   it: the output is perfectly well-formed. It would surface only as an unexplained lift in `G7.7`'s
+   firing rate, which is *"reported, not thresholded"*.
+
+**The grammar's `ACT` alphabet must therefore be the 158 target codes ∪ `{000}` — 159 values — and
+`G7.2` must say so.** This is a declaration, not a widening: `000` is already in the frozen record
+format, and refusing it at generation would make the decoder and the mask disagree about the same
+corpus.
+
+#### Path corrections, same class as Step 5's
+
+| where | said | is |
+|---|---|---|
+| `G7.6`, and `../Step3_docs/4thJ_03_serialisation.md:333` | `outputs_step3/encoder.py` + `decoder.py` | **`../tools/encoder.py`** and **`../tools/decoder.py`** — both exist and are importable |
+
+#### `D-S7-1` — for the author
+
+| | question | recommendation |
+|---|---|---|
+| **(a)** | `G7.13`'s indoor test | 🔴 **Re-point to `LOC == "at_home"`.** Additive, no threshold moves, and it *fixes* the silent Italy 11/12 loss the code form would have caused. The gate's own "read the shipped list, not a copy" clause is unaffected. |
+| **(b)** | `000` in the grammar | 🔴 **Declare the `ACT` alphabet as 158 ∪ `{000}` = 159 in work item 7.1, and amend `G7.2` to match**, before any grammar is compiled. Deciding this *after* a batch exists means deciding it while looking at a firing rate. |
+| **(c)** | whether `000` episodes should reach the schedule builder at all | Genuinely open, and **separate from (b)**. `000` has a duration but no activity, so it has no internal gain and no appliance trigger. Treating it as at-home-idle, as away, or as a gap are three different annual energies. **Recommend: carry it explicitly as its own state and report how much time it is** (0.43 % of episodes) rather than folding it into any existing class. |
+
+#### What was NOT done
+
+No grammar compiled, no throughput comparison, no generation, nothing submitted. `outputs_step7/`
+remains empty and every work item 7.1–7.7 is untouched. **`prereg.md` not touched** — md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar.
+
+### 2026-08-20 (later) — 🟢 **WORK ITEM 7.1 IS BUILT AND ITS SELF-TEST IS GREEN, 44/44, EVERY REJECTION BRANCH SEEN FIRING. 🔴 AND IT SURFACED `FINDING 45`, WHICH IS THE LARGEST OF THE DAY: `G7.3` AS WRITTEN WOULD REJECT 28.95 % OF THE REAL CORPUS, UNEVENLY BY COUNTRY.**
+
+Built locally — **no cluster compute, no GPU, no model.** The only cluster access was **retrieval**:
+`grep` and `wc -l` over the single shipped file `/speed-scratch/o_iseri/4J_step3_corpus.jsonl`, which
+is inside the login node's allowed command set. **Nothing was submitted and no generation was run.**
+
+#### 🔴 `FINDING 45` — the transition constraint would mask nearly a third of the training distribution
+
+`G7.3` requires **transition legality — "no workplace-to-home with no travel episode" — at 100 %,
+encoded as an FSM transition table.** Two separate things are wrong with it, and the second is
+measured.
+
+**(i) The rule cannot be expressed in the record format.** `crosswalk_location.csv` maps every
+non-home, non-transport place — workplace, second home, shop, restaurant, another person's house —
+onto the **single class `other_place`**. **There is no "workplace" in the serialised `LOC`.** The
+nearest implementable rule, `other_place -> at_home` requires an intervening transport episode, is
+therefore **strictly broader** than the rule that was specified: it also forbids coming home from a
+shop, from a restaurant, or from a friend's flat.
+
+**(ii) That broader rule contradicts the data.** Measured by grep over the corpus, counting **diaries
+containing at least one occurrence** (what a line-oriented grep can honestly report — it is a count of
+diaries, not of transitions, and is therefore a **lower bound** on how often the mask would fire):
+
+| | diaries with a direct `other_place → at_home`, no travel | total | share |
+|---|---:|---:|---:|
+| **all** | **21,210** | 73,254 | **28.95 %** |
+| `es` | 8,264 | 19,140 | **43.18 %** |
+| `uk` | 3,907 | 15,854 | 24.64 % |
+| `it` | 9,039 | 38,260 | 23.63 % |
+
+For scale, the *legal* form — a transport episode immediately before `at_home` — appears in 54,626
+diaries (74.57 %), and the mirror transition `at_home → other_place` with no travel appears in 21,106
+(28.81 %). **Both forms coexist throughout the corpus.** The direct transition is not an artefact of
+one country's instrument; it is ordinary under-reporting of short trips, and every HETUS wave has it.
+
+🔴 **What enforcing `G7.3` at 100 % would actually do.** The mask would fire on at least 28.95 % of
+generated diaries and **insert travel episodes the respondents never recorded** — inventing travel
+time, and in Step 9 inventing transport energy and the appliance-off period that goes with it. It
+would do so **1.83× more often on Spanish diaries than on Italian ones** (43.18 / 23.63). `G7.8`
+exists to catch exactly this — *"the mask propping up minority strata"*, ratio < 3.0 — **but `G7.8` is
+stratified by demographic stratum, not by country, so this particular unevenness is invisible to it.**
+And under LOCO, when Spain is the held-out country, that country-specific mask load lands directly on
+the transfer result.
+
+**This is the `FINDING 43` shape again, one gate over:** a constraint compiled from a source that
+disagrees with the corpus, enforced at 100 %, producing perfectly well-formed output that no
+structural gate can question.
+
+#### `D-S7-2` — for the author
+
+| | ruling | consequence |
+|---|---|---|
+| **(a)** | 🔴 **Recommended. Drop the travel requirement from the grammar** and keep `G7.3` as a *reported* rate rather than an enforced constraint. The corpus is the ground truth for what a plausible diary looks like, and it says this transition is normal. **Costs nothing real:** the constraint was never protecting a downstream consumer — no schedule, gain or appliance model reads the travel episode as a precondition for being home. |
+| **(b)** | Enforce it, and **report the firing rate per country** alongside `G7.8`'s per-stratum rate. | Honest but expensive: it changes 29 % of diaries, the change is country-dependent, and it must then be declared as a modelling intervention in the methods rather than as "structural validity". |
+| **(c)** | Enforce it only where the source data supports it. | 🔴 **Rejected.** It does not: the rate is 24–43 % in *all three* countries. There is no country where the rule holds. |
+
+Until it is ruled, the module below **refuses to run** in the enforcing mode without an explicit
+acknowledgement argument, and prints the measured rejection rates in the exception text.
+
+#### 🟢 What was actually built
+
+| file | lines | md5 | checked |
+|---|---:|---|---|
+| `../tools/4thJ_step7_grammar.py` | 286 | `53996757a17a5b2648302de3baaa0a83` | imports and runs; alphabets read live from the shipped crosswalks |
+| `../tools/4thJ_step7_grammar_selftest.py` | 146 | `6b9ba5168e1f18e486007b43ff6bb644` | **44 passed, 0 failed**, run locally on Python 3.13.5 |
+
+**Two functions that must never be the same code**, which is the whole point of `G7.10`:
+`build_alphabets()` is the constraint *definition* a grammar back-end compiles from;
+`validate_record()` is an independently written recogniser for the same language. `G7.10` compares
+them on 10,000 strings — **if the oracle imported the grammar's own accept function, the gate would
+compare a thing to itself**, the `V5.d` / `V6.b` failure class.
+
+**Verified, not asserted:**
+
+* **The 145-state tally automaton is returned as an explicit table** — 145 states, one accepting
+  state, 10,440 transitions — so `RL12`'s regularity objection is answered by something anyone can
+  count rather than by a paragraph.
+* 🔴 **The multiple-of-10 premise the automaton rests on was CHECKED against the real corpus, not
+  assumed.** A grep for any duration whose final digit is non-zero returned **zero diaries across all
+  73,254 records** — including the UK and Italy, which ship native episodes with explicit
+  start/end minutes rather than reconstructed 10-minute slots, and which were the obvious place for
+  the premise to break.
+* **The ACT alphabet is 158 ∪ {`000`} = 159**, per `FINDING 43`, declared in one place with its
+  reason. `build_alphabets()` **raises** if `000` ever appears in `activity_target_list.csv`, so the
+  union cannot silently become a duplication.
+* **Every rejection branch is exercised by a case built to fire it** — 20 malformed records covering
+  whitespace, a missing `<eor>`, a missing separator, 5- and 7-field prefixes, an empty prefix field,
+  zero episodes, a missing terminal semicolon, 4- and 6-field episodes, a non-multiple-of-10 duration,
+  a leading zero, an under- and an over-long day, an out-of-alphabet `ACT`, `ACT2` and `LOC`, an
+  out-of-range and a leading-zero `COP`, and a non-string input.
+
+🔴 **An honest note about the first run of that self-test, because it is the point of the discipline.**
+It came back **6 failed**, and two of the failures were that my "invalid" test codes were **valid**:
+`999` is a real target code and `99` is a real `ACT2` code. **Those two negative cases were vacuous —
+they would have passed a weaker test harness while proving nothing**, exactly the `V4.f` vacuity class.
+They were replaced with codes confirmed absent from the shipped lists (`120`, `10`), and only then did
+the branches fire.
+
+#### What this does NOT close
+
+* **`G7.1`–`G7.4` still cannot fail while the mask is on.** This module makes the language explicit; it
+  does not make those gates measurements. That warning stands unchanged.
+* **No XGrammar grammar has been compiled and no back-end has been run**, so `G7.10`'s actual
+  comparison — oracle versus XGrammar on 10,000 strings — has **not** been performed. Half of the pair
+  exists.
+* **The co-presence grammar variants indexed by household type (constraint class 4) are NOT built.**
+  `G7.4` is untouched by this work.
+* Nothing was generated, `outputs_step7/` is still empty, and no work item other than 7.1 was started.
+* **`../Step6_docs/outputs_step6/prereg.md` not touched** — md5 `e4243e07cdd80c9c846b91f40e3e8c45`,
+  verified against its sidecar.
+
+### 2026-08-20 — 🟢 **`D-S7-2` RULED (a) BY THE AUTHOR: THE TRAVEL REQUIREMENT IS DROPPED FROM THE GRAMMAR.**
+
+Ruled on the measured evidence in `FINDING 45`, the same day it was measured and **before any diary
+was generated** — so no result was seen when the rule was chosen.
+
+**The ruling.** `G7.3`'s travel requirement is **not enforced by the grammar.** `G7.3` becomes a
+**reported rate**, not a 100 % structural constraint. The mask never inserts a travel episode.
+
+**Why (a) and not (b).** (b) — enforce and declare — was the author's first inclination and is
+defensible, but it accepts that ~28.95 % of generated diaries would carry travel the model did not
+produce, unevenly by country (ES 43.18 % vs IT 23.63 %, `1.83×`). Under LOCO that intervention lands
+hardest on exactly the fold whose transfer result is being measured. **(a) costs nothing real:** no
+downstream consumer reads the travel episode as a precondition for being home — not the presence
+schedule, not the internal gains, not the appliance trigger. The corpus is the ground truth for what a
+plausible European diary looks like, and it says coming home without a recorded trip is ordinary.
+
+**What still gets reported.** The rate itself, per country, as a model-quality number alongside
+`G7.7`'s firing rate — because *how often the model produces a direct return home* is a real property
+of the model and is now measurable against the corpus baselines (ES 43.18 %, UK 24.64 %, IT 23.63 %,
+all 28.95 %).
+
+**Consequences already handled in code.** `../tools/4thJ_step7_grammar.py` was written with
+`TransitionPolicy` explicit and undefaulted for exactly this decision. Under the ruling the operative
+value is **`PERMISSIVE`**; `REQUIRE_TRAVEL` stays in the module as the falsifier the self-test uses to
+prove the constraint has teeth, and keeps its `acknowledge_finding_45` guard so it can never become
+the operative mode by accident.
+
+🔴 **What (a) does NOT do.** It does not claim the diaries are complete. Short trips *are* under-
+reported in HETUS, that under-reporting is now inherited by the generated diaries, and it belongs in
+the limitations next to the transport-energy caveat in Step 9 — **the model will under-produce travel
+because the corpus does.** Enforcing the rule would have hidden that behind a mask rather than fixed
+it.
+
+---
+
+### 2026-08-20 (evening) — 🟢 **`D-S7-1(c)` RULED: `000` IS CARRIED AS ITS OWN STATE. 🔴 AND MEASURING IT BEFORE WRITING THE RULING DOWN CHANGED WHAT IT COSTS — TWICE. THE DOCUMENT'S OWN `0.43 %` IS THE WRONG DENOMINATOR, AND `000` IS NOT "WHEREABOUTS UNKNOWN".**
+
+**Ruled by the author 2026-08-20:** `000` reaches the schedule builder as an **explicit, distinct
+state**. It is not folded into at-home-idle and not folded into away — those were the two alternatives
+and each would have silently moved annual energy in a known direction. The rate is **reported**.
+
+The corpus was then measured rather than quoted. `4J_step3_corpus.jsonl` was fetched by `scp`
+(retrieval only, no cluster compute) and scored locally: **73,254 diaries, 2,024,068 episodes,
+0 malformed, and every diary's durations sum to exactly 1440 — `105,485,760 = 73,254 × 1440`.**
+
+#### 🔴 Correction 1 — the number this step has been quoting is on the wrong axis, and it is 3x too big
+
+This document says `000` is *"0.43 % of episodes"*. That is right, and it is **not the quantity the
+ruling is about**. Energy is driven by **time**, and `000` episodes are short:
+
+| basis | value |
+|---|---|
+| episodes | `8,709 / 2,024,068` = **0.4303 %** |
+| 🔴 **time** | `149,510 / 105,485,760` min = **0.1417 %** |
+| mean duration | **`17.17` min**, against `52.12` min for the corpus as a whole |
+
+**The state the ruling creates covers one part in 700 of modelled time, not one part in 230.** Quote
+the time share; the episode share overstates the exposure by a factor of `3.04`.
+
+🔴 **And it is strongly country-dependent, which is the axis this paper is scored on:**
+
+| fold | `000` share of episodes | `000` share of **time** |
+|---|---|---|
+| `es` | 0.848 % | **0.304 %** |
+| `uk` | 0.809 % | **0.245 %** |
+| `it` | 0.033 % | **0.018 %** |
+
+**`es` carries 17x more `000` time than `it`.** This is a **per-fold** quantity and pooling it would
+hide the entire effect. It joins the standing list of per-fold asymmetries — the D-S6-2 wave gap,
+`FINDING 39`'s rounding floor, and the census-basis gap ruled today in Step 5. 🔴 **Never report a
+single pooled `000` rate.**
+
+#### 🟢 Correction 2 — `000` means "activity unknown", NOT "whereabouts unknown". `LOC` survives.
+
+This is the part that makes the ruling cheap, and it was not obvious from the specification. **`000`
+episodes carry a real `LOC`**, and mostly a known one:
+
+| `LOC` on `000` episodes | minutes | share of `000` time |
+|---|---|---|
+| `private_transport` | 64,320 | **43.02 %** |
+| `at_home` | 32,320 | **21.62 %** |
+| `unknown` | 29,220 | 19.54 % |
+| `other_place` | 20,660 | 13.82 % |
+| `public_transport` | 2,990 | 2.00 % |
+
+🟢 **80.46 % of `000` time has a determined location.** So for four fifths of it **the occupancy
+schedule is not in doubt at all** — the dwelling is known to be occupied or not. What is undefined is
+narrower than the specification implied: **the internal-gain level and the appliance trigger, not the
+occupancy state.**
+
+🔴 **The genuinely irreducible residue is `0.1417 % x 19.54 % = 0.0277 % of modelled time`** — about
+**one minute in 3,600** where neither the activity nor the location is known. **That, and only that,
+is what a declared limitation needs to cover.** The rest is an internal-gain question with a known
+occupancy answer.
+
+🔴 **A consequence that must not be missed: the modal `000` location is `private_transport`, at 43 %.**
+An implementation that reflexively treats a null activity as at-home-idle would put **43 % of `000`
+time inside the dwelling while the diary says the person is in a car.** Option (b), rejected today,
+would have done exactly that. **The ruling avoids a real error, not a hypothetical one.**
+
+#### What work item 7.1 must now carry
+
+`tools/4thJ_step7_grammar.py` already declares the `ACT` alphabet as `158 ∪ {000} = 159` and **raises**
+if `000` ever appears in `activity_target_list.csv`. That is unchanged and correct. **What is added by
+this ruling is downstream, in the schedule builder, not in the grammar:** a fourth state, its time
+share reported **per fold** on the time basis, and the `0.0277 %` residue named as the limitation.
+
+#### 🟢 A bonus check the same pass bought, which belongs to Step 8 and is recorded there too
+
+**1,320 diaries — 1.802 % — have ZERO at-home minutes**: `uk` 2.927 %, `es` 1.641 %, `it` 1.417 %, a
+2.1x spread. Those are dwellings with nobody home for a full modelled day. Legitimate, and it must be
+a deliberate branch in the schedule builder rather than an accident. Mean at-home time is `1,028.8`
+min/day, **71.4 %** of the corpus-wide time budget.
+
+#### Still open in `D-S7-1`: items (a) and (b)
+
+**(a) re-point `G7.13` to `LOC == "at_home"`** and **(b) declare the `ACT` alphabet as 159 and amend
+`G7.2`** were recommendations with no counter-option and **neither has been ruled.** 🟢 **(a) is now
+supported by measurement rather than by argument: `at_home` is `71.441 %` of corpus time**, so the
+re-pointed test is abundant and non-vacuous — unlike `LOC == 11`, whose presence is identically zero
+because `LOC` is a string. **`prereg.md` not touched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified
+against its sidecar.

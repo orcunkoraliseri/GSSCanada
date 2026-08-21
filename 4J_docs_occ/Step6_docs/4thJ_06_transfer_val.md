@@ -133,7 +133,7 @@ is from itself.
   scorers disagreed by 26.5 % and, fatally, disagreed about which of heating and cooling was larger.
 * **V6.c** — G6.1's comparison is strict (`margin > 0`), never `>= 0`. **A prediction of movement
   must not be satisfiable by nothing moving.**
-* **V6.d** — the runner FAILs if fewer than **4** folds were scored, or if any fold's held-out
+* **V6.d** — the runner FAILs if fewer than **3** folds (🔴 CORRECTED 2026-08-20 from **4** — see progress log; France excluded by decision 16) were scored, or if any fold's held-out
   country appears in its own training set — an assertion, run per fold, not a comment.
 * **V6.e** — `prereg.md`'s md5 is checked at scoring time against the value recorded before the first
   fold. **A pre-registration that can be edited after the results are seen is not a pre-registration.**
@@ -166,3 +166,55 @@ Append-only.
 * 🔴 The perturbation worth noticing is *"train including the held-out country"*: **the headline gate
   G6.1 improves.** Every check that could catch it is a privacy gate. That is the shape of the
   failure this step most needs to survive — the one where the number gets better.
+
+### 2026-08-20 — 🔴 **`V6.d` REQUIRES FOUR FOLDS. THE DESIGN HAS THREE. AS WRITTEN, THIS GUARD FAILS EVERY COMPLETE RUN OF STEP 6.**
+
+Found by reading, not by running — no scorer exists yet, so nothing has failed and nothing was
+re-scored. Recorded here because the guard is a **runner assertion**, and a runner assertion that can
+never be satisfied is indistinguishable, in its own output, from the failure it exists to catch.
+
+**The text, unchanged above at line 136:** *"the runner FAILs if fewer than **4** folds were scored."*
+
+**The design, from the FROZEN `prereg.md`:** three. Author decision 16 (2026-08-15) excluded France;
+`prereg.md` §2 line 71 reads *"LOCO trains on TWO, not three"*, §8 is titled *"The reporting clause —
+all three folds, including the worst"*, and §11 line 312 records *"rotation over three countries"* with
+its provenance. **The frozen file is correct. This validation document is the stale one.**
+
+#### The correction, and its exact scope
+
+| | before | after |
+|---|---|---|
+| `V6.d` fold-count arm | *fewer than **4** folds* → FAIL | *fewer than **3** folds* → FAIL |
+| `V6.d` self-containment arm | *any fold's held-out country appears in its own training set* | **unchanged** |
+
+🔴 **The guard is RE-POINTED, not removed.** Its purpose — catching a run that silently scored fewer
+folds than the design has — is intact and still needed; only the count was stale. Deleting it because
+it was wrong would trade a guard that always fires for no guard at all, which is the worse of the two.
+
+🔴 **`prereg.md` WAS NOT EDITED.** Verified at the time of writing: md5
+`e4243e07cdd80c9c846b91f40e3e8c45`, matching its sidecar. The fold count was never *in* the frozen
+file as a guard — see the next paragraph, which is the more serious finding.
+
+#### 🔴 The finding underneath the finding: **none of the `V6.*` guards are frozen**
+
+`V6.a` requires the scorer to *"import its thresholds and its band definitions from the frozen
+`prereg.md` module"*, on the argument that **a second copy of a threshold drifts invisibly, and the
+copy that drifts is always the one being quoted.** A grep for `V6.`, `vacuity` and `assert` over
+`prereg.md` returns **nothing**: the vacuity guards live only in this editable document.
+
+So the guards that protect the pre-registration are themselves outside it. `V6.d` drifting from four
+folds to three is the demonstration — it is exactly the drift `V6.a` predicts, one level up, and it
+went unnoticed for five days because no document holds the guards to the frozen one.
+
+**This is NOT proposed as a `prereg.md` edit.** The file is frozen and `G4.14` is live; editing it
+fails every Step 4 run at once. The guards stay here, and the standing requirement is that **the
+scorer, when it is written, asserts each `V6.*` guard's parameters against `prereg.md` at run time**
+rather than carrying them as literals — which is `V6.a`'s own rule applied to `V6.a`'s own neighbours.
+
+#### What this does and does not change
+
+* **No threshold moved.** `G6.1`–`G6.13` are untouched; this is a fold **count**, not a bar.
+* **No result is affected** — Step 6 has never been run, and its `outputs_step6/` holds only
+  `prereg.md`, its sidecar, and the D-S6-1 household re-split report.
+* **Still open and unrelated:** the §5 **raked-donor null** — `G6.1`'s actual bar — has never been
+  built, and `FINDING 39`/`D-S6-3` (2026-08-20) remain open against §6's `MAPE` arm.

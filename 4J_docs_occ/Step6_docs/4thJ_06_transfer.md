@@ -361,6 +361,34 @@ unmeasured number is worse than one containing an open question.**
   two documents to each other destroys the evidence that they ever disagreed. The correct reading is
   recorded here and in `prereg.md` §2 instead.
 
+#### 🟢 2026-08-20 — BOTH CROSS-REFERENCES HAVE SINCE BEEN CORRECTED FORWARD. THE "left in place" SENTENCE ABOVE DESCRIBES 2026-08-18 AND NO LONGER HOLDS.
+
+The two bullets above are a record of what was true when they were written, and they are kept. **What
+changed after them:** on **2026-08-19** both passages were amended **in their own files, by the route
+this project allows** — a forward correction that quotes the wording it replaces, rather than a silent
+harmonisation.
+
+| passage | state on 2026-08-18 | state now |
+|---|---|---|
+| `4thJ_04_finetuneLLM.md` §4.3 | *"Primary, four runs … the other three countries"* | **"Primary, three runs … the other two"**, carrying the note *"🔴 CORRECTED 2026-08-19. This read 'four runs … the other three countries', which was true before author decision 16 EXCLUDED FRANCE on 2026-08-15."* |
+| this file's EXPERIMENT section | *"N = 4 … Italy, Spain, UK, France"* | **"🔴 N = 3, NOT 4. CORRECTED 2026-08-19."**, quoting the replaced sentence in full |
+
+🔴 **No evidence was destroyed, and that is the whole test the bullets above were protecting.** Each
+correction carries the sentence it replaced inside itself, so the record that the two documents once
+disagreed survives in the documents themselves — which is strictly better than the record surviving
+only in a third file's progress log. **The rule is unchanged: amend forward, quote what you replace,
+never retro-fit.** What is now retired is only the *decision* to leave the two sentences standing;
+the reason for that decision was satisfied by a different route.
+
+**One further correction rode along with the §4.3 amendment and is recorded here because it is a
+separate claim:** §4.3's closing line *"Quoting either as a general result across the corpus would be
+quoting one fold as three"* previously read **"as four"**. The ceiling run and the comparison arm are
+still single-fold measurements; only the count they are contrasted against moved.
+
+🔴 **The bullets above must not be deleted.** A future session reading only the corrected files would
+otherwise have no way to learn that the two specs were inconsistent for four days, which is the fact
+that justifies checking the others.
+
 **What this step now owes, and it is new:** 🔴 **a split report for the UK fold** — its scores for
 `strat_hh_type = unknown` versus the rest — created by **D-S3-14** on 2026-08-18. 551 UK diaries carry
 a value neither training country emits. If the split cannot be produced, it is reported as
@@ -642,3 +670,263 @@ still not been compared against anything we hold, and **no §6 threshold has bee
 achievability against the real published numbers.** That question is smaller than the one just
 closed, it is unblocked, and it is still owed. Also still owed, and unblocked since the `uk` adapter
 exists: **the D-S3-14 UK-fold split report** for `strat_hh_type = unknown`.
+
+---
+
+### 2026-08-20 — 🔴 **THE §6 THRESHOLDS WERE CHECKED AGAINST THE REAL PUBLISHED NUMBERS. `MAPE > 20 %` IS NOT EVALUABLE AS WRITTEN, AND ITS MECHANICAL FLOOR IS NOT THE SAME IN ALL THREE FOLDS.** New: **FINDING 39**, and **D-S6-3** for the author.
+
+**Why this was done now, and what it closes.** The D-S6-2 ruling of 2026-08-19 (evening) ends with a
+declared owed item: *"no §6 threshold has been re-checked for achievability against the real published
+numbers … it is unblocked, and it is still owed."* Step 4's `it` fold (job `1284912`) occupies the GPU
+and this check needs none, so it was taken in that window — the same reasoning that produced D-S6-2 in
+the `uk` window. 🔴 **It found defects again.** The pattern is now twice-confirmed: *the declared
+omissions in this project have not been harmless, and each one that has actually been opened has
+contained a real defect.* The remaining declared omissions should be read in that light.
+
+**The tables were pulled from Eurostat's dissemination API with the CORRECTED names ruled in D-S6-2** —
+`tus_00startime` (145 start-time slots, 9 activity groups, 3 sexes, `time=2010`) for ES, UK and IT, and
+`tus_00age` for IT as a contrast case. Everything below is computed from those payloads, not from a
+description of them.
+
+#### 🔴 DEFECT 4 — `MAPE` IS UNDEFINED ON CELLS EUROSTAT PUBLISHES AS `0.0`, AND `prereg.md` NAMES NO RULE FOR THEM
+
+`tus_00startime` publishes a participation rate for every one of its 3,480 non-`TOTAL` cells per
+country — nothing is missing — but a large number of them are **exactly `0.0`**:
+
+| | ES | UK | IT |
+|---|---|---|---|
+| non-`TOTAL` cells | 3,480 | 3,480 | 3,480 |
+| missing | 0 | 0 | 0 |
+| **published exactly `0.0`** | **139 (4.0 %)** | **13 (0.4 %)** | **176 (5.1 %)** |
+
+An absolute percentage error divides by the reference value. On these cells the reference is zero and
+**`MAPE` has no value at all** — not a large value, no value. §6 says `MAPE > 20 %` and stops.
+🔴 **Every available repair is a basis choice, and they do not agree with each other:** dropping the
+zero cells removes between 0.4 % and 5.1 % of the evidence *and removes a different amount per fold*;
+flooring the denominator at ε makes the score a function of ε; switching to sMAPE or to a
+weighted MAPE changes the quantity being thresholded. **By this project's own rule a basis is
+registered before the run that reports under it**, which is exactly the rule D-S6-2 was decided under.
+
+#### 🔴 DEFECT 5 — THE THRESHOLD'S MECHANICAL FLOOR IS COUNTRY-DEPENDENT, AND IT IS WORST ON `it`
+
+Eurostat publishes these rates on a **0.1 percentage-point grid**. A cell printed as `0.2` is some
+true value in `[0.15, 0.25)`. **A model that reproduced the underlying population perfectly would
+still score a non-zero APE on that cell**, purely from the publication rounding. Taking the true value
+as uniform inside the printed cell, the expected irreducible APE is `0.025 / v`:
+
+| | ES | UK | IT |
+|---|---|---|---|
+| **expected `MAPE` floor from publication rounding alone** | **2.98 %** | **1.87 %** | **3.42 %** |
+| cells where rounding alone can exceed 20 % APE | 282 (8.1 %) | 148 (4.3 %) | 360 (10.3 %) |
+
+🔴 **The 20 % threshold therefore does not mean the same thing in the three folds.** A perfect model
+starts at `1.87 %` on `uk` and at `3.42 %` on `it` — the floor on `it` is **1.83×** the floor on `uk`,
+so `it` is scored with roughly `1.5` percentage points less headroom than `uk` before it has generated
+anything. **This is not fatal: the floors are single-digit against a 20 % bar, so the threshold is
+achievable in all three folds and does not need to move.** What it is, is a second respect in which
+**the LOCO result is not basis-uniform across its folds — and it falls on the same fold as the first
+one.** D-S6-2 already ruled that `it` carries a ~5-year wave gap; `it` also carries the loosest
+publication grid relative to its own cell values. **Report them together or the reader sees neither.**
+
+#### 🔴 DEFECT 6 — 12.5 % OF `tus_00age` IS SIMPLY ABSENT, SO THE DENOMINATOR OF ANY SCORE OVER IT IS A CHOICE
+
+Unlike `tus_00startime`, the demographic tables are **not** complete. `tus_00age` for Italy declares
+`3 units × 3 sexes × 8 age groups × 56 activity categories = 4,032` cells and returns **3,528**:
+
+| unit | present | missing | published as zero | expected floor |
+|---|---|---|---|---|
+| `TIME_SP` (time spent) | 1,176 / 1,344 | **168 (12.5 %)** | 125 (10.6 %) | 5.79 % |
+| `PTP_TIME` (participation time) | 1,176 / 1,344 | **168 (12.5 %)** | 31 (2.6 %) | 0.37 % |
+| `PTP_RT` (participation rate) | 1,176 / 1,344 | **168 (12.5 %)** | 16 (1.4 %) | 1.06 % |
+
+**`TIME_SP` is the bad one**: 10.6 % of its cells are `0:00`, and its expected rounding floor is
+**5.79 %** because it is published on a **whole-minute** grid where many cells are only a few minutes
+long. A `MAPE` computed over `TIME_SP` is close to a quarter unusable before the model is involved.
+🔴 **§6 does not say which unit it scores.** `tus_00age` publishes three, they behave completely
+differently under `MAPE`, and picking one after seeing the results is precisely the move D-S4-5 exists
+to forbid elsewhere in this project.
+
+#### 🔴 DEFECT 7 — `TOTAL` IS ALWAYS EXACTLY `100`, AND IT IS ONE NINTH OF THE TIME-OF-DAY TABLE
+
+`tus_00startime` carries an `acl00 = TOTAL` row for every (sex, slot) pair — **435 cells per country,
+11.1 % of the table — and it is `100` in every single one of them, verified for all three countries.**
+Any generated population whose activity shares sum to one matches those cells exactly and for free.
+🔴 **Including them would cut the reported `MAPE` by about a ninth and would be indistinguishable, in
+the printed number, from the model being a ninth better.** They must be excluded, and the exclusion
+must be stated rather than assumed — a reader cannot tell from a `MAPE` figure which cells went into
+it.
+
+#### 🔴 A TRAP THAT CAUGHT THIS SESSION'S OWN FIRST PASS, RECORDED SO THE SCORING CODE DOES NOT REPEAT IT
+
+In `tus_00age`, **`PTP_RT` is a JSON number and `TIME_SP` / `PTP_TIME` are JSON *strings* in `h:mm`
+form** — `"3:24"`, `"0:51"`, `"0:00"`. The first pass of this check parsed all three as floats. It did
+not crash and it did not return anything obviously wrong; it returned a **complete, plausible,
+entirely false table** in which `TIME_SP` appeared to be 79.9 % zeros and to top out at 24. The error
+was only caught by printing the raw payload. 🔴 **Scoring code that reads these tables with a float
+cast will silently truncate every duration to whole hours and will still produce a `MAPE`.** This is
+a `Step 6` implementation requirement, not a note: the parse must assert the unit and reject a value
+whose form does not match it. Recorded under this project's standing rule that a check nobody has
+seen fail is not evidence.
+
+#### 🔴 D-S6-3 — FOR THE AUTHOR. `prereg.md` IS FROZEN AND HAS **NOT** BEEN EDITED.
+
+md5 **`e4243e07cdd80c9c846b91f40e3e8c45`** is intact, `outputs_step6/prereg.md.md5` is untouched, and
+`G4.14` is unaffected — the `it` fold on the GPU is not disturbed by this entry. **As with D-S6-2,
+these corrections exist only as declared post-hoc errata, here, and are never applied by editing the
+frozen file.** Four things need a ruling, and **none is taken here**:
+
+1. **Zero-reference cells.** (a) Exclude them and report the excluded count per fold — simple, but
+   the excluded fraction differs 12-fold between `uk` and `it`; (b) report **sMAPE** alongside, which
+   is defined at zero; (c) keep `MAPE` for non-zero cells and report the zero cells as a separate
+   **hit/miss rate** — did the model also put ~0 there? 🔴 **Recommend (c):** it discards nothing, it
+   is defined everywhere, and "the model correctly generates *no* night-time employment" is a real
+   result rather than a discarded cell.
+2. **Which unit `MAPE` is computed on** where a table publishes several. Recommend **`PTP_RT`
+   only** — it is the one unit common to all five tables, it is the least rounding-damaged, and it is
+   the quantity the occupancy claim is actually about.
+3. **`TOTAL` rows excluded**, and the exclusion stated in the paper. Recommend accepting; there is no
+   argument for keeping a constant.
+4. **Whether the per-fold rounding floors are reported** next to the per-fold `MAPE`. Recommend yes,
+   as one line — a reader cannot otherwise tell that `1.87 %` and `3.42 %` of the three numbers were
+   never available to the model.
+
+**What this check did NOT do.** It did not compare the tables' *contents* against anything we hold —
+no diary, no generated population, no null. It establishes what the metric can and cannot mean; it
+says nothing yet about whether we will clear the bar. **The raked-donor null of §5 has still never
+been constructed, and it, not `MAPE`, is the pre-registered bar.**
+
+---
+
+### 2026-08-20 (evening) — 🟢 **THE RAKED-DONOR NULL EXISTS. `G6.1`'s PRE-REGISTERED BAR IS NO LONGER "NEVER BUILT" — 23/23 GREEN, EVERY GUARD SEEN FIRING. 🔴 AND BUILDING IT EXPOSED A DEPENDENCY THAT IS IN NEITHER DOCUMENT: THE BAR IS BLOCKED ON STEP 5.1.**
+
+Built locally in the `it` GPU window. **No cluster compute, no model, no corpus file, nothing
+submitted.** `prereg.md` not touched — md5 `e4243e07cdd80c9c846b91f40e3e8c45`, verified against its
+sidecar while this entry was written.
+
+| file | lines | md5 |
+|---|---:|---|
+| `../tools/4thJ_step6_rakeddonor.py` | 173 | `f1d18ba70c506011eb2440a4eda21019` |
+| `../tools/4thJ_step6_rakeddonor_selftest.py` | 133 | `f3fdf5e9ca5175e593ae674917e6ba03` |
+
+**Why this one first, ahead of anything else still open in Step 6.** §5 of the frozen pre-registration
+names it in bold as **THE BAR**, and every progress entry since has recorded it as never built. `G6.4`'s
+MAPE — the thing `FINDING 39` spent this morning on — is explicitly *not* the claim; §5 is.
+
+#### 🔴 The dependency nobody wrote down
+
+`rake()` needs **the held-out country's published marginals**: `prereg.md` §5 requires *"the same
+marginals the model was given, the same geography, the same strata"*. Those are Step 5 work item 5.1's
+deliverable, `outputs_step5/marginals_<country>.csv` + `marginals_provenance.md`.
+
+**`outputs_step5/` is empty. Work item 5.1 has never been started.**
+
+So **`G6.1`'s pre-registered bar cannot be computed until Step 5.1 exists**, and neither
+`4thJ_05_populationLinkage.md` nor this document says so — Step 5's own "what this step blocks" line
+names only Step 7. **This is not a code gap and no amount of Step 6 work closes it.** It also raises
+the priority of 5.1 well above "populate the people for Step 7": it is on the critical path of the
+headline gate.
+
+#### 🟢 The prereg perturbation is now DEMONSTRATED, before any fold is scored
+
+The Step 6 validation table's first perturbation reads:
+
+> Score the **raked-donor null against itself** as if it were the model → **`G6.1` must report exactly
+> zero margin** — and a `<= 0` comparison would pass it. 🔴 The comparison must be strict `>`.
+
+That is now a passing test rather than a plan. The self-test scores the null against itself, asserts
+the margin is **exactly `0.0`**, asserts `G6.1` returns **FAIL**, and then asserts that the `>=`
+reading **would have returned PASS** — so `V6.c` is shown to be load-bearing rather than merely
+stated. 🔴 **A perturbation demonstrated before the runs is worth more than the same perturbation
+demonstrated after them**, and this one cost no GPU at all.
+
+#### The three ways this null could have been built favourably, each refused in code
+
+`prereg.md` §5 says *"Construction, so it cannot be built favourably"* and then gives one sentence of
+construction. These are the three ways that sentence can be violated, each now a hard failure:
+
+1. 🔴 **Raking onto different marginals from the model's** — *"not a null, it is a handicap"*.
+   `rake()` requires a non-empty `marginals_source` provenance label and `score_margin()` **refuses to
+   compare** two values whose labels differ. A blank label is refused too: a provenance field nobody
+   fills is not provenance (`V5.b`'s reasoning).
+2. 🔴 **Leaving the held-out country in the donor pool.** `rake()` FAILS if any donor carries it. A
+   self-donor would make the null unbeatable *for the right reason* and the claim unfalsifiable — and
+   nothing in the resulting number would look wrong.
+3. 🔴 **A non-strict comparison.** `V6.c`, above.
+
+**Two more guards that exist because the failure would otherwise be silent:**
+
+* **A target category no donor can supply is a hard FAIL, never a silent drop.** IPF cannot create a
+  category from nothing; dropping it would quietly rake onto *different* marginals than the model
+  received — violation 1 arriving through the back door. This is the real one to watch when the
+  marginals finally land, because the UK's `strat_hh_type = unknown` (D-S3-14) is exactly the kind of
+  category a published census table will not have.
+* **Non-convergence is reported as a failure, never as a result.** Demonstrated on a structurally
+  infeasible pool where sex and day type are perfectly correlated: IPF oscillates, the worst margin
+  stays **22 pp** against a 0.5 pp tolerance, and `rake()` raises instead of returning the last
+  iterate. 🔴 A raking routine that returns its final iterate regardless is the single easiest way to
+  ship a null that was never actually raked.
+
+The tolerance is **±0.5 pp, reused from `G5.1` deliberately** — a raked margin is a fitted margin and
+is held to the same bar the synthetic population is held to, rather than to a looser one chosen here.
+
+#### What this does NOT close
+
+* **The null has never been run on real data**, because it cannot be (see the dependency above).
+  Twenty-three unit tests on synthetic pools are not a null.
+* **`score_margin()` does not choose the metric.** It applies `V6.c` to two values someone else
+  computed. Which quantity `G6.1` compares is still `G6.1`'s business and is unresolved — and
+  `FINDING 39`/`D-S6-3` are open on exactly that question for `G6.4`.
+* **`V6.b` is not satisfied by this module.** Asserting that the scorer and the gate read the *same
+  table* needs both of them to exist; only one does.
+* The other two nulls — pooled all-country average (`G6.3`) and nearest-neighbour country (`G6.2`) —
+  are **not** built. They are secondary by `RL08`/author decision, but they are still owed.
+
+---
+
+### 2026-08-20 (evening) — 🟢 **`D-S6-3` ITEM 1 RULED (c): `MAPE` ON NON-ZERO CELLS, AND THE ZERO CELLS BECOME THEIR OWN HIT/MISS RESULT. 🔴 THAT CREATES A NEW TOLERANCE WHICH MUST BE FIXED NOW, BEFORE ANY NUMBER IS SEEN.**
+
+**Ruled by the author 2026-08-20.** The zero-reference cells — `4.0 % (ES) / 0.4 % (UK) / 5.1 % (IT)`
+of time-of-day cells, where Eurostat publishes a literal `0.0` and `MAPE` has no value — are **not
+excluded and not patched**. They are scored separately:
+
+* **`MAPE` is computed over cells with a non-zero published reference.** Unchanged threshold, unchanged
+  arm, and no ε-floor or sMAPE substitution — every one of those is a basis choice and they disagree.
+* **The zero cells become a hit/miss rate:** did the model also put approximately zero there? 🟢 *"The
+  model correctly generates no night-time employment"* **is a result**, and (a) would have thrown it in
+  the bin while reporting a `12-fold` difference in what each fold binned.
+
+#### 🔴 The ruling's cost, and it must be paid before results exist
+
+**"Approximately zero" is a tolerance, and it does not exist yet.** Setting it after the model's
+night-time employment rates are visible would be exactly the defect this project refuses everywhere
+else — a threshold chosen while looking at the number it judges. **It must be pre-registered now.**
+
+**Proposed, for the author to confirm or replace, and either way to fix before any run:**
+
+| | proposal | why this and not something else |
+|---|---|---|
+| **hit definition** | a zero cell is a **HIT** when the model's rate for it is `< 0.5 %` of the population in that cell's stratum-hour | It is the publication rounding grain, not an invented number: Eurostat's own floor is already `1.87 % (UK)` to `3.42 % (IT)` on `PTP_RT`, so `0.5 %` is comfortably inside what the source could not have resolved anyway. |
+| **reporting** | **per fold, as a fraction — `hits / zero-cells` — with the denominator printed** | The denominators are `4.0 / 0.4 / 5.1 %`, a `12-fold` spread. A bare percentage across folds would be dominated by `it` and `es` and would say almost nothing about `uk`. 🔴 **Never average the three.** |
+| **gate or not** | **REPORTED, NOT THRESHOLDED**, on its first appearance | No prior exists for what this rate should be. Thresholding it now would be inventing a bar; reporting it makes the bar available to whoever comes next, which is what `G4.10` already does in Step 4. |
+
+#### What is still open in `D-S6-3` — items 2, 3 and 4
+
+Only item 1 was put to the author and only item 1 is ruled. **Still open:**
+
+2. **Which unit `MAPE` is computed on** where a table publishes several. Recommendation stands:
+   **`PTP_RT` only** — the one unit common to all five tables, the least rounding-damaged, and the
+   quantity the occupancy claim is actually about. 🔴 **Note the trap attached to it:** two of the three
+   units are `h:mm` **strings**, and a float cast truncates to whole hours **while still printing a
+   number**. It caught this session's own first pass.
+3. **`TOTAL` rows excluded** and the exclusion stated. Recommendation stands: accept — `TOTAL` is a
+   constant `100` across `11.1 %` of the startime table and would flatter any `MAPE` that included it.
+4. **Per-fold rounding floors reported** next to the per-fold `MAPE`. Recommendation stands: yes, one
+   line — otherwise no reader can tell that `1.87 %` and `3.42 %` of those numbers were never available
+   to the model in the first place.
+
+**`prereg.md` IS FROZEN AND WAS NOT EDITED.** md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified against
+`outputs_step6/prereg.md.md5` while this entry was written. As with `D-S6-2`, this ruling exists **only
+as a declared post-hoc erratum, here** — the frozen file is never touched and `G4.14` is unaffected.
+
+🔴 **And the standing caveat, unchanged by any of this:** `MAPE` is **not** the pre-registered bar. The
+raked-donor null of §5 is, its implementation is green at `23/23`, and it is **blocked on Step 5.1**.
