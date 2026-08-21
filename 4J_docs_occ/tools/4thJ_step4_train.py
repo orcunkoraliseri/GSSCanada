@@ -184,8 +184,9 @@ class DiaryDataset(Dataset):
         pad_id = tokenizer.pad_token_id
         for r in recs:
             text = r["text"]
-            # strip_eor_1pct is applied ONCE, to train_recs, before G4.7 reads them
-            # (FINDING 5). Doing it here as well would corrupt a second 1 %.
+            # strip_eor_1pct is applied ONCE, to train_recs, before G4.15 reads them
+            # (FINDING 5; the gate was called G4.7 until D-S4-7). Doing it here as well
+            # would corrupt a second 1 %.
             prefix, body = split_prefix_body(text)
             if perturbation == "no_prefix":
                 prefix = ""
@@ -246,14 +247,45 @@ def gate_g4_5(loader, pad_id):
 
 
 # ---------------------------------------------------------------------------
-# G4.7 -- termination
+# G4.15 -- termination of the TRAINING CORPUS        (D-S4-7 (a), 2026-08-20)
 # ---------------------------------------------------------------------------
-def gate_g4_7(recs):
+# 🔴 FINDING 46. This reading used to be called G4.7. It is taken on `train_recs`,
+# before a single optimiser step, so it can only ever measure the Step 3 BUILD -- it
+# never once looked at anything the model produced. It read 31560/31560 at the start
+# of the `it` fold, whose epoch 1 then generated 599/600 terminated diaries, and no
+# gate in the battery saw that. D-S4-7 splits the two readings apart. The corpus check
+# keeps its threshold and its exact arithmetic and becomes G4.15; G4.7 moves to the
+# generated sample below, which is what its own row in the gate table always claimed
+# ("Generation that never stops").
+def gate_g4_15(recs):
     n = len(recs)
     ok = sum(1 for r in recs if r["text"].rstrip().endswith(TH.G4_7_EOR))
     frac = ok / float(n) if n else 0.0
-    return {"gate": "G4.7", "verdict": "PASS" if (n > 0 and frac >= TH.G4_7_REQUIRED_FRACTION) else "FAIL",
-            "n": n, "n_terminated": ok, "fraction": frac}
+    return {"gate": "G4.15",
+            "verdict": "PASS" if (n > 0 and frac >= TH.G4_7_REQUIRED_FRACTION) else "FAIL",
+            "n": n, "n_terminated": ok, "fraction": frac,
+            "basis": "TRAINING CORPUS, read once before training starts",
+            "note": "an empty corpus would make this vacuous, so n == 0 FAILs (V4.f)"}
+
+
+# ---------------------------------------------------------------------------
+# G4.7 -- termination of the GENERATED SAMPLE        (D-S4-7 (a), 2026-08-20)
+# ---------------------------------------------------------------------------
+# Scored on every validation epoch and on every mid-epoch probe, against the same
+# threshold the corpus check used (TH.G4_7_REQUIRED_FRACTION = 1.0). 🔴 Re-pointing it
+# is not a hypothetical: replayed against the logs already on disk this gate reads
+# PASS/PASS on es and uk and 600/600 then 599/600 on `it`, i.e. it FAILS the `it` fold
+# at epoch 1. That is the first model-side defect any Step 4 gate has caught, and it
+# was visible in the printed log for weeks with nothing scoring it.
+def gate_g4_7(gen_texts):
+    n = len(gen_texts)
+    ok = sum(1 for t in gen_texts if t.rstrip().endswith(TH.G4_7_EOR))
+    frac = ok / float(n) if n else 0.0
+    return {"gate": "G4.7",
+            "verdict": "PASS" if (n > 0 and frac >= TH.G4_7_REQUIRED_FRACTION) else "FAIL",
+            "n": n, "n_terminated": ok, "fraction": frac,
+            "basis": "GENERATED sample, scored every validation epoch",
+            "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)"}
 
 
 # ---------------------------------------------------------------------------
@@ -787,6 +819,10 @@ def g41_midepoch_probe(model, tokenizer, val_dl, val_recs, real_ref, delim_ids,
         gen_batch=args.gen_batch, ref_recs=real_ref)[1]
     gen_entropy = activity_entropy_nats(gen_texts)
     g1 = gate_g4_1([r["text"] for r in real_ref], gen_texts)
+    # D-S4-7: the probe generates, so the probe can score G4.7. `it` failed at the
+    # probes and at epoch 1 together; a termination reading at the same checkpoints is
+    # what tells a reader whether those two facts move together.
+    g7p = gate_g4_7(gen_texts)
 
     detail = ("V4.a: only %s scorable strata" % g1.get("n_scorable_strata")
               if "reason" in g1 else
@@ -795,9 +831,11 @@ def g41_midepoch_probe(model, tokenizer, val_dl, val_recs, real_ref, delim_ids,
                  g1.get("n_above_band"), g1.get("band"),
                  g1.get("worst_low") or float("nan"),
                  g1.get("worst_high") or float("nan"), g1.get("which_end")))
-    print("  [ep %d frac %.2f] G4.1 %s [%s]  delim=%.4f content=%.4f entropy=%.3f  %s"
+    print("  [ep %d frac %.2f] G4.1 %s [%s]  delim=%.4f content=%.4f entropy=%.3f  "
+          "G4.7 %s [%d/%d]  %s"
           % (ep, frac, g1["verdict"], detail, dv["delimiter_loss"], dv["content_loss"],
-             gen_entropy, role), flush=True)
+             gen_entropy, g7p["verdict"], g7p["n_terminated"], g7p["n"], role),
+          flush=True)
 
     return {"basis": "D-S4-5 mid-epoch checkpoint", "epoch": ep, "frac": frac,
             "step": step, "n_steps_in_epoch": n_steps,
@@ -850,6 +888,16 @@ def main():
         "collapse_content", "sequential_countries", "drop_revision", "leak_1pct",
         "edit_prereg", "no_prefix", "freeze_adapter",
     }
+    # 🔴 D-S4-7 changed what `strip_eor_1pct` fells. It edits `train_recs`, so since the
+    # re-point it is G4.15's lever, NOT G4.7's -- the perturbation table in
+    # `4thJ_04_finetuneLLM_val.md` says so, and a run scored against the old table would
+    # credit the fall to the wrong gate.
+    # G4.7's own lever lives OUTSIDE this trainer, in `4thJ_step4_g47_coverage.py`
+    # (`strip_eor_gen`, rate 0.01, scored through `4thJ_step4_genperturb.gate_g4_7`).
+    # It is not duplicated here on purpose: felling a generated-side gate from inside
+    # the trainer costs a full ~5-hour training run per fold to demonstrate a detector
+    # whose rule is `n_terminated == n`, and the standalone script reads a
+    # `generated_*.jsonl` that already exists. One lever, one implementation.
     if args.perturbation is not None and args.perturbation not in KNOWN_PERTURBATIONS:
         fail("unknown --perturbation %r. Known: %s. A name that matches nothing would "
              "have trained a CLEAN run and been scored as a perturbation that did not "
@@ -960,12 +1008,15 @@ def main():
 
 
     # 🔴 FINDING 5, found while wiring the battery: `strip_eor_1pct` was applied inside
-    # DiaryDataset, but G4.7 is scored on `train_recs` -- so the perturbation removed
+    # DiaryDataset, but the corpus terminator gate is scored on `train_recs` -- so the
+    # perturbation removed
     # <eor> from what the model SAW while the gate went on reading unmodified records and
     # PASSED. The perturbation would have been logged as "did not fell its gate" when in
     # fact it never reached it. The corruption is moved here, to the records the gate
     # actually reads, which is also the honest place for it: the claim under test is that
-    # a corpus with missing terminators is detected.
+    # a corpus with missing terminators is detected. 🔴 Since D-S4-7 that gate is
+    # G4.15, not G4.7: this lever edits the CORPUS and cannot reach the generated
+    # sample, so it must be credited to G4.15 in the perturbation table.
     if args.perturbation == "strip_eor_1pct":
         rr = random.Random(TH.SEED)
         n_stripped = 0
@@ -1052,10 +1103,13 @@ def main():
               "values and every delimiter and every <eor> is left in place"
               % (coll_act, coll_act2, n_eps_done, n_flat, len(train_recs), n_skipped))
 
-    # ---- G4.7 on the training completions ----
-    g7 = gate_g4_7(train_recs)
-    print("G4.7 %s  %d/%d completions terminate with %s"
-          % (g7["verdict"], g7["n_terminated"], g7["n"], TH.G4_7_EOR))
+    # ---- G4.15 on the training completions (was G4.7 until D-S4-7) ----
+    g15 = gate_g4_15(train_recs)
+    print("G4.15 %s  %d/%d TRAINING completions terminate with %s"
+          % (g15["verdict"], g15["n_terminated"], g15["n"], TH.G4_7_EOR))
+    print("      D-S4-7: this is the CORPUS reading. G4.7 is now scored on the "
+          "GENERATED sample at every validation epoch, and it is the only one of the "
+          "two that can see a model that does not stop.")
 
     # ---- model ----
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -1188,7 +1242,7 @@ def main():
     detectors = {"run": run_name, "fold": args.fold, "held_out_country": args.fold,
                  "leg": args.leg, "run_type": args.run_type,
                  "perturbation": args.perturbation,
-                 "gates_at_start": {"G4.14": g14, "G4.13": g13, "G4.7": g7,
+                 "gates_at_start": {"G4.14": g14, "G4.13": g13, "G4.15": g15,
                                     "G4.8": g8, "G4.5": g5},
                  "epochs": []}
 
@@ -1358,7 +1412,10 @@ def main():
                            "both arms, V4.d)" % (TH.G4_2_DELIM_LOSS_HALT,
                                                  TH.G4_2_ACT_ENTROPY_HALT_NATS)}
 
-        gen_term = sum(1 for t in gen_texts if t.rstrip().endswith(TH.G4_7_EOR))
+        # 🔴 D-S4-7: this count was computed and PRINTED every epoch and scored by
+        # nothing. It is now G4.7's own reading.
+        g7 = gate_g4_7(gen_texts)
+        gen_term = g7["n_terminated"]
         row = {
             "run": run_name, "fold": args.fold, "held_out_country": args.fold,
             "leg": args.leg, "run_type": args.run_type,
@@ -1371,13 +1428,14 @@ def main():
             "g4_1_verdict": g1["verdict"],
             "g4_1_n_strata": g1.get("n_scorable_strata"),
             "g4_2_verdict": g2["verdict"],
+            "g4_7_verdict": g7["verdict"],
             "generated_terminated": gen_term, "generated_n": len(gen_texts),
         }
         for c, v in probe_losses.items():
             row["probe_loss_%s" % c] = v
         metrics_rows.append(row)
         detectors["epochs"].append({"epoch": ep, "delim_vs_content": dv,
-                                    "G4.1": g1, "G4.2": g2,
+                                    "G4.1": g1, "G4.2": g2, "G4.7": g7,
                                     "probe_content_loss": probe_losses,
                                     "generated_terminated": gen_term,
                                     "generated_n": len(gen_texts)})
@@ -1395,9 +1453,10 @@ def main():
                         g1.get("worst_low") or float("nan"),
                         g1.get("worst_high") or float("nan"), g1.get("which_end")))
         print("  [epoch %d] delim=%.4f content=%.4f entropy=%.3f  G4.1 %s [%s]  G4.2 %s  "
-              "gen-terminated %d/%d"
+              "G4.7 %s [gen-terminated %d/%d]"
               % (ep, dv["delimiter_loss"], dv["content_loss"], gen_entropy,
-                 g1["verdict"], g1_detail, g2["verdict"], gen_term, len(gen_texts)),
+                 g1["verdict"], g1_detail, g2["verdict"], g7["verdict"], gen_term,
+                 len(gen_texts)),
               flush=True)
         # 🔴 D-S4-4: the arm's own decomposition, on its own line. `delim=` above is the
         # FORCED basis; these are the number it replaced and the token it dropped, so a

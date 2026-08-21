@@ -370,7 +370,7 @@ corpus.
 
 | | question | recommendation |
 |---|---|---|
-| **(a)** | `G7.13`'s indoor test | 🔴 **Re-point to `LOC == "at_home"`.** Additive, no threshold moves, and it *fixes* the silent Italy 11/12 loss the code form would have caused. The gate's own "read the shipped list, not a copy" clause is unaffected. |
+| **(a)** 🟢 **RULED 2026-08-20 (a), APPLIED** | `G7.13`'s indoor test | 🔴 **Re-point to `LOC == "at_home"`.** Additive, no threshold moves, and it *fixes* the silent Italy 11/12 loss the code form would have caused. The gate's own "read the shipped list, not a copy" clause is unaffected. |
 | **(b)** | `000` in the grammar | 🔴 **Declare the `ACT` alphabet as 158 ∪ `{000}` = 159 in work item 7.1, and amend `G7.2` to match**, before any grammar is compiled. Deciding this *after* a batch exists means deciding it while looking at a firing rate. |
 | **(c)** | whether `000` episodes should reach the schedule builder at all | Genuinely open, and **separate from (b)**. `000` has a duration but no activity, so it has no internal gain and no appliance trigger. Treating it as at-home-idle, as away, or as a gap are three different annual energies. **Recommend: carry it explicitly as its own state and report how much time it is** (0.43 % of episodes) rather than folding it into any existing class. |
 
@@ -613,3 +613,97 @@ supported by measurement rather than by argument: `at_home` is `71.441 %` of cor
 re-pointed test is abundant and non-vacuous — unlike `LOC == 11`, whose presence is identically zero
 because `LOC` is a string. **`prereg.md` not touched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified
 against its sidecar.
+
+---
+
+### 2026-08-20 (execution pass) — items 9 and 10 ruled `(a)` and applied
+
+🟢 **Item 9 — `G7.13` now reads `(LOC == "at_home") AND (ACT not in OUTDOOR_AT_HOME)`.** The old
+form compared a string against the integer `11`, which is `False` for every episode ever written,
+so the gate reported **presence identically zero for every occupant of every dwelling** and would
+have done so while printing a clean verdict (`FINDING 42`).
+
+🟢 **Checked against the corpus rather than assumed.** `loc_class` has exactly four values —
+`at_home`, `other_place`, `private_transport`, `public_transport` — and the re-pointed rule
+reproduces the shipped `indoor_presence` column on all **2,022,141** episodes that carry an
+activity: `1,352,977` indoor, with `10,436` at-home-but-not-indoor episodes that are exactly the
+four `OUTDOOR_AT_HOME` codes `322`, `341`, `342`, `344`. The gate's "read the shipped list, not a
+copy" clause is untouched, and so is its threshold.
+
+🔴 **And the check found something the ruling does not mention: the rule is not defined for the
+null activity.** `1,927` at-home episodes carry a NULL `act` (ES 290 / IT 105 / UK 1,532). The
+shipped `indoor_presence` is `NA` for exactly those, while `ACT not in OUTDOOR_AT_HOME` is
+vacuously true and returns **PRESENT**. In generated text the case arrives as `000`, which
+`D-S7-1 (c)` ruled is a state in its own right, and a person at home doing an unrecorded activity
+**is** present — so PRESENT is the right answer. 🟢 **But it is an answer, not an accident of the
+`not in` operator, and it is now written into the gate's own row.** ⚪ The affected share is
+country-skewed (`uk` carries `79 %` of them), which is why it is recorded rather than waved past.
+
+🟢 **Item 10 — the `ACT` alphabet is declared as 159.** Re-derived from the shipped file:
+`activity_target_list.csv` holds **158 rows, 158 distinct `target_code`s, and `000` is not one of
+them**. `000` is the pre-registered null activity (`D-S3-9`, 8,709 episodes), so a grammar built
+from that file alone would forbid a code the corpus itself defines. The alphabet is
+`158 ∪ {000} = 159` in `G7.2`, `G7.10` and the grammar construction.
+
+⚪ **This ruling records what the code already does.** `tools/4thJ_step7_grammar.py` declares the
+union in the module itself, at the point of construction, and its selftest is green at 44/44. The
+documents were the things out of step, and they are now in step.
+
+🔴 **Neither gate has been RUN.** `G7.13` has no implementation yet — it is specified, not built —
+and `G7.10` still has no XGrammar back-end. Nothing here is a verdict about the model.
+
+---
+
+### 2026-08-21 — 🟢 **`G7.13` IS BUILT. IT WAS THE ONE GATE IN THIS STEP THAT WAS SPECIFIED AND NOT IMPLEMENTED, AND `FINDING 42` IS NOW A REGRESSION TEST RATHER THAN A MEMORY.**
+
+`tools/4thJ_step7_indoor.py` + `tools/4thJ_step7_indoor_selftest.py`. **36 of 36 green.** Local, no
+cluster, no model, no generated batch.
+
+The 2026-08-20 entry closed with *"`G7.13` has no implementation yet — it is specified, not built"*.
+It is built.
+
+#### What it implements, exactly as `D-S7-1` item 9 (a) ruled it
+
+    presence  <=>  (LOC == "at_home")  AND  (ACT not in OUTDOOR_AT_HOME)
+
+reading the exclusion list **live** from `Step2_docs/outputs_step2/outdoor_at_home.csv` — the four
+`D-S2-4` garden codes `322`, `341`, `342`, `344`, md5 `679518c7f626bd5d408adc96b5a1ff43`. The module
+carries **no literal copy of a code**, and the selftest asserts that by grepping its own source.
+
+#### 🔴 The three guards, each exercised rather than asserted
+
+* **`V7.c` — the pre-registered perturbation lands.** The gate re-reads the shipped file itself and
+  FAILs if the caller's set differs by so much as one code. Tested in both directions: one code
+  removed, one code added. A missing shipped file **raises** rather than falling back to a copy,
+  because there is deliberately no copy to fall back to.
+* 🔴 **`FINDING 42`'s signature is refused by construction.** A presence signal that is CONSTANT —
+  all-absent or all-present — FAILs. That is the exact shape the old `LOC == 11` produced: a string
+  compared against an integer, silently `False` for every episode ever written, **presence identically
+  zero for every occupant of every dwelling**. A building with nobody in it never fails a schedule
+  gate; it fails the paper. The selftest reproduces the old form and shows it matching **0 of 9**
+  episodes of a normal batch while the new form matches a non-zero number of the same episodes.
+* **An empty batch FAILs rather than skipping** (`V5.b`'s argument), as does a batch in which no
+  episode is `at_home`, because then the activity half of the rule was never reached.
+
+#### The two readings written down rather than left to an operator
+
+1. **`000` at home is PRESENT.** `D-S3-9`'s null activity, made its own state by `D-S7-1 (c)`. A person
+   at home doing an unrecorded activity is inside the conditioned volume. It is counted **separately**
+   in the gate's report so the reading is visible in every run, not inferred from a `not in`.
+2. **`LOC` unknown is NOT at home.** The decoder returns `None`; an unknown location is not evidence of
+   presence, and reading it as one would inflate every schedule in the direction that flatters the
+   paper.
+
+⚪ A record whose durations do not sum to 1,440 is **refused, never padded** — a short diary padded to
+a day is an occupancy dip nobody would ever trace back to here.
+
+#### 🔴 What has NOT been shown
+
+**`G7.13` has never been run against real records.** The 36 selftest cases are hand-built dicts. The
+corpus-level agreement quoted in the module docstring — reproducing the shipped `indoor_presence`
+column on all 2,022,141 episodes carrying an activity, differing on 1,927 at-home `NULL`-act episodes
+— is **the validation document's measurement of 2026-08-20, quoted and attributed, not re-derived
+here**; the corpus is on Speed and was not fetched. Running it over the corpus, and then over a
+generated batch, is owed.
+
+⚪ `G7.10` still has no XGrammar back-end, unchanged.

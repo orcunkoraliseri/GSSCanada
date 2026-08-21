@@ -1,0 +1,15 @@
+99094478f6ceb1efd6bb413fc4ac3a67 *tus_00age_ES.json
+61b55e5119e229ec82e42a885fc55a63 *tus_00age_IT.json
+7b811817b41aa07b85d9ccfa3c94a86e *tus_00age_UK.json
+3c1469c7cbd71d284ab8ce344ca56f31 *tus_00educ_ES.json
+62c6a6224b92f2ef2593f7468fa38b27 *tus_00educ_IT.json
+7738320625a693e46b14aae7e3ffd03b *tus_00educ_UK.json
+6a23581a98ef7df1849478cb45614266 *tus_00hhstatus_ES.json
+16108789b6efbafecdd70501a838211c *tus_00hhstatus_IT.json
+54135fe5ea912f603323d7c1480dae6e *tus_00hhstatus_UK.json
+4c8cb183001f2ce4f52d961445edeb55 *tus_00selfstat_ES.json
+366ecbb9d3f4a16a9978e208604ec080 *tus_00selfstat_IT.json
+765491b63facb7868861e1e4a7e87026 *tus_00selfstat_UK.json
+9cbfe8e757486a438f2f8da30a1b80de *tus_00startime_ES.json
+3d985230d1a04dd378366eb0ecc2304c *tus_00startime_IT.json
+23b7dda626a7e8a5d1fa7c40773c32e9 *tus_00startime_UK.json

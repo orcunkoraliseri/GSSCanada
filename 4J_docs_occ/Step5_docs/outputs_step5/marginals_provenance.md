@@ -21,6 +21,13 @@ different bases and are not interchangeable.**
 
 ---
 
+🔴 **SUPERSEDED 2026-08-21 BY PART IV (§16-§22) — ITALY IS BUILT AND STEP 5.1 IS 3 OF 3.** The table
+below is left exactly as it stood on 2026-08-20 because this document is append-only; its `it` row is
+the only line it gets wrong, and Part IV is where the Italian route, its cross-checks and the two
+questions it leaves the author are recorded. `marginals_it.csv` md5 `70dcf10cca73b9c54e4a2d8935dc620c`,
+`econ_11plus_it.csv` md5 `449ba212f17ba9b73828bbc227d89ec8`. **`G6.1` is now computable on all three
+folds.**
+
 ## STATUS, 2026-08-20 (after the three rulings)
 
 | country | status | file |
@@ -887,3 +894,539 @@ crosswalk value in all three countries, and in Italy it is the whole `11-14` ban
 
 ⚪ Items 1, 4 and 5 of Part II §11 are closed by §12, §13 and §14 respectively. Item 2 (Italy) and
 item 3 (`D-S5-3`) are carried forward — item 3 only as the age-15 residue.
+
+---
+---
+
+# PART IV — ITALY, 2026-08-21. 🟢 **BUILT. STEP 5.1 IS 3 OF 3.**
+
+## 16. The route, and 🔴 the one question it puts to the author
+
+`esploradati.istat.it` was retried again on 2026-08-21 and is still dead: `193.204.90.13`, TCP 443
+connect timeout, `000` after 15 s. `dati.istat.it` 302s to `avvisi.istat.it/IdotStat/`,
+`sdmx.istat.it` and `dati-censimentopopolazione.istat.it` both 302 into `esploradati`. **Four
+attempts across three days. The warehouse route is dead and is treated as dead.**
+
+Two routes are alive, and Italy is built from both:
+
+| | source | what it supplied |
+|---|---|---|
+| **A** | **ISTAT static census-tract release** — `dati-cpa_2011.zip`, 52,442,848 bytes, md5 `bab8d744088761397c09ef8c70ca53d4`, from `https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip`. 366,863 tracts x 140 variables, all 20 regions. **This is the national office, i.e. `D-S5-1` route 3.** | the private-household base (`PF2`), **all six economic bands** (`P60 P61 P128 P130 P131 P135 P139`) |
+| **B** | **Eurostat 2011 Census Hub**, dissemination API, `format=JSON&lang=EN&geo=IT` | single-year age (`cens_11ag_r3`), sex-by-age, the collective-quarters profile (`cens_11hou_r2`), **household type (`cens_11htts_r2`)** |
+
+### 🔴 16.1 `D-S5-1` says "Eurostat is not admissible". Here is why that reason does not reach these four tables — and where it still might.
+
+The route decision rejected Eurostat on **two stated grounds**, both recorded in the implementation
+doc's 2026-08-20 evening entry:
+
+1. *"Eurostat merges homemaker with other-inactive (`CAS.L` category `2.4`, splitting it optional)"*
+   — a defect **in the economic-status field**.
+2. *"drops the UK from the 2021 round entirely"* — a defect **for the UK, in the 2021 round**.
+
+**Neither ground touches what Eurostat supplied here.** Economic status was NOT taken from Eurostat —
+it comes from ISTAT, and ISTAT publishes a `casalinghe` band, so **Italy is fitted on SIX economic
+bands where Spain has five** (`FINDING 51`). Ground 1 is precisely the failure Italy does not have.
+Ground 2 is about the UK and about 2021; this is Italy and 2011.
+
+🔴 **What is nevertheless an author call, and is not being taken here:** the ruling's *letter* names
+route 3, the national offices. Three of the four Italian fields lean on Eurostat, and **`strat_hh_type`
+is Eurostat-ONLY** — ISTAT's tract file publishes households by SIZE (`PF3..PF8`) and never by TYPE,
+so the five composition categories are not derivable from the national office at all. See §19.
+
+### 🟢 16.2 The two routes were cross-checked before either was used, and they are the same numbers
+
+Fifteen quantities are computable from both routes. **All fifteen are identical to the person** — not
+to a rounding, to the person:
+
+| quantity | value | Eurostat | ISTAT |
+|---|---|---|---|
+| total population | 59,433,744 | `cens_11ag_r3` TOTAL | `P1` |
+| males | 28,745,507 | sex=M | `P2` |
+| females | 30,688,237 | sex=F | `P3` |
+| ages 10-14 | 2,795,020 | single-year sum | `P16` |
+| ages 15-24 | 5,921,814 | single-year sum | `P17+P18` |
+| ages 25-34 | 7,056,915 | single-year sum | `P19+P20` |
+| ages 35-44 | 9,359,751 | single-year sum | `P21+P22` |
+| ages 45-54 | 8,918,578 | single-year sum | `P23+P24` |
+| ages 55-64 | 7,465,671 | single-year sum | `P25+P26` |
+| ages 65-74 | 6,232,559 | single-year sum | `P27+P28` |
+| ages 75+ | 6,152,413 | single-year + `Y_GE100` | `P29` |
+| labour force | 25,985,295 | `wstatus=ACT` | `P60` |
+| employed | 23,017,840 | `wstatus=EMP` | `P61` |
+| unemployed | 2,967,455 | `wstatus=UNE` | `P60-P61` |
+| inactive incl. under-15 | 33,448,449 | `wstatus=INAC` | `P128+P14+P15+P16` |
+
+**This is the evidence, and it is the reason Eurostat is not being treated here as a second-best
+source.** It is the same tabulation, transmitted by ISTAT under Regulation (EC) 763/2008. The builder
+`tools/4thJ_step5_build_it.py` **refuses to write anything if any one of the fifteen disagrees**
+(`need()` raises `BuildError`), so the agreement is a gate, not a note.
+
+🔴 **The one place they do NOT agree** is the private/collective boundary — §18.
+
+## 17. `P139` — a published label that is wrong, caught by arithmetic and not by reading
+
+ISTAT's own `tracciato_2011_sezioni.csv` defines:
+
+> `P139;Popolazione residente - totale di 15 anni e più percettori di reddito da lavoro o capitale`
+
+"income from **work** or capital". A person **outside the labour force** cannot be drawing income from
+work, so the label contradicts the variable's own population. The arithmetic settles what it is:
+
+```
+P130 (casalinghe) + P131 (studenti) + P135 (altra condizione) + P139  =  25,122,406
+P128 (non appartenente alle forze di lavoro)                          =  25,122,406
+                                                             residual =           0
+```
+
+`P139` is the **fourth non-labour-force band** — pension or capital income — and the tracciato's
+wording is a typo for *pensione*. **It is mapped to `retired` on that identity, never on the label.**
+`FINDING 47` is the standing reminder that a plausible label is not a verified one; this is the same
+class of error, caught the same way, in ISTAT's own documentation.
+
+⚪ Further identities that close at exactly 0 and are asserted in the builder:
+`P17..P29 = P60 + P128` (so **the economic classification covers 100 % of 15+ and Italy has no
+non-response band**, corroborated independently by Eurostat's `wstatus=UNK` being 0), `P14..P29 = P1`,
+`P2+P3 = P1`, `P30..P45 = P2`, `PF3..PF8 = PF1`, and the size-weighted household identity
+`PF3 + 2·PF4 + 3·PF5 + 4·PF6 + 5·PF7 + PF9 = PF2`.
+
+## 18. `D-S5-5` applied — and the one field where it could NOT be
+
+Italy publishes the private-household population directly, which neither the UK nor Spain did:
+
+```
+PF2  componenti delle famiglie residenti   59,132,045
+P1   popolazione residente                 59,433,744
+     convivenze                               301,699    0.5076 % of P1
+```
+
+**0.5076 % is Spain's order of magnitude (0.515 %), not the UK's (1.78 %).** The UK remains the
+outlier on communal residence and every young-adult LOCO result still has to be read with that.
+
+Age and sex are corrected with the Eurostat CLQ profile scaled to ISTAT's own convivenze total —
+**the same construction the UK marginal used** with `DC1104EW` (there `k = 1.12096051`; here
+`k = 0.858126 = 301,699 / 351,579`). Two declared assumptions, both of them the UK's:
+
+* the collective rate is **uniform within a coarse Eurostat age band** (`Y_LT15`, `Y15-29`, `Y30-49`,
+  `Y50-64`, `Y65-84`, `Y_GE85`), which is how a coarse profile is pushed onto our finer bands;
+* 🔴 **Eurostat's CLQ (351,579) and ISTAT's convivenze (301,699) differ by 49,880 persons, 0.0839 % of
+  the population** — the two draw the private/collective boundary differently. **This is the one
+  quantity of the sixteen on which the routes disagree.** ISTAT's total is taken as authoritative (it
+  is the national office, and `PF2` is the definition that matches HETUS's sampling frame); Eurostat
+  supplies only the SHAPE.
+
+What it moved, per band:
+
+| band | all residents | private households | removed |
+|---|---|---|---|
+| `11-14` | 2,233,274 | 2,231,619.75 | 1,654.25 |
+| `15-24` | 5,921,814 | 5,905,680.61 | 16,133.39 |
+| `25-34` | 7,056,915 | 7,036,269.33 | 20,645.67 |
+| `35-44` | 9,359,751 | 9,330,736.94 | 29,014.06 |
+| `45-54` | 8,918,578 | 8,890,710.54 | 27,867.46 |
+| `55-64` | 7,465,671 | 7,442,130.47 | 23,540.53 |
+| `65-74` | 6,232,559 | 6,174,626.77 | 57,932.23 |
+| `75+` | 6,152,413 | 6,032,014.68 | 120,398.32 |
+| **base 11+** | 53,340,975 | **53,043,789.10** | 297,185.90 |
+
+🟢 **Sex is EXACT on the 11+ base** — `cens_11ag_r3` is sex x single-year — male `25,498,203.77`
+(48.0701 %), female `27,545,585.35` (51.9299 %). 🔴 **This is BETTER than the UK's marginal**, which is
+an all-ages `APPROXIMATION` because no UK-wide sex-by-age table exists. A third basis asymmetry, in
+Italy's favour this time, and it has to be declared in the same breath as the others.
+
+### 🔴 18.1 The one field `D-S5-5` could NOT reach, with its cost measured
+
+**The economic marginal stays on ALL RESIDENTS aged 15+.** No published Italian table crosses
+residence type with economic status — the UK had `DC1602EW`, and there is no Italian equivalent in
+either route. The rows carry the status string
+`ALL_RESIDENTS_15PLUS_D-S5-5_NOT_APPLIED_no_published_residence_by_activity_table_for_IT`.
+
+**The cost is bounded, not asserted.** Collective residents aged 15+ number `295,531.65` (0.5783 % of
+the 15+ base). If **every one of them** were `retired` — the direction the `Y65-84` (1.083 %) and
+`Y_GE85` (5.439 %) collective rates make overwhelmingly likely — the six shares would move by:
+
+| band | as built | worst case | move |
+|---|---|---|---|
+| `employed` | 45.0379 % | 45.2999 % | +0.2619 pp |
+| `unemployed` | 5.8063 % | 5.8400 % | +0.0338 pp |
+| `student` | 7.3108 % | 7.3534 % | +0.0425 pp |
+| **`retired`** | **24.8051 %** | **24.3678 %** | **-0.4373 pp** |
+| `homemaker` | 11.3936 % | 11.4598 % | +0.0663 pp |
+| `other_inactive` | 5.6463 % | 5.6791 % | +0.0328 pp |
+
+**The worst band moves 0.44 pp.** For comparison, `D-S5-5` moved the UK's `student` band by 9.56 pp.
+
+## 19. 🔴 `strat_hh_type` is the Eurostat-only field, and it is the whole of §16.1's question
+
+ISTAT's tract file publishes households by **SIZE** (`PF3` 1-component .. `PF8` 6+) and **never by
+TYPE**. `one_person` is derivable from it (`PF3 = 7,667,305`); the other four are not derivable at all.
+So `strat_hh_type` comes from Eurostat `cens_11htts_r2`, which is **natively private households**:
+
+| ours | `hhcomp` codes | count | share |
+|---|---|---|---|
+| `one_person` | `P1` | 7,641,106 | 0.310826 |
+| `couple_no_children` | `MAR_NCH + CSU_NCH + REP_NCH` | 4,968,407 | 0.202106 |
+| `couple_with_children` | `MAR_YCH + MAR_OCH + CSU_YCH + CSU_OCH + REP_YCH + REP_OCH` | 8,532,394 | 0.347082 |
+| `single_parent_with_children` | `M1_CH + F1_CH` | 2,438,716 | 0.099203 |
+| `other_complex` | `FAM_GE2 + MULTI` | 1,002,567 | 0.040783 |
+| `unknown` | — | 0 | 0.000000 |
+| **total** | | **24,583,190** | **residual 0** |
+
+`REP*` (registered partnership) is **0** for Italy in 2011 — kept in the mapping and asserted zero, so
+the partition cannot close by quietly ignoring a code.
+
+⚪ Eurostat's private-household total `24,583,190` differs from ISTAT's `PF1 = 24,611,766` by **28,576
+households, 0.1161 %** — the household-side shadow of the same 49,880-person boundary difference in
+§18. Recorded, not reconciled.
+
+🔴 **`one_person` at 31.08 % should be read next to the UK's 30.58 % and the corpus's diarists-alone
+14.44 %** — the 2.12x household-versus-person gap flagged for the UK is an Italian problem too, and
+Step 5.2's household-to-person conversion is where it gets fixed.
+
+## 20. `econ_11plus_it.csv` — 🔴 `D-S5-3` mostly does NOT apply to Italy, and that is a LOCO asymmetry
+
+`D-S5-3` had to invent `unknown` for `uk`/`es` because their censuses publish economic activity for
+**16-74 only**. **ITALY PUBLISHES 15+ DIRECTLY.** So on the `it` fold:
+
+* **age 15 is PUBLISHED**, where `uk`/`es` assign it to `unknown` (the extension that still owes a
+  one-line confirmation, §14.2);
+* **`75+` is PUBLISHED**, where `uk`/`es` impute it to `retired` — and `es` was only 58.9 % clean;
+* **`unknown` holds the `11-14` band and NOTHING ELSE.**
+
+🔴 **`unknown` and `retired` therefore mean different things in each of the three folds.** That is a
+country fingerprint of exactly `FINDING 48`'s species and it must be read alongside any `it`-fold
+economic result. Concretely: `it` `unknown` = 4.21 % (11-14 only) against `uk` 6.88 % and `es` 5.26 %
+(11-14 + age 15); `it` `retired` = 23.76 % **published**, against `uk` 20.33 % and `es` 22.56 % **part
+imputed**.
+
+### The base mismatch the build refused to write, and how it was closed
+
+The first run of the builder produced an `econ_11plus_it` partition that missed its base by
+**295,531.65 persons** — and the check caught it rather than the file shipping. The residual was not a
+rounding: it is **exactly the collective 15+ population**, because the six economic bands are
+`ALL RESIDENTS 15+` while the base is `PRIVATE HOUSEHOLD 11+`. That is a `FINDING 50`-class mixture of
+two universes inside one partition.
+
+It is closed by carrying the composition onto the private-household 15+ total — i.e. **assuming the
+collective population shares the private-household economic composition**, with §18.1's bound as the
+price if that is wrong. Two independent derivations of the private-household 15+ base agree to
+`-0.0000` persons:
+
+```
+base_11plus - band(11-14)          = 53,043,789.10 - 2,231,619.75 = 50,812,169.35
+base_15plus - collective_15plus    = 51,107,701.00 -   295,531.65 = 50,812,169.35
+                                                          residual =      -0.0000
+```
+
+🔴 **This assumption cannot move `G6.1`.** `rake()` consumes SHARES, and a proportional rescaling
+leaves every share bit-identical; it changes the base only, which is what makes the file internally
+consistent.
+
+## 21. Audit trail — Italy
+
+| file | md5 |
+|---|---|
+| `marginals_it.csv` | `70dcf10cca73b9c54e4a2d8935dc620c` |
+| `econ_11plus_it.csv` | `449ba212f17ba9b73828bbc227d89ec8` |
+| `raw/it_istat_dati-cpa_2011.zip` | `bab8d744088761397c09ef8c70ca53d4` |
+| `raw/it_istat_dati-cpa_2011_tracciato_sezioni.csv` | extracted from the zip, unmodified |
+| `raw/it_eurostat_cens_11ag_r3_age_single_year_by_sex.json` | verbatim API response |
+| `raw/it_eurostat_cens_11htts_r2_private_households_by_type.json` | verbatim API response |
+| `raw/it_eurostat_cens_11hou_r2_population_by_housing_arrangement.json` | verbatim API response |
+| `raw/it_eurostat_cens_11aed_r2_activity_status_by_education.json` | verbatim API response — **cross-check only, no marginal is taken from it** |
+
+Re-derive with:
+
+```
+python tools/4thJ_step5_build_it.py Step5_docs/outputs_step5
+```
+
+Retrieval, reproducible without a browser:
+
+```
+curl -L -o raw/it_istat_dati-cpa_2011.zip \
+  "https://www.istat.it/storage/cartografia/variabili-censuarie/dati-cpa_2011.zip"
+curl "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/<TABLE>?format=JSON&lang=EN&geo=IT"
+```
+
+## 22. What Step 5.1 owes after Part IV
+
+1. 🔴 **§16.1 — the author's call on Eurostat for `strat_hh_type`** (and, less sharply, for single-year
+   age, sex and the CLQ profile). The two stated grounds for the route ruling do not reach these
+   tables and the fifteen-quantity cross-check is exact, but the ruling's letter says national offices.
+   **If the answer is no, Italy has three of four fields and no household-type marginal at all.**
+2. 🔴 **§18.1 — the economic marginal is on all residents, bound 0.44 pp.** Accept the declaration, or
+   Italy's econ has no private-household basis.
+3. **§14.2's one line** — confirm age 15 → `unknown` for `uk`/`es`. Now sharper, because §20 shows
+   Italy does NOT need it and the three folds' `unknown` already differ.
+4. ⚪ **Step 5.2** is unblocked for all three folds.
+
+---
+
+# PART V — 2026-08-21 (afternoon). `strat_hh_type` GOES TO A PERSON BASIS IN ALL THREE FOLDS, AND `D-S5-7`'s BOUND BECOMES A MEASUREMENT
+
+Two new sources arrived and between them they closed `D-S5-7` and `D-S5-8` **with data rather than
+with an assumption**, and then exposed a defect that neither decision had anticipated.
+
+| what | source | route |
+|---|---|---|
+| ISTAT 2011 census, 1 % public-use microdata sample | supplied by the author, `Datasets/CensPop2011_1%_2011_IT-…` | national office, inside `D-S5-1` route 3 |
+| INE Censo 2011 person microdata | re-fetched, `https://www.ine.es/ftp/microdatos/censopv/cen11/Microdatos_personas_nacional.zip` | national office |
+| ONS `QS112UK` household composition **(people)** | already in `raw/`, unused until now | national office |
+
+Builders: `tools/4thJ_step5_build_it_microdata.py`, `tools/4thJ_step5_hhtype_person_es_uk.py`.
+Outputs: `hhtype_person_{es,uk,it}.csv`, `econ_basis_check_it.csv`.
+
+---
+
+## 15. `D-S5-8` DISSOLVED — the person basis was published or tabulable in **all three** countries
+
+The decision asked how to convert a household-basis marginal onto a person basis for Italy, and
+offered a mean-household-size assumption as the fallback. **No conversion is needed anywhere.**
+
+| fold | where the person basis comes from | conversion factor used |
+|---|---|---|
+| `uk` | ONS publishes it directly: `QS112UK` counts **people** per household-composition class, `KS105UK` counts households | none |
+| `es` | `ESTHOG` (*estructura del hogar*) sits on **every person record** of the INE microdata | none |
+| `it` | `TIPOLOGIA_FAM` sits on **every person record** of the ISTAT 1 % sample | none |
+
+🔴 **Why this mattered more than it looked.** Raking a person file onto a household marginal would
+have driven one-person households to **31.0 %** of UK *people*; they are **13.0 %** of people and
+31.0 % of *households*. A factor of 2.4 on the largest single stratum, in the direction that makes
+the null model look like a country of people living alone. `FINDING 50`'s frame error, one level up.
+
+### 15.1 The ISTAT file, and a third published-label defect
+
+`CensPop2011_1__Microdati_Anno_2011_individui.txt`, md5 `9f3ae2f2f9022e7e73ccd3107c0aa7a9`,
+**594,247 person records**, tab-delimited, latin-1, **no weight column** — the sample is
+self-weighting and the expansion factor is exactly 100.
+
+Three independent identities check the file before anything is emitted:
+
+| quantity | from the sample | published | deviation |
+|---|---|---|---|
+| collective-quarters population | 301,600 | 301,699 | **−0.033 %** |
+| private households | 24,609,300 | 24,583,190 | **+0.106 %** |
+| household size vs `NROCOMPO` | equal for **every** household below the 6+ cap | — | exact |
+
+⚪ The collective figure landing on 301,699 is the same number `k_convivenze = 0.85812577` was built
+from in Part IV, reached by a completely different route.
+
+🔴 **`FINDING 59` — `TIPOLOGIA_FAM`'s classification page is offset from its own codes.** The page
+reads as a hierarchy: `1` *Famiglie senza nuclei* with `2` *Non in coabitazione* and `3` *In
+coabitazione* beneath it, `4` *Famiglie con un solo nucleo* with `5`–`12` beneath it. Cross-tabulated
+against `NROCOMPO` and against the presence of a spouse/partner and of children, the data say
+something else:
+
+* `tf` **1, 2 and 3** all have **exactly one component**, no couple, no children. Together they are
+  **76,391 households = exactly the count of `NROCOMPO == 1`**. All three are one-person households.
+* `tf` **4** is 2+ persons, no couple, mostly no children — a family with **no** nucleus, which the
+  label places under code 1's branch.
+* `tf` **5** is exactly **2.00** persons per household, couple, no children.
+* `tf` **9–12** are the four nucleus forms **plus other resident people**.
+
+Same class as `FINDING 47`, `FINDING 56` (`P139` in ISTAT's own tracciato) and TABULA's `F_red_htr`
+unit: **a published label that contradicts its own column, catchable only by reading the values.**
+That is four, in three different official sources, and it is no longer an anecdote. The mapping is
+therefore keyed on the code whose behaviour was verified, and the verification re-runs as a refusal
+on every execution.
+
+### 15.2 Two candidate readings, scored against a full count
+
+| reading of `TIPOLOGIA_FAM` | worst deviation vs the Eurostat household counts |
+|---|---|
+| nucleus code (`tf`) | **1.49 %**, four of five under 1 % |
+| composition (`REL_PAR` presence) | **71.90 %** |
+
+The composition reading collapses because it cannot separate "couple + children" from "couple +
+children + grandmother". The nucleus-code reading is adopted — and its agreement is an **independent
+validation of the Eurostat household mapping in Part IV**, obtained without using Eurostat.
+
+---
+
+## 16. 🔴 `FINDING 60` — THE THREE COUNTRIES DO NOT CLASSIFY "FAMILY PLUS SOMEBODY ELSE" THE SAME WAY, AND THE DIFFERENCE IS COUNTRY-CORRELATED
+
+A household holding a family nucleus **plus other resident people** has two possible homes:
+
+| | convention | who uses it |
+|---|---|---|
+| **A** | it goes to `other_complex` | ONS (`uk`), INE (`es`) |
+| **B** | it keeps its nucleus's type | Eurostat — and therefore `marginals_it.csv` |
+
+Until today `es` and `uk` were on **A** and `it` was on **B**, in already-shipped files, and nothing
+had compared them.
+
+### 16.1 How it surfaced — the check that caught it was a ratio, not a rule
+
+The first version of the Spanish builder deliberately put `ESTHOG` 10 onto convention **B**, to match
+Italy. The mean-household-size check then reported:
+
+```
+es other_complex   3,415,402 persons / 2,070,516 households = 1.6495
+```
+
+🔴 **Impossible.** Every household in that class holds at least two people, so a mean of 1.65 is not
+a small error — it is a statement that the numerator and the denominator are counting different
+things. The person file was on B while the already-shipped Spanish **household** file was on A, and
+**the ratio between the two bases was the only quantity in the pipeline that could reveal it**.
+Neither file is wrong on its own; neither would have failed any check applied to it alone.
+
+⚪ The guard band was 1.5–6.0 and let 1.6495 through as a warning-free pass. It is now **1.95**–6.0,
+so this exact failure cannot recur silently.
+
+### 16.2 Convention A is adopted — forced, not preferred
+
+**The hard reason.** `QS112UK` publishes *Other household types* as a **single indivisible class**
+with no decomposition by whether a nucleus is present. The UK **cannot be put on convention B by any
+means**. A is the only convention the three folds can share.
+
+**The corroboration, and it was not arranged.** Under A, `couple_no_children` has a mean size of:
+
+| fold | mean persons per household, `couple_no_children` |
+|---|---|
+| `es` | **2.0000** |
+| `it` | **2.0000** |
+| `uk` | **2.0022** |
+
+Under B, Italy reads **2.0794** — the class is carrying somebody who is not in the couple. Two people
+is what a childless couple is. ⚪ The UK's 2.0022 is the same **2.00042** that `D-S5-2` measured on
+`QS112UK` when it folded the all-65+ block; two different questions, one number.
+
+**Why harmonising beats three national bases.** The classification difference is
+**country-correlated**, i.e. confounded with exactly the leave-one-country-out signal the paper
+measures. Identical argument to `FINDING 57`'s EU boundary conditions: a harmonised basis slightly
+further from each national publication beats three national bases that differ along the axis under
+test.
+
+### 16.3 What it costs, printed rather than buried
+
+Moving Italy from B to A reclassifies **7.222 % of Italian persons** and **4.446 % of Italian
+households**; `other_complex` goes from 5.62 % to **12.84 %** of persons. Large, and stated.
+
+### 16.4 🔴 `D-S5-9` — OPEN. Italy's two bases now disagree
+
+`marginals_it.csv`'s **household**-basis `strat_hh_type` rows remain on convention B, because they
+are Eurostat's and Eurostat cannot express A. Italy's household basis and Italy's person basis
+therefore contradict each other. Only the ISTAT microdata can reconcile them, and doing so edits an
+already-shipped file, so it is **raised, not taken**.
+
+* **(a) Recommended — rewrite `marginals_it.csv`'s five `strat_hh_type` household rows from the ISTAT
+  microdata under convention A.** Cost: those rows stop being a full count and become a 1 % sample
+  (deviation from the Eurostat full count measured at ≤1.49 %). Benefit: Italy's two bases agree, and
+  all three folds are on one convention on both bases.
+* (b) Leave `marginals_it.csv` on B and rely on the person file for everything the rake touches.
+  Cheaper, but the published table then contradicts the raked one and the paper has to explain why.
+
+⚪ **This does not block Step 5.2.** The rake consumes the **person** files, and those are on A in all
+three folds already.
+
+---
+
+## 17. The three person-basis marginals
+
+| category | `es` | `uk` | `it` | spread (pp) |
+|---|---|---|---|---|
+| `one_person` | 0.09003 | 0.13032 | 0.12921 | 4.03 |
+| `couple_no_children` | 0.16338 | 0.21797 | 0.15713 | 6.08 |
+| `couple_with_children` | 0.49452 | 0.41336 | 0.49742 | 8.41 |
+| `single_parent_with_children` | 0.08687 | 0.11940 | 0.08785 | 3.25 |
+| `other_complex` | 0.16520 | 0.11895 | 0.12839 | 4.62 |
+| `unknown` | 0 | 0 | 0 | — |
+
+| file | md5 | base |
+|---|---|---|
+| `hhtype_person_es.csv` | `4b7827eee1d2c8c2b9bc55c393e442e5` | 46,574,725.58 persons |
+| `hhtype_person_uk.csv` | `0e9cb545622ffe119a09d47570802eac` | 62,055,838 persons |
+| `hhtype_person_it.csv` | `f81ac4facc591470f6d6e4af1b08c096` | 59,123,100 persons |
+
+### 17.1 Spain: the household side reproduces to **under one household**
+
+Because `ESTHOG` and `NMIEM` sit on the same record, summing `weight / NMIEM` over the person file
+reconstructs the household counts. Against the published PC-Axis table already in `marginals_es.csv`:
+
+| category | reconstructed | published | difference |
+|---|---|---|---|
+| `one_person` | 4,193,319.34 | 4,193,319.34 | **−0.00** |
+| `couple_no_children` | 3,804,677.39 | 3,804,677.39 | **−0.00** |
+| `couple_with_children` | 6,321,922.38 | 6,321,922.38 | **−0.00** |
+| `single_parent_with_children` | 1,693,257.70 | 1,693,257.70 | **−0.00** |
+| `other_complex` | 2,070,515.52 | 2,070,515.52 | **−0.00** |
+
+🟢 Five categories, five exact hits. The person file and the household file are provably the same
+classification, and the PC-Axis table is independently confirmed.
+
+### 17.2 The two declared pieces, both `uk`, both small
+
+* **Same-sex civil partnership**, 75,188 people = **0.121 %** of the UK base, published with **no**
+  children breakdown, assigned in full to `couple_no_children`. The error is at most 0.121 pp and
+  only if every one of them had children.
+* **"One family only: All aged 65 and over"**, 4,263,276 people, is a **separate** class in the ONS
+  hierarchy and not a subset — verified by addition, the five sibling classes sum to *One family
+  only: Total* exactly. It follows `D-S5-2` into `couple_no_children`.
+
+⚪ Every `QS112UK` parent category was checked to be the **exact** sum of its children before the
+aggregates were discarded, so no row is double-counted and no hidden subset survives.
+
+### 17.3 ⚪ A rounding choice that would have blocked `G6.1` on its own
+
+At six decimal places the five shares sum to **0.999999**, and `rake()` refuses a target that misses
+1.0 by 1e-6. The writer now emits **nine** decimals and, more importantly, **re-reads the file it
+just wrote** and refuses if the shares as written miss 1.0 by more than 1e-7. Checking the intent
+would not have caught this; only checking the artifact does.
+
+---
+
+## 18. `D-S5-7` — the 0.44 pp bound is replaced by a **measurement**, and the answer is to keep the full count
+
+Both universes were tabulated from the same ISTAT records and differenced.
+
+| band | private-hh 15+ | all residents 15+ | **basis effect** | ISTAT tract full count | **sample noise** |
+|---|---|---|---|---|---|
+| `employed` | 0.450091 | 0.448313 | **+0.178** | 0.450379 | −0.207 |
+| `unemployed` | 0.059194 | 0.058893 | +0.030 | 0.058063 | +0.083 |
+| `student` | 0.072424 | 0.072096 | +0.033 | 0.073108 | −0.101 |
+| `retired` | 0.245305 | 0.247072 | **−0.177** | 0.248051 | −0.098 |
+| `homemaker` | 0.116157 | 0.115528 | +0.063 | 0.113936 | +0.159 |
+| `other_inactive` | 0.056829 | 0.058098 | **−0.127** | 0.056463 | +0.164 |
+
+**Max basis effect 0.178 pp.** The 0.44 pp bound was correct but loose, and the **sign** is now
+known: employed up, retired and other-inactive down — the expected direction for a collective sector
+that is overwhelmingly care homes.
+
+🔴 **But the same records, on the same universe as the published tract table, deviate from it by up
+to 0.207 pp.** That is 1 % sampling error plus ISTAT's disclosure control, and **it is larger than
+the basis effect it would correct.** Rewriting `econ_11plus_it.csv` from the sample would trade a
+0.178 pp *known, signed* bias for a 0.207 pp *unsigned random* error.
+
+🟢 **So the file is not rewritten.** `D-S5-7` stands as ruled — accept and declare — but the
+declaration now carries a measured 0.178 pp with a direction instead of a 0.44 pp bound. Recorded in
+`econ_basis_check_it.csv`.
+
+⚪ ISTAT's own caveat, from `!Leggimi.html`, is the second reason nothing full-count is overwritten
+from this file: *"a causa del trattamento dei dati per la tutela della riservatezza, le elaborazioni
+effettuate sui file ad uso pubblico possono condurre a risultati in qualche misura difformi rispetto
+a quelli pubblicati."*
+
+---
+
+## 19. What the ISTAT microdata **cannot** do
+
+🔴 `ETA_CLASSI` bottoms out at **"0-14"**. The `11-14` band is trapped inside it and is not
+recoverable at any price. `marginals_it.csv` keeps its Part IV derivation, and the builder **refuses
+to emit an age marginal at all** rather than emit a 15+ one that would look like the whole thing.
+
+⚪ The private share by age class is nonetheless a free validation of the `k_convivenze` profile:
+97.56 % at 75+, 99.21 % at 70-74, and ≥99.4 % in every band below — the collective sector is old,
+which is what the economic-status signs above independently say.
+
+---
+
+## 20. Status after Part V
+
+| fold | `strat_hh_type` person basis | convention | household basis |
+|---|---|---|---|
+| `es` | ✅ INE microdata `ESTHOG` | A | A — agrees, verified to under one household |
+| `uk` | ✅ ONS `QS112UK` | A | A — agrees, mean sizes all plausible |
+| `it` | ✅ ISTAT microdata `TIPOLOGIA_FAM` | A | 🔴 **B — disagrees, `D-S5-9` open** |
+
+🟢 **Step 5.2 is unblocked on the marginals side.** The remaining blocker is that the raking donors
+are the Step 3 corpus, which lives on Speed and is not on this machine.

@@ -930,3 +930,177 @@ as a declared post-hoc erratum, here** — the frozen file is never touched and 
 
 🔴 **And the standing caveat, unchanged by any of this:** `MAPE` is **not** the pre-registered bar. The
 raked-donor null of §5 is, its implementation is green at `23/23`, and it is **blocked on Step 5.1**.
+
+---
+
+### 2026-08-20 (execution pass) — 🟢 **`D-S6-3` ITEMS 2, 3 AND 4 RULED (a) AND APPLIED. THE FIVE SCORING TABLES ARE NOW ON DISK AND WERE MEASURED, NOT QUOTED — WHICH CONFIRMED `FINDING 39` AND PRODUCED `FINDING 54` AND `FINDING 55`.**
+
+All five tables were fetched verbatim for all three countries (15 files, HTTP 200, in
+`outputs_step6/eurostat_raw/`) and every number below is re-derived from them.
+
+#### 🟢 Item 6 = `D-S6-3` item 2 — `MAPE` is computed on `PTP_RT` only
+
+**Applied.** Confirmed at the source, and it is not a preference:
+
+* `TIME_SP` and `PTP_TIME` are **JSON strings** — the first cell of `tus_00age_ES` reads
+  `'24:00'`, not `24.0`. 🔴 A float cast does not raise; it truncates to whole hours **and still
+  prints a number.**
+* `tus_00startime` — **the time-of-day table, the one the occupancy claim is actually about —
+  publishes `PTP_RT` and nothing else.** For the table that matters most the ruling is not a
+  choice, it is the only unit there is.
+* `PTP_RT` is the one unit common to all five tables.
+
+#### 🟢 Item 7 = `D-S6-3` item 3 — `TOTAL` rows are excluded, and the exclusion is stated
+
+**Applied, and the premise re-derived:** in `tus_00startime`, `435` of `3,915` cells are `TOTAL`
+rows carrying exactly `100.0` — **`11.11 %`**, which is the logged figure to the digit. Any `MAPE`
+including them is diluted by an eleventh of guaranteed-zero error. The exclusion is a **declared
+methods sentence**, not a silent filter.
+
+#### 🟢 Item 8 = `D-S6-3` item 4 — the per-fold rounding floor is printed beside each fold's `MAPE`
+
+**Applied, and the floors are now derived rather than quoted.** The published grain is `0.1 pp`
+(the smallest non-zero `PTP_RT` in every table and every country is exactly `0.10`), so a cell
+carries an expected rounding error of `0.025 pp`, and `mean(0.025 / value)` over the non-zero
+scorable cells is the `MAPE` **a perfect model cannot beat**:
+
+| table | ES | UK | IT |
+|---|---|---|---|
+| `tus_00startime` | **3.01 %** | **1.87 %** | **3.38 %** |
+| `tus_00selfstat` | 1.13 % | 0.47 % | 0.96 % |
+| `tus_00age` | 1.01 % | 0.57 % | 0.89 % |
+
+🟢 **`FINDING 39`'s floors are CONFIRMED and their basis is now written down instead of inferred:**
+expected, not worst-case, rounding error on the time-of-day table. **`uk` reproduces exactly at
+`1.87 %`**; `es` reads `3.01` against the logged `2.98` and `it` `3.38` against `3.42`, a gap of
+`0.04 pp` that is the cell filter (this pass scores `sex = T` only), not a disagreement.
+🔴 **`it`'s floor is `1.8x` the UK's**, so an identical model scores worse on the `it` fold for a
+reason that is entirely the publisher's rounding.
+
+🟢 **`FINDING 39`'s zero-cell shares are CONFIRMED too, and their filter identified:** `ES 4.02 %`,
+`UK 0.38 %`, `IT 5.09 %` of time-of-day cells — the logged `4.0 / 0.4 / 5.1 %` — measured over
+**all sexes with `TOTAL` rows removed**. (Restricted to `sex = T` they are `3.73 / 0.09 / 4.77 %`;
+the filter has to be stated or the numbers do not reproduce.)
+
+#### 🔴 `FINDING 54` — **not one of the five tables has a day-type dimension.**
+
+`tus_00age`, `tus_00educ`, `tus_00selfstat`, `tus_00hhstatus` and `tus_00startime` all carry
+exactly `['freq', 'unit', 'sex', <one stratifier>, 'acl00', 'geo', 'time']`. **There is no
+weekday/weekend split to select.** Every published figure is an average day on whatever basis the
+national institute used, and we cannot ask for a different one.
+
+🔴 **This lands directly on `FINDING 53` and it is now a decision that must be made before scoring.**
+Item 1 put all three folds on a calendar week (`weight_dia_cal`); the published tables are on an
+undeclared national basis. Scoring calendar-weighted output against a table built on Spain's
+`50/25/25` would re-introduce, in the comparison, exactly the bias item 1 removed from the corpus.
+**Which weight Step 6 scores on is therefore a new open decision, `D-S6-4`** — it is not settled by
+item 1 and it is not settled by item 6.
+
+* **Recommended: score on `weight_dia_cal` and report the `weight_dia` figure beside it as a
+  declared sensitivity, never mixed.** The HETUS convention for an "average day" is a
+  calendar-representative day, all three folds are then mutually comparable, and the gap is
+  bounded and already measured (`es +0.947`, `it +1.300`, `uk −0.003 pp` on at-home time).
+* 🔴 **What would settle it properly and has not been done:** confirm from the HETUS guidelines
+  what basis the national institutes were required to tabulate on. That is a literature question,
+  and literature questions leave this project as a prompt.
+
+#### 🔴 `FINDING 55` — the scoring tables do not carry our strata, and one of the five cannot be used at all
+
+Measured, per table:
+
+| table | usable against our prefix? | why |
+|---|---|---|
+| `tus_00startime` | 🟢 **yes** | `sex` x `time of day` x 9 broad activity groups; `PTP_RT` only |
+| `tus_00selfstat` | 🟢 **yes** | `wstatus` = `EMP_FT`/`EMP_PT`/`LEAV`/`UNE`/`EDUC`/`HOME`/`RET`/`OTH` collapses **1:1** onto our six `strat_econ_status` bands once the three employed classes are merged |
+| `tus_00age` | 🟡 **partly** | see below |
+| `tus_00hhstatus` | 🟡 **partly** | 12 published categories (`CPL_CH6`, `CPL45-64_NCH`, `P25_NCH`, …) against our five; needs a declared regrouping and will not be exact |
+| `tus_00educ` | 🔴 **NO** | it is stratified by `isced97` **educational attainment**, and the corpus carries no education column at all. It cannot be scored against our strata under any mapping |
+
+🔴 **`tus_00age` has two separate defects.**
+
+1. **`Y65-74` is entirely absent — `0` of `168` cells present, in ES, UK and IT alike.** That is
+   the `12.5 %` absence logged in `FINDING 39`, now localised: it is not scattered missingness, it
+   is **one whole age band, and it is one of ours** (`65-74`), missing in every fold.
+2. **The age dimension is not a partition.** Published: `TOTAL, Y15-20, Y20-24, Y20-74, Y25-44,
+   Y45-64, Y65-74, Y_GE65`. `Y20-74` contains `Y25-44` and `Y45-64`; `Y_GE65` contains `Y65-74`.
+   A `MAPE` computed over all of them double-counts the same people. **And nothing below 15 is
+   published at all, so our `11-14` band has no counterpart in any fold** — which is the same
+   `11-14` that `FINDING 48` showed is a country fingerprint.
+
+**Consequence, recorded not decided:** the scoring set is realistically `tus_00startime` +
+`tus_00selfstat`, with `tus_00age` on a declared non-overlapping subset and `tus_00hhstatus` on a
+declared regrouping. **`D-S6-5`: confirm dropping `tus_00educ` from the scoring set and declaring
+it, rather than inventing an education proxy.** Recommended: drop and declare.
+
+#### ⚪ Still owed from `D-S6-3` item 1
+
+The **"approximately zero" tolerance** proposed at `< 0.5 %` was written into the ruling's cost
+section and has **not been confirmed**. It must be fixed before any zero-cell hit rate is computed.
+🟢 The proposal survives contact with the data: the publication grain is `0.1 pp`, so `0.5 %` is
+five grains — comfortably below what the source could resolve, and not a number chosen by looking
+at a model output.
+
+#### ⚪ Provenance
+
+`outputs_step6/eurostat_raw/<table>_<GEO>.json`, 15 files, fetched
+`2026-08-20` from `https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/<table>?format=JSON&lang=EN&geo=<GEO>`,
+all HTTP 200. 🔴 **The `2010` column is the wave, not the year: for `it` it is the 2008-09 survey
+while our microdata is ISTAT 2013-14 — `D-S6-2`'s declared asymmetry, unchanged by anything here.**
+`prereg.md` **not touched**; md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar
+while this entry was written.
+
+---
+
+### 2026-08-21 — 🟢 **`D-S6-4`, `D-S6-5` AND THE OUTSTANDING `D-S6-3` ITEM 1 TOLERANCE ARE ALL RULED BY THE AUTHOR.** 🔴 **THE ZERO-CELL TOLERANCE IS `< 1.0 %`, NOT THE `< 0.5 %` THAT WAS RECOMMENDED.**
+
+Three decisions closed. No file was rebuilt and no gate was run; `prereg.md` **not touched**, md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar at both ends of the session.
+
+#### 🟢 `D-S6-4` — RULED as recommended: score on `weight_dia_cal`
+
+Step 6 scores on **`weight_dia_cal`**, the calendar-week weight that item 1 put all three folds on.
+The `weight_dia` figure is **reported beside it as a declared sensitivity and never mixed into the
+headline**.
+
+This keeps the comparison on one basis across the three folds and prevents `FINDING 53`'s
+country-correlated day-mix (`uk` 71.45/14.32/14.24, `es` 50/25/25, `it` 33/33/33) from re-entering
+through the scoring tables after item 1 removed it from the corpus. The gap it leaves is bounded and
+already measured: at-home time `es +0.947`, `it +1.300`, `uk −0.003` pp.
+
+🔴 **Unchanged and still owed:** confirming from the HETUS guidelines what basis the national
+institutes were *required* to tabulate on. That is a literature question and leaves this project as a
+prompt, not as a search.
+
+#### 🟢 `D-S6-5` — RULED as recommended: drop `tus_00educ` and declare it
+
+`tus_00educ` is stratified by `isced97` **educational attainment** and the corpus carries no
+education column at all, so no mapping exists. It is **dropped from the scoring set and declared**,
+rather than back-filled with an invented education proxy.
+
+The scoring set is therefore `tus_00startime` + `tus_00selfstat` as the two clean tables, with
+`tus_00age` on a declared non-overlapping subset (`Y65-74` is absent in all three folds and the
+published age dimension is not a partition) and `tus_00hhstatus` on a declared regrouping.
+
+#### 🔴 `D-S6-3` item 1 — the "approximately zero" tolerance is `< 1.0 %`
+
+**The author chose the LOOSER of the two options.** The recommendation was `< 0.5 %`; the ruling is
+**`< 1.0 %`**, and `< 1.0 %` is what must be written everywhere the zero-cell hit/miss rule appears.
+
+⚪ Recorded so the number is not silently reverted to the recommendation later: the publication grain
+is `0.1 pp`, so `1.0 %` is **ten** grains rather than five. It is further below what the source can
+resolve, which makes the "approximately zero" test easier to pass and therefore **more conservative
+about claiming a miss** — a zero-cell has to be more clearly non-zero before it counts against us.
+The direction of the looseness is toward the model, so it must be stated in the paper as the
+pre-registered value and not defended as if it were the tight one.
+
+🔴 This tolerance is now **fixed** and any zero-cell hit rate computed against a different value is
+invalid.
+
+#### What this does NOT close
+
+* `FINDING 39`'s other defects stand: `TOTAL` is a constant 100 in 11.1 % of cells, and two of three
+  units are `h:mm` **strings** that a float cast silently truncates.
+* `D-S6-2`'s wave asymmetry is unchanged — the Eurostat `2010` column is the 2008-09 survey for `it`
+  while our microdata is ISTAT 2013-14.
+* `G6.1`'s raked-donor null is computable on all three folds as of 2026-08-21, but has **not been
+  run**, because the donors are the Step 3 corpus and it lives on Speed.

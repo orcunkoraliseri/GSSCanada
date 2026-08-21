@@ -138,3 +138,17 @@ BEM_Setup/SimResults_Step9/
 *.gz
 *.bak
 *.bak*
+_bak*/
+**/_bak*/**
+_bk_*
+
+# Raw dataset extraction
+4J_docs_occ/Datasets/CensPop2011*
+
+# 4J pipeline outputs exceptions
+!4J_docs_occ/Step5_docs/outputs_step5/*.csv
+!4J_docs_occ/Step5_docs/outputs_step5/raw/*.csv
+!4J_docs_occ/Step6_docs/outputs_step6/eurostat_raw/MD5SUMS.txt
+!4J_docs_occ/Step8_docs/outputs_step8/*.csv
+
+

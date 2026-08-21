@@ -36,13 +36,14 @@ Three things, in order of how badly they would hurt:
 | **G4.4** Slot-wise mutual information | Demographically appropriate mornings, generic evenings | MI(attributes ; activity) computed per slot against the empirical curve. 🔴 **The 18:00-23:00 window is scored separately and reported separately** | **project-chosen** |
 | **G4.5** Padding labels | Training on padding | 100 % of pad and prompt positions carry label `-100` | `RL05` failure mode 5 |
 | **G4.6** Adapter merge drift | Merged and unmerged models diverging | Max logit difference on a fixed sample **< 1e-4** | `RL05` failure mode 6 |
-| **G4.7** Termination | Generation that never stops | 100 % of training completions terminate with `<eor>` | `RL05` failure mode 7 |
+| **G4.7** Termination | Generation that never stops | 🔴 **D-S4-7 (2026-08-20): 100 % of the GENERATED sample terminates with `<eor>`, scored every validation epoch and at every mid-epoch probe.** Until this ruling the row said *training completions*, which is the corpus and not the model — see `G4.15` | `RL05` failure mode 7 |
 | **G4.8** Tokenizer round-trip | Vocabulary mismatch | `tokenize(detokenize(ids)) == ids` on 1,000 cases before any large generation run | `RL05` failure mode 4 |
 | **G4.9** Per-country probe stability | Catastrophic forgetting | Per-country held-in probe loss at final checkpoint within **+5 %** of its own best value during training | **project-chosen** |
 | **G4.10** Memory and walltime | A run that cannot be repeated | Peak VRAM recorded; run completes inside 7 days. **Reported, not thresholded** | operational |
 | **G4.11** Checkpoint provenance | An unreproducible model | Base repo **revision hash**, corpus md5, config and seed recorded per run. 🔴 A checkpoint named without a revision is not a reproducible checkpoint | **project-chosen** |
 | **G4.13** 🔴 **Fold isolation** | The held-out country reaching its own fold's training data | Per fold, the count of training records whose `country` equals the held-out country is **exactly 0**, counted **from the shard the trainer actually loaded**, never from the config or the filename. Run at training start, not at scoring time | **derived from decision 11** |
 | **G4.14** 🔴 **Pre-registration precedence** | A pre-registration written after a model exists | Every run manifest carries the `prereg.md` md5, all manifests carry the **same** value, and that value equals the md5 recorded **before the first Leg-5 submission**. Missing field, mismatched field, or a changed file: **FAIL** | **derived from decision 11's freeze clause** |
+| **G4.15** 🔴 **Corpus termination** | A training shard whose completions do not end | 100 % of the records in the shard **the trainer actually loaded** terminate with `<eor>`, read once before the first optimiser step. This is `G4.7`'s old threshold and old arithmetic under a new id | **`D-S4-7` (2026-08-20), from `FINDING 46`** |
 
 ---
 
@@ -76,7 +77,8 @@ Each perturbation must break **exactly one** gate. Run them on Leg-4, where a tr
 | Blank the evening slots' conditioning only | **G4.4** on the 18:00-23:00 window, and G4.4 must stay clean on the morning window | G4.3 (marginally — record it) |
 | Set 1 % of pad labels to a real token id | G4.5 | G4.6 |
 | Perturb one merged weight by 1e-3 | G4.6 | G4.5 |
-| Strip `<eor>` from 1 % of completions | G4.7 | G4.1 |
+| Strip `<eor>` from 1 % of **training** completions (`strip_eor_1pct`) | **G4.15** — 🔴 **not `G4.7`, since `D-S4-7`.** This lever edits `train_recs`; it cannot reach the generated sample | G4.1, **G4.7** |
+| 🔴 Strip `<eor>` from 1 % of the **generated** texts (`strip_eor_gen`, `4thJ_step4_g47_coverage.py`) | **G4.7** | G4.1 — *and it is deliberately NOT wired into the trainer: felling a generated-side gate from inside a training run costs ~5 h per fold to demonstrate a detector whose rule is `n_terminated == n`, and the standalone script scores a `generated_*.jsonl` that already exists* |
 | Swap the tokenizer | G4.8 | — |
 | Train country-by-country sequentially | G4.9 | G4.1 |
 | Delete the revision hash from the run manifest | G4.11 | all others |
@@ -225,7 +227,7 @@ never be presented as pre-registered. It must be **seen failing** before it is c
 
 | Perturbation | Must fail | Must stay clean |
 |---|---|---|
-| 🔴 **`collapse_content` — flatten `ACT`/`ACT2` to one constant, leave `DUR`/`LOC`/`COP` real** | **`G4.2`**, both arms together (`V4.d` is strict `AND`) | `G4.5`, `G4.7`, `G4.11`, `G4.13`, `G4.14` — but **`G4.9` is a KNOWN collateral fall at 4,000 records and above** (FINDING 26), dose-dependent, and must be quoted with any use of this lever |
+| 🔴 **`collapse_content` — flatten `ACT`/`ACT2` to one constant, leave `DUR`/`LOC`/`COP` real** | **`G4.2`**, both arms together (`V4.d` is strict `AND`) | `G4.5`, **`G4.15`** (the lever leaves every `<eor>` in place in the corpus, which is what `G4.15` reads), `G4.11`, `G4.13`, `G4.14` — 🔴 **`G4.7` is no longer a free entry on this list**: since `D-S4-7` it reads the GENERATED sample, and whether a model trained on collapsed content still terminates is an empirical question this table cannot answer in advance. Declared, not verified — but **`G4.9` is a KNOWN collateral fall at 4,000 records and above** (FINDING 26), dose-dependent, and must be quoted with any use of this lever |
 
 **Pre-registered outcome, written before the run.** Arm two is already nailed
 (`gen_entropy = 0.000` at every budget). Arm one now depends on whether the **forced-basis**
@@ -235,3 +237,47 @@ roughly `0.075`, which is **still above the band**. So: if the clean baseline do
 remains in `never made to fall`, and the coverage clause stays `FAIL`. D-S4-4 makes the arm
 **satisfiable in principle**; it does not make it pass, and a re-point that is followed by a
 pass it did not earn would be the band change this project refuses, wearing a different name.
+
+---
+
+### 2026-08-20 (night) — `D-S4-7` applied: `G4.7` moves to the generated sample, the corpus check becomes `G4.15`
+
+🔴 **`FINDING 46` in one line: `G4.7` never once looked at the model.** It was scored on
+`train_recs`, before the first optimiser step, so the only thing it could ever measure was the
+Step 3 build. It read `31560/31560` at the start of the `it` fold — and that fold's epoch 1 then
+generated **599 terminated diaries out of 600**. One diary ran past its terminator, the trainer
+printed the count on the epoch line, and **no gate in the battery scored it.**
+
+**What changed in `tools/4thJ_step4_train.py`** (1,808 → 1,867 lines, backup
+`4thJ_step4_train.py.bak_ds47`, md5 `f6746949271e0164de0fa31de66499c0`):
+
+* `gate_g4_15(recs)` — the corpus reading, **byte-for-byte the old arithmetic and the old
+  threshold** (`TH.G4_7_REQUIRED_FRACTION`, unchanged at `1.0`), under a new id. Run once at
+  training start; carried in `gates_at_start` where `G4.7` used to sit.
+* `gate_g4_7(gen_texts)` — the same rule applied to the **generated sample**, scored at every
+  validation epoch and at every `D-S4-5` mid-epoch probe. It writes `g4_7_verdict` into the
+  metrics row and `G4.7` into `detectors["epochs"]`, and the epoch line now prints a verdict
+  instead of a bare count.
+* No threshold moved, no band moved, and no other gate changed what it reads.
+
+🟢 **The re-pointed gate has already been seen failing, on real output, at zero compute cost.**
+Replayed against the three fold logs already on disk: `es` PASS, `uk` PASS, `it` **600/600 at
+epoch 0 and 599/600 at epoch 1 → FAIL**. That is the first model-side defect any Step 4 gate has
+caught on a LOCO fold. It co-occurs with the `it` epoch-1 runaway (`G4.1` FAIL with all six strata
+**above** the band); co-occurrence is not causation and is recorded as co-occurrence.
+
+🔴 **The perturbation table had to move with it.** `strip_eor_1pct` edits the corpus, so since
+this ruling it fells **`G4.15`**, not `G4.7` — a run scored against the old table would credit the
+fall to a gate the lever cannot reach. `G4.7`'s own lever is `strip_eor_gen` in
+`tools/4thJ_step4_g47_coverage.py`, which was written for exactly this basis and needs no training
+run. **It is deliberately not duplicated inside the trainer:** one lever, one implementation, no
+drift.
+
+⚪ **Two comments inside the trainer that named the wrong gate were corrected** (`DiaryDataset`
+and the `strip_eor_1pct` block, both of which explained themselves in terms of "`G4.7` reads
+`train_recs`" — true before the ruling, false after it).
+
+🔴 **Still owed:** the gate count in the 2026-08-14 entry above ("Fourteen gates, fifteen
+perturbations") is now **fifteen gates, sixteen perturbations**. Left as written, because that
+entry is a dated record of what was true when it was written; the current count is the gate table
+at the top of this document.

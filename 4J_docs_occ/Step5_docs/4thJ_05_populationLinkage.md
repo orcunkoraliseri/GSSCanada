@@ -7,7 +7,20 @@
 
 ## STATUS
 
-**✅ DECIDED by `RL09`. Implementation OPEN, nothing built.**
+**✅ DECIDED by `RL09`. Implementation OPEN.** 🟢 **2026-08-21: work item 5.1 is COMPLETE for all
+three folds** — `marginals_{uk,es,it}.csv` and `econ_11plus_{uk,es,it}.csv` exist with full provenance,
+so `G6.1`'s raked-donor null is computable on every fold and Italy is off the critical path.
+
+🟢 **2026-08-21 (afternoon): `strat_hh_type` IS NOW ON A PERSON BASIS IN ALL THREE FOLDS** —
+`hhtype_person_{es,uk,it}.csv`. `D-S5-6`, `D-S5-7` and `D-S5-8` are all CLOSED, and `D-S5-8` was
+dissolved rather than answered: no country needed a conversion factor. 🔴 **`FINDING 60` and the new
+`D-S5-9`**: the three offices classify "family plus other people" two different ways, `es`/`uk` on
+convention A and `it` on convention B, and the difference is COUNTRY-CORRELATED. All three person
+files are on A; `marginals_it.csv`'s HOUSEHOLD rows are still on B and disagree with Italy's own
+person file. See the 2026-08-21 (afternoon) Progress Log entry.
+
+**Items 5.2, 5.3 and 5.4 remain unbuilt and no Step 5 gate has been run.** Step 5.2's only remaining
+blocker is that the raking donors are the Step 3 corpus, which lives on Speed.
 
 ---
 
@@ -254,7 +267,7 @@ household re-split met when it proved 0 texts differed. It also must not be take
 
 | | question | recommendation |
 |---|---|---|
-| **(a)** | `G5.4` scope | 🔴 **Exclude `country` from `G5.4`'s membership test and say why in the gate's own text**, keeping the other five fields at 100 %. An unseen `country` is the design; an unseen `strat_hh_type` is a bug, and today one gate cannot tell them apart. **Do not weaken the threshold** — narrow the field set, and name the narrowing. |
+| **(a)** 🟢 **RULED 2026-08-20 (a), APPLIED** | `G5.4` scope | 🔴 **Exclude `country` from `G5.4`'s membership test and say why in the gate's own text**, keeping the other five fields at 100 %. An unseen `country` is the design; an unseen `strat_hh_type` is a bug, and today one gate cannot tell them apart. **Do not weaken the threshold** — narrow the field set, and name the narrowing. |
 | **(b)** | the unmeasured half of (a) | 🔴 **Add a measurement, not a waiver.** Nothing currently reports what the model does with the unseen country token. Cheapest honest version: at Step 7, generate one held-out batch with the country token **and** one with it replaced by each held-in token, and report whether the output moves. If it does not move, the token is inert and the conditioning is carried entirely by the other five fields — which would be a **major** result about how transfer is actually working, and it is invisible to every gate now written. |
 | **(c)** | `G6.7`'s encoder path | Add a declared control-token hook to `encoder.py` (e.g. an explicit opt-in argument, default off, refusing silently-unknown values as it does now), **and prove it a no-op** by re-encoding the corpus and asserting byte-identity on all 73,254 records. 🔴 **`prereg.md` is NOT edited** — it is correct; the encoder is what cannot serve it. |
 
@@ -587,7 +600,7 @@ already verified should not be believed on the two countries we cannot check.
 | | question | recommendation |
 |---|---|---|
 | **`D-S5-2`** | The 8.06 % `One family only: All aged 65 and over` block. Fold into `couple_no_children`, split it pro rata between `couple_no_children` and `single_parent_with_children`, or hold it out until `L26` D2 reports whether ONS publishes a split? | 🔴 **Hold, pending `L26` D2.** It is 8 % of the household base and pro-rata splitting invents a composition the source declines to state. |
-| **`D-S5-3`** | `strat_econ_status` for `11-14` and `75+`, which no census publishes at either end. Assign one convention to all folds, or assign each fold its own observed convention? | 🔴 **Neither as stated, and `FINDING 48` is why.** One convention imports Spain's coding into the UK and Italy; per-fold conventions require reading the held-out country's microdata, which is contamination. **Recommend a THIRD option: assign `unknown` to `11-14` in all three folds**, since `unknown` is a declared value of the field in the crosswalk for all three countries, it is the value Italy actually uses, and it is the only choice that asserts nothing the source does not say. `75+` is a separate and easier case, but state its weak fold: `retired` is the corpus modal value in all three, at `uk` 1,232 of 1,292 (95.4 %), `it` 3,420 of 4,753 (71.9 %) and `es` 1,138 of 1,933 — **only 58.9 %, because Spain also records 251 `homemaker` and 539 `other_inactive` at 75+**. So `retired` is defensible as a single convention and is NOT clean in Spain, and the Spanish figure must be quoted alongside it. |
+| **`D-S5-3`** (🟢 RULED 2026-08-20: `unknown` for `11-14` all folds, `75+` = `retired`; applied in `econ_11plus_<c>.csv`, see the late-night entry) | `strat_econ_status` for `11-14` and `75+`, which no census publishes at either end. Assign one convention to all folds, or assign each fold its own observed convention? | 🔴 **Neither as stated, and `FINDING 48` is why.** One convention imports Spain's coding into the UK and Italy; per-fold conventions require reading the held-out country's microdata, which is contamination. **Recommend a THIRD option: assign `unknown` to `11-14` in all three folds**, since `unknown` is a declared value of the field in the crosswalk for all three countries, it is the value Italy actually uses, and it is the only choice that asserts nothing the source does not say. `75+` is a separate and easier case, but state its weak fold: `retired` is the corpus modal value in all three, at `uk` 1,232 of 1,292 (95.4 %), `it` 3,420 of 4,753 (71.9 %) and `es` 1,138 of 1,933 — **only 58.9 %, because Spain also records 251 `homemaker` and 539 `other_inactive` at 75+**. So `retired` is defensible as a single convention and is NOT clean in Spain, and the Spanish figure must be quoted alongside it. |
 
 **`prereg.md` not touched**, md5 verified against its sidecar. **No gate was run and no verdict was
 changed by this entry.**
@@ -833,3 +846,423 @@ any file.**
 **`prereg.md` not touched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` re-verified against its sidecar.
 **No gate was run and no verdict was changed by this entry.** 🔴 **Step 5.1 is now Italy plus one
 yes/no.**
+
+---
+
+### 2026-08-20 (late night) — **THE SECOND ROUND OF RULINGS.** 🟢 **`D-S5-3` IS CLOSED, `FINDING 51` IS APPLIED, AND SPAIN'S MICRODATA BASIS IS NOW RULED RATHER THAN MERELY RECORDED.** 🔴 **APPLYING THE FIVE-BAND FIT SURFACED `FINDING 52`: THE RAKING ENGINE DELETES A DONOR CATEGORY THE TARGET NEVER NAMES, AND REPORTS A PERFECT FIT WHILE DOING IT.** 🔴 **ITALY IS NOW THE WHOLE OF THE CRITICAL PATH.**
+
+The author ruled all three open items, each as recommended. Full derivations and hashes are in
+`outputs_step5/marginals_provenance.md`, **Part III (sections 12-15)**, which supersedes Part II's
+list of what 5.1 owes.
+
+| item | ruling | effect on disk |
+|---|---|---|
+| §9.2 — Spain's age and sex basis | **keep the microdata basis** | none; `marginals_es.csv` unchanged, md5 `32e1d97d0c107ee8d2eb7034abd18a8a` |
+| `FINDING 51` — the Spanish econ fit | **`es` on five bands, `uk` on six** | `tools/4thJ_step6_rakeddonor.py` 173 → 227 lines; selftest 133 → 194 lines, **23 → 34 checks** |
+| `D-S5-3` — econ status outside 16-74 | **`unknown` for `11-14` all folds; `75+` = `retired`** | 🟢 **NEW** `econ_11plus_uk.csv` md5 `b4b3935816bf238c2f3c3248e578412f`, `econ_11plus_es.csv` md5 `24e3b6f3625f8dc2a3dff9ba38db9a73` |
+
+#### 🔴 `FINDING 52` — a null that was about to be built on a pool that had been silently cut by a sixth
+
+Handing `rake()` Spain's **five**-band target against a donor pool carrying **six** is not a
+no-op. `rake()` builds its IPF factors only from the categories the target names, so a donor whose
+category is absent hits `factor.get(..., 0.0)` and is multiplied by **zero** — not merged, not
+flagged, not counted. **Deleted.**
+
+Measured on a 120-donor `uk + it` pool against Spain's five published bands: **20 of 20 `homemaker`
+donors given weight exactly `0.0`, 16.67 % of the pool gone, `max_dev_pp` reported as 5.6e-15, and
+no error raised.** 🔴 **The diagnostic reports a flawless fit precisely because it converged on the
+categories that survived** — the sixth had been annihilated before the deviation was measured, and
+nothing in the return value shows it. Implemented naively, the `es` null would have looked *better*
+for having lost a sixth of its donors.
+
+⚪ **The engine already guarded the mirror image and it does not catch this.** `rake()` refuses a
+target naming a category **no donor has** ("IPF cannot create them"). The dangerous direction — a
+donor carrying a category **the target never names** — was open. A check that passes for the wrong
+reason is indistinguishable from a check that passes.
+
+**Fix, additive.** A new optional `collapse={variable: {donor_category: target_category}}` applied to
+a *copy* of the donors before raking, with its own two guards; and **Guard 5**, which raises on any
+orphan donor category, naming the count and the categories. 🟢 **A collapse is stamped onto the
+provenance label** — `…marginals_es.csv@2026-08-20|collapse=strat_econ_status:homemaker>other_inactive`
+— which buys a third protection free: `score_margin()`'s existing handicap guard **now refuses to
+compare a five-band null against a six-band model** without a line being written for it.
+
+**Seen failing, then seen passing.** Guard 5 fires on the uncollapsed pool; the collapsed run
+converges at 3.89e-14 pp keeping **120 of 120** donors; collapsing into an unnamed category and
+collapsing a variable nobody rakes on are both refused; callers that never needed a collapse come
+back `collapse=None` with the label untouched. 🟢 **The 23 pre-existing checks were re-run green
+BEFORE the new ones were added**, so the change is *shown* additive, not asserted — the Leg-3
+bit-identity precedent, now indexed at `Resources/preprocessing_precedents.md` §4.
+
+🔴 **Step 5.2 must rake `es` with `collapse={"strat_econ_status": {"homemaker": "other_inactive"}}`.**
+Not by dropping donors, and not by leaving `rake()` to work it out — as of Guard 5 it will refuse.
+
+#### 🟢 `D-S5-3` applied — and the age bands do not align with the econ base
+
+The censuses publish economic activity for **16-74**; the synthetic population starts at **11**.
+`11-14` → `unknown`, `75+` → `retired`, both as ruled. 🔴 **But `15-24` straddles the econ base, so a
+third slice falls out that `D-S5-3` did not cover: the 15-year-olds.** They are **1.415 %** of the
+UK's 11+ base and **1.027 %** of Spain's. Assigned `unknown` by the ruling's own argument — the
+census is equally silent at 15 — and flagged as **a one-line confirmation owed**. Reading it off the
+corpus was rejected for the two reasons that already killed `RL24`'s proposal: it would either
+import one country's convention as universal, or require reading the held-out country's own data.
+
+The slice is never counted directly. It is the **residual** of the four bases already in
+`marginals_<c>.csv`, so it cannot drift from them:
+`age15 = base(11+) − band(11-14) − base(16-74) − band(75+)`.
+🟢 **Independently checked for the UK**, where `QS103UK` publishes single years: 774,892 minus the
+scaled `DC1104EW` communal count (11,571.87) gives 763,320.13 against a residual of 763,320.32 —
+**the two agree to 0.19 persons.**
+
+| | `uk` | `es` |
+|---|---|---|
+| `unknown` (= `11-14` + age 15) | **3,712,013.70 (6.882 %)** | **2,170,562.74 (5.261 %)** |
+| `retired` (= published + `75+`) | **10,964,343.30 (20.327 %)** | **9,308,468.47 (22.564 %)** |
+| `homemaker` | 1,979,621.62 (3.670 %) | **blank — `FINDING 51`** |
+| partition residual vs base | **−0.00** | **0.00** |
+
+🔴 **`retired` roughly doubles and becomes the second-largest band** — UK 14.02 % → **20.33 %**,
+Spain 14.99 % → **22.56 %**. Any statement about retired-person occupancy must name its base. **The
+two files are not interchangeable:** `marginals_<c>.csv` carries published fields on published bases,
+`econ_11plus_<c>.csv` carries a *convention* applied on top. Step 5.2 rakes on the latter; anything
+citing a census figure quotes the former.
+
+⚪ And `75+` = `retired` is **not clean in Spain**: corpus-modal at `uk` 95.4 % and `it` 71.9 % but
+**`es` only 58.9 %**, because Spain also records 251 `homemaker` and 539 `other_inactive` at 75+.
+Quote that figure wherever this marginal is used.
+
+⚪ `unknown` now carries real mass (6.9 % uk, 5.3 % es) where in `marginals_<c>.csv` it is a `0` row
+flagged `NOT_PUBLISHED`. Donors can carry it: it is a declared crosswalk value in all three
+countries, and in Italy it **is** the `11-14` band (`FINDING 48`).
+
+#### 🔴 The LOCO asymmetry is now ruled, not merely recorded
+
+Keeping Spain's age and sex on the microdata basis was the right call against the alternative —
+mixing two universes inside one file — but it means **three of Spain's four marginal fields are
+tables we tabulated ourselves against three of four published aggregates for the UK.** In LOCO the
+held-out country's marginal carries the whole of the null's information, so **the folds are not
+scored against sources of equal standing.** A declared property of the design, to be stated wherever
+a cross-fold comparison of `G6.1` margins appears.
+
+#### New and changed artefacts
+
+`outputs_step5/econ_11plus_uk.csv`, `outputs_step5/econ_11plus_es.csv`,
+`tools/4thJ_step5_econ11plus.sh` (regenerates both from `marginals_<c>.csv` alone),
+`tools/4thJ_step6_rakeddonor.py` (+54 lines), `tools/4thJ_step6_rakeddonor_selftest.py` (+61 lines,
+34/34 green), `marginals_provenance.md` 663 → 889 lines with **Part III**. 🟢 Also written at the
+author's instruction: **`4J_docs_occ/Resources/preprocessing_precedents.md`**, an index of the 2J and
+3J preprocessing precedents to consult *before* any future preprocessing decision.
+
+**`prereg.md` NOT touched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` re-verified against its sidecar.
+**No gate was run and no verdict was changed.**
+
+🔴 **STEP 5.1 IS NOW ITALY, PLUS ONE LINE ON THE 15-YEAR-OLDS.**
+
+---
+
+### 2026-08-20 (execution pass) — decision items 3 and 4 applied: `G5.4` narrowed, `D5.1` registered
+
+🟢 **Item 3 (a).** `G5.4` now scores the **five non-`country` prefix fields** —
+`strat_age_band`, `strat_sex`, `strat_hh_type`, `strat_econ_status`, `strat_day_type`. **The
+threshold did not move**: it is still 100 %, on every one of those five. What moved is the field
+set, and the gate's own row now says so, which was `D-S5-1 (a)`'s whole condition.
+
+🔴 **One correction made in execution, not silently.** The rulings document lists the five fields
+as ending in `diary_day`. That is wrong twice over: `tools/encoder.py:86` `PREFIX_FIELDS` names
+`strat_day_type` as the sixth prefix field, and `diary_day` is not a prefix field at all — it is
+the raw column `FINDING 53` showed carries **three different meanings** across the three countries
+(`es` 1-7 day of week, `it` 1-3 day *type*, `uk` 1-2 *which of the respondent's two diaries*).
+Scoring membership on it would have compared values that are not the same kind of thing across
+folds. The gate is scoped to `PREFIX_FIELDS` **minus `country`**, read from the encoder.
+
+🟢 **`G5.11` added, because the narrowing needs a guard.** A field list is only safe while it is
+read from the encoder. `G5.11` fails if the `G5.4` checker restates the five names as a literal;
+its perturbation is to restate them and then add a seventh prefix field, at which point `G5.4`
+keeps passing on a prefix that no longer exists. That is the failure the narrowing could otherwise
+create, so it gets its own gate rather than a comment.
+
+🟢 **A perturbation `G5.4` did not have: run the design as specified.** Generating the held-out
+fold with its own `country` token must now fell **nothing**. Before this ruling that was the
+experiment felling its own gate on all three folds; it is now the check that the ruling was
+actually applied.
+
+🟢 **Item 4 (a) — `D5.1`, reported, never a gate.** Entropy at the first body position and the
+first-episode `ACT` total-variation distance, held-out token against each seen token, same prefixes.
+🔴 **No band is pre-registered for it, on purpose** — no published number says what an
+out-of-distribution conditioning token should do, and a band written here would be a threshold
+chosen after seeing the design. 🔴 **It cannot be run yet**: it needs a fold checkpoint and a
+generation pass, so it is owed at Step 7 and named here so it cannot be forgotten.
+
+⚪ **Nothing executable changed.** No Step 5 gate runner exists yet; when it is written, `G5.4`
+takes its field list from `tools/encoder.py`.
+
+---
+
+### 2026-08-21 — 🟢 **ITALY IS BUILT. STEP 5.1 IS 3 OF 3 AND `G6.1` IS COMPUTABLE ON EVERY FOLD.** 🔴 **`FINDING 56`: ISTAT'S OWN VARIABLE LABEL FOR `P139` IS WRONG, AND ONLY ARITHMETIC CATCHES IT. `D-S5-6` AND `D-S5-7` OPEN.**
+
+Full provenance in `outputs_step5/marginals_provenance.md` **Part IV, §16-§22**. Builder:
+`tools/4thJ_step5_build_it.py`. Nothing on the cluster; national aggregation of 366,863 census tracts
+runs locally in ~40 s and touches no GPU.
+
+#### What was actually retrieved, after the warehouse was retried a fourth time
+
+`esploradati.istat.it` is still dead — `193.204.90.13`, TCP 443 connect timeout, `000` after 15 s;
+`dati.istat.it` 302s to `avvisi.istat.it/IdotStat/`; `sdmx.istat.it` and
+`dati-censimentopopolazione.istat.it` both 302 into `esploradati`. **Four attempts across three days.
+It is treated as dead, not as a wrong URL.**
+
+Two live routes replaced it:
+
+* 🟢 **ISTAT's own STATIC census-tract release**, on `www.istat.it`, which is up:
+  `dati-cpa_2011.zip`, 52,442,848 bytes, md5 `bab8d744088761397c09ef8c70ca53d4` — 366,863 tracts x
+  140 variables, all 20 regions. **This is the national statistical office, i.e. `D-S5-1`'s route 3**,
+  and it is where the private-household base and **all six economic bands** come from.
+* 🟢 **Eurostat's 2011 Census Hub** via the dissemination API — single-year age, sex-by-age, the
+  collective-quarters profile, and **household type**.
+
+#### 🟢 The two routes were cross-checked before either was used, and fifteen shared quantities are identical **to the person**
+
+Total population, males, females, each of the eight age bands, labour force, employed, unemployed and
+inactive: **residual 0 on all fifteen.** The builder raises `BuildError` and writes nothing if any one
+of them disagrees, so this is a gate rather than a remark. It is also the evidence that the Eurostat
+cube is ISTAT's own transmitted tabulation and not a second-best substitute.
+
+#### 🟢 Italy is the BEST-conditioned fold on two fields, which is itself an asymmetry to declare
+
+* **Six economic bands.** ISTAT publishes `casalinghe` (`P130`), so `it` is fitted on **six** bands
+  where `es` has five (`FINDING 51` — the Spanish census has no `homemaker` category at all).
+* **Sex is EXACT on the 11+ base**, because `cens_11ag_r3` is sex x single-year. The UK's sex marginal
+  is an all-ages `APPROXIMATION` — no UK-wide sex-by-age table exists.
+* **`11-14` is EXACT**, from single-year age, with no fifths assumption.
+
+🔴 **Being better-conditioned is not neutral in a LOCO design.** Three folds fitted at three different
+resolutions is a third basis asymmetry, alongside `D-S5-1`'s per-fold census-year gap and `FINDING 39`'s
+country-dependent MAPE floor. It goes in the same table as those, and it is never averaged away.
+
+#### 🔴 `FINDING 56` — ISTAT's published label for `P139` contradicts the variable's own population
+
+The tracciato reads `P139;Popolazione residente - totale di 15 anni e più percettori di reddito da
+lavoro o capitale` — income from **work** or capital. But `P139` lives inside `P128`, the population
+**outside the labour force**, which cannot be drawing income from work. The label is self-contradictory
+and reading it would have mapped the band wrongly or dropped it.
+
+Arithmetic settles it, exactly:
+
+```
+P130 (casalinghe) + P131 (studenti) + P135 (altra condizione) + P139  =  25,122,406
+P128 (non appartenente alle forze di lavoro)                          =  25,122,406
+                                                             residual =           0
+```
+
+`P139` is the fourth non-labour-force band — **pension** or capital income — and the wording is a typo.
+It is mapped to `retired` **on the identity, never on the label**.
+
+🔴 **This is `FINDING 47`'s class, one level deeper: there the conflation was ours, here the defective
+label is in the national statistical office's own published documentation.** The general rule stands
+and now has a second instance: a plausible label is not a verified one, and the check that catches it
+is an identity the source asserts about itself.
+
+#### 🟢 `D-S5-5` applied, and Italy's communal population is Spain-like, not UK-like
+
+`PF2 = 59,132,045` persons in famiglie against `P1 = 59,433,744` gives convivenze `301,699`, **0.5076 %
+of the population** — Spain is 0.515 %, the UK 1.78 %. **The UK is the outlier and stays the outlier.**
+Age and sex are corrected by the Eurostat CLQ profile scaled to ISTAT's convivenze total,
+`k = 0.858126` — the same construction the UK used with `DC1104EW` at `k = 1.12096051`. The 11+
+private-household base is `53,043,789.10`.
+
+#### 🔴 The build REFUSED itself once, and the refusal was right — a `FINDING 50`-class base mixture
+
+The first run produced an `econ_11plus_it` partition missing its base by **295,531.65 persons**. That
+residual is not a rounding: it is **exactly the collective population aged 15+**, because the six
+economic bands are `ALL RESIDENTS 15+` while the base is `PRIVATE HOUSEHOLD 11+`. Two universes in one
+partition — the same error `FINDING 50` found in the Spanish marginals, caught this time by a check
+that was written before the number existed.
+
+It is closed by carrying the composition onto the private-household 15+ total, and two independent
+derivations of that total now agree to `-0.0000` persons:
+
+```
+base_11plus - band(11-14)       = 53,043,789.10 - 2,231,619.75 = 50,812,169.35
+base_15plus - collective_15plus = 51,107,701.00 -   295,531.65 = 50,812,169.35
+```
+
+🔴 **The assumption cannot move `G6.1`**: `rake()` consumes SHARES and a proportional rescaling leaves
+every share bit-identical. It changes the base only.
+
+#### 🔴 `D-S5-3` mostly does NOT apply to Italy, so `unknown` and `retired` now mean three different things
+
+Italy publishes economic activity for **15+**, not 16-74. So on the `it` fold **age 15 is published**,
+**`75+` is published**, and **`unknown` holds the `11-14` band alone**:
+
+| fold | `unknown` | what is in it | `retired` | basis |
+|---|---|---|---|---|
+| `uk` | 6.88 % | 11-14 + age 15 | 20.33 % | published 16-74 **+ imputed 75+** |
+| `es` | 5.26 % | 11-14 + age 15 | 22.56 % | published 16-74 **+ imputed 75+** (only 58.9 % clean) |
+| `it` | **4.21 %** | **11-14 only** | **23.76 %** | **published throughout** |
+
+🔴 **This is `FINDING 48`'s species — a category whose content is a country fingerprint — and it now
+affects two categories, not one.** Any `it`-fold economic result is read with this table beside it.
+
+#### 🔴 Two decisions this entry opens, both for the author
+
+**`D-S5-6` — is Eurostat admissible for `strat_hh_type`, and for age/sex/CLQ?**
+`D-S5-1` ruled route 3, the national offices, and `marginals_provenance.md` §15 records "Eurostat is
+not admissible". **The ruling's two stated grounds do not reach these tables**: ground 1 was that
+Eurostat merges `homemaker` into `other_inactive` — economic status, which is taken from ISTAT here and
+has all six bands; ground 2 was that Eurostat drops the UK from the 2021 round — this is Italy, 2011.
+And the fifteen-quantity cross-check is exact. **But the letter of the ruling says national offices,
+and this is the author's basis call, not Step 5's.**
+🔴 **The cost if the answer is no:** ISTAT's tract file publishes households by SIZE and **never by
+TYPE**, so `strat_hh_type` is not derivable from the national office at all. Italy would have **three
+of four fields and no household-type marginal**, and `G6.1` would rake `it` on three variables where
+`uk` and `es` rake on four. Age and sex would fall back to 5-year bands and an all-ages sex
+approximation — recoverable, but a precision loss.
+**Recommendation: (a) admit it, narrowly** — for these four tables, on the ground that both stated
+objections are inapplicable and the agreement is exact — and record the narrowness so it cannot be
+read as reopening Eurostat for economic status or for the UK.
+
+**`D-S5-7` — accept the Italian economic marginal on ALL RESIDENTS 15+?**
+No published Italian table crosses residence type with economic status; the UK had `DC1602EW` and there
+is no equivalent. **The bound is measured**: if every one of the 295,531.65 collective residents aged
+15+ were `retired`, the worst band moves **0.44 pp** (`retired` 24.8051 % → 24.3678 %). For comparison
+`D-S5-5` moved the UK's `student` band by 9.56 pp.
+**Recommendation: (a) accept and declare**, quoting the 0.44 pp bound wherever the `it` econ marginal
+is used.
+
+#### What was NOT done here
+
+* **No IPF, no synthesis, no gate run.** This is item 5.1 only. Step 5.2 is unblocked for all three
+  folds and has not been started in this entry.
+* **`prereg.md` NOT touched** — md5 `e4243e07cdd80c9c846b91f40e3e8c45` re-verified against its sidecar
+  before and after.
+* 🔴 **The three folds' `strat_hh_type` marginals are still on a HOUSEHOLD base while donors are
+  PERSONS.** That conversion is Step 5.2's first job in every fold, not just Italy's.
+* 🔴 **`marginals_<c>.csv` `share` columns are written to 6 dp and `econ_11plus_uk.csv` sums to
+  `0.999999`.** `rake()` refuses a target marginal whose shares miss 1.0 by more than `1e-6`, so the
+  Step 5.2 driver must build its targets from the `count` column and normalise — never from `share`.
+  Found by reading the files back, not by a gate; no gate covers it yet.
+
+---
+
+### 2026-08-21 (afternoon) — 🟢 **`D-S5-6`, `D-S5-7` AND `D-S5-8` ALL CLOSED. `strat_hh_type` IS ON A PERSON BASIS IN ALL THREE FOLDS, AND NO COUNTRY NEEDED A CONVERSION FACTOR.** 🔴 **`FINDING 59` (a fourth published-label defect) AND `FINDING 60` + `D-S5-9` (the three offices use two different household classifications, and the difference is country-correlated).**
+
+Full provenance: `outputs_step5/marginals_provenance.md` **Part V** (§15–§20). Builders:
+`tools/4thJ_step5_build_it_microdata.py`, `tools/4thJ_step5_hhtype_person_es_uk.py`. Outputs:
+`hhtype_person_{es,uk,it}.csv`, `econ_basis_check_it.csv`. Local, no cluster.
+
+#### What arrived
+
+The author supplied **ISTAT's 2011 census 1 % public-use microdata sample**
+(`Datasets/CensPop2011_1%_2011_IT-…`, 594,247 person records, md5
+`9f3ae2f2f9022e7e73ccd3107c0aa7a9`). It is a national-office release, so it is inside `D-S5-1` route
+3 and Eurostat is not involved in anything derived from it.
+
+Two more sources were pulled in alongside it: the **INE Censo 2011 person microdata** (re-fetched;
+the copy left in an earlier session's scratchpad turned out to be a **truncated partial download** —
+145,035,264 bytes, not a valid zip — and the real file, md5 `0c8f9b44b70b079b25f2f20fdbd2e83f`,
+matches the hash recorded on 2026-08-20 byte for byte), and **ONS `QS112UK`**, which had been sitting
+in `raw/` since 2026-08-20 **unused**.
+
+#### 🟢 `D-S5-8` DISSOLVED — the person basis was published or tabulable in every country
+
+The decision asked how to convert a household marginal onto a person basis for Italy and offered a
+mean-household-size assumption as the fallback. **No conversion is needed anywhere:** `QS112UK`
+counts *people*, `ESTHOG` sits on every Spanish person record, `TIPOLOGIA_FAM` sits on every Italian
+person record. Zero conversion factors, zero new assumptions, three folds.
+
+🔴 **What it was worth.** Raking a person file onto a household marginal would have driven
+one-person households to **31.0 %** of UK *people*. They are **13.0 %** of people and 31.0 % of
+*households* — a factor of **2.4** on the largest single stratum, in the direction that makes the
+null model look like a country of people living alone.
+
+#### 🔴 `FINDING 59` — `TIPOLOGIA_FAM`'s classification page is offset from its own codes
+
+The page reads as a hierarchy. The data do not. Cross-tabulated against `NROCOMPO` and against the
+presence of a spouse/partner and of children: `tf` **1, 2 and 3** all have **exactly one component**,
+no couple, no children, and together they are **76,391 households = exactly the count of
+`NROCOMPO == 1`**. `tf` **5** is exactly **2.00** persons per household. **Same class as
+`FINDING 47`, `FINDING 56` and TABULA's `F_red_htr` unit** — that is four published-label defects in
+three official sources, all caught by reading values instead of labels. The mapping is keyed on
+verified code behaviour and the verification re-runs as a refusal on every execution.
+
+Two candidate readings were scored against the Eurostat full count: nucleus code **1.49 %** worst
+deviation, composition (`REL_PAR`) **71.90 %**. The nucleus reading is adopted, and its agreement
+independently validates the Eurostat household mapping built on 2026-08-21 morning.
+
+#### 🔴 `FINDING 60` — two conventions, and the check that caught it was a RATIO
+
+A household holding a nucleus **plus other resident people** goes to `other_complex` under
+**convention A** (ONS, INE) or keeps its nucleus type under **convention B** (Eurostat, hence
+`marginals_it.csv`). `es` and `uk` were on A, `it` on B, in shipped files, and nothing had compared
+them.
+
+The first version of the Spanish builder deliberately used **B**, to match Italy. The
+mean-household-size check then read **`es other_complex` = 1.6495 persons per household** — 🔴
+**impossible**, since every household in that class holds at least two people. Neither file is wrong
+on its own and neither would fail any check applied to it alone; **only the ratio between the two
+bases could show it.** The guard band was 1.5–6.0 and let it through: it is now **1.95**–6.0.
+
+**Convention A is adopted, and it is forced rather than preferred.** `QS112UK` publishes *Other
+household types* as one **indivisible** class, so the UK cannot be put on B by any means. The
+corroboration, which was not arranged: under A, `couple_no_children` has a mean size of **2.0000** in
+Spain, **2.0000** in Italy and **2.0022** in the UK — and the UK's figure is the same **2.00042**
+that `D-S5-2` measured for a different reason. Under B, Italy reads 2.0794.
+
+Cost: **7.222 % of Italian persons** and 4.446 % of Italian households move; `other_complex` goes
+5.62 % → **12.84 %** of persons. Printed on every run, not buried.
+
+#### 🔴 `D-S5-9` — OPEN, and it is the only new decision
+
+`marginals_it.csv`'s **household**-basis `strat_hh_type` rows are still on convention B and now
+contradict Italy's own person file. Only the ISTAT microdata can reconcile them, and that edits a
+shipped file.
+
+* **(a) Recommended** — rewrite those five rows from the ISTAT microdata under convention A. Cost:
+  they stop being a full count and become a 1 % sample (deviation ≤1.49 %).
+* (b) Leave them on B; the published table then contradicts the raked one.
+
+⚪ **This does not block Step 5.2** — the rake consumes the person files, and all three are on A.
+
+#### 🟢 Spain reproduces its own published household table to under one household
+
+`ESTHOG` and `NMIEM` sit on the same record, so summing `weight / NMIEM` reconstructs households.
+Against the PC-Axis table already in `marginals_es.csv`: **five categories, five differences of
+−0.00.** The two bases are provably the same classification and the PC-Axis table is independently
+confirmed.
+
+#### 🟢 `D-S5-7` — the 0.44 pp bound becomes a 0.178 pp MEASUREMENT, and the ruling stands
+
+Both universes tabulated from the same ISTAT records: **max basis effect 0.178 pp**, signed —
+employed **+0.178**, retired **−0.177**, other-inactive **−0.127**, the expected direction for a
+collective sector that is overwhelmingly care homes.
+
+🔴 **But the same records on the same universe as the published tract table deviate from it by up to
+0.207 pp** (1 % sampling error plus ISTAT's disclosure control), which is **larger than the effect it
+would correct**. Rewriting `econ_11plus_it.csv` from the sample would trade a known signed 0.178 pp
+bias for an unsigned random 0.207 pp error. 🟢 **So it is not rewritten**; `D-S5-7` stands as ruled,
+with a measured effect and a direction replacing the bound. Recorded in `econ_basis_check_it.csv`.
+
+#### 🟢 `D-S5-6` — answered, and narrower than expected
+
+Eurostat was admitted narrowly for Italy. In the event the microdata supplies household type
+outright, so Eurostat's remaining role in `marginals_it.csv` is single-year age, the sex split and
+the collective-quarters profile only.
+
+#### ⚪ The 6-dp rounding trap, closed at the source
+
+At six decimals the five shares sum to **0.999999** and `rake()` refuses a target that misses 1.0 by
+1e-6 — the exact hazard flagged on 2026-08-20 for `econ_11plus_uk.csv`. The writers now emit **nine**
+decimals and, more to the point, **re-read the file they just wrote** and refuse if the shares *as
+written* miss 1.0 by more than 1e-7. Checking the intent would not have caught it. ⚪ The first
+tolerance chosen was 1e-9 and it **refused a correct file** on the UK's 0.999999999; the band was
+moved to 1e-7, still an order of magnitude inside what `rake()` requires.
+
+#### 🔴 What was NOT done
+
+* **`ETA_CLASSI` bottoms out at "0-14", so the `11-14` band cannot be recovered from the Italian
+  microdata at any price.** `marginals_it.csv` keeps its published-table derivation, and the builder
+  **refuses to emit an age marginal at all** rather than emit a 15+ one that looks like the whole
+  thing.
+* **Step 5.2 is still not built.** Its only remaining blocker is that the raking donors are the Step 3
+  corpus, which lives on Speed and is not on this machine.
+* No Step 5 gate has been run. Items 5.3 and 5.4 untouched.

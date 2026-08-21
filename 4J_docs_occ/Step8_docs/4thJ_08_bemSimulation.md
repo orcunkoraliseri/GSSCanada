@@ -7,7 +7,7 @@
 
 ## STATUS
 
-**OPEN. Scoped by `RL13`. Nothing built.**
+**OPEN. Scoped by `RL13`.** 🟢 **2026-08-21: work item 8.1 has PARAMETER TABLES for all three folds** — `outputs_step8/archetype_parameters_{es,uk,it}.csv` (24 / 36 / 42 archetypes) with `archetype_parameter_provenance.md`. 🟢 **2026-08-21 (afternoon): `D-S8-2` item 5 RULED (c) and PRE-REGISTERED** — the `phi_int` split is a five-level sensitivity `f ∈ {0.00, 0.15, 0.30, 0.50, 1.00}` with `f = 0` as the control, annual mean held at exactly 3.0 W/m² throughout (§9 of the provenance file). The injected campaign is therefore **five times larger**: 102 archetypes × 5 = 510 archetype-runs per weather specification. 🔴 **No IDF exists**, **five** of the six geometry/zoning/load decisions are still open (§6 items 1–4 and 6), and items 8.2–8.6 are untouched.
 
 ---
 
@@ -274,3 +274,179 @@ absorbed silently — the same class as the D-S6-2 wave gap.
 `RL24` confirms there is no library of European residential EnergyPlus models and no measured dataset
 for our archetypes, which **strengthens** the case against Guideline 14 as a bar and therefore against
 option (b). The recommendation remains **(a)**, recast as reproducibility gates.
+
+---
+
+### 2026-08-21 — 🟢 **WORK ITEM 8.1 HAS PARAMETER TABLES FOR ALL THREE FOLDS, AND B16 IS VERIFIED.** 🔴 **`FINDING 57`: THE ARCHETYPES USE THE *EU* BOUNDARY CONDITIONS, NOT THE NATIONAL ONES — SO `phi_int` IS 3.0 W/m² IN ALL THREE FOLDS AND THE NIGHT-SETBACK FACTOR IS NOT 1. 🔴 `FINDING 58`: TABULA'S `GB` TYPOLOGY IS *ENGLAND*.**
+
+Full provenance: `outputs_step8/archetype_parameter_provenance.md`. Builder:
+`tools/4thJ_step8_tabula.py`. Outputs: `archetype_parameters_{es,uk,it}.csv` — 24 / 36 / 42 archetypes.
+Local, no cluster.
+
+#### 🟢 `RL24`'s B16 is VERIFIED, and the route recorded on 2026-08-20 was one workbook short
+
+`tabula-values.xlsx` re-downloaded: md5 `7347b2cae3c4d9f5ce78221e9d5fb832`, **identical to the digest
+verified on 2026-08-20**. But every sheet of it was searched for a building-type code
+(`<CC>.<region>.<SFH|TH|MFH|AB>.…`) and **ZERO sheets carry one**. `Tab.Building.Constr`, which the
+route named, holds wall/roof/ceiling **assemblies** (`ES.Wall.ReEx.01.01`), not archetypes.
+
+The archetypes are only in `tabula-calculator.xlsx` — the 34 MB file the 2026-08-20 entry explicitly
+recorded as **NOT opened**, with B16 marked UNVERIFIED. It is opened now, md5
+`c99ddc9ffcb6dc0ae7391273d9619e37` pinned for the first time: `Calc.Set.Building`, **3,287 data rows ×
+333 columns**, one row per building variant. 🟢 **B16 confirmed.**
+
+#### 🟢 The 22 construction-year bands re-derived independently, and all 22 match
+
+Read from `Tab.ConstrYearClass`. Every boundary equals the table recorded on 2026-08-20.
+⚪ **The descriptive labels are SPAIN-ONLY** and live in `Remark_ConstructionYearClass`, not
+`Description_…` (which is empty for all 22 rows). GB and IT carry **no label at all**, so there is
+nothing to quote for them. `CTE-79` confirmed as the file's own wording for `ES.05`; `NBE-CT-79`
+appears nowhere in the workbook.
+
+#### 🔴 `FINDING 57` — the archetypes point at `EU.SUH`/`EU.MUH`, and this reverses the first reading
+
+`Tab.BoundaryCond` publishes national rows AND an EU cross-country pair. Reading the national rows
+first suggested "no night setback anywhere, and the three countries differ a lot". **Both halves of
+that are wrong for our tables.** `Code_BoundaryCond` on all 102 kept archetype rows takes exactly two
+values — `EU.SUH` for `SFH`/`TH`, `EU.MUH` for `MFH`/`AB` — in **all three folds**.
+
+| | `EU.SUH` | `EU.MUH` | `ES.SUH` | `GB.Gen` | `IT.SUH` |
+|---|---|---|---|---|---|
+| `theta_i` °C | **20** | **20** | 20 | 21 | 20 |
+| `F_red_htr1` | **0.9** | **0.95** | 1 | 1 | 1 |
+| `F_red_htr4` | **0.8** | **0.85** | 1 | 1 | 1 |
+| `n_air_use` 1/h | **0.4** | **0.4** | 0.4 | 0.59 | 0.3 |
+| `phi_int` W/m² | **3** | **3** | 3 | 4 | 2.8 |
+| `c_m` Wh/(m²K) | **45** | **45** | 45 | 32.79 | 87 |
+
+Three consequences, and none of them is cosmetic:
+
+1. 🔴 **`phi_int` = 3.0 W/m² in every fold.** One number, no split into occupants / appliances /
+   lighting, no time profile. **It is the only time-invariant load TABULA has, therefore it is the
+   injection point for the whole campaign** — the uninjected control is the run that keeps it, and
+   §8.5's injected campaign is the run that replaces it. Nothing else in TABULA can be injected into.
+2. 🔴 **There IS an intermittent-heating reduction** (0.9/0.8 and 0.95/0.85), applied as a **scalar on
+   the transmission coefficient, not a schedule**, identical across the folds. An EnergyPlus model that
+   implements a real night-setback schedule stops computing TABULA's quantity, and its difference from
+   TABULA is then partly the setback rather than the occupancy.
+3. 🟢 **Keeping the EU set removes a confound.** On it, every non-geometric boundary condition is
+   identical across `es`/`uk`/`it`, so cross-country differences come from geometry, U-values and
+   weather alone. The national set would add a 1 °C set-point difference and a factor-two air-change
+   difference, **both country-correlated, i.e. confounded with the LOCO signal itself**. Switching
+   would be a basis change and is **not taken**; it is recorded as an available sensitivity, never a
+   mixture. The builder refuses to run if the pointer ever stops being `EU.*`.
+
+⚪ **The honesty clause is now measured, not quoted.** Every sheet header of `tabula-values.xlsx` was
+searched for `schedul`, `hourly`, `sub-hour`, `tapping`, `window open`, `thermostat`, `set point`,
+`setpoint`, `zoning`, `zone`, `occupan`, `appliance`, `plug`, `lighting`, `draw`, `3d` — **not one
+appears anywhere**. `RL24`'s B17 list is CONFIRMED for schedules, appliance profiles, DHW tapping and
+3D zoning, and REFINED for setback and window opening: the slots exist, as the two scalars above.
+
+#### 🔴 A published unit that contradicts its own column, in the second official source today
+
+`Tab.BoundaryCond`'s unit row gives `F_red_htr1` and `F_red_htr4` the unit **°C**. They are
+dimensionless factors — the EU rows carry `0.9`/`0.8`, the German rows `0.8796296…`/`0.7931034…`.
+**Same class as `FINDING 47` and as `FINDING 56` (`P139` in ISTAT's own tracciato).** Two published
+label defects, in two different official sources, found in one day, both caught by reading the values
+instead of the label. That is now a pattern and not an anecdote.
+
+#### 🔴 `FINDING 58` — TABULA's `GB` typology is ENGLAND, which is worse than the recorded limitation
+
+The standing note was *"`GB` is Great Britain, not the UK; Northern Ireland is outside it"*. The file
+is stricter: **every GB archetype code is `GB.ENG.…`, and there is no Scotland or Wales row anywhere**.
+So the `uk` fold's diaries are UK-wide while its building stock is English. It belongs in the same
+table as `D-S6-2`'s wave gap and `D-S5-1`'s census-year gap.
+
+⚪ ES and IT have one climate region each (`ES.ME`, `IT.MidClim`), so no regional choice arises — but
+`IT.MidClim` standing for a country spanning Alpine to Mediterranean is a declared simplification.
+
+#### 🔴 Two contaminants the extraction had to refuse, and one of them is invisible
+
+* **166 refurbishment variants dropped.** Archetypes ship as `.001` (existing), `.002`, `.003`
+  (refurbishment levels). Only `.001` is the existing stock; scoring a refurbished variant against a
+  real diary compares our occupancy against a building that does not exist.
+* 🔴 **4 rows carry NO construction-year class**: `ES.TestRegion.MUH1..MUH4.SyAv.001.001`. They sit
+  under `Code_StatusDataset = Typology` and carry real floor areas (1,034.6–1,499.6 m²), so **neither
+  the status column nor a non-null check excludes them.** An extraction keyed on the country code alone
+  ships them and **Spain then reports seven construction-year classes where the census axis has six**.
+  The builder drops them on the construction-year class and refuses if that set ever changes.
+
+#### 🔴 The three folds do not have the same archetype structure — a fourth LOCO asymmetry
+
+| fold | archetypes | type × period cells |
+|---|---|---|
+| `es` | 24 | **24 of 24 — a complete 4 × 6 grid** |
+| `uk` | 36 | 29 of 32, with **two parallel parameterisations** in some cells (`GB.ENG.SFH.01.Gen` *and* `GB.ENG.SFH.01.Detached`) and merged-period codes (`SFH.04-08`) |
+| `it` | 42 | 42 of 48, with **composite types** (`MFH-AB`, `SFH-TH`) and **composite periods** (`.01-03`, `.04-05`) |
+
+Reference floor areas: `es` median 747.7 m², `uk` **149.4**, `it` 549.9. 🔴 **The UK median is a fifth
+of Spain's**, because the GB set is dominated by single dwellings while ES/IT carry whole apartment
+blocks. **Any per-m² comparison across folds must say which.**
+
+#### What was NOT done
+
+* 🔴 **No IDF was written.** Item 8.1 asks for archetype IDFs; what exists is the parameter table they
+  must be built from. Six decisions are named in §6 of the provenance file and **none is taken**:
+  box geometry and orientation, zoning, layer build-up behind the U-values, which archetype represents
+  a `uk`/`it` cell where two exist, what to do with the 3 empty GB and 6 empty IT cells, and **how to
+  split `phi_int` = 3.0 W/m² into occupant / appliance / lighting fractions**, which occupancy cannot
+  be injected without.
+* 🔴 **The licence is STILL unverified.** `RL24`'s IEE/IWU redistribution claim was not checked here
+  either. Owed before any derived table is published, not before it is used internally.
+* **No gate was run.** `G8.1`–`G8.4` remain as `D-S8-1` (a) left them.
+* Item 8.2 (weather) untouched.
+
+---
+
+### 2026-08-21 (afternoon) — 🟢 **`D-S8-2` ITEM 5 RULED (c) BY THE AUTHOR AND PRE-REGISTERED: THE `phi_int` SPLIT IS A FIVE-LEVEL SENSITIVITY, NOT A CHOSEN NUMBER. 🔴 THE CAMPAIGN IS THEREFORE FIVE TIMES LARGER, AND THE SETBACK SCALAR MUST NOT BECOME A SCHEDULE.**
+
+Full text: `outputs_step8/archetype_parameter_provenance.md` **§9**. §6 item 5 is struck through and
+marked closed; **items 1–4 and 6 of §6 remain open.**
+
+#### The form
+
+```
+phi_int(t) = (1 - f) * 3.0  +  f * 3.0 * g(t) / mean_year(g(t))
+```
+
+`g(t)` is the generated presence signal from `G7.13`. Three properties, each a constraint rather than
+a convenience:
+
+* 🟢 **Annual mean is exactly 3.0 W/m² at every `f`.** No run adds or removes energy against TABULA's
+  own balance, so **every difference between runs is redistribution in TIME** — which is the paper's
+  whole claim.
+* 🟢 **`f = 0` IS the uninjected control**, an endpoint of the same sweep rather than a separately
+  built model. That removes the "the control was constructed differently" objection outright.
+* 🟢 **`f = 1` brackets the effect.** If the conclusion holds at both 0.15 and 1.00, the missing split
+  does not decide it — a stronger statement than any single chosen split can support.
+
+#### 🔴 The grid, fixed before any run exists
+
+```
+f ∈ { 0.00, 0.15, 0.30, 0.50, 1.00 }
+```
+
+⚪ Deliberately **not** taken from any literature value — a spanning grid over the admissible
+interval, denser at the low end. **Reporting rule, also pre-registered: the headline result is quoted
+at every level of `f`, never at one.** A single-`f` number may not appear in the paper.
+
+#### 🔴 What it costs, stated now rather than discovered later
+
+The injected campaign multiplies by **five**: 102 archetypes × 5 = **510 archetype-runs per weather
+specification**. ⚪ Cheaper than it looks — the four injected levels share IDF, weather and schedules;
+only the gains object changes.
+
+#### 🔴 The interaction the sweep does NOT cover
+
+TABULA applies its intermittent-heating reduction as a **scalar** on the transmission coefficient
+(0.9/0.8 SUH, 0.95/0.85 MUH — `FINDING 57`), not a schedule. If the EnergyPlus model implements a
+real night-setback schedule **and** an occupancy-driven gains profile, the two stop being separable
+and the difference from TABULA is no longer attributable to occupancy. **The campaign must keep the
+scalar and must not add a setback schedule.**
+
+⚪ Also outside the sweep: the shape of `g(t)` itself (that is the object under test, not a
+parameter), and §6 items 1–4 and 6 — geometry, zoning, layer build-up, archetype selection, weather.
+
+#### 🔴 Unchanged from this morning
+
+No IDF written. TABULA licence still unverified. No Step 8 gate run. Item 8.2 (weather) untouched.

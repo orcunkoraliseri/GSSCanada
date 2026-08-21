@@ -151,13 +151,44 @@ def load_legal_act2_codes(path):
 # Field-level encoders. Each one fails loud (EncodeError) rather than
 # silently coercing or dropping.
 # ---------------------------------------------------------------------------
-def enc_country(v):
+# ---------------------------------------------------------------------------
+# Decision item 5 (a), 2026-08-20 -- G6.7's control token
+# ---------------------------------------------------------------------------
+# G6.7 asks whether the model follows its conditioning vector or a national stereotype,
+# and it asks by generating under a FICTIONAL country. The production whitelist is
+# {es, uk, it}, so `enc_country()` refused the fictional token and the gate could not be
+# run at all -- FINDING 41.
+#
+# 🔴 The hole this must not open: if the whitelist were simply widened, a real run could
+# ship a country token that never appeared in training and nothing would say so. So the
+# hook is not a widening. A synthetic token must match SYNTHETIC_COUNTRY_RE -- an `x_`
+# prefix that no ISO code has and no real value in the corpus can collide with -- AND
+# the caller must ask for it explicitly, per call, with a keyword. Both, or it fails.
+# The default is off, which means every existing caller keeps the old behaviour without
+# being edited.
+SYNTHETIC_COUNTRY_RE = re.compile(r"^x_[a-z]{2,16}$")
+REAL_COUNTRIES = ("es", "uk", "it")
+
+
+def enc_country(v, allow_synthetic_controls=False):
     if pd.isna(v):
         raise EncodeError("country is null")
     s = str(v).strip().lower()
-    if s not in ("es", "uk", "it"):
-        raise EncodeError("country %r lowercased to %r, not one of es/uk/it" % (v, s))
-    return s
+    if s in REAL_COUNTRIES:
+        return s
+    if allow_synthetic_controls and SYNTHETIC_COUNTRY_RE.match(s):
+        # 🔴 Deliberately reachable ONLY through the keyword. A synthetic token in a
+        # corpus build or a scoring run is a defect, and the keyword is what makes that
+        # defect visible in the call site rather than hidden in a value.
+        return s
+    if SYNTHETIC_COUNTRY_RE.match(s):
+        raise EncodeError(
+            "country %r is a synthetic control token, and this call did not ask for one. "
+            "Pass allow_synthetic_controls=True -- which only G6.7's fictional-country "
+            "control may do. Production paths must not." % v)
+    raise EncodeError("country %r lowercased to %r, not one of es/uk/it, and not a "
+                      "synthetic control token matching %s"
+                      % (v, s, SYNTHETIC_COUNTRY_RE.pattern))
 
 
 def enc_age_band(v):
@@ -244,9 +275,9 @@ def enc_cop(row, bitpos):
 # ---------------------------------------------------------------------------
 # Assembly
 # ---------------------------------------------------------------------------
-def encode_prefix(row):
+def encode_prefix(row, allow_synthetic_controls=False):
     fields = [
-        enc_country(row["country"]),
+        enc_country(row["country"], allow_synthetic_controls=allow_synthetic_controls),
         enc_age_band(row["strat_age_band"]),
         enc_safe_categorical(row["strat_sex"], "strat_sex"),
         enc_safe_categorical(row["strat_hh_type"], "strat_hh_type"),
@@ -265,12 +296,14 @@ def encode_episode(row, bitpos, legal_act2):
     return "%s,%s,%s,%s,%d;" % (dur, act, act2, loc, cop)
 
 
-def encode_diary(prefix_row, episode_rows_sorted, bitpos, legal_act2):
+def encode_diary(prefix_row, episode_rows_sorted, bitpos, legal_act2,
+                 allow_synthetic_controls=False):
     """prefix_row: a single row (Series/dict) carrying the 6 prefix columns.
     episode_rows_sorted: an iterable of rows for this diary, already sorted by
     episode_index, each carrying duration_min/act/act2/loc_class/cop_* columns.
     """
-    prefix = encode_prefix(prefix_row)
+    prefix = encode_prefix(prefix_row,
+                           allow_synthetic_controls=allow_synthetic_controls)
     episodes = "".join(encode_episode(r, bitpos, legal_act2) for r in episode_rows_sorted)
     if not episodes:
         raise EncodeError("diary has zero episodes")

@@ -2130,3 +2130,127 @@ into each per-country `filter_report_<country>.md` (crosswalk join match counts 
   cannot separate a childless couple from one whose children are all 16+ (F-UK-18), and UK
   `deconact=-1` → `unknown` is the generic "not applicable" reading, an assumption. Both are recorded
   in `crosswalk_strata.csv`'s `source_label`/`citation` fields for the affected rows, not resolved.
+
+---
+
+### 2026-08-20 (night) — 🔴 **`FINDING 53`: THE THREE COUNTRIES' DIARY WEIGHTS TARGET THREE DIFFERENT DAY BASES, AND ONLY THE UK IS CALENDAR-REPRESENTATIVE.** Read-only measurement on `harmonised.parquet`; nothing rebuilt, no gate re-run, no verdict changed.
+
+**How it surfaced.** `Resources/preprocessing_precedents.md` §5 recommends the 4J equivalent of the
+2nd paper's per-wave category-share file. Built as `tools/4thJ_prefix_category_shares.py` →
+`outputs_step2/prefix_category_shares.txt`. It re-derived every logged stratum claim exactly
+(`FINDING 48` at 710/711, 1644/1644, 896/896; `D-S5-3`'s `75+` at es 58.9 / it 72.0 / uk 95.4 %;
+`D-S3-14`'s UK `strat_hh_type = unknown` at 3.48 % = 551 diaries) — **and then showed something
+nobody had looked at: `strat_day_type` is not on a common basis.**
+
+⚪ **A unit trap caught on the way.** The first build deduplicated on `hid` and produced household-level
+shares that silently contradicted every logged figure. **A diary is `(country, pid, diary_day)`** —
+`hid` is the household, `pid` alone is the person, and the UK has 1.998 diaries per person. The fixed
+key gives 73,254 diaries from 2,024,068 episodes, `ES=19,140 / IT=38,260 / UK=15,854`, and every
+logged number then reproduces to the unit. The script now names its key in its own header.
+
+#### The finding
+
+| | weekday | saturday | sunday | what it is |
+|---|---|---|---|---|
+| a calendar week | 71.43 % | 14.29 % | 14.29 % | — |
+| **`uk`** (`weight_dia` = `dia_wt_a`) | **71.45 %** | 14.32 % | 14.24 % | 🟢 the calendar week |
+| **`es`** | **50.02 %** | 25.00 % | 24.98 % | 50/25/25, exact |
+| **`it`** | **33.33 %** | 33.33 % | 33.33 % | one third each, exact |
+
+🔴 **All three hit their figure to two decimals, so all three are deliberate design targets, not
+sampling noise.** Unweighted the picture is different again (`es` 60.80 / `it` 34.50 / `uk` 50.12 %
+weekday), which is the point: the weights are doing real work, just not the same work.
+
+🔴 **This is the Step 1 `dia_wt_a` reasoning applied to one country only.** §1.3 chose `dia_wt_a` over
+`dia_wt_b` with the explicit argument that *"Day of week is load-bearing for this paper… a weight
+with no day-of-week adjustment would carry whatever day-type imbalance the fieldwork left, straight
+into the thing we are modelling."* Measured: `weight_dia_b` puts the UK at **50.14 / 25.02 / 24.84**
+— i.e. `dia_wt_b` is the UK's *Spanish-shaped* weight, and the decision to reject it was right. But
+**ES and IT have no `_a` equivalent at all**: `weight_dia_a` and `weight_dia_b` are `ALL NULL` for
+both. The imbalance the UK decision removed is still fully present in the other two folds.
+
+#### What it moves, measured
+
+At-home share of time, published weights against a calendar basis:
+
+| | unweighted | published weight | calendar | published − calendar |
+|---|---|---|---|---|
+| `es` | 69.909 % | 69.552 % | 68.605 % | **+0.947 pp** |
+| `it` | 72.694 % | 72.667 % | 71.367 % | **+1.300 pp** |
+| `uk` | 70.267 % | 68.738 % | 68.741 % | **−0.003 pp** |
+
+🔴 **Small in absolute terms, but country-correlated and zero for exactly one fold.** The published
+weights overstate at-home time by 1.3 pp for Italy and 0.95 pp for Spain and by nothing for the UK,
+on the single quantity this paper exists to produce. In LOCO that moves a fold's score for a reason
+that has nothing to do with the model. ⚪ The `uk` row being −0.003 pp is the check that the
+post-stratification method is right, not a result.
+
+🔴 **It lands directly on `D-S6-3` item 2.** Whatever day basis the Eurostat scoring tables use, **at
+most one of our three countries currently matches it.** This has to be settled before the first fold
+is scored, and it is item 1 of `Prompts/previous/DECISIONS_OPEN_all13_ruled_2026-08-20.md` (all 13 items ruled `(a)` and applied 2026-08-20; it was `Prompts/DECISIONS_OPEN.md` when this entry was written).
+
+#### The fix, if ruled
+
+Post-stratification to the calendar week. Factors measured, not estimated:
+
+| | weekday | saturday | sunday |
+|---|---|---|---|
+| `es` | ×1.4281 | ×0.5714 | ×0.5718 |
+| `it` | ×2.1429 | ×0.4286 | ×0.4286 |
+| `uk` | ×0.9998 | ×0.9979 | ×1.0034 |
+
+🟢 **Additive form:** a NEW column `weight_dia_cal`, leaving `weight_dia` untouched, so **no Step 1 or
+Step 2 gate is disturbed and nothing already passed has to be re-run.** Not applied — it is a basis
+change and it is the author's to rule.
+
+#### ⚪ A latent trap found at the same time: `diary_day` means three different things
+
+| country | values | meaning |
+|---|---|---|
+| `es` | 1-7 | day of the week |
+| `it` | 1-3 | the day **type** (1 weekday, 2 saturday, 3 sunday) |
+| `uk` | 1-2 | **which of the respondent's two diaries** — not a day at all |
+
+Cross-tabulated against `strat_day_type`, `es` and `it` are deterministic and `uk` is not (diary 1 is
+3,937 weekday / 1,835 saturday / 2,160 sunday). **Nothing currently reads `diary_day` as a day of
+week, so this is a latent trap and not a live bug** — but it is exactly the "same column, different
+meaning per wave" class the precedent index records at
+`Resources/preprocessing_precedents.md` §6 (GSS 2005 `80` against 2010 `80.1`), and it is why that
+section says the crosswalk is per wave even when the variable name is identical.
+
+#### ⚪ One quoted figure confirmed on its basis
+
+`FINDING 51` quotes the Spanish corpus at **11.140 % homemaker**. Re-derived: that is the
+**diary-weighted** share. Unweighted it is 11.996 % and person-level 11.996 %. The census comparison
+(8.787 %) is a population share, so weighted-against-weighted is the right pairing and the finding
+stands as written. ⚪ `it` is the country where the weighting moves homemaker most: 12.739 %
+unweighted against **14.827 %** weighted.
+
+**Nothing was rebuilt.** `harmonised.parquet` is untouched; the new file is a diagnostic that nothing
+downstream reads.
+
+
+#### 🟢 2026-08-20 (execution pass) — RULED `(a)` AND APPLIED
+
+The author ruled item 1 as `(a)`. `weight_dia_cal` is now a column in `harmonised.parquet` and in
+the three per-country files. **All three countries sit at `71.4286 / 14.2857 / 14.2857` on it and
+each country's total weight is unchanged (rel diff <= `1.8e-16`)**, so it re-allocates across day
+types rather than rescaling a country. ⚪ `89` UK episodes (2 diaries) carry a null `weight_dia`;
+`weight_dia_cal` is null for exactly those and never `0.0`.
+
+🟢 **Additivity proved twice rather than asserted.** On read-back all `51` pre-existing columns are
+bit-identical (`41`/`44`/`48` in the per-country files), and **the full 18-gate battery was re-run
+at baseline: every verdict line is byte-identical to the accepted 2026-08-17 run, the only
+difference anywhere in the report being `V2.i`'s column listing, which now ends `'weight_dia_cal'`
+and still PASSES.** ⚪ `G2.18` still FAILs `(a)` with the identical string — pre-existing, not a
+regression.
+
+New md5s: `harmonised.parquet` `54a53a5f82189194cdcc7fe873cded7b` (was
+`2eb0d05fcd89e9e8ff8c983d6062d920`), `_es` `58da43376e29d80a5aeb32d4e7ebb341`, `_it`
+`5be19d6282272d200c0fb59a3405c5f5`, `_uk` `c15576cbe51fcc37f5e819bd00534ec7`. Originals kept in
+`outputs_step2/_bak_f53/`. No script anywhere hard-codes the old value.
+
+🔴 **`weight_dia` is untouched, and this column does NOT settle what Step 6 scores on.**
+`FINDING 54` (Step 6 doc) established that **no Eurostat table carries a day-type dimension**, so
+the published tables sit on an undeclared national basis that cannot be selected. Which weight the
+scoring reads is `D-S6-4`, and it is open.
