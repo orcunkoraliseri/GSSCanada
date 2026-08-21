@@ -707,3 +707,56 @@ here**; the corpus is on Speed and was not fetched. Running it over the corpus, 
 generated batch, is owed.
 
 ⚪ `G7.10` still has no XGrammar back-end, unchanged.
+
+
+---
+
+### 2026-08-21 (late afternoon) --- 🟢 **`G7.13` HAS NOW BEEN RUN AGAINST THE REAL CORPUS, AND SEEN FAILING TWICE. IT WAS 36/36 GREEN ON FIXTURES ONLY UNTIL TODAY.**
+
+`tools/4thJ_step7_g713_corpus.py`. All 73,254 Step 3 records decoded through the SHIPPED
+`tools/decoder.py` and put through the SHIPPED `tools/4thJ_step7_indoor.gate_g7_13()`. **No rule is
+implemented in the new module**; it only supplies data and perturbations.
+
+```
+73,254 records decoded, 0 refused
+exclusion list  ['322', '341', '342', '344']  md5 679518c7f626bd5d408adc96b5a1ff43  SHIPPED
+episodes        2,024,068
+minutes present 74,826,850 / 105,485,760
+presence share  70.9355 %
+at_home eps     1,365,340   excluded 10,436  {341: 7125, 342: 1657, 322: 1147, 344: 507}
+null act (000)  1,927  counted PRESENT by declaration
+verdict         PASS
+```
+
+🟢 **The 1,927 figure the Step 7 validation document quoted on 2026-08-20 is now
+RE-DERIVED rather than repeated, and it matches to the diary: ES 290 / IT 105 / UK 1,532.** That
+number had been carried as a quotation with a note saying the module had never seen a corpus. It has
+now.
+
+#### Per country, because `FINDING 53` says anything country-correlated is read per fold or not at all
+
+| fold | records | presence | at_home episodes | excluded | null act at home |
+|---|---:|---:|---:|---:|---:|
+| `es` | 19,140 | 69.5667 % | 304,849 | 1,704 | 290 |
+| `uk` | 15,854 | 69.6524 % | 384,614 | 3,883 | 1,532 |
+| `it` | 38,260 | 72.1519 % | 675,877 | 4,849 | 105 |
+
+⚪ A 2.59 pp spread in presence across the three folds, with Italy highest. Read alongside
+`FINDING 53`: the day bases differ per country too, and both effects move at-home time in the same
+direction for `it`.
+
+#### 🔴 Both perturbations FAILED, which is the only part of this that proves anything
+
+* **`V7.c`, the pre-registered one.** The same corpus re-run with an exclusion list differing by
+  exactly one code (`322` removed from the caller's copy): **FAIL**, naming the missing code. A gate
+  that passed here would be validating against a copy of the list instead of the shipped one.
+* **The vacuity guard.** A batch of 50 all-day at-home records: **FAIL**, "presence is identically
+  PRESENT across every record". That is `FINDING 42`'s signature refused by construction.
+
+`G7.13` is therefore seen passing on real data and seen failing for two different reasons. 🔴 It has still never been run against a GENERATED batch, which is the case that matters
+for the paper and which needs a fold checkpoint.
+
+#### ⚪ Unchanged
+
+`G7.10` has no XGrammar back-end. `FINDING 45` stands: enforcing `G7.3` would reject 28.95 % of the
+corpus, and `LOC` has no workplace class. The ACT alphabet is 159.

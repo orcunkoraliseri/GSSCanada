@@ -102,6 +102,49 @@ design mix, and `FINDING 53` showed that mix is different in each of the three
 countries. Using the calendar week rather than any country's survey mix is what
 keeps a country-correlated design artefact out of the synthetic population.
 
+WHAT ECONOMIC BAND A MINOR GETS -- `D-S5-11`, RULED (b) ON 2026-08-21
+====================================================================
+`D-S5-3` put the whole 11-14 band, and in `es`/`uk` the age-15 slice on top of
+it, into a single `unknown` economic band. That band is not a census category:
+it is a CONSTRUCT, invented because no national economic-activity table reaches
+below 16. `D-S5-11` asked what those people should actually be called, and the
+ruling is (b): TAKE IT FROM THE DONOR POOL, PER FOLD.
+
+Concretely, the `unknown` count `U` in `econ_11plus_<c>.csv` is split back over
+real bands using the N-1 pool's own econ mix at the ages that mass comes from:
+
+    U  ->  U * ( w11 * q11(e)  +  w15 * q1524(e) )   added to band `e`
+
+    w11 = band_11-14 / U        q11    = donor mix at age 11-14
+    w15 = age_15_residual / U   q1524  = donor mix at age 15-24
+
+`w11 + w15 == 1` is not assumed, it is CHECKED against the file's own footer:
+`band_11-14 + age_15_residual` must equal `unknown` to within half a person, and
+it does in all three folds. Italy has `w15 = 0` because ISTAT publishes age 15.
+
+🔴 THIS IS NOT A REWRITE OF A SHIPPED MARGINAL, AND IT CANNOT BE ONE.
+The answer depends on WHICH TWO COUNTRIES ARE THE DONORS, so `es` under the `es`
+fold and `es` as a donor elsewhere would need different files. It therefore lives
+here, at fit time, and `econ_11plus_<c>.csv` is left byte-identical. What the
+rule produces is written out beside the population as
+`minor_econ_split_<c>.csv`, so the re-label is auditable without re-running.
+
+🔴 WHY IT WAS NEEDED, AND WHAT IT COSTS
+`FINDING 62`: with `D-S5-3`'s `unknown` left in place, `G6.1`'s raked-donor null
+CANNOT CONVERGE on the `uk` fold -- 1.41515 pp against a 0.5 pp tolerance, which
+is exactly the age-15 slice, because neither Spanish nor Italian donors ever
+carry `unknown` at 15-24. It is not a tolerance to loosen; it is a category with
+no donor. And on the `it` fold the entire `unknown` marginal was being carried by
+**68 British diaries**. Under (b) both disappear by construction.
+
+The cost is stated and is not small. `FINDING 61`/`FINDING 48`: each country
+labels its own minors differently and DETERMINISTICALLY -- `student` in Spain
+(710 of 711), `other_inactive` in the UK (896 of 896), `unknown` in Italy (1,644
+of 1,644). Under leave-one-country-out we are forbidden the held-out country's
+own convention, so a Spanish synthetic 13-year-old is labelled from the British
+and Italian habit instead. The token is therefore WRONG for that country in a way
+no amount of data fixes, and every run prints the mix it used.
+
 TWO SEEDS, AND THE CHOICE BETWEEN THEM IS `D-S5-10`
 ===================================================
 IPF fits marginals. It does NOT invent an association structure -- it inherits
@@ -131,8 +174,12 @@ one from the seed, and the seed is a modelling choice nobody had made.
       the donors happen not to have. Out-of-distribution exposure falls to zero
       BY CONSTRUCTION, which means that number stops being evidence.
 
-Neither is obviously right and the difference is large, so both are built and
-the choice is the author's. Nothing downstream may mix them.
+`D-S5-10` RULED (a) ON 2026-08-21: **`uniform` is the frozen primary** and the
+population every downstream step consumes; `donor` is built beside it as a
+DECLARED SENSITIVITY and is never mixed into a headline. The reason is the one
+above: under `donor` the out-of-distribution share falls to zero BY CONSTRUCTION,
+so it can no longer be evidence of anything, and the primary population must be
+the one that can still be surprised.
 
 OUTPUT
 ======
@@ -230,7 +277,7 @@ def as_shares(got, order, path, field):
     return cats, v / v.sum()
 
 
-def ipf(seed, margins, axes_names):
+def ipf(seed, margins, axes_names, max_iter=None, strict=True):
     """Classic IPF. `margins` is a list of 1-D arrays, one per axis, each
     summing to 1. Zero seed cells stay zero for ever, which is how the
     structural mask is enforced -- there is no separate zeroing step that could
@@ -238,7 +285,8 @@ def ipf(seed, margins, axes_names):
     t = seed.astype(float).copy()
     need(t.sum() > 0, 'the structural mask left no admissible cell at all')
     t /= t.sum()
-    for it in range(IPF_MAX):
+    lim = IPF_MAX if max_iter is None else int(max_iter)
+    for it in range(lim):
         worst = 0.0
         for ax in range(t.ndim):
             cur = t.sum(axis=tuple(i for i in range(t.ndim) if i != ax))
@@ -258,8 +306,12 @@ def ipf(seed, margins, axes_names):
             t = t * scale.reshape(shape)
         if worst < IPF_TOL:
             return t, it + 1, worst
-    raise SynthError('IPF did not converge in %d sweeps; worst marginal '
-                     'deviation %.3e' % (IPF_MAX, worst))
+    if strict:
+        raise SynthError('IPF did not converge in %d sweeps; worst '
+                         'marginal deviation %.3e' % (lim, worst))
+    say('  !!! IPF STOPPED at %d sweeps WITHOUT converging, worst '
+        'marginal deviation %.3e. This is a PERTURBATION.' % (lim, worst))
+    return t, lim, worst
 
 
 def largest_remainder(real, n):
@@ -276,6 +328,158 @@ def largest_remainder(real, n):
     need(int(base.sum()) == n, 'integerisation produced %d rows, expected %d'
                                % (base.sum(), n))
     return base.reshape(real.shape)
+
+
+def opt(argv, flag, default):
+    """Pull `--flag v` or `--flag=v` out of argv. Returns (rest, value)."""
+    out, val, i = [], default, 0
+    while i < len(argv):
+        a = argv[i]
+        if a == flag:
+            need(i + 1 < len(argv), '%s needs a value' % flag)
+            val = argv[i + 1]
+            i += 2
+            continue
+        if a.startswith(flag + '='):
+            val = a.split('=', 1)[1]
+            i += 1
+            continue
+        out.append(a)
+        i += 1
+    return out, val
+
+
+def read_notes(path):
+    """Parse the `# key value key value` footer of a marginal file.
+
+    The footer is where the builder recorded the pieces it derived the file
+    from -- `band_11-14`, `age_15_residual`, `base_11plus`. D-S5-11 needs those
+    pieces back, and reading them from the file is what lets the mass identity
+    below be a CHECK rather than a restatement.
+    """
+    got = {}
+    for ln in io.open(path, encoding='utf-8'):
+        if not ln.startswith('#'):
+            continue
+        tok = ln.lstrip('#').split()
+        for i in range(len(tok) - 1):
+            try:
+                got[tok[i]] = float(tok[i + 1])
+            except ValueError:
+                pass
+    return got
+
+
+def donor_econ_by_age(held_out, bands):
+    """{age band: {econ: share}} over the N-1 pool, plus the raw diary counts.
+
+    No smoothing, no floor, no minimum support. A band a single donor diary
+    carries stays in, and the count is returned beside the share so that
+    thinness is visible rather than hidden -- one Spanish 13-year-old is
+    recorded as `employed`, and that cell survives into the population at four
+    ten-thousandths of the minor mass.
+    """
+    need(os.path.exists(CORPUS),
+         'D-S5-11 (b) needs the Step 3 corpus at %s' % CORPUS)
+    cnt = dict((b, collections.Counter()) for b in bands)
+    for ln in io.open(CORPUS, encoding='utf-8'):
+        r = json.loads(ln)
+        if r['country'] == held_out:
+            continue
+        f = r['text'].split('|', 1)[0].split(',')
+        if f[PFX_AGE] in cnt:
+            cnt[f[PFX_AGE]][f[PFX_ECON]] += 1
+    out = {}
+    for b in bands:
+        t = sum(cnt[b].values())
+        need(t > 0, 'the N-1 pool has no donor at all in age band %s, so '
+                    'D-S5-11 (b) has nothing to take the label from' % b)
+        out[b] = dict((e, n / float(t)) for e, n in cnt[b].items())
+    return out, cnt
+
+
+def relabel_minors(held_out, ec_raw, notes, path, ec_order):
+    """D-S5-11 (b). Split the `unknown` construct back over real bands.
+
+    Returns (new counts, audit rows). Mass is conserved exactly: nothing is
+    created, nothing is dropped, only the token changes.
+    """
+    need('unknown' in ec_raw and ec_raw['unknown'],
+         '%s has no `unknown` band, so there is nothing for D-S5-11 to '
+         're-label' % os.path.basename(path))
+    U = float(ec_raw['unknown'])
+    b11 = notes.get('band_11-14')
+    r15 = notes.get('age_15_residual', 0.0)
+    need(b11 is not None,
+         'the footer of %s does not record `band_11-14`, so the split between '
+         'the 11-14 band and the age-15 slice cannot be recovered'
+         % os.path.basename(path))
+    # The mass identity. If D-S5-3's `unknown` is anything other than these two
+    # pieces then this rule is being applied to something it was not written
+    # for, and refusing is the only safe answer.
+    need(abs((b11 + r15) - U) < 0.5,
+         'band_11-14 (%.2f) + age_15_residual (%.2f) = %.2f but the `unknown` '
+         'band holds %.2f. D-S5-11 (b) re-labels exactly those two pieces, so '
+         'a third contributor makes it inapplicable.'
+         % (b11, r15, b11 + r15, U))
+    w11, w15 = b11 / U, r15 / U
+
+    q, cnt = donor_econ_by_age(held_out, ['11-14', '15-24'])
+    has_home = ec_raw.get('homemaker') is not None
+    mix = collections.defaultdict(float)
+    audit = []
+    collapsed = 0.0
+    for band, w in (('11-14', w11), ('15-24', w15)):
+        if w <= 0.0:
+            continue
+        for e, sh in q[band].items():
+            tgt = e
+            if e == 'homemaker' and not has_home:
+                tgt = 'other_inactive'      # FINDING 51, es only
+                collapsed += w * sh * U
+            need(tgt in ec_order,
+                 'the donor pool puts minors in econ band %r, which is not one '
+                 'of the frozen seven' % e)
+            mix[tgt] += w * sh
+            audit.append((band, '%.6f' % w, e, tgt, str(cnt[band][e]),
+                          '%.9f' % sh, '%.2f' % (w * sh * U)))
+    tot = sum(mix.values())
+    need(abs(tot - 1.0) < 1e-9,
+         'the donor mix sums to %.12f, not 1' % tot)
+
+    new = dict(ec_raw)
+    new['unknown'] = 0.0
+    for e, sh in mix.items():
+        # `unknown`'s own base is ZERO here, not `U`. The whole point of
+        # the rule is that `U` LEAVES that band; a donor mix that puts
+        # some of it back must add to nothing, not to the original.
+        base = 0.0 if e == 'unknown' else (
+            float(ec_raw[e]) if ec_raw.get(e) is not None else 0.0)
+        new[e] = base + sh * U
+    before = sum(float(v) for v in ec_raw.values() if v is not None)
+    after = sum(float(v) for v in new.values() if v is not None)
+    need(abs(after - before) < 1.0,
+         'the re-label changed the total from %.2f to %.2f; it is a re-label, '
+         'so it must not' % (before, after))
+    say('  D-S5-11 (b): %.0f persons (%.4f %% of the base) re-labelled out of '
+        '`unknown`' % (U, 100.0 * U / before))
+    say('    w11 %.6f (band 11-14)   w15 %.6f (age-15 slice)' % (w11, w15))
+    for e in sorted(mix, key=lambda k: -mix[k]):
+        say('      -> %-15s %.6f of it  (%.4f pp of the population)'
+            % (e, mix[e], 100.0 * mix[e] * U / before))
+    if collapsed:
+        say('    homemaker -> other_inactive on %.0f of them (FINDING 51)'
+            % collapsed)
+    if new['unknown'] == 0.0:
+        say('    !!! `unknown` is now EMPTY in this fold: no donor country '
+            'labels a minor `unknown`.')
+    # the 11-14 mix alone, with FINDING 51 already applied, because the
+    # seed below has to bind the minor ROW and not just the total
+    q11 = collections.defaultdict(float)
+    for e, sh in q['11-14'].items():
+        q11['other_inactive' if (e == 'homemaker' and not has_home)
+            else e] += sh
+    return new, audit, q, cnt, dict(q11)
 
 
 def donor_seed(held_out, age_c, sex_c, hh_c, ec_c):
@@ -337,15 +541,24 @@ def donor_seed(held_out, age_c, sex_c, hh_c, ec_c):
 
 def main():
     argv = [a for a in sys.argv[1:]]
-    seed_kind = 'uniform'
-    for a in list(argv):
-        if a.startswith('--seed'):
-            seed_kind = a.split('=', 1)[1] if '=' in a else argv[argv.index(a) + 1]
-            argv = [x for x in argv if x != a and x != seed_kind]
+    argv, seed_kind = opt(argv, '--seed', 'uniform')
+    argv, minors_kind = opt(argv, '--minors', 'donor')
+    argv, ipf_max = opt(argv, '--ipf-max', '')
+    argv, out_suffix = opt(argv, '--out-suffix', '')
+    ipf_max = int(ipf_max) if str(ipf_max).strip() else None
+    if ipf_max is not None or out_suffix:
+        say('!!! PERTURBATION RUN. ipf-max %r, out-suffix %r. The file '
+            'this writes is evidence about a GATE, not a population, '
+            'and nothing downstream may read it.' % (ipf_max, out_suffix))
     need(seed_kind in ('uniform', 'donor'),
          '--seed must be uniform or donor, not %r' % seed_kind)
+    need(minors_kind in ('donor', 'ds53'),
+         '--minors must be donor (D-S5-11 b, the ruling) or ds53 (the '
+         'superseded convention, kept only so the difference can be shown), '
+         'not %r' % minors_kind)
     need(len(argv) >= 1,
-         'usage: 4thJ_step5_synthesise.py <country> [N] [--seed uniform|donor]')
+         'usage: 4thJ_step5_synthesise.py <country> [N] [--seed uniform|donor] '
+         '[--minors donor|ds53]')
     c = argv[0].strip().lower()
     need(c in ('es', 'uk', 'it'), 'country %r is not one of es/uk/it' % c)
     n = int(argv[1]) if len(argv) > 1 else N_DEFAULT
@@ -363,8 +576,16 @@ def main():
                              p_marg, 'strat_sex')
     hh_c, hh_m = as_shares(read_field(p_hh, 'strat_hh_type'), HH,
                            p_hh, 'strat_hh_type')
-    ec_c, ec_m = as_shares(read_field(p_econ, 'strat_econ_status'), ECON,
-                           p_econ, 'strat_econ_status')
+    ec_raw = read_field(p_econ, 'strat_econ_status')
+    audit, q_minor, q11 = None, None, None
+    if minors_kind == 'donor':
+        ec_raw, audit, q_minor, q_cnt, q11 = relabel_minors(
+            c, ec_raw, read_notes(p_econ), p_econ, ECON)
+    else:
+        say('  !!! --minors ds53: the SUPERSEDED convention. D-S5-11 was ruled')
+        say('     (b) on 2026-08-21 and this path is kept only to show the')
+        say('     difference. Nothing built this way may be quoted.')
+    ec_c, ec_m = as_shares(ec_raw, ECON, p_econ, 'strat_econ_status')
     need(age_c == AGE, 'age bands %r are not the frozen eight' % age_c)
     need(sex_c == SEX, 'sex categories %r' % sex_c)
     need(hh_c == HH, 'person-basis household types %r are not the five' % hh_c)
@@ -382,31 +603,55 @@ def main():
     i11 = age_c.index('11-14')
     i1524 = age_c.index('15-24')
     iunk = ec_c.index('unknown') if 'unknown' in ec_c else None
-    need(iunk is not None,
-         'econ_11plus_%s.csv has no `unknown` band, but D-S5-3 puts the 11-14 '
-         'population there' % c)
-    # Z1
-    ok[i11, :, :, :] = False
-    ok[i11, :, :, iunk] = True
-    # Z2
-    keep = [i11, i1524]
-    for a in range(len(age_c)):
-        if a not in keep:
-            ok[a, :, :, iunk] = False
-    # Z2', derived not assumed: where `unknown` equals the 11-14 band exactly,
-    # nothing is left for the 15-year-old slice.
-    slack = float(ec_m[iunk] - age_m[i11])
-    need(slack > -1e-9,
-         'econ `unknown` is %.9f but the 11-14 band alone is %.9f. D-S5-3 puts '
-         'the whole band in `unknown`, so this is infeasible.'
-         % (ec_m[iunk], age_m[i11]))
-    if slack < 1e-9:
-        ok[i1524, :, :, iunk] = False
-        say('  Z2\' applied: `unknown` == the 11-14 band to %.2e, so the 15-24 '
-            'x unknown cell is forced to zero.' % slack)
+    if minors_kind == 'donor':
+        # Z1 under D-S5-11 (b): a minor may hold any band the DONOR POOL is
+        # observed to give a minor, and no other. The set is read off the pool,
+        # never listed here, so a change of folds changes the mask by itself.
+        s11 = set(e for e, sh in q_minor['11-14'].items() if sh > 0.0)
+        s11 = set('other_inactive' if (e == 'homemaker' and
+                                       'homemaker' not in ec_c) else e
+                  for e in s11)
+        for ei, e in enumerate(ec_c):
+            if e not in s11:
+                ok[i11, :, :, ei] = False
+        say('  Z1 (D-S5-11 b): age 11-14 restricted to the %d band(s) the '
+            'donor pool uses for a minor: %s'
+            % (len(s11), ', '.join(sorted(s11))))
+        if iunk is not None:
+            # Z2 keeps D-S5-3's rule that `unknown` reaches no further than the
+            # two youngest bands, AND adds donor support as a second condition.
+            for a in range(len(age_c)):
+                if a not in (i11, i1524):
+                    ok[a, :, :, iunk] = False
+            if q_minor['15-24'].get('unknown', 0.0) <= 0.0:
+                ok[i1524, :, :, iunk] = False
+                say('  Z2 (donor support): no donor labels a 15-24 `unknown`, '
+                    'so that cell is zero. THIS IS THE CELL THAT MADE THE uk '
+                    'FOLD INFEASIBLE UNDER D-S5-3.')
+            else:
+                say('  Z2: 15-24 x unknown stays open on %d donor diaries'
+                    % q_cnt['15-24']['unknown'])
     else:
-        say('  Z2 slack %.9f (%.4f %% of the population) stays in 15-24 x '
-            'unknown -- the 15-year-old slice.' % (slack, 100.0 * slack))
+        need(iunk is not None,
+             'econ_11plus_%s.csv has no `unknown` band, but D-S5-3 puts the '
+             '11-14 population there' % c)
+        ok[i11, :, :, :] = False
+        ok[i11, :, :, iunk] = True
+        for a in range(len(age_c)):
+            if a not in (i11, i1524):
+                ok[a, :, :, iunk] = False
+        slack = float(ec_m[iunk] - age_m[i11])
+        need(slack > -1e-9,
+             'econ `unknown` is %.9f but the 11-14 band alone is %.9f. D-S5-3 '
+             'puts the whole band in `unknown`, so this is infeasible.'
+             % (ec_m[iunk], age_m[i11]))
+        if slack < 1e-9:
+            ok[i1524, :, :, iunk] = False
+            say('  Z2 applied: `unknown` == the 11-14 band to %.2e, so the '
+                '15-24 x unknown cell is forced to zero.' % slack)
+        else:
+            say('  Z2 slack %.9f (%.4f %% of the population) stays in 15-24 x '
+                'unknown -- the 15-year-old slice.' % (slack, 100.0 * slack))
     # Z3
     for h in ('one_person', 'couple_no_children'):
         ok[i11, :, hh_c.index(h), :] = False
@@ -424,20 +669,53 @@ def main():
         need(seed.sum() > 0, 'the mask emptied the donor seed')
     else:
         seed = ok.astype(float)
+        if minors_kind == 'donor':
+            # FINDING 63. Uniform everywhere EXCEPT the minor row, whose
+            # econ profile is what D-S5-11 (b) actually ruled on. Left
+            # uniform, IPF gives a 13-year-old the adult `employed`
+            # share of 43 %. This is not a second seed and it is not
+            # smoothing: it is the ruling, applied where it binds.
+            prof = np.array([q11.get(e, 0.0) for e in ec_c], dtype=float)
+            need(prof.sum() > 0.0,
+                 'the donor mix at 11-14 has no mass on any band this '
+                 'fold fits')
+            seed[i11] = seed[i11] * prof.reshape(1, 1, -1)
+            need(seed[i11].sum() > 0.0,
+                 'the minor profile and the structural mask are '
+                 'disjoint, so no minor can be placed at all')
 
     # ---- IPF ---------------------------------------------------------------
     t4, iters, worst = ipf(seed, [age_m, sex_m, hh_m, ec_m],
-                           ['age', 'sex', 'hh', 'econ'])
+                           ['age', 'sex', 'hh', 'econ'],
+                           max_iter=ipf_max, strict=(ipf_max is None))
     say('  IPF converged in %d sweeps, worst marginal deviation %.2e'
         % (iters, worst))
     for nm, ax, tgt in (('age', 0, age_m), ('sex', 1, sex_m),
                         ('hh', 2, hh_m), ('econ', 3, ec_m)):
         cur = t4.sum(axis=tuple(i for i in range(4) if i != ax))
         d = float(np.max(np.abs(cur - tgt)))
-        need(d < 1e-9, '%s marginal is off by %.3e after IPF' % (nm, d))
+        need(d < 1e-9 or ipf_max is not None,
+             '%s marginal is off by %.3e after IPF' % (nm, d))
     need(float(np.abs(t4[~ok]).max() if (~ok).any() else 0.0) == 0.0,
          'a structurally zeroed cell holds mass after IPF')
     say('  occupied cells after IPF %d of %d' % (int((t4 > 0).sum()), t4.size))
+    if minors_kind == 'donor':
+        # IPF fits marginals, so it is free to move the minor row away
+        # from the donor mix while still satisfying every constraint.
+        # How far it moved is a result, not an implementation detail.
+        row = t4[i11].sum(axis=(0, 1))
+        got = row / row.sum()
+        say('  minor econ profile, donor mix -> as fitted:')
+        worst_m = 0.0
+        for ei, e in enumerate(ec_c):
+            tgt = q11.get(e, 0.0)
+            if tgt <= 0.0 and got[ei] <= 0.0:
+                continue
+            worst_m = max(worst_m, abs(got[ei] - tgt))
+            say('    %-15s %.6f -> %.6f  (%+.4f pp of the minor band)'
+                % (e, tgt, got[ei], 100.0 * (got[ei] - tgt)))
+        say('    worst departure from the donor mix %.4f pp of the '
+            'minor band' % (100.0 * worst_m))
 
     # ---- day type, exogenous ----------------------------------------------
     t5 = t4[..., None] * DAY_W.reshape(1, 1, 1, 1, -1)
@@ -461,14 +739,32 @@ def main():
     # largest remainder over K occupied cells the worst case is of order K/N,
     # which is ~0.013 pp here, and the bound is set above the MECHANISM rather
     # than above the observation.
-    need(worst_pp < 0.05,
+    need(worst_pp < 0.05 or ipf_max is not None,
          'integerisation moved a marginal by %.4f pp, above the 0.05 pp bound '
          '(half the 0.1 pp publication grain)' % worst_pp)
     need(int(cnt[~ok].sum()) == 0 if (~ok).any() else True,
          'a structurally zeroed cell received persons')
 
     # ---- write -------------------------------------------------------------
-    suffix = '' if seed_kind == 'uniform' else '_donorseed'
+    if audit is not None:
+        p_aud = os.path.join(OUT, 'minor_econ_split_%s.csv' % c)
+        fa = io.open(p_aud, 'w', encoding='utf-8', newline='')
+        wa = csv.writer(fa, lineterminator=u'\n')
+        wa.writerow(['age_band_of_origin', 'weight_of_that_piece',
+                     'donor_econ_band', 'assigned_econ_band', 'donor_diaries',
+                     'share_within_band', 'persons'])
+        for r in audit:
+            wa.writerow(list(r))
+        fa.write(u'# D-S5-11 (b), fold %s, donors = %s\n'
+                 % (c, '+'.join(x for x in ('es', 'uk', 'it') if x != c)))
+        fa.write(u'# `econ_11plus_%s.csv` is NOT modified by this rule: the '
+                 u'answer depends on the donors, so it cannot live in a '
+                 u'per-country file.\n' % c)
+        fa.close()
+        say('  wrote %s -- the re-label, auditable without re-running'
+            % os.path.basename(p_aud))
+
+    suffix = ('' if seed_kind == 'uniform' else '_donorseed') + out_suffix
     p_out = os.path.join(OUT, 'population_%s%s.csv' % (c, suffix))
     fh = io.open(p_out, 'w', encoding='utf-8', newline='')
     w = csv.writer(fh, lineterminator=u'\n')

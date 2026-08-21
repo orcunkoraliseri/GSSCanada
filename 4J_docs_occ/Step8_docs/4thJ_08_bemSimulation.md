@@ -450,3 +450,80 @@ parameter), and §6 items 1–4 and 6 — geometry, zoning, layer build-up, arch
 #### 🔴 Unchanged from this morning
 
 No IDF written. TABULA licence still unverified. No Step 8 gate run. Item 8.2 (weather) untouched.
+
+
+---
+
+### 2026-08-21 (late afternoon) --- 🟢 **SECTION 6 ITEMS 2 AND 6 RULED BY THE AUTHOR: ONE THERMAL ZONE PER DWELLING, AND DIARY-SURVEY-YEAR ACTUAL WEATHER. 🔴 THE WEATHER RULING BUYS INTERNAL CONSISTENCY AT THE PRICE OF A CROSS-FOLD CONFOUND, AND THAT PRICE IS RECORDED BEFORE ANY RUN EXISTS.**
+
+Full text: `outputs_step8/archetype_parameter_provenance.md` **sections 10 and 11** (backup `.bak2`,
+247 -> 331 -> 454 lines). Section 6 items 2 and 6 are struck through; **items 1, 3 and 4 remain open.**
+
+#### 🟢 Item 2 --- ONE THERMAL ZONE PER DWELLING
+
+Forced rather than preferred, and by the same shape of argument as `FINDING 60`'s convention A.
+TABULA's calculation has no internal partition anywhere: `c_m` is one dwelling-wide capacity,
+`theta_i` one set-point, `n_air_use` one air-change rate, `F_red_htr` one scalar on the whole
+transmission coefficient. **There is no second zone in the parameter set to give a second zone its
+values**, so a multi-zone model would have to be parameterised from an assumption about how dwellings
+are divided, and that assumption would then sit between our schedules and our result doing undeclared
+work.
+
+🔴 The cost, stated now: the generated diaries carry `LOC == at_home` and nothing finer.
+The paper may say that occupancy redistributes internal gains in TIME. It may not say anything about
+WHERE in the dwelling they land, and no sentence may imply that it can.
+
+⚪ One zone is not one shoebox. Section 6 item 1 (geometry) is untouched and still owes an
+aspect ratio, an orientation and a window-to-face mapping.
+
+#### 🟢 Item 6 --- DIARY-SURVEY-YEAR ACTUAL WEATHER
+
+Each fold runs on the actual meteorological year covering its own fieldwork window: `es` 2009-2010,
+`uk` 2014-2015, `it` 2013-2014. Not a typical year, not one shared year.
+
+🔴 **This was not the recommended option, and the reason is a property of the design, not
+a preference.** Under a shared weather year the only thing differing across folds is the country and
+the transfer to it. Under this ruling **two things differ at once**, and the windows are five years
+apart at the extremes. So a cross-fold difference in heating demand can no longer be attributed to the
+LOCO transfer: part of it is that Spain's winter and the UK's winter were different winters. It joins
+a list of country-correlated asymmetries that is already long enough to need a table in the paper:
+`FINDING 53`'s three day bases, `D-S6-2`'s Italian wave gap, `FINDING 51`'s missing Spanish
+`homemaker` band, `FINDING 60`'s two household conventions.
+
+🟢 **What contains it, and the containment is real.** `D-S8-2` fixed
+`f in {0, 0.15, 0.30, 0.50, 1.00}`, and every level of `f` within one fold runs on the SAME weather
+file. So the occupancy effect --- the difference across `f`, within a fold --- is weather-free by
+construction, because `f = 0` sees exactly the same year as `f = 1`. 🔴 **Pre-registered
+reporting rule, added today: the headline effect is quoted WITHIN fold. Any cross-fold comparison of
+absolute demand must name the meteorological year in the same sentence as the country.**
+
+🔴 **The ruling is a decision, not a runnable design.** Item 8.2 stays open and is now a
+data-acquisition task of the same kind as 5.1 and 8.1, not attempted blind. It needs (1) the fieldwork
+calendars, so "survey year" becomes a definite twelve months --- proposed rule, to be confirmed
+against the published methodology: the twelve consecutive months containing the most diaries; (2) an
+AMY source whose licence permits publishing derived results, which is a different question from
+whether the file downloads; (3) a location, since TABULA's tags are `ES.ME`, `GB.ENG`, `IT.MidClim`
+and not coordinates. **Until all three are on disk, no weather-driven number may be quoted at all,
+not even a provisional typical-year one** --- a provisional TMY run is exactly the thing that would
+later be mistaken for the pre-registered design.
+
+#### 🟢 Item 8.1 re-run and reproducible
+
+`python tools/4thJ_step8_tabula.py Step8_docs/outputs_step8` re-executed end to end from the two
+pinned workbooks: 22 of 22 construction-year bands present, all 16 quoted EU boundary-condition values
+matching, 166 refurbishment variants dropped, the 4 unclassified ES rows identified by name, and
+**24 + 36 + 42 = 102 archetypes** written. `phi_int = 3.0 W/m2` in all three folds, confirmed from the
+file rather than quoted.
+
+#### 🟢 The licence question is now a written prompt
+
+Section 7 has owed the TABULA licence verification since 2026-08-20. It is a document-retrieval
+question, so the deliverable is a prompt:
+`DeepResearchPrompts/L27_hetus_weights_amy_weather_tabula_licence.md`, **Part C**, which also carries
+the AMY-weather licence question as **Part B**. 🔴 It states explicitly that a licence may
+not be inferred from the absence of a paywall, which is what the earlier unverified claim amounted to.
+
+#### Unchanged
+
+No IDF written. No Step 8 gate run. `G8.1`-`G8.4` are `D-S8-1` (a) reproducibility gates with no run
+to reproduce. Section 6 items 1, 3 and 4 open.

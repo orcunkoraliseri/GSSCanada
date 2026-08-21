@@ -7,7 +7,7 @@
 
 ## STATUS
 
-**OPEN.** 🟢 **2026-08-21: item 5.1 is COMPLETE — all three folds have published marginals** (`marginals_{uk,es,it}.csv` + `econ_11plus_{uk,es,it}.csv`), so `G6.1`'s raked-donor null is computable on every fold. 🟢 **2026-08-21 (afternoon): `strat_hh_type` is additionally on a PERSON basis in all three folds** (`hhtype_person_{es,uk,it}.csv`, convention A), which is what the rake must consume — `D-S5-6`, `D-S5-7`, `D-S5-8` closed; 🔴 `FINDING 60` / `D-S5-9` open, Italy's household-basis rows still on convention B. Items 5.2-5.4 are still unbuilt and no Step 5 gate has been run. All thresholds pre-registered.
+**OPEN.** 🟢 **2026-08-21: item 5.1 is COMPLETE — all three folds have published marginals** (`marginals_{uk,es,it}.csv` + `econ_11plus_{uk,es,it}.csv`), so `G6.1`'s raked-donor null is computable on every fold. 🟢 **2026-08-21 (afternoon): `strat_hh_type` is additionally on a PERSON basis in all three folds** (`hhtype_person_{es,uk,it}.csv`, convention A), which is what the rake must consume — `D-S5-6`, `D-S5-7`, `D-S5-8` closed; 🔴 `FINDING 60` / `D-S5-9` open, Italy's household-basis rows still on convention B. 🟢 **2026-08-21 (evening): THE BATTERY HAS RUN. `tools/4thJ_gates_step5.py`, all three folds, 27 gate-fold verdicts: 25 PASS, 2 FAIL, and the coverage clause is CLEAN --- every gate that passed at baseline was made to fall.** 🟢 **2026-08-21 (night): `D-S5-12` RULED (a) AND APPLIED --- `G5.6` is SPLIT into `G5.6i` (contamination: zero marginals from the held-out country's diaries) and `G5.6ii` (published source: URL + table id), both PASS on all three folds, each SEEN FAILING separately. The battery is now 30 gate-fold verdicts, 30 PASS, coverage clause still CLEAN. The old single gate is still run as `G5.6-as-written`, INFORMATIONAL, and still FAILS `es` 30/36 and `it` 12/36.** 🔴 **`G5.8` and `G5.9` are BLOCKED, not passing** --- item 5.4 has produced no temperature sweep and Step 7 no generation config. Item 5.4 is still unbuilt. All thresholds pre-registered.
 
 ---
 
@@ -31,7 +31,9 @@ inflates the result and leaves no trace in it.
 | **G5.3** Population size | A silently truncated synthesis | Synthetic population total within **±0.1 %** of the target | **project-chosen** |
 | **G5.4** Prefix field completeness | A prefix the model has never seen | 🔴 **100 % of synthetic persons map to a prefix whose every value in the FIVE non-`country` fields — `strat_age_band`, `strat_sex`, `strat_hh_type`, `strat_econ_status`, `strat_day_type` — appears in the training corpus.** The threshold is untouched at 100 %; the FIELD SET is narrowed, and this row is where the narrowing is named. `country` is excluded because an unseen `country` token IS the LOCO design (`G4.13` asserts zero held-out records reached the shard, so the token is absent by construction and on purpose), whereas an unseen `strat_hh_type` is a defect. One gate could not tell those apart, and the one that could not was reading 0 % on every fold | **project-chosen**<br>🟢 **RULED 2026-08-20, decision item 3 (a), from `FINDING 40`. 🔴 The field list is `tools/encoder.py:86` `PREFIX_FIELDS` minus `country` — it is NOT `diary_day`, which is not a prefix field at all and which `FINDING 53` showed means three different things in the three countries. The unseen-`country` behaviour is measured instead by `D5.1` below.** |
 | **G5.5** Prefix encoder identity | A second copy of the field order drifting from the first | The prefix string built here is **byte-identical** to what `../tools/encoder.py` 🔴 *(2026-08-20: corrected from `../Step3_docs/outputs_step3/encoder.py`, which does not exist)* produces for the same person. Tested by importing that encoder, never by reimplementing it | **project-chosen** |
-| **G5.6** 🔴 Held-out marginal provenance | **Contamination** | Every marginal used for the held-out country traces to a **published** table with a URL and table ID. Count of marginals with no published source, or derived from microdata: **0** | **derived from the experimental design** |
+| **G5.6i** 🔴 Held-out marginal provenance --- CONTAMINATION | **Contamination** | 🟢 **Count of marginals for the held-out country derived from that country's TIME-USE DIARIES: 0.** This is the condition the paper's headline claim rests on. Detected by scanning every marginal row's full provenance record for diary markers (`hetus`, `diary`, `time-use`, `tus_`, the Step 3 corpus, `harmonised.parquet`) --- deliberately WIDE, so a published Eurostat *time-use* aggregate would also trip it and have to be ruled on explicitly | **derived from the experimental design**<br>🟢 **RULED 2026-08-21, `D-S5-12` (a).** Condition (i) of the split |
+| **G5.6ii** 🔴 Held-out marginal provenance --- PUBLISHED SOURCE | A number nobody can check | 🟢 **Count of marginals with no published source: 0.** Every marginal row carries a non-empty URL **and** a non-empty table id | **derived from the experimental design**<br>🟢 **RULED 2026-08-21, `D-S5-12` (a).** Condition (ii) of the split |
+| ~~**G5.6** Held-out marginal provenance~~ 🔴 **SUPERSEDED** | --- | ~~Count of marginals with no published source, **or derived from microdata**: 0~~. 🔴 **Superseded by `D-S5-12` (a) on 2026-08-21, after FAILING `es` 30/36 and `it` 12/36 --- 42 rows, ZERO of which failed for "no published source".** Three later rulings (`D-S5-4` (b), `D-S5-5`, `D-S5-9`) put **public-use census microdata** into the marginals on purpose, and this text could not tell that apart from a time-use diary. **It is still RUN and still printed, as `G5.6-as-written`, INFORMATIONAL and never scored** --- a superseded gate is retired in the open. Its FAIL is the evidence for the split | --- |
 | **G5.7** Co-presence honesty | Conditioning on a flag a country never recorded | No prefix asserts a flag that `copresence_availability.md` marks "not recorded" for that country | **derived from Step 2** |
 | **G5.8** Temperature calibration reported | A knob chosen without evidence | Both the entropy-matching curve and the fidelity curve are reported, and **whether they agree is stated explicitly** | **project-chosen** |
 | **G5.9** No truncation creep | Tail deletion at generation | If top-p is used at all, **p ≤ 0.98**, asserted in the generation config that Step 7 actually reads, not in a comment | `RL09` |
@@ -70,7 +72,9 @@ Each perturbation must break **exactly one** gate.
 | 🔴 **Generate the held-out fold's prefixes with the held-out `country` token (i.e. change nothing — run the design as specified)** | **nothing** | **`G5.4`** — *this is the whole point of item 3's ruling: before it, the experiment as designed felled its own gate on every fold. If `G5.4` fails here, the narrowing was not applied* |
 | 🔴 **Restate the five field names as a literal list inside the `G5.4` checker, then add a seventh field to `PREFIX_FIELDS`** | **`G5.11`** | `G5.4` — *which is exactly the danger: `G5.4` goes on passing while it no longer scores the prefix that exists* |
 | Reorder two prefix fields in a local copy | **G5.5** | G5.4 |
-| 🔴 **Substitute one held-out marginal with a value computed from that country's microdata** | **G5.6** | G5.1 — *the fit is fine, the provenance is not, and only G5.6 can see it* |
+| 🔴 **Substitute one held-out marginal recounted from that country's own TIME-USE DIARIES** | **`G5.6i`** | `G5.1`, `G5.6ii` — *the fit is fine and the row is even published; only the contamination condition can see it* |
+| 🔴 **Add a held-out marginal with no URL and no table id** | **`G5.6ii`** | `G5.1`, `G5.6i` — *the two conditions must be felled independently or the split is cosmetic* |
+| 🔴 **Substitute one held-out marginal with a value computed from that country's CENSUS microdata** | **nothing** | **everything** — 🟢 *this is `D-S5-12` (a)'s own test. `D-S5-4` (b), `D-S5-5` and `D-S5-9` deliberately admit published-census microdata, so a split that still fells a gate here has not split anything. It DOES still fell `G5.6-as-written`, which is why that gate is kept and printed* |
 | Assert an unrecorded co-presence flag | G5.7 | G5.4 |
 | Report only the fidelity curve | G5.8 | all others |
 | Set `top_p = 0.9` in the generation config | G5.9 | all others |
@@ -150,3 +154,86 @@ Append-only.
 * 🔴 G5.6 is the gate that protects the paper's headline claim, and it is the only gate in this step
   whose failure would not show up anywhere else. A contaminated marginal makes Step 6 look *better*,
   which is the direction no other check is watching.
+
+
+### 2026-08-21 (evening) --- 🟢 **THE BATTERY EXISTS AND HAS RUN: 25 OF 27 PASS, COVERAGE CLAUSE CLEAN.** 🔴 **`G5.6` FAILS ON TWO FOLDS BY DESIGN, AND `G5.8`/`G5.9` ARE BLOCKED.**
+
+Runner: `tools/4thJ_gates_step5.py`. Full narrative in the implementation doc's entry of the same date.
+
+**Baseline, per fold.**
+
+| gate | `es` | `uk` | `it` |
+|---|---|---|---|
+| `G5.1` marginal fit | PASS 0.0120 pp | PASS 0.0112 pp | PASS 0.0099 pp |
+| `G5.2` joint plausibility | PASS, 12 cells, 0 persons | PASS, 13 cells, 0 | PASS, 5 cells, 0 |
+| `G5.3` population size | PASS 100,000/100,000 | PASS | PASS |
+| `G5.4` prefix completeness | PASS 0 of 100,000 unseen | PASS | PASS |
+| `G5.5` encoder identity | PASS 100,000 compared | PASS | PASS |
+| `G5.6` marginal provenance | 🔴 **FAIL 30 of 36** | PASS 0 of 36 | 🔴 **FAIL 12 of 36** |
+| `G5.7` co-presence honesty | PASS | PASS | PASS |
+| `G5.10` no output raking | PASS, 6 files scanned | PASS | PASS |
+| `G5.11` field set not restated | PASS | PASS | PASS |
+| `G5.8`, `G5.9` | 🔴 BLOCKED | BLOCKED | BLOCKED |
+
+**Perturbations.** Eleven per fold, each felling exactly the gate this document names, with two
+recorded departures and one gap:
+
+* **the 5 % drop is now every 20th row, not the first 5 %.** A head slice fells `G5.1` too, because the
+  population file is ordered by stratum. This document's own "must stay clean" column predicted the
+  distinction and it is now demonstrated in both directions.
+* **`it` survives "stop IPF after 2 sweeps"** and the perturbation escalates to one sweep, printing
+  that it escalated. Italy's marginals are near enough to independent that two sweeps already land
+  inside 0.5 pp.
+* the `G5.6` perturbation is reported **`n/a`** on `es` and `it`, where the gate is already failing at
+  baseline. It fells `G5.6` on `uk`, which is the fold where the gate passes.
+
+**Vacuity guards.** `V5.a` --- the impossibility table is non-empty on all three folds (12/13/5 cells)
+and it BINDS: the mask zeroes 22.5 % (`es`), 21.8 % (`uk`) and 8.8 % (`it`) of the joint. `V5.b` ---
+`G5.6` FAILs rather than skipping if it checked zero rows; it checked 36 on each fold. `V5.c` ---
+`G5.10` prints its file list and FAILs if a file could not be read. `V5.d` --- `G5.5` and the battery
+both take the field order from `tools/encoder.py`, never from a copy held here.
+
+🔴 **`G5.6` is the gate this document called "the one whose failure would not show up anywhere
+else", and it is now failing.** The measured split is what makes it decidable: **zero rows fail for
+"no published source"** --- all 42 failing rows have a URL and a table id, and fail only the "derived
+from microdata" clause, on public-use CENSUS files, not on time-use diaries. `D-S5-12` is open on
+whether the gate's text should separate those two things. It is not being relaxed in the meantime.
+
+
+### 2026-08-21 (night) --- 🟢 **`D-S5-12` RULED (a) AND APPLIED. `G5.6` IS TWO GATES. 30 OF 30 PASS, COVERAGE CLAUSE STILL CLEAN.**
+
+Runner unchanged: `tools/4thJ_gates_step5.py` (md5 `0988f1abfb4b9534798271748d1db5fa`). Full
+narrative in the implementation doc's entry of the same date.
+
+**The split, and what each half now scores.**
+
+| gate | `es` | `uk` | `it` |
+|---|---|---|---|
+| `G5.6i` diaries (contamination) | **PASS** 0 of 36 | **PASS** 0 of 36 | **PASS** 0 of 36 |
+| `G5.6ii` published source | **PASS** 0 of 36 | **PASS** 0 of 36 | **PASS** 0 of 36 |
+| `G5.6-as-written` 🔴 INFORMATIONAL, not scored | **FAIL 30 of 36** | PASS | **FAIL 12 of 36** |
+
+**30 gate-fold verdicts, 0 FAIL, 2 BLOCKED per fold.** The two BLOCKED are unchanged: `G5.8` and
+`G5.9` still have no temperature sweep and no generation config to read.
+
+**Both halves were SEEN FAILING, separately, on every fold.**
+
+* *substitute a held-out marginal recounted from the held-out diaries* → fells **`G5.6i`** only. The
+  injected row is published, carries a URL and a table id, and fits the margins perfectly. Nothing
+  else moves.
+* *add a marginal with no URL and no table id* → fells **`G5.6ii`** only.
+* 🟢 *substitute a held-out marginal computed from CENSUS microdata* → fells **nothing**, which is the
+  ruling's own test and is why the perturbation was kept rather than deleted. It still fells
+  `G5.6-as-written`, which is why that gate is still run.
+
+🔴 **The old gate is not deleted.** It runs at every baseline and prints
+`[INFORMATIONAL -- superseded by D-S5-12 (a), not counted]`. Its FAIL on `es` and `it` is the
+evidence for the split; a project that deletes the failing version of a gate it just relaxed has
+destroyed its own audit trail.
+
+⚪ **`V5.b` now applies to both halves** --- each FAILs rather than skipping if it checked zero rows.
+Each checked 36 on each fold.
+
+⚪ **`G5.6i`'s marker list is deliberately wide.** `tus_` matches published Eurostat time-use tables,
+which are aggregates rather than diaries. No Step 5 marginal matches any marker today, so the width
+costs nothing now and makes the gate fail towards caution if one ever does.

@@ -1104,3 +1104,114 @@ invalid.
   while our microdata is ISTAT 2013-14.
 * `G6.1`'s raked-donor null is computable on all three folds as of 2026-08-21, but has **not been
   run**, because the donors are the Step 3 corpus and it lives on Speed.
+
+
+---
+
+### 2026-08-21 (late afternoon) --- 🔴 **`G6.1` WAS RUN FOR THE FIRST TIME. IT CANNOT CONVERGE ON THE `uk` FOLD, AND WHERE IT DOES CONVERGE IT RESTS ON FAR FEWER DIARIES THAN THE POOL SIZE SUGGESTS. `FINDING 62`.**
+
+Step 5.1 unblocked `G6.1` in principle on 2026-08-20 and Step 5.2 was built today, so the null was
+run: the REAL donors from `Step3_docs/outputs_step3/4J_step3_corpus.jsonl`, raked onto the REAL
+published marginals in `outputs_step5/`, through the REAL `tools/4thJ_step6_rakeddonor.rake()`. No
+substitute for any of the three. Full numbers in
+`../Step5_docs/outputs_step5/marginals_provenance.md` section 25.
+
+#### 🔴 First attempt: all three folds REFUSED, and both guards were right
+
+```
+es, it   551 donors carry strat_hh_type 'unknown' that the target never names.
+uk       IPF did not converge: worst margin off by 1.41515 pp, tolerance 0.5 pp.
+```
+
+The first is `FINDING 52`'s orphan guard firing exactly as designed on `D-S3-14`'s UK-only household
+band. The second is something else entirely.
+
+#### Second attempt, with `collapse={strat_hh_type: {unknown: other_complex}}`
+
+| fold | verdict | iterations | `max_dev_pp` |
+|---|---|---:|---:|
+| `es` | converged | 7 | 0.4506 |
+| `uk` | 🔴 **CANNOT CONVERGE** | 200 | **1.41515** |
+| `it` | converged | 3 | 0.4121 |
+
+🔴 **`G6.1` is the pre-registered BAR for the entire claim, and it cannot be computed for
+one of the three folds.** The 1.41515 pp is exactly the age-15 `unknown` slice of `FINDING 61`: the
+`D-S5-3` convention puts those people in an economic band that **no donor diary carries**, so no
+reweighting of any donor pool can produce them. **This is not a tolerance to be loosened. It is a
+missing category**, and it is `D-S5-11`'s to resolve.
+
+#### 🔴 And the two folds that DO converge are thinner than the pool size suggests
+
+Effective sample size, `(sum w)^2 / sum w^2`, which no gate currently looks at:
+
+| fold | ESS | as % of pool | largest single donor weight | the `unknown` band is carried by |
+|---|---:|---:|---:|---|
+| `es` | 36,977 | 68.3 % | 0.0206 % | 1,712 donors |
+| `it` | **16,101** | **46.0 %** | **0.1136 %** | 🔴 **68 donors** |
+
+The Italian fold's null hits its economic margin by making **68 British diaries** stand for **4.207 %
+of an entire country**, roughly 62 synthetic persons per donor diary, with a largest-donor weight
+**5.5x** the Spanish fold's. It converges and it is arithmetically correct. A bar resting on 68
+diaries is not much of a bar, and `G6.1` for `it` may not be quoted without this alongside it.
+
+#### 🔴 Two collapses are now known to be REQUIRED, and neither is pre-registered
+
+* `strat_hh_type: unknown -> ?` --- without it the rake refuses on two folds. The `other_complex`
+  target used above was chosen to expose the next failure, **not decided**.
+* `strat_econ_status: homemaker -> other_inactive` for `es` --- already required by `FINDING 52` and
+  `FINDING 51`.
+
+`prereg.md` is frozen and cannot be edited, so both collapses have to be declared in the paper as
+what they are: post-registration operational choices, stated with their effect.
+
+#### 🟢 What was closed on the writing side
+
+`D-S6-4` still owed one item: confirmation from the HETUS guidelines of what weight basis the national
+institutes were REQUIRED to tabulate on. That is a literature question, so the deliverable is a
+prompt, and it is now written:
+`DeepResearchPrompts/L27_hetus_weights_amy_weather_tabula_licence.md`, **Part A**. It carries the
+measured day-base table (`uk` 71.45/14.32/14.24, `es` 50/25/25, `it` 33/33/33) as the thing the
+guidelines have to explain, and it asks whether the 2008 and 2018 editions differ, because that alone
+would account for it.
+
+#### What did NOT happen
+
+No `G6.*` gate was scored, no fold was compared, and `prereg.md` was not touched --- md5
+`e4243e07cdd80c9c846b91f40e3e8c45`, verified against its sidecar at both ends of the session. The
+numbers above are measurements of whether the null is COMPUTABLE, not a null result.
+
+
+---
+
+### 2026-08-21 (evening) --- 🟢 **`G6.1`'s RAKED-DONOR NULL NOW BUILDS ON ALL THREE FOLDS. `FINDING 62` IS RETIRED.**
+
+Runner: `tools/4thJ_step6_g61_rake_folds.py`, new. It does NOT score anything --- there is no model
+output yet --- it answers the question that comes first: **can the null be constructed for this fold?**
+
+`FINDING 62` had said no for `uk` (1.41515 pp against a 0.5 pp tolerance, the age-15 `unknown` slice no
+donor carries) and had said yes-but-thin for `it` (68 British diaries carrying 4.207 % of the country,
+effective sample size 46.0 %). `D-S5-11` (b), ruled and applied the same evening, removes both.
+
+| fold | iterations | worst margin | effective sample size | heaviest single diary |
+|---|---:|---:|---|---:|
+| `es` | 3 | 0.24602 pp | 26,769 of 54,114 (49.5 %) | 0.0164 % of the target |
+| `uk` | 5 | 0.41662 pp | 34,107 of 57,400 (59.4 %) | 0.0118 % |
+| `it` | 4 | 0.24487 pp | 26,881 of 34,994 (**76.8 %**) | 0.0098 % |
+
+🔴 **The null is raked onto the FITTED population, not onto `marginals_<c>.csv`.** That is
+`score_margin`'s Guard 1 applied honestly: the model is prompted with prefixes drawn from
+`population_<c>.csv`, so a null raked onto anything else would be answering a different population and
+the difference would be reported as transfer.
+
+🔴 **Two collapses are required for the null to exist and NEITHER IS PRE-REGISTERED.**
+`strat_hh_type: unknown -> other_complex` (the 551 UK diaries of `D-S3-14`; `es` and `it` folds) and
+`strat_econ_status: homemaker -> other_inactive` (`es` only, `FINDING 51`). `prereg.md` is frozen and
+mentions neither. Both are stamped into `marginals_source`, so a collapsed run can never compare equal
+to an uncollapsed one --- but they are owed to the author.
+
+Seen failing, on demand rather than from memory: with the collapses dropped, `es` and `it` REFUSE on
+the orphan guard; and rebuilding `uk` under the superseded `D-S5-3` minor convention refuses at
+**1.414 pp**, reproducing `FINDING 62` to four figures.
+
+⚪ Still true: `G6.1` cannot be SCORED until a fold has generated. What changed is that the bar now
+exists on every fold.

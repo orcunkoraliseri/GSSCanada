@@ -19,8 +19,42 @@ convention A and `it` on convention B, and the difference is COUNTRY-CORRELATED.
 files are on A; `marginals_it.csv`'s HOUSEHOLD rows are still on B and disagree with Italy's own
 person file. See the 2026-08-21 (afternoon) Progress Log entry.
 
-**Items 5.2, 5.3 and 5.4 remain unbuilt and no Step 5 gate has been run.** Step 5.2's only remaining
-blocker is that the raking donors are the Step 3 corpus, which lives on Speed.
+🟢 **2026-08-21 (late afternoon): `D-S5-9` RULED (a) AND APPLIED, AND ITEMS 5.2 AND 5.3 ARE
+BUILT FOR ALL THREE FOLDS.** `marginals_it.csv`'s household rows are on convention A from the ISTAT
+1 % microdata; `population_{es,uk,it}.csv` (100,000 synthetic persons each, no random draw anywhere)
+and `prefixes_{es,uk,it}.jsonl` exist, the latter built through the SHARED `tools/encoder.py` with an
+exact round trip on all 300,000 rows.
+
+🔴 **The corpus was never the blocker.** It was already on this machine, and it is the
+post-`D-S6-1` HOUSEHOLD-split corpus: 73,254 records, 32,205 households, **0 households straddling the
+split**, md5 `ca89d2295603c547f2384a40dd1909ba`. It now lives at
+`Step3_docs/outputs_step3/4J_step3_corpus.jsonl`.
+
+🔴 **Two new findings, and the second one reaches the headline gate.**
+
+* **`FINDING 61`** --- `D-S5-3` puts every 11-14-year-old in the population into `unknown`, but the
+  CORPUS uses a different band in each country: `student` (es, 99.9 %), `other_inactive` (uk, 100 %),
+  `unknown` (it, 100 %). So the `es` and `uk` folds have their entire 11-14 band served by ITALIAN
+  donors alone, and the `it` fold has no donor for it at all.
+* **`FINDING 62`** --- `G6.1` was RUN for the first time, on the real donors and the real marginals.
+  It **cannot converge for the `uk` fold** (1.41515 pp against a 0.5 pp tolerance --- the age-15
+  `unknown` slice nobody supplies), and the `it` fold converges only by making **68 British diaries**
+  carry 4.207 % of an entire country, at an effective sample size of **46 %** of the pool.
+
+🟢 **2026-08-21 (evening): `D-S5-11` RULED (b), `D-S5-10` RULED (a), BOTH APPLIED, AND THE
+STEP 5 GATE BATTERY HAS RUN.** All three populations are rebuilt, `G6.1`'s raked-donor null now
+**converges on every fold** (it could not be built for `uk` at all before), and 25 of 27 gate-fold
+verdicts PASS with the coverage clause clean --- every passing gate was seen falling on every fold.
+
+🔴 **`G5.6` FAILS on `es` (30 of 36 marginal rows) and on `it` (12 of 36), and it is being left
+to fail.** Its text bars a marginal "derived from microdata", and `D-S5-4` (b), `D-S5-5` and `D-S5-9`
+each ruled exactly that, knowingly. `D-S5-12` is open on whether the gate's text should distinguish
+published CENSUS microdata from the held-out country's DIARIES. It is not being relaxed meanwhile.
+
+🔴 **`G5.8` and `G5.9` are BLOCKED, not passing.** Both read artefacts item 5.4 and Step 7 have
+not produced. **Item 5.4 remains unbuilt**: it needs a fold checkpoint and a generation pass, which is
+`D5.1`'s blocker too. Step 5's Definition of Done is therefore **3 of 5 ticked, item 5 partially**, and
+the step is NOT closed.
 
 ---
 
@@ -1266,3 +1300,375 @@ moved to 1e-7, still an order of magnitude inside what `rake()` requires.
 * **Step 5.2 is still not built.** Its only remaining blocker is that the raking donors are the Step 3
   corpus, which lives on Speed and is not on this machine.
 * No Step 5 gate has been run. Items 5.3 and 5.4 untouched.
+
+
+---
+
+### 2026-08-21 (late afternoon) --- 🟢 **`D-S5-9` APPLIED; ITEMS 5.2 AND 5.3 BUILT FOR ALL THREE FOLDS; 🔴 `FINDING 61` AND `FINDING 62`, THE SECOND OF WHICH STOPS `G6.1` ON THE `uk` FOLD**
+
+Full text and every number: `outputs_step5/marginals_provenance.md` **PART VI**, sections 21-27
+(backup `.bak5`). Nothing ran on the cluster. `prereg.md` untouched, md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar at both ends of the session.
+
+#### 🟢 `D-S5-9` ruled (a) and applied
+
+`marginals_it.csv`'s five household-basis `strat_hh_type` rows are rebuilt from the ISTAT 1 %
+microdata on **convention A**. `other_complex` moves **+4.502 pp**; the other four move between
+-0.041 and -2.014. The rows stop being a full count, and what bounds their accuracy is not a guess:
+the same sample on convention B reproduces the Eurostat full count to **1.49 %** worst-category, and
+the builder refuses above 3 %.
+
+New: `tools/4thJ_step5_apply_ds59.py`, the only module in Step 5 allowed to mutate a shipped
+marginal. It re-reads the file it wrote, diffs it line by line against its own backup, and refuses
+unless **exactly six lines changed and every other line is byte-identical**.
+
+⚪ On a household basis `other_complex` now reads es 11.45 / uk 7.69 / it 8.58 %. Italy's old 4.08 %
+was an artefact of the classification, not of Italian households.
+
+#### 🟢 Item 5.2 --- three synthetic populations, deterministic end to end
+
+`tools/4thJ_step5_synthesise.py`. IPF onto `age x sex x hh_type x econ`, then largest-remainder
+expansion to `N = 100,000`. **No random draw and no seed to record**; every marginal is reproduced to
+under **0.014 pp**, a seventh of the 0.1 pp publication grain.
+
+🔴 `strat_hh_type` is taken from `hhtype_person_<c>.csv` and `strat_econ_status` from
+`econ_11plus_<c>.csv` --- **not** from `marginals_<c>.csv` in either case. The first is `D-S5-8`; the
+second is `D-S5-3`.
+
+Three structural zeros for `G5.2`, none of them a plausibility judgement: two are forced by `D-S5-3`,
+and the third is **proved** by the measured mean household sizes of exactly 1.0000 and 2.0000 persons
+under convention A.
+
+⚪ `strat_day_type` is exogenous at the calendar week (5/7, 1/7, 1/7), because `FINDING 54` says no
+source publishes it. Independence is an assumption and is declared as one.
+
+#### 🟢 Item 5.3 --- prefixes through the shared encoder
+
+`tools/4thJ_step5_prefixes.py` imports `encoder.encode_prefix()` and holds no mapping of its own.
+Round trip exact on 300,000 rows; distinct prefixes == distinct strata in all three folds.
+
+🔴 The coverage diagnostic is printed twice on purpose. On the whole prefix string it is
+**identically 100 % unseen in every fold** --- the country token is held out, so it cannot be
+anything else, and that is the same mechanism that made `G5.4` read 0 %. With the country stripped:
+**14.38 % (es) / 17.01 % (uk) / 24.39 % (it)** of synthetic PERSONS sit on a stratum the fold's
+training corpus never contained.
+
+#### 🔴 `FINDING 61` --- the population and the corpus disagree about minors
+
+`D-S5-3` says `11-14 -> unknown`. The corpus says `student` in Spain (711 diaries, 99.9 %),
+`other_inactive` in the UK (896 of 896) and `unknown` in Italy (1,644 of 1,644). Three countries,
+three deterministic and DIFFERENT answers --- `FINDING 48` re-derived from the corpus, with a
+consequence `FINDING 48` did not state:
+
+* `es` and `uk` folds: the whole 11-14 band is served by **Italian donors alone**, a country
+  fingerprint entering through the back door;
+* `it` fold: **no donor supplies it at all**.
+
+Caught by machine, not by inspection: `--seed donor` was added to the synthesiser and **refused on
+two of three folds**, quoting the exact deviations.
+
+#### 🔴 `FINDING 62` --- `G6.1` run for the first time, and it is thinner than it looks
+
+Real donors, real published marginals, the real `rake()`.
+
+* First attempt: **all three folds REFUSED.** The UK's 551 `strat_hh_type = unknown` donors
+  (`D-S3-14`) have no target category in the `es` and `it` folds --- `FINDING 52`'s orphan guard
+  firing correctly. The `uk` fold failed differently, on convergence.
+* With `collapse={strat_hh_type: {unknown: other_complex}}`: `es` converges (7 iters, 0.4506 pp),
+  `it` converges (3 iters, 0.4121 pp), 🔴 **`uk` CANNOT** --- 1.41515 pp against a 0.5 pp
+  tolerance, which is exactly the age-15 `unknown` slice of `FINDING 61`. **This is not a tolerance
+  to loosen. It is a missing category.**
+* 🔴 And the two that converge are thin. Effective sample size, which no gate looks at:
+  `es` 36,977 (68.3 % of pool); **`it` 16,101 (46.0 %)**, where 4.207 % of the country is carried by
+  **68 British diaries** at ~62 synthetic persons each, and the largest single donor weight is
+  **5.5x** the Spanish fold's.
+
+⚪ Two collapses are now known to be **required** for `G6.1` to run at all and **neither is
+pre-registered**. The `unknown -> other_complex` used above was chosen to expose the next failure, not
+decided.
+
+#### 🔴 What is now open
+
+* **`D-S5-10`** --- uniform (independence) or donor IPF seed. Recommendation **(a) uniform, declared**,
+  because (b) is better but is blocked behind `D-S5-11` and builds for only one fold today.
+* **`D-S5-11`** --- what economic band a minor gets in the synthetic population. Recommendation
+  **(b) take it from the donor pool per fold**: the only option that makes `G6.1` computable on all
+  three folds without touching the frozen corpus, without contradicting `D-S2-17`'s confirmed age
+  floor, and without inventing a value. It is a **basis change** and must not be applied without a
+  ruling.
+
+#### What did NOT happen
+
+No Step 5 gate was run and none has been seen failing; the numbers above are measurements, not gate
+verdicts. Item 5.4 is untouched. `population_<c>.parquet` is written alongside the CSV and verified
+on read-back.
+
+
+---
+
+### 2026-08-21 (evening) --- 🟢 **`D-S5-11` RULED (b) AND `D-S5-10` RULED (a), BOTH APPLIED. `G6.1`'s NULL NOW BUILDS ON ALL THREE FOLDS. THE STEP 5 GATE BATTERY HAS RUN: 25 OF 27 PASS, COVERAGE CLAUSE CLEAN.** 🔴 **`FINDING 63` AND `D-S5-12`.**
+
+Nothing ran on the cluster. `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`. No shipped
+marginal was modified --- `marginals_{es,uk,it}.csv` keep the md5s they had this morning, and the
+battery re-checks the populations' own md5s at both ends of its run.
+
+#### 🟢 `D-S5-11` ruled (b): the minor's economic band comes from the DONOR POOL, per fold
+
+`D-S5-3` had put the whole 11-14 band, plus in `es` and `uk` the age-15 slice, into a single `unknown`
+economic band. That band is not a census category; it is a construct, invented because no national
+economic-activity table reaches below 16. Under (b) that mass is split back over real bands using the
+N-1 pool's own econ mix at the ages the mass comes from.
+
+🔴 **It is not, and cannot be, a rewrite of `econ_11plus_<c>.csv`.** The answer depends on WHICH
+TWO COUNTRIES ARE THE DONORS, so `es` under the `es` fold and `es` as a donor elsewhere would need
+different files. The rule therefore lives in the synthesiser, at fit time, and what it produced is
+written out beside the population as `minor_econ_split_<c>.csv`.
+
+The split is checked against the marginal file's own footer before it is applied: `band_11-14` plus
+`age_15_residual` must equal the `unknown` count to within half a person, and it does in all three.
+
+| fold | `unknown` re-labelled | `w11` / `w15` | where it went |
+|---|---:|---|---|
+| `es` | 2,170,563 (5.2614 %) | 0.804762 / 0.195238 | `unknown` .5216, `other_inactive` .3036, `student` .1000, `employed` .0491, `unemployed` .0256, `retired` .0001 |
+| `uk` | 3,712,014 (6.8818 %) | 0.794365 / 0.205635 | `unknown` .5545, `student` .3663, `employed` .0382, `unemployed` .0302, `other_inactive` .0054, `homemaker` .0053 |
+| `it` | 2,231,620 (4.2071 %) | 1.000000 / 0.000000 | `other_inactive` .5576, `student` .4418, `employed` .0006 --- **`unknown` is now EMPTY** |
+
+🔴 **What it costs, stated plainly.** `FINDING 61`/`FINDING 48`: each country labels its own
+minors differently and deterministically. Under leave-one-country-out we are forbidden the held-out
+country's own convention, so a Spanish synthetic 13-year-old is labelled from the British and Italian
+habit instead. **The token is wrong for that country in a way no amount of data fixes**, and every run
+prints the mix it used. Spain additionally loses 10,753 donor minors' `homemaker` to `other_inactive`,
+which is `FINDING 51` reaching into the minor band as well.
+
+#### 🔴 `FINDING 63` --- the re-label fixed the MARGINAL and left the JOINT wrong
+
+Caught by reading the first output, not by a check: the `it` fold's largest unseen strata came back as
+`it,11-14,*,couple_with_children,employed`, 1,512 synthetic 13-year-olds in work out of about 4,207 ---
+**a third of Italy's minors**, off ONE Spanish donor diary.
+
+The cause is not the rule, it is where the rule was applied. IPF fits marginals; it takes the shape
+INSIDE a row from the seed. With a uniform seed the 11-14 row was spread across its admissible bands
+in proportion to the whole population's econ marginal, where `employed` is 43 %. The re-label had put
+the right TOTAL on each band and said nothing about who held it.
+
+Fixed by seeding the 11-14 row with the donor mix --- which is what (b) ruled, applied where it binds.
+`employed` at 11-14 falls to 0.2764 % (`uk`) and 0.4351 % (`it`). IPF still moves the row, because it
+must satisfy the marginals, and how far it moves is now printed on every run:
+
+| fold | worst departure of the fitted minor profile from the donor mix |
+|---|---:|
+| `es` | 11.6949 pp of the minor band |
+| `it` | 4.9713 pp |
+| `uk` | 0.2339 pp |
+
+⚪ Spain's 11.69 pp is the largest because its minor band is admissible on only TWO econ categories, so
+the econ marginal has nowhere else to push. It is a measurement, it is reported, and it is not tuned.
+
+#### 🟢 `D-S5-10` ruled (a): `uniform` is the frozen primary, `donor` is a declared sensitivity
+
+`population_<c>.csv` is the population every downstream step consumes; `population_<c>_donorseed.csv`
+is built beside it and never mixed into a headline. The reason is the one already recorded: under the
+donor seed the out-of-distribution share falls to zero BY CONSTRUCTION, so it stops being evidence, and
+the primary population must be one that can still be surprised.
+
+⚪ Both variants now build on all three folds. Before `D-S5-11`, `--seed donor` REFUSED on two of the
+three --- which is how `FINDING 61` was caught in the first place.
+
+Out-of-distribution exposure, country token stripped, on the frozen primary: **`es` 14.339 %,
+`uk` 16.277 %, `it` 20.093 %** of synthetic persons sit on a stratum the fold's training corpus never
+contained. Strata: `es` 1,116, `uk` 1,306, `it` 1,306.
+
+#### 🟢 `G6.1`'s null now BUILDS ON EVERY FOLD, and `FINDING 62` is retired
+
+`tools/4thJ_step6_g61_rake_folds.py`, new. It rakes the real N-1 diary pool onto the target the model
+is actually prompted with --- the fitted population, not the raw marginal file, which is `score_margin`
+Guard 1: a null raked onto a different population from the model's is not a null, it is a handicap.
+
+| fold | before (`D-S5-3`) | now | effective sample size | heaviest single diary |
+|---|---|---|---:|---:|
+| `es` | converged 0.4506 pp | **3 iters, 0.24602 pp** | 26,769 of 54,114 (49.5 %) | 0.0164 % of the target |
+| `uk` | 🔴 **COULD NOT CONVERGE**, 1.41515 pp | **5 iters, 0.41662 pp** | 34,107 of 57,400 (59.4 %) | 0.0118 % |
+| `it` | converged 0.4121 pp | **4 iters, 0.24487 pp** | 26,881 of 34,994 (**76.8 %**) | 0.0098 % |
+
+🔴 **Italy's null no longer rests on 68 British diaries.** That was `FINDING 62`'s second half:
+4.207 % of an entire country was being carried by the 68 `uk` diaries coded `econ = unknown`. With
+`unknown` empty in the `it` fold there is nothing for them to carry, and the effective sample size rises
+from 46.0 % to 76.8 %.
+
+Two perturbations, both run:
+
+* **drop the collapses** --- `es` and `it` REFUSE on the 551 `strat_hh_type = unknown` donors of
+  `D-S3-14` (`FINDING 52`'s orphan guard). `uk` still converges, correctly: those donors are its own
+  and are held out.
+* **rebuild `uk` under the superseded `D-S5-3` convention** --- refuses at **1.414 pp**, which is the
+  1.4151 % age-15 slice to four figures. The failure is reproduced on demand, not remembered.
+
+🔴 ~~**Both collapses are still NOT PRE-REGISTERED** and `prereg.md` is frozen. Declared, owed.~~
+
+🟢 **CLOSED 2026-08-21 (night): registered in `Step6_docs/outputs_step6/prereg_addendum_01.md`**
+(md5 `531d064176070e89371e86acbba68dd1`), a dated sidecar addendum --- the author's ruling, and the
+route `prereg.md`'s own STATUS section prescribes. `prereg.md` is byte-untouched at
+`e4243e07cdd80c9c846b91f40e3e8c45` and `G4.14` is unaffected.
+
+🔴 **AND THERE ARE THREE COLLAPSES, NOT TWO.** This sentence, and every other note in the project,
+said "both". The third is `strat_econ_status: unknown -> other_inactive` on fold `it`: `D-S5-11` (b)
+emptied Italy's `unknown` economic band entirely, which orphaned the 68 UK donor diaries carrying
+`econ = unknown` --- **the same 68 British diaries `FINDING 62` was about**. It is built by a loop in
+`tools/4thJ_step6_g61_rake_folds.py` rather than written literally, which is why nobody had counted
+it; it was found by reading the script's own `collapses (...)` line, not the note. Counts, costs and
+per-fold bindings are in the addendum. The registry is now **enforced**: the rake refuses on any
+collapse the addendum does not name, and that refusal is demonstrated by
+`tools/4thJ_step6_collapse_registry_selftest.py`.
+
+#### 🟢 The Step 5 gate battery --- `tools/4thJ_gates_step5.py`, run on all three folds
+
+**25 of 27 gate-fold verdicts PASS. Coverage clause CLEAN: no gate passed at baseline without being
+made to fall.** Eleven perturbations per fold, each felling exactly the gate the validation doc names.
+
+🔴 **`G5.6` FAILS on `es` (30 of 36 rows) and `it` (12 of 36).** Run as written and left to
+fail. See `D-S5-12` below.
+
+🔴 **`G5.8` and `G5.9` are BLOCKED, a third verdict, not PASS.** There is no temperature sweep
+and no generation config to read. A gate whose input does not exist has not passed.
+
+⚪ Two things the battery found about itself, both kept as comments in the code because they are facts
+about the data:
+
+* Dropping the FIRST 5 % of rows fells `G5.1` as well as `G5.3`, because the population file is ordered
+  by stratum and a head slice deletes whole categories. The validation doc asks specifically whether
+  the margins survive a PROPORTIONAL loss, so the perturbation drops every 20th row instead --- and
+  then `G5.1` survives, as the doc predicted it would.
+* **`it` survives "stop IPF after 2 sweeps" and needs one.** Not a weak perturbation: Italy's four
+  marginals are close enough to independent that two sweeps already land inside 0.5 pp. Worth knowing
+  before anyone reads `G5.1` as evidence that the Italian fit was hard. The escalation is printed.
+
+#### 🔴 `D-S5-12` --- open, and it is a gate-text decision, not a data one
+
+`G5.6` reads "count of marginals with no published source, **or derived from microdata**: 0". Since it
+was written, three rulings put census microdata into the marginals on purpose: `D-S5-4` (b) (Spanish
+economic bands), `D-S5-5` (private-household frame) and `D-S5-9` (Italian household rows).
+
+The measured split matters: **zero rows in any fold fail for "no published source".** Every failing row
+has a URL and a table id; all 42 fail only the microdata clause. And the microdata in question is the
+INE Censo 2011 and ISTAT CPA 2011 **public-use census files** --- not the HETUS diaries, which are what
+the contamination argument is actually about.
+
+**Recommendation (a): split `G5.6` into two conditions** --- (i) zero marginals derived from the
+held-out country's TIME-USE DIARIES, which is the contamination gate and which passes today, and
+(ii) zero marginals without a published source with URL and table id, which also passes today. Each
+would then have to be seen failing separately.
+
+🟢 **RULED (a) BY THE AUTHOR, 2026-08-21 (night), AND APPLIED.** `G5.6` is now `G5.6i` and
+`G5.6ii`; both PASS on all three folds; each was seen falling separately, on every fold; the battery
+is 30 of 30 with the coverage clause still clean. 🔴 **The gate as written is NOT deleted** --- it
+runs at every baseline as `G5.6-as-written`, INFORMATIONAL and never scored, and still FAILS `es`
+30/36 and `it` 12/36. See the 2026-08-21 (night) Progress Log entry.
+
+#### What did NOT happen
+
+Item 5.4 is untouched --- no checkpoint, no generation, so no temperature sweep. `D5.1` likewise. The
+Definition of Done is 3 of 5, with item 5 partial. **Step 5 is not closed and is not being written up
+as closed.**
+
+---
+
+## 2026-08-21 (night) --- 🟢 `D-S5-12` RULED (a) AND APPLIED, THE COLLAPSES ARE REGISTERED, AND THERE ARE THREE OF THEM
+
+### Say this first
+
+**Two things were owed and both are closed. Neither closed the way the note said it would.**
+
+1. `D-S5-12` ruled **(a)**: `G5.6` is split into `G5.6i` (contamination --- zero marginals from the
+   held-out country's TIME-USE DIARIES) and `G5.6ii` (published source --- URL and table id). Both
+   PASS on all three folds. Each was **seen failing separately**, on every fold. The battery is now
+   **30 gate-fold verdicts, 30 PASS**, coverage clause still CLEAN, `G5.8`/`G5.9` still BLOCKED.
+2. The unregistered collapses are registered in a dated sidecar addendum,
+   `Step6_docs/outputs_step6/prereg_addendum_01.md` --- and writing it turned up a **third collapse
+   nobody had counted**.
+
+### 🔴 The gate as written is still run, and still fails
+
+`G5.6-as-written` executes at every baseline and prints
+`[INFORMATIONAL -- superseded by D-S5-12 (a), not counted]`. It still reads **FAIL 30 of 36** on
+`es` and **FAIL 12 of 36** on `it`. It is kept deliberately: its failure is the evidence for the
+split, and deleting the failing version of a gate one has just relaxed destroys the audit trail that
+made the relaxation defensible in the first place.
+
+The perturbation *substitute a held-out marginal computed from CENSUS microdata* is also kept, with
+its expectation changed to **fell nothing**. That is the ruling's own test --- `D-S5-4` (b),
+`D-S5-5` and `D-S5-9` deliberately admit published-census microdata, so a split that still fells a
+scored gate there has not split anything. It does still fell `G5.6-as-written`.
+
+Two new perturbations, both green on all three folds:
+
+* *recount a held-out marginal from the held-out diaries* → fells **`G5.6i`** alone. The injected row
+  is published, sourced, and fits the margins; only the contamination condition sees it.
+* *add a marginal with no URL and no table id* → fells **`G5.6ii`** alone.
+
+🔴 `G5.6i`'s marker list is deliberately **wide**: `hetus`, `diary`, `diaries`, `time-use`,
+`time use`, `time_use`, `tus_`, `step3_corpus`, `harmonised.parquet`. `tus_` matches published
+Eurostat *time-use* aggregate tables, which are not diaries. Zero Step 5 marginal rows match any
+marker today, so the width costs nothing now and makes the gate fail towards caution later.
+
+### 🔴 FINDING 64 --- there are THREE collapses, not two, and the third moves the 68 diaries of `FINDING 62`
+
+Every note in this project --- this document, `4thJ_06_transfer.md`, `Prompts/RESUME.md` --- says
+"both collapses" and names two. It was wrong. Running `tools/4thJ_step6_g61_rake_folds.py` and
+reading the `collapses (...)` line it prints for each fold gives:
+
+| fold | collapses actually passed |
+|---|---|
+| `es` | `strat_hh_type: unknown→other_complex` **+** `strat_econ_status: homemaker→other_inactive` |
+| `uk` | `strat_hh_type: unknown→other_complex` (binds on nothing --- the 551 are held out) |
+| `it` | `strat_hh_type: unknown→other_complex` **+** 🔴 `strat_econ_status: unknown→other_inactive` |
+
+The third is generated by the "a donor band the target lost entirely must go somewhere" loop, not
+written literally, which is why it was never counted. Its cause is `D-S5-11` (b): splitting the
+constructed `unknown` band back over real bands **emptied Italy's `unknown` economic band
+completely**, so the 68 UK donor diaries carrying `econ = unknown` became orphans on that fold.
+
+🔴 **Those are the same 68 British diaries `FINDING 62` was about.** Italy's null used to rest on
+them at ESS 46 %; it now runs at 76.8 %, and this collapse is part of the reason --- they are
+weighted as `other_inactive` instead of being orphaned. The cost is stated in the addendum: a UK
+respondent whose economic status the UKDA left blank is *asserted* to be economically inactive when
+the UK donates into `it`. 68 of 73,254 diaries.
+
+Counts for the other two, measured from the corpus rather than remembered: **A** moves 551 diaries
+(all UK, binds on `es` and `it`); **B** moves 5,584 (uk 710 + it 4,874, binds on `es` only).
+
+### The registry is enforced, not asserted
+
+`REGISTERED_COLLAPSES` in `tools/4thJ_step6_g61_rake_folds.py` holds the three triples with the
+ruling each follows from. The rake **REFUSES** and names the pair if the dict it built contains
+anything else. Demonstrated by `tools/4thJ_step6_collapse_registry_selftest.py`: the three real
+per-fold dicts pass; a fourth collapse (`student→employed`) is refused; and a **registered
+variable and source with a new target** (`strat_hh_type: unknown→one_person`) is also refused, which
+is the case a coarser check would have missed.
+
+🟢 **The guard is additive: the three nulls are byte-for-byte what they were.** `es` 3 iters
+0.24602 pp, `uk` 5 iters 0.41662 pp, `it` 4 iters 0.24487 pp.
+
+### Artefacts
+
+| file | md5 |
+|---|---|
+| `tools/4thJ_gates_step5.py` | `0988f1abfb4b9534798271748d1db5fa` |
+| `tools/4thJ_step6_g61_rake_folds.py` | `d692ba56455cd7ab0c4cb69b40fd1d10` |
+| `tools/4thJ_step6_collapse_registry_selftest.py` | `8875678c7916d8056ffc9c605ec9181c` |
+| `Step6_docs/outputs_step6/prereg_addendum_01.md` | `531d064176070e89371e86acbba68dd1` |
+| `Step6_docs/outputs_step6/prereg.md` | `e4243e07cdd80c9c846b91f40e3e8c45` --- 🟢 **UNCHANGED, verified at both ends** |
+
+`.bak_ds512` and `.bak_addendum` copies of both patched tools are on disk. No population, marginal or
+prefix file was touched; the battery md5s `population_*.csv` before and after and reports them equal.
+
+### What did NOT happen
+
+**Item 5.4 is still untouched** --- no fold checkpoint, no generation pass, so no temperature sweep
+and no generation config. `G5.8`, `G5.9` and `D5.1` remain BLOCKED on it, and nothing here changes
+that.
+
+**The Definition of Done is STILL 3 of 5.** Items 1, 2 and 3 are done. Item 4 (temperature
+calibrated, both curves reported) is item 5.4 and is untouched. 🔴 **Item 5 --- "all Step 5 gates
+PASS and each has been seen failing" --- is CLOSER but NOT MET: the two gates that split both pass
+and both were seen failing, but `G5.8` and `G5.9` are BLOCKED, and a gate whose input does not exist
+has not passed.** Nine of eleven gates now satisfy item 5 completely. **Step 5 is not closed.**

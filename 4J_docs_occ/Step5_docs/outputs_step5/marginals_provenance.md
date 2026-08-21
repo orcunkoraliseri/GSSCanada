@@ -1725,3 +1725,102 @@ ruling.
   `pyarrow`; the CSV is the primary and the two are verified equal on read-back.
 * ⚪ `N = 100,000` per country is a choice, not a ruling. It is identical across folds on purpose, so
   no country gets an advantage from sample size.
+
+
+---
+
+# PART VII --- `D-S5-11` (b), `D-S5-10` (a), and the gate battery. 2026-08-21 (evening).
+
+## 28. No file in this directory that carries a published number was modified
+
+`marginals_es.csv` `32e1d97d0c107ee8d2eb7034abd18a8a`,
+`marginals_uk.csv` `5bd9d6c7feadcc2382e573a76d2f7b7e`,
+`marginals_it.csv` `1d0fafe493e2c39d059cbca7c3aa122c` --- unchanged from this morning.
+`econ_11plus_<c>.csv` and `hhtype_person_<c>.csv` likewise untouched.
+
+🔴 `D-S5-11` **could not** have been applied to them. The rule takes the minor's economic band
+from the DONOR POOL, and the donor pool is the other two countries, so the answer differs depending on
+which fold is being fitted. A per-country file cannot hold a per-fold answer. It is applied at fit time
+in `tools/4thJ_step5_synthesise.py` and audited in `minor_econ_split_<c>.csv`.
+
+## 29. What `D-S5-11` (b) moved, per fold
+
+The `unknown` band of `econ_11plus_<c>.csv` is `D-S5-3`'s construct: the 11-14 band, plus in `es` and
+`uk` the age-15 slice. Before splitting it, the builder checks that identity against the file's own
+footer --- `band_11-14 + age_15_residual` must equal `unknown` to within half a person --- and refuses
+if a third contributor exists.
+
+| fold | `unknown` | `w11` | `w15` | donors at 11-14 | donors at 15-24 |
+|---|---:|---:|---:|---|---|
+| `es` | 2,170,563 | 0.804762 | 0.195238 | `uk` + `it` | `uk` + `it` |
+| `uk` | 3,712,014 | 0.794365 | 0.205635 | `es` + `it` | `es` + `it` |
+| `it` | 2,231,620 | 1.000000 | 0.000000 | `es` + `uk` | n/a --- ISTAT publishes age 15 |
+
+Resulting shares of that mass:
+
+| fold | `unknown` | `student` | `other_inactive` | `employed` | `unemployed` | `homemaker` | `retired` |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `es` | .521649 | .100016 | .303572 | .049123 | .025575 | --- | .000064 |
+| `uk` | .554538 | .366331 | .005385 | .038240 | .030190 | .005315 | --- |
+| `it` | --- | .441817 | .557561 | .000622 | --- | --- | --- |
+
+🔴 Spain's row also folds 10,753 donor minors from `homemaker` into `other_inactive`
+(`FINDING 51`: the Spanish census `RELA` has no *Labores del hogar*). 🔴 Italy's `unknown`
+column is EMPTY: no donor country labels a minor `unknown`, so the band disappears from that fold's
+population entirely.
+
+## 30. `FINDING 63` --- the marginal was right and the joint was not
+
+The first build under (b) put 1,512 of Italy's roughly 4,207 synthetic 13-year-olds in `employed`.
+IPF fits marginals and takes the shape inside a row from the seed; a uniform seed gave the 11-14 row
+the whole population's econ profile, in which `employed` is 43 %. The re-label had fixed the totals and
+said nothing about who held them.
+
+The minor row of the seed is now set proportional to the donor mix, which is what (b) ruled. `employed`
+at 11-14 falls to 0.2764 % (`uk`) and 0.4351 % (`it`). IPF still moves the row to satisfy the
+marginals, and the movement is printed every run: worst departure `es` 11.6949 pp, `it` 4.9713 pp,
+`uk` 0.2339 pp of the minor band. Spain's is the largest because its minor band is admissible on only
+two categories.
+
+## 31. `D-S5-10` (a) --- the frozen primary is the uniform seed
+
+`population_<c>.csv` (uniform) is what every downstream step reads.
+`population_<c>_donorseed.csv` is a declared sensitivity and is never mixed into a headline.
+
+| artefact | md5 |
+|---|---|
+| `population_es.csv` | `7d5e2e2acdde2cd17c89009badaf8ff0` |
+| `population_uk.csv` | `8eaf3649933750cdec91aff2fbacb87a` |
+| `population_it.csv` | `d17f6563ce2630de00d3d3fb2278322a` |
+| `prefixes_es.jsonl` | `be51b8f7645981f4d52ad20d9560e940` |
+| `prefixes_uk.jsonl` | `b67b757819cb1930a6aaf840bb85cb00` |
+| `prefixes_it.jsonl` | `cfb93dc14bab0d4692ec77325343e323` |
+| `minor_econ_split_es.csv` | `f2d8593dec4901b6581fdac44cf7ec39` |
+| `minor_econ_split_uk.csv` | `dac6e6f4f18e774eba62d5b93457fbef` |
+| `minor_econ_split_it.csv` | `ab150518664532b6683f16d81169ff7a` |
+
+Out-of-distribution exposure with the country token stripped: `es` 14.339 %, `uk` 16.277 %,
+`it` 20.093 % of synthetic persons. Strata: 1,116 / 1,306 / 1,306.
+
+## 32. `G6.1`'s null, built on real donors and real marginals, all three folds
+
+`tools/4thJ_step6_g61_rake_folds.py`. Raked onto the FITTED population, not the raw marginal file,
+because that is the distribution the model is prompted with (`score_margin` Guard 1).
+
+| fold | iterations | worst margin | effective sample size | heaviest single diary |
+|---|---:|---:|---|---:|
+| `es` | 3 | 0.24602 pp | 26,769 of 54,114 (49.5 %) | 0.0164 % |
+| `uk` | 5 | 0.41662 pp | 34,107 of 57,400 (59.4 %) | 0.0118 % |
+| `it` | 4 | 0.24487 pp | 26,881 of 34,994 (76.8 %) | 0.0098 % |
+
+🔴 Before `D-S5-11`, `uk` could not converge at all (1.41515 pp against 0.5 pp) and Italy's
+null rested on 68 British diaries carrying 4.207 % of the country. Both are gone. Two collapses are
+still required and **neither is pre-registered**: `strat_hh_type: unknown -> other_complex` on `es` and
+`it`, and `strat_econ_status: homemaker -> other_inactive` on `es`.
+
+## 33. `G5.6` fails on two folds, and the reason it fails is decidable
+
+30 of 36 rows on `es`, 12 of 36 on `it`, 0 of 36 on `uk`. 🔴 **Not one row anywhere fails for
+"no published source"** --- every failing row carries a URL and a table id, and fails only the "derived
+from microdata" clause. The microdata is the INE Censo 2011 and ISTAT CPA 2011 public-use census files,
+which is not what the contamination argument is about. `D-S5-12` open; the gate is not relaxed.
