@@ -1430,3 +1430,298 @@ which is what the economic-status signs above independently say.
 
 🟢 **Step 5.2 is unblocked on the marginals side.** The remaining blocker is that the raking donors
 are the Step 3 corpus, which lives on Speed and is not on this machine.
+
+
+---
+---
+
+# PART VI --- `D-S5-9` APPLIED, STEP 5.2 AND 5.3 BUILT, AND TWO FINDINGS THAT REACH `G6.1`
+
+*2026-08-21, late afternoon. Everything in this part is measured on this machine from files that are
+on this machine. Nothing was run on the cluster.*
+
+---
+
+## 21. 🟢 `D-S5-9` RULED (a) AND APPLIED --- Italy's household rows move to convention A
+
+**Author, 2026-08-21: "rewrite from microdata".**
+
+`marginals_it.csv` carried its five household-basis `strat_hh_type` rows from Eurostat
+`cens_11htts_r2`, a FULL COUNT on **convention B**. `hhtype_person_it.csv` is on **convention A**
+(`FINDING 60`). Italy's two bases therefore contradicted each other inside one directory. They now
+do not.
+
+`tools/4thJ_step5_build_it_microdata.py` gained a second emitter,
+`outputs_step5/hhtype_household_it.csv`, and a new module
+`tools/4thJ_step5_apply_ds59.py` installs it. The applier is a separate file **on purpose**: it is
+the only thing in Step 5 that mutates an already-shipped marginal, and a reader should be able to see
+which script is allowed to do that without reading any code.
+
+| category | was (Eurostat, convention B) | now (ISTAT 1 %, convention A) | change |
+|---|---:|---:|---:|
+| `one_person` | 7,641,106 | 7,639,100 | **-0.041 pp** |
+| `couple_no_children` | 4,968,407 | 4,645,000 | **-1.336 pp** |
+| `couple_with_children` | 8,532,394 | 8,045,900 | **-2.014 pp** |
+| `single_parent_with_children` | 2,438,716 | 2,167,700 | **-1.112 pp** |
+| `other_complex` | 1,002,567 | 2,111,600 | **+4.502 pp** |
+
+🔴 **What it costs, and the cost is not hidden.** Those five rows **stop being a full count**.
+They are now a 1 % self-weighting sample estimate. The accuracy they inherit is **not asserted**: the
+same sample, tabulated on convention B, reproduces the Eurostat full count to within **1.49 %** on its
+worst category, and that like-for-like score is recomputed on every build and refuses above 3 %.
+
+🟢 **What it buys.** `other_complex` on a household basis now reads es 11.45 %, uk 7.69 %,
+it 8.58 % --- one range. Before, Italy read 4.08 %, an outlier produced entirely by the classification
+rather than by Italian households.
+
+⚪ **What was NOT touched, and it was verified after the write rather than intended before it.** The
+applier re-reads the file it produced, compares every line against its own backup, and refuses unless
+**exactly six lines changed and every other line is byte-identical**. Age, sex and economic status are
+untouched; `11-14` in particular keeps its published derivation, because `ETA_CLASSI` bottoms out at
+"0-14". `econ_11plus_it.csv` is untouched for the reason `D-S5-7` gave: the basis effect is 0.178 pp
+and this sample's own noise is 0.207 pp.
+
+```
+marginals_it.csv         md5 1d0fafe493e2c39d059cbca7c3aa122c
+hhtype_household_it.csv  md5 f18e7b008bf2a34aba34f48664789568
+backup                   marginals_it.csv.bak_dS59
+```
+
+---
+
+## 22. 🟢 STEP 5.2 IS BUILT --- three synthetic populations, and NO RANDOM DRAW ANYWHERE
+
+`tools/4thJ_step5_synthesise.py`. IPF of `age (8) x sex (2) x hh_type (5) x econ (5-7)` onto the
+published marginals, then a deterministic expansion to `N = 100,000` persons per country, then an
+exogenous `strat_day_type`.
+
+**Where each marginal comes from, and two of the four are NOT the obvious file:**
+
+| field | file | why not `marginals_<c>.csv` |
+|---|---|---|
+| `strat_age_band` | `marginals_<c>.csv` | --- |
+| `strat_sex` | `marginals_<c>.csv` | --- |
+| `strat_hh_type` | **`hhtype_person_<c>.csv`** | the units are PERSONS; the marginals file counts HOUSEHOLDS, and on the UK the two differ by **2.4x** on the largest category |
+| `strat_econ_status` | **`econ_11plus_<c>.csv`** | that is the band set with `D-S5-3`'s age conventions applied, which is what the corpus prefix uses |
+
+🟢 **There is no seed to record and no sampling noise to report.** The IPF table is expanded by
+**largest remainder**, which is deterministic and reproduces every marginal to under **0.014 pp** ---
+a seventh of the 0.1 pp grain the sources are published at. A Monte-Carlo draw would have added
+sqrt(N) noise to every cell for nothing.
+
+**Three structural zeros (`G5.2`), and not one of them is a plausibility judgement:**
+
+* **Z1** age `11-14` => econ `unknown`. Forced by `D-S5-3`.
+* **Z2** econ `unknown` => age in {`11-14`, `15-24`}. The other half of `D-S5-3`. Where the two
+  marginals are EQUAL --- Italy, where age 15 is published separately --- (`15-24`, `unknown`) is
+  additionally forced to zero, and that is **derived at run time from the marginals**, not hard-coded
+  per country.
+* **Z3** age `11-14` => not `one_person`, not `couple_no_children`. 🟢 **PROVED, not asserted:**
+  those two classes have measured mean sizes of exactly **1.0000** and **2.0000** persons under
+  convention A in all three countries (`FINDING 60`). A class of exactly two people who are a couple
+  cannot also hold a 13-year-old.
+
+⚪ **What is deliberately NOT masked:** `retired` at `15-24`, `student` at `75+`,
+`single_parent_with_children` at `75+`. All rare, none impossible. Masking a rare-but-real cell would
+hard-code our expectation of the answer into the population the model is asked to reproduce.
+
+🔴 **`strat_day_type` has no published marginal in any country** (`FINDING 54`), so it is
+assigned exogenously at the **calendar week** --- weekday 5/7, saturday 1/7, sunday 1/7 --- the same
+basis `D-S6-4` put the scoring on. Independence from the other four fields is an **assumption**. The
+corpus itself sits at 44.8 / 27.9 / 27.4, which is a survey design mix and, per `FINDING 53`, a
+DIFFERENT one in each country; using the calendar week is what keeps that country-correlated artefact
+out of the synthetic population.
+
+🔴 **Spain is fitted on FIVE economic bands and its synthetic population contains no
+`homemaker` at all.** `FINDING 51`: the Spanish census `RELA` has no *Labores del hogar*, so
+`econ_11plus_es.csv` leaves the band blank and its `other_inactive` is the whole residual inactive
+band. Those people are not lost --- they are inside `other_inactive` --- but **the prefix token
+differs**, and the Spanish HETUS corpus is 11.14 % `homemaker`. Printed on every run.
+
+```
+population_es.csv  md5 ab5a716296e29f62baf472c684a979e9   1,098 strata
+population_uk.csv  md5 4c886bf4feb627ad48669b618d6af362   1,308 strata
+population_it.csv  md5 0334fa68d39b6bcc41caa8d564069147   1,278 strata
+```
+
+---
+
+## 23. 🟢 STEP 5.3 IS BUILT --- prefixes through the SHARED encoder, and a coverage number that is degenerate on purpose
+
+`tools/4thJ_step5_prefixes.py` imports `tools/encoder.py` and calls `encode_prefix()`. It contains
+**no mapping of its own** --- that is the whole point of the file --- and it asserts
+`encoder.PREFIX_FIELDS` against the header Step 5.2 wrote, so a drift between the two copies of the
+field order is a refusal rather than a silent disagreement.
+
+Two checks that can actually fail, and both passed on all 300,000 rows:
+
+1. **Round trip.** Every prefix is split back on the encoder's own separator and compared field by
+   field with its source row. Fails if the encoder ever normalises a value --- which it is entitled
+   to do, and which we would otherwise discover in Step 7 as a model conditioned on something the
+   population does not say.
+2. **Injectivity.** Distinct prefixes must equal distinct strata. 1,098 / 1,308 / 1,278, exactly.
+
+🔴 **The coverage diagnostic is reported TWICE, and the first number is degenerate by
+construction.** The prefix's first field is `country`, and this fold's training corpus is the corpus
+MINUS this country, so **not one synthetic prefix string can ever have been seen: 100.00 %, always, in
+every fold.** That is the same mechanism that made `G5.4` read 0 %, and it is printed rather than
+hidden because a reader who saw only the second number would not know the first exists.
+
+The number that carries information strips the country token:
+
+| fold | strata unseen in training | PERSONS on an unseen stratum |
+|---|---:|---:|
+| `es` | 264 of 1,098 (24.04 %) | **14,383 (14.38 %)** |
+| `uk` | 409 of 1,308 (31.27 %) | **17,012 (17.01 %)** |
+| `it` | 408 of 1,278 (31.92 %) | **24,393 (24.39 %)** |
+
+⚪ It is a **diagnostic, not a gate**. Deleting an unseen stratum would delete exactly the cases the
+transfer claim is about. But the *composition* of that list is a finding in its own right --- see §24.
+
+---
+
+## 24. 🔴 `FINDING 61` --- THE POPULATION AND THE CORPUS DISAGREE ABOUT MINORS, AND THE DISAGREEMENT IS A COUNTRY FINGERPRINT
+
+Look at what the unseen strata actually are. The largest are
+`75+ / couple_with_children / employed`, `25-34 / couple_with_children / retired`, and --- for Italy
+--- `11-14 / couple_with_children / unknown` at 1,088 + 1,007 persons.
+
+The last one is not an IPF artefact. It is a **convention collision that had never been checked**.
+
+`D-S5-3` is a rule applied to the CENSUS marginals: `11-14 -> unknown`, `age 15 -> unknown`,
+`75+ -> retired`. The CORPUS carries whatever HETUS recorded. Measured on all 73,254 diaries:
+
+| corpus `strat_econ_status` for age `11-14` | | |
+|---|---|---|
+| `es` | n = 711 | **`student` 99.9 %** |
+| `uk` | n = 896 | **`other_inactive` 100.0 %** |
+| `it` | n = 1,644 | **`unknown` 100.0 %** |
+
+🔴 **Three countries, three different bands, each deterministic.** That is `FINDING 48`
+re-derived from the corpus instead of from the marginals --- and its consequence, which `FINDING 48`
+did not state, is this:
+
+* The synthetic population asks every fold for `11-14 x unknown`.
+* Only **Italy** supplies that combination. So in the `es` and `uk` folds, **the entire 11-14 band is
+  served by Italian donors alone** --- a country fingerprint entering through the back door.
+* In the `it` fold, where Italy is held out, **no donor supplies it at all.**
+
+`D-S5-3`'s second clause is in the same state: `age 15 -> unknown` has essentially no corpus support
+anywhere (`uk` 15-24 is 1.2 % `unknown` = 24 diaries; `es` and `it` are zero).
+
+**How it was caught.** Not by inspection. `tools/4thJ_step5_synthesise.py --seed donor` was added to
+test whether a donor-derived association structure beats the independence one, and it **refused on two
+of three folds**:
+
+```
+es   built   (donors it+uk; Italy supplies 11-14 x unknown)
+uk   REFUSED IPF did not converge, worst margin 1.415e-02  <- exactly the age-15 slack
+it   REFUSED axis age category 0 has target 0.042071 but the mask leaves it unreachable
+```
+
+⚪ The `es` donor-seeded population exists (`population_es_donorseed.csv`, 847 strata against the
+uniform seed's 1,098) and is kept as evidence; the other two do not, and must not be faked.
+
+---
+
+## 25. 🔴 `FINDING 62` --- `G6.1` IS NOW COMPUTABLE, AND WHAT IT COMPUTES IS THINNER THAN IT LOOKS
+
+Step 5.1 unblocked `G6.1` in principle. This is the first time it has been **run**: the real donors
+from the Step 3 corpus, raked onto the real published marginals, through the real
+`tools/4thJ_step6_rakeddonor.rake()`.
+
+**First attempt --- all three folds REFUSED**, and both refusals are the guards doing their job:
+
+```
+es, it   551 donors carry strat_hh_type 'unknown' that the target never names.
+         (D-S3-14's UK-only band; FINDING 52's orphan guard.)
+uk       IPF did not converge: worst margin off by 1.41515 pp, tolerance 0.5 pp.
+```
+
+**Second attempt, with `collapse={strat_hh_type: {unknown: other_complex}}`:**
+
+| fold | verdict | iterations | `max_dev_pp` |
+|---|---|---:|---:|
+| `es` | **converged** | 7 | 0.4506 |
+| `uk` | 🔴 **CANNOT CONVERGE** | 200 | **1.41515** |
+| `it` | **converged** | 3 | 0.4121 |
+
+🔴 **`G6.1` --- the pre-registered BAR for the whole claim --- cannot be computed for the `uk`
+fold.** The 1.41515 pp is exactly the age-15 `unknown` slice of §24: no donor has it, so no reweighting
+can produce it. This is not a tolerance to be loosened. It is a missing category.
+
+🔴 **And the two folds that DO converge are thin.** Effective sample size, which no gate looks
+at:
+
+| fold | ESS | as % of pool | largest single donor weight | `unknown` band carried by |
+|---|---:|---:|---:|---|
+| `es` | 36,977 | 68.3 % | 0.0206 % | 1,712 donors |
+| `it` | **16,101** | **46.0 %** | **0.1136 %** | 🔴 **68 donors** |
+
+The Italian fold's null hits its economic margin by making **68 British diaries** stand for **4.207 %
+of an entire country** --- about 62 synthetic persons per donor diary, and a largest-donor weight
+**5.5x** the Spanish fold's. It converges. It is arithmetically correct. **A null that rests on 68
+diaries is not a bar the model has to clear in any meaningful sense**, and the paper cannot quote
+`G6.1` for `it` without quoting this alongside it.
+
+⚪ Two collapses are now known to be **required** for `G6.1` to run at all, and neither is
+pre-registered: `strat_hh_type: unknown -> ?` and, for `es`, `strat_econ_status: homemaker ->
+other_inactive` (which `FINDING 52` already required). The first has no ruling behind it --- the
+`other_complex` target used above was chosen to expose the next failure, not decided.
+
+---
+
+## 26. 🔴 THE TWO OPEN DECISIONS
+
+### `D-S5-10` --- which IPF seed does the synthetic population use?
+
+IPF fits marginals; it inherits its **association structure** from the seed, and nobody had chosen one.
+
+* **(a) uniform seed** --- the literal reading of the step doc. Uses nothing but published marginals.
+  🔴 But independence manufactures people: `75+ / couple_with_children / employed`,
+  `25-34 / retired`. 14.4 / 17.0 / 24.4 % of each population lands on a stratum the fold's training
+  corpus never contained.
+* **(b) donor seed** --- the N-1 pool's joint structure, raked onto the held-out country's published
+  marginals. No held-out-country quantity enters. Same object `G6.1`'s null is built from, so the null
+  and the model would answer the same population and differ only in how the DIARY is produced.
+  🔴 But out-of-distribution exposure falls to zero **by construction**, so that number stops
+  being evidence --- and, per §24, **it only builds for one of the three folds today**.
+
+⚪ **Recommendation: (a), and say so.** (b) is the better idea and it is blocked behind `D-S5-11`;
+`(a)` is buildable now, is what the step doc says, and its weakness is measurable and reportable.
+Revisit (b) if `D-S5-11` is resolved.
+
+### `D-S5-11` --- what economic status does the synthetic population give a minor?
+
+`D-S5-3`'s `unknown` is unreachable in two of three folds (§24) and it is what breaks `G6.1` for `uk`
+(§25). Options, each with its cost:
+
+* **(a) Leave `D-S5-3` alone, declare it.** Cheapest. Cost: `G6.1` stays uncomputable for `uk`, the
+  Spanish and British 11-14 bands stay served by Italian donors alone, and ~4-5 % of every synthetic
+  population is conditioned on a token combination the model never saw.
+* **(b) Give the population the DONOR pool's coding for the 11-14 band**, per fold. Uses only donor
+  data, so no contamination. Makes every fold feasible. Cost: the band's meaning then differs per
+  fold, and `D-S5-3` no longer holds for the population.
+* **(c) Drop the 11-14 band from the synthetic population and declare the claim as 15+.** Cleanest
+  arithmetic and it removes a country fingerprint from the prefix. Cost: 4.2-5.5 % of the population,
+  and it contradicts `D-S2-17`, where the author CONFIRMED the age floor at 11.
+* **(d) Harmonise all three folds onto one band for 11-14** (e.g. `student`). Cost: it is simply wrong
+  for the UK, whose corpus says `other_inactive` for 896 of 896.
+
+⚪ **Recommendation: (b).** It is the only option that makes `G6.1` computable on all three folds
+without touching the frozen corpus, without contradicting a confirmed ruling, and without inventing a
+value. 🔴 It is a **basis change to `econ_11plus_<c>.csv`** and must not be applied without a
+ruling.
+
+---
+
+## 27. What was NOT done
+
+* 🔴 **No Step 5 gate has been run.** `G5.1`--`G5.11` exist as specifications; the numbers
+  above are measurements, not gate verdicts, and none has been seen failing.
+* **Item 5.4 (temperature calibration) is untouched.** It needs a fold checkpoint and a generation
+  pass, which is `D5.1`'s blocker too.
+* **`population_<c>.parquet`** is written by `4thJ_step5_prefixes.py` under the interpreter that has
+  `pyarrow`; the CSV is the primary and the two are verified equal on read-back.
+* ⚪ `N = 100,000` per country is a choice, not a ruling. It is identical across folds on purpose, so
+  no country gets an advantage from sample size.
