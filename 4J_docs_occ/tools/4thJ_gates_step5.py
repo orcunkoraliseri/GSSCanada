@@ -13,7 +13,8 @@ WHAT IT COVERS AND WHAT IT CANNOT
 Runnable today: `G5.1`-`G5.7`, `G5.10`, `G5.11`.
 
 🔴 NOT runnable, and NOT reported as passing: `G5.8` (temperature calibration
-reported) and `G5.9` (`top_p <= 0.98` in the generation config). Both read
+reported) and `G5.9` (`top_p >= 0.98` in the generation config, FINDING 69
+   ruled (1) 2026-08-21). Both read
 artefacts item 5.4 and Step 7 have not produced -- there is no checkpoint, so
 there is no temperature sweep and no generation config. They are printed as
 BLOCKED, which is a third verdict on purpose: a gate whose input does not exist
@@ -203,7 +204,25 @@ def build_state(c):
     st['prefixes'] = [ln.strip() for ln in
                       io.open(os.path.join(OUT, 'prefixes_%s.jsonl' % c),
                               encoding='utf-8')]
+    # --- item 5.4 / Step 7 artefacts, for `G5.8` and `G5.9` -----------------
+    # Missing is BLOCKED, never FAIL and never PASS: a gate whose input does
+    # not exist has not been evaluated.
+    st['calibration'] = _read_json(os.path.join(
+        OUT, 'temperature_calibration_%s.json' % c))
+    st['replicates'] = _read_json(os.path.join(
+        OUT, 'temperature_calibration_%s_replicates.json' % c))
+    st['gen_config'] = _read_json(os.path.join(
+        OUT, 'generation_config_%s.json' % c))
     return st
+
+
+def _read_json(path):
+    if not os.path.isfile(path):
+        return None
+    try:
+        return json.load(io.open(path, encoding='utf-8'))
+    except Exception:
+        return None
 
 
 # --------------------------------------------------------------------- gates
@@ -473,16 +492,127 @@ def g5_11(st):
             % (len(SCORED), len(encoder.PREFIX_FIELDS)))
 
 
+def g5_8(st):
+    """Temperature calibration reported.
+
+    The gate row: *"Both the entropy-matching curve and the fidelity curve are
+    reported, and WHETHER THEY AGREE IS STATED EXPLICITLY."* The val doc adds a
+    second, separately registered requirement -- the sensitivity trap: *"every
+    temperature level is run at least 5 times with different seeds, and the
+    step-to-step difference along the curve must exceed the spread from
+    re-running one level"*, else the deliverable is the BAND, not a value.
+
+    🔴 Both conditions are scored. Returning PASS on the reporting condition
+    alone would let a single-realisation curve -- the exact object the trap
+    section exists to reject -- carry the gate.
+    """
+    cal = st['calibration']
+    if cal is None:
+        return None, 'no temperature sweep artefact for this fold'
+    rows = cal.get('rows') or []
+    has_entropy = bool(rows) and all(('H_gen' in r and 'dH' in r) for r in rows)
+    has_fidelity = bool(rows) and all('at_home_mae_pp' in r for r in rows)
+    has_both_argmins = ('T_entropy' in cal) and ('T_fidelity' in cal)
+    states_agreement = 'agree' in cal
+    missing = []
+    if not has_entropy:
+        missing.append('entropy curve')
+    if not has_fidelity:
+        missing.append('fidelity curve')
+    if not has_both_argmins:
+        missing.append('one of T_entropy/T_fidelity')
+    if not states_agreement:
+        missing.append('the explicit agreement statement')
+    if missing:
+        return False, 'not reported: %s' % ', '.join(missing)
+
+    rep = st['replicates']
+    if rep is None:
+        return (None, 'curves and agreement reported (T_ent %.2f, T_fid %.2f, '
+                      'agree %s) -- but the sensitivity clause has no replicate '
+                      'artefact yet' % (cal['T_entropy'], cal['T_fidelity'],
+                                        cal.get('agree')))
+    seeds = rep.get('gen_seeds') or []
+    if len(seeds) < 5:
+        return False, ('sensitivity clause needs >= 5 seeds per level, artefact '
+                       'carries %d' % len(seeds))
+    sp = rep.get('spread') or {}
+    dec = sp.get('at_home_mae_pp') or sp.get('H_gen')
+    if not dec:
+        return False, 'replicate artefact carries no spread block'
+    if not dec.get('step_exceeds_noise'):
+        return (False, 'the re-run spread (%.4f) is not smaller than the '
+                       'step-to-step difference (%.4f) -- the sweep is '
+                       'uninformative and the deliverable is the BAND'
+                % (dec['max_within_T_range_over_seeds'],
+                   dec['max_step_between_adjacent_T']))
+    return (True, 'both curves + agreement reported (agree %s); %d seeds x %d '
+                  'levels, step %.4f > re-run spread %.4f'
+            % (cal.get('agree'), len(seeds), len(rep.get('grid') or []),
+               dec['max_step_between_adjacent_T'],
+               dec['max_within_T_range_over_seeds']))
+
+
+def g5_9(st):
+    """No truncation creep: if top-p is used at all, it must not delete tail.
+
+    🟢 `FINDING 69` -- RULED (1) BY THE AUTHOR 2026-08-21. The registered
+    text and the registered perturbation contradicted each other. The gate row
+    read *"if top-p is used at all, p <= 0.98"*; the perturbation table says
+    *"set `top_p = 0.9`"* must fell this gate. Both could not hold: 0.9
+    satisfies `p <= 0.98`.
+
+    In nucleus sampling a SMALLER p truncates MORE, so `p <= 0.98` admitted
+    p = 0.5 (half the tail deleted) and rejected p = 1.0 (no truncation at all)
+    -- the opposite of a gate named "no truncation creep", and the opposite of
+    what its own perturbation expects. 🔴 THE RULED READING IS
+    **p >= 0.98**, recorded as a post-registration erratum in
+    `4thJ_05_populationLinkage.md` (lines 92 and 168) and
+    `4thJ_05_populationLinkage_val.md` (line 39).
+
+    Both readings are still evaluated and printed -- the erratum is declared,
+    not hidden -- but the verdict is taken on the RULED one, which is the only
+    reading under which the registered perturbation fells the registered gate.
+    ⚪ Our own configuration is unaffected either way: `TOP_P = 1.0`, so
+    top-p is not used at all.
+    """
+    cfg = st['gen_config']
+    if cfg is None:
+        return None, 'no generation config for this fold'
+    if 'top_p' not in cfg:
+        return False, 'the generation config does not assert top_p at all'
+    p = float(cfg['top_p'])
+    used = p < 1.0
+    as_written = (p <= 0.98)
+    coherent = (p >= 0.98)
+    if not used:
+        return (True, 'top_p = %.3f -- top-p is NOT USED, the antecedent is '
+                      'false and the gate is VACUOUSLY SATISFIED (as-written '
+                      'reading p <= 0.98 would read FAIL here, which is '
+                      'FINDING 69, ruled (1) 2026-08-21)' % p)
+    return (coherent, 'top_p = %.3f, top-p IS used: RULED reading p >= 0.98 '
+                      '%s; superseded as-written reading p <= 0.98 %s'
+            % (p, 'PASS' if coherent else 'FAIL',
+               'PASS' if as_written else 'FAIL'))
+
+
 GATES = [('G5.1', g5_1), ('G5.2', g5_2), ('G5.3', g5_3), ('G5.4', g5_4),
          ('G5.5', g5_5), ('G5.6i', g5_6i), ('G5.6ii', g5_6ii),
-         ('G5.7', g5_7), ('G5.10', g5_10),
+         ('G5.7', g5_7), ('G5.8', g5_8), ('G5.9', g5_9), ('G5.10', g5_10),
          ('G5.11', g5_11)]
-BLOCKED = {'G5.8': 'no temperature sweep exists -- item 5.4 needs a fold '
-                   'checkpoint and a generation pass',
-           'G5.9': 'no generation config exists -- Step 7 has not run'}
+
+# 🔴 BLOCKED is no longer a static list. `G5.8` and `G5.9` now have real
+# checkers; they report BLOCKED only while the artefact they read is absent,
+# and the moment it exists they score like every other gate.
+BLOCKED = {}
 
 
 def run_gates(st, quiet=False):
+    """A gate returns True (PASS), False (FAIL) or None (BLOCKED).
+
+    BLOCKED is a third verdict on purpose: a gate whose input does not exist
+    has not passed, and it has not failed either.
+    """
     res = {}
     for gid, fn in GATES:
         try:
@@ -491,7 +621,9 @@ def run_gates(st, quiet=False):
             ok, msg = False, 'raised %s: %s' % (type(e).__name__, e)
         res[gid] = ok
         if not quiet:
-            say('    %-6s %-4s %s' % (gid, 'PASS' if ok else 'FAIL', msg))
+            say('    %-6s %-7s %s'
+                % (gid, {True: 'PASS', False: 'FAIL',
+                         None: 'BLOCKED'}[ok], msg))
     return res
 
 
@@ -640,6 +772,32 @@ def p_rake_in_genpath(st):
     return st
 
 
+def p_only_fidelity(st):
+    """`G5.8`'s registered perturbation: report only the fidelity curve.
+
+    Strips the entropy side out of the calibration artefact in memory -- the
+    curve, the argmin and the agreement statement. Nothing on disk is touched.
+    """
+    cal = st.get('calibration')
+    if cal is None:
+        return st
+    for r in cal.get('rows') or []:
+        r.pop('H_gen', None)
+        r.pop('dH', None)
+    for k in ('T_entropy', 'agree'):
+        cal.pop(k, None)
+    return st
+
+
+def p_top_p_09(st):
+    """`G5.9`'s registered perturbation: set `top_p = 0.9` in the config."""
+    cfg = st.get('gen_config')
+    if cfg is None:
+        return st
+    cfg['top_p'] = 0.9
+    return st
+
+
 def p_null(st):
     return st
 
@@ -661,6 +819,8 @@ PERTURBATIONS = [
     ('add a marginal with no URL and no table id',
      p_unsourced_marginal, {'G5.6ii'}),
     ('assert an unrecorded co-presence flag', p_copresence, {'G5.7'}),
+    ('report only the fidelity curve', p_only_fidelity, {'G5.8'}),
+    ('set top_p = 0.9 in the generation config', p_top_p_09, {'G5.9'}),
     ('add a rake call to the generation path', p_rake_in_genpath, {'G5.10'}),
     ('NULL perturbation: change nothing', p_null, set()),
 ]
@@ -718,8 +878,10 @@ def main():
                 (tag, name[:52],
                  ', '.join(sorted(broke)) if broke else '(nothing)'))
             if tag == 'n/a':
-                say('         %s already FAILS at baseline on this fold'
-                    % ', '.join(sorted(unreachable)))
+                say('         %s is already %s at baseline on this fold'
+                    % (', '.join(sorted(unreachable)),
+                       'BLOCKED' if all(res[g] is None for g in unreachable)
+                       else 'FAILING'))
             elif not good:
                 say('         expected %s'
                     % (', '.join(sorted(must - down)) if (must - down)
@@ -746,10 +908,17 @@ def main():
             return 2
     say('shipped populations unchanged (md5 verified before and after)')
 
-    nfail = sum(1 for c in folds for g, ok in verdict[c].items() if not ok)
+    nfail = sum(1 for c in folds for g, ok in verdict[c].items() if ok is False)
+    nblock = sum(1 for c in folds for g, ok in verdict[c].items() if ok is None)
+    npass = sum(1 for c in folds for g, ok in verdict[c].items() if ok is True)
     say('')
-    say('%d gate-fold verdicts, %d FAIL, %d BLOCKED per fold'
-        % (len(folds) * len(GATES), nfail, len(BLOCKED)))
+    say('%d gate-fold verdicts: %d PASS, %d FAIL, %d BLOCKED'
+        % (len(folds) * len(GATES), npass, nfail, nblock))
+    if nblock:
+        blocked_ids = sorted(set(g for c in folds
+                                 for g, ok in verdict[c].items() if ok is None))
+        say('   🔴 BLOCKED gates: %s -- their input artefact does not exist yet, '
+            'and BLOCKED is NOT a PASS' % ', '.join(blocked_ids))
     return 0
 
 

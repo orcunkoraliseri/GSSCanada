@@ -1021,6 +1021,12 @@ Measured, per table:
 1. **`Y65-74` is entirely absent — `0` of `168` cells present, in ES, UK and IT alike.** That is
    the `12.5 %` absence logged in `FINDING 39`, now localised: it is not scattered missingness, it
    is **one whole age band, and it is one of ours** (`65-74`), missing in every fold.
+   🔴 **CORRECTED by `FINDING 73` (2026-08-21 night): this is true of the `2010` column only,
+   and the cause is not missingness.** Split by the `time` dimension, `Y65-74` is populated in `504`
+   of `504` cells in the **2000** wave and `0` in **2010**, identically in all three countries —
+   Eurostat replaced it with `Y_GE65`, which is itself absent in 2000. The band we cannot use is
+   still unusable, but the sentence "Eurostat does not publish 65–74" is FALSE and must not be
+   written. See the `D-S6-5` residue below for the full table.
 2. **The age dimension is not a partition.** Published: `TOTAL, Y15-20, Y20-24, Y20-74, Y25-44,
    Y45-64, Y65-74, Y_GE65`. `Y20-74` contains `Y25-44` and `Y45-64`; `Y_GE65` contains `Y65-74`.
    A `MAPE` computed over all of them double-counts the same people. **And nothing below 15 is
@@ -1078,8 +1084,93 @@ education column at all, so no mapping exists. It is **dropped from the scoring 
 rather than back-filled with an invented education proxy.
 
 The scoring set is therefore `tus_00startime` + `tus_00selfstat` as the two clean tables, with
-`tus_00age` on a declared non-overlapping subset (`Y65-74` is absent in all three folds and the
-published age dimension is not a partition) and `tus_00hhstatus` on a declared regrouping.
+`tus_00age` on a declared non-overlapping subset (🔴 **now specified below** — and `FINDING 73` corrects the reason: `Y65-74` is not absent from the source, it is the 2000 wave's top band and does not exist in the 2010 wave we score against) and `tus_00hhstatus` on a declared regrouping.
+
+#### 🟢 `D-S6-5` RESIDUE — RULED (a) 2026-08-21 night: the `tus_00age` subset, written down BEFORE any fold is scored
+
+The ruling above drops `tus_00educ` and leaves `tus_00age` "on a declared non-overlapping subset".
+That subset had never been written down. The author ruled **(a) — fix it in writing now**, on the
+ground that a subset chosen while looking at a transfer result is selection on the outcome.
+
+**The ruled subset, on the Eurostat side:** the five published bands
+`Y15-20`, `Y20-24`, `Y25-44`, `Y45-64`, `Y_GE65`, with `TOTAL` excluded as a redundant aggregate and
+`Y20-74` excluded as a composite that overlaps `Y25-44`, `Y45-64` and part of `Y_GE65`.
+
+Two things were then **checked against the downloaded tables rather than assumed**, and both change
+what may be written.
+
+##### 🔴 `FINDING 73` (i) — `Y65-74` is NOT absent. It is the 2000 wave's top band, and the age dimension is WAVE-DEPENDENT
+
+`FINDING 55`'s second half said `Y65-74` was absent in `0 of 168` cells across ES, UK and IT. Counting
+the populated cells in `tus_00age_{ES,UK,IT}.json` **split by the `time` dimension** gives a different
+and much more specific picture — identical in all three countries:
+
+| band | cells in the **2000** wave | cells in the **2010** wave |
+|---|---|---|
+| `TOTAL` | 504 | 504 |
+| `Y15-20` | **0** | 504 |
+| `Y20-24` | 504 | 504 |
+| `Y20-74` | **0** | 504 |
+| `Y25-44` | 504 | 504 |
+| `Y45-64` | 504 | 504 |
+| `Y65-74` | 504 | **0** |
+| `Y_GE65` | **0** | 504 |
+
+So Eurostat **did not stop publishing 65–74**; it changed the classification between waves. `Y65-74`
+is the 2000 wave's top band and `Y_GE65` replaced it in 2010, exactly as `Y15-20` and `Y20-74` appear
+only in 2010. ⚪ The ruled subset is therefore precisely *the 2010 wave's own band set, minus `TOTAL`
+and minus the composite* — which is the right subset for us, because `D-S6-2` scores every fold
+against the **2010** column. But the reason must be written as "the band does not exist in the wave we
+score against", never as "Eurostat does not publish it": the second is false and is checkable in one
+line by any reviewer.
+
+##### 🔴 `FINDING 73` (ii) — two of the five ruled bands cannot be scored against OUR corpus at all
+
+The finest age resolution anything in this project ever sees is the **eight-band prefix scheme**
+(`11-14`, `15-24`, `25-34`, `35-44`, `45-54`, `55-64`, `65-74`, `75+`). It is what the corpus carries,
+what the Step 5 population prefixes carry, and therefore the only age information a **generated** diary
+can ever be resolved to. Mapping it onto the ruled Eurostat subset:
+
+| Eurostat band | our bands | mapping |
+|---|---|---|
+| `Y25-44` | `25-34` + `35-44` | 🟢 **exact** |
+| `Y45-64` | `45-54` + `55-64` | 🟢 **exact** |
+| `Y_GE65` | `65-74` + `75+` | 🟢 **exact** |
+| `Y15-20` | — | 🔴 **not separable**: our finest class in this range is `15-24` |
+| `Y20-24` | — | 🔴 **not separable**: same |
+| (none) | `11-14` | 🔴 **no counterpart**: Eurostat's table starts at 15 |
+
+🔴 **The split cannot be repaired from either side.** We cannot split our `15-24` because the band is
+what the model is conditioned on; and we cannot merge Eurostat's `Y15-20` and `Y20-24` into a single
+15–24 figure either, because the published units are participation **rates** and mean **times**, not
+counts, and the table carries no band population with which to weight the two into a union.
+
+**Consequence, stated with the size:** `tus_00age` is scorable on **three** bands, not five, and those
+three cover **84.7 %** of the corpus (`62,076` of `73,254` diaries). The two unscorable slices are
+`15-24` at **10.8 %** (`7,927`) and `11-14` at **4.4 %** (`3,251`); the second was never in scope, since
+the Eurostat table begins at 15. ⚪ This is a **coverage limitation of the reference table**, not a
+result — it is fixed before any fold is scored and must be reported as such, with the percentages,
+in the same breath as any `tus_00age` number.
+
+##### ⚪ One boundary that the published metadata cannot settle
+
+Eurostat labels the two bands *"From 15 to 20 years"* and *"From 20 to 24 years"*, which read as
+overlapping at age 20. Under the standard HETUS five-year classes they are 15–19 and 20–24 and
+partition 15–24 cleanly, and that is the reading adopted here. It is recorded rather than resolved
+because the metadata does not settle it — and it is **harmless for us**, since neither band is
+scorable on our side anyway. It would become load-bearing only if a future age scheme split `15-24`.
+
+##### The specification, as it must be applied
+
+> `tus_00age` is scored on `Y25-44`, `Y45-64` and `Y_GE65`, against the **2010** column, mapping our
+> eight prefix bands two-to-one onto each. `TOTAL` (redundant aggregate) and `Y20-74` (composite) are
+> excluded as non-partition members. `Y65-74` is excluded because it does not exist in the 2010 wave.
+> `Y15-20` and `Y20-24` are excluded because our corpus cannot separate them and the published table
+> cannot merge them. The excluded population — `15-24` (10.8 %) and `11-14` (4.4 %) — is declared with
+> every `tus_00age` result.
+
+⚪ Nothing here touches `prereg.md`, whose md5 is unchanged; `tus_00age` is a scoring-table detail that
+the prereg does not name at band level.
 
 #### 🔴 `D-S6-3` item 1 — the "approximately zero" tolerance is `< 1.0 %`
 

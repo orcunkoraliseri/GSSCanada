@@ -1,0 +1,20 @@
+{
+  "citation": "Richardson, Thomson & Infield 2008; Widen & Wackelgard 2010; Wilke 2013 -- the published first-order inhomogeneous Markov lineage for occupancy and activity models.",
+  "fold": "it",
+  "is_fail_criterion": false,
+  "metrics": {
+    "budget_err_max_min": 36.96706743335076,
+    "diurnal_jsd_mean": 0.024835287893346037,
+    "dwell_w1_max": 119.56447508871969,
+    "transition_tvd": 0.08627188166932197,
+    "transitions_abs_err": 0.26411395713538965
+  },
+  "n_heldout": 38260,
+  "n_train": 34994,
+  "reported_not_scored": true,
+  "seed": 42,
+  "trained_on": [
+    "es",
+    "uk"
+  ]
+}

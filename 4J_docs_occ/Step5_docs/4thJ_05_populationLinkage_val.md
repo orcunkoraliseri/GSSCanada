@@ -36,7 +36,7 @@ inflates the result and leaves no trace in it.
 | ~~**G5.6** Held-out marginal provenance~~ 🔴 **SUPERSEDED** | --- | ~~Count of marginals with no published source, **or derived from microdata**: 0~~. 🔴 **Superseded by `D-S5-12` (a) on 2026-08-21, after FAILING `es` 30/36 and `it` 12/36 --- 42 rows, ZERO of which failed for "no published source".** Three later rulings (`D-S5-4` (b), `D-S5-5`, `D-S5-9`) put **public-use census microdata** into the marginals on purpose, and this text could not tell that apart from a time-use diary. **It is still RUN and still printed, as `G5.6-as-written`, INFORMATIONAL and never scored** --- a superseded gate is retired in the open. Its FAIL is the evidence for the split | --- |
 | **G5.7** Co-presence honesty | Conditioning on a flag a country never recorded | No prefix asserts a flag that `copresence_availability.md` marks "not recorded" for that country | **derived from Step 2** |
 | **G5.8** Temperature calibration reported | A knob chosen without evidence | Both the entropy-matching curve and the fidelity curve are reported, and **whether they agree is stated explicitly** | **project-chosen** |
-| **G5.9** No truncation creep | Tail deletion at generation | If top-p is used at all, **p ≤ 0.98**, asserted in the generation config that Step 7 actually reads, not in a comment | `RL09` |
+| **G5.9** No truncation creep | Tail deletion at generation | If top-p is used at all, **p ≥ 0.98** (🔴 post-registration erratum, `FINDING 69`, ruled 2026-08-21; registered as ≤, which is the wrong direction — smaller p truncates more), asserted in the generation config that Step 7 actually reads, not in a comment | `RL09` |
 | **G5.11** 🔴 Prefix field set is not restated | `G5.4` drifting from the encoder | The five fields `G5.4` scores are read from `tools/encoder.py`'s `PREFIX_FIELDS` with `country` removed, **never written out as a literal list in the checker**. A checker carrying its own copy of the field set would keep passing after the prefix changed | **derived from item 3's ruling — the narrowing is only safe if it cannot go stale** |
 | **G5.10** No output raking | Using the trick we are benchmarked against | No raking, calibration or post-hoc reweighting is applied to any generated diary anywhere in the codebase. Asserted by an explicit search over the generation path | `RL09` |
 
@@ -237,3 +237,66 @@ Each checked 36 on each fold.
 ⚪ **`G5.6i`'s marker list is deliberately wide.** `tus_` matches published Eurostat time-use tables,
 which are aggregates rather than diaries. No Step 5 marginal matches any marker today, so the width
 costs nothing now and makes the gate fail towards caution if one ever does.
+
+### 2026-08-21 (evening, II) — 🟢 **`G5.8` AND `G5.9` HAVE REAL CHECKERS AND ARE NO LONGER A STATIC `BLOCKED` LIST.** 🔴 **`FINDING 69`: `G5.9`'s TEXT AND ITS OWN PERTURBATION CONTRADICT EACH OTHER.**
+
+Battery is now **36 gate-fold verdicts: 30 PASS, 0 FAIL, 6 BLOCKED**, coverage clause still clean,
+shipped populations md5-unchanged before and after.
+
+**What changed in the battery.** `BLOCKED` was a hardcoded dictionary of two gate ids. It is now
+**empty**, and `G5.8`/`G5.9` are ordinary entries in `GATES` with real checkers that return a third
+verdict, `None` = BLOCKED, **only while the artefact they read is absent**. The moment the artefact
+exists they score like every other gate, and BLOCKED can never again be a thing a human forgot to
+revisit. Both registered perturbations are wired: *"report only the fidelity curve"* → `G5.8`,
+*"set `top_p = 0.9`"* → `G5.9`.
+
+**`G5.8` reads two conditions, not one.** The gate row is a reporting obligation — both curves and
+an explicit agreement statement — and the val doc's own **sensitivity trap** section adds a second:
+*"every temperature level is run at least 5 times with different seeds, and the step-to-step
+difference along the curve must exceed the spread from re-running one level"*, else the deliverable
+is **the band**. Scoring the first alone would let a single-realisation curve — the exact object
+that section exists to reject — carry the gate, so both are scored. Today the reporting condition is
+**satisfied on all three folds** (`es` T_ent 1.30 / T_fid 0.70 / agree false; `uk` 1.10 / 1.00 /
+true; `it` 1.20 / 0.80 / false) and the sensitivity condition is **BLOCKED pending
+`1285712`–`1285714`**, the `D-S5-13`(a) replicate jobs.
+
+🔴 **`FINDING 69` — the `G5.9` contradiction, flagged rather than quietly resolved.** The gate reads
+*"if top-p is used at all, **p ≤ 0.98**"*. The perturbation table says *"set `top_p = 0.9`"* must
+fell it. **Both cannot hold: 0.9 satisfies p ≤ 0.98.** In nucleus sampling a smaller p truncates
+more, so as written the gate **admits p = 0.5** — half the tail deleted — and **rejects p = 1.0**,
+no truncation at all: the opposite of a gate named "no truncation creep" and the opposite of what
+its own perturbation expects. The coherent reading is **p ≥ 0.98**, under which our `top_p = 1.0` is
+**vacuously satisfied** (top-p is not used at all) **and** the registered perturbation fells the
+gate. The checker **evaluates and prints both readings** and takes its verdict on the coherent one,
+because it is the only one under which the register is self-consistent. ⚪ **Nothing about our
+configuration changes either way** — we do not use top-p, and `TOP_P = 1.0` is a pre-registered
+constant in `4thJ_step5_temperature.py`. One line closes this whichever way it is ruled.
+
+🟢 **RULED (1) BY THE AUTHOR, 2026-08-21 — the coherent reading `p ≥ 0.98` is adopted, as a declared POST-REGISTRATION ERRATUM.** The erratum is written into the three places the register states the clause — `4thJ_05_populationLinkage.md` line 92 (the `RL09` row) and line 168 (the design text, with the full reasoning), and this document's gate table at line 39 — and into `tools/4thJ_gates_step5.py`, whose `g5_9` docstring now records the ruling and whose message prints the superseded reading beside the ruled one so the correction stays visible rather than being absorbed. The registered perturbation *set `top_p = 0.9`* now **fells** the gate, which is the whole point: under the as-written text `G5.9` could never have been seen failing. Re-run of `4thJ_step5_g58_g59_selftest.py`: **17 of 17 green**, with `0.9` FAIL, `0.99` PASS, `0.5` FAIL and the boundary `0.98` PASS all demonstrated. ⚪ Our configuration is unchanged and was never at issue.
+
+**Still owed before Step 5 closes:** the three replicate jobs must land; then
+`outputs_step5/temperature_calibration.md` and `generation_config_<fold>.json` get written, and
+`G5.8`/`G5.9` score for the first time. **Step 5 DoD 3 of 5.**
+
+### 2026-08-21 (night) — 🟢 **`D-S5-15` RULED (a) AND SUBMITTED: the `D-S5-14`(a) COVERAGE CURVE WILL BE NINE POINTS ON ALL THREE FOLDS, NOT THREE.**
+
+`FINDING 71` established that the `D-S5-13`(a) replicate windows sit around `T_chosen` — the
+**entropy** optimum — and therefore exclude `T_fidelity` on `es` (0.70 vs 1.10–1.30) and `it`
+(0.80 vs 1.10–1.30), so the covered-basis curve would have arrived as a **3-of-9 stub** and
+`fidelity_argmin_moved_under_D_S5_14` would not have been evaluable on two folds of three. 🔴 The
+blind spot sat exactly where the confound is largest: on `es` the fidelity optimum is at `T = 0.70`,
+where **14.8 %** of diaries never terminate.
+
+The author ruled **(a)**, refined to run only the **six grid points each window does not cover**, at
+seed `101` only, spliced with the replicate seed-`101` rows — a complete nine-point single-seed curve
+for two thirds of the cost of a clean re-run. Jobs `1285777` (`es`), `1285778` (`uk`), `1285779`
+(`it`); launcher `tools/4thJ_step5_temperature_coverage101.sh`. Prompt seed 42, `n_prompts` 600,
+`top_p` 1.0, `top_k` 0, `max_new_tokens` 1200, pinned base revision and per-fold adapter — identical
+to both earlier passes. 🔴 **Replicate mode, so it chooses nothing**: `T_chosen` stays 1.30 / 1.10 /
+1.20 and `at_home_mae_pp` is not recomputed. ⚪ The splice is **declared** in
+`outputs_step5/temperature_calibration.md`, per the author's directive, and
+`fidelity_argmin_moved_under_D_S5_14` is derived offline there because the script emits it only in
+the non-replicate branch.
+
+⚪ **Blocks nothing.** Boxes 2 and 4 — and Step 5's closure — still turn on `1285712`–`1285714`;
+this is additive and lands after them.

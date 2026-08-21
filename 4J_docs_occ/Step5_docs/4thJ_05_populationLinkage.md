@@ -89,7 +89,7 @@ doubts the population synthesis can still accept the diary generation.**
 | Two stages, population first | `RL09` |
 | 🔴 **Training loss is UNWEIGHTED** | `RL09` |
 | 🔴 **We never rake our own output** | `RL09` |
-| No aggressive top-p / top-k at generation | `RL09`; p ≤ 0.98 if used at all |
+| No aggressive top-p / top-k at generation | `RL09`; p ≥ 0.98 if used at all (🔴 post-registration erratum, `FINDING 69`, ruled 2026-08-21) |
 | Representativeness is enforced in stage (a), where IPF makes it exact | `RL09` |
 
 ### The unweighted-loss argument, restated because it is counter-intuitive
@@ -165,7 +165,9 @@ optimises the fidelity metrics?**
 behaviour, and rare behaviour is where the interesting loads live: the household running laundry at
 03:00, the shift worker, the early-morning vehicle charge. **Those are the cases a peak-demand study
 exists to capture.** So: validation-set temperature scaling plus the Step 7 grammar mask, and no
-aggressive truncation. If top-p is used at all, **p ≤ 0.98**.
+aggressive truncation. If top-p is used at all, **p ≥ 0.98**.
+
+🔴 **Post-registration erratum, `FINDING 69`, ruled by the author 2026-08-21.** This clause was registered as *p ≤ 0.98*, and that is the wrong direction. In nucleus sampling a **smaller** p truncates **more**, so as written the gate admitted `p = 0.50` — half the tail deleted — and rejected `p = 1.0`, no truncation at all: the exact opposite of a clause named *no truncation creep*, and incompatible with its own registered perturbation (*set `top_p = 0.9`*, which must FELL the gate and instead satisfied it). The coherent reading **p ≥ 0.98** is adopted; it is the only reading under which the register is self-consistent. ⚪ **Nothing about our configuration changes either way**: `TOP_P = 1.0` is a pre-registered constant in `4thJ_step5_temperature.py`, so top-p is not used at all and the clause is vacuously satisfied under BOTH readings. The checker prints both and takes its verdict on the coherent one.
 
 **Output:** `outputs_step5/temperature_calibration.md` — the entropy-matching curve, the fidelity
 curve, and whether they agree. **If they disagree, say so and pick entropy matching**, because
