@@ -840,3 +840,68 @@ changed its md5. It now writes back in binary.
 It compares two recognisers **on strings**. It says nothing about whether vLLM's decoder actually
 honours the mask at generation time — that is items 7.3 and 7.5, on generated text, and it is still
 owed.
+
+---
+
+### 2026-08-22 (afternoon) — 🟡 **THE `envs/step7` INFERENCE STACK TOOK THREE FIXES TO COME UP, AND THE FIRST TWO ARE THE SAME BUG WITH TWO DIFFERENT GUARDS. `FINDING 79`.**
+
+`G7.10` needed no GPU and no model, so it passed on a stack that had never actually served a token.
+The first generation run is what exercised vLLM's engine, and it failed three times before the engine
+reached the sampler. All three fixes are **additive and confined to `envs/step7`**; `envs/step4` was
+re-checked after each and still reports torch `2.5.1+cu121`.
+
+#### 🔴 `FINDING 79` — `flashinfer` cannot be imported on Python 3.10, and vLLM reaches it two ways
+
+`envs/step7` was created from `envs/step4`'s interpreter, so it is **Python 3.10.20**.
+`flashinfer/comm/fd_exchange.py:55` annotates a return type as `tuple[tuple[int, int, array.array[int]]]`,
+and `array.array` only became subscriptable in Python **3.12**. The annotation is evaluated at module
+scope, so the import dies with `TypeError: 'type' object is not subscriptable` — not at call time, at
+import time, unconditionally.
+
+| Attempt | Job | What it did | How it failed |
+|---|---|---|---|
+| 1 | `1286177` | nothing — first run | `TypeError: 'type' object is not subscriptable`, via `allreduce_rms_fusion.py:90` |
+| 2 | `1286185` / `1286186` | `pip uninstall -y flashinfer-python` | `ModuleNotFoundError: No module named 'flashinfer'`, via `topk_topp_sampler.py:51` |
+| 3 | `1286187` | `export VLLM_USE_FLASHINFER_SAMPLER=0` | got past the sampler; died later in dynamo |
+| 4 | `1286189` | `enforce_eager=True` | engine up in 76.8 s |
+
+🔴 **The uninstall was necessary and not sufficient, and the reason is worth writing down.** vLLM
+reaches flashinfer through **two** different code paths with **two different guard styles**:
+
+- `vllm/compilation/passes/fusion/allreduce_rms_fusion.py` asks `find_spec("flashinfer.comm")` and
+  skips the pass when the module is absent. That path is **guarded**, so removing the package fixes it.
+- `vllm/v1/sample/ops/topk_topp_sampler.py:flashinfer_sampler_supported()` does a **bare**
+  `from vllm.v1.attention.backends.flashinfer import FlashInferBackend` with no guard at all. Its
+  docstring says so in as many words: *"Assumes flashinfer is installed, as guaranteed by
+  `requirements/cuda.txt`."* Removing the package therefore converts one crash into another.
+
+The function does return `False` **before** that import when `VLLM_USE_FLASHINFER_SAMPLER` is `0`, so
+the wrapper now exports it. Nothing is installed, nothing is pinned, and the log carries the proof:
+`INFO topk_topp_sampler.py:46] FlashInfer top-p/top-k sampling disabled via VLLM_USE_FLASHINFER_SAMPLER=0.`
+
+#### 🟡 `torch.compile` is OFF, and the reason is the same shared-interpreter arrangement
+
+With the sampler settled, the fourth failure was `AssertionError: Source mismatch for collections.abc
+(line 828-835)` inside `torch/_dynamo/package.py`. The venv's **site-packages** are under
+`envs/step7` but its **stdlib** is under `envs/step4/lib/python3.10` — visible in the traceback itself,
+which walks through `/speed-scratch/o_iseri/envs/step4/lib/python3.10/contextlib.py`. Dynamo hashes
+the source of the stdlib modules it traces and refused the mismatch.
+
+`4thJ_step7_generate.py` now passes `enforce_eager=not a.compile`, default eager, with `--compile` kept
+as an opt-in. ⚪ **This is a speed setting, not a sampling one** — eager and compiled graphs draw from
+the same distribution with the same seed, so no rehearsal or campaign number depends on it. It is
+recorded here anyway, because item 7.2 is a **throughput** comparison and any timing measured in this
+environment is an eager-mode timing and must be labelled as such.
+
+#### What the failed runs established before they died
+
+Two facts the smoke test existed to check were already visible in the logs of runs that crashed later:
+
+- `structured : structured_outputs=StructuredOutputsParams(grammar=...)` — this build takes the
+  grammar through `StructuredOutputsParams`, not the older `GuidedDecodingParams`.
+- `INFO model.py:645] Resolved architecture: Olmo2ForCausalLM` — 🔴 **and this corrects something this
+  session had repeated.** `Step4_docs/4thJ_04_finetuneLLM.md:96` is read as saying vLLM has no OLMo
+  support; it has. `ModelRegistry.get_supported_archs()` on this build returns eight OLMo
+  architectures including `Olmo2ForCausalLM` and `Olmo3ForCausalLM`. The `D-S7-3` ruling does not
+  depend on this — it rests on the downstream gates never having run on generated text — but the
+  throughput half of the argument was weaker than it was presented.
