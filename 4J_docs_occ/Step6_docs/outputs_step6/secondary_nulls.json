@@ -1,0 +1,638 @@
+[
+  {
+    "donor_countries": [
+      "it",
+      "uk"
+    ],
+    "donor_country_mass": {
+      "it": 0.5000000000000061,
+      "uk": 0.5000000000000003
+    },
+    "ess": 25514.358815318206,
+    "ess_frac": 0.47151017917131516,
+    "fold": "es",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.000227053648971847,
+    "marginals_source": "G6.3 pooled all-country average, EQUAL COUNTRY MASS (D-S6-7 (a): each donor country renormalised to 1.0 before pooling); NO raking; weight_dia_cal",
+    "n_donors": 54112,
+    "n_donors_seen": 54114,
+    "n_excluded_null_weight": 2,
+    "n_unmatched": 0,
+    "neighbour": null,
+    "null": "G6.3",
+    "pool_basis": "equal country mass (each donor country renormalised to 1.0)",
+    "pool_basis_ref": "D-S6-7 (a), author 2026-08-22",
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 14.183869284927002,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 14.183869284927002,
+        "level": "couple_with_children",
+        "null_pct": 35.267130715072994,
+        "target_pct": 49.451,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 13.39785860772624,
+        "level": "unemployed",
+        "null_pct": 4.479141392273762,
+        "target_pct": 17.877000000000002,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 9.445367720775486,
+        "level": "homemaker",
+        "null_pct": 9.445367720775486,
+        "target_pct": 0.0,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 7.110553668013847,
+        "level": "couple_no_children",
+        "null_pct": 23.44155366801385,
+        "target_pct": 16.331,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 5.4003847411563335,
+        "level": "one_person",
+        "null_pct": 14.406384741156334,
+        "target_pct": 9.006,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 5.304351512481492,
+        "level": "employed",
+        "null_pct": 47.83635151248149,
+        "target_pct": 42.532,
+        "var": "strat_econ_status"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "it"
+    ],
+    "donor_country_mass": {
+      "it": 1.0000000000000129
+    },
+    "ess": 14865.570982952746,
+    "ess_frac": 0.38854079934534097,
+    "fold": "es",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.00029743346179185876,
+    "marginals_source": "G6.2 single-donor-country null, donor it (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+    "n_donors": 38260,
+    "n_donors_seen": 38260,
+    "n_excluded_null_weight": 0,
+    "n_unmatched": 0,
+    "neighbour": "it",
+    "null": "G6.2",
+    "pool_basis": null,
+    "pool_basis_ref": null,
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 14.763948931953994,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 14.763948931953994,
+        "level": "homemaker",
+        "null_pct": 14.763948931953994,
+        "target_pct": 0.0,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 12.452739363156947,
+        "level": "other_complex",
+        "null_pct": 4.072260636843053,
+        "target_pct": 16.525000000000002,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 12.01461253337897,
+        "level": "unemployed",
+        "null_pct": 5.86238746662103,
+        "target_pct": 17.877000000000002,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 5.936017175410371,
+        "level": "one_person",
+        "null_pct": 14.94201717541037,
+        "target_pct": 9.006,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 5.622095232001199,
+        "level": "other_inactive",
+        "null_pct": 3.447904767998801,
+        "target_pct": 9.07,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 4.110811549255539,
+        "level": "25-34",
+        "null_pct": 12.774188450744461,
+        "target_pct": 16.885,
+        "var": "strat_age_band"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "uk"
+    ],
+    "donor_country_mass": {
+      "uk": 1.0000000000000002
+    },
+    "ess": 11172.568301364972,
+    "ess_frac": 0.7048049647593346,
+    "fold": "es",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.00045410729794369384,
+    "marginals_source": "G6.2 single-donor-country null, donor uk (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+    "n_donors": 15852,
+    "n_donors_seen": 15854,
+    "n_excluded_null_weight": 2,
+    "n_unmatched": 0,
+    "neighbour": "uk",
+    "null": "G6.2",
+    "pool_basis": null,
+    "pool_basis_ref": null,
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 30.730537008219095,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 30.730537008219095,
+        "level": "couple_with_children",
+        "null_pct": 18.72046299178091,
+        "target_pct": 49.451,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 14.7811046820735,
+        "level": "unemployed",
+        "null_pct": 3.0958953179265,
+        "target_pct": 17.877000000000002,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 13.528584387948023,
+        "level": "other_complex",
+        "null_pct": 30.053584387948025,
+        "target_pct": 16.525000000000002,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 12.158227556965178,
+        "level": "employed",
+        "null_pct": 54.690227556965176,
+        "target_pct": 42.532,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 11.043938403826708,
+        "level": "couple_no_children",
+        "null_pct": 27.37493840382671,
+        "target_pct": 16.331,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 4.8647523069021865,
+        "level": "one_person",
+        "null_pct": 13.870752306902187,
+        "target_pct": 9.006,
+        "var": "strat_hh_type"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "es",
+      "it"
+    ],
+    "donor_country_mass": {
+      "es": 0.49999999999999944,
+      "it": 0.5000000000000047
+    },
+    "ess": 25429.36080404056,
+    "ess_frac": 0.4430202230669087,
+    "fold": "uk",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.0002740058290771654,
+    "marginals_source": "G6.3 pooled all-country average, EQUAL COUNTRY MASS (D-S6-7 (a): each donor country renormalised to 1.0 before pooling); NO raking; weight_dia_cal",
+    "n_donors": 57400,
+    "n_donors_seen": 57400,
+    "n_excluded_null_weight": 0,
+    "n_unmatched": 0,
+    "neighbour": null,
+    "null": "G6.3",
+    "pool_basis": "equal country mass (each donor country renormalised to 1.0)",
+    "pool_basis_ref": "D-S6-7 (a), author 2026-08-22",
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 10.188327088577504,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 10.188327088577504,
+        "level": "employed",
+        "null_pct": 42.8966729114225,
+        "target_pct": 53.08500000000001,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 10.12229241572245,
+        "level": "couple_with_children",
+        "null_pct": 51.46029241572245,
+        "target_pct": 41.338,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 9.131436034032337,
+        "level": "homemaker",
+        "null_pct": 12.842436034032337,
+        "target_pct": 3.711,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 5.010181241508392,
+        "level": "unemployed",
+        "null_pct": 8.998181241508393,
+        "target_pct": 3.988,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 3.5364589297772544,
+        "level": "other_complex",
+        "null_pct": 8.349541070222745,
+        "target_pct": 11.886,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 3.4624275005253695,
+        "level": "single_parent_with_children",
+        "null_pct": 8.48257249947463,
+        "target_pct": 11.945,
+        "var": "strat_hh_type"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "es"
+    ],
+    "donor_country_mass": {
+      "es": 0.9999999999999953
+    },
+    "ess": 11107.537447323202,
+    "ess_frac": 0.5803311101004808,
+    "fold": "uk",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.000548011658154329,
+    "marginals_source": "G6.2 single-donor-country null, donor es (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+    "n_donors": 19140,
+    "n_donors_seen": 19140,
+    "n_excluded_null_weight": 0,
+    "n_unmatched": 0,
+    "neighbour": "es",
+    "null": "G6.2",
+    "pool_basis": null,
+    "pool_basis_ref": null,
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 9.768786393078694,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 9.768786393078694,
+        "level": "couple_with_children",
+        "null_pct": 51.10678639307869,
+        "target_pct": 41.338,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 8.274129645152827,
+        "level": "employed",
+        "null_pct": 44.810870354847175,
+        "target_pct": 53.08500000000001,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 8.145975016395733,
+        "level": "unemployed",
+        "null_pct": 12.133975016395732,
+        "target_pct": 3.988,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 7.209923136110722,
+        "level": "homemaker",
+        "null_pct": 10.920923136110721,
+        "target_pct": 3.711,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 6.185880316601453,
+        "level": "retired",
+        "null_pct": 14.138119683398548,
+        "target_pct": 20.324,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 5.6004658680909145,
+        "level": "35-44",
+        "null_pct": 21.844465868090914,
+        "target_pct": 16.244,
+        "var": "strat_age_band"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "it"
+    ],
+    "donor_country_mass": {
+      "it": 1.0000000000000129
+    },
+    "ess": 14865.570982952746,
+    "ess_frac": 0.38854079934534097,
+    "fold": "uk",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.00029743346179185876,
+    "marginals_source": "G6.2 single-donor-country null, donor it (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+    "n_donors": 38260,
+    "n_donors_seen": 38260,
+    "n_excluded_null_weight": 0,
+    "n_unmatched": 0,
+    "neighbour": "it",
+    "null": "G6.2",
+    "pool_basis": null,
+    "pool_basis_ref": null,
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 12.102524532002812,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 12.102524532002812,
+        "level": "employed",
+        "null_pct": 40.98247546799719,
+        "target_pct": 53.08500000000001,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 11.052948931953994,
+        "level": "homemaker",
+        "null_pct": 14.763948931953994,
+        "target_pct": 3.711,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 10.47579843836514,
+        "level": "couple_with_children",
+        "null_pct": 51.81379843836515,
+        "target_pct": 41.338,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 7.813739363156946,
+        "level": "other_complex",
+        "null_pct": 4.072260636843053,
+        "target_pct": 11.886,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 3.494353926328918,
+        "level": "15-24",
+        "null_pct": 11.021646073671084,
+        "target_pct": 14.516000000000002,
+        "var": "strat_age_band"
+      },
+      {
+        "gap_pp": 3.091152851484977,
+        "level": "75+",
+        "null_pct": 11.553152851484978,
+        "target_pct": 8.462,
+        "var": "strat_age_band"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "es",
+      "uk"
+    ],
+    "donor_country_mass": {
+      "es": 0.49999999999999767,
+      "uk": 0.5
+    },
+    "ess": 22279.91593756137,
+    "ess_frac": 0.6367145615443922,
+    "fold": "it",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.0002740058290771645,
+    "marginals_source": "G6.3 pooled all-country average, EQUAL COUNTRY MASS (D-S6-7 (a): each donor country renormalised to 1.0 before pooling); NO raking; weight_dia_cal",
+    "n_donors": 34992,
+    "n_donors_seen": 34994,
+    "n_excluded_null_weight": 2,
+    "n_unmatched": 0,
+    "neighbour": null,
+    "null": "G6.3",
+    "pool_basis": "equal country mass (each donor country renormalised to 1.0)",
+    "pool_basis_ref": "D-S6-7 (a), author 2026-08-22",
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 14.83037530757022,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 14.83037530757022,
+        "level": "couple_with_children",
+        "null_pct": 34.91362469242978,
+        "target_pct": 49.744,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 8.496202945775162,
+        "level": "other_complex",
+        "null_pct": 21.34020294577516,
+        "target_pct": 12.844,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 7.977627898441436,
+        "level": "couple_no_children",
+        "null_pct": 23.683627898441436,
+        "target_pct": 15.706000000000001,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 6.607548955906423,
+        "level": "employed",
+        "null_pct": 49.75054895590642,
+        "target_pct": 43.143,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 6.072101076052677,
+        "level": "retired",
+        "null_pct": 17.690898923947323,
+        "target_pct": 23.763,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 3.387145177146135,
+        "level": "homemaker",
+        "null_pct": 7.523854822853865,
+        "target_pct": 10.911,
+        "var": "strat_econ_status"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "es"
+    ],
+    "donor_country_mass": {
+      "es": 0.9999999999999953
+    },
+    "ess": 11107.537447323202,
+    "ess_frac": 0.5803311101004808,
+    "fold": "it",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.000548011658154329,
+    "marginals_source": "G6.2 single-donor-country null, donor es (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+    "n_donors": 19140,
+    "n_donors_seen": 19140,
+    "n_excluded_null_weight": 0,
+    "n_unmatched": 0,
+    "neighbour": "es",
+    "null": "G6.2",
+    "pool_basis": null,
+    "pool_basis_ref": null,
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 9.624880316601454,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 9.624880316601454,
+        "level": "retired",
+        "null_pct": 14.138119683398548,
+        "target_pct": 23.763,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 6.569975016395732,
+        "level": "unemployed",
+        "null_pct": 12.133975016395732,
+        "target_pct": 5.564,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 4.286317393056138,
+        "level": "couple_no_children",
+        "null_pct": 19.99231739305614,
+        "target_pct": 15.706000000000001,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 4.248465868090914,
+        "level": "35-44",
+        "null_pct": 21.844465868090914,
+        "target_pct": 17.596,
+        "var": "strat_age_band"
+      },
+      {
+        "gap_pp": 3.952315471505588,
+        "level": "one_person",
+        "null_pct": 8.972684528494412,
+        "target_pct": 12.925,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 2.7337184483297654,
+        "level": "student",
+        "null_pct": 11.591718448329766,
+        "target_pct": 8.858,
+        "var": "strat_econ_status"
+      }
+    ]
+  },
+  {
+    "donor_countries": [
+      "uk"
+    ],
+    "donor_country_mass": {
+      "uk": 1.0000000000000002
+    },
+    "ess": 11172.568301364972,
+    "ess_frac": 0.7048049647593346,
+    "fold": "it",
+    "g61_gap_pp_by_construction": 0.5,
+    "heaviest_diary_frac": 0.00045410729794369384,
+    "marginals_source": "G6.2 single-donor-country null, donor uk (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+    "n_donors": 15852,
+    "n_donors_seen": 15854,
+    "n_excluded_null_weight": 2,
+    "n_unmatched": 0,
+    "neighbour": "uk",
+    "null": "G6.2",
+    "pool_basis": null,
+    "pool_basis_ref": null,
+    "pool_dominated_by": null,
+    "raked": false,
+    "weight_field": "weight_dia_cal",
+    "worst_strata_gap_pp": 31.023537008219094,
+    "worst_strata_gaps": [
+      {
+        "gap_pp": 31.023537008219094,
+        "level": "couple_with_children",
+        "null_pct": 18.72046299178091,
+        "target_pct": 49.744,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 17.209584387948023,
+        "level": "other_complex",
+        "null_pct": 30.053584387948025,
+        "target_pct": 12.844,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 11.66893840382671,
+        "level": "couple_no_children",
+        "null_pct": 27.37493840382671,
+        "target_pct": 15.706000000000001,
+        "var": "strat_hh_type"
+      },
+      {
+        "gap_pp": 11.54722755696518,
+        "level": "employed",
+        "null_pct": 54.690227556965176,
+        "target_pct": 43.143,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 6.784213490403007,
+        "level": "homemaker",
+        "null_pct": 4.126786509596993,
+        "target_pct": 10.911,
+        "var": "strat_econ_status"
+      },
+      {
+        "gap_pp": 3.5532701458479448,
+        "level": "student",
+        "null_pct": 5.304729854152056,
+        "target_pct": 8.858,
+        "var": "strat_econ_status"
+      }
+    ]
+  }
+]

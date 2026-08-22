@@ -1,0 +1,146 @@
+{
+  "alphabet_sizes": {
+    "act": 159,
+    "act2": 43,
+    "cop": 65,
+    "loc": 5
+  },
+  "compile_seconds": 0.017,
+  "disagreement_examples": [],
+  "ebnf_chars": 115046,
+  "gate": "G7.10",
+  "match_seconds": 576.906,
+  "matcher_entry_point": "xgrammar.testing._is_grammar_accept_string",
+  "n_disagreements": 0,
+  "n_oracle_accepted": 5000,
+  "n_oracle_rejected": 5000,
+  "n_strings": 10000,
+  "per_label": {
+    "bad_act": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "bad_act2": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "bad_loc": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "cop_leading_zero": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "cop_range": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "day_long": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "day_short": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "dur_leading_zero": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "dur_not_mult10": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "episode_long": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "episode_short": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "no_bar": {
+      "disagree": 0,
+      "n": 264,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "no_eor": {
+      "disagree": 0,
+      "n": 264,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "no_terminal_semi": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "prefix_empty": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "prefix_long": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "prefix_short": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "valid": {
+      "disagree": 0,
+      "n": 5000,
+      "oracle_ok": 5000,
+      "xgr_ok": 5000
+    },
+    "whitespace": {
+      "disagree": 0,
+      "n": 264,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    },
+    "zero_episodes": {
+      "disagree": 0,
+      "n": 263,
+      "oracle_ok": 0,
+      "xgr_ok": 0
+    }
+  },
+  "policy": "permissive",
+  "policy_ref": "D-S7-2 (a), author 2026-08-20",
+  "seed": 20260822,
+  "vacuity_reasons": [],
+  "verdict": "PASS",
+  "xgrammar_version": "0.2.3"
+}

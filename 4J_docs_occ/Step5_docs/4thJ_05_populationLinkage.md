@@ -1674,3 +1674,34 @@ calibrated, both curves reported) is item 5.4 and is untouched. 🔴 **Item 5 --
 PASS and each has been seen failing" --- is CLOSER but NOT MET: the two gates that split both pass
 and both were seen failing, but `G5.8` and `G5.9` are BLOCKED, and a gate whose input does not exist
 has not passed.** Nine of eleven gates now satisfy item 5 completely. **Step 5 is not closed.**
+
+
+### 2026-08-22 — 🟢 **`D-S5-16` RULED (a). STEP 5 IS CLOSED.**
+
+The last open decision of Step 5 was ruled by the author: **`G5.8` stands exactly as written, and its
+FAIL on `es` and `uk` is the terminal verdict.** The checker was not amended, no fold was re-run and
+no temperature was re-tuned. `tools/4thJ_gates_step5.py` is byte-for-byte as it was when the gate
+failed — that is the ruling, not an omission.
+
+**Final board — 36 gate-fold verdicts: 34 PASS, 2 FAIL, 0 BLOCKED**, coverage clause clean, shipped
+populations md5-verified unchanged. `T_chosen` = `es` **1.30** / `uk` **1.10** / `it` **1.20** by
+entropy matching, unmoved. The **fidelity** result is a **band** per fold — `es` {0.60, 0.70},
+`uk` {0.90, 1.00}, `it` {0.80, 0.90} — and the FAIL is the reason it is a band and not a value.
+
+🔴 **DEFINITION OF DONE: 4 of 5, plus item 5 by DECLARED EXCEPTION.** Items 1–4 are met. Item 5
+reads *"all Step 5 gates PASS and each has been seen failing"*, and under the ruling `G5.8` does not
+pass on two folds of three — so **item 5 cannot be ticked as written**. It closes as a declared
+exception: 10 of 11 gates pass on all three folds, `G5.8` passes on `it`, every gate on the board
+including the two failures has been **seen failing**, and the two FAILs are carried into the paper as
+the result. **Step 5 must never be written up as 5 of 5, and the board never as 36 of 36.**
+
+🟢 Also applied: the generator of `outputs_step5/temperature_calibration.md` was promoted out of
+the session scratchpad to **`tools/4thJ_step5_mk_calibration_doc.py`**, so the deliverable's own
+instruction (*regenerate, never hand-edit*) stays followable. It was copied byte-identical, re-run,
+and shown to reproduce the deliverable at md5 `cf8f441e37e124fb68fbad47c7c49b5f` **exactly** before
+any edit was made to it. The deliverable now stands at 540 lines, md5
+`b76d34558db5bd93c86cb47709ddd5a0`.
+
+⚪ `prereg.md` untouched throughout, md5 `e4243e07cdd80c9c846b91f40e3e8c45`. Nothing is running on
+Speed. Decision record and the author's rationale:
+`IMP/docs/2026-08-22_questions-for-the-author.md`.

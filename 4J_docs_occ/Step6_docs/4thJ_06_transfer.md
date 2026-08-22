@@ -1306,3 +1306,215 @@ the orphan guard; and rebuilding `uk` under the superseded `D-S5-3` minor conven
 
 ⚪ Still true: `G6.1` cannot be SCORED until a fold has generated. What changed is that the bar now
 exists on every fold.
+
+
+---
+
+### 2026-08-22 — 🟢 **WORK ITEM 6.2: THE POOLED ALL-COUNTRY NULL (`G6.3`) IS BUILT ON ALL THREE FOLDS.** 🔴 **`G6.2` REFUSES TO BE BUILT AND `D-S6-6` IS WHY. NEW `FINDING 77`.**
+
+`tools/4thJ_step6_secondary_nulls.py` + `_selftest.py` (**30 of 30 green, every guard seen firing**),
+report at `outputs_step6/secondary_nulls.json` md5 `bc9f53bb04e0a911649fdb6c552399ca`. Full record:
+`Step6_docs/impl/2026-08-22_secondary-nulls.md`. No cluster job; nothing is scored.
+
+`G6.1` fixed the shape of a null here — **a weighting over the real N−1 donor diaries**. The raked
+null solves for weights that reproduce the held-out country's strata; these two solve for nothing,
+which is what makes them weaker on purpose. 🔴 **Neither is raked, and that is a rule, not an
+omission:** a raked pooled null is the raked-donor null under another name, and `prereg.md` permits
+raking in exactly one place. Weight basis `weight_dia_cal` (`D-S6-4`); `FINDING 53` is why that
+matters here more than anywhere — an unweighted pooled null would be a null about weekends, and
+unequally so per fold.
+
+#### `G6.3` builds, and for the first time we know HOW WEAK it is
+
+| fold | donors | ESS | ESS % | worst strata gap vs the target population |
+|---|---:|---:|---:|---:|
+| `es` | 54,112 of 54,114 | 14,868 | 27.5 % | 🔴 **14.7629 pp** |
+| `uk` | 57,400 of 57,400 | 25,436 | 44.3 % | 🔴 **10.1901 pp** |
+| `it` | 34,992 of 34,994 | 11,110 | 31.7 % | 🔴 **9.6242 pp** |
+
+🔴 **`G6.1` is ≤ 0.5000 pp on every variable BY CONSTRUCTION, so the pooled null sits 19x to 30x
+further from the population it is a null for.** Beating `G6.3` is a much smaller claim than beating
+`G6.1`, and the two must never share a sentence in the paper without this number.
+
+#### 🔴 `FINDING 77` — the `es` fold's widest gap is a category the target population does not contain
+
+`strat_econ_status = homemaker` is **14.76 %** of the `es` donor pool and **0.00 %** of
+`population_es.csv`. `FINDING 51`: the Spanish census `RELA` has no *Labores del hogar*, so
+`D-S5-4`(b) fitted Spain on **five** economic bands. The raked null met this as an orphan and it is
+why registered collapse **B** exists. 🔴 **The pooled null is not raked, so nothing refuses — the
+mismatch is simply carried, and must be DECLARED rather than repaired.** Collapsing it here would
+make `G6.3` a partly-raked null, which is the one thing it may not be. ⚪ On all three folds the
+widest gap is an economic-status column, not age or sex.
+
+#### ⚪ A counterintuitive measurement, recorded so it is not misread later
+
+Effective sample size, pooled vs raked, on the same pools: `es` 27.5 % vs 49.5 %, `uk` 44.3 % vs
+59.4 %, `it` 31.7 % vs **76.8 %**. **Raking INCREASED effective sample size on every fold** — the raw
+survey weights are more dispersed than the factors that reproduce a target from them, so the stronger
+null also rests on more diaries. `FINDING 62` pointed the other way; neither number may be quoted as
+though low ESS made a null weak on its own.
+
+#### 🔴 `D-S6-6` — OPEN, FOR THE AUTHOR: which country is the "nearest neighbour"?
+
+`prereg.md` §5 names a **"nearest-neighbouring-country model"** and **registers no rule for choosing
+the neighbour.** It did not need one: the design then had **four** countries including **France**,
+which borders both Spain and Italy. **Author decision 16 (2026-08-15) excluded France.** The pool per
+fold is now two countries, and for the `uk` fold neither Spain nor Italy is anybody's idea of a
+nearest neighbour.
+
+🔴 **Choosing one now — after the corpus, the folds and the populations are all built — is choosing
+a null's strength after the fact**, the same defect `G6.2` exists to answer. So the registry ships
+**empty**, `G6.2` **refuses on all three folds**, and the refusal names this decision. Seen refusing
+in the selftest and in the live run.
+
+**The ruling must supply a RULE, not three country codes.** Candidate bases, none chosen here: shared
+land border (fails for `uk` outright); great-circle distance between population centroids; a
+published regional grouping; or **drop `G6.2` and declare it undeliverable under a three-country
+design** — defensible, because the objection it answers is weaker when no fold *has* a neighbour.
+⚪ Whatever is ruled goes in a dated sidecar, `outputs_step6/prereg_addendum_02.md`;
+`prereg.md` is frozen and cannot carry it.
+
+#### Where this leaves Step 6
+
+**DoD item 2 is two nulls of three**: raked-donor (`G6.1`) and pooled (`G6.3`) built, neighbour
+(`G6.2`) blocked on `D-S6-6`. 🔴 **Everything else in Step 6 — items 6.3 (run the folds), 6.4
+(score) and 6.5 (privacy audit) — waits on GENERATED DIARIES, which is Step 7's deliverable.** That,
+not Step 6, is the critical path.
+
+⚪ `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`, verified at both ends. Nothing is
+running on Speed.
+
+
+---
+
+### 2026-08-22 (evening) — 🟢 **`D-S6-6` RULED (a) AND APPLIED: `G6.2` IS BUILT, SIX NULLS, TWO PER FOLD. WORK ITEM 6.2 IS COMPLETE.** 🔴 **AND THE REBUILD EXPOSED `FINDING 78` — NEW `D-S6-7`.**
+
+The author ruled **(a)**: build the single-donor-country null for **every** country in the fold's
+pool, report them all, **drop the word "nearest"**. Registered in
+`outputs_step6/prereg_addendum_02.md` (md5 `db450b89abbaf8f5480eb2479d50ae2d`, sidecar written,
+`md5sum -c` OK). ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` **unchanged**. Full record:
+`Step6_docs/impl/2026-08-22_secondary-nulls.md`. No cluster job; nothing scored.
+
+Why (a) and not a geographic rule: the rule was **computed, not assumed**, and it does not survive.
+The `es` fold's neighbour **flips** — `uk` under capital cities, `it` under centroids — and the
+basis is itself unregistered; the three capitals span 1263/1364/1434 km so "nearest" wins by 5–13 %;
+and **no fold has a land-border neighbour** in its pool, France having been the country that made
+that rule work (decision 16). (a) removes the degree of freedom instead of registering one, and it is
+the logic `G6.9` already uses: compare against all, nominate none.
+
+#### The six nulls, and why reporting both matters
+
+| fold | donor | donors | ESS % | worst strata gap vs the target |
+|---|---|---:|---:|---:|
+| `es` | `it` | 38,260 | 38.9 % | 14.7639 pp |
+| `es` | `uk` | 15,852 | 70.5 % | 🔴 **30.7305 pp** |
+| `uk` | `es` | 19,140 | 58.0 % | 9.7688 pp |
+| `uk` | `it` | 38,260 | 38.9 % | 12.1025 pp |
+| `it` | `es` | 19,140 | 58.0 % | 9.6249 pp |
+| `it` | `uk` | 15,852 | 70.5 % | 🔴 **31.0235 pp** |
+
+🔴 **The two nulls of one fold differ by up to 3.2x** (`it` fold: 9.62 vs 31.02 pp). Under any
+single-nomination rule, one of those two numbers would have been the whole of `G6.2` and the other
+invisible.
+
+#### 🔴 `FINDING 78` — the three surveys' weights are not on one scale, and `G6.3` is 99.99 % one country on two folds
+
+Σ `weight_dia_cal`: `ES` **162,500,706**, `IT` **162,800,375**, `UK` 🔴 **15,920** (mean
+1.0043). Population-grossing versus scale-free, ~10,000:1, identical in every weight column — a
+property of the **source microdata**. So the pooled null carries `it` **99.9902 %** on the `es` fold
+and `es` **99.9902 %** on the `it` fold; only `uk` (49.95/50.05) is a real mixture, and only because
+ES and IT gross to nearly the same total. On `es`, `G6.3` (14.7629 pp) and the `it`-only null
+(14.7639 pp) agree to four decimals: **the same object under two names**, so two folds ship **two**
+independent nulls, not three.
+
+🟢 **Checked, not assumed:** `G6.1` starts from a uniform seed
+(`4thJ_step6_rakeddonor.py:169`, `D-S5-10` (a)) and never reads a survey weight — **the
+pre-registered bar and `prereg_addendum_01.md` are untouched**. All six `G6.2` nulls are
+single-country, so the scale factor cancels on renormalisation. `G6.9` reads published tables. Steps
+1–5 use weights within one country only. 🔴 **What moves: `G6.3` `es` 14.7629 pp and `it`
+9.6242 pp must not be quoted as "pooled" until ruled;** `uk` 10.1901 pp is sound.
+
+🔴 **Not repaired — the pooling basis is a BASIS CHOICE.** Put to the author as `D-S6-7`
+(`IMP/docs/2026-08-22_D-S6-7_pooled-null-weight-scale.md`, recommendation **(a) equal country
+mass**). What was added is diagnostic only: `country_mass()` and a dominance flag printed on every
+run and stored in the JSON. ⚪ It was found only **because** (a) put the single-country nulls
+beside the pooled one — a single nomination had an even chance of hiding it, and `G6.3`'s own
+summary statistics (ESS 27.5 %, heaviest diary 0.0297 %) all looked ordinary. Second time a null has
+looked healthy while being wrong; `FINDING 52` was the first.
+
+#### Where this leaves Step 6
+
+**DoD item 2 is three nulls of three built** — `G6.1` raked-donor, `G6.2` six per-donor-country,
+`G6.3` pooled with its basis open. 🔴 **Items 6.3 (run the folds), 6.4 (score) and 6.5 (privacy
+audit) still wait on GENERATED DIARIES — Step 7's deliverable. That is the critical path.**
+
+⚪ Artefacts: `secondary_nulls.json` md5 `5bb023e51a3e5c4eb1a7e97b6d79ed66`, module
+`0e2df0ca8d0fd4a02145b356a9be53bb`, selftest `1e8a5a3880250af68762368e99f78b11` (**42 of 42 green**,
+was 30). Nothing is running on Speed.
+
+---
+
+### 2026-08-22 (night) — `D-S6-7` RULED (a) AND APPLIED: the pooled null `G6.3` now pools at EQUAL COUNTRY MASS. **Work item 6.2 is closed with THREE independent nulls per fold.**
+
+🟢 **The ruling.** Each donor country's `weight_dia_cal` is renormalised to sum to **1.0**
+before the pool is formed, so every donor country contributes the same total mass while, **within** a
+country, the survey weights keep their exact relative values — which is what `D-S6-4` chose and
+what `FINDING 53` requires, since `weight_dia_cal` is the column that corrects the three different day
+bases. Registered in `Step6_docs/outputs_step6/prereg_addendum_02.md` **§5b**; the file was
+re-frozen at md5 `fa1e4524f52c36ec82f02f825d6ff149` (its `D-S6-6`-only version was
+`db450b89abbaf8f5480eb2479d50ae2d`) and §1–§5 are unchanged. 🔴 `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` **UNTOUCHED**; all three sidecars `md5sum -c` **OK**.
+
+🔴 **It is a BASIS CHANGE and it is not raking.** Nothing is solved for, no held-out marginal
+is read, no diary's weight is fitted to a target: one arbitrary factor is removed — the national
+statistical office's choice to gross to the population or not — and nothing else. `prereg.md`
+still permits raking in exactly one place, `G6.1`. The declared cost is that a Spanish diary now
+counts ~1.21x a UK diary inside the pooled null, because 15,852 UK and 19,140 Spanish diaries share
+the mass equally.
+
+**What moved** (`secondary_nulls.json`, rebuilt, md5 `d4ce5e2f8345bc147d8d297f8f9606d7`):
+
+| fold | `G6.3` worst strata gap | ESS | donor mass after |
+|---|---|---|---|
+| `es` | 14.7629 → **14.1839 pp** | 14,868 → 25,514 | `it` 50.0000 %, `uk` 50.0000 % |
+| `uk` | 10.1901 → **10.1883 pp** | 25,436 → 25,429 | `es` 50.0000 %, `it` 50.0000 % |
+| `it` | 9.6242 → **14.8304 pp** | 11,110 → 22,280 | `es` 50.0000 %, `uk` 50.0000 % |
+
+🟢 **`G6.3` is no longer a duplicate of a `G6.2`.** On `es` it is 14.1839 pp against the
+`it`-only null's 14.7639; on `it` it is 14.8304 pp against the `es`-only null's 9.6249. Before the
+ruling those pairs agreed to **four decimal places**. `pool_dominated_by` is `null` on every fold.
+**Step 6 ships three independent nulls per fold, not two.**
+
+🟢 **Two predictions were CHECKED against the rebuild rather than assumed.** All six `G6.2`
+nulls came back byte-identical (14.7639 / 30.7305 / 9.7688 / 12.1025 / 9.6249 / 31.0235 pp, every ESS
+unchanged) because each is single-country and a constant scale factor cancels exactly on
+renormalisation. And `uk` moved by **0.0018 pp**, which is the check on the whole story: that fold was
+already a real mixture, because ES and IT gross to almost the same national total. `G6.1` was
+re-checked at `tools/4thJ_step6_rakeddonor.py:169` — `weights = [1.0] * len(donors)`, a uniform
+seed — so it never reads a survey weight and `prereg_addendum_01.md` stands.
+
+**Guards, all seen firing** (`tools/4thJ_step6_secondary_nulls_selftest.py`, **55 ok / 0 FAILED**, was
+42): the equalisation refuses a donor country with zero total mass instead of dividing by it
+(`FINDING 52`'s failure mode); it is applied **unconditionally**, proved by reading the module's own
+source, because a basis that switches itself on when the numbers look bad is a basis chosen after the
+fact; the `FINDING 78` flag is re-pointed to mean *"the ruling was not applied — do not quote this
+null"*; and the source label carries `EQUAL COUNTRY MASS (D-S6-7 (a))`, which `score_margin`'s Guard 1
+uses to refuse any comparison against a pre-ruling number.
+
+🔴 **One expectation broke and was left failing first.** The selftest's §6 case — a
+donor whose source weight is NULL is excluded — read `0.2 / 0.8` on the raw survey weights and now
+reads `0.5 / 0.5`, because after the exclusion the pool is one UK diary and one Italian diary. The
+check was run and watched failing before the expectation was rewritten, and the old value is recorded
+beside the new one.
+
+🟢 **STEP 6 WORK ITEM 6.2 IS CLOSED.** Three nulls of three built: `G6.1` the raked-donor bar,
+`G6.2` six single-donor-country nulls, `G6.3` the pooled all-country null at equal country mass.
+Nothing in item 6.2 is waiting on anyone. 🔴 **Items 6.3 (run the folds), 6.4 (score) and 6.5
+(privacy audit) still wait on GENERATED DIARIES — Step 7's deliverable. That is the critical
+path.**
+
+⚪ Artefacts: module `e79918f62e64c836ac6479a4d265da2e`, selftest
+`6a2737f8883ab00d9baea23955565998`, `secondary_nulls.json` `d4ce5e2f8345bc147d8d297f8f9606d7`,
+`prereg_addendum_02.md` `fa1e4524f52c36ec82f02f825d6ff149`. Record:
+`Step6_docs/impl/2026-08-22_secondary-nulls.md`. Nothing is running on Speed, and nothing is scored.
+

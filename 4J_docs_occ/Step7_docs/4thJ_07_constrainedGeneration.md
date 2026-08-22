@@ -760,3 +760,83 @@ for the paper and which needs a fold checkpoint.
 
 `G7.10` has no XGrammar back-end. `FINDING 45` stands: enforcing `G7.3` would reject 28.95 % of the
 corpus, and `LOC` has no workplace class. The ACT alphabet is 159.
+
+---
+
+### 2026-08-22 — 🟢 **`G7.10` IS RUN AND PASSES. THE GRAMMAR SIDE OF THE GATE DID NOT EXIST BEFORE TODAY; ONLY THE HAND-WRITTEN ORACLE DID, AND A GATE CANNOT COMPARE A THING TO ITSELF.**
+
+Executed under `D-S7-3` (a), directives 1 and 2. Job `1286176`, partition `ps`, **no GPU** — XGrammar
+compiles and matches on the CPU and neither recogniser involves a model, which is why `G7.10` is the
+one Step 7 gate settleable before a single diary is generated.
+
+#### What was missing
+
+`G7.10` reads *"an independently written recogniser for the same language accepts and rejects
+identically."* Work item 7.1 shipped one recogniser: `4thJ_step7_grammar.py`, the hand-written oracle,
+44/44 green on 2026-08-20. The second recogniser was never written. Until today the gate had nothing
+to compare against, and the note above recorded it honestly as **"no XGrammar back-end."**
+
+#### The environment, first
+
+`/speed-scratch/o_iseri/envs/step7` built by `tools/4thJ_step7_env_build.sh` (md5
+`dd8a1bb568e6e699720d6668e9513442`), job `1286173`, from `envs/step4`'s interpreter. Nothing pinned.
+Approved by the author as the sub-question of `D-S7-3`. **`envs/step4` is untouched and was verified
+so afterwards** — its torch still reports `2.5.1+cu121`.
+
+#### The two new artefacts
+
+| file | md5 | what it is |
+|---|---|---|
+| `tools/4thJ_step7_ebnf.py` | `164ca6dae8a66da70bfa0306f0efbce4` | emits the EBNF; **never imports the oracle** |
+| `tools/4thJ_step7_ebnf_selftest.py` | `fe29725a404d70512e92019b4b528d04` | 43 checks, **43 ok / 0 FAILED** |
+| `tools/4thJ_step7_g710.py` | `351c446ca5869a63c454fe8e4ec46431` | the gate runner |
+| `outputs_step7/step7_grammar.ebnf` | `65aae7cb4f48ebb495f449ae91bcfd50` | 115,046 chars, 296 rules |
+| `outputs_step7/g710_oracle_agreement.json` | `7d345798faa29b0f5f2ff95841c4eb69` | the verdict |
+
+#### The 145-state claim is now COUNTED, not asserted
+
+The self-test walks the emitted text rather than trusting the generator: **144 duration rules
+`E1`..`E144`**, `E1` spelling `10` and `E144` spelling `1440`; **144 tally states `S0`..`S143`**, with
+`S144` never defined anywhere in the file because a day that has reached 1440 ends on a bare `E`, not
+on a state; every alternative checked to advance the tally by exactly its own duration; and
+**10,440 transitions** in total. Alphabets are read live off the crosswalks, not hardcoded: ACT 159
+(158 shipped + `000`), ACT2 43, LOC 5, COP 65.
+
+#### The verdict
+
+**PASS — 0 disagreements on 10,000 strings**, 5,000 accepted by both and 5,000 rejected by both,
+matched in 576.9 s. XGrammar 0.2.3; entry point `xgrammar.testing._is_grammar_accept_string`; policy
+`permissive` per `D-S7-2` (a). Nineteen mutator classes plus `valid`, each ~263 strings, **every one
+of them zero-disagreement and none of them vacuously accepted**: `bad_act`, `bad_act2`, `bad_loc`,
+`cop_leading_zero`, `cop_range`, `day_long`, `day_short`, `dur_leading_zero`, `dur_not_mult10`,
+`episode_long`, `episode_short`, `no_bar`, `no_eor`, `no_terminal_semi`, `prefix_empty`,
+`prefix_long`, `prefix_short`, `whitespace`, `zero_episodes`.
+
+🔴 The negative codes are **computed, not guessed**. `_out_of_alphabet()` searches the alphabet for a
+code that is provably absent and **raises** if none exists — a full alphabet cannot silently yield a
+"bad" code that is actually legal. `999` is not assumed to be free.
+
+#### 🔴 The perturbation that mattered, and the two checks that were wrong before it
+
+Five perturbations were run against the module. **P3 — make the grammar import the oracle — SURVIVED
+at 42 ok / 0 FAILED.** The independence check read `"validate_record(" not in body`, so a perturbation
+that *bound* the oracle without calling it (`validate_record = _grammar.validate_record`) walked
+straight past. That is precisely the `V5.d` / `V6.b` self-comparison failure the gate exists to
+prevent, and it was invisible. The substring fix then failed on the **unperturbed** module, because a
+comment in `build_ebnf` names the function.
+
+The check now parses the **syntax tree** (`ast.walk`) and requires two things: no identifier named
+`validate_record` or `tally_step` anywhere in the module, and — the positive form — every attribute
+pulled off `_grammar` must be in a constant allowlist. `build_alphabets` is shared deliberately, since
+it is the constraint definition both sides compile from, but it is called by the caller and never
+reached through the grammar module. With that, **5 of 5 perturbations fell, each hitting only its own
+target.**
+
+⚪ A smaller one worth recording: the harness restored the module with CRLF line endings and silently
+changed its md5. It now writes back in binary.
+
+#### 🔴 What `G7.10` does NOT establish
+
+It compares two recognisers **on strings**. It says nothing about whether vLLM's decoder actually
+honours the mask at generation time — that is items 7.3 and 7.5, on generated text, and it is still
+owed.

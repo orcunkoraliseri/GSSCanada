@@ -28,8 +28,8 @@ Each of those is a way of passing the headline while failing the claim.
 | ID | What it detects | Threshold | Provenance |
 |---|---|---|---|
 | **G6.1** 🔴 Margin over the **raked-donor null** | The claim itself | **Must be positive.** Pre-registered before the run | `RL06`, author decision 4 |
-| **G6.2** Margin over the nearest-neighbour-country model | Geographic proxy | Reported | `RL06` |
-| **G6.3** Margin over the pooled all-country average | The weak null | Reported, **secondary** | `RL08`, demoted |
+| **G6.2** Margin over the **single-donor-country nulls** — 🟢 `D-S6-6` (a), ruled 2026-08-22, DROPPED the word *nearest*: **every** donor country in the fold's pool is built and reported (**two per fold, six in all**), none is nominated. `prereg_addendum_02.md` | Geographic proxy | Reported | `RL06` |
+| **G6.3** Margin over the pooled all-country average, **EQUAL COUNTRY MASS** — 🟢 `D-S6-7` (a), ruled 2026-08-22: each donor country renormalised to sum 1.0 before pooling, because the three surveys' weights are NOT on one scale (`FINDING 78`) and the raw pool was 99.99 % ONE COUNTRY on the `es` and `it` folds. `prereg_addendum_02.md` §5b. 🔴 NEVER quote the pre-ruling numbers (`es` 14.7629 / `uk` 10.1901 / `it` 9.6242 pp) | The weak null | Reported, **secondary** | `RL08`, demoted |
 | **G6.4** Level-1 time budgets vs published tables | Gross wrongness | MAPE ≤ **15.0 %** | **project-chosen** |
 | **G6.5** 🔴 Pre-registered FAIL criteria | Gate-shopping after the fact | Fails the claim if **any** of: MAE ≥ raked-donor null; MAPE > 20 %; **the sign of the country's divergence from the European mean is inverted** | **project-chosen**, frozen |
 | **G6.6** Regression on held-**in** countries | Forgetting | Bounded; small by construction under joint training | `RL05` |

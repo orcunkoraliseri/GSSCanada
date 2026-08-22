@@ -300,3 +300,369 @@ the non-replicate branch.
 
 ⚪ **Blocks nothing.** Boxes 2 and 4 — and Step 5's closure — still turn on `1285712`–`1285714`;
 this is additive and lands after them.
+
+### 2026-08-21 (night) — 🔴 **`FINDING 74` + `D-S5-16`: THE REPLICATE JOBS LANDED, THE SENSITIVITY TRAP FIRED, AND `G5.8` FAILS ON `uk`**
+
+`1285713` (`uk`) and `1285714` (`it`) COMPLETED; `1285712` (`es`) is on its last realisation.
+Artefacts and all 30 generation files are in `outputs_step5/`
+(`temperature_calibration_uk_replicates.json` md5 `62f17f9f580b495d6bf8e86bd8a0b38b`,
+`…_it_replicates.json` md5 `eeb1fe2e9dc6fdd273d770e1fcf11e0b`). Full record and every number:
+`Step5_docs/impl/2026-08-21_item5.4-temperature.md`.
+
+🟢 **The choice survives, and it survives on the criterion it was actually made on.** `T_chosen`
+rests on **entropy matching** (`entropy wins on disagreement`, pre-registered), and `dH` clears the
+trap on both landed folds (`uk` step 0.0705 > noise 0.0581; `it` 0.0888 > 0.0594). Stronger still,
+the test the spread block does *not* run — re-applying the selection rule **inside each of the five
+realisations** — gives `argmin|dH|` = **1.10 on 5/5 `uk` seeds** and **1.20 on 5/5 `it` seeds`**.
+`T_chosen` is a seed-independent decision, not a magnitude comparison.
+
+🔴 **`T_fidelity` on `uk` is a coin flip and must ship as a BAND.** `argmin at_home_mae_pp` is
+`1.00` on seeds 101/103/105 and `1.10` on 102/104. The `1.00` in
+`temperature_calibration_uk.json` is one realisation of a quantity with no stable argmin. **Report
+`{1.00, 1.10}`, never `1.00`.** ⚪ On `it` the in-window argmin is stable at 1.10, but the ruled
+`T_fidelity` = 0.80 lies **outside** the window and stays untested until `1285779` lands.
+
+> 🔴 **CORRECTED 2026-08-21 (night), after the coverage-101 jobs landed.** The band quoted in this paragraph is an argmin taken **inside the three-point replicate window** — the minimum of a *truncated* curve, and on `es` and `it` the ruled `T_fidelity` was not even in the window. It is **not** the fidelity temperature and must never be quoted as one. On the full nine-point grid the fidelity argmin moves one grid step under a seed change on **all three** folds: `es` **0.70 → 0.60**, `uk` **1.00 → 0.90**, `it` **0.80 → 0.90**, giving the bands `es` {0.60, 0.70}, `uk` {0.90, 1.00}, `it` {0.80, 0.90}. ⚪ The *conclusion* of this paragraph — that the fidelity argmin is not seed-stable — is unchanged and now holds on three folds rather than two. See the closing coverage-101 entry of this document.
+
+
+🔴 **A margin nobody asked about.** `agree` is abs(`T_ent` − `T_fid`) ≤ `AGREE_TOL = 0.1001`. On
+`uk` that is `0.1 ≤ 0.1001` — **`agree = True` by one part in ten thousand**. It is robust in
+verdict (5/5 True, since the two moving values are 1.00 and 1.10 and both clear it), but the paper
+must say **"the two curves agree to within one grid step"**, never *"the curves agree"*.
+
+> 🔴 **CORRECTED 2026-08-21 (night) — `FINDING 76`. `agree` is NOT robust; this paragraph's “5/5 `True`” is an artefact of the same truncated window.** The 5/5 verdict was computed from the **in-window** fidelity argmin, which on `uk` can only be `1.00`, `1.10` or `1.20` — and the first two both clear `agree_tol` by construction. Over the **full nine-point grid** the seed-101 fidelity argmin is `0.90`, the gap to `T_chosen = 1.10` is `0.2000`, and **`agree` reads `False`.** The single `True` on the whole board does not replicate. 🟢 `T_chosen` is unaffected — entropy wins on disagreement by pre-registration (`4thJ_step5_temperature.py:607`), so `uk` selects `1.10` either way. 🔴 **The claim, not the number, is what must change:** never write that the two criteria agree on `uk` as evidence that they converge.
+
+
+🔴 **`es` carries `endpoint_entropy = True`.** `T_chosen = 1.30` is the **top of the pre-registered
+grid**; the entropy optimum may lie above it and the grid cannot see it. The grid is **not**
+extended — extending it now would be choosing the search space on the result. Declared with every
+`es` number.
+
+**Battery: 30 PASS / 0 FAIL / 6 BLOCKED → 34 PASS / 1 FAIL / 1 BLOCKED**, coverage clause clean.
+🟢 `G5.9` scores on all three folds for the first time and its registered perturbation **fells it on
+all three** — impossible under the superseded reading, so `FINDING 69`'s ruling is now *demonstrated*
+rather than argued. 🟢 `G5.8` PASSES on `it` and its perturbation fells it. 🔴 **`G5.8` FAILS on
+`uk`** — *"the re-run spread (1.4072) is not smaller than the step-to-step difference (1.3994) — the
+sweep is uninformative and the deliverable is the BAND"*. **First substantive real-artefact FAIL in
+Step 5. It is left failing.** ⚪ `G5.8` on `es` stays BLOCKED; BLOCKED is not a PASS.
+
+🔴 **`D-S5-16` — OPEN, FOR THE AUTHOR.** The registered clause says the step must exceed the spread,
+*"else the deliverable is the **BAND**, not a value"* — which reads as a **remedy**, not only a
+failure condition. The checker (`tools/4thJ_gates_step5.py:544`) implements the first half only and
+never asks whether a band was in fact delivered. Both readings are defensible and they give
+**different verdicts on `uk`**, the one fold where it bites. 🔴 **Not resolved here, deliberately:**
+the ambiguity surfaced by seeing the gate fail, so amending the checker in the direction that turns
+that FAIL into a PASS would be selecting the test on the outcome. **(a) recommended** — leave `G5.8`
+as written, `uk` FAILS in the paper, and the `uk` fidelity result ships as the band with the FAIL as
+its stated reason; **(b)** additive erratum branch that accepts a delivered band, marked exactly as
+`FINDING 69` was; **(c) rejected** — re-running `uk` at more seeds is re-selecting on the same
+criterion with better statistics, and the `uk` curve is genuinely flat there (3.142 vs 3.425 pp,
+sd 0.56 / 0.47). ⚪ **`T_chosen` is untouched under all three**; `D-S5-16` scores a *reporting* gate,
+not the generation temperature.
+
+⚪ `generation_config_{es,uk,it}.json` written — every field **copied** from the calibration artefact,
+none freshly chosen: `T` 1.30 / 1.10 / 1.20, `top_p` 1.0, `top_k` 0, `max_new_tokens` 1200, base
+`allenai/OLMo-2-0425-1B` @ `a1847dff35000b4271fa70afc5db10fd29fedbdf`, per-fold adapter, prompt seed
+42. ⚪ `prereg.md` untouched, md5 unchanged. **Step 5 DoD 4 of 5** — `temperature_calibration.md`
+and `D-S5-16` are what remain.
+
+### 2026-08-21 (night) — 🔴 **`FINDING 75`: THE 1440-MINUTE BUDGET ERROR IS TWO-SIDED, AND THIS PROJECT'S OWN RECORD SAID OTHERWISE**
+
+The 30 persisted generation files (`generations_{uk,it}/`, 5 seeds × 3 temperatures × 600 diaries)
+made it possible for the first time to ask which **direction** the budget error runs, rather than only
+how often it is exact. Measured, not inferred. Full record and every number:
+`Step5_docs/impl/2026-08-21_item5.4-temperature.md`.
+
+🔴 **At `T_chosen`, `uk` overshoots in 65.5 % of diaries and undershoots in 24.4 %; `it` is 49.5 %
+over and 44.4 % under.** The impl doc's *"the bias is one-sided and depresses the generated at-home
+curve in the late slots only"* is **wrong** and is **corrected in place** at line 303. On `uk` the
+bias is one-sided **in the opposite direction to the one we wrote down**.
+
+🔴 **The two directions take different code paths and produce different distortions** — verified in
+`at_home_profile()`, not assumed. It clamps with `min(slot + n, 144)` and records
+`covered = min(slot, 144)` (`4thJ_step5_temperature.py:179,186`):
+
+- **UNDER 1440** — the fill stops early, the untouched tail keeps its `0`, and a *missing* tail is
+  scored as *away from home*. 🟢 This is `FINDING 67`, and `D-S5-14`(a)'s covered basis removes
+  exactly it.
+- **OVER 1440** — the excess minutes are **silently discarded** and the diary reports **full**
+  coverage. 🔴 No phantom tail, and **the covered basis cannot see it**, because by its own
+  denominator such a diary is complete.
+
+⚪ **The `D-S5-14`(a) remedy is correct and is not weakened.** What was wrong is its *scope*: it
+addresses the **minority** of `uk` diaries, and a second distortion exists that **no Step 5 diagnostic
+measures at all**. `FINDING 67` itself survives intact — its confound argument rests on the undershoot
+rate moving along the swept axis, and it does (`uk` 28.6 → 23.3 %, `it` 46.5 → 39.6 %).
+
+🔴 **`sum_1440_frac ≈ 0.06` must never be read as "the day is barely filled".** Median total minutes
+is **1,460** (`uk`) and **1,440** (`it`); median absolute deviation **30** and **50** minutes — 2 %
+and 3.5 % of a day; aggregate day-fill **101.6 %** and **100.4 %**. The budget error is **small and
+roughly centred**. What the model almost never does is land *exactly* on 1440. Two very different
+claims, and only the second is true.
+
+⚪ **Cross-checked, not merely re-parsed.** Counting diaries that reach slot 143 from the independent
+recount reproduces the artefacts' own `coverage_last_slot_frac` **row by row across all 30
+realisations** — worst absolute disagreement **0.0253**, typically 0.002–0.010, and **always
+positive**, as predicted: the artefact counts only diaries surviving `transcoder.parse_episodes`,
+which drops malformed trailing episodes, so the gap must be positive and must grow with `T`. It does
+(`it` `T=1.10` +0.003 → `T=1.30` +0.019). Two code paths, one quantity, agreement to ≤ 2.5 pp with an
+explained residual.
+
+🟢 **Step 7 does NOT inherit a design gap — the grammar is ALREADY TWO-SIDED BY CONSTRUCTION. Corrected here after checking the code rather than asserting from the finding.** `tally_automaton()` (`tools/4thJ_step7_grammar.py:169`) has 145 states and a **single** accepting state `{144}`, and `tally_step` returns `None` whenever `state + dur/10 > 144`. Run directly: `tally_step(143, 10) → 144` (accept), `tally_step(144, 10) → None`, `tally_step(140, 60) → None`, and from state 140 the only legal durations are **10–40 min**. **Overshoot has no transition; undershoot never reaches the accepting state.** Nothing needs adding to item 7.1.
+
+🔴 **What `FINDING 75` actually supplies is the MAGNITUDE of the work that mask does.** Unmasked, **90–94 %** of generated diaries miss the budget, and **the majority miss it by OVERSHOOTING** — so the constraint the mask most often has to enforce is the **upper** one. A "pad the short tail" mental model of the grammar would have predicted the opposite, and §1 of the improvements document was written on exactly that model. ⚪ `G7.10` (the XGrammar back-end that would apply this during decoding) has **still never been run**, so the grammar remains a specification plus a hand-written oracle, not something demonstrated inside the generation loop.
+
+🔴 **Episodes per diary at `T_chosen`, against the real reference measured in the same run on the same
+600 prompts**: `es` 19.17 vs 28.38 (**0.68×**), `it` 21.86 vs 28.62 (**0.76×**), `uk` 23.99 vs 25.18
+(**0.95×**). **Country-correlated in the LOCO-dangerous shape** — the same shape as `FINDING 53` and
+`FINDING 72`: `uk` nearly right, `es` and `it` badly short. Read with the totals above, the reading is
+**fewer, longer episodes filling the same day**, not a shorter day. ⚪ Reported, never thresholded —
+and a **Step 6 input**, since `G6.8` scores transitions per day and dwell-time distributions, both of
+which this moves on two folds of three.
+
+⚪ **One caveat closed.** Earlier entries recorded that the real reference's `sum_1440_frac` was
+*"asserted from the corpus measurement, not from this run"*. All three artefacts now carry
+`real_structural`, and it reads **1.000 / 1.000 / 1.000** on parse, terminate and sum-to-1440 for
+`es`, `uk` and `it`. `FINDING 67` now rests on a **within-run** comparison against an
+identically-computed reference.
+
+🟢 **The final Step 5 deliverable exists: `Step5_docs/outputs_step5/temperature_calibration.md`**
+(331 lines) — both curves per fold, the explicit agreement statement, the `D-S5-13`(a) spread verdict
+per statistic, the per-seed argmin stability table, the two-sided budget error, the declared
+`D-S5-15`(a) splice, the frozen generation configuration, and the declared limitations. 🔴 **It is
+GENERATED from the artefacts and must be regenerated, never hand-edited**; it fills in `es` and the
+coverage-101 points automatically as they land. ⚪ `prereg.md` untouched, md5 unchanged.
+
+---
+
+## 2026-08-21 (night) — 🟢 `1285712` (`es`) COMPLETED. ALL THREE FOLDS ARE IN, NO GATE IS BLOCKED ANY MORE, AND `G5.8` FAILS ON **TWO** FOLDS
+
+`temperature_calibration_es_replicates.json` md5 `6d14b493b03fd37b8af917338f7d6776`; the 15
+`generations_es/` files are local. (⚪ The directory also shows `gen_es_T0.50_s101.jsonl` — that is
+`1285777`, the coverage-101 job, writing in live. It is outside the replicate grid and no statistic
+here reads it.)
+
+### `es` clears the trap on the choice basis and fails it everywhere else
+
+| statistic | step | re-run spread | verdict |
+|---|---|---|---|
+| `H_gen` / `dH` | 0.0584 | 0.0318 | 🟢 **step > noise** |
+| `at_home_mae_pp` | 0.9315 | **1.8127** | 🔴 **NOISE DOMINATES — noise is 1.95× the step** |
+| `at_home_mae_pp_covered` | 0.6631 | **1.7613** | 🔴 **NOISE DOMINATES — 2.66×** |
+| `act_tvd_pp` | 0.2890 | **1.8034** | 🔴 **NOISE DOMINATES — 6.24×** |
+| `sum_1440_frac` | 0.0057 | **0.0283** | 🔴 **NOISE DOMINATES** |
+| `terminated_frac` | 0.0003 | **0.0017** | 🔴 **NOISE DOMINATES** |
+
+🟢 **The pattern established on `uk` and `it` holds on `es`, and it is now three for three: the only
+statistic that clears the trap on every fold is the one the choice was actually made on.** `dH`
+passes everywhere; every statistic carrying no part of the decision is noise-dominated somewhere.
+
+🟢 **`argmin |dH|` = 1.30 on 5/5 `es` seeds.** `T_chosen` is a seed-independent decision on **all
+three folds**.
+
+⚪ **One asymmetry that must be stated rather than glossed.** `uk` (1.10 in 1.00–1.20) and `it` (1.20
+in 1.10–1.30) choose an **interior** point of their replicate window, so their argmin had two
+directions it could have moved in and moved in neither. `es` chooses **1.30, the top of its window
+and of the whole grid**, so its argmin could only have moved *inward*. Stability on `es` is a
+**one-sided** test and is weaker evidence than on the other two folds. It compounds
+`endpoint_entropy = True` and both belong in the same sentence of the write-up.
+
+🔴 **`es`'s fidelity argmin MOVES too:** `at_home_mae_pp` picks 1.10 on three seeds and 1.20 on two;
+the covered basis picks 1.20 on four and 1.10 on one. **The `es` fidelity result is the band
+`{1.10, 1.20}`.** Two folds of three now have an unstable fidelity argmin.
+
+> 🔴 **CORRECTED 2026-08-21 (night), after the coverage-101 jobs landed.** The band quoted in this paragraph is an argmin taken **inside the three-point replicate window** — the minimum of a *truncated* curve, and on `es` and `it` the ruled `T_fidelity` was not even in the window. It is **not** the fidelity temperature and must never be quoted as one. On the full nine-point grid the fidelity argmin moves one grid step under a seed change on **all three** folds: `es` **0.70 → 0.60**, `uk` **1.00 → 0.90**, `it` **0.80 → 0.90**, giving the bands `es` {0.60, 0.70}, `uk` {0.90, 1.00}, `it` {0.80, 0.90}. ⚪ The *conclusion* of this paragraph — that the fidelity argmin is not seed-stable — is unchanged and now holds on three folds rather than two. See the closing coverage-101 entry of this document.
+
+
+### The final Step 5 board
+
+**36 gate-fold verdicts: 34 PASS, 2 FAIL, 0 BLOCKED.** Coverage clause clean — *"every passing gate
+was made to fall"*. Shipped populations md5-verified unchanged before and after.
+
+| gate | `es` | `uk` | `it` |
+|---|---|---|---|
+| `G5.8` | 🔴 **FAIL** (step 0.9315 vs spread 1.8127, **0.51×**) | 🔴 **FAIL** (1.3994 vs 1.4072, **0.99×**) | 🟢 PASS (4.1114 vs 3.1993, 1.29×) |
+| `G5.9` | 🟢 PASS, perturbation fells it | 🟢 PASS, perturbation fells it | 🟢 PASS, perturbation fells it |
+
+⚪ **No gate is BLOCKED any more.** Every Step 5 gate now scores on a real artefact — which is what
+box 4 was for. ⚪ `G5.6` still FAILs 12 of 36 marginal rows, informational, superseded by
+`D-S5-12`(a), not counted in the board.
+
+### 🔴 `D-S5-16` now decides TWO folds, and the two are not alike
+
+The decision written up above was framed on `uk` alone. With `es` in, it governs **two folds of
+three**, and the two fail very differently:
+
+- **`es` is decisively noise-dominated** — the re-run spread is nearly **twice** the step. No amount
+  of re-reading makes this curve informative; it simply is not.
+- **`uk` is marginal** — spread `1.4072` against step `1.3994`, a ratio of `0.994`. It fails by
+  **0.6 %**. 🔴 **This is precisely the situation in which the temptation to re-run is strongest and
+  must be refused**: option (c) would move `uk` across a line it sits within a rounding error of, and
+  that is re-selecting on the same criterion with better statistics — which the val doc forbids by
+  name. The recommendation is unchanged: **(a)**.
+
+⚪ The `es` failure also makes option (b) less attractive than it looked on `uk` alone: an amendment
+that accepts a delivered band would clear a fold whose curve carries **no usable signal at all**, not
+merely one that missed by a rounding error. That is an argument the author did not have when the
+options were drafted.
+
+⚪ `T_chosen` is untouched on all three folds under every option. `prereg.md` untouched, md5
+`e4243e07cdd80c9c846b91f40e3e8c45`.
+
+---
+
+## 2026-08-21 (night) — 🟢 THE `D-S5-15`(a) COVERAGE-101 JOBS LANDED. STEP 5 IS DELIVERABLE-COMPLETE. `FINDING 76`
+
+`1285777` (`es`, 03:34:19), `1285778` (`uk`, 03:02:08), `1285779` (`it`, 03:47:39) all COMPLETED,
+exit `0:0`. Artefacts and the 45 → **63** persisted generation files are local:
+
+| fold | coverage artefact | md5 | local generation files |
+|---|---|---|---|
+| `es` | `temperature_calibration_es_coverage101.json` | `61b7c47782b7ea267591de163ef119b3` | 21 |
+| `uk` | `temperature_calibration_uk_coverage101.json` | `d991683f718c81d6ebbcf98476712808` | 21 |
+| `it` | `temperature_calibration_it_coverage101.json` | `325d6653d5b30b68ec12d77619632112` | 21 |
+
+`temperature_calibration.md` regenerated from the artefacts — **352 → 530 lines**, md5
+`cf8f441e37e124fb68fbad47c7c49b5f`. New §6.1–§6.5. 🔴 **It is generated by `scratchpad/mktc.py`.
+Re-run it; never hand-edit it.**
+
+🟢 **The gate board did not move: 36 verdicts, 34 PASS, 2 FAIL, 0 BLOCKED**, coverage clause still
+*"every passing gate was made to fall"*, shipped populations md5-verified unchanged. This is the
+correct outcome — the coverage jobs run in **replicate mode** and choose nothing.
+
+### The splice is complete: 9 of 9 points on all three folds
+
+Assembled from the seed-`101` rows of the replicate artefact (3 points) plus the coverage artefact
+(6 points). No `T` appears in both — asserted in code, not assumed. All 27 points `usable`; lowest
+`parseable_frac` anywhere is `0.9983` (`it` at `T = 1.30`). The reference side (`H_real`,
+`real_structural`) is **byte-identical** between the primary and coverage artefacts on all three
+folds, so the comparisons below differ only on the generated side.
+
+### `fidelity_argmin_moved_under_D_S5_14` — derived offline, as the engine does not emit it here
+
+| fold | argmin `at_home_mae_pp` | argmin `at_home_mae_pp_covered` | moved? | gap to runner-up | `G5.8` spread |
+|---|---|---|---|---|---|
+| `es` | 0.60 | 0.60 | ⚪ no | 0.4664 pp | 1.8127 pp |
+| `uk` | 0.90 | **1.00** | 🔴 **YES** | **0.0437 pp** | 1.4072 pp |
+| `it` | 0.90 | 0.90 | ⚪ no | 0.1156 pp | 3.1993 pp |
+
+🔴 **The flag fires on `uk` and nowhere else** — `D-S5-14`(a)'s remedy is doing real work. ⚪ **But
+the magnitude matters more than the flag:** the two competing `uk` minima are `0.0437 pp` apart
+against a re-run spread of `1.4072 pp`, a factor of **32**. The argmin moved because the curve is
+*flat* there, not because the basis change is decisive.
+
+### 🔴 What the coverage jobs bought that nobody designed them to buy
+
+The six coverage-101 points are a **second realisation** of six grid points the primary sweep had
+already measured at generation seed `42`, and they sit at **six temperatures the replicate window
+never reaches**. That is an independent re-run spread estimate, not derived from the same three
+levels `G5.8` scores.
+
+| fold | mean \|diff\| | max \|diff\| | at `T` | mean signed diff | `G5.8` step | `G5.8` spread |
+|---|---|---|---|---|---|---|
+| `es` | 0.5840 pp | **1.7176 pp** | 0.60 | −0.3579 pp | 0.9315 | 1.8127 |
+| `uk` | 0.6100 pp | 1.2025 pp | 0.50 | −0.5884 pp | 1.3994 | 1.4072 |
+| `it` | 0.8407 pp | 1.2418 pp | 0.80 | **+0.7076 pp** | 4.1114 | 3.1993 |
+
+🔴 **This corroborates the two `G5.8` failures from outside the window that produced them.** On `es`
+the step the gate is asked to call meaningful is `0.9315 pp`; two runs of the same configuration at
+six *other* grid points disagree by up to `1.7176 pp`. `uk` is the same story less starkly
+(1.3994 vs 1.2025). `it` clears comfortably (4.1114 vs 1.2418). ⚪ **The `D-S5-16` recommendation is
+unchanged and is now supported by evidence the decision did not have when it was drafted: (a).**
+
+🔴 **The fidelity argmin moves under a seed change on ALL THREE folds, over the full nine-point
+grid:** `es` **0.70 → 0.60**, `uk` **1.00 → 0.90**, `it` **0.80 → 0.90**. One grid step each; two
+down, one up, so no systematic direction. ⚪ **The fidelity temperature is therefore a BAND on every
+fold** — `es` {0.60, 0.70}, `uk` {0.90, 1.00}, `it` {0.80, 0.90}.
+
+🔴 **Correction to what this document recorded earlier.** The bands `{1.10, 1.20}` (`es`) and
+`{1.00, 1.10}` (`uk`) were argmins taken **inside the three-point replicate window** — minima of a
+truncated curve, and on `es` and `it` the ruled `T_fidelity` was not even in the window. **Never
+quote the in-window argmin as the fidelity temperature.** Quote the nine-point bands above.
+
+⚪ **The confound, stated not glossed.** The primary sweep and the replicate/coverage jobs are
+separate engine invocations and **no cell shares both `T` and `gen_seed`**, so seed change and
+engine change cannot be separated by exact reproduction. Two bounds: the reference side is
+byte-identical, so any difference lives on the generated side; and the per-fold mean *signed*
+difference has inconsistent signs (−0.3579 / −0.5884 / **+0.7076**), which is what sampling noise
+looks like and not what a systematic engine change looks like. Evidence, not proof.
+
+### 🟢 `T_chosen` survives the strongest test yet run
+
+`argmin |dH|` over **all nine** grid points at a generation seed that played no part in the
+selection: `es` **1.30**, `uk` **1.10**, `it` **1.20** — **identical to `T_chosen` on all three
+folds**. The earlier 5/5 per-seed stability was measured inside a three-point window; this is the
+whole grid. ⚪ The `es` asymmetry still stands and still belongs in the same sentence: `es` chooses
+`1.30`, the **top of the grid**, so its argmin could only move inward — a **one-sided** test, and
+`endpoint_entropy = True`.
+
+### 🔴 `FINDING 76` — `uk`'s `agree = True` does not survive a seed change
+
+| fold | `T_chosen` | `T_fid` @ seed 42 | gap | `agree` recorded | `T_fid` @ seed 101 | gap | `agree` under 101 |
+|---|---|---|---|---|---|---|---|
+| `es` | 1.30 | 0.70 | 0.6000 | False | 0.60 | 0.7000 | False |
+| `uk` | 1.10 | 1.00 | **0.1000** | 🟢 **True** | 0.90 | **0.2000** | 🔴 **False** |
+| `it` | 1.20 | 0.80 | 0.4000 | False | 0.90 | 0.3000 | False |
+
+`agree` is `True` on **exactly one fold of three**, and that single `True` is the only evidence
+anywhere in Step 5 that the entropy and fidelity criteria ever point the same way. It rests on a
+margin of `0.0001` (`0.1000` against `agree_tol = 0.1001`). **Re-running the same configuration at
+seed `101` moves the `uk` fidelity argmin one further grid step away and `agree` reads `False`.**
+
+🟢 **`T_chosen` is unaffected, by pre-registration and not by luck.**
+`4thJ_step5_temperature.py:607` fixes that entropy wins on disagreement; `uk` selects `1.10` whether
+`agree` reads `True` or `False`.
+
+🔴 **What must change is the claim, not the number.** *"On the UK fold the entropy and fidelity
+criteria agree"* is a property of one realisation and does not replicate. It must never be written
+as corroboration that the two criteria converge. Write **"agree to within one grid step in the
+primary realisation; the agreement does not replicate at another seed"**, or do not write it.
+
+⚪ This is the **third** independent measurement pointing the same way — `FINDING 74` (the
+sensitivity trap), the argmin walk above, and `FINDING 76`: **the fidelity curve carries no
+seed-stable signal on `es` or `uk`.** That is exactly what `G5.8` reports, and exactly what
+`D-S5-16`(a) proposes to let stand in the paper.
+
+⚪ `prereg.md` untouched throughout, md5 `e4243e07cdd80c9c846b91f40e3e8c45`. 🔴 **`D-S5-16` remains
+the only thing Step 5 waits on.**
+
+
+---
+
+### 2026-08-22 — 🟢 **`D-S5-16` RULED (a). THE TWO `G5.8` FAILS ARE THE TERMINAL VERDICT AND STEP 5 IS CLOSED.**
+
+**The gate is not amended.** `tools/4thJ_gates_step5.py` is byte-for-byte as it was when `G5.8`
+failed. No fold is re-run and no temperature is re-tuned — the register itself forbids re-tuning an
+uninformative sweep, and the ambiguity that made this a decision surfaced *by watching the gate fail*.
+
+**FINAL STEP 5 BOARD — 36 gate-fold verdicts: 34 PASS, 2 FAIL, 0 BLOCKED.** Coverage clause clean
+(*every gate on the board, the two failures included, was made to fall*). Shipped populations
+md5-verified unchanged.
+
+| gate | `es` | `uk` | `it` |
+|---|---|---|---|
+| `G5.8` | 🔴 **FAIL** (0.9315 vs 1.8127, **0.51x**) | 🔴 **FAIL** (1.3994 vs 1.4072, **0.99x**) | 🟢 PASS (4.1114 vs 3.1993, 1.29x) |
+| `G5.9` | 🟢 PASS, perturbation fells it | 🟢 PASS, perturbation fells it | 🟢 PASS, perturbation fells it |
+| all others | 🟢 PASS, each seen failing | 🟢 PASS, each seen failing | 🟢 PASS, each seen failing |
+
+⚪ `G5.6-as-written` still FAILs 12 of 36 marginal rows — informational, superseded by
+`D-S5-12`(a), **not counted in the board**.
+
+**The fidelity deliverable is a BAND per fold:** `es` **{0.60, 0.70}**, `uk` **{0.90, 1.00}**,
+`it` **{0.80, 0.90}**. 🔴 The FAIL is the *reason* it is a band. Never quote a single fidelity
+temperature for `es` or `uk`, and never quote the truncated-window argmins `{1.10,1.20}` /
+`{1.00,1.10}`.
+
+🟢 **`T_chosen` is untouched and was never at issue:** `es` **1.30**, `uk` **1.10**, `it` **1.20**,
+by entropy matching, reproduced exactly by `argmin |dH|` over all nine grid points at a generation
+seed that played no part in the selection. ⚪ `es` carries `endpoint_entropy = True` and that
+sentence travels with every `es` number.
+
+🔴 **DEFINITION OF DONE — 4 of 5, PLUS ITEM 5 BY DECLARED EXCEPTION.** Item 5 reads *"all Step 5
+gates PASS and each has been seen failing"*; under `D-S5-16`(a), `G5.8` does not pass on two folds,
+so item 5 **cannot be ticked as written**. It closes as a declared exception: 10 of 11 gates pass on
+all three folds and `G5.8` passes on `it`, every gate including the two failures has been seen
+falling, and the two FAILs are carried into the paper as the result. **Never write Step 5 as 5 of 5,
+and never write the board as 36 of 36.**
+
+⚪ `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`. Nothing is running on Speed.
