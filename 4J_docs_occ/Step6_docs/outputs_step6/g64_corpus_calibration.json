@@ -1,0 +1,969 @@
+{
+  "arm": "corpus",
+  "board_scoreable_bands": {
+    "PASS": 9
+  },
+  "folds": {
+    "es": {
+      "bands": {
+        "ALL": {
+          "ac9a_parent_minus_children": 0,
+          "band": "ALL",
+          "blocked": false,
+          "floor_cells": [],
+          "floor_mae_max": 15.0,
+          "mae": 5.7059,
+          "mape": 7.7362,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 688.8808677672821,
+            "AC1_TR": 147.51108482255077,
+            "AC2": 35.04895831893622,
+            "AC3": 181.35869180301404,
+            "AC4-8": 315.3642464335631,
+            "AC99NSP": 1.2523385318586326,
+            "AC9A": 66.18899488825649,
+            "_n": 19140,
+            "_weight_sum": 162500706.01908046,
+            "null_000": 4.39481743453497
+          },
+          "n_floor_cells": 0,
+          "n_scored": 6,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "ES tus_00age TOTAL 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 0.27377987878924276,
+              "basis": "APE",
+              "model": 688.8808677672821,
+              "published": 687
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 5.441612293236686,
+              "basis": "APE",
+              "model": 147.51108482255077,
+              "published": 156
+            },
+            {
+              "aggregate": "AC2",
+              "ape": 29.810956736800822,
+              "basis": "APE",
+              "model": 35.04895831893622,
+              "published": 27
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 4.043020210045482,
+              "basis": "APE",
+              "model": 181.35869180301404,
+              "published": 189
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.4032946731714135,
+              "basis": "APE",
+              "model": 315.3642464335631,
+              "published": 311
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 5.444293016776446,
+              "basis": "APE",
+              "model": 66.18899488825649,
+              "published": 70
+            }
+          ]
+        },
+        "Y25-44": {
+          "ac9a_parent_minus_children": 0,
+          "band": "Y25-44",
+          "blocked": false,
+          "floor_cells": [],
+          "floor_mae_max": 15.0,
+          "mae": 1.9962,
+          "mape": 2.7893,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 661.7603550910644,
+            "AC1_TR": 231.52259320993187,
+            "AC2": 13.540639993935878,
+            "AC3": 201.29426397058444,
+            "AC4-8": 245.09072681551217,
+            "AC99NSP": 1.4531303362991943,
+            "AC9A": 80.58417298259134,
+            "_n": 6075,
+            "_weight_sum": 60469462.20652096,
+            "null_000": 4.754117600088467
+          },
+          "n_floor_cells": 0,
+          "n_scored": 6,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "ES tus_00age Y25-44 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 0.03620013730144839,
+              "basis": "APE",
+              "model": 661.7603550910644,
+              "published": 662
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 1.8972062669780212,
+              "basis": "APE",
+              "model": 231.52259320993187,
+              "published": 236
+            },
+            {
+              "aggregate": "AC2",
+              "ape": 9.729066707094146,
+              "basis": "APE",
+              "model": 13.540639993935878,
+              "published": 15
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 0.1463999853653923,
+              "basis": "APE",
+              "model": 201.29426397058444,
+              "published": 201
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 0.8603814055605638,
+              "basis": "APE",
+              "model": 245.09072681551217,
+              "published": 243
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 4.066460735010309,
+              "basis": "APE",
+              "model": 80.58417298259134,
+              "published": 84
+            }
+          ]
+        },
+        "Y45-64": {
+          "ac9a_parent_minus_children": 1,
+          "band": "Y45-64",
+          "blocked": false,
+          "floor_cells": [
+            {
+              "abs_error": 0.5932451686841071,
+              "aggregate": "AC2",
+              "hit": true,
+              "model": 4.406754831315893,
+              "published": 5
+            }
+          ],
+          "floor_mae_max": 15.0,
+          "mae": 1.9361,
+          "mape": 1.4902,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 672.1176048122135,
+            "AC1_TR": 180.78584174116563,
+            "AC2": 4.406754831315893,
+            "AC3": 200.8170310515149,
+            "AC4-8": 310.5963491382072,
+            "AC99NSP": 1.4399538916003247,
+            "AC9A": 65.08786395919526,
+            "_n": 6460,
+            "_weight_sum": 46640520.26322888,
+            "null_000": 4.748600574782782
+          },
+          "n_floor_cells": 1,
+          "n_scored": 5,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "ES tus_00age Y45-64 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 0.1665580942195934,
+              "basis": "APE",
+              "model": 672.1176048122135,
+              "published": 671
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 0.11831948001899104,
+              "basis": "APE",
+              "model": 180.78584174116563,
+              "published": 181
+            },
+            {
+              "abs_error": 0.5932451686841071,
+              "aggregate": "AC2",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 4.406754831315893,
+              "published": 5
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 2.0404726577976087,
+              "basis": "APE",
+              "model": 200.8170310515149,
+              "published": 205
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 0.8429704994179181,
+              "basis": "APE",
+              "model": 310.5963491382072,
+              "published": 308
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 4.28255300118344,
+              "basis": "APE",
+              "model": 65.08786395919526,
+              "published": 68
+            }
+          ]
+        },
+        "Y_GE65": {
+          "ac9a_parent_minus_children": 0,
+          "band": "Y_GE65",
+          "blocked": false,
+          "floor_cells": [
+            {
+              "abs_error": 0.45886039387221356,
+              "aggregate": "AC1_TR",
+              "hit": true,
+              "model": 5.458860393872214,
+              "published": 5
+            },
+            {
+              "abs_error": 0.1677770275442585,
+              "aggregate": "AC2",
+              "hit": true,
+              "model": 1.8322229724557415,
+              "published": 2
+            }
+          ],
+          "floor_mae_max": 15.0,
+          "mae": 1.8603,
+          "mape": 2.5695,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 753.8371037429183,
+            "AC1_TR": 5.458860393872214,
+            "AC2": 1.8322229724557415,
+            "AC3": 205.2253050039128,
+            "AC4-8": 432.7131556561749,
+            "AC99NSP": 0.5311779575773945,
+            "AC9A": 37.78956275930253,
+            "_n": 4036,
+            "_weight_sum": 30468758.89803972,
+            "null_000": 2.612611513801199
+          },
+          "n_floor_cells": 2,
+          "n_scored": 4,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "ES tus_00age Y_GE65 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 0.24429571049445692,
+              "basis": "APE",
+              "model": 753.8371037429183,
+              "published": 752
+            },
+            {
+              "abs_error": 0.45886039387221356,
+              "aggregate": "AC1_TR",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 5.458860393872214,
+              "published": 5
+            },
+            {
+              "abs_error": 0.1677770275442585,
+              "aggregate": "AC2",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 1.8322229724557415,
+              "published": 2
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 1.8060741608072688,
+              "basis": "APE",
+              "model": 205.2253050039128,
+              "published": 209
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 0.397483910945447,
+              "basis": "APE",
+              "model": 432.7131556561749,
+              "published": 431
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 7.830334733408471,
+              "basis": "APE",
+              "model": 37.78956275930253,
+              "published": 41
+            }
+          ]
+        }
+      },
+      "dropped_null_weight": 0,
+      "n": 19140,
+      "source": "Step3_docs/outputs_step3/4J_step3_corpus.jsonl"
+    },
+    "it": {
+      "bands": {
+        "ALL": {
+          "ac9a_parent_minus_children": 0,
+          "band": "ALL",
+          "blocked": false,
+          "floor_cells": [],
+          "floor_mae_max": 15.0,
+          "mae": 11.699,
+          "mape": 13.5283,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 692.4090398723665,
+            "AC1_TR": 136.59186886071146,
+            "AC2": 39.61496772474416,
+            "AC3": 187.59443485522456,
+            "AC4-8": 306.2557930594333,
+            "AC99NSP": 1.3145574451205564,
+            "AC9A": 75.89965029138446,
+            "_n": 38260,
+            "_weight_sum": 162800375.8159017,
+            "null_000": 0.3196878910272835
+          },
+          "n_floor_cells": 0,
+          "n_scored": 6,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "IT tus_00age TOTAL 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 1.2293917942056316,
+              "basis": "APE",
+              "model": 692.4090398723665,
+              "published": 684
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 15.684031567462064,
+              "basis": "APE",
+              "model": 136.59186886071146,
+              "published": 162
+            },
+            {
+              "aggregate": "AC2",
+              "ape": 52.365260479785235,
+              "basis": "APE",
+              "model": 39.61496772474416,
+              "published": 26
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 3.797725715269455,
+              "basis": "APE",
+              "model": 187.59443485522456,
+              "published": 195
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 4.168637095045341,
+              "basis": "APE",
+              "model": 306.2557930594333,
+              "published": 294
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 3.9244933020449864,
+              "basis": "APE",
+              "model": 75.89965029138446,
+              "published": 79
+            }
+          ]
+        },
+        "Y25-44": {
+          "ac9a_parent_minus_children": 3,
+          "band": "Y25-44",
+          "blocked": false,
+          "floor_cells": [],
+          "floor_mae_max": 15.0,
+          "mae": 10.398,
+          "mape": 9.2054,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 669.929067342731,
+            "AC1_TR": 233.56231734179067,
+            "AC2": 14.667583877262555,
+            "AC3": 187.50013777818288,
+            "AC4-8": 243.35102966718134,
+            "AC99NSP": 1.1048490505321549,
+            "AC9A": 89.49756773771688,
+            "_n": 10431,
+            "_weight_sum": 48536919.70835843,
+            "null_000": 0.3874472046047419
+          },
+          "n_floor_cells": 0,
+          "n_scored": 6,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "IT tus_00age Y25-44 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 1.5044041428380222,
+              "basis": "APE",
+              "model": 669.929067342731,
+              "published": 660
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 11.193035231258298,
+              "basis": "APE",
+              "model": 233.56231734179067,
+              "published": 263
+            },
+            {
+              "aggregate": "AC2",
+              "ape": 33.34167161147777,
+              "basis": "APE",
+              "model": 14.667583877262555,
+              "published": 11
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 1.902248792490693,
+              "basis": "APE",
+              "model": 187.50013777818288,
+              "published": 184
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 6.732907748763744,
+              "basis": "APE",
+              "model": 243.35102966718134,
+              "published": 228
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 0.558258069203469,
+              "basis": "APE",
+              "model": 89.49756773771688,
+              "published": 90
+            }
+          ]
+        },
+        "Y45-64": {
+          "ac9a_parent_minus_children": 1,
+          "band": "Y45-64",
+          "blocked": false,
+          "floor_cells": [
+            {
+              "abs_error": 0.2920963786162458,
+              "aggregate": "AC2",
+              "hit": true,
+              "model": 1.2920963786162458,
+              "published": 1
+            }
+          ],
+          "floor_mae_max": 15.0,
+          "mae": 2.0392,
+          "mape": 1.3334,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 664.0270163509082,
+            "AC1_TR": 187.66120539046744,
+            "AC2": 1.2920963786162458,
+            "AC3": 221.33852974342642,
+            "AC4-8": 285.11330544859953,
+            "AC99NSP": 1.4831685392484293,
+            "AC9A": 78.80264768784936,
+            "_n": 12543,
+            "_weight_sum": 51044977.53699822,
+            "null_000": 0.2820304608739127
+          },
+          "n_floor_cells": 1,
+          "n_scored": 5,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "IT tus_00age Y45-64 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 0.004068727546413253,
+              "basis": "APE",
+              "model": 664.0270163509082,
+              "published": 664
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 1.2309445313329241,
+              "basis": "APE",
+              "model": 187.66120539046744,
+              "published": 190
+            },
+            {
+              "abs_error": 0.2920963786162458,
+              "aggregate": "AC2",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 1.2920963786162458,
+              "published": 1
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 1.627320114032702,
+              "basis": "APE",
+              "model": 221.33852974342642,
+              "published": 225
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.4638097681848872,
+              "basis": "APE",
+              "model": 285.11330544859953,
+              "published": 281
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 2.341100893310855,
+              "basis": "APE",
+              "model": 78.80264768784936,
+              "published": 77
+            }
+          ]
+        },
+        "Y_GE65": {
+          "ac9a_parent_minus_children": 2,
+          "band": "Y_GE65",
+          "blocked": false,
+          "floor_cells": [
+            {
+              "abs_error": 0.48269397592308805,
+              "aggregate": "AC2",
+              "hit": true,
+              "model": 0.517306024076912,
+              "published": 1
+            }
+          ],
+          "floor_mae_max": 15.0,
+          "mae": 4.06,
+          "mape": 4.152,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 750.5645068634811,
+            "AC1_TR": 9.703509781275306,
+            "AC2": 0.517306024076912,
+            "AC3": 231.63414765083152,
+            "AC4-8": 399.3417361552579,
+            "AC99NSP": 1.2283383268847479,
+            "AC9A": 46.69111948347637,
+            "_n": 9581,
+            "_weight_sum": 38366776.02610877,
+            "null_000": 0.31933571474182243
+          },
+          "n_floor_cells": 1,
+          "n_scored": 5,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "IT tus_00age Y_GE65 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 0.7469136729504889,
+              "basis": "APE",
+              "model": 750.5645068634811,
+              "published": 745
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 11.786274715679035,
+              "basis": "APE",
+              "model": 9.703509781275306,
+              "published": 11
+            },
+            {
+              "abs_error": 0.48269397592308805,
+              "aggregate": "AC2",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 0.517306024076912,
+              "published": 1
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 3.8862457880367125,
+              "basis": "APE",
+              "model": 231.63414765083152,
+              "published": 241
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.6136733219485693,
+              "basis": "APE",
+              "model": 399.3417361552579,
+              "published": 393
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 2.726834409424228,
+              "basis": "APE",
+              "model": 46.69111948347637,
+              "published": 48
+            }
+          ]
+        }
+      },
+      "dropped_null_weight": 0,
+      "n": 38260,
+      "source": "Step3_docs/outputs_step3/4J_step3_corpus.jsonl"
+    },
+    "uk": {
+      "bands": {
+        "ALL": {
+          "ac9a_parent_minus_children": 48,
+          "band": "ALL",
+          "blocked": false,
+          "floor_cells": [],
+          "floor_mae_max": 15.0,
+          "mae": 6.9926,
+          "mape": 9.8909,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 657.358008712867,
+            "AC1_TR": 156.64307342139287,
+            "AC2": 31.265293081436,
+            "AC3": 170.82988604887427,
+            "AC4-8": 320.076754198007,
+            "AC99NSP": 28.028690876925157,
+            "AC9A": 72.27159440495339,
+            "_n": 15852,
+            "_weight_sum": 15919.834235742634,
+            "null_000": 3.5266992555629932
+          },
+          "n_floor_cells": 0,
+          "n_scored": 6,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "UK tus_00age TOTAL 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 2.232971806044633,
+              "basis": "APE",
+              "model": 657.358008712867,
+              "published": 643
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 0.2273417698134585,
+              "basis": "APE",
+              "model": 156.64307342139287,
+              "published": 157
+            },
+            {
+              "aggregate": "AC2",
+              "ape": 42.11496855198181,
+              "basis": "APE",
+              "model": 31.265293081436,
+              "published": 22
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 2.3829222577861304,
+              "basis": "APE",
+              "model": 170.82988604887427,
+              "published": 175
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.6116679993673,
+              "basis": "APE",
+              "model": 320.076754198007,
+              "published": 315
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 10.775809376600753,
+              "basis": "APE",
+              "model": 72.27159440495339,
+              "published": 81
+            }
+          ]
+        },
+        "Y25-44": {
+          "ac9a_parent_minus_children": 41,
+          "band": "Y25-44",
+          "blocked": false,
+          "floor_cells": [],
+          "floor_mae_max": 15.0,
+          "mae": 5.116,
+          "mape": 3.2533,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 635.9079074833373,
+            "AC1_TR": 238.63840606619874,
+            "AC2": 10.740578692879984,
+            "AC3": 187.21350233386946,
+            "AC4-8": 258.8091737946955,
+            "AC99NSP": 24.04679912832694,
+            "AC9A": 81.13255079148657,
+            "_n": 4567,
+            "_weight_sum": 4872.401951945976,
+            "null_000": 3.5110817092156172
+          },
+          "n_floor_cells": 0,
+          "n_scored": 6,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "UK tus_00age Y25-44 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 1.259220936837156,
+              "basis": "APE",
+              "model": 635.9079074833373,
+              "published": 628
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 3.755828724434235,
+              "basis": "APE",
+              "model": 238.63840606619874,
+              "published": 230
+            },
+            {
+              "aggregate": "AC2",
+              "ape": 2.3583755192728746,
+              "basis": "APE",
+              "model": 10.740578692879984,
+              "published": 11
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 1.1964877480375442,
+              "basis": "APE",
+              "model": 187.21350233386946,
+              "published": 185
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.0973335135529227,
+              "basis": "APE",
+              "model": 258.8091737946955,
+              "published": 256
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 9.852721342792705,
+              "basis": "APE",
+              "model": 81.13255079148657,
+              "published": 90
+            }
+          ]
+        },
+        "Y45-64": {
+          "ac9a_parent_minus_children": 45,
+          "band": "Y45-64",
+          "blocked": false,
+          "floor_cells": [
+            {
+              "abs_error": 0.1435202046753128,
+              "aggregate": "AC2",
+              "hit": true,
+              "model": 3.143520204675313,
+              "published": 3
+            }
+          ],
+          "floor_mae_max": 15.0,
+          "mae": 6.9727,
+          "mape": 4.9443,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 633.8761399559222,
+            "AC1_TR": 202.57154276762986,
+            "AC2": 3.143520204675313,
+            "AC3": 185.43020631602369,
+            "AC4-8": 311.6228076749903,
+            "AC99NSP": 24.082966468002134,
+            "AC9A": 75.80778560061319,
+            "_n": 5027,
+            "_weight_sum": 4685.780963202625,
+            "null_000": 3.4650310121400762
+          },
+          "n_floor_cells": 1,
+          "n_scored": 5,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "UK tus_00age Y45-64 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 1.7457688532780438,
+              "basis": "APE",
+              "model": 633.8761399559222,
+              "published": 623
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 6.616601456647297,
+              "basis": "APE",
+              "model": 202.57154276762986,
+              "published": 190
+            },
+            {
+              "abs_error": 0.1435202046753128,
+              "aggregate": "AC2",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 3.143520204675313,
+              "published": 3
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 1.3279815934555659,
+              "basis": "APE",
+              "model": 185.43020631602369,
+              "published": 183
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.1762362581137424,
+              "basis": "APE",
+              "model": 311.6228076749903,
+              "published": 308
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 13.854789090212286,
+              "basis": "APE",
+              "model": 75.80778560061319,
+              "published": 88
+            }
+          ]
+        },
+        "Y_GE65": {
+          "ac9a_parent_minus_children": 65,
+          "band": "Y_GE65",
+          "blocked": false,
+          "floor_cells": [
+            {
+              "abs_error": 0.2229098496695865,
+              "aggregate": "AC2",
+              "hit": true,
+              "model": 1.2229098496695865,
+              "published": 1
+            }
+          ],
+          "floor_mae_max": 15.0,
+          "mae": 4.2449,
+          "mape": 2.6976,
+          "mape_max": 15.0,
+          "model_budget": {
+            "AC0": 687.4716682510197,
+            "AC1_TR": 21.049022979558213,
+            "AC2": 1.2229098496695865,
+            "AC3": 222.2053084401752,
+            "AC4-8": 411.89251943121616,
+            "AC99NSP": 39.43994515355844,
+            "AC9A": 52.372045101541424,
+            "_n": 3356,
+            "_weight_sum": 3243.954309324536,
+            "null_000": 4.3465807932480365
+          },
+          "n_floor_cells": 1,
+          "n_scored": 5,
+          "n_zero_cells": 0,
+          "passes": true,
+          "published_floor_min": 10.0,
+          "published_source": "UK tus_00age Y_GE65 2010 TIME_SP sex=T",
+          "reasons": [],
+          "rows": [
+            {
+              "aggregate": "AC0",
+              "ape": 1.8476545557066149,
+              "basis": "APE",
+              "model": 687.4716682510197,
+              "published": 675
+            },
+            {
+              "aggregate": "AC1_TR",
+              "ape": 5.2451148977910655,
+              "basis": "APE",
+              "model": 21.049022979558213,
+              "published": 20
+            },
+            {
+              "abs_error": 0.2229098496695865,
+              "aggregate": "AC2",
+              "ape": null,
+              "basis": "floor-cell absolute",
+              "model": 1.2229098496695865,
+              "published": 1
+            },
+            {
+              "aggregate": "AC3",
+              "ape": 1.9290405688877073,
+              "basis": "APE",
+              "model": 222.2053084401752,
+              "published": 218
+            },
+            {
+              "aggregate": "AC4-8",
+              "ape": 1.4513594658167877,
+              "basis": "APE",
+              "model": 411.89251943121616,
+              "published": 406
+            },
+            {
+              "aggregate": "AC9A",
+              "ape": 3.014731293441807,
+              "basis": "APE",
+              "model": 52.372045101541424,
+              "published": 54
+            }
+          ]
+        }
+      },
+      "dropped_null_weight": 2,
+      "n": 15852,
+      "source": "Step3_docs/outputs_step3/4J_step3_corpus.jsonl"
+    }
+  },
+  "leg": 4,
+  "wave": "2010"
+}

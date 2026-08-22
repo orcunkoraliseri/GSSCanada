@@ -1518,3 +1518,1187 @@ path.**
 `prereg_addendum_02.md` `fa1e4524f52c36ec82f02f825d6ff149`. Record:
 `Step6_docs/impl/2026-08-22_secondary-nulls.md`. Nothing is running on Speed, and nothing is scored.
 
+
+---
+
+### 2026-08-22 (evening) — 🟢 **`G6.4` IS BUILT, CALIBRATED ON THE REAL CORPUS AT 9 PASS / 0 FAIL, AND RUN ON THE LEG-4 BATCHES AT 1 PASS / 8 FAIL. 🔴 GETTING THERE TOOK FOUR CORRECTIONS TO THE CROSSWALK, THREE OF WHICH WOULD HAVE BIASED EVERY FOLD. `FINDING 84`, `D-S6-8`.**
+
+`G6.4` reads *"Level-1 time budgets vs published tables, MAPE ≤ 15.0 %"*, and `G6.1`'s `MAE` is the
+same quantity. Neither could be computed, because **nothing in this project mapped our 158 activity
+codes onto Eurostat's `acl00` aggregates.** `tools/4thJ_step6_level1.py` now does, `_selftest.py` is
+**48/48 green**, and `tools/4thJ_step6_g64_run.py` runs it on either arm.
+
+#### 🔴 `FINDING 84` — the obvious crosswalk is wrong four times, and every error is one-directional
+
+The obvious mapping is the leading digit: `0`→`AC0`, `1`→`AC1_TR`, … `9`→`AC9A`. Four corrections,
+each established by arithmetic against the published table, never by reading a label.
+
+**1. `995`–`999` are unspecified time, not travel.** They carry leading digit `9`. Eurostat puts them
+under `AC99NSP`. In the corpus they are **26.09 min/day in the UK** against 0.02 in `es` and 0.00 in
+`it` — and Eurostat's own `AC99NSP` is **49 min for the UK** against 1 and 1. Left in the travel
+bucket they would have inflated one country's travel budget by a third, on the fold that country is
+held out of.
+
+**2. `998` (unspecified free time) is `AC4-8NSP`, inside `AC4-8`**, not unspecified time.
+
+**3. 🔴 `910` (travel to/from work) STAYS IN `AC9A`. This was got wrong first.** `AC1_TR` reads
+*"Employment, related activities and travel as part of/during main and second job"* and `AC9A` reads
+*"Travel except travel related to jobs"*, which together read as though commuting belongs with
+employment. It does not. **`AC9A`'s seven children sum to the published `AC9A` exactly — ES 70 = 70,
+IT 79 = 79 — and `AC913` "Travel to/from work" is one of the seven.** Moving `910` across cost
+15 min/day in *each* direction and took the travel category from a 5 % error to a 31 % one. The label
+was misleading; the column total was not.
+
+**4. 🔴 `AC9A`'s PUBLISHED PARENT IS UNUSABLE FOR THE UK.** Every other UK parent in `tus_00age` sums
+to its children exactly. `AC9A` does not:
+
+| country | `AC9A` parent | children sum | hole |
+|---|---|---|---|
+| ES | 70 | 70 | 0 |
+| IT | 79 | 79 | 0 |
+| **UK** | **129** | **81** | 🔴 **−48** |
+
+The 48-minute hole matches the UK's anomalous `AC99NSP` of 49 almost exactly. The module therefore
+takes `AC9A` as **the sum of its seven children** in every country — identical to the parent in ES and
+IT, and the only defensible figure in the UK. Using the published parent charges the UK model a 58 %
+travel error for a defect in the published table.
+
+#### 🔴 Two more basis facts, both measured
+
+**Weighting is not optional.** Unweighted, Italy's employment budget reads **113.7 min/day** against a
+published 162 — a 30 % shortfall. Weighted by `weight_dia_cal` it reads **155.9**, a 3.8 % error.
+`FINDING 53` said the three countries' diary weights hit three different day bases; this is what that
+costs when it is ignored, and it is country-correlated.
+
+**The age base is a choice.** Eurostat offers `TOTAL, Y15-20, Y20-24, Y20-74, Y25-44, Y45-64, Y65-74,
+Y_GE65`. Our eight frozen bands reproduce **exactly three** with no straddling — `Y25-44`, `Y45-64`,
+`Y_GE65`. `Y20-74` cannot be built (`15-24` straddles 20) and `Y65-74` is absent everywhere
+(`FINDING 55`). `TOTAL`'s own population base is not stated in the JSON-stat and our floor is age 11,
+so **`TOTAL` compares two different populations** and is reported as context, never scored.
+
+#### 🟢 The calibration arm, which is what makes this a gate rather than a number
+
+**The real harmonised corpus, weighted, against `tus_00age` 2010: 9 PASS / 0 FAIL.**
+
+| fold | `Y25-44` | `Y45-64` | `Y_GE65` |
+|---|---|---|---|
+| `es` | 2.79 % | **1.49 %** | 2.57 % |
+| `uk` | 3.43 % | 4.94 % | 2.70 % |
+| `it` | 4.38 % | **1.33 %** | 2.24 % |
+
+Every one inside the 15 % band, most inside 5 %. 🔴 **A gate whose own ground truth cannot pass it is
+not measuring the model**, and until this arm was run the gate reported a 31 % travel error that
+belonged entirely to the crosswalk. `outputs_step6/g64_corpus_calibration.json`.
+
+#### 🔴 The Leg-4 generated arm: 1 PASS / 8 FAIL, and the failure has a legible signature
+
+🔴 **`LEG-4 PILOT — NOT REPORTABLE.** `outputs_step6/g64_leg4_generated.json`.
+
+| fold | `Y25-44` | `Y45-64` | `Y_GE65` |
+|---|---|---|---|
+| `es` | FAIL 42.6 % | **PASS 12.2 %** | FAIL 363.4 % |
+| `uk` | FAIL 56.0 % | FAIL 13.8 % (MAE 22.9) | FAIL 215.1 % |
+| `it` | FAIL 39.8 % | FAIL 74.7 % | FAIL 176.9 % |
+
+The signature is one category. **`AC1_TR`, employment:** the pilot gives **106 min/day of work to
+Spaniards over 65** (published 5), **144 to Britons over 65** (published 20), and only **65 to
+working-age Italians** (published 263). It emits a roughly flat employment budget regardless of the
+prefix. That is not a calibration error — **it is the model not conditioning on age or economic
+status**, which is exactly the question `G6.7`'s fictional-country control exists to ask, answered
+here by accident on a 1.48 B rehearsal model.
+
+#### 🔴 A correction inside this entry, because it was made and it matters
+
+The zero-cell rule of `D-S6-3` item 1 was implemented backwards on the first pass: the `< 1.0 %`
+tolerance was used to decide **which published cells count as zero**, which classified Italy's
+published `AC2` of **eleven minutes** (0.76 % of the day) as "approximately zero" and then failed the
+real corpus for putting 14.67 minutes there. The tolerance governs **the model's value when the
+published cell is zero**. Corrected; no level-1 published cell is zero (the smallest is one minute),
+so the branch is now exercised on a synthetic table in the selftest rather than pretended into
+existence. The corpus board moved 8 PASS / 1 FAIL → **9 PASS / 0 FAIL**.
+
+#### 🔴 MAPE at these denominators, again
+
+`AC1_TR` is 5 published minutes at `Y_GE65`. A model putting 106 there scores an APE of **2,020 %**,
+which drags the band MAPE to 363 % and tells a reader nothing they could act on. **MAE is reported
+beside every MAPE for this reason** (42.13 min/day for that same cell). This is `FINDING 39`'s
+*"`MAPE > 20 %` is NOT EVALUABLE AS WRITTEN"* showing up again at level-1 granularity, and it is more
+evidence for the same conclusion rather than a new problem.
+
+#### `D-S6-8` — for the author
+
+Four items, all recorded in `IMP/docs/2026-08-22_D-S6-8_level1-crosswalk.md`. Nothing is frozen and
+`prereg.md` is untouched (md5 `e4243e07cdd80c9c846b91f40e3e8c45`).
+
+#### What is NOT established
+
+* `G6.1` still has no `model_value` **for the null side** — `tools/4thJ_step6_rakeddonor.py` has
+  `score_margin` and the nulls are built, but the raked-donor null has never been expressed as a
+  level-1 budget. That is the next piece and it is small now that the metric exists.
+* `G6.5`, `G6.6`, `G6.7`, `G6.9` and the four privacy gates are untouched.
+* The generated batches' **day-type mix** has not been checked against the calendar. `FINDING 53`
+  applies to synthetic populations too and nobody has looked.
+
+---
+
+### 2026-08-22 (evening, second entry) — 🟢 **`G6.1` IS SCORED. THE PRE-REGISTERED BAR NOW HAS A NUMBER ON BOTH SIDES OF IT, FOR THE FIRST TIME.**
+
+`tools/4thJ_step6_g61_rake_folds.py` said it in capitals in its own docstring: **"IT DOES NOT SCORE
+ANYTHING."** It answered whether the null could be *built*. `tools/4thJ_step6_g61_score.py` scores it.
+
+#### The quantity, and why it is this one
+
+prereg §6 FAIL criterion 1 is *"MAE ≥ the raked-donor null"*. `G6.4` fixes what the error is measured
+on — the level-1 time budget against the held-out country's published Eurostat table. So both sides
+produce a level-1 budget in minutes/day, both are scored against **the same published column**, and
+the margin is `null_MAE − model_MAE`, strictly positive or the claim fails. `V6.c` is enforced by
+`score_margin`, which returns `passes=False` for a margin of exactly 0.0.
+
+🔴 **The age-band restriction happens AFTER raking.** The null is raked onto the whole synthetic
+population, exactly as the model was prompted from the whole synthetic population; the `Y25-44` slice
+is taken from each afterwards. Raking separately per band would build three different nulls and make
+each one easier.
+
+#### 🟢 The bar itself — the number Leg 5 has to beat
+
+| fold | donors | raked | ESS-bearing | null MAE `Y25-44` | `Y45-64` | `Y_GE65` |
+|---|---|---|---|---|---|---|
+| `es` | uk+it | 54,114 | 3 iterations, 0.24602 pp | **9.94** | **8.82** | **11.81** |
+| `uk` | es+it | 57,400 | 5 iterations, 0.41662 pp | **21.79** | **19.21** | **18.54** |
+| `it` | es+uk | 34,994 | 4 iterations, 0.24487 pp | **19.51** | **13.85** | **15.51** |
+
+🔴 **The bar is not the same height in the three folds.** Spain's null is roughly twice as good as
+Britain's — 8.8–11.8 min/day against 18.5–21.8. Whatever the model does, **`es` is the hard fold and
+`uk` is the easy one**, and a cross-fold comparison that does not say so is comparing three different
+difficulties. This is a property of the donors, not of the model, and it was not visible before today.
+
+A sanity check the same run buys: `es`'s own real corpus scores **MAE 1.86–2.00** against the same
+published table (the `G6.4` calibration arm). Its raked-foreigner null scores 8.8–11.8. So the null is
+about five times worse than the country's own data — which is exactly what a demographically raked
+pool of real *foreign* days should look like. A null scoring like the real thing would have meant the
+rake was leaking the held-out country in.
+
+#### 🔴 The Leg-4 pilot loses every cell, 0 of 9
+
+🔴 **`LEG-4 PILOT — NOT REPORTABLE.** `outputs_step6/g61_leg4_scored.json`.
+
+| fold | `Y25-44` | `Y45-64` | `Y_GE65` |
+|---|---|---|---|
+| `es` | −59.57 | −21.03 | −30.32 |
+| `uk` | **−2.25** | **−3.72** | −17.83 |
+| `it` | −58.25 | −40.83 | −5.70 |
+
+Expected, and it is the reason `D-S7-3` (a) made Leg 4 a rehearsal — but the shape is worth keeping.
+The pilot comes closest on `uk` at working age (−2.25, −3.72 min/day) and is furthest away on `es` and
+`it` at `Y25-44` (−59, −58). That is the same signature `G6.4` found: **the model is not conditioning
+on age or economic status**, so it does best exactly where the population is most homogeneous and
+worst where the prefix carries the most information.
+
+#### What this makes runnable that was not
+
+`G6.1` was the last Tier-4 gate with no implementation path. It now has one, the null is built from
+real diaries with all three registered collapses **imported from the runner rather than restated**,
+and `score_margin`'s Guard 1 is satisfied by construction — both sides carry
+`population_<c>.csv|D-S5-11b` as their marginals source.
+
+#### Still not established
+
+* `G6.3`'s pooled null and `G6.2`'s six single-donor nulls exist as *convergence* results
+  (`prereg_addendum_02.md`) but have **not** been expressed as level-1 budgets, so their margins are
+  not computed. Same shape as this work, one function call each.
+* `G6.5`, `G6.6`, `G6.7`, `G6.9` untouched. The four privacy gates untouched.
+* Nothing here is a model result.
+
+---
+
+### 2026-08-22 (evening, third entry) — 🔴 **`G6.2` AND `G6.3` ARE SCORED TOO, AND THE THREE NULLS TOGETHER SAY SOMETHING THE PRE-REGISTRATION DID NOT EXPECT: THE RAKED-DONOR NULL IS NOT THE STRONGEST ONE. `FINDING 85`, `D-S6-9`.**
+
+`tools/4thJ_step6_secondary_score.py` turns `build_pooled` and `build_all_neighbours` into level-1
+budgets on the same metric, against the same published column, so `G6.1`, `G6.2` and `G6.3` are three
+readings of one comparison. Both nulls are **imported**, never rebuilt: `D-S6-7` (a)'s equal-country-
+mass renormalisation and `D-S6-6` (a)'s refusal to nominate a neighbour stay in the module that owns
+them. `outputs_step6/g62_g63_leg4_scored.json`.
+
+#### 🔴 `FINDING 85` — the pre-registered bar is the weakest of the three in 6 of 9 cells
+
+**NULL MAE, minutes/day against the published table. Lower = a stronger null = a harder bar.**
+
+| fold | band | `G6.1` raked | `G6.3` pooled | `G6.2` per donor |
+|---|---|---|---|---|
+| `es` | `Y25-44` | 9.93 | **5.81** | `it` **5.01**  ·  `uk` 10.91 |
+| `es` | `Y45-64` | **8.82** | 9.79 | `it` 11.23  ·  `uk` 15.26 |
+| `es` | `Y_GE65` | 11.81 | 15.71 | `it` **11.27**  ·  `uk` 20.84 |
+| `uk` | `Y25-44` | 21.79 | 11.69 | `es` 12.41  ·  `it` **10.80** |
+| `uk` | `Y45-64` | 19.21 | 17.62 | `es` **17.18**  ·  `it` 19.25 |
+| `uk` | `Y_GE65` | 18.54 | **18.43** | `es` 24.98  ·  `it` 18.99 |
+| `it` | `Y25-44` | 19.51 | 13.81 | `es` **13.26**  ·  `uk` 15.27 |
+| `it` | `Y45-64` | **13.85** | 14.07 | `es` 14.40  ·  `uk` 19.37 |
+| `it` | `Y_GE65` | 15.51 | **14.54** | `es` 16.82  ·  `uk` 18.31 |
+
+prereg §5 registers the raked-donor null as **"the strongest"** and calls the pooled all-country
+average **"weak"**; `D-S6-7` demoted `G6.3` to *"Reported, **secondary**"*. On the level-1 time budget
+the ordering is the other way round in **six of nine cells**, and on the `uk` fold at working age the
+gap is a factor of two — 21.79 against 10.80.
+
+**Two candidate mechanisms, neither asserted.** The rake starts from a **uniform seed** (`D-S5-10` (a))
+and therefore **discards the survey weights**, while `G6.3` and `G6.2` carry `weight_dia_cal`; and a
+raked null can converge on a small effective sample, which `FINDING 62` already showed for the `uk`
+fold. Both are checkable and neither has been checked. It is **not** the day mix: the synthetic
+populations are 71.43 / 14.29 / 14.29, the calendar week to two decimals, in all three folds.
+
+#### 🔴 `D-S6-9` — what the bar is, now that the ordering is known to be wrong
+
+| | option | consequence |
+|---|---|---|
+| **(a)** | 🟢 **Recommended. `G6.1` stays exactly as pre-registered — the raked-donor null is the bar — and `FINDING 85` is declared as a result.** | The pre-registration is honoured to the letter, which is the entire value of having frozen it. The paper reports that the null we called strongest was not, and says so with the table |
+| **(b)** | Take the minimum null MAE across all three as the operative bar. | Strictly harder, and therefore tempting — but it is **choosing the bar after seeing the numbers**, which is what prereg §6 exists to prevent. It would also make the bar's identity vary by cell |
+| **(c)** | Re-seed the rake from `weight_dia_cal` instead of uniform and re-measure. | 🔴 A basis change to `D-S5-10` (a), which was ruled. It might well fix the ordering, and it must be the author's call, not a repair applied because the result was surprising |
+
+🟢 **Found on a Leg-4 rehearsal, before any reportable model existed.** That is the only time this
+could have been found without it looking like a reaction to a result.
+
+#### The Leg-4 margins, for completeness
+
+🔴 **`LEG-4 PILOT — NOT REPORTABLE.** The pilot loses to every null in every cell — 9 of 9 against
+`G6.1`, and the same against all six `G6.2` nulls and `G6.3`. Its worst cells are `it Y25-44`
+(−63.9 against the pooled null) and `es Y25-44` (−59.6 against the raked one); its best is
+`uk Y45-64` (−3.7). No margin is positive anywhere.
+
+#### 🔴 `G6.2` is six nulls and the module refuses to reduce them
+
+`D-S6-6` (a) dropped the word *nearest*, so every donor country in a fold's pool is built and none is
+nominated. The scorer prints both members of each pair and emits no aggregate. On `es Y_GE65` the two
+differ by a factor of 1.85 — `it` 11.27 against `uk` 20.84 — which is exactly how large the
+gate-shopping opportunity would have been.
+
+#### Still not established
+
+* `G6.5`, `G6.6`, `G6.7`, `G6.9` and the four privacy gates are untouched.
+* No Step 6 gate has been **seen failing** under a registered perturbation yet. The nulls discriminate
+  (the pilot loses, the real corpus passes `G6.4` 9 of 9) but the perturbation battery of the
+  validation document has not been run.
+
+---
+
+### 2026-08-22 (evening, fourth entry) — 🟢 **STEP 6.5 IS STARTED. `G6.13` IS BUILT, PASSES 3/3, AND EACH OF ITS THREE CLAUSES HAS BEEN SEEN FAILING. 🔴 GETTING THERE COST TWO CORRECTIONS, AND THE SECOND ONE IS THE INTERESTING ONE: THE RAW GATE FAILED ALL THREE FOLDS AT `p < 1e-9` FOR A REASON THAT HAS NOTHING TO DO WITH PRIVACY. `FINDING 86`.**
+
+`tools/4thJ_step6_g613_dcr.py`, artefact `outputs_step6/g613_leg4_dcr.json`. It is the one privacy
+gate that needs no GPU: it reads the release and the corpus and nothing else.
+
+#### The distance, because a diary is a sequence and tabular DCR does not apply
+
+**Normalised Hamming over 144 ten-minute activity slots.** 144 is exact, not a resampling — every
+duration in all 73,254 corpus diaries is a positive multiple of 10 and they sum to 1440, which is the
+premise the tally automaton is built on and which was counted rather than assumed. It makes `DCR = 0`
+mean what the gate needs it to mean: **the synthetic day is the same activity sequence, slot for slot,
+as a real person's day.**
+
+🔴 `LOC`, `ACT2` and `COP` are **not** in the distance. That is the **optimistic** reading — two days
+identical in activity but differing in location score 0 here and are flagged. Declared, not defaulted.
+
+#### 🔴 Correction 1 — the `test` reference set did not exist, and the gate said PASS anyway
+
+Clause 2 compares median DCR to **train** against median DCR to **test**. Written as
+`split == "test"`, it matched **nothing**: the corpus `split` column has exactly two values, `train`
+and `heldout`, and `heldout` is `D-S6-1`'s second hold-out — the 10 % household split inside each
+country — not the LOCO country hold-out. The first run built no `test` set, **skipped clause 2
+entirely, and printed PASS on all three folds.**
+
+A privacy gate that quietly drops one of its own comparisons is worse than one that does not run. The
+module now **REFUSES** if any reference set is empty, and the three sets are named:
+
+| set | what it is | role |
+|---|---|---|
+| `train` | the donor countries' `split == "train"` | what the model saw |
+| `test` | the donor countries' `split == "heldout"` | same distribution, never seen |
+| `country` | every diary of the LOCO held-out country | unseen **and** a different country — reported, **not** part of the verdict |
+
+#### 🔴 `FINDING 86` — the raw train-versus-test comparison is a pool-size artefact, and it is enormous
+
+With `test` in place, the gate FAILED **all three folds**:
+
+| fold | median DCR train | test | difference | Mann-Whitney |
+|---|---|---|---|---|
+| `es` | 0.4028 | 0.4514 | −7.00 slots | z = −6.068, **p = 1.3e-9** |
+| `uk` | 0.3611 | 0.4028 | −6.00 slots | z = −6.301, **p = 3.0e-10** |
+| `it` | 0.4236 | 0.4583 | −5.00 slots | z = −8.097, **p = 5.7e-16** |
+
+**None of it is evidence of anything.** `train` is **8.80× / 9.07× / 9.19×** the size of `test`,
+because the second hold-out is a 10 % split. A nearest neighbour drawn from a nine-times-larger pool
+is mechanically closer, memorisation or not.
+
+🟢 **Size-matched, the signal vanishes completely.** `train` is subsampled without replacement to
+`|test|`, 200 draws, seed 20260822:
+
+| fold | matched train median [95 %] | test median | verdict |
+|---|---|---|---|
+| `es` | 0.4514 [0.4375, 0.4583] | **0.4514** | inside |
+| `uk` | 0.4028 [0.3889, 0.4097] | **0.4028** | inside |
+| `it` | 0.4583 [0.4514, 0.4653] | **0.4583** | inside |
+
+The test median lands **exactly on** the matched train median in all three folds. The whole
+`p < 1e-9` signal was pool size. This is the discipline the Overview already mandates for `G6.8` —
+*"a sample-size-matched bootstrap … That last comparison is the honest one"* — arriving in a second
+gate for a second reason. 🔴 **The raw comparison is still printed and still labelled `NOT THE
+VERDICT`**: deleting it would hide the size effect, using it would be a false alarm.
+
+#### 🟢 The other two clauses, at baseline
+
+**Zero exact matches** against any reference set, in any fold. **Zero records** with NNDR < 0.33,
+against any reference set, in any fold. Minimum DCR is 0.0972 (`es`) — about 14 of 144 slots — so the
+closest the pilot ever comes to a real day is still fourteen ten-minute blocks away.
+
+#### 🟢 Every clause seen failing, and the null perturbation moves nothing
+
+| perturbation | what it injects | what fell |
+|---|---|---|
+| `null` | nothing | nothing — PASS |
+| `verbatim` | one real TRAIN diary copied into the release | clause 1 (**1 exact match**) and clause 3 (NNDR < 0.33 in 0.167 %) |
+| `nearcopy` | one real TRAIN diary with two slots changed | clause 3 only — DCR 0.0139, **no exact match**, which is the distinction the gate exists to draw |
+| `leak_all` | all 600 records replaced by real TRAIN diaries | all three: 600 exact matches, NNDR < 0.33 in **99.5 %**, and the **size-matched** clause 2 finally fires (test 0.4236 above the matched interval [0.3958, 0.4132]) |
+
+🔴 `leak_all` is the one that matters for clause 2: it shows the size-matched test **can** fire, so
+its PASS at baseline is a measurement and not a gate that never fires.
+
+#### What Step 6.5 still owes
+
+* **`G6.10` loss-based MIA** and **`G6.11` reference-based MIA** need per-record losses from the
+  adapter and from the untuned base — a GPU job, not written.
+* **`G6.12` prefix-prompted extraction**, greedy and sampled, on strata with fewer than five training
+  records — a GPU job, not written.
+* The **three controls**: untuned base model, random-label-permutation adapter, and the train-versus-
+  test perplexity gap under 5 %. None exists.
+* 🔴 So `privacy_audit.md` cannot be written and **no release decision can be made**.
+
+---
+
+### 2026-08-22 (night) — 🟢 **THE AUTHOR RULED ALL FIVE DOCKET DECISIONS AND ALL FIVE ARE APPLIED. `G6.5` AND `G6.9` ARE BUILT AND BOTH ARMS ARE SCORED. 🔴 AND `G6.9` FAILS 9 OF 9 ON THE REAL WEIGHTED CORPUS — `FINDING 88`: ITS MARGIN CLAUSE CANNOT BE MET BY A PERFECT MODEL.**
+
+Ruling archived at `IMP/docs/DONE/2026-08-22_rehearsal-docket_findings-and-decisions.md`. New decision:
+`IMP/docs/2026-08-22_D-S6-10_g69-margin-and-the-european-mean.md`. Code:
+`tools/4thJ_step6_g65_g69.py`. Artefacts: `outputs_step6/g65_g69_corpus_calibration.json` and
+`g65_g69_leg4.json`.
+
+#### What the rulings changed, honestly: almost nothing, and that is the point
+
+| ruling | option | what had to change |
+|---|---|---|
+| `D-S6-8` item 1 — `AC9A` | (a) children sum | **nothing.** `4thJ_step6_level1.py` already summed the seven children in all three countries, with the UK's −48 min parent hole named in the code |
+| `D-S6-8` item 2 — age base | (a) three exact bands | **nothing.** `4thJ_step6_g64_run.py` already excludes `ALL` from the board and prints *"context only"* beside it |
+| `D-S6-8` items 3 & 4 | confirmed | **nothing.** Weight asymmetry and `MAE`-beside-`MAPE` were already implemented |
+| `D-S6-9` — the bar | (a) honour the pre-registration | **nothing.** `G6.1`'s bar is the raked-donor null and `FINDING 85` is reported, not acted on |
+
+🟢 That four of five rulings required no code change is the strongest evidence the recommendations were
+not written to justify work already done. The one that did require change was `D-S7-5`, in Step 7.
+
+#### `G6.5` — an AND over three frozen criteria, two of them READ BY FILE
+
+`prereg.md` freezes `G6.5` as: the claim fails if **any** of (1) MAE ≥ the raked-donor null, (2) MAPE
+> 20 %, (3) the sign of the country's divergence from the European mean is inverted.
+
+🔴 Criteria 1 and 2 are read out of `g61_*.json` and `g64_*.json` **by file, never recomputed.** Two
+modules recomputing the same bar can disagree about it, and the one a reader believes is whichever
+printed last. Only the **sign arm** is new code — which is what the val doc's own perturbation table
+demands, since a 25 % category shift must move `G6.4` and the MAPE arm while an inverted divergence
+must move the sign arm and *not* `G6.4`.
+
+| arm | `G6.5` board |
+|---|---|
+| **real corpus**, weighted | 🟢 **7 PASS / 2 FAIL** |
+| **Leg-4 pilot**, unweighted | 0 PASS / 9 FAIL |
+
+Both corpus failures are the **sign arm alone**: `es Y45-64` on `AC3` and `it Y25-44` on `AC1_TR`.
+
+#### 🔴 The European mean is not published. It had to be built, and that is `D-S6-10` item 2.
+
+Probed 2026-08-22: `tus_00age`'s `geo` dimension carries **22 countries and no EU aggregate at all** —
+AT BE BG DE EE EL ES FI FR HU IT LT LU LV NL NO PL RO RS SI TR UK. Implemented as the **unweighted
+mean over every HETUS country with a complete profile in the band**, fold country included, from
+`tus_00age_ALLGEO_2010_TIME_SP_T.json` (md5 `86eeb1b290519d25ab134731e3a813d2`). Not
+population-weighted — that would make "European" mean Germany and Turkey. An aggregate is scored only
+where the **published** divergence exceeds 2.0 min/day; below that the `h:mm` rounding swamps the sign,
+and those aggregates are reported `not_scored`, which is not a pass.
+
+#### 🔴 `FINDING 88` — `G6.9`'s margin clause is unsatisfiable by ground truth
+
+Operationalised literally — margin = MAE(runner-up) − MAE(own), bar = the **mean** pairwise MAE between
+the three published profiles — a model reproducing the held-out country's published table **exactly**
+still fails, because its margin is one pairwise distance and the bar is the mean of three. The nearest
+pair is below the mean by construction.
+
+| band | pairwise MAE | mean spread | perfect `es` | perfect `uk` | perfect `it` |
+|---|---|---|---|---|---|
+| `Y25-44` | 11.83 · 13.17 · 15.67 | 13.56 | 11.83 ❌ | 13.17 ❌ | 11.83 ❌ |
+| `Y45-64` | 12.67 · 16.83 · 20.50 | 16.67 | 12.67 ❌ | 16.83 ✔ | 12.67 ❌ |
+| `Y_GE65` | 15.17 · 23.33 · 20.17 | 19.56 | 15.17 ❌ | 20.17 ✔ | 15.17 ❌ |
+
+**A perfect model fails 7 of 9.** The real corpus fails 9 of 9.
+
+🟢 The discrimination itself works: the nearest published profile is the country's own in **8 of 9**
+corpus cells, at 2–7 min/day against 11–18 for the runner-up. Under `D-S6-10` item 1's recommended
+scale-free margin — `(MAE_runner − MAE_own) / MAE(own_pub, runner_pub) > 0.5` — the corpus scores
+**5 of 9** and the pilot **2 of 9**, and `es` reads 0.79 / 0.98 / 0.99.
+
+#### 🔴 `FINDING 89` — the Italian corpus is nearer SPAIN'S published table than Italy's own
+
+On `Y25-44`, real weighted `it` scores MAE **5.01 against `es`** and **10.40 against `it`**. Not an
+artefact: `D-S6-2` established that Eurostat's `2010` column for Italy is the **2008-09** survey while
+our microdata is **ISTAT 2013-14**, which appears in no Eurostat table at all. `G6.9` on the `it` fold
+therefore compares a 2013-14 corpus against a 2008-09 table, and working age is where five years show.
+Second basis asymmetry on that fold, after `D-S6-3`'s.
+
+#### Seen failing — `G6.5` yes, `G6.9` not yet, and the clause says so
+
+Run on the **corpus** arm, because a gate already failing at baseline cannot be seen to fall:
+
+| perturbation | fells |
+|---|---|
+| `null` | nothing |
+| `shift25` (+25 % on `AC3`, mass back to `AC0`) | `G6.5` in 6 cells, **all 6 by the sign arm alone** |
+| `invert_sign` (reflect the model through the European mean) | `G6.5` in 7 cells, **all 7 by the sign arm alone** — and `G6.4` not at all, a rigid motion about the mean |
+| `neighbour_tables` | 🔴 **nothing.** It cannot fell a gate already failing every cell. It goes live the moment `D-S6-10` item 1 is ruled |
+
+🔴 **Coverage clause: FAIL**, reported as such. `G6.5` has been seen failing; `G6.9` has not.
+
+---
+
+### 2026-08-22 (night) — 🟢 **STEP 6.5 MIA IS COMPLETE ON ALL THREE FOLDS. `G6.10`, `G6.11` AND `G6.12` PASS EVERYWHERE, BOTH RUNNING CONTROLS PASS, AND THE COVERAGE CLAUSE PASSES ON EVERY FOLD WITH ZERO NO-OP PERTURBATIONS. 🔴 GETTING THERE COST `FINDING 87`, WHICH WOULD HAVE MADE A PRIVACY GATE PASS FOR THE WRONG REASON.**
+
+`tools/4thJ_step6_privacy_mia.py`, 366 to 508 lines. Jobs **1286235** (`es`), **1286236** (`uk`),
+**1286237** (`it`); one `nvidia_a100_2g.20gb` slice each, 22 to 25 minutes. Artefacts
+`outputs_step6/privacy_mia_leg4_{es,uk,it}.json`. 🔴 **LEG-4 PILOT — NOT REPORTABLE**, and the string
+`"LEG-4 PILOT -- NOT REPORTABLE"` is written into every artefact's `provenance` field so a later
+reader cannot mistake it.
+
+#### 🔴 `FINDING 87` — one tokeniser attribute, two incompatible requirements, and a privacy gate that would have passed on garbage
+
+The module does two different things with the same tokeniser. `G6.10` and `G6.11` score **per-record
+losses**, which needs **RIGHT** padding, because the keep-mask that selects real tokens is built by
+indexing from the left. `G6.12` **generates** from a prefix, which needs **LEFT** padding, because a
+decoder-only model attends to whatever sits immediately before the first generated token; with right
+padding that is a run of PAD.
+
+The first version set `padding_side = "right"` once, at load, and never changed it. `G6.12` would then
+have generated from a batch of pad-terminated prompts, produced continuations of nothing, matched
+nothing, and reported **`PASS` — zero extraction**. 🔴 **That is a false negative in a privacy gate:
+the failure mode is silence, and silence is exactly what the gate reads as success.** The fix is one
+line, set at the top of the generation block and commented with the reason:
+
+```python
+# `FINDING 87`: the loss pass needs RIGHT padding (the keep-mask indexes from
+# the left) and `generate` needs LEFT padding ... a FALSE NEGATIVE in a privacy gate.
+tok.padding_side = "left"
+```
+
+The `transformers` warning *"right-padding was detected"* still appears in the logs — it is emitted by
+the **loss** pass, where right padding is correct — so its presence is not evidence the bug is back.
+
+#### 🟢 The baseline board, all three folds
+
+| | `es` | `uk` | `it` | bar |
+|---|---|---|---|---|
+| `G6.10` loss MIA, AUC | **0.5481** | **0.5336** | **0.5539** | < 0.65 |
+| `G6.10` TPR at FPR 0.001 | 0.0005 | 0.0000 | 0.0005 | < 0.05 |
+| control, **untuned base** AUC | 0.4914 | 0.5012 | 0.4874 | approx 0.50 |
+| `G6.11` reference MIA, AUC | **0.5204** | **0.5074** | **0.5274** | < 0.75 |
+| control, train/test **ppl gap** | 0.0143 | 0.0097 | 0.0182 | < 0.05 |
+| `G6.12` exact matches, greedy / sampled | 0 / 0 | 0 / 0 | 0 / 0 | 0 |
+
+**9 of 9 scored gates PASS, both running controls PASS on all three folds.** `n = 2000` per class,
+seed 20260822.
+
+🔴 **The untuned-base control is what makes the tuned numbers readable.** All three sit within 0.013
+of chance, so the member and non-member splits do not differ for any reason other than membership —
+without it an AUC of 0.55 could be a distribution artefact rather than a memorisation floor.
+
+#### 🔴 `G6.12`'s attack surface is not the same size in the three folds
+
+| fold | rare strata (< 5 training records) | records in them |
+|---|---|---|
+| `es` | 33 | 91 |
+| `uk` | **14** | **40** |
+| `it` | 39 | 103 |
+
+`it` offers the extraction attack **2.6x** as many targets as `uk`. The gate is the same and the
+verdict is the same, but **a `PASS` on `uk` is a weaker statement than a `PASS` on `it`**, and the
+three must never be quoted as one number. This is the demographic tail of the LOCO split showing up in
+a privacy gate: `uk` is the fold whose donor pool is `es` + `it`, the two largest shards.
+
+#### 🟢 Six injections, and every gate seen falling on every fold
+
+Baseline and perturbation traverse **identical code**: the verdicts were factored out into
+`score_g610`, `score_g611`, `score_pplgap` and `g612_match`, and a nested `board(tm, tn, bm, bn, dec)`
+closure is called once for the baseline and once per injection. A gate cannot pass at baseline and be
+scored by a different rule under attack.
+
+| injection | what it does | fell (`es` / `uk` / `it`, identical) |
+|---|---|---|
+| `null` | nothing | **nothing** — the board is stable |
+| `g610_memorise` | member losses down 0.5 nats | `G6.10` + `G6.11`, AUC to **0.9999 / 0.9999 / 0.9997** |
+| `g610_tail` | the top **8 %** of members down 5.0 nats | **`G6.10` only** |
+| `g611_reference` | base-model member losses **up** 1.0 nat | **`G6.11` only**, AUC to 0.9858 / 0.9928 / 0.9867 |
+| `pplgap_widen` | non-member losses times 1.15 | `G6.10` + the ppl-gap control |
+| `g612_verbatim` | one real training diary pasted into the greedy decode | **`G6.12` only**, 1 exact match |
+
+🔴 **Coverage clause: PASS on all three folds, and `no_op_perturbations` is EMPTY in all three
+artefacts.** Every injection moved something; none was decorative.
+
+**`g610_tail` is the one that earns its place.** `G6.10` has two clauses — AUC, and TPR at
+FPR = 0.001 — and an attack that lifts every member equally only ever exercises the first. Driving the
+worst-off 8 % of members down 5 nats leaves the AUC essentially where it was (`es` 0.5481 to 0.5510)
+and takes **TPR from 0.0005 to 0.0800** against a bar of 0.05. 🔴 **The second clause has now been seen
+failing on its own, which is the only way to know it is not decorative.** The first draft of this
+injection was a no-op — it moved TPR to 0.0100, under the bar — and was strengthened until it fired.
+
+**`g611_reference` had to be confined by hand.** Written the obvious way it shifted the *tuned* member
+losses, which both gates read, and felled `G6.10` as collateral. Shifting only the **base** model's
+member losses reaches `G6.11`'s likelihood ratio and nothing else. 🔴 **`pplgap_widen` is NOT
+confinable** — the perplexity gap and `G6.10` are computed from the same two loss vectors, so any
+injection that widens one moves the other. That is recorded in the module, not worked around.
+
+#### 🔴 What Step 6.5 still owes, unchanged
+
+The **third registered control — the random-label-permutation adapter — is still NOT RUN.** It needs
+its own training run and sets the floor for pure sequence memorisation. Every artefact carries the
+refusal text in `control_random_label_permutation`, and every job prints it:
+
+> 🔴 CONTROL NOT RUN: random-label-permutation adapter. Two of three registered controls are present.
+> No release decision can rest on this.
+
+🔴 **`privacy_audit.md` therefore still cannot be written, and no release decision can be made** — on
+Leg 4 or on Leg 5. Four of the five Step 6.5 gates now exist and pass (`G6.10`, `G6.11`, `G6.12`,
+`G6.13`); what is missing is not a gate but a control.
+
+---
+
+### 2026-08-22 (late night) — 🟢 **`D-S6-10` AND `D-S6-11` RULED AND APPLIED. THE `G6.9` MARGIN CLAUSE IS NOW SATISFIABLE, AND ON THE REAL CORPUS IT GOES FROM 0 OF 9 TO 5 OF 9 WITH THE COVERAGE CLAUSE PASSING FOR THE FIRST TIME.**
+
+Both documents are in `IMP/docs/DONE/`. Four items ruled, **one code change**.
+
+#### 🟢 `D-S6-10` item 1 — option (a), the dimensionless relative margin
+
+`FINDING 88` showed the original clause was **unsatisfiable by a perfect model**: the numerator was
+ONE pairwise distance and the bar was the MEAN of three, so a model sitting exactly on its own
+published table failed 7 of 9 corpus cells. The ruled replacement, in
+`tools/4thJ_step6_g65_g69.py`, `G69_REL_MARGIN_MIN = 0.5`:
+
+> **(MAE_runner − MAE_own) / MAE(own_pub, runner_pub) > 0.5**
+
+Perfect model → 1.0. Equidistant → 0.0. The bar is the midpoint. The denominator is the published
+distance **for the pair actually in contention**, not the three-country average, because the question
+is whether the model separates the two candidates it could plausibly be confused between.
+
+🔴 One defect fixed while implementing it, and it is not cosmetic: the runner-up was read as
+`order[1]`. When the model lands on the **wrong** country, `order[1]` is the SECOND wrong country, and
+the gate would have reported a healthy margin for a model that had just misidentified itself. The
+runner-up is now the nearest country **that is not `own`**, whatever the model did. `it Y25-44` is
+exactly that case and would have been mis-scored.
+
+🔴 `between_country_spread` is still computed and still written to the artefact, labelled
+`REPORTED ONLY`. Deleting it would make every reading before 2026-08-22 unreproducible.
+
+#### 🟢 The calibration, and it is the thing that shows the new bar works
+
+| fold | band | **rel. margin** | MAE own | MAE runner | published pair distance | nearest |
+|---|---|---|---|---|---|---|
+| `es` | Y25-44 | **0.7907** | 2.00 | 12.41 | 13.17 | `es` |
+| `es` | Y45-64 | **0.9844** | 1.94 | 14.40 | 12.67 | `es` |
+| `es` | Y_GE65 | **0.9862** | 1.86 | 16.82 | 15.17 | `es` |
+| `it` | Y45-64 | **0.7255** | 2.04 | 11.23 | 12.67 | `it` |
+| `uk` | Y_GE65 | **0.6974** | 4.24 | 18.31 | 20.17 | `uk` |
+| `it` | Y_GE65 | 0.4752 | 4.06 | 11.27 | 15.17 | `it` |
+| `uk` | Y45-64 | 0.4922 | 6.97 | 15.26 | 16.83 | `uk` |
+| `uk` | Y25-44 | 0.4400 | 5.12 | 10.91 | 13.17 | `uk` |
+| `it` | Y25-44 | **−0.4555** | 10.40 | **5.01** | 11.83 | 🔴 `es` |
+
+🟢 **The bar separates exactly what it should.** Spain's corpus sits on Spain's published tables
+(MAE 1.86–2.00) and scores 0.79–0.99. Every cell below the bar is a cell where **the real corpus is
+far from its own published table** — `uk Y25-44` 5.12, `uk Y45-64` 6.97, `it Y_GE65` 4.06 — and the
+one negative is `FINDING 89`, where Italy's own diaries are nearer **Spain's** table (5.01) than
+Italy's (10.40) because Eurostat's IT 2010 column is the 2008-09 survey and our microdata is ISTAT
+2013-14. 🔴 **The four remaining failures are a data problem, not a gate-design problem**, and none of
+them is a near-miss caused by an arbitrary threshold.
+
+#### 🟢 The coverage clause passes on the corpus arm for the first time
+
+| injection | `G6.5` fell | `G6.9` fell |
+|---|---|---|
+| `null` | 0 | 0 |
+| `shift25` | 6 (all 6 by the SIGN ARM ALONE) | 4 |
+| `invert_sign` | 7 (all 7 by the SIGN ARM ALONE) | 5 |
+| `neighbour_tables` | 0 | **5** |
+
+🔴 **`neighbour_tables` was a no-op before this ruling** — it cannot fell a gate that already fails
+every cell. It now fells `G6.9` in five of nine, which is the whole reason the coverage clause moved
+from FAIL to **PASS**. Board on the corpus arm: `G6.5` **7 PASS / 2 FAIL**, `G6.9` **5 PASS / 4 FAIL**.
+
+On the Leg-4 pilot arm `G6.9` goes 0/9 → **2/9**; `G6.5` stays 0/9 and its coverage clause stays FAIL
+there, correctly — a gate already failing at baseline cannot be *seen* to fall. 🔴 **LEG-4 PILOT,
+NOT REPORTABLE.**
+
+#### 🟢 `D-S6-10` item 2 — confirmed, and it was already built this way
+
+The European mean is the **unweighted** mean over every HETUS country with a complete profile in the
+band, **the fold's own country included**, with `SIGN_FLOOR_MIN = 2.0` min/day below which a published
+divergence is treated as rounding noise. Equal vote per country; no crowding-out by the large
+populations. No code change — the constant is now annotated with the ruling so the next reader does
+not have to re-derive that it was deliberate.
+
+#### 🟢 `D-S6-11` — all three items confirmed, no code change
+
+1. **Perturbation axis and amplitude guard.** Exponential tilt on age rank, λ ∈ [−0.6, +0.6] over five
+   levels, amplitude guard ≥ 30 min/day — Spain measures **79.3**. This is what replaced
+   `FINDING 90`'s first attempt, a distribution reversal worth **0.8 min/day** end to end.
+2. **Prefix pricing — option (a).** The fixed five-rung backoff ladder, with the share priced at each
+   rung reported per λ level. **0 % of prefixes dropped**, so no selection bias correlated with λ.
+   The first build dropped 24.6 % of the population as unpriced.
+3. **Anti-stereotype clause.** `MAE(gen, EXP(λ)) < MAE(gen, profile_c)` for **every** real country
+   `c`, against the corpus-**weighted** real national budgets — not the published tables.
+
+Items 1–3 were already implemented as ruled; all three modules now carry the ruling stamp.
+
+---
+
+### 2026-08-22 (late night, second entry) — 🟢 **`G6.6` IS BUILT. IT WAS THE LAST UNBUILT STEP 6 GATE, IT HAD NO NUMERIC BAR ANYWHERE, AND ITS CALIBRATION ARM IS GREEN 3/3 WITH THE COVERAGE CLAUSE PASSING. 🔴 ITS REGISTERED PERTURBATION IS A NAMED GAP THAT NO RE-SCORE CAN CLOSE.**
+
+`tools/4thJ_step6_g66_heldin.py`, artefact `outputs_step6/g66_corpus_calibration.json`.
+
+#### 🔴 The gate had no threshold. Anywhere.
+
+The val doc's row reads *"Bounded; small by construction under joint training"* and cites `RL05`. The
+**frozen prereg does not mention `G6.6` at all**, and neither addendum does. A gate whose requirement
+is an adjective cannot be seen failing, so the first job was to give it a measurable form without
+inventing a band — bands belong to the author.
+
+#### What it scores, and why it costs no new design
+
+Each country is a **donor in exactly two folds and held out in one**. That asymmetry is free evidence:
+
+| fold | generates at | |
+|---|---|---|
+| `es` | `uk` prefixes, `it` prefixes | the two countries it trained on |
+| `uk` | `es` prefixes, `it` prefixes | |
+| `it` | `es` prefixes, `uk` prefixes | |
+
+Six (fold, donor) batches, each scored with **`G6.4`'s own machinery** — level-1 budget against the
+donor's published tables — so held-in and held-out numbers are commensurable **by construction**, not
+by assertion. The Step 5 prefix files already exist; nothing new is designed.
+
+**Clause 1, absolute:** the donor's worst scoreable-band MAPE must clear `G6.4`'s bar, **15.0 %**,
+reused verbatim rather than chosen a second time. A model that cannot reproduce a country it was
+*trained on* has no standing on a country it was not.
+
+**Clause 2, paired — the forgetting clause:** `MAPE(F, D)` with `D` held **in**, against `MAPE(D, D)`
+with `D` held **out**, the latter read **by file** from the `G6.4` artefact. Held-in is the easier
+task. 🔴 **Held-in scoring worse than held-out is the alarm**, and the *direction* is what carries the
+meaning. The tolerance is `--tolerance-pp`, default **0.0** — the strict reading — and widening it is
+a band, so it is left to the author rather than assumed.
+
+#### 🟢 The calibration arm, on the real corpus
+
+| country | n | worst band MAPE | clause 1 |
+|---|---|---|---|
+| `es` | 19,140 | **4.64 %** | PASS |
+| `uk` | 15,852 (2 dropped for a null weight) | **5.96 %** | PASS |
+| `it` | 38,260 | **11.50 %** | PASS |
+
+Weighted by `weight_dia_cal` (`FINDING 53`). The three numbers reproduce `G6.4`'s corpus calibration
+exactly, which is the cross-check that the two modules share a scorer.
+
+🔴 **Clause 2 is NOT SCORED on the corpus arm and says so.** A real corpus does not belong to a fold,
+so there is no held-in / held-out pair. It would have been trivial to compare a country with itself
+and print PASS; that is precisely the failure `FINDING 86` caught in `G6.13`, where a reference set
+that did not exist was silently skipped and the gate reported PASS anyway.
+
+#### 🟢 Coverage clause: PASS
+
+| injection | what fell |
+|---|---|
+| `null` | **nothing** |
+| `wrong_tables` (score the donor against a country whose token was never used) | all three |
+| `flatten_to_ac0` (a model that forgot everything and sleeps all day) | all three |
+| `degrade_donor` (40 % of paid work and study moved into personal care) | all three |
+
+#### 🔴 The registered perturbation is a NAMED GAP
+
+The val doc registers *"train country-by-country sequentially → `G6.6`"*. That lever exists —
+`4thJ_step4_train.py --perturbation sequential_countries`, added under `FINDING 6` because the
+coverage clause would otherwise have reported a gate with no lever at all — but it is a **training**
+run, not a re-score. This module refuses to pretend otherwise: it prints `NOT RUNNABLE HERE`, writes
+`runnable: false` into the artefact, and the coverage clause names the gap explicitly.
+
+#### 🟢 The loss-side answer is already on disk, at zero compute
+
+`G4.9` — per-country held-in probe loss, final checkpoint within +5 % of its own best — reads **PASS
+6 of 6** from the existing Leg-4 detectors, with `regression` exactly **0.0** in every pair:
+
+| fold | donor | epoch 0 | epoch 1 | Δ |
+|---|---|---|---|---|
+| `es` | `it` | 0.85516 | 0.84424 | **−0.01092** |
+| `es` | `uk` | 0.97482 | 0.96130 | −0.01352 |
+| `uk` | `es` | 0.88149 | 0.86660 | −0.01489 |
+| `uk` | `it` | 0.85185 | 0.83502 | −0.01682 |
+| `it` | `es` | 0.89832 | 0.86979 | **−0.02853** |
+| `it` | `uk` | 0.98466 | 0.96976 | −0.01490 |
+
+Every donor improves monotonically; nothing is forgotten under joint training, which is what `RL05`'s
+prohibition on sequential training is for. 🔴 **But `regression = 0.0` in all six is guaranteed by the
+shape of the run, not earned**: Leg 4 has two epochs and both are monotone, so the final epoch IS the
+best epoch and the gate cannot report anything else. **Leg 5 has three epochs and is the first run
+where `G4.9` can say something.** Do not quote 6/6 as evidence of resistance to forgetting.
+
+#### What `G6.6` still owes
+
+Six generation batches — the fold's adapter, the donor's Step 5 prefixes, `--tag g66<donor>`. Until
+they exist the generated arm exits **2** and prints the six missing filenames. 🔴 **NOT SCORED is not
+a pass**, and the module will not print a board without them.
+
+---
+
+### 2026-08-22 (late afternoon) — 🟢 **`G6.6`'s GENERATED ARM IS RUN — SIX BATCHES, 3,600 DIARIES, 600/600 VALID AND 600/600 TERMINATED IN EVERY ONE. 🔴 IT FAILS 6 OF 6 ON CLAUSE 1, AND IN CHASING WHY, THE PRIMARY TRANSFER GATE `G6.4` TURNED OUT TO BE MEASURING SOMETHING OTHER THAN FIT. `FINDING 90`, `D-S6-12`.**
+
+Jobs 1286254–1286259, one per `(fold, donor)` ordered pair, each the fold's Leg-4 adapter driven by
+the **donor country's** 100,000-prefix pool. Artefact `outputs_step6/g66_leg4_generated.json`.
+
+#### The board
+
+| pair | worst band MAPE | held-out ref (`G6.4`) | delta | clause 1 | clause 2 |
+|---|---|---|---|---|---|
+| `es`/`it` | 206.19 % | 176.87 % | **+29.32 pp** | FAIL | **FAIL** |
+| `es`/`uk` | 85.14 % | 215.13 % | −129.99 pp | FAIL | PASS |
+| `it`/`es` | 122.19 % | 363.44 % | −241.25 pp | FAIL | PASS |
+| `it`/`uk` | 105.64 % | 215.13 % | −109.48 pp | FAIL | PASS |
+| `uk`/`es` | 249.88 % | 363.44 % | −113.56 pp | FAIL | PASS |
+| `uk`/`it` | 145.96 % | 176.87 % | −30.91 pp | FAIL | PASS |
+
+Clause 1 (MAPE ≤ 15 %, `G6.4`'s bar reused) fails everywhere, which for a 1.48 B two-epoch pilot
+scored at 363/215/177 % **held out** is the expected reading and not news.
+
+🔴 **Clause 2 is the finding, and its one failure is instructive.** Held-in beats held-out in five
+pairs of six. The exception is `es`/`it`: the `es`-fold model, which had **Italy in its training
+data**, matches Italy's published tables *worse* (206.19 %) than the `it`-fold model that never saw
+Italy (176.87 %). And the two models that both hold Italy in disagree with each other by **60 pp**
+(206.19 vs 145.96). 🔴 **The pair-to-pair spread is larger than the held-in advantage**, so at pilot
+scale clause 2 is not resolving membership. It is a `PASS 5/6` that must never be quoted as one.
+
+#### 🔴 The perturbation battery on this arm is vacuous, and is recorded as such
+
+All four runnable injections "fell" all six pairs — but the gate was **already failing at baseline**,
+so nothing was demonstrated. This is the identical situation to `G6.5`'s pilot arm. The `null`
+perturbation moving the verdict is the tell. **The demonstration of record for `G6.6` remains the
+corpus arm**, where baseline is 3/3 PASS and the three real injections each felled it. The coverage
+clause is FAIL here for the separate, honest reason that `sequential_countries` needs its own
+training run — a **NAMED GAP**, not an omission.
+
+#### 🔴 `FINDING 90` — the worst-band rule selects the smallest denominator, and it reaches `G6.4`
+
+Every one of the six worst-band verdicts above is driven by a cell whose **published** value is
+between **1 and 15 minutes per day**. Pulling the same view on `G6.4`, the reported gate:
+
+| fold | reported | band | that band's **MAE** | driving cell |
+|---|---|---|---|---|
+| `es` | 363.44 % | `Y_GE65` | 42.13 min | `AC1_TR` pub **5**, model 106.1 |
+| `uk` | 215.13 % | `Y_GE65` | 36.37 min | `AC2` pub **1**, model 7.3 |
+| `it` | 176.87 % | `Y_GE65` | 21.21 min | `AC2` pub **1**, model 6.3 |
+
+**`Y_GE65` is not the worst-fitting band; in minutes it is among the best.** Italy's `Y_GE65` MAE of
+21.21 min is the **second-lowest of the twelve rows in the artefact**, while its `Y25-44` — MAE
+77.75, nearly 4× larger — is reported at 39.76 %. Selecting on MAE instead flips the answer in two
+folds of three. Over the eighteen `(pair, band)` cells here the two metrics are **negatively
+rank-correlated, Spearman −0.5604.**
+
+The cause is not the model. Eurostat publishes ~1 min/day of employment for the over-65s because
+retired people do not work; that is the right number to publish and a useless denominator.
+`D-S6-3` item 1 ruled MAPE on **non-zero** cells — these are non-zero, so the rule sends them to the
+MAPE arm. It anticipated zero, not **near-zero**, and all three headlines live in near-zero.
+
+Compounded with `FINDING 39`'s country-dependent rounding floor, a cell printed `1` is truly in
+`[0.5, 1.5]`, so its APE is **not identified**: `uk`'s 630 % spans **387–1360 %** on the rounding
+convention alone; `it`'s 530 % spans 320–1160 %.
+
+🟢 **Not all three are artefacts and this must not be written as if they were.** `es`'s cell spans
+1829–2258 % — 106 minutes of daily travel against a published 5 is a genuine ~20× error that
+survives any rounding assumption. The `uk` and `it` cells do not survive it.
+
+🔴 **`D-S6-12` is open and blocks quoting any `G6.4` or `G6.6` headline.** It is a band question,
+so nothing was changed: no checker edited, `G6.4`'s artefact as it was, `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` intact. It does **not** reach `G6.9` (dimensionless MAE ratio
+since `D-S6-10`) nor `G6.1`/`G6.2`/`G6.3` (in pp).
+
+---
+
+### 2026-08-22 (evening) — 🟢 **`G6.7` IS RUN ON ALL THREE FOLDS — FIFTEEN BATCHES, 9,000 DIARIES, THE AMPLITUDE GUARD HELD EVERYWHERE AND 0 % OF PREFIXES WERE DROPPED. 🔴 IT FAILS 3/3 ON CLAUSE 1, AND THE PER-AGGREGATE VIEW SAYS THE OPPOSITE OF THE HEADLINE: THE MODEL RECEIVES THE CONDITIONING VECTOR AND ATTENUATES IT. `FINDING 91`, `D-S6-13`.**
+
+Jobs 1286260–1286274, five λ levels per fold under the fictional token `x_zz`. Artefacts
+`outputs_step6/g67_leg4_{es,uk,it}.json`.
+
+| fold | pooled slope | bar | clause 2 recites at |
+|---|---|---|---|
+| `es` | 0.0358 (R² 0.0018) | ≥ 0.80 | levels 0, 1, 2 (`uk`, `uk`, `uk`) |
+| `uk` | 0.2437 (R² 0.1012) | ≥ 0.80 | levels 0, 1, 2 (`es`, `uk`, `es`) |
+| `it` | 0.1899 (R² 0.1008) | ≥ 0.80 | levels 0, 1 (`es`, `es`) |
+
+#### 🟢 Clause 2 works, and reads cleanly
+
+The anti-stereotype clause fires at **low |λ|** and clears at **high |λ|** in every fold: MAE against
+the conditioning vector falls monotonically across the levels (`it`: 47.52 → 43.41 → 27.20 → 15.97 →
+**9.16**) while MAE against the national profiles stays flat at 31–49. **The weaker the conditioning
+signal, the more the model falls back on a national pattern** — which is exactly the behaviour the
+clause was written to detect, arriving as a graded result rather than a binary one.
+
+#### 🔴 `FINDING 91` — the pooled slope cannot separate attenuation from indifference
+
+`AC2` (employment), the channel the λ tilt principally moves:
+
+| fold | `AC2` **R²** | slope | requested | delivered | **gain** |
+|---|---|---|---|---|---|
+| `es` | 0.845 | +0.166 | 79.3 min | 14.3 min | **18 %** |
+| `uk` | **0.981** | +0.596 | 83.7 min | 47.7 min | **57 %** |
+| `it` | **0.984** | +0.120 | 72.5 min | 9.2 min | **13 %** |
+
+`AC2` is the **highest-R² aggregate of the six in two folds of three**. An R² of 0.98 over five
+levels is not indifference — the model orders the levels almost perfectly and then delivers an
+eighth to a half of the amplitude. `AC3` agrees: +0.822 / +0.504 / +0.863 at R² 0.90–0.96.
+
+🔴 **The statistic is blind to this.** `ignore_prefix`, which destroys all conditioning by
+construction, scores pooled **0.0000**; baseline `it` scores **0.1899**. Two behaviours as different
+as "tracks at R² 0.984" and "cannot track at all" are 0.19 apart on the gate's own number.
+
+**Why: budget closure.** The six level-1 aggregates were measured to sum to **1439.2–1439.6 min** of
+the 1440-minute day at every level in every fold, so their deviations must sum to ≈ 0. A model that
+under-delivers on five aggregates is *forced* to over-deliver on the sixth, and `AC4-8` (leisure) is
+that residual bucket — slope **−1.259** (`es`, R² 0.843) and **−1.023** (`uk`, R² 0.732), absorbing
+almost one-for-one what the other channels failed to deliver. Pooling averages the attenuated
+positives against the forced negative and lands near zero. 🔴 **So a model of uniform gain `g < 1`
+does not score pooled ≈ `g`; it scores well below it, by an amount set by which bucket absorbs the
+residual. The 0.80 bar is not "80 % of the requested amplitude".**
+
+🟢 **This is the diagnosis that matters for Leg 5:** an amplitude/gain deficit is the kind of thing
+a 7 B model at three epochs can plausibly close. A comprehension failure is not. The pilot's number
+would have suggested the latter; the per-aggregate view shows the former.
+
+#### 🔴 The perturbation battery on this arm is vacuous, and is recorded as such
+
+All four injections "fell" all three folds, but baseline was already FAILing — the same vacuity as
+`G6.6`'s generated arm and `G6.5`'s pilot arm, and again the tell is that `null` moves the verdict.
+**`G6.7` has never been seen failing from a passing baseline and cannot be until a model passes it.**
+
+#### 🟢 Cross-gate corroboration, at zero extra compute
+
+`G6.4` independently found the `es`-fold adapter producing `AC2` = 4.0 min against a published 15.0
+for `Y25-44`. `G6.7` finds the same adapter unable to move `AC2` past 17 min at any λ. Two gates,
+different tables, same channel.
+
+🔴 `D-S6-13` is open on the verdict statistic. Nothing was changed: no checker edited, artefacts as
+produced, `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` intact.
+
+---
+
+## `D-S6-12` RULED AND APPLIED — the APE floor, 2026-08-22
+
+Ruled **(a) + MAE** on question 1 and **(a)** on question 2. Both applied the same day. Backups
+`tools/4thJ_step6_level1.py.bak_ds612`, `tools/4thJ_step6_g66_heldin.py.bak_ds612`.
+
+**What changed.** `gate_g6_4` now picks a cell's basis from the **published side only**, on a
+three-rung ladder, and the rung is chosen before the model's value is looked at:
+
+| published value | basis | bar |
+|---|---|---|
+| `< 0.5` min/day | zero cell, hit/miss (`D-S6-3` item 1 (c), unchanged) | model `< 1.0 %` of the day |
+| `< 10.0` min/day | **floor cell, absolute** (new) | abs(model − published) `< 15.0` min/day |
+| otherwise | APE, and the MAPE is the mean of these | `MAPE <= 15.0 %`, unchanged |
+
+`PUBLISHED_FLOOR_MIN = 10.0` and `FLOOR_MAE_MAX = 15.0` are pre-registered in
+`tools/4thJ_step6_level1.py` and neither was tuned to an observed result. **`MAPE_MAX` did not
+move**: the 15 % bar stays binding, unchanged, on every cell of 10 min/day or more. Clause 2's
+tolerance stays at **0.0 pp** per question 2 (a) — a strict non-inferiority test, to be described in
+the methods as a **directional** guard rather than a calibrated band.
+
+`tools/4thJ_step6_level1_selftest.py` went 47 → **56 green**, and the one assertion that broke was
+the right one: *"Y_GE65 scores all six on APE"* is exactly what `FINDING 90` says must stop being
+true. Nine new checks cover the floor rung, including that a floor cell moves the verdict **without
+moving the MAPE** in both directions.
+
+**Blast radius, measured not assumed.** `grep` over `tools/` confirms `gate_g6_4` has exactly two
+callers, `4thJ_step6_g64_run.py` and `4thJ_step6_g66_heldin.py`. `G6.1`, `G6.5`, `G6.9` and the
+secondary scorer use `L1.mae`, which is untouched. That matches the decision doc's §3 scope claim.
+
+### 🟢 The calibration arm confirms the defect on the ground truth itself
+
+The real corpus is a perfect model of itself, and it was being charged up to **7.35 pp** for
+denominators it cannot be blamed for:
+
+| fold | band | MAPE before | MAPE after | delta pp |
+|---|---|---|---|---|
+| `es` | `Y45-64` | 3.22 | 1.49 | −1.73 |
+| `es` | `Y_GE65` | 4.64 | 2.57 | −2.07 |
+| `uk` | `Y45-64` | 4.92 | **4.94** | **+0.03** |
+| `uk` | `Y_GE65` | 5.96 | 2.70 | −3.27 |
+| `it` | `Y45-64` | 5.98 | 1.33 | −4.65 |
+| `it` | `Y_GE65` | 11.50 | 4.15 | −7.35 |
+
+`Y25-44` is unmoved in all three folds — it has no cell below 10 min/day. Corpus board stays **9/9
+PASS**, so the gate still clears its own ground truth. 🔴 `uk`/`Y45-64` went **up** by 0.03 pp: a
+removed cell was below the band's mean APE, so dropping it raises the mean. Not a defect, and worth
+stating because a floor that could only ever lower a number would be a floor worth distrusting.
+
+### 🟢 The generated arm: the same error, now caught in minutes instead of in a percentage
+
+`es`/`Y_GE65`, the fold that produced `FINDING 90`'s headline **363.44 %**, now reads **MAPE
+14.65 %** — and still **FAILs**, on this line:
+
+> floor-cell `AC1_TR`: published 5.00 min/day is below the 10.0 min/day APE floor, model 106.10 min,
+> absolute error 101.10 min/day exceeds the pre-registered 15.0 min/day tolerance
+
+That is the whole point of the ruling. A 101-minute error on a 5-minute published cell is real and
+must fail; **2 029 %** was never the size of it, and under `FINDING 39`'s rounding that percentage
+was not identified. The generated board moves **8 FAIL / 1 PASS → 7 FAIL / 2 PASS**.
+
+🔴 **The single band that flipped, `es`/`Y45-64` (20.95 → 12.21 %), was audited cell by cell before
+being accepted.** The cell that left the MAPE is `AC2`, published 5.00, model 1.77 — an error of
+**3.23 minutes** that was contributing a 64.6 % APE. Removing it is correct. But the band now
+PASSes while carrying `AC3` at **+53.05** and `AC0` at **−67.22** min/day (MAE 29.86). That is a
+property of a mean-of-percentages bar and not something this ruling introduced — and it is exactly
+why item 1 point 3 requires the minutes to be printed beside the percentage. **`G6.4` PASS at
+MAPE <= 15 % does not mean small absolute error, and no write-up may imply that it does.**
+
+### 🔴 The cost of the ruling, measured: `wrong_tables` lost two of its three kills
+
+The registered `wrong_tables` injection scores a country's real diaries against **another country's**
+published tables. On the corpus arm it felled 3 of 3 donors before and fells **1 of 3** now:
+
+| donor | worst MAPE before | after | bar 15.0 % |
+|---|---|---|---|
+| `es` | 35.01 % | **25.37 %** | FELL → FELL |
+| `uk` | 67.82 % | **11.77 %** | FELL → **held** |
+| `it` | 33.41 % | **8.06 %** | FELL → **held** |
+
+⚪ **Provenance of that table.** The `fell` transition 3/3 → 1/3 is in the artefacts on both
+sides (`g66_corpus_calibration.json`, `perturbations.wrong_tables.fell`). The six MAPE values are
+NOT — the perturbation record stores only which pairs fell. They were obtained by calling
+`score_pair(..., "wrong_tables", ...)` twice per donor over the same corpus, once with
+`L1.PUBLISHED_FLOOR_MIN` monkeypatched back to 0.5 to reproduce the pre-ruling basis exactly. Stated
+here so the numbers are not hunted for in a file that does not contain them.
+
+The reason is structural: what most distinguishes these three countries *in proportion* lives in the
+near-zero cells (over-65 `AC2` is 1 vs 2 vs 5 min/day), and in **minutes** those differences are a
+few units. The floor removes them from the percentage, so cross-scoring two countries is no longer
+visible to a 15 % bar in two of three cases. 🔴 **This is a real loss of discriminating power and it
+is not hidden.** The coverage clause still reads **PASS** — every injection still fells at least one
+pair and there is no no-op — and `es` still fells with a 10-point margin, so the gate remains
+demonstrated. But the trade the ruling makes is sensitivity on small cells in exchange for
+identifiability on them, and this table is the price.
+
+### 🔴 `FINDING 93` — `G6.6` clause 2 was 5/6 for the wrong reason. It is 2/6.
+
+The last session recorded clause 2 at **5 of 6 PASS** and flagged that it must never be quoted as a
+clean result. It was worse than flagged. Three of those five passes were bought by the denominator
+artefact **on the held-out side of the comparison**:
+
+| pair | worst MAPE | held-out ref | delta pp | clause 2 |
+|---|---|---|---|---|
+| `es`/`it` | 206.19 → 227.43 | 176.87 → 106.70 | +29.32 → **+120.73** | FAIL → FAIL |
+| `es`/`uk` | 85.14 → 58.37 | 215.13 → 132.54 | −129.99 → −74.17 | PASS → PASS |
+| `it`/`es` | 122.19 → 69.69 | **363.44 → 42.57** | −241.25 → **+27.13** | **PASS → FAIL** |
+| `it`/`uk` | 105.64 → 45.30 | 215.13 → 132.54 | −109.48 → −87.23 | PASS → PASS |
+| `uk`/`es` | 249.88 → 54.87 | **363.44 → 42.57** | −113.56 → **+12.31** | **PASS → FAIL** |
+| `uk`/`it` | 145.96 → 155.15 | 176.87 → 106.70 | −30.91 → **+48.45** | **PASS → FAIL** |
+
+`es`'s held-out reference was **363.44 %** — that number *was* `FINDING 90`, a 1-minute published
+cell. Any held-in score at all beat it, so clause 2 passed by default in every pair that referenced
+Spain. Under the floor the reference is **42.57 %** and the comparison becomes real.
+
+🔴 **Clause 2 is 2 of 6, not 5 of 6, and the corrected reading is the alarm this gate exists to
+raise**: the pilot reproduces a country it *trained on* **worse** than the model that never saw it,
+in 4 of 6 pairs. With `--tolerance-pp` ruled to stay at 0.0, nothing softens that. `G6.6`'s
+generated board is **6/6 FAIL** on clause 1 either way — expected of a 1.48 B two-epoch pilot — and
+its perturbation battery remains **vacuous** (baseline already FAILs; `null` moves the verdict).
+The demonstration of record stays the **corpus** arm, still 3/3 PASS, coverage clause PASS.
+
+⚪ The `worst by MAPE` / `worst by MAE` disagreement flag now prints on every pair, and it fires on
+exactly the two pairs whose worst-by-MAPE band is still `Y_GE65` (`es`/`it`, `uk`/`it`).
+
+---
+
+## `D-S6-13` RULED AND APPLIED — `AC4-8` out of the fit, steering in, 2026-08-22
+
+Ruled **(c) + (d)**, applied the same day. Backup `tools/4thJ_step6_g67_score.py.bak_ds613`.
+Clause 1 is now two parts and a batch must clear both:
+
+1. **STEERING** — on `AC2`, the channel the lambda tilt targets: **R² >= 0.80 and slope > 0**.
+2. **AMPLITUDE** — pooled slope **>= 0.80** over the five independent channels `AC0`, `AC1_TR`,
+   `AC2`, `AC3`, `AC9A`. `AC4-8` is excluded **by name**, on the stated ground that budget closure
+   makes it a dependent quantity; it is still measured and still printed.
+
+`SLOPE_MIN` is unchanged at 0.80 and `STEER_R2_MIN` reuses the same 0.80 rather than inventing a
+second project number. The six-aggregate fit is retained in the artefact as
+`pooled_slope_all_six` so the correction can be **shown** rather than asserted.
+
+| fold | pooled slope, six | pooled slope, five active | `AC2` R² | steering | amplitude |
+|---|---|---|---|---|---|
+| `es` | 0.0358 | **0.2666** | 0.8455 | **PASS** | FAIL |
+| `uk` | 0.2437 | **0.4612** | 0.9808 | **PASS** | FAIL |
+| `it` | 0.1899 | **0.3785** | 0.9836 | **PASS** | FAIL |
+
+🟢 **The correction does what the ruling predicted, and the 7.4x on `es` is the measure of how much
+of the old number was closure rather than model.** More importantly the new clause **separates the
+two behaviours the old one could not**: baseline steering PASSes in all three folds at R² 0.85–0.98,
+while `ignore_prefix` — which destroys all conditioning by construction — returns `AC2` R² **NaN**
+(zero variance in the generated series) and slope 0.0, and FAILs steering outright. That is the
+discrimination `FINDING 91` said the single pooled statistic lacked, now demonstrated on the
+artefact rather than argued.
+
+🔴 **The verdict is unchanged: `G6.7` FAILs in all three folds**, on amplitude and on clause 2 (the
+model recites a country at levels 0/1/2 in `es` and `uk`, 0/1 in `it`). The ruling did not rescue
+the pilot and was not meant to. What it changes is what the failure *means*: the corrected board
+says the model **tracks the conditioning vector and under-delivers its magnitude**, which is a
+deficit a 7 B model at three epochs can plausibly close.
+
+🔴 The perturbation battery stays **vacuous** on this arm — baseline already FAILs, so all four
+injections "felling" the gate demonstrates nothing, and the coverage clause correctly reads FAIL.
+**`G6.7` has still never been seen failing from a passing baseline.**
+
+⚪ One stale cross-reference fixed in passing: `ols()`'s zero-variance message cited "FINDING 90" for
+the amplitude guard, a number since assigned to the near-zero-denominator finding. Message text
+only; no verdict, threshold or count depends on it.
+
+🔴 All numbers on this page are **LEG-4 PILOT and not reportable**. `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` intact; no checker threshold was moved that the author did not
+rule; nothing was run on Speed.
+
+---
+
+## `D-S6-14` RULED AND BUILT — the memorisation ceiling, 2026-08-22
+
+Ruled **(a)** on question 1 and **(ii) + (iii)** on question 2, with three directives. The
+construction was built and demonstrated the same day; the four training runs are **held**, by the
+author's own scheduling directive, until Leg 5 is actually running.
+
+| # | question | ruling |
+|---|---|---|
+| 1 | what is permuted | **(a)** prefix-to-body pairing, at shard-build time, with a printed seed |
+| 2 | which leg, how many folds | **(ii) + (iii)** — one Leg-5 run on the pre-named `it` fold, plus three Leg-4 runs on `es`, `uk`, `it` |
+| 3 | thresholds | **unchanged** — `G6.10 <= 0.65`, `G6.11 <= 0.75`; the ceiling is reported beside them, never substituted for them |
+
+Plus: permuted shards marked `POISONED_CONTROL`, kept out of the production shard directory, and
+submitted only once job 1286209 is running so the control cannot compete with the critical path for
+`AssocGrpGRES`.
+
+### What was built
+
+`4thJ_step4_shards.py --permute-labels [--permutation-seed N]`, seed **614614**. Default mode is
+untouched: with no flag the script writes exactly what it wrote before, to exactly where it wrote it.
+
+🔴 **The permutation is within `(country, split)`, not global, and the first reason is not
+negotiable.** A global shuffle would put an Italian body behind a Spanish prefix, which in the `it`
+fold is the held-out country's data entering training wearing a donor's prefix — and `G4.13` would
+still read **0**, because it counts the `country` field. The leak would be invisible to the one gate
+built to see leaks. The second reason is that `4thJ_step6_privacy_mia.py` draws members from
+`split == "train"` and non-members from `split == "heldout"` of the same countries; permuting only
+the member side would let the attack separate the two sets on *pairing style* rather than on
+membership and report an inflated AUC that is not memorisation at all. **Both splits are permuted,
+independently.**
+
+⚪ **Declared limitation, and it follows directly from that first reason.** `P(body | country)`
+survives the permutation. The control de-associates five of the six prefix fields — age band, sex,
+household type, economic status, day type — and cannot touch the sixth without destroying the LOCO
+design. The ceiling it measures is therefore the ceiling for a model that may still condition on
+country. No write-up may call it a fully unconditional control.
+
+🔴 **The permutation is a derangement.** A uniform permutation of `n` items has one fixed point in
+expectation *regardless of n*, and a fixed point is a genuine `(prefix, body)` pair surviving inside
+a control whose whole claim is that no genuine pair survives. Drawn by rejection — redraw the group
+until it has none — which is a uniform derangement exactly, at an expected 2.72 draws.
+
+### The build, job 1286302, and its five measured invariants
+
+| group | n | draws | fixed points | identical-body collisions |
+|---|---|---|---|---|
+| `es`/heldout | 1,808 | 1 | 0 | 0 |
+| `es`/train | 17,332 | 1 | 0 | 0 |
+| `it`/heldout | 3,894 | 3 | 0 | 0 |
+| `it`/train | 34,366 | 1 | 0 | 0 |
+| `uk`/heldout | 1,626 | 4 | 0 | 0 |
+| `uk`/train | 14,228 | 2 | 0 | 0 |
+
+1. body character multiset **identical** (42,744,954 characters)
+2. prefix multiset **identical** (2,520 distinct prefixes)
+3. total body length **identical**
+4. prefix country `==` record country for **all 73,254** records — so `G4.13` still counts what it
+   thinks it counts
+5. records whose full text survived: **0** (0.0000 %)
+
+Fold shards come out with counts **identical to production** — train 48,594 / 51,698 / 31,560, strata
+at `N >= 100` of 150 / 151 / 97 — because the prefixes never moved and every stratum is keyed off the
+prefix. `G6.12`'s rare-stratum counts and the MIA's stratum keys are therefore unchanged by
+construction, which is what makes the ceiling comparable to the run it is a ceiling for.
+
+`corpus_permuted_control.jsonl` md5 `533a07e0417c8c05259c9e5e9ba72c4e`. The production
+`shard_manifest.json` and `shards/` still carry their 2026-08-18 10:50 timestamps: **nothing was
+written into the production tree.**
+
+### 🟢 The interlock was seen failing, in both directions — job 1286303
+
+The trainer refuses a poisoned shard for a production run-type and a clean shard for the control:
+
+> **A.** `--run-type primary` against the poisoned manifest →
+> *"this manifest is marked POISONED_CONTROL (permutation seed 614614) and the run-type is
+> 'primary'. A permuted-label shard may only be trained as the control."*
+>
+> **B.** `--run-type permuted` against the clean manifest →
+> *"the memorisation-ceiling control trained on the real corpus is not a ceiling, it is a duplicate
+> of the reported run."*
+
+Both refusals cost 45 seconds of CPU, on purpose: they read a json key and exit before a model
+loads. The two interlocks inside `4thJ_step6_privacy_mia.py` were hoisted to the same position for
+the same reason — a guard that can only fire after a full 7 B scoring pass is a guard nobody ever
+sees fail.
+
+### What the ceiling is for
+
+`4thJ_step6_privacy_mia.py` grows `--permuted-adapter` and `--permuted-corpus`. Given both, it scores
+the control through **the same functions the baseline went through**, over the permuted corpus at the
+same `n` and the same seed, and records `ceiling_G6_10_auc`, `ceiling_G6_11_auc` and the headroom to
+the measured values. Without them it prints the named gap exactly as before.
+
+The audit had a **floor** — the untuned base model, AUC ~0.50 — and no top. A measured 0.55 against a
+0.65 bar could not be called low, because low compared to what. The permuted adapter has nothing to
+generalise by construction, so what it scores is what rote memorisation looks like at this size, on
+this corpus, at this schedule.
+
+🔴 **One reading would invalidate the reported run and the artefact says so in words:** if the
+reported adapter's AUC is at or above the ceiling, then a model that could *only* memorise did not
+leak more than the model that could also generalise. Either the reported run memorised or the control
+did not train, and neither permits a release. That clause is written now, before any number exists.
+
+### 🔴 Two things found while building it
+
+**The `it` fold is the SMALLEST training pool, not the largest.** The ruling's rationale gives
+31,560 records — the right number — and calls it the largest; it is the smallest of the three
+(48,594 / 51,698 / 31,560). The other half of the rationale is right: 97 strata at `N >= 100` is the
+**fewest**, i.e. the highest fragmentation. The choice of `it` as the pre-named 7 B anchor is
+unaffected and stands; it is recorded here so the descriptor is not quoted from the docket into a
+paper.
+
+🔴 **The cluster's `4thJ_step4_train.py` was stale — it predated `D-S4-7`.** The re-point ruled on
+2026-08-20 (`G4.7` moved to the generated sample, the corpus reading became `G4.15`) existed only in
+the local tree. Job 1286209 is the **reported** Leg-5 fold and would have run without it, producing a
+result missing a ruled gate and costing a full re-run to notice. `4thJ_step4_g47_coverage.py`, the
+standalone generated-side lever, was **absent from the cluster entirely**. Both were pushed and
+verified by md5 while 1286209 was still queued; the old trainer is kept at
+`4thJ_step4_train.py.bak_pre_ds47_ds614`. `diagnostics`, `genperturb`, `thresholds`, `perturbtable`
+and `stratum_probe` were compared the same way and were already identical.
+
+⚪ Everything else in this section is construction, not result. No adapter has been trained on these
+shards yet, so there is no ceiling number to quote — and until there is, `privacy_audit.md` still has
+two of three controls.
+
+⚪ **Addendum, same day: the three audit-side guards were seen failing too** (jobs 1286305, 1286311).
+`--permuted-adapter` without `--permuted-corpus` is refused — *"the control adapter must be scored on
+the corpus it trained on"*; the real corpus passed as the control corpus is refused — *"not marked
+POISONED_CONTROL ... a ceiling measured on the real corpus is not a ceiling, it would simply read low
+and be believed"*; and a control adapter that has not been trained yet is refused rather than
+silently omitted from the artefact. 🔴 The first attempt at this demonstration FAILED TO FAIL: the
+`.py` had been pushed to Speed before the interlocks were hoisted, so the clean-corpus run sailed past
+the guard and began loading models. Caught, cancelled, re-pushed, re-run. **Five refusals are now on
+the record — two in the trainer, three in the audit — and every one of them was watched happening.**

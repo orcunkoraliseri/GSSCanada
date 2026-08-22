@@ -1,0 +1,345 @@
+{
+  "folds": {
+    "es": {
+      "G6.2 donor=it": {
+        "bands": {
+          "Y25-44": {
+            "margin": -64.4921,
+            "model_mae": 69.5,
+            "n_model": 215,
+            "n_null": 10431,
+            "null_mae": 5.0079,
+            "published_source": "ES tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -18.6274,
+            "model_mae": 29.8557,
+            "n_model": 164,
+            "n_null": 12543,
+            "null_mae": 11.2283,
+            "published_source": "ES tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -30.8652,
+            "model_mae": 42.1328,
+            "n_model": 118,
+            "n_null": 9581,
+            "null_mae": 11.2675,
+            "published_source": "ES tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.2 single-donor-country null, donor it (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+          "neighbour": "it",
+          "null": "G6.2",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      },
+      "G6.2 donor=uk": {
+        "bands": {
+          "Y25-44": {
+            "margin": -58.5912,
+            "model_mae": 69.5,
+            "n_model": 215,
+            "n_null": 4567,
+            "null_mae": 10.9088,
+            "published_source": "ES tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -14.597,
+            "model_mae": 29.8557,
+            "n_model": 164,
+            "n_null": 5027,
+            "null_mae": 15.2587,
+            "published_source": "ES tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -21.2929,
+            "model_mae": 42.1328,
+            "n_model": 118,
+            "n_null": 3356,
+            "null_mae": 20.8399,
+            "published_source": "ES tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.2 single-donor-country null, donor uk (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+          "neighbour": "uk",
+          "null": "G6.2",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      },
+      "G6.3 pooled": {
+        "bands": {
+          "Y25-44": {
+            "margin": -63.6922,
+            "model_mae": 69.5,
+            "n_model": 215,
+            "n_null": 14998,
+            "null_mae": 5.8078,
+            "published_source": "ES tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -20.0697,
+            "model_mae": 29.8557,
+            "n_model": 164,
+            "n_null": 17570,
+            "null_mae": 9.786,
+            "published_source": "ES tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -26.4265,
+            "model_mae": 42.1328,
+            "n_model": 118,
+            "n_null": 12937,
+            "null_mae": 15.7063,
+            "published_source": "ES tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.3 pooled all-country average, EQUAL COUNTRY MASS (D-S6-7 (a): each donor country renormalised to 1.0 before pooling); NO raking; weight_dia_cal",
+          "neighbour": null,
+          "null": "G6.3",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      }
+    },
+    "it": {
+      "G6.2 donor=es": {
+        "bands": {
+          "Y25-44": {
+            "margin": -64.4903,
+            "model_mae": 77.7535,
+            "n_model": 188,
+            "n_null": 6075,
+            "null_mae": 13.2632,
+            "published_source": "IT tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -40.2772,
+            "model_mae": 54.6822,
+            "n_model": 172,
+            "n_null": 6460,
+            "null_mae": 14.405,
+            "published_source": "IT tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -4.3923,
+            "model_mae": 21.2105,
+            "n_model": 137,
+            "n_null": 4036,
+            "null_mae": 16.8181,
+            "published_source": "IT tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.2 single-donor-country null, donor es (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+          "neighbour": "es",
+          "null": "G6.2",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      },
+      "G6.2 donor=uk": {
+        "bands": {
+          "Y25-44": {
+            "margin": -62.4863,
+            "model_mae": 77.7535,
+            "n_model": 188,
+            "n_null": 4567,
+            "null_mae": 15.2672,
+            "published_source": "IT tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -35.3115,
+            "model_mae": 54.6822,
+            "n_model": 172,
+            "n_null": 5027,
+            "null_mae": 19.3706,
+            "published_source": "IT tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -2.9005,
+            "model_mae": 21.2105,
+            "n_model": 137,
+            "n_null": 3356,
+            "null_mae": 18.3099,
+            "published_source": "IT tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.2 single-donor-country null, donor uk (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+          "neighbour": "uk",
+          "null": "G6.2",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      },
+      "G6.3 pooled": {
+        "bands": {
+          "Y25-44": {
+            "margin": -63.9469,
+            "model_mae": 77.7535,
+            "n_model": 188,
+            "n_null": 10642,
+            "null_mae": 13.8066,
+            "published_source": "IT tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -40.6154,
+            "model_mae": 54.6822,
+            "n_model": 172,
+            "n_null": 11487,
+            "null_mae": 14.0668,
+            "published_source": "IT tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -6.6711,
+            "model_mae": 21.2105,
+            "n_model": 137,
+            "n_null": 7392,
+            "null_mae": 14.5393,
+            "published_source": "IT tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.3 pooled all-country average, EQUAL COUNTRY MASS (D-S6-7 (a): each donor country renormalised to 1.0 before pooling); NO raking; weight_dia_cal",
+          "neighbour": null,
+          "null": "G6.3",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      }
+    },
+    "uk": {
+      "G6.2 donor=es": {
+        "bands": {
+          "Y25-44": {
+            "margin": -11.6356,
+            "model_mae": 24.0427,
+            "n_model": 195,
+            "n_null": 6075,
+            "null_mae": 12.4072,
+            "published_source": "UK tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -5.7512,
+            "model_mae": 22.9286,
+            "n_model": 168,
+            "n_null": 6460,
+            "null_mae": 17.1773,
+            "published_source": "UK tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -11.3836,
+            "model_mae": 36.3684,
+            "n_model": 114,
+            "n_null": 4036,
+            "null_mae": 24.9848,
+            "published_source": "UK tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.2 single-donor-country null, donor es (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+          "neighbour": "es",
+          "null": "G6.2",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      },
+      "G6.2 donor=it": {
+        "bands": {
+          "Y25-44": {
+            "margin": -13.241,
+            "model_mae": 24.0427,
+            "n_model": 195,
+            "n_null": 10431,
+            "null_mae": 10.8018,
+            "published_source": "UK tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -3.6792,
+            "model_mae": 22.9286,
+            "n_model": 168,
+            "n_null": 12543,
+            "null_mae": 19.2494,
+            "published_source": "UK tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -17.3776,
+            "model_mae": 36.3684,
+            "n_model": 114,
+            "n_null": 9581,
+            "null_mae": 18.9908,
+            "published_source": "UK tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.2 single-donor-country null, donor it (D-S6-6 (a): every donor country reported, none nominated); NO raking; weight_dia_cal",
+          "neighbour": "it",
+          "null": "G6.2",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      },
+      "G6.3 pooled": {
+        "bands": {
+          "Y25-44": {
+            "margin": -12.3497,
+            "model_mae": 24.0427,
+            "n_model": 195,
+            "n_null": 16506,
+            "null_mae": 11.6931,
+            "published_source": "UK tus_00age Y25-44 2010 TIME_SP sex=T"
+          },
+          "Y45-64": {
+            "margin": -5.3072,
+            "model_mae": 22.9286,
+            "n_model": 168,
+            "n_null": 19003,
+            "null_mae": 17.6214,
+            "published_source": "UK tus_00age Y45-64 2010 TIME_SP sex=T"
+          },
+          "Y_GE65": {
+            "margin": -17.9341,
+            "model_mae": 36.3684,
+            "n_model": 114,
+            "n_null": 13617,
+            "null_mae": 18.4343,
+            "published_source": "UK tus_00age Y_GE65 2010 TIME_SP sex=T"
+          }
+        },
+        "meta": {
+          "ess": null,
+          "ess_frac": null,
+          "marginals_source": "G6.3 pooled all-country average, EQUAL COUNTRY MASS (D-S6-7 (a): each donor country renormalised to 1.0 before pooling); NO raking; weight_dia_cal",
+          "neighbour": null,
+          "null": "G6.3",
+          "raked": false,
+          "worst_strata_gap_pp": null
+        }
+      }
+    }
+  },
+  "leg": 4,
+  "wave": "2010"
+}

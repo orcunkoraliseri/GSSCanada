@@ -18,10 +18,28 @@
 # every record `LEG-4 PILOT -- NOT REPORTABLE` itself.
 
 set -x
-FOLD=${1:?usage: sbatch 4thJ_step7_generate.sh <es|uk|it> <n> [--no-grammar]}
+FOLD=${1:?usage: sbatch 4thJ_step7_generate.sh <es|uk|it> <n> [extra] [prefix_country] [tag]}
 N=${2:-600}
 EXTRA=${3:-}
 LEG=${LEG:-4}
+# 🟢 `G6.6` needs the FOLD's adapter driven by a DONOR country's prefixes, and
+# `G6.7` needs five fictional-country levels that must not overwrite each other.
+# Both are served by the same two optional arguments, and both default to the
+# existing behaviour so every earlier invocation is unchanged.
+PFX=${4:-$FOLD}
+TAG=${5:-}
+
+# `D-S7-4` (a), RULED 2026-08-22: the author MANDATED N >= 5,200 per fold for the
+# Leg-5 campaign. `V7.a` refuses to score `G7.7`/`G7.8` below ten strata carrying
+# 100 records, and against the real 228-stratum prefix pools that costs
+# 5,115 / 5,203 / 4,850 for es / uk / it. A Leg-5 batch smaller than that produces
+# gates that cannot be reported at all, so it is refused here rather than
+# discovered afterwards.
+if [ "$LEG" = "5" ] && [ "$N" -lt 5200 ]; then
+    echo "REFUSED: leg 5 with N=$N. D-S7-4 (a) mandates N >= 5200 per fold; below"
+    echo "that V7.a cannot score G7.7/G7.8 and the batch is unreportable."
+    exit 1
+fi
 
 ENVDIR=/speed-scratch/o_iseri/envs/step7
 STAGE=/speed-scratch/o_iseri
@@ -46,7 +64,7 @@ if [ ! -x "$ENVDIR/bin/python" ]; then
     echo "NO STEP 7 ENV AT $ENVDIR -- run 4thJ_step7_env_build.sh first."
     exit 1
 fi
-for f in "$IN/generation_config_${FOLD}.json" "$IN/prefixes_${FOLD}.jsonl"; do
+for f in "$IN/generation_config_${FOLD}.json" "$IN/prefixes_${PFX}.jsonl"; do
     if [ ! -s "$f" ]; then
         echo "MISSING $f -- scp the Step 5 inputs before submitting."
         exit 1
@@ -54,7 +72,11 @@ for f in "$IN/generation_config_${FOLD}.json" "$IN/prefixes_${FOLD}.jsonl"; do
 done
 
 mkdir -p "$WORK/tools" "$WORK/outputs_step7" || exit 1
-for f in 4thJ_step7_grammar.py 4thJ_step7_ebnf.py 4thJ_step7_generate.py; do
+# 🔴 `encoder.py` and `decoder.py` are on this list because
+# `4thJ_step7_grammar.py` imports `load_bit_positions` from `encoder` since
+# `D-S7-5` (1). Job 1286241 died in 5 s on exactly this omission in the sibling
+# script and it was still missing here.
+for f in 4thJ_step7_grammar.py 4thJ_step7_ebnf.py 4thJ_step7_generate.py encoder.py decoder.py; do
     cp "$STAGE/$f" "$WORK/tools/$f" || exit 1
 done
 md5sum "$WORK/tools"/4thJ_step7_{grammar,ebnf,generate}.py
@@ -68,7 +90,8 @@ nvidia-smi
     --fold "$FOLD" --leg "$LEG" --n "$N" $EXTRA \
     --step2 "$WORK/Step2_docs/outputs_step2" \
     --config "$IN/generation_config_${FOLD}.json" \
-    --prefixes "$IN/prefixes_${FOLD}.jsonl" \
+    --prefixes "$IN/prefixes_${PFX}.jsonl" \
+    ${TAG:+--tag "$TAG"} \
     --out "$WORK/outputs_step7"
 echo "generation exit status: $?   (0 = ok, 2 = NOT RUN)"
 

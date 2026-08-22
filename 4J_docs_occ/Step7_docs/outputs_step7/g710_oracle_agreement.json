@@ -2,14 +2,14 @@
   "alphabet_sizes": {
     "act": 159,
     "act2": 43,
-    "cop": 65,
+    "cop": 34,
     "loc": 5
   },
-  "compile_seconds": 0.017,
+  "compile_seconds": 0.281,
   "disagreement_examples": [],
-  "ebnf_chars": 115046,
+  "ebnf_chars": 114833,
   "gate": "G7.10",
-  "match_seconds": 576.906,
+  "match_seconds": 1113.151,
   "matcher_entry_point": "xgrammar.testing._is_grammar_accept_string",
   "n_disagreements": 0,
   "n_oracle_accepted": 5000,

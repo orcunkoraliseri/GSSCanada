@@ -905,3 +905,543 @@ Two facts the smoke test existed to check were already visible in the logs of ru
   architectures including `Olmo2ForCausalLM` and `Olmo3ForCausalLM`. The `D-S7-3` ruling does not
   depend on this — it rests on the downstream gates never having run on generated text — but the
   throughput half of the argument was weaker than it was presented.
+
+---
+
+### 2026-08-22 (afternoon, second entry) — 🔴 **THE FIRST CONSTRAINED BATCH CAME BACK 0 OF 16 VALID, AND THE CAUSE IS THE ONE THING `G7.10` WAS WRITTEN TO SAY IT COULD NOT SEE. `FINDING 80`.**
+
+Job `1286189`, 16 diaries, fold `es`, Leg-4 adapter, mask on. The engine came up, the LoRA loaded
+(`Loading LoRA weights trained with rsLoRA`), 16 diaries were generated in 47.0 s — and **not one was
+valid**. Every rejection carried the same reason, `does not end with <eor>`, `n_terminated 0 / 16`,
+and every record's `finish_reason` was `length` at exactly `1200` tokens.
+
+The script's own guard fired, in the words it was written in:
+
+> 🔴 THE MASK WAS ON AND 16 RECORD(S) ARE STILL INVALID. Either the grammar does not say what the
+> oracle says, or vLLM did not apply it. Do not score this batch.
+
+#### 🔴 `FINDING 80` — the mask was applied, correctly, to the wrong root
+
+Neither of the guard's two hypotheses is what happened, and the third possibility is worse than both
+because it is silent. Counting delimiters in the 16 generated bodies settles it:
+
+| | measured |
+|---|---|
+| commas in the generated body | **exactly 5**, in all 16 |
+| `\|` in the generated body | **0**, in all 16 |
+| `;` in the generated body | 0 |
+
+That is not unconstrained text. A free-running model trained on this corpus emits hundreds of commas
+and semicolons. **The mask was on and it was obeyed exactly.** It was simply matching a different
+production from the one intended.
+
+`root ::= PF "," PF "," PF "," PF "," PF "," PF "|" S0 "<eor>"` describes the **whole record**. But
+vLLM constrains the **completion**, and at generation time the six prefix fields and the `|` are
+already in the *prompt*. So the matcher was started at the top of `root` and handed the first
+generated character. It therefore read the episodes as **prefix fields** — and
+
+```
+PF     ::= PFCHAR | PFCHAR PF
+PFCHAR ::= [0-9a-zA-Z_+-]
+```
+
+accepts any non-empty run of letters, digits, `_`, `+` and `-`. `180`, `011`, `82`, `at_home` are all
+legal `PF`. So are `6-faced` and `733etrueAnnotationalledat_home_bounds_g1`. The model consumed its
+five commas, entered the **sixth and last** `PF` — which is unbounded — and stayed there for the
+remaining ~1,100 tokens, never reaching the `|` that would have let the day begin.
+
+🔴 **A grammar that constrains nothing looks exactly like a grammar that was ignored.** The only
+reason this was caught in fifteen minutes rather than after the campaign is that the batch was piped
+through the independent oracle immediately and the script refuses to file an invalid constrained batch
+quietly.
+
+#### What this says about `G7.10`, and it is not that `G7.10` was wrong
+
+The previous entry closed with the sentence *"It compares two recognisers on strings. It says nothing
+about whether vLLM's decoder actually honours the mask at generation time — that is items 7.3 and 7.5,
+on generated text, and it is still owed."* That was written before this run and it is exactly what
+happened. `G7.10` compared the two recognisers **on whole records**, where both are right; the defect
+lives in the *seam* between the grammar and the decoder, which no string-level gate can reach.
+
+⚪ **`G7.10`'s verdict is untouched.** The gate is not re-run and its artefact is not rebuilt.
+
+#### The fix, and it is additive
+
+`build_ebnf(alphabets, whole_record=True)` gains a parameter. `True` — the default — emits the
+whole-record root, byte for byte what it emitted before: the regenerated text still hashes to
+**`65aae7cb4f48ebb495f449ae91bcfd50`**, the md5 of the `step7_grammar.ebnf` that `G7.10` scored, and
+`4thJ_step7_ebnf_selftest.py` is still **43 ok, 0 FAILED**. `False` emits
+
+```
+# ROOT: COMPLETION ONLY. The prefix and its "|" are in the prompt.
+root ::= S0 "<eor>"
+```
+
+and omits `PF` and `PFCHAR` entirely, so the failure mode cannot reappear by accident: with no `PF` in
+the grammar there is nothing permissive for a mis-rooted matcher to fall into. `4thJ_step7_generate.py`
+now asks for `whole_record=False`; **the oracle and `G7.10` keep the whole-record root**, because the
+record they validate really does include the prefix.
+
+⚪ The two roots are now a thing the paper has to be honest about: the language is defined on whole
+records, and what the decoder is masked with is its suffix. They are the same language given the
+prompt, and the oracle checks the whole record afterwards, which is what makes the claim checkable.
+
+---
+
+### 2026-08-22 (evening) — 🟢 **THE FIX HOLDS, ALL THREE FOLDS ARE GENERATED BOTH WAYS, AND THE STEP 7 GATE BATTERY EXISTS AND HAS BEEN RUN ON GENERATED TEXT FOR THE FIRST TIME. 🔴 IT RETURNED `FINDING 81`, `FINDING 82` AND `D-S7-4`.**
+
+The previous entry ended with a fix and no evidence. This one has the evidence, and then it has the
+three things the evidence exposed.
+
+#### 🟢 `FINDING 80` is closed by demonstration, not by argument
+
+Job **1286191**, the same 16-prompt smoke test that returned 0 of 16, returned **16 of 16 valid and
+16 of 16 `<eor>`-terminated** against the completion-rooted grammar. Nothing else changed.
+
+#### 🟢 The Leg-4 rehearsal campaign, six jobs, `N = 600` per fold per arm
+
+| fold | arm | job | diaries/s | valid by the oracle | `<eor>` |
+|---|---|---|---|---|---|
+| `es` | constrained | 1286195 | 15.76 | **600 / 600 (100.00 %)** | 600 / 600 |
+| `es` | `--no-grammar` | 1286196 | 23.03 | **16 / 600 (2.67 %)** | 600 / 600 |
+| `uk` | constrained | 1286197 | 13.50 | **600 / 600 (100.00 %)** | 600 / 600 |
+| `uk` | `--no-grammar` | 1286198 | 19.49 | **44 / 600 (7.33 %)** | 600 / 600 |
+| `it` | constrained | 1286199 | 12.87 | **600 / 600 (100.00 %)** | 600 / 600 |
+| `it` | `--no-grammar` | 1286200 | 13.80 | **24 / 600 (4.00 %)** | 600 / 600 |
+
+🔴 **`LEG-4 PILOT -- NOT REPORTABLE`**, stamped inside every record by the generator itself. Eager
+mode throughout (`FINDING 79`), on a `nvidia_a100_2g.20gb` slice, so the diaries/s figures are floors.
+
+Two readings, and only one of them is comfortable.
+
+🟢 **The model has learned to stop.** `600 / 600` terminated with `<eor>` in **every arm, including
+unconstrained**. That is not a masking artefact — with the mask off nothing forces termination — and
+it is the clearest single piece of evidence in Step 7 so far that the fine-tune took.
+
+🔴 **`G7.5` FAILS on all three folds, and by a very long way.** Unconstrained well-formedness is
+**2.67 % / 7.33 % / 4.00 %** against a pre-registered **≥ 99.90 %**. This is the one Tier-3 gate that
+measures the model rather than the harness, and on the 1.48 B pilot it says the model cannot produce a
+valid diary on its own. The failure modes are arithmetic, not vocabulary — `durations sum to 1310
+minutes, not 1440`, `duration 270 is not a positive multiple of 10`, `episode 9 has 6 fields` — which
+is exactly the class of error the tally automaton exists to remove. **This is a pilot number and it is
+the reason `D-S7-3` (a) made Leg 4 a rehearsal**, but it is also the first honest measurement of the
+backbone and it must be re-taken on Leg 5 before anything is said about it in the paper.
+
+#### 🟢 `tools/4thJ_gates_step7.py` — the battery, and it reads generated text
+
+`G7.1`–`G7.13`, all three folds, artefacts `outputs_step7/gates_step7_leg4_baseline.json` and
+`outputs_step7/gates_step7_leg4_perturbations.json`. Board over **SCORED** gates only:
+**12 PASS / 15 FAIL** across three folds.
+
+| gate | `es` | `uk` | `it` | reading |
+|---|---|---|---|---|
+| `G7.1` tally | PASS | PASS | PASS | 🔴 ENFORCEMENT CONFIRMATION, excluded from any tally |
+| `G7.2` alphabet | PASS | PASS | PASS | 🔴 ENFORCEMENT CONFIRMATION, excluded |
+| `G7.3` direct return home | 45.00 % | 46.00 % | 57.17 % | REPORTED RATE (`D-S7-2` (a)); corpus 43.18 / 24.64 / 23.63 |
+| `G7.4` co-presence | **FAIL** | **FAIL** | **FAIL** | `FINDING 81` |
+| `G7.5` unconstrained | **FAIL** | **FAIL** | **FAIL** | 2.67 / 7.33 / 4.00 % |
+| `G7.6` round-trip | PASS | PASS | PASS | `FINDING 82` — a third confirmation, not a measurement |
+| `G7.7`/`G7.8` firing rate | **FAIL** | **FAIL** | **FAIL** | `V7.a` unsatisfiable at `N = 600` |
+| `G7.9` renormalisation | **FAIL** | **FAIL** | **FAIL** | the control is 16 / 44 / 24 diaries |
+| `G7.10` oracle agreement | PASS | PASS | PASS | read from its own job's artefact, not re-scored |
+| `G7.11` no silent discard | PASS | PASS | PASS | 600 requested, 600 on disk |
+| `G7.12` throughput recorded | **FAIL** | **FAIL** | **FAIL** | work item 7.2, submitted as job 1286208 |
+| `G7.13` indoor rule | PASS | PASS | PASS | 🔴 first run ever on GENERATED records |
+
+🟢 **`G7.13` on generated text at last.** The 2026-08-21 entry closed with *"it has still never been
+run against a GENERATED batch, which is the case that matters"*. It now has. Presence share
+**73.11 % / 67.43 % / 69.35 %** of the day, the shipped exclusion list (md5
+`679518c7f626bd5d408adc96b5a1ff43`) imported not copied, and the `FINDING 42` vacuity signature —
+constant presence — refused in both directions. `it` is the only fold whose generated batch contains
+`000` at home at all (9 episodes), counted PRESENT by the `D-S7-1` (c) declaration.
+
+#### 🔴 `FINDING 81` — `G7.4` is not an enforcement confirmation in this build, and it FAILS
+
+Work item 7.1 asks for *"household-indexed co-presence variants"* and the validation document lists
+`G7.4` among the four gates that *"cannot fail while the mask is on"*. **Both assume a grammar that
+does not exist.** `4thJ_step7_ebnf.py` compiles **one** grammar whose `COP` alphabet is the full
+`0..64`, so nothing prevents the model asserting a household member the household does not contain.
+
+Scored on the 600-diary batches — the rule is **membership**, never behaviour, and
+`cop_other_persons` (people from outside the household) is never constrained:
+
+| fold | episodes checked | diaries violating | largest single violation |
+|---|---|---|---|
+| `es` | 12,385 | **84** | `cop_parent` in `one_person`, 54 |
+| `uk` | 14,582 | **41** | `cop_parent` in `one_person`, 120 |
+| `it` | 13,548 | **124** | `cop_parent` in `one_person`, 169 |
+
+The same shape in all three folds: a person recorded as living alone, co-present with a parent. There
+are also `cop_alone` episodes that simultaneously assert company — 39 / 23 / 59 — which is
+self-contradiction inside a single episode and needs no household knowledge to reject.
+
+🔴 **This is a gap against the specification, not a model result.** It could be closed by compiling
+six `COP` sub-alphabets and selecting one per prompt, which is what item 7.1 already asks for; it is
+not done, and until it is, `G7.4` measures rather than confirms. **It is left FAILING** — the gate is
+telling the truth about the build.
+
+#### 🔴 `FINDING 82` — `G7.6` cannot fall unless `G7.2` already has
+
+The shipped `tools/decoder.py` and `tools/4thJ_step7_grammar.py` were checked field by field: duration
+canonical form, `ACT` three-digit membership, `ACT2` empty-or-member, `LOC` five classes, `COP` range
+`0..64`. **They accept the same language.** So `G7.6` is a *third* enforcement confirmation and not,
+as the gate table implies, an independent check. It is demonstrated rather than asserted: the
+`g76_break_decoder` perturbation fells `G7.6` and `G7.2` together and nothing else.
+
+This is worth having — an encoder/decoder pair that drifted from the grammar would show up here — but
+it must not be counted as a passing measurement.
+
+#### 🔴 `D-S7-4` — how the constraint-firing rate is defined. For the author.
+
+`G7.7` asks *"how often the mask had to intervene"*, per stratum, and expects **> 35 %** untuned and
+**< 2 %** tuned. **vLLM exposes no count of mask interventions**, and the obvious substitute — the
+share of decoding positions at which the mask removed at least one candidate token — is ~100 % for
+every batch ever generated and therefore carries no information.
+
+| option | reading | note |
+|---|---|---|
+| **(a)** | 🔴 **Recommended. Per DIARY: the share of diaries the model gets structurally wrong with the mask OFF.** | It is the quantity the document's own expectations are sized for, it is already measured (it is `1 − G7.5` pooled, and `G7.7` is it per stratum), and it needs no instrumentation the back-end does not provide. It makes `G7.5` and `G7.7` two granularities of one measurement, which should be said in the methods rather than hidden |
+| **(b)** | Per TOKEN, instrumented with a custom `LogitsProcessor` that counts positions where the sampled token would have been masked out | Honest and much more expensive: it needs a second decode of every diary, it cannot be done inside vLLM's structured-output path, and the resulting number has no pre-registered band |
+
+**Implemented as (a)** in `tools/4thJ_gates_step7.py`, printed as a declaration at the top of the
+module rather than left in the operator's head. 🔴 If the author rules (b), the gate is rebuilt and
+this entry is superseded; nothing downstream depends on it yet.
+
+#### 🔴 `V7.a` cannot be satisfied at `N = 600`, and that sizes the campaign
+
+`V7.a` FAILs `G7.7`/`G7.8` unless **10 strata carry ≥ 100 records**. 600 records cannot fill more than
+six. Computed from the real 100,000-person prefix pools — **228 strata per fold** — the tenth-largest
+stratum has share 0.0196 / 0.0192 / 0.0206, so the minimum viable batch is:
+
+| fold | strata | 10th-largest share | 🔴 `N` for `V7.a` |
+|---|---|---|---|
+| `es` | 228 | 1.96 % | **5,115** |
+| `uk` | 228 | 1.92 % | **5,203** |
+| `it` | 228 | 2.06 % | **4,850** |
+
+`G7.9` is harder still. Its control is the **rejection-sampled** subset of the unconstrained batch, and
+at the pilot's yield matching 600 constrained diaries needs ~22,500 unconstrained draws on `es`,
+~8,200 on `uk`, ~15,000 on `it`. **At Leg-4 yields the rejection control is not affordable**; it
+becomes affordable exactly to the extent Leg 5 raises `G7.5`. That is the number to watch first when
+the 7 B fold is generated.
+
+#### 🟢 Every gate that can move has been made to move
+
+`outputs_step7/gates_step7_leg4_perturbations.json`, eleven runs on the `es` fold.
+
+| perturbation | felled |
+|---|---|
+| `g71_break_tally` | `G7.1`, and `G7.13` with it (the indoor module refuses a day that does not sum, rather than padding it) |
+| `g72_out_of_list_act` | `G7.2` |
+| `g76_break_decoder` | `G7.6` and `G7.2` together — `FINDING 82` |
+| `g711_drop` | `G7.11` |
+| `g713_local_copy` | `G7.13` |
+| **rose from FAIL** | |
+| `g74_clean_cop` | `G7.4` → PASS |
+| `g75_control_is_valid` | `G7.5` → PASS, and `G7.9` → PASS |
+| `null` | nothing moved |
+
+🔴 **The coverage clause earned its keep immediately.** The first version of `g72_out_of_list_act` set
+an `ACT` to **`999`** — which **is** one of the 159 codes. The perturbation was a no-op, `G7.2` stayed
+green, and only the cross-tab showed it. The battery now asserts its out-of-list code against the live
+alphabet at start-up and refuses to run if it is a member.
+
+`G7.10` did not move here and is not supposed to: it was seen failing in **its own** job under the
+off-by-one oracle perturbation, and the battery reads its artefact rather than re-scoring it.
+`G7.12` moves when work item 7.2 writes `throughput_comparison.md`.
+
+#### What is NOT established
+
+* **Nothing here is a model result.** Leg 4 is 1.48 B and a rehearsal.
+* `G7.4` is failing for a build reason, and the six household-indexed `COP` variants are owed.
+* `G7.7`/`G7.8` have never been scored, only refused by `V7.a`. They need `N ≈ 5,100`.
+* `G7.9` has never been scored against an adequate control.
+* Work items 7.4, 7.6 and 7.7 are untouched. The three-model firing-rate report needs the untuned base
+  arm, which has not been generated.
+
+---
+
+### 2026-08-22 (evening, second entry) — 🔴 **`FINDING 81` WAS MEASURED AGAINST THE REAL CORPUS BEFORE ANYONE PROPOSED ENFORCING IT, AND IT SPLITS IN TWO. `FINDING 83`, `D-S7-5`.**
+
+`FINDING 81` closed with *"it could be closed by compiling six `COP` sub-alphabets"*. Before writing
+one, the rule was run against all **73,254 real diaries** — because `FINDING 45` is what happens when
+a constraint is encoded first and measured afterwards, and it cost 28.95 % of the corpus.
+
+#### 🔴 `FINDING 83` — the household-membership half would reject 1.49 % of the REAL corpus, unevenly
+
+| fold | diaries | violating | share |
+|---|---|---|---|
+| `es` | 19,140 | 226 | 1.18 % |
+| `it` | 38,260 | 124 | **0.32 %** |
+| `uk` | 15,854 | 744 | **4.69 %** |
+| **all** | **73,254** | **1,094** | **1.49 %** |
+
+**A 14.7× spread between `uk` and `it`.** Country-correlated, therefore read per fold or not at all
+(`FINDING 53`'s standing rule), and therefore capable of moving a LOCO result on its own.
+
+| violation | episodes in the corpus |
+|---|---|
+| `cop_children` in `couple_no_children` | 2,358 |
+| `cop_other_hh` in `one_person` | 2,132 |
+| `cop_partner` in `one_person` | 1,355 |
+| `cop_partner` in `single_parent_with_children` | 1,151 |
+| `cop_parent` in `one_person` | 449 |
+| `cop_children` in `one_person` | 384 |
+
+These are not our defect. They are the harmonised source data disagreeing with itself: a respondent
+whose household type came from one survey field reporting company from another. `D-S2-19` already
+forbids repairing this class on a prevalence basis.
+
+#### 🟢 The self-contradiction half is CLEAN on real data, and the model breaks it
+
+`cop_alone` asserted **together with** any other co-presence flag, in the same episode. It needs no
+household knowledge — it is one episode contradicting itself.
+
+* **Real corpus: 0 episodes in 73,254 diaries.** Not rare. Zero.
+* **Generated, Leg-4 pilot: 39 (`es`) / 23 (`uk`) / 59 (`it`) episodes.**
+
+🔴 **That is a model-side defect with a clean reference**, and it is the first thing in Step 7 that
+separates "the corpus is like this" from "the model invented this".
+
+#### 🔴 `D-S7-5` — what `G7.4` enforces. For the author.
+
+| | option | consequence |
+|---|---|---|
+| **1** | 🟢 **Recommended. Enforce ONLY the self-contradiction rule** in the grammar: an episode asserting `cop_alone` may assert nothing else. | **Costs zero real diaries** — the corpus contains none — so it is additive, not a basis change. It removes a defect the model demonstrably has. One `COP` sub-alphabet, not six: the 32 patterns with bit 0 set and any other bit are simply absent from the alphabet |
+| **2** | Enforce household membership as well, via the six household-indexed variants item 7.1 asks for. | 🔴 **A BASIS CHANGE.** It rejects 1.49 % of real diaries, 14.7× more often in `uk` than in `it`, and would have to be declared as a modelling intervention in the methods rather than as structural validity — exactly what `D-S7-2` (a) decided not to do for `G7.3` |
+| **3** | Enforce neither; report both rates alongside `G7.3`. | Consistent with `D-S7-2` (a) and cheapest. But it leaves the model free to emit a self-contradicting episode that no human day contains, and Step 8 reads `COP` |
+
+🔴 **Nothing is enforced pending the ruling** and `G7.4` is left FAILING in the battery, reporting
+both halves separately. `4thJ_step7_ebnf.py` is untouched; the grammar md5 is unchanged.
+
+---
+
+### 2026-08-22 (night) — 🟢 **`D-S7-4` AND `D-S7-5` RULED BY THE AUTHOR AND BOTH APPLIED. THE GRAMMAR HAS CHANGED FOR THE FIRST TIME SINCE IT WAS BUILT: `COP` GOES 65 → 34 AND THE `.ebnf` md5 GOES `65aae7cb…` → `bb4208dd…`. 🔴 THE RULING SAID 32 IMPOSSIBLE PATTERNS. IT IS 31, AND THE MODULE REFUSES TO RUN IF IT IS EVER ANYTHING ELSE.**
+
+Ruling document, with the author's directives, archived at
+`IMP/docs/DONE/2026-08-22_rehearsal-docket_findings-and-decisions.md`.
+
+#### `D-S7-5` option (1) — enforce self-contradiction, never household membership
+
+`COP` is a six-bit flag set with `cop_alone` at **bit 0** (read live from
+`crosswalk_copresence.csv`, not hard-coded). The excluded set is every value with bit 0 set **and**
+any other bit set:
+
+| | count | why |
+|---|---|---|
+| values with the `cop_alone` bit set | 32 | |
+| of those, `cop_alone` **alone** — legal, kept | 1 | a person who is alone |
+| 🔴 **excluded** | **31** | alone *and* with company, in the same episode |
+| the sentinel `64` = *not collected* | kept | it is not a flag set at all |
+
+🔴 **The ruling and the earlier docket both said 32.** The count is 31; the off-by-one is the legal
+`cop_alone`-alone pattern. It is recorded here rather than silently corrected because the number
+appears in an author ruling, and `build_alphabets()` now **raises** if the exclusion is ever a
+different size — a COP width change or a bit-position change would otherwise slide past.
+
+**Verified before enforcing, which is the discipline `FINDING 45` cost 28.95 % of the corpus to
+learn:** across **73,254 diaries / 2,024,068 episodes**, **ZERO** carry an excluded pattern. The rule
+is additive. It is not a basis change and it rejects nothing real.
+
+| artefact | before | after |
+|---|---|---|
+| `COP` alphabet | 65 | **34** |
+| `step7_grammar.ebnf` md5 | `65aae7cb4f48ebb495f449ae91bcfd50` | **`bb4208dd99794c3b52bdead0608d7fad`** |
+| header line | `ACT 159 \| ACT2 43 \| LOC 5 \| COP 65` | `… \| COP 34` |
+| `4thJ_step7_grammar_selftest.py` | 44 checks | **51 passed, 0 FAILED** |
+
+The seven new checks are not decoration: they pin the count at 31, keep `64`, keep `0`, keep
+`cop_alone`-alone, kill `3`, assert that every excluded value really does carry the alone bit plus
+another, and confirm the **oracle itself** rejects an excluded pattern — so the hand-written
+recogniser and the grammar cannot drift apart on this rule.
+
+🔴 **`G7.10` must be re-run** — the language changed, so a 2026-08-22-morning agreement between the
+oracle and XGrammar says nothing about the language of 2026-08-22 night. Submitted as job 1286241, which died in 5 s (`ModuleNotFoundError: encoder`, the grammar now imports `load_bit_positions`); resubmitted as **job 1286244**;
+until it returns, the `G7.10` PASS printed by the battery is a **stale artefact** and is labelled so.
+
+#### `G7.4` is now two gates wearing one name, and only one of them is the verdict
+
+| half | status | on the Leg-4 batches |
+|---|---|---|
+| **self-contradiction** (`cop_alone` + company) | 🟢 **ENFORCEMENT CONFIRMATION** — the grammar cannot emit one | 🔴 still FAILS: 39 / 23 / **59** episodes. Those batches were generated **before** the ruling. That is the defect the ruling removes, not a gate failing |
+| **household membership** | REPORTED, **never enforced**, **not in the verdict** | rates reported per fold beside `G7.3`, as the ruling directs |
+
+Board unchanged at **12 PASS / 15 FAIL** over scored gates, and `G7.4`'s FAIL is now traceable to a
+single named cause that Leg 5 cannot reproduce.
+
+#### `D-S7-4` option (a) — per diary, and the campaign is sized
+
+Confirmed as already implemented. The methods owe one sentence: **`G7.5` and `G7.7` are the same
+measurement at two granularities**, pooled and per stratum, and must never be presented as
+independent evidence. The author **mandated `N ≥ 5,200` per fold** for Leg 5, which is what `V7.a`'s
+ten-strata-of-100 rule costs against the real 228-stratum prefix pools.
+
+---
+
+### 2026-08-22 (late night) — 🟢 **`G7.10` RE-RUN UNDER THE 34-VALUE COP ALPHABET: PASS, 0 DISAGREEMENTS ON 10,000 STRINGS. THE STALE ARTEFACT IS RETIRED. 🔴 AND IT CAUGHT A SECOND SELF-TEST NOBODY HAD UPDATED.**
+
+Job **1286244**, 23 min 15 s, `envs/step7`, XGrammar **0.2.3**. Artefact
+`outputs_step7/g710_oracle_agreement.json`, md5 `631ad64ba344de9e1195e0029214652c`; grammar
+`step7_grammar.ebnf` md5 `bb4208dd99794c3b52bdead0608d7fad`, 114,833 chars, 296 rules.
+
+| | |
+|---|---|
+| alphabets | ACT **159** (158 shipped + `000`), ACT2 43, LOC 5, **COP 34** |
+| policy | `permissive` (`D-S7-2` (a)) |
+| entry point | `xgrammar.testing._is_grammar_accept_string` |
+| compile | 0.281 s |
+| match | 1,113.15 s for 10,000 strings (9 strings/s) |
+| **disagreements** | **0** |
+| oracle | accepted **5,000**, rejected **5,000** |
+
+🔴 **The 5,000 / 5,000 split is what makes the zero meaningful.** Two recognisers that both reject
+everything also agree perfectly. Here 5,000 valid strings are accepted by BOTH and each of the
+nineteen mutator classes is rejected by BOTH — `cop_range`, `cop_leading_zero`, `bad_act`,
+`dur_not_mult10`, `day_long`/`day_short`, `no_eor`, `zero_episodes`, `whitespace` and the rest, 263
+or 264 strings each. No mutator class is entirely accepted, which is `V7.e`'s vacuity clause.
+
+**The earlier PASS is now retired.** It was measured on the 65-value COP language of
+2026-08-22 morning and was labelled a stale artefact the moment `D-S7-5` (1) changed the alphabet.
+This one is measured on the language that will actually be used.
+
+#### 🔴 The re-run exposed a self-test that had been left behind
+
+`4thJ_step7_ebnf_selftest.py` still asserted `COP is 0..64 = 65` and reported **42 ok, 1 FAILED** — in
+the same job whose grammar self-test reported 51 of 51 green. Two self-tests, one alphabet, and only
+one of them had been updated. The EBNF self-test now carries **six** checks in place of the one:
+34 values, exactly 31 excluded, `64` still present as the not-collected sentinel, `0` still present,
+`3` (alone + partner) gone, and `COP_MIN`/`COP_MAX` **unchanged at 0..64** — because the range
+constants describe the encoding, not the admissible set, and conflating the two is how this kind of
+edit goes wrong. **48 ok, 0 FAILED.**
+
+🔴 The job that shipped this ran with the failure in it. `G7.10` itself was unaffected — it reads the
+alphabet from `build_alphabets()`, not from the self-test — but a red self-test in a green job is
+exactly the state in which a real regression hides, and it is recorded here rather than quietly fixed.
+
+#### 🟢 What `G7.10`'s PASS does and does not cover, settled by diff rather than by argument
+
+The generation jobs print a **114,806**-char grammar; `G7.10` verified **114,833**. The 27 characters
+are not a discrepancy — they are the prefix, and the difference was checked rule by rule rather than
+assumed:
+
+| present only in the WHOLE-RECORD grammar (`G7.10`) | present only in the COMPLETION grammar (generation) |
+|---|---|
+| `root ::= PF "," PF "," PF "," PF "," PF "," PF "|" S0 "<eor>"` | `root ::= S0 "<eor>"` |
+| `PF ::= PFCHAR | PFCHAR PF` | |
+| `PFCHAR ::= [0-9a-zA-Z_+-]` | |
+
+**Every other rule is byte-identical** — all 293 of them, including the 145-state duration tally and
+the ACT / ACT2 / LOC / COP alphabets. So `G7.10`'s zero disagreements over 10,000 strings covers the
+whole of the episode language that constrained generation actually uses; what falls outside its scope
+is the six prefix fields and the `|`, and those are **supplied in the prompt and never generated**.
+
+🔴 Stated because a reviewer would otherwise be right to ask: a gate that verifies one language while
+the run uses another proves nothing. Here the second language is the first with the prompt-side rule
+removed, and that is a diff anyone can re-run.
+
+---
+
+### 2026-08-22 (evening) — 🟢 **`D-S7-5` (1) IS NOW VERIFIED ON GENERATED TEXT, NOT ASSERTED FROM THE ALPHABET. TWENTY-ONE POST-RULING BATCHES, 301,713 EPISODES, **ZERO** SELF-CONTRADICTORY `COP`. AND THE COMPARISON EXPOSES WHAT THE OLD GRAMMAR WAS ACTUALLY DOING: `FINDING 92`.**
+
+The 21 batches generated for `G6.6` and `G6.7` (jobs 1286254–1286274) are the first Leg-4 output
+produced **after** the `COP` alphabet was cut from 65 values to 34. That makes them the first
+opportunity to check the ruling against text rather than against the grammar file.
+
+A `COP` value is self-contradictory when `cop_alone` is set alongside any company bit. The bit
+positions are read live from `crosswalk_copresence.csv`; the `64` "not collected" sentinel is
+excluded, as it is everywhere else.
+
+| batch set | `COP` alphabet | files | episodes | self-contradictory |
+|---|---|---|---|---|
+| **post-ruling** (`g66*`, `g67*`) | **34** | 21 | **301,713** | **0** |
+| pre-ruling `constrained` | 65 | 3 | 40,720 | 121 (**0.2972 %**) |
+| `nogrammar` control | none | 3 | 35,626 | 120 (**0.3368 %**) |
+
+#### 🔴 `FINDING 92` — the COP-65 grammar had no purchase on this axis at all
+
+The pre-ruling **constrained** batch produced self-contradictions at **0.2972 %**, and the batch
+generated with **no grammar whatsoever** produced them at **0.3368 %**. The constrained rate is
+**88 % of the unconstrained rate.** Within the noise of three batches, *the mask was removing
+nothing here*: it admitted all 65 encodings, so the 31 impossible flag sets were legal tokens and
+the model emitted them at essentially the rate it would have unmasked.
+
+🔴 This is the concrete cost of the defect `D-S7-5` (1) removed, and it reframes what `G7.4`'s
+self-contradiction half was measuring before the ruling. It was **not** reporting a residual failure
+of a constraint that was mostly working. It was reporting a constraint that, on this axis, was not
+operating — while sitting inside a batch labelled `constrained`. A gate reading 0.30 % looks like a
+small leak; it was in fact the full unconstrained rate.
+
+🟢 After the ruling the quantity is not small — it is **structurally zero, across 301,713 episodes**,
+because the 31 encodings are no longer in the alphabet and the grammar cannot express them. That is
+the difference between a measurement and an enforcement confirmation, and it is why the battery
+docstring now labels it the latter.
+
+#### What this does and does not settle
+
+* It confirms the ruling on **generated** text at scale. The absence was previously established only
+  on the 2,024,068 **real** episodes, which is what justified the cut but says nothing about what a
+  model would emit.
+* 🔴 It does **not** retire the pre-ruling batches' `G7.4` readings. Those batches remain what they
+  are; they are simply no longer the current alphabet, and any Leg-4 `G7.4` number quoted from
+  `generated_leg4_*_constrained.jsonl` must carry the COP-65 label.
+* The household-membership half of `G7.4` is untouched by all of this and remains **reported and
+  never enforced**, per the same ruling.
+
+#### 🔴 One reporting defect fixed while checking the above — `G7.2` was describing the wrong rejection
+
+Re-scoring the battery surfaced `G7.2` reporting **`episode 1 COP 5 outside 0..64`**. `5` is inside
+`0..64`. The *test* was correct — `int(cop_s) not in alphabets["cop"]` — but after `D-S7-5` (1) cut
+the alphabet to 34 values, two different rejections wear that one test, and the message only ever
+described the rarer one. The common case is now a value that **is** in the encoding range and is
+simply not an admissible flag set.
+
+The two are separated in `4thJ_step7_grammar.py` (backup `.bak_g72msg`), message-only:
+
+```python
+if int(cop_s) < COP_MIN or int(cop_s) > COP_MAX:
+    return False, "episode %d COP %s outside the %d..%d encoding range" % (...)
+return False, ("episode %d COP %s is in 0..%d but is not one of the %d "
+               "admissible flag sets (D-S7-5 (1))" % (...))
+```
+
+🟢 **Nothing about acceptance changed and it was verified rather than assumed**: every gate verdict
+and every count in `gates_step7_leg4_baseline.json` is identical across the two runs (board
+`15 FAIL / 12 PASS` both sides), the twenty-one differing leaves are message strings and relative
+paths, and both self-tests stay green — `4thJ_step7_grammar_selftest.py` **51/51**,
+`4thJ_step7_ebnf_selftest.py` **48/48**. `G7.10`'s oracle-agreement result is therefore untouched:
+the string is returned only on rejection and the boolean is unaffected.
+
+🔴 It also puts a number on something previously unquantified. `G7.5`'s `top_reasons` shows **24 of
+the `es` unconstrained rejections** are this COP reason — so the reduced alphabet accounts for about
+4 % of the mask's work on that fold, not the bulk of it. The bulk remains the tally automaton.
+
+🔴 Corrected in passing, and **the pre-COP-34 `constrained` batches were already scored under the
+34-value alphabet** — the earlier baseline artefact was produced after the ruling, so the firing
+rates did **not** move: `G7.5` stays 2.67 % (`es`) / 6.83 % (`uk`) / 3.83 % (`it`) valid without the
+mask, i.e. a per-diary firing rate of **97.33 / 93.17 / 96.17 %**.
+
+#### 🔴 DoD item 5 is NOT met, and `G7.9` computed the reason itself
+
+*"Rejection-sampled control generated and marginals compared."* The control exists but is far too
+small to support the comparison. `G7.9` says so in its own output rather than passing quietly:
+
+> *the control carries 23 valid diaries against 600 constrained ones. A marginal estimated from 23
+> diaries cannot resolve 5.0 min/day, so this verdict is about the CONTROL, not about the mask.*
+
+Sized from the measured unconstrained validity rates, matching 600 constrained diaries needs:
+
+| fold | valid without the mask | draws needed for 600 valid |
+|---|---|---|
+| `es` | 16/600 = **2.67 %** | **≈ 22,500** |
+| `uk` | 41/600 = **6.83 %** | **≈ 8,800** |
+| `it` | 23/600 = **3.83 %** | **≈ 15,700** |
+
+The `es`/`uk` ratio is **2.6×**: the rejection control is not equally affordable across folds, which
+is itself a country-correlated property and belongs in the write-up beside `FINDING 45`'s
+country-correlated `G7.3` rejection.
+
+🔴 **These three jobs are sized and ready but deliberately NOT submitted.** Job 1286209 (Leg 5, the
+critical path) is PENDING on **`AssocGrpGRES`** with *zero* running jobs of mine, i.e. the cap is a
+group-level TRES rather than my own concurrency, and `gres/gpu` is counted across all slice types.
+Submitting three more GPU jobs could therefore push the reported model's training later. Item 7.5
+runs once Leg 5 is RUNNING, not before. Recorded here rather than left as a plan in someone's head.

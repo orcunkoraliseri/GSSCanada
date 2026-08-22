@@ -77,7 +77,21 @@ def main(step2_dir):
     check('ACT contains "000" (FINDING 43)', '"000"' in rules["ACT"])
     check("ACT2 literal count == alphabet", n_act2 == len(alph["act2"]), "%d" % n_act2)
     check("LOC is exactly 5", n_loc == 5 == len(grammar.LOC_ALPHABET))
-    check("COP is 0..64 = 65", n_cop == 65 == grammar.COP_MAX - grammar.COP_MIN + 1)
+    # 🟢 `D-S7-5` (1), ruled 2026-08-22: the COP alphabet is no longer the full
+    # 0..64 range. Patterns that assert `cop_alone` TOGETHER WITH another co-presence
+    # flag are self-contradictory and are excluded by the grammar, taking the
+    # alphabet from 65 to 34. 🔴 The ruling says 32 excluded patterns; it is 31 --
+    # `cop_alone` on its own is legal and is kept. `build_alphabets()` raises if the
+    # count is ever anything but 31, so the discrepancy cannot go quiet.
+    check("COP is the D-S7-5 (1) alphabet, 34 values", n_cop == 34 == len(alph["cop"]),
+          "%d" % n_cop)
+    check("COP excludes exactly 31 self-contradictory patterns",
+          len(alph["cop_excluded_self_contradiction"]) == 31)
+    check("COP still carries the 64 not-collected sentinel", '"64"' in rules["COP"])
+    check("COP still carries 0", '"0"' in rules["COP"])
+    check("COP no longer carries 3 (alone + partner)", '"3"' not in rules["COP"])
+    check("COP range constants unchanged (0..64)",
+          grammar.COP_MAX - grammar.COP_MIN + 1 == 65)
     check('LOC has no "workplace" class', '"workplace"' not in rules["LOC"])
 
     print("\n--- 3. the episode tail ---")

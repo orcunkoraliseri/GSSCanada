@@ -46,7 +46,20 @@ def main():
     check("000 is in the alphabet", "000" in A["act"])
     check("43 ACT2 codes", len(A["act2"]) == 43, str(len(A["act2"])))
     check("5 LOC classes", len(A["loc"]) == 5)
-    check("COP 0..64 = 65 values", len(A["cop"]) == 65)
+    # `D-S7-5` (1), ruled 2026-08-22: the 31 self-contradicting flag sets are gone.
+    check("COP = 34 values (65 minus the 31 self-contradicting flag sets)",
+          len(A["cop"]) == 34)
+    check("COP: exactly 31 patterns excluded",
+          len(A["cop_excluded_self_contradiction"]) == 31)
+    check("COP: the sentinel 64 (not collected) is KEPT -- it is not a flag set",
+          64 in A["cop"])
+    check("COP: cop_alone ON ITS OWN is kept", 1 in A["cop"])
+    check("COP: cop_alone + cop_partner (3) is gone", 3 not in A["cop"])
+    check("COP: 0 (nobody flagged) is kept", 0 in A["cop"])
+    check("COP: every excluded value has the alone bit AND another bit",
+          all(v & 1 and v & ~1 for v in A["cop_excluded_self_contradiction"]))
+    check("COP: an excluded pattern is REJECTED by the oracle",
+          not G.validate_record(rec(ep("1440", cop="3")), A, G.TransitionPolicy.PERMISSIVE)[0])
     check("4 outdoor-at-home codes, all inside ACT",
           sorted(A["outdoor_at_home"]) == ["322", "341", "342", "344"])
 

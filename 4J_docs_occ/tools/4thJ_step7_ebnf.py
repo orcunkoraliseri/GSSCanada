@@ -54,13 +54,21 @@ def _lit(s):
     return '"' + s + '"'
 
 
-def build_ebnf(alphabets):
+def build_ebnf(alphabets, whole_record=True):
     """Return the EBNF text for the diary language, built from `alphabets`.
 
     Deliberately plain BNF: alternation, concatenation, one character class, and
     right recursion for the prefix fields. No `*`, no `?`, no optional groups.
     Every back-end reads this dialect the same way, and `G7.10`'s job is to find
     disagreements about the LANGUAGE, not about EBNF sugar.
+
+    🔴 `whole_record` picks the ROOT, and it is not cosmetic -- see `FINDING 80`.
+    `True` is the WHOLE RECORD, prefix included, and it is what the oracle checks
+    and what `G7.10` compares. `False` is the COMPLETION ONLY, `S0 "<eor>"`, and
+    it is what a decoder must be given: at generation time the prefix and its `|`
+    are already in the PROMPT, so a mask rooted at the whole record starts matching
+    the episodes against `PF`. `PFCHAR` is `[0-9a-zA-Z_+-]` and `PF` is unbounded,
+    so that mask is satisfied by arbitrary word-like text and constrains nothing.
     """
     act = sorted(alphabets["act"])
     act2 = sorted(alphabets["act2"])
@@ -80,10 +88,14 @@ def build_ebnf(alphabets):
     lines.append("")
 
     # --- the record -------------------------------------------------------
-    pf = ' "," '.join(["PF"] * N_PREFIX_FIELDS)
-    lines.append('root ::= %s "|" S0 "<eor>"' % pf)
-    lines.append('PF ::= PFCHAR | PFCHAR PF')
-    lines.append('PFCHAR ::= %s' % PREFIX_CLASS_EBNF)
+    if whole_record:
+        pf = ' "," '.join(["PF"] * N_PREFIX_FIELDS)
+        lines.append('root ::= %s "|" S0 "<eor>"' % pf)
+        lines.append('PF ::= PFCHAR | PFCHAR PF')
+        lines.append('PFCHAR ::= %s' % PREFIX_CLASS_EBNF)
+    else:
+        lines.insert(2, '# ROOT: COMPLETION ONLY. The prefix and its "|" are in the prompt.')
+        lines.append('root ::= S0 "<eor>"')
     lines.append("")
 
     # --- terminal alphabets ----------------------------------------------

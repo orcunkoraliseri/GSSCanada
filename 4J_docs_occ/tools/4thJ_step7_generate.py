@@ -109,6 +109,8 @@ def main(argv=None):
     ap.add_argument("--step2", required=True)
     ap.add_argument("--config", required=True, help="generation_config_<fold>.json")
     ap.add_argument("--prefixes", required=True, help="prefixes_<fold>.jsonl")
+    ap.add_argument("--tag", default=None,
+                    help="output filename tag; default constrained/nogrammar")
     ap.add_argument("--out", required=True)
     ap.add_argument("--gpu-mem", type=float, default=0.90)
     ap.add_argument("--max-model-len", type=int, default=2048)
@@ -151,7 +153,13 @@ def main(argv=None):
     print("lora rank  : %s (read from adapter_config.json)" % rank)
 
     alph = grammar.build_alphabets(a.step2)
-    text = ebnf.build_ebnf(alph)
+    # 🔴 `whole_record=False`. `FINDING 80`: the prompt already carries the six
+    # prefix fields and the `|`, so the decoder must be masked with the COMPLETION
+    # grammar. Handed the whole-record root, XGrammar matched the episodes against
+    # `PF` -- which accepts any run of `[0-9a-zA-Z_+-]` -- and 16 of 16 diaries ran
+    # to `max_tokens` inside prefix field six. The oracle and `G7.10` keep the
+    # whole-record root; only what is handed to vLLM changes.
+    text = ebnf.build_ebnf(alph, whole_record=False)
     print("EBNF       : %d chars, ACT %d | ACT2 %d | LOC %d | COP %d"
           % (len(text), len(alph["act"]), len(alph["act2"]),
              len(alph["loc"]), len(alph["cop"])))
@@ -199,7 +207,10 @@ def main(argv=None):
 
     pol = grammar.TransitionPolicy.PERMISSIVE
     os.makedirs(a.out, exist_ok=True)
-    tag = "nogrammar" if a.no_grammar else "constrained"
+    # `--tag` exists for `G6.7`: five fictional-country levels share a fold and a
+    # leg and would otherwise overwrite one another -- the cache-key-collision
+    # class of `FINDING 8`. Default unchanged, so nothing already run moves.
+    tag = a.tag or ("nogrammar" if a.no_grammar else "constrained")
     path = os.path.join(a.out, "generated_leg%d_%s_%s.jsonl" % (a.leg, a.fold, tag))
 
     n_valid = 0

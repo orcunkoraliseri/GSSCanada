@@ -1,0 +1,132 @@
+{
+  "G6_10": {
+    "achieved_fpr": 0.0005,
+    "auc": 0.548102,
+    "auc_max": 0.65,
+    "passes": true,
+    "reasons": [],
+    "resolution_note": null,
+    "tpr_at_fpr": 0.0005,
+    "tpr_max": 0.05
+  },
+  "G6_11": {
+    "auc": 0.520393,
+    "auc_max": 0.75,
+    "passes": true,
+    "reasons": []
+  },
+  "G6_12": {
+    "blocked": false,
+    "n_attempted": 91,
+    "n_exact_greedy": 0,
+    "n_exact_sampled": 0,
+    "n_rare_records": 91,
+    "n_rare_strata": 33,
+    "passes": true,
+    "reasons": []
+  },
+  "adapter": "/speed-scratch/o_iseri/4J_step4/runs_ds45/leg4_primary_fold_es/adapter",
+  "base_repo": "allenai/OLMo-2-0425-1B",
+  "control_perplexity_gap": {
+    "gap": 0.014330734409243267,
+    "gap_max": 0.05,
+    "passes": true,
+    "test_ppl": 1.7093846385174207,
+    "train_ppl": 1.685233997679252
+  },
+  "control_random_label_permutation": {
+    "note": "NOT RUN. The random-label-permutation adapter sets the floor for pure sequence memorisation and requires its own training run. Its absence is a NAMED GAP: the audit has two of its three registered controls, and privacy_audit.md must say so before any release decision.",
+    "present": false
+  },
+  "control_untuned_base_auc": 0.49138925,
+  "coverage_clause": {
+    "no_op_perturbations": [],
+    "passes": true,
+    "seen_failing": {
+      "G6_10": [
+        "g610_memorise",
+        "g610_tail",
+        "pplgap_widen"
+      ],
+      "G6_11": [
+        "g610_memorise",
+        "g611_reference"
+      ],
+      "G6_12": [
+        "g612_verbatim"
+      ]
+    }
+  },
+  "fold": "es",
+  "leg": 4,
+  "n_per_class": 2000,
+  "perturbations": {
+    "g610_memorise": {
+      "G6_10_auc": 0.999869,
+      "G6_10_tpr": 0.991,
+      "G6_11_auc": 0.874723,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": true,
+      "fell": [
+        "G6_10",
+        "G6_11"
+      ],
+      "ppl_gap": 0.6723486573454018
+    },
+    "g610_tail": {
+      "G6_10_auc": 0.55097675,
+      "G6_10_tpr": 0.08,
+      "G6_11_auc": 0.55074425,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": true,
+      "fell": [
+        "G6_10"
+      ],
+      "ppl_gap": 0.5132036411683171
+    },
+    "g611_reference": {
+      "G6_10_auc": 0.548102,
+      "G6_10_tpr": 0.0005,
+      "G6_11_auc": 0.98579575,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [
+        "G6_11"
+      ],
+      "ppl_gap": 0.014330734409243267
+    },
+    "g612_verbatim": {
+      "G6_10_auc": 0.548102,
+      "G6_10_tpr": 0.0005,
+      "G6_11_auc": 0.520393,
+      "G6_12_exact": 1,
+      "control_perplexity_gap_fell": false,
+      "fell": [
+        "G6_12"
+      ],
+      "ppl_gap": 0.014330734409243267
+    },
+    "null": {
+      "G6_10_auc": 0.548102,
+      "G6_10_tpr": 0.0005,
+      "G6_11_auc": 0.520393,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [],
+      "ppl_gap": 0.014330734409243267
+    },
+    "pplgap_widen": {
+      "G6_10_auc": 0.7641705,
+      "G6_10_tpr": 0.0035,
+      "G6_11_auc": 0.5906395,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": true,
+      "fell": [
+        "G6_10"
+      ],
+      "ppl_gap": 0.09927298308487871
+    }
+  },
+  "provenance": "LEG-4 PILOT -- NOT REPORTABLE",
+  "seed": 20260822
+}

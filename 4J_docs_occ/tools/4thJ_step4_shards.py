@@ -29,8 +29,19 @@ Reads   /speed-scratch/o_iseri/4J_step3_corpus.jsonl        (household split, D-
         /speed-scratch/o_iseri/4J_step4/prereg.md           (frozen)
         /speed-scratch/o_iseri/4J_step4/prereg.md.md5       (the sidecar, the authority)
 Writes  /speed-scratch/o_iseri/4J_step4/shards/
+
+`D-S6-14` (a), author 2026-08-22, adds ONE alternate mode:
+
+    python 4thJ_step4_shards.py --permute-labels [--permutation-seed N]
+
+which builds the same shard set from a corpus whose prefix-to-body pairing has been
+deranged inside each (country, split) group. Those go to `shards_permuted_control/`
+and `shard_manifest_permuted_control.json`, never to `shards/`, and every record
+carries `POISONED_CONTROL: true`. Default mode is byte-for-byte what it always was.
 """
 
+import argparse
+import collections
 import hashlib
 import json
 import os
@@ -45,6 +56,60 @@ SHARDS = os.path.join(STEP4, "shards")
 PREREG = os.path.join(STEP4, "prereg.md")
 PREREG_MD5_SIDECAR = os.path.join(STEP4, "prereg.md.md5")
 MANIFEST = os.path.join(STEP4, "shard_manifest.json")
+
+# ---------------------------------------------------------------------------
+# 🔴 `D-S6-14`, RULED BY THE AUTHOR 2026-08-22 -- THE PERMUTED CONTROL SHARDS
+# ---------------------------------------------------------------------------
+# Question 1 ruled (a): permute the PREFIX-TO-BODY PAIRING at shard-build time,
+# with a dedicated printed seed. The adapter trained on these shards is the
+# memorisation CEILING: every generalisable conditional association is gone by
+# construction, so whatever `G6.10`/`G6.11` still read on it is rote recall of
+# arbitrary pairings and nothing else. Without it the audit has a floor (the
+# untuned base model, AUC ~0.50) and no top, and a measured 0.55 against a 0.65
+# bar cannot be called low.
+#
+# 🔴 THE PERMUTATION IS WITHIN (country, split), NOT GLOBAL. Two reasons, and the
+# first is not negotiable:
+#
+#   1. FOLD ISOLATION. A global shuffle would put an Italian diary body behind a
+#      Spanish prefix. In the `it` fold that is the held-out country's data
+#      entering training wearing a donor's prefix -- `G4.13` would still read 0
+#      because it counts the `country` FIELD, and the leak would be invisible.
+#      Keeping the permutation inside a country makes the prefix country token,
+#      the record's `country` field and the body's country agree by construction.
+#   2. MEMBERSHIP. `4thJ_step6_privacy_mia.py` takes members from `split ==
+#      "train"` and non-members from `split == "heldout"` of the SAME countries.
+#      If only the member side were permuted, the attack could separate the two
+#      sets on "does this pairing look like the training distribution" rather
+#      than on membership, and would report an inflated AUC that is not
+#      memorisation at all. Both splits are permuted, independently.
+#
+# ⚪ DECLARED LIMITATION, and it follows directly from reason 1: `P(body | country)`
+# survives the permutation. The control destroys conditioning on age, sex,
+# household type, economic status and day type -- five of the six prefix fields --
+# and cannot destroy the sixth without destroying the LOCO design. The ceiling it
+# measures is therefore the ceiling for a model that may still condition on
+# country. Stated here so no write-up calls it a fully unconditional control.
+#
+# 🔴 The permutation is a DERANGEMENT: no record keeps its own body. A uniform
+# permutation of n items has one fixed point in expectation regardless of n, and
+# a fixed point is a genuine (prefix, body) pair surviving inside a control whose
+# entire claim is that no genuine pair survives. Drawn by rejection -- redraw the
+# whole group until it has no fixed point -- which is a uniform derangement
+# exactly, at an expected e ~ 2.72 draws.
+#
+# 🔴 Output is ISOLATED and MARKED. Separate directory, separate manifest,
+# `POISONED_CONTROL` on every record and at the top of the manifest, and
+# `4thJ_step4_train.py` refuses to train a production run-type from a permuted
+# manifest and a `permuted` run-type from a clean one. Author directive:
+# "never into production shard directories".
+SHARDS_PERM = os.path.join(STEP4, "shards_permuted_control")
+MANIFEST_PERM = os.path.join(STEP4, "shard_manifest_permuted_control.json")
+CORPUS_PERM = os.path.join(SHARDS_PERM, "corpus_permuted_control.jsonl")
+SEED_PERM = 614614                   # `D-S6-14`. Fixed, printed, and never tuned:
+                                     # it is not a knob, and a control whose seed
+                                     # was chosen after seeing an AUC is not one.
+POISON_MARK = "POISONED_CONTROL"
 
 FOLDS = ["es", "uk", "it"]           # every country is held out in turn -- decision 11
 COUNTRIES = ["es", "it", "uk"]
@@ -91,6 +156,69 @@ def parse_prefix(text):
     return dict(zip(PREFIX_FIELDS, parts))
 
 
+def split_text(text):
+    """`prefix` , `body` -- the body is everything after the FIRST separator,
+    the separator itself excluded. `partition` rather than `split` so a body that
+    somehow contained a `|` would keep it rather than be silently truncated."""
+    head, sep, body = text.partition("|")
+    if not sep:
+        raise ValueError("record has no '|' separator")
+    return head, body
+
+
+def permute_pairs(recs, seed):
+    """`D-S6-14` (a). Re-pair prefixes with bodies inside each (country, split)
+    group, as a derangement. Returns a report; edits `r["text"]` in place.
+
+    The record keeps its own prefix and all of its metadata -- `hid`, `pid`,
+    weights, the stratum the prefix encodes -- and receives another record's
+    body. That direction matters: `G6.12` counts training records per stratum and
+    the MIA keys members by stratum, both from the prefix, so permuting bodies
+    under fixed prefixes leaves every stratum count identical to production and
+    changes only what the model is asked to learn inside it."""
+    rng = np.random.default_rng(seed)
+    groups = defaultdict(list)
+    for i, r in enumerate(recs):
+        groups[(r["country"], r["split"])].append(i)
+
+    report = {"seed": seed, "groups": {}, "n_permuted": 0,
+              "n_fixed_points": 0, "n_unchanged_text": 0}
+    for key in sorted(groups):
+        idx = groups[key]
+        m = len(idx)
+        if m < 2:
+            fail("group %s has %d record(s) -- a group of one cannot be deranged, and "
+                 "a control that silently leaves it paired is not a control" % (key, m))
+        for attempt in range(1, 101):
+            perm = rng.permutation(m)
+            fixed = int(np.sum(perm == np.arange(m)))
+            if fixed == 0:
+                break
+        else:
+            fail("group %s: 100 draws all had a fixed point. That is impossible for "
+                 "m=%d unless the RNG is degenerate; refusing to continue." % (key, m))
+
+        bodies = [split_text(recs[i]["text"])[1] for i in idx]
+        unchanged = 0
+        for pos, i in enumerate(idx):
+            head, _old = split_text(recs[i]["text"])
+            new_text = head + "|" + bodies[perm[pos]]
+            if new_text == recs[i]["text"]:
+                # not a fixed point of the permutation -- two DISTINCT records that
+                # happen to carry byte-identical bodies. Counted, not repaired: the
+                # pairing was still destroyed, and repairing it would bias the draw.
+                unchanged += 1
+            recs[i]["text"] = new_text
+        report["groups"]["%s/%s" % key] = {"n": m, "draws": attempt,
+                                           "fixed_points": 0,
+                                           "identical_body_collisions": unchanged}
+        report["n_permuted"] += m
+        report["n_unchanged_text"] += unchanged
+        print("  permuted %-12s n=%6d  draws=%d  fixed points=0  identical-body "
+              "collisions=%d" % ("%s/%s" % key, m, attempt, unchanged))
+    return report
+
+
 def write_shard(path, recs):
     with open(path, "w", encoding="utf-8") as fh:
         for r in recs:
@@ -99,10 +227,29 @@ def write_shard(path, recs):
             "bytes": os.path.getsize(path)}
 
 
-def main():
+def main(argv=None):
+    global SHARDS, MANIFEST
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
+    ap.add_argument("--permute-labels", action="store_true",
+                    help="`D-S6-14` (a): build the POISONED_CONTROL shards instead -- "
+                         "prefix-to-body pairing deranged within (country, split). "
+                         "Writes to shards_permuted_control/, NEVER to shards/.")
+    ap.add_argument("--permutation-seed", type=int, default=SEED_PERM,
+                    help="the printed seed for the derangement (default %d). Recorded "
+                         "in the manifest and in every record." % SEED_PERM)
+    args = ap.parse_args(argv)
+
     print("=" * 78)
-    print("STEP 4 SHARD BUILDER")
+    print("STEP 4 SHARD BUILDER%s"
+          % ("  --  🔴 PERMUTED CONTROL (%s)" % POISON_MARK if args.permute_labels else ""))
     print("=" * 78)
+    if args.permute_labels:
+        SHARDS, MANIFEST = SHARDS_PERM, MANIFEST_PERM
+        print("`D-S6-14` (a), author 2026-08-22. Permutation seed: %d"
+              % args.permutation_seed)
+        print("output is ISOLATED: %s" % SHARDS)
+        print("🔴 These shards are a CONTROL. They are not a model of anything and no "
+              "number computed from them is a result.")
 
     # ---- the frozen pre-registration, read before anything else ----
     if not os.path.exists(PREREG):
@@ -144,6 +291,8 @@ def main():
                      "field %r -- the shard would be split on a value the model never "
                      "sees" % (lineno, pref["country"], r["country"]))
             r["_prefix"] = pref
+            if args.permute_labels:
+                r["_orig_text"] = r["text"]
             recs.append(r)
 
     n = len(recs)
@@ -171,10 +320,87 @@ def main():
              "corpus that is already missing a country reports zero for the wrong "
              "reason." % missing)
 
+    # ---- `D-S6-14`: the permutation, and the four invariants it must not break ----
+    perm_report = None
+    if args.permute_labels:
+        print()
+        print("=" * 78)
+        print("PERMUTING PREFIX-TO-BODY PAIRING  --  `D-S6-14` (a)")
+        print("=" * 78)
+        before_tokens = collections.Counter()
+        before_prefix = collections.Counter()
+        for r in recs:
+            before_tokens.update(split_text(r["text"])[1])
+            before_prefix[split_text(r["text"])[0]] += 1
+        before_total = sum(len(split_text(r["text"])[1]) for r in recs)
+
+        perm_report = permute_pairs(recs, args.permutation_seed)
+
+        after_tokens = collections.Counter()
+        after_prefix = collections.Counter()
+        for r in recs:
+            after_tokens.update(split_text(r["text"])[1])
+            after_prefix[split_text(r["text"])[0]] += 1
+        after_total = sum(len(split_text(r["text"])[1]) for r in recs)
+
+        print()
+        print("INVARIANTS -- checked, not assumed:")
+        if before_tokens != after_tokens:
+            fail("the character multiset of the bodies changed under permutation. The "
+                 "control is supposed to re-pair existing bodies, not rewrite them.")
+        print("  1. body character multiset  : IDENTICAL (%d chars)" % before_total)
+        if before_prefix != after_prefix:
+            fail("the multiset of prefixes changed under permutation.")
+        print("  2. prefix multiset          : IDENTICAL (%d distinct)" % len(before_prefix))
+        if before_total != after_total:
+            fail("total body length changed under permutation.")
+        print("  3. total body length        : IDENTICAL")
+        for r in recs:
+            head = split_text(r["text"])[0]
+            if head.strip().split(",")[0] != r["country"]:
+                fail("a permuted record's prefix country %r no longer matches its "
+                     "country field %r -- the permutation escaped its group and fold "
+                     "isolation is gone" % (head.strip().split(",")[0], r["country"]))
+        print("  4. prefix country == record country : HOLDS for all %d records" % n)
+        print("     (so `G4.13` still counts what it thinks it counts)")
+
+        # 🔴 The point of the whole exercise, measured rather than asserted: the
+        # association between the five permutable prefix fields and the body is gone.
+        # Reported as the fraction of records whose body still belongs to a record
+        # sharing its full stratum -- under permutation this must fall to roughly the
+        # stratum's own share of its group, i.e. to chance.
+        kept = 0
+        for r in recs:
+            if r["text"] == r["_orig_text"]:
+                kept += 1
+        print("  5. records whose FULL text survived the permutation: %d (%.4f %%)"
+              % (kept, 100.0 * kept / n))
+        perm_report["n_text_identical_to_original"] = kept
+        for r in recs:
+            del r["_orig_text"]
+            r[POISON_MARK] = True
+            r["permutation_seed"] = args.permutation_seed
+
+        os.makedirs(SHARDS, exist_ok=True)
+        with open(CORPUS_PERM, "w", encoding="utf-8") as fh:
+            for r in recs:
+                out = {k: v for k, v in r.items() if k != "_prefix"}
+                fh.write(json.dumps(out) + "\n")
+        print()
+        print("wrote the permuted corpus to %s" % CORPUS_PERM)
+        print("  md5 %s" % md5_of_file(CORPUS_PERM))
+        print("🔴 `4thJ_step6_privacy_mia.py` MUST be pointed at THIS file for the "
+              "control run. Members and non-members both come from it, so the attack "
+              "still separates exposure and not pairing style.")
+        perm_report["corpus_permuted"] = {"path": CORPUS_PERM,
+                                          "md5": md5_of_file(CORPUS_PERM)}
+
     os.makedirs(SHARDS, exist_ok=True)
 
     manifest = {
         "generator": "4thJ_step4_shards.py",
+        POISON_MARK: bool(args.permute_labels),
+        "permutation": perm_report,
         "corpus": {"path": CORPUS, "md5": corpus_md5, "n_records": n},
         "prereg": {"path": PREREG, "md5": prereg_md5_live,
                    "sidecar": PREREG_MD5_SIDECAR, "md5_recorded": prereg_md5_recorded},
@@ -279,6 +505,14 @@ def main():
 
     print()
     print("=" * 78)
+    if args.permute_labels:
+        print("🔴 PERMUTED CONTROL SHARDS BUILT -- %s, seed %d." % (POISON_MARK,
+                                                                   args.permutation_seed))
+        print("🔴 These are NOT a model of the population. An adapter trained on them "
+              "measures ONE thing: how much a model of this size can memorise when there "
+              "is nothing to generalise. `D-S6-14` (a), author 2026-08-22.")
+        print("🔴 Train them with --run-type permuted and --shard-manifest %s. The "
+              "trainer refuses every other combination." % MANIFEST_PERM)
     print("SHARDS BUILT. Every fold: held-out country contributes 0 training records, "
           "counted from the file on disk.")
     print("🔴 The builder's own count is NOT G4.13. G4.13 re-counts from the shard the "

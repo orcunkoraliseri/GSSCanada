@@ -48,6 +48,7 @@ MODEL_FOR = {
     "primary": "allenai/Olmo-3-1025-7B",
     "ceiling": "allenai/Olmo-3-1025-7B",
     "qwen":    "Qwen/Qwen2.5-7B",
+    "permuted": "allenai/Olmo-3-1025-7B",   # `D-S6-14`; leg 4 still overrides to the 1B
 }
 
 
@@ -237,8 +238,14 @@ def main():
     # generated_perturb_<fold>.jsonl and conditioning_diagnostics_perturb_<fold>.json, so
     # it cannot overwrite the pilot or primary artefacts. leg 4 always loads
     # MODEL_FOR["pilot"], so the run-type does not change which base model is used.
+    # 🔴 `D-S6-14`: "permuted" is the memorisation-ceiling control. Running the
+    # conditioning diagnostics on it is not decoration -- the permutation is supposed
+    # to have destroyed prefix conditioning, and these are the readings that say so
+    # from the MODEL rather than from the shard builder's own invariants. Expect the
+    # prefix-sensitivity numbers to collapse; if they do not, the control did not work
+    # and nothing downstream of it may be reported.
     ap.add_argument("--run-type", default="pilot",
-                    choices=["pilot", "primary", "ceiling", "qwen", "perturb"])
+                    choices=["pilot", "primary", "ceiling", "qwen", "perturb", "permuted"])
     ap.add_argument("--adapter", default=None, help="peft adapter dir; omit for base model")
     ap.add_argument("--gen-n", type=int, default=400)
     ap.add_argument("--leg", type=int, default=4, choices=[4, 5])

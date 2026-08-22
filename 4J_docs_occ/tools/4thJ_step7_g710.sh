@@ -48,7 +48,12 @@ mkdir -p "$WORK/tools" "$WORK/Step2_docs" "$WORK/outputs_step7" || exit 1
 ln -sfn "$XWALK" "$WORK/Step2_docs/outputs_step2"
 
 for f in 4thJ_step7_grammar.py 4thJ_step7_grammar_selftest.py \
-         4thJ_step7_ebnf.py 4thJ_step7_ebnf_selftest.py 4thJ_step7_g710.py; do
+         4thJ_step7_ebnf.py 4thJ_step7_ebnf_selftest.py 4thJ_step7_g710.py          encoder.py; do
+    # `encoder.py` joined this list when `D-S7-5` (1) was applied: the grammar now
+    # reads the `cop_alone` BIT POSITION live from `crosswalk_copresence.csv`, and
+    # it reads it through the SAME `load_bit_positions()` the encoder and the
+    # decoder use. Two modules parsing the same crosswalk their own way is how bit
+    # positions drift.
     if [ ! -f "$STAGE/$f" ]; then
         echo "MISSING $STAGE/$f -- scp it before submitting."
         exit 1

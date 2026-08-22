@@ -43,11 +43,39 @@ fi
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
 
-RUNDIR=/speed-scratch/o_iseri/4J_step4/runs
-ADAPTER=$RUNDIR/leg4_primary_fold_$FOLD/adapter
+
+# ---------------------------------------------------------------------------
+# 🔴 `D-S6-14`, author 2026-08-22 -- the OPTIONAL second argument.
+#   usage: sbatch <this> <fold> [primary|permuted]     default primary
+# `permuted` trains the RANDOM-LABEL-PERMUTATION CONTROL: the same fold, the same
+# backbone, the same schedule, from shards whose prefix-to-body pairing was deranged
+# by `4thJ_step4_shards.py --permute-labels`. It is the memorisation CEILING that
+# `G6.10` and `G6.11` are read against, and it is not a model of anything.
+# Nothing about the default path changes: with no second argument this file behaves
+# exactly as it did before.
+RUNTYPE=${2:-primary}
+case "$RUNTYPE" in
+  primary)
+    MANIFEST_ARG=""
+    RUNDIR=/speed-scratch/o_iseri/4J_step4/runs
+    DIAG=/speed-scratch/o_iseri/4J_step4/diagnostics
+    ;;
+  permuted)
+    MANIFEST_ARG="--shard-manifest /speed-scratch/o_iseri/4J_step4/shard_manifest_permuted_control.json"
+    RUNDIR=/speed-scratch/o_iseri/4J_step4/runs_permuted_control
+    DIAG=/speed-scratch/o_iseri/4J_step4/diagnostics_permuted_control
+    echo "PERMUTED CONTROL RUN -- nothing this job produces is a result."
+    ;;
+  *)
+    echo "run-type must be primary or permuted, got '$RUNTYPE'"
+    exit 1
+    ;;
+esac
+mkdir -p "$DIAG"
+ADAPTER=$RUNDIR/leg4_${RUNTYPE}_fold_$FOLD/adapter
 
 "$ENVDIR/bin/python" -u 4thJ_step4_train.py \
-    --fold "$FOLD" --leg 4 --run-type primary \
+    --fold "$FOLD" --leg 4 --run-type "$RUNTYPE" $MANIFEST_ARG \
     --epochs 2 \
     --gen-stratified-k 6 --gen-batch 8 \
     --batch-size 2 --grad-accum 8 --eval-batch-size 4 --max-len 1280 \
@@ -59,11 +87,16 @@ if [ ! -d "$ADAPTER" ]; then
 fi
 
 "$ENVDIR/bin/python" -u 4thJ_step4_diagnostics.py \
-    --fold "$FOLD" --leg 4 --run-type primary --adapter "$ADAPTER" \
+    --fold "$FOLD" --leg 4 --run-type "$RUNTYPE" --adapter "$ADAPTER" \
+    --out "$DIAG" \
     --gen-stratified-k 6 --gen-batch 8 --ce-n 256 --max-len 1280
 
-GEN=/speed-scratch/o_iseri/4J_step4/diagnostics/generated_primary_$FOLD.jsonl
-if [ -s "$GEN" ]; then
+GEN=$DIAG/generated_${RUNTYPE}_$FOLD.jsonl
+if [ "$RUNTYPE" = "permuted" ]; then
+    echo "PERMUTED CONTROL: the generation-side perturbation battery is NOT run. Its"
+    echo "gates ask whether a model of the population is right; this run is not one,"
+    echo "and felling a gate on it would demonstrate nothing."
+elif [ -s "$GEN" ]; then
     "$ENVDIR/bin/python" -u 4thJ_step4_genperturb.py \
         --fold "$FOLD" --generated "$GEN" --perturbation all
 else

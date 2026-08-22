@@ -68,6 +68,9 @@ The series is not a flat list. `L01` gates everything and `L03` can end the proj
 
   WAVE 10 -- FOLLOW-THROUGH (written 2026-08-20, not yet run)
     L26  ES and IT census marginals ..... the UK is BUILT; these two are not, and the UK is the calibration target
+
+  WAVE 11 -- METHODOLOGICAL AUDIT & LICENSING (written 2026-08-21, RETURNED and VETTED)
+    L27  HETUS weights, AMY weather, TABULA licence .. weighting mandate, AMY sources + licences, IEE/IWU terms
 ```
 
 ## Wave 5 is a different kind of prompt
@@ -115,6 +118,11 @@ question: narrow, factual, and settled by opening a document.
 | **L24** | `L24_marginals_and_archetype_sources.md` | Which published sources can we actually reach, open and use, for (a) census marginals on age / sex / household type / economic status and (b) TABULA residential archetype parameters, for ES, UK and IT | 🔴 **Critical path of the HEADLINE CLAIM.** `G6.1`'s raked-donor null rakes onto the held-out country's PUBLISHED marginals, and `outputs_step5/` is empty, so the bar cannot be computed until Step 5.1 exists. Also unblocks Step 8.1, the longest-lead downstream item | **No** |
 | **L25** | `L25_activity_to_appliance_mapping.md` | What CREST, Widen, LoadProfileGenerator and RAMP actually publish as activity-to-appliance TABLES: resolution, trigger form, rated powers, cycle durations, validation scale, licence | Step 9 cannot start without it. `G9.1` FAILs any row citing only a paper rather than a table or figure; `G9.2` FAILs any `VALIDATED` label with no scale. Also settles `G9.11`, whether the mapping needs our 3-digit codes at all | **No** |
 | **L26** | `L26_es_it_census_marginals.md` | For **Spain and Italy only**: which 2011 census tables actually deliver age, sex, household composition and economic status, at what published category boundaries, reachable at what URL | 🔴 **The remaining two thirds of Step 5.1**, which is on the critical path of the headline claim. The UK was built directly from Nomis on 2026-08-20; the ES and IT census systems did not respond to the same treatment (INE `wstempus` does not list the 2011 census; the ISTAT census SDMX host returns HTTP 302) | **No** |
+| **L27** | `L27_hetus_weights_amy_weather_tabula_licence.md` | HETUS weighting mandate across guidelines (2000, 2008, 2018), fieldwork calendar dates for ES/UK/IT, open hourly AMY weather licences (ERA5, MIDAS, AEMET), and TABULA/EPISCOPE licence terms | Settles `D-S6-4` weighting mandate, enables Step 8 AMY simulation pipeline, and gates archetype redistribution in publication | **No** |
+
+**Wave 11 — the methodological audit and licensing round (`L27`), written 2026-08-21, RETURNED and VETTED.**
+Settles three foundational external questions required by the paper and simulation campaigns: (a) proves that Eurostat HETUS guidelines (2000, 2008, 2018) formally recommend 5/7 and 2/7 calendar-week weighting while national institutes exercised autonomy to publish on divergent day strata (UK: 7-day calendar week; Spain: 50/50 halves; Italy: 33/33/33 thirds), fully validating the construction of `weight_dia_cal`; (b) documents exact 12-month survey fieldwork windows (ES: 2009-10, UK: 2014-15, IT: 2013-14) and confirms that ECMWF ERA5 reanalysis under Copernicus CC-BY 4.0 provides open, legally redistributable AMY weather for simulation; and (c) establishes that IWU Darmstadt publishes TABULA/EPISCOPE workbooks under Intelligent Energy Europe (IEE) open terms where academic reuse, adaptation, and redistribution of derived parameter tables is explicitly intended and desirable with standard bibliographic citation.
+
 
 
 **Wave 10 — the follow-through round (`L26`), written 2026-08-20 after `RL24` and `RL25` were vetted.**

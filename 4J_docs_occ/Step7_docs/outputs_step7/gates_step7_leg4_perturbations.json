@@ -1,0 +1,206 @@
+{
+  "board": {
+    "g711_drop": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "FAIL",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g713_local_copy": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "FAIL",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g71_break_tally": {
+      "G7_1": "FAIL",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "FAIL",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g72_out_of_list_act": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "FAIL",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g74_clean_cop": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "PASS",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g74_wrong_hh_variant": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g75_control_is_valid": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "PASS",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "PASS"
+    },
+    "g76_break_decoder": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "FAIL",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "FAIL",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g78_concentrate": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "g79_shift_mask": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    },
+    "null": {
+      "G7_1": "PASS",
+      "G7_10": "PASS",
+      "G7_11": "PASS",
+      "G7_12": "FAIL",
+      "G7_13": "PASS",
+      "G7_2": "PASS",
+      "G7_4": "FAIL",
+      "G7_5": "FAIL",
+      "G7_6": "PASS",
+      "G7_7_G7_8": "FAIL",
+      "G7_9": "FAIL"
+    }
+  },
+  "coverage_clause": "G7.1 and G7.2 are ENFORCEMENT CONFIRMATIONS and are excluded from any 'gates seen failing' tally, per the validation document's own clause. G7.6 joins them: the shipped decoder and the grammar accept the same language, so it can only fall when G7.2 has already fallen. G7.7/G7.8 CANNOT move at N=600: V7.a needs 10 strata carrying 100 records and 600 records cannot fill more than 6. G7.10 was seen failing in its OWN job (the off-by-one oracle perturbation, 2026-08-22) and is read here from its artefact, not re-scored. G7.12 rises when work item 7.2 writes throughput_comparison.md.",
+  "fold": "es",
+  "gate": "Step 7 perturbation board",
+  "leg": 4,
+  "never_moved": [
+    "G7_7_G7_8",
+    "G7_10",
+    "G7_12"
+  ],
+  "perturbation_notes": {
+    "g711_drop": "6 of 606 constrained records silently discarded",
+    "g713_local_copy": "handled inside G7.13 -- a local OUTDOOR_AT_HOME copy differing by one code",
+    "g71_break_tally": "record 0's first duration +10 min: the day sums to 1450",
+    "g72_out_of_list_act": "record 0's first ACT set to 100, which is not in the 159 alphabet",
+    "g74_clean_cop": "every COP set to 64 (not collected): G7.4 has nothing left to contradict and must PASS",
+    "g74_wrong_hh_variant": "a one_person diary given cop_partner: the wrong household grammar variant, in effect",
+    "g75_control_is_valid": "the unconstrained control replaced by the constrained batch: G7.5 must PASS, which is how the gate is shown to discriminate rather than to always fail",
+    "g76_break_decoder": "record 0's first ACT set to the two-digit 99, which the SHIPPED decoder refuses. G7.2 falls with it, and that is the finding: the decoder and the grammar accept the same language, so G7.6 is a third enforcement confirmation rather than an independent measurement",
+    "g78_concentrate": "every invalid control record relabelled into one stratum; the population rate is unchanged by construction",
+    "g79_shift_mask": "ACT 011 relabelled to 821 throughout the constrained batch: the mask forbidding a common activity",
+    "null": "null perturbation: nothing changed"
+  },
+  "provenance": "LEG-4 PILOT -- NOT REPORTABLE",
+  "seen_falling": {
+    "G7_1": [
+      "g71_break_tally"
+    ],
+    "G7_11": [
+      "g711_drop"
+    ],
+    "G7_13": [
+      "g71_break_tally",
+      "g713_local_copy"
+    ],
+    "G7_2": [
+      "g72_out_of_list_act",
+      "g76_break_decoder"
+    ],
+    "G7_6": [
+      "g76_break_decoder"
+    ]
+  },
+  "seen_rising": {
+    "G7_4": [
+      "g74_clean_cop"
+    ],
+    "G7_5": [
+      "g75_control_is_valid"
+    ],
+    "G7_9": [
+      "g75_control_is_valid"
+    ]
+  },
+  "v7a_basis": "N such that the 10th-largest stratum of the 100,000-person prefix pool expects 100 draws; 228 strata per fold",
+  "v7a_required_n": {
+    "es": 5115,
+    "it": 4850,
+    "uk": 5203
+  }
+}

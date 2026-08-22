@@ -1,0 +1,214 @@
+{
+  "board": {
+    "PASS": 3
+  },
+  "folds": {
+    "es": {
+      "n_synthetic": 600,
+      "passes": true,
+      "reasons": [],
+      "reference_sizes": {
+        "country": 19140,
+        "test": 5520,
+        "train": 48594
+      },
+      "sets": {
+        "country": {
+          "dcr_mean": 0.42476851851851877,
+          "dcr_median": 0.4444444444444444,
+          "dcr_min": 0.10416666666666667,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 19140,
+          "nndr_median": 0.9733333333333332,
+          "share_nndr_below": 0.0
+        },
+        "test": {
+          "dcr_mean": 0.4344907407407403,
+          "dcr_median": 0.4513888888888889,
+          "dcr_min": 0.10416666666666667,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 5520,
+          "nndr_median": 0.9824561403508772,
+          "share_nndr_below": 0.0
+        },
+        "train": {
+          "dcr_mean": 0.39686342592592594,
+          "dcr_median": 0.4027777777777778,
+          "dcr_min": 0.09722222222222222,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 48594,
+          "nndr_median": 0.9705882352941176,
+          "share_nndr_below": 0.0
+        }
+      },
+      "train_vs_test": {
+        "alpha": 0.01,
+        "raw": {
+          "is_verdict": false,
+          "median_difference_slots": -6.999999999999999,
+          "median_test": 0.4513888888888889,
+          "median_train": 0.4027777777777778,
+          "p": 1.2951713825968847e-09,
+          "pool_ratio": 8.803260869565218,
+          "u": 143586.0,
+          "z": -6.067994750059792
+        },
+        "size_matched": {
+          "ci95": [
+            0.4375,
+            0.4583333333333333
+          ],
+          "is_verdict": true,
+          "median_test": 0.4513888888888889,
+          "median_train_centre": 0.4513888888888889,
+          "n": 5520,
+          "n_draws": 200,
+          "seed": 20260822,
+          "test_above_interval": false
+        }
+      }
+    },
+    "it": {
+      "n_synthetic": 600,
+      "passes": true,
+      "reasons": [],
+      "reference_sizes": {
+        "country": 38260,
+        "test": 3434,
+        "train": 31560
+      },
+      "sets": {
+        "country": {
+          "dcr_mean": 0.4558217592592595,
+          "dcr_median": 0.4583333333333333,
+          "dcr_min": 0.1527777777777778,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 38260,
+          "nndr_median": 0.976190476190476,
+          "share_nndr_below": 0.0
+        },
+        "test": {
+          "dcr_mean": 0.46700231481481524,
+          "dcr_median": 0.4583333333333333,
+          "dcr_min": 0.18055555555555555,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 3434,
+          "nndr_median": 0.9733333333333332,
+          "share_nndr_below": 0.0
+        },
+        "train": {
+          "dcr_mean": 0.42672453703703694,
+          "dcr_median": 0.4236111111111111,
+          "dcr_min": 0.1388888888888889,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 31560,
+          "nndr_median": 0.9824561403508772,
+          "share_nndr_below": 0.0
+        }
+      },
+      "train_vs_test": {
+        "alpha": 0.01,
+        "raw": {
+          "is_verdict": false,
+          "median_difference_slots": -4.999999999999998,
+          "median_test": 0.4583333333333333,
+          "median_train": 0.4236111111111111,
+          "p": 5.649666577067832e-16,
+          "pool_ratio": 9.190448456610367,
+          "u": 131419.0,
+          "z": -8.096642765095579
+        },
+        "size_matched": {
+          "ci95": [
+            0.4513888888888889,
+            0.4652777777777778
+          ],
+          "is_verdict": true,
+          "median_test": 0.4583333333333333,
+          "median_train_centre": 0.4583333333333333,
+          "n": 3434,
+          "n_draws": 200,
+          "seed": 20260822,
+          "test_above_interval": false
+        }
+      }
+    },
+    "uk": {
+      "n_synthetic": 600,
+      "passes": true,
+      "reasons": [],
+      "reference_sizes": {
+        "country": 15854,
+        "test": 5702,
+        "train": 51698
+      },
+      "sets": {
+        "country": {
+          "dcr_mean": 0.43612268518518543,
+          "dcr_median": 0.4444444444444444,
+          "dcr_min": 0.16666666666666666,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 15854,
+          "nndr_median": 0.9701492537313433,
+          "share_nndr_below": 0.0
+        },
+        "test": {
+          "dcr_mean": 0.3993287037037039,
+          "dcr_median": 0.4027777777777778,
+          "dcr_min": 0.125,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 5702,
+          "nndr_median": 0.976190476190476,
+          "share_nndr_below": 0.0
+        },
+        "train": {
+          "dcr_mean": 0.36238425925925943,
+          "dcr_median": 0.3611111111111111,
+          "dcr_min": 0.10416666666666667,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 51698,
+          "nndr_median": 0.9736842105263157,
+          "share_nndr_below": 0.0
+        }
+      },
+      "train_vs_test": {
+        "alpha": 0.01,
+        "raw": {
+          "is_verdict": false,
+          "median_difference_slots": -6.000000000000003,
+          "median_test": 0.4027777777777778,
+          "median_train": 0.3611111111111111,
+          "p": 2.9572019570473165e-10,
+          "pool_ratio": 9.066643283058577,
+          "u": 142190.0,
+          "z": -6.301005868654923
+        },
+        "size_matched": {
+          "ci95": [
+            0.3888888888888889,
+            0.4097222222222222
+          ],
+          "is_verdict": true,
+          "median_test": 0.4027777777777778,
+          "median_train_centre": 0.4027777777777778,
+          "n": 5702,
+          "n_draws": 200,
+          "seed": 20260822,
+          "test_above_interval": false
+        }
+      }
+    }
+  },
+  "leg": 4,
+  "n_corpus": 73254,
+  "n_slots": 144
+}

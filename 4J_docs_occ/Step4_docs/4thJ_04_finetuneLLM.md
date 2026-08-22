@@ -372,3 +372,43 @@ Append-only.
   found by trying to do the thing they described.
 * **It went first because it depends on nothing** — no corpus, no acquisition, no decision. Everything
   else in this step waits on Step 3.
+
+---
+
+### `D-S6-14` — Step 4 now also builds a POISONED control shard set (2026-08-22)
+
+`4thJ_step4_shards.py --permute-labels` writes a second, isolated shard set whose prefix-to-body
+pairing has been deranged inside each `(country, split)` group with seed **614614**, to
+`shards_permuted_control/` and `shard_manifest_permuted_control.json`. Every record carries
+`POISONED_CONTROL: true`. Nothing in the default path changed.
+
+`4thJ_step4_train.py` gains `--run-type permuted` and `--shard-manifest`, with an interlock that
+refuses a production run-type against a poisoned manifest **and** `permuted` against a clean one —
+both seen failing, job 1286303. `4thJ_step4_leg4_fold.sh` and `4thJ_step4_leg5_fold.sh` take an
+optional second argument, `primary` (default, unchanged) or `permuted`.
+
+🔴 **Nothing trained on these shards is a Step 4 result.** The adapters exist only to put a top on
+the AUC scale `G6.10` and `G6.11` are read against; the Step 4 fidelity gates are expected to fail on
+them and that failure means nothing. The construction, its five measured invariants and the ruling
+are recorded in `Step6_docs/4thJ_06_transfer.md`.
+
+⚪ **Noticed while checking the control manifest, and it is PRE-EXISTING in production, not
+introduced by it.** `G4.9`'s probe sets are drawn per fold with a fixed seed, but the RNG advances
+through `train_countries` in order, so a country's probe set is identical across folds only when the
+country occupies the same position in both. Measured on `shards/`:
+
+| probe | md5 |
+|---|---|
+| `probe_it_es.jsonl` | `9d7b9f3892c88a20ee8a096b3d2f90fd` |
+| `probe_uk_es.jsonl` | `9d7b9f3892c88a20ee8a096b3d2f90fd` — **byte-identical** |
+| `probe_es_it.jsonl` | `6a86475c4638585870b110437f3e41c2` |
+| `probe_uk_it.jsonl` | `590a5c46e0a8e4a415e175c38736d845` — **different** |
+
+`es` is first in both of its donor lists, so its 200 diaries are one fixed set; `it` and `uk` are
+first in one fold and second in the other, so each has **two different** probe sets.
+
+🔴 This is harmless for `G4.9`, which compares a probe series across checkpoints **within** one run,
+and that is all the gate claims. It is NOT harmless for any table that compares probe losses for the
+same country **across folds**: such a comparison is like-for-like on `es` and is not on `it` or `uk`.
+Recorded rather than repaired — re-seeding per country would change every production probe file, and
+that is a basis change, not a fix.

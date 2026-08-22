@@ -45,6 +45,11 @@ import csv
 import os
 import sys
 
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+from encoder import load_bit_positions
+
 DAY_MINUTES = 1440
 SLOT_MINUTES = 10
 N_TALLY_STATES = DAY_MINUTES // SLOT_MINUTES + 1  # 145: 0..144 inclusive
@@ -153,13 +158,48 @@ def build_alphabets(step2_dir):
         raise GrammarError("outdoor_at_home codes not in the activity list: %s"
                            % sorted(outdoor - act))
 
+    # -----------------------------------------------------------------------
+    # `D-S7-5` OPTION (1), RULED 2026-08-22 BY THE AUTHOR AND APPLIED HERE.
+    #
+    # `COP` is a six-bit flag set. A person cannot be ALONE and simultaneously be
+    # with someone: `cop_alone` set alongside any other flag is an episode that
+    # contradicts itself, with no household knowledge required to see it.
+    #
+    # 🔴 Thirty-one patterns are removed, not thirty-two. Of the 32 values with the
+    # `cop_alone` bit set, one -- the bit alone -- is legal and stays. The count was
+    # written as 32 once; it is 31, and the discrepancy is recorded rather than
+    # quietly corrected, because the number appears in a ruling.
+    #
+    # 🔴 `COP_MAX` (= 64, "not collected") is a SENTINEL, not a flag set, and is
+    # never touched by this rule.
+    #
+    # VERIFIED before enforcing, against all 73,254 diaries / 2,024,068 episodes:
+    # ZERO episodes carry an excluded pattern. This is why the rule is ADDITIVE and
+    # not a basis change -- the discipline `FINDING 45` cost 28.95 % of the corpus
+    # to learn. The Leg-4 pilot emitted 39 (`es`) / 23 (`uk`) / 59 (`it`).
+    # -----------------------------------------------------------------------
+    bits = load_bit_positions(os.path.join(step2_dir, "crosswalk_copresence.csv"))
+    if "cop_alone" not in bits:
+        raise GrammarError(
+            "crosswalk_copresence.csv no longer declares `cop_alone`. D-S7-5 (1) "
+            "is defined in terms of that flag and cannot be applied without it.")
+    alone = 1 << bits["cop_alone"]
+    cop = set(c for c in range(COP_MIN, COP_MAX + 1)
+              if c == COP_MAX or not (c & alone and c & ~alone))
+    excluded = sorted(set(range(COP_MIN, COP_MAX + 1)) - cop)
+    if len(excluded) != 31:
+        raise GrammarError(
+            "D-S7-5 (1) excludes %d patterns, not 31. The COP width or the bit "
+            "positions have changed and the ruling must be re-read." % len(excluded))
+
     return {
         "act": act,
         "act_n_shipped": n_shipped,
         "act2": act2,
         "loc": set(LOC_ALPHABET),
-        "cop": set(range(COP_MIN, COP_MAX + 1)),
+        "cop": cop,
         "outdoor_at_home": outdoor,
+        "cop_excluded_self_contradiction": set(excluded),
     }
 
 
@@ -266,7 +306,17 @@ def validate_record(text, alphabets, policy, acknowledge_finding_45=False):
         if not cop_s.isdigit() or (len(cop_s) > 1 and cop_s[0] == "0"):
             return False, "episode %d COP %r is not a leading-zero-free integer" % (i, cop_s)
         if int(cop_s) not in alphabets["cop"]:
-            return False, "episode %d COP %s outside 0..%d" % (i, cop_s, COP_MAX)
+            # 🔴 Two different rejections wear this one test, and reporting them
+            # identically was actively misleading: after `D-S7-5` (1) cut the
+            # alphabet from 65 values to 34, the common rejection is a value that
+            # IS inside 0..64 and is simply not an admissible flag set. The old
+            # message said "outside 0..64" about `COP 5`, which is inside it.
+            if int(cop_s) < COP_MIN or int(cop_s) > COP_MAX:
+                return False, ("episode %d COP %s outside the %d..%d encoding range"
+                               % (i, cop_s, COP_MIN, COP_MAX))
+            return False, ("episode %d COP %s is in 0..%d but is not one of the %d "
+                           "admissible flag sets (D-S7-5 (1))"
+                           % (i, cop_s, COP_MAX, len(alphabets["cop"])))
 
         if policy == TransitionPolicy.REQUIRE_TRAVEL:
             if loc in LOC_TRANSPORT:

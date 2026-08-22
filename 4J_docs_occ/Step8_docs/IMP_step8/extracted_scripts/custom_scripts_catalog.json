@@ -1,0 +1,572 @@
+﻿[
+    {
+        "ScriptNumber":  1,
+        "Index":  1211,
+        "NickName":  "Python",
+        "Filename":  "001_Python_idx1211.py",
+        "Inputs":  "InList",
+        "Outputs":  "TrueList, FalseList",
+        "Lines":  7,
+        "Preview":  "TrueList = [] FalseList = [] for id,value in enumerate(InList):     if value == \"True\":         TrueList.append(id)     else:         FalseList."
+    },
+    {
+        "ScriptNumber":  2,
+        "Index":  1220,
+        "NickName":  "Python",
+        "Filename":  "002_Python_idx1220.py",
+        "Inputs":  "InList",
+        "Outputs":  "TrueList, FalseList",
+        "Lines":  7,
+        "Preview":  "TrueList = [] FalseList = [] for id,value in enumerate(InList):     if value == \"True\":         TrueList.append(id)     else:         FalseList."
+    },
+    {
+        "ScriptNumber":  3,
+        "Index":  1228,
+        "NickName":  "Python",
+        "Filename":  "003_Python_idx1228.py",
+        "Inputs":  "InList",
+        "Outputs":  "TrueList, FalseList",
+        "Lines":  7,
+        "Preview":  "TrueList = [] FalseList = [] for id,value in enumerate(InList):     if value == \"True\":         TrueList.append(id)     else:         FalseList."
+    },
+    {
+        "ScriptNumber":  4,
+        "Index":  1246,
+        "NickName":  "Python",
+        "Filename":  "004_Python_idx1246.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  14,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  5,
+        "Index":  1253,
+        "NickName":  "Python",
+        "Filename":  "005_Python_idx1253.py",
+        "Inputs":  "InList",
+        "Outputs":  "TrueList, FalseList",
+        "Lines":  7,
+        "Preview":  "TrueList = [] FalseList = [] for id,value in enumerate(InList):     if value == \"True\":         TrueList.append(id)     else:         FalseList."
+    },
+    {
+        "ScriptNumber":  6,
+        "Index":  1314,
+        "NickName":  "Python",
+        "Filename":  "006_Python_idx1314.py",
+        "Inputs":  "InList",
+        "Outputs":  "TrueList, FalseList",
+        "Lines":  7,
+        "Preview":  "TrueList = [] FalseList = [] for id,value in enumerate(InList):     if value == \"True\":         TrueList.append(id)     else:         FalseList."
+    },
+    {
+        "ScriptNumber":  7,
+        "Index":  1571,
+        "NickName":  "Python",
+        "Filename":  "007_Python_idx1571.py",
+        "Inputs":  "Toggle",
+        "Outputs":  "",
+        "Lines":  13,
+        "Preview":  "import Grasshopper as gh  if Toggle:          # Get the Grasshopper document and objects     ghDoc = ghenv.Component.OnPingDocument()     ghObje"
+    },
+    {
+        "ScriptNumber":  8,
+        "Index":  1574,
+        "NickName":  "HB_EPContextSrf",
+        "Filename":  "008_HB_EPContextSrf_idx1574.py",
+        "Inputs":  "_shdSurfaces, EPTransSchedule_, RADMaterial, meshingSettings_, justBoundingBox_",
+        "Outputs":  "HBContext",
+        "Lines":  180,
+        "Preview":  "\"\"\" prepare shading/context geometries      Args:         northVectorOrRotation: A vector that shows North or a number that shows                "
+    },
+    {
+        "ScriptNumber":  9,
+        "Index":  1938,
+        "NickName":  "Python",
+        "Filename":  "009_Python_idx1938.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  21,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  10,
+        "Index":  2118,
+        "NickName":  "Python",
+        "Filename":  "010_Python_idx2118.py",
+        "Inputs":  "s, swapUV, reverseU, reverseV",
+        "Outputs":  "out, anchor, uVec, vVec, revSrf",
+        "Lines":  25,
+        "Preview":  " import Rhino  if reverseU:     uS,uE = s.Domain(0)     inter0 = Rhino.Geometry.Interval(-uE, -uS)     s.SetDomain(0,inter0)     s = s.Reverse("
+    },
+    {
+        "ScriptNumber":  11,
+        "Index":  2334,
+        "NickName":  "Python",
+        "Filename":  "011_Python_idx2334.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  12,
+        "Index":  3155,
+        "NickName":  "Python",
+        "Filename":  "012_Python_idx3155.py",
+        "Inputs":  "x, A",
+        "Outputs":  "out, a",
+        "Lines":  16,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  13,
+        "Index":  3292,
+        "NickName":  "Python",
+        "Filename":  "013_Python_idx3292.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  14,
+        "Index":  3353,
+        "NickName":  "Python",
+        "Filename":  "014_Python_idx3353.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  15,
+        "Index":  3669,
+        "NickName":  "Python",
+        "Filename":  "015_Python_idx3669.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  16,
+        "Index":  3675,
+        "NickName":  "Python",
+        "Filename":  "016_Python_idx3675.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  17,
+        "Index":  3677,
+        "NickName":  "Python",
+        "Filename":  "017_Python_idx3677.py",
+        "Inputs":  "x, y, z",
+        "Outputs":  "out, a",
+        "Lines":  19,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  18,
+        "Index":  3743,
+        "NickName":  "Data Rec",
+        "Filename":  "018_Data Rec_idx3743.py",
+        "Inputs":  "x, enable, reset, limit",
+        "Outputs":  "x",
+        "Lines":  8,
+        "Preview":  "from Grasshopper import DataTree if reset or \u0027rec\u0027 not in globals(): rec = DataTree[object]() if enable and not reset: rec.MergeTree(x) if limit \u003e "
+    },
+    {
+        "ScriptNumber":  19,
+        "Index":  3803,
+        "NickName":  "Python",
+        "Filename":  "019_Python_idx3803.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  18,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  20,
+        "Index":  4065,
+        "NickName":  "Python",
+        "Filename":  "020_Python_idx4065.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  21,
+        "Index":  4188,
+        "NickName":  "Python",
+        "Filename":  "021_Python_idx4188.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  21,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  22,
+        "Index":  4310,
+        "NickName":  "Python",
+        "Filename":  "022_Python_idx4310.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  23,
+        "Index":  4325,
+        "NickName":  "Python",
+        "Filename":  "023_Python_idx4325.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  24,
+        "Index":  4340,
+        "NickName":  "Python",
+        "Filename":  "024_Python_idx4340.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  25,
+        "Index":  4393,
+        "NickName":  "Python",
+        "Filename":  "025_Python_idx4393.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  13,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  26,
+        "Index":  4438,
+        "NickName":  "Python",
+        "Filename":  "026_Python_idx4438.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  27,
+        "Index":  4569,
+        "NickName":  "Python",
+        "Filename":  "027_Python_idx4569.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  28,
+        "Index":  4651,
+        "NickName":  "Python",
+        "Filename":  "028_Python_idx4651.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  29,
+        "Index":  4654,
+        "NickName":  "Python",
+        "Filename":  "029_Python_idx4654.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  30,
+        "Index":  4753,
+        "NickName":  "Python",
+        "Filename":  "030_Python_idx4753.py",
+        "Inputs":  "x, y, z",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  31,
+        "Index":  4815,
+        "NickName":  "Python",
+        "Filename":  "031_Python_idx4815.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  16,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  32,
+        "Index":  4830,
+        "NickName":  "Python",
+        "Filename":  "032_Python_idx4830.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, BuildingwithExtraUnit, BuildingwithoutExtraUnit",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  33,
+        "Index":  4872,
+        "NickName":  "Python",
+        "Filename":  "033_Python_idx4872.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, Windowless, NoWindowless",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  34,
+        "Index":  4935,
+        "NickName":  "Python",
+        "Filename":  "034_Python_idx4935.py",
+        "Inputs":  "s, swapUV, reverseU, reverseV",
+        "Outputs":  "out, anchor, uVec, vVec, revSrf",
+        "Lines":  25,
+        "Preview":  " import Rhino  if reverseU:     uS,uE = s.Domain(0)     inter0 = Rhino.Geometry.Interval(-uE, -uS)     s.SetDomain(0,inter0)     s = s.Reverse("
+    },
+    {
+        "ScriptNumber":  35,
+        "Index":  4943,
+        "NickName":  "Python",
+        "Filename":  "035_Python_idx4943.py",
+        "Inputs":  "x",
+        "Outputs":  "out, output",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  36,
+        "Index":  4955,
+        "NickName":  "Python",
+        "Filename":  "036_Python_idx4955.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  6,
+        "Preview":  "if x[0] == x[1]:     a =True     print(\"centroids are the same\") else:     a =False     print(\"centroids are not the same\")"
+    },
+    {
+        "ScriptNumber":  37,
+        "Index":  4957,
+        "NickName":  "Python",
+        "Filename":  "037_Python_idx4957.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  18,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  38,
+        "Index":  5003,
+        "NickName":  "Python",
+        "Filename":  "038_Python_idx5003.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  39,
+        "Index":  5017,
+        "NickName":  "Python",
+        "Filename":  "039_Python_idx5017.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  40,
+        "Index":  5267,
+        "NickName":  "Python",
+        "Filename":  "040_Python_idx5267.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  41,
+        "Index":  5289,
+        "NickName":  "Python",
+        "Filename":  "041_Python_idx5289.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  42,
+        "Index":  5354,
+        "NickName":  "Data Rec",
+        "Filename":  "042_Data Rec_idx5354.py",
+        "Inputs":  "x, enable, reset, limit",
+        "Outputs":  "x",
+        "Lines":  8,
+        "Preview":  "from Grasshopper import DataTree if reset or \u0027rec\u0027 not in globals(): rec = DataTree[object]() if enable and not reset: rec.MergeTree(x) if limit \u003e "
+    },
+    {
+        "ScriptNumber":  43,
+        "Index":  5375,
+        "NickName":  "Python",
+        "Filename":  "043_Python_idx5375.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  16,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  44,
+        "Index":  5439,
+        "NickName":  "Python",
+        "Filename":  "044_Python_idx5439.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  16,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  45,
+        "Index":  5604,
+        "NickName":  "Python",
+        "Filename":  "045_Python_idx5604.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  13,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  46,
+        "Index":  5634,
+        "NickName":  "Python",
+        "Filename":  "046_Python_idx5634.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  16,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  47,
+        "Index":  5657,
+        "NickName":  "Python",
+        "Filename":  "047_Python_idx5657.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  16,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  48,
+        "Index":  5710,
+        "NickName":  "Python",
+        "Filename":  "048_Python_idx5710.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  18,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  49,
+        "Index":  6360,
+        "NickName":  "Python",
+        "Filename":  "049_Python_idx6360.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  50,
+        "Index":  6364,
+        "NickName":  "Python",
+        "Filename":  "050_Python_idx6364.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  51,
+        "Index":  6406,
+        "NickName":  "Python",
+        "Filename":  "051_Python_idx6406.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  52,
+        "Index":  6537,
+        "NickName":  "Python",
+        "Filename":  "052_Python_idx6537.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  53,
+        "Index":  6555,
+        "NickName":  "Python",
+        "Filename":  "053_Python_idx6555.py",
+        "Inputs":  "x, y",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  54,
+        "Index":  6564,
+        "NickName":  "Python",
+        "Filename":  "054_Python_idx6564.py",
+        "Inputs":  "y",
+        "Outputs":  "out, a",
+        "Lines":  15,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  55,
+        "Index":  6595,
+        "NickName":  "Python",
+        "Filename":  "055_Python_idx6595.py",
+        "Inputs":  "x",
+        "Outputs":  "out, a",
+        "Lines":  17,
+        "Preview":  "\"\"\"Provides a scripting component.     Inputs:         x: The x script variable         y: The y script variable     Output:         a: The a out"
+    },
+    {
+        "ScriptNumber":  56,
+        "Index":  6670,
+        "NickName":  "Data Rec",
+        "Filename":  "056_Data Rec_idx6670.py",
+        "Inputs":  "x, enable, reset, limit",
+        "Outputs":  "x",
+        "Lines":  8,
+        "Preview":  "from Grasshopper import DataTree if reset or \u0027rec\u0027 not in globals(): rec = DataTree[object]() if enable and not reset: rec.MergeTree(x) if limit \u003e "
+    },
+    {
+        "ScriptNumber":  57,
+        "Index":  6787,
+        "NickName":  "Data Rec",
+        "Filename":  "057_Data Rec_idx6787.py",
+        "Inputs":  "x, enable, reset, limit",
+        "Outputs":  "x",
+        "Lines":  8,
+        "Preview":  "from Grasshopper import DataTree if reset or \u0027rec\u0027 not in globals(): rec = DataTree[object]() if enable and not reset: rec.MergeTree(x) if limit \u003e "
+    }
+]

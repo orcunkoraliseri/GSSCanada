@@ -82,6 +82,12 @@ MODEL_FOR = {
     "primary": "allenai/Olmo-3-1025-7B",
     "ceiling": "allenai/Olmo-3-1025-7B",
     "qwen":    "Qwen/Qwen2.5-7B",
+    # `D-S6-14`, author 2026-08-22. The permuted-label control shares the REPORTED
+    # backbone on purpose: a memorisation ceiling measured on a different model is
+    # a ceiling for a different model. Leg 4 still overrides to the 1B below, so
+    # `--leg 4 --run-type permuted` is the 1.48 B control and `--leg 5 --run-type
+    # permuted` is the 7.30 B one, exactly as the ruling asks.
+    "permuted": "allenai/Olmo-3-1025-7B",
 }
 
 
@@ -850,7 +856,12 @@ def main():
     ap.add_argument("--fold", required=True, choices=["es", "uk", "it"])
     ap.add_argument("--leg", type=int, required=True, choices=[4, 5])
     ap.add_argument("--run-type", required=True,
-                    choices=["pilot", "primary", "ceiling", "qwen", "perturb"])
+                    choices=["pilot", "primary", "ceiling", "qwen", "perturb", "permuted"])
+    ap.add_argument("--shard-manifest", default=MANIFEST_IN,
+                    help="`D-S6-14`: which shard manifest to train from. Defaults to the "
+                         "production one. The ONLY other legal value is the permuted "
+                         "control manifest, and it is legal only with --run-type "
+                         "permuted -- the interlock is enforced, both directions.")
     ap.add_argument("--epochs", type=int, default=None)
     ap.add_argument("--max-len", type=int, default=1280)
     ap.add_argument("--batch-size", type=int, default=2)
@@ -947,7 +958,34 @@ def main():
              "A run against an unfrozen or altered pre-registration is not a run.")
 
     # ---- shards ----
-    shard_manifest = json.load(open(MANIFEST_IN, "r", encoding="utf-8"))
+    shard_manifest = json.load(open(args.shard_manifest, "r", encoding="utf-8"))
+    print("shard manifest: %s" % args.shard_manifest)
+
+    # ---- 🔴 `D-S6-14` INTERLOCK, both directions ----
+    # A poisoned shard reaching a reported run would put a deranged corpus behind a
+    # number in the paper; a clean shard reaching the control would make the ceiling
+    # a second copy of the result and the audit would read as if it had a top when it
+    # did not. Neither is recoverable after the fact, so both are refused here.
+    poisoned = bool(shard_manifest.get("POISONED_CONTROL", False))
+    if poisoned and args.run_type != "permuted":
+        fail("this manifest is marked POISONED_CONTROL (permutation seed %s) and the "
+             "run-type is %r. A permuted-label shard may only be trained as the "
+             "control. See `D-S6-14`."
+             % ((shard_manifest.get("permutation") or {}).get("seed"), args.run_type))
+    if args.run_type == "permuted" and not poisoned:
+        fail("--run-type permuted was given but the manifest %s is NOT marked "
+             "POISONED_CONTROL. The memorisation-ceiling control trained on the real "
+             "corpus is not a ceiling, it is a duplicate of the reported run. Build "
+             "the shards with `4thJ_step4_shards.py --permute-labels` first."
+             % args.shard_manifest)
+    if poisoned:
+        pr = shard_manifest.get("permutation") or {}
+        print("🔴 POISONED_CONTROL run. permutation seed %s, %s records re-paired, "
+              "%s fixed points." % (pr.get("seed"), pr.get("n_permuted"),
+                                    pr.get("n_fixed_points")))
+        print("🔴 Nothing this run produces is a result. It exists to put a TOP on the "
+              "scale `G6.10`/`G6.11` are read against. `D-S6-14`, author 2026-08-22.")
+
     fold_m = shard_manifest["folds"][args.fold]
     train_path = fold_m["train"]["path"]
     val_path = fold_m["heldin_val"]["path"]

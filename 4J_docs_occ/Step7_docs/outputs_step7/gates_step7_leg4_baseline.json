@@ -1,0 +1,589 @@
+{
+  "board": {
+    "FAIL": 15,
+    "PASS": 12
+  },
+  "folds": {
+    "es": {
+      "G7_1": {
+        "examples": [],
+        "kind": "ENFORCEMENT CONFIRMATION",
+        "n_bad": 0,
+        "passes": true
+      },
+      "G7_10": {
+        "artefact": "Step7_docs/outputs_step7\\g710_oracle_agreement.json",
+        "n": 10000,
+        "n_disagreements": 0,
+        "note": "read from its own job's artefact; not re-scored here",
+        "passes": true,
+        "xgrammar_version": "0.2.3"
+      },
+      "G7_11": {
+        "n_on_disk": 600,
+        "n_requested": 600,
+        "passes": true,
+        "unexplained_discards": 0
+      },
+      "G7_12": {
+        "note": "work item 7.2. FAILs until the two-backbone comparison is written; a campaign sized from one backbone's number is an unsized campaign.",
+        "passes": false,
+        "path": "Step7_docs/outputs_step7\\throughput_comparison.md"
+      },
+      "G7_13": {
+        "excluded_by_code": {
+          "322": 0,
+          "341": 98,
+          "342": 0,
+          "344": 0
+        },
+        "minutes_present": 631680,
+        "minutes_total": 864000,
+        "n_at_home_episodes": 9037,
+        "n_at_home_null_act_episodes": 0,
+        "n_at_home_outdoor_episodes": 98,
+        "n_episodes": 12419,
+        "n_records": 600,
+        "outdoor_at_home": [
+          "322",
+          "341",
+          "342",
+          "344"
+        ],
+        "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+        "passes": true,
+        "present_share": 0.7311111111111112,
+        "reasons": [],
+        "used_shipped_list": true
+      },
+      "G7_2": {
+        "examples": [
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))",
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))",
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))"
+        ],
+        "kind": "ENFORCEMENT CONFIRMATION",
+        "n_bad": 39,
+        "passes": false
+      },
+      "G7_3": {
+        "corpus_pct": 43.18,
+        "generated_pct": 46.17,
+        "kind": "REPORTED RATE (D-S7-2 (a)) -- no pass/fail",
+        "n_hit": 259,
+        "n_scored": 561
+      },
+      "G7_4": {
+        "enforced_by_grammar": true,
+        "household_membership": {
+          "enforced": false,
+          "n_episodes": 128,
+          "n_records": 46,
+          "note": "REPORTED, NOT ENFORCED and NOT IN THE VERDICT (D-S7-5 (1)). The real corpus violates this rule in 1.49 % of diaries, 14.7x unevenly by country.",
+          "rate_pct": 7.666666666666667,
+          "violations": {
+            "cop_children in couple_no_children": 23,
+            "cop_children in one_person": 3,
+            "cop_other_hh in one_person": 22,
+            "cop_parent in one_person": 54,
+            "cop_partner in one_person": 3,
+            "cop_partner in single_parent_with_children": 23
+          }
+        },
+        "n_checked": 12385,
+        "n_episodes": 12419,
+        "n_records_violating": 39,
+        "passes": false,
+        "self_contradiction": {
+          "enforced_by_grammar_under": "D-S7-5 (1), COP alphabet 65 -> 34",
+          "n_episodes": 39,
+          "n_records": 39,
+          "rate_pct": 6.5,
+          "violations": {
+            "cop_alone with company": 39
+          }
+        },
+        "violations": {
+          "cop_alone with company": 39
+        }
+      },
+      "G7_5": {
+        "blocked": false,
+        "n": 600,
+        "n_valid": 16,
+        "passes": false,
+        "rate": 0.02666666666666667,
+        "target": 0.999,
+        "top_reasons": {
+          "durations sum to 1410 minutes, not 1440": 17,
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissi": 24,
+          "episode 12 ACT2 '79' not in the alphabet": 19,
+          "episode 14 duration 920 is not a positive multiple of 10, or": 53,
+          "episode 6 ACT '864' not in the alphabet": 24,
+          "episode 8 duration 129 is not a positive multiple of 10, or ": 19,
+          "episode 8 duration 360 is not a positive multiple of 10, or ": 19,
+          "whitespace present": 18
+        }
+      },
+      "G7_6": {
+        "examples": [],
+        "n": 600,
+        "n_decoded": 600,
+        "passes": true
+      },
+      "G7_7_G7_8": {
+        "blocked": false,
+        "n": 600,
+        "n_strata": 159,
+        "n_strata_ge_100": 0,
+        "passes": false,
+        "population_firing_rate": 0.973333,
+        "ratio": null,
+        "ratio_max": 3.0,
+        "reasons": [
+          "V7.a: only 0 stratum/strata carry >= 100 records (need 10). Both G7.7 and G7.8 FAIL rather than skipping -- an evenness ratio computed over cells of size 3 is noise wearing a threshold's clothes."
+        ],
+        "v7a_satisfied": false,
+        "worst_stratum": null,
+        "worst_stratum_rate": null
+      },
+      "G7_9": {
+        "band_min_day": 5.0,
+        "blocked": false,
+        "control_yield": 0.026667,
+        "deviations_over_band": {
+          "011": -56.367,
+          "012": 21.567,
+          "021": -21.375,
+          "031": 17.533,
+          "111": -155.008,
+          "132": 13.583,
+          "221": -6.9,
+          "311": 16.433,
+          "312": 9.242,
+          "321": 27.133,
+          "323": 14.4,
+          "324": 8.167,
+          "332": -15.95,
+          "361": 8.617,
+          "381": 9.85,
+          "391": 6.1,
+          "432": 7.05,
+          "512": -27.533,
+          "529": -6.5,
+          "531": 16.833,
+          "611": 20.067,
+          "613": 13.558,
+          "711": 12.408,
+          "723": 5.317,
+          "731": 5.233,
+          "813": -34.075,
+          "819": -30.2,
+          "821": 36.4,
+          "910": -14.192,
+          "972": 10.883
+        },
+        "implied_draws_for_parity": 22500,
+        "n_constrained": 600,
+        "n_control": 16,
+        "passes": false,
+        "reasons": [
+          "worst category 111 deviates -155.01 min/day (band +/- 5.0)",
+          "the control carries 16 valid diaries against 600 constrained ones. A marginal estimated from 16 diaries cannot resolve 5.0 min/day, so this verdict is about the CONTROL, not about the mask. Matching the constrained batch would need ~22,500 unconstrained draws."
+        ],
+        "worst_category": "111",
+        "worst_deviation_min_day": -155.0083
+      },
+      "blocked": false,
+      "fold": "es",
+      "n_constrained": 600,
+      "n_control": 600,
+      "note": "null perturbation: nothing changed",
+      "perturbation": "null"
+    },
+    "it": {
+      "G7_1": {
+        "examples": [],
+        "kind": "ENFORCEMENT CONFIRMATION",
+        "n_bad": 0,
+        "passes": true
+      },
+      "G7_10": {
+        "artefact": "Step7_docs/outputs_step7\\g710_oracle_agreement.json",
+        "n": 10000,
+        "n_disagreements": 0,
+        "note": "read from its own job's artefact; not re-scored here",
+        "passes": true,
+        "xgrammar_version": "0.2.3"
+      },
+      "G7_11": {
+        "n_on_disk": 600,
+        "n_requested": 600,
+        "passes": true,
+        "unexplained_discards": 0
+      },
+      "G7_12": {
+        "note": "work item 7.2. FAILs until the two-backbone comparison is written; a campaign sized from one backbone's number is an unsized campaign.",
+        "passes": false,
+        "path": "Step7_docs/outputs_step7\\throughput_comparison.md"
+      },
+      "G7_13": {
+        "excluded_by_code": {
+          "322": 0,
+          "341": 3,
+          "342": 0,
+          "344": 4
+        },
+        "minutes_present": 599170,
+        "minutes_total": 864000,
+        "n_at_home_episodes": 9463,
+        "n_at_home_null_act_episodes": 9,
+        "n_at_home_outdoor_episodes": 7,
+        "n_episodes": 13719,
+        "n_records": 600,
+        "outdoor_at_home": [
+          "322",
+          "341",
+          "342",
+          "344"
+        ],
+        "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+        "passes": true,
+        "present_share": 0.6934837962962963,
+        "reasons": [],
+        "used_shipped_list": true
+      },
+      "G7_2": {
+        "examples": [
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))",
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))",
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))"
+        ],
+        "kind": "ENFORCEMENT CONFIRMATION",
+        "n_bad": 52,
+        "passes": false
+      },
+      "G7_3": {
+        "corpus_pct": 23.63,
+        "generated_pct": 61.13,
+        "kind": "REPORTED RATE (D-S7-2 (a)) -- no pass/fail",
+        "n_hit": 335,
+        "n_scored": 548
+      },
+      "G7_4": {
+        "enforced_by_grammar": true,
+        "household_membership": {
+          "enforced": false,
+          "n_episodes": 343,
+          "n_records": 72,
+          "note": "REPORTED, NOT ENFORCED and NOT IN THE VERDICT (D-S7-5 (1)). The real corpus violates this rule in 1.49 % of diaries, 14.7x unevenly by country.",
+          "rate_pct": 12.0,
+          "violations": {
+            "cop_children in couple_no_children": 3,
+            "cop_children in one_person": 6,
+            "cop_other_hh in one_person": 39,
+            "cop_parent in one_person": 169,
+            "cop_partner in one_person": 28,
+            "cop_partner in single_parent_with_children": 98
+          }
+        },
+        "n_checked": 13548,
+        "n_episodes": 13719,
+        "n_records_violating": 52,
+        "passes": false,
+        "self_contradiction": {
+          "enforced_by_grammar_under": "D-S7-5 (1), COP alphabet 65 -> 34",
+          "n_episodes": 59,
+          "n_records": 52,
+          "rate_pct": 8.666666666666666,
+          "violations": {
+            "cop_alone with company": 59
+          }
+        },
+        "violations": {
+          "cop_alone with company": 59
+        }
+      },
+      "G7_5": {
+        "blocked": false,
+        "n": 600,
+        "n_valid": 23,
+        "passes": false,
+        "rate": 0.03833333333333333,
+        "target": 0.999,
+        "top_reasons": {
+          "durations sum to 1380 minutes, not 1440": 18,
+          "durations sum to 1400 minutes, not 1440": 27,
+          "durations sum to 1410 minutes, not 1440": 27,
+          "durations sum to 1420 minutes, not 1440": 32,
+          "durations sum to 1430 minutes, not 1440": 42,
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissi": 41,
+          "episode 16 duration 330 is not a positive multiple of 10, or": 23,
+          "episode 6 ACT '864' not in the alphabet": 19
+        }
+      },
+      "G7_6": {
+        "examples": [],
+        "n": 600,
+        "n_decoded": 600,
+        "passes": true
+      },
+      "G7_7_G7_8": {
+        "blocked": false,
+        "n": 600,
+        "n_strata": 163,
+        "n_strata_ge_100": 0,
+        "passes": false,
+        "population_firing_rate": 0.961667,
+        "ratio": null,
+        "ratio_max": 3.0,
+        "reasons": [
+          "V7.a: only 0 stratum/strata carry >= 100 records (need 10). Both G7.7 and G7.8 FAIL rather than skipping -- an evenness ratio computed over cells of size 3 is noise wearing a threshold's clothes."
+        ],
+        "v7a_satisfied": false,
+        "worst_stratum": null,
+        "worst_stratum_rate": null
+      },
+      "G7_9": {
+        "band_min_day": 5.0,
+        "blocked": false,
+        "control_yield": 0.038333,
+        "deviations_over_band": {
+          "011": -34.472,
+          "021": -32.472,
+          "031": 8.719,
+          "111": 18.545,
+          "211": 17.867,
+          "300": -21.814,
+          "311": -15.0,
+          "312": 5.749,
+          "321": 9.614,
+          "324": -5.485,
+          "332": -8.943,
+          "371": -9.503,
+          "381": -11.12,
+          "427": 7.067,
+          "431": -19.591,
+          "513": -6.24,
+          "522": 11.95,
+          "529": 9.679,
+          "531": 5.907,
+          "611": -43.67,
+          "615": 5.917,
+          "619": 7.2,
+          "722": 7.275,
+          "731": 16.017,
+          "733": 9.867,
+          "829": 12.406,
+          "950": -16.154
+        },
+        "implied_draws_for_parity": 15652,
+        "n_constrained": 600,
+        "n_control": 23,
+        "passes": false,
+        "reasons": [
+          "worst category 611 deviates -43.67 min/day (band +/- 5.0)",
+          "the control carries 23 valid diaries against 600 constrained ones. A marginal estimated from 23 diaries cannot resolve 5.0 min/day, so this verdict is about the CONTROL, not about the mask. Matching the constrained batch would need ~15,652 unconstrained draws."
+        ],
+        "worst_category": "611",
+        "worst_deviation_min_day": -43.6696
+      },
+      "blocked": false,
+      "fold": "it",
+      "n_constrained": 600,
+      "n_control": 600,
+      "note": "null perturbation: nothing changed",
+      "perturbation": "null"
+    },
+    "uk": {
+      "G7_1": {
+        "examples": [],
+        "kind": "ENFORCEMENT CONFIRMATION",
+        "n_bad": 0,
+        "passes": true
+      },
+      "G7_10": {
+        "artefact": "Step7_docs/outputs_step7\\g710_oracle_agreement.json",
+        "n": 10000,
+        "n_disagreements": 0,
+        "note": "read from its own job's artefact; not re-scored here",
+        "passes": true,
+        "xgrammar_version": "0.2.3"
+      },
+      "G7_11": {
+        "n_on_disk": 600,
+        "n_requested": 600,
+        "passes": true,
+        "unexplained_discards": 0
+      },
+      "G7_12": {
+        "note": "work item 7.2. FAILs until the two-backbone comparison is written; a campaign sized from one backbone's number is an unsized campaign.",
+        "passes": false,
+        "path": "Step7_docs/outputs_step7\\throughput_comparison.md"
+      },
+      "G7_13": {
+        "excluded_by_code": {
+          "322": 0,
+          "341": 0,
+          "342": 0,
+          "344": 9
+        },
+        "minutes_present": 582590,
+        "minutes_total": 864000,
+        "n_at_home_episodes": 9982,
+        "n_at_home_null_act_episodes": 0,
+        "n_at_home_outdoor_episodes": 9,
+        "n_episodes": 14582,
+        "n_records": 600,
+        "outdoor_at_home": [
+          "322",
+          "341",
+          "342",
+          "344"
+        ],
+        "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+        "passes": true,
+        "present_share": 0.6742939814814815,
+        "reasons": [],
+        "used_shipped_list": true
+      },
+      "G7_2": {
+        "examples": [
+          "episode 22 COP 17 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))",
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))",
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissible flag sets (D-S7-5 (1))"
+        ],
+        "kind": "ENFORCEMENT CONFIRMATION",
+        "n_bad": 19,
+        "passes": false
+      },
+      "G7_3": {
+        "corpus_pct": 24.64,
+        "generated_pct": 45.44,
+        "kind": "REPORTED RATE (D-S7-2 (a)) -- no pass/fail",
+        "n_hit": 264,
+        "n_scored": 581
+      },
+      "G7_4": {
+        "enforced_by_grammar": true,
+        "household_membership": {
+          "enforced": false,
+          "n_episodes": 123,
+          "n_records": 22,
+          "note": "REPORTED, NOT ENFORCED and NOT IN THE VERDICT (D-S7-5 (1)). The real corpus violates this rule in 1.49 % of diaries, 14.7x unevenly by country.",
+          "rate_pct": 3.6666666666666665,
+          "violations": {
+            "cop_children in couple_no_children": 3,
+            "cop_parent in one_person": 120
+          }
+        },
+        "n_checked": 14582,
+        "n_episodes": 14582,
+        "n_records_violating": 19,
+        "passes": false,
+        "self_contradiction": {
+          "enforced_by_grammar_under": "D-S7-5 (1), COP alphabet 65 -> 34",
+          "n_episodes": 23,
+          "n_records": 19,
+          "rate_pct": 3.1666666666666665,
+          "violations": {
+            "cop_alone with company": 23
+          }
+        },
+        "violations": {
+          "cop_alone with company": 23
+        }
+      },
+      "G7_5": {
+        "blocked": false,
+        "n": 600,
+        "n_valid": 41,
+        "passes": false,
+        "rate": 0.06833333333333333,
+        "target": 0.999,
+        "top_reasons": {
+          "durations sum to 1380 minutes, not 1440": 16,
+          "durations sum to 1410 minutes, not 1440": 33,
+          "durations sum to 1420 minutes, not 1440": 28,
+          "durations sum to 1430 minutes, not 1440": 39,
+          "episode 1 COP 5 is in 0..64 but is not one of the 34 admissi": 16,
+          "episode 17 duration 300 is not a positive multiple of 10, or": 26,
+          "episode 31 duration 270 is not a positive multiple of 10, or": 17,
+          "episode 8 duration 129 is not a positive multiple of 10, or ": 46
+        }
+      },
+      "G7_6": {
+        "examples": [],
+        "n": 600,
+        "n_decoded": 600,
+        "passes": true
+      },
+      "G7_7_G7_8": {
+        "blocked": false,
+        "n": 600,
+        "n_strata": 166,
+        "n_strata_ge_100": 0,
+        "passes": false,
+        "population_firing_rate": 0.931667,
+        "ratio": null,
+        "ratio_max": 3.0,
+        "reasons": [
+          "V7.a: only 0 stratum/strata carry >= 100 records (need 10). Both G7.7 and G7.8 FAIL rather than skipping -- an evenness ratio computed over cells of size 3 is noise wearing a threshold's clothes."
+        ],
+        "v7a_satisfied": false,
+        "worst_stratum": null,
+        "worst_stratum_rate": null
+      },
+      "G7_9": {
+        "band_min_day": 5.0,
+        "blocked": false,
+        "control_yield": 0.068333,
+        "deviations_over_band": {
+          "011": -97.459,
+          "021": -25.928,
+          "031": 14.365,
+          "111": 94.917,
+          "132": 5.326,
+          "211": -31.015,
+          "212": -13.242,
+          "221": 5.133,
+          "229": 7.183,
+          "311": 7.888,
+          "312": 7.488,
+          "332": 5.65,
+          "432": -6.878,
+          "511": 5.962,
+          "516": 6.383,
+          "519": 8.579,
+          "529": -5.765,
+          "531": -5.28,
+          "611": -7.408,
+          "731": -6.293,
+          "732": 6.483,
+          "819": -6.925,
+          "821": -53.652,
+          "942": 8.846,
+          "972": 5.25
+        },
+        "implied_draws_for_parity": 8780,
+        "n_constrained": 600,
+        "n_control": 41,
+        "passes": false,
+        "reasons": [
+          "worst category 011 deviates -97.46 min/day (band +/- 5.0)",
+          "the control carries 41 valid diaries against 600 constrained ones. A marginal estimated from 41 diaries cannot resolve 5.0 min/day, so this verdict is about the CONTROL, not about the mask. Matching the constrained batch would need ~8,780 unconstrained draws."
+        ],
+        "worst_category": "011",
+        "worst_deviation_min_day": -97.4589
+      },
+      "blocked": false,
+      "fold": "uk",
+      "n_constrained": 600,
+      "n_control": 600,
+      "note": "null perturbation: nothing changed",
+      "perturbation": "null"
+    }
+  },
+  "leg": 4,
+  "perturbation": "null"
+}
