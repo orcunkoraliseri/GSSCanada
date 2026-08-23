@@ -147,7 +147,7 @@ Every card has the same internal layout, so the eye can scan down the column:
   ┌──────────────────────────────────────────────┐
   │  [n]   STEP TITLE                    [state] │   <- number chip, title, state chip
   │        one line: what closes this step       │   <- the decision line
-  │        one line: what is still open here     │   <- omitted if nothing is open
+  │        one line: open here, or a declared caveat │   <- omitted if there is neither
   └──────────────────────────────────────────────┘
 ```
 
@@ -178,9 +178,9 @@ The cards, top to bottom, with the exact text each carries:
 | 2 | `Harmonisation` | `common activity, location and co-presence coding, shared day origin` | — | `validated` |
 | 3 | `Serialisation` | `episode form: duration, activity, location, co-presence` | — | `validated` |
 | 4 | `Fine-tuning` | `open-weight base model, low-rank adapter, one adapter per held-out country` | — | `decided` |
-| 5 | `Population linkage` | `synthetic population first, then one generated day per person` | — | `decided` |
-| 6 | `Transfer test` | `train on the other two, generate the held-out one from published marginals` | `the scoring basis where survey and published wave differ` | `open` |
-| 7 | `Constrained generation` | `well-formed diaries guaranteed at decoding` | — | `decided` |
+| 5 | `Population linkage` | `synthetic population first, then one generated day per person` | `two gates fail and ship as a declared exception` | 🔴 `validated` |
+| 6 | `Transfer test` | `train on the other two, generate the held-out one from published marginals` | 🔴 `the reported folds are not yet trained` | `open` |
+| 7 | `Constrained generation` | `well-formed diaries guaranteed at decoding` | 🔴 `throughput, chaining rule and schedule emission` | `decided` |
 | 8 | `Building simulation` | `European residential archetypes, uninjected control run first` | `archetype models built from published parameter tables` | `open` |
 | 9 | `End-use loads` | `published activity-to-appliance mappings, adapted not authored` | — | `open` |
 
@@ -208,6 +208,44 @@ not cosmetic:
   way and its gate battery is not complete. Promoting it would be the exact error Section 1 warns
   against.
 
+🔴 **CHANGED AGAIN 2026-08-22 — THREE CARDS MOVED AND TWO TILES CHANGED. REGENERATE.** The layout is
+untouched; every change is a chip or a string, and each is tied to the step document that rules it.
+
+* 🔴 **Step 5 goes `decided` → `validated`, and it is the one judgement call in this revision.**
+  Step 5 closed on 2026-08-22: `tools/4thJ_gates_step5.py` exists, the board reads **34 PASS / 2 FAIL
+  / 0 BLOCKED**, the coverage clause is clean, and gates were seen failing before any was trusted —
+  which is exactly what the `validated` chip was defined to mean. 🔴 **But `G5.8` FAILs on `es` and
+  `uk` are the TERMINAL VERDICT, not a demonstration**, and Step 5's Definition of Done closed at
+  **4 of 5 items plus item 5 by declared exception**. A bare `validated` chip would hide that. So the
+  chip moves **and the card gains a third line**, `two gates fail and ship as a declared exception`,
+  which is where the honesty now lives. **If the author prefers the chip to carry it instead, the
+  alternative is to leave Step 5 at `decided` and drop the third line — one word, one line, either
+  way. What must not happen is `validated` with no third line.**
+* 🔴 **Step 6's open line was STALE and is replaced.** It read `the scoring basis where survey and
+  published wave differ`. `D-S6-2` ruled that on **2026-08-19, the same evening the last revision was
+  written**: both Eurostat table renames accepted, Italy scored against the 2008-09 wave with the gap
+  declared, the asymmetry stated. It is no longer open. What is genuinely open at Step 6 is that the
+  reported folds have not been trained — the 7 B Leg-5 run is queued and has not started — so the line
+  becomes **`the reported folds are not yet trained`**.
+* **Step 7 gains an open line and keeps `decided`.** Since the last revision the grammar was built and
+  its oracle agreement passed on 10,000 strings, all three folds generated both constrained and
+  unconstrained, and a gate battery ran on generated text. It is still not `validated`: the board is
+  **12 PASS / 15 FAIL**, `G7.12` fails because the throughput comparison has not run, and the schedule
+  gates `G7.14`–`G7.17` have never been scored because no schedule has been emitted. The new line names
+  exactly that: **`throughput, chaining rule and schedule emission`**.
+* **The `pre-declared gate batteries` bracket extends from Steps 1–4 to Steps 1–5.** Step 5 now has a
+  battery; leaving the bracket short would say it does not.
+* 🔴 **The tile `collapse and memorisation` becomes `collapse, memorisation and privacy`.** Step 6.5
+  was built after the last revision: `G6.10`–`G6.13` — loss-based MIA, reference-based MIA against the
+  public base model, prefix-prompted extraction, and DCR/NNDR — all pass on all three Leg-4 folds with
+  both running controls. That is a distinct guard from collapse, it is why the adapter's weights cannot
+  be released, and the gutter had no tile for it. **Renaming beats adding a seventh tile**: the
+  2026-08-19 generation already dropped and merged tiles when the gutter was crowded.
+
+🔴 **Step 4 still stays `decided`, and this revision does not change that.** The Leg-5 fold is queued
+and has not run; `G4.3`, `G4.4` and `G4.12` have never been run and 4 of 15 perturbations are
+outstanding. The Section 1 warning against promoting it applies unchanged.
+
 🔴 **Card 6 is drawn larger than the others** and carries one extra line, in bold, beneath its decision
 line:
 
@@ -230,9 +268,9 @@ Tiles are visually lighter than the step cards so the spine stays dominant.
 
 | Tile label | Connects to |
 |---|---|
-| `pre-declared gate batteries` | **Steps 1, 2, 3 and 4** — 🔴 **new on 2026-08-19** |
+| `pre-declared gate batteries` | **Steps 1, 2, 3, 4 and 5** — 🔴 **new on 2026-08-19, extended to Step 5 on 2026-08-22** |
 | `distributional fidelity` | Step 6 |
-| `collapse and memorisation` | Step 6 |
+| 🔴 `collapse, memorisation and privacy` | Step 6 — 🔴 **renamed 2026-08-22** |
 | `structural validity` | Step 7 |
 | `transfer margin` | Step 6 |
 | `downstream energy` | Steps 8 and 9 |
@@ -241,7 +279,7 @@ Tiles are visually lighter than the step cards so the spine stays dominant.
 tells the reader that checking begins at the transfer test. **That is false, and it undersells the
 part of the work that is finished.** Every step from 1 onward ran a battery of gates fixed in advance,
 each gate demonstrated failing on a deliberately broken input before its passing result was accepted.
-The new tile spans Steps 1 to 4 with a single bracket rather than four separate lines, so the gutter
+The new tile spans Steps 1 to 5 with a single bracket rather than five separate lines, so the gutter
 does not become a second spine.
 
 Below the tiles, one small caption in a dashed-border box:
@@ -251,7 +289,7 @@ Below the tiles, one small caption in a dashed-border box:
 🔴 **This caption is not decoration.** A validation battery that has never been seen to fail has not
 been shown to work, and it is the practice this project runs on. Keep it even if the gutter is crowded.
 **As of 2026-08-19 the caption is no longer only an intention for the lower half of the figure — it is
-a description of what has already happened in Steps 1 to 4**, which is exactly why those steps now
+a description of what has already happened in Steps 1 to 5**, which is exactly why those steps now
 carry a tier of their own.
 
 ---
@@ -288,7 +326,9 @@ Step body lines, exactly as written in the Section 4 table:
 * `open-weight base model, low-rank adapter, one adapter per held-out country`
 * `synthetic population first, then one generated day per person`
 * `train on the other two, generate the held-out one from published marginals`
-* `the scoring basis where survey and published wave differ`
+* `the reported folds are not yet trained`
+* `two gates fail and ship as a declared exception`
+* `throughput, chaining rule and schedule emission`
 * `the bar: beat real diaries from the other countries, reweighted to the held-out country`
 * `well-formed diaries guaranteed at decoding`
 * `European residential archetypes, uninjected control run first`
@@ -301,7 +341,7 @@ State chips:
 
 Validation tiles:
 
-* `pre-declared gate batteries`, `distributional fidelity`, `collapse and memorisation`,
+* `pre-declared gate batteries`, `distributional fidelity`, `collapse, memorisation and privacy`,
   `structural validity`, `transfer margin`, `downstream energy`
 * `every tier is first shown failing on a deliberately broken control`
 
@@ -316,8 +356,16 @@ generated image, the image is rejected and regenerated — they are the reason f
 * `which model family` and `which country is held out` — both closed; the second is not merely closed
   but was never really open, since all three countries are held out in rotation
 
-**The word-form counts `one wave per country` and `the other two` are permitted**, under the same
-exception as Section 9 item 1: they are closed author decisions, written as words and never as digits.
+🔴 **TWO MORE STRINGS DELETED ON 2026-08-22. Same rule — if either appears, reject and regenerate:**
+
+* `the scoring basis where survey and published wave differ` — ruled by `D-S6-2` on 2026-08-19, the
+  same evening the previous revision was written. It is not an open question and must not be drawn as
+  one.
+* `collapse and memorisation` — the tile is now `collapse, memorisation and privacy`
+
+**The word-form counts `one wave per country`, `the other two` and 🔴 `two gates` are permitted**, under
+the same exception as Section 9 item 1: they are closed author decisions, written as words and never as
+digits. 🔴 `two gates` was added on 2026-08-22 with card 5 and is permitted on that card only.
 
 🔴 **SCAFFOLDING LABELS ARE FORBIDDEN, added 2026-08-19 after the generator printed them.**
 The column names in Section 2 are **instructions for whoever composes the layout, not text to draw**.
@@ -433,7 +481,7 @@ Handled by the assistant, not by the image tool:
 6. Check that no year, no threshold value, no model name, no country name and no count in digits appears
    anywhere; and that the only two word-form counts are `one wave per country` and `the other two`.
 7. Check that the sixth validation tile `pre-declared gate batteries` is present and brackets Steps 1
-   to 4.
+   to 5.
 8. Check legibility at full page width in print before it is accepted.
 9. 🔴 **If the plan document changes, this prompt changes first and the image is regenerated from it.**
    The Section 4 table is a copy of the Overview's step list, and a copy that drifts from its source is
@@ -498,14 +546,16 @@ circle 3, title Serialisation, chip validated
   episode form: duration, activity, location, co-presence
 circle 4, title Fine-tuning, chip decided
   open-weight base model, low-rank adapter, one adapter per held-out country
-circle 5, title Population linkage, chip decided
+circle 5, title Population linkage, chip validated
   synthetic population first, then one generated day per person
+  two gates fail and ship as a declared exception
 circle 6, title Transfer test, chip open
   train on the other two, generate the held-out one from published marginals
   the bar: beat real diaries from the other countries, reweighted to the held-out country
-  the scoring basis where survey and published wave differ
+  the reported folds are not yet trained
 circle 7, title Constrained generation, chip decided
   well-formed diaries guaranteed at decoding
+  throughput, chaining rule and schedule emission
 circle 8, title Building simulation, chip open
   European residential archetypes, uninjected control run first
   archetype models built from published parameter tables
@@ -518,10 +568,10 @@ bold body line in the whole picture. Card 6 nevertheless keeps the hollow white 
 runs short, shrink cards 8 and 9 rather than that bold line.
 
 THE SIX PALE TILES ON THE RIGHT, each with its thin connecting line:
-  pre-declared gate batteries   joined by ONE bracket that spans cards 1, 2, 3 and 4 together,
-                                reaching from card 1 down to card 4, not stopping at card 2
+  pre-declared gate batteries   joined by ONE bracket that spans cards 1, 2, 3, 4 and 5 together,
+                                reaching from card 1 down to card 5, not stopping short
   distributional fidelity       to card 6
-  collapse and memorisation     to card 6
+  collapse, memorisation and privacy   to card 6
   transfer margin               to card 6
   structural validity           to card 7
   downstream energy             to cards 8 and 9 together
@@ -556,9 +606,10 @@ one of them failing means regenerate rather than accept:
 
 1. Step 4 reads **`one adapter per held-out country`**, never `all countries trained jointly`.
 2. **`N-1` appears nowhere.**
-3. Steps 1, 2 and 3 carry **`validated`**; Steps 4, 5 and 7 carry `decided`; Steps 6, 8 and 9 carry
-   the hollow **`open`** chip.
-4. The sixth tile **`pre-declared gate batteries`** is present and brackets Steps 1 to 4.
+3. 🔴 **CHANGED 2026-08-22.** Steps 1, 2, 3 and **5** carry **`validated`**; Steps 4 and 7 carry
+   `decided`; Steps 6, 8 and 9 carry the hollow **`open`** chip.
+4. 🔴 **CHANGED 2026-08-22.** The sixth tile **`pre-declared gate batteries`** is present and brackets
+   Steps 1 to **5**, and the second tile reads **`collapse, memorisation and privacy`**.
 
 🔴 **Generators drop or merge tiles and chips when the gutter is crowded, and they silently
 re-word body lines that are long.** Check the strings character by character against Section 6 rather
@@ -614,6 +665,6 @@ The four phase band labels DATA, MODEL, CLAIM and ENERGY must be written HORIZON
 and not vertical. Do not print any column headings such as LEFT COLUMN, RIGHT COLUMN or CARDS AND
 STATE CHIPS. Do not print step numbers inside the phase bands and do not print ranges such as 6-7 or
 8-9 anywhere; the digits appear only inside the round number chips on the cards. The tile reading
-"pre-declared gate batteries" must bracket steps 1, 2, 3 and 4 together, not steps 1 and 2 only. The
+"pre-declared gate batteries" must bracket steps 1, 2, 3, 4 and 5 together, not steps 1 and 2 only. The
 line beginning "the bar:" on card 6 must be bold.
 ```

@@ -7,7 +7,23 @@
 
 ## STATUS
 
-**OPEN. Mechanism decided by `RL12`. Nothing built.**
+**OPEN.** Mechanism decided by `RL12`. 🔴 **The words *"Nothing built"* stood here until 2026-08-22
+and had been false for eight days** — the progress log below carries fifteen entries of built and run
+work. Corrected rather than quietly replaced.
+
+| work item | state as of 2026-08-22 (night) |
+|---|---|
+| **7.1** compile the grammar | 🟢 **BUILT**, selftest 51/51, `.ebnf` md5 `bb4208dd99794c3b52bdead0608d7fad`, `G7.10` PASS on 10,000 strings under the 34-value `COP` alphabet |
+| **7.2** throughput comparison | 🟢 **RUN** — job `1286208` COMPLETED 00:06:55. Diaries/second measured (**OLMo 0.835x Qwen**, not the predicted large penalty). 🔴 `G7.12` STILL FAILS: the KV-memory half is 3.05x the physical card (`FINDING 97`) |
+| **7.3** generate | 🟡 Leg-4 rehearsal done on all three folds, both arms. **Leg 5 is job `1286209`, PENDING** |
+| **7.4** three-model firing-rate report | 🟡 fine-tuned constrained and unconstrained measured; the **untuned-base arm needs a GPU** |
+| **7.5** rejection-sampled control | 🔴 sized (≈22,500 / 8,800 / 15,700 draws) and deliberately **not submitted** while `1286209` is PENDING on `AssocGrpGRES` |
+| **7.6** chaining rule (decision 14) | 🟡 DoD items **3 and 4 done** on CPU; items 1, 2, 5 and `G7.18`'s verdict need EnergyPlus. **DECISION 14 IS OPEN** |
+| **7.7** emit schedules | 🟢 **EMITTER BUILT** (selftest 52/52) and `G7.13`–`G7.17` scored 5 PASS / 0 FAIL on all three folds, all five seen falling. 🔴 The **campaign** is not run: every diary is `LEG-4 PILOT -- NOT REPORTABLE` |
+
+🔴 **Everything Leg-4 is from `allenai/OLMo-2-0425-1B`, not the reported `Olmo-3-1025-7B`. No Leg-4
+number is a result.** Work items 7.6 and 7.7's CPU half is recorded in full in
+**`4thJ_07_schedules_and_chaining_IMP.md`**.
 
 ---
 
@@ -84,7 +100,12 @@ not moved.
 
 * Presence fraction per slot per dwelling, from location codes **with the code-11 indoor rule from
   Step 2B applied**. 🔴 *(2026-08-20 `FINDING 42`: the record carries `LOC` as a STRING; the rule is `LOC == "at_home"`, which also picks up Italy's merged code 12 that a literal `11` would drop.)*
-* **Activity-resolved internal gains**, which is the part a presence fraction throws away.
+* 🟢 **Internal gains are OCCUPANCY-REDISTRIBUTED, not activity-resolved.** *(`D-S7-7` ruled **(a)** by the author, 2026-08-22, closing `FINDING 94`. This line previously read
+  "activity-resolved internal gains, which is the part a presence fraction throws away", which contradicted the ruled Step 8 interface. That interface is `D-S8-2` item 5:
+  `phi_int(t) = (1-f)*3.0 + f*3.0*g(t)/mean_year(g(t))`, with `g(t)` the generated presence signal from `G7.13` — **a fraction, not a watt**. Resolving a 3-digit HETUS code into a power needs a
+  mapping and there is no admissible one: `RL25` was commissioned for exactly that and its Part C figures were rejected as unsourced, so writing one here would put an invented number between our
+  diaries and every load in the paper. The emitter keeps each pool day's activity codes beside the presence signal, so the mapping can be applied later without a GPU run. 🔴 **The methods owe
+  one sentence saying the gains are occupancy-redistributed and NOT activity-resolved.**)*
 * 🔴 **`Schedule:File`, not `Schedule:Compact`.** At urban scale, compact blocks bloat the IDF past
   twenty thousand lines per schedule.
 * 🔴 **`Interpolate to Timestep = No`.** A step-wise presence signal interpolated linearly is no longer
@@ -193,6 +214,30 @@ Generate without the mask, reject invalid records, compare marginals against the
 
 Run the three-rule experiment above. Record the peak-demand spread. **Decide, and write down why.**
 
+🟢 **RULED 2026-08-22 — open decision 14 closes in STEP 8, on `G7.18`.** The author ruled option **(a)**: the CPU pre-screen is a screen and not the decision. It returned this document's own
+pre-registered null on every coincidence metric a peak-demand screen is made of (seed noise dominates `mean_pair_corr` on all three folds; `peak_aggregate` and `p99_aggregate` are degenerate at 1.000 on
+`es` and `it`), and the one axis on which the rules separate decisively — activity vocabulary, ratios 18.17 / 11.89 / 18.36, and same-day-type Jaccard 71.64 / 64.50 / 63.77 — is the one axis with
+**no empirical reference anywhere in this project** (`FINDING 96`: ISTAT and Spain give one diary day per respondent; the UK's second day is a weekend day in 99.7 % of cases). Decision 14 therefore
+closes on the quantity its trigger is defined on, which is a **watt**. Sizing, fixed here as arithmetic from `G7.18`'s own registration: **one archetype per fold, one `f` level, 3 rules × 5
+seeds × 100 dwellings = 1,500 dwelling-years per fold**, 4,500 across three — **independent of** the 510-archetype `f`-sweep, since one archetype and one `f` are held fixed.
+
+⚪ **Interim convention until then: `independent`, seed 1** — the rule the three baseline schedule cells on disk already use. It is a **placeholder, not an adopted rule**, and nothing downstream has
+committed to it.
+
+🔴 **Owed before any pre-screen verdict reaches the paper, and it needs no ruling:** every number in the pre-screen comes from 600-diary Leg-4 pools on a 1B backbone, whose back-off ladder
+serves four days in ten from a stratum coarser than the person's own (`es` 57.79 / `uk` 62.33 / `it` 63.52 % full depth). The vocabulary ordering would survive a bigger pool; **the seed-noise
+verdicts might not**, because a larger pool narrows the within-rule spread and could turn a coincidence metric from "tells us nothing" into a real effect. **Re-run the pre-screen at Leg-5's
+`N >= 5,200` and re-measure the back-off ladder rather than assuming it improved.** CPU-only, minutes.
+
+🟢 **RULED 2026-08-22 — `D-S7-6`, the household basis: option (a), surveyed composition, declared per fold.** The 100 households this item runs on come from the **real corpus** (`hid`/`pid`),
+because `population_<c>.csv` is a 100,000-row **person** table with no household identifier (`FINDING 93`) and `D-S5-9` settled household type on a person basis without ever assembling a
+dwelling. Re-opening Step 5 to draw households (option b) would invalidate `population_*`, `prefixes_*` and every `G6.1` null raked onto them; grouping synthetic persons post hoc (option c)
+would manufacture a joint distribution nothing measured. 🔴 **The declaration is specific, and it is not "surveyed households":** `FINDING 98` measured that a `hid` group is the household members
+who **kept a diary**, not the household — **13.50 % (`es`) / 12.37 % (`uk`) / 2.98 % (`it`)** of groups are multi-person households represented by a single diarist, a **4.5× country-correlated
+spread**, and `couple_with_children` runs on one diarist in **10.50 / 11.96 / 1.58 %** of cases. So the co-presence half of `G7.4` sees partners and children who have no day at all, and every
+household-level quantity (`mean_pair_corr`, `trough_aggregate`, co-presence) is measured on **the diarist members of surveyed households** and is read **per fold or not at all**. That row joins
+the paper's asymmetry table beside `FINDING 53`, `D-S6-2`, `FINDING 51` and `FINDING 60`.
+
 **Definition of done, sharpened after `RL21`:**
 
 1. Three rules run: independent daily resampling, static repetition, and habit-coupled resampling
@@ -216,7 +261,20 @@ Run the three-rule experiment above. Record the peak-demand spread. **Decide, an
 
 ### 7.7 — Emit schedules
 
-`Schedule:File`, `Interpolate to Timestep = No`, indoor rule applied, activity-resolved gains carried.
+`Schedule:File`, `Interpolate to Timestep = No`, indoor rule applied, **the presence signal carried** — occupancy-redistributed gains per `D-S8-2` item 5, **not** activity-resolved (`D-S7-7` (a), 2026-08-22).
+
+🟢 **The schedule calendar year** (`D-S7-8`, ruled **(a)** by the author, 2026-08-22): **a schedule runs on the first calendar year of whatever twelve-month weather window `D-S8-2`
+item 6 fixes**, and the schedules are re-emitted (CPU-seconds) once that window is known. The rule previously recorded — *"the non-leap year of each survey pair"* — is **struck**: none of the
+six candidate years (2009, 2010, 2013, 2014, 2015) is a leap year, so it discriminated nothing, and all six are identical in composition (365 d / 261 weekdays / 52 Saturdays / 52 Sundays). What the year changes is the **ordering** — which calendar date is a Saturday — which is inert while
+the schedules stand alone and becomes a basis choice the moment an actual-meteorological-year file is attached: the schedule's weekends must land on the weather's weekends, or the campaign pairs a
+synthetic Sunday with a real Tuesday for fifty-two weeks. The cells currently on disk (`es` 2010, `uk` 2014, `it` 2013) are **pilot cells emitted before the rule existed** and are superseded by it.
+
+🔴 **`FINDING 99` — the ruled alignment holds exactly when the window is a CALENDAR year, and nothing yet says it will be.** `D-S8-2` item 6 fixes *twelve consecutive months*, not necessarily
+January–December. If the window straddles two calendar years (say July 2013 – June 2014), a schedule emitted on calendar 2013 aligns with the weather for its first six months and is off by one
+or two weekdays for the rest — so "the first calendar year of the window" delivers the intended weekend coincidence only for a January-start window. Two further consequences of a straddling window:
+a twelve-month span containing 29 February is **8,784 hours**, which `year_day_types()` refuses outright and which no `Schedule:File` in this project accepts; and the emitter takes a `--year`
+parameter but has **no window-start parameter**, so a straddling window would need an additive change to `tools/4thJ_step7_schedules.py` before it could be honoured at all. ⚪ This needs no ruling now —
+it is a **constraint on `D-S8-2` item 6**: prefer a calendar-year window, or accept that the schedule/weather weekday alignment is partial and say so.
 
 ---
 
@@ -255,7 +313,7 @@ Steps 3 (grammar is defined against the record format), 4 (the adapter) and 5 (t
 3. Generation complete for every fold.
 4. Firing rate reported for three models, per stratum.
 5. Rejection-sampled control generated and marginals compared.
-6. Open decision 14 closed with a written reason.
+6. Open decision 14 closed with a written reason. ⚪ **Discharged in STEP 8** by `G7.18`, per the author's ruling of 2026-08-22 (option (a)) — this item cannot close inside Step 7.
 7. Schedules emitted with the indoor rule applied.
 8. All Step 7 gates PASS and each has been seen failing.
 
@@ -1045,7 +1103,7 @@ backbone and it must be re-taken on Leg 5 before anything is said about it in th
 | `G7.9` renormalisation | **FAIL** | **FAIL** | **FAIL** | the control is 16 / 44 / 24 diaries |
 | `G7.10` oracle agreement | PASS | PASS | PASS | read from its own job's artefact, not re-scored |
 | `G7.11` no silent discard | PASS | PASS | PASS | 600 requested, 600 on disk |
-| `G7.12` throughput recorded | **FAIL** | **FAIL** | **FAIL** | work item 7.2, submitted as job 1286208 |
+| `G7.12` throughput recorded | **FAIL** | **FAIL** | **FAIL** | 🔴 job 1286208 RETURNED and the gate STILL fails — no valid peak-KV value exists (`FINDING 97`) |
 | `G7.13` indoor rule | PASS | PASS | PASS | 🔴 first run ever on GENERATED records |
 
 🟢 **`G7.13` on generated text at last.** The 2026-08-21 entry closed with *"it has still never been
@@ -1148,7 +1206,11 @@ alphabet at start-up and refuses to run if it is a member.
 
 `G7.10` did not move here and is not supposed to: it was seen failing in **its own** job under the
 off-by-one oracle perturbation, and the battery reads its artefact rather than re-scoring it.
-`G7.12` moves when work item 7.2 writes `throughput_comparison.md`.
+`G7.12` did **not** move when work item 7.2 wrote `throughput_comparison.md` on 2026-08-22. The
+artefact exists and covers both backbones, and diaries/second is measured and sound, but the gate
+also demands **peak KV memory** and the report carries no valid value for it: the derived pool is
+**227.141 GiB against a 74.506 GiB card** and `torch_peak_allocated_gib` is **0.0 in both rows**.
+See `FINDING 97`. It moves when the KV derivation reads OLMo 3's `layer_types` — a 7-minute re-run.
 
 #### What is NOT established
 
@@ -1445,3 +1507,166 @@ critical path) is PENDING on **`AssocGrpGRES`** with *zero* running jobs of mine
 group-level TRES rather than my own concurrency, and `gres/gpu` is counted across all slice types.
 Submitting three more GPU jobs could therefore push the reported model's training later. Item 7.5
 runs once Leg 5 is RUNNING, not before. Recorded here rather than left as a plan in someone's head.
+
+---
+
+### 2026-08-22 (night, third entry) — 🟢 **WORK ITEM 7.7 HAS AN EMITTER AND WORK ITEM 7.6 HAS ITS CPU HALF. FOUR GATES THAT HAD NEVER BEEN SCORED ARE SCORED. 🔴 FOUR FINDINGS AND ONE NEW DECISION CAME OUT OF IT, AND ONE OF THEM SAYS THIS DOCUMENT AND `D-S8-2` DISAGREE ABOUT WHAT A SCHEDULE CARRIES.**
+
+Everything in this entry ran on the author's laptop while jobs `1286208` and `1286209` sat PENDING on
+the A100 `7g.80gb` pool. **No job was submitted, nothing touched Speed, no socket was opened.** Full
+record, with every number and every refusal: **`4thJ_07_schedules_and_chaining_IMP.md`**.
+
+#### What was built
+
+| file | what | state |
+|---|---|---|
+| `tools/4thJ_step7_schedules.py` | work item 7.7 — diary → presence → `Schedule:File` | selftest **52 ok / 0 FAILED** |
+| `tools/4thJ_step7_schedules_selftest.py` | every refusal made to fire on fixtures | |
+| `tools/4thJ_gates_step7_schedules.py` | `G7.13`–`G7.17`, everything re-read **from disk** | |
+| `tools/4thJ_step7_chaining.py` | work item 7.6, DoD items 3 and 4 | selftest **40 ok / 0 FAILED** |
+| `tools/4thJ_step7_chaining_selftest.py` | metrics checked against series whose answer is known | |
+
+Artefacts under `outputs_step7/`: `schedules/leg4_{es,uk,it}_independent_seed1/`, `schedules/perturb_*/`,
+`gates_step7_schedules_baseline.json`, `gates_step7_schedules_perturbations.json`,
+`chaining_prescreen_leg4.json`, `chaining_prescreen_leg4_stdout.txt`.
+
+#### 🟢 `G7.13`–`G7.17`: 5 PASS / 0 FAIL on all three folds, all five seen falling
+
+100 `Schedule:File` + 100 `People` objects and 100 CSVs of 8,760 hourly values per fold; mean presence
+`es` 0.7285 / `uk` 0.6450 / `it` 0.6843; exclusion list md5 `679518c7f626bd5d408adc96b5a1ff43` read
+live from Step 2's shipped path. The board's **first** run was a `G7.13` FAIL and it was right: the
+emitter's manifest recorded the list's md5 but not whether the list used **was** the shipped one, so
+`V7.c` was uncheckable from the artefact. Fixed additively, re-emitted, PASS.
+
+#### 🔴 `FINDING 93` — this document asks for 100 HOUSEHOLDS and Step 5 cannot supply one
+
+`population_<c>.csv` is a 100,000-row **person** table with **no household identifier** — `D-S5-9`
+settled household type on a person basis and never needed to assemble a dwelling. Work item 7.6's
+*"100 households"*, and the co-presence half of `G7.4`, have no object to run on in the synthetic
+population. Composition was therefore taken from the **real corpus** (`hid`/`pid`): real households,
+generated days — **a sample of surveyed households, not of the synthetic population.** → **`D-S7-6`,
+open**: (a) leave it and say so, (b) give Step 5 a household id, which re-opens a step that closed on
+2026-08-22, or (c) group persons post hoc, which invents a joint distribution nothing measured.
+
+#### 🔴 `FINDING 94` — this document and `D-S8-2` disagree, and one of them cannot be implemented
+
+**"DIARIES TO SCHEDULES"** above says schedules carry *"activity-resolved internal gains, which is the
+part a presence fraction throws away"*. **`D-S8-2` item 5**, ruled 2026-08-21, fixes the Step 8
+interface as `phi_int(t) = (1-f)*3.0 + f*3.0*g(t)/mean_year(g(t))` with `g(t)` *"the generated
+presence signal from `G7.13`"*. **A fraction is not a watt.** Resolving a 3-digit HETUS code into a
+power needs a mapping and there is no admissible one: `RL25` was commissioned for exactly that and its
+Part C figures were rejected as unsourced. The emitter implements the **ruled** interface and keeps
+each pool day's activity codes beside it, so the mapping can be applied later without a GPU run. ⚪ The
+methods owe one sentence saying the gains are occupancy-redistributed and **not** activity-resolved.
+
+#### 🔴 `FINDING 95` — `G7.14` and `G7.17` had no registered falsifier
+
+The validation document's perturbation table listed both only in the "must stay clean" column, so the
+coverage clause would have read four of four with two unfalsifiable gates. Two perturbations added
+there, marked as additions; all six run; each felled its gate with the intended message; the null
+perturbation felled nothing.
+
+#### 🔴 `FINDING 96` — `RL21`'s vocabulary criterion has no reference, and the reference it does have is flat
+
+*"The realistic value is computed on the held ISTAT data"*: **ISTAT gives every respondent exactly one
+diary day, and so does Spain.** Only the UK has a second (7,920 persons), and in 99.7 % of those the
+two days are a weekday and a **weekend** day — 21 pairs share a day type. A monthly vocabulary has no
+empirical reference anywhere in this project. And the quantity the UK anchor does measure — Jaccard
+between adjacent days of different day types — moves by **0.003 / 0.001 / 0.002** across all six
+chaining rules, because the habit rule holds the previous day *of the same day type* and cannot touch
+a weekday→weekend step. **The one empirically anchorable criterion cannot tell the rules apart.**
+
+#### 🔴 The chaining pre-screen returned the validation document's own pre-registered null
+
+90 cells (3 folds × 6 rule points × 5 seeds, 100 households). On the coincidence metrics a peak-demand
+pre-screen is made of, **seed noise dominates**: `mean_pair_corr` on all three folds, `annual_mean` on
+all three, `max_ramp` on two; `peak_aggregate` and `p99_aggregate` are **degenerate**, pinned at 1.000
+in all 30 cells on `es` and `it`. The rule effect is large only on monthly vocabulary (ratios 18.17 /
+11.89 / 18.36) and same-day-type Jaccard (71.64 / 64.50 / 63.77). 🔴 **`G7.18` is NOT evaluated** — its
+trigger is on peak DEMAND and `RL21`'s second metric on annual heating/cooling ENERGY, both
+EnergyPlus outputs. **Open decision 14 stays OPEN.**
+
+#### ⚪ Recorded, not decided
+
+The schedule calendar year is one per fold — `es` 2010, `uk` 2014, `it` 2013, the non-leap year of
+each survey pair. `D-S8-2` item 6 ruled diary-survey-year weather and each survey spans **two**
+calendar years, so which of the two a schedule runs on is unruled. The emitter refuses leap years and
+the parameter has no default, so it cannot be chosen by accident.
+
+#### 🔴 What is still owed on this step
+
+DoD items **2, 3, 4, 5 and 6** and the reported-model half of item **7**, all of which need the GPU:
+work item 7.2 (job `1286208`), the Leg-5 campaign (job `1286209`), the untuned-base firing-rate arm,
+the rejection-sampled control at the size `G7.9` needs, and `G7.18`'s verdict. **Item 8 — "all Step 7
+gates PASS and each has been seen failing" — is now true for `G7.13`–`G7.17` and for nothing else:
+the generated-text board still reads 12 PASS / 15 FAIL.**
+
+---
+
+### 2026-08-22 (night, fourth entry) — 🟢 **WORK ITEM 7.2 IS MEASURED (job `1286208`, 00:06:55). 🔴 `G7.12` STAYS FAIL AND `FINDING 97` SAYS THE KV-CACHE ARGUMENT IN THIS DOCUMENT IS OVERSTATED FOURFOLD.**
+
+Full record and the re-derivation: **`4thJ_07_schedules_and_chaining_IMP.md`** (fourth entry).
+Artefacts: `outputs_step7/throughput_comparison.{md,json}` plus `outputs_step7/throughput_evidence/`.
+
+🟢 **The measured half.** `N = 200`, both backbones base, eager, same job, same prompts, same grammar:
+**22.5331 vs 26.9839 diaries/second — OLMo is 0.835x Qwen, not the large penalty this document's KV
+argument predicts**, because it spends only **0.716x** as many output tokens per diary. 🔴 **The
+backbone does not need defending on throughput, and the paper should say so in those terms.**
+
+🔴 **`FINDING 97`.** The report's OLMo KV pool reads **227.141 GiB** against a **74.506 GiB** card —
+**3.05x the whole GPU**, so it measures nothing. The emitter derives bytes/token from
+`num_hidden_layers`, but OLMo 3 is hybrid: `layer_types` = **24 `sliding_attention` (window 4096) +
+8 `full_attention`**. On the 8 full layers the pool is **56.785 GiB**, within **1.135 GiB of Qwen's
+55.650** — which is the check, since two ~7B bf16 models on one card at `utilization = 0.9` must land
+about there. 🔴 **The claim *"no GQA, so about nine times larger per token"* above is true of the
+config field and false of the cache: the engine's ratio is 2.29x, not 9.14x.** `kv_cache_tokens` and
+`max_concurrency` come straight from `num_gpu_blocks x block_size` and are unaffected, so **no
+campaign sizing changes** — only the sentence does.
+
+🔴 **`G7.12` does not move.** It demands diaries/second **and** peak KV memory. The pool figure is
+impossible and `torch_peak_allocated_gib` is **0.0 in both rows** (vLLM v1 runs the model in a worker;
+the parent allocator never sees it). No valid peak exists, so the gate fails on its own artefact —
+which is the gate doing its job. It moves on a **7-minute re-run** once the derivation reads
+`layer_types` and the peak is read from the engine log.
+
+
+---
+
+### 2026-08-22 (night, fifth entry) — 🟢 **ALL FOUR ITEMS THAT NEEDED A PERSON ARE RULED, ALL FOUR (a), AND ALL FOUR APPLIED. `D-S7-6`, `D-S7-7`, `D-S7-8` CLOSED; OPEN DECISION 14 CLOSES IN STEP 8. 🔴 APPLYING `D-S7-8` PRODUCED `FINDING 99`.**
+
+Docket: `IMP/docs/DONE/2026-08-22_step7-four-items_D-S7-6_D-S7-7_D-S7-8_decision-14.md`, carrying the
+author's rulings verbatim. Full record: `4thJ_07_schedules_and_chaining_IMP.md` (sixth entry).
+⚪ **No gate was re-scored, no schedule re-emitted, no tool behaviour changed.** `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` untouched — none of the four is a pre-registered quantity.
+
+| item | ruled | what moved in this document |
+|---|---|---|
+| `D-S7-6` — household basis | **(a)** surveyed composition, declared per fold | §7.6 carries the declaration and `FINDING 98`'s per-fold numbers |
+| `D-S7-7` — internal gains (`FINDING 94`) | **(a)** presence signal, `D-S8-2` item 5 | DIARIES TO SCHEDULES bullet **rewritten**; §7.7 corrected |
+| `D-S7-8` — schedule calendar year | **(a)** first calendar year of the `D-S8-2` item 6 window | §7.7 carries the rule; the "non-leap" rationale is struck |
+| open decision 14 | **(a)** closes in Step 8 on `G7.18` | §7.6 carries the sizing; DoD item 6 marked discharged in Step 8 |
+
+🔴 **The one contradiction in this document is gone.** DIARIES TO SCHEDULES said schedules carry
+*"activity-resolved internal gains, which is the part a presence fraction throws away"* and §7.7 said
+*"activity-resolved gains carried"*, while the ruled Step 8 interface (`D-S8-2` item 5) is a
+**fraction**. Both lines now state the ruled interface and name the reason no other one is available:
+`RL25` was commissioned for an activity→power mapping and its Part C figures were rejected as
+unsourced. ⚪ The emitter already implemented the ruled interface and keeps each pool day's activity
+codes beside the presence signal, so reinstating activity-resolved gains later needs a **source**, not
+a GPU run.
+
+🔴 **`FINDING 99` — applying `D-S7-8` exposed a condition the ruling itself cannot satisfy alone.**
+"The first calendar year of the twelve-month window" delivers the intended weekend coincidence **only
+if that window is January–December**. A window straddling two calendar years (July 2013 – June 2014,
+say) aligns for its first six months and is off by one or two weekdays for the rest; a straddling span
+containing 29 February is **8,784 hours**, which `year_day_types()` refuses outright; and the emitter
+has a `--year` parameter but **no window-start parameter**, so a straddling window could not be
+honoured without an additive change to `tools/4thJ_step7_schedules.py`. ⚪ Needs no ruling — it is a
+**constraint on `D-S8-2` item 6**, recorded in §7.7 and in the Step 8 document.
+
+🔴 **What the rulings do NOT close.** `D-S7-6` (a) constrains what may be claimed, so household
+metrics are **per fold or not at all** and the asymmetry table gains a row. Decision 14 (a) is a
+ruling about **order**, not a green light: `G7.18` is blocked behind an IDF that does not exist and
+five open §6 geometry/zoning decisions, and the CPU pre-screen must be **re-run at Leg-5's
+`N >= 5,200`** before any of its verdicts is written into the paper. DoD item 6 therefore cannot close
+inside Step 7.

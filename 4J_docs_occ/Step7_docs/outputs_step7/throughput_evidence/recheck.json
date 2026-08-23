@@ -1,0 +1,46 @@
+{
+  "layer_types": {
+    "sliding_attention": 24,
+    "full_attention": 8
+  },
+  "sliding_window": 4096,
+  "max_model_len": 2048,
+  "reported": {
+    "olmo_kv_bytes_per_token": 524288,
+    "olmo_kv_cache_gib": 227.141,
+    "qwen_kv_cache_gib": 55.65,
+    "reported_ratio_bytes_per_token": 9.1429
+  },
+  "impossibility": {
+    "olmo_reported_gib": 227.141,
+    "physical_card_gib": 74.506,
+    "times_the_whole_card": 3.049,
+    "qwen_reported_gib": 55.65,
+    "qwen_fits": true
+  },
+  "full_attention_only": {
+    "full_attention_layers": 8,
+    "sliding_attention_layers": 24,
+    "kv_bytes_per_token": 131072,
+    "implied_gib": 56.785,
+    "qwen_gib": 55.65,
+    "gap_to_qwen_gib": 1.135,
+    "ratio_bytes_per_token_vs_qwen": 2.2857,
+    "reported_over_corrected": 4.0
+  },
+  "measured_and_sound": {
+    "olmo_diaries_per_second": 22.5331,
+    "qwen_diaries_per_second": 26.9839,
+    "olmo_over_qwen": 0.8351,
+    "olmo_output_tokens_per_diary": 100.73,
+    "qwen_output_tokens_per_diary": 140.62,
+    "output_tokens_olmo_over_qwen": 0.7163,
+    "olmo_max_concurrency": 227.14,
+    "qwen_max_concurrency": 508.8
+  },
+  "peak_memory": {
+    "olmo_torch_peak_allocated_gib": 0.0,
+    "qwen_torch_peak_allocated_gib": 0.0,
+    "both_identically_zero": true
+  }
+}

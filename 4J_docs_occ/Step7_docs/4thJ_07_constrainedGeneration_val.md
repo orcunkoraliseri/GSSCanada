@@ -7,7 +7,23 @@
 
 ## STATUS
 
-**OPEN. Nothing built.** All thresholds pre-registered.
+**OPEN.** All thresholds pre-registered. 🔴 **The line that stood here until 2026-08-22 — *"Nothing
+built"* — had been false for eight days.** Corrected rather than quietly replaced, because a status
+line nobody maintains is how a reader concludes that a whole step is untouched.
+
+**Built and run as of 2026-08-22 (night):** the grammar (`G7.10` oracle agreement PASS, 0
+disagreements on 10,000 strings under the 34-value `COP` alphabet), the Leg-4 rehearsal generation on
+all three folds both constrained and unconstrained, the gate battery on generated text
+(`gates_step7_leg4_baseline.json`, **12 PASS / 15 FAIL** over scored gates), the schedule emitter and
+the four schedule gates (**`G7.13`–`G7.17` 5 PASS / 0 FAIL on all three folds, all five seen
+falling**), and the chaining pre-screen (90 cells).
+
+🔴 **Still genuinely unbuilt:** work item 7.2 (throughput, job `1286208`), the Leg-5 campaign
+(job `1286209`), the untuned-base arm of `G7.7`, the rejection-sampled control at the size `G7.9`
+needs, and `G7.18`'s verdict — all of which need a GPU. **Open decision 14 is OPEN.**
+
+⚪ Everything Leg-4 carries the provenance `LEG-4 PILOT -- NOT REPORTABLE`: the backbone is
+`allenai/OLMo-2-0425-1B`, not the reported `Olmo-3-1025-7B`. **No Leg-4 number is a result.**
 
 ---
 
@@ -97,6 +113,8 @@ electrical power and heating/cooling ramp rates.
 | Set `Interpolate to Timestep = Yes` | G7.15 | G7.14 |
 | Emit 8,759 hours | G7.16 | G7.17 |
 | Use a **local copy** of `OUTDOOR_AT_HOME` that differs by one code | **G7.13** | G7.17 |
+| 🔴 **ADDED 2026-08-22** — emit `Schedule:Compact` instead of `Schedule:File` | **G7.14** | G7.16 |
+| 🔴 **ADDED 2026-08-22** — shift every presence value by `+0.5` | **G7.17** | G7.14 |
 | 🔴 **Null perturbation: change nothing** | **nothing** | everything |
 
 ### Coverage clause
@@ -150,3 +168,105 @@ Append-only.
   mask is on**. They will look like four passing structural gates in any summary table. They are four
   confirmations that a constraint we wrote is being applied, and counting them as validation of the
   model is the misreading this step exists to prevent.
+
+### 2026-08-22 (night) — 🟢 **THE SCHEDULE-PRODUCTION GATES ARE SCORED FOR THE FIRST TIME: `G7.13`–`G7.17`, 5 PASS / 0 FAIL ON ALL THREE FOLDS, AND ALL FIVE SEEN FALLING. 🔴 TWO OF THEM HAD NO REGISTERED FALSIFIER AND THE TABLE ABOVE NOW CARRIES THE TWO THAT WERE ADDED.**
+
+Full implementation record: `4thJ_07_schedules_and_chaining_IMP.md`. Artefacts:
+`outputs_step7/schedules/`, `outputs_step7/gates_step7_schedules_baseline.json`,
+`outputs_step7/gates_step7_schedules_perturbations.json`.
+
+Everything below is scored on emitted schedules re-read **from disk** — the `.idf` as text and every
+`.csv` as text, never from the emitter's in-memory objects. That is `G8.12`'s rule borrowed one step
+early, and it is the reason this board is evidence rather than a tautology.
+
+| | `es` | `uk` | `it` |
+|---|---|---|---|
+| `G7.13` indoor rule, on the **emitted** signal | PASS | PASS | PASS |
+| `G7.14` `Schedule:File`, not `Schedule:Compact` | PASS | PASS | PASS |
+| `G7.15` `Interpolate to Timestep = No`, **per object** | PASS | PASS | PASS |
+| `G7.16` length and resolution | PASS | PASS | PASS |
+| `G7.17` presence range and integral head-count | PASS | PASS | PASS |
+
+100 `Schedule:File` + 100 `People` objects and 100 CSVs of 8,760 hourly values per cell; exclusion
+list md5 `679518c7f626bd5d408adc96b5a1ff43`, read live from Step 2's shipped path on all three folds.
+
+#### 🟢 The board's first run was a FAIL, and it was right
+
+`G7.13` refused the first baseline: *"the manifest does not record WHICH exclusion list produced this
+signal."* True — the emitter recorded the list's md5 but not whether the list used **was** the shipped
+one, so `V7.c` could not be checked from the artefact at all. Fixed additively, re-emitted, PASS.
+
+#### 🔴 `FINDING 95` — `G7.14` and `G7.17` were unfalsifiable as registered
+
+The perturbation table listed both **only** in the "must stay clean" column. Under this document's own
+coverage clause — *"FAIL the probe if any passing gate was never made to fall"* — the board would have
+read four of four with two gates that no registered perturbation could ever fell. Two falsifiers are
+added above, marked as additions. All six perturbations run; each felled its gate with the intended
+message; the null perturbation felled nothing.
+
+⚪ Declared collateral: the `Schedule:Compact` perturbation **also** fells `G7.15`, because a Compact
+object carries no `Interpolate to Timestep` field and `G7.15` correctly reports that the setting was
+never asserted. `G7.16` is therefore named as its clean partner. A perturbation that fells two gates
+is fine; one whose second casualty is undeclared is not.
+
+#### 🔴 `G7.18` IS NOT EVALUATED, AND OPEN DECISION 14 IS STILL OPEN
+
+The chaining experiment's CPU half ran — three rules over a six-point persistence sweep, 5 seeds,
+100 households, 3 folds, 90 cells — and returned **this document's own pre-registered null**:
+
+> *"If the spread across seeds within a rule exceeds the spread between rules, the experiment has told
+> us nothing about chaining, and the deliverable is that finding, not a chosen rule."*
+
+On the coincidence metrics that a peak-demand pre-screen is made of, seed noise wins:
+`mean_pair_corr` on all three folds (ratios 0.39 / 0.19 / 0.19), `annual_mean` on all three,
+`max_ramp` on two of three. `peak_aggregate` and `p99_aggregate` are **degenerate** on `es` and `it`,
+pinned at exactly 1.000 in all 30 cells. The rule effect is enormous on monthly activity vocabulary
+(ratios 18.17 / 11.89 / 18.36) and on same-day-type adjacent Jaccard (71.64 / 64.50 / 63.77).
+
+🔴 **`G7.18`'s escalation trigger is defined on peak DEMAND and `RL21`'s second metric on annual
+heating/cooling ENERGY. Both are EnergyPlus outputs. Nothing in the run above is a watt**, and no
+number from it may be substituted for the trigger.
+
+#### 🔴 `FINDING 96` — the vocabulary criterion has no reference, and the reference it does have is flat
+
+`ISTAT gives every respondent exactly ONE diary day, and so does Spain.` Only the UK has a second day
+(7,920 persons), and in 99.7 % of those the two days are a weekday and a **weekend** day. So *"the
+realistic value computed on the held ISTAT data"* cannot be computed. The anchors that exist are
+codes-per-day (es 10.910 / it 11.543 / uk 12.546) and the UK two-day step: **4.907** new codes, union
+17.690, Jaccard **0.4325**. 🔴 And the simulated quantity that anchor measures — Jaccard between
+adjacent days of **different** day types — moves by **0.003 / 0.001 / 0.002** across all six chaining
+rules. The one empirically anchorable criterion cannot tell the rules apart.
+
+#### What this entry does NOT establish
+
+* Not that the schedules are **right**. A dwelling whose occupant sleeps 24 hours a day passes all
+  five gates. Structural validity is orthogonal to fidelity, which is this document's opening claim.
+* Not DoD item 7 for the reported model. Every diary above is `LEG-4 PILOT -- NOT REPORTABLE`, from
+  `allenai/OLMo-2-0425-1B`.
+* Nothing about EnergyPlus. No IDF has been run and `Schedule:File` has never been resolved by the
+  engine; `G8.12` and `G8.13` are Step 8's and remain unrun.
+
+---
+
+### 2026-08-22 (night, fourth entry) — 🔴 **`G7.12` WAS SCORED AGAINST A REAL ARTEFACT FOR THE FIRST TIME AND FAILED. THAT IS THE CORRECT VERDICT.**
+
+Job `1286208` returned `outputs_step7/throughput_comparison.md`. Scored clause by clause:
+
+| clause | verdict |
+|---|---|
+| the file exists | 🟢 PASS |
+| covers **both** backbones | 🟢 PASS — `allenai/Olmo-3-1025-7B` and `Qwen/Qwen2.5-7B`, one job, one prompt set |
+| reports **diaries/second** | 🟢 PASS — 22.5331 vs 26.9839, measured |
+| reports **peak KV memory** | 🔴 **FAIL — no valid value exists** |
+
+The fourth clause fails on two independent grounds, either of which is sufficient. The derived pool is
+**227.141 GiB** against a physical **74.506 GiB** card — **3.05x the whole GPU** — because the emitter
+derives bytes/token from `num_hidden_layers` and OLMo 3 is hybrid (**24 `sliding_attention` layers at
+window 4096, 8 `full_attention`**); corrected to the 8 full layers it is **56.785 GiB**, within
+**1.135 GiB of Qwen's 55.650**. And `torch_peak_allocated_gib` is **0.0 in both rows**, a structurally
+null field rather than a small one, because vLLM v1 runs the model in a worker process.
+
+🔴 **`G7.12` therefore stays FAIL on all three folds.** This is the first Step 7 gate to fail on a
+defect **in its own input artefact** rather than on a missing one, and it is exactly what a gate
+pointed at a quantity is for. See `FINDING 97` in `4thJ_07_schedules_and_chaining_IMP.md`. Nothing is
+re-registered and no threshold moves: the gate's wording was already right.

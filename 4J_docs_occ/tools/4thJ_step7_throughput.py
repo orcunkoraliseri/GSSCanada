@@ -86,8 +86,30 @@ def engine_facts(llm):
     if hd is None and out.get("hidden_size") and out.get("num_attention_heads"):
         hd = out["hidden_size"] // out["num_attention_heads"]
         out["head_dim"] = hd
+    # `FINDING 97`: OLMo 3 is a HYBRID -- its config carries `layer_types` with
+    # 24 `sliding_attention` layers (window 4096) against 8 `full_attention`.
+    # Deriving from `num_hidden_layers` alone reported a pool 3.05x the size of
+    # the physical card. The uniform figure is KEPT, under a name that says what
+    # it assumes, so the old number stays readable next to the corrected one.
+    lt = getattr(hf, "layer_types", None)
+    out["sliding_window"] = getattr(hf, "sliding_window", None)
+    if lt:
+        counts = {}
+        for name in lt:
+            counts[name] = counts.get(name, 0) + 1
+        out["layer_types"] = counts
+        out["full_attention_layers"] = counts.get("full_attention", 0)
+        out["hybrid_attention"] = len(counts) > 1
+    else:
+        out["layer_types"] = None
+        out["full_attention_layers"] = out.get("num_hidden_layers")
+        out["hybrid_attention"] = False
     if hd and out.get("num_hidden_layers") and out.get("num_key_value_heads"):
-        out["kv_bytes_per_token"] = 2 * out["num_hidden_layers"] * out["num_key_value_heads"] * hd * 2
+        kvh = out["num_key_value_heads"]
+        out["kv_bytes_per_token_all_layers_assumption"] = (
+            2 * out["num_hidden_layers"] * kvh * hd * 2)
+        full = out.get("full_attention_layers") or out["num_hidden_layers"]
+        out["kv_bytes_per_token"] = 2 * full * kvh * hd * 2
     return out
 
 
@@ -118,6 +140,10 @@ def measure(repo, prompts, text, sp_kwargs, gpu_mem, max_len):
     outs = llm.generate(prompts, params)
     gen_s = time.time() - t0
     peak = torch.cuda.max_memory_allocated()
+    # `FINDING 97`: this is 0.0 on vLLM v1 -- the model lives in a WORKER process
+    # and the parent's allocator never sees it. A structurally null field must not
+    # be printed as a measured zero. The device counters below are the real ones.
+    free_b, total_b = torch.cuda.mem_get_info()
 
     out_tokens = sum(len(o.outputs[0].token_ids) for o in outs)
     row = dict(
@@ -130,12 +156,27 @@ def measure(repo, prompts, text, sp_kwargs, gpu_mem, max_len):
         output_tokens_total=out_tokens,
         output_tokens_mean=round(out_tokens / float(len(outs)), 2),
         output_tokens_per_second=round(out_tokens / max(gen_s, 1e-9), 2),
-        torch_peak_allocated_gib=round(peak / (1024. ** 3), 3),
+        torch_peak_allocated_gib=(round(peak / (1024. ** 3), 3) if peak else None),
+        torch_peak_is_null_in_parent_process=(not peak),
+        device_total_gib=round(total_b / (1024. ** 3), 3),
+        device_used_gib=round((total_b - free_b) / (1024. ** 3), 3),
     )
     row.update(facts)
     if row.get("kv_cache_tokens") and row.get("kv_bytes_per_token"):
         row["kv_cache_gib"] = round(
             row["kv_cache_tokens"] * row["kv_bytes_per_token"] / (1024. ** 3), 3)
+        if row.get("kv_bytes_per_token_all_layers_assumption"):
+            row["kv_cache_gib_all_layers_assumption"] = round(
+                row["kv_cache_tokens"]
+                * row["kv_bytes_per_token_all_layers_assumption"] / (1024. ** 3), 3)
+        # 🔴 The guard `FINDING 97` should have had. A KV pool cannot exceed the
+        # device. If it does, the DERIVATION is wrong, not the card -- say so
+        # loudly and record it rather than emitting an impossible number.
+        row["kv_cache_gib_exceeds_device"] = bool(
+            row.get("device_total_gib") and row["kv_cache_gib"] > row["device_total_gib"])
+        if row["kv_cache_gib_exceeds_device"]:
+            print("🔴 REFUSED AS A MEASUREMENT: derived KV pool %.3f GiB > device %.3f GiB"
+                  % (row["kv_cache_gib"], row["device_total_gib"]))
 
     del llm
     gc.collect()
@@ -163,6 +204,13 @@ def markdown(rows, cfg, n, constrained):
              "against Qwen's 4** — so its KV cache is *\"about nine times larger per token\"*, "
              "and that KV cache is what caps vLLM's concurrent batch. The table below "
              "reads both halves of that from the engine, not from the claim.\n")
+    L.append("\U0001f534 **`FINDING 97`: the nine is wrong, and the table below "
+             "is the corrected one.** OLMo 3 is a **hybrid** -- its `layer_types` are "
+             "24 `sliding_attention` (window 4096) against 8 `full_attention`. Deriving "
+             "KV bytes from `num_hidden_layers` alone reported a pool **3.05x the "
+             "physical card**. Every `KV bytes / token` and `KV cache GiB` below counts "
+             "the **full-attention layers only**; the old uniform-layer figure is kept "
+             "beside it under a name that says what it assumes.\n")
 
     hdr = ["metric"] + [r["model"] for r in rows]
     L.append("| " + " | ".join(hdr) + " |")
@@ -179,16 +227,23 @@ def markdown(rows, cfg, n, constrained):
     line("KV heads", "num_key_value_heads")
     line("GQA group size", "gqa_group_size", "%.1f")
     line("layers", "num_hidden_layers")
+    line("of which **full-attention**", "full_attention_layers")
+    line("sliding window", "sliding_window")
     line("head dim", "head_dim")
     line("vocab size", "vocab_size", "%d")
-    line("**KV bytes / token** (bf16)", "kv_bytes_per_token", "%d")
+    line("**KV bytes / token** (bf16, full layers)", "kv_bytes_per_token", "%d")
+    line("KV bytes / token *if all layers were full*", "kv_bytes_per_token_all_layers_assumption", "%d")
     L.append("|  |" + "  |" * len(rows))
     line("KV cache blocks", "num_gpu_blocks")
     line("block size", "block_size")
     line("**KV cache tokens**", "kv_cache_tokens", "%d")
     line("KV cache GiB", "kv_cache_gib", "%.3f")
+    line("KV cache GiB *if all layers were full*", "kv_cache_gib_all_layers_assumption", "%.3f")
+    line("\U0001f534 derived pool exceeds the device", "kv_cache_gib_exceeds_device")
     line("**max concurrency @ max_model_len**", "max_concurrency_at_max_len", "%.2f")
-    line("torch peak allocated (GiB)", "torch_peak_allocated_gib", "%.3f")
+    line("device total (GiB)", "device_total_gib", "%.3f")
+    line("**device used after load (GiB)**", "device_used_gib", "%.3f")
+    line("torch peak allocated (GiB), parent process", "torch_peak_allocated_gib", "%.3f")
     L.append("|  |" + "  |" * len(rows))
     line("prompt tokens / diary", "prompt_tokens_mean", "%.2f")
     line("output tokens / diary", "output_tokens_mean", "%.2f")

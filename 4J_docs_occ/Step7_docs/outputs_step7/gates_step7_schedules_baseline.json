@@ -1,0 +1,174 @@
+{
+  "Step7_docs/outputs_step7/schedules/leg4_es_independent_seed1": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/leg4_es_independent_seed1::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7285333064041096,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/leg4_it_independent_seed1": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/leg4_it_independent_seed1::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.6842946905034246,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 29,
+        "2": 41,
+        "3": 21,
+        "4": 7,
+        "5": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/leg4_uk_independent_seed1": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/leg4_uk_independent_seed1::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.6450490566906393,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 39,
+        "2": 47,
+        "3": 10,
+        "4": 3,
+        "5": 1
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  }
+}

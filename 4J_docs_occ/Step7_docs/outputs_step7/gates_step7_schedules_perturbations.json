@@ -1,0 +1,357 @@
+{
+  "Step7_docs/outputs_step7/schedules/perturb_compact": {
+    "G7.13": true,
+    "G7.14": false,
+    "G7.15": false,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_compact::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7285333064041096,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 100,
+      "n_schedule_file": 0,
+      "passes": false,
+      "reasons": [
+        "100 Schedule:Compact objects. The step document requires Schedule:File: at urban scale compact blocks bloat the IDF past twenty thousand lines per schedule."
+      ]
+    },
+    "G7.15": {
+      "distinct_values": [],
+      "n_objects_checked": 0,
+      "passes": false,
+      "reasons": [
+        "no Schedule:File object carries an Interpolate to Timestep field, so the setting was never asserted."
+      ]
+    },
+    "G7.16": {
+      "declared_hours": {},
+      "declared_minutes_per_item": {},
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_hours_8759": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": false,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_hours_8759::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7285231619134604,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8759": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": false,
+      "reasons": [
+        "a schedule carries 8759 values; 8760 hours at 60 min is 8760",
+        "100 objects declare 8759 hours, not 8760"
+      ],
+      "value_counts": {
+        "8759": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_interp_yes": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": false,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_interp_yes::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7285333064041096,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "Yes"
+      ],
+      "n_objects_checked": 100,
+      "passes": false,
+      "reasons": [
+        "100 of 100 Schedule:File objects do not say No: ['Yes']"
+      ]
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_null": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_null::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7285333064041096,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_outdoor_local": {
+    "G7.13": false,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": true
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_outdoor_local::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7299180857488584,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": false,
+      "reasons": [
+        "the presence signal was derived with a LOCAL COPY of OUTDOOR_AT_HOME, not the shipped list: ['322', '342', '344']"
+      ],
+      "used_shipped_list": false
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_range": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": false
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_range::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 1.2285333064041095,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 100,
+      "passes": false,
+      "presence_max": 1.5,
+      "presence_min": 0.5,
+      "reasons": [
+        "presence leaves [0,1]: 100 of 100 schedules, range [0.500000, 1.500000]"
+      ]
+    }
+  }
+}

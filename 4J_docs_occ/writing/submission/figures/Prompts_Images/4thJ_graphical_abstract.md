@@ -54,6 +54,37 @@ asking a follow-up question.
 >    for a reader to guess. Section 7 item 2's stated reason is withdrawn and replaced; **the rule is
 >    kept, now as an editorial choice, and Section 3 gains one line so the dashed lane is not read as a
 >    permanent role.** See Section 3, Band 2.
+>
+> 🔴 **UPDATED AGAIN 2026-08-22. REGENERATE. Three drawn strings are now false and one is incomplete.**
+> Nothing about the layout changes. Every change below is a string, and each was checked against the
+> step document that rules it rather than against memory.
+>
+> 10. 🔴 **`season` IS NOT IN THE CONDITIONING PREFIX AND MUST BE STRUCK.** `D-S2-19` (author,
+>     2026-08-17) dropped the stratum for all three countries: Spain's `TRIM` and Italy's `meseri` are
+>     each delivered pre-banded, their boundaries are offset by one month at every edge, neither is a
+>     union of the other, and no non-trivial season classification is expressible in all three
+>     deliveries. `D-S3-11` then dropped `mode` and `scheme`, leaving **six** prefix fields:
+>     `country, age band, sex, household type, economic status, day type`
+>     (`Step3_docs/4thJ_03_serialisation.md:74`). The navy block's line becomes
+>     **`conditioned on: country, demographics, day type`** — the same six fields, worded generically.
+>     🔴 **This ruling predates the 2026-08-19 revision by two days and that revision missed it**,
+>     which is the second time in this file that a retired phrase survived in a place nobody grepped.
+>     Fixed in all three occurrences: Section 3 Band 3, Section 6, and the Section 10 paste block.
+> 11. 🔴 **`census marginals` OVERSTATES THE BASIS AND BECOMES `published population marginals`.**
+>     Step 5.1 was built after the last revision and two of the three folds do not rest on a census
+>     table. `D-S5-4 (b)` takes **Spain's economic status from the microdata** because the Spanish
+>     census publishes no economic-activity table for private households (`FINDING 49`), and Spain's
+>     age and sex followed it; the UK has no UK-wide sex-by-age table, so sex there is an all-ages
+>     **approximation**; and `D-S5-5` restricts every fold to **private households**, not all
+>     residents. A box drawn `census marginals` states a provenance the figure does not have.
+> 12. **Band 4's callout gains a fourth line: `three independent nulls, all reported`.** Work item 6.2
+>     closed on 2026-08-22 with three, not one: the raked-donor null (`G6.1`), six single-donor-country
+>     nulls (`G6.2`, two per fold), and the pooled all-country null at equal country mass (`G6.3`).
+>     The existing line 4 names only the raked-donor bar. 🔴 **`FINDING 85`: the raked-donor null is
+>     NOT the strongest of the three**, so a figure showing one comparison understates the test it is
+>     drawing. The new line says how many and says they are all reported; **it states no result and
+>     names no winner**, which Section 0 forbids.
+>
 
 ---
 
@@ -195,7 +226,7 @@ Inside, stacked vertically:
 * A small badge on the layer stack labelled **"low-rank adapter"**, connected by a thin line to the
   layer bars, to signal that only a small part is trained.
 * Below the motif, three short lines of white text, one per line:
-  * **"conditioned on: country, demographics, season, day type"**
+  * **"conditioned on: country, demographics, day type"**
   * 🔴 **"trained on: the other two"** — **CHANGED 2026-08-19, was `trained on: N-1 countries`.**
     With three lanes drawn, `N-1` invited a four-country reading and is retired. **No algebraic string
     remains anywhere in the figure.**
@@ -211,7 +242,7 @@ separate, earlier, entirely conventional stage, and the figure has to show that.
 Draw a **second, thinner horizontal chain running beneath the navy block**, in neutral grey so it reads
 as supporting machinery rather than as a competing headline, with two boxes joined by an arrow:
 
-1. `census marginals` (small icon: a grid or a table)
+1. `published population marginals` (small icon: a grid or a table)
 2. `synthetic population` with the sub-label `iterative proportional fitting`
 
 From the second box, draw an arrow that turns **upward into Band 4**, joining the point where the model
@@ -236,6 +267,7 @@ so the reader can trace it. Beside it, a small callout box, dashed border, conta
 * line 2: **"generated from published marginals only"**
 * line 3: **"scored against published aggregate statistics"**
 * line 4: **"compared against real diaries reweighted to the same marginals"**
+* line 5: 🔴 **"three independent nulls, all reported"** — NEW 2026-08-22
 
 This callout is the second most important element in the figure after the navy block. Give it room.
 
@@ -339,13 +371,13 @@ Band 3:
 
 * `One open-weight LLM, one recipe per held-out country`
 * `low-rank adapter`
-* `conditioned on: country, demographics, season, day type`
+* `conditioned on: country, demographics, day type`
 * `trained on: the other two`
 * `structure guaranteed at decoding`
 
 Band 3b:
 
-* `census marginals`
+* `published population marginals`
 * `synthetic population`
 * `iterative proportional fitting`
 * `population and day are generated separately`
@@ -356,6 +388,7 @@ Band 4:
 * `generated from published marginals only`
 * `scored against published aggregate statistics`
 * `compared against real diaries reweighted to the same marginals`
+* `three independent nulls, all reported`
 * `00` and `24` as the only axis labels on the activity ribbons
 
 Band 5:
@@ -376,6 +409,14 @@ they are the reason for this revision:**
 * `trained on: N-1 countries` — and `N-1` in any form
 * `Country D`, and `Country D — held out` — France was excluded, the corpus is three countries
 * 🔴 `One Model, Many Countries` — in the subtitle or anywhere else; it is `One Recipe, Many Countries`
+
+🔴 **STRINGS DELETED ON 2026-08-22. Same rule: if any appears in the generated image, reject and
+regenerate.**
+
+* `conditioned on: country, demographics, season, day type` — and the word **`season`** in any
+  conditioning line anywhere. `D-S2-19` dropped the stratum for all three countries.
+* `census marginals` — replaced by `published population marginals`; two of three folds are not on a
+  census basis (`D-S5-4 (b)`, `D-S5-5`, `FINDING 49`)
 
 Also add, in Band 2 beside the dashed lane: `each country is held out in turn`.
 
@@ -516,7 +557,9 @@ bands are read from the layout and carry no headings of their own.
 
 🔴 **A rendering of Sections 0 to 8, not a second specification.** If the two ever disagree, Sections 0
 to 8 win and this block is rewritten from them. **It is written to be self-contained: every correction
-of 2026-08-19 is inside the block, not appended after it.**
+of 2026-08-19 AND 2026-08-22 is inside the block, not appended after it.** 🔴 **Updated 2026-08-22 —
+paste this block, not the 2026-08-19 one: `season` is struck, `census marginals` is replaced, and the
+held-out callout has four lines.**
 
 ```
 Create a flat vector method diagram, landscape orientation, about 2000 x 1100 pixels, on a white
@@ -570,12 +613,12 @@ THE DARK NAVY BLOCK, the visual anchor, with white text inside:
   "low-rank adapter" joined to the bars by a thin line. Keep it abstract: no brain, no robot, no chip,
   no chat bubble.
   then three short lines:
-    conditioned on: country, demographics, season, day type
+    conditioned on: country, demographics, day type
     trained on: the other two
     structure guaranteed at decoding
 Do not write "fine-tuned once". Do not write N-1.
 
-THE CHAIN BELOW THE NAVY BLOCK, clearly outside it: "census marginals" with an arrow to
+THE CHAIN BELOW THE NAVY BLOCK, clearly outside it: "published population marginals" with an arrow to
 "synthetic population", labelled "iterative proportional fitting", and its arrow then turns UP into
 the generation area on the right. It must not enter the navy block. Beneath it one small line:
   population and day are generated separately
@@ -584,10 +627,11 @@ THE GENERATION AREA, right of the navy block: three thin horizontal stacked acti
 lane colour, each made of twenty to thirty coloured segments of unequal width, each labelled 00 at its
 left end and 24 at its right end, and the three visibly different from one another. The third ribbon
 has a dashed outline in the held-out lane's colour. Beside it, a dashed-outline box headed
-"held-out country" containing three lines:
+"held-out country" containing four lines:
   generated from published marginals only
   scored against published aggregate statistics
   compared against real diaries reweighted to the same marginals
+  three independent nulls, all reported
 
 THE RIGHT EDGE: a flat row of three or four European residential building types, side by side, and
 beneath them three small line-plot schedule curves in the three lane colours, each in a small white
@@ -618,3 +662,16 @@ arrow must mean that something flows. Every line must stay legible at single-col
 5. The population chain runs **below** the navy block and turns up into the generation area — if it
    enters the block, the figure says we trained on census marginals, which is false.
 6. `start` is absent from the episode tuple; the source card is single, not stacked.
+
+### 10.2 What to check on the 2026-08-22 regeneration, in addition to 10.1
+
+7. 🔴 The navy block's first small line reads **`conditioned on: country, demographics, day type`**.
+   **The word `season` appears nowhere in the image.** This is the item this revision exists for.
+8. The grey chain below the navy block starts at **`published population marginals`**, not
+   `census marginals`.
+9. The dashed held-out callout has **four** lines, the fourth being
+   **`three independent nulls, all reported`**. If the generator drops a line to fit the box, it is the
+   box that grows, not the list that shrinks — the same rule Section 3 already gives for line 4.
+10. Everything in 10.1 still holds. 🔴 **Check it again rather than assuming it survived**: the
+    2026-08-19 generation was correct on all six of those points and this revision touches none of
+    them, so any regression there is the generator re-drawing from scratch, not a prompt change.
