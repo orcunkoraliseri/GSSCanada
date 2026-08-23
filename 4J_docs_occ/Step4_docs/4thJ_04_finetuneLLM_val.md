@@ -44,6 +44,25 @@ Three things, in order of how badly they would hurt:
 | **G4.13** 🔴 **Fold isolation** | The held-out country reaching its own fold's training data | Per fold, the count of training records whose `country` equals the held-out country is **exactly 0**, counted **from the shard the trainer actually loaded**, never from the config or the filename. Run at training start, not at scoring time | **derived from decision 11** |
 | **G4.14** 🔴 **Pre-registration precedence** | A pre-registration written after a model exists | Every run manifest carries the `prereg.md` md5, all manifests carry the **same** value, and that value equals the md5 recorded **before the first Leg-5 submission**. Missing field, mismatched field, or a changed file: **FAIL** | **derived from decision 11's freeze clause** |
 | **G4.15** 🔴 **Corpus termination** | A training shard whose completions do not end | 100 % of the records in the shard **the trainer actually loaded** terminate with `<eor>`, read once before the first optimiser step. This is `G4.7`'s old threshold and old arithmetic under a new id | **`D-S4-7` (2026-08-20), from `FINDING 46`** |
+| **G4.16** 🔴 **Diary closure (`G4.7`'s companion)** | A termination reading that cannot tell a broken model from a broken harness | 100 % of the **GENERATED** sample **CONTAINS** `<eor>`, scored on the same texts and at the same checkpoints as `G4.7`. `G4.7` reads *endswith*, `G4.16` reads *contains*; the pair is read together and **neither number may be reported alone**. `n_more_than_one_eor` is recorded beside it, **not thresholded** — it is the direct fingerprint of the `D-S4-8` batch-padding defect | **`D-S4-8` (2026-08-23), from `FINDING 56`** |
+
+🔴 **How to read `G4.16` with `G4.7`.** This is the whole reason the gate exists, so it is written
+here rather than left to the reader:
+
+| `G4.16` | `G4.7` | what it means |
+|---|---|---|
+| **PASS** | **PASS** | clean |
+| **PASS** | **FAIL** | **HARNESS.** Every diary closes; generation ran on past the terminator. This is Leg-5 `es` exactly — `107/600` under `G4.7`, `600/600` under `G4.16` |
+| **FAIL** | **FAIL** | **MODEL.** Diaries do not close at all |
+| **FAIL** | **PASS** | **impossible** — *endswith* implies *contains*. The trainer prints this as an incoherence and the run must not be read |
+
+🔴 **What `G4.16` cost us by not existing.** Leg-4 read `G4.7` `600/600` on all three folds for three
+weeks. That was a `generation_config.json` default in the 1B repo covering for a harness that never had
+a working multi-sequence stop, and **no gate in the battery could see it** — the one number that would
+have (`n_more_than_one_eor`) was never computed. The defect surfaced only when the 7B repo happened not
+to ship the same default. `gates must be seen failing` catches a gate that cannot fall; it does not
+catch a gate that **passes for the wrong reason**, and a companion reading is the cheapest thing that
+does.
 
 ---
 
@@ -79,6 +98,8 @@ Each perturbation must break **exactly one** gate. Run them on Leg-4, where a tr
 | Perturb one merged weight by 1e-3 | G4.6 | G4.5 |
 | Strip `<eor>` from 1 % of **training** completions (`strip_eor_1pct`) | **G4.15** — 🔴 **not `G4.7`, since `D-S4-7`.** This lever edits `train_recs`; it cannot reach the generated sample | G4.1, **G4.7** |
 | 🔴 Strip `<eor>` from 1 % of the **generated** texts (`strip_eor_gen`, `4thJ_step4_g47_coverage.py`) | **G4.7** | G4.1 — *and it is deliberately NOT wired into the trainer: felling a generated-side gate from inside a training run costs ~5 h per fold to demonstrate a detector whose rule is `n_terminated == n`, and the standalone script scores a `generated_*.jsonl` that already exists* |
+| 🔴 **`D-S4-8`: strip EVERY `<eor>` from 1 % of the generated texts (`strip_all_eor_gen`, same script)** | **G4.16**, and `G4.7` with it | — *nothing is declared clean here on purpose: a diary with no terminator anywhere cannot end with one either, so the two gates fall together and that is correct* |
+| 🔴 **`D-S4-8` discrimination arm: `strip_eor_gen` must fell `G4.7` and LEAVE `G4.16` STANDING** | — | **`G4.16`** — *this is the check that the pair is worth having. If the trailing-only lever fells `G4.16` too, the two gates are one gate and the pair should be withdrawn rather than reported* |
 | Swap the tokenizer | G4.8 | — |
 | Train country-by-country sequentially | G4.9 | G4.1 |
 | Delete the revision hash from the run manifest | G4.11 | all others |

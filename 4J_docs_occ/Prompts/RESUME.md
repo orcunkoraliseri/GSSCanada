@@ -1,8 +1,163 @@
-#### Last updated: **2026-08-22 (night) — 🟢 ALL FOUR DOCKET ITEMS RULED (a) AND APPLIED. `D-S7-6`, `D-S7-7`, `D-S7-8` CLOSED, DECISION 14 CLOSES IN STEP 8. 🔴 `FINDING 99`. NO DECISION IN THIS PROJECT IS WAITING ON A PERSON.**
+#### Last updated: **2026-08-23 (late afternoon) — 🟢 `D-S4-8` RULED (e) + (d) AND APPLIED. `G4.7`'s defect was in `generate()`, not in the model: `Olmo-3-1025-7B` ships no `eos_token_id` in `generation_config.json`, so `transformers` never pads a finished row and a whole batch runs to its slowest member. Fix = one dict key. New companion gate `G4.16`. 🔴 THE REPAIR IS IN THE CODE AND HAS NOT YET BEEN SEEN WORKING — read job `1286491` before anything else.**
 
 ---
 
-## 🟢 NEXT SESSION — START HERE (written 2026-08-22, 22:55, for the morning)
+## 🔴 2026-08-23 (late afternoon) — READ THIS FIRST
+
+### The one thing to do next
+
+🔴 **Read job `1286491`** — `/speed-scratch/o_iseri/4J_s4_g47fix_1286491.out`, or
+`/speed-scratch/o_iseri/4J_step4/g47_fixcheck.json`. **Nothing else may start first.**
+
+It runs the `G4.7` repair against an unfixed control, same prefixes, same seed, `gen_batch 8`, and
+scores six checks, numbered `0`–`5`, that were **pre-declared in the script before it was first run**:
+
+| # | Check | If it fails |
+|---|---|---|
+| **0** | the CONTROL arm must **reproduce** the failure | 🔴 the whole run is **VOID**, not a pass. Do NOT quote the FIXED arm. Find out why the control came back clean first |
+| 1 | FIXED terminates `16/16` | fix not demonstrated |
+| 2 | FIXED has **0** texts carrying more than one `<eor>` | fix not demonstrated |
+| 3 | FIXED per-batch token counts **decouple** (spread > 0) | rows still locked to the slowest member — the defect itself |
+| 4 | FIXED `n_eos_emitted == 0` | the EOS is cutting diaries short on its own; the fix is **wrong** |
+| 5 | `contains <eor>` unmoved in **both** arms | the arms differ by something other than the mask; comparison void |
+
+### How to read it, verbatim
+
+🔴 **Status as this handoff was written: `1286491` is still `PENDING` on the queue** (80 GB
+A100, `nvidia_a100_7g.80gb`). It had not started. **Do not assume it ran.** First command of the next
+session:
+
+```
+ssh speed "sacct -j 1286491 --format=JobID,State,Elapsed,ExitCode -X"
+```
+
+* `PENDING` / `RUNNING` → nothing to read yet. Everything below stays held. Do not resubmit — there
+  is only one of these and a duplicate makes the two arms non-comparable.
+* terminal → read, in this order:
+
+```
+ssh speed "grep -n 'CHECK\|VOID\|CONTROL\|FIXED' /speed-scratch/o_iseri/4J_s4_g47fix_1286491.out"
+ssh speed "cat /speed-scratch/o_iseri/4J_step4/g47_fixcheck.json"
+```
+
+The script prints each of the six checks with its own `CHECK n` line and its own verdict; the JSON
+carries both arms' raw counters (`ends_with_eor`, `contains_eor`, `n_more_than_one_eor`,
+`n_eos_emitted`, per-batch `new_token_counts`) so the checks can be re-derived rather than trusted.
+🔴 **Re-derive them.** A printed `PASS` in a script written the same afternoon as the fix is
+not independent evidence.
+
+If the job never ran (queue drained, node lost, walltime), it is re-submittable as-is:
+`sbatch /speed-scratch/o_iseri/g47_fixcheck.sh`. The script is deterministic — same prefixes, same
+seed — so a re-run is the same experiment, not a second sample.
+
+
+**All six hold →** re-generate the Leg-5 `es` fold (generation only, on the adapter already at
+`4J_step4/runs_leg5/leg5_primary_fold_es/adapter` — a generation pass, not another eleven hours),
+then run `4thJ_step4_g47_coverage.py --fold es`, then re-score `G4.1`, then submit `uk` and `it`.
+**Any one of them fails →** reopen
+`Step4_docs/investigation/2026-08-23_G4.7_generation_does_not_terminate.md` and change nothing else.
+
+🔴 **Until `1286491` is read, `G4.7` must NOT be quoted as repaired and the `uk`/`it` Leg-5
+folds must NOT be submitted** — 22 GPU-hours reproducing a known-broken generation stage.
+
+### What happened
+
+`1286209` (Leg-5 `es`) **COMPLETED** (`11:00:05`, exit `0:0`) and did not come out clean.
+**FAIL:** `G4.7` (`107`/`138`/`127` of 600), `G4.1` (all three epochs), `G4.6`, `G4.3`, `G4.12`.
+**PASS:** `G4.14`, `G4.13`, `G4.15`, `G4.8`, `G4.5`, `G4.2`, `G4.4`, `G4.9`, `G4.11`.
+
+`G4.7` was investigated to the bottom and the cause is **proved**. The model emits `<eor>` in
+**600/600** texts and the stop criterion fires in **16/16** replayed sequences — it is neither the
+model nor the stop string. `transformers/generation/utils.py:2835` masks an already-finished row only
+when `has_eos_stopping_criteria` is true (`:2737`), which only `EosTokenCriteria` sets, which `:1336`
+appends only when the model's generation config names an EOS. 🔴 **`Olmo-3-1025-7B`'s
+`generation_config.json` has no `eos_token_id`; `OLMo-2-0425-1B`'s has `100257`.** So a finished row
+kept sampling until its whole batch of 8 finished. Proof: replay token counts identical inside each
+batch (`323x4`, `440x4`) while the stop step scatters `73`–`439`.
+
+🔴 **`FINDING 56`, which matters more than the bug: Leg-4's `600/600` was a model-repo default
+covering for a harness that never had a working multi-sequence stop.** `gates must be seen failing`
+catches a gate that cannot fall; it does not catch a gate that **passes for the wrong reason**.
+
+### What was changed (all additive, all uploaded to `/speed-scratch/o_iseri/`)
+
+* `4thJ_step4_train.py` — `eos_token_id` added to `stop_kw` in `generate_samples`, guarded, printed
+  every run. `stop_strings` untouched and still what detects `<eor>`.
+* `4thJ_step4_train.py` — new **`G4.16`**: `100 %` of the generated sample must **CONTAIN** `<eor>`,
+  scored beside `G4.7` at both checkpoints, plus an unthresholded `n_more_than_one_eor`, plus a
+  printed MODEL / HARNESS / incoherence reading. 🔴 **Never report `G4.7` without `G4.16`.**
+* `4thJ_step4_thresholds.py` — `G4_16_REQUIRED_FRACTION = 1.0`.
+* `4thJ_step4_genperturb.py` — new `gate_g4_16`; its pre-registered `EXPECTED` map **not touched**.
+* `4thJ_step4_g47_coverage.py` — new lever `strip_all_eor_gen` + a **discrimination arm** (the old
+  trailing-only lever must LEAVE `G4.16` standing, or the pair is one gate and gets withdrawn), both
+  declared in `EXPECTED_G16` before first run.
+* `4thJ_step4_g47_fixcheck.py` — **new**, the two-arm demonstration above.
+* `Step4_docs/4thJ_04_finetuneLLM_val.md` — `G4.16` row, the four-way reading table, two perturbation
+  rows. `Step4_docs/outputs_step4/proglog_step4_gates.md` — the `D-S4-8` entry.
+
+`G4.7`'s own function, threshold and arithmetic are **byte-identical**. No retraining, no tokenizer
+change, no corpus change. **`prereg.md` untouched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified
+against its sidecar.
+
+### 🔴 What `D-S4-8` does NOT fix
+
+**`G4.1` is not downstream of this.** Recomputed on both bases: as-scored worst-high `1.456`,
+truncated at the first `<eor>` worst-high `1.614` — truncating makes it **worse**. `G4.1`, `G4.6`,
+`G4.3` and `G4.12` stay open failures on `es` and must never be reported as repaired by this change.
+
+⚪ Step 7 is unaffected — vLLM string-level `stop=[grammar.EOR]`, `600/600` across 26 jobs. Its
+`4thJ_step7_throughput.sh 200` (~7 min) has no dependency on `D-S4-8` and can go at any time.
+
+---
+
+## ⚪ SUPERSEDED (written 2026-08-23 midday, before `D-S4-8` was ruled)
+
+`1286209` **COMPLETED** (`11:00:05`, exit `0:0`). It did **not** come out clean.
+
+**FAIL:** `G4.7` (`107/600`, `138/600`, `127/600` terminated, all three epochs), `G4.1` (all three
+epochs), `G4.6`, `G4.3`, `G4.12`.
+**PASS:** `G4.14`, `G4.13`, `G4.15`, `G4.8`, `G4.5`, `G4.2`, `G4.4`, `G4.9`, `G4.11`.
+
+`G4.7` was investigated to the bottom and the cause is **proved**, not suspected. Full document:
+`4J_docs_occ/Step4_docs/investigation/2026-08-23_G4.7_generation_does_not_terminate.md`.
+
+**One paragraph.** The model emits `<eor>` in **600/600** texts and the stop criterion fires in
+**16/16** replayed sequences. The defect is `transformers/generation/utils.py:2835` — the line that
+pads an already-finished row is guarded by `has_eos_stopping_criteria`, which is set only by
+`EosTokenCriteria`, which `:1336` adds only when the model's `generation_config` names an EOS.
+🔴 **`Olmo-3-1025-7B`'s `generation_config.json` has no `eos_token_id`; `OLMo-2-0425-1B`'s has
+`100257`.** So in Leg-5 a finished row keeps sampling until its whole batch of 8 finishes, accreting
+`;<eor>;<eor>;...` or a second diary. Proved by job `1286484`: token counts identical inside each batch
+(`323x4`, `440x4`) while `first_eor_step` scatters `73`–`439`. Same code, same env, same tokenizer,
+same `--gen-batch 8` in both legs — Leg-4's `600/600` was the 1B model's generation config covering for
+a harness that never had a working multi-sequence stop.
+
+**Fix is one dict key** in `4thJ_step4_train.py:735`: add `"eos_token_id": tokenizer.eos_token_id`
+beside `stop_strings`. Harness only, no retraining, no tokenizer change, no prereg change.
+
+🔴 **`D-S4-8` is owed and nothing should be submitted before it is ruled.** Recommendation:
+apply the fix **(e)**, add a companion *contains* gate `G4.16` **(d)**, and **re-generate** the Leg-5
+`es` fold from the adapter already on disk at
+`/speed-scratch/o_iseri/4J_step4/runs_leg5/leg5_primary_fold_es/adapter` — a generation pass, not
+another eleven hours.
+
+🔴 **`G4.1` is NOT downstream of this.** It was recomputed locally on both bases: as-scored
+worst-high `1.456`, truncated at the first `<eor>` worst-high `1.614`. Truncating makes it **worse**.
+It is a separate, unexplained defect and must never be reported as fixed by the `G4.7` repair.
+
+⚪ Step 7 is unaffected — it generates under vLLM with string-level `stop=[grammar.EOR]` and reads
+`600/600` across 26 jobs.
+
+**Submission order is otherwise unchanged from the block below**, except that the two Leg-5 folds
+(`uk`, `it`) should not go in until `D-S4-8` is ruled, or they will burn 22 GPU-hours reproducing a
+known-broken generation stage. The 7-minute `4thJ_step7_throughput.sh 200` job has no such dependency
+and can go first, today.
+
+---
+
+## ⚪ SUPERSEDED (written 2026-08-22, kept for its submission order and its `it`-fold warning)
+
+### 🟢 NEXT SESSION (written 2026-08-22, 22:55, for the morning)
 
 **One sentence: nothing is waiting on a person; everything left is waiting on one GPU.** Job
 `1286209` (Step 4 **Leg-5, fold `es`**, the reported model) holds the only A100 `7g.80gb` slice on

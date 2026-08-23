@@ -108,6 +108,23 @@ STEP4 = DIAG.STEP4
 # Pre-registered here, before the first run of this script, and not edited afterwards.
 EXPECTED = {"strip_eor_gen": {"must_fail": ["G4.7"], "must_stay_clean": ["G4.1"]}}
 
+# ----------------------------------------------------------------------------------
+# D-S4-8 (2026-08-23) -- G4.16's lever, declared here BEFORE it was first run.
+# ----------------------------------------------------------------------------------
+# G4.16 is new, so the coverage clause would immediately report it as "PASSes at
+# baseline and was never felled". It needs its own lever, and `strip_eor_gen` is NOT
+# it: that lever removes the TRAILING terminator, which is exactly the case G4.16 is
+# built to survive (a text with <eor> in the middle still CONTAINS one). Felling G4.16
+# requires removing EVERY occurrence.
+#
+# 🔴 That asymmetry is the point of the pair, and this is where it is demonstrated:
+# the SAME script runs both levers on the SAME generated set, and the pre-declaration
+# below says that `strip_eor_gen` must leave G4.16 standing. If it fells G4.16 too,
+# the two gates are not measuring different things and the pair is worthless.
+EXPECTED_G16 = {"strip_all_eor_gen": {"must_fail": ["G4.16", "G4.7"],
+                                      "must_stay_clean": []},
+                "strip_eor_gen": {"must_stay_clean": ["G4.16"]}}
+
 
 def strip_eor_gen(gen_pairs, rate, rng):
     """Remove the terminator from `rate` of the generated diaries, chosen uniformly."""
@@ -121,6 +138,26 @@ def strip_eor_gen(gen_pairs, rate, rng):
         stripped = t.rstrip()
         if stripped.endswith(TH.G4_7_EOR):
             out[i] = (d, stripped[: -len(TH.G4_7_EOR)].rstrip())
+            changed += 1
+    return out, {"selected": len(idxs), "changed": changed}
+
+
+def strip_all_eor_gen(gen_pairs, rate, rng):
+    """D-S4-8. Remove EVERY <eor> from `rate` of the generated diaries.
+
+    Distinct from `strip_eor_gen` on purpose: that one takes the terminator off the end
+    and leaves any interior occurrence alone, which is precisely the state Leg-5 `es`
+    was in (G4.7 107/600, G4.16 600/600). Only wiping all occurrences can fell G4.16.
+    """
+    out = list(gen_pairs)
+    n = len(out)
+    k = max(1, int(round(rate * n)))
+    idxs = rng.sample(range(n), min(k, n))
+    changed = 0
+    for i in idxs:
+        d, t = out[i]
+        if TH.G4_7_EOR in t:
+            out[i] = (d, t.replace(TH.G4_7_EOR, "").rstrip())
             changed += 1
     return out, {"selected": len(idxs), "changed": changed}
 
@@ -214,6 +251,70 @@ def main():
         collateral = "G4.1 stayed PASS under the perturbation, as declared."
     print(collateral)
 
+    # ------------------------------------------------------------------ D-S4-8, G4.16
+    print("-" * 78)
+    print("D-S4-8 -- G4.16 COVERAGE, SAME FOLD %s, SAME GENERATED SET" % args.fold)
+    print("levers: strip_all_eor_gen @ rate %.3f (must fell G4.16 and G4.7) and "
+          "strip_eor_gen (must LEAVE G4.16 standing)" % args.rate)
+    print("-" * 78)
+
+    base_g16 = GP.gate_g4_16(gen_pairs)
+    print("BASELINE  G4.16 %s (%d/%d contain <eor>; %d carry MORE than one)"
+          % (base_g16["verdict"], base_g16["n_contains"], base_g16["n"],
+             base_g16["n_more_than_one_eor"]))
+    if base_g16["n_more_than_one_eor"]:
+        print("      🔴 %d diaries carry more than one <eor>. That is the batch-padding "
+              "fingerprint D-S4-8 describes, on THIS generated set. If this file was "
+              "produced before the eos_token_id fix, expect it; after the fix it should "
+              "be 0." % base_g16["n_more_than_one_eor"])
+
+    # arm 1 -- the discriminating check: strip_eor_gen must NOT fell G4.16
+    pert_g16_trailing = GP.gate_g4_16(pert)
+    if base_g16["verdict"] != "PASS":
+        arm1 = ("NOT ASSESSABLE -- G4.16 is %s at baseline." % base_g16["verdict"])
+    elif pert_g16_trailing["verdict"] == "PASS":
+        arm1 = ("🟢 AS DECLARED: strip_eor_gen felled G4.7 and left G4.16 PASS "
+                "(%d/%d still contain <eor>). The two gates measure different things."
+                % (pert_g16_trailing["n_contains"], pert_g16_trailing["n"]))
+    else:
+        arm1 = ("🔴 THE PAIR IS WORTHLESS ON THIS FOLD: strip_eor_gen felled G4.16 too. "
+                "G4.16 is supposed to survive a stripped TRAILING terminator. Either the "
+                "lever removed interior occurrences as well, or the generated diaries "
+                "carry exactly one <eor> each and containment adds nothing here.")
+    print(arm1)
+
+    # arm 2 -- G4.16's own lever
+    pert16, info16 = strip_all_eor_gen(gen_pairs, args.rate, random.Random(TH.SEED))
+    print("perturbation strip_all_eor_gen: selected %d, actually stripped %d"
+          % (info16["selected"], info16["changed"]))
+    if info16["changed"] == 0:
+        raise SystemExit(
+            "🔴 strip_all_eor_gen CHANGED NOTHING -- no selected diary contained %r. "
+            "This is a FAIL of this script, not a negative result about G4.16."
+            % TH.G4_7_EOR)
+    g16_pert = GP.gate_g4_16(pert16)
+    g7_pert16 = GP.gate_g4_7(pert16)
+    print("PERTURBED G4.16 %s (%d/%d contain)   G4.7 %s (%d/%d terminated)"
+          % (g16_pert["verdict"], g16_pert["n_contains"], g16_pert["n"],
+             g7_pert16["verdict"], g7_pert16["n_terminated"], g7_pert16["n"]))
+
+    credited16 = False
+    if base_g16["verdict"] != "PASS":
+        arm2 = ("VOID -- G4.16 is already %s at baseline on this fold. A gate down "
+                "before the perturbation cannot be seen falling." % base_g16["verdict"])
+    elif g16_pert["verdict"] == "FAIL":
+        credited16 = True
+        arm2 = ("🟢 G4.16 SEEN FALLING ON FOLD %s. Baseline PASS -> perturbed FAIL, %d "
+                "of %d diaries left with no <eor> anywhere. Per D-S4-6 (a) this credit "
+                "names the fold and is NOT transferable to the other two."
+                % (args.fold, g16_pert["n"] - g16_pert["n_contains"], g16_pert["n"]))
+    else:
+        arm2 = ("🔴 G4.16 DID NOT FALL although %d diaries were wiped. "
+                "G4_16_REQUIRED_FRACTION is %.2f, so this should be impossible. The "
+                "gate, not the perturbation, is what to read next."
+                % (info16["changed"], TH.G4_16_REQUIRED_FRACTION))
+    print(arm2)
+
     out = {"gate": "G4.7", "fold": args.fold, "lever": "strip_eor_gen",
            "rate": args.rate, "generated_file": args.generated,
            "pre_declared": EXPECTED["strip_eor_gen"],
@@ -222,7 +323,20 @@ def main():
            "n_changed": info["changed"], "credited_seen_falling": credited,
            "verdict_text": verdict, "must_stay_clean_note": collateral,
            "scope": "generation-side demonstration only; does NOT show that training can "
-                    "break termination"}
+                    "break termination",
+           "D_S4_8_G4_16": {
+               "gate": "G4.16", "lever": "strip_all_eor_gen", "rate": args.rate,
+               "pre_declared": EXPECTED_G16,
+               "baseline": base_g16,
+               "perturbed_strip_all": g16_pert,
+               "perturbed_strip_all_G4.7": g7_pert16,
+               "n_changed": info16["changed"],
+               "credited_seen_falling": credited16,
+               "verdict_text": arm2,
+               "discrimination_arm": arm1,
+               "discrimination_G4.16_under_strip_eor_gen": pert_g16_trailing,
+               "scope": "generation-side demonstration only; shows the detector responds "
+                        "and that it is NOT the same reading as G4.7"}}
     path = os.path.join(args.out, "g47_coverage_%s.json" % args.fold)
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2)

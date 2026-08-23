@@ -3136,3 +3136,152 @@ The trainer has **not** been changed. It still computes the shard check and prin
 that is edited, any new run reproduces the mislabelling. **This is a code change to make before the
 next fold is run, not a re-run of anything already done.** `prereg.md` untouched — md5
 `e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar while this entry was written.
+
+
+---
+
+## 2026-08-23 — 🟢 **`D-S4-8` APPLIED. `G4.7`'s DEFECT WAS IN `generate()`, NOT IN THE MODEL, AND THE REPAIR IS ONE DICT KEY. `G4.16` IS ADDED SO THE NEXT ONE CANNOT HIDE.**
+
+Job `1286209` (Leg-5 `es`, `11:00:05`, exit `0:0`) came back with `G4.7` reading `107`/`138`/`127`
+of 600 across its three epochs. The obvious reading — *the model has not learned to close a diary* —
+is **wrong**, and this entry records how that was established and what was changed.
+
+Full investigation:
+`Step4_docs/investigation/2026-08-23_G4.7_generation_does_not_terminate.md`.
+
+### 1. What was measured, before anything was changed
+
+Three facts, each from a measurement and not from an argument:
+
+* **600/600** of those same generated texts **CONTAIN** `<eor>`. The model closes every diary it is
+  asked to write. `G4.7` reads `endswith`, so it scored `107`.
+* In the GPU replay (job `1286484`, 16 sequences, `gen_batch 4`) `StopStringCriteria` returned
+  **`True` in 16 of 16** sequences at the exact step the first `<eor>` completed — **including** on
+  the `">;"` overhang case that was the opening hypothesis. **The stop criterion never failed to fire.**
+* **`n_eos_emitted = 0`.** No sequence emitted token `100257`, so the diaries that *did* end cleanly
+  did not end because the model produced its own EOS.
+
+🔴 **The opening hypothesis (a tokenisation overhang hiding the closing `>` inside a merged
+token) is DISPROVED and is kept in the investigation document as disproved rather than deleted.**
+
+### 2. The mechanism, proved
+
+Read verbatim out of the installed library on the cluster,
+`envs/step4/lib/python3.10/site-packages/transformers/generation/utils.py` (`4.57.6`, the same file
+both legs imported):
+
+```python
+# :1335
+criteria.append(StopStringCriteria(stop_strings=generation_config.stop_strings, tokenizer=tokenizer))
+# :1336
+if generation_config._eos_token_tensor is not None:
+    criteria.append(EosTokenCriteria(eos_token_id=generation_config._eos_token_tensor))
+# :2737
+has_eos_stopping_criteria = any(hasattr(criteria, "eos_token_id") for criteria in stopping_criteria)
+# :2835   finished sentences should have their next token be a padding token
+if has_eos_stopping_criteria:
+    next_tokens = next_tokens * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
+```
+
+`StopStringCriteria` carries no `eos_token_id` attribute, so it cannot set the guard at `:2737`. The
+only criterion that carries one is `EosTokenCriteria`, appended at `:1336` **only when the model's
+generation config names an EOS**. And:
+
+```
+allenai/OLMo-2-0425-1B   generation_config.json : {"eos_token_id": 100257, "pad_token_id": 100277, ...}
+allenai/Olmo-3-1025-7B   generation_config.json : {"_from_model_config": true, "transformers_version": "4.57.0"}
+```
+
+🔴 **The 7B repo ships no `eos_token_id`.** Both `config.json` carry `100257`; `generate()`
+reads the *generation* config, not that one. With the guard false, `:2836` never runs, a row that has
+already emitted `<eor>` is **never masked**, and it keeps sampling **real tokens** until every member
+of its batch of 8 has finished. The returned text carries a second diary, or `;<eor>;<eor>;…`.
+
+**Evidence that it is the batch and not the model:** in the replay the new-token counts are
+**identical inside each batch** (`323x4`, `440x4`, `281x4`, `309x4`) while `first_eor_step` scatters
+from `73` to `439`, and one sequence carries **84** `<eor>`. Leg-4's generated file has free
+per-sequence lengths (420, 361, 324, 681, 567, 275, 479, 496) and exactly one `<eor>` per text;
+Leg-5's are locked together (795, 776, 790, 743, 767, 739, 756, 731).
+
+Everything else is identical between the two legs: same trainer, same `envs/step4`, same tokenizer
+blobs, same printed `eor_ids [27, 24274, 29]`, same `MULTI-TOKEN, wired as stop_strings` line, same
+`--gen-batch 8`.
+
+### 3. 🔴 The finding that matters more than the bug — `FINDING 56`
+
+**Leg-4's `600/600` on all three folds was a model-repo default covering for a harness that never had
+a working multi-sequence stop.** The rehearsal leg passed this gate for three weeks for a reason that
+had nothing to do with the harness being correct, and **no gate in the battery could have seen it**.
+The one number that would have — how many texts carry *more* than one `<eor>` — was never computed.
+
+`gates must be seen failing` catches a gate that **cannot fall**. It does not catch a gate that
+**passes for the wrong reason**. That is the gap `G4.16` closes, and it is the general lesson: a gate
+whose PASS is produced by an upstream default is indistinguishable, from inside the battery, from a
+gate whose PASS is earned.
+
+### 4. `D-S4-8` — ruled and applied
+
+**(e) + (d): fix the harness, and add the companion reading that would have caught it.**
+
+**(e) The repair, `tools/4thJ_step4_train.py:generate_samples`.** One dict key: `eos_token_id` is now
+passed to `generate()` alongside `stop_strings`, which makes `has_eos_stopping_criteria` true and
+restores the mask. It does **not** replace the stop string — `<eor>` is three tokens and
+`eos_token_id` cannot express it (`FINDING 12`), so `StopStringCriteria` is still what detects the
+terminator and still what ends the batch. The EOS is there for its side effect on the mask alone, and
+`n_eos_emitted` was measured at **0**, so it does not fire on its own.
+
+Harness only. **No retraining. No tokenizer change. No corpus change. `prereg.md` NOT edited** — md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar while this entry was written.
+
+**(d) `G4.16` — the companion gate.** `100 %` of the generated sample must **CONTAIN** `<eor>`, scored
+on the same texts at the same checkpoints as `G4.7`, threshold `1.0`, and the two are never reported
+apart. The pair separates the two failures one number could not:
+
+| `G4.16` | `G4.7` | reading |
+|---|---|---|
+| PASS | PASS | clean |
+| **PASS** | **FAIL** | **HARNESS** — Leg-5 `es` exactly |
+| FAIL | FAIL | **MODEL** |
+| FAIL | PASS | **impossible**; the trainer prints it as an incoherence and the run is not to be read |
+
+`n_more_than_one_eor` is recorded beside it and **deliberately not thresholded**: it is the direct
+fingerprint of this defect, and it should read `0` once the fix lands.
+
+**`G4.16`'s lever, declared before it was first run** (`tools/4thJ_step4_g47_coverage.py`):
+`strip_all_eor_gen` removes **every** occurrence from 1 % of the generated diaries and must fell
+`G4.16` **and** `G4.7`. 🔴 And a second, discriminating arm: the existing `strip_eor_gen`
+(trailing only) **must LEAVE `G4.16` STANDING**. If it fells `G4.16` too, the two gates are one gate
+and the pair is to be withdrawn rather than reported.
+
+### 5. 🔴 What `D-S4-8` does NOT fix
+
+**`G4.1` is not downstream of this.** It was recomputed locally on both bases from the existing
+generated file: as scored, worst-high **`1.456`**; truncated at the first `<eor>`, worst-high
+**`1.614`**. **Truncating makes it worse.** `G4.1`, `G4.6`, `G4.3` and `G4.12` remain open failures on
+`es` and must never be reported as repaired by this change.
+
+⚪ **Step 7 is unaffected.** It generates under vLLM with string-level `stop=[grammar.EOR]`, which
+does not go through this code path, and reads `600/600` across 26 jobs.
+
+### 6. Ledger
+
+| Job | What | State |
+|---|---|---|
+| `1286209` | Leg-5 `es`, the run that failed | COMPLETED `11:00:05`, exit `0:0` |
+| `1286480` | tokenizer/vocabulary probe | COMPLETED |
+| `1286483` | replay at `gen_batch 8` | **CANCELLED** as redundant once `1286484` settled the mechanism |
+| `1286484` | replay at `gen_batch 4`, token ids kept — **the decisive measurement** | COMPLETED `00:07:14`, exit `0:0` |
+| `1286491` | 🔴 `D-S4-8` fix-check: CONTROL vs FIXED arm, `gen_batch 8` | submitted 2026-08-23 |
+
+### 7. 🔴 What is still owed on this decision
+
+`1286491` runs both arms back to back on the same prefixes and the same seed and scores five
+**pre-declared** checks, the first of which is that the CONTROL arm must reproduce the failure — **if
+the control comes back clean the whole result is VOID, not a pass for the fix.** The others: the FIXED
+arm terminates `n/n`; no text carries more than one `<eor>`; per-batch token counts **decouple**
+(a spread of zero means the rows are still locked to the slowest member); the EOS never fires on its
+own; and `G4.16` is unmoved across both arms.
+
+🔴 **Until that job is read, the repair is established from the guard's condition and has NOT
+been seen working. `G4.7` must not be quoted as repaired, and the `uk` and `it` Leg-5 folds must not
+be submitted** — 22 GPU-hours reproducing a known-broken generation stage.

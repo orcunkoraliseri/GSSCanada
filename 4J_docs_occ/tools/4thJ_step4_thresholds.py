@@ -60,6 +60,16 @@ G4_6_MICRO_BATCH = 2
 G4_7_EOR = "<eor>"
 G4_7_REQUIRED_FRACTION = 1.0
 
+# --- G4.16 the model CAN close a diary --------------------------------------
+# D-S4-8 (2026-08-23), companion to G4.7. G4.7 asks whether the returned text ENDS with
+# <eor>; it cannot tell "the model never learned to close a diary" from "the harness
+# never stopped generating". Leg-5 `es` read G4.7 107/600 while 600/600 of the same
+# texts CONTAINED <eor> -- the model was fine, `generate()` was not. G4.16 reads the
+# containment. Same threshold, on purpose: a model that cannot close a diary at all is
+# as broken as one that never stops, and D-S4-7's split is only informative if both
+# readings are scored.
+G4_16_REQUIRED_FRACTION = 1.0
+
 # --- G4.8 tokenizer round-trip ----------------------------------------------
 G4_8_CASES = 1000
 

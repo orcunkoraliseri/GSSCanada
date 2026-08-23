@@ -172,6 +172,18 @@ def gate_g4_7(gen_texts):
             "n": n, "n_terminated": ok}
 
 
+# D-S4-8 (2026-08-23). Companion to gate_g4_7 above: containment, not endswith. Added
+# as a NEW function beside the existing one -- the pre-registered EXPECTED map in this
+# module is not touched, and no lever here claims G4.16. Its lever is declared in
+# `4thJ_step4_g47_coverage.py`, which is where G4.7's already lives.
+def gate_g4_16(gen_texts):
+    n = len(gen_texts)
+    ok = sum(1 for _d, t in gen_texts if TH.G4_7_EOR in t)
+    extra = sum(1 for _d, t in gen_texts if t.count(TH.G4_7_EOR) > 1)
+    return {"gate": "G4.16", "verdict": "PASS" if n and ok == n else "FAIL",
+            "n": n, "n_contains": ok, "n_more_than_one_eor": extra}
+
+
 def apply_perturbation(name, gen_pairs, rng):
     if name == "null":
         return list(gen_pairs), {"changed": 0}

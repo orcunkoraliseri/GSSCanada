@@ -316,3 +316,34 @@ OpenUBEM Engine Modules Consumed (C:\Users\o_iseri\Desktop\OpenUBEM\openubem\):
 ├── simulation/parallel.py       -> SLURM array execution harness for 510 campaign runs
 └── results/service_loads.py     -> Fraction-split EUI completion (simulated vs reconstructed)
 ```
+
+---
+
+## 10. Direction from the OpenUBEM European Locations Arc — Step 7 Decision 14 (Diary-Day Chaining Rule) — added 2026-08-23
+
+> **Status: OPEN REQUEST to the GSSCanada / Step 7 side.** This is the **only remaining blocker** of the OpenUBEM European campaign. Every other open decision was closed on 2026-08-23 (rulings D-EU-01…08/10/11 and accepted deep-research reports DR08–DR11 in `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\` — see `debugs/docs/DECISIONS_parent-open-items-2026-08-23.md` and MVP §11.13). It gates **only the `f > 0` occupant cells (408 runs, Q4)**; the `f = 0` controls, Q1–Q3 and the France baseline run without it.
+
+### 10.1 The problem
+
+Step 7 delivers **single diary days** of at-home presence per respondent, not annual series. An annual `Schedule:File` (8,760 h) therefore requires a **chaining rule**: which diary day is placed on which calendar day (weekday/weekend matching, seasonal matching, within-household vs pooled resampling, treatment of holidays). Step 8's own pre-registration (decision 14) warns that candidate rules can differ by **> 25 % on peak demand** — a casually chosen rule would make the campaign measure the chaining convention, not the occupant effect. No literature settles it for this corpus; it is an experiment on Step 7's own diaries, which is why no DR brief was written for it.
+
+### 10.2 Requested experiment (protocol proposal — amend freely on the Step 7 side)
+
+1. **Candidate rules (2–3, pre-declared before any simulation):**
+   - **C1 — day-type + season matched, within household:** resample the household's own diary days by {weekday/weekend} × {heating/non-heating season}; fall back to pooled only when the household has no day of that type.
+   - **C2 — day-type + season matched, pooled within stratum:** resample from all households of the same country × household-size stratum.
+   - **C3 (control convention) — single repeated day:** each household's one diary day tiled over the year with day-type correction only. (Cheapest; included to bound the effect.)
+2. **Sample:** ~20–50 dwellings per country fold (es / uk / it), each chained under every candidate rule with a fixed RNG seed per (dwelling, rule).
+3. **Simulation:** identical buildings, identical weather (the fold's ruled AMY), `f = 1.00` injection only — the rule effect is largest there.
+4. **Measure:** per dwelling, the spread across rules of (a) annual heating demand and (b) annual peak heating power; report the distribution of spreads, not just the mean.
+5. **Decision criterion (pre-registered):** if the across-rule spread is **< 25 % on peak and < 10 % on annual demand** for ≥ 90 % of the sample → adopt the **simplest** rule (lowest C-number that passes) and freeze it; otherwise the chaining rule becomes a **declared design factor** of the campaign (reported per rule), and the choice escalates to a user ruling.
+6. **Artefacts owed back to the OpenUBEM arc:** the frozen rule text, the seed policy, the script that implements it, and the spread table — filed so the OpenUBEM director can lift the `f > 0` block by reference.
+
+### 10.3 Constraints inherited from the pre-registration (do not violate)
+
+- **No thermostat schedule may be introduced** by the chaining experiment (`FINDING 57` / G8-series: intermittency stays a transmission scalar; a scheduled setback would confound the LOCO occupancy signal).
+- **Held-out-fold correctness (G8.16)** applies to the experiment itself: a fold's chained schedules must not use diary information from its held-out records.
+- Annual mean gain must remain exactly `3.0 W/m²` after chaining at every `f` (strict energy conservation, §5.1) — chaining redistributes time, never energy.
+- Leap days and DST: the ruled EPW windows are non-leap, LST without DST; the chaining script must produce exactly 8,760 rows and declare its day-boundary convention.
+
+*Requested by the OpenUBEM European Locations arc (director session, 2026-08-23). Contact artefact: `OpenUBEM/docs/docs_ACTIVE/europeanLocations/prompts/DIRECTOR_PROMPT_european_locations.md` §4.3 (D-EU-09).*

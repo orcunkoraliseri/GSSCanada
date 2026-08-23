@@ -295,6 +295,36 @@ def gate_g4_7(gen_texts):
 
 
 # ---------------------------------------------------------------------------
+# G4.16 -- the model CAN close a diary               (D-S4-8, 2026-08-23)
+# ---------------------------------------------------------------------------
+# 🔴 Why this exists. G4.7 reads `endswith`. On Leg-5 `es` it read 107/600 and the
+# obvious reading -- "the model has not learned to terminate" -- was WRONG: 600/600 of
+# those same texts CONTAINED <eor>, and the defect was in `generate()`'s batch padding
+# (D-S4-8, see generate_samples). One number could not separate a model failure from a
+# harness failure, and three weeks of Leg-4 "600/600" hid a harness that never had a
+# working multi-sequence stop. Two numbers can:
+#     G4.16 FAIL, G4.7 FAIL  -> the model cannot close a diary.       MODEL
+#     G4.16 PASS, G4.7 FAIL  -> it closes and generation runs past.   HARNESS
+#     G4.16 PASS, G4.7 PASS  -> clean.
+#     G4.16 FAIL, G4.7 PASS  -> impossible; endswith implies contains. Would mean the
+#                               two readings disagree about what <eor> is, so it is
+#                               reported as an incoherence, not as a pass.
+# `n_extra` is the count of texts carrying MORE than one <eor>. It is not thresholded --
+# it is the direct fingerprint of the batch-padding defect and is recorded so a reader
+# can see it die when the fix lands.
+def gate_g4_16(gen_texts):
+    n = len(gen_texts)
+    ok = sum(1 for t in gen_texts if TH.G4_7_EOR in t)
+    extra = sum(1 for t in gen_texts if t.count(TH.G4_7_EOR) > 1)
+    frac = ok / float(n) if n else 0.0
+    return {"gate": "G4.16",
+            "verdict": "PASS" if (n > 0 and frac >= TH.G4_16_REQUIRED_FRACTION) else "FAIL",
+            "n": n, "n_contains": ok, "fraction": frac, "n_more_than_one_eor": extra,
+            "basis": "GENERATED sample, scored beside G4.7 at the same checkpoints",
+            "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)"}
+
+
+# ---------------------------------------------------------------------------
 # G4.8 -- tokenizer round-trip on 1000 cases
 # ---------------------------------------------------------------------------
 def gate_g4_8(tokenizer, recs, n_cases=None, base_repo=None):
@@ -734,10 +764,37 @@ def generate_samples(model, tokenizer, recs, device, n, max_new_tokens=1200,
     # emits afterwards, which the episode parser would otherwise have to read as data.
     stop_kw = ({"eos_token_id": eos_arg} if eos_arg is not None
                else {"stop_strings": [TH.G4_7_EOR], "tokenizer": tokenizer})
+
+    # 🔴 D-S4-8 / FINDING 56. `stop_strings` alone is NOT enough in a batch, and this is
+    # what made Leg-5 `es` read G4.7 107/600 while 600/600 of the same texts CONTAINED
+    # <eor>. In transformers/generation/utils.py the line that masks an already-finished
+    # row (`:2835`, "finished sentences should have their next token be a padding token")
+    # is guarded by `has_eos_stopping_criteria` (`:2737`), which is true only when some
+    # criterion carries an `eos_token_id` attribute. StopStringCriteria carries none. The
+    # only criterion that does is EosTokenCriteria, appended at `:1336` ONLY when the
+    # model's generation config names an EOS -- and `Olmo-3-1025-7B` ships a
+    # generation_config.json with NO eos_token_id, where `OLMo-2-0425-1B` ships 100257.
+    # So under Leg-5 a row that had already emitted <eor> kept sampling REAL tokens until
+    # its whole batch finished, and the text came back with a second diary glued on.
+    # Leg-4's 600/600 was the 1B repo's default covering for a harness that never had a
+    # working multi-sequence stop.
+    #
+    # Passing eos_token_id restores the guard. It does NOT weaken the stop string: the
+    # batch still ends on `unfinished_sequences.max() == 0`, driven by StopStringCriteria,
+    # which is what actually detects <eor> (three tokens, so eos_token_id cannot express
+    # it -- see FINDING 12 above). The EOS is here for its side effect on the mask, and
+    # `n_eos_emitted` was measured at 0 in job 1286484, so it never fires on its own.
+    if eos_arg is None and getattr(tokenizer, "eos_token_id", None) is not None:
+        stop_kw = dict(stop_kw)
+        stop_kw["eos_token_id"] = tokenizer.eos_token_id
+
     print("generation stop token: %s -> ids %s, %s"
           % (TH.G4_7_EOR, eor_ids,
              "wired as eos_token_id" if eos_arg is not None else
              "MULTI-TOKEN, wired as stop_strings"))
+    print("D-S4-8 padding guard: eos_token_id=%s passed to generate() -> "
+          "has_eos_stopping_criteria will be True, finished rows in a batch are masked"
+          % stop_kw.get("eos_token_id"))
 
     # left padding, because a decoder-only model must have its prompt flush right
     old_side = tokenizer.padding_side
@@ -829,6 +886,9 @@ def g41_midepoch_probe(model, tokenizer, val_dl, val_recs, real_ref, delim_ids,
     # probes and at epoch 1 together; a termination reading at the same checkpoints is
     # what tells a reader whether those two facts move together.
     g7p = gate_g4_7(gen_texts)
+    # D-S4-8: scored at the SAME checkpoint, never separately. G4.7 alone cannot say
+    # whether a low reading is the model or the harness.
+    g16p = gate_g4_16(gen_texts)
 
     detail = ("V4.a: only %s scorable strata" % g1.get("n_scorable_strata")
               if "reason" in g1 else
@@ -838,14 +898,17 @@ def g41_midepoch_probe(model, tokenizer, val_dl, val_recs, real_ref, delim_ids,
                  g1.get("worst_low") or float("nan"),
                  g1.get("worst_high") or float("nan"), g1.get("which_end")))
     print("  [ep %d frac %.2f] G4.1 %s [%s]  delim=%.4f content=%.4f entropy=%.3f  "
-          "G4.7 %s [%d/%d]  %s"
+          "G4.7 %s [%d/%d]  G4.16 %s [%d/%d, %d with >1 eor]  %s"
           % (ep, frac, g1["verdict"], detail, dv["delimiter_loss"], dv["content_loss"],
-             gen_entropy, g7p["verdict"], g7p["n_terminated"], g7p["n"], role),
+             gen_entropy, g7p["verdict"], g7p["n_terminated"], g7p["n"],
+             g16p["verdict"], g16p["n_contains"], g16p["n"],
+             g16p["n_more_than_one_eor"], role),
           flush=True)
 
     return {"basis": "D-S4-5 mid-epoch checkpoint", "epoch": ep, "frac": frac,
             "step": step, "n_steps_in_epoch": n_steps,
             "role": role, "supplies_verdict": is_verdict,
+            "G4.7": g7p, "G4.16": g16p,
             "G4.1": g1, "delim_vs_content": dv,
             "activity_entropy_nats": gen_entropy,
             "generated_n": len(gen_texts)}
@@ -1453,6 +1516,8 @@ def main():
         # 🔴 D-S4-7: this count was computed and PRINTED every epoch and scored by
         # nothing. It is now G4.7's own reading.
         g7 = gate_g4_7(gen_texts)
+        # D-S4-8: the companion containment reading, scored on the SAME texts.
+        g16 = gate_g4_16(gen_texts)
         gen_term = g7["n_terminated"]
         row = {
             "run": run_name, "fold": args.fold, "held_out_country": args.fold,
@@ -1467,13 +1532,16 @@ def main():
             "g4_1_n_strata": g1.get("n_scorable_strata"),
             "g4_2_verdict": g2["verdict"],
             "g4_7_verdict": g7["verdict"],
+            "g4_16_verdict": g16["verdict"],
+            "generated_contains_eor": g16["n_contains"],
+            "generated_more_than_one_eor": g16["n_more_than_one_eor"],
             "generated_terminated": gen_term, "generated_n": len(gen_texts),
         }
         for c, v in probe_losses.items():
             row["probe_loss_%s" % c] = v
         metrics_rows.append(row)
         detectors["epochs"].append({"epoch": ep, "delim_vs_content": dv,
-                                    "G4.1": g1, "G4.2": g2, "G4.7": g7,
+                                    "G4.1": g1, "G4.2": g2, "G4.7": g7, "G4.16": g16,
                                     "probe_content_loss": probe_losses,
                                     "generated_terminated": gen_term,
                                     "generated_n": len(gen_texts)})
@@ -1491,11 +1559,28 @@ def main():
                         g1.get("worst_low") or float("nan"),
                         g1.get("worst_high") or float("nan"), g1.get("which_end")))
         print("  [epoch %d] delim=%.4f content=%.4f entropy=%.3f  G4.1 %s [%s]  G4.2 %s  "
-              "G4.7 %s [gen-terminated %d/%d]"
+              "G4.7 %s [gen-terminated %d/%d]  G4.16 %s [gen-contains %d/%d, %d with "
+              ">1 eor]"
               % (ep, dv["delimiter_loss"], dv["content_loss"], gen_entropy,
                  g1["verdict"], g1_detail, g2["verdict"], g7["verdict"], gen_term,
-                 len(gen_texts)),
+                 len(gen_texts), g16["verdict"], g16["n_contains"], g16["n"],
+                 g16["n_more_than_one_eor"]),
               flush=True)
+        # 🔴 D-S4-8. The pair, read together, in one line, so no reader has to do it.
+        if g16["verdict"] == "PASS" and g7["verdict"] == "FAIL":
+            print("      🔴 D-S4-8 READING: HARNESS, not model. Every generated diary "
+                  "contains <eor>; %d of %d do not END with it. Generation ran past the "
+                  "terminator -- check the eos_token_id padding guard in "
+                  "generate_samples before reading G4.7 as a model result."
+                  % (g7["n"] - gen_term, g7["n"]), flush=True)
+        elif g16["verdict"] == "FAIL" and g7["verdict"] == "FAIL":
+            print("      🔴 D-S4-8 READING: MODEL. %d of %d generated diaries do not "
+                  "contain <eor> at all." % (g16["n"] - g16["n_contains"], g16["n"]),
+                  flush=True)
+        elif g16["verdict"] == "FAIL" and g7["verdict"] == "PASS":
+            print("      🔴 D-S4-8 INCOHERENCE: G4.7 PASS with G4.16 FAIL is impossible "
+                  "-- endswith implies contains. The two readings disagree about what "
+                  "%r is. Do NOT read this run." % TH.G4_7_EOR, flush=True)
         # 🔴 D-S4-4: the arm's own decomposition, on its own line. `delim=` above is the
         # FORCED basis; these are the number it replaced and the token it dropped, so a
         # reader can see the re-point rather than take it on trust.
