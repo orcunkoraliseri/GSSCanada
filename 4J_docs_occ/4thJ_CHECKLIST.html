@@ -1,0 +1,475 @@
+<title>4J Pipeline Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F7F7F3;
+  --surface:#FFFFFF;
+  --surface-2:#F1F2ED;
+  --ink:#181A18;
+  --ink-2:#43474A;
+  --muted:#787E80;
+  --line:#DEE0D9;
+  --line-soft:#E9EAE4;
+  --accent:#0B6E68;
+  --accent-soft:#DDECEA;
+  --done:#2E6F4E;
+  --done-bg:#E2EFE6;
+  --prog:#9A6408;
+  --prog-bg:#F6EAD4;
+  --todo:#6E7478;
+  --todo-bg:#E8E9E5;
+  --risk:#A8352A;
+  --risk-bg:#F6E3E0;
+  --shadow:0 1px 2px rgba(24,26,24,.05), 0 8px 24px -16px rgba(24,26,24,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111311;
+    --surface:#181B19;
+    --surface-2:#1F2320;
+    --ink:#E9EBE6;
+    --ink-2:#B7BDB8;
+    --muted:#858C87;
+    --line:#2B302C;
+    --line-soft:#232725;
+    --accent:#4FBBB0;
+    --accent-soft:#16302E;
+    --done:#6FC08E;
+    --done-bg:#173123;
+    --prog:#DFA33E;
+    --prog-bg:#33260F;
+    --todo:#8B928D;
+    --todo-bg:#232623;
+    --risk:#E4776A;
+    --risk-bg:#341C19;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111311;
+  --surface:#181B19;
+  --surface-2:#1F2320;
+  --ink:#E9EBE6;
+  --ink-2:#B7BDB8;
+  --muted:#858C87;
+  --line:#2B302C;
+  --line-soft:#232725;
+  --accent:#4FBBB0;
+  --accent-soft:#16302E;
+  --done:#6FC08E;
+  --done-bg:#173123;
+  --prog:#DFA33E;
+  --prog-bg:#33260F;
+  --todo:#8B928D;
+  --todo-bg:#232623;
+  --risk:#E4776A;
+  --risk-bg:#341C19;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 24px 96px}
+
+/* ---------- masthead ---------- */
+.mast{display:flex;flex-wrap:wrap;align-items:flex-end;gap:20px;justify-content:space-between;margin-bottom:8px}
+h1{
+  font-family:Archivo,system-ui,sans-serif;
+  font-weight:700;
+  font-size:clamp(28px,4.4vw,42px);
+  letter-spacing:-.022em;
+  line-height:1.04;
+  margin:0;
+  text-wrap:balance;
+}
+.sub{color:var(--muted);font-size:13.5px;margin:6px 0 0;max-width:62ch}
+.stamp{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;
+}
+
+/* ---------- summary ---------- */
+.summary{
+  margin-top:28px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:20px 22px;box-shadow:var(--shadow);
+}
+.tallies{display:flex;flex-wrap:wrap;gap:28px;align-items:baseline}
+.tally{display:flex;align-items:baseline;gap:9px}
+.tally b{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.tally span{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tally.d b{color:var(--done)} .tally.p b{color:var(--prog)} .tally.n b{color:var(--todo)}
+
+.meter{display:flex;height:9px;border-radius:99px;overflow:hidden;margin-top:18px;background:var(--surface-2)}
+.meter i{display:block;height:100%}
+.meter i.d{background:var(--done)} .meter i.p{background:var(--prog)} .meter i.n{background:var(--line)}
+
+/* ---------- step track ---------- */
+.track{
+  display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:26px;
+}
+.seg{
+  appearance:none;border:1px solid var(--line);background:var(--surface);
+  border-radius:6px;padding:9px 4px 8px;cursor:pointer;text-align:center;
+  color:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:11px;
+  display:flex;flex-direction:column;gap:6px;align-items:center;
+  transition:transform .12s ease, border-color .12s ease;
+}
+.seg:hover{transform:translateY(-2px);border-color:var(--accent)}
+.seg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg .n{font-weight:600;font-size:14px;color:var(--ink)}
+.seg .bar{width:100%;height:4px;border-radius:99px;background:var(--line)}
+.seg[data-s="done"] .bar{background:var(--done)}
+.seg[data-s="prog"] .bar{background:var(--prog)}
+.seg[data-s="todo"] .bar{background:var(--line)}
+.seg .f{font-size:10px;color:var(--muted);letter-spacing:.03em}
+
+/* ---------- filters ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:7px;margin:34px 0 20px;align-items:center}
+.filters .lab{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-right:5px;
+}
+.chip{
+  appearance:none;cursor:pointer;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);border-radius:99px;padding:5px 13px;font-size:12.5px;
+  font-family:"IBM Plex Sans",sans-serif;
+}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0C1614}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0C1614}}
+
+/* ---------- step blocks ---------- */
+.step{margin-top:26px;scroll-margin-top:16px}
+.step-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}
+.step-no{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  letter-spacing:.1em;color:var(--accent);
+}
+.step-head h2{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:19px;letter-spacing:-.012em;
+  margin:0;flex:1;text-wrap:balance;
+}
+.step-note{width:100%;color:var(--muted);font-size:12.5px;margin:9px 0 0}
+.step-note.warn{color:var(--risk)}
+
+table{width:100%;border-collapse:collapse;margin-top:2px}
+.scroller{overflow-x:auto}
+tbody tr{border-bottom:1px solid var(--line-soft)}
+tbody tr.risk td:first-child{box-shadow:inset 3px 0 0 var(--risk)}
+td{padding:11px 12px;vertical-align:top}
+td.item{font-weight:500;width:31%;min-width:190px}
+td.st{width:1%;white-space:nowrap}
+td.note{color:var(--ink-2);font-size:13px}
+code{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  background:var(--surface-2);border-radius:4px;padding:1px 5px;
+}
+.flag{color:var(--risk);font-weight:600}
+
+.pill{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:99px;
+  font-weight:500;white-space:nowrap;
+}
+.pill.done{background:var(--done-bg);color:var(--done)}
+.pill.prog{background:var(--prog-bg);color:var(--prog)}
+.pill.todo{background:var(--todo-bg);color:var(--todo)}
+
+/* ---------- in-flight ---------- */
+.flight{
+  margin-top:38px;background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:8px;padding:18px 20px;
+}
+.flight h3{
+  font-family:Archivo,sans-serif;font-size:13px;font-weight:600;margin:0 0 12px;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+}
+.jobs{display:grid;gap:8px}
+.job{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-size:13px}
+.job code{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.job span{color:var(--ink-2)}
+
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+.empty{padding:26px 2px;color:var(--muted);font-size:13.5px}
+
+@media (max-width:720px){
+  .track{grid-template-columns:repeat(5,1fr)}
+  td.item{width:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1>4J Pipeline Board</h1>
+      <p class="sub">HETUS &rarr; fine-tuned LLM &rarr; occupancy schedules &rarr; BEM. Work items for steps 0&ndash;9, with the status of each.</p>
+    </div>
+    <div class="stamp">Updated 2026&#8209;08&#8209;23 &middot; night</div>
+  </header>
+
+  <section class="summary">
+    <div class="tallies">
+      <div class="tally d"><b id="t-done">&mdash;</b><span>done</span></div>
+      <div class="tally p"><b id="t-prog">&mdash;</b><span>in progress</span></div>
+      <div class="tally n"><b id="t-todo">&mdash;</b><span>not started</span></div>
+      <div class="tally"><b id="t-all">&mdash;</b><span>items total</span></div>
+    </div>
+    <div class="meter" id="meter" aria-hidden="true"></div>
+  </section>
+
+  <nav class="track" id="track" aria-label="Jump to a step"></nav>
+
+  <div class="filters">
+    <span class="lab">Show</span>
+    <button class="chip" data-f="all" aria-pressed="true">Everything</button>
+    <button class="chip" data-f="prog" aria-pressed="false">In progress</button>
+    <button class="chip" data-f="todo" aria-pressed="false">Not started</button>
+    <button class="chip" data-f="done" aria-pressed="false">Done</button>
+    <button class="chip" data-f="risk" aria-pressed="false">Flagged &#128308;</button>
+  </div>
+
+  <main id="board"></main>
+
+  <section class="flight">
+    <h3>In flight on Speed</h3>
+    <div class="jobs">
+      <div class="job"><code>1286546</code><span>re&#8209;generate Leg&#8209;5 <code>es</code> on the existing adapter &mdash; a generation pass, not a retrain</span></div>
+      <div class="job"><code>1286547</code><span>Leg&#8209;5 fold <code>uk</code></span></div>
+      <div class="job"><code>1286548</code><span>Leg&#8209;5 fold <code>it</code></span></div>
+      <div class="job"><code>1286553</code><span>&#10003; done in 4 s &mdash; measured how far <code>G4.12</code>&rsquo;s shuffle actually moves the prefix. At most one field of six; for 55&ndash;64 % of diaries, nothing.</span></div>
+      <div class="job"><code>1286556&ndash;59</code><span><code>G4.3</code> base&#8209;model baseline &mdash; no adapter, same permutation, same seed. <b>Read only <code>G4.3</code> from these.</b></span></div>
+      <div class="job"><code>1286562&ndash;65</code><span><code>G4.6</code> merge parity &mdash; merged vs unmerged generation on identical prompts and seed. Check its two&#8209;pass control first, or the run is void.</span></div>
+    </div>
+  </section>
+
+  <footer>
+    Detail lives in each step&rsquo;s own document and in <code>Prompts/RESUME.md</code>, which is the handoff.
+    The <code>## STATUS</code> headers inside <code>Step1/2/3_docs</code> are stale &mdash; this board is the current state.
+  </footer>
+</div>
+
+<script>
+const DATA = [
+  {n:0, title:"Feasibility gate", items:[
+    {t:"Four kill-switch questions to external deep research", s:"done"},
+    {t:"Verdict recorded", s:"done", note:"Closed 2026-08-14. One kill switch fired."}
+  ]},
+  {n:1, title:"Corpus definition and acquisition", items:[
+    {t:"1.1 Obtain the files", s:"done", note:"Three countries — ES, UK, IT. France excluded by decision 16."},
+    {t:"1.2 Read each codebook", s:"done"},
+    {t:"1.3 Shape-agnostic reader", s:"done"},
+    {t:"1.4 Eurostat entity-recognition enquiry", s:"todo", note:"No record found that it was sent. Not blocking."},
+    {t:"16-gate battery, round 3", s:"done", note:"15 of 15 scored gates PASS, all seen failing. <code>G2.10</code> permanently NOT CHECKED."}
+  ]},
+  {n:2, title:"Harmonisation", items:[
+    {t:"2.1 Activity crosswalk", s:"done"},
+    {t:"2.2 Location crosswalk and the indoor rule", s:"done"},
+    {t:"2.3 Co-presence normalisation", s:"done"},
+    {t:"2.4 Apply the filter, emit the table", s:"done", note:"<code>harmonised.parquet</code> — 2,024,068 episodes."},
+    {t:"Additive round: 11 prefix columns", s:"done", note:"D-S2-18 / D-S2-19. 40 → 51 columns; <code>season</code> dropped."},
+    {t:"18-gate battery", s:"done", note:"Step 2 closed twice."}
+  ]},
+  {n:3, title:"Serialisation and tokenisation", items:[
+    {t:"3.1 The record", s:"done", note:"Six-field prefix, D-S3-11."},
+    {t:"3.2 <code>COP</code> packing", s:"done", note:"D-S3-1."},
+    {t:"3.3 Encoder and decoder", s:"done", note:"Round-trip 100 % exact."},
+    {t:"3.4 Tokenizer assertions", s:"done"},
+    {t:"3.5 Emit the training corpus", s:"done", note:"<code>4J_step3_corpus.jsonl</code> — 73,254 records."},
+    {t:"Gate battery", s:"done", risk:true, note:"19 of 20 PASS, all 19 seen falling, 21 of 21 perturbations felled their gate. <span class='flag'>Never write it as 20 of 20.</span>"}
+  ]},
+  {n:4, title:"Model 1 — the fine-tuned LLM", items:[
+    {t:"4.1 Pre-stage weights", s:"done", note:"Job 1245620."},
+    {t:"4.2 Leg-4 pilot runs, three folds", s:"done", note:"1274884 <code>es</code>, 1274964 <code>uk</code>, 1281612 <code>it</code>."},
+    {t:"4.2-bis Freeze <code>prereg.md</code>", s:"done", risk:true, note:"md5 <code>e4243e07…</code>. <span class='flag'>Never edit it</span> — <code>G4.14</code> fails on every run at once."},
+    {t:"4.3 Leg-5 runs", s:"prog", note:"<code>es</code> 1286209 complete but failing. Re-generation 1286546 plus folds <code>uk</code> 1286547 and <code>it</code> 1286548 submitted."},
+    {t:"4.4 In-run detectors", s:"done", note:"Plus <code>G4.16</code>, added by D-S4-8."},
+    {t:"4.5 Conditioning diagnostics", s:"done", note:"Runs cleanly. The gates below are what fail."},
+    {t:"<code>G4.7</code> termination defect", s:"done", note:"D-S4-8 fix seen working — job 1286491, six of six pre-declared checks."},
+    {t:"<code>G4.12</code> — why its CE arm reads zero", s:"done", note:"Explained, job 1286553. The shuffle changes at most <b>one of six</b> prefix fields, and for <b>55–64 %</b> of diaries it changes nothing at all. A statement about the check's design, not about the model."},
+    {t:"<code>G4.6</code> — the band, not the merge", s:"done", risk:true, note:"Ruled <b>D-S4-10 (b)</b>. Settled by the <code>D-S4-3</code> alpha sweep (job 1274944, <b>on disk unread since 19 Aug</b>): scaling the adapter down 1000× at a fixed 20,103 positions does <b>not</b> shrink the drift — a 10<sup>-3</sup> floor an order of magnitude above the 1e-4 band. <span class='flag'>The only configuration that passes is an adapter that learned nothing.</span> Ships FAIL as a pre-registration defect. Parity check 1286562–1286565 in flight."},
+    {t:"<code>G4.3</code> — short, with the sign right", s:"prog", note:"Ruled <b>D-S4-9 (b)</b>. Fails 7/7, but CE rises <b>+0.068 to +0.106</b> nats/token every time against a <code>0.15</code> bar that carries <b>no recorded provenance</b>. Base-model baseline 1286556–1286559 submitted — it separates “the bar was too high” from “the fine-tune bought little”. Ships FAIL either way."},
+    {t:"<code>G4.1</code> — the last unexplained gate", s:"prog", risk:true, note:"<span class='flag'>FAIL on all three folds in both legs — never passed anywhere</span>, and the failure direction flips (lower / upper / both) between folds and between epochs of one run. Nothing measured yet. Investigation: <code>Step4_docs/investigation/2026-08-23_G4.1_G4.3_G4.6_G4.12_four_gates_never_passed.md</code>."},
+    {t:"Perturbation battery coverage", s:"prog", note:"Four of fifteen perturbations still owed."},
+    {t:"Ceiling run", s:"todo", note:"Needs <code>bitsandbytes</code>, not installed."}
+  ]},
+  {n:5, title:"Conditioning and population linkage", note:"Closed with a <b>declared exception</b> — Definition of Done 4 of 5, board 34 PASS / 2 FAIL / 0 BLOCKED. Never report it as 5 of 5 or 36 of 36.", warn:true, items:[
+    {t:"5.1 Marginals per country, with provenance", s:"done", note:"<code>marginals_{es,uk,it}.csv</code> and <code>econ_11plus_*.csv</code>."},
+    {t:"5.2 Synthesise the population", s:"done", note:"100,000 persons per fold, no random draw."},
+    {t:"5.3 Build the conditioning prefixes", s:"done", note:"Via the shared encoder."},
+    {t:"5.4 Fix the decoding temperature", s:"done", note:"<code>temperature_calibration.md</code>."},
+    {t:"<code>G5.8</code> FAIL on <code>es</code> and <code>uk</code>", s:"done", note:"The terminal verdict, D-S5-16 (a). A result, not an open item."}
+  ]},
+  {n:6, title:"Transfer — leave one country out", items:[
+    {t:"6.1 Pre-register, in writing", s:"done", note:"Frozen."},
+    {t:"6.2 Build the nulls", s:"done", risk:true, note:"<code>G6.1</code> raked-donor on all three folds; <code>G6.2</code> is six single-donor nulls. <span class='flag'>Never report one without its sibling.</span>"},
+    {t:"6.3 Run the folds", s:"prog", risk:true, note:"Waiting on Step 4.3. <code>G6.3</code> re-pooled at equal country mass — <span class='flag'>new values 14.1839 / 10.1883 / 14.8304 pp</span>."},
+    {t:"6.4 Score", s:"todo", note:"D-S6-2: <code>it</code> is scored against 2008-09 with the gap declared. Must be settled before the <code>it</code> fold is scored."},
+    {t:"6.5 Privacy audit (membership inference)", s:"prog", note:"Jobs 1286305 and 1286311."},
+    {t:"UK-fold split report", s:"todo", note:"Owed by D-S3-14 — 551 UK diaries at <code>strat_hh_type = unknown</code>."}
+  ]},
+  {n:7, title:"Constrained generation and schedules", items:[
+    {t:"7.1 Compile the grammar", s:"done", risk:true, note:"44 of 44 green. <span class='flag'>FINDING 45</span>: enforcing <code>G7.3</code> would reject 28.95 % of the corpus."},
+    {t:"7.2 Throughput comparison", s:"done", note:"Job 1286208."},
+    {t:"7.3 Generate", s:"prog", note:"Jobs 1286259–1286274."},
+    {t:"7.4 Three-model firing-rate report", s:"todo"},
+    {t:"7.5 Unconstrained rejection-sampled control", s:"todo"},
+    {t:"7.6 Decide the chaining rule", s:"todo", risk:true, note:"<span class='flag'>Decision 14</span> — the last one open from the original sixteen."},
+    {t:"7.7 Emit schedules", s:"todo"},
+    {t:"<code>G7.10</code>", s:"todo", note:"No XGrammar back-end yet."},
+    {t:"<code>G7.13</code>", s:"done", note:"Run on the real corpus and seen failing twice."}
+  ]},
+  {n:8, title:"BEM / UBEM simulation", items:[
+    {t:"8.1 Build the archetype IDFs", s:"prog", risk:true, note:"Parameter tables built for all three folds — 24 / 36 / 42 archetypes. <span class='flag'>No IDF exists</span>; five of six geometry and zoning decisions still open."},
+    {t:"8.2 Weather", s:"todo", note:"One zone ruled. Diary-year weather not recommended."},
+    {t:"8.3 Uninjected control campaign", s:"todo", risk:true, note:"<span class='flag'>Runs first, always.</span>"},
+    {t:"8.4 The two probes", s:"todo"},
+    {t:"8.5 Injected campaign", s:"todo", note:"Five times larger — the <code>phi_int</code> five-level sensitivity, 510 archetype-runs per weather specification."},
+    {t:"8.6 Aggregate", s:"todo"},
+    {t:"<code>G8.1</code>–<code>G8.4</code> re-pointed to reproducibility", s:"done", note:"D-S8-1 (a)."}
+  ]},
+  {n:9, title:"Activity-driven end-use loads", items:[
+    {t:"9.1 Activity-to-appliance table", s:"todo", risk:true, note:"<span class='flag'>Do not invent the mapping.</span>"},
+    {t:"9.2 Two-stage trigger", s:"todo"},
+    {t:"9.3 Domestic hot water", s:"todo"},
+    {t:"9.4 Emit end-use load profiles", s:"todo"},
+    {t:"9.5 Aggregate and compare", s:"todo"},
+    {t:"<code>act2</code> precondition", s:"done", note:"Dropped, D-S9-1 (d) — it could never be satisfied."},
+    {t:"<code>G9.4</code> citation", s:"done", note:"Made compound — volume, issue, pages, first author — after FINDING 47."},
+    {t:"<code>G9.11</code>", s:"done", note:"Allowed to FAIL. Zero of four models resolve at three digits."}
+  ]}
+];
+
+const LABEL = {done:"Done", prog:"In progress", todo:"Not started"};
+const KEY = "4j-board-filter";
+let filter = "all";
+try { filter = localStorage.getItem(KEY) || "all"; } catch (e) { filter = "all"; }
+
+function stepStatus(step){
+  const s = step.items.map(i => i.s);
+  if (s.every(x => x === "done")) return "done";
+  if (s.every(x => x === "todo")) return "todo";
+  return "prog";
+}
+
+function keep(item){
+  if (filter === "all") return true;
+  if (filter === "risk") return !!item.risk;
+  return item.s === filter;
+}
+
+function renderSummary(){
+  const all = DATA.flatMap(s => s.items);
+  const c = {done:0, prog:0, todo:0};
+  all.forEach(i => c[i.s]++);
+  document.getElementById("t-done").textContent = c.done;
+  document.getElementById("t-prog").textContent = c.prog;
+  document.getElementById("t-todo").textContent = c.todo;
+  document.getElementById("t-all").textContent = all.length;
+  const m = document.getElementById("meter");
+  m.innerHTML = "";
+  ["done","prog","todo"].forEach(k => {
+    const i = document.createElement("i");
+    i.className = k === "done" ? "d" : (k === "prog" ? "p" : "n");
+    i.style.width = (100 * c[k] / all.length) + "%";
+    m.appendChild(i);
+  });
+}
+
+function renderTrack(){
+  const t = document.getElementById("track");
+  t.innerHTML = "";
+  DATA.forEach(step => {
+    const st = stepStatus(step);
+    const done = step.items.filter(i => i.s === "done").length;
+    const b = document.createElement("button");
+    b.className = "seg";
+    b.dataset.s = st;
+    b.type = "button";
+    b.innerHTML = '<span class="n">' + step.n + '</span>' +
+                  '<span class="bar"></span>' +
+                  '<span class="f">' + done + '/' + step.items.length + '</span>';
+    b.setAttribute("aria-label", "Step " + step.n + ", " + step.title + ", " + LABEL[st]);
+    b.addEventListener("click", () => {
+      const el = document.getElementById("step-" + step.n);
+      if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    t.appendChild(b);
+  });
+}
+
+function renderBoard(){
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  let shown = 0;
+  DATA.forEach(step => {
+    const items = step.items.filter(keep);
+    if (!items.length) return;
+    shown += items.length;
+    const sec = document.createElement("section");
+    sec.className = "step";
+    sec.id = "step-" + step.n;
+
+    const head = document.createElement("div");
+    head.className = "step-head";
+    head.innerHTML = '<span class="step-no">STEP ' + step.n + '</span>' +
+                     '<h2>' + step.title + '</h2>' +
+                     '<span class="pill ' + stepStatus(step) + '">' + LABEL[stepStatus(step)] + '</span>' +
+                     (step.note ? '<p class="step-note' + (step.warn ? ' warn' : '') + '">' + step.note + '</p>' : '');
+    sec.appendChild(head);
+
+    const scroller = document.createElement("div");
+    scroller.className = "scroller";
+    const table = document.createElement("table");
+    const tb = document.createElement("tbody");
+    items.forEach(i => {
+      const tr = document.createElement("tr");
+      if (i.risk) tr.className = "risk";
+      tr.innerHTML = '<td class="item">' + i.t + '</td>' +
+                     '<td class="st"><span class="pill ' + i.s + '">' + LABEL[i.s] + '</span></td>' +
+                     '<td class="note">' + (i.note || "") + '</td>';
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    scroller.appendChild(table);
+    sec.appendChild(scroller);
+    board.appendChild(sec);
+  });
+  if (!shown){
+    board.innerHTML = '<p class="empty">Nothing matches that filter.</p>';
+  }
+}
+
+document.querySelectorAll(".chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    filter = btn.dataset.f;
+    try { localStorage.setItem(KEY, filter); } catch (e) {}
+    document.querySelectorAll(".chip").forEach(b =>
+      b.setAttribute("aria-pressed", String(b.dataset.f === filter)));
+    renderBoard();
+  });
+});
+document.querySelectorAll(".chip").forEach(b =>
+  b.setAttribute("aria-pressed", String(b.dataset.f === filter)));
+
+renderSummary();
+renderTrack();
+renderBoard();
+</script>

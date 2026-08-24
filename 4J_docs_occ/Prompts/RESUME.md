@@ -1,8 +1,357 @@
-#### Last updated: **2026-08-23 (late afternoon) — 🟢 `D-S4-8` RULED (e) + (d) AND APPLIED. `G4.7`'s defect was in `generate()`, not in the model: `Olmo-3-1025-7B` ships no `eos_token_id` in `generation_config.json`, so `transformers` never pads a finished row and a whole batch runs to its slowest member. Fix = one dict key. New companion gate `G4.16`. 🔴 THE REPAIR IS IN THE CODE AND HAS NOT YET BEEN SEEN WORKING — read job `1286491` before anything else.**
+#### Last updated: **2026-08-24 — 🟢 THE NINE FINISHED JOBS ARE READ. `G4.3` IS SETTLED AND IT IS THE BAR: the base model with NO adapter scores `0.0001`-`0.0011` nats/token, inside the pre-declared `0.00`-`0.02` band, so the fine-tune bought the conditioning (x60-x920) and the gap to `0.15` is the threshold's. 🔴 `G4.6`'s CONSEQUENCE IS LARGE AND MY PREDICTION WAS WRONG: parity is 4-19 %, not "high but not perfect" — the merged artefact does NOT generate the same diaries. `G4.7` IS REPAIRED AND RE-SCORED ON `es` (600/600, seen falling). 🔴 `G4.1` STILL UNEXPLAINED, but a SECOND failure mode is now visible. Thresholds FROZEN; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified intact by the job itself.**
 
 ---
 
-## 🔴 2026-08-23 (late afternoon) — READ THIS FIRST
+## 🔴 2026-08-24 — READ THIS FIRST
+
+### The one thing to do next
+
+🔴 **Read the two Leg-5 folds that were still RUNNING.** `uk` `1286547` and `it` `1286548` were at
+6 h 16 / 6 h 07 elapsed when the nine others had finished.
+
+```
+ssh speed "sacct -j 1286547,1286548 --format=JobID,State,Elapsed,ExitCode -X"
+```
+
+They carry `G4.7`/`G4.16`/`G4.1`/`G4.12` on repaired text for `uk` and `it`. 🔴 They **cannot**
+move `G4.3` or `G4.6` — those are computed on the model before generation starts.
+
+### 🟢 `G4.3` — SETTLED BY `D-S4-9`, jobs `1286556`-`1286559`
+
+Base model, **no adapter**, same prompts, same permutation:
+
+| job | fold / leg | base rise | fine-tuned rise | threshold |
+|---|---|---:|---:|---:|
+| `1286556` | es / 5 (Olmo-3-7B) | **`0.000115`** | `0.1062` | `0.15` |
+| `1286557` | es / 4 (OLMo-2-1B) | `0.001073` | `0.0929` | `0.15` |
+| `1286558` | uk / 4 | `0.000684` | `0.0755` | `0.15` |
+| `1286559` | it / 4 | `0.000527` | `0.0682` | `0.15` |
+
+All four land in the **`0.00`-`0.02`** branch pre-registered before the read: 🟢 **the fine-tune
+bought the conditioning and the gap to `0.15` is about the BAR.** The alternative branch
+(`0.07`-`0.10` = the fine-tune added nothing) is **excluded** — the base model is two to three
+orders of magnitude below the fine-tune. `G4.3` still ships **FAIL** as a pre-registration defect,
+`4thJ_step4_thresholds.py` untouched. Outputs `4J_step4/diagnostics_base_g43_leg<L>_<fold>/`.
+🔴 Only `G4.3` is readable from those four files; generation was cut to `1 x 100` and every other
+gate in them is meaningless (they print `G4.4`/`G4.12` FAIL with `nan` ratios — ignore).
+
+### 🔴 `G4.6` — `D-S4-10` RETURNED AND THE REGISTERED PREDICTION WAS WRONG
+
+**Control first, as the decision required: `48/48` token-identical on ALL FOUR runs.** No run is
+`VOID`. Then the measurement:
+
+| job | fold / leg | merged == unmerged | first divergence min / median / max |
+|---|---|---:|---|
+| `1286562` | es / 5 | **`9/48` = 18.75 %** | 6.2 % / 10.5 % / 93.8 % |
+| `1286563` | es / 4 | **`3/48` = 6.25 %** | 6.3 % / 11.9 % / 54.3 % |
+| `1286564` | uk / 4 | **`2/48` = 4.17 %** | 7.8 % / 15.9 % / 81.9 % |
+| `1286565` | it / 4 | **`4/48` = 8.33 %** | 9.5 % / 17.2 % / 96.4 % |
+
+🔴 **I predicted "parity high but not perfect". Parity is LOW.** And the divergence is not a tail
+artefact — the median split point is **10-17 % of the way into the diary**. So `G4.6`'s FAIL is
+**not** cosmetic: the merged artefact does not reproduce the text of the adapter it was evaluated
+as. 🔴 This does **not** show the merge is wrong — it bounds the merge's behavioural effect over
+**48 prompts, in bf16** (the shipping dtype, deliberately NOT `D-S4-1`'s float32 basis). Combined
+with the `1274944` alpha sweep, `G4.6` ships FAIL **and** the FAIL now has a demonstrated
+consequence. Outputs `4J_step4/g46_merge_parity_leg<L>_<fold>.json`.
+
+### 🟢 `1286546` — Leg-5 `es` re-generated after the `D-S4-8` `G4.7` repair
+
+`eos_token_id=100257` confirmed passed to `generate()` in the log.
+
+| gate | result |
+|---|---|
+| `G4.7` | 🟢 **PASS 600/600 terminated**, and **SEEN FALLING** (594/600 under `strip_eor_gen`). Credit names fold `es` only (`D-S4-6` (a)). |
+| `G4.16` | 🟢 **PASS** (600/600 contain `<eor>`, **0 carry more than one**) and SEEN FALLING. 🔴 **The `G4.7`/`G4.16` PAIR IS WORTHLESS ON THIS FOLD** — `strip_eor_gen` felled `G4.16` too, because each diary carries exactly one `<eor>` so containment adds nothing. The `D-S4-8` discrimination matrix cannot be applied here. |
+| `G4.4` | 🟢 **FAIL -> PASS** (evening `0.819`, morning `0.544`). 🔴 NOT predicted and NOT yet attributed to the repair. |
+| `G4.3` | FAIL `0.1062` — unchanged, as expected (model-side). |
+| `G4.12` | FAIL, CE rise `0.0020`, MI drop `0.102`. |
+| `G4.1` | **FAIL** — see below. |
+| coverage clause | 🔴 **FAIL** — `G4.7` passes at baseline and **no `genperturb` perturbation fells it**. A defect of the probe, not of the model. |
+
+`prereg.md` md5 re-verified **by the job itself**: `e4243e07cdd80c9c846b91f40e3e8c45`.
+
+### 🔴 `G4.1` — the only unexplained gate, and a NEW lead
+
+Two implementations of `G4.1` fail for **two different reasons** and this had not been noticed:
+
+* the **battery** fails it on the **band**, with the direction flipping `lower` / `upper` / `both`;
+* `4thJ_step4_g47_coverage.py` and `4thJ_step4_genperturb.py` fail it on
+  **`n_scorable_strata = 0`** — `V4.a`, no stratum reaches `N >= 100` on **both** sides.
+
+🔴 **Not measured, not a conclusion.** But before hypothesising about the band, establish **which
+`G4.1` produced each recorded FAIL across the seven scored runs.** A gate failing for a
+population-support reason in one script and a variance reason in another is not one gate.
+
+### 🔴 Still open
+
+* `G4.1` — the only unexplained gate. Start from the two-implementations lead above.
+* `uk` `1286547` / `it` `1286548` unread.
+* Every gate above still ships **FAIL**. `4thJ_step4_thresholds.py` frozen — all folds scored.
+* Board: `4thJ_CHECKLIST.html` — https://claude.ai/code/artifact/9e07da64-8e57-4e01-9c89-3fffd2a0ceaf
+
+---
+
+
+## ⚪ SUPERSEDED (written 2026-08-23 night)
+
+#### Last updated: **2026-08-23 (night) — 🟢 THREE OF THE FOUR GATES ARE DISPOSED OF. `G4.12` EXPLAINED (job `1286553`); `G4.3` + `G4.6` RULED BY THE AUTHOR, BOTH OPTION (b), BOTH EXECUTED — EIGHT read-only jobs `1286556`-`1286559` and `1286562`-`1286565`. 🔴 `G4.6` IS SETTLED AND IT IS OUR BAND THAT IS WRONG: the `D-S4-3` alpha sweep (job `1274944`, ON DISK SINCE 19 AUGUST, unread) shows the drift DOES NOT SHRINK when the adapter is scaled down 1000x — a `10^-3` floor an order of magnitude ABOVE the `1e-4` band, and THE ONLY CONFIGURATION THAT PASSES IS AN ADAPTER THAT LEARNED NOTHING. 🔴 `G4.1` IS THE ONLY GATE STILL UNEXPLAINED. Thresholds FROZEN; every gate above still ships FAIL.**
+
+---
+
+## 🔴 2026-08-23 (night) — READ THIS FIRST
+
+### The one thing to do next
+
+🔴 **Read the eleven jobs. All were `PENDING` when this was written — nothing below is a result yet.**
+
+```
+ssh speed "sacct -j 1286546,1286547,1286548,1286556,1286557,1286558,1286559,1286562,1286563,1286564,1286565 --format=JobID,State,Elapsed,ExitCode -X"
+```
+
+| jobs | what | reads out |
+|---|---|---|
+| `1286546`/`47`/`48` | Leg-5 re-generation after the `D-S4-8` `G4.7` repair | `G4.1` and `G4.12` on repaired text. 🔴 Cannot move `G4.3` or `G4.6`. |
+| `1286556`-`1286559` | `D-S4-9` — `G4.3` base-model baseline, no adapter | 🔴 **`G4.3` ONLY.** Generation was cut to the minimum; every other gate in those files is meaningless. |
+| `1286562`-`1286565` | `D-S4-10` — `G4.6` merged-vs-unmerged generation parity | whether `G4.6`'s FAIL has any behavioural consequence. 🔴 Check the two-unmerged-passes control first: if it is not identical, the run is `VOID`. |
+
+Registered before the read, so it cannot be re-framed afterwards: `G4.1` still FAIL; `G4.12` CE arm
+still ≈ 0; `G4.3` baseline near `0.00`-`0.02` → the bar is the problem, near `0.07`-`0.10` →
+🔴 **the fine-tune added little and the FAIL is about the model**; parity high but **not** perfect.
+
+### 🟢 What was closed since the last block
+
+**`G4.12` — explained** (job `1286553`, CPU, 4 s). `stratum_key` is `PREFIX_FIELDS` **minus**
+`strat_econ_status`, so the shuffle changes **at most one of six** prefix fields, and for
+**55.42 %-63.80 %** of pairs it changes **nothing at all** — the model's input is byte-identical and
+the gate asks it to have noticed. 🔴 My prediction `P3` was **mis-specified** (cell-level, measured
+`0.00 %`) and is left standing in the record; the pair-level figure that bears on the gate is the one
+above, and the effect is **larger** than `P3` would have caught.
+
+**`G4.3` and `G4.6` — ruled (b) and executed.** Decision file, now closed:
+`IMP/docs/DONE/2026-08-23_D-S4-9_D-S4-10_G4.3_and_G4.6_terminal_failures.md`.
+
+🔴 **`G4.6` is settled, and two things this project already knew had been missed.** §3.3 of the
+investigation asked whether `1e-4` is defensible for a **bf16** merge. Wrong in both halves:
+`FINDING 27` had already established the trainer calls `model.float()` **before** the measurement (it
+is float32), and `FINDING 27b` had already established the `0.000e+00` repeat floor compares the same
+kernel against itself and **bounds nothing**. 🔴 **And the measurement needed to rule it already
+existed** — the `D-S4-3` alpha sweep, job `1274944`, run 2026-08-19, sitting at
+`4J_step4/g46_alpha_sweep_1274944.json` marked `REPORTED, NOT ACTED ON` for four days:
+
+| `alpha` | `max_logit_diff` | at `1e-4` |
+|---:|---:|---|
+| `1` | `3.471e-04` | FAIL |
+| `0.1` | `1.034e-03` | FAIL |
+| `0.01` | **`1.238e-03`** | FAIL |
+| `0.001` | `6.428e-04` | FAIL |
+| `0` | **`0.000e+00`** | ✅ PASS |
+
+Fixed 20103 positions on every row, so position count is not the driver. **The drift does not shrink
+as the adapter shrinks.** `G4.6` at `1e-4` is **unsatisfiable for any adapter that trained**; it ships
+FAIL as a **pre-registration defect**, with the sweep as the evidence. 🔴 The ruling's stated
+rationale (bf16 artefact, extreme-value statistic) is superseded by this and must **not** be written
+up as ruled — the decision is unaffected.
+
+🔴 **The rule I broke: check what has already been measured before designing a measurement.**
+
+### 🔴 Still open
+
+* **`G4.1` — the only unexplained gate left.** Why does the failure direction flip
+  (`lower` / `upper` / `both`) between folds and between epochs of one run? Nothing measured.
+* 🔴 **Every gate above still ships FAIL.** `4thJ_step4_thresholds.py` is frozen — all folds are
+  scored, so no outcome may edit it. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` intact.
+* Board: `4thJ_CHECKLIST.html` — https://claude.ai/code/artifact/9e07da64-8e57-4e01-9c89-3fffd2a0ceaf
+
+---
+
+
+---
+
+## ⚪ SUPERSEDED (written 2026-08-23 late evening)
+
+### The one thing to do next
+
+🔴 **Read the three Leg-5 jobs.** They were still `PENDING` when this was written.
+
+```
+ssh speed "sacct -j 1286546,1286547,1286548 --format=JobID,State,Elapsed,ExitCode -X"
+```
+
+`1286553` is **done** — `COMPLETED` in 4 seconds, exit `0:0`, and its result is below.
+
+### 🔴 The second investigation, and the finding that reframes Step 4
+
+`Step4_docs/investigation/2026-08-23_G4.1_G4.3_G4.6_G4.12_four_gates_never_passed.md`
+
+The `G4.7` investigation recorded four other gates as FAILing on Leg-5 `es` and declined to take them
+up. Taken up now, and the first thing found is not what the numbers looked like from one fold:
+
+🔴 **`G4.1`, `G4.3`, `G4.6` and `G4.12` FAIL on ALL THREE LOCO FOLDS IN BOTH LEGS — seven of
+seven scored runs. They have never passed anywhere.** Not an `es` problem. Not a Leg-5 problem. Their
+values barely move across a **7x change of backbone size**, which is not what a model defect looks
+like. 🔴 Do **not** describe them as another consequence of `G4.7` — that defect was
+leg-specific and these are not.
+
+Two more things settled there before any hypothesis was formed:
+
+* **`G4.3` and `G4.12` fail with the RIGHT SIGN.** The model **is** conditioning on the prefix; it
+  just does not reach `0.15` nats/token. `G4.3` achieves `0.068`-`0.106`.
+* **Only two of the four can be moved by the re-runs.** `G4.1` and `G4.12` are computed over
+  generated text; `G4.3` and `G4.6` are computed on the **model** and are printed before generation
+  even starts. 🔴 Do not wait on `1286546`-`48` for those two, and do not report them as
+  re-scored.
+
+### 🟢 `G4.12` IS EXPLAINED — job `1286553`, measured not asserted
+
+`stratum_key` is `PREFIX_FIELDS` **minus `strat_econ_status`** (`diagnostics.py:97` against
+`thresholds.py:88`). So `G4.12`'s within-stratum shuffle re-pairs a prefix with a body from a diary
+that agrees on **five of the six** prefix fields. Measured across 200 permutations on all four scored
+runs, CPU-only, reading files that already existed:
+
+| prediction | result |
+|---|---|
+| the five key fields differ in **zero** pairs | ✅ PASS, every run |
+| max prefix Hamming distance `<= 1` | ✅ PASS — exactly **1 of 6** |
+| exact rng-free figure agrees with the simulation | ✅ PASS — to `0.002` |
+| `P3` whole cells frozen to one econ status | ⚪ **NOT SUPPORTED — 0.00 %** |
+
+🔴 **`P3` was MY mis-specification and it is left standing in the record.** It asked a
+**cell-level** question when the quantity that bears on the gate is **pair-level** — and the script
+measured that too: **`55.42 %`-`63.80 %` of the pairs the shuffle makes leave the prefix
+byte-identical.** For roughly six diaries in ten, `G4.12` hands the model a different person's day
+behind an input that has not changed by one character, then requires cross-entropy to move `0.15`
+nats/token — the same amount asked of `G4.3`, which permutes the **whole** prefix and gets
+`0.068`-`0.106`. The effect is **larger** than the wrong prediction would have caught, which is the
+reason the wrong prediction stays visible instead of being swapped for the number that worked.
+
+🔴 **What this is NOT:** it is a statement about the **check's design**, not a finding that the
+model conditions correctly, and it authorises **no threshold change**.
+
+Also surfaced, not looked for: all four generated sets are **6 cells of exactly 100, zero
+singletons** (`--gen-stratified-k 6 x 100`). 🔴 So `G4.12`'s clean `stuck = 0` line is a
+property of the **sampling design** and is **not** evidence that the strata are well populated.
+
+### 🔴 What is still unexplained — three separate questions, never one decision
+
+| gate | the open question | moved by the re-runs? |
+|---|---|---|
+| `G4.1` | why does the failure direction **flip** — `lower` / `upper` / `both` — between folds and between epochs of one run? Its statistic `at_home_share` is itself a recorded ASSUMPTION (`thresholds.py:19-26`) | yes |
+| `G4.3` | `0.15` is the **only** band in this group with **no recorded justification** in the threshold file. Search the val doc, the step doc and `prereg.md` before concluding there is none | 🔴 no |
+| `G4.6` | is `1e-4` defensible for a **bf16** LoRA merge, where `max` over 16-20k positions is an extreme-value statistic? Drift is **real** — repeat-noise floor `0.000e+00` | 🔴 no |
+
+🔴 Put them to the author **separately**. They do not share a cause and must not be bundled.
+
+### 🔴 The constraint on all of it
+
+`4thJ_step4_thresholds.py` says at its head that **nothing in it may be changed after the first fold
+is evaluated**. Every fold has been evaluated. The admissible outcomes are: the gate stands and the
+FAIL is the reported result; or the gate is **declared** defective and reported as a defect of the
+**check**; or a **new, additive** gate measures the thing alongside the old one, with the old one
+still failing in the record. Every one of those is an **author** decision.
+
+`prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`.
+
+### Jobs in flight
+
+| job | what | state |
+|---|---|---|
+| `1286546` | re-generate Leg-5 `es` on the existing adapter (generation pass, not a retrain) | PENDING |
+| `1286547` | Leg-5 fold `uk` | PENDING |
+| `1286548` | Leg-5 fold `it` | PENDING |
+| `1286553` | `G4.12` shuffle extent, CPU, read-only | ✅ COMPLETED `00:00:04` |
+
+### Progress board
+
+The checklist is now an HTML board, not a Markdown file: `4thJ_CHECKLIST.html` in `4J_docs_occ/`
+(published at `https://claude.ai/code/artifact/9e07da64-8e57-4e01-9c89-3fffd2a0ceaf`). The `.md`
+version was deleted at the author's instruction — there is only one.
+
+---
+
+## ⚪ SUPERSEDED (written 2026-08-23 evening, before the second investigation)
+
+### The one thing to do next
+
+🔴 **Read the three jobs, in this order:** `1286546` → `1286547` → `1286548`.
+
+```
+ssh speed "sacct -j 1286546,1286547,1286548 --format=JobID,JobName%16,State,Elapsed,ExitCode -X"
+```
+
+They were all `PENDING` when this was written. **Do not assume they ran.**
+
+### What is settled, and must not be re-litigated
+
+🟢 **`D-S4-8` is CLOSED.** Job `1286491` `COMPLETED` in `00:04:34`, exit `0:0`, and every one
+of the six checks that were **pre-declared in the script before it was first run** PASSes:
+
+| # | Check | Result |
+|---|-------|--------|
+| **0** | control **reproduces** the failure | ✅ `CONTROL` `2/16` terminate, **13** texts with >1 `<eor>`, and 🔴 **both** batches at **zero** length spread (b0 all exactly `328` new tokens, b1 all exactly `515`). The comparison is **valid**, not void |
+| 1 | FIXED terminates | ✅ `16/16` |
+| 2 | fingerprint gone | ✅ **0** texts with >1 `<eor>` |
+| 3 | lengths decouple | ✅ spread `{b0: 191, b1: 341}` vs `{0, 0}`; 14 of 16 rows come back padded |
+| 4 | EOS never fires alone | ✅ `n_eos_emitted` = **0** |
+| 5 | `G4.16` unmoved | ✅ `contains <eor>` **16/16 in BOTH arms** |
+
+Check 0's two zeros **are** the mechanism, printed rather than argued: with no `eos_token_id` on the
+generation config, `transformers` never installs the finished-row mask and every row in a batch runs
+to its slowest member.
+
+🔴 **Scope, stated as the script states it.** A generation-side demonstration on the `es`
+adapter, 16 sequences at `gen_batch 8`. It re-scores **no gate**, is **not** a fold result, and says
+**nothing** about `G4.1`. `G4.7` is repaired **in the harness**; it has not yet been re-scored as a
+gate on any fold. That is what `1286546` is for.
+
+### 🔴 A SECOND COPY OF THE DEFECT WAS FOUND AND FIXED
+
+`D-S4-8` patched `generate_samples` in `4thJ_step4_train.py`. It did **not** patch
+`4thJ_step4_diagnostics.py`, which has its own `generate()` call — and that is the one that writes
+`generated_<run_type>_<fold>.jsonl`, the file `4thJ_step4_genperturb.py` reads. Left alone it would
+have carried glued-on second diaries into **every generation-side perturbation** on all three folds.
+
+The identical two lines were added, identically guarded, with `stop_kw` copied before mutation so the
+single-id branch is untouched. Backup `4thJ_step4_diagnostics.py.bak_ds48` taken and verified
+non-empty and md5-identical **before** the edit (`89cc906c0fe10548e3dd3f99df72ea49`); patched file
+byte-compiles; diff is **17 lines added, 0 removed**.
+
+🔴 The lesson is the `FINDING 56` one again, one level out: a fix applied at the site where the
+defect was *diagnosed* is not the same as a fix applied everywhere the defect *lives*. Before closing
+any harness fix, grep for every other call site.
+
+### The three submitted jobs
+
+| Job | What | Notes |
+|-----|------|-------|
+| **`1286546`** | re-generate Leg-5 `es` | 🔴 a **generation pass on the EXISTING adapter**, not another eleven hours. `--out` redirected to `diagnostics_leg5_ds48/` so the **failing** Leg-5 evidence in `diagnostics_leg5/` survives as the control (FINDING 8's class). Then runs `4thJ_step4_g47_coverage.py` (`G4.7`'s coverage credit **and** its discrimination arm, `D-S4-6` (a): the credit names the fold and does **not** transfer) and the generation-side battery |
+| **`1286547`** | Leg-5 fold `uk` | full training. Was held on `D-S4-8`; picks the fix up from the uploaded trainer automatically |
+| **`1286548`** | Leg-5 fold `it` | ditto. 🔴 `it` is the small shard (31,560 / 97 strata) and was the fold that diverged in Leg-4 — read its epoch-1 `G4.1` against that history, not fresh |
+
+Script: `/speed-scratch/o_iseri/4thJ_step4_leg5_regen_es.sh`.
+
+**Pre-declared before the runs, so it cannot be adjusted after:** `G4.7` `600/600`, `G4.16` `600/600`,
+`n_more_than_one_eor` `0`.
+
+### 🔴 What is NOT fixed — say this every time `G4.7` is mentioned
+
+* **`G4.1` is not downstream of `G4.7`** and was shown so before the fix existed: truncating at the
+  first `<eor>` makes it **worse**, `1.456` → `1.614`. It is predicted to still FAIL on the
+  re-generated `es` sample.
+* **`G4.6`, `G4.3` and `G4.12`** are likewise still open on `es`.
+* Leg-4's `600/600` remains what `FINDING 56` says it was: a **model-repo default covering for a
+  broken harness**. Never quote it as evidence the harness worked.
+
+`prereg.md` untouched throughout, md5 `e4243e07cdd80c9c846b91f40e3e8c45` — never edit it or `G4.14`
+fails on every run at once. `G4.7`'s own function, threshold and arithmetic are byte-identical to what
+they were before the investigation opened.
+
+Closed investigation, kept for its proof and its six checks:
+`Step4_docs/investigation/DONE_2026-08-23_G4.7_generation_does_not_terminate.md`.
+
+---
+
+## ⚪ SUPERSEDED (written 2026-08-23 late afternoon, before `1286491` was read)
 
 ### The one thing to do next
 
