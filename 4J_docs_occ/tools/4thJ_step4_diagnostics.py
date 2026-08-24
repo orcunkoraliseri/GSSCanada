@@ -253,12 +253,20 @@ def main():
     ap.add_argument("--gen-batch", type=int, default=8)
     ap.add_argument("--ce-n", type=int, default=256)
     ap.add_argument("--max-len", type=int, default=1280)
+    # D-S4-12 arm (b), author ruling 2026-08-24. Additive: the default IS TH.SEED, so
+    # every existing invocation is byte-identical. A second seed exists only to
+    # QUANTIFY the sampling spread of G4.4, never to pick a better-looking run.
+    ap.add_argument("--seed", type=int, default=TH.SEED,
+                    help="sampling seed; default TH.SEED, the frozen value")
     ap.add_argument("--out", default=os.path.join(STEP4, "diagnostics"))
     args = ap.parse_args()
 
     os.makedirs(args.out, exist_ok=True)
-    rng = random.Random(TH.SEED)
-    torch.manual_seed(TH.SEED)
+    rng = random.Random(args.seed)
+    torch.manual_seed(args.seed)
+    if args.seed != TH.SEED:
+        print("🔴 SEED OVERRIDE: %d (frozen TH.SEED is %d). This run is a "
+              "SPREAD MEASUREMENT, not a gate verdict." % (args.seed, TH.SEED))
 
     # V4.h -- say which fold and which held-out country BEFORE any verdict
     print("=" * 78)

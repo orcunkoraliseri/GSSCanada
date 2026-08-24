@@ -2,7 +2,140 @@
 
 ---
 
+### 🟢 2026-08-24 — JOB 1286614 COMPLETED: D-S4-12 (a+b) + D-S4-13 ALL THREE ANSWERED; D-S4-14 RULED (a)
+
+Job `1286614`, fold `es`, 00:49:01, COMPLETED. Log
+`/speed-scratch/o_iseri/4J_s4_ds412_13_1286614.out`.
+`prereg.md` md5 re-verified `e4243e07cdd80c9c846b91f40e3e8c45` (matches the sidecar);
+`4thJ_step4_thresholds.py` md5 `724b558f2fb46357c8bba2838adb5451`. Both FROZEN, untouched.
+
+**ARM (a) — G4.4 SCORER IS STABLE.** Text held fixed, scorer re-run: the pre-repair
+set re-reads evening `0.8192770743879173` / morning `0.5440718741662449`, sixteen digits
+identical to `diagnostics_leg5/conditioning_diagnostics_primary_es.json` lines 37/45.
+🔴 The printed `SCORER NOT STABLE` line in the log is WRONG and must never be quoted:
+`PRED_RATIO = 0.544` in `4thJ_step4_ds412_g44_rescore.py` was copied out of the MORNING
+field and pre-registered as the EVENING one. The defect was in my prediction, not in the
+code. No swap, no repair, and no previously reported G4.4 verdict changes.
+Artefact: `4J_step4/ds412_arm_a_g44_scorer_stability_es.json`.
+
+**ARM (b) — G4.4 IS SEED-SENSITIVE, and this one is real.** Everything constant except
+`TH.SEED` -> `20260824` (additive `--seed` flag, default is still the frozen value and
+an override prints a red SPREAD-MEASUREMENT banner):
+evening `0.8193` -> `0.9610`, spread **0.14175**; morning `0.5441` -> `0.5823`, spread
+`0.03826`. Pre-registered expectation was `< 0.10`, so evening MISSES it by 1.4x while
+morning clears it. Real reference 54,114 diaries, 600/600 scorable in both generations.
+Artefacts: `4J_step4/ds412_arm_b_g44_seed_spread_es.json`,
+`4J_step4/diagnostics_ds412_seed20260824/`.
+
+**D-S4-14 RULED (a) BY THE AUTHOR (2026-08-24)** — declare the dispersion, change
+nothing. Decision doc `IMP/docs/2026-08-24_D-S4-14_G4.4_seed_sensitivity.md`, §5 filled
+by the author. Binding form:
+- 🔴 Every G4.4 evening ratio ships as a BAND, never a point: `es` evening
+  **`0.819-0.961 (2 seeds)`**.
+- The paper states the evening window carries a stochastic sensitivity of **0.142** at
+  N=600 against **0.038** for the morning control.
+- Passing margin preserved: all folds, all seeds, `0.54-0.96` against the pre-registered
+  `>= 0.50` (`G4_4_MIN_MI_RATIO`), margin larger than the noise.
+- Precedent: same shape as the Step 5 ruling where fidelity ships as a band per fold.
+  NO threshold move, NO post-hoc basis change, NO extra GPU.
+- `uk` (`0.722` / `0.535`) and `it` have ONE seed each: their band is a point and must be
+  reported as such, not silently widened by the `es` spread.
+
+**D-S4-13 — float32 merge parity: CAUSE C1 CONFIRMED (bf16 truncation, NOT a merge defect).**
+Same 48 held-in prompts, same adapter, `--dtype float32` (additive flag; default stays
+`bfloat16`):
+- control unmerged vs unmerged 48/48 identical -> the harness is deterministic;
+- merged vs unmerged **48/48 identical, 0 diverged -> PARITY**.
+Against the bf16 run (`4J_step4/g46_merge_parity_leg5_es.json`, PRESERVED, not
+overwritten): merged vs unmerged **9/48 identical, 39 diverged, PARTIAL**. So the merge
+arithmetic is sound and the divergence is bf16 rounding alone.
+Artefact: `4J_step4/g46_merge_parity_leg5_es_float32.json`.
+🔴 This changes NO verdict: `G4.6` is still FAIL (`max_logit_diff` 2.661e-04 vs 1e-04 on
+`uk`, repeat-noise floor 0.000e+00). And per D-S4-13 item (ii) the UNMERGED adapter is
+what is scored and what ships everywhere, so no merged artefact is ever evaluated or
+released.
+
+**STILL FAILING, untouched by any of the above:** `G4.1`, `G4.3`, `G4.6`, `G4.12` on all
+three folds, plus the coverage clause on `es`/`uk` (`G4.7` passes and no lever fells it).
+
 ## 🔴 2026-08-24 — READ THIS FIRST
+
+### 🟢 2026-08-24 — D-S4-12 + D-S4-13 SUBMITTED AS ONE JOB: `1286614` (fold `es`)
+
+`sbatch 4thJ_step4_ds412_ds413_es.sh` → **job 1286614**, `4J_s4_ds412_13_1286614.out`.
+Three measurements, none of them a gate verdict, nothing re-trained, adapter read-only:
+
+1. **`D-S4-12` arm (a)** — `G4.4` SCORER STABILITY, CPU, no model. Re-scores the KEPT
+   pre-repair set `diagnostics_leg5/generated_primary_es.jsonl` and then the post-repair
+   `diagnostics_leg5_ds48/` one. **Pre-registered: evening ratio 0.544 ± 0.01.**
+   → `4J_step4/ds412_arm_a_g44_scorer_stability_es.json`
+2. **`D-S4-12` arm (b)** — SAMPLING SPREAD. Re-generates 600 from the SAME Leg-5 adapter
+   under a DECLARED second seed **20260824** into `diagnostics_ds412_seed20260824/`, then
+   puts both seeds through one scorer. **Pre-registered: spread < 0.10** (< 0.10 leaves H1,
+   the `eos_token_id` repair, as the explanation of the FAIL → PASS).
+   → `4J_step4/ds412_arm_b_g44_seed_spread_es.json`
+3. **`D-S4-13`** — `G4.6` merge parity in **float32** on the SAME 48 prompts.
+   → `4J_step4/g46_merge_parity_leg5_es_float32.json` (the bf16 file is NOT overwritten).
+   Restored parity = C1 (bf16 truncation); still diverging = C2 (structural merge defect).
+
+**`D-S4-13` part (ii) is a POLICY, not compute, and is adopted now: the UNMERGED adapter is
+what is scored and what ships, everywhere.** No merged artefact is evaluated or released.
+
+Edits, all ADDITIVE, backups verified non-empty first:
+- `4thJ_step4_diagnostics.py` (+`.bak_ds412`) — new `--seed`, **default `TH.SEED`**, so every
+  existing invocation is unchanged; an override prints a red SPREAD-MEASUREMENT banner.
+- `4thJ_step4_g46_merge_parity.py` (+`.bak_ds413`) — new `--dtype`, **default `bfloat16`**.
+- NEW `4thJ_step4_ds412_g44_rescore.py` — arm (a)/(b) scorer, `--mode stability|spread`.
+🔴 `4thJ_step4_thresholds.py` and `prereg.md` untouched; the job prints both md5s at the end.
+
+
+### 🟢 2026-08-24 — D-S4-11 RULED (i); LEG-5 `uk` (1286547) COMPLETED
+
+- **`D-S4-11` = (i).** The TRAINER's `gate_g4_1` (`4thJ_step4_train.py:638`, real side `real_ref`,
+  54,114 diaries, 6 scorable strata) is the **canonical** `G4.1`. The **SEVENTEEN** perturbation-side
+  verdicts (5 levers x 3 folds + 2 in `g47_coverage_es.json`, all `n_scorable_strata = 0`) are
+  **`NOT COMPUTED`**, never FAIL. The four levers naming `G4.1` are **UNDEMONSTRATED** (declared
+  limitation). (iii) recorded too: the step doc never said which real set.
+- **The perturbation side is NOT re-pointed at `real_ref`** — basis change after scoring. Ruled NO.
+- **`1286547` (`uk`) COMPLETED 2026-08-24 09:00.** `G4.7` **PASS 600/600** at all three epochs and
+  `G4.16` **PASS 600/600, 0 with >1 eor** — the `D-S4-8` repair holds on `uk`. `G4.4` **PASS**
+  (evening 0.722 / morning 0.535). `G4.1` FAIL on all 3 epochs (real, 6 strata; ep2 1 below / 3
+  above, worst 0.707/2.293). `G4.3` FAIL, `G4.6` FAIL (max_logit_diff 2.661e-04 vs 1e-04, repeat
+  noise floor 0.000 so the drift is real), `G4.12` FAIL (CE rise 0.0060 vs 0.15). Coverage clause
+  **FAIL** — `G4.7` passes and was never felled. `prereg.md` md5 verified intact.
+- All three folds are now closed on the repaired harness.
+
+
+### 🟢 2026-08-24 (morning) — AUTHOR RULED ALL THREE `(a)`; `D-S4-11` AUDIT IS DONE
+
+Rulings recorded in `IMP/docs/2026-08-24_D-S4-11_D-S4-12_D-S4-13_...md`:
+`D-S4-11` (a) source audit first · `D-S4-12` (a) both arms with registered predictions ·
+`D-S4-13` (a) float32 parity + ship the UNMERGED adapter. Order: audit locally, then ONE
+combined sbatch for 12+13 on fold `es`. Both frozen files untouched.
+
+🔴 **`D-S4-11` AUDIT RESULT — `G4.1` IS SCORED AGAINST TWO DIFFERENT REAL SETS.**
+Full report: `IMP/docs/2026-08-24_D-S4-11_AUDIT_RESULT_G4.1_two_real_sides.md`.
+Same thresholds, same 5-field stratum key, **different real side**: the trainer
+(`4thJ_step4_train.py:638`) compares against `real_ref` = **54,114** diaries (166 strata reach
+N>=100 → **6 scorable**); `genperturb.py:65` / `g47_coverage.py` compare against `heldin_val` =
+**5,520** diaries → **ZERO** strata clear the floor → V4.a FAILs the gate before any variance is
+computed. **SEVENTEEN recorded `G4.1` FAILs have `n_scorable_strata = 0` and are VACUOUS** — 5 levers x 3
+folds in `genperturb_{es,uk,it}.json` plus 2 in `g47_coverage_es.json`. EVERY fold, EVERY lever. A `FINDING 56` case: the gate fell, every
+time, for the wrong reason. Consequence: the four `genperturb` levers that name `G4.1`
+(`modal_day`, `duplicate_500` must_fail; `null`, `within_stratum_shuffle` must_stay_clean) are
+**UNDEMONSTRATED** — `must_fail` was satisfied by V4.a, `must_stay_clean` was already violated at
+baseline. 🟢 **NO trainer-side number moves**; `4thJ_step4_g41_seedfloor.py` imports the trainer's
+function so it is on the good side. AWAITING the author's choice between (i) trainer canonical +
+re-label the seven as NOT COMPUTED [recommended], (ii) perturbation canonical → `G4.1` ships
+BLOCKED everywhere, (iii) gate under-specified = a finding. Re-pointing the perturbation side at
+`real_ref` is free but is a BASIS CHANGE after folds were scored — **not done, needs an explicit
+ruling.**
+
+🟢 **`1286548` (`it`) COMPLETED 06:41** — `G4.1` FAIL / FAIL / **PASS** on 6 strata; the epoch-2
+PASS is the FIRST clean `G4.1` on any fold. 🔴 **`1286547` (`uk`) STILL RUNNING** (9 h 25),
+`runs_leg5/leg5_primary_fold_uk/` still empty.
+
+**NEXT:** write + submit the combined `D-S4-12` / `D-S4-13` sbatch (fold `es`, existing adapter).
 
 ### The one thing to do next
 
@@ -5449,3 +5582,56 @@ The corpus that existed has been superseded by its own gate battery; **the rebui
 re-run battery are in flight and have reported nothing.** Step 3 is not DONE until Definition-of-Done
 item 6 can be ticked from job 1257441's output, and **a corpus that exists is still not a corpus that
 passed.**
+
+## 2026-08-24 — D-S4-15 RULED (a) AND SUBMITTED
+`G4.1` sampling-noise floor. Doc moved to `IMP/docs/DONE/2026-08-24_D-S4-15_G4.1_the_last_unexplained_gate.md`.
+`tools/4thJ_step4_g41_seedfloor.py` (md5 `409945ba930a72900d7c8a7a1ae9bf38`) shipped to Speed and run for the FIRST time.
+Jobs: **1286631 `es` · 1286632 `uk` · 1286633 `it`**, each on the LEG-5 adapter
+`/speed-scratch/o_iseri/4J_step4/runs_leg5/leg5_primary_fold_<c>/adapter`, `--gen-n 600`, five source-fixed seeds
+`13,101,1009,7919,104729`. No training: one adapter loaded once, so weight divergence is zero by construction and
+the spread is a LOWER BOUND on two trained replicates — quote it as a lower bound, never as "the" spread.
+🔴 IT IS NOT A VERDICT FOR ANY FOLD (`is_a_verdict_for_any_fold: false` in its own JSON). It is a RESOLUTION printed
+beside the `G4.1` readings (`es` 1.456, `uk` 2.293, `it` ep2 PASS — the only clean one; the floor tests whether that
+PASS survives seed variation). Band `0.80`–`1.25` UNCHANGED; `4thJ_step4_thresholds.py` and `prereg.md`
+(md5 `e4243e07cdd80c9c846b91f40e3e8c45`) untouched and FROZEN.
+Output: `/speed-scratch/o_iseri/4J_step4_g41floor_<jobid>.out`.
+
+🔴 **1286631/32/33 ARE VOID — DO NOT READ THEM.** All three exited `0:0` in ~48 s having done NOTHING: the
+launcher passed `--leg 4`, and `4thJ_step4_g41_seedfloor.py:132` reads `MODEL_FOR["pilot"]` whenever the leg is 4,
+i.e. the 1B `allenai/OLMo-2-0425-1B`. The 7B Leg-5 adapter then failed `PeftModel.from_pretrained` on every layer
+(`shape [32, 4096]` vs `[32, 2048]`) — and the job still reported SUCCESS because the `.sh` had no `|| exit 1`
+after the python call, so it walked on to the `md5sum` and returned 0. A `FINDING 56`-class trap: a green exit code
+produced by the harness, not by the work.
+Fixed additively in `tools/4thJ_step4_g41_seedfloor.sh` (backup `.bak_g41fix` verified non-empty): `--leg 4` → `--leg 5`,
+default adapter → `runs_leg5/leg5_primary_fold_<c>/adapter`, and `|| exit 1` added. `bash -n` clean.
+The `.py` is UNCHANGED (md5 `409945ba930a72900d7c8a7a1ae9bf38`); its leg-4 branch is still wrong for a leg-4 PRIMARY
+adapter and is left as a recorded trap, not repaired, because no leg-4 floor is owed.
+RE-SUBMITTED: **1286634 `es` · 1286635 `uk` · 1286636 `it`**. `prereg.md` md5 verified `e4243e07…` in the void runs.
+
+### 2026-08-24 — SESSION CLOSED WITH 1286634/35/36 STILL RUNNING (cold-start instructions)
+At close: all three **RUNNING**, elapsed `00:08:21`, no output read. Estimated 2-5 h each (5 seeds x 600
+generations, 7B bf16, `nvidia_a100_2g.20gb`, batch 8, max_len 1200) — an ESTIMATE, never measured, no prior
+5-seed run exists to calibrate it. Nothing below has been verified; the next agent verifies all of it.
+
+**First action on resume, in this order:**
+1. `ssh o_iseri@speed.encs.concordia.ca "sacct -j 1286634,1286635,1286636 --format=JobID,State,Elapsed,ExitCode -X"`
+2. 🔴 **CHECK ELAPSED BEFORE READING ANYTHING.** The void runs died in ~48 s and still exited `0:0`.
+   An elapsed time under ~10 min is a NO-OP, not a fast run.
+3. Confirm each `.out` printed the right base model:
+   `grep -h "^base " /speed-scratch/o_iseri/4J_step4_g41floor_128663{4,5,6}.out`
+   It MUST read `base allenai/Olmo-3-1025-7B @ <rev> + adapter .../runs_leg5/leg5_primary_fold_<c>/adapter`.
+   If it says `OLMo-2-0425-1B`, the `--leg 5` fix did not take and the run is void again.
+4. Only then read the per-fold seed spread from the `.out` and the JSON the script writes.
+
+**How the number may be reported.** As a LOWER BOUND on the run-to-run spread of two trained replicates —
+one adapter is loaded once, so weight divergence is exactly zero by construction. Never "the" spread.
+🔴 **It is NOT a verdict for any fold** (`is_a_verdict_for_any_fold: false` is written into its own JSON).
+It is printed BESIDE the `G4.1` readings (`es` 1.456, `uk` 2.293, `it` ep2 the only PASS in the project;
+the floor tests whether that PASS survives seed variation), never in place of them.
+
+**Frozen and untouched by this work:** `tools/4thJ_step4_thresholds.py` (md5 `724b558f2fb46357c8bba2838adb5451`,
+band `0.80`-`1.25`) and `prereg.md` (md5 `e4243e07cdd80c9c846b91f40e3e8c45`). No outcome of this measurement
+may edit either. Each `.sh` re-verifies the `prereg.md` md5 at the end — that is `G4.14`'s own check.
+
+**Still failing and NOT touched by D-S4-15:** `G4.1`, `G4.3`, `G4.6`, `G4.12` on all three folds, plus the
+coverage clause on `es`/`uk` (`G4.7` passes at baseline and no `genperturb` lever fells it).

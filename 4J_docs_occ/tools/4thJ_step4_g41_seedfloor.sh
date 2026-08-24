@@ -42,7 +42,7 @@
 
 set -x
 FOLD=${1:?usage: sbatch 4thJ_step4_g41_seedfloor.sh <es|uk|it> [adapter_dir]}
-ADAPTER=${2:-/speed-scratch/o_iseri/4J_step4/runs/leg4_primary_fold_${FOLD}/adapter}
+ADAPTER=${2:-/speed-scratch/o_iseri/4J_step4/runs_leg5/leg5_primary_fold_${FOLD}/adapter}
 
 ENVDIR=/speed-scratch/o_iseri/envs/step4
 export HF_HOME=/speed-scratch/o_iseri/hf_cache
@@ -72,9 +72,9 @@ export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
 
 "$ENVDIR/bin/python" -u 4thJ_step4_g41_seedfloor.py \
-    --fold "$FOLD" --leg 4 --run-type primary \
+    --fold "$FOLD" --leg 5 --run-type primary \
     --adapter "$ADAPTER" \
-    --gen-n 600 --gen-stratified-k 6 --gen-batch 8 --max-len 1200
+    --gen-n 600 --gen-stratified-k 6 --gen-batch 8 --max-len 1200 || exit 1
 
 # G4.14's own check, printed at the end of every job in this project.
 md5sum /speed-scratch/o_iseri/4J_step4/prereg.md
