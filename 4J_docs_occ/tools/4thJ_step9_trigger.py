@@ -361,6 +361,20 @@ def calibrate(app, eligible_per_year_stock, n_dwellings_owning):
 # --------------------------------------------------------------------------
 # the simulation
 # --------------------------------------------------------------------------
+def _geometric_skip(hazard, rng):
+    """Eligible minutes to skip before the next start, Geometric(hazard).
+
+    `hazard >= 1` means "start in the very next eligible minute". The campaign
+    can never reach it -- `calibrate` refuses a hazard that is not a probability
+    -- but the synthetic edge cases `G9.5` runs deliberately use 1.0, and a
+    `math.log(0)` there would make the gate crash instead of score.
+    """
+    if hazard >= 1.0:
+        return 0
+    u = rng.random()
+    return int(math.floor(math.log(1.0 - u) / math.log(1.0 - hazard)))
+
+
 class ApplianceState(object):
     __slots__ = ("cycle_left", "delay_left", "elapsed", "cycles", "run_minutes")
 
@@ -422,8 +436,7 @@ def simulate_day(app, state, hazard, elig, active, out, rng,
             break
         # Geometric skip over ELIGIBLE minutes -- exactly the per-minute
         # Bernoulli draw, without walking the minutes in between.
-        u = rng.random()
-        skip = int(math.floor(math.log(1.0 - u) / math.log(1.0 - hazard)))
+        skip = _geometric_skip(hazard, rng)
         ei += skip
         if ei >= len(elig_set):
             break
@@ -447,8 +460,7 @@ def simulate_dhw_day(ev, hazard, elig, out, rng):
         return litres, events
     ei = 0
     while ei < len(elig):
-        u = rng.random()
-        skip = int(math.floor(math.log(1.0 - u) / math.log(1.0 - hazard)))
+        skip = _geometric_skip(hazard, rng)
         ei += skip
         if ei >= len(elig):
             break
@@ -696,13 +708,111 @@ def to_timestep(minute_values, timestep_min):
     return out
 
 
+def measure_cycles(dwellings, mapping, owned, hazards, acl_to_profile, n_days,
+                   seed):
+    """Realised cycles per owning dwelling-year, appliances only.
+
+    Cheap relative to a full run: no DHW, no timestep binning, no emission.
+    Used by the calibration loop, which needs the COUNT and nothing else.
+    """
+    cycles = collections.Counter()
+    owners = collections.Counter()
+    for d in dwellings:
+        rng = random.Random("s9cal|%d|%s" % (seed, d["hid"]))
+        states = dict((aid, ApplianceState()) for aid in owned[d["hid"]])
+        for aid in owned[d["hid"]]:
+            owners[aid] += 1
+        scratch = [0.0] * DAY_MINUTES
+        for day_i in range(n_days):
+            elig, active = dwelling_day(d["members"], day_i, acl_to_profile)
+            for aid in owned[d["hid"]]:
+                app = mapping.appliances[aid]
+                simulate_day(app, states[aid], hazards[aid],
+                             eligible_for(elig, app["profile"]), active,
+                             scratch, rng)
+        for aid in owned[d["hid"]]:
+            cycles[aid] += states[aid].cycles
+    return dict((aid, cycles[aid] / float(owners[aid]))
+                for aid in owners if owners[aid])
+
+
+def calibrate_to_published(dwellings, mapping, owned, hazards, acl_to_profile,
+                           n_days, seed, tol=0.02, max_passes=6):
+    """Scale each appliance's hazard until the STOCK MEAN cycles per year meets
+    CREST's published `Cycles per year (n)`.
+
+    🔴 WHY THIS LOOP EXISTS, MEASURED RATHER THAN ASSUMED. The closed-form
+    calibration subtracts the minutes an appliance is busy PRO-RATED over the
+    year, which is what CREST does. That is right when the activity probability
+    is a small population share, and WRONG here: our eligibility indicator is
+    0/1 and an appliance whose cycle coincides with the activity that triggers
+    it -- a television during television-watching, a hob during cooking -- is
+    busy through most of its OWN eligible minutes, not a year-averaged sample of
+    them. The first campaign under the closed form delivered ratios of 0.46 to
+    0.54 against the published cycles for exactly those appliances.
+
+    Iterating to hit the published annual target is CREST's OWN procedure: the
+    reference implementation bisects a `calibration_factor` against an annual
+    consumption target for the same reason. The published cycles-per-year is the
+    reference and it is never adjusted; only our hazard is.
+
+    Returns `(hazards, trace)`. The trace is kept and written into the manifest,
+    so a reader can see how far the closed form was off and in which direction.
+    """
+    hz = dict(hazards)
+    trace = []
+    prev = {}
+    saturated = set()
+    for p in range(max_passes):
+        got = measure_cycles(dwellings, mapping, owned, hz, acl_to_profile,
+                             n_days, seed)
+        worst = 0.0
+        worst_id = None
+        step = {}
+        for aid, mean_cycles in got.items():
+            target = mapping.appliances[aid]["cycles_per_year"]
+            # CREST carries three standby-only devices at 1e-05 cycles per
+            # year -- an answering machine, a cordless telephone and a clock.
+            # They are a standby wattage with no cycle, so "within range of the
+            # published count" is not a question that can be asked of them.
+            # Excluded from convergence, and reported by the gate as
+            # NOT_EVALUABLE rather than as a pass or a failure.
+            if target < 0.5:
+                continue
+            ratio = mean_cycles / target
+            step[aid] = round(ratio, 4)
+            if aid in saturated:
+                continue
+            # An appliance whose ratio stops responding to a larger hazard has
+            # run out of eligible minutes: raising the hazard cannot buy cycles
+            # that the corpus has no activity time for. Detected rather than
+            # iterated against, so the loop reports a measurement instead of
+            # spinning six times on a wall.
+            if aid in prev and ratio > 0.0:
+                if abs(ratio - prev[aid]) < 0.01 and ratio < 1.0 - tol:
+                    saturated.add(aid)
+                    continue
+            prev[aid] = ratio
+            if abs(ratio - 1.0) > worst:
+                worst = abs(ratio - 1.0)
+                worst_id = aid
+            if ratio > 0.0 and hz.get(aid, 0.0) > 0.0:
+                hz[aid] = min(0.999, hz[aid] / ratio)
+        trace.append({"pass": p, "worst_abs_dev": round(worst, 4),
+                      "worst_appliance": worst_id, "ratios": step,
+                      "saturated": sorted(saturated)})
+        if worst <= tol:
+            break
+    return hz, trace
+
+
 def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
              dhw_l_per_day, restrict_default_dwelling=True,
              truncate_cycle_at_episode_end=False, drop_end_use=None,
              double_trigger_appliance=None, dhw_scale=1.0,
              collapse_dhw_events=False, extra_runtime_columns=(),
              force_two_digit_mapping=False, zero_load_share=0.0,
-             verify_against_step8=True, map_path=None):
+             verify_against_step8=True, map_path=None, calibration_passes=6):
     """One fold, end to end. Every keyword after `dhw_l_per_day` exists ONLY so
     the registered perturbation battery has something to perturb; all of them
     default to the correct behaviour and any non-default is stamped into the
@@ -729,6 +839,13 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
     mean_elig.update(count_eligible_dhw(dwellings, mapping, acl_to_profile, n_days))
     hazards, dhw_haz, calib = calibrate_all(
         mapping, mean_elig, dhw_l_per_day * dhw_scale / 200.0)
+    calib_trace = []
+    if calibration_passes:
+        hazards, calib_trace = calibrate_to_published(
+            dwellings, mapping, owned, hazards, acl_to_profile, n_days, seed,
+            max_passes=calibration_passes)
+        for aid, h in hazards.items():
+            calib[aid]["hazard_per_eligible_minute_calibrated"] = h
     if double_trigger_appliance:
         # PERTURBATION ONLY (G9.6's falsifier).
         if double_trigger_appliance not in hazards:
@@ -810,7 +927,7 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
                              stock_elec, stock_dhw, calib, timestep_min, year,
                              seed, leg, pool_meta, mean_elig,
                              dhw_l_per_day, restrict_default_dwelling,
-                             extra_runtime_columns, {
+                             extra_runtime_columns, calib_trace, {
                                  "truncate_cycle_at_episode_end":
                                      truncate_cycle_at_episode_end,
                                  "drop_end_use": drop_end_use,
@@ -908,7 +1025,7 @@ def write_series_csv(path, header, values):
 def write_outputs(root, fold, out_dir, mapping, per_dwelling, stock_elec,
                   stock_dhw, calib, timestep_min, year, seed, leg, pool_meta,
                   mean_elig, dhw_l_per_day, restrict_default_dwelling,
-                  extra_runtime_columns, perturbations):
+                  extra_runtime_columns, calib_trace, perturbations):
     prof_dir = os.path.join(out_dir, "enduse_profiles", fold)
     if not os.path.isdir(prof_dir):
         os.makedirs(prof_dir)
@@ -1025,6 +1142,7 @@ def write_outputs(root, fold, out_dir, mapping, per_dwelling, stock_elec,
         "mean_eligible_minutes_per_dwelling_year": dict(
             (str(k), round(v, 1)) for k, v in mean_elig.items()),
         "calibration": calib,
+        "calibration_trace": calib_trace,
         "cycles": cycle_table,
         "dhw_litres_by_category": dict(dhw_by_cat),
         "dhw_events_by_category": dict(ev_by_cat),

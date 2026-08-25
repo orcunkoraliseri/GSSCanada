@@ -1,0 +1,770 @@
+{
+  "artefacts": {
+    "by_dwelling": "enduse_by_dwelling_uk.csv",
+    "cycles": "cycles_uk.csv",
+    "idf": "step9_objects_uk.idf",
+    "profiles_dir": "enduse_profiles/uk",
+    "stock_series": "stock_series_uk.csv"
+  },
+  "calibration": {
+    "answer_machine": {
+      "cycles_per_year_target": 1e-05,
+      "hazard_per_eligible_minute": 3.8277951517146613e-11,
+      "hazard_per_eligible_minute_calibrated": 3.8277951517146613e-11,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Answer machine",
+      "profile": 6
+    },
+    "cassette_cd_player": {
+      "cycles_per_year_target": 1212.76286,
+      "hazard_per_eligible_minute": 0.005388162520387352,
+      "hazard_per_eligible_minute_calibrated": 0.006386329741489232,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Cassette / CD Player",
+      "profile": 6
+    },
+    "chest_freezer": {
+      "cycles_per_year_target": 6115.75933,
+      "hazard_per_eligible_minute": 0.06272776530171048,
+      "hazard_per_eligible_minute_calibrated": 0.06272776530171048,
+      "mean_eligible_minutes_per_dwelling_year": 525600.0,
+      "name": "Chest freezer",
+      "profile": 7
+    },
+    "clock": {
+      "cycles_per_year_target": 1e-05,
+      "hazard_per_eligible_minute": 1.9025875190258754e-11,
+      "hazard_per_eligible_minute_calibrated": 1.9025875190258754e-11,
+      "mean_eligible_minutes_per_dwelling_year": 525600.0,
+      "name": "Clock",
+      "profile": 7
+    },
+    "cordless_telephone": {
+      "cycles_per_year_target": 1e-05,
+      "hazard_per_eligible_minute": 3.8277951517146613e-11,
+      "hazard_per_eligible_minute_calibrated": 3.8277951517146613e-11,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Cordless telephone",
+      "profile": 6
+    },
+    "deswh": {
+      "cycles_per_year_target": 2684.99685,
+      "hazard_per_eligible_minute": 0.011447160966525292,
+      "hazard_per_eligible_minute_calibrated": 0.011447160966525292,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "DESWH",
+      "profile": 6
+    },
+    "dhw:dhw_cat_a": {
+      "hazard_per_eligible_minute": 0.2818315188016369,
+      "incidences_per_year_target": 10220.0,
+      "mean_eligible_minutes_per_dwelling_year": 36262.8,
+      "name": "DHW draw-off category A: short load (washing hands, etc.)"
+    },
+    "dhw:dhw_cat_b": {
+      "hazard_per_eligible_minute": 0.12062759397523004,
+      "incidences_per_year_target": 4380.0,
+      "mean_eligible_minutes_per_dwelling_year": 36310.1,
+      "name": "DHW draw-off category B: medium load (dish-washer, etc.)"
+    },
+    "dhw:dhw_cat_c": {
+      "hazard_per_eligible_minute": 0.002219529520975819,
+      "incidences_per_year_target": 52.19499999999999,
+      "mean_eligible_minutes_per_dwelling_year": 23986.0,
+      "name": "DHW draw-off category C: bath"
+    },
+    "dhw:dhw_cat_d": {
+      "hazard_per_eligible_minute": 0.034652995347954046,
+      "incidences_per_year_target": 730.0,
+      "mean_eligible_minutes_per_dwelling_year": 23986.0,
+      "name": "DHW draw-off category D: shower"
+    },
+    "dish_washer": {
+      "cycles_per_year_target": 241.4764,
+      "hazard_per_eligible_minute": 0.00683891211707161,
+      "hazard_per_eligible_minute_calibrated": 0.008608697574184183,
+      "mean_eligible_minutes_per_dwelling_year": 36310.1,
+      "name": "Dish washer",
+      "profile": 1
+    },
+    "e_inst": {
+      "cycles_per_year_target": 7208.63284,
+      "hazard_per_eligible_minute": 0.029624691159319906,
+      "hazard_per_eligible_minute_calibrated": 0.029624691159319906,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "E-INST",
+      "profile": 6
+    },
+    "electric_shower": {
+      "cycles_per_year_target": 290.39551,
+      "hazard_per_eligible_minute": 0.011373470375440883,
+      "hazard_per_eligible_minute_calibrated": 0.011373470375440883,
+      "mean_eligible_minutes_per_dwelling_year": 25575.1,
+      "name": "Electric shower",
+      "profile": 3
+    },
+    "fax": {
+      "cycles_per_year_target": 197.12359,
+      "hazard_per_eligible_minute": 0.0007634245951953745,
+      "hazard_per_eligible_minute_calibrated": 0.0007634245951953745,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Fax",
+      "profile": 6
+    },
+    "fridge_freezer": {
+      "cycles_per_year_target": 6115.75933,
+      "hazard_per_eligible_minute": 0.050145663626311364,
+      "hazard_per_eligible_minute_calibrated": 0.04813507692450962,
+      "mean_eligible_minutes_per_dwelling_year": 525600.0,
+      "name": "Fridge freezer",
+      "profile": 7
+    },
+    "hi_fi": {
+      "cycles_per_year_target": 109.42554,
+      "hazard_per_eligible_minute": 0.0004241569074957417,
+      "hazard_per_eligible_minute_calibrated": 0.00042349455037960946,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Hi-Fi",
+      "profile": 6
+    },
+    "hob": {
+      "cycles_per_year_target": 417.90201,
+      "hazard_per_eligible_minute": 0.011657551571113886,
+      "hazard_per_eligible_minute_calibrated": 0.013116233601787559,
+      "mean_eligible_minutes_per_dwelling_year": 36310.1,
+      "name": "Hob",
+      "profile": 1
+    },
+    "iron": {
+      "cycles_per_year_target": 35.45947,
+      "hazard_per_eligible_minute": 0.008714653063823088,
+      "hazard_per_eligible_minute_calibrated": 0.011155623461392355,
+      "mean_eligible_minutes_per_dwelling_year": 4077.2,
+      "name": "Iron",
+      "profile": 4
+    },
+    "kettle": {
+      "cycles_per_year_target": 1519.82287,
+      "hazard_per_eligible_minute": 0.005868478419841107,
+      "hazard_per_eligible_minute_calibrated": 0.005842942127232901,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Kettle",
+      "profile": 6
+    },
+    "microwave": {
+      "cycles_per_year_target": 94.61932,
+      "hazard_per_eligible_minute": 0.0026200175766082287,
+      "hazard_per_eligible_minute_calibrated": 0.0026636392063790347,
+      "mean_eligible_minutes_per_dwelling_year": 36310.1,
+      "name": "Microwave",
+      "profile": 1
+    },
+    "other_electric_space_heating": {
+      "cycles_per_year_target": 365.67578,
+      "hazard_per_eligible_minute": 0.0016803005725297088,
+      "hazard_per_eligible_minute_calibrated": 0.0016803005725297088,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Other electric space heating",
+      "profile": 6
+    },
+    "oven": {
+      "cycles_per_year_target": 219.7928,
+      "hazard_per_eligible_minute": 0.006122339502046267,
+      "hazard_per_eligible_minute_calibrated": 0.00604022279987978,
+      "mean_eligible_minutes_per_dwelling_year": 36310.1,
+      "name": "Oven",
+      "profile": 1
+    },
+    "personal_computer": {
+      "cycles_per_year_target": 449.23798,
+      "hazard_per_eligible_minute": 0.002312566162384189,
+      "hazard_per_eligible_minute_calibrated": 0.0038309383345841203,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Personal computer",
+      "profile": 6
+    },
+    "printer": {
+      "cycles_per_year_target": 654.87596,
+      "hazard_per_eligible_minute": 0.0025192867348527576,
+      "hazard_per_eligible_minute_calibrated": 0.002563736412354592,
+      "mean_eligible_minutes_per_dwelling_year": 261247.0,
+      "name": "Printer",
+      "profile": 6
+    },
+    "refrigerator": {
+      "cycles_per_year_target": 6115.75933,
+      "hazard_per_eligible_minute": 0.03130683776007105,
+      "hazard_per_eligible_minute_calibrated": 0.03041287182832193,
+      "mean_eligible_minutes_per_dwelling_year": 525600.0,
+      "name": "Refrigerator",
+      "profile": 7
+    },
+    "small_cooking_group": {
+      "cycles_per_year_target": 292.32622,
+      "hazard_per_eligible_minute": 0.008064279356622696,
+      "hazard_per_eligible_minute_calibrated": 0.008141513852191003,
+      "mean_eligible_minutes_per_dwelling_year": 36310.1,
+      "name": "Small cooking (group)",
+      "profile": 1
+    },
+    "storage_heaters": {
+      "cycles_per_year_target": 227.20878,
+      "hazard_per_eligible_minute": 0.0,
+      "hazard_per_eligible_minute_calibrated": 0.0,
+      "mean_eligible_minutes_per_dwelling_year": 0.0,
+      "name": "Storage heaters",
+      "profile": 8
+    },
+    "tumble_dryer": {
+      "cycles_per_year_target": 122.07292,
+      "hazard_per_eligible_minute": 0.07788981943992648,
+      "hazard_per_eligible_minute_calibrated": 0.999,
+      "mean_eligible_minutes_per_dwelling_year": 1589.4,
+      "name": "Tumble dryer",
+      "profile": 2
+    },
+    "tv_1": {
+      "cycles_per_year_target": 1464.26654,
+      "hazard_per_eligible_minute": 0.030663898763593444,
+      "hazard_per_eligible_minute_calibrated": 0.16621034858012812,
+      "mean_eligible_minutes_per_dwelling_year": 59942.7,
+      "name": "TV 1",
+      "profile": 0
+    },
+    "tv_2": {
+      "cycles_per_year_target": 1464.26654,
+      "hazard_per_eligible_minute": 0.030663898763593444,
+      "hazard_per_eligible_minute_calibrated": 0.1566383878050123,
+      "mean_eligible_minutes_per_dwelling_year": 59942.7,
+      "name": "TV 2",
+      "profile": 0
+    },
+    "tv_3": {
+      "cycles_per_year_target": 1521.49597,
+      "hazard_per_eligible_minute": 0.03218348451439265,
+      "hazard_per_eligible_minute_calibrated": 0.03218348451439265,
+      "mean_eligible_minutes_per_dwelling_year": 59942.7,
+      "name": "TV 3",
+      "profile": 0
+    },
+    "tv_receiver_box": {
+      "cycles_per_year_target": 1464.26654,
+      "hazard_per_eligible_minute": 0.030663898763593444,
+      "hazard_per_eligible_minute_calibrated": 0.3400543450140727,
+      "mean_eligible_minutes_per_dwelling_year": 59942.7,
+      "name": "TV Receiver box",
+      "profile": 0
+    },
+    "upright_freezer": {
+      "cycles_per_year_target": 6115.75933,
+      "hazard_per_eligible_minute": 0.03854767204933228,
+      "hazard_per_eligible_minute_calibrated": 0.03854767204933228,
+      "mean_eligible_minutes_per_dwelling_year": 525600.0,
+      "name": "Upright freezer",
+      "profile": 7
+    },
+    "vacuum": {
+      "cycles_per_year_target": 110.3676,
+      "hazard_per_eligible_minute": 0.0036618208304817143,
+      "hazard_per_eligible_minute_calibrated": 0.0037291487953410515,
+      "mean_eligible_minutes_per_dwelling_year": 30267.2,
+      "name": "Vacuum",
+      "profile": 5
+    },
+    "vcr_dvd": {
+      "cycles_per_year_target": 1464.26654,
+      "hazard_per_eligible_minute": 0.030663898763593444,
+      "hazard_per_eligible_minute_calibrated": 0.34719996428079597,
+      "mean_eligible_minutes_per_dwelling_year": 59942.7,
+      "name": "VCR / DVD",
+      "profile": 0
+    },
+    "washer_dryer": {
+      "cycles_per_year_target": 195.9066,
+      "hazard_per_eligible_minute": 0.13307953797263955,
+      "hazard_per_eligible_minute_calibrated": 0.13307953797263955,
+      "mean_eligible_minutes_per_dwelling_year": 1589.4,
+      "name": "Washer dryer",
+      "profile": 2
+    },
+    "washing_machine": {
+      "cycles_per_year_target": 195.9066,
+      "hazard_per_eligible_minute": 0.12994199334662812,
+      "hazard_per_eligible_minute_calibrated": 0.750440293552665,
+      "mean_eligible_minutes_per_dwelling_year": 1589.4,
+      "name": "Washing machine",
+      "profile": 2
+    }
+  },
+  "calibration_trace": [
+    {
+      "pass": 0,
+      "ratios": {
+        "cassette_cd_player": 0.8801,
+        "dish_washer": 0.8433,
+        "fridge_freezer": 1.0121,
+        "hi_fi": 0.9655,
+        "hob": 0.9063,
+        "iron": 0.8222,
+        "kettle": 1.0065,
+        "microwave": 0.9836,
+        "oven": 1.0236,
+        "personal_computer": 0.7638,
+        "printer": 0.9755,
+        "refrigerator": 1.0112,
+        "small_cooking_group": 0.9915,
+        "tumble_dryer": 0.2447,
+        "tv_1": 0.5721,
+        "tv_2": 0.5836,
+        "tv_receiver_box": 0.5078,
+        "vacuum": 0.9799,
+        "vcr_dvd": 0.5053,
+        "washing_machine": 0.1732
+      },
+      "saturated": [],
+      "worst_abs_dev": 0.8268,
+      "worst_appliance": "washing_machine"
+    },
+    {
+      "pass": 1,
+      "ratios": {
+        "cassette_cd_player": 0.9734,
+        "dish_washer": 0.9486,
+        "fridge_freezer": 1.0096,
+        "hi_fi": 1.0069,
+        "hob": 0.979,
+        "iron": 0.9503,
+        "kettle": 0.993,
+        "microwave": 0.9742,
+        "oven": 0.9901,
+        "personal_computer": 0.891,
+        "printer": 0.9983,
+        "refrigerator": 1.0075,
+        "small_cooking_group": 0.9952,
+        "tumble_dryer": 0.3001,
+        "tv_1": 0.703,
+        "tv_2": 0.7103,
+        "tv_receiver_box": 0.63,
+        "vacuum": 0.9845,
+        "vcr_dvd": 0.6265,
+        "washing_machine": 0.179
+      },
+      "saturated": [
+        "microwave",
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.6999,
+      "worst_appliance": "tumble_dryer"
+    },
+    {
+      "pass": 2,
+      "ratios": {
+        "cassette_cd_player": 0.9899,
+        "dish_washer": 0.9924,
+        "fridge_freezer": 1.0071,
+        "hi_fi": 1.0208,
+        "hob": 1.0001,
+        "iron": 1.0091,
+        "kettle": 0.9992,
+        "microwave": 0.9794,
+        "oven": 0.988,
+        "personal_computer": 0.9392,
+        "printer": 1.0077,
+        "refrigerator": 1.0054,
+        "small_cooking_group": 0.9972,
+        "tumble_dryer": 0.3057,
+        "tv_1": 0.7752,
+        "tv_2": 0.7798,
+        "tv_receiver_box": 0.69,
+        "vacuum": 1.0171,
+        "vcr_dvd": 0.6879,
+        "washing_machine": 0.179
+      },
+      "saturated": [
+        "microwave",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.3121,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 3,
+      "ratios": {
+        "cassette_cd_player": 0.9963,
+        "dish_washer": 0.9916,
+        "fridge_freezer": 1.0054,
+        "hi_fi": 0.9844,
+        "hob": 1.0068,
+        "iron": 0.9935,
+        "kettle": 1.0019,
+        "microwave": 0.9775,
+        "oven": 1.0075,
+        "personal_computer": 0.9694,
+        "printer": 0.9994,
+        "refrigerator": 1.0018,
+        "small_cooking_group": 1.0091,
+        "tumble_dryer": 0.3057,
+        "tv_1": 0.8159,
+        "tv_2": 0.8233,
+        "tv_receiver_box": 0.7247,
+        "vacuum": 0.978,
+        "vcr_dvd": 0.7226,
+        "washing_machine": 0.1789
+      },
+      "saturated": [
+        "microwave",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.2774,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 4,
+      "ratios": {
+        "cassette_cd_player": 1.0004,
+        "dish_washer": 1.014,
+        "fridge_freezer": 1.0039,
+        "hi_fi": 1.0204,
+        "hob": 1.0049,
+        "iron": 0.9903,
+        "kettle": 0.9972,
+        "microwave": 0.9717,
+        "oven": 1.0063,
+        "personal_computer": 0.9842,
+        "printer": 0.9982,
+        "refrigerator": 1.0018,
+        "small_cooking_group": 0.9966,
+        "tumble_dryer": 0.3057,
+        "tv_1": 0.8422,
+        "tv_2": 0.8485,
+        "tv_receiver_box": 0.7449,
+        "vacuum": 1.0135,
+        "vcr_dvd": 0.7431,
+        "washing_machine": 0.1789
+      },
+      "saturated": [
+        "microwave",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.2569,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 5,
+      "ratios": {
+        "cassette_cd_player": 0.9983,
+        "dish_washer": 0.9952,
+        "fridge_freezer": 1.003,
+        "hi_fi": 1.0047,
+        "hob": 0.99,
+        "iron": 1.007,
+        "kettle": 1.0066,
+        "microwave": 0.9856,
+        "oven": 0.9984,
+        "personal_computer": 0.9898,
+        "printer": 1.0038,
+        "refrigerator": 1.0014,
+        "small_cooking_group": 1.001,
+        "tumble_dryer": 0.3057,
+        "tv_1": 0.8612,
+        "tv_2": 0.8669,
+        "tv_receiver_box": 0.7568,
+        "vacuum": 1.0097,
+        "vcr_dvd": 0.7552,
+        "washing_machine": 0.1789
+      },
+      "saturated": [
+        "microwave",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.2448,
+      "worst_appliance": "vcr_dvd"
+    }
+  ],
+  "cycles": [
+    {
+      "appliance_id": "tv_1",
+      "appliance_name": "TV 1",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1288.904,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 94,
+      "ratio_modelled_over_published": 0.88024
+    },
+    {
+      "appliance_id": "tv_2",
+      "appliance_name": "TV 2",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1294.035,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 57,
+      "ratio_modelled_over_published": 0.88374
+    },
+    {
+      "appliance_id": "vcr_dvd",
+      "appliance_name": "VCR / DVD",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1118.076,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 92,
+      "ratio_modelled_over_published": 0.76357
+    },
+    {
+      "appliance_id": "tv_receiver_box",
+      "appliance_name": "TV Receiver box",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1121.108,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 93,
+      "ratio_modelled_over_published": 0.76564
+    },
+    {
+      "appliance_id": "hob",
+      "appliance_name": "Hob",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 415.5,
+      "cycles_per_year_published": 417.90201,
+      "n_dwellings_owning": 48,
+      "ratio_modelled_over_published": 0.99425
+    },
+    {
+      "appliance_id": "oven",
+      "appliance_name": "Oven",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 220.532,
+      "cycles_per_year_published": 219.7928,
+      "n_dwellings_owning": 62,
+      "ratio_modelled_over_published": 1.00336
+    },
+    {
+      "appliance_id": "microwave",
+      "appliance_name": "Microwave",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 95.14,
+      "cycles_per_year_published": 94.61932,
+      "n_dwellings_owning": 86,
+      "ratio_modelled_over_published": 1.0055
+    },
+    {
+      "appliance_id": "small_cooking_group",
+      "appliance_name": "Small cooking (group)",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 291.83,
+      "cycles_per_year_published": 292.32622,
+      "n_dwellings_owning": 100,
+      "ratio_modelled_over_published": 0.9983
+    },
+    {
+      "appliance_id": "dish_washer",
+      "appliance_name": "Dish washer",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 236.441,
+      "cycles_per_year_published": 241.4764,
+      "n_dwellings_owning": 34,
+      "ratio_modelled_over_published": 0.97915
+    },
+    {
+      "appliance_id": "tumble_dryer",
+      "appliance_name": "Tumble dryer",
+      "crest_profile": 2,
+      "cycles_per_dwelling_year_modelled": 37.319,
+      "cycles_per_year_published": 122.07292,
+      "n_dwellings_owning": 47,
+      "ratio_modelled_over_published": 0.30571
+    },
+    {
+      "appliance_id": "washing_machine",
+      "appliance_name": "Washing machine",
+      "crest_profile": 2,
+      "cycles_per_dwelling_year_modelled": 35.052,
+      "cycles_per_year_published": 195.9066,
+      "n_dwellings_owning": 77,
+      "ratio_modelled_over_published": 0.17892
+    },
+    {
+      "appliance_id": "iron",
+      "appliance_name": "Iron",
+      "crest_profile": 4,
+      "cycles_per_dwelling_year_modelled": 34.781,
+      "cycles_per_year_published": 35.45947,
+      "n_dwellings_owning": 96,
+      "ratio_modelled_over_published": 0.98087
+    },
+    {
+      "appliance_id": "vacuum",
+      "appliance_name": "Vacuum",
+      "crest_profile": 5,
+      "cycles_per_dwelling_year_modelled": 110.644,
+      "cycles_per_year_published": 110.3676,
+      "n_dwellings_owning": 90,
+      "ratio_modelled_over_published": 1.00251
+    },
+    {
+      "appliance_id": "answer_machine",
+      "appliance_name": "Answer machine",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 0.0,
+      "cycles_per_year_published": 1e-05,
+      "n_dwellings_owning": 87,
+      "ratio_modelled_over_published": 0.0
+    },
+    {
+      "appliance_id": "cassette_cd_player",
+      "appliance_name": "Cassette / CD Player",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 1208.988,
+      "cycles_per_year_published": 1212.76286,
+      "n_dwellings_owning": 85,
+      "ratio_modelled_over_published": 0.99689
+    },
+    {
+      "appliance_id": "cordless_telephone",
+      "appliance_name": "Cordless telephone",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 0.0,
+      "cycles_per_year_published": 1e-05,
+      "n_dwellings_owning": 89,
+      "ratio_modelled_over_published": 0.0
+    },
+    {
+      "appliance_id": "hi_fi",
+      "appliance_name": "Hi-Fi",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 106.371,
+      "cycles_per_year_published": 109.42554,
+      "n_dwellings_owning": 89,
+      "ratio_modelled_over_published": 0.97208
+    },
+    {
+      "appliance_id": "personal_computer",
+      "appliance_name": "Personal computer",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 448.667,
+      "cycles_per_year_published": 449.23798,
+      "n_dwellings_owning": 78,
+      "ratio_modelled_over_published": 0.99873
+    },
+    {
+      "appliance_id": "printer",
+      "appliance_name": "Printer",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 654.729,
+      "cycles_per_year_published": 654.87596,
+      "n_dwellings_owning": 70,
+      "ratio_modelled_over_published": 0.99977
+    },
+    {
+      "appliance_id": "kettle",
+      "appliance_name": "Kettle",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 1522.788,
+      "cycles_per_year_published": 1519.82287,
+      "n_dwellings_owning": 99,
+      "ratio_modelled_over_published": 1.00195
+    },
+    {
+      "appliance_id": "fridge_freezer",
+      "appliance_name": "Fridge freezer",
+      "crest_profile": 7,
+      "cycles_per_dwelling_year_modelled": 6130.911,
+      "cycles_per_year_published": 6115.75933,
+      "n_dwellings_owning": 56,
+      "ratio_modelled_over_published": 1.00248
+    },
+    {
+      "appliance_id": "refrigerator",
+      "appliance_name": "Refrigerator",
+      "crest_profile": 7,
+      "cycles_per_dwelling_year_modelled": 6117.578,
+      "cycles_per_year_published": 6115.75933,
+      "n_dwellings_owning": 45,
+      "ratio_modelled_over_published": 1.0003
+    },
+    {
+      "appliance_id": "clock",
+      "appliance_name": "Clock",
+      "crest_profile": 7,
+      "cycles_per_dwelling_year_modelled": 0.0,
+      "cycles_per_year_published": 1e-05,
+      "n_dwellings_owning": 91,
+      "ratio_modelled_over_published": 0.0
+    }
+  ],
+  "dhw_delta_t_k": 35.0,
+  "dhw_events_by_category": {
+    "dhw_cat_a": 1023348,
+    "dhw_cat_b": 437611,
+    "dhw_cat_c": 5311,
+    "dhw_cat_d": 74376
+  },
+  "dhw_litres_by_category": {
+    "dhw_cat_a": 1026710.4000000003,
+    "dhw_cat_b": 2625970.6000000006,
+    "dhw_cat_c": 731018.6000000001,
+    "dhw_cat_d": 2953343.9999999995
+  },
+  "dhw_reference_l_per_dwelling_day": 200.0,
+  "fold": "uk",
+  "is_campaign_run": true,
+  "leg": "leg5",
+  "map_md5": "640af0d0bdfadd5f10936d878bb0600d",
+  "mean_eligible_minutes_per_dwelling_year": {
+    "0": 59942.7,
+    "1": 36310.1,
+    "2": 1589.4,
+    "3": 25575.1,
+    "4": 4077.2,
+    "5": 30267.2,
+    "6": 261247.0,
+    "7": 525600.0,
+    "dhw:dhw_cat_a": 36262.8,
+    "dhw:dhw_cat_b": 36310.1,
+    "dhw:dhw_cat_c": 23986.0,
+    "dhw:dhw_cat_d": 23986.0
+  },
+  "n_dwellings": 100,
+  "n_people": 180,
+  "perturbations": {
+    "collapse_dhw_events": false,
+    "dhw_scale": 1.0,
+    "double_trigger_appliance": null,
+    "drop_end_use": null,
+    "force_two_digit_mapping": false,
+    "restrict_default_dwelling": true,
+    "truncate_cycle_at_episode_end": false,
+    "zero_load_share": 0.0
+  },
+  "pool": {
+    "n_days": 5200,
+    "n_keys_full_depth": 890,
+    "n_undecodable": 0,
+    "outdoor_at_home_is_shipped": true,
+    "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+    "outdoor_at_home_used": [
+      "322",
+      "341",
+      "342",
+      "344"
+    ],
+    "pool_file": "generated_leg5_uk_constrained.jsonl",
+    "pool_md5": "f850d0ba2811c066a82d991c2c882f1b",
+    "provenance": null
+  },
+  "restrict_to_crest_default_dwelling": true,
+  "rule": "independent",
+  "runtime_input_columns": [
+    "act",
+    "duration_min",
+    "loc_class"
+  ],
+  "seed": 1,
+  "stock_dhw_l_per_dwelling_day": 201.015,
+  "stock_dhw_l_per_person_day": 111.675,
+  "stock_elec_kwh_per_dwelling_year": 2084.74,
+  "timestep_min": 60,
+  "year": 2017
+}
