@@ -1,0 +1,107 @@
+{
+ "cache_key": "4e14e544892bf0f599a4b3b6b8bcc30274bf6c7fde1cdf460275fedf3df496bf",
+ "campaign": "step8_injected_sweep",
+ "cell": "es_AB_ES04",
+ "cell_period": "ES.04",
+ "cls": "AB",
+ "code": "ES.ME.AB.04.Gen.ReEx.001",
+ "energyplus_build": "94a887817b",
+ "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
+ "energyplus_version": "24.2.0",
+ "ensemble": {
+  "eui_kwh_m2a_max": 16.600046705335362,
+  "eui_kwh_m2a_mean": 16.600046705335362,
+  "eui_kwh_m2a_min": 16.600046705335362,
+  "eui_kwh_m2a_sd": 0.0,
+  "monthly_j_mean": [
+   33393354030.581547,
+   19602928405.377464,
+   16401195913.051428,
+   4695182449.131968,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1271872333.1184092,
+   10764135199.895632,
+   29948287059.077053
+  ],
+  "n": 1,
+  "peak_hour_max": 8672,
+  "peak_hour_min": 8672,
+  "peak_w_m2_max": 19.046244818711482,
+  "peak_w_m2_mean": 19.046244818711482,
+  "peak_w_m2_min": 19.046244818711482,
+  "peak_w_m2_sd": 0.0,
+  "series_sha256": {
+   "flat": "08d8fb4a72e838d053bb9a31b1dbe9179635be575dd2bb0bbe8af61603c24688"
+  }
+ },
+ "f": 0.0,
+ "fold": "es",
+ "household": "flat",
+ "household_schedule_md5": {
+  "flat": null
+ },
+ "households": [
+  "flat"
+ ],
+ "idf": "es_AB_ES04.idf",
+ "idf_md5_measured": "5e2ddc0f59fd60c7f32dfab053f25889",
+ "idf_md5_source": "4f700ed4060397c415e71e95d50bece1",
+ "injection": "Schedule:File on OtherEquipment E_PHI_INT; m(t) = (1-f) + f*g(t)/mean(g), annual mean exactly 1.0",
+ "multiplier_csv": "Step8_docs/outputs_step8/sched/es/flat__f000.csv",
+ "multiplier_max": 1.0,
+ "multiplier_md5": "aa46a656e1796ccd619005626eff519c",
+ "phi_int_w_m2": 3.0,
+ "platform": {
+  "cpu_count": 20,
+  "machine": "AMD64",
+  "measured_at_run_time": true,
+  "node": "tabletop1",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "python": "3.13.5"
+ },
+ "rerun": {
+  "finished_utc": "2026-08-25T17:51:03.768507Z",
+  "returncode": 0,
+  "series_sha256": "08d8fb4a72e838d053bb9a31b1dbe9179635be575dd2bb0bbe8af61603c24688",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:51:02.237791Z",
+  "stdout_tail": "0.12sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_AB_ES04__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.27sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "wall_s": 1.531,
+  "warnings": 1
+ },
+ "run": {
+  "finished_utc": "2026-08-25T17:50:58.827670Z",
+  "returncode": 0,
+  "series_sha256": "08d8fb4a72e838d053bb9a31b1dbe9179635be575dd2bb0bbe8af61603c24688",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:50:57.335868Z",
+  "stdout_tail": "00min  0.14sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_AB_ES04__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.26sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "variables_delivered": {
+   "Zone Ideal Loads Supply Air Total Heating Energy": true,
+   "Zone Ideal Loads Zone Total Heating Energy": true,
+   "Zone Mean Air Temperature": true
+  },
+  "wall_s": 1.492,
+  "warning_kinds": {
+   "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1
+  },
+  "warnings": 1
+ },
+ "scenario_cell": "es_AB_ES04__f000",
+ "schedule_bundle": "leg5_es_independent_seed1",
+ "schedule_file": null,
+ "schedule_fold": "es",
+ "schedule_md5": null,
+ "weather_base_period": "TMYx.2009-2023",
+ "weather_epw": "ESP_VC_Valencia.Viveros.082850_TMYx.2009-2023.epw",
+ "weather_md5": "b66696b6fdeb2421b26e33965e8e6ca2",
+ "weather_station": "Valencia.Viveros",
+ "weather_wmo": "082850",
+ "work_item": "8.5",
+ "written_utc": "2026-08-25T17:51:03.875652Z"
+}

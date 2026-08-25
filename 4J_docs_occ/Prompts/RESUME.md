@@ -1,8 +1,616 @@
-#### Last updated: **2026-08-24 (night, late) — 🟢 `STEP 7.3` IS CLOSED ON LEG 5 AND ITS BATTERY IS SCORED: **20 PASS / 7 FAIL** over the nine scored gates, against Leg-4's 12 / 15. The Leg-5 campaign (`1286835`-`1286861`, 27/27 exit `0:0`, 5,200 records per fold per arm) had been on disk since the afternoon booked under **Step 6.3**, and Step 7's own document never received the entry. 🟢 **The two CPU debts Step 7 owed itself were paid, and both returned something Leg 4 did not predict: `FINDING 105` — six of twenty-seven pre-screen verdicts CHANGED at Leg-5 N, and `max_ramp` went RULE>NOISE on all three folds (was `it` alone), so the "coincidence metrics tell us nothing" reading was partly a 600-diary artefact; and `FINDING 106` — item 7.5's registered sizing was computed against a **600**-diary batch, the reported batch is **5,200**, so the control requirement went UP about six times to 75,531 / 16,796 / 48,809 draws, 125,536 still owed.** ⚪ Back-off ladder re-measured rather than assumed: full-depth share `0.49`-`0.64` -> `0.77`-`0.92`. 🔴 `G7.5` and `G7.9` ship FAIL 3/3 and are the **same** failure — `G7.9`'s control *is* `G7.5`'s valid subset. 🔴 **Step 6.5's four permutation-control jobs are still on Speed** (`1286896`/`97`/`98` RUNNING; `1286899` COMPLETED); the interlock was seen refusing in both directions (`1286901`). 🟢 **STEP 8 §6 IS CLOSED — the last three decisions ruled `1(a)`/`3(a)`/`4a(a)`/`4b(a)`.** Three findings from measuring the tables rather than quoting them: `FINDING 107` Italy has 0 empty cells (4b was UK-only), `FINDING 108` the 3 GB holes are a span-keying artefact, `FINDING 109` all 36 UK archetypes carry zero South and zero North glazing while ES/IT use all four faces — a country-correlated convention, and the reason item 1 could not be ruled “as published”. 🟢 **AND ITEM 8.1 IS BUILT AND VALIDATED: 88 archetype IDFs** — not 102, because `4a`/`4b` turn ROWS into CELLS, so the campaign is **88 x 5 = 440** archetype-runs, not 510. **All 88 run in EnergyPlus 24.2.0 (`94a887817b`) with ZERO severe errors**, selftest **20 ok / 0 FAILED**, U round-trip exact to **0.0005 W/(m²·K)** over 440 surfaces, and the selftest was **seen failing four times** on defects it found. 🔴 **`FINDING 110`: the box conserves floor area and volume but NOT envelope area, and the loss is COUNTRY-CORRELATED** — `H_transmission` box/TABULA median `it` **0.765** vs `uk` **0.956**, a **19 pp** spread sitting in the LOCO channel → **`D-S8-3` is now the ONE thing waiting on the author** (recommendation (a)). 🔴 **`FINDING 111`**: TABULA's ISO 6946 U and the U EnergyPlus actually simulates differ by median **+2.58 %** / max **+6.70 %**, and the gap grows with U so it is period- and country-correlated. 🔴 **No weather file exists, so item 8.2 now blocks 8.3, and no Step 8 gate has ever been run.** 🔴 **AND THE FIRST MEMORISATION CEILING IS SCORED AND IT ALARMED** — job `1286941`, fold `it`, Leg 4: the `D-S6-14` control came in **BELOW** the reported adapter on both attacks (`G6.10` ceiling **0.5488** vs measured **0.5539**, headroom −0.0051; `G6.11` **0.5147** vs **0.5274**, −0.0127). 🔴 **`FINDING 112`: the control DID train and reached the SAME loss as the reported model, and that is what makes it not a ceiling** — last-20-step mean loss reported `it` **0.5565** vs permuted `it` **0.5536** (the permuted one *lower*), held-in perplexity 1.7189 vs 1.7353 = **0.95 %** apart, and `G4.3`/`G4.4`/`G4.12` all FAIL on the permuted adapters, so conditioning really was destroyed and cost the loss nothing. The bodies survive the permutation intact, so the control learns the diary LANGUAGE instead of memorising. 🔴 **`FINDING 113`: the comparison has no tolerance** — SE of the AUC difference at n=2000 is 0.0128, so the two alarms are **z = 0.40** and **z = 0.99**. → **`D-S6-16` is the SECOND thing waiting on the author** (recommendation (a)). 🔴 **`FINDING 114`, from the SECOND ceiling (`1286945`, `uk`, which did NOT alarm — headroom +0.0148 / +0.0041): THE CEILING DOES NOT MOVE BETWEEN FOLDS.** `it` 0.5488 and `uk` 0.5484 are **0.0004 apart** = 1/23 of one standard error, while the reported AUCs over the same two folds differ by **0.0203**, fifty times as much. A quantity meant to bound how much this model *could* memorise, constant to four decimals across two adapters and two corpora, is not measuring memorisation capacity — and the operative consequence is that `D-S6-14` has been acting as an **UNREGISTERED BAR AT ≈ 0.548, 82 % tighter than the registered `≤ 0.65`**. `it` alarmed and `uk` did not because the *reported* AUC moved; the ceiling did not. 🔴 **CONFIRMED ON ALL THREE (`1286955`, `es`, ALARMED at a headroom of −0.0015): the three ceilings are 0.5488 / 0.5484 / 0.5466, standard deviation `0.00117` — ONE EIGHTH of the SE of a single one of these AUCs — while the reported AUCs range 9.2x more widely.** Which folds alarm is decided by noise on the reported side alone (z = 0.40, 1.16, **0.12**). `FINDING 112` reproduces on all three: permuted minus reported loss −0.0029 / +0.0190 / +0.0165, nothing over 1.1 sigma either way, held-in perplexity penalty **0.95 / 0.78 / 0.88 %**. ⚪ **All four registered controls PASS on all three folds**, `G6.12` zero exact matches over 103/40/91 rare records, floors 0.4874/0.5012/0.4914. 🔴🔴 **AND THE GOVERNING AUDIT IS READ (`1286976`, Leg 5, `it`, 49 min): `G6.10` = `0.6645` AGAINST A PRE-REGISTERED `≤ 0.65` — **FAIL**, z = 1.70 over the bar; the perplexity-gap control = `0.0570` against `≤ 0.05` — **FAIL**. `FINDING 115`. Two of the four registered controls FAIL on the reported leg, and the untuned-base floor is CLEAN at 0.4886, which is what makes the 0.6645 readable as membership signal and not a split artefact. `G6.11` 0.5594/0.75 PASS, `G6.12` 0 exact matches PASS. 🔴 **Under the prereg's own terms this is a REFUSAL** — it does not overturn the standing position that the weights cannot be released, it supplies the measurement that position lacked.** 🔴 **TWO EARLIER READINGS ARE CORRECTED BY THAT RUN.** `FINDING 114` was stated too broadly: the Leg-5 ceiling is **0.6496** against Leg-4's 0.5479 ± 0.00117 — **+0.102, or 87x the between-fold sd** — so the ceiling is constant across FOLDS at fixed capacity and responds strongly to CAPACITY, and the "unregistered bar at ≈ 0.548" reading is **Leg-4-only**. `FINDING 112`'s measurement reproduces on every run (permuted minus reported loss −0.0029 / +0.0190 / +0.0165 / **+0.0045 at 7 B, z = 0.23**) but its INFERENCE does not: at 7 B the control reaches 0.6496, so it **does** memorise substantially while its aggregate loss stays indistinguishable. Withdrawn for Leg 5, stands for Leg 4. 🔴 **`D-S6-16` is NARROWED** — option (a)'s premise ("the four controls that pass") is false on Leg 5, so it no longer gates the release, only the methods write-up; recommendation **(a′)**. ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched; no threshold moved, no checker edited.**
+#### Last updated: **2026-08-25 (night, final) — 🟢 STEP 8 IS CLOSED ON ALL SIX DEFINITION-OF-DONE ITEMS, AND 15 OF 15 PROJECT DECISIONS ARE CLOSED. ⚪ STEP 9 IS THE NEXT STEP: it is UNBLOCKED, NOTHING IS BUILT, and it needs NO GPU and NO AUTHOR RULING.** 13,108 EnergyPlus runs on 2026-08-25, 0 severe errors, all local. Decision 14 — the day-to-year chaining rule, the last open decision in the project — was **measured by `G7.18` (9,000 runs, `FINDING 136`) and RULED CLOSED by the author the same night**: convention **`independent`, seed 1**, with **the empirical null itself as the published deliverable**, no re-run and no pipeline change. 🔴 **Before quoting ANY Step 8 number: `FINDING 134` forbids every annual occupancy claim** (the effect is smaller than the between-diary spread in all three folds — only the **peak** claim survives, and only with its spread attached), **`FINDING 133` supersedes `FINDING 128`'s magnitudes** (peak **+6.38 / +4.54 / +3.96 %** against annual **+1.82 / −0.04 / +0.06 %**), **`FINDING 121`** governs any comparison to TABULA and **`FINDING 120`** any cross-fold comparison of absolute demand. ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched; no threshold moved, no checker edited to make a gate pass. ⚪ PREVIOUSLY, 2026-08-25 (late): **🟢 WORK ITEM 8.3 IS DONE: `G8.0` HAS RUN AND STEP 8 HAS A GATE BOARD FOR THE FIRST TIME.** 88 archetypes × 176 EnergyPlus runs, 0 severe errors, **1,232 band rows / 0 gate-cell FAILs**, selftest **29 ok / 0 FAILED**, **12 of 12 injections seen felling their target**, coverage clause PASS. No new model was built — `f = 0` is an endpoint of the pre-registered `D-S8-2`(c) sweep, so the 88 IDFs ran byte-identically to the 8.1 artefacts. 🔴 **`G8.1`–`G8.6` all read EXACTLY 0: they are tripwires, not accuracy measurements.** 🔴 **`FINDING 121`: against TABULA's own published `q_h_nd` — an as-modelled reference of the same quantity that `FINDING 44` never examined, covering 86 of 86 codes — the uninjected control sits +136.6 % ABOVE in Spain (21 of 24 cells) and −29.6 % / −36.7 % BELOW in the UK and Italy (32 of 32 each). The sign flips by country: 166 pp, aligned with the LOCO fold, larger than `FINDING 110`/`117`/`120`. Spain's mechanism is MEASURED — TABULA counts a 539-hour heating season, EnergyPlus heats 2,901.** 🔴 `FINDING 122` the simulation timestep is worth −4.1 / +5.6 / −3.7 % and its SIGN DIFFERS BY FOLD; `FINDING 123` EnergyPlus's unruled 18 °C ground default is worth +33.5 / +1.7 / +15.7 %, a 20× country spread; `FINDING 124` one psychrometric warning belongs to the Torino EPW alone — all 32 Italian cells, no others, and the 12/12 weather gate could not have caught it. 🔴 **`FINDING 125` CAPS 8.5: switching `phi_int` off entirely moves heating only +40.5 / +19.7 / +20.1 %, and the sweep only REDISTRIBUTES it, so the “15 to 50 % on annual space heating” the step document quotes is unreachable at the top end in two folds of three.** 🟢 **`D-S8-5` RULED BY THE AUTHOR AND APPLIED THE SAME DAY — NOTHING IS WAITING ON THE AUTHOR IN STEP 8.** Item 1 **(a)**: `G8.7` is **INFO permanently**, no band is ever created (`G87_TOLERANCE_PCT` stays `None`, and selftest `C16` now fails if that changes) — EnergyPlus hourly-dynamic vs TABULA monthly quasi-steady-state is a model-to-model structural comparison, so `FINDING 121` is published as a declared methodological limitation instead of scored. Item 2 **approved**: `D-S8-1`(a) extends **verbatim** to `G8.5`/`G8.6` — reference = the independent re-run, thresholds unmoved, and **the occupancy peak shift is reported as an empirical result, not gated against the flat control** (the `FINDING 44` inversion, now closed in the last two gates it was live in). Re-verified after the change: **`G8.7` INFO = 88, 0 gate-cell FAILs over 88 cells**, selftest **29 ok / 0 FAILED, 12 of 12 injections HIT**; no campaign cell re-run and no measured number changed. ⚪ **Work item 8.4, the two probes, is next and is unblocked.** ⚪ PREVIOUSLY, 2026-08-25 (night): 🟢 `D-S8-4` RULED AND IMPLEMENTED: THE AUTHOR REVERSED THE ACTUAL-YEAR WEATHER RULING, AND WORK ITEM 8.2 IS CLOSED.** The three EPWs are on disk on a **`TMYx.2009-2023`** basis — the same base period for all three folds, and the only published window that contains every original fieldwork period. The station was **selected by measurement**, scoring 44 candidates against TABULA's own published monthly temperatures: `es` **Valencia.Viveros 082850** (0.620), `uk` **Birmingham.AP 035340** (0.533), `it` **Torino.Venaria 160600** (1.043); both planted controls lost. Weather gate **12 ok / 0 FAILED**, **injection battery 9 of 9 seen failing with a clean baseline**. 🔴 **`FINDING 120`: the station is a free parameter worth 5–11 % of heating demand and the UK margin that picked it is 0.002 K** — all 88 archetypes were run twice to measure it (es 10.7 %, uk 5.4 %, it 8.4 % median, and **the sign differs by fold**), so **no cross-fold comparison of absolute demand is safe to ±10 %**; the occupancy effect is untouched because every level of `f` in a fold shares one EPW. 🔴 **`RL27` B12 is falsified and `RL27` has never been vetted at all** — its three named stations are the worst Spanish candidate, a 2.8× worse English one and the worst Italian one. 🔴 `FINDING 118` one climate region with two spellings inside one TABULA release; 🔴 `FINDING 119` TABULA's `HeatingDays` is a MONTHLY-mean statistic and comparing an EPW's daily count to it manufactures a 22-vs-72 artefact. ⚪ The 88 IDFs were rebuilt to clear a now-false `item 8.2 is open` note — **8.1 selftest re-run, 26 ok / 0 FAILED**. ⚪ **Work item 8.3, the uninjected control campaign, is unblocked and is next.** ⚪ PREVIOUSLY, 2026-08-25 (evening): 🟢 `D-S8-3` RULED (a), IMPLEMENTED AND CLOSED. The 88 archetype IDFs are REBUILT: the aspect ratio is no longer 1 : 1.5 but is SOLVED per archetype so the box reproduces TABULA's published wall area.** Wall area box/TABULA is now **1.000 / 1.000 / 1.000** by fold and `H_transmission` is **0.982 `es` / 0.995 `uk` / 0.933 `it`**, so `FINDING 110`'s country-correlated spread falls from **19.1 pp to 6.1 pp**. **26 of 26 selftest checks pass, all 88 run in EnergyPlus with 0 severe errors**, E+ still reproduces every TABULA U to 0.0005 W/(m²·K). 🔴 **`FINDING 117`: it is a 68 % reduction, NOT a closure, and the residue is not spread — it IS the fallbacks.** 38 of 88 archetypes fall back to 1 : 1.5 (the brief said “a few”): 26 because no real box exists, **19 of them terraced houses** whose TABULA wall area excludes the party walls a free-standing box must have, and 12 because the solved box is so elongated a quarter of the glazing will not fit on the narrow facade (10 of those 12 Italian). Solved rows spread 4.8 pp; fallback rows spread **43.1 pp**. 🔴 **NEVER quote the 6.1 pp headline without the class table**: `it`/`AB` is still **0.656** and `uk`/`AB` now OVER-states at **1.137**, so an Italian `AB` and a British `TH`/`AB` result are the two places a LOCO difference is still explainable by geometry. ⚪ A follow-on (clamp the 12 to the most elongated ADMISSIBLE aspect instead of reverting to 1 : 1.5) is recorded in `D-S8-3` §8 and was deliberately NOT taken — it is a new rule, and it needs a ruling. 🔴 **`A5` was a NO-OP when first written** — it read a stored manifest column instead of re-deriving from the geometry, so reverting a shape passed; the injection battery caught it, it now re-derives, and **7 of 7 injections are seen failing with a clean baseline**. ⚪ **Item 8.2, the weather file, is now the SINGLE binding constraint on Step 8** and needs no author letter, no GPU and no Speed job. ⚪ Python IS installed locally (full path `AppData\Local\Programs\Python\Python313\python.exe`; the bare `python` alias fails) and EnergyPlus 24.2.0 is at `C:\EnergyPlusV24-2-0`. ⚪ PREVIOUSLY, 2026-08-25 (day): 🟢 `privacy_audit.md` IS WRITTEN AND WORK ITEM 6.5 IS CLOSED — AS A REFUSAL.** `G6.10` **0.6645** against a registered **≤ 0.65** and the perplexity-gap control **0.0570** against **≤ 0.05** both **FAIL** on the governing run `1286976` (Leg 5, `Olmo-3-1025-7B`, fold `it`); the untuned-base floor is CLEAN at **0.4886**, which is what makes 0.6645 membership signal and not a split artefact; `G6.11` 0.5594 and `G6.12` 0-of-103 PASS; `G6.13` is **2 PASS / 1 FAIL** (`uk`). **The weights are NOT released**, the Data Availability statement is drafted in §8 of the audit, and the `uk` synthetic set is withheld with them. 🔴 **NEVER write it as "the privacy audit passed" or as "4 of 4"** — it ships two registered FAILs and one partial. 🔴 **`FINDING 116`: the perplexity gap fails for the PERMUTED adapter too (0.0511)**, so on this corpus at three epochs it measures train/test overfit of the diary LANGUAGE, not membership of the pairing — it does not rescue the reported 0.0570, but it forbids reading it as a second independent confirmation of `G6.10`. 🔴 **The Leg-5 coverage clause reads FAIL only because the baseline already fails** (`G6_10 <- NEVER SEEN FAILING`, no-ops `g610_tail`/`pplgap_widen`) — the vacuity condition; the same two injections DO fell `G6.10` on all three Leg-4 folds, so `G6.10` is a demonstrated gate. 🔴 **THREE CORRECTIONS from re-deriving instead of quoting**: `G6.10`'s SE is **0.00852**, not 0.0128 (the z = 1.70 stands, the SE it was attributed to does not); the Leg-4 ceiling sd is **0.001137**, not 0.00117, so the Leg-5 gap is **89.4×**, not 87×; and a mis-stated minimum-DCR range was caught before the file was saved. 🟢 **The board Artifact had been rendering BLANK** — one unescaped `"` inside a JS string killed the whole inline `<script>`, so no `Done`/`In progress` pill existed anywhere — **fixed, verified against an unpatched control, and republished**. 🔴 **`D-S8-3` IS NOW THE ONLY THING WAITING ON THE AUTHOR**; `D-S6-16` governs the methods write-up only, recommendation (a′). ⚪ The Speed queue is EMPTY and all four permutation audits are read. ⚪ PREVIOUSLY, 2026-08-24 (night, late): 🟢 `STEP 7.3` IS CLOSED ON LEG 5 AND ITS BATTERY IS SCORED: **20 PASS / 7 FAIL** over the nine scored gates, against Leg-4's 12 / 15. The Leg-5 campaign (`1286835`-`1286861`, 27/27 exit `0:0`, 5,200 records per fold per arm) had been on disk since the afternoon booked under **Step 6.3**, and Step 7's own document never received the entry. 🟢 **The two CPU debts Step 7 owed itself were paid, and both returned something Leg 4 did not predict: `FINDING 105` — six of twenty-seven pre-screen verdicts CHANGED at Leg-5 N, and `max_ramp` went RULE>NOISE on all three folds (was `it` alone), so the "coincidence metrics tell us nothing" reading was partly a 600-diary artefact; and `FINDING 106` — item 7.5's registered sizing was computed against a **600**-diary batch, the reported batch is **5,200**, so the control requirement went UP about six times to 75,531 / 16,796 / 48,809 draws, 125,536 still owed.** ⚪ Back-off ladder re-measured rather than assumed: full-depth share `0.49`-`0.64` -> `0.77`-`0.92`. 🔴 `G7.5` and `G7.9` ship FAIL 3/3 and are the **same** failure — `G7.9`'s control *is* `G7.5`'s valid subset. 🔴 **Step 6.5's four permutation-control jobs are still on Speed** (`1286896`/`97`/`98` RUNNING; `1286899` COMPLETED); the interlock was seen refusing in both directions (`1286901`). 🟢 **STEP 8 §6 IS CLOSED — the last three decisions ruled `1(a)`/`3(a)`/`4a(a)`/`4b(a)`.** Three findings from measuring the tables rather than quoting them: `FINDING 107` Italy has 0 empty cells (4b was UK-only), `FINDING 108` the 3 GB holes are a span-keying artefact, `FINDING 109` all 36 UK archetypes carry zero South and zero North glazing while ES/IT use all four faces — a country-correlated convention, and the reason item 1 could not be ruled “as published”. 🟢 **AND ITEM 8.1 IS BUILT AND VALIDATED: 88 archetype IDFs** — not 102, because `4a`/`4b` turn ROWS into CELLS, so the campaign is **88 x 5 = 440** archetype-runs, not 510. **All 88 run in EnergyPlus 24.2.0 (`94a887817b`) with ZERO severe errors**, selftest **20 ok / 0 FAILED**, U round-trip exact to **0.0005 W/(m²·K)** over 440 surfaces, and the selftest was **seen failing four times** on defects it found. 🔴 **`FINDING 110`: the box conserves floor area and volume but NOT envelope area, and the loss is COUNTRY-CORRELATED** — `H_transmission` box/TABULA median `it` **0.765** vs `uk` **0.956**, a **19 pp** spread sitting in the LOCO channel → **`D-S8-3` is now the ONE thing waiting on the author** (recommendation (a)). 🔴 **`FINDING 111`**: TABULA's ISO 6946 U and the U EnergyPlus actually simulates differ by median **+2.58 %** / max **+6.70 %**, and the gap grows with U so it is period- and country-correlated. 🔴 **No weather file exists, so item 8.2 now blocks 8.3, and no Step 8 gate has ever been run.** 🔴 **AND THE FIRST MEMORISATION CEILING IS SCORED AND IT ALARMED** — job `1286941`, fold `it`, Leg 4: the `D-S6-14` control came in **BELOW** the reported adapter on both attacks (`G6.10` ceiling **0.5488** vs measured **0.5539**, headroom −0.0051; `G6.11` **0.5147** vs **0.5274**, −0.0127). 🔴 **`FINDING 112`: the control DID train and reached the SAME loss as the reported model, and that is what makes it not a ceiling** — last-20-step mean loss reported `it` **0.5565** vs permuted `it` **0.5536** (the permuted one *lower*), held-in perplexity 1.7189 vs 1.7353 = **0.95 %** apart, and `G4.3`/`G4.4`/`G4.12` all FAIL on the permuted adapters, so conditioning really was destroyed and cost the loss nothing. The bodies survive the permutation intact, so the control learns the diary LANGUAGE instead of memorising. 🔴 **`FINDING 113`: the comparison has no tolerance** — SE of the AUC difference at n=2000 is 0.0128, so the two alarms are **z = 0.40** and **z = 0.99**. → **`D-S6-16` is the SECOND thing waiting on the author** (recommendation (a)). 🔴 **`FINDING 114`, from the SECOND ceiling (`1286945`, `uk`, which did NOT alarm — headroom +0.0148 / +0.0041): THE CEILING DOES NOT MOVE BETWEEN FOLDS.** `it` 0.5488 and `uk` 0.5484 are **0.0004 apart** = 1/23 of one standard error, while the reported AUCs over the same two folds differ by **0.0203**, fifty times as much. A quantity meant to bound how much this model *could* memorise, constant to four decimals across two adapters and two corpora, is not measuring memorisation capacity — and the operative consequence is that `D-S6-14` has been acting as an **UNREGISTERED BAR AT ≈ 0.548, 82 % tighter than the registered `≤ 0.65`**. `it` alarmed and `uk` did not because the *reported* AUC moved; the ceiling did not. 🔴 **CONFIRMED ON ALL THREE (`1286955`, `es`, ALARMED at a headroom of −0.0015): the three ceilings are 0.5488 / 0.5484 / 0.5466, standard deviation `0.00117` — ONE EIGHTH of the SE of a single one of these AUCs — while the reported AUCs range 9.2x more widely.** Which folds alarm is decided by noise on the reported side alone (z = 0.40, 1.16, **0.12**). `FINDING 112` reproduces on all three: permuted minus reported loss −0.0029 / +0.0190 / +0.0165, nothing over 1.1 sigma either way, held-in perplexity penalty **0.95 / 0.78 / 0.88 %**. ⚪ **All four registered controls PASS on all three folds**, `G6.12` zero exact matches over 103/40/91 rare records, floors 0.4874/0.5012/0.4914. 🔴🔴 **AND THE GOVERNING AUDIT IS READ (`1286976`, Leg 5, `it`, 49 min): `G6.10` = `0.6645` AGAINST A PRE-REGISTERED `≤ 0.65` — **FAIL**, z = 1.70 over the bar; the perplexity-gap control = `0.0570` against `≤ 0.05` — **FAIL**. `FINDING 115`. Two of the four registered controls FAIL on the reported leg, and the untuned-base floor is CLEAN at 0.4886, which is what makes the 0.6645 readable as membership signal and not a split artefact. `G6.11` 0.5594/0.75 PASS, `G6.12` 0 exact matches PASS. 🔴 **Under the prereg's own terms this is a REFUSAL** — it does not overturn the standing position that the weights cannot be released, it supplies the measurement that position lacked.** 🔴 **TWO EARLIER READINGS ARE CORRECTED BY THAT RUN.** `FINDING 114` was stated too broadly: the Leg-5 ceiling is **0.6496** against Leg-4's 0.5479 ± 0.00117 — **+0.102, or 87x the between-fold sd** — so the ceiling is constant across FOLDS at fixed capacity and responds strongly to CAPACITY, and the "unregistered bar at ≈ 0.548" reading is **Leg-4-only**. `FINDING 112`'s measurement reproduces on every run (permuted minus reported loss −0.0029 / +0.0190 / +0.0165 / **+0.0045 at 7 B, z = 0.23**) but its INFERENCE does not: at 7 B the control reaches 0.6496, so it **does** memorise substantially while its aggregate loss stays indistinguishable. Withdrawn for Leg 5, stands for Leg 4. 🔴 **`D-S6-16` is NARROWED** — option (a)'s premise ("the four controls that pass") is false on Leg 5, so it no longer gates the release, only the methods write-up; recommendation **(a′)**. 🟢 **WORK ITEM 8.4 IS DONE, 2026-08-25 (late): `G8.8` AND `G8.9` WERE EACH SEEN FAILING.** 6 EnergyPlus runs on one archetype, 0 severe, **10 of 10 checks ok**. `G8.8` fell on a scenario declared at `f = 0.50` and wired to `f = 1.00`'s schedule file; `G8.9` fell on a cache key over the cell name alone. 🔴 **The probing found three defects a green board was hiding.** `FINDING 126`: `G8.13`'s parser read only the LAST comma-field, so `Interpolate to Timestep = Yes` was **invisible on a real 9-field `Schedule:File`** and the row read PASS — 8.3's injection `I9` used an 8-field shape, which is why the gate looked as though it had been seen firing. Fixed additively, `I13` added, battery now **13 of 13**. `FINDING 127`: `G8.10`'s note read "worst fuel: all zero" on all 88 cells while the gate was closing District Heating Water at 97.99 GJ vs 97.99 GJ. 🔴 `FINDING 128`: the full pre-registered sweep is worth **+1.60 % on annual heating and +10.84 % on peak**, peak hour one hour earlier — **the occupancy channel is a PEAK channel**, which sharpens `FINDING 125` from a ceiling into a measurement. `FINDING 129`: `f = 0` reproduces the 8.3 control **byte-for-byte**, so `D-S8-2` item 5 (c) held. ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched; no threshold moved, no checker edited.** 🟢 **AND 2026-08-25 (night): WORK ITEMS 8.5 AND 8.6 ARE DONE, DECISION 14 IS MEASURED, AND STEP 8's DEFINITION OF DONE IS CLOSED ON ALL SIX ITEMS.** 13,108 EnergyPlus runs tonight, 0 severe. The injected campaign is **440 scenario-cells / 4,048 runs**, **28,161 band rows, 0 gate-unit FAILs**, coverage clause PASS, battery **33 ok / 18 of 18 injections HIT**; **`G8.12` and `G8.16` were evaluated for the first time in this project**, both arms of `G8.12`, all seen failing. 🔴 **THE CAMPAIGN WAS BUILT TWICE.** `FINDING 130`: the diaries were the **Leg-4 pilot**, stamped `LEG-4 PILOT -- NOT REPORTABLE` in their own records, because `tools/4thJ_step7_schedules.py` had the leg **hard-coded** and the Leg-5 pools had been unreachable since 2026-08-24. `FINDING 131`: the schedules were emitted on the survey years (`es` 2010, a **Friday** start) and wired into the 8.1 IDFs' **Sunday**-start `RunPeriod`, so every synthetic Saturday landed on a Thursday for fifty-two weeks — **`FINDING 99` realised** — and it is worth −0.12/−0.04/+0.02 % annual and **+1.27/+0.37/−0.39 % on peak with the sign differing by fold**. `FINDING 132`: the pre-registered “annual mean exactly 3.0 W/m²” was true of the generator and false of the artefact (4.01e-07 at `%.6f`). All three fixed **additively**, all three now **guarded**, and every guard **seen firing on the exact artefact that was about to ship**. 🔴 **`FINDING 133`: THE OCCUPANCY CHANNEL IS A PEAK CHANNEL AND THE ANNUAL CHANNEL IS EMPTY** — median **+1.82 / −0.04 / +0.06 %** annual against **+6.38 / +4.54 / +3.96 %** peak; this **corrects `FINDING 128`'s magnitudes** (+1.60/+10.84 → +0.18/+7.70 on the same cell) and keeps its direction. 🔴 **`FINDING 134`: ON ANNUAL HEATING THE EFFECT IS SMALLER THAN THE BETWEEN-DIARY SPREAD IN ALL THREE FOLDS** (es 1.82 vs 1.88, uk −0.04 vs 0.36, it 0.06 vs 0.16) — **no annual occupancy claim survives**; on peak it is 1.7–2.0× the spread and does. `FINDING 135`: the annual peak's hour of day **never moves** (7 in every fold at every `f` — it is the thermostat recovery hour) while its DATE moves up to 7,824 h between diaries; what moves is the mean **diurnal** profile, `uk` 5 → 7 and `it` 6 → 7 at `f ≥ 0.50`. The effect is **monotone in dwelling class in all three folds**: `AB` +10.13/+8.69/+5.82 % against `TH` +4.29/+3.06/+2.51 %. 🟢 **`FINDING 136`: DECISION 14's TRIGGER IS NOT APPROACHED.** 9,000 runs (3 folds × 6 rule points × 5 seeds × 100 dwellings, `f = 1.00` so it is an upper bound): the whole chaining convention moves peak demand **0.178 / 0.075 / 0.239 %** against `G7.18`'s **25 %**, the **seed spread beats the rule spread on every metric in every fold** (the pre-registered null), and the occupancy effect is **17–60×** the convention's entire range — **this campaign is not measuring the chaining convention**. 🟢 **AND THE AUTHOR RULED IT THE SAME NIGHT — DECISION 14 IS CLOSED, the last open decision in the project: `independent`, seed 1, with the empirical null itself as the published deliverable, no re-run and no pipeline change.** ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched, no threshold moved.
 
 ---
 
-## 🔴 2026-08-24 (night, late) — READ THIS FIRST
+## 🔴 2026-08-25 (night, final) — READ THIS FIRST
+
+### The one thing to do next
+
+🟢 **Nothing is waiting on the author in Step 8, and Step 8's definition of done is CLOSED on
+all six items.** 88 archetype IDFs, three EPWs selected by measurement, the uninjected control, both
+probes, the injected campaign and the aggregate, and every gate PASSing and seen failing.
+**Step 9 is unblocked.**
+
+⚪ **THE ONE THING TO DO NEXT IS WORK ITEM 9.1 — build `Step9_docs/outputs_step9/activity_appliance_map.csv` and `mapping_provenance.md`.** Nothing else in the project is waiting on a person, no decision is open anywhere, and Step 9 needs no GPU and no Speed allocation to start. 🔴 **Read the STEP 9 section below before writing any of it** — four rules already govern that file, and one of them (`DO NOT INVENT THE MAPPING`) is the single easiest thing in this paper for a reviewer to reject.
+
+🔴 **Before quoting ANY Step 8 number, read these three lines.**
+
+1. **`FINDING 134` forbids every annual occupancy claim.** On annual heating the sweep's effect is
+   smaller than the between-diary spread in all three folds. Only the **peak** claim survives, and
+   only with its spread attached.
+2. **`FINDING 133` supersedes `FINDING 128`'s magnitudes.** The channel is peak: **+6.38 / +4.54 /
+   +3.96 %** at `f = 0 → 1`, against annual **+1.82 / −0.04 / +0.06 %**.
+3. **`FINDING 121` still governs any comparison to TABULA**, and **`FINDING 120`** any cross-fold
+   comparison of absolute demand.
+
+🟢 **NO DECISION IS OPEN ANYWHERE IN THE PROJECT.** Decision 14, the chaining rule, was the
+last one, and the author **RULED IT CLOSED on 2026-08-25 (night)**: the convention is **`independent`,
+seed 1** for every published Step 8 and Step 9 energy dataset, and **the empirical null is the
+deliverable** — the whole rule axis moves peak demand **0.075–0.239 %** against `G7.18`'s **25 %**,
+the seed spread inside a rule beats the spread between rules on every metric in every fold, and the
+occupancy effect is **17–60×** the convention's entire range. Under the validation document's own
+pre-registration that is exactly *"the experiment has told us nothing about chaining, and the
+deliverable is that finding, not a chosen rule."* **No re-run, no pipeline change, no recalculation.**
+Ruling in §8 of `Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
+
+🔴 **What that does NOT license.** The null is about the CHAINING CONVENTION only. It does not
+weaken `FINDING 134` (no annual occupancy claim survives), and it is an **upper bound** measured at
+`f = 1.00` on one archetype per fold — quote it as such.
+
+### ⚪ STEP 9 IS THE NEXT STEP — read this before touching it
+
+**Step 9 is `Step9_docs/4thJ_09_enduseLoads.md` (implementation) and `..._val.md` (validation).**
+Its own status line reads **OPEN, nothing built**, and `Step9_docs/outputs_step9/` is **empty**.
+It runs **CPU only** — `sbatch`, `ps`, `-t 7-00:00:00` — **no GPU**, no author ruling, no
+pre-registration change. Both of its declared blockers now exist: **Step 7's diaries with the
+3-digit `ACT` codes intact**, and **Step 8's archetypes**.
+
+🔴 **Four rules already govern this step before a line of code is written.**
+
+1. **DO NOT INVENT THE MAPPING** (`RL13`, and the step document says it in those words). Every row of
+   `activity_appliance_map.csv` is adapted from a validated lineage — **CREST / Widén / LPG / RAMP**
+   — and carries the **exact table or figure** it came from, not just a paper. A row we cannot source
+   is labelled **`NOT VALIDATED` with our written reasoning**; it is never given a plausible-looking
+   number. `G9.1`/`G9.2`/`G9.3` are the gates, and **`G9.2` FAILS a row labelled VALIDATED with no
+   validation scale** — a presence test that only asks *is a label there?* is satisfied by the label.
+2. **`G9.11` IS EXPECTED TO FAIL AND IS ALLOWED TO** (ruled 2026-08-20, item 11 (a)). `RL25`
+   established that **0 of 4** published end-use models resolve activity at 3 digits, so a mapping
+   sourced from the literature **cannot** pass a 3-digit-dependence gate. 🔴 **The band is NOT
+   relaxed** — the failure is recorded as a FAIL and the 3-digit corpus decision is re-justified on
+   **microdata fidelity** instead. Relaxing a threshold because the answer came out wrong is the one
+   move this project refuses.
+3. **`G9.4` WAS WIDENED AFTER `FINDING 47`** (ruled 2026-08-20, item 12 (a)): a citation PASSES only
+   when **volume, issue, page range AND first-author surname** all match the CrossRef record —
+   **never the title alone**. A title-only match is what let our own citation note pass while being
+   wrong on three counts, and what let `RL17`'s “CrossRef-verified” DOI resolve to a paper about
+   passive cooling in Brazil. `V9.c` prints **`NOT CHECKED`**, never `PASS`, when a DOI is unreachable.
+4. **`act2` IS CALIBRATION-ONLY** (`D-S9-1` ruled (d), 2026-08-20) and **must not appear in the
+   trigger's input columns**. `G9.14` asserts the set of columns the trigger reads **against the
+   generated parquet on disk**, not against a schema constant — because a trigger reading an absent
+   column does not raise, it silently never fires.
+
+⚪ **The five work items, in order.** 9.1 the mapping table → 9.2 the two-stage trigger, with the
+appliance running its **rated cycle to completion** independently of when the activity episode ends
+(`G9.5` asserts it on synthetic edge cases, not just on the corpus) → 9.3 DHW on the **Jordan–Vajen
+four-event** model, with **`G9.9` re-opening the saved IDF to check every `WaterUse:Equipment` object
+still points at the schedule it was built with** — in 3J a value-only check hid a ×3.028 draw
+increase across 56 cells → 9.4 emit per-dwelling, per-timestep, per-end-use profiles into the Step 8
+IDFs → 9.5 aggregate.
+
+🔴 **The claim is bounded before it is made.** The source models validate at **stock scale**
+(100–500 dwellings, aggregate R² ≥ 0.90); single-dwelling prediction has high residual variance by
+construction. **Report load shapes and distributions across a stock, never one household's day** —
+`G9.13` searches the results artefacts for per-dwelling framing and fails on it.
+
+### ⚪ Still owed elsewhere — none of it blocks Step 9, and none of it is waiting on a person
+
+* **`D-S8-4` follow-on** — a top-*k* station mean, or a reported band, instead of the single
+  measured-best EPW. Recorded, deliberately not taken.
+* **`D-S8-3` follow-on** — clamp the 12 `glazing_does_not_fit` archetypes to the most elongated
+  **admissible** aspect instead of reverting to 1 : 1.5. It is a new rule, so it needs a ruling.
+* **`RL27` has never been vetted**, and its B12 station claim is falsified (`FINDING 120`).
+* **`D-S6-16`** governs the **methods write-up only**, recommendation (a′) — it no longer gates any
+  release, because option (a)'s premise is false on Leg 5.
+* **GPU-bound, not undecided:** Step 4's four owed perturbations (`G4.1` stays UNDEMONSTRATED per
+  `D-S4-11` (i)); item 6.4 / `G6.8`; Step 7 items 7.4 / 7.5 / 7.7 (`FINDING 106`: the control sizing
+  went up about sixfold at Leg-5 N, **125,536 draws still owed**).
+* The **UK-fold split report** owed by `D-S3-14`.
+
+### 🟢 Work items 8.5 and 8.6 — the injected campaign, and the two defects it was first built on
+
+**4,048 EnergyPlus runs, 659 s, 0 severe.** 88 archetypes × 5 levels of `f` × **10 generated
+diaries**, plus one independent re-run per (cell, `f`).
+
+🔴 **Nothing pre-registers WHICH diary drives which archetype**, so the campaign **measures that free
+parameter instead of choosing it** — `FINDING 120`'s precedent. Every cell runs an ensemble, every
+table carries the between-diary spread beside the effect, and `FINDING 134` is what that decision
+returned.
+
+| gate | verdicts |
+|---|---|
+| `G8.1`–`G8.6` | PASS 440 each, against the independent re-run |
+| `G8.7` | INFO 440, permanently, by `D-S8-5` item 1 (a) |
+| `G8.8` / `G8.9` | PASS 1,232 / 7,217 |
+| `G8.10` / `G8.11` / `G8.14` / `G8.15` | PASS 440 each |
+| **`G8.12`** | **PASS 7,040 / NOT_EVALUABLE 88** — 🔴 first evaluation in this project |
+| `G8.13` | PASS 3,608, from every `in.idf` on disk |
+| **`G8.16`** | **PASS 3,520 / NOT_EVALUABLE 88** — 🔴 first evaluation in this project |
+| `V8.d` / `V8.h` | PASS 440 / 88 |
+
+⚪ `G8.12` and `G8.16` say **`NOT_EVALUABLE`** on the 88 `f = 0` cells rather than a vacuous pass:
+there is no Step 7 diary there at all. **`V8.h`** separately asserts the `f = 0` multiplier is
+identically 1.0, so "no schedule" cannot hide a wrong one.
+
+🔴 **`FINDING 130` — the diaries were the LEG-4 PILOT.** `tools/4thJ_step7_schedules.py` composed its
+pool path with the leg **hard-coded**, so every schedule on disk came from the 600-diary pool whose
+own records read `LEG-4 PILOT -- NOT REPORTABLE`, while the 5,200-diary Leg-5 pools sat beside them
+unreachable. Fixed with a `--leg` argument whose **default is `leg4`** — 100 of 100 presence files
+reproduce byte-for-byte, Step 7 selftest **52 ok / 0 FAILED** — and the campaign now **refuses** a
+bundle whose provenance says NOT REPORTABLE. Back-off full-depth share 0.578/0.623/0.635 →
+**0.804/0.875/0.916**.
+
+🔴 **`FINDING 131` — the schedule's calendar was not the model's. `FINDING 99`, realised.** The 8.1
+IDFs run a **Sunday**-start `RunPeriod`; the bundles were emitted on the survey years, and `es` 2010
+starts on a **Friday**. Re-emitted on 2017 and guarded by **`V8.i`**, which reads the day out of the
+IDF and the year out of the bundle manifest and was seen refusing the exact bundle that shipped.
+Measured worth, one archetype per fold at `f = 1`: **−0.116 / −0.037 / +0.018 %** annual and
+**+1.266 / +0.371 / −0.388 %** peak — small, **sign differing by fold**, and in Spain a fifth of the
+whole occupancy peak effect.
+
+🔴 **`FINDING 132`** — the multiplier was written at `%.6f`, so the pre-registered "annual mean
+exactly 3.0 W/m²" was true of the generator and false of the artefact by 4.01e-07. Now 4.24e-11
+against a bound **derived from the write format**, never fitted.
+
+⚪ Records: `Step8_docs/docs/2026-08-25_items-8.5-8.6_injected-campaign-and-aggregate.md` and
+`Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
+
+### 🟢 Work item 8.4 — the two probes, and the three defects they found
+
+**6 EnergyPlus runs on `es_AB_ES01`, its own fold's EPW, real Step 7 presence files from the fold
+that held Spain out. 7.2 s, 0 severe, 10 of 10 checks ok.**
+
+| probe | good arm | 🔴 broken arm |
+|---|---|---|
+| `G8.8` | `f = 0.00` vs `f = 1.00` → result files **differ**; `G8.10` clean **non-vacuously** | a scenario **declared `f = 0.50`, wired to `f = 1.00`'s schedule file** → byte-identical results, **`G8.8` FELL** |
+| `G8.9` | MISS → **HIT** (the cache is proved to cache first) → schedule changed → key moved → **re-ran** | key = **the cell name alone** → stale directory handed back, **`G8.9` FELL** |
+
+⚪ `G8.8` is scored only over runs that **actually executed**, so on the stale arm it says
+`NOT_EVALUATED` rather than a pass it did not earn — which is what keeps the two gates independent.
+
+🔴 **`FINDING 126` — a gate that was recorded as seen firing, and could not fire.** `G8.13`'s
+parser read only the LAST comma-field. That is where `Interpolate to Timestep` sits on a
+`Schedule:File` written *without* the optional `Minutes per Item` — 8.3's injection `I9`'s shape. On
+a **real** 9-field object the `Yes` was invisible and the row read PASS. Fixed **additively** (read by
+position, and strip comments **per line** first — IDF writes `value,  !- Field Name`, so the comment
+belongs to the field *before* the comma). Injection **`I13`** covers the real shape; `I9` still fires;
+battery **13 of 13**.
+
+**`FINDING 127` — `G8.10`'s note read "worst fuel: all zero" on all 88 control cells while the gate
+was live.** What it actually compared on every cell: District Heating Water, **97.99 GJ against
+97.99 GJ, at 0.0000 %**. The gate was never broken; its note was, and "all zero" and "nothing to
+compare" are the two readings a vacuity guard exists to keep apart. The note now counts the fuels
+actually compared and says `VACUOUS` only when there are none.
+
+🔴 **`FINDING 128` — the pre-registered sweep is a PEAK channel, not an annual-energy channel.**
+`f = 0.00 → 1.00` on this archetype: annual heating **+1.60 %** (97.99 → 99.56 GJ), peak **+10.84 %**,
+peak hour 8672 → **8671**. The annual mean is held at exactly 3.0 W/m² by construction, so the sweep
+**redistributes** rather than adds. ⚪ One archetype, one household, one fold — **not a campaign
+result**. It says where to look, and 8.5 measures it over 88 × 5.
+
+**`FINDING 129` — `f = 0` reproduces the 8.3 control byte-for-byte.** 🟢 `D-S8-2` item 5 (c)'s whole
+point, measured: `f = 0` is an **endpoint of the sweep**, not a second control, so "the control was
+built differently" is not available as an objection to anything 8.5 reports.
+
+🟢 **Re-verified by running.** Probes PASS 10/10. 8.3 re-scored after the two scorer edits →
+**1,232 rows, 0 gate-cell FAILs over 88 cells**. Selftest → **29 ok, 0 FAILED, 13 of 13 HIT**,
+coverage clause PASS. **No campaign cell re-run, no measured number changed.** `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45`, before and after.
+
+🔴 **What 8.5 inherits.** Import `tools/4thJ_step8_scenario.py`. **Name the multiplier file
+deterministically per (cell, schedule, `f`)** — the cache key includes the injected IDF's md5, which
+contains that path, so a churning name turns the cache off. The key is conservative on purpose: a
+false MISS costs one run, a false HIT costs correctness. `G8.12` and `G8.16` become evaluable there
+for the first time.
+
+### 🟢 Work item 8.3 — the uninjected control campaign ran, and it ran first
+
+**88 archetypes × 176 EnergyPlus runs, 214.6 s, zero severe errors**, each cell on its own fold's
+`D-S8-4` EPW. Record:
+`Step8_docs/docs/2026-08-25_item-8.3_uninjected-control-campaign.md`.
+
+🟢 **No new model was built, deliberately.** `D-S8-2` item 5 was ruled (c) so that `f = 0` would be an
+**endpoint of the pre-registered sweep**, not a separately constructed control — that removes the
+"the control was built differently" objection outright. The 88 IDFs ran **byte-identically** to the
+8.1 artefacts and the selftest re-hashes all 88 on disk afterwards to prove it.
+
+🟢 **Every cell ran twice** — fresh process, different output directory, different working directory —
+because `D-S8-1`(a) made `G8.1`–`G8.4` reproducibility gates against *a re-run of the same cell* and
+that reference did not exist until now.
+
+**Board: 1,232 band rows, 0 gate-cell FAILs. Selftest 29 ok / 0 FAILED. Injection battery 12 of 12
+seen felling their target, 0 no-ops, baseline clean, coverage clause PASS.**
+
+🔴 **`G8.1`–`G8.6` all read EXACTLY 0.** EnergyPlus is deterministic; that is what a clean re-run must
+give. **They are tripwires, not accuracy measurements** — the ±5 / ±10 / 15 / 30 % thresholds sit far
+from where any honest re-run lands and can only fire on gross wiring failure. Said out loud so that
+`NMBE = 0.000 %` is never read as an accuracy claim.
+
+### 🔴 `FINDING 121` — the control is +136.6 % above TABULA in Spain and ~30–37 % below it in the UK and Italy
+
+The reference `FINDING 44` never examined was already on this laptop: **`tabula-calculator.xlsx`
+publishes `q_h_nd`, the annual heating energy need, per building variant — 86 of 86 of our codes.**
+An **as-modelled reference of the same quantity**, computed from the archetype and never from our
+schedules, so it cannot invert the way the flat-4.0 foil and the control itself do. Extractor
+`tools/4thJ_step8_tabula_reference.py` → `outputs_step8/tabula_reference.csv`.
+
+| fold | n | control | TABULA `q_h_nd` | dev | absolute | above | E+ heating h | TABULA implied h |
+|---|---|---|---|---|---|---|---|---|
+| `es` | 24 | **24.92** | 10.91 | **+136.6 %** | +17.1 | **21 of 24** | 2,901 | **539** |
+| `uk` | 32 | **104.47** | 165.93 | **−29.6 %** | −37.7 | **0 of 32** | 6,117 | 5,832 |
+| `it` | 32 | **81.00** | 168.49 | **−36.7 %** | −55.0 | **0 of 32** | 4,784 | 4,176 |
+
+🔴 **The sign flips by country and the split is total** — a **166-percentage-point** spread aligned
+with country, therefore with the LOCO fold. Larger than `FINDING 110`, `117` or `120`. Under `G8.0`
+this is a **band-applicability limitation and no value was moved.**
+
+🟢 **Spain's mechanism is measured** — `FINDING 119` from the other end. TABULA counts gains only
+inside its own heating season, recoverable as `q_int × 1000 / phi_int`: for `ES.ME` that is **539 h =
+22.4 days**, its published `HeatingDays`. EnergyPlus at a 20 °C set-point heats **2,901 h**. The UK
+(1.05×) and Italy (1.15×) nearly agree on season length, so that explains nothing there — and this
+campaign does **not** claim to have decomposed what does.
+
+### 🔴 Four conventions nobody ruled, each measured, none applied
+
+`tools/4thJ_step8_control_diagnostics.py`, one knob at a time, in temp directories. **No IDF on disk
+was modified and no band was moved** — `G8.0` forbids exactly that.
+
+| knob | change | `es` | `uk` | `it` |
+|---|---|---|---|---|
+| `D1` timestep, all 88 cells | `Timestep, 6` → `1` | −4.13 % | **+5.63 %** | −3.66 % |
+| `D2` solar | SHGC 0.70 → 0.001 | +60.50 % | +27.62 % | +23.55 % |
+| `D3` ground | E+'s 18 °C default → EPW monthly means | **+33.52 %** | +1.72 % | +15.71 % |
+| `D4` gains | `phi_int` 3.0 → 0.0 W/m² | +40.54 % | +19.68 % | +20.08 % |
+
+* 🔴 **`FINDING 122`** — the simulation timestep is a free parameter and **its sign differs by fold**,
+  so it does not divide out of a cross-fold ratio. `Timestep, 6` was never ruled by anything.
+* 🔴 **`FINDING 123`** — no `Site:GroundTemperature` object is written, so EnergyPlus uses its own
+  **constant 18.0 °C** and says so once in every error file. Worth **+33.5 / +1.7 / +15.7 %** — a
+  **20× country spread**, and in Spain that invisible default is worth more than switching the entire
+  internal gain off is worth in the UK.
+* 🔴 **`FINDING 124`** — `Temperature out of range (PsyPsatFnTemp)`, −107.10 °C, in **all 32 Italian
+  cells and no others**. A Spanish IDF on the Torino EPW reproduces it; an Italian IDF on the Valencia
+  EPW does not; every field E+ reads in that EPW is in range with zero sentinels; at `Timestep, 1` it
+  vanishes; the series is smooth across it. A sub-hourly iteration artefact, harmless — and
+  🔴 **`D-S8-4`'s 12/12 weather gate could not have caught it.**
+* 🔴 **`FINDING 125` — THE ONE THAT CHANGES WHAT 8.5 MAY CLAIM.** `D-S8-2` item 5 holds the annual
+  mean of `phi_int` at exactly 3.0 W/m² at every `f`, so the sweep **redistributes gain in time and
+  can never add or remove any**. Switching the whole gain off moves heating **+40.5 / +19.7 /
+  +20.1 %**, so **the entire occupancy channel is bounded above by that** — and the *"15 to 50 % on
+  annual space heating"* the step document quotes as *"the size of the effect this paper is
+  manipulating"* is **unreachable at the top end in two folds of three**. ⚪ Peak demand is a different
+  quantity with no annual-mean constraint; that is where the 100–300 % lives.
+
+### 🟢 `D-S8-5` is RULED — both items, and applied in the scorer the same day
+
+Author's ruling, §10 of `Step8_docs/docs/2026-08-25_item-8.3_uninjected-control-campaign.md`.
+
+1. **`G8.7` → (a): INFO, permanently, with no band ever.** No numeric band exists anywhere in this
+   project — measured by grep, and `prereg.md` has no Step 8 clause at all. The ruling is that none
+   is created: EnergyPlus hourly-dynamic against TABULA monthly quasi-steady-state `q_h_nd` is a
+   **model-to-model structural comparison, not a compliance test**, and `FINDING 121` is published as
+   a **declared methodological limitation** with its medians quoted. 🔴 `G87_TOLERANCE_PCT`
+   stays `None` permanently and selftest `C16` was **strengthened to guard the band itself** — it
+   fails if the threshold column ever fills or the `None` leaves `tools/4thJ_step8_bands.py`. Fitting
+   a number to an answer already in hand now trips a check.
+2. **`G8.5` / `G8.6` → approved: `D-S8-1`(a) extends verbatim.** Reference = the independent
+   re-run, thresholds unmoved at ±15 % and ≤ 1 h. 🔴 **The `FINDING 44` inversion is
+   closed in the last two gates it was live in**: a ±15 % peak band on the flat control fails
+   exactly when the paper's claim succeeds, so in 8.5 the occupancy-driven peak shift is a **primary
+   empirical result, reported and not gated**, while the gate stays a tripwire on identical re-runs.
+
+🟢 **Applied and re-verified, not asserted.** `tools/4thJ_step8_bands.py`,
+`tools/4thJ_gates_step8_control.py` and `tools/4thJ_step8_control_selftest.py` (backups `.bak_ds85`,
+all verified non-empty first). Scorer: 1,232 rows, `G8.7` **INFO = 88**, `G8.5`/`G8.6` **PASS = 88**,
+**0 gate-cell FAILs over 88 cells**. Selftest: **29 ok / 0 FAILED, 12 of 12 injections HIT**, coverage
+clause PASS. **No campaign cell was re-run and no measured number changed** — only how two gates are
+reported. ⚪ An INFO row carries no coverage obligation, because it makes no claim to falsify; that
+is declared rather than left as a gap.
+
+### ⚪ Three limitations now carry the within-fold reporting rule, not one
+
+`FINDING 117`'s 6.1 pp of geometry residue, `FINDING 120`'s 5–11 % of weather station, and
+`FINDING 121`'s 166 pp of method. 🟢 **Every level of `f` inside a fold shares one IDF, one EPW and one
+convention set, so the occupancy effect is untouched by all three.** 🔴 **Across folds, absolute
+demand is not comparable** — now measured three times over rather than argued once. Control peaks for
+8.5 to be read against: median **29.4 / 45.9 / 42.7 W/m²** (`es`/`uk`/`it`).
+
+⚪ Recorded, not a finding: `Step8_docs/IMP_step8/` is an **unvetted research lane** — its dossier
+specifies EnergyPlus 9.2, OpenUBEM and multi-zone geometry, all three contradicting rulings this
+project has already built against, and it is cited by no governing document. Treat it as `RL27` is
+treated.
+
+⚪ Backups, all verified non-empty first: `Step8_docs/4thJ_08_bemSimulation.md.bak_83`,
+`Step8_docs/4thJ_08_bemSimulation_val.md.bak_83`, `Prompts/RESUME.md.bak_83`. 🟢 `prereg.md` untouched,
+md5 `e4243e07cdd80c9c846b91f40e3e8c45`, verified before and after.
+
+---
+
+## ⚪ SUPERSEDED — the 2026-08-25 (night) head, `D-S8-4` and `FINDING 120`–`118`/`119`, kept for its detail
+
+### The one thing to do next
+
+🟢 **Nothing is waiting on the author that stops work, and item 8.2 is no longer the constraint —
+it is CLOSED.** `D-S8-4` ruled and implemented the same evening.
+
+⚪ **Work item 8.3, the uninjected control campaign, is now the next work item and is unblocked.**
+It is what `G8.1`–`G8.4` have always needed: they are `D-S8-1`(a) reproducibility gates with no run
+to reproduce, and the missing weather was never their reason. No Step 8 gate has ever been run. The
+Speed queue is empty and none of this needs a GPU.
+
+🔴 Before 8.3 is designed, read `FINDING 120` below. It decides what 8.3 is allowed to report.
+
+### 🟢 `D-S8-4` — the author reversed the actual-year weather ruling, and the three EPWs are on disk
+
+The author: *"pas nécessaire de choisir de l'année exacte — tu peux choisir des autres années ou TMY
+méthode qui constituent plus d'années, ça marche pour nous aussi."* This **reverses section 6 item 6**
+(2026-08-21, diary-survey-year actual weather). The old entry stands with its reasoning intact; the
+brief `Step8_docs/docs/2026-08-25_D-S8-4_weather-basis-and-station-selection.md` is what supersedes it.
+
+🟢 **The reversal is a gain and the 2026-08-21 entry said so itself**: under the actual-year ruling
+"two things differ at once" across folds — the country *and* the meteorological year. One shared base
+period removes that confound. 🟢 `prereg.md` has **no weather clause at all**, so there is nothing to
+deviate from; md5 `e4243e07cdd80c9c846b91f40e3e8c45`, untouched.
+
+**What is on disk.** `TMYx.2009-2023`, the same base period for all three folds — the only published
+15-year window that **contains all three original fieldwork windows** (es 2009-2010, uk 2014-2015,
+it 2013-2014). One EPW per fold, because the parameter tables carry exactly one climate region per
+fold. ⚪ Checked before use: **climate.onebuilding.org publishes TMYx only** — all 107 ES, 197 GB and
+148 IT files at that tag are typical years, so had the old ruling stood, the source the author pointed
+at could not have served 8.2 at all.
+
+**The station was measured, not quoted.** TABULA gives no coordinates but publishes the twelve monthly
+mean external temperatures each climate-region code stands for. Score = RMSE of the EPW's twelve
+monthly means against them; **44 stations downloaded and scored**, each shortlist carrying a planted
+control that should lose.
+
+| fold | region | station | WMO | score | worst candidate |
+|---|---|---|---|---|---|
+| `es` | `ES.ME` Mediterranean | **Valencia.Viveros** | 082850 | **0.620** | Madrid-Barajas **3.57** |
+| `uk` | `GB.Temperate` England | **Birmingham.AP** | 035340 | **0.533** | London St.James **1.69** |
+| `it` | `IT.MidClim` Zone E | **Torino.Venaria** | 160600 | **1.043** | Roma-Ciampino **4.58** |
+
+🔴 **`RL27` B12 is falsified — and `RL27` has never been vetted at all.** It has sat in
+`DeepResearchPrompts/` since 2026-08-22 cited by no document in the project. It names Madrid-Barajas
+for `ES.ME`, London Kew/Heathrow for `GB` and Rome/Bologna for `IT.MidClim`. Measured, those are the
+**worst** Spanish candidate, a **2.8× worse** English one, and the **worst** Italian one. Two name a
+climate region TABULA does not describe: `ES.ME` is Mediterranean and Madrid is not; `IT.MidClim` is
+Zone E and Rome is Zone D. **Treat every other row in `RL27` as unvetted.**
+
+### 🔴 `FINDING 120` — the station is worth 5 to 11 % of heating demand, and 0.002 K picked it
+
+Birmingham 0.5333 beat Nottingham-Watnall 0.5351. That is a coin flip, so **all 88 archetypes were run
+twice** — installed EPW versus the fold's runner-up, 176 EnergyPlus runs.
+
+| fold | median heating EUI, winner | runner-up | median \|Δ\| | max \|Δ\| |
+|---|---|---|---|---|
+| `es` | 24.9 kWh/m² | 27.3 | **10.7 %** | 36.6 % |
+| `uk` | 104.5 kWh/m² | 110.8 | **5.4 %** | 6.0 % |
+| `it` | 81.0 kWh/m² | 74.8 | **8.4 %** | 11.2 % |
+
+🔴 **The sign differs by fold** — Spain's runner-up runs warmer, Italy's colder — so it is not a common
+offset that divides out of a cross-fold ratio. Country-correlated, same class as `FINDING 110`/`117`,
+same order as the 6.1 pp geometry residue `D-S8-3` spent a whole decision reducing.
+
+🟢 **It does not touch the occupancy effect**: `f = 0` and `f = 1` share one EPW inside a fold, so the
+station cancels exactly. That is the number the paper is about. 🔴 **It does mean no cross-fold
+comparison of absolute demand is safe to ±10 %.** The 2026-08-21 within-fold reporting rule is kept
+for exactly that reason. **Those EUI figures are a sensitivity probe with no schedules applied —
+none of them is a result, and none may be quoted as one.**
+
+⚪ Untaken follow-on, needing a ruling: run each fold on the mean of its top-`k` stations, or report a
+band across them, instead of committing to one station whose margin is 0.002 K. Turns a hidden ±10 %
+into a stated interval; multiplies the campaign by `k`.
+
+### 🔴 Two smaller findings, and one gate seen failing 9 times
+
+* **`FINDING 118`** — one climate region, two spellings inside one TABULA release: the parameter
+  tables carry `GB.Temperate`, `tabula-calculator.xlsx` carries `GB.England-Temperate`. Only Great
+  Britain disagrees. The alias is explicit and the lookup **fails loudly** on a miss.
+* **`FINDING 119`** — **TABULA's `HeatingDays` is not the statistic it looks like.** TABULA derives it
+  from *monthly* means by a fractional formula (`ES.ME`: 22.4 for the year); the obvious EPW statistic
+  counts *daily* means below 12 °C and gives 72 on the same climate. Scoring on it would have rejected
+  every real Spanish coastal station. Measured, recorded, **deliberately not scored** — re-deriving
+  the 22-vs-72 gap is re-deriving an artefact.
+* ⚪ Annual solar: all 44 candidates land *above* TABULA's `I_Sol_Year_Hor`. Installed files sit at
+  `es` **+9.8 %**, `uk` **+6.7 %**, `it` **+3.0 %** — same sign everywhere, 6.8 pp of spread.
+* 🟢 **`tools/4thJ_step8_weather_selftest.py`: 12 ok, 0 FAILED**, and the half that matters is `B2` —
+  the `Site:Location` line **EnergyPlus itself writes** into `eplusout.eio` is read back and matched
+  to the manifest. 🟢 **Injection battery 9 of 9 seen felling their target, 0 no-ops, baseline clean**:
+  truncate an hour → `W3`, sentinel dry bulb → `W4`, corrupt md5 → `W2`, mix a TMYx vintage → `W6`,
+  move a station → `W7`, overwrite the score → `W8`, install the runner-up with a fully consistent
+  manifest → `W9`, reduce a candidate set to its winner → `W10`, swap two folds' EPW content behind an
+  intact manifest → `B2`.
+
+### ⚪ The 88 IDFs were rebuilt, for a comment
+
+Every IDF carried `!- NOTE : ... item 8.2 is open.` — now false, and a false provenance line stamped
+into an artefact is a defect class with a precedent here. Three comment corrections in
+`tools/4thJ_step8_idf.py`, **88 IDFs rebuilt, full 8.1 selftest re-run: 26 ok, 0 FAILED**, B1 all 88
+at zero severe errors, B3 worst deviation 0.00050 W/(m²·K). Geometry, constructions and schedules are
+byte-identical in substance; only comments and md5s moved. ⚪ Ground temperature was corrected in
+substance too: closing 8.2 does **not** give the model ground temperatures — E+ ignores the EPW
+header's unless a `Site:GroundTemperature` object points at them, and none is written.
+
+⚪ Backups, all verified non-empty first: `archetype_idf_manifest.csv.bak_ds84`,
+`Step8_docs/4thJ_08_bemSimulation.md.bak_ds84`. The `.bak_ds83` set is untouched.
+
+---
+
+## ⚪ SUPERSEDED — the 2026-08-25 (evening) head, `D-S8-3` and `FINDING 117`, kept for its detail
+
+### The one thing to do next
+
+🔴 **Nothing is waiting on the author that stops work.** `D-S8-3` was ruled **(a)** and is
+**implemented, verified and closed**. `D-S6-16` is open but governs only how the `D-S6-14` ceiling is
+described in the methods, recommendation **(a′)**.
+
+⚪ **Item 8.2 — the weather file — is now the single binding constraint on all of Step 8.** No EPW is
+on disk, the AMY licence is unverified, 8.3 cannot start without it, and `G8.1`–`G8.4` have no
+reference series, so no Step 8 gate has ever been run. It needs no GPU and no Speed job. The Speed
+queue is empty.
+
+### 🟢 `D-S8-3` = (a), IMPLEMENTED. The 88 IDFs are rebuilt and TABULA's wall area is now exact
+
+`tools/4thJ_step8_idf.py` no longer uses a fixed 1 : 1.5 aspect. It **solves** one quadratic per
+archetype so the box reproduces TABULA's published wall area:
+
+```
+    2 (W + D) H  =  A_Wall_TABULA + A_Window          W D = A_plate      W >= D
+```
+
+The target is the **gross** facade, not `A_Wall` alone, because the builder carves the glazing out of
+the facade — targeting the gross is what makes the modelled **opaque** wall equal `A_Wall` exactly.
+Everything `1(a)` was ruled *for* is untouched: the equal four-facade glazing split, `A_C_Ref`, the
+volume, `c_m`, `phi_int`, the selection, and `3(a)`'s two-layer construction (which re-conserves
+automatically — `A10` and `A11` still pass).
+
+**Verified 2026-08-25: 26 of 26 selftest checks pass, all 88 archetypes run in EnergyPlus with zero
+severe errors** (including boxes at 22 : 1), and E+'s own construction U still reproduces
+`1/(1/U_TABULA − Rsi − Rse)` to **0.0005 W/(m²·K)**.
+
+| median, box / TABULA | `es` | `uk` | `it` | spread |
+|---|---|---|---|---|
+| wall area, before | 0.917 | 0.884 | 0.666 | 25.1 pp |
+| **wall area, after** | **1.000** | **1.000** | **1.000** | **0.0 pp** |
+| `H_transmission`, before | 0.924 | 0.956 | 0.765 | **19.1 pp** |
+| `H_transmission`, after | 0.982 | 0.995 | 0.933 | **6.1 pp** |
+
+### 🔴 `FINDING 117` — read this before quoting ANY Step 8 envelope number
+
+**`FINDING 110` is reduced by 68 %, not closed, and the residue is concentrated, not spread.**
+
+* **38 of 88 archetypes fall back to 1 : 1.5.** The brief said "a few". They fall back for two
+  recorded reasons, both structural:
+  * `no_real_root` (**26**): the published wall area is below the minimum perimeter for that
+    footprint, so no real box exists. **19 of the 26 are terraced houses** — TABULA's `A_Wall` for a
+    terrace excludes the party walls a free-standing box must have. A convention collision, not a
+    data error; no aspect ratio repairs it.
+  * `glazing_does_not_fit` (**12**, es 2 / **it 10**): a real root exists but the box is so elongated
+    that a quarter of the glazing will not fit on the narrow facade. `IT.MidClim.AB.02` wanted
+    186.4 m × 3.3 m and **409 %** of that facade as glass. `1(a)`'s equal split is a strict invariant
+    and outranks the aspect, so the aspect gives way and the split is never broken.
+* 🔴 **The surviving 6.1 pp IS the fallbacks.** Solved rows (n = 50) spread **4.8 pp**; fallback rows
+  (n = 38) spread **43.1 pp**.
+* 🔴 **By class the residue is two opposite-signed cells — never quote the 6.1 pp headline without
+  them:** `it`/`AB` is still **0.656**, and `uk`/`AB` now **over**-states at **1.137**
+  (`uk`/`TH` 1.139). An Italian `AB` result and a British `TH`/`AB` result are the two places a LOCO
+  difference is still explainable by geometry.
+* ⚪ **A follow-on exists and was deliberately NOT taken**, because it is a new rule rather than an
+  application of (a): clamp the 12 `glazing_does_not_fit` rows to the most elongated *admissible*
+  aspect instead of reverting to 1 : 1.5. It would recover part of the Italian `AB` deficit with the
+  equal split intact. Recorded in `D-S8-3` §8. It needs a ruling before anyone acts on it.
+
+### ⚪ `A5` was a no-op when written, and the injection battery is what caught it
+
+The new conservation check compared the manifest's **stored** `a_wall_box` column against
+`a_wall_tabula`, so reverting an archetype's geometry to 1 : 1.5 while leaving the column alone
+**passed** — exactly the regression it exists to catch. It now **re-derives** `2(W+D)H − win_total`
+from `width`, `depth`, `height` and `win_total`. Battery: **7 of 7 injections seen felling their
+target, 0 no-ops, baseline clean so the clause is not vacuous** — revert-a-shape → `A5`,
+relabel-a-fallback → `A5`, drop-a-reason → `A5c`, long-axis-N-S → `A5d`, stop-a-fallback → `A13`,
+uncap-the-WWR → `A12`, inflate-a-footprint → `A6`. `A13`/`A14`/`A15` pin the fallback census
+(26 + 12; es 11, uk 10, it 17; 19 TH) so a TABULA re-read cannot move `FINDING 117`'s numbers
+silently.
+
+### ⚪ Local environment, corrected
+
+**Python IS installed locally** at `C:\Users\o_iseri\AppData\Local\Programs\Python\Python313\python.exe`
+(3.13.5). Bare `python` resolves to the Microsoft Store alias and fails; use the full path.
+**EnergyPlus 24.2.0** is at `C:\EnergyPlusV24-2-0\energyplus.exe` and 88 annual runs take about four
+minutes. Neither needs Speed.
+
+⚪ Backups from this change, all verified non-empty before writing:
+`tools/4thJ_step8_idf.py.bak_ds83`, `tools/4thJ_step8_idf_selftest.py.bak_ds83`,
+`Step8_docs/outputs_step8/archetype_idf_manifest.csv.bak_ds83` (the pre-ruling manifest),
+`Step8_docs/4thJ_08_bemSimulation.md.bak_ds83`,
+`Step8_docs/docs/2026-08-24_D-S8-3_*.md.bak_ds83`. `prereg.md` untouched, md5
+`e4243e07cdd80c9c846b91f40e3e8c45`.
+
+---
+
+## ⚪ SUPERSEDED — the 2026-08-25 (day) head, work item 6.5 / the privacy audit, kept for its detail
+
+### The one thing to do next
+
+🔴 **`D-S8-3` is now the ONLY thing waiting on the author, and it is the last thing standing between
+Step 8 and its first gate run.** `D-S6-16` is still open but it no longer gates anything that stops
+work — it governs how the `D-S6-14` ceiling is described in the methods, recommendation **(a′)**.
+Brief: `Step8_docs/docs/2026-08-24_D-S8-3_the-box-does-not-conserve-envelope-area.md`,
+recommendation **(a)**: keep the equal four-facade split, replace the fixed 1:1.5 aspect with the
+one that reproduces TABULA's wall area. It exists because `FINDING 110` was measured after the §6
+rulings were taken, and no ruling could have anticipated it.
+
+⚪ **Nothing is on Speed. The queue is empty** — `1286896`/`97`/`98`/`99` all COMPLETED and all four
+audits are read. The next non-blocked item that needs no author letter is **Step 8 item 8.2, the
+weather file**, which now blocks 8.3; after that, Step 7 items 7.4 / 7.5 / 7.7 and Step 4's four owed
+perturbations, all of which are GPU-bound.
+
+### 🟢 `privacy_audit.md` IS WRITTEN — work item 6.5 is CLOSED, and it closes as a REFUSAL
+
+`Step6_docs/outputs_step6/privacy_audit.md`, written 2026-08-25 from the four scored artefacts on
+disk. **Every number in it was re-derived from the JSON**, and three of those re-derivations differ
+from what the record carried; all three are recorded as corrections in the Step 6 doc's entry of the
+same date, not silently adopted.
+
+🔴 **THE DECISION: the fine-tuned adapter weights are NOT released.** `G6.10` returned **0.6645
+against a registered ≤ 0.65** on the reported leg with the reported model. Under the
+pre-registration's own terms that is a refusal — not a judgement call. The standing position that
+the weights cannot be released is no longer asserted; it is measured.
+
+| # | registered attack | fails if | measured (`1286976`, Leg 5, `it`) | verdict |
+|---|---|---|---|---|
+| 1 | loss-based MIA `G6.10` | AUC > 0.65 | **0.6645** | 🔴 **FAIL** |
+| 1b | same gate, clause 2 | TPR@FPR 0.001 > 5 % | 0.0010 | PASS |
+| 2 | reference-based MIA `G6.11` | AUC > 0.75 | 0.5594 | PASS |
+| 3 | extraction `G6.12` | any exact match, rare strata | 0 of 103 in 39 strata | PASS |
+| 4 | DCR / NNDR `G6.13` (Leg 5) | see §6.5 spec | `es` PASS, `it` PASS, **`uk` FAIL** | 2 / 1 |
+
+Controls: untuned base **0.4886** (clean, which is what makes the 0.6645 membership signal rather
+than a split artefact), perplexity gap **0.0570** against ≤ 0.05 (🔴 **FAIL**), permutation ceiling
+0.6496 / 0.5441 (alarms, headroom −0.0149 / −0.0153). **Three of three registered controls present
+for the first time.**
+
+⚪ The **Data Availability statement is drafted** in §8 of the audit, ready for the paper: weights
+withheld, `es` and `it` synthetic sets shipped, **`uk` synthetic set withheld with them** because
+`G6.13` clause 2 fails on `uk`. The synthetic release is split by fold, never shipped whole.
+
+🔴 **Never write this as "the privacy audit passed" or as "4 of 4".** It ships **two registered
+FAILs and one partial**.
+
+### 🔴 `FINDING 116` — the perplexity-gap control fails for the PERMUTED adapter too
+
+Its own gap is **0.0511**, over the same 0.05 bar. A model trained on randomly re-paired prefixes and
+bodies with **0 fixed points** still breaches it, so on this corpus at three epochs the gap measures
+train/test overfit of the diary *language*, not membership of the pairing. It does **not** rescue the
+reported 0.0570, which ships as a failure — what it forbids is reading the gap as a second,
+independent confirmation of `G6.10`. The two registered failures are one measurement plus one much
+weaker one.
+
+### 🔴 The Leg-5 coverage clause reads FAIL — never quote it bare
+
+`coverage_clause: FAIL`, `G6_10 <- NEVER SEEN FAILING`, no-ops `g610_tail` and `pplgap_widen`. This
+is the **vacuity condition**, not a defect: the harness credits an injection with felling a gate only
+on a PASS → FAIL transition, and `G6.10` already FAILs at baseline here, even though both injections
+land as designed (`g610_tail` → 0.6659, `pplgap_widen` → 0.8367). The same two **do** fell `G6.10` on
+all three Leg-4 folds, where the coverage clause is PASS with zero no-ops. **`G6.10` is a
+demonstrated gate.** Same class as the Step 6.4 generated-arm batteries.
+
+### 🔴 Three corrections from re-deriving instead of quoting
+
+1. **`G6.10`'s `z` is 1.70 but its SE is 0.00852, not 0.0128.** The 0.0128 on the record is the SE of
+   an AUC *difference* at AUC ≈ 0.55 (`FINDING 113`); the bar comparison needs the Hanley–McNeil SE
+   of a single AUC at 0.6645 with n = 2,000 per class. `(0.6645 − 0.65)/0.008516 = 1.699`. The 1.70
+   was right; the SE it was attributed to was not.
+2. **The Leg-4 ceiling sd is 0.001137, not 0.00117, and the Leg-5 gap is 89.4×, not 87×.** The brief
+   computed the sd from 4-decimal inputs. At full precision the three ceilings mean 0.547937 with a
+   sample sd of 0.0011365, so +0.10161 is 89.4 sd. It makes the point marginally stronger.
+3. **A mis-stated minimum-DCR range was caught before the file was saved** — "0.132–0.174" is the
+   `uk` reference sets only; over all nine (fold × reference set) combinations the smallest single
+   distance is **0.0694**. The clause that matters — no DCR of zero — holds on all nine.
+
+### ⚪ Also done this session
+
+* 🟢 **The board Artifact was rendering blank and is fixed.** Two `note:` strings in its `DATA` array
+  carried an unescaped `"` (`<span class="flag">` where every other note uses `'flag'`), which is a
+  `SyntaxError`, so the whole inline `<script>` never executed and `#board`, `#track` and the four
+  tallies stayed empty — no `Done` / `In progress` / `Not started` pills anywhere. Verified by
+  `node --check` plus a DOM-shim render: control (unpatched) throws and renders nothing, patched
+  renders 10 sections, 79 pills, tallies 48 / 3 / 18 / 69. **Any artifact publish carrying an inline
+  script gets `node --check` first from now on.**
+
+---
+
+## ⚪ SUPERSEDED — the 2026-08-24 (night, late) head, kept for its detail
 
 ### The one thing to do next
 

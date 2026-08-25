@@ -1,0 +1,30 @@
+{
+ "campaign": "step8_control_uninjected",
+ "cells_written": 88,
+ "decision_basis": [
+  "D-S8-2 item 5 (c): f = 0 is an endpoint of the pre-registered sweep",
+  "D-S8-1 (a): G8.1-G8.4 reference = a re-run of the same cell",
+  "D-S8-4: TMYx.2009-2023, one station per fold"
+ ],
+ "declared_cells": 88,
+ "energyplus_exe": "C:\\EnergyPlusV24-2-0\\energyplus.exe",
+ "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
+ "f": 0.0,
+ "finished_utc": "2026-08-25T15:54:13Z",
+ "gate": "G8.0",
+ "phi_int_w_m2": 3.0,
+ "platform": {
+  "cpu_count": 20,
+  "machine": "AMD64",
+  "measured_at_run_time": true,
+  "node": "tabletop1",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "python": "3.13.5"
+ },
+ "runs_per_cell": 2,
+ "schedules_applied": false,
+ "started_utc": "2026-08-25T15:50:38Z",
+ "wall_s": 214.6,
+ "work_item": "8.3"
+}

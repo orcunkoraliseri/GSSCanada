@@ -598,6 +598,13 @@ was visible before `RL17`, the scope narrowing and `RL19`.
 🔴 **Only decision 14 is genuinely open**, and `RL21` established that it **cannot be closed by
 reading** — no published study has ever compared chaining rules on the same building, no standard
 defines a protocol, and no citable threshold exists. It closes by our own experiment or not at all.
+
+🟢 **AND IT DID, 2026-08-25 (night) — 15 OF 15 CLOSED.** `G7.18` ran in Step 8 on **9,000
+EnergyPlus runs** and returned `FINDING 136`: the whole chaining axis moves peak demand
+**0.178 / 0.075 / 0.239 %** against the pre-registered **25 %** trigger, with the seed spread inside a
+rule beating the spread between rules on every metric in every fold. **The author ruled `independent`,
+seed 1 as the standard convention, and the empirical null itself as the published deliverable.**
+Ruling: §8 of `Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
 Decision 12 is deferred scope, not an open question.
 
 ✅ **Decision 15 was the one to watch, because it could quietly reverse decision 6. It did not.**

@@ -1,0 +1,107 @@
+{
+ "cache_key": "bbe5ab32844ff9a3243e2b98f762c4df67e57e927b29f44067ef6dc720f8e245",
+ "campaign": "step8_injected_sweep",
+ "cell": "es_MFH_ES02",
+ "cell_period": "ES.02",
+ "cls": "MFH",
+ "code": "ES.ME.MFH.02.Gen.ReEx.001",
+ "energyplus_build": "94a887817b",
+ "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
+ "energyplus_version": "24.2.0",
+ "ensemble": {
+  "eui_kwh_m2a_max": 24.407290387472276,
+  "eui_kwh_m2a_mean": 24.407290387472276,
+  "eui_kwh_m2a_min": 24.407290387472276,
+  "eui_kwh_m2a_sd": 0.0,
+  "monthly_j_mean": [
+   17850709999.767605,
+   10965966797.105034,
+   9113808966.740627,
+   3177179762.5499415,
+   5587667.574655486,
+   2434328.0162743637,
+   0.0,
+   0.0,
+   5061656.633899932,
+   976415529.8486084,
+   7105749925.072492,
+   16521036922.076233
+  ],
+  "n": 1,
+  "peak_hour_max": 8671,
+  "peak_hour_min": 8671,
+  "peak_w_m2_max": 28.07325037399169,
+  "peak_w_m2_mean": 28.07325037399169,
+  "peak_w_m2_min": 28.07325037399169,
+  "peak_w_m2_sd": 0.0,
+  "series_sha256": {
+   "flat": "14f302bc57062d748783543cb89fbea863b0f5f317a0dc211ebcb75e8fdfdbc1"
+  }
+ },
+ "f": 0.0,
+ "fold": "es",
+ "household": "flat",
+ "household_schedule_md5": {
+  "flat": null
+ },
+ "households": [
+  "flat"
+ ],
+ "idf": "es_MFH_ES02.idf",
+ "idf_md5_measured": "4b3f68e049d9e0a9acb65582230ac481",
+ "idf_md5_source": "6f00703da90aef15ea1c7da30b70da8c",
+ "injection": "Schedule:File on OtherEquipment E_PHI_INT; m(t) = (1-f) + f*g(t)/mean(g), annual mean exactly 1.0",
+ "multiplier_csv": "Step8_docs/outputs_step8/sched/es/flat__f000.csv",
+ "multiplier_max": 1.0,
+ "multiplier_md5": "aa46a656e1796ccd619005626eff519c",
+ "phi_int_w_m2": 3.0,
+ "platform": {
+  "cpu_count": 20,
+  "machine": "AMD64",
+  "measured_at_run_time": true,
+  "node": "tabletop1",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "python": "3.13.5"
+ },
+ "rerun": {
+  "finished_utc": "2026-08-25T17:51:33.115841Z",
+  "returncode": 0,
+  "series_sha256": "14f302bc57062d748783543cb89fbea863b0f5f317a0dc211ebcb75e8fdfdbc1",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:51:31.486225Z",
+  "stdout_tail": ".16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_MFH_ES02__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.37sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "wall_s": 1.63,
+  "warnings": 1
+ },
+ "run": {
+  "finished_utc": "2026-08-25T17:51:27.829650Z",
+  "returncode": 0,
+  "series_sha256": "14f302bc57062d748783543cb89fbea863b0f5f317a0dc211ebcb75e8fdfdbc1",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:51:26.055272Z",
+  "stdout_tail": "0min  0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_MFH_ES02__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.50sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "variables_delivered": {
+   "Zone Ideal Loads Supply Air Total Heating Energy": true,
+   "Zone Ideal Loads Zone Total Heating Energy": true,
+   "Zone Mean Air Temperature": true
+  },
+  "wall_s": 1.774,
+  "warning_kinds": {
+   "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1
+  },
+  "warnings": 1
+ },
+ "scenario_cell": "es_MFH_ES02__f000",
+ "schedule_bundle": "leg5_es_independent_seed1",
+ "schedule_file": null,
+ "schedule_fold": "es",
+ "schedule_md5": null,
+ "weather_base_period": "TMYx.2009-2023",
+ "weather_epw": "ESP_VC_Valencia.Viveros.082850_TMYx.2009-2023.epw",
+ "weather_md5": "b66696b6fdeb2421b26e33965e8e6ca2",
+ "weather_station": "Valencia.Viveros",
+ "weather_wmo": "082850",
+ "work_item": "8.5",
+ "written_utc": "2026-08-25T17:51:33.331408Z"
+}

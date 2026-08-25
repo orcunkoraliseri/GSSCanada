@@ -18,7 +18,7 @@ work. Corrected rather than quietly replaced.
 | **7.3** generate | 🟢 **DONE, BOTH LEGS, BOTH ARMS.** Leg-5 landed 2026-08-24 as jobs `1286835`-`1286861`, 27/27 exit 0:0, `5,200` records per fold per arm, all on disk. The Leg-5 battery is scored: **20 PASS / 7 FAIL** over the nine scored gates, against Leg-4's 12/15 |
 | **7.4** three-model firing-rate report | 🟡 fine-tuned constrained and unconstrained measured; the **untuned-base arm needs a GPU** |
 | **7.5** rejection-sampled control | 🔴 **RE-SIZED 2026-08-24 on measured Leg-5 yield, and the requirement went UP, not down** (`FINDING 106`): ≈**75,531 / 16,796 / 48,809** draws, of which `5,200` per fold are already generated — **125,536 still owed**. The old ≈22,500 / 8,800 / 15,700 matched a **600**-diary constrained batch; Leg-5's is **5,200** |
-| **7.6** chaining rule (decision 14) | 🟡 DoD items **3 and 4 done** on CPU and **re-run at Leg-5 N 2026-08-24** — the back-off ladder improved as hoped but **6 of 27 seed-noise verdicts changed** (`FINDING 105`). Items 1, 2, 5 and `G7.18`'s verdict need EnergyPlus. **DECISION 14 IS OPEN** |
+| **7.6** chaining rule (decision 14) | 🟡 DoD items **3 and 4 done** on CPU and **re-run at Leg-5 N 2026-08-24** — the back-off ladder improved as hoped but **6 of 27 seed-noise verdicts changed** (`FINDING 105`). Items 1, 2, 5 and `G7.18`'s verdict need EnergyPlus. 🟢 **`G7.18` RAN IN STEP 8 ON 2026-08-25 (night) — 9,000 runs, `FINDING 136`, trigger not approached — AND THE AUTHOR RULED DECISION 14 CLOSED THE SAME NIGHT: `independent`, seed 1, with the empirical null as the deliverable** |
 | **7.7** emit schedules | 🟢 **EMITTER BUILT** (selftest 52/52) and `G7.13`–`G7.17` scored 5 PASS / 0 FAIL on all three folds, all five seen falling. 🔴 The **campaign** is not run: every diary is `LEG-4 PILOT -- NOT REPORTABLE` |
 
 🔴 **Everything Leg-4 is from `allenai/OLMo-2-0425-1B`, not the reported `Olmo-3-1025-7B`. No Leg-4
@@ -137,6 +137,8 @@ downstream result regardless of transfer quality**, and Step 8 would be measurin
 rather than the model. **This is open decision 14, and it is the only decision in the project still
 open.**
 
+🟢 **RULED 2026-08-25 (night): DECISION 14 IS CLOSED — `independent`, seed 1, adopted as the standard convention, with the empirical null itself as the published deliverable. No re-run, no pipeline change.** §8 of `Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
+
 ### What `RL21` settled on 2026-08-14, and what it did not
 
 `L21` asked the literature this exact question. **The answer is that the literature does not have one.**
@@ -213,6 +215,38 @@ Generate without the mask, reject invalid records, compare marginals against the
 ### 7.6 — Decide the chaining rule (open decision 14)
 
 Run the three-rule experiment above. Record the peak-demand spread. **Decide, and write down why.**
+
+🟢 **THE ENERGYPLUS HALF HAS RUN, 2026-08-25 (night), IN STEP 8, AND THE PEAK-DEMAND SPREAD IS
+RECORDED.** `tools/4thJ_step8_chaining.py` — **9,000 runs, 1,530 s, 0 severe**: three folds × the six
+`RULE_POINTS` this document registers × the five registered seeds × 100 dwellings, one archetype per
+fold, `f = 1.00` so the sensitivity is an **upper bound**. 🔴 **`FINDING 136`: `G7.18` is NOT
+triggered and is not close.** Aggregate coincident peak power moves **0.178 % (`es`) / 0.075 %
+(`uk`) / 0.239 % (`it`)** across the whole axis, against a **25 %** trigger — a factor of a hundred.
+Annual heating moves 0.109 / 0.006 / 0.017 %, which measures `RL21`'s inference instead of accepting
+it (DoD item 2). 🔴 **The pre-registered null fired on the watts exactly as it fired on the CPU
+pre-screen: the seed spread within a rule exceeds the rule spread on EVERY metric in EVERY fold**
+(peak ratios 0.176 / 0.315 / 0.404; p99 power 0.355 / 0.377 / 0.365; max ramp 0.433 / 0.140 / 0.396;
+annual 0.429 / 0.167 / 0.211), and there is no monotone ordering in ρ anywhere. Under this
+document's own words that means *"the experiment has told us nothing about chaining, and the
+deliverable is that finding, not a chosen rule."* ⚪ The interim convention (`independent`, seed 1)
+therefore costs **at most 0.24 % of peak and 0.11 % of annual heating** relative to any other point
+on the axis, which is inside its own seed noise — so work item 8.5 does not need re-running under a
+different rule, and that statement is now checkable rather than assumed. ⚪ **Decision 14 itself is
+still the author's**: the measurement exists, the choice does not. Record:
+`Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
+
+🟢 **RULED BY THE AUTHOR 2026-08-25 (night) — DECISION 14 IS CLOSED, and it was the
+last open decision in the project.** The convention is **`independent`, seed 1**, adopted as the
+standard for every published Step 8 and Step 9 energy dataset. The reason given is the empirical
+null itself: the whole rule axis moves peak demand **0.075–0.239 %** against `G7.18`'s **25 %**,
+the seed spread beats the rule spread on every metric in every fold, and the occupancy effect is
+**17–60×** the convention's entire range. 🔴 **The null is the deliverable and is to be stated
+as such in the manuscript** — building thermal and peak response is insensitive to the day-to-year
+chaining rule relative to sampling noise. **No re-run, no pipeline change, no recalculation.**
+Ruling recorded in §8 of `Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
+
+⚪ **Work item 7.6's DoD item 6 is therefore discharged**, in Step 8, as the 2026-08-22 ruling (a)
+said it would be.
 
 🟢 **RULED 2026-08-22 — open decision 14 closes in STEP 8, on `G7.18`.** The author ruled option **(a)**: the CPU pre-screen is a screen and not the decision. It returned this document's own
 pre-registered null on every coincidence metric a peak-demand screen is made of (seed noise dominates `mean_pair_corr` on all three folds; `peak_aggregate` and `p99_aggregate` are degenerate at 1.000 on
@@ -313,7 +347,7 @@ Steps 3 (grammar is defined against the record format), 4 (the adapter) and 5 (t
 3. Generation complete for every fold.
 4. Firing rate reported for three models, per stratum.
 5. Rejection-sampled control generated and marginals compared.
-6. Open decision 14 closed with a written reason. ⚪ **Discharged in STEP 8** by `G7.18`, per the author's ruling of 2026-08-22 (option (a)) — this item cannot close inside Step 7.
+6. Open decision 14 closed with a written reason. ⚪ **Discharged in STEP 8** by `G7.18`, per the author's ruling of 2026-08-22 (option (a)) — this item cannot close inside Step 7. 🟢 **DISCHARGED 2026-08-25 (night): `G7.18` ran (9,000 runs, `FINDING 136`) and the author ruled decision 14 CLOSED — `independent`, seed 1, the written reason being the empirical null itself. §8 of `Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.**
 7. Schedules emitted with the indoor rule applied.
 8. All Step 7 gates PASS and each has been seen failing.
 

@@ -1,0 +1,127 @@
+{
+ "cache": {
+  "index": "Step8_docs\\outputs_step8\\injected_cache.json",
+  "key": "sha256 over canonical JSON of every input that can change the result"
+ },
+ "campaign": "step8_injected_sweep",
+ "decision_basis": [
+  "D-S8-2 item 5 (c): f in {0.00,0.15,0.30,0.50,1.00}, annual mean held at 3.0 W/m2",
+  "D-S8-1 (a): G8.1-G8.4 reference = a re-run of the same cell",
+  "D-S8-5 item 2: G8.5/G8.6 same re-pointing; the peak SHIFT is reported, not gated",
+  "D-S8-4: TMYx.2009-2023, one station per fold",
+  "decision 11 / G8.16: a cell's schedules come from the fold that held its country out"
+ ],
+ "declared_cells": 88,
+ "declared_reruns": 440,
+ "declared_runs": 3608,
+ "declared_scenario_cells": 440,
+ "energyplus_exe": "C:\\EnergyPlusV24-2-0\\energyplus.exe",
+ "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
+ "finished_utc": "2026-08-25T18:01:37.808159Z",
+ "household_selection": "first 10 presence files by sorted household id in the cell's own fold bundle; the same 10 for every cell in a fold",
+ "households": {
+  "es": [
+   "presence_HH_es_00035.csv",
+   "presence_HH_es_00094.csv",
+   "presence_HH_es_00151.csv",
+   "presence_HH_es_00202.csv",
+   "presence_HH_es_00353.csv",
+   "presence_HH_es_00366.csv",
+   "presence_HH_es_00417.csv",
+   "presence_HH_es_00465.csv",
+   "presence_HH_es_00476.csv",
+   "presence_HH_es_00485.csv"
+  ],
+  "it": [
+   "presence_HH_it_000072.csv",
+   "presence_HH_it_000197.csv",
+   "presence_HH_it_000320.csv",
+   "presence_HH_it_000423.csv",
+   "presence_HH_it_000733.csv",
+   "presence_HH_it_000763.csv",
+   "presence_HH_it_000869.csv",
+   "presence_HH_it_000969.csv",
+   "presence_HH_it_000992.csv",
+   "presence_HH_it_001010.csv"
+  ],
+  "uk": [
+   "presence_HH_uk_11020212.csv",
+   "presence_HH_uk_11040814.csv",
+   "presence_HH_uk_11061012.csv",
+   "presence_HH_uk_11070714.csv",
+   "presence_HH_uk_11120108.csv",
+   "presence_HH_uk_11120120.csv",
+   "presence_HH_uk_11140708.csv",
+   "presence_HH_uk_11151219.csv",
+   "presence_HH_uk_11160211.csv",
+   "presence_HH_uk_11160217.csv"
+  ]
+ },
+ "households_per_cell": 10,
+ "multiplier_decimals": 10,
+ "multiplier_mean_residue_bound": 5e-11,
+ "phi_int_mean_w_m2": 3.0,
+ "platform": {
+  "cpu_count": 20,
+  "machine": "AMD64",
+  "measured_at_run_time": true,
+  "node": "tabletop1",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "python": "3.13.5"
+ },
+ "rows_written": 3608,
+ "runs_cache_hit": 0,
+ "runs_executed": 4048,
+ "scenario_cells_written": 440,
+ "schedule_bundles": {
+  "es": "leg5_es_independent_seed1",
+  "it": "leg5_it_independent_seed1",
+  "uk": "leg5_uk_independent_seed1"
+ },
+ "schedule_provenance": {
+  "es": {
+   "backoff_full_depth_share": 0.8037738383024443,
+   "days_in_year": 365,
+   "jan1_weekday": "Sunday",
+   "leg": "leg5",
+   "pool": "generated_leg5_es_constrained.jsonl",
+   "pool_md5": "b83132f7bff8dadcc2b1a5bdd5a2a3b8",
+   "pool_n_days": 5200,
+   "runperiod_start_day": "Sunday",
+   "schedule_year": 2017
+  },
+  "it": {
+   "backoff_full_depth_share": 0.9156371155337296,
+   "days_in_year": 365,
+   "jan1_weekday": "Sunday",
+   "leg": "leg5",
+   "pool": "generated_leg5_it_constrained.jsonl",
+   "pool_md5": "cededfd2dd9aa8dee59da593bfbe2028",
+   "pool_n_days": 5200,
+   "runperiod_start_day": "Sunday",
+   "schedule_year": 2017
+  },
+  "uk": {
+   "backoff_full_depth_share": 0.8752359208523592,
+   "days_in_year": 365,
+   "jan1_weekday": "Sunday",
+   "leg": "leg5",
+   "pool": "generated_leg5_uk_constrained.jsonl",
+   "pool_md5": "f850d0ba2811c066a82d991c2c882f1b",
+   "pool_n_days": 5200,
+   "runperiod_start_day": "Sunday",
+   "schedule_year": 2017
+  }
+ },
+ "started_utc": "2026-08-25T17:50:39.043394Z",
+ "sweep_f": [
+  0.0,
+  0.15,
+  0.3,
+  0.5,
+  1.0
+ ],
+ "wall_s": 658.8,
+ "work_item": "8.5"
+}

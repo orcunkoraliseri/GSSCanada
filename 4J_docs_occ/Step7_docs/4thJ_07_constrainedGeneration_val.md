@@ -20,7 +20,7 @@ falling**), and the chaining pre-screen (90 cells).
 
 🔴 **Still genuinely unbuilt:** work item 7.2 (throughput, job `1286208`), the Leg-5 campaign
 (job `1286209`), the untuned-base arm of `G7.7`, the rejection-sampled control at the size `G7.9`
-needs, and `G7.18`'s verdict — all of which need a GPU. **Open decision 14 is OPEN.**
+needs, and `G7.18`'s verdict — all of which need a GPU. **Open decision 14 is OPEN.** 🟢 **CORRECTED 2026-08-25 (night): `G7.18` needed EnergyPlus, not a GPU, and it RAN in Step 8 — 9,000 runs, `FINDING 136`, trigger not approached. THE AUTHOR RULED DECISION 14 CLOSED the same night: `independent`, seed 1, with the empirical null as the deliverable. The four items above still need a GPU; decision 14 does not.**
 
 ⚪ Everything Leg-4 carries the provenance `LEG-4 PILOT -- NOT REPORTABLE`: the backbone is
 `allenai/OLMo-2-0425-1B`, not the reported `Olmo-3-1025-7B`. **No Leg-4 number is a result.**

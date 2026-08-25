@@ -10,11 +10,11 @@ The geometry, the construction build-up and the archetype selection are NOT
 choices made here.  They were ruled by the author on 2026-08-24 as
 `D-S8-2` items 1, 3 and 4:
 
-  1(a)  One equivalent box per archetype.  Aspect ratio 1 : 1.5, long axis
-        East-West.  Footprint  A_plate = A_C_Ref / n_Storey,  height
-        H = n_Storey * h_room.  The TOTAL glazed area is split EQUALLY over
-        the four vertical facades.  Where the total-window column is zero the
-        sum of the compass columns is used instead.
+  1(a)  One equivalent box per archetype.  Footprint A_plate = A_C_Ref /
+        n_Storey, height H = n_Storey * h_room.  The TOTAL glazed area is
+        split EQUALLY over the four vertical facades.  Where the total-window
+        column is zero the sum of the compass columns is used instead.
+        AMENDED by `D-S8-3`(a), 2026-08-25 --- see below.
   3(a)  Two-layer equivalent per opaque surface: one mass-less resistive layer
         reproducing the TABULA U, plus one capacitive layer sized so that the
         areal heat capacity reproduces c_m = 45 Wh/(m^2.K).  No external
@@ -22,6 +22,45 @@ choices made here.  They were ruled by the author on 2026-08-24 as
   4a(a) Prefer the `.Gen.` row wherever one exists.
   4b(a) A merged-period row represents EVERY period its code declares.
         4a is applied AFTER 4b.
+
+`D-S8-3`(a), ruled 2026-08-25, amends the OTHER half of 1(a) --- the fixed
+1 : 1.5 aspect ratio --- and nothing else.  `FINDING 110` measured that the
+1 : 1.5 box does not reproduce TABULA's published wall area, and that what it
+loses is country-correlated: H_transmission box/TABULA had median 0.956 on
+`uk` against 0.765 on `it`, a 19 pp spread sitting inside the LOCO channel.
+The aspect ratio is therefore no longer a constant.  It is SOLVED per
+archetype so that the box's GROSS vertical envelope reproduces TABULA's own:
+
+      2 (W + D) H  =  A_Wall_TABULA + A_Window        (gross facade)
+              W D  =  A_plate                          (1(a), untouched)
+
+so that W and D are the roots of  t^2 - S t + A_plate = 0  with
+S = (A_Wall_TABULA + A_Window) / (2 H).  The target is the GROSS facade, not
+A_Wall alone, because the builder carves the glazing out of the facade
+(`a_wall_box = 2(W+D)H - win_total`); targeting the gross is what makes the
+modelled OPAQUE wall equal TABULA's published A_Wall exactly.  W >= D always,
+so the long axis stays East-West as 1(a) has it.
+
+TWO fallbacks to 1 : 1.5, both recorded per archetype in the manifest
+(`aspect_source`, `aspect_fallback`), because a fallback nobody can count is
+a fallback nobody will believe:
+
+  `no_real_root`          S < 2 sqrt(A_plate): the published wall area is
+                          below the minimum perimeter for that footprint, so
+                          no real box exists.  26 of 88, and NOT random ---
+                          19 of the 26 are terraced houses, whose TABULA wall
+                          area excludes the party walls a free-standing box
+                          has to have.
+  `glazing_does_not_fit`  a real root exists, but the box is so elongated
+                          that a quarter of the glazing will not fit on the
+                          narrow facade (WWR > 0.94).  12 of 88, 10 of them
+                          Italian.  1(a)'s EQUAL four-facade split is a strict
+                          invariant and outranks the aspect ratio, so the
+                          aspect gives way, not the split.
+
+`FINDING 117` records what this leaves behind: the country-correlated residue
+falls from 19.1 pp to 6.1 pp, it does NOT reach zero, and 17 of the 38
+fallbacks are Italian.  Read it before quoting the medians.
 
 Section 6 item 2 (ruled 2026-08-21) gives ONE THERMAL ZONE per archetype.
 
@@ -44,7 +83,9 @@ import sys
 # --------------------------------------------------------------------------
 # Ruled constants.  None of these is a free parameter of this script.
 # --------------------------------------------------------------------------
-ASPECT = 1.5                      # 1(a): long axis East-West, W/D = 1.5
+ASPECT = 1.5                      # 1(a) as first ruled; D-S8-3(a) keeps it
+                                  # ONLY as the documented fallback shape
+WWR_CAP = 0.94                    # a facade cannot hold more glass than wall
 C_M_WH_M2K = 45.0                 # 3(a): TABULA EU boundary condition, c_m
 C_M_J_M2K = C_M_WH_M2K * 3600.0   # = 162 000 J/(m^2.K) of A_C_Ref
 N_FACADES = 4                     # 1(a): equal split over four vertical faces
@@ -91,8 +132,10 @@ ASSUMED = [
      "None. TABULA residential has no cooling demand; the model is "
      "heating-only (ThermostatSetpoint:SingleHeating)."),
     ("ground_temp", None, "-",
-     "Not set here. Left to EnergyPlus defaults until item 8.2 supplies a "
-     "weather file and with it a site."),
+     "Not set here, and item 8.2 closing does NOT change that. The EPW named "
+     "in weather_manifest.csv supplies the site, but EnergyPlus does not read "
+     "the EPW header's ground temperatures unless a Site:GroundTemperature "
+     "object points at them, and none is written. Still an E+ default."),
     ("window_frame", None, "-",
      "No frame fraction column. U_Window_1 is applied to the whole opening "
      "via WindowMaterial:SimpleGlazingSystem, whose U-factor is an NFRC "
@@ -220,10 +263,10 @@ def derive(row):
     if a_ref <= 0 or n_st <= 0 or h_room <= 0:
         raise ValueError("degenerate geometry in %s" % row["Code_Building"])
 
-    a_plate = a_ref / n_st                      # 1(a)
-    width = math.sqrt(ASPECT * a_plate)         # East-West, the long axis
-    depth = math.sqrt(a_plate / ASPECT)         # North-South
-    height = n_st * h_room
+    a_plate = a_ref / n_st                      # 1(a), untouched
+    height = n_st * h_room                      # 1(a), untouched
+    # width/depth are no longer constants of the model.  D-S8-3(a) solves them
+    # below, once TABULA's wall area and the glazed area are both known.
 
     # 1(a): total glazed area, with the compass-sum fallback.
     win_total = f(row, "A_Window_1") + f(row, "A_Window_2")
@@ -252,6 +295,34 @@ def derive(row):
                          (f(row, "A_Window_2"), f(row, "U_Window_2"))])
     if u_win <= 0:
         u_win = f(row, "U_Window_1") or f(row, "U_Window_2")
+
+    # ------------------------------------------------------------------
+    # D-S8-3(a): the aspect ratio is an OUTPUT, solved from TABULA's own wall
+    # area.  See the module docstring for the algebra and for both fallbacks.
+    # Nothing here touches A_plate, the height, or the equal glazing split.
+    # ------------------------------------------------------------------
+    def fallback_box():
+        return math.sqrt(ASPECT * a_plate), math.sqrt(a_plate / ASPECT)
+
+    a_wall_gross_target = a_wall_t + win_total
+    s_half = a_wall_gross_target / (2.0 * height)      # = W + D
+    disc = s_half * s_half - 4.0 * a_plate
+    if a_wall_gross_target <= 0.0 or disc < 0.0:
+        # No real box has this footprint and that little wall.
+        width, depth = fallback_box()
+        aspect_source = "fallback"
+        aspect_fallback = ("no_wall_area" if a_wall_gross_target <= 0.0
+                           else "no_real_root")
+    else:
+        root = math.sqrt(disc)
+        width = (s_half + root) / 2.0               # long axis, East-West
+        depth = (s_half - root) / 2.0
+        aspect_source, aspect_fallback = "tabula", ""
+        # 1(a)'s equal split is a strict invariant and outranks the aspect.
+        if depth <= 0.0 or (win_face / (depth * height)) > WWR_CAP:
+            width, depth = fallback_box()
+            aspect_source = "fallback"
+            aspect_fallback = "glazing_does_not_fit"
 
     # The box's own envelope.
     a_wall_box = 2.0 * (width + depth) * height - win_total
@@ -283,6 +354,9 @@ def derive(row):
         "bc": row["Code_BoundaryCond"],
         "a_ref": a_ref, "n_storey": n_st, "h_room": h_room,
         "a_plate": a_plate, "width": width, "depth": depth, "height": height,
+        "aspect": (width / depth) if depth > 0 else 0.0,
+        "aspect_source": aspect_source, "aspect_fallback": aspect_fallback,
+        "a_wall_gross_target": a_wall_gross_target,
         "win_total": win_total, "win_face": win_face, "win_source": win_source,
         "u_roof": u_roof, "u_wall": u_wall, "u_floor": u_floor, "u_win": u_win,
         "dub": dub,
@@ -389,10 +463,20 @@ def build_idf(d):
     L.append("!- Archetype   : %s" % d["code"])
     L.append("!- Fold        : %s   class %s   period %s   boundary %s"
              % (d["country"], d["cls"], d["period"], d["bc"]))
-    L.append("!- Geometry    : D-S8-2 item 1(a), equal-facade box, aspect 1:1.5, long axis E-W")
+    L.append("!- Geometry    : D-S8-2 item 1(a) + D-S8-3(a), equal-facade box, long axis E-W")
+    # D-S8-3(a).  A fallback box must NEVER read as if it reproduced TABULA's
+    # wall area -- it is the one thing this header exists to make unmistakable.
+    if d["aspect_source"] == "tabula":
+        L.append("!- Aspect      : W/D = %.4f  (D-S8-3a, SOLVED: this box reproduces "
+                 "A_Wall_TABULA exactly)" % (W / D))
+    else:
+        L.append("!- Aspect      : W/D = %.4f  (D-S8-3a FALLBACK: %s --- this box does "
+                 "NOT reproduce A_Wall_TABULA)"
+                 % (W / D if D > 0 else 0.0, d["aspect_fallback"]))
     L.append("!- Layers      : D-S8-2 item 3(a), two-layer equivalent, c_m = 45 Wh/(m2.K)")
     L.append("!- Zoning      : section 6 item 2, ONE thermal zone, no internal partition")
-    L.append("!- NOTE        : no Site:Location and no RunPeriod weather --- item 8.2 is open.")
+    L.append("!- NOTE        : no Site:Location by design. The EPW supplies the site --- "
+             "item 8.2 is CLOSED (D-S8-4), see weather_manifest.csv.")
     L.append("")
     L.append("Version, %s;" % EPLUS_VERSION)
     L.append("")
@@ -564,7 +648,9 @@ def build_idf(d):
              "  Sunday,                  !- Day of Week for Start Day\n"
              "  No, No, No, Yes, Yes;    !- Holidays, DST, rain, snow\n"
              "!- The RunPeriod is a CALENDAR, not a weather choice.\n"
-             "!- Item 8.2 still supplies the EPW, and with it the site.")
+             "!- The EPW supplies the weather and the site: item 8.2 is closed under\n"
+             "!- D-S8-4 on a TMYx.2009-2023 basis, one station per fold, and the file\n"
+             "!- for this fold is named in outputs_step8/weather_manifest.csv.")
     L.append("")
     L.append("Output:Variable, *, Zone Ideal Loads Supply Air Total Heating Energy, Hourly;")
     L.append("Output:Variable, *, Zone Mean Air Temperature, Hourly;")
@@ -626,6 +712,7 @@ def main():
     cols = ["fold", "cls", "cell_period", "row_period", "expanded_by_4b",
             "code", "idf", "idf_md5",
             "a_ref", "n_storey", "h_room", "a_plate", "width", "depth", "height",
+            "aspect", "aspect_source", "aspect_fallback", "a_wall_gross_target",
             "win_total", "win_face", "win_source", "wwr_max", "wwr_over_limit",
             "u_wall", "u_roof", "u_floor", "u_win", "dub",
             "a_wall_tabula", "a_roof_tabula", "a_floor_tabula", "a_win_tabula",
@@ -642,7 +729,8 @@ def main():
 
     rp = os.path.join(base, "archetype_selection_report.json")
     io.open(rp, "w", encoding="utf-8").write(
-        json.dumps({"rulings": "D-S8-2 items 1(a) 3(a) 4a(a) 4b(a), 2026-08-24",
+        json.dumps({"rulings": "D-S8-2 items 1(a) 3(a) 4a(a) 4b(a), 2026-08-24; "
+                                "D-S8-3(a) aspect from A_Wall_TABULA, 2026-08-25",
                     "assumed": [{"name": a, "value": v, "unit": u, "why": w}
                                 for a, v, u, w in ASSUMED],
                     "eplus_version": EPLUS_VERSION,

@@ -17,9 +17,11 @@ Two halves, and the second is the one that matters.
      trusted.  `FINDING 56` discipline --- a check that cannot fail is not a
      check, so half A alone would not do.
 
-The weather file used in half B is whatever EnergyPlus ships.  It is NOT the
-study's weather: item 8.2 is open, and a U-factor round-trip does not depend
-on the climate.  The run is a validity probe, never a result.
+The weather file used in half B is whatever EnergyPlus ships, and that stays
+true now that item 8.2 is CLOSED (`D-S8-4`).  It is deliberate, not laziness: a
+U-factor round-trip must not depend on the climate, and running this half on the
+study's own EPWs would let a weather regression pass itself off as an envelope
+result.  The run is a validity probe, never a result.
 """
 
 import argparse
@@ -84,20 +86,63 @@ def half_a(base):
           any(r["idf"] == "uk_AB_GB04.idf" and ".Gen." in r["code"] for r in rows),
           [r["code"] for r in rows if r["idf"] == "uk_AB_GB04.idf"])
 
-    # 1(a): aspect ratio, footprint and height, on every row.
-    bad_aspect = bad_plate = bad_h = bad_win = 0
+    # 1(a) + D-S8-3(a): footprint, height, glazing split and the SOLVED aspect.
+    #
+    # A5 replaces the old "aspect is 1.5 everywhere" check, which D-S8-3(a)
+    # made false by design.  The invariant is no longer a shape; it is a
+    # CONSERVATION, and it is conditional on how the shape was obtained:
+    #   aspect_source == "tabula"    -> the modelled OPAQUE wall must equal
+    #                                   TABULA's published A_Wall exactly
+    #   aspect_source == "fallback"  -> the shape must be exactly 1 : 1.5
+    # Both halves can fail, and they fail on different rows, so neither can be
+    # satisfied by satisfying the other.  FINDING 56 discipline.
+    bad_plate = bad_h = bad_win = 0
+    bad_conserve, bad_fb_shape, bad_order, bad_reason = [], [], [], []
+    REASONS = {"no_real_root", "glazing_does_not_fit", "no_wall_area"}
     for r in rows:
         w, d = float(r["width"]), float(r["depth"])
         a_ref, n_st, h_room = float(r["a_ref"]), float(r["n_storey"]), float(r["h_room"])
-        if not near(w / d, 1.5, 0.0, TOL_AREA):
-            bad_aspect += 1
         if not near(w * d, a_ref / n_st, 0.0, TOL_AREA):
             bad_plate += 1
         if not near(float(r["height"]), n_st * h_room, 0.0, TOL_AREA):
             bad_h += 1
         if not near(float(r["win_face"]) * 4.0, float(r["win_total"]), 1e-9, TOL_AREA):
             bad_win += 1
-    check("A5  1(a) aspect W/D = 1.5 everywhere", bad_aspect == 0, "%d off" % bad_aspect)
+        if w < d - 1e-9:
+            bad_order.append(r["code"])          # long axis must stay E-W
+        # Re-derive the opaque wall FROM W, D, H and the glazing.  Reading
+        # `a_wall_box` back would make this a no-op -- the stored column
+        # survives a reverted geometry untouched, and the injection battery
+        # caught exactly that on 2026-08-25.
+        h, wt = float(r["height"]), float(r["win_total"])
+        a_wall_geom = 2.0 * (w + d) * h - wt
+        if not near(a_wall_geom, float(r["a_wall_box"]), 1e-6, TOL_AREA):
+            bad_conserve.append("%s manifest a_wall_box %.3f is not the box's own %.3f"
+                                % (r["code"], float(r["a_wall_box"]), a_wall_geom))
+        src, why = r["aspect_source"], r["aspect_fallback"]
+        if src == "tabula":
+            if why:
+                bad_reason.append("%s: tabula row carries reason %r" % (r["code"], why))
+            if not near(a_wall_geom, float(r["a_wall_tabula"]), 1e-6, TOL_AREA):
+                bad_conserve.append("%s box %.3f vs TABULA %.3f"
+                                    % (r["code"], a_wall_geom,
+                                       float(r["a_wall_tabula"])))
+        elif src == "fallback":
+            if why not in REASONS:
+                bad_reason.append("%s: reason %r not in %s" % (r["code"], why, REASONS))
+            if not near(w / d, 1.5, 0.0, TOL_AREA):
+                bad_fb_shape.append("%s W/D %.6f" % (r["code"], w / d))
+        else:
+            bad_reason.append("%s: aspect_source %r" % (r["code"], src))
+
+    check("A5  D-S8-3(a) solved rows conserve TABULA's A_Wall exactly",
+          not bad_conserve, "; ".join(bad_conserve[:4]))
+    check("A5b D-S8-3(a) fallback rows are exactly 1 : 1.5",
+          not bad_fb_shape, "; ".join(bad_fb_shape[:4]))
+    check("A5c every fallback declares a reason, no solved row does",
+          not bad_reason, "; ".join(bad_reason[:4]))
+    check("A5d 1(a) long axis stays East-West: W >= D on every row",
+          not bad_order, "; ".join(bad_order[:4]))
     check("A6  1(a) footprint = A_C_Ref / n_Storey", bad_plate == 0, "%d off" % bad_plate)
     check("A7  1(a) height = n_Storey * h_room", bad_h == 0, "%d off" % bad_h)
     check("A8  1(a) glazing split equally over 4 facades", bad_win == 0, "%d off" % bad_win)
@@ -120,9 +165,38 @@ def half_a(base):
           all(not r["clamped"] for r in rows),
           ";".join(r["code"] for r in rows if r["clamped"]))
 
-    # No window may be larger than the wall that holds it.
+    # No window may be larger than the wall that holds it.  Under D-S8-3(a)
+    # this stopped being a formality: the solved boxes are elongated, and on
+    # 12 archetypes a quarter of the glazing does not fit on the narrow
+    # facade.  A12 is what the `glazing_does_not_fit` fallback exists to keep
+    # true, so if the fallback ever stops firing this is the check that says
+    # so -- not the geometry, which would still look fine.
     check("A12 no facade exceeds the 0.94 window-to-wall cap",
-          all(not r["wwr_over_limit"] for r in rows))
+          all(not r["wwr_over_limit"] for r in rows),
+          ";".join(r["code"] for r in rows if r["wwr_over_limit"])[:200])
+
+    # A13 is a REGRESSION guard, not an arithmetic one: it pins the fallback
+    # census that FINDING 117 is written from.  If a TABULA re-read, a
+    # reselection or a units change moves any of these, the finding's numbers
+    # are stale and must be re-derived before they are quoted again.
+    fb = [r for r in rows if r["aspect_source"] == "fallback"]
+    cen = {}
+    for r in fb:
+        cen[r["aspect_fallback"]] = cen.get(r["aspect_fallback"], 0) + 1
+    want = {"no_real_root": 26, "glazing_does_not_fit": 12}
+    check("A13 fallback census is 26 no_real_root + 12 glazing_does_not_fit",
+          cen == want, "got %r" % cen)
+    byfold = {}
+    for r in fb:
+        byfold[r["fold"]] = byfold.get(r["fold"], 0) + 1
+    check("A14 fallbacks by fold are es 11, uk 10, it 17 (FINDING 117)",
+          byfold == {"es": 11, "uk": 10, "it": 17}, "got %r" % byfold)
+    th = sum(1 for r in fb if r["cls"] == "TH")
+    check("A15 19 of the 26 no-real-root rows are terraced houses",
+          th == 19 and sum(1 for r in fb
+                           if r["cls"] == "TH"
+                           and r["aspect_fallback"] == "no_real_root") == 19,
+          "TH fallbacks %d" % th)
     return rows
 
 
@@ -158,8 +232,8 @@ def half_b(base, eplus, epw, limit):
     arch = os.path.join(base, "archetypes")
     print("\nB. ENERGYPLUS ROUND-TRIP  (%d runs, weather = %s)"
           % (len(rows), os.path.basename(epw)))
-    print("   the weather file is E+'s own; item 8.2 is open and a U-factor "
-          "does not depend on climate")
+    print("   the weather file is E+'s own ON PURPOSE --- item 8.2 is closed, but a "
+          "U-factor must not depend on climate")
 
     tmp = tempfile.mkdtemp(prefix="4j_s8_")
     failed_run, u_off, no_tbl, film_gap = [], [], [], []

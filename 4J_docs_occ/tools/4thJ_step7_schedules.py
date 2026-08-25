@@ -446,7 +446,7 @@ def build(gen_dir, fold, step2_dir, crosswalk, corpus, out_dir, year,
           timestep_min, rule, seed, n_households, rho=0.0, arm="constrained",
           min_size=1, pool_limit=None, interpolate=None, n_hours_override=None,
           keep_series=False, outdoor_override=None, use_compact=False,
-          presence_offset=0.0):
+          presence_offset=0.0, leg="leg4"):
     """Emit one campaign cell. Returns the manifest dict.
 
     `interpolate` and `n_hours_override` exist ONLY so the two registered
@@ -455,7 +455,12 @@ def build(gen_dir, fold, step2_dir, crosswalk, corpus, out_dir, year,
     is stamped into the manifest.
     """
     bitpos = load_bit_positions(crosswalk)
-    pool_path = os.path.join(gen_dir, "generated_leg4_%s_%s.jsonl" % (fold, arm))
+    # `leg` defaults to leg4 so every invocation written before this argument
+    # existed reproduces byte-for-byte.  It is an argument at all because the
+    # leg was hard-coded here, which is why every schedule on disk came from the
+    # 600-diary pool whose own records stamp themselves NOT REPORTABLE while the
+    # 5,200-diary Leg-5 pools sat beside them unreachable.
+    pool_path = os.path.join(gen_dir, "generated_%s_%s_%s.jsonl" % (leg, fold, arm))
     pools, pool_meta = load_pool(pool_path, step2_dir, bitpos, limit=pool_limit,
                                  outdoor_override=outdoor_override)
     cal = year_day_types(year)
@@ -534,6 +539,7 @@ def build(gen_dir, fold, step2_dir, crosswalk, corpus, out_dir, year,
         "households": per_hh,
         "pool": pool_meta,
         "provenance": pool_meta["provenance"],
+        "leg": leg,
     }
     with io.open(os.path.join(out_dir, "manifest.json"), "w",
                  encoding="utf-8", newline="\n") as fh:
@@ -559,6 +565,9 @@ def main(argv=None):
     ap.add_argument("--rule", default="independent", choices=CHAINING_RULES)
     ap.add_argument("--rho", type=float, default=0.0)
     ap.add_argument("--seed", type=int, required=True)
+    ap.add_argument("--leg", default="leg4",
+                    help="which generation leg's pool to draw days from. "
+                         "Default leg4 so existing invocations reproduce.")
     ap.add_argument("--households", type=int, default=100)
     ap.add_argument("--min-size", type=int, default=1)
     ap.add_argument("--interpolate", default=None,
@@ -585,8 +594,9 @@ def main(argv=None):
     m = build(a.gen, a.fold, a.step2, a.crosswalk, a.corpus, a.out, a.year,
               a.timestep, a.rule, a.seed, a.households, a.rho, a.arm,
               a.min_size, None, a.interpolate, a.hours, False,
-              outdoor_override, a.compact, a.presence_offset)
+              outdoor_override, a.compact, a.presence_offset, a.leg)
     print("emitted %d schedules -> %s" % (m["n_households"], a.out))
+    print("  leg                 %s" % m["leg"])
     print("  provenance          %s" % m["provenance"])
     print("  pool                %s  %d days  md5 %s"
           % (m["pool"]["pool_file"], m["pool"]["n_days"], m["pool"]["pool_md5"]))

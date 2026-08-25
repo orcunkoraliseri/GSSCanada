@@ -1,0 +1,107 @@
+{
+ "cache_key": "1f53f7f3852cc92dbb2947865f411f16c722d369ffffc695226673be449a8003",
+ "campaign": "step8_injected_sweep",
+ "cell": "uk_MFH_GB04",
+ "cell_period": "GB.04",
+ "cls": "MFH",
+ "code": "GB.ENG.MFH.04.Gen.ReEx.001",
+ "energyplus_build": "94a887817b",
+ "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
+ "energyplus_version": "24.2.0",
+ "ensemble": {
+  "eui_kwh_m2a_max": 95.10663220454853,
+  "eui_kwh_m2a_mean": 95.10663220454853,
+  "eui_kwh_m2a_min": 95.10663220454853,
+  "eui_kwh_m2a_sd": 0.0,
+  "monthly_j_mean": [
+   37614851487.79677,
+   29340284524.262314,
+   21239296392.102493,
+   13136386644.761686,
+   7855115468.112795,
+   2849272809.972766,
+   363754009.2649432,
+   673737242.5840067,
+   4668648114.980522,
+   11660122897.805943,
+   28000674892.517376,
+   34134243392.165207
+  ],
+  "n": 1,
+  "peak_hour_max": 727,
+  "peak_hour_min": 727,
+  "peak_w_m2_max": 44.52561718215222,
+  "peak_w_m2_mean": 44.52561718215222,
+  "peak_w_m2_min": 44.52561718215222,
+  "peak_w_m2_sd": 0.0,
+  "series_sha256": {
+   "flat": "310a5d0e588aa5461673757af5b0a9f219cd291bfcbe9a8897e0a8618f26c726"
+  }
+ },
+ "f": 0.0,
+ "fold": "uk",
+ "household": "flat",
+ "household_schedule_md5": {
+  "flat": null
+ },
+ "households": [
+  "flat"
+ ],
+ "idf": "uk_MFH_GB04.idf",
+ "idf_md5_measured": "f976aa541e4e6722d8675bb43a862db7",
+ "idf_md5_source": "f3bd46dc69ab87ef1167f43d81754d42",
+ "injection": "Schedule:File on OtherEquipment E_PHI_INT; m(t) = (1-f) + f*g(t)/mean(g), annual mean exactly 1.0",
+ "multiplier_csv": "Step8_docs/outputs_step8/sched/uk/flat__f000.csv",
+ "multiplier_max": 1.0,
+ "multiplier_md5": "aa46a656e1796ccd619005626eff519c",
+ "phi_int_w_m2": 3.0,
+ "platform": {
+  "cpu_count": 20,
+  "machine": "AMD64",
+  "measured_at_run_time": true,
+  "node": "tabletop1",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "python": "3.13.5"
+ },
+ "rerun": {
+  "finished_utc": "2026-08-25T17:55:04.867702Z",
+  "returncode": 0,
+  "series_sha256": "310a5d0e588aa5461673757af5b0a9f219cd291bfcbe9a8897e0a8618f26c726",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:55:03.152061Z",
+  "stdout_tail": ".16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\uk_MFH_GB04__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.46sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "wall_s": 1.716,
+  "warnings": 1
+ },
+ "run": {
+  "finished_utc": "2026-08-25T17:54:59.292491Z",
+  "returncode": 0,
+  "series_sha256": "310a5d0e588aa5461673757af5b0a9f219cd291bfcbe9a8897e0a8618f26c726",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:54:57.564110Z",
+  "stdout_tail": "0min  0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\uk_MFH_GB04__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.46sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "variables_delivered": {
+   "Zone Ideal Loads Supply Air Total Heating Energy": true,
+   "Zone Ideal Loads Zone Total Heating Energy": true,
+   "Zone Mean Air Temperature": true
+  },
+  "wall_s": 1.728,
+  "warning_kinds": {
+   "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1
+  },
+  "warnings": 1
+ },
+ "scenario_cell": "uk_MFH_GB04__f000",
+ "schedule_bundle": "leg5_uk_independent_seed1",
+ "schedule_file": null,
+ "schedule_fold": "uk",
+ "schedule_md5": null,
+ "weather_base_period": "TMYx.2009-2023",
+ "weather_epw": "GBR_ENG_Birmingham.AP.035340_TMYx.2009-2023.epw",
+ "weather_md5": "5214009f62a6646392f94abe1010b0c9",
+ "weather_station": "Birmingham.AP",
+ "weather_wmo": "035340",
+ "work_item": "8.5",
+ "written_utc": "2026-08-25T17:55:05.002065Z"
+}

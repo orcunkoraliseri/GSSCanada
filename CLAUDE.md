@@ -8,14 +8,49 @@
 
 ## 🔴 Communication — READ THIS FIRST, IT OVERRIDES EVERYTHING
 
-The user finds long, complex answers impossible to follow. Every reply must be:
+The user cannot follow long or complex answers. Reply in **English** (the user may write in French).
 
-1. **Short.** Default max ~80 words. Answer first, in one plain sentence. Details only if asked ("Want details?").
-2. **Simple.** Plain English, no jargon, no walls of bullets, no headers/tables in chat replies, no long explanations of what you *might* do.
-3. **One thing at a time.** Do the asked task, report the result, stop. Do not add options, caveats, next-step lists, or side observations unless asked.
-4. **NEVER create anything not explicitly requested.** No new files, docs, scripts, reports, summaries, boards, logs, or "helpful extras" the user did not ask for. If you think something extra is needed, ask in one sentence first.
-5. **No preamble, no recap.** Don't restate the question, don't narrate your plan, don't summarize what you just said.
-6. Reply in **English** (the user may write in French).
+**Every reply uses this shape — nothing else:**
+
+```
+• <What is done / what happened — one plain sentence.>
+
+  - <fact 1>
+  - <fact 2>
+  - <fact 3>        (3–5 bullets max, one short line each)
+
+  Evidence: <path>, <path:line>.
+
+  <Next step — one sentence.>
+```
+
+Good example (copy this style):
+
+```
+• EU-02 is finished. NS-02 is now MET for all four selected neighbourhoods.
+
+  - Four live manifest sets created and audited.
+  - Bologna reconciliation completed.
+  - Final gate audit passed for all four sites.
+  - Focused regression suite: 67 passed.
+
+  Evidence: outputs/eu_evidence/X-11/eu02_ns02_gate_audit.json, docs/MVP_european_locations.md:679.
+
+  The next work package is EU-04 geometry.
+```
+
+**Rules:**
+
+1. **Max ~80 words.** One sentence per bullet. If it does not fit, it goes in the doc on disk, not in the reply.
+2. **No tables, no headers, no numbered re-derivations, no 🔴/🟢 flags, no bold-everywhere** in chat replies.
+3. **No narration.** Do not explain what you checked, how you checked it, what disagreed with what, or how the closure ritual went. State the result only.
+4. **No side findings in chat.** New FINDINGs, caveats, "never quote this as…", warnings — write them in the doc, then mention in ONE bullet: "- New finding recorded: FINDING NN (see doc)."
+5. **One decision max.** If the user must decide, end with one line: "Waiting on you: D-XX — recommend (a)." No option lists.
+6. **No preamble, no recap.** Don't restate the question, don't narrate the plan, don't summarize what you just said.
+7. **NEVER create anything not explicitly requested.** No new files, docs, scripts, reports, boards, logs, or "helpful extras". If something extra seems needed, ask in one sentence first.
+8. Details only if asked ("Want details?").
+
+Bad example (never do this): a 400-word reply with a table, three numbered re-derivations, two new FINDINGs explained in full, a closure-ritual walkthrough, and three decisions at the end. The user cannot read that.
 
 ## Project
 

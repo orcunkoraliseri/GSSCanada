@@ -1,5 +1,5 @@
 {
-  "rulings": "D-S8-2 items 1(a) 3(a) 4a(a) 4b(a), 2026-08-24",
+  "rulings": "D-S8-2 items 1(a) 3(a) 4a(a) 4b(a), 2026-08-24; D-S8-3(a) aspect from A_Wall_TABULA, 2026-08-25",
   "assumed": [
     {
       "name": "SHGC",
@@ -29,7 +29,7 @@
       "name": "ground_temp",
       "value": null,
       "unit": "-",
-      "why": "Not set here. Left to EnergyPlus defaults until item 8.2 supplies a weather file and with it a site."
+      "why": "Not set here, and item 8.2 closing does NOT change that. The EPW named in weather_manifest.csv supplies the site, but EnergyPlus does not read the EPW header's ground temperatures unless a Site:GroundTemperature object points at them, and none is written. Still an E+ default."
     },
     {
       "name": "window_frame",

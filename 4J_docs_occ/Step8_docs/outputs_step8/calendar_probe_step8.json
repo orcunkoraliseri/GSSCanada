@@ -1,0 +1,166 @@
+{
+ "f": 1.0,
+ "folds": {
+  "es": {
+   "aligned": {
+    "bundle": "leg5_es_independent_seed1",
+    "eui_mean": 22.382856515274725,
+    "jan1_weekday": "Sunday",
+    "n": 10,
+    "peak_hour": [
+     8671,
+     8672,
+     8672,
+     8669,
+     8672,
+     8672,
+     8672,
+     8672,
+     8670,
+     8671
+    ],
+    "peak_w_m2_mean": 26.56761594670502,
+    "runperiod_start_day": "Sunday",
+    "schedule_year": 2017,
+    "severe": 0
+   },
+   "cell": "es_AB_ES01",
+   "code": "ES.ME.AB.01.Gen.ReEx.001",
+   "delta_survey_minus_aligned_pct": {
+    "eui": -0.11610953580720261,
+    "peak": 1.2658093626320952
+   },
+   "survey_year": {
+    "bundle": "leg5_es_independent_seed1_cal2010",
+    "eui_mean": 22.356867884474447,
+    "jan1_weekday": "Friday",
+    "n": 10,
+    "peak_hour": [
+     8671,
+     8672,
+     8672,
+     8669,
+     8672,
+     8672,
+     8672,
+     8672,
+     8670,
+     8671
+    ],
+    "peak_w_m2_mean": 26.903911316786548,
+    "runperiod_start_day": "Sunday",
+    "schedule_year": 2010,
+    "severe": 0
+   }
+  },
+  "it": {
+   "aligned": {
+    "bundle": "leg5_it_independent_seed1",
+    "eui_mean": 81.0590999037897,
+    "jan1_weekday": "Sunday",
+    "n": 10,
+    "peak_hour": [
+     391,
+     391,
+     8215,
+     1063,
+     391,
+     391,
+     391,
+     391,
+     391,
+     391
+    ],
+    "peak_w_m2_mean": 44.89266575193655,
+    "runperiod_start_day": "Sunday",
+    "schedule_year": 2017,
+    "severe": 0
+   },
+   "cell": "it_AB_IT01",
+   "code": "IT.MidClim.AB.01.Gen.ReEx.001",
+   "delta_survey_minus_aligned_pct": {
+    "eui": 0.017864604526712957,
+    "peak": -0.38840612484578274
+   },
+   "survey_year": {
+    "bundle": "leg5_it_independent_seed1_cal2013",
+    "eui_mean": 81.07358079142043,
+    "jan1_weekday": "Tuesday",
+    "n": 10,
+    "peak_hour": [
+     391,
+     391,
+     391,
+     1063,
+     391,
+     391,
+     391,
+     391,
+     391,
+     391
+    ],
+    "peak_w_m2_mean": 44.71829988854948,
+    "runperiod_start_day": "Sunday",
+    "schedule_year": 2013,
+    "severe": 0
+   }
+  },
+  "uk": {
+   "aligned": {
+    "bundle": "leg5_uk_independent_seed1",
+    "eui_mean": 93.99371726374903,
+    "jan1_weekday": "Sunday",
+    "n": 10,
+    "peak_hour": [
+     727,
+     727,
+     727,
+     727,
+     727,
+     727,
+     727,
+     727,
+     991,
+     7992
+    ],
+    "peak_w_m2_mean": 42.347206118817965,
+    "runperiod_start_day": "Sunday",
+    "schedule_year": 2017,
+    "severe": 0
+   },
+   "cell": "uk_AB_GB01",
+   "code": "GB.ENG.AB.01.ApartmentBuildings.SyAv.001",
+   "delta_survey_minus_aligned_pct": {
+    "eui": -0.0367016219618471,
+    "peak": 0.370971516099222
+   },
+   "survey_year": {
+    "bundle": "leg5_uk_independent_seed1_cal2014",
+    "eui_mean": 93.959220044971,
+    "jan1_weekday": "Wednesday",
+    "n": 10,
+    "peak_hour": [
+     727,
+     727,
+     727,
+     727,
+     727,
+     727,
+     727,
+     727,
+     7992,
+     7992
+    ],
+    "peak_w_m2_mean": 42.50430219138261,
+    "runperiod_start_day": "Sunday",
+    "schedule_year": 2014,
+    "severe": 0
+   }
+  }
+ },
+ "guard": "V8.i, deliberately bypassed for the misaligned arm",
+ "households_per_arm": 10,
+ "runs": 60,
+ "wall_s": 35.1,
+ "what": "the schedule/model calendar mismatch, measured"
+}

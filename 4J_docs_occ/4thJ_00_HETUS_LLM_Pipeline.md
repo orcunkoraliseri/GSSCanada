@@ -1836,6 +1836,16 @@ day, and **decision 15 closed the same evening when `RL20` returned a clean nega
 🔴 **Only decision 14 is genuinely open, and `RL21` established that it cannot be closed by reading.**
 Decision 12 remains deferred as scope rather than open as a question. See V12 to V14.
 
+🟢 **UPDATE 2026-08-25 (night) — 15 OF 15 NOW CLOSED. Decision 14 closed by our own experiment,
+exactly as `RL21` said it would have to.** `G7.18` ran in Step 8 (`tools/4thJ_step8_chaining.py`,
+**9,000 EnergyPlus runs**, three folds × six rule points × five seeds × 100 dwellings at `f = 1.00`,
+so an upper bound) and returned `FINDING 136`: the whole chaining axis moves peak demand
+**0.178 / 0.075 / 0.239 %** against the **25 %** trigger, and the seed spread within a rule beats the
+spread between rules on every metric in every fold. **The author ruled `independent`, seed 1 as the
+standard convention, with the empirical null itself as the published deliverable.** Decision 12
+remains deferred scope. Ruling: §8 of
+`Step8_docs/docs/2026-08-25_decision-14_chaining-on-a-watt.md`.
+
 **What closed since the sixteen-report round:**
 
 * ✅ **Decision 3, the model family, is CLOSED — by our own measurement, not by `RL18`.** Primary

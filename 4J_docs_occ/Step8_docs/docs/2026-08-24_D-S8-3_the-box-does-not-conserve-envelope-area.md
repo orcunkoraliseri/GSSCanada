@@ -2,7 +2,10 @@
 
 **Date:** 2026-08-24 (night)
 **Raised by:** the item 8.1 build, from measurement — not from reading the ruling again
-**Status:** OPEN. One question, three options, one recommendation.
+**Status:** 🟢 **CLOSED 2026-08-25 — ruled (a) by the author and IMPLEMENTED.** See §7 for the
+ruling, and the Step 8 progress log entry of 2026-08-25 for what the implementation measured. 🔴 The
+brief said "a few archetypes" would fall back; **38 of 88 do**, and `FINDING 117` records why that is
+structural rather than numerical, and what artefact survives.
 **Evidence:** `Step8_docs/outputs_step8/archetype_idf_manifest.csv` (88 rows, written by
 `tools/4thJ_step8_idf.py`); `4thJ_08_bemSimulation.md`, entry 2026-08-24 (night), `FINDING 110`.
 
@@ -111,3 +114,60 @@ it, not a hand-wave.
 
 One line is enough: `D-S8-3 = (a)`, `(b)` or `(c)`. If (a), the rebuild and the full 88-run
 EnergyPlus selftest run immediately and the fallback list comes back with the result.
+
+---
+
+## 7. AUTHOR'S ANSWER
+
+> **`D-S8-3` Ruling:** 🟢 **Option (a) — Replace fixed aspect ratio with archetype-specific aspect ratio that reproduces TABULA published wall area, while preserving the equal four-facade glazing split.**
+>
+> Solve $2(W+D)\cdot H = A_{\text{Wall\_total}}$ with $W\cdot D = A_{\text{plate}}$. For archetypes where no real solution exists (wall area below minimal perimeter), fall back to $1:1.5$ aspect ratio and explicitly log the fallback in `archetype_idf_manifest.csv`.
+
+---
+
+## Author's Directives & Action Plan
+
+| # | Item | Ruling | Core Action | Impact / Invariants |
+|---|---|---|---|---|
+| **1** | `D-S8-3` (Archetype Envelope Area Conservation) | 🟢 **Option (a)** | **Calculate aspect ratio per archetype from TABULA $A_{\text{Wall}}$ quadratic**; conserve $A_{\text{plate}}$, volume, and wall area; maintain equal 4-facade glazing distribution; log any minimal-perimeter fallbacks to $1:1.5$. | Eliminates the 19 pp country-correlated transmission artifact (`FINDING 110`) before running EnergyPlus simulations. |
+
+### Execution Directives:
+1. Update `tools/4thJ_step8_idf.py` with the quadratic wall-area aspect ratio solver.
+2. Re-emit the 88 archetype IDFs and re-run the 88-archetype EnergyPlus selftest suite.
+3. Record all fallback archetypes in `Step8_docs/outputs_step8/archetype_idf_manifest.csv`.
+4. Invariants: Floor area $A_{\text{C\_Ref}}$, thermal capacitance $c_m$, internal gain baseline, and the equal 4-facade glazing split (`1(a)`) remain strictly conserved.
+
+---
+
+## 8. WHAT THE IMPLEMENTATION FOUND — read this with §7
+
+Executed 2026-08-25. All four directives carried out; all four invariants hold (selftest `A6`, `A7`,
+`A8`, `A10`, `A11`). 26 of 26 checks pass, all 88 archetypes still run in EnergyPlus with zero severe
+errors, and every new check was **seen failing** under injection before being trusted — one of them,
+`A5`, was a **no-op** as first written and the battery is what caught it.
+
+🟢 **The ruling delivered what it names.** Wall area box/TABULA is now **1.000 / 1.000 / 1.000** by
+fold. `H_transmission` box/TABULA: **0.982 `es` / 0.995 `uk` / 0.933 `it`**. The 19.1 pp
+country-correlated spread of `FINDING 110` falls to **6.1 pp** — a 68 % reduction.
+
+🔴 **Two things the brief did not anticipate, both recorded as `FINDING 117`:**
+
+1. **38 of 88 archetypes fall back, not "a few".** 26 because no real box exists
+   (`S < 2√A_plate`) — and **19 of those 26 are terraced houses**, whose TABULA `A_Wall` excludes
+   the party walls a free-standing box must have. That is a modelling-convention collision, not a
+   data error, and no aspect ratio repairs it. A further 12 fall back because the solved box is so
+   elongated that a quarter of the glazing will not fit on the narrow facade (`IT.MidClim.AB.02`
+   wanted 186.4 m × 3.3 m and **409 %** of that facade as glass). Since directive 4 makes the equal
+   split a strict invariant, the **aspect** gives way and the split is never broken.
+2. **The 6.1 pp that survives is not a remainder — it is the fallbacks.** Among the 50 solved
+   archetypes the spread is **4.8 pp**; among the 38 fallbacks it is **43.1 pp**. By class the
+   residue is two opposite-signed cells: **`it`/`AB` still 0.656** (10 of the 12 glazing fallbacks
+   are Italian `AB`/`MFH`) and **`uk`/`AB` now 1.137**. Never quote the 6.1 pp headline without
+   them: an Italian `AB` result and a British `TH`/`AB` result are the two places a LOCO difference
+   is still explainable by geometry.
+
+⚪ **One follow-on is available and is NOT taken here**, because it is a new rule rather than an
+application of (a): the 12 `glazing_does_not_fit` rows could be clamped to the most elongated
+*admissible* aspect — the shape that just fits the glazing — instead of reverting all the way to
+1 : 1.5. That would recover part of the Italian `AB` deficit while keeping the equal split intact.
+It needs a ruling.

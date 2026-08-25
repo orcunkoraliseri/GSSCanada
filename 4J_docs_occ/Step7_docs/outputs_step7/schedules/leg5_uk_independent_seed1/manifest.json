@@ -1,0 +1,748 @@
+{
+  "arm": "constrained",
+  "backoff_depth_counts": {
+    "2": 3337,
+    "3": 4860,
+    "4": 57503
+  },
+  "backoff_full_depth_share": 0.8752359208523592,
+  "fold": "uk",
+  "household_sizes": [
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    3,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    3,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    3,
+    1,
+    2,
+    1,
+    3,
+    1,
+    2,
+    2,
+    2,
+    2,
+    4,
+    1,
+    2,
+    3,
+    3,
+    2,
+    2,
+    1,
+    2,
+    4,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    3,
+    2,
+    1,
+    2,
+    1,
+    3,
+    1,
+    2,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    4,
+    1,
+    5,
+    3,
+    2,
+    1,
+    2,
+    3,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1
+  ],
+  "households": [
+    {
+      "hid": "13250802",
+      "mean_presence": 0.896689497716895,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "12070706",
+      "mean_presence": 0.7296137747336378,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "16101119",
+      "mean_presence": 0.8359018264840182,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "13120511",
+      "mean_presence": 0.6061263318112634,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "33051012",
+      "mean_presence": 0.8359589041095891,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "20210718",
+      "mean_presence": 0.773753805175038,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "21201004",
+      "mean_presence": 0.695880898021309,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "19010905",
+      "mean_presence": 0.7955003805175038,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15150920",
+      "mean_presence": 0.42317351598173514,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "12260106",
+      "mean_presence": 0.5652968036529681,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "28080607",
+      "mean_presence": 0.7770072298325723,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11151219",
+      "mean_presence": 0.45220700152207005,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "19070709",
+      "mean_presence": 0.7791159309994926,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "20061016",
+      "mean_presence": 0.7768074581430745,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11020212",
+      "mean_presence": 0.7515315829528159,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "20151219",
+      "mean_presence": 0.5344653729071538,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "16190517",
+      "mean_presence": 0.8585806697108067,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "15260107",
+      "mean_presence": 0.7597222222222223,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "12310316",
+      "mean_presence": 0.45197869101978694,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "17190114",
+      "mean_presence": 0.6533675799086758,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11160316",
+      "mean_presence": 0.7328703703703704,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "11120120",
+      "mean_presence": 0.7886510654490106,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11140708",
+      "mean_presence": 0.34524353120243534,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "11061012",
+      "mean_presence": 0.7915049467275495,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "19011213",
+      "mean_presence": 0.7879471080669711,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15190502",
+      "mean_presence": 0.45812404870624046,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "19291207",
+      "mean_presence": 0.735445205479452,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11160211",
+      "mean_presence": 0.6446917808219178,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "15221202",
+      "mean_presence": 0.7263222983257229,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "20090319",
+      "mean_presence": 0.7847222222222222,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "33080601",
+      "mean_presence": 0.7424847792998478,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15280712",
+      "mean_presence": 0.8405251141552511,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "18070705",
+      "mean_presence": 0.713375190258752,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15271006",
+      "mean_presence": 0.7776065449010654,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15210418",
+      "mean_presence": 0.7847222222222222,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "21010917",
+      "mean_presence": 0.8000190258751902,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "17031112",
+      "mean_presence": 0.6870053272450533,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "11120108",
+      "mean_presence": 0.8361872146118722,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "19241106",
+      "mean_presence": 0.7121004566210045,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "12290907",
+      "mean_presence": 0.6134639776763064,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "15010901",
+      "mean_presence": 0.9154299847792999,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "17070714",
+      "mean_presence": 0.7872336377473365,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "13150916",
+      "mean_presence": 0.8355974124809741,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "17310304",
+      "mean_presence": 0.7355498477929985,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "36051013",
+      "mean_presence": 0.7024923896499239,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "45051018",
+      "mean_presence": 0.5786244292237442,
+      "n_members": 4,
+      "n_values": 8760
+    },
+    {
+      "hid": "15031116",
+      "mean_presence": 0.7271499238964992,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "17110817",
+      "mean_presence": 0.6853405631659056,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "16310308",
+      "mean_presence": 0.7443810248604769,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "35051017",
+      "mean_presence": 0.7443493150684931,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "42051001",
+      "mean_presence": 0.7876712328767124,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "19090209",
+      "mean_presence": 0.764193302891933,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11190509",
+      "mean_presence": 0.7256468797564688,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "24051002",
+      "mean_presence": 0.8355022831050228,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "16050501",
+      "mean_presence": 0.6250665905631658,
+      "n_members": 4,
+      "n_values": 8760
+    },
+    {
+      "hid": "19160201",
+      "mean_presence": 0.6060882800608828,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "19230310",
+      "mean_presence": 0.8541666666666666,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "14220916",
+      "mean_presence": 0.7339421613394216,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "18220908",
+      "mean_presence": 0.47226027397260273,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "18280401",
+      "mean_presence": 0.5722602739726027,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "12210716",
+      "mean_presence": 0.45684931506849313,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "20101119",
+      "mean_presence": 0.8541666666666666,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "46051019",
+      "mean_presence": 0.636624809741248,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "13050118",
+      "mean_presence": 0.6572678843226789,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "14151217",
+      "mean_presence": 0.8337899543378996,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "19090208",
+      "mean_presence": 0.77720700152207,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "18241105",
+      "mean_presence": 0.8009956874682902,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "29080606",
+      "mean_presence": 0.6937119482496196,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11160217",
+      "mean_presence": 0.905441400304414,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "21151209",
+      "mean_presence": 0.7334665144596652,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11241104",
+      "mean_presence": 0.5889840182648401,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "17140415",
+      "mean_presence": 0.541736428209031,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "19090214",
+      "mean_presence": 0.6517123287671233,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "14201016",
+      "mean_presence": 0.726693302891933,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "14190101",
+      "mean_presence": 0.4563546423135464,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "37051020",
+      "mean_presence": 0.8033675799086758,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "15241116",
+      "mean_presence": 0.849410197869102,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11070714",
+      "mean_presence": 0.7292998477929985,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15090206",
+      "mean_presence": 0.787652207001522,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15280412",
+      "mean_presence": 0.689259893455099,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "19160203",
+      "mean_presence": 0.6896118721461187,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "52051019",
+      "mean_presence": 0.7641837899543379,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "18061006",
+      "mean_presence": 0.8541666666666666,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "18120115",
+      "mean_presence": 0.693093607305936,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "21010911",
+      "mean_presence": 0.4520738203957382,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "16210715",
+      "mean_presence": 0.7671518264840183,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "11040814",
+      "mean_presence": 0.7584474885844749,
+      "n_members": 4,
+      "n_values": 8760
+    },
+    {
+      "hid": "19031107",
+      "mean_presence": 0.9219939117199392,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "51051016",
+      "mean_presence": 0.7284627092846271,
+      "n_members": 5,
+      "n_values": 8760
+    },
+    {
+      "hid": "13220917",
+      "mean_presence": 0.6940131912734653,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "15120505",
+      "mean_presence": 0.8502758751902588,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "20020211",
+      "mean_presence": 0.8541666666666666,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "12040801",
+      "mean_presence": 0.836472602739726,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "24080613",
+      "mean_presence": 0.7604515474378488,
+      "n_members": 3,
+      "n_values": 8760
+    },
+    {
+      "hid": "18190517",
+      "mean_presence": 0.7851978691019786,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "15090210",
+      "mean_presence": 0.7415810502283106,
+      "n_members": 2,
+      "n_values": 8760
+    },
+    {
+      "hid": "41051010",
+      "mean_presence": 0.6660007610350076,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "19230208",
+      "mean_presence": 0.8541666666666666,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "26080611",
+      "mean_presence": 0.9221270928462709,
+      "n_members": 1,
+      "n_values": 8760
+    },
+    {
+      "hid": "18150902",
+      "mean_presence": 0.5697488584474886,
+      "n_members": 1,
+      "n_values": 8760
+    }
+  ],
+  "interpolate_to_timestep": "No",
+  "leg": "leg5",
+  "n_hours_override": null,
+  "n_households": 100,
+  "n_values_per_schedule_expected": 8760,
+  "perturbations": {
+    "interpolate": null,
+    "n_hours_override": null,
+    "outdoor_override": null,
+    "presence_offset": 0.0,
+    "use_compact": false
+  },
+  "pool": {
+    "n_days": 5200,
+    "n_keys_full_depth": 890,
+    "n_undecodable": 0,
+    "outdoor_at_home_is_shipped": true,
+    "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+    "outdoor_at_home_used": [
+      "322",
+      "341",
+      "342",
+      "344"
+    ],
+    "pool_file": "generated_leg5_uk_constrained.jsonl",
+    "pool_md5": "f850d0ba2811c066a82d991c2c882f1b",
+    "provenance": null
+  },
+  "provenance": null,
+  "rho": 0.0,
+  "rule": "independent",
+  "seed": 1,
+  "timestep_min": 60,
+  "year": 2017
+}

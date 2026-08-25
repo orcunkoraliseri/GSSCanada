@@ -125,6 +125,8 @@ BEM_Setup/SimResults_Step8/
 **/*.log
 **/*.err
 **/*.out
+**/*.eio
+**/*.end
 
 # Step 9 Prototype simulation runs
 2J_docs_occ_nTemp/Step9_docs/prototype/baseline/

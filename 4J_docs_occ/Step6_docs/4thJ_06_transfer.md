@@ -257,7 +257,7 @@ Steps 4, 5 and 7. ✅ **Decision 11 no longer blocks it: closed 2026-08-14, four
 2. Three nulls built, the raked-donor null built from real diaries.
 3. All folds run, all scored against Tier 4.
 4. All three reviewer attacks answered with an experiment.
-5. Privacy audit complete with its three controls.
+5. ✅ **DONE 2026-08-25.** Privacy audit complete with its three controls — `outputs_step6/privacy_audit.md`. 🔴 It closes as a **REFUSAL**: `G6.10` 0.6645 against a registered ≤ 0.65 and the perplexity-gap control 0.0570 against ≤ 0.05 both FAIL on the governing run `1286976`. Complete does not mean passed; never write it as 4 of 4.
 6. All Step 6 gates PASS and each has been seen failing.
 
 ---
@@ -3497,3 +3497,87 @@ same thing the bar caught.
 * 🔴 Leg 4 remains the pilot and remains `NOT REPORTABLE`. Every Leg-4 number above is context
   for the Leg-5 result, never a substitute for it.
 * `D-S6-16` still needs an answer for the **methods write-up**; it no longer gates the release.
+
+---
+
+### 2026-08-25 — 🟢 **`privacy_audit.md` IS WRITTEN. WORK ITEM 6.5 IS CLOSED, AND IT CLOSES AS A REFUSAL.**
+
+`outputs_step6/privacy_audit.md`, written from the four scored artefacts on disk, not from any
+summary. Every number in it was re-derived from the JSON; three re-derivations differ from what the
+record carried and are recorded as corrections below rather than silently adopted.
+
+#### The decision
+
+🔴 **The fine-tuned adapter weights are NOT released.** `G6.10` — a registered gate with a
+registered bar — was scored on the reported leg with the reported model and returned **0.6645
+against ≤ 0.65**. Under the pre-registration's own terms that is a refusal. It is not a judgement
+call, and the standing position that the weights cannot be released is no longer asserted: it is
+measured.
+
+⚪ The Data Availability statement is drafted in §8 of the audit, ready for the paper. It withholds
+the weights, ships the `es` and `it` synthetic sets, and **withholds the `uk` synthetic set** with
+them, because `G6.13` clause 2 fails on `uk`.
+
+#### The four registered attacks, governing run `1286976`
+
+| # | attack | fails if | measured | verdict |
+|---|---|---|---|---|
+| 1 | loss-based MIA `G6.10` | AUC > 0.65 | **0.6645** | 🔴 **FAIL** |
+| 1b | same gate, clause 2 | TPR@FPR 0.001 > 5 % | 0.0010 | PASS |
+| 2 | reference-based MIA `G6.11` | AUC > 0.75 | 0.5594 | PASS |
+| 3 | extraction `G6.12` | any exact match, rare strata | 0 of 103 in 39 strata | PASS |
+| 4 | DCR / NNDR `G6.13`, Leg 5 | see spec | `es` PASS, `it` PASS, **`uk` FAIL** | 2 / 1 |
+
+Controls: untuned base **0.4886** (clean), perplexity gap **0.0570** against ≤ 0.05 (🔴 FAIL),
+permutation ceiling 0.6496 / 0.5441 (alarms, headroom −0.0149 / −0.0153).
+**Three of three registered controls are present for the first time.**
+
+#### 🔴 Three corrections, from re-deriving instead of quoting
+
+1. **The `z` on `G6.10` is 1.70 and the SE is 0.00852, not 0.0128.** The 0.0128 on the record is the
+   SE of an AUC *difference* at AUC ≈ 0.55 (`FINDING 113`); the bar comparison needs the
+   Hanley–McNeil SE of a single AUC at 0.6645, with n = 2,000 per class. Re-derived:
+   `Q1 = A/(2−A) = 0.49757`, `Q2 = 2A²/(1+A) = 0.53057`, **SE = 0.008516**, so
+   `(0.6645 − 0.65)/SE = 1.699`. The published 1.70 is right; the SE it was attributed to was not.
+2. **The Leg-4 ceiling sd is 0.001137, not 0.00117, and the Leg-5 gap is 89× it, not 87×.** The
+   brief computed the sd from the 4-decimal values (0.5466 / 0.5484 / 0.5488). At full precision
+   (0.5466445 / 0.54838775 / 0.54877925) the mean is 0.547937 and the sample sd 0.0011365, so the
+   Leg-5 ceiling's +0.10161 is **89.4×**. Changes nothing — it makes the point marginally stronger —
+   and is recorded because the audit quotes the number.
+3. **The `G6.13` minimum-DCR claim was mis-stated at first draft and fixed before the file was
+   saved.** "Minimum DCR 0.132–0.174" is the range over the `uk` reference sets only; over all nine
+   (fold × reference set) combinations the smallest single distance is **0.0694** (`es`, country
+   set). The clause that matters — no DCR of zero — holds on all nine.
+
+#### 🔴 `FINDING 116` — the perplexity-gap control fails for the PERMUTED adapter too
+
+The permuted control's own train/test perplexity gap is **0.0511**, over the same 0.05 bar. A model
+trained on randomly re-paired prefixes and bodies, **0 fixed points**, still breaches the gap. So on
+this corpus at three epochs the gap is measuring train/test overfit of the diary *language*, not
+membership of the pairing.
+
+⚪ **It does not rescue the reported failure** — 0.0570 is over the registered bar and ships as a
+failure. What it does is forbid reading the gap as a second, independent confirmation of `G6.10`.
+The two registered failures are one measurement plus one much weaker one, not two.
+
+#### 🔴 The Leg-5 coverage clause reads FAIL and must never be quoted bare
+
+`coverage_clause: FAIL`, `G6_10 <- NEVER SEEN FAILING`, no-ops `g610_tail` and `pplgap_widen`.
+
+This is the **vacuity condition**, not a new defect. The harness credits a perturbation with felling
+a gate only when it moves that gate PASS → FAIL. `G6.10` is already FAIL at baseline here, so the
+two injections aimed at it cannot be credited — even though they land exactly as designed
+(`g610_tail` → 0.6659, `pplgap_widen` → 0.8367). The same two injections **do** fell `G6.10` on all
+three Leg-4 folds, where the baseline passes and the coverage clause is PASS with zero no-ops.
+`G6.10` is a demonstrated gate. Same class as the Step 6.4 generated-arm batteries.
+
+#### What this closes and what it leaves
+
+* 🟢 **DoD item 5 — "Privacy audit complete with its three controls" — is met.** All three controls
+  present, all four attacks scored, the decision written down with the artefacts that produced it.
+* 🔴 The audit **ships two registered FAILs and one partial**, and the write-up must say so. Never
+  "the privacy audit passed"; never "4 of 4".
+* `D-S6-16` stays open on the **methods write-up only**, recommendation **(a′)**. The release does
+  not rest on it.
+* ⚪ Nothing on Speed. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` intact; no threshold moved,
+  no checker edited.

@@ -1,0 +1,108 @@
+{
+ "cache_key": "61ebecbd08b433705caefc808f8179e333d1722c37c1264fea52f9ca78d68fe2",
+ "campaign": "step8_injected_sweep",
+ "cell": "it_SFH_IT03",
+ "cell_period": "IT.03",
+ "cls": "SFH",
+ "code": "IT.MidClim.SFH.03.Gen.ReEx.001",
+ "energyplus_build": "94a887817b",
+ "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
+ "energyplus_version": "24.2.0",
+ "ensemble": {
+  "eui_kwh_m2a_max": 175.38381031055076,
+  "eui_kwh_m2a_mean": 175.38381031055076,
+  "eui_kwh_m2a_min": 175.38381031055076,
+  "eui_kwh_m2a_sd": 0.0,
+  "monthly_j_mean": [
+   14315480475.485245,
+   11706771979.283699,
+   8197553107.12926,
+   4425764643.187893,
+   2988889358.009899,
+   343844700.8050723,
+   120181427.92706291,
+   225405809.78863466,
+   1424126964.9028487,
+   5366169089.185204,
+   9518148926.823881,
+   14734219046.58087
+  ],
+  "n": 1,
+  "peak_hour_max": 1063,
+  "peak_hour_min": 1063,
+  "peak_w_m2_max": 88.83336584936735,
+  "peak_w_m2_mean": 88.83336584936735,
+  "peak_w_m2_min": 88.83336584936735,
+  "peak_w_m2_sd": 0.0,
+  "series_sha256": {
+   "flat": "68c4fc698da500ce716c0f5548e306d72163d69af2c7f20a4868e845e6d62e6b"
+  }
+ },
+ "f": 0.0,
+ "fold": "it",
+ "household": "flat",
+ "household_schedule_md5": {
+  "flat": null
+ },
+ "households": [
+  "flat"
+ ],
+ "idf": "it_SFH_IT03.idf",
+ "idf_md5_measured": "0f38237666db3eb8763ec9b4a9f44317",
+ "idf_md5_source": "6448d416ee7392fbac24705afa134174",
+ "injection": "Schedule:File on OtherEquipment E_PHI_INT; m(t) = (1-f) + f*g(t)/mean(g), annual mean exactly 1.0",
+ "multiplier_csv": "Step8_docs/outputs_step8/sched/it/flat__f000.csv",
+ "multiplier_max": 1.0,
+ "multiplier_md5": "aa46a656e1796ccd619005626eff519c",
+ "phi_int_w_m2": 3.0,
+ "platform": {
+  "cpu_count": 20,
+  "machine": "AMD64",
+  "measured_at_run_time": true,
+  "node": "tabletop1",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "python": "3.13.5"
+ },
+ "rerun": {
+  "finished_utc": "2026-08-25T17:59:59.430185Z",
+  "returncode": 0,
+  "series_sha256": "68c4fc698da500ce716c0f5548e306d72163d69af2c7f20a4868e845e6d62e6b",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:59:57.663301Z",
+  "stdout_tail": ".17sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\it_SFH_IT03__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.51sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "wall_s": 1.767,
+  "warnings": 2
+ },
+ "run": {
+  "finished_utc": "2026-08-25T17:59:53.811372Z",
+  "returncode": 0,
+  "series_sha256": "68c4fc698da500ce716c0f5548e306d72163d69af2c7f20a4868e845e6d62e6b",
+  "severe": 0,
+  "started_utc": "2026-08-25T17:59:52.111497Z",
+  "stdout_tail": "0min  0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\it_SFH_IT03__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.36sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "variables_delivered": {
+   "Zone Ideal Loads Supply Air Total Heating Energy": true,
+   "Zone Ideal Loads Zone Total Heating Energy": true,
+   "Zone Mean Air Temperature": true
+  },
+  "wall_s": 1.7,
+  "warning_kinds": {
+   "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1,
+   "Temperature out of range [-100. to 200.] (PsyPsatFnTemp)": 1
+  },
+  "warnings": 2
+ },
+ "scenario_cell": "it_SFH_IT03__f000",
+ "schedule_bundle": "leg5_it_independent_seed1",
+ "schedule_file": null,
+ "schedule_fold": "it",
+ "schedule_md5": null,
+ "weather_base_period": "TMYx.2009-2023",
+ "weather_epw": "ITA_PM_Torino.Venaria.160600_TMYx.2009-2023.epw",
+ "weather_md5": "de989f09511211d350e5d05ebbefd520",
+ "weather_station": "Torino.Venaria",
+ "weather_wmo": "160600",
+ "work_item": "8.5",
+ "written_utc": "2026-08-25T17:59:59.590595Z"
+}
