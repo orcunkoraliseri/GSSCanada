@@ -1,0 +1,73 @@
+{
+  "folds": {
+    "es": {
+      "calibration_saturated": [
+        "hi_fi",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "dhw_l_per_dwelling_day": [
+        200.792,
+        122.502
+      ],
+      "dhw_l_per_person_day": [
+        105.654,
+        51.467
+      ],
+      "elec_kwh_per_dwelling_year": [
+        2244.14,
+        980.3
+      ],
+      "map_md5": "640af0d0bdfadd5f10936d878bb0600d",
+      "n_dwellings": 100,
+      "n_people": 204
+    },
+    "it": {
+      "calibration_saturated": [
+        "iron",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "dhw_l_per_dwelling_day": [
+        199.466,
+        103.294
+      ],
+      "dhw_l_per_person_day": [
+        95.021,
+        35.381
+      ],
+      "elec_kwh_per_dwelling_year": [
+        2065.38,
+        701.66
+      ],
+      "map_md5": "640af0d0bdfadd5f10936d878bb0600d",
+      "n_dwellings": 100,
+      "n_people": 212
+    },
+    "uk": {
+      "calibration_saturated": [
+        "microwave",
+        "tumble_dryer",
+        "washing_machine"
+      ],
+      "dhw_l_per_dwelling_day": [
+        201.015,
+        94.382
+      ],
+      "dhw_l_per_person_day": [
+        116.947,
+        41.26
+      ],
+      "elec_kwh_per_dwelling_year": [
+        2084.74,
+        697.3
+      ],
+      "map_md5": "640af0d0bdfadd5f10936d878bb0600d",
+      "n_dwellings": 100,
+      "n_people": 180
+    }
+  },
+  "min_dwellings_enforced": 100,
+  "note": "Every quantity here is a distribution or a mean over dwellings, with its spread. No per-dwelling prediction is made or implied; G9.13 searches these artefacts for such a claim and V9.d refuses a verdict over a subset.",
+  "scale": "stock"
+}

@@ -1,0 +1,162 @@
+{
+ "G8.0_band_position": {
+  "es": {
+   "dev_pct_max": 791.4702030797442,
+   "dev_pct_median": 136.5789638208088,
+   "dev_pct_min": -33.75449849557956,
+   "eplus_heating_hours_median": 2901,
+   "n": 24,
+   "our_eui_median": 24.924152,
+   "sign": "above",
+   "tabula_heating_hours_implied_median": 538.5728705537864,
+   "tabula_q_h_nd_median": 10.911063079215172
+  },
+  "it": {
+   "dev_pct_max": -8.885496659639534,
+   "dev_pct_median": -36.702983946316344,
+   "dev_pct_min": -67.91236218551168,
+   "eplus_heating_hours_median": 4784,
+   "n": 32,
+   "our_eui_median": 81.002318,
+   "sign": "below",
+   "tabula_heating_hours_implied_median": 4176.000000000001,
+   "tabula_q_h_nd_median": 168.4855056364766
+  },
+  "uk": {
+   "dev_pct_max": -9.989295714112545,
+   "dev_pct_median": -29.60407031079332,
+   "dev_pct_min": -51.9129390902533,
+   "eplus_heating_hours_median": 6117,
+   "n": 32,
+   "our_eui_median": 104.469611,
+   "sign": "below",
+   "tabula_heating_hours_implied_median": 5832.000000000001,
+   "tabula_q_h_nd_median": 165.92736422183455
+  }
+ },
+ "campaign": "step8_control_uninjected",
+ "cells": 88,
+ "fails": [],
+ "not_evaluable_at_the_control": {
+  "G8.12": "no --- there is no Step 7 schedule in the control. EVALUATED by work item 8.5, the first campaign in this project that wires a Step 7 diary into an IDF: the value arm rebuilds the multiplier from the published diary on disk and compares it against the series the SAVED in.idf points at, and the assignment arm checks that E_PHI_INT still names that Schedule:File object. Both arms seen failing: Step8_docs/outputs_step8/injected_bands.csv.",
+  "G8.16": "no --- no schedule, so no fold to mis-drive. V8.g's arm IS checked at the control: every control manifest carries an explicit `fold` field, so this gate could not later find zero violations over an absent field. EVALUATED by work item 8.5, which locates each driving diary BY CONTENT among the three Step 7 bundles on disk and reads the fold out of the bundle's own manifest.json rather than out of the cell's filename or the cell's own claim. Seen failing: Step8_docs/outputs_step8/injected_bands.csv.",
+  "G8.8": "no, not at the control --- one scenario cannot differ from itself. EVALUATED by work item 8.4's probes, seen passing on two real scenarios and FAILING on a third wired to the second's schedule file: Step8_docs/outputs_step8/probes_step8.json.",
+  "G8.9": "no, not at the control --- the 8.3 runner has no skip-if-done cache at all. EVALUATED by work item 8.4's probes, seen passing on an input-complete key and FAILING on a key over the cell name alone: Step8_docs/outputs_step8/probes_step8.json."
+ },
+ "per_gate": {
+  "G8.1": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.10": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.11": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.13": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 88,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 0
+  },
+  "G8.14": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.15": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.2": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.3": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.4": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.5": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.6": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "G8.7": {
+   "FAIL": 0,
+   "INFO": 88,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 0
+  },
+  "V8.d": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  },
+  "V8.x": {
+   "FAIL": 0,
+   "INFO": 0,
+   "NOT_EVALUABLE": 0,
+   "NO_THRESHOLD_PREREGISTERED": 0,
+   "PASS": 88
+  }
+ },
+ "runs": 176,
+ "suspicious_err_lines": [],
+ "vacuity_guards": {
+  "V8.a": "PASS -- 88 declared, 88 read",
+  "V8.b": "PASS -- one table, path asserted: Step8_docs\\outputs_step8\\control_annual.csv",
+  "V8.c": "PASS -- bands imported from tools/4thJ_step8_bands.py",
+  "V8.d": "scored per cell, areas from each cell's own eplusout.eio",
+  "V8.e": "PASS -- every gate row in control_bands.csv carries severity=hard",
+  "V8.f": "warnings triaged by kind, see warning_kinds below",
+  "V8.g": "PASS -- every control manifest carries an explicit fold field"
+ },
+ "warning_kinds": {
+  "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 88,
+  "Temperature out of range [-100. to 200.] (PsyPsatFnTemp)": 32
+ },
+ "work_item": "8.3"
+}

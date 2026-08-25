@@ -1,14 +1,15 @@
 {
-  "Step7_docs/outputs_step7/schedules/leg4_es_independent_seed1": {
+  "Step7_docs/outputs_step7/schedules/leg5_es_independent_seed1": {
     "G7.13": true,
     "G7.14": true,
     "G7.15": true,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
-  "Step7_docs/outputs_step7/schedules/leg4_es_independent_seed1::detail": {
+  "Step7_docs/outputs_step7/schedules/leg5_es_independent_seed1::detail": {
     "G7.13": {
-      "mean_presence_over_schedules": 0.7285333064041096,
+      "mean_presence_over_schedules": 0.7095525713869862,
       "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
       "passes": true,
       "reasons": [],
@@ -55,18 +56,56 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 0,
+      "dwellings_below_trough_hour": 11,
+      "hour_profile": [
+        0.9033638478904242,
+        0.9345394214246799,
+        0.947800076410966,
+        0.9287235105205861,
+        0.9948538803013659,
+        0.9946073052054738,
+        0.9940414743013658,
+        0.7536015436439147,
+        0.7608040424657534,
+        0.6709700949588993,
+        0.39247699465753744,
+        0.36909404389041633,
+        0.3973388281643833,
+        0.38378127843835447,
+        0.5801498227670936,
+        0.5822671908219265,
+        0.5544234284109368,
+        0.5172164978356302,
+        0.5362788373698727,
+        0.7257000097808665,
+        0.744600704520594,
+        0.749410823835641,
+        0.7797118155890862,
+        0.8335062400821902
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   },
-  "Step7_docs/outputs_step7/schedules/leg4_it_independent_seed1": {
+  "Step7_docs/outputs_step7/schedules/leg5_it_independent_seed1": {
     "G7.13": true,
     "G7.14": true,
     "G7.15": true,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
-  "Step7_docs/outputs_step7/schedules/leg4_it_independent_seed1::detail": {
+  "Step7_docs/outputs_step7/schedules/leg5_it_independent_seed1::detail": {
     "G7.13": {
-      "mean_presence_over_schedules": 0.6842946905034246,
+      "mean_presence_over_schedules": 0.7233966963755708,
       "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
       "passes": true,
       "reasons": [],
@@ -112,18 +151,56 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 8,
+      "dwellings_below_trough_hour": 6,
+      "hour_profile": [
+        0.9297360915890592,
+        0.9487659914246837,
+        0.9613987957534351,
+        0.9752297617534252,
+        0.9941369863013698,
+        0.944237419890368,
+        0.9088965018630129,
+        0.8494436531781263,
+        0.7601579061369468,
+        0.7620356211506533,
+        0.6702701965753295,
+        0.3930380423287723,
+        0.4143438962740035,
+        0.37885302553427375,
+        0.5661581235068796,
+        0.5477148032876907,
+        0.5105985118903643,
+        0.6669904866028363,
+        0.6555773514247126,
+        0.5114631892328657,
+        0.6234513366300914,
+        0.7203932214520562,
+        0.78448380479455,
+        0.8841459944384205
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   },
-  "Step7_docs/outputs_step7/schedules/leg4_uk_independent_seed1": {
+  "Step7_docs/outputs_step7/schedules/leg5_uk_independent_seed1": {
     "G7.13": true,
     "G7.14": true,
     "G7.15": true,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
-  "Step7_docs/outputs_step7/schedules/leg4_uk_independent_seed1::detail": {
+  "Step7_docs/outputs_step7/schedules/leg5_uk_independent_seed1::detail": {
     "G7.13": {
-      "mean_presence_over_schedules": 0.6450490566906393,
+      "mean_presence_over_schedules": 0.7202601827431506,
       "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
       "passes": true,
       "reasons": [],
@@ -168,6 +245,43 @@
       "passes": true,
       "presence_max": 1.0,
       "presence_min": 0.0,
+      "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 0,
+      "dwellings_below_trough_hour": 0,
+      "hour_profile": [
+        0.868241426602778,
+        0.8879522162191954,
+        0.9072516856712604,
+        0.9188286946301542,
+        0.9868538816712301,
+        0.9847442932876683,
+        0.9582046490137335,
+        0.9215775465479663,
+        0.8394060092602437,
+        0.7770625535342547,
+        0.5835578434520555,
+        0.2321342624931561,
+        0.3758876652602803,
+        0.5488557874246569,
+        0.643866816876661,
+        0.7268291225205423,
+        0.6833371444931703,
+        0.6543645257534276,
+        0.45326558383561427,
+        0.44207125079452425,
+        0.620179060438325,
+        0.7260323609315104,
+        0.747650804410999,
+        0.7980892007123384
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
       "reasons": []
     }
   }

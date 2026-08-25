@@ -55,7 +55,35 @@ HOURS_PER_YEAR = 8760
 #: The gates this module owns. `G7.13` is re-scored here on the EMITTED signal;
 #: its corpus-level and generated-text runs live in `4thJ_step7_indoor.py` and
 #: `4thJ_gates_step7.py` respectively and are not repeated.
-GATES = ("G7.13", "G7.14", "G7.15", "G7.16", "G7.17")
+GATES = ("G7.13", "G7.14", "G7.15", "G7.16", "G7.17", "G7.19")
+
+# --------------------------------------------------------------------------
+# 🔴 G7.19 -- THE PHASE GATE. Added 2026-08-26 under `D-S9-3`(a).
+#
+# `FINDING 141`: `D-S2-5` put every diary on a 04:00 origin, `Schedule:File` is
+# read from midnight, and the schedules Step 8 simulated were therefore four
+# hours early. NOT ONE of `G7.13`-`G7.17` could see it, and neither could any
+# Step 8 gate: they check that a schedule has 8,760 values, that `Interpolate to
+# Timestep` is No, that `Minutes per Item` matches, that values lie in [0, 1],
+# and that the multiplier rebuilds from the artefact on disk. **Every one of
+# those is true of a series rotated by four hours.** A well-formed schedule on
+# the wrong clock is the failure this gate exists for.
+#
+# The two arms are stated as PHASE, not as level, and both are self-referenced:
+# the schedule is scored against its OWN daily maximum and its OWN trough, never
+# against an external band, so nothing here can be met by rescaling.
+# --------------------------------------------------------------------------
+
+#: Arm (a). At 05:00 the residential population of every country in this corpus
+#: is at home and asleep, so mean presence there must be within a tenth of the
+#: schedule's own daily maximum. MEASURED on the shipped bundles: rotated
+#: 0.950-1.000, unrotated 0.674-0.787. Registered 2026-08-26 and never moved.
+G7_19_NIGHT_HOUR = 5
+G7_19_NIGHT_RATIO_MIN = 0.90
+
+#: Arm (b). The daily minimum of a residential presence profile is the working
+#: day. It is not 07:00. MEASURED: rotated 11 / 11 / 13, unrotated 7 / 7 / 9.
+G7_19_MIN_TROUGH_HOUR = 8
 
 
 class ScheduleGateError(ValueError):
@@ -282,6 +310,89 @@ def score(dir_path):
                     "n_schedules_out_of_range": n_out,
                     "head_counts": dict(collections.Counter(head))}
 
+    # ---------------------------------------------------------------- G7.19
+    # The phase of the emitted signal against the clock EnergyPlus reads it on.
+    # Scored on the mean over households AND on every household separately, so a
+    # bundle that is right on average and wrong in a corner cannot pass.
+    r19 = []
+    prof = None
+    ts19 = manifest.get("timestep_min")
+    per_h = int(60 // ts19) if ts19 and 60 % ts19 == 0 else None
+    if not csvs:
+        r19.append("no schedule on disk, so the phase was never tested")
+    elif not per_h:
+        r19.append("timestep %r does not divide an hour, so an hour-of-day "
+                   "profile is not defined" % ts19)
+    else:
+        acc = [0.0] * 24
+        n_v = 0
+        worst = []
+        for p in csvs:
+            _hdr, vals = read_schedule_csv(p)
+            hp = [0.0] * 24
+            for i, v in enumerate(vals):
+                h = (i // per_h) % 24
+                acc[h] += v
+                hp[h] += v
+            n_v += len(vals)
+            days = len(vals) / float(24 * per_h)
+            hp = [x / (days * per_h) for x in hp]
+            hmax = max(hp)
+            ratio = (hp[G7_19_NIGHT_HOUR] / hmax) if hmax > 0 else 0.0
+            trough = min(range(24), key=lambda k: hp[k])
+            worst.append((os.path.basename(p), ratio, trough))
+        prof = [x / (n_v / 24.0) for x in acc]
+        pmax = max(prof)
+        ratio = (prof[G7_19_NIGHT_HOUR] / pmax) if pmax > 0 else 0.0
+        trough = min(range(24), key=lambda k: prof[k])
+        if ratio < G7_19_NIGHT_RATIO_MIN:
+            r19.append(
+                "mean presence at %02d:00 is %.4f, which is %.3f of this "
+                "bundle's own daily maximum %.4f -- below %.2f. A residential "
+                "population is at home at %02d:00. FINDING 141: this is what an "
+                "unrotated 04:00-origin diary looks like on a Schedule:File."
+                % (G7_19_NIGHT_HOUR, prof[G7_19_NIGHT_HOUR], ratio, pmax,
+                   G7_19_NIGHT_RATIO_MIN, G7_19_NIGHT_HOUR))
+        if trough < G7_19_MIN_TROUGH_HOUR:
+            r19.append(
+                "the daily minimum of mean presence falls at %02d:00 (%.4f), "
+                "before %02d:00. Nobody's occupancy trough is the small hours."
+                % (trough, prof[trough], G7_19_MIN_TROUGH_HOUR))
+        # 🔴 THE PER-DWELLING COUNTS ARE A DIAGNOSTIC AND CARRY NO
+        # VERDICT, and that is a specification decision taken before this gate
+        # ever returned one. Both arms are POPULATION statements. A single
+        # dwelling's occupancy trough legitimately falls at 07:00 -- one
+        # household that leaves for work together has its minimum exactly there
+        # -- and a night-shift dwelling is legitimately empty at 05:00. Scoring
+        # a stock claim per dwelling would have made the gate fail on 11 of 100
+        # CORRECT schedules, and the fix for that must be the right statement,
+        # never a looser number. MEASURED on fold es: rotated 0 of 100 dwellings
+        # below the ratio arm (min 0.904) and 11 of 100 below the trough arm;
+        # unrotated 72 and 54.
+        n_ratio = sum(1 for _f, r, _t in worst if r < G7_19_NIGHT_RATIO_MIN)
+        n_trough = sum(1 for _f, _r, t in worst if t < G7_19_MIN_TROUGH_HOUR)
+    # The DECLARATION arm. A bundle that is in phase by accident and does not say
+    # so is not evidence: `G8.17` refuses to run a campaign on an undeclared one.
+    if "rotated_to_midnight" not in manifest:
+        r19.append("the manifest does not record WHETHER the series was rotated "
+                   "to midnight. An artefact that cannot say which clock it is "
+                   "on cannot be validated against one.")
+    elif not manifest.get("rotated_to_midnight"):
+        r19.append("the manifest declares rotated_to_midnight = false: this "
+                   "bundle is on the DIARY origin (%s), not on the clock "
+                   "EnergyPlus reads." % manifest.get("diary_origin_hour"))
+    res["G7.19"] = {"passes": not r19, "reasons": r19,
+                    "hour_profile": prof,
+                    "dwellings_below_night_ratio": (n_ratio if csvs and per_h
+                                                    else None),
+                    "dwellings_below_trough_hour": (n_trough if csvs and per_h
+                                                    else None),
+                    "n_dwellings": len(csvs),
+                    "night_hour": G7_19_NIGHT_HOUR,
+                    "night_ratio_min": G7_19_NIGHT_RATIO_MIN,
+                    "min_trough_hour": G7_19_MIN_TROUGH_HOUR,
+                    "declared_rotated": manifest.get("rotated_to_midnight")}
+
     # ---------------------------------------------------------------- G7.13
     # On the EMITTED signal. The exclusion-list half is read from the manifest
     # the emitter wrote (`V7.c` -- the emitter re-read the shipped file); the
@@ -339,6 +450,19 @@ def report(out):
             v for k, v in out["manifest_perturbations"].items()):
         L.append("  *** PERTURBED CELL: %s" % json.dumps(
             dict((k, v) for k, v in out["manifest_perturbations"].items() if v)))
+        L.append("")
+    p19 = out["gates"].get("G7.19", {})
+    if p19.get("hour_profile"):
+        pr = p19["hour_profile"]
+        tr = min(range(24), key=lambda k: pr[k])
+        L.append("  phase (D-S9-3)      declared rotated %s; mean presence at "
+                 "%02d:00 = %.4f of max; trough %02d:00"
+                 % (p19.get("declared_rotated"), p19["night_hour"],
+                    pr[p19["night_hour"]] / max(pr) if max(pr) else 0.0, tr))
+        L.append("                      dwellings below the arms (DIAGNOSTIC, "
+                 "no verdict): night %s/%s, trough %s/%s"
+                 % (p19.get("dwellings_below_night_ratio"), p19.get("n_dwellings"),
+                    p19.get("dwellings_below_trough_hour"), p19.get("n_dwellings")))
         L.append("")
     for g in GATES:
         r = out["gates"][g]

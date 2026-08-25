@@ -65,28 +65,28 @@
   "python": "3.13.5"
  },
  "rerun": {
-  "finished_utc": "2026-08-25T17:53:18.999253Z",
+  "finished_utc": "2026-08-25T21:13:09.339954Z",
   "returncode": 0,
   "series_sha256": "53cb17cb794f82221fa291cf7ca599517a916e121afbe7378ca8430b98c2eca5",
   "severe": 0,
-  "started_utc": "2026-08-25T17:53:17.408096Z",
-  "stdout_tail": "0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_TH_ES04__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.34sec\r\nEnergyPlus Completed Successfully.\r\n",
-  "wall_s": 1.591,
+  "started_utc": "2026-08-25T21:13:07.762056Z",
+  "stdout_tail": "0.12sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_TH_ES04__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.25sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "wall_s": 1.578,
   "warnings": 1
  },
  "run": {
-  "finished_utc": "2026-08-25T17:53:13.793576Z",
+  "finished_utc": "2026-08-25T21:13:02.577003Z",
   "returncode": 0,
   "series_sha256": "53cb17cb794f82221fa291cf7ca599517a916e121afbe7378ca8430b98c2eca5",
   "severe": 0,
-  "started_utc": "2026-08-25T17:53:12.204090Z",
+  "started_utc": "2026-08-25T21:13:01.008712Z",
   "stdout_tail": "00min  0.14sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\es_TH_ES04__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.35sec\r\nEnergyPlus Completed Successfully.\r\n",
   "variables_delivered": {
    "Zone Ideal Loads Supply Air Total Heating Energy": true,
    "Zone Ideal Loads Zone Total Heating Energy": true,
    "Zone Mean Air Temperature": true
   },
-  "wall_s": 1.589,
+  "wall_s": 1.568,
   "warning_kinds": {
    "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1
   },
@@ -103,5 +103,5 @@
  "weather_station": "Valencia.Viveros",
  "weather_wmo": "082850",
  "work_item": "8.5",
- "written_utc": "2026-08-25T17:53:19.279799Z"
+ "written_utc": "2026-08-25T21:13:09.463546Z"
 }

@@ -1,0 +1,457 @@
+{
+ "G8.7_vs_tabula": {
+  "es": {
+   "f=0.00": {
+    "max": 791.4702030797442,
+    "median_dev_pct": 136.5789638208088,
+    "min": -33.75449849557956,
+    "n": 24
+   },
+   "f=0.15": {
+    "max": 791.5900154835938,
+    "median_dev_pct": 137.19875553813046,
+    "min": -32.36830553114144,
+    "n": 24
+   },
+   "f=0.30": {
+    "max": 791.740240350351,
+    "median_dev_pct": 137.9247798403889,
+    "min": -30.5034288054515,
+    "n": 24
+   },
+   "f=0.50": {
+    "max": 791.9964359646943,
+    "median_dev_pct": 139.04110962533193,
+    "min": -27.330347330132312,
+    "n": 24
+   },
+   "f=1.00": {
+    "max": 792.9058172439576,
+    "median_dev_pct": 142.60190011168,
+    "min": -16.894410606960662,
+    "n": 24
+   }
+  },
+  "it": {
+   "f=0.00": {
+    "max": -8.885496659639534,
+    "median_dev_pct": -36.702983946316344,
+    "min": -67.91236218551168,
+    "n": 32
+   },
+   "f=0.15": {
+    "max": -8.896723164331718,
+    "median_dev_pct": -36.71037890403189,
+    "min": -67.91814715616735,
+    "n": 32
+   },
+   "f=0.30": {
+    "max": -8.906526943995914,
+    "median_dev_pct": -36.71671027266067,
+    "min": -67.92142858710731,
+    "n": 32
+   },
+   "f=0.50": {
+    "max": -8.917239611192338,
+    "median_dev_pct": -36.72371689584708,
+    "min": -67.92156670248795,
+    "n": 32
+   },
+   "f=1.00": {
+    "max": -8.932444405976128,
+    "median_dev_pct": -36.734491735407715,
+    "min": -67.9015902441774,
+    "n": 32
+   }
+  },
+  "uk": {
+   "f=0.00": {
+    "max": -9.989295714112545,
+    "median_dev_pct": -29.60407031079332,
+    "min": -51.9129390902533,
+    "n": 32
+   },
+   "f=0.15": {
+    "max": -10.034056313170108,
+    "median_dev_pct": -29.639171775059907,
+    "min": -51.95589921990179,
+    "n": 32
+   },
+   "f=0.30": {
+    "max": -10.07083960050838,
+    "median_dev_pct": -29.67141378645372,
+    "min": -51.974361721168094,
+    "n": 32
+   },
+   "f=0.50": {
+    "max": -10.108151074102315,
+    "median_dev_pct": -29.70987184513224,
+    "min": -51.95928288125339,
+    "n": 32
+   },
+   "f=1.00": {
+    "max": -10.14784363399358,
+    "median_dev_pct": -29.782716593761446,
+    "min": -51.711778826834426,
+    "n": 32
+   }
+  }
+ },
+ "bands_module": "tools/4thJ_step8_bands.py",
+ "campaign": "step8_injected_sweep",
+ "coverage_clause": {
+  "G8.1": "scored: PASS=440",
+  "G8.10": "scored: PASS=440",
+  "G8.11": "scored: PASS=440",
+  "G8.12": "scored: NOT_EVALUABLE=88, PASS=7040",
+  "G8.13": "scored: PASS=3608",
+  "G8.14": "scored: PASS=440",
+  "G8.15": "scored: PASS=440",
+  "G8.16": "scored: NOT_EVALUABLE=88, PASS=3520",
+  "G8.2": "scored: PASS=440",
+  "G8.3": "scored: PASS=440",
+  "G8.4": "scored: PASS=440",
+  "G8.5": "scored: PASS=440",
+  "G8.6": "scored: PASS=440",
+  "G8.7": "scored: INFO=440",
+  "G8.8": "scored: PASS=1232",
+  "G8.9": "scored: PASS=7217"
+ },
+ "coverage_clause_verdict": "PASS",
+ "evaluable": {
+  "G8.0": "yes --- this campaign IS G8.0",
+  "G8.1": "yes, as reproducibility (D-S8-1 (a)); reference = the re-run",
+  "G8.10": "yes, on the fuel columns EnergyPlus actually reports. The ELECTRICITY arm is vacuous here: the control model has no electric end use at all, and that is declared, not hidden.",
+  "G8.11": "yes --- every requested Output:Variable is checked for DELIVERY in the output, which is the same question asked of the artefact.",
+  "G8.12": "no --- there is no Step 7 schedule in the control. EVALUATED by work item 8.5, the first campaign in this project that wires a Step 7 diary into an IDF: the value arm rebuilds the multiplier from the published diary on disk and compares it against the series the SAVED in.idf points at, and the assignment arm checks that E_PHI_INT still names that Schedule:File object. Both arms seen failing: Step8_docs/outputs_step8/injected_bands.csv.",
+  "G8.13": "yes --- asserted from the in.idf EnergyPlus actually read.",
+  "G8.14": "yes --- manifest completeness, with the platform measured per run.",
+  "G8.15": "yes --- severe count and warning triage BY KIND (V8.f).",
+  "G8.16": "no --- no schedule, so no fold to mis-drive. V8.g's arm IS checked at the control: every control manifest carries an explicit `fold` field, so this gate could not later find zero violations over an absent field. EVALUATED by work item 8.5, which locates each driving diary BY CONTENT among the three Step 7 bundles on disk and reads the fold out of the bundle's own manifest.json rather than out of the cell's filename or the cell's own claim. Seen failing: Step8_docs/outputs_step8/injected_bands.csv.",
+  "G8.2": "yes, as reproducibility (D-S8-1 (a)); reference = the re-run",
+  "G8.3": "yes, as reproducibility (D-S8-1 (a)); reference = the re-run",
+  "G8.4": "yes, as reproducibility (D-S8-1 (a)); reference = the re-run",
+  "G8.5": "yes, as reproducibility (D-S8-5 item 2 extends D-S8-1 (a) verbatim); reference = the re-run, threshold unmoved at 15 %.",
+  "G8.6": "yes, as reproducibility (D-S8-5 item 2 extends D-S8-1 (a) verbatim); reference = the re-run, threshold unmoved at 1 h.",
+  "G8.7": "yes, as INFO and only as INFO -- D-S8-5 item 1 (a). The as-modelled reference exists (TABULA q_h_nd); no numeric band does, and none will be created.",
+  "G8.8": "no, not at the control --- one scenario cannot differ from itself. EVALUATED by work item 8.4's probes, seen passing on two real scenarios and FAILING on a third wired to the second's schedule file: Step8_docs/outputs_step8/probes_step8.json.",
+  "G8.9": "no, not at the control --- the 8.3 runner has no skip-if-done cache at all. EVALUATED by work item 8.4's probes, seen passing on an input-complete key and FAILING on a key over the cell name alone: Step8_docs/outputs_step8/probes_step8.json."
+ },
+ "fails": [],
+ "household_selection": "first 10 presence files by sorted household id in the cell's own fold bundle; the same 10 for every cell in a fold",
+ "households_per_cell": 10,
+ "n_suspicious": 0,
+ "per_gate": {
+  "G8.1": {
+   "PASS": 440
+  },
+  "G8.10": {
+   "PASS": 440
+  },
+  "G8.11": {
+   "PASS": 440
+  },
+  "G8.12": {
+   "NOT_EVALUABLE": 88,
+   "PASS": 7040
+  },
+  "G8.13": {
+   "PASS": 3608
+  },
+  "G8.14": {
+   "PASS": 440
+  },
+  "G8.15": {
+   "PASS": 440
+  },
+  "G8.16": {
+   "NOT_EVALUABLE": 88,
+   "PASS": 3520
+  },
+  "G8.2": {
+   "PASS": 440
+  },
+  "G8.3": {
+   "PASS": 440
+  },
+  "G8.4": {
+   "PASS": 440
+  },
+  "G8.5": {
+   "PASS": 440
+  },
+  "G8.6": {
+   "PASS": 440
+  },
+  "G8.7": {
+   "INFO": 440
+  },
+  "G8.8": {
+   "PASS": 1232
+  },
+  "G8.9": {
+   "PASS": 7217
+  },
+  "V8.d": {
+   "PASS": 440
+  },
+  "V8.h": {
+   "PASS": 88
+  }
+ },
+ "provenance": {
+  "G8.1": "val doc line 43, ASHRAE G14 lineage, re-pointed by D-S8-1 (a)",
+  "G8.10": "val doc line 63",
+  "G8.12": "val doc line 65. Boolean, no numeric band, two arms: value and ASSIGNMENT. First evaluated by work item 8.5 (2026-08-25); the value arm is scored against the Step 7 diary re-read from disk, never against anything the injector reported about itself.",
+  "G8.13": "val doc line 66. FINDING 126: the parser read only the LAST comma-field, so `Interpolate to Timestep = Yes` was invisible on a real 9-field Schedule:File. Fixed additively 2026-08-25 and seen firing on BOTH shapes (selftest I9 and I13).",
+  "G8.15": "val doc line 69",
+  "G8.16": "val doc line 71. Boolean, no numeric band. First evaluated by work item 8.5 (2026-08-25). The count of cells simulating a country under another country's fold must be 0, and the fold is read from the Step 7 bundle manifest, not from a filename.",
+  "G8.2": "val doc line 44, ASHRAE G14 lineage, re-pointed by D-S8-1 (a)",
+  "G8.3": "val doc line 45, ASHRAE G14 lineage, re-pointed by D-S8-1 (a)",
+  "G8.4": "val doc line 46, ASHRAE G14 lineage, re-pointed by D-S8-1 (a)",
+  "G8.5": "val doc line 47, inherited from papers 2 and 3; re-pointed to the re-run by D-S8-5 item 2",
+  "G8.6": "val doc line 48, inherited; re-pointed by D-S8-5 item 2",
+  "G8.7": "val doc line 49, RL13 + project. NO NUMERIC BAND EXISTS, and D-S8-5 item 1 (a) rules that none is created: INFO, permanently.",
+  "G8.8": "val doc line 61. Boolean, no numeric band: two scenarios either write different result files or they do not. Probed by 8.4.",
+  "G8.9": "val doc line 62. Boolean, no numeric band: a wiring change either moves the cache key or it does not. Probed by 8.4.",
+  "V8.h": "not a val-doc row --- the arm that keeps `f = 0 has no schedule` from hiding a wrong one. The control endpoint's multiplier is asserted to be identically 1.0, so `G8.12`/`G8.16` reporting NOT_EVALUABLE at f = 0 costs no coverage (FINDING 95)."
+ },
+ "runs": 3608,
+ "runs_executed": 4048,
+ "scenario_cells": 440,
+ "suspicious_lines": [],
+ "sweep": {
+  "f=0.00": {
+   "es": {
+    "d_eui_pct_max": 0.0,
+    "d_eui_pct_median": 0.0,
+    "d_eui_pct_min": 0.0,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 0.0,
+    "d_peak_pct_median": 0.0,
+    "d_peak_pct_min": 0.0,
+    "household_sd_eui_pct_mean": 0.0,
+    "household_sd_peak_pct_mean": 0.0,
+    "n_cells": 24
+   },
+   "it": {
+    "d_eui_pct_max": 0.0,
+    "d_eui_pct_median": 0.0,
+    "d_eui_pct_min": 0.0,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 0.0,
+    "d_peak_pct_median": 0.0,
+    "d_peak_pct_min": 0.0,
+    "household_sd_eui_pct_mean": 0.0,
+    "household_sd_peak_pct_mean": 0.0,
+    "n_cells": 32
+   },
+   "uk": {
+    "d_eui_pct_max": 0.0,
+    "d_eui_pct_median": 0.0,
+    "d_eui_pct_min": 0.0,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 0.0,
+    "d_peak_pct_median": 0.0,
+    "d_peak_pct_min": 0.0,
+    "household_sd_eui_pct_mean": 0.0,
+    "household_sd_peak_pct_mean": 0.0,
+    "n_cells": 32
+   }
+  },
+  "f=0.15": {
+   "es": {
+    "d_eui_pct_max": 2.092504,
+    "d_eui_pct_median": 0.171944,
+    "d_eui_pct_min": 0.01344,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 3.470073,
+    "d_peak_pct_median": 0.859357,
+    "d_peak_pct_min": 0.274912,
+    "household_sd_eui_pct_mean": 0.36112751662665965,
+    "household_sd_peak_pct_mean": 0.718466183064809,
+    "n_cells": 24
+   },
+   "it": {
+    "d_eui_pct_max": -0.001942,
+    "d_eui_pct_median": -0.006694,
+    "d_eui_pct_min": -0.021213,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 1.043156,
+    "d_peak_pct_median": 0.439092,
+    "d_peak_pct_min": -0.111943,
+    "household_sd_eui_pct_mean": 0.02903285712315536,
+    "household_sd_peak_pct_mean": 0.4091140987957745,
+    "n_cells": 32
+   },
+   "uk": {
+    "d_eui_pct_max": -0.04113,
+    "d_eui_pct_median": -0.051833,
+    "d_eui_pct_min": -0.115033,
+    "d_peak_hour_max": 265,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": -7265,
+    "d_peak_pct_max": 2.018166,
+    "d_peak_pct_median": 0.54881,
+    "d_peak_pct_min": -0.275645,
+    "household_sd_eui_pct_mean": 0.08723100448584871,
+    "household_sd_peak_pct_mean": 0.4773239497242977,
+    "n_cells": 32
+   }
+  },
+  "f=0.30": {
+   "es": {
+    "d_eui_pct_max": 4.907585,
+    "d_eui_pct_median": 0.370878,
+    "d_eui_pct_min": 0.030291,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 7.315771,
+    "d_peak_pct_median": 1.805174,
+    "d_peak_pct_min": 0.549776,
+    "household_sd_eui_pct_mean": 0.7541329340458419,
+    "household_sd_peak_pct_mean": 1.3758739703134184,
+    "n_cells": 24
+   },
+   "it": {
+    "d_eui_pct_max": 0.001799,
+    "d_eui_pct_median": -0.007603,
+    "d_eui_pct_min": -0.029079,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 2.406686,
+    "d_peak_pct_median": 0.892875,
+    "d_peak_pct_min": 0.209754,
+    "household_sd_eui_pct_mean": 0.0565003089981267,
+    "household_sd_peak_pct_mean": 0.7541932636373928,
+    "n_cells": 32
+   },
+   "uk": {
+    "d_eui_pct_max": -0.061686,
+    "d_eui_pct_median": -0.094426,
+    "d_eui_pct_min": -0.174346,
+    "d_peak_hour_max": 265,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": -7265,
+    "d_peak_pct_max": 4.036335,
+    "d_peak_pct_median": 1.11257,
+    "d_peak_pct_min": -0.326805,
+    "household_sd_eui_pct_mean": 0.15472553081360627,
+    "household_sd_peak_pct_mean": 0.9180828883571754,
+    "n_cells": 32
+   }
+  },
+  "f=0.50": {
+   "es": {
+    "d_eui_pct_max": 9.697503,
+    "d_eui_pct_median": 0.682898,
+    "d_eui_pct_min": 0.05903,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 14.03799,
+    "d_peak_pct_median": 3.015884,
+    "d_peak_pct_min": 0.916265,
+    "household_sd_eui_pct_mean": 1.3264320856106122,
+    "household_sd_peak_pct_mean": 2.0592685651140474,
+    "n_cells": 24
+   },
+   "it": {
+    "d_eui_pct_max": 0.021348,
+    "d_eui_pct_median": -0.000168,
+    "d_eui_pct_min": -0.034839,
+    "d_peak_hour_max": 8209,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": -143,
+    "d_peak_pct_max": 4.414798,
+    "d_peak_pct_median": 1.622463,
+    "d_peak_pct_min": 0.928754,
+    "household_sd_eui_pct_mean": 0.09146661224169236,
+    "household_sd_peak_pct_mean": 1.1171945615568633,
+    "n_cells": 32
+   },
+   "uk": {
+    "d_eui_pct_max": -0.054667,
+    "d_eui_pct_median": -0.132269,
+    "d_eui_pct_min": -0.157,
+    "d_peak_hour_max": 265,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": -7265,
+    "d_peak_pct_max": 6.727227,
+    "d_peak_pct_median": 1.926678,
+    "d_peak_pct_min": -0.195035,
+    "household_sd_eui_pct_mean": 0.21805050261117997,
+    "household_sd_peak_pct_mean": 1.545512424659471,
+    "n_cells": 32
+   }
+  },
+  "f=1.00": {
+   "es": {
+    "d_eui_pct_max": 26.941865,
+    "d_eui_pct_median": 1.818393,
+    "d_eui_pct_min": 0.161039,
+    "d_peak_hour_max": 0,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": 0,
+    "d_peak_pct_max": 31.466174,
+    "d_peak_pct_median": 6.384097,
+    "d_peak_pct_min": 1.832376,
+    "household_sd_eui_pct_mean": 3.00191837275073,
+    "household_sd_peak_pct_mean": 3.6416655372962032,
+    "n_cells": 24
+   },
+   "it": {
+    "d_eui_pct_max": 0.186831,
+    "d_eui_pct_median": 0.05902,
+    "d_eui_pct_min": -0.053563,
+    "d_peak_hour_max": 8207,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": -7677,
+    "d_peak_pct_max": 9.575172,
+    "d_peak_pct_median": 3.959386,
+    "d_peak_pct_min": 1.873944,
+    "household_sd_eui_pct_mean": 0.17841133087916397,
+    "household_sd_peak_pct_mean": 2.084168020206955,
+    "n_cells": 32
+   },
+   "uk": {
+    "d_eui_pct_max": 0.440191,
+    "d_eui_pct_median": -0.035654,
+    "d_eui_pct_min": -0.267216,
+    "d_peak_hour_max": 265,
+    "d_peak_hour_median": 0,
+    "d_peak_hour_min": -7265,
+    "d_peak_pct_max": 13.72057,
+    "d_peak_pct_median": 4.538012,
+    "d_peak_pct_min": 0.313415,
+    "household_sd_eui_pct_mean": 0.37206698344457956,
+    "household_sd_peak_pct_mean": 2.8968045477890465,
+    "n_cells": 32
+   }
+  }
+ },
+ "sweep_f": [
+  0.0,
+  0.15,
+  0.3,
+  0.5,
+  1.0
+ ],
+ "warning_kinds": {
+  "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 440,
+  "Temperature out of range [-100. to 200.] (PsyPsatFnTemp)": 160
+ },
+ "work_item": "8.5"
+}

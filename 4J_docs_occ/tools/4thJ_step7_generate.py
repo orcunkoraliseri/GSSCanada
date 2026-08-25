@@ -174,6 +174,14 @@ def main(argv=None):
     ap.add_argument("--n", type=int, default=600)
     ap.add_argument("--no-grammar", action="store_true",
                     help="work item 7.5 control: same everything, mask OFF")
+    # Work item 7.4 -- the UNTUNED BASE arm of the three-model firing-rate report.
+    # The adapter is not attached at all: same backbone, same revision, same
+    # prompts, same seed, no fine-tuning. Default False, so nothing already run
+    # moves. The firing rate is only defined with the mask OFF, so this flag
+    # implies --no-grammar and says so rather than silently assuming it.
+    ap.add_argument("--base-only", action="store_true",
+                    help="work item 7.4: UNTUNED base, no adapter (implies "
+                         "--no-grammar)")
     ap.add_argument("--step2", required=True)
     ap.add_argument("--config", required=True, help="generation_config_<fold>.json")
     ap.add_argument("--prefixes", required=True, help="prefixes_<fold>.jsonl")
@@ -198,7 +206,17 @@ def main(argv=None):
         raise NotRun("config is for fold %r, not %r" % (cfg["fold"], a.fold))
     cfg = resolve_leg(cfg, a.leg, a.fold)
 
-    mode = "UNCONSTRAINED (7.5 control)" if a.no_grammar else "CONSTRAINED"
+    if a.base_only and not a.no_grammar:
+        print("--base-only implies --no-grammar: a firing rate is the share of "
+              "diaries the model gets wrong with the MASK OFF, so a masked base "
+              "arm would report zero by construction.")
+        a.no_grammar = True
+    if a.base_only:
+        mode = "UNTUNED BASE, UNCONSTRAINED (7.4 arm 1)"
+    elif a.no_grammar:
+        mode = "UNCONSTRAINED (7.5 control)"
+    else:
+        mode = "CONSTRAINED"
     print("=" * 78)
     print("Step 7.3 generation -- fold %s, leg %d, %s, n=%d" % (a.fold, a.leg, mode, a.n))
     print("=" * 78)
@@ -212,14 +230,19 @@ def main(argv=None):
         print("\n🔴 %s -- Leg-4 is the PILOT. D-S7-3 (a): this run rehearses the\n"
               "   pipeline, it does not produce a number for the paper.\n" % PROVENANCE_LEG4)
 
-    if not os.path.isdir(cfg["adapter"]):
-        raise NotRun("no adapter at %s" % cfg["adapter"])
     rank = None
-    acfg = os.path.join(cfg["adapter"], "adapter_config.json")
-    if os.path.exists(acfg):
-        with open(acfg, encoding="utf-8") as fh:
-            rank = json.load(fh).get("r")
-    print("lora rank  : %s (read from adapter_config.json)" % rank)
+    if a.base_only:
+        print("adapter    : NOT ATTACHED -- --base-only. The path above is the "
+              "one this fold WOULD have used and is recorded in the summary so "
+              "the arm can be told apart from a run whose adapter went missing.")
+    else:
+        if not os.path.isdir(cfg["adapter"]):
+            raise NotRun("no adapter at %s" % cfg["adapter"])
+        acfg = os.path.join(cfg["adapter"], "adapter_config.json")
+        if os.path.exists(acfg):
+            with open(acfg, encoding="utf-8") as fh:
+                rank = json.load(fh).get("r")
+        print("lora rank  : %s (read from adapter_config.json)" % rank)
 
     alph = grammar.build_alphabets(a.step2)
     # 🔴 `whole_record=False`. `FINDING 80`: the prompt already carries the six
@@ -259,7 +282,7 @@ def main(argv=None):
 
     t0 = time.time()
     llm = LLM(model=cfg["base_repo"], revision=cfg.get("base_revision"),
-              enable_lora=True, max_lora_rank=rank or 16,
+              enable_lora=not a.base_only, max_lora_rank=rank or 16,
               dtype="bfloat16", gpu_memory_utilization=a.gpu_mem,
               max_model_len=a.max_model_len, seed=cfg["generation_seed"],
               enforce_eager=not a.compile)
@@ -269,7 +292,8 @@ def main(argv=None):
     params = SamplingParams(**sp_kwargs)
     t0 = time.time()
     outs = llm.generate(prompts, params,
-                        lora_request=LoRARequest(a.fold, 1, cfg["adapter"]))
+                        lora_request=(None if a.base_only
+                                      else LoRARequest(a.fold, 1, cfg["adapter"])))
     gen_s = time.time() - t0
     print("generated %d diaries in %.1f s (%.2f diaries/s)"
           % (len(outs), gen_s, len(outs) / max(gen_s, 1e-9)))
@@ -279,7 +303,8 @@ def main(argv=None):
     # `--tag` exists for `G6.7`: five fictional-country levels share a fold and a
     # leg and would otherwise overwrite one another -- the cache-key-collision
     # class of `FINDING 8`. Default unchanged, so nothing already run moves.
-    tag = a.tag or ("nogrammar" if a.no_grammar else "constrained")
+    tag = a.tag or ("base" if a.base_only
+                    else ("nogrammar" if a.no_grammar else "constrained"))
     path = os.path.join(a.out, "generated_leg%d_%s_%s.jsonl" % (a.leg, a.fold, tag))
 
     n_valid = 0
@@ -332,7 +357,11 @@ def main(argv=None):
         "diaries_per_second": round(len(outs) / max(gen_s, 1e-9), 4),
         "structured_api": struct_name,
         "base_repo": cfg["base_repo"], "base_revision": cfg.get("base_revision"),
-        "adapter": cfg["adapter"], "lora_rank": rank,
+        "adapter": ("NOT ATTACHED (--base-only)" if a.base_only
+                    else cfg["adapter"]),
+        "base_only": bool(a.base_only),
+        "adapter_that_would_have_been_used": cfg["adapter"] if a.base_only else None,
+        "lora_rank": rank,
         "temperature": cfg["temperature"], "top_p": cfg["top_p"], "top_k": cfg["top_k"],
         "max_new_tokens": cfg["max_new_tokens"],
         "generation_seed": cfg["generation_seed"],

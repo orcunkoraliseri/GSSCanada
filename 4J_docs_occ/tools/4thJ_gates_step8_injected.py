@@ -146,6 +146,47 @@ def schedule_file_objects(objs):
     return out
 
 
+# --------------------------------------------------------------------------
+# 🔴 G8.17 -- THE CAMPAIGN'S HALF OF THE PHASE CHECK. Added 2026-08-26
+# under `D-S9-3`(a).
+#
+# `FINDING 141`: the schedules this campaign consumed were on the DIARY origin
+# (04:00) while `Schedule:File` is read from midnight, so 13,108 EnergyPlus runs
+# applied occupancy four hours early and every gate on the board passed.
+# `G7.19` scores the emitter. `G8.17` scores the CONSUMER, because a correct
+# emitter does not stop a campaign being pointed at an old bundle -- and the
+# bundles that were wrong are still on disk under `schedules_bak_prerotation`.
+#
+# Both arms are computed HERE, from the CSV the saved `in.idf` resolves to. The
+# manifest's own declaration is checked as a third, separate arm: an artefact
+# that is in phase and does not say so cannot be validated, and one that says so
+# and is not is worse.
+# --------------------------------------------------------------------------
+G8_17_NIGHT_HOUR = 5            # same statistic and same band as `G7.19`
+G8_17_NIGHT_RATIO_MIN = 0.90
+G8_17_MIN_TROUGH_HOUR = 8
+
+
+def hour_of_day_profile(values):
+    """Mean over the year of each hour-of-day index. Hourly series only."""
+    prof = [0.0] * 24
+    n = [0] * 24
+    for i, v in enumerate(values):
+        prof[i % 24] += v
+        n[i % 24] += 1
+    return [p / c if c else 0.0 for p, c in zip(prof, n)]
+
+
+def phase_verdict(values):
+    """(ok, ratio, trough_hour). The statistic `G7.19` registered."""
+    prof = hour_of_day_profile(values)
+    pmax = max(prof)
+    ratio = prof[G8_17_NIGHT_HOUR] / pmax if pmax > 0 else 0.0
+    trough = min(range(24), key=lambda k: prof[k])
+    return (ratio >= G8_17_NIGHT_RATIO_MIN
+            and trough >= G8_17_MIN_TROUGH_HOUR), ratio, trough
+
+
 def read_multiplier_csv(path):
     with io.open(path, encoding="utf-8") as fh:
         lines = [ln.strip() for ln in fh if ln.strip() != ""]
@@ -221,6 +262,7 @@ def main():
     print("V8.a  runs           : %d declared, %d read -- OK"
           % (header["declared_runs"], len(runs)))
 
+    _g817_seen = set()
     warn_kind_totals = {}
     suspicious_all = []
     started_seen = {}
@@ -503,6 +545,70 @@ def main():
 
         src = os.path.join(SCHED7, bundles[0], sched_name)
         gser = presence_of(src)
+
+        # ---- G8.17: is the schedule this run consumed on the right clock? ----
+        bman_path = os.path.join(SCHED7, bundles[0], "manifest.json")
+        bman = {}
+        if os.path.exists(bman_path):
+            bman = json.load(io.open(bman_path, encoding="utf-8"))
+        if "rotated_to_midnight" not in bman:
+            record("G8.17", unit, fold, "bundle declares its clock", None, None,
+                   "FAIL", bman_path,
+                   "the Step 7 bundle does not say whether it was rotated to "
+                   "midnight. FINDING 141 crossed three steps because no "
+                   "artefact recorded which clock it was on.")
+        elif not bman.get("rotated_to_midnight"):
+            record("G8.17", unit, fold, "bundle declares its clock", None, None,
+                   "FAIL", bman_path,
+                   "bundle %s declares rotated_to_midnight = false: this run "
+                   "applied occupancy on the 04:00 DIARY origin. FINDING 141."
+                   % bundles[0])
+        else:
+            record("G8.17", unit, fold, "bundle declares its clock", None, None,
+                   "PASS", bman_path, "rotated_to_midnight = true")
+        # 🔴 THE TWO PHASE ARMS ARE SCORED ONCE PER BUNDLE, NOT PER RUN,
+        # and that is a specification decision, not a loosened band. Both arms
+        # are POPULATION statements: one dwelling that leaves for work together
+        # has its occupancy trough at exactly 07:00, and a night-shift dwelling
+        # is legitimately empty at 05:00. Each RUN here drives ONE household, so
+        # scoring the stock claim per run failed 320 units on CORRECT schedules
+        # the first time this gate was executed. `G7.19` had already been
+        # corrected for the same error and this module reproduced it -- which is
+        # why the counts below are reported and not silently dropped.
+        if fold not in _g817_seen:
+            _g817_seen.add(fold)
+            bdir = os.path.join(SCHED7, bundles[0])
+            files = sorted(f for f in os.listdir(bdir)
+                           if f.startswith("presence_") and f.endswith(".csv"))
+            acc = None
+            n_bad_ratio = n_bad_trough = 0
+            for fn in files:
+                v = presence_of(os.path.join(bdir, fn))
+                hp = hour_of_day_profile(v)
+                mx = max(hp)
+                if mx > 0 and hp[G8_17_NIGHT_HOUR] / mx < G8_17_NIGHT_RATIO_MIN:
+                    n_bad_ratio += 1
+                if min(range(24), key=lambda k: hp[k]) < G8_17_MIN_TROUGH_HOUR:
+                    n_bad_trough += 1
+                acc = hp if acc is None else [a + b for a, b in zip(acc, hp)]
+            prof = [x / len(files) for x in acc]
+            pmax = max(prof)
+            ratio17 = prof[G8_17_NIGHT_HOUR] / pmax if pmax > 0 else 0.0
+            trough17 = min(range(24), key=lambda k: prof[k])
+            note = ("bundle %s, %d dwellings; per-dwelling DIAGNOSTIC, no "
+                    "verdict: %d below the night arm, %d below the trough arm"
+                    % (bundles[0], len(files), n_bad_ratio, n_bad_trough))
+            record("G8.17", "bundle:" + bundles[0], fold,
+                   "presence at %02d:00 / daily max" % G8_17_NIGHT_HOUR,
+                   ratio17, G8_17_NIGHT_RATIO_MIN,
+                   "PASS" if ratio17 >= G8_17_NIGHT_RATIO_MIN else "FAIL", bdir,
+                   note)
+            record("G8.17", "bundle:" + bundles[0], fold,
+                   "hour of the daily occupancy trough",
+                   float(trough17), float(G8_17_MIN_TROUGH_HOUR),
+                   "PASS" if trough17 >= G8_17_MIN_TROUGH_HOUR else "FAIL", bdir,
+                   "a residential trough is the working day, not the small "
+                   "hours; measured on the bundle the saved in.idf resolves to")
         want = S.multiplier_series(gser, f)
         worst = max(abs(a - b) for a, b in zip(used, want))
         record("G8.12", unit, fold, "max |m_used - m_rebuilt|", worst, MULT_TOL,
@@ -684,7 +790,7 @@ def main():
     # ---- the coverage clause ----------------------------------------------
     ALL_GATES = ["G8.1", "G8.2", "G8.3", "G8.4", "G8.5", "G8.6", "G8.7", "G8.8",
                  "G8.9", "G8.10", "G8.11", "G8.12", "G8.13", "G8.14", "G8.15",
-                 "G8.16"]
+                 "G8.16", "G8.17"]
     cov = {}
     for gid in ALL_GATES:
         d = per_gate.get(gid)

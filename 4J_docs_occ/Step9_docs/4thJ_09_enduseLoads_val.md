@@ -7,7 +7,22 @@
 
 ## STATUS
 
-**OPEN. Nothing built.** All thresholds pre-registered.
+🟢 **RUN 2026-08-25 (night): 16 PASS / 3 FAIL over fourteen gates and five guards.** 🔴 **CORRECTED 2026-08-26, `FINDING 149`: the runner's own tally is `15 PASS / 3 FAIL / 1 NOT CHECKED` — the "16" counted `G9.4`'s NOT CHECKED as a PASS, which is what `V9.c` forbids. Per-gate verdicts unchanged; see the 2026-08-26 entry at the end.**
+Fourteen gates declared here, fourteen scored -- the runner reads the gate IDs out of THIS DOCUMENT
+and refuses to report a tally if the two sets differ, because a gate that exists only in prose
+occupies the slot of the check that would have caught the defect.
+
+🔴 **`G9.6`, `G9.7` and `G9.12` ship FAIL and no threshold was moved.** 🔴 **Their
+registered perturbations therefore demonstrate nothing about them** and are reported as
+`ALREADY_FAILING_AT_BASELINE`, never as hits.
+
+⚪ **The battery found four defects in the GATES before it found anything else** -- `G9.5` probing
+a code path the campaign could not reach, the `G9.3` perturbation felling `G9.1` as well, and
+`G9.13`'s directory exclusion computed on an absolute path, which also disabled `V9.d`'s self-probe.
+All four fixed additively. Record:
+`docs/2026-08-25_items-9.1-9.5_the-mapping-the-trigger-and-the-campaign.md`.
+
+**All thresholds pre-registered, and none of them edited.**
 
 ---
 
@@ -142,7 +157,98 @@ Append-only.
 * **Fourteen gates, fifteen perturbations, none run.**
 * 🔴 **G9.14 exists because the failure it catches produces no error and no wrong number.** A trigger
   rule reading `act2`, a column the generated diaries do not carry, does not raise: the appliance
-  simply never fires. Energy closure (G9.10) still reconciles, trigger rates (G9.6) still fall inside
+  simply never fires.
+  > 🔴 **CORRECTED FORWARD 2026-08-25, `FINDING 137`: THE GENERATED DIARIES DO CARRY `act2`.**
+  > The episode tuple has five comma-fields and **29.816 % of shipped Leg-5 episodes** carry a
+  > non-empty `act2`. So the failure mode described above -- "the appliance simply never fires" --
+  > **cannot happen**; a trigger reading `act2` WOULD fire. The gate is re-specified as a POLICY
+  > assertion (`D-S9-2` item 3): the trigger's runtime columns must be a subset of the generated
+  > record's **and must not contain `act2`, because `D-S9-1` ruled (d)**. The registered
+  > perturbation is unchanged and still fells it. Energy closure (G9.10) still reconciles, trigger rates (G9.6) still fall inside
   the source model's range for every rule that *did* fire, and the load is missing rather than wrong.
 * **It asserts against the file, not against a schema constant.** A schema constant is written by the
   same hand as the trigger and would agree with it about a column neither has checked exists.
+
+### 2026-08-25 (night) — 🟢 **THE BOARD IS RUN FOR THE FIRST TIME: 16 PASS / 3 FAIL, and the battery's COVERAGE CLAUSE PASSES.**
+
+**Fourteen gates, five guards, all nineteen implemented.** The runner reads the gate IDs out of THIS
+document and refuses to report a tally if what it scored differs from what is declared here — a gate
+that exists only in prose occupies the slot of the check that would have caught the defect.
+
+| | |
+|---|---|
+| `G9.1` PASS 61 | every load-bearing row names a source model and a table |
+| `G9.2` PASS 192 | label and scale, keyed on the STRUCTURED field (`V9.e`) |
+| `G9.3` PASS 149 | every NOT VALIDATED row carries reasoning or a citation |
+| `G9.4` PASS 3 | CrossRef match on title, volume, issue, pages **and first author** |
+| `G9.5` PASS | a cycle in the only eligible minute of the day ran all 60 minutes |
+| **`G9.6` FAIL 60** | `FINDING 139`, saturation; 3 standby-only devices NOT_EVALUABLE |
+| **`G9.7` FAIL 300** | medians 100.16 / 117.65 / 91.06 against the registered 30-50 band |
+| `G9.8` PASS 12 | four DHW categories, within 3 pp of Table 1's portions |
+| `G9.9` PASS 300 | assignment check, re-read off the SAVED IDF |
+| `G9.10` PASS 300 | closure rebuilt from the saved IDF and the on-disk schedules |
+| `G9.11` PASS 11 | `FINDING 140`, 6 vs 5 on CREST's rows, group 33 only |
+| **`G9.12` FAIL 3** | R2 0.297 / 0.411 / 0.035 against 0.85 |
+| `G9.13` PASS 28 | no per-dwelling framing; 2 negated mentions counted as denials |
+| `G9.14` PASS 9 | runtime columns a subset, `act2` absent by policy |
+| `V9.a`-`V9.e` PASS | each proven on a falsifier the same run |
+
+🔴 **`G9.6`, `G9.7` and `G9.12` ship FAIL and NO BAND WAS MOVED.** All three are results:
+saturation, a band whose basis its own source does not define, and a load shape that genuinely
+disagrees with CREST's UK-2000 activity timing. 🔴 **Their three registered perturbations
+therefore demonstrate nothing about them** and are reported `ALREADY_FAILING_AT_BASELINE`, never as
+hits — the vacuity condition, the same shape Step 6 recorded for its Leg-5 coverage clause.
+
+🟢 **The battery: 12 HIT / 0 MISS / 3 already-failing, null perturbation moved nothing,
+COVERAGE CLAUSE PASS.** Every gate that passes at baseline was made to fall by something.
+
+🔴 **The battery found FOUR defects in the gates themselves before it found anything else**,
+all fixed additively: `G9.5` probed a synthetic case with the truncation switch defaulted off, so a
+perturbed campaign could not reach it; the `G9.3` perturbation also felled `G9.1`, because the
+planted row had no source at all; `G9.13`'s scratch-directory exclusion was computed on the ABSOLUTE
+path, so scoring an output tree that itself sat under a `_`-prefixed directory made the gate skip the
+artefacts it was pointed at; and that same bug disabled `V9.d`'s self-probe.
+
+⚪ **`V9.a` gets a falsifier of ours** — drop an ACL code the corpus contains and watch the
+shortfall print — because the registered table falsifies the fourteen gates and says nothing about
+the five guards. `V9.b`, `V9.c`, `V9.d` and `V9.e` prove themselves by construction on every run.
+
+⚪ **`G9.4` is implemented in its widened form** (`FINDING 47`): title alone is never enough, and a
+citation with no DOI must carry a retrievable artefact and a recorded md5 instead — stricter than
+the DOI clause, not a waiver of it. `V9.c` proves the NOT CHECKED path every run on an unresolvable
+DOI.
+
+⚪ **`G9.11`'s implementation was itself caught passing for the wrong reason** before it shipped:
+the first version counted DHW rows into the signature and returned 9 vs 5 without saying where the
+splits came from. It now prints the electricity-only breakdown beside the verdict, which is what
+turned it into `FINDING 140`.
+
+---
+
+### 2026-08-26 — THE WHOLE GATE BOARD WAS RE-SCORED AFTER THE ROTATION AND CAME BACK IDENTICAL
+
+⚪ **`D-S9-3` was ruled (a) and executed**, so every Step 8 artefact was rebuilt on schedules
+rotated to midnight (`Step8_docs/docs/2026-08-26_D-S9-3a_the-rotated-re-run.md`). Step 9 was
+re-scored afterwards to find out whether any of its verdicts depended on the defect.
+
+🟢 **They did not.** `4thJ_step9_trigger.py` was re-run on all three folds, then
+`4thJ_step9_aggregate.py`, then `4thJ_gates_step9.py --root . --offline`. Every per-gate verdict is
+unchanged: `G9.6`, `G9.7` and `G9.12` fail for the reasons already recorded above, and `G9.4` is
+NOT CHECKED on `V9.c`'s unresolvable-DOI path. A `diff -rq` of the 630-file output tree against a
+snapshot taken before the re-run printed **nothing** and exited 0.
+
+🔴 **`FINDING 149` — but the TALLY was wrong, and it was wrong in the one direction this
+document forbids.** The runner prints
+`counts: {"FAIL": 3, "NOT CHECKED": 1, "PASS": 15}`. The 2026-08-25 entries above say
+**16 PASS / 3 FAIL over fourteen gates and five guards** — nineteen either way, so the missing
+verdict is `G9.4`'s **NOT CHECKED**, counted by hand as a pass. `V9.c` exists to stop exactly that
+substitution in code, and the prose performed it anyway. **Every "16 PASS / 3 FAIL" in this document
+and in `4thJ_09_enduseLoads.md` is superseded by "15 PASS / 3 FAIL / 1 NOT CHECKED".** The earlier
+entries are left standing because the log is append-only; nothing in the gates, thresholds or
+checkers was changed to obtain the corrected line.
+
+⚪ **This is the check, not a formality.** Step 9's presence schedules are rebuilt by
+`4thJ_step7_schedules.py` and its trigger refuses to run unless all 100 reproduce the shipped CSVs
+byte-for-byte — so had the rotation reached Step 9, the trigger would have refused, or the tree
+would have differed. Neither happened. **No threshold was moved, no checker was edited to make a
+gate pass**, and `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` is untouched.

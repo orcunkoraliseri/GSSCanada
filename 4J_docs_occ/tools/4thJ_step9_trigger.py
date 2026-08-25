@@ -56,6 +56,17 @@ import sys
 DAY_MINUTES = 1440
 YEAR_MINUTES = 365 * DAY_MINUTES
 
+# `D-S2-5`: the harmonised diary day begins at 04:00 in all three countries, so
+# minute 0 of every decoded record is 04:00 and NOT midnight. Measured on the
+# shipped diaries rather than taken from the ruling: sleep sits at 0.99 over
+# indices 0-2 and the presence trough falls at indices 6-9, which is 10:00-14:00
+# on a 04:00 origin and an implausible 06:00-10:00 on a midnight one.
+#
+# 🔴 EnergyPlus reads a `Schedule:File` from hour 0 of the run period, i.e. from
+# MIDNIGHT. A 04:00-origin series written straight into one is therefore applied
+# FOUR HOURS EARLY. See `FINDING 141` and `D-S9-3`.
+DIARY_ORIGIN_HOUR = 4
+
 # ACL codes that mean the occupant is present but NOT active. CREST's active
 # occupancy is "at home and awake"; the diary says which is which, so this is
 # read off the corpus rather than modelled.
@@ -561,8 +572,16 @@ def _assert_same_dwellings(shipped_dir, fold, dwellings):
                 "Step 8 has no presence schedule for household %s. Step 9 is "
                 "building a different set of dwellings from the one that was "
                 "simulated." % d["hid"])
+        # 🔴 D-S9-3(a), 2026-08-26. Step 7 now emits on the clock
+        # EnergyPlus reads (`FINDING 141`), so the shipped file is the ROTATED
+        # series and ours must be rotated before it can be compared.
+        #
+        # The rotation applied here is STEP 9's OWN implementation, not Step 7's,
+        # and the comparison is byte-for-byte -- so this check now also proves
+        # the two implementations agree on all 8,760 values of all 100
+        # dwellings. If they ever drift apart, this is where it shows.
         ours = ["HH_%s_%s_Presence" % (fold, d["hid"])] + \
-               ["%.6f" % v for v in d["presence"]]
+               ["%.6f" % v for v in rotate_to_midnight(d["presence"], 60)]
         theirs = [ln.strip() for ln in
                   io.open(path, encoding="utf-8").read().splitlines() if ln.strip()]
         if ours != theirs:
@@ -708,6 +727,25 @@ def to_timestep(minute_values, timestep_min):
     return out
 
 
+def rotate_to_midnight(series, timestep_min, origin_hour=DIARY_ORIGIN_HOUR):
+    """Move a 04:00-origin year series onto a midnight origin.
+
+    The rotation is CYCLIC OVER THE WHOLE YEAR, not per day. A diary day covers
+    04:00 of day D to 04:00 of day D+1, so its last four hours belong to the
+    NEXT calendar day; rotating each day inside itself would move those four
+    hours backwards by twenty hours instead of forwards by four. The year is
+    assembled as a closed loop of 365 diary days, so one cyclic shift of the
+    concatenated series is the exact correction.
+    """
+    k = int(origin_hour * 60 // timestep_min)
+    if not k:
+        return list(series)
+    if k >= len(series):
+        raise TriggerError("cannot rotate a %d-value series by %d"
+                           % (len(series), k))
+    return list(series[-k:]) + list(series[:-k])
+
+
 def measure_cycles(dwellings, mapping, owned, hazards, acl_to_profile, n_days,
                    seed):
     """Realised cycles per owning dwelling-year, appliances only.
@@ -812,7 +850,8 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
              double_trigger_appliance=None, dhw_scale=1.0,
              collapse_dhw_events=False, extra_runtime_columns=(),
              force_two_digit_mapping=False, zero_load_share=0.0,
-             verify_against_step8=True, map_path=None, calibration_passes=6):
+             verify_against_step8=True, map_path=None, calibration_passes=6,
+             rotate_origin=True):
     """One fold, end to end. Every keyword after `dhw_l_per_day` exists ONLY so
     the registered perturbation battery has something to perturb; all of them
     default to the correct behaviour and any non-default is stamped into the
@@ -906,6 +945,12 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
             dhw_litres["total"] += sum(v for v, _ in day_litres.values())
         for aid in owned[d["hid"]]:
             cycles[aid] = states[aid].cycles
+        if rotate_origin:
+            # `FINDING 141` / `D-S9-3`. Applied ONCE, after the whole year is
+            # assembled, and stamped into the manifest so an unrotated run can
+            # never be mistaken for a rotated one.
+            elec_ts = rotate_to_midnight(elec_ts, timestep_min)
+            dhw_ts = rotate_to_midnight(dhw_ts, timestep_min)
         for i, v in enumerate(elec_ts):
             stock_elec[i] += v
         for i, v in enumerate(dhw_ts):
@@ -927,7 +972,8 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
                              stock_elec, stock_dhw, calib, timestep_min, year,
                              seed, leg, pool_meta, mean_elig,
                              dhw_l_per_day, restrict_default_dwelling,
-                             extra_runtime_columns, calib_trace, {
+                             extra_runtime_columns, calib_trace, rotate_origin,
+                             {
                                  "truncate_cycle_at_episode_end":
                                      truncate_cycle_at_episode_end,
                                  "drop_end_use": drop_end_use,
@@ -1025,7 +1071,8 @@ def write_series_csv(path, header, values):
 def write_outputs(root, fold, out_dir, mapping, per_dwelling, stock_elec,
                   stock_dhw, calib, timestep_min, year, seed, leg, pool_meta,
                   mean_elig, dhw_l_per_day, restrict_default_dwelling,
-                  extra_runtime_columns, calib_trace, perturbations):
+                  extra_runtime_columns, calib_trace, rotate_origin,
+                  perturbations):
     prof_dir = os.path.join(out_dir, "enduse_profiles", fold)
     if not os.path.isdir(prof_dir):
         os.makedirs(prof_dir)
@@ -1137,6 +1184,8 @@ def write_outputs(root, fold, out_dir, mapping, per_dwelling, stock_elec,
         "restrict_to_crest_default_dwelling": restrict_default_dwelling,
         "dhw_reference_l_per_dwelling_day": dhw_l_per_day,
         "dhw_delta_t_k": 35.0,
+        "diary_origin_hour": DIARY_ORIGIN_HOUR,
+        "rotated_to_midnight": rotate_origin,
         "runtime_input_columns": sorted(
             set(mapping.runtime_input_columns()) | set(extra_runtime_columns)),
         "mean_eligible_minutes_per_dwelling_year": dict(

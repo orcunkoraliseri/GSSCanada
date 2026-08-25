@@ -295,6 +295,37 @@ try:
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
+# --------------------------------------------------------------------------
+print("\n[9] D-S9-3 / FINDING 141 -- the rotation onto the clock EnergyPlus reads")
+# --------------------------------------------------------------------------
+check("the diary origin is declared and is 04:00", S.DIARY_ORIGIN_HOUR == 4,
+      S.DIARY_ORIGIN_HOUR)
+
+# Two days of hourly values, each day counting from a different hundred, so the
+# rotation's effect is readable by eye and a per-day rotation is DISTINGUISHABLE
+# from a cyclic one.
+two = list(range(24)) + list(range(100, 124))
+rot = S.rotate_to_midnight(two, 60)
+check("the shift is four places at a 60-minute timestep",
+      rot[4:8] == [0, 1, 2, 3], rot[:8])
+check("the last four values of the YEAR wrap round to its start",
+      rot[:4] == [120, 121, 122, 123], rot[:4])
+check("day 2's first hours come from day 1, not from day 2 itself",
+      rot[28:32] == [100, 101, 102, 103], rot[28:32])
+check("nothing is created or destroyed", sorted(rot) == sorted(two))
+check("rotating is the identity when the origin is already midnight",
+      S.rotate_to_midnight(two, 60, origin_hour=0) == two)
+# The per-day rotation this is NOT: rotating each day inside itself would put
+# day 1's hours 20-23 at the START of day 1 instead of day 2's at the start of
+# the year. FINDING 141's own note, made checkable.
+per_day = two[20:24] + two[0:20] + two[44:48] + two[24:44]
+check("a CYCLIC-OVER-THE-YEAR rotation differs from a per-day one",
+      rot != per_day, "the two are identical, so the test proves nothing")
+check("a 15-minute timestep shifts sixteen places",
+      S.rotate_to_midnight(list(range(96 * 2)), 15)[16:20] == [0, 1, 2, 3])
+expect_raise("a series shorter than the shift is refused",
+             lambda: S.rotate_to_midnight([0.0, 1.0], 60), "longer than the series")
+
 print("\n" + "=" * 74)
 print("%d ok, %d FAILED" % (OK, BAD))
 print("=" * 74)

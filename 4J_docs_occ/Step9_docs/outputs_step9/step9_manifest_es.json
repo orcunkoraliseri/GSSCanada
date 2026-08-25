@@ -697,6 +697,7 @@
     "dhw_cat_d": 2954952.1999999993
   },
   "dhw_reference_l_per_dwelling_day": 200.0,
+  "diary_origin_hour": 4,
   "fold": "es",
   "is_campaign_run": true,
   "leg": "leg5",
@@ -744,6 +745,7 @@
     "provenance": null
   },
   "restrict_to_crest_default_dwelling": true,
+  "rotated_to_midnight": true,
   "rule": "independent",
   "runtime_input_columns": [
     "act",

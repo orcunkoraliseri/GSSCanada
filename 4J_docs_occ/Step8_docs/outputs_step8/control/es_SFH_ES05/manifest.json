@@ -35,17 +35,17 @@
   "energyplus_build": "94a887817b",
   "energyplus_version": "24.2.0",
   "eplusout_csv_md5": "fa93003bb87e91d8b152f691a4737e47",
-  "finished_utc": "2026-08-25T15:51:20Z",
+  "finished_utc": "2026-08-25T21:06:26Z",
   "returncode": 0,
   "severe": 0,
-  "started_utc": "2026-08-25T15:51:19Z",
-  "stdout_tail": "n  0.12sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\control\\_rerun\\es_SFH_ES05\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.07sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "started_utc": "2026-08-25T21:06:25Z",
+  "stdout_tail": "n  0.11sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\control\\_rerun\\es_SFH_ES05\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  0.97sec\r\nEnergyPlus Completed Successfully.\r\n",
   "variables_delivered": {
    "Zone Ideal Loads Supply Air Total Heating Energy": true,
    "Zone Ideal Loads Zone Total Heating Energy": true,
    "Zone Mean Air Temperature": true
   },
-  "wall_s": 1.295,
+  "wall_s": 1.159,
   "warnings": 1
  },
  "rerun_results": {
@@ -136,17 +136,17 @@
  "run": {
   "eplusout_csv_md5": "fa93003bb87e91d8b152f691a4737e47",
   "fatal": false,
-  "finished_utc": "2026-08-25T15:51:18Z",
+  "finished_utc": "2026-08-25T21:06:25Z",
   "returncode": 0,
   "severe": 0,
-  "started_utc": "2026-08-25T15:51:17Z",
-  "stdout_tail": "hr 00min  0.11sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\control\\es_SFH_ES05\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  0.99sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "started_utc": "2026-08-25T21:06:23Z",
+  "stdout_tail": "hr 00min  0.11sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\control\\es_SFH_ES05\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  0.91sec\r\nEnergyPlus Completed Successfully.\r\n",
   "variables_delivered": {
    "Zone Ideal Loads Supply Air Total Heating Energy": true,
    "Zone Ideal Loads Zone Total Heating Energy": true,
    "Zone Mean Air Temperature": true
   },
-  "wall_s": 1.201,
+  "wall_s": 1.096,
   "warning_kinds": {
    "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1
   },
@@ -162,5 +162,5 @@
  "weather_station": "Valencia.Viveros",
  "weather_wmo": "082850",
  "work_item": "8.3",
- "written_utc": "2026-08-25T15:51:20Z"
+ "written_utc": "2026-08-25T21:06:26Z"
 }

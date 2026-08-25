@@ -232,7 +232,7 @@ def g9_4(board, cites, out_dir, offline=False):
 # --------------------------------------------------------------------------
 # G9.5 -- cycle completion, asserted on synthetic edge cases
 # --------------------------------------------------------------------------
-def g9_5(board, trig):
+def g9_5(board, trig, manifests):
     """An appliance triggered near the END of an activity episode still runs its
     FULL rated cycle.
 
@@ -247,18 +247,25 @@ def g9_5(board, trig):
            "cycles_per_year": 1.0, "ownership_share": 1.0,
            "occupancy_dependent": 1, "in_default_dwelling": 1,
            "power_factor": 1.0}
+    # The probe must exercise the code path THE CAMPAIGN USED, or a perturbed
+    # campaign cannot reach this gate and the perturbation registered against it
+    # is a no-op. The truncation switch is read off the manifest the campaign
+    # wrote, not defaulted here.
+    truncate = any((m.get("perturbations") or {}).get(
+        "truncate_cycle_at_episode_end") for m in manifests.values())
     import random as _r
     state = trig.ApplianceState()
     out = [0.0] * trig.DAY_MINUTES
     active = [True] * trig.DAY_MINUTES
-    trig.simulate_day(app, state, 1.0, [100], active, out, _r.Random(0))
+    trig.simulate_day(app, state, 1.0, [100], active, out, _r.Random(0),
+                      truncate_at_episode_end=truncate)
     ran = sum(1 for v in out if v > 0.0)
     ok = (ran == 60 and state.cycles == 1)
     board.add("G9.5", "PASS" if ok else "FAIL", 1,
               "a cycle started in the only eligible minute of the day ran all "
               "60 minutes" if ok else
-              "the cycle ran %d of 60 minutes (cycles=%d): it was truncated"
-              % (ran, state.cycles))
+              "the cycle ran %d of 60 minutes (cycles=%d): it was truncated at "
+              "the end of the activity episode" % (ran, state.cycles))
 
 
 # --------------------------------------------------------------------------
@@ -331,8 +338,14 @@ def g9_6(board, manifests, tol=0.15):
 # --------------------------------------------------------------------------
 # G9.7 -- DHW volume, scored EXACTLY as registered
 # --------------------------------------------------------------------------
-def g9_7(board, manifests):
-    """30 to 50 L/person/day at 60 C, population median, reported per country.
+def g9_7(board, manifests, out_dir=None):
+    """30 to 50 L/person/day at 60 C, POPULATION MEDIAN, reported per country.
+
+    🔴 THE REGISTERED STATISTIC IS THE MEDIAN, and it is the median that is
+    scored here. An earlier draft scored the stock mean, which is a different
+    quantity: over a right-skewed per-dwelling distribution the two differ by
+    several litres, and scoring the convenient one is how a band gets met by
+    choosing a statistic rather than by the model.
 
     🔴 SCORED AS REGISTERED. `FINDING 138` established that neither the band's
     per-person basis nor its 60 C reference appears in Jordan & Vajen, whose
@@ -343,15 +356,33 @@ def g9_7(board, manifests):
     lo, hi = G9_7_BAND_L_PER_PERSON_DAY
     detail = []
     bad = []
+    n = 0
     for fold, m in sorted(manifests.items()):
-        v = m["stock_dhw_l_per_person_day"]
-        detail.append("%s %.2f" % (fold, v))
-        if not (lo <= v <= hi):
-            bad.append("%s %.2f" % (fold, v))
-    board.add("G9.7", "PASS" if not bad else "FAIL", len(manifests),
+        vals = []
+        if out_dir:
+            path = os.path.join(out_dir, "enduse_by_dwelling_%s.csv" % fold)
+            if os.path.exists(path):
+                vals = [float(r["dhw_litres_per_person_per_day"])
+                        for r in csv.DictReader(io.open(path, encoding="utf-8"))]
+        if not vals:
+            board.add("G9.7", "NOT_EVALUABLE", 0,
+                      "no per-dwelling table for fold %s, so the population "
+                      "median cannot be formed. Not a pass." % fold)
+            return
+        n += len(vals)
+        vals.sort()
+        k = len(vals)
+        med = (vals[k // 2] if k % 2 else
+               0.5 * (vals[k // 2 - 1] + vals[k // 2]))
+        detail.append("%s median %.2f (mean %.2f)"
+                      % (fold, med, sum(vals) / k))
+        if not (lo <= med <= hi):
+            bad.append("%s %.2f %s the band"
+                       % (fold, med, "ABOVE" if med > hi else "BELOW"))
+    board.add("G9.7", "PASS" if not bad else "FAIL", n,
               "L/person/day by fold: %s against the registered %.0f-%.0f band%s"
               % (", ".join(detail), lo, hi,
-                 "" if not bad else " -- OUTSIDE in %s" % ", ".join(bad)))
+                 "" if not bad else " -- OUTSIDE: %s" % "; ".join(bad)))
 
 
 # --------------------------------------------------------------------------
@@ -818,6 +849,10 @@ def _rebin(values, n_out):
 # --------------------------------------------------------------------------
 # G9.13 -- the per-dwelling non-claim, with V9.d's coverage clause
 # --------------------------------------------------------------------------
+NEGATION_RE = re.compile(
+    r"\b(?:no|not|never|cannot|neither|nor|without|refus\w*|"
+    r"forbid\w*|avoid\w*)\b[^.]{0,60}$", re.I)
+
 PER_DWELLING_PATTERNS = [
     r"predict(?:s|ed|ion)?\s+(?:the\s+)?(?:load|demand|profile|consumption)\s+"
     r"(?:of|for)\s+(?:a|one|this)\s+(?:dwelling|household|home)",
@@ -836,12 +871,25 @@ def g9_13(board, out_dir, extra_dirs=()):
     """
     scanned = []
     hits = []
+    denied = []
     roots = [out_dir] + list(extra_dirs)
     candidates = 0
     pats = [re.compile(p, re.I) for p in PER_DWELLING_PATTERNS]
     for rt in roots:
         for dirpath, _dirs, files in os.walk(rt):
-            if os.sep + "sources" in dirpath or os.sep + "enduse_profiles" in dirpath:
+            # The exclusion is computed RELATIVE to the directory being scored,
+            # never against its absolute path. Scoring an output tree that
+            # itself sits under a `_`-prefixed scratch directory -- which is
+            # exactly where the perturbation battery builds its cases -- must
+            # not make this gate skip the very artefacts it was pointed at. The
+            # first version did, and the battery caught it: the registered
+            # per-dwelling-prediction perturbation could not make G9.13 fall.
+            rel = os.path.relpath(dirpath, rt)
+            parts = [] if rel == "." else rel.replace("/", os.sep).split(os.sep)
+            # `sources/` holds other people's papers and `enduse_profiles/`
+            # holds numeric series with no prose.
+            if ("sources" in parts or "enduse_profiles" in parts
+                    or any(x.startswith("_") for x in parts)):
                 continue
             for fn in files:
                 if not fn.lower().endswith((".md", ".csv", ".json", ".txt", ".idf")):
@@ -854,8 +902,19 @@ def g9_13(board, out_dir, extra_dirs=()):
                     continue
                 scanned.append(os.path.relpath(path, rt))
                 for p in pats:
-                    m = p.search(text)
-                    if m:
+                    for m in p.finditer(text):
+                        before = text[max(0, m.start() - 60):m.start()].lower()
+                        # 🔴 A DENIAL IS NOT A CLAIM. A document that states the
+                        # limitation contains the right kind of token in the
+                        # wrong place, and a naive presence test reads the
+                        # disclaimer as the violation -- the same shape V9.e
+                        # exists to refuse one level up. Denials are counted and
+                        # PRINTED, never silently dropped.
+                        if NEGATION_RE.search(before):
+                            denied.append("%s: %r"
+                                          % (os.path.relpath(path, rt),
+                                             m.group(0)[:50]))
+                            continue
                         hits.append("%s: %r" % (os.path.relpath(path, rt),
                                                 m.group(0)[:60]))
     if len(scanned) < candidates:
@@ -864,10 +923,13 @@ def g9_13(board, out_dir, extra_dirs=()):
                   "over a subset the check chose itself"
                   % (len(scanned), candidates))
         return
-    board.add("G9.13", "PASS" if not hits else "FAIL", len(scanned),
-              "scanned %d result artefacts, no per-dwelling prediction framing"
-              % len(scanned) if not hits else
-              "%d per-dwelling claims: %s" % (len(hits), "; ".join(hits[:4])))
+    note = ("scanned %d result artefacts, no per-dwelling prediction framing"
+            % len(scanned) if not hits else
+            "%d per-dwelling claims: %s" % (len(hits), "; ".join(hits[:4])))
+    if denied:
+        note += ("; %d negated mentions counted as denials, not claims: %s"
+                 % (len(denied), "; ".join(denied[:3])))
+    board.add("G9.13", "PASS" if not hits else "FAIL", len(scanned), note)
 
 
 # --------------------------------------------------------------------------
@@ -966,10 +1028,13 @@ def v9_a(board, root, rows, manifests, folds):
     board.add("V9.a", "PASS" if not shortfall else "FAIL", len(present), note)
 
 
-def v9_b(board, board_rows):
+def v9_b(board, board_rows, out_dir):
     """G9.1 to G9.4 must print the row count they scanned before any verdict.
 
-    A provenance check over an empty set passes for the wrong reason.
+    A provenance check over an empty set passes for the wrong reason. The guard
+    checks the live board AND proves itself on an empty set the same run: over
+    zero rows, G9.1-G9.3 return PASS with `n_scanned == 0`, which is exactly the
+    shape this guard exists to refuse.
     """
     bad = []
     for gid in ("G9.1", "G9.2", "G9.3", "G9.4"):
@@ -979,9 +1044,91 @@ def v9_b(board, board_rows):
         elif not row["n_scanned"]:
             bad.append("%s scanned 0 rows and still returned %s"
                        % (gid, row["verdict"]))
+    sub = Board()
+    g9_1(sub, [])
+    g9_2(sub, [])
+    g9_3(sub, [])
+    vacuous = [r["id"] for r in sub.rows
+               if r["verdict"] == "PASS" and not r["n_scanned"]]
+    if not vacuous:
+        bad.append("the empty-set probe did not reproduce a vacuous pass, so "
+                   "this guard cannot demonstrate what it refuses")
     board.add("V9.b", "PASS" if not bad else "FAIL", 4,
-              "G9.1-G9.4 each scanned a non-empty row set" if not bad
+              "G9.1-G9.4 each scanned a non-empty row set; over an empty set "
+              "%s would each pass for the wrong reason, which is what this "
+              "guard refuses" % ", ".join(vacuous) if not bad
               else "; ".join(bad))
+
+
+def v9_c(board, out_dir):
+    """G9.4 must print NOT CHECKED, never PASS, when the resolver is out of
+    reach.
+
+    Proven every run rather than asserted: a citation with a DOI that cannot
+    resolve is scored on a private board, and the guard fails unless the verdict
+    is NOT CHECKED. A check that cannot distinguish *found nothing* from *could
+    not run* is not a check, and a guard that only says so in prose is the same
+    problem one level up.
+    """
+    probe = [{
+        "key": "V9C-PROBE", "model": "probe", "authors": "probe",
+        "first_author_family": "Nobody", "year": "1900", "title": "probe",
+        "container": "probe", "volume": "1", "issue": "1", "page": "1-2",
+        "doi": "10.0000/this-doi-cannot-resolve-v9c-probe",
+        "artefact": "", "artefact_origin": "", "artefact_licence": "",
+        "table": "", "note": "",
+    }]
+    sub = Board()
+    g9_4(sub, probe, out_dir, offline=False)
+    got = sub.verdict("G9.4")
+    ok = got == "NOT CHECKED"
+    board.add("V9.c", "PASS" if ok else "FAIL", 1,
+              "an unresolvable DOI makes G9.4 report NOT CHECKED, not PASS"
+              if ok else
+              "G9.4 returned %r for a DOI that cannot resolve" % got)
+
+
+def v9_d(board, out_dir, board_rows):
+    """G9.13 must print the files it scanned and refuse a verdict over a subset.
+
+    Proven by scoring G9.13 against a directory it cannot read in full: the
+    guard fails unless the shortfall is detected. A green check that scanned
+    nothing is decoration.
+    """
+    g13 = next((r for r in board_rows if r["id"] == "G9.13"), None)
+    if g13 is None or not g13["n_scanned"]:
+        board.add("V9.d", "FAIL", 0,
+                  "G9.13 did not run, or scanned nothing and still returned a "
+                  "verdict")
+        return
+    sub = Board()
+    _g9_13_over_subset(sub, out_dir)
+    ok = sub.verdict("G9.13") == "FAIL"
+    board.add("V9.d", "PASS" if ok else "FAIL", g13["n_scanned"],
+              "G9.13 printed the %d files it scanned, and refuses a verdict "
+              "when it can reach fewer than the directory holds"
+              % g13["n_scanned"] if ok else
+              "G9.13 returned %r over a deliberately truncated scan"
+              % sub.verdict("G9.13"))
+
+
+def _g9_13_over_subset(board, out_dir):
+    """G9.13 with its reader crippled on one file, so the shortfall clause fires."""
+    real_open = io.open
+    state = {"n": 0}
+
+    def crippled(path, *a, **kw):
+        if str(path).lower().endswith((".md", ".csv", ".json", ".txt", ".idf")):
+            state["n"] += 1
+            if state["n"] == 1:
+                raise IOError("V9.d probe: this file could not be read")
+        return real_open(path, *a, **kw)
+
+    io.open = crippled
+    try:
+        g9_13(board, out_dir)
+    finally:
+        io.open = real_open
 
 
 def v9_e(board, rows):
@@ -1051,9 +1198,9 @@ def run(root, folds, offline=False, out_dir=None, quiet=False):
     g9_2(board, rows)
     g9_3(board, rows)
     g9_4(board, cites, out_dir, offline=offline)
-    g9_5(board, trig)
+    g9_5(board, trig, manifests)
     g9_6(board, manifests)
-    g9_7(board, manifests)
+    g9_7(board, manifests, out_dir)
     g9_8(board, manifests)
     g9_9(board, out_dir, folds)
     g9_10(board, out_dir, manifests, folds)
@@ -1063,17 +1210,9 @@ def run(root, folds, offline=False, out_dir=None, quiet=False):
     g9_14(board, root, manifests, folds)
 
     v9_a(board, root, rows, manifests, folds)
-    v9_b(board, board.rows)
-    # V9.c is asserted inside G9.4 and recorded here from its verdict.
-    board.add("V9.c", "PASS" if board.verdict("G9.4") != "PASS" or not offline
-              else "FAIL", 1,
-              "G9.4 reports NOT CHECKED rather than PASS when the resolver "
-              "cannot be reached (verdict was %s)" % board.verdict("G9.4"))
-    # V9.d is asserted inside G9.13.
-    g13 = next(r for r in board.rows if r["id"] == "G9.13")
-    board.add("V9.d", "PASS" if g13["n_scanned"] > 0 else "FAIL",
-              g13["n_scanned"],
-              "G9.13 printed the %d files it scanned" % g13["n_scanned"])
+    v9_b(board, board.rows, out_dir)
+    v9_c(board, out_dir)
+    v9_d(board, out_dir, board.rows)
     v9_e(board, rows)
 
     # -- the gate set must be the one the document declares -------------------

@@ -65,28 +65,28 @@
   "python": "3.13.5"
  },
  "rerun": {
-  "finished_utc": "2026-08-25T17:57:20.019955Z",
+  "finished_utc": "2026-08-25T21:17:44.964847Z",
   "returncode": 0,
   "series_sha256": "9af55a3cd9ce6ed63564293ab499a8b41d57d26bf46e47feaee292819485f4b2",
   "severe": 0,
-  "started_utc": "2026-08-25T17:57:18.438025Z",
-  "stdout_tail": "0.12sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\uk_TH_GB06__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.32sec\r\nEnergyPlus Completed Successfully.\r\n",
-  "wall_s": 1.582,
+  "started_utc": "2026-08-25T21:17:43.516698Z",
+  "stdout_tail": "0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\uk_TH_GB06__f000\\_rerun\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.21sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "wall_s": 1.448,
   "warnings": 1
  },
  "run": {
-  "finished_utc": "2026-08-25T17:57:14.585856Z",
+  "finished_utc": "2026-08-25T21:17:38.548222Z",
   "returncode": 0,
   "series_sha256": "9af55a3cd9ce6ed63564293ab499a8b41d57d26bf46e47feaee292819485f4b2",
   "severe": 0,
-  "started_utc": "2026-08-25T17:57:12.868678Z",
-  "stdout_tail": "00min  0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\uk_TH_GB06__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.46sec\r\nEnergyPlus Completed Successfully.\r\n",
+  "started_utc": "2026-08-25T21:17:37.010940Z",
+  "stdout_tail": "00min  0.16sec\r\n ReadVarsESO program completed successfully.\r\n ReadVarsESO program starting.\r\n Requested ESO file=C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\cells\\uk_TH_GB06__f000\\eplusout.mtr\r\n does not exist.  ReadVarsESO program terminated.\r\n ReadVarsESO program terminated.\r\nEnergyPlus Run Time=00hr 00min  1.30sec\r\nEnergyPlus Completed Successfully.\r\n",
   "variables_delivered": {
    "Zone Ideal Loads Supply Air Total Heating Energy": true,
    "Zone Ideal Loads Zone Total Heating Energy": true,
    "Zone Mean Air Temperature": true
   },
-  "wall_s": 1.717,
+  "wall_s": 1.537,
   "warning_kinds": {
    "GetHTSurfaceData: Surfaces with interface to Ground found but no \"Ground Temperatures\" wer": 1
   },
@@ -103,5 +103,5 @@
  "weather_station": "Birmingham.AP",
  "weather_wmo": "035340",
  "work_item": "8.5",
- "written_utc": "2026-08-25T17:57:20.168034Z"
+ "written_utc": "2026-08-25T21:17:45.194620Z"
 }

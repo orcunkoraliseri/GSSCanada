@@ -1336,12 +1336,43 @@ def main():
              {i: repr(s) for i, s in dropped_ids.items()} or "NOTHING -- basis unchanged"))
 
     epochs = args.epochs if args.epochs is not None else (1 if args.leg == 4 else TH.EPOCHS_LEG5)
-    opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr) \
-        if any(p.requires_grad for p in model.parameters()) else None
+    trainable = [p for p in model.parameters() if p.requires_grad]
+    optimizer_name = None
+    if not trainable:
+        opt = None
+    elif args.run_type == "ceiling":
+        # 🔴 The ceiling recipe is FULL fine-tune + 8-BIT AdamW, fixed by RL05 and
+        # written at 4thJ_04_finetuneLLM.md:130. The full-fine-tune half was already
+        # implemented above; this is the other half. At 7 B, fp32 Adam moments are
+        # 56 GB on their own -- 14 (bf16 weights) + 14 (grads) + 56 = 84 GB before a
+        # single activation -- so the run does not fit the 80 GB instance it is
+        # registered on. This is what makes the measurement possible, not an
+        # optimisation of it.
+        try:
+            import bitsandbytes as bnb
+        except ImportError as e:
+            fail("--run-type ceiling needs `bitsandbytes` for 8-bit AdamW and it is "
+                 "not importable (%s). envs/step4 is FROZEN by D-S7-3 and must not "
+                 "be pip-installed into; stage bitsandbytes into its own directory "
+                 "and put it on PYTHONPATH instead. REFUSING rather than falling "
+                 "back to 32-bit AdamW: that would report a DIFFERENT recipe under "
+                 "the ceiling's name." % e)
+        opt = bnb.optim.AdamW8bit(trainable, lr=args.lr)
+        optimizer_name = "bitsandbytes.optim.AdamW8bit"
+        print("ceiling run: optimiser is %s (bitsandbytes %s)"
+              % (optimizer_name, getattr(bnb, "__version__", "?")))
+    else:
+        opt = torch.optim.AdamW(trainable, lr=args.lr)
+        optimizer_name = "torch.optim.AdamW"
 
     metrics_rows = []
     detectors = {"run": run_name, "fold": args.fold, "held_out_country": args.fold,
                  "leg": args.leg, "run_type": args.run_type,
+                 # The recipe travels WITH the readings, the same argument
+                 # `D-S4-5` makes for the delimiter basis: a ceiling number whose
+                 # JSON does not say which optimiser produced it cannot be
+                 # compared to a LoRA number that does.
+                 "optimizer": optimizer_name,
                  "perturbation": args.perturbation,
                  "gates_at_start": {"G4.14": g14, "G4.13": g13, "G4.15": g15,
                                     "G4.8": g8, "G4.5": g5},

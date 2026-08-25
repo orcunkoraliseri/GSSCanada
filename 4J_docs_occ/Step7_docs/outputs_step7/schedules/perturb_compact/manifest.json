@@ -7,6 +7,7 @@
     "4": 43032
   },
   "backoff_full_depth_share": 0.5779210314262692,
+  "diary_origin_hour": 4,
   "fold": "es",
   "household_sizes": [
     2,
@@ -713,12 +714,14 @@
     }
   ],
   "interpolate_to_timestep": "No",
+  "leg": "leg4",
   "n_hours_override": null,
   "n_households": 100,
   "n_values_per_schedule_expected": 8760,
   "perturbations": {
     "interpolate": null,
     "n_hours_override": null,
+    "no_rotate": null,
     "outdoor_override": null,
     "presence_offset": 0.0,
     "use_compact": true
@@ -741,6 +744,7 @@
   },
   "provenance": "LEG-4 PILOT -- NOT REPORTABLE",
   "rho": 0.0,
+  "rotated_to_midnight": true,
   "rule": "independent",
   "seed": 1,
   "timestep_min": 60,

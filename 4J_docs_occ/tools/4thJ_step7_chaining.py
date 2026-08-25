@@ -269,6 +269,16 @@ def run_cell(pools, households, cal, rule, rho, seed, timestep_min):
         md = [S.assemble_person_year(p, cal, rule, rng, pools, backoff, rho)
               for p in members]
         member_years.extend(md)
+        # 🔴 `D-S9-3`(a) / `FINDING 147`: this is the THIRD consumer of the
+        # diary series, and it is deliberately NOT rotated. Every statistic
+        # `prescreen` returns is invariant under a cyclic shift applied
+        # identically to every household -- annual mean, peak, trough, p99 and
+        # the pairwise correlations exactly so. The ONE exception is the ramp
+        # series, which is built over t = 1..n-1 and therefore drops a
+        # different wrap-around pair: at most ONE term of 8,759. Rotating here
+        # would change `max_ramp` by that one boundary term and nothing else,
+        # and would silently invalidate the 90 pre-screen cells already on
+        # disk. Recorded rather than left for the next reader to wonder about.
         series.append(S.household_year(md, timestep_min))
     out = prescreen(series, seed=seed)
     out.update(vocabulary(member_years, cal))

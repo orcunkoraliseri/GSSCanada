@@ -103,6 +103,45 @@ STRATUM_FIELDS = ("strat_age_band", "strat_sex", "strat_hh_type",
 
 CHAINING_RULES = ("independent", "static", "habit")
 
+#: 🔴 `D-S2-5`. THE DIARY DAY STARTS AT 04:00, NOT AT MIDNIGHT.
+#:
+#: Step 2 harmonised every country onto a 04:00 day origin (measured native
+#: origins: es 06:00, uk 04:00, it 04:00), so minute 0 of every decoded record
+#: is 04:00. `Schedule:File` has no origin field: EnergyPlus reads value 0 as
+#: hour 0 of the run period, which is MIDNIGHT. Writing the diary minutes
+#: straight out therefore applies every occupant's day FOUR HOURS EARLY.
+#:
+#: That is `FINDING 141`, and it is what every schedule emitted before
+#: 2026-08-26 did -- including the 13,108 EnergyPlus runs Step 8 reported.
+#: Ruled `D-S9-3` (a): rotate, re-emit, re-run.
+DIARY_ORIGIN_HOUR = 4
+
+
+def rotate_to_midnight(series, timestep_min, origin_hour=DIARY_ORIGIN_HOUR):
+    """Put a diary-origin series onto the clock `Schedule:File` is read on.
+
+    🔴 THE ROTATION IS CYCLIC OVER THE WHOLE YEAR, NOT WITHIN EACH DAY,
+    and that distinction is the whole correctness of it. A diary day covers
+    04:00 of day *D* to 04:00 of day *D+1*, so its last four hours belong to the
+    NEXT calendar day. Rotating each day inside itself would move those four
+    hours BACKWARDS by twenty, which is a different and larger error than the one
+    being fixed.
+
+    The year is treated as a cycle, so the four hours displaced off 31 December
+    land on 1 January. That is the same convention `D-S2-5` used to harmonise the
+    diaries in the first place, and it is what `tools/4thJ_step9_trigger.py`
+    already does to the appliance and hot-water series.
+    """
+    k = int(origin_hour * 60 // timestep_min)
+    if not k:
+        return list(series)
+    if k >= len(series):
+        raise ScheduleError(
+            "cannot rotate a %d-value series by %d places: the shift is longer "
+            "than the series, so the result would not be the same year."
+            % (len(series), k))
+    return list(series[-k:]) + list(series[:-k])
+
 
 class ScheduleError(ValueError):
     pass
@@ -446,7 +485,7 @@ def build(gen_dir, fold, step2_dir, crosswalk, corpus, out_dir, year,
           timestep_min, rule, seed, n_households, rho=0.0, arm="constrained",
           min_size=1, pool_limit=None, interpolate=None, n_hours_override=None,
           keep_series=False, outdoor_override=None, use_compact=False,
-          presence_offset=0.0, leg="leg4"):
+          presence_offset=0.0, leg="leg4", rotate=True):
     """Emit one campaign cell. Returns the manifest dict.
 
     `interpolate` and `n_hours_override` exist ONLY so the two registered
@@ -481,6 +520,11 @@ def build(gen_dir, fold, step2_dir, crosswalk, corpus, out_dir, year,
         member_days = [assemble_person_year(p, cal, rule, rng, pools, backoff, rho)
                        for p in members]
         series = household_year(member_days, timestep_min)
+        # D-S2-5 / FINDING 141. BEFORE the truncation perturbation, because the
+        # rotation is only defined on a whole year: rotating a 8,759-hour series
+        # would wrap the wrong four hours round.
+        if rotate:
+            series = rotate_to_midnight(series, timestep_min)
         if n_hours_override is not None:
             series = series[:int(n_hours_override * 60 / timestep_min)]
         if presence_offset:
@@ -524,8 +568,14 @@ def build(gen_dir, fold, step2_dir, crosswalk, corpus, out_dir, year,
         "n_values_per_schedule_expected": n_values_expected,
         "interpolate_to_timestep": interpolate or INTERPOLATE_TO_TIMESTEP,
         "n_hours_override": n_hours_override,
+        # D-S9-3(a). Stamped so an UNROTATED bundle can never be mistaken for a
+        # rotated one by anything downstream -- G8.17 refuses to run on a bundle
+        # that does not carry `true` here.
+        "rotated_to_midnight": bool(rotate),
+        "diary_origin_hour": DIARY_ORIGIN_HOUR if rotate else None,
         "perturbations": {
             "interpolate": interpolate,
+            "no_rotate": (not rotate) or None,
             "n_hours_override": n_hours_override,
             "outdoor_override": (sorted(outdoor_override)
                                  if outdoor_override is not None else None),
@@ -581,6 +631,11 @@ def main(argv=None):
                     help="PERTURBATION ONLY. Emit Schedule:Compact.")
     ap.add_argument("--presence-offset", type=float, default=0.0,
                     help="PERTURBATION ONLY. Shifts every value out of [0,1].")
+    ap.add_argument("--no-rotate", action="store_true",
+                    help="PERTURBATION ONLY. Emit on the DIARY origin (04:00) "
+                         "instead of the clock EnergyPlus reads. This is what "
+                         "every bundle emitted before 2026-08-26 did, and it is "
+                         "G7.19's falsifier -- FINDING 141.")
     a = ap.parse_args(argv)
     outdoor_override = None
     if a.drop_outdoor_code:
@@ -594,7 +649,8 @@ def main(argv=None):
     m = build(a.gen, a.fold, a.step2, a.crosswalk, a.corpus, a.out, a.year,
               a.timestep, a.rule, a.seed, a.households, a.rho, a.arm,
               a.min_size, None, a.interpolate, a.hours, False,
-              outdoor_override, a.compact, a.presence_offset, a.leg)
+              outdoor_override, a.compact, a.presence_offset, a.leg,
+              not a.no_rotate)
     print("emitted %d schedules -> %s" % (m["n_households"], a.out))
     print("  leg                 %s" % m["leg"])
     print("  provenance          %s" % m["provenance"])
@@ -605,6 +661,8 @@ def main(argv=None):
     print("  values/schedule     %d expected %d"
           % (m["households"][0]["n_values"], m["n_values_per_schedule_expected"]))
     print("  interpolate         %s" % m["interpolate_to_timestep"])
+    print("  rotated to midnight %s  (diary origin %s)"
+          % (m["rotated_to_midnight"], m["diary_origin_hour"]))
     return 0
 
 

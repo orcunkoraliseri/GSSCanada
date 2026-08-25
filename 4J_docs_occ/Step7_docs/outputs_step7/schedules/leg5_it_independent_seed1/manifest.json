@@ -5,6 +5,7 @@
     "4": 70852
   },
   "backoff_full_depth_share": 0.9156371155337296,
+  "diary_origin_hour": 4,
   "fold": "it",
   "household_sizes": [
     2,
@@ -718,6 +719,7 @@
   "perturbations": {
     "interpolate": null,
     "n_hours_override": null,
+    "no_rotate": null,
     "outdoor_override": null,
     "presence_offset": 0.0,
     "use_compact": false
@@ -740,6 +742,7 @@
   },
   "provenance": null,
   "rho": 0.0,
+  "rotated_to_midnight": true,
   "rule": "independent",
   "seed": 1,
   "timestep_min": 60,

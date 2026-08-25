@@ -1,0 +1,890 @@
+{
+ "knobs": {
+  "D1_timestep_1": {
+   "cells": [
+    {
+     "base_gj": 97.99,
+     "cell": "es_AB_ES01",
+     "dev_pct": -2.326768037554854,
+     "fold": "es",
+     "knob_gj": 95.71,
+     "warnings": 2
+    },
+    {
+     "base_gj": 117.36,
+     "cell": "es_AB_ES02",
+     "dev_pct": -3.2634628493524183,
+     "fold": "es",
+     "knob_gj": 113.53,
+     "warnings": 2
+    },
+    {
+     "base_gj": 80.33,
+     "cell": "es_AB_ES03",
+     "dev_pct": -2.9503298892070267,
+     "fold": "es",
+     "knob_gj": 77.96,
+     "warnings": 2
+    },
+    {
+     "base_gj": 116.08,
+     "cell": "es_AB_ES04",
+     "dev_pct": -2.300137835975191,
+     "fold": "es",
+     "knob_gj": 113.41,
+     "warnings": 2
+    },
+    {
+     "base_gj": 37.94,
+     "cell": "es_AB_ES05",
+     "dev_pct": -4.0326831839747,
+     "fold": "es",
+     "knob_gj": 36.41,
+     "warnings": 2
+    },
+    {
+     "base_gj": 48.95,
+     "cell": "es_AB_ES06",
+     "dev_pct": -7.088866189989797,
+     "fold": "es",
+     "knob_gj": 45.48,
+     "warnings": 2
+    },
+    {
+     "base_gj": 72.84,
+     "cell": "es_MFH_ES01",
+     "dev_pct": -4.187259747391539,
+     "fold": "es",
+     "knob_gj": 69.79,
+     "warnings": 2
+    },
+    {
+     "base_gj": 65.72,
+     "cell": "es_MFH_ES02",
+     "dev_pct": -2.921485088253198,
+     "fold": "es",
+     "knob_gj": 63.8,
+     "warnings": 2
+    },
+    {
+     "base_gj": 199.57,
+     "cell": "es_MFH_ES03",
+     "dev_pct": -4.148920178383525,
+     "fold": "es",
+     "knob_gj": 191.29,
+     "warnings": 2
+    },
+    {
+     "base_gj": 163.61,
+     "cell": "es_MFH_ES04",
+     "dev_pct": -3.532791394169061,
+     "fold": "es",
+     "knob_gj": 157.83,
+     "warnings": 2
+    },
+    {
+     "base_gj": 29.3,
+     "cell": "es_MFH_ES05",
+     "dev_pct": -4.1296928327645075,
+     "fold": "es",
+     "knob_gj": 28.09,
+     "warnings": 2
+    },
+    {
+     "base_gj": 15.77,
+     "cell": "es_MFH_ES06",
+     "dev_pct": -6.4045656309448304,
+     "fold": "es",
+     "knob_gj": 14.76,
+     "warnings": 2
+    },
+    {
+     "base_gj": 26.13,
+     "cell": "es_SFH_ES01",
+     "dev_pct": -4.324531190202828,
+     "fold": "es",
+     "knob_gj": 25.0,
+     "warnings": 2
+    },
+    {
+     "base_gj": 59.73,
+     "cell": "es_SFH_ES02",
+     "dev_pct": -5.156537753222834,
+     "fold": "es",
+     "knob_gj": 56.65,
+     "warnings": 2
+    },
+    {
+     "base_gj": 95.57,
+     "cell": "es_SFH_ES03",
+     "dev_pct": -2.961180286700846,
+     "fold": "es",
+     "knob_gj": 92.74,
+     "warnings": 2
+    },
+    {
+     "base_gj": 50.35,
+     "cell": "es_SFH_ES04",
+     "dev_pct": -4.349553128103286,
+     "fold": "es",
+     "knob_gj": 48.16,
+     "warnings": 2
+    },
+    {
+     "base_gj": 4.05,
+     "cell": "es_SFH_ES05",
+     "dev_pct": -10.12345679012345,
+     "fold": "es",
+     "knob_gj": 3.64,
+     "warnings": 2
+    },
+    {
+     "base_gj": 7.49,
+     "cell": "es_SFH_ES06",
+     "dev_pct": -4.005340453938582,
+     "fold": "es",
+     "knob_gj": 7.19,
+     "warnings": 2
+    },
+    {
+     "base_gj": 52.39,
+     "cell": "es_TH_ES01",
+     "dev_pct": -3.607558694407331,
+     "fold": "es",
+     "knob_gj": 50.5,
+     "warnings": 2
+    },
+    {
+     "base_gj": 45.24,
+     "cell": "es_TH_ES02",
+     "dev_pct": -5.592396109637491,
+     "fold": "es",
+     "knob_gj": 42.71,
+     "warnings": 2
+    },
+    {
+     "base_gj": 21.75,
+     "cell": "es_TH_ES03",
+     "dev_pct": -6.298850574712649,
+     "fold": "es",
+     "knob_gj": 20.38,
+     "warnings": 2
+    },
+    {
+     "base_gj": 26.69,
+     "cell": "es_TH_ES04",
+     "dev_pct": -4.533533158486327,
+     "fold": "es",
+     "knob_gj": 25.48,
+     "warnings": 2
+    },
+    {
+     "base_gj": 14.53,
+     "cell": "es_TH_ES05",
+     "dev_pct": -3.3035099793530533,
+     "fold": "es",
+     "knob_gj": 14.05,
+     "warnings": 2
+    },
+    {
+     "base_gj": 2.72,
+     "cell": "es_TH_ES06",
+     "dev_pct": -8.823529411764714,
+     "fold": "es",
+     "knob_gj": 2.48,
+     "warnings": 2
+    },
+    {
+     "base_gj": 167.88,
+     "cell": "uk_AB_GB01",
+     "dev_pct": 6.099594948772939,
+     "fold": "uk",
+     "knob_gj": 178.12,
+     "warnings": 2
+    },
+    {
+     "base_gj": 255.85,
+     "cell": "uk_AB_GB02",
+     "dev_pct": 5.6752003126832165,
+     "fold": "uk",
+     "knob_gj": 270.37,
+     "warnings": 2
+    },
+    {
+     "base_gj": 1264.3,
+     "cell": "uk_AB_GB03",
+     "dev_pct": 6.2896464446729405,
+     "fold": "uk",
+     "knob_gj": 1343.82,
+     "warnings": 2
+    },
+    {
+     "base_gj": 1092.82,
+     "cell": "uk_AB_GB04",
+     "dev_pct": 4.843432587251337,
+     "fold": "uk",
+     "knob_gj": 1145.75,
+     "warnings": 2
+    },
+    {
+     "base_gj": 204.48,
+     "cell": "uk_AB_GB05",
+     "dev_pct": 5.1056338028169,
+     "fold": "uk",
+     "knob_gj": 214.92,
+     "warnings": 2
+    },
+    {
+     "base_gj": 204.48,
+     "cell": "uk_AB_GB06",
+     "dev_pct": 5.1056338028169,
+     "fold": "uk",
+     "knob_gj": 214.92,
+     "warnings": 2
+    },
+    {
+     "base_gj": 317.76,
+     "cell": "uk_AB_GB07",
+     "dev_pct": 2.1934793554884275,
+     "fold": "uk",
+     "knob_gj": 324.73,
+     "warnings": 2
+    },
+    {
+     "base_gj": 204.48,
+     "cell": "uk_AB_GB08",
+     "dev_pct": 5.1056338028169,
+     "fold": "uk",
+     "knob_gj": 214.92,
+     "warnings": 2
+    },
+    {
+     "base_gj": 203.73,
+     "cell": "uk_MFH_GB01",
+     "dev_pct": 6.189564619839992,
+     "fold": "uk",
+     "knob_gj": 216.34,
+     "warnings": 2
+    },
+    {
+     "base_gj": 220.07,
+     "cell": "uk_MFH_GB02",
+     "dev_pct": 6.257100013632031,
+     "fold": "uk",
+     "knob_gj": 233.84,
+     "warnings": 2
+    },
+    {
+     "base_gj": 205.04,
+     "cell": "uk_MFH_GB03",
+     "dev_pct": 6.271946937182996,
+     "fold": "uk",
+     "knob_gj": 217.9,
+     "warnings": 2
+    },
+    {
+     "base_gj": 191.54,
+     "cell": "uk_MFH_GB04",
+     "dev_pct": 5.377466847655849,
+     "fold": "uk",
+     "knob_gj": 201.84,
+     "warnings": 2
+    },
+    {
+     "base_gj": 162.31,
+     "cell": "uk_MFH_GB05",
+     "dev_pct": 5.199926067401884,
+     "fold": "uk",
+     "knob_gj": 170.75,
+     "warnings": 2
+    },
+    {
+     "base_gj": 172.66,
+     "cell": "uk_MFH_GB06",
+     "dev_pct": 5.218348198772148,
+     "fold": "uk",
+     "knob_gj": 181.67,
+     "warnings": 2
+    },
+    {
+     "base_gj": 97.84,
+     "cell": "uk_MFH_GB07",
+     "dev_pct": 2.432542927228123,
+     "fold": "uk",
+     "knob_gj": 100.22,
+     "warnings": 2
+    },
+    {
+     "base_gj": 86.28,
+     "cell": "uk_MFH_GB08",
+     "dev_pct": 2.21372276309689,
+     "fold": "uk",
+     "knob_gj": 88.19,
+     "warnings": 2
+    },
+    {
+     "base_gj": 138.33,
+     "cell": "uk_SFH_GB01",
+     "dev_pct": 6.036290031085081,
+     "fold": "uk",
+     "knob_gj": 146.68,
+     "warnings": 2
+    },
+    {
+     "base_gj": 108.48,
+     "cell": "uk_SFH_GB02",
+     "dev_pct": 6.0195427728613575,
+     "fold": "uk",
+     "knob_gj": 115.01,
+     "warnings": 2
+    },
+    {
+     "base_gj": 83.94,
+     "cell": "uk_SFH_GB03",
+     "dev_pct": 6.004288777698363,
+     "fold": "uk",
+     "knob_gj": 88.98,
+     "warnings": 2
+    },
+    {
+     "base_gj": 73.87,
+     "cell": "uk_SFH_GB04",
+     "dev_pct": 6.064708271287382,
+     "fold": "uk",
+     "knob_gj": 78.35,
+     "warnings": 2
+    },
+    {
+     "base_gj": 61.05,
+     "cell": "uk_SFH_GB05",
+     "dev_pct": 5.601965601965605,
+     "fold": "uk",
+     "knob_gj": 64.47,
+     "warnings": 2
+    },
+    {
+     "base_gj": 64.44,
+     "cell": "uk_SFH_GB06",
+     "dev_pct": 5.664183736809444,
+     "fold": "uk",
+     "knob_gj": 68.09,
+     "warnings": 2
+    },
+    {
+     "base_gj": 22.02,
+     "cell": "uk_SFH_GB07",
+     "dev_pct": 2.9972752043596738,
+     "fold": "uk",
+     "knob_gj": 22.68,
+     "warnings": 2
+    },
+    {
+     "base_gj": 19.41,
+     "cell": "uk_SFH_GB08",
+     "dev_pct": 2.782071097372484,
+     "fold": "uk",
+     "knob_gj": 19.95,
+     "warnings": 2
+    },
+    {
+     "base_gj": 80.12,
+     "cell": "uk_TH_GB01",
+     "dev_pct": 6.003494757863208,
+     "fold": "uk",
+     "knob_gj": 84.93,
+     "warnings": 2
+    },
+    {
+     "base_gj": 73.8,
+     "cell": "uk_TH_GB02",
+     "dev_pct": 5.948509485094852,
+     "fold": "uk",
+     "knob_gj": 78.19,
+     "warnings": 2
+    },
+    {
+     "base_gj": 62.51,
+     "cell": "uk_TH_GB03",
+     "dev_pct": 5.919052951527749,
+     "fold": "uk",
+     "knob_gj": 66.21,
+     "warnings": 2
+    },
+    {
+     "base_gj": 52.19,
+     "cell": "uk_TH_GB04",
+     "dev_pct": 5.403333972025292,
+     "fold": "uk",
+     "knob_gj": 55.01,
+     "warnings": 2
+    },
+    {
+     "base_gj": 41.39,
+     "cell": "uk_TH_GB05",
+     "dev_pct": 5.629379077071753,
+     "fold": "uk",
+     "knob_gj": 43.72,
+     "warnings": 2
+    },
+    {
+     "base_gj": 41.69,
+     "cell": "uk_TH_GB06",
+     "dev_pct": 5.708803070280649,
+     "fold": "uk",
+     "knob_gj": 44.07,
+     "warnings": 2
+    },
+    {
+     "base_gj": 15.65,
+     "cell": "uk_TH_GB07",
+     "dev_pct": 3.1309904153354644,
+     "fold": "uk",
+     "knob_gj": 16.14,
+     "warnings": 2
+    },
+    {
+     "base_gj": 13.68,
+     "cell": "uk_TH_GB08",
+     "dev_pct": 2.9239766081871372,
+     "fold": "uk",
+     "knob_gj": 14.08,
+     "warnings": 2
+    },
+    {
+     "base_gj": 262.24,
+     "cell": "it_AB_IT01",
+     "dev_pct": -3.5883160463697363,
+     "fold": "it",
+     "knob_gj": 252.83,
+     "warnings": 2
+    },
+    {
+     "base_gj": 534.38,
+     "cell": "it_AB_IT02",
+     "dev_pct": -4.304053295407762,
+     "fold": "it",
+     "knob_gj": 511.38,
+     "warnings": 2
+    },
+    {
+     "base_gj": 430.04,
+     "cell": "it_AB_IT03",
+     "dev_pct": -4.167054227513723,
+     "fold": "it",
+     "knob_gj": 412.12,
+     "warnings": 2
+    },
+    {
+     "base_gj": 343.69,
+     "cell": "it_AB_IT04",
+     "dev_pct": -3.797026390060814,
+     "fold": "it",
+     "knob_gj": 330.64,
+     "warnings": 2
+    },
+    {
+     "base_gj": 441.81,
+     "cell": "it_AB_IT05",
+     "dev_pct": -3.616939408342957,
+     "fold": "it",
+     "knob_gj": 425.83,
+     "warnings": 2
+    },
+    {
+     "base_gj": 443.68,
+     "cell": "it_AB_IT06",
+     "dev_pct": -2.6235124413992037,
+     "fold": "it",
+     "knob_gj": 432.04,
+     "warnings": 2
+    },
+    {
+     "base_gj": 314.76,
+     "cell": "it_AB_IT07",
+     "dev_pct": -3.3422289998729133,
+     "fold": "it",
+     "knob_gj": 304.24,
+     "warnings": 2
+    },
+    {
+     "base_gj": 239.79,
+     "cell": "it_AB_IT08",
+     "dev_pct": -2.414612786187911,
+     "fold": "it",
+     "knob_gj": 234.0,
+     "warnings": 2
+    },
+    {
+     "base_gj": 175.92,
+     "cell": "it_MFH_IT01",
+     "dev_pct": -3.6550704865847994,
+     "fold": "it",
+     "knob_gj": 169.49,
+     "warnings": 2
+    },
+    {
+     "base_gj": 464.6,
+     "cell": "it_MFH_IT02",
+     "dev_pct": -3.6633663366336715,
+     "fold": "it",
+     "knob_gj": 447.58,
+     "warnings": 2
+    },
+    {
+     "base_gj": 259.95,
+     "cell": "it_MFH_IT03",
+     "dev_pct": -3.6737834198884336,
+     "fold": "it",
+     "knob_gj": 250.4,
+     "warnings": 2
+    },
+    {
+     "base_gj": 210.43,
+     "cell": "it_MFH_IT04",
+     "dev_pct": -3.830252340445755,
+     "fold": "it",
+     "knob_gj": 202.37,
+     "warnings": 2
+    },
+    {
+     "base_gj": 320.78,
+     "cell": "it_MFH_IT05",
+     "dev_pct": -3.675416173078111,
+     "fold": "it",
+     "knob_gj": 308.99,
+     "warnings": 2
+    },
+    {
+     "base_gj": 262.08,
+     "cell": "it_MFH_IT06",
+     "dev_pct": -2.987637362637357,
+     "fold": "it",
+     "knob_gj": 254.25,
+     "warnings": 2
+    },
+    {
+     "base_gj": 119.02,
+     "cell": "it_MFH_IT07",
+     "dev_pct": -2.428163333893464,
+     "fold": "it",
+     "knob_gj": 116.13,
+     "warnings": 2
+    },
+    {
+     "base_gj": 108.69,
+     "cell": "it_MFH_IT08",
+     "dev_pct": -2.4197258257429346,
+     "fold": "it",
+     "knob_gj": 106.06,
+     "warnings": 2
+    },
+    {
+     "base_gj": 83.2,
+     "cell": "it_SFH_IT01",
+     "dev_pct": -4.074519230769232,
+     "fold": "it",
+     "knob_gj": 79.81,
+     "warnings": 2
+    },
+    {
+     "base_gj": 75.03,
+     "cell": "it_SFH_IT02",
+     "dev_pct": -4.1316806610688985,
+     "fold": "it",
+     "knob_gj": 71.93,
+     "warnings": 2
+    },
+    {
+     "base_gj": 73.37,
+     "cell": "it_SFH_IT03",
+     "dev_pct": -3.9934578165462815,
+     "fold": "it",
+     "knob_gj": 70.44,
+     "warnings": 2
+    },
+    {
+     "base_gj": 91.56,
+     "cell": "it_SFH_IT04",
+     "dev_pct": -3.964613368283088,
+     "fold": "it",
+     "knob_gj": 87.93,
+     "warnings": 2
+    },
+    {
+     "base_gj": 86.59,
+     "cell": "it_SFH_IT05",
+     "dev_pct": -3.857258343919625,
+     "fold": "it",
+     "knob_gj": 83.25,
+     "warnings": 2
+    },
+    {
+     "base_gj": 63.58,
+     "cell": "it_SFH_IT06",
+     "dev_pct": -2.9254482541679767,
+     "fold": "it",
+     "knob_gj": 61.72,
+     "warnings": 2
+    },
+    {
+     "base_gj": 44.89,
+     "cell": "it_SFH_IT07",
+     "dev_pct": -2.740031187346857,
+     "fold": "it",
+     "knob_gj": 43.66,
+     "warnings": 2
+    },
+    {
+     "base_gj": 28.55,
+     "cell": "it_SFH_IT08",
+     "dev_pct": -2.4168126094570974,
+     "fold": "it",
+     "knob_gj": 27.86,
+     "warnings": 2
+    },
+    {
+     "base_gj": 60.12,
+     "cell": "it_TH_IT01",
+     "dev_pct": -3.8256819693945396,
+     "fold": "it",
+     "knob_gj": 57.82,
+     "warnings": 2
+    },
+    {
+     "base_gj": 56.46,
+     "cell": "it_TH_IT02",
+     "dev_pct": -3.8080056677293634,
+     "fold": "it",
+     "knob_gj": 54.31,
+     "warnings": 2
+    },
+    {
+     "base_gj": 67.96,
+     "cell": "it_TH_IT03",
+     "dev_pct": -4.223072395526767,
+     "fold": "it",
+     "knob_gj": 65.09,
+     "warnings": 2
+    },
+    {
+     "base_gj": 53.38,
+     "cell": "it_TH_IT04",
+     "dev_pct": -3.7654552266766674,
+     "fold": "it",
+     "knob_gj": 51.37,
+     "warnings": 2
+    },
+    {
+     "base_gj": 45.09,
+     "cell": "it_TH_IT05",
+     "dev_pct": -3.7037037037037073,
+     "fold": "it",
+     "knob_gj": 43.42,
+     "warnings": 2
+    },
+    {
+     "base_gj": 37.31,
+     "cell": "it_TH_IT06",
+     "dev_pct": -2.814258911819899,
+     "fold": "it",
+     "knob_gj": 36.26,
+     "warnings": 2
+    },
+    {
+     "base_gj": 28.6,
+     "cell": "it_TH_IT07",
+     "dev_pct": -2.692307692307703,
+     "fold": "it",
+     "knob_gj": 27.83,
+     "warnings": 2
+    },
+    {
+     "base_gj": 19.99,
+     "cell": "it_TH_IT08",
+     "dev_pct": -2.3511755877938914,
+     "fold": "it",
+     "knob_gj": 19.52,
+     "warnings": 2
+    }
+   ],
+   "description": "Timestep 6 -> 1",
+   "per_fold": {
+    "es": {
+     "max_pct": -2.300137835975191,
+     "median_pct": -4.1296928327645075,
+     "min_pct": -10.12345679012345,
+     "n": 24
+    },
+    "it": {
+     "max_pct": -2.3511755877938914,
+     "median_pct": -3.6633663366336715,
+     "min_pct": -4.304053295407762,
+     "n": 32
+    },
+    "uk": {
+     "max_pct": 6.2896464446729405,
+     "median_pct": 5.629379077071753,
+     "min_pct": 2.1934793554884275,
+     "n": 32
+    }
+   },
+   "scope": "all"
+  },
+  "D2_solar_off": {
+   "cells": [
+    {
+     "base_gj": 14.53,
+     "cell": "es_TH_ES05",
+     "dev_pct": 60.49552649690297,
+     "fold": "es",
+     "knob_gj": 23.32,
+     "warnings": 1
+    },
+    {
+     "base_gj": 1264.3,
+     "cell": "uk_AB_GB03",
+     "dev_pct": 27.616863086292817,
+     "fold": "uk",
+     "knob_gj": 1613.46,
+     "warnings": 1
+    },
+    {
+     "base_gj": 262.24,
+     "cell": "it_AB_IT01",
+     "dev_pct": 23.550945698596703,
+     "fold": "it",
+     "knob_gj": 324.0,
+     "warnings": 2
+    }
+   ],
+   "description": "window SHGC 0.70 -> 0.001",
+   "per_fold": {
+    "es": {
+     "max_pct": 60.49552649690297,
+     "median_pct": 60.49552649690297,
+     "min_pct": 60.49552649690297,
+     "n": 1
+    },
+    "it": {
+     "max_pct": 23.550945698596703,
+     "median_pct": 23.550945698596703,
+     "min_pct": 23.550945698596703,
+     "n": 1
+    },
+    "uk": {
+     "max_pct": 27.616863086292817,
+     "median_pct": 27.616863086292817,
+     "min_pct": 27.616863086292817,
+     "n": 1
+    }
+   },
+   "scope": "median"
+  },
+  "D3_ground_epw_monthly": {
+   "cells": [
+    {
+     "base_gj": 14.53,
+     "cell": "es_TH_ES05",
+     "dev_pct": 33.51686166551961,
+     "fold": "es",
+     "knob_gj": 19.4,
+     "warnings": 1
+    },
+    {
+     "base_gj": 1264.3,
+     "cell": "uk_AB_GB03",
+     "dev_pct": 1.7171557383532419,
+     "fold": "uk",
+     "knob_gj": 1286.01,
+     "warnings": 1
+    },
+    {
+     "base_gj": 262.24,
+     "cell": "it_AB_IT01",
+     "dev_pct": 15.70698596705308,
+     "fold": "it",
+     "knob_gj": 303.43,
+     "warnings": 2
+    }
+   ],
+   "description": "ground 18.0 C default -> EPW monthly means",
+   "per_fold": {
+    "es": {
+     "max_pct": 33.51686166551961,
+     "median_pct": 33.51686166551961,
+     "min_pct": 33.51686166551961,
+     "n": 1
+    },
+    "it": {
+     "max_pct": 15.70698596705308,
+     "median_pct": 15.70698596705308,
+     "min_pct": 15.70698596705308,
+     "n": 1
+    },
+    "uk": {
+     "max_pct": 1.7171557383532419,
+     "median_pct": 1.7171557383532419,
+     "min_pct": 1.7171557383532419,
+     "n": 1
+    }
+   },
+   "scope": "median"
+  },
+  "D4_gains_off": {
+   "cells": [
+    {
+     "base_gj": 14.53,
+     "cell": "es_TH_ES05",
+     "dev_pct": 40.53682037164489,
+     "fold": "es",
+     "knob_gj": 20.42,
+     "warnings": 1
+    },
+    {
+     "base_gj": 1264.3,
+     "cell": "uk_AB_GB03",
+     "dev_pct": 19.679664636557774,
+     "fold": "uk",
+     "knob_gj": 1513.11,
+     "warnings": 1
+    },
+    {
+     "base_gj": 262.24,
+     "cell": "it_AB_IT01",
+     "dev_pct": 20.080841976815115,
+     "fold": "it",
+     "knob_gj": 314.9,
+     "warnings": 2
+    }
+   ],
+   "description": "phi_int 3.0 -> 0.0 W/m2",
+   "per_fold": {
+    "es": {
+     "max_pct": 40.53682037164489,
+     "median_pct": 40.53682037164489,
+     "min_pct": 40.53682037164489,
+     "n": 1
+    },
+    "it": {
+     "max_pct": 20.080841976815115,
+     "median_pct": 20.080841976815115,
+     "min_pct": 20.080841976815115,
+     "n": 1
+    },
+    "uk": {
+     "max_pct": 19.679664636557774,
+     "median_pct": 19.679664636557774,
+     "min_pct": 19.679664636557774,
+     "n": 1
+    }
+   },
+   "scope": "median"
+  }
+ },
+ "median_cell": {
+  "es": "es_TH_ES05",
+  "it": "it_AB_IT01",
+  "uk": "uk_AB_GB03"
+ },
+ "note": "DIAGNOSTIC ONLY. No campaign artefact and no IDF on disk was modified; nothing here is applied and no band is moved."
+}

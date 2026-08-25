@@ -1842,3 +1842,48 @@ times larger against the one it does. Recorded rather than edited out.
   arms of three.
 * **7.7's campaign is still unrun** — the schedule gates are scored on Leg-4 pilot diaries.
 * **`G7.18` is still not evaluated** and **decision 14 is still open.** Nothing above is a watt.
+
+---
+
+### 2026-08-26 — ITEMS 7.4 AND 7.5 ARE RUNNING; 7.6, 7.7 AND `G7.10` WERE ALREADY DONE
+
+Record: `Step7_docs/impl/2026-08-26_close-the-ten-open-items.md`.
+
+🔴 **Three Step-7 board items were STALE, and one stale NOTE was worse than its stale status.**
+`7.6` was ruled and closed by the author on 2026-08-25 (decision 14: `independent`, seed 1, on a
+watt, `G7.18` rule spread 0.289 / 0.194 / 0.028 % against 25 %). `7.7` was emitted, re-emitted
+after `D-S9-3`(a) and consumed by two 13,108-run Step-8 campaigns — and the board carried **two**
+7.7 rows, a done one and a pre-rotation `s:"todo"` stub with no note, since removed. `G7.10` reads
+**PASS, 0 disagreements on 10,000 strings** from job 1286244 on 2026-08-22, artefact
+`g710_oracle_agreement.json` md5 `631ad64ba344de9e1195e0029214652c`. Its note said *"No XGrammar
+back-end yet"* — xgrammar **0.2.3** was installed in `envs/step7` by `D-S7-3`, which the note
+post-dates.
+
+🔴 **7.4's blocker was not the GPU.** `4thJ_step7_generate.py` had **no code path that skips the
+adapter**: `lora_request=LoRARequest(...)` was unconditional. `--base-only` now exists — new flag,
+default unchanged, +48/−5, every hunk guarded — and it **implies `--no-grammar` and says so**,
+because a firing rate is the share the model gets wrong with the mask off and a masked base arm
+reports zero by construction. Jobs **1287234–36**, 16,795 draws per fold. ⚪ N is the uk parity
+number in every fold, not each fold's own: measured, the untuned 7 B runs to `max_new_tokens` on
+nearly every prompt (ETA ≈ 10 h 26/fold against 3 h 41 for 4.5× as many fine-tuned draws), and
+16,795 already gives ≈ 3.2× the per-stratum density of the registered 5,200 batches.
+
+**7.5 is running at parity — jobs 1287231 / 1287232 / 1287233**, sized from the gate's own
+`implied_draws_for_parity` rather than recomputed: **es 75,531 / uk 16,795 / it 48,809** against
+yields 6.8846 / 30.9615 / 10.6538 %. ⚪ The 5,200-draw batches were backed up to `*.bak_5200`,
+sizes verified non-zero, **before** the jobs could overwrite them — the checker reads the canonical
+`generated_leg5_<fold>_nogrammar.jsonl`, so parity has to be written there and the old artefact is
+a scored one. 🔴 This also decides `V7.a` on `uk`, which failed at 5,200 with only **9** strata
+carrying 100 records against a floor of 10: `G7.7`/`G7.8` were FAILing on uk **for want of sample,
+not for want of evenness**.
+
+🟢 **The 7.4 report tool is written and already exercised**
+(`tools/4thJ_step7_firing_rate_report.py`). It imports `stratum_key`, the alphabet builder and the
+PERMISSIVE policy from `4thJ_gates_step7` rather than restating them, and its missing-arm guard was
+**seen firing** on all three folds. On the two arms that exist it reproduces
+`gates_step7_leg5_baseline.json` to six decimals (unconstrained 0.931154 / 0.690385 / 0.893462),
+the constrained arm reads **exactly 0.000000** in every fold — the mask is not leaking — and the
+generator's oracle and the scorer's oracle disagree on **0 of 31,200** records.
+
+⚪ No threshold moved, no checker edited, `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
+unchanged.

@@ -11,6 +11,36 @@
 
 🟢 **2026-08-25 (night) — THE INJECTED CAMPAIGN HAS RUN AND EVERY STEP 8 GATE IS NOW SCORED AND HAS BEEN SEEN FAILING.** 440 scenario-cells, **4,048 EnergyPlus runs, 0 severe**, **28,161 band rows, 0 gate-unit FAILs**, coverage clause **PASS**, battery **33 ok / 0 FAILED, 18 of 18 injections HIT**. **`G8.12` and `G8.16` are evaluated for the FIRST time in this project** — `G8.12` on both its value arm (the multiplier rebuilt from the published Step 7 diary on disk against the series the SAVED `in.idf` points at) and its **assignment arm** (`E_PHI_INT` must still name that `Schedule:File`), `G8.16` by locating each diary **by content** among the three Step 7 bundles and reading the fold out of the bundle's own manifest. Both report **`NOT_EVALUABLE` on the 88 `f = 0` cells** rather than a vacuous pass, and **`V8.h`** separately asserts that the `f = 0` multiplier is identically 1.0 so "no schedule" cannot hide a wrong one. 🔴 **Three defects were caught before anything was quoted, each now guarded and each guard SEEN FIRING on the artefact that was about to ship:** `FINDING 130` the diaries were the **Leg-4 pilot**, stamped `NOT REPORTABLE` in their own records, because the emitter had the leg hard-coded; `FINDING 131` the schedules were emitted on the survey years (`es` 2010, a **Friday** start) and wired into the 8.1 IDFs' **Sunday**-start `RunPeriod` — `FINDING 99` realised, and measured at −0.12 / −0.04 / +0.02 % annual and **+1.27 / +0.37 / −0.39 % on peak, sign differing by fold**; `FINDING 132` the pre-registered "annual mean exactly 3.0 W/m²" held in the generator and not in the artefact (4.01e-07 relative at `%.6f`, now 4.24e-11 against a bound derived from the write format). 🔴 **`FINDING 133`: the occupancy channel is a PEAK channel and the annual channel is empty** — median **+1.82 / −0.04 / +0.06 %** annual against **+6.38 / +4.54 / +3.96 %** peak, which **corrects `FINDING 128`'s magnitudes** while keeping its direction. 🔴 **`FINDING 134`: on annual heating the effect is SMALLER than the between-diary spread in all three folds**, so no annual occupancy claim survives; on peak it is 1.7–2.0× the spread and does. `FINDING 135`: the annual peak's hour of day never moves at any `f` — it is the thermostat recovery hour — while the mean diurnal profile shifts `uk` 5 → 7 and `it` 6 → 7 at `f ≥ 0.50`. 🔴 **`FINDING 130`–`135` are in `docs/2026-08-25_items-8.5-8.6_injected-campaign-and-aggregate.md`.**
 
+🔴 **2026-08-26 — `D-S9-3` RULED (a) AND EXECUTED: EVERY CAMPAIGN ABOVE WAS RE-EMITTED AND
+RE-RUN ON SCHEDULES ROTATED TO MIDNIGHT, AND THE BOARDS BELOW REPLACE THE ONES ABOVE.** `FINDING 141`:
+`D-S2-5` harmonised every diary onto a **04:00** day origin, a `Schedule:File` has no origin field and
+EnergyPlus reads value 0 as **midnight**, so all 13,108 runs applied occupancy four hours early. The
+fix is **one cyclic shift of the whole year** (cyclic over the YEAR, not within each day — a diary
+day's last four hours belong to the next calendar day). 🟢 **Two new gates, both registered
+before either side was scored and both SEEN FAILING on a real artefact**: **`G7.19`** (bundle-mean
+hour-of-day profile: 05:00 ≥ **0.90** of the daily maximum, trough at hour ≥ **8**, and the
+manifest must declare `rotated_to_midnight`), felled by `perturb_norotate/`, which the emitter's own
+`--no-rotate` switch rebuilds; **`G8.17`** (the declaration arm per run, the two phase arms once per
+bundle), felled by injection **`I19`**, which stages the actual pre-rotation tree the 13,108 runs
+consumed. 🟢 The emitter change is **only** the rotation, proved three ways: `--no-rotate`
+reproduces the shipped bundle **byte-for-byte** (100/100 plus the `.idf`), the rotated series matches
+Step 9's independent implementation on all 100 × 8,760 values, and the schedule-free 8.3 control
+re-ran to a **byte-identical** `control_annual.csv`. 🔴 **`FINDING 146`: the same
+specification error was made twice in one day** — both new gates first scored a population phase
+statistic per dwelling and felled correct artefacts (11 of 100 `es` schedules; 320 gate-unit FAILs).
+Fixed by demoting the per-dwelling counts to a **diagnostic with no verdict**; the registered
+0.90 / hour-8 band was **not** loosened. 🔴 **`FINDING 147`: `tools/4thJ_step8_chaining.py`
+built its series by calling `household_year` directly, bypassing `build()`**, so the first rotated
+decision-14 re-run returned values **bit-identical** to the superseded campaign across 9,000 runs —
+visible only because the comparison was made bit-for-bit. Fixed and relaunched. 🟢 Boards after
+the re-run: 8.3 **88 cells / 176 runs / 208.2 s / 0 severe / 1,232 rows / 0 FAILs**; 8.4 **10 of 10**;
+8.5–8.6 **440 cells / 4,048 runs / 787.3 s / 0 severe / 31,687 band rows / 0 gate-unit FAILs**,
+coverage clause **PASS**; battery **33 ok / 19 of 19 HIT**; `G8.17` **PASS = 3,526**; Step 7 board
+**6 PASS / 0 FAIL × 3 folds**, battery **7 of 7**, emitter selftest **61 ok**. ⚪ `prereg.md`
+md5 `e4243e07cdd80c9c846b91f40e3e8c45` unchanged, no threshold moved, no checker edited to pass a gate.
+🔴 **`FINDING 143`–`147` are in `docs/2026-08-26_D-S9-3a_the-rotated-re-run.md`, and every
+occupancy magnitude in the paragraph above is superseded there.**
+
 ---
 
 ## WHAT THIS STEP MUST PROVE
@@ -68,6 +98,7 @@ against it is information, not a failure. **Reporting both and grading only one 
 | **G8.13** Interpolation setting | `Interpolate to Timestep = No` on every schedule object, asserted from the saved IDF. 🔴 *(2026-08-25 `FINDING 126`, found by work item 8.4: the parser read only the LAST comma-field, so the `Yes` was **invisible on a real 9-field `Schedule:File`** and the row read PASS. 8.3's injection `I9` used an 8-field shape, which is why the gate looked as though it had been seen firing. Fixed additively; injection `I13` covers the real shape; both fire.)* |
 | **G8.14** Manifest completeness | Every cell has schedule md5, IDF md5, weather md5, EnergyPlus version **and build hash**, and a **measured** platform field |
 | **G8.16** 🔴 Fold correctness | Every cell's `fold` field names the fold that **held out that cell's country**. Count of cells simulating a country under another country's fold: **0**. Checked against the Step 7 schedule provenance, not against the cell's own filename. 🟢 *(2026-08-25 work item 8.5: **first evaluation in this project** — PASS on 3,520 runs, `NOT_EVALUABLE` on the 88 `f = 0` cells. The diary is located **by content** (name + md5) among the three bundles on disk and the fold is read out of the bundle's own `manifest.json`; **seen failing** on a cell driven by another country's fold.)* |
+| 🔴 **G8.17** Schedule phase | 🔴 **ADDED 2026-08-26 under `D-S9-3`(a).** The campaign's half of `G7.19`. A correct emitter does not stop a campaign being pointed at an **old bundle**, and the unrotated bundles are still on disk under `Step7_docs/outputs_step7/schedules_bak_prerotation`. Three arms per run, all measured on the presence CSV the **SAVED `in.idf`** resolves to and on that bundle's own manifest: the bundle **declares** `rotated_to_midnight = true`; mean presence at **05:00** is at least **0.90** of that schedule's own daily maximum; the daily trough falls at **08:00 or later**. Same statistic and same registered band as `G7.19` — `G8_17_NIGHT_RATIO_MIN = 0.90`, `G8_17_MIN_TROUGH_HOUR = 8`. 🔴 `NOT_EVALUABLE` on the 88 `f = 0` cells, which carry no schedule, exactly as `G8.12` and `G8.16` do |
 | **G8.15** Convergence and warnings | Zero severe errors; warning classes itemised and triaged **by kind, not by frequency** |
 
 ---
@@ -109,6 +140,7 @@ DHW draw across all 56 cells while every value check reported zero violations.
 | Set `Interpolate to Timestep = Yes` | G8.13 | G8.12 — 🟢 **EXECUTED 2026-08-25 (8.5, `I9`)** on the real 9-field `Schedule:File`; `G8.13` fell, `G8.12`'s value arm stayed clean |
 | Copy another cell's manifest wholesale | **G8.14** (platform/timestamp arm) | G8.12 — 🟢 **EXECUTED 2026-08-25 (8.5, `I3`)**: `G8.14` fell alone |
 | 🔴 **Drive one country's cells with a fold that did not hold that country out** | **G8.16** | G8.12, G8.14 — *the schedule is a real Step 7 artefact with a correct md5 and a complete manifest; only the fold is wrong, and the energy result would look entirely normal*. 🟢 **EXECUTED 2026-08-25 (8.5, `I17`)**: `G8.16` fell. 🔴 `G8.12` fell too and that is CORRECT rather than a leak — the other fold's diary is not the series the cell's own `in.idf` points at, so the value arm has a real disagreement to report |
+| 🔴 **ADDED 2026-08-26** — point the campaign at the **pre-rotation** Step 7 bundle (the 04:00 diary origin, which is what the 13,108 runs of 2026-08-25 actually consumed) | **G8.17** (`I19`) | G8.14, G8.15, G8.16 — *the bundle is a real Step 7 artefact with a correct md5, a complete manifest and the **right fold**, so nothing about its identity is wrong; only the clock is. `FINDING 141` is exactly the claim that a board of well-formedness checks passes on it.* 🔴 **`G8.12` and `G8.9` fall too and that is CORRECT, not a leak** — the same shape as `I17`: the multiplier the run actually consumed was built from the rotated series, so rebuilding it from the substituted diary has a real disagreement to report, and the cache key contains that diary's md5. 🔴 **EXECUTED 2026-08-26: HIT, 19 of 19, coverage clause PASS** |
 | Shift the modelled profile 2 h later | G8.6 | G8.5 |
 | Scale annual energy by 1.2 | G8.1, G8.3 — coverage | G8.6 |
 | Run with an archetype whose floor area is from a different geometry | G8.7 | G8.1 — *a 1.5× area error survives a read-through; only an explicit geometry assertion catches it* |
@@ -507,3 +539,92 @@ clean, coverage clause PASS. 🟢 **No campaign cell was re-run and no measured 
 `G8.10` note text changed on 88 rows, its value, threshold and verdict did not. 🟢 `prereg.md`
 untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`. Record:
 `docs/2026-08-25_item-8.4_the-two-probes.md`.
+
+
+### 2026-08-26 — 🔴 **`D-S9-3` RULED (a) AND EXECUTED. EVERY STEP 8 CAMPAIGN WAS RE-EMITTED AND RE-RUN ON SCHEDULES ROTATED TO MIDNIGHT, AND THE OCCUPANCY RESULT IS NOW A NULL ON BOTH CHANNELS**
+
+`FINDING 141`, raised while building Step 9: `D-S2-5` harmonised every diary onto a **04:00** day
+origin (native `es` 06:00, `uk` 04:00, `it` 04:00), a `Schedule:File` has no origin field, and
+EnergyPlus reads value 0 as **midnight**. All **13,108** runs behind the entries above applied
+occupancy **four hours early**. The author ruled **(a) re-emit and re-run**; this entry is that
+re-run. **13,108 local EnergyPlus runs again, no GPU, no queue.**
+
+🟢 **The fix is one cyclic shift of the WHOLE YEAR, not of each day inside itself.** A diary day
+runs 04:00 of day *D* to 04:00 of day *D+1*, so its last four hours belong to the next calendar day;
+rotating each day within itself would move them backwards by twenty hours.
+`rotate_to_midnight()` in `tools/4thJ_step7_schedules.py`, applied in `build()` **before** the
+truncation perturbation, manifest stamped `rotated_to_midnight` / `diary_origin_hour`.
+
+🟢 **Proved to be ONLY the rotation, three independent ways.** The new `--no-rotate` switch
+reproduces the shipped bundle **byte-for-byte** (100/100 presence files plus the `.idf`); the rotated
+series matches Step 9's independent implementation on all **100 × 8,760** values; and the
+schedule-free 8.3 control re-ran to a **byte-identical** `control_annual.csv`.
+
+🟢 **Two new gates, and neither band was guessed.** `G7.19` (Step 7) and `G8.17` (Step 8) score
+the bundle-mean hour-of-day profile: **05:00 ≥ 0.90 of the daily maximum** and **trough at hour
+≥ 8**, plus a manifest-declaration arm. The 0.90 was placed inside the measured gap — rotated
+bundles read 0.9498–0.9998, unrotated 0.674–0.787 — **before either side was scored**. Both
+were **seen failing on real artefacts**: `perturb_norotate/`, which the emitter's own switch rebuilds,
+and injection `I19`, which stages the actual pre-rotation tree the 13,108 runs consumed.
+
+| | |
+|---|---|
+| 8.3 uninjected control | 88 cells, **176 runs, 208.2 s, 0 severe**, **1,232 band rows, 0 gate-cell FAILs**, `control_annual.csv` **identical** |
+| 8.4 the two probes | 6 runs, 7.2 s, **10 of 10 checks ok** |
+| 8.5 / 8.6 injected campaign | **440 scenario-cells, 4,048 runs, 787.3 s, 0 severe**, **31,687 band rows, 0 gate-unit FAILs**, coverage clause **PASS** |
+| injection battery | **33 ok / 0 FAILED, 19 of 19 HIT** (was 18 of 18) |
+| `G8.17` | **PASS = 3,526** — 3,520 per-run declaration rows + 6 bundle-level phase rows |
+| decision 14 | **9,000 runs, 1,576 s, 0 severe** |
+| Step 7 board | **6 PASS / 0 FAIL on all three folds**, battery **7 of 7**, emitter selftest **61 ok** (was 52) |
+
+🔴 **`FINDING 143` — the peak claim does not survive.** At `f = 1.00` the peak effect is
+**+2.7145 / +0.0393 / −0.6332 %** against between-diary spreads of **4.9837 / 2.3797 / 1.5959**,
+i.e. ratios **0.54 / 0.02 / 0.40**. `FINDING 134`'s own test, applied to the channel it had spared,
+now fells it; in Italy the sign flips and in Britain the effect is two hundredths of the spread.
+🔴 **`FINDING 144` — every annual median is now NEGATIVE at every level of `f` in every fold**:
+**−1.5100 / −0.3605 / −0.4178 %** at `f = 1.00` (was +1.8184 / −0.0357 / +0.0590), monotone
+in `f`, ratio to spread 0.80–1.44. The mechanism is the sweep's own construction — the annual
+mean of `phi_int` is held at exactly 3.0 W/m² at every `f`, so the sweep cannot add energy, only
+move it in time; rotated, the occupancy peak lands where the heating runs. **The sign of the annual
+channel was a statement about the clock, not about occupancy.** 🔴 **At the top of the
+pre-registered sweep, no occupancy claim survives on either channel.**
+`FINDING 145`: `FINDING 135`'s diurnal sentence is **withdrawn** — rotated, the mean profile moves
+`es` 6→7 at `f ≥ 0.50`, `uk` never, `it` 6→7 at `f = 1.00` only. The annual peak **hour**
+still never moves (it is the thermostat recovery hour, set in the IDF and not rotated) and the
+**dwelling-class ordering survives**: `AB` largest in every fold, **+3.46 / +1.04 / +0.50 %** at
+`f = 1.00`. **That is the one occupancy statement this campaign still supports**, and it is a claim
+about surface-to-volume ratio, not about the clock.
+
+🟢 **`FINDING 136` survives the rotation, and it is the only Step 8 result that does.** Decision
+14 re-measured: rule spread on peak **0.289 / 0.194 / 0.028 %** against `G7.18`'s **25 %** — **not
+triggered in any fold**; the seed spread beats the rule spread on **every** metric in every fold
+(**NOISE DOMINATES**, ratios 0.075–0.482), `trough_aggregate_w` **DEGENERATE**. ⚪ One
+comparison in `FINDING 136` must not be repeated: the “occupancy is 17–60× the convention's
+range” line now reads **9.4× / 0.2× / 22.6×**, and in Britain both quantities are below the
+diary spread — neither is measurable there. The author's ruling (`independent`, seed 1) stands
+unchanged.
+
+🔴 **`FINDING 146` — the same gate-specification error was made twice in one day.** Both new
+gates first scored a **population** phase statistic **per dwelling** and felled correct artefacts:
+`G7.19` failed 11 of 100 CORRECT `es` schedules, `G8.17` returned **320 gate-unit FAILs** because each
+Step 8 run drives one household. Fixed by demoting the per-dwelling counts to a **diagnostic with no
+verdict**. 🟢 **The registered 0.90 / hour-8 band was NOT loosened** — the fix for a wrong
+statement is the right statement, never a looser number.
+🔴 **`FINDING 147` — `tools/4thJ_step8_chaining.py` bypassed the emitter.** It built its
+series by calling `household_year()` directly, never `build()`, so the first rotated decision-14
+re-run came back **bit-identical** to the superseded campaign across 9,000 runs, absolute watts
+included. **Only a bit-for-bit comparison against the superseded run could see this.** Fixed, board
+stamped, relaunched. Every other consumer of the diary series was then audited: Step 8 chaining now
+rotates; Step 7's pre-screen deliberately does **not**, because every `prescreen` statistic is
+invariant under a common cyclic shift except the ramp series, which differs by at most one term of
+8,759 — documented in place, because rotating it would silently invalidate the 90 pre-screen cells
+on disk.
+
+⚪ `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`, verified before and after. No
+threshold moved, no checker edited to make a gate pass, no band created to accommodate a result.
+Backups verified non-empty before every edit (`.bak_prerotation` on the tools and documents,
+`.bak_rotation` / `.bak_rotation2` on this document and the validation document). The superseded
+results are kept, not deleted: `Step8_docs/outputs_step8/prerotation/` (22 files) and
+`Step7_docs/outputs_step7/schedules_bak_prerotation/` (1,500 presence files, which is also `G8.17`'s
+falsifier). 🔴 **Record: `Step8_docs/docs/2026-08-26_D-S9-3a_the-rotated-re-run.md`. Read it
+before quoting ANY Step 8 number.**

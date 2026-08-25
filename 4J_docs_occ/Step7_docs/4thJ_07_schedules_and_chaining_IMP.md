@@ -714,3 +714,40 @@ and in the Step 8 document, not fixed — there is no window to fix it against y
 
 Job `1286209` (Leg-5 `es`) still owns the only A100 `7g.80gb` slice; `G7.12`'s 7-minute re-run stays
 staged behind it. **No decision in this project is now waiting on a person.**
+
+### 2026-08-26 (early) — 🔴 **THE EMITTER NOW PUTS THE SERIES ON THE CLOCK ENERGYPLUS READS IT ON, AND EVERY BUNDLE ON DISK IS RE-EMITTED. `D-S9-3`(a).**
+
+`FINDING 141`, found by Step 9 and ruled by the author the same day: `D-S2-5` harmonised every diary
+onto a **04:00** day origin, `write_schedule_csv` put minute 0 into a `Schedule:File`, and EnergyPlus
+reads a `Schedule:File` from **midnight**.
+
+🟢 **The change is `rotate_to_midnight()` and one call, and it is declared in three places at
+once**: `DIARY_ORIGIN_HOUR = 4` in the module, `"rotated_to_midnight": true` and
+`"diary_origin_hour": 4` in every manifest, and a line in the emitter's own stdout.
+
+🔴 **The rotation is cyclic over the YEAR, not within each day.** A diary day covers 04:00 of
+day *D* to 04:00 of day *D+1*, so its last four hours belong to the **next** calendar day; rotating
+each day inside itself would move them backwards by twenty hours instead of forwards by four. The
+selftest distinguishes the two on a two-day fixture rather than asserting the intent in a comment.
+
+🟢 **The change is exactly the rotation and nothing else, and that is checked rather than
+claimed.** `--no-rotate` reproduces the shipped pre-rotation bundle **byte-for-byte, 100 of 100
+presence files and the `.idf`**. And the rotated emission agrees with
+`tools/4thJ_step9_trigger.py`'s **independent** implementation on all 100 x 8,760 values — two
+implementations, written a day apart, compared at six decimals.
+
+🟢 **Step 9's byte-for-byte guard now carries that comparison permanently.**
+`_assert_same_dwellings` rotates its own rebuilt series with Step 9's function before comparing it to
+Step 7's file on disk, so the check that proves Step 9 is modelling Step 8's dwellings **also** proves
+the two rotations agree. **300 of 300 across the three folds**, and **seen failing** when pointed at
+the pre-rotation bundle (`household 02202 ... first difference at line 4`).
+
+⚪ **Sixteen bundles re-emitted**: `leg5_{es,uk,it}_independent_seed1` (the campaign's, calendar
+2017), the three `_cal20XX` calendar-probe bundles, the three `leg4` pilots, the six perturbation
+cells, and the new `perturb_norotate`. The pre-rotation tree is kept at
+`Step7_docs/outputs_step7/schedules_bak_prerotation/` — it is `G8.17`'s falsifier and it is also the
+artefact Step 8's 13,108 runs actually consumed.
+
+⚪ Selftest **61 ok / 0 FAILED** (was 52; nine new checks, all on the rotation). Backups
+`.bak_prerotation` on the emitter, its selftest, the schedule gates, the Step 8 injected gates and the
+Step 9 trigger.

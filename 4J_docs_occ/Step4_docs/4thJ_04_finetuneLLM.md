@@ -412,3 +412,32 @@ and that is all the gate claims. It is NOT harmless for any table that compares 
 same country **across folds**: such a comparison is like-for-like on `es` and is not on `it` or `uk`.
 Recorded rather than repaired — re-seeding per country would change every production probe file, and
 that is a basis change, not a fix.
+
+---
+
+### 2026-08-26 — PERTURBATION-BATTERY COVERAGE IS CLOSED AS A DECLARED LIMITATION
+
+Record: `Step4_docs/impl/2026-08-26_perturbation-coverage-closed-as-limitation.md`.
+
+The item was carried as IN PROGRESS on the assumption that four perturbations were "still owed".
+They are not owed; they are **undemonstrated by ruling**. Re-derived from the artefacts rather
+than quoted: across all four `genperturb` outputs — `genperturb_{es,it,uk}.json` and
+`genperturb_f29/genperturb_es.json` — there are **20 recorded `G4.1` verdicts and all 20 have
+`n_scorable_strata = 0`**. `D-S4-11` (i) re-labelled them `NOT COMPUTED`, and the one change that
+would make them non-vacuous — re-pointing the perturbation side at `real_ref` — was refused in the
+author's own words because it "would change the basis of a scored gate after all three folds were
+scored". 🔴 **Re-running the battery is the one action guaranteed not to change this item**, which
+is why it is closed rather than left open.
+
+🔴 **Correction to the checklist note.** It said the coverage clause "also FAILs on `es` and `uk`".
+Measured: `coverage_clause: FAIL` on **all three** folds, and `G4.7` PASSes under every one of the
+five levers in every fold. The note understated it.
+
+🔴 **No lever was added to fell `G4.7`, deliberately.** Writing one now, after all folds are
+scored, is the same act refused for `G4.1`; doing it for one gate and not the other would be
+inconsistent in the direction that flatters the result. `G4.7` is recorded as **passing at
+baseline and never demonstrated falling**, the same class of declared limitation as the four
+`G4.1` levers.
+
+⚪ Step 4 stays closed with four failing gates — `G4.1`, `G4.3`, `G4.6`, `G4.12`. Never written up
+as clean. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` unchanged.

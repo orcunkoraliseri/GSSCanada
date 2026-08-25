@@ -601,6 +601,35 @@ def _i17():
     edit_csv(p, f)
 
 
+@injection("I19", "G8.17", "point the campaign at the PRE-ROTATION Step 7 "
+                           "bundle -- the 04:00 diary origin FINDING 141 found")
+def _i19():
+    """`D-S9-3`(a)'s registered falsifier, and the artefact is real.
+
+    🔴 The bundle this stages is not a synthetic one: it is the tree
+    Step 8's 13,108 runs of 2026-08-25 ACTUALLY consumed, kept on disk at
+    `Step7_docs/outputs_step7/schedules_bak_prerotation/`. It is a complete Step
+    7 artefact -- right fold, right leg, right calendar, right md5s, a full
+    manifest, 100 well-formed 8,760-value schedules -- and **every other gate on
+    this board passed on it**. That is the whole content of `FINDING 141`.
+    """
+    src = os.path.join(PROJ, "Step7_docs", "outputs_step7",
+                       "schedules_bak_prerotation", "leg5_es_independent_seed1")
+    dst = os.path.join(SCHED7, "_i19_prerotation")
+    if os.path.isdir(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+    p = os.path.join(LIVE, "injected_runs.csv")
+
+    def f(r):
+        for x in r:
+            if x["schedule_file"] and x["fold"] == "es":
+                q = os.path.join(dst, x["schedule_file"])
+                if os.path.exists(q):
+                    x["schedule_md5"] = md5(q)
+    edit_csv(p, f)
+
+
 @injection("I18", "V8.h", "the f = 0 multiplier is not identically 1.0")
 def _i18():
     src = upath(CELL, 0.0, "in.idf")
@@ -632,6 +661,11 @@ for tag, target, desc, fn in INJECTIONS:
               % (tag, target, desc[:52], ",".join(sorted(fired)) or "NOTHING"))
 
 shutil.rmtree(work, ignore_errors=True)
+# 🔴 I19 has to stage its bundle inside the REAL Step 7 tree, because the
+# scorer resolves a schedule by locating it among the bundles on disk there --
+# that is the whole point of `G8.16`. Leaving it behind would put an UNROTATED
+# bundle in the tree every later run enumerates, so it is removed here.
+shutil.rmtree(os.path.join(SCHED7, "_i19_prerotation"), ignore_errors=True)
 
 # ---- the coverage clause -------------------------------------------------
 scored = set(x["gate"] for x in brows if x["verdict"] in ("PASS", "FAIL"))

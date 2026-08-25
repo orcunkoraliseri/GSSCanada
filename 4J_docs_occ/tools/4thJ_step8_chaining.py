@@ -184,6 +184,10 @@ def main():
              "rule_points": [CH._label(*rp) for rp in rule_points],
              "seeds": seeds, "households": a.households,
              "f": F_LEVEL, "leg": LEG, "schedule_year": SCHEDULE_YEAR,
+             # D-S9-3(a) / FINDING 147: stamped so this campaign can never again
+             # be read without knowing which clock its schedules were on.
+             "rotated_to_midnight": True,
+             "diary_origin_hour": S7.DIARY_ORIGIN_HOUR,
              "trigger_pct_on_peak_demand": TRIGGER_PCT,
              "sizing_basis": ("the D-S7-6 ruling: one archetype per fold, one f "
                               "level, the pre-registered rule axis x >= 5 seeds "
@@ -243,7 +247,15 @@ def main():
                     md = [S7.assemble_person_year(p, cal, rule, rng, pools,
                                                   backoff, rho)
                           for p in members]
-                    gseries.append(S7.household_year(md, 60))
+                    # 🔴 `FINDING 147`. This tool builds its series by calling
+                    # `household_year` DIRECTLY, so it never passed through
+                    # `build()` and the `D-S9-3`(a) rotation did not reach it. The
+                    # first rotated re-run returned numbers BIT-IDENTICAL to the
+                    # superseded campaign across 9,000 EnergyPlus runs, which is
+                    # the only reason it was seen at all. Any second consumer of
+                    # the diary series has to rotate too.
+                    gseries.append(S7.rotate_to_midnight(
+                        S7.household_year(md, 60), 60))
                 cdir = os.path.join(OUT, fold, "%s__seed%02d" % (lab, seed))
                 os.makedirs(cdir)
 

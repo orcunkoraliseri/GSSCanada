@@ -7,7 +7,22 @@
 
 ## STATUS
 
-**OPEN. Sourced by `RL13`. Nothing built.**
+🟢 **ITEMS 9.1 TO 9.5 ARE BUILT, 2026-08-25 (night). The gate board is
+16 PASS / 3 FAIL and the three FAILs are results, not defects.** 🔴 **CORRECTED 2026-08-26, `FINDING 149`: read `15 PASS / 3 FAIL / 1 NOT CHECKED`; the "16" counted `G9.4`'s NOT CHECKED as a PASS. Per-gate verdicts unchanged.** 100 dwellings per fold, the SAME
+dwellings Step 8 simulated -- proven byte-for-byte against the shipped presence schedules, 100/100 in
+every fold. No GPU, no Speed job, all local. Record: `docs/2026-08-25_items-9.1-9.5_the-mapping-the-trigger-and-the-campaign.md`.
+
+🔴 **THREE FINDINGS REACH BACK OUT OF THIS STEP.** `FINDING 137`: this document's claim that
+the generated diaries carry no `act2` is FALSE -- the tuple has five fields and **29.816 % of
+episodes** carry one, so `G9.14`'s stated failure mode does not exist (see the addendum under
+SECONDARY ACTIVITY below). `FINDING 138`: Jordan & Vajen's report was opened and contains **neither**
+our "30 to 50 L/person/day at 60 C" **nor** `RL25`'s correction of it. `FINDING 141`: `D-S2-5`
+harmonised the diary day onto a **04:00 origin**, and Step 7's emitter writes minute 0 into a
+`Schedule:File` that EnergyPlus reads from midnight -- so **Step 8's 13,108 runs applied occupancy
+four hours early**. Step 9 is corrected; Step 8 is the author's call, `D-S9-3`.
+
+⚪ Two decisions are open and both are the author's: **`D-S9-2`** (nine items, all nine already
+implemented at the recommended option) and **`D-S9-3`** (`FINDING 141`, recommendation (a)).
 
 ---
 
@@ -78,6 +93,18 @@ tuple. Written down because the two documents were consistent about the field an
 who receives it, and the gap is invisible in code: a trigger that reads a column which is simply
 absent does not fail, it just never fires.
 
+> 🔴 **SUPERSEDED IN PART, 2026-08-25 -- `FINDING 137`: THE SENTENCE ABOVE IS FALSE.**
+> The generated diaries **do** carry `act2`. `tools/decoder.py:86-88` asserts the episode has
+> **five** comma-fields, `dur, act, act2, loc, cop`; the Step 7 grammar declares **43** `ACT2` codes;
+> and measured on the 15,600 shipped Leg-5 diaries (339,612 episodes, 0 undecodable),
+> **29.816 % of episodes and 26.308 % of modelled minutes carry a non-empty `act2`**, over 29
+> distinct codes (es 32.113 / 27.101 %, uk 26.933 / 22.787 %, it 30.546 / 29.034 %).
+>
+> 🟢 **`D-S9-1`'s ruling (d) is untouched** -- it rests on the precondition being
+> unsatisfiable, not on serialisation. 🔴 **But `G9.14`'s rationale is void**: a trigger
+> reading `act2` would fire, on more than a quarter of modelled minutes. The gate is re-specified as
+> a POLICY assertion in `D-S9-2` item 3, and its registered perturbation is unchanged.
+
 **The resolution, and it costs the step nothing it actually had:**
 
 * **The trigger fires from the primary code alone**, on generated and real diaries alike. That is also
@@ -119,7 +146,14 @@ The load that matters most in a well-insulated dwelling, and **3J found the DHW 
 its energy result.**
 
 * **Jordan and Vajen four-event tapping model**: short draw, medium draw, bath, shower.
-* Roughly **30 to 50 L/person/day at 60 °C**.
+* Roughly **30 to 50 L/person/day at 60 °C**. 🔴 **DO NOT QUOTE THIS LINE. SUPERSEDED
+  2026-08-25, `FINDING 138`: the report was opened and it contains no per-person volume and no
+  60 °C anywhere.** Table 1's reference is **200 l/day for a single family house** at a **35 K**
+  rise, made of A 1 l/min x 1 min x 28/day = 28 l, B 6 x 1 x 12 = 72 l, C 14 x 10 x 0.143 = 20 l,
+  D 8 x 5 x 2 = 80 l. `RL25`'s correction ("base 50 L/person/day at 60 °C, 30-50 L for the shower
+  at 40 °C") is **also** absent from the report. 🔴 `G9.7`'s registered band is therefore
+  stated on a basis its own source does not define, and **the band was NOT moved**: it is scored as
+  registered, it FAILS, and `D-S9-2` item 7 asks what the manuscript should say about that.
 * Drivers: activity codes for washing, showering, food preparation and laundry.
 
 🔴 **3J's DHW lesson, carried forward:** a transform that re-points a `WaterUse:Equipment` object at a
@@ -204,16 +238,34 @@ load shapes, never per-dwelling predictions.
 
 Step 7's diaries (with 3-digit codes intact) and Step 8's archetypes.
 
+🟢 **NOTHING BLOCKS THIS STEP ANY MORE, 2026-08-25: both inputs existed and items 9.1 to 9.5
+are built.** 🔴 **What is now blocked on the author is `D-S9-3`** -- `FINDING 141`, the
+04:00 diary origin -- because Step 9's profiles cannot ship beside Step 8's occupancy schedules until
+the two agree about what time it is inside the same building.
+
 ---
 
 ## DEFINITION OF DONE
 
 1. Mapping table complete, every row cited to a published model and table.
+   🟢 **DONE** -- 192 rows, `G9.1` PASS over 61 load-bearing rows.
 2. Every row labelled VALIDATED or NOT VALIDATED with its validation scale.
+   🟢 **DONE** -- `G9.2` PASS over all 192, keyed on the structured field (`V9.e`).
 3. Two-stage trigger implemented with cycle-to-completion behaviour.
+   🟢 **DONE** -- `G9.5` PASS, and seen failing on the registered truncation perturbation.
 4. DHW implemented with an **assignment** check as well as a value check.
+   🟢 **DONE** -- `G9.9` PASS over 300 `WaterUse:Equipment` objects re-read from the SAVED
+   IDF, and seen failing on a re-pointed object whose values never moved.
 5. Results reported at stock scale only.
+   🟢 **DONE** -- item 9.5 refuses to write an aggregate over fewer than 100 dwellings, and
+   `G9.13` PASS with `V9.d`'s coverage clause.
 6. All Step 9 gates PASS and each has been seen failing.
+   🔴 **NOT MET, AND NOT MET BY DESIGN.** The board is **15 PASS / 3 FAIL / 1 NOT CHECKED** (🔴 written here on 2026-08-25 as "16 PASS / 3 FAIL"; corrected 2026-08-26, `FINDING 149`): `G9.6`
+   (`FINDING 139`, saturation), `G9.7` (`FINDING 138`, the band's basis) and `G9.12` (R2 0.26-0.31
+   against 0.85). All three ship FAIL and **no band was relaxed**. 🔴 Their three registered
+   perturbations therefore demonstrate nothing about them and are reported as
+   `ALREADY_FAILING_AT_BASELINE` -- the vacuity condition, the same shape Step 6 recorded for its
+   Leg-5 coverage clause.
 
 ---
 
@@ -590,3 +642,112 @@ spread. **Report it per fold on the time basis.**
 
 **`prereg.md` not touched**, md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified against its sidecar while
 this entry was written.
+
+### 2026-08-25 (night) — 🟢 **ITEMS 9.1 TO 9.5 ARE BUILT. NOTHING IN THE MAPPING WAS INVENTED, AND SIX FINDINGS CAME OUT OF BUILDING IT — THREE OF THEM REACHING BACK INTO STEPS 2, 7 AND 8.**
+
+Record: `docs/2026-08-25_items-9.1-9.5_the-mapping-the-trigger-and-the-campaign.md`.
+Decisions raised: `docs/2026-08-25_D-S9-2_step9-mapping-decisions.md` (nine items),
+`docs/2026-08-25_D-S9-3_FINDING-141_the-diary-day-starts-at-0400.md`.
+
+**All local. No GPU, no Speed job, nothing on the cluster.**
+
+🟢 **The mapping is sourced, not invented.** Four primary artefacts were retrieved and
+vendored under `outputs_step9/sources/` with their md5s: CREST's appliance table as distributed in
+`richardsonpy/inputs/Appliances.csv` (`eba850be…`), its activity-profile code list, its 10-minute
+activity statistics, and Jordan & Vajen's IEA-SHC Task 26 report (`c7c46092…`). `RL25`'s `B1`
+claim — which `RL25` itself could only report as UNVERIFIED, the paper being paywalled — is now
+**verified**: the artefact carries **exactly 33 appliance rows**. LoadProfileGenerator and RAMP were
+examined and supply nothing, exactly as `RL25` said.
+
+`activity_appliance_map.csv`: **192 rows, 141 ACL codes, 43 VALIDATED / 149 NOT VALIDATED**, 54
+electricity rows, 7 DHW rows and **131 explicit no-load rows that claim nothing**. 🔴 The one
+thing in it that is ours is the ACL-to-CREST join, and it lives in `acl_to_crest_activity.csv` so a
+ruling edits data and never a tool.
+
+🔴 **`FINDING 137` — THIS DOCUMENT WAS WRONG ABOUT `act2`.** The generated diaries DO carry
+it: the episode tuple has **five** comma-fields (`tools/decoder.py:86-88`), the grammar declares 43
+`ACT2` codes, and **29.816 % of episodes / 26.308 % of modelled minutes** carry one across the
+15,600 shipped Leg-5 diaries. `D-S9-1`'s ruling (d) stands — it rests on the precondition being
+unsatisfiable — but **`G9.14`'s stated failure mode cannot happen** and the gate is re-specified as
+a policy assertion.
+
+🔴 **`FINDING 138` — THE DHW RANGE IS ABSENT FROM ITS SOURCE, AND SO IS `RL25`'s CORRECTION
+OF IT.** The report was opened, as this step owed itself. Table 1's reference is **200 l/day for a
+single family house** at a **35 K** rise; there is no per-person figure and no 60 °C anywhere.
+`G9.7`'s band was **not moved** and it FAILS.
+
+🔴 **`FINDING 139` — THE CORPUS DOES NOT CONTAIN ENOUGH LAUNDRY TIME TO SUPPORT CREST'S
+PUBLISHED CYCLE COUNTS, AND THE SHORTFALL IS THREE TIMES WIDER IN ITALY THAN IN SPAIN.** Eligible
+laundry minutes per dwelling-year: **es 2,462 / uk 1,589 / it 781**, against a washing machine that
+asks 195.91 cycles × 138 min = **27,036 minutes**. Modelled/published 0.776 / 0.179 / 0.092.
+🔴 Laundry is the archetypal SECONDARY activity, and `D-S9-1` ruled primary-only — so
+`FINDING 139` is the size of what that ruling costs, and the two belong together in the methods.
+
+🟢 **`FINDING 140` — THE THREE-DIGIT CORPUS DECISION BUYS EXACTLY ONE PUBLISHED
+DISTINCTION.** `G9.11` PASSES, 6 signatures against 5 on CREST's electricity rows alone, and the
+single split is **ACL 331 Laundry against 332 Ironing** inside group 33. The splits in groups 03 and
+31 are ours. 🔴 Do not read the pass as vindication: `RL25` stands, and the corpus decision is
+still best justified on microdata fidelity.
+
+🔴🔴 **`FINDING 141` — THE DIARY DAY STARTS AT 04:00 AND STEP 8's SCHEDULES WERE
+WRITTEN AS IF IT STARTED AT MIDNIGHT.** `D-S2-5` harmonised every diary onto a 04:00 origin;
+`4thJ_step7_schedules.py` writes minute 0 into a `Schedule:File` that EnergyPlus reads from midnight.
+**Step 8's 13,108 runs applied occupancy four hours early.** Confirmed on three independent
+artefacts: the Step 2 ruling and its code, the generated diaries (sleep 0.99 at indices 0-2, waking
+at 3-5), and the shipped Step 8 presence files (trough at index 7). 🟢 Step 9 is corrected by
+one cyclic shift of the whole year series, stamped `"rotated_to_midnight": true`. 🔴 Step 8 is
+the author's call — `D-S9-3`, recommendation (a), about 13,108 local runs.
+
+🟢 **`FINDING 142` — THE APPLIANCE PEAK FALLS SIX HOURS APART ACROSS THE THREE COUNTRIES.**
+Spain **14:00** (503 W), Italy **18:00** (404 W), Britain **20:00** (416 W), one appliance set and
+one calibration; the only thing that differs is the diary. This is the step's positive result and it
+is also why `G9.12` fails — CREST's statistics are UK-2000.
+
+⚪ **The campaign is on the SAME dwellings Step 8 simulated, proven rather than assumed**: the
+trigger rebuilds them through `4thJ_step7_schedules.py` and refuses to run unless all 100 presence
+schedules reproduce the shipped CSVs byte-for-byte. 100/100 in every fold. Electricity
+**2,244 / 2,085 / 2,065 kWh per dwelling-year**; DHW **200.79 / 201.01 / 199.47 l per dwelling-day**,
+which reproduces Jordan & Vajen's Table 1 to better than 1 % on all four event categories.
+
+⚪ `prereg.md` does not cover Step 9; its md5 `e4243e07cdd80c9c846b91f40e3e8c45` is unchanged.
+
+---
+
+### 2026-08-26 — `D-S9-3` RULED **(a)** AND EXECUTED; STEP 9 RE-RUN END TO END AND **NOTHING CHANGED**
+
+🟢 **`FINDING 141`'s open call is closed.** The author ruled **(a) re-emit and re-run**: all 13,108
+Step 8 runs were rebuilt on schedules rotated to midnight. The full record of that campaign, and of
+what it did to the Step 8 results, is
+`Step8_docs/docs/2026-08-26_D-S9-3a_the-rotated-re-run.md` — 🔴 **read it before quoting any Step 8
+number.** The short version: **no occupancy claim survives on either channel**; what survives is the
+dwelling-class ordering and the fixed annual peak hour.
+
+🟢 **Step 9 itself is unaffected, and this was verified rather than assumed.** Step 9 already
+rotated internally (`"rotated_to_midnight": true`), so the prediction was that a full re-run would
+reproduce the tree bit-for-bit. The tree was snapshotted (630 files), then
+`4thJ_step9_trigger.py --fold es|uk|it`, `4thJ_step9_aggregate.py` and
+`4thJ_gates_step9.py --root . --offline` were re-run in order. **`diff -rq` between the snapshot and
+the re-built `outputs_step9/` printed nothing and exited 0 — the trees are identical.** The three
+triggers reproduced their own numbers to the digit: electricity **2244.1 / 2084.7 / 2065.4 kWh per
+dwelling-year**, DHW **200.79 / 201.01 / 199.47 l per dwelling-day** and **98.43 / 111.67 /
+94.09 l per person-day**, `campaign run True` in every fold.
+
+🔴 **`FINDING 149` — THE BOARD IS 15 PASS / 3 FAIL / **1 NOT CHECKED**, AND THE "16 PASS /
+3 FAIL" WRITTEN ON 2026-08-25 COUNTED THE NOT CHECKED GATE AS A PASS.** The runner's own tally line
+reads `counts: {"FAIL": 3, "NOT CHECKED": 1, "PASS": 15}`, and `G9.4` is the NOT CHECKED one —
+two of three DOIs do not resolve. **That is precisely what `V9.c` exists to forbid**, and the prose
+did by hand what the checker refuses to do by code. The **per-gate verdicts have not moved**; only
+the sentence that summed them was wrong. Every "16 PASS / 3 FAIL" in this document and in
+`4thJ_09_enduseLoads_val.md` is superseded by **15 PASS / 3 FAIL / 1 NOT CHECKED**. No gate was
+touched to produce this correction.
+
+⚪ **The per-gate board is unchanged.** The same three fail for the
+same registered reasons — `G9.6` against CREST's published cycles per year, `G9.7` against the
+registered 30–50 l/person/day band (`es` median 100.16, `it` 91.06, `uk` 117.65), `G9.12` on R²
+below 0.85 in all three folds (0.2967 / 0.4106 / 0.0346) — and `G9.4` is **NOT CHECKED** because two
+of three DOIs do not resolve and `V9.c` forbids reporting that as PASS. **No threshold was moved and
+no checker was edited**; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` is untouched.
+
+⚪ **What this null is worth.** A re-run that changes nothing is the only evidence that Step 9's
+internal rotation was already correct and that the Step 8 fix did not leak into it. It is reported
+here because it was measured, not because it was expected.

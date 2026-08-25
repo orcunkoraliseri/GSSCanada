@@ -17,7 +17,7 @@
  "declared_scenario_cells": 440,
  "energyplus_exe": "C:\\EnergyPlusV24-2-0\\energyplus.exe",
  "energyplus_exe_md5": "8d5ac988613b700891338b9997f13044",
- "finished_utc": "2026-08-25T18:01:37.808159Z",
+ "finished_utc": "2026-08-25T21:23:06.250526Z",
  "household_selection": "first 10 presence files by sorted household id in the cell's own fold bundle; the same 10 for every cell in a fold",
  "households": {
   "es": [
@@ -114,7 +114,7 @@
    "schedule_year": 2017
   }
  },
- "started_utc": "2026-08-25T17:50:39.043394Z",
+ "started_utc": "2026-08-25T21:09:58.982233Z",
  "sweep_f": [
   0.0,
   0.15,
@@ -122,6 +122,6 @@
   0.5,
   1.0
  ],
- "wall_s": 658.8,
+ "wall_s": 787.3,
  "work_item": "8.5"
 }

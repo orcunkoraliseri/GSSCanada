@@ -3,7 +3,7 @@
   "checks": [
     {
       "check": "A1 G8.8 good arm: two scenarios, two different result files",
-      "detail": "f0.00 22677b617f45 vs f1.00 ffcd21b943d2",
+      "detail": "f0.00 22677b617f45 vs f1.00 bc5cde8e7bdd",
       "ok": true
     },
     {
@@ -13,7 +13,7 @@
     },
     {
       "check": "A3 G8.8 SEEN FAILING: declared f=0.50 wired to f=1.00's file",
-      "detail": "byte-identical result files: ffcd21b943d2",
+      "detail": "byte-identical result files: bc5cde8e7bdd",
       "ok": true
     },
     {
@@ -23,17 +23,17 @@
     },
     {
       "check": "B1 the cache actually caches (identical inputs -> HIT)",
-      "detail": "MISS then HIT on key e054e2da4a85",
+      "detail": "MISS then HIT on key 5e83a177ae99",
       "ok": true
     },
     {
       "check": "B2 G8.9 good arm: schedule changed -> key moved -> re-run",
-      "detail": "MISS, key e054e2da4a85 -> 1f56aef6fc24",
+      "detail": "MISS, key 5e83a177ae99 -> bcfbde8de231",
       "ok": true
     },
     {
       "check": "B3 and the two executed runs differ (G8.8 stays clean here)",
-      "detail": "ffcd21b943d2 vs 9fad6a90ab87",
+      "detail": "bc5cde8e7bdd vs 2943ba347454",
       "ok": true
     },
     {
@@ -60,14 +60,14 @@
     "G8.8",
     "G8.9"
   ],
-  "generated_utc": "2026-08-25T18:39:26Z",
+  "generated_utc": "2026-08-25T21:28:11Z",
   "idf_md5": "3020da93599982ce588b58102576cf54",
   "one_cell_sensitivity": {
-    "annual_pct": 0.18188497508517473,
+    "annual_pct": -1.560383129848936,
     "note": "one archetype, one household, one fold -- NOT a campaign result",
     "peak_hour_f000": 8672,
     "peak_hour_f100": 8671,
-    "peak_pct": 7.699006689962445
+    "peak_pct": 3.344041545093705
   },
   "probe_a": {
     "broken": {
@@ -79,7 +79,7 @@
           "Diesel [GJ]": 0.0,
           "District Cooling [GJ]": 0.0,
           "District Heating Steam [GJ]": 0.0,
-          "District Heating Water [GJ]": 98.17,
+          "District Heating Water [GJ]": 96.46,
           "Electricity [GJ]": 0.0,
           "Fuel Oil No 1 [GJ]": 0.0,
           "Fuel Oil No 2 [GJ]": 0.0,
@@ -208,7 +208,7 @@
             "Diesel [GJ]": 0.0,
             "District Cooling [GJ]": 0.0,
             "District Heating Steam [GJ]": 0.0,
-            "District Heating Water [GJ]": 98.17,
+            "District Heating Water [GJ]": 96.46,
             "Electricity [GJ]": 0.0,
             "Fuel Oil No 1 [GJ]": 0.0,
             "Fuel Oil No 2 [GJ]": 0.0,
@@ -318,14 +318,14 @@
         },
         "eplus_build": "94a887817b",
         "eplus_version": "24.2.0",
-        "heating_j": 98165240078.52725,
+        "heating_j": 96458043544.49765,
         "n_hours": 8760,
         "outdir": "Step8_docs/outputs_step8/probes/A_broken/f050",
         "peak_hour": 8671,
-        "peak_w": 32970.407603843865,
-        "series_sha256": "ffcd21b943d23499ac8d7ecd16d17e9b58cd4ba673db19b69c03fc9c7bb82b70",
+        "peak_w": 31637.201473724213,
+        "series_sha256": "bc5cde8e7bdd5345c43c49f94d8c9f8de44fda471e0c7806a6cc969f6590585e",
         "severe": 0,
-        "wall_s": 1.186,
+        "wall_s": 1.172,
         "warnings": 1
       },
       "wired_to": "A_f100"
@@ -590,7 +590,7 @@
         "peak_w": 30613.474178788976,
         "series_sha256": "22677b617f45a0a84b31859b6c2292ed10db5d4c6542b55189dc1f27b5114563",
         "severe": 0,
-        "wall_s": 1.142,
+        "wall_s": 1.256,
         "warnings": 1
       },
       "f100": {
@@ -599,7 +599,7 @@
           "Diesel [GJ]": 0.0,
           "District Cooling [GJ]": 0.0,
           "District Heating Steam [GJ]": 0.0,
-          "District Heating Water [GJ]": 98.17,
+          "District Heating Water [GJ]": 96.46,
           "Electricity [GJ]": 0.0,
           "Fuel Oil No 1 [GJ]": 0.0,
           "Fuel Oil No 2 [GJ]": 0.0,
@@ -728,7 +728,7 @@
             "Diesel [GJ]": 0.0,
             "District Cooling [GJ]": 0.0,
             "District Heating Steam [GJ]": 0.0,
-            "District Heating Water [GJ]": 98.17,
+            "District Heating Water [GJ]": 96.46,
             "Electricity [GJ]": 0.0,
             "Fuel Oil No 1 [GJ]": 0.0,
             "Fuel Oil No 2 [GJ]": 0.0,
@@ -838,14 +838,14 @@
         },
         "eplus_build": "94a887817b",
         "eplus_version": "24.2.0",
-        "heating_j": 98165240078.52725,
+        "heating_j": 96458043544.49765,
         "n_hours": 8760,
         "outdir": "Step8_docs/outputs_step8/probes/A_good/f100",
         "peak_hour": 8671,
-        "peak_w": 32970.407603843865,
-        "series_sha256": "ffcd21b943d23499ac8d7ecd16d17e9b58cd4ba673db19b69c03fc9c7bb82b70",
+        "peak_w": 31637.201473724213,
+        "series_sha256": "bc5cde8e7bdd5345c43c49f94d8c9f8de44fda471e0c7806a6cc969f6590585e",
         "severe": 0,
-        "wall_s": 1.158,
+        "wall_s": 1.181,
         "warnings": 1
       },
       "g810": [
@@ -861,7 +861,7 @@
         "multiplier_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\A_f000.csv",
         "multiplier_md5": "f7d5125ab55cdb02680c545bbdc17ee8",
         "schedule": "presence_HH_es_00035.csv",
-        "schedule_md5": "b6ea44a71fb29e86b731d8cb030da596",
+        "schedule_md5": "3233e86372597121b6d386eea6ff801d",
         "tag": "A_f000"
       },
       {
@@ -869,9 +869,9 @@
         "idf": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\A_f100.idf",
         "injected_idf_md5": "67bda59f5ecc7a8abf1158706188ade5",
         "multiplier_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\A_f100.csv",
-        "multiplier_md5": "f81062283840e2286bf6048f3fe7dd81",
+        "multiplier_md5": "4aad4e81f3411104c6e4f45c1102a88f",
         "schedule": "presence_HH_es_00035.csv",
-        "schedule_md5": "b6ea44a71fb29e86b731d8cb030da596",
+        "schedule_md5": "3233e86372597121b6d386eea6ff801d",
         "tag": "A_f100"
       }
     ]
@@ -886,7 +886,7 @@
           "Diesel [GJ]": 0.0,
           "District Cooling [GJ]": 0.0,
           "District Heating Steam [GJ]": 0.0,
-          "District Heating Water [GJ]": 98.17,
+          "District Heating Water [GJ]": 96.46,
           "Electricity [GJ]": 0.0,
           "Fuel Oil No 1 [GJ]": 0.0,
           "Fuel Oil No 2 [GJ]": 0.0,
@@ -1015,7 +1015,7 @@
             "Diesel [GJ]": 0.0,
             "District Cooling [GJ]": 0.0,
             "District Heating Steam [GJ]": 0.0,
-            "District Heating Water [GJ]": 98.17,
+            "District Heating Water [GJ]": 96.46,
             "Electricity [GJ]": 0.0,
             "Fuel Oil No 1 [GJ]": 0.0,
             "Fuel Oil No 2 [GJ]": 0.0,
@@ -1125,14 +1125,14 @@
         },
         "eplus_build": "94a887817b",
         "eplus_version": "24.2.0",
-        "heating_j": 98165240078.52725,
+        "heating_j": 96458043544.49765,
         "n_hours": 8760,
         "outdir": "Step8_docs/outputs_step8/probes/B_broken/x_first",
         "peak_hour": 8671,
-        "peak_w": 32970.407603843865,
-        "series_sha256": "ffcd21b943d23499ac8d7ecd16d17e9b58cd4ba673db19b69c03fc9c7bb82b70",
+        "peak_w": 31637.201473724213,
+        "series_sha256": "bc5cde8e7bdd5345c43c49f94d8c9f8de44fda471e0c7806a6cc969f6590585e",
         "severe": 0,
-        "wall_s": 1.137,
+        "wall_s": 1.152,
         "warnings": 1
       },
       "stale_reused": true,
@@ -1149,13 +1149,13 @@
     "good": {
       "runs": {
         "x": {
-          "cached_as": "e054e2da4a85c76094ab2224af56225d130887ed89247f890c931c211a8ca138",
+          "cached_as": "5e83a177ae99dd573ee6f1a3f00a6538a26997bab677af3b34e149e8bbf11a89",
           "end_use_total_gj": {
             "Coal [GJ]": 0.0,
             "Diesel [GJ]": 0.0,
             "District Cooling [GJ]": 0.0,
             "District Heating Steam [GJ]": 0.0,
-            "District Heating Water [GJ]": 98.17,
+            "District Heating Water [GJ]": 96.46,
             "Electricity [GJ]": 0.0,
             "Fuel Oil No 1 [GJ]": 0.0,
             "Fuel Oil No 2 [GJ]": 0.0,
@@ -1284,7 +1284,7 @@
               "Diesel [GJ]": 0.0,
               "District Cooling [GJ]": 0.0,
               "District Heating Steam [GJ]": 0.0,
-              "District Heating Water [GJ]": 98.17,
+              "District Heating Water [GJ]": 96.46,
               "Electricity [GJ]": 0.0,
               "Fuel Oil No 1 [GJ]": 0.0,
               "Fuel Oil No 2 [GJ]": 0.0,
@@ -1394,24 +1394,24 @@
           },
           "eplus_build": "94a887817b",
           "eplus_version": "24.2.0",
-          "heating_j": 98165240078.52725,
+          "heating_j": 96458043544.49765,
           "n_hours": 8760,
           "outdir": "Step8_docs/outputs_step8/probes/B_good/x_first",
           "peak_hour": 8671,
-          "peak_w": 32970.407603843865,
-          "series_sha256": "ffcd21b943d23499ac8d7ecd16d17e9b58cd4ba673db19b69c03fc9c7bb82b70",
+          "peak_w": 31637.201473724213,
+          "series_sha256": "bc5cde8e7bdd5345c43c49f94d8c9f8de44fda471e0c7806a6cc969f6590585e",
           "severe": 0,
-          "wall_s": 1.208,
+          "wall_s": 1.21,
           "warnings": 1
         },
         "y": {
-          "cached_as": "1f56aef6fc24733debbee50580aa8cfb90f1f9093941eb33f074a013707a927e",
+          "cached_as": "bcfbde8de2316ea2f89ed2624e77097db087bee6da0dd03997c457ad6f9ecbbb",
           "end_use_total_gj": {
             "Coal [GJ]": 0.0,
             "Diesel [GJ]": 0.0,
             "District Cooling [GJ]": 0.0,
             "District Heating Steam [GJ]": 0.0,
-            "District Heating Water [GJ]": 98.32,
+            "District Heating Water [GJ]": 94.87,
             "Electricity [GJ]": 0.0,
             "Fuel Oil No 1 [GJ]": 0.0,
             "Fuel Oil No 2 [GJ]": 0.0,
@@ -1540,7 +1540,7 @@
               "Diesel [GJ]": 0.0,
               "District Cooling [GJ]": 0.0,
               "District Heating Steam [GJ]": 0.0,
-              "District Heating Water [GJ]": 98.32,
+              "District Heating Water [GJ]": 94.87,
               "Electricity [GJ]": 0.0,
               "Fuel Oil No 1 [GJ]": 0.0,
               "Fuel Oil No 2 [GJ]": 0.0,
@@ -1650,28 +1650,28 @@
           },
           "eplus_build": "94a887817b",
           "eplus_version": "24.2.0",
-          "heating_j": 98317954990.44661,
+          "heating_j": 94869834997.87787,
           "n_hours": 8760,
           "outdir": "Step8_docs/outputs_step8/probes/B_good/y_after_change",
           "peak_hour": 8672,
-          "peak_w": 34314.038068855065,
-          "series_sha256": "9fad6a90ab8780556a033eeb63368186b49e6c49967223865c9ad20d7e8e3861",
+          "peak_w": 30738.756962052626,
+          "series_sha256": "2943ba347454a2f268b42cdaf877b656d2a7255a05f0f3553b8209688ec5de48",
           "severe": 0,
-          "wall_s": 1.14,
+          "wall_s": 1.181,
           "warnings": 1
         }
       },
       "x_again": [
         "HIT",
-        "e054e2da4a85c76094ab2224af56225d130887ed89247f890c931c211a8ca138"
+        "5e83a177ae99dd573ee6f1a3f00a6538a26997bab677af3b34e149e8bbf11a89"
       ],
       "x_first": [
         "MISS",
-        "e054e2da4a85c76094ab2224af56225d130887ed89247f890c931c211a8ca138"
+        "5e83a177ae99dd573ee6f1a3f00a6538a26997bab677af3b34e149e8bbf11a89"
       ],
       "y_after_change": [
         "MISS",
-        "1f56aef6fc24733debbee50580aa8cfb90f1f9093941eb33f074a013707a927e"
+        "bcfbde8de2316ea2f89ed2624e77097db087bee6da0dd03997c457ad6f9ecbbb"
       ]
     },
     "scenarios": [
@@ -1680,9 +1680,9 @@
         "idf": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\B_x.idf",
         "injected_idf_md5": "c2f5ecfd2f5b6617c2d5f82e7aed3a8c",
         "multiplier_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\B_x.csv",
-        "multiplier_md5": "f81062283840e2286bf6048f3fe7dd81",
+        "multiplier_md5": "4aad4e81f3411104c6e4f45c1102a88f",
         "schedule": "presence_HH_es_00035.csv",
-        "schedule_md5": "b6ea44a71fb29e86b731d8cb030da596",
+        "schedule_md5": "3233e86372597121b6d386eea6ff801d",
         "tag": "B_x"
       },
       {
@@ -1690,9 +1690,9 @@
         "idf": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\B_y.idf",
         "injected_idf_md5": "82e45efa89ec0d4786c83db7adc02b3f",
         "multiplier_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step8_docs\\outputs_step8\\probes\\_sched\\B_y.csv",
-        "multiplier_md5": "4e5d2b101ff7e1c10f28f1b94e2cdd4b",
+        "multiplier_md5": "8bc80a9b728891e5a724e1c1d940aeee",
         "schedule": "presence_HH_es_00094.csv",
-        "schedule_md5": "50eb318456d555d4fe0e9766227352b6",
+        "schedule_md5": "38d71606c64b2645134c3fa7c517623d",
         "tag": "B_y"
       }
     ]

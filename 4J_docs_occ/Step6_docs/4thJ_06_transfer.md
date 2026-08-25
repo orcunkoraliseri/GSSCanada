@@ -3581,3 +3581,53 @@ three Leg-4 folds, where the baseline passes and the coverage clause is PASS wit
   not rest on it.
 * ⚪ Nothing on Speed. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` intact; no threshold moved,
   no checker edited.
+
+---
+
+### 2026-08-26 — `G6.8`'s MODEL ARM IS RUN AND FAILS, AND `D-S3-14`'s SPLIT REPORT IS FILED
+
+Both of Step 6's remaining obligations are discharged. Full record:
+`Step6_docs/impl/2026-08-26_g68-model-arm-and-uk-split-report.md`.
+
+**`G6.8` — the model arm, which "has never been run on either leg", has now been run on all
+three Leg-5 folds.** It was never blocked on a GPU, a checkpoint or the checker: the checker and
+its 17/17 self-test were finished on 2026-08-21 and both registered negative controls had been
+seen behaving correctly (split-half PASS/PASS, `shuffled_across` FAIL/PASS). It was blocked on one
+missing input — the `--ref/--cand` path calls `load(args.ref)` with no `country=` filter, so the
+reference must arrive already filtered, and no country-filtered reference existed. Three were
+built from the corpus (`outputs_step6/g68_refs/real_{es,uk,it}.jsonl`, 19,140 / 15,854 / 38,260).
+
+🔴 **SEQUENCE arm FAIL and MARGINAL arm FAIL, in all three folds, on both weight bases.** Dwell-time
+W1 5–6.7× its 10-min band (50.13–66.57); transition-matrix TVD 3.3–4.7× its 0.050 band
+(0.1623–0.2344); diurnal JSD mean 4.6–7.9× its 0.015 band (0.0690–0.1189); time-budget error
+38.26–68.67 min/day against 8–15. The one checker that passes anywhere is transitions/day on `es`
+(0.32 against a band of 1.50); `uk` reads 1.80 and `it` **3.92** — 12.51 generated transitions a
+day against a real 16.43.
+
+⚪ **The verdicts are IDENTICAL under `weight_dia_cal` and unweighted.** `D-S6-4` ruled
+`weight_dia_cal` the headline, but a generated diary has no `pid`, so all 5,200 candidates key
+nothing and sit at 1.0 while the reference is weighted; rather than weight one side only, both
+bases were run and both agree. Under weighting the `uk` reference is 15,852, not 15,854 — two UK
+rows carry a null `weight_dia_cal` and are dropped rather than defaulted.
+
+🔴 **This is not independent evidence.** It is the same failure `G6.1` (9 of 9) and `G6.4`
+(0 PASS / 9 FAIL) already report, read on quantities the prompt does not carry. Never write
+"G6.8 was run" without "and it failed", and never present it as a second confirmation.
+
+**`D-S3-14` — the UK-fold split report is filed, and half of it is reported UN-QUANTIFIED, which
+is that decision's own fallback and not an omission.** The 551 UK diaries at
+`strat_hh_type = unknown` are 3.48 % of the fold across 107 households (481 train / 70 held-out
+under `D-S6-1(b)`). 🔴 **Not one generated UK diary carries that value on either leg** — 0 of 600,
+0 of 600, 0 of 5,200, 0 of 5,200 — because generation prompts are drawn from the Step 5 synthetic
+population, built from census marginals, and a census margin has no "household type unknown"
+category. The model was never asked for this cell, so its scores cannot be split on it.
+
+What IS quantified: the cell is **missing-not-at-random** — 15-24-year-olds +20.16 pp, students
++8.81 pp, other-inactive +11.59 pp, women +9.64 pp, retired **−17.06 pp**, day type flat — and it
+fits the published UK level-1 budget **3.5× worse** than the rest of its own fold (MAE 29.087 vs
+17.187 min/day; MAPE **34.332 %** vs 9.945 %). Its influence on the fold-level number is bounded
+and measured: dropping it moves whole-fold MAE by **+0.158 min/day** and MAPE from 10.647 % to
+9.945 %, worst single aggregate **+1.07 min/day** (`AC0`).
+
+⚪ No threshold moved, no checker edited, `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
+unchanged.

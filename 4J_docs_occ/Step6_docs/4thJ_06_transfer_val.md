@@ -366,3 +366,33 @@ stated, not left implicit.
 anything**, because Step 6 generation does not exist; the comparator has not been run against the
 raked-donor null; and `G6.8`'s co-presence and transition-entropy quantities are computed and
 reported but not scored, because Tier 1 registers no band for either.
+
+---
+
+### 2026-08-26 — `G6.8` IS NO LONGER A GATE WITH AN UNRUN ARM
+
+`G6.8`'s registered spec — *"Score quantities NEVER IN THE PROMPT: co-presence cross-tabs,
+transition entropy, dwell-time distributions conditioned on ATTRIBUTE PAIRS. All must clear their
+Tier 1 and Tier 2 thresholds on the held-out country"* — had been demonstrated only on its two
+negative controls. The arm that scores an actual model against an actual held-out country had
+never run on either leg. It has now run on all three Leg-5 folds and on both weight bases.
+
+🔴 **SEQUENCE FAIL and MARGINAL FAIL in every fold.** The verdicts do not move between
+`weight_dia_cal` and unweighted. `G6.8` therefore joins `G6.1`, `G6.4`, `G6.5`, `G6.6`, `G6.7` and
+`G6.9` on the FAIL side, and the board's Step 6 tally must count it as a scored FAIL, not as an
+un-run gate.
+
+🔴 **It is a fourth reading of one failure, not a fourth failure.** `G6.8` was registered to
+answer "the model only echoes the marginals". It returns no answer, because the marginal arm fails
+too: the model matches neither the structure the prompt withheld nor the structure the prompt
+supplied. Reporting it as independent corroboration of `G6.1` would be counting the same
+measurement twice.
+
+⚪ The two registered negative controls remain the proof the checker discriminates: split-half
+PASS/PASS, `shuffled_across` FAIL sequence / PASS marginal. Without that pair a FAIL here would be
+unreadable.
+
+⚪ `D-S3-14`'s UK-fold split report is filed alongside; the model half is reported **un-quantified**
+under that decision's own fallback clause, because no diary in the `strat_hh_type = unknown` cell
+was ever generated. Record:
+`Step6_docs/impl/2026-08-26_g68-model-arm-and-uk-split-report.md`.

@@ -4,7 +4,8 @@
     "G7.14": false,
     "G7.15": false,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
   "Step7_docs/outputs_step7/schedules/perturb_compact::detail": {
     "G7.13": {
@@ -53,6 +54,43 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 1,
+      "dwellings_below_trough_hour": 2,
+      "hour_profile": [
+        0.8341048793150975,
+        0.8599187380274154,
+        0.8803048863561799,
+        0.8430585274520704,
+        0.9962374433972622,
+        0.9957625580273959,
+        0.9881571454794322,
+        0.7964253775343093,
+        0.7536494956438728,
+        0.7432029970411425,
+        0.6752350206027578,
+        0.5820575972054828,
+        0.5792222387123664,
+        0.49202672153424626,
+        0.5716930639725945,
+        0.5645380456438205,
+        0.5630454990958756,
+        0.6176245823561742,
+        0.5853551045479548,
+        0.6109462625205987,
+        0.6552239749315605,
+        0.7194023812055126,
+        0.7667757375890557,
+        0.8108310755068673
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   },
   "Step7_docs/outputs_step7/schedules/perturb_hours_8759": {
@@ -60,11 +98,12 @@
     "G7.14": true,
     "G7.15": true,
     "G7.16": false,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
   "Step7_docs/outputs_step7/schedules/perturb_hours_8759::detail": {
     "G7.13": {
-      "mean_presence_over_schedules": 0.7285231619134604,
+      "mean_presence_over_schedules": 0.7285271007158352,
       "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
       "passes": true,
       "reasons": [],
@@ -114,6 +153,43 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 1,
+      "dwellings_below_trough_hour": 2,
+      "hour_profile": [
+        0.8342001076378871,
+        0.8600169134741589,
+        0.8804053892544966,
+        0.8431547779975039,
+        0.9963511821166818,
+        0.9958762425299676,
+        0.9882699616851041,
+        0.7965163040530367,
+        0.7537355385135661,
+        0.7432878472520159,
+        0.6753121110263909,
+        0.5821240497225744,
+        0.5792883675214443,
+        0.4920828953807509,
+        0.5717583331887119,
+        0.5646024979837729,
+        0.5631097810343498,
+        0.6176950954949293,
+        0.5854219335358013,
+        0.6110160132070378,
+        0.6552987807284472,
+        0.7194845141409167,
+        0.7668632790592679,
+        0.808778500641643
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   },
   "Step7_docs/outputs_step7/schedules/perturb_interp_yes": {
@@ -121,7 +197,8 @@
     "G7.14": true,
     "G7.15": false,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
   "Step7_docs/outputs_step7/schedules/perturb_interp_yes::detail": {
     "G7.13": {
@@ -174,6 +251,143 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 1,
+      "dwellings_below_trough_hour": 2,
+      "hour_profile": [
+        0.8341048793150975,
+        0.8599187380274154,
+        0.8803048863561799,
+        0.8430585274520704,
+        0.9962374433972622,
+        0.9957625580273959,
+        0.9881571454794322,
+        0.7964253775343093,
+        0.7536494956438728,
+        0.7432029970411425,
+        0.6752350206027578,
+        0.5820575972054828,
+        0.5792222387123664,
+        0.49202672153424626,
+        0.5716930639725945,
+        0.5645380456438205,
+        0.5630454990958756,
+        0.6176245823561742,
+        0.5853551045479548,
+        0.6109462625205987,
+        0.6552239749315605,
+        0.7194023812055126,
+        0.7667757375890557,
+        0.8108310755068673
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
+    }
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_norotate": {
+    "G7.13": true,
+    "G7.14": true,
+    "G7.15": true,
+    "G7.16": true,
+    "G7.17": true,
+    "G7.19": false
+  },
+  "Step7_docs/outputs_step7/schedules/perturb_norotate::detail": {
+    "G7.13": {
+      "mean_presence_over_schedules": 0.7095525713869862,
+      "outdoor_at_home_md5": "679518c7f626bd5d408adc96b5a1ff43",
+      "passes": true,
+      "reasons": [],
+      "used_shipped_list": true
+    },
+    "G7.14": {
+      "n_schedule_compact": 0,
+      "n_schedule_file": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.15": {
+      "distinct_values": [
+        "No"
+      ],
+      "n_objects_checked": 100,
+      "passes": true,
+      "reasons": []
+    },
+    "G7.16": {
+      "declared_hours": {
+        "8760": 100
+      },
+      "declared_minutes_per_item": {
+        "60": 100
+      },
+      "passes": true,
+      "reasons": [],
+      "value_counts": {
+        "8760": 100
+      }
+    },
+    "G7.17": {
+      "head_counts": {
+        "1": 33,
+        "2": 43,
+        "3": 17,
+        "4": 3,
+        "5": 2,
+        "6": 2
+      },
+      "n_schedules_out_of_range": 0,
+      "passes": true,
+      "presence_max": 1.0,
+      "presence_min": 0.0,
+      "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": false,
+      "dwellings_below_night_ratio": 72,
+      "dwellings_below_trough_hour": 54,
+      "hour_profile": [
+        0.9948538803013659,
+        0.9946073052054738,
+        0.9940414743013658,
+        0.7536015436439147,
+        0.7608040424657534,
+        0.6709700949588993,
+        0.39247699465753744,
+        0.36909404389041633,
+        0.3973388281643833,
+        0.38378127843835447,
+        0.5801498227670936,
+        0.5822671908219265,
+        0.5544234284109368,
+        0.5172164978356302,
+        0.5362788373698727,
+        0.7257000097808665,
+        0.744600704520594,
+        0.749410823835641,
+        0.7797118155890862,
+        0.8335062400821902,
+        0.9033638478904242,
+        0.9345394214246797,
+        0.947800076410966,
+        0.9287235105205863
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": false,
+      "reasons": [
+        "mean presence at 05:00 is 0.6710, which is 0.674 of this bundle's own daily maximum 0.9949 -- below 0.90. A residential population is at home at 05:00. FINDING 141: this is what an unrotated 04:00-origin diary looks like on a Schedule:File.",
+        "the daily minimum of mean presence falls at 07:00 (0.3691), before 08:00. Nobody's occupancy trough is the small hours.",
+        "the manifest declares rotated_to_midnight = false: this bundle is on the DIARY origin (None), not on the clock EnergyPlus reads."
+      ]
     }
   },
   "Step7_docs/outputs_step7/schedules/perturb_null": {
@@ -181,7 +395,8 @@
     "G7.14": true,
     "G7.15": true,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
   "Step7_docs/outputs_step7/schedules/perturb_null::detail": {
     "G7.13": {
@@ -232,6 +447,43 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 1,
+      "dwellings_below_trough_hour": 2,
+      "hour_profile": [
+        0.8341048793150975,
+        0.8599187380274154,
+        0.8803048863561799,
+        0.8430585274520704,
+        0.9962374433972622,
+        0.9957625580273959,
+        0.9881571454794322,
+        0.7964253775343093,
+        0.7536494956438728,
+        0.7432029970411425,
+        0.6752350206027578,
+        0.5820575972054828,
+        0.5792222387123664,
+        0.49202672153424626,
+        0.5716930639725945,
+        0.5645380456438205,
+        0.5630454990958756,
+        0.6176245823561742,
+        0.5853551045479548,
+        0.6109462625205987,
+        0.6552239749315605,
+        0.7194023812055126,
+        0.7667757375890557,
+        0.8108310755068673
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   },
   "Step7_docs/outputs_step7/schedules/perturb_outdoor_local": {
@@ -239,7 +491,8 @@
     "G7.14": true,
     "G7.15": true,
     "G7.16": true,
-    "G7.17": true
+    "G7.17": true,
+    "G7.19": true
   },
   "Step7_docs/outputs_step7/schedules/perturb_outdoor_local::detail": {
     "G7.13": {
@@ -292,6 +545,43 @@
       "presence_max": 1.0,
       "presence_min": 0.0,
       "reasons": []
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 1,
+      "dwellings_below_trough_hour": 2,
+      "hour_profile": [
+        0.8341048793150975,
+        0.8599187380274154,
+        0.8803048863561799,
+        0.8430585274520704,
+        0.9962374433972622,
+        0.9957625580273959,
+        0.9881571454794322,
+        0.7964253775343093,
+        0.7536494956438728,
+        0.7456569461370289,
+        0.6899587655342643,
+        0.5936899508493392,
+        0.5792222387123664,
+        0.49319110602739796,
+        0.5730903242465673,
+        0.5659353059177933,
+        0.5635112506575196,
+        0.6176245823561742,
+        0.5853551045479548,
+        0.6109462625205987,
+        0.6552239749315605,
+        0.7194023812055126,
+        0.7667757375890557,
+        0.8108310755068673
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   },
   "Step7_docs/outputs_step7/schedules/perturb_range": {
@@ -299,7 +589,8 @@
     "G7.14": true,
     "G7.15": true,
     "G7.16": true,
-    "G7.17": false
+    "G7.17": false,
+    "G7.19": true
   },
   "Step7_docs/outputs_step7/schedules/perturb_range::detail": {
     "G7.13": {
@@ -352,6 +643,43 @@
       "reasons": [
         "presence leaves [0,1]: 100 of 100 schedules, range [0.500000, 1.500000]"
       ]
+    },
+    "G7.19": {
+      "declared_rotated": true,
+      "dwellings_below_night_ratio": 0,
+      "dwellings_below_trough_hour": 2,
+      "hour_profile": [
+        1.334104879315012,
+        1.3599187380273692,
+        1.380304886356142,
+        1.3430585274521065,
+        1.496237443397262,
+        1.4957625580273959,
+        1.4881571454794258,
+        1.2964253775341499,
+        1.253649495643732,
+        1.2432029970410186,
+        1.175235020602697,
+        1.082057597205531,
+        1.0792222387122816,
+        0.9920267215342764,
+        1.071693063972598,
+        1.0645380456438986,
+        1.063045499095892,
+        1.1176245823561841,
+        1.0853551045479537,
+        1.110946262520542,
+        1.1552239749314608,
+        1.2194023812053767,
+        1.2667757375889896,
+        1.3108310755067911
+      ],
+      "min_trough_hour": 8,
+      "n_dwellings": 100,
+      "night_hour": 5,
+      "night_ratio_min": 0.9,
+      "passes": true,
+      "reasons": []
     }
   }
 }

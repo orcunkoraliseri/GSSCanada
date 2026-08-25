@@ -7,6 +7,7 @@
     "4": 43032
   },
   "backoff_full_depth_share": 0.5779210314262692,
+  "diary_origin_hour": 4,
   "fold": "es",
   "household_sizes": [
     2,
@@ -119,7 +120,7 @@
     },
     {
       "hid": "09326",
-      "mean_presence": 0.7185878651799419,
+      "mean_presence": 0.7186068932272838,
       "n_members": 6,
       "n_values": 8759
     },
@@ -131,7 +132,7 @@
     },
     {
       "hid": "04180",
-      "mean_presence": 0.630507034034834,
+      "mean_presence": 0.630481663305045,
       "n_members": 3,
       "n_values": 8759
     },
@@ -155,7 +156,7 @@
     },
     {
       "hid": "07738",
-      "mean_presence": 0.7991970164021769,
+      "mean_presence": 0.7992065304258477,
       "n_members": 2,
       "n_values": 8759
     },
@@ -173,13 +174,13 @@
     },
     {
       "hid": "01538",
-      "mean_presence": 0.6614276109652294,
+      "mean_presence": 0.6614085829178876,
       "n_members": 3,
       "n_values": 8759
     },
     {
       "hid": "07994",
-      "mean_presence": 0.5681584655782623,
+      "mean_presence": 0.5681299235072497,
       "n_members": 2,
       "n_values": 8759
     },
@@ -215,7 +216,7 @@
     },
     {
       "hid": "04364",
-      "mean_presence": 0.7151881873882102,
+      "mean_presence": 0.7151501312935267,
       "n_members": 2,
       "n_values": 8759
     },
@@ -251,7 +252,7 @@
     },
     {
       "hid": "00417",
-      "mean_presence": 0.6511144093059837,
+      "mean_presence": 0.6510953812586419,
       "n_members": 3,
       "n_values": 8759
     },
@@ -275,13 +276,13 @@
     },
     {
       "hid": "03549",
-      "mean_presence": 0.6738973246565437,
+      "mean_presence": 0.6739068386802146,
       "n_members": 2,
       "n_values": 8759
     },
     {
       "hid": "06916",
-      "mean_presence": 0.6983141150055182,
+      "mean_presence": 0.6983103093960498,
       "n_members": 5,
       "n_values": 8759
     },
@@ -299,7 +300,7 @@
     },
     {
       "hid": "03633",
-      "mean_presence": 0.7256536134261902,
+      "mean_presence": 0.7257106975682156,
       "n_members": 2,
       "n_values": 8759
     },
@@ -323,7 +324,7 @@
     },
     {
       "hid": "03819",
-      "mean_presence": 0.9122553310245969,
+      "mean_presence": 0.9122933871192805,
       "n_members": 3,
       "n_values": 8759
     },
@@ -359,7 +360,7 @@
     },
     {
       "hid": "00353",
-      "mean_presence": 0.6842200403394604,
+      "mean_presence": 0.6842866385051566,
       "n_members": 2,
       "n_values": 8759
     },
@@ -371,7 +372,7 @@
     },
     {
       "hid": "09117",
-      "mean_presence": 0.7885666806205681,
+      "mean_presence": 0.7885539952556735,
       "n_members": 3,
       "n_values": 8759
     },
@@ -395,25 +396,25 @@
     },
     {
       "hid": "01981",
-      "mean_presence": 0.6873977242455379,
+      "mean_presence": 0.6874548083875633,
       "n_members": 2,
       "n_values": 8759
     },
     {
       "hid": "05451",
-      "mean_presence": 0.7148361685123873,
+      "mean_presence": 0.7148583679009527,
       "n_members": 6,
       "n_values": 8759
     },
     {
       "hid": "08206",
-      "mean_presence": 0.704158262612424,
+      "mean_presence": 0.7041328918826351,
       "n_members": 3,
       "n_values": 8759
     },
     {
       "hid": "08319",
-      "mean_presence": 0.8274441526810519,
+      "mean_presence": 0.8273870685390264,
       "n_members": 2,
       "n_values": 8759
     },
@@ -437,7 +438,7 @@
     },
     {
       "hid": "08182",
-      "mean_presence": 0.7933744339155916,
+      "mean_presence": 0.7933458918445789,
       "n_members": 2,
       "n_values": 8759
     },
@@ -461,19 +462,19 @@
     },
     {
       "hid": "07869",
-      "mean_presence": 0.8997126764851391,
+      "mean_presence": 0.8997697606271644,
       "n_members": 2,
       "n_values": 8759
     },
     {
       "hid": "03978",
-      "mean_presence": 0.712558511245576,
+      "mean_presence": 0.7125280663698291,
       "n_members": 5,
       "n_values": 8759
     },
     {
       "hid": "06624",
-      "mean_presence": 0.7052888457586483,
+      "mean_presence": 0.7052698177113065,
       "n_members": 4,
       "n_values": 8759
     },
@@ -521,7 +522,7 @@
     },
     {
       "hid": "08331",
-      "mean_presence": 0.5104368839669673,
+      "mean_presence": 0.5105320242036763,
       "n_members": 2,
       "n_values": 8759
     },
@@ -539,13 +540,13 @@
     },
     {
       "hid": "08536",
-      "mean_presence": 0.8197473075313012,
+      "mean_presence": 0.8198043916733265,
       "n_members": 1,
       "n_values": 8759
     },
     {
       "hid": "06444",
-      "mean_presence": 0.8531129885451155,
+      "mean_presence": 0.85316055866347,
       "n_members": 2,
       "n_values": 8759
     },
@@ -569,7 +570,7 @@
     },
     {
       "hid": "07690",
-      "mean_presence": 0.6476069059126486,
+      "mean_presence": 0.6475815351828594,
       "n_members": 3,
       "n_values": 8759
     },
@@ -581,13 +582,13 @@
     },
     {
       "hid": "05055",
-      "mean_presence": 0.5973284621532139,
+      "mean_presence": 0.5972999200822011,
       "n_members": 2,
       "n_values": 8759
     },
     {
       "hid": "09473",
-      "mean_presence": 0.5224721239106442,
+      "mean_presence": 0.5225196940289988,
       "n_members": 2,
       "n_values": 8759
     },
@@ -611,7 +612,7 @@
     },
     {
       "hid": "08229",
-      "mean_presence": 0.6732820844591594,
+      "mean_presence": 0.6733074551889485,
       "n_members": 3,
       "n_values": 8759
     },
@@ -641,7 +642,7 @@
     },
     {
       "hid": "08984",
-      "mean_presence": 0.6689817457599168,
+      "mean_presence": 0.6689563750301277,
       "n_members": 3,
       "n_values": 8759
     },
@@ -659,7 +660,7 @@
     },
     {
       "hid": "08418",
-      "mean_presence": 0.6396848955360201,
+      "mean_presence": 0.6397419796780455,
       "n_members": 2,
       "n_values": 8759
     },
@@ -671,13 +672,13 @@
     },
     {
       "hid": "09467",
-      "mean_presence": 0.7799025763976101,
+      "mean_presence": 0.7800167446816608,
       "n_members": 1,
       "n_values": 8759
     },
     {
       "hid": "05789",
-      "mean_presence": 0.8524565209118241,
+      "mean_presence": 0.8524945770065075,
       "n_members": 1,
       "n_values": 8759
     },
@@ -695,7 +696,7 @@
     },
     {
       "hid": "08979",
-      "mean_presence": 0.823273838971978,
+      "mean_presence": 0.8232357828772945,
       "n_members": 3,
       "n_values": 8759
     },
@@ -713,12 +714,14 @@
     }
   ],
   "interpolate_to_timestep": "No",
+  "leg": "leg4",
   "n_hours_override": 8759.0,
   "n_households": 100,
   "n_values_per_schedule_expected": 8760,
   "perturbations": {
     "interpolate": null,
     "n_hours_override": 8759.0,
+    "no_rotate": null,
     "outdoor_override": null,
     "presence_offset": 0.0,
     "use_compact": false
@@ -741,6 +744,7 @@
   },
   "provenance": "LEG-4 PILOT -- NOT REPORTABLE",
   "rho": 0.0,
+  "rotated_to_midnight": true,
   "rule": "independent",
   "seed": 1,
   "timestep_min": 60,

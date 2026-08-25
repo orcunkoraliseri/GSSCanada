@@ -98,9 +98,13 @@ def add_row_with_number_and_no_source(out_dir):
         "ownership_share": "1.000", "occupancy_dependent": "1",
         "power_factor": "1.0", "in_default_dwelling": "1",
         "crest_activity_index": "1", "crest_activity_name": "cooking",
-        # a number, and NOTHING to source it to
-        "source_model": "", "source_citation_key": "", "source_table": "",
-        "source_doi": "", "source_artefact": "", "source_artefact_md5": "",
+        # A number with NO SOURCE, in the sense G9.3 owns: the row names a
+        # model and a table so `G9.1` stays clean exactly as the registered
+        # table requires, but it carries neither a citation key nor any written
+        # reasoning for a value it labels NOT VALIDATED.
+        "source_model": "planted", "source_table": "planted Table 1",
+        "source_citation_key": "", "source_doi": "", "source_artefact": "",
+        "source_artefact_md5": "",
         "validation_label": "NOT VALIDATED", "validation_scale": "none",
         "reasoning": "",
     })
@@ -209,6 +213,13 @@ CASES = [
      {"zero_load_share": 0.20}),
     ("add_per_dwelling_prediction", "G9.13", None, "file", {}),
     ("null_change_nothing", None, "ALL", "run", {}),
+    # ---- ADDITIONAL probes, ours, beyond the registered fifteen ------------
+    # The registered table falsifies the fourteen GATES and says nothing about
+    # the five vacuity guards. V9.b, V9.c, V9.d and V9.e prove themselves on
+    # every run by construction; V9.a cannot, because its subject is the corpus.
+    # So it gets a probe here, and it is labelled as ours rather than counted
+    # among the registered cases.
+    ("EXTRA_drop_an_acl_code_from_the_map", "V9.a", ["G9.2"], "file", {}),
 ]
 
 FILE_MUTATORS = {
@@ -220,7 +231,23 @@ FILE_MUTATORS = {
     "replace_mapping_with_two_digit": lambda d, f: collapse_map_to_two_digits(d),
     "add_act2_to_runtime_inputs": lambda d, f: add_act2_to_runtime_columns(d, f),
     "add_per_dwelling_prediction": lambda d, f: add_per_dwelling_figure(d),
+    "EXTRA_drop_an_acl_code_from_the_map": lambda d, f: drop_an_acl_code(d),
 }
+
+
+def drop_an_acl_code(out_dir):
+    """Delete every row for one ACL code the corpus contains, so V9.a has a
+    shortfall to print."""
+    path = os.path.join(out_dir, "activity_appliance_map.csv")
+    rows, fields = _rows(path)
+    victim = None
+    for r in rows:
+        if r["end_use"] == "none" and r["acl_code"] not in ("000", "319"):
+            victim = r["acl_code"]
+            break
+    if victim is None:
+        raise RuntimeError("no droppable ACL code")
+    _write(path, [r for r in rows if r["acl_code"] != victim], fields)
 
 
 def build_campaign(trig, root, folds, work, households, calibration_passes=2,
@@ -264,7 +291,7 @@ def main(argv=None):
     root = args.root
     folds = [f for f in args.folds.split(",") if f]
     src = os.path.join(root, "Step9_docs", "outputs_step9")
-    work_root = args.work or os.path.join(src, "_selftest")
+    work_root = args.work or os.path.join(root, "Step9_docs", "_selftest_work")
     trig = _load(root, "4thJ_step9_trigger.py", "step9_trigger")
     gates = _load(root, "4thJ_gates_step9.py", "step9_gates")
 
@@ -277,7 +304,12 @@ def main(argv=None):
     base_verdict = dict((r["id"], r["verdict"]) for r in baseline["board"])
 
     results = []
-    fell = dict((gid, []) for gid, v in base_verdict.items() if v == "PASS")
+    # The coverage clause runs over GATES. The five guards prove themselves on
+    # every run -- V9.a by the probe below, V9.b/c/d/e by construction inside
+    # the runner -- so counting them here would double-count, and NOT counting
+    # them without saying so would be the silence this clause exists to break.
+    fell = dict((gid, []) for gid, v in base_verdict.items()
+                if v == "PASS" and gid.startswith("G9."))
     for name, must_fail, must_clean, kind, kw in CASES:
         cdir = os.path.join(work_root, name)
         seed_dir(root, cdir, src)
@@ -290,7 +322,8 @@ def main(argv=None):
         gv = dict((r["id"], r["verdict"]) for r in got["board"])
 
         for gid, v in gv.items():
-            if base_verdict.get(gid) == "PASS" and v == "FAIL":
+            if (gid.startswith("G9.") and base_verdict.get(gid) == "PASS"
+                    and v == "FAIL"):
                 fell.setdefault(gid, []).append(name)
 
         rec = {"case": name, "target": must_fail, "verdicts": gv}
@@ -323,7 +356,10 @@ def main(argv=None):
         results.append(rec)
 
     never_fell = sorted(g for g, cases in fell.items() if not cases)
+    guard_verdicts = dict((g, base_verdict.get(g))
+                          for g in ("V9.a", "V9.b", "V9.c", "V9.d", "V9.e"))
     report = {
+        "guard_verdicts_at_baseline": guard_verdicts,
         "households": args.households,
         "folds": folds,
         "baseline_verdicts": base_verdict,

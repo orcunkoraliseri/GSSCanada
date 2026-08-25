@@ -15,8 +15,8 @@ line nobody maintains is how a reader concludes that a whole step is untouched.
 disagreements on 10,000 strings under the 34-value `COP` alphabet), the Leg-4 rehearsal generation on
 all three folds both constrained and unconstrained, the gate battery on generated text
 (`gates_step7_leg4_baseline.json`, **12 PASS / 15 FAIL** over scored gates), the schedule emitter and
-the four schedule gates (**`G7.13`–`G7.17` 5 PASS / 0 FAIL on all three folds, all five seen
-falling**), and the chaining pre-screen (90 cells).
+the schedule gates (🔴 **`G7.19` ADDED 2026-08-26 under `D-S9-3`(a); `G7.13`–`G7.17` and `G7.19` are 6 PASS / 0 FAIL on all three folds, all six seen
+falling** — `G7.19` is the phase gate, and it exists because `FINDING 141` passed the other five), and the chaining pre-screen (90 cells).
 
 🔴 **Still genuinely unbuilt:** work item 7.2 (throughput, job `1286208`), the Leg-5 campaign
 (job `1286209`), the untuned-base arm of `G7.7`, the rejection-sampled control at the size `G7.9`
@@ -77,6 +77,7 @@ step, and the parent document says so in the same words.
 | **G7.15** | 🔴 `Interpolate to Timestep = No` | Asserted per schedule object. A step-wise presence signal interpolated linearly invents fractional occupants and smears appliance peaks |
 | **G7.16** | Schedule length and resolution | 8,760 h × the declared timestep, no gaps, no duplicated timestamps |
 | **G7.17** | Presence range | All values in [0, 1]; occupant counts integral where the `People` object expects them |
+| 🔴 **G7.19** | **The emitted schedule is on the clock EnergyPlus reads it on** | 🔴 **ADDED 2026-08-26 under `D-S9-3`(a), because `FINDING 141` showed that no gate in Steps 7 or 8 could see a schedule that was four hours out of phase.** `D-S2-5` put every diary on a **04:00** origin; `Schedule:File` has no origin field and EnergyPlus reads value 0 as MIDNIGHT. Every check the board already carried — 8,760 values, `Interpolate to Timestep = No`, `Minutes per Item`, values in [0, 1], the multiplier rebuilt from the artefact — **is true of a series rotated by four hours**. Three arms, all scored on the mean hour-of-day profile of the bundle: **(a)** mean presence at **05:00** is at least **0.90** of the schedule's **own** daily maximum — self-referenced, so it cannot be met by rescaling; **(b)** the daily **trough** falls at **08:00 or later**; **(c)** the manifest **declares** `rotated_to_midnight`, because an artefact that cannot say which clock it is on cannot be validated against one. Registered 2026-08-26: `G7_19_NIGHT_HOUR = 5`, `G7_19_NIGHT_RATIO_MIN = 0.90`, `G7_19_MIN_TROUGH_HOUR = 8`. 🔴 **The per-dwelling counts are a DIAGNOSTIC and carry no verdict**, and that is a specification decision taken before the gate returned one: both arms are POPULATION statements, one household that leaves for work together legitimately has its trough at 07:00, and scoring a stock claim per dwelling would have failed **11 of 100 correct** schedules. The answer to that is the right statement, never a looser number |
 
 ---
 
@@ -115,6 +116,7 @@ electrical power and heating/cooling ramp rates.
 | Use a **local copy** of `OUTDOOR_AT_HOME` that differs by one code | **G7.13** | G7.17 |
 | 🔴 **ADDED 2026-08-22** — emit `Schedule:Compact` instead of `Schedule:File` | **G7.14** | G7.16 |
 | 🔴 **ADDED 2026-08-22** — shift every presence value by `+0.5` | **G7.17** | G7.14 |
+| 🔴 **ADDED 2026-08-26** — emit on the **04:00 diary origin** instead of the clock EnergyPlus reads (`--no-rotate`) | **G7.19** | G7.13, G7.14, G7.15, G7.16, G7.17 |
 | 🔴 **Null perturbation: change nothing** | **nothing** | everything |
 
 ### Coverage clause
@@ -270,3 +272,54 @@ null field rather than a small one, because vLLM v1 runs the model in a worker p
 defect **in its own input artefact** rather than on a missing one, and it is exactly what a gate
 pointed at a quantity is for. See `FINDING 97` in `4thJ_07_schedules_and_chaining_IMP.md`. Nothing is
 re-registered and no threshold moves: the gate's wording was already right.
+
+### 2026-08-26 (early) — 🔴 **`G7.19` IS ADDED, AND IT IS THE FIRST GATE IN THIS STEP THAT CAN SEE WHAT CLOCK A SCHEDULE IS ON. THE BOARD IS 6 PASS / 0 FAIL ON ALL THREE FOLDS AND ALL SIX HAVE BEEN SEEN FALLING.**
+
+Under `D-S9-3`(a), ruled by the author the same day on `FINDING 141`.
+
+🔴 **The reason this gate exists is that the whole existing board passed on the defect.** Step
+9 measured a UK hot-water peak at 03:00 and asked what index 0 of the series meant. `D-S2-5` had put
+every diary on a **04:00** origin; `Schedule:File` has no origin field and EnergyPlus reads value 0 as
+**midnight**. So every schedule this step emitted — and every one of the **13,108 EnergyPlus runs**
+Step 8 reported — applied occupancy **four hours early**. `G7.13` through `G7.17` check the exclusion
+rule, the object type, `Interpolate to Timestep`, the length, the resolution and the range. **Every
+one of those is true of a series rotated by four hours.**
+
+| | baseline `es` | `uk` | `it` |
+|---|---|---|---|
+| `G7.13` indoor rule on the emitted signal | PASS | PASS | PASS |
+| `G7.14` `Schedule:File`, not `Schedule:Compact` | PASS | PASS | PASS |
+| `G7.15` `Interpolate to Timestep = No` | PASS | PASS | PASS |
+| `G7.16` length and resolution | PASS | PASS | PASS |
+| `G7.17` range and integral head-count | PASS | PASS | PASS |
+| 🔴 **`G7.19` phase** | **PASS** | **PASS** | **PASS** |
+| mean presence at 05:00, as a share of the bundle's own daily maximum | **0.9998** | **0.9979** | **0.9498** |
+| hour of the daily trough | **11:00** | **11:00** | **13:00** |
+
+**The same three bundles before the rotation**: 0.674 / 0.787 / 0.767 and troughs at **07:00 / 07:00 /
+09:00**. The registered band, 0.90, sits inside that gap and was fixed before either side was scored.
+
+🔴 **The perturbation battery is 7 of 7, and the new one is an ARTEFACT, not a one-off.** The
+emitter carries `--no-rotate`, so `outputs_step7/schedules/perturb_norotate/` is a bundle anyone can
+rebuild and re-score. It fells `G7.19` on all four of its arms and leaves `G7.13`-`G7.17` clean, which
+is the whole claim of `FINDING 141` stated as a test.
+
+| perturbation | fells | clean |
+|---|---|---|
+| null | **nothing** | everything |
+| `Interpolate to Timestep = Yes` | `G7.15` | `G7.14`, `G7.19` |
+| emit 8,759 hours | `G7.16` | `G7.17` |
+| local copy of `OUTDOOR_AT_HOME` | `G7.13` | `G7.17`, `G7.19` |
+| emit `Schedule:Compact` | `G7.14`, `G7.15` | `G7.16` |
+| shift every value by +0.5 | `G7.17` | `G7.14`, `G7.19` |
+| 🔴 **emit on the 04:00 diary origin** | **`G7.19`** | `G7.13`-`G7.17` |
+
+⚪ `Schedule:Compact` also fells `G7.15`, as it has since 2026-08-22 — a Compact object carries no
+interpolate field, so the setting genuinely was never asserted. Declared, not tidied away.
+
+🔴 **The per-dwelling arms carry NO VERDICT and that is a specification decision, not a
+loosened band.** Both arms are POPULATION statements. One household that leaves for work together has
+its occupancy trough at exactly 07:00, and a night-shift dwelling is legitimately empty at 05:00.
+Scored per dwelling the gate would have failed **11 of 100 CORRECT** `es` schedules. The answer to
+that is the right statement, never a looser number — the counts are printed beside the verdict as a
+diagnostic (`es` night 0/100 trough 11/100, `uk` 0/100 and 0/100, `it` 8/100 and 6/100).
