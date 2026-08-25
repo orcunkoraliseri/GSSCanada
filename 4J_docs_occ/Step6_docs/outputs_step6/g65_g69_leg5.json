@@ -1,0 +1,1748 @@
+{
+  "allgeo_table": "tus_00age_ALLGEO_2010_TIME_SP_T.json",
+  "arm": "generated",
+  "board": {
+    "G6_5_FAIL": 9,
+    "G6_9_FAIL": 9
+  },
+  "coverage_clause": {
+    "no_op_perturbations": [
+      "shift25",
+      "invert_sign",
+      "neighbour_tables"
+    ],
+    "passes": false,
+    "seen_failing": {
+      "G6_5": "\ud83d\udd34 NEVER SEEN FAILING (or already FAILING at baseline)",
+      "G6_5_sign_arm_alone": "\ud83d\udd34 the SIGN ARM was never the reason -- it is not an independent criterion unless it can fell G6.5 on its own",
+      "G6_9": "\ud83d\udd34 NEVER SEEN FAILING (or already FAILING at baseline)"
+    }
+  },
+  "european_mean_basis": "unweighted mean over every HETUS country with a complete level-1 profile in the band; NOT population-weighted; the fold country included",
+  "folds": {
+    "es": {
+      "bands": {
+        "Y25-44": {
+          "G6_5": {
+            "band": "Y25-44",
+            "fold": "es",
+            "mae": 36.8132,
+            "mape": 32.0511,
+            "mape_max": 20.0,
+            "null_mae": 9.9348,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 36.81 >= raked-donor null 9.93",
+              "criterion 2: MAPE 32.05 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC0, AC4-8, AC9A"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC0",
+                "AC4-8",
+                "AC9A"
+              ],
+              "n_scored": 6,
+              "not_scored": [],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": true,
+                  "model_div": -40.177454153182225,
+                  "published_div": 11.833333333333371,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": false,
+                  "model_div": -34.889428263214654,
+                  "published_div": -4.2777777777777715,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "inverted": false,
+                  "model_div": 20.724919093851135,
+                  "published_div": 5.444444444444445,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": false,
+                  "model_div": 4.388888888888886,
+                  "published_div": 9.277777777777771,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 75.28856526429342,
+                  "published_div": -18.944444444444457,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": true,
+                  "model_div": -18.743257820927724,
+                  "published_div": 5.111111111111114,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 13.555555555555555,
+            "mae_by_country": {
+              "es": 36.81319669183746,
+              "it": 46.35023372887451,
+              "uk": 30.683567062207832
+            },
+            "margin": -6.12962962962963,
+            "nearest": "uk",
+            "own": "es",
+            "pairwise": {
+              "es-it": 11.833333333333334,
+              "es-uk": 13.166666666666666,
+              "it-uk": 15.666666666666666
+            },
+            "passes": false,
+            "published_pair": "es-uk",
+            "published_pair_distance": 13.166666666666666,
+            "reasons": [
+              "nearest published profile is uk (MAE 30.68) not es (36.81)",
+              "relative margin -0.4655 over the runner-up uk does not exceed 0.50 (absolute margin -6.13, published es-uk distance 13.17)"
+            ],
+            "relative_margin": -0.4655414908579466,
+            "relative_margin_min": 0.5,
+            "runner_up": "uk",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 650.1666666666666,
+            "AC1_TR": 240.27777777777777,
+            "AC2": 9.555555555555555,
+            "AC3": 191.72222222222223,
+            "AC4-8": 261.94444444444446,
+            "AC9A": 78.88888888888889,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 609.9892125134844,
+            "AC1_TR": 205.38834951456312,
+            "AC2": 30.28047464940669,
+            "AC3": 196.11111111111111,
+            "AC4-8": 337.2330097087379,
+            "AC99NSP": 0.5070118662351673,
+            "AC9A": 60.14563106796116,
+            "_n": 1854,
+            "_weight_sum": 1854.0,
+            "null_000": 0.3451995685005394
+          },
+          "n": 1854
+        },
+        "Y45-64": {
+          "G6_5": {
+            "band": "Y45-64",
+            "fold": "es",
+            "mae": 34.5182,
+            "mape": 20.6132,
+            "mape_max": 20.0,
+            "null_mae": 8.8238,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 34.52 >= raked-donor null 8.82",
+              "criterion 2: MAPE 20.61 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC0, AC4-8"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC0",
+                "AC4-8"
+              ],
+              "n_scored": 5,
+              "not_scored": [
+                "AC9A"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": true,
+                  "model_div": -30.121869721671487,
+                  "published_div": 8.611111111111086,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": false,
+                  "model_div": -47.568003231255034,
+                  "published_div": -3.3888888888888857,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "inverted": false,
+                  "model_div": 1.6814276272306676,
+                  "published_div": 3.0,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": false,
+                  "model_div": 73.36325916134243,
+                  "published_div": 3.6111111111111143,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 28.10035250055074,
+                  "published_div": -6.166666666666686,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "model_div": -19.303664536975838,
+                  "published_div": -0.44444444444444287,
+                  "reason": "published divergence -0.44 is inside the 2.0 min/day floor",
+                  "scored": false
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 16.666666666666668,
+            "mae_by_country": {
+              "es": 34.5181758096497,
+              "it": 37.74531835205992,
+              "uk": 38.00099140779906
+            },
+            "margin": 3.2271425424102205,
+            "nearest": "es",
+            "own": "es",
+            "pairwise": {
+              "es-it": 12.666666666666666,
+              "es-uk": 16.833333333333332,
+              "it-uk": 20.5
+            },
+            "passes": false,
+            "published_pair": "es-it",
+            "published_pair_distance": 12.666666666666666,
+            "reasons": [
+              "relative margin 0.2548 over the runner-up it does not exceed 0.50 (absolute margin 3.23, published es-it distance 12.67)"
+            ],
+            "relative_margin": 0.25477441124291217,
+            "relative_margin_min": 0.5,
+            "runner_up": "it",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 662.3888888888889,
+            "AC1_TR": 184.38888888888889,
+            "AC2": 2.0,
+            "AC3": 201.38888888888889,
+            "AC4-8": 314.1666666666667,
+            "AC9A": 68.44444444444444,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 632.2670191672174,
+            "AC1_TR": 136.82088565763385,
+            "AC2": 3.6814276272306676,
+            "AC3": 274.7521480502313,
+            "AC4-8": 342.2670191672174,
+            "AC99NSP": 0.991407799074686,
+            "AC9A": 49.140779907468605,
+            "_n": 1513,
+            "_weight_sum": 1513.0,
+            "null_000": 0.07931262392597488
+          },
+          "n": 1513
+        },
+        "Y_GE65": {
+          "G6_5": {
+            "band": "Y_GE65",
+            "fold": "es",
+            "mae": 44.3204,
+            "mape": 13.6797,
+            "mape_max": 20.0,
+            "null_mae": 11.8136,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 44.32 >= raked-donor null 11.81",
+              "criterion 3: divergence sign INVERTED on AC0, AC1_TR, AC3, AC4-8, AC9A"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC0",
+                "AC1_TR",
+                "AC3",
+                "AC4-8",
+                "AC9A"
+              ],
+              "n_scored": 5,
+              "not_scored": [
+                "AC2"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": true,
+                  "model_div": -10.10140237324697,
+                  "published_div": 27.888888888888914,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": true,
+                  "model_div": 94.87594390507012,
+                  "published_div": -11.444444444444443,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 1.4298813376483277,
+                  "published_div": 0.9444444444444444,
+                  "reason": "published divergence 0.94 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": true,
+                  "model_div": 4.521035598705481,
+                  "published_div": -13.333333333333343,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": -84.21736785329017,
+                  "published_div": 11.277777777777771,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": true,
+                  "model_div": 2.054476806903992,
+                  "published_div": -5.722222222222221,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 19.555555555555554,
+            "mae_by_country": {
+              "es": 44.32038834951455,
+              "it": 34.20226537216828,
+              "uk": 36.064724919093855
+            },
+            "margin": -10.118122977346275,
+            "nearest": "it",
+            "own": "es",
+            "pairwise": {
+              "es-it": 15.166666666666666,
+              "es-uk": 23.333333333333332,
+              "it-uk": 20.166666666666668
+            },
+            "passes": false,
+            "published_pair": "es-it",
+            "published_pair_distance": 15.166666666666666,
+            "reasons": [
+              "nearest published profile is it (MAE 34.20) not es (44.32)",
+              "relative margin -0.6671 over the runner-up it does not exceed 0.50 (absolute margin -10.12, published es-it distance 15.17)"
+            ],
+            "relative_margin": -0.6671289875173368,
+            "relative_margin_min": 0.5,
+            "runner_up": "it",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 724.1111111111111,
+            "AC1_TR": 16.444444444444443,
+            "AC2": 1.0555555555555556,
+            "AC3": 222.33333333333334,
+            "AC4-8": 419.72222222222223,
+            "AC9A": 46.72222222222222,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 714.0097087378641,
+            "AC1_TR": 111.32038834951456,
+            "AC2": 2.4854368932038833,
+            "AC3": 226.85436893203882,
+            "AC4-8": 335.50485436893206,
+            "AC99NSP": 0.6796116504854369,
+            "AC9A": 48.77669902912621,
+            "_n": 1030,
+            "_weight_sum": 1030.0,
+            "null_000": 0.36893203883495146
+          },
+          "n": 1030
+        }
+      },
+      "n": 5200,
+      "source": "Step7_docs/outputs_step7\\generated_leg5_es_constrained.jsonl"
+    },
+    "it": {
+      "bands": {
+        "Y25-44": {
+          "G6_5": {
+            "band": "Y25-44",
+            "fold": "it",
+            "mae": 62.2415,
+            "mape": 65.8336,
+            "mape_max": 20.0,
+            "null_mae": 19.5076,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 62.24 >= raked-donor null 19.51",
+              "criterion 2: MAPE 65.83 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC1_TR, AC3, AC4-8, AC9A"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC1_TR",
+                "AC3",
+                "AC4-8",
+                "AC9A"
+              ],
+              "n_scored": 5,
+              "not_scored": [
+                "AC2"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": false,
+                  "model_div": 7.857247744913025,
+                  "published_div": 9.833333333333371,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": true,
+                  "model_div": -140.04492692818684,
+                  "published_div": 22.72222222222223,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 27.41738339976225,
+                  "published_div": 1.4444444444444446,
+                  "reason": "published divergence 1.44 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": true,
+                  "model_div": 18.441402699111933,
+                  "published_div": -7.7222222222222285,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 102.09583245926859,
+                  "published_div": -33.94444444444446,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": true,
+                  "model_div": -9.417523250122372,
+                  "published_div": 11.111111111111114,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 13.555555555555555,
+            "mae_by_country": {
+              "es": 51.07478498007132,
+              "it": 62.24145164673799,
+              "uk": 56.58275645059788
+            },
+            "margin": -11.166666666666671,
+            "nearest": "es",
+            "own": "it",
+            "pairwise": {
+              "es-it": 11.833333333333334,
+              "es-uk": 13.166666666666666,
+              "it-uk": 15.666666666666666
+            },
+            "passes": false,
+            "published_pair": "es-it",
+            "published_pair_distance": 11.833333333333334,
+            "reasons": [
+              "nearest published profile is es (MAE 51.07) not it (62.24)",
+              "relative margin -0.9437 over the runner-up es does not exceed 0.50 (absolute margin -11.17, published es-it distance 11.83)"
+            ],
+            "relative_margin": -0.9436619718309863,
+            "relative_margin_min": 0.5,
+            "runner_up": "es",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 650.1666666666666,
+            "AC1_TR": 240.27777777777777,
+            "AC2": 9.555555555555555,
+            "AC3": 191.72222222222223,
+            "AC4-8": 261.94444444444446,
+            "AC9A": 78.88888888888889,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 658.0239144115797,
+            "AC1_TR": 100.23285084959093,
+            "AC2": 36.97293895531781,
+            "AC3": 210.16362492133416,
+            "AC4-8": 364.04027690371305,
+            "AC99NSP": 0.1510383889238515,
+            "AC9A": 69.47136563876651,
+            "_n": 1589,
+            "_weight_sum": 1589.0,
+            "null_000": 0.9439899307740718
+          },
+          "n": 1589
+        },
+        "Y45-64": {
+          "G6_5": {
+            "band": "Y45-64",
+            "fold": "it",
+            "mae": 33.9465,
+            "mape": 18.4959,
+            "mape_max": 20.0,
+            "null_mae": 13.8522,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 33.95 >= raked-donor null 13.85",
+              "criterion 3: divergence sign INVERTED on AC1_TR, AC4-8"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC1_TR",
+                "AC4-8"
+              ],
+              "n_scored": 4,
+              "not_scored": [
+                "AC0",
+                "AC2"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "model_div": -0.6274897633423961,
+                  "published_div": 1.6111111111110858,
+                  "reason": "published divergence 1.61 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": true,
+                  "model_div": -82.14654035672149,
+                  "published_div": 5.611111111111114,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 16.201124297314177,
+                  "published_div": -1.0,
+                  "reason": "published divergence -1.00 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": false,
+                  "model_div": 11.927788187938091,
+                  "published_div": 23.611111111111114,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 40.40547574432645,
+                  "published_div": -33.166666666666686,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": false,
+                  "model_div": 19.781664237629258,
+                  "published_div": 8.555555555555557,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 16.666666666666668,
+            "mae_by_country": {
+              "es": 29.38538413491568,
+              "it": 33.94649177597335,
+              "uk": 36.47251717676452
+            },
+            "margin": -4.561107641057671,
+            "nearest": "es",
+            "own": "it",
+            "pairwise": {
+              "es-it": 12.666666666666666,
+              "es-uk": 16.833333333333332,
+              "it-uk": 20.5
+            },
+            "passes": false,
+            "published_pair": "es-it",
+            "published_pair_distance": 12.666666666666666,
+            "reasons": [
+              "nearest published profile is es (MAE 29.39) not it (33.95)",
+              "relative margin -0.3601 over the runner-up es does not exceed 0.50 (absolute margin -4.56, published es-it distance 12.67)"
+            ],
+            "relative_margin": -0.3600874453466582,
+            "relative_margin_min": 0.5,
+            "runner_up": "es",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 662.3888888888889,
+            "AC1_TR": 184.38888888888889,
+            "AC2": 2.0,
+            "AC3": 201.38888888888889,
+            "AC4-8": 314.1666666666667,
+            "AC9A": 68.44444444444444,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 661.7613991255465,
+            "AC1_TR": 102.2423485321674,
+            "AC2": 18.201124297314177,
+            "AC3": 213.31667707682698,
+            "AC4-8": 354.57214241099314,
+            "AC99NSP": 0.905683947532792,
+            "AC9A": 88.2261086820737,
+            "_n": 1601,
+            "_weight_sum": 1601.0,
+            "null_000": 0.7745159275452842
+          },
+          "n": 1601
+        },
+        "Y_GE65": {
+          "G6_5": {
+            "band": "Y_GE65",
+            "fold": "it",
+            "mae": 35.8421,
+            "mape": 111.9264,
+            "mape_max": 20.0,
+            "null_mae": 15.507,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 35.84 >= raked-donor null 15.51",
+              "criterion 2: MAPE 111.93 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC0, AC1_TR, AC3, AC4-8"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC0",
+                "AC1_TR",
+                "AC3",
+                "AC4-8"
+              ],
+              "n_scored": 4,
+              "not_scored": [
+                "AC2",
+                "AC9A"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": true,
+                  "model_div": -42.78649950031797,
+                  "published_div": 20.888888888888914,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": true,
+                  "model_div": 50.45661851549015,
+                  "published_div": -5.444444444444443,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 3.1226946488598166,
+                  "published_div": -0.05555555555555558,
+                  "reason": "published divergence -0.06 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": true,
+                  "model_div": -26.45434723357863,
+                  "published_div": 18.666666666666657,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 13.801898791678013,
+                  "published_div": -26.72222222222223,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "model_div": 7.9302716453166155,
+                  "published_div": 1.2777777777777786,
+                  "reason": "published divergence 1.28 is inside the 2.0 min/day floor",
+                  "scored": false
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 19.555555555555554,
+            "mae_by_country": {
+              "es": 27.342055055873534,
+              "it": 35.84205505587354,
+              "uk": 17.78359225947124
+            },
+            "margin": -18.058462796402296,
+            "nearest": "uk",
+            "own": "it",
+            "pairwise": {
+              "es-it": 15.166666666666666,
+              "es-uk": 23.333333333333332,
+              "it-uk": 20.166666666666668
+            },
+            "passes": false,
+            "published_pair": "it-uk",
+            "published_pair_distance": 20.166666666666668,
+            "reasons": [
+              "nearest published profile is uk (MAE 17.78) not it (35.84)",
+              "relative margin -0.8955 over the runner-up uk does not exceed 0.50 (absolute margin -18.06, published it-uk distance 20.17)"
+            ],
+            "relative_margin": -0.8954609651108576,
+            "relative_margin_min": 0.5,
+            "runner_up": "uk",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 724.1111111111111,
+            "AC1_TR": 16.444444444444443,
+            "AC2": 1.0555555555555556,
+            "AC3": 222.33333333333334,
+            "AC4-8": 419.72222222222223,
+            "AC9A": 46.72222222222222,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 681.3246116107931,
+            "AC1_TR": 66.90106295993459,
+            "AC2": 4.178250204415372,
+            "AC3": 195.8789860997547,
+            "AC4-8": 433.52412101390024,
+            "AC99NSP": 0.6132461161079313,
+            "AC9A": 54.65249386753884,
+            "_n": 1223,
+            "_weight_sum": 1223.0,
+            "null_000": 2.927228127555192
+          },
+          "n": 1223
+        }
+      },
+      "n": 5200,
+      "source": "Step7_docs/outputs_step7\\generated_leg5_it_constrained.jsonl"
+    },
+    "uk": {
+      "bands": {
+        "Y25-44": {
+          "G6_5": {
+            "band": "Y25-44",
+            "fold": "uk",
+            "mae": 58.9046,
+            "mape": 50.0508,
+            "mape_max": 20.0,
+            "null_mae": 21.7916,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 58.90 >= raked-donor null 21.79",
+              "criterion 2: MAPE 50.05 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC0, AC3, AC4-8, AC9A"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC0",
+                "AC3",
+                "AC4-8",
+                "AC9A"
+              ],
+              "n_scored": 5,
+              "not_scored": [
+                "AC2"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": true,
+                  "model_div": 35.77661323468976,
+                  "published_div": -22.16666666666663,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": false,
+                  "model_div": -140.03733388135362,
+                  "published_div": -10.277777777777771,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 18.329771201534456,
+                  "published_div": 1.4444444444444446,
+                  "reason": "published divergence 1.44 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": true,
+                  "model_div": 15.614399232771603,
+                  "published_div": -6.7222222222222285,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 93.25900808329908,
+                  "published_div": -5.944444444444457,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": true,
+                  "model_div": -16.18851897520208,
+                  "published_div": 11.111111111111114,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 13.555555555555555,
+            "mae_by_country": {
+              "es": 52.07131113851214,
+              "it": 63.90464447184547,
+              "uk": 58.90464447184547
+            },
+            "margin": -6.833333333333336,
+            "nearest": "es",
+            "own": "uk",
+            "pairwise": {
+              "es-it": 11.833333333333334,
+              "es-uk": 13.166666666666666,
+              "it-uk": 15.666666666666666
+            },
+            "passes": false,
+            "published_pair": "es-uk",
+            "published_pair_distance": 13.166666666666666,
+            "reasons": [
+              "nearest published profile is es (MAE 52.07) not uk (58.90)",
+              "relative margin -0.5190 over the runner-up es does not exceed 0.50 (absolute margin -6.83, published es-uk distance 13.17)"
+            ],
+            "relative_margin": -0.5189873417721521,
+            "relative_margin_min": 0.5,
+            "runner_up": "es",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 650.1666666666666,
+            "AC1_TR": 240.27777777777777,
+            "AC2": 9.555555555555555,
+            "AC3": 191.72222222222223,
+            "AC4-8": 261.94444444444446,
+            "AC9A": 78.88888888888889,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 685.9432799013564,
+            "AC1_TR": 100.24044389642417,
+            "AC2": 27.885326757090013,
+            "AC3": 207.33662145499383,
+            "AC4-8": 355.20345252774354,
+            "AC99NSP": 0.27743526510480887,
+            "AC9A": 62.70036991368681,
+            "_n": 1622,
+            "_weight_sum": 1622.0,
+            "null_000": 0.4130702836004932
+          },
+          "n": 1622
+        },
+        "Y45-64": {
+          "G6_5": {
+            "band": "Y45-64",
+            "fold": "uk",
+            "mae": 60.4441,
+            "mape": 36.5677,
+            "mape_max": 20.0,
+            "null_mae": 19.2128,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 60.44 >= raked-donor null 19.21",
+              "criterion 2: MAPE 36.57 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC1_TR, AC3, AC4-8, AC9A"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC1_TR",
+                "AC3",
+                "AC4-8",
+                "AC9A"
+              ],
+              "n_scored": 5,
+              "not_scored": [
+                "AC2"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": false,
+                  "model_div": -0.6469534050179391,
+                  "published_div": -39.388888888888914,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": true,
+                  "model_div": -103.91146953405017,
+                  "published_div": 5.611111111111114,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 10.161290322580646,
+                  "published_div": 1.0,
+                  "reason": "published divergence 1.00 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": true,
+                  "model_div": 30.062724014336908,
+                  "published_div": -18.388888888888886,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": true,
+                  "model_div": 99.3752688172043,
+                  "published_div": -6.166666666666686,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": true,
+                  "model_div": -31.68960573476702,
+                  "published_div": 19.555555555555557,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 16.666666666666668,
+            "mae_by_country": {
+              "es": 46.696774193548386,
+              "it": 50.36344086021506,
+              "uk": 60.44408602150538
+            },
+            "margin": -13.747311827956992,
+            "nearest": "es",
+            "own": "uk",
+            "pairwise": {
+              "es-it": 12.666666666666666,
+              "es-uk": 16.833333333333332,
+              "it-uk": 20.5
+            },
+            "passes": false,
+            "published_pair": "es-uk",
+            "published_pair_distance": 16.833333333333332,
+            "reasons": [
+              "nearest published profile is es (MAE 46.70) not uk (60.44)",
+              "relative margin -0.8167 over the runner-up es does not exceed 0.50 (absolute margin -13.75, published es-uk distance 16.83)"
+            ],
+            "relative_margin": -0.8166719897796233,
+            "relative_margin_min": 0.5,
+            "runner_up": "es",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 662.3888888888889,
+            "AC1_TR": 184.38888888888889,
+            "AC2": 2.0,
+            "AC3": 201.38888888888889,
+            "AC4-8": 314.1666666666667,
+            "AC9A": 68.44444444444444,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 661.741935483871,
+            "AC1_TR": 80.47741935483872,
+            "AC2": 12.161290322580646,
+            "AC3": 231.4516129032258,
+            "AC4-8": 413.541935483871,
+            "AC99NSP": 3.335483870967742,
+            "AC9A": 36.75483870967742,
+            "_n": 1550,
+            "_weight_sum": 1550.0,
+            "null_000": 0.535483870967742
+          },
+          "n": 1550
+        },
+        "Y_GE65": {
+          "G6_5": {
+            "band": "Y_GE65",
+            "fold": "uk",
+            "mae": 21.2357,
+            "mape": 82.7544,
+            "mape_max": 20.0,
+            "null_mae": 18.5377,
+            "passes": false,
+            "reasons": [
+              "criterion 1: MAE 21.24 >= raked-donor null 18.54",
+              "criterion 2: MAPE 82.75 % > 20.0 %",
+              "criterion 3: divergence sign INVERTED on AC9A"
+            ],
+            "sign": {
+              "floor_min": 2.0,
+              "inverted": [
+                "AC9A"
+              ],
+              "n_scored": 5,
+              "not_scored": [
+                "AC2"
+              ],
+              "passes": false,
+              "rows": [
+                {
+                  "aggregate": "AC0",
+                  "inverted": false,
+                  "model_div": -36.23749024852327,
+                  "published_div": -49.111111111111086,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC1_TR",
+                  "inverted": false,
+                  "model_div": 77.97882536498385,
+                  "published_div": 3.555555555555557,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC2",
+                  "model_div": 3.578346149559791,
+                  "published_div": -0.05555555555555558,
+                  "reason": "published divergence -0.06 is inside the 2.0 min/day floor",
+                  "scored": false
+                },
+                {
+                  "aggregate": "AC3",
+                  "inverted": false,
+                  "model_div": -0.6583082581076667,
+                  "published_div": -4.333333333333343,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC4-8",
+                  "inverted": false,
+                  "model_div": -27.856625431851114,
+                  "published_div": -13.722222222222229,
+                  "scored": true
+                },
+                {
+                  "aggregate": "AC9A",
+                  "inverted": true,
+                  "model_div": -11.396244288420817,
+                  "published_div": 7.277777777777779,
+                  "scored": true
+                }
+              ]
+            }
+          },
+          "G6_9": {
+            "between_country_spread": 19.555555555555554,
+            "mae_by_country": {
+              "es": 35.61116683383483,
+              "it": 29.55282514209294,
+              "uk": 21.2357071213641
+            },
+            "margin": 8.317118020728838,
+            "nearest": "uk",
+            "own": "uk",
+            "pairwise": {
+              "es-it": 15.166666666666666,
+              "es-uk": 23.333333333333332,
+              "it-uk": 20.166666666666668
+            },
+            "passes": false,
+            "published_pair": "it-uk",
+            "published_pair_distance": 20.166666666666668,
+            "reasons": [
+              "relative margin 0.4124 over the runner-up it does not exceed 0.50 (absolute margin 8.32, published it-uk distance 20.17)"
+            ],
+            "relative_margin": 0.4124190754080415,
+            "relative_margin_min": 0.5,
+            "runner_up": "it",
+            "spread_basis_note": "`between_country_spread` is REPORTED ONLY. It was the pre-D-S6-10 bar and is kept so every reading before 2026-08-22 can be re-derived; it is NOT in the verdict."
+          },
+          "blocked": false,
+          "european_mean": {
+            "AC0": 724.1111111111111,
+            "AC1_TR": 16.444444444444443,
+            "AC2": 1.0555555555555556,
+            "AC3": 222.33333333333334,
+            "AC4-8": 419.72222222222223,
+            "AC9A": 46.72222222222222,
+            "_countries": [
+              "AT",
+              "BE",
+              "DE",
+              "EE",
+              "EL",
+              "ES",
+              "FI",
+              "FR",
+              "HU",
+              "IT",
+              "LU",
+              "NL",
+              "NO",
+              "PL",
+              "RO",
+              "RS",
+              "TR",
+              "UK"
+            ],
+            "_n_countries": 18
+          },
+          "model_budget": {
+            "AC0": 687.8736208625878,
+            "AC1_TR": 94.42326980942829,
+            "AC2": 4.633901705115346,
+            "AC3": 221.67502507522568,
+            "AC4-8": 391.8655967903711,
+            "AC99NSP": 4.122367101303912,
+            "AC9A": 35.325977933801404,
+            "_n": 997,
+            "_weight_sum": 997.0,
+            "null_000": 0.0802407221664995
+          },
+          "n": 997
+        }
+      },
+      "n": 5200,
+      "source": "Step7_docs/outputs_step7\\generated_leg5_uk_constrained.jsonl"
+    }
+  },
+  "leg": 5,
+  "perturbations": {
+    "invert_sign": {
+      "cells": {
+        "es/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -10.055555555555554,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC2",
+            "AC3"
+          ]
+        },
+        "es/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -1.977895277961352,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC2",
+            "AC3"
+          ]
+        },
+        "es/Y_GE65": {
+          "G6_5": false,
+          "G6_9": true,
+          "margin": 8.339985616684636,
+          "nearest": "es",
+          "sign_inverted": []
+        },
+        "it/Y25-44": {
+          "G6_5": false,
+          "G6_9": true,
+          "margin": 9.769806307251201,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC0"
+          ]
+        },
+        "it/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 3.0,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC3",
+            "AC9A"
+          ]
+        },
+        "it/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 4.193225523151927,
+          "nearest": "it",
+          "sign_inverted": []
+        },
+        "uk/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -5.0,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC1_TR"
+          ]
+        },
+        "uk/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -2.511947431302282,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC0"
+          ]
+        },
+        "uk/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -15.666666666666668,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8"
+          ]
+        }
+      },
+      "fell_G6_5": [],
+      "fell_G6_5_sign_arm_only": [],
+      "fell_G6_9": []
+    },
+    "neighbour_tables": {
+      "cells": {
+        "es/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -15.666666666666675,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "es/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -3.2271425424102205,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC0",
+            "AC4-8"
+          ]
+        },
+        "es/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 1.862459546925578,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "it/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 5.507971470526556,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "it/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 4.561107641057671,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC4-8"
+          ]
+        },
+        "it/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -9.558462796402292,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8"
+          ]
+        },
+        "uk/Y25-44": {
+          "G6_5": false,
+          "G6_9": true,
+          "margin": 6.833333333333336,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC0",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "uk/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 3.6666666666666714,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "uk/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -14.375459712470729,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC9A"
+          ]
+        }
+      },
+      "fell_G6_5": [],
+      "fell_G6_5_sign_arm_only": [],
+      "fell_G6_9": []
+    },
+    "null": {
+      "cells": {
+        "es/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -6.12962962962963,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "es/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 3.2271425424102205,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC0",
+            "AC4-8"
+          ]
+        },
+        "es/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -10.118122977346275,
+          "nearest": "it",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "it/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -11.166666666666671,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "it/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -4.561107641057671,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC4-8"
+          ]
+        },
+        "it/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -18.058462796402296,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8"
+          ]
+        },
+        "uk/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -6.833333333333336,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC0",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "uk/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -13.747311827956992,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "uk/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 8.317118020728838,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC9A"
+          ]
+        }
+      },
+      "fell_G6_5": [],
+      "fell_G6_5_sign_arm_only": [],
+      "fell_G6_9": []
+    },
+    "shift25": {
+      "cells": {
+        "es/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -4.5,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "es/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 0.3938092090768919,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC0",
+            "AC4-8"
+          ]
+        },
+        "es/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -21.2588996763754,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "it/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -15.666666666666671,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "it/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -6.500000000000007,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC4-8"
+          ]
+        },
+        "it/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -12.5,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC0",
+            "AC1_TR",
+            "AC4-8"
+          ]
+        },
+        "uk/Y25-44": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 2.463625154130682,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "uk/Y45-64": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": -0.8333333333333428,
+          "nearest": "es",
+          "sign_inverted": [
+            "AC1_TR",
+            "AC3",
+            "AC4-8",
+            "AC9A"
+          ]
+        },
+        "uk/Y_GE65": {
+          "G6_5": false,
+          "G6_9": false,
+          "margin": 6.166666666666664,
+          "nearest": "uk",
+          "sign_inverted": [
+            "AC3",
+            "AC9A"
+          ]
+        }
+      },
+      "fell_G6_5": [],
+      "fell_G6_5_sign_arm_only": [],
+      "fell_G6_9": []
+    }
+  },
+  "sign_floor_min": 2.0,
+  "wave": "2010"
+}

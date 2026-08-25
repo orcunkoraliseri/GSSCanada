@@ -41,9 +41,75 @@ ebnf = importlib.import_module("4thJ_step7_ebnf")
 
 PROVENANCE_LEG4 = "LEG-4 PILOT -- NOT REPORTABLE"
 
+# ---------------------------------------------------------------------------
+# `D-S6-15` item 1 (a), RULED 2026-08-24 -- `FINDING 102`.
+#
+# 🔴 Before this block, `--leg 5` renamed the output file and STRIPPED the
+# not-reportable stamp, and did NOTHING ELSE. The adapter and the backbone came
+# from `generation_config_<fold>.json` alone, which is a FROZEN STEP 5 artefact
+# naming the Leg-4 1.48 B pilot. A `LEG=5` submission would therefore have
+# generated from the pilot, filed it as `generated_leg5_*` with the warning
+# removed, and handed it to every Step 6 and Step 7 gate as the paper result --
+# `FINDING 56`'s shape exactly, a default covering for a selector never wired.
+#
+# The leg now SELECTS the model. The Step 5 config is left untouched on disk:
+# these are the only three fields overridden, the Leg-4 values are kept in the
+# summary beside them, and `--leg 4` reaches none of this code.
+# ---------------------------------------------------------------------------
+LEG5_ADAPTER_FMT = "/speed-scratch/o_iseri/4J_step4/runs_leg5/leg5_primary_fold_%s/adapter"
+LEG5_BASE_REPO = "allenai/Olmo-3-1025-7B"
+LEG5_BASE_REVISION = "a81bae42db3975be1671e27b9c9a56da1a9f980f"
+
+# `D-S6-15` item 2 (a), same ruling. The temperature is NOT re-measured for
+# Leg 5; it is carried over and the transfer is DECLARED -- in the records and
+# the summary, not only in the methods, so a number lifted out of the artefact
+# carries its own basis. 🔴 `H_real` is a property of the CORPUS; the
+# temperature that reproduces it is a property of the MODEL, and it was measured
+# on `OLMo-2-0425-1B` -- 4.7x smaller than the backbone it is applied to here.
+TEMPERATURE_PROVENANCE_LEG5 = (
+    "entropy-matched on the Leg-4 1.48B pilot (allenai/OLMo-2-0425-1B) in Step 5 "
+    "and TRANSFERRED UNREVALIDATED to the 7B Leg-5 backbone; D-S6-15 item 2 (a)")
+
 
 class NotRun(RuntimeError):
     """The run could not be performed. Distinct from the run producing bad output."""
+
+
+def resolve_leg(cfg, leg, fold):
+    """Point `cfg` at the leg's own model. Leg 4 is untouched; leg 5 REFUSES.
+
+    🔴 The refusal is a bare `SystemExit`, not `NotRun`. `NotRun` exits 2 and is
+    a legitimate outcome the launcher reports as "NOT RUN"; a missing Leg-5
+    adapter must never be able to read as anything other than a stop, and must
+    NEVER fall back to whatever the config happens to name.
+    """
+    if leg != 5:
+        return cfg
+    adapter = LEG5_ADAPTER_FMT % fold
+    if not os.path.isdir(adapter):
+        print("\n" + "=" * 78)
+        print("REFUSED -- leg 5 was requested and there is no Leg-5 adapter at")
+        print("  %s" % adapter)
+        print("Generating from the Leg-4 pilot and filing it as leg 5 is the defect")
+        print("this refusal exists to prevent (FINDING 102). Nothing was generated.")
+        print("=" * 78)
+        raise SystemExit(3)
+    cfg = dict(cfg)
+    cfg["_leg4_adapter"] = cfg["adapter"]
+    cfg["_leg4_base_repo"] = cfg["base_repo"]
+    cfg["_leg4_base_revision"] = cfg.get("base_revision")
+    cfg["adapter"] = adapter
+    cfg["base_repo"] = LEG5_BASE_REPO
+    cfg["base_revision"] = LEG5_BASE_REVISION
+    cfg["temperature_provenance"] = TEMPERATURE_PROVENANCE_LEG5
+    print("\n🔴 LEG 5 -- the model is selected by the LEG, not by the Step 5 config.")
+    print("   adapter  %s" % cfg["_leg4_adapter"])
+    print("        ->  %s" % cfg["adapter"])
+    print("   base     %s @ %s" % (cfg["_leg4_base_repo"], cfg["_leg4_base_revision"]))
+    print("        ->  %s @ %s" % (cfg["base_repo"], cfg["base_revision"]))
+    print("   temperature %s CARRIED OVER UNREVALIDATED: %s\n"
+          % (cfg["temperature"], TEMPERATURE_PROVENANCE_LEG5))
+    return cfg
 
 
 def describe_vllm(vllm):
@@ -102,7 +168,9 @@ def load_prefixes(path, n, seed):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--fold", required=True, choices=("es", "uk", "it"))
-    ap.add_argument("--leg", type=int, default=4)
+    # 🔴 `choices` since `D-S6-15`: any other value used to take the Leg-4 config
+    # AND skip the Leg-4 stamp, which is the worst of both.
+    ap.add_argument("--leg", type=int, default=4, choices=(4, 5))
     ap.add_argument("--n", type=int, default=600)
     ap.add_argument("--no-grammar", action="store_true",
                     help="work item 7.5 control: same everything, mask OFF")
@@ -128,6 +196,7 @@ def main(argv=None):
         cfg = json.load(fh)
     if cfg["fold"] != a.fold:
         raise NotRun("config is for fold %r, not %r" % (cfg["fold"], a.fold))
+    cfg = resolve_leg(cfg, a.leg, a.fold)
 
     mode = "UNCONSTRAINED (7.5 control)" if a.no_grammar else "CONSTRAINED"
     print("=" * 78)
@@ -235,6 +304,8 @@ def main(argv=None):
                         "n_out_tokens": len(out.outputs[0].token_ids)})
             if a.leg == 4:
                 rec["provenance"] = PROVENANCE_LEG4
+            else:
+                rec["temperature_provenance"] = TEMPERATURE_PROVENANCE_LEG5
             fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
     print("\nvalid by the oracle : %d / %d (%.2f %%)"
@@ -273,6 +344,10 @@ def main(argv=None):
     }
     if a.leg == 4:
         summary["provenance"] = PROVENANCE_LEG4
+    else:
+        summary["temperature_provenance"] = TEMPERATURE_PROVENANCE_LEG5
+        summary["leg4_adapter_not_used"] = cfg["_leg4_adapter"]
+        summary["leg4_base_repo_not_used"] = cfg["_leg4_base_repo"]
     spath = os.path.join(a.out, "generated_leg%d_%s_%s_summary.json" % (a.leg, a.fold, tag))
     with open(spath, "w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=2, sort_keys=True)

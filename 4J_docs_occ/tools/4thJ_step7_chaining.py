@@ -292,6 +292,8 @@ def main(argv=None):
     ap.add_argument("--folds", default="es,uk,it")
     ap.add_argument("--years", default="es:2010,uk:2014,it:2013")
     ap.add_argument("--arm", default="constrained")
+    ap.add_argument("--leg", type=int, default=4,
+                    help="which generation leg the pool comes from (4 rehearsal, 5 reported)")
     ap.add_argument("--households", type=int, default=100)
     ap.add_argument("--timestep", type=int, default=60)
     ap.add_argument("--seeds", default=",".join(str(s) for s in DEFAULT_SEEDS))
@@ -332,7 +334,8 @@ def main(argv=None):
         fold = fold.strip()
         year = int(years[fold])
         cal = S.year_day_types(year)
-        pool_path = os.path.join(a.gen, "generated_leg4_%s_%s.jsonl" % (fold, a.arm))
+        pool_path = os.path.join(a.gen, "generated_leg%d_%s_%s.jsonl"
+                                 % (a.leg, fold, a.arm))
         pools, pool_meta = S.load_pool(pool_path, a.step2, bitpos)
         hh_rng = random.Random(1)
         households = S.load_households(a.corpus, fold, a.households, hh_rng)

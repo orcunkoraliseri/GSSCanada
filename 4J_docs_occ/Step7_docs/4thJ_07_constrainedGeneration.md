@@ -11,14 +11,14 @@
 and had been false for eight days** — the progress log below carries fifteen entries of built and run
 work. Corrected rather than quietly replaced.
 
-| work item | state as of 2026-08-22 (night) |
+| work item | state as of 2026-08-24 (night) |
 |---|---|
 | **7.1** compile the grammar | 🟢 **BUILT**, selftest 51/51, `.ebnf` md5 `bb4208dd99794c3b52bdead0608d7fad`, `G7.10` PASS on 10,000 strings under the 34-value `COP` alphabet |
 | **7.2** throughput comparison | 🟢 **RUN** — job `1286208` COMPLETED 00:06:55. Diaries/second measured (**OLMo 0.835x Qwen**, not the predicted large penalty). 🔴 `G7.12` STILL FAILS: the KV-memory half is 3.05x the physical card (`FINDING 97`) |
-| **7.3** generate | 🟡 Leg-4 rehearsal done on all three folds, both arms. **Leg 5 is job `1286209`, PENDING** |
+| **7.3** generate | 🟢 **DONE, BOTH LEGS, BOTH ARMS.** Leg-5 landed 2026-08-24 as jobs `1286835`-`1286861`, 27/27 exit 0:0, `5,200` records per fold per arm, all on disk. The Leg-5 battery is scored: **20 PASS / 7 FAIL** over the nine scored gates, against Leg-4's 12/15 |
 | **7.4** three-model firing-rate report | 🟡 fine-tuned constrained and unconstrained measured; the **untuned-base arm needs a GPU** |
-| **7.5** rejection-sampled control | 🔴 sized (≈22,500 / 8,800 / 15,700 draws) and deliberately **not submitted** while `1286209` is PENDING on `AssocGrpGRES` |
-| **7.6** chaining rule (decision 14) | 🟡 DoD items **3 and 4 done** on CPU; items 1, 2, 5 and `G7.18`'s verdict need EnergyPlus. **DECISION 14 IS OPEN** |
+| **7.5** rejection-sampled control | 🔴 **RE-SIZED 2026-08-24 on measured Leg-5 yield, and the requirement went UP, not down** (`FINDING 106`): ≈**75,531 / 16,796 / 48,809** draws, of which `5,200` per fold are already generated — **125,536 still owed**. The old ≈22,500 / 8,800 / 15,700 matched a **600**-diary constrained batch; Leg-5's is **5,200** |
+| **7.6** chaining rule (decision 14) | 🟡 DoD items **3 and 4 done** on CPU and **re-run at Leg-5 N 2026-08-24** — the back-off ladder improved as hoped but **6 of 27 seed-noise verdicts changed** (`FINDING 105`). Items 1, 2, 5 and `G7.18`'s verdict need EnergyPlus. **DECISION 14 IS OPEN** |
 | **7.7** emit schedules | 🟢 **EMITTER BUILT** (selftest 52/52) and `G7.13`–`G7.17` scored 5 PASS / 0 FAIL on all three folds, all five seen falling. 🔴 The **campaign** is not run: every diary is `LEG-4 PILOT -- NOT REPORTABLE` |
 
 🔴 **Everything Leg-4 is from `allenai/OLMo-2-0425-1B`, not the reported `Olmo-3-1025-7B`. No Leg-4
@@ -1670,3 +1670,141 @@ ruling about **order**, not a green light: `G7.18` is blocked behind an IDF that
 five open §6 geometry/zoning decisions, and the CPU pre-screen must be **re-run at Leg-5's
 `N >= 5,200`** before any of its verdicts is written into the paper. DoD item 6 therefore cannot close
 inside Step 7.
+
+---
+
+### 2026-08-24 (night) — 🟢 **WORK ITEM 7.3 IS CLOSED ON LEG 5 AND ITS BATTERY IS SCORED: 20 PASS / 7 FAIL, AGAINST LEG-4's 12 / 15. 🔴 AND THE TWO CPU DEBTS THIS DOCUMENT OWED ITSELF WERE PAID — BOTH RETURNED SOMETHING THE LEG-4 NUMBERS DID NOT PREDICT.**
+
+Three CPU tasks, no job submitted, nothing on Speed. The GPU queue was full with the `D-S6-14`
+permutation controls; none of this waited on it.
+
+#### ⚪ First, a bookkeeping fact that had been true for six hours without being written down
+
+The Leg-5 generation campaign — jobs `1286835`–`1286861`, 27 batches, all COMPLETED exit `0:0` —
+was recorded in the **Step 6** work item `6.3`, and **this document never received the entry**. Its
+status table went on saying *"Leg 5 is job `1286209`, PENDING"* while 54 files sat in
+`outputs_step7/`: `generated_leg5_{es,uk,it}_{constrained,nogrammar,g66*,g67t0*}.jsonl`, **5,200
+records each**, verified by line count. The work was done; the record was not. Fixed above.
+
+#### 🟢 `tools/4thJ_gates_step7.py --leg 5` — the battery, on the reported model
+
+| gate | `es` | `uk` | `it` | reading |
+|---|---|---|---|---|
+| `G7.1` `G7.2` | PASS | PASS | PASS | **ENFORCEMENT CONFIRMATIONS, excluded from the board** — they cannot fall while the mask is on |
+| `G7.3` | 58.85 % | 50.71 % | 69.73 % | **REPORTED RATE** (`D-S7-2` (a)), against corpus 43.18 / 24.64 / 23.63 |
+| `G7.4` | PASS | PASS | PASS | 115,809 / 118,990 / 103,230 episodes, **0 records violating** |
+| `G7.5` | **FAIL** | **FAIL** | **FAIL** | 358 / 1,610 / 554 of 5,200 = **6.88 / 30.96 / 10.65 %** vs `≥ 99.90 %` |
+| `G7.6` | PASS | PASS | PASS | |
+| `G7.7`/`G7.8` | PASS | **FAIL** | PASS | pop firing 93.12 / 69.04 / 89.35 %; `uk` falls on `V7.a` — only **9** strata carry ≥ 100 records, and 10 are required |
+| `G7.9` | **FAIL** | **FAIL** | **FAIL** | worst category off by −103.65 / −25.39 / −52.64 min/day against a ±5.0 band |
+| `G7.10` `G7.11` `G7.12` `G7.13` | PASS | PASS | PASS | |
+
+**BOARD over scored gates: 20 PASS / 7 FAIL.** Leg 4 was **12 PASS / 15 FAIL**. Written to
+`outputs_step7/gates_step7_leg5_baseline.json`.
+
+🟢 **Two Leg-4 failures are gone for reasons already on the record, not for unexplained ones.**
+`G7.4` failed on all three Leg-4 folds because every rehearsal batch was generated **before**
+`D-S7-5` (1) removed the 31 impossible flag sets from the `COP` alphabet; the module says so in its
+own header. `G7.12` failed on the Leg-4 throughput artefact (`FINDING 97`). Both now pass on text
+generated after the ruling. **Nothing was re-scored to make them pass and no threshold moved.**
+
+🔴 **`G7.5` and `G7.9` fail on every fold, and the two failures are the same failure.** `G7.9`'s
+control **is** `G7.5`'s valid subset. With 358 / 1,610 / 554 valid diaries standing in for a
+5,200-diary constrained batch, the module prints the disclaimer itself: *"this verdict is about the
+CONTROL, not about the mask."* That is not a defence of the mask — it is a statement that **`G7.9`
+has not yet been given the sample it was registered to need**, which is item 7.5, below.
+
+#### 🔴 `FINDING 105` — THE PRE-SCREEN'S SEED-NOISE VERDICTS DID **NOT** SURVIVE THE BIGGER POOL. SIX OF TWENTY-SEVEN CHANGED, IN BOTH DIRECTIONS.
+
+This document wrote, on 2026-08-22, that the vocabulary ordering would survive a bigger pool but
+*"the seed-noise verdicts might not, because a larger pool narrows the within-rule spread and could
+turn a coincidence metric from 'tells us nothing' into a real effect"*, and it directed that the
+pre-screen be **re-run at Leg-5's `N ≥ 5,200`** rather than assumed. It has been. It was right to
+worry.
+
+`tools/4thJ_step7_chaining.py` hard-coded `generated_leg4_` at line 335. A `--leg` argument was
+added — **+4 / −1 lines, purely additive, default `4` unchanged**, backup `.bak_leg5` verified
+non-empty first, and the selftest re-run at **40 ok / 0 FAILED** before the tool was pointed at
+anything. Six rules × five seeds × three folds, 100 households, 1m23s on the author's laptop.
+
+| fold | metric | Leg 4 | Leg 5 | |
+|---|---|---|---|---|
+| `es` | `max_ramp` | seed-noise `0.79` | **RULE>NOISE `1.30`** | 🔴 |
+| `uk` | `max_ramp` | seed-noise `0.84` | **RULE>NOISE `2.30`** | 🔴 |
+| `es` | `peak_aggregate` | DEGENERATE | seed-noise `0.40` | ⚪ |
+| `es` | `p99_aggregate` | DEGENERATE | seed-noise `0.40` | ⚪ |
+| `es` | `vocab_day_mean` | RULE>NOISE `1.02` | seed-noise `0.18` | ⚪ |
+| `it` | `trough_aggregate` | RULE>NOISE `1.01` | seed-noise `0.82` | ⚪ |
+
+🔴 **The one that matters is `max_ramp`, and it matters because of what `G7.18` is defined on.**
+`max_ramp` was RULE>NOISE on `it` alone at Leg 4; **it is now RULE>NOISE on all three folds**, at
+ratios `1.30` / `2.30` / `1.92`. Of everything the CPU pre-screen computes, the ramp is the closest
+proxy for the quantity decision 14 actually turns on — a rate of change of demand. The Leg-4 reading
+that the coincidence metrics *"tell us nothing about chaining"* was **partly an artefact of a
+600-diary pool**, and any sentence in this project that leans on it must now be read at Leg-5 N.
+
+⚪ **The two that moved the other way were marginal to begin with** — `es vocab_day_mean` at `1.02`
+and `it trough_aggregate` at `1.01` were both a hair over the line, and both fell back under it. A
+verdict decided at the third decimal place was never a verdict.
+
+⚪ **What did not change: the ordering, and the ruling.** `vocab_month_mean` and
+`jaccard_adjacent_same_day_type` stay RULE>NOISE on all three folds at ratios `16.87`–`27.49` and
+`33.88`–`79.86`, `annual_mean` and `mean_pair_corr` stay seed-noise everywhere, and `it`'s
+`peak_aggregate`/`p99_aggregate` are still degenerate constants at `1.000000`. **`D-S7-6` and the
+2026-08-22 ruling on decision 14 are untouched** — the pre-screen was already declared a screen and
+not the decision, and decision 14 still closes in Step 8 on a watt. `FINDING 105` does not reopen
+it; it removes an argument that was being made *in support* of it.
+
+Artefacts: `outputs_step7/chaining_prescreen_leg5.json` and `..._leg5_stdout.txt`. The Leg-4 pair is
+kept, not overwritten.
+
+#### 🟢 The back-off ladder was re-measured, not assumed — and it improved by roughly a factor of two
+
+The same instruction said to *"re-measure the back-off ladder rather than assuming it improved."*
+Share of dwelling-days served at the person's **own** stratum, min–max over all 30 cells per fold:
+
+| fold | Leg 4 | Leg 5 |
+|---|---|---|
+| `es` | 0.4853 – 0.5811 | **0.7712 – 0.8065** |
+| `uk` | 0.4685 – 0.6262 | **0.8352 – 0.8768** |
+| `it` | 0.4497 – 0.6352 | **0.8664 – 0.9174** |
+
+Leg 4 served roughly **four days in ten** from a stratum coarser than the person's own. Leg 5 serves
+between **one and two in ten**. The improvement is real and it is monotone across folds — but note
+it does **not** run in the same direction as the country spread everything else in Step 7 shows:
+`it` has the *best* ladder and the *worst* `G7.3` divergence.
+
+#### 🔴 `FINDING 106` — ITEM 7.5's REGISTERED SIZING WAS COMPUTED AGAINST A 600-DIARY BATCH. THE REPORTED BATCH IS 5,200, SO THE REQUIREMENT WENT **UP** BY ROUGHLY SIX TIMES.
+
+The status table has carried `≈22,500 / 8,800 / 15,700 draws` since 2026-08-22, and the reason given
+for not submitting it — *"deliberately not submitted while `1286209` is PENDING on
+`AssocGrpGRES`"* — is now obsolete, because that job is finished. It would be easy to read the
+higher Leg-5 validity (6.88 / 30.96 / 10.65 % against Leg-4's 2.67 / 6.83 / 3.83 %) and conclude the
+control got cheaper. **It did not.** The old figures were sized to yield **600** valid diaries.
+`G7.9` compares the control's marginals against the **constrained batch**, and the author mandated
+`N ≥ 5,200` for Leg 5.
+
+| fold | Leg-5 yield | draws to match **5,200** | already on disk | **still owed** |
+|---|---|---|---|---|
+| `es` | 6.88 % | 75,531 | 5,200 | **70,331** |
+| `uk` | 30.96 % | 16,796 | 5,200 | **11,596** |
+| `it` | 10.65 % | 48,809 | 5,200 | **43,609** |
+| | | | | **125,536 total** |
+
+The battery prints these three numbers itself, per fold, as part of `G7.9`'s reason string — they
+are not this entry's arithmetic. ⚪ Against the *old* 600-diary target the picture is the opposite
+and `uk` would already clear it (5,200 draws yield 1,610), but **that target is not the one `G7.9`
+is registered on** and reporting it as though it were would be the same class of error as
+`FINDING 47`.
+
+🔴 **This corrects a statement of mine made to the author earlier the same evening**, that the real
+requirement was "far smaller". It is smaller against a target `G7.9` does not use and about six
+times larger against the one it does. Recorded rather than edited out.
+
+#### What this entry does **not** settle
+
+* **`G7.5` and `G7.9` ship FAIL on all three folds** and no threshold was touched.
+* **7.4's untuned-base arm still needs a GPU**, so the three-model firing-rate report is still two
+  arms of three.
+* **7.7's campaign is still unrun** — the schedule gates are scored on Leg-4 pilot diaries.
+* **`G7.18` is still not evaluated** and **decision 14 is still open.** Nothing above is a watt.

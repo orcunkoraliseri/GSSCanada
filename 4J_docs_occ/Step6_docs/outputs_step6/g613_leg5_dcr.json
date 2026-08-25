@@ -1,0 +1,217 @@
+{
+  "board": {
+    "FAIL": 1,
+    "PASS": 2
+  },
+  "folds": {
+    "es": {
+      "n_synthetic": 5200,
+      "passes": true,
+      "reasons": [],
+      "reference_sizes": {
+        "country": 19140,
+        "test": 5520,
+        "train": 48594
+      },
+      "sets": {
+        "country": {
+          "dcr_mean": 0.4389049145299157,
+          "dcr_median": 0.4444444444444444,
+          "dcr_min": 0.06944444444444445,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 19140,
+          "nndr_median": 0.976190476190476,
+          "share_nndr_below": 0.0
+        },
+        "test": {
+          "dcr_mean": 0.45120993589743796,
+          "dcr_median": 0.4583333333333333,
+          "dcr_min": 0.10416666666666667,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 5520,
+          "nndr_median": 0.9733333333333332,
+          "share_nndr_below": 0.0
+        },
+        "train": {
+          "dcr_mean": 0.4156837606837582,
+          "dcr_median": 0.4236111111111111,
+          "dcr_min": 0.10416666666666667,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 48594,
+          "nndr_median": 0.972972972972973,
+          "share_nndr_below": 0.0
+        }
+      },
+      "train_vs_test": {
+        "alpha": 0.01,
+        "raw": {
+          "is_verdict": false,
+          "median_difference_slots": -4.999999999999998,
+          "median_test": 0.4583333333333333,
+          "median_train": 0.4236111111111111,
+          "p": 7.897566186772171e-61,
+          "pool_ratio": 8.803260869565218,
+          "u": 11001679.0,
+          "z": -16.453640182519283
+        },
+        "size_matched": {
+          "ci95": [
+            0.4513888888888889,
+            0.4652777777777778
+          ],
+          "is_verdict": true,
+          "median_test": 0.4583333333333333,
+          "median_train_centre": 0.4583333333333333,
+          "n": 5520,
+          "n_draws": 200,
+          "seed": 20260822,
+          "test_above_interval": false
+        }
+      }
+    },
+    "it": {
+      "n_synthetic": 5200,
+      "passes": true,
+      "reasons": [],
+      "reference_sizes": {
+        "country": 38260,
+        "test": 3434,
+        "train": 31560
+      },
+      "sets": {
+        "country": {
+          "dcr_mean": 0.4312847222222267,
+          "dcr_median": 0.4444444444444444,
+          "dcr_min": 0.1111111111111111,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 38260,
+          "nndr_median": 0.9777777777777779,
+          "share_nndr_below": 0.0
+        },
+        "test": {
+          "dcr_mean": 0.4615291132478605,
+          "dcr_median": 0.4652777777777778,
+          "dcr_min": 0.1527777777777778,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 3434,
+          "nndr_median": 0.9743589743589745,
+          "share_nndr_below": 0.0
+        },
+        "train": {
+          "dcr_mean": 0.4142307692307726,
+          "dcr_median": 0.4166666666666667,
+          "dcr_min": 0.125,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 31560,
+          "nndr_median": 0.9692307692307692,
+          "share_nndr_below": 0.0
+        }
+      },
+      "train_vs_test": {
+        "alpha": 0.01,
+        "raw": {
+          "is_verdict": false,
+          "median_difference_slots": -6.999999999999999,
+          "median_test": 0.4652777777777778,
+          "median_train": 0.4166666666666667,
+          "p": 4.647715084273669e-176,
+          "pool_ratio": 9.190448456610367,
+          "u": 9190880.0,
+          "z": -28.289541228938536
+        },
+        "size_matched": {
+          "ci95": [
+            0.4444444444444444,
+            0.4722222222222222
+          ],
+          "is_verdict": true,
+          "median_test": 0.4652777777777778,
+          "median_train_centre": 0.4583333333333333,
+          "n": 3434,
+          "n_draws": 200,
+          "seed": 20260822,
+          "test_above_interval": false
+        }
+      }
+    },
+    "uk": {
+      "n_synthetic": 5200,
+      "passes": false,
+      "reasons": [
+        "SIZE-MATCHED: median DCR to TEST (0.4236) lies ABOVE the 95 % interval of median DCR to a train subsample of the same size [0.4028, 0.4167] -- the model is closer to what it was trained on than to unseen diaries of the same distribution"
+      ],
+      "reference_sizes": {
+        "country": 15854,
+        "test": 5702,
+        "train": 51698
+      },
+      "sets": {
+        "country": {
+          "dcr_mean": 0.45125534188034283,
+          "dcr_median": 0.4513888888888889,
+          "dcr_min": 0.1597222222222222,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 15854,
+          "nndr_median": 0.9775280898876404,
+          "share_nndr_below": 0.0
+        },
+        "test": {
+          "dcr_mean": 0.4163074252136739,
+          "dcr_median": 0.4236111111111111,
+          "dcr_min": 0.1736111111111111,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 5702,
+          "nndr_median": 0.9696969696969697,
+          "share_nndr_below": 0.0
+        },
+        "train": {
+          "dcr_mean": 0.3757545405982877,
+          "dcr_median": 0.375,
+          "dcr_min": 0.13194444444444445,
+          "n_exact_matches": 0,
+          "n_nndr_below": 0,
+          "n_reference": 51698,
+          "nndr_median": 0.9733333333333332,
+          "share_nndr_below": 0.0
+        }
+      },
+      "train_vs_test": {
+        "alpha": 0.01,
+        "raw": {
+          "is_verdict": false,
+          "median_difference_slots": -6.999999999999999,
+          "median_test": 0.4236111111111111,
+          "median_train": 0.375,
+          "p": 5.246690160223501e-117,
+          "pool_ratio": 9.066643283058577,
+          "u": 10000813.5,
+          "z": -22.994865244683716
+        },
+        "size_matched": {
+          "ci95": [
+            0.4027777777777778,
+            0.4166666666666667
+          ],
+          "is_verdict": true,
+          "median_test": 0.4236111111111111,
+          "median_train_centre": 0.4097222222222222,
+          "n": 5702,
+          "n_draws": 200,
+          "seed": 20260822,
+          "test_above_interval": true
+        }
+      }
+    }
+  },
+  "leg": 5,
+  "n_corpus": 73254,
+  "n_slots": 144
+}

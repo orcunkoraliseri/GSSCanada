@@ -35,8 +35,48 @@
     "train_ppl": 1.7189361365269418
   },
   "control_random_label_permutation": {
-    "note": "NOT RUN. The random-label-permutation adapter sets the floor for pure sequence memorisation and requires its own training run. Its absence is a NAMED GAP: the audit has two of its three registered controls, and privacy_audit.md must say so before any release decision.",
-    "present": false
+    "adapter": "/speed-scratch/o_iseri/4J_step4/runs_permuted_control/leg4_permuted_fold_it/adapter",
+    "alarms": [
+      "G6.10: the reported adapter's AUC 0.5539 is at or above the memorisation ceiling 0.5488",
+      "G6.11: the reported adapter's AUC 0.5274 is at or above the memorisation ceiling 0.5147"
+    ],
+    "ceiling_G6_10": {
+      "achieved_fpr": 0.0005,
+      "auc": 0.54877925,
+      "auc_max": 0.65,
+      "passes": true,
+      "reasons": [],
+      "resolution_note": null,
+      "tpr_at_fpr": 0.003,
+      "tpr_max": 0.05
+    },
+    "ceiling_G6_10_auc": 0.54877925,
+    "ceiling_G6_11": {
+      "auc": 0.5146795,
+      "auc_max": 0.75,
+      "passes": true,
+      "reasons": []
+    },
+    "ceiling_G6_11_auc": 0.5146795,
+    "ceiling_perplexity_gap": {
+      "gap": 0.016780538514269222,
+      "gap_max": 0.05,
+      "passes": true,
+      "test_ppl": 1.7644304027469366,
+      "train_ppl": 1.735310950507709
+    },
+    "corpus": "/speed-scratch/o_iseri/4J_step4/shards_permuted_control/corpus_permuted_control.jsonl",
+    "decision": "D-S6-14 (a) + (ii)/(iii), author 2026-08-22",
+    "headroom_G6_10": -0.00510849999999996,
+    "headroom_G6_11": -0.01271600000000006,
+    "limitation": "The permutation is within (country, split), so P(body | country) survives it -- five of the six prefix fields are de-associated, not all six. Forced by LOCO fold isolation; see 4thJ_step4_shards.py.",
+    "measured_G6_10_auc": 0.55388775,
+    "measured_G6_11_auc": 0.5273955,
+    "n_per_class": 2000,
+    "note": "The CEILING, not a bar. `G6.10 <= 0.65` and `G6.11 <= 0.75` are unchanged and are the only thresholds that decide anything. This number says what pure rote memorisation scores at this model size, so a passing AUC can be called low against something rather than against nothing. Its own verdict fields are what the SAME scoring code returns for it and are NOT a pass/fail on the control.",
+    "permutation_seed": 614614,
+    "present": true,
+    "seed": 20260822
   },
   "control_untuned_base_auc": 0.487405,
   "coverage_clause": {

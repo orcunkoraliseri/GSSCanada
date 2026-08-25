@@ -1,6 +1,614 @@
-#### Last updated: **2026-08-24 — 🟢 THE NINE FINISHED JOBS ARE READ. `G4.3` IS SETTLED AND IT IS THE BAR: the base model with NO adapter scores `0.0001`-`0.0011` nats/token, inside the pre-declared `0.00`-`0.02` band, so the fine-tune bought the conditioning (x60-x920) and the gap to `0.15` is the threshold's. 🔴 `G4.6`'s CONSEQUENCE IS LARGE AND MY PREDICTION WAS WRONG: parity is 4-19 %, not "high but not perfect" — the merged artefact does NOT generate the same diaries. `G4.7` IS REPAIRED AND RE-SCORED ON `es` (600/600, seen falling). 🔴 `G4.1` STILL UNEXPLAINED, but a SECOND failure mode is now visible. Thresholds FROZEN; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified intact by the job itself.**
+#### Last updated: **2026-08-24 (night, late) — 🟢 `STEP 7.3` IS CLOSED ON LEG 5 AND ITS BATTERY IS SCORED: **20 PASS / 7 FAIL** over the nine scored gates, against Leg-4's 12 / 15. The Leg-5 campaign (`1286835`-`1286861`, 27/27 exit `0:0`, 5,200 records per fold per arm) had been on disk since the afternoon booked under **Step 6.3**, and Step 7's own document never received the entry. 🟢 **The two CPU debts Step 7 owed itself were paid, and both returned something Leg 4 did not predict: `FINDING 105` — six of twenty-seven pre-screen verdicts CHANGED at Leg-5 N, and `max_ramp` went RULE>NOISE on all three folds (was `it` alone), so the "coincidence metrics tell us nothing" reading was partly a 600-diary artefact; and `FINDING 106` — item 7.5's registered sizing was computed against a **600**-diary batch, the reported batch is **5,200**, so the control requirement went UP about six times to 75,531 / 16,796 / 48,809 draws, 125,536 still owed.** ⚪ Back-off ladder re-measured rather than assumed: full-depth share `0.49`-`0.64` -> `0.77`-`0.92`. 🔴 `G7.5` and `G7.9` ship FAIL 3/3 and are the **same** failure — `G7.9`'s control *is* `G7.5`'s valid subset. 🔴 **Step 6.5's four permutation-control jobs are still on Speed** (`1286896`/`97`/`98` RUNNING; `1286899` COMPLETED); the interlock was seen refusing in both directions (`1286901`). 🟢 **STEP 8 §6 IS CLOSED — the last three decisions ruled `1(a)`/`3(a)`/`4a(a)`/`4b(a)`.** Three findings from measuring the tables rather than quoting them: `FINDING 107` Italy has 0 empty cells (4b was UK-only), `FINDING 108` the 3 GB holes are a span-keying artefact, `FINDING 109` all 36 UK archetypes carry zero South and zero North glazing while ES/IT use all four faces — a country-correlated convention, and the reason item 1 could not be ruled “as published”. 🟢 **AND ITEM 8.1 IS BUILT AND VALIDATED: 88 archetype IDFs** — not 102, because `4a`/`4b` turn ROWS into CELLS, so the campaign is **88 x 5 = 440** archetype-runs, not 510. **All 88 run in EnergyPlus 24.2.0 (`94a887817b`) with ZERO severe errors**, selftest **20 ok / 0 FAILED**, U round-trip exact to **0.0005 W/(m²·K)** over 440 surfaces, and the selftest was **seen failing four times** on defects it found. 🔴 **`FINDING 110`: the box conserves floor area and volume but NOT envelope area, and the loss is COUNTRY-CORRELATED** — `H_transmission` box/TABULA median `it` **0.765** vs `uk` **0.956**, a **19 pp** spread sitting in the LOCO channel → **`D-S8-3` is now the ONE thing waiting on the author** (recommendation (a)). 🔴 **`FINDING 111`**: TABULA's ISO 6946 U and the U EnergyPlus actually simulates differ by median **+2.58 %** / max **+6.70 %**, and the gap grows with U so it is period- and country-correlated. 🔴 **No weather file exists, so item 8.2 now blocks 8.3, and no Step 8 gate has ever been run.** 🔴 **AND THE FIRST MEMORISATION CEILING IS SCORED AND IT ALARMED** — job `1286941`, fold `it`, Leg 4: the `D-S6-14` control came in **BELOW** the reported adapter on both attacks (`G6.10` ceiling **0.5488** vs measured **0.5539**, headroom −0.0051; `G6.11` **0.5147** vs **0.5274**, −0.0127). 🔴 **`FINDING 112`: the control DID train and reached the SAME loss as the reported model, and that is what makes it not a ceiling** — last-20-step mean loss reported `it` **0.5565** vs permuted `it` **0.5536** (the permuted one *lower*), held-in perplexity 1.7189 vs 1.7353 = **0.95 %** apart, and `G4.3`/`G4.4`/`G4.12` all FAIL on the permuted adapters, so conditioning really was destroyed and cost the loss nothing. The bodies survive the permutation intact, so the control learns the diary LANGUAGE instead of memorising. 🔴 **`FINDING 113`: the comparison has no tolerance** — SE of the AUC difference at n=2000 is 0.0128, so the two alarms are **z = 0.40** and **z = 0.99**. → **`D-S6-16` is the SECOND thing waiting on the author** (recommendation (a)). 🔴 **`FINDING 114`, from the SECOND ceiling (`1286945`, `uk`, which did NOT alarm — headroom +0.0148 / +0.0041): THE CEILING DOES NOT MOVE BETWEEN FOLDS.** `it` 0.5488 and `uk` 0.5484 are **0.0004 apart** = 1/23 of one standard error, while the reported AUCs over the same two folds differ by **0.0203**, fifty times as much. A quantity meant to bound how much this model *could* memorise, constant to four decimals across two adapters and two corpora, is not measuring memorisation capacity — and the operative consequence is that `D-S6-14` has been acting as an **UNREGISTERED BAR AT ≈ 0.548, 82 % tighter than the registered `≤ 0.65`**. `it` alarmed and `uk` did not because the *reported* AUC moved; the ceiling did not. 🔴 **CONFIRMED ON ALL THREE (`1286955`, `es`, ALARMED at a headroom of −0.0015): the three ceilings are 0.5488 / 0.5484 / 0.5466, standard deviation `0.00117` — ONE EIGHTH of the SE of a single one of these AUCs — while the reported AUCs range 9.2x more widely.** Which folds alarm is decided by noise on the reported side alone (z = 0.40, 1.16, **0.12**). `FINDING 112` reproduces on all three: permuted minus reported loss −0.0029 / +0.0190 / +0.0165, nothing over 1.1 sigma either way, held-in perplexity penalty **0.95 / 0.78 / 0.88 %**. ⚪ **All four registered controls PASS on all three folds**, `G6.12` zero exact matches over 103/40/91 rare records, floors 0.4874/0.5012/0.4914. 🔴🔴 **AND THE GOVERNING AUDIT IS READ (`1286976`, Leg 5, `it`, 49 min): `G6.10` = `0.6645` AGAINST A PRE-REGISTERED `≤ 0.65` — **FAIL**, z = 1.70 over the bar; the perplexity-gap control = `0.0570` against `≤ 0.05` — **FAIL**. `FINDING 115`. Two of the four registered controls FAIL on the reported leg, and the untuned-base floor is CLEAN at 0.4886, which is what makes the 0.6645 readable as membership signal and not a split artefact. `G6.11` 0.5594/0.75 PASS, `G6.12` 0 exact matches PASS. 🔴 **Under the prereg's own terms this is a REFUSAL** — it does not overturn the standing position that the weights cannot be released, it supplies the measurement that position lacked.** 🔴 **TWO EARLIER READINGS ARE CORRECTED BY THAT RUN.** `FINDING 114` was stated too broadly: the Leg-5 ceiling is **0.6496** against Leg-4's 0.5479 ± 0.00117 — **+0.102, or 87x the between-fold sd** — so the ceiling is constant across FOLDS at fixed capacity and responds strongly to CAPACITY, and the "unregistered bar at ≈ 0.548" reading is **Leg-4-only**. `FINDING 112`'s measurement reproduces on every run (permuted minus reported loss −0.0029 / +0.0190 / +0.0165 / **+0.0045 at 7 B, z = 0.23**) but its INFERENCE does not: at 7 B the control reaches 0.6496, so it **does** memorise substantially while its aggregate loss stays indistinguishable. Withdrawn for Leg 5, stands for Leg 4. 🔴 **`D-S6-16` is NARROWED** — option (a)'s premise ("the four controls that pass") is false on Leg 5, so it no longer gates the release, only the methods write-up; recommendation **(a′)**. ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched; no threshold moved, no checker edited.**
 
 ---
+
+## 🔴 2026-08-24 (night, late) — READ THIS FIRST
+
+### The one thing to do next
+
+🔴 **TWO things are waiting on the author: `D-S8-3` and `D-S6-16`** — but read the Step 6.5 result first, because it is the biggest thing on this page: **`G6.10` FAILS its pre-registered bar on the reported leg** (`1286976`, Leg 5, `it`, `0.6645` against `≤ 0.65`), with a clean floor and a second registered control (the perplexity gap, `0.0570` against `≤ 0.05`) failing beside it. That is a refusal under the prereg's own terms and it is **not** a decision anyone has to take — it is a measurement. `D-S6-16` is consequently NARROWED: it no longer gates the release, only how the `D-S6-14` ceiling is written up, recommendation **(a′)**. Brief: `IMP/docs/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` (§6 is the addendum written after the `uk` control landed and carries `FINDING 114`, which is an independent reason for (a) that does not depend on accepting §1's mechanism), recommendation **(a)**. 🔴 If (a), the same reading must be declared to apply to `uk`, `es` and the governing Leg-5 `it` control **before they are read**, or it becomes a rule invented per result. On `D-S8-3`: Step 8 §6 was closed on 2026-08-24 — the last three
+decisions ruled `1(a)`, `3(a)`, `4a(a)`, `4b(a)`, confirmed on re-evaluation the same evening — and item 8.1 was
+then BUILT: **88 archetype IDFs, all 88 run in EnergyPlus, selftest 20 ok / 0 FAILED**. Building it
+produced `FINDING 110`, which the rulings could not have anticipated because nobody had measured it,
+and which needs one letter back. Brief:
+`Step8_docs/docs/2026-08-24_D-S8-3_the-box-does-not-conserve-envelope-area.md`. Everything
+else that can move without a GPU has moved. **Step 6.5 is running**, and when it lands it is the
+next thing to close.
+
+* 🔴 **`STEP 6.5` IS UNDER WAY, NOT BLOCKED.** The 2026-08-24 revision of this file said its third
+  registered control *"is NOT TRAINED"* and that `4J_step4/runs/leg4_permuted_fold_it/` being empty
+  proved it. **The conclusion was right and the reasoning was wrong**, and the correction is
+  recorded: the trainer creates `--out/<run_name>/` **before** it reads the shard manifest, so that
+  empty directory is the residue of a **refusal**, not of a half-finished run. Proved by the
+  interlock probe's own guard firing (job `1286901`).
+  * `1286896` = Leg-5 `it` permuted — **the governing 7 B memorisation ceiling**, fold pre-named
+    ex ante. 🟢 **RUNNING since 2026-08-24T19:21:54 on `speed-40`** — it started roughly
+    twelve hours ahead of the `2026-08-25T07:35` estimate this file previously carried. Its header
+    prints `🔴 POISONED_CONTROL run. permutation seed 614614, 73254 records re-paired,
+    0 fixed points.` — **no diary kept its own label**, which is the property the control needs
+    and the one a permutation can silently fail to have.
+  * `1286897` / `1286898` / `1286899` = Leg-4 `es`/`uk`/`it` permuted — submitted 18:13:55.
+    🟢 **`1286899` (`it`) COMPLETED 03:33:29, exit `0:0`** — adapter at
+    `4J_step4/runs_permuted_control/leg4_permuted_fold_it/adapter` (NOT `runs/`, whose
+    `leg4_permuted_fold_it/` is still the empty 2026-08-22 refusal residue), 600 diaries generated,
+    and its conditioning gates `G4.3` / `G4.4` / `G4.12` **all FAIL** — which is exactly what a
+    random-label model should do, and is the first evidence the ceiling is a real ceiling.
+    🟢 **MIA control audit `1286941` COMPLETED `0:0` in 00:39:48 — READ.** It is the first
+    `D-S6-14` control this project has ever scored, and it **ALARMED**: ceiling `G6.10` 0.5488 vs
+    measured 0.5539, ceiling `G6.11` 0.5147 vs 0.5274 — the model that could "only memorise"
+    leaked LESS than the reported one. 🔴 The sentence above — that the failing conditioning
+    gates were *"the first evidence the ceiling is a real ceiling"* — is **the opposite of what
+    they show**, and `FINDING 112` is the correction: the permuted model reached the SAME training
+    loss (0.5536 vs 0.5565) and the SAME held-in perplexity (1.7353 vs 1.7189, 0.95 %) as the
+    reported one. Conditioning costs the loss nothing, the bodies survive the permutation intact,
+    so the control learns the diary language instead of memorising and never bounds memorisation.
+    `FINDING 113`: the comparison has no tolerance either — z = 0.40 and z = 0.99. → `D-S6-16`.
+    🟢 `1286898` (`uk`) COMPLETED 04:46:37 `0:0` — audit submitted as **`1286945`**.
+    `1286897` (`es`) still RUNNING; its audit follows the same way.
+    🟢 **`1286945` (`uk` audit) COMPLETED and it did NOT alarm** — headroom +0.0148 and
+    +0.0041. 🔴 Read beside `it` it is the strongest evidence yet: `FINDING 114`, **the two
+    ceilings are 0.0004 apart** (`it` 0.5488, `uk` 0.5484) while the reported AUCs differ by
+    0.0203. The ceiling is a CONSTANT, so `D-S6-14` has been acting as an unregistered bar at
+    ≈ 0.548 — 82 % tighter than the registered `G6.10 ≤ 0.65` — and the two folds differ only
+    because the *reported* AUC crossed it. `FINDING 112` reproduces on `uk` too: permuted loss
+    0.5195 vs reported 0.5005, under one sigma; held-in perplexity 1.6701 vs 1.6572, 0.78 %.
+    🟢 **`1286955` (`es` audit) COMPLETED and it ALARMED** — headroom −0.0015 and
+    −0.0021, the smallest margins of the three. 🔴 **The Leg-4 board is now complete and
+    `FINDING 114` is confirmed: ceilings 0.5488 (`it`) / 0.5484 (`uk`) / 0.5466 (`es`), sd
+    `0.00117` = one eighth of the Hanley-McNeil SE of a single one (0.0091), against a reported
+    range of 0.0203 — 9.2x wider.** Three adapters, three corpora, three held-out countries, and
+    the ceiling does not move. `D-S6-14` has been imposing an unregistered bar at 0.5479 +/- 0.001,
+    82 % tighter than the registered `≤ 0.65`, and two of three folds alarm purely because the
+    *reported* AUC scattered across it (z = 0.40, 1.16, 0.12). `FINDING 112` reproduces on all
+    three folds in both directions, nothing over 1.1 sigma, perplexity penalty under 1 % everywhere.
+    ⚪ `D-S6-16` is unchanged and now rests on three folds; brief §7 carries the table.
+    🟢 **`1286896` (Leg-5 `it` permuted) COMPLETED `0:0` in 07:33:23**, three epochs,
+    1.7811 → ≈ 0.52, 600 diaries, `G4.3`/`G4.4`/`G4.12` all FAIL. ⚪ Its adapter is at
+    `runs_leg5_permuted_control/leg5_permuted_fold_it/adapter`, NOT `runs_permuted_control/` —
+    the Leg-5 launcher writes its own tree and `4thJ_step6_privacy_mia.sh` already branches on
+    `$LEG` for it. 🟢 **THE GOVERNING AUDIT IS SUBMITTED: `1286976`**, with the two
+    overrides the script's own comment demands — `--gres=gpu:nvidia_a100_7g.80gb:1` and
+    `--mem=192G`, because a Leg-5 control loads TWO 7 B bases and the header's `2g.20gb` slice
+    would OOM after the first. 🔴 **`FINDING 112` survives the 7 B backbone**: leg-5 `it`
+    permuted 0.5267 (`1286896`) vs reported 0.5223 (`1286548`), difference +0.0045 = **0.23
+    sigma**, the smallest of the four. The mechanism is a property of THIS CORPUS, not of the
+    pilot's capacity. 🔴🔴 **`1286976` IS READ — COMPLETED `0:0` in 00:49:01, and it is a FAIL.**
+    `G6.10` **0.6645** against the registered `≤ 0.65` (z = 1.70 over the bar, `TPR@FPR=0.001`
+    0.0010 against 0.05); perplexity gap **0.0570** against `≤ 0.05` (train 1.6397, test 1.7331).
+    `G6.11` 0.5594/0.75 PASS; `G6.12` 0 exact of 103 rare records PASS; untuned-base floor
+    **0.4886**, within 0.012 of chance — CLEAN, which is what makes 0.6645 membership signal
+    rather than a split artefact. `FINDING 115`. 🔴 **Under the prereg's own terms this is a
+    REFUSAL.** No threshold moved; md5 `e4243e07cdd80c9c846b91f40e3e8c45` printed by the job.
+    🔴 It CORRECTS two readings of mine: `FINDING 114` holds **within Leg 4 only** (Leg-5
+    ceiling 0.6496, +0.102 = 87x the between-fold sd — the ceiling tracks CAPACITY, not fold),
+    and `FINDING 112`'s inference is withdrawn at 7 B (the control reaches 0.6496, so it DOES
+    memorise; only its loss-equality reproduces). ⚪ `privacy_audit.md` is still unwritten but
+    now has a result to write, and `D-S6-16` is narrowed to the methods write-up.
+  * `1286901` = the interlock probe. **COMPLETED, both arms refused, exit 1 each** — a production
+    run-type on the poisoned manifest, and `--run-type permuted` on the clean one. CPU-only by
+    design so it took no GPU from the queued control. `FINDING 56` discipline: four acceptances are
+    not a guard, a refusal seen happening is.
+  * When `1286897`/`98`/`99` land: `sbatch 4thJ_step6_privacy_mia.sh <fold> 4 2000 control`, three
+    times. 🔴 **The Leg-5 audit needs its OWN submission** — the script's own comment says a Leg-5
+    control does not fit it, because it requests a `2g.20gb` slice and a Leg-5 control loads two 7 B
+    bases. Give it `--gres=gpu:nvidia_a100_7g.80gb:1` and `--mem=192G` or it OOMs after the first
+    model.
+  * Until then `privacy_audit.md` stays unwritten and **there is no release decision on either leg.**
+    The audit has a floor (the untuned base, `0.4874`-`0.5012`) and **no ceiling**.
+* 🟢 **`STEP 7.3` IS CLOSED AND ITS BATTERY IS SCORED — 20 PASS / 7 FAIL** (Leg 4 was 12 / 15).
+  `G7.4` and `G7.12` stopped failing for reasons already on the record: every Leg-4 batch predates
+  `D-S7-5` (1), and `G7.12`'s FAIL was the throughput artefact (`FINDING 97`). Nothing was re-scored
+  to make them pass. 🔴 `G7.5` FAILs 3/3 (`6.88` / `30.96` / `10.65` % vs `99.90`) and `G7.9` FAILs
+  3/3 (worst `−103.65` / `−25.39` / `−52.64` min/day vs `±5.0`); `G7.7`/`G7.8` FAIL on `uk` only, on
+  `V7.a` — 9 strata carry `≥ 100` records where 10 are required. Artefact
+  `Step7_docs/outputs_step7/gates_step7_leg5_baseline.json`.
+* 🔴 **`FINDING 105` — the chaining pre-screen's seed-noise verdicts did NOT survive the bigger
+  pool.** Six of twenty-seven changed, in both directions. **`max_ramp` is now RULE>NOISE on all
+  three folds** (`1.30` / `2.30` / `1.92`) where it was `it` alone, and the ramp is the pre-screen's
+  closest proxy for the quantity decision 14 actually turns on. Any sentence leaning on *"the
+  coincidence metrics tell us nothing about chaining"* must now be read at Leg-5 N. ⚪ The two that
+  moved the other way sat at `1.02` and `1.01`. **`D-S7-6` and the 2026-08-22 ruling are untouched**
+  — decision 14 still closes in Step 8 on a watt; this removes an argument made *in support* of it,
+  it does not reopen it.
+* 🔴 **`FINDING 106` — item 7.5 got MORE expensive, not less.** The registered `≈22,500 / 8,800 /
+  15,700` draws were sized to yield **600** valid diaries. `G7.9` compares against the **constrained
+  batch** and Leg-5's is **5,200**, so on measured yield the requirement is **75,531 / 16,796 /
+  48,809** draws — 5,200 per fold exist, **125,536 still owed**. The old hold reason (*"not
+  submitted while `1286209` is PENDING"*) is obsolete; that job is finished.
+* 🔴 **`G4.1`'s `it` PASS is STRUCK** by `D-S4-16` (a). It may be mentioned only as struck, beside
+  its fold's sampling-noise floor. Never as a PASS.
+* 🟢 `G6.13` finished: **PASS 2 / FAIL 1**. Zero exact matches and zero `NNDR < 0.33` on every fold,
+  but `uk` FAILs the size-matched arm — median DCR to TEST `0.4236` sits **above** the 95 % interval
+  of a same-size train subsample `[0.4028, 0.4167]`: the model is closer to what it was trained on
+  than to unseen diaries of the same distribution. `es` and `it` are inside.
+* ⚪ **What is still GPU-bound and cannot be worked around:** Step 4's four owed perturbations;
+  `G6.8`'s model arm, never run on either leg, which is the only thing holding work item 6.4 open;
+  7.4's untuned-base arm; 7.5's 125,536 draws; and 7.7's campaign.
+* 🟢 **STEP 8 §6 IS CLOSED — all six decisions ruled, and work item 8.1 is now the one thing that
+  is NOT compute-bound.** Ruled 2026-08-24: `1(a)` one equivalent box per archetype, aspect 1:1.5,
+  long axis E–W, **total glazing split equally over the four vertical facades**; `3(a)` two-layer
+  equivalent per surface (mass-less resistive layer at the exact TABULA `U`, plus a capacitive layer
+  reproducing `c_m = 45 Wh/(m²·K)`) with **no invented build-up**; `4a(a)` prefer the `Gen` row for
+  all 17 duplicate cells; `4b(a)` a merged row covers every period its code declares, closing the UK
+  matrix at **32/32**. ⚪ 4a is applied AFTER 4b, so `GB.04` takes its `Gen` row and `AB.04-08`
+  supplies `GB.05`–`GB.08` only.
+  * 🔴 **Three findings came out of measuring the tables instead of quoting them, and three of the
+    four questions changed shape before they were put.** `FINDING 107`: Italy has **0** empty cells
+    (42 rows, 32 cells, 10 duplicates) — 4b was a **UK-only** question. `FINDING 108`: `GB.05/06/08`
+    are empty only because the loader keyed `AB.04-08` to the first period of its span, so the
+    question was about reading TABULA correctly, not about fabricating archetypes. `FINDING 109`:
+    **all 36 UK archetypes carry zero South and zero North glazing** while ES/IT use all four faces —
+    a country-correlated convention in a LOCO design, same class as `FINDING 53` and `FINDING 60`,
+    and the reason item 1 could not be ruled “orientation as published”.
+  * 🔴 **Still true after the rulings: no IDF exists, NO Step 8 gate has ever been run, no weather
+    file is on disk** (the diary-year ruling is a decision, not an acquisition), the AMY and TABULA
+    licences are unverified Parts B/C of `DeepResearchPrompts/L27_...md`, `G8.1`–`G8.4` have no
+    reference series, and **decision 14 (chaining) is still open** and still closes here on a watt.
+  * Brief: `Step8_docs/docs/2026-08-24_D-S8-2_items-1-3-4_geometry-layers-archetype-selection.md`
+    (status RULED, author's §7). Entry appended to `Step8_docs/4thJ_08_bemSimulation.md`; its STATUS
+    header had said **five** open against its own 2026-08-21 entry's **three**, and is fixed.
+* 🟢 **WORK ITEM 8.1 IS BUILT AND VALIDATED (2026-08-24 night).** `tools/4thJ_step8_idf.py` +
+  `tools/4thJ_step8_idf_selftest.py`, local, no Speed job. **88 archetype IDFs** in
+  `outputs_step8/archetypes/`, plus `archetype_idf_manifest.csv` and `archetype_selection_report.json`.
+  * 🔴 **The set is 88, not 102**, and the campaign is therefore **88 x 5 = 440** archetype-runs,
+    not 510. `102` counted ROWS; `4a`/`4b` turn rows into CELLS (es 24, uk 32, it 32). The 510 figure
+    is superseded. ⚪ It is **not** in `prereg.md` — checked — so this corrects a Step 8 number, not a
+    frozen registration.
+  * 🔴 **`FINDING 107` was wrong about Italy's ten extra rows.** They are **combined-class** rows
+    (`MFH-AB`, `SFH-TH`), not duplicates, and `4a(a)` **cannot arbitrate them** — both candidates carry
+    `.Gen.`, and the difference is in the class token, not the variant token. They are excluded, BY NAME,
+    in `archetype_selection_report.json`; Italy still closes 32/32 without them. A gap in `4a(a)` as
+    written, recorded as one.
+  * 🟢 **Selftest 20 ok / 0 FAILED.** Half A checks the four rulings one at a time (17/17,
+    including that the compass-sum fallback fires **exactly once, on `ES.ME.MFH.05`** — the archetype
+    the ruling named). Half B runs **all 88 through EnergyPlus 24.2.0 (`94a887817b`): 88/88 exit 0,
+    zero severe errors**, and reads E+'s own `U-Factor no Film` back out — **worst deviation 0.0005
+    W/(m²·K)** over 440 surfaces.
+  * 🔴 **The selftest was SEEN FAILING four times, on four defects it found**: a clamped
+    construction (`ES.ME.SFH.01`, `U_Roof` 5.71); a manifest `period` column that carried the chosen
+    ROW's period, so six UK files said `GB.04` beside `uk_AB_GB05.idf`; an invalid E+ enum
+    (`ControlMode`) that was fatal on every Spanish archetype; and **its own `B3`**, which compared two
+    different U-values.
+  * 🔴 **`FINDING 110` — the box conserves floor area and volume but NOT envelope area, and the
+    loss is COUNTRY-CORRELATED.** `H_transmission` box/TABULA, median: **`it` 0.765**, `es` 0.924,
+    **`uk` 0.956** — Italian transmission understated by 23.5 %, British by 4.4 %, a **19 pp** spread
+    that is deterministic per country and sits in the LOCO channel. Driver is `it`'s `MFH` 0.703 and
+    `AB` 0.656; `IT.MidClim.AB.02` publishes 3,257 m² of wall and the box gives 473 — a factor of 6.9.
+    Same class as `FINDING 53` / `60` / `109`. **→ `D-S8-3`, recommendation (a): keep the equal
+    four-facade split, replace the fixed 1:1.5 aspect with the one that reproduces TABULA's wall area.**
+  * 🔴 **`FINDING 111` — TABULA's U and the U EnergyPlus simulates are not the same quantity.**
+    TABULA is EN ISO 6946 (films included, 0.13 / 0.04); an E+ `Construction` excludes films and E+ adds
+    its own. The builder gives the resistive layer `1/U - Rsi - Rse` and `B3` confirms it. The residual
+    gap is **median +2.58 %, max +6.70 %**, and it **grows with U**, so it is period- and therefore
+    country-correlated. ⚪ The naive convention (`R = 1/U`) would have gone the other way by **≈30 %**
+    at `U = 2.56`. `B4` reports the gap as a measured number and deliberately **not** as a pass/fail.
+  * ⚪ Six quantities are not in the 44 columns and are declared in `archetype_selection_report.json`,
+    every one **uniform across all 88 and all three folds** so it cannot itself make a country
+    difference: `SHGC = 0.70`, infiltration `0.50 ach`, set point `20 °C` (EU BC, per `FINDING 57`),
+    no cooling, no ground temperatures, no frame fraction.
+  * 🔴 **The weather is still item 8.2 and still open.** Half B ran on the Chicago TMY3 file E+
+    ships — a **validity probe, never a result**; no energy number from it is recorded anywhere, and the
+    `RunPeriod` in each IDF is a calendar, not a weather choice. **8.2 is now what blocks 8.3.**
+
+### 🔴 The result, stated plainly, because it is the paper
+
+`prereg.md` §5 froze the claim: *"If a fine-tuned LLM cannot beat a demographically raked pool of
+real European donors on the held-out country, the transfer claim fails. There is no weaker reading
+of that sentence."*
+
+**It does not beat it. Anywhere.**
+
+| fold | Y25-44 | Y45-64 | Y_GE65 |
+|---|---|---|---|
+| `es` | −26.9 | −25.7 | −32.5 |
+| `uk` | −37.1 | −41.2 | **−2.7** |
+| `it` | −42.7 | −20.1 | −20.3 |
+
+(model MAE minus null MAE; negative = the null wins.) 🔴 **This is not a band that can be argued
+about.** It is reported as the result. `Step6_docs/4thJ_06_transfer.md`, entry of 2026-08-24
+(night), carries the full board, the Leg-4/Leg-5 comparison and what the comparison does and does
+not license.
+
+### 🟢 Step 6.3 — the campaign, closed
+
+Jobs `1286835`-`1286861`, all `COMPLETED` exit `0:0`, 27 of 27 files fetched to
+`Step7_docs/outputs_step7/`. Every header carries `allenai/Olmo-3-1025-7B @ a81bae42…` and the
+`runs_leg5` adapter — `FINDING 102` is repaired **in the artefact**, not only in the script.
+
+⚪ Two things recorded from the batches themselves, before any gate reads them:
+
+* **The grammar is load-bearing and its effect is country-correlated.** Unconstrained validity is
+  es `6.88 %` / uk `30.96 %` / it `10.65 %` — `uk` is `4.5x` `es`.
+* `es --no-grammar` is the only batch that did not terminate everywhere: **10 of 5,200** carry no
+  `<eor>`.
+
+### 🟢 Step 4's eleven outstanding jobs — all read, §10 of the investigation
+
+`Step4_docs/investigation/2026-08-23_G4.1_G4.3_G4.6_G4.12_four_gates_never_passed.md` §10. 🔴 The
+file is **not** renamed `DONE_`: `G4.1` is still open, and it is open on `D-S4-11`.
+
+* 🟢 **`D-S4-9` ANSWERED on the branch the script pre-declared as reading (i).** Untrained backbone,
+  same prompts, same seed: rise `0.0001`-`0.0011` against the fine-tune's `0.068`-`0.106`, a factor
+  of `84x`-`1062x`. `G4.3` still ships FAIL — what is settled is that the distance to `0.15` is
+  about an **unsourced band**, not about a model that failed to condition.
+* 🟢 **`D-S4-10` ANSWERED, and `FINDING 103`.** Control clean in all four runs (`48/48` identical),
+  and in the **shipping bfloat16** merged vs unmerged adapters produce **different diaries in 81-96 %
+  of cases**. `G4.6`'s FAIL has a behavioural consequence. 🔴 No artefact in Steps 5-8 records
+  whether it was produced merged or unmerged.
+* 🟢 **`G4.1` read PASS — Leg-5 `it`, end of epoch 2** — and `D-S4-16` (a) **STRUCK it** the same
+  day: it cleared the bound by `0.010` against a measured seed floor of `0.385` (`38x` below
+  resolution) and **fails on 4 of 5 seeds on the same weights**. `G4.1` ships **FAIL on all three
+  folds**, resolution-limited at `N = 600`. §3.5’s flip question is closed too — the seed alone
+  produces the flip at frozen weights.
+* 🔴 **A withdrawal of mine, recorded not erased.** I reported a `FINDING 104` — that `D-S4-5`’s
+  mid-epoch verdict probe had never run — and opened a decision on the `G4.1` basis. **Both halves
+  were wrong**: job `1284898` ran it (`FINDING 36`, on the record since 2026-08-20), and `D-S4-16`
+  had already ruled the basis. Deleted the decision file; §10.4 carries the withdrawal. Second time
+  in one document that I worked against something already measured — §9.2 is the first.
+* ⚪ `G4.12` unchanged, CE arm alone in six of seven runs, and **still not put to the author**
+  although §5 item 3 said it was ready.
+* 🟢 `G4.7` and `G4.16` **SEEN FALLING on `es`** (`600/600` -> `594/600`), credits that name the fold.
+
+### ⚪ Housekeeping done this session
+
+Eight superseded backups deleted at the author's instruction (`RESUME.md.bak_20260824{,b,c,d,e}`, `.bak_ds615{,b}`,
+`IMP/2026-08-21_review-derived-improvements.md.bak_exec`); the live
+files were checked larger and newer first. Step 8 status confirmed: **item 8.1 only** — TABULA
+archetype parameter tables for all three folds exist, **no IDF exists**, items 8.2-8.6 untouched,
+five of the six §6 geometry/zoning decisions still open.
+
+---
+
+## ⚪ SUPERSEDED — the `D-S6-15` head, written earlier the same day
+
+⚪ Its "one thing to do next" was *poll `1286835`-`1286861`, then score Step 6.4*. Both are done and
+the results are above. The block is kept for the `D-S6-15` application record and the fix-check
+table.
+
+## 🔴 2026-08-24 (evening) — READ THIS FIRST
+
+### The one thing to do next
+
+🔴 **Poll `1286835`–`1286861`, then score Step 6.4.** Nothing is waiting on the author. Twenty-seven
+batches are on the queue, four running at a time behind `AssocGrpGRES`; a primary batch is ~25 min of
+generation and an auxiliary ~3 min, so the whole campaign is hours, not days.
+
+* **Before reading any number from a batch, read its header.** `base : allenai/Olmo-3-1025-7B @
+  a81bae42…` and `adapter : …/runs_leg5/leg5_primary_fold_<c>/adapter` must both be there. That is
+  the whole content of `FINDING 102` and it is now printed by the run itself.
+* **Step 6.4 — score.** 🔴 `D-S6-2` binds: `it` is scored against **2008-09** with the gap declared,
+  and that is settled **before** the `it` fold is scored, not after.
+* ⚪ Outputs land in `/speed-scratch/o_iseri/4J_step7/outputs_step7/generated_leg5_*.jsonl`; the
+  Leg-4 rehearsal files sit beside them and are **not** overwritten.
+
+### 🟢 `D-S6-15` — ruled `(a)`/`(a)`/`(a)`, applied, closed
+
+`IMP/docs/DONE/2026-08-24_D-S6-15_the_leg5_generation_config.md`. `IMP/docs/` holds **no open
+decision**.
+
+| item | ruling | what changed |
+|---|---|---|
+| 1 selector | `(a)` | `resolve_leg()` in `tools/4thJ_step7_generate.py`: leg 5 resolves `runs_leg5/leg5_primary_fold_<fold>/adapter` + `Olmo-3-1025-7B` @ `a81bae42…`, **hard `SystemExit(3)` if absent, never a fallback**; `--leg` is now `choices=(4, 5)` |
+| 2 temperature | `(a)` | 1.30 / 1.10 / 1.20 carried **unchanged**; `temperature_provenance` written into every leg-5 record **and** summary |
+| 3 the `N ≥ 5200` refusal | `(a)` | narrowed to the six PRIMARY batches; the 21 auxiliaries stay on the Leg-4 basis at N=600 |
+
+The frozen Step 5 configs were **not edited** — the leg overrides three fields in memory and prints
+the Leg-4 values it displaced. Backups `.bak_ds615` verified non-empty and byte-identical to what was
+staged on Speed: `.py` `2ea98c36…` → `98408973…`, `.sh` `4bafdb2c…` → `adbd34eb…`.
+
+### 🟢 The fix-check — `1286834`, 46 s, CPU only, 6/6, and check 0 is the CONTROL
+
+🔴 Written because of `FINDING 56`: Leg 4's `600/600` was a model-repo default covering for a broken
+harness. A guard not seen refusing is not a guard, so the control ran **first** and the run was VOID
+if it did not fire.
+
+| # | check | result |
+|---|---|---|
+| 1 | `py_compile` the patched generator | PASS |
+| **0** | **CONTROL — leg-5 adapter root pointed at a missing directory** | **PASS, `SystemExit` 3, "Nothing was generated."** |
+| 2 | `--leg 4` returns the config **identical** (`==`) — still `runs_ds45` + `OLMo-2-0425-1B` | PASS |
+| 3 | `--leg 5` resolves the leg-5 adapter + backbone | PASS |
+| 4 | temperature / `top_p` / `top_k` / seed unchanged, provenance present | PASS |
+| 5 | three leg-5 adapters on disk, `r = 32` each | PASS |
+
+Exit **3**, not `NotRun`'s **2**: `2` is a legitimate "NOT RUN" the launcher reports, and a missing
+Leg-5 adapter must never read as an ordinary outcome. Item 3's classifier was tested against **the
+file's own bytes** (guard block extracted with `sed`, not reimplemented): `LEG=5 es 600` REFUSED
+exit 1, `LEG=5 es 5200` allowed, `g66it` and `g67_es_t00` auxiliary and allowed at 600, `LEG=4`
+untouched.
+
+### The campaign on the queue
+
+| batches | jobs | N |
+|---|---|---:|
+| primary, 3 folds × {constrained, `--no-grammar`} | `1286835`–`1286840` | 5,200 |
+| `G6.6` held-in, six ordered `(fold, donor)` pairs | `1286841`–`1286846` | 600 |
+| `G6.7` fictional-country levels, 3 folds × 5 | `1286847`–`1286861` | 600 |
+
+`1286835` was submitted **alone and read before the other 26 went out**: the fix-check proves the
+selector, but that a 7 B model loads on the rehearsal's `2g.20gb` slice is a separate claim.
+⚪ `GPU KV cache size: 5,901 tokens` against `max_new_tokens = 1200` is the tight resource — and it
+still sustains **3.4 diaries/s, 932 output tok/s**.
+
+### 🔴 What this does not settle
+
+* The temperature is **transferred, not measured**. `H_real` is the corpus's; the temperature that
+  reproduces it is the **model's**, fitted on a 1.48 B backbone. Declared, not re-derived.
+* **Nothing is scored.** These are batches, not gates.
+* Step 6.5's **third registered control — the random-label-permutation adapter — is still NOT
+  TRAINED**; `4J_step4/runs/leg4_permuted_fold_it/` is empty, `privacy_audit.md` cannot be written,
+  and **no release decision can be made on either leg**.
+* Step 4 closed **owing** four of fifteen perturbations, the coverage clause on `es`/`uk`, and the
+  ceiling run. Closing was never passing.
+
+### Where things live
+
+* Step 6 progress log: `Step6_docs/4thJ_06_transfer.md` (backup `.bak_ds615`).
+* Closed decision: `IMP/docs/DONE/2026-08-24_D-S6-15_the_leg5_generation_config.md`.
+* Board: `4thJ_CHECKLIST.html` — https://claude.ai/code/artifact/9e07da64-8e57-4e01-9c89-3fffd2a0ceaf
+
+---
+
+## ⚪ STILL VALID AS A RECORD — the block that opened `D-S6-15`, written earlier the same day
+
+⚪ Its "one thing to do next" said *`D-S6-15` is on the author's desk*. It is **ruled, applied and
+closed**; `FINDING 102`'s diagnosis below is the reason the selector exists and is left standing
+verbatim. Its instruction **not** to submit `LEG=5` no longer applies — it applied to the unpatched
+script, and the patched one refuses rather than falls back.
+
+### 🔴 2026-08-24 (night) — `FINDING 102`, the block that opened `D-S6-15` (dated record, was "READ THIS FIRST")
+
+### The one thing to do next
+
+🔴 **`D-S6-15` is on the author's desk and Step 6.3 is held until it is ruled.** Nothing is queued —
+`squeue -u o_iseri` returns no rows — and nothing else is waiting on anyone.
+Doc: `IMP/docs/2026-08-24_D-S6-15_the_leg5_generation_config.md`.
+
+Do **not** submit `LEG=5 sbatch 4thJ_step7_generate.sh` before item 1 is ruled and applied. It will
+not error. It will produce a file named `generated_leg5_*` with the not-reportable stamp removed,
+containing Leg-4 pilot text.
+
+### 🔴 `FINDING 102` — what `--leg 5` actually changes
+
+`tools/4thJ_step7_generate.py` reads the adapter **and** the backbone from
+`generation_config_<fold>.json` (lines 137, 146, 203 — all `cfg["adapter"]`), never from `--leg`.
+The configs at `/speed-scratch/o_iseri/4J_step5/inputs/` read today:
+
+| fold | `adapter` | `base_repo` | `temperature` |
+|---|---|---|---:|
+| `es` | `runs_ds45/leg4_primary_fold_es/adapter` | `allenai/OLMo-2-0425-1B` | 1.30 |
+| `uk` | `runs_ds45/leg4_primary_fold_uk/adapter` | `allenai/OLMo-2-0425-1B` | 1.10 |
+| `it` | `runs_ds45/leg4_primary_fold_it/adapter` | `allenai/OLMo-2-0425-1B` | 1.20 |
+
+`--leg 5` does exactly three things, none of them model selection: renames the output
+`generated_leg5_*` (line 214); **strips** `"provenance": "LEG-4 PILOT -- NOT REPORTABLE"` from every
+record and the summary (142-144, 236-237, 274-275); enforces `N >= 5200` in the launcher — a guard
+that counts prompts, not parameters, so it passes.
+
+🔴 Same shape as `FINDING 56`: a default covering for a selector that was never wired. ⚪ The three
+Leg-5 adapters exist and are complete at `4J_step4/runs_leg5/leg5_primary_fold_{es,uk,it}/adapter`.
+
+### 🔴 The decision under it — the temperature is a 1 B measurement
+
+1.30 / 1.10 / 1.20 came from **entropy matching** (`"temperature_basis"` in each config). `H_real` is
+the corpus's; the temperature that reproduces it is the **model's**, measured on `OLMo-2-0425-1B`
+against a Leg-5 backbone of `Olmo-3-1025-7B` — 4.7× the parameters.
+
+🔴 **There is nothing to apply, because it was never asked.**
+`grep -n "leg 4\|Leg 4\|leg 5\|Leg 5" Step5_docs/*.md` → **no matches**, and `D-S7-3` (a) directive 4
+says only *"train Leg-5 … and execute paper campaign"*. Carrying it forward is a choice; so is
+re-measuring. Weakening it already on the record: `temperature_curves_agree: false` on all three
+folds (`es` entropy argmin 1.30 vs fidelity argmin 0.70), 14.8 % of `es` diaries never terminate at
+`T = 0.70`, and `G5.8` ships FAILING on `es` + `uk`.
+
+⚪ **Not evidence, so it is not quoted as evidence:** every Leg-5 generation that exists ran at a
+hard-coded `temperature=1.0` (`4thJ_step4_train.py:811`, `4thJ_step4_diagnostics.py:413`), a
+diagnostic default. The 7 B adapter has never been observed at 1.30 / 1.10 / 1.20.
+
+### The three items of `D-S6-15`
+
+1. **The selector.** (a) recommended — `--leg 5` resolves `runs_leg5/…` + `Olmo-3-1025-7B`
+   additively and **refuses** if absent rather than falling back; `--leg 4` byte-identical so the
+   rehearsal stands. (b) separate `_leg5.json` configs. (c) rejected — by hand, 27 times.
+2. **The temperature.** (a) carry it forward and declare the transfer; (b) re-run the Step 5 entropy
+   sweep on the Leg-5 adapters (re-opens a CLOSED step, costs a 7 B sweep first); (c) generate at
+   `T = 1.0` and declare the departure. 🔴 Any option: the basis must reach the methods — each config
+   asserts *"nothing here is a fresh choice"* and that is true only of Leg 4.
+3. **The `N >= 5200` refusal.** (a) recommended — narrow it to the 6 primary batches; `V7.a` is its
+   only justification and `grep -ln "V7\.a" tools/4thJ_step6_{g66_heldin,g67_score,level1}.py`
+   returns nothing. (b) apply to all 27.
+
+### The campaign it gates — 27 batches
+
+| purpose | batches | Leg-4 precedent |
+|---|---:|---|
+| primary per fold, constrained + unconstrained | 6 | `1286195`-`1286200`, N = 600 |
+| `G6.6` held-in, one per ordered `(fold, donor)` pair | 6 | `1286254`-`1286259`, N = 600 |
+| `G6.7` fictional-country levels, 3 folds × 5 | 15 | `1286260`-`1286274`, N = 600 |
+
+### 🟢 The two "unread" Step 6.5 jobs are read — the flag is retired
+
+* `1286305` — `GUARD-A-REFUSED-GOOD`, then **`GUARD-B` sailed past** and began loading the base model
+  before being cancelled at `00:02:52`. The *failed to fail* attempt.
+* `1286311` — `GUARD-B-REFUSED-GOOD` + `GUARD-C-REFUSED-GOOD`, six lines, **no model loaded**. The
+  1 m 21 s elapsed is the guards working; a refusal is *meant* to be cheap.
+
+⚪ `Step6_docs/4thJ_06_transfer.md` §2696 was already correct in every particular. Nothing revised.
+
+### 🟢 Checked and clean — the `D-S4-8` defect has no third copy
+
+`4thJ_step4_train.py` and `4thJ_step4_diagnostics.py` both carried the missing-`eos_token_id`
+defect. The Step 7 path is vLLM with `stop=[grammar.EOR]`, `include_stop_str_in_output=True`
+(lines 182-183); vLLM terminates each sequence independently under continuous batching and never
+needs `eos_token_id` to pad a finished row. 🔴 Worth checking, not assuming: Leg 4 ran on
+`OLMo-2-0425-1B`, which **does** ship an `eos_token_id`, so this defect would have been invisible
+through the whole rehearsal and appeared first in the paper campaign.
+
+### 🔴 Still true, and not touched by any option above
+
+Step 6.5's **third registered control — the random-label-permutation adapter — is NOT TRAINED.**
+`4J_step4/runs/leg4_permuted_fold_it/` exists and is **empty**. `privacy_audit.md` cannot be written
+and **no release decision can be made on either leg**. Four of five Step 6.5 gates exist and pass;
+what is missing is a control, not a gate.
+
+### Where things live
+
+* Step 6 progress log: `Step6_docs/4thJ_06_transfer.md` (backup `.bak_ds615`, +113 lines).
+* Open decision: `IMP/docs/2026-08-24_D-S6-15_the_leg5_generation_config.md`.
+* Board: `4thJ_CHECKLIST.html` — https://claude.ai/code/artifact/9e07da64-8e57-4e01-9c89-3fffd2a0ceaf
+
+---
+
+## ⚪ STILL VALID AS A RECORD — the Step 4 closure block, written earlier the same day
+
+⚪ Its "one thing to do next" said *Step 6.3*. That is still right and is now **qualified**: 6.3 is
+unblocked by Step 4 and held by `D-S6-15` above. Its item on the two Step 6.5 jobs is **retired** —
+they are read. Everything else below stands as written.
+
+
+### 🟢 2026-08-24 (late) — STEP 4 IS CLOSED (dated record, was "READ THIS FIRST")
+
+### The one thing to do next
+
+🔴 **Step 4 is closed, so the critical path moves to STEP 6.** Nothing is queued and nothing is
+waiting on the author — `squeue -u o_iseri` returns no rows and `D-S4-16` was ruled on the day it
+was written.
+
+* **Step 6.3 — run the folds.** Its only recorded blocker was Step 4.3, which is now closed.
+* **Step 6.4 — score.** `D-S6-2` must be honoured: `it` is scored against 2008-09 with the gap
+  declared, and that has to be settled **before** the `it` fold is scored, not after.
+* ⚪ **Two Step 6.5 privacy jobs are unread:** `1286305` **CANCELLED** `00:02:52` and `1286311`
+  **COMPLETED** `00:01:21`. 🔴 Do not trust the second on its exit code — `1286631`-`33` exited
+  `0:0` in ~48 s having done nothing. Check what it printed before reading any number from it.
+
+### 🟢 `D-S4-15` — executed exactly as ruled, and it is not a no-op
+
+`tools/4thJ_step4_g41_seedfloor.py` md5 `409945ba930a72900d7c8a7a1ae9bf38` **unchanged**; one frozen
+Leg-5 adapter per fold loaded once; five source-fixed seeds `13, 101, 1009, 7919, 104729`;
+`--gen-n 600`, `--gen-stratified-k 6`; **no training**, so weight divergence is zero by construction.
+
+| job | fold | state | elapsed | prefix pool / real ref |
+|---|---|---|---:|---|
+| `1286634` | `es` | COMPLETED `0:0` | `03:56:26` | 5,520 / 54,114 |
+| `1286635` | `uk` | COMPLETED `0:0` | `03:08:54` | 5,702 / 57,400 |
+| `1286636` | `it` | COMPLETED `0:0` | `02:28:57` | 3,434 / 34,994 |
+
+The three checks the previous session registered were run **before** any number was read, because
+`1286631`-`33` had exited `0:0` in ~48 s having done nothing: (1) elapsed is hours, not a no-op;
+(2) every log's `base` line reads `allenai/Olmo-3-1025-7B @ a81bae42…` with the
+`runs_leg5/leg5_primary_fold_<c>/adapter` path, so the `--leg 5` fix took and **no run is void**;
+(3) neither hard `SystemExit` guard fired — the prefix draw was identical across seeds and no two
+seeds produced byte-identical text, so the spread is the sampler's and not the harness's.
+
+Artefacts fetched to `Step4_docs/outputs_step4/g41_seedfloor/`: `g41_seedfloor_es.json`
+`697b278cea64ef4155c82bbe821f08fc`, `_uk.json` `a1022a357cdb1fe10d0c4f83b1705d38`, `_it.json`
+`cbb1c8a2e13ade62855acd250d4bf20e`, and the three `.out` logs.
+
+### 🔴 The floor, and `FINDING 100`
+
+Per-seed `worst_high` at frozen weights. Band `0.80`–`1.25`, width `0.45`.
+
+| fold | 13 | 101 | 1009 | 7919 | 104729 | spread | stdev | verdicts |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `es` | 1.541 | 1.225 | 1.612 | 1.646 | 1.117 | **0.529** | 0.241 | FAIL ×5 |
+| `uk` | 2.154 | 1.846 | 1.496 | 2.060 | 1.577 | **0.658** | 0.289 | FAIL ×5 |
+| `it` | 1.318 | 1.432 | 1.387 | 1.338 | 1.047 | **0.385** | 0.151 | FAIL ×4, **PASS ×1** |
+
+`worst_low` spreads `es` `0.324` · `uk` `0.225` · `it` `0.239`.
+
+🔴 **`FINDING 100` (i) — the verdict is not stable under reseeding.** On `it`, one frozen adapter
+returns `FAIL, FAIL, FAIL, FAIL, PASS`. The script printed that itself
+(`verdict_stable_under_reseed: false`) under a rule written into its source before any result
+existed. **No single `G4.1` reading in Step 4 — every `D-S4-5` verdict checkpoint included — is
+reportable without this spread beside it.**
+
+🔴 **`FINDING 100` (ii) — the direction flip is explained and it is not a property of any fold or
+epoch.** The seed alone, at frozen weights, produces every end: `es`
+`upper / lower(collapse) / upper / upper / lower(collapse)`, `uk`
+`upper / upper / both / upper / upper`, `it` `both / upper / upper / upper / none`. The
+long-standing question in this file is closed; no fold-composition, epoch-dynamics or
+backbone-size hypothesis is needed, and none may be offered.
+
+### 🔴 One canonical reading of nine survives its own floor
+
+| fold | ep | worst_low / worst_high | violation | floor | exceeds it? |
+|---|---:|---|---:|---:|---|
+| `es` | 0 | 0.771 / 1.435 | +0.185 | 0.529 | no |
+| `es` | 1 | 0.591 / 1.500 | +0.250 | 0.529 | no |
+| `es` | 2 | 0.750 / 1.568 | +0.318 | 0.529 | no |
+| `uk` | 0 | 1.079 / 1.670 | +0.420 | 0.658 | no |
+| `uk` | 1 | 0.854 / 1.311 | +0.061 | 0.658 | no |
+| `uk` | 2 | 0.707 / **2.293** | **+1.043** | 0.658 | 🟢 **YES, 1.59×** |
+| `it` | 0 | 0.848 / 1.269 | +0.019 | 0.385 | no |
+| `it` | 1 | 1.156 / 1.397 | +0.147 | 0.385 | no |
+| `it` | 2 | 0.931 / 1.240 | ~~PASS~~ **STRUCK** | 0.385 | no |
+
+**How the floor may be quoted:** as a **LOWER BOUND** on the run-to-run spread of two TRAINED
+replicates (weight divergence is exactly zero here), never as "the" spread; and never in place of a
+`G4.1` reading — `is_a_verdict_for_any_fold: false` is written into each JSON.
+
+### 🟢 `D-S4-16` — RULED THE DAY IT WAS WRITTEN, BOTH ITEMS `(a)`, ZERO COMPUTE
+
+`IMP/docs/DONE/2026-08-24_D-S4-16_G4.1_ships_with_its_floor.md`, §6 filled by the author.
+
+* **Item 1 (a)** — `G4.1` ships **FAIL on all three folds**, every reading printed beside its fold's
+  floor, and **`G4.1` is declared RESOLUTION-LIMITED AT N=600** because the floor exceeds the whole
+  band.
+* 🔴 **`it`'s epoch-2 PASS IS STRUCK — struck, not deleted.** ~~"the only clean `G4.1` in the
+  project"~~ It cleared the bound by `0.010` against a floor of `0.385` — 38× smaller than the
+  resolution — and the same frozen weights FAIL on 4 seeds of 5. **There is now no clean `G4.1`
+  anywhere in this project.** Every earlier block in this file that calls it clean is retracted
+  here; those blocks are dated records and are left standing, not rewritten.
+* Only **`uk` epoch 2** is reported as a genuine over-dispersion the measurement can resolve.
+* **Item 2 (a)** — the five `1286634` readings (`1.117`–`1.646`, all FAIL) **are `es`'s post-repair
+  `G4.1` evidence.** Canonical epoch lines stay as scored (`1286209`, pre-repair); the basis
+  asymmetry is declared in the methods with the five post-repair readings beside them. 11 GPU-hours
+  not spent.
+* ⚪ **Step 4 closes with four failing gates — `G4.1`, `G4.3`, `G4.6`, `G4.12` — all explained.**
+  🔴 **Closing is not passing.** Never write Step 4 up as clean.
+
+### 🔴 `FINDING 101` — `es`'s `G4.1` is scored on PRE-REPAIR text; `uk` and `it` are not
+
+`uk` `1286547` and `it` `1286548` are full Leg-5 **training** runs; their epoch lines carry
+`G4.7 PASS [gen-terminated 600/600]`. `es` `1286546` is a **generation + diagnostics** pass — it
+computes `G4.3` / `G4.4` / `G4.12` and the coverage clause and **computes no trainer-side `G4.1` at
+all**; the only `G4.1` lines in its log are the perturbation-side ones `D-S4-11 (i)` already ruled
+`NOT COMPUTED`. `es`'s canonical `G4.1` therefore still comes from `1286209`, whose epoch lines read
+`G4.7 FAIL [107/600 · 138/600 · 127/600]`.
+
+⚪ **Correction of record, visible rather than silent:** `D-S4-15` §1 records `es` as
+"worst-high `1.456` … job `1286546`". `1.456` is a **recomputation** on the pre-repair `es` set from
+the `D-S4-8` investigation (this file, further down); the canonical epoch readings are
+`1.435 / 1.500 / 1.568` from job **`1286209`**. `D-S4-15`'s ruling turned on `it`'s PASS and on the
+absence of a floor, so it is unaffected and left as written.
+
+### 🔴 What Step 4 still OWES, closed or not
+
+Recorded so the closure cannot be read as completeness:
+
+* **Four of fifteen perturbations** are still not run, and the four `genperturb` levers naming
+  `G4.1` stay **UNDEMONSTRATED** per `D-S4-11 (i)`.
+* The **coverage clause FAILs on `es` and `uk`** — `G4.7` passes at baseline and no `genperturb`
+  lever fells it. A defect of the probe, not of the model.
+* The **ceiling run** was never done: it needs `nvidia_a100_7g.80gb` + `bitsandbytes`, and has
+  neither.
+* `4thJ_step4_thresholds.py` md5 `724b558f2fb46357c8bba2838adb5451` and `prereg.md` md5
+  `e4243e07cdd80c9c846b91f40e3e8c45` FROZEN, verified intact by the jobs themselves.
+
+### Where things live
+
+* Progress log: `Step4_docs/outputs_step4/proglog_step4_gates.md` (backup `.bak_ds415`).
+* Decisions: `IMP/docs/DONE/` — `D-S4-15` and `D-S4-16` both closed.
+* Board: `4thJ_CHECKLIST.html` — https://claude.ai/code/artifact/9e07da64-8e57-4e01-9c89-3fffd2a0ceaf
+
+---
+
+## ⚪ SUPERSEDED (written 2026-08-24, before the `G4.1` seed floor was read)
+
+#### Last updated: **2026-08-24 — 🟢 THE NINE FINISHED JOBS ARE READ. `G4.3` IS SETTLED AND IT IS THE BAR: the base model with NO adapter scores `0.0001`-`0.0011` nats/token, inside the pre-declared `0.00`-`0.02` band, so the fine-tune bought the conditioning (x60-x920) and the gap to `0.15` is the threshold's. 🔴 `G4.6`'s CONSEQUENCE IS LARGE AND MY PREDICTION WAS WRONG: parity is 4-19 %, not "high but not perfect" — the merged artefact does NOT generate the same diaries. `G4.7` IS REPAIRED AND RE-SCORED ON `es` (600/600, seen falling). 🔴 `G4.1` STILL UNEXPLAINED, but a SECOND failure mode is now visible. Thresholds FROZEN; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified intact by the job itself.**
+
+🔴 **Retraction applied to everything below by `D-S4-16`:** `it`'s epoch-2 `G4.1` PASS is **struck**.
+Where the blocks below call it clean, or call `G4.1` unexplained, read the top of this file instead.
 
 ### 🟢 2026-08-24 — JOB 1286614 COMPLETED: D-S4-12 (a+b) + D-S4-13 ALL THREE ANSWERED; D-S4-14 RULED (a)
 
@@ -5608,7 +6216,10 @@ The `.py` is UNCHANGED (md5 `409945ba930a72900d7c8a7a1ae9bf38`); its leg-4 branc
 adapter and is left as a recorded trap, not repaired, because no leg-4 floor is owed.
 RE-SUBMITTED: **1286634 `es` · 1286635 `uk` · 1286636 `it`**. `prereg.md` md5 verified `e4243e07…` in the void runs.
 
-### 2026-08-24 — SESSION CLOSED WITH 1286634/35/36 STILL RUNNING (cold-start instructions)
+### ⚪ ANSWERED 2026-08-24 (late) — 2026-08-24 — SESSION CLOSED WITH 1286634/35/36 STILL RUNNING (cold-start instructions)
+
+🟢 **All four steps below were carried out and all three cold-start checks PASS. The result is at the
+TOP of this file.** Kept as the record of what was registered before the numbers were seen.
 At close: all three **RUNNING**, elapsed `00:08:21`, no output read. Estimated 2-5 h each (5 seeds x 600
 generations, 7B bf16, `nvidia_a100_2g.20gb`, batch 8, max_len 1200) — an ESTIMATE, never measured, no prior
 5-seed run exists to calibrate it. Nothing below has been verified; the next agent verifies all of it.

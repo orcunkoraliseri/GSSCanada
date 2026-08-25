@@ -7,7 +7,7 @@
 
 ## STATUS
 
-**OPEN. Scoped by `RL13`.** 🟢 **2026-08-21: work item 8.1 has PARAMETER TABLES for all three folds** — `outputs_step8/archetype_parameters_{es,uk,it}.csv` (24 / 36 / 42 archetypes) with `archetype_parameter_provenance.md`. 🟢 **2026-08-21 (afternoon): `D-S8-2` item 5 RULED (c) and PRE-REGISTERED** — the `phi_int` split is a five-level sensitivity `f ∈ {0.00, 0.15, 0.30, 0.50, 1.00}` with `f = 0` as the control, annual mean held at exactly 3.0 W/m² throughout (§9 of the provenance file). The injected campaign is therefore **five times larger**: 102 archetypes × 5 = 510 archetype-runs per weather specification. 🔴 **No IDF exists**, **five** of the six geometry/zoning/load decisions are still open (§6 items 1–4 and 6), and items 8.2–8.6 are untouched.
+**OPEN. Scoped by `RL13`.** 🟢 **2026-08-21: work item 8.1 has PARAMETER TABLES for all three folds** — `outputs_step8/archetype_parameters_{es,uk,it}.csv` (24 / 36 / 42 archetypes) with `archetype_parameter_provenance.md`. 🟢 **2026-08-21 (afternoon): `D-S8-2` item 5 RULED (c) and PRE-REGISTERED** — the `phi_int` split is a five-level sensitivity `f ∈ {0.00, 0.15, 0.30, 0.50, 1.00}` with `f = 0` as the control, annual mean held at exactly 3.0 W/m² throughout (§9 of the provenance file). The injected campaign is therefore **five times larger**: 102 archetypes × 5 = 510 archetype-runs per weather specification. 🟢 **2026-08-24 (evening): SECTION 6 IS CLOSED — ALL SIX decisions ruled.** Items 1, 3 and 4 were the last three (the header previously said five, which contradicted this file’s own 2026-08-21 entry) and were ruled `1(a)` equal-facade 1:1.5 box, `3(a)` two-layer equivalent, `4a(a)` prefer `Gen`, `4b(a)` merged rows span their declared periods — brief at `Step8_docs/docs/2026-08-24_D-S8-2_items-1-3-4_geometry-layers-archetype-selection.md`. Three new findings, all from measuring the tables rather than quoting them: `FINDING 107` Italy has **0** empty cells (42 rows, 32 cells, 10 duplicates) so 4b was UK-only; `FINDING 108` the 3 missing GB cells sit inside `AB.04-08`’s declared span; `FINDING 109` **all 36 UK archetypes carry zero South and zero North glazing** while ES/IT use all four faces — a country-correlated convention, which is what forced `1(a)`. 🔴 **No IDF exists**, **no Step 8 gate has ever been run**, no weather file is on disk, and items 8.2–8.6 are untouched. 🔴 **Decision 14 (chaining) is still open** and still closes here, on a watt.
 
 ---
 
@@ -527,3 +527,285 @@ not be inferred from the absence of a paywall, which is what the earlier unverif
 
 No IDF written. No Step 8 gate run. `G8.1`-`G8.4` are `D-S8-1` (a) reproducibility gates with no run
 to reproduce. Section 6 items 1, 3 and 4 open.
+
+---
+
+### 2026-08-24 (evening) — 🟢 **SECTION 6 IS CLOSED. THE LAST THREE OPEN DECISIONS — ITEMS 1, 3 AND 4 — WERE RULED `1(a)`, `3(a)`, `4a(a)`, `4b(a)`, AND THREE OF THE FOUR QUESTIONS CHANGED SHAPE BEFORE THEY WERE PUT, BECAUSE THE PARAMETER TABLES WERE MEASURED RATHER THAN QUOTED.**
+
+Decision brief: `Step8_docs/docs/2026-08-24_D-S8-2_items-1-3-4_geometry-layers-archetype-selection.md`,
+status **RULED**, the author's rulings recorded in its own §7. No IDF exists yet; nothing below is a
+run.
+
+#### ⚪ First, the docket itself was wrong, and the correction is recorded before the rulings
+
+This document's STATUS line said **five** of six §6 decisions were open. Its own 2026-08-21 entry, 450
+lines lower, says items 2 and 6 are struck through and *"items 1, 3 and 4 remain open"*. **Three, not
+five.** The header had not been updated when items 2 and 6 were ruled. Fixed above.
+
+#### 🔴 `FINDING 107` — ITALY HAS NO EMPTY CELLS. THE 42 ROWS ARE NOT 42 CELLS.
+
+The tables were read from disk, not from the provenance summary, filtering the three leading `#`
+comment lines:
+
+| fold | rows | cells (`types × periods`) | duplicate cells | **empty cells** |
+|---|---|---|---|---|
+| `es` | 24 | 4 × 6 = **24** | 0 | **0** |
+| `uk` | 36 | 4 × 8 = **32** | 7 | **3** — `AB` × `GB.05`, `GB.06`, `GB.08` |
+| `it` | 42 | 4 × 8 = **32** | 10 | **0** |
+
+🔴 **This made item 4b a UK-only question.** It had been carried as a general one about "the folds
+with more rows than cells", and Italy's ten extra rows are duplicates of cells that are already
+filled — they need a *selection* rule (4a), never an *invention* rule. Had the question been put as
+written, it would have asked the author to rule on a gap Italy does not have.
+
+#### 🔴 `FINDING 108` — THE THREE MISSING GB CELLS ARE INSIDE A DECLARED SPAN. THE QUESTION WAS NOT "WHAT DO WE INVENT".
+
+Every UK `AB` row and the period its own TABULA code declares:
+
+```
+GB.01 -> GB.ENG.AB.01.ApartmentBuildings.SyAv.001     span 01
+GB.02 -> GB.ENG.AB.02-03.ApartmentBuildings.SyAv.002  span 02-03
+GB.03 -> GB.ENG.AB.03.Gen.ReEx.001                    span 03
+GB.04 -> GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005  span 04-08
+GB.04 -> GB.ENG.AB.04.Gen.ReEx.001                    span 04
+GB.07 -> GB.ENG.AB.07.Gen.ReEx.001                    span 07
+```
+
+`GB.05`, `GB.06` and `GB.08` are empty **only because the loader keyed `AB.04-08` to the first period
+of its span**. TABULA published one row for five bands and our reader filed it under one. The
+question became *may a merged row cover the periods its code declares* — which is a question about
+reading the source correctly, not about fabricating an archetype, and that is why the answer could be
+`(a)`.
+
+#### 🔴 `FINDING 109` — THE UK ARCHETYPES HAVE ZERO SOUTH AND ZERO NORTH GLAZING, IN ALL 36 ROWS. THIS REVERSED THE RECOMMENDATION ON ITEM 1.
+
+Count of rows carrying a non-zero window area on each face:
+
+| fold | rows | East | **South** | West | **North** | Horizontal |
+|---|---|---|---|---|---|---|
+| `es` | 24 | 19 | 17 | 17 | 19 | 0 |
+| `uk` | 36 | **36** | **0** | 27 | **0** | 0 |
+| `it` | 42 | 29 | 38 | 28 | 25 | 0 |
+
+🔴 **The three national TABULA teams did not use the compass columns the same way.** The British
+sheet books glazing to East (and partly West) and never to South or North; the Spanish and Italian
+sheets spread it over all four. Placing each `A_Window_<dir>` on the face of its own name would
+therefore give every UK archetype **an all-East-facing dwelling** and every Spanish and Italian one a
+four-sided dwelling — a **country-correlated** solar-gain difference, imposed by a bookkeeping
+convention, in a study whose entire design is LOCO. It would land in the same class as
+`FINDING 53` (three day bases) and `FINDING 60` (two household conventions): an artefact that is
+perfectly deterministic per country and therefore indistinguishable from a country effect.
+
+#### 🟢 The rulings
+
+| item | ruled | what it means |
+|---|:---:|---|
+| **1** geometry & glazing | **(a)** | One equivalent box per archetype, aspect ratio **1 : 1.5**, long axis **East–West**. Footprint `A_plate = A_C,Ref / n_Storey`, height `n_Storey × h_room`. **Total glazed area split equally over the four vertical facades**, neutralising the British zero-South convention (`FINDING 109`). Where the total-window column is zero the **sum of the compass columns** is used instead — this repairs `ES.ME.MFH.05`. |
+| **3** layers & thermal mass | **(a)** | **Two-layer equivalent per surface**: one mass-less resistive layer reproducing the TABULA `U` **exactly**, plus one capacitive layer sized so areal capacity reproduces `c_m = 45 Wh/(m²·K)`. Both normative quantities are met deterministically, and **no external construction assembly is invented** — no brick/EPS/plaster build-up enters the model. |
+| **4a** duplicate cells | **(a)** | **Prefer the `Gen` row wherever one exists**; a specific or composite row is used only where no `Gen` row exists. One symmetric rule for all **17** duplicate cells (`uk` 7 + `it` 10), so no country gets its own selection logic. |
+| **4b** merged GB rows | **(a)** | **A merged row represents every period its code declares** — `AB.04-08` expands over `GB.04`–`GB.08`, `AB.02-03` over `GB.02`–`GB.03`. The UK matrix closes at **32 / 32** with nothing fabricated. Where the expansion collides with a single-period row, **4a decides** (`Gen` wins). |
+
+⚪ **Where 4a and 4b interact, and the order matters.** `GB.04` is reachable two ways after the
+expansion: `AB.04-08.ApartmentBuildings.SyAv.005` by span and `AB.04.Gen.ReEx.001` directly. 4a is
+applied after 4b, so `GB.04` takes the `Gen` row and the merged row supplies `GB.05`–`GB.08` only.
+The rule is stated in that order deliberately; reversed, it would give `GB.04` a composite row while
+a `Gen` row for exactly that band sat unused.
+
+#### 🔴 What this does **not** unblock
+
+* **No IDF exists.** These four rulings are the specification for writing one; none of it has been
+  written, and **no Step 8 gate has ever been run** on any leg.
+* **Item 8.2 has no weather file.** The diary-survey-year ruling (§6 item 6) is a decision, not an
+  acquisition — nothing is on disk and the AMY licence question is still an unanswered Part B of
+  `DeepResearchPrompts/L27_...md`. The TABULA licence (Part C) is likewise unverified.
+* **`G8.1`–`G8.4` still have no reference series** — `D-S8-1` (a) made them reproducibility gates,
+  and there is no run to reproduce.
+* 🔴 **Decision 14 (chaining) is still open**, and Step 8 is where it closes, on a watt. Nothing here
+  touches it. `FINDING 105` removed one argument that was being made in its support.
+* The `f ∈ {0, 0.15, 0.30, 0.50, 1.00}` sensitivity (`D-S8-2` item 5) still multiplies the campaign by
+  five: **102 archetypes × 5 = 510 archetype-runs** per weather specification.
+
+⚪ `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`. No threshold moved, no checker
+edited, no parameter table rewritten — `archetype_parameters_{es,uk,it}.csv` are byte-identical to
+their 2026-08-21 state and the rulings above are instructions to the **builder**, not edits to the
+tables.
+
+---
+
+### 2026-08-24 (night) — 🟢 **WORK ITEM 8.1 IS BUILT AND VALIDATED. 88 ARCHETYPE IDFs EXIST, ALL 88 RUN IN ENERGYPLUS WITH ZERO SEVERE ERRORS, AND ENERGYPLUS ITSELF REPRODUCES EVERY TABULA U TO 0.0005 W/(m²·K). 🔴 AND THE VALIDATION FOUND TWO THINGS THE RULINGS DID NOT ANTICIPATE — `FINDING 110` AND `FINDING 111` — BOTH COUNTRY-CORRELATED, ONE OF WHICH NEEDS THE AUTHOR.**
+
+`tools/4thJ_step8_idf.py` + `tools/4thJ_step8_idf_selftest.py`. Local, no Speed job. E+ **24.2.0**,
+build hash **`94a887817b`**.
+
+#### 🟢 The archetype set is **88**, not 102 — and that is the rulings working, not a loss
+
+`102` counted **rows in the parameter tables**. `4a(a)` and `4b(a)` turn rows into **cells**, and a
+cell is what gets an IDF:
+
+| fold | rows | matrix | resolved | 4b expansions | rows excluded |
+|---|---|---|---|---|---|
+| `es` | 24 | 4 × 6 = **24** | 24 | 0 | 0 |
+| `uk` | 36 | 4 × 8 = **32** | 32 | 6 | 0 |
+| `it` | 42 | 4 × 8 = **32** | 32 | 0 | **10** |
+| | | | **88** | | |
+
+🔴 **The campaign is therefore `88 × 5 = 440` archetype-runs per weather specification, not
+`102 × 5 = 510`.** The 510 figure has been carried since 2026-08-21 and is superseded. ⚪ It is not
+in `prereg.md` — checked, the file names no archetype count — so this is a Step 8 figure being
+corrected, not a deviation from a frozen registration.
+
+🔴 **Italy's ten extra rows are not duplicates. They are COMBINED-CLASS rows, and `4a(a)` cannot
+arbitrate them.** `FINDING 107` called them duplicate cells; reading the codes says otherwise:
+
+```
+IT.MidClim.MFH-AB.01-03.Gen.ReEx.001   IT.MidClim.SFH-TH.01-03.Gen.ReEx.001
+IT.MidClim.MFH-AB.04-05.Gen.ReEx.001   IT.MidClim.SFH-TH.04-05.Gen.ReEx.001
+IT.MidClim.MFH-AB.06.Gen.ReEx.001      IT.MidClim.SFH-TH.06.Gen.ReEx.001
+IT.MidClim.MFH-AB.07.Gen.ReEx.001      IT.MidClim.SFH-TH.07.Gen.ReEx.001
+IT.MidClim.MFH-AB.08.Gen.ReEx.001      IT.MidClim.SFH-TH.08.Gen.ReEx.001
+```
+
+`MFH-AB` names **two** classes. It is TABULA's coarser two-class breakdown published beside the
+four-class one — and for periods 06/07/08 the combined row is numerically **identical** to the
+single-class row (`SFH-TH.06` `A_C_Ref` = 199.1 = `SFH.06`; `MFH-AB.08` = 829.4 = `MFH.08`). Both
+candidates carry `.Gen.`, so **`4a(a)`'s Gen preference cannot choose between them** — it discriminates
+on the variant token, and here the difference is in the *class* token. The builder excludes them on
+the ground that a row labelled `MFH-AB` is a row for neither `MFH` nor `AB` alone, and the exclusion
+is **listed by name** in `archetype_selection_report.json` rather than performed silently. Italy still
+closes at 32/32 without them, so nothing is lost — but this is a gap in `4a(a)` as written, and it is
+recorded as one.
+
+⚪ Also recorded: **the loader had been filing these under the FIRST class token** (`MFH-AB` → `MFH`),
+which is why the earlier count called Italy's 42 rows "10 duplicates". That was the loader's choice,
+not TABULA's.
+
+#### 🟢 The four rulings, checked one at a time rather than in aggregate
+
+`4thJ_step8_idf_selftest.py` half A, **17 of 17**:
+
+* `1(a)` — `W/D = 1.5` on all 88; footprint `= A_C_Ref / n_Storey` on all 88; height
+  `= n_Storey × h_room` on all 88; glazed area **split into exactly four equal faces** on all 88.
+* the compass-sum fallback fires **exactly once**, on `ES.ME.MFH.05` — which is the archetype the
+  ruling named. Not asserted from the ruling; measured from the output and compared to it.
+* `3(a)` — `c_m × A_C_Ref` conserved over the modelled opaque envelope on all 88, and **no
+  construction clamped**.
+* `4b(a)` — the UK matrix closes at **32/32**; the four cells served by a merged-span row are
+  `AB.02`, `AB.05`, `AB.06`, `AB.08` and no others; the three the table left empty are filled by
+  `GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005` specifically.
+* `4a` **after** `4b` — `GB.04` is reachable both ways and takes the `.Gen.` row, checked directly.
+
+#### 🟢 Half B is the half that matters, and it is a round-trip through EnergyPlus, not arithmetic
+
+All **88** IDFs were run. **88 / 88 exit 0, zero severe errors.** For every opaque exterior surface
+the `U-Factor no Film` E+ computed for itself was read back out of `eplustbl.csv` and compared to
+`1 / (1/U_TABULA − R_si − R_se)`:
+
+**worst deviation over 440 surfaces: `0.00050 W/(m²·K)`** (`it_MFH_IT05`, E+ 1.8000 against a
+required 1.8005 — a rounding digit).
+
+🔴 **This selftest has been seen failing, four separate times, on defects it found in this build.**
+Not one of them was predicted:
+
+| what failed | what it caught |
+|---|---|
+| `A11` | `ES.ME.SFH.01` has `U_Roof = 5.56 + 0.15`. At the first mass-layer conductivity the capacitive layer's own resistance (0.05) **exceeded the whole available resistance** (0.035) and the construction had to be clamped. Fixed by raising the conductivity to 5.0 — which changes no U and no `c_m`, because conductivity does not enter areal capacity. |
+| `A3`/`A4` | The manifest's `period` column carried the **chosen row's** period, not the **cell's**. Six UK files said `GB.04` beside a file named `uk_AB_GB05.idf`. The IDFs were right; the provenance was lying. Now `cell_period` and `row_period` are both written. |
+| `B1` | `ScheduleTypeLimits` unit type `ControlMode` is not an EnergyPlus enum value. Every Spanish archetype was fatal on input processing. Caught on the very first run of half B. |
+| `B3` | 🔴 **The check itself was wrong** — see `FINDING 111`. |
+
+#### 🔴 `FINDING 110` — THE EQUAL-FACADE BOX CONSERVES FLOOR AREA AND VOLUME. IT DOES NOT CONSERVE ENVELOPE AREA, AND WHAT IT LOSES IS COUNTRY-CORRELATED: ITALY'S TRANSMISSION LOSS IS UNDERSTATED BY 23.5 %, THE UK'S BY 4.4 %.
+
+`1(a)` derives the box from `A_C_Ref` and `n_Storey`. Nothing in that derivation touches
+`A_Wall_1..3`, `A_Roof_1..2` or `A_Floor_1..2`, so TABULA's own envelope areas are simply not used —
+and the box does not reproduce them. Ratio of modelled to published opaque envelope area, and the
+consequence for `H_transmission = Σ U·A`:
+
+| fold | opaque envelope, box / TABULA | `H_transmission`, box / TABULA |
+|---|---|---|
+| `es` | median **0.889** (0.515 – 1.926) | median **0.924** (0.576 – 1.582) |
+| `uk` | median **0.946** (0.699 – 1.552) | median **0.956** (0.802 – 1.213) |
+| `it` | median **0.718** (0.361 – 1.322) | median **0.765** (0.576 – 1.240) |
+
+🔴 **The spread across folds is 19 percentage points and it is deterministic per country.** Broken
+down by class, the driver is visible:
+
+| class | `es` | `uk` | `it` |
+|---|---|---|---|
+| `SFH` | 0.873 | 0.871 | 0.792 |
+| `TH` | 0.961 | 1.139 | 1.063 |
+| `MFH` | 0.906 | 0.934 | **0.703** |
+| `AB` | 1.022 | 1.058 | **0.656** |
+
+It is not the class mix — every fold carries the same four classes in equal numbers. It is that the
+**Italian TABULA reference buildings for `MFH` and `AB` are shaped nothing like a 1 : 1.5 box.**
+`IT.MidClim.AB.02` publishes `A_Wall = 3,257 m²`; the box built from its own `A_C_Ref = 2,448` over
+4 storeys has `473 m²` of wall. A factor of **6.9**.
+
+⚪ **This does not make `1(a)` wrong, and it is not a reason to reopen it on its own terms.** `1(a)`
+was ruled to neutralise `FINDING 109`, the zero-South British glazing convention, and it does that.
+But it was ruled without this number, exactly as `FINDING 109` was discovered after the geometry
+question was first drafted. **This is the same class of artefact as `FINDING 53`, `FINDING 60` and
+`FINDING 109`: perfectly deterministic per country, and therefore indistinguishable from a country
+effect in a design whose entire claim is LOCO.** It goes to the author as **`D-S8-3`**, with the
+brief at `Step8_docs/docs/2026-08-24_D-S8-3_the-box-does-not-conserve-envelope-area.md`.
+
+#### 🔴 `FINDING 111` — TABULA'S U AND ENERGYPLUS'S U ARE NOT THE SAME QUANTITY, AND THE GAP GROWS WITH U, SO IT TOO IS PERIOD- AND COUNTRY-CORRELATED.
+
+TABULA publishes a thermal transmittance in the **EN ISO 6946** sense: films included, at the fixed
+`R_si = 0.13`, `R_se = 0.04` for a wall. An EnergyPlus `Construction` resistance **excludes** films
+and E+ adds its own — dynamically in simulation, and at its own standard values in the tabular
+report. The builder therefore gives the resistive layer `1/U − R_si − R_se`, and `B3` confirms E+
+computes exactly that back.
+
+But the U **E+ will actually simulate with** is not TABULA's. Over the same 440 surfaces:
+
+```
+(U_Eplus_with_film - U_TABULA) / U_TABULA      min -0.00 %   median +2.58 %   max +6.70 %
+```
+
+🔴 **The gap grows with U**, because the film resistance is a fixed additive term. A poorly insulated
+1960s wall is overstated by ~6 %; a modern one by well under 1 %. Construction period therefore sets
+the size of the error, and the period mix differs by fold (median `U_wall + Δ`: `uk` 1.700,
+`es` 1.606, `it` 1.305).
+
+⚪ **The alternative convention would have been far worse and in the opposite direction.** Had the
+resistive layer been given `1/U` outright — the naive reading of *"a layer matching TABULA U"* — E+
+would have added films on top, understating transmittance by **≈ 30 %** at `U = 2.56` and **≈ 5 %** at
+`U = 0.30`. That is a five-fold period-dependent bias instead of a six-fold-smaller one. The ISO 6946
+subtraction is the right choice and it is now in the code with the reason beside it.
+
+🔴 **`B3` originally tested the wrong quantity** — it compared E+'s with-film U to TABULA's U and
+failed, and the temptation was to call the construction broken. It was not; the check was. `B3` now
+tests the construction alone, which is what the builder controls, and **`B4` reports the film gap as
+a measured number that is deliberately not a pass/fail**, because it does not go away and hiding it
+behind a quantity that agrees would be the `FINDING 47` error.
+
+#### ⚪ What the IDFs contain, and what TABULA does not give us
+
+One thermal zone (§6 item 2). Four walls, four windows — one per facade by `1(a)` — a roof, a
+ground-coupled floor. `WindowMaterial:SimpleGlazingSystem` at `U_Window_1`. `OtherEquipment` carrying
+`phi_int × A_C_Ref` watts on `SCH_ALWAYS_ON`, which is the hook item 8.5 replaces with the Step 7
+schedule and the `f ∈ {0, 0.15, 0.30, 0.50, 1.00}` sensitivity. Ideal loads, heating only —
+`ThermostatSetpoint:SingleHeating` — because TABULA residential has no cooling demand.
+
+Six quantities are **not** in the 44 columns we hold and are declared in
+`archetype_selection_report.json`, every one **uniform across all 88 archetypes and all three folds**
+so that it cannot itself manufacture a country difference: `SHGC = 0.70`, infiltration
+`0.50 ach`, heating set point `20 °C` (the EU boundary condition, per `FINDING 57`), no cooling, no
+ground temperatures, no window frame fraction.
+
+🔴 **The weather is still item 8.2 and is still open.** Half B ran on the Chicago TMY3 file that
+ships with EnergyPlus. That is a **validity probe and never a result** — a U-factor round-trip does
+not depend on climate, and no energy number from those runs is recorded anywhere. The `RunPeriod`
+written into each IDF is a **calendar**, not a weather choice.
+
+#### What this entry does not settle
+
+* **`D-S8-3` is open** and it is on the critical path of any number Step 8 produces.
+* **Item 8.2 has no weather file**, so 8.3 cannot start.
+* **`G8.1`–`G8.4` still have no reference series** and no Step 8 gate has been run.
+* 🔴 **Decision 14 (chaining) is still open** and still closes here, on a watt.
+* `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`.
+
+Artefacts: `outputs_step8/archetypes/*.idf` (88 files), `outputs_step8/archetype_idf_manifest.csv`,
+`outputs_step8/archetype_selection_report.json`.

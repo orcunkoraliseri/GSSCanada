@@ -35,10 +35,27 @@ TAG=${5:-}
 # 5,115 / 5,203 / 4,850 for es / uk / it. A Leg-5 batch smaller than that produces
 # gates that cannot be reported at all, so it is refused here rather than
 # discovered afterwards.
-if [ "$LEG" = "5" ] && [ "$N" -lt 5200 ]; then
-    echo "REFUSED: leg 5 with N=$N. D-S7-4 (a) mandates N >= 5200 per fold; below"
-    echo "that V7.a cannot score G7.7/G7.8 and the batch is unreportable."
+# 🔴 `D-S6-15` item 3 (a), RULED 2026-08-24: the refusal is NARROWED to the six
+# PRIMARY batches. `V7.a` is its only justification and `V7.a` is a Step 7 guard
+# -- `grep -l "V7\.a" tools/4thJ_step6_{g66_heldin,g67_score,level1}.py` returns
+# nothing. Applied to all 27 it would force the 21 auxiliary batches to 8.7x
+# their rehearsal size for a reason that does not reach them, and would move
+# `G6.6`/`G6.7` off the single N their own Leg-4 comparisons rest on.
+#
+# A batch is PRIMARY iff it takes both defaults: the fold's own prefixes and no
+# tag. Every `G6.6` batch names a donor country, every `G6.7` level names a tag.
+# The class is DERIVED from the invocation, never hand-labelled.
+IS_PRIMARY=0
+if [ -z "$TAG" ] && [ "$PFX" = "$FOLD" ]; then IS_PRIMARY=1; fi
+
+if [ "$LEG" = "5" ] && [ "$IS_PRIMARY" = "1" ] && [ "$N" -lt 5200 ]; then
+    echo "REFUSED: leg 5 PRIMARY batch with N=$N. D-S7-4 (a) mandates N >= 5200 per"
+    echo "fold; below that V7.a cannot score G7.7/G7.8 and the batch is unreportable."
     exit 1
+fi
+if [ "$LEG" = "5" ] && [ "$IS_PRIMARY" = "0" ]; then
+    echo "leg 5 AUXILIARY batch (prefixes=$PFX tag=$TAG): N=$N, the 5200 floor does"
+    echo "not apply -- D-S6-15 item 3 (a). G6.6/G6.7 stay on their Leg-4 N."
 fi
 
 ENVDIR=/speed-scratch/o_iseri/envs/step7

@@ -1,0 +1,167 @@
+{
+  "G6_10": {
+    "achieved_fpr": 0.0005,
+    "auc": 0.6644655,
+    "auc_max": 0.65,
+    "passes": false,
+    "reasons": [
+      "ROC-AUC 0.6645 exceeds 0.65"
+    ],
+    "resolution_note": null,
+    "tpr_at_fpr": 0.001,
+    "tpr_max": 0.05
+  },
+  "G6_11": {
+    "auc": 0.5594225,
+    "auc_max": 0.75,
+    "passes": true,
+    "reasons": []
+  },
+  "G6_12": {
+    "blocked": false,
+    "n_attempted": 103,
+    "n_exact_greedy": 0,
+    "n_exact_sampled": 0,
+    "n_rare_records": 103,
+    "n_rare_strata": 39,
+    "passes": true,
+    "reasons": []
+  },
+  "adapter": "/speed-scratch/o_iseri/4J_step4/runs_leg5/leg5_primary_fold_it/adapter",
+  "base_repo": "allenai/Olmo-3-1025-7B",
+  "control_perplexity_gap": {
+    "gap": 0.05700910134072525,
+    "gap_max": 0.05,
+    "passes": false,
+    "test_ppl": 1.7331478924958494,
+    "train_ppl": 1.6396716833350822
+  },
+  "control_random_label_permutation": {
+    "adapter": "/speed-scratch/o_iseri/4J_step4/runs_leg5_permuted_control/leg5_permuted_fold_it/adapter",
+    "alarms": [
+      "G6.10: the reported adapter's AUC 0.6645 is at or above the memorisation ceiling 0.6496",
+      "G6.11: the reported adapter's AUC 0.5594 is at or above the memorisation ceiling 0.5441"
+    ],
+    "ceiling_G6_10": {
+      "achieved_fpr": 0.0005,
+      "auc": 0.64955075,
+      "auc_max": 0.65,
+      "passes": true,
+      "reasons": [],
+      "resolution_note": null,
+      "tpr_at_fpr": 0.002,
+      "tpr_max": 0.05
+    },
+    "ceiling_G6_10_auc": 0.64955075,
+    "ceiling_G6_11": {
+      "auc": 0.54412925,
+      "auc_max": 0.75,
+      "passes": true,
+      "reasons": []
+    },
+    "ceiling_G6_11_auc": 0.54412925,
+    "ceiling_perplexity_gap": {
+      "gap": 0.05107971573685934,
+      "gap_max": 0.05,
+      "passes": false,
+      "test_ppl": 1.7446702454679683,
+      "train_ppl": 1.6598838502414324
+    },
+    "corpus": "/speed-scratch/o_iseri/4J_step4/shards_permuted_control/corpus_permuted_control.jsonl",
+    "decision": "D-S6-14 (a) + (ii)/(iii), author 2026-08-22",
+    "headroom_G6_10": -0.014914750000000088,
+    "headroom_G6_11": -0.015293250000000036,
+    "limitation": "The permutation is within (country, split), so P(body | country) survives it -- five of the six prefix fields are de-associated, not all six. Forced by LOCO fold isolation; see 4thJ_step4_shards.py.",
+    "measured_G6_10_auc": 0.6644655,
+    "measured_G6_11_auc": 0.5594225,
+    "n_per_class": 2000,
+    "note": "The CEILING, not a bar. `G6.10 <= 0.65` and `G6.11 <= 0.75` are unchanged and are the only thresholds that decide anything. This number says what pure rote memorisation scores at this model size, so a passing AUC can be called low against something rather than against nothing. Its own verdict fields are what the SAME scoring code returns for it and are NOT a pass/fail on the control.",
+    "permutation_seed": 614614,
+    "present": true,
+    "seed": 20260822
+  },
+  "control_untuned_base_auc": 0.488585625,
+  "coverage_clause": {
+    "no_op_perturbations": [
+      "g610_tail",
+      "pplgap_widen"
+    ],
+    "passes": false,
+    "seen_failing": {
+      "G6_10": "NEVER SEEN FAILING",
+      "G6_11": [
+        "g610_memorise",
+        "g611_reference"
+      ],
+      "G6_12": [
+        "g612_verbatim"
+      ]
+    }
+  },
+  "fold": "it",
+  "leg": 5,
+  "n_per_class": 2000,
+  "perturbations": {
+    "g610_memorise": {
+      "G6_10_auc": 0.99998825,
+      "G6_10_tpr": 0.998,
+      "G6_11_auc": 0.8978115,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [
+        "G6_11"
+      ],
+      "ppl_gap": 0.7427133887040811
+    },
+    "g610_tail": {
+      "G6_10_auc": 0.66586925,
+      "G6_10_tpr": 0.08,
+      "G6_11_auc": 0.5841955,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [],
+      "ppl_gap": 0.5768722830116982
+    },
+    "g611_reference": {
+      "G6_10_auc": 0.6644655,
+      "G6_10_tpr": 0.001,
+      "G6_11_auc": 0.99204975,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [
+        "G6_11"
+      ],
+      "ppl_gap": 0.05700910134072525
+    },
+    "g612_verbatim": {
+      "G6_10_auc": 0.6644655,
+      "G6_10_tpr": 0.001,
+      "G6_11_auc": 0.5594225,
+      "G6_12_exact": 1,
+      "control_perplexity_gap_fell": false,
+      "fell": [
+        "G6_12"
+      ],
+      "ppl_gap": 0.05700910134072525
+    },
+    "null": {
+      "G6_10_auc": 0.6644655,
+      "G6_10_tpr": 0.001,
+      "G6_11_auc": 0.5594225,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [],
+      "ppl_gap": 0.05700910134072525
+    },
+    "pplgap_widen": {
+      "G6_10_auc": 0.83670325,
+      "G6_10_tpr": 0.005,
+      "G6_11_auc": 0.630107,
+      "G6_12_exact": 0,
+      "control_perplexity_gap_fell": false,
+      "fell": [],
+      "ppl_gap": 0.1479000381289632
+    }
+  },
+  "seed": 20260822
+}

@@ -1,0 +1,249 @@
+{
+  "G6_7": {
+    "active_aggregates": [
+      "AC0",
+      "AC1_TR",
+      "AC2",
+      "AC3",
+      "AC9A"
+    ],
+    "excluded_aggregate": "AC4-8",
+    "levels": [
+      {
+        "follows_the_vector": false,
+        "level": 0,
+        "mae_vs_expected": 60.70597719585111,
+        "mae_vs_national": {
+          "es": 44.07072519441275,
+          "it": 47.77569475749964,
+          "uk": 44.762514007630436
+        },
+        "nearest_country": "es"
+      },
+      {
+        "follows_the_vector": false,
+        "level": 1,
+        "mae_vs_expected": 59.1470514934304,
+        "mae_vs_national": {
+          "es": 41.5262807499683,
+          "it": 45.2312503130552,
+          "uk": 40.77477421356122
+        },
+        "nearest_country": "uk"
+      },
+      {
+        "follows_the_vector": false,
+        "level": 2,
+        "mae_vs_expected": 49.036759461943205,
+        "mae_vs_national": {
+          "es": 41.22060570451918,
+          "it": 42.846994250202556,
+          "uk": 44.78866310245012
+        },
+        "nearest_country": "es"
+      },
+      {
+        "follows_the_vector": true,
+        "level": 3,
+        "mae_vs_expected": 34.19424507741316,
+        "mae_vs_national": {
+          "es": 40.43727237118584,
+          "it": 42.063660916869225,
+          "uk": 43.04977421356123
+        },
+        "nearest_country": "es"
+      },
+      {
+        "follows_the_vector": true,
+        "level": 4,
+        "mae_vs_expected": 16.638431447581738,
+        "mae_vs_national": {
+          "es": 30.868649782091833,
+          "it": 31.31898095941374,
+          "uk": 38.99699643578345
+        },
+        "nearest_country": "es"
+      }
+    ],
+    "passes": false,
+    "per_aggregate": {
+      "AC0": {
+        "expected_range": 24.181499186480778,
+        "fitted": true,
+        "generated_range": 27.100000000000023,
+        "r2": 0.8427355536275414,
+        "slope": 0.9699864513420402
+      },
+      "AC1_TR": {
+        "expected_range": 51.14691960676316,
+        "fitted": true,
+        "generated_range": 32.8,
+        "r2": 0.9399635607882579,
+        "slope": -0.6163468456831395
+      },
+      "AC2": {
+        "expected_range": 79.30499570877556,
+        "fitted": true,
+        "generated_range": 22.049999999999997,
+        "r2": 0.9896766532040907,
+        "slope": 0.2862651275521593
+      },
+      "AC3": {
+        "expected_range": 67.20670882099205,
+        "fitted": true,
+        "generated_range": 73.94999999999999,
+        "r2": 0.9747282304209186,
+        "slope": 0.995832167455337
+      },
+      "AC4-8": {
+        "expected_range": 47.970233975487986,
+        "fitted": false,
+        "generated_range": 91.38333333333333,
+        "r2": 0.9350481118581999,
+        "slope": -1.6482627458340249
+      },
+      "AC9A": {
+        "expected_range": 24.021014083105392,
+        "fitted": true,
+        "generated_range": 12.25,
+        "r2": 0.5104887624569993,
+        "slope": 0.32558421654330083
+      }
+    },
+    "pooled_r2": 0.3403563443637813,
+    "pooled_r2_all_six": 0.012266067303919739,
+    "pooled_slope": 0.41530107368358027,
+    "pooled_slope_all_six": 0.10327079188226511,
+    "reasons": [
+      "amplitude: slope 0.4153 over the 5 active aggregates is below 0.80 (the residual bucket AC4-8 is excluded, D-S6-13)",
+      "at level(s) 0, 1, 2 a real country's national profile explains the output better than the conditioning vector does"
+    ],
+    "slope_min": 0.8,
+    "steering": {
+      "aggregate": "AC2",
+      "passes": true,
+      "r2": 0.9896766532040907,
+      "r2_min": 0.8,
+      "slope": 0.2862651275521593
+    }
+  },
+  "coverage_clause": {
+    "no_op_perturbations": [
+      "ignore_prefix",
+      "recite_country",
+      "flatten"
+    ],
+    "passes": false,
+    "seen_failing": "\ud83d\udd34 NEVER SEEN FAILING (or already FAILING at baseline)"
+  },
+  "fold": "es",
+  "leg": 5,
+  "manifest": "Step6_docs/outputs_step6/g67_prefixes/g67_manifest_es.json",
+  "national_profiles": {
+    "es": {
+      "AC0": 688.8808677672821,
+      "AC1_TR": 147.51108482255077,
+      "AC2": 35.04895831893622,
+      "AC3": 181.35869180301404,
+      "AC4-8": 315.3642464335631,
+      "AC99NSP": 1.2523385318586326,
+      "AC9A": 66.18899488825649,
+      "_n": 19140,
+      "_weight_sum": 162500706.01908046,
+      "null_000": 4.39481743453497
+    },
+    "it": {
+      "AC0": 692.4090398723665,
+      "AC1_TR": 136.59186886071146,
+      "AC2": 39.61496772474416,
+      "AC3": 187.59443485522456,
+      "AC4-8": 306.2557930594333,
+      "AC99NSP": 1.3145574451205564,
+      "AC9A": 75.89965029138446,
+      "_n": 38260,
+      "_weight_sum": 162800375.8159017,
+      "null_000": 0.3196878910272835
+    },
+    "uk": {
+      "AC0": 657.358008712867,
+      "AC1_TR": 156.64307342139287,
+      "AC2": 31.265293081436,
+      "AC3": 170.82988604887427,
+      "AC4-8": 320.076754198007,
+      "AC99NSP": 28.028690876925157,
+      "AC9A": 72.27159440495339,
+      "_n": 15852,
+      "_weight_sum": 15919.834235742634,
+      "null_000": 3.5266992555629932
+    }
+  },
+  "perturbations": {
+    "flatten": {
+      "fell": false,
+      "passes": false,
+      "pooled_slope": 0.20765053684179005,
+      "reasons": [
+        "amplitude: slope 0.2077 over the 5 active aggregates is below 0.80 (the residual bucket AC4-8 is excluded, D-S6-13)",
+        "at level(s) 0, 1, 2 a real country's national profile explains the output better than the conditioning vector does"
+      ],
+      "steering": {
+        "aggregate": "AC2",
+        "passes": true,
+        "r2": 0.9896766532040907,
+        "r2_min": 0.8,
+        "slope": 0.14313256377607966
+      }
+    },
+    "ignore_prefix": {
+      "fell": false,
+      "passes": false,
+      "pooled_slope": 0.0,
+      "reasons": [
+        "steering: AC2 slope +0.0000 R2 nan -- needs slope > 0 and R2 >= 0.80. The model is not tracking the channel the lambda tilt targets.",
+        "amplitude: slope 0.0000 over the 5 active aggregates is below 0.80 (the residual bucket AC4-8 is excluded, D-S6-13)",
+        "at level(s) 0, 1, 2 a real country's national profile explains the output better than the conditioning vector does"
+      ],
+      "steering": {
+        "aggregate": "AC2",
+        "passes": false,
+        "r2": NaN,
+        "r2_min": 0.8,
+        "slope": 0.0
+      }
+    },
+    "null": {
+      "fell": false,
+      "passes": false,
+      "pooled_slope": 0.41530107368358027,
+      "reasons": [
+        "amplitude: slope 0.4153 over the 5 active aggregates is below 0.80 (the residual bucket AC4-8 is excluded, D-S6-13)",
+        "at level(s) 0, 1, 2 a real country's national profile explains the output better than the conditioning vector does"
+      ],
+      "steering": {
+        "aggregate": "AC2",
+        "passes": true,
+        "r2": 0.9896766532040907,
+        "r2_min": 0.8,
+        "slope": 0.2862651275521593
+      }
+    },
+    "recite_country": {
+      "fell": false,
+      "passes": false,
+      "pooled_slope": 0.0,
+      "reasons": [
+        "steering: AC2 slope +0.0000 R2 nan -- needs slope > 0 and R2 >= 0.80. The model is not tracking the channel the lambda tilt targets.",
+        "amplitude: slope 0.0000 over the 5 active aggregates is below 0.80 (the residual bucket AC4-8 is excluded, D-S6-13)",
+        "at level(s) 0, 1, 2, 3, 4 a real country's national profile explains the output better than the conditioning vector does"
+      ],
+      "steering": {
+        "aggregate": "AC2",
+        "passes": false,
+        "r2": NaN,
+        "r2_min": 0.8,
+        "slope": 0.0
+      }
+    }
+  },
+  "token": "x_zz"
+}

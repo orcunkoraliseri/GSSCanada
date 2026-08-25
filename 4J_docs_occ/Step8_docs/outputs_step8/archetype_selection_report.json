@@ -1,0 +1,791 @@
+{
+  "rulings": "D-S8-2 items 1(a) 3(a) 4a(a) 4b(a), 2026-08-24",
+  "assumed": [
+    {
+      "name": "SHGC",
+      "value": 0.7,
+      "unit": "-",
+      "why": "No g-value column exists in archetype_parameters_*.csv. Uniform across all archetypes so it cannot become a country effect."
+    },
+    {
+      "name": "infiltration_ach",
+      "value": 0.5,
+      "unit": "1/h",
+      "why": "n_air_use is not among the 44 columns. Uniform, same reason."
+    },
+    {
+      "name": "heating_setpoint",
+      "value": 20.0,
+      "unit": "degC",
+      "why": "The EU.* boundary-condition set point. Consistent with FINDING 57 (the archetypes carry EU, not national, boundary conditions)."
+    },
+    {
+      "name": "cooling",
+      "value": null,
+      "unit": "-",
+      "why": "None. TABULA residential has no cooling demand; the model is heating-only (ThermostatSetpoint:SingleHeating)."
+    },
+    {
+      "name": "ground_temp",
+      "value": null,
+      "unit": "-",
+      "why": "Not set here. Left to EnergyPlus defaults until item 8.2 supplies a weather file and with it a site."
+    },
+    {
+      "name": "window_frame",
+      "value": null,
+      "unit": "-",
+      "why": "No frame fraction column. U_Window_1 is applied to the whole opening via WindowMaterial:SimpleGlazingSystem, whose U-factor is an NFRC whole-window value and therefore already film-inclusive."
+    }
+  ],
+  "eplus_version": "24.2",
+  "folds": [
+    {
+      "fold": "es",
+      "rows_in_table": 24,
+      "classes": [
+        "AB",
+        "MFH",
+        "SFH",
+        "TH"
+      ],
+      "periods": [
+        "ES.01",
+        "ES.02",
+        "ES.03",
+        "ES.04",
+        "ES.05",
+        "ES.06"
+      ],
+      "cells_in_matrix": 24,
+      "cells_resolved": 24,
+      "rows_expanded_by_4b": 0,
+      "combined_class_rows_excluded": [],
+      "unparsed": [],
+      "picks": [
+        {
+          "cell": "AB|ES.01",
+          "n_candidates": 1,
+          "chosen": "ES.ME.AB.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|ES.02",
+          "n_candidates": 1,
+          "chosen": "ES.ME.AB.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|ES.03",
+          "n_candidates": 1,
+          "chosen": "ES.ME.AB.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|ES.04",
+          "n_candidates": 1,
+          "chosen": "ES.ME.AB.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|ES.05",
+          "n_candidates": 1,
+          "chosen": "ES.ME.AB.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|ES.06",
+          "n_candidates": 1,
+          "chosen": "ES.ME.AB.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|ES.01",
+          "n_candidates": 1,
+          "chosen": "ES.ME.MFH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|ES.02",
+          "n_candidates": 1,
+          "chosen": "ES.ME.MFH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|ES.03",
+          "n_candidates": 1,
+          "chosen": "ES.ME.MFH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|ES.04",
+          "n_candidates": 1,
+          "chosen": "ES.ME.MFH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|ES.05",
+          "n_candidates": 1,
+          "chosen": "ES.ME.MFH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|ES.06",
+          "n_candidates": 1,
+          "chosen": "ES.ME.MFH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|ES.01",
+          "n_candidates": 1,
+          "chosen": "ES.ME.SFH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|ES.02",
+          "n_candidates": 1,
+          "chosen": "ES.ME.SFH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|ES.03",
+          "n_candidates": 1,
+          "chosen": "ES.ME.SFH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|ES.04",
+          "n_candidates": 1,
+          "chosen": "ES.ME.SFH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|ES.05",
+          "n_candidates": 1,
+          "chosen": "ES.ME.SFH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|ES.06",
+          "n_candidates": 1,
+          "chosen": "ES.ME.SFH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|ES.01",
+          "n_candidates": 1,
+          "chosen": "ES.ME.TH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|ES.02",
+          "n_candidates": 1,
+          "chosen": "ES.ME.TH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|ES.03",
+          "n_candidates": 1,
+          "chosen": "ES.ME.TH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|ES.04",
+          "n_candidates": 1,
+          "chosen": "ES.ME.TH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|ES.05",
+          "n_candidates": 1,
+          "chosen": "ES.ME.TH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|ES.06",
+          "n_candidates": 1,
+          "chosen": "ES.ME.TH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        }
+      ],
+      "missing": []
+    },
+    {
+      "fold": "uk",
+      "rows_in_table": 36,
+      "classes": [
+        "AB",
+        "MFH",
+        "SFH",
+        "TH"
+      ],
+      "periods": [
+        "GB.01",
+        "GB.02",
+        "GB.03",
+        "GB.04",
+        "GB.05",
+        "GB.06",
+        "GB.07",
+        "GB.08"
+      ],
+      "cells_in_matrix": 32,
+      "cells_resolved": 32,
+      "rows_expanded_by_4b": 6,
+      "combined_class_rows_excluded": [],
+      "unparsed": [],
+      "picks": [
+        {
+          "cell": "AB|GB.01",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.AB.01.ApartmentBuildings.SyAv.001",
+          "rule": "4a:no-Gen-exists",
+          "rejected": []
+        },
+        {
+          "cell": "AB|GB.02",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.AB.02-03.ApartmentBuildings.SyAv.002",
+          "rule": "4a:no-Gen-exists",
+          "rejected": []
+        },
+        {
+          "cell": "AB|GB.03",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.AB.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.AB.02-03.ApartmentBuildings.SyAv.002"
+          ]
+        },
+        {
+          "cell": "AB|GB.04",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.AB.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005"
+          ]
+        },
+        {
+          "cell": "AB|GB.05",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005",
+          "rule": "4a:no-Gen-exists",
+          "rejected": []
+        },
+        {
+          "cell": "AB|GB.06",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005",
+          "rule": "4a:no-Gen-exists",
+          "rejected": []
+        },
+        {
+          "cell": "AB|GB.07",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.AB.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005"
+          ]
+        },
+        {
+          "cell": "AB|GB.08",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005",
+          "rule": "4a:no-Gen-exists",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.01",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.02",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.03",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.04",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.05",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.06",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.07",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|GB.08",
+          "n_candidates": 1,
+          "chosen": "GB.ENG.MFH.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|GB.01",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.01.Detached.SyAv.001"
+          ]
+        },
+        {
+          "cell": "SFH|GB.02",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.02-03.Detached.SyAv.002"
+          ]
+        },
+        {
+          "cell": "SFH|GB.03",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.02-03.Detached.SyAv.002"
+          ]
+        },
+        {
+          "cell": "SFH|GB.04",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.04-08.Detached.SyAv.005"
+          ]
+        },
+        {
+          "cell": "SFH|GB.05",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.04-08.Detached.SyAv.005"
+          ]
+        },
+        {
+          "cell": "SFH|GB.06",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.04-08.Detached.SyAv.005"
+          ]
+        },
+        {
+          "cell": "SFH|GB.07",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.04-08.Detached.SyAv.005"
+          ]
+        },
+        {
+          "cell": "SFH|GB.08",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.SFH.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.SFH.04-08.Detached.SyAv.005"
+          ]
+        },
+        {
+          "cell": "TH|GB.01",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.01.Terraced.SyAv.001"
+          ]
+        },
+        {
+          "cell": "TH|GB.02",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.02-03.Terraced.SyAv.002"
+          ]
+        },
+        {
+          "cell": "TH|GB.03",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.02-03.Terraced.SyAv.002"
+          ]
+        },
+        {
+          "cell": "TH|GB.04",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.04-08.Terraced.SyAv.005"
+          ]
+        },
+        {
+          "cell": "TH|GB.05",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.04-08.Terraced.SyAv.005"
+          ]
+        },
+        {
+          "cell": "TH|GB.06",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.04-08.Terraced.SyAv.005"
+          ]
+        },
+        {
+          "cell": "TH|GB.07",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.04-08.Terraced.SyAv.005"
+          ]
+        },
+        {
+          "cell": "TH|GB.08",
+          "n_candidates": 2,
+          "chosen": "GB.ENG.TH.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": [
+            "GB.ENG.TH.04-08.Terraced.SyAv.005"
+          ]
+        }
+      ],
+      "missing": []
+    },
+    {
+      "fold": "it",
+      "rows_in_table": 42,
+      "classes": [
+        "AB",
+        "MFH",
+        "SFH",
+        "TH"
+      ],
+      "periods": [
+        "IT.01",
+        "IT.02",
+        "IT.03",
+        "IT.04",
+        "IT.05",
+        "IT.06",
+        "IT.07",
+        "IT.08"
+      ],
+      "cells_in_matrix": 32,
+      "cells_resolved": 32,
+      "rows_expanded_by_4b": 0,
+      "combined_class_rows_excluded": [
+        "IT.MidClim.MFH-AB.01-03.Gen.ReEx.001",
+        "IT.MidClim.MFH-AB.04-05.Gen.ReEx.001",
+        "IT.MidClim.MFH-AB.06.Gen.ReEx.001",
+        "IT.MidClim.MFH-AB.07.Gen.ReEx.001",
+        "IT.MidClim.MFH-AB.08.Gen.ReEx.001",
+        "IT.MidClim.SFH-TH.01-03.Gen.ReEx.001",
+        "IT.MidClim.SFH-TH.04-05.Gen.ReEx.001",
+        "IT.MidClim.SFH-TH.06.Gen.ReEx.001",
+        "IT.MidClim.SFH-TH.07.Gen.ReEx.001",
+        "IT.MidClim.SFH-TH.08.Gen.ReEx.001"
+      ],
+      "unparsed": [],
+      "picks": [
+        {
+          "cell": "AB|IT.01",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.02",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.03",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.04",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.05",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.06",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.07",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "AB|IT.08",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.AB.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.01",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.02",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.03",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.04",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.05",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.06",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.07",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "MFH|IT.08",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.MFH.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.01",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.02",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.03",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.04",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.05",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.06",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.07",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "SFH|IT.08",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.SFH.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.01",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.01.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.02",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.02.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.03",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.03.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.04",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.04.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.05",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.05.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.06",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.06.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.07",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.07.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        },
+        {
+          "cell": "TH|IT.08",
+          "n_candidates": 1,
+          "chosen": "IT.MidClim.TH.08.Gen.ReEx.001",
+          "rule": "4a:Gen",
+          "rejected": []
+        }
+      ],
+      "missing": []
+    }
+  ]
+}

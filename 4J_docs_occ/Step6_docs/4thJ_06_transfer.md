@@ -2702,3 +2702,798 @@ silently omitted from the artefact. 🔴 The first attempt at this demonstration
 `.py` had been pushed to Speed before the interlocks were hoisted, so the clean-corpus run sailed past
 the guard and began loading models. Caught, cancelled, re-pushed, re-run. **Five refusals are now on
 the record — two in the trainer, three in the audit — and every one of them was watched happening.**
+
+---
+
+### 2026-08-24 — 🔴 **STEP 6.3 IS UNBLOCKED BY STEP 4 AND STILL CANNOT BE SUBMITTED. `--leg 5` DOES NOT SELECT THE LEG-5 MODEL. `FINDING 102`, `D-S6-15`.** 🟢 **THE TWO "UNREAD" STEP 6.5 JOBS ARE READ AND THE RECORD WAS ALREADY RIGHT.**
+
+Step 4 closed the same day (`D-S4-16`, both items `(a)`), so item 6.3 became the critical path and
+the launcher was already built and already rehearsed. Nothing has been submitted, and nothing in
+this entry changes a threshold: `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` is untouched.
+
+#### 🟢 First, the smaller thing: jobs `1286305` and `1286311` are read
+
+The handoff carried them as **unread**, with an explicit warning not to trust `1286311`'s exit code
+because it completed in 1 m 21 s and `1286631`-`33` had exited `0:0` in ~48 s having done nothing.
+Both `.out` files were fetched and read in full:
+
+* `1286305` — `GUARD-A-REFUSED-GOOD`, then `GUARD-B` **sailed past** and began loading the base
+  model (`loading the PUBLIC base model ...`, `Fetching 2 files`) before being cancelled at
+  `00:02:52`. This is the *failed to fail* attempt.
+* `1286311` — `GUARD-B-REFUSED-GOOD` and `GUARD-C-REFUSED-GOOD`, 6 lines, **no model loaded**. The
+  short elapsed is the guards working, not a no-op: a refusal that costs 81 seconds is the design.
+
+⚪ **The §2696 addendum above was already correct in every particular.** Nothing is revised; the
+handoff's "unread" flag is retired, having cost one `scp` to clear. 🔴 Checking it was still right:
+the cost of reading two files is 81 seconds, and the cost of *assuming* a 1 m 21 s COMPLETED job did
+its work is the whole privacy audit.
+
+#### 🔴 `FINDING 102` — `--leg 5` changes the filename and the provenance stamp, not the model
+
+`tools/4thJ_step7_generate.py` resolves both the adapter and the backbone from
+`generation_config_<fold>.json` — lines 137, 146, 203 all read `cfg["adapter"]` — and **never from
+`--leg`**. The three configs on Speed still read `runs_ds45/leg4_primary_fold_<c>/adapter` and
+`allenai/OLMo-2-0425-1B`, frozen by Step 5 and correct for Leg 4.
+
+What `--leg 5` actually does, all three cosmetic or protective: renames the output
+`generated_leg5_*` (line 214); **strips** `"provenance": "LEG-4 PILOT -- NOT REPORTABLE"` from every
+record and from the summary (142-144, 236-237, 274-275); and enforces `N >= 5200` in the launcher.
+
+🔴 **A `LEG=5` submission today would generate from the 1.48 B Leg-4 adapter, name the file
+`generated_leg5_*`, remove the not-reportable stamp, and hand it to every Step 6 and Step 7 gate as
+the paper result.** The `N >= 5200` guard would pass — it counts prompts, not parameters. This is
+`FINDING 56`'s shape exactly: a default covering for a selector that was never wired, invisible to
+every downstream check. It is caught for the same reason it was caught there — the guard was read
+before the number was wanted.
+
+⚪ The three Leg-5 adapters exist and are complete at
+`4J_step4/runs_leg5/leg5_primary_fold_{es,uk,it}/adapter`.
+
+#### 🔴 And the decision under it: the temperature is a 1 B measurement
+
+`temperature` 1.30 / 1.10 / 1.20 was chosen by **entropy matching**, and each config says so:
+`"temperature_basis": "entropy matching"`. `H_real` is the corpus's; the temperature that reproduces
+it is the **model's**, and it was measured against `OLMo-2-0425-1B` while Leg 5 is
+`Olmo-3-1025-7B` — 4.7× the parameters.
+
+🔴 **There is no ruling to apply because the question was never asked.** Step 5's two documents do
+not contain the word "leg" at all, and `D-S7-3` (a) directive 4 says only *"train Leg-5 … and execute
+paper campaign"*. Carrying the number forward is a choice; re-measuring it is a choice; neither is
+the status quo. Already on the record and weakening the number *on its own model*:
+`temperature_curves_agree: false` on all three folds (`es` entropy argmin 1.30 vs fidelity argmin
+0.70), 14.8 % of `es` diaries never terminate at `T = 0.70`, and `G5.8` ships FAILING on `es` + `uk`
+with fidelity as a band.
+
+⚪ **Not evidence, and recorded so it is not mistaken for evidence:** every Leg-5 generation that
+exists — the `G4.7` / `G4.16` sets — ran at a hard-coded `temperature=1.0`
+(`4thJ_step4_train.py:811`, `4thJ_step4_diagnostics.py:413`), a diagnostic default. There is no
+measurement of the 7 B adapter at 1.30 / 1.10 / 1.20.
+
+#### 🟢 What was checked and is clean — the `D-S4-8` defect has no third copy here
+
+`4thJ_step4_train.py` and `4thJ_step4_diagnostics.py` both carried the missing-`eos_token_id` defect.
+The Step 7 generation path does **not**: it is vLLM with `stop=[grammar.EOR]` and
+`include_stop_str_in_output=True` (lines 182-183), and vLLM terminates each sequence independently
+under continuous batching — it never needs `eos_token_id` to pad a finished row, which is the exact
+mechanism that failed in HF `transformers`. 🔴 Worth checking rather than assuming, because Leg 4 ran
+on `OLMo-2-0425-1B`, which **does** ship an `eos_token_id`: the defect would have been invisible
+throughout the rehearsal and would have appeared for the first time in the paper campaign.
+
+#### The campaign this gates, and one guard aimed at the wrong batches
+
+| purpose | batches | Leg-4 precedent |
+|---|---:|---|
+| primary per fold, constrained + unconstrained | 6 | `1286195`-`1286200`, N = 600 |
+| `G6.6` held-in, one per ordered `(fold, donor)` pair | 6 | `1286254`-`1286259`, N = 600 |
+| `G6.7` fictional-country levels, 3 folds × 5 | 15 | `1286260`-`1286274`, N = 600 |
+
+**27 batches.** The launcher's refusal is written `if [ "$LEG" = "5" ] && [ "$N" -lt 5200 ]` —
+unconditional on the batch's purpose. Its stated justification is `V7.a`, a **Step 7** vacuity guard,
+and `grep -ln "V7\.a" tools/4thJ_step6_{g66_heldin,g67_score,level1}.py` returns nothing. As written
+it would force the 21 auxiliary batches to 8.7× their rehearsal size for a reason that does not
+apply to them, and would move `G6.6`/`G6.7` off the single basis their own comparisons rest on.
+
+#### `D-S6-15` — three items, for the author
+
+`IMP/docs/2026-08-24_D-S6-15_the_leg5_generation_config.md`.
+
+1. **The selector.** (a) recommended — `--leg 5` resolves `runs_leg5/…` + `Olmo-3-1025-7B` additively
+   and **refuses** rather than falling back; the Leg-4 path stays byte-identical so nothing scored
+   from the rehearsal is disturbed. (b) separate `_leg5.json` configs. (c) rejected — by hand, 27
+   times, which is the failure mode itself.
+2. **The temperature.** (a) carry 1.30/1.10/1.20 forward and declare the transfer; (b) re-run the
+   Step 5 entropy sweep on the Leg-5 adapters — defensible, but re-opens a CLOSED step and costs a
+   7 B sweep before the campaign; (c) generate at `T = 1.0`, the only setting the 7 B adapter has
+   been observed at, and declare the departure. 🔴 Under every option the basis must reach the
+   methods: each config asserts *"nothing here is a fresh choice"*, and that is true only of Leg 4.
+3. **The `N >= 5200` refusal.** (a) recommended — narrow it to the primary batches. (b) apply it to
+   all 27.
+
+#### 🔴 Unchanged, and not touched by any option above
+
+Step 6.5's **third registered control — the random-label-permutation adapter — is still not
+trained.** `4J_step4/runs/leg4_permuted_fold_it/` exists and is **empty**. `privacy_audit.md` cannot
+be written and no release decision can be made, on either leg. Four of five Step 6.5 gates exist and
+pass; what is missing is a control, not a gate.
+
+---
+
+### 2026-08-24 (evening) — 🟢 **`D-S6-15` RULED ALL THREE ITEMS `(a)`, APPLIED, AND THE SELECTOR WAS SEEN WORKING BEFORE A SINGLE DIARY WAS GENERATED (job `1286834`, 6/6, the control fired). 🟢 STEP 6.3 IS RUNNING: ALL TWENTY-SEVEN LEG-5 BATCHES ARE ON THE QUEUE, `1286835`–`1286861`, AND THEY ARE THE FIRST GENERATION THIS PROJECT HAS EVER RUN ON THE 7 B MODEL.**
+
+The author ruled the day the decision was written. `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` untouched, no threshold moved, and the frozen Step 5 configs were
+**not edited** — the leg overrides three fields in memory and prints the Leg-4 values it displaced.
+
+#### What was applied
+
+| item | ruling | file | change |
+|---|---|---|---|
+| 1 | `(a)` | `tools/4thJ_step7_generate.py` | `resolve_leg()` — leg 5 resolves `runs_leg5/leg5_primary_fold_<fold>/adapter` + `Olmo-3-1025-7B` @ `a81bae42…`, hard `SystemExit(3)` if absent, **never a fallback**; `--leg` now `choices=(4, 5)` |
+| 2 | `(a)` | same | temperatures 1.30 / 1.10 / 1.20 **carried unchanged**; `TEMPERATURE_PROVENANCE_LEG5` written into every leg-5 record **and** summary |
+| 3 | `(a)` | `tools/4thJ_step7_generate.sh` | `N >= 5200` narrowed to the six PRIMARY batches; the 21 auxiliaries stay at `N = 600` |
+
+Backups verified non-empty and **byte-identical to what was staged on Speed** before the push:
+`.py` `2ea98c3690fba099caf42cbe11483b92` → `9840897345905bcf7e808ee484965530`;
+`.sh` `4bafdb2cd839c15d76e1919bd3547945` → `adbd34ebefa38eb94444d7853078976a`.
+
+#### 🟢 The fix-check — `1286834`, 46 s, CPU only, **6 / 6 PASS**, and check 0 is a CONTROL
+
+🔴 `FINDING 56` is why this job exists: Leg 4's `600/600` was a model-repo default covering for a
+broken harness, so a guard that has not been seen refusing is not a guard. The control ran **first**
+and the run was declared VOID if it did not fire.
+
+| # | check | result |
+|---|---|---|
+| 1 | `py_compile` the patched generator | PASS |
+| **0** | **CONTROL — the leg-5 adapter root pointed at a missing directory** | **PASS — `SystemExit` 3, "Nothing was generated."** |
+| 2 | `--leg 4` returns the config **identical** (`==`): still `runs_ds45` + `OLMo-2-0425-1B` | PASS |
+| 3 | `--leg 5` resolves the leg-5 adapter + `Olmo-3-1025-7B` @ `a81bae42` | PASS |
+| 4 | temperature, `top_p`, `top_k`, seed unchanged; provenance string present | PASS |
+| 5 | three leg-5 adapters on disk, `adapter_config.json` readable, `r = 32` each | PASS |
+
+The refusal exits **3**, deliberately not `NotRun`'s **2**: `2` is a legitimate "NOT RUN" the launcher
+reports, and a missing Leg-5 adapter must never be readable as an ordinary outcome.
+
+Item 3's classifier was tested against **the file's own bytes** — the guard block extracted with
+`sed` and evaluated, not reimplemented: `LEG=5 es 600` REFUSED exit 1; `LEG=5 es 5200` allowed;
+`g66it` and `g67_es_t00` both classified auxiliary and allowed at 600; `LEG=4 es 600` untouched.
+`IS_PRIMARY` is **derived** from the invocation (own prefixes **and** no tag), never hand-labelled,
+so a typo in a submission line cannot promote an auxiliary batch into a primary one.
+
+#### 🟢 The campaign — 27 batches, `1286835`–`1286861`
+
+| batches | jobs | N |
+|---|---|---:|
+| primary, 3 folds × {constrained, `--no-grammar`} | `1286835`–`1286840` | 5,200 |
+| `G6.6` held-in, six ordered `(fold, donor)` pairs | `1286841`–`1286846` | 600 |
+| `G6.7` fictional-country levels, 3 folds × 5 | `1286847`–`1286861` | 600 |
+
+`1286835` (`es`, constrained) was submitted **alone and read before the other 26 went out** — the
+selector is proved by a fix-check, but that the 7 B model actually loads on the rehearsal's
+`2g.20gb` slice is a separate claim. Its header reads
+`base : allenai/Olmo-3-1025-7B @ a81bae42…` and
+`adapter : …/runs_leg5/leg5_primary_fold_es/adapter`, engine up in **39.6 s**, LoRA rank 32,
+`5200 drawn from a pool of 100000`, EBNF 114,806 chars / ACT 159.
+
+⚪ **The KV cache is the tight resource and it is worth recording**: `GPU KV cache size: 5,901
+tokens` on the 20 GB slice, against `max_new_tokens = 1200`. It nevertheless sustains **3.4
+diaries/s, 932 output tok/s**, so a 5,200-diary primary batch is ~25 minutes of generation, not the
+hours a naive read of that cache size suggests. Four jobs run at once (`AssocGrpGRES`, my own
+concurrent-GPU ceiling); the remaining 23 are `PD` behind them.
+
+#### 🔴 What this does NOT settle
+
+* The temperature is **transferred, not measured**. `H_real` is a property of the corpus; the
+  temperature that reproduces it is a property of the **model**, and 1.30 / 1.10 / 1.20 were fitted
+  on a 1.48 B backbone. Under `D-S6-15` item 2 `(a)` this is carried **and declared** — in the
+  methods, and in every generated record via `temperature_provenance`. It is not a re-measurement and
+  must never be written up as one.
+* **Nothing is scored yet.** These are batches, not gates. `D-S6-2` still binds Step 6.4: `it` is
+  scored against 2008-09 with the gap declared, and that must be settled **before** the `it` fold is
+  scored.
+* Step 6.5's **third registered control — the random-label-permutation adapter — is still not
+  trained**, `4J_step4/runs/leg4_permuted_fold_it/` is empty, and no release decision can be made on
+  either leg until it is.
+
+### 2026-08-24 (night) — 🟢 **STEP 6.3 IS CLOSED: ALL 27 LEG-5 BATCHES `COMPLETED` EXIT `0:0`. 🔴 STEP 6.4 IS SCORED AND THE PRE-REGISTERED TRANSFER CLAIM FAILS — `G6.1` FAILS 9 OF 9, AND SCALING THE BACKBONE 4.7x BOUGHT NOTHING: MEAN MODEL MAE `42.05` -> `43.14`.**
+
+#### Step 6.3 — the campaign, read out of the job logs
+
+Jobs `1286835`-`1286861`, all `COMPLETED`, exit `0:0`. Every batch header carries
+`base : allenai/Olmo-3-1025-7B @ a81bae42db3975be1671e27b9c9a56da1a9f980f` and
+`adapter : …/runs_leg5/leg5_primary_fold_<c>/adapter` — `FINDING 102` is repaired in the artefact
+itself, not only in the script. 27 of 27 output files on disk and fetched to
+`Step7_docs/outputs_step7/`.
+
+| batches | jobs | N | oracle-valid | terminated |
+|---|---|---:|---|---|
+| primary, constrained, 3 folds | `1286835`/`1286837`/`1286839` | 5,200 | **5200/5200 each** | 5200/5200 |
+| primary, `--no-grammar`, 3 folds | `1286836`/`1286838`/`1286840` | 5,200 | es `358` (6.88 %), uk `1610` (30.96 %), it `554` (10.65 %) | uk+it 5200/5200, **es 5190/5200** |
+| `G6.6` held-in, 6 ordered pairs | `1286841`-`1286846` | 600 | 600/600 each | 600/600 |
+| `G6.7` fictional-country, 15 levels | `1286847`-`1286861` | 600 | 600/600 each | 600/600 |
+
+⚪ **The grammar is load-bearing and the free-arm spread is country-correlated.** Unconstrained
+validity runs 6.88 % / 30.96 % / 10.65 % — `uk` is `4.5x` `es`. That is a LOCO-relevant pattern, not
+a nuisance, and it is recorded before anyone reads a fidelity number from a constrained batch.
+⚪ `es --no-grammar` is the only batch in the campaign that did not terminate everywhere: **10 of
+5,200 diaries carry no `<eor>`**. Post-`D-S4-8` that is exactly the count `G4.16` exists to see.
+
+#### Step 6.4 — the board, Leg 5
+
+All scored locally from the fetched batches, `--leg 5`, `--wave 2010`. 🔴 **`D-S6-2` is honoured and
+restated here rather than assumed: `it` is scored against the Eurostat `2010` column, which is the
+**2008-09** survey, while the Italian microdata is ISTAT 2013-14. The gap is declared, the
+asymmetry with `es`/`uk` is real, and no `it` number below may be quoted without it.**
+
+| gate | what it asks | Leg-5 verdict | artefact |
+|---|---|---|---|
+| **`G6.1`** | model MAE **<** raked-donor null, per band | 🔴 **FAIL 9 / 9** | `g61_leg5_scored.json` |
+| `G6.4` | level-1 budget vs published, MAPE ≤ 15 % | 🔴 **FAIL 9 / 9** exact bands | `g64_leg5_generated.json` |
+| `G6.5` | AND over three frozen FAIL criteria | 🔴 **FAIL 9 / 9** | `g65_g69_leg5.json` |
+| `G6.9` | nearest published profile is the held-out country | 🔴 **FAIL 9 / 9** | `g65_g69_leg5.json` |
+| `G6.6` | held-in donor prefixes clear `G6.4`'s bar | 🔴 **FAIL 6 / 6** | `g66_leg5_generated.json` |
+| `G6.7` | follows a fictional conditioning vector, slope ≥ 0.80 | 🔴 **FAIL 3 / 3** | `g67_leg5_{es,uk,it}.json` |
+| `G6.2` / `G6.3` | secondary nulls, **reported not thresholded** | all margins negative | `g62_g63_leg5_scored.json` |
+| `G6.13` | distance to closest record | ⚪ **PASS 2 / FAIL 1** — `uk` fails the size-matched arm | `g613_leg5_dcr.json` |
+
+#### 🔴 The headline. `G6.1` is the pre-registered bar and it is not close.
+
+`prereg.md` §5: *"If a fine-tuned LLM cannot beat a demographically raked pool of real European
+donors on the held-out country, the transfer claim fails. There is no weaker reading of that
+sentence."*
+
+| fold | band | model MAE | null MAE | margin |
+|---|---|---:|---:|---:|
+| `es` | Y25-44 / Y45-64 / Y_GE65 | 36.81 / 34.52 / 44.32 | 9.94 / 8.82 / 11.81 | **−26.9 / −25.7 / −32.5** |
+| `uk` | Y25-44 / Y45-64 / Y_GE65 | 58.91 / 60.44 / 21.24 | 21.79 / 19.21 / 18.54 | **−37.1 / −41.2 / −2.7** |
+| `it` | Y25-44 / Y45-64 / Y_GE65 | 62.24 / 33.95 / 35.84 | 19.51 / 13.85 / 15.51 | **−42.7 / −20.1 / −20.3** |
+
+The closest the model ever comes is `uk Y_GE65` at **−2.70 MAE**, and it is still behind. 🔴 **This is
+not a threshold that could be argued about. A raked pool of real diaries from the other two
+countries reproduces the held-out country's time budget between two and six times better than the
+fine-tuned model does, on every band of every fold.**
+
+#### 🔴 4.7x the parameters bought nothing on the headline gate
+
+Same nulls, same bands, same scorer — only the backbone changed (`OLMo-2-0425-1B`, 1.48 B ->
+`Olmo-3-1025-7B`, 7 B):
+
+| fold / band | Leg-4 model MAE | Leg-5 model MAE | |
+|---|---:|---:|---|
+| `es` Y25-44 | 69.50 | **36.81** | better |
+| `es` Y45-64 | 29.86 | 34.52 | worse |
+| `es` Y_GE65 | 42.13 | 44.32 | worse |
+| `uk` Y25-44 | 24.04 | 58.91 | **much worse** |
+| `uk` Y45-64 | 22.93 | 60.44 | **much worse** |
+| `uk` Y_GE65 | 36.37 | **21.24** | better |
+| `it` Y25-44 | 77.75 | **62.24** | better |
+| `it` Y45-64 | 54.68 | **33.95** | better |
+| `it` Y_GE65 | 21.21 | 35.84 | worse |
+| **mean** | **42.05** | **43.14** | **4 cells better, 5 worse** |
+
+`G6.4` tells the same story from the other side: Leg 4 scored **1 PASS / 8 FAIL** over the exact age
+bands; Leg 5 scores **0 PASS / 9 FAIL**. The one Leg-4 PASS (`uk` Y45-64, MAPE 9.69 %) went to
+36.57 % at 7 B.
+
+🔴 **What this does and does not license.** It licenses: *within this design, at this corpus size,
+scaling the backbone from 1.48 B to 7 B does not improve cross-country transfer of time-use
+structure, and the per-cell movement is not even consistent in sign.* It does **not** license any
+claim about scaling in general — two points is not a curve, one LoRA configuration is not a training
+regime, and `D-S4-11` is open on whether `G4.1` was even read on its registered basis.
+
+#### ⚪ `G6.7` is the one place the model demonstrably responds
+
+`G6.7` FAILs, but not by being inert. The distance to the fictional conditioning vector falls
+monotonically as the vector is pushed:
+
+| fold | level 0 | 1 | 2 | 3 | 4 | slope (need ≥ 0.80) |
+|---|---:|---:|---:|---:|---:|---:|
+| `es` | 60.71 | 59.15 | 49.04 | 34.19 | **16.64** | 0.4153 |
+| `uk` | 35.76 | 34.06 | 24.38 | 18.77 | **15.39** | 0.5329 |
+| `it` | 36.49 | 28.55 | 15.89 | **12.42** | 19.02 | 0.4049 |
+
+The model **does** move with the prefix — at roughly **half** the demanded amplitude — and at the low
+levels a real country's published profile still explains the output better than the vector does
+(`es` at levels 0/1/2, `uk` at 0/1/2/3, `it` at 0/1/4). Read with `G4.3`'s base-model baseline from
+the same day (§10.1 of the Step-4 investigation: untrained `0.0001`-`0.0011` vs fine-tuned
+`0.068`-`0.106`), the two agree: **conditioning is real and under-powered**, on both the CE metric
+and the behavioural one.
+
+#### 🔴 Coverage: the Leg-5 perturbations felled nothing, and the reason matters
+
+`G6.5` / `G6.9`: all four levers (`null`, `shift25`, `invert_sign`, `neighbour_tables`) fell in **0**
+cells and the coverage clause reads FAIL. 🔴 **That is not a new defect and it must not be reported
+as one: every cell is already FAIL at baseline, and a gate that is already down cannot be seen
+falling.** The seen-falling credit for `G6.5`/`G6.9` comes from the **Leg-4** run and from the corpus
+calibration arm, where the baseline passes. The same reading applies to `G6.6`, whose four runnable
+levers all felled all six pairs — and whose fifth, `sequential_countries`, remains a **NAMED GAP**
+that needs its own training run.
+
+#### What Step 6.4 does NOT settle
+
+* ⚪ **`G6.13` finished after the table was drafted and is now in it: PASS `es`, PASS `it`, FAIL `uk`.** Zero exact matches and zero `NNDR < 0.33` on all three folds, so the crude memorisation arms are clean. `uk` fails the **size-matched** arm: median DCR to TEST `0.4236` lies **above** the 95 % interval of the median DCR to a same-size train subsample, `[0.4028, 0.4167]` over 200 draws — the model sits closer to what it was trained on than to unseen diaries of the same distribution. 🔴 The RAW train-vs-test comparison is **not** the verdict on any fold (pool ratios `8.8x`-`9.2x`) and must not be quoted as one; the checker says so itself.
+* **`G6.8`'s model arm has never been run on either leg.** Only the `it` controls exist
+  (`g68_it_splithalf.json`, `g68_it_shuffled_across.json`). Scoring the generated set against the
+  real held-out country needs a country-filtered reference file that does not exist; recorded as
+  owed, not improvised.
+* 🔴 **Step 6.5's third registered control — the random-label-permutation adapter — is still NOT
+  TRAINED.** `4J_step4/runs/leg4_permuted_fold_it/` is empty, `privacy_audit.md` cannot be written,
+  and **no release decision can be made on either leg.**
+* The `UK-fold split report` owed by `D-S3-14` (551 UK diaries at `strat_hh_type = unknown`) is
+  still owed.
+* 🔴 `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` — **untouched**. No threshold moved, no
+  checker edited, no band re-argued. Every FAIL above is reported as the result.
+
+---
+
+## 2026-08-24 (evening) — STEP 6.5: THE THIRD REGISTERED CONTROL IS TRAINING, AND ITS INTERLOCK HAS BEEN SEEN REFUSING
+
+`D-S6-14` was ruled on 2026-08-22 — **(a)** permute the prefix-to-body pairing at shard-build time,
+**(ii)+(iii)** one Leg-5 run on the pre-named `it` fold plus three Leg-4 runs — and the tooling was
+built the same day. It then sat unsubmitted, because the ruling's own §6 directive said to hold every
+permuted job until the reported model's training was off the queue. That condition is now met: the
+queue is empty of reported work, all 27 Step 6.3 batches having finished.
+
+### Submitted 2026-08-24
+
+| job | leg | fold | backbone | what it is |
+|---|---|---|---|---|
+| `1286896` | 5 | `it` | `Olmo-3-1025-7B` | 🔴 the **governing** memorisation ceiling, fold pre-named ex ante |
+| `1286897` | 4 | `es` | `OLMo-2-0425-1B` | cross-fold spread at pilot scale |
+| `1286898` | 4 | `uk` | `OLMo-2-0425-1B` | cross-fold spread at pilot scale |
+| `1286899` | 4 | `it` | `OLMo-2-0425-1B` | cross-fold spread at pilot scale, the Leg-4/Leg-5 hinge |
+
+The three Leg-4 runs started immediately on `speed-43`/`speed-39`. `1286896` is `PENDING (Resources)`
+for the full `nvidia_a100_7g.80gb` instance with an estimated start of **2026-08-25T07:35**.
+
+The shards were **not** rebuilt for this — they were deranged on 2026-08-22 and were sitting ready:
+`shards_permuted_control/`, manifest `shard_manifest_permuted_control.json`, **permutation seed
+`614614`**, **73,254 records re-paired, 0 fixed points** (a strict derangement — no record keeps its
+own body), every record marked `POISONED_CONTROL`. Each run reprints all of it in its own log, so the
+seed is in the artefact and not only in the builder.
+
+### 🔴 The interlock, seen refusing in both directions — job `1286901`
+
+The four control jobs show the `POISONED_CONTROL` interlock **accepting**. That is not evidence that
+it works. `FINDING 56` is this project's own case of a guard that passed for the wrong reason — a
+600/600 that turned out to be a model-repo default covering for a broken harness — and the standing
+rule is that a guard not seen refusing is not a guard. So both refusals were put to it directly, on a
+**CPU-only** job so as not to take a GPU from the Leg-5 control already queued behind `Resources`:
+
+| arm | command | expected | observed |
+|---|---|---|---|
+| 1 | `--run-type primary` on the **poisoned** manifest | refuse | 🟢 `FAIL: this manifest is marked POISONED_CONTROL (permutation seed 614614) and the run-type is 'primary'` — exit 1 |
+| 2 | `--run-type permuted` on the **clean** manifest | refuse | 🟢 `FAIL: --run-type permuted was given but the manifest … is NOT marked POISONED_CONTROL` — exit 1 |
+
+Both arms died before any weight was loaded, and `G4.14` printed PASS in both — the prereg md5 is
+checked before the interlock, so a refusal is not a way to skip it.
+
+⚪ **An observation the probe's own guard caught, and it retires a line this document has been
+carrying.** The probe asserted that no run directory should exist afterwards, and one did:
+`--out/<run_name>/` is created *before* the manifest is read, so a refused run still leaves an empty
+directory behind. That is exactly what `4J_step4/runs/leg4_permuted_fold_it/` is — empty, timestamped
+`2026-08-22 15:13`, the same minute the shards were built. This document and the board have both been
+citing that empty directory as evidence the control was never trained. The conclusion was right and
+the reasoning was wrong: **an empty run directory is the residue of a refusal, not of a half-finished
+run**, and it would look identical either way. The probe's two directories were removed; the Aug-22
+one is left where it is, as the record.
+
+### What this does not yet settle
+
+* **Nothing is scored.** The adapters do not exist yet. `privacy_audit.md` stays unwritten and **no
+  release decision can be made on either leg.**
+* The scoring path is already wired and needs no new code: `4thJ_step6_privacy_mia.sh <fold> <leg>
+  <n> control` passes `--permuted-adapter` and `--permuted-corpus` together, and the module refuses
+  one without the other — the control must be scored on the corpus it trained on, or it measures a
+  model reading text it never saw.
+* 🔴 **The Leg-5 audit will not fit `4thJ_step6_privacy_mia.sh` as written.** Its GRES is a
+  `2g.20gb` slice, and a Leg-5 control run loads *two* 7 B bases (the reported one and a fresh one
+  for the control). The script says so in its own comments. That submission is owed.
+* 🔴 The bars do not move. `G6.10` ≤ 0.65 and `G6.11` ≤ 0.75 are pre-registered, and the ceiling is
+  read **beside** the measured AUCs, never substituted for the bar. `prereg.md` md5
+  `e4243e07cdd80c9c846b91f40e3e8c45`, verified live inside every one of these jobs by `G4.14`.
+
+---
+
+## 2026-08-24 (night) — 🔴 THE FIRST MEMORISATION CEILING IS SCORED AND IT ALARMED. THE MEASUREMENT SAYS THE CEILING IS NOT A CEILING. `FINDING 112`, `FINDING 113`, `D-S6-16`.
+
+Job `1286941`, fold `it`, Leg 4, `4thJ_step6_privacy_mia.sh it 4 2000 control` — **COMPLETED
+`0:0` in 00:39:48**. It is the first `D-S6-14` control this project has ever scored. Artefacts
+fetched: `outputs_step6/privacy_mia_leg4_it.json` (4,922 B, against 3,227/3,228 B for the
+control-less `es`/`uk` audits of 2026-08-22) and `outputs_step6/4J_step6_mia_1286941.out`.
+
+### What was measured
+
+| | reported adapter | ceiling (permuted) | headroom | pre-registered bar |
+|---|---|---|---|---|
+| `G6.10` loss MIA AUC | **0.5539** | **0.5488** | **−0.0051** | ≤ 0.65 — **PASS** |
+| `G6.11` reference MIA AUC | **0.5274** | **0.5147** | **−0.0127** | ≤ 0.75 — **PASS** |
+| perplexity gap | 0.0182 | 0.0168 | −0.0014 | ≤ 0.05 — **PASS** |
+| `G6.12` verbatim | 0 greedy / 0 sampled of 103 rare records | — | — | **PASS** |
+| untuned-base floor | 0.4874 | — | — | ≈ 0.50, as expected |
+
+The perturbation battery ran and the **coverage clause is PASS**: `G6_10` fell to `g610_memorise`
+(AUC 0.9997), `g610_tail` and `pplgap_widen`; `G6_11` to `g610_memorise` (0.8706) and
+`g611_reference` (0.9867); `G6_12` to `g612_verbatim` (exact 1). Every gate has been seen falling.
+
+🔴 **The module printed the alarm it was built to print**, on both attacks:
+
+> A model that could only memorise did not leak more than the reported one. Either the reported run
+> memorised, or the control did not train. Neither reading permits a release.
+
+### 🔴 `FINDING 112` — the control DID train, and it reached the SAME loss as the reported model. That is exactly what makes it not a ceiling.
+
+The alarm offered two readings. Three independent measurements support a **third** one it did not
+offer.
+
+**(i) Training loss.** Mean of the last 20 logged steps of epoch 2, read from the job logs:
+
+| run | job | start | last-20 mean | sd |
+|---|---|---|---|---|
+| reported `it` | `1281612` | 1.7323 | **0.5565** | 0.0386 |
+| permuted `it` | `1286899` | 1.7134 | **0.5536** | 0.0733 |
+
+🔴 **The model whose prefix-to-body pairing was destroyed ended 0.0029 *below* the
+correctly-paired one.** It trained (1.71 → 0.55) and it trained to the same place.
+
+**(ii) Perplexity, measured inside the audit itself on held-in text.** Reported model train
+`1.7189`; ceiling model train `1.7353`. **0.95 % apart.**
+
+**(iii) The conditioning gates on the permuted adapters.** `G4.3` / `G4.4` / `G4.12` **all FAIL** on
+both permuted runs read so far — `1286899` (`it`, `G4.12` CE rise 0.0023 against a required 0.15,
+MI drop −0.070 against 0.10) and `1286898` (`uk`, `G4.4` evening ratio 0.305 / morning 0.134, both
+FAIL). The permutation did precisely what it was built to do: it destroyed conditioning on age, sex,
+household type, economic status and day type.
+
+Put (iii) beside (i) and (ii): **conditioning on the prefix contributes almost nothing to the
+training loss.** A model that has lost it entirely reaches the same likelihood as one that has it.
+
+The consequence for `D-S6-14` is structural, not arithmetic. The ruling's premise was that destroying
+the pairing leaves nothing generalisable to learn, so the control is *forced* to memorise. **That
+premise is false for this corpus.** The permutation shuffles which prefix sits in front of which
+body; the builder itself asserts the body multiset is unchanged. Every body in the permuted corpus is
+still a real, well-formed diary, so the control has a large generalisable thing left to learn —
+**the diary language** — and it learns that instead of memorising. Its MIA AUC is near chance
+because it never needed to memorise, **not** because memorisation is impossible at this capacity.
+
+🔴 **A control that is not forced to memorise does not bound memorisation. `0.5488` is not a
+ceiling; it is another model's near-chance MIA score.**
+
+⚪ Same class as `FINDING 56` — a guard returning a number for a reason other than the one it was
+built to test — and caught the same way, by measuring rather than re-reading the design.
+
+### 🔴 `FINDING 113` — the comparison has no tolerance, and this alarm fires on noise
+
+`D-S6-14` pre-registered the direction of the comparison and no margin. The module implements a
+strict test, so any negative headroom alarms. At `n = 2000` per class the Hanley–McNeil standard
+error of one AUC near 0.55 is **0.0091**:
+
+| | observed gap | SE of the difference | z |
+|---|---|---|---|
+| `G6.10` | 0.0051 | 0.0128 | **0.40** |
+| `G6.11` | 0.0127 | 0.0129 | **0.99** |
+
+🔴 **Neither difference is distinguishable from zero.** Even if `FINDING 112` were wrong and
+the control were a valid ceiling, this alarm would not be evidence that the reported model leaks
+more — it would be two tied numbers ordered by noise. `FINDING 86` already forced size-matching on
+this attack for a related reason; the tolerance was never added.
+
+### `D-S6-16` — for the author
+
+**What does an alarmed `D-S6-14` control mean for the release decision?** Four options, brief at
+`IMP/docs/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md`.
+
+🟢 **Recommendation (a):** read the alarm as informative about the **control**, not about the
+reported model; report the ceiling as **INCONCLUSIVE AS A CEILING** with the three measurements
+printed beside it; rest the release on the four controls that pass — the two pre-registered bars,
+the untuned-base floor, the perplexity gap and `G6.12`. It changes no threshold, discards no control
+and repairs no number after the fact. ⚪ If (a), the same reading must apply to `uk`, `es` and the
+governing Leg-5 `it` control **whatever they return**, and that has to be said now, before they are
+read, or (a) becomes a rule invented per result.
+
+⚪ (b) adds the missing tolerance but sets it after seeing the number it would decide — admissible
+only as a pre-registration for future folds, never as a repair of this one. (c) builds a control that
+really is forced to memorise (randomise the **bodies**, not the pairing) and costs a full retrain per
+fold, on Leg 5 the 7 B model. (d) refuses the release on the strength of an instrument whose premise
+has just been shown false, at 0.4 sigma.
+
+### Queue, as of 23:05
+
+| job | leg | fold | state |
+|---|---|---|---|
+| `1286899` | 4 | `it` permuted | 🟢 COMPLETED 03:33:29 — audit `1286941` 🟢 COMPLETED, read above |
+| `1286898` | 4 | `uk` permuted | 🟢 COMPLETED 04:46:37, `0:0` — audit submitted as **`1286945`** |
+| `1286897` | 4 | `es` permuted | RUNNING 04:47 — audit follows the same way |
+| `1286896` | 5 | `it` permuted | RUNNING 03:39 — 🔴 the **governing** control; its audit still needs a separate submission at `--gres=gpu:nvidia_a100_7g.80gb:1` and `--mem=192G` |
+
+🔴 **The bars did not move.** `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`, verified live
+by `G4.14` inside every job above. Nothing in this entry asks for a threshold to change.
+
+🔴 **`privacy_audit.md` is still unwritten and no release decision has been made on either
+leg.** It waits on `D-S6-16` and on the Leg-5 control.
+
+---
+
+## 2026-08-24 (night, later) — 🔴 THE SECOND CEILING LANDED AND IT DID **NOT** ALARM. THE TWO CEILINGS ARE 0.0004 APART. `FINDING 114`.
+
+Job `1286945`, fold `uk`, Leg 4 — **COMPLETED**. Artefacts fetched:
+`outputs_step6/privacy_mia_leg4_uk.json`, `outputs_step6/4J_step6_mia_1286945.out`.
+
+| | reported adapter | ceiling (permuted) | headroom | bar |
+|---|---|---|---|---|
+| `G6.10` | 0.5336 | 0.5484 | **+0.0148** | ≤ 0.65 — PASS |
+| `G6.11` | 0.5074 | 0.5116 | **+0.0041** | ≤ 0.75 — PASS |
+| perplexity gap | 0.0097 | 0.0132 | +0.0035 | ≤ 0.05 — PASS |
+| `G6.12` | 0 greedy / 0 sampled of 40 rare records | — | — | PASS |
+| untuned-base floor | 0.5012 | — | — | ≈ 0.50 |
+
+> `no alarm: the reported adapter sits below the memorisation ceiling on both attacks.`
+
+Taken alone this reads as the control working. Put beside `it` it is the clearest evidence yet that
+it is not.
+
+### 🔴 `FINDING 114` — the ceiling does not move between folds. It is a constant, and it silently imposes a bar tighter than the registered one.
+
+| fold | reported AUC `G6.10` | ceiling AUC `G6.10` | headroom | alarm? |
+|---|---|---|---|---|
+| `it` | **0.5539** | **0.5488** | −0.0051 | 🔴 YES |
+| `uk` | **0.5336** | **0.5484** | +0.0148 | no |
+
+🔴 **The two ceilings are 0.0004 apart.** Two independently trained adapters, two different
+folds, two different training corpora, two different held-out countries — and the quantity that is
+supposed to measure *how much this model could memorise if it had to* comes out at 0.5484 and 0.5488.
+The Hanley–McNeil SE of either is **0.0091**, so the spread is **1/23 of one standard error**. The
+reported AUCs, over the same two folds, are **0.0203** apart.
+
+A ceiling that is constant to four decimal places while the thing it is supposed to bound varies by
+fifty times as much is not measuring memorisation capacity. It is measuring a fixed property of the
+setup — exactly what `FINDING 112` predicts, since the permuted model learns the diary language and
+never memorises, and the diary language is the same in every fold.
+
+🔴 **The consequence is that `D-S6-14` has been acting as an unregistered bar at ≈ 0.548.**
+`it` alarmed and `uk` did not, and neither ceiling moved — the *reported* AUC moved. So in practice
+the control replaces the pre-registered `G6.10 ≤ 0.65` with a hidden `≤ 0.5484`, an 82 % tighter
+threshold, set by an artefact, discovered after the fact and never registered. That is a stronger
+reason to rule `D-S6-16` (a) than the `it` alarm on its own.
+
+### `FINDING 112` reproduces on `uk`
+
+| run | job | last-20 mean loss | sd |
+|---|---|---|---|
+| reported `uk` | `1274964` | 0.5005 | 0.0779 |
+| permuted `uk` | `1286898` | 0.5195 | 0.0543 |
+
+Permuted is **0.0190** higher, against an SE of the difference of about **0.021** — under one sigma,
+the same verdict as `it` (where the permuted run came out 0.0029 *lower*). Held-in perplexity:
+reported `1.6572`, ceiling `1.6701` — **0.78 % apart**, against `it`'s 0.95 %. **Destroying the
+prefix-to-body pairing costs the training loss nothing on either fold.**
+
+### Queue
+
+| job | leg | fold | state |
+|---|---|---|---|
+| `1286941` | 4 | `it` audit | 🟢 COMPLETED — 🔴 ALARMED |
+| `1286945` | 4 | `uk` audit | 🟢 COMPLETED — no alarm |
+| `1286897` | 4 | `es` permuted | 🟢 COMPLETED — audit submitted as **`1286955`** |
+| `1286896` | 5 | `it` permuted | RUNNING — 🔴 the **governing** control; its audit still needs a separate submission at `--gres=gpu:nvidia_a100_7g.80gb:1` and `--mem=192G` |
+
+⚪ `D-S6-16` recommendation (a) required that its reading be declared to apply to `uk`, `es` and the
+Leg-5 control **before they were read**. `uk` was read before the ruling came back, so that
+undertaking is now partly spent: the recommendation was on the record, in writing, before `1286945`
+was opened, and this entry records that `uk` did **not** alarm — which is the direction that would
+have made it convenient to drop the recommendation. It stands unchanged.
+
+🔴 **The bars did not move.** `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`. All four
+registered controls pass on both folds read so far. `privacy_audit.md` remains unwritten and **no
+release decision has been made on either leg.**
+
+---
+
+## 2026-08-25 (early) — 🔴 ALL THREE LEG-4 CEILINGS ARE IN. TWO OF THREE ALARM, AND THE THREE CEILINGS HAVE A STANDARD DEVIATION OF **0.00117**. `FINDING 114` CONFIRMED.
+
+Job `1286955`, fold `es`, Leg 4 — **COMPLETED**, and it **ALARMED**, by the smallest margin yet.
+Artefacts fetched: `outputs_step6/privacy_mia_leg4_es.json`,
+`outputs_step6/4J_step6_mia_1286955.out`.
+
+| `es` | reported | ceiling | headroom | bar |
+|---|---|---|---|---|
+| `G6.10` | 0.5481 | 0.5466 | **−0.0015** | ≤ 0.65 — PASS |
+| `G6.11` | 0.5204 | 0.5183 | **−0.0021** | ≤ 0.75 — PASS |
+| perplexity gap | 0.0143 | 0.0147 | +0.0004 | ≤ 0.05 — PASS |
+| `G6.12` | 0 greedy / 0 sampled of 91 rare records | — | — | PASS |
+| untuned-base floor | 0.4914 | — | — | ≈ 0.50 |
+
+### The complete Leg-4 board — and what it shows
+
+| fold | job | reported `G6.10` | ceiling `G6.10` | headroom | z | alarm? |
+|---|---|---|---|---|---|---|
+| `it` | `1286941` | 0.5539 | **0.5488** | −0.0051 | 0.40 | 🔴 YES |
+| `uk` | `1286945` | 0.5336 | **0.5484** | +0.0148 | 1.16 | no |
+| `es` | `1286955` | 0.5481 | **0.5466** | −0.0015 | **0.12** | 🔴 YES |
+
+🔴 **`FINDING 114` is confirmed on three folds, and it is stronger than it looked on two.**
+
+| quantity, over the three folds | mean | sd | range |
+|---|---|---|---|
+| **ceiling** `G6.10` | 0.5479 | **0.00117** | **0.0022** |
+| **reported** `G6.10` | 0.5452 | 0.01046 | **0.0203** |
+
+The between-fold standard deviation of the ceiling is **0.00117** — **one eighth of the
+Hanley–McNeil standard error of a single one of these AUCs (0.0091)**. Three independently trained
+adapters, three different training corpora, three different held-out countries, and the number that
+is supposed to say *how much this model could memorise if it had to* comes out at 0.5488, 0.5484,
+0.5466. The quantity it is supposed to bound ranges **9.2 times** more widely. `G6.11` says the same:
+ceiling range 0.0067 against a reported range of 0.0200.
+
+🔴 **The ceiling is not a property of the fold. It is a constant of the setup**, and
+`D-S6-14` has been imposing it as an **unregistered bar at 0.5479 ± 0.001** — **82 % tighter** than
+the pre-registered `G6.10 ≤ 0.65`, never registered, and discovered only after it fired.
+
+⚪ **Which folds alarm is therefore decided by noise on the reported side alone.** The three
+headrooms are z = 0.40, 1.16 and **0.12**; `es` alarms on a gap of **0.0015** against a difference SE
+of 0.0128. Two of three folds alarming is not a signal about two of three models — it is three
+reported AUCs scattering by ±0.01 around a constant that sits in the middle of them.
+
+### `FINDING 112` reproduces on all three folds
+
+| fold | reported last-20 mean loss | permuted | difference | z | held-in perplexity gap |
+|---|---|---|---|---|---|
+| `it` | 0.5565 | 0.5536 | **−0.0029** | −0.15 | 1.7189 → 1.7353 = **0.95 %** |
+| `uk` | 0.5005 | 0.5195 | +0.0190 | 0.90 | 1.6572 → 1.6701 = **0.78 %** |
+| `es` | 0.5353 | 0.5517 | +0.0165 | 1.07 | 1.6852 → 1.7001 = **0.88 %** |
+
+**Destroying the prefix-to-body pairing costs the training loss nothing, on every fold, in both
+directions.** No difference reaches 1.1 sigma, and the held-in perplexity penalty is under **1 %**
+everywhere. Meanwhile `G4.3` / `G4.4` / `G4.12` FAIL on every permuted adapter — conditioning really
+was destroyed. A model that has lost the pairing entirely fits the data as well as one that has it,
+so it never has to memorise, so its MIA AUC is near chance for a reason that has nothing to do with
+memorisation capacity.
+
+### What this does and does not change
+
+* 🔴 **All four registered controls PASS on all three folds.** Reported `G6.10` 0.5539 /
+  0.5336 / 0.5481 against 0.65; `G6.11` 0.5274 / 0.5074 / 0.5204 against 0.75; perplexity gap 0.0182
+  / 0.0097 / 0.0143 against 0.05; `G6.12` **zero exact matches, greedy and sampled, on all three**
+  (103 / 40 / 91 rare records). Untuned-base floors 0.4874 / 0.5012 / 0.4914, all within 0.013 of
+  0.50 — the splits do not differ for a reason that is not membership.
+* `D-S6-16` is unchanged and now rests on three folds instead of one. 🟢 Recommendation
+  **(a)** — report the ceiling as **INCONCLUSIVE AS A CEILING**, rest the release on the four
+  controls that pass. The brief's §7 carries the three-fold table.
+* 🔴 **This is Leg 4, the pilot, and the module prints `NOT REPORTABLE` on every one of these
+  runs.** The governing control is the Leg-5 `it` run, `1286896`, still training.
+* 🔴 `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`. No threshold moved, no checker
+  edited, every alarm reported as it fired. `privacy_audit.md` stays unwritten and **no release
+  decision has been made on either leg.**
+
+---
+
+## 2026-08-25 (early) — 🟢 THE GOVERNING LEG-5 CONTROL IS TRAINED AND ITS AUDIT IS SUBMITTED. `FINDING 112` SURVIVES THE 7 B BACKBONE.
+
+`1286896` — **COMPLETED `0:0` in 07:33:23**, three epochs, loss 1.7811 → ≈ 0.52. This is the
+`D-S6-14` control the ruling pre-named ex ante: Leg 5, `Olmo-3-1025-7B`, fold `it`. 600 diaries
+generated; `G4.3` / `G4.4` / `G4.12` **all FAIL** (`G4.12` CE rise −0.0054 against a required 0.15,
+MI drop 0.093 against 0.10), as they do on every permuted adapter.
+
+⚪ **The adapter is at `runs_leg5_permuted_control/leg5_permuted_fold_it/adapter`**, not
+`runs_permuted_control/` — the Leg-5 launcher writes to its own tree, and
+`4thJ_step6_privacy_mia.sh` already branches on `$LEG` for exactly this. Its `--out` refusal was
+checked live before submitting: the script exits 1 rather than run a control that is silently absent.
+
+**Audit submitted: `1286976`**, with the two overrides the script's own comment demands —
+`--gres=gpu:nvidia_a100_7g.80gb:1` and `--mem=192G`, since a Leg-5 control loads *two* 7 B bases and
+the header's `2g.20gb` slice would OOM after the first. `FINDING 9` discipline: the GRES is named on
+the submission, not assumed.
+
+### 🔴 `FINDING 112` is not a small-model artefact — it reproduces on the 7 B backbone
+
+| leg | fold | reported last-20 mean loss | permuted | difference | z |
+|---|---|---|---|---|---|
+| 4 | `it` | 0.5565 | 0.5536 | −0.0029 | −0.15 |
+| 4 | `uk` | 0.5005 | 0.5195 | +0.0190 | 0.90 |
+| 4 | `es` | 0.5353 | 0.5517 | +0.0165 | 1.07 |
+| **5** | **`it`** | **0.5223** (`1286548`) | **0.5267** (`1286896`) | **+0.0045** | **0.23** |
+
+🔴 **Scaling 1.48 B → 7 B did not make the prefix-to-body pairing matter.** On the reported
+leg, on the fold the ruling pre-named, a model that has lost the pairing entirely trains to within
+**0.0045** of one that has it — **0.23 sigma**, the smallest difference of the four. The mechanism
+behind `FINDING 112` is a property of this corpus, not of the pilot's capacity, and the four
+measurements now span both backbones.
+
+⚪ This says nothing yet about what `1286976` will return. The ceiling AUC has not been measured on
+Leg 5; the three Leg-4 ceilings sat at 0.5488 / 0.5484 / 0.5466 (`FINDING 114`). Whatever it returns,
+`D-S6-16` (a) applies — that undertaking was written before any of the four controls was read, and
+it is on the record above.
+
+🔴 `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`, printed by the job itself.
+`privacy_audit.md` stays unwritten; **no release decision on either leg.**
+
+---
+
+## 2026-08-25 (early) — 🔴🔴 THE GOVERNING AUDIT IS READ AND **`G6.10` FAILS ITS PRE-REGISTERED BAR**. `FINDING 115`. TWO EARLIER READINGS OF MINE ARE CORRECTED HERE.
+
+Job `1286976`, fold `it`, **Leg 5**, `Olmo-3-1025-7B`, adapter
+`runs_leg5/leg5_primary_fold_it/adapter` — **COMPLETED `0:0` in 00:49:01**. This is the run the whole
+of Step 6.5 was waiting for. Artefacts: `outputs_step6/privacy_mia_leg5_it.json`,
+`outputs_step6/4J_step6_mia_1286976.out`.
+
+### 🔴 `FINDING 115` — the reported model exceeds a pre-registered privacy bar on the reported leg
+
+| | measured | bar | verdict |
+|---|---|---|---|
+| `G6.10` loss MIA AUC | **0.6645** | ≤ **0.65** | 🔴 **FAIL** |
+| `G6.11` reference MIA AUC | 0.5594 | ≤ 0.75 | PASS |
+| perplexity-gap control | **0.0570** | ≤ **0.05** | 🔴 **FAIL** |
+| `G6.12` verbatim | 0 greedy / 0 sampled of 103 rare records | 0 | PASS |
+| untuned-base floor | **0.4886** | ≈ 0.50 | clean |
+
+🔴 **Two of the four registered controls FAIL, and the floor is clean.** 0.4886 is within 0.012
+of chance, so the two splits do **not** differ for a reason that is not membership — which is exactly
+what makes the 0.6645 readable as membership signal rather than as an artefact of the split. The bar
+is exceeded by 0.0145 against a Hanley–McNeil SE of 0.0085: **z = 1.70**, and `TPR@FPR=0.001` is
+0.0010 against a 0.05 allowance.
+
+The perplexity gap tells the same story from the other side: train `1.6397` vs test `1.7331`, a gap
+of **0.0570** against a registered 0.05. The reported model fits its training members measurably
+better than its non-members.
+
+🔴 **Under the prereg's own terms this is a refusal.** `G6.10` is a registered gate, it was
+scored on the reported leg with the reported model, and it failed. `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45`, printed by the job. No threshold moved and none may.
+⚪ It does not overturn the standing project position that the weights cannot be released — it
+supplies the measurement that position had been asserted without.
+
+### 🔴 CORRECTION 1 — `FINDING 114` was stated too broadly, and I stated it
+
+The 2026-08-25 entry above says the ceiling *“is not a property of the fold — it is a constant of
+the setup”*. **The Leg-5 ceiling is 0.6496.** The three Leg-4 ceilings were 0.5488 / 0.5484 / 0.5466.
+
+| | ceiling `G6.10` | ceiling `G6.11` | ceiling ppl gap |
+|---|---|---|---|
+| Leg 4 (1.48 B), three folds | 0.5479 ± 0.00117 | 0.5149 ± 0.0034 | ≈ 0.0149 |
+| **Leg 5 (7 B), `it`** | **0.6496** | **0.5441** | **0.0511** |
+
+🔴 **The ceiling moves +0.102 with capacity — 87 times its between-fold sd.** So the correct
+statement is narrower than the one on the record: **the ceiling is constant across FOLDS at fixed
+capacity, and it responds strongly to capacity.** `D-S6-14` does track memorisation capacity across
+backbones; what it does not do is discriminate between folds. The “unregistered bar at ≈ 0.548”
+reading holds **within Leg 4 only** — on Leg 5 that implicit bar is 0.6496, which sits *above* the
+registered 0.65 rather than 82 % below it. `FINDING 114` stands as a Leg-4 result and is corrected
+here, not deleted.
+
+### 🔴 CORRECTION 2 — `FINDING 112`'s measurement reproduces; its inference does not, at 7 B
+
+The measurement is unchanged and now spans both backbones: permuted minus reported last-20 mean loss
+−0.0029 / +0.0190 / +0.0165 (Leg 4) and **+0.0045, z = 0.23** (Leg 5). Destroying the pairing still
+costs the training loss nothing.
+
+But `FINDING 112` went on to infer *“so the control never needed to memorise, so its AUC is near
+chance”*. **At 7 B the control's AUC is 0.6496, not near chance.** So the permuted model at 7 B
+**does** memorise substantially, while its aggregate training loss stays indistinguishable from the
+reported model's. The two facts are compatible — memorisation of 31,560 records moves an aggregate
+loss very little — but the inference as written was too strong and is withdrawn for Leg 5. It
+survives for Leg 4, where the ceiling really is near chance.
+
+⚪ What both corrections have in common: they were caught by running the governing arm rather than
+generalising from the pilot. `FINDING 105` and `FINDING 106` were the same lesson at Step 7.
+
+### What this does to `D-S6-16`
+
+🔴 **Option (a)'s premise is now false on Leg 5.** It read *“rest the release on the four
+controls that pass”*; on the governing run **two of them fail**. The ceiling question has not
+disappeared — it still governs how the control is written up in the methods — but it is **no longer
+what decides the release**. The registered bar decides it, and the registered bar fails.
+
+⚪ The alarm fired here too (headroom −0.0149 and −0.0153, z = 1.23 and 1.19), and on this run the
+alarm and the bar agree for once. That agreement is not evidence for the ceiling: a ceiling that sits
+0.0149 below a reported AUC which itself sits 0.0145 above the registered bar is simply tracking the
+same thing the bar caught.
+
+### Where Step 6.5 now stands
+
+* All four permuted controls are trained and all four audits are read: `1286941` `it`4,
+  `1286945` `uk`4, `1286955` `es`4, **`1286976` `it`5**.
+* 🔴 `privacy_audit.md` is still unwritten — but it now has a result to write, and it is a
+  **FAIL on `G6.10` and on the perplexity-gap control**, with a clean floor and `G6.12` at zero.
+* 🔴 Leg 4 remains the pilot and remains `NOT REPORTABLE`. Every Leg-4 number above is context
+  for the Leg-5 result, never a substitute for it.
+* `D-S6-16` still needs an answer for the **methods write-up**; it no longer gates the release.

@@ -1,0 +1,105 @@
+{
+  "gate": "G4.1",
+  "measurement": "sampling-noise floor, frozen adapter",
+  "fold": "es",
+  "adapter": "/speed-scratch/o_iseri/4J_step4/runs_leg5/leg5_primary_fold_es/adapter",
+  "base_repo": "allenai/Olmo-3-1025-7B",
+  "base_revision": "a81bae42db3975be1671e27b9c9a56da1a9f980f",
+  "seeds": [
+    13,
+    101,
+    1009,
+    7919,
+    104729
+  ],
+  "gen_n": 600,
+  "stratified_k": 6,
+  "weight_divergence": "zero by construction -- one adapter, never trained",
+  "per_seed": [
+    {
+      "gate": "G4.1",
+      "verdict": "FAIL",
+      "statistic": "at_home_share",
+      "band": [
+        0.8,
+        1.25
+      ],
+      "n_scorable_strata": 6,
+      "n_below_band_COLLAPSE_END": 0,
+      "n_above_band": 4,
+      "which_end": "upper",
+      "worst_low": 0.9564341323081512,
+      "worst_high": 1.5406751722585463,
+      "seed": 13
+    },
+    {
+      "gate": "G4.1",
+      "verdict": "FAIL",
+      "statistic": "at_home_share",
+      "band": [
+        0.8,
+        1.25
+      ],
+      "n_scorable_strata": 6,
+      "n_below_band_COLLAPSE_END": 2,
+      "n_above_band": 0,
+      "which_end": "lower (collapse)",
+      "worst_low": 0.7304315128595315,
+      "worst_high": 1.225075388321749,
+      "seed": 101
+    },
+    {
+      "gate": "G4.1",
+      "verdict": "FAIL",
+      "statistic": "at_home_share",
+      "band": [
+        0.8,
+        1.25
+      ],
+      "n_scorable_strata": 6,
+      "n_below_band_COLLAPSE_END": 0,
+      "n_above_band": 1,
+      "which_end": "upper",
+      "worst_low": 0.817693812669619,
+      "worst_high": 1.6117384758888043,
+      "seed": 1009
+    },
+    {
+      "gate": "G4.1",
+      "verdict": "FAIL",
+      "statistic": "at_home_share",
+      "band": [
+        0.8,
+        1.25
+      ],
+      "n_scorable_strata": 6,
+      "n_below_band_COLLAPSE_END": 0,
+      "n_above_band": 1,
+      "which_end": "upper",
+      "worst_low": 0.8223260324727033,
+      "worst_high": 1.6460359756514276,
+      "seed": 7919
+    },
+    {
+      "gate": "G4.1",
+      "verdict": "FAIL",
+      "statistic": "at_home_share",
+      "band": [
+        0.8,
+        1.25
+      ],
+      "n_scorable_strata": 6,
+      "n_below_band_COLLAPSE_END": 1,
+      "n_above_band": 0,
+      "which_end": "lower (collapse)",
+      "worst_low": 0.6323349288179708,
+      "worst_high": 1.1172576063377797,
+      "seed": 104729
+    }
+  ],
+  "spread_worst_low": 0.3240992034901804,
+  "spread_worst_high": 0.5287783693136479,
+  "verdict_stable_under_reseed": true,
+  "is_a_verdict_for_any_fold": false,
+  "note": "a resolution, to be quoted next to G4.1 readings and never in place of one"
+}

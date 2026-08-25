@@ -3285,3 +3285,154 @@ own; and `G4.16` is unmoved across both arms.
 🔴 **Until that job is read, the repair is established from the guard's condition and has NOT
 been seen working. `G4.7` must not be quoted as repaired, and the `uk` and `it` Leg-5 folds must not
 be submitted** — 22 GPU-hours reproducing a known-broken generation stage.
+
+---
+
+## 2026-08-24 — 🟢 **`D-S4-15` EXECUTED AND READ: `G4.1` HAS A NOISE FLOOR AT LAST, AND IT IS WIDER THAN THE BAND. `FINDING 100` + `FINDING 101`. NEW DECISION `D-S4-16`.**
+
+> ⚪ **Gap notice.** This log's previous entry is the `D-S4-8` block of 2026-08-23. The
+> 2026-08-24 chain `D-S4-9` → `D-S4-15` (`G4.3` base-model baseline, `G4.6` merge parity,
+> the `G4.1` two-real-sides audit, `G4.4` scorer stability and seed sensitivity) was written
+> up in `Prompts/RESUME.md` and in `IMP/docs/DONE/`, not here, and is **not re-derived in
+> this entry**. Only the numbers below were re-derived from the artefacts.
+
+### 1. What was run
+
+`D-S4-15` was ruled **(a)** by the author: run `G4.1`'s missing sampling-noise floor on all three
+folds. `tools/4thJ_step4_g41_seedfloor.py` (md5 `409945ba930a72900d7c8a7a1ae9bf38`, **unchanged**),
+one frozen Leg-5 adapter per fold loaded **once**, five seeds fixed in the source before any result
+existed (`13, 101, 1009, 7919, 104729`), `--gen-n 600`, `--gen-stratified-k 6`. **No training**, so
+weight divergence is zero by construction and only the sampler moves.
+
+| job | fold | state | elapsed | prefix pool / real reference |
+|---|---|---|---:|---|
+| `1286634` | `es` | COMPLETED `0:0` | `03:56:26` | 5,520 / 54,114 |
+| `1286635` | `uk` | COMPLETED `0:0` | `03:08:54` | 5,702 / 57,400 |
+| `1286636` | `it` | COMPLETED `0:0` | `02:28:57` | 3,434 / 34,994 |
+
+🔴 **The three cold-start checks the previous session registered were run BEFORE anything was
+read**, because the predecessor jobs `1286631`-`33` had exited `0:0` in ~48 s having done nothing:
+
+1. elapsed is **hours**, not a no-op;
+2. every log's `base` line reads `allenai/Olmo-3-1025-7B @ a81bae42db3975be1671e27b9c9a56da1a9f980f`
+   with the `runs_leg5/leg5_primary_fold_<c>/adapter` path — the `--leg 5` fix took, no run is void;
+3. the script's two hard `SystemExit` guards did not fire, so the prefix draw was identical across
+   seeds and no two seeds produced byte-identical text. The spread is the sampler's, not the
+   harness's.
+
+`prereg.md` md5 re-verified **by each job itself**: `e4243e07cdd80c9c846b91f40e3e8c45`, matching the
+sidecar. `4thJ_step4_thresholds.py` md5 `724b558f2fb46357c8bba2838adb5451`, untouched. Band still
+`0.80`–`1.25`.
+
+Artefacts pulled down to `Step4_docs/outputs_step4/g41_seedfloor/`:
+`g41_seedfloor_es.json` `697b278cea64ef4155c82bbe821f08fc`,
+`g41_seedfloor_uk.json` `a1022a357cdb1fe10d0c4f83b1705d38`,
+`g41_seedfloor_it.json` `cbb1c8a2e13ade62855acd250d4bf20e`, plus the three `.out` logs.
+
+### 2. The floor
+
+Per-seed `worst_high`, frozen weights, band width `0.45`:
+
+| fold | 13 | 101 | 1009 | 7919 | 104729 | spread | stdev | verdicts |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `es` | 1.541 | 1.225 | 1.612 | 1.646 | 1.117 | **0.529** | 0.241 | FAIL ×5 |
+| `uk` | 2.154 | 1.846 | 1.496 | 2.060 | 1.577 | **0.658** | 0.289 | FAIL ×5 |
+| `it` | 1.318 | 1.432 | 1.387 | 1.338 | 1.047 | **0.385** | 0.151 | FAIL ×4, **PASS ×1** |
+
+`worst_low` spreads `es` `0.324` · `uk` `0.225` · `it` `0.239`.
+
+🔴 On `es` and `uk` the **seed alone** moves the statistic further than the entire width of the band
+it is judged against.
+
+### 3. 🔴 `FINDING 100` — the gate's verdict is seed-dependent, and the direction flip is explained
+
+**(i)** On `it` the same frozen adapter returns `FAIL, FAIL, FAIL, FAIL, PASS`. The script printed
+this under a rule written into its own source before any result existed
+(`verdict_stable_under_reseed: false`). **No single `G4.1` reading anywhere in Step 4 — including
+every `D-S4-5` verdict checkpoint — is reportable without this spread beside it.**
+
+**(ii)** The standing open question, *why does the failure end flip `lower` / `upper` / `both`
+between folds and between epochs of one run*, is answered by the **seed alone at frozen weights**:
+`es` gives `upper / lower(collapse) / upper / upper / lower(collapse)`, `uk` gives
+`upper / upper / both / upper / upper`, `it` gives `both / upper / upper / upper / none`. All three
+ends occur inside one fold, one adapter, one set of weights. No fold-composition, epoch-dynamics or
+backbone-size hypothesis is needed, and none may be offered.
+
+### 4. One canonical reading of nine survives its own floor
+
+Trainer-side canonical readings (`real_ref`, per `D-S4-11 (i)`), re-derived from the job logs, each
+against its own fold's floor:
+
+| fold | ep | worst_low / worst_high | band violation | floor | exceeds it? |
+|---|---:|---|---:|---:|---|
+| `es` | 0 | 0.771 / 1.435 | +0.185 | 0.529 | no |
+| `es` | 1 | 0.591 / 1.500 | +0.250 | 0.529 | no |
+| `es` | 2 | 0.750 / 1.568 | +0.318 | 0.529 | no |
+| `uk` | 0 | 1.079 / 1.670 | +0.420 | 0.658 | no |
+| `uk` | 1 | 0.854 / 1.311 | +0.061 | 0.658 | no |
+| `uk` | 2 | 0.707 / **2.293** | **+1.043** | 0.658 | 🟢 **YES, 1.59×** |
+| `it` | 0 | 0.848 / 1.269 | +0.019 | 0.385 | no |
+| `it` | 1 | 1.156 / 1.397 | +0.147 | 0.385 | no |
+| `it` | 2 | 0.931 / 1.240 | **PASS** by 0.010 | 0.385 | no |
+
+🔴 **`uk` epoch 2 is the only band violation in Step 4 that its own measurement can resolve.** And
+🔴 **`it`'s epoch-2 PASS — the only clean `G4.1` in the project — clears the bound by `0.010`
+against a floor of `0.385`, thirty-eight times smaller than the resolution**; the reseeding is the
+direct test and that same adapter FAILs on four seeds in five.
+
+Reading rule, registered in the source before the numbers: the spread is a **LOWER BOUND** on the
+run-to-run spread of two TRAINED replicates, because weight divergence is held at exactly zero.
+Never "the" spread.
+
+### 5. 🔴 `FINDING 101` — `es`'s `G4.1` is scored on PRE-REPAIR text, `uk` and `it` are not
+
+Surfaced while sourcing the table above, not looked for. `uk` `1286547` and `it` `1286548` are full
+Leg-5 **training** runs and their epoch lines carry `G4.7 PASS [gen-terminated 600/600]`. `es`
+`1286546` is a **generation + diagnostics** pass: it computes `G4.3` / `G4.4` / `G4.12` and the
+coverage clause and **computes no trainer-side `G4.1` at all** — the only `G4.1` lines in its log
+are the perturbation-side ones `D-S4-11 (i)` already ruled `NOT COMPUTED`. So `es`'s canonical
+`G4.1` still comes from `1286209`, whose epoch lines read `G4.7 FAIL [107/600 · 138/600 · 127/600]`.
+
+⚪ **Correction of record, made visibly rather than by a silent edit:** `D-S4-15` §1 records `es` as
+"worst-high `1.456` … job `1286546`". `1.456` is a **recomputation** on the pre-repair `es` set made
+during the `D-S4-8` investigation, and the canonical epoch readings are `1.435 / 1.500 / 1.568` from
+job **`1286209`**. `D-S4-15`'s ruling turned on `it`'s PASS and on the absence of a floor, so it is
+unaffected and is left as written.
+
+🟢 The gap may close for free: the seed-floor run **is** post-repair on `es` (it imports the
+trainer's own `gate_g4_1` and `generate_samples`, inheriting the `D-S4-8` `eos_token_id` fix) and
+returns five post-repair `es` readings, **all FAIL**. What is missing is the label, not the
+knowledge.
+
+### 6. Not done
+
+* **`G4.1` still ships FAIL** and the floor is **not a verdict** for any fold
+  (`is_a_verdict_for_any_fold: false` in each JSON). Nothing was re-scored.
+* **No threshold, band, statistic or `N` moved.** `4thJ_step4_thresholds.py` and `prereg.md` md5s
+  unchanged and verified by the jobs.
+* `G4.3`, `G4.6`, `G4.12` and the `es`/`uk` coverage clause are untouched and still FAIL for their
+  own recorded reasons.
+* The four `genperturb` levers naming `G4.1` remain **UNDEMONSTRATED** per `D-S4-11 (i)`; this
+  measurement does not touch them.
+
+### 7. 🟢 `D-S4-16` RULED THE SAME DAY — BOTH ITEMS `(a)`, ZERO COMPUTE, AND STEP 4 CLOSES
+
+`IMP/docs/DONE/2026-08-24_D-S4-16_G4.1_ships_with_its_floor.md`, §6 filled by the author. Binding form:
+
+* **Item 1 (a) — `G4.1` ships FAIL on all three folds**, every reading printed beside its fold's
+  sampling-noise floor (`es` `0.529` · `uk` `0.658` · `it` `0.385`), and **`G4.1` is declared
+  RESOLUTION-LIMITED AT N=600** because the floor exceeds the whole `0.45` band.
+* 🔴 **`it`'s epoch-2 PASS IS STRUCK — struck, not deleted.** ~~`it` ep2 PASS, worst 0.931/1.240~~
+  It cleared the upper bound by `0.010` against a floor of `0.385` (38× smaller than the
+  resolution) and the same frozen weights FAIL on 4 of 5 seeds. **The project has no clean `G4.1`
+  anywhere.** Any text still calling it "the only clean `G4.1`" is retracted by this entry.
+* **Only `uk` epoch 2** (`+1.043` high, worst `2.293`, `1.59×` its floor) is reported as a genuine
+  over-dispersion the measurement can resolve.
+* **Item 2 (a) — the five `1286634` seed-floor readings ARE `es`'s post-repair `G4.1` evidence**
+  (`1.117`–`1.646`, all FAIL). The canonical epoch lines stay as scored (`1286209`, pre-repair) and
+  the basis asymmetry is declared in the methods with the five post-repair readings beside them.
+  No re-train; 11 GPU-hours not spent.
+* ⚪ `4thJ_step4_thresholds.py` (`724b558f2fb46357c8bba2838adb5451`) and `prereg.md`
+  (`e4243e07cdd80c9c846b91f40e3e8c45`) remain strictly frozen. **Step 4 closes with all four
+  failing gates — `G4.1`, `G4.3`, `G4.6`, `G4.12` — explained and empirically grounded.**
+  🔴 Closing is not passing: never write Step 4 up as clean.
