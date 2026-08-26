@@ -105,7 +105,7 @@ STRATA_RAW_COLUMNS = [
 ]
 
 PERTURBATIONS = [
-    "null", "del_activity_row", "strip_citation", "scale_duration", "round_duration",
+    "null", "del_activity_row", "strip_citation", "scale_duration", "scale_weight", "round_duration",
     "add_one_to_many", "empty_outdoor", "drop_spain_age", "zero_missing_flag",
     "pool_modal_code", "shift_sleep_budget", "remap_spain_transport", "wrong_rotation",
     "italy_catcon_swap", "spain_cop_bool", "spain_secondary_repoint", "uk_group1_carry",
@@ -119,6 +119,15 @@ PERTURBATION_SPEC = {
     "del_activity_row":      {"must_fail": "G2.1",  "must_stay_clean": ["G2.3"]},
     "strip_citation":        {"must_fail": "G2.2",  "must_stay_clean": ["G2.1"]},
     "scale_duration":        {"must_fail": "G2.3",  "must_stay_clean": ["G2.4"]},
+    # D-S2-20 Q2(a), ruled by the author 2026-08-26. ADDED to the pre-registered
+    # table, not substituted for scale_duration: scale_duration cannot isolate
+    # G2.3 even in principle (scaling every episode of a 1440-minute diary by
+    # 1.01 necessarily breaks day closure -> 1454.4). Corrupting the WEIGHT
+    # moves total weighted minutes, which is exactly what G2.3 asserts, while
+    # leaving every duration and start_min untouched, so G2.4's tiling
+    # invariant is arithmetically unreachable from here. This is the row that
+    # demonstrates G2.3's detection power independently of G2.4's.
+    "scale_weight":          {"must_fail": "G2.3",  "must_stay_clean": ["G2.4"]},
     "round_duration":        {"must_fail": "G2.4",  "must_stay_clean": ["G2.3"]},
     "add_one_to_many":       {"must_fail": "G2.5",  "must_stay_clean": ["G2.1"]},
     "empty_outdoor":         {"must_fail": "G2.6",  "must_stay_clean": "ALL_OTHER"},
@@ -1334,6 +1343,15 @@ def apply_perturbation(name, ws):
         w["harm"].loc[mask, "duration_min"] = w["harm"].loc[mask, "duration_min"] * 1.01
         return w
 
+    if name == "scale_weight":
+        # D-S2-20 Q2(a). Same country and same 1.01 factor as scale_duration so
+        # the two rows differ in exactly one thing: which column is corrupted.
+        w = ws_copy(ws, ["harm"])
+        w["harm"]["weight_dia"] = w["harm"]["weight_dia"].astype(float)
+        mask = w["harm"].country == "it"
+        w["harm"].loc[mask, "weight_dia"] = w["harm"].loc[mask, "weight_dia"] * 1.01
+        return w
+
     if name == "round_duration":
         w = ws_copy(ws, ["harm"])
         idx = w["harm"][(w["harm"].country == "it") & (w["harm"].duration_min == 20)].index
@@ -1625,6 +1643,46 @@ def _blocks_for(country, act_map, loc_codes, outdoor_target, outdoor_source, lvl
     return blocks
 
 
+def _strata_pairs_for_country(country, cw_strata):
+    """FINDING 152. Real (target_band, source_value) pairs for one country, read
+    straight out of the shipped crosswalk_strata.csv -- never invented here.
+    V2.j FAILs on any parquet band absent from that file and G2.18 (b) reads
+    the same file, so a fixture that made up a band or a raw code would
+    manufacture a defect the real table does not have.
+
+    'unknown' is deliberately EXCLUDED, to keep the three countries' unknown
+    shares SYMMETRIC. What G2.18's D-S2-19 escalation actually reacts to is
+    asymmetry, not presence: it compares one country's unknown share against
+    ten times the SMALLEST share among the other two, and per FINDING 151 that
+    bar collapses to 0.0 the moment one of those is zero. Measured, not
+    assumed, on this fixture at n_diaries=40:
+      * excluding 'unknown' everywhere (shipped)  -> escalations = 0
+      * including it for all three                 -> escalations = 0
+        (equal shares; 0.1667 > 1.667 is false)
+      * including it for uk/it but NOT es          -> escalations = 4, and
+        G2.18's whole-gate verdict is FAIL at baseline, which would leave both
+        italy_* rows unfalsifiable at gate level -- only their M-7 sub-clause
+        counters would still discriminate.
+    Exclusion is simply the cheapest guarantee of symmetry; it is NOT the case
+    that any 'unknown' at all would fire the clause."""
+    out = {}
+    if cw_strata is None or len(cw_strata) == 0:
+        return out
+    sub = cw_strata[cw_strata["country"].astype(str).str.strip() == country]
+    for s in STRATA_COLUMNS:
+        rows = sub[sub["stratum"].astype(str).str.strip() == s]
+        pairs, seen = [], set()
+        for _, r in rows.iterrows():
+            band = str(r["target_band"]).strip()
+            raw = str(r["source_value"]).strip()
+            if band in ("", "nan", "unknown") or band in seen:
+                continue
+            seen.add(band)
+            pairs.append((band, raw))
+        out[s] = sorted(pairs)
+    return out
+
+
 def build_synthetic_country(country, n_diaries, cw):
     """Build a native-origin-order episode table for one country, replicated
     n_diaries times with unique (hid, pid). Uses ONLY source/target codes that
@@ -1691,6 +1749,33 @@ def build_synthetic_country(country, n_diaries, cw):
     rep["weight_ind"] = 1.0
     rep["weight_dia"] = 1.0
 
+    # FINDING 152: the five harmonised conditioning strata and their six raw
+    # carriers (D-S2-18/D-S2-19). Without these the fixture has no strat_*
+    # columns at all, and apply_perturbation CRASHED with KeyError on the
+    # first strata row -- taking every later perturbation and all three
+    # sweep-level acceptance tests down with it. A crash is not a FAIL.
+    #
+    # A stratum is a property of the PERSON-DAY, not the episode (G2.17 (b)),
+    # so each value is drawn once per diary and broadcast across that diary's
+    # episodes. Assigning per episode would make the fixture fail (b) at
+    # baseline, which would in turn make strat_day_type_wrong_grain
+    # unfalsifiable -- it could not move a gate that was already red.
+    strata = _strata_pairs_for_country(country, cw.get("cw_strata"))
+    diary_idx = rep["hid"].to_numpy()
+    for s in STRATA_COLUMNS:
+        pairs = strata.get(s) or []
+        if not pairs:
+            continue
+        bands = [p[0] for p in pairs]
+        raws = [p[1] for p in pairs]
+        pick = diary_idx % len(pairs)
+        rep[s] = pd.array([bands[i] for i in pick], dtype="string")
+        rep[s + "_raw"] = [raws[i] for i in pick]
+    # strat_season_raw ships raw-only: D-S2-19 dropped season from the prefix,
+    # so it has no crosswalk rows and no harmonised partner, and V2.j must not
+    # demand one.
+    rep["strat_season_raw"] = [str(1 + (i % 4)) for i in diary_idx]
+
     # extras: UK / IT specific, null for the other countries by construction
     for col in EXTRA_COP_COLUMNS:
         owner = col.split("_")[2]
@@ -1743,6 +1828,11 @@ def build_fixtures(out_dir, real_crosswalks_dir, real_step1_dir, n_diaries=1200)
     harm = pd.concat(harm_parts, ignore_index=True)
     ordered_cols = [c for c in D_S2_12_COLUMNS if c != "country"]
     final_cols = ["country"] + ordered_cols[:ordered_cols.index("act_raw")] + EXTRA_COP_COLUMNS + ordered_cols[ordered_cols.index("act_raw"):]
+    # FINDING 152: D_S2_12_COLUMNS predates the D-S2-18 round and does not list
+    # the strata, so this reindex used to DROP every strat_* column the builder
+    # had just assigned. APPENDED, not inserted -- the D-S2-12 column ORDER is
+    # itself under audit (G2.12/V2.b) and must not move.
+    final_cols = final_cols + STRATA_COLUMNS + STRATA_RAW_COLUMNS
     for c in final_cols:
         if c not in harm.columns:
             harm[c] = None
@@ -1756,7 +1846,13 @@ def build_fixtures(out_dir, real_crosswalks_dir, real_step1_dir, n_diaries=1200)
 
     for country in COUNTRIES:
         cname = {"es": "spain", "uk": "uk", "it": "italy"}[country]
-        natives[country].to_parquet(step1_dir / f"episodes_{cname}.parquet", index=False)
+        # FINDING 152: the real episodes_<country>.parquet carries NO strat_*
+        # column -- banding is Step 2's own work item -- so drop them back off
+        # before writing the Step 1 fixture. They were assigned in the native
+        # frame only so that rotate_and_split carries them into harmonised.
+        step1_native = natives[country].drop(
+            columns=[c for c in STRATA_COLUMNS + STRATA_RAW_COLUMNS if c in natives[country].columns])
+        step1_native.to_parquet(step1_dir / f"episodes_{cname}.parquet", index=False)
         real_cb = Path(real_step1_dir) / f"codebook_facts_{cname}.md"
         if real_cb.exists():
             shutil.copy(real_cb, step1_dir / f"codebook_facts_{cname}.md")
@@ -2016,7 +2112,9 @@ def main():
     ap.add_argument("--selftest", action="store_true",
                      help="build synthetic fixtures and run baseline + all twenty-one perturbations in-process. "
                           "NOTE (2026-08-17): the synthetic fixture was NOT extended with strat_* columns for the "
-                          "D-S2-18 round, so G2.17 always reports missing-column FAILs under --selftest; G2.18/V2.j "
+                          "D-S2-18 round. FINDING 152, 2026-08-26: the fixture now builds all five strata and their six "
+                          "raw carriers, so G2.17/G2.18 are genuinely exercised under --selftest and all 22 "
+                          "perturbations run; G2.18/V2.j "
                           "still read the REAL crosswalk_strata.csv (from the default Step2_docs/outputs_step2 dir) "
                           "and are meaningful. The real, non-selftest run against harmonised.parquet is authoritative.")
     ap.add_argument("--n-diaries", type=int, default=1200, help="selftest only: diaries per country in the fixture")

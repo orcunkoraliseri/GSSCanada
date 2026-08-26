@@ -1,6 +1,6 @@
 # Item 1.4 — Eurostat entity-recognition enquiry: READY-TO-SEND DRAFT
 
-Status: **DRAFTED, NOT SENT.** Drafting is not the Definition of Done.
+Status: **SENT 2026-08-26.** Item 1.4 is CLOSED. (Was: DRAFTED, NOT SENT.)
 `Step1_docs/4thJ_01_corpusAcquisition.md:281` is explicit: *"the enquiry is sent to Concordia's
 Office of Research and the date is recorded."* Only the author can send it, because it goes out in
 the author's own name and asks Concordia, as an institution, to apply for a status. This file exists
@@ -86,10 +86,10 @@ orcunkoral.oseri@concordia.ca
 Fill this in **after** sending, and copy the date into the Step 1 progress log:
 
 ```
-SENT ON:            ____________________   (YYYY-MM-DD)
-SENT TO:            ____________________   (name / address at the Office of Research)
-REPLY RECEIVED ON:  ____________________   (or "no reply as of <date>")
-OUTCOME:            ____________________
+SENT ON:            2026-08-26             (YYYY-MM-DD)
+SENT TO:            office.of.research@concordia.ca   (Office of Research, general inquiries)
+REPLY RECEIVED ON:  no reply as of 2026-08-26
+OUTCOME:            pending
 ```
 
 Until the first line carries a date, item 1.4 is **NOT DONE**, and the checklist must keep saying so.

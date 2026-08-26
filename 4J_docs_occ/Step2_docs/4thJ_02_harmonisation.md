@@ -1891,8 +1891,8 @@ decided not to perform.**
 
 ### 3. How the `unknown` band is scored, pre-registered here before it is measured again
 
-`unknown` prevalence is not even across the three countries — economic status: **ES 0.0 %, UK 6.3 %,
-IT 13.5 %**; household type: **ES 0.0 %, IT 0.0 %, UK 3.6 %**. A band two countries emit and the third
+`unknown` prevalence is not even across the three countries — economic status: **ES 0.0000 %, UK 0.5192 %,
+IT 4.2435 %**; household type: **ES 0.0000 %, IT 0.0000 %, UK 3.5141 %** (🔴 **corrected under `D-S2-20` Q1(a), 2026-08-26**; this line previously read UK 6.3 % / IT 13.5 % / UK 3.6 %, wrong by 12× and 3× — re-derived from `harmonised.parquet`, 73,254 diaries, `weight_dia`). A band two countries emit and the third
 never does is a partial country marker, and the question of whether that fails D-S2-18's Rule 3 has to
 be settled **before** the gate runs rather than by whoever reads its output.
 
@@ -2023,6 +2023,16 @@ against its source codebook, or the `unknown` declarations for the country/strat
 D-S2-19's quoted 6.3 % / 13.5 % should be corrected to **0.519 % / 4.243 %**), and whether to repair
 the `scale_duration` → `G2.4` clean violation.
 
+🔴 **2026-08-26 — BOTH WERE RE-MEASURED AND ARE NOW DOCKETED AS `D-S2-20`:**
+`Step2_docs/impl/2026-08-26_D-S2-20_the-two-standing-step2-questions.md`. The correction is
+confirmed from the parquet (**0.5192 % / 4.2435 %**, robust to the weight choice; `6.3 % / 13.5 %` is
+wrong by 12× and 3×). 🔴 **`FINDING 151` changes what question 1 asks**: in both strata one
+country's `unknown` share is exactly **0.0000 %**, so `tools/4thJ_gates_step2.py:1068`'s
+`smallest_other * 10.0` bar is **0.0** and *any* positive share escalates — the ten-times threshold is
+inert, and the gate is reporting a zero denominator, not a large imbalance. Recommendations: **1(a)**
+keep the FAIL and publish `FINDING 151` with it; **2(a)** add the weight-scaling perturbation that can
+separate `G2.3` from `G2.4`.
+
 ---
 
 ## Progress Log fragment — Task B, Step 2 (M-8 / D-S2-18 / D-S2-19 additive round)
@@ -2122,7 +2132,8 @@ into each per-country `filter_report_<country>.md` (crosswalk join match counts 
   sheet named — they are copied from `codebook_facts_<country>_strata.md`'s own citation column,
   which I did not re-derive from the source documents myself (Task A's job, already accepted).
 * Whether the `strat_econ_status`/`strat_hh_type` `unknown`-band prevalence asymmetry
-  (ES 0.0 %/UK 6.3 %/IT 13.5 % for econ status; ES 0.0 %/IT 0.0 %/UK 3.6 % for household type) is
+  (ES 0.0000 %/UK 0.5192 %/IT 4.2435 % for econ status; ES 0.0000 %/IT 0.0000 %/UK 3.5141 % for household
+  type — 🔴 corrected under `D-S2-20` Q1(a), 2026-08-26) is
   missing-at-random or structurally concentrated — not investigated here; D-S2-19 §3 already rules
   that this is scored on availability, not prevalence, so it does not gate this round, but the
   underlying data question is still open per `strata_proposal.md`'s own "WHAT I DID NOT VERIFY".

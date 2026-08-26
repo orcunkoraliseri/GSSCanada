@@ -272,7 +272,14 @@ correct field and the choice is re-taken then, in writing, before anything is tr
 **Definition of done:** `outputs_step1/episodes_<country>.parquet` plus a per-country parse report
 naming every dropped or unparsed row.
 
-### 1.4 — File the Eurostat entity-recognition enquiry
+### 1.4 — File the Eurostat entity-recognition enquiry — 🟢 **DONE, SENT 2026-08-26**
+
+🟢 **CLOSED ON ITS OWN DEFINITION OF DONE.** The enquiry was sent by the author on **2026-08-26** to
+**`office.of.research@concordia.ca`** (Concordia Office of Research, general inquiries). Text as
+filed, and the closing lines, are in `outputs_step1/1_4_eurostat_enquiry_DRAFT.md`. No reply as of
+2026-08-26; outcome pending, and a pending outcome does not reopen the item — the DoD is *sent, with
+a date*, not *answered*. ⚪ Nothing downstream changes: no `G1.x` gate references 1.4, and the
+corpus stays at three countries for this manuscript.
 
 Not blocking, and **more valuable than it was**: our four waves *are* the HETUS 2010 round, so Track A
 would widen the corpus from four countries to seventeen with no harmonisation change at all. With

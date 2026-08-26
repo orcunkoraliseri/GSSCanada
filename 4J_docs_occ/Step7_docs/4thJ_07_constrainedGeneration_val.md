@@ -323,3 +323,79 @@ its occupancy trough at exactly 07:00, and a night-shift dwelling is legitimatel
 Scored per dwelling the gate would have failed **11 of 100 CORRECT** `es` schedules. The answer to
 that is the right statement, never a looser number — the counts are printed beside the verdict as a
 diagnostic (`es` night 0/100 trough 11/100, `uk` 0/100 and 0/100, `it` 8/100 and 6/100).
+
+### 2026-08-26 (morning) — 🟢 **WORK ITEM 7.5 IS SCORED AT ITS REGISTERED SIZE. THE PARITY CLAUSE IS DISCHARGED ON ALL THREE FOLDS, AND `G7.9` STILL FAILS 3/3 — WHICH IS THE POINT.**
+
+Jobs `1287231` / `1287232` / `1287233`, all `COMPLETED 0:0` (6:28:40 / 1:28:13 / 3:01:28). The
+unconstrained control now carries **75,531 / 16,795 / 48,809 draws** — `FINDING 106`'s re-sizing,
+delivered to the record. Scored artefact `outputs_step7/gates_step7_leg5_baseline.json`; the
+5,200-draw predecessor is kept beside it as `.bak_prerescore` (18,226 bytes, verified non-empty
+before the overwrite). The three `*.bak_5200` files on Speed are untouched.
+
+**Board over scored gates: 21 PASS / 6 FAIL** (was 20 / 7). Exactly one verdict moved.
+
+#### 1. `G7.9` — what the re-size was for
+
+🔴 **The caveat is gone from all three folds and the FAIL is not.** At 5,200 draws every fold's
+`G7.9` carried a second reason — *"the control carries N valid diaries against 5200 constrained ones.
+A marginal estimated from N diaries cannot resolve 5.0 min/day, so this verdict is about the CONTROL,
+not about the mask."* At the registered size that reason is **absent on `es`, `uk` and `it`**. The
+only reason left is the deviation itself.
+
+| | `es` | `uk` | `it` |
+|---|---|---|---|
+| valid control diaries, was → now | 358 → **5,169** | 1,610 → **5,066** | 554 → **5,065** |
+| worst category | `111` | `011` | `011` |
+| worst deviation min/day, was → now | −103.65 → **−101.02** | −25.39 → **−29.60** | −52.64 → **−48.87** |
+| verdict | FAIL | FAIL | FAIL |
+
+🔴 **The deviations barely moved under a 14×/10×/9× increase in the control's sample** (−2.6, +4.2,
+−3.8 min/day). The mask genuinely displaces the marginals; it was never the small-sample artefact the
+parity clause was written to rule out. **`G7.9` may now be quoted as a statement about the mask.**
+
+#### 2. 🔴 `FINDING 150` — parity was sized off a yield measured at 5,200, and the yield falls at scale
+
+None of the three folds actually reaches parity: **5,169 / 5,066 / 5,065 valid against 5,200
+constrained**, short by **31 / 134 / 135**. The cause is measured, not guessed — the validity yield
+is lower at the registered size than the 5,200-draw batch it was sized from:
+
+| | `es` | `uk` | `it` |
+|---|---|---|---|
+| yield, 5,200-draw estimate | 0.068846 | 0.309615 | 0.106538 |
+| yield, at registered size | **0.068435** | **0.301637** | **0.103772** |
+| draws implied for parity, then | 75,531 | 16,795 | 48,809 |
+| draws implied for parity, **now** | **75,984** | **17,239** | **50,110** |
+
+⚪ The shortfall is 0.6 / 2.6 / 2.6 % and the gate does not raise it, so nothing is re-run for it —
+but **`implied_draws_for_parity` is a moving target and must not be quoted as a fixed requirement**.
+A campaign sized from a yield estimate chases its own tail; the honest statement is a yield with a
+sample size attached.
+
+#### 3. 🟢 `V7.a` on `uk` is settled — `G7.7`/`G7.8` were FAILing for want of sample
+
+The one verdict that moved. `uk` carried **9** strata with ≥ 100 records against a floor of **10**;
+at 16,795 draws it carries **54**, `v7a_satisfied` is true and both gates PASS.
+
+| | `es` | `uk` | `it` |
+|---|---|---|---|
+| strata ≥ 100 records, was → now | 10 → **149** | **9 → 54** | 11 → **108** |
+| population firing rate, was → now | 0.931154 → 0.931565 | 0.690385 → **0.698363** | 0.893462 → 0.896228 |
+| evenness ratio (max 3.0) | 1.0739 → 1.0735 | 1.3593 → **1.4319** | 1.1192 → 1.1158 |
+| `G7.7`/`G7.8` | PASS | **FAIL → PASS** | PASS |
+
+🔴 **The estimate itself was never in doubt — the density floor was.** The population firing rate
+moves by **0.04 / 0.80 / 0.28 pp** under a 14×/3×/9× sample increase, so `V7.a` was not protecting
+against a wrong number; it was refusing to certify evenness computed over cells of size 3. It was
+right to refuse and it is right to stop refusing. ⚪ `uk`'s evenness ratio rose 1.3593 → 1.4319 while
+passing — the denser measurement is the *less* even one, and it is still well inside the 3.0 band.
+
+#### 4. ⚪ `G7.5` is confirmed, not merely re-observed
+
+FAIL 3/3, unchanged, and now on 6.6× the evidence: **6.84 / 30.16 / 10.38 %** valid against a target
+of 99.90 % (was 6.88 / 30.96 / 10.65 %). The rate is stable to **0.04 / 0.80 / 0.28 pp**, so the
+free-generation validity rate is a property of the model, not of the batch. 🔴 `G7.5` and `G7.9`
+remain **the same failure** — `G7.9`'s control *is* `G7.5`'s valid subset — and the re-size does not
+change that.
+
+⚪ Not re-run and not affected: `G7.1`–`G7.4`, `G7.6`, `G7.10`–`G7.13` all hold their prior verdicts.
+`G7.3` is REPORTED, not scored, per `D-S7-2` (a).
