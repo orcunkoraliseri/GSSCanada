@@ -399,3 +399,58 @@ change that.
 
 ⚪ Not re-run and not affected: `G7.1`–`G7.4`, `G7.6`, `G7.10`–`G7.13` all hold their prior verdicts.
 `G7.3` is REPORTED, not scored, per `D-S7-2` (a).
+
+
+---
+
+## 🟢 2026-08-26 (afternoon) — 7.4 is COMPLETE on three arms
+
+Job **`1287234`** (`es` base arm) returned **COMPLETED `0:0`, 13:38:13**. `generated_leg5_es_base.jsonl`
+is on disk byte-exact (**79,484,540 B / 16,795 lines**), so the 7.4 report ran on **three** arms for the
+first time. Full record: `Step7_docs/impl/2026-08-26_7.4_three-arm-firing-rate.md`.
+
+| fold | untuned_base | finetuned_unconstrained | finetuned_constrained |
+|---|---|---|---|
+| es | **1.000000** (n=16,795) | 0.931565 (n=75,531) | 0.000000 (n=5,200) |
+| uk | **1.000000** (n=16,795) | 0.698363 (n=16,795) | 0.000000 (n=5,200) |
+| it | **1.000000** (n=16,795) | 0.896228 (n=48,809) | 0.000000 (n=5,200) |
+
+⚪ **oracle-stamp disagreements 0 in all nine cells.** ⚪ Deliverables written:
+`firing_rate_by_stratum.csv` (**2,048 data rows**) and `firing_rate_by_stratum_summary.json`.
+⚪ `v7a_floor_met` is **false for `uk`'s constrained arm only** (9 strata vs a floor of 10); its rate
+is exactly 0.000000, so evenness there is degenerate rather than uncertain, but the fold must not be
+reported as having met the floor outright.
+
+### 🔴 The base arm's 1.000000 was controlled before it was quoted
+
+The `es`/`it` summaries reject **all 16,795** records for one single reason, `whitespace present`.
+A perfectly homogeneous reason list is the signature of a formatting artefact, so it was tested.
+`validate_record` checks whitespace **first** (`tools/4thJ_step7_grammar.py:260`) and returns on the
+first failure — so the histogram is *first-check-wins*, not a diagnosis. Re-testing every base record
+with **all** whitespace deleted — the most generous rescue V3.c could ever allow — leaves
+**0 of 50,385** ending in `<eor>`, a necessary condition needing no alphabet or policy. 🟢 The
+same test reads **0.9983 / 1.0000 / 1.0000** on the unconstrained arms and 1.0000 on the constrained
+ones, so the control was **seen registering a positive**. `1.000000` is a property of the model.
+⚪ It is also not truncation: `stop`, not `length`, was the finish reason on **8,225 / 14,633 /
+11,813** of 16,795.
+
+### 🔴 `FINDING 154` — `rejection_reasons` is a masking histogram
+
+It counts **first** failures. On the base arms it implies the backbone is one `.strip()` from validity;
+the same records independently fail the `<eor>` terminator at **100 %**. Same shape as `FINDING 151`
+and `FINDING 152`'s Control B. **Deliberately not fixed** — reordering the checks changes what
+`validate_record` returns to every scored gate. The mitigation is documentary: quote it as *"first
+failing check"*, never as a defect profile.
+
+### ⚪ The stale comparison baseline was in the prose, not in the tool
+
+`4thJ_07_constrainedGeneration.md:1884` (and RESUME) quote unconstrained **0.931154 / 0.690385 /
+0.893462**. That is the **5,200-draw estimate**; § 3 above already recorded the was→now shift under
+`FINDING 150`, and 7.5's parity run overwrote `generated_leg5_<fold>_nogrammar.jsonl` at the same path.
+🟢 Checked against the artefact, not the prose: `gates_step7_leg5_baseline.json` carries
+**0.931565 / 0.698363 / 0.896228** — today's run reproduces the frozen baseline to six decimals
+**exactly**. ⚪ Prefix-subsample and Leg-4 hypotheses were **falsified** first (first-5,200 gives
+0.928846 / 0.695192 / 0.896154; Leg-4 gives 0.973333 / 0.926667 / 0.960000).
+
+⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched; no threshold moved, no checker
+edited. The whitespace control ran in a throwaway script, never in the scorer.

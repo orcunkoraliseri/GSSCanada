@@ -1,0 +1,178 @@
+{
+  "arms": [
+    {
+      "arm": "untuned_base",
+      "fold": "es",
+      "n": 16795,
+      "n_strata": 228,
+      "n_strata_ge_min": 50,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_es_base.jsonl",
+      "population_firing_rate": 1.0,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "es",
+        "65-74",
+        "male",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 1.0
+    },
+    {
+      "arm": "finetuned_unconstrained",
+      "fold": "es",
+      "n": 75531,
+      "n_strata": 228,
+      "n_strata_ge_min": 149,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_es_nogrammar.jsonl",
+      "population_firing_rate": 0.9315645231759145,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "es",
+        "65-74",
+        "male",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 1.0
+    },
+    {
+      "arm": "finetuned_constrained",
+      "fold": "es",
+      "n": 5200,
+      "n_strata": 227,
+      "n_strata_ge_min": 10,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_es_constrained.jsonl",
+      "population_firing_rate": 0.0,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "es",
+        "35-44",
+        "male",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 0.0
+    },
+    {
+      "arm": "untuned_base",
+      "fold": "uk",
+      "n": 16795,
+      "n_strata": 228,
+      "n_strata_ge_min": 54,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_uk_base.jsonl",
+      "population_firing_rate": 1.0,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "uk",
+        "65-74",
+        "male",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 1.0
+    },
+    {
+      "arm": "finetuned_unconstrained",
+      "fold": "uk",
+      "n": 16795,
+      "n_strata": 228,
+      "n_strata_ge_min": 54,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_uk_nogrammar.jsonl",
+      "population_firing_rate": 0.6983626079190235,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "uk",
+        "75+",
+        "male",
+        "couple_no_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 1.0
+    },
+    {
+      "arm": "finetuned_constrained",
+      "fold": "uk",
+      "n": 5200,
+      "n_strata": 227,
+      "n_strata_ge_min": 9,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_uk_constrained.jsonl",
+      "population_firing_rate": 0.0,
+      "v7a_floor_met": false,
+      "worst_stratum": [
+        "uk",
+        "45-54",
+        "male",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 0.0
+    },
+    {
+      "arm": "untuned_base",
+      "fold": "it",
+      "n": 16795,
+      "n_strata": 228,
+      "n_strata_ge_min": 48,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_it_base.jsonl",
+      "population_firing_rate": 1.0,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "it",
+        "11-14",
+        "female",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 1.0
+    },
+    {
+      "arm": "finetuned_unconstrained",
+      "fold": "it",
+      "n": 48809,
+      "n_strata": 228,
+      "n_strata_ge_min": 108,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_it_nogrammar.jsonl",
+      "population_firing_rate": 0.8962281546436108,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "it",
+        "15-24",
+        "female",
+        "single_parent_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 1.0
+    },
+    {
+      "arm": "finetuned_constrained",
+      "fold": "it",
+      "n": 5200,
+      "n_strata": 226,
+      "n_strata_ge_min": 11,
+      "oracle_stamp_disagreements": 0,
+      "path": "Step7_docs/outputs_step7\\generated_leg5_it_constrained.jsonl",
+      "population_firing_rate": 0.0,
+      "v7a_floor_met": true,
+      "worst_stratum": [
+        "it",
+        "35-44",
+        "male",
+        "couple_with_children",
+        "weekday"
+      ],
+      "worst_stratum_rate": 0.0
+    }
+  ],
+  "complete": true,
+  "leg": 5,
+  "missing": []
+}
