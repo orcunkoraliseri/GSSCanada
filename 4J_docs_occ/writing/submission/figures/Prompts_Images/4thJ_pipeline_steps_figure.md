@@ -1,4 +1,4 @@
-# Image prompt — 4J pipeline steps figure (Steps 0 to 9)
+# Image prompt — 4J pipeline steps figure (Steps 0 to 11)
 
 **Deliverable:** one raster image, `HETUS_LLM_Pipeline_Steps.png`, generated **by the author** in their
 own image tool. This file is the prompt. It is written so the image can be produced without asking a
@@ -6,7 +6,7 @@ follow-up question.
 
 **Install path once generated:** `4J_docs_occ/writing/submission/figures/`
 **Source of truth for the content:** `4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline_Overview.md`, the ASCII
-box diagram, Steps 0 to 9, reconciled against the project state on 2026-08-19.
+box diagram, ⚪ **Steps 0 to 11**, reconciled against the project state on ⚪ **2026-08-26**.
 
 > 🔴 **Revised 2026-08-14. The installed image is out of date and must be regenerated from this file.**
 > Author decision 6 fixed the corpus at **one wave per country**, which retired two strings the
@@ -58,6 +58,19 @@ box diagram, Steps 0 to 9, reconciled against the project state on 2026-08-19.
 
 ---
 
+> 🔴 **REVISED A THIRD TIME, 2026-08-26. The installed image is out of date again. Regenerate.**
+> Two things changed and both are structural. **Steps 8 and 9 were built, run and gate-scored** — they
+> are no longer `open`, and Step 8's result is a **null** that the figure must not hide. And **Steps 10
+> and 11 were added**: the OpenUBEM extension is registered as new steps rather than as an edit to Steps
+> 8 and 9, because those two are a closed chapter with a scored pre-registration. The spine therefore
+> grows from ten cards to **twelve**, the left gutter from four phase bands to **five**, and the right
+> gutter from six tiles to **seven**. Sections 2, 3, 4, 5, 6 and 11 carry the change.
+>
+> ⚪ **Cards 6 and 7 were NOT re-verified in this revision.** Their state chips and body lines are
+> carried forward from 2026-08-22 unchanged. Check them against `Step6_docs/` and `Step7_docs/` before
+> generating — Step 7's work item 7.4 closed on 2026-08-26 and this file has not been reconciled
+> against it. **Do not promote either card on the strength of this banner.**
+
 ## 0. Read this before generating
 
 > 🔴 **NO NUMBER MAY APPEAR IN THIS IMAGE EXCEPT THE STEP NUMBERS 0 TO 9.**
@@ -106,15 +119,15 @@ Three columns:
 
 ```
    left gutter          main spine                right gutter
-   (phase bands)        (the ten step cards)      (validation tiers)
+   (phase bands)        (the twelve step cards)    (validation tiers)
    narrow               wide, vertical            narrow
 ```
 
-* The **main spine** is a single vertical column of ten rounded rectangular cards, Step 0 at the top,
-  Step 9 at the bottom, joined by short downward arrows.
-* The **left gutter** carries four tall vertical phase bands, each spanning the steps it groups, drawn
+* The **main spine** is a single vertical column of 🔴 **twelve** rounded rectangular cards, Step 0 at
+  the top, 🔴 **Step 11** at the bottom, joined by short downward arrows.
+* The **left gutter** carries 🔴 **five** tall vertical phase bands, each spanning the steps it groups, drawn
   as a soft-tinted rounded bar with the phase name in it.
-* The **right gutter** carries **six** small tiles, one per validation tier, each connected by a thin
+* The **right gutter** carries 🔴 **seven** small tiles, one per validation tier, each connected by a thin
   horizontal line to the step or steps it guards. These lines are the only horizontal connectors in the
   figure.
 
@@ -122,7 +135,7 @@ White background. Flat vector style, matching the graphical abstract and the 3J 
 
 ---
 
-## 3. The four phase bands (left gutter)
+## 3. The five phase bands (left gutter)
 
 Each band spans a contiguous run of steps and is labelled with horizontal text at its top, not rotated.
 
@@ -132,14 +145,15 @@ Each band spans a contiguous run of steps and is labelled with horizontal text a
 | 2 | Steps 3 to 5 | `MODEL` |
 | 3 | Steps 6 to 7 | `CLAIM` |
 | 4 | Steps 8 to 9 | `ENERGY` |
+| 5 | 🔴 Steps 10 to 11 | 🔴 `STOCK` |
 
-🔴 **The `CLAIM` band is the one that must stand out.** Give it the strongest tint of the four, and make
+🔴 **The `CLAIM` band is the one that must stand out.** Give it the strongest tint of the five, and make
 it slightly wider than the others so it reads as the centre of gravity of the diagram. Everything above
 it is preparation and everything below it is consequence.
 
 ---
 
-## 4. The ten step cards (main spine)
+## 4. The twelve step cards (main spine)
 
 Every card has the same internal layout, so the eye can scan down the column:
 
@@ -151,7 +165,7 @@ Every card has the same internal layout, so the eye can scan down the column:
   └──────────────────────────────────────────────┘
 ```
 
-* The **number chip** is a small filled circle at the left edge containing the digit `0` to `9`.
+* The **number chip** is a small filled circle at the left edge containing `0` to 🔴 `11`.
 * The **state chip** sits at the right edge of the card and is one of exactly **four**:
   * `cleared` — solid fill, checkmark glyph
   * `validated` — solid fill, **double-checkmark glyph** — 🔴 **new on 2026-08-19**
@@ -181,8 +195,10 @@ The cards, top to bottom, with the exact text each carries:
 | 5 | `Population linkage` | `synthetic population first, then one generated day per person` | `two gates fail and ship as a declared exception` | 🔴 `validated` |
 | 6 | `Transfer test` | `train on the other two, generate the held-out one from published marginals` | 🔴 `the reported folds are not yet trained` | `open` |
 | 7 | `Constrained generation` | `well-formed diaries guaranteed at decoding` | 🔴 `throughput, chaining rule and schedule emission` | `decided` |
-| 8 | `Building simulation` | `European residential archetypes, uninjected control run first` | `archetype models built from published parameter tables` | `open` |
-| 9 | `End-use loads` | `published activity-to-appliance mappings, adapted not authored` | — | `open` |
+| 8 | `Building simulation` | `European residential archetypes, uninjected control run first` | 🔴 `the occupancy effect does not survive at full injection` | 🔴 `validated` |
+| 9 | `End-use loads` | `published activity-to-appliance mappings, adapted not authored` | 🔴 `three gates ship as declared failures` | 🔴 `validated` |
+| 🔴 10 | `Real-stock UBEM` | `observed footprints, one independent diary per dwelling` | `the engine, and which year the diaries belong to` | `open` |
+| 🔴 11 | `Stock-scale end-use loads` | `the same mapping, at the scale its sources were validated at` | `hot water magnitude diagnosed before it is re-measured` | `open` |
 
 🔴 **CHANGED 2026-08-19 — READ THIS BEFORE COPYING THE TABLE.** Five rows moved and the reasons are
 not cosmetic:
@@ -242,6 +258,27 @@ untouched; every change is a chip or a string, and each is tied to the step docu
   be released, and the gutter had no tile for it. **Renaming beats adding a seventh tile**: the
   2026-08-19 generation already dropped and merged tiles when the gutter was crowded.
 
+🔴 **CHANGED AGAIN 2026-08-26 — cards 8 and 9 were promoted, and two cards were added.**
+
+* **Cards 8 and 9 become `validated`, and this is not a promotion of their results.** `validated` means
+  *built, and its gate battery ran and was seen failing on purpose before it was trusted* — it has
+  never meant *everything passed*. Step 8 closed all six work items with **0 gate-unit FAILs** over
+  31,687 band rows and a battery of **19 of 19** injections hitting; Step 9's board is
+  **15 PASS / 3 FAIL / 1 NOT CHECKED** with a battery of 12 HIT / 0 MISS / 3 already-failing and its
+  coverage clause passing. Both were built and both had their gates seen failing. Leaving them `open`
+  would have said the work has not been done.
+* 🔴 **Card 8's second line is the null, and it is mandatory.** Step 8's own conclusion is that
+  at full injection **no occupancy claim survives on either channel** — the peak claim's ratio to the
+  between-diary spread is 0.54 / 0.02 / 0.40 and every annual median is negative. **A figure that shows
+  Step 8 as validated and does not show that it returned a null is dishonest**, and the state chip alone
+  cannot say it. If the layout is tight, shrink something else.
+* 🔴 **Card 9's second line is the three FAILs.** They ship as results — saturation, a hot
+  water band whose basis its own source does not define, and a load shape that genuinely disagrees with
+  the source model's activity timing — and **no band was moved.** That is the claim the figure is
+  making about how this project works, so it is drawn.
+* **Cards 10 and 11 are `open` and must stay `open`.** Nothing is built. They exist in the figure
+  because the paper contains them, not because they have results.
+
 🔴 **Step 4 still stays `decided`, and this revision does not change that.** The Leg-5 fold is queued
 and has not run; `G4.3`, `G4.4` and `G4.12` have never been run and 4 of 15 perturbations are
 outstanding. The Section 1 warning against promoting it applies unchanged.
@@ -257,13 +294,15 @@ the one the diagram is built around — carries the weakest. **That contrast is 
 project on 2026-08-19 and it is intended. Do not soften it.**
 
 This is the falsifiable claim of the paper and it is the single most important sentence in the figure.
-If the layout is tight, shrink cards 8 and 9 rather than this line.
+If the layout is tight, shrink cards 10 and 11 rather than this line. 🔴 **Cards 8 and 9
+may no longer be shrunk to make room** — each now carries a second line the figure is not allowed to
+drop.
 
 ---
 
 ## 5. The validation tiers (right gutter)
 
-**Six** small tiles, stacked, each joined by a thin horizontal line to the step or steps it guards.
+🔴 **Seven** small tiles, stacked, each joined by a thin horizontal line to the step or steps it guards.
 Tiles are visually lighter than the step cards so the spine stays dominant.
 
 | Tile label | Connects to |
@@ -274,6 +313,7 @@ Tiles are visually lighter than the step cards so the spine stays dominant.
 | `structural validity` | Step 7 |
 | `transfer margin` | Step 6 |
 | `downstream energy` | Steps 8 and 9 |
+| 🔴 `basis and denominator` | Steps 10 and 11 — 🔴 **new 2026-08-26** |
 
 🔴 **Why the new tile was added.** The installed figure attaches no validation to Steps 1 to 5, which
 tells the reader that checking begins at the transfer test. **That is false, and it undersells the
@@ -281,6 +321,14 @@ part of the work that is finished.** Every step from 1 onward ran a battery of g
 each gate demonstrated failing on a deliberately broken input before its passing result was accepted.
 The new tile spans Steps 1 to 5 with a single bracket rather than five separate lines, so the gutter
 does not become a second spine.
+
+🔴 **Why a seventh tile, when this file's own rule is that renaming beats adding.** The rule holds
+where a new guard is a variant of an old one. This one is not. Steps 10 and 11 introduce a class of check
+that does not exist anywhere above them: that a **basis change is not reported as an effect** (the weather
+station alone is worth 5–11 % of heating demand, against an occupancy channel of a few per cent), that
+two populations selected on different geometry are **not pooled**, and that an end-use is **not counted
+twice** at the seam between a reconstruction and a simulation. None of the six existing tiles can be
+renamed to cover that without lying about what it guards.
 
 Below the tiles, one small caption in a dashed-border box:
 
@@ -301,21 +349,21 @@ Every string that may appear in the image. Nothing else.
 Title, two lines at the top, centred:
 
 * `From Harmonised Time-Use Surveys to Simulated Building Energy`
-* `The ten steps of the cross-national occupancy pipeline`
+* 🔴 `The twelve steps of the cross-national occupancy pipeline`
 
 Phase bands:
 
-* `DATA`, `MODEL`, `CLAIM`, `ENERGY`
+* `DATA`, `MODEL`, `CLAIM`, `ENERGY`, 🔴 `STOCK`
 
 Step numbers:
 
-* `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9` — **only inside the number chips**
+* `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, 🔴 `10`, 🔴 `11` — **only inside the number chips**
 
 Step titles:
 
 * `Feasibility gate`, `Corpus`, `Harmonisation`, `Serialisation`, `Fine-tuning`,
   `Population linkage`, `Transfer test`, `Constrained generation`, `Building simulation`,
-  `End-use loads`
+  `End-use loads`, 🔴 `Real-stock UBEM`, 🔴 `Stock-scale end-use loads`
 
 Step body lines, exactly as written in the Section 4 table:
 
@@ -334,6 +382,12 @@ Step body lines, exactly as written in the Section 4 table:
 * `European residential archetypes, uninjected control run first`
 * `archetype models built from published parameter tables`
 * `published activity-to-appliance mappings, adapted not authored`
+* 🔴 `the occupancy effect does not survive at full injection`
+* 🔴 `three gates ship as declared failures`
+* 🔴 `observed footprints, one independent diary per dwelling`
+* 🔴 `the engine, and which year the diaries belong to`
+* 🔴 `the same mapping, at the scale its sources were validated at`
+* 🔴 `hot water magnitude diagnosed before it is re-measured`
 
 State chips:
 
@@ -342,7 +396,7 @@ State chips:
 Validation tiles:
 
 * `pre-declared gate batteries`, `distributional fidelity`, `collapse, memorisation and privacy`,
-  `structural validity`, `transfer margin`, `downstream energy`
+  `structural validity`, `transfer margin`, `downstream energy`, 🔴 `basis and denominator`
 * `every tier is first shown failing on a deliberately broken control`
 
 🔴 **FOUR STRINGS WERE DELETED ON 2026-08-19 AND ARE NOW FORBIDDEN. If any of them appears in the
@@ -365,7 +419,8 @@ generated image, the image is rejected and regenerated — they are the reason f
 
 **The word-form counts `one wave per country`, `the other two` and 🔴 `two gates` are permitted**, under
 the same exception as Section 9 item 1: they are closed author decisions, written as words and never as
-digits. 🔴 `two gates` was added on 2026-08-22 with card 5 and is permitted on that card only.
+digits. 🔴 `two gates` was added on 2026-08-22 with card 5 and is permitted on that card only, and
+🔴 `three gates` was added on 2026-08-26 with card 9 and is permitted on that card only.
 
 🔴 **SCAFFOLDING LABELS ARE FORBIDDEN, added 2026-08-19 after the generator printed them.**
 The column names in Section 2 are **instructions for whoever composes the layout, not text to draw**.
@@ -489,7 +544,7 @@ Handled by the assistant, not by the image tool:
 
 ---
 
-## 11. PASTE-READY PROMPT (Gemini / Antigravity) — added 2026-08-19
+## 11. PASTE-READY PROMPT (Gemini / Antigravity) — added 2026-08-19, 🔴 **rewritten 2026-08-26 for twelve cards**
 
 🔴 **This section is a rendering of Sections 0 to 10, not a second specification.** Paste it as a
 single prompt. If it ever disagrees with the sections above, the sections above win and this one is
@@ -505,26 +560,27 @@ NO section labels and NO captions of any kind except the exact strings listed un
 Nothing that names a part of the layout may appear in the image.
 
 ALL TEXT IS HORIZONTAL. Nothing is rotated, sideways or vertical anywhere in the image, including the
-four tinted bars down the left side. Their labels DATA, MODEL, CLAIM and ENERGY are written
+five tinted bars down the left side. Their labels DATA, MODEL, CLAIM, ENERGY and STOCK are written
 horizontally, reading left to right, like every other word in the picture. This is the single most
 important formatting rule here.
 
 At the very top, centred, exactly two lines of text with nothing above them:
   From Harmonised Time-Use Surveys to Simulated Building Energy
-  The ten steps of the cross-national occupancy pipeline
+  The twelve steps of the cross-national occupancy pipeline
 
-STRUCTURE. Down the centre runs a single vertical column of ten rounded rectangular cards, numbered 0
-at the top to 9 at the bottom, each joined to the next by one short downward arrow. Along the left
-edge, four tall tinted rounded bars sit beside the cards they group. Along the right edge, six small
+STRUCTURE. Down the centre runs a single vertical column of twelve rounded rectangular cards, numbered
+0 at the top to 11 at the bottom, each joined to the next by one short downward arrow. Along the left
+edge, five tall tinted rounded bars sit beside the cards they group. Along the right edge, seven small
 pale tiles each connect to the cards they guard by one thin horizontal line. Those tier lines are the
 only horizontal connectors in the picture; every other arrow points down.
 
-THE FOUR TINTED BARS ON THE LEFT, labelled horizontally, each spanning the cards named:
+THE FIVE TINTED BARS ON THE LEFT, labelled horizontally, each spanning the cards named:
   DATA   beside cards 0, 1 and 2, light grey
   MODEL  beside cards 3, 4 and 5, soft teal
-  CLAIM  beside cards 6 and 7, soft dark navy, the strongest tint of the four and slightly wider
+  CLAIM  beside cards 6 and 7, soft dark navy, the strongest tint of the five and slightly wider
   ENERGY beside cards 8 and 9, soft orange
-Write only those four words on them. Put NO digits and NO number ranges on these bars.
+  STOCK  beside cards 10 and 11, soft green, the palest of the five
+Write only those five words on them. Put NO digits and NO number ranges on these bars.
 
 EACH CARD carries, left to right: a small filled circle holding the card's digit, then a bold title,
 then one to three body lines in smaller regular type, then a small chip at the right edge. The chips
@@ -534,7 +590,7 @@ are drawn four ways, distinguished by fill and by glyph rather than by colour:
   decided    solid dark navy fill, white text, no glyph
   open       white fill, navy outline, navy text, no glyph
 
-THE TEN CARDS, with the exact wording of every line:
+THE TWELVE CARDS, with the exact wording of every line:
 
 circle 0, title Feasibility gate, chip cleared
   data reachable, prior art clear, method justified, release limits known
@@ -556,18 +612,26 @@ circle 6, title Transfer test, chip open
 circle 7, title Constrained generation, chip decided
   well-formed diaries guaranteed at decoding
   throughput, chaining rule and schedule emission
-circle 8, title Building simulation, chip open
+circle 8, title Building simulation, chip validated
   European residential archetypes, uninjected control run first
-  archetype models built from published parameter tables
-circle 9, title End-use loads, chip open
+  the occupancy effect does not survive at full injection
+circle 9, title End-use loads, chip validated
   published activity-to-appliance mappings, adapted not authored
+  three gates ship as declared failures
+circle 10, title Real-stock UBEM, chip open
+  observed footprints, one independent diary per dwelling
+  the engine, and which year the diaries belong to
+circle 11, title Stock-scale end-use loads, chip open
+  the same mapping, at the scale its sources were validated at
+  hot water magnitude diagnosed before it is re-measured
 
 CARD 6 IS THE CENTREPIECE. Draw it noticeably larger than every other card, with a very light navy
 fill and a thicker border. Its middle line, the one beginning "the bar:", is BOLD, and it is the only
 bold body line in the whole picture. Card 6 nevertheless keeps the hollow white "open" chip. If space
-runs short, shrink cards 8 and 9 rather than that bold line.
+runs short, shrink cards 10 and 11 rather than that bold line. Do not shrink or drop the second
+line of card 8 or of card 9; both are required.
 
-THE SIX PALE TILES ON THE RIGHT, each with its thin connecting line:
+THE SEVEN PALE TILES ON THE RIGHT, each with its thin connecting line:
   pre-declared gate batteries   joined by ONE bracket that spans cards 1, 2, 3, 4 and 5 together,
                                 reaching from card 1 down to card 5, not stopping short
   distributional fidelity       to card 6
@@ -575,20 +639,22 @@ THE SIX PALE TILES ON THE RIGHT, each with its thin connecting line:
   transfer margin               to card 6
   structural validity           to card 7
   downstream energy             to cards 8 and 9 together
+  basis and denominator         to cards 10 and 11 together
 Beneath the tiles, one small line inside a dashed-outline box:
   every tier is first shown failing on a deliberately broken control
 
-QUOTED TEXT. The image contains the two title lines, the four bar labels, the digits 0 to 9 inside the
-ten circles, the ten card titles, the card body lines, the four chip words, the six tile labels, and
-the dashed-box line. Nothing else. In particular:
+QUOTED TEXT. The image contains the two title lines, the five bar labels, the numbers 0 to 11 inside
+the twelve circles, the twelve card titles, the card body lines, the four chip words, the seven tile
+labels, and the dashed-box line. Nothing else. In particular:
   Write no other heading, label or caption of any kind.
-  Write no number anywhere except the digits 0 to 9 inside the circles. No ranges such as 6-7 or 8-9.
+  Write no number anywhere except 0 to 11 inside the circles. No ranges such as 6-7 or 8-9.
   Write no percentage, threshold, accuracy, token count, corpus size, model size, year or date.
   Do not write N-1 or any algebraic expression.
   Do not write any of: all countries trained jointly; acquisition outstanding for the countries not
   yet held; which model family; which country is held out; several waves per country; how many waves
   earn their place; pooling level across waves.
-  The only counts written as words are "one wave per country" and "the other two", both required.
+  The only counts written as words are "one wave per country", "the other two", "two gates" on
+  card 5 and "three gates" on card 9. All four are required.
   No country names and no flags. No model names such as Gemma, Llama, Qwen, Mistral or OLMo.
 
 STYLE. Flat vector only: no 3D, no perspective, no drop shadows, no gradients on text. No logos. No
@@ -606,10 +672,19 @@ one of them failing means regenerate rather than accept:
 
 1. Step 4 reads **`one adapter per held-out country`**, never `all countries trained jointly`.
 2. **`N-1` appears nowhere.**
-3. 🔴 **CHANGED 2026-08-22.** Steps 1, 2, 3 and **5** carry **`validated`**; Steps 4 and 7 carry
-   `decided`; Steps 6, 8 and 9 carry the hollow **`open`** chip.
+3. 🔴 **CHANGED 2026-08-26.** Steps 1, 2, 3, 5, **8** and **9** carry **`validated`**; Steps 4 and 7
+   carry `decided`; Steps 6, **10** and **11** carry the hollow **`open`** chip.
 4. 🔴 **CHANGED 2026-08-22.** The sixth tile **`pre-declared gate batteries`** is present and brackets
    Steps 1 to **5**, and the second tile reads **`collapse, memorisation and privacy`**.
+5. 🔴 **NEW 2026-08-26. The two lines that make the figure honest are present, verbatim:**
+   card 8 carries **`the occupancy effect does not survive at full injection`** and card 9 carries
+   **`three gates ship as declared failures`**. A generator that drops a second body line to fit
+   twelve cards into the height will drop exactly these two, because they are the last lines added.
+   **If either is missing, regenerate.** A figure showing Steps 8 and 9 as `validated` with no
+   mention of the null and the three failures claims a clean downstream result this project does
+   not have.
+6. 🔴 **NEW 2026-08-26.** Twelve cards, five bars including **`STOCK`**, seven tiles including
+   **`basis and denominator`**. Count them; do not read the image for general correctness.
 
 🔴 **Generators drop or merge tiles and chips when the gutter is crowded, and they silently
 re-word body lines that are long.** Check the strings character by character against Section 6 rather

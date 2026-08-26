@@ -1,0 +1,312 @@
+{
+  "epochs": [
+    {
+      "G4.1": {
+        "band": [
+          0.8,
+          1.25
+        ],
+        "gate": "G4.1",
+        "n_above_band": 0,
+        "n_below_band_COLLAPSE_END": 2,
+        "n_scorable_strata": 6,
+        "statistic": "at_home_share",
+        "verdict": "FAIL",
+        "which_end": "lower (collapse)",
+        "worst_high": 1.091946199019023,
+        "worst_low": 0.6962747900082835
+      },
+      "G4.16": {
+        "basis": "GENERATED sample, scored beside G4.7 at the same checkpoints",
+        "fraction": 1.0,
+        "gate": "G4.16",
+        "n": 600,
+        "n_contains": 600,
+        "n_more_than_one_eor": 0,
+        "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)",
+        "verdict": "PASS"
+      },
+      "G4.2": {
+        "act2_slot_loss": 0.2360461898596025,
+        "act2_slot_tokens": 119518,
+        "activity_entropy_nats": 3.2708959722992956,
+        "basis_note": "D-S4-4 (2026-08-19, FINDING 28): the first arm is scored over FORCED delimiters only. The band is unchanged at 0.05. `delimiter_loss_all_basis` is the pre-ruling number and is what every reading before 2026-08-19 reports.",
+        "content_loss": 0.896478274900347,
+        "delimiter_basis": "forced delimiters only (D-S4-4, FINDING 28)",
+        "delimiter_loss": 0.06730938560833447,
+        "delimiter_loss_all_basis": 0.09717907117426368,
+        "delimiter_tokens": 555651,
+        "delimiter_tokens_all_basis": 675169,
+        "gate": "G4.2",
+        "halt_rule": "delimiter_loss < 0.05 AND activity_entropy < 1.50 (strict on both arms, V4.d)",
+        "verdict": "PASS"
+      },
+      "G4.7": {
+        "basis": "GENERATED sample, scored every validation epoch",
+        "fraction": 1.0,
+        "gate": "G4.7",
+        "n": 600,
+        "n_terminated": 600,
+        "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)",
+        "verdict": "PASS"
+      },
+      "delim_vs_content": {
+        "act2_slot_loss": 0.2360461898596025,
+        "act2_slot_tokens": 119518,
+        "content_loss": 0.896478274900347,
+        "content_tokens": 860324,
+        "delimiter_basis": "forced delimiters only (D-S4-4, FINDING 28)",
+        "delimiter_loss": 0.06730938560833447,
+        "delimiter_loss_all_basis": 0.09717907117426368,
+        "delimiter_tokens": 555651,
+        "delimiter_tokens_all_basis": 675169
+      },
+      "epoch": 0,
+      "generated_n": 600,
+      "generated_terminated": 600,
+      "probe_content_loss": {
+        "it": 0.855596926965104,
+        "uk": 0.9643733667208417
+      }
+    },
+    {
+      "G4.1": {
+        "band": [
+          0.8,
+          1.25
+        ],
+        "gate": "G4.1",
+        "n_above_band": 0,
+        "n_below_band_COLLAPSE_END": 1,
+        "n_scorable_strata": 6,
+        "statistic": "at_home_share",
+        "verdict": "FAIL",
+        "which_end": "lower (collapse)",
+        "worst_high": 1.232289264837693,
+        "worst_low": 0.6696575055616064
+      },
+      "G4.16": {
+        "basis": "GENERATED sample, scored beside G4.7 at the same checkpoints",
+        "fraction": 1.0,
+        "gate": "G4.16",
+        "n": 600,
+        "n_contains": 600,
+        "n_more_than_one_eor": 0,
+        "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)",
+        "verdict": "PASS"
+      },
+      "G4.2": {
+        "act2_slot_loss": 0.22195943567188262,
+        "act2_slot_tokens": 119518,
+        "activity_entropy_nats": 3.341923337361856,
+        "basis_note": "D-S4-4 (2026-08-19, FINDING 28): the first arm is scored over FORCED delimiters only. The band is unchanged at 0.05. `delimiter_loss_all_basis` is the pre-ruling number and is what every reading before 2026-08-19 reports.",
+        "content_loss": 0.8787472640787813,
+        "delimiter_basis": "forced delimiters only (D-S4-4, FINDING 28)",
+        "delimiter_loss": 0.06978549048694738,
+        "delimiter_loss_all_basis": 0.09672322912571811,
+        "delimiter_tokens": 555651,
+        "delimiter_tokens_all_basis": 675169,
+        "gate": "G4.2",
+        "halt_rule": "delimiter_loss < 0.05 AND activity_entropy < 1.50 (strict on both arms, V4.d)",
+        "verdict": "PASS"
+      },
+      "G4.7": {
+        "basis": "GENERATED sample, scored every validation epoch",
+        "fraction": 1.0,
+        "gate": "G4.7",
+        "n": 600,
+        "n_terminated": 600,
+        "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)",
+        "verdict": "PASS"
+      },
+      "delim_vs_content": {
+        "act2_slot_loss": 0.22195943567188262,
+        "act2_slot_tokens": 119518,
+        "content_loss": 0.8787472640787813,
+        "content_tokens": 860324,
+        "delimiter_basis": "forced delimiters only (D-S4-4, FINDING 28)",
+        "delimiter_loss": 0.06978549048694738,
+        "delimiter_loss_all_basis": 0.09672322912571811,
+        "delimiter_tokens": 555651,
+        "delimiter_tokens_all_basis": 675169
+      },
+      "epoch": 1,
+      "generated_n": 600,
+      "generated_terminated": 600,
+      "probe_content_loss": {
+        "it": 0.832038529882779,
+        "uk": 0.9477435638884426
+      }
+    },
+    {
+      "G4.1": {
+        "band": [
+          0.8,
+          1.25
+        ],
+        "gate": "G4.1",
+        "n_above_band": 2,
+        "n_below_band_COLLAPSE_END": 1,
+        "n_scorable_strata": 6,
+        "statistic": "at_home_share",
+        "verdict": "FAIL",
+        "which_end": "both",
+        "worst_high": 1.508187521013314,
+        "worst_low": 0.7492148125975628
+      },
+      "G4.16": {
+        "basis": "GENERATED sample, scored beside G4.7 at the same checkpoints",
+        "fraction": 1.0,
+        "gate": "G4.16",
+        "n": 600,
+        "n_contains": 600,
+        "n_more_than_one_eor": 0,
+        "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)",
+        "verdict": "PASS"
+      },
+      "G4.2": {
+        "act2_slot_loss": 0.20243690480936,
+        "act2_slot_tokens": 119518,
+        "activity_entropy_nats": 3.30900536008868,
+        "basis_note": "D-S4-4 (2026-08-19, FINDING 28): the first arm is scored over FORCED delimiters only. The band is unchanged at 0.05. `delimiter_loss_all_basis` is the pre-ruling number and is what every reading before 2026-08-19 reports.",
+        "content_loss": 0.863564506485109,
+        "delimiter_basis": "forced delimiters only (D-S4-4, FINDING 28)",
+        "delimiter_loss": 0.07411967411494029,
+        "delimiter_loss_all_basis": 0.09683431173627009,
+        "delimiter_tokens": 555651,
+        "delimiter_tokens_all_basis": 675169,
+        "gate": "G4.2",
+        "halt_rule": "delimiter_loss < 0.05 AND activity_entropy < 1.50 (strict on both arms, V4.d)",
+        "verdict": "PASS"
+      },
+      "G4.7": {
+        "basis": "GENERATED sample, scored every validation epoch",
+        "fraction": 1.0,
+        "gate": "G4.7",
+        "n": 600,
+        "n_terminated": 600,
+        "note": "zero generations would make this vacuous, so n == 0 FAILs (V4.f)",
+        "verdict": "PASS"
+      },
+      "delim_vs_content": {
+        "act2_slot_loss": 0.20243690480936,
+        "act2_slot_tokens": 119518,
+        "content_loss": 0.863564506485109,
+        "content_tokens": 860324,
+        "delimiter_basis": "forced delimiters only (D-S4-4, FINDING 28)",
+        "delimiter_loss": 0.07411967411494029,
+        "delimiter_loss_all_basis": 0.09683431173627009,
+        "delimiter_tokens": 555651,
+        "delimiter_tokens_all_basis": 675169
+      },
+      "epoch": 2,
+      "generated_n": 600,
+      "generated_terminated": 600,
+      "probe_content_loss": {
+        "it": 0.8220415641780747,
+        "uk": 0.9331372476675038
+      }
+    }
+  ],
+  "fold": "es",
+  "gates_at_end": {
+    "G4.10": {
+      "elapsed_seconds": 31451.47461795807,
+      "gate": "G4.10",
+      "peak_vram_gib": 46.14468479156494,
+      "verdict": "REPORTED_NOT_THRESHOLDED",
+      "walltime_budget_days": 7
+    },
+    "G4.11": {
+      "gate": "G4.11",
+      "missing": [],
+      "n_required": 15,
+      "note": "a run that cannot say which weights it started from is not reproducible, however good its numbers are",
+      "verdict": "PASS"
+    },
+    "G4.6": {
+      "gate": "G4.6",
+      "reason": "ceiling run has no adapter to merge",
+      "verdict": "NOT CHECKED"
+    },
+    "G4.9": {
+      "gate": "G4.9",
+      "per_country": {
+        "it": {
+          "best": 0.8220415641780747,
+          "final": 0.8220415641780747,
+          "regression": 0.0,
+          "verdict": "PASS"
+        },
+        "uk": {
+          "best": 0.9331372476675038,
+          "final": 0.9331372476675038,
+          "regression": 0.0,
+          "verdict": "PASS"
+        }
+      },
+      "verdict": "PASS"
+    }
+  },
+  "gates_at_start": {
+    "G4.13": {
+      "by_country": {
+        "it": 34366,
+        "uk": 14228
+      },
+      "counted_from": "the shard the trainer loaded",
+      "gate": "G4.13",
+      "held_out_country": "es",
+      "n_heldout_country_in_train": 0,
+      "n_train": 48594,
+      "verdict": "PASS"
+    },
+    "G4.14": {
+      "gate": "G4.14",
+      "md5_recomputed_from_disk": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "md5_recorded": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "note": "recomputed from the file on disk (V4.g), never read from the manifest this gate is checking",
+      "path_checked": "/speed-scratch/o_iseri/4J_step4/prereg.md",
+      "verdict": "PASS"
+    },
+    "G4.15": {
+      "basis": "TRAINING CORPUS, read once before training starts",
+      "fraction": 1.0,
+      "gate": "G4.15",
+      "n": 48594,
+      "n_terminated": 48594,
+      "note": "an empty corpus would make this vacuous, so n == 0 FAILs (V4.f)",
+      "verdict": "PASS"
+    },
+    "G4.5": {
+      "fraction_masked": 1.0,
+      "gate": "G4.5",
+      "loader": "the TRAINING loader itself, batch 2",
+      "note": "zero pad positions would make this gate vacuous, so it FAILs rather than passing on an empty check",
+      "pad_positions": 3009629,
+      "pad_positions_not_masked": 0,
+      "verdict": "PASS"
+    },
+    "G4.8": {
+      "basis_note": "D-S4-2: asserts tokenizer IDENTITY and THEN round-trip. Before 2026-08-18 it asserted round-trip alone and was blind to a tokenizer swap (FINDING 17).",
+      "gate": "G4.8",
+      "identity": {
+        "checked": true,
+        "expected_base_repo": "allenai/Olmo-3-1025-7B",
+        "match": true,
+        "tokenizer_name_or_path": "allenai/Olmo-3-1025-7B"
+      },
+      "n": 1000,
+      "n_roundtrip_ok": 1000,
+      "roundtrip_pass": true,
+      "verdict": "PASS"
+    }
+  },
+  "halted_by_G4.2": false,
+  "held_out_country": "es",
+  "leg": 5,
+  "optimizer": "bitsandbytes.optim.AdamW8bit",
+  "perturbation": null,
+  "run": "leg5_ceiling_fold_es",
+  "run_type": "ceiling"
+}

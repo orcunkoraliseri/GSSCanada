@@ -1,0 +1,42 @@
+{
+  "adapter_dir": "/speed-scratch/o_iseri/4J_step4/runs_leg5_ceiling/leg5_ceiling_fold_es/adapter",
+  "base_repo": "allenai/Olmo-3-1025-7B",
+  "base_revision": "a81bae42db3975be1671e27b9c9a56da1a9f980f",
+  "config": {
+    "batch_size": 2,
+    "dtype": "bfloat16",
+    "epochs": 3,
+    "grad_accum": 8,
+    "lora_alpha": 64,
+    "lora_r": 32,
+    "lr": 0.0001,
+    "max_len": 1280,
+    "packing": false,
+    "packing_note": "ASSUMPTION/DEFERRAL: the recipe calls for packed sequences with block-diagonal masks. This run pads instead. Padding is slower, not wrong -- and G4.5 is only meaningful while padding exists. Recorded so it is a decision, not an omission.",
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "use_rslora": true
+  },
+  "corpus_md5": "ca89d2295603c547f2384a40dd1909ba",
+  "fold": "es",
+  "held_out_country": "es",
+  "leg": 5,
+  "perturbation": null,
+  "prereg_md5": "e4243e07cdd80c9c846b91f40e3e8c45",
+  "run": "leg5_ceiling_fold_es",
+  "run_type": "ceiling",
+  "seed": 42,
+  "tokenizer_repo": "allenai/Olmo-3-1025-7B",
+  "train_shard": {
+    "md5": "3b15432e25d1df09a1e65c764a87f562",
+    "n_loaded": 48594,
+    "path": "/speed-scratch/o_iseri/4J_step4/shards/train_es.jsonl"
+  }
+}

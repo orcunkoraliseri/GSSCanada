@@ -3436,3 +3436,138 @@ knowledge.
   (`e4243e07cdd80c9c846b91f40e3e8c45`) remain strictly frozen. **Step 4 closes with all four
   failing gates — `G4.1`, `G4.3`, `G4.6`, `G4.12` — explained and empirically grounded.**
   🔴 Closing is not passing: never write Step 4 up as clean.
+
+---
+
+## 2026-08-26 (evening) — 🟢 THE CEILING RAN. JOB `1287378`, `COMPLETED 0:0`, 8:45:36 ON `speed-40`. IT ANSWERS ITS PRE-REGISTERED QUESTION, AND THE ANSWER IS **NO**.
+
+**Read before anything else:** the exit state, per `Prompts/RESUME.md` §B.
+`sacct -j 1287378` → `4J_s4_ceiling  COMPLETED  0:0  08:45:36  MaxRSS 21576792K  speed-40`.
+That is the **first** of the three declared outcomes: the ceiling ran, and
+**`bitsandbytes.optim.AdamW8bit` was exercised on a card for the first time in this project.**
+Not the second (a `FAILED` at optimiser construction, which the refusal control was built to make
+visible), and not the third.
+
+* Log: `/speed-scratch/o_iseri/4J_step4_ceiling_1287378.out`
+* Artefacts: `/speed-scratch/o_iseri/4J_step4/runs_leg5_ceiling/leg5_ceiling_fold_es/`
+* `peak VRAM 46.14 GiB, 31451.5 s` — the `nvidia_a100_7g.80gb` profile was needed and was enough.
+* `G4.14 PASS  live=e4243e07cdd80c9c846b91f40e3e8c45 recorded=e4243e07cdd80c9c846b91f40e3e8c45`,
+  re-verified by `md5sum` after the run. 🔴 **The freeze held; no threshold, band, statistic or
+  `N` moved anywhere in this entry.**
+* `G4.13 PASS  heldout-country records in train = 0  by_country={'it': 34366, 'uk': 14228}`.
+
+### 1. 🟢 `FINDING 155` — THE CEILING DOES NOT UNDERFIT. IT FITS **WORSE** THAN THE ADAPTER, AT EVERY EPOCH.
+
+The ceiling exists to answer one pre-registered question, written in
+`4thJ_04_finetuneLLM.md` before any fold trained: *"does LoRA underfit a far-from-pretraining
+target"*. One measurement was to settle it.
+
+The comparison is exact. `leg5_ceiling_fold_es` and `leg5_primary_fold_es` share **every** manifest
+field except `run_type`: `corpus_md5 ca89d2295603c547f2384a40dd1909ba`, `train_shard.md5
+3b15432e25d1df09a1e65c764a87f562`, `n_loaded 48594`, `seed 42`, `base_revision a81bae42…`,
+`batch_size 2`, `grad_accum 8`, `lr 1e-4`, `epochs 3`, `max_len 1280`, `dtype bfloat16`,
+`packing false`. Same fold, same held-out country, same prereg md5.
+
+Trainable parameters: primary **79,953,920** of 7,377,965,056 (**1.0837 %**, printed by the run);
+ceiling **all 7,377,965,056** — *"ceiling run: FULL fine-tune, no adapter"*. **92× more.**
+
+| epoch | primary `train_loss` | ceiling `train_loss` | ceiling − primary |
+|---|---|---|---|
+| 0 | 0.559465 | **0.566805** | **+0.00734** |
+| 1 | 0.525521 | **0.532635** | **+0.00711** |
+| 2 | 0.508305 | **0.513494** | **+0.00519** |
+
+| epoch | primary `content_loss` | ceiling `content_loss` | ceiling − primary |
+|---|---|---|---|
+| 0 | 0.888311 | 0.896478 | +0.00817 |
+| 1 | 0.869616 | 0.878747 | +0.00913 |
+| 2 | 0.865262 | **0.863565** | **−0.00170** |
+
+🔴 **92× the trainable parameters buys nothing.** The full fine-tune ends epoch 2 at a *higher*
+training loss than the rank-32 adapter and a content loss tied to within 0.0017. The
+catastrophic-forgetting probes agree — ceiling `it 0.8220` / `uk 0.9331` against primary
+`it 0.8230` / `uk 0.9352`, indistinguishable.
+
+**The underfitting hypothesis is dead.** `G4.1`, `G4.3`, `G4.6` and `G4.12` do not fail because the
+adapter lacked capacity to fit this corpus. Whatever they are measuring, it is not adapter rank.
+🔴 That is a **negative** result and it is the one the ceiling was commissioned to produce; it is
+reportable precisely because the question was asked before the answer existed.
+
+⚪ **The one confound, stated rather than buried.** The two arms differ in **optimiser** as well as
+in capacity: the ceiling runs `AdamW8bit` (the whole point of `bitsandbytes` being required), the
+primary runs the default 32-bit `AdamW`. So the **+0.005 to +0.007** gap must **not** be attributed
+to capacity. What the measurement does rule out is the *direction that mattered*: full fine-tuning
+does not recover loss that LoRA left on the table. A confound that could only make the ceiling look
+*worse* cannot manufacture a "LoRA is fine" conclusion — it can only weaken a "full FT is better"
+one, and there is no such conclusion here.
+
+⚪ **The long-standing `bitsandbytes` blocker is closed by measurement.** `bitsandbytes 0.50.1`
+imports **and runs** against `torch 2.5.1+cu121` on `speed-40`; the impl doc's *"the ceiling run
+needs `nvidia_a100_7g.80gb` **and** `bitsandbytes` and has only the first"* (investigation §10.7) is
+now spent. It was true when written. It is another instance of `feedback_recheck_recorded_blockers`,
+and the third this week.
+
+### 2. 🔴 `FINDING 156` — THE CEILING'S `G4.1` READINGS MUST **NOT** BE COMPARED TO THE PRIMARY'S. THE DIFFERENCE IS INSIDE THE SEED FLOOR.
+
+The temptation is immediate, and it is wrong. Side by side, fold `es`:
+
+| epoch | primary `1286209` | ceiling `1287378` |
+|---|---|---|
+| 0 | FAIL 1 below / 3 above, worst `0.771`/`1.435`, `end=both` | FAIL 2 below / 0 above, worst `0.696`/`1.092`, `end=lower` |
+| 1 | FAIL 3 / 1, worst `0.591`/`1.500`, `end=both` | FAIL 1 / 0, worst `0.670`/`1.232`, `end=lower` |
+| 2 | FAIL 1 / 3, worst `0.750`/`1.568`, `end=both` | FAIL 1 / 2, worst `0.749`/`1.508`, `end=both` |
+
+Read naively that says the ceiling is *less* dispersed. 🔴 **It says nothing of the kind.**
+`D-S4-16` item 1 measured `G4.1`'s sampling-noise floor on **frozen** weights, five seeds per fold:
+`es` **0.529**, wider than the entire `[0.80, 1.25]` band (`0.45`). Every difference in the table
+above — the largest is `1.568 − 1.508 = 0.060` — is **an order of magnitude inside** that floor.
+
+**What is comparable is the verdict, and only the verdict: both arms FAIL `G4.1` on all three
+epochs.** `G4.1` remains RESOLUTION-LIMITED AT N = 600, exactly as `D-S4-16 (a)` declared, and the
+ceiling neither repairs it nor worsens it. Any sentence of the form *"the full fine-tune reduced
+over-dispersion"* is forbidden by this project's own prior ruling.
+
+⚪ Two further readings that look like arm effects and are **not**:
+
+1. **`G4.7`.** Ceiling `PASS 600/600` at every epoch; primary `1286209` `FAIL 107/138/127 of 600`.
+   🔴 **This is a script difference, not a capacity difference.** `1286209` predates the `D-S4-8`
+   repair — its CSV has 21 columns and no `g4_16_verdict`; the ceiling's has 24 and logs
+   *"`<eor>` → ids [27, 24274, 29], MULTI-TOKEN, wired as `stop_strings`"* plus the `eos_token_id`
+   padding guard. Re-generated post-repair on the **same adapter**, `es` reads
+   `BASELINE G4.7 PASS (600/600 terminated)` (job `1286546`). Both arms terminate once the harness
+   is fixed.
+2. **`G4.6 NOT CHECKED  ceiling run has no adapter to merge`** — correct and expected, not a miss.
+   `G4.11 PASS  missing=none`. `G4.10 REPORTED_NOT_THRESHOLDED`, unchanged.
+
+### 3. ⚪ `FINDING 157` — THE CEILING'S OWN PROVENANCE FILE DESCRIBES A LORA RUN
+
+`run_manifest_leg5_ceiling_fold_es.json` records `"lora_alpha": 64`, `"lora_r": 32`,
+`"use_rslora": true` and a `targets` list of seven projections — for a run whose log says
+*"FULL fine-tune, no adapter"*. Its 14 GB of weights are written to a directory literally named
+`adapter/`, in three `model-0000N-of-00003.safetensors` shards.
+
+**A reader given only the manifest would conclude the ceiling was a rank-32 LoRA run** — that is,
+would conclude the exact opposite of what it is, on the one artefact `G4.11` exists to make
+authoritative. Nothing downstream consumed it yet, so nothing is contaminated.
+
+* **Not a re-run.** The training is correct; only its label is wrong. The 8.75 GPU-hours stand.
+* The fix is a script edit — emit `"trainable": "full"` and null the `lora_*` keys when
+  `run_type == "ceiling"`, and name the directory `weights/` — and it is **owed before the methods
+  section quotes this manifest**, not before anything else.
+* 🔴 **Filed, not fixed silently.** `4thJ_step4_train.py` is not edited in this entry.
+
+⚪ Related, and worth one line for Step 6: the ceiling leaves a **full** fine-tune of the corpus on
+`speed-scratch` (14 GB). `RL10` already forbids releasing adapters; a full fine-tune is strictly
+more exposed, and `G6.10` FAILED on the *adapter* at Leg 5. It is not released and not scheduled to
+be. Recording it so the decision is one someone made.
+
+### 4. What this entry does **not** change
+
+* **No threshold, band, statistic or `N` moved.** `prereg.md` `e4243e07cdd80c9c846b91f40e3e8c45`
+  verified live inside the job and again by `md5sum` after it.
+* **`G4.1`, `G4.3`, `G4.6`, `G4.12` still FAIL** for the reasons already ruled. Step 4 still closes
+  with four failing gates, and 🔴 closing is still not passing.
+* **The ceiling is a single-fold measurement on the pre-named fold `es`**, named 2026-08-14 before
+  any fold trained. `4thJ_04_finetuneLLM.md`: *"Quoting either as a general result across the corpus
+  would be quoting one fold as three."* It must be written up as one fold.
+* The Qwen comparison arm — the other single-fold Leg-5 run — **is still owed.**

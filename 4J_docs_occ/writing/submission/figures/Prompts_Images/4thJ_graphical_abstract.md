@@ -88,6 +88,17 @@ asking a follow-up question.
 
 ---
 
+> 🔴 **REVISED 2026-08-26 — BAND 5 ONLY. Regenerate.** The building end of the pipeline grew
+> from two steps to four: Steps 8 and 9 (archetype simulation, now closed and gate-scored) and **new
+> Steps 10 and 11**, which repeat the exercise on **observed building stock with one independent diary
+> per dwelling**. The rest of the figure is untouched — the claim, the lanes, the navy block and the
+> population track are all unchanged, because none of them changed. **Only Band 5 and its strings move.**
+>
+> ⚪ **Why the change is small even though the paper grew.** This figure carries the *claim*, not the
+> *step count*: one recipe, many countries, and the country being generated was never seen in training.
+> Steps 10 and 11 do not alter that claim — they extend where the diaries land. The step-count figure
+> is `4thJ_pipeline_steps_figure.md`, and **that** one grows from ten cards to twelve.
+
 ## 0. Read this before generating
 
 > 🔴 **NO NUMBER MAY APPEAR IN THIS IMAGE THAT IS NOT LISTED IN SECTION 6 BELOW.**
@@ -283,11 +294,23 @@ has to grow.
   adjoining dwelling forms of different heights and periods, side by side, not a tall tower. This is
   deliberately different from the 3J figure's single mixed-use tower, because paper 4 is residential
   stock across countries, not one building.
+* 🔴 **Added 2026-08-26 — a second, smaller element BEHIND and slightly right of that row:**
+  a small **plan-view cluster of four or five irregular building footprints**, as a real block would
+  be, drawn in light outline so it reads as background depth rather than as a second subject. **One**
+  of those footprints is subdivided into four or five small cells, and **each cell carries a tiny
+  distinct tick-mark or micro-curve**. That is the whole visual argument of Steps 10 and 11: the
+  archetype row in front carries **one** schedule for the whole building; the block behind carries
+  **one per dwelling**. 🔴 **Draw the subdivided footprint's cells with visibly different
+  marks.** Identical marks would say every dwelling shares one diary, which is precisely the design
+  Step 10 exists to replace.
 * To the right of the buildings, a small vertical stack of 🔴 **three miniature schedule curves** (was four), each in
   its lane's colour, each a simple line plot in a small white box with a `0` and `24` on the x axis and
   no y axis numbers. The curves must have visibly different shapes.
 * Below the curves, one small line of text: **"occupancy and activity-driven internal gains"**.
 * Below that, a second small line: **"EnergyPlus schedules"**.
+* 🔴 Below that, a third small line: **"archetypes first, then real stock, one diary per
+  dwelling"**. ⚪ This is the only string Steps 10 and 11 add to the figure, and it is the only
+  one they need.
 
 Optionally, a very small EnergyPlus wordmark may be placed here as in the 3J figure, but only if the
 author has the asset. Do not draw an approximation of a logo.
@@ -395,6 +418,7 @@ Band 5:
 
 * `occupancy and activity-driven internal gains`
 * `EnergyPlus schedules`
+* 🔴 `archetypes first, then real stock, one diary per dwelling`
 * `0` and `24` as the only axis labels on the schedule curves
 
 🔴 **`N-1` WAS RETIRED ON 2026-08-19 AND MUST NOT APPEAR.** There is no algebraic string in the figure
@@ -636,9 +660,14 @@ has a dashed outline in the held-out lane's colour. Beside it, a dashed-outline 
 THE RIGHT EDGE: a flat row of three or four European residential building types, side by side, and
 beneath them three small line-plot schedule curves in the three lane colours, each in a small white
 box with 0 at the left and 24 at the right of its x axis and no y axis numbers, the three shapes
-visibly different. Beneath them two lines:
+visibly different. Behind and slightly to the right of that row, drawn small and in light outline so
+it reads as background, a plan view of four or five irregular building footprints as a real city
+block would be; one of those footprints is divided into four or five small cells and each cell
+carries its own tiny tick-mark, all of the marks different from one another. Beneath the curves,
+three lines:
   occupancy and activity-driven internal gains
   EnergyPlus schedules
+  archetypes first, then real stock, one diary per dwelling
 
 QUOTED TEXT. The picture contains the two title lines and the strings named above, and nothing else.
 In particular: write no number anywhere except 00, 24, 0 and 24 as the axis end labels. Write no

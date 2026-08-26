@@ -441,3 +441,42 @@ baseline and never demonstrated falling**, the same class of declared limitation
 
 ⚪ Step 4 stays closed with four failing gates — `G4.1`, `G4.3`, `G4.6`, `G4.12`. Never written up
 as clean. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` unchanged.
+
+### 2026-08-26 (evening) — 🟢 THE CEILING RUN IS DONE. `1287378`, `COMPLETED 0:0`. THE ANSWER TO ITS QUESTION IS **NO**.
+
+This document declared the ceiling's purpose on 2026-08-14, before any fold trained:
+*"Answers 'does LoRA underfit a far-from-pretraining target'. One measurement settles that."*
+It has been measured, on the pre-named fold **`es`**, and it settles it.
+
+🔴 **LoRA does not underfit.** Full fine-tune of all **7,377,965,056** parameters against the
+adapter's **79,953,920** (**92×**), everything else identical — same corpus md5, same shard md5,
+same seed 42, same lr/batch/accum/epochs/`max_len`, same base revision:
+
+| epoch | primary `train_loss` | ceiling `train_loss` |
+|---|---|---|
+| 0 | 0.559465 | **0.566805** |
+| 1 | 0.525521 | **0.532635** |
+| 2 | 0.508305 | **0.513494** |
+
+The ceiling ends **higher** at every epoch; `content_loss` ties at epoch 2 (0.8636 vs 0.8653). ⚪ The
+arms also differ in optimiser (`AdamW8bit` vs 32-bit `AdamW`), so the gap's *magnitude* is not
+attributable to capacity — but the direction that mattered is settled: full fine-tuning recovers no
+loss that the adapter left on the table.
+
+🔴 **`G4.1` is NOT improved by the ceiling and must never be reported as improved.** Both arms FAIL
+all three epochs. The band counts differ (`es` ceiling worst `1.508` vs primary `1.568` at epoch 2)
+by an order of magnitude **less** than `G4.1`'s own `es` sampling-noise floor of **0.529** measured
+under `D-S4-16`. Only the verdict is comparable.
+
+⚪ The `bitsandbytes` blocker carried by `Step4_docs/impl/2026-08-18_step4-training.md` is spent:
+`0.50.1` runs against `torch 2.5.1+cu121`, `AdamW8bit` exercised on a card, peak VRAM **46.14 GiB**
+in 8:45:36 on the `nvidia_a100_7g.80gb` profile.
+
+⚪ Filed and **not** fixed here: the ceiling's `run_manifest_*.json` still records `lora_r 32` /
+`lora_alpha 64` / `use_rslora true` and writes to a directory named `adapter/` for a run that used
+no adapter. Owed before the methods section quotes that manifest.
+
+🔴 **This is one fold.** Per this document's own rule, quoting it as a corpus-wide result would be
+quoting one fold as three. **The Qwen comparison arm — the other single-fold Leg-5 run — is still
+owed.** Full record: `outputs_step4/proglog_step4_gates.md`, entry 2026-08-26 (evening),
+`FINDING 155`–`FINDING 157`.

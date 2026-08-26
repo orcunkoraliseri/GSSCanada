@@ -1764,6 +1764,187 @@ corpus, the grammar and every trained fold.
 
 ---
 
+## STEP 10 — REAL-STOCK UBEM SIMULATION WITH PER-DWELLING DIARIES
+
+**Status: PLANNED 2026-08-26. Engine: OpenUBEM. Documents: `Step10_docs/`.**
+
+🔴 **Steps 8 and 9 are a closed chapter and this step does not reopen them.** Step 8's definition
+of done closed on 2026-08-25 and was re-run rotated on 2026-08-26 under `D-S9-3`(a); Step 9's board is
+15 PASS / 3 FAIL / 1 NOT CHECKED. Steps 10 and 11 are **additive**: a new gate series, a new basis, and
+an explicit inheritance statement on every threshold they carry over.
+
+### 10A. Why the step exists, and why it is not a second attempt at Step 8
+
+Step 8 returned a null. `FINDING 143`: the peak claim does not survive, ratio to the between-diary spread
+0.54 / 0.02 / 0.40. `FINDING 144`: every annual median is negative. `FINDING 145`: the diurnal-shift
+sentence is withdrawn. The one survivor is the **dwelling-class ordering** — the effect is monotone in
+dwelling class in all three folds, `AB` above `MFH` above `TH`.
+
+Step 8 could not have produced anything else. Its unit was a TABULA archetype **box** and **one diary
+drove the whole cell**, so every dwelling-equivalent inside an apartment block shared one presence
+series. `FINDING 134` measured the consequence: on annual heating the effect is **smaller than the
+between-diary spread** in all three folds. A design in which every dwelling carries the same series
+cannot express inter-household diversity, and diversity is the mechanism the European stock literature
+attributes its peak sensitivity to. The surviving dwelling-class ordering is that mechanism showing
+through a design that could not measure it.
+
+🔴 **`H10` is pre-declared, before any Step 10 cell exists:** at fixed `f`, the occupancy effect
+on building peak grows with `N_u`, the number of independently diarised dwellings. The null `H10₀` is
+that it does not, and that Step 8's null is a property of occupancy rather than of the box. **Both
+outcomes are publishable and the null is the stronger paper.** Declaring it now is what separates this
+step from re-running until a result appears — which is exactly what it would look like from outside,
+given the timing.
+
+🔴 **A Step 10 result never rehabilitates a Step 8 claim.** What `FINDING 143`/`144`/`145`
+withdrew stays withdrawn.
+
+### 10B. What is carried across verbatim, and the one thing that is not
+
+The injection formula, the five-level `f` set, the exact-3.0 W/m² conservation property, the chaining
+rule (`independent`, seed 1) and the midnight schedule origin are all carried across **unchanged**, so
+that a Step 10 ≠ Step 8 difference is attributable to the unit of analysis and to diary diversity.
+
+🔴 **The weather basis is the exception, and it is worth more than the effect.** Step 8 runs on
+`TMYx.2009-2023` with the station chosen by measurement (`D-S8-4`); Step 10 runs on ERA5 actual-year
+files. `FINDING 120` puts the station alone at **5–11 % of heating demand**, against an occupancy
+channel of a few per cent. **No absolute Step 8 EUI is ever placed beside an absolute Step 10 EUI**;
+only control-referenced relative deltas cross, reported side by side and never differenced. Gate
+`G10.12`.
+
+### 10C. 🔴 The weather YEAR is unruled, and the engine has ruled that it is ours
+
+`es`, `uk` and `it` all carry `diary_window = None` and status `RULED_NOT_PINNED` against two-year ERA5
+windows (2009–2010, 2014–2015, 2013–2014). An EPW is one year. The engine's converter
+**refuses to default** and prints `YEAR_NOT_RULED`, on the explicit ground that choosing the year is a
+diary question and the diary is ours.
+
+🔴 **Measured on the artefact, 2026-08-26: the harmonised corpus cannot answer it.**
+`harmonised_{es,uk,it}.parquet` carries `wave` (`2009-2010` / `2014-2015` / `2013-2014`, one value each)
+and `strat_season_raw` (quarter for `es`/`it`, month for `uk`) and **no calendar-year column**. Decision
+`D-S10-1` is therefore open, with three options recorded in `Step10_docs/`: recover the year from the
+Step 1 raw deliveries, run both years as a declared design factor, or rule a convention. This blocks the
+engine-side contract freeze, not only Step 10.
+
+### 10D. 🔴 The per-dwelling configuration is geometry-limited
+
+Measured, not assumed: of 297 layout-ready buildings at the first real site the generator emitted a
+dwelling layout for **18**, and **256 of 297** footprints are non-convex or hold a courtyard. Of a frozen
+12-building ladder sample, **1** emitted a layout.
+
+Three consequences are designed for rather than discovered. **Two populations are scored separately and
+never pooled** — Arm D, dwelling-partitioned with `N_u ≥ 2`, and Arm F, the `one_zone_per_floor`
+fallback, which is the Step 8 configuration on real geometry and therefore a second control worth having.
+**Arm D is selected on footprint convexity**, which correlates with epoch and typology, so no stock-level
+EUI may be quoted from it. And **the two arms are not yet comparable in vertical extent**, because the
+one dwelling-level run available was a single floor plate rather than a full stack.
+
+🔴 `G10.19` refuses the `H10` test outright, printing `NOT_EVALUABLE`, below 30 qualifying
+buildings per fold. Checking that **before** the campaign rather than after is the whole point of
+registering it.
+
+### 10E. France is not a fold
+
+The engine's fourth European site is Lyon. The corpus was fixed at three countries on 2026-08-15, so
+there is no French fold, no French held-out fold and no French diary. France enters as a physical
+baseline on a separate manifest, never in a 4J denominator. Gate `G10.11`.
+
+---
+
+### 10F. 🔴 What the vetted `L28` / `L29` round changed, 2026-08-26 (evening)
+
+Two deep-research rounds returned and were vetted before any value entered a plan
+(`DeepResearchPrompts/VETTING_RL28_RL29.md`). **The round's most valuable output was not the
+literature.** Vetting it forced a re-measurement of two blockers this project had written down, and
+**both were wrong**.
+
+* 🔴 **The 173-vertex `EPLUS_FATAL` is dead.** `EPLUS_FATAL` appears nowhere in the OpenUBEM EU-04
+  evidence tree, and `s1_smoke_manifest.csv`, regenerated 2026-08-26 12:10, reports **12 of 12
+  `EPLUS_COMPLETED`** — the named building completes with **0 Severe Errors** in all three campaigns.
+* 🔴 **Its diagnosis was false as well.** There is no ~120-vertex `BuildingSurface:Detailed` limit:
+  in both installed IDDs the object is `\extensible:3` with no `\max-fields`, and the IDD's own note
+  says 120 is what is *shown*. `RL29` returned **our own prompt's figure** rated Tier 1, confidence H,
+  "read full text" — laundered, not verified. Its proposed remedy would have re-simplified every
+  footprint in the corpus to fix a defect that no longer reproduces. **Rejected.**
+* 🔴 **The CRS tolerance arithmetic does not close.** The failing building is 544.206 m²; an
+  `area_error_fraction` of 5.09e-12 implies a 2.77e-9 m² gap, *inside* the 1e-8 m² tolerance, which
+  needs ~1 965 m² to cross. `G10.10` is retargeted to the **rotation origin**, which is a verified code
+  fact, and the tolerance pairing is withdrawn as a causal statement until re-measured.
+
+Three things were accepted, **on their own logic rather than on the dossier's authority**:
+
+1. **`H10` is decided on the coincidence factor**, `CF(N_u) = P_peak,bldg / sum(P_peak,zone)`, not on
+   annual EUI. 🔴 The reason is `FINDING 143`: that claim died because a peak effect was measured
+   against a between-diary spread it could not beat. `CF` is dimensionless, bounded, and equals **1 by
+   construction** in the synchronised case — so the comparison is against a **constant**, not a spread.
+2. **The test is paired within a footprint.** Every building runs twice at each `f`: Case A, one diary
+   replicated to all `N_u` zones; Case B, `N_u` independent diaries. Otherwise diversity is confounded
+   with geometry, because buildings with different `N_u` also differ in volume and envelope area.
+3. **`H10` also predicts a shape**, `CF(N) = g_inf + (1-g_inf)/sqrt(N)`, reported with residuals — so
+   "monotone but not `1/sqrt(N)`" becomes a third distinguishable outcome.
+
+🟢 **And the arithmetic of that shape answers the obvious objection.** The fraction of the asymptotic
+effect reached at `N` is `1 - 1/sqrt(N)`, with `g_inf` cancelling: **half the entire effect is realised by
+`N = 4`**. Real European dwelling plates sit at the **steep** end of the curve, not the saturated tail.
+⚪ `RL28`'s own claim that diversity saturates *"over 90 % by `N = 20` to `30`"* is **false on its own
+formula** (77.6 % and 81.7 %; 90 % needs `N = 100`), and its sampling advice aims at the flat part.
+
+🔴 **`H10`'s pre-declared text was not edited.** A hypothesis rewritten after commissioning
+literature that predicts its outcome is indistinguishable from moving the goalposts. What was added —
+metric, shape, and a recorded prior that the **annual channel is expected to stay null** — is written
+beside it, dated, before any Step 10 cell exists. Four gates follow (`G10.20`–`G10.23`) plus guard
+`V10.i`: **a recorded blocker carries the date it was last measured, not the date it was first written.**
+
+## STEP 11 — ACTIVITY-DRIVEN END-USE LOADS AT STOCK SCALE
+
+**Status: PLANNED 2026-08-26. Documents: `Step11_docs/`. Basis: Step 10.**
+
+### 11A. Step 9's mapping and trigger, unchanged, at the scale its sources were validated at
+
+Step 9's `9C` states the bound the downstream claim rests on: the published activity-to-load models
+validate against **aggregate** demand at **100–500 dwellings**, and individual single-dwelling
+prediction is not claimed. Step 9 scored its stock-scale gate `G9.12` on **100 dwellings per fold** —
+*exactly the registered floor*, the weakest population in which the gate could have been evaluated at
+all. Step 10's neighbourhoods carry on the order of 1,200 residential buildings per site. **Step 11 is
+the first configuration in this project that sits inside the range the source models were validated
+in**, so `9C`'s caveat becomes satisfiable rather than merely declared.
+
+🔴 **But the population changes too.** Step 9's 100 dwellings were drawn across a fold; Step 11's
+sit in one neighbourhood, on one weather file, in a correlated epoch mix. These are not the same
+population and their R² values are not comparable without saying so. `G11.16` makes the declaration
+mandatory and a comparison without it a FAIL.
+
+### 11B. 🔴 Three inherited FAILs, and why they are inherited rather than relaxed
+
+Step 9 shipped `G9.6` FAIL 60 (saturation), `G9.7` FAIL 300 (DHW medians 100.16 / 117.65 / 91.06 against
+a registered 30–50 band) and `G9.12` FAIL 3 (R² 0.297 / 0.411 / 0.035 against 0.85), and moved no
+band. `G11.6`, `G11.7` and `G11.12` inherit those bands **unmoved**.
+
+**Step 11 does not exist to make them pass.** If they pass at stock scale that is a scale effect and it is
+a result; if they fail again, Step 9's failure is confirmed as a property of the mapping, measured at the
+scale its sources were validated at — which is the stronger finding, and one no threshold movement could
+have produced.
+
+🔴 **`G9.7`'s failure is a magnitude error and scale will not fix it.** 2–4× is not the
+shape of a small-sample artefact. Work item 11.2 diagnoses it on the Step 9 artefact **before** Step 11
+re-measures anything, and it starts from a named candidate: `RL25` records Jordan & Vajen's base as
+**50 L/person/day at 60 °C** while the shower event is **30–50 L at 40 °C** — the registered
+band carries the shower row's two numbers on the daily total's temperature basis. That is a lead to
+falsify against the source table, not a conclusion, and `FINDING 47` is the standing reminder of what
+happens when a deep-research citation is trusted unvetted.
+
+🔴 **A failing gate's perturbation demonstrates nothing.** Step 9 reported the three FAILs'
+perturbations as `ALREADY_FAILING_AT_BASELINE`, never as hits. `V11.b` inherits that disposition.
+
+### 11C. The seam with Step 10, which is invisible from either side
+
+Step 10 reports simulated **and reconstructed** EUI, where service loads absent from EnergyPlus — hot
+water, cooking, distribution parasitics — are reconstructed from national end-use shares. **Step 11
+supplies those same end-uses from the diaries.** If both run, the pair double-counts, and the double
+count cannot be seen in either artefact read alone. The accounting path is chosen **once**, per end-use
+per building, recorded in the manifest, and gated at the seam by `G11.15`.
+
+---
+
 ## VALIDATION PLAN
 
 The gate tables live in the overview document and are reproduced nowhere else, deliberately: two copies
