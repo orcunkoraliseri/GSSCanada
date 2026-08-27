@@ -59,7 +59,7 @@ until this section was written.
 |---|---|---|---|
 | **Primary** — rsLoRA r=32, all linear | Leg-4 **and** Leg-5 | 🔴 **3 each**, one per held-out country — **was 4 until author decision 16 excluded France, 2026-08-15** | The reported models. Step 6 scores **three** folds and Step 7 generates per fold |
 | **Ceiling** — full fine-tune, 8-bit AdamW | Leg-5 | **1**, on a pre-named fold | Answers "does LoRA underfit a far-from-pretraining target". One measurement settles that; four would settle it four times |
-| **Comparison arm** — `Qwen/Qwen2.5-7B`, same recipe | Leg-5 | **1**, the **same** pre-named fold | States what the alternative backbone cost. The training-side backbone argument is already closed by measurement |
+| **Comparison arm** — `Qwen/Qwen2.5-7B`, same recipe | Leg-5 | **1**, the **same** pre-named fold | States what the alternative backbone cost. The training-side backbone argument is already closed by measurement. 🟡 **SUBMITTED 2026-08-26 (night, last), job `1287613`** — `tools/4thJ_step4_qwen_fold.sh`, outputs redirected to `runs_leg5_qwen` / `diagnostics_leg5_qwen` |
 
 🔴 **FIVE Leg-5 jobs and THREE Leg-4 jobs** — three primary folds per leg, one ceiling, one Qwen
 comparison arm. *(Was six and four; author decision 16, 2026-08-15, excluded France, so the rotation
@@ -137,6 +137,14 @@ sized.**
 * **bf16.** V100 and P6 nodes have no hardware bf16.
 * 🔴 **Joint multi-country training, never sequential.** Sequential costs 40 to 70 % on earlier
   countries. One model, country token in the prefix.
+
+🟢 **`D-S4-17` RULED 2026-08-26 — OPTION (A), AND IT WAS RULED WHILE THE JOB WAS STILL `PD`.** `--max-len 1280` **stays fixed on every arm**; the Qwen arm is reported with its **exact measured truncation rate printed beside its losses**, under a pre-declared **≤ 1.0 %** contamination threshold — above it the arm is flagged CONTAMINATED and escalates before any claim is made. 🔴 **The number had not been seen by anyone when the decision was taken**, which is the point of the document.
+
+🔴 **Why the question existed: `--max-len` is NOT backbone-neutral.** The table above measures the same diary at **200 OLMo tokens against 303 Qwen tokens**, and `311` at **1 token against 3** — so a fixed token budget is a **tighter** budget for Qwen. Holding the number constant does not hold the constraint constant. `DiaryDataset` sliced `(prefix + body)[:max_len]` **silently**; it now **counts** truncated records and prints a `TRUNCATION` line for **every** run, OLMo arms included, so this arm has a baseline. ⚪ It is a **counter, not a gate** — no `G4.x` id, no band, no verdict — and it was seen both silent and firing before the arm was submitted.
+
+🔴 **Three directives that reach the manuscript.** (1) Report the Qwen comparison **strictly on fold `es`**, as `prereg.md:90` pre-registers. (2) State that `G4.2`'s delimiter parsing is evaluated on **Qwen's native vocabulary** — the verdict is comparable across arms, the numbers are not. (3) `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` stays frozen; **no re-runs and no threshold alterations permitted.**
+
+🔴 **What may never be done, whatever the count:** raise `--max-len` on the Qwen arm alone and still call the two arms *"the same recipe"*. Record: `../Step10_docs/docs/2026-08-26_D-S4-17_the-qwen-arm-truncation-decision.md`.
 
 🔴 **The memory arithmetic in `RL18` is for Qwen2.5-7B and does not transfer unchecked.** It gives
 18.27 GB LoRA / 48.86 GB full FT. OLMo 3 7B is slightly smaller in parameters but has no GQA and uses
@@ -480,3 +488,16 @@ no adapter. Owed before the methods section quotes that manifest.
 quoting one fold as three. **The Qwen comparison arm — the other single-fold Leg-5 run — is still
 owed.** Full record: `outputs_step4/proglog_step4_gates.md`, entry 2026-08-26 (evening),
 `FINDING 155`–`FINDING 157`.
+
+🟢 **`FINDING 157` DISCHARGED 2026-08-26 (night, last), script edit only, no re-run.**
+`tools/4thJ_step4_train.py` now emits `"trainable": "full"` for a ceiling run, nulls the
+`lora_*` keys with a `lora_note` saying why, splits `adapter_dir` / `weights_dir`, and names the
+saved directory `weights/` instead of `adapter/` — only the ceiling branch moves.
+🔴 **`G4.11` was TIGHTENED to require `trainable`** (`n_required` 15 → 16) and was seen
+refusing the defect on four shapes including **the shipped ceiling manifest, which now FAILS on
+`trainable` — intended, and never to be repaired by loosening the gate.**
+🔴 **The shipped manifest is NOT edited** — it is the record of what job `1287378` wrote and
+must keep agreeing with its own stdout log. The corrected labels live in a sidecar,
+`outputs_step4/leg5_ceiling_fold_es/run_manifest_leg5_ceiling_fold_es.CORRECTION.json`, with each
+shipped value preserved beside its correction. 🔴 **The methods section quotes the CORRECTION
+file, never the shipped manifest's `lora_r` / `lora_alpha` / `use_rslora` / `targets`.**

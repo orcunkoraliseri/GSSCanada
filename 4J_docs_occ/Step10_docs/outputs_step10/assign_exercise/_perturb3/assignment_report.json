@@ -1,0 +1,1285 @@
+{
+  "building_table": "Step10_docs/outputs_step10/building_table_exercise_es_uk_it.csv",
+  "country_override": null,
+  "f_values": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "g10_8_failures": [
+    {
+      "building_id": "BATIMENT0000000013365727_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000013365727_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000013365727_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 8,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 9,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 10,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877179_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877179_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877179_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877518_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877518_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877518_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877522_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877522_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877522_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877523_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877523_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877538_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877538_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240877538_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240878034_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240878034_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240878034_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 8,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 9,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 10,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 11,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 12,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 13,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 14,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 15,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 16,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 17,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 18,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 19,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 20,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 21,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 22,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 23,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 24,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 25,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 26,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 27,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879451_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879510_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879510_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879614_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879614_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879614_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879627_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879627_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879627_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879644_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879644_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879644_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879644_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879644_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879650_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879650_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879650_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879650_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879669_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879669_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879669_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879669_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879669_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879681_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879755_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879755_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879755_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879756_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879756_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879756_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879756_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879759_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879759_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879759_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879759_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879761_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879761_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879761_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879789_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879789_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879789_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879789_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879789_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879789_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879897_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879897_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879897_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879897_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879934_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879934_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879934_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold es; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879957_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879957_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    },
+    {
+      "building_id": "BATIMENT0000000240879957_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "bundle declares fold uk; the dwelling is it"
+    }
+  ],
+  "gate_board": {
+    "G10.13": {
+      "bound_w_m2": 1.5e-10,
+      "building_fails": 0,
+      "decimals": 10,
+      "gate": "G10.13",
+      "note": "read from the emitted CSV on disk (V10.h), never from the generator's own list",
+      "verdict": "PASS",
+      "zone_fails": 0,
+      "zone_rows": 7880
+    },
+    "G10.19": {
+      "folds_absent": [
+        "es",
+        "uk"
+      ],
+      "folds_short": {
+        "it": 17
+      },
+      "gate": "G10.19",
+      "min_N_u": 2,
+      "note": "below the population H10 is NOT_EVALUABLE with the population named. It is never reported as a pass and never as a fail.",
+      "qualifying_buildings_per_fold": {
+        "it": 17
+      },
+      "required_per_fold": 30,
+      "verdict": "NOT_EVALUABLE"
+    },
+    "G10.8": {
+      "dwellings": 1576,
+      "gate": "G10.8",
+      "note": "per DWELLING, not per building; the fold is read from the bundle's own manifest.json, never from a filename",
+      "unlocatable": 0,
+      "verdict": "FAIL",
+      "wrong_fold": 1067
+    },
+    "G10.9": {
+      "arms_present": [
+        "D",
+        "F"
+      ],
+      "buildings_with_mixed_arms": 0,
+      "gate": "G10.9",
+      "note": "a building carrying both arms means the arm was decided per zone; it is a property of the BUILDING's zone_source",
+      "verdict": "PASS"
+    },
+    "W10.8": {
+      "gate": "W10.8",
+      "live": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "note": "prereg.md is frozen; recomputed from disk",
+      "recorded": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "verdict": "PASS"
+    }
+  },
+  "label": "perturb:every dwelling RECORDS a fold its diary did not come from",
+  "n_assignments": 1576,
+  "n_buildings": 297,
+  "n_csv_retained": 35,
+  "n_emitted_csv": 7880,
+  "perturbations": {
+    "arm_f_independent": false,
+    "arm_from_zone_count": false,
+    "break_md5": false,
+    "force_fold": null,
+    "mislabel_fold": "it",
+    "perturb_zone": null,
+    "unequal_areas": false
+  },
+  "reduction_note": "every emitted CSV was READ FROM DISK by G10.13 at the moment it was written; only a named sample is kept, because 7,880 hourly files is 2.6 GB per run and the battery runs it six times (the Step 8 precedent)",
+  "seed_base": 1,
+  "skipped": [],
+  "write_decimals": 10
+}

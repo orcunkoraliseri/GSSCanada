@@ -9,7 +9,12 @@
 
 ## STATUS
 
-⚪ **PLANNED, 2026-08-26. Nothing built on the 4J side.**
+🟡 **PLANNED 2026-08-26. FOUR WORK ITEMS BUILT, 2026-08-26 / 27 — the STATUS line said "nothing built"
+until 2026-08-27 and was stale by four items.** Done: **10.1** (chaining closure notice), **10.2**
+(`D-S10-1` ruled and applied as a sidecar), **10.4** (per-dwelling assignment and emission), **10.9**
+(paired Case A / Case B emission, §9.2). 🔴 **Everything still open needs a SIMULATED cell** — 10.3,
+10.5, 10.6, 10.7, 10.8 and, since `FINDING 158`, **10.10** — and all of them wait on OpenUBEM `EU-04`.
+Nothing in Step 10 is waiting on a 4J decision.
 
 🔴 **Steps 8 and 9 are CLOSED and this step does not reopen them.** Step 8's definition of done closed
 on 2026-08-25 (night) and was re-run rotated on 2026-08-26 under `D-S9-3`(a); Step 9's board is
@@ -162,7 +167,42 @@ reporting the weather and calling it occupancy.
 
 ---
 
-## 4. 🔴 OPEN DECISION `D-S10-1` — THE WEATHER YEAR IS UNRULED, AND OPENUBEM HAS RULED THAT IT IS OURS
+## 4. 🟢 **CLOSED 2026-08-26 — `D-S10-1` IS RULED. THE WEATHER YEAR IS PINNED AND THE OPENUBEM CONTRACT FREEZE IS LIFTED.**
+
+| fold | pinned EPW year | measured share of diaries | basis |
+|---|---|---|---|
+| `es` | **2010** | **76.90 %** (14,718 / 19,140) | exact — `TRIM` value label + INE fieldwork window 1 Oct 2009 – 30 Sep 2010 |
+| `uk` | **2014** | **58.11 %** (9,213 / 15,854) | exact, per diary — the delivered `dyear`, joined on `(serial, pnum, daynum)` |
+| `it` | **2014** | 100 % after absorption; **≥ 72.8 %** exact | `meseri` 2/3/4 exact against the ISTAT window 1 Nov 2013 – 31 Oct 2014; `meseri=1` **absorbed** |
+
+**Author's ruling, 2026-08-26 — option (A), the majority year per fold.** Three sub-rulings:
+(1) option (A) overall; (2) `uk` pins to 2014 despite the 58/42 split, to keep one convention
+across all three folds; (3) `it`'s straddling quarter is **absorbed into 2014, not interpolated**,
+because the ISTAT daily-diary delivery ships no month field. 🟢 **The OpenUBEM
+boundary-contract freeze (MVP §12.8, `FINDING EU-S2-03`) is LIFTED; Steps 10 and 11 are
+unblocked.** Full record and every source: `../IMP/docs/2026-08-26_D-S10-1_the-weather-year-is-recoverable.md` §6.
+
+### 4.0.1 🔴 What the ruling was applied to — a SIDECAR, never the corpus
+
+`tools/4thJ_step10_weather_year.py` writes `outputs_step10/weather_year_ruling.json` (the
+fold → `--year` pinning OpenUBEM's converter consumes) and `diary_year_{es,uk,it}.parquet`
+(per-diary year **and the basis for it**, `exact` or `absorbed`). 🔴 **`harmonised_*.parquet`
+was NOT edited** — directive 2 requires the enrichment not invalidate Step 2 gates, and an edit
+in place would move them and, downstream, the frozen `corpus_md5 ca89d229…`. Gate **`W10.1`**
+proves it by hashing the three inputs before and after.
+
+Eight gates, **8 PASS / 0 FAIL**, and 🔴 **four were seen felling on purpose** before the
+outputs were trusted: flipping the `es` map fells `W10.3`; breaking the `uk` join key fells
+`W10.4`; flipping the `it` map fells `W10.6`; mis-pinning `uk` to the minority year 2015 fells
+`W10.7`. Report: `outputs_step10/weather_year_report.txt`.
+
+⚪ **One number to carry into the methods, not to hide:** `it`'s absorbed quarter is
+**10,160 of 38,260 diaries (26.6 %)** — those diaries are *assigned* 2014, not *measured* as
+2014. `es` and `uk` have no absorbed diaries at all.
+
+---
+
+## 4.b ⚪ SUPERSEDED, KEPT AS THE RECORD — the decision as it stood before the ruling
 
 `FINDING EU-S2-03` (MVP §12.12) is a decision request pointed at this project:
 
@@ -188,8 +228,8 @@ recoverable** — `es` and `uk` exactly, `it` with one straddling quarter. `es` 
 ⚪ 🔴 **Trap, filed:** the Italian delivery has a column named `anno` and it is a constant
 `2013` on all 1,077,657 rows — a wave stamp, **not** a diary year.
 
-🔴 **The decision is still OPEN and still the author's**, but it is now a choice between
-pinning the measured majority year, running both, or going per-diary — not a choice made blind.
+🟢 **RULED the same day — see §4 above.** The author took option (A), the majority year
+per fold. This paragraph is kept only to show the decision was answerable before it was answered.
 Full record, with every source and count: **`../IMP/docs/2026-08-26_D-S10-1_the-weather-year-is-recoverable.md`**.
 
 ### 4.1 🔴 Measured on the artefact, 2026-08-26 — the current corpus cannot answer it
@@ -219,11 +259,28 @@ field is a quarter for `es`/`it` and a month for `uk`, and a month cannot separa
 🔴 **This blocks more than Step 10.** MVP §12.8 lists the contract freeze as waiting on the weather rows,
 and `FINDING EU-S2-03` is precisely the reason a fold can remain `RULED_NOT_PINNED` **after a technically
 successful acquisition**. Until `D-S10-1` is ruled, `es`/`uk`/`it` cannot each be reduced to one EPW, and
-the OpenUBEM boundary contract cannot be signed.
+the OpenUBEM boundary contract cannot be signed. 🟢 **— RESOLVED 2026-08-26, see §4 above.**
 
 ---
 
-## 5. 🔴 DECISION 14 IS CLOSED, AND THE OPENUBEM SIDE IS STILL CARRYING IT AS THE BLOCKER
+## 5. 🟢 **CLOSED 2026-08-26 (night) — WORK ITEM 10.1 IS FILED. THE `f > 0` BLOCK IS LIFTED BY REFERENCE.**
+
+🟢 **The closure notice exists: `Step10_docs/docs/2026-08-26_10.1_chaining-closure-notice.md`.**
+It carries all four artefacts §10.2 item 6 asked for — the frozen rule text (`independent`, seed 1,
+`rho = 0`, year 2017, 8,760 hourly values, `diary_origin_hour = 4` **rotated to midnight**), the seed
+policy (production seed **1**; experiment seeds **11/22/33/44/55**, a pre-registered minimum the runner
+refuses to go below), the implementing script with `FINDING 147` attached to it, and the spread table
+re-measured on the **rotated** schedules. 🔴 **It also withdraws one sentence:** `FINDING 136`'s
+*"17–60×"* occupancy-to-convention comparison does not survive the rotation (9.4× / 0.2× / 22.6×) and
+must not be repeated — the claim decision 14 rests on is `G7.18`'s trigger, which is missed by two
+orders of magnitude in every fold (0.2892 / 0.1936 / 0.0285 % against 25 %).
+
+⚪ `Step8_docs/IMP_step8/4thJ_08_bemSimulation_IMP.md` §10 was de-staled the same night. **MVP §12.11
+is on the OpenUBEM side and is theirs to correct**, on receipt of the notice.
+
+---
+
+## 5.b ⚪ SUPERSEDED, KEPT AS THE RECORD — the item as it stood before the filing
 
 Two live OpenUBEM artefacts are **stale** on this point:
 
@@ -244,7 +301,7 @@ is owed back — the frozen rule text, the seed policy, the implementing script,
 four already exist (`tools/4thJ_step8_chaining.py`; `FINDING 136`'s table; `FINDING 147` records that this
 script bypassed the emitter and that its first rotated re-run returned bit-identical to the superseded
 one, which must travel with it). Filing it lets the OpenUBEM director lift the `f > 0` block **by
-reference**, unblocking Q4's 408 runs.
+reference**, unblocking Q4's 408 runs. 🟢 **Done 2026-08-26 (night); see the header of §5.**
 
 ---
 
@@ -388,22 +445,130 @@ conservation *held in the generator and not in the artefact*. Step 10 fixes the 
 Scored by `G10.13`. Held-out-fold correctness (`G10.8`) applies **per dwelling**: no dwelling in a fold's
 campaign may carry a diary from that fold's held-out records.
 
+### 9.1 🟢 BUILT 2026-08-26 (night, last) — work item 10.4
+
+`tools/4thJ_step10_assign.py`. **297 buildings → 1,576 dwellings → 7,880 emitted hourly CSVs.**
+`G10.13` **PASS** on **9,365** rows (7,880 per-zone + 1,485 per-building, area-weighted);
+`G10.8` **PASS**, 0 unlocatable and 0 wrong-fold of 1,576; `G10.9` **PASS**, 0 buildings
+carrying both arms; `G10.19` **`NOT_EVALUABLE`** — and that is the gate working. Battery
+**6 of 6**. ⚪ This is the tool, not a campaign: no EnergyPlus was run and none is owed here.
+
+🔴 **`G10.19` reproduces §6's severity from the artefact rather than the prose.**
+Qualifying buildings — Arm D with `N_u ≥ 2` — are **es 9 · uk 5 · it 3** against the **30 per
+fold** `H10` needs. The whole layout census offers **18** Arm D buildings in total. **The gate
+says so before a campaign is built, not after.**
+
+🔴 **The `G10.13` bound is TIGHT, not slack.** Largest deviation anywhere is
+**1.347e-10 W/m²** against a bound of **1.5e-10** — **90 % of the allowance used**. The bound
+is derived from the `%.10f` write format, never chosen to clear the result.
+
+**Three decisions the item had to take, recorded because none is obvious:**
+
+1. 🔴 **The arm comes from `zone_source`, NEVER from `zone_count`.** A building with
+   `zone_count = 4` under `FALLBACK_ONE_ZONE_PER_FLOOR` is four **storeys**, not four
+   dwellings; assigning it four independent diaries would **manufacture the exact diversity
+   `H10` exists to test for**. The battery demonstrates it: read the arm from `zone_count` and
+   `G10.19` flips `NOT_EVALUABLE → PASS` on a population made of storeys.
+2. **Arm F gets ONE diary for the whole building**, repeated across its storey zones — the
+   fallback spatially averages non-coincident gains by construction (`G10.22` calls it a lower
+   bound), and pretending each storey is an independent household would hide the bias that
+   makes it one. Measured: **0** Arm F buildings carry more than one distinct diary, and
+   **0** of the 18 Arm D buildings repeats a diary across its own dwellings.
+3. ⚪ **Zone areas are `footprint_area_m2 / zone_count` — an ASSUMPTION, not a measurement.**
+   The real per-zone areas arrive with the dwelling layout. Declared because equal areas make
+   the area-weighted arm of `G10.13` true by symmetry, which is why the battery includes a
+   very-unequal-areas case.
+
+🔴 **Three defects the battery found in the tool's own first draft**, each recorded in
+`impl/2026-08-26_work-item-10.4_per-dwelling-assignment.md`: `G10.8` returned **PASS on an
+empty population** (both gates now return `NOT_EVALUABLE` instead); the perturbation that
+exposed it was itself **badly designed** — it *removed* the gate rather than testing it, and
+was replaced by a genuine cross-fold mislabel; and **globbing the Step 7 schedules directory
+picked up the `leg4_*`, `_cal<year>` and `perturb_*` bundles** — the reader refused
+`perturb_hours_8759`'s short year, and the bundle set is now read from the **campaign's own
+`schedule_bundles` field**, because `perturb_null`'s manifest is indistinguishable from a
+production one.
+
+⚪ **Reduced in flight, declared not discovered.** 7,880 hourly CSVs is 2.6 GB per run and the
+battery runs it six times, so each file is **read from disk by `G10.13` at the moment it is
+written** (`V10.h` intact) and then removed unless it is in the retained sample. **What is
+dropped is the artefact, never the measurement.** 35 CSVs kept; the tree is 18 MB.
+
+⚪ Exercised on the **real** OpenUBEM layout census (297 rows, its own zone counts, footprint
+areas and refusal mix) with **one declared change**: the country label, because that census is
+French and **France is not a fold** (§7). When the 4J building table arrives with 10.3 it
+replaces the exercise table and **nothing in the tool changes**.
+
+### 9.2 🟢 BUILT 2026-08-27 — work item 10.9, the paired emission
+
+`tools/4thJ_step10_paired.py`. Every building emitted **twice at every `f`** — Case A synchronised,
+Case B independent, same footprint, same zone areas, same arm, same fold, same seed stream.
+**297 buildings → 3,152 paired rows → 15,760 emitted hourly CSVs → 2,970 cells → 1,485 `delta_div`
+rows, 0 refused.** `G10.20` **PASS**; `G10.13` **PASS** scored **per case**; `G10.8` **PASS**
+(3,152 dwellings); `G10.9` **PASS**; `G10.19` **`NOT_EVALUABLE`** at es 9 · uk 5 · it 3, unchanged
+from 10.4 as it must be; `G10.21` **`NOT_EVALUABLE`** with its population named — *simulated Step 10
+cells, size 0*. `W10.11` **PASS**: the Arm D half of Case B reproduces 10.4's shipped
+`assignment_table.csv` at **143 of 143 rows, 0 differing**, read off that artefact rather than
+asserted from both tools calling one function.
+Battery **10 of 10**, and the **null case fells nothing** — `G10.20` seen failing on three distinct
+clauses, `G10.13` on two, `G10.8` on two, `W10.9` on its rewritten arm, `G10.19` flipping
+`NOT_EVALUABLE → PASS` on a population of storeys.
+Record: `impl/2026-08-27_work-item-10.9_paired-case-a-case-b.md`.
+
+🔴 **THREE FINDINGS, AND EACH ONE NARROWS WHAT `G10.21` AND 10.10 CAN BE.**
+
+* **`FINDING 158` — on the emitted `phi_int` channel the coincidence factor is exactly 1 by
+  construction.** **1,450 of 1,450** Case B cells with `N_u ≥ 2` return `CF_phi = 1` to 1e-12, and every
+  one of them holds at least one hour where **all** its zones sit at their own maximum — **minimum 396
+  such hours** in the worst cell. Every Step 7 presence series reaches 1.0, so independent households
+  still coincide. **Diversity cannot lower the DRIVER peak**; any `CF < 1` in Step 10 must come from the
+  thermal response, so `G10.21` **cannot be discharged by any pre-simulation artefact**. 🔴 **The
+  pre-registered consequence for 10.6, written before it runs: `CF_A = CF_B = 1.000` on simulated power
+  would be a `NOT_EVALUABLE`, not a null.** §1.1a's *"comparison against a constant"* stands; what is
+  added is that **the constant is not evidence**.
+* **`FINDING 159` — the 99th-percentile hourly power equals the peak in 2,970 of 2,970 cells** (2,376 of
+  2,376 among `f > 0`). Presence saturates at 1.0 for far more than 1 % of the year, so `q99 = max`
+  exactly. Before simulation, quoting `CF` and `q99` side by side is quoting one number twice.
+* **`FINDING 160` — `delta_div` on this channel is a statement about WHICH diary Case A replicates.**
+  At `f = 1.00`: median **0.73 %** (Arm D, n = 17) and **1.22 %** (Arm F, n = 273) against a Case-A
+  choice spread of **31.77 %** and **30.00 %** — ratios **0.198** / **0.295**, and **0 of 290 rows** in
+  either arm beat the spread of the parameter that was free. `FINDING 143`'s shape, caught before
+  publication; the ratio ships as its own column.
+
+🔴 **The battery felled a guard of ours before the guard could ship.** The first `W10.9` scored
+`G10.21`(ii) literally — Case A's `CF_phi` must be 1 — and the battery's `case_a_independent` case, the
+exact harness defect that clause exists to catch, came back **PASS**. A guard whose discriminator is
+constant in the ground truth is not a guard. `W10.9` now scores **series identity** (sha256 of the
+emitted files, taken before reduction); the `CF = 1` arm is retained, reported, and stamped
+**`CARRIED, NOT SCORED`** in the artefact so it can never be quoted as evidence of correct
+synchronisation. `W10.12` publishes the degeneracy as a measurement.
+
+🔴 **The reading 10.9 had to take, recorded because two documents pull.** 10.4 ruled *"Arm F gets one
+diary for the whole building"*; §6.6 says *"every Step 10 building therefore runs twice"*. **10.4
+governs the PRODUCTION assignment and is untouched** (`W10.11` is the proof); **10.9 is a paired
+probe**, and on Arm F its zones are **storeys**, so its `delta_div` measures the averaging bias
+`G10.22` labels rather than dwelling diversity. Every row carries `zone_semantics`; `G10.19` counts
+Arm D only; `G10.9` keeps the arms apart. **An Arm F delta is never an `H10` dwelling result.**
+
+⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched. `H10`'s text unedited, no `G10.x`
+threshold moved, no gate loosened — `W10.9` was **tightened**.
+
 ---
 
 ## 10. WORK ITEMS
 
 | # | Item | Depends on | Simulation? |
 |---|---|---|---|
-| **10.1** | **Chaining closure notice** — file the four owed artefacts so OpenUBEM lifts `BLOCKED_CHAINING_RULE` by reference (§5) | nothing | no |
-| **10.2** | **`D-S10-1`** — attempt recovery (a) from the Step 1 raw deliveries; else ruling (§4) | nothing | no |
+| **10.1** | ✅ **DONE 2026-08-26 (night)** — **chaining closure notice FILED**: `docs/2026-08-26_10.1_chaining-closure-notice.md`, all four owed artefacts with md5s, `FINDING 136`'s `17–60×` sentence withdrawn (§5) | nothing | no |
+| **10.2** | ✅ **DONE 2026-08-26 (night)** — recovery (a) succeeded on all three folds and the author RULED: **`es` 2010 · `uk` 2014 · `it` 2014**, applied as a sidecar, 8 gates PASS / 4 seen felling; the OpenUBEM contract freeze is **LIFTED** (§4) | nothing | no |
 | **10.3** | **Full-stack parity** — Arm D and Arm F at equal vertical extent (§6.3) | OpenUBEM `EU-04` | smoke only |
-| **10.4** | **Per-dwelling diary assignment and emission** — `N_u` independent series, per-zone and per-building conservation (§9) | 10.1, Step 7 pools | no |
+| **10.4** | ✅ **DONE 2026-08-26 (night, last)** — `tools/4thJ_step10_assign.py`; 297 buildings → **1,576 dwellings** → **7,880 emitted CSVs**; `G10.13` **PASS** on 9,365 rows (7,880 zone + 1,485 building), `G10.8` **PASS** 0/1,576 wrong-fold, `G10.9` **PASS**, `G10.19` **`NOT_EVALUABLE`** (es 9 · uk 5 · it 3 against 30); battery **6 of 6** (§9) | 10.1, Step 7 pools | no |
 | **10.5** | **`f = 0` control campaign** on real stock — Q1 → Q2 → Q3, plus `FR-B` on its own manifest | 10.2, 10.3, contract freeze | yes |
 | **10.6** | **Injected campaign** `f ∈ {0.15, 0.30, 0.50, 1.00}`, dependency-enforced `Q3 → audit → Q4` | 10.4, 10.5 | yes |
 | **10.7** | **`H10` test and aggregate** — Arm D and Arm F reported separately | 10.6 | no |
 | **10.8** | **Gate board, mutation battery, dossier** — every `G10.x` seen failing its designated mutation | 10.7 | no |
-| **10.9** | 🔴 **Paired Case A / Case B emission** — synchronised and independent at every `f`, within footprint (§6.6) | 10.4 | yes |
-| **10.10** | 🔴 **`CF` and the `sqrt(N)` fit** — coincidence factor, 99th-percentile power, one-parameter fit reported with residuals (§1.1a) | 10.9 | no |
+| **10.9** | ✅ **DONE 2026-08-27 — the EMISSION half.** `tools/4thJ_step10_paired.py`; 297 buildings → **3,152 paired rows** → **15,760 emitted CSVs** → 2,970 cells → **1,485 delta_div rows, 0 refused**; `G10.20` **PASS** (0 missing partners, 0 geometry mismatches, 0 cross-building rows, 15,760 files scanned), `G10.13` **PASS** per case, `W10.11` **PASS** 143/143 against 10.4's shipped table; battery **10 of 10** with the null case moving nothing. 🔴 The **simulated** half stays with 10.5 / 10.6 (§9.2) | 10.4 | yes (owed by 10.6) |
+| **10.10** | 🔴 **`CF` and the `sqrt(N)` fit** — coincidence factor, 99th-percentile power, one-parameter fit reported with residuals (§1.1a). 🔴 **`FINDING 158`/`159` removed the early route: on the emitted schedules `CF_phi` is 1 in 1,450 of 1,450 cells and `q99` equals the peak in 2,970 of 2,970. This item cannot start before simulated cells exist** | 10.9, **10.6** | no |
 | **10.11** | ⚪ **Rotation-origin fix, upstream** — centroid-translate before rotating in `european_residential.py`; an OpenUBEM item, requested not implemented by 4J (§6.4) | nothing | no |
 
 **Order is enforced, not suggested.** MVP §10.6: the control-audit job must exit non-zero if any Q3 cell
@@ -478,3 +643,123 @@ own design.
 ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched. No Step 8 or Step 9 threshold moved, no
 checker edited, no `G8.x` or `G9.x` gate ID reused — Step 10 opens a new `G10.x` series and states its
 inheritance per gate.
+
+
+### 2026-08-26 (night) — 🟢 work item 10.1 is DONE: the chaining closure notice is FILED
+
+`Step10_docs/docs/2026-08-26_10.1_chaining-closure-notice.md`. **A filing, not an experiment** — all four
+artefacts §10.2 item 6 asks for already existed; what was missing was the document that lets the OpenUBEM
+director lift `BLOCKED_CHAINING_RULE` on **408 runs (Q4)** by reference instead of re-deriving the answer.
+
+**The four, with md5s recorded in the notice:**
+
+1. **The frozen rule text** — `independent`, `rho = 0`, seed 1, year 2017 Sunday-start, 8,760 hourly
+   values, `interpolate_to_timestep = No`, stratum key backed off one field at a time with
+   `strat_day_type` **never** dropped. 🔴 `diary_origin_hour = 4` **with**
+   `rotated_to_midnight = true` is the day-boundary convention and the two must be read together — a
+   consumer who re-derives from raw diaries without rotating disagrees with the shipped bundles by four
+   hours (`FINDING 141`).
+2. **The seed policy** — production seed **1**; experiment seeds **11/22/33/44/55**, a pre-registered
+   minimum the runner *refuses* to go below. Checkable in the artefact, not only in prose:
+   `injected_campaign.json` names its bundles `leg5_{es,uk,it}_independent_seed1`.
+3. **The script** — `tools/4thJ_step8_chaining.py` (`cab2417b…`), with **`FINDING 147` attached to it and
+   not separable from it**: it once bypassed the emitter and its first rotated re-run came back
+   bit-identical to the superseded campaign across 9,000 runs. The class of defect is the point — *a
+   re-run that reproduces the old answer exactly is evidence the fix did not reach the tool.*
+4. **The spread table** — re-read from `chaining_step8.json` (`rotated_to_midnight: true`), not
+   transcribed from the earlier prose. Peak spread **0.2892 / 0.1936 / 0.0285 %** against `G7.18`'s
+   **25 %**; every varying metric returns **NOISE DOMINATES** with ratios 0.075–0.482;
+   `trough_aggregate_w` is **DEGENERATE** in all three folds and says so rather than reporting a vacuous
+   ratio.
+
+🔴 **One sentence was withdrawn in the filing.** `FINDING 136`'s *"the occupancy effect is
+17–60× the convention's entire range"* does not survive the rotation — the multiples are **9.4× / 0.2× /
+22.6 ×**, and in `uk` the occupancy channel is now the *smaller* of the two. 🟢 That does not
+weaken decision 14: both quantities sit below the between-diary spread in `uk`, so **neither is
+measurable there**, and the claim the decision rests on is `G7.18`'s trigger, which is missed by two
+orders of magnitude in every fold. The notice says this in place rather than quietly dropping the number.
+
+🟢 **The four constraints §10.3 inherited from the pre-registration are each discharged in the
+notice**, against the **rotated** campaign (440 cells, 4,048 runs, **31,687 band rows, 0 gate-unit
+FAILs**, coverage **PASS**): no thermostat schedule introduced; `G8.16` **PASS = 3,520 / 0 FAIL** with the
+fold read from the bundle manifest and the diary located by content; `phi_int_mean_w_m2 = 3.0` with a
+mean-residue bound of `5e-11`; 8,760 rows with the day boundary declared.
+
+⚪ `Step8_docs/IMP_step8/4thJ_08_bemSimulation_IMP.md` §10 de-staled the same night — its *"only remaining
+blocker"* header is superseded in place and kept underneath as the record of what was asked for.
+🔴 **MVP §12.11's receiving step is on the OpenUBEM side and is theirs to correct**; 4J cannot and
+should not edit it.
+
+⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified live at filing time and unchanged. No
+threshold moved, no checker edited, no number re-derived to make the notice read better. Backups verified
+non-empty before every edit (`.bak_wi101`).
+
+
+### 2026-08-26 (night, last) — 🟢 work item 10.4 is DONE: per-dwelling assignment and emission
+
+`tools/4thJ_step10_assign.py`, `Step10_docs/impl/2026-08-26_work-item-10.4_per-dwelling-assignment.md`.
+**297 buildings → 1,576 dwellings → 7,880 emitted hourly CSVs.** `G10.13` **PASS** on 9,365 rows,
+`G10.8` **PASS** 0 of 1,576 wrong-fold, `G10.9` **PASS**, `G10.19` **`NOT_EVALUABLE`**, `W10.8`
+**PASS**. Battery **6 of 6**. ⚪ **The tool, not a campaign** — no EnergyPlus, and none owed here.
+
+🔴 **`G10.19`'s `NOT_EVALUABLE` is the substantive result of this item.** Qualifying buildings
+— Arm D with `N_u ≥ 2` — are **es 9 · uk 5 · it 3** against the **30 per fold** `H10` needs; the whole
+census offers **18** Arm D buildings. §6 said the geometry limit was severe; this measures it on the
+artefact, **before** a campaign exists rather than after.
+
+🔴 **Not every perturbation expects FAIL, and pretending otherwise would have been the bug.**
+`G10.19` never returns FAIL — a vacuity guard that could fail would be a hypothesis test. Its defect
+mode is **saying PASS on a manufactured population**, so its case is scored on flipping
+`NOT_EVALUABLE → PASS` when the arm is read from `zone_count` and 279 fallback buildings' storeys
+become Arm D dwellings.
+
+🔴 **Three defects the battery found in the tool's own first draft, and the MISS is what found
+the first one:**
+
+1. **`G10.8` returned PASS on an EMPTY population.** A perturbation pointed every dwelling at a fold
+   with no pool; every building was skipped, **zero** dwellings were assigned, and the gate read
+   *0 unlocatable, 0 wrong-fold* → **PASS**. **A gate whose population is empty has not been
+   satisfied, it has not been asked** — `FINDING 95` / `FINDING 127`. `G10.8` and `G10.13` now return
+   `NOT_EVALUABLE` on empty input.
+2. **The perturbation was itself badly designed** — it *removed* the gate instead of testing it.
+   Replaced by `mislabel_fold`: the diary really is drawn from the right fold and the dwelling
+   **records a different one**. It fells `G10.8`.
+3. **Globbing `Step7_docs/outputs_step7/schedules/` picked up the wrong bundles** — `leg4_*`, the
+   `_cal<year>` survey-calendar variants and seven `perturb_*` bundles. `perturb_hours_8759` has
+   8,759 values and **the reader refused it**, which is the reason nothing silently emitted a short
+   year. 🔴 **A manifest filter alone is not enough**: `perturb_null`'s manifest is
+   indistinguishable from a production one, because the null perturbation *is* "change nothing". The
+   bundle set is now read from the **campaign's own `schedule_bundles` field** — the artefact `G8.16`
+   traces — with the manifest check as a second opinion.
+
+🔴 **The `G10.13` bound is tight**: largest deviation **1.347e-10 W/m²** against **1.5e-10**,
+**90 % of the allowance used**, and the bound is derived from `%.10f` rather than chosen to clear the
+result. ⚪ Reduced in flight (2.6 GB per run × six runs): every file is **read from disk at the moment
+it is written**, so `V10.h` is intact — **what is dropped is the artefact, never the measurement**.
+
+⚪ Exercised on the **real** OpenUBEM layout census with one declared change, the country label,
+because that census is French and France is not a fold. `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` verified live by `W10.8`, untouched.
+
+### 2026-08-27 — 🟢 work item 10.9 is DONE: the paired Case A / Case B emission
+
+The pairing exists and is gated. **297 buildings → 3,152 paired rows → 15,760 emitted hourly CSVs →
+2,970 cells → 1,485 `delta_div` rows, 0 refused.** `G10.20` **PASS** on all four of its clauses —
+0 missing partners, 0 geometry mismatches, 0 cross-building rows, 0 refusals, **15,760 files scanned**
+(`V10.d`, a search gate that scans nothing passes everything). `W10.11` **PASS**, 143 of 143 Arm D rows
+identical to 10.4's shipped table. Full record in §9.2 and
+`impl/2026-08-27_work-item-10.9_paired-case-a-case-b.md`.
+
+🔴 **Three findings, and all three point the same way: the driver channel is degenerate, so nothing
+about `H10` can be settled before EnergyPlus runs.** `FINDING 158` — `CF_phi = 1` in 1,450 of 1,450
+Case B cells, minimum **396** fully coincident hours per cell. `FINDING 159` — `q99` equals the peak in
+2,970 of 2,970 cells. `FINDING 160` — `delta_div` is smaller than the Case-A choice spread in **0 of
+290** rows, medians 0.198 / 0.295 of it.
+
+🔴 **And the battery felled one of our own guards.** The first `W10.9` scored `G10.21`(ii) literally and
+its designated defect **passed** it. Rewritten to score series identity; the `CF = 1` arm ships stamped
+`CARRIED, NOT SCORED`. No threshold moved; `W10.9` was tightened and `W10.12` added.
+
+⚪ **What 10.9 does NOT deliver, stated here rather than left to be discovered:** no EnergyPlus, no
+simulated power, no `CF`, no `sqrt(N)` fit, no `H10` verdict. Work item **10.10 now depends on 10.6**
+as well as 10.9 — `FINDING 158` removed the route by which it might have started early.

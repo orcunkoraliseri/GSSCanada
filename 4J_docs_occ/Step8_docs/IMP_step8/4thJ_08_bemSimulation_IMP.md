@@ -321,7 +321,22 @@ OpenUBEM Engine Modules Consumed (C:\Users\o_iseri\Desktop\OpenUBEM\openubem\):
 
 ## 10. Direction from the OpenUBEM European Locations Arc — Step 7 Decision 14 (Diary-Day Chaining Rule) — added 2026-08-23
 
-> **Status: OPEN REQUEST to the GSSCanada / Step 7 side.** This is the **only remaining blocker** of the OpenUBEM European campaign. Every other open decision was closed on 2026-08-23 (rulings D-EU-01…08/10/11 and accepted deep-research reports DR08–DR11 in `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\` — see `debugs/docs/DECISIONS_parent-open-items-2026-08-23.md` and MVP §11.13). It gates **only the `f > 0` occupant cells (408 runs, Q4)**; the `f = 0` controls, Q1–Q3 and the France baseline run without it.
+> 🟢 **STATUS: ANSWERED AND CLOSED, 2026-08-26 (night). THIS IS NO LONGER A BLOCKER OF ANYTHING.**
+> The requested experiment ran (9,000 EnergyPlus runs, re-run on rotated schedules after `D-S9-3`), the
+> author ruled decision 14 on 2026-08-25, and work item 10.1 **filed the four artefacts item 10.2/6 asks
+> for** at `Step10_docs/docs/2026-08-26_10.1_chaining-closure-notice.md`. **Adopted convention:
+> `independent`, seed 1.** The `G7.18` trigger of 25 % on peak demand is **not approached in any fold**
+> — measured **0.2892 / 0.1936 / 0.0285 %** — and the seed spread beats the rule spread on every metric
+> in every fold, so the pre-registered **null is the deliverable**. 🔴 **`FINDING 136`'s
+> `17–60×` occupancy-to-convention comparison is WITHDRAWN** (9.4× / 0.2× / 22.6× after the rotation);
+> do not quote it. The `f > 0` occupant cells (408 runs, Q4) are unblocked **by reference to the
+> notice** — read it, not the request below. 🔴 **MVP §12.11's receiving step is still stale on
+> the OpenUBEM side and is theirs to correct.**
+>
+> ---
+>
+> ⚪ **SUPERSEDED, KEPT AS THE RECORD OF WHAT WAS ASKED FOR.** *Status: OPEN REQUEST to the GSSCanada /
+> Step 7 side. This is the only remaining blocker of the OpenUBEM European campaign.* Every other open decision was closed on 2026-08-23 (rulings D-EU-01…08/10/11 and accepted deep-research reports DR08–DR11 in `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\` — see `debugs/docs/DECISIONS_parent-open-items-2026-08-23.md` and MVP §11.13). It gates **only the `f > 0` occupant cells (408 runs, Q4)**; the `f = 0` controls, Q1–Q3 and the France baseline run without it.
 
 ### 10.1 The problem
 

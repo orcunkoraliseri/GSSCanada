@@ -1,0 +1,55 @@
+{
+  "decision": "D-S10-1",
+  "status": "RULED_PINNED",
+  "ruled_on": "2026-08-26",
+  "ruled_by": "the author",
+  "option": "A -- pin the majority calendar year per fold",
+  "document": "IMP/docs/2026-08-26_D-S10-1_the-weather-year-is-recoverable.md",
+  "epw_year": {
+    "es": 2010,
+    "uk": 2014,
+    "it": 2014
+  },
+  "supersedes": "FINDING EU-S2-03 / MVP 12.8 RULED_NOT_PINNED for es, uk, it",
+  "openubem_contract_freeze": "LIFTED",
+  "note_it": "meseri=1 (Nov 2013 - Jan 2014) straddles and the ISTAT daily-diary delivery ships no month field; per ruling 3 it is ABSORBED into the pinned majority year 2014, not interpolated",
+  "note_uk": "58.1 % is a clear but not decisive majority; pinned to 2014 per ruling 2 to keep one convention across all three folds",
+  "measured": {
+    "es": {
+      "n_diaries": 19140,
+      "by_year": {
+        "2009": 4422,
+        "2010": 14718
+      },
+      "pinned_year": 2010,
+      "pinned_share_pct": 76.9,
+      "absorbed_diaries": 0
+    },
+    "uk": {
+      "n_diaries": 15854,
+      "by_year": {
+        "2014": 9213,
+        "2015": 6641
+      },
+      "pinned_year": 2014,
+      "pinned_share_pct": 58.11,
+      "absorbed_diaries": 0
+    },
+    "it": {
+      "n_diaries": 38260,
+      "by_year": {
+        "2014": 38260
+      },
+      "pinned_year": 2014,
+      "pinned_share_pct": 100.0,
+      "absorbed_diaries": 10160
+    }
+  },
+  "prereg_md5": "e4243e07cdd80c9c846b91f40e3e8c45",
+  "harmonised_md5": {
+    "es": "58da43376e29d80a5aeb32d4e7ebb341",
+    "uk": "c15576cbe51fcc37f5e819bd00534ec7",
+    "it": "5be19d6282272d200c0fb59a3405c5f5"
+  },
+  "corpus_untouched": true
+}

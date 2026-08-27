@@ -186,6 +186,16 @@ class DiaryDataset(Dataset):
         self.items = []
         self.n_prompt_positions = 0
         self.n_pad_positions = 0
+        # 🔴 The `[:max_len]` slices below TRUNCATE SILENTLY. That was harmless while
+        # every run used the OLMo tokenizer, which the corpus was measured on; it is not
+        # harmless for the Qwen comparison arm, which tokenises the same diary at about
+        # 1.5x the length (303 tokens against 200, `4thJ_04_finetuneLLM.md`). A backbone
+        # comparison in which one arm quietly trains on cut-off diaries is a comparison of
+        # truncation, not of backbones. COUNTED and printed, never gated and never used to
+        # change `max_len` -- moving `max_len` for one arm would break the 'same recipe'
+        # that makes the arms comparable at all.
+        self.n_truncated = 0
+        self.max_tokens_seen = 0
         self.max_len = max_len
         pad_id = tokenizer.pad_token_id
         for r in recs:
@@ -198,6 +208,11 @@ class DiaryDataset(Dataset):
                 prefix = ""
             p_ids = tokenizer(prefix, add_special_tokens=False)["input_ids"]
             b_ids = tokenizer(body, add_special_tokens=False)["input_ids"]
+            n_full = len(p_ids) + len(b_ids)
+            if n_full > max_len:
+                self.n_truncated += 1
+            if n_full > self.max_tokens_seen:
+                self.max_tokens_seen = n_full
             ids = (p_ids + b_ids)[:max_len]
             labels = ([TH.G4_5_REQUIRED_LABEL] * len(p_ids) + list(b_ids))[:max_len]
             self.n_prompt_positions += min(len(p_ids), max_len)
@@ -442,9 +457,15 @@ def gate_g4_13(train_recs, held_out_country):
 # A perturbation that cannot fell its gate because the gate is not there is the exact
 # vacuity this project's battery exists to catch, and it was caught by writing the
 # battery rather than by running it.
+# FINDING 157: `trainable` is REQUIRED, added 2026-08-26. The ceiling wrote a manifest
+# carrying `lora_r 32` / `lora_alpha 64` / `use_rslora true` for a run whose own log said
+# "FULL fine-tune, no adapter", so a reader given only the manifest would have concluded
+# the exact opposite of what the run was -- on the one artefact G4.11 exists to make
+# authoritative. The gate is TIGHTENED, not loosened: a manifest that cannot say what was
+# trainable now FAILS rather than being read as a LoRA run by default.
 G4_11_REQUIRED = ["run", "fold", "held_out_country", "leg", "run_type",
                   "base_repo", "base_revision", "tokenizer_repo",
-                  "corpus_md5", "prereg_md5", "seed", "config"]
+                  "corpus_md5", "prereg_md5", "seed", "trainable", "config"]
 
 
 def gate_g4_11(manifest):
@@ -1287,6 +1308,18 @@ def main():
     # ---- data ----
     train_ds = DiaryDataset(train_recs, tokenizer, args.max_len, args.perturbation)
     val_ds = DiaryDataset(val_recs, tokenizer, args.max_len, args.perturbation)
+    # Printed for EVERY run, not only the Qwen arm, so the OLMo runs supply the
+    # baseline this number has to be read against.
+    for _nm, _ds in (("train", train_ds), ("val", val_ds)):
+        _pct = 100.0 * _ds.n_truncated / max(1, len(_ds.items))
+        print("TRUNCATION %-5s tokenizer=%s max_len=%d : %d of %d records truncated "
+              "(%.4f %%), longest record %d tokens"
+              % (_nm, tok_repo, args.max_len, _ds.n_truncated, len(_ds.items), _pct,
+                 _ds.max_tokens_seen))
+        if _ds.n_truncated:
+            print("  🔴 records were CUT. This is not a gate and nothing stops the run, "
+                  "but a backbone comparison quoted over a truncated arm is a comparison "
+                  "of truncation. Report this number beside the losses.")
     pad_id = tokenizer.pad_token_id
     coll = lambda b: collate(b, pad_id, args.perturbation)
     train_dl = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, collate_fn=coll)
@@ -1696,11 +1729,19 @@ def main():
     # arm would have been an observation dressed as a demonstration.
     save_this = (args.run_type not in ("ceiling", "perturb")
                  or args.perturbation in (None, "no_prefix"))
+    # 🔴 FINDING 157: the directory is named for WHAT IS IN IT. A ceiling run writes 14 GB
+    # of full base weights in `model-0000N-of-00003.safetensors` shards; calling that
+    # directory `adapter/` mislabels the one artefact that says what the run was. LoRA runs
+    # keep `adapter/` -- every existing path and every `--adapter <dir>` call site is
+    # unchanged, because only the ceiling branch moves.
+    save_subdir = "weights" if args.run_type == "ceiling" else "adapter"
     if save_this and hasattr(model, "save_pretrained"):
-        adapter_dir = os.path.join(outdir, "adapter")
+        adapter_dir = os.path.join(outdir, save_subdir)
         model.save_pretrained(adapter_dir)
         tokenizer.save_pretrained(adapter_dir)
-        print("adapter saved to %s" % adapter_dir)
+        print("%s saved to %s"
+              % ("full fine-tuned weights" if args.run_type == "ceiling" else "adapter",
+                 adapter_dir))
     elif args.run_type == "perturb":
         print("perturbation run %s: adapter deliberately not saved (eleven of these would "
               "cost a gigabyte and none of them is a model anyone should reuse). The "
@@ -1952,8 +1993,17 @@ def main():
     detectors["halted_by_G4.2"] = halted
 
     # ---- G4.11 run manifest ----
+    # 🔴 FINDING 157. A ceiling run is a FULL fine-tune of every parameter and has no
+    # adapter, no rank and no alpha. Emitting `TH.LORA_*` unconditionally described a
+    # rank-32 LoRA run in the provenance file of a run that had no adapter at all. The
+    # keys are NULLED rather than dropped, so the difference is visible to a reader
+    # comparing two manifests instead of showing up as an absent key that could equally
+    # be an older schema.
+    is_ceiling = (args.run_type == "ceiling")
     manifest = {
-        "adapter_dir": adapter_dir,
+        "trainable": "full" if is_ceiling else "lora",
+        "adapter_dir": None if is_ceiling else adapter_dir,
+        "weights_dir": adapter_dir if is_ceiling else None,
         "run": run_name, "fold": args.fold, "held_out_country": args.fold,
         "leg": args.leg, "run_type": args.run_type,
         "perturbation": args.perturbation,
@@ -1964,8 +2014,14 @@ def main():
                         "n_loaded": len(train_recs)},
         "prereg_md5": g14.get("md5_recomputed_from_disk"),
         "seed": TH.SEED,
-        "config": {"lora_r": TH.LORA_R, "lora_alpha": TH.LORA_ALPHA,
-                   "use_rslora": TH.USE_RSLORA, "targets": TH.LORA_TARGET_MODULES,
+        "config": {"lora_r": None if is_ceiling else TH.LORA_R,
+                   "lora_alpha": None if is_ceiling else TH.LORA_ALPHA,
+                   "use_rslora": None if is_ceiling else TH.USE_RSLORA,
+                   "targets": None if is_ceiling else TH.LORA_TARGET_MODULES,
+                   "lora_note": ("run_type=ceiling: FULL fine-tune of every parameter, "
+                                 "no adapter. The lora_* keys are null because there is "
+                                 "no adapter to describe, not because they were omitted "
+                                 "(FINDING 157)." if is_ceiling else None),
                    "dtype": TH.DTYPE, "epochs": epochs, "lr": args.lr,
                    "batch_size": args.batch_size, "grad_accum": args.grad_accum,
                    "max_len": args.max_len,

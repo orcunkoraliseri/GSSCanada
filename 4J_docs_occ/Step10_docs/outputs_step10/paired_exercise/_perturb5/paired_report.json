@@ -1,0 +1,297 @@
+{
+  "building_table": "Step10_docs/outputs_step10/building_table_exercise_es_uk_it.csv",
+  "cf_basis_note": "CF_phi is the coincidence factor of the DRIVER. G10.21 scores CF on SIMULATED BUILDING POWER and is NOT_EVALUABLE until 10.6 runs.",
+  "country_override": null,
+  "f_values": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "g10_20_failing_rows": [],
+  "g10_8_failures": [],
+  "gate_board": {
+    "G10.13": {
+      "bound_w_m2": 1.5e-06,
+      "building_fails": 2376,
+      "decimals": 6,
+      "gate": "G10.13",
+      "note": "read from the emitted CSV on disk (V10.h); scored PER CASE so Case A's zones are never area-weighted with Case B's",
+      "scored_per_case": [
+        "A",
+        "B"
+      ],
+      "verdict": "FAIL",
+      "zone_fails": 2376,
+      "zone_rows": 15760
+    },
+    "G10.19": {
+      "folds_absent": [],
+      "folds_short": {
+        "es": 9,
+        "it": 3,
+        "uk": 5
+      },
+      "gate": "G10.19",
+      "min_N_u": 2,
+      "note": "below the population H10 is NOT_EVALUABLE with the population named. It is never reported as a pass and never as a fail.",
+      "qualifying_buildings_per_fold": {
+        "es": 9,
+        "it": 3,
+        "uk": 5
+      },
+      "required_per_fold": 30,
+      "verdict": "NOT_EVALUABLE"
+    },
+    "G10.20": {
+      "buildings": 297,
+      "cells_expected": 2970,
+      "cells_present": 2970,
+      "cross_building_delta_rows": 0,
+      "delta_rows": 1485,
+      "f_values": [
+        0.0,
+        0.15,
+        0.3,
+        0.5,
+        1.0
+      ],
+      "files_scanned": 15760,
+      "gate": "G10.20",
+      "note": "delta_div is WITHIN FOOTPRINT. A missing Case A partner is REFUSED and counted, never silently compared across buildings",
+      "pairs_missing_a_partner": 0,
+      "pairs_refused": 0,
+      "pairs_with_geometry_mismatch": 0,
+      "verdict": "PASS"
+    },
+    "G10.21": {
+      "gain_channel_cells_available": 2970,
+      "gate": "G10.21",
+      "note": "CF_phi is the DRIVER's coincidence factor. Heating demand peaks when gains are LOW, so CF_phi is not CF and is never quoted as it. Arm (ii) --- Case A is 1 BY CONSTRUCTION --- is a statement about the harness and IS checkable now: W10.9",
+      "owed_by": "work items 10.6 / 10.7 (both wait on 10.3 / OpenUBEM EU-04)",
+      "population": "simulated Step 10 cells",
+      "population_size": 0,
+      "verdict": "NOT_EVALUABLE"
+    },
+    "G10.8": {
+      "dwellings": 3152,
+      "gate": "G10.8",
+      "note": "per DWELLING, not per building; the fold is read from the bundle's own manifest.json, never from a filename",
+      "unlocatable": 0,
+      "verdict": "PASS",
+      "wrong_fold": 0
+    },
+    "G10.9": {
+      "arms_present": [
+        "D",
+        "F"
+      ],
+      "buildings_with_mixed_arms": 0,
+      "gate": "G10.9",
+      "note": "a building carrying both arms means the arm was decided per zone; it is a property of the BUILDING's zone_source",
+      "verdict": "PASS"
+    },
+    "W10.10": {
+      "bound": 1e-09,
+      "gate": "W10.10",
+      "note": "H10 CANNOT live on the annual channel of this artefact: conservation makes the annual delta_div exactly zero, so a non-zero one is a conservation failure, not an effect",
+      "rows": 1485,
+      "verdict": "FAIL",
+      "worst_relative_annual_delta": 4.121347352946034e-07,
+      "worst_row": {
+        "building_id": "BATIMENT0000000240881367_part0",
+        "f": 0.5
+      }
+    },
+    "W10.11": {
+      "examples": [],
+      "gate": "W10.11",
+      "note": "Case B on Arm D IS 10.4's production draw --- compared against the shipped table, not against this tool's own logic",
+      "paired_arm_d_rows": 143,
+      "production_arm_d_rows": 143,
+      "rows_differing": 0,
+      "verdict": "PASS"
+    },
+    "W10.12": {
+      "case_b_cells_n_u_ge_2": 1450,
+      "cells_with_a_fully_coincident_hour": 1450,
+      "cells_with_cf_phi_exactly_one": 1450,
+      "gate": "W10.12",
+      "median_hours_all_zones_at_max": 2014.0,
+      "min_hours_all_zones_at_max": 396,
+      "note": "FINDING 158: every Step 7 presence series reaches 1.0, so independent dwellings still share hours at which all are present. On the DRIVER channel diversity cannot lower the peak. Any CF < 1 in Step 10 must come from the THERMAL response, which means G10.21 cannot be discharged by any pre-simulation artefact",
+      "verdict": "INFO"
+    },
+    "W10.8": {
+      "gate": "W10.8",
+      "live": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "note": "prereg.md is frozen; recomputed from disk",
+      "recorded": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "verdict": "PASS"
+    },
+    "W10.9": {
+      "case_a_cells": 1485,
+      "cells_with_non_identical_series": 1160,
+      "cf_bound": 1e-12,
+      "cf_cells_off": 0,
+      "cf_one_arm": "CARRIED, NOT SCORED (FINDING 158): the discriminator is constant on this artefact",
+      "cf_worst_abs_dev": 6.661338147750939e-16,
+      "examples": [
+        {
+          "building_id": "BATIMENT0000000013365727_part0",
+          "distinct_series": 2,
+          "f": 0.15,
+          "n_zones": 3
+        },
+        {
+          "building_id": "BATIMENT0000000013365727_part0",
+          "distinct_series": 2,
+          "f": 0.3,
+          "n_zones": 3
+        },
+        {
+          "building_id": "BATIMENT0000000013365727_part0",
+          "distinct_series": 2,
+          "f": 0.5,
+          "n_zones": 3
+        },
+        {
+          "building_id": "BATIMENT0000000013365727_part0",
+          "distinct_series": 2,
+          "f": 1.0,
+          "n_zones": 3
+        },
+        {
+          "building_id": "BATIMENT0000000240877101_part0",
+          "distinct_series": 2,
+          "f": 0.15,
+          "n_zones": 4
+        }
+      ],
+      "gate": "W10.9",
+      "note": "scored on SERIES IDENTITY, not on CF. The first version scored CF and the battery's own independent-Case-A case passed it",
+      "verdict": "FAIL"
+    }
+  },
+  "label": "perturb:write format coarsened to 6 decimals (FINDING 132)",
+  "n_assignments": 3152,
+  "n_buildings": 297,
+  "n_csv_retained": 140,
+  "n_delta_rows": 1485,
+  "n_emitted_csv": 15760,
+  "pairs_refused": [],
+  "perturbations": {
+    "arm_from_zone_count": false,
+    "break_md5": false,
+    "case_a_independent": false,
+    "case_a_shift_areas": false,
+    "cross_building": false,
+    "drop_case_a": null,
+    "force_fold": null,
+    "mislabel_fold": null,
+    "perturb_zone": 0,
+    "unequal_areas": false
+  },
+  "production_table": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step10_docs\\outputs_step10\\assign_exercise\\assignment_table.csv",
+  "reduction_note": "the paired emission is 2x work item 10.4's, so every file is read from disk the moment it is written and only the named sample is kept (the 10.4 precedent)",
+  "retained_buildings": [
+    "BATIMENT0000000240877130_part0",
+    "BATIMENT0000000013365727_part0"
+  ],
+  "seed_base": 1,
+  "skipped": [],
+  "summary_by_arm_f": [
+    {
+      "arm": "D",
+      "f": 0.0,
+      "median_abs_delta_over_choice_spread": NaN,
+      "median_case_a_choice_spread_pct": 0.0,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.0,
+      "n_buildings": 17
+    },
+    {
+      "arm": "D",
+      "f": 0.15,
+      "median_abs_delta_over_choice_spread": 0.19841460985459328,
+      "median_case_a_choice_spread_pct": 8.168084481570233,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.14210791000605374,
+      "n_buildings": 17
+    },
+    {
+      "arm": "D",
+      "f": 0.3,
+      "median_abs_delta_over_choice_spread": 0.1984158122998649,
+      "median_case_a_choice_spread_pct": 13.85281802034711,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.2693625866640077,
+      "n_buildings": 17
+    },
+    {
+      "arm": "D",
+      "f": 0.5,
+      "median_abs_delta_over_choice_spread": 0.19841677712828829,
+      "median_case_a_choice_spread_pct": 20.346741454835694,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.4197934570697168,
+      "n_buildings": 17
+    },
+    {
+      "arm": "D",
+      "f": 1.0,
+      "median_abs_delta_over_choice_spread": 0.19841650693508203,
+      "median_case_a_choice_spread_pct": 33.1217955119089,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.7224324981013204,
+      "n_buildings": 17
+    },
+    {
+      "arm": "F",
+      "f": 0.0,
+      "median_abs_delta_over_choice_spread": NaN,
+      "median_case_a_choice_spread_pct": 0.0,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.0,
+      "n_buildings": 273
+    },
+    {
+      "arm": "F",
+      "f": 0.15,
+      "median_abs_delta_over_choice_spread": 0.2309847059785708,
+      "median_case_a_choice_spread_pct": 6.529526442292742,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.2314157902516891,
+      "n_buildings": 273
+    },
+    {
+      "arm": "F",
+      "f": 0.3,
+      "median_abs_delta_over_choice_spread": 0.2687662153618058,
+      "median_case_a_choice_spread_pct": 11.733486719451323,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.44354686053781955,
+      "n_buildings": 273
+    },
+    {
+      "arm": "F",
+      "f": 0.5,
+      "median_abs_delta_over_choice_spread": 0.27994985374007525,
+      "median_case_a_choice_spread_pct": 17.822199827002432,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 0.6999564521520358,
+      "n_buildings": 273
+    },
+    {
+      "arm": "F",
+      "f": 1.0,
+      "median_abs_delta_over_choice_spread": 0.2864005862780177,
+      "median_case_a_choice_spread_pct": 29.91405723584679,
+      "median_cf_phi_b": 1.0,
+      "median_delta_div_peak_pct": 1.2133119900039508,
+      "n_buildings": 273
+    }
+  ],
+  "write_decimals": 6
+}

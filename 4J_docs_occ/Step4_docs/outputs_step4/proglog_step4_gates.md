@@ -3571,3 +3571,169 @@ be. Recording it so the decision is one someone made.
   any fold trained. `4thJ_04_finetuneLLM.md`: *"Quoting either as a general result across the corpus
   would be quoting one fold as three."* It must be written up as one fold.
 * The Qwen comparison arm — the other single-fold Leg-5 run — **is still owed.**
+
+
+---
+
+## 2026-08-26 (night, last) — 🟢 `FINDING 157` IS DISCHARGED. THE FIX IS A SCRIPT EDIT AND A GATE THAT NOW REFUSES THE DEFECT.
+
+**No re-run. No training number, loss, band or verdict moves.** The 8.75 GPU-hours of job `1287378`
+stand exactly as scored.
+
+### 1. What was wrong, restated in one line
+
+`run_manifest_leg5_ceiling_fold_es.json` recorded `lora_r 32` / `lora_alpha 64` / `use_rslora true`
+and a seven-projection `targets` list, and pointed `adapter_dir` at a directory named `adapter/`
+holding **14 GB of full base weights** — for a run whose own stdout says *"ceiling run: FULL
+fine-tune, no adapter"*. **A reader given only the manifest would have concluded the exact opposite
+of what the run was**, on the one artefact `G4.11` exists to make authoritative.
+
+### 2. The fix — four additive edits to `tools/4thJ_step4_train.py` (backup `.bak_f157`, `py_compile` clean)
+
+1. **`G4.11` now REQUIRES a `trainable` field.** 🔴 **The gate is TIGHTENED, not loosened.**
+   `n_required` goes 15 → 16. A manifest that cannot say what was trainable now **FAILS** instead of
+   being read as a LoRA run by default.
+2. **The manifest says what was trainable:** `"trainable": "full"` for `run_type == "ceiling"`,
+   `"lora"` otherwise.
+3. **`adapter_dir` and `weights_dir` no longer lie about each other.** A ceiling run emits
+   `adapter_dir: null` and `weights_dir: <path>`; a LoRA run emits the reverse. ⚪ The `lora_*`
+   keys are **nulled, not dropped** — an absent key could equally be an older schema, whereas an
+   explicit `null` beside a `lora_note` is a statement.
+4. **The saved directory is named for what is in it:** `weights/` for a ceiling run, `adapter/`
+   otherwise. ⚪ **Only the ceiling branch moves** — every existing path and every
+   `--adapter <dir>` call site is untouched.
+
+### 3. 🔴 The gate was seen refusing the defect, on the real artefact
+
+| manifest | `G4.11` | missing |
+|---|---|---|
+| ceiling, fixed shape | **PASS** | none |
+| LoRA, fixed shape | **PASS** | none |
+| ceiling with `trainable` removed | **FAIL** | `trainable` |
+| ceiling with `trainable` empty | **FAIL** | `trainable` |
+| 🔴 **the SHIPPED `run_manifest_leg5_ceiling_fold_es.json`** | **FAIL** | **`trainable`** |
+
+🔴 **The last row is the point and it is not a regression to repair.** The shipped manifest
+really is missing the one field that would have stopped a reader concluding LoRA, and the tightened
+gate now says so out loud. **It must never be made green by loosening `G4.11`.**
+
+### 4. What was done with the shipped artefact — a SIDECAR, and the manifest left alone
+
+`Step4_docs/outputs_step4/leg5_ceiling_fold_es/run_manifest_leg5_ceiling_fold_es.CORRECTION.json`.
+
+🔴 **The shipped manifest is NOT edited.** It is the record of what job `1287378` wrote, and
+it must keep agreeing with its own stdout log `4J_step4_ceiling_1287378.out`; rewriting a completed
+run's output to match a later correction destroys the audit trail that caught the defect. The
+sidecar carries the corrected labels, **each shipped value preserved beside its correction**, the
+fields that were always right (`base_revision`, `corpus_md5`, `prereg_md5`, `train_shard`, the real
+hyper-parameters), the `G4.11` FAIL stated as intended, and four reader warnings.
+
+🔴 **The methods section quotes the CORRECTION file, never the shipped manifest's
+`lora_*` keys.** That was the whole condition `FINDING 157` was filed under.
+
+### 5. What this entry does not change
+
+* **`G4.1`, `G4.3`, `G4.6`, `G4.12` still FAIL.** Step 4 still closes with four failing gates, and
+  closing is still not passing.
+* **The ceiling is still one fold.** `es`, pre-named 2026-08-14. Quoting it across the corpus is
+  quoting one fold as three.
+* **The Qwen comparison arm is still owed** and still blocks nothing.
+* ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified live, untouched. No threshold
+  moved, no checker loosened, no band created to accommodate a result. Backups verified non-empty
+  before every edit (`.bak_f157`).
+
+
+---
+
+## 2026-08-26 (night, last) — 🟢 `D-S4-17` RULED (A). THE QWEN COMPARISON ARM IS SUBMITTED AND ITS TRUNCATION RULE WAS FIXED BEFORE THE NUMBER EXISTED.
+
+### 1. The arm
+
+Job **`1287613`**, `sbatch tools/4thJ_step4_qwen_fold.sh es`. `Qwen/Qwen2.5-7B` @
+`d149729398750b98c0af14eb82c78cfe92750796`, resolved by the trainer from `staged_weights.json`.
+
+🔴 **It is PRE-REGISTERED, not optional.** `prereg.md:90`: the pre-named fold *"is used for
+exactly two single-fold measurements — the ceiling run and the comparison arm — and **both must be
+reported as single-fold**."* The ceiling landed the same day. ⚪ An earlier reply called this arm
+"optional" and that was wrong; only its ordering was ever free.
+
+**Same recipe, nothing re-tuned:** LoRA `r = 32` rsLoRA on seven projections, bf16, 3 epochs,
+effective batch `2 × 8 = 16`, `--max-len 1280`. ⚪ Outputs redirected to `runs_leg5_qwen` /
+`diagnostics_leg5_qwen`, off every path the reported Leg-5 folds wrote to — the `FINDING 8`
+cache-key-collision class, which has now cost this project twice. ⚪ The launcher **refuses** any
+fold other than `es` rather than accepting one silently.
+
+### 2. 🔴 The defect found while building it — the trainer truncated silently
+
+`DiaryDataset.__init__` sliced `(p_ids + b_ids)[:max_len]` with **no count and no warning**. On the
+OLMo runs that was harmless. It is not harmless here: `4thJ_04_finetuneLLM.md:92–97` measured the
+same diary at **200 OLMo tokens against 303 Qwen tokens**, and `311` at **1 token against 3**.
+
+🔴 **So `--max-len` is not backbone-neutral, and "hold everything constant" was hiding
+that.** A fixed token budget is a **tighter** budget for Qwen. **A comparison in which one arm
+quietly trains on cut-off diaries is a comparison of truncation, not of backbones.**
+
+**Fixed additively before the arm was submitted.** `DiaryDataset` now carries `n_truncated` and
+`max_tokens_seen`, and every run prints
+
+```
+TRUNCATION train tokenizer=<repo> max_len=<N> : n of m records truncated (p %), longest record L tokens
+```
+
+⚪ **Printed for EVERY run, not only this one**, so the OLMo arms supply the baseline the Qwen number
+has to be read against. 🔴 **It is a COUNTER, not a gate** — no `G4.x` id, no band, no
+verdict, and nothing stops the run. **Seen both silent and firing** before submission: 0 of 10 on a
+tokenizer that fits, 10 of 10 on one that does not.
+
+### 3. The estimate — and it is declared an estimate, not a measurement
+
+Measured on the frozen corpus (`4J_step3_corpus.jsonl`, 73,254 records; median 587 chars, p99 1,406,
+max 2,896), converting at a **linear chars-per-token ratio anchored at the median**:
+
+| backbone | chars/token | est. longest record | est. records over `max_len = 1280` |
+|---|---|---|---|
+| OLMo 3 7B | 2.935 | ~987 tok | **0 of 73,254** |
+| Qwen 2.5 7B | 1.937 | ~1,495 tok | **1 of 73,254 (0.0014 %)** |
+
+🔴 **A proxy. Do not quote it as a result.** Tokenization is not linear in character count,
+and a long record here is long because it repeats grammar the tokenizer handles efficiently — so the
+tail is more likely **over**-stated. ⚪ Fold `es`'s shard is 48,594 records, so the fold-level count
+can only be smaller. **The job's own `TRUNCATION` line is the number.**
+
+### 4. 🟢 The ruling — and WHEN it was made is the part that matters
+
+**Option (A): `--max-len 1280` stays fixed on every arm; the Qwen arm is reported with its exact
+measured truncation rate beside its losses**, under a pre-declared **≤ 1.0 %** contamination
+threshold. Above 1.0 % the arm is flagged **CONTAMINATED** and escalates to the author before any
+claim is made.
+
+🔴 **Ruled while `1287613` was still `PD`. The number had not been seen by anyone.** The
+alternative — read the count, then pick the option that flatters the arm — is selecting an artefact
+because it passes, the same move refused at `D-S4-5` (the named mid-epoch checkpoint) and at
+`D-S2-20 Q2` (option (c), dropping the must-stay-clean entry). ⚪ The 1.0 % bar sits **two to three
+orders of magnitude above** the estimate, deliberately: a threshold the expected outcome clears by
+that margin cannot be accused of having been placed to produce a verdict.
+
+**Author's rationale, as ruled:** recipe integrity (exact hyper-parameter and token-budget symmetry
+across backbones); transparent reporting (the tokenization-density difference **is** part of the
+comparative cost, which is what the arm exists to state); and negligible measured risk.
+
+🔴 **What may never be done, whatever the count:** raise `--max-len` on the Qwen arm alone
+and still report the two arms as *"the same recipe"*. If that is ever done, the phrase comes out of
+the paper with it.
+
+### 5. Directives that reach the manuscript
+
+1. **Single fold.** Report the Qwen comparison strictly on `es` (`prereg.md:90`). Quoting it across
+   the corpus is quoting one fold as three.
+2. **`G4.2`'s delimiter basis is Qwen's native vocabulary.** `delimiter_token_ids()` is computed from
+   whichever tokenizer is loaded. 🔴 **The VERDICT is comparable across arms; the NUMBERS are
+   not.** Same discipline as the ceiling.
+3. **`G4.8` asserts tokenizer identity against the base checkpoint** (`D-S4-2`), so a PASS here means
+   *"this really is the Qwen tokenizer"*, not *"this matches OLMo"*.
+4. **The truncation rate is reported even when it is exactly 0** — a zero that was measured is a
+   result; a zero that was assumed is the whole reason this section exists.
+
+⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified live before and after, unchanged. **No
+re-runs and no threshold alterations permitted**, as ruled. Record:
+`../../Step10_docs/docs/2026-08-26_D-S4-17_the-qwen-arm-truncation-decision.md`.

@@ -1,0 +1,1286 @@
+{
+  "building_table": "Step10_docs/outputs_step10/building_table_exercise_es_uk_it.csv",
+  "country_override": null,
+  "f_values": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "g10_8_failures": [
+    {
+      "building_id": "BATIMENT0000000013365727_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09326.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000013365727_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09326.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000013365727_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09326.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_11190509.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_11190509.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_11190509.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877101_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_11190509.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877122_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_004552.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06387.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08645.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03111.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00035.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06287.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_01639.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02683.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06449.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 8,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07365.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 9,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_01769.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877130_part0",
+      "unit_index": 10,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00417.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_26080611.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_26080611.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_26080611.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_26080611.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_26080611.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877151_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_26080611.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877159_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017251.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877159_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017251.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877159_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017251.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03783.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03783.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03783.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877169_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03783.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877179_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877179_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877179_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877182_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_002940.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877182_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_002940.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03111.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03111.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03111.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877183_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03111.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877518_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_15210418.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877518_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_15210418.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877518_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_15210418.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877519_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007674.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877519_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007674.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877519_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007674.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877519_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007674.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877522_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07298.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877522_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07298.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877522_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07298.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877523_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_14201016.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877523_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_14201016.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877524_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007498.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877524_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007498.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877524_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007498.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877524_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007498.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00502.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00502.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00502.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00502.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877527_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00502.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877538_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_18150902.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877538_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_41051010.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240877538_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240878030_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007881.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240878030_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007881.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240878030_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_007881.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240878034_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02763.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240878034_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02763.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240878034_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02763.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_13050118.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_13050118.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_13050118.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_13050118.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879409_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_13050118.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879419_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07690.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06246.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07531.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09059.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07091.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09467.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03819.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_07523.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 8,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08024.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 9,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05789.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 10,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08319.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 11,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06627.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 12,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05634.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 13,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03978.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 14,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06449.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 15,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09326.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 16,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_01639.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 17,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03633.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 18,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08206.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 19,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06445.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 20,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03804.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 21,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_09117.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 22,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08331.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 23,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00417.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 24,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_00476.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 25,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_04748.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 26,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08279.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879449_part0",
+      "unit_index": 27,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_06140.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879451_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_17031112.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879459_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_011712.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879459_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_011712.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879459_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_011712.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879459_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_011712.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879459_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_011712.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08229.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08229.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08229.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08229.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879467_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08229.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879470_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_21010917.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879486_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_016553.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879486_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_016553.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879486_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_016553.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879486_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_016553.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_04971.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_04971.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_04971.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_04971.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879492_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_04971.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879510_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_19230208.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879510_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_19230208.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879511_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_005754.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879511_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_005754.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879511_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_005754.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879511_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_005754.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879534_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_05451.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879546_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_37051020.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879558_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017601.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879564_part0",
+      "unit_index": 7,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_08992.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879572_part0",
+      "unit_index": 6,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16050501.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879577_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_008205.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879577_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_008205.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879577_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_008205.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879577_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_008205.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02792.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02792.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02792.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879604_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_02792.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879614_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_19160203.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879614_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_19160203.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879614_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_19160203.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879618_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_008625.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879618_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_008625.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879627_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03046.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879627_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03046.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879627_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_es_03046.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_15120505.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 1,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_15260107.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 2,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_16310308.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 3,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_12040801.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 4,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_11020212.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879632_part0",
+      "unit_index": 5,
+      "verdict": "FAIL",
+      "why": "presence_HH_uk_20101119.csv md5 000000000000 is in no bundle on disk"
+    },
+    {
+      "building_id": "BATIMENT0000000240879635_part0",
+      "unit_index": 0,
+      "verdict": "FAIL",
+      "why": "presence_HH_it_017223.csv md5 000000000000 is in no bundle on disk"
+    }
+  ],
+  "gate_board": {
+    "G10.13": {
+      "bound_w_m2": 1.5e-10,
+      "building_fails": 0,
+      "decimals": 10,
+      "gate": "G10.13",
+      "note": "read from the emitted CSV on disk (V10.h), never from the generator's own list",
+      "verdict": "PASS",
+      "zone_fails": 0,
+      "zone_rows": 7880
+    },
+    "G10.19": {
+      "folds_absent": [],
+      "folds_short": {
+        "es": 9,
+        "it": 3,
+        "uk": 5
+      },
+      "gate": "G10.19",
+      "min_N_u": 2,
+      "note": "below the population H10 is NOT_EVALUABLE with the population named. It is never reported as a pass and never as a fail.",
+      "qualifying_buildings_per_fold": {
+        "es": 9,
+        "it": 3,
+        "uk": 5
+      },
+      "required_per_fold": 30,
+      "verdict": "NOT_EVALUABLE"
+    },
+    "G10.8": {
+      "dwellings": 1576,
+      "gate": "G10.8",
+      "note": "per DWELLING, not per building; the fold is read from the bundle's own manifest.json, never from a filename",
+      "unlocatable": 1576,
+      "verdict": "FAIL",
+      "wrong_fold": 0
+    },
+    "G10.9": {
+      "arms_present": [
+        "D",
+        "F"
+      ],
+      "buildings_with_mixed_arms": 0,
+      "gate": "G10.9",
+      "note": "a building carrying both arms means the arm was decided per zone; it is a property of the BUILDING's zone_source",
+      "verdict": "PASS"
+    },
+    "W10.8": {
+      "gate": "W10.8",
+      "live": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "note": "prereg.md is frozen; recomputed from disk",
+      "recorded": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "verdict": "PASS"
+    }
+  },
+  "label": "perturb:recorded md5 broken -- diary unlocatable by content",
+  "n_assignments": 1576,
+  "n_buildings": 297,
+  "n_csv_retained": 35,
+  "n_emitted_csv": 7880,
+  "perturbations": {
+    "arm_f_independent": false,
+    "arm_from_zone_count": false,
+    "break_md5": true,
+    "force_fold": null,
+    "mislabel_fold": null,
+    "perturb_zone": null,
+    "unequal_areas": false
+  },
+  "reduction_note": "every emitted CSV was READ FROM DISK by G10.13 at the moment it was written; only a named sample is kept, because 7,880 hourly files is 2.6 GB per run and the battery runs it six times (the Step 8 precedent)",
+  "seed_base": 1,
+  "skipped": [],
+  "write_decimals": 10
+}

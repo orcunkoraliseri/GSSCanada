@@ -1,0 +1,85 @@
+{
+  "building_table": "Step10_docs/outputs_step10/building_table_exercise_es_uk_it.csv",
+  "country_override": null,
+  "f_values": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "g10_8_failures": [],
+  "gate_board": {
+    "G10.13": {
+      "bound_w_m2": 1.5e-10,
+      "building_fails": 1188,
+      "decimals": 10,
+      "gate": "G10.13",
+      "note": "read from the emitted CSV on disk (V10.h), never from the generator's own list",
+      "verdict": "FAIL",
+      "zone_fails": 1188,
+      "zone_rows": 7880
+    },
+    "G10.19": {
+      "folds_absent": [],
+      "folds_short": {
+        "es": 9,
+        "it": 3,
+        "uk": 5
+      },
+      "gate": "G10.19",
+      "min_N_u": 2,
+      "note": "below the population H10 is NOT_EVALUABLE with the population named. It is never reported as a pass and never as a fail.",
+      "qualifying_buildings_per_fold": {
+        "es": 9,
+        "it": 3,
+        "uk": 5
+      },
+      "required_per_fold": 30,
+      "verdict": "NOT_EVALUABLE"
+    },
+    "G10.8": {
+      "dwellings": 1576,
+      "gate": "G10.8",
+      "note": "per DWELLING, not per building; the fold is read from the bundle's own manifest.json, never from a filename",
+      "unlocatable": 0,
+      "verdict": "PASS",
+      "wrong_fold": 0
+    },
+    "G10.9": {
+      "arms_present": [
+        "D",
+        "F"
+      ],
+      "buildings_with_mixed_arms": 0,
+      "gate": "G10.9",
+      "note": "a building carrying both arms means the arm was decided per zone; it is a property of the BUILDING's zone_source",
+      "verdict": "PASS"
+    },
+    "W10.8": {
+      "gate": "W10.8",
+      "live": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "note": "prereg.md is frozen; recomputed from disk",
+      "recorded": "e4243e07cdd80c9c846b91f40e3e8c45",
+      "verdict": "PASS"
+    }
+  },
+  "label": "perturb:one zone scaled 1.02, building mean left near-right",
+  "n_assignments": 1576,
+  "n_buildings": 297,
+  "n_csv_retained": 35,
+  "n_emitted_csv": 7880,
+  "perturbations": {
+    "arm_f_independent": false,
+    "arm_from_zone_count": false,
+    "break_md5": false,
+    "force_fold": null,
+    "mislabel_fold": null,
+    "perturb_zone": 0,
+    "unequal_areas": false
+  },
+  "reduction_note": "every emitted CSV was READ FROM DISK by G10.13 at the moment it was written; only a named sample is kept, because 7,880 hourly files is 2.6 GB per run and the battery runs it six times (the Step 8 precedent)",
+  "seed_base": 1,
+  "skipped": [],
+  "write_decimals": 10
+}

@@ -150,3 +150,46 @@ which channel decides `H10`, and that change is recorded **before any Step 10 ce
 pre-declared text of `H10` itself was left untouched.
 
 ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched. No Step 8 or Step 9 threshold moved.
+
+### 2026-08-27 — 🟢 first gates SCORED. `G10.20` PASS; `G10.21` NOT_EVALUABLE with its population named
+
+Work item 10.9 (paired emission) is the first Step 10 item to put numbers on this table. Scored on
+**297 buildings / 2,970 cells / 15,760 emitted CSVs**; record `4thJ_10_ubemRealStock.md` §9.2 and
+`impl/2026-08-27_work-item-10.9_paired-case-a-case-b.md`.
+
+| gate | verdict | basis |
+|---|---|---|
+| **`G10.20`** | **PASS** | 0 missing partners, 0 geometry mismatches, 0 cross-building `delta_div` rows, 0 refusals; **15,760 files scanned** and printed (`V10.d`) |
+| **`G10.13`** | **PASS** | 15,760 zone rows, 0 zone fails, 0 building fails, scored **per case** |
+| **`G10.8`** | **PASS** | 3,152 dwellings, 0 unlocatable, 0 wrong-fold |
+| **`G10.9`** | **PASS** | 0 buildings carrying both arms |
+| **`G10.19`** | **`NOT_EVALUABLE`** | es 9 · uk 5 · it 3 against 30 per fold |
+| **`G10.21`** | **`NOT_EVALUABLE`** | population *simulated Step 10 cells*, **size 0** |
+
+🟢 **Battery 10 of 10 with the null case moving nothing** (`V10.a`, both halves). `G10.20` was seen
+failing on three distinct clauses of its own row — a deleted Case A partner, a cross-building pairing,
+and Case A areas moved 10 % — so no single clause is carrying the gate.
+
+Every other gate in this table is **NOT CHECKED** and is written as such — `V10.c`: an unchecked gate is
+never a pass, and the tally is checked, not only the verdicts.
+
+🔴 **`V10.a` did its job on a guard we wrote ourselves.** `W10.9` was first written to score
+`G10.21`(ii) literally — *Case A returns `CF = 1.000`* — and the battery's `case_a_independent` case,
+which is precisely the harness defect that clause names, **passed** it. `FINDING 158`: `CF_phi` is 1 for
+the independent case too, because every Step 7 presence series reaches 1.0 and independent households
+still share hours at which all are in — **1,450 of 1,450** Case B cells with `N_u ≥ 2`, minimum **396**
+fully coincident hours. A guard whose discriminator is constant in the ground truth is not a guard.
+
+**The repair is additive.** `W10.9` now scores **series identity** (sha256 of the emitted files, taken
+before reduction); the `CF = 1` arm is kept, reported, and stamped **`CARRIED, NOT SCORED`** inside the
+artefact. **`W10.12`** is added as permanent **INFO** publishing the degeneracy. No threshold moved, no
+gate loosened, `H10`'s text unedited.
+
+🔴 **A pre-registered consequence for `G10.21`, recorded before 10.6 runs.** §1.1a chose `CF` because in
+the synchronised case it is 1 *by construction* — a comparison against a constant rather than a spread.
+That is unchanged. What `FINDING 158` adds is that **the constant is not evidence**: on the driver the
+independent case is also exactly 1, so **`CF_A = CF_B = 1.000` on simulated power would be a
+`NOT_EVALUABLE`, not a null**. `FINDING 159` adds that `q99` equals the peak in **2,970 of 2,970** cells
+here, so the two channels `G10.21`(i) asks for are one channel until EnergyPlus runs.
+
+⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified live. No Step 8 or Step 9 threshold moved.
