@@ -59,7 +59,7 @@ until this section was written.
 |---|---|---|---|
 | **Primary** — rsLoRA r=32, all linear | Leg-4 **and** Leg-5 | 🔴 **3 each**, one per held-out country — **was 4 until author decision 16 excluded France, 2026-08-15** | The reported models. Step 6 scores **three** folds and Step 7 generates per fold |
 | **Ceiling** — full fine-tune, 8-bit AdamW | Leg-5 | **1**, on a pre-named fold | Answers "does LoRA underfit a far-from-pretraining target". One measurement settles that; four would settle it four times |
-| **Comparison arm** — `Qwen/Qwen2.5-7B`, same recipe | Leg-5 | **1**, the **same** pre-named fold | States what the alternative backbone cost. The training-side backbone argument is already closed by measurement. 🟡 **SUBMITTED 2026-08-26 (night, last), job `1287613`** — `tools/4thJ_step4_qwen_fold.sh`, outputs redirected to `runs_leg5_qwen` / `diagnostics_leg5_qwen` |
+| **Comparison arm** — `Qwen/Qwen2.5-7B`, same recipe | Leg-5 | **1**, the **same** pre-named fold | States what the alternative backbone cost. The training-side backbone argument is already closed by measurement. 🟢 **DONE 2026-08-27, job `1287613` `COMPLETED 0:0`, 13:33:05 — the backbone does NOT fix `G4.1` (FAIL 3/3 epochs, band difference `0.029` against the `es` noise floor `0.529`); it costs stability (`G4.9` FAIL, epoch-1 runaway), +24 % wall and +16 % VRAM. Truncation measured: train 0.0247 % / val 0.0543 %, both far under `D-S4-17`'s 1.0 %. See the 2026-08-27 entry.** Submitted 2026-08-26 (night, last) — `tools/4thJ_step4_qwen_fold.sh`, outputs redirected to `runs_leg5_qwen` / `diagnostics_leg5_qwen` |
 
 🔴 **FIVE Leg-5 jobs and THREE Leg-4 jobs** — three primary folds per leg, one ceiling, one Qwen
 comparison arm. *(Was six and four; author decision 16, 2026-08-15, excluded France, so the rotation
@@ -501,3 +501,76 @@ must keep agreeing with its own stdout log. The corrected labels live in a sidec
 `outputs_step4/leg5_ceiling_fold_es/run_manifest_leg5_ceiling_fold_es.CORRECTION.json`, with each
 shipped value preserved beside its correction. 🔴 **The methods section quotes the CORRECTION
 file, never the shipped manifest's `lora_r` / `lora_alpha` / `use_rslora` / `targets`.**
+
+### 2026-08-27 — 🟢 THE QWEN COMPARISON ARM IS DONE. `1287613`, `COMPLETED 0:0`, 13:33:05. THE BACKBONE IS NOT THE REASON `G4.1` FAILS.
+
+This closes the last of the eight Leg-4/Leg-5 jobs. The arm was pre-registered on 2026-08-14 and
+its question was *"what does the alternative backbone cost?"* — asked of the training side, on the
+one pre-named fold, `es`.
+
+🟢 **`D-S4-17` HELD: the recipe is identical on every axis but one.** Read from the two shipped
+manifests, not asserted: `corpus_md5 ca89d2295603c547f2384a40dd1909ba` and
+`train_shard.md5 3b15432e25d1df09a1e65c764a87f562` are **the same file** as the `es` arms;
+`seed 42`, `epochs 3`, `lr 1e-4`, `batch_size 2`, `grad_accum 8`, **`max_len 1280`**,
+`lora_r 32` / `lora_alpha 64` / `use_rslora true`, the same seven target modules,
+`prereg_md5 e4243e07cdd80c9c846b91f40e3e8c45`. `base_repo` is the only field that moves:
+`Qwen/Qwen2.5-7B` at revision `d149729398750b98c0af14eb82c78cfe92750796`. `trainable: "lora"`, so
+this manifest **passes** the tightened `G4.11` (16/16) that the ceiling manifest fails by design.
+
+🟢 **The truncation rate was measured, and the arm is NOT contaminated.** `D-S4-17` set the bar at
+1.0 %: **train 12 of 48,594 (0.0247 %), longest record 1,509 tokens; val 3 of 5,520 (0.0543 %),
+longest 1,700 tokens**, tokenizer `Qwen/Qwen2.5-7B` at `max_len 1280`. Both are **~20–40× under the
+bar**, so the comparison below is a comparison of backbones and not of truncation.
+🔴 **The asymmetry that must travel with it:** the truncation instrumentation post-dates the Llama
+arms, so `1286209` (primary `es`) and `1287378` (ceiling `es`) have **no measured rate**. They ran
+the same `--max-len 1280` — verified in both stdout logs — but a *different tokenizer*, so their
+rate may not be assumed equal to Qwen's. **Never write "both arms truncated equally"; write that
+one arm was measured and the other was not.**
+
+**Epoch-2 comparison, fold `es`, LoRA both sides, single-variable:**
+
+| epoch-2 quantity | primary `1286209` (Llama) | Qwen `1287613` |
+|---|---|---|
+| `delim` | **0.0734** | 0.1090 |
+| `content` | **0.8653** | 0.8739 |
+| `entropy` | 3.307 | 3.478 |
+| `G4.1` | FAIL, worst `0.750 / 1.568` | FAIL, worst `0.892 / 1.539` |
+| `G4.3` CE rise (need ≥ 0.15) | FAIL, **0.1062** | FAIL, **0.0387** |
+| `G4.7` | FAIL | FAIL (gen-terminated 599/600) |
+| `G4.6` | FAIL | FAIL, `max_logit_diff 1.470e-02` |
+| `G4.9` | **PASS** | 🔴 **FAIL** |
+| peak VRAM / wall | 19.98 GiB / 37,211 s | 23.14 GiB / 45,339 s |
+
+🔴 **`G4.1` IS NOT IMPROVED BY THE BACKBONE AND MUST NEVER BE REPORTED AS IMPROVED.** Both arms
+**FAIL all three epochs**. The worst-band figures differ by `1.568 − 1.539 = 0.029`, which is
+**18× smaller** than `G4.1`'s own `es` sampling-noise floor of **0.529** measured under `D-S4-16`.
+⚪ **Only the verdict is comparable** — the same sentence the ceiling arm earned, now earned twice,
+from opposite directions: more capacity does not fix `G4.1` and a different backbone does not fix
+`G4.1`.
+
+🔴 **`G4.9` is the one gate where the arms genuinely differ, and the mechanism is visible in the
+epoch line.** `G4.9` asks for monotone improvement across checkpoints inside one run. Qwen's
+`content` runs **0.5187 → 1.2261 → 0.8739**: epoch 1 is a runaway, not a plateau, and it carries
+`G4.1 FAIL [V4.a: only 1 scorable strata]` and `G4.7 FAIL [gen-terminated 558/600]` with it.
+The Llama arm is monotone and passes. ⚪ This is a **stability** difference under an identical
+recipe, not a capability difference, and it is the honest answer to "what does the alternative
+backbone cost": **it costs stability, 24 % more wall-clock and 16 % more VRAM, and it buys nothing
+a gate can see.**
+
+🟢 **The generation-side perturbation probe ran and its coverage clause PASSES.** `G4.1`/`G4.4`/
+`G4.7` are all **FAIL at the null baseline**, so all three are correctly reported
+`NOT ASSESSABLE as STAY CLEAN` / `VOID` rather than credited; **gates credited as seen falling on
+this probe: none**; **gates that pass at baseline and were never felled: none**. `prereg.md`
+md5 verified live inside the job against `Step6_docs/outputs_step6/prereg.md` — equal.
+
+🔴 **One correction to the 2026-08-26 (evening) ceiling entry above, filed additively and not
+repaired in place.** That entry reads *"`content_loss` ties at epoch 2 (0.8636 vs 0.8653)"* in a
+paragraph whose table columns are `primary | ceiling`, which reads as primary `0.8636`. The stdout
+logs say the opposite: **ceiling `1287378` is 0.8636 and primary `1286209` is 0.8653.** The
+conclusion the entry draws — that the two tie — is unaffected, and the `train_loss` table above it
+is correct as printed. ⚪ Recorded because the pair is quoted in the methods and the labels must be
+the right way round when it is.
+
+🔴 **This is one fold, and it is now the SECOND single-fold Leg-5 result.** Neither the ceiling nor
+this arm may be quoted as a corpus-wide result. Both are single-fold measurements on the same
+pre-named fold `es`, and the methods must say so in the same sentence that quotes them.

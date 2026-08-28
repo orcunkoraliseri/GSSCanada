@@ -302,3 +302,44 @@ and the `strip_eor_1pct` block, both of which explained themselves in terms of "
 perturbations") is now **fifteen gates, sixteen perturbations**. Left as written, because that
 entry is a dated record of what was true when it was written; the current count is the gate table
 at the top of this document.
+
+### 2026-08-27 (Qwen comparison arm, `1287613`) — NO GATE, BAND OR THRESHOLD MOVED; ONE GATE SEPARATED THE TWO BACKBONES
+
+Record: `4thJ_04_finetuneLLM.md`, entry 2026-08-27. Job `1287613` `COMPLETED 0:0`, 13:33:05,
+fold `es`, `Qwen/Qwen2.5-7B` rev `d149729398750b98c0af14eb82c78cfe92750796`, LoRA.
+
+🟢 **`G4.11` PASS 16/16 on this manifest.** `trainable: "lora"` is present, so the arm satisfies the
+key that `FINDING 157` added and that the shipped ceiling manifest fails by design. This is the
+first run whose manifest was written by the tightened emitter and scored by the tightened gate.
+
+🟢 **`D-S4-17` verified on file, not asserted.** `max_len 1280` on all three `es` arms
+(`1286209`, `1287378`, `1287613`), read from each job's own stdout invocation line. Truncation on
+the Qwen arm: **train 12/48,594 = 0.0247 %, val 3/5,520 = 0.0543 %**, against `D-S4-17`'s 1.0 %
+`CONTAMINATED` bar. 🔴 **The two Llama arms carry no measured rate** — the instrumentation
+post-dates them — and their tokenizer differs, so their rate may not be inferred from Qwen's.
+A methods sentence claiming equal truncation across arms would be unsupported.
+
+🔴 **`G4.1` FAIL 3/3 epochs on both backbones, and the difference is below its own noise floor.**
+Worst band `1.568` (primary) vs `1.539` (Qwen) — a gap of **0.029** against the `es` sampling-noise
+floor of **0.529** from `D-S4-16`, i.e. **18× inside** it. **Only the verdict is comparable**; the
+band counts are not. Reporting the Qwen arm as an improvement would be reporting noise.
+
+🔴 **`G4.9` is the only gate that separates the arms, and it separated them for a visible reason.**
+Primary PASS, Qwen **FAIL**. Qwen's held-out `content` is **0.5187 → 1.2261 → 0.8739** — epoch 1 is
+a runaway carrying `G4.1 [V4.a: only 1 scorable strata]` and `G4.7 [gen-terminated 558/600]` with
+it. ⚪ `G4.9` was designed to catch exactly a non-monotone checkpoint sequence, and the earlier note
+in this document that *"`regression = 0.0` in all six is guaranteed by a two-epoch monotone run,
+not earned — Leg 5's three epochs are the first place `G4.9` can say anything"* is now discharged:
+**`G4.9` has said something, and it said FAIL on a real three-epoch run.** That is the gate's first
+substantive verdict.
+
+🟢 **Coverage clause PASS on the generation-side perturbation probe, by the correct route.**
+`G4.1`, `G4.4` and `G4.7` are all FAIL at the null baseline, so each is printed
+`NOT ASSESSABLE as STAY CLEAN` or `VOID` rather than credited — *a gate down before the
+perturbation cannot be seen falling*. **Gates credited as seen falling on this probe: none.
+Gates passing at baseline and never felled: none.** No gate was quietly banked.
+
+⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` recomputed inside the job and equal to
+`Step6_docs/outputs_step6/prereg.md`. `G4.3` FAIL on both arms (rise `0.1062` primary,
+`0.0387` Qwen, need ≥ 0.15); `G4.6` FAIL on both; `G4.10` `REPORTED_NOT_THRESHOLDED` on both.
+**No threshold, band or gate definition changed in this entry.**

@@ -1614,3 +1614,57 @@ results are kept, not deleted: `Step8_docs/outputs_step8/prerotation/` (22 files
 `Step7_docs/outputs_step7/schedules_bak_prerotation/` (1,500 presence files, which is also `G8.17`'s
 falsifier). 🔴 **Record: `Step8_docs/docs/2026-08-26_D-S9-3a_the-rotated-re-run.md`. Read it
 before quoting ANY Step 8 number.**
+
+---
+
+### 2026-08-27 (night) — `RL27` IS VETTED. THE DEBT ON THIS PAGE IS DISCHARGED, AND THE REPORT IS ADMISSIBLE ROW BY ROW ONLY.
+
+🟢 **`D-S8-4`'s standing sentence — *"`RL27` has never been vetted at all"* — is now false**, and it
+is corrected **additively**: the sentence stays where it is, dated, with the record beside it.
+Record: `DeepResearchPrompts/VETTING_RL27.md`. **13 rows: 4 confirmed, 3 confirmed-but-mislabelled,
+1 part-refuted, 1 falsified, 5 UNVERIFIABLE HERE.**
+
+🔴 **Read-only, and the limit is stated rather than hidden.** Every row testable against an artefact
+we already hold was tested against it (three harmonised parquets, the raw deliveries under
+`_local_runs/4J/raw/`, the rulings on the record). **No external document was fetched and no DOI was
+resolved** — literature retrieval is external to this seat — so `B1`, `B2`, `B3`, `B10` and `B13` are
+marked `UNVERIFIABLE HERE`. An unverifiable row is neither refuted nor confirmed.
+
+🔴 **`FINDING 174` — the percentages are right to two decimals and ALL THREE COLUMN NAMES ARE WRONG.**
+Measured on our own artefacts at the diary key `(hid, pid, diary_day)`: `es` **50.017 / 25.001 /
+24.982**, `uk` **71.446 / 14.316 / 14.238**, `it` **33.333 × 3** — `B4`/`B5`/`B6` agree. But the
+delivery carries **`FACTORF`** (not `FACTOR_ADULTOS` / `FACTOR_DIARIO`, **0 hits** under
+`raw/spain/`), **`dia_wt_a`/`dia_wt_b`** (not `ddaywgt`, **0 hits** under `raw/uk/`) and
+**`coefin`/`coefi2`** (not `PESO` / `COEF_IND`, `COEF_IND` **0 hits**). A report that had read
+the microdata would carry the microdata's names; this one carries the methodology prose's names and
+the design targets' values. **Operative rule: never quote `RL27`'s variable names into the
+methods, the code or a data statement.** ⚪ And the numbers are **not new** — `FINDING 53` measured
+the same three splits on 2026-08-20, two days before `RL27` was written, and `D-S6-4` had already
+ruled `weight_dia_cal` as the repair. `RL27` confirms an existing measurement from the source side.
+
+🔴 **`FINDING 175` — UK fieldwork is 21 months WITH A HOLE, so "continuous" is refuted.** Month ×
+delivered-year crosstab, 15,854 of 15,854 diaries joined: the span **April 2014 → December 2015** is
+exactly as `B8` says, but **September 2015 carries ZERO diaries** while October and November 2015
+carry 1,243 between them, and the "12-consecutive-month core" does not exist — a uniformly-worked
+window of either candidate shape would put 66.7 % or 75.0 % of diaries in 2014 and the delivery reads
+**58.1 %**. ⚪ `D-S10-1`'s `uk` = 2014 pinning is **re-confirmed, not reopened** (the same 58.1 % read
+a second way). What changes is only what may be written: **April 2014 to December 2015 with an
+interruption**, never "continuously" and never "twelve-month core". ⚪ ES/IT uniformity is testable
+only at **quarter** grain and is *supported* there (max/min 1.133 and 1.112), never as "uniform across
+all 12 months".
+
+🔴 **`FINDING 176` — `RL27`'s decision-impact table is STALE, not wrong.** Its Section C row 2 says
+*"keep exact 12-month AMY windows as pre-registered"*; the author **reversed the actual-year ruling
+on 2026-08-25** and Step 8 runs `TMYx.2009-2023`. The class is `V10.i`'s: a recorded position
+outliving the thing it was a position about. ⚪ The AMY half moved rather than died — Step 10 runs
+ERA5 actual-year files, so `B10`'s licence question is live *there*, and it is one of the five rows
+nobody here can verify. **So `RL27` may not be cited in this step's weather section at all.**
+
+⚪ **`B12` stays falsified, and its falsification impugns its sources.** It rests on the three
+national TABULA brochures, all marked *Tier 1, read full text*, and its three stations measure out as
+the worst ES candidate, a 2.8× worse English one and the worst IT one. **[R12]–[R14] carry no weight
+until someone opens them.**
+
+⚪ **Nothing moved.** No band, threshold, verdict, gate or count changed; no gate was scored; no
+artefact was regenerated; the whole pass was four read-only pandas reads over parquet already on
+disk. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched.

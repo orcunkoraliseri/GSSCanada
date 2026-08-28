@@ -74,7 +74,7 @@ under a `G9.x` ID and no `G9.x` ID is scored here. Inheritance is written on eac
 |---|---|---|---|
 | **`G11.1`** 🔴 Mapping citation completeness | An invented heuristic wearing a citation's clothes | **100 %** of rows in `activity_appliance_map.csv` carry a source model **and** the specific table or figure. A row citing only a paper is not cited | `G9.1` (PASS 61) |
 | **`G11.2`** 🔴 VALIDATED labelling | A caveat presented as a method | **100 %** of rows carry VALIDATED or NOT VALIDATED **and** the validation scale. 🔴 **A row labelled VALIDATED with no scale is a FAIL, not a warning.** Keyed on the **structured** field, never on prose (`V11.e`) | `G9.2` (PASS 192) |
-| **`G11.3`** Unsourced-row honesty | A plausible number filling a gap | Rows with neither a citation nor written reasoning: **0** | `G9.3` (PASS 149) |
+| **`G11.1`** Unsourced-row honesty | A plausible number filling a gap | Rows with neither a citation nor written reasoning: **0** | `G9.3` (PASS 149) |
 | **`G11.4`** Citation correctness | A DOI that resolves to a different paper | CrossRef match on **volume, issue, page range AND first-author surname** — never the title alone. 🔴 A title-only match is what let our own note pass while wrong on three counts (`FINDING 47`). 🔴 If CrossRef is unreachable, print **`NOT CHECKED`**, never `PASS` (`V11.c`) | `G9.4`. 🔴 **Currently `NOT CHECKED` on the Step 9 board** — `FINDING 149`. 🟢 **AMENDED 2026-08-27 by work item 11.1: that sentence is now true only OFFLINE.** With a resolver reachable, `G11.4` scores **`PASS 4`** - all four citations, `FUENTES-2018` included, match CrossRef on title, volume, issue, page range and first-author surname. Offline it still prints `NOT CHECKED`, and `V11.c` still forbids reading that as a pass. ⚪ The two verdicts are not a contradiction: `NOT CHECKED` says the check did not run, and the whole point of `V11.c` is that this is a third thing, not a soft pass |
 
 ### B. The trigger and the loads — inherited from `G9.5`–`G9.11`, `G9.14`
@@ -83,7 +83,7 @@ under a `G9.x` ID and no `G9.x` ID is scored here. Inheritance is written on eac
 |---|---|---|---|
 | **`G11.5`** Cycle completion | A cycle truncated by the end of its activity episode | An appliance triggered near the end of an episode **still runs its full rated cycle**, asserted on synthetic edge cases, not only on the corpus | `G9.5` (PASS) |
 | **`G11.6`** Trigger rate | A saturated trigger | Per-appliance daily activation counts within the source model's reported range, per household size. 🔴 **Band unmoved.** Step 9 verdict **FAIL 60** (`FINDING 139`, saturation; 3 standby-only devices `NOT_EVALUABLE`) | `G9.6` |
-| **`G11.18`** 🟢 **DHW volume PER DWELLING** (declared 2026-08-27, `D-S11-2`; **renumbered from `G11.15` the same day, `FINDING 168`** - that ID was already the pre-registered double-count gate, and the newcomer moves) | A scale error in the emitted volume, now that `G11.7` is `INFO` and cannot fail | Stock **mean** litres per dwelling per day against **Jordan & Vajen's own 200 l/day, +/-10 %**, inherited from `G9.15` unchanged. ⚪ **A scale / regression arm, not an external validation** - 200 l/day is the emitter's own input. 🔴 **It exists because `D-S11-1` retired `G9.7`'s verdict and with it the only detector of `scale_dhw_by_2`; a gate scores a quantity AND detects a mutation, and retiring the first retires the second.** Unlike `G11.7` this arm is NOT vacuous at stock scale: the per-dwelling mean is a quantity `N` sharpens. The medians must be printed whatever the verdict . ⚪ **AMENDMENT 2026-08-27 (`FINDING 170`):** the OpenUBEM response of 2026-08-27 addresses this arm as `G11.15`, the ID it held before `FINDING 168` renumbered it the same day - read their §6 item 1 as **`G11.18`**. Their two asks need no change here: this arm's population is the Step 9/10 trigger output over HETUS households, **never the `S3` corpus** (nothing on the 4J side was ever scoped against 95 or 374), and it scores against Jordan & Vajen's own 200 l/day, which is the emitter's input, not an `S3` figure. 🔴 An IDF object census run 2026-08-27 confirms `S3` carries **no DHW term at all** - `WaterUse*` 0, `Lights` 0, `ElectricEquipment` 0 - so `S3` could not have served as a comparison even if this arm had proposed it | `G9.15` |
+| **`G11.18`** 🟢 **DHW volume PER DWELLING** (declared 2026-08-27, `D-S11-2`; **renumbered from `G11.15` the same day, `FINDING 168`** - that ID was already the pre-registered double-count gate, and the newcomer moves) | A scale error in the emitted volume, now that `G11.7` is `INFO` and cannot fail | Stock **mean** litres per dwelling per day against **Jordan & Vajen's own 200 l/day, +/-10 %**, inherited from `G9.15` unchanged. ⚪ **A scale / regression arm, not an external validation** - 200 l/day is the emitter's own input. 🔴 **It exists because `D-S11-1` retired `G9.7`'s verdict and with it the only detector of `scale_dhw_by_2`; a gate scores a quantity AND detects a mutation, and retiring the first retires the second.** Unlike `G11.7` this arm is NOT vacuous at stock scale: the per-dwelling mean is a quantity `N` sharpens. The medians must be printed whatever the verdict | `G9.15` |
 | **`G11.7`** DHW volume | A magnitude error hiding behind a plausible profile | **30–50 L/person/day at 60 °C**, population median, reported per country. 🔴 **Band unmoved.** Step 9 verdict **FAIL 300** at **100.16 / 117.65 / 91.06** — 2–4× the band. **Work item 11.2 must diagnose this before Step 11 re-measures it** — 🔴 **DIAGNOSED 2026-08-27, THEN RULED THE SAME DAY: `INFO`, PERMANENTLY, AND NOT SCORED.** `FINDING 163`–`166`: the band and the model come from two different papers, and the scored quantity is `200 / n_members`, so this gate measures household size. `D-S11-1` item 2 (2026-08-27) classifies `G11.7` `INFO` on the `G8.7` / `D-S8-5` item 1 (a) precedent and forbids a stock-scale attempt to fit the band: `N` cannot move `200 / n_members` when the mean household is ~2.0. 🔴 **The band is not moved either way, and the deviation is reported in full.** `docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md` §8 | `G9.7` |
 | **`G11.8`** DHW event mix | A total that is right for the wrong reasons | Four-event structure (short, medium, bath, shower) with the source model's proportions | `G9.8` (PASS 12, within 3 pp) |
 | **`G11.9`** 🔴 DHW **assignment** check | A re-pointed object that a value check cannot see | Re-open the **saved IDF** and assert every `WaterUse:Equipment` object still points at the schedule it was built with. 🔴 In 3J this hid a **×3.028** draw increase across 56 cells with zero violations reported | `G9.9` (PASS 300) |
@@ -102,7 +102,7 @@ under a `G9.x` ID and no `G9.x` ID is scored here. Inheritance is written on eac
 
 | Gate | What it catches | Threshold |
 |---|---|---|
-| **`G11.15`** 🔴 No double-counted service load | An end-use both **reconstructed** by Step 10 and **simulated** by Step 11 | For every building, each end-use is accounted on **exactly one** path, recorded in the manifest. End-uses appearing in both Step 10's Table-4 reconstruction and Step 11's trigger output: **0**. 🔴 The double count is invisible in either artefact read alone, which is why it is gated at the seam. ⚪ **AMENDMENT 2026-08-27:** when this gate is authored, the `S3` per-dwelling population is **26 dwelling zones in 12 buildings**, verified from the manifest here; **374 is a ZONE count** (348 of them massing floors) and **381** is the all-96 total including the fatal building's 7 zones. 🔴 `S3` carries exactly **two** end uses - ideal-loads heating and a constant `OtherEquipment` electricity - so the reconstruction/simulation seam has only those two to double-count, and at `f = 0` the electricity side is **flat at 3 W/m² with zero occupancy signal**. Record: `../Step10_docs/docs/2026-08-27_OpenUBEM-response-intake_S3-basis-and-population.md` |
+| **`G11.15`** 🔴 No double-counted service load | An end-use both **reconstructed** by Step 10 and **simulated** by Step 11 | For every building, each end-use is accounted on **exactly one** path, recorded in the manifest. End-uses appearing in both Step 10's Table-4 reconstruction and Step 11's trigger output: **0**. 🔴 The double count is invisible in either artefact read alone, which is why it is gated at the seam |
 | **`G11.16`** 🔴 Aggregation-unit declaration | Two incomparable R² values placed side by side | Every stock-scale statistic names its **population**, its **spatial extent** and its **weather file**. A cross-population comparison presented without that declaration is a **FAIL**. 🔴 Step 9's 100 dwellings were drawn across a fold; Step 11's sit in one neighbourhood on one EPW — spatially adjacent and epoch-correlated. Not the same population |
 | **`G11.17`** 🔴 Arm label survives aggregation | An Arm F total presented as an estimate, or the two arms silently pooled at stock scale | Every Step 11 aggregate names its Step 10 **arm**. Aggregates mixing Arm D and Arm F: **0**. Arm F aggregates carrying estimate language rather than **lower bound**: **0**. ⚪ The gate checks the **label and the pooling**, never a bias magnitude — `RL29`'s percentages rest on a self-refuting citation and are not registered anywhere in this suite |
 
@@ -325,40 +325,3 @@ a question about Step 9.
 on the serialised JSON before it is written. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
 untouched. No band, threshold or tolerance moved anywhere; no Step 9 artefact was regenerated or
 edited.
-
-### 2026-08-27 (response intake) — TWO ROWS CARRY A DATED AMENDMENT, AND NO GATE, BAND OR VERDICT MOVED
-
-Record: `../Step10_docs/docs/2026-08-27_OpenUBEM-response-intake_S3-basis-and-population.md`.
-Incoming: `../messages_OpenUBEM/2026-08-27_OpenUBEM_to_4J_response_S3_EU-05-06_challenges.md`.
-
-🔴 **`FINDING 170` — the OpenUBEM response addresses the DHW per-dwelling arm as `G11.15`.** That ID
-became the pre-registered double-count gate again on 2026-08-27 under `FINDING 168`, the same day their
-document was written; the DHW arm is **`G11.18`**. Acting on the letter by ID would have amended the
-double-count gate — the one gate here whose subject is the Step 10 / Step 11 seam and not water.
-⚪ Nothing had been scored under either ID, so no verdict moves. **Rule taken from it: a cross-tree
-message that names a gate must name its date, because the ID is the token that goes stale silently.**
-
-🟢 **Their two asks need no change to `G11.18`.** Its population is the Step 9/10 trigger output over
-HETUS households, never the `S3` corpus — `grep` over `4J_docs_occ` finds **no** use of 95 or 374 as a
-per-dwelling denominator anywhere on this side — and it scores against **Jordan & Vajen's own
-200 l/day ±10 %**, the emitter's own input, not an `S3` figure. 🔴 An IDF object census run from this
-machine on 2026-08-27 confirms `S3` carries **no DHW term at all** (`WaterUse*` 0, `Lights` 0,
-`ElectricEquipment` 0, cooling coils 0), so `S3` could not have served as a comparison even had the arm
-proposed it. `G11.18`'s basis, tolerance and inheritance from `G9.15` are **unchanged**.
-
-⚪ **`G11.15` carries a forward amendment for whoever authors it.** The `S3` per-dwelling population is
-**26 dwelling zones in 12 buildings**; **374 is a ZONE count** (348 of them massing floors) and **381**
-is the all-96 total including the fatal building's 7 zones. `S3` carries exactly **two** end uses —
-ideal-loads heating and a constant `OtherEquipment` electricity — and at `f = 0` that electricity is
-**flat at 3 W/m² across all 381 gain CSVs, 8,760 rows each, zero occupancy signal**, verified here.
-
-🔴 **`FINDING 172`, recorded in the Step 10 document and repeated here because it bears on every
-`EU-*` number this suite will ever inherit:** the OpenUBEM tree **is** on this machine, at
-`C:\Users\o_iseri\Desktop\OpenUBEM`, a **sibling** of `GSSCanada`. The earlier record saying otherwise
-came from a `find` bounded to `Desktop\GSSCanada`. Every load-bearing figure in the response was
-therefore **re-derived here and matches exactly**, including **96 of 96 recorded `idf_sha256`
-recomputed with 0 mismatches**. ⚪ **A negative search result is only as strong as its root.**
-
-⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched. No Step 9 or Step 10 threshold moved,
-no gate was scored, no artefact regenerated. The only edits are two dated amendments appended inside
-existing table cells and this entry.

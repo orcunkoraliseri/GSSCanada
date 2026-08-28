@@ -305,6 +305,39 @@ quantity, and `FINDING 121` was published as a declared limitation instead. The 
 🔴 **If the author prefers (a), the FAIL ships as a FAIL** — that is also fine and it is the more
 conservative option.
 
+> 🟢 **RULED 2026-08-27 — (d)(ii) → (b), TOGETHER WITH `D-S11-1`, AS THIS BLOCK ASKED.**
+> The author's ruling is recorded in §8 of
+> `../../Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md` and what was executed against
+> it in §9 of the same record. `G9.7` and `G11.7` are **permanent `INFO`** on the `G8.7` /
+> `D-S8-5` item 1 (a) precedent; `FUENTES-2018` is in `citations.csv`; §9B names both papers and
+> both bases; the manuscript reports the gap as a denominator incompatibility. 🔴 **The
+> 30-50 band was NOT moved and `G9_7_BAND_L_PER_PERSON_DAY` is still `(30.0, 50.0)`** — the medians
+> `100.16 / 117.65 / 91.06` are still computed and still printed as outside it. 🔴 **One
+> thing the ruling did not foresee and that the execution surfaced: `G9.7` was the only detector of
+> `scale_dhw_by_2`, so retiring it to `INFO` left that mutation caught by nothing. That is
+> `D-S11-2`, and it is open.** Item 7 itself is closed.
+>
+> 🔴 **2026-08-27 — ITEM 7's EVIDENCE TABLE IS SUPERSEDED AND A FOURTH OPTION EXISTS. DO NOT RULE
+> THIS ITEM FROM THE TABLE ABOVE.** Work item 11.2
+> (`../../Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md`, findings `163`–`166`) found
+> that the premise *"a basis its source does not define"* is wrong in a way that matters: **the band
+> has a different source.** `RL13` row 15 attributes it jointly to Jordan & Vajen **and Fuentes et
+> al. (2018)** (RSER 81(1): 1530–1547, DOI `10.1016/j.rser.2017.05.229`), and §9B of the parent
+> document compressed the two into one. Fuentes is in **no citation table in this project**. The two
+> rows of the table above reading *"`RL25`'s … not present"* are also **too broad**: all four of
+> `RL25`'s event volumes match Table 1, and only its bases are absent.
+>
+> 🟢 **The new option (d) — cite the band's actual source and score it on its actual basis — is
+> written up in `D-S11-1` §5, with the recommendation (d)(ii) → (b).** Ruling item 7 and ruling
+> `D-S11-1` are the same decision and should be taken together. 🔴 **The band is not moved under any
+> option**, and the sub-option that would meet it by *declaring an occupancy* is recorded there as
+> refused.
+>
+> ⚪ **Item 5 is affected too and is NOT re-opened here.** Its ruling — hold 200 l/day constant,
+> because a per-person scaling *"is not in the report and would be ours"* — is **correct as written**
+> and is exactly why the scored quantity is `200 / n_members`. It would only reopen under option
+> (d)(i), which is not recommended.
+
 ---
 
 # Item 8 — `richardsonpy` is GPL-3.0 and its data file is vendored
@@ -380,7 +413,7 @@ missing row.
 | 4 | DHW drivers | (a) keep, `NOT VALIDATED` | nothing | DHW timing |
 | 5 | 200 l/day scaling | (a) hold constant | nothing | `G9.7`'s verdict |
 | 6 | Table 1 `sigma` | (a) 0.2 l/min steps | nothing | 6.9 % of DHW volume |
-| 7 | `G9.7` basis | (b) permanent `INFO` | what the gate reports | a published FAIL |
+| 7 | `G9.7` basis | 🟢 **RULED 2026-08-27: (d)(ii) → (b)**, with `D-S11-1`, as asked. Permanent `INFO` on the `G8.7` precedent, band unmoved, citation repaired, gap reported as a denominator incompatibility. `D-S11-2` opened in its wake | what the gate reports, **plus one row in `citations.csv`** | a published FAIL |
 | 8 | GPL-3.0 vendoring | (a) keep with notice | Data Availability text | release terms |
 | 9 | `G9.11` | (a) FAIL and report | nothing | the corpus decision's justification |
 

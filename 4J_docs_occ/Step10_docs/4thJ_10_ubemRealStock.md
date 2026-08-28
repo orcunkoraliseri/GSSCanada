@@ -16,6 +16,112 @@ until 2026-08-27 and was stale by four items.** Done: **10.1** (chaining closure
 10.5, 10.6, 10.7, 10.8 and, since `FINDING 158`, **10.10** — and all of them wait on OpenUBEM `EU-04`.
 Nothing in Step 10 is waiting on a 4J decision.
 
+🔴 **2026-08-27 — `EU-04`'s blocker moved, and it moved somewhere Step 10 should read before
+planning any cell.** `D-EU-22` was ruled (Option F1) and its coverage probe ran: Madrid's Catastro
+INSPIRE `BU` covers, so `S3` becomes an **FR + ES** binational sample; London is **credential-blocked**
+behind a GOV.UK One Login token (unmeasured, not zero); Bologna has no per-building construction year
+in any ruled open source and is out on typology regardless. ⚪ An independent second measurement
+run from this side by a different route (Catastro WFS ad hoc `BBOX`, 48 tiles, rather than the ATOM
+bulk download) reproduces all three verdicts: **1883 residential features in the study bbox, 1883
+of 1883 carrying a year, and 1183 of 1194 EU-02 footprints (99.1 %) recovering an observed
+year AND an observed dwelling count.**
+
+🔴 **But the binding ceiling turned out not to be attributes at all, and this is what reaches
+Step 10.** The ruled OpenUBEM layout contract — convex, courtyard-free, at least 8 m wide —
+accepts only **204 of 4186** footprints across all four sites (`ES` 63 · `FR` 52 ·
+`GB` 49 · `IT` 40), and clearing it is still not emission: in Lyon, the only site where
+emission has been measured, **18 of 28** clearers actually emitted (64.3 %). So attributes
+would make 1,183 Madrid footprints usable and **geometry accepts 63.** `D-EU-23` is now the arc's
+one OPEN decision and **no `S3` sample may be frozen until it is ruled**
+(`OpenUBEM/docs/docs_ACTIVE/europeanLocations/debugs/docs/DECISION_REQUEST_D-EU-23_s3_geometry_mode_2026-08-27.md`).
+
+⚪ **Consequence for Step 10, stated so it is not read as worse news than it is.** Step 10's own
+population is the **real-stock neighbourhoods**, not `S3`; `10.4` and `10.9` already ran on 297
+buildings and 1,576 dwellings. What `D-EU-23` gates is the `S3` ladder rung that `EU-04` must clear
+before the arc completes, and `EU-04` completing is what §STATUS above says 10.3 / 10.5 / 10.6 / 10.7 /
+10.8 / 10.10 wait on. 🔴 It also puts a number on something Step 10 has never had one for:
+**a dwelling-partitioned population large enough for `G10.19`'s 30-per-fold `H10` requirement does not
+exist in this corpus** — `G10.19` already said so from the artefact (es 9 · uk 5 · it 3), and the
+geometric census is the upstream reason why.
+
+🟢 **Work item `10.1`'s chaining closure notice has been RECEIVED on the OpenUBEM side,
+2026-08-27.** It was filed on 2026-08-26 and nothing in the OpenUBEM tree referenced it until now:
+MVP §12.11 receiving step 3 still read *"that block is D-EU-09, upstream in Step 7, and it is not
+OpenUBEM's to lift"*, and Table 21 still carried `D-EU-09` as the arc's only remaining block. Both now
+record the block as **lifted by reference**, and the `EU-06` work-package row with them. ⚪ This
+records a lifted block, **not an executed cell**: the 408 `f > 0` runs are still unexecuted and
+§9.4 still assigns their execution to GSSCanada. `v1.0`'s frozen `schedule_status` values were
+**not** edited, because `v1.0` is immutable.
+
+🟢 **2026-08-27 (later) — `EU-04` moved again, and this time a cell ran.** `D-EU-23` was
+**RULED G1** — `S3 = 96` in mixed mode, both axes printed — and it was **executed end to end
+the same day**. The Madrid attribute ingestion ran as a **sidecar** (2,084 Catastro features in the
+study bbox, 1,183 of 1,194 EU-02 footprints credited a partner, 1,178 carrying a year **and** a
+dwelling count, all 28 `eu02` files SHA-256-identical before and after), lifting Spain's
+`layout_ready` from **0 to 958**. `S3` was frozen at **96** (FR 69 / ES 27, **12
+dwelling-partitioned / 84 massing**) by an input-only rule, and its **annual** campaign completed
+**95 of 96** with 0 severe and 0 fatal across those 95, EUI **min 29.5663 / median 80.3233 / max
+222.2945 kWh/m²** pooled **66.8677**, in **471.10 s** total.
+
+🔴 **BASIS, added additively 2026-08-27 — those figures are HEATING-ONLY, and the sentence above must
+never be quoted without the word.** `eui_kwh_m2` is `heating_kwh / floor_area_m2`, where `heating_kwh`
+is the annual sum of the hourly `Zone Ideal Loads Zone Total Heating Energy` `Output:Variable`
+(`run_eu_s2_campaign.py::_extract_heating_kwh`). **No lighting, no appliance electricity, no DHW, no
+cooling.** A reader who takes the column at its name gets a whole-building EUI wrong by a large factor
+in the direction that looks plausible. An off-path meter sidecar over copies of the same 95 IDFs
+measured the model's site total at **93.768 kWh/m²**, ratio **1.4023**, with every promoted artefact
+unmoved. 🔴 **`93.768` is NOT a whole-building EUI either:** heating + `InteriorEquipment:Electricity`
+is **100 %** of it (residual **0.02 kWh over 10.67 GWh**), and an object census of a promoted IDF finds
+**`Lights` 0, `ElectricEquipment` 0, `People` 0, `WaterUse*` 0, cooling coils 0**. The `S3` models
+contain exactly **two** end uses, so no TABULA or national-EUI comparison is reachable at this rung.
+Record: `docs/2026-08-27_OpenUBEM-response-intake_S3-basis-and-population.md` (`FINDING 169`,
+`FINDING 171`).
+
+🟢 **All of the above was RE-MEASURED FROM THIS MACHINE on 2026-08-27, not accepted as reported.** The
+OpenUBEM tree is at **`C:\Users\o_iseri\Desktop\OpenUBEM`** — a **sibling** of `GSSCanada`, which is why
+a `find` bounded to `Desktop\GSSCanada` had previously returned nothing and the nothing was written
+down as *"the tree is not on this machine"*. 🔴 **`FINDING 172`: that recorded limit was a scoping
+error, and it is this arc's fifth stale-blocker-with-a-written-reason — the first one of ours.** Every
+load-bearing figure in the OpenUBEM response re-derives here **exactly**: 95 of 96 with 0 severe /
+0 fatal, 95 distinct `idf_sha256` and 2 `weather_sha256`, pooled **66.867688** over **113,768.5830 m²**,
+min/median/max **29.5663 / 80.3233 / 222.2945**, sidecar **95/95 identical at `max_abs_diff = 0.0`**,
+site total **93.768143**, ratio **1.402294** — and **96 of 96 recorded `idf_sha256` recompute from the
+files with 0 mismatches**, which is stronger than the three-hash spot check they reported. ⚪ A negative
+search result is only as strong as its root; any future *"X is not available from here"* must print the
+root it searched.
+
+🔴 **POPULATION, same intake: the `S3` dwelling population is 26, in 12 buildings.** Verified here by
+summing `zone_count` by `layout_mode` over the manifest: **`DWELLING_LAYOUT_EMITTED` 12 buildings /
+26 zones**, **`FALLBACK_PENDING_LAYOUT` 83 buildings / 348 zones**, total **374** over the accepted 95
+(**381** over all 96 — the extra 7 are the zones of the one fatal building). ⚪ *"374 dwellings"* is
+false; 374 is a **zone** count, and 348 of those zones are massing floors. 🔴 **26 is the ceiling on any
+per-dwelling statistic taken over the `S3` corpus** — the same shape as `G10.19`, where `H10`'s
+dwelling-partitioned population is es 9 · uk 5 · it 3 against a required 30 per fold. Neither reaches 30.
+
+⚪ **And one constraint for whoever first reads an `S3` electricity series:** at `f = 0` **all 381 gain
+CSVs are flat at exactly `3`** — 8,760 rows each, one distinct value, 0 non-flat, verified here. The
+`OtherEquipment` `1` is a multiplier (`Watts/Area`) and the `Schedule:File` type limits are
+`AnyNumber_Wm2`, so the CSV *is* the gain. The non-heating 40 % of `S3` therefore carries **zero
+occupancy signal** at `f = 0`, and a null found there would be an artefact of the input, not a result.
+No 4J document currently reads it that way — checked by grep, which returned nothing.
+
+🔴 **What that does and does not do for Step 10.** It does **not** produce a Step-10 cell:
+the 408 `f > 0` runs are still unexecuted and §9.4 still assigns them to GSSCanada. What it does
+is retire the *reason* `EU-04` was open. `S3`'s acceptance is **half met** — the resource
+envelope is measured; the exclusion census (469 rows, each with a named reason) and one classified
+EnergyPlus failure **await an owner ruling**
+(`OpenUBEM/docs/docs_ACTIVE/europeanLocations/ACCEPTANCE_S3_promotion_2026-08-27.md` §6).
+⚪ Until those two answers land, `10.3 / 10.5 / 10.6 / 10.7 / 10.8 / 10.10` still wait on
+`EU-04`, but they now wait on **an approval**, not on a measurement.
+
+⚪ **One number this step quoted is corrected.** The `18` dwelling-partitioned Lyon buildings
+recorded above and in `FINDING`s that cite the layout ceiling is **28 of 297**; the 10 rows once
+refused as `PARTITION_AUDIT_FAILED` now emit, because the layout generator rotates about the
+footprint centroid and audits against a relative tolerance. The withdrawal is additive in
+`layout_contract_ceiling.CORRECTION.json`. 🔴 It does **not** rescue `G10.19`: corpus-wide
+only **79 of 1,255** attribute-ready buildings emit a dwelling layout at all, so a
+dwelling-partitioned population of 30 per fold still does not exist in this corpus.
+
 🔴 **Steps 8 and 9 are CLOSED and this step does not reopen them.** Step 8's definition of done closed
 on 2026-08-25 (night) and was re-run rotated on 2026-08-26 under `D-S9-3`(a); Step 9's board is
 **15 PASS / 3 FAIL / 1 NOT CHECKED** (`FINDING 149`). Their documents, their gates, their thresholds and
@@ -763,3 +869,173 @@ its designated defect **passed** it. Rewritten to score series identity; the `CF
 ⚪ **What 10.9 does NOT deliver, stated here rather than left to be discovered:** no EnergyPlus, no
 simulated power, no `CF`, no `sqrt(N)` fit, no `H10` verdict. Work item **10.10 now depends on 10.6**
 as well as 10.9 — `FINDING 158` removed the route by which it might have started early.
+
+### 2026-08-27 (response intake) — ALL FOUR `S3` CHALLENGES CAME BACK ACCEPTED, AND THEN THE TREE TURNED OUT TO BE LOCAL, SO ALL OF IT WAS RE-MEASURED
+
+Record: `docs/2026-08-27_OpenUBEM-response-intake_S3-basis-and-population.md`. Incoming:
+`../messages_OpenUBEM/2026-08-27_OpenUBEM_to_4J_response_S3_EU-05-06_challenges.md`.
+
+🔴 **`FINDING 172` — the recorded "hard limit" was a scoping error, and it is the arc's FIFTH
+stale-blocker-with-a-written-reason, the first one of ours.** `RESUME.md`'s entry of
+2026-08-27 (night, last+3) §2 says in bold that the OpenUBEM tree is not on this machine and that no
+`S3` / `EU-05` / `EU-06` number *can* be verified from here. The `find` behind it was bounded to
+`Desktop\GSSCanada`. **The tree is a sibling, at `C:\Users\o_iseri\Desktop\OpenUBEM`.** An entire arc of
+correspondence was conducted as *challenges from reported figures*, under a standing caution that none
+of it was checkable, when direct measurement was one directory up. ⚪ The three challenges were still
+right — which is exactly why this is recorded: **a correct conclusion reached under a false constraint
+is not evidence the constraint was harmless.** The rule *test the reason, do not inherit it* had been
+applied outward four times and inward never. **A negative search result is only as strong as its root.**
+
+🟢 **Re-measured from here, read-only, and every load-bearing figure they reported is EXACT.** 96 rows,
+`eplus_return_code` 95×`0` / 1×`1`, 0 severe and 0 fatal over the 95; 95 distinct `idf_sha256`,
+2 `weather_sha256`; pooled heating-only **66.867688** over **113,768.5830 m²**; min/median/max
+**29.5663 / 80.3233 / 222.2945**; sidecar **95 rows, `identical` True ×95, max `max_abs_diff` 0.0**;
+site total **93.768143**, ratio **1.402294**; heating + `InteriorEquipment:Electricity` residual
+**0.020000 kWh over 10,667,868.78 kWh**; manifest SHA-256 `e90652c6…4de909` as recorded; and **96 of 96
+recorded `idf_sha256` recompute with 0 mismatches** — stronger than the three-hash spot check they
+reported. Nothing they said was overstated.
+
+🔴 **`FINDING 169` — the unlabelled EUI was live in exactly one 4J place**, § `2026-08-27 (later)` of
+this document, corrected **additively**: the original sentence stands and a BASIS paragraph follows it.
+The other hits are correspondence, a ruled decision record and two dated `RESUME` entries, none
+rewritten; the `Step8_docs/` hits are coincidental digit matches, opened before being dismissed.
+
+🔴 **`FINDING 171` — `93.768 kWh/m²` is not a whole-building EUI either.** An object census of a
+promoted IDF finds **no `Lights`, no `ElectricEquipment`, no `People`, no `WaterUse*`, no cooling
+coil** — present are 4 `OTHEREQUIPMENT`, 4 `SCHEDULE:FILE`, 4 `HVACTEMPLATE:ZONE:IDEALLOADSAIRSYSTEM`.
+The correction owed is not *heating-only → whole-building*; it is that the `S3` models contain **two**
+end uses. No TABULA comparison, no national-EUI comparison and no `N1` projection is reachable at this
+rung, sidecar or not.
+
+🔴 **`FINDING 170` — their letter addresses the DHW arm as `G11.15`, an ID that moved the same day.**
+Since `FINDING 168`, `G11.15` is the double-count gate and the DHW per-dwelling arm is `G11.18`; acting
+by ID would have amended the wrong gate. ⚪ On the merits neither of their two asks needs a change:
+nothing on the 4J side was ever scoped against 95 or 374, and `G11.18` inherits `G9.15`'s
+**200 l/day ±10 %** from the HETUS trigger output, never from `S3` — which contains no DHW term to
+calibrate against. **Rule: a cross-tree message naming a gate must name its date.**
+
+⚪ **Nothing in this intake moved a 4J gate, band, threshold, verdict or count; no 4J code ran; nothing
+in the OpenUBEM tree was written.** Step 11 is still blocked on the **408 unexecuted `f > 0` runs**
+(§9.4, GSSCanada) — compute, not a decision.
+
+### 2026-08-27 (later) — 🔴 `FINDING 173`: THE 408 `f > 0` RUNS CANNOT BE SUBMITTED, AND THE REASON IS NOT THE CHAINING RULE. **THERE IS NO EXECUTOR.**
+
+Written after an attempt to prepare the `sbatch` for them. **The sbatch was not written, because
+there is nothing for it to invoke.** Measured from both trees on this machine, read-only.
+
+🔴 **1. Nothing consumes the frozen cell specification.** `grep` for
+`eu_campaign_cell_spec_v1.0.json` and for `cell_spec` across every `.py` and `.sh` in
+`C:\Users\o_iseri\Desktop\OpenUBEM\scripts\` and `\openubem\` returns **exactly one hit**:
+`scripts/freeze_eu_campaign_cell_spec.py:53`, the script that **wrote** the file. No reader. The
+same grep across `4J_docs_occ/tools/` returns **none**. §9.4 is signed `CLOSED` and the spec is
+`FROZEN_PINNED` at **510 cells / 510 unique `cell_id` / 0 unpinned weather** — all of which is
+true, and none of which is an executor. ⚪ **A closed contract is not a built runner**; §9.4 closed
+the *specification*, and `EU-08` — *"Execution of the 510 cells"*, owner **GSSCanada** — is a
+separate row of §9.7 and is still `In progress`.
+
+🔴 **2. The artefacts the spec points at do not exist.** Every cell names
+`idfs/<cell_id>.idf`, `schedules/<cell_id>.csv` and `manifests/<cell_id>.json` relative to a
+campaign root. `find` for directories named `idfs` or `manifests` under the OpenUBEM tree returns
+only unrelated US fleet and pytest-temp trees; **no campaign root exists**. There are no IDFs, no
+gain CSVs and no cell manifests for any of the 510.
+
+🔴 **3. The 102 `f = 0` control cells are ALSO unexecuted.** Their `schedule_status` is
+`READY_F0_CONTROL`, which says the *schedule* is ready, not that the *cell* has run. ⚪ **The
+blocker was never "408 of 510"; it is 510 of 510.** Any plan that treats the controls as done and
+the `f > 0` cells as the remainder is wrong by 102 runs.
+🔴 **Do not confuse this campaign with the `S3` campaign.** `S3` is 96 real-footprint buildings
+(FR + ES), it has run, and its 381 flat gain CSVs are a different artefact set entirely. The 510
+are **102 TABULA archetypes × 5 `f`** over `es`/`uk`/`it`. Two campaigns, two populations; the
+`f = 0` figures of one say nothing about the other.
+
+🔴 **4. The spec's own frozen field still reads `BLOCKED_CHAINING_RULE` on all 408.** `v1.0` is
+immutable and work item `10.1` lifted the block **by reference**, in a document — not in the JSON.
+⚪ A runner written to trust the spec's `schedule_status` would therefore **refuse all 408 by
+construction**, and would be right to, since the field is what it was frozen as. Whoever writes
+the executor must read the lift from `Step10_docs/docs/2026-08-26_10.1_chaining-closure-notice.md`
+and record that it did so. **This does not justify editing `v1.0`; a change produces a `v1.1`.**
+
+🟢 **What DOES exist, so the gap is bounded and is a driver, not a capability.**
+`openubem/semantic/european_schedules.py::emit_step8_gain_schedule` /
+`build_step8_gain_series` implement the `f > 0` gain law
+`phi(t) = 3.0 · ((1 − f) + f · g(t)/mean(g))` and accept every `f` in the frozen set; the 102
+TABULA archetype records exist; all four weather folds are `RULED_PINNED_EXCEPTION` with a hashed
+EPW verified on disk; and **EnergyPlus 24.2.0 is installed on Speed** at
+`~/ep_install/EnergyPlus-24.2.0-e7ecb2d53b-Linux-Ubuntu22.04-x86_64`. The missing piece is the
+driver that walks the spec, emits each gain CSV from a 4J presence series, builds the IDF, runs
+E+, and writes the cell manifest of §9.6.
+
+🔴 **The ownership question this raises, and it is the author's, not mine.** §9.4 gives OpenUBEM
+*"dwelling/core geometry and watertight IDF generation"* and *"EnergyPlus execution, parsing, and
+low-level meter integrity"*, while §9.7 gives GSSCanada *"Execution of the 510 cells"*. **Those two
+rows are consistent only if OpenUBEM supplies the per-cell build-and-run entry point and GSSCanada
+drives it.** No such entry point is exported today. ⚪ Filed as a question, not a decision:
+whichever tree writes it, it must not be written twice.
+
+⚪ **What this entry changes: nothing.** No gate, band, threshold, verdict or count moved; no code
+was written or run; nothing in the OpenUBEM tree was written. Step 11's blocker is **re-stated,
+not lifted** — and it is now stated correctly: **510 unexecuted cells and no executor**, where the
+record previously said *408 runs, compute not a decision*. 🔴 **"Compute, not a decision" was
+wrong.** It is not compute; there is nothing to compute with yet.
+
+### 2026-08-27 (night) — AMENDMENT TO `FINDING 173`: AN EXECUTOR *DOES* EXIST, FOR ANOTHER POPULATION — AND THE ASK TO OPENUBEM IS NOW ONE FUNCTION, NOT A CAMPAIGN
+
+🔴 **`FINDING 173` point (1) says *"There is no reader and no executor anywhere."* The first half stands
+and is unchanged. The second half is too strong and is corrected here, additively, before it is
+quoted.** The entry above is not rewritten; this paragraph is what a later reader must carry with it.
+
+🟢 **An executor exists — for a different population.** `OpenUBEM/scripts/run_eu_s2_campaign.py` and
+`scripts/run_eu_s3_campaign.py` build IDFs, invoke EnergyPlus, parse the heating series and write a
+campaign manifest; `S3` imports `build_geometry_for_row`, `build_idf_for_building` and
+`run_energyplus_for_building` from `S2`, and **`S2` already calls `emit_step8_gain_schedule`** per
+dwelling zone (line 267), with the fixed-name `SCHEDULETYPELIMITS` duplication handled at line 263.
+That path has been exercised on the **96 real-footprint `S3` buildings**, 95 accepted.
+
+🔴 **What it is not, measured field by field rather than asserted.** (a) Its population is a frozen
+`S3` sample of **real footprints**, not the 510 rows of the spec. (b) Its geometry comes from a **GPKG
+footprint manifest** — and the 510 cells carry **no footprint reference at all**, a cell being
+`archetype_id × weather_id × f` and nothing else. (c) `f` is a **module constant `SENSITIVITY_F = 0.0`**;
+`presence` and `chaining_rule` are **never passed**. (d) It writes a **flat campaign CSV**, not the
+§9.6 per-cell JSON manifest.
+
+⚪ **So the corrected statement of the blockage is:** the missing pieces are a **driver** (walk the
+spec, supply `g(t)`, order the runs, submit the array) and an **archetype-only geometry route**
+(TABULA record → conditioned plate → zones, with no OSM polygon). `derive_european_plate_area` is
+documented as valid *"for synthetic-average rows as well as for integral source rows"*, so the
+ingredients exist; the plate-to-zones step for a building with no measured outline does not.
+
+🟢 **The ownership question of `FINDING 173` §7 is now answered as a recommendation and sent.**
+`Step 9.4` gives OpenUBEM *"dwelling/core geometry and watertight IDF generation"* and *"EnergyPlus
+execution, parsing, and low-level meter integrity"*, and gives GSSCanada *"the five-level campaign
+matrix and run ordering"* and *"Step 8 `manifest.json`, gate scoring"*; §9.7 assigns `EU-08` —
+*execution of the 510 cells* — to GSSCanada. 🔴 **Those rows are consistent under exactly one reading:
+`EU-08` is the LOOP, not the ENGINE.** OpenUBEM exports one per-cell entry point
+(`run_campaign_cell(cell, *, archetype_record, presence, chaining_rule, run_root, dry_run)` returning
+the §9.6 manifest); GSSCanada writes the driver around it. Two reasons this is the right side of the
+line: the §9.6 manifest demands `openubem_git_commit`, `energyplus_version` and
+`energyplus_build_hash` — facts only their tree observes — and §9.4 explicitly forbids GSSCanada from
+reaching into OpenUBEM geometry or IDF internals, which is what a GSSCanada-side IDF builder would do.
+
+⚪ **Sent 2026-08-27** as `messages_OpenUBEM/2026-08-27_4J_to_OpenUBEM_EU-08_executor_entry_point.md`
+(102 lines), copied into their inbox at
+`OpenUBEM/docs/docs_ACTIVE/europeanLocations/messages_GSSCanada/`. It also withdraws, to them, the
+*"408 runs — compute, not a decision"* sentence of the previous letter's §6.
+
+🔴 **Two constraints the driver must satisfy, recorded here because no gate would catch either.**
+(1) It must read the `f > 0` lift from `Step10_docs/docs/2026-08-26_10.1_chaining-closure-notice.md`,
+**not** from the frozen `schedule_status`, and **record in each cell manifest that it did so**, with
+the notice's identity rather than a boolean — a runner that silently ignores a frozen `BLOCKED_*`
+field is indistinguishable from one that never read it. (2) `eu_campaign_cell_spec_v1.0.json` must
+never be amended; restating the statuses inside the file produces a **`v1.1`**, and `v1.0`'s digest
+must survive it.
+
+⚪ **One question raised to them, not decided here: 102 versus 88.** The spec is 102 archetypes × 5 =
+**510**; the 4J side's own Step 8 injected campaign is 88 archetype cells × 5 = **440**, because the
+`4a`/`4b` rulings turn TABULA rows into cells (es 24, uk 32, it 32). **They are two different
+campaigns and nothing here reconciles them** — but the archetype populations differ by 14, and any
+figure carried between them must cross that difference deliberately.
+
+⚪ **What this amendment changes: nothing scored.** No gate, band, threshold, verdict or count moved;
+no code was written or run; nothing in the OpenUBEM tree was written but the message named above.
+Step 11 remains blocked, **510 of 510**, and what is owed is now **one exported function and one
+geometry route on their side, and the driver on ours** — not compute.

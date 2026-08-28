@@ -3631,3 +3631,45 @@ and measured: dropping it moves whole-fold MAE by **+0.158 min/day** and MAPE fr
 
 ⚪ No threshold moved, no checker edited, `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
 unchanged.
+
+---
+
+### 2026-08-27 (night) — `D-S6-16`'s METHODS WRITE-UP IS DRAFTED. THE DECISION IS STILL OPEN AND THAT IS SAID IN THE TEXT.
+
+🟢 **The one thing `D-S6-16` still governed — how the `D-S6-14` ceiling is reported — now has
+drafted text.** `writing/4thJ_writeup_notes.md` **§8** (375 → **478** lines; backup
+`.bak_pre_ds616`, `[ -s ]`-verified before the append): `8.1` Methods (the control and what it turned
+out to measure), `8.2` Results and limitations (what actually decided the release), `8.3` the
+`FINDING 112` sentence and why it may not be generalised, `8.4` scope.
+
+🔴 **The decision is NOT ruled by this.** The passages are drafted under **(a′)**, the standing
+recommendation, and say so in their first paragraph; **(c′)** — additionally building the
+body-randomised ceiling, a full 7 B retrain — remains the author's call and one line closes it. Under
+(c′) the drafted text survives unchanged and gains a paragraph, which is why drafting it now costs
+nothing.
+
+🔴 **What the text carries, because these are the sentences easiest to lose.** The ceiling is
+reported as **constant across folds at fixed capacity** (Leg 4: 0.5488 / 0.5484 / 0.5466, sd
+**0.001137**) and **strongly responsive to capacity** (Leg 5: **0.6496**, +0.102 = **89.4×** that
+sd), so it discriminates **backbones, not folds**; its alarms are quoted with their z-values
+(**0.40 / 1.16 / 0.12** against an AUC-difference SE of 0.0128) **to explain them, never to re-score
+them** — adding the tolerance and re-scoring is option (b), declined because it sets a threshold
+after seeing the number it would decide. The control is **not removed**: it was built, run and found
+not to do what it was designed to do, and deleting a control after seeing its result is the move this
+project refuses everywhere else.
+
+🔴 **Three sentences the write-up must not lose**, all already on this page and now in the drafted
+text: never *"the privacy audit passed"* or *"4 of 4"* (it ships **two registered FAILs and one
+partial**); the perplexity gap is **not** independent confirmation (`FINDING 116`, 0.0511 on the
+permuted adapter); and the Leg-5 coverage clause FAILs for **vacuity**, the same two injections
+felling `G6.10` on all three Leg-4 folds.
+
+🔴 **`FINDING 112`'s inference is written as withdrawn for Leg 5 and standing for Leg 4**, with the
+generalisable half stated in the methods rather than only in the decision record: *an aggregate loss
+that matches is not evidence that a model did not memorise* — at 7 B the control reaches 0.6496 while
+its last-20-step loss sits +0.0045 (z = 0.23) from the reported model's. The Leg-4-only
+*"unregistered bar at ≈ 0.548"* reading is quoted as Leg-4-only or not at all.
+
+⚪ **Nothing moved.** No band, threshold, verdict or count changed; no gate was scored; no run was
+submitted; the release position is unchanged and still rests on `G6.10`'s registered FAIL.
+`prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched.

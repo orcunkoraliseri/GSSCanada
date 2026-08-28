@@ -676,6 +676,32 @@ OF IT.** The report was opened, as this step owed itself. Table 1's reference is
 single family house** at a **35 K** rise; there is no per-person figure and no 60 °C anywhere.
 `G9.7`'s band was **not moved** and it FAILS.
 
+> 🔴 **CORRECTED 2026-08-27 by work item 11.2** —
+> `../Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md`, findings `163`–`166`.
+> **Nothing above is withdrawn and no Step 9 number changes**: the report really does contain no
+> per-person volume and no 60 °C, `G9.7` still **FAILS 300**, and the band is still unmoved. Two
+> things are added.
+>
+> **(1) The band was never Jordan & Vajen's, so its absence from that report was never evidence
+> about the band.** It enters this project at `DeepResearchPrompts/RL13_…` row 15 (2026-08-14,
+> Tier 2), which attributes *"30 to 50 L/person/day at 60 deg C"* jointly to Jordan & Vajen **and to
+> Fuentes et al. (2018)**, *A review of domestic hot water consumption profiles…*, RSER 81(1):
+> 1530–1547, DOI `10.1016/j.rser.2017.05.229`. §9B of the parent document compressed that row to one
+> attribution. **Fuentes is in no citation table in this project, `outputs_step9/citations.csv`
+> included.** `FINDING 138` opened the right report and asked the wrong one — the general lesson
+> being that a value's **source** is a claim needing its own check, separate from the value.
+>
+> **(2) `RL25`'s VOLUMES were sound; only its BASES were not.** Short 1–2 L against Table 1's 1;
+> medium 6 L against 6, exact; bath 100–140 L against 140; shower 30–50 L against 40 — **4 of 4
+> consistent**. The per-category temperatures and the 50 L/person/day base are **absent**, exactly as
+> stated above. The sentence *"and so is `RL25`'s correction of it"* is therefore **too broad** and
+> should be read as applying to the bases alone.
+>
+> ⚪ Also established, and it is the operative part: `G9.7`'s scored quantity reduces to
+> **`200 / n_members`** to within 0.0005 over all 300 rows, so the gate measures household size.
+> **`D-S11-1`** carries the question forward; `D-S9-2` item 7's option set is extended there, not
+> here.
+
 🔴 **`FINDING 139` — THE CORPUS DOES NOT CONTAIN ENOUGH LAUNDRY TIME TO SUPPORT CREST'S
 PUBLISHED CYCLE COUNTS, AND THE SHORTFALL IS THREE TIMES WIDER IN ITALY THAN IN SPAIN.** Eligible
 laundry minutes per dwelling-year: **es 2,462 / uk 1,589 / it 781**, against a washing machine that

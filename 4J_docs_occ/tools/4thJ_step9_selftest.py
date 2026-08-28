@@ -201,7 +201,13 @@ CASES = [
      {"truncate_cycle_at_episode_end": True}),
     ("double_one_trigger_probability", "G9.6", ["G9.5"], "run",
      {"double_trigger_appliance": "vacuum"}),
-    ("scale_dhw_by_2", "G9.7", ["G9.8"], "run", {"dhw_scale": 2.0}),
+    # D-S11-2, 2026-08-27: `G9.7` is `INFO` by `D-S11-1` and an `INFO` gate
+    # cannot fail, so this mutation had NO detector between the ruling and
+    # this line. `G9.15` scores the per-dwelling volume against Jordan &
+    # Vajen's own 200 l/day and takes the case over. `G9.7` is not listed
+    # as must-stay-clean because a permanently-INFO gate staying clean is
+    # vacuous -- it would pass this row even if the model were deleted.
+    ("scale_dhw_by_2", "G9.15", ["G9.8"], "run", {"dhw_scale": 2.0}),
     ("collapse_four_events_into_one", "G9.8", ["G9.7"], "run",
      {"collapse_dhw_events": True}),
     ("repoint_one_wateruse_equipment", "G9.9", ["G9.7"], "file", {}),
@@ -214,7 +220,8 @@ CASES = [
     ("add_per_dwelling_prediction", "G9.13", None, "file", {}),
     ("null_change_nothing", None, "ALL", "run", {}),
     # ---- ADDITIONAL probes, ours, beyond the registered fifteen ------------
-    # The registered table falsifies the fourteen GATES and says nothing about
+    # The registered table falsifies the GATES (fourteen as registered, and
+    # `G9.15` since `D-S11-2`, 2026-08-27) and says nothing about
     # the five vacuity guards. V9.b, V9.c, V9.d and V9.e prove themselves on
     # every run by construction; V9.a cannot, because its subject is the corpus.
     # So it gets a probe here, and it is labelled as ours rather than counted

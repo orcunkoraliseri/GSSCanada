@@ -203,3 +203,41 @@ of the paper with it.
 1. **Single-Fold Reporting**: Report the Qwen comparison strictly on pre-named fold `es`, as pre-registered in `prereg.md:90`.
 2. **Tokenizer Basis for `G4.2`**: Note in the manuscript that delimiter token parsing is evaluated on Qwen's native vocabulary.
 3. **Invariants**: `prereg.md` (md5 `e4243e07cdd80c9c846b91f40e3e8c45`) remains strictly frozen. No re-runs or threshold alterations permitted.
+
+---
+
+## 9. OUTCOME — the number arrived, 2026-08-27. **The ruling taken blind HOLDS.**
+
+🟢 **This section is added after the fact and changes nothing above it.** The point of this document
+was to fix the rule before the number existed; the number now exists, and it is recorded here beside
+the rule it was measured against, not in place of it.
+
+| | |
+|---|---|
+| job | `1287613`, `PD` → **`R` on `speed-41`** |
+| elapsed at the 2026-08-27 check | **9 h 03 m**, epoch 1 of 3, losses 0.32–0.45 |
+| **truncation, train** | **0.0247 %** |
+| **truncation, val** | **0.0543 %** |
+| pre-declared contamination line (§4) | **≤ 1.0 %** |
+| verdict | 🟢 **NOT approached. The arm is NOT contaminated.** |
+| `--max-len` | **1280, unchanged on every arm.** Option (B) was never exercised |
+| `prereg.md` | md5 `e4243e07cdd80c9c846b91f40e3e8c45`, untouched |
+
+⚪ **The estimate in §2 was 0.0014 %, and the measurement is ~18× larger.** That is worth stating
+rather than rounding away: the linear chars-per-token proxy under-stated the tail, exactly the
+direction §2 said was *less* likely. It does not change the ruling — 0.0247 % is still two orders of
+magnitude below the 1.0 % line — but **the estimate was wrong in the unfavourable direction, and any
+future use of that proxy should carry this correction.** Quote the job's own `TRUNCATION` line, never
+§2's table.
+
+🔴 **What is still owed and must not be assumed from this section:** the arm has **not finished**. No
+loss comparison, no `G4.x` verdict, no `G4.2` reading, and nothing about OLMo-vs-Qwen may be written
+until `1287613` exits. Read the `TRUNCATION` line **before** any loss number when it does.
+
+🔴 **Still forbidden, unchanged:** raising `--max-len` on this arm alone and still calling the two
+arms "the same recipe".
+
+⚪ **Where this is tracked.** Until 2026-08-27 this running job had **no card on the pipeline board**,
+so the board reported `0 in progress` through its ninth hour and the *In progress* filter returned an
+empty page. A `s:"prog"` card now exists (Step 4, board item 115 of 115); the stale snapshot
+`4thJ_CHECKLIST.html` carries the same card and a banner saying it is a 2026-08-24 snapshot.

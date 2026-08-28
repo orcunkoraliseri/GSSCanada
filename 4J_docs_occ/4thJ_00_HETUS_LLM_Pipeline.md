@@ -1725,6 +1725,51 @@ energy result. The Jordan and Vajen four-event tapping model (short, medium, bat
 standard, at roughly 30 to 50 L/person/day at 60 °C. Activity codes for washing, showering, food
 preparation and laundry are the drivers.
 
+> 🔴 **DO NOT QUOTE THE SENTENCE ABOVE. It is the citation-collapse that `FINDING 163` traces
+> `G9.7`'s failure to** (2026-08-27, work item 11.2 —
+> `Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md`). It merges **two papers with two
+> bases** into one attribution:
+> * the **four-event tapping model** is Jordan & Vajen, IEA-SHC Task 26 (2001), and its volumes are
+>   **per dwelling — 200 l/day — with no temperature stated anywhere in the report**, which says
+>   outright that *"for the cold water temperature distribution during the year, a local profile
+>   should be used"* (`FINDING 164`);
+> * the **30 to 50 L/person/day at 60 °C** is `RL13` row 15's, attributed there jointly to
+>   **Fuentes et al. (2018)**, *A review of domestic hot water consumption profiles for application
+>   in systems and buildings energy performance analysis*, **RSER 81(1): 1530–1547**, DOI
+>   `10.1016/j.rser.2017.05.229` — a **review**, per person, at 60 °C. ⚪ Tier 2, **not yet fetched
+>   or verified**.
+>
+> Step 9 built the model on the first and registered `G9.7` on the second, so the gate's scored
+> quantity is **`200 / n_members`** and it measures household size (`FINDING 165`). **The band is not
+> moved.** What the manuscript does about it is `D-S11-1`, to be ruled with `D-S9-2` item 7;
+> repairing the citation is not optional under any option there.
+>
+> 🟢 **RULED 2026-08-27, (d)(ii) → (b), and executed the same day.** `G9.7` and `G11.7`
+> are **permanent `INFO`** on the `G8.7` / `D-S8-5` item 1 (a) precedent; `FUENTES-2018` is now in
+> `Step9_docs/outputs_step9/citations.csv`; the deviation is reported in the methods as a
+> **denominator incompatibility**, never as a model failure and never as a pass. 🔴 **The
+> band is still `(30.0, 50.0)` in the checker and the medians are still printed as outside it.**
+> 🟢 **Fuentes et al. is no longer unverified in its bibliographic fields:** `G9.4`
+> resolved it against CrossRef and **failed it on the first run** — `RL13`'s `81(1)` carries an
+> issue number the publisher's record does not have (`FINDING 167`); title, container, volume 81,
+> pages 1530-1547, 2018 and Fuentes / Arce / Salom are all confirmed. ⚪ **The 30-50
+> figure itself is still unverified** — it is inside the paper, and the paper has not been read.
+> 🔴 **`D-S11-2` is open:** retiring `G9.7` to `INFO` left `scale_dhw_by_2` detected by
+> nothing in Step 9.
+>
+> 🟢 **`D-S11-2` CLOSED the same day: `G9.15`.** The author ruled the arm - per dwelling,
+> at Jordan & Vajen's own **200 l/day, +/-10 %**, the model's own denominator and the source's own
+> published figure. Implemented in `4thJ_gates_step9.py`, handed `scale_dhw_by_2` in the registered
+> table, and seen failing before it was trusted: shipped `PASS` at 200.79 / 201.01 / 199.47
+> l/dwelling/day, doubled draws `FAIL` at 401.58 / 402.03 / 398.93. Step 9 now reads
+> `16 PASS / 2 FAIL / 1 INFO / 1 NOT CHECKED` offline, `17 PASS / 2 FAIL / 1 INFO` online, over
+> fifteen gates. ⚪ **It is a scale / regression arm and must never be quoted as an
+> external validation** - 200 l/day is also the emitter's own input default. 🔴 **`G9.7`
+> and `G11.7` stay `INFO`, the 30-50 band stays registered and unmoved, and the methods still
+> report that comparison as a denominator incompatibility.** ⚪ **The transferable lesson:
+> a gate scores a quantity AND detects a mutation, and retiring the first silently retires the
+> second - which applies to `G8.7` too.**
+
 ### 9C. 🔴 The validation-scale catch, which bounds the whole downstream claim
 
 The published activity-to-load models validate against **aggregate** demand: 100 to 500 dwellings, feeder
@@ -1934,6 +1979,24 @@ happens when a deep-research citation is trusted unvetted.
 
 🔴 **A failing gate's perturbation demonstrates nothing.** Step 9 reported the three FAILs'
 perturbations as `ALREADY_FAILING_AT_BASELINE`, never as hits. `V11.b` inherits that disposition.
+
+> 🟢 **2026-08-27 - WORK ITEM 11.1 IS DONE, AND IT IS THE ONLY PART OF STEP 11
+> THAT HAS RUN.** The carry-over audit scored `G11.1`-`G11.4` on the Step 9 mapping and citation
+> set, unchanged: **`PASS 61 / PASS 192 / PASS 149 / PASS 4`** online, the same three plus
+> `NOT CHECKED` offline (`V11.c`). 🔴 **The other fourteen declared gates print
+> `NOT RUN` by name and the runner prints NO TALLY** - `V11.g`, because a partial run that prints
+> a tally reads as a complete one. ⚪ Nothing at stock scale was measured: no
+> building was simulated, nothing was aggregated, and the three inherited failures are untouched.
+> Battery **7 HIT / 0 MISS**, coverage clause PASS.
+>
+> 🔴 **`FINDING 168`, found by census before anything was scored: `G11.15` headed TWO
+> gate-table rows** - the double-count gate below and, for one evening, `D-S11-2`'s DHW
+> per-dwelling arm. `V11.g` compares SETS, and a set does not count a duplicate twice, so the
+> coverage clause would have gone green with one of the two gates unscored forever. The newcomer
+> moved to **`G11.18`**; no verdict moved, because nothing had been scored under either ID.
+> ⚪ The runner now censuses row heads and refuses an ambiguous document, and the
+> refusal is a registered case in the battery. Record
+> `Step11_docs/docs/2026-08-27_work-item-11.1_carry-over-audit.md`.
 
 ### 11C. The seam with Step 10, which is invisible from either side
 

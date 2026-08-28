@@ -1,0 +1,232 @@
+{
+  "artefact_identity": {
+    "activity_appliance_map.csv": {
+      "md5": "640af0d0bdfadd5f10936d878bb0600d",
+      "missing": false,
+      "n_rows": 192
+    },
+    "citations.csv": {
+      "md5": "f240b78bcbaa9783c0021f147cd2c09c",
+      "missing": false,
+      "n_rows": 4
+    }
+  },
+  "artefact_paths": {
+    "citations": "Step9_docs\\outputs_step9\\citations.csv",
+    "map": "Step9_docs\\outputs_step9\\activity_appliance_map.csv",
+    "step9_gate_code": "tools\\4thJ_gates_step9.py"
+  },
+  "board": [
+    {
+      "id": "G11.1",
+      "n_scanned": 61,
+      "note": "every load-bearing row names a source model and a table. CARRY-OVER: agrees with G9.1 as shipped -- PASS 61, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.2",
+      "n_scanned": 192,
+      "note": "every row carries a structured label and a scale. CARRY-OVER: agrees with G9.2 as shipped -- PASS 192, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.3",
+      "n_scanned": 149,
+      "note": "every NOT VALIDATED row carries reasoning or a citation. CARRY-OVER: agrees with G9.3 as shipped -- PASS 149, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.4",
+      "n_scanned": 4,
+      "note": "all 4 citations match CrossRef on title, volume, issue, pages and first author. CARRY-OVER: the validation document declares no shipped count for G9.4, so only the verdict carries over",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.5",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.6",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.7",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.8",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.9",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.10",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.11",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.12",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.13",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.14",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.15",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.16",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.17",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    },
+    {
+      "id": "G11.18",
+      "n_scanned": 0,
+      "note": "declared, not implemented -- outside work item 11.1",
+      "verdict": "NOT RUN"
+    }
+  ],
+  "carry_over_agreement": [
+    {
+      "expected_n": 61,
+      "expected_verdict": "PASS",
+      "gate": "G11.1",
+      "inherits": "G9.1",
+      "n": 61,
+      "status": "AGREES",
+      "verdict": "PASS"
+    },
+    {
+      "expected_n": 192,
+      "expected_verdict": "PASS",
+      "gate": "G11.2",
+      "inherits": "G9.2",
+      "n": 192,
+      "status": "AGREES",
+      "verdict": "PASS"
+    },
+    {
+      "expected_n": 149,
+      "expected_verdict": "PASS",
+      "gate": "G11.3",
+      "inherits": "G9.3",
+      "n": 149,
+      "status": "AGREES",
+      "verdict": "PASS"
+    },
+    {
+      "expected_n": null,
+      "expected_verdict": null,
+      "gate": "G11.4",
+      "inherits": "G9.4",
+      "n": 4,
+      "status": "NO INHERITED COUNT",
+      "verdict": "PASS"
+    }
+  ],
+  "carry_over_drift": [],
+  "carry_over_inheritance_broken": [],
+  "counts_of_scored_gates_only": {
+    "PASS": 4
+  },
+  "declared_gates": [
+    "G11.1",
+    "G11.2",
+    "G11.3",
+    "G11.4",
+    "G11.5",
+    "G11.6",
+    "G11.7",
+    "G11.8",
+    "G11.9",
+    "G11.10",
+    "G11.11",
+    "G11.12",
+    "G11.13",
+    "G11.14",
+    "G11.15",
+    "G11.16",
+    "G11.17",
+    "G11.18"
+  ],
+  "declared_guards": [
+    "V11.a",
+    "V11.b",
+    "V11.c",
+    "V11.d",
+    "V11.e",
+    "V11.f",
+    "V11.g"
+  ],
+  "duplicate_gate_ids": [],
+  "gates_declared_but_absent_from_board": [],
+  "gates_declared_but_not_implemented": [
+    "G11.5",
+    "G11.6",
+    "G11.7",
+    "G11.8",
+    "G11.9",
+    "G11.10",
+    "G11.11",
+    "G11.12",
+    "G11.13",
+    "G11.14",
+    "G11.15",
+    "G11.16",
+    "G11.17",
+    "G11.18"
+  ],
+  "gates_scored_but_not_declared": [],
+  "implemented_gates": [
+    "G11.1",
+    "G11.2",
+    "G11.3",
+    "G11.4"
+  ],
+  "offline": false,
+  "scope": "G11.1-G11.4 only; Step 11 declares 18 gates",
+  "step9_gate_code_md5": "5c527ef86ccd87cd17c2c684061882cd",
+  "suite_is_partial": true,
+  "v11_f_gate_id_hygiene": "PASS",
+  "work_item": "11.1 carry-over audit"
+}

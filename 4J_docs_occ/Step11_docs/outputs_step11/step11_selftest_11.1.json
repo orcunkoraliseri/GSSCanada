@@ -1,0 +1,57 @@
+{
+  "already_failing": 0,
+  "baseline": {
+    "G11.1": "PASS",
+    "G11.2": "PASS",
+    "G11.3": "PASS",
+    "G11.4": "NOT CHECKED"
+  },
+  "coverage_clause": "PASS",
+  "hits": 7,
+  "misses": 0,
+  "rows": [
+    [
+      "null",
+      "-",
+      "HIT",
+      "nothing moved"
+    ],
+    [
+      "blank_source_table",
+      "G11.1",
+      "HIT",
+      "G11.1 fell and its clean set stayed clean"
+    ],
+    [
+      "strip_validation_scale",
+      "G11.2",
+      "HIT",
+      "G11.2 fell and its clean set stayed clean"
+    ],
+    [
+      "strip_reasoning_and_citation",
+      "G11.3",
+      "HIT",
+      "G11.3 fell and its clean set stayed clean"
+    ],
+    [
+      "citation_lose_artefact",
+      "G11.4",
+      "HIT",
+      "G11.4 fell and its clean set stayed clean"
+    ],
+    [
+      "drop_rows_to_20",
+      "G11.1",
+      "HIT",
+      "G11.1 fell and its clean set stayed clean"
+    ],
+    [
+      "duplicate_gate_id",
+      "-",
+      "HIT",
+      "the runner refused to score: V11"
+    ]
+  ],
+  "seconds": 0.2
+}

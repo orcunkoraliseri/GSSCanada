@@ -484,6 +484,16 @@ architecture differs.
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
+> 🔴 **The DHW line in the box above is a citation-collapse and must not be quoted** (2026-08-27,
+> `FINDING 163`, work item 11.2 —
+> `Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md`). The **four-event tapping model**
+> is Jordan & Vajen (2001), whose volumes are **per dwelling, 200 l/day, with no temperature stated
+> anywhere in the report**. The **30–50 L/person/day at 60 °C** is a different source —
+> **Fuentes et al. (2018)**, RSER 81(1): 1530–1547, DOI `10.1016/j.rser.2017.05.229`, named in
+> `RL13` row 15 and cited in no artefact of this project. Step 9 built on the first and gated on the
+> second, so `G9.7`'s scored quantity is **`200 / n_members`**. **No band is moved**; the manuscript
+> question is `D-S11-1`, ruled together with `D-S9-2` item 7.
+
 ---
 
 ## VALIDATION GATES — thresholds now set

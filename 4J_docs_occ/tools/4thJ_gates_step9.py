@@ -11,6 +11,16 @@ validation document declares, and FAILs if the two sets differ.
 
 No threshold in this file may be changed to make a gate pass. `G9.7` and `G9.11`
 are both expected to FAIL and are scored exactly as registered.
+
+2026-08-27, `D-S11-1` item 1, ruled by the author on `FINDING 163` and
+`FINDING 165`: `G9.7` is now recorded as `INFO`, permanently, on the `G8.7` /
+`D-S8-5` item 1 (a) precedent. THE BAND IS NOT MOVED and the medians are not
+softened -- 100.16 / 117.65 / 91.06 are still printed against 30-50. What
+changed is that the two sides are known not to be the same quantity: the band
+is Fuentes et al. (2018)'s, PER PERSON, and the model is Jordan & Vajen's, PER
+DWELLING and unscaled, so their ratio is n_members and the comparison scores
+household size. A gate whose two sides are not the same quantity demonstrates
+nothing EVEN WHEN IT PASSES.
 """
 import argparse
 import collections
@@ -27,6 +37,13 @@ import sys
 # `Step9_docs/4thJ_09_enduseLoads_val.md` and are NOT to be edited here.
 # --------------------------------------------------------------------------
 G9_7_BAND_L_PER_PERSON_DAY = (30.0, 50.0)     # "at 60 C, population median"
+# D-S11-2 (2026-08-27): the PER DWELLING arm. 200 l/day is Jordan & Vajen's
+# own figure for a one-family house -- 73 000 l/yr / 365 d -- quoted in
+# `RL25` B10 and reproduced verbatim in `FINDING 165`. It is NOT a new
+# number and it is NOT a softened 30-50: it is the emitter's own source,
+# read on the basis that source states.
+G9_15_DWELLING_REF_L_PER_DAY = 200.0          # Jordan & Vajen, per dwelling
+G9_15_TOL_FRAC = 0.10                         # +/-10 %, D-S11-2, the author
 G9_10_CLOSURE_PCT = 0.5
 G9_12_R2_MIN = 0.85
 G9_4_FIELDS = ("volume", "issue", "page", "first_author")   # FINDING 47
@@ -336,7 +353,7 @@ def g9_6(board, manifests, tol=0.15):
 
 
 # --------------------------------------------------------------------------
-# G9.7 -- DHW volume, scored EXACTLY as registered
+# G9.7 -- DHW volume. INFO, PERMANENTLY, by D-S11-1 item 1 (2026-08-27)
 # --------------------------------------------------------------------------
 def g9_7(board, manifests, out_dir=None):
     """30 to 50 L/person/day at 60 C, POPULATION MEDIAN, reported per country.
@@ -352,6 +369,26 @@ def g9_7(board, manifests, out_dir=None):
     reference is 200 l/day per single-family house at a 35 K rise. The band is
     NOT moved for that: `D-S9-2` item 7 asks the author what the manuscript
     should say about the failure, not whether to soften it.
+
+    🔴 2026-08-27 -- `D-S11-1` item 1, ruled (d)(ii) -> (b). THE VERDICT IS NOW
+    `INFO`, PERMANENTLY, AND THE BAND IS UNCHANGED AT (30.0, 50.0). The medians
+    are still computed, still printed, and still stated to be outside; nothing
+    is softened and no threshold moved. The reason the comparison is no longer
+    SCORED is that `FINDING 163` traced the band to Fuentes et al. (2018) via
+    `RL13` row 15, not to Jordan & Vajen, and `FINDING 165` showed the scored
+    quantity reduces to `200 / n_members` to 0.0005 over all 300 rows -- a band
+    stated PER PERSON against a model stated PER DWELLING and not scaled by
+    household size (`D-S9-2` item 5 (a)). The two sides are not the same
+    quantity, so the comparison could not have demonstrated anything about the
+    DHW model in either direction. Precedent: `G8.7`, `D-S8-5` item 1 (a).
+
+    🔴 A CONSEQUENCE THE RULING DID NOT ADDRESS, RECORDED HERE RATHER THAN
+    REPAIRED HERE: `4thJ_step9_selftest.py` line 204 declares `G9.7` the ONLY
+    detector of the `scale_dhw_by_2` mutation, and explicitly declares `G9.8`
+    blind to it (the four portions are scale-invariant). An `INFO` gate cannot
+    fail, so as of this ruling DOUBLING EVERY DHW DRAW IS CAUGHT BY NOTHING IN
+    THE STEP 9 BATTERY. That hole is real and is raised as `D-S11-2`; it is NOT
+    closed by inventing a replacement band here.
     """
     lo, hi = G9_7_BAND_L_PER_PERSON_DAY
     detail = []
@@ -379,10 +416,117 @@ def g9_7(board, manifests, out_dir=None):
         if not (lo <= med <= hi):
             bad.append("%s %.2f %s the band"
                        % (fold, med, "ABOVE" if med > hi else "BELOW"))
-    board.add("G9.7", "PASS" if not bad else "FAIL", n,
+    # D-S11-1 item 1: INFO, permanently. `bad` is still built and still printed
+    # -- the deviation is reported, not scored. Verdict does not depend on it.
+    board.add("G9.7", "INFO", n,
+              "INFO PERMANENTLY by D-S11-1 item 1 (2026-08-27), on the G8.7 / "
+              "D-S8-5 item 1 (a) precedent: the band is Fuentes et al. (2018)'s "
+              "PER PERSON, the model is Jordan & Vajen's 200 l/day PER DWELLING "
+              "unscaled, and FINDING 165 shows the ratio is n_members. Band "
+              "UNMOVED, deviation reported in full. "
               "L/person/day by fold: %s against the registered %.0f-%.0f band%s"
               % (", ".join(detail), lo, hi,
                  "" if not bad else " -- OUTSIDE: %s" % "; ".join(bad)))
+
+
+# --------------------------------------------------------------------------
+# G9.15 -- DHW volume PER DWELLING, against the source's own 200 l/day.
+# Added 2026-08-27 by `D-S11-2`. This gate exists because `D-S11-1` was right.
+# --------------------------------------------------------------------------
+def g9_15(board, manifests, out_dir=None):
+    """Stock MEAN litres per dwelling per day, against 200 +/- 10 %, per fold.
+
+    WHY THIS GATE EXISTS. `D-S11-1` (2026-08-27) reclassified `G9.7` to `INFO`,
+    correctly: its band is Fuentes et al.'s PER PERSON and the model is Jordan &
+    Vajen's PER DWELLING, so the comparison could not demonstrate anything in
+    either direction. But `4thJ_step9_selftest.py` had registered `G9.7` as the
+    ONLY detector of the `scale_dhw_by_2` mutation and had explicitly declared
+    `G9.8` blind to it, the four portions being scale-invariant. An `INFO` gate
+    cannot fail. So the ruling, by retiring a gate's SCORE, silently retired
+    that gate's DETECTOR, and doubling every DHW draw in this project became
+    something nothing in the Step 9 battery would notice. That was demonstrated
+    before it was repaired -- every `dhw_*` column doubled, `G9.7` still `INFO`
+    at medians 200.31 / 235.30 / 182.13 -- and raised as `D-S11-2`.
+
+    A GATE DOES TWO JOBS: IT SCORES A QUANTITY AND IT DETECTS A MUTATION. A
+    DECISION THAT CORRECTLY RETIRES THE FIRST STILL HAS TO REPLACE THE SECOND.
+
+    WHAT THIS ARM IS, STATED HONESTLY. It is a SCALE / REGRESSION arm, NOT an
+    external validation, and it must never be quoted as one. 200 l/day is also
+    `4thJ_step9_trigger.py`'s `--dhw-l-per-day` default, so a pass says the
+    pipeline reproduces its own stated reference through disaggregation, the
+    four-event split, the peak-flow arithmetic and the per-dwelling write-out.
+    It does not say the reference is right for European dwellings; nobody in
+    this project has measured that, and `G9.7` stays `INFO` under every option
+    because Fuentes's basis and Jordan & Vajen's do not become one quantity by
+    being checked more carefully.
+
+    WHY THE MEAN AND NOT THE MEDIAN, WRITTEN DOWN BEFORE ANYONE ASKS. Jordan &
+    Vajen's 200 l/day is an ANNUAL AVERAGE per dwelling -- "one-family house =>
+    73 000 litres (= 365 days * 200 l/day)" -- so the commensurable statistic
+    is the stock mean, and the emitter targets exactly that. `G9.7` used the
+    median because a population band over people is a distributional statement;
+    this band is not. THE CHOICE IS DISCLOSED, NOT HIDDEN: the emitted
+    per-dwelling volume is strongly right-skewed (16.3 to 645.7 l/day), the
+    medians are 174.97 / 175.79 / 195.13, and A MEDIAN ARM AT THIS SAME +/-10 %
+    WOULD SHIP FAIL 2 -- `es` -12.5 %, `uk` -12.1 %, `it` -2.4 %. The medians
+    are therefore PRINTED IN THE NOTE ON EVERY RUN, whatever the verdict, so
+    that the statistic cannot be quietly the flattering one. If the author
+    prefers the median basis, this is a one-line change and the board gains two
+    FAILs; that is a band decision and is left open.
+
+    TWO INDEPENDENT PATHS AGREE, WHICH IS WHY THIS IS NOT PURE TAUTOLOGY.
+    The scored figure is the mean of the per-dwelling table; the manifest's
+    `stock_dhw_l_per_dwelling_day` is the integral of the stock time series
+    over 365 days, written by a different branch of the trigger. They agree to
+    the printed digit -- 200.792 / 201.015 / 199.466 against 200.79 / 201.01 /
+    199.47 -- so the arm exercises disaggregation, the four-event split, the
+    peak-flow arithmetic and the write-out, not a constant echoed back. The
+    trigger's own comment records that this comparison already caught a units
+    error once, "exactly the kind of check a units error survives when nobody
+    makes it".
+
+    SEEN FAILING BEFORE IT WAS TRUSTED (2026-08-27): shipped tables ->
+    PASS at 200.79 / 201.01 / 199.47; every `dhw_*` column doubled ->
+    FAIL at 401.58 / 402.03 / 398.93, +100.8 / +101.0 / +99.5 %.
+    """
+    ref = G9_15_DWELLING_REF_L_PER_DAY
+    tol = G9_15_TOL_FRAC
+    lo, hi = ref * (1.0 - tol), ref * (1.0 + tol)
+    detail = []
+    bad = []
+    n = 0
+    for fold, m in sorted(manifests.items()):
+        vals = []
+        if out_dir:
+            path = os.path.join(out_dir, "enduse_by_dwelling_%s.csv" % fold)
+            if os.path.exists(path):
+                vals = [float(r["dhw_litres_per_day"])
+                        for r in csv.DictReader(io.open(path, encoding="utf-8"))]
+        if not vals:
+            board.add("G9.15", "NOT_EVALUABLE", 0,
+                      "no per-dwelling table for fold %s, so the stock mean "
+                      "cannot be formed. Not a pass." % fold)
+            return
+        n += len(vals)
+        k = len(vals)
+        mean = sum(vals) / k
+        srt = sorted(vals)
+        med = (srt[k // 2] if k % 2 else 0.5 * (srt[k // 2 - 1] + srt[k // 2]))
+        detail.append("%s mean %.2f (%+.1f %%, median %.2f)"
+                      % (fold, mean, 100.0 * (mean - ref) / ref, med))
+        if not (lo <= mean <= hi):
+            bad.append("%s mean %.2f, %+.1f %% off the %.0f l/day reference"
+                       % (fold, mean, 100.0 * (mean - ref) / ref, ref))
+    board.add("G9.15", "PASS" if not bad else "FAIL", n,
+              "l/dwelling/day against Jordan & Vajen's own %.0f +/- %.0f %% "
+              "(D-S11-2, 2026-08-27; SCALE/REGRESSION arm, not an external "
+              "validation -- 200 is also the emitter's own input). %s.%s "
+              "The medians are printed because the distribution is right-"
+              "skewed and a median arm at this tolerance would fail 2 folds; "
+              "the mean is the source's stated basis (73 000 l/yr / 365 d)."
+              % (ref, tol * 100.0, "; ".join(detail),
+                 "" if not bad else " OUTSIDE: %s." % "; ".join(bad)))
 
 
 # --------------------------------------------------------------------------
@@ -1208,6 +1352,7 @@ def run(root, folds, offline=False, out_dir=None, quiet=False):
     g9_12(board, root, out_dir, manifests, folds)
     g9_13(board, out_dir, extra_dirs=[os.path.join(root, "Step9_docs", "docs")])
     g9_14(board, root, manifests, folds)
+    g9_15(board, manifests, out_dir)          # D-S11-2, 2026-08-27
 
     v9_a(board, root, rows, manifests, folds)
     v9_b(board, board.rows, out_dir)

@@ -228,3 +228,251 @@ allowed to drift into "we took something from it".**
 ⚪ **The `Energies` half of the instruction is recorded as a slip, not a second paper.** The
 instruction said "SoftwareX-Energies"; the venue is **SoftwareX** alone. If a separate *Energies*
 paper was ever meant, it is not in `extra/`, nothing here covers it, and it needs its own entry.
+
+---
+
+## 7. `D-S11-1` directive 2 — the denominator-incompatibility passages (DRAFTED 2026-08-27)
+
+🔴 **This section discharges directive 2 of `D-S11-1` §8.** It is drafted manuscript text, not a
+record: the four passages below are meant to be lifted into Methods (7.1), Results (7.2),
+Limitations (7.3) and a figure/caption rule (7.4). ⚪ **No band, threshold, verdict or count is
+moved by anything here** — every number is quoted from an artefact that already carries it, and each
+passage names where it came from so the sentence can be re-derived rather than trusted.
+
+⚪ Sources drawn on: `Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md` (`FINDING 163`–
+`166` and the §8 ruling), `Step10_docs/docs/2026-08-27_OpenUBEM-response-intake_S3-basis-and-
+population.md` §3 / §3.1 / §5 (`FINDING 169`–`172`), `Step4_docs/4thJ_04_finetuneLLM.md`
+(the two Leg-5 comparison arms).
+
+---
+
+### 7.1 Methods — the DHW denominator, stated once, where the model is described
+
+> Domestic hot-water demand is emitted from the four-event tapping model of Jordan and Vajen
+> (IEA SHC Task 26), whose Table 1 specifies a total of **200 litres per dwelling-day** for a
+> one-family house, distributed over four categories — short load 28 L, medium load 72 L, bath
+> 20 L, shower 80 L (portions 0.14 / 0.36 / 0.10 / 0.40). The source assigns **no temperature to
+> any volume**; it states that "for the cold water temperature distribution during the year, a local
+> profile should be used", and the only temperature it gives is a 35 K rise inside a worked
+> maximum-energy example. The volume is therefore emitted **per dwelling and unweighted by
+> temperature**, and it is held constant with respect to household size, because a per-occupant
+> scaling is not present in the source and would be ours.
+>
+> The pre-registered acceptance band for this quantity — **30–50 litres per person-day at 60 °C** —
+> comes from a different work: the review of Fuentes, Arce and Salom (2018), *Renewable and
+> Sustainable Energy Reviews* **81**, 1530–1547. A per-person review band and an unscaled
+> per-dwelling emission do not share a denominator, and the ratio between them is exactly the
+> household size. We report this comparison as a **denominator incompatibility** rather than as a
+> model failure, and the band is left exactly as pre-registered.
+
+⚪ **Two things this paragraph must keep.** (i) Both papers are named, with their bases attached —
+the single-sentence compression of `RL13` row 15 into "the Jordan and Vajen model … at roughly 30 to
+50 L/person/day at 60 °C" is the citation collapse that produced the defect (`FINDING 163`), and the
+manuscript must not repeat it. (ii) The phrase *"would be ours"* is doing work: it records that the
+constant volume is a **ruling** (`D-S9-2` item 5 (a)), not an oversight.
+
+🔴 **Unverified, and it must stay flagged until someone reads the paper.** Fuentes et al. (2018) has
+**not been fetched**; its 30–50 L/person-day at 60 °C is taken from a Tier-2 deep-research row, and
+`FINDING 47` holds that such a value is unvetted until confirmed at the source. ⚪ The *bibliographic*
+record is verified (CrossRef, `FINDING 167`: no issue field — `RL13`'s `81(1)` was the January
+part of the print date). **Verified reference ≠ verified content**, and the manuscript may not
+imply the second from the first.
+
+---
+
+### 7.2 Results — how the number itself is reported, with the verdict withdrawn and the deviation kept
+
+> The emitted volumes correspond to population medians of **100.16 (ES), 117.65 (UK) and
+> 91.06 (IT) litres per person-day**, against a pre-registered band of 30–50. The scored quantity is
+> arithmetically `200 ÷ n_members` — over all 300 rows the largest difference between the reported
+> per-person volume and this identity is 0.0005 L, i.e. rounding — so the check measures **household
+> size**, not hot-water demand: landing inside the band would require mean households of
+> **4.00 to 6.67 people**, where the corpus median is **2.0**. The check is therefore reported as a
+> diagnostic and carries no pass/fail verdict; the deviation is reported in full.
+
+🔴 **Why the verdict is withdrawn and the numbers are not.** A verdict asserts that the two sides
+were comparable; the medians assert only what was emitted. The ruling withdrew the first and kept
+the second, and the manuscript must do the same — *reporting the deviation is the point of the
+classification, not an exception to it.*
+
+⚪ **A sentence available if a reviewer asks whether temperature explains it.** *"Granting a
+temperature assignment the source does not make — the two low-volume categories at 60 °C and bath
+and shower at 40 °C, with a 10 °C inlet — the conversion is ×0.800, which moves the Spanish median
+from 100.16 to 80.12 and leaves it outside the band. The discrepancy is not a temperature-basis
+error."* 🔴 It is offered **only** as a refutation of that hypothesis; it must never be written as
+though the project adopted those temperatures.
+
+---
+
+### 7.3 Limitations — four paragraphs that must appear together
+
+**(a) Denominator incompatibility, and what it cost.** As above: the DHW check compares a per-person
+band with a per-dwelling model and is reported as a diagnostic. 🔴 **The honest half that is easy to
+omit:** the same check was the pipeline's only detector of a hot-water **scale** mutation, so
+classifying it as diagnostic removed a detector as well as a verdict. A replacement arm was declared
+in its place, scoring the stock mean litres per **dwelling**-day against the emitter's own
+200 L/day ±10 % — a scale/regression arm, explicitly **not** an external validation.
+
+**(b) The simulated end-use basis is heating-only, and the models carry two end uses.** 🔴 **Standing
+rule: the pooled 66.8677 kWh/m², the min 29.5663 / median 80.3233 / max 222.2945 and the
+FR 55.4141 / ES 87.2000 split may not appear in any sentence, table or caption without the words
+"heating-only".** The site total of 93.768 kWh/m² is likewise **not** a whole-building EUI: an object
+census of a promoted model finds no `Lights`, no `ElectricEquipment`, no `WaterUse*`, no `People` and
+no cooling coil, and heating plus interior-equipment electricity account for 100 % of the total
+(residual 0.02 kWh over 10.67 GWh). **The models contain exactly two end uses.** Consequently **no
+TABULA comparison, no national-EUI comparison and no stock-level energy projection is drawn from
+them anywhere in this paper**, and none may be added later without changing the models rather than
+the wording.
+
+**(c) The dwelling-level population is 26, and it is a ceiling.** Per-dwelling statistics over the
+simulated corpus are bounded by **26 dwellings in 12 buildings**; the remaining buildings are
+massing-only. This is below the 30-per-fold minimum the dwelling-level checks were registered
+against — the same shape as the stock-side layout population (9 / 5 / 3 against 30). 🔴 **A check can
+be green and empty**, and both of these are known empty for the same underlying reason: the layout
+contract, not attribute coverage.
+
+**(d) At the zero-sensitivity rung the electricity series is flat by construction.** Across 381
+emitted gain series (8,760 hourly values each) every value is exactly 3 W/m² — ≈ 26.3 kWh/m²·yr of
+perfectly flat electricity with **zero occupancy signal**. 🔴 **A null occupancy effect on
+electricity found at that rung would be an artefact of the input, not a result**, and this paper
+draws no such conclusion. Every reported electricity series states its sensitivity level; the
+zero rung is never used as the occupancy baseline for an electricity claim. ⚪ Heating, where every
+simulated figure quoted in this paper lives, is unaffected.
+
+**(e) Both backbone/capacity comparison arms are single-fold.** The full fine-tune and the
+alternative-backbone arm were each run on **one** held-out country (ES) rather than the full
+leave-one-country-out rotation. 🔴 **Only their verdicts are comparable, not their band values:** the
+worst-band figure of the reference arm (1.568) differs from the full fine-tune's (1.508) by 0.060 and
+from the alternative backbone's (1.539) by 0.029, where the single-fold sampling-noise floor for that
+country is **0.529** — an order of magnitude larger in both cases — so no ranking may be read from
+either difference. What the arms support is the
+**negative** statement that the registered band failure is repaired by **neither** more trainable
+capacity **nor** a different pre-trained backbone. ⚪ Truncation was measured only on the later arm
+(0.0247 % train / 0.0543 % validation, both far under the 1 % contamination bar); the earlier arms
+carry **no** measured rate, and equal truncation across arms must not be claimed.
+
+---
+
+### 7.4 The caption and cross-reference rule
+
+🔴 Three tokens may not travel without their qualifier, in any caption, table header or cross
+reference: **"heating-only"** on every simulated EUI; **the sensitivity level** on every electricity
+series; and **"diagnostic"** — never "passed" or "within band" — on the DHW per-person quantity.
+⚪ And a fourth, for correspondence rather than the manuscript: a check ID quoted across a tree
+boundary must carry its date, because an ID is exactly the token that goes stale silently
+(`FINDING 170` — a letter named a gate by an ID that had been renumbered the same day).
+
+---
+
+### 7.5 What this passage set does NOT do
+
+⚪ It authors **no result**, moves **no band**, and closes **no open item other than directive 2**.
+⚪ It does not verify Fuentes et al. (2018); §7.1's flag stands until someone reads the paper.
+⚪ It does not reconcile the two archetype populations (102 × 5 = 510 in the European-locations
+specification, 88 × 5 = 440 in this pipeline's own injected campaign) — they are different campaigns,
+they differ by 14 archetypes, and any figure carried between them must cross that difference
+deliberately. ⚪ It adds no manuscript **file**: these are drafted passages in the notes, and the
+manuscript itself remains unwritten.
+
+---
+
+## 8. `D-S6-16` (a′) — how the memorisation ceiling is reported (DRAFTED 2026-08-27)
+
+🔴 **Status, stated before the text so it cannot be mistaken for a closure.** `D-S6-16` is **still
+open**. The release question it was raised for is settled — by the registered bar, not by this
+decision — and what remains is exactly one thing: **how the `D-S6-14` ceiling is described in the
+methods**, between **(a′)** report it as measured and **(c′)** additionally build a body-randomised
+ceiling (a full 7 B retrain). The passages below are drafted **under (a′), the standing
+recommendation**; if the author rules (c′) they survive unchanged and gain a paragraph. ⚪ Nothing
+here rules anything.
+
+⚪ Sources: `IMP/docs/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` §3 and its
+third addendum §8; `Step6_docs/outputs_step6/privacy_audit.md`; `FINDING 112`–`116`.
+
+---
+
+### 8.1 Methods — the control, and what it turned out to measure
+
+> Memorisation was probed with a pre-registered permuted-shard control: an adapter trained on the
+> same corpus with the prefix–body pairing destroyed by a derangement (seed `614614`, 73,254 records
+> re-paired, zero fixed points), so that nothing generalisable connects a prompt to its diary. Its
+> membership-inference AUC was intended as an upper bound on what the reported adapter could have
+> memorised.
+>
+> **Measured, it does not behave as a ceiling of the reported model; it behaves as a property of the
+> backbone.** Across the three leave-one-country-out folds at 1.48 B capacity the control returns
+> **0.5488, 0.5484 and 0.5466** — a standard deviation of **0.001137**, while the reported AUCs over
+> the same folds differ by an order of magnitude more. At 7 B the same control returns **0.6496**,
+> **+0.102** above that mean and **89.4×** its between-fold spread. The instrument is therefore
+> constant across folds at fixed capacity and strongly responsive to capacity: it discriminates
+> backbones, not folds, and it is reported as such.
+>
+> The comparison it was to license also has no declared tolerance. The standard error of the
+> AUC difference at *n* = 2,000 is 0.0128, so the alarms recorded on the pilot folds sit at
+> **z = 0.40, 1.16 and 0.12** — inside noise in every case. **No release decision rests on this
+> control.** It is reported with its four runs, its z-values and both of the corrections above, and
+> it licenses and refuses nothing.
+
+🔴 **Two guards this paragraph carries.** (i) The control is **not removed** from the paper. It was
+built, run and found not to do what it was designed to do, and that is a result; deleting a control
+after seeing its result is the move this project refuses everywhere else. (ii) The tolerance is
+quoted **to explain the alarms, never to re-score them** — adding the tolerance and re-scoring is
+option (b), which was declined precisely because it sets a threshold after seeing the number it would
+decide.
+
+---
+
+### 8.2 Results and limitations — what actually decided the release
+
+> The release decision is made by the registered bars on the governing run (job `1286976`, Leg 5,
+> `Olmo-3-1025-7B`, held-out fold `it`), and **two of the four registered controls fail**:
+> `G6.10` = **0.6645** against a pre-registered ≤ 0.65 (z = 1.70 over the bar, on a standard error of
+> 0.00852) and the perplexity-gap control = **0.0570** against ≤ 0.05. `G6.11` (0.5594 ≤ 0.75) and
+> `G6.12` (0 exact matches over 103 rare records) pass, and the untuned-base floor is clean at
+> **0.4886** — which is what makes the 0.6645 readable as membership signal rather than an artefact
+> of the split. **Under the pre-registration's own terms this is a refusal: the weights are not
+> released.** The `uk` synthetic set is withheld with them; the `es` and `it` sets ship.
+
+🔴 **Three sentences the write-up must not lose.**
+**(a)** Never *"the privacy audit passed"* and never *"four of four"* — it ships **two registered
+FAILs and one partial** (`G6.13` is 2 PASS / 1 FAIL, on `uk`).
+**(b)** The perplexity gap is **not** a second independent confirmation of `G6.10`: it fails for the
+**permuted** adapter too, at 0.0511 (`FINDING 116`), so on this corpus at three epochs it measures
+train/test overfit of the diary *language*, not membership of the pairing.
+**(c)** The Leg-5 coverage clause reads FAIL **for vacuity, not for want of a demonstration** — the
+baseline already fails, and the same two injections do fell `G6.10` on all three Leg-4 folds, so the
+gate is demonstrated.
+
+⚪ **The limitation, in one sentence.** *The upper bound this design intended to supply was not
+obtained: the control that was to provide it is insensitive to the fold and sensitive to the
+backbone, so the memorisation claim rests on the registered attacks and their floor alone, and a
+ceiling that would genuinely force memorisation — bodies randomised rather than re-paired — was
+specified and not built.*
+
+---
+
+### 8.3 The `FINDING 112` sentence, and why it may not be generalised
+
+> On every run the permuted control reaches a training loss indistinguishable from the reported
+> model's — last-20-step means differ by −0.0029, +0.0190, +0.0165 and **+0.0045** (z = 0.23 at 7 B).
+> At 1.48 B this supported reading the control as a model that learned the diary *language* without
+> memorising pairings. **At 7 B that reading fails**: the control reaches an AUC of 0.6496, so it
+> memorises substantially while its aggregate loss stays indistinguishable.
+
+🔴 **So the inference is withdrawn for Leg 5 and stands for Leg 4, and the write-up must say which.**
+An aggregate loss that matches is **not** evidence that a model did not memorise — that is the
+generalisable lesson and it belongs in the methods, not only in the decision record.
+
+⚪ Equally withdrawn: the Leg-4-only reading that `D-S6-14` had been acting as *"an unregistered bar
+at ≈ 0.548, 82 % tighter than the registered ≤ 0.65"*. On Leg 5 the implicit bar is 0.6496, which is
+**above** the registered one. Quote it as Leg-4-only or not at all.
+
+---
+
+### 8.4 What this passage set does NOT do
+
+⚪ It does not rule `D-S6-16`; (a′) versus (c′) remains the author's, and one line closes it.
+⚪ It moves no threshold, re-scores nothing, and removes no control.
+⚪ It does not build the body-randomised ceiling, and it does not claim the four registered controls
+pass — two of them do not.
+⚪ It creates no manuscript **file**: these are drafted passages in the notes, exactly as §7 is.

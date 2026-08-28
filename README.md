@@ -31,14 +31,21 @@ The codebase is **script-driven, not package-driven** — most workflows are run
 
 ## Research Roadmap & Status
 
-The project is structured as a sequence of publications, each building on the last.
+The project is structured as a sequence of publications, each building on the last. Journal status
+mirrors the author's public list at
+[orcunkoraliseri.com/publications](https://www.orcunkoraliseri.com/publications.html).
 
-| Publication | Scope | Status |
-|---|---|---|
-| **eSim 2026 Conference Paper** | Residential occupancy pipeline — proof of concept (GSS 2005–2022 → EnergyPlus) | ✅ **COMPLETE** |
-| **1st Journal Paper** | Extended residential methodology, validation, and HPC-scale BEM simulations | ✅ **COMPLETE** |
-| **2nd Journal Paper** | Full 9-step longitudinal residential pipeline (2005–2030) with Conditional Transformer augmentation, Census linkage, and activity-driven end-use loads | ✅ **COMPLETE** |
-| **3rd Journal Paper** | Multi-channel (Residential + Office + Retail + Hotel) mixed-use tall-building UBEM pipeline | 🔄 **IN PROGRESS** |
+| # | Publication | Scope | Status |
+|---|---|---|---|
+| — | **eSim 2026 Conference Paper** — *Longitudinal Occupancy Impact on Residential Energy Demand (2005–2030): A GSS-Based Framework* | Residential occupancy pipeline, proof of concept (GSS 2005–2022 → EnergyPlus) | ✅ **Published** |
+| 1J | **Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials** | Extended residential methodology, validation suite, HPC-scale BEM campaign | ⏳ **Under Evaluation** |
+| 2J | **From "How Much" to "When": Forecasting the Residential Energy Load Shape from a Calibrated Behavioural Occupancy Time-Series (Canada, 2005–2030)** | Full 9-step longitudinal residential pipeline — Conditional Transformer augmentation, Census linkage, 2030 forecast, activity-driven end-use loads | ⏳ **Under Evaluation** |
+| 3J | **From One Channel to Four: A Jointly-Trained Time-Use Occupancy Model for Mixed-Use Building Energy Simulation (Canada, 2005–2030)** | 4-channel (Residential + Office + Retail + Hotel) mixed-use tall-building UBEM pipeline | 🛠️ **In Preparation** |
+| 4J | **HETUS-Wide Occupancy Generation with a Fine-Tuned Open-Weight LLM: Cross-National Occupant Behaviour for BEM/UBEM** | One fine-tuned open-weight LLM generating activity-resolved diaries for any HETUS country, tested leave-one-country-out | 🛠️ **In Preparation** |
+
+Journal status and pipeline status are tracked separately: the 2J pipeline is complete end-to-end,
+every 3J Leg-3 step is built and run, and 4J is mid-build. See
+[Publication Details](#publication-details) for what each paper contains.
 
 ---
 
@@ -136,6 +143,9 @@ GSSCanada-main/
 ├── 3J_docs_occ_nTemp/               # 3rd journal — 2-channel & 4-channel multi-use pipeline specs
 │   ├── Leg2_2-split/                #   Residential + Office spec
 │   └── Leg3_4-split/                #   + Retail + Hotel spec
+├── 4J_docs_occ/                     # 4th journal — HETUS + fine-tuned open-weight LLM pipeline
+│   ├── Step<N>_docs/                #   per-step working docs, gates and impl/ job ledgers
+│   └── Prompts/RESUME.md            #   fixed handoff file between agent sessions
 │
 ├── eSim_docs_occ_utils/             # Occupancy workflow docs
 ├── eSim_docs_bem_utils/             # BEM workflow docs
@@ -219,7 +229,13 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 
 ## Publication Details
 
-### eSim 2026 Conference Paper — COMPLETE
+Five outputs, one lineage: a conference proof of concept, two residential journal papers now under
+evaluation, a mixed-use multi-channel paper in preparation, and a cross-national LLM paper in
+preparation. The public list is at
+[orcunkoraliseri.com/publications](https://www.orcunkoraliseri.com/publications.html); the sections
+below add what the repository holds for each.
+
+### eSim 2026 Conference Paper — PUBLISHED
 
 **Title:** Longitudinal Occupancy Impact on Residential Energy Demand (2005–2030): A GSS-Based Framework
 
@@ -232,7 +248,9 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 
 ---
 
-### 1st Journal Paper — COMPLETE
+### 1st Journal Paper — UNDER EVALUATION
+
+**Title:** Longitudinal Analysis of Occupancy-Driven Energy Demand in Canadian Residentials
 
 **Scope:** Expanded methodology with a full validation suite, peer-review-ready documentation, and an HPC-scale BEM simulation campaign across Canadian climate zones.
 
@@ -244,11 +262,13 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 
 ---
 
-### 2nd Journal Paper — COMPLETE
+### 2nd Journal Paper — UNDER EVALUATION
 
-**Title:** Comprehensive Annual Occupancy Dataset Pipeline for BEM/UBEM — Longitudinal Occupancy Impact on Residential Energy Demand (2005–2030)
+**Title:** From "How Much" to "When": Forecasting the Residential Energy Load Shape from a Calibrated Behavioural Occupancy Time-Series (Canada, 2005–2030)
 
-**Scope:** Full 9-step pipeline from raw GSS episodes to 8760-hour EnergyPlus schedules, with deep-learning augmentation and a 2030 forecast.
+*(internal working title: Comprehensive Annual Occupancy Dataset Pipeline for BEM/UBEM — Longitudinal Occupancy Impact on Residential Energy Demand, 2005–2030)*
+
+**Scope:** Full 9-step pipeline from raw GSS episodes to 8760-hour EnergyPlus schedules, with deep-learning augmentation and a 2030 forecast. The argument is a shift of the research question from annual totals to *timing*: an annually-representative synthetic occupancy dataset is built from four GSS Time-Use cycles (2005, 2010, 2015, 2022), augmented by a Conditional Transformer so that every temporal stratum of every occupant archetype is covered, linked probabilistically to Census PUMF households, forecast to 2030, and then simulated — so the paper's outcome is a residential **load shape**, not an EUI number. The pipeline is documented step-by-step in [`2J_docs_occ_nTemp/00_GSS_Occupancy_Pipeline_Overview.md`](2J_docs_occ_nTemp/00_GSS_Occupancy_Pipeline_Overview.md) (map) and [`00_GSS_Occupancy_Pipeline.md`](2J_docs_occ_nTemp/00_GSS_Occupancy_Pipeline.md) (detail).
 
 **Pipeline summary (all 9 steps COMPLETE):**
 
@@ -278,11 +298,13 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 
 ---
 
-### 3rd Journal Paper — IN PROGRESS
+### 3rd Journal Paper — IN PREPARATION
 
-**Title:** Longitudinal Occupancy-Driven Energy Demand in Canadian Mixed-Use Tall Buildings: GSS-Derived 4-Channel Occupancy Pipeline (2005–2030)
+**Title:** From One Channel to Four: A Jointly-Trained Time-Use Occupancy Model for Mixed-Use Building Energy Simulation (Canada, 2005–2030)
 
-**Scope:** Extends the residential pipeline into a multi-channel generator targeting PNNL Tall and SuperTall mixed-use building prototypes (Calgary CZ7A, Montreal CZ6A).
+*(internal working title: Longitudinal Occupancy-Driven Energy Demand in Canadian Mixed-Use Tall Buildings — GSS-Derived 4-Channel Occupancy Pipeline, 2005–2030)*
+
+**Scope:** Extends the residential pipeline into a multi-channel generator targeting PNNL Tall and SuperTall mixed-use building prototypes (Calgary CZ7A, Montreal CZ6A). One shared time-use backbone is trained jointly across three GSS-derived channels — residential, office and retail — instead of three separate single-use models, because the same respondent-day supplies presence in more than one use; the fourth channel, hotel, has no GSS code in any cycle and is carried by a separate tourism-statistics side-track (ISQ for Quebec, CBRE for Alberta) with a SARIMA forecast rather than the Transformer. Residential presence **replaces** baseline schedules; office, retail and hotel **modulate** code-compliant NECB / ASHRAE 90.1 peak densities, so regulatory comparability survives. Per-space routing uses the IDF `Tag 2` field; Service/MEP/Circulation stays on code defaults. The pipeline is documented in [`3J_docs_occ_nTemp/Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md`](3J_docs_occ_nTemp/Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline_Overview.md) (map) and [`3rdJ_00_4split_Occupancy_Pipeline.md`](3J_docs_occ_nTemp/Leg3_4-split/3rdJ_00_4split_Occupancy_Pipeline.md) (detail).
 
 #### Three-Leg Roadmap
 
@@ -290,7 +312,7 @@ Generated schedules are injected into EnergyPlus `.idf` models via `eppy`/`geome
 |---|---|---|
 | Leg 1 | Residential only (AT_HOME replaces BEM baseline) | ✅ COMPLETE (2nd Journal) |
 | Leg 2 | Residential + Office (AT_WORK modulates code-compliant densities) | ✅ COMPLETE — validated end-to-end, paper-ready |
-| Leg 3 | + Retail + Hotel (full 4-channel mixed-use) | 🔄 DESIGN FROZEN — build begins at Step 3 |
+| Leg 3 | + Retail + Hotel (full 4-channel mixed-use) | ✅ BUILT — all nine steps run; paper in preparation |
 
 #### 4-Channel Architecture (Leg 3 target)
 
@@ -330,6 +352,30 @@ All nine pipeline steps are built and validated end-to-end for the two-channel (
 **Documentation:**
 - [`3J_docs_occ_nTemp/Leg2_2-split/`](3J_docs_occ_nTemp/Leg2_2-split/) — 2-channel (Residential + Office) pipeline spec — **DESIGN FROZEN, pipeline COMPLETE**
 - [`3J_docs_occ_nTemp/Leg3_4-split/`](3J_docs_occ_nTemp/Leg3_4-split/) — 4-channel (+ Retail + Hotel) pipeline spec — **DESIGN FROZEN** (all 13 reports integrated, 15 open decisions resolved; build begins at Step 3)
+
+---
+
+### 4th Journal Paper — IN PREPARATION
+
+**Title:** HETUS-Wide Occupancy Generation with a Fine-Tuned Open-Weight LLM: Cross-National Occupant Behaviour for BEM/UBEM
+
+**Scope:** Replaces the *one country, one model trained from scratch* pattern of papers 1–3 with **one open-weight language model, fine-tuned once, that generates activity-resolved daily diaries — and the occupant attributes attached to them — for any country inside the HETUS harmonised framework.** The transfer claim is not asserted, it is tested: a country is held out of training entirely and the generated population is scored against that country's published aggregate statistics. Diaries still end up as EnergyPlus schedules and activity-driven end-use loads for European residential archetypes, so the paper closes in simulated energy rather than in a metric table.
+
+**Design (as frozen by the author):**
+
+| Item | Decision |
+|---|---|
+| Corpus | **HETUS only, three countries, one wave each** — Italy 2013-14, Spain 2009-10, UK 2014-15 (France excluded: no data-access arrival date) |
+| Evaluation | **3-fold leave-one-country-out**; the pre-registered first fold is held-out Spain |
+| The null | Real diaries from the *other* countries, reweighted to the held-out country's demographics — beating that null is the experiment, not an obstacle |
+| Backbone | OLMo-3-7B, chosen on measured tokenisation: the dolma2 BPE holds each 3-digit activity code as a single token (~34 % shorter diary sequences than the Qwen lineage), with a pre-registered Qwen arm run for comparison |
+| Forecast | **Out of scope.** The contribution is the cross-national method, and a weakly-supported projection would only give a reviewer an easy target |
+| Release | Generated **dataset + code + a public stand-in pipeline**. Weights and adapters trained on restricted microdata are *not* released — the binding constraint is the data agreement, not the model licence |
+
+**Series position:** paper 1 (*Energy and Buildings* 357 (2026) 117155, CENTUS — Italy, ISTAT Census + TUS) made an explicit but **untested** claim that HETUS standardisation makes the approach globally adaptable. Paper 4 is the test of that claim, with a different class of model. Documentation: [`4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline_Overview.md`](4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline_Overview.md) (map) and [`4thJ_00_HETUS_LLM_Pipeline.md`](4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline.md) (detail, with the running decision log).
+
+> The documents under `4J_docs_occ/` record reversals in place rather than rewriting them, so a
+> superseded decision is normal there — read the amendment banners before quoting any count.
 
 ---
 
@@ -433,4 +479,4 @@ GitHub: https://github.com/orcunkoraliseri/GSSCanada
 
 ---
 
-*Last updated: 9 July 2026*
+*Last updated: 27 August 2026*
