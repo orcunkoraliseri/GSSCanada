@@ -1,0 +1,341 @@
+{
+  "tool": "4thJ_step10_val_extension.py",
+  "basis": "the SIMULATED 410 real-stock cells. No EnergyPlus was invoked.",
+  "d_eu_31": "untouched --- no certified EU cell is read, quoted or recomputed",
+  "cells": 410,
+  "retained_run_trees": 410,
+  "board": {
+    "G10.0": {
+      "gate": "G10.0",
+      "verdict": "PASS",
+      "controls": 82,
+      "injected_cells": 328,
+      "injected_without_a_control": 0,
+      "controls_that_did_not_complete": 0,
+      "examples": [],
+      "note": "the control map is built from f = 0 rows only, in a first pass, before any f > 0 row is touched"
+    },
+    "G10.5": {
+      "gate": "G10.5",
+      "verdict": "PASS",
+      "reference": "independent re-run on Speed (EnergyPlus 23.1.0 both hosts, identical IDF bytes, idf_sha256 matched 410 of 410)",
+      "band_relative": 0.15,
+      "paired_cells": 410,
+      "cells_outside_band": 0,
+      "worst_relative_difference": 5.387917405779104e-14,
+      "unpaired_or_refused": 0,
+      "note": "a reproducibility tripwire, NOT a measured-accuracy claim (FINDING 44). The occupancy peak shift is reported as an empirical result and is NEVER gated against the flat control."
+    },
+    "G10.6": {
+      "gate": "G10.6",
+      "verdict": "PASS",
+      "reference": "independent re-run on Speed (EnergyPlus 23.1.0 both hosts, identical IDF bytes, idf_sha256 matched 410 of 410)",
+      "band_hours": 1,
+      "paired_cells": 410,
+      "cells_outside_band": 0,
+      "worst_hours_apart": 0,
+      "unpaired_or_refused": 0
+    },
+    "G10.8": {
+      "gate": "G10.8",
+      "verdict": "PASS",
+      "dwelling_zones": 2300,
+      "unlocatable": 0,
+      "wrong_fold": 0,
+      "note": "per DWELLING ZONE on the SIMULATED cells, located by CONTENT (name + md5); the fold is read from each bundle's own manifest.json, never from a filename"
+    },
+    "G10.9": {
+      "gate": "G10.9",
+      "verdict": "PASS",
+      "arms_present": [
+        "D",
+        "F"
+      ],
+      "buildings": 41,
+      "buildings_with_mixed_arms": 0,
+      "files_scanned": 413,
+      "scanned": [
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\campaign_summary.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseA__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseA__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseA__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseA__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseA__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseB__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseB__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseB__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseB__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000013365727_part0__caseB__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseA__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseA__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseA__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseA__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseA__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseB__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseB__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseB__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseB__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877130_part0__caseB__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseA__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseA__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseA__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseA__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseA__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseB__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseB__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseB__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseB__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240877169_part0__caseB__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseA__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseA__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseA__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseA__f050.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseA__f100.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseB__f000.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseB__f015.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseB__f030.json",
+        "Step10_docs\\outputs_step10\\realstock_campaign_widened\\manifests\\es__BATIMENT0000000240879449_part0__caseB__f050.json"
+      ],
+      "note": "(i) no statistic pools Arm D and Arm F: no building carries both arms, so no per-building row can. (ii) the scan prints its scope, as V10.d requires."
+    },
+    "G10.13": {
+      "gate": "G10.13",
+      "verdict": "PASS",
+      "basis": "the EMITTED CSV ON DISK, never the generator (V10.h)",
+      "zone_rows": 2300,
+      "buildings_scored": 410,
+      "zones_with_wrong_length": 0,
+      "gain_csvs_missing": 0,
+      "write_decimals": 1,
+      "derived_relative_bound": 0.016666666666666666,
+      "worst_zone_relative_residue": 1.4344081478157023e-12,
+      "worst_building_relative_residue": 1.2501111257279263e-12,
+      "population": "the run trees under C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410",
+      "note": "FINDING 132 is this failure at BUILDING level; with N_u series it can also fail PER ZONE while the building mean is right, so both arms are scored."
+    },
+    "G10.14": {
+      "gate": "G10.14",
+      "verdict": "FAIL",
+      "cells": 410,
+      "per_field_present": {
+        "schedule_sha256": 410,
+        "idf_sha256": 410,
+        "weather_sha256": 0,
+        "energyplus_version": 410,
+        "energyplus_build_hash": 0,
+        "openubem_version": 0,
+        "openubem_git_commit": 0,
+        "platform_measured": 0
+      },
+      "fields_not_on_every_cell": [
+        "weather_sha256",
+        "energyplus_build_hash",
+        "openubem_version",
+        "openubem_git_commit",
+        "platform_measured"
+      ],
+      "where_the_missing_values_DO_live": {
+        "weather_sha256": "campaign_summary.json preflight.weather.<fold>.sha256",
+        "energyplus_build_hash": "23.1.0-87ed9199d4",
+        "platform_measured": "speed_metrics.jsonl carries `platform` on 410 cells; the LOCAL manifests carry none"
+      },
+      "note": "MEASURED, not designed around. A campaign-level value is not a per-cell manifest field: the gate row asks for the field ON THE CELL. The manifests are NOT retrofitted (the EU-08 precedent)."
+    },
+    "G10.16": {
+      "gate": "G10.16",
+      "verdict": "PASS",
+      "basis": "read back FROM THE SAVED IDF, scored PER ZONE",
+      "cells": 410,
+      "zones": 2300,
+      "zones_whose_gain_object_names_no_schedule": 0,
+      "zones_whose_schedule_is_absent": 0,
+      "zones_naming_the_wrong_file": 0,
+      "zones_whose_file_sha256_disagrees_with_the_manifest": 0,
+      "zones_whose_presence_md5_is_in_no_bundle": 0,
+      "population": "the run trees under C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410",
+      "evidence": [
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410\\es__BATIMENT0000000013365727_part0__caseA__f000\\es__BATIMENT0000000013365727_part0__caseA__f000.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410\\es__BATIMENT0000000013365727_part0__caseA__f015\\es__BATIMENT0000000013365727_part0__caseA__f015.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410\\es__BATIMENT0000000013365727_part0__caseA__f030\\es__BATIMENT0000000013365727_part0__caseA__f030.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410\\es__BATIMENT0000000013365727_part0__caseA__f050\\es__BATIMENT0000000013365727_part0__caseA__f050.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410\\es__BATIMENT0000000013365727_part0__caseA__f100\\es__BATIMENT0000000013365727_part0__caseA__f100.idf"
+      ],
+      "note": "value arm = the series EnergyPlus actually read hashes to the manifest's gain_sha256 and descends from a Step 7 file located by md5; assignment arm = the gain object still names that Schedule:File. Per ZONE, because a single-schedule check would pass a building whose dwellings all share one series."
+    },
+    "G10.17": {
+      "gate": "G10.17",
+      "verdict": "PASS",
+      "schedule_file_objects": 2300,
+      "not_No": 0,
+      "field_counts_seen": [
+        10
+      ],
+      "basis": "asserted from the SAVED IDF at the NAMED field position",
+      "population": "the run trees under C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410",
+      "note": "FINDING 126: the old parser read the LAST comma-field, so a `Yes` was invisible on a 9-field object. D-EU-13 is an OPEN off-by-one on the OpenUBEM copy of this gate and its scorer is NOT adopted here."
+    },
+    "G10.18": {
+      "gate": "G10.18",
+      "verdict": "FAIL",
+      "why": "the DECLARATION arm is unscoreable: no campaign manifest carries `rotated_to_midnight`. V10.c --- NOT CHECKED is never a PASS. The two PHASE arms are scored below and they hold.",
+      "declaration_arm": {
+        "verdict": "NOT_CHECKED",
+        "cells_declaring": 0,
+        "cells": 410,
+        "note": "the field was never written by the campaign; the manifests are NOT retrofitted"
+      },
+      "phase_arms_per_bundle": {
+        "verdict": "PASS",
+        "basis": "scored ONCE PER BUNDLE (G7.19 verbatim), on the f > 0 aggregate daily profile of every scored zone in the fold",
+        "folds": {
+          "es": {
+            "morning_fraction_at_05h": 1.0,
+            "trough_hour": 13
+          },
+          "it": {
+            "morning_fraction_at_05h": 0.9768823772420419,
+            "trough_hour": 12
+          },
+          "uk": {
+            "morning_fraction_at_05h": 0.998576616374896,
+            "trough_hour": 11
+          }
+        },
+        "folds_failing": [],
+        "morning_fraction_threshold": 0.9,
+        "trough_min_hour": 8
+      },
+      "per_zone_INFO": {
+        "verdict": "INFO --- a STRICTER basis than the gate row, reported, never scored: a basis change is a band change",
+        "phase_rows_scored": 1840,
+        "phase_rows_excluded_degenerate_f0_flat_control": 460,
+        "morning_below_threshold": 23,
+        "troughs_before_hour_8": 84,
+        "worst_morning_fraction": 0.4283102164386175,
+        "trough_examples": [
+          {
+            "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f015",
+            "zone": "BATIMENT0000000240877130_part0_F2_dwelling_2",
+            "trough_hour": 7,
+            "f": 0.15,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f030",
+            "zone": "BATIMENT0000000240877130_part0_F2_dwelling_2",
+            "trough_hour": 7,
+            "f": 0.3,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f050",
+            "zone": "BATIMENT0000000240877130_part0_F2_dwelling_2",
+            "trough_hour": 7,
+            "f": 0.5,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f100",
+            "zone": "BATIMENT0000000240877130_part0_F2_dwelling_2",
+            "trough_hour": 7,
+            "f": 1.0,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240879449_part0__caseB__f015",
+            "zone": "BATIMENT0000000240879449_part0_F0_dwelling_1",
+            "trough_hour": 7,
+            "f": 0.15,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240879449_part0__caseB__f015",
+            "zone": "BATIMENT0000000240879449_part0_F0_dwelling_2",
+            "trough_hour": 7,
+            "f": 0.15,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240879449_part0__caseB__f015",
+            "zone": "BATIMENT0000000240879449_part0_F1_dwelling_4",
+            "trough_hour": 7,
+            "f": 0.15,
+            "morning_fraction_at_05h": 1.0
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240879449_part0__caseB__f030",
+            "zone": "BATIMENT0000000240879449_part0_F0_dwelling_1",
+            "trough_hour": 7,
+            "f": 0.3,
+            "morning_fraction_at_05h": 1.0
+          }
+        ]
+      },
+      "population": "the run trees under C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\step10_realstock_speed410",
+      "note": "FINDING 141: without this, occupancy is applied FOUR HOURS EARLY and 13,108 runs were wrong while every board stayed green. A four-hour shift would move the 05:00 maximum; it did not move on any scored zone."
+    },
+    "G10.23": {
+      "gate": "G10.23",
+      "verdict": "NOT_EVALUABLE_VACUOUS",
+      "geometry_remedies_entered": 0,
+      "note": "no geometry remedy entered this campaign: the footprints are the census's own, unaltered. A gate with an empty population has not been satisfied, it has not been ASKED (V10.c). Reported VACUOUS, never as a pass."
+    }
+  },
+  "battery": {
+    "cases": [
+      {
+        "mutation": "one building's f = 0 control deleted",
+        "gate": "G10.0",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "the re-run's peak inflated 30 % on one cell",
+        "gate": "G10.5",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "the re-run's peak hour moved 5 h on one cell",
+        "gate": "G10.6",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one diary's recorded md5 broken --- unlocatable by content",
+        "gate": "G10.8",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "every bundle declares a fold its diaries did not come from",
+        "gate": "G10.8",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one building made to carry both arms",
+        "gate": "G10.9",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "every G10.14 field supplied --- the gate must then MOVE",
+        "gate": "G10.14",
+        "verdict_clean": "FAIL",
+        "verdict_mutated": "PASS",
+        "felled": true
+      }
+    ],
+    "n": 7,
+    "verdict": "PASS",
+    "note": "V10.a: a gate that was never seen firing is not evidence. The G10.14 case is the INVERSE mutation --- the gate reads FAIL on the real manifests, so it is seen MOVING by supplying the fields, which proves the FAIL is the data and not the parser."
+  },
+  "g10_8_failing_rows": []
+}

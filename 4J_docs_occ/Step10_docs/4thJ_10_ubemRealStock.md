@@ -1221,3 +1221,343 @@ uk  GB.ENG.MFH.02.Gen.ReEx.001.001        76609.278498 ->  76524.889061   0.1103
 ⚪ **7. STATE.** Unchanged from `last+16`: nothing waits on the author; owed by OpenUBEM is `FINDING 181` (`es` first, 100 % affected) then the owner's `D-EU-26` ruling; owed by us the day those close is **one command, `--workers 14`, ~80 s**, then `EU-09`/`EU-10`. ⚠ **The board is still NOT re-published.** 🔴 **No file under `openubem/` written, no promoted artefact edited, no job submitted, Speed queue EMPTY.**
 
 ⚪ **8. ADDENDUM TO THIS ENTRY (same night, after OpenUBEM's reply) — ONE CONSTRAINT ON THE RE-RUN, AND ONE SHARPENING.** 🔴 **The re-run happens ONCE, after BOTH `FINDING 181` and `D-EU-26` are settled — never once per ruling.** Three partially-superseding campaigns would leave a later reader unable to tell which `idf_sha256` was current, and the tree already carries one superseded campaign for exactly that reason. ⚪ Their framing, kept because it is better than ours: **all five archetypes are `Gen.ReEx.001.001` — one construction variant — so the five are LESS independent than "five archetypes" reads.** ⚪ `D-EU-26` now carries the stability question as its own **§6** rather than beside it, with the ordering stated to the owner: **the ruling decides how many cells are *attempted*; `FINDING 181` decides whether an attempted cell *means* anything; only the second is binding on scoreability.** ⚪ Their side: suite green **2,341 passed / 55 skipped**, the only change under `openubem/` remains the T07 runner fixes, `european_box.py` clean, floor flip reverted, nothing running. ⚪ Recorded there as **T09** and in `D-EU-26` §6.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+18) — `EU-08` IS ACCOUNTED FOR AND THE `191` REPRODUCES EXACTLY. BUT `FINDING 182`: THE CERTIFICATION RULE DOES NOT SCREEN THE `.err` MARKERS, AND **ALL 42 CERTIFIED `es` CELLS CARRY `PsyPsatFnTemp` IN ALL THREE REPLICATES**. `EU-09`/`EU-10` NOT SCORED — `D-EU-28` RAISED.**
+
+⚪ **1. WHERE THIS CAME FROM.** `openubem-92` handed off the OpenUBEM side as closed with zero open decisions, and asked for EU-08 accounting plus `EU-09`/`EU-10` scoring over the certified 191. Their `D-EU-27` re-run (Option B, `Timestep 12`, 3 replicates, 1,530 cell-runs) **spent the single agreed re-run budget** — so our driver was NOT re-run and must not be. Everything below is read-only over their tree.
+
+🟢 **2. THE EXECUTION IS ACCOUNTABLE AS OURS, BECAUSE IT CONSUMED THE RULED INPUTS.** All **1,185** attempted-cell manifests, **zero defects**: spec `16d3fbd6…`, binding v2 `8f94165d…`, chaining notice `058c9d13…`, `energyplus_version` `23.1`, `dry_run` false, `survey_fold` present on every one (**`V8.g` satisfied**, so `G8.16` is scoreable), and every `f > 0` manifest carries the notice **by digest** and `presence_source = eu_cell_presence_binding, ruled D-S10-8`. 🔴 **`RESUME` §2 (i)/(ii)/(iii) are all met — but NOT by our driver:** the `D-EU-27` timestep edit moved the runner from `82eb7cf2…` to `4abcbf03…`, so `4thJ_step10_eu08_driver.py` would refuse this campaign at preflight. Our six `D`-guards were re-derived by hand from the manifests instead, and that must be said wherever `EU-08` is described.
+
+🟢 **3. THE ACCOUNTING, EVERY NUMBER RE-DERIVED HERE FROM `deu27_rerun_cells.csv`, NONE CARRIED.**
+```
+510 cells · 1,530 runs · 345 BUILD_REFUSED (115 x 3) · 395 attempted
+attempted by fold        es 110 · uk  95 · it 190     (refused: es 10 · uk 85 · it 20)
+completed per replicate  341 / 346 / 342
+CERTIFIED                191   es 42 · uk 75 · it 74
+rejected                 121 not-all-completed · 82 replicates-disagree · 1 severe/fatal
+five-f archetype x fold   17   uk 8 · it 7 · es 2
+worst disagreement    382.1 %  uk__GB.ENG.AB.04.Gen.ReEx.001.001__f100
+```
+⚪ `191 / 395 / 510`, the `17`, and the `382.1 %` all reproduce exactly. One immaterial partition difference: their `replicates_disagree 83` splits here as `82 + 1`; `121 + 82 + 1 + 191 = 395` and the certified set is identical either way.
+
+🔴 **4. `FINDING 182` — CERTIFICATION IS BLIND TO THE WARNING THAT `FINDING 181` IS ABOUT.**
+```
+certified                                    191   uk 75 · it 74 · es 42
+certified carrying marker_psy, all 3 reps     42   uk  0 · it  0 · es 42
+certified AND marker-free                    149   uk 75 · it 74 · es  0
+five-f pairs, marker-free                     15   uk  8 · it  7 · es  0
+```
+🔴 **Every certified `es` cell carries `Temperature out of range … (PsyPsatFnTemp)` in all three replicates.** `D-EU-27` certifies on `completed` + bitwise identity + `severe_count`/`fatal_count`, and EnergyPlus reports a diverging inside-surface heat balance as a **Warning**, raising neither counter. So **a cell can be bit-reproducible and still ill-posed**, and the `es` fold did not move from 0 clean to 42 certified because the ill-posedness receded — `Timestep 12` made the same ill-posed solution *repeatable*. ⚪ **`FINDING 181` is closed by construction for `uk` and `it`, and is NOT closed for `es`.** 🔴 **This does not withdraw the 191** — which perimeter is quotable is a certification-rule question and it is **their owner's**.
+
+🔴 **5. `EU-09` / `EU-10` ARE NOT SCORED, AND THAT IS DELIBERATE.** Every fold-level number depends on 191 vs 149, and `es` is the entire difference; scoring now and re-scoring after the ruling would put two perimeters into the record — the failure the single-re-run budget exists to prevent. 🔴 **No gate scored, no band, threshold, verdict or count moved.** ⚪ Measured while checking scoreability: `G8.1`–`G8.4` **are** scoreable (8,760 hourly rows per cell per replicate, and the replicates are the re-run those gates require), but the only reported variable is `Zone Ideal Loads Zone Total Heating Energy` and there is **no `Output:Meter` anywhere** — so **`G8.10`/`G8.11` are VACUOUS by construction, not FAIL**, and Table 17 perturbations 3 and 4 cannot be seen failing. Reported as a vacuity, never worked around.
+
+⚪ **6. WHAT MOVED.** New: `Step10_docs/impl/2026-08-28_EU-08-accounting-over-the-certified-191.md` (the full state, incl. WHAT I DID NOT VERIFY), `messages_OpenUBEM/2026-08-28_4J_to_OpenUBEM_D-EU-28_certified_perimeter_es_markers.md`. 🔴 **Nothing under `openubem/` written, no promoted artefact edited, no job submitted, Speed queue EMPTY.** ⚠ **The board is still NOT re-published.**
+
+🔴 **What is owed to a person.** ⚪ Owed by **OpenUBEM's owner**: **`D-EU-28`** — perimeter 191 (a), 149 marker-free (b, our recommendation), or both (c, we argue against). ⚪ Owed by **us on that ruling**: the `EU-09` scorer against Table 17 / Table 18 over the ruled perimeter, then `EU-10`. **No re-run is requested and the spent budget is not re-opened.** ⚪ Still the author's, unchanged and untouched: **`D-S6-16` (a′) or (c′)**, the **`D-S8-3` follow-on**, the **`D-S8-4` follow-on**. ⚪ Optional: **Fuentes et al. (2018)**.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+19) — `D-EU-28` RULED (Option B): THE PERIMETER IS THE **149** MARKER-FREE CELLS. `EU-09` AND `EU-10` ARE SCORED AND DONE — 11 PASS / 2 FAIL / 4 VACUOUS, 9 OF 12 PERTURBATIONS SEEN FALLING. `FINDING 184`: THE OCCUPANT MANIPULATION IS A **NULL ON ANNUAL HEATING** AND LIVES IN THE PEAK.**
+
+⚪ **1. THE RULING.** `openubem-92` relayed the owner's ruling on `D-EU-28`: **Option B**. The quotable perimeter is the **149 marker-free certified cells (uk 75 · it 74 · es 0)**; the `191` is SUPERSEDED as a reporting perimeter and may be cited only as the intermediate certified count. **No "report both".** The f-sweep set is **15** pairs (uk 8 · it 7), not 17. **No `es` result is quotable at any level.** `D-EU-26` still bars every `uk` fold-level figure, so **`it` is the only fold that survives both bars at fold level** — say that wherever a fold-level number appears. `FINDING 181` is closed by construction for `uk` and `it` and **NOT** for `es`; it stays `[OPEN]`. The ruling implies **no re-run** — it is one filter on an already-emitted column. They also re-derived `FINDING 182` independently and every figure reproduced; two additions for our record: `marker_psy` is **all-three-or-none** (any = all 3 = 42), and `marker_inside_hb`/`marker_calchb` are **0 on every certified cell**, so `marker_psy` is the only marker in play and is **perfectly confounded with the `es` fold**.
+
+🟢 **2. THE PERIMETER RE-DERIVES TO THE RULED 149.** From `deu27_rerun_cells.csv` alone, in the same run as the scoring (V8.b): `1,530 rows · 510 cells · 191 certified · 149 certified AND marker-free`, `uk 75 · it 74 · es 0`, and **15** five-`f` pairs (`uk 8 · it 7`). Both match the ruling exactly.
+
+🟢 **3. `EU-09` — THE GATE REPORT.** `Step10_docs/outputs_step10/eu09_gate_report_2026-08-28.json`, produced by `tools/4thJ_step10_eu09_scorer.py`. Bands, gate contracts and the frozen `PERTURBATION_MATRIX` are **imported** from `openubem.validation.step8_bands` / `step8_gates` (V8.c) — no threshold is restated in our tree and a smaller mutation set cannot be substituted.
+```
+PASS (11)     G8.1 G8.2 G8.3 G8.4 G8.5 G8.6 G8.8 G8.12 G8.13 G8.14 G8.16
+FAIL (2)      G8.0  G8.15
+VACUOUS (4)   G8.7 G8.9 G8.10 G8.11      each naming its empty population
+```
+`G8.1`–`G8.4` and `G8.5`/`G8.6`: **298 replicate pairs** (149 cells × rep1-vs-rep2 and rep1-vs-rep3), all in band. *G8.1–G8.4 are reproducibility gates. They compare a cell against a re-run of itself. They are not a validation of simulated energy against measured energy, and no such validation is claimed anywhere in this paper.* The G8.5/G8.6 comparison series is **the same cell's re-run**, never a measured series. `G8.8` 37/37 archetype × fold groups carry distinct emitted-schedule digests across `f`. `G8.12`/`G8.13` 149/149 from the **saved IDF on disk**, read by OpenUBEM's independent text parser: `Schedule:File` path + **measured** file digest match the manifest, the consuming `OtherEquipment` object names that schedule, `Interpolate to Timestep = No`. `G8.14` 149/149 — ⚪ but the retained manifests carry **no `platform` field**, so that arm is a reported coverage gap, not a pass. `G8.16` 149/149 with `V8.g` satisfied.
+
+🔴 **4. THE TWO FAILURES, CARRIED AND NOT CURED.** **`G8.0` FAIL 99/121** — of the 121 `f > 0` perimeter cells, **22** have an `f = 0` control that did not complete in all three replicates (12 of them completed in rep 1 and failed later), and **29** have an `f = 0` control that is **not itself inside the ruled perimeter**, so **no f-versus-baseline difference may be quoted for those 29**. **`G8.15` FAIL 149/149**, **8 distinct untriaged warning kinds** (`calculatezonevolume`, `entered zone volumes differ from calculated zone volume(s).`, `fixviewfactors`, `getsurfacedata`, `getvertices`, `managesizing`, `processscheduleinput`, `calculated design cooling load for zone`) — no `approved_warning_kinds` list has ever been ruled, so triage ran against an empty approval set (standing caveat C-08); severe/fatal are 0 by the perimeter definition; triage is by **kind**, never frequency (V8.f). **No band was moved to make either green.**
+
+⚪ **5. WHY THE FOUR VACUOUS GATES ARE VACUOUS, NOT FAILING.** `G8.9`: each replicate ran into its own fresh run root, no cache consulted, no `dependency_digest` in the retained manifests. `G8.10`/`G8.11`: **0 `Output:Meter` objects across all 149 perimeter IDFs** — heating comes from the Zone Ideal Loads hourly variable. `G8.7`: no as-modelled published EUI band has ever been ruled for these TABULA archetypes, so there is nothing to grade against.
+
+🟢 **6. TABLE 17 COVERAGE — 9 OF 12 EXERCISED ON REAL ARTEFACTS, ALL 9 PASS; 3 VACUOUS.** Every mutation was applied to a **copy** of a retained artefact and re-scored — **no EnergyPlus run, the spent budget untouched**. `P01` G8.8 falls · `P05` the assignment arm falls while the value arm stays clean · `P06` G8.13 falls, G8.12 clean · `P07` G8.14 falls · `P08` G8.16 falls · `P09` G8.6 falls, G8.5 clean · `P10` G8.1 and G8.3 fall, G8.6 clean · `P11` exercised on the **V8.d** geometry arm (borrowed geometry FAILs, the archetype's own passes) because `G8.7` itself is vacuous · `P12` null leaves every baseline checkpoint clean. **`P02`/`P03`/`P04` VACUOUS** — no cache layer, no meters. `V8.a`–`V8.g` all pass with measured detail in the JSON.
+
+🔴 **7. `FINDING 183` — OpenUBEM's saved-IDF geometry reader is too tight for its own serializer.** `read_saved_idf_geometry` requires `V / (A · h)` integral to `abs_tol=1e-9`, but `Zone.Ceiling_Height` is serialized to **7 significant figures**, so `GB.ENG.AB.03.Gen.ReEx.001.001` (10.999998) and `IT.MidClim.AB.05.Gen.ReEx.001.001` (7.999999) **raise instead of reading** — 2 of 39 perimeter archetypes. A **reader tolerance defect, not a geometry defect**. Our scorer falls back to the same positional parse with a relative tolerance and **flags every cell it did so for**; it does not loosen anyone's gate and does not skip the archetype. Routed to OpenUBEM as a defect note, not a decision.
+
+🟢 **8. `EU-10` — THE DOSSIER.** `Step10_docs/outputs_step10/eu10_campaign_dossier_2026-08-28.json`, schema `eu10-dossier-campaign/1.0-deu28`, from `tools/4thJ_step10_eu10_dossier.py`. Per cell: annual, 12 monthly, hourly peak + its hour index, denominator area and storey count **read per archetype from that archetype's own saved IDF**, heating EUI, weather id and calendar year, geometry-readback mode. **The hourly series re-sums to the manifest `heating_kwh` on 149 of 149.** EUI accounting mode is **`single_simulated_end_use_no_reconstruction`** — neither §9.10 mode applies, no service-load object is emitted and no reconstruction table is applied, so **nothing can be double counted**; every EUI is a **heating-only** EUI and must never be compared to a whole-building EUI or a measured total. The **quotation bars live inside the dossier**: `es` not quotable at any level, `uk` never at fold level (D-EU-26), **`it` the only fold surviving both bars**, and any cross-fold absolute comparison names the meteorological year (uk 2014, it 2014) beside the country. Fold-level figure, `it` only: **area-pooled heating EUI 108.25 kWh/m²**, cell range 45.08–156.70. The `uk` aggregate is deliberately withheld.
+
+🔴 **9. `FINDING 184` — THE OCCUPANT MANIPULATION IS A NULL ON ANNUAL HEATING AND LIVES IN THE PEAK.** Over the 15 five-`f` pairs, `f = 1.00` vs `f = 0.00`:
+```
+annual heating    it  min -0.38 %  median -0.10 %  max +0.45 %   (n=7)
+                  uk  min -0.21 %  median -0.04 %  max +0.10 %   (n=8)
+hourly peak       it  min -2.83 %  median -1.46 %  max +7.92 %
+                  uk  min -0.74 %  median +1.91 %  max +6.32 %
+peak-hour shift   it  0, -15, -41, -41, 0, 0, 0 h
+                  uk  +2, +20, -3, -27, 0, 0, +4, +1 h
+```
+The annual effect is **under half a percent**, against a published European expectation of **15–50 %** on annual space heating. The cause is in the injection formula itself: `phi_int(t) = 3.0 · ((1-f) + f · g_norm(t))` with `g_norm = g / mean(g)`, so **the annual mean gain is conserved by construction and only the shape changes**. The manipulation *cannot* move an annual total; it moves the **peak magnitude (up to ~8 %)** and the **peak timing (up to 41 hours)**. 🔴 **Every claim from this campaign must be a peak/timing claim, not an annual-demand claim, and the 15–50 % literature band is not the comparison this design supports.** Because certification makes the replicates bitwise identical, these differences are deterministic, not run noise.
+
+⚪ **10. WHAT MOVED.** New: `tools/4thJ_step10_eu09_scorer.py`, `tools/4thJ_step10_eu10_dossier.py`, `Step10_docs/outputs_step10/eu09_gate_report_2026-08-28.json`, `Step10_docs/outputs_step10/eu10_campaign_dossier_2026-08-28.json`, `Step10_docs/impl/2026-08-28_EU-09-EU-10-scored-over-the-149.md`. 🔴 **Nothing under `openubem/` written, no promoted artefact edited, no job submitted, no simulation run, Speed queue EMPTY.** ⚠ **The board is still NOT re-published.**
+
+🔴 **What is owed to a person.** ⚪ **Nothing is owed on `EU-08`/`EU-09`/`EU-10` — all three are done.** ⚪ Owed by **OpenUBEM**, optional and not blocking: an `approved_warning_kinds` list (would re-score `G8.15` only), and their `FINDING 183` reader fix. ⚪ Still the author's, unchanged and untouched: **`D-S6-16` (a′) or (c′)** — one line, text already drafted at `writing/4thJ_writeup_notes.md` §8; the **`D-S8-3` follow-on**; the **`D-S8-4` follow-on**. ⚪ Optional: **Fuentes et al. (2018)**.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+20) — THE AUTHOR DELEGATED THE THREE REMAINING DECISIONS AND ALL THREE ARE NOW RULED: `D-S6-16` = **(a′)**, the `D-S8-3` follow-on = **NOT TAKEN**, the `D-S8-4` follow-on = **NOT TAKEN**. 🟢 **THE DECISION QUEUE IS EMPTY — NOTHING ANYWHERE IS WAITING ON A PERSON.** NO RE-RUN, NO THRESHOLD MOVED, NO CONTROL REMOVED.**
+
+⚪ **0. THE DELEGATION.** The author wrote *"continuer jusqu'a la fin, progress comme tu recommends"*. Each of the three was ruled to its **standing written recommendation**, and each ruling is recorded **additively** in the brief that raised it — no ruled decision was rewritten in place.
+
+🟢 **1. `D-S6-16` RULED (a′) — report the ceiling as measured.** `IMP/docs/DONE/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` §9. **(c′) declined** — a full 7 B retrain that cannot change the release, which `G6.10`'s registered bar has already decided; the Speed budget is not re-opened for a methods refinement. The passages at `writing/4thJ_writeup_notes.md` §8 were drafted under (a′) and are now the **ruled text**, unchanged: §8.1 methods, §8.2 results and limitations, §8.3 the `FINDING 112` withdrawal. 🔴 **The ruling does not make the privacy audit pass.** The paper still ships **two registered FAILs and one partial** — `G6.10` 0.6645 > 0.65, perplexity gap 0.0570 > 0.05, `G6.13` 2 PASS / 1 FAIL on `uk` — the weights are **not** released and the `uk` synthetic set is withheld. The body-randomised ceiling stays **specified and not built**, and the limitation sentence says so. Reopen trigger: only if such a ceiling is ever built for an unrelated reason.
+
+🟢 **2. THE `D-S8-3` FOLLOW-ON RULED — NOT TAKEN.** The 12 `glazing_does_not_fit` rows keep the `1 : 1.5` fallback; no archetype is rebuilt and no IDF changes. 🔴 **The reason is a cancellation, not a preference:** the clamp is a **level** correction while every claim here is a **contrast**, and within an archetype all five `f` levels share one geometry, so the geometry cancels exactly out of `f = 0` versus `f = 1` — the same argument `D-S8-4` §6 makes for the station. It cannot move `FINDING 143`/`144`/`145`, which after the `D-S9-3`(a) rotation say **no occupancy claim survives on either channel at `f = 1.00`**. Taking it would invalidate 13,108 completed runs to refine a number no conclusion rests on. ⚪ Carried instead: `FINDING 117`'s two named cells, **`it`/`AB` 0.656 and `uk`/`AB` 1.137**, never omitted when the 6.1 pp headline is quoted.
+
+🟢 **3. THE `D-S8-4` FOLLOW-ON RULED — NOT TAKEN.** Each fold keeps its single measured station; no EPW re-selected. Same cancellation (`f = 0` and `f = 1` share one EPW), and the follow-on would multiply 13,108 rotated runs by `k` to put an interval around a level no published claim rests on. ⚪ Carried instead, and binding: **no cross-fold comparison of absolute demand is safe to ±10 %** (`FINDING 120`, 0.002 K selection margin), and no result is ever written as *"the Spanish stock uses X kWh/m²"*. ⚪ Both follow-ons reopen on exactly one trigger — a published claim resting on an **absolute** cross-fold or per-class demand **level** rather than a within-archetype contrast.
+
+⚪ **4. WHAT MOVED.** Appended sections only: `IMP/docs/DONE/2026-08-24_D-S6-16_*.md` §9 (status line at the head also flipped to RULED), `Step8_docs/docs/2026-08-24_D-S8-3_*.md` and `Step8_docs/docs/2026-08-25_D-S8-4_*.md` each gain a dated ADDENDUM; `writing/4thJ_writeup_notes.md` §8 header and status paragraph now read RULED instead of DRAFTED and §8.4's *"does not rule"* bullet is corrected. Backups: `.bak4`, `.bak_followon` ×2, `.bak_ds616`. 🔴 **No campaign re-run, no gate re-scored, no band moved, no control removed, nothing written under `openubem/`, Speed queue EMPTY.**
+
+🔴 **What is owed to a person.** 🟢 **NOTHING. The decision queue is empty in every direction.** ⚪ Owed by **OpenUBEM**, optional and not blocking: one ruling bundling `approved_warning_kinds` with the disposition of `G8.0`'s 29 out-of-perimeter `f = 0` controls, and their `FINDING 183` reader fix — 🔴 until that ruling arrives we **hold**: `G8.15` is not re-scored and the `EU-10` dossier is not re-emitted, at their explicit request. ⚪ `EU-09`/`EU-10` stay **In progress** on their side by design, not Completed, because `G8.0` and `G8.15` FAIL and the failures are carried. ⚪ Optional and unchanged: **Fuentes et al. (2018)**. ⚠ **The board is still NOT re-published.**
+
+---
+
+#### 🟢 **2026-08-28 (night, last+21) — THE BOARD IS RE-PUBLISHED, AND IT HAD BEEN STALE FOR FOUR DAYS AND TWO WHOLE STEPS. `4thJ_CHECKLIST.html` NOW CARRIES **STEPS 0–11**, 97 ITEMS, 80 DONE / 5 IN PROGRESS / 12 NOT STARTED. `node --check` OK AND DOM-SHIM SMOKE OK.**
+
+🔴 **1. WHAT WAS WRONG WITH IT.** The board ended at **Step 9** and every card except the ceiling and Qwen ones read as of **2026-08-24**. Measured against the step docs, it was lying in five places at once: **Step 8 items 8.2–8.6 all read `todo`** although the Definition of Done closed on 2026-08-25 and the whole campaign was re-run under `D-S9-3`(a); **Step 9's five items read `todo`** although 9.1–9.5 were built on 2026-08-25; **`7.4`, `7.5`, `7.6`, `7.7` and `G7.10` read `todo`** although all five were closed on 2026-08-25/26 — `G7.10`'s note still said *"No XGrammar back-end yet"* when `xgrammar 0.2.3` had been installed by `D-S7-3` **before the note was written**; the `D-S3-14` UK split report read `todo` although it was filed on 2026-08-26; and **Steps 10 and 11 did not exist on the board at all**.
+
+🟢 **2. WHAT IT NOW SAYS, AND EVERY NUMBER CAME FROM THE STEP DOC, NOT FROM MEMORY.** Steps 8 and 9 are rewritten card by card; Step 7's five stale cards are corrected with their measured results (7.4 three arms, base **1.000000** in all three folds against constrained **0.000000**, 0 oracle disagreements in 9 of 9 cells; 7.5 at its registered size **75,531 / 16,795 / 48,809**, board **21 PASS / 6 FAIL**, `G7.9` still FAILing 3/3; 7.6 decision 14 ruled `independent`, seed 1, `G7.18` rule spread 0.289 / 0.194 / 0.028 % against 25 %). **Steps 10 and 11 are new sections** carrying 10.1–10.11 and 11.1–11.6 with their real dependencies, plus five cards for the OpenUBEM arc: `EU-08`, the `D-EU-28` ruling, `EU-09`, `EU-10`, `FINDING 183` and `FINDING 184`.
+
+🔴 **3. THE BOARD NOW CARRIES THE PROHIBITIONS, NOT JUST THE STATUSES.** Written onto the cards themselves so no one can read a number off this board without its bar: the **191 is SUPERSEDED** as a reporting perimeter and **no `es` result is quotable at any level**; **no `uk` fold-level or nationally representative figure** (`D-EU-26`), so **`it` is the only fold surviving both bars**; every EU-10 EUI is **heating-only**; **`G8.7` is INFO permanently** and no as-modelled EUI band exists anywhere in this project; `G8.1`–`G8.4` are **reproducibility tripwires and no measured-energy validation is claimed**; Step 9's board is **15 PASS / 3 FAIL / 1 NOT CHECKED** and *never 16*; Step 8's post-rotation result is a **NULL on both channels** with only the dwelling-class ordering surviving, and the pre-rotation "peak channel" reading is marked **superseded**; `G11.13` bars **any per-dwelling prediction at any scale**; and both Step-8 follow-ons now show as **RULED NOT TAKEN** with the cancellation argument on the card.
+
+🟡 **4. THE TWO `prog` CARDS ARE DELIBERATE.** `EU-09` and `EU-10` are **In progress, not Done**, because `G8.0` and `G8.15` **FAIL** and the failures are carried — that is OpenUBEM's own acceptance rule and the board must not out-run it. Both cards carry the **HOLD**: no `G8.15` re-score and no dossier re-emit until the owner rules `approved_warning_kinds` together with `G8.0`'s 29 out-of-perimeter `f = 0` controls.
+
+⚪ **5. VERIFICATION, BEFORE AND AFTER.** Backup `4thJ_CHECKLIST.html.bak_s1011` taken first. After the edit: the inline script was extracted and **`node --check` passed**, and a **DOM-shim smoke run passed** — 12 steps `0…11`, **97 items**, 181 DOM nodes constructed, no duplicate step number, no empty title, no status outside `done`/`prog`/`todo`. Per-step: `0:2/2 1:4/5 2:6/6 3:6/6 4:15/16 5:5/5 6:5/7 7:9/9 8:8/8 9:9/9 10:8/17 11:3/7`. Re-verified again after the masthead line changed from *"steps 0–9"* to *"steps 0–11"*.
+
+🔴 **What is owed to a person.** 🟢 **NOTHING, in any direction.** ⚪ Owed by **OpenUBEM**, optional and not blocking: the single ruling bundling `approved_warning_kinds` with `G8.0`'s 29 controls, and their `FINDING 183` reader fix — **we hold until it lands**. ⚪ Optional and unchanged: **Fuentes et al. (2018)**. 🟢 **The board is no longer stale and the decision queue is empty.**
+
+---
+
+#### 🔴 **2026-08-28 (night, last+22) — `FINDING 181`: A/B/C ANSWERED, AND **TWO OF THE PEER'S THREE QUESTIONS WERE ANSWERED WITH ZERO COMPUTE**. `FINDING 185` — THE DIVERGING REPLICATES CARRY AN **IDENTICAL** `.err` KIND-SET (0 OF 54). `FINDING 186` — `FixViewFactors` IS ASSOCIATED (it OR 4.12, p 6.4e-4) BUT **NEITHER NECESSARY NOR SUFFICIENT** (0/7 in uk). `FINDING 187` — THE MANIFEST'S `energyplus_version` IS A HARD-CODED LITERAL.**
+
+⚪ **1. WHAT ARRIVED.** `openubem-92` relayed two rulings (`D-EU-29` Option A — the 8 warning kinds approved on a NEW perimeter `campaign_149`, `getvertices` still REFUSED on `s2_bundle`, read the per-entry `perimeter` field; `D-EU-30` Option A — the f-versus-baseline DIFFERENCE perimeter is 92 cells / 28 archetypes, the LEVEL perimeter stays 149, `G8.0` carried as **FAIL 99/121** and never reported as PASS) and asked three questions: **A** accept a 62-cell scope or fold in 28 more, **B** how many replicates on how many hosts, **C** what we need from their side.
+
+🟢 **2. THEIR CLASSIFICATION RE-DERIVED INDEPENDENTLY, AND IT REPRODUCES EXACTLY.** From `deu27_rerun_cells.csv` alone (1,530 rows, 510 cells): **149 certified · 54 `FINDING 181` proper (it 47 · uk 7) · 42 marker-bearing reproducible · 28 marker-bearing non-reproducible · 236 partial/never · 1 severe**, spread over the 54 **0.048 / 6.569 / 31.365 %** — every figure to 3 dp. Their scope file was **readable in place** (62 unique, it 51 · uk 11, f000 17 · f015 11 · f030 12 · f050 9 · f100 13), so nothing had to be copied. ⚪ One fact they did not state: **all 28 marker-bearing non-reproducible cells are `es`**, so with `FINDING 182` the marker is **perfectly confounded with the fold**.
+
+🔴 **3. `FINDING 185` — QUESTION 2 ANSWERED, NO COMPUTE, AND THE ANSWER IS NO.** The `.err` files were already on disk under `eu_certified_rerun_2026-08-28/rep{1,2,3}/<cell>/`. Kind normalisation **imported from OpenUBEM's own `evaluate_warning_gate`**, so the alphabet is theirs: kind-set differs across replicates on **0 / 149 certified · 0 / 54 `FINDING 181` · 1 / 28 marker non-reproducible**, `err` files missing 0 everywhere. The 54 draw on **exactly the same 8 kinds** as the 149. 🔴 **So the `.err` kind-set does not point at the model.** The single differing cell is `es__ES.ME.MFH.02.Gen.ReEx.001.001__f100`, one kind (`calculated design cooling load for zone`) present in rep1/rep3 and absent in rep2 — a sizing artefact *downstream* of a diverging solution.
+
+🔴 **4. `FINDING 186` — QUESTION 3 PARTLY ANSWERED, AND THE DESIGN QUESTION CANNOT BE THE WHOLE ANSWER.** `fixviewfactors` in `rep1`, non-reproducible vs certified, **stratified by fold** because the two populations have opposite fold mixes: `it` **37/47 (78.7 %) vs 35/74 (47.3 %), OR 4.12, Fisher p = 6.4e-4**; `uk` **0/7 vs 0/75**. 🔴 `fixviewfactors` **never appears anywhere in `uk` and 7 `uk` cells are still non-reproducible**, and **10 of 47** non-reproducible `it` cells carry none. The unenclosed-zone surface **raises the risk and does not create it** — a second, `fixviewfactors`-independent mechanism is present. This narrows their equivalent-envelope DESIGN question, it does not rule it.
+
+🟢 **5. THE ANSWER SENT — A.** Accept the **62** (the 54 + their 8 Group I `f = 0` controls; Group II's 3 are already inside the 54). ⚪ Asked to add the **28 as a second, explicitly labelled arm — 90 total** — *not* because they answer question 3 (they cannot, being 28/28 `es`), but because they cost ~30 s, they are the only replicated observation of the `es` fold we would ever have, and excluding them pre-decides that the marker and the non-reproducibility are one phenomenon. 🔴 **They stay out of every perimeter and no number from them is quotable at any level.**
+
+🟢 **6. THE ANSWER SENT — B, AND THE COST BASIS IS MEASURED, NOT ESTIMATED.** From `_local_runs/4J_eu08_v4_T1/campaign_summary.json`: `n_cells 510 · workers 14 · wall_s 71.9` on `tabletop1` — about **2 s of core time per cell-run**. Proposed **arm 1: 90 × 10 replicates, `--workers 14`, ~2 min**; **arm 2: 90 × 3 replicates, `--workers 1`, ~15 min** — because the entire 1,530-run campaign ran at `--workers 14` and **scheduling has never been excluded**; if divergence vanishes serially, question 1 is answered and no second host is needed. 🔴 **This is NOT a campaign re-run and must not be booked against the spent `D-EU-27` budget** — it is a 90-cell diagnostic producing no quotable number and touching no perimeter.
+
+🔴 **7. THE SECOND HOST CANNOT BE DONE AS SPECIFIED, AND WE SAID SO.** `tabletop1` runs **EnergyPlus 23.1.0-87ed9199d4 Windows**; the only other engine we have is **24.2.0-94a887817b Linux** in `/speed-scratch/o_iseri/EnergyPlus/`. Different version *and* platform; the IDF header declares `Version,23.1` and our driver's `energyplus_version_required = 23.1` guard would refuse every cell. The achievable second arm is to stage **23.1.0 Linux** on Speed and `sbatch` 90 × 3 — 🔴 **a *platform* arm, not a *host* arm**, and it must be labelled that way in every sentence. A clean host arm needs a **second Windows box with the identical installer**, which we do not have.
+
+🟢 **8. THE ANSWER SENT — C, SIX ITEMS.** (1) the cell list: **nothing needed**, read in place and re-derived; (2) 🔴 **`platform` in `MANIFEST_FIELDS`** — host, OS, CPU, and the **sha256 of the binary actually executed**; without it a two-host study is not certifiable by their own `G8.14`, whose `platform` arm is already a reported coverage gap; (3) 🔴 **`FINDING 187` — `eu_cell_runner.py:572` writes `"energyplus_version": "23.1"` as a hard-coded literal**, never measured, so a 24.2.0 run, a Linux run and a Windows run all produce manifests reading `23.1`; the measured string exists only in *our* `campaign_summary.json`, which their gates do not read; (4) the `eu_approved_warning_kinds_v1.0.json` path + sha256 and confirmation that `campaign_149` is the exact `perimeter` string; (5) confirmation that the kind normalisation stays theirs; (6) confirmation that the re-run may write a fresh run root under `_local_runs/`.
+
+⚪ **9. WHAT MOVED.** New: `messages_OpenUBEM/2026-08-28_4J_to_OpenUBEM_FINDING181_rerun_scope_A_B_C.md`. Analysis scripts in the session scratchpad (`f181_errkinds.py`, `f181_fvf2.py`) — read-only over the OpenUBEM tree. 🔴 **Nothing under `openubem/` written, no EnergyPlus run, no gate re-scored, no band moved, no perimeter touched, Speed queue EMPTY.** `G8.15` is **not** re-scored yet — it waits on item C.4. `EU-09`/`EU-10` stay **In progress**. `FINDING 181` stays **OPEN**.
+
+🔴 **What is owed to a person.** 🔴 **ONE decision, the author's:** may we stage **EnergyPlus 23.1.0 Linux** on Speed for the platform arm — recommend **yes**, it is a ~300 MB fetch into `/speed-scratch` plus one `sbatch`, and it is the only second engine reachable. ⚪ Arms 1 and 2 (~17 min on `tabletop1`) **do not wait** for that answer and do not wait for OpenUBEM. ⚪ Owed by **OpenUBEM**: the six C items, of which only `platform` blocks a two-host *result*. ⚪ Optional and unchanged: **Fuentes et al. (2018)**.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+23) — `FINDING 181` ARMS 1, 2 AND 3 ARE RUN (2,660 CELL-RUNS). **THE CAUSE IS NOT CONTENTION** — `FINDING 190`, DIVERGENCE SURVIVES `--workers 1` AND `uk` IS IDENTICAL SERIALLY (1/11 vs 1/10). 🔴 `FINDING 191` — **THE `D-EU-28` CERTIFIED 149 IS CONTAMINATED AT THE CELL LEVEL, 53 OF 149 DIVERGE.** 🟢 `FINDING 192` — **BUT THE `it` FOLD AGGREGATE MOVES ONLY 0.157 % ACROSS TEN FULL RE-RUNS**, SO THE ONE QUOTABLE NUMBER SURVIVES WITH A STATED ±0.16 % TOLERANCE.**
+
+⚪ **1. WHAT WAS RUN, AND ONE ARM WAS NOT AUTHORISED.** `openubem-92` said "START THEM" for arm 1 (90 cells × 10, `--workers 14`) and arm 2 (the same 90 × 3, `--workers 1`), on the conditions that this produces no quotable number, touches no perimeter, re-scores no gate and is **not booked against the spent `D-EU-27` budget**. 🔴 **Arm 3 — the 149 `D-EU-28` CERTIFIED cells × 10 — was added on our own initiative**, gated behind `ALL_ARMS_DONE` so it could not contaminate arm 2's contention test, and **disclosed as unasked in the letter** with an explicit offer to ask first next time. Trigger: arm 1 showed 3-replicate certification to be a weak filter, and if that holds for the 90 it may hold for the 149 the perimeter rests on. Host `tabletop1`, EnergyPlus **23.1.0-87ed9199d4** Windows, driver `--cells` flag (additive, backup `.bak_f181`). 🔴 All three arms **predate OpenUBEM's C-2 commit**, so no manifest carries a `platform` block — a single-host diagnostic, never offered as a certifiable two-host result. `eu_certified_rerun_2026-08-28/` untouched; nothing under `openubem/` written.
+
+🔴 **2. `FINDING 188` — COMPLETION IS ITSELF NONDETERMINISTIC, AND IT HAD NEVER BEEN MEASURED.** Same cell, same IDF, same weather, same binary: `completed` differs between replicates. Arm 1 replicates-completed-of-10 `4:1 6:2 7:14 8:14 9:33 10:26` → **64 of 90 inconsistent, 0 never complete**; arm 3 `6:2 7:6 8:23 9:47 10:71` → 🔴 **78 of the 149 CERTIFIED cells failed to complete in at least one of ten re-runs**, per-replicate `engine_failed` **8 to 18** with no trend. **`completed` is a random variable, not a cell attribute**, and no 3-replicate certification can see it.
+
+🔴 **3. `FINDING 189` — IT IS A CONTINUUM, NOT BISTABILITY.** Distinct `heating_kwh` per cell: arm 1 `1:19 2:19 3:5 4:14 5:14 6:13 7:5 8:1` — **up to 8 values in 10 runs**, 52 of 90 with ≥3; arm 3 `1:96 2:45 3:5 4:3`. Worst arm-1 spreads `es__ES.ME.MFH.06…__f015` **79.11 %** over 8 states, `it__IT.MidClim.TH.07…__f015` **35.16 %** over 4, three `it` `SFH`/`SFH-TH` cells **31–32 %**. So the solver lands on a *distribution*, and a 3-replicate comparison samples it at low resolution and with bias.
+
+🔴 **4. `FINDING 190` — QUESTION 1 ANSWERED AND THE ANSWER IS NOT CONTENTION.** Comparing 10 replicates against 3 would confound contention with detection power, so the comparison is **power-matched** — arm 1's first three against arm 2's three: pooled **61.2 % vs 56.6 %**, `it` 75.0 vs 67.4, `es` 57.7 vs 55.6, 🔴 **`uk` identical at 1/11 vs 1/10**. Overlap: 37 both, 15 parallel-only, **10 serial-only** — divergence is not even nested, and at full power 3 cells diverge *only* serially. Worker count moves the **rate** (71/90 at ten parallel replicates), not the phenomenon. ⚪ The peer's standing instruction was to say so and stop if divergence vanished; it did not vanish, so we did not stop. 🔴 **Contention is excluded, which makes the platform arm INFORMATIVE rather than optional.**
+
+🔴 **5. `FINDING 191` — THE CERTIFIED 149 IS CONTAMINATED AT THE CELL LEVEL.** **53 of 149 (35.6 %)** produce more than one distinct `heating_kwh` — `it` 30/74 (40.5 %), `uk` 23/75 (30.7 %). P(three independent draws land on one value): **mean 0.859, median 1.000, 13 cells below 0.5**; the same statistic on the 90 known-bad cells is mean 0.390 / median 0.173 / 53 of 90 below 0.5, so the certified set is decisively **better** but not **clean**. Worst inside it: `uk__GB.ENG.AB.04…__f050` **79.14 %**, `uk__GB.ENG.AB.03…__f015` **73.67 %**, `…AB.03…__f000` **73.64 %**, `uk__GB.ENG.TH.07…__f050` **10.15 %**. 🔴 **NO CELL-LEVEL NUMBER FROM THE 149 IS SAFE TO QUOTE** — not a per-cell heating value, EUI, or f-versus-baseline difference.
+
+🟢 **6. `FINDING 192` — AND THE ONE QUOTABLE NUMBER SURVIVES.** Basis fixed to the **71** cells complete in all ten replicates; no EUI computed, areas are OpenUBEM's. `it` **35 cells, 3,913,790.634 … 3,919,936.408, spread 0.157 %**; `uk` 36 cells, 2,434,508.868 … 2,750,791.667, **11.498 %**. By f-level: `it` 0.435 / 0.216 / 0.594 / 0.052 / 0.558 %; `uk` **f000 58.540 %**, then 0.000 / 0.098 / 0.139 / 0.214 %. 🟢 **The `it` fold aggregate — the only fold surviving both `D-EU-26` and `D-EU-28` — moves 0.157 % across ten independent re-runs of the whole certified set: per-cell chaos averages out.** 🔴 Ten distinct sums in ten runs, so it is **numerically stable, NOT bitwise reproducible** — write the weaker claim, and quote the `it` heating figure with a stated **±0.16 %** re-run tolerance. `uk`'s 11.5 % is an independent reason never to lift `D-EU-26`.
+
+⚪ **7. `FINDING 186` AMENDED — WE OWED THIS CORRECTION.** The `it` odds ratio **4.12** (78.7 vs 47.3 %) was measured on 3-replicate labels, where a cell diverges only if divergence is *frequent*. At ten replicates the stratification largely washes out: arm 1 `it|fvf=True` 92.1 % vs `False` 84.6 %; arm 3 48.6 % vs 33.3 %; `uk` carries **no** `fixviewfactors` anywhere and still diverges 23/75. 🔴 **The conclusion stands — associated, neither necessary nor sufficient — the EFFECT SIZE does not, and `4.12` must never be quoted.** Part of it was a detection-power artefact. OpenUBEM's equivalent-envelope DESIGN question stays live and stays partial: it cannot explain `uk`.
+
+🟢 **8. WHAT ARRIVED FROM OPENUBEM AND IS NOW CLOSED.** C-2: **`platform` exists in `MANIFEST_FIELDS`** (`eu_cell_runner.py:77-82`) with seven keys — `hostname, os, machine, processor, python_version, energyplus_exe, energyplus_sha256`; their own `step8_gates` `immutable_fields` had demanded `platform` while `MANIFEST_FIELDS` had no such key, so **`G8.14`'s platform arm could never have been satisfied by any run, on any host**. C-3: **`FINDING 187` repaired** — `energyplus_version_declared` / `energyplus_version_measured`, legacy key retained; both defects registered in their `OpenUBEM_debug_References.md` ch. 9. Suite 2345 passed / 55 skipped. 🔴 **Existing manifests must NOT be retrofitted**, and any future platform arm must report `energyplus_version_measured` **verbatim** rather than restating "23.1".
+
+⚪ **9. WHAT MOVED.** New: `messages_OpenUBEM/2026-08-28_4J_to_OpenUBEM_FINDING181_arms_1_2_3_results.md` and `Step10_docs/docs/2026-08-28_FINDING181_arms-1-2-3_implementation.md`. Run trees `_local_runs/4J_f181_arm{1,2,3}_rep*` — **2,660 cell-runs, 30 `campaign_summary.json`**. Analysis in the session scratchpad (`f181_analyse.py`, `f181_matched.py`, `f181_arm3.py`, `f181_aggregate.py`), kind normalisation imported from OpenUBEM's `evaluate_warning_gate` throughout. 🔴 **No gate re-scored, no band moved, no perimeter edited, no published number changed.** `EU-09`/`EU-10` stay **In progress** on the carried `G8.0` FAIL; `G8.15` still waits on the pinned digest `863c9e59…`. 🔴 **`FINDING 181` stays OPEN** — contention is excluded, the mechanism is not identified.
+
+🔴 **What is owed to a person.** 🔴 **ONE decision, the author's, unchanged and now sharper:** may we stage **EnergyPlus 23.1.0 Linux** on Speed for the **PLATFORM** arm — recommend **yes**; contention is excluded, so this is now the only remaining lever on the mechanism. It is a ~300 MB fetch into `/speed-scratch` plus one `sbatch --array`; run against OpenUBEM's new writer its manifests would carry host, OS, CPU and the binary's own sha256, so the comparison becomes evidence rather than assertion. ⚪ An **ACTION, not a decision**, also the author's: a clean second **Windows** box with the identical 23.1.0 installer would give a true *host* arm, which the cluster never can. ⚪ Owed by **OpenUBEM**, and asked in the letter: whether any *cell-level* use of the 149 is still permitted, and how `G8.1`–`G8.4` stand as bitwise tripwires now that a single-replicate bitwise comparison cannot pass reliably on any cell. ⚪ Optional and unchanged: **Fuentes et al. (2018)**.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+24) — OPENUBEM BUNDLED OUR THREE QUESTIONS INTO **ONE** RULING, `D-EU-31`, AND PUT US ON **HOLD**. 🔴 **CORRECTION CARRIED: THE ±0.157 % IS MEASURED ON 35 `it` CELLS, NOT THE 74 THAT CARRY `108.25 kWh/m²` — "108.25 WAS RE-MEASURED" MUST NEVER BE WRITTEN.** 🟢 ARM 3 WAS ACCEPTED AS THE RIGHT INITIATIVE, AND OUR "NUMERICALLY STABLE, NOT BITWISE REPRODUCIBLE" IS ADOPTED VERBATIM.**
+
+🟢 **1. ARM 3 — THE PRECEDENT, RECORDED.** We asked whether the unauthorised control arm should have been asked for first. Answer: ***"No. Run it again in the same circumstances."*** Arm 3 is the only reason the certification criterion is known to be luck-driven, and testing the **control you were handed** rather than only the cells you were pointed at is the initiative wanted. 🔴 The rule held is **not** "ask before adding an arm" — it is **"change nothing and re-score nothing without a ruling"**, and that was not breached.
+
+🔴 **2. THE CORRECTION WE MUST CARRY, AND IT IS THEIRS NOT OURS.** `FINDING 192`'s **0.157 %** is measured on the **35 `it` cells that completed in all ten replicates**, not on the **74** `it` cells behind the published **108.25 kWh/m²**. 🔴 **It is the best available estimate of re-run TOLERANCE; it is NOT a re-measurement of the published figure.** The same caveat governs every f-level spread we quoted. Written into `D-EU-31` that way.
+
+⚪ **3. `D-EU-31` — ONE RULING, NOT THREE ANSWERS**, because our three questions share one cause: `debugs/docs/DECISION_REQUEST_D-EU-31_reproducibility_perimeter_2026-08-28.md`, recommendation **Option A, zero compute**. (1) **cell-level use of the 149 BARRED**, including the `it` cell range **45.08–156.70**, **withdrawn from the quotable set**; (2) **`FINDING 192` adopted** — the 149 restricted to **fold-level aggregate use**, `it` quoted as **108.25 kWh/m²** with a stated re-run tolerance of **±0.16 %**; (3) **`G8.1`–`G8.4` recorded NOT SCOREABLE on this engine**, carried with that reason exactly as `G8.0` is carried as FAIL and **never reported as PASS**. 🔴 **`D-EU-28` and `D-EU-30` are NOT reopened**, and re-deriving certification from ten replicates was **explicitly rejected** — it would shrink 149 → 96, discard the `uk` side of `EU-09`, and sharpen a perimeter Option A already forbids using at cell level.
+
+🟢 **4. TWO OF OUR FORMULATIONS ADOPTED VERBATIM.** *"Numerically stable, NOT bitwise reproducible"* is the claim that will be made and the stronger one is **barred**; and the **`4.12` is struck** while `FINDING 186`'s qualitative conclusion stands. ⚪ Their note: this is the second time in this arc that a number died because the party who produced it re-measured it.
+
+🔴 **5. HOLD.** **Nothing is owed from us and nothing is to be started** — no compute, no further arms, no re-scoring — until `D-EU-31` is ruled. If Option A is ruled, execution is **documentation-only** on their side and we have nothing to run. 🔴 **This supersedes the pending author decision on staging EnergyPlus 23.1.0 Linux for the PLATFORM arm: it is on HOLD, not withdrawn.** ⚪ The clean second **Windows** box stays an owner **ACTION**, unblocked at the writer; if a host arm is ever authorised, quote the `platform` block and `energyplus_version_measured` **verbatim**. ⚪ `FINDING 181` stays **OPEN**.
+
+🔴 **What is owed to a person.** 🟢 **NOTHING from us, and nothing to start.** ⚪ `D-EU-31` is with **OpenUBEM's owner**; the Speed/PLATFORM question is **on hold behind it**; the second Windows box remains an author **ACTION**. ⚪ Optional and unchanged: **Fuentes et al. (2018)**.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+25) — `D-EU-31` IS **RULED OPTION A** BY OPENUBEM'S OWNER AND EXECUTED THE SAME DAY (DOCUMENTATION-ONLY, ZERO COMPUTE). OUR RECOMMENDATION WAS ADOPTED IN FULL. **CELL-LEVEL USE OF THE 149 IS NOW BARRED**, THE `it` FOLD FIGURE MUST CARRY ITS TOLERANCE OR NOT BE QUOTED, AND `G8.1`–`G8.4` ARE **NOT SCOREABLE**. 🔴 **NOTHING IS OWED FROM US AND NOTHING IS TO BE STARTED.**
+
+⚪ **1. HOW IT WAS RULED.** No file under `openubem/` touched, no gate re-run, no perimeter edited. Recorded in `STATE_european_locations_v2.md` §1 and §3, in the director prompt READ-FIRST block and in their progress log; the decision doc is archived to `debugs/docs/DONE-docs/` with its citations swept. ⚪ **Perimeters unchanged — 149 level, 92 difference; `D-EU-28` and `D-EU-30` are NOT reopened.**
+
+🔴 **2. CELL-LEVEL USE OF THE 149 IS BARRED.** No individual cell `heating_kwh` may be quoted, ranked, tabulated or used as an example — **in a dossier, a gate report, a plot label or an illustrative sentence**. 🔴 The `it` cell range **45.08–156.70** is **WITHDRAWN from the quotable set**. 🔴 **If `EU-10`'s dossier emits that field, the field STOPS BEING QUOTED — it is NOT recomputed.**
+
+🔴 **3. THE `it` FOLD FIGURE CARRIES ITS TOLERANCE OR IT IS NOT QUOTED.** **108.25 kWh/m² ± 0.16 %** re-run tolerance, and the tolerance itself stated as **measured on 35 of the 74 cells**. 🔴 Write **"numerically stable, not bitwise reproducible"**; the stronger claim is barred, and **"108.25 was re-measured" must never be written**.
+
+🔴 **4. `G8.1`–`G8.4` ARE NOT SCOREABLE ON THIS ENGINE**, carried with that reason exactly as `G8.0` is carried as FAIL, and **never reported as PASS**. `EU-09` is restated **12 PASS / 1 FAIL / 4 VACUOUS → 8 PASS / 1 FAIL / 4 VACUOUS / 4 NOT SCOREABLE**. Gate code untouched, nothing re-scored. 🔴 **`FINDING 186`'s odds ratio 4.12 is struck from all citation**; the qualitative association stands.
+
+🔴 **5. OPTION B WAS REJECTED EXPLICITLY AND MUST NOT BE RE-PROPOSED.** Re-deriving certification from the ten replicates would shrink 149 → 96 and discard the `uk` side of `EU-09`, to sharpen a perimeter that Option A already forbids using at cell level. **Do not propose it again without new evidence.**
+
+⚪ **6. WHAT IS OPEN AND WHAT IS OWED.** 🔴 **NOTHING IS OWED FROM US AND NOTHING IS TO BE STARTED — no compute, no further arms, no re-scoring.** `FINDING 181` remains **the arc's only open item**: contention excluded, mechanism unidentified, and the phenomenon reaches inside the 149. ⚪ The clean second **Windows** box with the identical 23.1.0 installer stays an **owner ACTION**, not a decision. ⚪ The Speed **PLATFORM** arm is no longer blocked by `D-EU-31` but is owed by no deadline and is the author's call if ever wanted. ⚪ Optional and unchanged: **Fuentes et al. (2018)**.
+
+---
+
+#### 🔴 **2026-08-28 (night, last+26) — `EU-08`, `EU-09` AND `EU-10` ARE ALL THREE CLOSED UNDER `D-EU-31`, FROM RETAINED ARTEFACTS ONLY. **BOTH `EU-08` COVERAGE GAPS ARE MEASURED, NOT SUSPECTED** (`dependency_digest` 0 of 1,185 · `platform` 0 of 1,185). `EU-09` RESTATED **8 PASS / 1 FAIL / 4 VACUOUS / 4 NOT SCOREABLE**, AND **`G8.15` MOVED ON AN ARTEFACT, NOT ON ARGUMENT**. `EU-10` LOSES EVERY CELL-LEVEL NUMBER.**
+
+⚪ **1. WHAT WAS DONE AND WHAT WAS NOT.** OpenUBEM's execution handover: the three packages are ours, **retained artefacts only** — no simulation, no re-run, no job submission, no network, the `D-EU-27` budget stays **SPENT**. 🔴 **Nothing under `openubem/` written, no gate re-scored, no band moved, no `idf_sha256` touched, and `eu09_gate_report_2026-08-28.json` / `eu10_campaign_dossier_2026-08-28.json` NOT re-emitted** — the closure is an **additive record** that governs how they are read: `Step10_docs/docs/2026-08-28_EU-08_EU-09_EU-10_acceptance-closure.md`, letter `messages_OpenUBEM/2026-08-28_4J_to_OpenUBEM_EU-08_EU-09_EU-10_acceptance_closure.md`.
+
+🔴 **2. `EU-08` — TWO COVERAGE GAPS, MEASURED OVER 1,185 RETAINED MANIFESTS** (perimeter subset **447 of 447 present**). **(a)** `dependency_digest` present in **0 of 1,185**: each replicate executed into its **own fresh run root**, so no cache was ever consulted — `G8.9` is **VACUOUS with population 0** and registered perturbation **`P02`** is VACUOUS for the same reason. **(b)** `platform` present in **0 of 1,185**, `energyplus_version` in 1,185 as the **legacy single string**, `energyplus_version_declared`/`_measured` in **0** — every retained manifest **predates the C-2 commit**, so `G8.14`'s identity arm PASSes 149/149 while **its platform arm is NOT SCOREABLE**. 🔴 **Manifests NOT retrofitted, and no two-host claim is available from this campaign.**
+
+🔴 **3. `EU-09` — RESTATED, NOT RE-SCORED: 8 PASS / 1 FAIL / 4 VACUOUS / 4 NOT SCOREABLE.** PASS `G8.5 G8.6 G8.8 G8.12 G8.13 G8.14 G8.15 G8.16`; FAIL `G8.0` carried at **99/121** with the **29** out-of-perimeter `f=0` controls stated and never PASS; VACUOUS `G8.7` (no ruled as-modelled band; the geometry-identity arm perturbation 11 targets **is** exercised under `V8.d`), `G8.9`, `G8.10`/`G8.11` (**0 `Output:Meter` objects across all 149 perimeter IDFs**) — **every one population 0 and each naming why**; NOT SCOREABLE `G8.1`–`G8.4` per `D-EU-31`, never PASS. ⚪ `G8.5`/`G8.6` stay PASS **deliberately** — they are ±15 % / ≤1 h **peak-band** gates, not bitwise tripwires.
+
+⚪ **4. THE ONE VERDICT THAT MOVED, AND IT MOVED ON AN ARTEFACT.** `G8.15` **FAIL → PASS 149/149** because `openubem/data/campaign/eu_approved_warning_kinds_v1.0.json` (sha256 `863c9e59…`, **`D-EU-29` Option A**, perimeter string **`campaign_149`**) now exists. 🔴 **Re-derived rather than accepted:** our **8 observed kinds are exactly the 8 approved**, untriaged remaining **none**, four of them recorded as **stated design assumptions** and `indicated zone volume <` still **REFUSED — repaired, not approved**. ⚪ **That resolves the arithmetic between the two sides** — ours read 11 PASS / 2 FAIL / 4 VACUOUS pre-ruling, theirs 12 / 1 / 4, and `G8.15` is the **single differing verdict**; the earlier board note calling it an unresolved reconciliation was wrong and is corrected.
+
+🔴 **5. `EU-10` — WHAT STOPS BEING QUOTED, WITH THE DOSSIER NOT RECOMPUTED.** Barred: all **149 `cells[]`** records (`annual_heating_kwh`, `monthly_heating_kwh`, `peak_hourly_heating_kwh`, every per-cell EUI); `eui_kwh_m2_min`/`_median`/`_max`, so the **`it` cell range 45.08–156.70 is WITHDRAWN and the cell median 113.09 with it**; `all_perimeter_cells_informational` = **99.79 kWh/m²**, barred twice over as cell-level **and** `uk`-crossing; and the **15 `f_sweep.pairs[]`** per-pair values. 🟢 Surviving: **`it` = 108.25 kWh/m² ± 0.16 %** re-run tolerance, tolerance stated as **measured on 35 of the 74 cells**, **numerically stable, not bitwise reproducible**, never "re-measured"; heating-only; `uk` withheld at fold level; `es` not quotable at any level; **93.768 a two-end-use model total, never a whole-building EUI**; every f-difference statement carrying **both perimeters (92 / 28 for the difference, 149 for the level)** and, per `FINDING 184`, a **peak-and-timing** claim only.
+
+🔴 **6. WHAT A CLOSED `EU-05` OR `EU-06` SHOULD HAVE SUPPLIED, RAISED RATHER THAN WORKED AROUND.** **`EU-05` is exactly why `G8.10`/`G8.11` are VACUOUS and will stay VACUOUS on this campaign** — `meters_present` 0 of 95 appears on our side as **0 `Output:Meter` objects in all 149 perimeter IDFs**, and their off-path sidecar is evidence about the **S3** population, not about these 149 cells, so it **cannot fill the gap**: recorded as **stated and permanent, not scheduled**, and the VACUOUS `core_unconditioned` pass is cited **nowhere**. ⚪ **`EU-06`'s `f = 0`-only closure is not load-bearing for us** — our 121 `f > 0` cells rest on our own driver and on the `10.1` chaining-closure notice's lift **by reference**, and it is never read as covering the injected-series path.
+
+⚪ **7. WHAT MOVED, AND WHAT IS OWED.** New: the acceptance-closure record, the letter, and the **board republished** (128 items, 114 done / 4 in progress / 10 not started) — the whole `EU-08`–`EU-10` arc had **no card at all** until this publish, and `D-S10-7/8/9`, the `FINDING 181` arms, `D-EU-31` and the `EU-05`/`EU-06` closure went on with it; `node --check` + DOM smoke run passed first. 🔴 **No decision is raised — everything was writable one way and nothing was left silent.** 🔴 **`FINDING 181` remains the arc's only open item**; the second Windows box stays an owner ACTION and the Speed PLATFORM arm an author call, neither on a deadline.
+
+---
+
+#### 🔴 **2026-08-28 (last+27) — THE REAL-STOCK CAMPAIGN IS EXECUTED, ON **BOTH** HOSTS: 410 of 410 CELLS LOCALLY AND 410 of 410 ON SPEED, 0 FAILED EITHER SIDE. THE AUTHOR REVERSED `Q3` AND ORDERED SPEED, AND THAT ORDER IS WHAT FINALLY SUPPLIES `FINDING 181`'s PLATFORM ARM. `10.3 / 10.5 / 10.6 / 10.7 / 10.8 / 10.10` DISCHARGED.**
+
+⚪ **1. THE RULING THAT CHANGED, RECORDED ADDITIVELY.** `Q3` was ruled **(a) local Windows only, no cluster staging, no two-platform divergence**. The author reversed it the same day — *"utiliser le speed, change le decision … soumettre des runs meme a la speed, vas-y"* — and **§6 of the questions doc was NOT rewritten**: the reversal is §7, additive. 🔴 **Never again cite `Q3` (a) as a reason not to use Speed.** Record: `Step10_docs/docs/2026-08-28_Step10_closure_questions_for_the_author.md` §7, `Step10_docs/impl/2026-08-28_realstock-campaign-two-platform.md`.
+
+🟢 **2. THE PLATFORM ARM, MEASURED RATHER THAN CARRIED.** `FINDING 181`'s platform arm was open only because the **EU campaign's** 1,185 retained manifests hold `platform` in **0 of 1,185** and may not be retrofitted. This campaign answers it with its own population: **410 paired cells**, the **same IDF bytes on both hosts** (`idf_sha256` matched **410 of 410**, refusal `P1` dropped none), EnergyPlus **23.1.0 on both** (installed Windows build; `energyplus_23.1.0.sif` on Speed — Speed's extracted **24.2.0** trees were not used and must never be). Worst relative difference **8.66e-15** annual heating · **5.39e-14** building peak · **3.45e-14** `CF` · **6.30e-14** `q99`, and the **same peak hour in 410 of 410**. 🔴 The one quotable sentence: **numerically stable across the two hosts, NOT bitwise reproducible, over 410 paired cells** — `D-EU-31`'s wording, for `D-EU-31`'s reason. ⚪ **It does NOT move `G8.14`**, whose platform arm stays NOT SCOREABLE on the EU campaign's own manifests.
+
+⚪ **3. HOW SPEED WAS USED, AND WHAT IT WAS NOT ALLOWED TO DO.** Speed has **no `shapely`, no `geopandas`**, and `/speed-scratch/o_iseri/openubem` is a partial tree; building a geometry stack there would have made the Speed cells a **different construction**, not a different platform. So the 410 IDFs and their hourly gain CSVs are emitted once on Windows (`--emit-only`) and shipped, and **Speed runs EnergyPlus and nothing else**: `sbatch` **1287966** untar, **1287967** the 410-task array at `%64`, **1288200** the IDF digests, **1288122** the harvest. `Schedule:File` now carries a **bare file name on both hosts** and the local arm was **re-run** under that emitter, so the two sides are genuinely the same file rather than one side patched.
+
+🔴 **4. THE DEFECT THE FIRST LOCAL RUN FOUND, AND WHY IT MATTERED MORE THAN ITS 100 FAILURES.** Ten Arm **F** buildings — every one `FALLBACK_PENDING_LAYOUT` / `PARTITION_AUDIT_FAILED` in `s1_layout_reachability_census.csv` — **did** emit a layout when re-probed at `units_per_floor`, because the census had audited a different requested count. The route was being chosen by that probe, so 100 of 410 cells refused. **Had the refusal not been there, those buildings would have been promoted into Arm D**, manufacturing `N_u > 1` for buildings the census refused to partition, inside the only population in the project where `N_u > 1`. 🔴 **The census (pinned by refusal `R3`) now decides the arm**; the probe result is still computed and recorded on every cell as `probe_emitted` / `probe_disagrees_with_census_arm`, and never acted on.
+
+⚪ **5. `H10` IS INFO, AS `Q1` (a) RULED, WITH `N` DECLARED AND RESIDUALS SHOWN.** Arm D `n = 18`, `N_u` in 1..28, per `f`: `g_inf` **0.9993 / 0.9975 / 0.9943 / 0.9776** at `f` = 0.15 / 0.30 / 0.50 / 1.00, **R² 0.28 / 0.19 / 0.25 / 0.29**, RMSE 0.0004–0.0084, CF spread 0.0015–0.0372, decreasing in 116 / 109 / 101 / 104 of 141 pairs. 🔴 **The sign is the pre-registered one and the strength is not**: `G10.19` wants **30 dwelling-partitioned buildings per fold** and the corpus has **es 9 / uk 5 / it 3**, so `H10` is **NOT EVALUABLE at the pre-declared strength** and **no `g_inf` above is a result**. `f = 0.00` is not fitted — `CF` is degenerate there by construction, which is the control working. ⚪ **The annual channel stayed null**, as the 92.4–97.5 % diurnal-attenuation prior said: median Δannual **0.0000 % to −0.0363 %** in Arm D across every `f`. Peak-and-timing only, per `FINDING 184`.
+
+⚪ **6. THE BOARD, AND WHAT ARM F IS FOR.** `G10.7` INFO · `G10.11` PASS · `G10.12` PASS · `G10.15` OPEN_INHERITED · **`G10.19` `NOT_EVALUABLE_FAIL_BY_POPULATION`, permanently, no contract relaxed to reach a population** · `G10.20` PASS · `G10.21` PASS · `G10.22` PASS. Mutation battery **9 of 9 felled**. 🔴 **Arm F is the control, never an average**: `N_u = 1` throughout while its `CF` still moves with zone count and `f` (median Δpeak **−0.8469 %** at `f = 1.00` against Arm D's **−0.5909 %**), which is exactly why `G10.22` calls it a **lower bound** and why the two arms are never pooled.
+
+🔴 **7. WHAT IS STILL NOT CLAIMED.** Heating-only, two end uses, `Zone Ideal Loads` hourly — **no measured-accuracy claim**, per §11. All 41 buildings are **`FR-LYO-HAUTCOEURPENTES` footprints** under the 10.4 relabelling, so **no national stock claim** for `es`, `uk`, `it` or France, and `G10.11` holds because there is no French fold, no French diary and no French cell in a denominator — the provenance is printed on every artefact. `G10.21`(ii) stays **CARRIED, NOT SCORED on simulated power**. `D-EU-31` untouched: `Q4` (a) scopes it to the 149 certified cells and **no certified-cell number is quoted, computed or re-run here**. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` checked by `R1` before every run, unchanged. ⚪ **Nothing owed on this campaign**; `FINDING 181`'s second-Windows-box arm remains an owner ACTION.
+
+---
+
+#### 🔴 **2026-08-28 (last+28) — CORRECTION, ADDITIVE: `FINDING 193`. THE last+27 SENTENCE "0 UNSTABLE-HEAT-BALANCE MARKERS" IS **FALSE**. 190 OF 410 CELLS CARRY ONE, **190 OF 190 `es` AND 0 OF 220 `uk`+`it`**, IDENTICALLY ON BOTH HOSTS — `FINDING 182`'s CONFOUNDING REPRODUCED ON AN INDEPENDENT CORPUS.**
+
+🔴 **The last+27 entry is NOT edited.** Its clause *"0 severe, 0 fatal, 0 unstable-heat-balance markers"* is true in its first two terms and **wrong in the third**. The scored board never carried the error — `realstock_gate_board.json` records `G10.15.diverging_heat_balance_markers = 190` — so this was prose against our own artefact.
+
+⚪ **Measured.** **190 of 410** cells, one marker each; **every `es` cell (190 of 190)** and **no `uk` or `it` cell (0 of 220)**. Speed's `speed_metrics.jsonl` splits **190 / 220 identically**, so it is not a platform artefact and the platform arm is undisturbed. The marker is `Temperature out of range [-100. to 200.] (PsyPsatFnTemp)`, `Routine=PsyTwbFnTdbWPb, During Sizing, Environment=ANNUALSIZINGPERIOD`, input **−126.168377 °C**, recurring summary **1 total, 0 during Warmup, 0 during the annual run**. 🔴 **No hourly series, annual total, peak, `CF` or `q99` is touched** — every number in last+27 stands, and 410/410 completed with 0 severe and 0 fatal on both hosts.
+
+⚪ **The `es` EPW is clean.** `es_madrid_2009_2010_y2010.epw`: 8,760 rows, dry-bulb **−5.3…37.3 °C**, dew point **−12.4…17.3 °C**, no sentinels, 12/26 13:00–16:00 = 3.2 / 4.2 / 5.0 / 6.8 °C. The −126 °C is **generated by the sizing period**, not read from the file.
+
+🔴 **Why it is a finding.** `FINDING 182` found `marker_psy` perfectly confounded with the `es` fold on the EU campaign's certified cells. This campaign reproduces that confounding **190 of 190** while sharing **no cell, footprint, archetype or injection** with it. What survives as common is the **`es` weather basis** — and the file is clean, so the suspect is the sizing-period construction on that weather, not the geometry, the campaign or the platform. ⚪ Raised as an OpenUBEM-side **measurement**; nothing here diagnoses their sizing objects.
+
+⚪ **Nothing moves.** `G10.15` stays `OPEN_INHERITED`, now open with a measured, structured population rather than a clean count — the gate working. No threshold, verdict or perimeter changes; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched.
+
+---
+
+
+---
+
+### 2026-08-28 (last+29) --- 🟢 **WORK ITEM 10.8 IS DISCHARGED: ALL 24 `G10.x` GATES ARE SCORED ON THE SIMULATED 410**
+
+**18 PASS** (`G10.0`-`G10.6`, `G10.8`-`G10.13`, `G10.16`, `G10.17`, `G10.20`-`G10.22`) ·
+🔴 **2 FAIL** (`G10.14`, `G10.18`) · `G10.7` INFO · `G10.15` OPEN_INHERITED ·
+`G10.19` `NOT_EVALUABLE_FAIL_BY_POPULATION` · `G10.23` `NOT_EVALUABLE_VACUOUS`.
+Batteries **7 of 7** and **4 of 4** felled. 🔴 **No EnergyPlus was invoked**;
+`D-EU-31` untouched; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` unchanged.
+
+🔴 **`G10.14` FAIL** --- `weather_sha256`, `energyplus_build_hash`,
+`openubem_version`, `openubem_git_commit` and a measured `platform` are on **0 of 410**
+cells. A campaign-level value is not a per-cell field. **The manifests are NOT
+retrofitted.** 🔴 **`G10.18` FAIL on the DECLARATION arm only** --- **0 of 410**
+carry `rotated_to_midnight`; the two **phase** arms, scored once per bundle, **PASS**
+(`es` 05:00 fraction 1.000 / trough 15 h, `it` 1.000 / 13 h), so this is a missing field,
+**not** a `FINDING 141` repeat.
+
+🟢 **`FINDING 194`: `G10.10`'s recorded defect DOES NOT REPRODUCE.** The code reads
+`rotation_origin = footprint.centroid`, not the literal origin, and **the yield is
+invariant on 297 of 297 buildings** across `EPSG:32631` -> `EPSG:2154`. `G10.10` PASSES.
+
+🔴 **Population, named:** `G10.1`-`G10.4`, `G10.13`, `G10.16`-`G10.18` are scored on
+the **40 retained local run trees** --- `es` 30, `it` 10, **`uk` 0**. Full detail and the
+open decision `D-S10-1` in `impl/2026-08-28_step10-validation-suite-scored.md` and the
+validation doc's own log.
+
+---
+
+### 2026-08-28 (last+30) --- 🟢 **`D-S10-1` RULED (a): THE ARTEFACT-READING GATES ARE RE-SCORED ON SPEED'S 410, AND `uk` IS NO LONGER ABSENT**
+
+The author ruled **option (a)**. Speed's **410 retained run trees** were packed by `sbatch`
+(job **1290892**, `COMPLETED 0:0`, 3 s) and pulled down: **410 IDFs, 2,300 `*_gain.csv`**,
+matching `G10.8`'s 2,300 dwelling zones. 🔴 **No re-run and no EnergyPlus** --- the job copied
+bytes that already existed. `D-EU-31` untouched.
+
+🟢 **Four gates widened, all four hold, on 2,300 zones instead of 210.**
+`G10.13` conservation on disk --- 2,300 zone rows, 410 buildings, 0 wrong length, 0 missing.
+`G10.16` schedule provenance per zone --- 2,300 zones, **0** whose sha256 disagrees with the
+manifest. `G10.17` --- 2,300 `Schedule:File` objects, **0** not `No`, field count **10**.
+`G10.18` phase arms --- now **all three folds**: `es` **1.000** / trough **13 h**, `it`
+**0.9769** / **12 h**, **`uk` 0.9986 / 11 h**.
+
+🔴 **`G10.1`-`G10.4` were NOT widened, and no number of theirs may be quoted as if they were.**
+They are a **paired** local-vs-Speed comparison and only **40 local run trees** survive, so the
+pair does not exist for the other 370. They remain on **40 cells --- `es` 30, `it` 10, `uk` 0**,
+and that naming travels with every number they produce. Widening them is option **(c)**, a local
+re-run, which was **not** ruled.
+
+🔴 **`G10.14` and `G10.18` still FAIL, for the same reason and no other: a field was never
+written.** `rotated_to_midnight` is on **0 of 410** cell manifests after the widening, exactly as
+before; a wider population repairs neither, and neither manifest set is retrofitted.
+
+⚪ Two things recorded rather than acted on: `G10.13`'s bound is derived from the least-precise
+first line in the population, so it loosened from **1.667e-11** to **1.667e-2** --- and the
+measured residue, **1.434e-12**, clears the **tighter** bound by four orders, so **nothing was
+re-banded to reach a pass**. And `G10.18`'s per-zone arm, still **INFO and still not scored**
+(a stricter basis than the gate row is a band change), now reads 1,840 rows scored, 460
+degenerate `f = 0` controls excluded, 23 below the morning threshold, 84 troughs before hour 8.
+
+⚪ **Board verdicts unchanged: 18 PASS, 2 FAIL.** What changed is the **population**, and that
+was the entire content of `D-S10-1`, which is now **closed** for the four gates it could reach.
+
+⚪ **Evidence.** `outputs_step10/realstock_campaign_widened/realstock_gate_board_extension.json` ·
+`_local_runs/step10_realstock_speed410/` · Speed job **1290892** · the validation doc's
+`2026-08-28 (late+1)` entry, which also records a process incident: a heredoc mangled by the
+remote **tcsh** ran the first pack attempt on the **login node**; its output was deleted and the
+work resubmitted by `sbatch`.
+
+
+---
+
+### 2026-08-28 (last+31) --- 🟢 **OPTION (c) DECLINED: `D-S10-1` CLOSED IN FULL, STEP 10 FORMALLY VALIDATED**
+
+🟢 **The author ruled section 9 of `Step10_docs/impl/2026-08-28_step10-validation-suite-scored.md`:
+option (c) --- the local 410-cell re-run with `--keep-all` --- is DECLINED.** No re-run was
+started, no compute was spent, and `G10.1`-`G10.4` therefore stay on **40 paired cells:
+`es` 30, `it` 10, `uk` 0**. That population is named in the tool's own docstring and in
+`realstock_g10_1_4_nmbe.json`, and it must be quoted with every number those four gates produce.
+
+⚪ **Why declining is defensible, in the author's own terms.** Those four are a
+**reproducibility tripwire, not an accuracy claim**; machine agreement at 1e-14 to 1e-15 is
+already established on the 40. The **peak** arms `G10.5` and `G10.6` are PASS on all **410**.
+The artefact-reading gates `G10.13`, `G10.16`, `G10.17` and `G10.18`-phase were widened to all
+410 (2,300 zones, **`uk` present**) under option (a) the same night. What (c) would have bought
+is ~70 min and ~10 GB of redundant local compute for a population statement, not a new result.
+
+🔴 **Nothing moved.** 18 PASS / 2 FAIL stands. `G10.14` and `G10.18`'s declaration arm
+are FAIL on **0 of 410** because a field was never written --- never a population problem, never
+retrofitted, repaired only in a future campaign. `G10.7` INFO, `G10.15` OPEN_INHERITED, `G10.19`
+`NOT_EVALUABLE_FAIL_BY_POPULATION`, `G10.23` `NOT_EVALUABLE_VACUOUS`. `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` frozen.
+
+⚪ **Step 10's validation suite is formally completed and closed.** `D-S10-1`: (a) taken,
+(b) moot, (c) refused. Do not re-propose (c).
+
+⚪ **Evidence.** the impl doc section 9 · the validation doc's `2026-08-28 (late+2)` entry ·
+`outputs_step10/realstock_campaign_widened/realstock_gate_board_extension.json`.

@@ -193,3 +193,223 @@ independent case is also exactly 1, so **`CF_A = CF_B = 1.000` on simulated powe
 here, so the two channels `G10.21`(i) asks for are one channel until EnergyPlus runs.
 
 ⚪ `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` verified live. No Step 8 or Step 9 threshold moved.
+
+
+### 2026-08-28 (evening) --- 🟢 **THE SUITE IS SCORED IN FULL: ALL 24 `G10.x` GATES, ON THE SIMULATED 410**
+
+⚪ The board carried **8 of 24**. The other 16 were **NOT CHECKED on a simulated cell**,
+and several had been scored at 10.4 / 10.9 on the **emitted** artefacts --- a different
+basis, which does not carry. All 24 are now scored on the simulated cells.
+
+| Verdict | Gates | n |
+|---|---|---|
+| **PASS** | `G10.0` `G10.1` `G10.2` `G10.3` `G10.4` `G10.5` `G10.6` `G10.8` `G10.9` `G10.10` `G10.11` `G10.12` `G10.13` `G10.16` `G10.17` `G10.20` `G10.21` `G10.22` | **18** |
+| 🔴 **FAIL** | `G10.14` `G10.18` | **2** |
+| INFO, permanently | `G10.7` | 1 |
+| OPEN_INHERITED | `G10.15` | 1 |
+| `NOT_EVALUABLE_FAIL_BY_POPULATION` | `G10.19` | 1 |
+| `NOT_EVALUABLE_VACUOUS` | `G10.23` | 1 |
+
+🔴 **NO ENERGYPLUS WAS INVOKED.** Every number is read off an artefact that already
+existed. `D-EU-31` untouched; no certified EU cell read, quoted or recomputed; `prereg.md`
+md5 `e4243e07cdd80c9c846b91f40e3e8c45` unchanged. Batteries **7 of 7** and **4 of 4** felled.
+
+⚪ **`G10.1`-`G10.4`** against the **Speed re-run** (`D-S8-1`(a) extended verbatim): worst
+|NMBE| monthly **5.348e-15**, hourly **5.509e-15**; worst CV(RMSE) monthly **1.109e-14**,
+hourly **6.338e-14**. 🔴 **A REPRODUCIBILITY TRIPWIRE, NOT A MEASURED-ACCURACY
+CLAIM** --- the `FINDING 44` inversion on the gate row. 🔴 **Population: 40 paired
+cells, `es` 30 / `it` 10 / `uk` 0.**
+
+⚪ **`G10.5`** worst relative peak difference **5.388e-14** and **`G10.6`** worst
+peak-hour separation **0 h**, both on all **410**. **`G10.0`** 82 controls / 328 injected /
+0 violations. **`G10.8`** **2,300 dwelling zones**, 0 unlocatable, 0 wrong-fold. **`G10.9`**
+41 buildings, 0 carrying both arms. **`G10.13`** 210 zone rows, bound **derived** from the
+10-decimal write format (1.667e-11), worst zone residue **1.102e-12**. **`G10.16`** 210
+zones, 0 disagreeing sha256. **`G10.17`** 210 `Schedule:File` objects, **0 not `No`**, field
+count **10** --- the real shape, not `FINDING 126`'s 8-field fixture.
+
+🔴 **`G10.14` FAIL, and it is the data, not the parser.** `weather_sha256`,
+`energyplus_build_hash`, `openubem_version`, `openubem_git_commit` and a measured
+`platform` are on **0 of 410** cells. A campaign-level value is **not** a per-cell manifest
+field. **The manifests are NOT retrofitted** (the `EU-08` precedent). The battery ran the
+**inverse** mutation --- supply the five fields and the gate moves FAIL to PASS.
+
+🔴 **`G10.18` FAIL --- on the DECLARATION arm only.** The two **phase** arms, scored
+**once per bundle** as `G7.19` writes them, **PASS**: `es` 05:00 fraction 1.000 / trough
+hour 15, `it` 1.000 / hour 13. **0 of 410 manifests carry `rotated_to_midnight`**, and
+`V10.c` says an unchecked arm is never a pass. ⚪ **A four-hour shift would have moved
+the 05:00 maximum; it did not move on any scored zone**, so this is a missing field and not
+a `FINDING 141` repeat. Per-zone INFO (a **stricter** basis, reported and never scored): 42
+rows excluded as degenerate --- at `f = 0` the gain series is the constant 3.0 W/m2 and has
+no phase --- and 4 troughs before hour 8, **all four the same single zone**.
+
+⚪ **`G10.23`** `NOT_EVALUABLE_VACUOUS`: **0 geometry remedies entered this campaign**.
+A gate with an empty population has not been satisfied, it has not been ASKED.
+
+### 🟢 `FINDING 194` --- `G10.10`'s RECORDED DEFECT DOES NOT REPRODUCE
+
+🔴 The 2026-08-26 retarget put `G10.10` on *"`european_residential.py:504` rotating
+about the literal origin"*. Re-measured on disk by `inspect.getsource`, the code reads
+**`rotation_origin = footprint.centroid`**, with a comment stating the invariance
+explicitly. **The defect no longer exists.** Measured consequence: **the yield is invariant
+on 297 of 297 buildings across `EPSG:32631` -> `EPSG:2154`**, so the gate's stated risk ---
+*a layout census whose yield is an artefact of the projection* --- **is absent**, and
+`G10.10` **PASSES** on its own pass condition.
+
+⚪ Reported, **never gated**: 7 of 297 buildings move their area **shares** under a pure
+100 km translation, by **1.3e-9 to 5.0e-7**; cross-CRS worst **5.18e-6**, median
+**4.37e-9**. 🔴 **No numeric area-share tolerance is pre-registered for this gate**,
+so choosing one now would be a band change. ⚪ An OpenUBEM-side observation, and the
+exact class `V10.i` and `G10.23` exist for.
+
+⚪ **Evidence.** `impl/2026-08-28_step10-validation-suite-scored.md` ·
+`outputs_step10/realstock_campaign/realstock_gate_board_extension.json`,
+`realstock_g10_10_crs.json`, `realstock_g10_1_4_nmbe.json` · tools
+`4thJ_step10_val_extension.py`, `4thJ_step10_g10_10_crs.py`,
+`4thJ_step10_g10_1_4_nmbe.py` · Speed job **1288393** (`speed_series40.json`).
+
+🔴 **ONE DECISION IS OPEN: `D-S10-1`** --- the artefact-reading gates are scored on
+**40 of 410** cells and `uk` is absent. **(a)** widen on Speed's 410 retained trees by
+`sbatch`, no re-run **(recommended)**; **(b)** keep the 40 and carry the naming; **(c)**
+re-run the 410 locally with `--keep-all`. `G10.14` and `G10.18` do **not** wait on this ---
+both fail because a field was never written, and neither is repaired by a wider population.
+
+---
+
+### 2026-08-28 (late) --- INTAKE: the `10.1` chaining closure notice, measured against the Step-10 manifests
+
+The author supplied `Step10_docs/docs/2026-08-26_10.1_chaining-closure-notice.md` (Decision 14
+formally closed; convention `independent`, production seed `1`; the `f > 0` lock lifted for the
+**European** campaign's 408 cells). Three claims in it touch gates already scored, so they were
+**re-measured on the Step-10 artefacts** rather than accepted.
+
+| claim in the notice | measured on Step-10's 410 cell manifests | effect on the board |
+|---|---|---|
+| convention is `independent`, seed 1 | `chaining_rule = independent` on **328 of 328** `f > 0` cells; `not_applicable_f0` on the **82** controls. No cell disagrees | none --- the campaign already ran under the closed convention |
+| `rotated_to_midnight: true`, `diary_origin_hour: 4` "as recorded in **every shipped bundle manifest**" | **TRUE at the bundle level**: all three `Step7_docs/outputs_step7/schedules/leg5_{es,uk,it}_independent_seed1/manifest.json` carry both fields | see below |
+| the `f > 0` lift covers 408 runs | that is the **European** campaign's population (`EU-06`/`EU-08`). Step-10's `f > 0` population is **328 of 410**. Different perimeters --- never conflate the two counts | none |
+
+🔴 **`G10.18`'s declaration-arm FAIL STANDS, but its CHARACTER NARROWS.** The gate row reads
+*"declaration arm **per run**"*. Measured: **0 of 410** Step-10 cell manifests carry
+`rotated_to_midnight`, and **0 of 410** name the Step-7 bundle they drew from, so the declaration
+that demonstrably exists upstream is **not reachable from the cell**. This is a
+**provenance-link gap, not an undeclared convention** --- the convention IS declared, in all three
+shipped bundles. It is still a FAIL under `V10.c` (a field the gate asks for on the run is absent
+on the run), still **NOT retrofitted**, and still repairable only by writing the field --- or a
+bundle reference --- in a **future** campaign. It remains **not** a `FINDING 141` repeat: the
+05:00 maximum did not move on any scored zone.
+
+**A contradiction was suspected and disproved.** The per-zone `independent` flag inside
+`manifest["schedules"]` is `false` on 164 `f > 0` cells and `true` on the other 164 while
+`chaining_rule` reads `independent` throughout. Measured: the split is **exactly** `case A` /
+`case B` --- the flag is the **diversity contrast** (A = one shared diary, B = `N_u` independent
+diaries per `4thJ_step10_realstock_campaign.py:712`), **not** the Decision-14 chaining rule.
+Two fields, two meanings, one word. **No finding.**
+
+Evidence: `Step10_docs/outputs_step10/realstock_campaign/manifests/*.json` (410),
+`Step7_docs/outputs_step7/schedules/leg5_{es,uk,it}_independent_seed1/manifest.json`,
+`tools/4thJ_step10_realstock_campaign.py:104,497,712`.
+
+---
+
+### 2026-08-28 (late+1) --- `D-S10-1` RULED **(a)**: THE ARTEFACT-READING GATES ARE RE-SCORED ON SPEED'S 410
+
+The author ruled **option (a)**. Speed's **410 retained run trees** were packed by `sbatch`
+(job **1290892**, `COMPLETED 0:0`, 00:00:03; `g10_widen.tar.gz`, 5,215,611 B), pulled down and
+extracted to `_local_runs/step10_realstock_speed410`. **410 IDFs and 2,300 `*_gain.csv`** ---
+matching `G10.8`'s 2,300 dwelling zones exactly. 🔴 **No re-run, no EnergyPlus, no new
+simulation: the job copied bytes that already existed.** `D-EU-31` untouched.
+
+⚪ **The plumbing was controlled before it was trusted.** The same scorer was first run against
+the widened output directory with the **old 40-tree** runroot: `G10.13`, `G10.16`, `G10.17` and
+`G10.18` came back **byte-identical** to the scored board. Only then was the runroot swapped.
+
+| gate | scored on the 40 | **re-scored on the 410** | verdict |
+|---|---|---|---|
+| `G10.13` conservation on disk | 210 zone rows, 40 buildings | **2,300 zone rows, 410 buildings**, 0 wrong length, 0 CSVs missing | 🟢 **PASS** |
+| `G10.16` schedule provenance per zone | 210 zones | **2,300 zones**, 0 naming no schedule, 0 absent, 0 wrong file, **0 whose sha256 disagrees with the manifest**, 0 whose presence md5 is in no bundle | 🟢 **PASS** |
+| `G10.17` `Schedule:File` interpolation | 210 objects | **2,300 objects**, **0** not `No`, field count **10** on every one | 🟢 **PASS** |
+| `G10.18` phase arms, per bundle | `es`, `it` only | **all three folds** --- `es` **1.000** / trough **13 h**, `it` **0.9769** / **12 h**, **`uk` 0.9986 / 11 h** | 🟢 **PASS** (arm) |
+| `G10.18` declaration arm | 0 of 410 | **still 0 of 410** | 🔴 **FAIL** |
+
+🔴 **`uk` IS NO LONGER ABSENT.** That was the whole content of `D-S10-1`, and it is discharged
+for these four gates.
+
+🔴 **`G10.1`--`G10.4` COULD NOT BE WIDENED AND ARE NOT CLAIMED TO HAVE BEEN.** They are a
+**paired** local-vs-Speed comparison; only **40 local run trees** survive, so the pair does not
+exist for the other 370. They stay on **40 cells --- `es` 30, `it` 10, `uk` 0**, and that naming
+must travel with every number they produce. Widening them needs option **(c)**, a local re-run.
+
+⚪ **`G10.13`'s derived bound moved, and the gate passes either way --- reported, not used.**
+The bound is derived from the write format as `(0.5 x 10^-dec)/3.0`, with `dec` the **minimum
+first-line decimal count** over the population. On the 40 that was 10 (bound **1.667e-11**); on
+the 410 the least-precise first line carries **1** decimal, so the derived bound loosens to
+**1.667e-2**. 🔴 **Nothing was re-banded to reach a pass**: the measured residue is
+**1.434e-12** worst zone and **1.250e-12** worst building, which clears the **tighter** 40-cell
+bound by four orders of magnitude. The bound's sensitivity to a single first line is an
+**observation on the derivation**, recorded here and **not acted on**.
+
+⚪ **`G10.18`'s per-zone INFO grew with the population and is STILL NOT SCORED** --- it is a
+stricter basis than the gate row, and a basis change is a band change. On the 410: **1,840**
+phase rows scored, **460** excluded as the degenerate `f = 0` flat control, **23** zones below
+the 0.90 morning threshold (worst **0.428**), **84** troughs before hour 8. All eight recorded
+examples are `es`, over **4 distinct zones**. 🔴 Reported so it is not lost; **not** a gate
+movement, and **not** a `FINDING 141` signature --- the per-bundle 05:00 maximum did not move
+in any fold.
+
+⚪ **A stale label was fixed in the scorer, not in the evidence.** `4thJ_step10_val_extension.py`
+hard-coded `"population": "the RETAINED local run trees only"` on four gates; on a widened run
+that string is simply false. It now reports the runroot it actually read. The already-scored
+`realstock_gate_board.json` and `realstock_gate_board_extension.json` under
+`outputs_step10/realstock_campaign/` are **untouched**; the widened run writes to a **separate**
+directory, `outputs_step10/realstock_campaign_widened/`.
+
+🔴 **PROCESS INCIDENT, RECORDED BECAUSE IT TOUCHES A STANDING RULE.** The first attempt to stage
+the pack script sent a heredoc through the remote shell, which is **tcsh**; it mangled, and the
+`find`/`tar` lines executed **on the login node** instead of a compute node. The output was
+**deleted** and the work resubmitted properly with `sbatch`. Scripts are now uploaded by `scp`
+and never composed inline over `ssh`.
+
+⚪ **Evidence.** `outputs_step10/realstock_campaign_widened/realstock_gate_board_extension.json`
+(410 trees) · `_local_runs/step10_realstock_speed410/` (410 IDFs, 2,300 gain CSVs) ·
+Speed job **1290892**, `/speed-scratch/o_iseri/step10_realstock/widen_pack.{sh,out}` ·
+tool `tools/4thJ_step10_val_extension.py`.
+
+⚪ **Board after the widening: unchanged in verdict, wider in population.** 18 PASS, 2 FAIL.
+`G10.14` and `G10.18` fail for the same reason as before --- **a field was never written** ---
+and a wider population does not repair either. Neither is retrofitted.
+
+
+---
+
+### 2026-08-28 (late+2) --- OPTION **(c) DECLINED** BY THE AUTHOR: STEP 10 IS FORMALLY CLOSED
+
+🟢 **The ruling, recorded by the author in section 9 of
+`Step10_docs/impl/2026-08-28_step10-validation-suite-scored.md`.** Option **(c)** --- a local
+re-run of the 410 with `--keep-all` to pair `G10.1`-`G10.4` on the full population --- is
+**DECLINED**. No local re-run is authorised, and none was started. `D-S10-1` is closed in full:
+**(a)** taken for the artefact-reading gates, **(c)** refused for the paired gates.
+
+⚪ **What that fixes permanently.** `G10.1`-`G10.4` stay scored on **40 paired cells ---
+`es` 30, `it` 10, `uk` 0**, and that naming travels with every number they produce. They are a
+**reproducibility tripwire, not a measured-accuracy claim** (the `FINDING 44` inversion, written
+on the gate row), and the author's rationale rests on that reading: machine agreement at 1e-14
+to 1e-15 is already established there; `G10.5` and `G10.6` already carry the **peak** arms on all
+**410**; and `G10.13`, `G10.16`, `G10.17`, `G10.18`-phase already reach all 410 (2,300 zones,
+`uk` present) through option (a). Nothing is claimed for the 370 unpaired cells, and the
+declared population is the disclosure that makes declining honest.
+
+🔴 **What the decline does NOT do.** It does not move a verdict, loosen a band, or repair
+a FAIL. `G10.14` and `G10.18`'s declaration arm remain **FAIL on 0 of 410** because a field was
+never written; they were never waiting on a population, and they are **not retrofitted**.
+`G10.15` stays `OPEN_INHERITED`, `G10.19` `NOT_EVALUABLE_FAIL_BY_POPULATION`, `G10.23`
+`NOT_EVALUABLE_VACUOUS`, `G10.7` INFO. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
+remains frozen and untouched.
+
+⚪ **Final suite, as ruled: 18 PASS, 2 FAIL, 1 INFO, 1 OPEN_INHERITED, 2 NOT_EVALUABLE.**
+PASS = `G10.0`-`G10.6`, `G10.8`-`G10.13`, `G10.16`, `G10.17`, `G10.20`-`G10.22`.
+
+⚪ **Evidence.** `Step10_docs/impl/2026-08-28_step10-validation-suite-scored.md` section 9 ·
+`outputs_step10/realstock_campaign_widened/realstock_gate_board_extension.json` ·
+`outputs_step10/realstock_campaign/realstock_g10_1_4_nmbe.json` (the 40-cell population, named
+in the artefact itself).

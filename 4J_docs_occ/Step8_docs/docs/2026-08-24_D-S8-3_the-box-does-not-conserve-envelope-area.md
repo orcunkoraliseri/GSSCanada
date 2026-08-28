@@ -171,3 +171,32 @@ application of (a): the 12 `glazing_does_not_fit` rows could be clamped to the m
 *admissible* aspect — the shape that just fits the glazing — instead of reverting all the way to
 1 : 1.5. That would recover part of the Italian `AB` deficit while keeping the equal split intact.
 It needs a ruling.
+
+---
+
+## ADDENDUM, 2026-08-28 — the follow-on is RULED: **NOT TAKEN**
+
+🟢 **The `glazing_does_not_fit` clamp is DECLINED.** The author delegated the choice to this session
+on 2026-08-28. The 12 affected rows keep the `1 : 1.5` fallback ruled under (a); no archetype is
+rebuilt, no IDF changes, and the Step 8 / Step 9 campaigns are **not** re-run.
+
+🔴 **Why, measured rather than asserted.** The clamp is a **level** correction, and the claim this
+project makes is a **contrast**. Within an archetype every `f` level shares one geometry, so the
+geometry cancels exactly out of the `f = 0` versus `f = 1` comparison — the same cancellation
+argument `D-S8-4` §6 makes for the weather station. The clamp therefore cannot move `FINDING 143`,
+`FINDING 144` or `FINDING 145`, which are the findings Step 8 now ships, and after the `D-S9-3`(a)
+rotation those say **no occupancy claim survives on either channel at `f = 1.00`**. Taking the clamp
+would invalidate 13,108 completed runs to refine a number no conclusion rests on.
+
+⚪ **What is carried instead, and it is not weaker.** `FINDING 117`'s two named cells stay in the
+text exactly as §.2 above writes them — **`it`/`AB` 0.656 and `uk`/`AB` 1.137** — with the standing
+rule that the 6.1 pp headline is **never** quoted without them, and with the sentence that *an
+Italian `AB` result and a British `TH`/`AB` result are the two places a LOCO difference is still
+explainable by geometry*. That is a declared methodological limitation, in the same form
+`D-S8-5`(a) gave `G8.7`.
+
+⚪ **Reopen trigger, one only.** If a future campaign ever rests a published claim on an **absolute**
+`it`/`AB` or `uk`/`AB` demand level rather than on a within-archetype contrast, the clamp must be
+ruled again before that claim is made. Nothing else reopens it.
+
+**Status: follow-on RULED — NOT TAKEN. `D-S8-3` is CLOSED in full.**

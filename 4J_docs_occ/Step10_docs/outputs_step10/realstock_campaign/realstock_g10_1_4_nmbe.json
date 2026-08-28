@@ -1,0 +1,413 @@
+{
+  "tool": "4thJ_step10_g10_1_4_nmbe.py",
+  "population": {
+    "paired_cells": 40,
+    "by_fold": {
+      "es": 30,
+      "it": 10
+    },
+    "skipped": [],
+    "why_not_410": "the local run trees were deleted for 370 cells at campaign time; Speed holds all 410. Widening needs a LOCAL re-run --- a decision, not a fix."
+  },
+  "board": {
+    "G10.1": {
+      "gate": "G10.1",
+      "verdict": "PASS",
+      "metric": "nmbe_monthly",
+      "band": 0.05,
+      "cells": 40,
+      "cells_outside_band": 0,
+      "worst_absolute": 5.348227202839693e-15,
+      "reference": "an INDEPENDENT RE-RUN on Speed (EnergyPlus 23.1.0, identical IDF bytes) --- D-S8-1(a) extended verbatim",
+      "note": "A REPRODUCIBILITY TRIPWIRE, NOT A MEASURED-ACCURACY CLAIM (the FINDING 44 inversion, written on the gate row)."
+    },
+    "G10.2": {
+      "gate": "G10.2",
+      "verdict": "PASS",
+      "metric": "nmbe_hourly",
+      "band": 0.1,
+      "cells": 40,
+      "cells_outside_band": 0,
+      "worst_absolute": 5.509457882005058e-15,
+      "reference": "an INDEPENDENT RE-RUN on Speed (EnergyPlus 23.1.0, identical IDF bytes) --- D-S8-1(a) extended verbatim",
+      "note": "A REPRODUCIBILITY TRIPWIRE, NOT A MEASURED-ACCURACY CLAIM (the FINDING 44 inversion, written on the gate row)."
+    },
+    "G10.3": {
+      "gate": "G10.3",
+      "verdict": "PASS",
+      "metric": "cvrmse_monthly",
+      "band": 0.15,
+      "cells": 40,
+      "cells_outside_band": 0,
+      "worst_absolute": 1.1087386915897824e-14,
+      "reference": "an INDEPENDENT RE-RUN on Speed (EnergyPlus 23.1.0, identical IDF bytes) --- D-S8-1(a) extended verbatim",
+      "note": "A REPRODUCIBILITY TRIPWIRE, NOT A MEASURED-ACCURACY CLAIM (the FINDING 44 inversion, written on the gate row)."
+    },
+    "G10.4": {
+      "gate": "G10.4",
+      "verdict": "PASS",
+      "metric": "cvrmse_hourly",
+      "band": 0.3,
+      "cells": 40,
+      "cells_outside_band": 0,
+      "worst_absolute": 6.337761060296812e-14,
+      "reference": "an INDEPENDENT RE-RUN on Speed (EnergyPlus 23.1.0, identical IDF bytes) --- D-S8-1(a) extended verbatim",
+      "note": "A REPRODUCIBILITY TRIPWIRE, NOT A MEASURED-ACCURACY CLAIM (the FINDING 44 inversion, written on the gate row)."
+    }
+  },
+  "battery": {
+    "cases": [
+      {
+        "mutation": "one cell's nmbe_monthly pushed to twice the band",
+        "gate": "G10.1",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one cell's nmbe_hourly pushed to twice the band",
+        "gate": "G10.2",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one cell's cvrmse_monthly pushed to twice the band",
+        "gate": "G10.3",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one cell's cvrmse_hourly pushed to twice the band",
+        "gate": "G10.4",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      }
+    ],
+    "verdict": "PASS"
+  },
+  "rows": [
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseA__f000",
+      "hours": 8760,
+      "nmbe_monthly": 3.643288660198015e-15,
+      "cvrmse_monthly": 9.636367601161812e-15,
+      "nmbe_hourly": 3.150804741724182e-15,
+      "cvrmse_hourly": 5.945928948213785e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseA__f015",
+      "hours": 8760,
+      "nmbe_monthly": 3.4916604533718084e-15,
+      "cvrmse_monthly": 7.100667664571883e-15,
+      "nmbe_hourly": 3.3806991755246596e-15,
+      "cvrmse_hourly": 6.19978973965455e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseA__f030",
+      "hours": 8760,
+      "nmbe_monthly": 1.1936498422904973e-15,
+      "cvrmse_monthly": 6.7569457391891924e-15,
+      "nmbe_hourly": 1.2444846504271307e-15,
+      "cvrmse_hourly": 6.055804204854026e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseA__f050",
+      "hours": 8760,
+      "nmbe_monthly": 2.695570113738782e-16,
+      "cvrmse_monthly": 7.465938022966566e-15,
+      "nmbe_hourly": 1.4691343139677379e-16,
+      "cvrmse_hourly": 6.14270544598381e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseA__f100",
+      "hours": 8760,
+      "nmbe_monthly": -9.516196707817834e-16,
+      "cvrmse_monthly": 9.6926398984556e-15,
+      "nmbe_hourly": -1.0568128114627787e-15,
+      "cvrmse_hourly": 6.337761060296812e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseB__f000",
+      "hours": 8760,
+      "nmbe_monthly": -7.147736397565587e-16,
+      "cvrmse_monthly": 1.1087386915897824e-14,
+      "nmbe_hourly": -5.650103816907086e-16,
+      "cvrmse_hourly": 6.336446517765613e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseB__f015",
+      "hours": 8760,
+      "nmbe_monthly": 2.7066466611789042e-15,
+      "cvrmse_monthly": 8.650888695993532e-15,
+      "nmbe_hourly": 2.98259310417619e-15,
+      "cvrmse_hourly": 6.185123458720314e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseB__f030",
+      "hours": 8760,
+      "nmbe_monthly": -7.118819159226334e-16,
+      "cvrmse_monthly": 7.283082177831725e-15,
+      "nmbe_hourly": -6.892209196721865e-16,
+      "cvrmse_hourly": 6.108908507855769e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseB__f050",
+      "hours": 8760,
+      "nmbe_monthly": 2.3940808391598362e-15,
+      "cvrmse_monthly": 8.102101284411639e-15,
+      "nmbe_hourly": 1.957367371603807e-15,
+      "cvrmse_hourly": 6.287280541375311e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000013365727_part0__caseB__f100",
+      "hours": 8760,
+      "nmbe_monthly": -3.03505170916491e-16,
+      "cvrmse_monthly": 8.471233052853286e-15,
+      "nmbe_hourly": -5.910771430417416e-17,
+      "cvrmse_hourly": 6.307636769150362e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseA__f000",
+      "hours": 8760,
+      "nmbe_monthly": 8.308526361979186e-16,
+      "cvrmse_monthly": 2.3439424402488615e-15,
+      "nmbe_hourly": 4.2592963464458944e-16,
+      "cvrmse_hourly": 2.5925062103986558e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseA__f015",
+      "hours": 8760,
+      "nmbe_monthly": 1.4901689751733227e-15,
+      "cvrmse_monthly": 3.232160922913628e-15,
+      "nmbe_hourly": 1.0224445008137194e-15,
+      "cvrmse_hourly": 2.482599636042062e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseA__f030",
+      "hours": 8760,
+      "nmbe_monthly": 2.9588444899334636e-16,
+      "cvrmse_monthly": 2.9386865412579676e-15,
+      "nmbe_hourly": 4.107661268176298e-16,
+      "cvrmse_hourly": 2.5872333622232215e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseA__f050",
+      "hours": 8760,
+      "nmbe_monthly": 9.113350054393798e-16,
+      "cvrmse_monthly": 3.6942099879366275e-15,
+      "nmbe_hourly": 7.038980393368146e-16,
+      "cvrmse_hourly": 2.5648783412565246e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseA__f100",
+      "hours": 8760,
+      "nmbe_monthly": 6.253647810243366e-16,
+      "cvrmse_monthly": 3.2720753194185517e-15,
+      "nmbe_hourly": 5.317659795971157e-16,
+      "cvrmse_hourly": 2.674348687500332e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f000",
+      "hours": 8760,
+      "nmbe_monthly": 8.308526361979186e-16,
+      "cvrmse_monthly": 2.3439424402488615e-15,
+      "nmbe_hourly": 4.2592963464458944e-16,
+      "cvrmse_hourly": 2.5925062103986558e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f015",
+      "hours": 8760,
+      "nmbe_monthly": 1.2861882098447658e-15,
+      "cvrmse_monthly": 5.559456709368137e-15,
+      "nmbe_hourly": 1.286154152538933e-15,
+      "cvrmse_hourly": 2.6963145115673554e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f030",
+      "hours": 8760,
+      "nmbe_monthly": -2.405474182596346e-17,
+      "cvrmse_monthly": 3.2306534620410588e-15,
+      "nmbe_hourly": -1.4171654432680035e-16,
+      "cvrmse_hourly": 2.5984907562210436e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f050",
+      "hours": 8760,
+      "nmbe_monthly": -5.535954815293695e-16,
+      "cvrmse_monthly": 2.0048816179686075e-15,
+      "nmbe_hourly": -7.743832585037998e-16,
+      "cvrmse_hourly": 2.5816341829282113e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877130_part0__caseB__f100",
+      "hours": 8760,
+      "nmbe_monthly": 7.735999721383177e-17,
+      "cvrmse_monthly": 3.7308595606541686e-15,
+      "nmbe_hourly": -6.738402030845018e-16,
+      "cvrmse_hourly": 2.5268007635839713e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseA__f000",
+      "hours": 8760,
+      "nmbe_monthly": -6.829650302373252e-17,
+      "cvrmse_monthly": 5.0700707215162315e-15,
+      "nmbe_hourly": -4.127596850942548e-17,
+      "cvrmse_hourly": 3.742227564874817e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseA__f015",
+      "hours": 8760,
+      "nmbe_monthly": 2.3571142582981065e-15,
+      "cvrmse_monthly": 3.8431785975527426e-15,
+      "nmbe_hourly": 1.9078077026667334e-15,
+      "cvrmse_hourly": 3.684477124474295e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseA__f030",
+      "hours": 8760,
+      "nmbe_monthly": -4.4064565655042053e-17,
+      "cvrmse_monthly": 4.020840846026012e-15,
+      "nmbe_hourly": 5.568164580240303e-17,
+      "cvrmse_hourly": 3.71538155930408e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseA__f050",
+      "hours": 8760,
+      "nmbe_monthly": -7.010495343097451e-18,
+      "cvrmse_monthly": 3.4030478177486315e-15,
+      "nmbe_hourly": -4.942792097083459e-16,
+      "cvrmse_hourly": 3.6428271981905214e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseA__f100",
+      "hours": 8760,
+      "nmbe_monthly": 4.645320001627696e-16,
+      "cvrmse_monthly": 3.766093844783186e-15,
+      "nmbe_hourly": 3.9466853230647125e-16,
+      "cvrmse_hourly": 3.552160401304006e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseB__f000",
+      "hours": 8760,
+      "nmbe_monthly": -6.829650302373252e-17,
+      "cvrmse_monthly": 5.0700707215162315e-15,
+      "nmbe_hourly": -4.127596850942548e-17,
+      "cvrmse_hourly": 3.742227564874817e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseB__f015",
+      "hours": 8760,
+      "nmbe_monthly": 3.4341228064831787e-16,
+      "cvrmse_monthly": 2.992197121677226e-15,
+      "nmbe_hourly": 1.7871309840848358e-16,
+      "cvrmse_hourly": 3.690277156643122e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseB__f030",
+      "hours": 8760,
+      "nmbe_monthly": -1.6392956159745363e-15,
+      "cvrmse_monthly": 4.436853574985883e-15,
+      "nmbe_hourly": -1.7819293610041725e-15,
+      "cvrmse_hourly": 3.6639159496982625e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseB__f050",
+      "hours": 8760,
+      "nmbe_monthly": 2.479603247730928e-16,
+      "cvrmse_monthly": 1.7727365422792843e-15,
+      "nmbe_hourly": 1.695298116781747e-16,
+      "cvrmse_hourly": 3.695542819284976e-14
+    },
+    {
+      "cell_id": "es__BATIMENT0000000240877169_part0__caseB__f100",
+      "hours": 8760,
+      "nmbe_monthly": -1.8508321444316487e-15,
+      "cvrmse_monthly": 4.117702110798703e-15,
+      "nmbe_hourly": -1.6686794436789761e-15,
+      "cvrmse_hourly": 3.528893546217619e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseA__f000",
+      "hours": 8760,
+      "nmbe_monthly": 3.4941821403230724e-15,
+      "cvrmse_monthly": 6.869543466523975e-15,
+      "nmbe_hourly": 3.6238349324777895e-15,
+      "cvrmse_hourly": 5.732714201988931e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseA__f015",
+      "hours": 8760,
+      "nmbe_monthly": 2.6941158033812095e-16,
+      "cvrmse_monthly": 6.645034413804185e-15,
+      "nmbe_hourly": 8.27704930742436e-16,
+      "cvrmse_hourly": 5.399858018248285e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseA__f030",
+      "hours": 8760,
+      "nmbe_monthly": -2.230793583419267e-15,
+      "cvrmse_monthly": 6.531811152328232e-15,
+      "nmbe_hourly": -2.1830417150846733e-15,
+      "cvrmse_hourly": 5.2864706529012755e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseA__f050",
+      "hours": 8760,
+      "nmbe_monthly": -3.525993981125233e-15,
+      "cvrmse_monthly": 7.772771566585046e-15,
+      "nmbe_hourly": -3.7186109373332144e-15,
+      "cvrmse_hourly": 5.532556167385355e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseA__f100",
+      "hours": 8760,
+      "nmbe_monthly": -2.165940405065307e-15,
+      "cvrmse_monthly": 7.033977251293096e-15,
+      "nmbe_hourly": -1.787422583287244e-15,
+      "cvrmse_hourly": 5.539657752156899e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseB__f000",
+      "hours": 8760,
+      "nmbe_monthly": 5.348227202839693e-15,
+      "cvrmse_monthly": 7.833107812232223e-15,
+      "nmbe_hourly": 5.509457882005058e-15,
+      "cvrmse_hourly": 5.889186273609664e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseB__f015",
+      "hours": 8760,
+      "nmbe_monthly": 2.211207204129466e-15,
+      "cvrmse_monthly": 1.0089582452477183e-14,
+      "nmbe_hourly": 2.6328793396680375e-15,
+      "cvrmse_hourly": 5.550472639613775e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseB__f030",
+      "hours": 8760,
+      "nmbe_monthly": -1.9824438108900402e-15,
+      "cvrmse_monthly": 3.4006934745299914e-15,
+      "nmbe_hourly": -2.2785576829545974e-15,
+      "cvrmse_hourly": 5.4553845300676215e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseB__f050",
+      "hours": 8760,
+      "nmbe_monthly": 3.374821043175283e-15,
+      "cvrmse_monthly": 8.30941116778147e-15,
+      "nmbe_hourly": 3.4550586290854105e-15,
+      "cvrmse_hourly": 5.6311834717196546e-14
+    },
+    {
+      "cell_id": "it__BATIMENT0000000240877159_part0__caseB__f100",
+      "hours": 8760,
+      "nmbe_monthly": 1.0882854668780558e-19,
+      "cvrmse_monthly": 5.635506034983552e-15,
+      "nmbe_hourly": 3.0327129597307635e-16,
+      "cvrmse_hourly": 5.4975548353192726e-14
+    }
+  ]
+}

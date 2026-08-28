@@ -1,0 +1,61 @@
+{
+  "campaign": "4J Step 10 real-stock campaign",
+  "cases": {
+    "A": "one diary replicated to every zone (synchronised control)",
+    "B": "N_u independent diaries, one per zone (the diversity case)"
+  },
+  "authority": "Step10_docs/docs/2026-08-28_Step10_closure_questions_for_the_author.md section 6, Q1(a) Q2(a) Q3(a) Q4(a)",
+  "basis": "HEATING-ONLY, Zone Ideal Loads hourly variable. No lighting, no appliances, no DHW, no cooling.",
+  "corpus_note": "Lyon FR-LYO-HAUTCOEURPENTES footprint census; the ES/GB/IT labels are the 10.4 exercise's diary-and-weather relabelling and carry no national stock claim.",
+  "d_eu_31_scope": "scoped to the 149 certified EU archetype cells (Q4(a)); no certified-cell number is used here",
+  "f_levels": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "arms": {
+    "D": "DWELLING_LAYOUT_EMITTED, independent diary per dwelling zone",
+    "F": "FALLBACK_PENDING_LAYOUT, one diary repeated across storey zones (G10.22 lower bound)"
+  },
+  "preflight": {
+    "prereg_md5": "e4243e07cdd80c9c846b91f40e3e8c45",
+    "building_table_sha256": "2d8b37bb5a4df1dc3640e1111f07cf09557b9fb2fe0d625175147981ec55611f",
+    "layout_census_sha256": "e9d53899a6523483d5ae45c7359656e44f6519efca49cdd82450b938b553b40e",
+    "manifest_gpkg_sha256": "4fb23656ed1726f0f2ae8502174f9737a5f456fda9f0906cffde63380ec99bac",
+    "energyplus_version_measured": "23.1.0-87ed9199d4",
+    "n_buildings": 41,
+    "n_cells": 410,
+    "weather": {
+      "es": {
+        "epw": "es_madrid_2009_2010_y2010.epw",
+        "sha256": "d2563b7dfdd8a78716ce3611c4180bea4e4d217b3779d0f693c607390a17346d"
+      },
+      "uk": {
+        "epw": "uk_london_2014_2015_y2014.epw",
+        "sha256": "7b7d9524d6667d79572a3453b7ece531a6b2717dd496aaa239ec925fbce6e295"
+      },
+      "it": {
+        "epw": "it_bologna_2013_2014_y2014.epw",
+        "sha256": "ab631c6026e3f7cf5cfcff7c6a506eb84b6eeb62f1afa5703fc48ef0897e25fa"
+      }
+    },
+    "weather_registry_sha256": "7fd1691075de83ac0c2e9bf595cd7a317bc831ee931fe4aa04510947aa39c6d1",
+    "registry_entries": 7
+  },
+  "n_cells": 410,
+  "retained_run_dirs_for": [
+    "BATIMENT0000000013365727_part0",
+    "BATIMENT0000000240877130_part0",
+    "BATIMENT0000000240877159_part0",
+    "BATIMENT0000000240877169_part0"
+  ],
+  "started_utc": "2026-08-28T17:51:20Z",
+  "finished_utc": "2026-08-28T17:53:10Z",
+  "completed_cells": 0,
+  "failed_cells": 410,
+  "total_runtime_s": 650.3,
+  "manifest_csv": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step10_docs\\outputs_step10\\realstock_stage\\realstock_campaign_manifest.csv",
+  "manifest_csv_sha256": "455b9d76230b32106d9b514ea7576ecca6ce65cc2c469d78e27cba23ef9a9e26"
+}

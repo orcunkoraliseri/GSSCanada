@@ -1,0 +1,255 @@
+{
+  "work_package": "EU-09",
+  "ruling": "D-EU-28 Option B, ruled 2026-08-28 by the OpenUBEM owner",
+  "perimeter": {
+    "definition": "certified (3/3 completed, bitwise-identical heating_kwh, severe=0, fatal=0) AND marker-free in all three replicates",
+    "n_cells": 149,
+    "by_fold": {
+      "uk": 75,
+      "it": 74
+    },
+    "certified_intermediate_count": 191,
+    "campaign_table": "C:\\Users\\o_iseri\\Desktop\\OpenUBEM\\docs\\docs_ACTIVE\\europeanLocations\\outputs\\deu27_rerun_cells.csv",
+    "run_root": "C:\\Users\\o_iseri\\Desktop\\OpenUBEM\\openubem\\outputs\\eu_certified_rerun_2026-08-28"
+  },
+  "reproducibility_disclaimer": "G8.1-G8.4 are reproducibility gates. They compare a cell against a re-run of itself. They are not a validation of simulated energy against measured energy, and no such validation is claimed anywhere in this paper.",
+  "gates": {
+    "G8.16": {
+      "status": "PASS",
+      "detail": "survey_fold present and matches cell_id prefix on 149/149",
+      "n": 149
+    },
+    "G8.0": {
+      "status": "FAIL",
+      "detail": "99/121 f>0 perimeter cells have an f=0 control that completed in ALL THREE replicates - the same strictness the perimeter itself is defined at. 12 of the 22 failures completed in replicate 1 and failed in a later replicate. Separately, 29/121 f>0 cells have an f=0 control that is NOT itself inside the ruled perimeter, so no f-versus-baseline difference may be quoted for those cells.",
+      "n": 121,
+      "control_not_completed_3of3": [
+        "uk__GB.ENG.MFH.07.Gen.ReEx.001.001__f015",
+        "uk__GB.ENG.MFH.07.Gen.ReEx.001.001__f030",
+        "uk__GB.ENG.MFH.08.Gen.ReEx.001.001__f015",
+        "uk__GB.ENG.MFH.08.Gen.ReEx.001.001__f030",
+        "uk__GB.ENG.MFH.08.Gen.ReEx.001.001__f050",
+        "uk__GB.ENG.MFH.08.Gen.ReEx.001.001__f100",
+        "uk__GB.ENG.TH.02.Gen.ReEx.001.001__f030",
+        "uk__GB.ENG.TH.02.Gen.ReEx.001.001__f050",
+        "uk__GB.ENG.TH.04.Gen.ReEx.001.001__f015",
+        "uk__GB.ENG.TH.04.Gen.ReEx.001.001__f030",
+        "uk__GB.ENG.TH.04.Gen.ReEx.001.001__f100",
+        "it__IT.MidClim.AB.04.Gen.ReEx.001.001__f015",
+        "it__IT.MidClim.MFH-AB.07.Gen.ReEx.001.001__f015",
+        "it__IT.MidClim.MFH-AB.07.Gen.ReEx.001.001__f030",
+        "it__IT.MidClim.MFH-AB.07.Gen.ReEx.001.001__f050",
+        "it__IT.MidClim.TH.02.Gen.ReEx.001.001__f015",
+        "it__IT.MidClim.TH.02.Gen.ReEx.001.001__f050",
+        "it__IT.MidClim.TH.02.Gen.ReEx.001.001__f100",
+        "it__IT.MidClim.TH.03.Gen.ReEx.001.001__f015",
+        "it__IT.MidClim.TH.03.Gen.ReEx.001.001__f030"
+      ],
+      "control_outside_perimeter_count": 29
+    },
+    "G8.8": {
+      "status": "PASS",
+      "detail": "37/37 archetype x fold groups have distinct schedule digests per f (2 single-level groups excluded)",
+      "n": 37
+    },
+    "G8.9": {
+      "status": "VACUOUS",
+      "detail": "each replicate executed into its own fresh run root; no cache was consulted and no dependency_digest field exists in the retained manifests, so the stale-output guard has no population",
+      "n": 0
+    },
+    "G8.10": {
+      "status": "VACUOUS",
+      "detail": "0 Output:Meter objects across 149 perimeter IDFs (observed count 0); heating comes from the Zone Ideal Loads hourly variable, never a meter. No meter population exists to score.",
+      "n": 0
+    },
+    "G8.11": {
+      "status": "VACUOUS",
+      "detail": "0 Output:Meter objects across 149 perimeter IDFs (observed count 0); heating comes from the Zone Ideal Loads hourly variable, never a meter. No meter population exists to score.",
+      "n": 0
+    },
+    "G8.12": {
+      "status": "PASS",
+      "detail": "149/149 saved IDFs: Schedule:File path + measured file digest match the manifest AND the consuming OtherEquipment object names that schedule",
+      "n": 149,
+      "failing": []
+    },
+    "G8.13": {
+      "status": "PASS",
+      "detail": "149/149 saved Schedule:File objects carry Interpolate to Timestep = No",
+      "n": 149,
+      "failing": []
+    },
+    "G8.14": {
+      "status": "PASS",
+      "detail": "149/149 manifests are self-identifying and populated on cell_id, created_utc, idf_sha256, openubem_git_commit, energyplus_version. NOTE: the retained manifests carry no `platform` field, so the platform arm of G8.14 is not scoreable here and is reported as a coverage gap.",
+      "n": 149,
+      "arms_not_scoreable": [
+        "platform"
+      ]
+    },
+    "G8.15": {
+      "status": "FAIL",
+      "detail": "149/149 cells carry at least one untriaged warning kind. 8 distinct kinds; no approved_warning_kinds list has ever been ruled, so triage ran against an empty approval set. severe/fatal are 0 by the perimeter definition.",
+      "n": 149,
+      "distinct_kinds": [
+        "calculated design cooling load for zone",
+        "calculatezonevolume",
+        "entered zone volumes differ from calculated zone volume(s).",
+        "fixviewfactors",
+        "getsurfacedata",
+        "getvertices",
+        "managesizing",
+        "processscheduleinput"
+      ]
+    },
+    "G8.1": {
+      "status": "PASS",
+      "detail": "298/298 replicate pairs within band (5.0). Reference = a re-run of the same cell.",
+      "n": 298,
+      "failing": []
+    },
+    "G8.2": {
+      "status": "PASS",
+      "detail": "298/298 replicate pairs within band (10.0). Reference = a re-run of the same cell.",
+      "n": 298,
+      "failing": []
+    },
+    "G8.3": {
+      "status": "PASS",
+      "detail": "298/298 replicate pairs within band (15.0). Reference = a re-run of the same cell.",
+      "n": 298,
+      "failing": []
+    },
+    "G8.4": {
+      "status": "PASS",
+      "detail": "298/298 replicate pairs within band (30.0). Reference = a re-run of the same cell.",
+      "n": 298,
+      "failing": []
+    },
+    "G8.5": {
+      "status": "PASS",
+      "detail": "298/298 replicate pairs within band; 0 pairs had no unique positive peak and were not scoreable. Comparison series is the same cell's re-run, NOT a measured series.",
+      "n": 298,
+      "failing": []
+    },
+    "G8.6": {
+      "status": "PASS",
+      "detail": "298/298 replicate pairs within band; 0 pairs had no unique positive peak and were not scoreable. Comparison series is the same cell's re-run, NOT a measured series.",
+      "n": 298,
+      "failing": []
+    },
+    "G8.7": {
+      "status": "VACUOUS",
+      "detail": "G8.7 grades an as-modelled published band per archetype. No such band has been ruled for the TABULA archetypes of this campaign, so there is nothing to grade against. The geometry identity arm that perturbation 11 targets IS exercised, under V8.d.",
+      "n": 0
+    }
+  },
+  "vacuity_guards": {
+    "V8.a": {
+      "passed": true,
+      "detail": "scorer read 149 cells; ruled perimeter declares 149 (campaign declares 510 cells before D-EU-26/27/28)"
+    },
+    "V8.b": {
+      "passed": true,
+      "detail": "perimeter and scoring both read C:\\Users\\o_iseri\\Desktop\\OpenUBEM\\docs\\docs_ACTIVE\\europeanLocations\\outputs\\deu27_rerun_cells.csv"
+    },
+    "V8.c": {
+      "passed": true,
+      "detail": "bands imported from openubem.validation.step8_bands; no threshold restated here"
+    },
+    "V8.d": {
+      "passed": true,
+      "detail": "area/volume/storeys read per archetype from that archetype's own saved IDF (39 archetypes); consistent across every cell of the archetype. 2 archetypes needed the tolerant read-back (GB.ENG.AB.03.Gen.ReEx.001.001, IT.MidClim.AB.05.Gen.ReEx.001.001) because Zone.Ceiling_Height is serialized to 7 significant figures and OpenUBEM's reader demands an integral V/(A*h) to abs_tol=1e-9 - FINDING 183, reader tolerance, not a geometry defect",
+      "tolerant_readback_archetypes": [
+        "GB.ENG.AB.03.Gen.ReEx.001.001",
+        "IT.MidClim.AB.05.Gen.ReEx.001.001"
+      ]
+    },
+    "V8.e": {
+      "passed": true,
+      "detail": "every GateFinding produced here is hard severity"
+    },
+    "V8.f": {
+      "passed": true,
+      "detail": "G8.15 triages by warning kind, never by frequency"
+    },
+    "V8.g": {
+      "passed": true,
+      "detail": "survey_fold present on 149/149 manifests, so G8.16 is scored rather than forced to FAIL"
+    }
+  },
+  "perturbation_coverage": [
+    {
+      "perturbation": "P01",
+      "status": "PASS",
+      "description": "two scenarios use the same schedule file",
+      "detail": "must_fail=['G8.8'] not_seen_falling=[]; must_stay_clean=[] dirtied=[]; clean_arms_with_no_population=['G8.10']"
+    },
+    {
+      "perturbation": "P02",
+      "status": "VACUOUS",
+      "description": "schedule changes without clearing cache",
+      "detail": "no cache layer and no dependency_digest was retained"
+    },
+    {
+      "perturbation": "P03",
+      "status": "VACUOUS",
+      "description": "request obsolete Gas:Facility meter",
+      "detail": "no Output:Meter exists in any campaign IDF, so the meter gates have no population"
+    },
+    {
+      "perturbation": "P04",
+      "status": "VACUOUS",
+      "description": "zero one end-use meter",
+      "detail": "no Output:Meter exists in any campaign IDF, so the meter gates have no population"
+    },
+    {
+      "perturbation": "P05",
+      "status": "PASS",
+      "description": "People object points at another schedule",
+      "detail": "must_fail=['G8.12.assignment'] not_seen_falling=[]; must_stay_clean=['G8.12.value'] dirtied=[]; clean_arms_with_no_population=[]"
+    },
+    {
+      "perturbation": "P06",
+      "status": "PASS",
+      "description": "Schedule:File interpolation enabled",
+      "detail": "must_fail=['G8.13'] not_seen_falling=[]; must_stay_clean=['G8.12'] dirtied=[]; clean_arms_with_no_population=[]"
+    },
+    {
+      "perturbation": "P07",
+      "status": "PASS",
+      "description": "copy another cell manifest wholesale",
+      "detail": "must_fail=['G8.14'] not_seen_falling=[]; must_stay_clean=['G8.12'] dirtied=[]; clean_arms_with_no_population=[]"
+    },
+    {
+      "perturbation": "P08",
+      "status": "PASS",
+      "description": "country uses a fold that held it in",
+      "detail": "must_fail=['G8.16'] not_seen_falling=[]; must_stay_clean=['G8.12', 'G8.14'] dirtied=[]; clean_arms_with_no_population=[]"
+    },
+    {
+      "perturbation": "P09",
+      "status": "PASS",
+      "description": "shift modelled profile two hours",
+      "detail": "must_fail=['G8.6'] not_seen_falling=[]; must_stay_clean=['G8.5'] dirtied=[]; clean_arms_with_no_population=[]"
+    },
+    {
+      "perturbation": "P10",
+      "status": "PASS",
+      "description": "scale annual energy by 1.2",
+      "detail": "must_fail=['G8.1', 'G8.3'] not_seen_falling=[]; must_stay_clean=['G8.6'] dirtied=[]; clean_arms_with_no_population=[]"
+    },
+    {
+      "perturbation": "P11",
+      "status": "PASS",
+      "description": "use a different geometry floor area",
+      "detail": "G8.7 has no ruled band and is VACUOUS; the geometry identity arm this row targets was exercised under V8.d instead: borrowed geometry FAILs (saved IDF area=4357.13/899.3 m2 volume=10355.74/3745.3 m3 storeys=13/5) while the archetype's own geometry passes"
+    },
+    {
+      "perturbation": "P12",
+      "status": "PASS",
+      "description": "null perturbation",
+      "detail": "null perturbation leaves 11/11 baseline checkpoints clean"
+    }
+  ]
+}

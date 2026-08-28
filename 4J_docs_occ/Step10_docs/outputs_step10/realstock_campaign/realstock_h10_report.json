@@ -1,0 +1,2933 @@
+{
+  "hypothesis": "H10 --- at fixed f, the occupancy effect on building peak demand grows with N_u, the number of independently diarised dwellings",
+  "status": "INFO",
+  "why_info": "G10.19 is below its pre-registered population (es 9 / uk 5 / it 3 against 30 per fold), so H10 is NOT EVALUABLE at the pre-declared strength. Ruled Q1 (a), 2026-08-28, in writing, before this campaign ran.",
+  "channel": "coincidence factor CF on SIMULATED hourly heating power, never annual EUI (FINDING 143 died on the annual/peak-spread channel)",
+  "geometry_provenance": "FR-LYO-HAUTCOEURPENTES footprints under the 10.4 exercise relabelling; fold and diary are es/uk/it, geometry is French, and no national stock claim is available from this campaign",
+  "arms_reported_separately": true,
+  "arms": {
+    "D": {
+      "zone_semantics": "dwelling",
+      "label": "dwelling-partitioned",
+      "by_f": {
+        "f0.00": {
+          "buildings": 18,
+          "cf_case_b_min": 0.9993832028953565,
+          "cf_case_b_median": 1.0,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": 0.0,
+          "median_delta_div_peak_pct": 0.0,
+          "median_delta_div_annual_pct": 0.0,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000240877130_part0",
+              "n_u": 11,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.321958244877072,
+              "peak_kw_case_b": 14.321958244877072,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240877538_part0",
+              "n_u": 3,
+              "cf_case_a": 0.999411405908989,
+              "cf_case_b": 0.999411405908989,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.399828839030697,
+              "peak_kw_case_b": 11.399828839030697,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879449_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 77.10315490650198,
+              "peak_kw_case_b": 77.10315490650198,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879632_part0",
+              "n_u": 6,
+              "cf_case_a": 0.9998009763142093,
+              "cf_case_b": 0.9998009763142093,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 18.682359178537638,
+              "peak_kw_case_b": 18.682359178537638,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879681_part0",
+              "n_u": 8,
+              "cf_case_a": 0.9993832028953565,
+              "cf_case_b": 0.9993832028953565,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 31.335661070017284,
+              "peak_kw_case_b": 31.335661070017284,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880013_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 13.875244180816283,
+              "peak_kw_case_b": 13.875244180816283,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880027_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.245300403537556,
+              "peak_kw_case_b": 14.245300403537556,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880082_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.776747738264339,
+              "peak_kw_case_b": 8.776747738264339,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880159_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.414626767962691,
+              "peak_kw_case_b": 5.414626767962691,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880162_part0",
+              "n_u": 10,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.01017845873976,
+              "peak_kw_case_b": 14.01017845873976,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880188_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.15665974550424,
+              "peak_kw_case_b": 10.15665974550424,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880189_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 9.966890173907814,
+              "peak_kw_case_b": 9.966890173907814,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880216_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 19.988208183687593,
+              "peak_kw_case_b": 19.988208183687593,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880233_part0",
+              "n_u": 2,
+              "cf_case_a": 0.999658886257072,
+              "cf_case_b": 0.999658886257072,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 12.423301860146529,
+              "peak_kw_case_b": 12.423301860146529,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881152_part0",
+              "n_u": 20,
+              "cf_case_a": 0.9998210752672033,
+              "cf_case_b": 0.9998210752672033,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 55.50009137820772,
+              "peak_kw_case_b": 55.50009137820772,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881223_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 61.309282523746425,
+              "peak_kw_case_b": 61.309282523746425,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881521_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 21.36025342464797,
+              "peak_kw_case_b": 21.36025342464797,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881525_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 12.121272753742197,
+              "peak_kw_case_b": 12.121272753742197,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            }
+          ]
+        },
+        "f0.15": {
+          "buildings": 18,
+          "cf_case_b_min": 0.9984933556398129,
+          "cf_case_b_median": 0.9998631426195997,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": 0.0,
+          "median_delta_div_peak_pct": -0.022105106433308527,
+          "median_delta_div_annual_pct": 0.0,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000240877130_part0",
+              "n_u": 11,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9998631426195997,
+              "delta_div_cf": -0.00013685738040025708,
+              "peak_kw_case_a": 14.25749326025165,
+              "peak_kw_case_b": 14.301716890450471,
+              "delta_div_peak_pct": 0.3101781595935409,
+              "delta_div_annual_pct": 0.011359075799345008
+            },
+            {
+              "building_id": "BATIMENT0000000240877538_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9994062754342551,
+              "cf_case_b": 0.9994114060897515,
+              "delta_div_cf": 5.13065549645475e-06,
+              "peak_kw_case_a": 11.301262968187205,
+              "peak_kw_case_b": 11.399832342267112,
+              "delta_div_peak_pct": 0.8721978628174424,
+              "delta_div_annual_pct": 0.0504808738453546
+            },
+            {
+              "building_id": "BATIMENT0000000240879449_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9984933556398129,
+              "delta_div_cf": -0.0015066443601871038,
+              "peak_kw_case_a": 77.5834077815428,
+              "peak_kw_case_b": 77.22264846421555,
+              "delta_div_peak_pct": -0.4649954515314235,
+              "delta_div_annual_pct": 0.03739636368246279
+            },
+            {
+              "building_id": "BATIMENT0000000240879632_part0",
+              "n_u": 6,
+              "cf_case_a": 0.9998005364943263,
+              "cf_case_b": 0.9998004924017563,
+              "delta_div_cf": -4.409257003956668e-08,
+              "peak_kw_case_a": 18.641156109120075,
+              "peak_kw_case_b": 18.637035461721755,
+              "delta_div_peak_pct": -0.022105106433308527,
+              "delta_div_annual_pct": -0.04367482933192447
+            },
+            {
+              "building_id": "BATIMENT0000000240879681_part0",
+              "n_u": 8,
+              "cf_case_a": 0.9993815994629104,
+              "cf_case_b": 0.9993814502705526,
+              "delta_div_cf": -1.4919235780119777e-07,
+              "peak_kw_case_a": 31.254361616755173,
+              "peak_kw_case_b": 31.246818492892277,
+              "delta_div_peak_pct": -0.02413462784935377,
+              "delta_div_annual_pct": -0.061513809449944494
+            },
+            {
+              "building_id": "BATIMENT0000000240880013_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 13.897057197803077,
+              "peak_kw_case_b": 13.910373439876434,
+              "delta_div_peak_pct": 0.09582058909178039,
+              "delta_div_annual_pct": 0.052512143859803434
+            },
+            {
+              "building_id": "BATIMENT0000000240880027_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.275504566896018,
+              "peak_kw_case_b": 14.262701466271306,
+              "delta_div_peak_pct": -0.08968580104973374,
+              "delta_div_annual_pct": -0.09749211091375759
+            },
+            {
+              "building_id": "BATIMENT0000000240880082_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.759311857769825,
+              "peak_kw_case_b": 8.759311857769825,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880159_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.536460682968769,
+              "peak_kw_case_b": 5.474955374830808,
+              "delta_div_peak_pct": -1.1109138429748657,
+              "delta_div_annual_pct": 0.06641680280252651
+            },
+            {
+              "building_id": "BATIMENT0000000240880162_part0",
+              "n_u": 10,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9987659425825859,
+              "delta_div_cf": -0.001234057417414114,
+              "peak_kw_case_a": 13.966409971426206,
+              "peak_kw_case_b": 13.96141708726913,
+              "delta_div_peak_pct": -0.03574923095692463,
+              "delta_div_annual_pct": -0.026982404402712382
+            },
+            {
+              "building_id": "BATIMENT0000000240880188_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.158526061585881,
+              "peak_kw_case_b": 10.146511967338355,
+              "delta_div_peak_pct": -0.11826611631146826,
+              "delta_div_annual_pct": -0.004527191752101676
+            },
+            {
+              "building_id": "BATIMENT0000000240880189_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 9.890719887138358,
+              "peak_kw_case_b": 9.96639088139994,
+              "delta_div_peak_pct": 0.7650706432398588,
+              "delta_div_annual_pct": 0.0003970352209663323
+            },
+            {
+              "building_id": "BATIMENT0000000240880216_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.108315324594614,
+              "peak_kw_case_b": 20.036952140255515,
+              "delta_div_peak_pct": -0.3548938993005233,
+              "delta_div_annual_pct": 0.02177067741237655
+            },
+            {
+              "building_id": "BATIMENT0000000240880233_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9996578422949969,
+              "cf_case_b": 0.9996580341900531,
+              "delta_div_cf": 1.9189505617855929e-07,
+              "peak_kw_case_a": 12.385384018765352,
+              "peak_kw_case_b": 12.392336490170177,
+              "delta_div_peak_pct": 0.056134483955368235,
+              "delta_div_annual_pct": -0.025568556100866162
+            },
+            {
+              "building_id": "BATIMENT0000000240881152_part0",
+              "n_u": 20,
+              "cf_case_a": 0.9998207233257309,
+              "cf_case_b": 0.9994676636866329,
+              "delta_div_cf": -0.00035305963909804117,
+              "peak_kw_case_a": 55.39111858829808,
+              "peak_kw_case_b": 55.25897040484043,
+              "delta_div_peak_pct": -0.2385728738208984,
+              "delta_div_annual_pct": -0.02634654438738286
+            },
+            {
+              "building_id": "BATIMENT0000000240881223_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9997033756494681,
+              "delta_div_cf": -0.0002966243505319044,
+              "peak_kw_case_a": 60.88801714771177,
+              "peak_kw_case_b": 61.301583531788204,
+              "delta_div_peak_pct": 0.6792245887612626,
+              "delta_div_annual_pct": 0.11911243941719664
+            },
+            {
+              "building_id": "BATIMENT0000000240881521_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 21.45698696690495,
+              "peak_kw_case_b": 21.32791592749791,
+              "delta_div_peak_pct": -0.6015338481871608,
+              "delta_div_annual_pct": -0.04617435516709216
+            },
+            {
+              "building_id": "BATIMENT0000000240881525_part0",
+              "n_u": 6,
+              "cf_case_a": 0.9995870358398145,
+              "cf_case_b": 0.9996620382421033,
+              "delta_div_cf": 7.500240228885957e-05,
+              "peak_kw_case_a": 12.084831335223555,
+              "peak_kw_case_b": 12.098730345485459,
+              "delta_div_peak_pct": 0.11501203348525293,
+              "delta_div_annual_pct": -0.05797824326391137
+            }
+          ]
+        },
+        "f0.30": {
+          "buildings": 18,
+          "cf_case_b_min": 0.9954421583399857,
+          "cf_case_b_median": 0.9994114062705297,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": 0.0,
+          "median_delta_div_peak_pct": -0.04839514206448961,
+          "median_delta_div_annual_pct": -0.004731376884373414,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000240877130_part0",
+              "n_u": 11,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9984397279210943,
+              "delta_div_cf": -0.0015602720789057445,
+              "peak_kw_case_a": 14.192992618859826,
+              "peak_kw_case_b": 14.28143784373524,
+              "delta_div_peak_pct": 0.6231612123710067,
+              "delta_div_annual_pct": 0.021040622244752137
+            },
+            {
+              "building_id": "BATIMENT0000000240877538_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9994010547336122,
+              "cf_case_b": 0.9994114062705297,
+              "delta_div_cf": 1.0351536917529991e-05,
+              "peak_kw_case_a": 11.202697097343567,
+              "peak_kw_case_b": 11.399835845503704,
+              "delta_div_peak_pct": 1.7597436264422754,
+              "delta_div_annual_pct": 0.09270416368672536
+            },
+            {
+              "building_id": "BATIMENT0000000240879449_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9960881831956039,
+              "delta_div_cf": -0.003911816804396118,
+              "peak_kw_case_a": 78.06366065655178,
+              "peak_kw_case_b": 77.34214202193613,
+              "delta_div_peak_pct": -0.9242695366158089,
+              "delta_div_annual_pct": 0.07400025692627984
+            },
+            {
+              "building_id": "BATIMENT0000000240879632_part0",
+              "n_u": 6,
+              "cf_case_a": 0.9998000947262343,
+              "cf_case_b": 0.9998000061303686,
+              "delta_div_cf": -8.859586575482581e-08,
+              "peak_kw_case_a": 18.5999530396969,
+              "peak_kw_case_b": 18.59171174490629,
+              "delta_div_peak_pct": -0.044308148375530335,
+              "delta_div_annual_pct": -0.085818175226942
+            },
+            {
+              "building_id": "BATIMENT0000000240879681_part0",
+              "n_u": 8,
+              "cf_case_a": 0.9993799876721344,
+              "cf_case_b": 0.9992647662422103,
+              "delta_div_cf": -0.00011522142992415052,
+              "peak_kw_case_a": 31.173062163487508,
+              "peak_kw_case_b": 31.157975915767636,
+              "delta_div_peak_pct": -0.04839514206448961,
+              "delta_div_annual_pct": -0.1230795864882111
+            },
+            {
+              "building_id": "BATIMENT0000000240880013_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 13.918866785267525,
+              "peak_kw_case_b": 13.945496934579856,
+              "delta_div_peak_pct": 0.1913241194356225,
+              "delta_div_annual_pct": 0.11273881514739002
+            },
+            {
+              "building_id": "BATIMENT0000000240880027_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.305678484108945,
+              "peak_kw_case_b": 14.280072282860209,
+              "delta_div_peak_pct": -0.17899326674495375,
+              "delta_div_annual_pct": -0.19465542269227937
+            },
+            {
+              "building_id": "BATIMENT0000000240880082_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.741875977275411,
+              "peak_kw_case_b": 8.741875977275411,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880159_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9967221796920595,
+              "delta_div_cf": -0.003277820307940549,
+              "peak_kw_case_a": 5.658294597974998,
+              "peak_kw_case_b": 5.5409882225711335,
+              "delta_div_peak_pct": -2.0731754660820667,
+              "delta_div_annual_pct": 0.11918124501078264
+            },
+            {
+              "building_id": "BATIMENT0000000240880162_part0",
+              "n_u": 10,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9954421583399857,
+              "delta_div_cf": -0.004557841660014272,
+              "peak_kw_case_a": 13.922641484117271,
+              "peak_kw_case_b": 13.912655715798584,
+              "delta_div_peak_pct": -0.07172323104117027,
+              "delta_div_annual_pct": -0.05416981643643185
+            },
+            {
+              "building_id": "BATIMENT0000000240880188_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.160392377669856,
+              "peak_kw_case_b": 10.136364189173385,
+              "delta_div_peak_pct": -0.23648878511109026,
+              "delta_div_annual_pct": -0.009941893683797278
+            },
+            {
+              "building_id": "BATIMENT0000000240880189_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 9.8145496003691,
+              "peak_kw_case_b": 9.965891588891921,
+              "delta_div_peak_pct": 1.5420166455435687,
+              "delta_div_annual_pct": -0.004731376884373414
+            },
+            {
+              "building_id": "BATIMENT0000000240880216_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.228422465501332,
+              "peak_kw_case_b": 20.085696096822648,
+              "delta_div_peak_pct": -0.7055734025829109,
+              "delta_div_annual_pct": 0.04427846068321207
+            },
+            {
+              "building_id": "BATIMENT0000000240880233_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9981812336907893,
+              "cf_case_b": 0.9981832758507344,
+              "delta_div_cf": 2.0421599451481143e-06,
+              "peak_kw_case_a": 12.347466177383971,
+              "peak_kw_case_b": 12.36137112019232,
+              "delta_div_peak_pct": 0.11261373474193125,
+              "delta_div_annual_pct": -0.04975315654334108
+            },
+            {
+              "building_id": "BATIMENT0000000240881152_part0",
+              "n_u": 20,
+              "cf_case_a": 0.9998203699970075,
+              "cf_case_b": 0.9974388704940601,
+              "delta_div_cf": -0.002381499502947415,
+              "peak_kw_case_a": 55.28214579837464,
+              "peak_kw_case_b": 55.017849431468456,
+              "delta_div_peak_pct": -0.47808630270997493,
+              "delta_div_annual_pct": -0.051759808160155636
+            },
+            {
+              "building_id": "BATIMENT0000000240881223_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9990497808722877,
+              "delta_div_cf": -0.0009502191277123151,
+              "peak_kw_case_a": 60.46660500496446,
+              "peak_kw_case_b": 61.29291990535216,
+              "delta_div_peak_pct": 1.3665640733754738,
+              "delta_div_annual_pct": 0.23185881627193353
+            },
+            {
+              "building_id": "BATIMENT0000000240881521_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 21.55372050916209,
+              "peak_kw_case_b": 21.295578430349085,
+              "delta_div_peak_pct": -1.1976683037310143,
+              "delta_div_annual_pct": -0.08972785938786157
+            },
+            {
+              "building_id": "BATIMENT0000000240881525_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9985290733372438,
+              "delta_div_cf": -0.0014709266627561668,
+              "peak_kw_case_a": 12.12341119621255,
+              "peak_kw_case_b": 12.07611368790907,
+              "delta_div_peak_pct": -0.3901336640157499,
+              "delta_div_annual_pct": -0.11194999034074525
+            }
+          ]
+        },
+        "f0.50": {
+          "buildings": 18,
+          "cf_case_b_min": 0.9883194069196382,
+          "cf_case_b_median": 0.9979868478811739,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": -0.0017543134360946677,
+          "median_delta_div_peak_pct": -0.12004188457704067,
+          "median_delta_div_annual_pct": -0.014254628809924744,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000240877130_part0",
+              "n_u": 11,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9963079065016907,
+              "delta_div_cf": -0.0036920934983093456,
+              "peak_kw_case_a": 14.107002497794104,
+              "peak_kw_case_b": 14.2543811105583,
+              "delta_div_peak_pct": 1.0447195482331695,
+              "delta_div_annual_pct": 0.033961481382800314
+            },
+            {
+              "building_id": "BATIMENT0000000240877538_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9993939492854083,
+              "cf_case_b": 0.9994114065115579,
+              "delta_div_cf": 1.745722614965306e-05,
+              "peak_kw_case_a": 11.07127593621757,
+              "peak_kw_case_b": 11.39984051648478,
+              "delta_div_peak_pct": 2.9677209940398463,
+              "delta_div_annual_pct": 0.13349263342554543
+            },
+            {
+              "building_id": "BATIMENT0000000240879449_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9915539387181149,
+              "delta_div_cf": -0.008446061281885076,
+              "peak_kw_case_a": 78.70399782327159,
+              "peak_kw_case_b": 77.5014667655563,
+              "delta_div_peak_pct": -1.5279161046120586,
+              "delta_div_annual_pct": 0.12139264244148457
+            },
+            {
+              "building_id": "BATIMENT0000000240879632_part0",
+              "n_u": 6,
+              "cf_case_a": 0.9997995026491276,
+              "cf_case_b": 0.999799354069156,
+              "delta_div_cf": -1.4857997165940162e-07,
+              "peak_kw_case_a": 18.54501561380541,
+              "peak_kw_case_b": 18.531280122485327,
+              "delta_div_peak_pct": -0.0740656767625405,
+              "delta_div_annual_pct": -0.1409970327279318
+            },
+            {
+              "building_id": "BATIMENT0000000240879681_part0",
+              "n_u": 8,
+              "cf_case_a": 0.9993778255025672,
+              "cf_case_b": 0.9976235120664725,
+              "delta_div_cf": -0.0017543134360946677,
+              "peak_kw_case_a": 31.0646628924695,
+              "peak_kw_case_b": 31.03951914626919,
+              "delta_div_peak_pct": -0.08094002593025253,
+              "delta_div_annual_pct": -0.20418533425062702
+            },
+            {
+              "building_id": "BATIMENT0000000240880013_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9987110684058357,
+              "delta_div_cf": -0.001288931594164322,
+              "peak_kw_case_a": 13.947939779409818,
+              "peak_kw_case_b": 13.99232139479327,
+              "delta_div_peak_pct": 0.31819477346015707,
+              "delta_div_annual_pct": 0.19166541588087477
+            },
+            {
+              "building_id": "BATIMENT0000000240880027_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.34586007979148,
+              "peak_kw_case_b": 14.303183077711488,
+              "delta_div_peak_pct": -0.29748653508833606,
+              "delta_div_annual_pct": -0.3213168014534686
+            },
+            {
+              "building_id": "BATIMENT0000000240880082_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.718628136616708,
+              "peak_kw_case_b": 8.718628136616708,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880159_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9967876158642675,
+              "delta_div_cf": -0.003212384135732549,
+              "peak_kw_case_a": 5.820739817983156,
+              "peak_kw_case_b": 5.654229176386327,
+              "delta_div_peak_pct": -2.8606439525504217,
+              "delta_div_annual_pct": 0.169903941287234
+            },
+            {
+              "building_id": "BATIMENT0000000240880162_part0",
+              "n_u": 10,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9883194069196382,
+              "delta_div_cf": -0.011680593080361845,
+              "peak_kw_case_a": 13.864283501035684,
+              "peak_kw_case_b": 13.847640553837937,
+              "delta_div_peak_pct": -0.12004188457704067,
+              "delta_div_annual_pct": -0.09248165727588198
+            },
+            {
+              "building_id": "BATIMENT0000000240880188_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.162880796863039,
+              "peak_kw_case_b": 10.12283381828513,
+              "delta_div_peak_pct": -0.3940514444513604,
+              "delta_div_annual_pct": -0.014254628809924744
+            },
+            {
+              "building_id": "BATIMENT0000000240880189_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 9.712989218007067,
+              "peak_kw_case_b": 9.965225865547506,
+              "delta_div_peak_pct": 2.596900314403864,
+              "delta_div_annual_pct": -0.017642535778818545
+            },
+            {
+              "building_id": "BATIMENT0000000240880216_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.388565320042115,
+              "peak_kw_case_b": 20.150688038913103,
+              "delta_div_peak_pct": -1.1667190770660918,
+              "delta_div_annual_pct": 0.07684840782156861
+            },
+            {
+              "building_id": "BATIMENT0000000240880233_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9999201480382411,
+              "cf_case_b": 0.9957761534712053,
+              "delta_div_cf": -0.004143994567035847,
+              "peak_kw_case_a": 12.348181827607453,
+              "peak_kw_case_b": 12.320083960224787,
+              "delta_div_peak_pct": -0.22754659572509803,
+              "delta_div_annual_pct": -0.08414389023917215
+            },
+            {
+              "building_id": "BATIMENT0000000240881152_part0",
+              "n_u": 20,
+              "cf_case_a": 0.9998198967198785,
+              "cf_case_b": 0.9940844098793907,
+              "delta_div_cf": -0.005735486840487747,
+              "peak_kw_case_a": 55.13684874515684,
+              "peak_kw_case_b": 54.696354800309976,
+              "delta_div_peak_pct": -0.7989102657695075,
+              "delta_div_annual_pct": -0.08424699804445883
+            },
+            {
+              "building_id": "BATIMENT0000000240881223_part0",
+              "n_u": 28,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9979868478811739,
+              "delta_div_cf": -0.0020131521188261337,
+              "peak_kw_case_a": 59.904513123791865,
+              "peak_kw_case_b": 61.28233190766694,
+              "delta_div_peak_pct": 2.3000250098483135,
+              "delta_div_annual_pct": 0.3693298524064883
+            },
+            {
+              "building_id": "BATIMENT0000000240881521_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9977069731281158,
+              "delta_div_cf": -0.0022930268718841518,
+              "peak_kw_case_a": 21.68269856550142,
+              "peak_kw_case_b": 21.252461767483044,
+              "delta_div_peak_pct": -1.9842400922499037,
+              "delta_div_annual_pct": -0.14112922792461785
+            },
+            {
+              "building_id": "BATIMENT0000000240881525_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9970160718351601,
+              "delta_div_cf": -0.002983928164839944,
+              "peak_kw_case_a": 12.174757789585826,
+              "peak_kw_case_b": 12.045835307486419,
+              "delta_div_peak_pct": -1.058932623774133,
+              "delta_div_annual_pct": -0.17611838005765473
+            }
+          ]
+        },
+        "f1.00": {
+          "buildings": 18,
+          "cf_case_b_min": 0.9627686559652235,
+          "cf_case_b_median": 0.9907587549500255,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": -0.0060951217157627635,
+          "median_delta_div_peak_pct": -0.5908504908666045,
+          "median_delta_div_annual_pct": -0.0363379217383116,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000240877130_part0",
+              "n_u": 11,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9874568297681814,
+              "delta_div_cf": -0.012543170231818612,
+              "peak_kw_case_a": 13.89184309740073,
+              "peak_kw_case_b": 14.229017483553509,
+              "delta_div_peak_pct": 2.42713932045393,
+              "delta_div_annual_pct": 0.07057717797352779
+            },
+            {
+              "building_id": "BATIMENT0000000240877538_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9787064100621065,
+              "delta_div_cf": -0.021293589937893542,
+              "peak_kw_case_a": 11.330776867306879,
+              "peak_kw_case_b": 11.399852193938916,
+              "delta_div_peak_pct": 0.6096256897560344,
+              "delta_div_annual_pct": 0.16021652700911948
+            },
+            {
+              "building_id": "BATIMENT0000000240879449_part0",
+              "n_u": 28,
+              "cf_case_a": 0.9999074360510594,
+              "cf_case_b": 0.9742654367130956,
+              "delta_div_cf": -0.02564199933796374,
+              "peak_kw_case_a": 80.30484074000869,
+              "peak_kw_case_b": 77.89977862461058,
+              "delta_div_peak_pct": -2.994915491065638,
+              "delta_div_annual_pct": 0.22753240056126622
+            },
+            {
+              "building_id": "BATIMENT0000000240879632_part0",
+              "n_u": 6,
+              "cf_case_a": 0.9951983036144402,
+              "cf_case_b": 0.9971808036531199,
+              "delta_div_cf": 0.0019825000386797242,
+              "peak_kw_case_a": 18.407672049078208,
+              "peak_kw_case_b": 18.380201066435163,
+              "delta_div_peak_pct": -0.1492365931433514,
+              "delta_div_annual_pct": -0.26955981750540503
+            },
+            {
+              "building_id": "BATIMENT0000000240879681_part0",
+              "n_u": 8,
+              "cf_case_a": 0.9993723535222057,
+              "cf_case_b": 0.9904381575490376,
+              "delta_div_cf": -0.008934195973168024,
+              "peak_kw_case_a": 30.79366471492222,
+              "peak_kw_case_b": 30.74337722252039,
+              "delta_div_peak_pct": -0.16330466953957556,
+              "delta_div_annual_pct": -0.4027690266254039
+            },
+            {
+              "building_id": "BATIMENT0000000240880013_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.994503316554118,
+              "delta_div_cf": -0.005496683445881945,
+              "peak_kw_case_a": 14.020586889930977,
+              "peak_kw_case_b": 14.109372132720653,
+              "delta_div_peak_pct": 0.6332491177914815,
+              "delta_div_annual_pct": 0.3805259701667166
+            },
+            {
+              "building_id": "BATIMENT0000000240880027_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.445956375907837,
+              "peak_kw_case_b": 14.36060237175041,
+              "delta_div_peak_pct": -0.5908504908666045,
+              "delta_div_annual_pct": -0.6218991151360639
+            },
+            {
+              "building_id": "BATIMENT0000000240880082_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.660508534970507,
+              "peak_kw_case_b": 8.660508534970507,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880159_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9969403193175175,
+              "delta_div_cf": -0.003059680682482524,
+              "peak_kw_case_a": 6.226852868003098,
+              "peak_kw_case_b": 5.937331560926174,
+              "delta_div_peak_pct": -4.649560752665909,
+              "delta_div_annual_pct": 0.20337609884993424
+            },
+            {
+              "building_id": "BATIMENT0000000240880162_part0",
+              "n_u": 10,
+              "cf_case_a": 0.9999997109087897,
+              "cf_case_b": 0.9627686559652235,
+              "delta_div_cf": -0.037231054943566155,
+              "peak_kw_case_a": 13.718388543330878,
+              "peak_kw_case_b": 13.694173337671971,
+              "delta_div_peak_pct": -0.17651640046803282,
+              "delta_div_annual_pct": -0.19896215554032837
+            },
+            {
+              "building_id": "BATIMENT0000000240880188_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.169101821513342,
+              "peak_kw_case_b": 10.089007890225863,
+              "delta_div_peak_pct": -0.7876205066413573,
+              "delta_div_annual_pct": -0.0363379217383116
+            },
+            {
+              "building_id": "BATIMENT0000000240880189_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9836135704228391,
+              "delta_div_cf": -0.016386429577160855,
+              "peak_kw_case_a": 10.072210962516625,
+              "peak_kw_case_b": 9.963561557186258,
+              "delta_div_peak_pct": -1.0787046233910438,
+              "delta_div_annual_pct": -0.0855338843065823
+            },
+            {
+              "building_id": "BATIMENT0000000240880216_part0",
+              "n_u": 4,
+              "cf_case_a": 0.9966297693708204,
+              "cf_case_b": 0.9989297930006037,
+              "delta_div_cf": 0.002300023629783321,
+              "peak_kw_case_a": 20.788521732113992,
+              "peak_kw_case_b": 20.312874910962684,
+              "delta_div_peak_pct": -2.2880261871460132,
+              "delta_div_annual_pct": 0.17098568651850737
+            },
+            {
+              "building_id": "BATIMENT0000000240880233_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9968538766657883,
+              "cf_case_b": 0.9907587549500255,
+              "delta_div_cf": -0.0060951217157627635,
+              "peak_kw_case_a": 12.370593038616827,
+              "peak_kw_case_b": 12.268138832365896,
+              "delta_div_peak_pct": -0.8282077175370921,
+              "delta_div_annual_pct": -0.16721294044562873
+            },
+            {
+              "building_id": "BATIMENT0000000240881152_part0",
+              "n_u": 20,
+              "cf_case_a": 0.9974918690570731,
+              "cf_case_b": 0.9819965933309842,
+              "delta_div_cf": -0.015495275726088886,
+              "peak_kw_case_a": 54.773606112120575,
+              "peak_kw_case_b": 54.06616579181557,
+              "delta_div_peak_pct": -1.2915715625092978,
+              "delta_div_annual_pct": -0.15072350283129618
+            },
+            {
+              "building_id": "BATIMENT0000000240881223_part0",
+              "n_u": 28,
+              "cf_case_a": 0.9899979837551762,
+              "cf_case_b": 0.9902431960851739,
+              "delta_div_cf": 0.000245212329997635,
+              "peak_kw_case_a": 58.49820126973858,
+              "peak_kw_case_b": 61.25493169458951,
+              "delta_div_peak_pct": 4.712504598456773,
+              "delta_div_annual_pct": 0.661928805462135
+            },
+            {
+              "building_id": "BATIMENT0000000240881521_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9819629070095286,
+              "delta_div_cf": -0.018037092990471404,
+              "peak_kw_case_a": 22.005143706355017,
+              "peak_kw_case_b": 21.144670110316934,
+              "delta_div_peak_pct": -3.9103293644457384,
+              "delta_div_annual_pct": -0.23612135967907374
+            },
+            {
+              "building_id": "BATIMENT0000000240881525_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.991281691711946,
+              "delta_div_cf": -0.008718308288053978,
+              "peak_kw_case_a": 12.302912340753775,
+              "peak_kw_case_b": 11.970119644049625,
+              "delta_div_peak_pct": -2.7049912044139655,
+              "delta_div_annual_pct": -0.31784495009390035
+            }
+          ]
+        }
+      }
+    },
+    "F": {
+      "zone_semantics": "storey",
+      "label": "LOWER BOUND on heating demand and peak power, never an estimate (G10.22; one_zone_per_floor spatially averages non-coincident gains)",
+      "by_f": {
+        "f0.00": {
+          "buildings": 23,
+          "cf_case_b_min": 0.9993808893691459,
+          "cf_case_b_median": 1.0,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": 0.0,
+          "median_delta_div_peak_pct": 0.0,
+          "median_delta_div_annual_pct": 0.0,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000013365727_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.051878982395435,
+              "peak_kw_case_b": 5.051878982395435,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240877159_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.802009269356741,
+              "peak_kw_case_b": 11.802009269356741,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240877169_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 12.44679441908881,
+              "peak_kw_case_b": 12.44679441908881,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240877179_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9993808893691459,
+              "cf_case_b": 0.9993808893691459,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.234358726304269,
+              "peak_kw_case_b": 14.234358726304269,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879451_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.3462204411750935,
+              "peak_kw_case_b": 4.3462204411750935,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879467_part0",
+              "n_u": 5,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 63.08052505041639,
+              "peak_kw_case_b": 63.08052505041639,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879486_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 13.248473323420326,
+              "peak_kw_case_b": 13.248473323420326,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879768_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.769964131538208,
+              "peak_kw_case_b": 11.769964131538208,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879979_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 46.91623778875575,
+              "peak_kw_case_b": 46.91623778875575,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880050_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.113186812896846,
+              "peak_kw_case_b": 20.113186812896846,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880071_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.336073348549451,
+              "peak_kw_case_b": 4.336073348549451,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880079_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9999483466190663,
+              "cf_case_b": 0.9999483466190663,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 3.3601760880101845,
+              "peak_kw_case_b": 3.3601760880101845,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880177_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.67879745117969,
+              "peak_kw_case_b": 14.67879745117969,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880393_part0",
+              "n_u": 8,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 75.93134219680341,
+              "peak_kw_case_b": 75.93134219680341,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240880615_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9995470459142284,
+              "cf_case_b": 0.9995470459142284,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.325637349207517,
+              "peak_kw_case_b": 10.325637349207517,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881089_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.255656142767267,
+              "peak_kw_case_b": 8.255656142767267,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881095_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 43.87118656309429,
+              "peak_kw_case_b": 43.87118656309429,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881134_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 97.49739409243375,
+              "peak_kw_case_b": 97.49739409243375,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881368_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 12.752683708206577,
+              "peak_kw_case_b": 12.752683708206577,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881528_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 38.07385418840445,
+              "peak_kw_case_b": 38.07385418840445,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881532_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 26.12608885124376,
+              "peak_kw_case_b": 26.12608885124376,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240881533_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.825676153178428,
+              "peak_kw_case_b": 10.825676153178428,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000357175643_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.045545891472599,
+              "peak_kw_case_b": 4.045545891472599,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            }
+          ]
+        },
+        "f0.15": {
+          "buildings": 23,
+          "cf_case_b_min": 0.9977087485078455,
+          "cf_case_b_median": 1.0,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": 0.0,
+          "median_delta_div_peak_pct": -0.017576983235278953,
+          "median_delta_div_annual_pct": 0.025400817768844997,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000013365727_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.077454403361631,
+              "peak_kw_case_b": 5.058479888921703,
+              "delta_div_peak_pct": -0.3737013261481103,
+              "delta_div_annual_pct": 0.001242000228499232
+            },
+            {
+              "building_id": "BATIMENT0000000240877159_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.845603370382985,
+              "peak_kw_case_b": 11.803271126140531,
+              "delta_div_peak_pct": -0.35736672011402315,
+              "delta_div_annual_pct": 0.018198482525368192
+            },
+            {
+              "building_id": "BATIMENT0000000240877169_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 12.450513215708757,
+              "peak_kw_case_b": 12.457253600512372,
+              "delta_div_peak_pct": 0.05413740531684325,
+              "delta_div_annual_pct": 0.029357201835589448
+            },
+            {
+              "building_id": "BATIMENT0000000240877179_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9993790064997065,
+              "cf_case_b": 0.9993782043576929,
+              "delta_div_cf": -8.021420135895241e-07,
+              "peak_kw_case_a": 14.191173020877631,
+              "peak_kw_case_b": 14.17285444693686,
+              "delta_div_peak_pct": -0.12908428298225558,
+              "delta_div_annual_pct": 0.07310923675334474
+            },
+            {
+              "building_id": "BATIMENT0000000240879451_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.332051458492594,
+              "peak_kw_case_b": 4.332051458492594,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879467_part0",
+              "n_u": 5,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 63.43051781713822,
+              "peak_kw_case_b": 63.16588681303164,
+              "delta_div_peak_pct": -0.41719824023740776,
+              "delta_div_annual_pct": 0.030080456549035142
+            },
+            {
+              "building_id": "BATIMENT0000000240879486_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 13.332449560397011,
+              "peak_kw_case_b": 13.239614906311303,
+              "delta_div_peak_pct": -0.6963060588765784,
+              "delta_div_annual_pct": -0.08063751879460383
+            },
+            {
+              "building_id": "BATIMENT0000000240879768_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.648479966591127,
+              "peak_kw_case_b": 11.69888918709762,
+              "delta_div_peak_pct": 0.4327536352474428,
+              "delta_div_annual_pct": 0.1126910338842121
+            },
+            {
+              "building_id": "BATIMENT0000000240879979_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 46.717000724135886,
+              "peak_kw_case_b": 46.802388995116516,
+              "delta_div_peak_pct": 0.1827777247192047,
+              "delta_div_annual_pct": 0.06530948140542754
+            },
+            {
+              "building_id": "BATIMENT0000000240880050_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.11534967372328,
+              "peak_kw_case_b": 20.090039943511535,
+              "delta_div_peak_pct": -0.1258229691368849,
+              "delta_div_annual_pct": 0.025400817768844997
+            },
+            {
+              "building_id": "BATIMENT0000000240880071_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.329782971500362,
+              "peak_kw_case_b": 4.329021926273337,
+              "delta_div_peak_pct": -0.017576983235278953,
+              "delta_div_annual_pct": -0.0031726544391891777
+            },
+            {
+              "building_id": "BATIMENT0000000240880079_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9999479330414731,
+              "cf_case_b": 0.9999476555180302,
+              "delta_div_cf": -2.775234428931128e-07,
+              "peak_kw_case_a": 3.333484201801082,
+              "peak_kw_case_b": 3.315809594855508,
+              "delta_div_peak_pct": -0.5302142105855542,
+              "delta_div_annual_pct": -0.1312754240489838
+            },
+            {
+              "building_id": "BATIMENT0000000240880177_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.584511572172225,
+              "peak_kw_case_b": 14.606279257612018,
+              "delta_div_peak_pct": 0.14925207012983624,
+              "delta_div_annual_pct": 0.0398715258538429
+            },
+            {
+              "building_id": "BATIMENT0000000240880393_part0",
+              "n_u": 8,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9977087485078455,
+              "delta_div_cf": -0.002291251492154478,
+              "peak_kw_case_a": 75.63312519629132,
+              "peak_kw_case_b": 75.78145820943521,
+              "delta_div_peak_pct": 0.19612175585621722,
+              "delta_div_annual_pct": 0.04923296986624491
+            },
+            {
+              "building_id": "BATIMENT0000000240880615_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9995449118448426,
+              "cf_case_b": 0.9995456073187017,
+              "delta_div_cf": 6.954738590581044e-07,
+              "peak_kw_case_a": 10.27719483969304,
+              "peak_kw_case_b": 10.292931833211847,
+              "delta_div_peak_pct": 0.15312537870769052,
+              "delta_div_annual_pct": 0.052891610577549396
+            },
+            {
+              "building_id": "BATIMENT0000000240881089_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.327475139680528,
+              "peak_kw_case_b": 8.312165224201095,
+              "delta_div_peak_pct": -0.18384822797586026,
+              "delta_div_annual_pct": 0.09211315153667209
+            },
+            {
+              "building_id": "BATIMENT0000000240881095_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 43.736024059098725,
+              "peak_kw_case_b": 43.71968860710464,
+              "delta_div_peak_pct": -0.037350107481209545,
+              "delta_div_annual_pct": -0.02723262665917259
+            },
+            {
+              "building_id": "BATIMENT0000000240881134_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9992911001516652,
+              "delta_div_cf": -0.0007088998483347764,
+              "peak_kw_case_a": 97.06362940944872,
+              "peak_kw_case_b": 97.75509482894124,
+              "delta_div_peak_pct": 0.71238364328586,
+              "delta_div_annual_pct": 0.02966347570240851
+            },
+            {
+              "building_id": "BATIMENT0000000240881368_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 12.751819385913647,
+              "peak_kw_case_b": 12.806632709614286,
+              "delta_div_peak_pct": 0.42984708332042987,
+              "delta_div_annual_pct": -0.08135818679470207
+            },
+            {
+              "building_id": "BATIMENT0000000240881528_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 37.843826603205486,
+              "peak_kw_case_b": 38.047567980583175,
+              "delta_div_peak_pct": 0.5383741435926344,
+              "delta_div_annual_pct": 0.07388782081148713
+            },
+            {
+              "building_id": "BATIMENT0000000240881532_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 25.849849426801505,
+              "peak_kw_case_b": 25.998755985660157,
+              "delta_div_peak_pct": 0.5760442020380339,
+              "delta_div_annual_pct": -0.006956317910309844
+            },
+            {
+              "building_id": "BATIMENT0000000240881533_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.799562550688169,
+              "peak_kw_case_b": 10.794726448438217,
+              "delta_div_peak_pct": -0.044780538352856836,
+              "delta_div_annual_pct": 0.013091558414214196
+            },
+            {
+              "building_id": "BATIMENT0000000357175643_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.028533661616515,
+              "peak_kw_case_b": 4.027694808523308,
+              "delta_div_peak_pct": -0.02082278972121171,
+              "delta_div_annual_pct": 0.00843385173530259
+            }
+          ]
+        },
+        "f0.30": {
+          "buildings": 23,
+          "cf_case_b_min": 0.994432733268902,
+          "cf_case_b_median": 1.0,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": 0.0,
+          "median_delta_div_peak_pct": -0.03507495253533963,
+          "median_delta_div_annual_pct": 0.05296437886673836,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000013365727_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.103029824327772,
+              "peak_kw_case_b": 5.065080795448434,
+              "delta_div_peak_pct": -0.7436568114578176,
+              "delta_div_annual_pct": 0.002006650635951192
+            },
+            {
+              "building_id": "BATIMENT0000000240877159_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.889197471408687,
+              "peak_kw_case_b": 11.804532982922685,
+              "delta_div_peak_pct": -0.7121127282947761,
+              "delta_div_annual_pct": 0.03721867637949465
+            },
+            {
+              "building_id": "BATIMENT0000000240877169_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9988369233694092,
+              "delta_div_cf": -0.001163076630590787,
+              "peak_kw_case_a": 12.454021891446134,
+              "peak_kw_case_b": 12.467541197225255,
+              "delta_div_peak_pct": 0.10855373386172686,
+              "delta_div_annual_pct": 0.05401337955821405
+            },
+            {
+              "building_id": "BATIMENT0000000240877179_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9993771121427789,
+              "cf_case_b": 0.9993754959556255,
+              "delta_div_cf": -1.616187153441473e-06,
+              "peak_kw_case_a": 14.14798731545041,
+              "peak_kw_case_b": 14.11135016757009,
+              "delta_div_peak_pct": -0.25895660678399385,
+              "delta_div_annual_pct": 0.14947181232069764
+            },
+            {
+              "building_id": "BATIMENT0000000240879451_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.3617576239791465,
+              "peak_kw_case_b": 4.3617576239791465,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879467_part0",
+              "n_u": 5,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 63.78051058387422,
+              "peak_kw_case_b": 63.25124857564939,
+              "delta_div_peak_pct": -0.8298177662419668,
+              "delta_div_annual_pct": 0.05892207325440211
+            },
+            {
+              "building_id": "BATIMENT0000000240879486_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 13.41642579656514,
+              "peak_kw_case_b": 13.230756485268689,
+              "delta_div_peak_pct": -1.3838954883497032,
+              "delta_div_annual_pct": -0.15842246332843732
+            },
+            {
+              "building_id": "BATIMENT0000000240879768_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.526995576925287,
+              "peak_kw_case_b": 11.627814018427701,
+              "delta_div_peak_pct": 0.8746289597285152,
+              "delta_div_annual_pct": 0.21986257550843966
+            },
+            {
+              "building_id": "BATIMENT0000000240879979_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9993170844074365,
+              "delta_div_cf": -0.0006829155925635044,
+              "peak_kw_case_a": 46.51776365952858,
+              "peak_kw_case_b": 46.68854020148276,
+              "delta_div_peak_pct": 0.3671211350659897,
+              "delta_div_annual_pct": 0.12874277603294088
+            },
+            {
+              "building_id": "BATIMENT0000000240880050_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.117506043606394,
+              "peak_kw_case_b": 20.06687248585688,
+              "delta_div_peak_pct": -0.2516890395845345,
+              "delta_div_annual_pct": 0.05296437886673836
+            },
+            {
+              "building_id": "BATIMENT0000000240880071_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.323486431729491,
+              "peak_kw_case_b": 4.32196997091569,
+              "delta_div_peak_pct": -0.03507495253533963,
+              "delta_div_annual_pct": -0.007324306459171709
+            },
+            {
+              "building_id": "BATIMENT0000000240880079_part0",
+              "n_u": 2,
+              "cf_case_a": 0.9993061417030225,
+              "cf_case_b": 0.9986599271192751,
+              "delta_div_cf": -0.0006462145837473621,
+              "peak_kw_case_a": 3.3067923155910686,
+              "peak_kw_case_b": 3.2714431016997607,
+              "delta_div_peak_pct": -1.0689880257868387,
+              "delta_div_annual_pct": -0.2606806712688147
+            },
+            {
+              "building_id": "BATIMENT0000000240880177_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 14.49022569316529,
+              "peak_kw_case_b": 14.533761064044432,
+              "delta_div_peak_pct": 0.3004464650932075,
+              "delta_div_annual_pct": 0.07755451455342316
+            },
+            {
+              "building_id": "BATIMENT0000000240880393_part0",
+              "n_u": 8,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.994432733268902,
+              "delta_div_cf": -0.005567266731097975,
+              "peak_kw_case_a": 75.33490819577801,
+              "peak_kw_case_b": 75.73372981544395,
+              "delta_div_peak_pct": 0.5293981624421613,
+              "delta_div_annual_pct": 0.09648005896772152
+            },
+            {
+              "building_id": "BATIMENT0000000240880615_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9995427575711433,
+              "cf_case_b": 0.9995441595560196,
+              "delta_div_cf": 1.401984876303608e-06,
+              "peak_kw_case_a": 10.228752330178372,
+              "peak_kw_case_b": 10.260226317217917,
+              "delta_div_peak_pct": 0.30770113522727593,
+              "delta_div_annual_pct": 0.10407461229240049
+            },
+            {
+              "building_id": "BATIMENT0000000240881089_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 8.399245593161876,
+              "peak_kw_case_b": 8.368644339677239,
+              "delta_div_peak_pct": -0.36433335762381186,
+              "delta_div_annual_pct": 0.17445527534872962
+            },
+            {
+              "building_id": "BATIMENT0000000240881095_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9998321493144964,
+              "delta_div_cf": -0.00016785068550362325,
+              "peak_kw_case_a": 43.60086155509245,
+              "peak_kw_case_b": 43.568190651113404,
+              "delta_div_peak_pct": -0.07493178532209521,
+              "delta_div_annual_pct": -0.05547480826130631
+            },
+            {
+              "building_id": "BATIMENT0000000240881134_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.997712559977478,
+              "delta_div_cf": -0.0022874400225220137,
+              "peak_kw_case_a": 96.62986472646426,
+              "peak_kw_case_b": 98.01279556544891,
+              "delta_div_peak_pct": 1.431162966955807,
+              "delta_div_annual_pct": 0.05704538960951715
+            },
+            {
+              "building_id": "BATIMENT0000000240881368_part0",
+              "n_u": 4,
+              "cf_case_a": 0.9998041235010541,
+              "cf_case_b": 0.999366924251269,
+              "delta_div_cf": -0.0004371992497850252,
+              "peak_kw_case_a": 12.766595020201041,
+              "peak_kw_case_b": 12.860454957592474,
+              "delta_div_peak_pct": 0.7351994579832306,
+              "delta_div_annual_pct": -0.15898578497772956
+            },
+            {
+              "building_id": "BATIMENT0000000240881528_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 37.61379901801953,
+              "peak_kw_case_b": 38.02128177276684,
+              "delta_div_peak_pct": 1.0833331526871346,
+              "delta_div_annual_pct": 0.14413508734312516
+            },
+            {
+              "building_id": "BATIMENT0000000240881532_part0",
+              "n_u": 4,
+              "cf_case_a": 0.9980187375875723,
+              "cf_case_b": 0.9983679930783034,
+              "delta_div_cf": 0.00034925549073105966,
+              "peak_kw_case_a": 25.630695645271818,
+              "peak_kw_case_b": 25.87142312007222,
+              "delta_div_peak_pct": 0.9392155333279422,
+              "delta_div_annual_pct": -0.032658744574099084
+            },
+            {
+              "building_id": "BATIMENT0000000240881533_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.773448948199452,
+              "peak_kw_case_b": 10.763776743698806,
+              "delta_div_peak_pct": -0.08977816247286692,
+              "delta_div_annual_pct": 0.027301897180109256
+            },
+            {
+              "building_id": "BATIMENT0000000357175643_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.011521431758062,
+              "peak_kw_case_b": 4.009843725572993,
+              "delta_div_peak_pct": -0.041822191744696736,
+              "delta_div_annual_pct": 0.015916751245831893
+            }
+          ]
+        },
+        "f0.50": {
+          "buildings": 23,
+          "cf_case_b_min": 0.9793113220008448,
+          "cf_case_b_median": 0.9977172063528402,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": -0.0006094671975154231,
+          "median_delta_div_peak_pct": -0.12540464744137783,
+          "median_delta_div_annual_pct": 0.0851790998218286,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000013365727_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.137130385616499,
+              "peak_kw_case_b": 5.073882004150073,
+              "delta_div_peak_pct": -1.2312006260054265,
+              "delta_div_annual_pct": 0.004950419558764125
+            },
+            {
+              "building_id": "BATIMENT0000000240877159_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 11.94732293944243,
+              "peak_kw_case_b": 11.806215458634036,
+              "delta_div_peak_pct": -1.1810803267278152,
+              "delta_div_annual_pct": 0.05729630400316886
+            },
+            {
+              "building_id": "BATIMENT0000000240877169_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9966443855595136,
+              "delta_div_cf": -0.0033556144404863764,
+              "peak_kw_case_a": 12.458209338367036,
+              "peak_kw_case_b": 12.480878153221227,
+              "delta_div_peak_pct": 0.1819588533030865,
+              "delta_div_annual_pct": 0.0851790998218286
+            },
+            {
+              "building_id": "BATIMENT0000000240877179_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9993745682816794,
+              "cf_case_b": 0.9993411207033169,
+              "delta_div_cf": -3.3447578362433283e-05,
+              "peak_kw_case_a": 14.090406374881242,
+              "peak_kw_case_b": 14.029344461746115,
+              "delta_div_peak_pct": -0.433358070097831,
+              "delta_div_annual_pct": 0.25909793083550736
+            },
+            {
+              "building_id": "BATIMENT0000000240879451_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.403224428680812,
+              "peak_kw_case_b": 4.403224428680812,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879467_part0",
+              "n_u": 5,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9993905328024846,
+              "delta_div_cf": -0.0006094671975154231,
+              "peak_kw_case_a": 64.24716760617487,
+              "peak_kw_case_b": 63.365064259143196,
+              "delta_div_peak_pct": -1.3729840238854258,
+              "delta_div_annual_pct": 0.09559526506630955
+            },
+            {
+              "building_id": "BATIMENT0000000240879486_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9974983388911233,
+              "delta_div_cf": -0.0025016611088767293,
+              "peak_kw_case_a": 13.528394109971892,
+              "peak_kw_case_b": 13.218945253447433,
+              "delta_div_peak_pct": -2.2874027324230664,
+              "delta_div_annual_pct": -0.2588077886143878
+            },
+            {
+              "building_id": "BATIMENT0000000240879768_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9986099204220333,
+              "cf_case_b": 0.9934192482294194,
+              "delta_div_cf": -0.005190672192613932,
+              "peak_kw_case_a": 11.4851701618723,
+              "peak_kw_case_b": 11.533047364270857,
+              "delta_div_peak_pct": 0.41686106277724855,
+              "delta_div_annual_pct": 0.34818727087047235
+            },
+            {
+              "building_id": "BATIMENT0000000240879979_part0",
+              "n_u": 7,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9937438743188725,
+              "delta_div_cf": -0.0062561256811275445,
+              "peak_kw_case_a": 46.25211424004429,
+              "peak_kw_case_b": 46.53674180996454,
+              "delta_div_peak_pct": 0.6153828308108363,
+              "delta_div_annual_pct": 0.20669832922518439
+            },
+            {
+              "building_id": "BATIMENT0000000240880050_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.120344188351346,
+              "peak_kw_case_b": 20.035938604655666,
+              "delta_div_peak_pct": -0.4195036770024394,
+              "delta_div_annual_pct": 0.08768481005700857
+            },
+            {
+              "building_id": "BATIMENT0000000240880071_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.315084503972186,
+              "peak_kw_case_b": 4.3125669144550685,
+              "delta_div_peak_pct": -0.058343921533874056,
+              "delta_div_annual_pct": -0.015558985114068075
+            },
+            {
+              "building_id": "BATIMENT0000000240880079_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9793113220008448,
+              "delta_div_cf": -0.02068867799915519,
+              "peak_kw_case_a": 3.360157668230509,
+              "peak_kw_case_b": 3.274898749506042,
+              "delta_div_peak_pct": -2.5373487539162225,
+              "delta_div_annual_pct": -0.43193789386227754
+            },
+            {
+              "building_id": "BATIMENT0000000240880177_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9944742381184316,
+              "delta_div_cf": -0.005525761881568392,
+              "peak_kw_case_a": 14.624361568047371,
+              "peak_kw_case_b": 14.43707013928702,
+              "delta_div_peak_pct": -1.2806810600851324,
+              "delta_div_annual_pct": 0.11940293569090378
+            },
+            {
+              "building_id": "BATIMENT0000000240880393_part0",
+              "n_u": 8,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.99090382740808,
+              "delta_div_cf": -0.009096172591919971,
+              "peak_kw_case_a": 74.93728552842799,
+              "peak_kw_case_b": 75.94153089909786,
+              "delta_div_peak_pct": 1.3401144217972722,
+              "delta_div_annual_pct": 0.157164228809318
+            },
+            {
+              "building_id": "BATIMENT0000000240880615_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9995398532782293,
+              "cf_case_b": 0.9995422147936578,
+              "delta_div_cf": 2.3615154285394624e-06,
+              "peak_kw_case_a": 10.164162317492437,
+              "peak_kw_case_b": 10.216618962557519,
+              "delta_div_peak_pct": 0.516094129811408,
+              "delta_div_annual_pct": 0.17125304588432735
+            },
+            {
+              "building_id": "BATIMENT0000000240881089_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9977172063528402,
+              "delta_div_cf": -0.0022827936471597754,
+              "peak_kw_case_a": 8.494879509143042,
+              "peak_kw_case_b": 8.443910754099305,
+              "delta_div_peak_pct": -0.5999938549908719,
+              "delta_div_annual_pct": 0.28609796598664755
+            },
+            {
+              "building_id": "BATIMENT0000000240881095_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9965321253482291,
+              "delta_div_cf": -0.003467874651770897,
+              "peak_kw_case_a": 43.42064488309508,
+              "peak_kw_case_b": 43.36619337646266,
+              "delta_div_peak_pct": -0.12540464744137783,
+              "delta_div_annual_pct": -0.08953015057947815
+            },
+            {
+              "building_id": "BATIMENT0000000240881134_part0",
+              "n_u": 7,
+              "cf_case_a": 0.9928924091165371,
+              "cf_case_b": 0.9928581223514505,
+              "delta_div_cf": -3.428676508654416e-05,
+              "peak_kw_case_a": 96.05151181580925,
+              "peak_kw_case_b": 98.35639654745272,
+              "delta_div_peak_pct": 2.399633996457414,
+              "delta_div_annual_pct": 0.08797553621241078
+            },
+            {
+              "building_id": "BATIMENT0000000240881368_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9980890980878732,
+              "delta_div_cf": -0.001910901912126839,
+              "peak_kw_case_a": 12.831771042006787,
+              "peak_kw_case_b": 12.93189843827964,
+              "delta_div_peak_pct": 0.7803084698524526,
+              "delta_div_annual_pct": -0.25644719099368235
+            },
+            {
+              "building_id": "BATIMENT0000000240881528_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9960534519731434,
+              "cf_case_b": 0.9966941425981798,
+              "delta_div_cf": 0.0006406906250363553,
+              "peak_kw_case_a": 37.379028671578226,
+              "peak_kw_case_b": 37.98623349567219,
+              "delta_div_peak_pct": 1.6244531911971825,
+              "delta_div_annual_pct": 0.234809567766676
+            },
+            {
+              "building_id": "BATIMENT0000000240881532_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.990285774623667,
+              "delta_div_cf": -0.009714225376333041,
+              "peak_kw_case_a": 26.101693923995246,
+              "peak_kw_case_b": 25.7016459659584,
+              "delta_div_peak_pct": -1.532651326008706,
+              "delta_div_annual_pct": -0.09196076635509436
+            },
+            {
+              "building_id": "BATIMENT0000000240881533_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.73863081154572,
+              "peak_kw_case_b": 10.722510470711685,
+              "delta_div_peak_pct": -0.15011542082910298,
+              "delta_div_annual_pct": 0.04675054191818215
+            },
+            {
+              "building_id": "BATIMENT0000000357175643_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 3.9888384586156396,
+              "peak_kw_case_b": 3.986042281639841,
+              "delta_div_peak_pct": -0.07010003049280963,
+              "delta_div_annual_pct": 0.024337391345372952
+            }
+          ]
+        },
+        "f1.00": {
+          "buildings": 23,
+          "cf_case_b_min": 0.9576797753001443,
+          "cf_case_b_median": 0.9800005243394943,
+          "cf_case_b_max": 1.0,
+          "median_delta_div_cf": -0.01577070644902734,
+          "median_delta_div_peak_pct": -0.8469345818003402,
+          "median_delta_div_annual_pct": 0.14109727361613197,
+          "rows": [
+            {
+              "building_id": "BATIMENT0000000013365727_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 5.222381788839024,
+              "peak_kw_case_b": 5.095885025906137,
+              "delta_div_peak_pct": -2.422204427934179,
+              "delta_div_annual_pct": 0.015576354712835161
+            },
+            {
+              "building_id": "BATIMENT0000000240877159_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9861502726712875,
+              "delta_div_cf": -0.01384972732871248,
+              "peak_kw_case_a": 12.092636609530759,
+              "peak_kw_case_b": 11.810421647911687,
+              "delta_div_peak_pct": -2.3337752611919687,
+              "delta_div_annual_pct": 0.10836786582944088
+            },
+            {
+              "building_id": "BATIMENT0000000240877169_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9912264309851766,
+              "delta_div_cf": -0.008773569014823401,
+              "peak_kw_case_a": 12.46780920746922,
+              "peak_kw_case_b": 12.513277692887067,
+              "delta_div_peak_pct": 0.3646870485522708,
+              "delta_div_annual_pct": 0.1656784394807248
+            },
+            {
+              "building_id": "BATIMENT0000000240877179_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9993681167868099,
+              "cf_case_b": 0.9800005243394943,
+              "delta_div_cf": -0.019367592447315674,
+              "peak_kw_case_a": 13.946454023454379,
+              "peak_kw_case_b": 13.828336681394859,
+              "delta_div_peak_pct": -0.8469345818003402,
+              "delta_div_annual_pct": 0.5540652500664333
+            },
+            {
+              "building_id": "BATIMENT0000000240879451_part0",
+              "n_u": 1,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.506891440434872,
+              "peak_kw_case_b": 4.506891440434872,
+              "delta_div_peak_pct": 0.0,
+              "delta_div_annual_pct": 0.0
+            },
+            {
+              "building_id": "BATIMENT0000000240879467_part0",
+              "n_u": 5,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9951539289308701,
+              "delta_div_cf": -0.004846071069129931,
+              "peak_kw_case_a": 65.4138101619171,
+              "peak_kw_case_b": 63.649603467866996,
+              "delta_div_peak_pct": -2.696994242780244,
+              "delta_div_annual_pct": 0.17777312739512105
+            },
+            {
+              "building_id": "BATIMENT0000000240879486_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9797222776302071,
+              "delta_div_cf": -0.02027772236979286,
+              "peak_kw_case_a": 13.80831489017121,
+              "peak_kw_case_b": 13.18941715601443,
+              "delta_div_peak_pct": -4.482065618284191,
+              "delta_div_annual_pct": -0.5086541319325473
+            },
+            {
+              "building_id": "BATIMENT0000000240879768_part0",
+              "n_u": 3,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9750732847372144,
+              "delta_div_cf": -0.02492671526278556,
+              "peak_kw_case_a": 11.853769196232856,
+              "peak_kw_case_b": 11.479078229179036,
+              "delta_div_peak_pct": -3.160943669907937,
+              "delta_div_annual_pct": 0.6071600184568149
+            },
+            {
+              "building_id": "BATIMENT0000000240879979_part0",
+              "n_u": 7,
+              "cf_case_a": 0.9995101061931447,
+              "cf_case_b": 0.9739442987490798,
+              "delta_div_cf": -0.025565807444064892,
+              "peak_kw_case_a": 46.32070171362042,
+              "peak_kw_case_b": 46.157245831173306,
+              "delta_div_peak_pct": -0.35287868361254443,
+              "delta_div_annual_pct": 0.3849990945307565
+            },
+            {
+              "building_id": "BATIMENT0000000240880050_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 20.127223129561155,
+              "peak_kw_case_b": 19.958423584154698,
+              "delta_div_peak_pct": -0.8386628613389756,
+              "delta_div_annual_pct": 0.17234449141286778
+            },
+            {
+              "building_id": "BATIMENT0000000240880071_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 4.2940780387870365,
+              "peak_kw_case_b": 4.289057071640101,
+              "delta_div_peak_pct": -0.11692771071189441,
+              "delta_div_annual_pct": -0.03277338723236923
+            },
+            {
+              "building_id": "BATIMENT0000000240880079_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9624180694172698,
+              "delta_div_cf": -0.03758193058273018,
+              "peak_kw_case_a": 3.530783812889284,
+              "peak_kw_case_b": 3.382619988459474,
+              "delta_div_peak_pct": -4.196343709544928,
+              "delta_div_annual_pct": -0.8451228618250254
+            },
+            {
+              "building_id": "BATIMENT0000000240880177_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9665143514904452,
+              "delta_div_cf": -0.03348564850955482,
+              "peak_kw_case_a": 15.199048039750057,
+              "peak_kw_case_b": 14.195342827395034,
+              "delta_div_peak_pct": -6.603737350721132,
+              "delta_div_annual_pct": 0.20422930384699578
+            },
+            {
+              "building_id": "BATIMENT0000000240880393_part0",
+              "n_u": 8,
+              "cf_case_a": 0.9928778987403784,
+              "cf_case_b": 0.977107192291351,
+              "delta_div_cf": -0.01577070644902734,
+              "peak_kw_case_a": 74.35279707163026,
+              "peak_kw_case_b": 76.46103360822865,
+              "delta_div_peak_pct": 2.835450204472258,
+              "delta_div_annual_pct": 0.29288083322780323
+            },
+            {
+              "building_id": "BATIMENT0000000240880615_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9995324285269798,
+              "cf_case_b": 0.9952749775365686,
+              "delta_div_cf": -0.0042574509904111935,
+              "peak_kw_case_a": 10.002687285774927,
+              "peak_kw_case_b": 10.107600575907442,
+              "delta_div_peak_pct": 1.0488510450758066,
+              "delta_div_annual_pct": 0.32943165909090555
+            },
+            {
+              "building_id": "BATIMENT0000000240881089_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9919181689908697,
+              "delta_div_cf": -0.008081831009130291,
+              "peak_kw_case_a": 8.73370711052668,
+              "peak_kw_case_b": 8.631953489004218,
+              "delta_div_peak_pct": -1.1650679400482689,
+              "delta_div_annual_pct": 0.5293645132216416
+            },
+            {
+              "building_id": "BATIMENT0000000240881095_part0",
+              "n_u": 6,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9728465043792756,
+              "delta_div_cf": -0.027153495620724444,
+              "peak_kw_case_a": 42.97010320309492,
+              "peak_kw_case_b": 42.86120018982744,
+              "delta_div_peak_pct": -0.2534390312091118,
+              "delta_div_annual_pct": -0.16656356028799976
+            },
+            {
+              "building_id": "BATIMENT0000000240881134_part0",
+              "n_u": 7,
+              "cf_case_a": 0.9908464604604056,
+              "cf_case_b": 0.9741539466018154,
+              "delta_div_cf": -0.016692513858590163,
+              "peak_kw_case_a": 99.1594189392395,
+              "peak_kw_case_b": 99.21539900247437,
+              "delta_div_peak_pct": 0.05645460999440891,
+              "delta_div_annual_pct": 0.14109727361613197
+            },
+            {
+              "building_id": "BATIMENT0000000240881368_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9949720883465589,
+              "delta_div_cf": -0.005027911653441075,
+              "peak_kw_case_a": 12.994248905794517,
+              "peak_kw_case_b": 13.109868906037617,
+              "delta_div_peak_pct": 0.889778247910437,
+              "delta_div_annual_pct": -0.48245658278854286
+            },
+            {
+              "building_id": "BATIMENT0000000240881528_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9932592515304552,
+              "cf_case_b": 0.9770343847845896,
+              "delta_div_cf": -0.01622486674586565,
+              "peak_kw_case_a": 38.23909497988029,
+              "peak_kw_case_b": 37.89861280293935,
+              "delta_div_peak_pct": -0.8904033349118009,
+              "delta_div_annual_pct": 0.4251136343408416
+            },
+            {
+              "building_id": "BATIMENT0000000240881532_part0",
+              "n_u": 4,
+              "cf_case_a": 1.0,
+              "cf_case_b": 0.9644064617822312,
+              "delta_div_cf": -0.03559353821776878,
+              "peak_kw_case_a": 27.27918961913551,
+              "peak_kw_case_b": 25.27720308066953,
+              "delta_div_peak_pct": -7.338878340658807,
+              "delta_div_annual_pct": -0.39379265644777106
+            },
+            {
+              "building_id": "BATIMENT0000000240881533_part0",
+              "n_u": 2,
+              "cf_case_a": 1.0,
+              "cf_case_b": 1.0,
+              "delta_div_cf": 0.0,
+              "peak_kw_case_a": 10.65158546991472,
+              "peak_kw_case_b": 10.619344788246437,
+              "delta_div_peak_pct": -0.3026843445921358,
+              "delta_div_annual_pct": 0.08408941939508574
+            },
+            {
+              "building_id": "BATIMENT0000000357175643_part0",
+              "n_u": 3,
+              "cf_case_a": 0.9986212916935799,
+              "cf_case_b": 0.9576797753001443,
+              "delta_div_cf": -0.040941516393435684,
+              "peak_kw_case_a": 4.077076302365916,
+              "peak_kw_case_b": 3.926538671808658,
+              "delta_div_peak_pct": -3.6922936779451923,
+              "delta_div_annual_pct": 0.03713021797049907
+            }
+          ]
+        }
+      }
+    }
+  },
+  "fits": {
+    "armD_f0.15": {
+      "verdict": "REPORTED",
+      "degenerate_constant_cf": false,
+      "g_inf": 0.9992772234004825,
+      "n_points": 18,
+      "n_range": [
+        1,
+        28
+      ],
+      "cf_range": [
+        0.9984933556398129,
+        1.0
+      ],
+      "cf_spread": 0.0015066443601871038,
+      "r_squared": 0.28367791854652835,
+      "rmse": 0.0003634053184925394,
+      "max_abs_residual": 0.000920459698939613,
+      "residuals": [
+        {
+          "n_u": 11,
+          "cf": 0.9998631426195997,
+          "fitted": 0.9994951487448324,
+          "residual": 0.00036799387476738055
+        },
+        {
+          "n_u": 3,
+          "cf": 0.9994114060897515,
+          "fitted": 0.9996945186647779,
+          "residual": -0.00028311257502633413
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9984933556398129,
+          "fitted": 0.9994138153387525,
+          "residual": -0.000920459698939613
+        },
+        {
+          "n_u": 6,
+          "cf": 0.9998004924017563,
+          "fitted": 0.9995722957116229,
+          "residual": 0.0002281966901334087
+        },
+        {
+          "n_u": 8,
+          "cf": 0.9993814502705526,
+          "fitted": 0.9995327635178834,
+          "residual": -0.00015131324733086426
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9997883036352843,
+          "residual": 0.00021169636471574105
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9997883036352843,
+          "residual": 0.00021169636471574105
+        },
+        {
+          "n_u": 1,
+          "cf": 1.0,
+          "fitted": 1.0,
+          "residual": 0.0
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9997883036352843,
+          "residual": 0.00021169636471574105
+        },
+        {
+          "n_u": 10,
+          "cf": 0.9987659425825859,
+          "fitted": 0.9995057854298772,
+          "residual": -0.0007398428472913388
+        },
+        {
+          "n_u": 3,
+          "cf": 1.0,
+          "fitted": 0.9996945186647779,
+          "residual": 0.0003054813352221242
+        },
+        {
+          "n_u": 4,
+          "cf": 1.0,
+          "fitted": 0.9996386117002413,
+          "residual": 0.0003613882997587359
+        },
+        {
+          "n_u": 4,
+          "cf": 1.0,
+          "fitted": 0.9996386117002413,
+          "residual": 0.0003613882997587359
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9996580341900531,
+          "fitted": 0.9997883036352843,
+          "residual": -0.00013026944523120143
+        },
+        {
+          "n_u": 20,
+          "cf": 0.9994676636866329,
+          "fitted": 0.9994388411613893,
+          "residual": 2.8822525243610286e-05
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9997033756494681,
+          "fitted": 0.9994138153387525,
+          "residual": 0.0002895603107155864
+        },
+        {
+          "n_u": 3,
+          "cf": 1.0,
+          "fitted": 0.9996945186647779,
+          "residual": 0.0003054813352221242
+        },
+        {
+          "n_u": 6,
+          "cf": 0.9996620382421033,
+          "fitted": 0.9995722957116229,
+          "residual": 8.974253048044112e-05
+        }
+      ],
+      "note": "g_inf is the asymptotic coincidence factor; the fraction of the asymptotic reduction reached at N is 1 - 1/sqrt(N), so N=4 reaches 50 %",
+      "monotone": {
+        "verdict": "REPORTED",
+        "n_points": 18,
+        "pairs": 141,
+        "concordant_decreasing": 116,
+        "fraction_decreasing": 0.8226950354609929
+      }
+    },
+    "armD_f0.30": {
+      "verdict": "REPORTED",
+      "degenerate_constant_cf": false,
+      "g_inf": 0.9975157328667082,
+      "n_points": 18,
+      "n_range": [
+        1,
+        28
+      ],
+      "cf_range": [
+        0.9954421583399857,
+        1.0
+      ],
+      "cf_spread": 0.004557841660014272,
+      "r_squared": 0.19275647832505405,
+      "rmse": 0.0012901478975816424,
+      "max_abs_residual": 0.002859168772472387,
+      "residuals": [
+        {
+          "n_u": 11,
+          "cf": 0.9984397279210943,
+          "fitted": 0.9982647675903574,
+          "residual": 0.0001749603307368286
+        },
+        {
+          "n_u": 3,
+          "cf": 0.9994114062705297,
+          "fitted": 0.9989500251648532,
+          "residual": 0.00046138110567650603
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9960881831956039,
+          "fitted": 0.9979852152256327,
+          "residual": -0.001897032030028778
+        },
+        {
+          "n_u": 6,
+          "cf": 0.9998000061303686,
+          "fitted": 0.9985299306769302,
+          "residual": 0.0012700754534383796
+        },
+        {
+          "n_u": 8,
+          "cf": 0.9992647662422103,
+          "fitted": 0.998394053934823,
+          "residual": 0.0008707123073873335
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9992723750029378,
+          "residual": 0.0007276249970622484
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9992723750029378,
+          "residual": 0.0007276249970622484
+        },
+        {
+          "n_u": 1,
+          "cf": 1.0,
+          "fitted": 1.0,
+          "residual": 0.0
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9967221796920595,
+          "fitted": 0.9992723750029378,
+          "residual": -0.0025501953108783004
+        },
+        {
+          "n_u": 10,
+          "cf": 0.9954421583399857,
+          "fitted": 0.9983013271124581,
+          "residual": -0.002859168772472387
+        },
+        {
+          "n_u": 3,
+          "cf": 1.0,
+          "fitted": 0.9989500251648532,
+          "residual": 0.0010499748351467941
+        },
+        {
+          "n_u": 4,
+          "cf": 1.0,
+          "fitted": 0.9987578664333541,
+          "residual": 0.001242133566645931
+        },
+        {
+          "n_u": 4,
+          "cf": 1.0,
+          "fitted": 0.9987578664333541,
+          "residual": 0.001242133566645931
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9981832758507344,
+          "fitted": 0.9992723750029378,
+          "residual": -0.0010890991522033433
+        },
+        {
+          "n_u": 20,
+          "cf": 0.9974388704940601,
+          "fitted": 0.9980712318851391,
+          "residual": -0.0006323613910790282
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9990497808722877,
+          "fitted": 0.9979852152256327,
+          "residual": 0.0010645656466550246
+        },
+        {
+          "n_u": 3,
+          "cf": 1.0,
+          "fitted": 0.9989500251648532,
+          "residual": 0.0010499748351467941
+        },
+        {
+          "n_u": 6,
+          "cf": 0.9985290733372438,
+          "fitted": 0.9985299306769302,
+          "residual": -8.573396863553739e-07
+        }
+      ],
+      "note": "g_inf is the asymptotic coincidence factor; the fraction of the asymptotic reduction reached at N is 1 - 1/sqrt(N), so N=4 reaches 50 %",
+      "monotone": {
+        "verdict": "REPORTED",
+        "n_points": 18,
+        "pairs": 141,
+        "concordant_decreasing": 109,
+        "fraction_decreasing": 0.7730496453900709
+      }
+    },
+    "armD_f0.50": {
+      "verdict": "REPORTED",
+      "degenerate_constant_cf": false,
+      "g_inf": 0.9942589050213054,
+      "n_points": 18,
+      "n_range": [
+        1,
+        28
+      ],
+      "cf_range": [
+        0.9883194069196382,
+        1.0
+      ],
+      "cf_spread": 0.011680593080361845,
+      "r_squared": 0.24839756813524405,
+      "rmse": 0.0027227404703428918,
+      "max_abs_residual": 0.007754991741270367,
+      "residuals": [
+        {
+          "n_u": 11,
+          "cf": 0.9963079065016907,
+          "fitted": 0.9959899102876802,
+          "residual": 0.00031799621401040756
+        },
+        {
+          "n_u": 3,
+          "cf": 0.9994114065115579,
+          "fitted": 0.9975735277526979,
+          "residual": 0.0018378787588599899
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9915539387181149,
+          "fitted": 0.9953438699903645,
+          "residual": -0.0037899312722495804
+        },
+        {
+          "n_u": 6,
+          "cf": 0.999799354069156,
+          "fitted": 0.9966026972317481,
+          "residual": 0.003196656837407885
+        },
+        {
+          "n_u": 8,
+          "cf": 0.9976235120664725,
+          "fitted": 0.9962886886167409,
+          "residual": 0.0013348234497315703
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9987110684058357,
+          "fitted": 0.9983184722121764,
+          "residual": 0.0003925961936592781
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9983184722121764,
+          "residual": 0.0016815277878236001
+        },
+        {
+          "n_u": 1,
+          "cf": 1.0,
+          "fitted": 1.0,
+          "residual": 0.0
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9967876158642675,
+          "fitted": 0.9983184722121764,
+          "residual": -0.0015308563479089488
+        },
+        {
+          "n_u": 10,
+          "cf": 0.9883194069196382,
+          "fitted": 0.9960743986609085,
+          "residual": -0.007754991741270367
+        },
+        {
+          "n_u": 3,
+          "cf": 1.0,
+          "fitted": 0.9975735277526979,
+          "residual": 0.0024264722473020806
+        },
+        {
+          "n_u": 4,
+          "cf": 1.0,
+          "fitted": 0.9971294525106527,
+          "residual": 0.0028705474893473415
+        },
+        {
+          "n_u": 4,
+          "cf": 1.0,
+          "fitted": 0.9971294525106527,
+          "residual": 0.0028705474893473415
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9957761534712053,
+          "fitted": 0.9983184722121764,
+          "residual": -0.0025423187409711057
+        },
+        {
+          "n_u": 20,
+          "cf": 0.9940844098793907,
+          "fitted": 0.9955426528850698,
+          "residual": -0.001458243005679094
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9979868478811739,
+          "fitted": 0.9953438699903645,
+          "residual": 0.0026429778908093615
+        },
+        {
+          "n_u": 3,
+          "cf": 0.9977069731281158,
+          "fitted": 0.9975735277526979,
+          "residual": 0.00013344537541792878
+        },
+        {
+          "n_u": 6,
+          "cf": 0.9970160718351601,
+          "fitted": 0.9966026972317481,
+          "residual": 0.0004133746034119534
+        }
+      ],
+      "note": "g_inf is the asymptotic coincidence factor; the fraction of the asymptotic reduction reached at N is 1 - 1/sqrt(N), so N=4 reaches 50 %",
+      "monotone": {
+        "verdict": "REPORTED",
+        "n_points": 18,
+        "pairs": 141,
+        "concordant_decreasing": 101,
+        "fraction_decreasing": 0.7163120567375887
+      }
+    },
+    "armD_f1.00": {
+      "verdict": "REPORTED",
+      "degenerate_constant_cf": false,
+      "g_inf": 0.9775546868495665,
+      "n_points": 18,
+      "n_range": [
+        1,
+        28
+      ],
+      "cf_range": [
+        0.9627686559652235,
+        1.0
+      ],
+      "cf_spread": 0.03723134403477646,
+      "r_squared": 0.2855674891883624,
+      "rmse": 0.00839312135839519,
+      "max_abs_residual": 0.021883862119452924,
+      "residuals": [
+        {
+          "n_u": 11,
+          "cf": 0.9874568297681814,
+          "fitted": 0.9843222033970227,
+          "residual": 0.0031346263711586886
+        },
+        {
+          "n_u": 3,
+          "cf": 0.9787064100621065,
+          "fitted": 0.9905134944390147,
+          "residual": -0.01180708437690825
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9742654367130956,
+          "fitted": 0.9817964523277818,
+          "residual": -0.007531015614686165
+        },
+        {
+          "n_u": 6,
+          "cf": 0.9971808036531199,
+          "fitted": 0.986717947572157,
+          "residual": 0.010462856080962868
+        },
+        {
+          "n_u": 8,
+          "cf": 0.9904381575490376,
+          "fitted": 0.9854903034168301,
+          "residual": 0.004947854132207552
+        },
+        {
+          "n_u": 2,
+          "cf": 0.994503316554118,
+          "fitted": 0.9934259199840936,
+          "residual": 0.0010773965700244803
+        },
+        {
+          "n_u": 2,
+          "cf": 1.0,
+          "fitted": 0.9934259199840936,
+          "residual": 0.006574080015906425
+        },
+        {
+          "n_u": 1,
+          "cf": 1.0,
+          "fitted": 1.0,
+          "residual": 0.0
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9969403193175175,
+          "fitted": 0.9934259199840936,
+          "residual": 0.003514399333423901
+        },
+        {
+          "n_u": 10,
+          "cf": 0.9627686559652235,
+          "fitted": 0.9846525180846765,
+          "residual": -0.021883862119452924
+        },
+        {
+          "n_u": 3,
+          "cf": 1.0,
+          "fitted": 0.9905134944390147,
+          "residual": 0.009486505560985292
+        },
+        {
+          "n_u": 4,
+          "cf": 0.9836135704228391,
+          "fitted": 0.9887773434247833,
+          "residual": -0.00516377300194415
+        },
+        {
+          "n_u": 4,
+          "cf": 0.9989297930006037,
+          "fitted": 0.9887773434247833,
+          "residual": 0.0101524495758204
+        },
+        {
+          "n_u": 2,
+          "cf": 0.9907587549500255,
+          "fitted": 0.9934259199840936,
+          "residual": -0.002667165034068053
+        },
+        {
+          "n_u": 20,
+          "cf": 0.9819965933309842,
+          "fitted": 0.9825736114476304,
+          "residual": -0.0005770181166462329
+        },
+        {
+          "n_u": 28,
+          "cf": 0.9902431960851739,
+          "fitted": 0.9817964523277818,
+          "residual": 0.008446743757392072
+        },
+        {
+          "n_u": 3,
+          "cf": 0.9819629070095286,
+          "fitted": 0.9905134944390147,
+          "residual": -0.008550587429486112
+        },
+        {
+          "n_u": 6,
+          "cf": 0.991281691711946,
+          "fitted": 0.986717947572157,
+          "residual": 0.004563744139788994
+        }
+      ],
+      "note": "g_inf is the asymptotic coincidence factor; the fraction of the asymptotic reduction reached at N is 1 - 1/sqrt(N), so N=4 reaches 50 %",
+      "monotone": {
+        "verdict": "REPORTED",
+        "n_points": 18,
+        "pairs": 141,
+        "concordant_decreasing": 104,
+        "fraction_decreasing": 0.7375886524822695
+      }
+    }
+  }
+}

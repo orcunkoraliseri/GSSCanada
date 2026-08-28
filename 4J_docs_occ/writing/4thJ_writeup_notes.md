@@ -376,17 +376,17 @@ manuscript itself remains unwritten.
 
 ---
 
-## 8. `D-S6-16` (a′) — how the memorisation ceiling is reported (DRAFTED 2026-08-27)
+## 8. `D-S6-16` (a′) — how the memorisation ceiling is reported (RULED (a′) 2026-08-28)
 
-🔴 **Status, stated before the text so it cannot be mistaken for a closure.** `D-S6-16` is **still
-open**. The release question it was raised for is settled — by the registered bar, not by this
-decision — and what remains is exactly one thing: **how the `D-S6-14` ceiling is described in the
-methods**, between **(a′)** report it as measured and **(c′)** additionally build a body-randomised
-ceiling (a full 7 B retrain). The passages below are drafted **under (a′), the standing
-recommendation**; if the author rules (c′) they survive unchanged and gain a paragraph. ⚪ Nothing
-here rules anything.
+🟢 **Status.** `D-S6-16` is **RULED (a′)** as of 2026-08-28, the author having delegated the
+choice; `IMP/docs/DONE/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` §9 carries the
+ruling. **(c′) — a body-randomised ceiling, a full 7 B retrain — is declined.** The release question was
+never this decision's to settle: it was settled by the registered bar, and `G6.10` **FAILS** it. The
+passages below were drafted under (a′) and are now the ruled text — they stand unchanged, and ruling
+(a′) neither adds to nor removes from them. 🔴 The ruling moves no threshold, re-scores nothing and
+removes no control.
 
-⚪ Sources: `IMP/docs/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` §3 and its
+⚪ Sources: `IMP/docs/DONE/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` §3 and its
 third addendum §8; `Step6_docs/outputs_step6/privacy_audit.md`; `FINDING 112`–`116`.
 
 ---
@@ -471,7 +471,8 @@ at ≈ 0.548, 82 % tighter than the registered ≤ 0.65"*. On Leg 5 the implicit
 
 ### 8.4 What this passage set does NOT do
 
-⚪ It does not rule `D-S6-16`; (a′) versus (c′) remains the author's, and one line closes it.
+⚪ It did not itself rule `D-S6-16` — the ruling (a′) is in the decision record, §9, and these
+passages are what it ruled **into** the methods.
 ⚪ It moves no threshold, re-scores nothing, and removes no control.
 ⚪ It does not build the body-randomised ceiling, and it does not claim the four registered controls
 pass — two of them do not.

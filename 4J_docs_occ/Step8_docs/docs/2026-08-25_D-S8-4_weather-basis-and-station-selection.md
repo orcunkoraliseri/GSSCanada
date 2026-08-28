@@ -248,3 +248,28 @@ itself off as an envelope result.
 All verified non-empty before writing: `archetype_idf_manifest.csv.bak_ds84`
 (the pre-rebuild manifest). The `.bak_ds83` set from `D-S8-3` is untouched.
 `prereg.md` untouched, md5 `e4243e07cdd80c9c846b91f40e3e8c45`.
+
+---
+
+## ADDENDUM, 2026-08-28 — the follow-on is RULED: **NOT TAKEN**
+
+🟢 **The top-`k` station mean, and the reported-band variant, are both DECLINED.** The author
+delegated the choice to this session on 2026-08-28. Each fold keeps the single station selected by
+measurement in §4; no EPW is re-selected, and the Step 8 / Step 9 campaigns are **not** re-run.
+
+🔴 **Why.** §6 of this brief already establishes the decisive fact: `f = 0` and `f = 1` share one
+EPW, **so the station cancels exactly out of the occupancy contrast**. The follow-on would multiply
+the campaign by `k` — on 13,108 rotated runs — to put an interval around a **level** that no
+published claim rests on, while leaving every **contrast** it could affect unchanged. `FINDING 120`'s
+5–11 % is real, and it is a reason to state a limitation, not a reason to buy one.
+
+⚪ **What is carried instead.** The §5 within-fold reporting rule stands as the binding one: **no
+cross-fold comparison of absolute demand is safe to ±10 %**, no result is ever quoted as *"the
+Spanish stock uses X kWh/m²"*, and `FINDING 120` is published as a declared limitation naming the
+0.002 K selection margin. ⚪ The `EU-10` dossier applies the same discipline independently, by naming
+the meteorological year beside the country in any cross-fold sentence.
+
+⚪ **Reopen trigger, one only.** A published claim that compares **absolute** demand across folds.
+Nothing else reopens it.
+
+**Status: follow-on RULED — NOT TAKEN. `D-S8-4` is CLOSED in full.**

@@ -21,7 +21,7 @@ The user cannot follow long or complex answers. Reply in **English** (the user m
 
   Evidence: <path>, <path:line>.
 
-  <Next step — one sentence.>
+  Next: <the next action, 3–4 words>
 ```
 
 Good example (copy this style):
@@ -36,7 +36,7 @@ Good example (copy this style):
 
   Evidence: outputs/eu_evidence/X-11/eu02_ns02_gate_audit.json, docs/MVP_european_locations.md:679.
 
-  The next work package is EU-04 geometry.
+  Next: EU-04 geometry.
 ```
 
 **Rules:**
@@ -48,7 +48,10 @@ Good example (copy this style):
 5. **One decision max.** If the user must decide, end with one line: "Waiting on you: D-XX — recommend (a)." No option lists.
 6. **No preamble, no recap.** Don't restate the question, don't narrate the plan, don't summarize what you just said.
 7. **NEVER create anything not explicitly requested.** No new files, docs, scripts, reports, boards, logs, or "helpful extras". If something extra seems needed, ask in one sentence first.
-8. Details only if asked ("Want details?").
+8. **Every reply ends with `Next:` and the next action in 3–4 words.** Never a sentence, never a paragraph — a short
+   noun phrase ("Next: EU-04 geometry.", "Next: nothing owed.", "Next: waiting on D-EU-31."). It is mandatory on
+   every reply, including short answers and questions.
+9. Details only if asked ("Want details?").
 
 Bad example (never do this): a 400-word reply with a table, three numbered re-derivations, two new FINDINGs explained in full, a closure-ritual walkthrough, and three decisions at the end. The user cannot read that.
 
@@ -173,3 +176,5 @@ Loop: `/plan` → `/review-plan` → `/build` → `/report` → `/review-executi
 Doc routing: `eSim_docs_occ_utils/` (occupancy/GSS), `eSim_docs_bem_utils/` (EnergyPlus/IDF), `eSim_docs_cloudSims/` (HPC), `eSim_docs_ubem_utils/` (urban), `eSim_docs_report/` (analysis/figures/paper).
 
 State files: `.claude/tasks.md` (planner), `.claude/progress.md` (builder appends), `.claude/state.md` (reporter overwrites).
+
+**After task completion:** archive any `.bak` files in a separate archive folder.

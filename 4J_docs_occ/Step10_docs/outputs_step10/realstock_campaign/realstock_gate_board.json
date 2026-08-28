@@ -1,0 +1,206 @@
+{
+  "source_manifest": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\4J_docs_occ\\Step10_docs\\outputs_step10\\realstock_campaign\\realstock_campaign_manifest.csv",
+  "source_manifest_sha256": "e98adfc34e5b38a7b14d311e3efb835fd878a29c9843f0e677cfe62c928b6c4f",
+  "cells": 410,
+  "completed": 410,
+  "failed": 0,
+  "basis": "HEATING-ONLY, Zone Ideal Loads hourly variable; no lighting, no appliances, no DHW, no cooling. Never comparable to a whole-building EUI or a measured total.",
+  "geometry_provenance": "FR-LYO-HAUTCOEURPENTES footprints under the 10.4 exercise relabelling; fold and diary are es/uk/it, geometry is French, and no national stock claim is available from this campaign",
+  "arm_f_label": "LOWER BOUND on heating demand and peak power, never an estimate (G10.22; one_zone_per_floor spatially averages non-coincident gains)",
+  "d_eu_31_scope": "scoped to the 149 certified EU archetype cells (Q4 (a), 2026-08-28); no certified-cell number appears in this report",
+  "gate_board": {
+    "G10.7": {
+      "gate": "G10.7",
+      "verdict": "INFO",
+      "note": "INFO permanently; no numeric EUI band exists anywhere in this project and Step 10 does not create one (D-S8-5 item 1(a))"
+    },
+    "G10.11": {
+      "gate": "G10.11",
+      "cells_with_a_french_fold": 0,
+      "cells_with_a_french_country_label": 0,
+      "cells_in_a_french_denominator": 0,
+      "geometry_provenance": "FR-LYO-HAUTCOEURPENTES footprints under the 10.4 exercise relabelling; fold and diary are es/uk/it, geometry is French, and no national stock claim is available from this campaign",
+      "verdict": "PASS",
+      "note": "the bar is on the FOLD, the DIARY and the DENOMINATOR. The corpus carries French GEOMETRY under the declared 10.4 relabelling, and that provenance is printed on every artefact this campaign writes."
+    },
+    "G10.12": {
+      "gate": "G10.12",
+      "artefacts_scanned": [
+        "gate_board_header",
+        "h10_report"
+      ],
+      "absolute_step8_or_eu_figures_found": [],
+      "verdict": "PASS",
+      "note": "only control-referenced RELATIVE deltas cross between steps; the weather station alone is worth 5-11 % of heating (FINDING 120)"
+    },
+    "G10.15": {
+      "gate": "G10.15",
+      "cells": 410,
+      "completed": 410,
+      "severe_total": 0,
+      "fatal_total": 0,
+      "diverging_heat_balance_markers": 190,
+      "verdict": "OPEN_INHERITED",
+      "note": "G8.15 is closed on the OpenUBEM side under D-EU-29 for the campaign_149 perimeter only. This campaign is a different population on a different corpus, so the warning triage is NOT inherited as clean; zero severe and zero fatal is recorded as a measurement, not as a PASS."
+    },
+    "G10.19": {
+      "gate": "G10.19",
+      "required_per_fold": 30,
+      "min_N_u": 2,
+      "qualifying_buildings_per_fold": {
+        "es": 9,
+        "uk": 5,
+        "it": 3
+      },
+      "folds_short": {
+        "es": 9,
+        "uk": 5,
+        "it": 3
+      },
+      "verdict": "NOT_EVALUABLE_FAIL_BY_POPULATION",
+      "note": "the frozen gate text prints NOT_EVALUABLE with the population named and is never a pass and never a fail; the author's ruling of 2026-08-28 (Q1 (a)) records it additionally as FAIL-by-population, permanently. Both strings are carried; PASS is unreachable."
+    },
+    "G10.20": {
+      "gate": "G10.20",
+      "pairs": 205,
+      "missing_partner": 0,
+      "geometry_or_basis_mismatches": 0,
+      "cross_building_delta_rows": 0,
+      "examples": [],
+      "cells_scanned": 410,
+      "verdict": "PASS"
+    },
+    "G10.21": {
+      "gate": "G10.21",
+      "clause_i_cf_and_q99_emitted": {
+        "cells": 410,
+        "missing_cf": 0,
+        "missing_q99": 0,
+        "q99_equals_peak": 0,
+        "q99_equals_peak_fraction": 0.0,
+        "verdict": "PASS"
+      },
+      "clause_ii_case_a_cf_one": {
+        "status": "CARRIED, NOT SCORED ON SIMULATED POWER",
+        "population": 205,
+        "cells_with_cf_off_one": 52,
+        "examples": [
+          {
+            "cell_id": "es__BATIMENT0000000240879449_part0__caseA__f100",
+            "cf": 0.9999074360510594
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240880216_part0__caseA__f100",
+            "cf": 0.9966297693708204
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240880393_part0__caseA__f100",
+            "cf": 0.9928778987403784
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240881134_part0__caseA__f050",
+            "cf": 0.9928924091165371
+          },
+          {
+            "cell_id": "es__BATIMENT0000000240881134_part0__caseA__f100",
+            "cf": 0.9908464604604056
+          }
+        ],
+        "why_not_scored": "the clause is a harness check on the emitted phi channel, where one replicated series makes every zone peak in the same hour. On simulated power the zones differ in envelope area, orientation and solar exposure, so CF_A != 1 is physics, not a harness defect. 10.9 scored this clause on the channel it was written for and it PASSED there."
+      },
+      "clause_iii_fit_reported_with_residuals": {
+        "fits_reported": [
+          "armD_f0.15",
+          "armD_f0.30",
+          "armD_f0.50",
+          "armD_f1.00"
+        ],
+        "fits_not_evaluable": []
+      },
+      "verdict": "PASS"
+    },
+    "G10.22": {
+      "gate": "G10.22",
+      "arm_f_cells": 230,
+      "artefacts_checked": [
+        "gate_board_header",
+        "h10_report"
+      ],
+      "every_artefact_carries_the_label": true,
+      "magnitude_quoted": false,
+      "verdict": "PASS",
+      "note": "direction only; RL29's magnitudes rest on a self-refuting citation and are not quoted"
+    }
+  },
+  "mutation_battery": {
+    "cases": [
+      {
+        "mutation": "drop_one_case_a_partner",
+        "gate": "G10.20",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "case_a_run_on_a_different_epw",
+        "gate": "G10.20",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "blank_q99_on_one_cell",
+        "gate": "G10.21",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "blank_cf_on_one_cell",
+        "gate": "G10.21",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "fit_against_a_constant_cf",
+        "gate": "G10.21(iii)",
+        "verdict_clean": "REPORTED",
+        "verdict_mutated": "NOT_EVALUABLE",
+        "felled": true
+      },
+      {
+        "mutation": "inflate_the_population_to_30_per_fold",
+        "gate": "G10.19",
+        "verdict_clean": "NOT_EVALUABLE_FAIL_BY_POPULATION",
+        "verdict_mutated": "PASS",
+        "felled": true
+      },
+      {
+        "mutation": "strip_the_arm_f_lower_bound_label",
+        "gate": "G10.22",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "place_an_absolute_step8_eui_beside_step10",
+        "gate": "G10.12",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "label_one_cell_with_a_french_fold",
+        "gate": "G10.11",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      }
+    ],
+    "felled": 9,
+    "total": 9,
+    "verdict": "PASS",
+    "note": "a gate that cannot be seen failing is not a gate. Each mutation is the defect its gate exists to catch, applied to the scored table rather than to EnergyPlus, so the battery costs no re-run."
+  }
+}

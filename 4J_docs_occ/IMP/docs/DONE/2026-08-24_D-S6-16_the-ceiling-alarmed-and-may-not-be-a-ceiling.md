@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-24 (night)
 **Raised by:** the first scored `D-S6-14` control — job `1286941`, fold `it`, Leg 4
-**Status:** OPEN, but **NARROWED** — see §8. The governing Leg-5 audit was read on 2026-08-25 and `G6.10` **FAILS its pre-registered bar**, so this decision no longer gates the release; it now governs only how the ceiling is written up in the methods.
+**Status:** 🟢 **RULED (a′) 2026-08-28 — CLOSED.** See §9. It was OPEN but **NARROWED** on 2026-08-25: the governing Leg-5 audit was read and `G6.10` **FAILS its pre-registered bar**, so this decision never gated the release; it governed only how the ceiling is written up in the methods — §8.
 **Evidence:** `Step6_docs/outputs_step6/privacy_mia_leg4_it.json`,
 `Step6_docs/outputs_step6/4J_step6_mia_1286941.out`, the training logs of `1281612` (reported `it`)
 and `1286899` (permuted `it`). `4thJ_06_transfer.md`, entry 2026-08-24 (night), `FINDING 112` /
@@ -270,3 +270,30 @@ options collapse to two:
 
 ⚪ Both corrections came from running the governing arm instead of generalising from the pilot —
 the same lesson as `FINDING 105` and `FINDING 106` at Step 7.
+
+---
+
+## 9. RULING, 2026-08-28 — **(a′)**, delegated by the author
+
+🟢 **`D-S6-16` is RULED (a′): report the ceiling as measured, with both corrections stated.** The
+author delegated the choice to this session on 2026-08-28 (*"progress comme tu recommends"*) against
+the standing recommendation in §8. **(c′) is declined** — it is a full 7 B retrain that cannot change
+the release, which `G6.10`'s registered bar has already decided, and the Speed budget is not
+re-opened for a methods refinement.
+
+⚪ **What the ruling does.** It closes the last open item of the `D-S6-14` / `D-S6-16` chain. The
+passages drafted at `writing/4thJ_writeup_notes.md` §8 were written under (a′) and are now the ruled
+text: §8.1 methods, §8.2 results and limitations, §8.3 the `FINDING 112` withdrawal. They stand
+unchanged; ruling (a′) adds nothing to them and removes nothing from them.
+
+🔴 **What the ruling does NOT do.** It moves no threshold, re-scores no control, removes no control
+from the paper, and reverses neither of §8's two corrections. It does **not** make the privacy audit
+pass — the paper still ships **two registered FAILs and one partial** (`G6.10` 0.6645 > 0.65, the
+perplexity gap 0.0570 > 0.05, `G6.13` 2 PASS / 1 FAIL on `uk`), the weights are **not** released and
+the `uk` synthetic set is withheld. It does not build the body-randomised ceiling, which remains
+**specified and not built** and is named as such in the limitation sentence.
+
+⚪ **Reopen trigger, one only.** If a body-randomised ceiling is ever built for an unrelated reason,
+its number is added to §8.1 and the limitation sentence is deleted. Nothing else reopens this.
+
+**Status: RULED (a′), CLOSED.**

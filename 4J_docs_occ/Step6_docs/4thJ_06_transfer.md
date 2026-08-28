@@ -3673,3 +3673,25 @@ its last-20-step loss sits +0.0045 (z = 0.23) from the reported model's. The Leg
 ⚪ **Nothing moved.** No band, threshold, verdict or count changed; no gate was scored; no run was
 submitted; the release position is unchanged and still rests on `G6.10`'s registered FAIL.
 `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` untouched.
+
+
+---
+
+### 2026-08-28 — 🟢 **CORRECTION, ADDITIVE: `D-S6-16` IS NOT OPEN. IT WAS RULED (a′) ON 2026-08-28.**
+
+🔴 **The 2026-08-27 entry above — *"THE DECISION IS STILL OPEN AND THAT IS SAID IN THE TEXT"* — is
+STALE, and so is every earlier line in this document that lists `D-S6-16` among the items waiting on
+the author.** Those lines are **not edited**: this log is append-only and they were true when written.
+
+⚪ **The ruling.** The author ruled **(a′)** and declined **(c′)**, delegating the choice, in
+`Step10_docs/docs/2026-08-28_Step10_closure_questions_for_the_author.md` §1. Record of the ruling and
+its reasoning: `writing/4thJ_writeup_notes.md` §8; detail at
+`IMP/docs/DONE/2026-08-24_D-S6-16_the-ceiling-alarmed-and-may-not-be-a-ceiling.md` §9.
+
+⚪ **What (a′) governs, and what it does not.** `D-S6-16` had already stopped gating the release
+(see the 2026-08-26 entry): it governed the **methods write-up only** — how the `D-S6-14` ceiling is
+reported. (a′) settles that wording. 🔴 **Nothing else moves**: no band, no threshold, no verdict,
+no count; `G6.10`'s registered **FAIL** stands; `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` untouched.
+
+🔴 **No decision from Step 6 is waiting on the author.**

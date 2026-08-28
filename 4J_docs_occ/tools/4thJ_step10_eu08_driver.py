@@ -313,6 +313,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--limit", type=int, default=0, help="run only the first N cells (smoke)")
+    parser.add_argument("--cells", default="", help="path to a newline-separated cell_id list; run only those cells (FINDING 181 diagnostic). The order rule is unchanged.")
     parser.add_argument("--energyplus-timeout", type=int, default=900)
     parser.add_argument("--progress-every", type=int, default=10)
     args = parser.parse_args()
@@ -322,6 +323,13 @@ def main() -> int:
     cells = order_cells(info.pop("cells"))
     if args.limit:
         cells = cells[: args.limit]
+    if args.cells:
+        wanted = {ln.strip() for ln in Path(args.cells).read_text(encoding="utf-8").splitlines() if ln.strip()}
+        cells = [c for c in cells if c["cell_id"] in wanted]
+        missing = wanted - {c["cell_id"] for c in cells}
+        if missing:
+            raise SystemExit(f"--cells: {len(missing)} ids are not in the design, e.g. {sorted(missing)[:3]}")
+        print(f"[preflight] --cells subset: {len(cells)} of {len(wanted)} requested")
 
     print(f"[preflight] OK — {len(cells)} cells, dry_run={args.dry_run}, workers={args.workers}")
     print(f"[preflight] spec {info['spec_sha256'][:12]}...  binding {info['binding_sha256'][:12]}...  "

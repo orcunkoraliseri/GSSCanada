@@ -23,6 +23,15 @@ detector anywhere in Step 9, and the replacement arm is a band decision, so it w
 author. 🔴 **§1.3 below is SUPERSEDED by that record** — its
 named candidate was refuted; read §1.3a beside it.
 
+🟢 **CORRECTION, added additively 2026-08-28 — the two sentences above are STALE and `D-S11-2` is
+NOT open.** It was **discharged on 2026-08-27**, the same day it was raised, by gate `G9.15`: stock
+means **200.79 / 201.01 / 199.47** l/dwelling/day against 200 ± 10 %, medians **174.97 / 175.79 /
+195.13** printed, the gate **seen failing** at **401.58 / 402.03 / 398.93** on doubled draws, and the
+battery re-run **13 HIT / 0 MISS / 2 already-failing**. Record: `Step9_docs/4thJ_09_enduseLoads_val.md`;
+the work-item table at §11.2 already carries the closure and this STATUS paragraph did not. ⚪ Nothing
+above is deleted — the stale sentences are kept as the record of what was carried, and this line is
+what governs. 🔴 **No decision from Step 11 is waiting on the author.**
+
 🔴 **Step 9 is CLOSED and this step does not reopen it.** Step 9's board is
 **15 PASS / 3 FAIL / 1 NOT CHECKED** (`FINDING 149`); its mapping, its trigger, its citations and its
 thresholds are read-only from here.
@@ -136,6 +145,10 @@ blank page — and that no band moves either way.
 > and watching `G9.7` return `INFO` anyway. The repair that invents no number — a per-dwelling arm
 > at Jordan & Vajen's own 200 l/day — is a band decision and was deliberately not made here.
 > Executed in full: §9 of `docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md`.
+
+🟢 **The quoted block above is the ruling AS IT STOOD; `D-S11-2` did not stay open.** It was
+discharged the same day by `G9.15` — the per-dwelling arm at Jordan & Vajen's 200 l/day, implemented
+and **seen failing** on doubled draws. See the correction in §STATUS for the measured figures.
 
 Full record: `docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md`. Four findings, no band moved, no
 checker edited, no artefact regenerated.
@@ -257,6 +270,7 @@ simulates it, the pair double-counts, and the double count is invisible in both 
 | **11.3** | **Per-dwelling trigger campaign** — run the trigger on Step 10 Arm D's `N_u` diaries per building | Step 10 items 10.4, 10.6 | no |
 | **11.4** | **Accounting-path resolution** — one path per end-use per building, recorded in the manifest (§3) | 11.3, Step 10 10.6 | no |
 | **11.5** | **Stock-scale aggregation** — `G11.12` at real neighbourhood scale, with the population declaration `G11.16` requires | 11.3, 11.4 | no |
+| **11.7** | ⚪ **3D stock visualisation, ONE static self-contained `.html`** — added 2026-08-28 at the author's request. Renders the Step 11 stock aggregate on the **existing** OpenUBEM 3D export `OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D`, in the vocabulary and conventions of `OpenUBEM/docs/docs_EXPLANATION/OpenUBEM_fundamentals.md`. 🔴 **It is a rendering, never a result, and it inherits every bar**: Arm D and Arm F **never share a colour scale or a legend** (`G10.9`); every Arm F surface is labelled a **LOWER BOUND** with **no magnitude attached** (`G10.22`); **no per-dwelling value is rendered at any zoom** (`G11.13`); every figure is **HEATING-ONLY** and stated **relative to its own control** (`G10.12`); the **Lyon geometry provenance** is printed on the page (`G10.11`). ⚪ **Read-only on the OpenUBEM tree** — it reads the export and never writes into it. No new simulation, no new artefact in their tree | 11.5 | no |
 | **11.6** | **Gate board, mutation battery, dossier** — every `G11.x` seen failing its designated mutation, `ALREADY_FAILING_AT_BASELINE` where §1.4 applies | 11.5 | no |
 
 ⚪ **No Speed job and no GPU.** Step 9 ran entirely locally, and Step 11's addition is population size, not
