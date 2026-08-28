@@ -1,0 +1,801 @@
+{
+  "artefact": "4J cell -> presence-series binding",
+  "binding_invariance": "This binding keys on survey_fold and archetype_id only. Neither moves under a weather-only spec revision, so the cell -> series pairing is INVARIANT across eu_campaign_cell_spec v1.0 -> v1.1; only the spec digest recorded above moves. A runner must validate against the spec digest of the version it actually executes.",
+  "dwellings_per_cell": 1,
+  "f_levels": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    1.0
+  ],
+  "f_levels_share_one_series": true,
+  "folds": {
+    "es": {
+      "bijective": true,
+      "binding": [
+        {
+          "archetype_id": "ES.ME.AB.01.Gen.ReEx.001.001",
+          "hid": "00035",
+          "presence_csv": "presence_HH_es_00035.csv",
+          "presence_sha256": "d601348642a2eb41f02a51b0a37a3dc1b0a0e70d6f9b6b0f0b042048a8fb37dd",
+          "rank": 0
+        },
+        {
+          "archetype_id": "ES.ME.AB.02.Gen.ReEx.001.001",
+          "hid": "00094",
+          "presence_csv": "presence_HH_es_00094.csv",
+          "presence_sha256": "63533d12e24951d8e178126a15fed1772a07b0afdd50fafc53bef6fc329e1648",
+          "rank": 1
+        },
+        {
+          "archetype_id": "ES.ME.AB.03.Gen.ReEx.001.001",
+          "hid": "00151",
+          "presence_csv": "presence_HH_es_00151.csv",
+          "presence_sha256": "baa3343d7db86a2a39c73fe21f3d86ae19842fe1cd73498af40626c9b1e66ce6",
+          "rank": 2
+        },
+        {
+          "archetype_id": "ES.ME.AB.04.Gen.ReEx.001.001",
+          "hid": "00202",
+          "presence_csv": "presence_HH_es_00202.csv",
+          "presence_sha256": "b2b83e72ec9225d925ea3d3620d72e1629fb70b9f89b542a220dc7b73b739ec7",
+          "rank": 3
+        },
+        {
+          "archetype_id": "ES.ME.AB.05.Gen.ReEx.001.001",
+          "hid": "00353",
+          "presence_csv": "presence_HH_es_00353.csv",
+          "presence_sha256": "b4e7fed01884fe530e57f61b13bc4cf839a678dcc06e28c37931519624120ea1",
+          "rank": 4
+        },
+        {
+          "archetype_id": "ES.ME.AB.06.Gen.ReEx.001.001",
+          "hid": "00366",
+          "presence_csv": "presence_HH_es_00366.csv",
+          "presence_sha256": "0d785eef610b2f4d1bc0284e36462a6182c3ce119b665b8d82bc4c20f627c31d",
+          "rank": 5
+        },
+        {
+          "archetype_id": "ES.ME.MFH.01.Gen.ReEx.001.001",
+          "hid": "00417",
+          "presence_csv": "presence_HH_es_00417.csv",
+          "presence_sha256": "2522f3f2dd7eb56d0c6000369e78d06896eb47ea35a2c24e563e9a237e17fd28",
+          "rank": 6
+        },
+        {
+          "archetype_id": "ES.ME.MFH.02.Gen.ReEx.001.001",
+          "hid": "00465",
+          "presence_csv": "presence_HH_es_00465.csv",
+          "presence_sha256": "2f3e1b14dc48d428ab42cf7466381d2eacaa4c91a83d4abd289182c3d9c8840b",
+          "rank": 7
+        },
+        {
+          "archetype_id": "ES.ME.MFH.03.Gen.ReEx.001.001",
+          "hid": "00476",
+          "presence_csv": "presence_HH_es_00476.csv",
+          "presence_sha256": "0d4f193ecd31fbf086fafddc593b81b43ff55e88d449a51a6bbd74ed99fd051f",
+          "rank": 8
+        },
+        {
+          "archetype_id": "ES.ME.MFH.04.Gen.ReEx.001.001",
+          "hid": "00485",
+          "presence_csv": "presence_HH_es_00485.csv",
+          "presence_sha256": "3b56fec4e549e548bf0f153c1a389e93847ef6655a71dff86e7732b359c44b1b",
+          "rank": 9
+        },
+        {
+          "archetype_id": "ES.ME.MFH.05.Gen.ReEx.001.001",
+          "hid": "00502",
+          "presence_csv": "presence_HH_es_00502.csv",
+          "presence_sha256": "8e0751179fd356ae415bd406eb9e0c6ecfdf367fa97269ea6069a86e7983037d",
+          "rank": 10
+        },
+        {
+          "archetype_id": "ES.ME.MFH.06.Gen.ReEx.001.001",
+          "hid": "00566",
+          "presence_csv": "presence_HH_es_00566.csv",
+          "presence_sha256": "131a31fbf6d150f9bd5f10557b4fddc8b84b8fc866a10f8ac7b2989d05ce0ee8",
+          "rank": 11
+        },
+        {
+          "archetype_id": "ES.ME.SFH.01.Gen.ReEx.001.001",
+          "hid": "00713",
+          "presence_csv": "presence_HH_es_00713.csv",
+          "presence_sha256": "57dfc65eadc2a56dc27daeb3d38491b217f6b594a85740587befe4dcc9ae792c",
+          "rank": 12
+        },
+        {
+          "archetype_id": "ES.ME.SFH.02.Gen.ReEx.001.001",
+          "hid": "01034",
+          "presence_csv": "presence_HH_es_01034.csv",
+          "presence_sha256": "f918e98e9dcf96d6c5eccdc41c8e03433ada9c5ba5aecf78b79921adfd2731d6",
+          "rank": 13
+        },
+        {
+          "archetype_id": "ES.ME.SFH.03.Gen.ReEx.001.001",
+          "hid": "01417",
+          "presence_csv": "presence_HH_es_01417.csv",
+          "presence_sha256": "8198bf0e9a5cbcf8bbab7ddf80aae869aaa57d66b966813b49ed9298c9d7d0f7",
+          "rank": 14
+        },
+        {
+          "archetype_id": "ES.ME.SFH.04.Gen.ReEx.001.001",
+          "hid": "01538",
+          "presence_csv": "presence_HH_es_01538.csv",
+          "presence_sha256": "eafbb2f5aaeae8cf98c44474e32d9f377de5e306d81b7702cf0065915775952b",
+          "rank": 15
+        },
+        {
+          "archetype_id": "ES.ME.SFH.05.Gen.ReEx.001.001",
+          "hid": "01639",
+          "presence_csv": "presence_HH_es_01639.csv",
+          "presence_sha256": "734cc0db53180f74052c796f3452a22c3ce0b2b73e1a5057bdf1b3a69834832f",
+          "rank": 16
+        },
+        {
+          "archetype_id": "ES.ME.SFH.06.Gen.ReEx.001.001",
+          "hid": "01675",
+          "presence_csv": "presence_HH_es_01675.csv",
+          "presence_sha256": "0a7adea7cd1c672248c45cf4aab88df7e6f11dfdfdc42a713ecab7d240d28257",
+          "rank": 17
+        },
+        {
+          "archetype_id": "ES.ME.TH.01.Gen.ReEx.001.001",
+          "hid": "01769",
+          "presence_csv": "presence_HH_es_01769.csv",
+          "presence_sha256": "925e1b4be80f4eb8b3b04f3a505b9d0e5acc02a82113556c98e8f1578a1e146e",
+          "rank": 18
+        },
+        {
+          "archetype_id": "ES.ME.TH.02.Gen.ReEx.001.001",
+          "hid": "01932",
+          "presence_csv": "presence_HH_es_01932.csv",
+          "presence_sha256": "906569de14e77c9f47175f145830b143f2f0ea0e85ad4cbd33a0fe3545c0c8e5",
+          "rank": 19
+        },
+        {
+          "archetype_id": "ES.ME.TH.03.Gen.ReEx.001.001",
+          "hid": "01981",
+          "presence_csv": "presence_HH_es_01981.csv",
+          "presence_sha256": "99adcf658543c31a2c57853fbed3b3371b58986c56741a985c41c892ffdbd7d7",
+          "rank": 20
+        },
+        {
+          "archetype_id": "ES.ME.TH.04.Gen.ReEx.001.001",
+          "hid": "02202",
+          "presence_csv": "presence_HH_es_02202.csv",
+          "presence_sha256": "89f9f6c358d4b59b865b212475c4556b8efc63c2eacdc78a0bc2715eeb789abb",
+          "rank": 21
+        },
+        {
+          "archetype_id": "ES.ME.TH.05.Gen.ReEx.001.001",
+          "hid": "02683",
+          "presence_csv": "presence_HH_es_02683.csv",
+          "presence_sha256": "c2e65cdb62867a1bd1843efcafd3af2711149ad232af008a6c9cc8dd8b0692cc",
+          "rank": 22
+        },
+        {
+          "archetype_id": "ES.ME.TH.06.Gen.ReEx.001.001",
+          "hid": "02763",
+          "presence_csv": "presence_HH_es_02763.csv",
+          "presence_sha256": "5610a95be3ec4f8a44e3bff201ad4714c628ada7b78e32ec40017306346b5d77",
+          "rank": 23
+        }
+      ],
+      "bundle": "leg5_es_independent_seed1_cal2010",
+      "bundle_rho": 0.0,
+      "bundle_rule": "independent",
+      "bundle_seed": 1,
+      "bundle_year": 2010,
+      "diary_origin_hour": 4,
+      "hid_width": 5,
+      "n_archetypes": 24,
+      "n_cells_bound": 120,
+      "n_series_shipped": 100,
+      "rotated_to_midnight": true,
+      "series_unused": 76
+    },
+    "it": {
+      "bijective": true,
+      "binding": [
+        {
+          "archetype_id": "IT.MidClim.AB.01.Gen.ReEx.001.001",
+          "hid": "000072",
+          "presence_csv": "presence_HH_it_000072.csv",
+          "presence_sha256": "e2b8fd15c78c071983bf2677c1b56ff06d84b8b11655af1444dd8bdde319dbd2",
+          "rank": 0
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.02.Gen.ReEx.001.001",
+          "hid": "000197",
+          "presence_csv": "presence_HH_it_000197.csv",
+          "presence_sha256": "c13e918b6fe534d25ade3d9f875a7b893fe72e9065b555bfa9b10837262dae33",
+          "rank": 1
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.03.Gen.ReEx.001.001",
+          "hid": "000320",
+          "presence_csv": "presence_HH_it_000320.csv",
+          "presence_sha256": "8cda075c7ec6bbb3496431744651967d699baf8d0b1ebc8a8c048666afccb741",
+          "rank": 2
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.04.Gen.ReEx.001.001",
+          "hid": "000423",
+          "presence_csv": "presence_HH_it_000423.csv",
+          "presence_sha256": "19a3d012a88ec3b4f6acbca3cb40a759273789109f8d46addf4d3b1928fb7809",
+          "rank": 3
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.05.Gen.ReEx.001.001",
+          "hid": "000733",
+          "presence_csv": "presence_HH_it_000733.csv",
+          "presence_sha256": "2a2480e77e57e880ecf8956074fe0592659e2a3d8ba72ce90026a788f64c982a",
+          "rank": 4
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.06.Gen.ReEx.001.001",
+          "hid": "000763",
+          "presence_csv": "presence_HH_it_000763.csv",
+          "presence_sha256": "6be92fb3cbfb787e521018f93646a7f31bd2c2aab35643c37aabf56c38916bf7",
+          "rank": 5
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.07.Gen.ReEx.001.001",
+          "hid": "000869",
+          "presence_csv": "presence_HH_it_000869.csv",
+          "presence_sha256": "ea950af78ba3ea027dd5dc4cb30044dbb01f9ac5fda3d0b6a53c910731c5b2d2",
+          "rank": 6
+        },
+        {
+          "archetype_id": "IT.MidClim.AB.08.Gen.ReEx.001.001",
+          "hid": "000969",
+          "presence_csv": "presence_HH_it_000969.csv",
+          "presence_sha256": "3349dad5ee7c8fd56adc7b7e1a21e3c95fd3f83cdf94eafde365af28436f0564",
+          "rank": 7
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH-AB.01-03.Gen.ReEx.001.001",
+          "hid": "000992",
+          "presence_csv": "presence_HH_it_000992.csv",
+          "presence_sha256": "54acb5dfeacac482f04a6869c3aa9a737525e3c38935712700688410962eed1a",
+          "rank": 8
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH-AB.04-05.Gen.ReEx.001.001",
+          "hid": "001010",
+          "presence_csv": "presence_HH_it_001010.csv",
+          "presence_sha256": "ee8e9e87970d7b6b0f0eb655fc3e7eb04d20af792696bb5971385099dd9d4822",
+          "rank": 9
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH-AB.06.Gen.ReEx.001.001",
+          "hid": "001044",
+          "presence_csv": "presence_HH_it_001044.csv",
+          "presence_sha256": "93f366320f2dce9ad3a4fb075e11367bbb131860b31b172a7667876d6f4d6d53",
+          "rank": 10
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH-AB.07.Gen.ReEx.001.001",
+          "hid": "001179",
+          "presence_csv": "presence_HH_it_001179.csv",
+          "presence_sha256": "4cc1026ad843b447a74e65e131ec99c07c33a771c9091559ed5f6154e4d8805d",
+          "rank": 11
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH-AB.08.Gen.ReEx.001.001",
+          "hid": "001480",
+          "presence_csv": "presence_HH_it_001480.csv",
+          "presence_sha256": "e87f73e3cc5e2e28d23fd1ae49bd96d5e1ef0d75e7cfd43d3e71d86a84c8801f",
+          "rank": 12
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.01.Gen.ReEx.001.001",
+          "hid": "002146",
+          "presence_csv": "presence_HH_it_002146.csv",
+          "presence_sha256": "2a7605a6898605e1a8eaeb0acc0587532370ce27d1bd64d99281d10ca47c743a",
+          "rank": 13
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.02.Gen.ReEx.001.001",
+          "hid": "002940",
+          "presence_csv": "presence_HH_it_002940.csv",
+          "presence_sha256": "0f7b78b0152d40b4927eb72057b7366c33493fac609333a36a0e1dc30a3d1634",
+          "rank": 14
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.03.Gen.ReEx.001.001",
+          "hid": "003190",
+          "presence_csv": "presence_HH_it_003190.csv",
+          "presence_sha256": "85a9bb2540be328171919067316ef5225186af8c1b6233fae4ded3ac901d2a32",
+          "rank": 15
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.04.Gen.ReEx.001.001",
+          "hid": "003396",
+          "presence_csv": "presence_HH_it_003396.csv",
+          "presence_sha256": "c322a8b50f4013bdffc29cce2f3ed98c57a21b99f9c39c0e599a05dd3600b15c",
+          "rank": 16
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.05.Gen.ReEx.001.001",
+          "hid": "003470",
+          "presence_csv": "presence_HH_it_003470.csv",
+          "presence_sha256": "3a6aa9e7056b64ecd1f1fc20f138b0087e65a0c15cd2feca3e2acfbd4a6ca52c",
+          "rank": 17
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.06.Gen.ReEx.001.001",
+          "hid": "003663",
+          "presence_csv": "presence_HH_it_003663.csv",
+          "presence_sha256": "bb71500936d55589f1e295c48f24215319f4a7e475273e47db9847dca95bdc58",
+          "rank": 18
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.07.Gen.ReEx.001.001",
+          "hid": "003994",
+          "presence_csv": "presence_HH_it_003994.csv",
+          "presence_sha256": "26100248111cc120b72fa54f358a8a9948b9d25ac8f71d7e609298efca691d50",
+          "rank": 19
+        },
+        {
+          "archetype_id": "IT.MidClim.MFH.08.Gen.ReEx.001.001",
+          "hid": "004094",
+          "presence_csv": "presence_HH_it_004094.csv",
+          "presence_sha256": "7059ce4b9ff73557f7abb7563dc91516cc3d7ead4e692f9e970e4eb0e7798e7a",
+          "rank": 20
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH-TH.01-03.Gen.ReEx.001.001",
+          "hid": "004376",
+          "presence_csv": "presence_HH_it_004376.csv",
+          "presence_sha256": "547c60b2abc93a5aa5a8b58ff180f34de46ce5f8bfc420f77a83587cbba0794a",
+          "rank": 21
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH-TH.04-05.Gen.ReEx.001.001",
+          "hid": "004552",
+          "presence_csv": "presence_HH_it_004552.csv",
+          "presence_sha256": "181d8fbe3d53d6235eb8e5e5d42adfbe37cde10f14e2ccb3744ea0431b56f642",
+          "rank": 22
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH-TH.06.Gen.ReEx.001.001",
+          "hid": "005531",
+          "presence_csv": "presence_HH_it_005531.csv",
+          "presence_sha256": "c8cb04dcb3d417539943934b33eda2baeb402c33619e192f4c5c54a9062940c9",
+          "rank": 23
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH-TH.07.Gen.ReEx.001.001",
+          "hid": "005695",
+          "presence_csv": "presence_HH_it_005695.csv",
+          "presence_sha256": "05757f09ef48c55c6d347471c812dab114d3464c191c7a59f346b12369ea48fc",
+          "rank": 24
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH-TH.08.Gen.ReEx.001.001",
+          "hid": "005754",
+          "presence_csv": "presence_HH_it_005754.csv",
+          "presence_sha256": "85041ffb09af9378122180b2f735045558d0aec176e530d8b8cd250e66538456",
+          "rank": 25
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.01.Gen.ReEx.001.001",
+          "hid": "005843",
+          "presence_csv": "presence_HH_it_005843.csv",
+          "presence_sha256": "5199656230b1dca904444a686453f1e166b0633330a082a1a8be1757f61cf157",
+          "rank": 26
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.02.Gen.ReEx.001.001",
+          "hid": "006280",
+          "presence_csv": "presence_HH_it_006280.csv",
+          "presence_sha256": "27eba1ce642736ca83b2a3710dbb15e74d67cac6f3d37fd39a43d27939305f57",
+          "rank": 27
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.03.Gen.ReEx.001.001",
+          "hid": "006415",
+          "presence_csv": "presence_HH_it_006415.csv",
+          "presence_sha256": "70c30a994a6b61425a0deb655e6fb57292b5dacc0f0dc6fbf14c772e4e28e30c",
+          "rank": 28
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.04.Gen.ReEx.001.001",
+          "hid": "006741",
+          "presence_csv": "presence_HH_it_006741.csv",
+          "presence_sha256": "3da7bb8f152c3b0a1176ea1de3ceead710c694709e8f3a4feebcf1d5fdee81a6",
+          "rank": 29
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.05.Gen.ReEx.001.001",
+          "hid": "007096",
+          "presence_csv": "presence_HH_it_007096.csv",
+          "presence_sha256": "6336672755db3a5669a4cfefbd3488caa457c99946228c45bfa9010a06a5fb97",
+          "rank": 30
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.06.Gen.ReEx.001.001",
+          "hid": "007324",
+          "presence_csv": "presence_HH_it_007324.csv",
+          "presence_sha256": "0b29c4e2c2b08e7efb4e5c364d34f8fc7a91ed7fb8889b5ab0a0668244458d9c",
+          "rank": 31
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.07.Gen.ReEx.001.001",
+          "hid": "007400",
+          "presence_csv": "presence_HH_it_007400.csv",
+          "presence_sha256": "dd7b462ae857c62ed02b7ee0695ac3e6e73a21f93fac887a76c2866ad264dd00",
+          "rank": 32
+        },
+        {
+          "archetype_id": "IT.MidClim.SFH.08.Gen.ReEx.001.001",
+          "hid": "007498",
+          "presence_csv": "presence_HH_it_007498.csv",
+          "presence_sha256": "297ebc9672282c0daa2628109bcb79138442bcfac7f758546dd485f61bf01adb",
+          "rank": 33
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.01.Gen.ReEx.001.001",
+          "hid": "007674",
+          "presence_csv": "presence_HH_it_007674.csv",
+          "presence_sha256": "12f21323dea0af18d235cbb4846d76395d43f76ef5c39f1c240a8b5c18bfa8a1",
+          "rank": 34
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.02.Gen.ReEx.001.001",
+          "hid": "007735",
+          "presence_csv": "presence_HH_it_007735.csv",
+          "presence_sha256": "31a9ad41d0f433734364a50c8e93ecbb54397e11e2b0b06edc4c09d07fdbe716",
+          "rank": 35
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.03.Gen.ReEx.001.001",
+          "hid": "007806",
+          "presence_csv": "presence_HH_it_007806.csv",
+          "presence_sha256": "ffa2b309d61cf745a9cbe4eda1c1758805c179628521400e32011a33208f82bb",
+          "rank": 36
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.04.Gen.ReEx.001.001",
+          "hid": "007849",
+          "presence_csv": "presence_HH_it_007849.csv",
+          "presence_sha256": "0dd9b58636e15ed480026261e5fd1ad60768526a9e13016d0d8b51fc1746deba",
+          "rank": 37
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.05.Gen.ReEx.001.001",
+          "hid": "007881",
+          "presence_csv": "presence_HH_it_007881.csv",
+          "presence_sha256": "3a4411b41f5d343513598d553cc65b8b6e231022af1beb56feac88ad8a5f6580",
+          "rank": 38
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.06.Gen.ReEx.001.001",
+          "hid": "008205",
+          "presence_csv": "presence_HH_it_008205.csv",
+          "presence_sha256": "fe58cdfb11d2ae69217569ce4908bcfe3b3b6d08851478a71f90d9231ba1320b",
+          "rank": 39
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.07.Gen.ReEx.001.001",
+          "hid": "008625",
+          "presence_csv": "presence_HH_it_008625.csv",
+          "presence_sha256": "55b3353a74c67e7fa2ca08d7a8c4f2f5a3eff6451ae555b543a5d7c4bda9b477",
+          "rank": 40
+        },
+        {
+          "archetype_id": "IT.MidClim.TH.08.Gen.ReEx.001.001",
+          "hid": "009007",
+          "presence_csv": "presence_HH_it_009007.csv",
+          "presence_sha256": "f33e4e84d31f6a3105029a19ee1ad5511c65250c2cc303903ed7a3e126767e67",
+          "rank": 41
+        }
+      ],
+      "bundle": "leg5_it_independent_seed1_cal2014",
+      "bundle_rho": 0.0,
+      "bundle_rule": "independent",
+      "bundle_seed": 1,
+      "bundle_year": 2014,
+      "diary_origin_hour": 4,
+      "hid_width": 6,
+      "n_archetypes": 42,
+      "n_cells_bound": 210,
+      "n_series_shipped": 100,
+      "rotated_to_midnight": true,
+      "series_unused": 58
+    },
+    "uk": {
+      "bijective": true,
+      "binding": [
+        {
+          "archetype_id": "GB.ENG.AB.01.ApartmentBuildings.SyAv.001.001",
+          "hid": "11020212",
+          "presence_csv": "presence_HH_uk_11020212.csv",
+          "presence_sha256": "2ba8039bf861c9e68fbb76640a230c204689d3ae919d83743e850225ff3fbd15",
+          "rank": 0
+        },
+        {
+          "archetype_id": "GB.ENG.AB.02-03.ApartmentBuildings.SyAv.002.001",
+          "hid": "11040814",
+          "presence_csv": "presence_HH_uk_11040814.csv",
+          "presence_sha256": "cab06f3537aa5e49070dc7cc2de85b14daa9d9c79dec6a8e30bf3a6db094ec66",
+          "rank": 1
+        },
+        {
+          "archetype_id": "GB.ENG.AB.03.Gen.ReEx.001.001",
+          "hid": "11061012",
+          "presence_csv": "presence_HH_uk_11061012.csv",
+          "presence_sha256": "a5d93d5a8f4c5f330208de88b52206dba00d313732b617ffa175088986c778dc",
+          "rank": 2
+        },
+        {
+          "archetype_id": "GB.ENG.AB.04-08.ApartmentBuildings.SyAv.005.001",
+          "hid": "11070714",
+          "presence_csv": "presence_HH_uk_11070714.csv",
+          "presence_sha256": "b7c33c37c7050b341d87c233cfe3e743f30a1f5764af57488b4d7de938344b67",
+          "rank": 3
+        },
+        {
+          "archetype_id": "GB.ENG.AB.04.Gen.ReEx.001.001",
+          "hid": "11120108",
+          "presence_csv": "presence_HH_uk_11120108.csv",
+          "presence_sha256": "47bd32be4b4d086bbe09ed989c8186a9d4fcb6676f30367c27b1b52e9a1e1b84",
+          "rank": 4
+        },
+        {
+          "archetype_id": "GB.ENG.AB.07.Gen.ReEx.001.001",
+          "hid": "11120120",
+          "presence_csv": "presence_HH_uk_11120120.csv",
+          "presence_sha256": "5dfb17c530374578d0437c23ed32c4e1b317f11680311bb6a1dcf469f82b6f51",
+          "rank": 5
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.01.Gen.ReEx.001.001",
+          "hid": "11140708",
+          "presence_csv": "presence_HH_uk_11140708.csv",
+          "presence_sha256": "a0eb705fd9035bed893292a359a848b8262bc52476613ff61592554bf7e299aa",
+          "rank": 6
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.02.Gen.ReEx.001.001",
+          "hid": "11151219",
+          "presence_csv": "presence_HH_uk_11151219.csv",
+          "presence_sha256": "0a89f1b7b8c2720b8bfaf76369d210f52f377489382febf7a631a64db8cc45a0",
+          "rank": 7
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.03.Gen.ReEx.001.001",
+          "hid": "11160211",
+          "presence_csv": "presence_HH_uk_11160211.csv",
+          "presence_sha256": "9c0cf4bbfba8d56e43062d5e1b3657268f5a0a7d87a6444c153f2176594762b0",
+          "rank": 8
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.04.Gen.ReEx.001.001",
+          "hid": "11160217",
+          "presence_csv": "presence_HH_uk_11160217.csv",
+          "presence_sha256": "6d7a0782c0a88c265c850ee2c0f1c379f3ad7b5af6facaa1fdf5b9534f6504de",
+          "rank": 9
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.05.Gen.ReEx.001.001",
+          "hid": "11160316",
+          "presence_csv": "presence_HH_uk_11160316.csv",
+          "presence_sha256": "7e4fb0edccef12c209174d2457be36cecae29b3897a5c2e3e4fcffa3b402bf88",
+          "rank": 10
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.06.Gen.ReEx.001.001",
+          "hid": "11190509",
+          "presence_csv": "presence_HH_uk_11190509.csv",
+          "presence_sha256": "95db2e2c9212f9bd69b973e113b37e59bb372b0567074232f909cb1999af7503",
+          "rank": 11
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.07.Gen.ReEx.001.001",
+          "hid": "11241104",
+          "presence_csv": "presence_HH_uk_11241104.csv",
+          "presence_sha256": "4d74a26c1b1f3351fef667dfef03fb962c06ef12c0c6333c57ebf00f8018f39b",
+          "rank": 12
+        },
+        {
+          "archetype_id": "GB.ENG.MFH.08.Gen.ReEx.001.001",
+          "hid": "12040801",
+          "presence_csv": "presence_HH_uk_12040801.csv",
+          "presence_sha256": "53cda2d1f4cfa23fcb028839808bcae7402d571ef263701d9b33f5c0b4ca54e5",
+          "rank": 13
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.01.Detached.SyAv.001.001",
+          "hid": "12070706",
+          "presence_csv": "presence_HH_uk_12070706.csv",
+          "presence_sha256": "f132e630bfe84de255f401ab105ef59b216db157fcdcaa6db469b77a70ac815b",
+          "rank": 14
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.01.Gen.ReEx.001.001",
+          "hid": "12210716",
+          "presence_csv": "presence_HH_uk_12210716.csv",
+          "presence_sha256": "16a2c59d083c0942150df2216e563b85e2354a631900413974a03de8ec263f00",
+          "rank": 15
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.02-03.Detached.SyAv.002.001",
+          "hid": "12260106",
+          "presence_csv": "presence_HH_uk_12260106.csv",
+          "presence_sha256": "2c4dda239c30d33376a38255312b2815a6ba3fb61ff1211351c0dc4e8de52778",
+          "rank": 16
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.02.Gen.ReEx.001.001",
+          "hid": "12290907",
+          "presence_csv": "presence_HH_uk_12290907.csv",
+          "presence_sha256": "7d257109dda74f66399db03c7a3b57c329bf5e037c722897f619edf66637c749",
+          "rank": 17
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.03.Gen.ReEx.001.001",
+          "hid": "12310316",
+          "presence_csv": "presence_HH_uk_12310316.csv",
+          "presence_sha256": "caf1bf3d93cbb847554d4b04be01c2f19a710a14e4bbba7ca2782225cfb081ab",
+          "rank": 18
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.04-08.Detached.SyAv.005.001",
+          "hid": "13050118",
+          "presence_csv": "presence_HH_uk_13050118.csv",
+          "presence_sha256": "5730a3e77fc74f321d01557c60b247f97da8433c48fe881b52def3f09f7ae013",
+          "rank": 19
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.04.Gen.ReEx.001.001",
+          "hid": "13120511",
+          "presence_csv": "presence_HH_uk_13120511.csv",
+          "presence_sha256": "d21f6ba56b3b56172ee1f7235f3782c109c742a562afef006eb0eb50b8fd61e1",
+          "rank": 20
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.05.Gen.ReEx.001.001",
+          "hid": "13150916",
+          "presence_csv": "presence_HH_uk_13150916.csv",
+          "presence_sha256": "de93def44ab4d300f0101b88a77d79a7b9e659ffd0f5ac2aa0967d8a160a30d1",
+          "rank": 21
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.06.Gen.ReEx.001.001",
+          "hid": "13220917",
+          "presence_csv": "presence_HH_uk_13220917.csv",
+          "presence_sha256": "277d15cae274dd53213519e59e32bea72319e847b5ddb5eae4940730ebcd0e60",
+          "rank": 22
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.07.Gen.ReEx.001.001",
+          "hid": "13250802",
+          "presence_csv": "presence_HH_uk_13250802.csv",
+          "presence_sha256": "bed84b07e3d4928cb31d4185b7b3efe7796b22737ecad75c2b01fed6b8d59234",
+          "rank": 23
+        },
+        {
+          "archetype_id": "GB.ENG.SFH.08.Gen.ReEx.001.001",
+          "hid": "14151217",
+          "presence_csv": "presence_HH_uk_14151217.csv",
+          "presence_sha256": "72c38eb3d2bf4925d937b3e40539e04abd30878ed251bc7f840217b0d223aa6f",
+          "rank": 24
+        },
+        {
+          "archetype_id": "GB.ENG.TH.01.Gen.ReEx.001.001",
+          "hid": "14190101",
+          "presence_csv": "presence_HH_uk_14190101.csv",
+          "presence_sha256": "a13a40817d0a6c1dd9dab4f9ca5ea9bd2c5b2fd9b8df253c1b690ae4f85bb057",
+          "rank": 25
+        },
+        {
+          "archetype_id": "GB.ENG.TH.01.Terraced.SyAv.001.001",
+          "hid": "14201016",
+          "presence_csv": "presence_HH_uk_14201016.csv",
+          "presence_sha256": "70563b6ca4565b52237e2f2c3a77c9133070a52726d4f48f2353b18b9208ff00",
+          "rank": 26
+        },
+        {
+          "archetype_id": "GB.ENG.TH.02-03.Terraced.SyAv.002.001",
+          "hid": "14220916",
+          "presence_csv": "presence_HH_uk_14220916.csv",
+          "presence_sha256": "adc25ff839100bb4de2dba5ca0605ae41e1d6ae25d55516e3e449117d295116c",
+          "rank": 27
+        },
+        {
+          "archetype_id": "GB.ENG.TH.02.Gen.ReEx.001.001",
+          "hid": "15010901",
+          "presence_csv": "presence_HH_uk_15010901.csv",
+          "presence_sha256": "9a0584e3f7422592fbb423e4b4879271cd440b2254094998e292f2f006e25b63",
+          "rank": 28
+        },
+        {
+          "archetype_id": "GB.ENG.TH.03.Gen.ReEx.001.001",
+          "hid": "15031116",
+          "presence_csv": "presence_HH_uk_15031116.csv",
+          "presence_sha256": "4aac6b49963ca61d1209e0965dba5c73f1565253fda99c2fd810061dc8e3e1ad",
+          "rank": 29
+        },
+        {
+          "archetype_id": "GB.ENG.TH.04-08.Terraced.SyAv.005.001",
+          "hid": "15090206",
+          "presence_csv": "presence_HH_uk_15090206.csv",
+          "presence_sha256": "d36353919adf57e61c63438c94dc86bd5b42383a10f33c135288e68427e58420",
+          "rank": 30
+        },
+        {
+          "archetype_id": "GB.ENG.TH.04.Gen.ReEx.001.001",
+          "hid": "15090210",
+          "presence_csv": "presence_HH_uk_15090210.csv",
+          "presence_sha256": "698148dc0867cdde92a8d6b3d2a1a69214335ce783f51d6c9dbca99e5a0fd517",
+          "rank": 31
+        },
+        {
+          "archetype_id": "GB.ENG.TH.05.Gen.ReEx.001.001",
+          "hid": "15120505",
+          "presence_csv": "presence_HH_uk_15120505.csv",
+          "presence_sha256": "51403cd6c40abad9a2c6ef6b3456740ccca597540a370bff8c7c61594efd5e61",
+          "rank": 32
+        },
+        {
+          "archetype_id": "GB.ENG.TH.06.Gen.ReEx.001.001",
+          "hid": "15150920",
+          "presence_csv": "presence_HH_uk_15150920.csv",
+          "presence_sha256": "55a9ab0f35ca12585001e709087c15af4f7495695572d9bac476afca961aaded",
+          "rank": 33
+        },
+        {
+          "archetype_id": "GB.ENG.TH.07.Gen.ReEx.001.001",
+          "hid": "15190502",
+          "presence_csv": "presence_HH_uk_15190502.csv",
+          "presence_sha256": "b16cdc1269c639c4e1f6d4c38da862ed6fdcdf28fe3400e276f279a570517953",
+          "rank": 34
+        },
+        {
+          "archetype_id": "GB.ENG.TH.08.Gen.ReEx.001.001",
+          "hid": "15210418",
+          "presence_csv": "presence_HH_uk_15210418.csv",
+          "presence_sha256": "7d7908283d680b3e666fbdc8d2e7b966af6d4dae0ed4d1a795a717bd894e2918",
+          "rank": 35
+        }
+      ],
+      "bundle": "leg5_uk_independent_seed1_cal2014",
+      "bundle_rho": 0.0,
+      "bundle_rule": "independent",
+      "bundle_seed": 1,
+      "bundle_year": 2014,
+      "diary_origin_hour": 4,
+      "hid_width": 8,
+      "n_archetypes": 36,
+      "n_cells_bound": 180,
+      "n_series_shipped": 100,
+      "rotated_to_midnight": true,
+      "series_unused": 64
+    }
+  },
+  "n_cells_bound_total": 510,
+  "rule_statement": "Within each survey_fold, sort the spec's distinct archetype_id values ascending (Python str ordering, i.e. byte/codepoint order) and sort the bundle's household hids ascending (fixed-width zero-padded strings, so this equals numeric order). Archetype at rank i is driven by the household at rank i. All five sensitivity_f levels of one archetype are driven by that same single series. One dwelling per cell.",
+  "ruled_year_per_fold": {
+    "es": 2010,
+    "it": 2014,
+    "uk": 2014
+  },
+  "ruling": "D-S10-8, ruled 2026-08-27",
+  "semantics_warning": "The binding carries NO occupant semantics. A spec cell holds no occupant attribute, so this is an arbitrary-but-fixed pairing, never a representative or stratum-matched one. It must never be described as matching households to archetypes.",
+  "sort_order_declared": "python_str_ascending_on_both_sides",
+  "spec": {
+    "n_cells": 510,
+    "path": "eu_campaign_cell_spec_v1.1.json",
+    "sha256": "16d3fbd62a9f79265c08c5746bbc70f5130cd30cb673c1a68c74755c79aa65f6"
+  },
+  "supersedes": {
+    "path": "eu_cell_presence_binding_v1.json",
+    "reason": "re-emitted against eu_campaign_cell_spec_v1.1.json (the D-S10-7 uk weather repin). The superseded file is left byte-identical on disk; it is not edited.",
+    "retained": true,
+    "sha256": "333ed4df3bdb7a7e497cac8aff3b83faa42bdd4ccff915fcc7102e3f335ad199"
+  }
+}

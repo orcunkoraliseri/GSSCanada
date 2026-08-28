@@ -1,0 +1,854 @@
+{
+  "addendum_to": "manifest.json",
+  "addendum_to_sha256": "03bad64c493795dd3b8025b19d12344daf91e47981fb635f56c98168dccbf735",
+  "artefact": "MVP 9.5 presence-series record -- ADDENDUM to manifest.json",
+  "chaining_rule": "independent",
+  "diary_origin_hour": 4,
+  "diary_source_id": "INE_EET_2009_2010",
+  "dst_applied": false,
+  "end_timestamp": "2010-12-31T23:00:00",
+  "epw_location_line": "LOCATION,Madrid,Madrid,ESP,ERA5,000000,40.50,-3.50,1.0,609.0",
+  "field_provenance": {
+    "assigned_by_convention": [
+      "diary_source_id",
+      "timezone"
+    ],
+    "derived_from_artefacts": [
+      "schedule_sha256",
+      "held_out_country",
+      "n_hours",
+      "year",
+      "start_timestamp",
+      "end_timestamp",
+      "utc_offset_hours",
+      "chaining_rule",
+      "rho",
+      "random_seed",
+      "timestep_min",
+      "diary_origin_hour",
+      "rotated_to_midnight"
+    ],
+    "why_the_split_is_recorded": "A reader cannot otherwise tell which of these fields carries evidence. timezone in particular is an IANA label placed on the EPW's measured offset, not itself a measurement."
+  },
+  "fold": "es",
+  "held_out_country": "es",
+  "held_out_country_basis": "held_out_country IS the fold under LOCO. tools/4thJ_step4_shards.py:489 and tools/4thJ_step4_diagnostics.py:538. Load-bearing: MVP 9.5 makes the adapter reject a series naming the wrong fold; G8.16 scored on it.",
+  "interpolate_to_timestep": "No",
+  "is_additive": true,
+  "local_time_basis": "Local standard time, no daylight saving. Index 0 is 00:00 local on 1 January of the stated year. The series were generated on the diary origin hour 4 and then ROTATED to midnight (rotated_to_midnight=True), which is the clock EnergyPlus Schedule:File is read on. These two facts must be read together -- either alone implies a four-hour shift that no length check can detect (FINDING 141, D-S9-3).",
+  "n_hours": 8760,
+  "n_series": 100,
+  "note": "The bundle is NOT re-emitted by this file. No series hash moves. Every field below is either derived from the artefacts or marked assigned in field_provenance.",
+  "random_seed": 1,
+  "rho": 0.0,
+  "rotated_to_midnight": true,
+  "ruling": "D-S10-7/8/9 directive 2, ruled 2026-08-27",
+  "series": [
+    {
+      "hid": "02202",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_02202_Presence",
+      "schedule_path": "presence_HH_es_02202.csv",
+      "schedule_sha256": "89f9f6c358d4b59b865b212475c4556b8efc63c2eacdc78a0bc2715eeb789abb"
+    },
+    {
+      "hid": "09326",
+      "n_members": 6,
+      "n_values": 8760,
+      "schedule_id": "HH_es_09326_Presence",
+      "schedule_path": "presence_HH_es_09326.csv",
+      "schedule_sha256": "20a7de912e0e67563015aac84ba4a3949a78bbf5651d3b78414a323976177d65"
+    },
+    {
+      "hid": "01034",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01034_Presence",
+      "schedule_path": "presence_HH_es_01034.csv",
+      "schedule_sha256": "f918e98e9dcf96d6c5eccdc41c8e03433ada9c5ba5aecf78b79921adfd2731d6"
+    },
+    {
+      "hid": "04180",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04180_Presence",
+      "schedule_path": "presence_HH_es_04180.csv",
+      "schedule_sha256": "b56e7ddfad8c607a6e417d10a33cfbd63ac4a28829e5f7d4a3bfdd01b6b354df"
+    },
+    {
+      "hid": "01932",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01932_Presence",
+      "schedule_path": "presence_HH_es_01932.csv",
+      "schedule_sha256": "906569de14e77c9f47175f145830b143f2f0ea0e85ad4cbd33a0fe3545c0c8e5"
+    },
+    {
+      "hid": "08118",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08118_Presence",
+      "schedule_path": "presence_HH_es_08118.csv",
+      "schedule_sha256": "57d68c742217e40cd77d3ebed8bbb7f932d3e6817a8490ee0d92f56c00db24a0"
+    },
+    {
+      "hid": "07365",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07365_Presence",
+      "schedule_path": "presence_HH_es_07365.csv",
+      "schedule_sha256": "f28997315f46c7881b68eab1078e2e3147b0c7cebe2d086fefbc2e7f09fadbae"
+    },
+    {
+      "hid": "07738",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07738_Presence",
+      "schedule_path": "presence_HH_es_07738.csv",
+      "schedule_sha256": "d494b0849c4b51a933dae469d87ae941aa777b4c202687b694de9432f6d9fee0"
+    },
+    {
+      "hid": "06220",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06220_Presence",
+      "schedule_path": "presence_HH_es_06220.csv",
+      "schedule_sha256": "9a1fbd14c2f28053bfd0edb44d786987966ceb07d9c4e02bea36dfaf97606df2"
+    },
+    {
+      "hid": "03440",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03440_Presence",
+      "schedule_path": "presence_HH_es_03440.csv",
+      "schedule_sha256": "690194b60bdedb060c1867169caf9b85d2f7393e0a5af691fa2d18635801b566"
+    },
+    {
+      "hid": "01538",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01538_Presence",
+      "schedule_path": "presence_HH_es_01538.csv",
+      "schedule_sha256": "eafbb2f5aaeae8cf98c44474e32d9f377de5e306d81b7702cf0065915775952b"
+    },
+    {
+      "hid": "07994",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07994_Presence",
+      "schedule_path": "presence_HH_es_07994.csv",
+      "schedule_sha256": "2c57fdcf561800d5988a56126de357057a5bfe0c015001c5a478f7d5dfdf6315"
+    },
+    {
+      "hid": "00465",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00465_Presence",
+      "schedule_path": "presence_HH_es_00465.csv",
+      "schedule_sha256": "2f3e1b14dc48d428ab42cf7466381d2eacaa4c91a83d4abd289182c3d9c8840b"
+    },
+    {
+      "hid": "06387",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06387_Presence",
+      "schedule_path": "presence_HH_es_06387.csv",
+      "schedule_sha256": "52f3cf834b2e29daeea9358719f34e03675cfec1cb2eda5f9538619e53b77cfc"
+    },
+    {
+      "hid": "07091",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07091_Presence",
+      "schedule_path": "presence_HH_es_07091.csv",
+      "schedule_sha256": "130d20feb8dfdd5451fc0878bac25a4b7bec90ffa76744241beef43d36e19c62"
+    },
+    {
+      "hid": "00035",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00035_Presence",
+      "schedule_path": "presence_HH_es_00035.csv",
+      "schedule_sha256": "d601348642a2eb41f02a51b0a37a3dc1b0a0e70d6f9b6b0f0b042048a8fb37dd"
+    },
+    {
+      "hid": "07298",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07298_Presence",
+      "schedule_path": "presence_HH_es_07298.csv",
+      "schedule_sha256": "8eafb0e47e66ffe7b20eaacd3f984425cb90c3260c4153b3e209ea3b728c9ba7"
+    },
+    {
+      "hid": "04364",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04364_Presence",
+      "schedule_path": "presence_HH_es_04364.csv",
+      "schedule_sha256": "06a81f611d697a1224ede4a1e77f1eca6fbfc7b78db0ec8bbaf9a86746d38705"
+    },
+    {
+      "hid": "03749",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03749_Presence",
+      "schedule_path": "presence_HH_es_03749.csv",
+      "schedule_sha256": "b1c27f703df9b29377b1b008f00e0ebd40f32a91d4f7b0868c24d10ca013a685"
+    },
+    {
+      "hid": "01675",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01675_Presence",
+      "schedule_path": "presence_HH_es_01675.csv",
+      "schedule_sha256": "0a7adea7cd1c672248c45cf4aab88df7e6f11dfdfdc42a713ecab7d240d28257"
+    },
+    {
+      "hid": "05201",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_05201_Presence",
+      "schedule_path": "presence_HH_es_05201.csv",
+      "schedule_sha256": "2d46bb0aa3086346dafaaa4aaccb0cddf1e93ab5e0e6cba83b4074d26fac200d"
+    },
+    {
+      "hid": "00502",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00502_Presence",
+      "schedule_path": "presence_HH_es_00502.csv",
+      "schedule_sha256": "8e0751179fd356ae415bd406eb9e0c6ecfdf367fa97269ea6069a86e7983037d"
+    },
+    {
+      "hid": "00366",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00366_Presence",
+      "schedule_path": "presence_HH_es_00366.csv",
+      "schedule_sha256": "0d785eef610b2f4d1bc0284e36462a6182c3ce119b665b8d82bc4c20f627c31d"
+    },
+    {
+      "hid": "00417",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00417_Presence",
+      "schedule_path": "presence_HH_es_00417.csv",
+      "schedule_sha256": "2522f3f2dd7eb56d0c6000369e78d06896eb47ea35a2c24e563e9a237e17fd28"
+    },
+    {
+      "hid": "08871",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08871_Presence",
+      "schedule_path": "presence_HH_es_08871.csv",
+      "schedule_sha256": "da251a73d5b5dd0c95b10b4611a1905b7a35dc2b631b7f9a2007ff2227fe1f0c"
+    },
+    {
+      "hid": "00151",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00151_Presence",
+      "schedule_path": "presence_HH_es_00151.csv",
+      "schedule_sha256": "baa3343d7db86a2a39c73fe21f3d86ae19842fe1cd73498af40626c9b1e66ce6"
+    },
+    {
+      "hid": "06246",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06246_Presence",
+      "schedule_path": "presence_HH_es_06246.csv",
+      "schedule_sha256": "ce6f217adf7873e563e0fd00ce8e0e89a0afa8cf81ff63599a45b149376ae194"
+    },
+    {
+      "hid": "03549",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03549_Presence",
+      "schedule_path": "presence_HH_es_03549.csv",
+      "schedule_sha256": "d842ac9f63fe382bf95181b0671ec0ea9fb8f1f1b72256ac7319c3ec3b17a900"
+    },
+    {
+      "hid": "06916",
+      "n_members": 5,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06916_Presence",
+      "schedule_path": "presence_HH_es_06916.csv",
+      "schedule_sha256": "bc25684172184c1e011459a58e457397f34ce505c64db065f424bac2ba3f68be"
+    },
+    {
+      "hid": "00476",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00476_Presence",
+      "schedule_path": "presence_HH_es_00476.csv",
+      "schedule_sha256": "0d4f193ecd31fbf086fafddc593b81b43ff55e88d449a51a6bbd74ed99fd051f"
+    },
+    {
+      "hid": "08645",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08645_Presence",
+      "schedule_path": "presence_HH_es_08645.csv",
+      "schedule_sha256": "df2817489ada6c676e3a680b5cf5cde560a17f062dd921423555be661756c8c5"
+    },
+    {
+      "hid": "03633",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03633_Presence",
+      "schedule_path": "presence_HH_es_03633.csv",
+      "schedule_sha256": "f68b17378153b41e64e7b17ec7709dda2f4bc466bf4618638d52038de9cdad54"
+    },
+    {
+      "hid": "07175",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07175_Presence",
+      "schedule_path": "presence_HH_es_07175.csv",
+      "schedule_sha256": "af313dd9146c112925183acd799fcd2374b824665d4109af274fb867c64f9da2"
+    },
+    {
+      "hid": "08124",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08124_Presence",
+      "schedule_path": "presence_HH_es_08124.csv",
+      "schedule_sha256": "800054324ec98fdcec894af698fb42276927f3354f4bea3e6903b7226d5d60ed"
+    },
+    {
+      "hid": "09059",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_09059_Presence",
+      "schedule_path": "presence_HH_es_09059.csv",
+      "schedule_sha256": "8b65f1cf43072f1a8fb94858a00ee894779906a23fd9fe487e87fa5aae7f40d0"
+    },
+    {
+      "hid": "03819",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03819_Presence",
+      "schedule_path": "presence_HH_es_03819.csv",
+      "schedule_sha256": "236b5f420ebc7c63a26cab9724dbbb744765b92c7a82fdc4dfebf7a79db3891e"
+    },
+    {
+      "hid": "05664",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_05664_Presence",
+      "schedule_path": "presence_HH_es_05664.csv",
+      "schedule_sha256": "7ce423dbb3fce9c18819a3e14d1f7c35524798f3737767c3259216503e6382ef"
+    },
+    {
+      "hid": "03783",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03783_Presence",
+      "schedule_path": "presence_HH_es_03783.csv",
+      "schedule_sha256": "bb23c7dd337ba92459a6b17aa37673e65056775fb7754c5c687c6004a1c3435b"
+    },
+    {
+      "hid": "03585",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03585_Presence",
+      "schedule_path": "presence_HH_es_03585.csv",
+      "schedule_sha256": "d85224d57e4cbe147664712590ffd15be9e4d4b66ce323592ba9aefef03945b1"
+    },
+    {
+      "hid": "07531",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07531_Presence",
+      "schedule_path": "presence_HH_es_07531.csv",
+      "schedule_sha256": "42b26c8aaa14b8ac4408b64340bfdc66b736dc6583ec966a7f8bd38f6c8c2f94"
+    },
+    {
+      "hid": "04748",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04748_Presence",
+      "schedule_path": "presence_HH_es_04748.csv",
+      "schedule_sha256": "79e83abc10f69cf6e7889016df4616befdee40500be7c2a755ec65869a07c96a"
+    },
+    {
+      "hid": "00353",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00353_Presence",
+      "schedule_path": "presence_HH_es_00353.csv",
+      "schedule_sha256": "b4e7fed01884fe530e57f61b13bc4cf839a678dcc06e28c37931519624120ea1"
+    },
+    {
+      "hid": "06819",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06819_Presence",
+      "schedule_path": "presence_HH_es_06819.csv",
+      "schedule_sha256": "1f81a7bf38126d51c75054023f63b29a10c2be3062bb24fa3d1b9d9c88ac22f1"
+    },
+    {
+      "hid": "09117",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_09117_Presence",
+      "schedule_path": "presence_HH_es_09117.csv",
+      "schedule_sha256": "9fb6202139f92a5d35dcbadeb97d50029406ae7668cd07f0147ce7b466736f75"
+    },
+    {
+      "hid": "01639",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01639_Presence",
+      "schedule_path": "presence_HH_es_01639.csv",
+      "schedule_sha256": "734cc0db53180f74052c796f3452a22c3ce0b2b73e1a5057bdf1b3a69834832f"
+    },
+    {
+      "hid": "03046",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03046_Presence",
+      "schedule_path": "presence_HH_es_03046.csv",
+      "schedule_sha256": "56461c735b718307f23ee96327c266521623c5a9d231f912a8aff963a04d4e09"
+    },
+    {
+      "hid": "04857",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04857_Presence",
+      "schedule_path": "presence_HH_es_04857.csv",
+      "schedule_sha256": "830c75847705faab6281fdc557432c432fee5d9d455e36c1503fc497a5614bbc"
+    },
+    {
+      "hid": "01981",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01981_Presence",
+      "schedule_path": "presence_HH_es_01981.csv",
+      "schedule_sha256": "99adcf658543c31a2c57853fbed3b3371b58986c56741a985c41c892ffdbd7d7"
+    },
+    {
+      "hid": "05451",
+      "n_members": 6,
+      "n_values": 8760,
+      "schedule_id": "HH_es_05451_Presence",
+      "schedule_path": "presence_HH_es_05451.csv",
+      "schedule_sha256": "432b1b940dbd6da00324ee040013d57dbb93d30f7ed5f08d8221a0dadafd3d84"
+    },
+    {
+      "hid": "08206",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08206_Presence",
+      "schedule_path": "presence_HH_es_08206.csv",
+      "schedule_sha256": "630c3a69562167c83fe46048f71a15886f7aca532801f2bb5eb646f01d67f7e7"
+    },
+    {
+      "hid": "08319",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08319_Presence",
+      "schedule_path": "presence_HH_es_08319.csv",
+      "schedule_sha256": "52d8fa12f5aa48f0499ecf46f768cd5fc3a863532371cdfc5c5a53f076074265"
+    },
+    {
+      "hid": "03111",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03111_Presence",
+      "schedule_path": "presence_HH_es_03111.csv",
+      "schedule_sha256": "d2d8d0e2e06867a99be144f5cd2211fc978c9d935335fdb32b2d2a9bae87b2dc"
+    },
+    {
+      "hid": "04971",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04971_Presence",
+      "schedule_path": "presence_HH_es_04971.csv",
+      "schedule_sha256": "85aa3eb88e52093049658b1471daf0cd5357d29be162a5c078b749a88c186b58"
+    },
+    {
+      "hid": "04656",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04656_Presence",
+      "schedule_path": "presence_HH_es_04656.csv",
+      "schedule_sha256": "1368ca21417f89d086e24d282eb12ecc32cd4621dd13573ec87f7ee6473bf5cf"
+    },
+    {
+      "hid": "08182",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08182_Presence",
+      "schedule_path": "presence_HH_es_08182.csv",
+      "schedule_sha256": "7e1dff6ad9ac16435748316d0fddcbc274b3b9141d4f50a4b5550ccfb4a1dba5"
+    },
+    {
+      "hid": "08279",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08279_Presence",
+      "schedule_path": "presence_HH_es_08279.csv",
+      "schedule_sha256": "40738fa8b752f3477d952ff857ca55f7846ccd7cae451b18a0718b383ad9cf00"
+    },
+    {
+      "hid": "06445",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06445_Presence",
+      "schedule_path": "presence_HH_es_06445.csv",
+      "schedule_sha256": "132a1fd5d371c426f87dabcb0d5ac829da654c6eeab366075db7fbd47314fb77"
+    },
+    {
+      "hid": "00566",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00566_Presence",
+      "schedule_path": "presence_HH_es_00566.csv",
+      "schedule_sha256": "131a31fbf6d150f9bd5f10557b4fddc8b84b8fc866a10f8ac7b2989d05ce0ee8"
+    },
+    {
+      "hid": "07869",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07869_Presence",
+      "schedule_path": "presence_HH_es_07869.csv",
+      "schedule_sha256": "5f29d7c16df984ff258ccd9e47594ec399fbd66ee4a4f6c7feb6af3f09174730"
+    },
+    {
+      "hid": "03978",
+      "n_members": 5,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03978_Presence",
+      "schedule_path": "presence_HH_es_03978.csv",
+      "schedule_sha256": "46623bc0b8983a774599e0a2ea70203fa1487ff237de869742c5fa08dab2c9a2"
+    },
+    {
+      "hid": "06624",
+      "n_members": 4,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06624_Presence",
+      "schedule_path": "presence_HH_es_06624.csv",
+      "schedule_sha256": "f9ac83b6ebf2dfd1b79c97f82c1989c9b16b07bdf50bcf3aff7c2b638af5b3b9"
+    },
+    {
+      "hid": "06789",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06789_Presence",
+      "schedule_path": "presence_HH_es_06789.csv",
+      "schedule_sha256": "2f0e5060baaff6a9f948b825329ae24ce866eac6e25aa9d78cb6fbc30db475ae"
+    },
+    {
+      "hid": "02835",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_02835_Presence",
+      "schedule_path": "presence_HH_es_02835.csv",
+      "schedule_sha256": "8a1eb77038329f79cdbc05bb9bf9d523b4fa96d683d3e43b4047fb486a1793ed"
+    },
+    {
+      "hid": "06015",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06015_Presence",
+      "schedule_path": "presence_HH_es_06015.csv",
+      "schedule_sha256": "229c934bb2acb2d9652de2d25aa21f7351daef6201709ae093971cce048f13a1"
+    },
+    {
+      "hid": "08992",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08992_Presence",
+      "schedule_path": "presence_HH_es_08992.csv",
+      "schedule_sha256": "2229547b1403391142dd812c1f57ef954aceaa3b47d7d83fee9d50b6648a3aae"
+    },
+    {
+      "hid": "06140",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06140_Presence",
+      "schedule_path": "presence_HH_es_06140.csv",
+      "schedule_sha256": "d50d6b672decb659dc3c60a027d661fc1cd679ac311580e3e5d3f360e13018a2"
+    },
+    {
+      "hid": "01417",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01417_Presence",
+      "schedule_path": "presence_HH_es_01417.csv",
+      "schedule_sha256": "8198bf0e9a5cbcf8bbab7ddf80aae869aaa57d66b966813b49ed9298c9d7d0f7"
+    },
+    {
+      "hid": "07192",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07192_Presence",
+      "schedule_path": "presence_HH_es_07192.csv",
+      "schedule_sha256": "446078043faee238a89ac145624ad2cc3254d0b71f55ac3162819c35d05a6340"
+    },
+    {
+      "hid": "08331",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08331_Presence",
+      "schedule_path": "presence_HH_es_08331.csv",
+      "schedule_sha256": "2a7ecc5b3d18589419cd26efd436056c85a00218aed93ea90c82a1519a8e1cf9"
+    },
+    {
+      "hid": "01769",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_01769_Presence",
+      "schedule_path": "presence_HH_es_01769.csv",
+      "schedule_sha256": "925e1b4be80f4eb8b3b04f3a505b9d0e5acc02a82113556c98e8f1578a1e146e"
+    },
+    {
+      "hid": "02683",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_02683_Presence",
+      "schedule_path": "presence_HH_es_02683.csv",
+      "schedule_sha256": "c2e65cdb62867a1bd1843efcafd3af2711149ad232af008a6c9cc8dd8b0692cc"
+    },
+    {
+      "hid": "08536",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08536_Presence",
+      "schedule_path": "presence_HH_es_08536.csv",
+      "schedule_sha256": "60fb371ddb2a0dc212abd8e4627674c71403fe8a781c71a8a0db7d030a0b0326"
+    },
+    {
+      "hid": "06444",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06444_Presence",
+      "schedule_path": "presence_HH_es_06444.csv",
+      "schedule_sha256": "270465b88cffa8819d898637aee88816cc41714aacfc82dd02b7f43b7c476a3e"
+    },
+    {
+      "hid": "06071",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06071_Presence",
+      "schedule_path": "presence_HH_es_06071.csv",
+      "schedule_sha256": "a18b6db56d189085f7c2fa1a63cce2f96394d1aa320c23c633c01c0d72bcad96"
+    },
+    {
+      "hid": "08024",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08024_Presence",
+      "schedule_path": "presence_HH_es_08024.csv",
+      "schedule_sha256": "c1d7da5e610e87e27c074f209e244f7a0935977619e70ba856678cde070bab44"
+    },
+    {
+      "hid": "00485",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00485_Presence",
+      "schedule_path": "presence_HH_es_00485.csv",
+      "schedule_sha256": "3b56fec4e549e548bf0f153c1a389e93847ef6655a71dff86e7732b359c44b1b"
+    },
+    {
+      "hid": "07690",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07690_Presence",
+      "schedule_path": "presence_HH_es_07690.csv",
+      "schedule_sha256": "029ab1f3a8df9e81c54b725baa772ba3a28241043b7663533a40ecc55c2c59b7"
+    },
+    {
+      "hid": "00713",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00713_Presence",
+      "schedule_path": "presence_HH_es_00713.csv",
+      "schedule_sha256": "57dfc65eadc2a56dc27daeb3d38491b217f6b594a85740587befe4dcc9ae792c"
+    },
+    {
+      "hid": "05055",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_05055_Presence",
+      "schedule_path": "presence_HH_es_05055.csv",
+      "schedule_sha256": "bdd4ca2e6e55aa62f809bdcd7ad590d05854cb9d48cf34530528f23702dc851d"
+    },
+    {
+      "hid": "09473",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_09473_Presence",
+      "schedule_path": "presence_HH_es_09473.csv",
+      "schedule_sha256": "71077afb630a305d787cb39b2c3278ee8865469db81960aa0fefab4048910443"
+    },
+    {
+      "hid": "06449",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06449_Presence",
+      "schedule_path": "presence_HH_es_06449.csv",
+      "schedule_sha256": "40575fdce96ea393c837f4d75cf83cfbfe1450ab82af9014dad8041c71001131"
+    },
+    {
+      "hid": "02792",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_02792_Presence",
+      "schedule_path": "presence_HH_es_02792.csv",
+      "schedule_sha256": "c3ca9664daec3ce7c8345c78343031f4993e07eb05eb5ef04024dd1ce9ae4882"
+    },
+    {
+      "hid": "02763",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_02763_Presence",
+      "schedule_path": "presence_HH_es_02763.csv",
+      "schedule_sha256": "5610a95be3ec4f8a44e3bff201ad4714c628ada7b78e32ec40017306346b5d77"
+    },
+    {
+      "hid": "08229",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08229_Presence",
+      "schedule_path": "presence_HH_es_08229.csv",
+      "schedule_sha256": "d2a9945bf827a7a2c7c7e413316608ece3adc8110fbfe4a8f309664bd6d2b57a"
+    },
+    {
+      "hid": "03719",
+      "n_members": 4,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03719_Presence",
+      "schedule_path": "presence_HH_es_03719.csv",
+      "schedule_sha256": "018b8f604612a308227c6e661539d045ecad9778f4444d3e880626b5a18bc8d1"
+    },
+    {
+      "hid": "00202",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00202_Presence",
+      "schedule_path": "presence_HH_es_00202.csv",
+      "schedule_sha256": "b2b83e72ec9225d925ea3d3620d72e1629fb70b9f89b542a220dc7b73b739ec7"
+    },
+    {
+      "hid": "03269",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03269_Presence",
+      "schedule_path": "presence_HH_es_03269.csv",
+      "schedule_sha256": "81d0a11e46aa87fab483f0d96ad9aeec50876e434e519e325252f162677f47c3"
+    },
+    {
+      "hid": "08842",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08842_Presence",
+      "schedule_path": "presence_HH_es_08842.csv",
+      "schedule_sha256": "392662384e342da43eae8dc2c398196f068e22c8c1799dfbfa1d528cd09c7bc4"
+    },
+    {
+      "hid": "08984",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08984_Presence",
+      "schedule_path": "presence_HH_es_08984.csv",
+      "schedule_sha256": "42cc1eb80eb359a3ce9d2142cd9578f0d8ed7e89baf255557371f68481fc2190"
+    },
+    {
+      "hid": "03804",
+      "n_members": 4,
+      "n_values": 8760,
+      "schedule_id": "HH_es_03804_Presence",
+      "schedule_path": "presence_HH_es_03804.csv",
+      "schedule_sha256": "84f74001369a041daa2d306f35fb6ab61bbfb1836e385bbc56de4a7fbb626b7d"
+    },
+    {
+      "hid": "06627",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06627_Presence",
+      "schedule_path": "presence_HH_es_06627.csv",
+      "schedule_sha256": "083347dc3339de6c7ee6a929f0ac195e82b11bad199060153b6e88522150f9e4"
+    },
+    {
+      "hid": "08418",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08418_Presence",
+      "schedule_path": "presence_HH_es_08418.csv",
+      "schedule_sha256": "59972a90f7d5f056e9dc055cc92983ec5b2310a1b8123826ed3deccddd550e22"
+    },
+    {
+      "hid": "05634",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_05634_Presence",
+      "schedule_path": "presence_HH_es_05634.csv",
+      "schedule_sha256": "ee2f599b4095d275adfe02b8bb5d3466b47d9f059d2dd69f8d1400e77f8ff07b"
+    },
+    {
+      "hid": "09467",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_09467_Presence",
+      "schedule_path": "presence_HH_es_09467.csv",
+      "schedule_sha256": "2c6d20996358aac20a20c27b797770483e448f6db5a065c874b6feeb3b6cb10e"
+    },
+    {
+      "hid": "05789",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_05789_Presence",
+      "schedule_path": "presence_HH_es_05789.csv",
+      "schedule_sha256": "583c1cc7a18f226b122d78d69bac7fff96fa8fa18135992157ec95f179814d0f"
+    },
+    {
+      "hid": "07523",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_es_07523_Presence",
+      "schedule_path": "presence_HH_es_07523.csv",
+      "schedule_sha256": "189f86b1a37ede192af7e22a9008f95011ce84925510991a362c885addc9d29f"
+    },
+    {
+      "hid": "04412",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_04412_Presence",
+      "schedule_path": "presence_HH_es_04412.csv",
+      "schedule_sha256": "cef4d53aba80cdaa259bced86654a727a14d2ede26757075b9395f406488f2e2"
+    },
+    {
+      "hid": "08979",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_08979_Presence",
+      "schedule_path": "presence_HH_es_08979.csv",
+      "schedule_sha256": "b09ac308ac7cade2bf84c1e140f78672cbaf5c1f4426b68ff5c9a61b83aeb9d9"
+    },
+    {
+      "hid": "00094",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_es_00094_Presence",
+      "schedule_path": "presence_HH_es_00094.csv",
+      "schedule_sha256": "63533d12e24951d8e178126a15fed1772a07b0afdd50fafc53bef6fc329e1648"
+    },
+    {
+      "hid": "06287",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_es_06287_Presence",
+      "schedule_path": "presence_HH_es_06287.csv",
+      "schedule_sha256": "8e65c1d5e2c452f97e9dd5f10f84a3c8d44eb36042e7b61b5aa4375ab6266581"
+    }
+  ],
+  "start_timestamp": "2010-01-01T00:00:00",
+  "timestamp_convention": "hour-beginning; the stated end_timestamp is the START of the 8760th hour, not the end of the year",
+  "timestep_min": 60,
+  "timezone": "Europe/Madrid",
+  "utc_offset_hours": 1.0,
+  "year": 2010
+}

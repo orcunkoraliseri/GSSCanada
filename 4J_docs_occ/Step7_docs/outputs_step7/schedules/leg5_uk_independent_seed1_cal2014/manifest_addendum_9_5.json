@@ -1,0 +1,854 @@
+{
+  "addendum_to": "manifest.json",
+  "addendum_to_sha256": "48d32e4662a2344744e19d97c0b7434836aed727951e5121d40b95836e5c3a2f",
+  "artefact": "MVP 9.5 presence-series record -- ADDENDUM to manifest.json",
+  "chaining_rule": "independent",
+  "diary_origin_hour": 4,
+  "diary_source_id": "UKDS_SN8128_UKTUS_2014_2015",
+  "dst_applied": false,
+  "end_timestamp": "2014-12-31T23:00:00",
+  "epw_location_line": "LOCATION,London,London,GBR,ERA5,000000,51.50,-0.50,0.0,25.0",
+  "field_provenance": {
+    "assigned_by_convention": [
+      "diary_source_id",
+      "timezone"
+    ],
+    "derived_from_artefacts": [
+      "schedule_sha256",
+      "held_out_country",
+      "n_hours",
+      "year",
+      "start_timestamp",
+      "end_timestamp",
+      "utc_offset_hours",
+      "chaining_rule",
+      "rho",
+      "random_seed",
+      "timestep_min",
+      "diary_origin_hour",
+      "rotated_to_midnight"
+    ],
+    "why_the_split_is_recorded": "A reader cannot otherwise tell which of these fields carries evidence. timezone in particular is an IANA label placed on the EPW's measured offset, not itself a measurement."
+  },
+  "fold": "uk",
+  "held_out_country": "uk",
+  "held_out_country_basis": "held_out_country IS the fold under LOCO. tools/4thJ_step4_shards.py:489 and tools/4thJ_step4_diagnostics.py:538. Load-bearing: MVP 9.5 makes the adapter reject a series naming the wrong fold; G8.16 scored on it.",
+  "interpolate_to_timestep": "No",
+  "is_additive": true,
+  "local_time_basis": "Local standard time, no daylight saving. Index 0 is 00:00 local on 1 January of the stated year. The series were generated on the diary origin hour 4 and then ROTATED to midnight (rotated_to_midnight=True), which is the clock EnergyPlus Schedule:File is read on. These two facts must be read together -- either alone implies a four-hour shift that no length check can detect (FINDING 141, D-S9-3).",
+  "n_hours": 8760,
+  "n_series": 100,
+  "note": "The bundle is NOT re-emitted by this file. No series hash moves. Every field below is either derived from the artefacts or marked assigned in field_provenance.",
+  "random_seed": 1,
+  "rho": 0.0,
+  "rotated_to_midnight": true,
+  "ruling": "D-S10-7/8/9 directive 2, ruled 2026-08-27",
+  "series": [
+    {
+      "hid": "13250802",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_13250802_Presence",
+      "schedule_path": "presence_HH_uk_13250802.csv",
+      "schedule_sha256": "bed84b07e3d4928cb31d4185b7b3efe7796b22737ecad75c2b01fed6b8d59234"
+    },
+    {
+      "hid": "12070706",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_12070706_Presence",
+      "schedule_path": "presence_HH_uk_12070706.csv",
+      "schedule_sha256": "f132e630bfe84de255f401ab105ef59b216db157fcdcaa6db469b77a70ac815b"
+    },
+    {
+      "hid": "16101119",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_16101119_Presence",
+      "schedule_path": "presence_HH_uk_16101119.csv",
+      "schedule_sha256": "d8ca646e1ecded7690eb8d65748f73ffd9ef74a844ddc3f72b14911f0c45e855"
+    },
+    {
+      "hid": "13120511",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_13120511_Presence",
+      "schedule_path": "presence_HH_uk_13120511.csv",
+      "schedule_sha256": "d21f6ba56b3b56172ee1f7235f3782c109c742a562afef006eb0eb50b8fd61e1"
+    },
+    {
+      "hid": "33051012",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_33051012_Presence",
+      "schedule_path": "presence_HH_uk_33051012.csv",
+      "schedule_sha256": "e89095971d4e841a9db690e0446ab45e5906122f200deebe058100a7a45c1d8f"
+    },
+    {
+      "hid": "20210718",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_20210718_Presence",
+      "schedule_path": "presence_HH_uk_20210718.csv",
+      "schedule_sha256": "a520bf2489cfca5f1929eafb6f1d0d994b6050fb57893aa93b69431c0d703f83"
+    },
+    {
+      "hid": "21201004",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_21201004_Presence",
+      "schedule_path": "presence_HH_uk_21201004.csv",
+      "schedule_sha256": "12ec4e917f91600b1e6710e2e0b0aa24ca9679608683d325311f58bd9f9f59b6"
+    },
+    {
+      "hid": "19010905",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19010905_Presence",
+      "schedule_path": "presence_HH_uk_19010905.csv",
+      "schedule_sha256": "768badba5ebf918c54af7487021a6f4bff531baf221c8067042f334212993473"
+    },
+    {
+      "hid": "15150920",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15150920_Presence",
+      "schedule_path": "presence_HH_uk_15150920.csv",
+      "schedule_sha256": "55a9ab0f35ca12585001e709087c15af4f7495695572d9bac476afca961aaded"
+    },
+    {
+      "hid": "12260106",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_12260106_Presence",
+      "schedule_path": "presence_HH_uk_12260106.csv",
+      "schedule_sha256": "2c4dda239c30d33376a38255312b2815a6ba3fb61ff1211351c0dc4e8de52778"
+    },
+    {
+      "hid": "28080607",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_28080607_Presence",
+      "schedule_path": "presence_HH_uk_28080607.csv",
+      "schedule_sha256": "fc210947900edc9eb7ededa8c83158c5cbd41d7339a324b56857d3def8348880"
+    },
+    {
+      "hid": "11151219",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11151219_Presence",
+      "schedule_path": "presence_HH_uk_11151219.csv",
+      "schedule_sha256": "0a89f1b7b8c2720b8bfaf76369d210f52f377489382febf7a631a64db8cc45a0"
+    },
+    {
+      "hid": "19070709",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19070709_Presence",
+      "schedule_path": "presence_HH_uk_19070709.csv",
+      "schedule_sha256": "3c90b58e31d42a23be5b8a105b562de0498601833b17e5d6e12d86bced99c5f0"
+    },
+    {
+      "hid": "20061016",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_20061016_Presence",
+      "schedule_path": "presence_HH_uk_20061016.csv",
+      "schedule_sha256": "5bed89ae8457b91f6822a834cca1b961fcc2cdfd03d617db9b1bfdfb689560d6"
+    },
+    {
+      "hid": "11020212",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11020212_Presence",
+      "schedule_path": "presence_HH_uk_11020212.csv",
+      "schedule_sha256": "2ba8039bf861c9e68fbb76640a230c204689d3ae919d83743e850225ff3fbd15"
+    },
+    {
+      "hid": "20151219",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_20151219_Presence",
+      "schedule_path": "presence_HH_uk_20151219.csv",
+      "schedule_sha256": "d3899b2ec0569e4a5874f3656af28ef24efba67bf7af2841d664b7eb8b0964b9"
+    },
+    {
+      "hid": "16190517",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_16190517_Presence",
+      "schedule_path": "presence_HH_uk_16190517.csv",
+      "schedule_sha256": "23ca3c9ac1aa1c8e273d047f918368264867f43f4f636bf38d934073c1d159f2"
+    },
+    {
+      "hid": "15260107",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15260107_Presence",
+      "schedule_path": "presence_HH_uk_15260107.csv",
+      "schedule_sha256": "1904e8c1cfdd87878e860e08af1c75ab8788b9108f2bb28ad82c9b4d8a87aee3"
+    },
+    {
+      "hid": "12310316",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_12310316_Presence",
+      "schedule_path": "presence_HH_uk_12310316.csv",
+      "schedule_sha256": "caf1bf3d93cbb847554d4b04be01c2f19a710a14e4bbba7ca2782225cfb081ab"
+    },
+    {
+      "hid": "17190114",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_17190114_Presence",
+      "schedule_path": "presence_HH_uk_17190114.csv",
+      "schedule_sha256": "32bf2256e4daa07a9bad45b297e469b08ad83530bfb0b42cbdac510b080e6c48"
+    },
+    {
+      "hid": "11160316",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11160316_Presence",
+      "schedule_path": "presence_HH_uk_11160316.csv",
+      "schedule_sha256": "7e4fb0edccef12c209174d2457be36cecae29b3897a5c2e3e4fcffa3b402bf88"
+    },
+    {
+      "hid": "11120120",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11120120_Presence",
+      "schedule_path": "presence_HH_uk_11120120.csv",
+      "schedule_sha256": "5dfb17c530374578d0437c23ed32c4e1b317f11680311bb6a1dcf469f82b6f51"
+    },
+    {
+      "hid": "11140708",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11140708_Presence",
+      "schedule_path": "presence_HH_uk_11140708.csv",
+      "schedule_sha256": "a0eb705fd9035bed893292a359a848b8262bc52476613ff61592554bf7e299aa"
+    },
+    {
+      "hid": "11061012",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11061012_Presence",
+      "schedule_path": "presence_HH_uk_11061012.csv",
+      "schedule_sha256": "a5d93d5a8f4c5f330208de88b52206dba00d313732b617ffa175088986c778dc"
+    },
+    {
+      "hid": "19011213",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19011213_Presence",
+      "schedule_path": "presence_HH_uk_19011213.csv",
+      "schedule_sha256": "9b9d2fc8b4aeddc952d1cd9d831f6c6b631cf28cfaf1da7aac13c74e12a2e259"
+    },
+    {
+      "hid": "15190502",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15190502_Presence",
+      "schedule_path": "presence_HH_uk_15190502.csv",
+      "schedule_sha256": "b16cdc1269c639c4e1f6d4c38da862ed6fdcdf28fe3400e276f279a570517953"
+    },
+    {
+      "hid": "19291207",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19291207_Presence",
+      "schedule_path": "presence_HH_uk_19291207.csv",
+      "schedule_sha256": "099961a846da34505b568be42b5d5a1a8be660e1dc007bfb3e3f424e86c03a08"
+    },
+    {
+      "hid": "11160211",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11160211_Presence",
+      "schedule_path": "presence_HH_uk_11160211.csv",
+      "schedule_sha256": "9c0cf4bbfba8d56e43062d5e1b3657268f5a0a7d87a6444c153f2176594762b0"
+    },
+    {
+      "hid": "15221202",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15221202_Presence",
+      "schedule_path": "presence_HH_uk_15221202.csv",
+      "schedule_sha256": "3683a888bd715afbe5e841353b1992729010124a708bd3aef4bf1c05e06e7806"
+    },
+    {
+      "hid": "20090319",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_20090319_Presence",
+      "schedule_path": "presence_HH_uk_20090319.csv",
+      "schedule_sha256": "228434c20cc9d743e16ee0bb0158e7d61de5df7f15fcbc01231591996d2347d5"
+    },
+    {
+      "hid": "33080601",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_33080601_Presence",
+      "schedule_path": "presence_HH_uk_33080601.csv",
+      "schedule_sha256": "99e020a6959f7967fc580135476d0263ba9fe55ab3c3bd96343ea8dc168c3902"
+    },
+    {
+      "hid": "15280712",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15280712_Presence",
+      "schedule_path": "presence_HH_uk_15280712.csv",
+      "schedule_sha256": "c6bd8a8917a68ee9204ce5bfa6ca1ffb59189ffc990298c0fbd5966bf3711cec"
+    },
+    {
+      "hid": "18070705",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18070705_Presence",
+      "schedule_path": "presence_HH_uk_18070705.csv",
+      "schedule_sha256": "d104c27a0cc6308563351316114608c09ad90d863143ecddfb27cfe0cf43809a"
+    },
+    {
+      "hid": "15271006",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15271006_Presence",
+      "schedule_path": "presence_HH_uk_15271006.csv",
+      "schedule_sha256": "772127d6bd05de94ead74d420c4d5fde07ccfc4d9815ab9e42bf33635518aef0"
+    },
+    {
+      "hid": "15210418",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15210418_Presence",
+      "schedule_path": "presence_HH_uk_15210418.csv",
+      "schedule_sha256": "7d7908283d680b3e666fbdc8d2e7b966af6d4dae0ed4d1a795a717bd894e2918"
+    },
+    {
+      "hid": "21010917",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_21010917_Presence",
+      "schedule_path": "presence_HH_uk_21010917.csv",
+      "schedule_sha256": "b04cfde820252aff7a78421c657824303213e82368c4c3b3b89be9a94e24e399"
+    },
+    {
+      "hid": "17031112",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_17031112_Presence",
+      "schedule_path": "presence_HH_uk_17031112.csv",
+      "schedule_sha256": "90ab426f0d4c031eff4c29e0d31a228b5f8792f5a544e71ae4c9412df41bd979"
+    },
+    {
+      "hid": "11120108",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11120108_Presence",
+      "schedule_path": "presence_HH_uk_11120108.csv",
+      "schedule_sha256": "47bd32be4b4d086bbe09ed989c8186a9d4fcb6676f30367c27b1b52e9a1e1b84"
+    },
+    {
+      "hid": "19241106",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19241106_Presence",
+      "schedule_path": "presence_HH_uk_19241106.csv",
+      "schedule_sha256": "d41fdd6a7b5cc8888a37f0025eb8f8e7d2855420b9df1730c0286b372f6b167a"
+    },
+    {
+      "hid": "12290907",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_12290907_Presence",
+      "schedule_path": "presence_HH_uk_12290907.csv",
+      "schedule_sha256": "7d257109dda74f66399db03c7a3b57c329bf5e037c722897f619edf66637c749"
+    },
+    {
+      "hid": "15010901",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15010901_Presence",
+      "schedule_path": "presence_HH_uk_15010901.csv",
+      "schedule_sha256": "9a0584e3f7422592fbb423e4b4879271cd440b2254094998e292f2f006e25b63"
+    },
+    {
+      "hid": "17070714",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_17070714_Presence",
+      "schedule_path": "presence_HH_uk_17070714.csv",
+      "schedule_sha256": "ae67b3c50e0f6cd48dac7bd99c0b6739b798dda05d6e5501961ebb8f531bc584"
+    },
+    {
+      "hid": "13150916",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_13150916_Presence",
+      "schedule_path": "presence_HH_uk_13150916.csv",
+      "schedule_sha256": "de93def44ab4d300f0101b88a77d79a7b9e659ffd0f5ac2aa0967d8a160a30d1"
+    },
+    {
+      "hid": "17310304",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_17310304_Presence",
+      "schedule_path": "presence_HH_uk_17310304.csv",
+      "schedule_sha256": "1fcba041de6a1235d9eb7b977c9518e049a78034c1f95b029df73746df85adff"
+    },
+    {
+      "hid": "36051013",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_36051013_Presence",
+      "schedule_path": "presence_HH_uk_36051013.csv",
+      "schedule_sha256": "a7c654069a22bcf12edd1c57473ea0ae2010a9f3839d85c3317f556bea99f93a"
+    },
+    {
+      "hid": "45051018",
+      "n_members": 4,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_45051018_Presence",
+      "schedule_path": "presence_HH_uk_45051018.csv",
+      "schedule_sha256": "e9b7278d87c8fa664261ec0387b4b48e8c097a1b6f52ace9f080b1d7b72c59eb"
+    },
+    {
+      "hid": "15031116",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15031116_Presence",
+      "schedule_path": "presence_HH_uk_15031116.csv",
+      "schedule_sha256": "4aac6b49963ca61d1209e0965dba5c73f1565253fda99c2fd810061dc8e3e1ad"
+    },
+    {
+      "hid": "17110817",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_17110817_Presence",
+      "schedule_path": "presence_HH_uk_17110817.csv",
+      "schedule_sha256": "c24e4488d0b7ee2581765225bf4c47e0e681b24535f8fed9abed57ce0caa4fb4"
+    },
+    {
+      "hid": "16310308",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_16310308_Presence",
+      "schedule_path": "presence_HH_uk_16310308.csv",
+      "schedule_sha256": "e394c6c8517fae52411816e8249c21eb724658598ca9aa9f524c15cc04521343"
+    },
+    {
+      "hid": "35051017",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_35051017_Presence",
+      "schedule_path": "presence_HH_uk_35051017.csv",
+      "schedule_sha256": "31c5ac3344df316edec9f0616f1148d23f5d2591706b96066b9f90e1e6caf7eb"
+    },
+    {
+      "hid": "42051001",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_42051001_Presence",
+      "schedule_path": "presence_HH_uk_42051001.csv",
+      "schedule_sha256": "be88a26a8993bac83186a438b6f4cdcf4880bf6d10bd3b0c50f10ece4c228ff7"
+    },
+    {
+      "hid": "19090209",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19090209_Presence",
+      "schedule_path": "presence_HH_uk_19090209.csv",
+      "schedule_sha256": "b2c92cf9624ae4d1c12fa905aa4f010fa17a16c8b5daa4b5142009a6b08d265d"
+    },
+    {
+      "hid": "11190509",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11190509_Presence",
+      "schedule_path": "presence_HH_uk_11190509.csv",
+      "schedule_sha256": "95db2e2c9212f9bd69b973e113b37e59bb372b0567074232f909cb1999af7503"
+    },
+    {
+      "hid": "24051002",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_24051002_Presence",
+      "schedule_path": "presence_HH_uk_24051002.csv",
+      "schedule_sha256": "b1946d7f3870fb72b0a465a57506b34809d8eb39e9408a2014df816b22ae9a3c"
+    },
+    {
+      "hid": "16050501",
+      "n_members": 4,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_16050501_Presence",
+      "schedule_path": "presence_HH_uk_16050501.csv",
+      "schedule_sha256": "8118177374f8100845f45f31dccad57a12ceb94707fb8eb39eb236a9fd2544b8"
+    },
+    {
+      "hid": "19160201",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19160201_Presence",
+      "schedule_path": "presence_HH_uk_19160201.csv",
+      "schedule_sha256": "0cd1fbcc5fb88a84943723c541ae2a8fc6f2976f63e6ead3cd48acae4f13192e"
+    },
+    {
+      "hid": "19230310",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19230310_Presence",
+      "schedule_path": "presence_HH_uk_19230310.csv",
+      "schedule_sha256": "c8261aa8b42072ae61d9a145bffafd5389d82075d7328f63fd65a36a660118c4"
+    },
+    {
+      "hid": "14220916",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_14220916_Presence",
+      "schedule_path": "presence_HH_uk_14220916.csv",
+      "schedule_sha256": "adc25ff839100bb4de2dba5ca0605ae41e1d6ae25d55516e3e449117d295116c"
+    },
+    {
+      "hid": "18220908",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18220908_Presence",
+      "schedule_path": "presence_HH_uk_18220908.csv",
+      "schedule_sha256": "7c229d6ac7019c61e736b9a85e3ac859f36bcb2c15378047a5918849a6209b75"
+    },
+    {
+      "hid": "18280401",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18280401_Presence",
+      "schedule_path": "presence_HH_uk_18280401.csv",
+      "schedule_sha256": "850b6ff94f613145d11a95a389f23b2f88d73339b6d1533c73972565450663e4"
+    },
+    {
+      "hid": "12210716",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_12210716_Presence",
+      "schedule_path": "presence_HH_uk_12210716.csv",
+      "schedule_sha256": "16a2c59d083c0942150df2216e563b85e2354a631900413974a03de8ec263f00"
+    },
+    {
+      "hid": "20101119",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_20101119_Presence",
+      "schedule_path": "presence_HH_uk_20101119.csv",
+      "schedule_sha256": "eaf41ee9472b9e7bef3508a7259807c049ab79f8242a274ca8fc74b7a29645c7"
+    },
+    {
+      "hid": "46051019",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_46051019_Presence",
+      "schedule_path": "presence_HH_uk_46051019.csv",
+      "schedule_sha256": "577d8ac7e293ee8a6bdc5fa26b4289d701dc5e48f435fd25e1b2c526e7288661"
+    },
+    {
+      "hid": "13050118",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_13050118_Presence",
+      "schedule_path": "presence_HH_uk_13050118.csv",
+      "schedule_sha256": "5730a3e77fc74f321d01557c60b247f97da8433c48fe881b52def3f09f7ae013"
+    },
+    {
+      "hid": "14151217",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_14151217_Presence",
+      "schedule_path": "presence_HH_uk_14151217.csv",
+      "schedule_sha256": "72c38eb3d2bf4925d937b3e40539e04abd30878ed251bc7f840217b0d223aa6f"
+    },
+    {
+      "hid": "19090208",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19090208_Presence",
+      "schedule_path": "presence_HH_uk_19090208.csv",
+      "schedule_sha256": "008b8d4f63adfe4eee3baa282832b452f6baac85dca6b3380bd09f0b5f924524"
+    },
+    {
+      "hid": "18241105",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18241105_Presence",
+      "schedule_path": "presence_HH_uk_18241105.csv",
+      "schedule_sha256": "97645cce35e5215e2e8a1a8cc16bf43474fa970c015303c729d84d5cf9a1176a"
+    },
+    {
+      "hid": "29080606",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_29080606_Presence",
+      "schedule_path": "presence_HH_uk_29080606.csv",
+      "schedule_sha256": "a9b51b6eb5d4677700d88b2ea2d55aaeff6460339a8057c59f95e6d60406faaf"
+    },
+    {
+      "hid": "11160217",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11160217_Presence",
+      "schedule_path": "presence_HH_uk_11160217.csv",
+      "schedule_sha256": "6d7a0782c0a88c265c850ee2c0f1c379f3ad7b5af6facaa1fdf5b9534f6504de"
+    },
+    {
+      "hid": "21151209",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_21151209_Presence",
+      "schedule_path": "presence_HH_uk_21151209.csv",
+      "schedule_sha256": "c71c3ff35ece680c059140cdcb0707a76e2e3e4ace033b11c62d4851f4a7a5d8"
+    },
+    {
+      "hid": "11241104",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11241104_Presence",
+      "schedule_path": "presence_HH_uk_11241104.csv",
+      "schedule_sha256": "4d74a26c1b1f3351fef667dfef03fb962c06ef12c0c6333c57ebf00f8018f39b"
+    },
+    {
+      "hid": "17140415",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_17140415_Presence",
+      "schedule_path": "presence_HH_uk_17140415.csv",
+      "schedule_sha256": "e893e862fa8ba5b26d1c8e5dc6744700b233b941452d64d55935704a61d25327"
+    },
+    {
+      "hid": "19090214",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19090214_Presence",
+      "schedule_path": "presence_HH_uk_19090214.csv",
+      "schedule_sha256": "383da948b631662d9bf9618988587e27374dda025de326ac774869cfc66ac86a"
+    },
+    {
+      "hid": "14201016",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_14201016_Presence",
+      "schedule_path": "presence_HH_uk_14201016.csv",
+      "schedule_sha256": "70563b6ca4565b52237e2f2c3a77c9133070a52726d4f48f2353b18b9208ff00"
+    },
+    {
+      "hid": "14190101",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_14190101_Presence",
+      "schedule_path": "presence_HH_uk_14190101.csv",
+      "schedule_sha256": "a13a40817d0a6c1dd9dab4f9ca5ea9bd2c5b2fd9b8df253c1b690ae4f85bb057"
+    },
+    {
+      "hid": "37051020",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_37051020_Presence",
+      "schedule_path": "presence_HH_uk_37051020.csv",
+      "schedule_sha256": "9764d99a674e953f00208266bc3bf02bcdfed78c190fb3dc04892cffad879c2b"
+    },
+    {
+      "hid": "15241116",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15241116_Presence",
+      "schedule_path": "presence_HH_uk_15241116.csv",
+      "schedule_sha256": "87b4fe156bc3b71965aeddc35d46ed503f0b33a5dd12ea49c8627f3b5a1b6429"
+    },
+    {
+      "hid": "11070714",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11070714_Presence",
+      "schedule_path": "presence_HH_uk_11070714.csv",
+      "schedule_sha256": "b7c33c37c7050b341d87c233cfe3e743f30a1f5764af57488b4d7de938344b67"
+    },
+    {
+      "hid": "15090206",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15090206_Presence",
+      "schedule_path": "presence_HH_uk_15090206.csv",
+      "schedule_sha256": "d36353919adf57e61c63438c94dc86bd5b42383a10f33c135288e68427e58420"
+    },
+    {
+      "hid": "15280412",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15280412_Presence",
+      "schedule_path": "presence_HH_uk_15280412.csv",
+      "schedule_sha256": "56872daf25c6c38552f56bd64c2f4e36cca006841d63f40ddd5dbb031078d2ac"
+    },
+    {
+      "hid": "19160203",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19160203_Presence",
+      "schedule_path": "presence_HH_uk_19160203.csv",
+      "schedule_sha256": "d5ae6c11d54918a231599cbd4a1336407b77f75f29f7d3de0ff9a1506a09e49d"
+    },
+    {
+      "hid": "52051019",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_52051019_Presence",
+      "schedule_path": "presence_HH_uk_52051019.csv",
+      "schedule_sha256": "a958522eb5d67ce3eab8ce9e912f6b8626fce53da5cfade64ffad29969e8d516"
+    },
+    {
+      "hid": "18061006",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18061006_Presence",
+      "schedule_path": "presence_HH_uk_18061006.csv",
+      "schedule_sha256": "ac213d246da020d1b29cdf82a881d1b95a782c2e0be70412c509986d9125890a"
+    },
+    {
+      "hid": "18120115",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18120115_Presence",
+      "schedule_path": "presence_HH_uk_18120115.csv",
+      "schedule_sha256": "079b6b941005cf869969ed31409cf352e0f2479e151de00a857d47179079b03f"
+    },
+    {
+      "hid": "21010911",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_21010911_Presence",
+      "schedule_path": "presence_HH_uk_21010911.csv",
+      "schedule_sha256": "9868392ca7acae017fefbb21f9920ba22f90a6abdcadbc399b4bd231761f993e"
+    },
+    {
+      "hid": "16210715",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_16210715_Presence",
+      "schedule_path": "presence_HH_uk_16210715.csv",
+      "schedule_sha256": "1e47d6eb5d82350a167564d6b22cdf93063640d7f31dbd08fa24a983f3b30b2e"
+    },
+    {
+      "hid": "11040814",
+      "n_members": 4,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_11040814_Presence",
+      "schedule_path": "presence_HH_uk_11040814.csv",
+      "schedule_sha256": "cab06f3537aa5e49070dc7cc2de85b14daa9d9c79dec6a8e30bf3a6db094ec66"
+    },
+    {
+      "hid": "19031107",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19031107_Presence",
+      "schedule_path": "presence_HH_uk_19031107.csv",
+      "schedule_sha256": "969d8551be5f2d48c8ac12f654c99434d0e8e29366f98c20d54ac56e21495991"
+    },
+    {
+      "hid": "51051016",
+      "n_members": 5,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_51051016_Presence",
+      "schedule_path": "presence_HH_uk_51051016.csv",
+      "schedule_sha256": "06e7a91a0091b1638a6b0bb8449233a00863162f03a17bcf0e99756b1620737f"
+    },
+    {
+      "hid": "13220917",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_13220917_Presence",
+      "schedule_path": "presence_HH_uk_13220917.csv",
+      "schedule_sha256": "277d15cae274dd53213519e59e32bea72319e847b5ddb5eae4940730ebcd0e60"
+    },
+    {
+      "hid": "15120505",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15120505_Presence",
+      "schedule_path": "presence_HH_uk_15120505.csv",
+      "schedule_sha256": "51403cd6c40abad9a2c6ef6b3456740ccca597540a370bff8c7c61594efd5e61"
+    },
+    {
+      "hid": "20020211",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_20020211_Presence",
+      "schedule_path": "presence_HH_uk_20020211.csv",
+      "schedule_sha256": "835e48f3db308f48518d6411564aaf8043fbd9b9db57167adbd915e07a8f265c"
+    },
+    {
+      "hid": "12040801",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_12040801_Presence",
+      "schedule_path": "presence_HH_uk_12040801.csv",
+      "schedule_sha256": "53cda2d1f4cfa23fcb028839808bcae7402d571ef263701d9b33f5c0b4ca54e5"
+    },
+    {
+      "hid": "24080613",
+      "n_members": 3,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_24080613_Presence",
+      "schedule_path": "presence_HH_uk_24080613.csv",
+      "schedule_sha256": "19c2f3ad206ecb4c41b69c5f746ae187137fc90657fda040cbd29a8682c16822"
+    },
+    {
+      "hid": "18190517",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18190517_Presence",
+      "schedule_path": "presence_HH_uk_18190517.csv",
+      "schedule_sha256": "186ac06cce77b6ee37e5eec45d3e105cd28643ddf91452b7ef8f422a6114dcb5"
+    },
+    {
+      "hid": "15090210",
+      "n_members": 2,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_15090210_Presence",
+      "schedule_path": "presence_HH_uk_15090210.csv",
+      "schedule_sha256": "698148dc0867cdde92a8d6b3d2a1a69214335ce783f51d6c9dbca99e5a0fd517"
+    },
+    {
+      "hid": "41051010",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_41051010_Presence",
+      "schedule_path": "presence_HH_uk_41051010.csv",
+      "schedule_sha256": "e53c6975c547e5fb8a541b40d6884bf79e0fb15bb5c3d4039bf3649d976cff1b"
+    },
+    {
+      "hid": "19230208",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_19230208_Presence",
+      "schedule_path": "presence_HH_uk_19230208.csv",
+      "schedule_sha256": "75dc937e83cde02dc2cde0cbaf9b86e2ee430f378611df5e23aba09966fe70af"
+    },
+    {
+      "hid": "26080611",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_26080611_Presence",
+      "schedule_path": "presence_HH_uk_26080611.csv",
+      "schedule_sha256": "cb861fada850c361b2c50e92526e27fb9c8dda6c0619481dff4a9702a661feb2"
+    },
+    {
+      "hid": "18150902",
+      "n_members": 1,
+      "n_values": 8760,
+      "schedule_id": "HH_uk_18150902_Presence",
+      "schedule_path": "presence_HH_uk_18150902.csv",
+      "schedule_sha256": "fa1f095f958ece03f9cc75bb9cb7da679da6af486f535280cdd8671f0e3a60da"
+    }
+  ],
+  "start_timestamp": "2014-01-01T00:00:00",
+  "timestamp_convention": "hour-beginning; the stated end_timestamp is the START of the 8760th hour, not the end of the year",
+  "timestep_min": 60,
+  "timezone": "Europe/London",
+  "utc_offset_hours": 0.0,
+  "year": 2014
+}
