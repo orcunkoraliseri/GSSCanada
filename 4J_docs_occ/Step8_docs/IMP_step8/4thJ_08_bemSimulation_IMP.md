@@ -226,7 +226,13 @@ Three fundamental properties govern this injection:
 > 🟡 **SUPERSEDED by `D-EU-79` (2026-09-03).** "Dwelling unit" below assumed the core-era MFH/AB grid
 > (§4). Under no-core, the unit *is* the drawn flat directly (no corridor-served unit count); the
 > per-unit independent-diary principle survives and is restated for the no-core regime as `D-IMP-3`
-> (Step 12, `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-5).
+> (`IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-5).
+>
+> 🟢 **Corrected 2026-09-03 (`D-IMP-4`), same day.** This note first said "Step 12". **There is no
+> Step 12**: the no-core campaign is **Step 10 campaign `C2`**
+> (`Step10_docs/4thJ_10_nocoreRealStock.md`, gate series `G10N.x`), and the core-era campaign `C1`
+> is archived at `Step10_docs/archive_C1_core_era/`. Docket:
+> `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
 
 In multi-family archetypes (MFH / AB), `openubem` assigns an **independent stochastic diary** from the held-out LOCO fold population to each dwelling unit $u \in \{1, \dots, N_{\text{units}}\}$, capturing inter-household demographic heterogeneity across identical physical envelopes.
 

@@ -690,6 +690,27 @@ documented reason rather than an untested hope of repair.
 | `DeepResearchPrompts/L28`, `L29` | **The two Step 10 rounds, authored 2026-08-26, not yet run.** `L28` asks whether the peak effect scales with the number of independently diarised dwellings, and whether our conserved-mean null already has company in the literature; `L29` asks how non-convex and courtyard footprints are subdivided, and what the one-zone-per-floor fallback costs. ⚪ A DHW round was deliberately **not** written: `RL25` §B10 already carries the Jordan & Vajen figures `G9.7` needs, and the next move is to vet them against the source table |
 | `writing/submission/figures/Prompts_Images/4thJ_graphical_abstract.md` | The prompt from which the author generates the graphical abstract |
 
+> 🟢 **Added 2026-09-03 (`D-IMP-4`) --- the registration rule above is about GATE IDs, not step
+> numbers, and it now reads that way.** The pipeline is **Steps 0--11**; there is **no Step 12**.
+> A no-core real-stock campaign was briefly registered as `Step12_docs/` earlier the same day and
+> was **re-homed as Step 10's second campaign** on the author's ruling (*"i want clean pipeline,
+> not extra step like 12"*). **Step 10 carries two campaigns:**
+>
+> * **`C1` --- core-era**, `Step10_docs/archive_C1_core_era/4thJ_10_ubemRealStock.md` + `_val.md`,
+>   gate series `G10.x`: run, scored, **CLOSED** (410 cells, 18 PASS / 2 FAIL / 1 INFO /
+>   1 OPEN_INHERITED / 2 NOT_EVALUABLE). **Archived, not deleted; not re-opened, not re-scored,
+>   not retracted. 🔴 Not reported** --- kept as the method and reproducibility record.
+> * **`C2` --- no-core**, `Step10_docs/4thJ_10_nocoreRealStock.md` + `_val.md` +
+>   `prereg_step10_nocore_DRAFT.md`, gate series **`G10N.x`**: the campaign that will be reported.
+>   **Spec only** --- waits on the OpenUBEM engine carry-in, `D-EU-84`, `D-EU-87`, `D-EU-88` and
+>   `D-EU-55`.
+>
+> 🔴 **Why no twelfth step was needed:** the rule forbids one *gate ID* scoring two bases.
+> `G10.x` stays spent on `C1`'s core-era basis and `C2` opens `G10N.x`, every row naming the
+> `G10.x` row it inherits from --- the separation lives in the namespace, so the pipeline needs no
+> extra step. Docket: `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`; path
+> redirect for anything written before today: `Step10_docs/README.md`.
+
 > **Graphical abstract.** Not yet generated. The prompt has been **updated on 2026-08-14** to match the
 > decided pipeline: the two-stage population-then-diary structure now appears, the episode tuple lost
 > its `start` field, and the held-out lane now shows what it is scored against. The author generates the

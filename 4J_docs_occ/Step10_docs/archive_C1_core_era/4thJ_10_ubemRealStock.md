@@ -9,6 +9,44 @@
 
 ## STATUS
 
+> 🟢 **2026-09-03 --- `D-IMP-4`: STEP 10 NOW DECLARES TWO CAMPAIGNS, AND THE PIPELINE ENDS AT
+> STEP 11.** The author ruled *"I want a clean pipeline, not an extra step like 12"*, so the
+> no-core real-stock campaign filed this morning as `Step12_docs/` under `D-IMP-2`(a) is **re-homed
+> as Step 10's second campaign** and **`Step12_docs/` no longer exists**. Docket:
+> `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+>
+> * **`C1` --- core-era** = this document and `4thJ_10_ubemRealStock_val.md`. Run, scored and
+>   **CLOSED**: 410 cells, **18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE**,
+>   `G10.1`--`G10.4` on 40 paired cells (`es` 30 / `it` 10 / `uk` 0). 🔴 **Retained as the method
+>   and reproducibility record. No `C1` result is reported** --- which changes nothing in practice:
+>   `G10.7` was INFO permanently, `FINDING 196` made the six Arm D EUIs lower bounds, and no
+>   stock-level EUI from Arm D was ever quotable. 🔴 **`C1` is not re-opened, not re-scored, not
+>   deleted, and no `C1` number is retracted** --- everything it scored stays true of the core-era
+>   basis it was scored on.
+> * **`C2` --- no-core** = `../4thJ_10_nocoreRealStock.md` + `_val.md` +
+>   `../prereg_step10_nocore_DRAFT.md`, gate series **`G10N.x`**. The campaign that will be
+>   reported. **Spec only: nothing computed, no cell, no EnergyPlus.** Waits on the OpenUBEM
+>   blockers (engine carry-in, `D-EU-84`, `D-EU-87`, `D-EU-88`) and on `D-EU-55`.
+>
+> 🔴 **The registration rule of `Overview.md:683` is satisfied by the gate namespace, not by a
+> step number:** `G10.x` stays spent on `C1`'s core-era basis, `C2` opens `G10N.x` with the
+> inheritance stated on every row, so **no gate ID ever claims two bases**. Everything below this
+> note describes **`C1`** and is unchanged.
+>
+> 📦 **ARCHIVED, NOT DELETED --- same ruling, author's own words: *"archive older step 10 core
+> version, no need to delete lets keep it"*.** This document and
+> `4thJ_10_ubemRealStock_val.md` now live in **`Step10_docs/archive_C1_core_era/`**; the live
+> Step 10 documents are `../4thJ_10_nocoreRealStock.md` and `../4thJ_10_nocoreRealStock_val.md`.
+> 🔴 **Only this note and the `D-IMP-4` Progress-Log entry at the foot of the file were written
+> today; not one word of `C1`'s record below was edited, and no relative path inside it was
+> rewritten.** Every path written here before 2026-09-03 --- `outputs_step10/…`, `impl/…`,
+> `docs/…`, `../Step8_docs/…`, `4thJ_10_ubemRealStock_val.md` --- still resolves **from
+> `Step10_docs/`**, one level up, because the campaign's executed artefacts (`outputs_step10/`,
+> `impl/`, `docs/`) and its nine `tools/4thJ_step10_*.py` scripts were deliberately **left where
+> they were**: moving executed evidence would invalidate commands recorded in a closed record.
+> `Step10_docs/README.md` carries the same redirect.
+
+
 🟡 **PLANNED 2026-08-26. FOUR WORK ITEMS BUILT, 2026-08-26 / 27 — the STATUS line said "nothing built"
 until 2026-08-27 and was stale by four items.** Done: **10.1** (chaining closure notice), **10.2**
 (`D-S10-1` ruled and applied as a sidecar), **10.4** (per-dwelling assignment and emission), **10.9**
@@ -1604,3 +1642,50 @@ variant: edge removal → **0.000, did not fire** (the hull shrank with the colu
 `outputs_step10/realstock_campaign/manifests/*__caseA__f000.json` (`floor_area_m2`, `footprint_area_m2`,
 `observed_storeys`, `storeys_without_a_dwelling`) · `_local_runs/step10_realstock_speed410/` (410 IDFs) ·
 the IMP document §2 and §14.
+
+
+---
+
+## 2026-09-03 (`D-IMP-4`) --- 🟢 **THE NO-CORE CAMPAIGN IS RE-HOMED AS STEP 10 CAMPAIGN `C2`; THERE IS NO STEP 12. DOCUMENTATION-ONLY, ZERO COMPUTE.**
+
+**Ruling.** The author, reading this morning's execution session, said the no-core work should
+**replace** the core-era Step 10 rather than open a twelfth step: *"no need new step … i want clean
+process"*. `D-IMP-2`(a)'s **substance** (a separate gate namespace, an own prereg, spec now and
+compute only after the OpenUBEM blockers clear) is **kept in full**; only its **location** changes.
+Docket: `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+
+**What moved.** `Step12_docs/4thJ_12_nocoreRealStock.md` → `../4thJ_10_nocoreRealStock.md`;
+`_val.md` → `../4thJ_10_nocoreRealStock_val.md`; `prereg_step12_DRAFT.md` →
+`../prereg_step10_nocore_DRAFT.md`; `Step12_docs/impl/` → `../impl/`;
+`tools/4thJ_step12_preflight.py` → `tools/4thJ_step10_nocore_preflight.py`. Gate series
+`G12.x` → **`G10N.x`**, vacuity guards `V12.x` → **`V10N.x`**. `Step12_docs/` deleted (backup
+`Step12_docs.bak_dimp4/`). The pipeline is **Steps 0--11**, no orphan step.
+
+**And `C1` was archived, on the author's follow-up in the same session** (*"archive older step 10
+core version, no need to delete lets keep it"*): `4thJ_10_ubemRealStock.md` and
+`4thJ_10_ubemRealStock_val.md` (with their `.bak` siblings) moved to
+`Step10_docs/archive_C1_core_era/`, and the three `C2` documents were promoted to the top of
+`Step10_docs/`. 🔴 **`outputs_step10/`, `impl/`, `docs/` and the nine `tools/4thJ_step10_*.py`
+scripts did NOT move** --- they are `C1`'s executed evidence, addressed by path from ~30 recorded
+places including commands inside this closed record, and relocating them would falsify those
+commands. `Step10_docs/README.md` is the redirect for anything that still points at the old
+document paths.
+
+**What did NOT move.** No threshold, no inheritance clause, no perturbation result: the four
+scratch perturbations (manifest blank-field 15 of 15, replicate tolerance, binding-rule collision,
+wrong-fold) keep their recorded verdicts under the renamed IDs, because renaming a gate does not
+re-measure it. The preflight guard's logic is byte-identical apart from its docstring; it was
+**re-run under the new name** and is still **SEEN FAILING, `checked=410 failed=410`, exit 1**, on
+the same engine digest `316fe7a6…150b` measured this morning --- so the rename did not turn a
+failing guard into a vacuous pass (`../impl/2026-09-03_preflight-seen-failing.md`, second
+section).
+
+🔴 **Nothing about `C1` changed.** No gate re-scored, no manifest retrofitted, no number retracted,
+no EnergyPlus invoked, `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` never opened. The suite
+stays **18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE**. Option (c) of `D-S10-1`
+and Option B of `D-EU-31` stay refused. `C1` is now labelled **method-and-reproducibility record,
+not reported** --- a reporting decision, not a re-scoring.
+
+⚪ **Evidence.** `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md` ·
+`Step10_docs/` (the three `C2` documents) · `Step10_docs/archive_C1_core_era/` · `tools/4thJ_step10_nocore_preflight.py` ·
+`../impl/2026-09-03_preflight-seen-failing.md`.

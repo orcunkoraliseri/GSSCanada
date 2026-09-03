@@ -428,3 +428,42 @@ permanently), `G10.19`–`G10.22` are untouched; the suite stays **18 PASS / 2 F
 unchanged. The check was seen felling on edge and interior removals (0.398 / 0.400) and its
 convex-hull variant was seen **not** felling on the edge removal (demoted). Details: the Step 10
 main-doc entry of the same date and `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` §2.
+
+---
+
+### 2026-09-03 (`D-IMP-4`) --- this gate board becomes campaign `C1`'s; the no-core suite is `G10N.x`, not `G12.x`; nothing re-scored
+
+Step 10 now declares **two campaigns** and the pipeline **ends at Step 11**. The author ruled
+*"no need new step … i want clean process"*, so the no-core campaign filed this morning as
+`Step12_docs/` (under `D-IMP-2`(a)) is re-homed as **Step 10 campaign `C2`** and `Step12_docs/`
+no longer exists. Docket:
+`IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+
+* **This board is `C1`'s** — the core-era engine, 410 retained cells. It stays exactly as scored:
+  **18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE**, `G10.1`–`G10.4` on 40 paired
+  cells (`es` 30 / `it` 10 / `uk` 0), the two FAILs still "a field was never written" on 0 of 410
+  and still never retrofitted, `G10.15` still OPEN_INHERITED, `G10.19` still
+  NOT_EVALUABLE_FAIL_BY_POPULATION, `G10.23` still NOT_EVALUABLE_VACUOUS. 🔴 **No gate was
+  re-scored, re-banded, re-opened or retracted by `D-IMP-4`** — it moved documents, not verdicts.
+* **`C2`'s board is `../4thJ_10_nocoreRealStock_val.md`**, gate series **`G10N.x`** (formerly
+  `G12.x`), vacuity guards **`V10N.x`** (formerly `V12.x`), every row still carrying its stated
+  inheritance from the `G10.x` row above. Renaming a gate does not re-measure it: the four
+  scratch perturbations recorded on 2026-09-03 (manifest blank-field 15 of 15, replicate
+  tolerance, binding-rule collision, wrong-fold) keep their verdicts verbatim under the new IDs.
+* **The gate-ID separation is what the Step 12 number was carrying** (`Overview.md:683`: two
+  documents claiming one ID on two bases is how a basis change hides as a fix). `G10.x` stays
+  spent on `C1`'s basis; `G10N.x` is a different namespace on the no-core basis. A step number
+  was never needed for that, so there is none.
+* **Reporting.** `C1` is retained as the **method and reproducibility record and is not
+  reported**. This is a reporting decision, not a re-scoring: `G10.7` was INFO permanently,
+  `FINDING 196` made the six Arm D EUIs lower bounds, and no stock-level Arm D EUI was ever
+  quotable, so no quotable number is lost.
+* **Guard re-verified, not assumed.** `tools/4thJ_step12_preflight.py` →
+  `tools/4thJ_step10_nocore_preflight.py`, logic unchanged, re-run under the new name on the same
+  410 `C1` manifests: `checked=410 failed=410`, **exit 1**, engine digest `316fe7a6…150b`
+  identical to this morning's measurement — **still SEEN FAILING**, not vacuously passing under a
+  new filename (`impl/2026-09-03_preflight-seen-failing.md`, second section).
+
+⚪ **Location.** This document moved to `Step10_docs/archive_C1_core_era/` (archived, **not
+deleted** — author's own follow-up). `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45` was never
+opened. No EnergyPlus, no cell, no compute. See `Step10_docs/README.md` for the path redirect.

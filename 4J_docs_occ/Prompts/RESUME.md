@@ -1,3 +1,93 @@
+## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+35). READ THIS BLOCK FIRST. THE last+34 BLOCK BELOW IT IS THE RECORD OF THE MORNING'S EXECUTION SESSION AND IS SUPERSEDED ON ONE POINT ONLY --- WHERE THE NO-CORE CAMPAIGN LIVES. THE last+32 BLOCK FURTHER BELOW STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
+
+### 0. WHAT HAPPENED, IN ONE PARAGRAPH
+
+🔴 **There is no Step 12. The pipeline is Steps 0-11.** The author read the morning's
+execution session and said the no-core campaign should have **replaced** Step 10, not opened a
+twelfth step: *"no need new step, what i wanted to replace `Step10_docs` with nocore version"*,
+then *"i want clean pipeline, not extra step like 12"*, then *"yes, do it, i want clean process,
+i am preparing the OpenUBEM results soon they will come in here"*, then *"archive older step 10
+core version, no need to delete lets keep it"*. That was **option (b) of the review's section 4** ---
+written down, recommended against, and rejected on the `Overview.md:683` registration rule; the
+author's *"lets go"* had been read as (a). **`D-IMP-4` corrects the location and keeps the
+substance.** Docket: `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+Documentation-only, **zero compute, no EnergyPlus, no cell, nothing re-scored**.
+
+### 1. THE ONE THING TO KNOW: STEP 10 NOW HAS TWO CAMPAIGNS
+
+| | **`C1` --- core-era** | **`C2` --- no-core** |
+|---|---|---|
+| documents | `Step10_docs/archive_C1_core_era/4thJ_10_ubemRealStock.md` + `_val.md` | `Step10_docs/4thJ_10_nocoreRealStock.md` + `_val.md` + `prereg_step10_nocore_DRAFT.md` |
+| gates | `G10.x` (spent, closed), guards `V10.x` | **`G10N.x`** (was `G12.x`), guards **`V10N.x`** (was `V12.x`) |
+| preflight | --- | `tools/4thJ_step10_nocore_preflight.py` (was `4thJ_step12_preflight.py`) |
+| state | **CLOSED** --- 410 cells, 18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE | **SPEC ONLY** --- no cell, no EnergyPlus |
+| reported? | 🔴 **NO** --- method and reproducibility record only | yes, once it runs |
+
+🔴 **`C1` is ARCHIVED, NOT DELETED, NOT RETRACTED, NOT RE-SCORED.** Everything it scored
+stays true of the basis it was scored on. Not reporting it loses **no quotable number**: `G10.7`
+was INFO permanently, `FINDING 196` made the six Arm D EUIs lower bounds, and no stock-level Arm D
+EUI was ever quotable. `G10.1`-`G10.4` still name their 40 paired cells (`es` 30 / `it` 10 /
+`uk` 0). The two FAILs are still "a field was never written" on 0 of 410 and still never
+retrofitted.
+
+🔴 **Why no twelfth step was needed:** `Overview.md:683` forbids **one gate ID** scoring two
+bases. `G10.x` (core-era) and `G10N.x` (no-core, every row naming the `G10.x` row it inherits) give
+that separation inside one step. **`D-IMP-2`'s substance is kept in full** --- separate namespace,
+own prereg, spec now, compute only after the OpenUBEM blockers clear. `D-IMP-1` and `D-IMP-3` are
+untouched.
+
+⚪ **What deliberately did NOT move:** `Step10_docs/outputs_step10/`, `Step10_docs/impl/`'s
+pre-2026-09-03 notes, `Step10_docs/docs/`, and the nine `tools/4thJ_step10_*.py` scripts. They are
+`C1`'s **executed evidence**, addressed by path from ~30 recorded places including commands written
+inside a closed record; moving them would falsify those commands. **`Step10_docs/README.md` is the
+redirect for any path written before today** --- and relative paths *inside* the archived `C1`
+documents resolve from `Step10_docs/`, one level up, because a closed record is not edited in place.
+
+### 2. WHAT WAS TOUCHED (all additive except the moves)
+
+* **Moved:** `Step12_docs/*` -> `Step10_docs/` (+ `impl/`); `C1`'s two specs -> `archive_C1_core_era/`.
+  `Step12_docs/` **deleted**; its backup was archived the same day to `previous/Step12_docs.bak_dimp4/` (author's instruction), where the repo keeps every other superseded copy. Redirect row added to `Step10_docs/README.md`.
+* **Dated notes appended, nothing rewritten:** `C1`'s implementation doc (STATUS declaration +
+  `D-IMP-4` Progress-Log entry) and its validation doc; the master plan; the Overview's
+  companion-documents table; `Step11_docs/4thJ_11_stockEndUseLoads.md` (its live forward-pointer
+  re-pointed); `Step8_docs/IMP_step8/4thJ_08_bemSimulation_IMP.md`; the IMP review (new section 16
+  + a clause on its status line); the `D-IMP-1/2/3` docket (superseded-in-part note).
+  🔴 Every other `Step12_docs/` / `G12.x` / `4thJ_step12_preflight.py` string left in those
+  files is a **historical record, deliberately not rewritten**.
+* **Board:** republished at the same URL (`9e07da64...`), **12 groups / 143 items / 136 done /
+  0 in progress / 7 not started**. The Step 12 group is gone; its four cards are now `C2` cards at
+  the foot of Step 10 and are **done** (they were stale `todo` from box 3). `node --check` clean;
+  DOM-shim smoke **seen failing 3 of 3** on planted mutations (live `Step12_docs/` pointer in a
+  card, a restored step-12 group, a duplicate step number) with a clean baseline.
+* **The check that closes it:** a rename must not turn a failing guard into a vacuous pass. The
+  renamed preflight was re-run on the same 410 `C1` manifests --- `checked=410 failed=410`, exit 1,
+  engine `sha256=316fe7a6...150b` byte-identical to the morning's measurement. Record:
+  `Step10_docs/impl/2026-09-03_preflight-seen-failing.md`, second section.
+* **Re-scanned end to end the same day (author's request), and it holds.** Folders are `Step0_docs`…`Step11_docs` only; 175 documents and 2,209 path tokens resolved with **no link broken by `D-IMP-4`**; all 18 files still carrying a step-12 string read as history or correction, **never a live pointer**; gate namespaces clean (`G10.x` only in the `C1` archive and the closed notes, `G10N.x` only in `C2`); `prereg.md` md5 re-measured `e4243e07cdd80c9c846b91f40e3e8c45`. 🔴 **When grepping, note that `V12.` in the master plan (M:351, M:2242) is the deep-research VETTING series — not a retired step-12 guard.** ⚪ Two things predate `D-IMP-4` and were left alone: Step 9's implementation doc never names Step 10, and `C2`'s spec reaches its upstream through `C1`'s §2 carry-over instead of naming Step 9. Neither is a defect this ruling introduced; say so before "fixing" either.
+
+### 3. WHAT TO DO WHEN THIS SESSION OPENS
+
+1. **The author said OpenUBEM results are being prepared and will arrive here.** They land in
+   **campaign `C2`**, under `G10N.x`, never under `G10.x`. Before any cell is built, `D-EU-55`'s own
+   sentence and the OpenUBEM blockers (section 8 of `Step10_docs/4thJ_10_nocoreRealStock.md`) must
+   clear --- check `OpenUBEM/docs/docs_ACTIVE/europeanLocations/` for their state; this file does
+   not track the OpenUBEM side's progress. The preflight guard refuses every manifest until the
+   owner pins `ENGINE_DIGEST_PIN`; **never move that pin to make a run pass.**
+2. 🔴 **Never** re-open `C1`, re-score a closed gate, file a `C2` result under a `G10.x` ID,
+   re-propose option (c) of `D-S10-1` or Option B of `D-EU-31`, retrofit a manifest, or run
+   EnergyPlus without the owner's own sentence.
+3. 🔴 **Never re-create a Step 12.** The pipeline ends at Step 11 by ruling.
+4. **Board**: `4thJ_CHECKLIST.html`, 143 items / 12 step groups. **Never edit the local board
+   without first reading the live artefact** (`FINDING 197`). Backup of this rewrite:
+   `Prompts/RESUME.md.bak_next35`; board backup `4thJ_CHECKLIST.html.bak_dimp4`.
+5. Reply shape unchanged (rule 5 of the last+32 block below): English, ~80 words, headline,
+   3-5 bullets, `Evidence:`, `Next:`.
+
+🔴 **Nothing is owed and no decision is open.** `D-IMP-4` is closed. The next task is the
+author's to name --- most likely the incoming OpenUBEM results.
+
+---
+
 ## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+34). READ THIS BLOCK FIRST. THE last+32 BLOCK FURTHER BELOW STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
 
 > 🟢 **Verification note, added 2026-09-03 (later same day, post-compaction continuation

@@ -1,3 +1,7 @@
+> 🔴 **SPENT RUN-BOOK — EXECUTED 2026-09-03, AND ITS BOX 4 IS SUPERSEDED BY `D-IMP-4` THE SAME DAY. DO NOT RE-EXECUTE.** All eight §12 boxes were run. **There is no Step 12**: every `Step12_docs/`, `G12.x`, `V12.x` and `4thJ_step12_preflight.py` below is a historical instruction, deliberately not rewritten. The no-core campaign is **Step 10 campaign `C2`** (`Step10_docs/4thJ_10_nocoreRealStock.md` + `_val.md` + `prereg_step10_nocore_DRAFT.md`, gate series **`G10N.x`**, preflight `tools/4thJ_step10_nocore_preflight.py`) and the core-era campaign `C1` is archived at `Step10_docs/archive_C1_core_era/`. Docket: `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`; path redirect: `Step10_docs/README.md`.
+
+---
+
 # Session task — execute the no-core review, IMP §12 boxes 2 to 8, after the author's rulings
 
 **Written** 2026-09-03 (last+33, same session that filed the review) · **For** the next session, opened with this file's path and "continue".

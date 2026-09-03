@@ -1,8 +1,9 @@
-"""4thJ_step12_preflight.py -- read-only preflight guard for the no-core Step 12 campaign.
+"""4thJ_step10_nocore_preflight.py -- read-only preflight guard for Step 10 campaign C2 (no-core).
 
-Written 2026-09-03 for IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md, box 4 (I-4).
+Written 2026-09-03 for IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md, box 4 (I-4). Re-homed 2026-09-03 under D-IMP-4: there is no Step 12; this guards
+Step 10 campaign C2, gate series G10N.x, specified in Step10_docs/nocore/.
 
-Asserts, per manifest, that it is eligible for the no-core real-stock campaign:
+Asserts, per manifest, that it is eligible for campaign C2 (no-core real stock):
   1. manifest["scheme"] == "nocore_equal_area"
   2. manifest["status"] == "direct"
   3. a check verdict is present (manifest["check"]["verdict"] is not None)
@@ -17,7 +18,7 @@ No EnergyPlus is invoked, no network call is made, no cluster job is submitted. 
 script only reads manifests already on disk and hashes one file already on disk.
 
 Usage:
-  C:/Users/o_iseri/AppData/Local/Programs/Python/Python313/python.exe 4thJ_step12_preflight.py \
+  C:/Users/o_iseri/AppData/Local/Programs/Python/Python313/python.exe 4thJ_step10_nocore_preflight.py \
       --manifests <dir of *.json> [--engine <path to european_residential.py>]
 """
 import argparse

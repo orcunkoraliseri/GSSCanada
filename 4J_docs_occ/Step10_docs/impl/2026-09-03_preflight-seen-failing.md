@@ -1,4 +1,4 @@
-# `tools/4thJ_step12_preflight.py` — seen failing, 2026-09-03
+# `tools/4thJ_step10_nocore_preflight.py` — seen failing, 2026-09-03
 
 Task: §12 box 4 (I-4), run-book check — the preflight guard must be seen FAILING today on the
 410 retained Step 10 manifests and on the engine as it is (core-era). No EnergyPlus, no network,
@@ -7,7 +7,7 @@ no cluster; read-only.
 ## Command
 
 ```
-C:/Users/o_iseri/AppData/Local/Programs/Python/Python313/python.exe tools/4thJ_step12_preflight.py \
+C:/Users/o_iseri/AppData/Local/Programs/Python/Python313/python.exe tools/4thJ_step10_nocore_preflight.py \
     --manifests Step10_docs/outputs_step10/realstock_campaign/manifests
 ```
 
@@ -17,7 +17,7 @@ C:/Users/o_iseri/AppData/Local/Programs/Python/Python313/python.exe tools/4thJ_s
 exit code 1.
 
 Failure reasons (all four fire on every manifest, since the 410 are Step 10 manifests, not
-Step 12 ones):
+campaign `C2` ones):
 
 * `scheme=None (want nocore_equal_area)` — the field does not exist on a Step 10 manifest.
 * `status=None (want direct)` — same.
@@ -39,3 +39,17 @@ would have been the wrong result and would have meant the guard was broken; `SEE
 410/410 is the guard working as designed.
 
 No manifest was retrofitted. No gate moved. No EnergyPlus was invoked.
+
+---
+
+## Re-verified after the `D-IMP-4` re-home — 2026-09-03
+
+The guard was renamed `tools/4thJ_step12_preflight.py` → `tools/4thJ_step10_nocore_preflight.py`
+when the no-core campaign became **Step 10 campaign `C2`** and `Step12_docs/` was retired. Logic
+unchanged (`ENGINE_DIGEST_PIN` still the literal `TBD_by_owner`, still set only by the owner).
+Re-run under the new name on the same 410 retained `C1` manifests:
+
+`checked=410 failed=410`, exit code **1**, engine
+`sha256=316fe7a66ca62f7f55050a45d43a2cff0f8b5704af0881a099ad050d80bb150b` — byte-identical to the
+digest measured earlier today, so the engine has not moved and the guard is still **SEEN FAILING**,
+not passing vacuously under a new filename. No manifest retrofitted, no gate moved, no EnergyPlus.

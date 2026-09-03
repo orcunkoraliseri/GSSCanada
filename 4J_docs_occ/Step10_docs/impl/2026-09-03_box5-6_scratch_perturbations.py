@@ -81,15 +81,15 @@ def check_wrong_fold():
 
 if __name__ == "__main__":
     felled, total = check_g12_14()
-    print("G12.14 blank-field: %d of %d single-field blanks felled the gate" % (felled, total))
+    print("G10N.14 blank-field: %d of %d single-field blanks felled the gate" % (felled, total))
     assert felled == total
 
     (q_clean, w_clean), (q_out, w_out) = check_g12_replicate()
-    print("G12.replicate: clean set quotable=%s (worst %.4f%%); outlier set quotable=%s (worst %.4f%%)"
+    print("G10N.replicate: clean set quotable=%s (worst %.4f%%); outlier set quotable=%s (worst %.4f%%)"
           % (q_clean, w_clean, q_out, w_out))
 
     check_g12_20()
-    print("G12.20 binding rule: baseline PASS, 2-of-3 collision fixture FAILS")
+    print("G10N.20 binding rule: baseline PASS, 2-of-3 collision fixture FAILS")
 
     check_wrong_fold()
     print("Wrong-fold check: matched fold PASS, mismatched fold FAILS")

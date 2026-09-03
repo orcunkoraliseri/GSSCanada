@@ -1,6 +1,6 @@
 # No-core review — pipeline-wide improvements, implementation document
 
-**Created** 2026-09-03 · **Status** 🟡 **PROPOSALS. NOTHING APPLIED. Three decisions wait on the author (`D-IMP-1`, `D-IMP-2`, `D-IMP-3`, §11); everything else is additive housekeeping the next session executes once they are ruled.** *(dated 2026-09-03, same day, execution session: `D-IMP-1/2/3` RULED (a) on all three; §12 boxes 2–8 all executed — **APPLIED except compute**. Step 12 exists on paper only, waiting on the OpenUBEM blockers of §4 and on `D-EU-55`. Step 10 and Step 11 do not re-open. See §12/§13 below and `Prompts/RESUME.md` last+34.)*
+**Created** 2026-09-03 · **Status** 🟡 **PROPOSALS. NOTHING APPLIED. Three decisions wait on the author (`D-IMP-1`, `D-IMP-2`, `D-IMP-3`, §11); everything else is additive housekeeping the next session executes once they are ruled.** *(dated 2026-09-03, same day, execution session: `D-IMP-1/2/3` RULED (a) on all three; §12 boxes 2–8 all executed — **APPLIED except compute**. Step 12 exists on paper only, waiting on the OpenUBEM blockers of §4 and on `D-EU-55`. Step 10 and Step 11 do not re-open. See §12/§13 below and `Prompts/RESUME.md` last+34.)* 🟢 **(Later the same day, `D-IMP-4`, §16 below: I-4's ruling was LOCATED wrong. There is NO Step 12 — the pipeline is Steps 0–11, the no-core campaign is **Step 10 campaign `C2`** at `Step10_docs/4thJ_10_nocoreRealStock.md` with gate series **`G10N.x`**, and the core-era campaign `C1` is archived at `Step10_docs/archive_C1_core_era/` — closed, unchanged, not reported. Every `Step12_docs/`, `G12.x`, `V12.x` and `4thJ_step12_preflight.py` reference below is a HISTORICAL record, deliberately not rewritten; read it through §16 and `Step10_docs/README.md`.)**
 **Origin** The owner's **no-core ruling** on the OpenUBEM side — `D-EU-79` / `D-EU-80` / `D-EU-81` (2026-09-02), `D-EU-82`–`D-EU-88` (2026-09-03) — plus a full read of Steps 0 to 11 asked for by the author on 2026-09-03.
 **Inputs**
 `OpenUBEM/docs/docs_ACTIVE/europeanLocations/rules/RULES_dwelling_layout_groups_nocore_2026-09-02.html` ·
@@ -343,3 +343,36 @@ Tick a box only when the item is applied **and** its perturbation has been seen 
 * **I did not check the London credential block** (GOV.UK One Login token, an OpenUBEM-side action) or whether any district can be cut end-to-end today; `FINDING 221`'s 939 demotions at IDF-writing time are OpenUBEM's number, quoted not re-derived.
 * **I did not re-derive any EU figure**, quote any EUI, or touch the 149. Every barred number in `Prompts/RESUME.md` §4 was checked against this document by search before it was saved.
 * **The extracts the scanners wrote live in the session scratchpad**, not in the tree; every claim taken from them that mattered was re-read at the cited `path:line` or re-measured, and the ones that were not are marked "quoted" above.
+
+---
+
+## 16. 🟢 `D-IMP-4` — I-4's ruling was located wrong, and the author corrected it the same day
+
+**`D-IMP-2` chose (a). The author meant (b).** §4 offered *(b) amend Step 10 in place as
+"campaign 2"* and rejected it on the `Overview.md:683` registration rule; *"no more core plans,
+nocore plans i want, lets go"* was then read as a go-ahead on the recommended (a), which built
+`Step12_docs/`. On reading the result the author said: *"no need new step, what i wanted to replace
+`Step10_docs` with nocore version"*, *"i want clean pipeline, not extra step like 12"*, and
+*"archive older step 10 core version, no need to delete lets keep it"*.
+
+**Ruled and executed the same day.** There is **no Step 12**; the pipeline is **Steps 0–11**.
+`Step12_docs/` is deleted (backup `Step12_docs.bak_dimp4/`). Step 10 declares **two campaigns**:
+**`C1` core-era** (`Step10_docs/archive_C1_core_era/`, `G10.x`, closed, archived, **not
+reported**) and **`C2` no-core** (`Step10_docs/4thJ_10_nocoreRealStock.md` + `_val.md` +
+`prereg_step10_nocore_DRAFT.md`, **`G10N.x`**, guards **`V10N.x`**, preflight
+`tools/4thJ_step10_nocore_preflight.py`, spec only). Docket:
+`IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+
+🔴 **I-4's substance survives intact** — a gate namespace that never lets one ID score two bases,
+an own prereg, spec now, compute only after the OpenUBEM blockers clear. §4's argument was right
+about *gate IDs* and over-applied to *step numbers*: `G10.x` (core-era) and `G10N.x` (no-core, each
+row naming the `G10.x` row it inherits) give the same separation without an orphan step. I-1, I-3,
+I-5, I-6, I-7 and I-9 are unaffected; `D-IMP-1` and `D-IMP-3` are untouched.
+
+⚪ **Nothing was re-measured and nothing was re-scored.** The four scratch perturbations keep their
+verdicts verbatim under the renamed IDs — renaming a gate does not re-measure it — and the
+preflight guard was re-run under its new name to prove the rename had not turned it into a vacuous
+pass: `checked=410 failed=410`, exit 1, engine digest byte-identical to this morning's
+(`Step10_docs/impl/2026-09-03_preflight-seen-failing.md`, second section). `C1` keeps
+**18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE**; no manifest retrofitted, no
+number retracted, no EnergyPlus invoked.

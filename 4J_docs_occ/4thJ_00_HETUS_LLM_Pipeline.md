@@ -3039,3 +3039,51 @@ The author ruled (a) on all three recommendations (docket
 **APPLIED except compute.** Step 12 exists on paper only — it waits on the OpenUBEM blockers
 (engine carry-in, `D-EU-84`, `D-EU-87`, `D-EU-88`) and on `D-EU-55`. **Step 10 and Step 11 do not
 re-open.** No EnergyPlus, no cell, no emission, no re-scoring of any closed board.
+
+---
+
+### 2026-09-03 (same day, later session) --- 🟢 `D-IMP-4`: **THERE IS NO STEP 12.** THE NO-CORE CAMPAIGN IS **STEP 10 CAMPAIGN `C2`**; THE CORE-ERA CAMPAIGN IS **ARCHIVED AS `C1`**. DOCUMENTATION-ONLY, ZERO COMPUTE.
+
+The author read the entry above and corrected the reading behind it: *"no need new step, what i
+wanted to replace `Step10_docs` with nocore version"*, then *"i want clean pipeline, not extra step
+like 12"*, then *"archive older step 10 core version, no need to delete lets keep it"*. Option
+**(b)** of the review's §4 --- amend Step 10 in place as a second campaign --- had been rejected on
+the `Overview.md:683` registration rule and *"lets go"* had been read as (a). Docket:
+`IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+
+**The pipeline is Steps 0--11.** `Step12_docs/` is deleted (backup `Step12_docs.bak_dimp4/`).
+**Step 10 now declares two campaigns:**
+
+* **`C1` --- core-era.** `Step10_docs/archive_C1_core_era/4thJ_10_ubemRealStock.md` + `_val.md`.
+  **Archived, not deleted; closed, not re-opened; unchanged, not retracted** --- 410 cells,
+  **18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE**, `G10.1`--`G10.4` still on 40
+  paired cells (`es` 30 / `it` 10 / `uk` 0). 🔴 **Retained as the method and reproducibility
+  record and NOT reported** --- a reporting decision, not a re-scoring, and one that loses no
+  quotable number: `G10.7` was INFO permanently, `FINDING 196` made the six Arm D EUIs lower
+  bounds, and no stock-level Arm D EUI was ever quotable.
+* **`C2` --- no-core.** `Step10_docs/4thJ_10_nocoreRealStock.md` + `_val.md` +
+  `prereg_step10_nocore_DRAFT.md`, gate series **`G10N.x`** (was `G12.x`), guards **`V10N.x`**
+  (was `V12.x`), preflight `tools/4thJ_step10_nocore_preflight.py` (was
+  `tools/4thJ_step12_preflight.py`). **Spec only: no cell, no EnergyPlus, nothing computed.** This
+  is the campaign that will be reported, and the one the incoming OpenUBEM results land in.
+
+🔴 **`Overview.md:683`'s rule is satisfied by the gate namespace, not by a step number.** It
+forbids one gate ID scoring two bases; `G10.x` (core-era, closed) and `G10N.x` (no-core, unscored,
+each row naming the `G10.x` row it inherits) satisfy it without an orphan step, which is what the
+author asked for. `D-IMP-2`'s substance --- separate namespace, own prereg, spec now, compute only
+after the OpenUBEM blockers clear --- is kept in full; only its location changed. `D-IMP-1` and
+`D-IMP-3` are untouched.
+
+⚪ **What deliberately did NOT move:** `Step10_docs/outputs_step10/`, `Step10_docs/impl/`'s
+pre-2026-09-03 notes, `Step10_docs/docs/`, and the nine `tools/4thJ_step10_*.py` scripts --- `C1`'s
+executed evidence, addressed by path from ~30 recorded places including commands inside a closed
+record. `Step10_docs/README.md` is the redirect for any path written before today.
+
+⚪ **The one check that closes it:** a rename must not turn a failing guard into a vacuous pass.
+The renamed preflight was re-run on the same 410 `C1` manifests --- `checked=410 failed=410`,
+exit 1, engine `sha256=316fe7a6…150b` byte-identical to this morning's measurement, **still SEEN
+FAILING** (`Step10_docs/impl/2026-09-03_preflight-seen-failing.md`, second section). No gate
+re-scored, no manifest retrofitted, no number retracted, no EnergyPlus invoked, `prereg.md` md5
+`e4243e07cdd80c9c846b91f40e3e8c45` never opened.
+
+⚪ **Later the same day, on the author's instruction, the `Step12_docs/` backup was archived** from the repo root to `previous/Step12_docs.bak_dimp4/`, where every other superseded copy in this project is kept. The five files inside are unchanged. Every earlier mention of `Step12_docs.bak_dimp4/` above and elsewhere means that archived copy; the redirect row is in `Step10_docs/README.md`. Nothing else moved and nothing was re-scored.

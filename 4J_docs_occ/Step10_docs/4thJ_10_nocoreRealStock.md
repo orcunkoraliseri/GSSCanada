@@ -1,7 +1,7 @@
-# Step 12 — No-core real-stock UBEM simulation
+# Step 10 — campaign `C2`: no-core real-stock UBEM simulation
 
 ### 4J HETUS LLM pipeline. Implementation specification.
-#### Parent: `../4thJ_00_HETUS_LLM_Pipeline.md`. Validation: `4thJ_12_nocoreRealStock_val.md`.
+#### Parent: `../4thJ_00_HETUS_LLM_Pipeline.md` Step 10. Campaign `C1` (core-era, closed): `archive_C1_core_era/4thJ_10_ubemRealStock.md`. Validation: `4thJ_10_nocoreRealStock_val.md`.
 #### Origin: `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` (I-1 through I-7), ruled `D-IMP-1/2/3` (a) on all three, docket `IMP/docs/DONE/2026-09-03_D-IMP-1_D-IMP-2_D-IMP-3_nocore-review-rulings.md`.
 #### Engine: **OpenUBEM**, no-core build — does not exist yet. `D-EU-79`–`D-EU-88` (owner's ruling, OpenUBEM side). `D-EU-55` binds: no EnergyPlus without the owner's own sentence.
 
@@ -9,10 +9,27 @@
 
 ## STATUS
 
-🔴 **SPEC ONLY. NOTHING COMPUTED, NOTHING SIMULATED, NO CELL RUN, 2026-09-03.** Registered as a
-**new step**, not an edit to Step 10, per `Overview.md:683`'s own registration rule (two documents
-claiming one basis under one ID is how a basis change hides as a fix). Step 12 waits on the
-OpenUBEM blockers below and on `D-EU-55`; **Step 10 and Step 11 do not re-open**.
+🔴 **SPEC ONLY. NOTHING COMPUTED, NOTHING SIMULATED, NO CELL RUN, 2026-09-03.**
+
+🟢 **Re-homed 2026-09-03 under `D-IMP-4`** (author's ruling: *"I want a clean pipeline, not an
+extra step like 12"*). This document was first filed as `Step12_docs/4thJ_12_nocoreRealStock.md`
+under `D-IMP-2`(a); **the pipeline ends at Step 11 and there is no Step 12.** The no-core campaign
+is **Step 10's second campaign, `C2`**, at `Step10_docs/` (its `C1` predecessor archived beside it in `archive_C1_core_era/`). Step 10 now declares two
+campaigns:
+
+* **`C1` — core-era** (`archive_C1_core_era/4thJ_10_ubemRealStock.md`, `archive_C1_core_era/4thJ_10_ubemRealStock_val.md`): run,
+  scored and **CLOSED** — 410 cells, 18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2
+  NOT_EVALUABLE. 🔴 Retained as the **method and reproducibility record only. No `C1` result is
+  reported.** Frozen: not re-opened, not re-scored, not deleted.
+* **`C2` — no-core** (this document and its validation companion): the campaign that will be
+  reported. Nothing computed.
+
+🔴 **`Overview.md:683`'s registration rule is honoured by the gate namespace, not by a step
+number.** `C1`'s `G10.x` stays spent on the core-era basis; `C2` opens **`G10N.x`**, one row per
+`G10.x` with the inheritance stated on it, so no gate ID ever claims two bases.
+
+Step 10 `C2` waits on the OpenUBEM blockers of §8 and on `D-EU-55`; **`C1` and Step 11 do not
+re-open.**
 
 ---
 
@@ -33,7 +50,7 @@ convention, or any Step 10/11 gate that does not depend on the layout geometry.
 * The injection formula `φ_int(t) = (1−f)·3.0 + f·3.0·g(t)/mean(g)`, the `f` set
   `{0, .15, .30, .50, 1.00}`, per-zone **and** per-building conservation (`G10.13`'s discipline),
   the chaining convention `independent`, seed 1 (decision 14), and `rotate_to_midnight()`
-  (`D-S9-3`(a)). Any Step 12 emission path inherits these verbatim.
+  (`D-S9-3`(a)). Any campaign `C2` emission path inherits these verbatim.
 * Step 7's interface: presence **fraction** `g(t)`, never watts (`D-S7-7`(a)); one
   `Schedule:File` + `People` pair per dwelling; `Interpolate to Timestep = No`.
 * Every closed board: Steps 1–9, Step 10's 24 gates, the `EU-09` restated board, `prereg.md` and
@@ -45,7 +62,7 @@ convention, or any Step 10/11 gate that does not depend on the layout geometry.
 ## 3. What changes — the population
 
 **Four districts**: Madrid, Lyon, London, Bologna. **France (Lyon) is a physical baseline —
-never a 4J denominator** (`G10.11` carries over intact, extended `G12.11`); no French fold, no
+never a 4J denominator** (`G10.11` carries over intact, extended `G10N.11`); no French fold, no
 French held-out fold, no French diary.
 
 ### 3.1 `N_u` under no-core (I-3)
@@ -81,15 +98,15 @@ census `k × storeys`**, labelled **"projected, not measured"** — `tools/4thJ_
 (selftest 61/61) is **not invoked**; nothing is emitted now. All drawn storeys are eligible;
 non-residential ground floors are a declared limitation, reported not gated. Case A stays the
 paired control, exactly as in Step 10. `G10.8` (content-located fold) and `G10.20` (Case A/Case B
-distinct) carry over as `G12.8` / `G12.20` rows.
+distinct) carry over as `G10N.8` / `G10N.20` rows.
 
 ## 5. Manifest fields (I-6)
 
-Every Step 12 manifest, when one is ever written, carries all of: `weather_sha256`,
+Every campaign `C2` manifest, when one is ever written, carries all of: `weather_sha256`,
 `energyplus_build_hash`, `energyplus_version` (measured, not literal — `FINDING 187`),
 `openubem_version`, `openubem_git_commit`, measured `platform`, `rotated_to_midnight`,
 `diary_origin_hour`, `completed`, `completion_status`, `scheme`, `status`, `k`,
-`observed_dwellings`, `dwelling_deficit`. See `4thJ_12_nocoreRealStock_val.md` `G12.14` (the `G10.14`
+`observed_dwellings`, `dwelling_deficit`. See `4thJ_10_nocoreRealStock_val.md` `G10N.14` (the `G10.14`
 twin) for the blank-field perturbation.
 
 ## 6. Replicate arm (I-7)
@@ -98,12 +115,12 @@ A named subset re-run `R` times on one host measures re-run tolerance. The **quo
 inside tolerance → quotable, with the tolerance stated; outside → **barred**, named as barred, and
 the barring is never silent. The `.err` marker census (`PsyPsatFnTemp` / `PsyTwbFnTdbWPb`,
 `FINDING 182`/`193`) rides along as an **INFO column**, never a gate. See
-`4thJ_12_nocoreRealStock_val.md` `G12.replicate` for the out-of-tolerance perturbation. **No
+`4thJ_10_nocoreRealStock_val.md` `G10N.replicate` for the out-of-tolerance perturbation. **No
 compute is authorised now**; this section specifies the arm for when it runs.
 
 ## 7. Preflight guard
 
-`tools/4thJ_step12_preflight.py` — read-only. Asserts, per manifest: `scheme ==
+`tools/4thJ_step10_nocore_preflight.py` — read-only. Asserts, per manifest: `scheme ==
 "nocore_equal_area"`, `status == "direct"`, a check verdict present, and the sha256 of
 `openubem/geometry/european_residential.py` against a pinned no-core digest
 (`ENGINE_DIGEST_PIN = "TBD_by_owner"`, so the digest arm fails by construction until the owner
@@ -129,6 +146,6 @@ Implementation and validation documents written; population (four districts), `N
 (I-3), Arm F redefinition, binding rule (I-5, `D-IMP-3`(a)), manifest field list (I-6), replicate
 arm and quotation rule (I-7) all specified. Preflight guard written and **seen failing** on all
 410 retained Step 10 manifests (`impl/2026-09-03_preflight-seen-failing.md`). Prereg draft filed
-at `prereg_step12_DRAFT.md` (DRAFT, not frozen, no md5 sidecar). No compute, no EnergyPlus, no
+at `prereg_step10_nocore_DRAFT.md` (DRAFT, not frozen, no md5 sidecar). No compute, no EnergyPlus, no
 cell, no emission. `Step6_docs/outputs_step6/prereg.md` (md5 `e4243e07cdd80c9c846b91f40e3e8c45`)
 never opened for writing.

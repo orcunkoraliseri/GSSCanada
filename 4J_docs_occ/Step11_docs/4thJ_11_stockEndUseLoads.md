@@ -245,9 +245,17 @@ any Step 11 aggregate that mixes them or that presents an Arm F total without th
 > regime: **check-FAIL or unusable footprint → one box per floor**, no longer a convexity refusal
 > alone (any layout-route failure now falls back to one box per floor, per
 > `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` and
-> `Step12_docs/4thJ_12_nocoreRealStock.md` §3.2). `G11.17` above is **unchanged** — the LOWER BOUND
+> `Step10_docs/4thJ_10_nocoreRealStock.md` §3.2). `G11.17` above is **unchanged** — the LOWER BOUND
 > rule and the never-pooled rule apply identically to the redefined Arm F. Nothing built; this
-> section still describes Step 10's core-era population until a no-core Step 12 cell exists.
+> section still describes Step 10 campaign `C1`'s core-era population until a no-core `C2` cell
+> exists.
+>
+> 🟢 **Corrected 2026-09-03 (`D-IMP-4`), same day.** The path above first read
+> `Step12_docs/4thJ_12_nocoreRealStock.md`. **There is no Step 12** — the pipeline ends at Step 11
+> and the no-core campaign is **Step 10 campaign `C2`**, gate series **`G10N.x`** (formerly
+> `G12.x`); the core-era campaign `C1` is archived at `Step10_docs/archive_C1_core_era/`, closed
+> and unchanged. Docket: `IMP/docs/DONE/2026-09-03_D-IMP-4_no-step-12-fold-into-step-10.md`.
+> Nothing in Step 11 moves.
 
 ---
 
