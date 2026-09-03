@@ -1,3 +1,13 @@
+> 🟡 **NO-CORE REGIME, 2026-09-03 (`D-IMP-1`, ruled (a)).** The owner ruled the no-core regime on the
+> OpenUBEM side (`D-EU-79`/`80`/`81`, 2026-09-02/03): *"a floor plate divides into dwellings only, no
+> core, corridor, access band or unconditioned zone; every square metre belongs to a flat; nothing
+> narrower than 2 m; one flat = one zone."* **Everything below in this document that names a core,
+> corridor, stairwell or `b_u` is SUPERSEDED by `D-EU-79` and kept only as the record of what was
+> considered** during the OpenUBEM-adaptation design phase (2026-08 architecture). No section below is
+> deleted; each superseded block carries its own dated marker. See
+> `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1 and
+> `IMP/docs/DONE/2026-09-03_D-IMP-1_D-IMP-2_D-IMP-3_nocore-review-rulings.md`.
+
 # Step 8 — BEM / UBEM Simulation: Implementation Specification (Unified OpenUBEM + GSSCanada Architecture)
 
 ### 4J HETUS LLM Pipeline & OpenUBEM Framework Integration.
@@ -18,13 +28,20 @@
 - [`DR07: Engineering Roadmap for Adapting OpenUBEM to European Standards`](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/4J_docs_occ/Step8_docs/IMP_step8/DeepResearch/DR07_adapting_openubem_to_european_standards.md)
 #### Methodological Provenance: `IMP_step8/outputs/kbem_ankara_report.md`, `IMP_step8/outputs/floor_layout_generation_report.md`, and *Iseri et al. (2025), Energy and Buildings 337, 115620*.
 
+> 🟡 **Added 2026-09-03.** `DR02` (staircase buffer methods) and `DR03`/`DR04`'s core/corridor synthesis
+> fed a **circulation-core recommendation** — an unconditioned stair/corridor zone, 6–12 % of GFA — that
+> was **considered and retired** by the owner's `D-EU-79` no-core ruling: *"a floor plate divides into
+> dwellings only, no core, corridor, access band or unconditioned zone."* The dossiers are kept as the
+> literature record (DR02/DR03 cited as literature, never as a district number); no plan below built on
+> them is live.
+
 ---
 
 ## 1. Executive Summary & Strategic Integration Architecture
 
 This document establishes the **unified implementation methodology** merging the **OpenUBEM** urban building energy simulation framework with **GSSCanada** (the 4J HETUS Large Language Model demographic occupancy pipeline).
 
-Rather than developing a one-off simulation harness from scratch, Step 8 configures and deploys the modular Python package `openubem` ([`C:\Users\o_iseri\Desktop\OpenUBEM\openubem`](file:///C:/Users/o_iseri/Desktop/OpenUBEM/openubem)) as its core computational engine. OpenUBEM provides the production-grade geometry generators, watertight EnergyPlus IDF assembly pipelines, SLURM HPC array runners, and post-processing tools required to execute the 510-cell pre-registered simulation campaign across the 102 European residential archetypes.
+Rather than developing a one-off simulation harness from scratch, Step 8 configures and deploys the modular Python package `openubem` ([`C:\Users\o_iseri\Desktop\OpenUBEM\openubem`](file:///C:/Users/o_iseri/Desktop/OpenUBEM/openubem)) as its core computational engine. OpenUBEM provides the production-grade geometry generators, watertight EnergyPlus IDF assembly pipelines, SLURM HPC array runners, and post-processing tools required to execute the 510-cell pre-registered simulation campaign across the 102 European residential archetypes **(clarified 2026-09-03: "510-cell / 102 archetypes" names the OpenUBEM archetype campaign, `EU-08`, on the OpenUBEM side — not this 4J Step 8 campaign, which is 88 archetypes × 5 `f`-levels × 10 diaries; see `4thJ_08_bemSimulation.md:796-799`)**.
 
 ```mermaid
 flowchart TD
@@ -42,6 +59,7 @@ flowchart TD
 
     subgraph OpenUBEM["3. OpenUBEM Computational Backbone (openubem/)"]
         C1["openubem.geometry.layoutGenerator<br/>Dwelling Subdivision (1x1, 2x1, 2x2, 3x2, 4x2)<br/>Unconditioned Stair Core (6% - 12% GFA)"]
+        %% SUPERSEDED by D-EU-79 (2026-09-03): the stair-core fraction above is retired, no-core regime
         C2["openubem.idf.builder & opaque_assembly<br/>Parametric Insulation (U_wall, U_roof, U_window)<br/>Internal Thermal Mass Injection (c_m = 45 Wh/m2K)"]
         C3["openubem.simulation.runner & parallel<br/>EnergyPlus 9.2 Execution on SLURM Cluster<br/>(510 Injected Cells + 102 Uninjected Controls)"]
         C4["openubem.results.service_loads<br/>Simulated 4-End-Use EUI + Reconstructed Whole EUI"]
@@ -130,6 +148,10 @@ To bridge OpenUBEM's architecture with the European CEN/ISO and TABULA specifica
 +------------------------------------+---------------------------------+----------------------------------+
 ```
 
+> 🟡 **SUPERSEDED by `D-EU-79` (2026-09-03).** The "Zoning & Compartmentalization" row above
+> ("Multi-Dwelling + Unheated Stair") names the retired core-era plan; kept as the record of what was
+> considered. No-core regime: dwellings only, no unheated stair zone.
+
 ### 3.1. Module-by-Module Technical Adaptation
 1. **Opaque Assembly Builder (`openubem.idf.opaque_assembly`)**:
    - Calculates insulation layer thickness ($d_{\text{ins}}$) parametrically from TABULA $U$-values ($U_{\text{wall}}, U_{\text{roof}}, U_{\text{ground}}$):
@@ -149,6 +171,12 @@ To bridge OpenUBEM's architecture with the European CEN/ISO and TABULA specifica
 ---
 
 ## 4. Procedural Multi-Zone Floor Layout & Geometry Engine
+
+> 🟡 **THIS ENTIRE SECTION (§4) SUPERSEDED by `D-EU-79` (2026-09-03).** The MFH/AB grids, the corridor
+> spine, the 8 % circulation core, `b_u`, and the `units_corridor` diagram below all describe the
+> retired core-era subdivision. Owner's ruling: *"a floor plate divides into dwellings only, no core,
+> corridor, access band or unconditioned zone; every square metre belongs to a flat; nothing narrower
+> than 2 m; one flat = one zone."* Kept as the record of what was considered; no plan below is live.
 
 OpenUBEM's `openubem.geometry.layoutGenerator` implements the procedural spatial slicing and typological rules established in [`floor_layout_generation_report.md`](file:///C:/Users/o_iseri/Desktop/GSSCanada/GSSCanada-main/4J_docs_occ/Step8_docs/IMP_step8/outputs/floor_layout_generation_report.md) and *Iseri et al. (2025)*:
 
@@ -194,6 +222,12 @@ Three fundamental properties govern this injection:
 3. **Intermittent Heating Factor Preservation**: Transmission reduction factors ($0.90/0.80$ SUH, $0.95/0.85$ MUH) are maintained as transmission scalars on UA per TABULA `FINDING 57`, with **no scheduled thermostat night setback added** to avoid confounding the LOCO occupancy signal.
 
 ### 5.2. Multi-Occupant Schedule Assignment in Multi-Family Archetypes
+
+> 🟡 **SUPERSEDED by `D-EU-79` (2026-09-03).** "Dwelling unit" below assumed the core-era MFH/AB grid
+> (§4). Under no-core, the unit *is* the drawn flat directly (no corridor-served unit count); the
+> per-unit independent-diary principle survives and is restated for the no-core regime as `D-IMP-3`
+> (Step 12, `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-5).
+
 In multi-family archetypes (MFH / AB), `openubem` assigns an **independent stochastic diary** from the held-out LOCO fold population to each dwelling unit $u \in \{1, \dots, N_{\text{units}}\}$, capturing inter-household demographic heterogeneity across identical physical envelopes.
 
 ---
@@ -362,3 +396,26 @@ Step 7 delivers **single diary days** of at-home presence per respondent, not an
 - Leap days and DST: the ruled EPW windows are non-leap, LST without DST; the chaining script must produce exactly 8,760 rows and declare its day-boundary convention.
 
 *Requested by the OpenUBEM European Locations arc (director session, 2026-08-23). Contact artefact: `OpenUBEM/docs/docs_ACTIVE/europeanLocations/prompts/DIRECTOR_PROMPT_european_locations.md` §4.3 (D-EU-09).*
+
+---
+
+## Progress Log
+
+Append-only. Never delete or reformat an existing entry.
+
+### 2026-09-03 — no-core review, `D-IMP-1` ruled (a): dated header and SUPERSEDED markers applied
+
+`IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1, docket
+`IMP/docs/DONE/2026-09-03_D-IMP-1_D-IMP-2_D-IMP-3_nocore-review-rulings.md`. Added: a dated
+no-core regime header above the title, quoting `D-EU-79`; SUPERSEDED markers on the mermaid `C1`
+node, the §3 table row ("Multi-Dwelling + Unheated Stair"), the whole §4 section (MFH/AB grids,
+corridor spine, 8% core, `b_u`, `units_corridor` diagram), and §5.2 (with a `D-IMP-3` pointer for
+the no-core per-flat restatement); one paragraph under the `DR01`–`DR04` links; a 510-vs-88
+disambiguation. Same device on `outputs/step8_master_results_dossier.md:217` and on
+`outputs/floor_layout_generation_report.md` (document-level header, its core content proved
+pervasive beyond the three run-book anchor lines). Check: `grep -n -i
+"corridor\|circulation\|stair\|core\b\|b_u"` on the IMP file returns 33 hits, all under the
+document header's blanket declaration (6 accepted false positives — generic "core" word-boundary
+collisions, out of I-1's scope); perturbation seen felling on scratch copies (§4 marker removed →
+6 unmarked hits exposed; document header removed on the report file → ~10 unmarked hits exposed).
+No plate cut, no cell run, no EnergyPlus invoked.

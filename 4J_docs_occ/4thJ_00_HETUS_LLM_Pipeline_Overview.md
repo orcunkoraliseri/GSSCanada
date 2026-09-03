@@ -268,6 +268,12 @@ architecture differs.
 
 ---
 
+> 🟡 **Added 2026-09-03.** The box below is stale on several step statuses (Steps 2, 7, 8, 9 read OPEN;
+> Step 10 reads PLANNED); the dated corrections are in `4thJ_00_HETUS_LLM_Pipeline.md`'s own per-step
+> headers, not repeated here. The box itself is kept unedited, per this document's own registration rule
+> at `:683` (new work is a new step, not a silent edit). No-core review:
+> `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md`.
+
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  STEP 0 — FEASIBILITY GATE                                                   ║

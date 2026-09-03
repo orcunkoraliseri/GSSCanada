@@ -1,4 +1,61 @@
-## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+33). READ THIS BLOCK FIRST. THE last+32 BLOCK BELOW IT STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
+## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+34). READ THIS BLOCK FIRST. THE last+32 BLOCK FURTHER BELOW STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
+
+> 🟢 **Verification note, added 2026-09-03 (later same day, post-compaction continuation
+> session, no new box work).** The author asked "are we sure we completed
+> `IMP/Prompt/4thJ_imp_nocore_execution_2026-09-03.md`" and I re-checked from disk rather than
+> from memory: re-read the run-book's own box 2–8 definitions, then grepped every target file
+> against them. All eight `§12` boxes of `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md`
+> confirmed `[x]` (`:293`–`:300`); SUPERSEDED markers present in `4thJ_08_bemSimulation_IMP.md`,
+> `step8_master_results_dossier.md`, `floor_layout_generation_report.md`; `writeup_notes.md` §9
+> present; master plan "four→three countries" correction and five dated status lines confirmed;
+> `Step12_docs/4thJ_12_nocoreRealStock.md`, `_val.md`, `prereg_step12_DRAFT.md`,
+> `tools/4thJ_step12_preflight.py` and `impl/2026-09-03_preflight-seen-failing.md`
+> (`checked=410 failed=410`) all present on disk with matching content; `box5-6_scratch_perturbations.py`
+> present; Step 11 §2.1 and item 11.7 dated notes confirmed; board stamp
+> (`4thJ_CHECKLIST.html:253`) confirms the box-8 republish. **Nothing was re-executed, nothing
+> re-scored, no new ruling; this is a read-only confirmation that last+34's closure claim holds.**
+
+### 0. WHAT HAPPENED ON 2026-09-03 (SAME DAY, EXECUTION SESSION), IN ONE PARAGRAPH
+
+The author ruled `D-IMP-1` / `D-IMP-2` / `D-IMP-3` **(a) on all three** ("no more core plans,
+nocore plans i want, lets go"), docket
+`IMP/docs/DONE/2026-09-03_D-IMP-1_D-IMP-2_D-IMP-3_nocore-review-rulings.md`. **All eight boxes of
+`IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` §12 are executed, APPLIED except
+compute.** Box 2: dated no-core header + SUPERSEDED markers on the retired
+`Step8_docs/IMP_step8/` core/corridor plan, its dossier and the floor-layout report; the "no
+circulation zone" limitation drafted in `writing/4thJ_writeup_notes.md` §9. Box 3: master-plan
+"four countries" corrected to three, five stale step-status lines dated, the Overview box flagged
+stale, 510-vs-88 disambiguated, the Step 7 `G7.18` note dated, board card `10.11` flipped
+(`FINDING 194`: the defect does not reproduce). Boxes 4–6: **`Step12_docs/` created**
+(implementation + validation, `G12.x` gate table with `G10.x` inheritance per row), `prereg`
+draft filed, `tools/4thJ_step12_preflight.py` written and **seen FAILING 410 of 410** on today's
+core-era engine (`ENGINE_DIGEST_PIN = "TBD_by_owner"` by design), four gate-design perturbations
+seen felling on scratch fixtures (manifest blank-field, replicate tolerance, binding-rule
+collision, wrong-fold). Box 7: Step 11 §2.1 (Arm F redefined for no-core) and item 11.7
+(re-pointed to `D-EU-88`) dated. Box 8: this rewrite, board republished (no-core review card
+flipped `prog` → `done`, `139` cards unchanged, item count `143`), memory updated. **Step 12
+exists ON PAPER ONLY** — it waits on the OpenUBEM blockers (engine carry-in, `D-EU-84`, `D-EU-87`,
+`D-EU-88`) and on `D-EU-55`. **Step 10 and Step 11 do not re-open. No EnergyPlus was invoked, no
+cell was run, no manifest was retrofitted, no closed board was re-scored.**
+
+### 1. WHAT TO DO WHEN THIS SESSION OPENS
+
+1. The no-core review is **closed**. Nothing is owed on it. If the user asks for Step 12 compute,
+   `D-EU-55`'s own sentence and the OpenUBEM blockers (§8 of `Step12_docs/4thJ_12_nocoreRealStock.md`)
+   must clear first — check `OpenUBEM/docs/docs_ACTIVE/europeanLocations/` for their state before
+   assuming anything moved; this file does not track the OpenUBEM side's own progress.
+2. 🔴 **Never** re-open Step 10 or Step 11, re-score a closed gate, re-propose option (c) of
+   `D-S10-1` or Option B of `D-EU-31`, retrofit a manifest, or run EnergyPlus without the owner's
+   own sentence (`D-EU-55`).
+3. **Board**: `4thJ_CHECKLIST.html` = the published page, 143 items / 13 step groups, 132 done /
+   0 in progress / 11 not started. `Prompts/RESUME.md.bak_next34` is this rewrite's backup.
+   **Never edit the local board without first reading the live artefact.**
+4. Reply shape unchanged (rule 5 of the last+32 block below): English, ~80 words, headline,
+   3–5 bullets, `Evidence:`, `Next:`.
+
+---
+
+## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+33). SUPERSEDED by the last+34 block above; kept as the record of the execution session's opening state. THE last+32 BLOCK BELOW IT STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
 
 ### 0. WHAT HAPPENED ON 2026-09-03, IN ONE PARAGRAPH
 
@@ -41,6 +98,7 @@ additive log entries of its §12 box 1.
 ### 2. WHAT TO DO WHEN THIS SESSION OPENS
 
 1. Read the IMP document's **§0, §11 and §12** --- do not re-derive them from this file.
+   🟢 **Run-book for that execution (written 2026-09-03, same session):** `IMP/Prompt/4thJ_imp_nocore_execution_2026-09-03.md` --- open it with "continue"; it carries §12 boxes 2–8 with the check that closes each, the never-quote list and the closure ritual.
 2. 🔴 **If the author has ruled `D-IMP-1` / `D-IMP-2` / `D-IMP-3`, execute §12 in order,
    additively, each perturbation seen felling its check.** If not, ask for the rulings in one
    line (recommend (a) on all three) and stop.

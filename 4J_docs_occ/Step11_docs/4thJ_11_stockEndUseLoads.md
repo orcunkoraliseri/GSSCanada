@@ -241,6 +241,14 @@ numbers do not stand at all and may not be quoted. (`../DeepResearchPrompts/VETT
 Enforced by `G11.16`, extended: the population declaration now carries the **arm**, and `G11.17` refuses
 any Step 11 aggregate that mixes them or that presents an Arm F total without the bound language.
 
+> 🟡 **Added 2026-09-03 (`D-IMP-1`, no-core review, I-1).** Arm F is **redefined** for the no-core
+> regime: **check-FAIL or unusable footprint → one box per floor**, no longer a convexity refusal
+> alone (any layout-route failure now falls back to one box per floor, per
+> `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` and
+> `Step12_docs/4thJ_12_nocoreRealStock.md` §3.2). `G11.17` above is **unchanged** — the LOWER BOUND
+> rule and the never-pooled rule apply identically to the redefined Arm F. Nothing built; this
+> section still describes Step 10's core-era population until a no-core Step 12 cell exists.
+
 ---
 
 ## 3. 🔴 THE DOUBLE-COUNTING SEAM WITH STEP 10
@@ -270,7 +278,7 @@ simulates it, the pair double-counts, and the double count is invisible in both 
 | **11.3** | **Per-dwelling trigger campaign** — run the trigger on Step 10 Arm D's `N_u` diaries per building | Step 10 items 10.4, 10.6 | no |
 | **11.4** | **Accounting-path resolution** — one path per end-use per building, recorded in the manifest (§3) | 11.3, Step 10 10.6 | no |
 | **11.5** | **Stock-scale aggregation** — `G11.12` at real neighbourhood scale, with the population declaration `G11.16` requires | 11.3, 11.4 | no |
-| **11.7** | ⚪ **3D stock visualisation, ONE static self-contained `.html`** — added 2026-08-28 at the author's request. Renders the Step 11 stock aggregate on the **existing** OpenUBEM 3D export `OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D`, in the vocabulary and conventions of `OpenUBEM/docs/docs_EXPLANATION/OpenUBEM_fundamentals.md`. 🔴 **It is a rendering, never a result, and it inherits every bar**: Arm D and Arm F **never share a colour scale or a legend** (`G10.9`); every Arm F surface is labelled a **LOWER BOUND** with **no magnitude attached** (`G10.22`); **no per-dwelling value is rendered at any zoom** (`G11.13`); every figure is **HEATING-ONLY** and stated **relative to its own control** (`G10.12`); the **Lyon geometry provenance** is printed on the page (`G10.11`). ⚪ **Read-only on the OpenUBEM tree** — it reads the export and never writes into it. No new simulation, no new artefact in their tree | 11.5 | no |
+| **11.7** | ⚪ **3D stock visualisation, ONE static self-contained `.html`** — added 2026-08-28 at the author's request. Renders the Step 11 stock aggregate on the **existing** OpenUBEM 3D export `OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D`, in the vocabulary and conventions of `OpenUBEM/docs/docs_EXPLANATION/OpenUBEM_fundamentals.md`. 🔴 **It is a rendering, never a result, and it inherits every bar**: Arm D and Arm F **never share a colour scale or a legend** (`G10.9`); every Arm F surface is labelled a **LOWER BOUND** with **no magnitude attached** (`G10.22`); **no per-dwelling value is rendered at any zoom** (`G11.13`); every figure is **HEATING-ONLY** and stated **relative to its own control** (`G10.12`); the **Lyon geometry provenance** is printed on the page (`G10.11`). ⚪ **Read-only on the OpenUBEM tree** — it reads the export and never writes into it. No new simulation, no new artefact in their tree. 🟡 **Added 2026-09-03 (`D-IMP-1`, I-8):** input re-pointed to the `D-EU-88` district-viewer output once it exists — **geometry only, no EUI rendered on the page**; `G11.13`'s no-per-dwelling-value rule stays exactly as above. `D-EU-88` has not started; nothing built here today | 11.5 | no |
 | **11.6** | **Gate board, mutation battery, dossier** — every `G11.x` seen failing its designated mutation, `ALREADY_FAILING_AT_BASELINE` where §1.4 applies | 11.5 | no |
 
 ⚪ **No Speed job and no GPU.** Step 9 ran entirely locally, and Step 11's addition is population size, not
@@ -447,3 +455,12 @@ can retire, and only by reading the paper.
 no Step 9, 10 or 11 artefact was regenerated. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
 untouched. ⚪ **No manuscript file was created** — §7 is drafted passages inside the notes, and the
 manuscript itself remains unwritten.
+
+### 2026-09-03 — no-core review, `D-IMP-1` (I-8): Arm F redefined, item 11.7 re-pointed
+
+`D-IMP-1` ruled (a). Two dated amendments, both additive, nothing built: §2.1 — Arm F is redefined
+for the no-core regime as check-FAIL-or-unusable-footprint → one box per floor (no longer a
+convexity refusal alone); `G11.17`'s LOWER BOUND / never-pooled rule is unchanged. Item 11.7 —
+input re-pointed to the `D-EU-88` district-viewer output once it exists (geometry only, no EUI on
+the page); `G11.13` stays. Mirrored one line in `_val.md`'s `G11.17` row. `D-EU-88` has not
+started; Step 11 does not re-open.

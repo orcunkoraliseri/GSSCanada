@@ -646,8 +646,10 @@ after the corresponding work had been done the wrong way.
 
 ## STEP 1 — CORPUS DEFINITION AND ACQUISITION
 
-**Status: ✅ CLOSED 2026-08-14 by author decisions 5 and 6. HETUS only, four countries, one wave each.
-Acquisition is open and executable; the definition is not.**
+**Status: ✅ CLOSED 2026-08-14 by author decisions 5 and 6. HETUS only, three countries, one wave each.
+Acquisition is open and executable; the definition is not.** *(corrected 2026-09-03: this line said
+"four"; decision 16, same day 2026-08-14, narrowed it to three — Italy 2013-14, Spain 2009-10, UK
+2014-15; France 2009-10 stays a physical baseline, never a 4J denominator.)*
 
 ### 1A. Four HETUS countries, one wave each
 
@@ -846,7 +848,9 @@ DECISIONS**. **The Data Availability statement is written from that entry and fr
 
 ## STEP 2 — HARMONIZATION
 
-**Status: OPEN. Specified by `RL02`.**
+**Status: OPEN. Specified by `RL02`.** *(dated status, added 2026-09-03: closed 2026-08-14/18 per the
+Progress Log; this header line was stale — see `4thJ_00_HETUS_LLM_Pipeline_Overview.md` for the
+authoritative per-step status box.)*
 
 ### 2A. The three code lists, as transcribed
 
@@ -1554,7 +1558,9 @@ named directly, constant across this corpus, and impossible to extrapolate.
 
 ## STEP 7 — CONSTRAINED GENERATION AT SCALE, AND SCHEDULE PRODUCTION
 
-**Status: OPEN. Mechanism decided by `RL12`.**
+**Status: OPEN. Mechanism decided by `RL12`.** *(dated status, added 2026-09-03: closed 2026-08-25 per
+the Progress Log; this header line was stale — see `4thJ_00_HETUS_LLM_Pipeline_Overview.md` for the
+authoritative per-step status box.)*
 
 ### 7A. The episodes-versus-slots conflict, and why episodes still win
 
@@ -1641,7 +1647,9 @@ convention rather than the model. That is the same shape of error as the uninjec
 
 ## STEP 8 — BEM/UBEM SIMULATION
 
-**Status: OPEN. Scoped by `RL13`.**
+**Status: OPEN. Scoped by `RL13`.** *(dated status, added 2026-09-03: closed 2026-08-25/26 per the
+Progress Log; this header line was stale — see `4thJ_00_HETUS_LLM_Pipeline_Overview.md` for the
+authoritative per-step status box. No-core review: `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md`.)*
 
 ### 8A. 🔴 There is no European DOE prototype library, and that is new scope
 
@@ -1701,7 +1709,9 @@ the building-science half is not decorative.
 
 ## STEP 9 — ACTIVITY-DRIVEN END-USE LOADS
 
-**Status: OPEN. Sourced by `RL13`.**
+**Status: OPEN. Sourced by `RL13`.** *(dated status, added 2026-09-03: closed 2026-08-25/27 per the
+Progress Log; this header line was stale — see `4thJ_00_HETUS_LLM_Pipeline_Overview.md` for the
+authoritative per-step status box.)*
 
 This step is the answer to "why generate 145 activity classes when a building model needs a presence
 fraction". A diary says **what people are doing**, and that is the signal a presence fraction discards.
@@ -1811,7 +1821,10 @@ corpus, the grammar and every trained fold.
 
 ## STEP 10 — REAL-STOCK UBEM SIMULATION WITH PER-DWELLING DIARIES
 
-**Status: PLANNED 2026-08-26. Engine: OpenUBEM. Documents: `Step10_docs/`.**
+**Status: PLANNED 2026-08-26. Engine: OpenUBEM. Documents: `Step10_docs/`.** *(dated status, added
+2026-09-03: closed 2026-08-28 per the Progress Log — validation suite scored, 18 PASS / 2 FAIL / 1 INFO
+/ 1 OPEN_INHERITED / 2 NOT_EVALUABLE; this header line was stale — see
+`4thJ_00_HETUS_LLM_Pipeline_Overview.md` for the authoritative per-step status box.)*
 
 🔴 **Steps 8 and 9 are a closed chapter and this step does not reopen them.** Step 8's definition
 of done closed on 2026-08-25 and was re-run rotated on 2026-08-26 under `D-S9-3`(a); Step 9's board is
@@ -1875,6 +1888,11 @@ engine-side contract freeze, not only Step 10.
 Measured, not assumed: of 297 layout-ready buildings at the first real site the generator emitted a
 dwelling layout for **18**, and **256 of 297** footprints are non-convex or hold a courtyard. Of a frozen
 12-building ladder sample, **1** emitted a layout.
+
+*(Added 2026-09-03, `D-IMP-1`): the 18/297, 256/297 and 1/12 figures above are measured under the parked
+layout regime — the still core-era `european_residential.py` generator, unchanged since these numbers
+were taken. They are not re-measured here and do not move under the no-core ruling until the engine
+carry-in lands; see `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1.)*
 
 Three consequences are designed for rather than discovered. **Two populations are scored separately and
 never pooled** — Arm D, dwelling-partitioned with `N_u ≥ 2`, and Arm F, the `one_zone_per_floor`
@@ -2052,7 +2070,7 @@ Reproduced from the overview, with the reasoning that did not fit there.
 | Decision | Rationale |
 |---|---|
 | The transfer experiment is the paper | Now evidenced by `RL06` rather than asserted by us. A from-scratch conditional Transformer beats the LLM everywhere except transfer, and pretraining stops helping on tabular data at around 1,000 records. Building the paper on anything else invites the one reviewer question we cannot answer |
-| Track B primary, Track A parallel — 🔴 **Track C withdrawn** | A 12 to 14 week institutional application does not go on the critical path, and Track A now widens the corpus from four countries to seventeen with no harmonisation change, so it matters more than it did. **Track C was the public ATUS path and it leaves with decision 5.** What replaces it is open decision 13 |
+| Track B primary, Track A parallel — 🔴 **Track C withdrawn** | A 12 to 14 week institutional application does not go on the critical path, and Track A now widens the corpus from four countries to seventeen with no harmonisation change *(the "four" is stale — see the corrected row below; not recomputed here)*, so it matters more than it did. **Track C was the public ATUS path and it leaves with decision 5.** What replaces it is open decision 13 |
 | Episode encoding plus a 145-state tally automaton | Four-fold token saving, measured, and the grammar objection dissolves once the sum is recognised as bounded and quantised |
 | 🔴 **Backbone `allenai/Olmo-3-1025-7B`, chosen by measurement not by report** | 200 tokens per diary against Qwen's 303 on the identical string, because the OLMo tokenizer holds a three-digit activity code as one token and the entire Qwen lineage splits it into three. Apache 2.0 with no condition on generated text, native vLLM kernel, ungated, 65,536 context. `RL18` recommended the opposite and did so on a mis-counted token figure and a licence clause that is not in Llama 3.1 |
 | 🔴 **No mnemonic code remapping** | Measured, it saves 12.9 % on Qwen and **costs** 5.5 % on the tokenizer we adopted. A fix for a tokenizer we are not using |
@@ -2061,7 +2079,7 @@ Reproduced from the overview, with the reasoning that did not fit there.
 | We never rake our own output | Raking fixes margins, not joints, and it is reserved for building the null we must beat |
 | Joint multi-country training | Sequential costs 40 to 70 % on earlier countries |
 | 🔴 **No forecast; the method is the contribution** | Author's decision, backed independently by `RL16`. One claim defended completely beats two where the second undermines the first |
-| 🔴 **HETUS-only corpus, four countries, one wave each** | The claim under test is about HETUS standardisation, so the corpus is HETUS members. One wave each because `RL17`'s own inventory argues against two: three of the four second waves sit past the ACL 2000 break, which forces 2-digit codes and starves Step 9, and UK 2000-01's 15-minute slots are not admissible to a tally automaton built on multiples of 10. The chosen set is the HETUS 2010 round, so Track A widens it four → seventeen with no harmonisation change |
+| 🔴 **HETUS-only corpus, three countries, one wave each** *(corrected 2026-09-03: this row said "four"; decision 16, same day 2026-08-14, narrowed it to three — France stays a physical baseline, never a 4J denominator; the Track A "seventeen" figure below is stale on the new base count and not recomputed here)* | The claim under test is about HETUS standardisation, so the corpus is HETUS members. One wave each because `RL17`'s own inventory argues against two: three of the four second waves sit past the ACL 2000 break, which forces 2-digit codes and starves Step 9, and UK 2000-01's 15-minute slots are not admissible to a tally automaton built on multiples of 10. The chosen set is the HETUS 2010 round, so Track A widens it four → seventeen with no harmonisation change |
 | 🔴 **The hard null is the announced objective** | Stated in the introduction, so the paper is falsifiable in one sentence. A bar set in advance and cleared is worth more than one chosen afterwards |
 | Weights withheld, data and code released, without apology | No precedent exists for a statistical institute permitting weight release from restricted microdata, and reference-based MIA against a public base model is the specific attack that makes adapters leaky. A methods paper describes the method; anyone with the same data licence can rebuild it |
 | The uninjected control runs first | 3J spent eight campaigns learning this |
@@ -2997,3 +3015,27 @@ district). **Nothing applied.**
   into `european_residential.py` ("identified, not ordered"), `D-EU-84` (no aspect rung at FAIL 0),
   `D-EU-87` (`C10` pinch test not implemented), `D-EU-55` (no EnergyPlus without the owner's own
   sentence), `D-EU-88` (district viewer, not started).
+
+### 2026-09-03 (same day) — `D-IMP-1/2/3` ruled (a) on all three; §12 boxes 2–8 executed; APPLIED except compute
+
+The author ruled (a) on all three recommendations (docket
+`IMP/docs/DONE/2026-09-03_D-IMP-1_D-IMP-2_D-IMP-3_nocore-review-rulings.md`). All eight boxes of
+`IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` §12 are now closed:
+
+* **Box 2 (I-1):** dated no-core header + SUPERSEDED markers on `4thJ_08_bemSimulation_IMP.md`,
+  its dossier, and `floor_layout_generation_report.md`; limitation §9 in `writing/4thJ_writeup_notes.md`.
+* **Box 3 (I-9):** this document's own "four countries" corrected to three at `:649` and in KEY
+  DESIGN DECISIONS; five stale step-status lines dated; Step 10D figures captioned "measured under
+  the parked layout regime"; `Overview.md` flagged stale above its status box; 510-vs-88 disambiguated;
+  Step 7 IMP note dated; board card `10.11` flipped (`FINDING 194`), Step 12 group added, republished.
+* **Boxes 4–6 (I-4, I-3/I-6/I-7, I-5):** `Step12_docs/` created (implementation + validation,
+  `G12.x` with `G10.x` inheritance per row), `prereg_step12_DRAFT.md` filed, preflight guard
+  **seen failing 410 of 410** on today's core-era engine, four gate-design perturbations seen
+  felling on scratch fixtures.
+* **Box 7 (I-8):** Step 11 §2.1 and item 11.7 dated amendments.
+* **Box 8:** this entry; `Prompts/RESUME.md` lead block rewritten (last+34); board republished;
+  memory updated.
+
+**APPLIED except compute.** Step 12 exists on paper only — it waits on the OpenUBEM blockers
+(engine carry-in, `D-EU-84`, `D-EU-87`, `D-EU-88`) and on `D-EU-55`. **Step 10 and Step 11 do not
+re-open.** No EnergyPlus, no cell, no emission, no re-scoring of any closed board.

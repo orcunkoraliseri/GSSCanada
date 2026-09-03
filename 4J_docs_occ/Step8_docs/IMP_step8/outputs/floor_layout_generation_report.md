@@ -1,3 +1,12 @@
+> 🟡 **NO-CORE REGIME, 2026-09-03 (`D-IMP-1`, ruled (a)).** The owner ruled the no-core regime on the
+> OpenUBEM side (`D-EU-79`/`80`/`81`, 2026-09-02/03): *"a floor plate divides into dwellings only, no
+> core, corridor, access band or unconditioned zone; every square metre belongs to a flat; nothing
+> narrower than 2 m; one flat = one zone."* **This entire report describes the retired core-era
+> subdivision engine and is SUPERSEDED by `D-EU-79`**, kept only as the record of what was considered.
+> Habitability-diagnostic principles that do not depend on a core (facade-contact length, windowless-unit
+> rejection) survive and are restated for no-core flats where marked below. See
+> `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1.
+
 # Technical Report: Automated Residential Floor Layout Generation & Spatial Subdivision in UBEM
 
 **Topic**: Algorithmic Generation of Floor Layouts, Multi-Dwelling Spatial Slicing, Architectural Typologies, and Zone-Level Thermal Discretization  
@@ -47,6 +56,7 @@ flowchart TD
     end
 
     subgraph S4["4. Circulation & Quality Diagnostics"]
+        %% SUPERSEDED by D-EU-79 (2026-09-03): the core/circulation nodes below are retired, no-core regime
         C2 & C3 & C4 & C5 & C6 --> D1["Embed Centroidal Staircase Core<br/>(6% - 12% of Floor Area)"]
         D1 --> D2["Boolean Subtraction: Floor - Core"]
         D2 --> D3{"Remainder Units?<br/>N = q * N_flr + r"}
@@ -58,6 +68,11 @@ flowchart TD
         D6 -->|Pass| D8["Watertight Thermal Zones (HBZones)"]
     end
 ```
+
+> 🟡 **SUPERSEDED by `D-EU-79` (2026-09-03).** Subgraph S4's core-embedding nodes (D1, D2) name the
+> retired core-era plan; kept as the record of what was considered. The windowless-unit diagnostic
+> (D5-D8, `L_exterior >= 2.50 m`) is a habitability principle that survives, restated for no-core flats
+> in `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1.
 
 ---
 
@@ -264,6 +279,12 @@ The layout generator automatically adapts its slicing topology based on building
 
 ## 7. Circulation Core (Staircase & Elevator) Integration
 
+> 🟡 **THIS ENTIRE SECTION (§7, including §7.1 and §7.2) SUPERSEDED by `D-EU-79` (2026-09-03).** The
+> centroidal staircase core, its 6-12 % area sizing, and the unconditioned thermal buffer zone
+> (`b_u = 0.50-0.80`) below all describe the retired core-era plan. Owner's ruling: *"a floor plate
+> divides into dwellings only, no core, corridor, access band or unconditioned zone; every square metre
+> belongs to a flat."* Kept as the record of what was considered; no plan below is live.
+
 ```
 +-------------------------------------------------------------+
 |                      FLOOR PLAN WITH CORE                   |
@@ -311,6 +332,10 @@ $$N_{\text{units, total}} = q \cdot N_{\text{floors}} + r, \quad 0 \le r < N_{\t
 ---
 
 ## 9. Habitability Gates: The Windowless Unit Diagnostic
+
+> 🟡 **Added 2026-09-03.** The `[CORE?]` placeholder in the diagram below names the retired core-era
+> layout (`D-EU-79` SUPERSEDED); kept as the record of what was considered. The facade-contact
+> diagnostic itself (`L_exterior >= 2.50 m`) is a habitability principle that survives for no-core flats.
 
 ```
 [Invalid Landlocked Cell]                   [Perimeter Re-Allocation]

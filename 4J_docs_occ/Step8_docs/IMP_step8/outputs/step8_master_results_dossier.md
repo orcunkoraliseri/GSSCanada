@@ -135,6 +135,11 @@ $$\phi_{\text{int}}(t) = (1 - f) \cdot 3.0 + f \cdot 3.0 \cdot \frac{g(t)}{\text
 5. **$f = 1.00$ (Full Demographic Exposure)**: 100% pure stochastic presence signal $g(t)$.
 
 ### 4.2. Campaign Size & Cell Counts
+
+**(clarified 2026-09-03)** the 102-archetype / 510-run campaign below names the **OpenUBEM archetype
+campaign** (`EU-08`, OpenUBEM side); the **4J Step 8 campaign** actually executed is **88 archetypes ×
+5 `f`-levels × 10 diaries** (`4thJ_08_bemSimulation.md:796-799`). The two are not the same campaign.
+
 - **Total Archetypes**: $102$ ($24\text{ ES} + 36\text{ UK} + 42\text{ IT}$).
 - **Total Injected Simulation Runs**: $102 \times 5 = 510\text{ runs}$.
 - **Uninjected Controls**: $102\text{ runs}$ ($f = 0.00$).
@@ -215,5 +220,9 @@ GSSCanada Repository / Step 8 Root:
 
 1. **Elimination of North American Bias**: Successfully transitioned UBEM archetyping from US commercial defaults (ASHRAE 90.1) to European domestic reality (CEN/ISO, hydronic baseboard loops, heavy masonry, continuous background ventilation).
 2. **First Watertight Multi-Dwelling Procedural UBEM**: Reconciled architectural floor layout subdivision with 100% watertight EnergyPlus simulation models, capturing inter-dwelling thermal interactions and buffer core physics.
+
+> 🟡 **SUPERSEDED by `D-EU-79` (2026-09-03).** "Buffer core physics" above names the retired core-era
+> unconditioned circulation zone; the owner's no-core ruling removes it — dwellings only, one flat = one
+> zone. Kept as the record of what was considered.
 3. **Controlled Multi-Scale Sensitivity Sweep**: The pre-registered 5-level $\phi_{\text{int}}$ sweep ($f \in \{0.00, \dots, 1.00\}$) isolates the exact thermodynamic impact of LLM-generated stochastic human presence from static regulatory benchmarks ($3.0\text{ W}/\text{m}^2$).
 4. **Defect-Proof Wiring Architecture**: Implementation of 10 verification gates (`G8.0` through `G8.16`) eliminates silent failure modes (unmetered end-uses, stale caching, interpolation smoothing, and circular in-memory references).

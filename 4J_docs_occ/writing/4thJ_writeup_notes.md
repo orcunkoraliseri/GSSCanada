@@ -477,3 +477,30 @@ passages are what it ruled **into** the methods.
 ⚪ It does not build the body-randomised ceiling, and it does not claim the four registered controls
 pass — two of them do not.
 ⚪ It creates no manuscript **file**: these are drafted passages in the notes, exactly as §7 is.
+
+---
+
+## 9. No-core regime — a limitation for the write-up (added 2026-09-03, `D-IMP-1`)
+
+🔴 **No circulation zone is modelled.** The owner's no-core ruling (`D-EU-79`/`80`/`81` on the OpenUBEM
+side, applied to Step 8's IMP plan via `D-IMP-1`) removes the unconditioned stairwell/corridor core
+from every dwelling subdivision: a floor plate divides into dwellings only, no core, corridor, access
+band or unconditioned zone; every square metre belongs to a flat; one flat = one zone.
+
+**Consequence, stated plainly:** every square metre of every simulated floor plate is conditioned
+dwelling. The thermal buffering action a real building's stairwell/corridor core would provide between
+neighbouring flats — and the reduced conditioned floor area a core would otherwise subtract — is absent
+from the model. Heating demand under no-core is not directly comparable to a core-modelled campaign; it
+is a declared simplification, reported as such, not concealed.
+
+**Literature range, cited as literature only:** unconditioned circulation cores are commonly sized at
+**6-12 % of gross floor area** in the residential UBEM/TABULA literature synthesised in `DR02`
+(floor-to-unit division and staircase buffer methods) and `DR03` (thermal zoning resolution). This range
+is **never** to be read as a district-level or per-building number for this project — it is the
+literature's own figure, cited to show the order of magnitude of what the no-core simplification omits,
+not a correction applied to any result.
+
+See `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1, and the SUPERSEDED markers in
+`Step8_docs/IMP_step8/4thJ_08_bemSimulation_IMP.md`, `Step8_docs/IMP_step8/outputs/floor_layout_generation_report.md`
+and `Step8_docs/IMP_step8/outputs/step8_master_results_dossier.md:217` for the retired core-era plan
+this limitation replaces.

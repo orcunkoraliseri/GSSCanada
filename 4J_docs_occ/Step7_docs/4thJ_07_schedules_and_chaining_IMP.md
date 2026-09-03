@@ -705,7 +705,10 @@ and in the Step 8 document, not fixed — there is no window to fix it against y
   spread — and are read **per fold or not at all**. One row is owed in the paper's asymmetry table.
 * Decision 14 (a) rules **order**, not readiness. `G7.18` is blocked behind an IDF that does not exist
   and five open §6 geometry/zoning decisions. Step 7's DoD item 6 therefore cannot close inside
-  Step 7; it is discharged in Step 8.
+  Step 7; it is discharged in Step 8. *(dated note, added 2026-09-03: this blocker text is stale since
+  `D-S8-2` (2026-08-21/24) and the 9,000-run chaining sweep (2026-08-25) — `G7.18`'s trigger of 25 % on
+  peak demand was not approached in any fold, measured 0.2892 / 0.1936 / 0.0285 %, closed and answered
+  2026-08-25/26; see `4thJ_08_bemSimulation_IMP.md` §10.)*
 * The CPU pre-screen's seed-noise verdicts stand on 600-diary Leg-4 pools on a 1B backbone. **They
   must be re-derived at Leg-5's `N >= 5,200`, with the back-off ladder re-measured rather than
   assumed to have improved, before any of them is written into the paper.** CPU-only, minutes.
