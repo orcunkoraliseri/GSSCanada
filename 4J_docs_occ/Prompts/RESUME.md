@@ -1,3 +1,66 @@
+## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+33). READ THIS BLOCK FIRST. THE last+32 BLOCK BELOW IT STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
+
+### 0. WHAT HAPPENED ON 2026-09-03, IN ONE PARAGRAPH
+
+The owner ruled the **no-core regime** on the OpenUBEM side --- `D-EU-79` / `D-EU-80` / `D-EU-81`
+(2026-09-02) and `D-EU-82`–`D-EU-88` (2026-09-03): a floor plate divides into **dwellings only**,
+no core, corridor, access band or unconditioned zone, every square metre belongs to a flat, nothing
+narrower than 2 m, one flat = one zone. 🔴 The engine `european_residential.py` is **still
+core-era** (carry-in "identified, not ordered"); only the rule-bench `scripts/eu21/07_nocore_tests.py`
+implements it; `D-EU-84` and `D-EU-87` are open; `D-EU-55` forbids any EnergyPlus run without the
+owner's own sentence. The author then asked for a full read of Steps 0 to 11 and an improvement
+document like the 2026-08-21 one. **It is filed:**
+`IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` --- nine items, **three decisions
+waiting on the author (`D-IMP-1`, `D-IMP-2`, `D-IMP-3`, its §11), NOTHING APPLIED** except the
+additive log entries of its §12 box 1.
+
+### 1. WHERE THE RULING LANDS --- AND WHERE IT DOES NOT
+
+* **Only three places:** (1) the **unexecuted** `Step8_docs/IMP_step8/` core/corridor plan and its
+  `DR01`–`DR04` dossier; (2) Step 10's **population basis** (Arm D / Arm F, "the census decides
+  the arm", `G10.19`'s floor, the 18-of-297 yield) --- **not its numbers**; (3) Step 11's unbuilt
+  items 11.3–11.7 and their Arm vocabulary.
+* **No exposure:** Steps 0–7 and 9 (grep-verified); Step 8 as executed (88 archetype IDFs, one
+  zone `Z_DWELLING` each); the 410 retained Step 10 IDFs carry **zero** core/corridor/stair/
+  unconditioned zones (2,300 zones = 1,430 `dwelling_N` + 870 `whole`).
+* 🔴 **Two new findings on retained artefacts, recorded additively in Step 10's logs, no gate
+  moves, board stays 18 / 2 / 1 / 1 / 2:** `FINDING 195` --- 6 of 18 Arm D buildings are
+  **stepped masses** (the parked engine spread the census dwellings unevenly over storeys; 15 of
+  73 Arm D storeys; 997 m² of declared floor area with no zone; roofs to outdoors under the missing
+  columns, thermally consistent). `FINDING 196` --- `floor_area_m2 = footprint × observed_storeys`
+  in all 41 manifests, so `eui_heating_kwh_m2` on those six is a **lower bound**. Manifests are
+  never retrofitted; no stock EUI from Arm D was ever quotable.
+* **Tool:** `tools/4thJ_imp_nocore_void_census.py` → `IMP/docs/2026-09-03_nocore_void_census.csv`
+  and `…_nocore_projection_41.csv`. 🔴 The convex-hull variant was **seen NOT failing** on an
+  edge-dwelling removal (0.000) and is demoted to INFO; the census-footprint reference is the
+  verdict (edge 0.398, interior 0.400).
+* **The no-core storey rule** `k = max(1, round(dwellings / storeys))` gives N_u = 332 on the 41
+  against 312 observed and 230 built; 29 of 41 differ by up to ±4 --- census arithmetic, never a
+  result; the Step 12 spec must say which N_u it means.
+
+### 2. WHAT TO DO WHEN THIS SESSION OPENS
+
+1. Read the IMP document's **§0, §11 and §12** --- do not re-derive them from this file.
+2. 🔴 **If the author has ruled `D-IMP-1` / `D-IMP-2` / `D-IMP-3`, execute §12 in order,
+   additively, each perturbation seen felling its check.** If not, ask for the rulings in one
+   line (recommend (a) on all three) and stop.
+3. 🔴 **Never** re-open Step 10, re-score a closed gate, re-propose option (c), retrofit a
+   manifest, or propose compute. **Step 12 (`G12.x`, the recommended home for the no-core
+   campaign) exists only on paper until `D-IMP-2` is ruled AND the OpenUBEM blockers in the IMP
+   document's §4 table clear** (engine carry-in, `D-EU-84`, `D-EU-87`, `D-EU-55`, `D-EU-88`).
+4. 🔴 **The board had TWO LINEAGES (`FINDING 197`, IMP document §9).** The live artefact
+   (`9e07da64…`, 128 cards, 2026-08-28 night) and the local `4thJ_CHECKLIST.html` (105 cards, the
+   Step 10 campaign closure on a 2026-08-24 base) had diverged; the last+29/last+31 "board
+   republished" entries never reached the live address. **Merged 2026-09-03 on the live base**
+   (139 cards, 130 done / 1 in progress / 8 todo, `node --check` + smoke green, republished at the
+   same URL, local file replaced, backup `4thJ_CHECKLIST.html.bak_nocore`). The one card in progress
+   is the no-core review (Step 10, NEXT UP). `10.11` is the only stale card left — flip it in the
+   execution session. **Never edit the local board without first reading the live artefact.**
+5. Reply shape unchanged (rule 5 of the last+32 block): English, ~80 words, headline, 3–5 bullets,
+   `Evidence:`, `Next:`; one decision at a time: `Waiting on you: D-IMP-2 --- recommend (a).`
+
+---
+
 ## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-08-28 (last+32). READ THIS BLOCK FIRST; EVERYTHING BELOW IT IS OLDER AND PARTLY SUPERSEDED, INCLUDING THE THREE EARLIER "NEXT-SESSION PROMPT" BLOCKS (last+27, last+28, last+29).**
 
 ### 0. WHERE THE PROJECT STANDS IN ONE PARAGRAPH

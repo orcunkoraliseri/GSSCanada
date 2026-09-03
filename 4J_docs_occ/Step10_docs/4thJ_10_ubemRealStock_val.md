@@ -413,3 +413,18 @@ PASS = `G10.0`-`G10.6`, `G10.8`-`G10.13`, `G10.16`, `G10.17`, `G10.20`-`G10.22`.
 `outputs_step10/realstock_campaign_widened/realstock_gate_board_extension.json` ·
 `outputs_step10/realstock_campaign/realstock_g10_1_4_nmbe.json` (the 40-cell population, named
 in the artefact itself).
+
+---
+
+### 2026-09-03 --- `FINDING 195` / `FINDING 196` recorded; no gate re-opens
+
+A plate-coverage census over the 410 retained IDFs (`tools/4thJ_imp_nocore_void_census.py`) found
+six Arm D buildings whose upper storeys carry fewer dwelling zones than the storeys below (15 of 73
+Arm D storeys, 997 m² of declared floor area with no zone) and that every manifest's `floor_area_m2`
+is `footprint × observed_storeys`, so `eui_heating_kwh_m2` on those six is a lower bound. **No
+registered gate scores plate coverage**; `G10.13` (per-zone conservation), `G10.7` (INFO
+permanently), `G10.19`–`G10.22` are untouched; the suite stays **18 PASS / 2 FAIL / 1 INFO /
+1 OPEN_INHERITED / 2 NOT_EVALUABLE**; `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`
+unchanged. The check was seen felling on edge and interior removals (0.398 / 0.400) and its
+convex-hull variant was seen **not** felling on the edge removal (demoted). Details: the Step 10
+main-doc entry of the same date and `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` §2.

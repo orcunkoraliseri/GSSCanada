@@ -2966,3 +2966,34 @@ which is now a larger multiple than it was.
 **Not changed by this decision:** decision 5 (HETUS only), decision 13 (two reproduction tiers — Spain
 alone, and Spain + UK; both countries are still in), decision 15 (Norway rejected), and every Step 1
 gate threshold including the five M-1..M-5 decisions taken earlier the same day.
+
+### 2026-09-03 — No-core review filed; the ruling lands on three places, none of them a closed number
+
+The owner ruled the **no-core regime** on the OpenUBEM side (`D-EU-79`/`D-EU-80`/`D-EU-81`,
+2026-09-02; `D-EU-82`–`D-EU-88`, 2026-09-03): a plate divides into dwellings only, no core, corridor
+or unconditioned zone, every square metre belongs to a flat, nothing narrower than 2 m. The author
+asked for a full read of Steps 0 to 11 and an improvement document in the shape of the 2026-08-21
+one. **Filed:** `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` — nine items, three
+decisions waiting on the author (`D-IMP-1` supersede the `IMP_step8` core/corridor plan;
+`D-IMP-2` register the no-core campaign as **Step 12 / `G12.x`**, spec now, compute only after the
+OpenUBEM blockers clear; `D-IMP-3` one independent series per drawn flat, emission sized per
+district). **Nothing applied.**
+
+* **Where it lands:** only the unexecuted `IMP_step8` plan and its `DR01`–`DR04` dossier, Step 10's
+  population basis (Arm D / Arm F, `G10.19`'s floor, the 18-of-297 yield — all properties of the
+  parked generator, presumptively stale), and Step 11's unbuilt items. **Steps 0–7 and 9: no
+  exposure. Step 8 as executed: none** (88 archetype IDFs, one zone each).
+* **Measured on retained artefacts:** the 410 Step 10 IDFs hold 2,300 zones (1,430 `dwelling_N`,
+  870 `whole`) and **no** core/corridor zone; 58 of 73 Arm D storeys fill the census footprint;
+  🔴 `FINDING 195` — 6 of 18 Arm D buildings are stepped masses (15 storeys, 997 m² with no zone);
+  🔴 `FINDING 196` — `floor_area_m2 = footprint × storeys` in every manifest, so the six per-building
+  EUIs are lower bounds. No gate moves; the Step 10 board stays 18 / 2 / 1 / 1 / 2.
+* **Stale text found by the read (§9 of the IMP document, no decision needed):** this document
+  still says *four countries* at the Step 1 header and in KEY DESIGN DECISIONS while decision 16
+  made it three; Steps 2, 7, 8 and 9 still read OPEN at their headers and Step 10 PLANNED; the
+  Step 10D figures must carry "measured under the parked layout regime". Edited in the execution
+  session, not here, so that the one entry that records the defect is not also the one that hides it.
+* **What waits on the OpenUBEM side before any no-core cell can exist:** engine carry-in of the rule
+  into `european_residential.py` ("identified, not ordered"), `D-EU-84` (no aspect rung at FAIL 0),
+  `D-EU-87` (`C10` pinch test not implemented), `D-EU-55` (no EnergyPlus without the owner's own
+  sentence), `D-EU-88` (district viewer, not started).

@@ -1561,3 +1561,46 @@ retrofitted, repaired only in a future campaign. `G10.7` INFO, `G10.15` OPEN_INH
 
 ⚪ **Evidence.** the impl doc section 9 · the validation doc's `2026-08-28 (late+2)` entry ·
 `outputs_step10/realstock_campaign_widened/realstock_gate_board_extension.json`.
+
+---
+
+## 2026-09-03 --- `FINDING 195` and `FINDING 196`: the retained Arm D geometry is stepped, and the EUI denominator counts the missing area (additive; nothing re-scored)
+
+Found while writing the no-core review, `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md`
+§2, by running a plate-coverage census on the **real** retained artefacts first
+(`tools/4thJ_imp_nocore_void_census.py` → `IMP/docs/2026-09-03_nocore_void_census.csv`).
+
+🔴 **`FINDING 195` --- six Arm D buildings are stepped-back masses, not full stacks.** The parked
+layout engine distributed `observed_dwellings` over `observed_storeys` unevenly (11 over 4 as
+3+3+3+2; 28 over 6 as 5+5+5+5+4+4; 28 over 8 as 4×4+3×4; 10 over 3 as 4+3+3; 6 over 4 as 2+2+1+1;
+20 over 8 as 3×4+2×4). On every storey carrying fewer dwellings than the one below, the plate area of
+the missing column has **no zone**; the dwelling beneath it gets a `roof` to `outdoors` (verified on
+`es__BATIMENT0000000240877130_part0`, zone `F2_dwelling_2`). Thermally consistent, but **15 of 73
+Arm D storeys** in **6 of 18** buildings (`es` ×3, `it` ×1, `uk` ×2) are 20–51 % narrower than the
+census footprint; **997 m²** of declared floor area carries no zone. The 23 Arm F buildings read
+≤ 1e-5 on every storey. `storeys_without_a_dwelling` is 0 on all six --- it counts storeys with
+*no* dwelling, not with *fewer*. On the other 58 Arm D storeys the dwelling floors sum to the
+footprint to five decimals, so **no core or circulation region was carved out** of any retained
+layout (the carve-out exists in `european_residential.py:250-348` and was not active).
+
+🔴 **`FINDING 196` --- `floor_area_m2 = footprint_area_m2 × observed_storeys` in all 41
+manifests** (ratio 1.0000), and `eui_heating_kwh_m2 = annual_heating_kwh / floor_area_m2`. On the
+six stepped buildings the denominator includes plate area no zone heats, so their per-building
+`eui_heating_kwh_m2` is a **lower bound**, under-stated by the missing share on the stepped storeys.
+
+⚪ **Nothing moves.** No `G10.x` scored plate coverage; `G10.13` conserves gain per zone on the
+zone's own area; `H10` / `CF(N_u)` are within-building peak ratios and never read the denominator;
+`G10.7` is INFO permanently and no stock-level EUI from Arm D was ever quotable (§11). The board
+stays **18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE**. Manifests are **not
+retrofitted** (`EU-08` precedent). Option (c) of `D-S10-1` stays refused. Under the no-core storey
+rule (`D-EU-79`/`D-EU-80`, the same `k` on every storey) the stepping disappears by construction ---
+see the IMP document §3 for what that costs in dwelling-count conservation.
+
+⚪ **The instrument was seen failing, and seen not failing.** Footprint-referenced check: edge
+dwelling removed on every storey → 0.398 FAIL; interior dwelling removed → 0.400 FAIL. Convex-hull
+variant: edge removal → **0.000, did not fire** (the hull shrank with the column); demoted to INFO.
+
+⚪ **Evidence.** `IMP/docs/2026-09-03_nocore_void_census.csv` · `IMP/docs/2026-09-03_nocore_projection_41.csv` ·
+`outputs_step10/realstock_campaign/manifests/*__caseA__f000.json` (`floor_area_m2`, `footprint_area_m2`,
+`observed_storeys`, `storeys_without_a_dwelling`) · `_local_runs/step10_realstock_speed410/` (410 IDFs) ·
+the IMP document §2 and §14.
