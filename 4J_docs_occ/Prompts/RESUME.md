@@ -64,6 +64,31 @@ documents resolve from `Step10_docs/`, one level up, because a closed record is 
   engine `sha256=316fe7a6...150b` byte-identical to the morning's measurement. Record:
   `Step10_docs/impl/2026-09-03_preflight-seen-failing.md`, second section.
 * **Re-scanned end to end the same day (author's request), and it holds.** Folders are `Step0_docs`…`Step11_docs` only; 175 documents and 2,209 path tokens resolved with **no link broken by `D-IMP-4`**; all 18 files still carrying a step-12 string read as history or correction, **never a live pointer**; gate namespaces clean (`G10.x` only in the `C1` archive and the closed notes, `G10N.x` only in `C2`); `prereg.md` md5 re-measured `e4243e07cdd80c9c846b91f40e3e8c45`. 🔴 **When grepping, note that `V12.` in the master plan (M:351, M:2242) is the deep-research VETTING series — not a retired step-12 guard.** ⚪ Two things predate `D-IMP-4` and were left alone: Step 9's implementation doc never names Step 10, and `C2`'s spec reaches its upstream through `C1`'s §2 carry-over instead of naming Step 9. Neither is a defect this ruling introduced; say so before "fixing" either.
+* **Housekeeping recorded the same day, after the re-scan (this is the current state of the files).**
+  Archiving the backup invalidated **eight recorded paths**; all eight were repaired **additively, nothing
+  rewritten**: the redirect row `Step12_docs.bak_dimp4/ (repo root)` -> `previous/Step12_docs.bak_dimp4/`
+  in `Step10_docs/README.md:45` plus the dated sentence at `:8`; a dated ⚪ note at the foot of the
+  `D-IMP-4` entry in the master plan (`4thJ_00_HETUS_LLM_Pipeline.md:3089`); and the one stale path inside
+  the board's standing `<li class="stop">` (`4thJ_CHECKLIST.html:300`), now reading *"backup archived to
+  `previous/Step12_docs.bak_dimp4/`"*. 🔴 **Closed records were deliberately NOT touched** --- they are
+  read through the `Step10_docs/README.md` redirect, which is why the redirect exists. The archive holds
+  the five files unchanged (`4thJ_12_nocoreRealStock.md`, `_val.md`, `prereg_step12_DRAFT.md`, `impl/`).
+  **Board republished to the same URL** (`9e07da64...`), label *"backup archived to previous/"*: the live
+  page was read and diffed first (`FINDING 197`) --- its DATA block **byte-identical to local, 198,822 B
+  both sides**, authored diff exactly that one line --- `node --check` clean, DOM-shim smoke **seen failing
+  2 of 2** (A: a live Step-12 pointer planted in a card; B: a ghost `{n:12}` group) with the baseline
+  `12 groups / 143 items / 136-0-7` restored afterwards.
+* **Backups that actually exist from this work** (check these names, not the ones in section 4 point 4):
+  `4thJ_CHECKLIST.html.bak_prevmove` and `4thJ_00_HETUS_LLM_Pipeline.md.bak_prevmove` at the repo root,
+  `Step10_docs/README.md.bak_prevmove`, and `Prompts/previous/RESUME.md.bak_prevmove` +
+  `RESUME.md.bak_prog35b` (this update). 🔴 **Correction:** `Prompts/RESUME.md.bak_next35` and
+  `4thJ_CHECKLIST.html.bak_dimp4`, both named in section 4 below, are **not on disk**; the pre-rewrite
+  RESUME copy is `Prompts/previous/RESUME.md.bak_verify34` (12:56), and **every RESUME backup lives in
+  `Prompts/previous/`**, not in `Prompts/`. ⚪ **Measured, not estimated:** exactly **two** loose `.bak_*` files sit at the repo
+  root (the two above), and **232** `.bak*` copies sit scattered through the tree outside the `previous/`
+  folders (`tools/` 61, `Step7_docs/` 24, `Step6_docs/` 23, `Step11_docs/` 16, ...). None was moved --- the
+  instruction named one folder --- and none is referenced as a live path; they can be swept into `previous/`
+  whenever the author asks.
 
 ### 3. WHAT TO DO WHEN THIS SESSION OPENS
 
@@ -79,7 +104,7 @@ documents resolve from `Step10_docs/`, one level up, because a closed record is 
 3. 🔴 **Never re-create a Step 12.** The pipeline ends at Step 11 by ruling.
 4. **Board**: `4thJ_CHECKLIST.html`, 143 items / 12 step groups. **Never edit the local board
    without first reading the live artefact** (`FINDING 197`). Backup of this rewrite:
-   `Prompts/RESUME.md.bak_next35`; board backup `4thJ_CHECKLIST.html.bak_dimp4`.
+   `Prompts/RESUME.md.bak_next35`; board backup `4thJ_CHECKLIST.html.bak_dimp4`. 🔴 *Corrected the same day: neither of those two names is on disk --- see the last two bullets of section 2 for the real backup set.*
 5. Reply shape unchanged (rule 5 of the last+32 block below): English, ~80 words, headline,
    3-5 bullets, `Evidence:`, `Next:`.
 
