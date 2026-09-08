@@ -504,3 +504,96 @@ See `IMP/docs/2026-09-03_nocore-pipeline-review-improvements.md` I-1, and the SU
 `Step8_docs/IMP_step8/4thJ_08_bemSimulation_IMP.md`, `Step8_docs/IMP_step8/outputs/floor_layout_generation_report.md`
 and `Step8_docs/IMP_step8/outputs/step8_master_results_dossier.md:217` for the retired core-era plan
 this limitation replaces.
+
+---
+
+## 10. Figure prompts reconciled to the no-core position (added 2026-09-07)
+
+Both image prompts under `writing/submission/figures/Prompts_Images/` were last written on
+2026-08-26 and had aged out. They are reconciled and **both installed images are now out of date and
+must be regenerated**. No image was created by the assistant — the prompts are the deliverable and
+the author generates from them.
+
+### 10.1 `4thJ_pipeline_steps_figure.md` — cards 10 and 11 only, no chip moves
+
+🔴 **The load-bearing instruction is a refusal, not an edit: card 10 stays `open`.** Step 10's
+410-cell campaign was run and gate-scored on 2026-08-28 (**18 PASS / 2 FAIL / 1 INFO /
+1 OPEN_INHERITED / 2 NOT_EVALUABLE**), then archived under `D-IMP-4` as campaign `C1` and **not
+reported**; campaign `C2`, the no-core one that will be reported, has no cell. A figure describes the
+paper, not the repository, so the gate board is not a reason to promote the card — and because the
+board is real, the refusal has to be written down or it will be overturned by whoever finds it next.
+
+Three strings changed:
+
+| card | was | is |
+|---|---|---|
+| 10 decision | `observed footprints, one independent diary per dwelling` | `observed footprints, dwellings only, one independent diary per dwelling` |
+| 10 open | `the engine, and which year the diaries belong to` | `the no-core engine does not exist yet` |
+| 11 open | `hot water magnitude diagnosed before it is re-measured` | `the bands are inherited unmoved, not re-set at stock scale` |
+
+🔴 **Card 11's old line was a stale-string defect of the `season` class.** `D-S11-1` was ruled on
+**2026-08-27, the day after the prompt was last written**: `G9.7` and `G11.7` are both `INFO`
+permanently, the 30–50 band is inherited unmoved, the deviation is reported and not scored, and it
+**will not be re-measured at stock scale**. The retired line promised a measurement the project had
+already decided not to make. Card 10's old open line named the wrong blocker: section 8 of
+`Step10_docs/4thJ_10_nocoreRealStock.md` lists the engine carry-in, `D-EU-84`, `D-EU-87`, `D-EU-88`
+and `D-EU-55`, and the diary year is not among them.
+
+Also written in: twelve cards is final by `D-IMP-4` (never a thirteenth, never a `Step 12`); a first
+district arriving from OpenUBEM is not a campaign and does not move card 10, because `G10N.19` needs
+**30 qualifying buildings per fold**; and cards 0–9 were spot-checked, not audited.
+
+### 10.2 `4thJ_graphical_abstract.md` — Band 5 only, and it is a drawing change
+
+🔴 **The no-core rule is drawn, not written. No string is added to the figure.** The subdivided
+footprint in the small background plan must be filled **edge to edge** by dwelling cells: no core, no
+stair block, no lift shaft, no corridor spine, no shaded service block, no gap. An image generator
+asked to subdivide a building plan draws a core by reflex, and a drawn core would state in the
+paper's front figure the exact layout regime section 9 above records as removed.
+
+🔴 **And a counting trap was closed.** The real stock is **four districts** (Madrid, Lyon, London,
+Bologna) while the corpus is **three countries**, with **Lyon a physical baseline that never enters a
+4J denominator** (`G10.11`). Four countable footprints beside three lanes would tell a reader the
+paper has a fourth country. The cluster is therefore drawn as **six or seven ungrouped footprints in
+grey outline** — uncoloured, unlabelled, and deliberately uncountable — and nothing about project
+status (gate counts, chips, `campaign C1`/`C2`, step numbers) may enter this figure at all.
+
+⚪ Backups: `4thJ_pipeline_steps_figure.md.bak_nocore` and `4thJ_graphical_abstract.md.bak_nocore`
+beside the live files. Nothing else in either prompt was touched; every earlier revision banner is
+kept as the record.
+
+### 10.3 Both figures generated and installed, and checked against their own lists (2026-09-07, same day)
+
+The author generated both images from the reconciled prompts and installed them. They were read and
+checked string by string against the prompts' own post-generation lists — Section 10 items 3 to 7 plus
+Section 11.1 for the steps figure, Sections 10.1, 10.2 and 10.3 for the abstract.
+
+| file | md5 | size | previous kept at |
+|---|---|---|---|
+| `submission/figures/HETUS_LLM_Pipeline_Steps.png` | `c852194c9d213c5e7ac825688202befb` | 896 × 1200 | `Prompts_Images/previous/`, md5 `207f42dcac694e2c9a299c13cb966829` |
+| `submission/figures/HETUS_LLM_CrossNational_Pipeline.png` | `38e1e602acbab5210839021ef7fb80a4` | 1376 × 768 | `Prompts_Images/previous/`, md5 `d3f0a13b02c04a39fbdb3bc263b6cafc` |
+
+🟢 **Both revisions got what they existed for.** The steps figure keeps cards 10 and 11 on the hollow
+`open` chip and carries all three new strings verbatim, so the archived `C1` gate board did not leak
+into the paper's figure. The abstract's subdivided footprint is filled edge to edge by its dwelling
+cells, with no core, corridor, shaft, hatched block or gap — the no-core rule is drawn, as intended,
+and no string was added to say it.
+
+🔴 **Four defects, none of which moves a claim, and two of which are repeats that survived being
+explicitly instructed against.** In the steps figure the five band labels are again rotated vertical,
+and the `pre-declared gate batteries` bracket again stops short, now at card 4 instead of card 5 — the
+second of the two is the one that misstates something, because as drawn Population linkage has no
+pre-declared battery. In the abstract the word `activity` is printed above the ribbons, which is the
+only unpermitted string in the image, and the six dwelling cells all carry the *same* checkmark where
+Band 5 requires them to differ: identical marks say one diary repeated, the opposite of `one
+independent diary per dwelling` printed below them, and a checkmark also reads as a pass mark.
+
+⚪ **Both rasters are below print spec** and neither clears the legibility item: 896 × 1200 and
+1376 × 768 against the 1400 × 1900 and 2000 × 1100 asked for, both re-encoded from `.jpg`, so the small
+type carries JPEG ringing. **The two figures are usable as working drafts and are not yet submission
+rasters.**
+
+Every fixable defect was merged **into the paste blocks** of the two prompts rather than appended
+after them, and each prompt now carries a dated result section — `4thJ_pipeline_steps_figure.md`
+Section 13 and `4thJ_graphical_abstract.md` Section 11 — recording what was correct, what failed and
+what changed. Backups: `*.bak_gen20260907`.

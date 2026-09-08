@@ -6,7 +6,8 @@ follow-up question.
 
 **Install path once generated:** `4J_docs_occ/writing/submission/figures/`
 **Source of truth for the content:** `4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline_Overview.md`, the ASCII
-box diagram, ⚪ **Steps 0 to 11**, reconciled against the project state on ⚪ **2026-08-26**.
+box diagram, ⚪ **Steps 0 to 11**, reconciled against the project state on ⚪ **2026-08-26**,
+and again on 🔴 **2026-09-07** (cards 10 and 11 only — see the 2026-09-07 banner below).
 
 > 🔴 **Revised 2026-08-14. The installed image is out of date and must be regenerated from this file.**
 > Author decision 6 fixed the corpus at **one wave per country**, which retired two strings the
@@ -70,6 +71,45 @@ box diagram, ⚪ **Steps 0 to 11**, reconciled against the project state on ⚪ 
 > carried forward from 2026-08-22 unchanged. Check them against `Step6_docs/` and `Step7_docs/` before
 > generating — Step 7's work item 7.4 closed on 2026-08-26 and this file has not been reconciled
 > against it. **Do not promote either card on the strength of this banner.**
+
+> 🔴 **REVISED A FOURTH TIME, 2026-09-07. THE INSTALLED IMAGE IS OUT OF DATE AGAIN. Regenerate
+> — but read this banner before touching the table, because the largest change since 2026-08-26 is
+> one the figure must deliberately NOT make.**
+>
+> **What happened.** Step 10 was **built, run and gate-scored** on 2026-08-28: 410 cells across two
+> hosts, a 24-gate validation suite closed at **18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED /
+> 2 NOT_EVALUABLE**. Then the owner ruled a **no-core** dwelling-subdivision regime
+> (`D-EU-79`/`80`/`81`, 2026-09-02/03) that changes the population underneath that campaign, and
+> `D-IMP-4` (2026-09-03) folded the replacement into Step 10 rather than into a new step. **Step 10
+> now has two campaigns:**
+>
+> * **`C1`, core-era** — the one that was run and scored. **Archived, closed, and NOT REPORTED.**
+> * **`C2`, no-core** — the one that **will** be reported. **Spec only: no cell, no run, no result.**
+>
+> 🔴 **THE TRAP, AND IT IS THE WHOLE REASON THIS REVISION EXISTS: CARD 10 STAYS `open`.**
+> Anyone reading the project files will find an 18-PASS gate board with Step 10's name on it and
+> promote the card to `validated`. **That board belongs to a campaign the paper does not report.**
+> This figure describes the paper, not the repository. Promoting card 10 would assert a validated
+> real-stock result that appears nowhere in the manuscript — and it is the most dangerous defect
+> this file has ever had to prevent, worse than `all countries trained jointly`, because it would be
+> **defended with a real gate board**. The same reasoning bars any mention of `C1` in the image: it
+> is a method and reproducibility record, and a figure that drew it would be advertising evidence
+> the paper does not present.
+>
+> 🔴 **THE PIPELINE ENDS AT STEP 11 BY RULING (`D-IMP-4`). TWELVE CARDS IS FINAL.** Never draw
+> a thirteenth card and never draw a `Step 12`. One was created on 2026-09-03 and dissolved the
+> same day; the folders on disk are `Step0_docs` – `Step11_docs` only.
+>
+> **Three strings move, all on cards 10 and 11, and one of them is a stale-string defect of the
+> `season` class** — card 11's `hot water magnitude diagnosed before it is re-measured` was
+> falsified by `D-S11-1` on **2026-08-27, the day after this file was last written**. Sections 4, 6,
+> 10 and 11 carry the change.
+>
+> ⚪ **Cards 0 to 9 were NOT re-verified in this revision.** Steps 4, 6 and 7 were re-read on
+> 2026-09-07 and their STATUS blocks still say what they said (`Step4_docs`: *"Implementation OPEN,
+> nothing trained"*; `Step6_docs`: *"OPEN – this is where the paper is won or lost"*;
+> `Step7_docs`: OPEN with work items 7.4, 7.5 and 7.6 outstanding), so nothing was moved — **but
+> that is a spot check, not an audit. Do not promote any card 0 to 9 on the strength of this banner.**
 
 ## 0. Read this before generating
 
@@ -197,8 +237,8 @@ The cards, top to bottom, with the exact text each carries:
 | 7 | `Constrained generation` | `well-formed diaries guaranteed at decoding` | 🔴 `throughput, chaining rule and schedule emission` | `decided` |
 | 8 | `Building simulation` | `European residential archetypes, uninjected control run first` | 🔴 `the occupancy effect does not survive at full injection` | 🔴 `validated` |
 | 9 | `End-use loads` | `published activity-to-appliance mappings, adapted not authored` | 🔴 `three gates ship as declared failures` | 🔴 `validated` |
-| 🔴 10 | `Real-stock UBEM` | `observed footprints, one independent diary per dwelling` | `the engine, and which year the diaries belong to` | `open` |
-| 🔴 11 | `Stock-scale end-use loads` | `the same mapping, at the scale its sources were validated at` | `hot water magnitude diagnosed before it is re-measured` | `open` |
+| 🔴 10 | `Real-stock UBEM` | 🔴 `observed footprints, dwellings only, one independent diary per dwelling` | 🔴 `the no-core engine does not exist yet` | `open` |
+| 🔴 11 | `Stock-scale end-use loads` | `the same mapping, at the scale its sources were validated at` | 🔴 `the bands are inherited unmoved, not re-set at stock scale` | `open` |
 
 🔴 **CHANGED 2026-08-19 — READ THIS BEFORE COPYING THE TABLE.** Five rows moved and the reasons are
 not cosmetic:
@@ -278,6 +318,64 @@ untouched; every change is a chip or a string, and each is tied to the step docu
   making about how this project works, so it is drawn.
 * **Cards 10 and 11 are `open` and must stay `open`.** Nothing is built. They exist in the figure
   because the paper contains them, not because they have results.
+
+🔴 **CHANGED AGAIN 2026-09-07 — CARDS 10 AND 11 ONLY. NO CHIP MOVES, THREE STRINGS DO.**
+This is the revision that has to be read rather than skimmed, because its central instruction is a
+**refusal to promote a card that now has a gate board behind it.**
+
+* 🔴 **Card 10 stays `open`, and the 18-PASS board is not a reason to move it.** Step 10's
+  410-cell campaign was real, was scored, and is **archived as `C1` and not reported**; the campaign
+  the paper reports is **`C2`, the no-core one, which has no cell**. `validated` is defined in this
+  file as *built, and its gate battery ran and was seen failing on purpose before it was trusted* —
+  and by that definition `C1` qualifies. **That is exactly why the rule has to be written down: the
+  chip would be defensible on the repository and false about the paper.** The hollow chip on card 10
+  is the honest state of the reported work.
+* 🔴 **Card 10's decision line gains the rule that defines the campaign:**
+  **`observed footprints, dwellings only, one independent diary per dwelling`**. Under `D-EU-79`,
+  `D-EU-80` and `D-EU-81` a floor plate divides into **dwellings only** — no core, no corridor, no
+  access band, no unconditioned zone; every square metre belongs to a flat; one flat = one zone.
+  ⚪ The old string `observed footprints, one independent diary per dwelling` is **superseded, not
+  forbidden**: it is not false, it is silent on the one rule that made the campaign be rewritten.
+* 🔴 **Card 10's open line `the engine, and which year the diaries belong to` is RETIRED,
+  because it names the wrong blocker.** Section 8 of `Step10_docs/4thJ_10_nocoreRealStock.md` names
+  what actually waits, and the diary year is not on the list: the **engine carry-in of the no-core
+  rule into `european_residential.py`** (recorded as *"identified, not ordered"*), `D-EU-84`,
+  `D-EU-87`, `D-EU-88`, and `D-EU-55`, which forbids any EnergyPlus run without the owner's own
+  sentence. The new line is **`the no-core engine does not exist yet`** — the single fact that
+  stops a reviewer reading card 10 as work merely awaiting a queue slot. ⚪ This does not assert
+  that the diary-year question is closed; it asserts that it is not what holds Step 10.
+* 🔴 **Card 11's open line is a STALE-STRING DEFECT and is FORBIDDEN.**
+  `hot water magnitude diagnosed before it is re-measured` was falsified by **`D-S11-1`, ruled
+  2026-08-27 — the day after this file was last revised.** The diagnosis happened and its outcome
+  was the opposite of the line's promise: `G9.7` and `G11.7` are both **`INFO`, permanently**, the
+  30–50 band is inherited **unmoved**, the deviation is **reported and not scored**, and
+  🔴 **it will not be re-measured at stock scale.** The line advertises a measurement the
+  project has decided not to make. **Same class as `season` and as `the scoring basis where survey
+  and published wave differ`: a string that outlived the ruling that killed it, in a file nobody
+  grepped.**
+* 🔴 **Card 11's replacement line carries the claim that matters:**
+  **`the bands are inherited unmoved, not re-set at stock scale`**. Step 11 inherits Step 9's three
+  FAILs — `G9.6` saturation, `G9.7` DHW volume, `G9.12` stock-scale agreement — with their
+  bands untouched, and its own document says it **does not exist to make them pass**. That is the
+  same species of honesty as card 8's null and card 9's three declared failures, and it is what the
+  bottom third of the figure is for.
+* ⚪ **Card 11 stays `open` and needs no other change.** Its work item 11.2 is done and no
+  Step 11 decision waits on the author, but nothing is built and it depends on a campaign that has
+  not run.
+
+🔴 **A first district landing is NOT a campaign, and must not move card 10.** The four-district
+population (Madrid, Lyon, London, Bologna) is expected to arrive **one district first**, and
+`G10N.19` requires **30 qualifying buildings per fold** before `H10` is evaluable at all. One
+district cannot satisfy a per-fold floor across three folds. Until the four-district campaign has
+run and been scored, card 10 carries the hollow chip — **regenerating this figure on the strength
+of a first delivery is the predictable way this rule gets broken.**
+
+🔴 **France is a site, not a fold, and this figure must not leak the difference.** Lyon is one of
+the four districts as a **physical baseline** and never enters a 4J denominator: no French fold, no
+French held-out fold, no French diary (`G10.11`, carried to `G10N.11`). The corpus is still **three
+countries**. Since this figure names no country and draws no map, the rule costs it nothing — **it
+is written here so that a future revision does not "helpfully" add a fourth something to cards 10
+and 11 and quietly contradict card 6.**
 
 🔴 **Step 4 still stays `decided`, and this revision does not change that.** The Leg-5 fold is queued
 and has not run; `G4.3`, `G4.4` and `G4.12` have never been run and 4 of 15 perturbations are
@@ -384,10 +482,11 @@ Step body lines, exactly as written in the Section 4 table:
 * `published activity-to-appliance mappings, adapted not authored`
 * 🔴 `the occupancy effect does not survive at full injection`
 * 🔴 `three gates ship as declared failures`
-* 🔴 `observed footprints, one independent diary per dwelling`
-* 🔴 `the engine, and which year the diaries belong to`
+* 🔴 `observed footprints, dwellings only, one independent diary per dwelling`
+  — **rewritten 2026-09-07**; the old form is superseded, not forbidden
+* 🔴 `the no-core engine does not exist yet` — **new 2026-09-07**
 * 🔴 `the same mapping, at the scale its sources were validated at`
-* 🔴 `hot water magnitude diagnosed before it is re-measured`
+* 🔴 `the bands are inherited unmoved, not re-set at stock scale` — **new 2026-09-07**
 
 State chips:
 
@@ -416,6 +515,24 @@ generated image, the image is rejected and regenerated — they are the reason f
   same evening the previous revision was written. It is not an open question and must not be drawn as
   one.
 * `collapse and memorisation` — the tile is now `collapse, memorisation and privacy`
+
+🔴 **THREE STRINGS DELETED ON 2026-09-07. Same rule — if any appears, reject and regenerate:**
+
+* `the engine, and which year the diaries belong to` — it names the wrong blocker. Section 8 of
+  `Step10_docs/4thJ_10_nocoreRealStock.md` lists what actually waits (the no-core engine carry-in,
+  `D-EU-84`, `D-EU-87`, `D-EU-88`, `D-EU-55`) and the diary year is not on it.
+* `hot water magnitude diagnosed before it is re-measured` — falsified by `D-S11-1` on
+  **2026-08-27**, the day after the previous revision was written. `G9.7` and `G11.7` are both
+  **`INFO` permanently**, the band is inherited unmoved, and it **will not be re-measured at stock
+  scale**. The line promises a measurement the project decided not to make.
+* `Step 12`, `campaign C1`, `campaign C2`, and any thirteenth card — **`D-IMP-4` ended the
+  pipeline at Step 11.** The two-campaign split inside Step 10 is repository bookkeeping; the paper
+  reports one Step 10 and the figure draws one card for it.
+
+🔴 **AND ONE STRING THAT IS NOT FORBIDDEN BUT MUST NOT BE DRAWN AS A RESULT: the Step 10 gate
+board.** `18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED / 2 NOT_EVALUABLE` is real, and it belongs to
+the **archived, unreported** core-era campaign. No count from it, in digits or in words, may enter
+this figure, and it is never a reason to move card 10's chip. See the 2026-09-07 banner.
 
 **The word-form counts `one wave per country`, `the other two` and 🔴 `two gates` are permitted**, under
 the same exception as Section 9 item 1: they are closed author decisions, written as words and never as
@@ -531,6 +648,12 @@ Handled by the assistant, not by the image tool:
    gate-validated work. Showing **Step 4 or Step 6 as `validated`** overstates the project's position —
    Step 4 is still training and **Step 6 has not been run at all** — and that error is the more serious
    of the two, because Step 6 is the claim.
+   🔴 **Corrected 2026-08-26 and again 2026-09-07 — the list in item 4 above is the
+   2026-08-19 one and is superseded. The current list is: Step 0 `cleared`; Steps 1, 2, 3, 5, 8 and 9
+   `validated`; Steps 4 and 7 `decided`; Steps 6, 10 and 11 hollow `open`.** 🔴 **Cards 10 and
+   11 carrying anything but `open` is an automatic reject, and the reject holds even if the person
+   generating the image can point at Step 10's 18-PASS board — that board is the archived,
+   unreported core-era campaign. See the 2026-09-07 banner.**
 5. Check that Step 6 is the largest card, carries its bold bar line, and **still carries the hollow
    `open` chip** despite being the visual centre of the figure.
 6. Check that no year, no threshold value, no model name, no country name and no count in digits appears
@@ -562,7 +685,8 @@ Nothing that names a part of the layout may appear in the image.
 ALL TEXT IS HORIZONTAL. Nothing is rotated, sideways or vertical anywhere in the image, including the
 five tinted bars down the left side. Their labels DATA, MODEL, CLAIM, ENERGY and STOCK are written
 horizontally, reading left to right, like every other word in the picture. This is the single most
-important formatting rule here.
+important formatting rule here. Two earlier generations rotated them anyway: if a label does not fit
+horizontally inside its bar, widen the bar or set the label above it, but never turn it on its side.
 
 At the very top, centred, exactly two lines of text with nothing above them:
   From Harmonised Time-Use Surveys to Simulated Building Energy
@@ -589,6 +713,8 @@ are drawn four ways, distinguished by fill and by glyph rather than by colour:
   validated  solid dark navy fill, white text, two checkmarks
   decided    solid dark navy fill, white text, no glyph
   open       white fill, navy outline, navy text, no glyph
+The number of checkmarks is not decoration. EVERY card whose chip word is validated carries TWO
+checkmarks, cards 8 and 9 included; only card 0, whose chip word is cleared, carries one.
 
 THE TWELVE CARDS, with the exact wording of every line:
 
@@ -619,11 +745,11 @@ circle 9, title End-use loads, chip validated
   published activity-to-appliance mappings, adapted not authored
   three gates ship as declared failures
 circle 10, title Real-stock UBEM, chip open
-  observed footprints, one independent diary per dwelling
-  the engine, and which year the diaries belong to
+  observed footprints, dwellings only, one independent diary per dwelling
+  the no-core engine does not exist yet
 circle 11, title Stock-scale end-use loads, chip open
   the same mapping, at the scale its sources were validated at
-  hot water magnitude diagnosed before it is re-measured
+  the bands are inherited unmoved, not re-set at stock scale
 
 CARD 6 IS THE CENTREPIECE. Draw it noticeably larger than every other card, with a very light navy
 fill and a thicker border. Its middle line, the one beginning "the bar:", is BOLD, and it is the only
@@ -632,8 +758,11 @@ runs short, shrink cards 10 and 11 rather than that bold line. Do not shrink or 
 line of card 8 or of card 9; both are required.
 
 THE SEVEN PALE TILES ON THE RIGHT, each with its thin connecting line:
-  pre-declared gate batteries   joined by ONE bracket that spans cards 1, 2, 3, 4 and 5 together,
-                                reaching from card 1 down to card 5, not stopping short
+  pre-declared gate batteries   joined by ONE bracket that spans cards 1, 2, 3, 4 and 5 together.
+                                The bracket starts at the top edge of card 1 and ENDS AT THE BOTTOM
+                                EDGE OF CARD 5, the card titled Population linkage. A bracket that
+                                stops at card 2, or at card 4, is wrong: it has been drawn short
+                                twice already, and card 5 must be inside it.
   distributional fidelity       to card 6
   collapse, memorisation and privacy   to card 6
   transfer margin               to card 6
@@ -652,7 +781,10 @@ labels, and the dashed-box line. Nothing else. In particular:
   Do not write N-1 or any algebraic expression.
   Do not write any of: all countries trained jointly; acquisition outstanding for the countries not
   yet held; which model family; which country is held out; several waves per country; how many waves
-  earn their place; pooling level across waves.
+  earn their place; pooling level across waves; the engine, and which year the diaries belong to;
+  hot water magnitude diagnosed before it is re-measured; Step 12; campaign C1; campaign C2.
+  Draw exactly twelve cards. Do not add a thirteenth card and do not draw a card numbered 12.
+  Cards 10 and 11 both keep the hollow open chip. Do not give either of them a checkmark.
   The only counts written as words are "one wave per country", "the other two", "two gates" on
   card 5 and "three gates" on card 9. All four are required.
   No country names and no flags. No model names such as Gemma, Llama, Qwen, Mistral or OLMo.
@@ -662,7 +794,9 @@ brain, robot, android, glowing orb or chat bubble. No loop-back arrows, no feedb
 iteration loops, since the steps run once in order. No time axis, no years, no forecast arrow. Nothing
 suggesting the trained model is released: no download icon, no repository mark, no open-weights badge.
 Do not rely on red and green as the only pair distinguishing anything. Every line must stay legible
-when the picture is printed at full page width.
+when the picture is printed at full page width. Render at the largest pixel size available, at least
+1400 by 1900, and return a PNG rather than a JPEG: this is line art, and JPEG compression frays the
+small type in the card body lines.
 ```
 
 ### 11.1 What to check the moment the image comes back
@@ -685,6 +819,18 @@ one of them failing means regenerate rather than accept:
    not have.
 6. 🔴 **NEW 2026-08-26.** Twelve cards, five bars including **`STOCK`**, seven tiles including
    **`basis and denominator`**. Count them; do not read the image for general correctness.
+
+7. 🔴 **NEW 2026-09-07. Card 10 reads `observed footprints, dwellings only, one independent
+   diary per dwelling` and `the no-core engine does not exist yet`; card 11 reads `the same mapping,
+   at the scale its sources were validated at` and `the bands are inherited unmoved, not re-set at
+   stock scale`.** Neither of the two retired lines — `the engine, and which year the diaries
+   belong to`, `hot water magnitude diagnosed before it is re-measured` — may survive anywhere.
+8. 🔴 **NEW 2026-09-07, and this is the one to check hardest. Cards 10 and 11 carry the
+   HOLLOW `open` chip.** If either carries a checkmark, reject and regenerate — whatever the
+   reason given. Step 10's scored campaign is archived and unreported, and the reported one has no
+   cell. A first district arriving from OpenUBEM does not change this.
+9. 🔴 **NEW 2026-09-07. Count the cards: exactly twelve, numbered 0 to 11.** No card 12, no
+   thirteenth card, no `Step 12` anywhere in the image. The pipeline ends at Step 11 by ruling.
 
 🔴 **Generators drop or merge tiles and chips when the gutter is crowded, and they silently
 re-word body lines that are long.** Check the strings character by character against Section 6 rather
@@ -743,3 +889,75 @@ STATE CHIPS. Do not print step numbers inside the phase bands and do not print r
 "pre-declared gate batteries" must bracket steps 1, 2, 3, 4 and 5 together, not steps 1 and 2 only. The
 line beginning "the bar:" on card 6 must be bold.
 ```
+
+---
+
+## 13. RESULT OF THE 2026-09-07 GENERATION — the no-core revision, checked string by string
+
+**Installed file.** `../HETUS_LLM_Pipeline_Steps.png`, md5 `c852194c9d213c5e7ac825688202befb`,
+**896 × 1200 px**, installed 2026-09-07 12:00 by converting the image tool's `.jpg` output to PNG. The
+previous generation (2026-08-19) is kept at `previous/HETUS_LLM_Pipeline_Steps.png`, md5
+`207f42dcac694e2c9a299c13cb966829`, and was not overwritten.
+
+🔴 **The headline: the refusal held. Cards 10 and 11 both carry the hollow `open` chip**, which is the
+single thing the 2026-09-07 revision existed to protect, and the one a generator or a reader with the
+Step 10 gate board in front of them would have got wrong. All three new strings landed verbatim.
+
+### 13.1 What is correct and must not regress
+
+* **Twelve cards, 0 to 11.** No thirteenth card, no card numbered 12, and `Step 12` appears nowhere.
+* **Cards 10 and 11 both hollow `open`.** Card 10 reads `observed footprints, dwellings only, one
+  independent diary per dwelling` and `the no-core engine does not exist yet`; card 11 reads `the same
+  mapping, at the scale its sources were validated at` and `the bands are inherited unmoved, not
+  re-set at stock scale`.
+* **Every retired string is absent**, checked one at a time: `the engine, and which year the diaries
+  belong to`, `hot water magnitude diagnosed before it is re-measured`, `N-1`, `all countries trained
+  jointly`, `acquisition outstanding for the countries not yet held`, `which model family`, `which
+  country is held out`, `several waves per country`, `how many waves earn their place`, `pooling level
+  across waves`, `campaign C1`, `campaign C2`.
+* **The chip words match the current list on all twelve cards:** 0 `cleared`; 1, 2, 3, 5, 8, 9
+  `validated`; 4, 7 `decided`; 6, 10, 11 `open`.
+* **Card 6 is the centrepiece and still hollow.** Largest card, thicker border, pale navy fill, and its
+  `the bar:` line is the only bold body line in the picture — 🟢 **Section 12 defect 4 is fixed.**
+* **The scaffolding is gone.** No `LEFT COLUMN`, `RIGHT COLUMN` or `CARDS & STATE CHIPS`; no step
+  digits repeated down the phase bands; no `6-7` or `8-9` ranges anywhere — 🟢 **Section 12 defect 3
+  is fixed.**
+* Seven tiles, all present with their exact labels, and the dashed control line at the foot. No year,
+  no threshold, no model name, no country name, and no digit outside the twelve circles. All four
+  word-form counts present: `one wave per country`, `the other two`, `two gates`, `three gates`.
+
+### 13.2 Defects. 🔴 **The first two are REPEATS of Section 12, and both were explicitly instructed against inside the block that was pasted.**
+
+1. 🔴 **The five band labels are drawn VERTICALLY**, rotated to read bottom-to-top: `DATA`, `MODEL`,
+   `CLAIM`, `ENERGY`, `STOCK`. The pasted block opens by calling horizontal text *"the single most
+   important formatting rule here"*. It was ignored on 2026-08-19 and ignored again now. **It
+   misstates nothing** — a rotated band label is a common figure convention and no reader is misled —
+   but after two attempts the honest conclusion is that **more prompt text will not fix it**: either
+   accept it, or the author straightens the five labels by hand.
+2. 🔴 **The `pre-declared gate batteries` bracket stops at card 4. Card 5 sits outside it.** On
+   2026-08-19 the same bracket spanned only cards 1 and 2; the block was rewritten to say *"reaching
+   from card 1 down to card 5, not stopping short"*, and the bracket grew by two cards and still
+   stopped short. **This one does misstate the project.** As drawn, Population linkage has no
+   pre-declared battery — and Step 5's two declared exceptions, which the card itself prints, came out
+   of exactly that battery.
+3. ⚪ **Cards 8 and 9 carry `validated` with ONE checkmark**, where cards 1, 2, 3 and 5 carry two.
+   Section 2 gives one checkmark to `cleared` and two to `validated`. In a figure whose whole subject
+   is the chip vocabulary, the same word drawn two ways is a defect, if a quiet one.
+4. ⚪ **Print quality is below spec and item 8 of Section 10 is NOT cleared.** 896 × 1200 against the
+   1400 × 1900 asked for, and the PNG is a re-encode of a `.jpg`, so the body type carries JPEG
+   ringing. At full page width that is roughly 130 dpi. It is legible on screen; it is not a
+   submission raster.
+
+**Off-spec but accepted, recorded so they are not "fixed" into something worse:** the card fills are
+tinted to match their band rather than white (accepted since 2026-08-19); the `CLAIM` band is not
+visibly wider or stronger than the other four; and `transfer margin` still sits nearer card 7 than
+card 6, which is a routing nuisance, not a false statement, as long as its line lands on card 6 — it
+does.
+
+### 13.3 What was changed in this document as a result
+
+The two fixable defects were **merged into the Section 11 paste block**, not appended after it, per
+that section's own rule: the bracket instruction now names card 5 by its title and says the bracket
+has been drawn short twice, and the chip description now says every `validated` chip carries two
+checkmarks including cards 8 and 9. A resolution-and-format line was added to the STYLE paragraph.
+🔴 **Paste Section 11 as it now stands; do not paste the copy used on 2026-09-07.**

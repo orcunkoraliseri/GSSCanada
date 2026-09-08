@@ -2,7 +2,7 @@
 
 ### 4J HETUS LLM pipeline. Implementation specification.
 #### Parent: `../4thJ_00_HETUS_LLM_Pipeline.md` Step 11. Validation: `4thJ_11_stockEndUseLoads_val.md`
-#### Basis: `../Step10_docs/4thJ_10_ubemRealStock.md`. Predecessor (closed): `../Step9_docs/4thJ_09_enduseLoads.md`
+#### Basis: `../Step10_docs/4thJ_10_nocoreRealStock.md` — Step 10 campaign `C2` (no-core), the campaign this step will run on. Core-era campaign `C1`, closed and archived: `../Step10_docs/archive_C1_core_era/4thJ_10_ubemRealStock.md`. Predecessor (closed): `../Step9_docs/4thJ_09_enduseLoads.md`
 
 ---
 
@@ -35,6 +35,23 @@ what governs. 🔴 **No decision from Step 11 is waiting on the author.**
 🔴 **Step 9 is CLOSED and this step does not reopen it.** Step 9's board is
 **15 PASS / 3 FAIL / 1 NOT CHECKED** (`FINDING 149`); its mapping, its trigger, its citations and its
 thresholds are read-only from here.
+
+🟢 **`Basis:` path repaired 2026-09-07, on the author's instruction, and this is the record of
+what it said before.** The header read `Basis: ../Step10_docs/4thJ_10_ubemRealStock.md`, written
+before `D-IMP-4` (2026-09-03) archived the core-era campaign. That file now lives at
+`../Step10_docs/archive_C1_core_era/4thJ_10_ubemRealStock.md`, so the literal path had stopped
+resolving. ⚪ It was the **only live dangling pointer** to the moved `C1` documents: the other
+twelve references found in the same audit are closed records — `IMP/docs/DONE/` dockets,
+`Step10_docs/impl/` ledgers, sent `messages_OpenUBEM/` files, run deep-research prompts and their
+vetting — and those are **deliberately not rewritten**, which is what `Step10_docs/README.md`'s
+redirect table exists for.
+
+🔴 **The repair also names the right campaign, which the old line could not.** Step 10 now has
+two: `C1` (core-era, run, scored, **archived and not reported**) and `C2` (no-core, **the one Step 11
+will run on**, spec only, gate series `G10N.x`). The header now points at `C2` and keeps `C1`
+addressable beside it. ⚪ **Nothing else in this step moves.** Section 2.1's note still governs
+the content: what is written below still describes `C1`'s core-era population until a no-core `C2`
+cell exists. No gate is re-scored, no band moves, and Step 11 remains **PLANNED, nothing built**.
 
 ---
 

@@ -6,6 +6,8 @@ asking a follow-up question.
 
 **Install path once generated:** `4J_docs_occ/writing/submission/figures/`
 **Sibling to match:** `3J_docs_occ_nTemp/Leg3_4-split/Residential-Office-Retail-Hotel_Pipeline.png`
+**Reconciled against the project state on** 🔴 **2026-09-07** (Band 5 only — see the
+2026-09-07 banner below).
 
 > **Updated 2026-08-14**, after all sixteen `L`-series research reports came back. Four things changed
 > and each of them changes the drawing, not only the wording:
@@ -98,6 +100,39 @@ asking a follow-up question.
 > *step count*: one recipe, many countries, and the country being generated was never seen in training.
 > Steps 10 and 11 do not alter that claim — they extend where the diaries land. The step-count figure
 > is `4thJ_pipeline_steps_figure.md`, and **that** one grows from ten cards to twelve.
+
+> 🔴 **REVISED 2026-09-07 — BAND 5 ONLY, AGAIN, AND THE CHANGE IS A DRAWING CHANGE
+> RATHER THAN A STRING CHANGE. Regenerate.** Nothing about the claim moves: the lanes, the navy
+> block, the population track and the held-out callout are all untouched, and **no new string is
+> added to Section 6.** What changed is the rule by which the little plan-view block behind the
+> building row is subdivided — and it changed in a direction that a generator will get wrong by
+> default unless it is told not to.
+>
+> 🔴 **THE NO-CORE RULE. Every square metre of that plan is a dwelling.** The owner ruled on
+> 2026-09-02/03 (`D-EU-79`, `D-EU-80`, `D-EU-81`) that a floor plate divides into **dwellings only**:
+> no core, no corridor, no access band, no unconditioned zone, nothing narrower than 2 m, one flat =
+> one zone. **Asked to subdivide a building plan, an image generator draws a stair core or a
+> corridor spine in the middle, because that is what building plans look like in its training data.**
+> A drawn core in that footprint would state, in the figure, the exact layout regime this project
+> rejected and rewrote a whole campaign to be rid of. Section 3 Band 5, Section 7 and the Section 10
+> paste block all carry the change.
+>
+> 🔴 **AND A COUNTING TRAP: the real stock is FOUR DISTRICTS, the corpus is THREE COUNTRIES,
+> and they are not the same four and three.** The districts are Madrid, Lyon, London and Bologna;
+> **Lyon is a physical baseline and never enters a 4J denominator** — no French fold, no French
+> held-out fold, no French diary (`G10.11`). France was excluded from the corpus by decision 16 and
+> the figure still draws **three lanes**. So the footprint cluster must be drawn **deliberately
+> un-countable**: six or seven footprints, in neutral grey, never four, never grouped into four,
+> never coloured in the lane colours and never labelled with a city or a country. A reader who counts
+> four footprints beside three lanes will conclude the paper has a fourth country, and it does not.
+>
+> ⚪ **Why Band 5 and nothing else, again.** Since 2026-08-26 the real-stock campaign was run,
+> scored, and then **archived unreported** when the no-core rule replaced its population; the
+> campaign that will be reported has no cell yet. **None of that touches this figure**, which
+> carries the claim — one recipe, many countries, the generated country never seen in training —
+> and not the state of the work. The figure that carries state is
+> `4thJ_pipeline_steps_figure.md`, and its cards 10 and 11 stay `open`. 🔴 **Do not import that
+> status story into this figure: no gate counts, no chips, no `archived`, no `campaign C1` or `C2`.**
 
 ## 0. Read this before generating
 
@@ -294,15 +329,34 @@ has to grow.
   adjoining dwelling forms of different heights and periods, side by side, not a tall tower. This is
   deliberately different from the 3J figure's single mixed-use tower, because paper 4 is residential
   stock across countries, not one building.
-* 🔴 **Added 2026-08-26 — a second, smaller element BEHIND and slightly right of that row:**
-  a small **plan-view cluster of four or five irregular building footprints**, as a real block would
-  be, drawn in light outline so it reads as background depth rather than as a second subject. **One**
-  of those footprints is subdivided into four or five small cells, and **each cell carries a tiny
-  distinct tick-mark or micro-curve**. That is the whole visual argument of Steps 10 and 11: the
-  archetype row in front carries **one** schedule for the whole building; the block behind carries
-  **one per dwelling**. 🔴 **Draw the subdivided footprint's cells with visibly different
-  marks.** Identical marks would say every dwelling shares one diary, which is precisely the design
-  Step 10 exists to replace.
+* 🔴 **Added 2026-08-26, rewritten 2026-09-07 — a second, smaller element BEHIND and
+  slightly right of that row:** a small **plan-view cluster of six or seven irregular building
+  footprints**, packed together as a real block would be, drawn in **plain light grey outline** so it
+  reads as background depth rather than as a second subject. **One** of those footprints is
+  subdivided into five or six small cells, and **each cell carries a tiny distinct tick-mark or
+  micro-curve**. That is the whole visual argument of Steps 10 and 11: the archetype row in front
+  carries **one** schedule for the whole building; the block behind carries **one per dwelling**.
+  🔴 **Draw the subdivided footprint's cells with visibly different marks.** Identical marks
+  would say every dwelling shares one diary, which is precisely the design Step 10 exists to replace.
+
+  🔴 **THE SUBDIVISION FILLS THE FOOTPRINT, EDGE TO EDGE. NEW AND MANDATORY, 2026-09-07.**
+  Every part of that plan is a dwelling cell: **no core, no stair block, no lift shaft, no corridor
+  spine, no shaded rectangle, no hatched service zone, no leftover gap in the middle.** The cells are
+  roughly equal in size and none is a sliver. This is the owner's no-core rule (`D-EU-79`/`80`/`81`)
+  drawn rather than written: a plate divides into flats only, every square metre belongs to a flat,
+  nothing narrower than 2 m, one flat = one zone.
+
+  🔴 **This is the most likely defect in the whole figure and it is the reason for this
+  revision.** Generators draw a stair core in a subdivided plan by reflex. **A drawn core states the
+  layout regime the project rejected**, and it would sit in the figure contradicting a campaign that
+  was rewritten from scratch to be rid of it. Check this cell by cell before accepting the image.
+
+  🔴 **Do not colour, label or count the cluster.** Grey outline only — never the lane
+  colours, never a city or country name, never a legend, and **never arranged into four separate
+  groups**. The real stock is four districts and the corpus is three countries; a countable four in
+  Band 5 beside three lanes in Band 2 invents a fourth country the paper does not have. ⚪ Six
+  or seven footprints is not an arbitrary number: it is chosen so that nobody can count it as
+  anything.
 * To the right of the buildings, a small vertical stack of 🔴 **three miniature schedule curves** (was four), each in
   its lane's colour, each a simple line plot in a small white box with a `0` and `24` on the x axis and
   no y axis numbers. The curves must have visibly different shapes.
@@ -421,6 +475,15 @@ Band 5:
 * 🔴 `archetypes first, then real stock, one diary per dwelling`
 * `0` and `24` as the only axis labels on the schedule curves
 
+🔴 **NO STRING IS ADDED OR REMOVED ON 2026-09-07, AND THAT IS DELIBERATE.** The no-core rule is
+drawn, not written: it is stated by the subdivided footprint filling its outline with dwelling cells
+and nothing else. Band 5's `archetypes first, then real stock, one diary per dwelling` remains the
+only string Steps 10 and 11 contribute, and it is still the only one they need. 🔴 **Do not add
+a line such as `no core, no corridor`, `dwellings only`, `four districts`, or any name of a city or
+district.** A graphical abstract carries the claim; the layout rule is a method detail that belongs
+in the caption or the text, and a district name in this figure would contradict the anonymous lanes
+three inches to its left.
+
 🔴 **`N-1` WAS RETIRED ON 2026-08-19 AND MUST NOT APPEAR.** There is no algebraic string in the figure
 any more. The words `the other two` replace it, permitted as a word-form count under the same exception
 as `one wave per country`: a closed author decision, written as words and never as digits.
@@ -500,6 +563,25 @@ above a band, it must first be added to Section 6; until then there is none.
     output, never to Band 3.
 12. **No arrow from the population chain into the navy block.** The synthetic population conditions
     generation; it is not training input. This is the specific misreading Band 3b exists to prevent.
+13. 🔴 **No core, no corridor, no stairwell, no lift shaft, no shaded service block, and no
+    leftover gap inside the subdivided footprint in Band 5. NEW 2026-09-07 and it is the item this
+    revision exists for.** The owner's rule (`D-EU-79`/`80`/`81`) is that a floor plate divides into
+    **dwellings only** — every square metre belongs to a flat, nothing narrower than 2 m, one flat
+    = one zone. **An image generator asked to subdivide a building plan draws a core by reflex**,
+    because that is what plans look like in its training data. A core drawn here would state the
+    layout regime the project rejected, in the figure that fronts the paper.
+14. 🔴 **The Band 5 footprint cluster is never coloured, never labelled, and never countable
+    as four. NEW 2026-09-07.** Grey outline only: not the lane colours, no city or country name, no
+    legend, and not arranged into four groups. The real stock is **four districts** (Madrid, Lyon,
+    London, Bologna) while the corpus is **three countries**, and **Lyon is a physical baseline that
+    never enters a 4J denominator** — no French fold, no French held-out fold, no French diary
+    (`G10.11`). Four countable footprints beside three lanes would tell a reader the paper has a
+    fourth country. Six or seven, ungrouped, is chosen so the cluster cannot be counted as anything.
+15. 🔴 **Nothing about project status enters this figure. NEW 2026-09-07.** No gate counts, no
+    pass/fail marks, no state chips, no `archived`, no `campaign C1` or `campaign C2`, no `Step 12`.
+    The real-stock campaign that was run has been archived unreported and the one that will be
+    reported has no cell yet — that story belongs to `4thJ_pipeline_steps_figure.md`, whose cards
+    10 and 11 stay `open`. **This figure carries the claim, and the claim did not move.**
 
 ---
 
@@ -649,8 +731,10 @@ the generation area on the right. It must not enter the navy block. Beneath it o
 
 THE GENERATION AREA, right of the navy block: three thin horizontal stacked activity ribbons, one per
 lane colour, each made of twenty to thirty coloured segments of unequal width, each labelled 00 at its
-left end and 24 at its right end, and the three visibly different from one another. The third ribbon
-has a dashed outline in the held-out lane's colour. Beside it, a dashed-outline box headed
+left end and 24 at its right end, and the three visibly different from one another. Write NO heading
+above these ribbons: not the word activity, not a title, nothing at all. The only text touching them
+is 00 at one end and 24 at the other. The third ribbon has a dashed outline in the held-out lane's
+colour. Beside it, a dashed-outline box headed
 "held-out country" containing four lines:
   generated from published marginals only
   scored against published aggregate statistics
@@ -660,11 +744,18 @@ has a dashed outline in the held-out lane's colour. Beside it, a dashed-outline 
 THE RIGHT EDGE: a flat row of three or four European residential building types, side by side, and
 beneath them three small line-plot schedule curves in the three lane colours, each in a small white
 box with 0 at the left and 24 at the right of its x axis and no y axis numbers, the three shapes
-visibly different. Behind and slightly to the right of that row, drawn small and in light outline so
-it reads as background, a plan view of four or five irregular building footprints as a real city
-block would be; one of those footprints is divided into four or five small cells and each cell
-carries its own tiny tick-mark, all of the marks different from one another. Beneath the curves,
-three lines:
+visibly different. Behind and slightly to the right of that row, drawn small and in plain light grey
+outline so it reads as background, a plan view of six or seven irregular building footprints packed
+together as a real city block would be. One of those footprints is divided into five or six small
+cells of roughly equal size, and those cells FILL the whole outline: every part of that plan is a
+cell, edge to edge, with no stair core, no lift shaft, no corridor strip, no shaded or hatched
+block, and no empty gap anywhere in the middle. Each cell carries its own tiny tick-mark, and every one of
+those marks is a DIFFERENT little mark from the marks in all the other cells: a short zigzag, a wave,
+a dot, a cross, a bar, a small spiral. None of them is a checkmark. The marks stand for six different
+daily schedules, one per dwelling, not for approval, so six identical marks would say the opposite of
+the line printed below them. Draw the footprints in grey outline only: do not colour
+them, do not label them, do not write any city or country name on them, and do not arrange them into
+four separate groups. Beneath the curves, three lines:
   occupancy and activity-driven internal gains
   EnergyPlus schedules
   archetypes first, then real stock, one diary per dwelling
@@ -672,12 +763,22 @@ three lines:
 QUOTED TEXT. The picture contains the two title lines and the strings named above, and nothing else.
 In particular: write no number anywhere except 00, 24, 0 and 24 as the axis end labels. Write no
 percentage, accuracy, metric, country count, year or parameter count. Write no real country name and
-draw no flag. Write no model name such as OLMo, Gemma, Llama, Qwen or Mistral. Write no headings.
+draw no flag. Write no model name such as OLMo, Gemma, Llama, Qwen or Mistral. Write no headings, and
+in particular no word above the three coloured ribbons: the word activity must not appear anywhere.
+Write no city or district name. Write nothing about project status: no gate counts, no pass or fail
+marks, no words such as archived, campaign, C1, C2, Step 10, Step 11 or Step 12.
+
+THE ONE THING MOST LIKELY TO GO WRONG. In the small plan of building footprints at the far right,
+the subdivided footprint must be filled completely by its dwelling cells. Do not draw a stair core,
+a lift shaft, a corridor, an entrance hall, a shaded service block or any hatched area inside it,
+and leave no blank space between the cells and the outline. Every part of that plan is a dwelling.
 
 STYLE. Flat vector only: no 3D, no perspective, no drop shadows, no gradients on text. No logos. No
 results, no bar charts, no scatter plots, no confusion matrices, no metric callouts; the ribbons and
 the curves are illustrative shapes, not plotted data. No time axis, no years, no forecast arrow. Every
 arrow must mean that something flows. Every line must stay legible at single-column print width.
+Render at the largest pixel size available, at least 2000 by 1100, and return a PNG rather than a
+JPEG: this is line art, and JPEG compression frays the small type.
 ```
 
 ### 10.1 What to check the moment the image comes back
@@ -704,3 +805,96 @@ arrow must mean that something flows. Every line must stay legible at single-col
 10. Everything in 10.1 still holds. 🔴 **Check it again rather than assuming it survived**: the
     2026-08-19 generation was correct on all six of those points and this revision touches none of
     them, so any regression there is the generator re-drawing from scratch, not a prompt change.
+
+### 10.3 What to check on the 2026-09-07 regeneration, in addition to 10.1 and 10.2
+
+11. 🔴 **The subdivided footprint in the small background plan is filled edge to edge by its
+    dwelling cells.** No core, no stair block, no lift shaft, no corridor, no hatched or shaded
+    area, no gap between the cells and the outline. **This is the item this revision exists for and
+    it is the one a quick glance passes** — a plan with a neat core in the middle looks more
+    professional, not less, which is exactly why it will be drawn and accepted.
+12. 🔴 **The footprint cluster is grey outline only and cannot be counted as four.** Six or
+    seven footprints, ungrouped, unlabelled, uncoloured. If it is drawn in the lane colours, or as
+    four, or with a city name, regenerate: it would tell the reader the paper has a fourth country,
+    which is the one thing decision 16 and `G10.11` between them make false.
+13. 🔴 **Nothing about project status appears.** No gate count, no pass/fail mark, no state
+    chip, no `archived`, no `campaign`, no `C1`/`C2`, no step number anywhere in the image.
+14. ⚪ **Everything in 10.1 and 10.2 still holds and must be re-checked from scratch.** This
+    revision touches only the far right of the figure, so any regression in the title, the lanes, the
+    navy block or the population chain is the generator re-drawing rather than a prompt change —
+    and it has happened before.
+
+---
+
+## 11. RESULT OF THE 2026-09-07 GENERATION — the no-core revision, checked string by string
+
+**Installed file.** `../HETUS_LLM_CrossNational_Pipeline.png`, md5
+`38e1e602acbab5210839021ef7fb80a4`, **1376 × 768 px**, installed 2026-09-07 12:00 by converting the
+image tool's `.jpg` output to PNG. The previous generation (2026-08-19) is kept at
+`previous/HETUS_LLM_CrossNational_Pipeline.png`, md5 `d3f0a13b02c04a39fbdb3bc263b6cafc`, and was not
+overwritten.
+
+🔴 **The headline: check 11 PASSES. The subdivided footprint is filled edge to edge by six dwelling
+cells — no core, no stair block, no lift shaft, no corridor, no hatched area, no gap.** That is the
+one thing this revision existed to obtain, it is the thing an image generator gets wrong by reflex,
+and it came back right.
+
+### 11.1 What is correct and must not regress
+
+* The subtitle reads **`One Recipe, Many Countries: HETUS-Harmonised Time-Use Diaries for Building
+  Energy Modelling`** — 🟢 **the 2026-08-19 defect 1 is fixed.** `One Model, Many Countries` is gone.
+* **No `TITLE`, no `BAND`, no `BAND n:` heading** anywhere — 🟢 **defect 2 is fixed.**
+* The navy block reads `One open-weight LLM, one recipe per held-out country`, `conditioned on:
+  country, demographics, day type`, `trained on: the other two`, `structure guaranteed at decoding`.
+  No `fine-tuned once`, no `N-1`, no `season`.
+* **Three lanes**, `Country A`, `Country B`, `Country C - held out` dashed. No `Country D`. Both
+  callout lines present: `each country is held out in turn`, `never seen in training`.
+* 🔴 **The two checks that matter most, items 4 and 5 of Section 8, both PASS.** The dashed lane does
+  not enter the navy block, and the population chain runs **below** the block with its arrow turning
+  up into the generation area. The figure does not say we trained on census marginals.
+* `published population marginals` → `synthetic population`, labelled `iterative proportional
+  fitting`, with `population and day are generated separately` beneath.
+* The dashed held-out callout carries **all four** lines, including `three independent nulls, all
+  reported`.
+* `start` is absent from the episode tuple; the source card is **single, not stacked**.
+* 🔴 **Checks 12 and 13 pass.** The footprint cluster is plain grey outline, unlabelled, uncoloured,
+  and not arranged in four groups; no city or district name appears; and **nothing about project
+  status enters the figure** — no gate count, no chip, no `campaign`, no `C1`/`C2`, no step number.
+
+### 11.2 Defects
+
+1. 🔴 **The word `activity` is printed above the three ribbons.** It is not in Section 6, so it is a
+   defect by the rule in Section 8 item 3, and it is the **only unpermitted string in the image**. It
+   is the same class as the `BAND n:` headings retired on 2026-08-19: a scaffolding word the generator
+   supplied because the layout seemed to need a label.
+2. 🔴 **All six dwelling cells carry the SAME checkmark, and Band 5 requires the marks to differ.**
+   The difference is not decoration: differing marks are how the plan draws `one independent diary per
+   dwelling`, the line printed three centimetres below it. Six identical marks draw the opposite — one
+   diary repeated across the plate — and a checkmark additionally reads as a pass mark, which check 13
+   forbids in this figure. **This is the more serious of the two, because it contradicts a sentence
+   the same figure prints.**
+3. ⚪ **Small ones, recorded so they are not "fixed" into something worse:** a stray apostrophe sits
+   before `One open-weight LLM` in the navy block title; the subdivided footprint is filled mid-grey
+   with a heavy black outline rather than left as plain outline; the cluster holds about thirteen
+   footprints rather than six or seven; and the plan is drawn tilted, on a faint white sheet. **None
+   of these breaks check 12** — the cluster is still uncountable and still cannot be read as four.
+4. ⚪ **Print quality is below spec.** 1376 × 768 against the ~2000 × 1100 asked for, and the PNG is a
+   re-encode of a `.jpg`, so the small type carries JPEG ringing. Fine on screen, not a submission
+   raster.
+
+**Off-spec but accepted, not a defect:** the dashed held-out lane re-enters the generation area
+**through** the population chain rather than beside it. As drawn it reads: for the held-out country,
+published marginals → synthetic population → generated day → scored in the dashed box. That is what
+the design actually does, and the critical check — does the dashed lane enter the navy block? — is
+PASS. Also accepted: the three lanes are not identical in structure, lane one showing `episode diary`
+and lanes two and three `serialised record`; the pipeline still reads left to right and no lane is
+privileged.
+
+### 11.3 What was changed in this document as a result
+
+Both defects were **merged into the Section 10 paste block**, not appended after it, per that
+section's own rule: the generation area now forbids any heading above the ribbons by name, and the
+Band 5 sentence now says every cell's mark must differ from every other and that none may be a
+checkmark, with the reason. A resolution-and-format line was added to the STYLE paragraph, and
+`activity` was added to the QUOTED TEXT prohibition.
+🔴 **Paste Section 10 as it now stands; do not paste the copy used on 2026-09-07.**

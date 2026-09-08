@@ -1,3 +1,245 @@
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-07 (last+38), the third block of the same day. READ
+THIS BLOCK FIRST, THEN last+37, last+36 AND last+35 BELOW IT, ALL OF WHICH STILL BIND. THIS BLOCK
+ANSWERS ONE SEQUENCING QUESTION AND CHANGES NOTHING ELSE. NOTHING WAS COMPUTED AND NO GATE MOVED.**
+
+### 0. THE QUESTION
+
+The author asked, having installed the figures: *"when we complete openubem neighbourhood sets, will
+we start step9?"* Answered from disk, not from memory. **Documentation-only. Zero compute, no board
+change, nothing re-scored.**
+
+### 1. NO. STEP 9 IS CLOSED AND NOTHING RE-OPENS IT
+
+🔴 **Step 9 — Activity-driven end-use loads — is BUILT and CLOSED.** Items 9.1–9.5 were built
+2026-08-25 on 100 dwellings per fold, the same dwellings Step 8 simulated, proven byte-for-byte
+against the shipped presence schedules 100/100 in every fold. Board **15 PASS / 3 FAIL / 1 NOT
+CHECKED** (`FINDING 149`: the "16 PASS" first written had counted `G9.4`'s NOT CHECKED as a PASS).
+🔴 **Its mapping, its trigger, its citations and its thresholds are READ-ONLY from here** —
+`Step11_docs/4thJ_11_stockEndUseLoads.md` says exactly that in its own STATUS block. The three FAILs
+(`G9.6` 60, `G9.7` 300, `G9.12` 3) are **results, not defects**, and no band moves.
+
+⚪ Step 9's two decisions are not outstanding work either: `D-S9-3` was ruled (a) and the Step 8
+campaign re-run under it; `D-S9-2`'s nine items are all implemented at the recommended option and
+live in CSVs, not code, so a later ruling changes a data file and a re-run, never a tool. `D-S11-1`
+(2026-08-27) then made `G9.7`/`G11.7` **`INFO` permanently** — the 30–50 L band is inherited
+**UNMOVED** and **will not be re-measured at stock scale**.
+
+### 2. WHAT ACTUALLY STARTS WHEN THE NEIGHBOURHOOD SETS ARE COMPLETE
+
+**Step 10 campaign `C2`, then Step 11 — in that order**, because Step 11 consumes `C2`'s
+per-dwelling real-stock population.
+
+1. 🔴 **Step 10 `C2` — no-core real stock.** `Step10_docs/4thJ_10_nocoreRealStock.md` + `_val.md`,
+   gate series **`G10N.x`**, guards `V10N.x`, preflight `tools/4thJ_step10_nocore_preflight.py`.
+   Spec only, no cell. It waits on the OpenUBEM engine carry-in, `D-EU-84`/`87`/`88`, and `D-EU-55`.
+   🔴 **The prereg is frozen BEFORE the first district is run; a first district is a shakedown and
+   NOT a campaign (`G10N.19` needs 30 qualifying Arm D buildings per fold); `ENGINE_DIGEST_PIN` is
+   never moved to make a run pass.** Never file a `C2` result under a `G10.x` ID, and never re-open
+   the archived `C1`.
+2. **Step 11 — the SAME Step 9 mapping and trigger, unchanged, at stock scale.** This is where the
+   question's instinct is right: the work that *looks* like "doing Step 9 again" is **Step 11**. It
+   is Step 9's machinery run on the order of 1,200 residential buildings per site instead of 100
+   dwellings per fold — the first configuration in this project that sits inside the 100–500-dwelling
+   range the source models were validated in (`9C`), so that caveat becomes satisfiable rather than
+   declared. 🔴 **It does not exist to make the three inherited FAILs pass**: if they pass that is a
+   scale effect and a result; if they fail again, Step 9's failure is confirmed at the scale its
+   sources were validated at, which is the stronger finding. `G11.16` makes the population
+   declaration mandatory — Step 9's 100 dwellings were drawn across a fold, Step 11's sit in one
+   neighbourhood on one weather file, and the two R² values are not comparable without saying so.
+
+⚪ **Step 11's internal order is fixed by its own dependency column.** `11.1` (carry-over audit) and
+`11.2` (`G9.7` diagnosis) are **DONE 2026-08-27** — they were the only items needing nothing from
+Step 10. Then **`11.3`** per-dwelling trigger campaign (needs Step 10 items 10.4 and 10.6) →
+**`11.4`** accounting-path resolution → **`11.5`** stock-scale aggregation (`G11.12` with the
+`G11.16` declaration) → **`11.6`** gate board, mutation battery, dossier → **`11.7`** the one static
+self-contained 3D `.html`, which is **a rendering and never a result** and inherits `G10.9`,
+`G10.22`, `G11.13`, `G10.12` and `G10.11` in full.
+
+### 3. THE BOARD ALREADY SAYS THIS
+
+The seven `todo` items on `4thJ_CHECKLIST.html` are exactly **`11.3`, `11.4`, `11.5`, `11.6`, `11.7`
+and the two Step 10 `C1` FAILs** (`G10.14`, `G10.18` — permanent, a field was never written, never
+retrofitted). ⚪ **There is no Step 9 card among them, and none is added.** Counts unchanged:
+**12 groups / 143 items / 136-0-7**; the board was not read live and not republished.
+
+🔴 **Nothing is owed and no new decision is open.** The one thing still waiting is last+37's yes/no:
+regenerate both figures from the corrected paste blocks now, or keep them as working drafts and
+regenerate once before submission.
+
+---
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-07 (last+37), later the same day as last+36. READ THIS
+BLOCK FIRST, THEN last+36 AND last+35 BELOW IT, BOTH OF WHICH STILL BIND. BOTH FIGURES NOW EXIST AND
+HAVE BEEN CHECKED. NOTHING WAS COMPUTED AND NO GATE MOVED.**
+
+### 0. WHAT HAPPENED
+
+The author generated both images from the prompts reconciled earlier the same day and installed them
+(*"images are done"*). They were read and checked string by string against the prompts' own
+post-generation lists, and the result was written into both prompts and into the write-up notes.
+**Documentation-only. Zero compute, no board change.** ⚪ **last+36's line "both installed images are
+now out of date" is superseded: they are current, and its section 3 item 2 is DONE.**
+
+### 1. BOTH REVISIONS GOT WHAT THEY EXISTED FOR
+
+* `HETUS_LLM_Pipeline_Steps.png`, md5 `c852194c9d213c5e7ac825688202befb`, 896 × 1200.
+  🔴 **Cards 10 and 11 both carry the hollow `open` chip** and all three new strings landed verbatim.
+  The refusal held: the archived `C1` gate board did not leak into the paper's figure. Twelve cards,
+  no thirteenth, no `Step 12`. Card 6 is the centrepiece with its bold `the bar:` line, which was a
+  2026-08-19 defect and is now fixed, as is the scaffolding-heading defect.
+* `HETUS_LLM_CrossNational_Pipeline.png`, md5 `38e1e602acbab5210839021ef7fb80a4`, 1376 × 768.
+  🔴 **The subdivided footprint is filled edge to edge by six dwelling cells** — no core, no shaft, no
+  corridor, no hatched block, no gap. The subtitle reads `One Recipe, Many Countries`; the dashed lane
+  does not enter the navy block; the population chain runs below it. No project status, no city name.
+
+Previous generation kept, not overwritten:
+`writing/submission/figures/Prompts_Images/previous/HETUS_LLM_*.png` (2026-08-19).
+
+### 2. FOUR DEFECTS. NONE MOVES A CLAIM. TWO ARE REPEATS THAT SURVIVED BEING INSTRUCTED AGAINST.
+
+1. 🔴 **Steps figure: the `pre-declared gate batteries` bracket stops at card 4.** It spanned only
+   cards 1–2 on 2026-08-19; the block was rewritten to say *"not stopping short"*; it grew by two
+   cards and stopped short again. **This is the one that misstates something** — as drawn, Step 5 has
+   no pre-declared battery, and Step 5's two declared exceptions came out of that battery.
+2. 🔴 **Steps figure: the five band labels are drawn vertical again**, against a rule the block calls
+   *"the single most important formatting rule here"*. Misstates nothing. **After two attempts, more
+   prompt text will not fix it** — accept it, or straighten five labels by hand.
+3. 🔴 **Abstract: the word `activity` is printed above the ribbons** — the only unpermitted string in
+   the image, same class as the `BAND n:` headings retired on 2026-08-19.
+4. 🔴 **Abstract: all six dwelling cells carry the SAME checkmark.** Band 5 requires the marks to
+   differ, because differing marks are how the plan draws `one independent diary per dwelling` —
+   printed three centimetres below. Identical marks say one diary repeated, and a checkmark also reads
+   as a pass mark, which check 13 forbids.
+
+⚪ **Both rasters are below print spec**: 896 × 1200 and 1376 × 768 against 1400 × 1900 and
+2000 × 1100, both re-encoded from `.jpg`, so the small type carries JPEG ringing. **Working drafts,
+not submission rasters.** Neither figure clears its legibility item.
+
+### 3. WHAT WAS CHANGED, AND WHAT IS WAITING
+
+Every fixable defect was merged **into the paste blocks**, not appended after them, so pasting the
+current Section 10 (abstract) or Section 11 (steps) is enough. Each prompt now carries a dated result
+section: `4thJ_pipeline_steps_figure.md` **Section 13**, `4thJ_graphical_abstract.md` **Section 11**.
+Write-up record: `writing/4thJ_writeup_notes.md` **section 10.3**. Backups `*.bak_gen20260907`.
+⚪ Board untouched again — there is still no board card for the figures, counts stand at
+**12 groups / 143 items / 136-0-7**.
+
+🔴 **Waiting on the author, and it is a yes/no, not a task:** regenerate both figures from the
+corrected blocks, or keep these as working drafts and regenerate once before submission. **Nothing
+else is owed.** Everything in last+36 section 2 still stands: the prereg must be frozen **before** the
+first OpenUBEM district is run, a first district is **not** a campaign (`G10N.19` needs 30 qualifying
+Arm D buildings **per fold**), and `ENGINE_DIGEST_PIN` is never moved to make a run pass.
+
+---
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-07 (last+36). READ THIS BLOCK FIRST, THEN THE
+last+35 BLOCK BELOW IT, WHICH STILL BINDS IN FULL. THIS BLOCK ADDS ONE CLOSED TASK AND THREE THINGS
+TO WATCH WHEN THE OPENUBEM RESULTS ARRIVE. NOTHING WAS COMPUTED AND NO GATE MOVED.**
+
+### 0. WHAT HAPPENED
+
+The author asked for the two figure prompts to be reconciled to the current position ahead of the
+incoming OpenUBEM results (*"soon we will provide one neighbourhood from openUBem then all four
+european neighbourhood, before, i want you to update these prompts … in order to understand our
+position in the project"*) and for a re-check of whether anything is owed before OpenUBEM.
+**Documentation-only. Zero compute, no EnergyPlus, no cell, nothing re-scored, no board change.**
+No image was generated — the prompts are the deliverable and the author generates from them.
+
+### 1. THE TWO PROMPTS ARE UPDATED. BOTH INSTALLED IMAGES ARE NOW OUT OF DATE.
+
+Both files under `writing/submission/figures/Prompts_Images/` were last written **2026-08-26** and
+had aged out. Backups beside the live files: `*.bak_nocore`. A dated record is
+`writing/4thJ_writeup_notes.md` **section 10** (backup `.bak_figprompts`).
+
+* **`4thJ_pipeline_steps_figure.md`** — cards 10 and 11 only, **no chip moves**. Three strings:
+  card 10 decision – `observed footprints, dwellings only, one independent diary per dwelling`;
+  card 10 open – `the no-core engine does not exist yet`; card 11 open – `the bands are
+  inherited unmoved, not re-set at stock scale`.
+* **`4thJ_graphical_abstract.md`** — Band 5 only, and it is a **drawing** change, not a string
+  change. **No string is added to the figure.**
+
+🔴 **THE ONE INSTRUCTION THAT MATTERS IN THE STEPS FIGURE IS A REFUSAL: CARD 10 STAYS `open`.**
+Step 10's 410-cell campaign was run and scored (18 PASS / 2 FAIL / 1 INFO / 1 OPEN_INHERITED /
+2 NOT_EVALUABLE) and is **archived as `C1` and NOT REPORTED**; `C2` is the reported campaign and has
+no cell. A figure describes the paper, not the repository, so **that board is never a reason to
+promote the card** — and because the board is real, the refusal is written into the prompt in three
+places or it will be overturned by whoever finds it next. Retired and now rejected on sight:
+`the engine, and which year the diaries belong to` (names the wrong blocker) and `hot water magnitude
+diagnosed before it is re-measured` (falsified by `D-S11-1` on **2026-08-27, the day after the prompt
+was last written** — `G9.7`/`G11.7` are `INFO` permanently and it **will not be re-measured at
+stock scale**; same class as the `season` defect).
+
+🔴 **THE ONE THAT MATTERS IN THE GRAPHICAL ABSTRACT IS THE NO-CORE PLAN.** The subdivided
+footprint in the small background block must be filled **edge to edge** by dwelling cells: no core,
+no stair block, no lift shaft, no corridor, no shaded service block, no gap. **Generators draw a core
+by reflex**, and a drawn core states the layout regime `D-EU-79`/`80`/`81` removed. Also closed: a
+**counting trap** — the stock is **four districts** (Madrid, Lyon, London, Bologna) while the corpus
+is **three countries** and **Lyon is a physical baseline that never enters a 4J denominator**
+(`G10.11`), so the cluster is drawn as **six or seven ungrouped grey footprints, deliberately
+uncountable**, never coloured, never labelled, never in four groups. **No project status enters that
+figure at all** — no gate counts, no chips, no `campaign C1`/`C2`, no step numbers.
+
+### 2. NOTHING IS OWED BEFORE OPENUBEM. THREE THINGS TO WATCH WHEN IT LANDS.
+
+Re-checked from disk, not from memory: `Step10_docs/prereg_step10_nocore_DRAFT.md`'s five freeze
+conditions (**none met**), section 8 of `4thJ_10_nocoreRealStock.md`, the `G10N.x` table
+(`G10N.0`–`G10N.23` + `G10N.replicate`, complete ⚪ note `G10N.1`–`G10N.4` is a **range row**,
+not a gap), the preflight guard, and the board's seven `todo` items. **Every open item is either
+OpenUBEM's or requires the owner's own sentence. 4J's own list is empty.**
+
+1. 🔴 **The prereg must be frozen BEFORE the first district is run, not after.** Condition 5 is
+   the owner's freeze plus an md5 sidecar. A staged delivery (one district, then four) is exactly how
+   a freeze slips to *after* someone has seen data — at which point it is not a pre-registration.
+2. 🔴 **A first district is NOT a campaign.** `G10N.19` needs **30 qualifying Arm D buildings
+   per fold**; one district cannot satisfy a per-fold floor across three folds. Treat the first
+   delivery as a shakedown: it scores nothing, moves no gate, and does not move the figure's card 10.
+3. 🔴 **`ENGINE_DIGEST_PIN` is the owner's to pin after carry-in, and is never moved to make a
+   run pass.** The guard is currently seen failing 410 of 410 by construction.
+
+🟢 **One discrepancy found and REPAIRED the same session, on the author's instruction
+(*"yes, repair the Step11 header path"*).** `Step11_docs/4thJ_11_stockEndUseLoads.md:5` read
+`#### Basis: ../Step10_docs/4thJ_10_ubemRealStock.md`; that file moved into
+`Step10_docs/archive_C1_core_era/` under `D-IMP-4`, so the literal path had stopped resolving —
+which the last+35 re-scan's *"2,209 path tokens resolved with no link broken by `D-IMP-4`"* missed.
+Lines 248 and 256 of that file **had** been re-pointed; the header had not.
+
+The header now names **both** campaigns and both paths resolve: basis =
+`../Step10_docs/4thJ_10_nocoreRealStock.md` (campaign `C2`, the one Step 11 will run on), with `C1`
+addressable beside it at `../Step10_docs/archive_C1_core_era/4thJ_10_ubemRealStock.md`. A dated
+🟢 note in that file's STATUS block records what the line said before and why it changed;
+backup `4thJ_11_stockEndUseLoads.md.bak_basispath`. 🔴 **Nothing else in Step 11 moved** —
+section 2.1 still governs the content (it describes `C1`'s core-era population until a `C2` cell
+exists), no gate was re-scored, no band moved, Step 11 stays **PLANNED, nothing built**.
+
+🔴 **A full audit was run first, and the other twelve references were deliberately NOT touched.**
+`grep -rn "Step10_docs/4thJ_10_ubemRealStock"` returns thirteen live-tree hits; twelve are **closed
+records** — `IMP/docs/DONE/` dockets, `Step10_docs/impl/` ledgers, sent `messages_OpenUBEM/` files,
+run deep-research prompts (`L28`, `L29`) and their vetting. Those are read through
+`Step10_docs/README.md`'s redirect table, which is exactly what it exists for. **Repairing a path
+inside a closed record would falsify the record.** The Step 11 header was the only live one.
+
+⚪ **Board untouched, deliberately.** There is no board card for the figure prompts (grepped:
+no `Prompts_Images`, `graphical`, or `pipeline_steps` token in `4thJ_CHECKLIST.html`), so there was
+nothing to flip and no republish was made. Counts stand at **12 groups / 143 items / 136-0-7**.
+
+### 3. WHAT TO DO WHEN THIS SESSION OPENS
+
+1. Everything in the last+35 block below still binds — read it.
+2. If the author has generated either image, run the prompt's own post-generation checklist
+   **string by string**: section 10 + section 11.1 items 1–9 for the steps figure (items 7–9 are the
+   2026-09-07 ones), and sections 10.1 + 10.2 + **10.3** for the graphical abstract.
+3. If OpenUBEM results have landed, they are campaign `C2`, gate series `G10N.x`, and section 2
+   above is the checklist. **Never file a `C2` result under a `G10.x` ID.**
+4. 🔴 **Never re-create a Step 12, never re-open `C1`, never retrofit a manifest, never run
+   EnergyPlus without the owner's own sentence (`D-EU-55`).**
+5. Reply shape unchanged: English, ~80 words, headline, 3–5 bullets, `Evidence:`, `Next:`.
+
+🔴 **Nothing is owed and no decision is open.** The `Step11_docs` header line was the one item
+outstanding and it was repaired the same session. The next task is the author's to name — most
+likely the incoming OpenUBEM neighbourhood.
+
+---
+
 ## 🟢 **NEXT-SESSION PROMPT --- rewritten at the head 2026-09-03 (last+35). READ THIS BLOCK FIRST. THE last+34 BLOCK BELOW IT IS THE RECORD OF THE MORNING'S EXECUTION SESSION AND IS SUPERSEDED ON ONE POINT ONLY --- WHERE THE NO-CORE CAMPAIGN LIVES. THE last+32 BLOCK FURTHER BELOW STILL BINDS FOR ITS SECTIONS 1 TO 5 (the five rules, the Step 10 state, the EU 149 state, the never-quote list, where things live).**
 
 ### 0. WHAT HAPPENED, IN ONE PARAGRAPH
