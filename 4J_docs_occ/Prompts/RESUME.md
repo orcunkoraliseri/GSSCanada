@@ -1,3 +1,437 @@
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+40), LATER THE SAME DAY AS last+39. READ
+THIS BLOCK FIRST. IT SUPERSEDES last+39 SECTIONS 2 AND 3 — THE BLOCKER IS CLEARED. NOTHING WAS
+COMPUTED, NO GATE MOVED, NO BOARD CHANGE, NOTHING UNDER `OpenUBEM/` WAS WRITTEN.**
+
+### 0. WHAT HAPPENED
+
+The OpenUBEM side **re-emitted and installed the `layouts/` payload for ES/GB/IT** and announced it
+with per-district counts. This session **verified every count independently** (recursively, with
+`find`, never `ls`), wrote the verification record, appended a dated STATUS section to the
+pre-registration draft, and put a SUPERSEDED pointer on the old audit. **Read-only on their tree.
+Zero compute.**
+
+🔴 **Record to read before anything else:**
+`Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`.
+
+### 1. 🟢 THE PAYLOAD IS CLEAN — MEASURED HERE, NOT ACCEPTED ON REPORT
+
+```
+district                     JSONs   mtime        cored   circ==0   fallback
+eu_ES-MAD-BERRUGUETE          1175   2026-09-08       0      1175          75
+eu_GB-LDN-STDUNSTANS           451   2026-09-08       0       451          12
+eu_IT-BOL-GALVANI2            1211   2026-09-08       0      1211         175
+eu_FR-LYO-HAUTCOEURPENTES      297   2026-09-01      31       266          --   (NOT re-emitted)
+```
+
+`conditioned_floor_area_m2 / gross_footprint_area_m2` over all **2,837** ES/GB/IT files:
+**min 1.000000, max 1.000000, zero files outside `D-EU-80`'s 0.999–1.001 band.** The Bologna
+`27746` contradiction is gone at its own witness. **The payload can be consumed.**
+
+🔴 **Two things never to read from that tree.** `sources.json` `layout_counts` / `layouts_coverage`
+are **unchanged and now wrong** (they still say 1038 / 692 / 552 — they come from the viewer's
+render mode in `buildings.csv`, not from the side-car count; the owner named them and left them
+alone deliberately). And **the London manifest's `geometry_outcome` column** reads 691 emitted
+against 451 non-empty `layout_json` because 255 skipped rows carry stale values. **The JSON count
+on disk is the only population source.**
+
+### 2. 🔴 LONDON IS 451 OF 706 — A NAMED LIMITATION, NOT A DEFECT, NOT SOMETHING TO WAIT FOR
+
+The emitter intersects `_gb_rows(gdf, records)` with the simulated ids and `_gb_rows` yields no
+record for **255** of them — the London coverage-recovery batch. **451 of 706 (63.9 %) is the honest
+coverage figure and the one we quote and pre-register.** Madrid (1,175) and Bologna (1,211) match
+their published row counts exactly; **a "JSON count == published row count" check fails London by
+design** — do not write that check without the exception, and do not report London as broken.
+
+### 3. 🔴 THE FALLBACK POPULATION IS ARM F, NOT ARM D
+
+**262 files** carry `geometry_outcome = FALLBACK_PENDING_LAYOUT` — Madrid **75**, London **12**,
+Bologna **175**. Measured: every one has `scheme: null` and **zero zones**. There is nothing to
+partition, so they **cannot enter Arm D**. Under §3.2 they are the Arm F population (one box per
+floor) and `G10N.22`'s LOWER BOUND wording binds every number they carry — direction only, magnitude
+refused, never an estimate. `G10N.9` (never pooled) and `G10N.17` (arm label survives aggregation)
+are the gates that must see them. Scheme is `nocore_equal_area` on all **2,575** non-fallback files.
+
+### 4. 🔴 THE ONE OPEN QUESTION — WHICH POPULATION IS "A DWELLING"? THE AUTHOR'S CALL, BEFORE FREEZE
+
+`4thJ_10_nocoreRealStock.md` §3.1 defines `N_u := k × storeys`, `k = max(1, round(dwellings_total /
+storeys))`. §3.1 says in its own words that this is **census arithmetic written when no plate had
+been cut**. The plates are now cut, and over the 2,575 non-fallback files the three candidate
+populations disagree:
+
+```
+district      emitted zones   dwellings_total   N_u = k x storeys   zones==dw_total   zones==N_u
+Madrid (es)          11,244            10,809              11,363     867 of 1,100   547 of 1,100
+London (uk)           1,728             1,231               1,733      50 of   439   392 of   439
+Bologna (it)         13,792            13,757              13,571   1,001 of 1,036   156 of 1,036
+total                26,764            25,797              26,667
+```
+
+`floors[].dwelling_count` sums to the zone count on **all 2,575 files** — their payload is
+internally consistent; the disagreement is between **our projection and their cut**. Dominant
+cause, measured: a building declared `dwellings_total = 1` on `n` storeys is cut into `n` dwellings,
+one per floor — which is exactly what our own `max(1, ...)` clamp produces, so London tracks `N_u`
+while Bologna tracks `dwellings_total`. **Neither formula wins everywhere.**
+
+⚪ **Recommendation, NOT applied:** the **emitted zone is the dwelling** — it is the only one of the
+three with a footprint, a floor area and a load, and Step 11 aggregates per dwelling. Keep `N_u` as
+the *projection* sense and report the deficit `N_u − emitted_zones`, **never gated**; add a third
+named sense `zone_count_emitted` to §3.1's list. §3.1 already requires every gate row to name which
+sense it means, so those rows need re-reading, not rewriting. 🔴 **Nothing was changed. Settle this
+before freezing the pre-registration, never after.**
+
+### 5. 🟢 `G10N.19`'s OPEN UNKNOWN IS ANSWERED — THE FLOOR IS REACHABLE
+
+§3.2 recorded that *nobody had counted* how many no-core Arm D buildings the population yields.
+Counted, first time:
+
+```
+fold   district              Arm D candidates   >=2 zones   >=2 zones AND >=2 storeys   floor
+es     eu_ES-MAD-BERRUGUETE             1,100       1,042                       1,032     30
+uk     eu_GB-LDN-STDUNSTANS               439         437                         437     30
+it     eu_IT-BOL-GALVANI2               1,036       1,015                       1,015     30
+```
+
+Every fold clears 30 by more than thirty times over on the strictest reading. 🔴 **This is a
+candidate count from geometry, not a scored gate** — `V10N.a` holds, `G10N.19` prints
+`NOT_EVALUABLE` with its population named as 0 until a campaign runs, the census assigns the arm at
+run time, and **the layout probe must never promote Arm F to Arm D.**
+
+### 6. 🔴 FREEZE CONDITIONS — 1 AND 2 ARE MET, 3/4/5 ARE THE AUTHOR'S
+
+```
+1. engine carry-in lands                          MET   2026-09-03, bit-parity 0 of 2,529
+2. D-EU-84 and D-EU-87 ruled and closed           MET   D-EU-110 residual + D-EU-87 implemented
+3. owner pins ENGINE_DIGEST_PIN                   OPEN  author's action
+4. owner gives the D-EU-55 sentence               OPEN  author's action
+5. owner freezes the prereg, md5 sidecar written  OPEN  author's action
+```
+
+Recorded additively at the end of `prereg_step10_nocore_DRAFT.md` (backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908`; the 2026-09-03 "none of the five is met" sentence
+was **left standing**, not rewritten). **Nothing on the OpenUBEM side blocks `C2` any more.** All
+three remaining conditions happen **before** the first district runs, never after.
+
+### 7. RESIDUALS CARRIED, RECORDED AS TOLD
+
+* **`FINDING 258`** (area imbalance on plates that pass all seven checks) is **still open and
+  unscheduled** — this payload is **pre-repair**, as agreed. Per our own letter's option (b) we
+  consume it and carry the affected-building list as a **declared limitation** in the `G11.16`
+  population declaration, holding the count fixed.
+* **`D-EU-110`** — `D-EU-84` closed as an accepted named residual: `MAX_FLAT_ASPECT` at the
+  strictest rung 2.5, **81 of 550 plates across 57 buildings** shipping an honest `FAIL`, and the
+  clause we froze against says **`EU-21` acceptance criterion 2 remains NOT met**.
+* Source trees: ES/GB from `EU-11/<D>_merged_2026-09-07`, IT from
+  `EU-11/IT-BOL-GALVANI2_final_2026-09-07` — **Bologna has no merged tree yet, still simulating.**
+  Emission ran on a copied manifest; no published artifact was mutated.
+* 🔴 **Never quote:** Bologna's pooled EUI (stale), and every other pooled district EUI — they are
+  theirs, not 4J results.
+
+### 8. WHAT TO DO NEXT SESSION
+
+1. **Ask the author for the §4 ruling first** — which population is a dwelling. Everything
+   downstream sits on it and it must precede the freeze.
+2. **Then the author's three freeze actions**, in order: pin `ENGINE_DIGEST_PIN`, give the
+   `D-EU-55` sentence, freeze the prereg with an md5 sidecar.
+3. **Only then the Bologna-only shakedown.** 🔴 A single district is **not a campaign** — `G10N.19`
+   needs 30 qualifying Arm D buildings **per fold across three folds**, so a one-district run
+   **scores nothing and moves no gate**. Say that in the same breath as the result, every time.
+4. Board untouched at **12 groups / 143 items / 136-0-7** — not read live, not republished.
+5. **Still outstanding from last+37, a yes/no not a task:** regenerate the two paper figures from
+   the corrected paste blocks now, or keep them as working drafts and regenerate once before
+   submission.
+
+### 9. 🔴 SAME-DAY FOLLOW-UP FROM OPENUBEM — READ THIS, IT CORRECTS SECTION 2 AND EXPLAINS SECTION 4
+
+Full record: §9 of `Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`.
+
+**9.1 — Section 2 above is corrected. London's 255 are NOT permanent.** They are `D-EU-108`'s newly
+admitted London population — **187 age-inherited + 68 straddle-disambiguated**, never simulated —
+and they sit inside a **single 1,534-case Speed array** (1,279 re-emitted fleet-wide + the 255).
+Verified against their own plan, not taken on report:
+`europeanLocations/implementation/PLAN_eu-dwelling-division-recovery-2026-09-07.md` §1b clause 4
+(lines 100–103) and **T06** (~line 392). `D-EU-107`/`108`/`109` are **all still in execution**, the
+campaign has not run, **no date was given and none was invented**. **London coverage will rise above
+451.**
+
+🔴 **Our decision is unchanged, and is now their recommendation too: freeze at 451 of 706, name the
+255, do not wait.** They undertake to tell us before we could consume a new emission, with counts —
+the same undertaking as for `FINDING 258`. ⚪ **But pre-register 451 of 706 as a DATED SNAPSHOT, not
+a final coverage figure**, so that re-pre-registering later is an explicit act with a visible before
+and after, never a silent restatement.
+
+**9.2 — Section 4's gap is EXPLAINED and is not a defect on either side.** Their `FINDING 246`: the
+district census cuts one `k` **per building**; the engine re-derives `k` **per storey**, and for
+81 % of the fleet those differ. Tested here independently and it closes **one for one**:
+
+```
+district      multi-storey   per-storey counts NOT uniform   files where zones != N_u (§4)
+Madrid (es)          1,032                             553              1,100 - 547 = 553
+London (uk)            437                              47                439 - 392 =  47
+Bologna (it)         1,015                             880              1,036 - 156 = 880
+```
+
+`N_u = k × storeys` reproduces the emitted count on **exactly** the uniform-per-storey buildings and
+fails on **exactly** the non-uniform ones. 🔴 Also measured: **`units_per_floor` is the MAXIMUM
+per-storey dwelling count, never a constant** — never multiply `units_per_floor × storeys` and call
+it a population; on the 1,480 non-uniform buildings it over-counts.
+
+🟢 **Section 4's recommendation is strengthened, not changed** — they independently give the same
+advice: the emitted zone is the dwelling, `floors[].dwelling_count` is authoritative, and
+**`dwellings_total` is a building-level census/imputed count carried for provenance — an attribute,
+never a check.** The `dwellings_total = 1` on `n` storeys → `n` dwellings pattern is `D-EU-79` doing
+what it says: a storey is never left uncut for want of a census dwelling. **Still the author's
+ruling. Nothing was changed.**
+
+**9.3 — Confirmed back to us:** our Arm F treatment of the 262 fallback files is correct; our
+conditioned/gross check across all 2,837 files is recorded on their side as an independent
+verification of `D-EU-80`; and they undertake to read no number out of our Bologna shakedown.
+
+**9.4 — closing exchange.** Our `units_per_floor` trap was re-measured on their side and opened as
+**`FINDING 266`** (`STATE` §8): `units_per_floor == max(floors[].dwelling_count)` on **100 %** of
+files, **1,480 of 2,484** multi-storey buildings non-uniform (553 / 47 / 880) — our numbers and
+theirs identical. Binding there now: `floors[].dwelling_count` is the only authoritative per-storey
+number, its sum the only authoritative building total, `units_per_floor × storeys` must not be
+written. `FINDING 246` is filed there as **confirmed from outside their codebase**, and our
+conditioned/gross 1.000000 result as an **independent external control on `D-EU-80`**, credited to
+us. 🔴 **`1,534` is NOT a promise about the size of the eventual London recovery** — T06 says `N` is
+never back-fitted; never quote it as a future population or size anything against it.
+
+
+---
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+39). READ THIS BLOCK FIRST, THEN last+38,
+last+37, last+36 AND last+35 BELOW IT. THIS BLOCK SUPERSEDES PART OF last+36 SECTION 2 AND PART OF
+last+38 — THE OPENUBEM SIDE MOVED A LONG WAY BETWEEN 2026-09-03 AND 2026-09-08 AND THIS SESSION READ
+IT FROM DISK. NOTHING WAS COMPUTED, NO GATE MOVED, NO BOARD CHANGE.**
+
+### 0. WHAT HAPPENED
+
+The author delivered the first OpenUBEM neighbourhood — `eu_FR-LYO-HAUTCOEURPENTES` under
+`OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D/` — and asked to *"start and test our step 11
+with one neighbourhood"*. The answer, from disk: **not on that one, and not yet on any of them.** An
+audit of the per-building layout payload was run, a letter was sent to the OpenUBEM side, and the
+one Step 11 item that could have run today was **withdrawn as not worth doing**.
+**Read-only. Zero compute, no EnergyPlus, no cell, nothing re-scored, no board republish.**
+
+### 1. 🔴 LYON CANNOT HOST A STEP 11 SHAKEDOWN — ON A RULE, NOT ON A DATA PROBLEM
+
+`G10.11` / `G10N.11`: **France is a physical baseline and never enters a 4J denominator — no French
+fold, no French held-out fold, no French diary.** The corpus is three countries (`es`/`uk`/`it`),
+LOCO training on two. Lyon maps to `fr`. Step 11 items `11.3`–`11.5` are a **per-dwelling diary
+trigger campaign**; on Lyon there is nothing to trigger from. This is not a weak shakedown, it is an
+inadmissible one. 🔴 **Never propose a Lyon occupancy run again**, however good the geometry looks.
+
+⚪ **The district → fold map, for the next session:** Madrid → `es`, London → `uk`, Bologna → `it`,
+Lyon → `fr` (baseline only). **Bologna is the only fold district with a usable payload today.**
+
+### 2. 🔴 SUPERSEDED: THE OPENUBEM BLOCKERS ARE NOT WHAT last+35/36 SAY
+
+Read from `europeanLocations/STATE_european_locations_v5.md` on 2026-09-08, **not from memory**:
+
+* 🟢 **Engine carry-in is COMPLETE** — `openubem/geometry/european_nocore.py`, bit-parity **0
+  mismatches on 2,529 / 2,529 compared plates** across all four districts
+  (`implementation/DONE/PLAN_eu-engine-nocore-carryin-2026-09-03.md`). **Prereg freeze condition 1 is
+  MET.** ⚪ Note their `CP-2` emitted-IDF audit itself FAILED (`FINDING 249`/`250`) and was never
+  re-signed; the owner lifted the wait-for-`CP-2` gate directly (`D-EU-100`), so the campaign
+  proceeded on bit-parity, not on `CP-2`. Say that if the carry-in is ever quoted as clean.
+* 🟢 **`D-EU-88` COMPLETE** (district viewers), **`D-EU-105`** closed `D-EU-54`, and
+  **`outputs_3D/` is now the merged viewer** carrying EUI — `D-IMP-1` I-8's *"read the `D-EU-88`
+  viewer, not the pre-no-core `outputs_3D`"* is **satisfied**, because they are now the same thing.
+* 🟢 **`EU-19` (simulate) COMPLETE and `D-EU-55` SATISFIED** by the ceiling82 campaign's own
+  submission. 🔴 **EnergyPlus HAS run on their side.** Anyone still saying "no EnergyPlus without the
+  owner's sentence, nothing has run" is quoting a 2026-09-03 state.
+* 🔴 **`D-EU-84` IS STILL OPEN and it is OUR freeze condition 2.** `MAX_FLAT_ASPECT` is **not
+  calibrated** — no rung of 2.5/3.0/3.5/4.0 reached `FAIL 0` after two genuine repair rounds; set to
+  the strictest rung **2.5** per `D-EU-89` clause 2; **81 of 550 plates ship as an honest residual
+  `FAIL` across 57 unique buildings**; **`EU-21` acceptance criterion 3 is NOT met.**
+  ⚪ `D-EU-87` reads as **implemented** (`C10` rebuilt as a created-pinch test).
+* 🔴 **`FINDING 258` open and unscheduled on their side:** plates reporting `PASS ALL 7 CHECKS` that
+  still divide into a few tiny strip dwellings alongside one oversized dwelling, because the
+  seven-check set does not penalise inter-dwelling area imbalance. Owner's ruling is
+  per-affected-building repair, **never a full-batch re-cut**. **This reaches Step 11 directly** —
+  Step 11 aggregates per dwelling, so it changes what a dwelling *is* in our denominator.
+
+🔴 **Freeze conditions now: 1 MET, 2 NOT MET (`D-EU-84`), 3/4/5 are the owner's.** Everything else
+in last+36 section 2 still binds — freeze **before** the first district runs, a first district is
+**not** a campaign (`G10N.19` needs 30 qualifying Arm D buildings **per fold**, unreachable on one
+district across three folds), and **`ENGINE_DIGEST_PIN` is never moved to make a run pass.**
+
+### 3. 🔴 THE LAYOUT PAYLOAD IS PRE-CARRY-IN AND MOSTLY MISSING — MEASURED
+
+> 🔴 **CORRECTED THE SAME DAY — READ SECTION 8 BELOW BEFORE QUOTING THIS SECTION'S TABLE.** The
+> `layout files` and `cored files` columns are **wrong for Madrid and London**: they were counted
+> with `ls`, which counted nested subdirectories as files. Recursively, Madrid ships **961** JSONs
+> (**74** cored) and London **82** (**8** cored). **Point 1 below is withdrawn** — Madrid is nearly
+> complete and London is the only depleted district. Bologna and Lyon were flat directories and are
+> unaffected. The section is kept unedited because it is what the sent letter was built on.
+
+Record with every count reproducible:
+`Step10_docs/impl/2026-09-08_openubem-3d-export-layouts-audit.md`.
+
+```
+district                  residential   ruled(csv)   layout files   cored files
+eu_ES-MAD-BERRUGUETE            1,194        1,038              2             0
+eu_GB-LDN-STDUNSTANS            1,242          692              1             0
+eu_IT-BOL-GALVANI2              1,220          552          1,204           173
+eu_FR-LYO-HAUTCOEURPENTES         530          459            297            31
+```
+
+1. 🔴 **The two fold districts we most need ship almost no per-dwelling geometry.** Madrid declares
+   1,038 ruled buildings and ships **2** layout files; London declares 692 and ships **1**. Both
+   `buildings.csv` files are complete and dated 2026-09-07/08. **This is the real blocker, not the
+   cores.**
+2. 🔴 **All four `layouts/` directories are dated 2026-09-01** — two days **before** the 2026-09-03
+   carry-in — while every `buildings.csv` and `viewer.html` beside them was regenerated 2026-09-07/08.
+   The siblings now contradict each other for the same building. Bologna `27746`: CSV says
+   `circulation_pct 0.0` and `gross 114.5 == conditioned 114.5`; the layout JSON says
+   `has_unconditioned_core true`, `circulation_area_m2_total 8.1972`,
+   `gross 136.8679 != conditioned 128.6707`. Across Bologna **1,257 of 1,257 CSV rows read 0.0
+   circulation against 173 cored JSONs**; Lyon 768 of 768 against 31. London is the one district
+   whose CSV is not uniformly zero — **3 rows carry `circulation_pct > 0`**.
+3. ⚪ **Cross-tab, top-level `scheme` × `has_unconditioned_core`** — every cored file is multi-cell
+   and no `1x1` is cored, but **seven multi-cell plates are already core-free** (Bologna's five
+   `l_shape_decomposition`, Lyon's `4x2` and one `2x2`), which reads like 2026-09-01 catching the
+   cutter mid-migration rather than wholly before it.
+4. ⚪ **Lyon's `sources.json` overstates its own payload:** `layout_counts.ruled = 459` and
+   *"459 dwelling layout ruled"*, but 297 files ship — **201 ruled buildings have no layout JSON**
+   and **39 shipped files belong to `massing_box` buildings**.
+
+🔴 **THIS IS A STALE EXPORT, NOT A LIVE ENGINE DEFECT, AND THE LETTER SAYS SO IN THOSE WORDS.**
+`european_nocore.py` is not accused of drawing cores. Do not let this be re-told as a regression
+against their bit-parity result.
+
+🔴 **NEVER READ `k` OR `N_u` FROM THE 2026-09-01 PAYLOAD.** `C2` §3.1 sets
+`N_u := k × storeys`, `k = max(1, round(dwellings_total / storeys))`, and `D-EU-80` requires every
+square metre to belong to exactly one flat (coverage 0.999–1.001). A payload with
+`circulation_area_m2_total > 0` fails that premise by construction, and reading it would seed `C2`
+with core-era arithmetic.
+
+### 4. THE LETTER — SENT 2026-09-08, AWAITING REPLY
+
+`messages_OpenUBEM/2026-09-08_4J_to_OpenUBEM_layout_payload_and_two_questions.md`, copied verbatim
+into their inbox at `europeanLocations/messages_GSSCanada/` (md5 `7ddeece4e0117f6f8c5ddfd89a677b1e`
+both sides) and announced to their live session, which acknowledged receipt.
+🔴 **Nothing under `OpenUBEM/` was written except that one letter file.**
+
+* **The ask** — re-emit `outputs_3D/eu_*_data/layouts/` from geometry they already have. **No compute,
+  no re-cut, no EnergyPlus.** Priority **Madrid, London, Bologna**; **Lyon explicitly deprioritised**,
+  and the letter tells them why so they do not spend effort in the wrong place.
+* **Question one** — `FINDING 258`: **sequencing only, not the fix.** Will the repair land before or
+  after the payload 4J consumes? Either is workable; not knowing which is not.
+* **Question two** — `D-EU-84`: **closed as an accepted named residual, or still open work?** The
+  letter states plainly that we are **not** asking them to make it pass, asks them **not** to move
+  `MAX_FLAT_ASPECT` to accommodate us, and says we will not move a threshold of ours to accommodate
+  it. If it closes as a residual we freeze against that wording and carry the 57 buildings as a
+  declared limitation.
+
+### 5. 🔴 THE NEVER-QUOTE LIST GAINS FOUR NUMBERS
+
+Their pooled district EUI figures were read and **stay theirs** — Lyon **69.595307** over 505 of 509,
+London **120.064327** over 706 of 706, Madrid **80.694006** over 1,166 of 1,175 (2026-09-07 T07
+restatements), Bologna **54.935569** and **stale**, still the ceiling82 number pending its delta
+harvest. 🔴 **None is a 4J result**: `C2` has no cell, and Lyon's can never enter a 4J denominator
+under any circumstance. The letter says so in writing.
+
+### 6. ⚪ OPTION (c) — ITEM 11.7 — WAS OFFERED AND THEN WITHDRAWN
+
+11.7 is the one static self-contained 3D `.html` — a **rendering, never a result**. It was offered as
+the one Step 11 item Lyon is actually named in (its geometry provenance is printed on the page,
+`G10.11`). ⚪ **Withdrawn the same session, on the model's own judgement, and the author did not
+object:** the page's colouring comes from Step 11's stock aggregate, which does not exist, so all
+that could be built today is an empty shell with no energy on it. **Do not revive it before `11.5`.**
+Its inherited bars are unchanged when it does come: `G10.9` (Arm D and Arm F never share a colour
+scale or legend), `G10.22` (Arm F labelled LOWER BOUND, **no magnitude attached**), `G11.13` (no
+per-dwelling value at any zoom), `G10.12` (heating-only, relative to its own control), `G10.11`
+(provenance printed).
+
+### 7. WHAT TO DO WHEN THIS SESSION OPENS
+
+1. **Check for a reply** in `messages_OpenUBEM/` and in
+   `europeanLocations/messages_GSSCanada/` before anything else, and **re-read their `STATE` from
+   disk** — it moved four days' worth between 2026-09-03 and 2026-09-08 and this block will age the
+   same way.
+2. **If a regenerated payload has landed:** confirm `circulation_area_m2_total == 0` on **every**
+   file and that Madrid and London ship layouts in the thousands, not in single figures. Only then
+   read `N_u`. Then a **Bologna-only shakedown** — it scores nothing, moves no gate, and does not
+   move the paper figure's card 10.
+3. **Freeze `prereg_step10_nocore_DRAFT.md` BEFORE the first district runs**, with the md5 sidecar.
+   It is still DRAFT and unfrozen, correctly.
+4. 🔴 **Never** re-open `C1`, file a `C2` result under a `G10.x` ID, re-create a Step 12, retrofit a
+   manifest, move `ENGINE_DIGEST_PIN` to make a run pass, or run a Step 11 campaign on Lyon.
+5. ⚪ **Still waiting from last+37, and it is a yes/no, not a task:** regenerate both paper figures
+   from the corrected paste blocks now, or keep them as working drafts and regenerate once before
+   submission.
+6. Reply shape: English, ~80 words, headline, 3–5 bullets, `Evidence:`, `Next:`. 🔴 **Plain words —
+   no gate IDs or decision codes inside sentences; say what the thing means.**
+
+⚪ **Board untouched: 12 groups / 143 items / 136-0-7, not read live and not republished.** Nothing
+on it changed, so nothing was flipped. **Nothing is owed by 4J. The next move belongs to the OpenUBEM
+side** — the regenerated payload and two one-sentence answers.
+
+### 8. 🟢 THEY REPLIED THE SAME DAY — BOTH QUESTIONS ANSWERED, ONE OF OUR MEASUREMENTS CORRECTED
+
+🔴 **They corrected us and they were right; it was re-measured here before being accepted.** Our
+layout-file counts used `ls`, which counts **directory entries**. Madrid's and London's `layouts/`
+are **nested** (`relation/`, `way/`); Lyon's and Bologna's are flat. Recursively
+(`find <dir> -name '*.json' | wc -l`):
+
+```
+district                  declared ruled   layout JSONs   cored
+eu_ES-MAD-BERRUGUETE               1,038            961      74
+eu_GB-LDN-STDUNSTANS                 692             82       8
+eu_IT-BOL-GALVANI2                   552          1,204     173
+eu_FR-LYO-HAUTCOEURPENTES            459            297      31
+```
+
+🔴 **Cored total is 286, not 204. Madrid is nearly complete; London is the only depleted district.**
+🔴 **NEVER COUNT THESE WITH `ls` — ALWAYS `find -name '*.json'`.** This is the lesson worth keeping.
+
+🔴 **Their root cause is deeper than staleness, and it was VERIFIED HERE independently against
+`openubem/outputs/eu_evidence/EU-17/`: 961 / 297 / 82 / 1,204, one for one.**
+`generate_eu_3d_viewers.py` copies `layouts/` **verbatim from the EU-17 rebuild scope**, which is a
+**partial** population. **So `sources.json`'s `layout_counts` describes the district while the
+`layouts/` folder beside it describes the rebuild scope — two different populations under one
+folder.** That is also why Lyon ships fewer files than its declared `ruled` and Bologna ships more.
+⚪ Our staleness finding stands on top of it and they confirm it: *"engine correct, payload older
+than the engine."*
+
+🟢 **Re-emission IN FLIGHT on their side** — geometry only, live no-core cutter
+(`scripts/emit_eu11_layout_sidecars.py`, `EUROPEAN_LAYOUT_REGIME = "nocore"`), from the **published**
+populations: ES `_merged_2026-09-07` **1,175 rows**, GB `_merged_2026-09-07` **706**, IT
+`_final_2026-09-07` **1,211**. No re-cut, no EnergyPlus, no cluster job, manifests staged as copies.
+Lyon excluded per our own de-prioritisation. 🔴 **DO NOT CONSUME THE CURRENT PAYLOAD.** When theirs
+lands, verify first: `circulation_area_m2_total == 0` on **every** file walked with `find`, and the
+JSON count against **those published row counts**, never against `sources.json`.
+
+🔴 **Q1 — `FINDING 258` lands AFTER the regeneration.** Open, explicitly unscheduled, confined to
+affected buildings only, never a full-batch re-cut. **The payload we consume is pre-repair.** 4J
+carries this as a **declared limitation inside the `G11.16` population declaration** and does **not**
+treat a later repair as a population change. They send the building list before any fix ships.
+
+🟢 **Q2 — `D-EU-84` CLOSED as an accepted named residual, ruled today as `D-EU-110`**
+(`STATE_european_locations_v5.md` §4). **Freeze against their wording verbatim** — the ladder ran
+over all 550 plates, no rung reached `FAIL 0` after two genuine repair rounds, **that outcome is the
+answer**; `MAX_FLAT_ASPECT` stays at 2.5 and may not be moved to make any downstream consumer's
+condition pass; **81 of 550 plates ship an honest `FAIL` across 57 unique buildings**; `EU-21`
+criterion 3 is satisfied **as a declared residual**, and 🔴 **criterion 2 (FAIL 0 on 550 plates)
+REMAINS NOT MET — quoting `D-EU-110` as "closed" without that clause overstates it.**
+⚪ `D-EU-87` confirmed implemented (`C10` created-pinch, fleet 1358.78 → 134.63 m², −90 %).
+
+🔴 **FREEZE CONDITIONS NOW: 1 MET, 2 MET, and 3/4/5 ARE THE AUTHOR'S OWN** — pin
+`ENGINE_DIGEST_PIN`, give the sentence our `D-EU-55` requires for **our** run, freeze the prereg with
+its md5 sidecar. **After their payload lands, nothing on the OpenUBEM side blocks `C2`.** The
+standing rules do not relax: `ENGINE_DIGEST_PIN` is never moved to make a run pass, a first district
+is never a campaign, the prereg is frozen **before** the first district runs.
+
+⚪ **Bologna's pooled EUI is stale (ceiling82, pending its delta harvest) — do not carry it even as
+context.** It joins the other three on the never-quote list.
+
+⚪ Correction filed additively at `Step10_docs/impl/2026-09-08_openubem-3d-export-layouts-audit.md`
+§§7–9, with §2 kept unedited under a pointer because it is what the sent letter was built on. Reply
+sent to their session accepting the correction and confirming the freeze wording.
+
+---
+
 ## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-07 (last+38), the third block of the same day. READ
 THIS BLOCK FIRST, THEN last+37, last+36 AND last+35 BELOW IT, ALL OF WHICH STILL BIND. THIS BLOCK
 ANSWERS ONE SEQUENCING QUESTION AND CHANGES NOTHING ELSE. NOTHING WAS COMPUTED AND NO GATE MOVED.**

@@ -55,6 +55,32 @@ Good example (copy this style):
 
 Bad example (never do this): a 400-word reply with a table, three numbered re-derivations, two new FINDINGs explained in full, a closure-ritual walkthrough, and three decisions at the end. The user cannot read that.
 
+### 🔴 Plain language — the shape above is not enough, the WORDS must be easy too
+
+The user is not a native English speaker and does not want to decode jargon. Write every chat reply
+so that a smart person who has not seen the project for a week understands it on the first read.
+
+1. **Plain everyday English.** Short common words. "The job finished" not "the run terminated
+   nominally". "It works" not "the invariant holds". "We are stuck" not "the gate is BLOCKED".
+2. **No technical terms unless the user asked a technical question.** No gate IDs, decision IDs,
+   FINDING numbers, hashes, md5s, error codes, or tool names in the sentence itself. If an ID must
+   appear, put it in parentheses after the plain words: "the size check (G10.14)". Never lead with it.
+3. **No project shorthand without a plain gloss.** Write "the Spanish fold (es)" the first time, not
+   just "es". Write "not scoreable, because the input was never written" not "VACUOUS".
+4. **Say what it MEANS, not what it IS.** After each fact, the reader should know: is this good, bad,
+   or nothing to do? "18 of 24 checks pass; the 2 failures are missing labels, not wrong numbers."
+5. **No cryptic bullets.** Every bullet is a full, simple sentence with a verb. Never a bare
+   "G10.18 FAIL 0/410" or a path on its own.
+6. **Numbers get a plain meaning.** "1.4e-12" becomes "essentially zero". Only keep the raw number if
+   the user must copy it somewhere.
+7. **Paths and code go only in the `Evidence:` line**, never inside the sentences.
+8. **When the user asks a question, answer it first in one plain sentence**, then the bullets.
+9. Technical depth is fine **only when asked** ("give me the technical version", "details").
+   Then use the same shape, still short, still one idea per sentence.
+
+Test before sending: read the reply as if you were tired, not an expert, and in your second
+language. If any bullet needs a second read, rewrite it.
+
 ## Project
 
 Builds residential occupancy schedules for EnergyPlus from StatCan Census + GSS time-use data; ML path for synthetic populations. Python 3.9+, macOS/Windows. Use the repo's existing environment; run scripts one at a time.
