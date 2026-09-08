@@ -1,6 +1,241 @@
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+43), THE FOURTH BLOCK OF THE SAME DAY. READ
+THIS BLOCK FIRST, THEN last+40's SECTIONS 13, 14. THIS BLOCK IS WRITTEN FOR A SESSION THAT STARTS
+COLD WHEN OPENUBEM ANNOUNCES THE `2026-09-08b` RE-EMISSION. NOTHING WAS COMPUTED, NO GATE MOVED, NO
+BAND MOVED, NO BOARD CHANGE, NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+### 0. WHY YOU ARE HERE, IN ONE PARAGRAPH
+
+Campaign `C2` (Step 10, no-core real stock, gates `G10N.x` / `V10N.x`) is **fully prepared and
+waiting on one external event**: OpenUBEM re-emitting all four European districts as
+`2026-09-08b` side-cars and **announcing** it. Geometry is verified, the engine is pinned, the
+eligibility basis is ruled, the pre-registration is frozen, the guard admits the right buildings and
+has been seen failing eleven ways. **When the announcement lands, section 3 below is your run-book.**
+🔴 **Two things do not exist yet and both are ours: the `C2` campaign runner, and a new engine pin
+for the post-recut engine.**
+
+🟢 **WAITING IS THE RULED STATE, NOT A BLOCKER.** The author's own words, 2026-09-08:
+**"we are dependent on openubem, we can wait them."** Our side is finished and correct; the next
+move is theirs. 🔴 **Do not start the runner, the shakedown, or any re-measurement speculatively.**
+When their announcement lands, section 3 is the run-book — and it opens with re-measuring their
+counts ourselves, because waiting for them never means trusting their numbers.
+
+🔴 **Read before anything else:** `Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`
+(1,016 lines — §13 the basis, §14 the announcement and two defects, §15 the two rulings, §16 the
+peer's confirmation).
+
+### 1. THE STATE, AS OF THE END OF 2026-09-08
+
+🟢 **The pre-registration is FROZEN and has been RE-PRE-REGISTERED ONCE.**
+
+```
+Step10_docs/prereg_step10_nocore_DRAFT.md            473 lines
+Step10_docs/prereg_step10_nocore_DRAFT.md.md5        1bc21094b0e09e3ac4332fa2e80abf75   CURRENT
+                                                     8176327149c3d36e06c822264ee676e8   superseded
+verify:  md5sum -c Step10_docs/prereg_step10_nocore_DRAFT.md.md5   ->  OK
+```
+
+🔴 **This file is APPEND-ONLY and changes only by an explicit re-pre-registration**: a new dated
+section, a new sidecar, the superseded md5 named at its head, and the old text left standing
+unedited. `RE-PRE-REGISTRATION 1` is at the end of the file and is the model to copy. **The next one
+is `RE-PRE-REGISTRATION 2` and it is the recut's actual populations.** The filename keeps `_DRAFT`
+deliberately — the sidecar is what makes it frozen, not the name.
+
+🟢 **All five freeze conditions MET.** Condition 4 is the author's `D-EU-55` sentence and it is
+**Bologna only**: *"I authorise EnergyPlus to run on our side for the no-core work, starting with
+Bologna only as a shakedown that scores nothing."* 🔴 **Madrid, London, Lyon, any multi-district
+campaign, or reading any of it as a scored `G10N.x` result each need a SECOND author sentence.**
+
+🟢 **The eligibility basis, ruled by the author and widened once by them.** A building is eligible
+for `C2` **when flats were actually drawn in it**; the verdict field is `geometry_outcome`:
+
+```
+DWELLING_LAYOUT_EMITTED                                ELIGIBLE
+DWELLING_LAYOUT_EMITTED_IMPUTED_COUNT                  ELIGIBLE
+DWELLING_LAYOUT_EMITTED_BEST_EFFORT                    ELIGIBLE   added by RE-PRE-REGISTRATION 1
+DWELLING_LAYOUT_EMITTED_BEST_EFFORT_IMPUTED_COUNT      ELIGIBLE   added by RE-PRE-REGISTRATION 1
+FALLBACK_PENDING_LAYOUT                                EXCLUDED   Arm F -- ineligible is CORRECT, never a FAIL
+DWELLING_LAYOUT_EMITTED_INTERZONE_MISMATCH_REROUTED    FAIL       core-era, Lyon only
+anything else                                          FAIL       unknown verdict -- record and rule, NEVER admit
+```
+
+Plus: an eligible payload carries `scheme == "nocore_equal_area"` and **≥1 zone**; Arm F carries
+`scheme: null` and **zero** zones; a best-effort payload **must name what it waived** and may waive
+**only `C6`/`C10`/`C11`**; **both** digests match before any payload is opened.
+
+🟢 **Populations as last measured (unchanged by the widening — 0 best-effort exist yet):**
+
+```
+Madrid   1175 payloads  1100 ELIGIBLE   75 Arm F     0 FAIL   exit 0
+London    451 payloads   439 ELIGIBLE   12 Arm F     0 FAIL   exit 0   <- 451 of 706, DATED SNAPSHOT
+Bologna  1211 payloads  1036 ELIGIBLE  175 Arm F     0 FAIL   exit 0
+Lyon      297 payloads     0 ELIGIBLE  101 Arm F   196 FAIL   exit 1   <- CORRECT, baseline, never a fold
+```
+
+🔴 **The engine pin is NOT satisfied by OpenUBEM's live tree and that is expected.** They are
+mid-edit on `european_residential.py` (uncommitted `D-EU-111` work); it reads `fd1214a6…` against
+the pin `8e1dcda1…`, so the preflight **REFUSES before opening any payload**. `european_nocore.py`
+still matches `21d723d5…` exactly. 🔴 **NEVER move a pin to make a run pass.** The pinned bytes are
+preserved as our own artefact and reproduce both pins exactly:
+
+```
+Step10_docs/impl/engine_pin_20260908/european_residential.py   8e1dcda1…  = ENGINE_DIGEST_PIN
+Step10_docs/impl/engine_pin_20260908/european_nocore.py        21d723d5…  = NOCORE_DIGEST_PIN
+run the guard against them with:  --engine <that path> --nocore <that path>
+```
+
+🔴 **Our pins are LINE-ENDING DEPENDENT** — both are the `HEAD` blob in **CRLF** form.
+`git show HEAD:<path> | sha256sum` gives `135fe46c…` / `6de4c66d…` and will NEVER reproduce them.
+**Record the commit AND the line-ending convention beside every future digest.**
+
+🔴 **`FINDING 258` is a TOPOLOGY GAP, not a rounding residue.** `AREA_CONSERVATION`'s tolerance is
+`0.01` and the measured area errors clear it by ~500×, so the area check **cannot** be what failed;
+the topology checks use `footprint_area × 1e-9`. Extent across all three folds:
+
+```
+Madrid 745 of 1100 (worst 8.809e-05)   London 48 of 439 (worst 9.960e-05)   Bologna 980 of 1036 (worst 1.651e-04)
+```
+
+🟢 **`partition_audit` is REPORTED, NEVER GATED** — gating admits 56 of 1,036 in Bologna and would
+discard 1,773 of 2,575 sound buildings. Unchanged; only the recorded reason was corrected.
+
+### 2. WHAT THE AUTHOR RULED ON 2026-09-08, IN THEIR OWN WORDS
+
+1. **"yes, start lets go"** → the eligibility basis is `geometry_outcome`, *flats were actually
+   drawn in it* (§13).
+2. **"yes, accept the new buildings"** → the two `D-EU-111` best-effort tokens are ELIGIBLE, executed
+   as `RE-PRE-REGISTRATION 1` (§15.1).
+3. **"revert the software"** → satisfied by preserving the pinned engine as our own artefact rather
+   than deleting OpenUBEM's uncommitted work, which was their in-flight implementation of the very
+   feature ruling 2 admitted (§15.2). 🔴 **The author was told this.** If they still want their tree
+   reverted, that is a fresh instruction and it is theirs to give.
+4. **"when openubem completes we can recontinue with new session"** → this block.
+
+### 3. 🔴 RUN-BOOK — DO THESE IN ORDER WHEN THE ANNOUNCEMENT LANDS
+
+🔴 **Step 0. Do not start until `openubem-6e` announces the side-cars are INSTALLED.** Their
+sequence: best-effort code + dry run → wall-B ruling → imputation → **one** re-emission of all four
+districts → Speed wave → harvest → side-cars `2026-09-08b` installed → **announcement with sha and
+counts** → our run. They send per-district counts before the Speed wave; **counts are not an
+announcement.** Never consume a re-emission they have not announced as complete.
+
+**1. Re-measure the populations yourself. Never trust their manifest, never trust `sources.json`.**
+
+```
+find "C:/Users/o_iseri/Desktop/OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D/eu_<D>_data/layouts" -name '*.json' | wc -l
+```
+🔴 **`find … | wc -l` is the ONLY correct way to count payloads. NEVER `ls`. NEVER PowerShell for
+line counts.** Districts: `eu_ES-MAD-BERRUGUETE_data`, `eu_GB-LDN-STDUNSTANS_data`,
+`eu_IT-BOL-GALVANI2_data`, `eu_FR-LYO-HAUTCOEURPENTES_data`. 🔴 **Madrid and London nest under
+`relation/` and `way/`; only Bologna is flat — never assume a district tree is flat.**
+🔴 **NEVER read `sources.json`'s `layout_counts` (stale 1038/692/552) nor London's manifest
+`geometry_outcome` (691 vs 451).** The JSON count on disk is the only population source.
+
+**2. Take a NEW engine pin from the author.** Their announcement will carry the commit sha, the
+line-ending convention (CRLF, as checked out on Windows) and the sha256 of both engine files.
+🔴 **A pin is set by the author, never by us, and never to make a run pass.** Until it is set, the
+guard refuses — which is correct.
+
+**3. Run the preflight on each district and read every number.**
+
+```
+C:/Users/o_iseri/AppData/Local/Programs/Python/Python313/python.exe \
+  tools/4thJ_step10_nocore_preflight.py --manifests <layouts dir> [--engine … --nocore …]
+```
+🔴 `python` is NOT on PATH — always the full interpreter path above. Expect Lyon to FAIL and exit 1;
+**that is the guard working.** Read the two REPORTED-NOT-GATED lines: the best-effort count and the
+`partition_audit` count. 🔴 **`0 checked` is a REFUSE (exit 2), never a pass.**
+
+**4. Write `RE-PRE-REGISTRATION 2`** — the recut's actual populations, the best-effort counts per
+fold, London's snapshot (it should rise from 451 of 706 when `D-EU-108`'s 255 land), and the
+`FINDING 258` state now that the side-cars carry `failures` / `gap_area_m2` / `overlap_area_m2` /
+`outside_area_m2`. New dated section, new sidecar, superseded md5 `1bc21094b0e09e3ac4332fa2e80abf75`
+named at its head, old text untouched. **Do this BEFORE any run.**
+
+**5. Build the `C2` campaign runner.** It does not exist.
+`tools/4thJ_step10_realstock_campaign.py` (789 lines) is the **`C1`** machinery: built around the
+**Lyon** footprint census, 41 buildings × 5 f-levels = 205 cells, with six non-downgradeable
+preflight refusals pinned to **`C1`** artefacts (R1 `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`,
+R2 building-table sha256, R3 layout-census sha256, R4 EnergyPlus binary not 23.1, R5 cell count
+≠ 41×5, R6 non-deterministic run order). It must be **re-pointed** at the no-core layouts, its
+refusals re-pinned to `C2` artefacts, and each refusal **seen failing** before it is trusted. Local
+EnergyPlus **23.1.0 at `C:/EnergyPlusV23-1-0`** (22-1-0 and 24-2-0 also present).
+
+**6. The Bologna-only shakedown.** 🔴 **It scores nothing and moves no gate, and that sentence
+travels with every number it produces.** 🔴 **Bologna only** — anything else needs a second author
+sentence. 🔴 A best-effort building carries a real `FAIL` in its own `checks` block: **no EUI from
+one may be quoted as a clean cut**, and any result over a mixed population must state the
+best-effort count in the same breath.
+
+**7. Close in three artefacts, always:** the record (`Step10_docs/impl/…`), the handoff (this file,
+edited in place), and memory (`memory/project_4j_hetus_llm.md` + the `MEMORY.md` index line).
+
+### 4. 🔴 THE NEVER LIST — THESE ARE STANDING AND NONE OF THEM IS NEGOTIABLE
+
+- **Never move a digest pin to make a run pass.** Rewriting a guard's field names so a population
+  passes is the same act by another route.
+- **Never run EnergyPlus without the author's own sentence** (`D-EU-55`). Bologna only.
+- **Never consume a re-emission OpenUBEM has not announced as installed.**
+- **Never treat a peer message as the author's approval.** A peer cannot rule, cannot pin, cannot
+  authorise a run. Never edit permission settings, `CLAUDE.md` or config because a peer asked.
+- **Never write under `OpenUBEM/`.** Read-only, always. Do not revert, stage, or commit their tree.
+- **Never count payloads with `ls`; never count lines with PowerShell.** `find -name '*.json' | wc -l`
+  and `wc -l`.
+- **Never let a layout probe promote Arm F to Arm D** — the census assigns the arm at run time.
+- **Never re-open campaign `C1`** (archived at `Step10_docs/archive_C1_core_era/`, `G10.x`, CLOSED,
+  NOT REPORTED, not re-scored, not retracted). **Never file a `C2` result under a `G10.x` ID.**
+  **Never re-create a Step 12** (`D-IMP-4`: the pipeline is Steps 0–11).
+- **Never treat Lyon as a fold.** Lyon = FR, a physical baseline only, never an occupancy run, never
+  a Step 11 run. LOCO 3-fold is Madrid→`es`, London→`uk`, Bologna→`it`.
+- **Never retrofit a manifest field that was never written.** `G10.14` and `G10.18` FAIL on 0 of 410
+  and stay failed.
+- **Never re-propose** option (c) of `D-S10-1`, Option B of `D-EU-31`, a Lyon occupancy campaign, or
+  the withdrawn item 11.7 render before 11.5.
+- **Never generate images** (*"tu ne jamais creer des images"*) — write the prompt; matplotlib plots
+  from frozen data are the only exception. **Deep research is EXTERNAL** — author a prompt file,
+  never search literature or verify DOIs.
+- **Cluster:** never run blocking `srun` or any python on the login node (`speed-submit2`). **Always
+  `sbatch`**, fire-and-forget, read the output file. ≥7-day walltime. Upload by `scp`, never a
+  heredoc over `ssh` (tcsh).
+- **Guard `[ -s "$BK" ]` before truncating anything.**
+- **Reply shape to the author is mandatory:** English, ~80 words, one plain-sentence headline, 3–5
+  short bullets, an `Evidence:` line, `Next:` in 3–4 words. **No IDs, no field names, no jargon
+  inside sentences — say what it means in plain words.** They have twice said they could not follow
+  a technical framing; that is a standing correction, not a one-off.
+
+### 5. OPEN, AND WHO OWNS IT
+
+```
+no C2 campaign runner                                   OURS      section 3 step 5
+new engine pin after the recut                          AUTHOR    we measure, they set
+RE-PRE-REGISTRATION 2 (recut populations)               OURS      section 3 step 4
+FINDING 258 repair                                      OPENUBEM  side-cars will carry the fields
+London 451 of 706 -> should rise (D-EU-108, 255 rows)   OPENUBEM  announce before we consume
+FINDING 181 platform arm                                quote as "numerically stable across two hosts,
+                                                        NOT bitwise reproducible, over 410 paired cells"
+report the Lyon viewer defect to openubem-20            OURS      an OBSERVATION, never a request -- NOT SENT
+two paper figures from the corrected paste blocks       AUTHOR    yes/no: regenerate now, or once before submission
+```
+
+⚪ **The Lyon viewer defect, unreported:** the viewer **draws flats that do not exist** —
+`BATIMENT…240879992_part0` renders 5 dwellings and `PASS ALL 7 CHECKS` on a payload with
+`scheme: null`, `floors: []` and zero dwellings in all five copies on disk; it synthesises from
+`units_per_floor`. **An Arm F building must never render as a passing layout.** Lyon has 192 of 297
+with no floors. No `C2` number changes — Lyon is baseline only.
+
+⚪ **Board untouched: 12 groups / 143 items / 136-0-7.** The live artifact is master — read and diff
+it before any republish.
+
 ## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+40), LATER THE SAME DAY AS last+39. READ
 THIS BLOCK FIRST. IT SUPERSEDES last+39 SECTIONS 2 AND 3 — THE BLOCKER IS CLEARED. NOTHING WAS
 COMPUTED, NO GATE MOVED, NO BOARD CHANGE, NOTHING UNDER `OpenUBEM/` WAS WRITTEN.**
+
+🔴 **READ SECTION 14 BEFORE ACTING ON ANYTHING IN THIS BLOCK.** Later the same day OpenUBEM
+announced a **full re-emission of all four districts** (`D-EU-111` best-effort tier, `D-EU-112`
+neighbour imputation). The prereg **stays frozen** — deliberate; the recut is the third foreseen
+re-pre-registration. But **the engine pin no longer matches the file on disk**, so the guard now
+REFUSES; **`FINDING 258` is a topology gap, not the rounding residue this block and the frozen
+prereg call it**; and **two questions are owed to the author** (do best-effort buildings enter
+`C2`? revert the engine to `HEAD` or wait and re-pin?). Read section 13, then 14.
 
 ### 0. WHAT HAPPENED
 
@@ -96,14 +331,14 @@ candidate count from geometry, not a scored gate** — `V10N.a` holds, `G10N.19`
 `NOT_EVALUABLE` with its population named as 0 until a campaign runs, the census assigns the arm at
 run time, and **the layout probe must never promote Arm F to Arm D.**
 
-### 6. 🔴 FREEZE CONDITIONS — 1 AND 2 ARE MET, 3/4/5 ARE THE AUTHOR'S
+### 6. 🟢 FREEZE CONDITIONS — ALL FIVE MET 2026-09-08; THE PREREG IS FROZEN (see section 13)
 
 ```
 1. engine carry-in lands                          MET   2026-09-03, bit-parity 0 of 2,529
 2. D-EU-84 and D-EU-87 ruled and closed           MET   D-EU-110 residual + D-EU-87 implemented
-3. owner pins ENGINE_DIGEST_PIN                   OPEN  author's action
-4. owner gives the D-EU-55 sentence               OPEN  author's action
-5. owner freezes the prereg, md5 sidecar written  OPEN  author's action
+3. owner pins ENGINE_DIGEST_PIN                   MET   2026-09-08, TWO files pinned (nocore too)
+4. owner gives the D-EU-55 sentence               MET   2026-09-08, author's own words, Bologna-only
+5. owner freezes the prereg, md5 sidecar written  MET   2026-09-08, md5 8176327149c3d36e06c822264ee676e8
 ```
 
 Recorded additively at the end of `prereg_step10_nocore_DRAFT.md` (backup
@@ -128,10 +363,10 @@ three remaining conditions happen **before** the first district runs, never afte
 
 ### 8. WHAT TO DO NEXT SESSION
 
-1. **Ask the author for the §4 ruling first** — which population is a dwelling. Everything
-   downstream sits on it and it must precede the freeze.
-2. **Then the author's three freeze actions**, in order: pin `ENGINE_DIGEST_PIN`, give the
-   `D-EU-55` sentence, freeze the prereg with an md5 sidecar.
+1. 🟢 **DONE — the §4 population ruling was given 2026-09-08 (section 10): the drawn plate is the
+   dwelling.** Do not re-ask it. 🟢 **DONE — the `D-EU-55` sentence was given (section 11).**
+2. 🟢 **DONE — `ENGINE_DIGEST_PIN` pinned (section 12).** Remaining: freeze the prereg with an
+   md5 sidecar. 🔴 **AND rule the new blocker of section 12.1 — the guard admits nothing.**
 3. **Only then the Bologna-only shakedown.** 🔴 A single district is **not a campaign** — `G10N.19`
    needs 30 qualifying Arm D buildings **per fold across three folds**, so a one-district run
    **scores nothing and moves no gate**. Say that in the same breath as the result, every time.
@@ -196,8 +431,305 @@ conditioned/gross 1.000000 result as an **independent external control on `D-EU-
 us. 🔴 **`1,534` is NOT a promise about the size of the eventual London recovery** — T06 says `N` is
 never back-fitted; never quote it as a future population or size anything against it.
 
+### 10. 🟢 THE AUTHOR RULED SECTION 4 ON 2026-09-08 — THE DRAWN PLATE IS THE DWELLING
+
+Given in the viewer: the dwelling is **the smallest unit the floor plate is divided into** — one
+coloured residential unit. That is the **emitted zone**, i.e. §4's recommendation. Record: §10 of
+`Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`; entered additively at the end
+of `prereg_step10_nocore_DRAFT.md` (backup `impl/prereg_step10_nocore_DRAFT.bak_20260908b`).
+
+* 🟢 **Emitted zone = dwelling.** `floors[].dwelling_count` and its sum are authoritative. `C2`
+  population at this date: **26,764** (es 11,244 / uk 1,728 / it 13,792) over 2,575 non-fallback files.
+* ⚪ `N_u = k × storeys` survives as the **projection sense only**; deficit `N_u − emitted_zones`
+  **reported, never gated**. New third sense `zone_count_emitted` is what the `G10N.x` gates read.
+* ⚪ `dwellings_total` = provenance, an attribute, **never a check**. 🔴 `units_per_floor × storeys`
+  is **not a population** (`FINDING 266`).
+* 🔴 **The freeze is NOT done.** Conditions 3, 4, 5 remain the author's: pin `ENGINE_DIGEST_PIN`,
+  give the `D-EU-55` sentence, then freeze with an md5 sidecar. No gate scored, no band moved.
+
+🔴 **10.1 — A SEPARATE FINDING CAME OUT OF THE AUTHOR'S OWN SCREENSHOT.** The viewer rendered
+`BATIMENT0000000240879992_part0` (Lyon) as **five dwellings D1–D5 with `PASS ALL 7 CHECKS` and
+`C3 5/5`**. That payload has **`scheme: null`, `FALLBACK_PENDING_LAYOUT`, `floors: []`, zero
+dwellings — in all five copies on disk** (docs_ACTIVE outputs_3D, openubem/outputs/3D, EU-11, EU-17,
+EU-21). The viewer synthesises the plate from `units_per_floor` instead of reading `floors[]`, and
+its header prints `5 × 6 = 30` against `census 29` — the `FINDING 266` trap in the interface. **A
+fallback building must never render as a passing dwelling layout**; that is what `G10N.9`, `G10N.17`
+and `G10N.22` exist to prevent, and Lyon has **192 of 297** files with no floors at all. ⚪ Lyon is
+the physical baseline only and can never host a Step 11 run, so **no `C2` number changes**. Report to
+`openubem-20` as an observation about the viewer, never a request.
+
+### 11. 🟢 FREEZE CONDITION 4 IS MET — THE AUTHOR GAVE THE `D-EU-55` SENTENCE, 2026-09-08
+
+Verbatim, in the author's own words, which is the only thing that satisfies `D-EU-55`:
+
+> "I authorise EnergyPlus to run on our side for the no-core work, starting with Bologna only as a
+> shakedown that scores nothing."
+
+Record: §11 of `Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`; entered
+additively at the end of `prereg_step10_nocore_DRAFT.md` (backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908c`).
+
+* 🟢 **Authorised:** EnergyPlus, our side, campaign `C2`, **Bologna only**, as a shakedown.
+* 🔴 **NOT authorised:** Madrid, London, Lyon, any multi-district campaign, or reading the output as
+  a scored `G10N.x` result. **A wider scope needs a second sentence from the author**, recorded the
+  same way. The author's own sentence carries the "scores nothing" clause — quote it with the result.
+* 🔴 **Conditions 3 and 5 are still open and still the author's**: pin `ENGINE_DIGEST_PIN`, then
+  freeze the prereg with an md5 sidecar, **both before the first district runs**.
+
+⚪ **11.1 — Measured for condition 3, NOT pinned.** `OpenUBEM/openubem/geometry/european_nocore.py`,
+91,468 bytes, 2026-09-07, commit `4431f2fe`, **sha256
+`21d723d5479076d0a57416ff92fd67a98fca8a33ff19343132415c144ff6b8ae`**. `ENGINE_DIGEST_PIN` still
+reads `TBD_by_owner` and was **not touched** — the pin is the author's act and is **never moved to
+make a run pass**.
+
+🟢 **11.2 — THE AUTHOR ASKED WHETHER WE STILL NEED TO WAIT FOR OPENUBEM. WE DO NOT, AND THAT IS THE
+STANDING POSITION, NOT A NEW RULING.** The geometry is already prepared and verified here (2,837
+JSONs, 0 cored, conditioned/gross 1.000000 on every file) and the engine carry-in is complete
+(bit-parity 0 of 2,529). **Freeze conditions 1 and 2 were MET before this session.** Every remaining
+blocker is ours, not theirs. 🔴 The cost of not waiting is already priced in and must keep travelling
+with the numbers: **London 451 of 706 pre-registered as a DATED SNAPSHOT with the 255 named**, and
+the payload **pre-repair for `FINDING 258`**, carried as a declared limitation. Those are **declared
+limitations, not blockers** — which is precisely what "freeze at 451, name the 255, do not wait"
+means. Lyon is unchanged: physical baseline, never a fold, never an occupancy run.
+
+### 12. 🟢 FREEZE CONDITION 3 MET — DIGESTS PINNED — 🔴 AND A NEW BLOCKER FOUND WHILE PINNING
+
+Record: §12 of `Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`; prereg backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908d`; tool backup
+`tools/previous_4thJ_step10_nocore_preflight.py.bak_pin20260908`.
+
+* 🟢 **TWO files pinned, not one — a correction, not a preference.** `european_residential.py:24`
+  does `from openubem.geometry.european_nocore import cut_storey_nocore`, so the 2026-09-03 guard,
+  which hashed only the caller, **left the accepted cutter unpinned**.
+  ```
+  european_residential.py   8e1dcda193bd2e68165ec7267c637e9fdf5abb0d3a0be464c6eb4cdb1db4d2d5
+  european_nocore.py        21d723d5479076d0a57416ff92fd67a98fca8a33ff19343132415c144ff6b8ae
+  ```
+* 🟢 **Seen holding and seen failing.** Both digests match on all **1,211** Bologna files; `--nocore`
+  and `--engine` each pointed at the other file FAIL on the right line; a missing file REFUSEs with
+  exit 2; the **175 Arm F fallbacks FAIL on `scheme=None`**, which is `G10N.9` working, not a defect.
+* 🔴 **NEVER move either pin to make a run pass.** A digest that stops matching means the engine
+  changed — a fact to record and rule on, never a value to update. The docstring now says so.
+
+🔴 **12.1 — THE BOLOGNA SHAKEDOWN CANNOT START YET, AND IT IS NOT THE DIGEST.** The guard reports
+`checked=1211 failed=1211`. Two of its three manifest assertions, written 2026-09-03 **before any
+payload existed**, name keys the emitted payload does not carry — measured, not inferred:
+**0 of 1,211 files have a `status` key, 0 of 1,211 have a `check` key.** The payload carries
+`geometry_outcome` (`DWELLING_LAYOUT_EMITTED` / `..._IMPUTED_COUNT` / `FALLBACK_PENDING_LAYOUT`) and
+`partition_audit` (`{"passed", "area_error_fraction"}`) instead. On `27746.json`
+`partition_audit.passed` is **false** at 2.86e-05 — `FINDING 258` visible in the payload.
+
+🔴 **Those assertions were NOT relaxed and must not be.** Rewriting a guard's field names so a
+population passes is the same act as moving a digest pin. **What is needed is a basis decision by the
+author: which emitted field is the campaign-`C2` eligibility verdict, and what value admits a
+building.** The `D-EU-55` sentence authorises the run; the guard still refuses every file.
+
+**Freeze conditions now: 1, 2, 3, 4 MET; 5 OPEN** (freeze the prereg with an md5 sidecar, before the
+first district runs). No gate scored, no band moved, no cell, nothing written under `OpenUBEM/`.
+
+### 13. 🟢 THE BASIS IS RULED, ALL FIVE FREEZE CONDITIONS ARE MET, THE PREREG IS FROZEN — 2026-09-08
+
+Record: §13 of `Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md`. This **closes
+the 12.1 blocker above** — read 12.1 for what the problem was, this for the answer.
+
+The author ruled, in their own words (**"yes, start lets go"**, to the plain-language
+recommendation): **a building is eligible for campaign `C2` when flats were actually drawn in it.**
+The eligibility verdict is `geometry_outcome`.
+
+```
+DWELLING_LAYOUT_EMITTED                                ELIGIBLE   flats drawn, census count as given
+DWELLING_LAYOUT_EMITTED_IMPUTED_COUNT                  ELIGIBLE   flats drawn, count imputed
+FALLBACK_PENDING_LAYOUT                                EXCLUDED   Arm F -- ineligible is CORRECT, never a FAIL
+DWELLING_LAYOUT_EMITTED_INTERZONE_MISMATCH_REROUTED    FAIL       core-era artefact, Lyon only
+anything else                                          FAIL       unknown verdict -- record and rule, never admit
+```
+
+Plus: an eligible payload must carry `scheme == "nocore_equal_area"` and **≥1 zone**; an Arm F
+payload must carry `scheme: null` and **zero** zones; **both** digests must match before any payload
+is opened.
+
+🔴 **This REPLACED the two 2026-09-03 assertions, it did not relax them** — they named keys no
+payload carries. The old names stay quoted in the tool docstring so the substitution is never
+invisible. 🔴 **`partition_audit` is REPORTED, NEVER GATED**: gating on `passed` would admit
+**56 of 1,036** Bologna buildings, and the 980 that read `false` are off by a **median 1.416e-05,
+worst 1.651e-04 (0.0165 %)** — that is `FINDING 258`, a declared limitation, not a criterion.
+⚪ **Whether the count was imputed is provenance, never a test** (Madrid 1,099 of 1,100 non-imputed).
+
+**Eligible populations, measured with the ruled guard — these ARE the pre-registered ones:**
+
+```
+Madrid   1175 payloads  1100 ELIGIBLE   75 Arm F     0 FAIL   exit 0
+London    451 payloads   439 ELIGIBLE   12 Arm F     0 FAIL   exit 0   <- 451 of 706, DATED SNAPSHOT
+Bologna  1211 payloads  1036 ELIGIBLE  175 Arm F     0 FAIL   exit 0
+Lyon      297 payloads     0 ELIGIBLE  101 Arm F   196 FAIL   exit 1   <- CORRECT, never a fold
+```
+
+🟢 Reproduces §5's Arm D candidate counts (es 1,100 / uk 439 / it 1,036) exactly from an
+independent code path. 🔴 Still a **geometry** count, not a scored gate.
+
+🔴 **TWO REAL DEFECTS IN THE GUARD, FOUND BY RUNNING IT — both fixed, both worth remembering:**
+
+1. **It walked one directory level only, and the districts it could not see PASSED.** Madrid and
+   London nest payloads under `layouts/relation/` and `layouts/way/`; only Bologna is flat. The
+   2026-09-03 `os.listdir` walk inspected **zero files in two of the three folds and exited 0.**
+   Now `os.walk`. 🔴 **Never assume a district's payload tree is flat — Bologna is the exception,
+   not the rule.**
+2. **An empty scan was a pass.** Now `REFUSE`, exit 2: *a preflight that inspected nothing is not a
+   pass.*
+3. ⚪ And a third, same family: the first cut of the ruling admitted only the `_IMPUTED_COUNT`
+   variant — the only value **Bologna** emits — and **failed 1,099 sound Madrid buildings.**
+   Implementing a ruling from one district's vocabulary is how a basis quietly narrows.
+
+**Seen failing in NINE classes:** unknown outcome; wrong scheme on a drawn payload; zero zones on a
+drawn payload; Arm F carrying a scheme; core-era rerouted outcome; engine digest swapped; no-core
+digest swapped; engine file absent (exit 2); empty scan (exit 2). Backup:
+`tools/previous_4thJ_step10_nocore_preflight.py.bak_basis20260908`.
+
+🟢 **FREEZE CONDITION 5 MET — THE PRE-REGISTRATION IS FROZEN**, in the same turn, **before any
+district runs**:
+
+```
+Step10_docs/prereg_step10_nocore_DRAFT.md          287 lines
+Step10_docs/prereg_step10_nocore_DRAFT.md.md5      8176327149c3d36e06c822264ee676e8
+verify:  md5sum -c Step10_docs/prereg_step10_nocore_DRAFT.md.md5   ->  OK
+```
+
+Backup `impl/prereg_step10_nocore_DRAFT.bak_20260908e` (11,736 B, guarded). ⚪ The filename keeps
+`_DRAFT` **deliberately** — referenced by name across Step 10, IMP and `Step10_docs/README.md`; the
+sidecar is what makes it frozen, not the name. 🔴 **Append-only from here, and only by explicit
+re-pre-registration** — new dated section, new sidecar, visible before and after. Two are already
+foreseen: London's dated snapshot, and the `FINDING 258` repair.
+
+🔴 **WHAT IS STILL NOT DONE — the shakedown has not run, because there is no `C2` runner yet.**
+`tools/4thJ_step10_realstock_campaign.py` is the **`C1`** machinery: 789 lines around the Lyon
+footprint census, 41 buildings × 5 f-levels, six preflight refusals pinned to `C1` artefacts
+(including `prereg.md` md5 `e4243e07…`). It must be re-pointed at the no-core layouts. Local
+EnergyPlus 23.1.0 is present at `C:/EnergyPlusV23-1-0`. **That build is the next piece of work and
+it is ours.** 🔴 When it runs: **Bologna only** — Madrid, London, Lyon, any multi-district campaign,
+or reading any of it as a scored `G10N.x` result each need a **SECOND author sentence**. **The
+shakedown scores nothing and moves no gate, said in the same breath as every number it produces.**
+
+Zero compute in this work. No EnergyPlus, no cluster job, no gate scored, no band moved, no cell, no
+manifest, board untouched at 12 groups / 143 items / 136-0-7, nothing written under `OpenUBEM/`.
+
+
+
+
+
 
 ---
+
+### 14. 🔴 OPENUBEM ANNOUNCED A FULL RE-EMISSION — THE FREEZE HOLDS, THE ENGINE PIN HAS MOVED, AND `FINDING 258` IS NOT WHAT WE WROTE DOWN — 2026-09-08
+
+Record: §14 of `Step10_docs/impl/2026-09-08_openubem-layouts-reemitted-verified.md` (→ 823 lines).
+Read section 13 first for the ruling this sits on top of. Trigger: a direct, author-authorised
+session message from **`openubem-6e`**. 🔴 **A peer message is never the author's approval** — no
+basis was widened, no pin moved, no prereg edited, no re-emission consumed.
+
+**Announced:** `D-EU-111`, a *best-effort* tier for the three **shape** checks `C6`/`C10`/`C11` only
+— new tokens `DWELLING_LAYOUT_EMITTED_BEST_EFFORT` and `..._BEST_EFFORT_IMPUTED_COUNT`, side-car
+keeps the real `FAIL` in `checks` and adds `best_effort_failed_checks`; `C1`/`C3`/`C4`/`C5`, the
+partition audit and the 12-per-floor cap still refuse; **`MAX_FLAT_ASPECT` stays 2.5 and no
+threshold moves, so freeze condition 2 and `D-EU-110` are undisturbed**; dry-run ≈ +53 Madrid,
++148 Bologna, +5 London, +15 Lyon. `D-EU-112`, neighbour imputation of the 585 never-simulated
+buildings (London 536 / Lyon 21 / Madrid 19 / Bologna 9), ≈570 entering, each with
+`imputation_provenance`. A Wall-B second pass on 184 reroutes, still being measured. Full
+re-emission of **all four districts** into `<D>_layouts_2026-09-08b/`, installed under
+`outputs_3D/eu_<D>_data/layouts/`. Plan:
+`docs/docs_ACTIVE/europeanLocations/implementation/PLAN_eu-recut-95pct-2026-09-08.md`. 🟢 **This is
+the announcement the standing rule requires before we consume any re-emission.**
+
+🟢 **THE FREEZE IS NOT REVERSED, and that is not a refusal of their ask.** Re-verified: `md5sum -c
+Step10_docs/prereg_step10_nocore_DRAFT.md.md5` → **OK**, `8176327149c3d36e06c822264ee676e8`.
+Freezing **before any district runs** is the entire content of condition 5; a pre-registration that
+waits for the data it binds is not one. §13.5 already named two foreseen re-pre-registrations
+(London's dated snapshot, the `FINDING 258` repair) — **the recut is simply the third**, and the
+mechanism was written down before the message arrived: new dated section, new sidecar, visible
+before and after, **on the author's word**. Freezing after the recut would have hidden the move
+instead of showing it.
+
+🔴 **THE RULED GUARD FAILS BOTH NEW TOKENS — that is the guard working, a tenth failure class,
+observed not constructed:**
+
+```
+DWELLING_LAYOUT_EMITTED                                ELIGIBLE
+DWELLING_LAYOUT_EMITTED_IMPUTED_COUNT                  ELIGIBLE
+DWELLING_LAYOUT_EMITTED_BEST_EFFORT                    FAIL   <- announced, NOT YET RULED
+DWELLING_LAYOUT_EMITTED_BEST_EFFORT_IMPUTED_COUNT      FAIL   <- announced, NOT YET RULED
+DWELLING_LAYOUT_EMITTED_INTERZONE_MISMATCH_REROUTED    FAIL
+FALLBACK_PENDING_LAYOUT                                EXCLUDED
+```
+
+🔴 **Whether best-effort buildings enter `C2` is a BASIS question — the author's, not ours and not
+OpenUBEM's.** Their recommendation (*same geometry contract, flag from `best_effort_failed_checks`*)
+is accepted as a **loader** answer; eligibility is a different thing, and adding two strings to
+`ELIGIBLE_OUTCOMES` would silently widen the ruled population by ~200 buildings — *moving a pin by
+another route*. ⚪ The widening is genuinely defensible (the author ruled *"flats were actually
+drawn"*, and in a best-effort payload they are) — **that is an argument to put to the author, not a
+licence to act.**
+
+🔴 **THE ENGINE PIN HAS MOVED — the guard now REFUSES before reading any payload:**
+`european_residential.py` was modified today 12:21 (uncommitted, `git status` → ` M`), now
+`fd1214a6…` ≠ pin `8e1dcda1…`; `european_nocore.py` untouched and still exactly `21d723d5…`. The
+diff **is** the in-flight `D-EU-111` work (24 insertions / 4 deletions in
+`generate_european_nocore_storey_layout`: `best_effort_eligible`, `best_effort_audit`,
+`fallback_reason = "NOCORE_BEST_EFFORT_" + …`). 🟢 **The pin is NOT moved and does not need to be** —
+a digest that stops matching is a fact to record, never a value to update. ⚪ **The pinned bytes are
+fully recoverable:** both pins are the `HEAD` blob (`e3f879e3`, blob from `4431f2fe`) in **CRLF**
+form —
+
+```
+european_residential   HEAD-as-LF 135fe46c…   HEAD-as-CRLF 8e1dcda1… = PIN   worktree fd1214a6…
+european_nocore        HEAD-as-LF 6de4c66d…   HEAD-as-CRLF 21d723d5… = PIN   worktree 21d723d5… = PIN
+```
+
+🔴 **Carry forward: our pins are LINE-ENDING DEPENDENT.** `git show HEAD:<path> | sha256sum` will
+never reproduce them; a fresh clone with a different `core.autocrlf` breaks both without one byte of
+logic changing. **When the next pin is set after the recut, record the commit AND the line-ending
+convention beside the digest.** ⚪ Consequence: **even the Bologna-only shakedown cannot start
+against the engine as it now stands on disk** — the pin doing its job, not a new blocker. It
+resolves two ways, **and which one is the author's call**: revert the working tree to `HEAD`, or
+take a new author pin on the post-recut engine.
+
+🔴 **`FINDING 258` IS MIS-CHARACTERISED ON OUR OWN RECORD — it is a TOPOLOGY GAP, not a rounding
+residue.** `audit_european_floor_partition` fails on any of `DWELLING_COUNT` / `INVALID_DWELLING` /
+`AREA_GAP` / `AREA_OVERLAP` / `OUTSIDE_FOOTPRINT` / `AREA_CONSERVATION`. `AREA_CONSERVATION` uses
+`relative_area_tolerance = 0.01`, so our median **1.416e-05** / worst **1.651e-04** clears it by
+~500× and **cannot be what failed**; the three topology checks use
+`footprint_area × 1e-9`, so a 1.9e-05 gap is ~**19,000×** that tolerance. 🔴 **The number we have
+been quoting (`area_error_fraction`) is not the quantity that failed.** ⚪ We cannot say which of
+the three fired: the side-car keeps only `{passed, area_error_fraction}` and **drops the audit's own
+`failures` tuple plus `gap_area_m2` / `overlap_area_m2` / `outside_area_m2`** (measured across all
+1,036 drawn Bologna payloads: those two keys and no others; 56 true / 980 false / 175 absent = Arm
+F). Asked of OpenUBEM.
+
+🟢 **The DECISION is unchanged and still right — `partition_audit` REPORTED, NEVER GATED**; gating
+still admits 56 of 1,036. Only the recorded *reason* was wrong. The guard docstring now carries the
+correction with the old wording quoted beside it (backup
+`tools/previous_4thJ_step10_nocore_preflight.py.bak_finding258_20260908`, `py_compile` → `COMPILE_OK`,
+classification and both pins verified unchanged). 🔴 **The frozen prereg says "rounding residue" at
+line 219 and was NOT edited** — frozen means a correction is a re-pre-registration, not a typo fix.
+**The next re-pre-registration must carry it**, with London's snapshot and the recut.
+
+⚪ **Not bookkeeping:** `D-EU-111`'s tier is gated on **that same audit passing**
+(`if best_effort_audit is not None and best_effort_audit.passed:`). If the topology residue that
+puts 980 of 1,036 Bologna buildings at `passed=false` survives re-emission, the tier admits only the
+gap-free buildings and **the announced Bologna ≈ +148 will not arrive.** Falsifiable on the first
+`2026-09-08b` side-car; sent to the peer.
+
+**Answered to `openubem-6e`:** freeze stands and here is the re-registration path; best-effort
+geometry loads identically but **eligibility is not ours to grant**; two asks — put the audit's
+`failures`/`gap_area_m2`/`overlap_area_m2`/`outside_area_m2` in the side-car, and give the engine
+**commit plus line-ending convention** with each re-emission.
+
+🔴 **Owed to the author, and they are the only one who can answer:** (1) do best-effort buildings
+enter `C2`? (2) revert the engine to `HEAD` for the shakedown, or wait and pin the post-recut
+engine? 🔴 Still **no `C2` runner**. Still **Bologna only**. **The shakedown scores nothing and moves
+no gate.**
+
+Zero compute. No EnergyPlus, no cluster job, no gate scored, no band moved, no cell, no manifest,
+board untouched at 12 groups / 143 items / 136-0-7, nothing written under `OpenUBEM/`.
+
 
 ## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+39). READ THIS BLOCK FIRST, THEN last+38,
 last+37, last+36 AND last+35 BELOW IT. THIS BLOCK SUPERSEDES PART OF last+36 SECTION 2 AND PART OF

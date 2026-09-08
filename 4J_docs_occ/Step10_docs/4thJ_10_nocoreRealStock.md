@@ -149,3 +149,41 @@ arm and quotation rule (I-7) all specified. Preflight guard written and **seen f
 at `prereg_step10_nocore_DRAFT.md` (DRAFT, not frozen, no md5 sidecar). No compute, no EnergyPlus, no
 cell, no emission. `Step6_docs/outputs_step6/prereg.md` (md5 `e4243e07cdd80c9c846b91f40e3e8c45`)
 never opened for writing.
+
+### 2026-09-08 — the payload landed, the basis was ruled, all five freeze conditions are MET
+
+Record: `impl/2026-09-08_openubem-layouts-reemitted-verified.md` §§11–13. Pre-registration
+**FROZEN**: `prereg_step10_nocore_DRAFT.md`, md5 `8176327149c3d36e06c822264ee676e8`, sidecar
+`prereg_step10_nocore_DRAFT.md.md5`.
+
+🔴 **§7 above is superseded on its assertion list.** It describes the 2026-09-03 guard, which
+asserted `status == "direct"`, a present `check.verdict`, and one engine digest. Measured
+2026-09-08: **0 of 1,211** Bologna payloads carry a `status` key and **0** carry a `check` key —
+those two assertions named fields no emitted payload has, because they were written before any
+plate had been cut. The author ruled the basis: **eligibility is `geometry_outcome`, and a building
+is eligible when flats were actually drawn in it** (`DWELLING_LAYOUT_EMITTED` or
+`DWELLING_LAYOUT_EMITTED_IMPUTED_COUNT`); `FALLBACK_PENDING_LAYOUT` is **EXCLUDED as Arm F, never a
+failure**; the Lyon-only `..._INTERZONE_MISMATCH_REROUTED` and any unknown value **FAIL**.
+`partition_audit` is **reported, never gated** (`FINDING 258`). **TWO** digests are pinned, not one
+— `european_residential.py` `8e1dcda1…` and `european_nocore.py` `21d723d5…`, because the caller
+imports the cutter from the second file. 🔴 Neither pin is ever moved to make a run pass, and
+rewriting a field name so a population passes is the same act.
+
+Eligible populations, measured with the ruled guard: **Madrid 1,100 of 1,175 / London 439 of 451 /
+Bologna 1,036 of 1,211**, Arm F 75 / 12 / 175, **0 FAIL** in all three. Lyon **0 eligible, 196
+FAIL** — correct: never re-emitted, core era, and a baseline that is never a fold. These reproduce
+§3.2's Arm D candidate counts exactly, from an independent code path; still a geometry count, not a
+scored gate.
+
+Two defects in the guard itself were found by running it and are fixed: it **walked one directory
+level only**, so Madrid and London (nested under `layouts/relation/` and `layouts/way/`) were
+inspected as **zero files and reported exit 0**; and an **empty scan was a pass**, now `REFUSE`
+exit 2. Seen failing in **nine** classes.
+
+`D-EU-55` satisfied for **Bologna only** by the author's own sentence. **The shakedown scores
+nothing and moves no gate**; Madrid, London, Lyon, any multi-district campaign, or reading any of
+it as a scored `G10N.x` result each need a second sentence.
+
+⚪ **Still to build: a campaign runner for `C2`.** `tools/4thJ_step10_realstock_campaign.py` is the
+`C1` machinery and is pinned to `C1` artefacts (Lyon census, 41×5 cells, `prereg.md`
+`e4243e07…`). Nothing computed on this date.
