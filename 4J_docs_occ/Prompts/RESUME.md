@@ -1,3 +1,3149 @@
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+68) — SUPERSEDES last+67 BELOW**
+
+**Routine progress tick, no new failures, no district-state changes.** ES (Madrid) unchanged: still
+COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~08:41 EDT via direct `ssh` reads:
+`cells_finished` **1450** of 11,710 planned (**12.4%**, up from 1325/11.3% at last+67),
+`campaign_status.json` shows **1320** `COMPLETED` + **130** `ENERGYPLUS_FAILED` (failure count
+unchanged from last+67). Live `cells_failed/*.json` count re-derived fresh: **130**, matches
+exactly. Distinct failing buildings re-derived fresh: **13**, same 13 building IDs as last+67
+(27683, 28134, 28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211) —
+unchanged, still under the ~20-building CSV-log threshold. `payload_set_sha256` unchanged
+(`2cc6ba9512...`). `squeue` confirms `1315014` (IT) still `RUNNING` on `antenna1`, elapsed
+`8:05:42`; `1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 ~08:41 EDT (this session, read-only,
+direct SSH); `memory/project_4j_hetus_llm.md` last+68 (pending this session's write, immediately
+following). Everything from `last+67` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+67) — SUPERSEDES last+66 BELOW**
+
+**Routine progress tick, no new failures, no district-state changes.** ES (Madrid) unchanged: still
+COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~08:11 EDT via direct `ssh` reads:
+`cells_finished` **1325** of 11,710 planned (**11.3%**, up from 1150/9.8% at last+66),
+`campaign_status.json` shows **1195** `COMPLETED` + **130** `ENERGYPLUS_FAILED` (failure count
+unchanged from last+66). Live `cells_failed/*.json` count re-derived fresh: **130**, matches exactly.
+Distinct failing buildings re-derived fresh: **13**, same 13 building IDs as last+66 (27683, 28134,
+28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211) — unchanged, still
+under the ~20-building CSV-log threshold. `payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue`
+confirms `1315014` (IT) still `RUNNING` on `antenna1`, elapsed `7:35:41`; `1315015` (UK) still
+`PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 ~08:11 EDT (this session, read-only,
+direct SSH); `memory/project_4j_hetus_llm.md` last+67 (pending this session's write, immediately
+following). Everything from `last+66` onward is preserved below as history — unedited.
+
+---
+
+# 🟡 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+66) — SUPERSEDES last+65 BELOW**
+
+**New IT failures this tick (still small, still read-only).** ES (Madrid) unchanged: still COMPLETE,
+840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing, failure count rose.** Fresh poll 2026-09-10 ~07:38 EDT via direct `ssh`
+reads: `cells_finished` **1150** of 11,710 planned (**9.8%**, up from 1050/9.0% at last+65),
+`campaign_status.json` shows **1020** `COMPLETED` + **130** `ENERGYPLUS_FAILED` (up from 100 at
+last+65). Live `cells_failed/*.json` count re-derived fresh: **130**, matches exactly. Distinct
+failing buildings re-derived fresh: **13** (up from 10 at last+65) — the original 10
+(27683, 28134, 28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903) plus **3 new**: `29171`,
+`29180`, `29211`. Still under the ~20-building CSV-log threshold, so no CSV started yet — watch
+closely next tick. `payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue` confirms `1315014`
+(IT) still `RUNNING` on `antenna1`, elapsed `7:05:50`; `1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — this is an OBSERVED count change, not an
+action. `C2` stays pinned to `T07`. Evidence: fresh `squeue`/`campaign_status.json`/`cells_failed/`
+poll 2026-09-10 ~07:38 EDT (this session, read-only, direct SSH); `memory/project_4j_hetus_llm.md`
+last+66 (pending this session's write, immediately following). Everything from `last+65` onward is
+preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+65) — SUPERSEDES last+64 BELOW**
+
+**Routine progress tick, no new failures, no district-state changes.** ES (Madrid) unchanged: still
+COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~07:14 EDT via direct `ssh` reads:
+`cells_finished` **1050** of 11,710 planned (**9.0%**, up from 900/7.7% at last+64), `campaign_status.json`
+shows **950** `COMPLETED` + **100** `ENERGYPLUS_FAILED` (failure count unchanged from last+64). Live
+`cells_failed/*.json` count re-derived fresh: **100**, matches exactly. Distinct failing buildings
+re-derived fresh: **10**, same 10 building IDs as last+64 (27683, 28134, 28217, 28454, 28473, 28527,
+28533, 28861, 28891, 28903) — unchanged, still under the ~20-building CSV-log threshold.
+`payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue` confirms `1315014` (IT) still `RUNNING` on
+`antenna1`, elapsed `6:35:44`; `1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 ~07:14 EDT (this session, read-only,
+direct SSH); `memory/project_4j_hetus_llm.md` last+65 (pending this session's write, immediately
+following). Everything from `last+64` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+64) — SUPERSEDES last+63 BELOW**
+
+**Routine progress tick, no new failures, no district-state changes.** ES (Madrid) unchanged: still
+COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~07:04 EDT via direct `ssh` reads:
+`cells_finished` **900** of 11,710 planned (**7.7%**, up from 850/7.3% at last+63), `campaign_status.json`
+shows **800** `COMPLETED` + **100** `ENERGYPLUS_FAILED` (failure count unchanged from last+63). Live
+`cells_failed/*.json` count re-derived fresh: **100**, matches exactly. Distinct failing buildings
+re-derived fresh: **10**, same 10 building IDs as last+63 (27683, 28134, 28217, 28454, 28473, 28527,
+28533, 28861, 28891, 28903) — unchanged, still under the ~20-building CSV-log threshold.
+`payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue` confirms `1315014` (IT) still `RUNNING` on
+`antenna1`, elapsed `6:05:41`; `1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 ~07:04 EDT (this session, read-only,
+direct SSH); `memory/project_4j_hetus_llm.md` last+64 (pending this session's write, immediately
+following). Everything from `last+63` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+63) — SUPERSEDES last+62 BELOW**
+
+**Routine progress tick, no new failures, no district-state changes.** ES (Madrid) unchanged: still
+COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~06:31 EDT via direct `ssh` reads:
+`cells_finished` **850** of 11,710 planned (**7.3%**, up from 825/7.0% at last+62), `campaign_status.json`
+shows **750** `COMPLETED` + **100** `ENERGYPLUS_FAILED` (failure count unchanged from last+62; note the
+status label here reads plain `COMPLETED`, not `COMPLETED_WITH_UNSTABLE_MARKERS` as ES shows — a
+district-specific label difference, not an anomaly). Live `cells_failed/*.json` count re-derived fresh:
+**100**, matches exactly. Distinct failing buildings re-derived fresh: **10**, same 10 building IDs as
+last+62 (27683, 28134, 28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903) — unchanged, still under
+the ~20-building CSV-log threshold. `payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue` confirms
+`1315014` (IT) still `RUNNING` on `antenna1`, elapsed `5:53:20`; `1315015` (UK) still `PENDING
+(Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 ~06:31 EDT (this session, read-only,
+direct SSH); `memory/project_4j_hetus_llm.md` last+63 (pending this session's write, immediately
+following). Everything from `last+62` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+62) — SUPERSEDES last+61 BELOW**
+
+**Author asked this session to keep monitoring at fixed 30-minute intervals** (recurring cron job
+`fb56173f`, `*/30 * * * *`, session-only, auto-expires in 7 days). This entry is the first tick,
+run immediately on scheduling (not yet a full 30-minute gap from last+61). ES and UK unchanged from
+last+61 (ES COMPLETE 840/84, CSV log 85 lines; UK still `PENDING (Dependency)` on IT).
+
+**IT (Bologna): small, expected progress, no new failures.** Fresh poll 2026-09-10 ~06:24 EDT:
+`cells_finished` **825** of 11,710 (**7.0%**, up from 800/6.8% at last+61), `campaign_status.json`
+shows **725** `COMPLETED` + **100** `ENERGYPLUS_FAILED` (failure count unchanged from last+61).
+`cells_failed/*.json` count re-derived fresh via `find`: **100**, matches exactly. Distinct failing
+buildings re-derived fresh: **10**, unchanged from last+61 — still under the ~20-building CSV-log
+threshold. `payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue` confirms `1315014` (IT) still
+`RUNNING` on `antenna1`, elapsed `5:44:18`; `1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 06:21-06:24 EDT (this session,
+read-only, direct SSH); `memory/project_4j_hetus_llm.md` last+62 (pending this session's write,
+immediately following). Everything from `last+61` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+61) — SUPERSEDES last+60 BELOW**
+
+**Status check, no completions or district-starts since last+60 — a routine progress update.** ES
+(Madrid) unchanged: still COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines, nothing to
+add. `1315015` (UK) still `PENDING (Dependency)`, gated on IT, unchanged.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~06:23 EDT via direct `ssh` reads (no
+intermediate script this pass — `campaign_status.json` and `cells_failed/` read directly):
+`cells_finished` **800** of 11,710 planned (**6.8%**), `campaign_status.json` shows **700**
+`COMPLETED` + **100** `ENERGYPLUS_FAILED`. Live `cells_failed/*.json` count re-derived fresh via
+`find`: **100** — matches the summary exactly this time, no lag. Distinct failing buildings
+re-derived fresh via `find ... -printf '%f\n' | awk -F'__' '{print $2}' | sort -u | wc -l`: **10**
+(up from 9 at last+60) — still under the ~20-building threshold set for starting a
+`C2_IT_failure_progress_log.csv`. `payload_set_sha256` for IT unchanged (`2cc6ba9512...`). `squeue`
+confirms `1315014` (IT) still `RUNNING` on `antenna1`, elapsed `5:41:06`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 06:19-06:23 EDT (this session,
+read-only, direct SSH, no scratchpad script this pass); `memory/project_4j_hetus_llm.md` last+61
+(pending this session's write, immediately following). Everything from `last+60` onward is preserved
+below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+60) — SUPERSEDES last+59 BELOW**
+
+**Status check, no completions or district-starts since last+59 — a routine progress update,
+requested by the author mid-session.** ES (Madrid) unchanged: still COMPLETE, 840 failed cells / 84
+buildings, CSV log at 85 lines, nothing to add. `1315015` (UK) still `PENDING (Dependency)`, gated
+on IT, unchanged.
+
+**IT (Bologna) progressing normally.** Fresh poll 2026-09-10 ~06:16 EDT: `cells_finished` 725 of
+11,710 planned (**6.2%**), `campaign_status.json` shows 639 `COMPLETED` + 86 `ENERGYPLUS_FAILED`;
+live `cells_failed/*.json` directory count is 87 (1-file lag behind the periodic summary — the same
+benign lag pattern seen on ES, not a bug). Distinct failing buildings re-derived fresh via
+`ls cells_failed/*.json | sed -E 's#.*/##' | awk -F'__' '{print $2}' | sort -u | wc -l`: **9**
+(grew from 7 at the prior two ticks — real growth, still well under the ~20-building threshold set
+for starting a `C2_IT_failure_progress_log.csv`). `payload_set_sha256` for IT unchanged
+(`2cc6ba9512...`).
+
+🔴 **Correction to last+59's file-shape note:** last+59 recorded IT as using "a DIFFERENT
+progress-file shape than ES" (`campaign_progress.jsonl` only, no `campaign_status.json`). That was
+an artifact of checking within IT's first ~15 minutes, before its runner had written its first
+periodic summary file. Confirmed on every poll since: IT uses the **SAME** file conventions as ES —
+`campaign_status.json` (periodic summary) + `cells_failed/*.json` (one file per failed cell, named
+`it__<building_id>__case<A/B>__f<pct>.json`, mirroring ES's `es__...` pattern). Recorded here so a
+future session reading last+59 literally isn't misled; last+59's text is left unedited as history
+per the append-only convention.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json`/`cells_failed/` poll 2026-09-10 06:16 EDT (this session, read-only,
+standard SSH-via-scratchpad-script pattern); `memory/project_4j_hetus_llm.md` last+60 (pending this
+session's write, immediately following). Everything from `last+59` onward is preserved below as
+history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+59) — SUPERSEDES last+58z BELOW**
+
+**IT (Bologna) is now RUNNING.** After ~3 hours `PENDING (AssocGrpCpuLimit)`, the peer's
+`openubem_t07` job array (`1315099`) finished and cleared entirely from `squeue` — this freed a CPU
+slot under the shared account cap, and job `1315014` (`4J_c2_IT`) started at `2026-09-10T00:39:11`
+on node `antenna1`. Confirmed via `sacct -j 1315014` (State RUNNING, Elapsed growing) and direct file
+reads in `out/IT-BOL-GALVANI2/` — no claim carried untested. `1315015` (UK) still `PENDING
+(Dependency)`, now gated on IT instead of ES.
+
+**IT's own preregistration numbers (from `preflight_report.json`, read directly):** `n_buildings`
+**1,171** eligible, `n_cells` **11,710** planned (1,171 × up to 10 cells, same shape as ES's
+11,510/1,151 — consistent with the campaign's per-building cell count), `dwellings_registered`
+15,705, engine/no-core pins and weather sha256 unchanged from the pre-registration on record
+(`prereg_md5` `e1f2822a...`, engine pin `6a14f428...`, no-core pin `21d723d5...`). `payload_set_sha256`
+for IT: `2cc6ba9512...` — a DIFFERENT value from ES's (`575960f5...`), as expected, this is a
+different district's own payload set, not a stock change.
+
+**IT is very early — only 20 cells done so far (of 11,710), 2 already `ENERGYPLUS_FAILED`** (both
+from building `it__27683`, cases `caseA__f050` and `caseA__f000`, read directly from
+`campaign_progress.jsonl`, IT's own progress ledger — a different file shape from ES's
+`campaign_status.json`+`cells_failed/*.json` pair, noted so no session assumes the same file names
+apply across districts without checking first). **Deliberately NOT building a separate `C2_IT_...`
+failure log yet** — 20 of 11,710 cells is far too early for a meaningful bulk-triage pass; that
+will start once IT has meaningfully progressed or completed, mirroring the same judgment call made
+for ES's own new failures near the end of its run (last+58x).
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. IT starting is a
+scheduling fact, not a scoring event. Evidence: fresh `squeue`/`sacct -j 1315014` read
+2026-09-10 00:53-00:56 EDT; `out/IT-BOL-GALVANI2/preflight_report.json` and `campaign_progress.jsonl`
+read directly (this session); `memory/project_4j_hetus_llm.md` last+59 (pending this session's
+write, immediately following). Everything from `last+58z` onward is preserved below as history —
+unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-09, last+58z) — SUPERSEDES last+58y BELOW**
+
+**ES (Madrid) is DONE.** Job `1315013` finished: `campaign_status.json` shows `cells_finished ==
+cells_planned == 11,510`, `campaign_results.json` now exists (2.1MB, per-cell ledger — never read in
+full, per the NO-PARKING context guard; summary pulled from `campaign_status.json` instead). Final
+tally: `ENERGYPLUS_FAILED` **840** cells = **84 distinct buildings** (up from 83/830 at the last
+wake). `payload_set_sha256` unchanged throughout (`575960f5...`) — the run finished on the same
+stock it started on.
+
+**The one new failure was folded into the CSV log using the refresh script, exactly as the author's
+"for every fail, record" request intended.** New building: `way-987123378` — appeared only in ES's
+final ~10 cells. Ran `bash tree/scripts/4J_s10_failure_triage.sh ES-MAD-BERRUGUETE` on Speed via the
+standard SSH pattern; verified its own output directly (84 `TRIAGE_ROW` lines, one per failing
+building, matching the freshly re-derived 84-building list byte-for-byte) before trusting it. The
+new row: `vm=3`, all other signatures 0 — pure `vertex-mismatch-only`, no auto-rule fires, so
+`confirmed_class` stays blank as scoped (same treatment as the other 44 vertex-mismatch-only
+buildings). Appended to
+`4J_docs_occ/Step10_docs/impl/C2_ES_failure_progress_log.csv` — now **85 lines = header + 84
+rows**, verified by direct `wc -l` + `tail -1` read after the edit. No ring-check performed, no
+class forced.
+
+**IT's blocking reason changed**: `1315014` (IT) moved from `PENDING (Dependency)` to
+`PENDING (AssocGrpCpuLimit)` — the dependency on ES finishing is now satisfied, IT is simply waiting
+for a CPU slot under the account's shared cap (currently saturated by `openubem_t07`'s many running
+array tasks, confirmed earlier as authorised/theirs). `1315015` (UK) still shows `PENDING
+(Dependency)` — presumably gated on IT, not ES, unchanged. Neither IT nor UK is RUNNING yet.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. ES's own
+completion is a fact, not a scoring event — no `G10.x` result has been filed, none should be filed
+by a session under a "read-only, do not score" mandate. Evidence: fresh `squeue`/`campaign_status.json`
+poll 2026-09-09 21:44-21:53 EDT; refresh-script output read directly (`refresh_out.txt`, 84
+`TRIAGE_ROW` lines); CSV re-read after edit; `memory/project_4j_hetus_llm.md` last+58z (pending this
+session's write, immediately following). Everything from `last+58y` onward is preserved below as
+history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-09, last+58y) — SUPERSEDES last+58x BELOW**
+
+**Author's request discharged: a durable, structured per-building failure log now exists, covering
+every currently-failing ES building, plus a reusable refresh script.** Read-only throughout, nothing
+retried/patched/cancelled, `C2` untouched.
+
+**The record:** `4J_docs_occ/Step10_docs/impl/C2_ES_failure_progress_log.csv` — **83 rows, one per
+currently-failing building** (re-derived fresh, not carried: 830 failed cells / 83 distinct
+buildings, all now settled 10-of-10, none in flight). Columns: `building_id, n_failed_cells,
+confirmed_class, signature_bucket, severe_message_counts_summary, first_documented_in, notes`.
+`confirmed_class` is populated for the **31** buildings with an established or explicitly-flagged
+status: (a) 9, (b1) 9, (b2) 1, (c)-PURE 4, (c)-MIXED 1, (d) 1, the one-off `way-310738153` (fits no
+class), and the 5-member unnamed sixth signature family (zero/near-zero surface area). The other
+**52** buildings carry only a `signature_bucket` (44 `vertex-mismatch-only`, 8
+`vertex-mismatch+nonplanar`) and a blank `confirmed_class` — placing them in (b1)/(b2)/(d)/a new
+mechanism needs a ring-level IDF read, deliberately NOT done this pass (out of scope, per the
+author's own task framing: this is a log for future investigation, not a fix or a deep-dive).
+
+🔴 **One new classification gain this pass, by cheap bulk text-signature triage alone, no ring
+check:** `way-942352870` — a building that did not exist at the §18.29 read (75 settled buildings)
+and arrived in the growth to 83 — carries the EXACT (a) signature (CalcCoordinateTransformation
+route, nothing else) and is confirmed **(a)** by the same exact-text rule §18.29 already established
+as needing no ring check. **`(a)` grows 8 → 9.** No other building resolved this pass; everything else
+requiring a ring check to place stays unplaced, as instructed.
+
+**The reusable refresh script:** deployed to
+`/speed-scratch/o_iseri/4J_step10_nocore/tree/scripts/4J_s10_failure_triage.sh` (matches the
+existing `4J_s10_*.sh` naming convention on Speed), read-only, executable. Usage: `bash
+tree/scripts/4J_s10_failure_triage.sh [DISTRICT]` (default `ES-MAD-BERRUGUETE`) via the standard SSH
+pattern. It re-derives the failing-building list from `cells_failed/*.json`, greps the same six
+severe/fatal substrings, and auto-applies the two exact-text rules ((a), (c)-PURE/(c)-MIXED),
+leaving everything else bucket-only. **Smoke-tested on the live district**: reproduced all 83 rows
+and all 14 auto-classifications identically to this session's manual pass. Merging a fresh run into
+the CSV is a documented 2-step manual diff (by `building_id`; written as a comment block at the top
+of the script itself).
+
+**Full methodology, exact grep patterns, the reconciliation of §18.29's un-itemised 45 against this
+pass's itemised 52, and everything not done (no ring-level inspection, no fix, no retry) is impl doc
+§18.30**, `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md`.
+
+**Fresh campaign poll, end of this pass (21:21:45 EDT 2026-09-09):** `1315013` (ES) still `RUNNING`
+on `salus`, 11:18 elapsed; `cells_finished` **10,900 of 11,510** (95%); `ENERGYPLUS_FAILED` **830**
+= **83 buildings, unchanged since the start of this pass** — no new failure appeared while this log
+was being built. `payload_set_sha256` unchanged (`575960f5...`). `1315014`/`1315015` (IT/UK) still
+`PENDING (Dependency)`. `openubem_t07` unchanged, one task running, rest queued behind the CPU cap,
+still not this project's job to own. At the current rate ES has well under an hour of wall-clock
+left.
+
+🔴 Nothing retried, dropped, patched, moved, or scored. `C2` stays pinned to `T07`. Evidence: this
+session's SSH transcripts and campaign_status.json reads throughout; impl §18.30; the CSV and script
+paths above; `memory/project_4j_hetus_llm.md` pending the coordinating session's update. Everything
+from `last+58x` onward is preserved below as history — unedited.
+
+---
+
+# 🟡 **SUPERSEDED — HANDOFF FOR A NEW SESSION (2026-09-09, last+58x) — SUPERSEDES last+58w BELOW**
+
+**Pure overnight progress note, read-only, no new classification work done this cycle.** `1315013`
+(ES) still RUNNING on `salus`, 31 cpu, 11:02 elapsed. `cells_finished` 9,550→10,500 (91% of 11,510),
+`ENERGYPLUS_FAILED` 770→830 = **83 distinct buildings, up from 75-77**. At the current rate
+(~10,500 cells in 11h) ES has roughly ~1h of wall-clock left. Payload sha unchanged
+(`575960f5...`). IT/UK still PENDING (Dependency); `openubem_t07` behaving exactly as the peer
+promised (one task running, rest queued behind the CPU cap).
+
+**The 6-8 newly-failed buildings (75-77 → 83) were NOT classified this cycle.** Judgment call:
+ES is close enough to completion (~1h left) that doing a partial classification pass now, then
+another one after completion, would duplicate work for no benefit — deferring the next
+classification pass until ES reaches `cells_finished == cells_planned` (or a wakeup finds the gap
+has grown large), at which point one full pass over all remaining unclassified buildings makes
+more sense than two partial ones. This mirrors the existing open item already on record: 45
+buildings from the last pass (§18.29) still not ring-checked, plus these new ones, will be handled
+together.
+
+🔴 Nothing retried, dropped, patched, or scored. `C2` stays pinned to `T07`. Evidence: fresh
+`squeue`/`campaign_status.json` read 2026-09-09 21:06-21:10 EDT (see memory
+`project_4j_hetus_llm.md` last+58x for full numbers). Everything from `last+58w` onward is
+preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-09, last+58w) — SUPERSEDES last+58v BELOW**
+
+**The openubem_t07 risk flagged in last+58v is RESOLVED, no action needed.** Asked the peer
+`openubem` session directly: job array `1315099` is theirs, authorised, expected, and they will
+queue behind `C2` — they never touch another project's runs. Nothing to watch beyond ordinary
+courtesy; the CPU-cap math in last+58v stands as background but is no longer an open question.
+
+**The 52 (now 59) new failing buildings were read, NOT scored, partially classified — full detail
+in impl doc §18.29.** Snapshot 20:28-20:37 EDT: `1315013` (ES) still RUNNING, 31 cpu, 10:33 elapsed;
+`cells_finished` 9,350→9,550 (was 8,200), `ENERGYPLUS_FAILED` 750→770 = **75-77 buildings** (75
+settled and reviewed; the last 2 appeared mid-read, unclassified). Payload sha unchanged — stock
+did not move. IT/UK still PENDING (Dependency).
+
+Of the 59 new (all `way-` ids, none `relation-`): **5 are `(a)` (CalcCoordinateTransformation
+route, exact text match, `(a)` now 3→8); 2 are `(c)`-PURE (construction-reverse-order, exact text
+match, `(c)`-PURE now 2→4). 47 share the "Vertex size mismatch" text with both `(b1)` and `(d)`** —
+full ring inspection on 2 of them found they are NOT the same mechanism: one
+(`way-195286070`) is a genuine new `(b1)`-below-grid member (byte-identical 6-vertex rings, ~0.18mm
+short edge); the other (`way-310738153`) matches neither `(b1)` nor `(d)` — a collapsed 3-vertex
+ring paired asymmetrically with a 6-vertex one whose OWN declared partner is a third, different
+surface. **The remaining 45 were not individually ring-checked — flagged as the next concrete step,
+same method demonstrated in §18.29.** Separately, **5 buildings show a signature not in `(a)`-`(d)`
+at all**: `GetSurfaceData: Zero or negative surface area`, sometimes with `CheckConvexity`
+non-planar on the same surface — plausibly `(d)`'s sliver mechanism showing up as collapsed area
+instead of vertex-count mismatch, but NOT confirmed, reported as its own open item.
+
+🔴 Nothing retried, dropped, patched, or scored. `C2` stays pinned to `T07`. Evidence: impl §18.29;
+this file's addendum below dated 2026-09-09 (last+58w); `memory/project_4j_hetus_llm.md` pending
+update. Everything from `last+58v` onward, including the resource-risk block, is preserved below as
+history — its resolution is stated above, its original text is untouched.
+
+---
+
+# 🟡 **SUPERSEDED — HANDOFF FOR A NEW SESSION (2026-09-09, last+58v)**
+
+**The job is one sentence: READ THE RUN, DO NOT SCORE IT.** `C2` is running on Speed, much further
+along than the last read: ES has finished 8,200 of 11,510 cells (was 1,325), with 680 cells now
+failing — **68 distinct buildings, up from sixteen. The 52 new failures are NOT yet classified**
+against the (a)/(b1)/(b2)/(c)/(d) signatures in §2/§3 — that re-classification is the next
+session's first job, same read-only procedure as §7, nothing assumed. IT/UK are still PENDING
+(Dependency) on ES.
+
+🔴 **NEW, UNEXPLAINED RESOURCE RISK — READ BEFORE ANYTHING ELSE:** a second Slurm job array appeared
+on the SAME account as `C2` that this session did not launch — `1315099` (`openubem_t07`, 8,152
+tasks, throttled at 32 concurrent, submitted 15:28 EDT today from
+`/speed-scratch/o_iseri/openubem/scripts/cluster/submit_fleet_t07.sbatch`; origin not established,
+not investigated further — read-only `squeue`/`scontrol`/`sacctmgr` only). The account's hard cap is
+**`cpu=32` total** (`chachemv`, confirmed via `sacctmgr`), and right now it is FULL: ES holds 31,
+this array's one running task holds the last 1; its other 8,151 tasks sit `PENDING
+(AssocGrpCpuLimit)`. **When ES finishes and frees its 31 cpus, this array and IT/UK will be
+competing for the same freed capacity** — which gets scheduled first is Slurm's backfill, not this
+project's choice. Not touched, not cancelled, not this session's job to own — watch it via `squeue
+-u o_iseri`, act on it only on the author's word.
+
+The fix-authority rule (last+58s) was tested on defect `(d)` (last+58t) and did NOT fire — unchanged
+this cycle, see §5/§8. The blast-radius census (last+58u) is unchanged: ~22% of the stock
+(790/3,625) still carries the trigger topology. Everything below the next `---` is the older log,
+newest first; this block is the current state.
+
+---
+
+## 1. Run state, read at 19:23 EDT on 2026-09-09 — 🔴 FAILING-BUILDING COUNT JUMPED 16 → 68, AND A SECOND JOB ARRAY APPEARED ON THE SAME ACCOUNT
+
+```
+job 1315013  4J_c2_ES      RUNNING on salus       9:20:39 elapsed, 31 cpu
+job 1315014  4J_c2_IT      PENDING (Dependency)
+job 1315015  4J_c2_UK      PENDING (Dependency)
+job 1315099  openubem_t07  ARRAY 1-8152, throttle 32 — NOT this session's job, origin not established
+  task 235    RUNNING on magic-node-06 (took the account's last free cpu, 19:23:17)
+  8,151 more  PENDING (AssocGrpCpuLimit)
+
+cells_planned   11510
+cells_finished   8200
+  completed (COMPLETED_WITH_UNSTABLE_MARKERS)  7520
+  ENERGYPLUS_FAILED                             680
+campaign_progress.jsonl            8217 lines
+payload_set_sha256  575960f547ce462a3754eaa8d1f84090f721b5fb7ca135324bb46b6769929486
+account cpu cap (sacctmgr, chachemv)  32   —  currently FULL: 31 (ES) + 1 (openubem_t07 task 235)
+```
+
+🔴 **680 failed cells = 68 distinct buildings** (unit of failure is the BUILDING, 10 cells each,
+never partial) — up from sixteen at the 13:17 EDT read. **None of the 52 new failing buildings has
+been classified against the (a)/(b1)/(b2)/(c)/(d) signatures in §2/§3 — do not assume which class
+any of them belongs to.** This is the next read-only task, exact procedure in §7. Nothing retried,
+dropped, moved, patched or scored.
+
+🔴 **New finding this read: a second job array on the same Slurm account.** `1315099`
+(`openubem_t07`) was submitted 15:28 EDT today by this account but not by this session — 8,152
+array tasks, throttled at 32 concurrent. The account's association cap is a hard `cpu=32`
+(confirmed via `sacctmgr show assoc`), and it is fully saturated right now: ES's job alone holds 31
+cpus (`scontrol show job 1315013`), leaving exactly one, which `1315099`'s first task already
+claimed the moment it opened up. **Once ES finishes and releases its 31 cpus, IT/UK and the
+remaining 8,151 `openubem_t07` tasks will be competing for the same freed capacity** — a genuine
+scheduling risk to when IT/UK actually start that this session did not create and should not act
+on unilaterally. Flagged for continued watching; not touched, not queried beyond read-only
+`squeue`/`scontrol`/`sacctmgr`.
+
+⚪ `campaign_progress.jsonl` line count still running slightly ahead of `cells_finished` (8217 vs
+8200, gap 17 — was 5-7 lines at the smaller scale) — still flagged only, not investigated while
+`C2` runs.
+
+🔴 `campaign_results.json` is written **only after the last of 11,510 cells**. A failing cell writes
+**no manifest**. So the only live instruments are `campaign_status.json`,
+`campaign_progress.jsonl`, `cells_failed/*.json` and the `.err` files — which survive, because the
+runner's cleanup loop deletes the IDF and outputs **only on the success path**.
+## 2. The failure picture — SIXTEEN CLASSIFIED, SIXTY-EIGHT TOTAL as of 19:23 EDT 2026-09-09 (was sixteen through 1,325 cells; 52 new failures NOT yet classified — see §1)
+
+🔴 **The unit of a failure class is the BUILDING, never the cell.** Each building is 2 cases × 5 `f`
+values = exactly 10 cells, and each fails all ten identically. 150 failed cells = 15 buildings; the
+16th (below) adds its own 10, for 160.
+
+```
+(a)  3   12582234 13033801 4165180
+         coincident vertex deleted -> degenerate surface -> CalcCoordinateTransformation Fatal
+(b1) 8   12702627 12713026 12725306 4154554 4466638    short edges ON a 1 mm grid
+         12800464 13113580 4165178                     short edges BELOW any grid
+         vertex-size mismatch; the two copies are written BYTE-IDENTICAL
+(b2) 1   4154505    the two copies are written GENUINELY DIFFERENT; cause NOT established
+(c)  2 PURE  12863111 4164962   +  1 MIXED  4179135
+         OUR OWN runner's construction-assignment loop,
+         4thJ_step10_nocore_campaign.py lines 1038-1045
+(d)  1   way-1237260791   ROOT CAUSED + SIZED: trigger topology in ~22% of ALL buildings (790/3625) — NOT fixed
+```
+
+🔴 **`way-1237260791` — full ring diagnostic run, NOT folded into (b1).** `.err` (caseA/f000)
+carries **12 Severe + 1 Fatal, 3 Warning**, every severe the SAME shape: `Vertex size mismatch`
+between a `STOREY n CEILING` and the `STOREY n+1 FLOOR` it shares, sizes alternating 5 vs 4, for
+n = 0..5 (six pairs, one repeated floor plan) on element `_3`. Verbatim first pair:
+```
+** Severe ** RoofCeiling:Detailed="BLOCK WAY/1237260791_3 STOREY 0 CEILING 0001_1", Vertex size
+   mismatch between base surface: ...STOREY 0 CEILING 0001_1 and outside boundary surface:
+   ...STOREY 1 FLOOR 0001_2 — sizes are 5 for base, 4 for outside boundary.
+**  Fatal  ** GetSurfaceData: Errors discovered, program terminates.
+```
+**Matches (b1) only at the signature level:** PURE vertex-size-mismatch (zero coincident/degenerate,
+zero dot-product, zero non-planar, zero interzone-construction line); both rings write 6 vertices,
+1 short edge each, sub-millimetre (~0.14 mm), not on the 1 mm grid — same magnitude class as the
+three below-grid (b1) members. `cells_failed/…caseA__f000.json` gives no error text beyond
+`returncode: 1` (defect 4 of §5, again).
+
+🔴 **Breaks from (b1) on the actual measurement — two ways.** (1) §3's identity is written−k = one
+engine number exactly, the other one away — here BOTH rings independently compute written−k = 5
+(written 6, k 1, identical on both sides), so the engine's "4" reading matches NEITHER ring's own
+arithmetic; in every established (b1) member the two rings' own edge counts differ and each
+explains its own reported number. (2) The payload trace (mirroring the `13113580` precedent)
+found the owning zone's OWN polygon (`…_dwelling_3`) is clean — 6 vertices, 2.4697 m minimum
+gap, nothing tight, nothing to snap. The short edge exists only because the **written IDF ring is
+not that zone's polygon**: 4 of its 6 vertices are the *adjacent* zone's (`…_dwelling_1`) entire
+footprint, and the other 2 are a split/duplicated copy of one point that IS in `dwelling_3`'s own
+footprint. Every established (b1) member's short edge sits inside the OWNING zone's own ring
+(payload-to-IDF snap/manufacture); this one's short edge sits at a seam between two DIFFERENT
+zones' vertex sets, inside a ring nominally owned by a third. That is a cross-zone vertex-sourcing
+defect, not a same-zone snap-tolerance artefact — a different generator bug wearing the same error
+text. **Conclusion: NOT a ninth (b1) building.** Kept as `(?)`, n = 1, not named as its own class
+yet — one building is not a pattern. Nothing retried, dropped, moved, patched or scored.
+
+🔴 **ROOT CAUSE TRACED (last+58t), owner is upstream, not us.** A dispatched read-only
+investigation reproduced the exact splice locally against the real payload and the real installed
+`geomeppy`: the corruption is not in our runner (`zones_for_cell`/`build_idf_for_cell` pass each
+zone's own clean polygon through untouched) but inside OpenUBEM's `extrude_geometry()` →
+`geomeppy`'s `intersect_match()` → `populate_adjacencies()` (`geomeppy/geom/surfaces.py:135-201`).
+Two same-floor zones that touch at exactly ONE shared vertex, no shared edge, SAME-facing normal (a
+point-touch, not a hole — confirmed via `is_hole()`) get an all-pairs coplanar sweep, unscoped to
+genuine adjacency, that computes a spurious non-empty sliver where they touch, then routes the
+resulting fragments to the wrong zone because routing is by normal-vector match alone — blind
+whenever both normals are identical. A FOURTH distinct mechanism, named `(d)`: not (b1)'s
+byte-identical-ring/engine-read split, not (b2)'s wrong-partner pairing, not (c)'s post-hoc
+materials loop — the written ring here genuinely contains another zone's vertices, correctly
+paired, wrongly sourced.
+
+🔴 **BLAST RADIUS: real, not bounded to one building.** The same mechanism fires TWICE inside
+`way-1237260791` alone (`dwelling_1`↔`dwelling_3` and `dwelling_1`↔`dwelling_2`); the trigger
+topology (≥3 same-floor zones meeting at one interior corner) is generic to `nocore_equal_area`
+layouts, not specific to this OSM building. Most instances will NOT throw a fatal — a fatal only
+fires when the sliver's near-duplicate vertex pair straddles EnergyPlus's own collapse threshold
+asymmetrically (the same coincidence that governs (b1)); elsewhere a zone silently gains a surface
+(area/adjacency/conduction) that is not its own, with no visible symptom, in cells CURRENTLY
+reported `COMPLETED`/`COMPLETED_WITH_UNSTABLE_MARKERS`. Neither existing OpenUBEM safety net catches
+it (`_repair_mismatched_horizontal_pairs` exempts the legitimate ceiling/floor interfloor type; the
+count-only mismatch check sees two 6-vertex rings and finds nothing wrong).
+
+🔴 **DECISION under the author's fix-authority rule (applying last+58s): NOT fixed now.** The
+criterion is "important AND high-impact" — this defect plausibly clears both, on the evidence
+above. But the actual repair (discard near-zero-area intersections, or disambiguate fragments by
+point-in-polygon instead of normal match) lives inside `openubem/idf/surfaces.py` and third-party
+`geomeppy`, code this project has never edited unilaterally — every prior instance of an upstream
+cause ((b1)'s snap tolerance, (b2)'s pairing) was left to `openubem-20` with authorisation routed
+through the author directly, never assumed from a peer message. A same-tree detector-only
+alternative was also considered (extend `find_mismatched_interzone_pairs`), but that function ALSO
+lives under `openubem/`, not our runner — equally not ours to edit. Separately, ANY geometry or
+detector change — ours or theirs — alters what gets emitted or refused, which is a basis change;
+mid-campaign (ES `1315013` RUNNING, IT/UK still PENDING) that breaks "one campaign, one code
+version" exactly as §8 warns. Both blockers are independent of the delegated fix authority and
+neither is overridden by it. Recorded as defect `(d)`, fifth in the list, NOT fixed, deferred to the
+next re-pre-registration — flagged HIGH PRIORITY for that re-pre-registration given the
+blast-radius evidence, which the other four defects were not. A read-only, no-engine,
+no-code-change census (count same-floor zone pairs sharing exactly one vertex with no shared edge
+and matching normals, across the payload stock already on disk) was dispatched to size actual
+exposure before that decision is made.
+
+🔴 **CENSUS RETURNED (last+58u): the trigger topology is large and cross-district.** Scanning
+the actual live payload trees for all three districts (ES-MAD-BERRUGUETE 1,174 buildings,
+IT-BOL-GALVANI2 1,211, GB-LDN-STDUNSTANS 1,240 — 3,625 total, Lyon excluded, out of scope) for
+every same-floor zone pair sharing EXACTLY one vertex with no shared edge (the defect's geometric
+precondition): **790 of 3,625 buildings (≈22%) contain at least one matching pair — ES 349/1174,
+IT 332/1211, UK 109/1240 — 6,994 matching pairs total.** Vertex-match tolerance swept 1e-9 m to
+0.5 m with IDENTICAL results throughout — not a sensitivity artefact. **Ground-truth check passed:**
+`way-1237260791`'s own confirmed defect pair (`dwelling_1`↔`dwelling_3`) is caught by this
+signature. A second, stricter filter (also requiring no local edge collinearity at the touch point)
+was tried and REJECTED — it produces a FALSE NEGATIVE on the one confirmed case (an end-to-end
+wall-line continuation reads as "collinear" even though the investigation independently confirmed
+that exact pair triggers the real bug), so the loose vertex-count-one signature is the defensible
+number, not the stricter one.
+
+🟡 **Not yet established: how many of the 790 actually produce corrupted geometry** — sharing
+one vertex is necessary but not proven sufficient (the fatal-vs-silent split inside `way-1237260791`
+itself shows the trigger can fire without a visible symptom, per §18.27); this count is an upper
+bound on EXPOSURE, not a count of confirmed corruption. ⚪ **Also observed, NOT concluded**: 13 of
+the other 15 known-failing buildings also show this same signature ELSEWHERE in their own geometry
+(the 3 exceptions — `relation-12702627`, `relation-12713026`, `relation-12725306` — show none, every
+pair on every floor shares 2+ vertices). 13/15 (87%) against a 22% general rate is a notable gap,
+but presence elsewhere in a building's geometry does not establish that THIS mechanism caused THAT
+building's specific fatal — each of those 15 already has its own independently-confirmed mechanism
+((a)/(b1)/(b2)/(c)) and none is reclassified on this evidence alone. This stays an open question,
+not a finding.
+
+🔴 **Decision unchanged, now on firmer ground.** The blockers that kept `(d)` unfixed at
+last+58t — code owned upstream, any fix is a basis change that cannot land mid-campaign — are about
+WHO may change WHAT WHEN, not about how big the problem is; a bigger number does not unlock either
+door. `(d)` stays recorded, NOT fixed, flagged HIGH PRIORITY for the next re-pre-registration, now
+with a quantified, cross-district, ground-truth-validated size attached instead of a qualitative
+"plausibly wide-reaching." Nothing retried, dropped, moved, patched or scored; `C2` stays pinned to
+`T07`.
+
+🔴 **ATTRIBUTION RULE (ACROSS OWNERS).** A building is charged to our defect **only when no severe
+belonging to another owner appears in its `.err`**. Several severe kinds under one owner cross no
+attribution line, but they leave that owner's *mechanism* claim unestablished. `4179135` is MIXED —
+ours plus two `CheckConvexity` non-planar severes — so fixing our loop would **not** have saved it.
+Pure (c) is **two** buildings, not three. The blunt earlier form of this rule ("our severe is the
+only severe") is retired.
+
+## 3. What is ESTABLISHED about (b1) — the class whose cause holds on every member
+
+🔴 **THE ARITHMETIC IDENTITY (last+58n).** For every surface named in a `Vertex size mismatch`
+severe, **one of the two engine-reported vertex counts is exactly `written − k`, where `k` is the
+number of edges in that written ring shorter than 10 mm, and the other count is one away.** 8 of 8
+buildings, every named pair, no exceptions. The engine collapses short edges **wholesale** —
+`4154554` writes 37 vertices and is read as 12 and 13 because 25 of its 37 edges are under 10 mm —
+and the two copies land one apart.
+
+🔴 **THE ORIGIN SPLIT (last+58o).** In **five** buildings every short edge in the failing ring is an
+**exact 1 mm grid step**, the shortest ones single axis-aligned 1 mm moves, **none** on a 5 mm grid —
+what a 1 mm snap floor emits. In the other **three** no short edge lies on **any** grid (deltas like
+−0.000418, −0.000130) and each ring carries exactly **one** short edge against 11–25. This is a split
+*within* (b1) by edge origin, **not** a new mechanism and **not** a new class — the identity above
+holds identically across both halves.
+
+🔴 **THE SHORT EDGES ARE MANUFACTURED BETWEEN PAYLOAD AND IDF.** `13113580`: the payload ring has 7
+vertices and a minimum gap of 1.040812 m; the IDF ring has 9 vertices and a 0.000447 m edge — and
+that single edge is exactly the `k=1` producing its 7-versus-8.
+
+## 4. What is NOT established — do not let a new session promote any of these
+
+⚪ **The tolerance is not pinned.** Largest edge below 10 mm is 0.005099 m; smallest at or above is
+0.026926 m. Any threshold from ~5 mm to ~27 mm gives the same identity. The 10 mm figure was chosen
+in an earlier window for unrelated reasons and was **not** tuned to this test — which is why the
+identity is evidence and not a fit.
+⚪ **Why one copy keeps one more short edge than the other.** The rings are written byte-identical,
+so the asymmetry happens during the **read**.
+⚪ **Which code snapped.** Exact 1 mm quantisation is *consistent with* a 1 mm snap; it does not name
+an owner. Neither extrude path nor intersect path has been read, on either side.
+⚪ **That a coarser grid would make the five grid buildings RUN.** It would remove the edges — that
+follows from their being exact grid steps. Whether the cells then complete has **not** been measured
+and will **not** be measured while `C2` runs.
+⚪ **Short edges do NOT predict failure.** `12628570` COMPLETED carrying 5 surfaces under 10 mm. 🔴
+The min-edge census stays **DEMOTED** — a candidate, never a rule — and **must not be revived as an
+acceptance test on the strength of the identity.**
+⚪ **`4154505`'s cause.** Its ordinary pairs obey the identity (written 15, k 3 → 12; engine 12/11).
+Its `12v3` pair cannot: the base ring is written with **three** vertices and one short edge,
+predicting two, while the engine says 3 against 12. A three-vertex plate is not a collapsed
+sixteen-vertex plate — that pair is the many-to-one pairing tangle wearing the mismatch error's
+clothes. Nothing orders the two defects in that building.
+
+## 5. Four defects recorded, NONE fixed, ALL deferred to the next re-pre-registration
+
+1. Our own construction-assignment loop, `4thJ_step10_nocore_campaign.py` 1038–1045.
+2. The many-to-one interzone pairing.
+3. The manufactured sub-millimetre / 1 mm edges.
+4. The runner writing **no manifest** for a failing cell.
+
+🔴 None of these is edited while `C2` runs. A hurried fix mid-campaign would break the pin.
+
+🟡 **FIFTH DEFECT `(d)` CONFIRMED AND SIZED (last+58u), `way-1237260791`'s cross-zone
+vertex splice — root cause traced to `openubem/idf/surfaces.py`'s `extrude_geometry()` →
+third-party `geomeppy`'s `populate_adjacencies()`, NOT our runner (full trace: impl §18.27; §3
+above).** A read-only census (impl §18.27 addendum; §3 above) found the defect's trigger topology
+in **~22% of the ENTIRE building stock (790/3,625), all three districts** — clearing the author's
+"important and high-impact" bar quantitatively, not just plausibly. Still NOT fixed: the fix
+location is upstream code this project has never edited unilaterally, and any change to it (or to a
+same-tree detector) is a basis change that cannot land mid-campaign without breaking "one campaign,
+one code version" — a bigger number does not remove either blocker. Recorded, NOT fixed, same as
+the other four, flagged HIGH PRIORITY with a number attached for the next re-pre-registration.
+
+## 6. The peer session `openubem-20`
+
+Three messages exchanged. They have **recorded** our findings, **corrected themselves visibly**
+where we corrected them (their "(b1) has the weakest hold on us because the rings are
+byte-identical", and their "a coarser grid on its own would not remove it" — the second now scoped
+to the three below-grid buildings, with the note that `13113580`, the building they reasoned from,
+is in the minority half). Their latest message says explicitly: *"Nothing needed from you."*
+
+🔴 **Their three measurements are STOPPED, and correctly so — there is no authorisation in their
+session.** Re-ordered by them, snap-floor question first (now asked in both directions), partner-
+names-it-back second, metres-apart adjacency third.
+
+🔴 **THE OUTSTANDING HUMAN-OWED ITEM: the author must give that authorisation to the `openubem-20`
+session directly, in that session.** A peer message is never the author's approval, and this session
+cannot pass one along. Their snap-floor line numbers are recorded as **their** measurement, never
+carried as verified.
+
+## 7. How to read the run — the exact procedure
+
+Poll (background, ~25 min): `ssh -o BatchMode=yes speed.encs.concordia.ca 'bash -s' < poll3.sh`.
+🔴 Never a remote one-liner with nested quotes — always `'bash -s' < script`.
+
+For every **newly failing building**, in this order:
+
+| script | what it answers |
+| --- | --- |
+| `new5.sh` | pull the `.err`, see the severes |
+| `sevmix.sh` | classify severes by OWNER — pure or MIXED (the attribution rule) |
+| `rings2.sh` | exact-precision ring comparison — places it in (b1) or (b2) |
+| `vsz.sh` | the difference-of-one check |
+| `vred2.sh` | 🔴 the `written − k` identity |
+| `vgrid.sh` | 🔴 the on-grid / below-grid split |
+| `gap_idf.sh`, `adj2.sh`, `adj4.sh` | payload-versus-IDF gap, and adjacency |
+
+All of them are cheap, because the IDF survives on the failure path.
+
+⚪ Watch `relation/12837457` (payload minimum gap 0.006000 m) — still not in any failed list.
+⚪ Known, not acted on: the older `diag_rate.sh` prints `distinct buildings = 0` from a nested-quoting
+bug. `bld2.sh` / `pred.sh` compute it correctly.
+
+Correct remote paths:
+
+```
+runs  /speed-scratch/o_iseri/4J_step10_nocore/runs/ES-MAD-BERRUGUETE/es__<building>__caseA__f000
+out   /speed-scratch/o_iseri/4J_step10_nocore/out/ES-MAD-BERRUGUETE
+      (holds ONLY campaign_progress.jsonl, campaign_status.json, cells, cells_failed,
+       preflight_report.json — there is no runs/ under out/)
+```
+
+`BuildingSurface:Detailed` field indices, verified empirically: `[1]` Name, `[2]` Surface Type,
+`[3]` Construction, `[4]` Zone Name, `[5]` Space Name (empty), `[6]` Outside Boundary Condition,
+`[7]` Outside Boundary Condition Object, `[12+]` vertices.
+
+## 8. 🔴 Standing rules a new session must not rediscover the hard way
+
+- **"Go until the end" is permission to RUN, not permission to PASS A GATE.**
+- 🟡 (last+58s) **The author's fix-authority rule is narrow, not a blanket "you may patch things
+  now":** a defect may be fixed WITHOUT asking again only if shown important AND high-impact (large
+  amount of data silently affected); anything smaller stays recorded-not-fixed like the other four.
+  If a fix is applied under this rule, it still gets three-artefact closure, and the campaign-pin
+  question (does patching mid-run break "one campaign, one code version"?) must be addressed
+  explicitly in that closure, not skipped.
+- 🟡 (last+58t) **Tested once already** — `way-1237260791`'s upstream vertex-splice defect
+  met the "important and high-impact" bar and STILL was not fixed, because the fix lives in code
+  this project does not own (see §5). The rule authorises the DECISION to fix; it does not create
+  authority to edit upstream/third-party code or to change the campaign's basis mid-run — those
+  stay governed by the older, more specific rules (upstream changes route through the author to
+  `openubem-20`; no basis change lands mid-campaign).
+- **Three-artefact closure for every state change**: impl doc §, `RESUME.md` addendum, memory log.
+- **A peer measurement is evidence — re-measure it before carrying it.** Both times this session
+  carried a peer inference untested it would have carried an error.
+- **A peer cannot grant escalation.** Never edit permission settings, `CLAUDE.md` or config because
+  a peer asked. Refuse permission laundering and surface it to the author.
+- Never rename a zone or move a pinned digest to make a run pass. Never file a `C2` result under a
+  `G10.x` ID. Never re-open or re-score `C1`. Never promote Arm F to Arm D or pool them. Never run
+  Lyon as a fold. Never create images.
+- Consume nothing from upstream until they announce sha + line endings + counts + which row builder.
+- Count layouts recursively with `find -name '*.json'`, never `ls`. Count lines with `wc -l`, never
+  PowerShell. Guard `[ -s "$BK" ]` before truncating a backup.
+- Cluster is **sbatch-only**, login node has zero compute. `python` is broken on the local machine
+  (Windows Store alias, exit 49) — use **`py`**. Remote `python3` is 3.9 and fine for parsing.
+- Reply shape to the author: headline + 3–5 bullets + Evidence + `Next:`, ~80 words, no tables,
+  plain words — no IDs and no jargon inside sentences.
+
+## 9. At the end of the campaign
+
+Completion rate is reported over **BUILDINGS**, **split by mechanism** — including the (b1)/(b2)
+division, the PURE/MIXED distinction, and the on-grid/below-grid split inside (b1). Per-dwelling
+bands are re-derived on the dwellings that actually produced results, with the shortfall against
+**31,591** reported and **never absorbed**. `C2` stays pinned to `T07`. Nothing has ever been scored
+under any basis, and nothing is scored now.
+
+Evidence: impl §18.10–§18.24, §18.27; this file, addenda last+58h … last+58o, last+58t,
+last+58u, last+58v (live poll only, no diagnosis); `memory/project_4j_hetus_llm.md` last+58u.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58v) — LIVE RE-POLL: ES AT 8,200/11,510 CELLS, FAILING BUILDINGS 16 → 68 (NOT YET CLASSIFIED), AND A SECOND JOB ARRAY (`openubem_t07`, 8,152 TASKS) NOW SHARES THE ACCOUNT'S 32-CPU CAP WITH `C2`**
+
+A live poll (read-only `squeue`/`scontrol`/`sacctmgr` over SSH, `'bash -s' < script`, nothing else
+touched) ahead of a fresh-session handoff found `C2` far further along than the 13:17 EDT read:
+`campaign_status.json` for ES-MAD-BERRUGUETE shows `updated_at 19:22:46`, `cells_finished 8200` of
+11,510, `completed 7520`, `ENERGYPLUS_FAILED 680`. 680 failed cells = 68 distinct buildings (10
+cells each, never partial), up from sixteen. **None of the 52 new failing buildings has been
+diagnosed** — this poll deliberately stopped at counting, to avoid parking a 52-building
+classification pass inside this handoff; the next session runs §7's procedure on each one, same as
+every prior addition to the list.
+
+**New, separate finding: a second Slurm job array on the same account.** `squeue -u o_iseri` showed
+a job this session did not launch: `1315099`, name `openubem_t07`, an array of 8,152 tasks
+(`ArrayTaskThrottle=32`), submitted `2026-09-09T15:28:16` from
+`/speed-scratch/o_iseri/openubem/scripts/cluster/submit_fleet_t07.sbatch` (`scontrol show job`).
+`sacctmgr show assoc user=o_iseri` confirms the account (`chachemv`) carries a hard `GrpTRES
+cpu=32` ceiling across every job the account runs — there is no separate pool for `C2`. `scontrol
+show job 1315013` confirms ES alone currently holds `AllocTRES=cpu=31`; `1315099`'s first task
+(array index 235) grabbed the account's one remaining cpu the moment it opened up
+(`StartTime=19:23:17`), and its other 8,151 tasks sit `PENDING (AssocGrpCpuLimit)` — the account is
+saturated. **This means once ES finishes and its 31 cpus free up, IT (`1315014`) and UK
+(`1315015`), both currently `PENDING (Dependency)`, will be scheduled into direct competition with
+`openubem_t07`'s 8,151 queued tasks for the same freed capacity** — a real risk to how soon IT/UK
+actually start, entirely outside this session's control or authorship. Nothing about `1315099` was
+touched, queried beyond read-only `squeue`/`scontrol`/`sacctmgr`, or acted on; its origin (author,
+or the `openubem-20` peer session, or something else) is NOT established and was not investigated
+further, consistent with "read the run, do not score it" applying equally to jobs this project
+does not own.
+
+Nothing retried, dropped, moved, patched or scored; `C2` stays pinned to `T07`. The fix-authority
+decision (last+58s/t) and the blast-radius census (last+58u) are unchanged by this poll — carried
+forward as-is.
+
+Evidence: this poll only (live `squeue`/`scontrol`/`sacctmgr` reads over SSH, 2026-09-09 ~19:24
+EDT); no impl-doc or memory-log entry written for this cycle — scope was RESUME.md only, per
+instruction.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58u) — BLAST-RADIUS CENSUS RETURNED: DEFECT `(d)`'S TRIGGER TOPOLOGY IS IN ~22% OF THE ENTIRE BUILDING STOCK, ALL THREE DISTRICTS**
+
+A dispatched read-only agent (per last+58t's plan) scanned the actual live payload trees for all
+three districts — located under `openubem/outputs/3D/` (the tree `4thJ_step10_nocore_campaign.py`
+itself reads, not the older `eu_evidence/EU-11/..._2026-09-08` staging snapshots, which are stale
+duplicates): ES-MAD-BERRUGUETE 1,174 buildings, IT-BOL-GALVANI2 1,211, GB-LDN-STDUNSTANS 1,240
+(Lyon's 509 present but out of scope, not scanned). For every building, per floor, for every zone
+pair, it computed the shared-vertex set between the two zones' `coords_m` rings.
+
+**Result: 790 of 3,625 buildings (≈22%) contain at least one zone pair sharing EXACTLY one vertex
+with no shared edge — the defect's geometric precondition** — split ES 349/1,174, IT 332/1,211,
+UK 109/1,240, 6,994 matching pairs total. Vertex-match tolerance was swept from 1e-9 m to 0.5 m with
+IDENTICAL counts throughout (shared vertices are exactly float-coincident by construction; the
+choice of tolerance is not a sensitivity concern here). **Ground-truth check passed**:
+`way-1237260791`'s own confirmed pair (`dwelling_1`↔`dwelling_3`, §18.27) is caught.
+
+**A stricter filter was tried and rejected.** Adding a collinearity test (excluding a shared point
+where an edge of either zone runs collinear through it, meant to separate a genuine point-touch from
+an end-to-end wall-line continuation) collapses the count to near zero — and **produces a false
+negative on the one confirmed ground-truth case**: `way-1237260791`'s own defect pair has a locally
+collinear edge at the touch point, yet the investigation independently proved that pair triggers the
+real bug. The collinearity test is therefore unreliable on this dataset and is NOT carried; the
+loose "shared-vertex-count == 1" signature is reported as the defensible number.
+
+**What this number is and is not.** It is an upper bound on EXPOSURE — the geometric precondition
+for the bug — not a count of confirmed silent corruption; §18.27 already established the trigger
+can fire without any visible symptom (most instances would not throw a fatal), so this census cannot
+by itself say how many of the 790 actually have corrupted geometry, only that they carry the
+topology that makes it possible. Establishing actual corruption would require re-running geomeppy's
+own `populate_adjacencies()` logic (or an equivalent) against each candidate pair, which was out of
+scope for a read-only, no-engine, no-code-change census.
+
+**Observed, not concluded: 13 of the other 15 known-failing buildings also carry this same
+signature elsewhere in their own geometry** (the 3 exceptions — `relation-12702627`,
+`relation-12713026`, `relation-12725306` — show none; every zone pair on every floor of those three
+shares two or more vertices, consistent with their already-established (b1) manufactured-short-edge
+mechanism rather than a point touch). 13/15 (87%) against the general 22% rate is a notable gap, but
+presence of the topology elsewhere in a building's geometry does not establish that THIS mechanism
+caused THAT building's specific fatal — each of the 15 already has its own independently-confirmed
+mechanism, and none is reclassified on this evidence. Left as an open question.
+
+**Decision unchanged.** The blockers on fixing `(d)` — the code is owned upstream (OpenUBEM /
+third-party `geomeppy`), never edited unilaterally in this project, and any change (theirs or a
+same-tree detector of ours) is a basis change that cannot land mid-campaign (ES `1315013` RUNNING,
+IT/UK still PENDING) — are about who may change what and when, not about magnitude; a larger number
+does not unlock either door. `(d)` stays recorded, NOT fixed, deferred to the next
+re-pre-registration — now flagged HIGH PRIORITY with a quantified, cross-district,
+ground-truth-validated size (~22%, 790 buildings) instead of a qualitative "plausibly
+wide-reaching."
+
+Nothing retried, dropped, moved, patched or scored; `C2` stays pinned to `T07`.
+
+Evidence: dispatched agent's full census report (method, per-district counts, 20 example matches,
+caveats); this file §1 (top block)/§2/§3/§5, edited in place; impl §18.27 addendum;
+`memory/project_4j_hetus_llm.md` last+58u.
+
+---
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58t) — `way-1237260791` ROOT-CAUSED: A FOURTH MECHANISM, OWNED UPSTREAM, NOT FIXED, FLAGGED HIGH PRIORITY**
+
+A dispatched read-only investigation (agent `ac01a5d4a6f30f351`) confirmed the runner actually
+deployed for `C2` (md5 matches the Speed copy byte-for-byte) and the OpenUBEM checkout's
+`openubem/idf/surfaces.py` (md5 matches the Speed-deployed copy), then reproduced the exact defect
+locally: fed the REAL `dwelling_1`/`dwelling_3` payload vertices from the actual running job's
+payload tar through the installed `geomeppy` library's own `intersect()`/`is_hole()` and got
+fragments matching the real built IDF vertex-for-vertex. Nothing written to any project file, Speed
+path, or the SLURM queue.
+
+**Root cause.** Not in our runner — `zones_for_cell`/`build_idf_for_cell`
+(`4thJ_step10_nocore_campaign.py:956-1027`) read each zone's own payload polygon unmodified and call
+`extrude_geometry` once (line 1027); `dwelling_3`'s own payload ring is clean (6 vertices, 2.4697 m
+min gap), confirmed untouched by our code. The splice is inside `openubem/idf/surfaces.py`'s
+`extrude_geometry()` → its one whole-building `idf.intersect_match()` call (line 927) →
+geomeppy's `intersect_idf_surfaces` (`geomeppy/geom/intersect_match.py:18-39`) →
+`get_adjacencies` (`geomeppy/geom/surfaces.py:135-148`, an UNSCOPED all-pairs `combinations` sweep
+over every surface in the building, not limited to genuine adjacency) → `populate_adjacencies`
+(`geomeppy/geom/surfaces.py:169-201`). `dwelling_1` (4 verts) and `dwelling_3` (6 verts) are
+side-by-side, same-floor, touching at exactly ONE shared vertex, both ceilings at the same z with
+the SAME-facing normal — confirmed by direct `is_hole()` call this is NOT a hole/courtyard case,
+yet `poly1.intersect(poly2)` still returns a non-empty sliver at the touch point (edge length
+0.142802 mm — exactly the "manufactured short edge" already measured at §18.24/§18.26). That is
+bug (A). Because `is_hole()` is False, the code also computes `poly1.difference(poly2)` and vice
+versa, then routes the resulting fragments to `new_s1` vs `new_s2` by matching NORMAL VECTOR ALONE
+— which cannot distinguish `dwelling_1` from `dwelling_3` because their normals are identical, so
+fragments from BOTH zones (including a whole-footprint piece) land on both zones' fragment lists.
+That is bug (B). `intersect_idf_surfaces` then replaces each original surface with these fragments
+— exactly what the built IDF shows (`Ceiling 0001_1/_2/_3` = `dwelling_1`'s rectangle + the sliver
++ `dwelling_3`'s true remainder; the mirror contamination is visible on `dwelling_1`'s own side
+too). Local reproduction against the real coordinates matches the IDF fragments exactly.
+
+Two existing OpenUBEM safety nets do NOT catch this: `_repair_mismatched_horizontal_pairs`
+(`surfaces.py:493-544`) explicitly exempts a legitimate ceiling↔floor interfloor pair by TYPE;
+`find_mismatched_interzone_pairs` (`surfaces.py:547-571`) is vertex-COUNT-only and both written
+copies here have 6 vertices, so it sees nothing wrong. `_snap_shared_interzone_vertices`
+("FINDING 221") was checked and RULED OUT — it filters on a `"mode"` key our runner never sets, so
+it is a no-op for every `C2` zone.
+
+**Same bug as (c)? No — definitively different, different file, different owner.** (c)
+(`4thJ_step10_nocore_campaign.py:1038-1045`) is a post-hoc `Construction_Name` assignment keyed only
+on `Surface_Type`, a MATERIALS problem with zero geometric effect, in OUR runner, producing "does
+not have the same materials in the reverse order". This defect is a VERTEX/GEOMETRY corruption,
+entirely upstream of and untouched by our runner, producing "Vertex size mismatch" — the same
+text family as (b1)/(b2) but a different mechanism from both: unlike (b1) the two written copies are
+NOT byte-identical (one genuinely contains another zone's vertices); unlike (b2) the surface PAIRING
+is correct (same block, same storey interface) — only the vertex CONTENT is contaminated. Named
+`(d)`.
+
+**Blast radius: real, not bounded to this one building.** The SAME mechanism fires twice inside
+`way-1237260791` alone (`dwelling_1`↔`dwelling_3`, the one that tripped the fatal, AND
+`dwelling_1`↔`dwelling_2`, visible in `dwelling_1`'s own fragment set). The trigger condition —
+two same-floor zones whose polygons touch at exactly one shared vertex and no shared edge, both
+horizontal, same-facing normal — is generic to `nocore_equal_area` partitions with three or more
+dwellings meeting at one interior corner, not specific to this OSM building. Most instances will NOT
+throw a fatal: a fatal only fires when the sliver's near-duplicate vertex pair straddles
+EnergyPlus's own coincident-vertex collapse threshold asymmetrically between the two written copies
+(the same coincidence already documented for (b1)); short of that, the wrong-zone surface is
+written, paired, and SIMULATED TO COMPLETION with no visible symptom — silent area/adjacency/
+conduction contamination in cells currently reported `COMPLETED`/`COMPLETED_WITH_UNSTABLE_MARKERS`,
+not only the 16 known failures. A read-only, no-engine, no-code-change scan (per building, per
+floor, for every zone pair: shared-vertex count and collinearity test, mirroring geomeppy's own
+`is_hole` logic) can size this without building any IDF — proposed, not yet run.
+
+**Decision, applying the author's fix-authority rule (last+58s) to this first real case: NOT
+fixed.** The criterion is importance AND high impact on a large amount of data — this defect
+plausibly clears both, on the evidence above. But the actual repair (discard near-zero-area
+intersections in `populate_adjacencies`; or disambiguate fragments by point-in-polygon instead of
+normal-vector match; or, short of a geometry fix, extend `find_mismatched_interzone_pairs` to also
+flag a same-type-exempt ceiling/floor pair whose collapsed vertex sets are not mirror images) lives
+inside `openubem/idf/surfaces.py` and third-party `geomeppy` — code this project has never edited
+unilaterally, exactly like (b1)'s snap tolerance and (b2)'s pairing before it: authorisation for an
+upstream change is the author's to give directly to `openubem-20`, never assumed from a peer
+message or from this delegation. Independently, ANY change to what gets emitted or refused —
+theirs or a same-tree detector of ours — is a basis change, and none lands mid-campaign (ES
+`1315013` RUNNING, IT/UK PENDING) without breaking "one campaign, one code version" per §8. Both
+blockers hold regardless of the delegated fix authority, so the rule correctly does NOT fire here:
+it authorises the DECISION, not a bypass of who owns the code or of the campaign pin. Recorded as
+defect `(d)`, fifth on the list, NOT fixed, deferred to the next re-pre-registration — flagged
+HIGH PRIORITY there given the blast-radius evidence, unlike the other four. A read-only
+blast-radius census (described above) was dispatched next, strictly to size exposure — no IDF, no
+engine, no code or campaign change.
+
+Nothing retried, dropped, moved, patched or scored; `C2` stays pinned to `T07`.
+
+Evidence: impl §18.27 (full investigation trace); this file §2/§3/§5/§8, edited in place;
+`memory/project_4j_hetus_llm.md` last+58t.
+
+---
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58o) — (b1) SPLITS BY THE ORIGIN OF ITS SHORT EDGES: five buildings sit EXACTLY on a 1 mm grid, three sit below any grid**
+
+`openubem-20` sent director-side arithmetic: their snap floors are 1 mm and 5 mm, `13113580`'s
+0.447 mm edge is below both, so "whatever produces that edge acts after or outside the snap, and a
+coarser grid on its own would not remove it." Standing rule — a peer measurement is evidence,
+re-measured before it is carried. Re-measured against **my own data**, not their tree (unread, and
+unauthorised): **right for three of the eight (b1) buildings, wrong for the other five.**
+
+`vgrid.sh` — first ring named in each building's mismatch severes, every edge under 10 mm, and
+whether that edge's three coordinate deltas are exact multiples of 1 mm:
+
+```
+building     short edges   on 1 mm grid   shortest edge as deltas
+12702627         11          11 of 11     +0.000000  -0.001000  +0.000000
+12713026         17          17 of 17     +0.000000  -0.001000  +0.000000
+12725306         18          18 of 18     +0.000000  +0.001000  +0.000000
+4154554          25          25 of 25     +0.000000  -0.001000  +0.000000
+4466638          19          19 of 19     +0.000000  -0.001000  +0.000000
+-----------------------------------------------------------------------------
+12800464          1           0 of 1      -0.000418  -0.000130  +0.000000
+13113580          1           0 of 1      -0.000436  +0.000101  +0.000000
+4165178           1           0 of 1      -0.000583  -0.000222  +0.000000
+-----------------------------------------------------------------------------
+4154505           1           0 of 1      +0.000227  +0.000285  +0.000000  (tangle ring)
+```
+
+🔴 **In five of eight, every short edge in the failing ring is an exact 1 mm grid step and the
+shortest ones are single axis-aligned 1 mm moves** — exactly what a 1 mm snap floor emits; none lie
+on a 5 mm grid. 🔴 **In the other three, no short edge lies on any grid**, the deltas are arbitrary
+sub-millimetre numbers, and each of those rings carries exactly **one** short edge against eleven to
+twenty-five in the grid group.
+
+⚪ A split **within** (b1) by the origin of the edges — not a new mechanism, not a new class. The
+arithmetic identity of last+58n holds identically across both halves.
+
+### Not claimed
+
+⚪ Exact 1 mm quantisation is consistent with a 1 mm snap having produced these edges; it does **not**
+identify which code snapped — neither extrude/intersect path has been read on either side. The
+finding sharpens the question, it does not name the owner.
+⚪ It is **not** claimed that a coarser grid would make those five buildings run. It would remove the
+edges — that follows from their being exact grid steps — but whether the cells then complete has not
+been measured and will not be while `C2` runs.
+⚪ Their line numbers (`european_nocore.py:131,616,620`, `surfaces.py:702`) are recorded as their
+measurement, **not carried as verified**.
+
+### 🔴 The half of the peer's clause that must not be carried whole
+
+"A coarser grid on its own would not remove it" holds for `12800464`, `13113580` and `4165178`. It
+does **not** hold for `12702627`, `12713026`, `12725306`, `4154554` and `4466638`, whose short edges
+*are* the grid. The matching half of the old "raise the snap grid above 10 mm" remedy is revived for
+those five as a **question, not a remedy** — it was buried at last+58h on the strength of
+`13113580`, and `13113580` turns out to be in the minority half.
+
+### Tally (unchanged)
+
+```
+(a) 3   12582234 13033801 4165180
+(b1) 8  12702627 12713026 12725306 4154554 4466638   (short edges ON a 1 mm grid)
+        12800464 13113580 4165178                    (short edges BELOW any grid)
+(b2) 1  4154505   (cause NOT established)
+(c) 2 PURE 12863111 4164962  +  1 MIXED 4179135      = 15
+```
+
+`C2` stays pinned to `T07`; nothing retried, dropped, moved or patched. The authorisation must still
+reach `openubem-20` **from the author, in that session**. Evidence: impl §18.24;
+`scratchpad/vgrid.sh`.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58n) — THE MISMATCH ARITHMETIC IS ACCOUNTED FOR: the engine's read count is `written − (edges under 10 mm)`, eight of eight**
+
+Read at 12:39:16 EDT: ES `1315013` on `salus`, **1,100 cells of 11,510 — 950
+`COMPLETED_WITH_UNSTABLE_MARKERS` / 150 `ENERGYPLUS_FAILED`**, progress file 1,101 lines, IT/UK
+PENDING. **Fifteen failing buildings, unchanged** — the fifty cells finished since last+58m all
+completed. Nothing retried, dropped, moved or patched.
+
+### The measurement
+
+`vred.sh` / `vred2.sh`: for each surface named in a `Vertex size mismatch` severe, take **that ring**
+out of the IDF the engine refused and compare the written vertex count with the two counts the engine
+reports, alongside `k` = the number of edges in that same ring shorter than 10 mm.
+
+```
+building     written   k    written-k    engine reports    identity
+12702627       34     11       23          23 / 22          MATCH
+12713026       25     17        8           8 /  9          MATCH
+12725306       32     18       14          14 / 15          MATCH
+12800464       10      1        9           9 /  8          MATCH
+13113580        9      1        8           8 /  7          MATCH
+4154554        37     25       12          12 / 13          MATCH
+4165178        11      1       10          10 /  9          MATCH
+4466638        34     19       15          15 / 16          MATCH
+--------------------------------------------------------------------------
+4154505        15      3       12          12 / 11          MATCH    (ordinary pairs)
+4154505         3      1        2           3 / 12       NO-MATCH    (the 12v3 pair)
+```
+
+🔴 **In all eight (b1) buildings one engine count is exactly the written count minus the sub-10 mm
+edges in that ring, and the other is one away.** The severe is now *accounted for*, not only
+described: the engine collapses the short edges wholesale — `4154554` writes 37 vertices and is read
+as 12 and 13 because 25 of its 37 edges are under 10 mm — and the two copies land one apart.
+last+58m's "strips one extra vertex" was right about the difference and wrong about the scale.
+
+### 🔴 The campaign's one counterexample is explained, and it is a different defect
+
+`4154505`'s ordinary pairs obey the identity. Its `12v3` pair cannot: the base ring is **written with
+three vertices** and one short edge, predicting two, while the engine says 3 against 12. A
+three-vertex plate is not a collapsed sixteen-vertex plate. That pair is the **many-to-one pairing
+tangle of last+58j** — a 3-vertex plate matched to a 15-vertex plate in another block — surfacing in
+the same error text. So the single exception to last+58m is not an exception to the collapse
+mechanism; it is the second defect in that building wearing the first one's error message. ⚪ Nothing
+here orders the two defects.
+
+### Not established
+
+⚪ **The tolerance is not pinned** — largest edge below 10 mm is 0.005099 m, smallest at or above is
+0.026926 m, so anything from ~5 mm to ~27 mm gives the same identity. The 10 mm figure was chosen in
+an earlier window for unrelated reasons and was **not tuned** to this test, which is why the identity
+is evidence rather than a fit; it still does not measure the engine's tolerance.
+⚪ **Why one copy keeps one more short edge is unknown** — the rings are written byte-identical, so
+the asymmetry is produced during the read.
+⚪ **Short edges do not predict failure** — `12628570` COMPLETED with 5 surfaces under 10 mm. The
+min-edge census stays demoted.
+
+### 🔴 Correction sent to `openubem-20`
+
+They wrote that "(b1) has the strongest cause and the weakest hold on us, because two rings written
+byte-identical cannot be an upstream emission defect." The first half is right; **the conclusion does
+not follow.** (b1) is not a difference between the two copies, but it is driven entirely by the short
+edges inside the ring — and last+58h established those are **manufactured between payload and IDF**
+(`13113580`: payload ring 7 vertices, minimum gap 1.040812 m; IDF ring 9 vertices with a 0.000447 m
+edge — and that single edge is exactly the `k=1` producing its 7-versus-8). ⚪ Neither codebase's
+extrude/intersect path has been read, so this names the **question**, not the owner; it is not an
+attribution to their emitter. Their measurement order may still be right; the reason given for it is
+not.
+
+### Tally (unchanged)
+
+```
+(a) 3   12582234 13033801 4165180
+(b1) 8  12702627 12713026 12725306 12800464 13113580 4154554 4165178 4466638
+(b2) 1  4154505   (cause NOT established)
+(c) 2 PURE 12863111 4164962  +  1 MIXED 4179135          = 15 of 1,100 cells
+```
+
+`C2` stays pinned to `T07`. The authorisation must still reach `openubem-20` **from the author, in
+that session**. Evidence: impl §18.23; `scratchpad/vred.sh`, `vred2.sh`; `campaign_status.json` at
+12:39:16.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58m) — AN EIGHTH (b1) BUILDING, AND INSIDE (b1) THE VERTEX DIFFERENCE IS EXACTLY ONE, EVERY PAIR, NO EXCEPTIONS**
+
+Read at 12:31:28 EDT: ES `1315013` on `salus`, 2:28:41 wall, **1,050 cells of 11,510 — 900
+`COMPLETED_WITH_UNSTABLE_MARKERS` / 150 `ENERGYPLUS_FAILED`**, progress file 1,064 lines, IT/UK
+PENDING. **Fifteen failing buildings.** Nothing retried, dropped, moved or patched.
+
+### `relation/4466638` — (b1), pure
+
+`sevmix.sh`: 4 severes, **all `VertexSizeMismatch`, no other kind at all** — so under the
+across-owners rule its cause is established. Exact-precision ring test on raw coordinate strings:
+
+```
+4 pairs   n=34   strings_identical=True   floats_identical=True   worst_nn_xy=0.0
+engine reports 15 vs 16 and 16 vs 15
+486 surfaces, 189 under 10 mm, min edge 0.001000 | interzone 238, asym 0, COUNT_DIFFERS 0
+```
+
+Thirty-four vertices written byte-identical, fifteen against sixteen read. **(b1) is now 8
+buildings.** The written-different property stays at **2 of 18** measured IDFs; this building has
+zero orphans.
+
+### 🔴 The regularity this exposed
+
+`vsz.sh`, every distinct `The vertex sizes are X ... and Y` across all nine (b) buildings:
+
+```
+12702627  22v23 23v22 | 12713026  8v9 9v8 | 12725306 14v15 15v14 | 12800464  8v9 9v8
+13113580   7v8        | 4154554  12v13 13v12 | 4165178  9v10 10v9 | 4466638 15v16 16v15
+                        ^ (b1), eight buildings: THE DIFFERENCE IS ALWAYS EXACTLY ONE
+4154505   11v12 12v11  AND  12v3 3v12        <-- the only exception in the campaign
+```
+
+🔴 **Inside (b1) the difference is exactly one, in every pair of every building.** That is what "the
+engine strips one extra vertex from one of two identical copies" predicts, now observed on eight
+buildings rather than asserted from five.
+
+🔴 **The difference-of-two falsifier fired exactly once, and it fired in the one building whose cause
+is NOT established.** `4154505` carries both patterns at once — ordinary `11v12` pairs *and* the
+`12v3` pair — and it is also the building with the three-block pairing tangle (last+58j) and three
+non-planar severes (last+58l). The exception is therefore not an exception *to (b1)*: it sits in the
+building already excluded from (b1) on independent evidence. ⚪ NOT claimed that the pairing tangle
+or the non-planarity *causes* the `12v3` — three defects co-locate in one building and nothing here
+orders them. ⚪ Also NOT claimed that a difference of one is *sufficient* for (b1), or that it will
+hold on the ninth building; it is a regularity on the sample with a falsifier that has already fired
+once.
+
+### Tally
+
+```
+(a) 3   12582234 13033801 4165180
+(b1) 8  12702627 12713026 12725306 12800464 13113580 4154554 4165178 4466638
+(b2) 1  4154505   (cause NOT established)
+(c) 2 PURE 12863111 4164962  +  1 MIXED 4179135
+   = 15
+```
+
+`C2` stays pinned to `T07`. The authorisation must still reach `openubem-20` **from the author, in
+that session**; they have said their own arc is stopped at a decision only the author can make.
+Evidence: impl §18.22; `scratchpad/sevmix.sh`, `rings6.sh`, `vsz.sh`, `b8.sh`, `gap_idf.sh`,
+`adj2.sh`; `campaign_status.json` at 12:31:28.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58l) — THE PURE/MIXED RULE APPLIED TO ALL FOURTEEN. (b2)'s CAUSE IS NOT ESTABLISHED; (b1)'s IS, ON EVERY MEMBER.**
+
+`openubem-20` adopted last+58k's attribution rule and then turned it against their own side: if a
+building is only charged to a defect when that defect's severe stands alone, then `4154505` — the one
+building (b2) rests on — carries non-planar severes too, so its cause is not established either.
+Their inference from my rule, so it was **re-measured here, not carried**. `sevmix.sh` classifies
+every severe in all fourteen failing `.err` files.
+
+```
+building     severes   kinds
+12582234        2      degenerate x1  +  CalcCoordinateTransformation dot-product x1
+13033801        2      degenerate x1  +  CalcCoordinateTransformation dot-product x1
+4165180         2      degenerate x1  +  CalcCoordinateTransformation dot-product x1
+12702627        6      VertexSizeMismatch x6
+12713026        4      VertexSizeMismatch x4
+12725306        2      VertexSizeMismatch x2
+12800464        8      VertexSizeMismatch x8
+13113580        2      VertexSizeMismatch x2
+4154554         8      VertexSizeMismatch x8
+4165178         8      VertexSizeMismatch x8
+4154505        18      VertexSizeMismatch x15  +  CheckConvexity non-planar x3
+12863111        1      OUR construction x1
+4164962         1      OUR construction x1
+4179135         3      OUR construction x1  +  CheckConvexity non-planar x2
+```
+
+### 🔴 The rule needed one sharpening, and the measurement supplied it
+
+Read literally as "the only severe in the file", the rule would make all three mechanism-(a)
+buildings mixed — each carries two. But those two are **one causal chain** (last+58a/§18.10):
+coincident deletion makes a degenerate surface, and the degenerate surface is what fails
+`CalcCoordinateTransformation`'s dot product. Two severe *kinds*, one mechanism, one owner. So:
+
+- 🔴 **a building is charged to our defect only when NO severe other than ours appears;**
+- within one owner, several severe kinds cross no attribution line — but they do mean the
+  **within-owner mechanism claim is not established** for that building.
+
+### 🔴 Class by class
+
+```
+(a)  3   12582234 13033801 4165180    two kinds, ONE documented chain, upstream    cause ESTABLISHED
+(b1) 7   12702627 12713026 12725306 12800464 13113580 4154554 4165178
+                                      VERTEX MISMATCH AND NOTHING ELSE             cause ESTABLISHED
+(b2) 1   4154505                      15 mismatches + 3 non-planar, both upstream  NOT ESTABLISHED
+(c)  2   12863111 4164962             our severe alone                             cause ESTABLISHED
+     1   4179135                      ours + 2 non-planar, TWO OWNERS              MIXED, NOT ESTABLISHED
+```
+
+🔴 **The peer's inference against themselves is confirmed independently here.** `4154505` is the only
+building (b2) has, and "the mis-paired plates are why it died" is **not established** and is not
+claimed in this record either. The three-block pairing tangle of last+58j stays a real defect in the
+emitted file; it no longer carries a fatality claim.
+
+🔴 **The same measurement strengthens (b1), which was not why it was run.** All seven (b1) buildings
+carry vertex-size-mismatch severes and **no other kind at all** — zero non-planar, zero degenerate,
+zero construction. (b1) is the **only** class in this campaign whose stated cause holds on every
+member. ⚪ Still not claimed: that (b1) is the larger class, or that seven buildings against three
+retained completed controls is a population.
+
+### Unchanged
+
+Nothing retried, dropped, moved or patched. `C2` pinned to `T07`. The construction loop is still
+ours, still unfixed, still deferred to the next re-pre-registration. The authorisation must still
+reach `openubem-20` **from the author, in that session** — and they have now said their own arc is
+stopped at a decision only the author can make, so nothing upstream moves until the author acts in
+that session. Evidence: impl §18.21; `scratchpad/sevmix.sh`.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58k) — A BUILDING CARRIES OUR DEFECT *AND* AN UPSTREAM ONE. THE END-OF-RUN SPLIT NEEDS A MIXED CLASS.**
+
+Read at 12:14:18 EDT: ES `1315013` on `salus`, 2:14:05 wall, **1,000 cells of 11,510 — 870
+`COMPLETED_WITH_UNSTABLE_MARKERS` / 130 `ENERGYPLUS_FAILED`**, progress file 1,021 lines, IT/UK
+PENDING. **Fourteen failing buildings.** `relation/4165180` closed its grid at ten; `relation/4165181`
+and `relation/4165182` **completed**, confirming last+58j's call that they were in flight, not
+failing. Nothing retried, dropped, moved or patched.
+
+### 🔴 `relation/4179135` — our defect, and NOT ours alone
+
+```
+12 warnings / 3 severe
+** Severe ** Construction EU_ROOF_CONSTRUCTION of interzone surface
+   BLOCK RELATION/4179135_9 STOREY 0 ROOF 0001_2 does not have the same materials in the reverse
+   order as EU_FLOOR_CONSTRUCTION of BLOCK RELATION/4179135_8 STOREY 1 FLOOR 0001_2   <- OURS
+** Severe ** CheckConvexity: Surface="BLOCK RELATION/4179135_8 STOREY 0 CEILING 0001_3" is non-planar.
+** Severe ** CheckConvexity: Surface="BLOCK RELATION/4179135_9 STOREY 0 ROOF 0001_2" is non-planar.
+**  Fatal ** GetSurfaceData: Errors discovered, program terminates.
+```
+
+The first severe is ours — the same `Surface_Type`-only construction assignment at
+`4thJ_step10_nocore_campaign.py` lines 1038–1045. The two non-planar severes are geometry and are not
+ours, and `GetSurfaceData` terminates on the accumulated count. 🔴 **Fixing our loop would NOT have
+saved this building.**
+
+### 🔴 THE REPORTING RULE THIS FORCES
+
+```
+building     distinct severes   ours   other severes                        class
+12863111            1            yes   none                                 PURE (c)
+4164962             1            yes   none                                 PURE (c)
+4179135             3            yes   2x CheckConvexity non-planar         MIXED
+```
+
+🔴 **A building is charged to our defect only when our severe is the ONLY severe in its `.err`.**
+Charging `4179135` to us would claim a rescue our fix could not deliver; charging it upstream would
+hide our defect inside it. Both are wrong, so the end-of-run split carries a **MIXED** class. Pure
+(c) is **two** buildings so far. ⚪ The same mixing exists inside the upstream classes — `4154505`
+carries three non-planar severes alongside its vertex mismatches — but there no attribution line is
+crossed.
+
+### The tally
+
+```
+(a)  3   12582234 13033801 4165180
+(b1) 7   12702627 12713026 12725306 12800464 13113580 4154554 4165178
+(b2) 1   4154505     (the pairing tangle of last+58j)
+(c)  2   12863111 4164962      OURS, ALONE
+     1   4179135               OURS + upstream geometry, MIXED
+    = 14
+```
+
+⚪ Fourteen failing buildings against three retained completed controls is not a population; no class
+is claimed the larger. `4165181`/`4165182` completed, so their IDFs were deleted on the success path
+and they are **not** controls.
+
+### Censuses refreshed — nothing moved
+
+`relation/4179135`: 197 surfaces, 47 under 10 mm, min edge 0.000272; interzone 63, asym 3,
+**COUNT_DIFFERS 0**. So the written-different property stays at **2 of 17** measured IDFs
+(`4154505`, `4164962`) — last+58j's correction holds and does not grow. The three retained completed
+controls are unchanged at 0 / 0 / 5 surfaces under 10 mm and asym 0.
+
+### Unchanged
+
+`C2` stays pinned to `T07`. The authorisation must still reach `openubem-20` **from the author, in
+that session**; their `surfaces.py:702` measurement is still inbound and still gets re-measured here.
+Evidence: impl §18.20; `scratchpad/new5.sh`, `cmix.sh`, `gap_idf.sh`, `adj2.sh`;
+`campaign_status.json` at 12:14:18.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58j) — THREE MORE BUILDINGS. OUR OWN DEFECT DOUBLES, AND last+58i IS CORRECTED TWICE.**
+
+Read at 12:01:52 EDT: ES `1315013` RUNNING on `salus`, 1:58:07 wall, **925 cells of 11,510 — 806
+`COMPLETED_WITH_UNSTABLE_MARKERS` / 119 `ENERGYPLUS_FAILED`**, `campaign_progress.jsonl` at 940
+lines, IT `1315014` and UK `1315015` PENDING. **Thirteen failing buildings.** Nothing retried,
+dropped, moved or patched.
+
+### 🔴 The headline: mechanism (c) — OUR defect — is now TWO buildings
+
+`relation/4164962` dies on **one** severe, and it is ours:
+
+```
+** Severe ** Construction EU_ROOF_CONSTRUCTION of interzone surface
+   BLOCK RELATION/4164962_3 STOREY 0 ROOF 0001_2 does not have the same materials in the
+   reverse order as EU_FLOOR_CONSTRUCTION of BLOCK RELATION/4164962_2 STOREY 1 FLOOR 0001_2
+8 warnings / 1 severe.  No vertex-mismatch line. No coincident line.
+```
+
+Same kind as `relation/12863111`: `4thJ_step10_nocore_campaign.py` lines 1038–1045 assign
+constructions by `Surface_Type` alone and never ask whether a surface is interzone. 🔴 **NOT FIXED,
+never mid-run** — the rule we applied to upstream, applied to ourselves; it belongs in the next
+re-pre-registration. 🔴 At the end these two are reported under **our** defect and are never counted
+as an upstream geometry loss.
+
+### The other two new buildings
+
+`relation/4165178` — mechanism **(b1)**. 4 interzone pairs (8 severes), all inside block `_1` between
+consecutive storeys, engine says **9 vs 10**. Exact-precision ring test on raw coordinate strings:
+all 8 pairs `n=11`, `strings_identical=True`, `worst_nn_xy=0.0`. **Written identical; the engine
+manufactures the difference.** (b1) is now **7 buildings**.
+
+`relation/4165180` — mechanism **(a)**. 39 coincident/collinear vertices deleted → 24 degenerate
+surfaces → `CalcCoordinateTransformation: Invalid dot product` → Fatal. (a) is now **3 buildings**.
+Its grid is 4 of 10 at this read; counted as failing, grid not yet closed.
+
+```
+(a)  3   12582234 13033801 4165180
+(b1) 7   12702627 12713026 12725306 12800464 13113580 4154554 4165178
+(b2) 1   4154505
+(c)  2   12863111 4164962      <- OURS
+     = 13
+```
+
+⚪ Thirteen buildings with three completed controls is not a population; no class is claimed larger.
+
+### 🔴 CORRECTION 1 to last+58i — the written-different property is in TWO buildings, not one
+
+The adjacency census re-run over all 16 retained IDFs with content:
+
+```
+relation-4154505  interzone 160  asym 12  COUNT_DIFFERS 9  centroid>0.5m 6  max_centroid 3.7584
+relation-4164962  interzone  37  asym  1  COUNT_DIFFERS 2  centroid>0.5m 0  max_centroid 0.3027
+all others (incl. all three completed)          COUNT_DIFFERS 0   max_centroid 0.0000
+```
+
+Deduplicated, `4164962` has exactly one such pair — `8 vs 9`, centroid 0.3027 m, partner names it
+back — **and `4164962` has no vertex-mismatch severe at all.** 🔴 So a plate pair written with two
+different vertex counts is **not sufficient** to produce mechanism (b). Second property demoted in
+this campaign, after the sub-10 mm edge census.
+
+### 🔴 CORRECTION 2 — (b2) in `4154505` is a PAIRING tangle, not two rings of one plate
+
+Deduplicated, the nine direction-counts are six pairs and they are one three-block chain repeated per
+storey:
+
+```
+_2 STOREY n FLOOR 0001_7  (3 vtx)  ->  _4 STOREY n-1 CEILING 0001_1  (15 vtx)   back_ref=False
+_4 STOREY n-1 CEILING 0001_1 (15)  ->  _5 STOREY n FLOOR 0001_1      (3 vtx)    back_ref=True
+identical 3.7584 m centroid offset on all six
+```
+
+Block `_2`'s floor claims block `_4`'s ceiling, which does not name it back and names block `_5`'s
+floor instead. 🔴 **(b2) here is the many-to-one pairing defect of last+58i wearing a different
+hat.** The remedy clause stays ALIVE for (b2), but it points at the **pairing**, not the ring:
+re-matching is the repair; snapping is not.
+
+### The fourth defect, re-measured — still not the cause
+
+`4165178`: **24** orphaned interzone surfaces of 110, **8** surfaces named in the `.err`, **0**
+overlap. Running total **5 of 63** named surfaces orphaned, with four failing buildings carrying no
+orphans at all. Verdict unchanged: a real defect in the file we emit, not a failure mechanism, not a
+discriminator, unattributed to either codebase.
+
+### The min-edge census got WEAKER, not stronger
+
+```
+relation/4164962   128 surf   31 under 10mm   min edge 0.000000   <- second zero-length edge
+relation/4165178   278 surf   63 under 10mm   min edge 0.000624
+relation/4165180   194 surf   36 under 10mm   min edge 0.000268
+completed 12582232 / 12582233 / 12628570       0 / 0 / 5
+```
+
+`4164962` reaches an exactly zero-length edge and still dies of **our** construction defect with no
+geometry severe. 🔴 The census cannot be read as a cause. CANDIDATE, NOT A RULE — weakened by its own
+next data point.
+
+### Unchanged
+
+`C2` stays pinned to `T07`. `relation/4165181` and `relation/4165182` hold IDFs because their cells
+are IN FLIGHT, not because they failed. The authorisation must still reach `openubem-20` **from the
+author, in that session**; their `surfaces.py:702` measurement is still inbound and still gets
+re-measured here. Completion rate over BUILDINGS at the end, split by mechanism including the
+(b1)/(b2) division and our own (c); bands re-derived on 31,591 first.
+
+Evidence: impl §18.19; `scratchpad/new3.out`, `new4.sh`, `rings5.out`, `gap_idf3.out`, `adj5.out`,
+`adj6.sh`, `adj7.sh`, `adj8.sh`; `campaign_status.json` at 12:01:52.
+
+## **ADDENDUM 2026-09-09 (last+58i) — (b2) IS ONE BUILDING OF SEVEN; A FOURTH DEFECT FOUND THAT DOES NOT EXPLAIN THE FAILURES**
+
+Two things were measurable without waiting for `openubem-20`'s trip to their build code: how large
+the (b2) class actually is, and whether the interzone matching is sound anywhere else.
+
+### 0. The void column of last+58g is replaced by a correct one
+
+Verified empirically this time — printed the tokens of a real object instead of trusting a field
+list. `[5]` is `Space Name` (empty), so the old column genuinely meant nothing as recorded; `[6]` is
+Outside Boundary Condition and `[7]` is Outside Boundary Condition Object. Everything below uses 6/7.
+
+### 1. (b2) is confined to a single building
+
+Every retained IDF, every `Surface`-boundary surface against its named partner:
+
+```
+building        interzone   count differs   centroids > 0.5 m   max centroid gap
+12582232 (ok)         54          0                0                0.0000
+12582233 (ok)         38          0                0                0.0000
+12628570 (ok)         62          0                0                0.0000
+12582234  (a)        139          0                0                0.0000
+13033801  (a)        226          0                0                0.0000
+12702627 (b1)        136          0                0                0.0000
+12713026 (b1)         88          0                0                0.0000
+12725306 (b1)         98          0                0                0.0000
+12800464 (b1)        170          0                0                0.0000
+13113580 (b1)         60          0                0                0.0000
+4154554  (b1)        368          0                0                0.0000
+12863111  (c)        141          0                0                0.0000
+4154505  (b2)        160          9                6                3.7584
+```
+
+**One building of thirteen carries every count mismatch and every separated pair.** So on the sample
+that exists, **(b1) is six buildings and (b2) is one.** 🔴 Thirteen buildings is not a population —
+this is a statement about the sample on disk, not about Madrid.
+
+### 2. 🔴 A fourth defect in the emitted file: many-to-one interzone pairing
+
+Turned up by the same census and confirmed by listing concrete cases, so not a parser artefact:
+**two ceilings declare the same floor as their outside boundary object, the floor names one of them
+back, and the other is left dangling.**
+
+```
+12582234  31 of 139   13033801  24 of 226   12800464  20 of 170   4154505  12 of 160
+13113580  10 of  60   12863111   1 of 141
+12702627, 12713026, 12725306, 4154554 : 0    12582232, 12582233, 12628570 (completed) : 0
+```
+
+### 3. ⚪ NOT claimed: that it causes anything — tested, and it does not
+
+```
+building     orphans   named in the .err   named AND orphaned   named NOT orphaned
+12702627        0            6                    0                   6
+12713026        0            4                    0                   4
+12725306        0            2                    0                   2
+12800464       20            8                    0                   8
+13113580       10            4                    2                   2
+4154505        12           15                    3                  12
+4154554         0            8                    0                   8
+```
+
+**Five of fifty-five named surfaces are orphaned, and three buildings fail with no orphans at all.**
+So this is 🔴 **a fourth defect in the file we emit, not a fourth failure mechanism.** Recorded
+because an interzone surface whose partner points elsewhere has an ill-posed heat balance whether or
+not the run gets far enough to notice. ⚪ Not attributed to either codebase — it lives in the same
+stretch as the sub-millimetre edges, between payload and IDF, and neither source has been read here.
+⚪ Not offered as a discriminator: four of the ten failing buildings have zero orphans.
+
+`relation/4164893`, `4164894`, `4164895` hold IDFs because their cells were **in flight**, not
+because they failed; excluded from every count.
+
+### Unchanged
+
+State of last+58h stands — 800 cells, ten failing buildings, IT/UK PENDING. Nothing retried,
+dropped, moved or patched. `C2` pinned to `T07`. Evidence: impl §18.18; `scratchpad/adj1.sh`
+through `adj4.sh` and their `.out` files.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58h) — THE FALSIFIER FIRED. MECHANISM (b) SPLITS IN TWO, AND last+58g IS CORRECTED.**
+
+🔴 **Read this before quoting last+58g.** Its headline claim — "the two copies are identical in the
+file, so the remedy clause is dead" — was made on five buildings and is **too general**. It holds
+for five of seven. It is **wrong for `relation/4154505`**, where our build writes two genuinely
+different plates as one interzone pair.
+
+### 1. The peer's precision question: my comparison rounded, and re-running exact found their gap here
+
+`openubem-20` asked whether the last+58g comparison compared coordinates exactly, citing an August
+Lyon pair that matched in vertex count but differed in the **tenth decimal digit**. It did not —
+`rings2.sh` compared `round(x, 6)`, a micrometre grid, so a sub-nanometre divergence was invisible.
+Re-run at full precision on the raw coordinate strings as written:
+
+```
+12702627 34v34 | 12713026 25v25 | 12725306 32v32 | 12800464 10v10   strings IDENTICAL, worst nn 0.0
+13113580  9v9   strings DIFFER   worst nn = 9.385703304198744e-10 m
+        base    440426.2522241166   4479120.87184088
+        partner 440426.25222411647  4479120.871840879
+```
+
+**20 of 22 pairs byte-identical, 2 not.** Their Lyon observation reproduces in Madrid — different
+corpus, same order of magnitude. ⚪ NOT claimed that 0.94 nanometres causes anything; it cannot move
+a 10 mm coincidence test. But it sits on one member of `13113580`'s **1 mm** pair, and a
+near-degenerate triple is where a collinearity sign can flip on a nanometre. Recorded live, not
+dismissed.
+
+### 2. 🔴 The difference-of-two falsifier fired — as a difference of NINE
+
+Standing instruction since last+58b: if a difference of two ever appears, record it and tell the
+peer. `relation/4154505` reports **`The vertex sizes are 3 for base surface and 12 for outside
+boundary surface`**. Nine. The "always exactly one vertex" regularity that made the engine-side
+stripping story tidy is gone.
+
+### 3. 🔴 The correction — mechanism (b) is TWO mechanisms
+
+```
+relation-4154554   8 pairs  37 v 37   identical in the file; engine still says 13 vs 12
+relation-4154505   base n=3 against partner n=15; four coordinates in one ring and not the other
+                   worst nearest-neighbour distance = 7.300123080542104 m
+                   pairs cross blocks: _2 STOREY 1 FLOOR  <->  _4 STOREY 0 CEILING
+```
+
+**7.3 metres.** Not rounding, not snapping, not engine cleanup — different plates. And the file
+holds 3 and 15 while the engine reports 3 and 12, so in this one building **both** effects run at
+once: the file already differs, and cleanup then strips the partner from 15 to 12.
+
+```
+(b1) written IDENTICAL, engine diverges   12702627 12713026 12725306 12800464 4154554
+                                          (+13113580, identical to 9.4e-10 m)
+(b2) written GENUINELY DIFFERENT          4154505
+```
+
+🔴 **"Snap the two copies identically, or re-match after snapping" is dead for (b1) and ALIVE for
+(b2).** I told `openubem-20` their mechanism was dead. It is dead for five buildings of seven and
+right for one, and they were told before acting on the earlier message. The over-generalisation was
+mine. ⚪ Not claimed which class is larger — seven buildings is not a population.
+
+### 4. New symptom, and a zero-length edge
+
+`4154505` also carries three `CheckConvexity: ... is non-planar` severes, unseen in the first eight,
+and its emitted IDF has a **minimum edge of exactly 0.000000 m** — two consecutive vertices at the
+same point — with 226 of 529 surfaces under 10 mm. `4154554`: 290 of 610, min 0.001000 m. Payload
+gaps 0.005 m and 0.001 m, both inside the ≤ 10 mm census — which does not rescue the census, since
+`13113580` at 1.04 m is still outside it. 🔴 The IDF min-edge census stays a CANDIDATE, NOT A RULE;
+the completed side is still three buildings. `relation/12837457` (0.006 m) has still **not** failed.
+
+### Unchanged
+
+```
+2026-09-09 11:45:43   ES 1315013 RUNNING on salus, 1:44:26 wall
+800 cells of 11,510   711 COMPLETED_WITH_UNSTABLE_MARKERS / 89 ENERGYPLUS_FAILED
+TEN buildings failing, ten cells each; progress file 825 lines; IT 1315014 / UK 1315015 PENDING
+```
+
+Nothing retried, dropped, moved or patched — the construction defect of last+58f included. `C2`
+stays pinned to `T07`. Failing buildings are reported SPLIT BY MECHANISM at the end, and that split
+now has a **(b1)/(b2)** division inside it. The authorisation must still reach `openubem-20` **from
+the author, in that session**; their `surfaces.py:702` measurement is still inbound and still gets
+re-measured here.
+
+Evidence: impl §18.17; `scratchpad/rings3.sh`+`rings3.out`, `rings4.sh`+`rings4.out`, `new2.out`,
+`gap_idf2.out`, `poll_l58h.out`.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58g) — THE TWO COPIES ARE IDENTICAL IN THE FILE. THE REMEDY CLAUSE IS DEAD.**
+
+🔴 **The single clause both sessions have called load-bearing since last+58a — "snap the two copies
+of an interzone plate identically, or re-match after snapping" — is FALSIFIED by direct
+observation.** They are already identical. Do not carry that clause forward, and do not let anyone
+spend a rebuild on it.
+
+`openubem-20` proposed the test themselves, with no ask attached and with the consequence stated in
+both directions: pull the two named surfaces out of the **emitted IDF** and compare their vertex
+rings before EnergyPlus reads them. It was runnable here immediately — the runner deletes a cell's
+`.idf` only on the SUCCESS path, so every failing cell still holds the exact file the engine
+refused. Nothing was rebuilt, re-run or changed.
+
+```
+22 interzone pairs named across the five mechanism-(b) .err files
+relation-12702627  6 pairs   34 vs 34    xy-multiset identical
+relation-12713026  4 pairs   25 vs 25    xy-multiset identical
+relation-12725306  2 pairs   32 vs 32    xy-multiset identical
+relation-12800464  8 pairs   10 vs 10    xy-multiset identical
+relation-13113580  2 pairs    9 vs  9    xy-multiset identical
+NOT ONE PAIR DIFFERS IN THE FILE.  The partner ring is the base ring reversed.
+```
+
+### 🔴 What this means
+
+The engine reports 7 versus 8, 23 versus 22 — but it read two identical rings. **The divergence is
+produced INSIDE EnergyPlus, after the file is read**, when it removes coincident and collinear
+vertices from each surface separately. The only asymmetry between the two copies is their winding
+direction. ⚪ **NOT claimed:** that the winding is why one copy loses an extra vertex. EnergyPlus's
+cleanup source has not been read here; that is a candidate, not a cause. The measured statement is
+narrow: **identical in, different out.**
+
+### 🔴 The millimetre is manufactured by the BUILD, not present in the payload
+
+This resolves what last+58f left open. `relation/13113580`'s payload ring has **7 vertices, minimum
+gap 1.040812 m**; the same plate in the emitted IDF has **9 vertices including a pair 1 mm apart**.
+Whole-file minimum edge lengths:
+
+```
+completed  12582232  152 surfaces    0 under 10 mm   min edge 0.034986
+completed  12582233  175 surfaces    0 under 10 mm   min edge 0.953555
+COMPLETED  12628570  204 surfaces    5 under 10 mm   min edge 0.001000
+failed     12582234  443 surfaces   78 under 10 mm   min edge 0.000118
+failed     12702627  280 surfaces   96 under 10 mm   min edge 0.001000
+failed     12713026  174 surfaces   95 under 10 mm   min edge 0.001000
+failed     12725306  215 surfaces  112 under 10 mm   min edge 0.001000
+failed     12800464  535 surfaces   60 under 10 mm   min edge 0.000437
+failed     12863111  328 surfaces   56 under 10 mm   min edge 0.001000
+failed     13033801  503 surfaces  172 under 10 mm   min edge 0.000091
+failed     13113580  165 surfaces   36 under 10 mm   min edge 0.000447
+```
+
+Edges of 9.1e-5 and 1.18e-4 m sit **below** the 1 mm floor the payload census found. 🔴 **The
+sub-millimetre geometry is created between the payload and the IDF — in the extrude/intersect path
+our runner drives (`openubem.idf.surfaces.extrude_geometry` plus geomeppy's surface intersection).**
+Second independent reason the ≤ 10 mm payload census cannot be the acceptance test, and 🔴 **a
+reason an upstream snap-tolerance change may not touch this failure class at all.** `openubem-20`
+must hear this before they spend a rebuild.
+
+### A replacement discriminator — promising, and NOT adopted
+
+The min-edge census inside the emitted IDF separates the sample (eight failures at 36–172 surfaces
+under 10 mm; two completions at zero) — but `relation/12628570` **completed** with five such
+surfaces and a minimum edge of exactly 1.000 mm, and **three completed buildings is not a control
+group.** 🔴 Candidate, not a rule; it earns the name discriminator when it is measured against a
+population, exactly as the payload census and the varying-zone-count predictor did not.
+
+⚪ One column of `gap_idf.sh` is void and flagged rather than left standing: its "interzone" count
+read the outside-boundary field at token 5, where EnergyPlus 23.1 puts `Space Name`. It printed 0
+everywhere and means nothing; nothing above rests on it.
+
+### Unchanged
+
+State at 11:37:01 EDT: ES `1315013` RUNNING on `salus`, 1:37:31 wall, **775 cells of 11,510 — 695
+`COMPLETED_WITH_UNSTABLE_MARKERS` / 80 `ENERGYPLUS_FAILED`**, the same eight buildings, IT and UK
+PENDING. Nothing retried, dropped, moved or patched — including the construction loop of last+58f,
+which is still our own recorded defect and still untouched. `C2` stays pinned to `T07`. Failing
+buildings are still reported SPLIT BY MECHANISM at the end. The authorisation must still reach
+`openubem-20` **from the author, in that session**; their `surfaces.py:702` measurement is still
+inbound and still gets re-measured here.
+
+Evidence: impl §18.16; `scratchpad/rings.sh`, `rings2.out`, `gap_idf.sh`, `gap_idf.out`;
+`campaign_status.json` at 11:37:01.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58f) — THREE CORRECTIONS: THE MILLIMETRE DISCRIMINATOR IS FALSIFIED, AND THE THIRD MECHANISM IS OURS.**
+
+🔴 **Read this before quoting last+58e at all. Two of its claims are dead.** last+58e said "zero
+failures off the millimetre edge" across nineteen buildings and called it the discriminator
+hardening. One read later the off-edge column is non-zero, and a third failure mechanism has turned
+up that is a defect in OUR OWN RUNNER, not in upstream's emission.
+
+State at 11:26 EDT (ES `1315013` on `salus`, 1:21:52 wall): **596 cells of 11,510 — 516
+`COMPLETED_WITH_UNSTABLE_MARKERS`, 80 `ENERGYPLUS_FAILED`**; IT `1315014` / UK `1315015` PENDING.
+Re-confirmed at 11:33 with 694 cells, still 80 failures and still the same eight buildings.
+
+```
+complete ten-cell grids   66  ->  8 failed  (12.1 %)
+on the 1.000 mm edge      23  ->  7 failed, 16 completed   (30 %)
+off the millimetre edge   43  ->  1 failed, 42 completed
+mechanism (a) CalcCoordinateTransformation : 2 buildings  (12582234, 13033801)
+mechanism (b) vertex size mismatch         : 5 buildings  (12702627, 12713026, 12725306, 12800464, 13113580)
+mechanism (c) OUR construction assignment  : 1 building   (12863111)
+```
+
+### 🔴 Correction 1 — the millimetre edge is NOT a necessary condition, and the acceptance test is INSUFFICIENT
+
+`relation/13113580` failed all ten cells with a **minimum vertex gap of 1.040812 m** — a metre, not
+a millimetre, and nowhere near the 10 mm census. Re-measured straight from the payload, not carried
+from `mingap.csv`; the two agree. 🔴 **So the acceptance test written into last+58c/58d/58e — the
+census of buildings with a min vertex gap of 10 mm or less must go to zero — WOULD NOT HAVE CAUGHT
+THIS BUILDING.** A snap-tolerance change alone can pass that census and still leave it dead. This
+must reach `openubem-20`, because it changes what "fixed" means for them.
+
+What survives: the mechanism and the off-by-one signature. `13113580` is mechanism (b) — nothing
+deleted — and prints **7 vs 8**, a difference of exactly one, the fifth building in a row. The
+difference-of-two falsifier still has NOT fired. So the identical-snap / re-match clause stands;
+what dies is the claim that a sub-millimetre gap is what triggers it.
+
+⚪ NOT claimed, recorded so nobody claims it: the payload has a 7-vertex zone and no 8-vertex zone,
+which looks like a vertex ADDED to one copy. It is not evidence — `relation/12702627` reports 23 vs
+22 and its payload has only 4, 9, 15 and 34 vertices, so counts change downstream routinely.
+
+### 🔴 Correction 2 — a THIRD mechanism, and it is a defect in our own runner
+
+`relation/12863111`, all ten cells, one severe:
+
+```
+Construction EU_ROOF_CONSTRUCTION of interzone surface ..._8 STOREY 0 ROOF 0001_2 does not have
+the same materials in the reverse order as the construction EU_FLOOR_CONSTRUCTION of adjacent
+surface ..._7 STOREY 1 FLOOR 0001_2
+```
+
+Block `_8` is shorter than `_7`, so its storey-0 roof is an INTERIOR partition against `_7`'s
+storey-1 floor. `tools/4thJ_step10_nocore_campaign.py` lines 1038–1045 assign constructions **by
+`Surface_Type` alone** — `ROOF`/`ROOFCEILING` gets `EU_ROOF`, `FLOOR`/`CEILING` gets `EU_FLOOR` —
+and never ask whether the surface is interzone. EnergyPlus requires an interzone pair to carry
+reverse-order materials; two different no-mass constructions are not.
+
+🔴 **impl §18.6's sentence "the failure is upstream geometry, not our harness" is WRONG for this
+building** and is corrected in §18.15 rather than left standing. It is still right for the other
+seven.
+
+🔴 **NOT FIXED, and not to be fixed during the run.** Changing the construction loop at cell 596
+would mean the campaign built its IDFs two different ways, which is not a campaign — the same rule
+we applied to upstream, applied to ourselves. It belongs in the next re-pre-registration, exactly
+like the reporting defect that became Amendment 2.
+
+🔴 **At the end, failing buildings are reported SPLIT BY MECHANISM.** A building killed by our own
+construction assignment is never counted as an upstream geometry loss. Attributing our defect to
+someone else's emission would be the reporting equivalent of moving a pin.
+
+### Correction 3 — mechanism (a) has a second building
+
+`relation/13033801`: 72 very small surfaces (8.14e-4 m²), a coincident deletion, a degenerate
+severe, three `CalcCoordinateTransformation` lines, 379 warnings / 93 severe, Fatal in 0.51 s, min
+gap 0.001000 m.
+
+### A predictor measured and REJECTED
+
+"Zone count varies between floors" looked like a cheap census for the construction defect (ES 587 of
+1174, IT 1004 of 1211, LDN 146 of 1240). Checked against the buildings that have finished it gives
+**5 failed / 27 completed varying, against 3 failed / 31 completed constant** — 🔴 it does not
+discriminate, so it is rejected, not quoted. Recorded so nobody picks it up later as a screening
+rule that would condemn half of Madrid for a defect that has killed one building.
+
+### Unchanged
+
+Nothing retried, dropped, moved or patched at cell 596 — including the construction loop. `C2` stays
+pinned to `T07`. Completion rate stated over BUILDINGS at the end, now additionally split by
+mechanism; per-dwelling bands re-derived on the dwellings that actually produced results, shortfall
+against 31,591 reported and never absorbed. Still owed: the authorisation must reach `openubem-20`
+**from the author, in that session**; and their `surfaces.py:702` measurement is inbound and gets
+re-measured here before it is carried.
+
+Evidence: impl §18.15; `campaign_progress.jsonl` at 11:26:23 and 11:33:01; `scratchpad/err7.sh`
+output, `chk13113580.py`, `vcounts.py`, `varzones.csv`, `pred4.out`, `mingap.csv`.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58e) — FOURTH ENLARGEMENT: THE DISCRIMINATOR HARDENS, NO SIXTH BUILDING, AND THE FALSIFIER IS UNTESTED (NOT CONFIRMED).**
+
+🔴 Read this before quoting "zero failures off the millimetre edge" as settled — it is now nineteen
+buildings deep and still worth one honest caveat, which is at the bottom of this block.
+
+Read at 11:05 EDT, ES `1315013` on `salus` at 1:00:58 wall. **349 cells of 11,510 — 299
+`COMPLETED_WITH_UNSTABLE_MARKERS`, 50 `ENERGYPLUS_FAILED`**; IT `1315014` and UK `1315015` still
+PENDING on `afterok`. The 50 failures are still **exactly five whole buildings, ten cells each** —
+`relation/12582234` (mechanism a), `relation/12702627`, `relation/12713026`, `relation/12725306`,
+`relation/12800464` (all mechanism b). `12800464`, which was failing in flight at last+58d, has now
+completed its grid with all ten cells failed: the determinism check passed again. **No sixth failing
+building has appeared.**
+
+Buildings touched 37; **complete ten-cell grids 34, five failed = 14.7 %**. The predictor
+re-measured on those 34 (never carried from last+58d):
+
+```
+complete grids              34
+carrying the 1.000 mm edge  15  ->  5 failed, 10 completed   (33 %)
+off the millimetre edge     19  ->  0 failed
+```
+
+Four independent enlargements now: exposed 4 → 8 → 14 → 15, shares 25 %, 25 %, 29 %, 33 %, and the
+off-edge column has never once been non-zero. 🔴 Still a **CEILING ON EXPOSURE, never an expected
+loss** — two thirds of the exposed buildings ran to completion.
+
+🔴 **The difference-of-two falsifier was not tested this window.** No new building failed, so there
+were no new `vertex sizes are X ... and Y` lines to read. Silence is not confirmation. The reading
+procedure stands unchanged for the next failing building: read the vertex-size lines, not just the
+`Fatal`, and if any plate ever differs by more than one, tell `openubem-20` — that would put the
+coarser-tolerance clause back in front of the identical-snap clause.
+
+🔴 **One building in flight is named as EXPOSURE, not as a forecast:** `relation/12837457` has a
+minimum vertex gap of **0.006000 m** — inside the 10 mm acceptance census but NOT on the 1.000 mm
+floor that every failure so far has sat on exactly. If it fails, it is the first failure off the
+millimetre edge and the discriminator widens; if it completes, the floor stands. It is read, not
+predicted. (The other two in flight, `12837455` at 0.050090 and `12803889` at 0.132774, are well off
+the edge.)
+
+Nothing changed in the run: no cell retried, no building dropped, no pin moved, no instrument
+touched at cell 349. `C2` stays pinned to `T07`. Completion rate is stated over BUILDINGS at the
+end; per-dwelling bands re-derived on the dwellings that actually produced results, shortfall
+against 31,591 reported and never absorbed.
+
+Still owed, unchanged: the authorisation must reach `openubem-20` **from the author, in that
+session** — nothing upstream starts until it does; and the peer's `surfaces.py:702` measurement is
+inbound and will be re-measured here before it is carried.
+
+Evidence: impl §18.14; `campaign_progress.jsonl` at 11:05:29; `scratchpad/pred3.out`,
+`scratchpad/complete34.txt`, `scratchpad/mingap.csv`.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58d) — THE MISMATCH MECHANISM IS THE DOMINANT ONE, AND IT IS ALWAYS OFF BY EXACTLY ONE VERTEX.**
+
+🔴 **Read this before quoting §18.12 as "the second, rarer mechanism". By count it is now the FIRST.**
+
+At 10:58:21, **319 cells of 11,510 finished — 279 `COMPLETED_WITH_UNSTABLE_MARKERS`, 40
+`ENERGYPLUS_FAILED`**. Thirty-two buildings have a complete ten-cell grid; **four failed**
+(`relation/12582234`, `relation/12702627`, `relation/12713026`, `relation/12725306`) and a fifth,
+`relation/12800464`, is already failing in flight. ES `1315013` still RUNNING on `salus`; IT
+`1315014` / UK `1315015` still PENDING on `afterok`.
+
+**One building fails by the §18.2 route. Four fail by the §18.12 route.** Each new one was READ,
+not assumed — the §18.12 absence list (no small-area warning, no coincident deletion, no degenerate
+surface, no `CalcCoordinateTransformation`) reproduces exactly on all three new buildings and on the
+in-flight fifth. The engine deleted nothing; the defect is in the IDF as written.
+
+🔴 **NEW MEASUREMENT — the two copies of an interzone plate differ by EXACTLY ONE vertex, every
+time:** `12702627` 23 vs 22 (three plates), `12713026` 8 vs 9 (two), `12725306` 15 vs 14 (one),
+`12800464` 8 vs 9 (four). Never two, never three. That is sharper than "snapped independently": a
+single snap merged **one** vertex pair on one copy of the plate and left the other copy alone. Four
+buildings do not land on a difference of one by chance.
+
+🔴 **Predictor re-measured on 32 complete buildings: 14 carry the 1.000 mm edge, 4 of those failed,
+10 completed; ZERO failures off the millimetre edge.** Across three enlargements of the sample (4 →
+8 → 14 exposed) the failure share among exposed buildings has been 25 %, 25 %, 29 %. Still perfectly
+necessary in-sample, still nowhere near sufficient. 🔴 **ES 140 / IT 251 / LDN 32 remain a CEILING
+ON EXPOSURE. The ~29 % is one district's first thirty-two buildings, never an expected loss.**
+
+**Where the remedy's weight now sits.** Of the two clauses owed upstream, the one that matters most
+is **snap the two copies of an interzone plate identically (or re-match after snapping)** — a
+coarser tolerance alone would not have saved four of these five. The acceptance test is unchanged,
+because both mechanisms live on the same exposed set: the min-vertex-gap ≤ 10 mm census (ES 140 /
+IT 251 / LDN 32) must go to zero.
+
+**Nothing changed in the run.** No cell retried, no building dropped, no instrument touched at cell
+330. `C2` stays pinned to `T07`. Building-level state: 4 failed of 32 complete (12.5 %), one more
+failing in flight. Completion rate is stated over BUILDINGS at the end; per-dwelling bands are
+re-derived on the dwellings that actually produced results, with the shortfall against 31,591
+reported, never absorbed.
+
+🔴 **Still owed by a human, unchanged:** the authorisation to fix this upstream must reach the
+`openubem-20` session FROM THE AUTHOR, in THAT session. They refused a relayed one and were right
+to. Nothing upstream starts until it is given. One measurement is owed INBOUND (whether
+`idf/surfaces.py:702`'s 5 mm footprint snap has the same independent-application problem) — do not
+assume it either direction, and re-measure it here before carrying it.
+
+🔴 **A FALSIFIER IS NOW ON WATCH, and it is cheap to check: a difference of TWO.** The peer registered the off-by-one measurement into the same bullet (extended, not duplicated; the 16-building reading marked superseded, not deleted) and drew the consequence out loud — if the difference is always one, coarsening the tolerance would have missed FOUR OF OUR FIVE in practice, so the identical-snap / re-match clause is the load-bearing half of the fix, not a completing detail. **But a single plate showing 2 vertices' difference would mean two independent merges on one copy and would put the tolerance clause back in front.** So: on every newly failing building, read the `vertex sizes are X ... and Y` lines, not just the Fatal, and if X and Y ever differ by more than one, say so here AND tell `openubem-20` — they asked to be told either way. Nothing changed in their code and nothing will without their own user; their `surfaces.py:702` measurement is still owed inbound, including the possible answer that their fleet snaps both faces from one footprint and never sees this.
+
+Evidence: impl §18.13; `campaign_progress.jsonl` at 10:58:21; four `eplusout.err` files read
+directly; `scratchpad/mingap.csv`.
+
+## 🔴 **ADDENDUM 2026-09-09 (last+58c) — A SECOND BUILDING FAILED, BY A DIFFERENT MECHANISM.**
+
+**Read this before quoting §18.2 as "the" failure mode. There are now two.**
+
+At 10:34:32, ES `1315013` had finished **150 of 11,510 cells: 130 completed-with-markers, 20
+`ENERGYPLUS_FAILED`.** The twenty are two whole building grids — `relation/12582234` (known) and
+**`relation/12702627` (new)**. 17 buildings touched, 16 complete, 2 failed. IT `1315014` and UK
+`1315015` still PENDING on `afterok`.
+
+**The new one fails differently.** No tiny surfaces, no coincident-vertex deletion, no degenerate
+surfaces, no `CalcCoordinateTransformation`. Six Severe errors, all the same:
+
+```
+Vertex size mismatch between base surface: ..._2 STOREY 0 CEILING 0001
+                and outside boundary surface: ..._2 STOREY 1 FLOOR 0001
+The vertex sizes are 23 for base surface and 22 for outside boundary surface.
+Fatal: GetSurfaceData: Errors discovered, program terminates.   Elapsed 0.26 s
+```
+
+A ceiling and the floor above it are the same plate from two sides; one copy kept 23 vertices and
+the other 22. **EnergyPlus deleted nothing here — the mismatch was already in the IDF.** So the
+millimetre snap does not only manufacture slivers: applied independently to the two copies of an
+interzone plate, it drops a near-duplicate vertex on one side and not the other. Same root cause
+family, different symptom. Identical on all ten cells: geometry, not chance.
+
+**Predictor, re-measured on twice the sample (all 16 finished buildings):** eight carry the 1.000 mm
+edge, **both failures are among those eight, six of the eight completed → 2 of 8 (25 %) exposed.**
+Perfectly necessary here, still far from sufficient. 🔴 **ES 140 / IT 251 / LDN 32 stay a CEILING ON
+EXPOSURE. 25 % of a ceiling is not a forecast and must never be quoted as expected loss.**
+
+🔴 **What it adds to the remedy owed upstream:** "snap coarser than the engine tolerance" is
+necessary but not the whole shape — **the two copies of an interzone plate must be snapped
+identically, or re-matched after snapping**, or a coarser floor applied independently still yields
+23 vs 22. The acceptance test is unchanged and still covers both mechanisms (census of buildings with
+min vertex gap <= 10 mm must go to zero), because both live on the same exposed set.
+
+🔴 **Unchanged by this: everything else.** Nothing retried, reclassified or excluded; instrument,
+population and the three pins untouched at cell 150; `C2` stays on `T07`. The one thing still owed by
+a human is unchanged too — **the authorisation must reach `openubem-20` from the author, in THAT
+session.** This measurement was sent to them as evidence, with no ask attached.
+
+**Peer response to the second symptom (recorded, nothing owed by us).** `openubem-20` registered it as
+a separate `[OPEN]` bullet under the same cause, kept the framing (the discriminator is the ABSENCE
+list; the mismatch is in the IDF as written; coarser snapping is necessary but not sufficient; the
+acceptance test is shared by both symptoms; the predictor is a ceiling at 2 of 8). They have still
+implemented nothing and still will not start without their own user. 🔴 **One measurement is now owed
+INBOUND, not by us:** `idf/surfaces.py:702` snaps a footprint the whole storey stack is built from, so
+the independent-application question may not arise on their 5 mm path — they will MEASURE it after
+their rebuild and tell us either way. Do not assume it either direction until that number arrives, and
+re-measure it here before carrying it.
+
+Evidence: impl §18.12; status file at 10:34:32; `scratchpad/mingap.csv`.
+
+## 🟡 **ADDENDUM 2026-09-09 (last+58b) — THE PEER REFUSED THE RELAYED AUTHORISATION, CORRECTLY.**
+
+`openubem-20` will not start the snap fix on our relay: a peer message quoting the author verbatim is
+not their user's approval, and they will put it to their user directly. That is our own never-list rule
+applied back at us; accepted, not re-asked, not routed around. 🔴 **The one thing now owed by a human:
+the authorisation must reach `openubem-20` from the author, in THAT session.** Nothing upstream starts
+until it does. They have implemented none of the remedy, will emit nothing into our path, and will
+land it after their restatement rebuild as a new emission. `C2` unaffected: still `T07`, still running.
+Evidence: impl §18.11.
+
+---
+
+## 🟡 **ADDENDUM 2026-09-09 (last+58a) — THE 1 mm SNAP IS A LITERAL CONSTANT, FOUND IN SOURCE, AND
+THE AUTHOR HAS AUTHORISED FIXING IT FOR A FUTURE EMISSION ONLY.**
+
+Re-measured here in our own checkout, not carried from the peer:
+
+```
+openubem/geometry/european_nocore.py:131/616/620   set_precision(g, 0.001)      <-- the 1 mm floor
+openubem/geometry/layoutGenerator.py:112           VERTEX_SNAP_M = 0.005
+openubem/idf/surfaces.py:702                       set_precision(footprint, 0.005)
+```
+
+🔴 **Both snap paths are in OUR path** — `european_nocore.py` is `C2_NOCORE_PATH`, `surfaces.py:702`
+is in the IDF build. `layoutGenerator.py:112`'s comment ("well under E+ 1 cm coincident tol") is the
+defect restated as a reassurance: being UNDER the tolerance is what guarantees the weld. (No
+`set_precision` at `:610`, contra the peer; not load-bearing.)
+
+**Author's ruling, verbatim:** *"can we solve. you can collaborate openUBEM"* / *"if not this session,
+tell openUBEM to handle"*. Sent to `openubem-20` as authorisation to fix, with the boundary stated in
+the same message: snap COARSER than the engine tolerance (~10 mm floor) or weld below ~1 cm and refuse
+rings left with < 3 distinct vertices; acceptance test is a before/after census of buildings with
+min vertex gap <= 10 mm (ES 140 / IT 251 / LDN 32 → 0), not the absence of crashes in a sample.
+
+🔴 **What it does NOT permit, and this is the part to re-read before touching anything:** it must not
+be installed over the payload tree the running jobs read (`D-EU-115` undid a no-core install silently
+once; `R10` would kill a multi-day run), it lands as a NEW emission announced in full (sha + line
+endings + counts + which row builder), we consume nothing before that announcement, **this campaign
+stays pinned to `T07` and runs to completion**, and whether the fixed emission gets a campaign is the
+author's decision taken with the T07 completion rate in hand. Evidence: impl §18.10.
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+58). READ THIS BLOCK FIRST, THEN last+57.
+THE RUN IS BEING READ, NOT SCORED. THE FIRST FAILURE CLASS IS DIAGNOSED FROM DISK: UPSTREAM
+GEOMETRY, ONE BUILDING SO FAR, NOTHING CHANGED IN THE INSTRUMENT.**
+
+```
+1315013  4J_c2_ES  RUNNING salus 31 cpu   90 cells finished of 11,510 at 10:25 EDT
+                   80 COMPLETED_WITH_UNSTABLE_MARKERS   10 ENERGYPLUS_FAILED
+                   9 buildings complete (10 cells each), 1 building failed
+1315014 IT / 1315015 UK  PENDING on afterok --- the chain is intact
+```
+
+🔴 **A per-cell percentage is meaningless here.** All ten failures are the ten cells of ONE building,
+`relation/12582234`. The unit of this failure class is the BUILDING. Read `cells_failed/` by building
+before quoting any number: `ls out/<D>/cells_failed | sed 's/^[a-z]*__//; s/__case.*//' | sort | uniq -c`.
+
+**The mechanism, from `eplusout.err`, not from a guess.** ~41 surfaces of 1.99e-4 / 2.21e-4 m2, then
+`GetSurfaceData: There are 80 coincident/collinear vertices; These have been deleted`, then 47
+degenerate surfaces with fewer than three sides, then `CalcCoordinateTransformation: Invalid dot
+product` with a vertex repeated verbatim, then Fatal — 1.11 s of engine time. The 271 wall seconds
+were IDF construction. `returncode 1`, `unstable_markers: []`.
+
+**The payload is NOT malformed — measured.** Census of every zone polygon in the three fold districts
+(ES 12,411 / IT 15,740 / LDN 5,187 polygons): **dup-vertex 0, tiny-area 0 everywhere**; the failing
+building's smallest zone is 60.03 m2. The slivers are manufactured downstream during extrusion.
+
+**What distinguishes it: a 1.000 mm edge**, exactly on the nose — a snap floor in upstream's
+regularization, below EnergyPlus's coincident-vertex tolerance. Per-building minimum vertex gaps for
+all 3,625 fold buildings are in `scratchpad/mingap.csv`; exposure ES 140 / IT 251 / LDN 32 at 10 mm.
+
+🔴 **THE PREDICTOR OVER-SELECTS — MEASURED, NOT INFERRED.** Of the nine buildings finished, FOUR carry
+the 1 mm edge and THREE OF THOSE FOUR COMPLETED. Necessary-looking, demonstrably not sufficient.
+**The 140 / 251 / 32 counts are a CEILING ON EXPOSURE and must NEVER be quoted as an expected loss.**
+
+**Can it be solved (the author asked):** yes, and not here. (1) Upstream snaps at 10 mm instead of
+1 mm, or welds below the engine's tolerance before emission — the real fix, but a NEW EMISSION, new
+digests, a new campaign; `R10` would refuse this run the instant the stock moved, so it must NOT be
+requested as a mid-run patch. (2) Welding in our own IDF build — refused: an instrument change at
+cell 46 of 35,290, and it moves geometry the emitter pre-registered. (3) Dropping exposed buildings
+— refused: the population was fixed at preflight (1,151 / 1,171 / 1,207).
+
+🔴 **NEXT ACT: STILL READ THE RUN.** Cross-check each new failing building against `mingap.csv`
+before its outcome is known. Send the geometry side the millimetre MEASUREMENT (not a re-emission
+request, and state that we are pinned to `T07`). At the end: completion rate stated over BUILDINGS,
+per-dwelling bands re-derived on the dwellings that actually produced results, and the shortfall
+against **31,591** reported, never absorbed. Nothing has ever been scored under any basis.
+Evidence: impl §18 (now 2,067 lines, §18.8 and §18.9 added at 10:25).
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+57). READ THIS BLOCK FIRST, THEN last+56.
+`C2` IS LAUNCHED AND RUNNING ON SPEED. 35,290 CELLS, THREE DISTRICTS, CHAINED. NOTHING IS SCORED.**
+
+```
+1315013  4J_c2_ES  ES-MAD-BERRUGUETE  11510 cells  digest 575960f5...  RUNNING  salus, 31 cpu
+1315014  4J_c2_IT  IT-BOL-GALVANI2    11710 cells  digest 2cc6ba95...  PENDING  afterok:1315013
+1315015  4J_c2_UK  GB-LDN-STDUNSTANS  12070 cells  digest 1d575d0f...  PENDING  afterok:1315014
+start 2026-09-09T10:04:31-04:00      base /speed-scratch/o_iseri/4J_step10_nocore
+```
+
+**How to read a running district (this is what Amendment 2 bought):**
+
+```
+out/<D>/campaign_status.json      counts by completion status, rewritten every 25 cells
+out/<D>/campaign_progress.jsonl   RUN_HEADER + one flushed line per finished cell
+out/<D>/cells_failed/*.json       one file per non-completing cell, with the traceback
+out/<D>/cells/*.json              the manifest population --- results only, never a failure
+C2_<TAG>_<jobid>.out              the live stdout
+```
+
+**What was deployed, and what was moved aside.** The 2026-09-08 tree on Speed was the SUPERSEDED
+stock and the PRE-AMENDMENT runner — shipped payloads ES 1175 / LYO 297 / LDN 706 against T07's
+1174 / 509 / 1240, prereg `7ce1c041…` against the frozen `e1f2822a…`, runner `6bd2e4e0…` against
+`ad8a586d…`. Its cancelled ES job `1314969` had finished 83 cells at **60 completed / 13
+`ENERGYPLUS_FAILED` / 10 `HARNESS_ERROR` — 28 % non-completion with NO diagnosis on disk**, which is
+exactly the defect Amendment 2 closed. 🔴 `tree`, `out`, `runs` were RENAMED `*_superseded_2026-09-08`,
+never deleted — a superseded emission is named, not erased, and its 60 manifests can never be swept
+into `C2`.
+
+**Shipped as a tar, never a clone** (`PIN 2` is CRLF-dependent): 6,922 files, 79,481,159 bytes,
+sha256 `39ff25dc…` **identical on both ends**. The tree was rebuilt from the PREVIOUS DEPLOYMENT'S
+OWN 6,675-path file list so no dependency could be dropped by a hand-written include rule — 2,756
+copied, **0 missing**, `__pycache__` excluded, `openubem/outputs/**` replaced wholesale by T07.
+
+**Deploy + preflight ran inside `sbatch` (job `1315012`, COMPLETED 5:04; the login node is
+zero-compute)** and reproduced the Windows numbers exactly, on Linux, from a tar:
+
+```
+runner md5 ad8a586d...   prereg e1f2822a... == its own sidecar   Amendment 2 0269860953...
+payloads   ES 1174  LYO 509  LDN 1240  IT 1211      nested backups: none
+ES 1151 elig/11510 cells/11976 dw   IT 1171/11710/15705   LDN 1207/12070/3910
+TOTAL 35,290 cells over 3,529 buildings, 31,591 dwellings
+```
+
+🔴 **`R10` and `R3` were SEEN REFUSING on the launch tree minutes before the launch** — ES given a
+digest that is not its own ("a campaign that spans two emissions is two campaigns"), and Lyon.
+A pin never observed refusing is not a pin.
+
+**Why 31 cpu and one district at a time:** the association cap is `cpu=32` across ALL the user's
+jobs, so three concurrent districts would each get a third of the cores and finish no sooner in
+total. Sequential gives each the full allocation (~32 h each at the measured rate, far inside the
+7-day walltime), leaves one core for the author, makes ES readable while IT/UK are still queued, and
+`afterok` stops the chain if ES fails instead of burning four days.
+
+🔴 **NEXT ACT: READ THE RUN, DO NOT SCORE IT.** Watch `campaign_status.json` and `cells_failed/`.
+The old stock's 28 % non-completion rate is the thing to check first — if `ENERGYPLUS_FAILED` or
+`HARNESS_ERROR` climbs, the tracebacks are now on disk, so DIAGNOSE from `cells_failed/*.json`
+rather than re-running. Per-dwelling bands must be re-derived on **31,591** before any verdict is
+quoted; nothing has ever been scored under any basis. Disk: ~4 MB/cell → ~140 GB expected, against
+3.2 TB of quota headroom (6.8 T used of 10 T).
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+56). READ THIS FIRST, THEN last+55.
+AMENDMENT 2 IS IN FORCE: A RUN CAN NOW BE READ WHILE IT RUNS. ALL FOUR LAUNCH CONDITIONS ARE MET.
+STILL NOTHING LAUNCHED AND NOTHING SCORED — THE NEXT ACT IS THE LAUNCH ITSELF.**
+
+**Amendment 2** — `Step10_docs/prereg_step10_nocore_AMENDMENT_2026-09-09b_reporting.md`, md5
+`0269860953ad0521fe2a3a2f5972d188`. Made BEFORE the campaign runs, which is the only honest time.
+Frozen DRAFT still `e1f2822a800932ff099c15aed6be7ead` (re-verified after), `R1` passes; Amendment 1
+(population, `86afe204…`) stands unchanged beside it.
+
+**Defect closed:** a failing cell wrote NO file, and `campaign_results.json` appeared only after the
+LAST of 35,290 cells. `DEFECT 8` had to be reproduced on a second machine for exactly this reason.
+
+**Runner changes, all additive** (backup `.bak_pre_l56` md5 `25b16567f2f94d0bc24637d57fbbca8f`;
+after: 77,239 bytes, md5 `ad8a586d0a681057cb3552e082165669`, LF-only verified both sides):
+
+```
+write_failure_record()   -> cells_failed/<slug>.json, "record_kind": "FAILURE_NOT_A_RESULT"
+                            🔴 NEVER into cells/ (that is the manifest population G10N.14 reads)
+run_cell()               -> thin wrapper; the old body is run_cell_inner(), unchanged on success
+campaign_progress.jsonl  -> RUN_HEADER + one FLUSHED line per finished cell, APPEND mode
+campaign_status.json     -> counts by status every PROGRESS_EVERY = 25 cells and at the end
+closing print + docstring
+```
+
+🔴 No refusal relaxed, added or renamed. No manifest field changed. `R7` and `R11` untouched.
+`campaign_results.json` still written at the end and still the complete record. Population path
+proven undisturbed: ES preflight still 1,151 eligible / 11,510 cells / 11,976 dwellings / digest
+`575960f5…`.
+
+**Seen failing:** shipped runner imported unmodified, `run_cell` with geometry missing →
+`HARNESS_ERROR`, `failure_record_written True`, `record_kind FAILURE_NOT_A_RESULT`, traceback kept,
+`cells/` untouched. **Seen working:** real 2-cell `--shakedown --limit 2` on EnergyPlus 23.1.0 — both
+COMPLETED, JSONL header + one line per cell as each finished, status file `2/2`, results file still
+written at the end (18 zones, `cf` 1.0, `Temperature out of range` → COMPLETED_WITH_UNSTABLE_MARKERS,
+handled as before). **Seen NOT firing:** `--dry-run --limit 3` wrote no `cells_failed/` at all.
+
+🔴 **ALL FOUR LAUNCH CONDITIONS ARE NOW MET:** (1) one emission all three fold districts pass
+(`T07`); (2) population rule pre-registered, count re-derived (31,591 dwellings); (3) a run readable
+while it runs (this amendment); (4) `--expect-payload-digest` pinned per district — **do this, it is
+not optional, the stock moved twice in two days**:
+
+```
+ES-MAD-BERRUGUETE  575960f547ce462a3754eaa8d1f84090f721b5fb7ca135324bb46b6769929486   11510 cells
+IT-BOL-GALVANI2    2cc6ba9512be91fae8974f9ade1dd55a8cc61683b66b4d23997abd214cd161a3   11710 cells
+GB-LDN-STDUNSTANS  1d575d0f7bfcddc7a1637c6d3c4803526d54f84060b3393bbe1cf8fb24bcfc18   12070 cells
+```
+
+**Next act = the launch**, on the cluster (sbatch only, zero-compute login node, association cap
+`cpu=32` across ALL the user's jobs — 31 cpu was the measured choice, re-measure 31-vs-32 next run),
+one engine build for the whole campaign, ship as a tar never a clone, `PIN 2` is CRLF-dependent.
+Per-dwelling bands must be re-derived on 31,591 before any verdict is quoted; nothing has ever been
+scored, so there is nothing to invalidate.
+
+⚪ Upstream closed their arc. Backup directory now deleted in BOTH mirrors (verified here: zero
+remain anywhere under `OpenUBEM/`). `FINDING 258`, `263`, `269` stay open by their ruling, no fix
+planned there. Nothing of ours waits on them, nothing of theirs waits on us.
+
+---
+
+## ⚪ **ADDENDUM 2026-09-09 (last+55a) — three corrections exchanged with `openubem-20`, one of them ours.**
+
+- **Ours, withdrawn:** the Bologna IDF count of 1,382 was my artefact — a recursive `find` swept 162
+  EnergyPlus working copies in `local_out/<hash>/` (81 dirs x 2, beside `eplusout.eso`). Their
+  **1,220** (1,215 top-level + 5 nested) stands. Madrid 1,194 / Lyon 530 / London 1,240 agreed all along.
+- **Theirs, accepted:** `FINDING 269` is **27**, not 29 (ES 6 / LYO 18 / LDN 0 / IT 3; Lyon was
+  double-counted). Their count and a raw IDF-minus-payload gap are different measurements and both
+  right — theirs counts only manifests DECLARING an emitted layout with no payload. Not load-bearing
+  for `C2` either way: our population is payload-driven.
+- **Theirs, accepted:** the digest wording is corrected to "raw digest bytes" in their protocol record.
+- ⚪ **The backup is deleted in ONE mirror only.** Gone from `docs/docs_ACTIVE/...`; still present as
+  451 files in `openubem/outputs/3D/eu_GB-LDN-STDUNSTANS_data/layouts_pre_D-EU-113_backup_2026-09-08`
+  — the tree our runner reads. Sibling of `layouts/`, so §15.3's numbers are unaffected. The two
+  mirrors are separate directories, not one linked tree. Reported to them; not our tree to delete.
+
+Evidence: impl doc §15.7.
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+55). READ THIS BLOCK FIRST, THEN last+54a.
+`T07` LANDED AND IS VERIFIED HERE. ALL THREE FOLD DISTRICTS PASS PREFLIGHT ON ONE EMISSION FOR THE
+FIRST TIME. THE ONLY REMAINING BLOCKER IS OUR OWN RUNNER'S REPORTING DEFECT. NOTHING LAUNCHED.**
+
+**The announcement was complete** — row builder (`scripts/emit_eu11_layout_sidecars.py` per district
+against `openubem/outputs/eu_evidence/EU-11/<D>_recut_2026-09-08`, `--population-manifest`), scan
+path, per-district counts, digests, line endings, scheme census. Nothing was carried; all re-derived.
+
+**Verified here (impl §15):**
+
+```
+files      ES 1174   LYO 509   LDN 1240   IT 1211      <- match announcement
+digests    all four reproduce BYTE-FOR-BYTE
+           recipe recovered by sweep: relpath + NUL + RAW 32 sha256 bytes, no record separator
+line ends  CRLF-only 100% in all four, zero LF-only, zero mixed, no final newline  <- as announced
+schemes    nocore_equal_area 1151/496/1207/1171 + scheme-null FALLBACK_PENDING_LAYOUT 23/13/33/40
+           has_unconditioned_core true: 0 of 0 everywhere
+```
+
+🔴 **Zero `ruled_grid_*` and zero `INTERZONE_MISMATCH_REROUTED` in any district.** `FINDING 263`'s
+reroute — the `R5` that refused London for two days — **does not exist in this emission**. London
+passes with NO ruling on exclusion. Upstream's exclusion advice was recorded and never taken, and
+re-emission was the remedy, as the amendment's §7 said it might be. **That question is now moot for
+this emission**; if a future stock reintroduces reroutes it returns to the author untouched.
+
+**Population under the amended rule, re-derived:** distinct zone names == `dwellings_total` on
+**4,025 of 4,025** drawn buildings, zero mismatches, none missing. ES 11,976 / LYO 6,786 / LDN 3,910
+/ IT 15,705. Fold total **31,591** (superseded sum-over-floors rule would have said 33,338).
+
+**Preflight, all three, one emission:**
+
+```
+ES-MAD  OK  1174 -> 1151 eligible / 23 Arm F / 0 FAIL  11510 cells  reg 11976  digest 575960f5...
+IT-BOL  OK  1211 -> 1171 eligible / 40 Arm F / 0 FAIL  11710 cells  reg 15705  digest 2cc6ba95...
+GB-LDN  OK  1240 -> 1207 eligible / 33 Arm F / 0 FAIL  12070 cells  reg  3910  digest 1d575d0f...
+FR-LYO  REFUSE R3 (unchanged, not waivable; upstream is not asking us to run it)
+CAMPAIGN = 35,290 cells over 3,529 buildings
+```
+
+🔴 Those three digests are the runner's OWN construction — pass them to `--expect-payload-digest`
+at launch so `R10` refuses if the stock moves under the run again. It moved twice in two days.
+
+**Smoke on the new payloads** (IDFs built, no binary): zones == gain csvs == dwellings == declared
+`dwellings_total` on 1 / 17 / 21-dwelling buildings, z spans 9 / 6 / 15 m — full height, nothing lost.
+
+**`FINDING 258` now:** `partition_audit passed=false` on 796/1115/162, worst area error 1.17e-4 /
+1.65e-4 / 9.96e-5 — an order of magnitude better than the old stock's 1.9e-2. Still REPORTED, NEVER
+GATED; the frozen prereg still calls it a rounding residue.
+
+**Their `FINDING 269` (29 buildings with an IDF and no payload)** — recorded, not disputed. Raw file
+counts here give gaps 20/21/0/171 against their stated 6/20/0/3, but their IDFs are named by opaque
+16-hex ids so the two cannot be reconciled without their manifest mapping. NOT load-bearing: our
+population is payload-driven, so an IDF with no payload is simply not in `C2`.
+
+🔴 **WHAT BLOCKS THE LAUNCH IS NOW OURS.** Every external blocker is gone. What remains is the
+recorded defect: **a failing cell writes NO manifest, and `campaign_results.json` is written only
+after the LAST cell** — at 35,290 cells the run is unreadable until it ends, and defect 8 had to be
+reproduced on a second machine to be seen at all. **Next act: a SECOND amendment (per-cell manifest
+writing + incremental results), additive, no refusal relaxed, seen failing before it is trusted;
+then launch with `--expect-payload-digest` pinned per district.** No band is quoted until the
+per-dwelling denominators are re-derived on 31,591 — nothing has ever been scored.
+
+⚪ `eu_GB-LDN-STDUNSTANS_data/layouts_pre_D-EU-113_backup_2026-09-08/` was still on disk at census
+time. It is a SIBLING of `layouts/`, so a recursive read of `layouts/` never sees it. Re-check before
+launch anyway — a nested backup was the 2026-09-08 trap.
+
+---
+
+## 🔴 **ADDENDUM 2026-09-09 (last+54a) — THE CAUSE IS CONFIRMED AND IT IS UPSTREAM'S VIEWER BUILDER.
+THE FOUR 07:15 DIGESTS ARE VOID AS A PIN AND VOID AS A POPULATION. STILL NOTHING CONSUMED.**
+
+`openubem-20` replied: the metadata/layouts split is their defect, they named the line, and I
+verified it in their code before recording it. `scripts/generate_eu_3d_viewers.py`, `build_district`:
+every viewer rebuild does `shutil.rmtree(target_layouts_dir)` and then `shutil.copytree` from the
+EU-17 rebuild tree — the 2026-09-01 core-era set. So each install of the 2026-09-08 no-core payloads
+was silently undone by the next rebuild, the 06:47 one included. Confirmed independently by counting
+the copy source: EU-17 layouts ES 961 / LDN 82 / IT 1204 / LYO 297 — **identical, file for file, to
+the live mirrored tree**. My reading in last+54 was right; the mechanism is now measured, not inferred.
+
+**Their fix**, ruling `D-EU-115`, in flight: copy EU-17 first, then overlay the EU-11 trees
+oldest-to-newest so mirror and viewer cannot diverge again, and re-emit the side-cars over the FULL
+recut population from the recut IDFs — single-vintage 2026-09-08, not a 539-recut-plus-706-older mix
+(which our `R10` would have called two campaigns).
+
+**They asked us to discard the four digests.** Not consumed and not carried — but NOT erased. They
+stay in last+54 and impl §14, labelled the state of a broken intermediate tree, **void as a pin and
+void as a population**. Deleting a measurement because it turned out to describe a defect is the one
+thing this project does not do; naming it superseded is.
+
+🔴 **Carry this into the next preflight:** their re-emission covers the FULL population per district,
+not the simulated delta, so payload counts will be LARGER than the 1,100 / 1,036 / 685 buildings of
+the 2026-09-08 emission. `R11` clause (b) is per building — dwellings vs that building's own
+`dwellings_total` — so a bigger population does not touch it. **A bigger count is a different
+emission, not a regression**, and it is still re-derived here and never carried. Rule pre-registered,
+count measured per emission.
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+54). READ THIS BLOCK FIRST, THEN last+53.
+THE PAYLOAD STOCK ON DISK CHANGED UNDER US. ALL THREE FOLD DISTRICTS NOW REFUSE PREFLIGHT.
+NOTHING IS CONSUMED, NOTHING IS LAUNCHED, NOTHING IS RELAXED.**
+
+**What happened.** `openubem-20` went idle at 07:02. Before assuming the tree was unchanged I
+re-ran the same runner, unmodified, on the same machine, minutes after last+53 recorded ES and IT
+passing:
+
+```
+ES-MAD-BERRUGUETE   REFUSE R5   628 payloads FAIL   scheme='ruled_grid_1x1' (want nocore_equal_area)
+IT-BOL-GALVANI2     REFUSE R5   620 payloads FAIL   scheme='ruled_grid_2x1'
+GB-LDN-STDUNSTANS   REFUSE R5    38 payloads FAIL   scheme='ruled_grid_3x2'
+FR-LYO-HAUTCOEURPENTES  REFUSE R3  unchanged, not waivable
+```
+
+🔴 Our tools did not change. `R7` is still untouched, `R11` is still in, the amendment md5 is still
+`86afe2043657f0bccf679c0781fd3d42`. **The stock changed.**
+
+**What is on disk now (whole-tree census, computed here 2026-09-09 ~07:1x):**
+
+```
+ES  files= 961  digest=06388b0cc322c9ae9924700b8492bde93f7a787bc259b94ed5ae432fa253a4bd
+LDN files=  82  digest=11969243edb6c5eaded6a2fc40b9cd5a99bc0965b96ba58bd9c8045782008e2f
+IT  files=1204  digest=18e461875623f81964c3bf66d8fdd733d77badc662484f029388df537a993200
+LYO files= 297  digest=3a53862284d9d54e958869548f081535264d7197dbb332bf515f3f346239e5f3
+```
+
+🔴 **Zero payloads carry `scheme='nocore_equal_area'` in any district.** Every layout file is dated
+2026-09-01 10:20–10:21 — this is the CORE-ERA emission. Outcomes are dominated by
+`FALLBACK_PENDING_LAYOUT` and `INTERZONE_MISMATCH_REROUTED`. The 2026-09-08 no-core emission that
+last+52/+53 measured (ES 1,100 buildings / 10,809 dwellings, IT 1,036 / 13,757, LDN 685 / 1,529) is
+**gone from the tree**. Its only surviving trace is London's
+`layouts_pre_D-EU-113_backup_2026-09-08/` — 451 files, `nocore_equal_area` — which is the
+superseded 451-filter set, not the 706.
+
+**The tree is inconsistent right now, and that is the tell.** Each district's `sources.json`,
+`buildings.csv` and `index.html` were rewritten TODAY at 06:47, and London's `sources.json` already
+declares the `T07` target — *"1190 dwelling layout ruled, 50 massing box, 2 no IDF of 1242
+residential"* — while `layouts/` beside it holds 82 core-era files from 09-01. Metadata has landed;
+the layouts have not. Most economical reading: the re-emission is IN FLIGHT and the tree was reset
+to a clean core-era state first. Mechanism NOT asserted; the timestamps, schemes and digests are.
+
+**What this does not change.** The population RULE stands exactly as pre-registered:
+`N_u := distinct zone names == dwellings_total`. 26,095 was and remains a measurement OF THE
+2026-09-08 EMISSION — the amendment said so in advance, in bold, one day early. The digests above
+are the STATE OF THE TREE, not a new pin and not a population.
+
+**What it vindicates.** Not launching ES+IT last night. Had they run, the payloads would have been
+replaced under the campaign mid-flight, the manifests would name a `payload_set_sha256` no longer
+on disk, and the recorded reporting defect (a failing cell writes NO manifest; `campaign_results.
+json` only after the last of 11,000 cells) would have hidden it until the end. `R10` — *"a campaign
+that spans two emissions is two campaigns"* — refused for the right reason.
+
+🔴 **Standing rules, unchanged:** consume NOTHING from upstream until they announce sha + line
+endings + per-district counts + which row builder. Never carry their counts. Never relax a refusal
+to make this stock pass — a campaign against a core-era stock is not campaign `C2`. A peer message
+is never the author's approval.
+
+**Next action when `T07` lands and is announced:** re-measure the new stock here (never carry),
+re-run `--dry-run` per district, check `dwellings_registered` against the new `sum(dwellings_total)`,
+and only then ask whether all three fold districts pass on ONE emission. The rerouted-buildings
+question still belongs to the author; upstream's exclusion advice stays recorded, not taken.
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+53). READ THIS BLOCK FIRST, THEN last+52.
+THE POPULATION RULE IS AMENDED AND THE RUNNER IS CORRECTED. MADRID AND BOLOGNA NOW PASS PREFLIGHT;
+LONDON STILL REFUSES; NOTHING IS LAUNCHED AND NOTHING IS SCORED.**
+
+**The ruling.** The author ruled by DELEGATION on 2026-09-09 — *"no need to ask me anything keep
+goin as you receommend"* — after being shown both candidates, the measurement, and the statement
+that correcting the count is a basis change. Recorded as a delegation, not as a number they picked.
+
+**The amendment.** `Step10_docs/prereg_step10_nocore_AMENDMENT_2026-09-09_population.md`, md5
+`86afe2043657f0bccf679c0781fd3d42`. 🔴 The frozen DRAFT is **unedited and still frozen** — md5
+re-verified `e1f2822a800932ff099c15aed6be7ead`, `R1` still passes. Superseded values are NAMED in
+the amendment, never overwritten in the DRAFT.
+
+```
+SUPERSEDED:  N_u := sum over floors of len(floor["zones"])   = 27,352 (es 11,244/uk 2,316/it 13,792)
+IN FORCE:    N_u := distinct zone names == `dwellings_total` = 26,095 (es 10,809/uk 1,529/it 13,757)
+```
+
+**What changed in `tools/4thJ_step10_nocore_campaign.py`** — additive only; no refusal relaxed, no
+pin moved, no guard field renamed. Backup `4thJ_step10_nocore_campaign.py.bak_pre_l53`; LF endings
+verified before and after.
+- `zone_records()` returns one record per DWELLING (byte-identical storey repeats collapsed) and no
+  longer reads the storey row's `z_floor_m` as the zone's elevation.
+- **NEW refusal `R11`**: a repeated name with DIFFERENT geometry refuses (the genuine
+  two-flats-one-name fault), and a building whose distinct dwellings differ from its declared
+  `dwellings_total` refuses.
+- `preflight_report.json` gains `dwellings_registered` +
+  `payload_zone_entries_superseded_basis`.
+- 🔴 `R7` is UNTOUCHED — it was refusing correctly because `N_u` counted entries.
+
+**Seen (`--dry-run`, this machine).** ES-MAD `PREFLIGHT OK` 1,100 eligible, 11,000 cells, dwellings
+registered 10,809 (superseded 11,244). IT-BOL `PREFLIGHT OK` 1,036 eligible, 10,360 cells, 13,757
+(superseded 13,792). GB-LDN `REFUSE R5`, 12 rerouted payloads. FR-LYO `REFUSE R3`. The runner's own
+numbers reproduce the independent sweep exactly.
+
+**Geometry smoke (`--limit 45 --dry-run`, builds IDFs, no binary).** The building that died
+`HARNESS_ERROR` yesterday now builds: `es__relation-12638102__caseA__f000` → **1 zone, 1 gain csv,
+`dwellings_total` 1, vertex z 0.0→15.0 m** (all five storeys, nothing lost);
+`es__relation-12582232` → 18 zones, 18 gain csvs, `dwellings_total` 18. 🔴 The correction removes
+1,257 duplicate COUNTS, not floor area, volume or buildings.
+
+**Band change.** Every per-dwelling quantity now has a denominator smaller by 1,257 (es −435,
+uk −787, it −35). No threshold value changed, no `G10N.x` clause touched. Nothing was ever scored
+under either basis, so no verdict is invalidated.
+
+🔴 **NOT LAUNCHED, and this is the reasoning to keep.** Madrid and Bologna pass; London cannot until
+the rerouted payloads are re-emitted or the author rules them excluded. Running the two that pass
+today would put London on a DIFFERENT emission later, and `R10` says it in the file: *"a campaign
+that spans two emissions is two campaigns."* Upstream's `T07` re-emission of all four districts is
+in flight (Madrid 1,175→1,187, Lyon 509→529, London 706→1,240, Bologna 1,211→1,215). **The campaign
+holds until that lands, is announced (sha, line endings, per-district counts, row builder) and is
+re-measured here.** 🔴 **26,095 is the population of the 2026-09-08 emission, not a constant** — the
+amendment pre-registers the RULE; the COUNT is re-derived at every preflight.
+
+**Still open, deliberately not decided:** the rerouted buildings. Upstream's exclusion
+recommendation stays recorded, NOT taken — membership is a different act from counting, and their
+re-emission is the better remedy.
+
+⚪ `Step10_docs/outputs_step10_nocore/cells/` holds 1,427 cell records from 2026-09-08 written under
+the SUPERSEDED basis. Prior evidence, not a current population.
+
+**Next action when `T07` lands:** re-measure the new stock (never carry their counts), re-run
+`--dry-run` per district, check `dwellings_registered` against the new `dwellings_total` sum, and
+only then ask whether all three fold districts pass on ONE emission.
+
+Evidence: impl doc §13; amendment md5 `86afe2043657f0bccf679c0781fd3d42`.
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+52). READ THIS BLOCK FIRST, THEN last+51.
+THE RETRACTION IS TWO-SIDED AND THE CORRECTED POPULATION IS NOW A DIRECT READ, NOT A DERIVED COUNT.
+STILL NOTHING RUNNING; NOTHING SCORED; PREREG `e1f2822a800932ff099c15aed6be7ead` UNTOUCHED; `N_u`,
+THE PREREG AND `R7` ALL EXACTLY AS THEY WERE.**
+
+**What changed since last+51 — nothing operational, one measurement.**
+
+Upstream (`openubem-20`, 06:18) confirmed `FINDING 268` is retracted on their side too, and recorded
+our numbers (ES 233/435, IT 35/35, LDN 630/787, LYO 22/31, the 0-of-1,288 md5 result, the
+1,100/1,100 and 1,036/1,036 invariant, and our `zone_records()` `z_floor` fallback) in
+`docs/docs_EXPLANATION/OpenUBEM_debug_References.md` and §5 of
+`messages_GSSCanada/2026-09-09_OpenUBEM_to_4J_finding268_retracted.md`.
+
+They offered ONE note — as a note, not a request: the corrected population needs **no
+de-duplication**, because `dwellings_total` per building (`dwelling_count` per storey group) is the
+field **the emitter treats as authoritative**. Re-measured here before carrying it, all payloads,
+all four districts:
+
+```
+ES   buildings= 1100  entries= 11244  distinct= 10809  sum(dwellings_total)= 10809  mismatches=0
+LDN  buildings=  685  entries=  2316  distinct=  1529  sum(dwellings_total)=  1529  mismatches=0
+IT   buildings= 1036  entries= 13792  distinct= 13757  sum(dwellings_total)= 13757  mismatches=0
+LYO  buildings=  105  entries=   617  distinct=   586  sum(dwellings_total)=   586  mismatches=0
+TOTAL ES+LDN+IT      entries=27352  distinct=26095  sum(dwellings_total)=26095
+```
+
+`missing_dwellings_total = 0` everywhere; **2,926 of 2,926 buildings agree, zero mismatches** —
+this extends last+51's invariant to **London and Lyon**, which had never been tested.
+
+**What this does and does not mean.**
+- The pending ruling is unchanged in value: **27,352 (the frozen sum-over-floors rule) against
+  26,095 (real dwellings)**. Only the corrected side got cheaper — one declared field, no
+  de-duplication step.
+- 🔴 **DO NOT EDIT `N_u`. DO NOT TOUCH THE PREREG. DO NOT RELAX `R7`.** `R7` refusing is CORRECT
+  while `N_u` counts entries. `dwellings_total` is still PROVENANCE under the frozen record; it
+  becomes a basis only when the author re-pre-registers it. Basis change ⇒ band change ⇒ the
+  author's re-pre-registration.
+- Their reroute-exclusion recommendation stays **recorded, not taken** — the author's call.
+
+**Upstream's state.** `FINDING 263` (`INTERZONE_MISMATCH_REROUTED`) is real, unfixed and grew:
+London 17 of 1,240, Madrid 73 of 1,187, Bologna 93 of 1,215. Their `T07` four-district re-emission
+is **still in flight** — the merged results harvest before it is two districts of four complete.
+They will send sha, line endings, per-district file counts and the row builder
+(`scripts/emit_eu11_layout_sidecars.py`) when it lands, and not before. 🔴 **Consume nothing until
+then; re-measure, never carry.** Every number above is against the present stock (ES/IT
+2026-09-08 06:51, LDN 2026-09-08 19:53) and is superseded on announcement.
+
+**Owed.** Upstream owes nothing on the zone name. **The author owes ONE ruling: the population —
+27,352 or 26,095 — and whether the rerouted buildings are pre-registered as excluded.** Nothing
+runs before it.
+
+Evidence: impl doc §12.5 (`Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md`).
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+51). READ THIS BLOCK FIRST, THEN last+50.
+DEFECT 8 IS RETRACTED. THE DUPLICATE ZONE NAME WAS NEVER UPSTREAM'S FAULT — IT IS OURS, AND IT IS
+THE PRE-REGISTERED POPULATION RULE ITSELF. STILL NOTHING RUNNING; NOTHING SCORED; NO PIN MOVED; NO
+POPULATION CHANGED; THE FROZEN PREREG STILL UNTOUCHED.**
+
+🔴 **LAST+50 IS SUPERSEDED IN ITS DIAGNOSIS, NOT IN ITS DISCIPLINE.** The author's ruling "wait, drop
+nothing" was right and still holds — **nothing is excluded** — but the reason has changed
+completely, and the question now in front of the author is a different one.
+
+🟢 **RE-MEASURED HERE, ALL PAYLOADS, BEFORE ACCEPTING ONE WORD OF THE PEER'S REPLY** (a peer
+measurement is evidence, never carried):
+```
+repeated zone-name entries whose zone object is BYTE-IDENTICAL (md5, canonical json):  ALL
+repeated entries whose geometry actually differs:                                      0 of 1,288
+relation/12638102   storeys 5   dwellings_total 1   one zone, z_floor 0.0 -> z_ceiling 15.0,
+                    the SAME md5 af87011a3802193a0e81a34b44f850e2 in all five floors[] rows
+distinct zone names == dwellings_total    ES 1,100 of 1,100 · IT 1,036 of 1,036 · violations 0
+```
+⚪ **Where our read went wrong:** the field that advances 0/3/6/9/12 m is `floors[i].z_floor_m`, the
+**storey row's** elevation. `zone_records()` falls back to it (`zone.get("z_floor", z_floor)`), so
+one zone extruded across five storeys read as five distinct plates. **We were measuring the row, not
+the zone.** Nothing was ever going to overwrite five households' gain csvs — **there is one household
+and one csv.** The `ValueError` at `european_controls.py:48` is that guard **working as designed**,
+refusing a second emission of one zone, which is what a per-storey-row loop attempts.
+
+🔴 **THE REAL DEFECT, AND IT IS INSIDE THE FROZEN PREREG:** `N_u := sum over floors of
+len(floor["zones"])` counts a zone spanning `n` storeys `n` times.
+```
+ES-MAD  entries 11,244  distinct 10,809  over-count   435
+GB-LDN  entries  2,316  distinct  1,529  over-count   787   (34% of London)
+IT-BOL  entries 13,792  distinct 13,757  over-count    35
+ TOTAL  entries 27,352  distinct 26,095  over-count 1,257
+```
+`27,352` is **exactly** the pre-registered population (`prereg_step10_nocore_DRAFT.md:525`). **The
+frozen pre-registration counts 1,257 dwellings that do not exist.**
+
+🔴 **DO NOT EDIT `N_u`, DO NOT TOUCH THE PREREG, DO NOT RELAX `R7`.** Correcting the population is a
+**basis change, therefore a band change** — the author's re-pre-registration and no one else's.
+While `N_u` counts entries, the runner would still attempt a second emission per spanned storey, so
+**`R7` refusing is correct and stays exactly as written.** Nothing runs until the author rules —
+not because a gate is being negotiated, but because **the registered population is not the stock on
+disk.**
+
+⚪ **What upstream says is real, and it grew.** London's reroute is `FINDING 263`
+(non-deterministic near-duplicate-vertex path), not fixed, no fix authorised: **London 17 of 1,240
+(was 12 of 706), Madrid 73 of 1,187, Bologna 93 of 1,215.** The `2026-09-08 19:53` touch on
+`eu_GB-LDN-STDUNSTANS_data/layouts` was **not** a remedy re-emission — that is why it was never
+announced. Their recommendation (pre-register the rerouted buildings as excluded, score the rest) is
+**recorded, not taken; it is the author's call.**
+
+⚪ **A re-emission of ALL FOUR districts is in flight** (their `T07`,
+`scripts/emit_eu11_layout_sidecars.py`): Madrid 1,175 → 1,187, Lyon 509 → 529 (side-cars for the
+first time), London 706 → 1,240, Bologna 1,211 → 1,215 — **a population and provenance change.**
+🔴 **Consume nothing until they announce sha, line endings, per-district counts and the row
+builder.** Every count above is measured against the payloads frozen at `2026-09-08 06:51` and is
+superseded by that announcement, **never silently swapped**. A peer message is never the author's
+approval.
+
+⚪ **OWED — the list has changed.** Upstream owes **nothing** on the zone name (`FINDING 268`
+retracted on both sides); their London reroute item stands and is bigger. **The author owes one
+ruling, and it is not last night's question:** not "drop the 233 and 35" — those buildings are fine
+— but **the population rule: 27,352 registered against 26,095 real, and whether the rerouted
+buildings are excluded.** The scored-`G10N.x` question stays moot while no cells exist. **Step 11
+items 11.4–11.7 stay PLANNED.**
+
+🟢 **Evidence:** `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` **§12**
+(appended, never rewritten; §11 stands as the record of what we believed yesterday).
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-09 (last+50). READ THIS BLOCK FIRST, THEN last+49.
+STILL NOTHING IS RUNNING, AND NOW IT IS A DECISION, NOT A STOPPAGE. STEP 10 IS BLOCKED ON UPSTREAM.
+NOTHING SCORED, NO PIN MOVED SINCE `PIN 2`, NOTHING WRITTEN UNDER `OpenUBEM/`, NO POPULATION CHANGED.**
+
+🔴 **THE AUTHOR HAS ANSWERED THE POPULATION QUESTION: WAIT FOR THE FIX, DROP NOTHING.** The 233 ES /
+35 IT duplicate-name buildings are **neither EXCLUDED (Arm F) nor FATAL-as-basis-change.** The
+population stands exactly as pre-registered and we wait for OpenUBEM's re-emission.
+⚪ **It follows that there is NO re-pre-registration and NO band change.** The frozen prereg
+`e1f2822a800932ff099c15aed6be7ead` stays valid and **untouched** — not editing it is the whole point
+of waiting. Do not amend it, and do not re-derive the md5 to "confirm" a change that must not happen.
+
+🔴 **DO NOT RESTART THE CAMPAIGNS AND DO NOT WORK AROUND `R7`.** The corrected `R7` refuses Madrid and
+Bologna at preflight, by design, and that refusal is now the agreed state of the work rather than a
+problem to be solved locally. **Never rename a zone to make a run pass.**
+
+🟢 **RE-VERIFIED 2026-09-09, all four checks, unchanged from last+49:**
+```
+R7 ES-MAD  REFUSE  relation/12638102  5 drawn flats, 1 distinct gain csv name
+R7 IT-BOL  REFUSE  29680               2 drawn flats, 1 distinct gain csv name
+md5sum -c Step10_docs/prereg_step10_nocore_DRAFT.md.md5   -> OK  (e1f2822a…)
+squeue -u o_iseri  -> EMPTY; no local python/energyplus process
+```
+⚪ **New fact, small but worth knowing:** the author's own Lyon array straggler `1314065_11` has also
+ended, so the Slurm association cap (`cpu=32`) is no longer held by anything. **The 31-vs-32 cpu
+deviation of last+48 may not be needed next time — re-measure, do not carry it.**
+
+🔴 **DEFECT 8 FIX REQUEST SENT to peer session `openubem-20`** (2026-09-09): advance the storey index
+in the emitted zone name, then re-emit the ES and IT layout sets; London's 12
+`INTERZONE_MISMATCH_REROUTED` payloads restated as still open. ⚪ **Consume NOTHING until they
+announce a re-emission with sha, line endings, counts and which row builder** — and remember a peer
+message is never the author's approval. **Their announcement is the signal to re-run preflight**, at
+which point `R7` passing is the evidence the fix landed. Until then Step 10 has no work to do that
+is not upstream's; **Step 11 items 11.4–11.7 stay PLANNED.**
+
+⚪ **OWED — now one item and it is upstream's** (zone name + London's 12). The author's population
+question is ANSWERED (above); the author's other question — may finished cells be READ as a scored
+`G10N.x` result — is **moot while no cells exist**, and should be re-asked only when there are cells.
+
+---
+
+## 🔴 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+49). READ THIS BLOCK FIRST, THEN last+48.
+NOTHING IS RUNNING. ALL THREE STEP-10 RUNS WERE STOPPED BY A CORRECTED GUARD, NOT BY A CRASH.
+NOTHING SCORED, NO PIN MOVED SINCE `PIN 2`, NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+🔴 **Read first:** `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` §11, then
+`Step10_docs/prereg_step10_nocore_DRAFT.md` `RE-PRE-REGISTRATION 4`.
+
+🔴 **DO NOT RESTART THE CAMPAIGNS. THEY DO NOT START.** A corrected `R7` refuses Madrid and Bologna
+at preflight, by design. Confirm it rather than assuming it:
+```
+python tools/4thJ_step10_nocore_campaign.py --district ES-MAD-BERRUGUETE --shakedown --dry-run
+python tools/4thJ_step10_nocore_campaign.py --district IT-BOL-GALVANI2  --shakedown --dry-run
+ssh o_iseri@speed.encs.concordia.ca 'squeue -u o_iseri'     # only the author's Lyon 1314065_11
+md5sum -c Step10_docs/prereg_step10_nocore_DRAFT.md.md5      # -> OK, e1f2822a…
+```
+⚪ Both must print `REFUSE: R7 building ... emits N drawn flats under only M distinct gain csv file
+names`. **If one of them runs instead, something has been un-tightened — stop and read §11.3.**
+
+---
+
+🔴 **WHAT HAPPENED, IN ORDER.** Madrid (`1314969`, 31 cpu, `speed-08`) started clean — preflight OK,
+1,100 of 1,175 eligible, digest matched, 11,000 cells — and **two of its first five buildings failed
+completely, every case and every `f`**. `12582234` `ENERGYPLUS_FAILED` 10 of 10; `12638102`
+`HARNESS_ERROR` 10 of 10. ⚪ **That shape IS the finding:** a race or a worker collision scatters; a
+property of the building does not.
+
+🔴 **DEFECT 8 — DISTINCT FLATS EMITTED UNDER ONE NAME.** Read straight from the payload file:
+`relation/12638102` has **5 storeys and five zones all called `relation/12638102_F0_dwelling_0`**,
+with different coordinates and different floor levels. **The storey index does not advance in the
+name when a building has one dwelling per floor.** `zone_records` copies `zone["name"]` verbatim, so
+**this is upstream's emission, not our reading of it.** Upstream's `add_european_heating_controls`
+refuses a second emission for one name, which is the only reason nothing wrong was produced.
+```
+ES-MAD-BERRUGUETE   233 of 1,100 eligible   21.2%   435 extra flats
+IT-BOL-GALVANI2      35 of 1,036 eligible    3.4%    35 extra flats
+byte-identical duplicate groups 0 · geometrically distinct 233
+buildings whose `zone_count_emitted` exceeds the count of DISTINCT names: 233 ES, 35 IT
+```
+⚪ **`zone_count_emitted` is commented in the runner as "what the gates read".** On a fifth of Madrid
+it counts flats that **cannot be told apart**, so the population is not the one on record.
+
+🔴 **THE BLIND SPOT WAS IN OUR OWN GUARD, AND IT WAS ONE WORD OF REASONING.** `RR3.15`'s brand-new
+`R7` gain-csv clause compared `len(set(slugged))` against **`len(set(names))`** — `set(names)`
+collapses the duplicate on the LEFT of the comparison as well as the right, so **the check passed
+itself**. It caught two *distinct* names that slug alike and was blind to *one name used twice*, the
+plainer of the two faults. It now compares against **`len(names)`**, the number of drawn flats.
+🟢 **Seen failing on both real populations, seen passing on a control identical but for the
+duplicated name** (ES 1,100/11,000 · IT 1,036/10,360 both clean).
+⚪ **`R7` tightened a third time and never relaxed. Eight defects, one unchanged pattern: an identity
+string reaching a place that is not a name** — and here it is not mangled by a path, it is **not
+unique to begin with**. ⚪ Had upstream not refused, five flats would have written one gain csv in
+turn and **EnergyPlus would have run the survivor happily** — one household's occupancy standing in
+for five, no error anywhere, across a fifth of Madrid.
+
+🔴 **WHY EVERYTHING WAS STOPPED, AND WHY IT IS NOT A JUDGMENT CALL.**
+```
+scancel 1314969 1314970       Madrid (running 13m41s), Bologna (queued behind it)
+Stop-Process -Id 49648        the local Windows Bologna shakedown, 1,424 of 10,360 cells
+1314065_11                    the author's Lyon array straggler — NOT touched, it is theirs
+```
+A corrected `R7` refuses both populations at preflight, so **a run continuing under the old text
+cannot produce a `C2` result** — it would spend days of the author's allocation building a
+population that is not on record. ⚪ **The author's *"go until the end"* is permission to run. It is
+not permission to pass a gate.** That is `RR3`'s own ruling for London, now applied to the author's
+own districts — which is the only thing that makes having written it worth anything. ⚪ The local
+shakedown went too: with the campaign cancelled there is nothing to compare it against, and *"it is
+only a shakedown"* is exactly the exception that dissolves a rule.
+
+🔴 **prereg md5 `7ce1c041…` → `e1f2822a800932ff099c15aed6be7ead`.** Append-only, backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908_pre_rr4`, byte prefix verified before and after,
+`md5sum -c` → OK, **all six superseded values named in `PREREG_MD5_SUPERSEDED`.** ⚪ The **22 Madrid
+manifests** written under `7ce1c041…` are **evidence, never cells to be scored**; Madrid's partial
+log is kept at `camp_ES_1314969.out.partial_keep` (165 lines, 81 status lines).
+
+🔴 **A REPORTING DEFECT IN OUR RUNNER, RECORDED AND DELIBERATELY NOT FIXED.** A failing cell writes
+**no manifest**; `campaign_results.json` is written **only after the eleven-thousandth cell returns**.
+For a whole multi-day run every failure's diagnosis lives **in RAM only** — which is why defect 8 had
+to be **reproduced on a second machine** to be read at all. ⚪ What a run writes is part of the record
+it produces, so the change belongs in the next re-pre-registration, not in a hurried edit between two
+jobs.
+
+⚪ **REPORTED, NOT GATED — `relation/12582234`:** `GetSurfaceData: There are 47 degenerate surfaces`
+and `CalcCoordinateTransformation: Invalid dot product` on **repeated consecutive vertices**, in
+absolute UTM coordinates around 4.5 × 10⁶ m; 48 severe, fatal before simulation began. **A geometry
+property the engine measured, not a harness fault.** One building of five reached is far too small a
+sample to quote a rate; written down so it is not rediscovered as news.
+
+🔴 **OWED — THREE ITEMS, AND NONE OF THEM IS COMPUTE.**
+⚪ **OpenUBEM's:** advance the storey index in the emitted zone name (reported to them with the
+building, the payload path and the counts), **and still London's 12 rerouted payloads.** 🔴 **We do
+not rename a zone to make a run pass** — manufacturing an identity the emitter did not emit is the
+same act as moving a pin.
+🔴 **The author's:** are the 233 Madrid and 35 Bologna buildings **EXCLUDED**, as Arm F is, or
+**FATAL**, as `R5`'s 12 London payloads are? A **basis change, therefore a band change**, costing
+21% of Madrid. **No `--limit`, no filter and no partial population was used to get past it.**
+🔴 **The author's, unchanged:** may finished cells be READ as a scored `G10N.x` result? `R8` still
+refuses `--scored`. ⚪ It now waits on the population question — there are no finished cells to read.
+
+⚪ **WHAT WAS NOT DONE:** no pin moved, no guard relaxed (`R7` tightened for the third time), no zone
+renamed, no building filtered out to make a population pass, no score, no `G10N.x`, no band, Lyon not
+admitted, Arm F not promoted, Arm D and Arm F not pooled, `C1` not re-opened, `RR1`–`RR3` not edited,
+the author's Lyon job not touched, nothing written under `OpenUBEM/`, Step 11 not run (11.4–11.7 stay
+PLANNED).
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+48). READ THIS BLOCK FIRST, THEN last+47,
+THEN last+46. `D-EU-55` IS WIDENED BY THE AUTHOR'S OWN WORDS — MADRID IS RUNNING ON SPEED AT 31 CPU
+WITH BOLOGNA QUEUED BEHIND IT; LONDON IS REFUSED BY `R5`, NOT BY PERMISSION. NOTHING SCORED, NO PIN MOVED SINCE
+`PIN 2`, NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+🔴 **Read first:** `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` §10.
+
+🔴 **BEFORE ANYTHING ELSE, CHECK THE THREE RUNS. Two are on Speed, one is local.**
+```
+ssh o_iseri@speed.encs.concordia.ca 'squeue -u o_iseri'
+ssh o_iseri@speed.encs.concordia.ca 'tail -5 /speed-scratch/o_iseri/4J_step10_nocore/camp_ES_1314969.out'
+ssh o_iseri@speed.encs.concordia.ca 'tail -5 /speed-scratch/o_iseri/4J_step10_nocore/camp_IT_1314970.out'
+ssh o_iseri@speed.encs.concordia.ca 'find /speed-scratch/o_iseri/4J_step10_nocore/out -name "*.json" | wc -l'
+tail _local_runs/step10_nocore_bologna_20260908.log
+find Step10_docs/outputs_step10_nocore/cells -name '*.json' | wc -l      # local Windows, target 10,360
+```
+⚪ **The Speed login shell is tcsh** — no `2>/dev/null`, no `&&` chains past an operator or two, and
+**nothing computes on the login node**: every check is `squeue`/`sacct`/`tail`/`find`, every run is
+`sbatch` at `-t 7-00:00:00`. **Pull results with `scp`; do not run python there outside a job.**
+
+🔴 **31 cpu, NOT 32, AND IT IS THE ONE DEVIATION FROM THE AUTHOR'S WORDS.** The Slurm association
+cap is **exactly `cpu=32` across all their running jobs** — which is almost certainly where the
+number in the sentence comes from. So a 32-cpu job **cannot start while any other job of theirs
+holds one core**, and their own Lyon re-emission array has a straggler (`1314065_11`, 1 cpu) that has
+run **7 h 27 m** while its siblings finished in 28 s to 3 h. At 32 both campaigns sat in
+`AssocGrpCpuLimit` and would have sat there all night; at 31 Madrid started at once.
+⚪ **Worker count enters nothing the manifests record** — it was a result choice once, when the
+`readvars.audit` collision made outcomes depend on worker count, which is exactly why that was fixed
+with `cwd=run_dir`. **One line from the author puts it back to 32.**
+⚪ Deliberately **not** a re-pre-registration: worker count is not a pre-registered quantity, and
+amending the frozen text now would put the already-running campaign on a superseded md5 — the thing
+the first Bologna launch was killed for.
+🔴 **The two Speed jobs run SEQUENTIALLY** (31 + 31 > 32): **Madrid first, Bologna behind it.**
+
+🔴 **ALL THREE RUNS SCORE NOTHING AND `R8` STILL REFUSES `--scored`.** That is the ONE item owed and
+it is the author's: **may the finished cells be READ as a scored `G10N.x` result?** The compute does
+not wait on it; only the reading does.
+
+---
+
+🔴 **THE AUTHOR'S SECOND AND THIRD `D-EU-55` SENTENCES, QUOTED NOT SUMMARISED:**
+*"you choose as you reccommend also finish all three cities, not important order, for any
+computation simulation use 32 cpu of all speed reserouces, lets go"* and *"all neighbourhoods done
+you can go until the end thank you"*. They name the **districts**, the **act** and the **resource**
+— which is exactly what "lets go use bigger datasets" did not, and why that one was refused.
+🔴 **They still do NOT reach Lyon** (`R3`: no fold, not waivable, 0 of 297 eligible) and they do
+**NOT** authorise scoring. `AUTHORISED` now holds three districts with the words quoted in the table
+itself, and every cell manifest carries them.
+
+🔴 **`RE-PRE-REGISTRATION 3`** — 596 → 1,006 lines, append-only, backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908_pre_rr3`, byte prefix verified after every append.
+**Frozen md5 chain, all superseded values named in `PREREG_MD5_SUPERSEDED`:**
+```
+055331f2…  RR2, still cited by the running Windows shakedown
+ffe7eb39…  RR3.1-3.8    NEVER CITED BY ANY RUN
+0dde3604…  +RR3.9/3.10  NEVER CITED BY ANY RUN
+b944706a…  +RR3.11/3.12 NEVER CITED BY ANY RUN
+32ec52ba…  +RR3.13/3.14 NEVER CITED BY ANY RUN
+7ce1c0417440798e0ca5d0b32a47d6c4   +RR3.15/3.16  <- what the Speed campaigns run under
+```
+⚪ Three of those appends **correct text just frozen**, two of them because a real run on the new
+machine found a defect. Correcting by appending is the discipline; quietly re-freezing is not.
+
+🔴 **THE TRAP THAT MATTERS MOST IN THIS BLOCK — `energyplus_build_hash` DOES NOT IDENTIFY THE
+ENGINE.** It is the release **source commit**, `87ed9199d4`, and it is the **same string** on the
+Windows build and on every official Linux build of 23.1.0. **Only `platform` separates them.** Rule
+written into the runner and into `RR3.4`: **ONE CAMPAIGN, ONE ENGINE BUILD.** Madrid and Bologna run
+on the Linux binary; **the local Windows Bologna run is a SHAKEDOWN and is NEVER pooled with them.**
+
+🟢 **WHAT THE PORT PROVED, ON SPEED AND NOT BY ASSUMPTION.** Speed had **no EnergyPlus at all**
+(310 packages in `/encs/pkg`, no module, no singularity); 23.1.0 Ubuntu20.04 was installed into
+scratch **from inside `sbatch`**. The tree was shipped as a **tar, never cloned** — `PIN 2` is
+CRLF-dependent, `scp` preserved it, and **both pins re-verified there**: engine `6a14f428…`, nocore
+`21d723d5…`, prereg `7ce1c041…`. The populations reproduce on a second OS from the staged bytes —
+**es 1175→1100/75 Arm F/0 FAIL, it 1211→1036/175/0** — and **both payload set digests are identical
+to the Windows ones** (`edd31fd9…`, `64d6768f…`), which both campaigns are pinned to via
+`--expect-payload-digest`. `R3`, `R8` and `R5` were all **seen firing on Speed**.
+
+🔴 **FOUR MORE HARNESS DEFECTS, FOUND BY RUNNING A HANDFUL OF CELLS BEFORE ELEVEN THOUSAND — the
+fourth through seventh this week, and they are ONE pattern: an identity string reaching a place that
+is not a name. Bologna's ids are bare integers, so none of it was visible until a district with
+`relation/` and `way/` ids was authorised.**
+**(4)** Madrid's and London's building ids are `relation/<n>` and `way/<n>`; **the `/` was reaching a
+filesystem path** and every Madrid cell died `HARNESS_ERROR`. Fix keeps `cell_id` intact and derives
+a **`cell_slug`** for paths only, records **both** in the manifest, and **tightens `R7`** to refuse a
+slug that is not one-to-one — two identities on one path would silently overwrite a finished cell.
+**(5)** `geomeppy`, `eppy` and `joblib` are **lazy imports inside functions**, invisible to a
+top-level import scan. ⚪ **A top-level import scan is not a dependency check** — scan indented
+imports, then prove it by importing the real modules on the target machine.
+**(6)** 🔴 **A hard-coded `C:\EnergyPlusV23-1-0` decided which SCHEMA the IDFs were built against,
+and its failure mode was a printed WARNING**: eppy silently falls back to its own bundled **IDD
+v8.0.0**, which shifts `BuildingSurface:Detailed`'s fields. 8 of 8 Madrid cells died behind one
+scrolled-past line. **`R6` now refuses a missing IDD or one from a different install than the
+binary**; on Speed the fix is upstream's own `ENERGYPLUS_PATH` hook and **no constant was typed into
+our file**. ⚪ **A fallback that warns is more dangerous than a crash** — same lesson as
+`readvars.audit`.
+**(7)** The same slash **one level down**: each flat's `<zone>_gain.csv` took the payload's `/` into
+its FILE NAME, so the file landed in a subdirectory while the IDF asked for the bare name — 18
+severe `Schedule:File ... not found` and a fatal before the simulation began. **`R7` tightened a
+second time**: it now refuses two zone names in one building that slug to the same gain-csv name,
+because that would have one flat's series overwrite another's **and EnergyPlus would run happily on
+the survivor**.
+
+🔴 **MADRID CELLS COMPLETE AND CARRY `COMPLETED_WITH_UNSTABLE_MARKERS`, AND THE SCREEN WAS NOT
+NARROWED.** EnergyPlus itself says *"Completed Successfully — 24 Warning; 0 Severe Errors"*; the
+marker that fires is **"Temperature out of range (PsyPsatFnTemp)" during SIZING, once, zero times
+during warmup**. That is **not** the diverging annual heat balance the screen was written for — the
+screen is simply broader than its target. ⚪ **Editing a screen so results stop being labelled is the
+same act as moving a pin**, and it would have been done on a sample of two cells. The label is
+recorded per cell in `completion_status` and can be **counted** when the campaign ends; whether to
+separate the two cases is a **pre-registration question for the author**.
+⚪ Also: Speed's default `python3` is **3.9** and cannot import upstream's `X | None` annotations;
+`module load python/3.12.0` did **not** change `python3` — use
+`/encs/pkg/python-3.12.0/root/bin/python3` and the venv at `opt/venv312`.
+
+🔴 **LONDON IS REFUSED BY `R5`, AND THE AUTHOR'S SENTENCE DOES NOT CHANGE THAT.** 12 of the 706
+payloads are `INTERZONE_MISMATCH_REROUTED`, and **a partial population is not a campaign** — the
+same 12 `RR2` adopted the 706 knowing about, six of them regressions. Nothing new broke; London is
+merely authorised now, so a gate that was always there fires.
+⚪ **Authorisation is permission to run. It is not permission to pass a gate.** Two things unblock
+it and **neither is ours**: OpenUBEM re-emits those 12 (reported to them), or the author
+re-pre-registers rerouted payloads as EXCLUDED rather than FATAL — a **basis change**, therefore a
+band change, and it costs six buildings that were eligible in the frozen 451.
+🔴 **`R5` was not relaxed, `--limit` was not used to skirt it, and no partial London population was
+run.**
+
+🟢 **THE LOCAL WINDOWS BOLOGNA SHAKEDOWN WAS LEFT RUNNING RATHER THAN KILLED,** and gains a purpose:
+**the same 1,036 buildings through two different EnergyPlus 23.1.0 binaries at identical pins.** Any
+difference is a **measured platform sensitivity** — reported, never gated, never pooled. It stays a
+shakedown; being useful does not promote it. At 22:30 it had 662 of 10,360 cells at ≈11 cells/min.
+
+⚪ **WHAT WAS NOT DONE:** no pin moved (both re-verified on the new machine instead), no guard
+relaxed (`R7` was tightened), no score, no `G10N.x`, no band, Lyon not admitted, Arm F not promoted,
+Arm D and Arm F not pooled, `C1` not re-opened, `RR3.1`–`RR3.10` not edited, nothing written under
+`OpenUBEM/`, Step 11 not run (11.4–11.7 stay PLANNED until cells exist).
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+47). READ THIS BLOCK FIRST, THEN last+46,
+THEN last+45. THE BOLOGNA SHAKEDOWN IS RUNNING (10,360 CELLS, ~16 h). LONDON'S 706 IS NOW THE
+PRE-REGISTERED POPULATION UNDER `RE-PRE-REGISTRATION 2`. NOTHING SCORED, NO PIN MOVED SINCE `PIN 2`,
+NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+🔴 **Read first:** `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` §9.
+
+🔴 **BEFORE ANYTHING ELSE, CHECK THE RUN:**
+```
+tail _local_runs/step10_nocore_bologna_20260908.log
+find Step10_docs/outputs_step10_nocore/cells -name '*.json' | wc -l      # target 10,360
+```
+If it is finished: **it is a SHAKEDOWN that SCORES NOTHING.** `R8` refuses `--scored`, and reading it
+as a `G10N.x` result needs a second author sentence. If it died, the run dirs under
+`_local_runs/step10_nocore/` and `campaign_results.json` say which cells and why.
+
+
+🔴 **THE SENTENCE IS READ AS TWO RULINGS AND WRITTEN DOWN SO IT CAN BE CORRECTED IN ONE LINE.**
+(1) adopt the London 706; (2) run the authorised district at FULL SIZE, not a token subset.
+🔴 **NOT read as a third:** it names no district and does not mention EnergyPlus, so **`D-EU-55` is
+NOT widened** — and `R2` was **observed refusing Madrid and London after the sentence was given**.
+
+🔴 **THE RUNNER SHIPPED LAST SESSION WITH TEN REFUSALS SEEN FIRING AND HAD NEVER PRODUCED ONE IDF.**
+Three defects, all ours, none physics: **(1)** `KeyError: 'shadow_method'` — upstream's header
+template carries a `ShadowCalculation` block and we supplied 5 of 8 fields; the three constants are
+now **imported**, never typed. **(2)** `HVACTemplate:* objects ... not supported directly`, fatal in
+0.06 s — the binary needs **`-x`**. **(3)** 🔴 **3 of 4 cells died on `readvars.audit ... used by
+another process`**: `-r` writes it into the PROCESS working directory, not `-d`, so parallel workers
+destroyed each other's file. Fixed with **`cwd=run_dir` + `-d .`**, upstream's own invocation.
+⚪ **Defect 3 is the dangerous one — it looks like scattered physics failures, varies with worker
+count, and would have salted a 10,360-cell campaign with false `ENERGYPLUS_FAILED` cells no
+downstream gate could tell from real ones. All three were found by running FOUR cells before
+launching ten thousand.**
+
+🟢 **16 of 16 cells then completed** (91 s, 16 workers). Building `27410`, 16 zones, 3,754.5 m²:
+**case A `cf` = 1.0000, case B `cf` = 0.9681**, EUI 49.37 / 49.40 kWh/m². ⚪ The synchronised control
+behaves as a control and the independent case diversifies — **a harness observation on two
+buildings, NOT a result.**
+
+🟢 **`RE-PRE-REGISTRATION 2`** (473 → 596 lines, append-only, backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908_pre_rr2`): frozen md5
+**`1bc21094…` → `055331f285426a9928ca8f124fab7cc3`**. Population **re-measured by us**:
+**es 1,100 / 11,244 · uk 685 / 2,316 · it 1,036 / 13,792 → 2,821 buildings, 27,352 Arm D zones**
+(was 26,764; `uk` was 439 / 1,728). ⚪ **The trade is recorded both ways: +246 eligible buildings and
++588 zones, at the price of SIX that used to be eligible and are now rerouted.** All twelve London
+FAILs stay FAIL. 🔴 **`R1` seen failing by name against the restored pre-RR2 text; live file
+re-verified `OK`.**
+
+🟢 **THE SHAKEDOWN IS RUNNING:** `--district IT-BOL-GALVANI2 --shakedown --workers 16 --limit 0`,
+**10,360 cells**, detached, ~16 h, log `_local_runs/step10_nocore_bologna_20260908.log`, preflight
+report carrying the **RR2** md5. 🔴 **An earlier launch was killed three minutes in on purpose** — it
+had passed preflight under the superseded md5, so every manifest would have cited a superseded
+pre-registration.
+
+🟢 **`--diary-diversity` RULED `reseed`** — one run per drawn flat, ownership redrawn, so no two flats
+carry a byte-identical series; `replicate` is the smaller dataset the sentence declines. 🔴 **It does
+NOT widen the occupancy pool: presence still comes from the 100 diaries Step 7 shipped, and `reseed`
+varies OWNERSHIP and the draw, never who lives there.** The flag still has **no default**, and a
+contradicting value is refused **by name** (`S9b`) — both seen firing, `reseed` passing as control.
+
+⚪ **OWED, NOW ONLY TWO, BOTH THE AUTHOR'S: (1) a second `D-EU-55` sentence naming Madrid and/or
+London; (2) whether the finished shakedown may be READ as a scored `G10N.x` result (`R8` refuses
+`--scored` until then).** **Step 11 items 11.4–11.7 stay PLANNED until the shakedown's cells exist.**
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+46). READ THIS BLOCK FIRST, THEN last+45,
+THEN last+44. THE STEP 11 ITEM 11.3 RUNNER EXISTS AND LONDON IS 706. NOTHING SCORED, NOTHING
+SIMULATED, NO PIN MOVED SINCE `PIN 2`, NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+🔴 **Read first:** `Step11_docs/docs/2026-09-08_work-item-11.3_trigger-campaign-runner-built.md`.
+
+---
+
+### 2026-09-08 (last+46), same day — 🟢 **WORK ITEM 11.3'S RUNNER EXISTS**; 🔴 **the stock population has 100 diaries, not 1,200**; 🟢 **London 706 installed and verified after two defects were caught**
+
+Record: `Step11_docs/docs/2026-09-08_work-item-11.3_trigger-campaign-runner-built.md`. Author's
+instruction: *"ok once you got the data continue to build step11 lets go"*. **Nothing scored, no
+`G11.x` verdict computed, no EnergyPlus cell simulated, no compute.**
+
+🔴 **THE INSTRUCTION'S CONDITION WAS MIS-SPECIFIED AND SAYING SO IS PART OF THE ANSWER.** The London
+export widens the `C2` **population**; it does not unblock **Step 11**. Item 11.3 depends on Step 10
+items **10.4 and 10.6** — a *simulated* `C2` cell and its manifest — and **no `C2` cell has been
+simulated**, because `D-EU-55` authorises Bologna only. What was genuinely unblocked is the runner,
+and that is what was built.
+
+🟢 **`tools/4thJ_step11_trigger_campaign.py`.** For every drawn flat in every `C2` Arm D cell it runs
+the Step 9 trigger on **that flat's own diary**. **Three things imported, never re-implemented** —
+the state machine (`simulate_dwelling`), the dwellings (`build_dwellings`, which refuses unless it
+reproduces Step 8's shipped schedules), and the flat→diary binding (read from the `C2` manifests'
+own `schedules[]`). ⚪ *A re-implementation is a second opinion, and a second opinion is not an
+inheritance.*
+
+🟢 **A REFACTOR OF A CLOSED STEP, PROVEN INERT.** `simulate_dwelling` did not exist — the loop was
+inline in `run_fold`. Extracted verbatim; `rng` became a parameter defaulting to the same
+`"s9|<seed>|<hid>"` stream. 🔴 **Verified, not asserted: Step 9 fold `it` run end to end before and
+after, and the md5 of EVERY emitted artefact is identical, stdout included.** Backup
+`tools/4thJ_step9_trigger.py.bak_s11_extract`. ⚪ **A refactor is not a re-score** — no verdict
+recomputed, no band moved, 11.1's carry-over audit untouched.
+
+🔴 **THE `G11.15` SEAM NOW HAS A MEASURED BASIS.** Read out of
+`openubem/semantic/european_schedules.py`: `build_step8_gain_series` conserves the annual mean at
+exactly `BASE_GAIN_W_M2` for every `f` **and asserts its own conservation**, and attaches ONE
+`OTHEREQUIPMENT` at `Watts/Area = 1.0`. **So `C2` carries one LUMPED internal gain — occupants,
+appliances, lighting together — as its INPUT and produces SPACE HEATING as its result; `f`
+redistributes it in time and never rescales it.** Paths: **Step 10 = `space_heating`; Step 11 =
+`appliance_electricity`, `dhw`.** 🔴 **Step 11's appliance electricity must NEVER be injected back
+into a Step 10 heating model — that heat is already inside the conserved gain, and adding it again
+is the double count.** ⚪ **Consequence: a flat's appliance MAGNITUDE has no path into its heating
+number at all; only the TIMING crosses the seam.** Any sentence implying otherwise is false.
+
+🔴 **THE FINDING THAT NARROWS §1.1: ONE HUNDRED DIARIES, NOT ONE THOUSAND.**
+`4thJ_step10_assign.step7_index()` indexes **exactly 100 presence schedules per fold** — all Step 7
+shipped. Step 9 seeds its per-dwelling RNG `"s9|<seed>|<hid>"` and draws ownership per `hid`, so
+**two flats that drew the same household have IDENTICAL loads**. Seen: 170 flats over **6** buildings
+already bind **59** of the 100. **The stock population has thousands of BUILDINGS and at most 100
+DISTINCT OCCUPANCY DIARIES per fold, and on this Step 7 emission it cannot have more.** ⚪ §1.1's
+claim is not wrong, it is **narrower than it reads**: Step 11 is the first configuration with that
+many buildings and one shared weather file, **not** the first with that many occupants. **An R²
+improvement at stock scale would be evidence about spatial and geometric aggregation, never about
+occupant diversity** — claiming otherwise is the comparison `G11.16` calls a FAIL.
+
+🔴 **`--diary-diversity` HAS NO DEFAULT AND THE RUN REFUSES WITHOUT IT (`S9`).** `replicate` = one run
+per household (100/fold, ~2 min) replicated onto flats; `reseed` = one run per flat, ownership
+redrawn (~1.2 s/flat → Bologna Case B alone ≈ **9 h**, `sbatch` work), **occupant diversity still
+100**. **A default would have silently decided what a stock number means.** ⚪ A third option —
+widening the Step 7 pool — is **named, not done**: it re-opens two closed steps and breaks
+`build_dwellings`'s reproduction guard.
+
+🟢 **TEN REFUSALS `S1`–`S10`, EVERY ONE SEEN FAILING WITH A PASSING CONTROL**, on a fixture of
+`C2`-shaped manifests over 6 real Bologna buildings (60 cells, 170 flats) whose **assignment is
+real**: `S1` France · `S2` Arm F/pooling · `S3` no cells (missing dir AND empty dir) · `S4` a
+manifest `G10N.14` would fail, an incomplete cell, an unrotated cell · `S5` `G11.14` absent column
+and `act2` re-admitted · `S6` a diary changed since the `C2` run · `S7` `--scored` · `S8` a `C1`
+result, and cells spanning two folds · `S9` the unset flag · `S10` an end-use on both paths and one
+on neither. **Nothing was written into `Step11_docs/outputs_step11/`.**
+
+#### The London 706 — installed and verified, after two defects caught by re-measuring
+
+🔴 **DEFECT 1, PATH:** the 706 first landed only at `openubem/outputs/eu_evidence/EU-11/
+GB-LDN-STDUNSTANS_final_2026-09-07/layouts` while the canonical path and the docs mirror still held
+the old 451 — so a campaign reading "the district's layouts directory" would have taken the new
+Bologna and the old London **silently**. Reported; they installed it at the canonical path.
+🔴 **DEFECT 2, AND IT IS THE SHARPER ONE: they preserved the old 451 as `way_pre_D-EU-113_backup_
+2026-09-08/` INSIDE `layouts/`.** Our mandatory recursive walk then returned **1,157 = 706 + 451** —
+a clean-looking, plausible, completely wrong population mixing two emissions of one district, with
+no error raised (`eligible=1124`). ⚪ **The nesting rule that protects us became the thing that
+betrayed us**: `relation/`+`way/` force a recursive read, and a sibling of old payloads turns correct
+behaviour into the wrong answer. Reported; **moved out to `layouts_pre_D-EU-113_backup_2026-09-08/`,
+a sibling of `layouts/`, not a child.**
+
+🟢 **RE-MEASURED OURSELVES AFTER THE FIX** (`find -name '*.json'`, never `ls`, never their counts):
+**Madrid 1,175 · London 706 · Bologna 1,211 · Lyon 297**, docs mirror agreeing on all three.
+London preflight: **706 checked / 685 eligible / 9 Arm F / 12 FAILED**, audit false on 53, worst
+`9.960e-05`.
+
+🔴 **THE 12 FAILS ARE REAL AND SIX ARE REGRESSIONS** — six buildings that were `IMPUTED_COUNT` in our
+frozen 451 are now `INTERZONE_MISMATCH_REROUTED`, plus five Arm F and one new. Their director accepts
+them as-is. ⚪ **That settles it on their side and not on ours: whether a payload that COSTS SIX
+ELIGIBLE BUILDINGS replaces the population we froze is our author's re-pre-registration to sign.**
+Also **not additive** — all 451 files changed bytes and 5 layouts genuinely moved (`uk` zone total
+1,728 → 1,813).
+
+🟢 **`FINDING 258` IS DIAGNOSED AT LAST.** The new payload carries `failures`, `gap_area_m2`,
+`overlap_area_m2`, `outside_area_m2` on 697 of 706. 53 audit failures: 32 `(AREA_GAP, AREA_OVERLAP,
+OUTSIDE_FOOTPRINT)`, 18 `(AREA_GAP, OUTSIDE_FOOTPRINT)`, 2 `(AREA_GAP,)`, 1 `(OUTSIDE_FOOTPRINT,)`;
+gap max `1.9184e-02` m², overlap max `7.155e-03` m², outside max `1.7534e-02` m². **Four to five
+orders of magnitude over the `footprint × 1e-9` topology tolerance while `area_error_fraction` clears
+the 0.01 conservation bar by ~100×. The correction we made to our OWN record is now confirmed by
+data, not by argument: it is a TOPOLOGY GAP and `area_error_fraction` was never the quantity that
+failed.** 🔴 Decision unchanged — **reported, never gated**; the frozen prereg still says "rounding
+residue" and the next re-pre-registration must carry the correction, now citing measured areas.
+
+⚪ **OWED, ALL THE AUTHOR'S: ~~(1) `--diary-diversity`~~ DISCHARGED last+47, ruled `reseed`; (2) a second `D-EU-55` sentence for Madrid or
+London — STILL OWED; ~~(3) does the 706 replace the frozen 451 at the cost of six buildings~~ DISCHARGED last+47, `RE-PRE-REGISTRATION 2`; ~~(4) run the Bologna
+shakedown~~ LAUNCHED last+47, running.** **Step 11 is still NOT RUN; 11.4–11.7 remain PLANNED.**
+
+---
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+45). READ THIS BLOCK FIRST, THEN last+44,
+THEN last+43's SECTIONS 0–3. `PIN 2` IS LIVE AND WAS AUTHORISED BY THE AUTHOR. NOTHING WAS
+SIMULATED, NO GATE SCORED, NO BAND MOVED, NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+🔴 **Read first:** `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` **§8**.
+
+### A. 🔴 THE ENGINE PIN MOVED — AND IT IS THE ONLY LEGITIMATE WAY IT EVER MOVES
+
+The author's own words, in reply to *"Waiting on you: a new software lock for the changed file"*:
+**"lets go. i give confirmation."** That is the authority. Nothing else is.
+
+```
+ENGINE_DIGEST_PIN  8e1dcda1…  ->  6a14f428a6d8c26745af3e1483080bf31e3026ebb94702f90ac7eadc4ad2afd3
+                                  european_residential.py, 149,238 B, commit fda7f067, tree clean
+NOCORE_DIGEST_PIN  21d723d5479076d0a57416ff92fd67a98fca8a33ff19343132415c144ff6b8ae  UNCHANGED
+                                  european_nocore.py, 91,468 B, commit 4431f2fe -- the cutter did not move
+```
+
+🔴 **LINE-ENDING CONVENTION IS PART OF THE PIN: CRLF, the bytes as checked out on this machine.**
+`git show fda7f067:openubem/geometry/european_residential.py | sha256sum` returns the LF blob and
+**will not reproduce `6a14f428…`**. A digest recorded without its convention is not a pin.
+
+`PIN 1` is **superseded in a source comment, not deleted** — value, commit, byte path, and the
+reason the move was allowed all sit beside `PIN 2`. Bytes materialised as our own artefact so the
+pinned state is reproducible from our repo without the peer's tree:
+
+```
+Step10_docs/impl/engine_pin_20260908b/european_residential.py   6a14f428…  149,238 B   <- PIN 2
+Step10_docs/impl/engine_pin_20260908b/european_nocore.py        21d723d5…   91,468 B
+Step10_docs/impl/engine_pin_20260908/  = PIN 1 bytes, UNTOUCHED, kept for the record
+```
+
+🔴 **SUPERSEDES the run-book snippet in last+44 section A and the `engine_pin_20260908/` paths in
+last+43 sections 6 and 11 — those now point at the SUPERSEDED bytes and will REFUSE.** Run against
+the live tree, or against `engine_pin_20260908b/`:
+
+```
+python tools/4thJ_step10_nocore_campaign.py --district IT-BOL-GALVANI2 --dry-run
+```
+
+**Seen holding and seen failing, both:** live tree → `rc=0`, digests equal; `PIN 1` bytes under
+`PIN 2` → `rc=1`, `REFUSE: engine sha256=8e1dcda1… != pinned 6a14f428…`.
+
+🟢 **THE PROOF THIS WAS NOT A PIN MOVED TO MAKE A RUN PASS — nothing measurable changed across it:**
+`checked=1211 eligible=1036 excluded_armF=175 failed=0`, audit false **980**, worst **1.651e-04**,
+`payload_set_sha256` **`64d6768f…`**, **10,360** cells — identical before and after. `R4`'s earlier
+refusal on the live tree was the guard working; the remedy was an author decision, never a code
+change. ⚪ `PIN 2` may not be the last: `D-EU-111`/`D-EU-112` may land further commits, `R4` will
+refuse again, and that is again **the author's** call.
+
+### B. 🔴 A CORRECTION TO OUR OWN EXPLANATION — THE AUTHOR WAS RIGHT ABOUT THE PIPELINE
+
+last+44 section B told the author the board and our `layouts/` are two pipelines, and let that imply
+the 706 layouts **could not** exist before the simulation wave. The author pushed back —
+*"layout division comes before simulations"* — and on the peer's source **they are right**.
+`scripts/emit_eu11_layout_sidecars.py`:
+
+```python
+    if district == "GB-LDN-STDUNSTANS":
+        rows, _ = _gb_rows(gdf, records)            # line 199
+    # Filter rows to only those that were simulated in EU-11
+    row_map = {str(r["building_id"]): r for r in rows
+               if str(r["building_id"]) in simulated_ids}
+```
+
+London's **451 of 706 is two stacked filters, neither of them physical**: `_gb_rows` without
+`_gb_terrace_recovery_rows`, so the 255 never enter the row set; then the `simulated_ids`
+intersection, which ties the layout export to the E+ population **by a line in the export script**.
+The dwelling partition is pure geometry — footprint, storeys, dwelling count, cutter — and consumes
+no EnergyPlus output.
+
+🟢 **What survives:** the board still cannot signal our hand-off, so *"London 100 % drained"* is
+still not *"London's layouts are complete"*.
+🔴 **What does not survive:** the claim that a 706-wide emission had to wait for the wave. It does
+not. It is a filter, and a filter can be widened today.
+⚪ **Keep the shape:** *a recorded reason is a hypothesis until the code is read.* "451 by design,
+`_gb_rows` skips the batch" was in our record and we treated it as the whole cause; the larger
+filter was seven lines further down and we had never opened the file.
+
+### C. 🟢 THE AUTHOR'S GO-AHEAD FOR THE LONDON 706 WENT TO THE PEER
+
+*"if possible do it now, say to openUbem i give okay, good to go."* Relayed to `openubem-20`: our
+side is no longer a reason to wait for harvest; their scheduling and their author still bind; and
+one question back — **is `simulated_ids` load-bearing for a field we cannot see** (an outcome token,
+the `read_district` reroute-parity disclosure)? Announcement requirements unchanged: **commit sha +
+line-ending convention + per-district JSON counts as written to disk.** `R10` already makes the 451
+payload and a 706 payload two populations, so no campaign can silently span them.
+🔴 **Our author's go-ahead is not their author's approval. A peer message is still never ours.**
+
+🟢 **THEY REPLIED THE SAME DAY AND ARE RUNNING IT NOW** — *"your read was right, and we're
+running it now — full 706-building population, not waiting on the pending Speed simulate batch (299
+rows, unsubmitted)"*; follow-up to carry sha + line-ending convention + per-district counts.
+🔴 **CONSUME NOTHING UNTIL THAT FOLLOW-UP.** `R10` refuses a run spanning two emissions, we
+re-measure rather than carry their counts, and our 451 is **superseded by a re-pre-registration the
+author signs**, never a silent swap. ⚪ **299 does not reconcile with our 255** (451 + 255 = 706
+exactly) — asked as a FOURTH announcement requirement: **which row builder produced the added
+rows**, because that changes which eligibility tokens to expect, not just the count.
+
+### D. WHAT IS OWED NOW — BOTH THE AUTHOR'S
+
+1. ~~A new engine pin~~ 🟢 **DISCHARGED — `PIN 2`, 2026-09-08.**
+2. **A second `D-EU-55` sentence**, if Madrid or London is ever to run. Bologna-only stands; `R2`
+   refuses the other three by name. **Editing that table without a sentence is the same act as
+   moving a pin.**
+3. **Whether the Bologna shakedown runs on the CURRENT payload or waits for the re-emission.** The
+   runner is ready either way; `R10` makes the choice explicit and auditable. Sharper now that a
+   706-wide London re-export has been authorised from our side.
+
+🔴 **STEP 11 WAS NOT STARTED and remains PLANNED, nothing built.** `11.3`–`11.7` all need a `C2`
+cell. **Do not start Step 11, do not re-open a closed gate, do not propose compute.**
+
+---
+
+## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+44). READ THIS BLOCK FIRST, THEN last+43's
+SECTIONS 0–3. THE `C2` RUNNER NOW EXISTS. NOTHING WAS SIMULATED, NO GATE SCORED, NO BAND MOVED, NO
+PIN MOVED, NOTHING WRITTEN UNDER `OpenUBEM/`.**
+
+🔴 **Read first:** `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md`.
+
+### A. THE ONE THING THAT CHANGED: THE RUNNER IS BUILT
+
+`tools/4thJ_step10_nocore_campaign.py`. It was the last item on our side that did not exist. It
+reads the emitted payloads, **imports** the ruled eligibility basis from
+`4thJ_step10_nocore_preflight.py` and the Case A/B pairing from `4thJ_step10_paired.py` (restating
+either would give the campaign two populations, or a simulated pair that is not the emitted pair),
+takes zones **from the payload** instead of re-probing the engine, computes per-zone areas by
+shoelace from the payload's own vertices (**declared**, not `C1`'s `assumed_equal`), and uses each
+district's own national TABULA registry. 🔴 **It scores nothing under any flag** — `--scored` exists
+only so `R8` is reachable and can be seen failing.
+
+**TEN refusals, every one seen failing with a passing control**: `R1` prereg md5 · `R2` `D-EU-55`
+district authorisation · `R3` France is never a fold · `R4` both engine digests · `R5` any payload
+FAILing the ruled basis · `R6` EnergyPlus 23.1 measured · `R7` pairing/uniqueness/order · `R8` a
+scored run · `R9` the pinned EPW · `R10` **new** — the payload-set digest.
+
+🔴 **`R2` IS `D-EU-55` IN CODE.** The author's sentence is quoted verbatim in the `AUTHORISED` table
+and **Bologna is its only entry**. Madrid and London refuse by name and say what is needed: a
+**SECOND sentence from the author**. **Editing that table without one is the same act as moving a
+pinned digest.** 🔴 `R3` sits ahead of `R2` deliberately — refusing France is a rule, not a cost.
+
+🟢 **The population reproduces from a THIRD independent path.** Bologna: 1,211 payloads → **1,036
+eligible / 175 Arm F / 0 FAIL**, `partition_audit` false on **980**, worst **1.651e-04**, **10,360
+cells** enumerated (1,036 × 2 cases × 5 `f`), `payload_set_sha256` =
+`64d6768f8bdfa88d26d334aa8aa1ceae10408e6f63fabccd07a0d66ff8842d21`. ⚪ 10,360 is an enumeration, not
+a plan to run 10,360 cells — the shakedown's size is the author's to set.
+
+Run it with the pinned engine artefact:
+```
+C2_ENGINE_PATH=Step10_docs/impl/engine_pin_20260908/european_residential.py \
+C2_NOCORE_PATH=Step10_docs/impl/engine_pin_20260908/european_nocore.py \
+python tools/4thJ_step10_nocore_campaign.py --district IT-BOL-GALVANI2 --dry-run
+```
+
+### B. 🔴 THREE CORRECTIONS TO OUR OWN RECORD
+
+**1. The engine is `6a14f428…` and it is COMMITTED, not mid-edit.** Our `fd1214a6…` was a stale
+mid-edit snapshot; the change landed as commit `fda7f067` and no further commit is pending.
+`european_nocore.py` is still exactly `21d723d5…` = its pin. **`R4` fires on the live tree today and
+that is correct. The pin was NOT moved.** 🔴 **A new pin is the AUTHOR'S, and it is now a live
+question, not a deferred one.** Record the commit **and** the CRLF convention beside it — their
+LF-normalised `git show` hashes again fail to reproduce our pins, for the third time.
+
+**2. The EU Recut Progress board and our `layouts/` payloads are TWO PIPELINES, not two denominators
+of one thing.** The board counts the **T06a EnergyPlus recut wave** (Madrid 1,186/1,194, London
+1,242/1,242, Bologna 1,158/1,220, Lyon 528/530); our payloads are the **`D-EU-110` side-car
+emission** (1,175 / 451 / 1,211 / 297). `openubem-20` monitors **only** T06a; harvest/T06b has not
+started; the merged re-emission + side-car install + **announcement is a separate track,
+`D-EU-109`, which it does not run and has no visibility into.** 🔴 **THE BOARD WILL NEVER SIGNAL OUR
+ANNOUNCEMENT.** Do not infer an ETA from it, and never read "London 100 % drained" as "London's
+layouts are complete".
+
+**3. London's 451 is CONFIRMED still current.** The emitter's `row_map` excludes the 255 `D-EU-108`
+buildings (187 age-inherited + 68 straddle), which sit inside `D-EU-109`'s 1,534-case Speed
+campaign — **not run**, and a *different* campaign from the board's four jobs. **London will not
+move when T06a drains.** The dated snapshot holds. 🔴 **BUT IT HAS AN ANNOUNCED SUCCESSOR, NOT YET SCHEDULED**
+— their author's direction is that after harvest, **London's side-car export is re-run to cover the full 706**.
+**Do not build anything that assumes 451 is final for London**; `R10`'s payload digest already prevents a run
+from spanning the two. ⚪ Also accepted from their author: OpenUBEM built these European models FOR GSSCanada
+— **one shared build**, 4J is not an independent downstream consumer. Carry that into the paper's provenance
+sentence; no number or gate changes. ⚪ Their bad count came from globbing `layouts/relation/` only — **the same
+one-directory-level defect our own guard had**; the nesting is the hazard, anything reading these payloads walks
+recursively or is wrong. They withdrew the figure; our 1,175/1,100 stands and both sides confirm 0 of 2,837 topology sub-fields.
+
+### C. `FINDING 258` — STILL UNRESOLVABLE, AND A PEER CLAIM CORRECTED
+
+Measured here on all 2,837 payloads: the four topology sub-fields (`failures`, `gap_area_m2`,
+`overlap_area_m2`, `outside_area_m2`) are present on **0**. The installed side-cars predate the
+emitter code at HEAD. **So which of `AREA_GAP` / `AREA_OVERLAP` / `OUTSIDE_FOOTPRINT` fired is still
+unknowable.** ⚪ But `openubem-20`'s companion claim — `partition_audit` "always null", Madrid
+"130/1,175" — is **WRONG**: the key is on **100 %** of all three districts and
+`passed`/`area_error_fraction` are populated on exactly the eligible buildings (**1,100 / 439 /
+1,036**). 🔴 **Checked before carrying. A peer's measurement is evidence, never an authority.**
+Decision unchanged: **reported, never gated.**
+
+### D. WHAT IS OWED — ALL THREE ARE THE AUTHOR'S
+
+1. ~~**A new engine pin** for the post-recut `european_residential.py` (`6a14f428…`, `fda7f067`).~~
+   🟢 **DISCHARGED same day — `PIN 2` taken on the author's confirmation; see the last+45 block at the top.**
+2. **A second `D-EU-55` sentence**, if Madrid or London is ever to run.
+3. **Whether the shakedown runs on the CURRENT payload or waits for `D-EU-109`.** The runner is
+   ready either way; `R10` is what makes that choice explicit and auditable.
+
+🔴 **STEP 11 WAS NOT STARTED and remains PLANNED, nothing built.** Items `11.3`–`11.7` all need a
+`C2` cell; `11.1`/`11.2` were the only Step-10-free items and were done 2026-08-27. **Do not start
+Step 11, do not re-open a closed gate, do not propose compute.** Ask the author which of D.1–D.3
+they want to rule.
+
+---
+
 ## 🟢 **NEXT-SESSION PROMPT — prepended 2026-09-08 (last+43), THE FOURTH BLOCK OF THE SAME DAY. READ
 THIS BLOCK FIRST, THEN last+40's SECTIONS 13, 14. THIS BLOCK IS WRITTEN FOR A SESSION THAT STARTS
 COLD WHEN OPENUBEM ANNOUNCES THE `2026-09-08b` RE-EMISSION. NOTHING WAS COMPUTED, NO GATE MOVED, NO

@@ -489,3 +489,234 @@ convexity refusal alone); `G11.17`'s LOWER BOUND / never-pooled rule is unchange
 input re-pointed to the `D-EU-88` district-viewer output once it exists (geometry only, no EUI on
 the page); `G11.13` stays. Mirrored one line in `_val.md`'s `G11.17` row. `D-EU-88` has not
 started; Step 11 does not re-open.
+
+---
+
+### 2026-09-08 (last+46), same day — 🟢 **WORK ITEM 11.3'S RUNNER EXISTS**; 🔴 **the stock population has 100 diaries, not 1,200**; 🟢 **London 706 installed and verified after two defects were caught**
+
+Record: `Step11_docs/docs/2026-09-08_work-item-11.3_trigger-campaign-runner-built.md`. Author's
+instruction: *"ok once you got the data continue to build step11 lets go"*. **Nothing scored, no
+`G11.x` verdict computed, no EnergyPlus cell simulated, no compute.**
+
+🔴 **THE INSTRUCTION'S CONDITION WAS MIS-SPECIFIED AND SAYING SO IS PART OF THE ANSWER.** The London
+export widens the `C2` **population**; it does not unblock **Step 11**. Item 11.3 depends on Step 10
+items **10.4 and 10.6** — a *simulated* `C2` cell and its manifest — and **no `C2` cell has been
+simulated**, because `D-EU-55` authorises Bologna only. What was genuinely unblocked is the runner,
+and that is what was built.
+
+🟢 **`tools/4thJ_step11_trigger_campaign.py`.** For every drawn flat in every `C2` Arm D cell it runs
+the Step 9 trigger on **that flat's own diary**. **Three things imported, never re-implemented** —
+the state machine (`simulate_dwelling`), the dwellings (`build_dwellings`, which refuses unless it
+reproduces Step 8's shipped schedules), and the flat→diary binding (read from the `C2` manifests'
+own `schedules[]`). ⚪ *A re-implementation is a second opinion, and a second opinion is not an
+inheritance.*
+
+🟢 **A REFACTOR OF A CLOSED STEP, PROVEN INERT.** `simulate_dwelling` did not exist — the loop was
+inline in `run_fold`. Extracted verbatim; `rng` became a parameter defaulting to the same
+`"s9|<seed>|<hid>"` stream. 🔴 **Verified, not asserted: Step 9 fold `it` run end to end before and
+after, and the md5 of EVERY emitted artefact is identical, stdout included.** Backup
+`tools/4thJ_step9_trigger.py.bak_s11_extract`. ⚪ **A refactor is not a re-score** — no verdict
+recomputed, no band moved, 11.1's carry-over audit untouched.
+
+🔴 **THE `G11.15` SEAM NOW HAS A MEASURED BASIS.** Read out of
+`openubem/semantic/european_schedules.py`: `build_step8_gain_series` conserves the annual mean at
+exactly `BASE_GAIN_W_M2` for every `f` **and asserts its own conservation**, and attaches ONE
+`OTHEREQUIPMENT` at `Watts/Area = 1.0`. **So `C2` carries one LUMPED internal gain — occupants,
+appliances, lighting together — as its INPUT and produces SPACE HEATING as its result; `f`
+redistributes it in time and never rescales it.** Paths: **Step 10 = `space_heating`; Step 11 =
+`appliance_electricity`, `dhw`.** 🔴 **Step 11's appliance electricity must NEVER be injected back
+into a Step 10 heating model — that heat is already inside the conserved gain, and adding it again
+is the double count.** ⚪ **Consequence: a flat's appliance MAGNITUDE has no path into its heating
+number at all; only the TIMING crosses the seam.** Any sentence implying otherwise is false.
+
+🔴 **THE FINDING THAT NARROWS §1.1: ONE HUNDRED DIARIES, NOT ONE THOUSAND.**
+`4thJ_step10_assign.step7_index()` indexes **exactly 100 presence schedules per fold** — all Step 7
+shipped. Step 9 seeds its per-dwelling RNG `"s9|<seed>|<hid>"` and draws ownership per `hid`, so
+**two flats that drew the same household have IDENTICAL loads**. Seen: 170 flats over **6** buildings
+already bind **59** of the 100. **The stock population has thousands of BUILDINGS and at most 100
+DISTINCT OCCUPANCY DIARIES per fold, and on this Step 7 emission it cannot have more.** ⚪ §1.1's
+claim is not wrong, it is **narrower than it reads**: Step 11 is the first configuration with that
+many buildings and one shared weather file, **not** the first with that many occupants. **An R²
+improvement at stock scale would be evidence about spatial and geometric aggregation, never about
+occupant diversity** — claiming otherwise is the comparison `G11.16` calls a FAIL.
+
+🔴 **`--diary-diversity` HAS NO DEFAULT AND THE RUN REFUSES WITHOUT IT (`S9`).** `replicate` = one run
+per household (100/fold, ~2 min) replicated onto flats; `reseed` = one run per flat, ownership
+redrawn (~1.2 s/flat → Bologna Case B alone ≈ **9 h**, `sbatch` work), **occupant diversity still
+100**. **A default would have silently decided what a stock number means.** ⚪ A third option —
+widening the Step 7 pool — is **named, not done**: it re-opens two closed steps and breaks
+`build_dwellings`'s reproduction guard.
+
+🟢 **TEN REFUSALS `S1`–`S10`, EVERY ONE SEEN FAILING WITH A PASSING CONTROL**, on a fixture of
+`C2`-shaped manifests over 6 real Bologna buildings (60 cells, 170 flats) whose **assignment is
+real**: `S1` France · `S2` Arm F/pooling · `S3` no cells (missing dir AND empty dir) · `S4` a
+manifest `G10N.14` would fail, an incomplete cell, an unrotated cell · `S5` `G11.14` absent column
+and `act2` re-admitted · `S6` a diary changed since the `C2` run · `S7` `--scored` · `S8` a `C1`
+result, and cells spanning two folds · `S9` the unset flag · `S10` an end-use on both paths and one
+on neither. **Nothing was written into `Step11_docs/outputs_step11/`.**
+
+#### The London 706 — installed and verified, after two defects caught by re-measuring
+
+🔴 **DEFECT 1, PATH:** the 706 first landed only at `openubem/outputs/eu_evidence/EU-11/
+GB-LDN-STDUNSTANS_final_2026-09-07/layouts` while the canonical path and the docs mirror still held
+the old 451 — so a campaign reading "the district's layouts directory" would have taken the new
+Bologna and the old London **silently**. Reported; they installed it at the canonical path.
+🔴 **DEFECT 2, AND IT IS THE SHARPER ONE: they preserved the old 451 as `way_pre_D-EU-113_backup_
+2026-09-08/` INSIDE `layouts/`.** Our mandatory recursive walk then returned **1,157 = 706 + 451** —
+a clean-looking, plausible, completely wrong population mixing two emissions of one district, with
+no error raised (`eligible=1124`). ⚪ **The nesting rule that protects us became the thing that
+betrayed us**: `relation/`+`way/` force a recursive read, and a sibling of old payloads turns correct
+behaviour into the wrong answer. Reported; **moved out to `layouts_pre_D-EU-113_backup_2026-09-08/`,
+a sibling of `layouts/`, not a child.**
+
+🟢 **RE-MEASURED OURSELVES AFTER THE FIX** (`find -name '*.json'`, never `ls`, never their counts):
+**Madrid 1,175 · London 706 · Bologna 1,211 · Lyon 297**, docs mirror agreeing on all three.
+London preflight: **706 checked / 685 eligible / 9 Arm F / 12 FAILED**, audit false on 53, worst
+`9.960e-05`.
+
+🔴 **THE 12 FAILS ARE REAL AND SIX ARE REGRESSIONS** — six buildings that were `IMPUTED_COUNT` in our
+frozen 451 are now `INTERZONE_MISMATCH_REROUTED`, plus five Arm F and one new. Their director accepts
+them as-is. ⚪ **That settles it on their side and not on ours: whether a payload that COSTS SIX
+ELIGIBLE BUILDINGS replaces the population we froze is our author's re-pre-registration to sign.**
+Also **not additive** — all 451 files changed bytes and 5 layouts genuinely moved (`uk` zone total
+1,728 → 1,813).
+
+🟢 **`FINDING 258` IS DIAGNOSED AT LAST.** The new payload carries `failures`, `gap_area_m2`,
+`overlap_area_m2`, `outside_area_m2` on 697 of 706. 53 audit failures: 32 `(AREA_GAP, AREA_OVERLAP,
+OUTSIDE_FOOTPRINT)`, 18 `(AREA_GAP, OUTSIDE_FOOTPRINT)`, 2 `(AREA_GAP,)`, 1 `(OUTSIDE_FOOTPRINT,)`;
+gap max `1.9184e-02` m², overlap max `7.155e-03` m², outside max `1.7534e-02` m². **Four to five
+orders of magnitude over the `footprint × 1e-9` topology tolerance while `area_error_fraction` clears
+the 0.01 conservation bar by ~100×. The correction we made to our OWN record is now confirmed by
+data, not by argument: it is a TOPOLOGY GAP and `area_error_fraction` was never the quantity that
+failed.** 🔴 Decision unchanged — **reported, never gated**; the frozen prereg still says "rounding
+residue" and the next re-pre-registration must carry the correction, now citing measured areas.
+
+⚪ **OWED, ALL THE AUTHOR'S: (1) `--diary-diversity`; (2) a second `D-EU-55` sentence for Madrid or
+London; (3) does the 706 replace the frozen 451 at the cost of six buildings; (4) run the Bologna
+shakedown, which 11.3–11.7 all wait on.** **Step 11 is still NOT RUN; 11.4–11.7 remain PLANNED.**
+
+---
+
+### 2026-09-08 (last+47), same day — 🔴 **THE `C2` RUNNER HAD NEVER BUILT AN IDF**; 🟢 **three harness defects found by a four-cell smoke**; 🟢 **`RE-PRE-REGISTRATION 2` adopts the London 706**; 🟢 **the Bologna shakedown is RUNNING at full size**; 🟢 **`--diary-diversity` ruled `reseed`**
+
+Record: `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` §9. Author's sentence:
+*"continue as you recommend lets go use bigger datasets"*. **Nothing scored, no `G10N.x` or `G11.x`
+verdict computed.**
+
+🔴 **THE SENTENCE IS READ AS TWO RULINGS AND WRITTEN DOWN SO IT CAN BE CORRECTED IN ONE LINE.**
+(1) adopt the London 706; (2) run the authorised district at FULL SIZE, not a token subset.
+🔴 **NOT read as a third:** it names no district and does not mention EnergyPlus, so **`D-EU-55` is
+NOT widened** — and `R2` was **observed refusing Madrid and London after the sentence was given**.
+
+🔴 **THE RUNNER SHIPPED LAST SESSION WITH TEN REFUSALS SEEN FIRING AND HAD NEVER PRODUCED ONE IDF.**
+Three defects, all ours, none physics: **(1)** `KeyError: 'shadow_method'` — upstream's header
+template carries a `ShadowCalculation` block and we supplied 5 of 8 fields; the three constants are
+now **imported**, never typed. **(2)** `HVACTemplate:* objects ... not supported directly`, fatal in
+0.06 s — the binary needs **`-x`**. **(3)** 🔴 **3 of 4 cells died on `readvars.audit ... used by
+another process`**: `-r` writes it into the PROCESS working directory, not `-d`, so parallel workers
+destroyed each other's file. Fixed with **`cwd=run_dir` + `-d .`**, upstream's own invocation.
+⚪ **Defect 3 is the dangerous one — it looks like scattered physics failures, varies with worker
+count, and would have salted a 10,360-cell campaign with false `ENERGYPLUS_FAILED` cells no
+downstream gate could tell from real ones. All three were found by running FOUR cells before
+launching ten thousand.**
+
+🟢 **16 of 16 cells then completed** (91 s, 16 workers). Building `27410`, 16 zones, 3,754.5 m²:
+**case A `cf` = 1.0000, case B `cf` = 0.9681**, EUI 49.37 / 49.40 kWh/m². ⚪ The synchronised control
+behaves as a control and the independent case diversifies — **a harness observation on two
+buildings, NOT a result.**
+
+🟢 **`RE-PRE-REGISTRATION 2`** (473 → 596 lines, append-only, backup
+`impl/prereg_step10_nocore_DRAFT.bak_20260908_pre_rr2`): frozen md5
+**`1bc21094…` → `055331f285426a9928ca8f124fab7cc3`**. Population **re-measured by us**:
+**es 1,100 / 11,244 · uk 685 / 2,316 · it 1,036 / 13,792 → 2,821 buildings, 27,352 Arm D zones**
+(was 26,764; `uk` was 439 / 1,728). ⚪ **The trade is recorded both ways: +246 eligible buildings and
++588 zones, at the price of SIX that used to be eligible and are now rerouted.** All twelve London
+FAILs stay FAIL. 🔴 **`R1` seen failing by name against the restored pre-RR2 text; live file
+re-verified `OK`.**
+
+🟢 **THE SHAKEDOWN IS RUNNING:** `--district IT-BOL-GALVANI2 --shakedown --workers 16 --limit 0`,
+**10,360 cells**, detached, ~16 h, log `_local_runs/step10_nocore_bologna_20260908.log`, preflight
+report carrying the **RR2** md5. 🔴 **An earlier launch was killed three minutes in on purpose** — it
+had passed preflight under the superseded md5, so every manifest would have cited a superseded
+pre-registration.
+
+🟢 **`--diary-diversity` RULED `reseed`** — one run per drawn flat, ownership redrawn, so no two flats
+carry a byte-identical series; `replicate` is the smaller dataset the sentence declines. 🔴 **It does
+NOT widen the occupancy pool: presence still comes from the 100 diaries Step 7 shipped, and `reseed`
+varies OWNERSHIP and the draw, never who lives there.** The flag still has **no default**, and a
+contradicting value is refused **by name** (`S9b`) — both seen firing, `reseed` passing as control.
+
+⚪ **OWED, NOW ONLY TWO, BOTH THE AUTHOR'S: (1) a second `D-EU-55` sentence naming Madrid and/or
+London; (2) whether the finished shakedown may be READ as a scored `G10N.x` result (`R8` refuses
+`--scored` until then).** **Step 11 items 11.4–11.7 stay PLANNED until the shakedown's cells exist.**
+
+---
+
+### 2026-09-08 (last+48), late the same day — Step 11 is UNBLOCKED IN PRINCIPLE AND STILL NOT RUN
+
+Record: `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` §10. **No Step 11 run,
+no `G11.x` verdict, no cell simulated by this step.**
+
+🟢 **What changed upstream of Step 11.** The author's own words widened `D-EU-55` — *"finish all
+three cities"*, *"all neighbourhoods done you can go until the end"*, *"use 32 cpu of all speed
+reserouces"* — and **two `C2` campaigns are now running on Speed at 32 cpu each**: Madrid (11,000
+cells) and Bologna (10,360). Items **11.4–11.7 depend on Step 10's items 10.4 and 10.6**, a simulated
+`C2` cell and its manifest, and those cells are being written now rather than being waited on.
+
+🔴 **London contributes NOTHING to Step 11 for the time being, and the reason is not permission.**
+`R5` refuses the district outright: 12 of its 706 payloads are `INTERZONE_MISMATCH_REROUTED` and **a
+partial population is not a campaign**. The `uk` fold therefore has **no `C2` manifests to bind
+diaries to**, so any Step 11 result covering all three folds is blocked on OpenUBEM re-emitting those
+12 — not on us and not on the author.
+
+🔴 **THE 100-DIARY CEILING IS UNCHANGED BY ANY OF THIS.** `--diary-diversity` stays ruled `reseed`
+(no default, `S9`/`S9b` still refuse), and `reseed` varies **ownership and the draw**, never who
+lives there. Step 7 shipped **100 presence schedules per fold** and that is still the whole pool.
+⚪ **An R² gain at stock scale is evidence about geometry and aggregation, never about occupant
+diversity** — and now that the stock is about to double in size, that sentence gets easier to
+forget and more expensive to get wrong.
+
+🔴 **The `G11.15` seam is unchanged too.** Step 10 = `space_heating` from ONE lumped internal gain
+whose annual mean is conserved; Step 11 = `appliance_electricity` + `dhw`. **Only TIMING crosses the
+seam, never magnitude**, and Step 11's electricity is never injected back into a Step 10 heating
+model.
+
+⚪ **Also unchanged: nothing here is scored.** The `C2` cells Step 11 will read are authorised to
+exist and **not** authorised to be read as a `G10N.x` result — `R8` still refuses `--scored`, and
+that single sentence from the author is the one item owed. **11.4–11.7 stay PLANNED.**
+
+---
+
+### 2026-09-08 (last+49), after midnight — 🔴 **STEP 11 STAYS PLANNED: THE STEP 10 CAMPAIGNS WERE STOPPED AND THERE ARE NO CELLS**
+
+Record: `Step10_docs/impl/2026-09-08_C2-runner-built-refusals-seen-failing.md` §11 and
+`Step10_docs/prereg_step10_nocore_DRAFT.md` `RE-PRE-REGISTRATION 4`.
+
+🔴 **Nothing in this entry changes the seam and nothing changes Step 11's design.** It records why
+Step 11 has no input yet.
+
+🔴 **DEFECT 8, found by the Madrid campaign in its first eighty cells of eleven thousand:** the
+no-core layout emitter names **every storey `F0_dwelling_0`** when a building has one dwelling per
+floor, so **geometrically distinct flats are emitted under ONE identity** — `relation/12638102` has
+five flats and one name. **Measured: 233 of 1,100 eligible Madrid buildings (21.2%), 35 of 1,036
+Bologna (3.4%).** `zone_count_emitted` — what the gates read — counts flats that cannot be told
+apart, so the population is not the one on record. **`R7` had a blind spot that let it through**
+(it compared distinct-slug count against `set(names)`, which collapses the duplicate on both sides);
+`R7` is **tightened a third time**, seen failing on both populations and passing on a control.
+**All three runs were stopped**; prereg md5 `7ce1c041…` → `e1f2822a…`.
+
+🔴 **WHAT THIS MEANS FOR STEP 11, PRECISELY.** Step 11 consumes **finished Step 10 cells**, and there
+are none — the 22 Madrid manifests written before the stop are **evidence, never cells to be read**.
+**Items 11.4–11.7 stay PLANNED**, unchanged, and they do not move until the author rules on whether
+the affected buildings are EXCLUDED or FATAL, because that ruling changes the **population** Step 11
+would draw its stock from.
+
+⚪ **The seam is untouched** (`G11.15`): Step 10 is space heating from one lumped internal gain whose
+annual mean is conserved; Step 11 is appliance electricity and DHW; only TIMING crosses, never
+magnitude. **Nothing in defect 8 touches the gain, the diary pool, or the `--diary-diversity`
+ruling** (`reseed`, still no default, still refused by name by `S9b` on a contradicting value).
+
+⚪ **A Step 11 lesson taken from a Step 10 defect, and worth writing down before 11.4 is built:** the
+Step 10 runner writes **no manifest for a failing cell** and aggregates every diagnosis only after
+the last cell returns, so a cancelled run loses all of it. **Step 11's own campaign must not repeat
+that** — a failure's record belongs on disk when it happens.

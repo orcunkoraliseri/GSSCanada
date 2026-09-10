@@ -844,6 +844,91 @@ def calibrate_to_published(dwellings, mapping, owned, hazards, acl_to_profile,
     return hz, trace
 
 
+def simulate_dwelling(d, owned_ids, mapping, hazards, dhw_haz, acl_to_profile,
+                      n_days, timestep_min, seed, rng=None, zero_load=False,
+                      truncate_cycle_at_episode_end=False, drop_end_use=None,
+                      collapse_dhw_events=False, rotate_origin=True):
+    """ONE dwelling, one year, returning its own record.
+
+    EXTRACTED VERBATIM from `run_fold`'s inner loop on 2026-09-08 so that
+    Step 11 work item 11.3 can drive THE SAME state machine once per drawn
+    flat.  Re-implementing the loop in the Step 11 runner would have produced
+    a second opinion, and a second opinion is not an inheritance -- the same
+    argument `4thJ_gates_step11.py` makes for importing `g9_1`-`g9_4`.
+
+    NOTHING IN THE BEHAVIOUR CHANGED.  `run_fold` now calls this with exactly
+    the arguments it used to compute inline, `rng` defaults to the same
+    `"s9|<seed>|<hid>"` stream, and `zero_load` carries what `di_d >=
+    zero_after` decided.  The only reason `rng` is a parameter at all is
+    `11.3`'s per-flat re-seeding option, which is the author's to rule.
+    """
+    if rng is None:
+        rng = random.Random("s9|%d|%s" % (seed, d["hid"]))
+    states = dict((aid, ApplianceState()) for aid in owned_ids)
+    standby = sum(mapping.appliances[aid]["standby_power_w"]
+                  for aid in owned_ids)
+    elec_ts = []
+    dhw_ts = []
+    by_appliance = collections.Counter()
+    cycles = collections.Counter()
+    dhw_litres = collections.Counter()
+    dhw_events = collections.Counter()
+    for day_i in range(n_days):
+        elig, active = dwelling_day(d["members"], day_i, acl_to_profile)
+        dhw_elig = dwelling_day_dhw(d["members"], day_i, mapping.dhw_drivers)
+        minute = [standby] * DAY_MINUTES
+        for aid in owned_ids:
+            app = mapping.appliances[aid]
+            before = states[aid].run_minutes
+            simulate_day(app, states[aid], hazards[aid],
+                         eligible_for(elig, app["profile"]), active, minute,
+                         rng,
+                         truncate_at_episode_end=truncate_cycle_at_episode_end)
+            by_appliance[aid] += states[aid].run_minutes - before
+        water = [0.0] * DAY_MINUTES
+        day_litres = {}
+        for did, ev in mapping.dhw.items():
+            if collapse_dhw_events and did != "dhw_cat_a":
+                continue          # PERTURBATION ONLY (G9.8's falsifier)
+            lit, nev = simulate_dhw_day(ev, dhw_haz[did],
+                                        dhw_elig.get(did, []), water, rng)
+            day_litres[did] = (lit, nev)
+        if drop_end_use == "dhw":
+            water = [0.0] * DAY_MINUTES      # PERTURBATION ONLY (G9.10)
+            day_litres = {}
+        if zero_load:
+            minute = [0.0] * DAY_MINUTES     # PERTURBATION ONLY (G9.12)
+            water = [0.0] * DAY_MINUTES
+            day_litres = {}
+        elec_ts.extend(to_timestep(minute, timestep_min))
+        dhw_ts.extend(to_timestep(water, timestep_min))
+        for did, (lit, nev) in day_litres.items():
+            dhw_litres[did] += lit
+            dhw_events[did] += nev
+        dhw_litres["total"] += sum(v for v, _ in day_litres.values())
+    for aid in owned_ids:
+        cycles[aid] = states[aid].cycles
+    if rotate_origin:
+        # `FINDING 141` / `D-S9-3`. Applied ONCE, after the whole year is
+        # assembled, and stamped into the manifest so an unrotated run can
+        # never be mistaken for a rotated one.
+        elec_ts = rotate_to_midnight(elec_ts, timestep_min)
+        dhw_ts = rotate_to_midnight(dhw_ts, timestep_min)
+
+    return {
+        "hid": d["hid"], "n_members": d["n_members"],
+        "appliances": owned_ids,
+        "cycles": dict(cycles),
+        "run_minutes": dict(by_appliance),
+        "elec_kwh": sum(elec_ts) * timestep_min / 60.0 / 1000.0,
+        "dhw_litres": dhw_litres["total"],
+        "dhw_litres_by_category": dict(
+            (k, v) for k, v in dhw_litres.items() if k != "total"),
+        "dhw_events_by_category": dict(dhw_events),
+        "elec_ts": elec_ts, "dhw_ts": dhw_ts,
+    }
+
+
 def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
              dhw_l_per_day, restrict_default_dwelling=True,
              truncate_cycle_at_episode_end=False, drop_end_use=None,
@@ -900,73 +985,18 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
     zero_after = int(round(len(dwellings) * (1.0 - zero_load_share)))
 
     for di_d, d in enumerate(dwellings):
-        rng = random.Random("s9|%d|%s" % (seed, d["hid"]))
-        states = dict((aid, ApplianceState()) for aid in owned[d["hid"]])
-        standby = sum(mapping.appliances[aid]["standby_power_w"]
-                      for aid in owned[d["hid"]])
-        elec_ts = []
-        dhw_ts = []
-        by_appliance = collections.Counter()
-        cycles = collections.Counter()
-        dhw_litres = collections.Counter()
-        dhw_events = collections.Counter()
-        for day_i in range(n_days):
-            elig, active = dwelling_day(d["members"], day_i, acl_to_profile)
-            dhw_elig = dwelling_day_dhw(d["members"], day_i, mapping.dhw_drivers)
-            minute = [standby] * DAY_MINUTES
-            for aid in owned[d["hid"]]:
-                app = mapping.appliances[aid]
-                before = states[aid].run_minutes
-                simulate_day(app, states[aid], hazards[aid],
-                             eligible_for(elig, app["profile"]), active, minute,
-                             rng,
-                             truncate_at_episode_end=truncate_cycle_at_episode_end)
-                by_appliance[aid] += states[aid].run_minutes - before
-            water = [0.0] * DAY_MINUTES
-            day_litres = {}
-            for did, ev in mapping.dhw.items():
-                if collapse_dhw_events and did != "dhw_cat_a":
-                    continue          # PERTURBATION ONLY (G9.8's falsifier)
-                lit, nev = simulate_dhw_day(ev, dhw_haz[did],
-                                            dhw_elig.get(did, []), water, rng)
-                day_litres[did] = (lit, nev)
-            if drop_end_use == "dhw":
-                water = [0.0] * DAY_MINUTES      # PERTURBATION ONLY (G9.10)
-                day_litres = {}
-            if di_d >= zero_after:
-                minute = [0.0] * DAY_MINUTES     # PERTURBATION ONLY (G9.12)
-                water = [0.0] * DAY_MINUTES
-                day_litres = {}
-            elec_ts.extend(to_timestep(minute, timestep_min))
-            dhw_ts.extend(to_timestep(water, timestep_min))
-            for did, (lit, nev) in day_litres.items():
-                dhw_litres[did] += lit
-                dhw_events[did] += nev
-            dhw_litres["total"] += sum(v for v, _ in day_litres.values())
-        for aid in owned[d["hid"]]:
-            cycles[aid] = states[aid].cycles
-        if rotate_origin:
-            # `FINDING 141` / `D-S9-3`. Applied ONCE, after the whole year is
-            # assembled, and stamped into the manifest so an unrotated run can
-            # never be mistaken for a rotated one.
-            elec_ts = rotate_to_midnight(elec_ts, timestep_min)
-            dhw_ts = rotate_to_midnight(dhw_ts, timestep_min)
-        for i, v in enumerate(elec_ts):
+        rec = simulate_dwelling(
+            d, owned[d["hid"]], mapping, hazards, dhw_haz, acl_to_profile,
+            n_days, timestep_min, seed, zero_load=(di_d >= zero_after),
+            truncate_cycle_at_episode_end=truncate_cycle_at_episode_end,
+            drop_end_use=drop_end_use,
+            collapse_dhw_events=collapse_dhw_events,
+            rotate_origin=rotate_origin)
+        for i, v in enumerate(rec["elec_ts"]):
             stock_elec[i] += v
-        for i, v in enumerate(dhw_ts):
+        for i, v in enumerate(rec["dhw_ts"]):
             stock_dhw[i] += v
-        per_dwelling.append({
-            "hid": d["hid"], "n_members": d["n_members"],
-            "appliances": owned[d["hid"]],
-            "cycles": dict(cycles),
-            "run_minutes": dict(by_appliance),
-            "elec_kwh": sum(elec_ts) * timestep_min / 60.0 / 1000.0,
-            "dhw_litres": dhw_litres["total"],
-            "dhw_litres_by_category": dict(
-                (k, v) for k, v in dhw_litres.items() if k != "total"),
-            "dhw_events_by_category": dict(dhw_events),
-            "elec_ts": elec_ts, "dhw_ts": dhw_ts,
-        })
+        per_dwelling.append(rec)
 
     manifest = write_outputs(root, fold, out_dir, mapping, per_dwelling,
                              stock_elec, stock_dhw, calib, timestep_min, year,

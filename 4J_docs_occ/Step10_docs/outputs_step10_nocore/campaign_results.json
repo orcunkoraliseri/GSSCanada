@@ -1,0 +1,182 @@
+[
+  {
+    "cell_id": "es__relation/12582232__caseA__f000",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseA__f015",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseA__f030",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseA__f050",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseA__f100",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseB__f000",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseB__f015",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseB__f030",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseB__f050",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582232__caseB__f100",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 18
+  },
+  {
+    "cell_id": "es__relation/12582233__caseA__f000",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseA__f015",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseA__f030",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseA__f050",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseA__f100",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseB__f000",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseB__f015",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseB__f030",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseB__f050",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582233__caseB__f100",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 14
+  },
+  {
+    "cell_id": "es__relation/12582234__caseA__f000",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseA__f015",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseA__f030",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseA__f050",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseA__f100",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseB__f000",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseB__f015",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseB__f030",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseB__f050",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  },
+  {
+    "cell_id": "es__relation/12582234__caseB__f100",
+    "completion_status": "DRY_RUN",
+    "completed": false,
+    "n_zones": 21
+  }
+]

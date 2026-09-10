@@ -79,9 +79,31 @@ import os
 import sys
 
 # Pinned 2026-09-08 by the author. NEVER moved to make a run pass -- see the module docstring.
-# european_residential.py, commit 4431f2fe, measured 2026-09-08
-ENGINE_DIGEST_PIN = "8e1dcda193bd2e68165ec7267c637e9fdf5abb0d3a0be464c6eb4cdb1db4d2d5"
-# european_nocore.py, 91,468 bytes, mtime 2026-09-07, commit 4431f2fe, measured 2026-09-08
+#
+# PIN 2, authorised by the author 2026-09-08 ("lets go. i give confirmation"),
+# in reply to a report that the engine had advanced and been committed.
+#   european_residential.py
+#     sha256 6a14f428a6d8c26745af3e1483080bf31e3026ebb94702f90ac7eadc4ad2afd3
+#     149,238 bytes, commit fda7f067 "feat(eu): implement 95% recut dwelling
+#     schemes, delta merge harvest, and Wall-B second pass validation"
+#     (2026-09-08 14:34 -0400), working tree clean under
+#     openubem/geometry/ at the moment of measurement.
+#   LINE-ENDING CONVENTION: CRLF, i.e. the bytes AS CHECKED OUT on this
+#     machine. `git show <commit>:<path> | sha256sum` gives the LF blob and
+#     will NOT reproduce this value. Every future pin records the convention.
+#   Reproducible from our own repo at
+#     Step10_docs/impl/engine_pin_20260908b/european_residential.py
+#
+# SUPERSEDED, kept for the record, NOT deleted:
+#   PIN 1, 2026-09-08, european_residential.py commit 4431f2fe,
+#     sha256 8e1dcda193bd2e68165ec7267c637e9fdf5abb0d3a0be464c6eb4cdb1db4d2d5
+#     (148,132 bytes; bytes at Step10_docs/impl/engine_pin_20260908/).
+#   The move is authorised because the engine legitimately advanced and landed
+#   as a commit -- NOT because a run was failing. No population was measured
+#   against PIN 2 before it was authorised, and none is re-scored by it.
+ENGINE_DIGEST_PIN = "6a14f428a6d8c26745af3e1483080bf31e3026ebb94702f90ac7eadc4ad2afd3"
+# european_nocore.py, 91,468 bytes, commit 4431f2fe, CRLF as checked out.
+# UNCHANGED across PIN 1 and PIN 2 -- the cutter did not move.
 NOCORE_DIGEST_PIN = "21d723d5479076d0a57416ff92fd67a98fca8a33ff19343132415c144ff6b8ae"
 
 DEFAULT_ENGINE_PATH = (
