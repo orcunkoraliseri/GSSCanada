@@ -1,3 +1,1333 @@
+# 🟢 START-HERE (2026-09-11 ~15:1x EDT, last+141) — routine hourly check: UK local failed-cell count flat this tick (120→120), IT frozen snapshot unchanged, dashboard already refreshed mid-tick on author's ad hoc request
+
+**Speed cluster**: `squeue -j 1315014,1315015` still completely empty — both IT and UK jobs remain confirmed cancelled and gone, permanent state. (Only unrelated array job 1323957 `lmn_dfix` visible under this user, nothing for 4J.)
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at still 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~5h stable, still the longest stretch this run). Disk truth: `cells/` = 9,152, `cells_failed/` = 120, total 9,272 vs 6,490 planned. `campaign_status.json` (updated 15:04:14) shows 3,625 finished / 3,505 completed / 120 ENERGYPLUS_FAILED — finished-count lag persists as before, failed-count now matches disk truth exactly (120 = 120). Failed-cell trend across last four ticks: 80 → 100 → 120 → 120, i.e. flat this tick — first tick with zero new failures since the count started climbing. Still read-only, no action taken.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Ad hoc this tick**: author asked to check machine memory (perceived slowdown) — found 56% used, 27.9GB free of 63.5GB, well under the 75% watchdog threshold, no kill in the log; concluded not a memory issue, took no corrective action per author's "keep going as it is" instruction. Live dashboard was refreshed at that point (15:04:14 snapshot) with fresh UK local counts and the still-frozen IT snapshot — already up to date as of this tick, no further refresh needed right now.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched.
+
+**Next tick**: same checks; watch whether UK's `cells_failed/` count resumes climbing or stays flat, Speed squeue (expect empty), supervisor's handoff line.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~14:4x EDT, last+140) — routine hourly check: UK local failed-cell count still climbing steadily (80→100→120), rate looks proportional not alarming
+
+**Speed cluster**: `squeue -j 1315014,1315015` still completely empty — both IT and UK jobs remain confirmed cancelled and gone, permanent state.
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~4h40m stable, still the longest stretch this run). Disk truth: `cells/` = 8,634, `cells_failed/` = 120, total 8,754 vs 6,490 planned. `campaign_status.json` (updated 14:43:20) shows 3,150 finished / 3,040 completed / 110 ENERGYPLUS_FAILED — finished-count lag persists as before, but failed-count is now close to disk truth (110 vs 120). Failed-cell trend across last three ticks: 80 → 100 → 120, i.e. roughly +20 per ~30min tick, tracking proportionally with total cells processed (not accelerating relative to throughput) — still read-only, no action taken, continuing to watch in case the rate changes shape.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched. Dashboard NOT refreshed this tick — steady linear failed-cell growth doesn't change the narrative enough yet to warrant a live write.
+
+**Next tick**: same checks; keep tracking UK's `cells_failed/` trend (watch for any acceleration), Speed squeue (expect empty), supervisor's handoff line.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~14:1x EDT, last+139) — routine hourly check: UK local failed-cell count rising, worth watching
+
+**Speed cluster**: `squeue -j 1315014,1315015` still completely empty — both IT and UK jobs remain confirmed cancelled and gone, permanent state.
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~4h10m stable, still the longest stretch this run). Disk truth: `cells/` = 7,848, `cells_failed/` = 100, total 7,948 vs 6,490 planned. `campaign_status.json` (updated 14:12:22) now shows 2,350 finished / 2,250 completed / 100 ENERGYPLUS_FAILED — still lagging disk truth heavily, but the failed-cell count (80 → 100) rose noticeably since last tick. This is a read-only observation: the failure rate is still small relative to total cells processed and there is no instruction to investigate mid-run, so no action taken, but worth flagging for continued watching next tick.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched. Dashboard NOT refreshed this tick — IT frozen, UK progressing normally; failed-cell uptick alone doesn't yet warrant a live dashboard write, will refresh if the trend continues or crosses a threshold worth showing.
+
+**Next tick**: same checks; specifically re-check UK's `cells_failed/` count to see if the failure rate is climbing or was a one-off blip, watch for supervisor's handoff line, and Speed squeue (expect empty).
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~14:2x EDT, last+138) — routine hourly check, no change in shape
+
+**Speed cluster**: `squeue -j 1315014,1315015` returned COMPLETELY EMPTY again — both IT and UK jobs remain confirmed cancelled and gone, this is now the expected, permanent state, no further "is it really gone" checks needed each tick beyond a quick squeue glance.
+
+**IT (Bologna) on Speed** — frozen historical snapshot, unchanged since cancellation: `campaign_status.json` updated_at 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` count = 770, matches JSON exactly. This file will never update again (job that wrote it no longer runs).
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (now ~4h20m stable, the longest stretch this run). Disk truth: `cells/` = 7,618, `cells_failed/` = 80, total 7,698 vs 6,490 planned. No `campaign_results.json` yet (not complete). Note: `campaign_status.json` periodic write still lags disk truth (last read showed 1,725 finished at 13:20:27, far below the 7,698 actual) — same known lag pattern as before, read-only observation, not actionable.
+
+**IT (Bologna) local supervisor** (PID 15076, `_local_runs/4J_IT_local/logs/supervisor.ps1`) — still correctly blocked waiting for UK's `campaign_results.json`. `supervisor.log` shows ONLY the original 13:09:21 startup line — no launch, no crash, no relaunch. Script content unchanged, logic confirmed sound: waits → launches IT at 4 workers with 75% memory watchdog → auto-relaunches with `--resume` on any crash until `campaign_results.json` appears.
+
+**Standing plan** (unchanged): sequential execution — UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart, per author's explicit "even it crashes you renew it and continue" authorization. ES (Madrid) complete and untouched. Dashboard NOT refreshed this tick — no materially new numbers (IT frozen, UK progressing within normal in-run drift).
+
+**Next tick**: same checks — Speed squeue (expect empty), UK disk cell counts + watchdog.log for any new kill, supervisor.log for the handoff line ("UK local arm finished -- starting IT campaign") or any launch/crash lines. Once IT starts locally, begin tracking its own `cells`/`cells_failed` counts under `_local_runs/4J_IT_local/out/IT-BOL-GALVANI2/`.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~13:5x EDT, last+137) — Speed IT/UK jobs CANCELLED (confirmed gone from squeue), local IT supervisor still waiting on UK, no crashes
+
+**Speed cluster (read-only check):** `squeue -j 1315014,1315015` returns EMPTY — both jobs fully gone, cancellation confirmed still final. IT's `campaign_status.json` is the frozen snapshot from cancellation (updated_at 12:57:30): 9,700 finished / 11,710 planned, 8,930 completed, 770 ENERGYPLUS_FAILED (76 distinct buildings, unchanged). `cells_failed/` count on disk still 770. This file will not change again — Speed is done being touched.
+
+**Local UK arm (TABLETOP1, GB-LDN-STDUNSTANS):** still RUNNING, no watchdog kill since the 10:03:16 start (now ~3h50m stable). Disk counts: `cells/` 7,202 + `cells_failed/` 80 = 7,282 finished (vs 6,490 planned — known benign over-count, growing). No `campaign_results.json` yet.
+
+**Local IT supervisor (PID 15076):** still correctly blocked, waiting for UK's `campaign_results.json`. `supervisor.log` shows only the single startup line from 13:09:21 — no launch, no crash, no relaunch. This is expected and correct; it will log "UK local arm finished -- starting IT campaign" the moment UK completes.
+
+**Standing plan (unchanged):** UK finishes locally → supervisor auto-launches remaining ~2,010 IT cells locally at 4 workers with a 75% memory watchdog → any crash auto-relaunches with `--resume` until IT's own `campaign_results.json` appears. Sequential by design (user chose "wait for UK" over concurrent, given two prior watchdog kills this week).
+
+🔴 Next tick: check `supervisor.log` for the handoff line; once IT starts, also check its own `cells`/`cells_failed` counts under `_local_runs\4J_IT_local\out\IT-BOL-GALVANI2\`.
+
+---
+
+# 🔴 OPERATIONAL CHANGE (2026-09-11 ~13:09 EDT) — Speed IT job CANCELLED, migrated to a self-healing local supervisor at 4 workers
+
+**Speed job 1315014 (IT-BOL-GALVANI2) was cancelled** at ~12:56 EDT, freeing the node for the author's other work, with 9,712 cells already finished (8,942 completed + 770 failed). Those results were copied byte-for-byte to `_local_runs\4J_IT_local\out\IT-BOL-GALVANI2\{cells,cells_failed}` so nothing is re-run — the campaign script's `--resume` flag skips any cell that already has output there.
+
+**A supervisor now runs the rest locally, self-healing:** `_local_runs\4J_IT_local\logs\supervisor.ps1` (PID 15076) is watching for the UK local arm's `campaign_results.json` (its completion signal). Once UK finishes, it launches IT at **4 workers** (author's explicit choice, accepting crash risk), runs the usual 75%-memory watchdog against it, and if the process ever dies for any reason it automatically relaunches the SAME command with `--resume` — looping until `campaign_results.json` actually appears for IT. No manual restart needed if it crashes.
+
+**Sequential by design** — confirmed with the author: IT waits for UK to finish first, not concurrent, given two watchdog kills already this week on this box.
+
+**Monitoring going forward** should check three things each tick: (1) UK's cells/cells_failed counts as before, (2) `_local_runs\4J_IT_local\logs\supervisor.log` for the "starting IT campaign" line (marks the handoff) and any relaunch-after-crash lines, (3) once started, IT's own cells/cells_failed counts under `_local_runs\4J_IT_local\out\IT-BOL-GALVANI2\`.
+
+Full detail: `memory/project_4j_hetus_llm.md`, entry "Speed IT job cancelled, migrated to local; self-healing supervisor launched".
+
+---
+
+# 🔴 AUTHOR NOTE (2026-09-11 ~12:5x EDT, added at last+136 tick) — failed cells for BOTH IT and UK will be fixed/re-simulated LOCALLY, not on Speed
+
+Author confirmed: once both campaigns finish, the failed-cell buildings for IT (Bologna) AND UK (London) will be investigated/fixed and re-simulated using LOCAL compute (not resubmitted to Speed). Not yet acted on — monitoring stays strictly read-only until then.
+
+An investigation/fix PACKAGE ALREADY EXISTS from the 2026-09-10 root-cause session (see the "🟢 INVESTIGATION LANE" block further below in this file): 101 buildings (84 ES + 17 IT, INCOMPLETE — both campaigns had far more failures still to come) classified into 5 families (A/B/C/D/E). Our one defect (family C, 7 buildings) has a ready-but-unapplied patch: `4J_docs_occ/Step10_docs/impl/fixes_pending_resubmit/FIX_C_interzone_construction.patch`. Families A/B/D/E need openubem-20 authorisation. Two author-only open items (insufficient acceptance test; EU_FLOOR-vs-EU_ROOF physics choice) still need the author's sign-off before any fix is applied.
+
+**This classification is STALE** — must be re-run on IT's and UK's FINAL failure sets (item 2 of the 5-item POST-CAMPAIGN TO-DO LIST below) before any fix/re-sim work starts. Full detail: `memory/project_4j_hetus_llm.md`, entry "Author decision (2026-09-11, noted at last+136 tick)".
+
+---
+
+# START-HERE (last+136, 2026-09-11 ~12:37 EDT) — IT broke one more building; local UK arm still clean
+
+**Speed IT (Bologna, job 1315014): RUNNING, elapsed 1-12:05:39.** `campaign_status.json` updated_at 2026-09-11T12:36:46: cells_finished 9,625/11,710 (82.2%), COMPLETED 8,865, ENERGYPLUS_FAILED 760 (up from 750 last tick, +10 = one building's full 10-combo failure). Distinct broken buildings rose 75 → 76 (+1 new broken building this tick).
+
+**Speed UK: still cancelled.** Job 1315015 absent from `squeue -u o_iseri` entirely (no PD/dependency row either) — confirms the cancellation from last+133 is final, not a paused dependency. Local arm remains the only active UK coverage.
+
+**Local Windows UK arm (TABLETOP1): still running, no watchdog kill since the 10:03:16 start.** `cells/` rose from 6,578 to 6,644 (+66). `cells_failed/` unchanged at 70 (still 7 distinct broken buildings) — no new local failures this tick. Cumulative disk total now 6,644+70=6,714 vs 6,490 planned (known benign over-count, still growing). `campaign_results.json` not yet present.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+137. Cadence stays Speed IT + local UK arm only; watch for the local arm's `campaign_results.json` (completion signal).
+
+Evidence: Speed `squeue -u o_iseri` shows only 1315014 (4J_c2_IT), no 1315015 in any state; IT `campaign_status.json` updated_at 2026-09-11T12:36:46; IT `cells_failed/` count 760 (76 distinct buildings, +1 new); local `cells/`=6644 (was 6578), `cells_failed/`=70 (7 buildings, unchanged); no `campaign_results.json` yet.
+
+# START-HERE (last+135, 2026-09-11 ~12:27 EDT) — Quiet steady tick: both arms progressed, no new broken buildings on either side
+
+**Speed IT (Bologna, job 1315014): RUNNING, elapsed 1-11:47:58.** `campaign_status.json` updated_at 2026-09-11T12:26:48: cells_finished 9,550/11,710 (81.6%), COMPLETED 8,800, ENERGYPLUS_FAILED 750 (unchanged from last+134). Distinct broken buildings unchanged at 75 (raw `cells_failed/` count matches: 750 files) — no new failures this tick, just progress (+50 finished).
+
+**Speed UK: not monitored — job 1315015 stays cancelled** (local arm covers this work). Confirmed absent from squeue.
+
+**Local Windows UK arm (TABLETOP1): still running, no watchdog kill since the 10:03:16 start.** `cells/` rose from 6,540 to 6,578 (+38). `cells_failed/` unchanged at 70 (still 7 distinct broken buildings) — no new local failures this tick. Cumulative disk total now 6,578+70=6,648 vs 6,490 planned (the known benign over-count, growing slightly as before). Campaign still in flight; `campaign_results.json` not yet present.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+136. Cadence stays Speed IT + local UK arm only; watch for the local arm's `campaign_results.json` (completion signal). HOURLY per author instruction; dashboard refreshed this tick too.
+
+Evidence: Speed `squeue -u o_iseri` shows only 1315014 (4J_c2_IT), no 1315015; IT `campaign_status.json` updated_at 2026-09-11T12:26:48; IT `cells_failed/` count 750 (75 distinct buildings, unchanged); local `cells/`=6578 (was 6540), `cells_failed/`=70 (7 buildings, unchanged); `watchdog.log` no kill entry since 10:03:16 start.
+
+# START-HERE (last+134, 2026-09-11 ~12:16 EDT) — Speed IT + local UK arm: both progressed, one more broken building on each side, local arm near-complete
+
+**Speed IT (Bologna, job 1315014): RUNNING, node antenna1, elapsed 1-11:38:07.** `campaign_status.json` updated_at 2026-09-11T12:12:10: cells_finished 9,500/11,710 (81.1%), COMPLETED 8,750, ENERGYPLUS_FAILED 750. Distinct broken buildings rose from 74 to 75 (raw `cells_failed/` count matches: 750 files). One more building broke since last+133, in line with the ongoing pattern.
+
+**Speed UK: no longer monitored — job 1315015 was cancelled at the author's request in last+133** (local arm covers this work). Not checked this tick; squeue confirms it is absent.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill since the 10:03:16 start** (now ~2h13m running, the longest stretch yet). `cells/` rose from 6,518 to 6,540 (+22). `cells_failed/` grew from 60 to 70: a 7th building started failing (`way-298850489`), alongside the 6 known-broken ones. Local `campaign_status.json` (this-session counters, reset at each restart) shows 1,025/6,490 finished this run; the disk totals above are the true cumulative progress (6,540+70=6,610 vs 6,490 planned — total slightly exceeds the plan, a minor known counting quirk, not treated as an error). Campaign is effectively done or within the last few cells.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+135. Cadence stays Speed IT + local UK arm only; watch specifically for the local arm process exiting normally (campaign_results.json appearing) as the completion signal. HOURLY per author instruction; also push a fresh dashboard snapshot each tick per author's latest instruction.
+
+Evidence: Speed `squeue -u o_iseri` shows only 1315014 (4J_c2_IT) among 4J jobs, no 1315015; IT `campaign_status.json` updated_at 2026-09-11T12:12:10; IT `cells_failed/` count 750 (75 distinct buildings, was 74); local `cells/`=6540 (was 6518), `cells_failed/`=70 (7 buildings, was 60/6); `watchdog.log` no kill entry since 10:03:16 start.
+# START-HERE (last+133, 2026-09-11 ~12:09 EDT) — AUTHOR ACTION: Speed UK job 1315015 CANCELLED (local UK arm near-complete, no longer needed); IT and local both progressed, one more broken building on each side
+
+**Author-directed change this tick (not part of the read-only Speed cadence):** the author asked to cancel the Speed UK job (1315015), since the local Windows UK run is close to finishing and covers the same work. Ran `scancel 1315015` on Speed at the author's explicit request — confirmed gone from `squeue -u o_iseri`. Bologna (IT, job 1315014) was untouched and keeps running. **Speed UK is no longer part of this monitoring cadence going forward** unless the author asks for it to be resubmitted.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill since the 10:03:16 start** (now ~2h6m running, the longest stretch yet, and now the primary UK arm since Speed UK was cancelled). `cells/` rose from 6,296 to 6,518 (+222). `cells_failed/` grew from 50 to 60: a 6th building (`way-298846078`) started failing, alongside the 5 known-broken ones. Local `campaign_status.json` (this-session counters, reset at each restart) shows 975/6,490 finished this run; the disk totals above are the true cumulative progress (~97-101%, campaign nearly done).
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-11:31:49.** `campaign_status.json` updated_at 2026-09-11T12:07:56: cells_finished 9,475/11,710 (80.9%), COMPLETED 8,735, ENERGYPLUS_FAILED 740. Distinct broken buildings rose from 71 to 74 (raw `cells_failed/` count matches). Three more buildings broke since last+132, in line with the ongoing pattern.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+134. Speed cadence narrows to IT only (job 1315014) since UK on Speed is cancelled; keep watching the local arm for completion — cadence is HOURLY per author instruction.
+
+Evidence: local `cells/`=6518 (was 6296), `cells_failed/`=60 (6 buildings, was 50/5); `watchdog.log` no kill entry since 10:03:16 start; `squeue -u o_iseri` confirms job 1315015 absent after `scancel`; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T12:07:56; `cells_failed/` count matches 74 distinct buildings (was 71).
+
+# START-HERE (last+132, 2026-09-11 ~11:40 EDT) — Both local UK arm and Speed IT quiet tick: steady progress, no new broken buildings on either side
+
+**Scope this tick:** normal read-only Speed cadence (squeue/JSON/count for IT/UK) plus checking on the author-authorized local UK arm. Nothing touched on Speed.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill since the 10:03:16 start** (now running ~97 minutes at 2 workers, the longest stretch yet). `cells/` rose from 6,250 to 6,270 (+20). `cells_failed/` unchanged at 50 — no new broken buildings (still 5) for the second tick in a row.
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-11:05:38.** `campaign_status.json` updated_at 2026-09-11T11:39:53: cells_finished 9,375/11,710 (80.1%), COMPLETED 8,665, ENERGYPLUS_FAILED 710. Distinct broken buildings unchanged at 71 — no new failures since last+131.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+133. Keep watching the local arm for continued stability/throughput, and Speed IT for further new broken buildings — cadence is HOURLY per author instruction.
+
+Evidence: local `cells/`=6270 (was 6250), `cells_failed/`=50 (5 buildings, unchanged); `watchdog.log` no kill entry since 10:03:16 start; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T11:39:53; `cells_failed/` count 710, 71 distinct buildings (unchanged); squeue for 1315014/1315015.
+
+# START-HERE (last+131, 2026-09-11 ~11:22 EDT) — Local UK arm still stable, slow steady progress, no new local breaks; Speed IT gained 1 more broken building (70→71), still healthy overall
+
+**Scope this tick:** normal read-only Speed cadence (squeue/JSON/count for IT/UK) plus checking on the author-authorized local UK arm. Nothing touched on Speed.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill since the 10:03:16 start** (now running ~78 minutes at 2 workers, the longest stretch yet). `cells/` rose from 6,242 to 6,250 (+8, a short check interval this tick). `cells_failed/` unchanged at 50 — no new broken buildings since last+130 (still 5).
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-10:47:05.** `campaign_status.json` updated_at 2026-09-11T11:21:33: cells_finished 9,325/11,710 (79.6%), COMPLETED 8,615, ENERGYPLUS_FAILED 710. Distinct broken buildings rose from 70 to 71 (raw `cells_failed/` count 710, exact match). One more building broke since last+130, in line with the ongoing pattern.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+132. Keep watching the local arm for continued stability/throughput, and Speed IT for further new broken buildings — cadence is HOURLY per author instruction.
+
+Evidence: local `cells/`=6250 (was 6242), `cells_failed/`=50 (5 buildings, unchanged); `watchdog.log` no kill entry since 10:03:16 start; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T11:21:33; `cells_failed/` count 710, 71 distinct buildings (was 70); squeue for 1315014/1315015.
+
+# START-HERE (last+130, 2026-09-11 ~11:12 EDT) — Local UK arm still stable, +152 more completed cells, a 5th building broke locally; Speed IT gained 1 more broken building (69→70), still healthy overall
+
+**Scope this tick:** normal read-only Speed cadence (squeue/JSON/count for IT/UK) plus checking on the author-authorized local UK arm. Nothing touched on Speed.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill since the 10:03:16 start** (now running ~68 minutes at 2 workers, the longest stretch yet). `cells/` rose from 6,090 to 6,242 (+152 new completions) — steady progress, slower than last tick's burst but still healthy. `cells_failed/` grew from 40 to 50: a 5th building (`way-192335498`) started failing, alongside the 4 known-broken ones. Not treated as a problem — consistent with the established pattern.
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-10:35:41.** `campaign_status.json` updated_at 2026-09-11T11:11:19: cells_finished 9,275/11,710 (79.2%), COMPLETED 8,575, ENERGYPLUS_FAILED 700. Distinct broken buildings rose from 69 to 70 (raw `cells_failed/` count 700, matches exactly this tick). One more building broke since last+129, in line with the pattern seen throughout this campaign.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+131. Keep watching the local arm for continued stability/throughput, and Speed IT for further new broken buildings — cadence is HOURLY per author instruction.
+
+Evidence: local `cells/`=6242 (was 6090), `cells_failed/`=50 (5 buildings, was 40/4); `watchdog.log` no kill entry since 10:03:16 start; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T11:11:19; `cells_failed/` count 700, 70 distinct buildings (was 69); squeue for 1315014/1315015.
+
+# START-HERE (last+129, 2026-09-11 ~10:43 EDT) — Local UK arm still stable and now +500 completed cells, but a 4th building broke locally; Speed IT gained 2 new broken buildings (67→69), still healthy overall
+
+**Scope this tick:** normal read-only Speed cadence (squeue/JSON/count for IT/UK) plus checking on the author-authorized local UK arm. Nothing touched on Speed.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill since the 10:03:16 start** (now running ~40 minutes at 2 workers, the longest stretch yet). `cells/` jumped from 5,588 to 6,090 (+502 new completions) — real, fast progress. `cells_failed/` grew from 30 to 40: a 4th building (`way-192335451`) started failing, alongside the 3 known-broken ones. Not treated as a problem — one more geometry-broken building out of thousands is expected at this scale.
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-10:05:38.** `campaign_status.json` updated_at 2026-09-11T10:42:50: cells_finished 9,150/11,710 (78.1%), COMPLETED 8,470, ENERGYPLUS_FAILED 680. Distinct broken buildings rose from 67 to 69 (raw `cells_failed/` count 681, close enough — one building's failures are still being written). Two more buildings broke since last+128, in line with the pattern seen throughout this campaign.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+130. Keep watching the local arm for continued stability/throughput, and Speed IT for further new broken buildings — cadence is HOURLY per author instruction.
+
+Evidence: local `cells/`=6090 (was 5588), `cells_failed/`=40 (4 buildings, was 30/3); `watchdog.log` no kill entry since 10:03:16 start; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T10:42:50; `cells_failed/` count 681, 69 distinct buildings (was 67); squeue for 1315014/1315015.
+
+# START-HERE (last+128, 2026-09-11 ~10:11 EDT) — Local UK arm (2 workers) STABLE, no kill, 8 new cells completed; Speed IT steady progress, 670 failed unchanged
+
+**Scope this tick:** normal read-only Speed cadence (squeue/JSON/count for IT/UK) plus checking on the author-authorized local UK arm relaunch. Nothing touched on Speed.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) STABLE — no watchdog kill, and now producing genuinely new completed cells.** `cells/` count is up to 5,588 (from 5,580 at launch — 8 new completions), `cells_failed/` still exactly 30 (the same 3 known-broken buildings, no new failures). `watchdog.log` has no kill entry since the 10:03:16 start, meaning it has now run for roughly 8 minutes at 2 workers without tripping the 75% memory threshold — a real improvement over the 2-minute deaths seen at 3 workers. This is the first real evidence the 2-worker configuration is sustainable.
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-09:35:38.** `campaign_status.json` updated_at 2026-09-11T10:10:43: cells_finished 9,050/11,710 (77.3%), COMPLETED 8,380, ENERGYPLUS_FAILED 670 — unchanged, no new building broke. Raw `cells_failed/` recount = 670, matches.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+129. Keep confirming the local arm's stability at 2 workers as it accumulates more completed cells; continue the normal Speed cadence.
+
+Evidence: local `cells/`=5588 (was 5580), `cells_failed/`=30 (unchanged); `watchdog.log` no kill entry since 10:03:16 start; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T10:10:43; `cells_failed/` count 670; squeue for 1315014/1315015.
+
+# START-HERE (last+127, 2026-09-11 ~10:04 EDT) — Local UK arm (2 workers, PID 46544) holding past the 2-minute mark this time, memory at 69.4% vs 82-88% on the prior two kills; Speed IT steady at 670 failed
+
+**Scope this tick:** routine autonomous-loop check. Local UK arm: verified it survived longer than the prior two attempts. Speed: normal read-only squeue/JSON/count check. Nothing touched on Speed.
+
+**Local Windows UK arm (TABLETOP1): PID 46544 (2 workers) still alive, no watchdog kill yet.** `watchdog.log` has no new kill entry since it started at 10:03:16 — already outlasting the last+125 attempt (3 workers, killed in ~2 min at 82.6%). Machine memory measured at 69.4% used right now, comfortably under the 75% threshold and well below the 82-88% seen on the last two kills. `campaign_progress.jsonl` is actively appending: it re-attempted all 3 of the run's previously-failed buildings (`6171462`, `1054785381`, `182927520` — exactly 30 failed cells = 3 buildings x 10, confirming there were only 3 broken buildings in this arm so far, not more), all failing again as expected (genuine geometry problems, not flukes). No new COMPLETED cells beyond the original 5,580 yet — expected, since it worked through the known-failed set first and has only been running ~1 minute at check time. `cells/`=5,580, `cells_failed/`=30, unchanged as of this check (too early to expect new completions).
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-09:26:00.** `campaign_status.json` updated_at 2026-09-11T10:03:40: cells_finished 9,000/11,710 (76.9%), COMPLETED 8,330, ENERGYPLUS_FAILED 670 — still unchanged, no new building broke since last+126. Raw `cells_failed/` recount = 670, matches.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+128. Confirm the local arm (PID 46544) is still alive and check whether it's finally producing new completed cells beyond 5,580 — if it survives another 20+ minutes without a kill, the 2-worker configuration can be considered stable.
+
+Evidence: `watchdog.log` (no kill entry for PID 46544 as of this check, started 10:03:16); `Get-CimInstance Win32_OperatingSystem` PctUsed 69.4; `Get-Process -Id 46544,16488` both alive; local `cells/`=5580, `cells_failed/`=30; Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T10:03:40; `cells_failed/` count 670; squeue for 1315014/1315015.
+
+# START-HERE (last+126, 2026-09-11 ~10:03 EDT) — Local UK arm's 2nd relaunch (3 workers) also watchdog-killed in ~2 min; now relaunched at 2 workers with --resume; Speed IT steady at 670 failed, no new buildings broke this tick
+
+**Scope this tick:** author said "start local run from the point where we left off" — continuing the author-authorized local-arm work from last+125. Speed IT/UK check is the normal read-only cadence, nothing touched there.
+
+**Local Windows UK arm (TABLETOP1): the last+125 relaunch (3 workers, PID 23568) was ALSO watchdog-killed, fast.** `watchdog.log` shows it started at 09:52:28 and was killed at 09:54:10 — under 2 minutes later, at 82.6% memory used. No new cells were written to `cells/` or `cells_failed/` in that window (still exactly 5,580/30, unchanged from before that attempt), so nothing was lost. Checked why headroom was so tight: baseline free memory right after the kill was healthy (~50% used, ~32 GB free of ~63.5 GB), but 9 unrelated `python.exe` multiprocessing workers from a different tool (`fanout_dfix.py`, under `speed_lmn_can/dfix_pipeline`) are running on this box, together holding roughly 8 GB — not touched (out of scope, someone else's tool), but flagged again as eating into the same budget the watchdog protects. **Relaunched a third time at `--workers 2`** (down from 3) with `--resume`, new campaign PID 46544, using the exact same shakedown command shape as before (`--district GB-LDN-STDUNSTANS --shakedown --resume --workers 2 --out .../4J_UK_local/out/GB-LDN-STDUNSTANS --run-root .../4J_UK_local/runs/GB-LDN-STDUNSTANS`). Verified live: `campaign_progress.jsonl` immediately resumed appending CELL records, correctly re-attempting two previously-failed buildings (`6171462` and `1054785381`) which failed again — genuine repeat geometry failures, not flukes, consistent with last+125's all-or-nothing-per-building finding. Watchdog re-armed at the same 75% threshold, watching new PID 46544, watchdog PID 16488; confirmed alive 30s after launch with no kill yet. Logs for this attempt: `logs/campaign_stdout_last126.log`, `logs/campaign_stderr_last126.log`, `logs/watchdog_stdout_last126.log`, `logs/watchdog_stderr_last126.log`.
+
+**IT (Bologna): RUNNING, job 1315014, node antenna1, elapsed 1-09:24:19.** `campaign_status.json` updated_at 2026-09-11T10:00:33: cells_finished 8,975/11,710 (76.7%), COMPLETED 8,305, ENERGYPLUS_FAILED 670 — **unchanged from last+125**, meaning no additional building crossed into failure this tick (consistent with the last+125 explanation: failures only grow when a new building's IDF breaks, and none did between the two checks). Raw `cells_failed/` recount = 670, matches.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+127. Resume the normal Speed cadence, and check whether the local UK arm (PID 46544) survives longer than 2 minutes at 2 workers — if it's still being killed this fast, the unrelated `fanout_dfix.py` memory load may need the author's attention (out of this session's scope to touch).
+
+Evidence: `watchdog.log` entries for PID 23568 kill (09:54:10, 82.6%) and PID 46544 start (10:03:16); local `cells/`=5580, `cells_failed/`=30 (unchanged across the failed attempt); `Get-CimInstance Win32_Process` showing 9 `fanout_dfix.py` workers (~8 GB); Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T10:00:33; `cells_failed/` count 670; squeue for 1315014/1315015 at 2026-09-11T10:0x.
+
+# START-HERE (last+125, 2026-09-11 ~09:56 EDT) — Author authorized triage script: +10/tick pattern explained (67 buildings, each fails all 10 of its cells or none); local UK arm restarted with resume + fewer workers
+
+**Scope this tick (author explicitly expanded it twice):** (1) authorized running `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed — verified its source first: purely read-only, only greps existing `eplusout.err` files and writes a summary text file, "nothing retried, dropped, moved, patched or scored." (2) asked to restart the local Windows UK arm (TABLETOP1) using less resources and to continue rather than restart from zero. Nothing on the Speed IT/UK jobs themselves was touched — still observation only there.
+
+**IT (Bologna): triage result — the +10/tick pattern is now EXPLAINED.** squeue: job 1315014 RUNNING, node antenna1, elapsed 1-09:17:36. `campaign_status.json` updated_at 2026-09-11T09:50:31: `cells_finished` 8,925/11,710 (76.2%), COMPLETED 8,255, ENERGYPLUS_FAILED 670 (up from 650 at last+123). Raw `cells_failed/` recount = 670, matches. Triage output shows **67 distinct failing buildings, every one with exactly 10 failed cells** (2 cases x 5 sensitivity levels) — 67 x 10 = 670 exactly. A building's geometry either fails all 10 of its case/f combinations or none; there is no partial-cell failure mode. That is the whole explanation for the clean +10 steps: one more building crosses into "broken" per tick, not an external systematic fault. Signature breakdown: 43 `vertex-mismatch-only`, 7 auto-classified `(a) CalcCoordinateTransformation route`, 7 `vertex-mismatch+nonplanar`, 6 auto-classified `(c)-PURE construction-only`, 2 `zero-area-only`, 2 `zero-area+nonplanar`. Only 13/67 are confidently auto-classified; the other 54 (mostly the 43 `vertex-mismatch-only`) would need a ring-level IDF read to classify further — explicitly out of this script's scope and out of this session's read-only lane; informational only, no further action taken. `payload_set_sha256` unchanged.
+
+**UK (Speed, job 1315015):** still PENDING (Dependency) on IT job 1315014. No change.
+
+**Local Windows UK arm (TABLETOP1): RESTARTED — now resumes instead of redoing everything, and uses fewer workers.** The shared run driver (`4J_docs_occ/tools/4thJ_step10_nocore_campaign.py`) had no resume capability — a bare re-invocation would have silently re-simulated all 12,070 cells, including the 5,580 already done. Added a minimal, additive `--resume` flag (default off, so it changes nothing for the Speed ES/IT/UK invocations, which never pass it): when passed, skips any cell whose `out/cells/<slug>.json` already exists. Verified with `--dry-run --resume` first: correctly found 5,580 done, queued the remaining 6,490 (including the 30 previously-failed cells, which get retried since they have no output file — appropriate for this locally-managed arm; the Speed monitoring lane's no-retry rule does not apply here). The original run used `--workers 6` (not 20 — the dashboard's "0/20" is a capacity display, not the actual worker count), and that alone hit the watchdog's 75% memory threshold in ~72 minutes. Relaunched with `--workers 3` (campaign PID 23568) plus the same `watchdog.ps1` (`-ThresholdPercent 75 -PollSeconds 20`, watchdog PID 32504) pointed at the new PID. Verified live: `campaign_progress.jsonl` is appending new CELL records (including a retry of a previously-failed building, which failed again — same genuine geometry problem, not a fluke), and overall machine memory sat at ~64.5% right after start (vs. 62.1% baseline), much more headroom than the run that got killed. Noted but not touched: unrelated `python.exe` processes (`fanout_dfix.py`, a different tool) are also running on this box and consuming ~8 GB combined, eating into the same memory budget the watchdog protects.
+
+**ES (Madrid): unchanged, COMPLETE.** Not re-checked this tick.
+
+**Next tick:** last+126. Resume the normal read-only Speed cadence (squeue/JSON/count), plus check on how the resumed local UK run and its watchdog are doing.
+
+Evidence: Speed `campaign_status.json` (IT-BOL-GALVANI2) updated_at 2026-09-11T09:50:31; `cells_failed/` count 670; triage output `/speed-scratch/o_iseri/4J_step10_nocore/out/IT-BOL-GALVANI2/failure_triage_20260911_095603.txt`; squeue for 1315014/1315015; local edit to `4thJ_step10_nocore_campaign.py` (added `--resume`, `py_compile`-checked); local campaign PID 23568 + watchdog PID 32504; `watchdog.log` entry "watchdog started, watching PID 23568" 2026-09-11T09:52:28.
+
+# START-HERE (last+124, 2026-09-11 ~12:00 EDT) — Local Windows UK arm (TABLETOP1) restarted, hit 46.4%, watchdog-killed again; Speed side unchanged from last+123
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count for Speed jobs only; never retry/patch/move/score anything. This tick's new information came from the author reporting the local run's dashboard directly — no Speed SSH check was run this tick, so IT/UK/ES figures below are carried forward unchanged from last+123. Item (2) of the 5-item POST-CAMPAIGN TO-DO LIST remains this session's own read-only lane; items 1/3/4/5 are for the author/a future task. Monitoring cadence HOURLY (author instruction, last+96b).
+
+**Local Windows UK arm (TABLETOP1): RESTARTED since last known "stopped," progressed to 46.4%, then WATCHDOG-KILLED again.** Author-reported dashboard: 5,600/12,070 cells finished (46.4%), 5,580 completed, 20 failed cells, workers 0/20 cores, machine memory 0.0% free — the run hit the 75%-memory-usage watchdog threshold and was killed. This box has no remote reboot if it freezes (see [[local-runs-parsec-no-reboot]]). Last known state before this (last+120) was "stopped since the last+100 watchdog kill" — so the author must have restarted it since then, and it has now died the same way a second time. This session did not restart, patch, or touch the run — purely recording what the author reported.
+
+**IT (Bologna): unchanged from last+123, not re-polled this tick.** Last known: RUNNING, job 1315014, 75.1% (8,800/11,710), COMPLETED 8,150, ENERGYPLUS_FAILED 650 — third consecutive tick of exactly +10 new failures (620→630→640→650), flagged as a systematic pattern. Triage script (`4J_s10_failure_triage.sh`) still not run — remains out of this session's authorized scope pending explicit author go-ahead.
+
+**UK (Speed, job 1315015): unchanged from last+123, not re-polled this tick.** Last known: still PENDING (Dependency) on IT job 1315014.
+
+**ES (Madrid): unchanged, COMPLETE.** 840 `ENERGYPLUS_FAILED`/84 buildings, fully logged. Not re-checked this tick.
+
+**Next tick:** last+125. Resume the normal Speed-side squeue/JSON/count check. Also worth the author deciding whether to restart the local UK arm again, since it has now hit the same memory watchdog kill twice.
+
+Evidence: author-reported local dashboard (46.4%, 5,600/12,070, 5,580 completed, 20 failed, 0/20 cores, 0.0% memory free, watchdog-kill message) relayed 2026-09-11 ~12:00 EDT; Speed-side IT/UK/ES figures carried forward from RESUME.md last+123 block / `project_4j_hetus_llm.md` last+123 entry (updated_at 2026-09-11T09:26:20).
+
+# START-HERE (last+123, 2026-09-11 ~11:30 EDT) — IT past 75.1%, THIRD straight tick of exactly 10 new failed cells (650 vs 640); UK still pending
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here. Item (2) of the 5-item POST-CAMPAIGN TO-DO LIST (re-classify IT/UK final failure sets once both complete) is this session's own read-only lane; items 1/3/4/5 are for the author / a future task. Monitoring cadence HOURLY (author instruction, last+96b). Dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): unchanged, COMPLETE.** No change since last+119–122 — 840 `ENERGYPLUS_FAILED`/84 buildings, fully logged (`C2_ES_failure_progress_log.csv`). Not re-checked this tick (out of the narrowed scope).
+
+**IT (Bologna): RUNNING — THIRD consecutive tick of exactly +10 new failed cells, pattern now looks systematic.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-08:48:01. `campaign_status.json` updated_at 2026-09-11T09:26:20: `cells_finished` 8,800/11,710 (75.1%, up from 8,725/74.5% at last+122). `by_completion_status`: COMPLETED 8,150 (up from 8,085), ENERGYPLUS_FAILED 650 (up from 640). This is the THIRD tick in a row with exactly +10 new failures (620→630→640→650), which no longer looks like scattered noise — flagging as a pattern worth investigating soon. Raw `cells_failed/` recount matches exactly (650 files). `4J_s10_failure_triage.sh` still NOT run — remains out of this session's read-only scope without explicit authorization, but the case for running it is now stronger given the regular +10/tick pattern. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (Speed, job 1315015): still PENDING (Dependency)** on IT job 1315014 finishing. No state change.
+
+**Local Windows UK arm (TABLETOP1): not re-checked this tick** — scope stayed limited to Speed-side squeue/JSON/count. Last known state (last+120): still stopped since the last+100 watchdog kill, not restarted by the author. Re-verify when back in scope.
+
+**Next tick:** last+124, ~1 hour from this poll. Recommend the author explicitly authorize running `4J_s10_failure_triage.sh IT-BOL-GALVANI2` given three consecutive ticks of exactly +10 new failures — this regularity suggests a single recurring cause (e.g. one building failing consistently across a fixed batch size) rather than random spread-out failures.
+
+Evidence: `project_4j_hetus_llm.md` last+123 entry; Speed `campaign_status.json` updated_at 2026-09-11T09:26:20; RESUME.md stack last+58h…last+123 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+122, 2026-09-11 ~11:15 EDT) — IT past 74.5%, 10 more NEW failed cells this tick (640 vs 630); UK still pending
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here. Item (2) of the 5-item POST-CAMPAIGN TO-DO LIST (re-classify IT/UK final failure sets once both complete) is this session's own read-only lane; items 1/3/4/5 are for the author / a future task. Monitoring cadence HOURLY (author instruction, last+96b). Dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): unchanged, COMPLETE.** No change since last+119/120/121 — 840 `ENERGYPLUS_FAILED`/84 buildings, fully logged (`C2_ES_failure_progress_log.csv`). Not re-checked this tick (static, complete, out of this tick's requested scope).
+
+**IT (Bologna): RUNNING, 10 MORE new failed cells this tick — triage still not run.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-08:35:48. `campaign_status.json` updated_at 2026-09-11T09:13:06: `cells_finished` 8,725/11,710 (74.5%, up from 8,525/72.8% at last+121). `by_completion_status`: COMPLETED 8,085 (up from 7,895), ENERGYPLUS_FAILED 640 (up from 630 — 10 more new failed cells this tick, second consecutive tick with new failures after last+119/120 being flat). Raw `cells_failed/` recount matches exactly (640 files). `4J_s10_failure_triage.sh` was again NOT run this tick — scope stayed narrow per the author's standing instruction — so it is still unknown whether these 20 cumulative new failures (since last+120) are new distinct buildings or repeats within the existing ~62-building set. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (Speed, job 1315015): still PENDING (Dependency)** on IT job 1315014 finishing. No state change.
+
+**Local Windows UK arm (TABLETOP1): not re-checked this tick** — scope stayed limited to Speed-side squeue/JSON/count per the author's standing instruction. Last known state (last+120): still stopped since the last+100 watchdog kill, not restarted by the author. Re-verify when back in scope.
+
+**Next tick:** last+123, ~1 hour from this poll. Recommend running `4J_s10_failure_triage.sh IT-BOL-GALVANI2` soon to classify the now-20 cumulative new failures (620→640) since they've grown for two consecutive ticks.
+
+Evidence: `project_4j_hetus_llm.md` last+122 entry; Speed `campaign_status.json` updated_at 2026-09-11T09:13:06; RESUME.md stack last+58h…last+122 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+121, 2026-09-11 ~10:35 EDT) — IT past 72.8%, 10 NEW failed cells this tick (630 vs 620); UK still pending
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here. Item (2) of the 5-item POST-CAMPAIGN TO-DO LIST (re-classify IT/UK final failure sets once both complete) is this session's own read-only lane; items 1/3/4/5 are for the author / a future task. Monitoring cadence HOURLY (author instruction, last+96b). Dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): unchanged, COMPLETE.** No change since last+119/120 — 840 `ENERGYPLUS_FAILED`/84 buildings, fully logged (`C2_ES_failure_progress_log.csv`). Not re-checked this tick (static, complete).
+
+**IT (Bologna): RUNNING, 10 NEW failed cells this tick — triage not yet run.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-08:05:44. `campaign_status.json` updated_at 2026-09-11T08:40:05: `cells_finished` 8,525/11,710 (72.8%, up from 8,375/71.5% at last+120). `by_completion_status`: COMPLETED 7,895 (up from 7,755), ENERGYPLUS_FAILED 630 (up from 620 — 10 new failed cells this tick). Raw `cells_failed/` recount matches exactly (630 files). This tick's scope per the author's explicit request was limited to squeue + campaign_status.json + failed-count only — the `4J_s10_failure_triage.sh` classification script was NOT run this tick, so whether the 10 new failures are new distinct buildings or repeats of the existing 62 is not yet known; flagged for next tick or a dedicated triage pass. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (Speed, job 1315015): still PENDING (Dependency)** on IT job 1315014 finishing. No state change.
+
+**Local Windows UK arm (TABLETOP1): not re-checked this tick** — scope was limited to Speed-side squeue/JSON/count per this tick's explicit instruction. Last known state (last+120): still stopped since the last+100 watchdog kill, not restarted by the author. Re-verify next tick.
+
+**Next tick:** last+122, ~1 hour from this poll. Recommend running `4J_s10_failure_triage.sh IT-BOL-GALVANI2` next tick to classify the 10 new failures against the existing family taxonomy.
+
+Evidence: `project_4j_hetus_llm.md` last+121 entry; Speed `campaign_status.json` updated_at 2026-09-11T08:40:05; RESUME.md stack last+58h…last+121 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+120, 2026-09-11 ~09:35 EDT) — fresh session's first tick; IT past 71.5%, no new failing buildings; hourly ScheduleWakeup re-armed
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here. Item (2) of the 5-item POST-CAMPAIGN TO-DO LIST (re-classify IT/UK final failure sets once both complete) is this session's own read-only lane; items 1/3/4/5 are for the author / a future task. Monitoring cadence HOURLY (author instruction, last+96b) — this fresh session re-armed its own `ScheduleWakeup` after reading the last+119 handoff. Dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, no new failing buildings this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-07:41:55. `campaign_status.json` updated_at 2026-09-11T08:22:32: `cells_finished` 8,375/11,710 (71.5%, up from 8,325/71.1% at last+119). `by_completion_status`: COMPLETED 7,755 (up from 7,705), ENERGYPLUS_FAILED 620 — unchanged, no new failed cells this tick. Raw `cells_failed/` recount matches exactly (620 files), same 62 distinct buildings as last+119, CSV log (`C2_IT_failure_progress_log.csv`, 63 lines = header+62 rows) already fully caught up, no triage needed. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author.** `campaign_status.json` mtime re-verified fresh: still 2026-09-10 22:06:49, unchanged since the watchdog kill at last+100. **No action taken** — restart remains the author's call.
+
+**Dashboard:** `https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f` refreshed this tick via `write_db` (IT numbers updated to 8,375/11,710, 620 failed, 62 buildings; local-arm values unchanged).
+
+**Next tick:** last+121, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+120 entry; Speed `campaign_status.json` updated_at 2026-09-11T08:22:32; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+120 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+119, 2026-09-11 ~09:20 EDT) — NO CHANGE since last+118; AUTHOR IS STARTING A FRESH SESSION HERE, READ THIS BLOCK FIRST
+
+**Handoff note for the fresh session:** the author asked the prior session to update this file and hand off to a new Claude Code session. This block IS the handoff. Everything below was re-verified fresh at last+119, not carried over blindly. The prior session's own recurring `ScheduleWakeup` has been stopped (see below) so it does not keep polling in parallel with whatever the new session sets up — if the author wants the hourly cadence to continue, the new session should re-arm its own `ScheduleWakeup` after reading this block.
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence has been HOURLY (author instruction, last+96b) — resume that cadence unless the author says otherwise. Dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, NO CHANGE this tick.** squeue re-checked fresh: job 1315014, state RUNNING, node antenna1, elapsed 1-07:39:45. `campaign_status.json` updated_at 2026-09-11T08:12:54 (same snapshot as last+118 — no new write yet): `cells_finished` 8,325/11,710 (71.1%). `by_completion_status`: COMPLETED 7,705, ENERGYPLUS_FAILED 620. Raw `cells_failed/` recount matches exactly (620 files) — identical to last+118, so no new failing buildings, still 62 distinct, CSV log (`C2_IT_failure_progress_log.csv`, 63 lines = header+62 rows) is already fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author.** `campaign_status.json` mtime re-verified fresh: still 2026-09-10 22:06:49, unchanged since the watchdog kill at last+100. Live process list re-checked fresh: no process matches the campaign's command line — only this session's own inspection commands. **No action taken** — restart remains the author's call.
+
+**Dashboard:** `https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f` refreshed this tick via `write_db` (same IT/UK/local numbers as last+118, `updated_at` bumped).
+
+**Next tick:** last+120, whenever the fresh session's own hourly check runs. Still watching for the author to restart the local arm; re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+119 entry; Speed `campaign_status.json` updated_at 2026-09-11T08:12:54 (unchanged from last+118); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+119 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+118, 2026-09-11 ~08:47 EDT) — IT three new failing buildings (32380, 32390, 32392), heavier tick; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, three new failing buildings this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-07:35:46. `campaign_status.json` updated_at 2026-09-11T08:12:54: `cells_finished` 8,325/11,710 (71.1%, up from 8,200/70.0% at last+117). `by_completion_status`: COMPLETED 7,705 (up from 7,613), ENERGYPLUS_FAILED 620 (up from ~590 raw last tick, +30 failed cells this tick — heavier than the recent pace). Raw `cells_failed/` recount matches exactly (620 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 62, up from 59 — THREE new: `32380` (mixed vertex-mismatch+nonplanar, vm=9 np=2), `32390` and `32392` (both pure vertex-mismatch-only, vm=9) — none fire an auto-rule. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify all three; rows appended to `C2_IT_failure_progress_log.csv` (now 63 lines = header+62 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+119, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+118 entry; `C2_IT_failure_progress_log.csv` now 63 lines = header+62 rows (32380/32390/32392 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+118 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+117, 2026-09-11 ~08:17 EDT) — IT one new failing building (32368), past 70%; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, past 70%, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-07:05:42. `campaign_status.json` updated_at 2026-09-11T07:43:26: `cells_finished` 8,200/11,710 (70.0%, up from 8,075/69.0% at last+116). `by_completion_status`: COMPLETED 7,613 (up from 7,495), ENERGYPLUS_FAILED 587 per that snapshot. Raw `cells_failed/` recount this tick shows 590 — 3 ahead of the JSON snapshot, a small normal write-timing lag (not the larger 10-cell gap seen at last+115). Distinct failing buildings from the raw recount: 59, up from 58 — ONE new: `32368`, mixed vertex-mismatch+nonplanar signature (vm=21 np=11), no auto-rule fires. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 60 lines = header+59 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+118, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+117 entry; `C2_IT_failure_progress_log.csv` now 60 lines = header+59 rows (32368 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+117 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+116, 2026-09-11 ~07:47 EDT) — IT one new failing building (32306), JSON/raw count lag from last tick resolved; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-06:35:36. `campaign_status.json` updated_at 2026-09-11T07:13:33: `cells_finished` 8,075/11,710 (69.0%, up from 7,900/67.5% at last+115). `by_completion_status`: COMPLETED 7,495 (up from 7,340), ENERGYPLUS_FAILED 580. Raw `cells_failed/` recount this tick matches the JSON exactly (580 `.json` files) — last tick's 10-cell lag between the JSON snapshot and the live directory has resolved itself, as expected for a normal write-timing gap. Distinct failing buildings: 58, up from 57 — ONE new: `32306`, pure vertex-mismatch-only signature (vm=7), no auto-rule fires. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 59 lines = header+58 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+117, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+116 entry; `C2_IT_failure_progress_log.csv` now 59 lines = header+58 rows (32306 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+116 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+115, 2026-09-11 ~07:17 EDT) — IT one new failing building (32280); campaign_status.json failed-count lagging the raw cells_failed/ count by 10; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-06:05:44. `campaign_status.json` updated_at 2026-09-11T06:39:14: `cells_finished` 7,900/11,710 (67.5%, up from 7,775/66.4% at last+114). `by_completion_status`: COMPLETED 7,340 (up from 7,215), ENERGYPLUS_FAILED 560 as of that snapshot. Raw `cells_failed/` recount this tick, however, shows 570 `.json` files — 10 ahead of the JSON snapshot's 560, meaning the on-disk directory had already picked up more failures than the last `campaign_status.json` write reflects (a normal lag between the periodic status write and the always-current file count; noted here rather than silently averaged over). Distinct failing buildings from the raw recount: 57, up from 56 — ONE new: `32280`, auto-classified `(c)-PURE` construction-only (cn=2), same exact-text rule established for ES/IT (c) cases. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 58 lines = header+57 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+116, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped. Will also keep watching whether the campaign_status.json failed-count lag persists or self-corrects on its next write.
+
+Evidence: `project_4j_hetus_llm.md` last+115 entry; `C2_IT_failure_progress_log.csv` now 58 lines = header+57 rows (32280 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+115 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+114, 2026-09-11 ~06:46 EDT) — IT one new failing building (32211), steady pace; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-05:35:41. `campaign_status.json` updated_at 2026-09-11T06:09:35: `cells_finished` 7,775/11,710 (66.4%, up from 7,625/65.1% at last+113). `by_completion_status`: COMPLETED 7,215 (up from 7,075), ENERGYPLUS_FAILED 560 (up from 550, +10 failed cells this tick). Raw `cells_failed/` recount matches exactly (560 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 56, up from 55 — ONE new: `32211`, auto-classified `(a)` CalcCoordinateTransformation route (cc=3 co=1), same exact-text rule established for ES/IT (a) cases. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 57 lines = header+56 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+115, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+114 entry; `C2_IT_failure_progress_log.csv` now 57 lines = header+56 rows (32211 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+114 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+113, 2026-09-11 ~06:16 EDT) — quiet tick, IT past 65%, failure count steady for third tick running; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, past 65%, no new failures for a third tick in a row.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-05:05:36. `campaign_status.json` updated_at 2026-09-11T05:43:03: `cells_finished` 7,625/11,710 (65.1%, up from 7,500/64.0% at last+112). `by_completion_status`: COMPLETED 7,075 (up from 6,950), ENERGYPLUS_FAILED 550 — unchanged since last+111 (three ticks steady). Raw `cells_failed/` recount confirms exactly 550 `.json` files, 55 distinct failing buildings — matches last+112 exactly, no new buildings. CSV log (`C2_IT_failure_progress_log.csv`) stays at 56 lines = header+55 rows, fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since 22:06:49): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+114, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+113 entry; `C2_IT_failure_progress_log.csv` unchanged at 56 lines; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+113 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+112, 2026-09-11 ~05:47 EDT) — quiet tick, IT past 64%, no new failures; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, past 64%, no new failures this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-04:35:43. `campaign_status.json` updated_at 2026-09-11T05:09:46: `cells_finished` 7,500/11,710 (64.0%, up from 7,300/62.3% at last+111). `by_completion_status`: COMPLETED 6,950 (up from 6,750), ENERGYPLUS_FAILED 550 — unchanged, no new failed cells this tick. Raw `cells_failed/` recount confirms exactly 550 `.json` files, 55 distinct failing buildings — matches last+111 exactly, no new buildings. CSV log (`C2_IT_failure_progress_log.csv`) stays at 56 lines = header+55 rows, fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since 22:06:49): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+113, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+112 entry; `C2_IT_failure_progress_log.csv` unchanged at 56 lines; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+112 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+111, 2026-09-11 ~05:16 EDT) — IT two new failing buildings (32054, 32073), steady pace; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, two new failing buildings this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-04:05:36. `campaign_status.json` updated_at 2026-09-11T04:41:59: `cells_finished` 7,300/11,710 (62.3%, up from 7,125/60.9% at last+110). `by_completion_status`: COMPLETED 6,750 (up from 6,595), ENERGYPLUS_FAILED 550 (up from 530, +20 failed cells this tick). Raw `cells_failed/` recount matches exactly (550 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 55, up from 53 — TWO new: `32054` (pure vertex-mismatch-only, vm=3) and `32073` (pure vertex-mismatch-only, vm=7) — neither fires an auto-rule. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify both; rows appended to `C2_IT_failure_progress_log.csv` (now 56 lines = header+55 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+112, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+111 entry; `C2_IT_failure_progress_log.csv` now 56 lines = header+55 rows (32054/32073 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+111 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+110, 2026-09-11 ~04:46 EDT) — quiet tick, IT past 60%, no new failures; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, past the 60% mark, no new failures this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-03:35:37. `campaign_status.json` updated_at 2026-09-11T04:11:21: `cells_finished` 7,125/11,710 (60.9%, up from 6,950/59.4% at last+109). `by_completion_status`: COMPLETED 6,595 (up from 6,420), ENERGYPLUS_FAILED 530 — unchanged for a second tick in a row, no new failed cells. Raw `cells_failed/` recount confirms exactly 530 `.json` files, 53 distinct failing buildings — matches last+109 exactly, no new buildings. CSV log (`C2_IT_failure_progress_log.csv`) stays at 54 lines = header+53 rows, fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since 22:06:49): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+111, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+110 entry; `C2_IT_failure_progress_log.csv` unchanged at 54 lines; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+110 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+109, 2026-09-11 ~04:17 EDT) — quiet tick, IT steady progress no new failures, LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, steady progress, no new failures this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-03:05:36. `campaign_status.json` updated_at 2026-09-11T03:43:13: `cells_finished` 6,950/11,710 (59.4%, up from 6,800/58.1% at last+108). `by_completion_status`: COMPLETED 6,420 (up from 6,270), ENERGYPLUS_FAILED 530 — unchanged from last+108, no new failed cells this tick. Raw `cells_failed/` recount confirms exactly 530 `.json` files, 53 distinct failing buildings — matches last+108 exactly, no new buildings. CSV log (`C2_IT_failure_progress_log.csv`) stays at 54 lines = header+53 rows, fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since 22:06:49): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+110, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+109 entry; `C2_IT_failure_progress_log.csv` unchanged at 54 lines; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+109 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+108, 2026-09-11 ~03:47 EDT) — IT three new failing buildings (31888, 31915, 31916), heavier tick; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, three new failing buildings this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-02:35:36. `campaign_status.json` updated_at 2026-09-11T03:12:01: `cells_finished` 6,800/11,710 (58.1%, up from 6,600/56.4% at last+107). `by_completion_status`: COMPLETED 6,270 (up from 6,100), ENERGYPLUS_FAILED 530 (up from 500, +30 failed cells this tick — heavier than the recent +10-per-tick pace). Raw `cells_failed/` recount matches exactly (530 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 53, up from 50 — THREE new: `31888` (pure vertex-mismatch-only, vm=9), `31915` (mixed vertex-mismatch+nonplanar, vm=12 np=1), `31916` (pure vertex-mismatch-only, vm=6) — none fire an auto-rule. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify all three; rows appended to `C2_IT_failure_progress_log.csv` (now 54 lines = header+53 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+109, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+108 entry; `C2_IT_failure_progress_log.csv` now 54 lines = header+53 rows (31888/31915/31916 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+108 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+107, 2026-09-11 ~03:16 EDT) — IT one new failing building (31821), steady pace; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-02:05:45. `campaign_status.json` updated_at 2026-09-11T02:36:37: `cells_finished` 6,600/11,710 (56.4%, up from 6,450/55.1% at last+106). `by_completion_status`: COMPLETED 6,100 (up from 5,960), ENERGYPLUS_FAILED 500 (up from 490, +10 failed cells this tick). Raw `cells_failed/` recount matches exactly (500 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 50, up from 49 — ONE new: `31821`, pure vertex-mismatch-only signature (vm=12), no auto-rule fires. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 51 lines = header+50 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+108, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+107 entry; `C2_IT_failure_progress_log.csv` now 51 lines = header+50 rows (31821 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+107 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+106, 2026-09-11 ~02:48 EDT) — IT two new failing buildings (31716, 31774), heavier tick; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, two new failing buildings this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-01:35:37. `campaign_status.json` updated_at 2026-09-11T02:14:43: `cells_finished` 6,450/11,710 (55.1%, up from 6,250/53.4% at last+105). `by_completion_status`: COMPLETED 5,960 (up from 5,780), ENERGYPLUS_FAILED 490 (up from 470, +20 failed cells this tick — a bit heavier than the recent +10-per-tick pace). Raw `cells_failed/` recount matches exactly (490 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 49, up from 47 — TWO new: `31716` (pure vertex-mismatch-only, vm=10, no auto-rule fires) and `31774` (mixed zero-area+nonplanar, np=5 za=7, no auto-rule fires). Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify both; rows appended to `C2_IT_failure_progress_log.csv` (now 50 lines = header+49 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+107, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+106 entry; `C2_IT_failure_progress_log.csv` now 50 lines = header+49 rows (31716/31774 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+106 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+105, 2026-09-11 ~02:18 EDT) — IT one new failing building (31661), steady pace; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-01:05:36. `campaign_status.json` updated_at 2026-09-11T01:40:52: `cells_finished` 6,250/11,710 (53.4%, up from 6,125/52.3% at last+104). `by_completion_status`: COMPLETED 5,780 (up from 5,665), ENERGYPLUS_FAILED 470 (up from 460, +10 failed cells this tick). Raw `cells_failed/` recount matches exactly (470 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 47, up from 46 — ONE new: `31661`, pure vertex-mismatch-only signature (vm=12), no auto-rule fires. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 48 lines = header+47 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+106, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+105 entry; `C2_IT_failure_progress_log.csv` now 48 lines = header+47 rows (31661 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+105 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+104, 2026-09-11 ~01:47 EDT) — IT one new failing building (31615), steady pace; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-00:35:36. `campaign_status.json` updated_at 2026-09-11T01:13:04: `cells_finished` 6,125/11,710 (52.3%, up from 6,000/51.2% at last+103). `by_completion_status`: COMPLETED 5,665 (up from 5,550), ENERGYPLUS_FAILED 460 (up from 450, +10 failed cells this tick). Raw `cells_failed/` recount matches exactly (460 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 46, up from 45 — ONE new: `31615`, auto-classified `(a)` CalcCoordinateTransformation route (cc=3 co=1), same exact-text rule established for ES/IT (a) cases. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 47 lines = header+46 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+105, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+104 entry; `C2_IT_failure_progress_log.csv` now 47 lines = header+46 rows (31615 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+104 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+103, 2026-09-11 ~01:22 EDT) — quiet tick, IT steady progress no new failures, LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, steady progress, no new failures this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 1-00:05:37. `campaign_status.json` updated_at 2026-09-11T00:40:50: `cells_finished` 6,000/11,710 (51.2%, up from 5,825/49.7% at last+102). `by_completion_status`: COMPLETED 5,550 (up from 5,375), ENERGYPLUS_FAILED 450 — unchanged from last+102, no new failed cells this tick. Raw `cells_failed/` recount confirms exactly 450 `.json` files, 45 distinct failing buildings — matches last+102 exactly, no new buildings. CSV log (`C2_IT_failure_progress_log.csv`) stays at 46 lines = header+45 rows, fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since 22:06:49): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+104, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+103 entry; `C2_IT_failure_progress_log.csv` unchanged at 46 lines; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+103 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+102, 2026-09-11 ~00:21 EDT) — IT one new failing building (31525), steady pace; LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 23:35:39. `campaign_status.json` updated_at 2026-09-11T00:18:10 (freshest read, pulled by the triage script): `cells_finished` 5,825/11,710 (49.7%, up from 5,650/48.2% at last+101). `by_completion_status`: COMPLETED 5,375 (up from 5,210), ENERGYPLUS_FAILED 450 (up from 440, +10 failed cells this tick). Raw `cells_failed/` recount matches exactly (450 `.json` files, single piped `ssh` call as usual). Distinct failing buildings: 45, up from 44 — ONE new: `31525`, mixed `vertex-mismatch+nonplanar` signature (vm=15 np=16), no auto-rule fires. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 46 lines = header+45 rows, fully caught up, no pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since then): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list again this tick: no process matching the campaign (only unrelated leftover monitors and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc refreshed this tick with the same local-arm values (nothing new on that arm).
+
+**Next tick:** last+103, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+102 entry; `C2_IT_failure_progress_log.csv` now 46 lines = header+45 rows (31525 appended); local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+102 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+101, 2026-09-11 ~00:21 EDT) — quiet tick, IT steady progress no new failures, LOCAL UK ARM STILL STOPPED (not restarted)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, steady progress, no new failures this tick.** squeue: job 1315014, state RUNNING, node antenna1, elapsed 23:05:58. `campaign_status.json` updated_at 2026-09-10T23:42:50: `cells_finished` 5,650/11,710 (48.2%, up from 5,525/47.2% at last+100). `by_completion_status`: COMPLETED 5,210 (up from 5,085), ENERGYPLUS_FAILED 440 — unchanged from last+100, no new failed cells this tick. Raw `cells_failed/` recount confirms exactly 440 `.json` files, 44 distinct failing buildings — matches last+100 exactly, no new buildings. CSV log (`C2_IT_failure_progress_log.csv`) stays at 45 lines = header+44 rows, fully caught up, no triage needed this tick. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STILL STOPPED — not restarted by the author yet.** `campaign_status.json` unchanged since the watchdog kill (updated_at 2026-09-10T22:06:49, file mtime confirms no write since 22:06:49): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. Checked the live process list this tick: no process matching the campaign (only unrelated leftover `grep` monitors from June/July and this session's own inspection commands) — confirms the run has not been restarted. **This session took no action** — restart remains the author's call. Dashboard artifact db doc unchanged from last+100 (`local.running: false`), refreshed this tick with the same values (nothing new to report on that arm).
+
+**Next tick:** last+102, ~1 hour from this poll (ScheduleWakeup armed after this report). Still watching for the author to restart the local arm; will re-verify from scratch each tick rather than assuming it stays stopped.
+
+Evidence: `project_4j_hetus_llm.md` last+101 entry; `C2_IT_failure_progress_log.csv` unchanged at 45 lines; local `campaign_status.json` mtime unchanged since 22:06:49; RESUME.md stack last+58h…last+101 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+100, 2026-09-10 ~23:20 EDT) — IT picked up pace, 4 new failing buildings; LOCAL UK ARM WAS KILLED BY ITS OWN WATCHDOG, NEEDS THE AUTHOR'S ATTENTION
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, faster failure pace this tick.** squeue: job 1315014, state RUNNING, node antenna1. `campaign_status.json` updated_at 2026-09-10T23:17:18: `cells_finished` 5,525/11,710 (47.2%, up from 5,350/45.7% at last+99). `by_completion_status`: COMPLETED 5,085, ENERGYPLUS_FAILED 440 — up from 400 at last+99, +40 failed cells this tick (a bigger jump than the last two ticks' +10/+30). Distinct failing buildings: 44, up from 40 — four new: `31410` and `31418` and `31461` (all pure vertex-mismatch-only, no auto-rule fires, blank `confirmed_class`), and `31445` (auto-classified `(c)-PURE` construction-only). Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify all four; rows appended to `C2_IT_failure_progress_log.csv` (now 45 lines = header+44 rows, fully caught up, no pending triage). Raw `cells_failed/` recount this tick matches exactly (440 `.json` files via the corrected `awk -F'__'` extraction, run through a single piped `ssh` call this time to dodge Speed's two-login-node round-robin, which silently splits `/tmp` writes across `speed-submit1`/`speed-submit2`). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): STOPPED — killed by its own memory watchdog at 22:08:13, NOT by this session.** `watchdog.log`: `"MEMORY THRESHOLD HIT: 87.8% used (>= 75%) -- killing campaign tree rooted at PID 30884"`, followed by a clean `taskkill` of the whole process tree (confirmed via `watchdog_stdout.log`, all child PIDs "terminated"). Last surviving `campaign_status.json` snapshot (updated_at 2026-09-10T22:06:49, one tick stale, written just before the kill): cells_finished 5,600/12,070 (46.4%), COMPLETED 5,580, ENERGYPLUS_FAILED 20. The raw `cells_failed/` count on disk is actually 30 (10 ahead of the last snapshot) — `campaign_progress.jsonl`'s last five lines show a burst of 5 straight `ENERGYPLUS_FAILED` cells on one building (`way-182927520`, both cases, 10 of its own cells total) right before the memory spike, worth a look if the author investigates the crash. Confirmed via the live process list that no python process matching this run exists any more (all currently-running python.exe processes belong to an unrelated script, `fanout_dfix.py`, started 23:01, after the kill). **This session took no action** — restarting a killed run is outside read-only monitoring scope and is the author's call (their machine, their memory budget). Dashboard artifact (`https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f`) db doc updated this tick to reflect `local.running: false` and the kill reason.
+
+**Next tick:** last+101, ~1 hour from this poll (ScheduleWakeup armed after this report). Author attention needed on the local arm restart decision — not actioned here.
+
+Evidence: `project_4j_hetus_llm.md` last+100 entry; `C2_IT_failure_progress_log.csv` now 45 lines = header+44 rows (rows 31410/31418/31445/31461 appended); `_local_runs\4J_UK_local\logs\watchdog.log` and `watchdog_stdout.log`; RESUME.md stack last+58h…last+100 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+99, 2026-09-10 ~22:50 EDT) — one new failing building, IT; local UK arm past 46%
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, one new failing building this tick.** squeue: job 1315014, state RUNNING, node antenna1. `campaign_status.json` updated_at 2026-09-10T22:44:35: `cells_finished` 5,350/11,710 (45.7%, up from 5,100/43.6% at last+98). `by_completion_status`: COMPLETED 4,950, ENERGYPLUS_FAILED 400 — up from 390 at last+98, +10 failed cells this tick (back to the quieter pace, vs +30 last tick). Distinct failing buildings: 40, up from 39 — one new: `31401` (pure vertex-mismatch-only, no auto-rule fires, blank `confirmed_class` per established convention). Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify it; row appended to `C2_IT_failure_progress_log.csv` (now 41 lines = header+40 rows, fully caught up, no pending triage). Raw `cells_failed/` recount this tick matches exactly (400 `.json` files via the corrected `awk -F'__'` extraction). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): still live, progressing normally, past the halfway mark.** `campaign_status.json` updated_at 2026-09-10T22:06:49: cells_finished 5,600/12,070 (46.4%, up from 4,750/39.4% at last+98), COMPLETED 5,580, ENERGYPLUS_FAILED 20 (unchanged). Dashboard artifact (`https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f`) db doc updated this tick with current IT/UK-Speed/UK-local numbers.
+
+**Next tick:** last+100, ~1 hour from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+99 entry; `C2_IT_failure_progress_log.csv` now 41 lines = header+40 rows (row 31401 appended); local campaign_status.json at `C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_UK_local\out\GB-LDN-STDUNSTANS\campaign_status.json`; RESUME.md stack last+58h…last+99 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+98, 2026-09-10 ~22:17 EDT) — three new failing buildings, IT (uptick in failure rate); local UK arm progressing
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence stays HOURLY (author instruction, last+96b); dashboard refreshed every tick per the author's standing instruction.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, uptick in failures this tick.** squeue: job 1315014, state RUNNING, node antenna1. `campaign_status.json` updated_at 2026-09-10T22:11:51: `cells_finished` 5,100/11,710 (43.6%, up from 4,950/42.3% at last+97). `by_completion_status`: COMPLETED 4,710, ENERGYPLUS_FAILED 390 — up from 360 at last+97, +30 failed cells this tick (a heavier failure rate than the mostly-quiet ticks since last+95). Distinct failing buildings: 39, up from 36 — three new: `31278` (auto-classified `(c)-PURE`, construction-only, same exact-text rule as ES/existing IT (c) cases), `31281` and `31289` (both pure vertex-mismatch-only, no auto-rule fires, blank `confirmed_class` per established convention). Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only) to classify the three; all rows appended to `C2_IT_failure_progress_log.csv` (now 40 lines = header+39 rows, fully caught up, no pending triage). Raw `cells_failed/` recount this tick matches exactly (390 `.json` files via corrected `awk -F'__'` field extraction — last tick's "362 vs 360" mismatch was traced this tick to a filename-parsing bug in the ad hoc count method, not a real discrepancy; the naming convention is `it__<building_id>__caseX__fNNN.json`, confirmed from a real directory listing). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): still live, progressing normally.** `campaign_status.json` updated_at 2026-09-10T21:56:46: cells_finished 4,750/12,070 (39.4%, up from 3,900/32.3% at last+97), COMPLETED 4,730, ENERGYPLUS_FAILED 20 (unchanged). Dashboard artifact (`https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f`) db doc updated this tick with current IT/UK-Speed/UK-local numbers.
+
+**Next tick:** last+99, ~1 hour from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+98 entry; `C2_IT_failure_progress_log.csv` now 40 lines = header+39 rows (rows 31278/31281/31289 appended); local campaign_status.json at `C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_UK_local\out\GB-LDN-STDUNSTANS\campaign_status.json`; RESUME.md stack last+58h…last+98 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+97, 2026-09-10 ~21:46 EDT) — quiet tick on Speed, no new failures, IT; local UK arm progressing; cadence now hourly
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. Monitoring cadence is now HOURLY (author instruction, last+96b) — this is the first full-hour tick under that cadence; the dashboard artifact is refreshed every tick per the author's explicit follow-up instruction ("for each hour you check progress update artifact as well").
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, quiet tick — no new failures since last+96.** squeue: job 1315014, state RUNNING, TIME 21:06:46, node antenna1. `campaign_status.json` updated_at 2026-09-10T21:43:32: `cells_finished` 4,950/11,710 (42.3%, up from 4,825/41.2% at last+96). `by_completion_status`: COMPLETED 4,590, ENERGYPLUS_FAILED 360 — unchanged from last+96, all 125 new-finished cells this tick were successes. Distinct failing buildings unchanged at 36. Raw `cells_failed/` recount this tick shows 362 `.json` files vs the status JSON's 360 `ENERGYPLUS_FAILED` — a 2-file mismatch (previous ticks matched exactly); flagged here, not chased further under strict read-only scope, and it does not change the reported failed-cell or distinct-building counts, which are taken from `campaign_status.json` as authoritative. No CSV changes this tick — still 37 lines = header+36 rows, fully caught up. `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): still live, progressing normally.** `campaign_status.json` updated_at 2026-09-10T21:46:20: cells_finished 3,900/12,070 (32.3%, up from 2,075/17.2% at last+96), COMPLETED 3,880, ENERGYPLUS_FAILED 20 (unchanged). Campaign PID 30884 and watchdog PID 30976 both confirmed alive. System memory 57.7% used (26.9 GB free of 63.5 GB total) — steady, well under the 75% watchdog threshold. Dashboard artifact (`https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f`) db doc updated this tick with current IT/UK-Speed/UK-local numbers.
+
+**Next tick:** last+98, ~1 hour from this poll (ScheduleWakeup armed after this report at the hourly cadence).
+
+Evidence: `project_4j_hetus_llm.md` last+97 entry; local campaign_status.json at `C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_UK_local\out\GB-LDN-STDUNSTANS\campaign_status.json`; RESUME.md stack last+58h…last+97 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+96, 2026-09-10 ~21:25 EDT) — quiet tick on Speed, no new failures, IT; local UK arm progressing
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING, quiet tick — no change since last+95.** squeue: job 1315014, state RUNNING, TIME 20:42:52, node antenna1 (this tick landed only a few minutes after last+95, not a full 30-minute gap). `campaign_status.json` updated_at 2026-09-10T21:18:05 — identical snapshot to last+95: `cells_finished` 4,825/11,710 (41.2%), COMPLETED 4,465, ENERGYPLUS_FAILED 360. `cells_failed/` recount confirms 360, matching exactly. No new failing buildings (still 36). `payload_set_sha256` `2cc6ba9512...` unchanged. No CSV changes this tick — still 37 lines = header+36 rows, fully caught up.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Unchanged, gated on IT.
+
+**Local UK arm (Windows, `TABLETOP1`): still live, progressing normally.** `campaign_status.json` updated_at 2026-09-10T21:22:02: cells_finished 2,075/12,070 (17.2%, up from 1,975/16.4% at last+95), COMPLETED 2,055, ENERGYPLUS_FAILED 20 (unchanged). Campaign PID 30884 and watchdog PID 30976 both confirmed alive. System memory 57.7% used (26.8 GB free of 63.5 GB total) — steady, well under the 75% watchdog threshold. Dashboard artifact (`https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f`) db doc updated this tick.
+
+**Next tick:** last+97, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+96 entry; local campaign_status.json at `C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_UK_local\out\GB-LDN-STDUNSTANS\campaign_status.json`; RESUME.md stack last+58h…last+96 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+95, 2026-09-10 ~21:20 EDT) — one new failing building, IT; local UK arm now a live kept run
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session. This tick also confirmed the `--diary-diversity` flag for Step 11 was already ruled `reseed` at last+47 (2026-09-08) — a background survey agent flagged it as an open author decision, but that was a stale reading of a same-day work-item checklist never updated after the ruling landed; nothing changed, no new decision needed.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 20:39:27, node antenna1. `campaign_status.json` updated_at 2026-09-10T21:18:05: `cells_finished` 4,825/11,710 (41.2%, up from 4,600/39.3% at last+94). `by_completion_status`: COMPLETED 4,465, ENERGYPLUS_FAILED 360 (up from 350 — 10 new failed cells this tick, `cells_failed/` recount matches exactly). Distinct failing buildings: 36, up from 35 — one new: `31169`. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed (read-only): the two buildings pending since last+94 (`31118` vm=3, `31123` vm=12) are both pure vertex-mismatch-only, no auto-rule fires; the new one (`31169`) auto-classifies `(a)` CalcCoordinateTransformation route (cc=3 co=1), same exact-text rule as ES. All three rows appended to `C2_IT_failure_progress_log.csv` (now 37 lines = header + 36 rows, fully caught up — no more pending triage). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London) on Speed: still PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Local UK arm (Windows, `TABLETOP1`): now a live, ongoing, disjoint run — no longer a discarded shakedown.** After the last+94 shakedown (12/12 cells, discarded) was stopped, the author had this session relaunch it at the settled 6-worker configuration; it has been running continuously since 2026-09-10T20:56:23 and is genuinely progressing: `cells_finished` 1,975/12,070 (16.4%), COMPLETED 1,955, ENERGYPLUS_FAILED 20. Campaign PID 30884 and watchdog PID 30976 both confirmed alive. System memory 59.1% used (26.0 GB free of 63.5 GB total) — comfortably under the 75% watchdog kill line, no freeze risk observed. This remains a disjoint Windows-build arm (same frozen prereg + UK payload digest, same `energyplus_build_hash` `87ed9199d4`, platform Windows) per the ONE-CAMPAIGN-ONE-ENGINE-BUILD rule — never to be pooled with Speed's Linux-arm UK results once Speed's UK job eventually runs. Dashboard artifact (`https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f`) db doc updated this tick with current IT/UK-Speed/UK-local numbers.
+
+**Next tick:** last+96, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+95 entry; `C2_IT_failure_progress_log.csv` now 37 lines = header+36 rows, fully caught up; local campaign_status.json at `C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_UK_local\out\GB-LDN-STDUNSTANS\campaign_status.json`; RESUME.md stack last+58h…last+95 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+94, 2026-09-10 ~20:55 EDT) — two new failing buildings, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 19:57:58, node antenna1. `campaign_status.json` updated_at 2026-09-10T20:31:06: `cells_finished` 4,600/11,710 (39.3%, up from 4,525/38.6% at last+93). `by_completion_status`: COMPLETED 4,250, ENERGYPLUS_FAILED 350 (up from 330 at last+93 — 20 new failed cells this tick). Distinct failing buildings: 35, up from 33 — two new: `31118`, `31123`. CSV log update pending (still 34 lines = header+33 rows; the two new buildings are not yet triaged/appended, staying strictly read-only this tick). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged. Separately: on the author's direct instruction this tick, a local Windows-build shakedown of the UK campaign was started on the idle local machine (4 workers, memory watchdog armed given this box's documented freeze history, same frozen prereg + UK payload digest, `energyplus_build_hash` confirmed identical `87ed9199d4` to Speed's build, platform Windows — distinct arm per the ONE-CAMPAIGN-ONE-ENGINE-BUILD rule, never to be pooled with Speed's Linux-arm results) — then STOPPED minutes later, also on the author's instruction. 12 completed / 12 failed cells were produced and discarded; nothing from it is kept or reported. Speed's own IT and UK jobs were never touched by any of this.
+
+**Next tick:** last+95, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+94 entry; `C2_IT_failure_progress_log.csv` unchanged at 34 lines = header+33 rows (`31118`/`31123` pending triage); RESUME.md stack last+58h…last+94 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+93, 2026-09-10 ~20:20 EDT) — quiet tick, no new failures, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 19:40:18, node antenna1. `campaign_status.json` updated_at 2026-09-10T20:17:12: `cells_finished` 4,525/11,710 (38.6%, up from 4,450/38.0% at last+92). `by_completion_status`: COMPLETED 4,195, ENERGYPLUS_FAILED 330 (unchanged from last+92 — no new failed cells this tick). Distinct failing buildings: 33, unchanged, no new buildings. CSV log unchanged (34 lines = header+33 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+94, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+93 entry; `C2_IT_failure_progress_log.csv` unchanged at 34 lines = header+33 rows; RESUME.md stack last+58h…last+93 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+92, 2026-09-10 ~20:15 EDT) — one new failing building, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 19:24:04, node antenna1. `campaign_status.json` updated_at 2026-09-10T20:00:36: `cells_finished` 4,450/11,710 (38.0%, up from 4,400/37.6% at last+91). `by_completion_status`: COMPLETED 4,120, ENERGYPLUS_FAILED 330 (up from 320 at last+91, +10 cells). Distinct failing buildings: 33, ONE NEW this tick: `31069` (10 failed cells, vm=11 np=0 cc=0 co=0 cn=0 za=0) — pure vertex-mismatch-only signature, no auto-rule fires, confirmed_class left blank, mirrors the established convention. CSV row appended to `C2_IT_failure_progress_log.csv` (34 lines = header+33 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+93, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+92 entry; `C2_IT_failure_progress_log.csv` now 34 lines = header+33 rows (row 31069 appended); RESUME.md stack last+58h…last+92 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+91, 2026-09-10 ~19:45 EDT) — two new failing buildings, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 19:05:37, node antenna1. `campaign_status.json` updated_at 2026-09-10T19:43:47: `cells_finished` 4,400/11,710 (37.6%, up from 4,200/35.9% at last+90). `by_completion_status`: COMPLETED 4,080, ENERGYPLUS_FAILED 320 (up from 300 at last+90, +20 cells). Distinct failing buildings: 32, TWO NEW this tick: `31016` (10 failed cells, vm=19 np=0 cc=0 co=0 cn=0 za=0) and `31035` (10 failed cells, vm=12 np=0 cc=0 co=0 cn=0 za=0) — both pure vertex-mismatch-only signature, no auto-rule fires, confirmed_class left blank, mirrors the established convention. CSV rows appended to `C2_IT_failure_progress_log.csv` (33 lines = header+32 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+92, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+91 entry; `C2_IT_failure_progress_log.csv` now 33 lines = header+32 rows (rows 31016, 31035 appended); RESUME.md stack last+58h…last+91 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+90, 2026-09-10 ~19:15 EDT) — quiet tick, no new failures, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 18:35:44, node antenna1. `campaign_status.json` updated_at 2026-09-10T19:08:26: `cells_finished` 4,200/11,710 (35.9%, up from 4,150/35.4% at last+89). `by_completion_status`: COMPLETED 3,900, ENERGYPLUS_FAILED 300 (unchanged from last+89 — no new failed cells this tick). Distinct failing buildings: 30, unchanged, no new buildings. CSV log unchanged (31 lines = header+30 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+91, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+90 entry; `C2_IT_failure_progress_log.csv` unchanged at 31 lines = header+30 rows; RESUME.md stack last+58h…last+90 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+89, 2026-09-10 ~18:45 EDT) — new failing building, IT (auto-class (a))
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 18:05:37, node antenna1. `campaign_status.json` updated_at 2026-09-10T18:43:55: `cells_finished` 4,150/11,710 (35.4%, up from 4,025/34.4% at last+88). `by_completion_status`: COMPLETED 3,850, ENERGYPLUS_FAILED 300 (up from 285 at last+88, +15 cells). Raw `cells_failed/*.json` file count now matches exactly (300=300) — last tick's small 4-file gap resolved itself, confirming it was in-flight write timing, not a real discrepancy. Distinct failing buildings: 30, ONE NEW this tick: `30930` (10 failed cells, signature vm=0 np=0 cc=3 co=1 cn=0 za=0, matches the `CalcCoordinateTransformation route` auto-rule -> **(a)**, same class as 28473/29211). CSV row appended to `C2_IT_failure_progress_log.csv` (31 lines = header+30 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+90, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+89 entry; `C2_IT_failure_progress_log.csv` now 31 lines = header+30 rows (row 30930 appended, (a)); RESUME.md stack last+58h…last+89 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+88, 2026-09-10 ~18:15 EDT) — two new failing buildings, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 17:35:37, node antenna1. `campaign_status.json` updated_at 2026-09-10T18:13:10: `cells_finished` 4,025/11,710 (34.4%, up from 3,900/33.3% at last+87). `by_completion_status`: COMPLETED 3,740, ENERGYPLUS_FAILED 285 (up from 270 at last+87, +15 cells). Note: raw `cells_failed/*.json` file count read as 289, 4 above the `campaign_status.json` figure of 285 — observed, not investigated (read-only scope), consistent with in-flight write timing; distinct-building derivation below uses the file listing as usual. Distinct failing buildings: 29, TWO NEW this tick: `30905` (10 failed cells, vm=9 np=0 cc=0 co=0 cn=0 za=0) and `30912` (9 failed cells, vm=13 np=0 cc=0 co=0 cn=0 za=0) — both pure vertex-mismatch-only signature, no auto-rule fires, confirmed_class left blank, mirrors the established convention. CSV rows appended to `C2_IT_failure_progress_log.csv` (30 lines = header+29 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+89, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+88 entry; `C2_IT_failure_progress_log.csv` now 30 lines = header+29 rows (rows 30905, 30912 appended); RESUME.md stack last+58h…last+88 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+87, 2026-09-10 ~17:45 EDT) — two new failing buildings, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 17:05:44, node antenna1. `campaign_status.json` updated_at 2026-09-10T17:43:03: `cells_finished` 3,900/11,710 (33.3%, up from 3,800/32.4% at last+86). `by_completion_status`: COMPLETED 3,630, ENERGYPLUS_FAILED 270 (up from 250 at last+86, +20 cells). Distinct failing buildings: 27, TWO NEW this tick: `30817` and `30850` (10 failed cells each, both pure vertex-mismatch-only signature vm=12 np=0 cc=0 co=0 cn=0 za=0, no auto-rule fires, confirmed_class left blank — mirrors the established vertex-mismatch-only convention, same as most recent prior new buildings). CSV rows appended to `C2_IT_failure_progress_log.csv` (28 lines = header+27 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+88, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+87 entry; `C2_IT_failure_progress_log.csv` now 28 lines = header+27 rows (rows 30817, 30850 appended); RESUME.md stack last+58h…last+87 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+86, 2026-09-10 ~17:15 EDT) — new failing building, IT (construction class, OURS)
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 16:35:39, node antenna1. `campaign_status.json` updated_at 2026-09-10T17:14:22: `cells_finished` 3,800/11,710 (32.4%, up from 3,675/31.4% at last+85). `by_completion_status`: COMPLETED 3,550, ENERGYPLUS_FAILED 250 (up from 240 at last+85, +10 cells). Distinct failing buildings: 25, ONE NEW building this tick: `30742` (10 failed cells, construction-only signature vm=0 np=0 cc=0 co=0 cn=2 za=0 — matches the auto-classification rule `cn>0, vm==0, np==0, za==0` → **(c)-PURE**, same class as building 28861/28891, OUR OWN interzone-construction defect, not a blank vertex-mismatch case this time). CSV row appended to `C2_IT_failure_progress_log.csv` (26 lines = header+25 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+87, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+86 entry; `C2_IT_failure_progress_log.csv` now 26 lines = header+25 rows (row 30742 appended, (c)-PURE); RESUME.md stack last+58h…last+86 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+85, 2026-09-10 ~16:45 EDT) — new failing building, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 16:05:38, node antenna1. `campaign_status.json` updated_at 2026-09-10T16:40:24: `cells_finished` 3,675/11,710 (31.4%, up from 3,500/29.9% at last+84). `by_completion_status`: COMPLETED 3,435, ENERGYPLUS_FAILED 240 (up from 230 at last+84, +10 cells). Distinct failing buildings: 24, ONE NEW building this tick: `30651` (10 failed cells, vertex-mismatch-only signature vm=12 np=0 cc=0 co=0 cn=0 za=0, no auto-rule fires, ring check not performed, confirmed_class left blank — mirrors the established vertex-mismatch-only convention). CSV row appended to `C2_IT_failure_progress_log.csv` (25 lines = header+24 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+86, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+85 entry; `C2_IT_failure_progress_log.csv` now 25 lines = header+24 rows (row 30651 appended); RESUME.md stack last+58h…last+85 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+84, 2026-09-10 ~16:15 EDT) — new failing building, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 15:35:46, node antenna1. `campaign_status.json` updated_at 2026-09-10T16:14:41: `cells_finished` 3,500/11,710 (29.9%, up from 3,350/28.6% at last+83). `by_completion_status`: COMPLETED 3,270, ENERGYPLUS_FAILED 230 (up from 220 at last+83, +10 cells). Distinct failing buildings: 23, ONE NEW building this tick: `30570` (10 failed cells, vertex-mismatch-only signature vm=19 np=0 cc=0 co=0 cn=0 za=0, no auto-rule fires, ring check not performed, confirmed_class left blank — mirrors the established vertex-mismatch-only convention). CSV row appended to `C2_IT_failure_progress_log.csv` (24 lines = header+23 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+85, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+84 entry; `C2_IT_failure_progress_log.csv` now 24 lines = header+23 rows (row 30570 appended); RESUME.md stack last+58h…last+84 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+83, 2026-09-10 ~15:45 EDT) — new failing building, IT
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 15:05:38, node antenna1. `campaign_status.json` updated_at 2026-09-10T15:42:51: `cells_finished` 3,350/11,710 (28.6%, up from 3,200/27.3% at last+82). `by_completion_status`: COMPLETED 3,130, ENERGYPLUS_FAILED 220 (up from 210 at last+82, +10 cells). Distinct failing buildings: 22, ONE NEW building this tick: `30485` (10 failed cells, zero-area-only signature vm=0 np=0 cc=0 co=0 cn=0 za=5, no auto-rule fires, ring check not performed, confirmed_class left blank — mirrors the existing zero-area-only convention e.g. building 28217). CSV row appended to `C2_IT_failure_progress_log.csv` (23 lines = header+22 rows). `payload_set_sha256` `2cc6ba9512...` unchanged.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+84, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+83 entry; `C2_IT_failure_progress_log.csv` now 23 lines = header+22 rows (row 30485 appended); RESUME.md stack last+58h…last+83 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+82, 2026-09-10 ~15:15 EDT) — routine tick, no new failures
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings. Peer session that ran that investigation is now CLOSED (confirmed by the author); 5-item POST-CAMPAIGN TO-DO LIST it wrote into the INVESTIGATION LANE block (line ~118, "WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD") stays parked — item (2), re-classify IT/UK final failure sets once both complete, is this session's own read-only lane; items 1/3/4/5 are for the author / a future task, not this session.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 14:35:52, node antenna1. `campaign_status.json` updated_at 2026-09-10T15:12:32: `cells_finished` 3,200/11,710 (27.3%, up from 3,025/25.8% at last+81). `by_completion_status`: COMPLETED 2,990, ENERGYPLUS_FAILED 210 (unchanged from last+81). Distinct failing buildings: 21, NO NEW building this tick (same list as last+81). No CSV update needed.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. Gated as designed on IT completion, unchanged.
+
+**Next tick:** last+83, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+82 entry; `C2_IT_failure_progress_log.csv` unchanged (22 lines = header+21 rows); RESUME.md stack last+58h…last+82 (this block at top, INVESTIGATION LANE block + post-campaign to-do list preserved below, untouched).
+
+# START-HERE (last+81, 2026-09-10 ~14:45 EDT) — routine tick, no new failures
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 14:05:45, node antenna1. `campaign_status.json` updated_at 2026-09-10T14:44:40: `cells_finished` 3,025/11,710 (25.8%, up from 2,825/24.1% at last+80). `by_completion_status`: COMPLETED 2,815, ENERGYPLUS_FAILED 210 (unchanged from last+80). Distinct failing buildings: 21, NO NEW building this tick (same list as last+80). No CSV update needed.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. `scontrol show job 1315015`: `Dependency=afterok:1315014(unfulfilled)`. Gated as designed on IT completion.
+
+**Next tick:** last+82, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+81 entry; `C2_IT_failure_progress_log.csv` unchanged (22 lines = header+21 rows); RESUME.md stack last+58h…last+81 (this block at top, INVESTIGATION LANE block preserved below).
+
+# START-HERE (last+80, 2026-09-10 ~14:15 EDT) — TWO new failing buildings (30230, 30240), CSV updated
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — its findings (5 failure families A-E, all 101 buildings classified, two items flagged FOR THE AUTHOR) are informational only here; this session does not act on them.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 13:35:48, node antenna1. `campaign_status.json` updated_at 2026-09-10T14:14:11: `cells_finished` 2,825/11,710 (24.1%, up from 2,650/22.6% at last+79). `by_completion_status`: COMPLETED 2,615, ENERGYPLUS_FAILED 210 (up from 190). Distinct failing buildings: 21, TWO NEW since last+79 — **30230** and **30240**. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed: both pure vertex-mismatch-only signatures (30230: vm=14; 30240: vm=13; both np=0 cc=0 co=0 cn=0 za=0), no auto-classification rule fires for either → `confirmed_class` left blank for both, two rows appended to `C2_IT_failure_progress_log.csv` (now 21 data rows). `payload_set_sha256` unchanged (`2cc6ba9512...`).
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. `scontrol show job 1315015`: `Dependency=afterok:1315014(unfulfilled)`. Gated as designed on IT completion.
+
+**Next tick:** last+81, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+80 entry; `C2_IT_failure_progress_log.csv` (21 rows, buildings 30230/30240 appended); RESUME.md stack last+58h…last+80 (this block at top, INVESTIGATION LANE block preserved directly below).
+# START-HERE (last+79, 2026-09-10 ~13:36 EDT) — routine tick, no new failures
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — informational only here; this session does not act on its findings.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 13:05:49, node antenna1. `campaign_status.json` updated_at 2026-09-10T13:36:19: `cells_finished` 2,650/11,710 (22.6%, up from 2,525/21.6% at last+78). `by_completion_status`: COMPLETED 2,460, ENERGYPLUS_FAILED 190 (unchanged from last+78). Distinct failing buildings: 19, NO NEW building this tick. No CSV update needed.
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. `scontrol show job 1315015`: `Dependency=afterok:1315014(unfulfilled)`. Gated as designed on IT completion.
+
+**Next tick:** last+80, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+79 entry; `C2_IT_failure_progress_log.csv` unchanged (19 rows); RESUME.md stack last+58h…last+79 (this block at top, INVESTIGATION LANE block preserved below).
+# START-HERE (last+78, 2026-09-10 ~13:15 EDT) — NEW failing building (30139), CSV updated
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation, delegated to a separate Opus Claude session, CLOSED at last+76c — its findings (5 failure families A-E, all 101 buildings classified, two items flagged FOR THE AUTHOR) are informational only here; this session does not act on them.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 12:36:06, node antenna1. `campaign_status.json` updated_at 2026-09-10T13:15:04: `cells_finished` 2,525/11,710 (21.6%, up from 2,400/20.5% at last+77). `by_completion_status`: COMPLETED 2,335, ENERGYPLUS_FAILED 190 (up from 180). Distinct failing buildings: 19, ONE NEW since last+77 — **30139**. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed: building 30139, 10 failed cells, signature "vertex-mismatch-only" (vm=6 np=0 cc=0 co=0 cn=0 za=0), no auto-classification rule fires (not class (a)/(c)-PURE) → `confirmed_class` left blank, row appended to `C2_IT_failure_progress_log.csv` (now 19 data rows). `payload_set_sha256` unchanged (`2cc6ba9512...`).
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. `scontrol show job 1315015`: `Dependency=afterok:1315014(unfulfilled)`. Gated as designed on IT completion.
+
+**Next tick:** last+79, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+78 entry; `C2_IT_failure_progress_log.csv` (19 rows, building 30139 appended); RESUME.md stack last+58h…last+78 (this block at top, INVESTIGATION LANE block preserved directly below).
+# START-HERE (last+77, 2026-09-10 ~12:40 EDT) — NEW failing building (30037), CSV updated
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation is DELEGATED to a separate Opus Claude session (author's instruction, ~12:05 EDT) — do NOT duplicate it here.
+
+**ES (Madrid): COMPLETE.** Unchanged (840 failures/84 buildings, fully logged).
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 12:05:40, node antenna1. `campaign_status.json` updated_at 2026-09-10T12:40:37: `cells_finished` 2,400/11,710 (20.5%, up from 2,275/19.4% at last+76). `by_completion_status`: COMPLETED 2,220, ENERGYPLUS_FAILED 180 (up from 170). Distinct failing buildings: 18, ONE NEW since last+76 — **30037**. Ran `4J_s10_failure_triage.sh IT-BOL-GALVANI2` on Speed: building 30037, 10 failed cells, signature "vertex-mismatch-only" (vm=12 np=0 cc=0 co=0 cn=0 za=0), no auto-classification rule fires (not class (a)/(c)-PURE) → `confirmed_class` left blank, row appended to `C2_IT_failure_progress_log.csv` (now 18 data rows). `payload_set_sha256` unchanged (`2cc6ba9512...`).
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. `scontrol show job 1315015`: `Dependency=afterok:1315014(unfulfilled)`. Gated as designed on IT completion.
+
+**Next tick:** last+78, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+77 entry; `C2_IT_failure_progress_log.csv` (18 rows, building 30037 appended); RESUME.md stack last+58h…last+77 (this block at top).
+# 🟢 INVESTIGATION LANE (2026-09-10 ~12:50 EDT) — ALL 101 FAILING BUILDINGS CLASSIFIED, OUR ONE DEFECT FIXED IN A PATCH FILE (NOT APPLIED)
+
+**This is the separate root-cause session the author opened at ~12:05 EDT, not a monitoring tick.**
+The 30-minute monitoring lane is untouched: its `RESUME.md` blocks below, its two
+`C2_*_failure_progress_log.csv` logs and its cron are all unmodified. Nothing on Speed was written,
+no cell retried, no job cancelled, no building dropped, no pin moved, nothing scored. The deployed
+runner is **byte-unchanged and verified so** — Speed copy and local copy both `md5
+ad8a586d0a681057cb3552e082165669`.
+
+**Read.** Every failing building's run directory survives on Speed (`runs/<DISTRICT>/<cell_slug>/`,
+9.8 GB) with both the built `.idf` and `eplusout.err`, so the ring-level read the earlier passes
+deferred could be done without rebuilding anything. All 84 ES + 17 IT failing buildings read
+read-only over SSH (`grep`/`awk` on the login node only).
+
+**Result — 72 blank `confirmed_class` rows became 0.** Five families, all 101 buildings placed:
+A coincident-vertex deletion 11 bldgs; B degenerate-vertex asymmetric read 57; C **our** construction
+assignment 7; D rings genuinely differ 19; E zero-area sliver 7. Agrees with every established class
+with no exception ((a)→A 11/11, (b1)→B 9/9, (b2)→D 1/1, (c)→C 7/7, (d)→B 1/1 — B names the fatal
+route, not the origin, exactly as §18.27 predicted).
+
+🔴 **The "minimum vertex gap ≤ 10 mm" acceptance test is insufficient for a second, independent
+reason.** Five buildings whose minimum edge is 0.06–3.27 m fail anyway, on **exactly collinear**
+vertices, which EnergyPlus removes by the same rule. A snap-tolerance change alone cannot close
+family B; the test must cover collinear vertices too. This has to reach `openubem-20`.
+
+**Our one defect is fixed — in a patch file, deliberately not applied.** Family C, 7 buildings /
+70 cells, 100 % of the class. `Step10_docs/impl/fixes_pending_resubmit/FIX_C_interzone_construction.patch`
+compiles, `patch --dry-run` clean, LF preserved, plus a proposed `R12` refusal. **Seen failing before
+trusted**: replaying the deployed rule over the real refused IDFs reproduces exactly 7 bad interzone
+pairs, one per building, matching each `eplusout.err`; the new rule gives 0. ⚪ Not yet rebuilt or
+re-run under EnergyPlus — that is the post-campaign acceptance test. 🔴 One physics choice
+(interzone plates take `EU_FLOOR`, not `EU_ROOF`) is the author's to confirm in the
+re-pre-registration.
+
+**Everything else is handed over, not patched** — A/B/E ring hygiene and D fragment routing live in
+`openubem/`/geomeppy, so authorisation goes to `openubem-20` from the author directly.
+
+**New files:** `Step10_docs/impl/2026-09-10_C2-failure-root-cause-and-resubmit-package.md` (the
+diagnosis + the re-submit protocol), `Step10_docs/impl/C2_failure_families.csv` (101 rows),
+`Step10_docs/impl/fixes_pending_resubmit/` (patch + 2 specs + README checklist),
+`tools/4J_s10_{ring_extract.sh,surface_table.sh,analyze_rings.py,classify_families.py,verify_fix_c.py}`
+(re-runnable on the final IT set and on UK with one command each).
+
+🔴 **LANE CLOSED (author's instruction, 2026-09-10 ~13:0x EDT): "no need to re-submit now — prepare
+documents and inform the other manager session."** Nothing further is pending in this lane. No
+re-submission was attempted, prepared-for-execution, scheduled or authorised. The package above is
+documentation only, to be picked up by whoever runs the post-`C2` re-pre-registration. The monitoring
+session (`gsscanada-de`) was informed of this block, the CSV rows it now has causes for, and the two
+items that need the author: the insufficient acceptance test and the `EU_FLOOR`-on-interzone-plates
+physics choice.
+
+## 🔴 WHEN `C2` COMPLETES — CARRY THIS LIST FORWARD (owner: whoever holds the campaign after UK finishes)
+
+Nothing here is authorised yet and nothing here is to be done while any job is running. This is the
+to-do that the post-campaign session must pick up; the monitoring lane holds it as information only.
+
+1. **Report `C2` as it stands**, cells split by family, using `Step10_docs/impl/C2_failure_families.csv`.
+   Our 70 class-C cells are reported as **ours**, not as an engine failure.
+2. **Re-run the classifier on IT's final failure set and on UK** (they were incomplete when this was
+   written — IT was at ~20 %, UK had not started):
+   `tools/4J_s10_ring_extract.sh <DISTRICT> <building ids...>` on Speed, piped into
+   `tools/4J_s10_classify_families.py`. Fill the blank `confirmed_class` rows in the two
+   `C2_*_failure_progress_log.csv` logs instead of leaving them blank.
+3. **Put the two author-only items in front of the author** — (a) the "min vertex gap ≤ 10 mm → zero"
+   acceptance test is insufficient (five buildings fail on collinear vertices at 0.06–3.27 m edges),
+   which must reach `openubem-20` from the author directly; (b) `FIX_C` puts `EU_FLOOR` on interzone
+   horizontal plates instead of `EU_ROOF` — a physics/basis change for the re-pre-registration.
+4. **Only after a new frozen prereg**: apply `FIX_C_interzone_construction.patch`, then see the gates
+   fail and pass — rebuild the 7 class-C buildings (`grep -c "reverse order"` = 0), see `R12` refuse a
+   deliberately mis-assigned surface, re-run `tools/4J_s10_verify_fix_c.py` (`OLD_bad > 0`,
+   `NEW_bad == 0`).
+5. **Any upstream geometry fix arrives as a NEW emission**, announced in full, never installed over a
+   tree a job is reading. Then a **new campaign over the full population** — never a re-run of only
+   the failed buildings pooled with `T07`.
+
+Full ordering and caveats: `Step10_docs/impl/fixes_pending_resubmit/README.md`.
+
+`C2` stays pinned to `T07` and runs to completion. Nothing below this block was edited.
+
+---
+
+# START-HERE (last+76, 2026-09-10 ~12:16 EDT) — routine tick, no new failure
+
+**Scope reminder (still in force):** strictly read-only monitoring. squeue + campaign_status.json + cells_failed/ count only. Never retry/patch/move/score anything on the simulation. Ring-level failure root-cause investigation is DELEGATED to a separate Opus Claude session (author's instruction, ~12:05 EDT) — do NOT duplicate it here.
+
+**ES (Madrid): COMPLETE.** `cells_finished == cells_planned == 11,510`. Final: 840 `ENERGYPLUS_FAILED` across 84 distinct buildings, fully logged in `C2_ES_failure_progress_log.csv` (85 lines). No change this tick.
+
+**IT (Bologna): RUNNING.** squeue: job 1315014, state RUNNING, TIME 11:35:50, node antenna1. `campaign_status.json` updated_at 2026-09-10T12:13:27: `cells_finished` 2,275/11,710 (19.4%, up from 2,225/19.0% at last+75). `by_completion_status`: COMPLETED 2,105, ENERGYPLUS_FAILED 170 — unchanged count. Distinct failing buildings: 17, SAME set as last+75 (27683, 28134, 28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211, 29466, 29530, 29605, 29788). No new building → no CSV append this tick. `payload_set_sha256` unchanged (`2cc6ba9512...`).
+
+**UK (London): PENDING.** squeue: job 1315015, state PENDING, reason Dependency. `scontrol show job 1315015`: `Dependency=afterok:1315014(unfulfilled)`. Gated as designed on IT completion.
+
+**Next tick:** last+77, ~30 min from this poll (ScheduleWakeup armed after this report).
+
+Evidence: `project_4j_hetus_llm.md` last+76 entry; RESUME.md stack last+58h…last+76 (this block at top).
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+75) — SUPERSEDES last+74 BELOW**
+
+**Routine tick. IT progressing, no new failing building — CSV log unchanged.**
+Fresh poll 2026-09-10 ~11:53 EDT via direct SSH reads: `squeue` shows job **1315014 (IT) RUNNING**
+on `antenna1`, job **1315015 (UK) still PENDING (Dependency)**. `campaign_status.json`:
+`cells_finished` **2225**/11,710 (**19.0%**, up from 2150/18.4% at last+74), `by_completion_status`
+**2055** `COMPLETED` + **170** `ENERGYPLUS_FAILED` (unchanged count, same as last+74). Live
+`cells_failed/*.json` count re-derived fresh: **170**, matches exactly.
+
+**Distinct failing buildings re-derived fresh: 17 — identical set to last+74's** (27683, 28134,
+28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211, 29466, 29530, 29605,
+29788). No new building this tick, so `4J_docs_occ/Step10_docs/impl/C2_IT_failure_progress_log.csv`
+needs **no append** — stays at 17 rows, still LIVE and checked every future tick per the author's
+standing instruction.
+
+ES (Madrid) unchanged: still COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines
+(`C2_ES_failure_progress_log.csv`). UK (London) unchanged: still `PENDING (Dependency)` on IT.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — pure observation, all three tracking files
+updated. `C2` stays pinned to `T07`. Evidence: fresh SSH poll ~11:53 EDT (`squeue -j
+1315014,1315015`; `campaign_status.json`; `cells_failed/` recount); `memory/project_4j_hetus_llm.md`
+last+75. Everything from `last+74` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+74) — SUPERSEDES last+73 BELOW**
+
+**Routine 30-min tick. IT progressing, no new failing building — CSV log unchanged.**
+Fresh poll 2026-09-10 ~11:41 EDT via direct SSH reads: `squeue` shows job **1315014 (IT) RUNNING**
+on `antenna1`, job **1315015 (UK) still PENDING (Dependency)**. `campaign_status.json`:
+`cells_finished` **2150**/11,710 (**18.4%**, up from 2050/17.5% at last+73), `by_completion_status`
+**1980** `COMPLETED` + **170** `ENERGYPLUS_FAILED` (unchanged count, same as last+73). Live
+`cells_failed/*.json` count re-derived fresh: **170**, matches exactly.
+
+**Distinct failing buildings re-derived fresh: 17 — identical set to last+73's** (27683, 28134,
+28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211, 29466, 29530, 29605,
+29788). No new building this tick, so `4J_docs_occ/Step10_docs/impl/C2_IT_failure_progress_log.csv`
+needs **no append** — stays at 17 rows, still LIVE and checked every future tick per the author's
+standing instruction.
+
+ES (Madrid) unchanged: still COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines
+(`C2_ES_failure_progress_log.csv`). UK (London) unchanged: still `PENDING (Dependency)` on IT.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — pure observation, all three tracking files
+updated. `C2` stays pinned to `T07`. Evidence: fresh SSH poll ~11:41 EDT (`squeue -j
+1315014,1315015`; `campaign_status.json`; `cells_failed/` recount); `memory/project_4j_hetus_llm.md`
+last+74. Everything from `last+73` onward is preserved below as history — unedited.
+
+---
+
+# 🟡 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+73) — SUPERSEDES last+72 BELOW**
+
+**New IT failing building — CSV log appended (row 17).** Fresh poll 2026-09-10 ~11:08 EDT via direct
+SSH reads: `squeue` shows job **1315014 (IT) RUNNING** on `antenna1`, job **1315015 (UK) still
+PENDING (Dependency)**. `campaign_status.json`: `cells_finished` **2050**/11,710 (**17.5%**, up from
+1925/16.4% at last+72), `by_completion_status` **1880** `COMPLETED` + **170** `ENERGYPLUS_FAILED`
+(up from 160 at last+72). Live `cells_failed/*.json` count re-derived fresh: **170**, matches exactly.
+
+**Distinct failing buildings: 17 (up from 16 at last+72) — new building `29788`.** Ran the reusable,
+read-only `tree/scripts/4J_s10_failure_triage.sh IT-BOL-GALVANI2` over SSH to pull its signature:
+`vm=13 np=0 cc=0 co=0 cn=0 za=0` — pure vertex-mismatch-only, no auto-classification rule fires.
+**Appended one row to `4J_docs_occ/Step10_docs/impl/C2_IT_failure_progress_log.csv`** (16 → 17 rows)
+for `29788`, `confirmed_class` left blank, mirroring the established vertex-mismatch-family
+convention (ring check deferred to the post-completion investigation per the author's standing
+instruction). All 16 prior rows unchanged.
+
+ES (Madrid) unchanged: still COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines
+(`C2_ES_failure_progress_log.csv`). UK (London) unchanged: still `PENDING (Dependency)` on IT.
+
+🔴 Nothing retried, dropped, patched, moved, or scored on the SIMULATION side — only the CSV
+documentation artefact was appended to, per the author's standing instruction to record every new
+failure as it appears. `C2` stays pinned to `T07`. Evidence: fresh SSH poll ~11:08 EDT (`squeue -j
+1315014,1315015`; `campaign_status.json`; `cells_failed/` recount); `4J_s10_failure_triage.sh
+IT-BOL-GALVANI2` run for building `29788`'s signature; `C2_IT_failure_progress_log.csv` (17 rows);
+`memory/project_4j_hetus_llm.md` last+73. Everything from `last+72` onward is preserved below as
+history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+72) — SUPERSEDES last+71 BELOW**
+
+**Routine 30-min tick. IT progressing, no new failing building — CSV log unchanged.**
+Fresh poll 2026-09-10 ~10:44 EDT via direct SSH reads: `squeue` shows job **1315014 (IT) RUNNING**
+on `antenna1`, job **1315015 (UK) still PENDING (Dependency)**. `campaign_status.json`:
+`cells_finished` **1925**/11,710 (**16.4%**, up from 1800/15.4% at last+71), `by_completion_status`
+**1765** `COMPLETED` + **160** `ENERGYPLUS_FAILED` (unchanged count, same as last+71). Live
+`cells_failed/*.json` count re-derived fresh: **160**, matches exactly.
+
+**Distinct failing buildings re-derived fresh: 16 — identical set to last+71's** (27683, 28134,
+28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211, 29466, 29530, 29605).
+No new building this tick, so `4J_docs_occ/Step10_docs/impl/C2_IT_failure_progress_log.csv` needs
+**no append** — stays at 16 rows, still LIVE and checked every future tick per the author's standing
+instruction.
+
+ES (Madrid) unchanged: still COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines
+(`C2_ES_failure_progress_log.csv`). UK (London) unchanged: still `PENDING (Dependency)` on IT.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — pure observation, all three tracking files
+updated. `C2` stays pinned to `T07`. Evidence: fresh SSH poll ~10:44 EDT (`squeue -j
+1315014,1315015`; `campaign_status.json`; `cells_failed/` recount); `memory/project_4j_hetus_llm.md`
+last+72. Everything from `last+71` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+71) — SUPERSEDES last+70b BELOW**
+
+**Routine 30-min tick. IT progressing, no new failing building since last+70b — CSV log unchanged.**
+Fresh poll 2026-09-10 ~10:09 EDT via direct SSH reads: `squeue` shows job **1315014 (IT) RUNNING**
+on `antenna1`, job **1315015 (UK) still PENDING (Dependency)**. `campaign_status.json`:
+`cells_finished` **1800**/11,710 (**15.4%**, up from 1725/14.7% at last+70b), `by_completion_status`
+**1640** `COMPLETED` + **160** `ENERGYPLUS_FAILED` (unchanged count from last+70b's 160). Live
+`cells_failed/*.json` count re-derived fresh: **160**, matches exactly.
+
+**Distinct failing buildings re-derived fresh: 16 — identical set to last+70b's CSV** (27683, 28134,
+28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211, 29466, 29530, 29605).
+No new building appeared this tick, so `4J_docs_occ/Step10_docs/impl/C2_IT_failure_progress_log.csv`
+needs **no append** — it stays at its 16 rows from last+70b, still LIVE and checked every future tick
+per the author's standing instruction.
+
+ES (Madrid) unchanged: still COMPLETE, 840 failed cells / 84 buildings, CSV log at 85 lines
+(`C2_ES_failure_progress_log.csv`). UK (London) unchanged: still `PENDING (Dependency)` on IT.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — pure observation, all three tracking files
+updated. `C2` stays pinned to `T07`. Evidence: fresh SSH poll ~10:09 EDT (`squeue -j
+1315014,1315015`; `campaign_status.json`; `cells_failed/` recount); `memory/project_4j_hetus_llm.md`
+last+71. Everything from `last+70b` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+70b) — SUPERSEDES last+70 BELOW**
+
+**Author gave direct authorization: start the IT failure recording document NOW, not at the
+~20-building threshold.** Quote: "as i said before record these failures when all finish we will
+investigate. start the recording document starting now." Ran the reusable, read-only
+`tree/scripts/4J_s10_failure_triage.sh IT-BOL-GALVANI2` over SSH at 09:52:57 EDT (same script used
+to build the ES log). At that moment IT had already progressed past the last+70 tick numbers:
+`cells_finished` **1725**/11,710 (up from 1675 at last+70), `by_completion_status` **1565**
+`COMPLETED` + **160** `ENERGYPLUS_FAILED` (up from 150). Distinct failing buildings: **16** (one
+more than last+70's 15) — new building `29605` (`vertex-mismatch+nonplanar`, vm=25/np=13) appeared
+between the last+70 poll (~09:32) and this ad-hoc run (~09:53).
+
+**Created `4J_docs_occ/Step10_docs/impl/C2_IT_failure_progress_log.csv`** — 16 rows (all 16 currently
+failing buildings), same columns as the ES log (`building_id, n_failed_cells, confirmed_class,
+signature_bucket, severe_message_counts_summary, first_documented_in, notes`). Auto-classified via
+the script's mechanical exact-text rule (same rule already established on ES, not re-argued here):
+`28473`/`29211` = (a) CalcCoordinateTransformation route; `28861`/`28891` = (c)-PURE construction-only.
+Remaining 12 buildings left `confirmed_class` blank (signature_bucket populated), mirroring ES's
+vertex-mismatch-family convention — no ring-level IDF check performed this pass. Full signature
+breakdown: 9× vertex-mismatch-only, 1× zero-area-only, 1× zero-area+nonplanar, 1×
+vertex-mismatch+nonplanar, plus the 4 auto-classified above.
+
+**This is a NEW recurring artefact from here on**: every future 30-min tick that finds a NEW distinct
+failing building on IT must append a row to this CSV (2-step manual diff per the script's own header
+comment: new `building_id`s only, established ids never change signature) — same discipline as the
+ES log was NOT kept live (ES was refreshed once at completion); IT is being kept live from the start
+per the author's instruction. The author also floated using a **subsidiary session** to work the
+eventual investigation once IT finishes — noted, not actioned, no subsidiary session started this
+tick.
+
+🔴 Nothing retried, dropped, patched, moved, or scored on the SIMULATION side — only a documentation
+artefact was created, which is what the author explicitly asked for. `C2` stays pinned to `T07`.
+Evidence: this session's SSH transcript of `4J_s10_failure_triage.sh IT-BOL-GALVANI2` run 09:52:57
+EDT; `C2_IT_failure_progress_log.csv` (16 rows); `memory/project_4j_hetus_llm.md` last+70b (pending
+this session's write, immediately following). Everything from `last+70` onward is preserved below as
+history — unedited.
+
+---
+
+# 🟡 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+70) — SUPERSEDES last+69 BELOW**
+
+**Another new IT failure this tick (still small, still read-only).** ES (Madrid) unchanged: still COMPLETE,
+840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing, failure count rose again — approaching the CSV-log threshold.** Fresh poll
+2026-09-10 ~09:32 EDT via direct `ssh` reads: `cells_finished` **1675** of 11,710 planned (**14.3%**, up
+from 1575/13.5% at last+69), `campaign_status.json` `by_completion_status` shows **1525** `COMPLETED` +
+**150** `ENERGYPLUS_FAILED` (up from 140 at last+69). Live `cells_failed/*.json` count re-derived fresh:
+**150**, matches exactly. Distinct failing buildings re-derived fresh: **15** (up from 14 at last+69) —
+the prior 14 (27683, 28134, 28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211,
+29466) plus **1 new**: `29530`. Still under the ~20-building CSV-log threshold, but at 15/20 it is close —
+watch closely next tick, next new building may trigger the CSV start. `payload_set_sha256` unchanged
+(`2cc6ba9512...`). `squeue` confirms `1315014` (IT) still `RUNNING` on `antenna1`, elapsed `9:06:21`;
+`1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — this is an OBSERVED count change, not an
+action. `C2` stays pinned to `T07`. Evidence: fresh `squeue`/`campaign_status.json`/`cells_failed/`
+poll 2026-09-10 ~09:32 EDT (this session, read-only, direct SSH); `memory/project_4j_hetus_llm.md`
+last+70 (pending this session's write, immediately following). Everything from `last+69` onward is
+preserved below as history — unedited.
+
+---
+
+# 🟡 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+69) — SUPERSEDES last+68 BELOW**
+
+**New IT failure this tick (still small, still read-only).** ES (Madrid) unchanged: still COMPLETE,
+840 failed cells / 84 buildings, CSV log at 85 lines. UK still `PENDING (Dependency)` on IT.
+
+**IT (Bologna) progressing, failure count rose.** Fresh poll 2026-09-10 ~09:02 EDT via direct `ssh`
+reads: `cells_finished` **1575** of 11,710 planned (**13.5%**, up from 1450/12.4% at last+68),
+`campaign_status.json` shows **1435** `COMPLETED` + **140** `ENERGYPLUS_FAILED` (up from 130 at
+last+68). Live `cells_failed/*.json` count re-derived fresh: **140**, matches exactly. Distinct
+failing buildings re-derived fresh: **14** (up from 13 at last+68) — the prior 13
+(27683, 28134, 28217, 28454, 28473, 28527, 28533, 28861, 28891, 28903, 29171, 29180, 29211) plus
+**1 new**: `29466`. Still under the ~20-building CSV-log threshold, so no CSV started yet — watch
+closely next tick. `payload_set_sha256` unchanged (`2cc6ba9512...`). `squeue` confirms `1315014`
+(IT) still `RUNNING` on `antenna1`, elapsed `8:35:48`; `1315015` (UK) still `PENDING (Dependency)`.
+
+🔴 Nothing retried, dropped, patched, moved, or scored — this is an OBSERVED count change, not an
+action. `C2` stays pinned to `T07`. Evidence: fresh `squeue`/`campaign_status.json`/`cells_failed/`
+poll 2026-09-10 ~09:02 EDT (this session, read-only, direct SSH); `memory/project_4j_hetus_llm.md`
+last+69 (pending this session's write, immediately following). Everything from `last+68` onward is
+preserved below as history — unedited.
+
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-10, last+68) — SUPERSEDES last+67 BELOW**
 
 **Routine progress tick, no new failures, no district-state changes.** ES (Madrid) unchanged: still

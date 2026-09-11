@@ -1,0 +1,48 @@
+--- tools/4thJ_step10_nocore_campaign.py	2026-09-09 08:00:22.417822800 -0400
++++ tools/4thJ_step10_nocore_campaign.py (PREPARED, NOT APPLIED)	2026-09-10 12:42:36.093090100 -0400
+@@ -1037,13 +1037,45 @@
+     wall, roof, floor = construction("wall"), construction("roof"), construction("floor")
+     for surface in idf.idfobjects["BUILDINGSURFACE:DETAILED"]:
+         kind = str(surface.Surface_Type).upper()
++        # 🔴 DEFECT (c).  EnergyPlus requires the two faces of an INTERZONE plate to
++        # carry constructions that are exact material reverses.  Keying on `Surface_Type`
++        # alone hands one face `EU_ROOF` and the other `EU_FLOOR` wherever a short block's
++        # roof is an interior partition against a taller block's floor, which the engine
++        # refuses (`GetSurfaceData` severe -> Fatal).  An interzone plate therefore takes
++        # the interior-slab construction on BOTH faces -- the same construction every other
++        # interior plate in this model already carries, and a one-layer NoMass construction
++        # is its own reverse, so the pair is symmetric by construction rather than by luck.
++        # Interzone WALLs are already symmetric (both faces are typed WALL) and keep `wall`.
++        # EXTERIOR surfaces are not touched by this branch.
++        interzone = str(surface.Outside_Boundary_Condition).upper() == "SURFACE"
+         if kind == "WALL":
+             surface.Construction_Name = wall
++        elif interzone:
++            surface.Construction_Name = floor
+         elif kind in ("ROOF", "ROOFCEILING"):
+             surface.Construction_Name = roof
+         elif kind in ("FLOOR", "CEILING"):
+             surface.Construction_Name = floor
+ 
++    # 🔴 `R12` (PROPOSED for the re-pre-registration -- NOT an authorised gate yet).
++    # The fix above is not trusted on its own: every interzone pair is re-read from the
++    # object we just wrote and the cell is REFUSED if the two faces disagree.  A silent
++    # construction defect is what cost 70 cells in `C2`; a refusal is cheap, a wrong
++    # material pair that happens not to be fatal is not.
++    by_name = {str(s.Name).upper(): s
++               for s in idf.idfobjects["BUILDINGSURFACE:DETAILED"]}
++    for surface in idf.idfobjects["BUILDINGSURFACE:DETAILED"]:
++        if str(surface.Outside_Boundary_Condition).upper() != "SURFACE":
++            continue
++        partner = by_name.get(str(surface.Outside_Boundary_Condition_Object).upper())
++        if partner is None:
++            raise Refusal("R12 %s interzone surface %s has no partner object"
++                          % (cell["building_id"], surface.Name))
++        if str(partner.Construction_Name) != str(surface.Construction_Name):
++            raise Refusal("R12 %s interzone pair %s / %s carries %s / %s"
++                          % (cell["building_id"], surface.Name, partner.Name,
++                             surface.Construction_Name, partner.Construction_Name))
++
+     f = cell["sensitivity_f"]
+     units = cell["units"]
+     # 🔴 One drawn flat, one series. If the payload's zone count and the unit

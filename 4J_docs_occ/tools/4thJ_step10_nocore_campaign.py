@@ -1373,6 +1373,10 @@ def main():
     ap.add_argument("--timeout", type=int, default=3600)
     ap.add_argument("--limit", type=int, default=0,
                     help="cap the cell count (a smoke run, never a population)")
+    ap.add_argument("--resume", action="store_true",
+                    help="skip cells whose out/cells/<slug>.json already exists "
+                         "from a prior run of this same district/out (default "
+                         "off, so every other caller's behaviour is unchanged)")
     args = ap.parse_args()
 
     if not args.dry_run and not args.shakedown:
@@ -1423,6 +1427,15 @@ def main():
                                                encoding="utf-8")
 
     todo = cells[:args.limit] if args.limit else cells
+    if args.resume:
+        cells_dir = out / "cells"
+        before = len(todo)
+        todo = [c for c in todo
+                if not (cells_dir / ("%s.json" % c["cell_slug"])).is_file()]
+        print("  RESUME: %d of %d cells already have output, skipping them "
+              "(re-running the remaining %d, including any prior "
+              "ENERGYPLUS_FAILED, which have no output file)"
+              % (before - len(todo), before, len(todo)))
     keep = set(sorted({c["building_id"] for c in todo})[:RETAIN_RUN_DIRS])
     base_manifest = {
         "weather_sha256": report["weather_sha256"],
