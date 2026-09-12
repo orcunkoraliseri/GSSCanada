@@ -988,14 +988,27 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
     from openubem.idf.european_controls import add_european_heating_controls
     from openubem.idf.european_physics import (add_european_internal_mass,
                                                add_nomass_construction)
+    from openubem.geometry.european_residential import (
+        RING_STABILIZATION_GRID_M,
+        _stabilize_ring_coords,
+    )
     from openubem.idf.builder import write_zone_volumes
-    from openubem.idf.surfaces import extrude_geometry
+    from openubem.idf.surfaces import (
+        extrude_geometry,
+        find_mismatched_interzone_pairs,
+        _force_reroute_room_layout_to_one_zone_per_floor,
+        _repair_roof_roof_pairs,
+        _repair_mismatched_horizontal_pairs,
+        _pair_interfloor_surfaces,
+    )
     from openubem.semantic.european_schedules import emit_step8_gain_schedule
     from scripts.run_eu_s2_campaign import (
         IDF_HEADER_TEMPLATE,
         SHADOW_CALCULATION_METHOD,
         SHADOW_CALCULATION_UPDATE_FREQUENCY_METHOD,
         SHADOW_CALCULATION_UPDATE_FREQUENCY_DAYS,
+        _has_near_duplicate_vertex_surfaces,
+        _drop_redundant_ring_vertices,
     )
 
     try:
@@ -1024,7 +1037,82 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
             shadow_update_days=SHADOW_CALCULATION_UPDATE_FREQUENCY_DAYS),
         encoding="utf-8")
     idf = IDF(str(idf_path))
+    # 🔴 FINDING 210/221 pre-extrude stack, per openubem-4d 2026-09-12: our zones
+    # come from our OWN pre-cut geometry payload, never `generate_european_
+    # dwelling_layout`, so we never get `_stabilize_ring_coords`'s 1 mm grid
+    # snap OpenUBEM applies at layout-emission time (european_residential.py
+    # :2824/:2838) -- the ORIGINAL cause of the ~1e-8 m floating-point vertex
+    # noise `GetSurfaceData`/`CheckConvexity` fatal on. Applying it here, once,
+    # right before extrusion, is the mode-independent half of their fix.
+    for zone in zones:
+        polygon = zone.get("floor_polygon")
+        if polygon is not None:
+            zone["coords_m"] = _stabilize_ring_coords(polygon)
+        coords = zone.get("coords_m")
+        if coords:
+            zone["coords_m"] = _drop_redundant_ring_vertices(coords)
+    # `_snap_shared_interzone_vertices` (openubem/idf/surfaces.py:774, FINDING
+    # 221) is the other mode-independent half: two adjacent zones' shared wall
+    # can straddle a grid cell after independent per-zone stabilization above,
+    # so intersect_match still sees a sub-mm near-miss on the shared edge. Its
+    # own gate only admits `mode in ("room_layout", "european_dwelling_
+    # layout")` zones, which ours never are, so it would always no-op for us --
+    # this is its 15-line clustering BODY, unmodified, run unconditionally over
+    # every zone instead of behind that gate.
+    _interzone_tol = RING_STABILIZATION_GRID_M
+    _canonical_pts: list = []
+
+    def _snap_point(pt):
+        for c in _canonical_pts:
+            if abs(c[0] - pt[0]) <= _interzone_tol and abs(c[1] - pt[1]) <= _interzone_tol:
+                return c
+        _canonical_pts.append(pt)
+        return pt
+
+    for zone in zones:
+        coords = zone.get("coords_m")
+        if not coords:
+            continue
+        zone["coords_m"] = [_snap_point(tuple(pt)) for pt in coords]
     extrude_geometry(idf, zones, [])
+    # 🔴 FINDING 210 fix, ported verbatim from OpenUBEM's own
+    # `scripts/run_eu_s2_campaign.py::build_idf_for_building` (D-EU-42/D-EU-43),
+    # 2026-09-12, applied after the author's explicit go-ahead to fix rather than
+    # accept the 94-building Bologna / 161-building London loss to this defect.
+    # geomeppy's own intersect_match can leave an interzone floor/ceiling pair
+    # with mismatched vertex counts, or a sub-mm near-duplicate vertex on one
+    # side only -- both read by EnergyPlus as non-planar / vertex-size-mismatch
+    # and fatal in GetSurfaceData before any timestep. Our zones never carry a
+    # `room_layout`/`european_dwelling_layout` "mode" key (we draw one flat per
+    # zone, already cut upstream -- nothing here re-cuts a footprint), so
+    # `_force_reroute_room_layout_to_one_zone_per_floor` always declines
+    # (returns False) for us, same as it does for OpenUBEM's own non-room-layout
+    # buildings. That leaves exactly two outcomes, both disclosed, never scored:
+    # a genuine vertex-COUNT mismatch raises and the cell is excluded at build
+    # time (never reaches EnergyPlus); a near-duplicate-vertex-only case is
+    # tolerated and disclosed via `fallback_reason`, then proceeds to run.
+    mismatched = find_mismatched_interzone_pairs(idf)
+    near_duplicate = _has_near_duplicate_vertex_surfaces(idf)
+    if mismatched or near_duplicate:
+        reason = "interzone_vertex_mismatch" if mismatched else "near_duplicate_vertex"
+        did_reroute = _force_reroute_room_layout_to_one_zone_per_floor(idf, zones, reason)
+        if did_reroute:
+            idf.intersect_match()
+            _repair_roof_roof_pairs(idf)
+            _repair_mismatched_horizontal_pairs(idf)
+            _pair_interfloor_surfaces(idf)
+            mismatched = find_mismatched_interzone_pairs(idf)
+            residual_near_dup = _has_near_duplicate_vertex_surfaces(idf)
+        else:
+            residual_near_dup = _has_near_duplicate_vertex_surfaces(idf)
+        if mismatched or residual_near_dup:
+            if not mismatched:
+                for _z in zones:
+                    _z["fallback_reason"] = "near_duplicate_vertex_tolerated_box"
+            else:
+                raise RuntimeError(
+                    "interzone_vertex_mismatch_unresolved: mismatched=%r "
+                    "near_duplicate_vertex=%r" % (mismatched, residual_near_dup))
     write_zone_volumes(idf, zones)
 
     def construction(component):
@@ -1102,6 +1190,7 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
             "gain_sha256": info["sha256"],
             "mean_phi_int_w_m2": info["mean_phi_int_w_m2"],
             "zone_area_m2": area,
+            "fallback_reason": zone.get("fallback_reason"),
         })
 
     # 🔴 PORTABLE SCHEDULE PATHS, carried from `C1`. `emit_step8_gain_schedule`

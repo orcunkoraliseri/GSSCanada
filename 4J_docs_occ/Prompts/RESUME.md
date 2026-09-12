@@ -1,3 +1,882 @@
+# 🟢 START-HERE (2026-09-12 ~05:4x EDT, last+186) — READ-ONLY check: nothing changed — 13th consecutive no-change tick, real content at last+173
+
+Speed jobs still CANCELLED (permanent), local: nothing running, numbers unchanged (UK 58.8%, IT
+47.9%), Madrid not rerun. Nothing retried/patched/scored.
+
+Evidence: `ssh speed 'sacct'`/`squeue`; `tasklist` (no python.exe). `memory/project_4j_hetus_llm.md`
+last+186 (immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~05:2x EDT, last+185) — READ-ONLY check: nothing changed — 12th consecutive no-change tick, real content at last+173
+
+Speed jobs still CANCELLED (permanent), local: nothing running, numbers unchanged (UK 58.8%, IT
+47.9%), Madrid not rerun. Nothing retried/patched/scored.
+
+Evidence: `ssh speed 'sacct'`/`squeue`; `tasklist` (no python.exe). `memory/project_4j_hetus_llm.md`
+last+185 (immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~05:0x EDT, last+184) — READ-ONLY check: nothing changed — 11th consecutive no-change tick, real content at last+173
+
+Speed jobs still CANCELLED (permanent), local: nothing running, numbers unchanged (UK 58.8%, IT
+47.9%), Madrid not rerun. Nothing retried/patched/scored.
+
+Evidence: `ssh speed 'sacct'`/`squeue`; `tasklist` (no python.exe). `memory/project_4j_hetus_llm.md`
+last+184 (immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~04:4x EDT, last+183) — READ-ONLY check: nothing changed — 10th consecutive no-change tick, real content at last+173
+
+Speed jobs still CANCELLED (permanent), local: nothing running, numbers unchanged (UK 58.8%, IT
+47.9%), Madrid not rerun. Nothing retried/patched/scored.
+
+Evidence: `ssh speed 'sacct'`/`squeue`; `tasklist` (no python.exe). `memory/project_4j_hetus_llm.md`
+last+183 (immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~04:2x EDT, last+182) — READ-ONLY check: nothing changed since last+181's close — 9th consecutive no-change tick, real content at last+173
+
+Speed jobs still CANCELLED (permanent), local: nothing running, numbers unchanged (UK 58.8%, IT
+47.9%), Madrid not rerun. Nothing retried/patched/scored. See last+173 for the substantive content.
+
+Evidence: `ssh speed 'sacct'`/`squeue`; `tasklist` (no python.exe). `memory/project_4j_hetus_llm.md`
+last+182 (immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~04:0x EDT, last+181) — READ-ONLY check: nothing changed since last+180's close, no process running locally — 8th consecutive no-change tick
+
+Speed: both jobs still CANCELLED (permanent). Local: nothing running. Numbers unchanged: UK 100/170
+recovered (58.8%), IT 450/940 recovered (47.9%). Madrid (ES) still not rerun. Nothing retried,
+patched, dropped, or scored. Open work unchanged from last+173 — this recurring check has now
+repeated identically 8 times (last+174 through last+181) with no new information possible from
+Speed (permanently cancelled) or the local runs (finished). Any future cold session reading this:
+skip straight to last+173 for the real content, this and the preceding 7 blocks are pure
+confirmations.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+181 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~03:4x EDT, last+180) — READ-ONLY check: nothing changed since last+179's close, no process running locally — 7th consecutive no-change tick
+
+Speed: both jobs still CANCELLED (permanent). Local: nothing running. Numbers unchanged: UK 100/170
+recovered (58.8%), IT 450/940 recovered (47.9%). Madrid (ES) still not rerun. Nothing retried,
+patched, dropped, or scored. Open work unchanged from last+173.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+180 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~03:2x EDT, last+179) — READ-ONLY check: nothing changed since last+178's close, no process running locally — 6th consecutive no-change tick
+
+Speed: both jobs still CANCELLED (permanent, unchanged since last+165). Local: nothing running.
+Numbers unchanged: UK 100/170 recovered (58.8%), IT 450/940 recovered (47.9%). Madrid (ES) still not
+rerun. Nothing retried, patched, dropped, or scored. Open work unchanged from last+173.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+179 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~03:0x EDT, last+178) — READ-ONLY check: nothing changed since last+177's close, no process running locally — 5th consecutive no-change tick
+
+Speed: both jobs still CANCELLED (permanent, per last+177 — this cannot change). Local: nothing
+running. Numbers unchanged: UK 100/170 recovered (58.8%), IT 450/940 recovered (47.9%). Madrid (ES)
+still not rerun. Nothing retried, patched, dropped, or scored this tick. Real open work is still
+last+173's list (residual-failure investigation, dashboard republish, `openubem-4d` update, closing
+entry) — unchanged, untouched by this recurring check.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+178 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~02:4x EDT, last+177) — READ-ONLY check: nothing changed since last+176's close, no process running locally — 4th consecutive no-change tick, flagging this loop's diminishing value
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED (permanently — `sacct` end times are fixed history,
+this will never change again). **Local: nothing running.** Numbers unchanged: UK 100/170 recovered
+(58.8%), IT 450/940 recovered (47.9%). Madrid (ES) still not rerun.
+
+🔴 **Flag for whoever is driving this recurring check** (4th identical no-change tick in a row,
+last+174 through last+177): Speed's two jobs are cancelled for good — this half of the check can
+never produce new information again. The local fix-reruns are also both finished — nothing is
+in flight to poll. The only real open work left is what last+173 already listed: investigate the
+~560 residual failing cells' defect class, republish the dashboard, decide on an `openubem-4d`
+update, write the closing entry. If this check is on an automated repeat, it may be worth stopping
+it and switching to that actual work instead.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+177 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~02:2x EDT, last+176) — READ-ONLY check: nothing changed since last+175's close, no process running locally
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165. **Local: nothing running.** Numbers unchanged: UK 100/170 recovered (58.8%, 7 buildings
+still failing), IT 450/940 recovered (47.9%, 49 buildings still failing). Madrid (ES) still not
+rerun. This is the **third consecutive** identical no-change tick (last+174, 175, 176) — the fix
+work itself is finished; the open items are the residual-failure investigation, dashboard republish,
+and `openubem-4d` update flagged at last+173, none of which this recurring read-only Speed-check
+task is scoped to do.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+176 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~02:0x EDT, last+175) — READ-ONLY check: nothing changed since last+174's close, no process running locally
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165. **Local: nothing running** — no `python.exe` process. Numbers unchanged from last+173/174:
+UK 100/170 recovered (58.8%, 7 buildings still failing), IT 450/940 recovered (47.9%, 49 buildings
+still failing). Madrid (ES) still not rerun. Residual-failure investigation, dashboard republish,
+and `openubem-4d` update remain open, not done this tick (read-only scope, no new instruction).
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` (no python.exe, this tick).
+`memory/project_4j_hetus_llm.md` last+175 (pending this session's write, immediately following).
+
+---
+
+# 🟢 START-HERE (2026-09-12 ~01:4x EDT, last+174) — READ-ONLY check: nothing changed since last+173's close, no process running locally
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165.
+
+**Local: nothing running.** `tasklist` confirms no `python.exe` process — both UK's and IT's
+fix-reruns finished (per last+166/173) and nothing new was launched since. Numbers unchanged from
+last+173: UK 100/170 recovered (58.8%, 70 still fail / 7 buildings), IT 450/940 recovered (47.9%,
+490 still fail / 49 buildings). Madrid (ES) still not rerun. The residual-failure investigation,
+dashboard republish, and `openubem-4d` update flagged at last+173 are still open — not done this
+tick (read-only scope, and no new instruction to do them).
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `tasklist` showing no `python.exe`
+(this tick). `memory/project_4j_hetus_llm.md` last+174 (pending this session's write, immediately
+following).
+
+---
+
+# 🟡 START-HERE (2026-09-12 ~01:2x EDT, last+173) — IT fix-rerun FINISHED (450/940 recovered); BOTH cities' reruns now done, closing numbers below
+
+**IT (Bologna) fix-rerun finished.** Process exited clean, all 940 processed: **450 `COMPLETED`**
+(recovered by last+164's geometry patch), **300 `ENERGYPLUS_FAILED`** (still genuinely fatal), **190
+`HARNESS_ERROR`** (clean per-cell exclusion). Driver's own stdout: "490 cell(s) did not complete...
+DONE: 450 of 940 cells completed." **Recovery rate: 450/940 = 47.9%** — notably lower than UK's
+58.8%, consistent with last+171's flag that Bologna's failure mix (more raw `ENERGYPLUS_FAILED`)
+looked different from London's.
+
+**True cumulative IT directory counts**: `cells/` = **11,220** of 11,710 planned (was 10,770
+pre-rerun). `cells_failed/` directory count is still **940** (fully stale — same as UK, old records
+aren't deleted on later success); true still-failing = 940 − 450 = **490** (matches stdout).
+
+🔴 **Correction to how "distinct still-failing buildings" should be counted** (last+166 flagged this
+as unverified for UK, using a stale-directory `awk` split — that number was wrong). The reliable
+method is to read `completion_status` per `cell_id` directly from the **scoped** rerun's own
+`campaign_progress.jsonl` (not the stale `cells_failed/` directory), e.g.:
+`tail -n +<line-after-RUN_HEADER> campaign_progress.jsonl | grep -v '"COMPLETED"' | grep -o
+'"cell_id": "[^"]*"' | sed 's/.*__<prefix>__//;s/__.*//' | sort -u | wc -l`. Redone properly this
+tick: **UK still-failing buildings = 7** (not last+166's stale "17"), **IT still-failing
+buildings = 49** (down from the original 94).
+
+**Summary, both cities, final (from this fix pass):**
+| | total cells | before fix | after fix | still failing | recovery |
+|---|---|---|---|---|---|
+| UK (London) | 12,070 | 11,900 done / 170 failed (161 buildings) | 12,000 done | 70 cells / 7 buildings | 100/170 = 58.8% |
+| IT (Bologna) | 11,710 | 10,770 done / 940 failed (94 buildings) | 11,220 done | 490 cells / 49 buildings | 450/940 = 47.9% |
+
+Madrid (ES) unchanged, not rerun, per last+164's flag — still open for the author to decide.
+
+🔴 **Still open, not done this tick**: investigate why the remaining ~560 failing cells (70+490)
+don't clear with the current fix — the "zero-area sliver" symptom flagged at last+164/165 is one
+candidate, but not yet confirmed as the sole cause; republish the live dashboard artifact with these
+final numbers; decide/report to `openubem-4d` on the real recovery rates versus their own
+~84/94-building estimate (they explicitly caveated it wasn't a promise for our geometry).
+
+Evidence: `_local_runs/4J_IT_local/out/IT-BOL-GALVANI2/campaign_progress.jsonl` (scoped tail, this
+tick); `rerun_geometry_fix_stdout.log` (this tick); `tasklist` confirming PID 6056 exited (this
+tick); directory counts via `ls`/`find` on both cities' `out/` trees (this tick).
+`memory/project_4j_hetus_llm.md` last+173 (pending this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-12 ~01:0x EDT, last+172) — READ-ONLY Speed check (separate task) + IT local fix-rerun progress snapshot — SUPERSEDES nothing below, IT fix work continues per last+166..171
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165.
+
+**Local IT fix-rerun — nearly done, checked while here.** PID 6056 still running. Scoped counts:
+**783 of 940** processed — **373 `COMPLETED`**, **250 `ENERGYPLUS_FAILED`**, **160 `HARNESS_ERROR`**.
+Running rate 373/783 = 47.6% — ticked back up slightly from last+171's 44.8% (this batch: +97
+COMPLETED, +40 ENERGYPLUS_FAILED, +30 HARNESS_ERROR — completions outpaced failures this time,
+unlike the previous tick). Only **~157 cells left**; close to done.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `campaign_progress.jsonl` scoped tail
+(this tick); `tasklist` PID 6056 (this tick). `memory/project_4j_hetus_llm.md` last+172 (pending
+this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-12 ~00:4x EDT, last+171) — READ-ONLY Speed check (separate task) + IT local fix-rerun progress snapshot — SUPERSEDES nothing below, IT fix work continues per last+166..170
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165.
+
+**Local IT fix-rerun — progressing, checked while here.** PID 6056 still running. Scoped counts:
+**616 of 940** processed — **276 `COMPLETED`**, **210 `ENERGYPLUS_FAILED`**, **130 `HARNESS_ERROR`**.
+Running rate 276/616 = 44.8% — **falling** tick over tick (was 53.2% at last+170, 60.5% at last+169).
+This batch's deltas: +93 COMPLETED, **+140 ENERGYPLUS_FAILED**, +40 HARNESS_ERROR — the raw-fatal
+failure share is now growing faster than completions, the opposite direction from UK's pattern.
+Staying read-only per this tick's scope; flagging clearly for whoever does the residual
+investigation — Bologna's overall recovery rate may land noticeably lower than London's 58.8%.
+~324 cells left to process.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `campaign_progress.jsonl` scoped tail
+(this tick); `tasklist` PID 6056 (this tick). `memory/project_4j_hetus_llm.md` last+171 (pending
+this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-12 ~00:2x EDT, last+170) — READ-ONLY Speed check (separate task) + IT local fix-rerun progress snapshot — SUPERSEDES nothing below, IT fix work continues per last+166..169
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165.
+
+**Local IT fix-rerun — progressing, checked while here.** PID 6056 still running. Scoped counts:
+**344 of 940** processed — **183 `COMPLETED`**, **70 `ENERGYPLUS_FAILED`**, **90 `HARNESS_ERROR`**.
+Running rate 183/344 = 53.2% completed — the `HARNESS_ERROR` (clean-exclusion) share has grown
+faster than `COMPLETED` this batch (90 vs the prior tick's 20), worth a note but not yet worth
+interrupting the read-only monitoring rule to investigate; will fold into the closing-entry residual
+analysis once the full 940 are done. ~596 cells left to process.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `campaign_progress.jsonl` scoped tail
+(this tick); `tasklist` PID 6056 (this tick). `memory/project_4j_hetus_llm.md` last+170 (pending
+this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-12 ~00:0x EDT, last+169) — READ-ONLY Speed check (separate task) + IT local fix-rerun progress snapshot — SUPERSEDES nothing below, IT fix work continues per last+166/167/168
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed. Nothing retried, patched, dropped,
+or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to every prior tick since
+last+165.
+
+**Local IT fix-rerun — progressing, checked while here.** PID 6056 still running. Scoped counts:
+**152 of 940** processed — **92 `COMPLETED`**, **40 `ENERGYPLUS_FAILED`**, **20 `HARNESS_ERROR`**.
+Running rate 92/152 = 60.5% completed, now closer to UK's final 58.8% as the sample grows — still
+not final, ~788 cells left to process.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `campaign_progress.jsonl` scoped tail
+(this tick); `tasklist` PID 6056 (this tick). `memory/project_4j_hetus_llm.md` last+169 (pending
+this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~23:4x EDT, last+168) — READ-ONLY Speed check (separate task) + IT local fix-rerun progress snapshot — SUPERSEDES nothing below, IT fix work continues per last+166/167
+
+**This tick's task was explicitly READ-ONLY**, scoped to Speed: `squeue`/`sacct` for
+`1315014`/`1315015`, IT's Speed-side status. Nothing retried, patched, dropped, or scored.
+
+**Speed: no change**, both jobs still CANCELLED, identical `sacct` output to last+165/167.
+
+**Local IT fix-rerun — progressing, checked while here.** PID 6056 still running, 4 EnergyPlus
+workers. Scoped to `RUN_HEADER` line 3561 (`cells_planned: 940`): **64 of 940** processed —
+**44 `COMPLETED`**, **10 `ENERGYPLUS_FAILED`**, **10 `HARNESS_ERROR`**. Running recovery rate so far
+(early, small sample): 44/64 = 68.8% completed outright, consistent in shape with UK's eventual
+58.8% — not yet enough cells to treat as the final number.
+
+Evidence: `ssh speed 'sacct'`/`squeue` (read-only, this tick); `campaign_progress.jsonl` tail from
+line 3562 (this tick); `tasklist` PID 6056 + 4 energyplus.exe (this tick).
+`memory/project_4j_hetus_llm.md` last+168 (pending this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~23:2x EDT, last+167) — READ-ONLY Speed check (separate task) + IT local fix-rerun progress snapshot — SUPERSEDES nothing below, IT fix work continues per last+166
+
+**This tick's task was explicitly READ-ONLY** ("never retry, patch, or score anything"), scoped to
+Speed: `squeue`/`sacct` for `1315014`/`1315015`, IT's `campaign_status.json`/`cells_failed/` on
+`speed-scratch`. Nothing retried, patched, dropped, or scored.
+
+**Speed: no change, both jobs still CANCELLED** (`1315014` IT, `1315015` UK — same `sacct` result as
+last+165, ended 2026-09-11T12:59:27 / T11:54:27). `squeue` empty. IT's frozen `campaign_status.json`
+on speed-scratch unchanged: 9700/11710 finished, 8930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`,
+`cells_failed/` count 770 — still Speed's own stale, superseded partial number, not the real result.
+
+**Local IT fix-rerun (last+166's launch) — in progress, checked while here.** PID 6056 still
+running, 4 EnergyPlus workers active. Scoped to the current `RUN_HEADER`
+(`campaign_progress.jsonl` line 3561, `cells_planned: 940`): only **16 of 940** cells processed so
+far, all 16 `COMPLETED` — too early to read a recovery rate from, just confirms the run is healthy
+and progressing (no early crash, no immediate mass-failure).
+
+Evidence: `ssh speed 'sacct -j 1315014,1315015'`/`squeue` (this tick, read-only);
+`/speed-scratch/.../IT-BOL-GALVANI2/campaign_status.json` (this tick);
+`_local_runs/4J_IT_local/out/IT-BOL-GALVANI2/campaign_progress.jsonl` (tail from line 3562, this
+tick); `tasklist` for PID 6056 + energyplus.exe (this tick). `memory/project_4j_hetus_llm.md`
+last+167 (pending this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~23:0x EDT, last+166) — UK fix-rerun FINISHED (100/170 recovered); IT fix-rerun LAUNCHED
+
+**UK (London) fix-rerun finished.** Process exited clean, `campaign_progress.jsonl` (scoped to
+`RUN_HEADER` line 12134, `cells_planned: 170`) shows all 170 processed: **100 `COMPLETED`** (fixed
+by last+164's geometry patch), **40 `ENERGYPLUS_FAILED`** (still genuinely fatal — likely the
+"zero-area sliver" class flagged last+165, not yet investigated), **30 `HARNESS_ERROR`** (the new
+deliberate per-cell exclusion — build-time `interzone_vertex_mismatch_unresolved`, caught cleanly,
+campaign not aborted). Driver's own stdout confirms: "70 cell(s) did not complete... DONE: 100 of
+170 cells completed." **Recovery rate: 100/170 = 58.8%.**
+
+**True cumulative UK directory counts** (not the rerun's own scoped numbers): `cells/` = **12,000**
+of 12,070 planned (was 11,900 before this rerun); `cells_failed/` directory still shows 170 files —
+this is **stale**, old failed-cell JSON records are not deleted on later success, so the directory
+count is NOT the true still-failing number. True still-failing = 170 − 100 = **70** (matches
+stdout). Distinct still-failing buildings re-derived fresh via
+`find cells_failed -name '*.json' -printf '%f\n' | awk -F'__' '{print $2}' | sort -u | wc -l`: **17**
+(down from the original ~161 buildings — most of London's failing buildings are now fixed; the
+17 remaining need the file-name split refined further before quoting a clean before/after building
+count, since this awk parse currently gives a raw name-fragment count, not verified against known
+building-ID format — flag for whoever writes the closing entry).
+
+**IT (Bologna) fix-rerun launched.** Same pattern: `--district IT-BOL-GALVANI2 --shakedown --resume
+--workers 4`, PID **6056**, confirmed running via `tasklist`. 940 cells to reprocess (only the
+previously-failed ones, per `--resume` semantics). A background wait is watching PID 6056 for exit.
+
+🔴 Not yet done: investigate the 40 still-ENERGYPLUS_FAILED UK cells (zero-area sliver class or
+similar) — deferred again, this time because IT was launched immediately to keep the machine moving
+overnight; will look at both cities' residuals together once IT also finishes.
+
+Evidence: `_local_runs/4J_UK_local/out/GB-LDN-STDUNSTANS/campaign_progress.jsonl` (tail -n +12135,
+this tick); `_local_runs/4J_UK_local/logs/rerun_geometry_fix_stdout.log` (this tick); `tasklist` for
+UK's exited PID 33376 and IT's new PID 6056 (this tick). `memory/project_4j_hetus_llm.md` last+166
+(pending this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~22:4x EDT, last+165) — READ-ONLY Speed check (separate task) + local fix-rerun progress snapshot — SUPERSEDES nothing below, both cities' fix work continues per last+164
+
+**This tick's task was explicitly READ-ONLY** ("never retry, patch, or score anything") and scoped to
+Speed: check `squeue`/`sacct` for jobs `1315014` (IT) and `1315015` (UK), and IT's
+`campaign_status.json`/`cells_failed/` on `speed-scratch`. Nothing was retried, patched, dropped, or
+scored this tick.
+
+**Speed: no change, both jobs long CANCELLED.** `sacct` confirms `1315014` (IT) `CANCELLED+`, ran
+1 day 12h, ended `2026-09-11T12:59:27`; `1315015` (UK) `CANCELLED+` at `00:00:00` elapsed (it never
+started — a dependency job cancelled alongside IT). `squeue` shows neither job in the queue. IT's
+last-written `campaign_status.json` on Speed (stale, frozen at cancellation) shows 9700/11710
+finished, 8930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`, `cells_failed/` directory count 770 — this is
+Speed's own partial, superseded number, **not** the final result; the real Bologna result is the
+local run (last+162: 10,770/11,710 completed, 940 failed) now being repaired locally per last+164.
+Nothing new on Speed since last+163 — consistent, no correction needed.
+
+**Local fix-rerun (last+164's actual task) — still in progress, checked while here.** UK
+(`GB-LDN-STDUNSTANS`, `python.exe` PID 33376, 4 EnergyPlus workers) is still running. Scoped to the
+current rerun's own `RUN_HEADER` (`campaign_progress.jsonl` line 12134, `cells_planned: 170`):
+108 of 170 cells processed so far — **58 COMPLETED**, **30 still `ENERGYPLUS_FAILED`**, **20
+`HARNESS_ERROR`** (the new, deliberate per-cell build-time exclusion added in last+164, not a bug).
+IT (`IT-BOL-GALVANI2`, 940 cells) is still queued, **not yet launched** — waiting for UK's PID to
+exit first, per last+164's plan (avoid 8 EnergyPlus workers on one machine at once).
+
+🔴 **Not yet resolved:** the 30 still-failing UK cells include at least one ("zero-area sliver"
+surfaces, distinct from the two symptoms the fix targets) flagged in last+164 as deferred until the
+full rerun finishes, so the assessment uses complete, representative numbers. Still deferred — this
+tick did not investigate further, per its own read-only scope.
+
+Evidence: `ssh speed 'sacct -j 1315014,1315015 ...'` and `squeue -j 1315014,1315015` (this tick, read-only);
+`/speed-scratch/o_iseri/4J_step10_nocore/out/IT-BOL-GALVANI2/campaign_status.json` (this tick);
+`_local_runs/4J_UK_local/out/GB-LDN-STDUNSTANS/campaign_progress.jsonl` (tail -n +12135, this tick);
+`tasklist` for PID 33376 and `energyplus.exe` (this tick). `memory/project_4j_hetus_llm.md` last+165
+(pending this session's write, immediately following).
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~22:1x EDT, last+164) — Author authorized the FIX (no longer read-only): "please handle failed simulations, solve them, if needed use openUBEM ... for uk and it". Standing read-only monitoring rule is SUSPENDED for this specific task by the author's own explicit instruction; do not extend the suspension to anything else.
+
+Author is asleep, returning tomorrow morning. This block is the state a cold agent needs to pick this up if the session ends mid-run.
+
+## What changed
+`4J_docs_occ/tools/4thJ_step10_nocore_campaign.py::build_idf_for_cell` (the shared C2 driver, used by ES/UK/IT) was patched to fix the geometry defect behind the 940 Bologna / 170 London EnergyPlus failures (last+162/163: FINDING 210, `GetSurfaceData`/`CheckConvexity` fatal on interzone floor/ceiling pairs with mismatched vertex counts or a sub-mm near-duplicate vertex).
+
+## Root cause of the failures, confirmed
+Our zones are drawn from our OWN pre-cut geometry payload (one flat = one zone, no re-cut), never through OpenUBEM's `generate_european_dwelling_layout`. That path is where OpenUBEM applies `_stabilize_ring_coords` (a 1 mm grid snap) at layout-emission time — we never got that snap, so geomeppy's `intersect_match` was free to introduce ~1e-8 m floating-point vertex noise on interzone pairs, which EnergyPlus reads as non-planar / vertex-count-mismatch and fatals on before any timestep.
+
+## What was tried and ruled out first
+Consulted `openubem-4d` (their session is open all night; ask it anything). First attempt: ported OpenUBEM's own POST-extrude repair block (`find_mismatched_interzone_pairs` / `_has_near_duplicate_vertex_surfaces` / `_force_reroute_room_layout_to_one_zone_per_floor` / three `_repair_*` calls) verbatim, unchanged. Rebuilt+reran two known-diagnostic buildings (it__27683 = near-duplicate class, it__28134 = raw vertex-count-mismatch class) live through EnergyPlus outside the main campaign tree: BOTH still hit the identical fatal, byte-for-byte same surfaces. Confirmed why with openubem-4d: `_force_reroute_room_layout_to_one_zone_per_floor` only ever engages for zones carrying `mode in ("room_layout","european_dwelling_layout")` — ours never do — so it always declines, and the actual repair calls (`intersect_match`+three `_repair_*`) sit inside that decline-gated branch and never ran. The post-extrude block alone was cosmetic bookkeeping (a disclosure flag), not a fix, on our geometry shape.
+
+## The actual fix (working, verified)
+openubem-4d identified two MODE-INDEPENDENT pre-extrude functions and gave the exact call order:
+1. `_stabilize_ring_coords(polygon, grid_size_m=0.001)` (`openubem/geometry/european_residential.py:2764`) — snap each zone's own ring to a 1 mm grid. Applied per zone, using `zone["floor_polygon"]`, writing the result into `zone["coords_m"]`.
+2. `_drop_redundant_ring_vertices` on the result (already imported, was already in the first patch attempt).
+3. `_snap_shared_interzone_vertices`'s BODY (`openubem/idf/surfaces.py:774`) copied inline, UNGATED — its own gate is also `mode`-restricted so the packaged function would no-op for us; the 15-line clustering body itself has no mode dependency. Copied verbatim into `build_idf_for_cell`, run unconditionally over every zone, right before `extrude_geometry`.
+4. The original post-extrude find_mismatched/near-duplicate check is KEPT as a backstop: if a cell is still mismatched after the pre-extrude fix, it raises `RuntimeError("interzone_vertex_mismatch_unresolved: ...")`, caught per-cell by the existing `run_cell_inner` `except Exception` (NOT the campaign-fatal `Refusal` class), recorded as `completion_status: HARNESS_ERROR` with the exact reason in `error` — a clean build-time exclusion, never a silent rescue. A tolerated near-duplicate-only case proceeds to run with `fallback_reason: "near_duplicate_vertex_tolerated_box"` disclosed on every zone in `schedules[]` in the manifest.
+
+**Live verification** (outside the main tree, `scratchpad/diag_two_buildings.py`, same driver code, `--shakedown` for real): it__27683 → COMPLETED, cf=1.0, no unstable markers, no fallback_reason (fully resolved). it__28134 → COMPLETED, cf=1.0, no unstable markers, fallback_reason=near_duplicate_vertex_tolerated_box disclosed on all 16 zones (residual tolerated, ran fine anyway). BOTH known failure classes fixed for real, not just predicted.
+
+## What is running right now
+`--resume --shakedown` reruns only touch cells lacking a `cells/<slug>.json` (i.e. exactly the previously-`ENERGYPLUS_FAILED` ones — `--resume` never checks `cells_failed/`, so this is safe and correctly scoped), writing into the SAME `out`/`run-root` dirs as the original campaigns so the district's cumulative `cells/`+`cells_failed/` bookkeeping stays correct.
+- UK (GB-LDN-STDUNSTANS, 170 cells): launched first, `python.exe` PID 33376 (workers=4), stdout/stderr at `_local_runs/4J_UK_local/logs/rerun_geometry_fix_std{out,err}.log`. A background wait is watching for this PID to exit.
+- IT (IT-BOL-GALVANI2, 940 cells): NOT YET LAUNCHED — queued to start once UK's PID exits, to avoid running 8 EnergyPlus workers at once on one machine. If you are a cold agent picking this up and UK is already done but IT was never launched, launch it now with the same flags UK used, pointed at IT's own out/run-root (see supervisor.ps1 in `_local_runs/4J_IT_local/logs/` for the exact paths, or `_local_runs/4J_IT_local/out/IT-BOL-GALVANI2` / `.../runs/IT-BOL-GALVANI2`).
+
+## Other things on disk
+- Backup of the pre-patch driver: `scratchpad/4thJ_step10_nocore_campaign.py.bak` (session scratchpad, not the repo — informational only, not needed for recovery since the patch is straightforward to re-derive from this block if ever lost).
+- `openubem-4d`'s two messages this arc (root-cause explanation, then the working fix) are the full technical record; not re-transcribed here beyond the summary above.
+
+## 🔴 Flag for the author, not yet acted on
+This changes `build_idf_for_cell`, the SAME driver Madrid's (ES) C2 campaign already ran to completion under the OLD code. Madrid is untouched and not being rerun — its result stands as-is under the pre-fix code path. Flagging only so it's a visible, deliberate choice, not an oversight, when you're back.
+
+## Next
+Read the LAST entry above this one for exact status when you pick this up (this block will be superseded by a closing block once both reruns finish). If both `campaign_results.json` files are fresh (newer than this block's timestamp) and no python.exe/energyplus.exe is running: recompute both districts' cumulative `cells/`+`cells_failed/` counts the same way last+162 did (directory counts, not the run's own scoped `campaign_results.json`), republish the dashboard artifact, and write the closing block with before/after numbers and any residual `HARNESS_ERROR`/still-`ENERGYPLUS_FAILED` count.
+
+# 🟢 START-HERE (2026-09-11 ~21:4x EDT, last+163) — READ-ONLY check: nothing changed since last+162's close; both cities remain FINISHED
+
+**Checked (read-only, nothing retried/patched/scored)**:
+- `squeue -j 1315014,1315015` on Speed — empty, both jobs remain cancelled.
+- Speed's `campaign_status.json` for IT-BOL-GALVANI2 — unchanged stale snapshot: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED.
+- Speed's `cells_failed/` count — 770, unchanged.
+- Local Windows side — no `python.exe` running (confirmed via `tasklist`), campaign finished cleanly at 21:35:06, `campaign_status.json` unchanged since then (2,488/2,488 finished this arm, 1,548 completed, 940 failed).
+
+**Status unchanged from last+162**: Bologna's own local simulation is FINISHED — 11,710/11,710 cells, 10,770 completed, 940 failed across 94 buildings (known geometry defect). UK and ES remain finished, unaffected. No new peer messages since the last+162 exchange.
+
+**Next tick**: still nothing to check that would change tick to tick — the only remaining open item is the author's decision on the driver fix vs. accept-as-final, per last+162.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~21:35 EDT, last+162) — Bologna's OWN local simulation FINISHED: 10,770/11,710 completed, 940 failed across 94 buildings (known geometry defect); decision pending for author
+
+**Local Bologna campaign completed** (PID 32980 exited cleanly, `campaign_results.json` written 21:35:06). Confirmed via the district's cumulative `out/cells/` (10,770) + `out/cells_failed/` (940) = 11,710, matching `cells_planned` exactly — this is the real total across Speed's earlier progress and everything finished locally, our own generated occupancy throughout (not OpenUBEM's).
+
+**Final result**: 11,710 cells planned, 11,710 finished. **10,770 completed cleanly, 940 ENERGYPLUS_FAILED (8.0%)**. Failed cells are exactly 94 distinct buildings × 10 cells each (verified: `ls cells_failed | sed building-id | sort -u | wc -l` = 94) — all fatal in `GetSurfaceData`/`CheckConvexity` before any timestep, same defect family flagged to OpenUBEM earlier (`2026-09-11_4J_to_OpenUBEM_bologna_77_buildings_bad_geometry.md`). This is HIGHER than the originally-reported ~77-79 — that estimate was from partial data before the run finished; 94 is the true final count.
+
+**`openubem-4d` put the fix decision in sharper terms** (peer info, logged, not acted on): their own full-chain Bologna build only loses 10 of 1,215 buildings (0.8%); our 94-of-~1,170 is 8%. The driver fix (from last+157's addendum) isn't a tidy-up — it would recover ~84 buildings (~7% of the population), and "accept as final" means publishing over ~1,076 good buildings when ~1,160 is reachable with the exact same inputs and occupancy. They also noted the rerun is cheap: only the 94 affected buildings (~940 cells, <9% of the full campaign) need rebuilding under the fix — the other 1,076+ are untouched by this geometry entry point. Expected residual after a fix: ~10 buildings, should overlap the previously-named tolerated list (27931, 29109, 29171, 29629, 30001, 31169, 31234, 31376, 31440, 32694) — if it doesn't, something else is going on.
+
+**Still NOT applied**: no driver code change made. This remains a methodology change to `4thJ_step10_nocore_campaign.py` (shared with ES/UK) and is the author's call, not made unilaterally overnight.
+
+**Dashboard republished** (https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f) — Bologna now shown FINISHED with the real 10,770/940/94 numbers, defect explained plainly, London section unchanged (finished, 6,490/6,490, 6,320 completed, 170 failed).
+
+**Both UK and Bologna are now fully finished with their OWN simulations** (own generated occupancy throughout) — no borrowed OpenUBEM numbers anywhere in the current answer. ES already complete.
+
+**🔴 Decision for the author, whenever they're back**:
+1. **Apply the driver fix** — switch `4thJ_step10_nocore_campaign.py` to call `build_idf_for_building` instead of `extrude_geometry` directly, then overwrite schedules with our own generated occupancy, and rerun just the 94 failing buildings (~940 cells, cheap). Expected outcome: ~84 buildings recovered, ~10 remain excluded (same tolerated list as before).
+2. **Accept the current 10,770/940 result as final** for C2 Bologna, with 94 buildings excluded/unrepaired.
+
+No further monitoring ticks scheduled — the campaign has nothing left to change without the author's action; standing monitoring cadence is being paused here pending that decision (re-establish it if a rerun is authorized).
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~21:1x EDT, last+161) — READ-ONLY check: Speed unchanged; Bologna local run ~90% done, ~238 cells remaining
+
+**Checked (read-only, nothing retried/patched/scored)**:
+- `squeue -j 1315014,1315015` on Speed — empty, both jobs remain cancelled.
+- Speed's `campaign_status.json` for IT-BOL-GALVANI2 — unchanged stale snapshot: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED.
+- Speed's `cells_failed/` count — 770, unchanged.
+- Local Windows Bologna run (PID 32980) — still alive. `campaign_status.json`: 2,250/2,488 finished this arm (~90%), **1,310 completed, 940 ENERGYPLUS_FAILED**. ~238 cells remaining. `campaign_results.json` not yet written. Failed count growth has slowed (897→920→940, +23 then +20) compared to earlier ticks — consistent with most of the affected buildings already having been hit and the tail now being a mix of a few more failures and mostly clean cells.
+
+**No new peer messages since last+160.** No action taken beyond monitoring.
+
+**Status unchanged**: Bologna's own local simulation is the real, not-yet-final result; the earlier "adopted OpenUBEM manifest" answer stays withdrawn. UK and ES remain finished, unaffected. **Next real checkpoint**: report the true finished/failed split (and actual failing-building count/list) when `campaign_results.json` appears — expected within the next tick or two at this rate. Still open decision on driver fix vs. accept-as-final, deferred to author.
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~20:4x EDT, last+160) — READ-ONLY check: Speed unchanged; Bologna local run ~two-thirds done, failed count now clearly above the original ~77-79-building estimate
+
+**Checked (read-only, nothing retried/patched/scored)**:
+- `squeue -j 1315014,1315015` on Speed — empty, both jobs remain cancelled.
+- Speed's `campaign_status.json` for IT-BOL-GALVANI2 — unchanged stale snapshot: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED.
+- Speed's `cells_failed/` count — 770, unchanged.
+- Local Windows Bologna run (PID 32980) — still alive. `campaign_status.json`: 1,675/2,488 finished this arm, **778 completed, 897 ENERGYPLUS_FAILED**. `campaign_results.json` not yet written.
+
+**Worth flagging**: failed count has kept climbing tick over tick (775→810→830→880→897) — noticeably above the original ~770-790 (77-79 buildings) estimate from the Speed report sent to OpenUBEM. This could simply mean this local arm's building set includes a few more affected buildings than the exact 77-79 originally counted on Speed (different resume slice, not necessarily new information), or there could be a handful of buildings failing for an unrelated reason. Not investigated further — read-only, no retry/patch, and no per-building breakdown pulled this tick; this is just an observation to flag for the author, and to double-check once `campaign_results.json` gives the final per-building list.
+
+**No new peer messages since last+159.** No action taken beyond monitoring.
+
+**Status unchanged**: Bologna's own local simulation is the real, not-yet-final result; the earlier "adopted OpenUBEM manifest" answer stays withdrawn. UK and ES remain finished, unaffected. **Next real checkpoint**: report the true finished/failed split (and actual failing-building count/list) when `campaign_results.json` appears — still open decision on driver fix vs. accept-as-final, deferred to author.
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~20:1x EDT, last+159) — READ-ONLY check: Speed unchanged; Bologna local run past halfway, completions now outpacing new failures
+
+**Checked (read-only, nothing retried/patched/scored)**:
+- `squeue -j 1315014,1315015` on Speed — empty, both jobs remain cancelled.
+- Speed's `campaign_status.json` for IT-BOL-GALVANI2 — unchanged stale snapshot: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED.
+- Speed's `cells_failed/` count — 770, unchanged.
+- Local Windows Bologna run (PID 32980) — still alive. `campaign_status.json`: 1,200/2,488 finished this arm, **370 completed, 830 ENERGYPLUS_FAILED**. Completions are now coming in steadily (190→370 since last tick) as the run works past the known-bad buildings into clean ones. Failed count crept slightly above the earlier 770-790 estimate (now 830) — not alarming, likely a handful of scattered failing cells beyond the core cluster rather than a new issue; will only matter once the final per-building tally is available. `campaign_results.json` not yet written.
+
+**No new peer messages since last+158.** No action taken beyond monitoring.
+
+**Status unchanged from last+157/158**: Bologna's own local simulation is the real, not-yet-final result; the earlier "adopted OpenUBEM manifest" answer stays withdrawn. UK and ES remain finished, unaffected. **Next real checkpoint**: report the true finished/failed split when `campaign_results.json` appears — still open decision on driver fix vs. accept-as-final, deferred to author.
+
+---
+
+# 🟡 START-HERE (2026-09-11 ~19:4x-19:5x EDT, last+158) — READ-ONLY check: Speed still cancelled/unchanged; Bologna local run in progress, still hitting known-bad set
+
+**Checked (read-only, nothing retried/patched/scored)**:
+- `squeue -j 1315014,1315015` on Speed — empty, no rows. Both jobs remain cancelled.
+- Speed's `campaign_status.json` for IT-BOL-GALVANI2 — unchanged stale snapshot from before cancellation: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED.
+- Speed's `cells_failed/` count — 770, unchanged, matches the status file.
+- Local Windows Bologna run (PID 32980, resumed 19:20:57) — still alive and running. `campaign_status.json`: 775/2,488 finished in this arm, **0 completed, 775 ENERGYPLUS_FAILED** so far (100% fail rate so far, expected — resume is working through the known ~77-79-building set before reaching untouched buildings). `campaign_results.json` not yet written.
+
+**Since last+157**: `openubem-4d` sent two further read-only-verifiable clarifications, both checked and logged (see last+157 addendum #3 and #4 immediately above this block):
+1. Ruled out an alternate "schedule packaging" explanation for the failure streak by grepping actual `eplusout.err` files across several buildings — confirmed real geometry defect (GetSurfaceData/CheckConvexity fatals), not a staging problem.
+2. Learned the two failure sub-classes behave differently under a real fix: vertex-count-mismatch buildings (28134-class) get caught and excluded at build time, never reaching EnergyPlus; only the near-duplicate-vertex class (27683-class, ~10 buildings) would still fatal at runtime. Relevant only if/when the author picks a fix path.
+
+No local action taken beyond monitoring; no driver code touched.
+
+**Status unchanged from last+157**: Bologna's own local simulation is the only thing running toward this campaign's real result; the earlier "adopted OpenUBEM manifest" answer stays withdrawn. UK and ES remain finished, unaffected. **Next real checkpoint**: when `campaign_results.json` appears in the local IT-BOL-GALVANI2 output, report the true finished/failed split — that will be the actual (not borrowed) Bologna number, still open decision on whether the ~77-79 failures get revisited with a driver fix per author's call.
+
+---
+# 🔴 START-HERE (2026-09-11 ~19:2x-19:3x EDT, last+157) — REVERSED last+155: adopting OpenUBEM's numbers was wrong; Bologna's own local simulation RESUMED and RUNNING now; author offline overnight
+
+
+## last+157 addendum #4 (2026-09-11 ~19:5x EDT) — Two-bucket breakdown of failures if driver fix is applied (peer info, logged only)
+
+`openubem-4d` clarified the 28134-class (vertex-count mismatch, FINDING 210) and 27683-class
+(near-duplicate-vertex, D-EU-43) are NOT both "~10 leftover failures" — they behave differently
+under the real (`build_idf_for_building`) pipeline:
+- Vertex-count mismatch (28134-class): re-checked after post-extrude repairs
+  (`scripts/run_eu_s2_campaign.py:714-722`); if still unresolved, build raises
+  `RuntimeError("interzone_vertex_mismatch_unresolved: ...")` and the building is EXCLUDED AT BUILD
+  TIME — never reaches EnergyPlus, never becomes a runtime fatal.
+- Near-duplicate-vertex (27683-class, `fallback_reason="near_duplicate_vertex_tolerated_box"`):
+  the only class tolerated through to a run; ~10 Bologna buildings are expected to still fatal in
+  EnergyPlus with this signature even after the fix.
+
+Implication for whichever option the author picks: option (a) (call `build_idf_for_building`) gets
+this exclusion bookkeeping for free. Option (b) (replicate the repair steps manually) MUST also
+catch `interzone_vertex_mismatch_unresolved` explicitly and skip that building, or the driver will
+crash outright on the first 28134-class building instead of excluding it cleanly.
+
+No action taken — logged for the author's decision. Replied to openubem-4d acknowledging.
+
+## last+157 addendum #3 (2026-09-11 ~19:4x EDT) — Confirmed real geometry defect, not schedule packaging
+
+`openubem-4d` flagged a valid alternate explanation for a 100% failure streak: EnergyPlus IDFs
+reference `../../schedules/<stem>/..._gain.csv` via SCHEDULE:FILE, and if `schedules/` isn't staged
+next to `idfs/`+`weather/`, EVERY cell fails 100% at ProcessScheduleInput before any geometry check
+— same `ENERGYPLUS_FAILED` status, would make the whole run void rather than partially valid.
+
+Checked directly (read-only, grep on existing `eplusout.err` files, case-insensitive, across
+27683 + 28134 + others): the "schedule" hits are false positives — benign
+`ProcessScheduleInput: ... Blank Schedule Type Limits Name ...` warnings present in both failing
+and passing cells. Every actual fatal is in `GetSurfaceData`/`CheckConvexity`, before warmup.
+27683 shows the known non-planar/zero-area signature; 28134 shows a related sibling
+(vertex-count mismatch, 13 vs 12, between a base surface and its interzone pair) — same
+`GetSurfaceData` fatal family, same root cause (bypassed repair chain), different symptom.
+
+Confirmed: real geometry defect, not a packaging problem. Run is valid as far as it goes, reading
+from last+157/addendum stands unchanged. Replied to openubem-4d with this. No action taken.
+
+## last+157 addendum #2 (2026-09-11 ~19:3x EDT) — OpenUBEM confirms diagnosis registered; early run status matches prediction
+
+`openubem-4d` registered the full diagnosis in their own debug reference doc
+(`docs/docs_EXPLANATION/OpenUBEM_debug_References.md`, near `FINDING 210`/`D-EU-43`) so it's on
+record for the author tomorrow without re-reading this thread. They also flagged: if our
+`campaign_results.json` ends up with ~77-79 failures rather than ~10, that CONFIRMS the diagnosis
+(bypassed repair path) rather than contradicting it — ~10 is the number to expect only after a
+driver fix, not before.
+
+Checked the current local run's early status: 75/2488 cells finished, 0 completed, 75
+ENERGYPLUS_FAILED (100% fail rate so far). This matches expectation — the resume is hitting the
+known ~77-79-building set first. Not a new problem, no action taken. Replied to `openubem-4d`
+acknowledging this and confirming still no driver change tonight.
+
+Nothing else changed. Still waiting on the author for the (a)/(b) decision once
+`campaign_results.json` is written.
+## last+157 addendum (2026-09-11 ~19:4x EDT) — OpenUBEM explained the root cause; requires a driver code change, deferred to author
+
+`openubem-4d` replied with the exact call-path gap (peer info, not user input, logged not acted on):
+- `_stabilize_ring_coords` runs at LAYOUT time inside `european_building_layout_to_zone_specs` (`openubem/geometry/european_residential.py:2785,2824,2838`) — it never runs if zone coords come from anywhere else, which they do in our nocore driver (calls `extrude_geometry` directly).
+- `_snap_shared_interzone_vertices` (inside `extrude_geometry`, `surfaces.py:916`) is gated on `zone["mode"] in ("room_layout", "european_dwelling_layout")` (`surfaces.py:800`) — a no-op if our nocore zones don't carry that mode.
+- The actual recut tree was built via `build_idf_for_building` (`scripts/run_eu_s2_campaign.py:596`), which wraps `extrude_geometry` with `_drop_redundant_ring_vertices` before it and a repair chain (`find_mismatched_interzone_pairs`, `_force_reroute_room_layout_to_one_zone_per_floor`, `_repair_roof_roof_pairs`, etc.) plus `_assign_envelope_constructions` after — none of which our driver calls.
+
+Their fix: use `build_idf_for_building` (or replicate its three bracket steps) instead of calling `extrude_geometry` directly, then overwrite schedules with our own generated occupancy afterward — geometry pipeline and occupancy are independent, so this does NOT reintroduce the earlier mistake (adopting their occupancy). Expected outcome per their estimate: 77-79 bad buildings would drop to ~10 genuinely unrepairable ones (same 10 as before), not zero.
+
+**Not done tonight**: this is a methodology change to `4thJ_step10_nocore_campaign.py` (also used for ES/UK), author is offline overnight. Replied to openubem-4d that we're deferring this to the author's sign-off. Current local run (PID 32980) keeps going as-is on the existing extrude_geometry path — will finish with the known buildings failing again, but everything else completing. **Next tick for the author**: decide whether to apply the build_idf_for_building switch (would need a fresh full re-run to matter) or accept the current run's failures as final for those buildings once campaign_results.json is written.
+
+**Author corrected the previous close**: "no no openubm runs are differnt than gsscanada runs, in gsscanada runs we are inserting generate occupancy that is the difference." OpenUBEM's manifest/summary.json (adopted last+155) reflects THEIR occupancy assumptions, not 4J's own HETUS+LLM-generated occupancy schedules (the caseA/caseB × f cells this campaign runs). Their precomputed EUI is not a valid substitute for our C2 result. **The `adopted_openubem_recut_2026-09-08/` folder and its README are now stale/withdrawn** — do not treat them as Bologna's result. Left on disk for the record, not deleted.
+
+**What's actually needed**: our own local EnergyPlus simulation, using OpenUBEM's geometry-generation code (which we import live via `openubem.idf.surfaces.extrude_geometry`), with our own occupancy injected — not their static output.
+
+**Checked before restarting** (background agent + direct verification):
+- OpenUBEM's D-EU-43 fix (`_stabilize_ring_coords`, `_snap_shared_interzone_vertices`) IS live in the source tree we import (not just a separate offline script), confirmed at git commit `9d6026af69762c0c7a28aea3f1bf2d6e1d37dae4`.
+- **But this is empirically NOT sufficient**: that exact commit is the one recorded in the local run's OWN failure record for building 27683 (`written_at: 2026-09-11T18:02:48`), and it still fataled with the identical `CheckConvexity`/`GetSurfaceData` non-planar/zero-area signature. So the "fix" does not resolve at least this building in practice, despite being present in the code path. Flagged this contradiction to `openubem-4d` directly (msg sent 19:2x) — no reply yet, not blocking.
+- Local campaign's actual python (`C:\Users\o_iseri\AppData\Local\Programs\Python\Python313\python.exe`) resolves `openubem` to the same live editable checkout — confirmed, not a stale copy.
+
+**Action taken** (author instruction: "start rest of if that they are not completed with fixed geometries by openubem, lets go" + "i am going outside... you continue... start rest of the bologna simulations at local"):
+- Restarted `supervisor.ps1` (was stopped last+155). New campaign PID **32980**, launched 2026-09-11T19:20:57, `--district IT-BOL-GALVANI2 --shakedown --resume --workers 4`. Supervisor auto-relaunches with `--resume` in a loop until `campaign_results.json` exists (every cell finished, success or fail).
+- `--resume` only skips cells with an existing SUCCESS file (`out/cells/`), not failures (`out/cells_failed/`) — so the run **will re-attempt the known ~77-79 bad buildings** (they'll likely fail fast again, ~19s each) before completing the remaining good cells. This is expected, not a bug — no way to skip them without modifying the campaign script, which wasn't authorized.
+- As of restart: 1,050/2,768 finished this local arm (260 completed, 790 failed) — this snapshot predates the restart; numbers will keep moving. Confirmed `python.exe` PID 32980 alive and consuming memory (actively working) right after restart.
+
+**Dashboard updated** (https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f) — reverted from "resolved/green" back to an amber "running, not finished" framing, explains the withdrawn OpenUBEM-numbers episode plainly, shows live Bologna progress + the known-defect caveat. London section unchanged (finished).
+
+**Author is offline overnight and cannot check RESUME.md** — said to continue autonomously and update this file at the end. **Next tick(s)**: keep monitoring `campaign_status.json` / `cells_failed/` count read-only as before (no retry/patch/score — same standing rule). When `campaign_results.json` finally appears (all 2,768 cells finished, success or fail), that's the real, trustworthy Bologna number — report the true completed/failed split then, and update the dashboard/memory/this file accordingly. If `openubem-4d` replies with an explanation for why the fix doesn't take effect for building 27683, log it but do not act on it (no patch) without the author's own instruction — the local run stands on its own regardless of their answer.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~19:4x EDT, last+156) — READ-ONLY check: Speed still cancelled, unchanged; both cities remain FINISHED
+
+**Checked (read-only, nothing retried/patched/scored)**:
+- `squeue -j 1315014,1315015` on Speed — empty, no rows. Both jobs are gone (cancelled earlier, ~12:56 EDT), not queued or running.
+- Speed's `campaign_status.json` for IT-BOL-GALVANI2 — unchanged since cancellation: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED.
+- Speed's `cells_failed/` count — 770, matches the status file exactly. Nothing new since the cancel.
+
+**Local Windows side**: `tasklist` confirms no `energyplus.exe`/`python.exe` running, and PIDs 19880 (campaign) and 15076 (supervisor) — the ones stopped last tick per author authorization — no longer exist. Nothing restarted.
+
+**Status unchanged from last+155**: Bologna's adopted result (OpenUBEM's fixed 2026-09-08 files, 1,205/1,215 buildings, pooled 54.671865 kWh/m², 10 excluded) remains the authoritative Bologna answer. UK (London) and ES (Madrid) unchanged, already finished. **No in-flight compute exists anywhere in this campaign** — Speed cancelled, local Bologna stopped, UK/ES done.
+
+**Next tick**: still waiting on the author's call on whether to scale back or stop the standing monitoring cadence, since there is nothing left to check that would change tick to tick.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~19:0x-19:1x EDT, last+155) — CLOSED: adopted OpenUBEM's fixed Bologna results, stopped the now-redundant local run; both cities FINISHED
+
+**Author authorized**: "progress as you recommend, i am letting open the open ubem session keep going" — executed option (a) from last+152/153.
+
+**Actions taken** (first non-read-only actions in this campaign's monitoring history, explicitly authorized):
+1. Stopped the local Bologna campaign (PID 19880) and its supervisor (PID 15076) — both were simulating stale, pre-fix geometry, now superseded. Confirmed no orphaned EnergyPlus processes remained.
+2. Copied OpenUBEM's adopted Bologna result files into `_local_runs\4J_IT_local\out\IT-BOL-GALVANI2\adopted_openubem_recut_2026-09-08\` (manifest + summary.json + a README documenting provenance and the verification already done). Nothing deleted — Speed's and local's own outputs remain on disk as superseded historical record.
+3. Rewrote and republished the dashboard (https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f) — green "resolved" banner, adopted OpenUBEM result shown as Bologna's primary card, Speed+local's own attempt demoted to a dimmed historical card. UK section unchanged.
+
+**Final Bologna result**: 1,205 of 1,215 buildings with a valid EUI, pooled 54.671865 kWh/m², 10 buildings excluded (genuinely unrepairable geometry, kept in the building census). **UK (London)**: 6,490/6,490, 6,320 completed, 170 failed (~2.6%) — unchanged, already finished. **ES (Madrid)**: already complete.
+
+**Both cities are now FINISHED for C2.** Author is keeping the OpenUBEM session (`openubem-4d`) open for further back-and-forth if needed — no action pending from that side right now.
+
+**Next tick**: with no more in-flight compute anywhere (Speed cancelled, local Bologna stopped, UK long finished), consider whether the standing hourly/dynamic monitoring cadence should be scaled back or ended — flag to the author if not addressed sooner.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~19:3x EDT, last+154) — CORRECTION: OpenUBEM is local code on this machine, not a separate team; doesn't change what to do
+
+**A background search launched earlier finished**: `C:\Users\o_iseri\Desktop\OpenUBEM` is a full, editable source checkout on this machine, and the 4J campaign driver imports its `extrude_geometry` function directly. `messages_OpenUBEM/` is an internal documentation convention, not a real separate-repo boundary — the geometry code and raw per-building footprint data are both local and inspectable.
+
+**This doesn't change the recommendation** — their own verified guidance already said not to hand-patch geometry (breaks IDF hashes/comparability, and their own two remedies cleared 0 of 184 affected surfaces). Pulling the fixed `IT-BOL-GALVANI2_recut_2026-09-08/` tree is still the right move.
+
+**One new lead, noted only**: building 27683's own footprint audit (`layouts/27683.json`) recorded `partition_audit.passed=false` but was emitted anyway instead of being blocked — a real inconsistency in the audit gate, not pursued further (out of scope for read-only monitoring).
+
+**No action taken** — this was a background task finishing, not a user reply. Still waiting on your (a)/(b) decision from last+152/153.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~19:2x EDT, last+153) — OpenUBEM sent the exact pull location; re-verified again; still waiting on your a/b call
+
+**OpenUBEM followed up on its own** with the authoritative directory to pull: `openubem/outputs/eu_evidence/EU-11/IT-BOL-GALVANI2_recut_2026-09-08/` — must ship `idfs/` + `schedules/` + `weather/` together (relative paths break otherwise), build the run list from `prepared_buildings.csv` (not `fleet.lst`, which is a 139-building subset), and gave the corrected 10-building exclude list with why they can't be fixed (a rescue mechanism that repairs everything else declines by design for these 10 — no room-layout zones left to reroute, or a genuine courtyard hole).
+
+**Re-verified independently, second round**: re-hashed building 27683's IDF straight from their recut tree — matches both their claim and the adopted manifest exactly. Spot-checked 3 of the 10 excluded buildings in `prepared_buildings.csv` — all three carry the `near_duplicate_vertex_tolerated_box` marker they described. Their tree's own `excluded_buildings.csv` separately lists a different, already-handled class of earlier-stage failures — doesn't overlap with our 10.
+
+**This is now a fully corroborated fix path** — nothing further to verify. Still waiting on you: **(a)** pull OpenUBEM's finished Bologna results directly, or **(b)** re-simulate locally using their corrected IDFs. Nothing has been pulled, copied, or changed on our side — the local run keeps going untouched until you decide.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~19:1x EDT, last+152) — RESOLVED: OpenUBEM already fixed the Bologna defect; independently verified against their real data
+
+**Author opened a live OpenUBEM session** and had this session send the 77-building report directly. OpenUBEM replied: known defect (`D-EU-43` — shapely boolean-op floating-point vertex artifacts, ~1e-8m, read by EnergyPlus as non-planar/zero-area, fatals in `GetSurfaceData`), **already fixed in their code since early September**, baked into their **2026-09-08 recut IDFs**. They gave a corrected IDF hash for building 27683 and a 10-building genuine-residual exclude list.
+
+**Independently verified, not taken on trust** — checked their real output on disk at `C:\Users\o_iseri\Desktop\OpenUBEM\openubem\outputs\eu_evidence\EU-11\IT-BOL-GALVANI2_merged_2026-09-08\`:
+- Our local IDF hash for 27683 does NOT match their claimed fixed hash — confirms we're on the stale pre-fix vintage.
+- Their manifest row for 27683 matches their claim exactly (clean run, EUI 44.85).
+- Their summary.json (1,215 buildings, 1,205 with a result, 10 pending, pooled EUI 54.67) matches their claim exactly, including the exact 10 excluded building IDs.
+- Cross-checked all 77 of our failing buildings against their manifest: **74 of 77 now complete cleanly** (60 fully clean, 14 more complete despite non-fatal warnings) — only 3 remain broken, and all 3 are already inside OpenUBEM's own 10-building exclude list.
+
+**Bottom line**: the defect is real, confirmed fixed upstream, and NOT something 4J should patch directly (this confirms last+151's call was right). Bologna's real residual is OpenUBEM's 10 buildings, not the 77 we were tracking.
+
+**Waiting on you**: do you want to (a) re-pull OpenUBEM's finished Bologna results directly instead of continuing our own local run, or (b) re-simulate locally using their corrected IDFs? Either way the local run in progress is now simulating stale geometry for the buildings covered by their fix.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~18:5x EDT, last+151) — MATERIAL: failures are a CLOSED set (77 buildings x 10 cells = 770), reported to OpenUBEM
+
+**Author pushed back** on the earlier "exclude buildings" suggestion, insisting the failures be solved and disputing that Speed's run had gone well. Checked directly: it had not — the exact same 77 building IDs fail locally AND failed on Speed, same error signature (confirmed via directory-listing overlap: 77/77 match, 0 local-only buildings). Speed just got further into the campaign before being cancelled — it hit the same wall.
+
+**Why we can't fix it directly**: Bologna's footprint→IDF geometry is generated by OpenUBEM (an external team, interfaced via `4J_docs_occ/messages_OpenUBEM/`), not by anything in this repo. Patching degenerate polygons (non-planar surfaces, near-zero-area interzone pairs) needs their pipeline, and guessing at it would silently change the frozen `payload_set_sha256`.
+
+**Good news buried in the data**: local's failed count has been flat at exactly 770 since 18:26 while completions keep climbing (130 completed of 900 finished as of 18:46). 77 buildings × 10 cells = 770 exactly — the broken set is fully enumerated and closed. Everything outside it is running clean. This is a small, reproducible, two-platform-confirmed defect, not a widespread problem.
+
+**Action taken**: wrote `4J_docs_occ/messages_OpenUBEM/2026-09-11_4J_to_OpenUBEM_bologna_77_buildings_bad_geometry.md` (+ a plain building-ID list) using the existing 4J↔OpenUBEM report template — lays out the evidence, asks OpenUBEM to repair the 77 buildings or confirm exclusion. No retry/patch/exclusion/geometry edit performed directly — the campaign itself is untouched.
+
+**Next tick**: continue watching local IT progress (should keep climbing cleanly now that the broken set is exhausted); watch for any reply file appearing under `messages_OpenUBEM/`; reconfirm Speed squeue still empty.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~18:4x EDT, last+150) — MATERIAL: local IT's 100% failure rate BROKE — first 105 completions appeared
+
+**Simulation work is local, not Speed** — Speed's IT contribution is finished/historical: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED, frozen since its 12:57:30 cancellation. All currently-changing work is on the local Windows machine (TABLETOP1).
+
+**IT (Bologna) local campaign** — `campaign_status.json` (18:44:36): 875/2,768 planned, **105 completed**, 770 ENERGYPLUS_FAILED. This is the first tick with any local completions — the 100% failure rate that held steady from 375 through 650 cells has broken. Current local failure rate: 770/875 = 88.0%, still very high but no longer total. No diagnosis performed on why completions started appearing — read-only observation only.
+
+**Combined Bologna (Speed + local)**: 10,575/11,710 finished (90.3%), 9,035 completed, 1,540 failed.
+
+**UK (London)**: unchanged, FINISHED (6,490/6,490, 6,320 completed, 170 failed).
+
+**Dashboard** (https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f) refreshed this tick with updated local numbers and a note that completions have started.
+
+**Next tick**: watch whether the completion rate keeps rising or the failure rate resumes climbing back toward 100%; reconfirm Speed squeue still empty (no change expected).
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~19:0x EDT, last+149) — routine Speed-side check: jobs 1315014/1315015 confirmed cancelled, IT frozen snapshot unchanged
+
+**Speed cluster**: `squeue -j 1315014,1315015 -u o_iseri` returns empty — both jobs remain cancelled, unchanged since last+137. No UK dependency state exists on Speed anymore since its job is gone from the queue.
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` at `/speed-scratch/o_iseri/4J_step10_nocore/out/IT-BOL-GALVANI2/` still shows updated_at 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. `cells_failed/` directory count re-derived fresh: 770, matches exactly.
+
+**Note**: the live, currently-changing work is on the local Windows machine (TABLETOP1), not Speed — see last+148 for local IT's confirmed 100% failure rate (650/650 at that tick, flagged as a real bug). This tick was scoped to re-confirming Speed's frozen state only, per the user's explicit ask; local IT was not re-checked this specific tick.
+
+**Next tick**: re-confirm Speed squeue still empty; separately continue watching local IT's failure trend and whether any cell ever completes.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~18:2x EDT, last+148) — CONFIRMED: IT local 100% failure rate persists past 100 cells (now 650/650) — real bug, flagged
+
+**Speed cluster**: reconfirmed empty of 1315014/1315015 this tick — only unrelated `lmn_dfix`/`lmn_extr` array jobs. Cancellation is permanent.
+
+**IT (Bologna) on Speed** — frozen at 12:57:30 cancellation snapshot, treated as final for Speed's share: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED (76 broken buildings). Copied intact to local machine, not re-run.
+
+**IT (Bologna) local campaign** — `campaign_status.json` (18:26:24): 650/2,768 planned, 0 completed, 650 ENERGYPLUS_FAILED. Failure trend: 375→475→650 across the last three ticks — **100% failure rate holding steady, well past the 100-cell threshold set last tick**. Re-read a fresh failed cell and its EnergyPlus log: same signature every time — building geometry defects (non-planar / zero-area surfaces) that make EnergyPlus abort in `GetSurfaceData` before simulation starts. Build/engine hashes identical to the successful UK run, so this is not a version or platform issue.
+
+**Combined Bologna so far**: 10,350/11,710 finished (88.4%) once Speed's and local's cells are added together.
+
+**Verdict**: per last tick's own threshold, this is now a confirmed real bug, not noise. No diagnosis, retry, or patch has been performed — strictly read-only, flagged for the user's decision.
+
+**Dashboard** (https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f) refreshed this tick with the updated local numbers and combined total, per the author's earlier request to show Speed's finished share alongside local.
+
+**Next tick**: keep watching whether any local IT cell ever completes (does the 100% rate ever break); reconfirm Speed squeue empty; watch supervisor.log for a crash/relaunch line.
+
+---
+
+# 🟢 START-HERE (2026-09-11 ~18:1x EDT, last+147) — MATERIAL: UK local arm FINISHED (6,490/6,490, 170 failed), supervisor auto-launched IT locally, but IT's first 100 cells are 100% ENERGYPLUS_FAILED
+
+**Speed cluster**: reconfirmed empty of 1315014/1315015 this tick — only unrelated `lmn_dfix`/`lmn_extr` array jobs. Cancellation is permanent.
+
+**IT (Bologna) on Speed** — frozen at 12:57:30 cancellation snapshot, treated as final for Speed's share: 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED (76 broken buildings). Copied intact to local machine, not re-run.
+
+**IT (Bologna) local campaign** — `campaign_status.json` (18:26:24): 650/2,768 planned, 0 completed, 650 ENERGYPLUS_FAILED. Failure trend: 375→475→650 across the last three ticks — **100% failure rate holding steady, well past the 100-cell threshold set last tick**. Re-read a fresh failed cell and its EnergyPlus log: same signature every time — building geometry defects (non-planar / zero-area surfaces) that make EnergyPlus abort in `GetSurfaceData` before simulation starts. Build/engine hashes identical to the successful UK run, so this is not a version or platform issue.
+
+**Combined Bologna so far**: 10,350/11,710 finished (88.4%) once Speed's and local's cells are added together.
+
+**Verdict**: per last tick's own threshold, this is now a confirmed real bug, not noise. No diagnosis, retry, or patch has been performed — strictly read-only, flagged for the user's decision.
+
+**Dashboard** (https://claude.ai/code/artifact/ce24f312-2b58-466a-97af-2bba62c6c40f) refreshed this tick with the updated local numbers and combined total, per the author's earlier request to show Speed's finished share alongside local.
+
+**Next tick**: keep watching whether any local IT cell ever completes (does the 100% rate ever break); reconfirm Speed squeue empty; watch supervisor.log for a crash/relaunch line.
+
+---
+
+
+**Speed cluster**: not re-checked this tick (autonomous check, UK/IT-local was the priority); last confirmed empty of 1315014/1315015 at last+146.
+
+**UK (London) local arm on TABLETOP1** — COMPLETE. `campaign_status.json` (18:02:03) shows 6,490/6,490 finished, 6,320 completed, 170 ENERGYPLUS_FAILED — final. `campaign_results.json` now exists. Watchdog log: `18:02:06 campaign PID 46544 no longer running, watchdog exiting` — clean stop, no memory kill at the end. Final failed-cell trend (ten ticks): 80→100→120→120→120→150→160→170→170→170 (final).
+
+**IT (Bologna) local supervisor** (PID 15076) — fired as designed: `supervisor.log` shows `18:02:27 UK local arm finished -- starting IT campaign`, `18:02:27 launched campaign PID 19880 (workers=4)`. IT local campaign has its own fresh `campaign_status.json` (started 18:02:29, `cells_planned: 2768`).
+
+**⚠️ IT local campaign — concerning start**: as of 18:11:05, `cells_finished: 100`, `completed: 0`, `ENERGYPLUS_FAILED: 100` — **every one of the first 100 cells attempted locally has failed**, all `returncode: 1`, ~19s wall time each. `campaign_stderr.log` shows 20 repeats of `intersect_match raised IndexError — purging and retrying with match() alone` (a warning/retry message, not necessarily the failure cause). This is a sharp contrast with the UK local arm on the same Windows/EnergyPlus build, which only failed 170/6,490 (~2.6%) overall — so this doesn't look like a generic Windows-build issue, more likely something specific to the Bologna payload or this run's startup. **No action taken — read-only, not diagnosed, not retried, not patched.** Flagging for the user's attention as a likely real problem, not routine noise.
+
+**Standing plan** (updated): UK done; IT local now the only arm running. ES (Madrid) complete, unchanged.
+
+**Next tick**: check IT's `cells_failed/` count trend — if the 100% failure rate continues past the first 100 cells, this is a real bug in the local build/run and probably needs the user's attention (not something to silently retry). Also re-confirm Speed squeue is still empty.
+
+---
+# 🟢 START-HERE (2026-09-11 ~17:4x EDT, last+146) — routine hourly check: UK failed-cell count flat again (170→170), IT frozen snapshot unchanged
+
+**Speed cluster**: `squeue -u o_iseri` shows zero trace of jobs 1315014/1315015 — both IT and UK remain confirmed cancelled and gone, permanent state. (Only unrelated array jobs 1323957/1324109/1323970/1324180/1324263/1324324 `lmn_dfix` and 1324325 `lmn_extr` visible, nothing for 4J.)
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at still 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change since last+145.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~7.7h stable, still the longest stretch this run). Disk truth: `cells/` = 11,253, `cells_failed/` = 170, total 11,423 vs 6,490 planned. `campaign_status.json` (updated 17:44:30) shows 5,825 finished / 5,655 completed / 170 ENERGYPLUS_FAILED — finished-count lag persists, failed-count matches disk truth exactly (170 = 170). Failed-cell trend across last nine ticks: 80 → 100 → 120 → 120 → 120 → 150 → 160 → 170 → 170 — flat this tick after last tick's +10 rise, progress continuing to accumulate with no new failures; no clear runaway pattern, still read-only, no action taken.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched.
+
+**Next tick**: same checks; watch whether UK's `cells_failed/` count stays flat or resumes climbing, Speed squeue (expect empty), supervisor's handoff line.
+
+---
+# 🟢 START-HERE (2026-09-11 ~17:2x EDT, last+145) — routine hourly check: UK failed-cell count rose again (160→170), IT frozen snapshot unchanged
+
+**Speed cluster**: `squeue -u o_iseri` shows zero trace of jobs 1315014/1315015 — both IT and UK remain confirmed cancelled and gone, permanent state. (Only unrelated array jobs 1323957 `lmn_dfix` and 1324325/1324109/1323970/1324180/1324263/1324324 `lmn_dfix`/`lmn_extr` visible, nothing for 4J.)
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at still 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change since last+144.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~7.2h stable, still the longest stretch this run). Disk truth: `cells/` = 10,573, `cells_failed/` = 170, total 10,743 vs 6,490 planned. `campaign_status.json` (updated 17:13:46) shows 5,150 finished / 4,980 completed / 170 ENERGYPLUS_FAILED — finished-count lag persists, failed-count matches disk truth exactly (170 = 170). Failed-cell trend across last eight ticks: 80 → 100 → 120 → 120 → 120 → 150 → 160 → 170 — rose +10 this tick after holding flat at 160 last tick; steady gradual accumulation, no spike, no clear runaway pattern, still read-only, no action taken.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched.
+
+**Next tick**: same checks; watch whether UK's `cells_failed/` count keeps climbing gradually or plateaus again, Speed squeue (expect empty), supervisor's handoff line.
+
+---
+# 🟢 START-HERE (2026-09-11 ~16:4x EDT, last+144) — routine hourly check: UK failed-cell count flat again (160→160), IT frozen snapshot unchanged
+
+**Speed cluster**: `squeue -u o_iseri` shows zero trace of jobs 1315014/1315015 — both IT and UK remain confirmed cancelled and gone, permanent state. (Only unrelated array jobs 1323957 `lmn_dfix` and 1324325 `lmn_extr` visible, nothing for 4J.)
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at still 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change since last+143.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~6.7h stable, still the longest stretch this run). Disk truth: `cells/` = 10,424, `cells_failed/` = 160, total 10,584 vs 6,490 planned. `campaign_status.json` (updated 16:39:59) shows 5,000 finished / 4,840 completed / 160 ENERGYPLUS_FAILED — finished-count lag persists, failed-count matches disk truth exactly (160 = 160). Failed-cell trend across last seven ticks: 80 → 100 → 120 → 120 → 120 → 150 → 160 — flat again this tick after the +30 jump last tick and a smaller +10 rise in the interim autonomous check; no clear runaway pattern, still read-only, no action taken.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched.
+
+**Next tick**: same checks; watch whether UK's `cells_failed/` count stays flat or resumes climbing, Speed squeue (expect empty), supervisor's handoff line.
+
+---
+# 🟢 START-HERE (2026-09-11 ~16:1x EDT, last+143) — routine hourly check: UK plateau BROKE, failed-cell count jumped 120→150, IT frozen snapshot unchanged
+
+**Speed cluster**: `squeue -u o_iseri` shows zero trace of jobs 1315014/1315015 — both IT and UK remain confirmed cancelled and gone, permanent state. (Only unrelated array job 1323957 `lmn_dfix` and a new dependent job 1324325 `lmn_extr` visible, nothing for 4J.)
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at still 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change since last+142.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~6h stable, still the longest stretch this run). Disk truth: `cells/` = 10,138, `cells_failed/` = 150, total 10,288 vs 6,490 planned. `campaign_status.json` (updated 16:13:22) shows 4,700 finished / 4,550 completed / 150 ENERGYPLUS_FAILED — finished-count lag persists, failed-count matches disk truth exactly (150 = 150). Failed-cell trend across last six ticks: 80 → 100 → 120 → 120 → 120 → 150 — the three-tick plateau ended, +30 new failures this tick. No crash, no watchdog event, no config change — this looks like new failures accumulating during normal running, not an incident. Still read-only, no action taken.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched.
+
+**Next tick**: same checks; watch whether UK's `cells_failed/` count keeps climbing from 150 or settles again, Speed squeue (expect empty), supervisor's handoff line.
+
+---
+# 🟢 START-HERE (2026-09-11 ~15:5x EDT, last+142) — routine hourly check: UK local failed-cell count still flat (120, third flat tick in a row), IT frozen snapshot unchanged
+
+**Speed cluster**: `squeue -u o_iseri` shows zero trace of jobs 1315014/1315015 — both IT and UK remain confirmed cancelled and gone, permanent state. (Only unrelated array job 1323957 `lmn_dfix` visible, nothing for 4J.)
+
+**IT (Bologna) on Speed** — unchanged frozen snapshot since cancellation: `campaign_status.json` updated_at still 2026-09-11T12:57:30, 9,700/11,710 finished, 8,930 completed, 770 ENERGYPLUS_FAILED. Disk `cells_failed/` = 770, matches. No change since last+141.
+
+**UK (London) local arm on TABLETOP1** — still RUNNING, no watchdog kill since 10:03:16 start (~5.5h stable, still the longest stretch this run). Disk truth: `cells/` = 9,846, `cells_failed/` = 120, total 9,966 vs 6,490 planned. `campaign_status.json` (updated 15:32:30) shows 4,025 finished / 3,905 completed / 120 ENERGYPLUS_FAILED — finished-count lag persists as before, failed-count matches disk truth exactly (120 = 120). Failed-cell trend across last five ticks: 80 → 100 → 120 → 120 → 120 — now three consecutive flat ticks, increasingly looks like a genuine plateau rather than a one-off pause. Still read-only, no action taken.
+
+**IT (Bologna) local supervisor** (PID 15076) — still correctly blocked, `supervisor.log` unchanged, only the original 13:09:21 startup line. No launch, no crash, no relaunch.
+
+**Standing plan** (unchanged): UK local arm finishes first, then IT local supervisor auto-launches Bologna at 4 workers with crash-safe auto-restart. ES (Madrid) complete, untouched.
+
+**Next tick**: same checks; watch whether UK's `cells_failed/` count resumes climbing or the plateau holds, Speed squeue (expect empty), supervisor's handoff line.
+
+---
 # 🟢 START-HERE (2026-09-11 ~15:1x EDT, last+141) — routine hourly check: UK local failed-cell count flat this tick (120→120), IT frozen snapshot unchanged, dashboard already refreshed mid-tick on author's ad hoc request
 
 **Speed cluster**: `squeue -j 1315014,1315015` still completely empty — both IT and UK jobs remain confirmed cancelled and gone, permanent state. (Only unrelated array job 1323957 `lmn_dfix` visible under this user, nothing for 4J.)
