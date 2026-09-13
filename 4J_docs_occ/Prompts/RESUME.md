@@ -1,3 +1,116 @@
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+260) — SUPERSEDES last+259 BELOW**
+
+**Speed-cluster poll loop CANCELLED at the author's explicit word. No more 30-min checks will fire.**
+
+Author confirmed: "cancel, we do not have any run on the speed" (said twice). Cron `fb56173f` cancelled
+via `CronDelete` — confirmed `Cancelled job fb56173f`. This ends the 28-poll sequence (last+231 through
+last+259, ~13.5-14 hours) that repeatedly re-confirmed Speed-cluster jobs `1315014`/`1315015` as
+CANCELLED/dead since 2026-09-11, with zero change across every check.
+
+**Status recap, unaffected throughout:** Step 11 (the real project work) finished cleanly at last+236
+— both Bologna and London ran clean, zero refusals, output written and spot-checked. Nothing on Speed
+is running or planned; author's stated policy is all 4J computation stays local, Speed is fetch/read
+only. No further Speed monitoring is expected unless the author asks for a new check.
+
+Evidence: `CronDelete` result `Cancelled job fb56173f`; RESUME.md last+259 (previous poll, unchanged
+numbers); author's chat confirmation this session.
+
+Next: nothing pending on Step 11 — still open question is what consumes Step 11's `appliance_electricity`/
+`dhw` output next in the pipeline; ask the author. Everything from `last+259` onward is preserved below
+as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+259) — SUPERSEDES last+258 BELOW**
+
+**28th read-only poll of the Speed cluster campaign — still byte-identical to all twenty-seven prior
+polls.** `squeue -j 1315014,1315015` zero rows. `sacct`: `1315014` CANCELLED (2026-09-10T00:39:11 to
+2026-09-11T12:59:27, exit 0:0), `1315015` CANCELLED with `Start=None`. Bologna `campaign_status.json`
+frozen: 9,700/11,710 finished, 8,930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`, `updated_at`
+2026-09-11T12:57:30. `cells_failed/` still 770. Nothing retried, patched, or scored.
+
+**Author asked why this loop keeps firing and whether the project is finished.** Clarified in-chat:
+Step 11 (the actual project work) finished cleanly at last+236 and nothing about that has changed.
+This poll is a SEPARATE, unrelated recurring cron job (`fb56173f`, every 30 min, session-only) that
+only re-reads the status of the Speed-cluster EnergyPlus jobs (1315014/1315015), which have been dead
+(CANCELLED) since 2026-09-11 — before Step 11 even started. Per standing rule ("never stop a
+user-configured recurring loop unilaterally"), it keeps running until the author explicitly confirms
+stopping it. Author's separate policy statement this session: all computation for this project stays
+local; Speed may still be used to fetch/read things, just not to run compute.
+
+Evidence: `sacct -j 1315014,1315015 -X`, Bologna `campaign_status.json`/`cells_failed/` count,
+identical to last+258. Everything from `last+258` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+258) — SUPERSEDES last+257 BELOW**
+
+**27th read-only poll of the Speed cluster campaign — still byte-identical to all twenty-six prior
+polls.** `squeue -j 1315014,1315015` zero rows. `sacct`: `1315014` CANCELLED (2026-09-10T00:39:11 to
+2026-09-11T12:59:27, exit 0:0), `1315015` CANCELLED with `Start=None`. Bologna `campaign_status.json`
+frozen: 9,700/11,710 finished, 8,930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`, `updated_at`
+2026-09-11T12:57:30. `cells_failed/` still 770. Nothing retried, patched, or scored.
+
+🔴 27th consecutive identical read of a terminal CANCELLED state — cron `fb56173f` keeps firing
+unattended every 30 min, ~13.5 hours running. Author asked twenty-six times now (last+231 through
+last+257) to confirm stopping it; still running. Nothing about the actual project has moved since
+last+236 (Step 11 finished both cities clean). Evidence: `sacct -j 1315014,1315015 -X`, Bologna
+`campaign_status.json`/`cells_failed/` count, identical to last+257. Everything from `last+257`
+onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+257) — SUPERSEDES last+256 BELOW**
+
+**26th read-only poll of the Speed cluster campaign — still byte-identical to all twenty-five prior
+polls.** `squeue -j 1315014,1315015` zero rows. `sacct`: `1315014` CANCELLED (2026-09-10T00:39:11 to
+2026-09-11T12:59:27, exit 0:0), `1315015` CANCELLED with `Start=None`. Bologna `campaign_status.json`
+frozen: 9,700/11,710 finished, 8,930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`, `updated_at`
+2026-09-11T12:57:30. `cells_failed/` still 770. Nothing retried, patched, or scored.
+
+🔴 26th consecutive identical read of a terminal CANCELLED state — cron `fb56173f` keeps firing
+unattended every 30 min, ~13 hours running. Author asked twenty-five times now (last+231 through
+last+256) to confirm stopping it; still running. Nothing about the actual project has moved since
+last+236 (Step 11 finished both cities clean). Evidence: `sacct -j 1315014,1315015 -X`, Bologna
+`campaign_status.json`/`cells_failed/` count, identical to last+256. Everything from `last+256`
+onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+256) — SUPERSEDES last+255 BELOW**
+
+**25th read-only poll of the Speed cluster campaign — still byte-identical to all twenty-four prior
+polls.** `squeue -j 1315014,1315015` zero rows. `sacct`: `1315014` CANCELLED (2026-09-10T00:39:11 to
+2026-09-11T12:59:27, exit 0:0), `1315015` CANCELLED with `Start=None`. Bologna `campaign_status.json`
+frozen: 9,700/11,710 finished, 8,930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`, `updated_at`
+2026-09-11T12:57:30. `cells_failed/` still 770. Nothing retried, patched, or scored.
+
+🔴 25th consecutive identical read of a terminal CANCELLED state — cron `fb56173f` keeps firing
+unattended every 30 min, ~12.5 hours running. Author asked twenty-four times now (last+231 through
+last+255) to confirm stopping it; still running. Nothing about the actual project has moved since
+last+236 (Step 11 finished both cities clean). Evidence: `sacct -j 1315014,1315015 -X`, Bologna
+`campaign_status.json`/`cells_failed/` count, identical to last+255. Everything from `last+255`
+onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+255) — SUPERSEDES last+254 BELOW**
+
+**24th read-only poll of the Speed cluster campaign — still byte-identical to all twenty-three prior
+polls.** `squeue -j 1315014,1315015` zero rows. `sacct`: `1315014` CANCELLED (2026-09-10T00:39:11 to
+2026-09-11T12:59:27, exit 0:0), `1315015` CANCELLED with `Start=None`. Bologna `campaign_status.json`
+frozen: 9,700/11,710 finished, 8,930 `COMPLETED` + 770 `ENERGYPLUS_FAILED`, `updated_at`
+2026-09-11T12:57:30. `cells_failed/` still 770. Nothing retried, patched, or scored.
+
+🔴 24th consecutive identical read of a terminal CANCELLED state — cron `fb56173f` keeps firing
+unattended every 30 min, ~12 hours running. Author asked twenty-three times now (last+231 through
+last+254) to confirm stopping it; still running. Nothing about the actual project has moved since
+last+236 (Step 11 finished both cities clean). Evidence: `sacct -j 1315014,1315015 -X`, Bologna
+`campaign_status.json`/`cells_failed/` count, identical to last+254. Everything from `last+254`
+onward is preserved below as history — unedited.
+
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+254) — SUPERSEDES last+253 BELOW**
 
 **23rd read-only poll of the Speed cluster campaign — still byte-identical to all twenty-two prior
