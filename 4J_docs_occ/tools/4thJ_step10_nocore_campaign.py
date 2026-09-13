@@ -977,8 +977,123 @@ def zones_for_cell(cell, geometry):
             "height_m": record["z_ceiling"] - record["z_floor"],
             "storey_index": record["storey_index"],
             "area_m2": record["area_m2"],
+            # 🔴 FINDING 254, per author's go-ahead 2026-09-12. OpenUBEM's
+            # `_force_reroute_room_layout_to_one_zone_per_floor` and
+            # `_snap_shared_interzone_vertices` (openubem/idf/surfaces.py)
+            # only act on zones carrying this key; our payload-cut dwelling
+            # zones never carried one, so the reroute safety net always
+            # declined for us (the snap half was already ported around the
+            # gate as FINDING 221). This tag lets the SAME upstream code run
+            # unmodified. It changes nothing for the ~91% of buildings that
+            # never trip the mismatch/near-duplicate check in the first place.
+            "mode": "european_dwelling_layout",
         })
     return out
+
+
+def average_units_by_floor(units, zone_floor_by_index, zone_area_by_index, run_dir, paired_mod):
+    """Collapse per-dwelling occupancy diaries to one averaged diary per floor.
+
+    Used ONLY when `_force_reroute_room_layout_to_one_zone_per_floor` has
+    already collapsed the geometry from one-zone-per-dwelling to
+    one-zone-per-floor -- R7 then compares the zone count against THIS
+    list's length, so the two collapses must agree floor for floor, and a
+    cell that was never rerouted never calls this function at all.
+
+    🔴 FINDING 254 design check with openubem-4d, 2026-09-12. Step 8's own
+    gain object is `Watts/Area` with no separate People object
+    (openubem/semantic/european_schedules.py:100-137,132-133), so a merged
+    floor zone's total gain at hour t is `area_merged * gain_merged(t)`. For
+    that to equal `sum_i area_i * gain_i(t)` at EVERY hour -- not just in the
+    annual mean, which Step 8's per-series assertion already guarantees
+    regardless of weighting -- the merge must be an AREA-WEIGHTED average of
+    each dwelling's own MEAN-1-NORMALIZED presence, never a plain mean of raw
+    values (a plain mean of raw, un-normalized series would let one unusually
+    "busy" diary's absolute scale dominate the shape, and an unweighted merge
+    across unequal dwelling sizes would not conserve the hourly load). Author
+    approved this as a general-purpose rule (2026-09-12: "if you think this
+    method is suitable for other simulations as well go for it"), so it is a
+    real reusable function, not a one-off hack. The caller (build_idf_for_cell)
+    asserts area conservation per floor after this returns.
+
+    Known, disclosed limitations (not fixed here): averaging flattens peaks,
+    so a merged floor is valid for ANNUAL heating only, never peak/cooling
+    sizing; and this function may ONLY be used for a quantity that enters the
+    zone's load LINEARLY (a Watts/Area gain) -- never for something that also
+    drives setpoints, window-opening, or HVAC availability, which must stay
+    dwelling-resolved. Every merged unit is tagged so downstream reporting
+    never mistakes it for per-dwelling-resolved.
+    """
+    S = paired_mod.S
+    by_floor: dict = {}
+    for unit, floor, area in zip(units, zone_floor_by_index, zone_area_by_index):
+        by_floor.setdefault(floor if floor is not None else 0, []).append((unit, area))
+
+    merged_dir = run_dir / "merged_floor_presence"
+    merged_dir.mkdir(parents=True, exist_ok=True)
+
+    merged_units = []
+    for floor in sorted(by_floor):
+        members = by_floor[floor]
+        total_area = sum(area for _, area in members)
+        if total_area <= 0.0:
+            raise RuntimeError(
+                "average_units_by_floor: floor %r has zero or negative total "
+                "area" % floor)
+
+        normalized = []
+        n_hours = None
+        for unit, area in members:
+            raw = S.read_presence(unit["presence_path"])
+            if n_hours is None:
+                n_hours = len(raw)
+            elif len(raw) != n_hours:
+                raise RuntimeError(
+                    "average_units_by_floor: presence series length mismatch "
+                    "on floor %r: %s has %d, expected %d"
+                    % (floor, unit["presence_path"], len(raw), n_hours))
+            mean_raw = sum(raw) / len(raw)
+            if mean_raw <= 0.0:
+                raise RuntimeError(
+                    "average_units_by_floor: %s has non-positive mean "
+                    "presence, cannot normalize" % unit["presence_path"])
+            normalized.append(([v / mean_raw for v in raw], area))
+
+        merged = [0.0] * n_hours
+        for series, area in normalized:
+            weight = area / total_area
+            for t in range(n_hours):
+                merged[t] += weight * series[t]
+        # Weighted average of mean-1 series is itself mean-1 (up to float
+        # noise); this is what makes Step 8's own re-normalization by ITS mean
+        # a no-op, so the area weighting here is preserved through to the
+        # emitted gain series unchanged.
+        merged_mean = sum(merged) / n_hours
+        if abs(merged_mean - 1.0) > 1e-9:
+            raise AssertionError(
+                "average_units_by_floor: floor %r merged series mean %.12f "
+                "!= 1.0" % (floor, merged_mean))
+
+        dst = merged_dir / ("floor%02d_averaged.csv" % floor)
+        with dst.open("w", encoding="utf-8") as fh:
+            fh.write("Presence\n")
+            for v in merged:
+                fh.write("%.10f\n" % v)
+        digest = md5_file(dst)
+
+        merged_units.append({
+            "unit_index": floor,
+            "presence_path": str(dst),
+            "presence_file": dst.name,
+            "presence_md5": digest,
+            "seed": None,
+            "independent": False,
+            "n_source_units": len(members),
+            "source_unit_indices": sorted(u["unit_index"] for u, _ in members),
+            "source_total_area_m2": total_area,
+            "merged_floor_averaged_occupancy": True,
+        })
+    return merged_units
 
 
 def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paired_mod):
@@ -1074,6 +1189,15 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
         if not coords:
             continue
         zone["coords_m"] = [_snap_point(tuple(pt)) for pt in coords]
+    # 🔴 FINDING 254 pairing snapshot, taken BEFORE any reroute can run.
+    # `_force_reroute_room_layout_to_one_zone_per_floor` mutates `zones` IN
+    # PLACE (openubem/idf/surfaces.py:719-747 removes the per-dwelling dicts
+    # and inserts new whole-floor ones) -- reading floor/area off `zones`
+    # itself AFTER that call would be reading the post-merge zones, not the
+    # per-dwelling ones `cell["units"]` is positionally paired against.
+    # Confirmed with openubem-4d, 2026-09-12.
+    _pre_reroute_floor_by_index = [z.get("storey_index") for z in zones]
+    _pre_reroute_area_by_index = [float(z["floor_polygon"].area) for z in zones]
     extrude_geometry(idf, zones, [])
     # 🔴 FINDING 210 fix, ported verbatim from OpenUBEM's own
     # `scripts/run_eu_s2_campaign.py::build_idf_for_building` (D-EU-42/D-EU-43),
@@ -1093,6 +1217,7 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
     # tolerated and disclosed via `fallback_reason`, then proceeds to run.
     mismatched = find_mismatched_interzone_pairs(idf)
     near_duplicate = _has_near_duplicate_vertex_surfaces(idf)
+    zones_were_rerouted = False
     if mismatched or near_duplicate:
         reason = "interzone_vertex_mismatch" if mismatched else "near_duplicate_vertex"
         did_reroute = _force_reroute_room_layout_to_one_zone_per_floor(idf, zones, reason)
@@ -1113,7 +1238,54 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
                 raise RuntimeError(
                     "interzone_vertex_mismatch_unresolved: mismatched=%r "
                     "near_duplicate_vertex=%r" % (mismatched, residual_near_dup))
+        if did_reroute:
+            zones_were_rerouted = True
     write_zone_volumes(idf, zones)
+
+    # 🔴 FINDING 254 occupancy merge, per author's go-ahead 2026-09-12 and
+    # design check with openubem-4d. `zones` has just collapsed from one
+    # zone per dwelling to one zone per floor -- the R7 zone/unit-count check
+    # below must be against a unit list that has collapsed the SAME way, so
+    # this replaces `cell["units"]` with one area-weighted, mean-1-normalized
+    # occupancy series per merged floor (see `average_units_by_floor`'s
+    # docstring for the full derivation). Buildings that were never rerouted
+    # (the large majority -- this only fires on the interzone-mismatch/
+    # near-duplicate-vertex path above) are completely unaffected.
+    if zones_were_rerouted:
+        units = average_units_by_floor(
+            cell["units"], _pre_reroute_floor_by_index, _pre_reroute_area_by_index,
+            run_dir, paired_mod)
+        if len(zones) != len(units):
+            raise RuntimeError(
+                "average_units_by_floor produced %d floor unit(s) for %d "
+                "post-reroute zone(s) -- floor grouping disagrees with the "
+                "geometry reroute" % (len(units), len(zones)))
+        for _zone, _unit in zip(zones, units):
+            _zone["merged_floor_averaged_occupancy"] = True
+            # The reroute's own fallback zone dicts (openubem/idf/surfaces.py
+            # :730-740) never set "storey_index" (only our own zones_for_cell
+            # does); the merged unit's "unit_index" IS the floor number
+            # (average_units_by_floor groups by floor), so it is the correct
+            # value here.
+            _zone.setdefault("storey_index", _unit["unit_index"])
+            _post_area = float(_zone["floor_polygon"].area)
+            _pre_area = _unit.get("source_total_area_m2")
+            # Load-conservation check (openubem-4d, 2026-09-12): Step 8's gain
+            # object is Watts/Area with no separate design-level object
+            # (openubem/semantic/european_schedules.py:132-133), so the
+            # merged zone's total gain is correct iff its floor area equals
+            # the summed area of the dwellings it replaced. 2% / 0.5 m^2
+            # tolerance absorbs the reroute's own footprint-reconstruction
+            # rounding (buffer/set_precision/simplify), not a real mismatch.
+            if _pre_area is not None and abs(_post_area - _pre_area) > max(0.5, 0.02 * _pre_area):
+                raise RuntimeError(
+                    "merged floor area conservation failed for %s: pre-merge "
+                    "dwellings summed %.3f m^2, post-merge zone is %.3f m^2 -- "
+                    "refusing to run a cell whose gain design level would not "
+                    "represent the dwellings it replaced"
+                    % (_zone["name"], _pre_area, _post_area))
+    else:
+        units = cell["units"]
 
     def construction(component):
         f_red = float(record["f_red_temp"])
@@ -1123,20 +1295,36 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
             float(record["delta_u_tb_w_m2k"]) * f_red)
 
     wall, roof, floor = construction("wall"), construction("roof"), construction("floor")
+    # 🔴 FINDING 253 fix, ported verbatim from OpenUBEM's own
+    # `scripts/run_eu_s2_campaign.py::_assign_envelope_constructions`, 2026-09-12,
+    # per author's go-ahead. A nominal ROOF/ROOFCEILING surface whose
+    # Outside_Boundary_Condition == "Surface" is an interzone surface paired with
+    # a shorter neighbour's FLOOR (e.g. a 1-storey block under a taller one) --
+    # assigning it `roof` while its partner gets `floor` gives EnergyPlus two
+    # different-material single-layer constructions on the same interzone pair,
+    # which can never satisfy the reverse-order-materials interzone check and is
+    # a guaranteed GetSurfaceData fatal. Such a surface gets `floor` instead,
+    # matching its partner. A true exterior roof (Outdoors) is unaffected. Must
+    # run AFTER intersect_match, which is why this stays here: OBC only reads
+    # "Surface" once intersect_match has paired the surfaces.
     for surface in idf.idfobjects["BUILDINGSURFACE:DETAILED"]:
         kind = str(surface.Surface_Type).upper()
         if kind == "WALL":
             surface.Construction_Name = wall
         elif kind in ("ROOF", "ROOFCEILING"):
-            surface.Construction_Name = roof
+            obc = str(getattr(surface, "Outside_Boundary_Condition", "")).strip().upper()
+            surface.Construction_Name = floor if obc == "SURFACE" else roof
         elif kind in ("FLOOR", "CEILING"):
             surface.Construction_Name = floor
 
     f = cell["sensitivity_f"]
-    units = cell["units"]
-    # 🔴 One drawn flat, one series. If the payload's zone count and the unit
-    # list ever disagree the cell is REFUSED, not recycled -- a recycled series
-    # is exactly the `G10N.20` collision the binding rule exists to catch.
+    # 🔴 One drawn flat, one series -- OR, on a rerouted/merged building, one
+    # floor and its one area-weighted averaged series (`units` was already
+    # replaced above by `average_units_by_floor` in that case; `zones` and
+    # `units` collapsed the SAME way, by floor, together). If the two counts
+    # ever disagree regardless, the cell is REFUSED, not recycled -- a
+    # recycled series is exactly the `G10N.20` collision the binding rule
+    # exists to catch.
     if len(zones) != len(units):
         raise Refusal("R7 %s has %d drawn zones and %d assigned series"
                       % (cell["building_id"], len(zones), len(units)))
@@ -1191,6 +1379,14 @@ def build_idf_for_cell(cell, record, zones, run_dir: Path, epw_path: Path, paire
             "mean_phi_int_w_m2": info["mean_phi_int_w_m2"],
             "zone_area_m2": area,
             "fallback_reason": zone.get("fallback_reason"),
+            # 🔴 FINDING 254 disclosure: this zone is NOT per-dwelling-resolved
+            # -- its occupancy series is an area-weighted average of the
+            # dwellings that used to occupy this floor before the geometry
+            # reroute merged them. Valid for annual heating only (peaks are
+            # flattened by the averaging). Never treat as per-dwelling detail.
+            "merged_floor_averaged_occupancy": bool(zone.get("merged_floor_averaged_occupancy")),
+            "merged_source_unit_indices": unit.get("source_unit_indices"),
+            "merged_source_total_area_m2": unit.get("source_total_area_m2"),
         })
 
     # 🔴 PORTABLE SCHEDULE PATHS, carried from `C1`. `emit_step8_gain_schedule`

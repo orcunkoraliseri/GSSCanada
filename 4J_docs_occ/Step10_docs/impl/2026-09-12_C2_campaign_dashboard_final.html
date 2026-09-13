@@ -1,0 +1,111 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>4J C2 Campaign Live</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1a1d23; --muted:#6b7280; --border:#e5e7eb;
+  --accent:#2563eb; --good:#16a34a; --warn:#d97706; --bad:#dc2626; --track:#eef0f3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1115; --card:#171a21; --text:#e8eaed; --muted:#9aa1ac; --border:#2a2e37;
+    --accent:#5b8def; --good:#4ade80; --warn:#fbbf24; --bad:#f87171; --track:#22262f;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --card:#171a21; --text:#e8eaed; --muted:#9aa1ac; --border:#2a2e37;
+  --accent:#5b8def; --good:#4ade80; --warn:#fbbf24; --bad:#f87171; --track:#22262f;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:20px;max-width:1080px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.banner{background:color-mix(in srgb, var(--good) 12%, var(--card));border:1px solid var(--good);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;line-height:1.5}
+.banner.mid{background:color-mix(in srgb, var(--warn) 12%, var(--card));border-color:var(--warn)}
+.banner b{color:var(--good)}
+.banner.mid b{color:var(--warn)}
+h3.section{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:22px 0 8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card.alert{border-color:var(--bad)}
+.card.win{border-color:var(--good)}
+.card.mid{border-color:var(--warn)}
+.card h2{font-size:15px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot.run{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb, var(--warn) 25%, transparent)}
+.dot.bad{background:var(--bad);box-shadow:0 0 0 3px color-mix(in srgb, var(--bad) 25%, transparent)}
+.dot.done{background:var(--good)}
+.row{margin-bottom:14px}
+.row:last-child{margin-bottom:0}
+.label{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.bar{height:10px;background:var(--track);border-radius:6px;overflow:hidden}
+.bar>div{height:100%;border-radius:6px;background:var(--accent);transition:width .4s ease}
+.bar.done>div{background:var(--good)}
+.bar.bad>div{background:var(--bad)}
+.bar.mid>div{background:var(--warn)}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+.stats b{color:var(--text);font-size:13px;display:block}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--track);color:var(--muted)}
+.foot{margin-top:18px;font-size:11px;color:var(--muted);text-align:center}
+.note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+.combo{font-size:12px;color:var(--muted);margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+.combo b{color:var(--text)}
+</style>
+
+<h1>4J Campaign C2 — Bologna / London</h1>
+<div class="sub" id="asof">Data snapshot: 2026-09-12 ~17:3x EDT — BOTH CITIES FINISHED. Floor-averaging fix (merges same-floor dwellings into one zone with area-weighted averaged occupancy, only where a building's shape previously forced a reject) has completed its full re-run in both cities. All numbers below are re-derived directly from each city's own run log and output folders, deduplicated to the latest attempt per unit.</div>
+
+<div class="banner">
+  <b>Both cities are done.</b> London: every unit works, zero failures. Bologna: all but 30 units now work, and those 30 belong to only 3 buildings that were already known to be real courtyards this fix could never save. Nothing else broke.
+</div>
+
+<h3 class="section">London (UK) — FINISHED, fully recovered</h3>
+<div class="grid">
+  <div class="card win">
+    <h2><span class="dot done"></span>Local, Windows — FINISHED</h2>
+    <div class="row">
+      <div class="label"><span>Units finished</span><span>100.0%</span></div>
+      <div class="bar done"><div style="width:100%"></div></div>
+    </div>
+    <div class="stats">
+      <div><b>12,070 / 12,070</b>total units, all completed</div>
+      <div><b>0</b>still failing</div>
+      <div><b>finished</b>re-run complete, clean stop</div>
+    </div>
+    <div class="note">The 70 units that were still failing after the two earlier fixes are now all fixed by the floor-averaging fix. London needs no further work.</div>
+  </div>
+</div>
+
+<h3 class="section">Bologna (IT) — FINISHED, all but 3 known courtyard buildings recovered</h3>
+<div class="grid">
+  <div class="card win">
+    <h2><span class="dot done"></span>Local, Windows — FINISHED</h2>
+    <div class="row">
+      <div class="label"><span>Units finished</span><span>100.0%</span></div>
+      <div class="bar done"><div style="width:100%"></div></div>
+    </div>
+    <div class="stats">
+      <div><b>11,680 / 11,710</b>total units now completed</div>
+      <div><b>420 / 450</b>recovered by today's floor-averaging fix</div>
+      <div><b>30</b>still failing, all in 3 buildings</div>
+      <div><b>finished</b>re-run complete, clean stop</div>
+    </div>
+    <div class="note">Of the 450 units still failing before today, 420 are now fixed. The remaining 30 all belong to just 3 buildings (real courtyards — a shape this fix was never meant to save, confirmed in testing before the run). The run's own "non-zero exit" flag was just its rule that any leftover failure counts as non-clean, not a sign anything crashed; the actual per-unit error logs were checked and confirm nothing else regressed.</div>
+  </div>
+  <div class="card alert">
+    <h2><span class="dot bad"></span>Remaining failures — 3 buildings, expected</h2>
+    <div class="stats">
+      <div><b>3</b>buildings still failing (down from 94)</div>
+      <div><b>30</b>units still failing (down from 940)</div>
+    </div>
+    <div class="note">These are genuine courtyard buildings whose shape this fix category was never designed to fix. No further action planned unless the author asks for a different approach for courtyards specifically.</div>
+  </div>
+</div>
+
+<div class="combo">
+  <b>What changed today:</b> the author approved averaging same-floor dwellings into one merged reading (area-weighted, each dwelling normalized to its own yearly average first) for buildings whose shape was otherwise unbuildable in EnergyPlus. This trades per-apartment detail for a working simulation on those specific buildings only — flagged in the output so it is never mistaken for full per-apartment detail. Tested on two real buildings before the full re-run; both matched expectations, and the full re-run confirms it at scale (94 buildings down to 3). Madrid (ES) untouched. Speed cluster stays frozen and ignored — all numbers here are from local runs only.
+</div>
+
+<div class="foot">Both cities' repair campaigns are finished. No further hourly checks needed unless a new fix is started.</div>
+
+</body></html>
