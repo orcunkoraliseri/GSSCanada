@@ -53,6 +53,36 @@ addressable beside it. ⚪ **Nothing else in this step moves.** Section 2.1's no
 the content: what is written below still describes `C1`'s core-era population until a no-core `C2`
 cell exists. No gate is re-scored, no band moves, and Step 11 remains **PLANNED, nothing built**.
 
+🟢 **CLOSURE, 2026-09-13 (last+264) — EVERY SENTENCE ABOVE THAT SAYS `PLANNED` OR
+`NOTHING BUILT` IS NOW STALE, AND THIS PARAGRAPH GOVERNS.** Step 11 is **COMPLETE**. It was built and
+run between last+229 and last+263, and the Progress Log below was not kept during that stretch — the
+record lived in `docs/` and in `Prompts/RESUME.md` instead. ⚪ **Nothing above is deleted**; the stale
+sentences stay as the record of what was carried, exactly as the 2026-08-28 correction did.
+
+**Work items:** `11.1` `11.2` `11.4` `11.5` `11.6` **DONE**; `11.3` **DONE** (built at last+46,
+`docs/2026-09-08_work-item-11.3_trigger-campaign-runner-built.md`; run at full size in both cities at
+last+236); `11.7` **WITHDRAWN** (`Prompts/RESUME.md` §6 — withdrawn on the model's own judgement, the
+author did not object; it renders a stock aggregate and is **a rendering, never a result**).
+
+**Board:** all **18** declared `G11.x` gates scored, `V11.g` **SUITE COMPLETE**,
+`{"PASS": 14, "FAIL": 2, "INFO": 1, "NOT CHECKED": 1}`.
+🔴 **`G11.6` FAIL** (per-appliance activation counts outside CREST ±15 %) and
+🔴 **`G11.12` FAIL** (stock diurnal shape, R² 0.4347 `uk` / 0.0781 `it`) are **one single
+mechanism, not two defects**: CREST's reference profile is >77 % laundry at 11:00 while this model
+suppresses laundry starts 80–90 % under the already-ruled **`D-S9-1`** — only *primary* HETUS
+activities trigger appliances, and laundry is recorded as a *secondary* activity. **Both stay FAIL, no
+code change, band never moved**, consistent with `G9.6`/`G9.12`'s own Step 9 FAILs. `G11.7` stays
+permanently `INFO` (`D-S11-1`). `G11.4` is `NOT CHECKED` offline — 3 of 4 DOIs need network; not a defect.
+🟢 **`G11.8` and `G11.18` are genuine new stock-scale PASSes** (DHW event mix within 3 pp of
+Table 1; stock mean DHW **202.41** `uk` / **200.35** `it` l/dwelling/day against 200 ± 10 %).
+
+**Battery:** **18 HIT / 0 MISS / 1 already-failing** (`G11.6`, `ALREADY_FAILING_AT_BASELINE`, `V11.b`),
+**COVERAGE CLAUSE PASS**.
+
+🔴 **Step 11 is the LAST step of the pipeline.** `D-IMP-4` (2026-09-03) deleted Step 12 — *“The
+pipeline is Steps 0–11.”* **Nothing downstream consumes Step 11's `appliance_electricity`/`dhw`
+output**; what follows is cross-step analysis and the manuscript, not another computed step.
+
 ---
 
 ## AIM
@@ -300,11 +330,11 @@ simulates it, the pair double-counts, and the double count is invisible in both 
 |---|---|---|---|
 | **11.1** | 🟢 **DONE 2026-08-27. Carry-over audit** — the Step 9 mapping, trigger and citation set re-scored unchanged on the new basis; `G11.1`–`G11.4`. Online **`PASS 61 / PASS 192 / PASS 149 / PASS 4`**, offline the same with `G11.4` `NOT CHECKED` (`V11.c`); the other fourteen gates print **`NOT RUN` by name and no tally** (`V11.g`). Battery **7 HIT / 0 MISS**, coverage clause PASS. 🔴 **`FINDING 168` found in the doing: `G11.15` headed two gate-table rows; the DHW newcomer moved to `G11.18` and a duplicate-ID census is now a registered detector.** ⚪ `G11.14` is deliberately NOT in scope — it asserts the trigger's columns against the **generated diaries**, and Step 11's are Step 10's, which do not exist yet. Record `docs/2026-08-27_work-item-11.1_carry-over-audit.md` | Step 9 artefacts | no |
 | **11.2** | 🟢 **DONE AND RULED 2026-08-27. `G9.7` diagnosis** — falsify candidate explanations for the 2–4× DHW magnitude **before** re-measuring (§1.3). Candidate refuted, mechanism found, `D-S11-1` raised and **ruled (d)(ii) → (b) the same day**: `G9.7` and `G11.7` are permanent `INFO`, band unmoved, citation repaired, `FINDING 167` found by `G9.4` in the doing. 🟢 **`D-S11-2` raised AND closed the same day: `G9.15` implemented, `G11.18` declared** (§1.3a, §§9-10 of the record) | Step 9 artefacts | no |
-| **11.3** | **Per-dwelling trigger campaign** — run the trigger on Step 10 Arm D's `N_u` diaries per building | Step 10 items 10.4, 10.6 | no |
-| **11.4** | **Accounting-path resolution** — one path per end-use per building, recorded in the manifest (§3) | 11.3, Step 10 10.6 | no |
-| **11.5** | **Stock-scale aggregation** — `G11.12` at real neighbourhood scale, with the population declaration `G11.16` requires | 11.3, 11.4 | no |
-| **11.7** | ⚪ **3D stock visualisation, ONE static self-contained `.html`** — added 2026-08-28 at the author's request. Renders the Step 11 stock aggregate on the **existing** OpenUBEM 3D export `OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D`, in the vocabulary and conventions of `OpenUBEM/docs/docs_EXPLANATION/OpenUBEM_fundamentals.md`. 🔴 **It is a rendering, never a result, and it inherits every bar**: Arm D and Arm F **never share a colour scale or a legend** (`G10.9`); every Arm F surface is labelled a **LOWER BOUND** with **no magnitude attached** (`G10.22`); **no per-dwelling value is rendered at any zoom** (`G11.13`); every figure is **HEATING-ONLY** and stated **relative to its own control** (`G10.12`); the **Lyon geometry provenance** is printed on the page (`G10.11`). ⚪ **Read-only on the OpenUBEM tree** — it reads the export and never writes into it. No new simulation, no new artefact in their tree. 🟡 **Added 2026-09-03 (`D-IMP-1`, I-8):** input re-pointed to the `D-EU-88` district-viewer output once it exists — **geometry only, no EUI rendered on the page**; `G11.13`'s no-per-dwelling-value rule stays exactly as above. `D-EU-88` has not started; nothing built here today | 11.5 | no |
-| **11.6** | **Gate board, mutation battery, dossier** — every `G11.x` seen failing its designated mutation, `ALREADY_FAILING_AT_BASELINE` where §1.4 applies | 11.5 | no |
+| **11.3** | 🟢 **DONE. Per-dwelling trigger campaign** — run the trigger on Step 10 Arm D's `N_u` diaries per building. **Built 2026-09-08** (`tools/4thJ_step11_trigger_campaign.py`; every refusal seen failing with a passing control; `SCORES NOTHING` by design) — record `docs/2026-09-08_work-item-11.3_trigger-campaign-runner-built.md`. **Run at full size 2026-09-12 (last+236)**, `--diary-diversity reseed`, no `--limit`, zero refusals, zero errors: **Bologna 29,902 flats / 1,126 buildings** (6,126.2 s) → `outputs_step11/c2_it/step11_11-3_it_reseed.json` (33.8 MB, `n_flats_enumerated == n_flats_run == 29902`, `smoke_run: false`); **London 7,602 flats / 1,200 buildings** (1,537.3 s) → `outputs_step11/c2_uk/step11_11-3_uk_reseed.json` (9.0 MB, same clean counts). 🔴 **A seam was found mid-launch and ruled by the author:** 42 Bologna + 7 London buildings carry synthetic *floor-averaged* diaries, not real per-flat Step 7 diaries, so the per-flat diary check correctly refused them; the author chose **EXCLUDE** — all **49** buildings are flagged *no Step 11 data*, never scored, never guessed at, the same way the 3 accepted courtyard buildings are. Non-destructive method: filtered **copies** of each city's `cells/`, 420 IT + 70 UK cells dropped, skip counts matching the exclusion lists exactly; **nothing in Step 10's output was touched**. ⚪ Madrid (ES) was never in scope for this campaign. | Step 10 items 10.4, 10.6 | no |
+| **11.4** | 🟢 **DONE 2026-09-13. Accounting-path resolution** — one path per end-use per building, recorded in the manifest (§3). **Closed on 11.3's OWN construction, not new work**: `STEP10_END_USES`/`STEP11_END_USES` are a fixed disjoint partition, `check_seam` (`S10`) refuses any overlap or unknown end-use before any manifest is written (seen refusing on a planted overlap 2026-09-13), and `population_declaration()`'s `accounting_paths` field records the partition in every manifest — verified present, byte-identical, in both cities' real last+236 output. The 49 buildings excluded from Step 11 have `appliance_electricity`/`dhw` on NEITHER path (declared absent, not zero) — not a seam violation, recorded for 11.5. Record: `docs/2026-09-13_work-item-11.4_accounting-path-closure.md` | 11.3, Step 10 10.6 | no |
+| **11.5** | 🟢 **DONE 2026-09-13. Stock-scale aggregation** — `G11.12` at real neighbourhood scale, with the population declaration `G11.16` requires. New tool `tools/4thJ_step11_aggregate.py` imports (never re-implements) 11.3's trigger loop and `G9.12`'s own scorer, accumulating `elec_ts`/`dhw_ts` elementwise across every drawn flat into one stock diurnal profile — never persisting per-flat series at 30k-flat scale. 2,000-flat Bologna smoke ran clean first (`FAIL R2=0.0731, n=2000`, correctly flagged as a smoke, not carried forward). Both full populations then run to completion, no `--limit`, `reseed` unchanged: **London 7,602 flats/1,200 buildings, `G11.12` FAIL R2=0.4347**; **Bologna 29,902 flats/1,126 buildings, `G11.12` FAIL R2=0.0781**. Same gate Step 9 already FAILED at n=100 (§2) — two independent stock populations failing the same way is evidence the measurement is real, not a defect to chase a PASS on. Record `docs/2026-09-13_work-item-11.5_stock-scale-aggregation-closure.md`, manifests `outputs_step11/c2_uk/step11_11-5_uk_reseed.json` and `c2_it/step11_11-5_it_reseed.json` | 11.3, 11.4 | no |
+| **11.7** | 🔴 **WITHDRAWN, and NOT revived at closure (2026-09-13).** Offered, then withdrawn the same session on the model's own judgement with no author objection — `Prompts/RESUME.md` §6, *“OPTION (c) — ITEM 11.7 — WAS OFFERED AND THEN WITHDRAWN”*. It is **a rendering, never a result**, so it adds no evidence to the board, and its re-pointed `D-EU-88` district-viewer input still does not exist. If it is ever revived, **every inherited bar below applies unchanged**. The original scope is kept verbatim: ⚪ **3D stock visualisation, ONE static self-contained `.html`** — added 2026-08-28 at the author's request. Renders the Step 11 stock aggregate on the **existing** OpenUBEM 3D export `OpenUBEM/docs/docs_ACTIVE/europeanLocations/outputs_3D`, in the vocabulary and conventions of `OpenUBEM/docs/docs_EXPLANATION/OpenUBEM_fundamentals.md`. 🔴 **It is a rendering, never a result, and it inherits every bar**: Arm D and Arm F **never share a colour scale or a legend** (`G10.9`); every Arm F surface is labelled a **LOWER BOUND** with **no magnitude attached** (`G10.22`); **no per-dwelling value is rendered at any zoom** (`G11.13`); every figure is **HEATING-ONLY** and stated **relative to its own control** (`G10.12`); the **Lyon geometry provenance** is printed on the page (`G10.11`). ⚪ **Read-only on the OpenUBEM tree** — it reads the export and never writes into it. No new simulation, no new artefact in their tree. 🟡 **Added 2026-09-03 (`D-IMP-1`, I-8):** input re-pointed to the `D-EU-88` district-viewer output once it exists — **geometry only, no EUI rendered on the page**; `G11.13`'s no-per-dwelling-value rule stays exactly as above. `D-EU-88` has not started; nothing built here today | 11.5 | no |
+| **11.6** | 🟢 **DONE 2026-09-13. Gate board, mutation battery, dossier** — all 18 declared `G11.x` scored (`V11.g` SUITE COMPLETE): 14 PASS / **`G11.6` FAIL** / **`G11.12` FAIL** / `G11.7` INFO (permanent) / `G11.4` NOT CHECKED (offline). New tool `tools/4thJ_step11_stockboard.py` (imports 11.3's trigger loop, never re-implements) fed the three gates with no earlier stock-scale data — full populations, no `--limit`: London 7,602 flats, Bologna 29,902 flats. **`G11.8` and `G11.18` both PASS real** (DHW category mix within 3 pp of Table 1; stock mean DHW 202.41/200.35 l/dwelling/day against 200 ± 10 %). **`G11.6` FAILS for the SAME mechanism `G11.12` already found**: laundry appliances SATURATED and three appliances 74–84 % below CREST's published cycle count, both folds — consistent with `G9.6`'s own Step 9 FAIL, band never moved. `tools/4thJ_step11_selftest.py` extended with two new registered mutations (`g11_8_reshape_dhw_mix`, `g11_18_triple_dhw_volume`, both against a scratch copy of the REAL `it`-fold stockboard output) — **battery 18 HIT / 0 MISS / 1 already-failing (`G11.6`), COVERAGE CLAUSE PASS**. Record `docs/2026-09-13_work-item-11.6_gate-board-battery-closure.md`, evidence `outputs_step11/g11_6_18/` | 11.5 | no |
 
 ⚪ **No Speed job and no GPU.** Step 9 ran entirely locally, and Step 11's addition is population size, not
 model size. If that stops being true, it is recorded before the first submission, not after.
@@ -720,3 +750,92 @@ ruling** (`reseed`, still no default, still refused by name by `S9b` on a contra
 Step 10 runner writes **no manifest for a failing cell** and aggregates every diagnosis only after
 the last cell returns, so a cancelled run loses all of it. **Step 11's own campaign must not repeat
 that** — a failure's record belongs on disk when it happens.
+
+---
+
+### 2026-09-13 (last+264) — 🟢 **STEP 11 IS CLOSED. THIS ENTRY BACKFILLS last+229–last+263, WHICH THIS LOG NEVER RECORDED**
+
+🔴 **Read the gap first, because it is the lesson.** Between the entry above (last+49,
+2026-09-08, *“STEP 11 STAYS PLANNED”*) and today, the whole step was built, run, scored and closed —
+and **not one line of it was written here.** The state lived in the `docs/` closure records, in the
+§4 work-item table, and in `Prompts/RESUME.md`. A reader who trusted this Progress Log would have
+concluded the step was never started. The three-artefact ritual asks for all three artefacts every
+time; two of three is how a log stops being merely incomplete and becomes misleading. ⚪ **Nothing
+below is new measurement** — every number is re-read from the artefact named beside it, never
+restated from a summary sentence.
+
+**11.3 — the campaign (built last+46, run last+236).** `tools/4thJ_step11_trigger_campaign.py`,
+`--diary-diversity reseed`, no `--limit`, zero refusals, zero errors. Bologna **29,902 flats over
+1,126 buildings**, 6,126.2 s; London **7,602 flats over 1,200 buildings**, 1,537.3 s. Both manifests
+carry `n_flats_enumerated == n_flats_run` and `smoke_run: false`. **The exclusion ruled mid-launch:**
+42 Bologna + 7 London buildings hold synthetic floor-averaged diaries rather than real per-flat Step 7
+diaries; the per-flat check refused them and the author chose EXCLUDE, so **49 buildings are declared
+absent, not zero**. Filtered copies of `cells/` were used — 420 IT and 70 UK cells dropped, skip counts
+matching the exclusion lists exactly — and **Step 10's own output was never touched**. The tool scores
+nothing, by design.
+
+**11.4 — the accounting path (2026-09-13).** Closed **on 11.3's own construction, not on new work**:
+`STEP10_END_USES`/`STEP11_END_USES` are a fixed disjoint partition, `check_seam` (`S10`) refuses any
+overlap or unknown end-use before a manifest is written (seen refusing on a planted overlap), and
+`population_declaration()`'s `accounting_paths` field is present byte-identical in both cities' real
+output. The 49 excluded buildings are on **neither** path — declared absent, which is not a seam
+violation. Record `docs/2026-09-13_work-item-11.4_accounting-path-closure.md`.
+
+**11.5 — stock-scale aggregation (2026-09-13).** `tools/4thJ_step11_aggregate.py` **imports** 11.3's
+trigger loop and `G9.12`'s own scorer and re-implements neither — a re-implementation is a second
+opinion, and a second opinion is not an inheritance. A 2,000-flat Bologna smoke ran first and was
+flagged a smoke, not carried forward. Full populations then ran: **`G11.12` FAIL, R² = 0.4347 (`uk`,
+7,602 flats) and 0.0781 (`it`, 29,902 flats)**. ⚪ `G9.12` had already FAILED the same band at n=100 in
+Step 9; **two much larger, independently drawn populations failing the same way is evidence the
+measurement is real**, and nothing was adjusted to chase a PASS. Record
+`docs/2026-09-13_work-item-11.5_stock-scale-aggregation-closure.md`.
+
+**The `G11.12` investigation (last+262, run by the author in a separate session).** `FINDING`s
+`270`–`274`, report `docs/2026-09-13_G11.12-stock-scale-failure-investigation.md`. 🔴 **An earlier
+in-file draft (`FINDING`s `168`–`172`) had a sign error** — it read the best circular-shift R²
+(0.60–0.69) as if timing nearly explained the failure, but that peak sits on the **anti-correlation
+branch** (r < 0); on the real positive branch, shifting gains almost nothing in `uk` and caps at
+R² = 0.27 in `it`. Only `270`–`274` stand. **Root mechanism (`FINDING 272`): CREST's reference profile
+is >77 % laundry at 11:00, and this model suppresses laundry starts 80–90 % under `D-S9-1`** — only
+primary HETUS activities trigger appliances, and laundry is recorded as a secondary activity.
+Occupancy drift is a Step-9-manifest artefact, not a population difference (`FINDING 273`); the
+scoring arithmetic re-verified clean, zero bugs (`FINDING 274`).
+
+**The ruling on `G11.12`: KEEP FAIL, no code change.** `D-S11-1`'s own INFO-reclassification criterion
+is a **basis/denominator mismatch** — a per-person band scored against a per-dwelling model — and that
+is not what is happening here. `G11.12` measures a real shape correlation that **could** pass if the
+shape matched, so reclassifying it `INFO` would silently retire its mutation-battery coverage for no
+matching reason.
+
+**11.6 — board, battery, dossier (2026-09-13).** `tools/4thJ_step11_stockboard.py` (again importing
+11.3's loop, never re-implementing it) fed the three gates that had no stock-scale data; both full
+populations ran clean in the background, no `--limit`. `tools/4thJ_gates_step11.py` then scored **all
+18 declared gates, SUITE COMPLETE** (`V11.g`): `{"PASS": 14, "FAIL": 2, "INFO": 1, "NOT CHECKED": 1}`.
+🟢 **`G11.8` PASS real** — DHW four-event mix within 3 pp of Table 1 in both folds.
+🟢 **`G11.18` PASS real** — stock mean DHW **202.41** (`uk`) / **200.35** (`it`) l/dwelling/day
+against 200 ± 10 %.
+🔴 **`G11.6` FAIL real** — three appliances (`tv_2`, `vcr_dvd`, `tv_receiver_box`) 74–84 % below
+CREST's published cycle count and the laundry appliances SATURATED, **both folds**. 🔴 **This is
+`G11.12`'s mechanism, not a second defect** — the same `D-S9-1`, and consistent with `G9.6`'s own Step 9
+FAIL, where the band never moved either. `G11.7` stays permanent `INFO`; `G11.4` is `NOT CHECKED`
+offline. Because `G11.8`/`G11.18` are genuine new PASSes they earned detectors:
+`tools/4thJ_step11_selftest.py` gained `g11_8_reshape_dhw_mix` and `g11_18_triple_dhw_volume`, both
+built the existing G11.9/10/16/17 way — a scratch copy of the **real** `it`-fold stockboard output,
+mutated in place, never invented from nothing. **Battery 18 HIT / 0 MISS / 1 already-failing**
+(`G11.6`, `ALREADY_FAILING_AT_BASELINE`, `V11.b`), **COVERAGE CLAUSE PASS**. Record
+`docs/2026-09-13_work-item-11.6_gate-board-battery-closure.md`; evidence
+`outputs_step11/g11_6_18/gates_step11_full.json` and `.../selftest_full.json`.
+
+**11.7 — stays WITHDRAWN and was NOT revived at closure.** It is a rendering, never a result, so it
+adds nothing to the board, and its re-pointed `D-EU-88` district-viewer input still does not exist.
+
+🔴 **What is owed after this step: nothing computed.** `D-IMP-4` (2026-09-03) deleted Step 12 —
+**the pipeline is Steps 0–11** — so there is no downstream consumer of Step 11's
+`appliance_electricity`/`dhw` output to hand it to. The open question recorded at last+261 and last+263
+(*“what consumes Step 11's output next”*) is therefore **answered by the parent plan rather than by the
+author: nothing does.** What follows is the cross-step analysis and the manuscript.
+
+⚪ **Two honest caveats on this entry.** (1) It is written **retrospectively** from the closure records
+and `Prompts/RESUME.md`, not from a live log kept at the time — which is exactly the defect it records.
+(2) Both stock-scale populations are **`C2` cells that `R8` still refuses `--scored`**; Step 11's own
+`G11.x` board is scored, but **no `G10N.x` UBEM result is claimed from them here**.

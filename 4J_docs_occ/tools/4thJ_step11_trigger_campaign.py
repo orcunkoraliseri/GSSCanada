@@ -472,6 +472,10 @@ def prepare_fold(root, fold, trigger, quiet=False):
         "owned": owned, "hazards": hazards, "dhw_haz": dhw_haz,
         "n_days": n_days, "pool_meta": pool_meta,
         "map_md5": md5_of_file(map_path),
+        # Exposed 2026-09-13 for work item 11.6 (`G11.6`'s SATURATED
+        # classification). Already computed by the call above; this is
+        # additive -- 11.3 and 11.5 never read this key and are unaffected.
+        "calib_trace": calib_trace,
     }
 
 

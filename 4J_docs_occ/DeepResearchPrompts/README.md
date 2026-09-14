@@ -120,6 +120,41 @@ question: narrow, factual, and settled by opening a document.
 | **L26** | `L26_es_it_census_marginals.md` | For **Spain and Italy only**: which 2011 census tables actually deliver age, sex, household composition and economic status, at what published category boundaries, reachable at what URL | 🔴 **The remaining two thirds of Step 5.1**, which is on the critical path of the headline claim. The UK was built directly from Nomis on 2026-08-20; the ES and IT census systems did not respond to the same treatment (INE `wstempus` does not list the 2011 census; the ISTAT census SDMX host returns HTTP 302) | **No** |
 | **L27** | `L27_hetus_weights_amy_weather_tabula_licence.md` | HETUS weighting mandate across guidelines (2000, 2008, 2018), fieldwork calendar dates for ES/UK/IT, open hourly AMY weather licences (ERA5, MIDAS, AEMET), and TABULA/EPISCOPE licence terms | Settles `D-S6-4` weighting mandate, enables Step 8 AMY simulation pipeline, and gates archetype redistribution in publication | **No** |
 
+**Wave 12 — the post-result round (`L30`, `L31`), written AND returned AND vetted 2026-09-13.** 🔴 **Verdict: `VETTING_RL30_RL31.md`. Five of the seven vetting steps FAILED, and the round is still worth keeping — what failed was everything the reports asserted, what held was everything the negative controls forced them to concede.** Three `NOT FOUND`s survive and are the deliverable: no published like-for-like LLM vs raked-donor comparison; **no published floor on the number of source populations** (so the *"three countries was always too few"* defence is NOT available to us); and plain raking not beaten by any learned hybrid. 🔴 **Struck: the `K = 2` invariance theorem** (Rosenfeld et al. 2021 is about IRM, an estimator we do not run), **the "8 or more countries" number** (the reports' own inequality implies 21, and 8 is simply what we could reach), **the "slope 0.45 to 0.85" CFG prediction** (a number for an unrun experiment on a diagnostic that exists only in our repository), and **the whole of `RL31` Section D** (it judged the SLURM cluster we withdrew, on an A100 we never named). Two method candidates survive our own re-sort and both need their own frozen pre-registration first: guidance with conditioning dropout, and post-sampling raking.
+
+🔴 **These
+are the first prompts in the series written AFTER the headline experiment returned, and they are
+written about a FAILURE.** `G6.1`, the pre-registered transfer bar, FAILS 9 of 9: a pool of real donor
+diaries from the other two countries, raked by IPF onto the held-out country's published marginals,
+reproduces that country two to six times better than the fine-tuned model on every band of every fold.
+Capacity was eliminated three ways by our own measurement (4.7× backbone made it worse; 92× trainable
+parameters ended at a higher train loss every epoch; a second backbone family changed nothing a gate
+can see), and the fictional-country control splits cleanly: **direction passes, amplitude fails at a
+slope of 0.40–0.53** — the model steers correctly and delivers about half the amplitude.
+
+* **`L30` is a READING prompt and asks for no recommendation at all.** Is our result already published?
+  Is a raked donor pool known to be hard to beat, and is there a floor on the number of source
+  populations below which cross-population transfer is not expected to work? Is the amplitude
+  phenomenon a named failure mode? How is a failed pre-registered claim actually reported? 🔴 Its
+  strongest negative control is the one that matters most here: *what would have made you answer that
+  our result is unsurprising and well precedented* — because a report that finds our failure novel and
+  interesting is exactly the report this series has learned to distrust.
+* **`L31` is the ALTERNATIVES prompt**, and it is the one at risk of telling us what we want to hear.
+  It therefore carries two bans no earlier prompt needed. First, **the pre-registration is frozen and
+  md5-locked**, so every recommendation must be sorted, explicitly, into *admissible as a new separately
+  pre-registered experiment* or *inadmissible because it re-defines the metric, the null or the band*;
+  an answer that does not sort is unusable. Second, **more parameters, a bigger backbone, longer
+  training and a different backbone family are already falsified by our own runs**, so a negative
+  control asks it to name any recommendation of its own that reduces to one of the four. Item 2 asks
+  the question `RL06` did not: `RL06` ranked a hybrid first with the LLM generating and raking
+  calibrating afterwards — `L31` asks for evidence on the **opposite** hybrid, where the donor pool
+  generates and the learned model only selects, edits or imputes. ⚪ *"Plain raking is not beaten in
+  the published record"* is named in the prompt as the most useful sentence it could return.
+
+⚪ **Housekeeping, flagged not fixed: `L28` and `L29` were never registered here.** Both were written
+2026-08-26 for Step 10 (inter-dwelling occupancy diversity and peak; non-convex and courtyard dwelling
+subdivision) and both exist in this folder. The table above and the wave list stop at `L27`.
+
 **Wave 11 — the methodological audit and licensing round (`L27`), written 2026-08-21, RETURNED and VETTED.**
 Settles three foundational external questions required by the paper and simulation campaigns: (a) proves that Eurostat HETUS guidelines (2000, 2008, 2018) formally recommend 5/7 and 2/7 calendar-week weighting while national institutes exercised autonomy to publish on divergent day strata (UK: 7-day calendar week; Spain: 50/50 halves; Italy: 33/33/33 thirds), fully validating the construction of `weight_dia_cal`; (b) documents exact 12-month survey fieldwork windows (ES: 2009-10, UK: 2014-15, IT: 2013-14) and confirms that ECMWF ERA5 reanalysis under Copernicus CC-BY 4.0 provides open, legally redistributable AMY weather for simulation; and (c) establishes that IWU Darmstadt publishes TABULA/EPISCOPE workbooks under Intelligent Energy Europe (IEE) open terms where academic reuse, adaptation, and redistribution of derived parameter tables is explicitly intended and desirable with standard bibliographic citation.
 

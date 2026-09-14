@@ -597,3 +597,72 @@ Every fixable defect was merged **into the paste blocks** of the two prompts rat
 after them, and each prompt now carries a dated result section — `4thJ_pipeline_steps_figure.md`
 Section 13 and `4thJ_graphical_abstract.md` Section 11 — recording what was correct, what failed and
 what changed. Backups: `*.bak_gen20260907`.
+
+---
+
+## 2026-09-14 — figures installed, merged into a `.docx`, and verified against the installed manuscript
+
+The author generated all three images externally and installed them to
+`writing/submission/figures/` (`HETUS_LLM_Pipeline_Steps.png`, `HETUS_LLM_CrossNational_Pipeline.png`,
+`Figure_02_loco_design.png`), with aliases kept beside the prompts in `Prompts_Images/`. Figure 2 now
+exists, so `RESUME.md` queue item 5 is closed as *generated*, not as *verified*.
+
+**Merged copy built.** `pandoc 4J_manuscript_submission.md -o 4J_manuscript_submission.docx
+--resource-path=. --standalone`, run from `writing/submission/`. All three images are embedded
+byte-for-byte (`word/media/rId13|rId22|rId25.png`, 1,065,892 / 1,205,984 / 1,060,235 bytes — identical
+to the installed files). No venue reference document was applied: the venue is undecided, so the 2J
+`ref_submit.docx` house style was deliberately **not** used. `4J_supplementary_material.md` contains no
+images and was not converted. Nothing in the `.md` was edited to make the merge work.
+
+🔴 **FINDING 276 — Figure 2's fork is drawn backwards, and the fork is the whole point of the figure.**
+`4thJ_figure02_loco_design.md:58-70` marks Band 2b as *the load-bearing element*: one marginals box,
+**one arrow leaving it**, forking into both candidates. As installed, the box is correctly drawn once,
+but the only arrow touching it **arrives**, running from the fine-tuned model's right edge down and into
+the box; **no arrow leaves the box, and nothing connects it to the raked donor pool at all.** Read
+literally the image says the model produces Britain's census marginals, and it does not show the null
+receiving them. That inverts the single claim the figure exists to prove — that both candidates were
+handed exactly the same input. **The figure must not be submitted as drawn.** The numbers on it are all
+correct and need no change: 58.91 / 21.79, 60.44 / 19.21, 21.24 / 18.54 min/day, closest miss 2.70, and
+73,254 diaries / 2,024,068 episodes all match the manuscript abstract.
+
+🔴 **FINDING 277 — Figure 1 card 6 carries a line the manuscript contradicts.** The installed steps
+figure prints *"the reported folds are not yet trained"* on the Transfer test card. That string is in the
+prompt (`4thJ_pipeline_steps_figure.md`) and was true when the prompt was written on 2026-09-07; it is
+false now. The manuscript reports three trained folds and nine scored fold-band cells. A reader who
+compares the figure with §5 finds the paper disagreeing with its own pipeline diagram. **The fix is one
+line in the prompt, not a claim change.** ⚪ Card 10's *"the no-core engine does not exist yet"* is in the
+same stale-prompt class and should be re-checked against Step 10 before the next generation.
+
+⚪ **Figure 1 is otherwise correct, including both repeat defects from 2026-09-07.** Twelve cards, 0 to 11,
+no thirteenth. The five band labels are **horizontal** this time. The `pre-declared gate batteries`
+bracket **now reaches card 5**, Population linkage, which is the third attempt and the first that is
+right. Chips are as specified throughout, card 6 is the enlarged centrepiece with the only bold body
+line, and cards 6, 10 and 11 keep the hollow `open` chip.
+
+⚪ **Graphical abstract — one structural defect and two cosmetic ones.** The held-out lane (`Country C`)
+appears to run into the dark training block along with the other two rather than passing around it and
+re-entering on the right; as drawn it contradicts *"never seen in training"* printed beside it, which is
+the same class of error as `FINDING 276` and should be fixed in the same round. Lanes 1 and 2 show only
+`episode diary` while lane 3 shows only `serialised record`, where the spec asks every lane to carry
+both; and the third ribbon is a flat tint rather than unequal segments. 🟢 **The two defects named on
+2026-09-07 are both repaired**: the word `activity` is gone from above the ribbons, and the six dwelling
+cells now carry six *different* marks, none of them a checkmark, filling the footprint edge to edge with
+no core.
+
+⚪ **Raster spec, unchanged from 2026-09-07 and still not met.** 1376 × 768 and 896 × 1200 against the
+2000 × 1100 and 1400 × 1900 asked for, and all three were re-encoded from `.jpg`, so the small type
+carries JPEG ringing. **Working drafts, not submission rasters.**
+
+⚪ **Author observation, recorded because it is correct: 4J is figure-poor against its own prior line.**
+2J's submission carries **16 images and no inline tables**; 4J carries **3 images and 8 numbered tables**,
+and both of its non-abstract figures are schematics — neither plots a measured series. Every result in
+4J is currently read as a table. This is not a rule problem: matplotlib plots computed by a script from
+frozen data are the standing exception to the never-create-images rule, so the missing result figures are
+**local compute and can be made here**, unlike the three schematics. Candidates, in the order they would
+earn their place: the nine fold-band transfer cells as model-versus-null bars (the paper's headline,
+currently Table-only); the three countries' stock appliance-electricity profiles showing the 14:00 /
+18:00 / 20:00 peaks; and the fictional-country amplitude slope against the 0.80 floor. **No figure is
+added without the author's word, and none may restate a number the tables do not already carry.**
+
+Next: author decides whether the two structural figure defects are re-generated now, and whether the
+result plots are built.

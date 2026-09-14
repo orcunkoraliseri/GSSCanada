@@ -1,3 +1,532 @@
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+268) — SUPERSEDES last+267 BELOW**
+
+⚪ **Nothing was computed, run, generated or moved since `last+267`. No gate, no band, no verdict, no
+artefact changed. This entry is the WORK QUEUE the author asked for before returning tomorrow; the state
+of the project is exactly what `last+267` (immediately below) describes, and that entry stays the factual
+record. Read it after this one.**
+
+## Where the project stands in one paragraph
+
+Steps 0 to 11 are complete and Step 11 is terminal — there is no Step 12, `D-IMP-4` deleted it, so nothing
+consumes Step 11's output and nobody should ask what comes next in the pipeline. The cross-step analysis is
+written (`writing/4thJ_crossStep_analysis.md`, now with `§10`). The manuscript is drafted end to end:
+**17,869 words** in `writing/submission/4J_manuscript_submission.md`, **2,639 words** in
+`writing/submission/4J_supplementary_material.md`, venue-agnostic, in the 2J/3J house style. The headline
+result is unchanged and negative as pre-registered: real donor diaries raked to the held-out country's
+published marginals beat the fine-tuned model on **every band of every fold, 9 of 9**, closest miss
+2.70 min/day. **The work from here is finishing, not finding.**
+
+---
+
+## 🔴 THE QUEUE, IN ORDER. Item 1 is the author's; items 2 to 6 are the session's.
+
+### 1. Author read-through of the draft — blocks nothing, informs everything
+
+`writing/submission/4J_manuscript_submission.md`, `§1` to `§8` plus references, and
+`4J_supplementary_material.md`. Four author defaults were taken while drafting, all reversible and all
+stated in the text; each is a place where the author may simply rule the other way and the session edits
+one paragraph:
+
+* the larger stock campaign is written as **a compute campaign whose board was deliberately not read**, with
+  no scored result claimed anywhere (this was the recommendation);
+* the blank ruling block is **not** claimed as ruled;
+* **Fuentes 2018 is cited and the text says outright that the authors have not read it** (`§7.7` and the
+  reference list both flag it);
+* **venue stays undecided** and nothing in the draft depends on one.
+
+### 2. The reference pass — the largest remaining piece of work
+
+The reference list is **partial and says so in the file**. Cited in the text and not yet formatted: the
+TABULA typology documentation, the three national survey user guides (ES / UK / IT), the Eurostat HETUS
+methodological guidelines, and the authors' own prior line (2J and 3J).
+
+🔴 **The rule that governs how this is done: the assistant never searches literature, never verifies a DOI
+and never resolves a citation online.** Deep research is EXTERNAL. So the pass splits in two and the split
+must be respected:
+
+* **(a) Formattable on disk.** Any entry whose bibliographic details already exist inside this project's own
+  records — the verified citation records the current list was assembled from, the step documents, the 2J
+  and 3J submissions — is formatted from those records, with the source path recorded. This is most of the
+  work and it is safe.
+* **(b) Not on disk.** Anything else becomes **a deep-research prompt** written to `DeepResearchPrompts/`
+  for the author to run in Gemini Antigravity, and **it must be vetted on return under the README's 7-step
+  protocol before a single value enters the manuscript**. The `RL30`/`RL31` round is the precedent:
+  five of seven vetting steps failed, and the report's specific numbers, author lists and URLs were all
+  rejected. **Assume the next round is the same until it is checked.**
+
+### 3. The HETUS guidelines — one open check, and it constrains what `§2.1` may say
+
+The Eurostat HETUS methodological guidelines have **not** been read directly on the question of diary-day
+allocation. Until they are, `§2.1` may state **what our three files do** and may **never** state what the
+HETUS framework requires. The text currently respects this. Two ways to close it: the author supplies the
+document, or it becomes a research prompt under the same external rule as item 2(b).
+
+### 4. `FINDING 275` — the one piece of computation that is worth doing
+
+🔴 **The steering arm of `G6.7` was never measured on the reported model.** The steering R²
+**0.8455 / 0.9808 / 0.9836** and the five-channel amplitude slopes **0.2666 / 0.4612 / 0.3785** are
+**Leg-4, the 1.48 B pilot** (`Step6_docs/4thJ_06_transfer.md:2330-2333`, `:2523-2541`). The Leg-5 reported
+7 B section carries **only** a slope column, **0.4153 / 0.5329 / 0.4049** (`:2989-2993`), and **no Leg-5
+steering R² exists anywhere in `Step6_docs`**. ⚪ Second discrepancy in the same place: that Leg-5 slope is
+the **six-channel pre-split** figure while `D-S6-13`'s ruled definition is **five channels**, `AC4-8`
+excluded by name — the ruled definition was never applied to Leg-5.
+
+**Until it is recomputed, nobody may write *"the model steers correctly and delivers about half the
+amplitude"* about the 7 B model without the qualifier.** The 1.48 B pilot supports that sentence. The
+reported model supports only its second half.
+
+**The fix is one generation run against an existing control**, scored under the **five-channel** definition
+for **both** arms so the two stop disagreeing. It is local compute — **4J runs locally; Speed is
+fetch/read-only and the poll loop is cancelled.** If it is run, the edit lands in **five places at once**
+and they must all move together: the **abstract**, **`§1.5`**, **`§5.4`** (which currently prints both slope
+readings), **`§6.2`**, and **`§7.10`** (which currently lists the recomputation as unfinished).
+
+If it is not run, the draft is already honest about it and is submittable as written. **This is a quality
+item, not a blocker.**
+
+### 5. Figure 2 — written as a prompt, waiting on the author
+
+`writing/submission/figures/Prompts_Images/4thJ_figure02_loco_design.md` is the specification;
+**the image does not exist and must not be generated here.** The author generates it and installs it to
+`writing/submission/figures/Figure_02_loco_design.png`, then it is verified **against the installed
+manuscript, not against the prompt file.** Figures 1 and the graphical abstract are already wired to
+`HETUS_LLM_CrossNational_Pipeline.png` and `HETUS_LLM_Pipeline_Steps.png`, both installed.
+
+The prompt's one load-bearing instruction, because it is the commonest way this figure gets drawn wrong:
+the shared marginals box is drawn **once** and forks to both candidates. Two boxes, or two arrows from two
+copies, destroys the only thing the figure exists to prove — that both sides were given exactly the same
+input.
+
+### 6. Housekeeping — `L28` and `L29`, flagged for three sessions and still unregistered
+
+`DeepResearchPrompts/README.md:154` admits it. Both prompts were written and neither has a register entry.
+Small, mechanical, and it has been deferred three times; it should stop being deferred.
+
+---
+
+## ⚪ Standing bars that apply to every item above
+
+* **Never create images.** The deliverable is always a prompt file under
+  `writing/submission/figures/Prompts_Images/`. Plots computed from frozen data are the only exception.
+* **Never search literature, verify a DOI or resolve a citation.** Write the prompt; the author runs it;
+  vet the return under the 7-step protocol.
+* **No gate, band, verdict or registered definition moves during a writing round.** If the writing appears
+  to require one to move, that is a finding to record, not an edit to make.
+* **`G6.1` failed 9 of 9 and that is the paper.** The pre-registration
+  (`Step6_docs/outputs_step6/prereg.md`, md5 `e4243e07cdd80c9c846b91f40e3e8c45`, frozen 2026-08-18) is what
+  makes the negative result publishable rather than embarrassing. Do not soften it, and do not let a
+  reference pass or a figure round quietly re-frame it.
+* **There is no published floor on how many source countries transfer needs.** `RL30` was forced to concede
+  this. It cuts both ways and both halves are written into `§7.1`: we cannot defend the result by citing a
+  threshold, and no reviewer can dismiss it by citing one either.
+
+Next: author read-through, then the reference pass. Everything from `last+267` onward is preserved below
+as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+267) — SUPERSEDES last+266 BELOW**
+
+🟢 **THE MANUSCRIPT EXISTS. It is drafted end to end, venue-agnostic, on the author's instruction to
+use the 2J and 3J submissions as templates.**
+
+* `writing/submission/4J_manuscript_submission.md` — **~17,600 words**, sections 1 to 8 plus references.
+  Title: *Beaten by Real Diaries*. Built on the 3J house style (Abstract with Context/Gap/Aim/Methodology/
+  Key quantified results/Impact, Highlights, Declarations, prose Methods with no bullet lists, tables
+  numbered, figures referenced).
+* `writing/submission/4J_supplementary_material.md` — the registered check set with **every band marked
+  P / C / H for provenance**, the model card, the prefix table, the campaign-size table, and a closing
+  *"what the reader should not infer"* section built from the 27-item bar list.
+* `writing/submission/figures/Prompts_Images/4thJ_figure02_loco_design.md` — **a figure PROMPT, not an
+  image.** Figures 1 and the graphical abstract already exist and are wired to the two installed PNGs.
+
+**Built from four read-only harvest agents** (Steps 1–3, 4–5, 6–7, 8–11), each returning provenance to
+`path:line`. Nothing was computed, no gate moved, no band moved, no verdict changed.
+
+🔴 **ONE NEW FINDING, and it is the reason the harvests were worth running: `FINDING 275` — the
+STEERING arm of `G6.7` was never measured on the reported model.** `§10` of
+`writing/4thJ_crossStep_analysis.md` carries it in full. In short: the steering R² **0.8455 / 0.9808 /
+0.9836** and the five-channel amplitude slopes **0.2666 / 0.4612 / 0.3785** are **Leg-4, the 1.48 B
+pilot**. The Leg-5 (reported 7 B) section carries **only** a slope column, **0.4153 / 0.5329 / 0.4049**,
+and **no Leg-5 steering R² exists anywhere in `Step6_docs`.** ⚪ And the Leg-5 slope printed against the
+≥ 0.80 bar is the **six-channel pre-split** figure while `D-S6-13`'s ruled definition is **five
+channels** — the ruled definition was never applied to Leg-5.
+**So the project's most quotable sentence, *"the model steers correctly and delivers about half the
+amplitude"*, is half measured on the model the paper reports.** The manuscript states it that way
+throughout and lists the recomputation in §7.10 as unfinished. **The fix is one generation run against an
+existing control**, scored under the five-channel definition for both arms.
+
+⚪ **Author defaults taken while drafting, all reversible, all stated in the text:**
+the larger stock campaign is described as **a compute campaign whose board was deliberately not read**
+(no scored result claimed anywhere), which was the recommendation and is `§9` question 1; the
+blank-ruling-block items are **not** claimed as ruled; **Fuentes 2018 is cited and the text says outright
+that the authors have not read it** (`§7.7` and the reference list flag it); venue stays undecided and
+nothing in the draft depends on one.
+
+⚪ **Still owed before submission:** the reference list is **partial and marked so** — TABULA docs, the
+three survey user guides, the HETUS guidelines and the authors' own prior line are cited in text and not
+yet formatted; the HETUS guidelines carry an open check (§2.1 may state what our three files do, never
+what HETUS requires, until they are read); `L28`/`L29` remain unregistered in the DeepResearch README.
+
+Next: author read-through of the draft, then the reference pass. Everything from `last+266` onward is
+preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+266) — SUPERSEDES last+265 BELOW**
+
+**`L30` and `L31` came back the same day, and both have been vetted.** Record:
+`DeepResearchPrompts/VETTING_RL30_RL31.md`. **Nothing was computed, no gate moved, no band moved, no
+verdict changed.**
+
+🔴 **Five of the README's seven vetting steps FAILED, and the round is still worth keeping.**
+**What failed was everything the reports asserted. What held was everything the negative controls forced
+them to concede.** The checks that decided it, all offline:
+
+* **Its own floor arithmetic.** `RL31` recommends widening to **"eight or more"** HETUS countries and
+  justifies it with one source, whose condition it states itself as `|E_tr| > d_s`, and whose `d_s` it
+  states itself as **"twenty demographic covariates"**. Twenty gives a floor of **21**, not 8. ⚪ Eight
+  is roughly what we told the prompt we could reach. **Struck: no number goes in the paper.**
+* **`RL30` answers the prompt's most important question twice, oppositely** — Finding 7 says a floor is
+  *proven*, Finding 9 says **NOT FOUND**, both typed `Fact` at confidence `H`. 🔴 **Finding 9 is the
+  honest one.** The theorem is about **IRM**, an estimator with an explicit invariance penalty, and
+  **we do not run IRM**. So: **the *"three countries was always too few"* defence is NOT available to
+  us** (no published floor exists to invoke), and equally nobody can dismiss our result by citing one.
+  🔴 **Rosenfeld et al. does NOT go in the limitations section.**
+* **The `Section F` provenance column is filled in as a formality.** Every row in both reports says
+  *"Confirmed reachable"*; one repository URL is built out of the report's own **invented author
+  initial**, another is one character wrong. **No row of that column is evidence.**
+* **Two of three machine-learning author lists are partly invented**, including the one carrying
+  `RL31`'s only real recommendation.
+* **`RL31` predicts our own unrun experiment**: *"slope moves from ~0.45 toward 0.85"*. That is **+89 %**
+  against the **15 to 35 %** its own evidence row cites, on a diagnostic `RL30` correctly says exists
+  nowhere in the literature because it is ours. **Struck.**
+* **`RL31` Section D judged the wrong machine** — the prompt said all computation is local and the
+  cluster is fetch-only; it answered for a shared SLURM partition on an A100 we never named, for the one
+  section the prompt called load-bearing.
+* **Both reports invented our plan** (*"present the LLM as a successful cross-national generator"*) and
+  then recommended, as a design change, **author decisions 3 and 4 handed back to us**. That is an echo,
+  not corroboration.
+* ⚪ **The bibliographies were padded from the session's own API connectivity test** — our own 2J paper
+  appears in both reference lists marked *"read full text"* and supports **no finding in either
+  document**. Same tell as `RL28`. Third round running.
+
+🟢 **What is carried, and it is thin and honest:**
+
+* **Three `NOT FOUND`s**, all entering the manuscript in the first person as *our* failed search with the
+  date, never as *"none exists"*: no published like-for-like LLM vs raked-donor comparison on an unseen
+  population; **no published numerical floor on source populations**; and **plain raking has not been
+  beaten by any learned hybrid** — which is the sentence `L31` named in advance as the most useful it
+  could return.
+* 🔴 **The reviewer objection we must answer**: conditioning on published demographic marginals
+  starves the generator of meal hours, school schedules, shop opening times, labour law and daylight —
+  the very things that put our appliance peaks six hours apart. **It is a statement about our
+  conditioning design, not about the backbone.** ⚪ It does not rescue anything: the donor null had the
+  same marginals and no more, and won 2–6× anyway.
+* 🔴 **The question it was not asked, and its own answer**: *"what is the legitimate scientific
+  justification for using a 7 B generator at all?"* — *"in an operational pipeline, there is none; the
+  LLM is justified solely as an object of academic investigation into generative transfer boundaries."*
+  **That goes in the discussion, answered by us, before a reviewer asks it.**
+* ⚪ **Two method candidates survive our own re-sort** (`RL31`'s own sort put six of eight rows in the
+  admissible box, three of which it then rejected): **guidance with conditioning dropout**, and
+  **post-sampling raking of an over-generated pool**. Both are admissible only as **new, separately
+  pre-registered experiments with the original failure kept and reported alongside**, and 🔴 **no
+  number from `RL31` may seed their bands.**
+
+Next: start the manuscript methods, venue-agnostic. Everything from `last+265` onward is preserved below
+as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+265) — SUPERSEDES last+264 BELOW**
+
+**Two deep-research prompts written, and the author's question about the project goal is answered from
+the parent plan.** Nothing was computed, no gate moved, no verdict changed.
+
+🔴 **The author asked whether the failed transfer claim breaks the goal set in
+`4thJ_00_HETUS_LLM_Pipeline.md` and its overview. It does not, and both files say so in their own
+words.** Author decision 4 (2026-08-14) made the hardened null *"the objective of the paper, and it is
+stated as such in the introduction"*, for two reasons written down at the time: a bar set in advance
+and then cleared is worth more than one chosen afterwards, and it makes the paper *"falsifiable in one
+sentence"*. Author decision 3 removed the forecast and relocated the contribution explicitly: *"the
+contribution of this paper is the method of applying a fine-tuned language model across the HETUS and
+wider time-use framework."* The overview's decision table says the same twice. **So the experiment did
+exactly what it was designed to do, and the surviving contribution is the one the plan already named.**
+⚪ **The one real gap: neither parent file ever wrote what happens if the bar is NOT cleared.** The
+plan is written throughout as if the only outcomes were pass and a corpus too thin to try. That is not
+a contradiction, it is an unwritten branch, and the manuscript has to write it.
+
+**New: `DeepResearchPrompts/L30` and `L31`, registered in that folder's README as Wave 12.** They are
+the first prompts in the series written **after** the headline experiment returned, and the first
+written about a failure.
+
+* **`L30_negative_transfer_precedent.md` — a READING prompt that asks for no recommendation at all.**
+  Is our result already published anywhere? Is a raked donor pool known to be hard to beat, and
+  🔴 **is there a published floor on the number of source populations below which cross-population
+  transfer is not expected to work** — the line that decides whether our result is a fact about
+  language models or a fact about a three-country corpus. Also: is *steers correctly, delivers half the
+  amplitude* a named failure mode, and how is a failed pre-registered claim actually worded in print.
+* **`L31_transfer_repair_alternatives.md` — the alternatives prompt**, and the one at risk of telling
+  us what we want to hear. It carries two bans nothing earlier needed. **The pre-registration is frozen
+  and md5-locked**, so every recommendation must be sorted explicitly into *admissible as a new,
+  separately pre-registered experiment, with the original failure kept and reported alongside* or
+  *inadmissible because it re-defines the metric, the null or the band*. And **more parameters, a bigger
+  backbone, longer training and a different backbone family are already falsified by our own runs**, so
+  a negative control asks it to name any recommendation of its own that reduces to one of the four.
+  ⚪ Item 2 asks the question `RL06` did not: `RL06` ranked a hybrid first with the **LLM generating and
+  raking calibrating afterwards**; `L31` asks for evidence on the **opposite** hybrid, where the **donor
+  pool generates** and the learned model only selects, edits or imputes. *"Plain raking is not beaten in
+  the published record"* is named in the prompt as the most useful sentence it could return.
+
+⚪ Both prompts carry the post-2026-08-14 corrections block (HETUS only, three countries, one wave
+each, no forecast) plus a fourth point new to this pair: **the pipeline is Steps 0–11 and Step 11 is
+terminal**, so nothing may be proposed that presupposes a further step.
+
+⚪ **`L28` and `L29` were never registered in the DeepResearch README** (written 2026-08-26 for
+Step 10). Flagged in the new Wave 12 block, not fixed.
+
+🔴 **Venue is NOT decided** — the author declined to pick one on 2026-09-13. `§9` question 3 of
+`writing/4thJ_crossStep_analysis.md` stays open, and drafting proceeds venue-agnostic.
+
+Next: run `L30` and `L31` externally when the author chooses to, and start the manuscript methods.
+Everything from `last+264` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+264) — SUPERSEDES last+263 BELOW**
+
+**STEP 11 IS CLOSED IN ITS OWN DOCUMENTS NOW, NOT ONLY IN `docs/` AND HERE — AND STEP 11 IS THE LAST
+STEP OF THE PIPELINE.** last+263 closed work item 11.6 and said *“nothing owed on Step 11”*; that was
+true of the **work** and false of the **record**. Three gaps were found and all three are now shut.
+
+🔴 **Gap 1 — Step 11's own Progress Log stopped at last+49 (2026-09-08) and still read
+“STEP 11 STAYS PLANNED”.** Everything from last+229 to last+263 — the build, both full-size city
+runs, the `G11.12` investigation, the 18-gate board, the battery — was recorded in `docs/`, in the
+§4 work-item table and in this file, and **not one line of it reached the plan document's log**. A
+reader trusting that log would have concluded the step was never started. Backfilled as a single
+dated entry, `### 2026-09-13 (last+264)`, which says openly that it is retrospective and why.
+⚪ The §STATUS header's *“PLANNED, nothing built”* sentences are **not deleted** — a new governing
+CLOSURE paragraph sits under them, the way the 2026-08-28 correction did.
+
+🔴 **Gap 2 — two §4 work-item rows never got their marker.** `11.3` had a closure record since
+last+46 and was run at full size at last+236, but its table row still read as unstarted; `11.7` was
+withdrawn (§6 of this file) but its row still read as planned. Both now carry the marker and the
+evidence. **No verdict moved and nothing was re-run** — this was bookkeeping, not measurement.
+
+🔴 **Gap 3 — the board called `C2` “spec only”, which stopped being true on 2026-09-08.**
+`D-EU-55` was widened by the author's own words from Bologna alone to **Madrid, London and Bologna**,
+and Step 11 then consumed London's and Bologna's finished cells at full size. The board's Step 10
+note now carries a dated correction saying so — **and saying, in the same breath, that the scoring
+did not change**: `scores` stays `False`, **`R8` still refuses `--scored`**, and **no `G10N.x` verdict
+has ever been produced**. Step 11 scored its **own** `G11.x` board on those cells and claims no
+`G10N.x` result from them.
+
+**Board republished** (same URL, 141 done / 0 in progress / **2 not started**, 143 total): the five
+Step 11 cards flipped, a new stamp, and the Step 10 correction. The only two items left open on the
+whole board are Step 10's **`G10.14`** and **`G10.18`**, both FAILing because a manifest field was
+never written — data, not parser, and repairable only by a future campaign. Read + diffed against
+the live page first (`FINDING 197` rule); the two lineages were byte-identical, `node --check` clean,
+DOM-shim smoke 141/0/2/143 over 12 sections and 143 rows.
+
+🔴 **THE QUESTION last+261 AND last+263 LEFT OPEN IS ANSWERED, AND NOT BY THE AUTHOR.**
+*“What consumes Step 11's appliance/DHW output next in the pipeline?”* — **nothing does.**
+`D-IMP-4` (2026-09-03) deleted Step 12: *“the pipeline is Steps 0–11.”* Step 11 is the terminal step.
+**Do not ask the author what comes next in the pipeline** — the parent plan already says. What
+follows is **cross-step analysis and the manuscript**, which is the author's stated plan for this
+session (*“finish step 11, then we will analyze all steps, then we will start writing”*).
+
+**Step 11's final numbers, unchanged from last+263 and re-read from the artefacts, not restated:**
+18 gates scored, SUITE COMPLETE, `{"PASS": 14, "FAIL": 2, "INFO": 1, "NOT CHECKED": 1}`; battery
+**18 HIT / 0 MISS / 1 already-failing**, COVERAGE CLAUSE PASS. `G11.6` and `G11.12` are **one
+mechanism, not two defects** — CREST is >77 % laundry at 11:00, this model suppresses laundry starts
+80–90 % under `D-S9-1` because only **primary** HETUS activities trigger appliances. Both stay FAIL,
+band unmoved. `G11.8` and `G11.18` are genuine new stock-scale PASSes.
+
+**🟢 AND THE CROSS-STEP ANALYSIS IS DONE, SAME SESSION — `writing/4thJ_crossStep_analysis.md`.**
+Four independent read-only harvests (Steps 0–3, 4–6, 7–9, Step 10 + the two parent plan files),
+reconciled against this file and the board. **It re-computed nothing and ruled nothing.** What it says:
+
+🔴 **The paper's headline is a NEGATIVE result, and it was pre-registered as the objective.**
+`G6.1` — the transfer bar — **FAILS 9 of 9**: a raked pool of REAL donor diaries reproduces the
+held-out country **2–6× better** than the fine-tuned model, on every band of every fold (closest miss
+−2.70, `uk`). Five more transfer gates agree. **Capacity is eliminated from three directions** — 4.7×
+backbone (MAE 42.05→43.14, *worse*), **92× trainable parameters** (ceiling ends at a HIGHER train loss
+every epoch, `FINDING 155`), and a different backbone family (Qwen: +24 % wall, +16 % VRAM, nothing a
+gate can see). ⚪ And Step 4's four never-passing gates are **not** the cause: each was diagnosed to its
+own check's defect. **The model conditions, and it still loses.**
+
+🟢 **What the paper positively has:** the appliance peak falls **six hours apart** across the three
+countries (es 14:00 / it 18:00 / uk 20:00) from one appliance set, one calibration, one trigger — **only
+the diary differs** (`FINDING 142`); a **dwelling-class ordering** that survived the four-hour phase error
+(`AB` largest, all three folds); and **two clean nulls that are deliverables** (the chaining convention,
+and the annual-heating channel).
+
+🔴 **Eight gates across three steps are ONE finding, not eight.** `G9.6`+`G9.12`+`G11.6`+`G11.12`
+are all `D-S9-1` (laundry is secondary, only primary activities trigger); `G9.7`+`G11.7` are one
+denominator error (the band was **never Jordan & Vajen's** — it is Fuentes 2018, and the gate was
+measuring **household size**); Step 4's four are four unsatisfiable bands. **Reporting them as eight
+would overstate what is wrong with this pipeline by 4×.**
+
+⚪ The analysis also carries a **27-item consolidated bar list** (what the paper may NOT say), the
+limitations table with the **three that were REMOVED rather than answered**, five transferable process
+lessons, and **ten honest gaps** a reviewer will find first.
+
+🔴 **FOUR QUESTIONS FOR THE AUTHOR BEFORE ANY MANUSCRIPT TEXT** (§9 of the analysis):
+**(1)** Is `C2` reported at all? It ran to completion (35,290 cells) and was never scored because `R8`
+refuses `--scored` — lift it and run the `G10N.x` board, or describe `C2` as a compute campaign whose
+board was deliberately not read. Both are defensible and they are different papers' worth of Step 10.
+**(2)** Does `D-S9-2`'s blank ruling block get filled? Eight items are implemented at their recommended
+option and formally un-ruled; one line closes it. **(3)** Target venue — it decides length, whether the
+validation apparatus gets its own section, and whether the negative result leads the abstract.
+**(4)** Does anyone read **Fuentes et al. (2018)**? It is the real source of the 30–50 L band and the
+drafted limitation currently says outright that nobody has read it.
+
+⚪ **The board was deliberately NOT given a “writing” card.** It is a board of pipeline work items 0–11
+and the pipeline is complete; a twelfth group would read against `D-IMP-4`'s *“there is no Step 12”*.
+Its stamp already says what follows.
+
+Next: the author's four answers, then drafting. Everything from `last+263` onward is
+preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+263) — SUPERSEDES last+262 BELOW**
+
+**WORK ITEM 11.6 IS DONE. STEP 11 IS NOW FULLY COMPLETE** (11.1/11.2/11.4/11.5/11.6 all `DONE`, 11.7
+`WITHDRAWN`, 11.3 has its own closure record `docs/2026-09-08_work-item-11.3_trigger-campaign-runner-built.md`
+even though its section-4 table row was never given a 🟢 marker — not touched here, out of this
+item's scope). Bologna's background stock-scale run (`it`, PID `41368`) finished clean, exit 0,
+29,902 flats, matching London's earlier clean finish (`uk`, 7,602 flats, last+262). Both real
+(non-smoke) manifests are now on disk in `Step11_docs/outputs_step11/g11_6_18/c2_{uk,it}/`.
+
+`tools/4thJ_gates_step11.py` run for real (`--offline`, both cities' data present): **all 18 declared
+gates scored, SUITE COMPLETE.** `scored: {"FAIL": 2, "INFO": 1, "NOT CHECKED": 1, "PASS": 14}`.
+`G11.8` (DHW four-event mix) and `G11.18` (stock mean DHW litres/day) both came back a genuine real
+**PASS** — DHW mix within 3 pp of Table 1 in both folds; mean 202.41/200.35 l/dwelling/day against
+200 ± 10 %. **`G11.6` came back a real FAIL** — per-appliance activation counts outside CREST's
+± 15 % band, for the SAME mechanism `G11.12` already found: three appliances (tv_2, vcr_dvd,
+tv_receiver_box) 74-84 % below CREST's published count, laundry appliances SATURATED, both folds —
+consistent with `G9.6`'s own Step 9 FAIL (band never moved there either). `G11.12` stays FAIL as
+already recorded (last+262, kept, no code change). `G11.7` stays permanent `INFO`. `G11.4` is
+`NOT CHECKED` offline (3 of 4 DOIs unresolved without network) — not a defect, same as work item 11.1.
+
+Since `G11.8` and `G11.18` are genuine new PASSes, `tools/4thJ_step11_selftest.py` got two new
+registered mutations in `run_direct_probes` (mirroring the existing G11.9/10/16/17 style — a scratch
+copy of the REAL `it`-fold stockboard output, mutated in place, never invented from nothing):
+`g11_8_reshape_dhw_mix` (re-splits the real DHW volume 60/20/10/10 across A/B/C/D against Table 1's
+14/36/10/40) and `g11_18_triple_dhw_volume` (triples the real per-flat DHW litres/day column). `G11.6`
+needs no mutation — its real baseline is already FAIL, `ALREADY_FAILING_AT_BASELINE` (`V11.b`) applies.
+**Battery result: 18 HIT / 0 MISS / 1 already-failing. `COVERAGE CLAUSE: PASS`.**
+
+Closure doc written: `Step11_docs/docs/2026-09-13_work-item-11.6_gate-board-battery-closure.md`.
+`Step11_docs/4thJ_11_stockEndUseLoads.md` section 4's work-item table row for 11.6 updated to DONE
+with the full summary. Evidence: `Step11_docs/outputs_step11/g11_6_18/gates_step11_full.json` (the
+real board), `Step11_docs/outputs_step11/g11_6_18/selftest_full.json` (the real battery run),
+`tools/4thJ_gates_step11.py`, `tools/4thJ_step11_selftest.py`, `tools/4thJ_step11_stockboard.py`.
+
+Next: nothing owed on Step 11. If a new Step 11 work item is opened, or something else in the 4J
+pipeline needs attention, start there — ask the author what consumes Step 11's appliance/DHW output
+next in the pipeline if that is still genuinely open (last+261 flagged this as unresolved; not
+re-checked this entry). Everything from `last+262` onward is preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+262) — SUPERSEDES last+261 BELOW**
+
+**`G11.12` stock-scale investigation is DONE** (run by the author in a separate session, per their
+request at last+261). Final report: `Step11_docs/docs/2026-09-13_G11.12-stock-scale-failure-investigation.md`,
+`FINDING`s `270`-`274`. An earlier draft in the same file (`FINDING`s `168`-`172`) had a sign error —
+it treated the "best circular-shift R2" (0.60-0.69) as if the timing offset nearly explained the
+failure, but that peak sits on the **anti-correlation branch** ($r<0$). On the real positive-correlation
+branch, shifting gains almost nothing in `uk` and caps at R2=0.27 in `it`. The final report supersedes
+the draft; both are visible in the file's git-less history but only `270`-`274` stand.
+
+Root mechanism (`FINDING 272`): CREST's reference profile is >77% laundry at 11:00, but our model
+suppresses laundry starts 80-90% under the already-ruled `D-S9-1` (only primary HETUS activities
+trigger appliances; laundry is recorded as a secondary activity in the diaries). Occupancy-distribution
+drift is a Step-9-manifest artefact, not a real population difference (`FINDING 273`). Scoring
+arithmetic re-verified clean, zero bugs (`FINDING 274`).
+
+The report ends with an open author question: keep `G11.12` FAIL (documented dual mechanism) or
+reclassify permanent `INFO` on the `G8.7`/`G9.7` precedent (`D-S11-1`). **Recommendation: KEEP FAIL,
+no code change.** Read `D-S11-1`'s own closing lesson
+(`Step11_docs/docs/2026-08-27_work-item-11.2_G9.7-diagnosis.md` bottom): that reclassification was for
+a genuine basis mismatch (a per-person review band vs an unscaled per-dwelling model — incompatible
+denominators, the gate could never have meant anything). `G11.12` has no such mismatch: it measures a
+diurnal-shape correlation that COULD pass if the shape matched, and the reason it doesn't is a
+previously-ruled modelling choice (`D-S9-1`), not a definitional incoherence. Reclassifying it INFO
+would also silently retire its mutation-battery coverage (the precedent's own warning) for no
+matching reason. `G11.12` therefore stays `FAIL`, inherited from `G9.12` unchanged, in
+`4thJ_gates_step11.py` — nothing edited. Author can still override; nothing is blocked on it.
+
+**Work item 11.6 (gate board + battery + dossier) — IN PROGRESS, not closed.** `tools/4thJ_gates_step11.py`
+rewritten for all 18 declared gates (was 4). Offline run: 15/18 real-scored already (12 PASS, 1 FAIL,
+1 INFO, 3 `NOT_EVALUABLE`). `tools/4thJ_step11_selftest.py` extended to a 16-mutation battery: 16 HIT /
+0 MISS / 0 already-failing, "COVERAGE CLAUSE: PASS". The 3 remaining gates (`G11.6` appliance activation
+rates, `G11.8` DHW event mix, `G11.18` DHW daily volume) are correctly held as "NOT YET SCORED", not
+gaps — they need stock-scale data no earlier tool wrote. New tool `tools/4thJ_step11_stockboard.py`
+built for exactly those three (imports 11.3/11.5's own trigger loop unchanged); a 200-flat Bologna
+smoke ran clean.
+
+**UPDATE (same day, later check): London (`uk`) FINISHED clean, exit code 0.** Real (non-smoke)
+`Step11_docs/outputs_step11/g11_6_18/c2_uk/step11_stockboard_uk.json` now on disk: `n_flats_aggregated=7602`,
+`smoke_run=false`, 23 appliances owned, `dhw_litres_by_category` populated (cat_a 7.80e7, cat_b
+2.03e8, cat_c 5.55e7, cat_d 2.26e8 litres, stock total). `enduse_by_dwelling_uk.csv` also written
+(7602 rows). PID `22284` has exited (confirmed absent from `Get-CimInstance`).
+
+**Bologna (`it`, PID `41368`) still running** — confirmed alive via `Get-CimInstance`, elapsed
+~31 min so far. `c2_it/` still holds only the earlier 200-flat smoke files
+(`step11_stockboard_it_smoke.json`); its run log is still empty (same Windows stdout buffering, not
+a hang — it only flushes every 1000 flats or at completion). Bologna's fold is roughly 4x London's
+flat count (~29,902 vs 7,602, per the 11.5 closure numbers), and London took ~28.7 min for 7,602
+flats (~0.227 s/flat) — so Bologna is estimated at roughly 110-115 min total; expect it to still be
+running for another ~80 min from this check.
+
+**Do NOT run `4thJ_gates_step11.py` for `G11.6`/`G11.8`/`G11.18` yet** — wait for Bologna's real
+`step11_stockboard_it.json` (non-smoke) to land in `c2_it/` first, so both cities are scored the
+same way 11.5 scored `G11.12` (both folds, not just one).
+
+**Nothing is closed for 11.6.** No dossier written, work-item table untouched, this RESUME entry is
+the only artefact updated so far. Once both runs finish: read real `G11.6`/`G11.8`/`G11.18` verdicts,
+add a battery mutation for any that comes back a genuine PASS (not `ALREADY_FAILING_AT_BASELINE`),
+then write the 11.6 closure doc and update the work-item table, this file, and the two memory files.
+
+Evidence: `Step11_docs/docs/2026-09-13_G11.12-stock-scale-failure-investigation.md`,
+`tools/4thJ_gates_step11.py`, `tools/4thJ_step11_selftest.py`, `tools/4thJ_step11_stockboard.py`,
+`Step11_docs/outputs_step11/g11_6_18/`.
+
+Next: wait for both stockboard runs to finish, then close 11.6. Everything from `last+261` onward is
+preserved below as history — unedited.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+261) — SUPERSEDES last+260 BELOW**
+
+**Work item 11.5 (stock-scale aggregation) is DONE.** New tool `tools/4thJ_step11_aggregate.py`
+imports 11.3's own trigger loop and `G9.12`'s own scorer, re-runs the same per-flat simulation over
+both real `C2` populations, and sums each flat's electricity/DHW series elementwise into one stock
+diurnal profile (never persisting per-flat series at 30k-flat scale). A 2,000-flat Bologna smoke ran
+clean first. Both full populations then ran to completion, no `--limit`, `reseed` unchanged:
+
+- London: 7,602 flats / 1,200 buildings, 1,567.3 s — `G11.12` **FAIL, R2=0.4347**
+- Bologna: 29,902 flats / 1,126 buildings, 5,969.9 s — `G11.12` **FAIL, R2=0.0781**
+
+Both are real, permanent verdicts, not smokes. `G11.12` inherits `G9.12`'s band verbatim, and `G9.12`
+already FAILED at n=100 in Step 9 — two much larger, independently-drawn populations failing the same
+way is evidence the measurement is real, not a defect to chase a PASS on. Nothing was re-implemented
+or adjusted to move the number.
+
+Work-item table (`Step11_docs/4thJ_11_stockEndUseLoads.md` §4) updated: 11.5 now DONE. Closure record
+written: `Step11_docs/docs/2026-09-13_work-item-11.5_stock-scale-aggregation-closure.md`.
+
+Evidence: `Step11_docs/outputs_step11/c2_uk/step11_11-5_uk_reseed.json`,
+`.../c2_it/step11_11-5_it_reseed.json`, closure doc above.
+
+Next: work item 11.6 — the full `G11.x` gate board and mutation battery (11.7 stays withdrawn/out of
+scope). Everything from `last+260` onward is preserved below as history — unedited.
+
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+260) — SUPERSEDES last+259 BELOW**
 
 **Speed-cluster poll loop CANCELLED at the author's explicit word. No more 30-min checks will fire.**

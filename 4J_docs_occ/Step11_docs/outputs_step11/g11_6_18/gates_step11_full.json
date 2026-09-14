@@ -1,0 +1,247 @@
+{
+  "artefact_identity": {
+    "activity_appliance_map.csv": {
+      "md5": "640af0d0bdfadd5f10936d878bb0600d",
+      "missing": false,
+      "n_rows": 192
+    },
+    "citations.csv": {
+      "md5": "f240b78bcbaa9783c0021f147cd2c09c",
+      "missing": false,
+      "n_rows": 4
+    }
+  },
+  "artefact_paths": {
+    "citations": "Step9_docs\\outputs_step9\\citations.csv",
+    "map": "Step9_docs\\outputs_step9\\activity_appliance_map.csv",
+    "step9_gate_code": "tools\\4thJ_gates_step9.py"
+  },
+  "board": [
+    {
+      "id": "G11.1",
+      "n_scanned": 61,
+      "note": "every load-bearing row names a source model and a table. CARRY-OVER: agrees with G9.1 as shipped -- PASS 61, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.2",
+      "n_scanned": 192,
+      "note": "every row carries a structured label and a scale. CARRY-OVER: agrees with G9.2 as shipped -- PASS 192, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.3",
+      "n_scanned": 149,
+      "note": "every NOT VALIDATED row carries reasoning or a citation. CARRY-OVER: agrees with G9.3 as shipped -- PASS 149, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.4",
+      "n_scanned": 4,
+      "note": "3 of 4 DOIs could not be resolved; V9.c forbids reporting this as a PASS. CARRY-OVER: not compared -- a NOT CHECKED verdict distinguishes *could not run* from *found nothing*, and V11.c forbids reading it either as a PASS or as drift",
+      "verdict": "NOT CHECKED"
+    },
+    {
+      "id": "G11.11",
+      "n_scanned": 11,
+      "note": "9 distinct 3-digit appliance signatures against 5 distinct 2-digit signatures. 2-digit groups SPLIT by the mapping: 03, 31, 33. On CREST's electricity rows ALONE: 6 vs 5, splitting 33. \ud83d\udd34 The pass rests on 1 published split(s) and nothing wider: the third digit buys exactly that much.. CARRY-OVER: agrees with G9.11 as shipped -- PASS 11, on the same rows",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.5",
+      "n_scanned": 1,
+      "note": "a cycle started in the only eligible minute of the day ran all 60 minutes. Inherited from G9.5 UNCHANGED: a synthetic probe of the state machine's own cycle-truncation behaviour, independent of any corpus or population.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.6",
+      "n_scanned": 40,
+      "note": "stock-scale per-appliance annual activation counts vs CREST's published range, read from 4thJ_step11_stockboard.py's own output over folds ['it', 'uk'] (imported g9_6, unchanged): 40 appliance-folds scored against CREST's published cycles per year, band +/-15 % (ours, declared). NOT_EVALUABLE, standby-only with published cycles < 0.5: answer_machine, clock, cordless_telephone. SATURATED (the corpus has too little of the driving activity to support the published count): it/tumble_dryer 0.214 BELOW; it/washing_machine 0.110 BELOW; uk/tumble_dryer 0.336 BELOW; uk/washing_machine 0.186 BELOW. OUTSIDE the band for other reasons: it/tv_2 0.840 BELOW; it/vcr_dvd 0.803 BELOW; it/tv_receiver_box 0.817 BELOW; uk/vcr_dvd 0.743 BELOW; uk/tv_receiver_box 0.742 BELOW.",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "G11.7",
+      "n_scanned": 0,
+      "note": "INFO PERMANENTLY by D-S11-1 item 2 (2026-08-27), on the G8.7 / D-S8-5 item 1 (a) precedent, inherited unchanged from G9.7 (itself INFO by D-S11-1 item 1): the 30-50 L/person/day band is Fuentes et al. (2018)'s, PER PERSON; the model is Jordan & Vajen's 200 l/day, PER DWELLING, unscaled; FINDING 165 showed the ratio between them is exactly n_members. A stock-scale attempt to fit this band is explicitly forbidden by the val doc STATUS section: growing N cannot move 200/n_members when the mean household is ~2.0. Band UNMOVED at 30-50; not scored.",
+      "verdict": "INFO"
+    },
+    {
+      "id": "G11.8",
+      "n_scanned": 8,
+      "note": "stock-scale four-event DHW volume mix vs Table 1's portions, read from 4thJ_step11_stockboard.py's own output over folds ['it', 'uk'] (imported g9_8, unchanged): all four categories present and within 3 pp of Table 1's portions in every fold",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.9",
+      "n_scanned": 300,
+      "note": "300 WaterUse:Equipment objects re-read from the saved IDF, every one still bound to its own schedule. CARRIED OVER FROM STEP 9, NOT RE-MEASURED: Step 11 writes no per-flat IDF and no per-flat fraction-schedule CSV of its own -- it is a Python state machine over Step 10's diaries, reusing the SAME 300 Step-9-built households unchanged (only ownership and the stochastic draw are redrawn per flat, `reseed`). The only saved IDF and schedules that exist are Step 9's, so re-opening them is the whole check, not a shortcut around a bigger one.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.10",
+      "n_scanned": 300,
+      "note": "300 dwellings: electricity and DHW rebuilt from the saved IDF and the on-disk fraction schedules reconcile with the summary within 0.5 %. CARRIED OVER FROM STEP 9, NOT RE-MEASURED: Step 11 writes no per-flat IDF and no per-flat fraction-schedule CSV of its own -- it is a Python state machine over Step 10's diaries, reusing the SAME 300 Step-9-built households unchanged (only ownership and the stochastic draw are redrawn per flat, `reseed`). The only saved IDF and schedules that exist are Step 9's, so re-opening them is the whole check, not a shortcut around a bigger one.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.12",
+      "n_scanned": 37504,
+      "note": "mean diurnal appliance power against CREST's own published activity statistics at real stock scale, read from work item 11.5's OWN closed manifests (never re-simulated here): it R2=0.0781 n=29902 (FAIL); uk R2=0.4347 n=7602 (FAIL)",
+      "verdict": "FAIL"
+    },
+    {
+      "id": "G11.13",
+      "n_scanned": 28,
+      "note": "scanned 28 result artefacts, no per-dwelling prediction framing; 4 negated mentions counted as denials, not claims: 4thJ_11_stockEndUseLoads.md: 'per-dwelling prediction'; 4thJ_11_stockEndUseLoads.md: 'per-dwelling prediction'; 4thJ_11_stockEndUseLoads.md: 'per-dwelling prediction'. Inherited from G9.13 UNCHANGED (V11.d: the search prints its own scope and FAILs if it scanned fewer files than it found), pointed at the Step 11 results tree instead of Step 9's.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.14",
+      "n_scanned": 2,
+      "note": "the trigger's runtime columns are a subset of the generated diary's own, and act2 is absent, re-asserted fresh (S5, the same check 11.3/11.5 already passed silently before every real run): uk: 3 runtime columns, all present, act2 absent; it: 3 runtime columns, all present, act2 absent",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.15",
+      "n_scanned": 1,
+      "note": "S10, re-asserted fresh: appliance_electricity and dhw (Step 11's declared end-uses) share no member with space_heating (Step 10's), and nothing outside the declared pair is emitted. This check is scale-free -- it compares two frozensets -- and it already ran silently on every real Step 11 campaign to date (11.3, 11.4, 11.5) without raising.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.16",
+      "n_scanned": 2,
+      "note": "every stock-scale manifest names its population, spatial extent, weather file, fold and district (population_declaration(), re-checked against the manifests on disk): folds ['it', 'uk']",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.17",
+      "n_scanned": 2,
+      "note": "every stock-scale aggregate names its Step 10 arm (D) and carries the LOWER BOUND label for Arm F in its own note: folds ['it', 'uk']. Vacuously satisfied on the never-mixed clause: this project has never produced a Step 11 stock aggregate over Arm F or over a mix of arms, so there is nothing to mislabel or pool -- stated rather than hidden.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "G11.18",
+      "n_scanned": 37504,
+      "note": "stock MEAN litres per dwelling per day vs Jordan & Vajen's own 200 +/- 10%, read from 4thJ_step11_stockboard.py's own per-flat table (imported g9_15, unchanged), one fold at a time (g9_15 keys its CSV lookup by out_dir, and each fold's table lives in its own directory): l/dwelling/day against Jordan & Vajen's own 200 +/- 10 % (D-S11-2, 2026-08-27; SCALE/REGRESSION arm, not an external validation -- 200 is also the emitter's own input). uk mean 202.41 (+1.2 %, median 181.35). The medians are printed because the distribution is right-skewed and a median arm at this tolerance would fail 2 folds; the mean is the source's stated basis (73 000 l/yr / 365 d). || l/dwelling/day against Jordan & Vajen's own 200 +/- 10 % (D-S11-2, 2026-08-27; SCALE/REGRESSION arm, not an external validation -- 200 is also the emitter's own input). it mean 200.35 (+0.2 %, median 192.64). The medians are printed because the distribution is right-skewed and a median arm at this tolerance would fail 2 folds; the mean is the source's stated basis (73 000 l/yr / 365 d).",
+      "verdict": "PASS"
+    }
+  ],
+  "carry_over_agreement": [
+    {
+      "expected_n": 61,
+      "expected_verdict": "PASS",
+      "gate": "G11.1",
+      "inherits": "G9.1",
+      "n": 61,
+      "status": "AGREES",
+      "verdict": "PASS"
+    },
+    {
+      "expected_n": 192,
+      "expected_verdict": "PASS",
+      "gate": "G11.2",
+      "inherits": "G9.2",
+      "n": 192,
+      "status": "AGREES",
+      "verdict": "PASS"
+    },
+    {
+      "expected_n": 149,
+      "expected_verdict": "PASS",
+      "gate": "G11.3",
+      "inherits": "G9.3",
+      "n": 149,
+      "status": "AGREES",
+      "verdict": "PASS"
+    },
+    {
+      "expected_n": null,
+      "expected_verdict": null,
+      "gate": "G11.4",
+      "inherits": "G9.4",
+      "n": 4,
+      "status": "NOT COMPARABLE",
+      "verdict": "NOT CHECKED"
+    },
+    {
+      "expected_n": 11,
+      "expected_verdict": "PASS",
+      "gate": "G11.11",
+      "inherits": "G9.11",
+      "n": 11,
+      "status": "AGREES",
+      "verdict": "PASS"
+    }
+  ],
+  "carry_over_drift": [],
+  "carry_over_inheritance_broken": [],
+  "counts_of_scored_gates_only": {
+    "FAIL": 2,
+    "INFO": 1,
+    "NOT CHECKED": 1,
+    "PASS": 14
+  },
+  "declared_gates": [
+    "G11.1",
+    "G11.2",
+    "G11.3",
+    "G11.4",
+    "G11.5",
+    "G11.6",
+    "G11.7",
+    "G11.8",
+    "G11.9",
+    "G11.10",
+    "G11.11",
+    "G11.12",
+    "G11.13",
+    "G11.14",
+    "G11.15",
+    "G11.16",
+    "G11.17",
+    "G11.18"
+  ],
+  "declared_guards": [
+    "V11.a",
+    "V11.b",
+    "V11.c",
+    "V11.d",
+    "V11.e",
+    "V11.f",
+    "V11.g"
+  ],
+  "duplicate_gate_ids": [],
+  "gates_declared_but_absent_from_board": [],
+  "gates_declared_but_not_implemented": [],
+  "gates_scored_but_not_declared": [],
+  "implemented_gates": [
+    "G11.1",
+    "G11.2",
+    "G11.3",
+    "G11.4",
+    "G11.5",
+    "G11.6",
+    "G11.7",
+    "G11.8",
+    "G11.9",
+    "G11.10",
+    "G11.11",
+    "G11.12",
+    "G11.13",
+    "G11.14",
+    "G11.15",
+    "G11.16",
+    "G11.17",
+    "G11.18"
+  ],
+  "offline": true,
+  "scope": "all 18 declared gates",
+  "step9_gate_code_md5": "5c527ef86ccd87cd17c2c684061882cd",
+  "stock_folds_available": [
+    "uk",
+    "it"
+  ],
+  "suite_is_partial": false,
+  "v11_f_gate_id_hygiene": "PASS",
+  "work_item": "11.6 full gate board"
+}

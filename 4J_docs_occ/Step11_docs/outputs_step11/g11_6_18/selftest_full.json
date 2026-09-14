@@ -1,0 +1,165 @@
+{
+  "already_failing": 1,
+  "baseline": {
+    "G11.1": "PASS",
+    "G11.10": "PASS",
+    "G11.11": "PASS",
+    "G11.12": "FAIL",
+    "G11.13": "FAIL",
+    "G11.14": "PASS",
+    "G11.15": "PASS",
+    "G11.16": "PASS",
+    "G11.17": "PASS",
+    "G11.18": "PASS",
+    "G11.2": "PASS",
+    "G11.3": "PASS",
+    "G11.4": "NOT CHECKED",
+    "G11.5": "PASS",
+    "G11.6": "FAIL",
+    "G11.7": "INFO",
+    "G11.8": "PASS",
+    "G11.9": "FAIL"
+  },
+  "coverage_clause": "PASS",
+  "genuine_coverage_gaps": [],
+  "hits": 18,
+  "misses": 0,
+  "real_baseline": {
+    "G11.1": "PASS",
+    "G11.10": "PASS",
+    "G11.11": "PASS",
+    "G11.12": "FAIL",
+    "G11.13": "FAIL",
+    "G11.14": "PASS",
+    "G11.15": "PASS",
+    "G11.16": "PASS",
+    "G11.17": "PASS",
+    "G11.18": "PASS",
+    "G11.2": "PASS",
+    "G11.3": "PASS",
+    "G11.4": "NOT CHECKED",
+    "G11.5": "PASS",
+    "G11.6": "FAIL",
+    "G11.7": "INFO",
+    "G11.8": "PASS",
+    "G11.9": "PASS"
+  },
+  "rows": [
+    [
+      "null",
+      "-",
+      "HIT",
+      "nothing moved"
+    ],
+    [
+      "blank_source_table",
+      "G11.1",
+      "HIT",
+      "G11.1 fell and its clean set stayed clean"
+    ],
+    [
+      "strip_validation_scale",
+      "G11.2",
+      "HIT",
+      "G11.2 fell and its clean set stayed clean"
+    ],
+    [
+      "strip_reasoning_and_citation",
+      "G11.3",
+      "HIT",
+      "G11.3 fell and its clean set stayed clean"
+    ],
+    [
+      "citation_lose_artefact",
+      "G11.4",
+      "HIT",
+      "G11.4 fell and its clean set stayed clean"
+    ],
+    [
+      "drop_rows_to_20",
+      "G11.1",
+      "HIT",
+      "G11.1 fell and its clean set stayed clean"
+    ],
+    [
+      "force_two_digit_mapping",
+      "G11.11",
+      "HIT",
+      "G11.11 fell and its clean set stayed clean"
+    ],
+    [
+      "duplicate_gate_id",
+      "-",
+      "HIT",
+      "the runner refused to score: V11"
+    ],
+    [
+      "g11_5_truncation",
+      "G11.5",
+      "HIT",
+      "cycle-truncation perturbation flag fell the gate"
+    ],
+    [
+      "g11_15_seam_overlap",
+      "G11.15",
+      "HIT",
+      "an emitted set overlapping space_heating fell the seam gate"
+    ],
+    [
+      "g11_13_plant_per_dwelling_claim",
+      "G11.13",
+      "HIT",
+      "a planted 'this dwelling's predicted' sentence fell the search gate"
+    ],
+    [
+      "g11_14_act2_policy",
+      "G11.14",
+      "HIT",
+      "a mapping requesting act2 at runtime triggered the S5/G11.14 policy refusal (D-S9-1 ruling (d)), against the REAL generated diary for fold it"
+    ],
+    [
+      "g11_9_repoint_schedule",
+      "G11.9",
+      "HIT",
+      "re-pointing one WaterUse:Equipment's flow schedule fell G11.9"
+    ],
+    [
+      "g11_10_double_design_level",
+      "G11.10",
+      "HIT",
+      "doubling one ElectricEquipment's Design Level {W} fell G11.10"
+    ],
+    [
+      "g11_16_strip_declaration_field",
+      "G11.16",
+      "HIT",
+      "blanking it's spatial_extent fell G11.16"
+    ],
+    [
+      "g11_17_relabel_arm",
+      "G11.17",
+      "HIT",
+      "relabelling it's arm to F fell G11.17"
+    ],
+    [
+      "g11_8_reshape_dhw_mix",
+      "G11.8",
+      "HIT",
+      "re-splitting fold it's real DHW volume 60/20/10/10 across A/B/C/D (Table 1 wants 14/36/10/40) fell G11.8"
+    ],
+    [
+      "g11_18_triple_dhw_volume",
+      "G11.18",
+      "HIT",
+      "tripling fold it's real per-dwelling DHW litres/day fell G11.18"
+    ]
+  ],
+  "seconds": 9.4,
+  "uncovered": [
+    [
+      "G11.6",
+      "ALREADY_FAILING_AT_BASELINE",
+      "real baseline is FAIL; V11.b: a mutation cannot be seen felling a gate already down, so none is owed"
+    ]
+  ]
+}
