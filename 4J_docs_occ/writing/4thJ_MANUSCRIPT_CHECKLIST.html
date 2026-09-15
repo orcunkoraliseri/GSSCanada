@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4J manuscript checklist</title>
+<style>
+  :root{
+    --rose:#CC6677; --indigo:#332288; --teal:#44AA99; --sand:#DDCC77; --wine:#882255;
+    --ink:#111111; --muted:#5b5b66; --line:#e2e2e8; --bg:#f6f6f8; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  header{background:var(--indigo);color:#fff;padding:26px 30px 22px}
+  header h1{margin:0 0 6px;font-size:23px;letter-spacing:.2px}
+  header p{margin:0;opacity:.85;font-size:13.5px;max-width:980px}
+  header code{background:rgba(255,255,255,.14);padding:1px 5px;border-radius:3px;font-size:12.5px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 70px}
+  .tally{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0 6px}
+  .t{background:var(--card);border:1px solid var(--line);border-radius:10px;
+     padding:12px 18px;min-width:132px}
+  .t b{display:block;font-size:26px;line-height:1.15}
+  .t span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+  .t.done b{color:var(--teal)} .t.block b{color:var(--wine)}
+  .t.qual b{color:var(--sand);text-shadow:0 0 1px #b9a24a}
+  .t.dec b{color:var(--indigo)} .t.never b{color:var(--muted)}
+  .t.flight b{color:var(--rose)}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+  .bar button{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;cursor:pointer;
+              border:1px solid var(--line);background:#fff;color:var(--muted)}
+  .bar button[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#fff}
+  h2{font-size:15px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);
+     margin:34px 0 12px;border-bottom:1px solid var(--line);padding-bottom:7px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+  .c{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);
+     border-radius:9px;padding:14px 16px}
+  .c[data-s="done"]{border-left-color:var(--teal)}
+  .c[data-s="block"]{border-left-color:var(--wine)}
+  .c[data-s="qual"]{border-left-color:var(--sand)}
+  .c[data-s="dec"]{border-left-color:var(--indigo)}
+  .c[data-s="never"]{border-left-color:#c9c9d2}
+  .c[data-s="flight"]{border-left-color:var(--rose)}
+  .c h3{margin:0 0 6px;font-size:14.5px;line-height:1.35}
+  .c p{margin:0 0 8px;font-size:13.2px;color:#33333c}
+  .tag{display:inline-block;font-size:11px;letter-spacing:.5px;text-transform:uppercase;
+       padding:2px 8px;border-radius:999px;margin:0 6px 6px 0}
+  .tag.done{background:#e3f4f0;color:#15695a}
+  .tag.block{background:#f7e4ec;color:var(--wine)}
+  .tag.qual{background:#f8f2dc;color:#7a6415}
+  .tag.dec{background:#e8e6f5;color:var(--indigo)}
+  .tag.never{background:#eeeef2;color:#55555f}
+  .tag.flight{background:#f9e6ea;color:#9c3a4a}
+  .ev{font-size:11.8px;color:var(--muted);word-break:break-all;border-top:1px dashed var(--line);
+      padding-top:7px;margin-top:4px}
+  footer{margin-top:44px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);
+         padding-top:16px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>4J manuscript - what is done and what is still open</h1>
+  <p>Board for the paper only. Written 2026-09-14, updated the same afternoon after the repair round
+  drawn from the two evaluator returns (<code>writing/IMP/IMP_PLAN_2026-09-14.md</code>). The pipeline
+  board that tracked Steps 0 to 11 was
+  retired on the same day and is now <code>DONE_4thJ_CHECKLIST.html</code>; its last two open cards are
+  carried here, at the bottom, because they can never be closed and should stop being counted as work.
+  Master document: <code>writing/submission/4J_manuscript_submission.md</code>.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="tally">
+    <div class="t done"><b>18</b><span>Done</span></div>
+    <div class="t block"><b>5</b><span>Blocking</span></div>
+    <div class="t qual"><b>3</b><span>Quality</span></div>
+    <div class="t dec"><b>6</b><span>Author decision</span></div>
+    <div class="t never"><b>2</b><span>Cannot close</span></div>
+    <div class="t flight"><b>1</b><span>In flight</span></div>
+  </div>
+
+  <div class="bar" id="bar">
+    <button data-f="all" aria-pressed="true">All</button>
+    <button data-f="done" aria-pressed="false">Done</button>
+    <button data-f="block" aria-pressed="false">Blocking</button>
+    <button data-f="qual" aria-pressed="false">Quality</button>
+    <button data-f="dec" aria-pressed="false">Author decision</button>
+    <button data-f="never" aria-pressed="false">Cannot close</button>
+    <button data-f="flight" aria-pressed="false">In flight</button>
+  </div>
+
+  <h2 data-sec="done">Done</h2>
+  <div class="grid" data-sec="done">
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>The paper is drafted end to end</h3>
+      <p>Sections 1 to 8, about 18,200 words, plus abstract, keywords, highlights and declarations.
+      The markdown file is the master; the Word file is built from it, never edited directly.</p>
+      <div class="ev">writing/submission/4J_manuscript_submission.md</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>Supplementary material written</h3>
+      <p>The supplement exists as markdown and is complete. It has not been built to Word yet, which is
+      listed under quality below.</p>
+      <div class="ev">writing/submission/4J_supplementary_material.md</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>Cross-step analysis written</h3>
+      <p>The read of Steps 0 to 11 that the paper rests on: the transfer bar is not met, that was
+      pre-registered as the aim, and capacity is eliminated three ways.</p>
+      <div class="ev">writing/4thJ_crossStep_analysis.md</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>Eight tables written and installed</h3>
+      <p>Tables are in place and every number is read from the step documents. The numbering is fixed
+      as of this afternoon (see the done card below); the file runs Table 1 through Table 8 with no
+      gap and no duplicate.</p>
+      <div class="ev">4J_manuscript_submission.md lines 59, 111, 623, 659, 696, 764, 842, 920</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>Figures 3 to 7 built in code from the measured values</h3>
+      <p>Five data figures are plotted by scripts straight from the frozen series, so no value can drift
+      between the tables and the pictures.</p>
+      <div class="ev">writing/submission/figures/scripts/generate_fig0{3..7}.py</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>Figure 1, Figure 2 and the graphical abstract rebuilt in code</h3>
+      <p>Four rounds with an image generator did not converge: each round fixed some faults and
+      introduced others, and every round came back at the same small canvas. All three are now drawn by
+      script from the frozen text lists, so the wording, the arrow directions and the held-out gap are
+      checked by the program before the file is written.</p>
+      <div class="ev">figures/scripts/generate_fig01_pipeline.py, generate_fig02_loco.py,
+      generate_graphical_abstract.py</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>The picture faults that blocked those three are closed</h3>
+      <p>The small canvas, the repeated word on card 11, the two instruction words drawn as extra tiles,
+      the arrow pointing into the published-marginals box instead of out of it, and the held-out lane
+      running into the model block. Each one is now either impossible by construction or asserted in the
+      script before it saves.</p>
+      <div class="ev">FINDING 282, 286, 289, 276 / 287 / 290, 288 / 291 -
+      writing/4thJ_writeup_notes.md</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>One palette across every figure</h3>
+      <p>Spain rose, Britain indigo, Italy teal, second series sand with a hatch, negative channel wine.
+      No green and no red anywhere, and every series is separated by hatch or line style as well as
+      colour, so the figures survive greyscale printing.</p>
+      <div class="ev">Prompts/RESUME.md - house palette</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>Caption rule applied</h3>
+      <p>Every table and figure caption is ten words or fewer, and no explanatory note, verdict sentence
+      or footnote block is printed inside any image.</p>
+      <div class="ev">15 captions re-parsed after the last edit; longest is ten words</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done</span>
+      <h3>Front matter settled</h3>
+      <p>Sole author, affiliation, declarations and data-availability statement are written and the
+      document carries no other name.</p>
+      <div class="ev">4J_manuscript_submission.md lines 19 to 44</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>The pipeline board is retired</h3>
+      <p>The board that tracked Steps 0 to 11 is finished and renamed, so it stops competing with this
+      one for attention.</p>
+      <div class="ev">4J_docs_occ/DONE_4thJ_CHECKLIST.html</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>The table numbering is fixed</h3>
+      <p>Tables 5 to 10 are renumbered 3 to 8, every caption and in-text mention repointed, and the
+      broken "Table 4" pointer in Section 3 now points at the supplement's registered check set instead.
+      Checked directly: the file carries Table 1 through Table 8, no gap, no duplicate.</p>
+      <div class="ev">writing/IMP/DONE_tierB_2026-09-14.md; grep -noE "Table [0-9]+"
+      4J_manuscript_submission.md &rarr; 1 2 3 4 5 6 7 8</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>Section 5.1's rows are now called what they are</h3>
+      <p>"Activity band" is replaced with "age band" wherever it described Table 3's rows. Checked
+      directly: the string "activity band" no longer appears anywhere in the file.</p>
+      <div class="ev">writing/IMP/DONE_tierB_2026-09-14.md (B2); 4J_manuscript_submission.md:86,
+      171</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>The steering fit was already on the reported model, and the paper now says so</h3>
+      <p>FINDING 275 was wrong. The steering arm was measured on the 7.30 B model the paper reports, not
+      inherited from the pilot, and it passes in all three folds. Checked directly against the score
+      files: R-squared 0.9897, 0.9914 and 0.9941 against a floor of 0.80. The amplitude slopes are
+      correctly labelled as the five-channel definition throughout.</p>
+      <div class="ev">Step6_docs/outputs_step6/g67_leg5_{es,uk,it}.json:122-126;
+      writing/IMP/IMP_PLAN_2026-09-14.md &sect;0; 4J_manuscript_submission.md:724-745,
+      1007-1009</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>Figure 2 is pointed at, and the two arguments it lost are back in the prose</h3>
+      <p>One sentence at the end of Section 3.5 now sends the reader to Figure 2, and that same
+      paragraph already carries both arguments the picture used to make: giving the null weaker
+      marginals would turn it into a handicap, and the raking starts from a flat seed. Checked directly
+      in the live file.</p>
+      <div class="ev">writing/IMP/DONE_tierB_2026-09-14.md (B3); 4J_manuscript_submission.md:360-372</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>Figure 4, Figure 6 and Figure 7 labels repaired</h3>
+      <p>Figure 4 now draws direction alongside amplitude, with both load-bearing notes rewritten to the
+      current, verified facts about the reported model. Figure 6 carries an explicit "100-dwelling
+      archetype run, not stock scale" label. Figure 7's Panel B2 axis is relabelled from "Peak" to
+      "Apartment-building effect", matching the text. All three scripts re-ran clean, pixel dimensions
+      unchanged.</p>
+      <div class="ev">writing/IMP/DONE_tierC_c1_c2_c3_2026-09-14.md;
+      writing/IMP/DONE_tierC_c4_c6_2026-09-14.md</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>Fail-register wording is gone from the manuscript and the supplement</h3>
+      <p>Every prose use of fail, failure, fails, failed and failing is replaced with limitation-register
+      wording, on the author's ruling. Checked directly: the manuscript is 1,456 lines, carries exactly 6
+      uppercase FAIL tokens (the registered gate verdicts in Table 4) and zero lower-case fail-family
+      words anywhere, and zero em or en dashes. The held-in regression shortfall (6 of 6, in-sample) is
+      now stated as a limitation in Section 7.1. The supplement's adapter merge-drift row is corrected to
+      3.2e-4 to 7.3e-4, matching the four runs it cites.</p>
+      <div class="ev">writing/IMP/DONE_wording_ms_2026-09-14.md; writing/IMP/DONE_wording_sm_figs_2026-09-14.md;
+      writing/IMP/DONE_b7_mergedrift_2026-09-14.md; re-measured: grep -oE "\bFAIL\b" &rarr; 6</div></div>
+
+  </div>
+
+  <h2 data-sec="block">Open - blocking, fix before submission</h2>
+  <div class="grid" data-sec="block">
+
+    <div class="c" data-s="block"><span class="tag block">Blocking &middot; 2026-09-14</span>
+      <h3>Figure 2's picture still shows one null, its caption now says three</h3>
+      <p>The wording was corrected this afternoon: caption, title and body all now read "three nulls"
+      to match the text's own count. The drawn schematic itself was not changed - it still draws
+      only the one primary null the transfer bar is scored against, so the picture and its own caption
+      now disagree. Redrawing it to show all three is a new design task, declined this round rather than
+      attempted; the image's own checksum is unchanged.</p>
+      <div class="ev">writing/IMP/DONE_tierC_c1_c2_c3_2026-09-14.md (C2);
+      figures/scripts/generate_fig02_loco.py</div></div>
+
+    <div class="c" data-s="block"><span class="tag block">Blocking</span>
+      <h3>The reference list is a third finished</h3>
+      <p>Thirteen references are formatted. The project's own verified citation records hold 236 unique
+      resolved DOIs that have never been harvested into the paper. Nothing here needs an external search;
+      it is on-disk work first.</p>
+      <div class="ev">DeepResearchPrompts/RL01 to RL31; vet against VETTING_RL27.md,
+      VETTING_RL28_RL29.md, VETTING_RL30_RL31.md</div></div>
+
+    <div class="c" data-s="block"><span class="tag block">Blocking</span>
+      <h3>The warning block at the end of the references is still open</h3>
+      <p>Five things are cited in the text and not yet formatted: the TABULA typology documentation, the
+      three national survey user guides, the Eurostat HETUS methodological guidelines and the author's own
+      prior line. Four of the five are already on disk.</p>
+      <div class="ev">4J_manuscript_submission.md - end of the reference list</div></div>
+
+    <div class="c" data-s="block"><span class="tag block">Blocking</span>
+      <h3>The HETUS guidelines have not been read</h3>
+      <p>Section 2.1 says so in the text and makes no claim about what the framework requires until they
+      are read. That is honest, but it cannot ship that way: it is the document the whole harmonisation
+      rests on.</p>
+      <div class="ev">4J_manuscript_submission.md &sect;2.1</div></div>
+
+    <div class="c" data-s="block"><span class="tag block">Blocking</span>
+      <h3>Table 7 (was Table 9) carries archetype-scale numbers under a stock-scale caption</h3>
+      <p>The caption and the numbers still disagree about what was measured, and Spain has no stock cell
+      at all. Section 5.8's "at stock scale" clause is governed by the same ruling. Partial progress this
+      afternoon: Figure 6, which Table 7 is taken from, now carries its own "100-dwelling archetype run,
+      not stock scale" label, but the table and the prose beside it are unchanged and still need the
+      author's ruling (E2) before they can ship.</p>
+      <div class="ev">FINDING 278; writing/IMP/IMP_PLAN_2026-09-14.md (E2);
+      4J_manuscript_submission.md:842-854</div></div>
+
+  </div>
+
+  <h2 data-sec="qual">Open - quality, not blocking</h2>
+  <div class="grid" data-sec="qual">
+
+    <div class="c" data-s="qual"><span class="tag qual">Quality</span>
+      <h3>One sentence was cut from Figure 1 and never landed in the prose</h3>
+      <p>"Every tier is first shown failing on a deliberately broken control." It is the sentence that
+      says the checks were tested before they were trusted, and Section 3 does not currently carry it.</p>
+      <div class="ev">figures/Prompts_Images/4thJ_pipeline_steps_figure.md</div></div>
+
+    <div class="c" data-s="qual"><span class="tag qual">Quality</span>
+      <h3>The supplement is not built to Word</h3>
+      <p>Same chain as the manuscript, one command. It only matters at submission.</p>
+      <div class="ev">writing/submission/4J_supplementary_material.md</div></div>
+
+    <div class="c" data-s="qual"><span class="tag qual">Quality</span>
+      <h3>Two research prompts are unregistered</h3>
+      <p>L28 and L29 have been flagged for several sessions and still are not on the register.</p>
+      <div class="ev">4J_docs_occ/DeepResearchPrompts/</div></div>
+
+    <div class="c" data-s="done"><span class="tag done">Done &middot; 2026-09-14</span>
+      <h3>The Word file was rebuilt with the new recipe and verified</h3>
+      <p>The build script fixes both Word defects: the author line's affiliation and
+      corresponding-author marker, lost because raw LaTeX superscript does not survive pandoc, and the
+      eight duplicated figure captions pandoc builds from alt text. Rebuilt at 17:38 on 2026-09-14,
+      after the table renumbering and the wording pass, so the shipped file now carries them. Verified
+      on the built file itself, not on a copy: all eight embedded image md5s match the eight PNGs on
+      disk, 8 caption paragraphs and 0 pandoc-generated ones, and a real Word superscript run is
+      present. The previous build is kept beside it.</p>
+      <div class="ev">writing/submission/4J_manuscript_submission.docx;
+      tools/4thJ_build_submission_docx.sh; writing/IMP/DONE_docx_build_2026-09-14.md</div></div>
+
+  </div>
+
+  <h2 data-sec="dec">Waiting on the author</h2>
+  <div class="grid" data-sec="dec">
+
+    <div class="c" data-s="dec"><span class="tag dec">Decision</span>
+      <h3>Report campaign C2, or leave it out</h3>
+      <p>Its cells ran but were never scored, and no verdict exists for them. Reporting it means saying
+      that plainly; leaving it out means the paper never mentions it.</p>
+      <div class="ev">writing/4thJ_crossStep_analysis.md</div></div>
+
+    <div class="c" data-s="dec"><span class="tag dec">Decision</span>
+      <h3>Fill the gap the analysis left open</h3>
+      <p>One unwritten branch: what the paper says should be done when the bar is not cleared. The result
+      is already stated as a falsifiable null; this is the "so what next" paragraph.</p>
+      <div class="ev">D-S9-2 - writing/4thJ_crossStep_analysis.md</div></div>
+
+    <div class="c" data-s="dec"><span class="tag dec">Decision</span>
+      <h3>Target venue</h3>
+      <p>One venue was declined. The draft is written so that it does not depend on the answer, but the
+      reference style and the length limit do.</p>
+      <div class="ev">Prompts/RESUME.md</div></div>
+
+    <div class="c" data-s="dec"><span class="tag dec">Decision</span>
+      <h3>Chips on cards 6, 10 and 11 of Figure 1</h3>
+      <p>All three still read "open". The transfer test has been trained, generated, scored and reported
+      as a nine-of-nine failure, and Step 11 is finished, so whether "open" is still the right word is a
+      judgement about project state, not a drawing choice. It was not changed without a ruling.</p>
+      <div class="ev">figures/HETUS_LLM_Pipeline_Steps.png</div></div>
+
+    <div class="c" data-s="dec"><span class="tag dec">Decision &middot; 2026-09-14</span>
+      <h3>E5 - every reference repair that needs the outside world</h3>
+      <p>Five unformatted works, the Vosoughkhosravi entry one evaluator reports as a blend of two real
+      papers, a false preamble sentence about CrossRef, and five works said to be missing. Deep research
+      is external: none of the supplied metadata enters the file until it is checked independently under
+      the seven-step vetting protocol. Nothing here was actioned this round.</p>
+      <div class="ev">writing/IMP/IMP_PLAN_2026-09-14.md (Tier E, E5); Prompts/RESUME.md
+      last+272</div></div>
+
+    <div class="c" data-s="dec"><span class="tag dec">Decision &middot; 2026-09-14</span>
+      <h3>C5 - Figure 1's four card strings</h3>
+      <p>Cards 5, 6, 9 and 11 each assert something the manuscript text does not itself state. Fixing the
+      wording is a judgement about what the paper is allowed to claim, so it was left for the author
+      rather than edited on this session's own reading.</p>
+      <div class="ev">writing/IMP/IMP_PLAN_2026-09-14.md (Tier C, C5);
+      figures/scripts/generate_fig01_pipeline.py</div></div>
+
+  </div>
+
+  <h2 data-sec="never">Carried over - cannot be closed, and are not work</h2>
+  <div class="grid" data-sec="never">
+
+    <div class="c" data-s="never"><span class="tag never">Cannot close</span>
+      <h3>Five record fields were never written on 410 runs</h3>
+      <p>The weather file's fingerprint, the simulator build, the model version, the code commit and the
+      measured platform are present on none of the 410 cells. The values exist only for the campaign as a
+      whole, never per cell, and record files are never edited after the fact. The only repair is to write
+      the fields in a future campaign, and the campaign they belong to is archived and is not reported in
+      this paper.</p>
+      <div class="ev">G10.14 - DONE_4thJ_CHECKLIST.html</div></div>
+
+    <div class="c" data-s="never"><span class="tag never">Cannot close</span>
+      <h3>One arm of the midnight-rotation check was never recorded</h3>
+      <p>Both phase arms pass cleanly. The third arm asks each run's record to declare that it was rotated
+      to midnight, and no record carries that field, so the arm is unchecked rather than failed -
+      and an unchecked arm is never a pass. Same campaign, same reason, same repair.</p>
+      <div class="ev">G10.18 - DONE_4thJ_CHECKLIST.html</div></div>
+
+  </div>
+
+  <h2 data-sec="flight">In flight on this machine right now - not done, do not disturb</h2>
+  <div class="grid" data-sec="flight">
+
+    <div class="c" data-s="flight"><span class="tag flight">In flight</span>
+      <h3>Madrid stock run, district ES-MAD-BERRUGUETE, fold es</h3>
+      <p>A real simulation campaign is running on this machine, launched 2026-09-14 17:07, 11,510 cells
+      planned. Expected 40 to 60 hours for the simulation stage, then three aggregation passes. This is a
+      live run, not a finished result, and no cell count is given here because it changes every minute and
+      a stale number on a checklist is worse than none. Do not launch a second run and do not touch
+      <code>tools/</code> while this is in flight.</p>
+      <div class="ev">Live board: https://claude.ai/code/artifact/45991d0c-158a-4351-b432-4503abbefa70
+      - Prompts/RESUME.md last+272</div></div>
+
+  </div>
+
+  <footer>
+    Counts on this page are the cards on this page. Findings, their evidence and the reasoning behind
+    every ruling live in <code>writing/4thJ_writeup_notes.md</code>; the running handoff is
+    <code>Prompts/RESUME.md</code>. No gate, band, verdict or registered definition was moved to produce
+    this board.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var bar = document.getElementById('bar');
+  var buttons = bar.querySelectorAll('button');
+  var cards = document.querySelectorAll('.c');
+  var groups = document.querySelectorAll('[data-sec]');
+
+  function apply(f) {
+    var i;
+    for (i = 0; i < cards.length; i++) {
+      cards[i].classList.toggle('hidden', f !== 'all' && cards[i].getAttribute('data-s') !== f);
+    }
+    for (i = 0; i < groups.length; i++) {
+      groups[i].classList.toggle('hidden', f !== 'all' && groups[i].getAttribute('data-sec') !== f);
+    }
+    for (i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('aria-pressed', String(buttons[i].getAttribute('data-f') === f));
+    }
+  }
+
+  bar.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('button') : null;
+    if (b && b.getAttribute('data-f')) { apply(b.getAttribute('data-f')); }
+  });
+})();
+</script>
+</body>
+</html>

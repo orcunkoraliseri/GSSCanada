@@ -5,7 +5,7 @@ Language Model for Cross-National Occupancy Generation*.
 
 Two things are given here that the main text refers to and does not restate: the registered check set with
 each band's provenance marked, and the model card. A third section records the threshold-provenance audit
-in full, because three of this study's reported failures are failures of a band rather than of a model and
+in full, because three of this study's reported limitations are limitations of a band rather than of a model and
 a reader is entitled to see which bands carry external authority and which do not.
 
 ---
@@ -37,7 +37,7 @@ seen.
 |---|---|---|---|---|
 | Within-stratum variance ratio | generated against real dispersion inside a stratum | 0.80 to 1.25 | C | FAIL, 3 of 3; **resolution-limited**, see S1.6 |
 | Shuffled-prefix cross-entropy | rise when the prefix is permuted | at least 0.15 nats/token | **H, unsourced** | FAIL, 7 of 7; measured 0.068 to 0.106 |
-| Adapter merge drift | maximum logit difference, merged against unmerged | below 1e-4 | H | FAIL, 4 of 4; measured 2.7e-4 to 7.3e-4 |
+| Adapter merge drift | maximum logit difference, merged against unmerged | below 1e-4 | H | FAIL, 4 of 4; measured 3.2e-4 to 7.3e-4 across those four scored runs |
 | Loss masking | prompt and pad positions carry the ignore label | 100 per cent | C | PASS |
 | Held-in probe loss | final checkpoint within 5 per cent of its own best | 5 per cent | C | PASS on the reported backbone, FAIL on the alternative family |
 | Within-stratum shuffle | cross-entropy rise and mutual-information drop, conjoined | 0.15 nats and 0.10 | H | FAIL; **no decision record, see S1.6** |
@@ -65,9 +65,9 @@ never to be reported as 36 of 36.
 | Single-donor nulls | each donor country's own population as a comparison | positive margin | C | reported, six populations |
 | Pooled-average null | the cross-country pooled average, demoted to secondary | positive margin | C | reported |
 | Budget agreement | level-1 budget against published tables | MAPE at or below 15 per cent | P | FAIL, 9 of 9 |
-| Frozen failure criteria | conjunction of three pre-declared conditions | any triggers | C | FAIL, 9 of 9; coverage clause FAIL **for vacuity** |
+| Frozen limitation criteria | conjunction of three pre-declared conditions | any triggers | C | FAIL, 9 of 9; coverage clause FAIL **for vacuity** |
 | Held-in regression | training-country prefixes clear the same bar, and no forgetting | 15 per cent | P | FAIL, 6 of 6 on clause 1 |
-| Fictional country, steering | movement in the specified direction | R-squared at least 0.80 | C | PASS, **pilot arm only** |
+| Fictional country, steering | movement in the specified direction | R-squared at least 0.80 | C | PASS, 3 of 3, reported model |
 | Fictional country, amplitude | movement of the specified size | slope at least 0.80 | C | FAIL, 3 of 3 |
 | Joint structure, dwell time | Wasserstein distance of dwell-time distributions | 10.0 min | C | FAIL, 50.13 to 66.57 |
 | Joint structure, transitions | total variation of the transition matrix | 0.050 | C | FAIL, 0.1623 to 0.2344 |
@@ -85,15 +85,15 @@ never to be reported as 36 of 36.
 | Reference-based membership inference | against the untuned public base | at most 0.75 | C | PASS, 0.5594 |
 | Prefix-prompted extraction | exact matches on strata with fewer than five records | zero | C | PASS, 0 of 103 |
 | Distance to closest record | released synthetic set against training records | see text | C | PASS Spain, PASS Italy, **FAIL Britain** |
-| Perplexity gap | control, **not independent** | at most 0.05 | C | FAIL, 0.0570; also fails at 0.0511 on a permuted adapter |
+| Perplexity gap | control, **not independent** | at most 0.05 | C | FAIL, 0.0570; also misses the bar at 0.0511 on a permuted adapter |
 | Memorisation ceiling | random-label-permutation control | -- | -- | **INCONCLUSIVE AS A CEILING**, 0.6496 |
 
-This board ships two registered failures and one partial. It is never to be described as a passing audit
+This board ships two registered limitations and one partial. It is never to be described as a passing audit
 and never as four of four.
 
-### S1.6 Three bands that failed for reasons that are not about the model
+### S1.6 Three bands that miss the bar for reasons that are not about the model
 
-Three of the training-stage failures are properties of their own checks, and this study reports them as
+Three of the training-stage limitations are properties of their own checks, and this study reports them as
 such rather than as model defects. The distinction is load-bearing for the main text's claim that the
 model conditions and still loses.
 
@@ -106,8 +106,8 @@ rather than kept, which is the direction that costs this study rather than helps
 **The cross-entropy-rise bar has no recorded provenance.** It is the only band in its group with none. The
 measured rise is 0.068 to 0.106 nats per token, the sign is correct in every run, and the untrained
 backbone's rise on the same construction is 0.0001 to 0.0011, so the fine-tune bought between 84 and 1,062
-times the untrained baseline's conditioning response. The check fails against a bar that nothing
-justifies, and it is reported failing with that stated rather than adjusted.
+times the untrained baseline's conditioning response. The check does not clear a bar that nothing
+justifies, and it is reported as not clearing it, with that stated rather than adjusted.
 
 **The merge-drift band is satisfiable only by an adapter that learned nothing.** Scaling the adapter down
 by a factor of 1,000 does not bring the drift inside the band; it plateaus an order of magnitude above it,
@@ -117,7 +117,7 @@ shipping precision, merged and unmerged adapters produce different diaries in 39
 consequence of this remains open and is recorded in the main text: no intermediate artefact records which
 of the two produced it.
 
-**One check ships failing without ever having been adjudicated.** Its shuffle key omits one of the six
+**One check ships short of its bar, without ever having been adjudicated.** Its shuffle key omits one of the six
 prefix fields, so it can change at most one field, and for 55 to 64 per cent of diaries it changes nothing
 at all, while being required to move cross-entropy as much as a full permutation would. Its measured rise
 is 0.002 to 0.0069. It carries no decision record and is reported as unfinished.
@@ -184,7 +184,7 @@ assembled, and no result in the paper is a household-level claim.
 | Generation, per fold | 5,200 constrained + 5,200 unconstrained | 10,400 per fold |
 | Held-in regression | 600 x 6 configurations | 3,600 |
 | Fictional-country control | 600 x 5 levels x 3 folds | 9,000 |
-| Archetype simulation | (88 archetypes x 5 levels x 10 diaries) + 440 re-runs | 4,048 |
+| Archetype simulation | 88 archetypes x (1 control + 4 levels x 10 diaries) + 440 re-runs | 4,048 |
 | Day-chaining experiment | 3 folds x 6 rule points x 5 seeds x 100 dwellings | 9,000 |
 | Calendar probe | -- | 60 |
 | **Archetype campaign total** | executed **twice**, see §3.8 | **13,108** |

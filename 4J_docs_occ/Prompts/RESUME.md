@@ -1,3 +1,405 @@
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-14, last+273) — SUPERSEDES last+272 BELOW**
+
+Read this block, then read last+272 below it for the detail of the writing round and the launcher. The
+run economics table, the "why from scratch" reasoning and the two launcher bugs all live down there and
+are still correct. This block records only what changed after it, which is an incident and a relaunch.
+
+## 1. State of the Madrid run, right now
+
+🔴 **A REAL RUN IS IN FLIGHT ON THIS MACHINE, AND IT IS NOT YOURS TO TOUCH.** The author ruled on
+2026-09-14: *"do not touch local runs when i pass to the new session, do it independent"*. The local
+Madrid lane belongs to the session that launched it. A new session **does not** monitor it, relaunch
+it, kill it, re-plan it, or spawn agents anywhere near it. Read the state below so you know what is
+happening on the machine, then work on the independent items in section 6. Do not launch a second run
+and do not reboot.
+
+* Third launch, `2026-09-14 18:25:41`. Master log
+  `_local_runs/4J_ES_local/logs/madrid_stock_campaign_20260914_182541.log`.
+* Driver process `python.exe` PID 24608, launcher `bash tools/4thJ_run_madrid_stock_campaign.sh`
+  PID 1240321. Both detached from the session that started them, so they survive a session ending.
+* **277 cells written, 30 refused, of 11,510 planned.** Cells land in
+  `_local_runs/4J_ES_local/out/ES-MAD-BERRUGUETE/cells/`, refusals in the sibling `cells_failed/`.
+* Resumable, and already detached from any session. Relaunching the same script with no flags skips
+  every cell already written, which is how the 277 survived two kills. That recovery is the owning
+  session's to perform, not a new session's. If a new session sees the run dead, **say so to the author
+  and stop there**.
+* Live board: https://claude.ai/code/artifact/45991d0c-158a-4351-b432-4503abbefa70
+* Still expect **40 to 60 hours** for Step 10 from a standing start, then the three Step 11 passes
+  (11.3 trigger, 11.5 aggregate, 11.6 stockboard) which run automatically and are not resumable.
+
+## 2. 🔴 The incident, and the rule it produced
+
+The campaign was killed twice, at about 18:22 and again at about 18:24, by **a leftover subagent of
+this session's own making**. It was the general-purpose agent that had written the launcher an hour
+earlier; its task was long finished but it was never stopped, and it stayed alive with its own
+progress line reading *"Killing runaway Madrid campaign processes"*. It mistook the real campaign for
+a stray process of its own and killed the driver and its four EnergyPlus workers. It was stopped with
+`TaskStop` at 18:25 and the campaign was relaunched immediately.
+
+**The rule: stop an execution agent the moment its task is done.** An agent that has ever held
+authority to kill processes must not be left running beside a long job, because from inside its own
+context a legitimate run started by someone else is indistinguishable from a runaway it should clean
+up. This cost roughly three minutes of wall clock and no cells, only because the run is resumable.
+
+⚪ **The second launcher bug's fix earned its keep in the same hour.** The master log shows attempt 1
+exiting `rc=0` at 18:22:41 with the completion marker missing, the script sleeping 15 s, and attempt 2
+starting at 18:22:56 without any intervention. Before that fix, `ps_rc=$?` after an unguarded command
+under `set -e` would have ended the campaign at 18:22 for good. Keep the pattern
+`ps_rc=0; powershell.exe ... || ps_rc=$?` and keep the `.ps1` path; both are described in last+272.
+
+## 3. The 30 refused cells are precedented, not a Madrid defect
+
+All 30 carry `completion_status: ENERGYPLUS_FAILED`, `returncode: 1`, `unstable_markers: []`, and they
+are 3 buildings times 10 cells, not 30 scattered cells: `relation-12582234`, `relation-12702626`,
+`relation-12765477`. **Bologna's completed run carries exactly 30 refusals of exactly that shape**;
+London carries 0. So this is the same handled phenomenon that the precedent run shipped with, and it
+is not a reason to stop or to intervene. Re-measure the count at the end rather than assuming it stays
+at 30.
+
+## 4. Speed, unchanged since last+272
+
+Both jobs are still `PENDING`, behind the author's own `lmn_dfix_z8` array on the association CPU
+limit. Confirmed by `sacct -j 1327892,1327894 -X` this session.
+
+* `1327892` `4J_ep231_install` installs an EnergyPlus 23.1.0 Linux build under
+  `/speed-scratch/o_iseri/4J_madrid/engine/`. Speed carries only 24.2.0, and refusal `R6` **measures**
+  the version by running `--version` on the binary, so nothing can run there until this lands.
+* `1327894` `4J_dep_probe` probes the Python dependencies.
+* When both reach a terminal state, read `writing/IMP/PREFLIGHT_speed_ep231_2026-09-14.md`, confirm the
+  binary measures as 23.1 **with `Energy+.idd` beside it** (`R6b`; eppy silently falls back to its
+  bundled v8.0.0 IDD otherwise), and only then design the shard.
+* 🔴 **Speed is an independent replication shard, not a throughput lane.** Splitting the Madrid
+  population across a Windows 23.1 build and a Linux 23.1 build would leave that city with two engine
+  build hashes where London and Bologna each have one. The local machine runs the whole population
+  under one engine. The reasoning is written out in last+272 and in
+  `writing/4thJ_writeup_notes.md` under "2026-09-14 last+6".
+* `sacct` and `squeue` only. **Never run blocking `srun` or any python on the login node.** Never put
+  `2>/dev/null` or `2>&1` inside `ssh speed "..."`; the login shell is tcsh and it is a parse error
+  that returns empty stdout, and **empty output is not a state**.
+
+## 5. What is closed, and what a new session should not reopen
+
+The writing round is closed and independently re-measured: Tiers A, B, C and D, the fail to limitation
+sweep, the capacity scoping, the held-in limitation, and the supplement's B7 merge-drift row. The docx
+is rebuilt and verified, 306 `.bak` files are archived under
+`archive/backups_all_swept_2026-09-14/`, and the checklist, the writeup notes and last+272 all record
+it. ⚪ **No gate, band, verdict or registered definition moved.** `G6.7` still reads FAIL in all three
+folds on amplitude.
+
+## 6. What a new session works on, and what it leaves alone
+
+🔴 **Leave the local Madrid lane alone.** No relaunching, no killing, no worker-count changes, no
+monitors, no agents pointed at `_local_runs/`. Counting the cells once to know where things stand is
+fine; changing anything is not. If it looks dead or stalled, report it to the author and stop. The
+machine is memory-bound rather than CPU-bound and the author uses it interactively over Parsec and
+cannot reboot it, so nothing about the local lane is worth improvising over.
+
+Independent work a new session can take, in order:
+
+1. The Speed lane in section 4, checked once per session and never in a loop. It is the one compute
+   thread that does not touch the local machine.
+2. Anything in the document tree that does not need a run: the checklist, the writeup notes, the
+   supplement, the reference pass on the items that are on disk rather than external.
+3. The author-side list at the end of this block, which needs the author rather than a session.
+
+**Open and author-side, none of it executable by a session:** every reference repair that needs the
+outside world (five unformatted works, the Vosoughkhosravi entry reported as a blend of two real
+papers, the false CrossRef preamble sentence, five works said to be missing), whether campaign `C2` is
+reported, `D-S9-2`, the target venue, and Figure 1's four card strings. **Open and declined on scope:**
+Figure 2's schematic draws one null while its caption says three; that is a redraw, not a wording fix.
+
+---
+
+# ⚪ **SUPERSEDED HANDOFF (2026-09-14, last+272) — read last+273 above first; this block keeps the detail**
+
+🔴 **A REAL RUN IS IN FLIGHT ON THIS MACHINE. Do not launch a second one, and do not reboot.**
+Madrid (`ES-MAD-BERRUGUETE`, fold `es`) is being run at stock scale, from scratch, under the current
+fixed driver. Launched 2026-09-14 17:07 local.
+
+* Launcher: `tools/4thJ_run_madrid_stock_campaign.sh` (no flag = real run, `--dry-run` = plan only).
+* Output: `_local_runs/4J_ES_local/out/ES-MAD-BERRUGUETE/`, runs under `.../runs/`, logs under
+  `.../logs/`, master log `madrid_stock_campaign_20260914_170726.log`.
+* 4 EnergyPlus workers, memory watchdog at 75 per cent committed, `--shakedown --resume`, the same
+  invocation London and Bologna used (`PREFLIGHT_madrid_stock_run_2026-09-14.md` section 1).
+* 11,510 planned cells. Resumable: relaunching the same script skips cells already written under
+  `out/cells/`. The three Step 11 passes (11.3 trigger, 11.5 aggregate, 11.6 stockboard) follow
+  automatically and are NOT resumable, by their own tools' design.
+
+🔴 **The "800 to 1,100 cells per hour" figure in `SCOPE_madrid_stock_run_2026-09-14.md:158-159`
+is not what the precedent runs delivered, and the Madrid estimate built on it was wrong.** Measured
+from the precedent runs' own cell-file timestamps, this session:
+
+| run | cells | first cell | last cell | elapsed | rate |
+|---|---:|---|---|---:|---:|
+| London `GB-LDN-STDUNSTANS` | 12,070 | 2026-09-10 20:57 | 2026-09-12 17:11 | ~44.2 h | ~273 cells/h |
+| Bologna `IT-BOL-GALVANI2` | 11,681 | 2026-09-11 13:01 | 2026-09-12 19:30 | ~30.5 h | ~383 cells/h |
+| Madrid, first 23 min | 70 | 2026-09-14 17:08 | 2026-09-14 17:31 | 0.4 h | ~183 cells/h |
+
+Madrid's per-cell cost is about 1.5x London's (about 79 s against about 53 s per cell per worker) and
+its cell files are 17.6 KB against London's 4 to 10 KB, both consistent with more zones per building:
+Madrid's stock is `relation/`-identified apartment blocks. **Expect 40 to 60 hours for Step 10, not
+10 to 15**, plus the three Step 11 passes. The elapsed columns include any resume gaps and are an
+upper bound on wall-clock, not a lower bound on rate.
+
+⚪ **Worker count was left at 4 deliberately.** The machine has 20 physical cores and 63.5 GB, so CPU
+is not the constraint; memory is. With 4 EnergyPlus workers the machine already sits at 62.3 per cent
+committed against the watchdog's 75 per cent kill threshold, leaving about 8 GB of headroom against
+2.4 to 3 GB per worker. Raising the count would buy throughput at the cost of a kill-and-resume loop
+on a machine the author uses interactively over Parsec and **cannot reboot**. Not worth it.
+* Live board, updated as it goes: https://claude.ai/code/artifact/45991d0c-158a-4351-b432-4503abbefa70
+
+**Why from scratch.** The author ruled *"Re-run Spain from scratch"* on 2026-09-14. Madrid's existing
+11,510-cell result is Speed/Linux and pre-driver-fix, so it cannot be pooled with London and Bologna's
+local Windows post-fix cells as one population. The old Speed output is untouched and unreachable by
+this script (`PREFLIGHT_madrid_stock_run_2026-09-14.md` section 4).
+
+**Two launcher bugs were found by the first launch attempt and fixed before the second.** Backup at
+`tools/previous/4thJ_run_madrid_stock_campaign.sh.bak_pre_ps1fix`.
+1. The stage runner wrote its PowerShell launcher to `mktemp`, which yields a path with no `.ps1`
+   extension. `powershell.exe -File` REFUSES such a path and exits **127**; `set -eu` then killed the
+   whole campaign after the first line of the first stage. Now written to
+   `$LOG_DIR/_launch_<stage>.ps1`, deterministic and inspectable.
+2. `ps_rc=$?` sat after an unguarded command under `set -e`, so the script could never reach its own
+   retry loop — the first memory-watchdog kill would have ended the campaign instead of resuming it.
+   Now `ps_rc=0; powershell.exe ... || ps_rc=$?`.
+
+## Speed, this round: compute was granted, and it is NOT a throughput lane
+
+The author said, in turn, *"use speed resources for runs of spain"* and then *"there are works at
+speed, if possible you can give some of our spain runs in here local resources"*. Compute on Speed is
+therefore granted for this run only; the standing rule (Speed is fetch and read-only for 4J) resumes
+afterwards.
+
+🔴 **The split the author asked for is not available, and here is the measured reason.** Campaign
+`C2` pins `REQUIRED_EP_VERSION = "23.1"` (`tools/4thJ_step10_nocore_campaign.py:317`) and refusal `R6`
+MEASURES it by running `--version` on the binary, refusing anything else; `R6b` additionally requires
+`Energy+.idd` in the same directory as the binary, because eppy otherwise falls back silently to its
+bundled v8.0.0 schema. **Speed carries only EnergyPlus 24.2.0.** Worse for a split, the driver has no
+shard selector: its only subsetting flag is `--limit`, whose own help string reads *"cap the cell
+count (a smoke run, never a population)"*.
+
+So the design is: **the local lane runs the whole Madrid population under one engine build**, and
+Speed's granted compute is spent on an **independent replication shard** once EnergyPlus 23.1.0 for
+Linux is installed there. This keeps one engine build behind one population, which is what London and
+Bologna each have, and it turns the two-build-hashes problem into a cross-check rather than a defect.
+
+Speed state as of writing: `/speed-scratch/o_iseri/4J_madrid/` holds `install_ep231.sh` and
+`probe_deps.sh`; jobs `1327892` (install) and `1327894` (dependency probe) are submitted and PENDING
+on `AssocGrpCpuLimit`, behind the author's own `lmn_dfix_z8` array. Neither has run. Nothing on Speed
+has been cancelled or modified.
+
+## The writing round that ran alongside it
+
+Repairs drawn from the two evaluator returns, planned in `writing/IMP/IMP_PLAN_2026-09-14.md`.
+⚪ **No gate, band, verdict or registered definition moved.** `G6.7` still FAILs in all three folds on
+amplitude, before and after every repair in this round.
+
+* **Tier A** landed: the steering arm IS computed on the reported 7.30 B model and passes in all three
+  folds, R-squared 0.9897 / 0.9914 / 0.9941 against a floor of 0.80; the printed slopes are the
+  five-channel ruled definition. `FINDING 275` is refuted by the artefact it cites.
+* **Tier B** landed: tables renumbered 5-10 to 3-8 and every mention repointed, nine wrong section
+  pointers fixed, missing table citations added. Report `writing/IMP/DONE_tierB_2026-09-14.md`.
+* **Wording**: the words fail / failure / failing are gone from the manuscript prose, replaced with
+  limitation-register wording, per the author's ruling of 2026-09-14. Re-measured independently: 1,456
+  lines, **exactly 6 uppercase `FAIL` gate-verdict tokens surviving, unchanged**, zero remaining
+  fail-family prose words, zero em or en dashes. Report `writing/IMP/DONE_wording_ms_2026-09-14.md`.
+* **Capacity** is now scoped in all three loci rather than asserted: across 1.5 to 7.3 billion
+  parameters, with tuning and the second model family each on one fold, more capacity did not close
+  the gap.
+* **Held-in** is carried into section 7.1 as a limitation: the bar is missed in-sample too, so the
+  shortfall is not confined to transfer.
+* **B7 closed**: the supplement's adapter merge drift row now reads `3.2e-4 to 7.3e-4 across those
+  four scored runs`, matching the four-run table it cites. Recorded with it: `FINDING 103`'s prose
+  upper bound of `7.6e-04` **matches no measurement anywhere in the repository**. Report
+  `writing/IMP/DONE_b7_mergedrift_2026-09-14.md`.
+* **Tier D1/D2** solved in the build script `tools/4thJ_build_submission_docx.sh`. Report
+  `writing/IMP/DONE_docx_build_2026-09-14.md`.
+* **Tier C** partly done (C4 and C6 did not reproduce and were correctly left alone; C1, C2, C3 in
+  flight at the time of writing).
+
+## 🔴 Still the author's, unexecuted
+
+`E1` tables ruling is DONE (renumbered). Open: `E5` every reference repair needing the outside world
+(the five unformatted works, the Vosoughkhosravi entry reported as a blend of two real papers, the
+false CrossRef preamble sentence, the five works said to be missing) — deep research is external and
+none of it enters the file until it is resolved independently under the seven-step protocol. `E6`
+report campaign `C2` or not; fill `D-S9-2`; target venue. `C5` Figure 1's four card strings.
+
+---
+
+# **HANDOFF (2026-09-14, last+271) — SUPERSEDED BY last+272 ABOVE**
+
+⚪ **Nothing was computed, trained or scored in this pass. No gate, no band, no verdict and no registered
+definition moved.** This is a writing-and-figures pass only. The factual state of the project is still the
+one `last+267` describes, further down this file.
+
+## What changed on 2026-09-14, in one paragraph
+
+The manuscript now names **one author**. Figures 3 to 7 were **regenerated onto a new colour palette with
+every explanatory note deleted from inside the image**. **All fifteen table and figure captions are now
+ten words or fewer**, with the detail that left them relocated into the body text of the section that
+cites them. **Figure 1's prompt was re-specified as a landscape figure** and Figure 2's prompt now carries
+the reversed-fork correction. The `.docx` was rebuilt and verified. Two new defects were found and left
+untouched for the author to rule on. Full record:
+`writing/4thJ_writeup_notes.md`, entry *2026-09-14 later still*.
+
+---
+
+## 🔴 THE QUEUE, IN ORDER
+
+### 1. 🟢 CLOSED 2026-09-14: all three pictures are now built in code, and the image loop is over
+
+The author ruled: *"ok if possible you create these failed images."* Taken. **Figure 1, Figure 2 and the
+graphical abstract are now drawn by matplotlib scripts, like Figures 3 to 7 already were.** The
+never-create-images rule stands; its standing exception is a plot built by a script from frozen data, and
+the author's instruction extends that exception to these three by name.
+
+| Figure | Script | Installed PNG | Pixels |
+|---|---|---|---|
+| Figure 1, pipeline | `figures/scripts/generate_fig01_pipeline.py` | `figures/HETUS_LLM_Pipeline_Steps.png` | 4440 x 1620 |
+| Figure 2, leave-one-country-out | `figures/scripts/generate_fig02_loco.py` | `figures/Figure_02_loco_design.png` | 3850 x 1277 |
+| Graphical abstract | `figures/scripts/generate_graphical_abstract.py` | `figures/HETUS_LLM_CrossNational_Pipeline.png` | 3937 x 1525 |
+
+**Every string drawn comes from the frozen TEXT INVENTORY of the matching prompt file**, copied
+character for character. Nothing is invented and no number is altered. The prompt files are unchanged and
+remain the specification; they are now the input to a script rather than to a generator.
+
+**Five findings close together, and each one closes for a structural reason rather than a hopeful one.**
+
+* `FINDING 282`, the canvas. Four generator returns in a row came back 1376 x 768 against prompts that
+  named 2400 x 1000, forbade the small size by name, and asked the tool to say so if it could not exceed
+  it. The prompt was never the variable. Resolution is now a script argument.
+* `FINDING 286`, the repeated word on card 11, and every other wording risk. The script carries the
+  sixteen body lines as data and **asserts the word count of each against the prompt's own table before
+  it draws**. A repeated word aborts the build.
+* `FINDING 289`, `ONE` and `RIGHT EDGE` drawn as two extra tiles. There is no instruction text in the
+  drawing path at all, so an instruction cannot leak into the picture.
+* `FINDING 276` / `287` / `290`, the arrow arriving at the published-marginals box. The script builds the
+  six arrowheads as coordinates and **asserts two on each method box, two on the scoring box and zero
+  anywhere inside the marginals box** before it saves. The build refuses to write a wrong figure.
+* `FINDING 288` / `291`, the held-out lane touching the model block. The gap is computed as one tenth of
+  the image width and **asserted to be at least that** before saving. The build prints it: *held-out lane
+  stops 3.15 in (10.0% of the image width) short of the model block.*
+
+Text fitting is also mechanical now: after drawing, the script measures every text object against the
+element that holds it and prints `no text overflows its element`, or names the offender and its width.
+Nothing is shrunk to fit and nothing is clipped.
+
+🔴 **These scripts are the figures.** Do not edit the PNGs. To change a figure, change its
+script, re-run it, and rebuild the `.docx`.
+
+**The `.docx` was rebuilt and verified.** Recipe unchanged:
+
+```
+cd 4J_docs_occ/writing/submission
+pandoc 4J_manuscript_submission.md -o raw.docx --reference-doc=extra/build_scripts/ref_submit_single.docx --resource-path=.
+py -3 extra/build_scripts/post.py raw.docx 4J_manuscript_submission.docx
+```
+
+`post.py` reported `tables 8 | xml ok`. The file is 1,817,366 bytes, down from 4,615,601, because the
+three vector-drawn PNGs are far smaller than the generated ones. **All eight embedded images were checked
+by md5 against `figures/*.png` and all eight matched**, so nothing was re-encoded on the way in. The
+previous `.docx` is at `writing/submission/previous/4J_manuscript_submission.docx.bak_pre_codefigs`; the
+three previous PNGs are at `figures/previous/backup_20260914_pre_codebuild/`.
+
+**Two boards, and they no longer compete.** `4thJ_CHECKLIST.html` tracked the pipeline, Steps 0 to 11.
+It is finished, and on the author's instruction it is retired by name: **`DONE_4thJ_CHECKLIST.html`**
+(its backup likewise). Its last two open cards, `G10.14` and `G10.18`, are carried into the new board
+under a heading that says they cannot be closed and are not work. The paper now has its own board:
+**`writing/4thJ_MANUSCRIPT_CHECKLIST.html`** - 30 cards, 12 done, 5 blocking, 7 quality, 4 waiting on the
+author, 2 that cannot close. Its inline script passes `node --check` and a DOM-shim smoke run.
+
+**Two evaluation prompts were written**, in `writing/IMP/`, deliberately split so the two returns can be
+compared rather than merged:
+
+* `IMP_01_GEMINI_manuscript_evaluation.md` - outward-facing. Literature coverage, whether the negative
+  result is defensible, DOI integrity, the hostile-reviewer read. Gemini is the external tool, so it gets
+  every job that needs the outside world.
+* `IMP_02_FABLE_manuscript_evaluation.md` - inward-facing and read-only. Number traceability back to the
+  step documents, cross-reference audit, figure against text, built file against master, and what the
+  repository records that the paper does not carry. Explicitly forbidden to search the web or offer a
+  citation.
+
+Both end with a **reconciliation section answered last**, against the same eight known defects, so the
+depth of each pass can be measured rather than assumed. Both forbid replacement prose, forbid moving any
+number, and forbid loosening any threshold because the model fails it.
+
+Next in this queue is `FINDING 280`, which is now the most damaging single item in the file.
+
+### 2. Three author rulings, none of which a session may take
+
+* 🔴 **`FINDING 280` — Tables 3 and 4 do not exist and §3 cites Table 4.** The numbered tables run
+  1, 2, 5, 6, 7, 8, 9, 10. Line 208 of `4J_manuscript_submission.md` says the complete gate set "is given
+  in Table 4", and there is no Table 4. Either the gate table was written and lost, and must be restored
+  as Table 4 with Table 3 identified too, or the numbering skipped two and Tables 5 to 10 renumber to
+  3 to 8 with §3's sentence re-pointed. **A reviewer will find this on the first pass.** This is now the
+  most damaging single item in the file.
+* 🔴 **`FINDING 278` — Table 9 is archetype-scale numbers under a stock-scale caption**, and Spain has no
+  stock cell. Still open. Figure 6's caption is now *Mean appliance electricity by hour of day, three
+  folds*, which commits to neither scale, so the ruling still governs Table 9's caption and §5.8's "at
+  stock scale" clause and nothing else.
+* 🔴 **Figure 1 card 6's chip still reads `open`.** The transfer test is trained, generated, scored and
+  reported as a nine-of-nine FAIL, and Step 11 is complete. Whether `open` is still the right chip is a
+  state judgement, so it was not changed. Same question for cards 10 and 11.
+
+### 3. The reference pass — on-disk first, Gemini last
+
+🔴 **The manuscript formats 13 references. `RL01` to `RL31` in `4J_docs_occ/DeepResearchPrompts/` already
+hold 236 unique DOIs.** The list is short because the bibliography was built only from the pipeline's own
+verified citation records, not because the literature was never searched. In order:
+
+1. **Harvest `RL01`-`RL31`.** No external step. Every candidate must be checked against
+   `VETTING_RL27.md`, `VETTING_RL28_RL29.md` and `VETTING_RL30_RL31.md` before it is allowed in —
+   `RL30`/`RL31` failed five of seven vetting steps and several of their citations were struck.
+2. **Close the ⚠ block at the end of the reference list**: TABULA typology documentation, three national
+   survey user guides, the Eurostat HETUS methodological guidelines, the author's own prior line. Four are
+   on-disk; the HETUS guidelines carry the open read recorded in §2.1.
+3. **Then, and only then, one or two new prompts.** Two candidates: `L14`'s venue positioning is stale
+   (written before the venue was declined and before the result was known), and `RL30`'s three
+   first-person `NOT FOUND` results are load-bearing negative claims in §6.1 that rest on a single search.
+
+### 4. Smaller items, unchanged from last+268
+
+* 🔴 **`FINDING 281`** — §5.1 line 605 says *per activity band*; Table 5's rows are **age** bands. Prose
+  and table disagree on what the rows are. Left as found; band vocabulary does not move in a writing round.
+* 🔴 **`FINDING 275`** — the steering R² 0.8455 / 0.9808 / 0.9836 is **pilot-only**, never recomputed on
+  the reported 7 B model, and the reported slope is six-channel where `D-S6-13` rules five. **Both
+  qualifiers now live in §5.4's prose**, since the caption that carried them was cut to eight words and
+  the figure's own note box was deleted. One run fixes it. Quality item, not a blocker.
+* Figure 2 has a caption but still no prose pointer in the text — a one-line edit, never asked for.
+* `4J_supplementary_material.md` is still not built to `.docx`. Same chain as the manuscript.
+* HETUS guidelines unread; `L28` / `L29` not registered.
+
+---
+
+## Where things are on disk, after this pass
+
+| | |
+|---|---|
+| Manuscript, markdown | `4J_docs_occ/writing/submission/4J_manuscript_submission.md` |
+| Manuscript, built | `4J_docs_occ/writing/submission/4J_manuscript_submission.docx` — 1,817,366 bytes, 8 images, 8 tables, `xml ok`, rebuilt 2026-09-14 |
+| Figure scripts (ALL eight images) | `4J_docs_occ/writing/submission/figures/scripts/` — `generate_fig01_pipeline.py`, `generate_fig02_loco.py`, `generate_graphical_abstract.py`, `generate_fig0{3..7}.py`. 🔴 **The scripts are the figures. Never edit a PNG.** |
+| Manuscript board | `4J_docs_occ/writing/4thJ_MANUSCRIPT_CHECKLIST.html` — 30 cards, new 2026-09-14 |
+| Pipeline board, retired | `4J_docs_occ/DONE_4thJ_CHECKLIST.html` |
+| Evaluation prompts | `4J_docs_occ/writing/IMP/IMP_01_GEMINI_manuscript_evaluation.md`, `IMP_02_FABLE_manuscript_evaluation.md` |
+| Installed figures | `4J_docs_occ/writing/submission/figures/*.png` |
+| Image prompts | `4J_docs_occ/writing/submission/figures/Prompts_Images/` |
+| Deep-research prompts and returns | `4J_docs_occ/DeepResearchPrompts/` |
+| Working record | `4J_docs_occ/writing/4thJ_writeup_notes.md` |
+| Backups from this pass | `4J_docs_occ/writing/submission/previous/*pre_soleauthor*`, `previous/scripts_pre_recolour_2026-09-14/` |
+
+**House palette, set 2026-09-14 and binding on every figure in this paper:** Spain `#CC6677` rose,
+Britain `#332288` indigo, Italy `#44AA99` teal, second series `#DDCC77` sand plus a hatch, negative
+channel `#882255` wine, reference lines `#000000`. **No green and no red anywhere.** Colour-blind safe,
+greyscale safe by lightness, and every series also separated by line style, marker or hatch.
+
+**Caption rule, set 2026-09-14:** every table and figure caption in this paper is **ten words or fewer**,
+and no explanatory note, verdict sentence or footnote block is printed inside any image. Detail goes in
+the body text of the section that cites the figure.
+
+---
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-13, last+268) — SUPERSEDES last+267 BELOW**
 
 ⚪ **Nothing was computed, run, generated or moved since `last+267`. No gate, no band, no verdict, no

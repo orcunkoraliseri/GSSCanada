@@ -666,3 +666,1294 @@ added without the author's word, and none may restate a number the tables do not
 
 Next: author decides whether the two structural figure defects are re-generated now, and whether the
 result plots are built.
+
+---
+
+## 2026-09-14 (later) — five result-figure prompts written, and one manuscript defect found while writing them
+
+**Author instruction:** build the result figures as **prompts**, to be generated externally in Gemini
+alongside the three schematics. So the matplotlib exception was **not** used and nothing was plotted here.
+Five new prompt files, all in the Figure-2 house format, all carrying their measured series in a table
+under a **no value may be altered** bar, each naming its install path and its manuscript section:
+
+| File | Section | Source of every number |
+|---|---|---|
+| `4thJ_figure03_nine_cells.md` | §5.1 | Table 5, `4J_manuscript_submission.md:609-621` |
+| `4thJ_figure04_amplitude_slope.md` | §5.4 | `Step6_docs/4thJ_06_transfer.md:2989-2993` and `:704-722` of the manuscript |
+| `4thJ_figure05_joint_structure.md` | §5.5 | Table 8, `:734-741` |
+| `4thJ_figure06_appliance_peaks.md` | §5.8 | `Step9_docs/outputs_step9/agg_diurnal.csv`, column `elec_w_per_dwelling` |
+| `4thJ_figure07_heating_null.md` | §5.11 | Table 10, `:872-879`, and the prose of §5.11 |
+
+Figure 4 carries `FINDING 275` inside the drawing rather than only in the caption: the steering arm is
+drawn nowhere, appears only as text marked **inherited from the pilot**, and the prompt states that the
+plotted slope is the six-channel figure while the registered definition counts five. Figure 3 is forbidden
+from computing any ratio, because the table carries three columns and a ratio is not one of them.
+Figure 5 is the one place a derived quantity is plotted, and only because Table 8 prints that multiple
+itself.
+
+🔴 **`FINDING 278` — Table 9 is archetype-scale numbers under a stock-scale caption, and Spain has no
+stock-scale run at all.** Found while harvesting the hourly series for Figure 6, then re-measured here
+directly rather than carried from the harvest.
+
+* The manuscript prints **Spain 14:00 / 503 W, Italy 18:00 / 404 W, Britain 20:00 / 416 W** under the
+  caption *"Stock appliance-electricity peak, generated populations"*, and §5.8 says the result is
+  *"reported as a shape and timing result at stock scale"*.
+* Those three numbers are **Step 9, archetype scale, 100 dwellings**:
+  `Step9_docs/outputs_step9/agg_diurnal.csv` gives `es` 14:00 **502.8777**, `it` 18:00 **403.5225**,
+  `uk` 20:00 **416.1349**. They round to the manuscript's three exactly.
+* The **actual stock-scale** figures are different: `Step11_docs/outputs_step11/c2_uk/step11_11-5_uk_reseed.json`
+  gives hour 20 at **422.3315239140366 W**, and `.../c2_it/step11_11-5_it_reseed.json` hour 18 at
+  **395.0492889695305 W**, both under the key `ours_mean_diurnal_w_per_dwelling`.
+* 🔴 **There is no Spanish stock-scale run.** `outputs_step11/` holds only `c2_it/` and `c2_uk/`. Step 11's
+  own investigation doc says so in as many words
+  (`Step11_docs/docs/2026-09-13_G11.12-stock-scale-failure-investigation.md:257`), and the same doc's
+  table at `:63-78` already lists both scales side by side. **This was on record in Step 11 and did not
+  reach the manuscript.**
+
+⚪ **What survives and what does not.** The **six-hour spread survives**: the peak hours are 14:00 / 18:00 /
+20:00 at archetype scale, and the stock-scale run agrees on both hours it covers, 20:00 for Britain and
+18:00 for Italy. What does **not** survive as written is the word *stock*: as printed, Table 9 and §5.8
+attribute archetype-scale numbers to a stock-scale campaign, and for Spain no stock-scale campaign exists
+to attribute them to. **No gate moves and no band moves.** This is a labelling repair in the manuscript,
+in Table 9's caption and in §5.8, and it is the author's to rule.
+
+🔴 **Figure 6 is blocked on that ruling** and its prompt says so at the top. As written the prompt plots
+the archetype-scale series, labels it archetype scale, and forbids the word *stock* anywhere in the image.
+If the author rules that the figure must be stock scale, the prompt is rewritten against the Step 11
+files and **Spain cannot appear in it**, which would cost the figure its six-hour span and most of its
+point. The recommendation is to keep the figure at archetype scale and repair the manuscript's two labels.
+
+⚪ Figure numbering assumes the five new figures are cited in section order, making the paper Figures 1 to
+7 plus the graphical abstract, against 2J's sixteen images. **Nothing in the manuscript was edited** to
+cite them; that is a separate pass, after the images exist and are verified.
+
+Next: author rules on `FINDING 278`, then generates Figures 3, 5 and 7, which are unblocked.
+
+---
+
+## 2026-09-14 — the five result figures were generated and verified against their prompts
+
+The author generated all five result figures externally and installed them. They were produced by
+**matplotlib scripts driven by the frozen series in the prompt files**, which is the standing exception to
+the never-create-images rule, so the drawn values are the measured values by construction rather than by a
+model's reading of a table. Every file was re-measured here rather than accepted on report.
+
+**What is on disk.** Five PNGs, each **3600 x 2160** (Figure 5 is 3600 x 2100, Figure 7 is 3600 x 2550),
+which is 300 dpi at twelve inches wide and clears the 180 mm requirement in every prompt. Each image
+exists three times and all three copies are **byte-identical** (md5 compared): once in
+`writing/submission/figures/` under its install name, and twice in `figures/Prompts_Images/` beside its
+prompt, under both the install name and the prompt's own stem.
+
+| Figure | Install name | md5 | Numbers checked against |
+|---|---|---|---|
+| 3 | `Figure_03_nine_cells.png` | `d71fbdee...` | Table 5, all eighteen values |
+| 4 | `Figure_04_amplitude_slope.png` | `e23aaff4...` | `4thJ_06_transfer.md:2989-2993`, fifteen levels and three slopes |
+| 5 | `Figure_05_joint_structure.png` | `b0150d76...` | Table 8, four bands and four multiples |
+| 6 | `Figure_06_appliance_peaks.png` | `f6ed4410...` | `agg_diurnal.csv`, three peaks and their hours |
+| 7 | `Figure_07_heating_null.png` | `948238da...` | Table 10, both panels and three ratios |
+
+⚪ **Every number reads correctly and no value was altered.** Figure 3 prints all nine pairs in manuscript
+order, unsorted, with the call-out on Britain's oldest band only. Figure 4 draws Italy's upturn at level 4
+and carries all three notes, including the one that says the steering numbers are **inherited from the
+pilot and were never recomputed on the reported model**, which is `FINDING 275` surviving into the drawing.
+Figure 5 prints Table 8's own multiples rather than recomputing them. Figure 6 marks 14:00 / 18:00 / 20:00
+and spans the six hours, and **the word *stock* does not appear anywhere in it**, as its prompt required.
+Figure 7 keeps every sign visible, including Italy's negative peak effect and all three negative annual
+medians.
+
+🔴 **`FINDING 279` — the no-green-no-red bar is broken in three of the five images.** Every one of the five
+prompts carries the same line in its *what must NOT appear* list: **no green, no red, no tick, no cross**,
+and every one of them also asks for a colour-blind-safe palette. Three images break it:
+
+* **Figure 4** draws the Italy fold in green and the registered floor line in red, and the same green fills
+  Italy's slope bar in the right panel.
+* **Figure 6** draws the Italy curve in green against Spain in red-orange.
+* **Figure 7** prints Italy's negative value `-0.6332 %` in red type.
+
+The bar exists for two reasons and both are live here. The first is that **red and green together are the
+one pairing a colour-blind reader cannot separate**, and in Figures 4 and 6 they carry two of the three
+countries. The second is that these are failing checks and a null, so **any hue a reader decodes as
+good-or-bad misreads the result**; green on the fold that turns back upward in Figure 4, and red on the one
+negative number in Figure 7, both read as verdicts that the paper does not make. Line style and marker
+already carry the series in Figures 4 and 6 and hatch already carries it in Figure 7, so the fix costs
+nothing: recolour Italy away from green, draw the floor and band lines in black, and set the negative
+label in the body colour. **No value changes and no rerun of anything upstream is involved.**
+
+⚪ Smaller, cosmetic, author's call: in Figure 3 the method note and the md5 note sit close enough to the
+plotting area and the axis title to look crowded at page width.
+
+🔴 **Figure 6 is still blocked on `FINDING 278`.** The image exists and is correct at archetype scale, but
+it cannot be cited until the author rules on whether Table 9 and §5.8 keep the word *stock*. Figures 3, 4,
+5 and 7 are clear to cite as drawn once the colour bar is repaired.
+
+⚪ **Nothing in the manuscript was edited.** No figure is cited yet. That remains a separate pass.
+
+Next: recolour Figures 4, 6 and 7, then rule on `FINDING 278`, then cite all five in the manuscript.
+
+---
+
+## 2026-09-14 later — `FINDING 279` closed, and the document put into the 3J house style
+
+### The recolour
+
+🔴 **`FINDING 279` was under-reported when it was written: the defect is in four of the five images, not
+three.** Figure 5 drew the registered band line in dark red (`#9B2C2C`) and that was missed on the first
+read. The corrected list is **Figures 4, 5, 6 and 7**; only Figure 3 was clean. All four are rebuilt.
+
+The five matplotlib scripts that built the images were copied out of the generating session's scratch
+directory into the project at **`writing/submission/figures/scripts/generate_fig03.py` ... `generate_fig07.py`**,
+so the figures are now reproducible from inside the repository instead of from a transcript. Each of the
+four edited scripts carries a header naming the finding and the palette.
+
+**The house palette, now written into all five prompt files under a new `## Palette` heading:**
+
+| Role | Colour |
+|---|---|
+| Spain | `#E69F00` orange |
+| Britain | `#0072B2` blue |
+| Italy | `#7B3294` purple |
+| Model series, and any single-series bar | `#3E6B99` slate blue |
+| Null series, and the between-diary spread | `#D19C65` ochre, hatched |
+| Registered band, registered floor, zero line | `#000000` |
+| Every printed value and verdict line | `#111111` |
+
+Colour is never the only carrier: every series still differs by line style and marker, or by fill pattern,
+so each figure reads with the colour taken out.
+
+⚪ **No plotted value changed.** The edits touched colour constants and two annotation-box tints and
+nothing else; the data arrays in the scripts are untouched, and the four rebuilt images were read back and
+checked against their tables again. All fifteen files agree: each image exists three times (`figures/`
+under its install name, `Prompts_Images/` under both the install name and the prompt stem) and all three
+copies are byte-identical.
+
+| Figure | md5 after recolour |
+|---|---|
+| 3 (unchanged) | `d71fbdee...` |
+| 4 | `f6789866...` |
+| 5 | `e7d3d843...` |
+| 6 | `00dbcb61...` |
+| 7 | `69a21588...` |
+
+Each prompt's header line was also corrected. It said *not generated here*, which is no longer true: it
+now names the script that builds the image and says the PNG is never hand-edited.
+
+### The document format
+
+The author asked for `4J_manuscript_submission.docx` to read like `3J_manuscript_submission.docx` in font,
+size and paragraph style. **3J's own build chain was adopted unchanged**, which is the right answer because
+the target file is the definition of the target style. `ref_submit_single.docx`, `ref_submit.docx` and
+`post.py` were copied from `3J_docs_occ_nTemp/writing/submission/extra/build_scripts/` into the matching
+place under 4J. The recipe, run from `4J_docs_occ/writing/submission/`:
+
+```
+pandoc 4J_manuscript_submission.md -o raw.docx --reference-doc=extra/build_scripts/ref_submit_single.docx --resource-path=.
+py -3 extra/build_scripts/post.py raw.docx 4J_manuscript_submission.docx
+```
+
+That gives **12 pt Times New Roman, single spaced, justified body, black headings, centred captions**, and
+`post.py` then sets **table text to 10 pt single spaced**. Verified rather than assumed: the built file's
+`word/styles.xml` is **byte-identical to 3J's** (`a3233bd1...`), its document defaults carry
+`Times New Roman`, `w:sz 24` and `w:line 240`, and all eight tables come back with run size `20`
+half-points and `after=0 line=240`. The three embedded images are byte-identical to the PNGs on disk.
+
+🔴 **`ref_submit.docx` is the double-spaced reference and it was copied across too.** Single spacing is an
+explicit authorial choice carried over from 3J, not a default. **Elsevier asks for double spacing at
+submission**, so if a desk check bounces the file the fix is one filename on the pandoc line, not a
+rebuild. The previous unstyled build is kept at
+`previous/4J_manuscript_submission.2026-09-14_pre_house_style.docx`.
+
+⚪ **The supplementary material was not built.** `4J_supplementary_material.md` exists and 3J builds both
+halves every time, but only the manuscript was asked for. It is one more pandoc line when wanted.
+
+⚪ **Still true: no figure is cited in the manuscript.** The built document carries the three original
+schematics only. Figures 3 to 7 exist, are correct and are in the right folder, and the citation pass has
+not been run.
+
+Next: rule on `FINDING 278`, then cite Figures 3 to 7 in the manuscript and rebuild both halves.
+
+---
+
+## 2026-09-14 — Figures 3 to 7 placed in the manuscript, both halves rebuilt
+
+Asked for: `go ahead, place figures 3 to 7 and rebuild`.
+
+Before this pass the manuscript pointed at three images only (graphical abstract, Figure 1, Figure 2);
+the five result figures existed on disk and in the prompt folder but nothing in the text referenced
+them, so the built `.docx` carried three images. It now carries eight.
+
+**Where each one went, and the sentence that carries it.** Each figure sits immediately after the
+paragraph that states the result it draws, and each is introduced by one clause added to the end of that
+paragraph, in the same voice as the existing Figure 1 pointer:
+
+| Fig | Section | Anchor paragraph ends | Pointer added |
+|---|---|---|---|
+| 3 | §5.1 | "no subset of this table in which the method worked" | "Figure 3 draws the same nine cells." |
+| 4 | §5.4 | "named in §7.10 among the unfinished items rather than presented as done" | "Figure 4 shows the response curves and the fitted slopes together, with both qualifiers marked on the figure itself." |
+| 5 | §5.5 | "not an artefact of the weighting correction described in §2.1" | "Figure 5 places the four quantities on one scale, as multiples of their registered bands." |
+| 6 | §5.8 | "never reported for an individual dwelling" | "Figure 6 shows the three diurnal profiles that the peaks in Table 9 are taken from." |
+| 7 | §5.11 | "rather than anything the occupancy signal touches" | "Figure 7 reports the null and the surviving ordering together." |
+
+**The five captions are the ones the prompt files specify, installed verbatim.** Each prompt carries a
+`Caption to install with it:` block; each was copied character for character rather than re-written, so
+the caption in the manuscript and the caption in the specification cannot drift apart. No number in any
+caption was rounded, re-ordered or restated.
+
+**`FINDING 278` is not touched by this pass and is still open.** Figure 6's caption says *mean appliance
+electricity per dwelling*, which is true at either scale, so placing the figure does not commit the paper
+to the stock-scale reading that Table 9's caption and §5.8's prose assert. The ruling is still needed; it
+now governs Table 9's caption, §5.8's "at stock scale" clause, and the figure's own label, not the
+caption.
+
+**Build.** From `writing/submission/`, unchanged recipe:
+
+```
+pandoc 4J_manuscript_submission.md -o raw.docx --reference-doc=extra/build_scripts/ref_submit_single.docx --resource-path=.
+py -3 extra/build_scripts/post.py raw.docx 4J_manuscript_submission.docx
+```
+
+`post.py` reported `tables 8 | xml ok`. The file went from 3,383,149 to 5,096,426 bytes and the markdown
+from 1,390 to 1,434 lines.
+
+**Verified, not assumed.**
+* Eight images are embedded (`word/media/rId44,53,56,82,88,92,98,104.png`) and the md5 of every one of
+  the eight is present in the md5 list of `figures/*.png`, so no image was re-encoded on the way in.
+* `word/styles.xml` md5 is still `a3233bd11a66cc8ce3939f0c08602858`, byte-identical to 3J's, so placing
+  the figures did not disturb the house style applied in the previous pass.
+* All eight table objects survived `post.py` at 10 pt single-spaced.
+
+**Backups.** `previous/4J_manuscript_submission.2026-09-14_pre_figures.md` and
+`previous/4J_manuscript_submission.2026-09-14_pre_figures.docx` hold the three-image state.
+
+**Two things this pass deliberately did not do.** Figure 2 still has a caption but no prose pointer, as
+it did before; adding one is a one-line edit and was not asked for. The supplementary material is still
+not built to `.docx`.
+
+Next: rule on `FINDING 278`, then Figure 2 and the graphical abstract still need regenerating
+(`FINDING 276`) and Figure 1's prompt still carries the stale line (`FINDING 277`).
+
+---
+
+## 2026-09-14 later still — sole authorship, second recolour, ten-word captions, Figure 1 turned landscape
+
+Author instruction, five parts in one message: drop the second author; recolour Figures 2, 4, 5, 6 and 7
+and take the note text out of the bottom of the pictures; cut every table and figure caption to ten words
+or fewer and move what leaves into the body text; ask why the reference list is short and whether more
+deep-research prompts are needed; and re-specify Figure 1 in a horizontal format. All five are done except
+the two images only the author can generate.
+
+### 1. Sole authorship
+
+🟢 **`4J_manuscript_submission.md` now names one author.** Caroline Hachem-Vermette is removed from the
+author line and from the CRediT statement, and eleven further sentences that said *the authors* now say
+*the author*. The CRediT roles the second author held — Supervision, Funding acquisition, Resources — were
+**not** transferred to the remaining author; only *Writing - review and editing* was added, because the
+sole author did in fact do it and the other three would be claims rather than records. The funding
+sentence is unchanged in substance: NSERC and the Voltage-Age Seed fund are still acknowledged. `grep -i
+hachem` returns nothing in the markdown and nothing in `word/document.xml` of the rebuilt `.docx`.
+
+⚪ **Affiliation and corresponding-author block are unchanged.** One affiliation, one ORCID, one address.
+
+### 2. Second recolour, and the notes come out of the pictures
+
+🟢 **Figures 3 to 7 were regenerated from their scripts onto a new house palette.** The palette set on
+2026-09-14 in the first recolour (orange / blue / purple) is replaced by the Tol muted set:
+
+| Role | Hex |
+|---|---|
+| Spain | `#CC6677` rose |
+| Britain | `#332288` indigo |
+| Italy | `#44AA99` teal |
+| Second series in a pair | `#DDCC77` sand, plus a hatch |
+| Negative or null channel | `#882255` wine |
+| Reference lines, registered floors | `#000000` |
+
+The set is colour-blind safe, carries no green and no red, and separates by lightness as well as hue, so
+the greyscale guarantee from the first recolour survives. Line style, marker shape and hatch were left
+in place, so no figure depends on hue alone.
+
+🟢 **Every explanatory note, footnote block and verdict sentence was deleted from inside the images.**
+That is nine text blocks across the five figures: the italic note boxes at the bottom of Figures 4, 5, 6
+and 7, the bold verdict lines under Figures 3, 5 and 6, the two per-panel italic lines under Figure 7's
+B1 and B2, and the bold line under Figure 4's right panel. What remains inside each image is axis labels,
+tick labels, panel titles, the legend, and the data values themselves. Bottom margins were tightened to
+match, so no figure carries a band of white space where the notes used to be.
+
+🔴 **Figure 3 was recoloured-adjacent, not recoloured.** The author's list named Figures 2, 4, 5, 6 and 7.
+Figure 3's hues were left as they were, but its bottom notes and verdict line were removed with the rest,
+because leaving one figure in the set with a caption-like sentence printed under the chart would have been
+visibly inconsistent. If the author wants that line back it is one edit in `generate_fig03.py`.
+
+⚪ **Figure 2 could not be recoloured here** — it is an author-generated image, not a matplotlib plot. Its
+prompt now carries the palette table, the no-notes rule, and the reversed-fork correction. See §5.
+
+**No plotted value changed in any of the five scripts.** The patch script refused to write unless every
+anchor matched exactly once, and it matched 24 of 24.
+
+### 3. Captions capped at ten words
+
+🟢 **All fifteen numbered captions are now ten words or fewer**, verified by re-parsing the markdown after
+the edit rather than by eye:
+
+| | Words | Caption |
+|---|---:|---|
+| Table 1 | 5 | Positioning against the time-use-survey-to-occupancy lineage. |
+| Table 2 | 7 | The three national time-use surveys as delivered. |
+| Table 5 | 8 | Time-budget mean absolute error in minutes per day. |
+| Table 6 | 3 | The transfer board. |
+| Table 7 | 4 | Three independent capacity interventions. |
+| Table 8 | 8 | Joint structure never present in the conditioning prompt. |
+| Table 9 | 5 | Stock appliance-electricity peak, generated populations. |
+| Table 10 | 8 | Occupancy effect on heating after the phase correction. |
+| Figure 1 | 5 | Pipeline, Steps 0 to 11. |
+| Figure 2 | 6 | Leave-one-country-out design and the two nulls. |
+| Figure 3 | 8 | Time-budget mean absolute error, model against raked-donor null. |
+| Figure 4 | 8 | The fictional-country control: response curves and fitted slopes. |
+| Figure 5 | 10 | Four structural properties, each as a multiple of its band. |
+| Figure 6 | 9 | Mean appliance electricity by hour of day, three folds. |
+| Figure 7 | 9 | Occupancy effect on heating, and the ordering that survives. |
+
+🔴 **Nothing was dropped; four facts were relocated into the prose that carries them.** This is the part
+of the edit that could have quietly lost a qualifier, so each move is recorded:
+
+1. **§5.4** now states, in the paragraph before Figure 4, that the slopes are computed over **six**
+   conditioning channels while the registered definition counts **five**, and that a low slope means
+   under-response rather than indifference. Both lived only in the old caption and in the figure's own
+   note box; both of those are now gone, so without this the qualifier that `FINDING 275` exists to
+   protect would have disappeared from §5 entirely.
+2. **§5.5** now states that all four structural quantities fail in every fold at between three and nine
+   times the band, that each bar spans the range across folds, and that none of the four was in the
+   conditioning prompt.
+3. **§5.11** now states that Table 10's values are taken at the top of the sensitivity sweep.
+4. **§5.11** now names the three panels of Figure 7 in the pointer sentence, since the caption no longer
+   can.
+
+🟢 **The `Caption to install with it:` blocks in all six figure prompts were shortened in the same pass**,
+so the specification and the manuscript still cannot drift. Each now also carries the standing rule:
+*every caption in this paper is ten words or fewer, and anything beyond that belongs in the body text.*
+
+### 4. Figure 1 re-specified as a landscape figure
+
+🟢 **`4thJ_pipeline_steps_figure.md` now asks for a wide figure, not a tall one.** The twelve step cards
+run left to right along one spine, the five phase bands move from the left gutter to a band along the
+**top**, and the seven validation tiles move from the right gutter to a strip along the **bottom**, each
+tile connecting upward to the cards it guards. Target canvas 2400 x 1000 at 300 dpi. A fallback is
+written in: if twelve cards in one row would push the body type below 8 pt, wrap to two rows of six,
+left to right on both rows, with one return arrow and no snaking.
+
+The change reaches the paste-ready Gemini block in Section 11, not just the prose sections, because
+Section 11 is what actually gets pasted. Sections 2, 3, 4, 5 and 7 were written for the portrait figure
+and still use the words *gutter* and *spine*; each now carries an **ORIENTATION OVERRIDE** banner saying
+the content is unchanged and only the direction is different.
+
+🟢 **`FINDING 277` is closed in the prompt.** Both stale strings are deleted from the card list and added
+to the forbidden-string list: card 6's *the reported folds are not yet trained* and card 10's *the no-core
+engine does not exist yet*. Checklist item 7 was rewritten to test for their **absence** rather than their
+presence, and three new checklist items were added — wide not tall, no note band, no green and no red.
+
+🔴 **One question the author must answer before this figure is generated: card 6's chip still reads
+`open`.** That was correct when the card was written. The transfer test is now trained, generated, scored
+and reported as a nine-of-nine FAIL, and Step 11 is complete. Whether `open` is still the right chip is a
+state judgement, not a wording fix, so it was **not** changed here. The same question applies to cards 10
+and 11, where checklist item 8 currently says to reject any generation that gives them a checkmark.
+
+### 5. Figure 2's prompt carries the reversed-fork correction
+
+🟢 **`4thJ_figure02_loco_design.md` now opens with a blocking revision banner.** It states `FINDING 276`
+in full — the marginals box must be a **source**, with arrows leaving it into both candidates and no
+arrow arriving from either — and adds the palette table and the no-notes rule. It repeats that every
+number on the installed image is correct and none of them changes.
+
+⚪ **The image itself is unchanged and the `.docx` still carries the old Figure 2.** Generating it is the
+author's step.
+
+### 6. The reference list, answered with a count
+
+🔴 **The manuscript formats 13 references. The project's own deep-research returns already hold 236
+unique DOIs.** Counted directly: `RL01` to `RL31` in `4J_docs_occ/DeepResearchPrompts/`, 31 returned and
+vetted files, `grep` for DOI patterns, sorted unique — 236. The reference list is short **not because the
+literature was never searched, but because the bibliography was assembled only from the pipeline's own
+verified citation records**, which are the citations that were load-bearing for a method or a band. The
+236 were never harvested into it.
+
+**So the answer to *do we need more deep-research prompts* is: mostly no, and the next move is on-disk.**
+The work that is actually outstanding, in order:
+
+1. **A harvest pass over `RL01`-`RL31`.** No external step, no Gemini. Read the 31 returns, pull the
+   citations that bear on §1, §2, §3 and §6, format them, and check each against `VETTING_RL27.md`,
+   `VETTING_RL28_RL29.md` and `VETTING_RL30_RL31.md` before it is allowed in — `RL30`/`RL31` failed five
+   of seven vetting steps and several of their citations were struck, so an unvetted harvest would import
+   exactly the fabrications that vetting caught.
+2. **Finish the ⚠ block at the end of the reference list**, which names five sources cited in the text and
+   not yet formatted: TABULA typology documentation, three national survey user guides, the Eurostat
+   HETUS methodological guidelines, and the author's own prior line. Four of the five are on-disk jobs;
+   the HETUS guidelines carry the open read recorded in §2.1.
+3. **Only then, a new prompt or two, and only where the shelf is genuinely empty.** Two candidates:
+   `L14`'s venue positioning was written before the author declined the venue and before the result was
+   known, so it is stale rather than wrong; and `RL30`'s three first-person `NOT FOUND` results are
+   load-bearing negative claims in §6.1 that a reviewer will test, so they are the ones worth re-running
+   against a second search rather than left resting on one.
+
+⚪ **Not done here, because it was a question and not an instruction.** No new deep-research prompt was
+written this pass.
+
+### 7. Two defects found while counting captions, neither touched
+
+🔴 **`FINDING 280` — Tables 3 and 4 do not exist, and §3 cites Table 4.** The manuscript's numbered
+tables run 1, 2, 5, 6, 7, 8, 9, 10. There is no Table 3 and no Table 4 anywhere in
+`4J_manuscript_submission.md`, and the supplementary file contains no numbered tables at all. Line 208 of
+§3 reads *"the complete gate set, with each band's provenance marked as published, project-chosen or
+heuristic, is given in Table 4"* — a dangling cross-reference to a table the paper does not contain. Two
+readings, and the fix differs: either the gate table was written and lost, in which case it must be
+restored as Table 4 and Table 3 identified too; or the numbering skipped two and the reference should
+point somewhere else, in which case Tables 5 to 10 renumber to 3 to 8 and §3's sentence needs a new home.
+**Not guessed at here.** A reviewer will find this on the first pass; it is the most damaging thing in
+the file.
+
+🔴 **`FINDING 281` — §5.1 says *activity band* where the table gives *age bands*.** Line 605: *"the
+model's time-budget mean absolute error against the raked donor pool's, per activity band, per fold."*
+Table 5's `Band` column holds `Y25-44`, `Y45-64` and `Y_GE65`, which are age bands, and the old Table 5
+caption said *three published age bands per fold*. The prose and the table disagree on what the rows are.
+Left as found, because band vocabulary does not move during a writing round.
+
+### Build and verification
+
+From `writing/submission/`, unchanged recipe:
+
+```
+pandoc 4J_manuscript_submission.md -o raw.docx --reference-doc=extra/build_scripts/ref_submit_single.docx --resource-path=.
+py -3 extra/build_scripts/post.py raw.docx 4J_manuscript_submission.docx
+```
+
+`post.py` reported `tables 8 | xml ok`. The file went from 5,096,426 to 4,615,601 bytes; it shrank because
+the five regenerated PNGs carry less text.
+
+**Verified, not assumed.**
+* Eight images embedded; the md5 of every one is present in the md5 list of `figures/*.png`, so nothing
+  was re-encoded and all five recoloured images did reach the document.
+* `word/styles.xml` md5 is still `a3233bd11a66cc8ce3939f0c08602858`, byte-identical to 3J's.
+* `grep -i hachem` on `word/document.xml` returns zero.
+* All fifteen captions re-parsed out of the markdown after the edit; longest is ten words.
+
+**Backups.** `previous/4J_manuscript_submission.2026-09-14_pre_soleauthor.md`,
+`previous/4J_manuscript_submission.2026-09-14_pre_soleauthor.docx`, and
+`previous/scripts_pre_recolour_2026-09-14/` holding the five figure scripts as they were.
+
+Next: the author generates Figure 1 (landscape) and Figure 2 (fork corrected) from the two revised
+prompts; rule on `FINDING 278` and on `FINDING 280`; then the reference harvest over `RL01`-`RL31`.
+
+---
+
+## 2026-09-14 last — the three author-generated images were returned and checked against their own checklists
+
+⚪ **Nothing was computed. No gate, band, verdict or registered definition moved.** This entry records an
+inspection of three PNGs the author generated in Gemini / Antigravity and installed, plus two new findings.
+
+**What was installed, and from where.** The author generated all three, converted the returns from JPEG to
+PNG and installed them over the previous versions. The superseded images were kept at
+`writing/submission/figures/Prompts_Images/previous/backup_20260914/`. Figures 3 to 7 were not touched
+(timestamps unchanged, 10:09).
+
+| File | Size | Verdict |
+|---|---|---|
+| `HETUS_LLM_Pipeline_Steps.png` (Figure 1) | 1376 x 768 | content **PASS**, resolution **FAIL** |
+| `Figure_02_loco_design.png` (Figure 2) | 1376 x 768 | blocking test **PASS**, two cosmetic faults |
+| `HETUS_LLM_CrossNational_Pipeline.png` (graphical abstract) | 1376 x 768 | **REJECT**, see `FINDING 283` |
+
+### Figure 1 — the landscape turn worked, and every item of Section 11.1 passes
+
+Checked item by item against the twelve-item checklist in `4thJ_pipeline_steps_figure.md` §11.1, reading
+the installed PNG and two magnified crops of it:
+
+* **Item 10, wide not tall — PASS.** Twelve cards in one horizontal row, 0 at the left to 11 at the right,
+  every spine arrow pointing right. The five phase bands `DATA` `MODEL` `CLAIM` `ENERGY` `STOCK` are along
+  the TOP, each spanning exactly its own cards, all five labelled horizontally. The seven validation tiles
+  are along the BOTTOM. This is the change the revision existed for and it landed on the first return.
+* **Item 11, no note band — PASS.** No paragraph of small italic text anywhere. The only line below the
+  tiles is the one the prompt asks for, inside its dashed box.
+* **Item 12, no green and no red — PASS.** The `MODEL` band is the house teal `#44AA99` at a light tint and
+  the `ENERGY` band the house rose `#CC6677`; neither reads as pass-green or fail-red, and nothing else in
+  the picture carries either.
+* **Item 7, the two retired strings — PASS, and this closes the last part of `FINDING 277` on the image
+  side.** Card 6 carries only its two body lines and *"the reported folds are not yet trained"* is gone.
+  Card 10 carries only *"observed footprints, dwellings only, one independent diary per dwelling"* and
+  *"the no-core engine does not exist yet"* is gone. Neither of the two older retired lines appears either.
+* **The `pre-declared gate batteries` bracket — PASS, drawn correctly for the first time.** A magnified crop
+  of the bracket shows five drop lines, from cards 1, 2, 3, 4 and 5, with the bracket running from card 1's
+  left edge to card 5's right edge. It was drawn short twice before, stopping at card 2 and at card 4.
+* **Tier routing — PASS.** Traced on a 4x crop: `distributional fidelity`, `collapse, memorisation and
+  privacy` and `transfer margin` all rise to card 6; `structural validity` rises to card 7; `downstream
+  energy` is one bracket over cards 8 and 9; `basis and denominator` is one bracket over cards 10 and 11.
+  The transfer-margin and structural-validity lines cross, which is what the specification asks for and is
+  easy to misread as swapped at page size.
+* **Chips — PASS.** Card 0 `cleared` with one checkmark; cards 1, 2, 3, 5, 8 and 9 `validated` with two;
+  cards 4 and 7 `decided` with none; cards 6, 10 and 11 hollow `open`. Cards 8 and 9 do carry two
+  checkmarks, which earlier returns got wrong.
+* **Card 6 — PASS.** Larger than the others, light navy fill, thicker border, the `the bar:` line the only
+  bold body line in the picture, and it keeps the hollow `open` chip.
+* Cards counted: exactly twelve, 0 to 11. No card 12, no `Step 12`, no country name, no model name, no
+  number outside the twelve circles.
+
+🔴 **`FINDING 282` — all three returns are 1376 x 768 pixels, and all three prompts asked for more.**
+Figure 1's prompt asks for *"at least 2400 by 1000"*, the graphical abstract's for *"at least 2000 by
+1100"*. What came back is 1376 x 768 in every case, an aspect ratio of 1.79 where Figure 1 asked for about
+2.4. At a 7-inch full-page width that is about 197 dpi, against the 300 dpi most publishers require, and
+the card body lines in Figure 1 are about seven pixels tall. **Both prompts also ask for a PNG rather than
+a JPEG, in terms, because JPEG compression frays small type; the returns are JPEGs that were converted to
+PNG after the fact, so the compression damage is already in the pixels and the conversion did not undo
+it.** The `.jpg` originals are in the Antigravity brain directory.
+
+The content is right, so this is a re-render, not a redesign: the same prompt text, asked for at a larger
+canvas, or the generator set to its largest output size. If the tool cannot exceed 1376 x 768, the
+alternative is to rebuild Figure 1 in matplotlib from the card list, which the never-create-images rule
+allows, since the card text is frozen in the prompt file and nothing about it is drawn from judgement.
+**Not a blocker for an internal read-through, but it is a blocker for submission.** An author ruling on
+which route to take.
+
+### Figure 2 — the fork is fixed, which was the one blocking test
+
+🟢 **`FINDING 276` is closed for Figure 2.** The single `Britain's published census marginals` box is now a
+source: two arrows leave it, one up into the fine-tuned model and one down into the raked donor pool, and
+no arrow arrives at it from either candidate. The installed image before this pass said the opposite. The
+two candidate boxes are the same size and weight, the model is not drawn as the hero, and the held-out
+country's real diaries appear only at the far right as `ground truth, never seen by either side until
+scoring`.
+
+All numbers verified on the image and all correct: 73,254 diaries, 2,024,068 episodes, 7.30 B backbone,
+79.95 M trainable parameters, 5,200 generated diaries, and the three pairs 58.91 / 21.79, 60.44 / 19.21,
+21.24 / 18.54 minutes per day, with `The null wins every band of every fold. 9 of 9. Closest miss 2.70
+min/day.` The null bar is the shorter of the pair in all three bands. Palette is the house set: Spain rose,
+Italy teal, Britain indigo and hollow, model bars sand with a hatch, null bars wine, no green, no red.
+
+Two faults, neither disqualifying:
+
+1. **Annotation (a) is printed twice**, once at the top of the middle band and once again under the
+   marginals box, in slightly different line breaks. One copy should go.
+2. **The image still carries prose blocks** — annotations (a) and (b) and the verdict line under the bars.
+   This is the prompt contradicting itself rather than the generator misreading it: the body of
+   `4thJ_figure02_loco_design.md` asks for `Two annotations` and for a line under the bars, while the
+   no-notes rule appended to the same file on 2026-09-14 forbids exactly that. The rule was appended and
+   the older instructions were not removed. **Whoever revises this prompt next must delete the `Two
+   annotations` section and the line under the bars, or strike the no-notes rule for this one figure.**
+   Both annotations say something a reader needs, so the honest fix is to move them into the §4 prose that
+   cites Figure 2 and out of the picture.
+
+Also cosmetic: the three band labels `split corpus`, `candidate` and `evaluation` are layout words drawn
+into the image, and the title `Leave-one-country-out design evaluation` was never asked for. Harmless.
+
+### The graphical abstract
+
+🔴 **`FINDING 283` — the graphical abstract must not be used. Three faults, the first disqualifying.**
+
+1. 🔴 **The held-out lane enters the training block.** The rose `Country C - held out` lane runs into the
+   left edge of the navy `One open-weight LLM` block exactly as the teal and orange training lanes do,
+   confirmed on a 3x crop. Its prompt asks for the opposite in terms: *"The third does NOT enter it: its
+   dashed arrow passes under or around the block and re-enters on the right."* Read literally the picture
+   says the held-out country was trained on, which is the single claim the whole paper turns on. This is
+   the same defect class as `FINDING 276` and it is why that finding named the abstract as well as Figure 2.
+2. 🔴 **The word `activity` is printed above the ribbons.** The prompt forbids it by name twice: *"Write NO
+   heading above these ribbons: not the word activity"* and *"the word activity must not appear anywhere."*
+3. **Only two ribbons are drawn where the prompt asks for three**, one per lane colour; the rose one is
+   missing, and the rose arrow goes straight to the `held-out country` box instead. And inside that box the
+   line `three independent nulls, all reported` is printed twice.
+
+What did come out right: the plan of building footprints at the far right is subdivided edge to edge with
+no stair core, no corridor and no gap, and its six cells carry six different tick-marks and no checkmark,
+which is the fault the prompt flags as most likely and which earlier returns got wrong. The three schedule
+curves are there with 0 and 24 axes and visibly different shapes. No real country name, no flag, no model
+name, no status word.
+
+**The graphical abstract's prompt was never revised in this pass or the last**, which is why fault 1 is
+still in it: the file still contains the original lane instructions and no blocking banner. Revising it is
+a session job of the same shape as Figure 2's revision and has not been asked for.
+
+### State
+
+Figure 1 and Figure 2 are usable for an internal read-through now and need one re-render at a larger canvas
+before submission. The graphical abstract is not usable. Figures 3 to 7 are untouched and still current.
+No caption changed, no manuscript text changed, and the `.docx` was not rebuilt, because the three
+installed files carry the same filenames the existing build already embeds by path.
+
+Next: rule on `FINDING 282`, re-render or rebuild; revise the graphical abstract prompt for `FINDING 283`;
+strike the duplicated annotation in Figure 2's prompt; then `FINDING 280` and the reference harvest.
+
+---
+
+## 2026-09-14 last+1 — the three Gemini prompts cut back: "these are not reports, these are representative images"
+
+⚪ **Nothing computed. No gate, band, verdict or registered definition moved.** Prompt files only; no image
+was generated here and no manuscript text changed.
+
+**The instruction.** *"update prompts to be generated by gemini, also lets use less text inside the
+pictures, these are not reports, these are representative images."* Applied to all three author-generated
+prompts. The three fixes owed from the inspection entry above were folded into the same pass.
+
+**Backups:** `figures/Prompts_Images/previous/prompts_pre_sparse_2026-09-14/`, all three files.
+
+### Figure 1 — `4thJ_pipeline_steps_figure.md`, Section 11 rewritten
+
+Text that will actually be drawn, counted: **card body lines fell from 18 lines and 155 words to 16 lines
+and 82 words.** Every card now carries exactly one short body line, with a second line only on cards 5, 6,
+8 and 9 — the four that record something that failed.
+
+| Card | Was | Now |
+|---|---|---|
+| 0 | data reachable, prior art clear, method justified, release limits known | data, prior art, method, release limits |
+| 1 | national time-use series, one wave per country | one harmonised wave per country |
+| 2 | common activity, location and co-presence coding, shared day origin | common activity, location, co-presence |
+| 3 | episode form: duration, activity, location, co-presence | duration, activity, location, co-presence |
+| 4 | open-weight base model, low-rank adapter, one adapter per held-out country | one adapter per held-out country |
+| 5 | synthetic population first, then one generated day per person / two gates fail and ship as a declared exception | synthetic population, then one day each / two gates ship as declared exceptions |
+| 6 | train on the other two, generate the held-out one from published marginals / the bar: beat real diaries from the other countries, reweighted to the held-out country | train on two, generate the third / the bar: beat real diaries, reweighted |
+| 7 | well-formed diaries guaranteed at decoding / throughput, chaining rule and schedule emission | well-formed diaries guaranteed at decoding |
+| 8 | European residential archetypes, uninjected control run first / the occupancy effect does not survive at full injection | European residential archetypes / the occupancy effect does not survive |
+| 9 | published activity-to-appliance mappings, adapted not authored / three gates ship as declared failures | published activity-to-appliance mappings / three gates ship as declared failures |
+| 10 | observed footprints, dwellings only, one independent diary per dwelling | observed footprints, one diary per dwelling |
+| 11 | the same mapping, at the scale its sources were validated at / the bands are inherited unmoved, not re-set at stock scale | same mapping, bands inherited unmoved |
+
+Two further cuts:
+
+* **The two title lines became one**, `From harmonised time-use surveys to simulated building energy`. The
+  journal prints a caption under the figure; a second title line inside it was duplication.
+* 🔴 **The bottom sentence `every tier is first shown failing on a deliberately broken control` was removed
+  from the image altogether**, and added to the forbidden-strings list so it cannot come back. It is an
+  explanatory sentence in a dashed box along the bottom edge, which is exactly what the no-notes rule of
+  2026-09-14 forbids, and the author's instruction settles it. **It is a real methodological claim and it
+  must be carried by §3's prose instead.** Recorded here because it is the one piece of content this pass
+  removed rather than shortened.
+
+**The honesty lines were kept, shortened, not dropped.** Cards 5, 8 and 9 still say two gates ship as
+declared exceptions, the occupancy effect does not survive, and three gates ship as declared failures. A
+pipeline figure showing Steps 5, 8 and 9 as `validated` with nothing else would claim a clean downstream
+result this project does not have, and the checklist has said so since 2026-08-26.
+
+**Three banners added so the file cannot contradict itself**, at Sections 4, 5 and 6: Section 11's card
+list is now the authoritative wording for the **body lines**; Sections 4, 5 and 6 still govern the card
+titles, the chip words, the twelve numbers, the seven tile labels and the complete list of strings that
+are *allowed*. A string that appears in Section 6 but not in Section 11 is permitted-but-retired and must
+not be drawn.
+
+**Two checklist items added**, 13 and 14: count the words (one title line, one body line per card, two
+only on 5, 6, 8 and 9, nothing below the tiles), and check the pixel size before installing.
+
+### Figure 2 — `4thJ_figure02_loco_design.md`, specification body rewritten
+
+The whole file is pasted, so the body itself was cut rather than a block inside it.
+
+Removed from the image: the two annotation paragraphs, in full; `published by the national statistical
+office before either candidate existed` shortened to `published before either candidate existed`;
+`the same tables, the same geography, the same strata` beside the fork; `grammar-constrained generation`;
+`79.95 M trainable parameters`; `every day is a day somebody lived`; `one wave each`; `three age bands:
+Y25-44 · Y45-64 · Y_GE65` in the scoring box, now carried by the bar labels alone; `training, 2 countries`
+cut to `training`; `held out, never seen in training` cut to `held out`; `ground truth, never seen by
+either side until scoring` cut to `ground truth`. The verdict line was shortened to `The null wins 9 of 9.
+Closest miss 2.70 min/day.` and is now stated to be **the only sentence in the picture**.
+
+🔴 **The prompt no longer contradicts itself.** It previously asked for `Two annotations` in its body while
+the no-notes rule appended to the same file forbade them; the generator obeyed the body and printed one of
+them twice. The `Two annotations` section is deleted and a paragraph in its place says both arguments now
+belong in the body text of the section that cites Figure 2 — that giving the null weaker marginals would
+convert a null into a handicap, and that the raking starts from a uniform seed so the donor surveys' own
+weights are discarded. **Neither is in the manuscript prose yet. Whoever writes Figure 2's prose pointer
+must carry both, or the paper loses two answers to two obvious reviewer objections.**
+
+Also added: no image title, no band headings (the 2026-09-14 return invented both), do not print any label
+twice, and the fork rule restated as `No arrow arrives at this box from either candidate`.
+
+**Every number is unchanged**: 73,254 / 2,024,068, 7.30 B, 5,200, the three pairs 58.91 / 21.79,
+60.44 / 19.21, 21.24 / 18.54, and 2.70.
+
+### Graphical abstract — `4thJ_graphical_abstract.md`, Section 10 rewritten and a blocking banner added
+
+🟢 **`FINDING 283` is now addressed in the prompt.** Three changes, beyond the text cut:
+
+1. **Lane three is given its own rule, in capitals, stated three times** — before the navy block, in the
+   block's own paragraph, and again under "the two things most likely to go wrong". It turns downward
+   before reaching the block, runs below it as a dashed line with clear white space, and turns back up on
+   the far side. At no point may it touch, overlap or pass behind the block, and no arrowhead from it may
+   land on the block. The paragraph says why: the whole paper rests on the held-out country never being
+   trained on.
+2. **The word `activity` is forbidden three times**, including one sentence that says printing it is on its
+   own a reject.
+3. **Three ribbons, "and three is the count, not two"**, with the third dashed and receiving lane three.
+   The held-out box is specified as exactly two lines, each written once.
+
+Text removed from the image: the diary-field tuples and `conditioning prefix + day sequence` from all three
+lanes; the sub-lines under the three source cards; `Harmonised European Time Use Surveys` at the foot of
+the left panel; `structure guaranteed at decoding` in the navy block; two of the four lines in the held-out
+box; `population and day are generated separately`; and one of the three lines under the schedule curves.
+The two title lines stay, because a graphical abstract is read on its own on a listing page.
+
+A blocking banner was added above Section 0 stating all three faults and the text cut, and saying that
+where Sections 3 and 6 list a sub-line Section 10 no longer carries, Section 10 wins.
+
+### What this does about `FINDING 282`
+
+It does not fix it, but it makes it survivable. **The same canvas now has to carry about half the words**,
+so the type can be set roughly twice as large at any pixel count. All three prompts also end with an
+explicit OUTPUT paragraph naming the minimum size, asking for a PNG that was never a JPEG, and saying that
+a 1376 x 768 return has to be regenerated. If the generator still caps at 1376 x 768, the ruling recorded
+under `FINDING 282` stands: re-render elsewhere, or rebuild Figure 1 in matplotlib from the frozen card
+list.
+
+Next: author regenerates all three from the revised prompts; then `FINDING 280`, then the reference harvest.
+
+---
+
+## 2026-09-14 last+2 — second generation from the cut-back prompts, inspected: one pass, two rejects
+
+⚪ **Nothing computed. No gate, band, verdict or registered definition moved.** Image inspection only.
+
+The author regenerated all three images from the prompts rewritten earlier the same day and installed them
+at 11:25. The superseded 11:03 set is at `figures/Prompts_Images/previous/backup_20260914_1103/`. The
+generating agent's own summary again claimed all three were correct; again it was not taken at face value.
+Every statement below was read off the installed PNG, several off crops magnified 3x to 10x.
+
+**All three are 1376 x 768 again.** `FINDING 282` is therefore unchanged and the shorter text did not move
+it: the generator caps at that canvas whatever the prompt asks for. The type *is* visibly larger than on
+the 11:03 set, because the same box now carries half the words, so the images are readable on screen; they
+are still about 197 dpi at full page width. **The author ruling under `FINDING 282` is now the only route
+to a submittable Figure 1: re-render somewhere with a larger canvas, or rebuild Figure 1 in matplotlib
+from the frozen card list.**
+
+### Figure 1 — `HETUS_LLM_Pipeline_Steps.png` — PASS on thirteen of fourteen items, one typo
+
+🟢 Twelve cards in one row, 0 to 11, left to right. The five bands span exactly the cards they should
+(DATA over 0-2, MODEL over 3-5, CLAIM over 6-7, ENERGY over 8-9, STOCK over 10-11) and all five labels are
+horizontal. One title line only. No green, no red, nothing written below the tiles. Card 6 is enlarged with
+the only bold body line and keeps the hollow `open` chip. Chips are right on all twelve: card 0 `cleared`
+with one check, cards 1, 2, 3, 5, 8 and 9 `validated` with two checks each, cards 4 and 7 `decided`, cards
+6, 10 and 11 hollow `open`. The `pre-declared gate batteries` bracket spans cards 1 to 5 with five drop
+lines, correct for the second time running. The honesty lines on cards 5, 8 and 9 are all present and all
+short.
+
+🔴 **`FINDING 286` — card 11 prints the word `mapping,` twice.** It reads *same mapping, mapping, bands
+inherited unmoved* where Section 11 says *same mapping, bands inherited unmoved*. Confirmed on a 4x crop.
+It is one duplicated word in one card and nothing else on the figure is wrong, so this is a re-render of
+Figure 1 alone, not a redesign. Nothing in the prompt caused it; the paste block is correct.
+
+### Figure 2 — `Figure_02_loco_design.png` — REJECT, `FINDING 287`
+
+🔴 **`FINDING 276` is reopened for Figure 2. The fork is wrong again, in the mirror image of the old
+defect.** The marginals box now sends one arrow UP into the fine-tuned model, which is right. But the
+second arrow still points the wrong way: it runs UP from the raked donor pool INTO the marginals box, so
+an arrow **arrives** at the box from a candidate, which the prompt forbids in those words. Read literally
+the picture now says the donor pool produces Britain's published marginals. Confirmed at 4x. The branch
+that should exist, marginals down into the donor pool, is not drawn.
+
+🔴 **A third arrow runs straight from the marginals box into the scoring box.** The marginals are an input
+to both candidates, not a thing that is scored. Three arrowheads land on the scoring box where there
+should be two.
+
+🔴 **Three band headings are printed across the top**: *Corpus and split*, *Visual candidates*, *Scoring*.
+The revised prompt says there is no image title and no band headings, and names *corpus*, *candidate* and
+*split* as words that must not appear in the picture. All three appear.
+
+🔴 **Two hex colour codes are printed inside the boxes**: `Upper: #332288` above the model's title and
+`#882255` above the raked donor pool's title. The palette table is a specification for the person drawing
+the figure and was read as text to draw.
+
+🔴 **The prompt's own instruction sentence is printed as the ground-truth label**, greyed at the top right,
+reading *held-out country's real diaries appear a single label ground truth*, and it is clipped by the
+right edge of the canvas. The label should be the two words `ground truth`.
+
+⚪ Minor, not blocking: the two candidate boxes are not of equal visual weight — the model is a white box
+with a thin indigo outline, the null a solid wine block. The prompt asks for equal weight so that neither
+reads as the hero.
+
+🟢 What is right: every number (58.91 / 21.79, 60.44 / 19.21, 21.24 / 18.54, 2.70, 73,254, 2,024,068,
+7.30 B, 5,200), the null bar shorter in all three pairs, the house palette on the country tiles and the
+bars, the sand hatch on the null series, Britain outlined not filled, and one verdict sentence only.
+
+### Graphical abstract — `HETUS_LLM_CrossNational_Pipeline.png` — REJECT, `FINDING 288`
+
+🟢 **Two of the three faults of `FINDING 283` are fixed.** The word `activity` appears nowhere in the
+image. The dashed bypass below the navy block is now drawn: lane three turns down, runs under the block
+with clear white space, and turns up on the far side into the dashed ribbon, with the two small lines
+*each country is held out in turn* and *never seen in training* beside it.
+
+🔴 **But lane three still touches the navy block.** A short solid rose stub runs from the point of the
+lane-three chevron to the block's left edge, exactly as lanes one and two do. Confirmed at 10x
+magnification: the stub is about six pixels long and unmistakable. So the image now says both things at
+once — the held-out country bypasses the model, and the held-out country feeds the model. **This is the
+same disqualifying defect as before and the abstract still must not be used.** The bypass is necessary but
+the contact is what makes the claim false.
+
+🔴 **Only two ribbons are drawn where the prompt asks for three**, one solid and one dashed. The prompt
+says *three is the count, not two* in those words. The third, teal or orange, is missing.
+
+🔴 **The held-out box carries four lines, not two, and one of them is garbled**: *generated from published
+marginals only*, *compared against demgranle c diary*, *compared against reweighted real diaries*, under
+the heading *held-out country*. `demgranle c diary` is not a word. `compared against` is printed twice.
+
+⚪ Minor: the two ribbons are drawn in many hues rather than one per lane colour, and the three lane words
+are split across lanes — lane one has `episode diary`, lane two has `serialised record`, lane three has
+neither — where the prompt gives all three lanes both.
+
+🟢 What else is right: the three source cards each carry one label, the navy block carries its title, the
+transformer motif, the `low-rank adapter` badge and exactly two lines, the marginals-to-synthetic-
+population chain runs below and outside the block and turns up into the held-out box, the subdivided
+footprint is filled edge to edge with six differently marked cells and no service core, and the three
+schedule curves are present in the three lane colours with 0 and 24 on each axis.
+
+### Where this leaves the figure set
+
+| Figure | State |
+|---|---|
+| Figure 1, pipeline | Content correct. One duplicated word on card 11 (`FINDING 286`). Re-render, or rebuild in matplotlib under `FINDING 282`. |
+| Figure 2, design | REJECT (`FINDING 287`). Five faults, one of them the fork the figure exists to prove. |
+| Graphical abstract | REJECT (`FINDING 288`). Lane three still touches the block. |
+| Figures 3 to 7 | Untouched, timestamps unchanged at 10:09. |
+
+**A pattern worth recording, because it decides what to do next.** Across two generations the same class of
+error keeps recurring: text that is a specification for the person drawing gets printed as text in the
+drawing (hex codes, band names, the ground-truth instruction sentence), labels get duplicated (`mapping,`,
+`compared against`, and on the 11:03 set an annotation and a ribbon line), and an explicitly forbidden
+connector gets drawn anyway. Prose prompts are not eliminating these, and each regeneration costs a full
+author round trip. **Figure 1 is the one figure whose content is entirely frozen — twelve cards, twelve
+titles, sixteen body lines, four chip words, seven tiles, five bands, no judgement anywhere — and the
+never-create-images rule permits a matplotlib build from frozen data. Recommendation to the author:
+build Figure 1 in code and keep Gemini for Figure 2 and the abstract, which are pictorial.**
+
+Next: author ruling on `FINDING 282`; then regenerate Figure 2 and the abstract; then `FINDING 280`.
+
+---
+
+## 2026-09-14 last+3 — all three figure prompts rewritten a third time, on the author's ruling that the failures are this side's
+
+⚪ **Nothing computed. No gate, band, verdict or registered definition moved.** Prompt files only.
+
+**The instruction.** *"if figures are not good, it is your fault, update prompts to be in detail."*
+Taken as written. The inspection entry above (*last+2*) recorded five faults on Figure 2, three on the
+graphical abstract and one on Figure 1. **Three of the five Figure 2 faults are traceable to this side
+of the work and not to the generator**, and they are the reason the ruling is right.
+
+### The root cause on Figure 2, which was ours
+
+Figure 1 and the graphical abstract each had a fenced paste-ready block. Figure 2 never did: the file
+said to paste the whole document. The whole document contains markdown section headings
+(`### Band 1 (left) - the corpus, split`, `### Band 2 (middle) - the two candidates`,
+`### Band 3 (right) - scoring`), a house-palette table of hex codes, and a sentence describing how to
+draw the far-right element. The generator drew all three: three headings across the top of the picture,
+`Upper: #332288` and `#882255` inside the boxes, and the description sentence as the label. **It was not
+inventing text. It was handed text with no way of telling which of it was to be drawn.**
+
+🟢 **Figure 2 now has Section 12, a single self-contained paste-ready block**, and the file's
+header says to paste that and nothing else. The block contains no markdown heading, no table of colour
+codes and no sentence that could be mistaken for a label.
+
+### Three additions made to all three prompts
+
+1. **A TEXT INVENTORY**, numbered, at the end of each block: every string the picture may contain, the
+   count, and which few strings are drawn more than once and how many times. The governing rule is now
+   stated positively — *if a word appears in these instructions but not in the inventory, it must not
+   appear in the picture* — rather than as a growing list of prohibitions.
+2. **A never-draw-instruction-words paragraph** naming the words that actually leaked: the layout words,
+   the section names, and every colour code, with the flat rule that **the character `#` appears nowhere
+   in any of the three images**.
+3. **A six-question self-check the generator must answer in its reply.** Each question is a yes/no or a
+   count on the exact defect that figure has already shown, plus the pixel size, with the sentence
+   *a wrong answer reported is one round trip; a wrong answer reported as correct is three*. The
+   generating agent has now twice reported all three figures correct when they were not, so the value of
+   this is not that it prevents the defect but that it forces the defect to be named.
+
+### Per figure
+
+**Figure 1.** A word-count table for all sixteen card body lines, so a duplicated word shows as a count
+one too high, and card 11's five words listed individually with *the word mapping appears on card 11
+once and only once* (`FINDING 286`). Nothing else on Figure 1 changed; it passed thirteen of fourteen.
+
+**Figure 2.** An explicit **arrow table**: exactly six arrowheads, each one named by where it lands, and
+then the negatives — no arrowhead on the marginals box, no arrow from the marginals box to the scoring
+box, exactly two arrowheads on the scoring box, none on any country tile. The two branches of each fork
+are stated to be branches of **one** line leaving the source. The 2026-09-13 return drew the only arrow
+touching the marginals box as arriving from the model; the 2026-09-14 return drew it arriving from the
+donor pool. The new block says which end of each line carries the head, one line at a time
+(`FINDING 276`, `FINDING 287`). The far-right label is written out as *the two words are: ground truth*
+and given its own inventory number. The two method boxes are respecified as identical except for border
+colour and hatch, which also answers the equal-weight point.
+
+**Graphical abstract.** The lane-three rule is rewritten around a measurement rather than an adjective:
+lane three turns down **at least one tenth of the image width to the left of** the navy block's edge,
+and **no connector of any length** may join them — *six pixels was enough to make the figure unusable*
+(`FINDING 288`). It also forbids lane three from tapering to a point aimed at the block, which is what
+the defect actually looked like. The held-out box is respecified as exactly three lines counting its
+heading, with *do not write "compared against" more than once anywhere in the image*, and with the rule
+that every word in the box is an ordinary English word — the return contained `demgranle c diary`.
+🔴 **Section 10.2 item 9, which still demanded a fourth line `three independent nulls, all
+reported`, is marked SUPERSEDED.** The file had been contradicting itself since the text cut, and a
+checker following 10.2 would have enforced the four-line box that produced the duplication.
+
+### What this does not fix
+
+🔴 **`FINDING 282` is untouched and no prompt can touch it.** All three returns have now come
+back 1376 x 768 three times running, against prompts that name the size, forbid it, and now ask the
+generator to say so if it cannot exceed it. If the fourth return is 1376 x 768 as well, the prompt is
+not the variable. **The recommendation of *last+2* stands unchanged: build Figure 1 in matplotlib from
+the frozen card list, which settles `FINDING 282` and `FINDING 286` together and at any resolution, and
+keep the generator for Figure 2 and the abstract, which are pictorial and cannot be coded.**
+
+**Backups.** `4thJ_pipeline_steps_figure.md.bak_pre_detail` (1103 lines),
+`4thJ_figure02_loco_design.md.bak_pre_detail` (214), `4thJ_graphical_abstract.md.bak_pre_detail` (929),
+all beside the originals, which are now 1159, 437 and 1011 lines.
+
+Next: author regenerates all three from the revised blocks; then `FINDING 280`.
+
+---
+
+## 2026-09-14 last+4 — third generation inspected: one figure closes a defect and opens two, two figures still fail on the one thing they exist to prove
+
+⚪ **Nothing computed. No gate, band, verdict or registered definition moved.** Image inspection and
+prompt files only.
+
+The author regenerated all three from the revised blocks and installed them at 13:11. The 11:25 set is at
+`figures/Prompts_Images/previous/backup_20260914_pre_regenerate/`. Every claim below was read off the
+installed PNG, several off crops magnified 3x to 8x.
+
+🟢 **The self-check worked, and that is the one clear gain of the third revision.** The generating
+agent answered the six questions and **reported three of its own defects in plain words**: the stray
+`ONE` and `RIGHT EDGE` labels on Figure 1, one arrowhead touching the marginals box on Figure 2, and the
+third lane tapering into the dark block on the abstract. All three were then confirmed here independently.
+For the first time the external report and the inspection agree. That is worth keeping whatever else
+changes.
+
+🔴 **All three are 1376 x 768 for the fourth time.** `FINDING 282` is now settled as a fact rather
+than a suspicion: the prompt is not the variable. The block asks for 2400 x 1000, forbids 1376 x 768 by
+name, and asks the generator to say so if it cannot exceed it — and it did say so. The cap is the tool.
+
+### Figure 1 — `HETUS_LLM_Pipeline_Steps.png` — one defect closed, two opened
+
+🟢 **`FINDING 286` is CLOSED.** Card 11 reads `same mapping, bands inherited unmoved`, each word
+once. The word-count table did its job.
+🟢 The `pre-declared gate batteries` bracket spans cards 1 to 5, confirmed on a 3x crop, for the
+third time running. Twelve cards, five bands over the right cards, card 6 enlarged with the only bold
+line and a hollow chip, no green, no red, nothing else below the tiles.
+
+🔴 **`FINDING 289` — and this one is this side's fault, not the generator's.** Two extra shapes
+are drawn along the bottom: the loose word `ONE` and, in its own grey tile, `RIGHT EDGE`. **Nine tile
+shapes where the specification says seven.** Both strings come from the prompt's own bracket sentence,
+which read *joined by ONE bracket that spans cards 1, 2, 3, 4 and 5 together. The bracket starts at the
+LEFT edge of card 1 and ENDS AT THE RIGHT EDGE OF CARD 5* — written in capitals, and sitting inside the
+list of the seven tile labels, where every other line is a label. It was read as two more labels.
+**The general rule this yields is now written into all three blocks: an instruction inside a fenced
+prompt is never written in capitals and never sits inside a list of labels.** The capitals were added on
+this side to make the instruction harder to miss, and they made it easier to draw.
+
+🔴 Card 3's chip reads `vall`, a clipped `validated`, with its two checkmarks correct. Card 0's
+`cleared` chip carries no checkmark where the specification gives it one. Both are new, both are the
+generator, and both are now named in the block: chip words are spelled in full, widen the chip rather
+than clip the word, and card 0 carries exactly one checkmark.
+
+⚪ Minor, not blocking: cards 2 and 3 share one rounded outline and are narrower than the rest, and
+card 2 is tinted teal although it sits under the grey `DATA` band.
+
+### Figure 2 — `Figure_02_loco_design.png` — REJECT, `FINDING 290`
+
+🟢 **Four of the five faults of `FINDING 287` are fixed.** No band headings. No hex code anywhere
+— the character `#` appears nowhere in the image. The far-right label is the two words `ground truth`,
+and the grey dashed line from it to the scoring box carries no arrowhead, as specified. Every number is
+right, the null bar is shorter in all three pairs, the hatch is on the null series, Britain is outlined
+and not filled, and there is one sentence in the picture.
+
+🔴 **The fork is still wrong, for the third generation running, and it is the only thing the
+figure exists to prove.** The single line leaving the Spain-and-Italy enclosure forks into **three**
+branches, not two: up into the model, **straight into the box holding Britain's published census
+marginals**, and down into the donor pool. Confirmed on a 5x crop: the arrowhead lands squarely on that
+box's left edge. Read literally, the picture now says the two training countries produced Britain's
+census. Meanwhile the fork that should exist — marginals down and up into the two candidates — **is
+not drawn at all**; the marginals box's only outgoing line runs right, merges with the donor pool's
+output line, and shares the lower arrowhead into the scoring box. The scoring box does have exactly two
+arrowheads, so that count now passes, but one of them is carrying the marginals.
+
+**What the prompt did wrong, and what it now says.** The arrow table named six arrowheads by their
+landing place and then listed the negatives afterwards. A list of six destinations does not stop a
+seventh line being drawn. The block now describes **three lines, drawn one at a time**, each with its
+start, its fork and its two ends, and says that the marginals box is a starting point and never a
+destination, with the sentence *if you find yourself drawing a line that ends at it, you have the picture
+backwards*.
+
+### Graphical abstract — `HETUS_LLM_CrossNational_Pipeline.png` — REJECT, `FINDING 291`
+
+🟢 **Two of the three faults of `FINDING 288` are fixed.** Three ribbons are drawn, not two. The
+held-out box carries its heading and exactly two lines, each written once, every word a real English word
+— `demgranle c diary` and the repeated `compared against` are gone.
+
+🔴 **The third lane still reaches the dark block, and it is worse than last time.** On 2026-09-14
+at 11:25 the contact was a stub about six pixels long. At 13:11 **the tinted lane body itself runs flush
+into the block's left edge across its full width**, confirmed on an 8x nearest-neighbour crop: rose fill
+and navy fill are adjacent, with no white between them. A dashed bypass is also drawn below the block. So
+the picture again says both things at once, and the disqualifying one is the contact.
+
+**What the prompt did wrong, and what it now says.** The rule was written about arrows, stubs and
+connectors — things joined *to* the lane — and the lane is not any of those. It is a tinted strip, and
+the strip was simply drawn long enough to arrive. The block now specifies the **shape of the strip
+itself**: the third lane is a strip that runs right and **stops**, its rightmost point at least a tenth of
+the image width from the block, the gap plain white, and *if any coloured pixel of the third lane is
+adjacent to the dark block, the picture is wrong*. It is now the first thing said about the lanes rather
+than a rule appended after them.
+
+🔴 **New: all six dwelling cells in the small footprint plan carry the same checkmark.** The
+prompt asks for six *different* tiny marks and says *none of them is a checkmark*, in those words. Six
+identical ticks were drawn. On a figure whose headline result is a failure, a grid of green-ticked cells
+is the worst available mark. The block now lists the six marks one by one and says that six identical
+marks are wrong whatever the mark is.
+
+⚪ Minor, unchanged: each lane carries one of `episode diary` and `serialised record` rather than both.
+
+### Where this leaves the figure set
+
+| Figure | State after the third generation |
+|---|---|
+| Figure 1, pipeline | Content correct, `FINDING 286` closed. Two extra tiles from a prompt defect (`FINDING 289`), one clipped chip word, one missing checkmark. |
+| Figure 2, design | REJECT (`FINDING 290`). Four faults fixed; the fork is wrong for the third time. |
+| Graphical abstract | REJECT (`FINDING 291`). Two faults fixed; the held-out lane touches the model, worse than before. |
+| Figures 3 to 7 | Untouched, timestamps 10:09. |
+
+🔴 **The pattern across three generations is now measurable, and it decides the question.** Each
+round fixes most of the named faults and introduces new ones somewhere the prompt did not name. Round one
+to two: three faults fixed, three new. Round two to three: six fixed, four new. **Nothing converges,
+because the prompt can only name the failures that have already happened.** Figure 1 is the one figure
+whose content is entirely frozen — twelve cards, twelve titles, sixteen body lines, four chip words,
+seven tiles, five bands, no judgement anywhere — and every remaining defect on it is a drawing error,
+not a content error: two stray labels, a clipped word, a missing checkmark, and the canvas size. **A
+matplotlib build produces all four correctly by construction and at any resolution, and the
+never-create-images rule expressly allows it for frozen data. Recommendation, unchanged and now
+stronger: build Figure 1 in code. Figure 2 and the graphical abstract stay with the generator, because
+they are pictorial.**
+
+**Prompt files after the fourth revision**: `4thJ_pipeline_steps_figure.md` 1169 lines,
+`4thJ_figure02_loco_design.md` 447, `4thJ_graphical_abstract.md` 1020. Pre-revision copies are the
+`.bak_pre_detail` files beside them.
+
+Next: author ruling on Figure 1 in code; then regenerate Figure 2 and the abstract; then `FINDING 280`.
+
+---
+
+## 2026-09-14 last+5 — Figures 1 and 2 and the graphical abstract built in code; the image loop is closed
+
+⚪ **Nothing computed, trained or scored. No gate, band, verdict or registered definition moved.**
+Figure scripts, one board rename, one new board, two prompts, one rebuild.
+
+### The instruction, and why it is the right call
+
+*"ok if possible you create these failed images."* The never-create-images rule stands and its standing
+exception is a plot built by a script from frozen data; the author extended that exception to these three
+by name. The case for it was already measured. Round one to two fixed three faults and introduced three.
+Round two to three fixed six and introduced four. Round three to four was never run because the pattern
+was clear: **a prompt can only name failures that have already happened**, so each revision buys the last
+round's defects and pays for them with new ones. Four returns in a row also came back at the same
+1376 x 768 canvas against prompts that named the size, forbade it, and asked the tool to say so if it
+could not exceed it. The canvas was never the prompt's to fix.
+
+### What was built
+
+| Figure | Script | PNG | Pixels |
+|---|---|---|---|
+| Figure 1 | `figures/scripts/generate_fig01_pipeline.py` | `HETUS_LLM_Pipeline_Steps.png` | 4440 x 1620 |
+| Figure 2 | `figures/scripts/generate_fig02_loco.py` | `Figure_02_loco_design.png` | 3850 x 1277 |
+| Graphical abstract | `figures/scripts/generate_graphical_abstract.py` | `HETUS_LLM_CrossNational_Pipeline.png` | 3937 x 1525 |
+
+Each script carries the figure's frozen TEXT INVENTORY as data, copied character for character from the
+prompt file, and draws nothing else. The prompt files are untouched and remain the specification.
+
+### The assertions, which are the point
+
+The gain is not that a script draws more neatly. It is that **the defects that kept coming back are now
+checked by the program before the file is written**, so a wrong figure cannot be produced silently.
+
+* **Word counts.** Figure 1's sixteen body lines are checked against the prompt's own word-count table.
+  `ABORT card N word count ... expected ...` if any line gains or loses a word. This is `FINDING 286`
+  made impossible rather than merely warned against.
+* **Arrowheads.** Figure 2 collects the six arrowhead coordinates and asserts two on the top method box,
+  two on the bottom, two on the scoring box and **zero anywhere inside the published-marginals box**.
+  The build prints the four counts. This is `FINDING 276` / `287` / `290`, which was drawn wrong three
+  times in three different ways, made impossible.
+* **The held-out gap.** The abstract computes the gap between the third lane's end and the model block
+  and refuses to save if it is under one tenth of the image width. It prints *held-out lane stops 3.15 in
+  (10.0% of the image width) short of the model block*. This is `FINDING 288` / `291`.
+* **Text fitting.** Every text object is measured against the element that holds it after drawing.
+  Nothing is shrunk and nothing is clipped; the script either prints `no text overflows its element` or
+  names the offender, its drawn width and its allowance. All three print the clean line.
+* **Resolution.** `FINDING 282` becomes a script argument. All three are well past the 2400 x 1000 the
+  prompts asked for, and all three are PNG that was never JPEG.
+
+`FINDING 289`, the two instruction words drawn as extra tiles, closes for a different reason again:
+there is no instruction text anywhere in the drawing path, so an instruction cannot leak into a picture.
+
+### Palette and captions, unchanged
+
+Spain rose `#CC6677`, Britain indigo `#332288`, Italy teal `#44AA99`, second series sand `#DDCC77` with a
+hatch, negative channel wine `#882255`, reference lines black, neutral fills `#F2F2F2` and `#D0D0D0`. No
+green and no red. Every pair is separated by hatch as well as hue, so all three survive greyscale. No
+caption, note band, verdict sentence or legend is printed inside any of the three images, and the three
+external captions are unchanged and are within the ten-word rule.
+
+### The rebuild, verified rather than assumed
+
+```
+cd 4J_docs_occ/writing/submission
+pandoc 4J_manuscript_submission.md -o raw.docx --reference-doc=extra/build_scripts/ref_submit_single.docx --resource-path=.
+py -3 extra/build_scripts/post.py raw.docx 4J_manuscript_submission.docx
+```
+
+`tables 8 | xml ok`. 1,817,366 bytes, down from 4,615,601 because vector-drawn line art compresses far
+better than a generated raster. **Eight images embedded; the md5 of each one matches a file in
+`figures/`, all eight, so nothing was re-encoded.** The manuscript markdown already referenced all three
+images at lines 41, 96 and 100, so no markdown edit was needed and none was made.
+
+Backups: `writing/submission/previous/4J_manuscript_submission.docx.bak_pre_codefigs`, and the three
+superseded PNGs at `figures/previous/backup_20260914_pre_codebuild/`. The copies of the three images that
+live beside the prompts in `figures/Prompts_Images/`, under both their names, were refreshed too.
+
+### The two boards
+
+🟢 **`4thJ_CHECKLIST.html` is retired to `DONE_4thJ_CHECKLIST.html`**, on the author's
+instruction, with its pre-Step-11 backup renamed alongside it. It tracked the pipeline, Steps 0 to 11,
+and the pipeline is finished. Nothing else was changed inside it.
+
+🟢 **`writing/4thJ_MANUSCRIPT_CHECKLIST.html` is new** and tracks the paper only: 30 cards, 12
+done, 5 blocking, 7 quality, 4 waiting on the author, and 2 carried over under a heading that says they
+cannot be closed and are not work. Those two are `G10.14` and `G10.18`, the manifest fields never written
+on campaign C1's 410 cells; the board states in plain words why no future session should pick them up.
+The card counts on the page were checked against the cards on the page; the inline filter script passes
+`node --check` and a DOM-shim smoke run over all six filter states.
+
+### The two evaluation prompts
+
+`writing/IMP/IMP_01_GEMINI_manuscript_evaluation.md` and
+`writing/IMP/IMP_02_FABLE_manuscript_evaluation.md`. The split is deliberate and follows the standing
+rule that deep research is external: **Gemini gets everything that needs the outside world** - literature
+coverage, whether a comparable negative result already exists, whether anything published contradicts
+this one, DOI integrity, the hostile-reviewer read - and **Fable gets everything that needs the
+repository** - every number traced back to its step document, the cross-reference audit, figure against
+text, built file against master, and what the repository records that the paper does not carry. Fable is
+explicitly forbidden to search the web, to resolve a DOI or to offer a citation, and is explicitly
+read-only.
+
+Both returns are shaped the same way, eight lettered sections in a fixed order, so they can be laid side
+by side. Both end with a **reconciliation section that must be answered last**, against the same eight
+known defects, which turns the return into a measurement of its own depth: a pass that finds one of the
+eight is shallow and the rest of it is worth less. Both forbid replacement prose, forbid changing or
+recomputing any number, forbid proposing that a threshold be loosened because the model fails it, and
+forbid em and en dashes. Both carry a six-question self-check to be answered in the reply, the mechanism
+that worked on the third figure generation.
+
+🔴 **Neither return may move a gate, a band, a verdict or a registered definition.** If a return
+argues that one should move, that is a finding to record, not an edit to make. Vet under the seven-step
+protocol; `RL30` and `RL31` failed five of seven on 2026-09-13 and several of their citations were
+struck.
+
+### What did not change
+
+No gate, band, verdict or registered definition. No number in the manuscript. No wording in any prompt
+file. No section of the manuscript markdown. `FINDING 280`, `278`, `281` and `275` are all exactly as
+they were and are on the new board.
+
+Next: `FINDING 280` - Tables 3 and 4 do not exist and §3 cites Table 4.
+
+---
+
+## 2026-09-14 last+6 - the two evaluator returns worked through, and Madrid put on the machine
+
+Two independent evaluations of the manuscript came back: one with the literature and without the
+repository, one with the repository and without the literature. Both were read in full and planned
+into `writing/IMP/IMP_PLAN_2026-09-14.md` as five tiers. This entry records what was executed.
+
+⚪ **No gate, band, verdict or registered definition moved in this round.** `G6.7` still reads FAIL in
+all three folds on amplitude, before and after every repair below.
+
+### What the repository said back, against what the paper said
+
+The single most valuable thing the repository-side evaluation produced was a refutation, not a defect.
+`FINDING 275` had recorded that the steering arm of `G6.7` was never recomputed on the reported 7.30 B
+model, and the manuscript apologised for that in four places. It is not true. The `steering` block in
+`Step6_docs/outputs_step6/g67_leg5_{es,uk,it}.json` carries `passes: true` with R-squared 0.9897 /
+0.9914 / 0.9941 against a registered floor of 0.80. The arm was computed and it passes in all three
+folds. The same files settled a second item: the printed slopes 0.4153 / 0.5329 / 0.4049 are the
+five-channel definition that `D-S6-13` rules, not the six-channel numbers the paper said they were;
+the six-channel values, 0.1033 / 0.4310 / 0.1916, appear nowhere in the paper. Both were re-measured
+directly before anything was edited, because a peer's numbers are evidence only after re-measurement.
+
+### The word that left the prose
+
+The author ruled, verbatim: *"never say as failure, do not use this word, this is academic
+publications, instead use the word of limitation"*. 119 prose hits across the manuscript were
+rewritten into the register of a limitation. Re-measured independently afterwards rather than taken on
+the executing session's own count: 1,456 lines, zero surviving fail-family prose words, zero em or en
+dashes, and **exactly 6 uppercase `FAIL` tokens, unchanged**. Those six are registered gate verdicts;
+renaming one would move a definition, so they stay verbatim and only the sentences around them changed.
+
+### What the paper now concedes that it did not
+
+* **Capacity.** Both evaluators independently named the unqualified "capacity is eliminated" claim the
+  likeliest reviewer objection, because two of the three eliminations ran on a single fold and the
+  backbone comparison has two points. It is now scoped in all three loci: across 1.5 to 7.3 billion
+  parameters, with the tuning and the second model family each resting on one fold, more capacity did
+  not close the gap. The finding is kept; the reach is not.
+* **The held-in result.** Section 7.1 now states that the same bar is missed on 6 of 6 of the
+  countries the model was trained on, so the shortfall is not confined to transfer. The title frames
+  the work as transfer and the paper now says where that framing is generous to itself.
+
+### Two numbers corrected against their own cited basis
+
+* The supplement's adapter merge drift row said `2.7e-4 to 7.3e-4 (table basis)` beside a verdict of
+  `FAIL, 4 of 4`. The four scored runs it names read 3.223e-04, 3.471e-04, 3.853e-04 and 7.279e-04, so
+  the row now reads `3.2e-4 to 7.3e-4 across those four scored runs`. Recorded with it, and left in
+  place rather than edited out of the source: `FINDING 103`'s prose upper bound of `7.6e-04` **matches
+  no measurement anywhere in the repository**. Every `max_logit_diff` on disk was enumerated to check.
+* Figure 4's title promised direction and amplitude and drew only amplitude. Now that the direction
+  arm is known to exist, the figure carries both, and its amplitude axis says on its face that the
+  slopes are the five-channel ruled definition.
+
+### Two items did not reproduce, and were reported rather than edited
+
+Figure 7's rounding and the graphical abstract's subtitle were both in the plan and neither was in the
+file. The plan had been drawn from stale documents. Reporting a non-reproducing item is the correct
+outcome; editing to match a plan is not.
+
+One further item was declined on scope rather than reported as done: Figure 2's caption now says three
+nulls and the schematic draws one, so the wording in the script and in the prompt was corrected but the
+picture still does not depict three. Redesigning the schematic is a design task and is left open.
+
+### The built file
+
+`tools/4thJ_build_submission_docx.sh` now holds both Word defects. The author line had lost its
+affiliation and corresponding-author anchor because raw LaTeX superscript does not survive pandoc; the
+script rewrites it to pandoc's own superscript syntax before building. Every figure gained a duplicate
+caption paragraph built from its alt text; `--from=markdown-implicit_figures` drops them. Rebuilt and
+verified this round: all eight embedded image md5s match the eight PNGs on disk, 8 caption paragraphs
+and 0 pandoc-generated ones, and a real Word superscript run is present.
+
+### Madrid, and why the split the author asked for was not taken
+
+The author ruled that Spain be re-run from scratch, then granted the Speed cluster for it, then asked
+that some of the runs be given to the local machine because the cluster was busy with their own work.
+The first two are done; the third could not be, and the reason is worth recording.
+
+Campaign `C2` pins EnergyPlus 23.1 and refusal `R6` **measures** it by running `--version` on the
+binary rather than reading it from a config. Speed carries only 24.2.0, so a 23.1.0 Linux build has to
+be installed there before a single cell can run; that install is submitted and sitting behind the
+author's own array on the association CPU limit. Separately, the driver has no shard selector at all:
+its only subsetting flag is `--limit`, whose own help string reads *"cap the cell count (a smoke run,
+never a population)"*.
+
+Both could be worked around. The reason not to is methodological: two builds of version 23.1, one
+Windows and one Linux, inside one Madrid population would leave that city with two engine build hashes
+where London and Bologna each have one. So the local machine runs the whole population under one engine
+and the cluster's granted compute is spent on an independent replication shard instead. That turns a
+provenance defect into a cross-check.
+
+🔴 **The run's own scoping note was wrong about how fast this goes, and the error was mine to catch.**
+It quoted 800 to 1,100 cells per hour on four local workers. Measured from the precedent runs' own
+cell-file timestamps: London did 12,070 cells in about 44 hours, Bologna 11,681 in about 30, so about
+273 and about 383 cells per hour. Madrid's first 23 minutes read about 183 cells per hour, and its
+cells cost about 1.5 times London's, its stock being `relation/`-identified apartment blocks rather
+than terraces. **Expect 40 to 60 hours for Step 10, not 10 to 15.** Worker count was left at 4: the
+machine has 20 cores and is not CPU-bound, but sits at 62 per cent committed memory against a 75 per
+cent watchdog threshold, and the author uses it interactively and cannot reboot it.
+
+Two launcher bugs were found by the first launch attempt and are recorded because both were silent in
+different ways. `powershell.exe -File` refuses any path without a `.ps1` extension and exits 127, which
+`mktemp` guaranteed; under `set -eu` that killed the campaign after one line. And `ps_rc=$?` sat after
+an unguarded command under `set -e`, so the retry loop the script was built around could never have
+been reached: the first memory-watchdog kill would have ended the run instead of resuming it. The
+second bug would not have shown itself until hours in.

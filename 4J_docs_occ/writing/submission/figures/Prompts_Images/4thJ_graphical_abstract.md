@@ -134,6 +134,28 @@ asking a follow-up question.
 > `4thJ_pipeline_steps_figure.md`, and its cards 10 and 11 stay `open`. 🔴 **Do not import that
 > status story into this figure: no gate counts, no chips, no `archived`, no `campaign C1` or `C2`.**
 
+> 🔴 **REVISED 2026-09-14. The installed image must not be used and must be regenerated from
+> Section 10 of this file.** Three faults in the 2026-09-14 return, the first disqualifying
+> (`FINDING 283`):
+>
+> 1. 🔴 **The held-out lane ran into the training block.** The rose `Country C - held out` lane
+>    entered the left edge of the navy block exactly as the two training lanes did. Read literally, the
+>    picture says the held-out country was trained on, which is the one claim the whole paper turns on.
+>    Section 10 now says in three places that lane three must pass BELOW the block and touch nothing.
+> 2. 🔴 **The word `activity` was printed above the ribbons**, which this file forbids by name.
+> 3. **Only two of the three ribbons were drawn**, and one line inside the held-out box was printed twice.
+>
+> 🔴 **And the text inside the image was cut on 2026-09-14, on the author's instruction:
+> "these are not reports, these are representative images."** Section 10's string list is now the
+> authoritative wording; Sections 3 and 6 below still describe the layout and the forbidden strings, but
+> where they list a sub-line that Section 10 no longer carries, Section 10 wins. What was removed: the
+> diary-field tuples and `conditioning prefix + day sequence` in the lanes, the sub-lines under the three
+> source cards, `Harmonised European Time Use Surveys` at the foot of the left panel, `structure
+> guaranteed at decoding` in the navy block, two of the four lines in the held-out box, `population and
+> day are generated separately`, and one of the three lines under the schedule curves.
+
+---
+
 ## 0. Read this before generating
 
 > 🔴 **NO NUMBER MAY APPEAR IN THIS IMAGE THAT IS NOT LISTED IN SECTION 6 BELOW.**
@@ -671,114 +693,206 @@ held-out callout has four lines.**
 Create a flat vector method diagram, landscape orientation, about 2000 x 1100 pixels, on a white
 background, in one clean sans-serif family.
 
-READ THIS FIRST. Everything below describes what to DRAW. Words like "band", "column", "lane" and
-"block" are layout instructions for you, not text to put in the picture. Draw NO headings, NO section
-labels and NO captions of any kind except the exact strings listed under QUOTED TEXT. Do not write the
-word TITLE. Do not write BAND, or BAND 1, or any heading naming a part of the layout. All text is
-horizontal; nothing is rotated or vertical anywhere.
+READ THIS FIRST. This is a REPRESENTATIVE DIAGRAM, NOT A REPORT. It carries very little text on purpose.
+Only the strings listed under QUOTED TEXT may appear anywhere in the image. Words like "band", "column",
+"lane" and "block" are layout instructions for you, not text to put in the picture. Draw NO headings, NO
+section labels, NO captions and NO explanatory sentences. All text is horizontal; nothing is rotated.
+
+NEVER DRAW A WORD THAT CAME OUT OF THESE INSTRUCTIONS. Everything you are allowed to draw is listed
+under TEXT INVENTORY near the end of this prompt, numbered. If a word appears in this prompt but not in
+that inventory, it must not appear in the picture. In particular:
+  Never draw the words band, lane, column, block, panel, card, ribbon, tile, badge, motif, chevron,
+  dashed, navy, teal, orange, rose, QUOTED TEXT, TEXT INVENTORY, STRUCTURE, STYLE or OUTPUT.
+  Never draw a colour code. The character # appears nowhere in the image.
+  Never turn a sentence of this prompt into a label, a heading, a note or a caption.
+
+DRAW EVERY STRING EXACTLY ONCE, except the three strings the inventory marks as once per lane. Read
+every line of text in the picture back word by word before you finish and delete any word or line you
+have written twice. The 2026-09-14 generation wrote "compared against" twice inside one small box and
+garbled the second copy into text that is not English. If a box will not hold its lines, make the box
+bigger; never let a line break into fragments.
+
+SET THE TYPE LARGE. The text was cut short on purpose so that what remains can be read at a glance on a
+journal listing page. If a line does not fit, widen the element; never shrink the type to fit.
 
 At the very top, centred, exactly two lines of text with nothing above them:
   Cross-National Occupancy Generation with a Fine-Tuned Open-Weight LLM
   One Recipe, Many Countries: HETUS-Harmonised Time-Use Diaries for Building Energy Modelling
-The second line reads "One Recipe". Do not write "One Model, Many Countries".
+The second line reads "One Recipe". Do not write "One Model, Many Countries". These two lines are the
+only title; add no third line and no strapline.
 
-STRUCTURE, left to right: a narrow light grey panel of source cards; then three coloured horizontal
-lanes that converge rightward; then one large dark navy block; then the generation area; then
-buildings and small schedule curves at the right edge. A separate short chain runs BELOW the navy
-block. No headings label any of these areas.
+STRUCTURE, left to right: a narrow light grey panel of three source cards; then three coloured
+horizontal lanes; then one large dark navy block; then the generation area; then buildings and small
+schedule curves at the right edge. A separate short chain runs BELOW the navy block. No heading labels
+any of these areas.
 
-LEFT PANEL, three stacked cards, each with a simple flat icon:
-  a calendar or clipboard icon, bold label "National time-use surveys", beneath it
-    "household + individual + diary files" and "one harmonised survey round per country"
-    Draw this as ONE card. Do not draw stacked or offset copies behind it.
-  a document icon, bold label "HETUS framework", beneath it
-    "common diary structure, common activity coding list, common location and co-presence fields"
-  a people icon, bold label "Census and population marginals", beneath it
-    "household composition, age, employment"
-At the foot of the panel, one small line: "Harmonised European Time Use Surveys"
+LEFT PANEL, three stacked cards, each with a simple flat icon and ONE bold label and nothing else:
+  a calendar or clipboard icon, label "National time-use surveys". Draw this as ONE card, not as
+    stacked or offset copies.
+  a document icon, label "HETUS framework"
+  a people icon, label "Census and population marginals"
+No sub-lines under any of the three. No line at the foot of the panel.
 
 THREE LANES, and exactly three. Each is a soft-tinted rounded strip, identical in structure to the
 others, because the pipeline treats every country the same way. In each lane, left to right: a small
-neutral country tile, then "episode diary" with "(duration, activity, location, co-presence)" beneath
-it, then "serialised record" with "conditioning prefix + day sequence" beneath it. The word "start"
-must not appear: the tuple has no start field.
+neutral country tile, then "episode diary", then "serialised record". Those are the only words in a
+lane. Do not add the tuple of diary fields, do not add "conditioning prefix", and the word "start" must
+not appear anywhere.
   lane one, teal, tile reads "Country A"
   lane two, orange, tile reads "Country B"
-  lane three, magenta or rose, DASHED outline, tile reads "Country C - held out"
-The first two lanes converge into the navy block. The third does NOT enter it: its dashed arrow passes
-under or around the block and re-enters on the right, in the generation area. Beside that dashed lane
-write two small lines:
+  lane three, rose, DASHED outline, tile reads "Country C - held out"
+Draw no fourth lane and write no "Country D".
+
+🔴 THE SINGLE MOST IMPORTANT THING IN THIS IMAGE. IT HAS NOW BEEN DRAWN WRONG TWICE, IN TWO
+DIFFERENT WAYS, SO READ THIS TWICE.
+The third lane is shaped differently from the other two, and this is the single most important thing in
+the picture. Read this paragraph before you draw any lane at all, because the difference is in the shape
+of the lane itself and cannot be added afterwards.
+
+The first lane and the second lane are tinted strips that run rightward and end at the left edge of the
+dark block, touching it. That is right for those two lanes and only for those two.
+
+The third lane is a tinted strip that runs rightward and then stops. It stops well short of the dark
+block: its rightmost point is at least one tenth of the whole image width away from the dark block's left
+edge, and the space between them is plain white. The tinted strip does not continue past that point, does
+not narrow to a point aimed at the block, does not fade toward the block, and does not pass behind it.
+From where the strip stops, a thin dashed line leaves it going downward, runs left to right underneath
+the dark block with plain white space between the line and the underside of the block, and turns upward
+again on the far side to reach the generation area.
+
+Nothing at all joins the third lane to the dark block. Not a strip, not a line, not an arrowhead, not a
+connector, not a leader, not a tick, and not a short mark of any length. If any coloured pixel of the
+third lane is adjacent to the dark block, the picture is wrong and must be redrawn. The gap is empty
+white and you should be able to see it without magnifying the image.
+
+The reason is the whole paper: the country in the third lane is never trained on. A picture in which the
+third lane reaches the model says the opposite of the one thing the paper reports.
+
+Beside the dashed line write two small lines:
   each country is held out in turn
   never seen in training
-Draw no fourth lane and write no "Country D".
 
 THE DARK NAVY BLOCK, the visual anchor, with white text inside:
   large title line: One open-weight LLM, one recipe per held-out country
-  below it a small schematic transformer motif, three or four stacked horizontal layer bars with a
-  thin fan of connecting lines between two of them, and a small badge on the stack reading
-  "low-rank adapter" joined to the bars by a thin line. Keep it abstract: no brain, no robot, no chip,
-  no chat bubble.
-  then three short lines:
-    conditioned on: country, demographics, day type
-    trained on: the other two
-    structure guaranteed at decoding
-Do not write "fine-tuned once". Do not write N-1.
+  below it a small schematic transformer motif, three or four stacked horizontal layer bars with a thin
+  fan of connecting lines between two of them, and a small badge on the stack reading "low-rank adapter"
+  joined to the bars by a thin line. Keep it abstract: no brain, no robot, no chip, no chat bubble.
+  then two short lines and no more:
+    conditioned on country, demographics, day type
+    trained on the other two
+Do not write "fine-tuned once". Do not write N-1. Do not write "structure guaranteed at decoding".
 
-THE CHAIN BELOW THE NAVY BLOCK, clearly outside it: "published population marginals" with an arrow to
-"synthetic population", labelled "iterative proportional fitting", and its arrow then turns UP into
-the generation area on the right. It must not enter the navy block. Beneath it one small line:
-  population and day are generated separately
+THE CHAIN BELOW THE NAVY BLOCK, clearly outside it and clearly separate from lane three: "published
+marginals" with an arrow to "synthetic population", the arrow labelled "iterative proportional fitting",
+and its arrow then turns UP into the generation area on the right. It must not enter the navy block, and
+no lane feeds into it. Write nothing else beneath it.
 
-THE GENERATION AREA, right of the navy block: three thin horizontal stacked activity ribbons, one per
-lane colour, each made of twenty to thirty coloured segments of unequal width, each labelled 00 at its
-left end and 24 at its right end, and the three visibly different from one another. Write NO heading
-above these ribbons: not the word activity, not a title, nothing at all. The only text touching them
-is 00 at one end and 24 at the other. The third ribbon has a dashed outline in the held-out lane's
-colour. Beside it, a dashed-outline box headed
-"held-out country" containing four lines:
+THE GENERATION AREA, right of the navy block: THREE thin horizontal stacked ribbons, one per lane
+colour, and three is the count, not two. Each ribbon is made of twenty to thirty coloured segments of
+unequal width, each labelled 00 at its left end and 24 at its right end, and the three are visibly
+different from one another. The third ribbon has a dashed outline in the rose lane's colour, and lane
+three's dashed line arrives at it. Write NO heading above these ribbons. The word "activity" must not
+appear anywhere in the image, above the ribbons or elsewhere; the 2026-09-14 generation printed it and
+that alone is a reject. The only text touching a ribbon is 00 at one end and 24 at the other.
+
+Beside the ribbons, a dashed-outline box whose first line is "held-out country" and which contains
+exactly TWO further lines, in this order, each written once and in full:
   generated from published marginals only
-  scored against published aggregate statistics
-  compared against real diaries reweighted to the same marginals
-  three independent nulls, all reported
+  compared against reweighted real diaries
+Three lines of text in that box in total, counting its first line. Not four, not five. Do not print any
+of the three twice. Do not write "compared against" more than once anywhere in the image. Do not invent
+a fourth line. If the box is too small for three lines at a readable size, enlarge the box; never break
+a line into fragments and never abbreviate a word. Every word in that box is an ordinary English word:
+if what you have drawn contains a string that is not a word, redraw the box.
 
 THE RIGHT EDGE: a flat row of three or four European residential building types, side by side, and
-beneath them three small line-plot schedule curves in the three lane colours, each in a small white
-box with 0 at the left and 24 at the right of its x axis and no y axis numbers, the three shapes
-visibly different. Behind and slightly to the right of that row, drawn small and in plain light grey
-outline so it reads as background, a plan view of six or seven irregular building footprints packed
-together as a real city block would be. One of those footprints is divided into five or six small
-cells of roughly equal size, and those cells FILL the whole outline: every part of that plan is a
-cell, edge to edge, with no stair core, no lift shaft, no corridor strip, no shaded or hatched
-block, and no empty gap anywhere in the middle. Each cell carries its own tiny tick-mark, and every one of
-those marks is a DIFFERENT little mark from the marks in all the other cells: a short zigzag, a wave,
-a dot, a cross, a bar, a small spiral. None of them is a checkmark. The marks stand for six different
-daily schedules, one per dwelling, not for approval, so six identical marks would say the opposite of
-the line printed below them. Draw the footprints in grey outline only: do not colour
+beneath them three small line-plot schedule curves in the three lane colours, each in a small white box
+with 0 at the left and 24 at the right of its x axis and no y axis numbers, the three shapes visibly
+different. Behind and slightly to the right of that row, drawn small and in plain light grey outline so
+it reads as background, a plan view of six or seven irregular building footprints packed together as a
+real city block would be. One of those footprints is divided into five or six small cells of roughly
+equal size, and those cells FILL the whole outline: every part of that plan is a cell, edge to edge,
+with no stair core, no lift shaft, no corridor strip, no shaded or hatched block, and no empty gap
+anywhere in the middle. Each cell carries its own tiny mark, and every one of those marks is a
+different little mark from the marks in all the other cells: a short zigzag in the first, a wave in the
+second, a dot in the third, a small cross in the fourth, a short bar in the fifth, a small spiral in the
+sixth. None of the six is a checkmark or a tick. The 2026-09-14 13:11 generation drew the same checkmark
+in all six cells; a checkmark reads as something passing a test, and nothing in this picture passes a
+test. If you have drawn six identical marks, you have drawn it wrong, whatever the mark is. Draw the footprints in grey outline only: do not colour
 them, do not label them, do not write any city or country name on them, and do not arrange them into
-four separate groups. Beneath the curves, three lines:
-  occupancy and activity-driven internal gains
-  EnergyPlus schedules
-  archetypes first, then real stock, one diary per dwelling
+four separate groups. Beneath the curves, TWO lines and no more:
+  occupancy-driven internal gains
+  EnergyPlus schedules, one diary per dwelling
 
-QUOTED TEXT. The picture contains the two title lines and the strings named above, and nothing else.
-In particular: write no number anywhere except 00, 24, 0 and 24 as the axis end labels. Write no
+TEXT INVENTORY. The picture contains these strings and nothing else. Count them when you have finished.
+  1  the first title line, at the very top, written once
+  2  the second title line, directly under it, written once
+  3  National time-use surveys
+  4  HETUS framework
+  5  Census and population marginals
+  6  Country A
+  7  Country B
+  8  Country C - held out
+  9  episode diary        (once in each of the three lanes, three times in all)
+  10 serialised record    (once in each of the three lanes, three times in all)
+  11 each country is held out in turn
+  12 never seen in training
+  13 One open-weight LLM, one recipe per held-out country
+  14 low-rank adapter
+  15 conditioned on country, demographics, day type
+  16 trained on the other two
+  17 published marginals
+  18 synthetic population
+  19 iterative proportional fitting
+  20 00                   (once at the left end of each of the three ribbons)
+  21 24                   (once at the right end of each of the three ribbons)
+  22 held-out country
+  23 generated from published marginals only
+  24 compared against reweighted real diaries
+  25 0                    (once at the left of each of the three schedule curves)
+  26 24                   (once at the right of each of the three schedule curves)
+  27 occupancy-driven internal gains
+  28 EnergyPlus schedules, one diary per dwelling
+Entries 9, 10, 20, 21, 25 and 26 are the only strings written more than once, and each of them is
+written exactly three times, once per lane or once per curve. Every other entry is written exactly once.
+
+QUOTED TEXT. The picture contains the two title lines and the strings named above, and nothing else. In
+particular: write no number anywhere except 00, 24, 0 and 24 as the axis end labels. Write no
 percentage, accuracy, metric, country count, year or parameter count. Write no real country name and
-draw no flag. Write no model name such as OLMo, Gemma, Llama, Qwen or Mistral. Write no headings, and
-in particular no word above the three coloured ribbons: the word activity must not appear anywhere.
+draw no flag. Write no model name such as OLMo, Gemma, Llama, Qwen or Mistral. Write no heading of any
+kind, and in particular no word above the three ribbons: the word "activity" must not appear anywhere.
 Write no city or district name. Write nothing about project status: no gate counts, no pass or fail
-marks, no words such as archived, campaign, C1, C2, Step 10, Step 11 or Step 12.
+marks, no words such as archived, campaign, C1, C2, Step 10, Step 11 or Step 12. Do not print any label
+twice.
 
-THE ONE THING MOST LIKELY TO GO WRONG. In the small plan of building footprints at the far right,
-the subdivided footprint must be filled completely by its dwelling cells. Do not draw a stair core,
-a lift shaft, a corridor, an entrance hall, a shaded service block or any hatched area inside it,
-and leave no blank space between the cells and the outline. Every part of that plan is a dwelling.
+THE TWO THINGS MOST LIKELY TO GO WRONG, BOTH OF WHICH WENT WRONG ON 2026-09-14.
+  One: lane three must not touch the navy block. See the rule above.
+  Two: in the small plan of building footprints at the far right, the subdivided footprint must be filled
+  completely by its dwelling cells, with no stair core, no corridor, no shaded service block and no blank
+  space between the cells and the outline.
 
 STYLE. Flat vector only: no 3D, no perspective, no drop shadows, no gradients on text. No logos. No
-results, no bar charts, no scatter plots, no confusion matrices, no metric callouts; the ribbons and
-the curves are illustrative shapes, not plotted data. No time axis, no years, no forecast arrow. Every
-arrow must mean that something flows. Every line must stay legible at single-column print width.
-Render at the largest pixel size available, at least 2000 by 1100, and return a PNG rather than a
-JPEG: this is line art, and JPEG compression frays the small type.
+results, no bar charts, no scatter plots, no confusion matrices, no metric callouts; the ribbons and the
+curves are illustrative shapes, not plotted data. No time axis, no years, no forecast arrow. Every arrow
+must mean that something flows.
+
+OUTPUT. Render at the largest pixel size the tool offers, and at least 2000 by 1100. Return a PNG, not a
+JPEG: this is line art, and JPEG compression frays small type. Before you generate, choose the widest
+canvas and the highest resolution your image tool exposes. If your tool cannot produce an image wider
+than 1376 pixels, SAY SO IN YOUR REPLY IN PLAIN WORDS instead of returning a small image without
+comment: a silent small return costs another round trip.
+
+BEFORE YOU REPLY, CHECK THESE SIX AND SAY IN YOUR REPLY WHAT EACH ONE CAME OUT AS.
+  1. Is there ANY mark at all, of any length, joining lane three to the navy block? There must be none,
+     and there must be a clear white gap. Look closely at the point where lane three turns down.
+  2. How many ribbons did you draw in the generation area? It must be exactly three.
+  3. How many lines of text are inside the dashed held-out box, counting its first line? It must be
+     exactly three, and no words may be repeated between them.
+  4. Does the word "activity" appear anywhere in the image? It must not.
+  5. Is every line of text in the image made of real English words? Read them back one by one.
+  6. What are the pixel dimensions of the image you are returning?
+Answer all six honestly, including where the answer is wrong. A wrong answer reported is one round
+trip; a wrong answer reported as correct is three.
 ```
 
 ### 10.1 What to check the moment the image comes back
@@ -799,9 +913,15 @@ JPEG: this is line art, and JPEG compression frays the small type.
    **The word `season` appears nowhere in the image.** This is the item this revision exists for.
 8. The grey chain below the navy block starts at **`published population marginals`**, not
    `census marginals`.
-9. The dashed held-out callout has **four** lines, the fourth being
-   **`three independent nulls, all reported`**. If the generator drops a line to fit the box, it is the
-   box that grows, not the list that shrinks — the same rule Section 3 already gives for line 4.
+9. 🔴 **SUPERSEDED 2026-09-14, and this item must no longer be checked for.** The held-out
+   callout now carries the heading `held-out country` and **TWO** lines, not four:
+   `generated from published marginals only` and `compared against reweighted real diaries`.
+   The text was cut on the author's instruction that these are representative images and not reports,
+   and Section 10 is the authority on what is drawn. The retired fourth line
+   `three independent nulls, all reported` must NOT appear in the image. The 2026-09-14 generation
+   printed four lines, repeated `compared against` across two of them and garbled the second copy,
+   which is `FINDING 288`. **Check for exactly three lines of text in that box, counting its
+   heading.**
 10. Everything in 10.1 still holds. 🔴 **Check it again rather than assuming it survived**: the
     2026-08-19 generation was correct on all six of those points and this revision touches none of
     them, so any regression there is the generator re-drawing from scratch, not a prompt change.

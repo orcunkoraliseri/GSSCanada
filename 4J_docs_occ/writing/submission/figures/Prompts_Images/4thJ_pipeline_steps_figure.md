@@ -46,6 +46,32 @@ and again on 🔴 **2026-09-07** (cards 10 and 11 only — see the 2026-09-07 ba
 > truth** — Section 11 is a rendering of them, and if the two ever disagree, Sections 0 to 10 win and
 > Section 11 is rewritten from them.
 
+---
+
+> 🔴 **REVISED 2026-09-14, author request. Regenerate. Three changes.**
+>
+> 1. 🔴 **The figure becomes HORIZONTAL (landscape).** The twelve step cards run **left to right
+>    along one spine**, not top to bottom. Target canvas **2400 x 1000 px at 300 dpi**, an aspect ratio of
+>    roughly 12:5, sized to be read across a full journal page width or across a slide. Concretely:
+>    - The **five phase bands** move from a left gutter to a **band along the top**, each spanning the
+>      cards that belong to it, so the phase a card sits in is read by looking up rather than left.
+>    - The **twelve cards** sit in one horizontal row, equal width, equal height, joined left to right by
+>      a single arrow spine. If twelve cards in one row makes the type smaller than 8 pt at the target
+>      size, wrap to **two rows of six**, reading left to right on the top row and then left to right on
+>      the bottom row, with one return arrow between them - never a snake that reverses direction.
+>    - The **seven validation tiles** move from a right gutter to a **strip along the bottom**, each tile
+>      sitting under the cards it guards, aligned to them.
+>    - Card text stacks vertically inside each card as before: step number, short title, state chip, then
+>      the body lines. Nothing about the content changes; only the direction of flow.
+> 2. **Recolour onto the house palette below**, so this figure matches Figures 3 to 7.
+> 3. **Remove any explanatory note text from inside the image.** See the rule below.
+>
+> 🔴 **And one string must go.** Card 6, the transfer-test card, prints
+> *"the reported folds are not yet trained"*. That was true when the card was written and the manuscript
+> now contradicts it: all three folds are trained, generated and scored, and Step 11 is complete. Delete
+> that line. If card 10 still carries *"the no-core engine does not exist yet"*, delete that too, for the
+> same reason. No other card text changes.
+
 > **This is the second figure of paper 4 and it is not the graphical abstract.**
 > `4thJ_graphical_abstract.md` shows *what flows into what*: five bands, left to right, countries
 > converging into one model. **This figure shows how the work is organised**: ten sequential steps, the
@@ -152,6 +178,9 @@ running, and **Step 6 — the step the whole diagram exists for — has not been
 
 ## 2. Overall composition
 
+> 🔴 **ORIENTATION OVERRIDE, 2026-09-14.** This section was written for a PORTRAIT figure and still says *left gutter*, *right gutter* and *vertical spine*. The figure is now LANDSCAPE: the phase bands run along the TOP, the twelve cards run LEFT TO RIGHT in one row (or two rows of six), and the validation tiles run along the BOTTOM. Everything this section says about CONTENT - which cards, which strings, which chips, which tiles - still holds unchanged. Only the direction is different. See the 2026-09-14 banner at the head of this file.
+
+
 **Portrait or square, tall.** Roughly 1400 x 1900 pixels or the same aspect. This is deliberately the
 opposite orientation to the graphical abstract, so the two are never confused.
 
@@ -177,6 +206,9 @@ White background. Flat vector style, matching the graphical abstract and the 3J 
 
 ## 3. The five phase bands (left gutter)
 
+> 🔴 **ORIENTATION OVERRIDE, 2026-09-14.** This section was written for a PORTRAIT figure and still says *left gutter*, *right gutter* and *vertical spine*. The figure is now LANDSCAPE: the phase bands run along the TOP, the twelve cards run LEFT TO RIGHT in one row (or two rows of six), and the validation tiles run along the BOTTOM. Everything this section says about CONTENT - which cards, which strings, which chips, which tiles - still holds unchanged. Only the direction is different. See the 2026-09-14 banner at the head of this file.
+
+
 Each band spans a contiguous run of steps and is labelled with horizontal text at its top, not rotated.
 
 | Band | Spans | Label |
@@ -194,6 +226,16 @@ it is preparation and everything below it is consequence.
 ---
 
 ## 4. The twelve step cards (main spine)
+
+> 🔴 **SHORTENED 2026-09-14, author request: "these are not reports, these are representative
+> images."** The card **body lines** below were cut to one short line per card, with a second line kept
+> only on cards 5, 6, 8 and 9, and **Section 11's card list is now the authoritative wording for the body
+> lines.** Card titles, chip words, the twelve numbers and the seven tile labels are unchanged and this
+> section still governs them. The line *every tier is first shown failing on a deliberately broken
+> control* was removed from the image altogether and belongs in the body text of §3.
+
+> 🔴 **ORIENTATION OVERRIDE, 2026-09-14.** This section was written for a PORTRAIT figure and still says *left gutter*, *right gutter* and *vertical spine*. The figure is now LANDSCAPE: the phase bands run along the TOP, the twelve cards run LEFT TO RIGHT in one row (or two rows of six), and the validation tiles run along the BOTTOM. Everything this section says about CONTENT - which cards, which strings, which chips, which tiles - still holds unchanged. Only the direction is different. See the 2026-09-14 banner at the head of this file.
+
 
 Every card has the same internal layout, so the eye can scan down the column:
 
@@ -400,6 +442,15 @@ drop.
 
 ## 5. The validation tiers (right gutter)
 
+> 🔴 **SHORTENED 2026-09-14.** The seven tile labels are unchanged and this section still governs
+> them, but they now sit along the **bottom** of a landscape figure, not in a right gutter, and the line
+> `every tier is first shown failing on a deliberately broken control` was **removed from the image**.
+> It is an explanatory sentence, and the picture no longer carries any. It belongs in the body text of
+> §3 of the manuscript. Section 11 is the authoritative list of what is drawn.
+
+> 🔴 **ORIENTATION OVERRIDE, 2026-09-14.** This section was written for a PORTRAIT figure and still says *left gutter*, *right gutter* and *vertical spine*. The figure is now LANDSCAPE: the phase bands run along the TOP, the twelve cards run LEFT TO RIGHT in one row (or two rows of six), and the validation tiles run along the BOTTOM. Everything this section says about CONTENT - which cards, which strings, which chips, which tiles - still holds unchanged. Only the direction is different. See the 2026-09-14 banner at the head of this file.
+
+
 🔴 **Seven** small tiles, stacked, each joined by a thin horizontal line to the step or steps it guards.
 Tiles are visually lighter than the step cards so the spine stays dominant.
 
@@ -441,6 +492,13 @@ carry a tier of their own.
 ---
 
 ## 6. THE COMPLETE LIST OF PERMITTED TEXT STRINGS
+
+> 🔴 **SUPERSEDED IN PART, 2026-09-14.** This list still names every string that is *allowed*, and
+> nothing outside it may ever appear. But the card **body lines** were cut short on the author's
+> instruction that these are representative images and not reports, and the bottom sentence
+> `every tier is first shown failing on a deliberately broken control` was dropped altogether.
+> **Section 11's card list is the authoritative wording of what is actually drawn.** A string that appears
+> here but not in Section 11 is permitted-but-retired: it must not be drawn.
 
 Every string that may appear in the image. Nothing else.
 
@@ -555,6 +613,9 @@ are not permitted strings at all. **The bands span their steps visually; they mu
 ---
 
 ## 7. Palette
+
+> 🔴 **PALETTE OVERRIDE, 2026-09-14.** Superseded by the *House palette* section at the end of this file. No green and no red anywhere.
+
 
 Consistent with the graphical abstract so the two read as one series, and colour-blind safe.
 
@@ -674,41 +735,73 @@ single prompt. If it ever disagrees with the sections above, the sections above 
 rewritten from them. **Do not edit this section without editing its source.**
 
 ```
-Create a flat vector process diagram, portrait orientation, about 1400 x 1900 pixels, on a white
-background, in one clean sans-serif family.
+Create a flat vector process diagram, LANDSCAPE orientation, as wide as the tool will allow and about
+2.4 times wider than it is tall, on a white background, in one clean sans-serif family. The picture is
+wide and short, meant to be read across a full journal page width or across a slide.
 
-READ THIS FIRST. Everything below describes what to DRAW. Words like "column", "gutter", "spine",
-"band" and "tile" are layout instructions for you, not text to put in the picture. Draw NO headings,
-NO section labels and NO captions of any kind except the exact strings listed under QUOTED TEXT.
-Nothing that names a part of the layout may appear in the image.
+READ THIS FIRST. This is a REPRESENTATIVE DIAGRAM, NOT A REPORT. It carries very little text on
+purpose. Only the strings listed under QUOTED TEXT may appear anywhere in the image, and nothing else.
+Words like "column", "spine", "band" and "tile" are layout instructions for you, not text to put in the
+picture. Draw NO headings, NO section labels, NO captions and NO explanatory sentences of any kind.
+
+NEVER DRAW A WORD THAT CAME OUT OF THESE INSTRUCTIONS. Everything you are allowed to draw is listed
+under TEXT INVENTORY near the end of this prompt. If a word appears in these instructions but not in
+that inventory, it must not appear in the picture. In particular:
+  Never draw the words circle, title, chip, card, band, tile, bracket, bold, centrepiece, spine,
+  gutter, QUOTED TEXT, STYLE, OUTPUT, READ THIS FIRST or TEXT INVENTORY.
+  Never draw a colour code. Strings such as #332288, #F2F2F2, #44AA99, #CC6677 and #DDCC77 are
+  instructions to your renderer. The character # appears nowhere in the image.
+  Never turn a sentence of this prompt into a label, a caption or a note.
+
+DRAW EVERY STRING EXACTLY ONCE, AND EVERY WORD INSIDE A STRING EXACTLY AS MANY TIMES AS IT IS WRITTEN
+HERE. The 2026-09-14 generation drew card 11's body line as "same mapping, mapping, bands inherited
+unmoved", repeating one word, and that alone made the figure unusable. Before you finish, read every
+line of text in the picture back against the list below, word by word, and delete any word you have
+written twice. The word-count table after the card list is there so you can check this mechanically.
+
+SET THE TYPE LARGE. The body line under a card title must be at least 60 per cent of the height of that
+title, and every word in the picture must stay legible when the image is printed at full page width.
+The text has been cut short on purpose so that what remains can be set large. If a line does not fit,
+widen the card or widen the picture. Never shrink the type to make text fit.
 
 ALL TEXT IS HORIZONTAL. Nothing is rotated, sideways or vertical anywhere in the image, including the
-five tinted bars down the left side. Their labels DATA, MODEL, CLAIM, ENERGY and STOCK are written
-horizontally, reading left to right, like every other word in the picture. This is the single most
-important formatting rule here. Two earlier generations rotated them anyway: if a label does not fit
-horizontally inside its bar, widen the bar or set the label above it, but never turn it on its side.
+five tinted bands along the top. Their labels DATA, MODEL, CLAIM, ENERGY and STOCK are written
+horizontally, reading left to right, like every other word in the picture.
 
-At the very top, centred, exactly two lines of text with nothing above them:
-  From Harmonised Time-Use Surveys to Simulated Building Energy
-  The twelve steps of the cross-national occupancy pipeline
+At the very top, centred, ONE line of text and nothing above it:
+  From harmonised time-use surveys to simulated building energy
+That is the only title. Do not add a second title line, a subtitle or a strapline.
 
-STRUCTURE. Down the centre runs a single vertical column of twelve rounded rectangular cards, numbered
-0 at the top to 11 at the bottom, each joined to the next by one short downward arrow. Along the left
-edge, five tall tinted rounded bars sit beside the cards they group. Along the right edge, seven small
-pale tiles each connect to the cards they guard by one thin horizontal line. Those tier lines are the
-only horizontal connectors in the picture; every other arrow points down.
+STRUCTURE. THE FLOW RUNS LEFT TO RIGHT. Across the middle of the picture runs a single horizontal ROW
+of twelve rounded rectangular cards, numbered 0 at the far left to 11 at the far right, each joined to
+the next by one short arrow pointing RIGHT. Along the TOP edge, five wide tinted rounded bands sit above
+the cards they group, each band spanning exactly the cards named below it. Along the BOTTOM edge, seven
+small pale tiles each connect UP to the cards they guard by one thin vertical line. Those tier lines are
+the only vertical connectors in the picture; every other arrow points right.
 
-THE FIVE TINTED BARS ON THE LEFT, labelled horizontally, each spanning the cards named:
-  DATA   beside cards 0, 1 and 2, light grey
-  MODEL  beside cards 3, 4 and 5, soft teal
-  CLAIM  beside cards 6 and 7, soft dark navy, the strongest tint of the five and slightly wider
-  ENERGY beside cards 8 and 9, soft orange
-  STOCK  beside cards 10 and 11, soft green, the palest of the five
-Write only those five words on them. Put NO digits and NO number ranges on these bars.
+If twelve cards in one row would make the card body type too small to read, wrap to TWO ROWS OF SIX
+instead: cards 0 to 5 on the upper row reading left to right, cards 6 to 11 on the lower row also
+reading left to right, with a single return arrow from the end of the upper row to the start of the
+lower one. Never snake the row back on itself, and never let any arrow point left except that one
+return arrow. With two rows, the five tinted bands still sit along the top and the seven tiles still sit
+along the bottom.
 
-EACH CARD carries, left to right: a small filled circle holding the card's digit, then a bold title,
-then one to three body lines in smaller regular type, then a small chip at the right edge. The chips
-are drawn four ways, distinguished by fill and by glyph rather than by colour:
+THE FIVE TINTED BANDS ALONG THE TOP, labelled horizontally, each spanning the cards named. Use these
+exact hues, which are this paper's house palette, and no others:
+  DATA   above cards 0, 1 and 2,   a light neutral grey, #F2F2F2
+  MODEL  above cards 3, 4 and 5,   a pale teal, #44AA99 at about 25 per cent tint
+  CLAIM  above cards 6 and 7,      indigo #332288, the strongest tint of the five and slightly taller
+  ENERGY above cards 8 and 9,      a pale rose, #CC6677 at about 25 per cent tint
+  STOCK  above cards 10 and 11,    a pale sand, #DDCC77 at about 25 per cent tint
+There is NO GREEN and NO RED anywhere in this image. Green reads as pass and red as fail, and this
+figure scores nothing.
+Write only those five words on the bands. Put NO digits and NO number ranges on them.
+
+EACH CARD carries, stacked TOP TO BOTTOM inside the card: a small filled circle holding the card's
+digit, then a bold title, then ONE short body line, then a small chip at the bottom of the card. Four
+cards carry a SECOND body line and they are named below; no other card may be given one. Cards are
+equal width and equal height. The chips are drawn four ways, distinguished by fill and by glyph rather
+than by colour:
   cleared    solid dark navy fill, white text, one checkmark
   validated  solid dark navy fill, white text, two checkmarks
   decided    solid dark navy fill, white text, no glyph
@@ -719,84 +812,130 @@ checkmarks, cards 8 and 9 included; only card 0, whose chip word is cleared, car
 THE TWELVE CARDS, with the exact wording of every line:
 
 circle 0, title Feasibility gate, chip cleared
-  data reachable, prior art clear, method justified, release limits known
+  data, prior art, method, release limits
 circle 1, title Corpus, chip validated
-  national time-use series, one wave per country
+  one harmonised wave per country
 circle 2, title Harmonisation, chip validated
-  common activity, location and co-presence coding, shared day origin
+  common activity, location, co-presence
 circle 3, title Serialisation, chip validated
-  episode form: duration, activity, location, co-presence
+  duration, activity, location, co-presence
 circle 4, title Fine-tuning, chip decided
-  open-weight base model, low-rank adapter, one adapter per held-out country
+  one adapter per held-out country
 circle 5, title Population linkage, chip validated
-  synthetic population first, then one generated day per person
-  two gates fail and ship as a declared exception
+  synthetic population, then one day each
+  two gates ship as declared exceptions
 circle 6, title Transfer test, chip open
-  train on the other two, generate the held-out one from published marginals
-  the bar: beat real diaries from the other countries, reweighted to the held-out country
-  the reported folds are not yet trained
+  train on two, generate the third
+  the bar: beat real diaries, reweighted
 circle 7, title Constrained generation, chip decided
   well-formed diaries guaranteed at decoding
-  throughput, chaining rule and schedule emission
 circle 8, title Building simulation, chip validated
-  European residential archetypes, uninjected control run first
-  the occupancy effect does not survive at full injection
+  European residential archetypes
+  the occupancy effect does not survive
 circle 9, title End-use loads, chip validated
-  published activity-to-appliance mappings, adapted not authored
+  published activity-to-appliance mappings
   three gates ship as declared failures
 circle 10, title Real-stock UBEM, chip open
-  observed footprints, dwellings only, one independent diary per dwelling
-  the no-core engine does not exist yet
+  observed footprints, one diary per dwelling
 circle 11, title Stock-scale end-use loads, chip open
-  the same mapping, at the scale its sources were validated at
-  the bands are inherited unmoved, not re-set at stock scale
+  same mapping, bands inherited unmoved
 
-CARD 6 IS THE CENTREPIECE. Draw it noticeably larger than every other card, with a very light navy
-fill and a thicker border. Its middle line, the one beginning "the bar:", is BOLD, and it is the only
-bold body line in the whole picture. Card 6 nevertheless keeps the hollow white "open" chip. If space
-runs short, shrink cards 10 and 11 rather than that bold line. Do not shrink or drop the second
-line of card 8 or of card 9; both are required.
+WORD COUNTS, SO YOU CAN CHECK THE CARDS MECHANICALLY BEFORE YOU FINISH. Count the words you have
+actually drawn on each card body line and compare. A line whose count is one too high almost always
+has a word repeated, which is the exact defect of the 2026-09-14 generation.
+  card 0  line 1 = 6 words        card 6  line 1 = 6 words   line 2 = 6 words
+  card 1  line 1 = 5 words        card 7  line 1 = 5 words
+  card 2  line 1 = 4 words        card 8  line 1 = 3 words   line 2 = 6 words
+  card 3  line 1 = 4 words        card 9  line 1 = 3 words   line 2 = 6 words
+  card 4  line 1 = 5 words        card 10 line 1 = 6 words
+  card 5  line 1 = 6 words        card 11 line 1 = 5 words
+          line 2 = 6 words
+Card 11's five words are: same / mapping, / bands / inherited / unmoved. The word mapping appears on
+card 11 once and only once.
 
-THE SEVEN PALE TILES ON THE RIGHT, each with its thin connecting line:
-  pre-declared gate batteries   joined by ONE bracket that spans cards 1, 2, 3, 4 and 5 together.
-                                The bracket starts at the top edge of card 1 and ENDS AT THE BOTTOM
-                                EDGE OF CARD 5, the card titled Population linkage. A bracket that
-                                stops at card 2, or at card 4, is wrong: it has been drawn short
-                                twice already, and card 5 must be inside it.
+CARD 6 IS THE CENTREPIECE. Draw it noticeably larger than every other card, with a very light navy fill
+and a thicker border. Its second line, the one beginning "the bar:", is BOLD, and it is the only bold
+body line in the whole picture. Card 6 nevertheless keeps the hollow white "open" chip. If space runs
+short, shrink cards 10 and 11 rather than that bold line. Do not drop the second line of card 5, 8 or 9;
+all three are required, because they are the lines that keep the diagram honest about what failed.
+
+THE SEVEN PALE TILES ALONG THE BOTTOM, each with its thin vertical connecting line running UP to the
+card or cards it guards. These seven labels are the whole of their text; add nothing to them:
+  pre-declared gate batteries   to cards 1, 2, 3, 4 and 5
   distributional fidelity       to card 6
   collapse, memorisation and privacy   to card 6
   transfer margin               to card 6
   structural validity           to card 7
   downstream energy             to cards 8 and 9 together
   basis and denominator         to cards 10 and 11 together
-Beneath the tiles, one small line inside a dashed-outline box:
-  every tier is first shown failing on a deliberately broken control
+Nothing is written below the tiles. There is no line of text along the bottom edge of the picture.
+There are seven tile shapes and seven tile labels. Not eight, not nine. Every shape along the bottom
+carries one of those seven labels; if you have drawn a shape you cannot label from that list, delete it.
 
-QUOTED TEXT. The image contains the two title lines, the five bar labels, the numbers 0 to 11 inside
-the twelve circles, the twelve card titles, the card body lines, the four chip words, the seven tile
-labels, and the dashed-box line. Nothing else. In particular:
-  Write no other heading, label or caption of any kind.
+The first of the seven tiles is joined to its cards by a single square bracket rather than by five
+separate lines. That bracket begins under the left-hand side of the card numbered 1 and finishes under
+the right-hand side of the card numbered 5, and its stem drops from the middle of it to the tile. This
+paragraph describes a shape. None of its words is drawn.
+
+The chip word on a card is always spelled out in full, as one of cleared, validated, decided or open.
+Do not shorten, clip or abbreviate a chip word to fit the chip; widen the chip instead. The card
+numbered 3 carries the word validated spelled in full. The card numbered 0 carries the word cleared and
+exactly one checkmark beside it; a chip with no checkmark at all is wrong.
+
+QUOTED TEXT. The image contains the one title line, the five band labels, the numbers 0 to 11 inside the
+twelve circles, the twelve card titles, the sixteen card body lines, the four chip words and the seven
+tile labels. Nothing else. In particular:
+  Write no other heading, label, caption or sentence of any kind.
   Write no number anywhere except 0 to 11 inside the circles. No ranges such as 6-7 or 8-9.
   Write no percentage, threshold, accuracy, token count, corpus size, model size, year or date.
   Do not write N-1 or any algebraic expression.
   Do not write any of: all countries trained jointly; acquisition outstanding for the countries not
   yet held; which model family; which country is held out; several waves per country; how many waves
   earn their place; pooling level across waves; the engine, and which year the diaries belong to;
-  hot water magnitude diagnosed before it is re-measured; Step 12; campaign C1; campaign C2.
+  hot water magnitude diagnosed before it is re-measured; Step 12; campaign C1; campaign C2;
+  the reported folds are not yet trained; the no-core engine does not exist yet; every tier is first
+  shown failing on a deliberately broken control.
   Draw exactly twelve cards. Do not add a thirteenth card and do not draw a card numbered 12.
   Cards 10 and 11 both keep the hollow open chip. Do not give either of them a checkmark.
-  The only counts written as words are "one wave per country", "the other two", "two gates" on
-  card 5 and "three gates" on card 9. All four are required.
   No country names and no flags. No model names such as Gemma, Llama, Qwen, Mistral or OLMo.
+
+TEXT INVENTORY. The image contains these strings and no others. Count them when you have finished:
+  1 title line, written once, at the top.
+  5 band words: DATA, MODEL, CLAIM, ENERGY, STOCK. Each written once, horizontally, on its own band.
+  12 digits, 0 to 11, one inside each card's circle, each written once.
+  12 card titles, each written once, on its own card.
+  16 card body lines: one on each of cards 0, 1, 2, 3, 4, 7, 10 and 11, and two on each of cards 5,
+    6, 8 and 9. That is 8 + 8 = 16 lines. No card has three.
+  12 chips, drawn from 4 words: cleared on card 0; validated on cards 1, 2, 3, 5, 8 and 9; decided on
+    cards 4 and 7; open on cards 6, 10 and 11.
+  7 tile labels along the bottom, each written once.
+That is 1 + 5 + 12 + 12 + 16 + 12 + 7 pieces of text. Nothing else is written anywhere in the image:
+no eighth tile, no sixth band, no thirteenth card, no note, no legend, no key, no caption, no credit
+line, no watermark, no page number.
 
 STYLE. Flat vector only: no 3D, no perspective, no drop shadows, no gradients on text. No logos. No
 brain, robot, android, glowing orb or chat bubble. No loop-back arrows, no feedback cycles, no
 iteration loops, since the steps run once in order. No time axis, no years, no forecast arrow. Nothing
 suggesting the trained model is released: no download icon, no repository mark, no open-weights badge.
-Do not rely on red and green as the only pair distinguishing anything. Every line must stay legible
-when the picture is printed at full page width. Render at the largest pixel size available, at least
-1400 by 1900, and return a PNG rather than a JPEG: this is line art, and JPEG compression frays the
-small type in the card body lines.
+Use no green and no red anywhere; the palette above contains neither.
+
+OUTPUT. Render at the largest pixel size the tool offers, and at least 2400 by 1000. Return a PNG, not
+a JPEG: this is line art, and JPEG compression frays small type. A 1376 by 768 return is too small for
+print and has to be regenerated, so choose the largest canvas available before generating.
+Before you generate, choose the widest canvas and the highest resolution your image tool exposes, and
+set the aspect ratio to about 21:9. If your tool cannot produce an image wider than 1376 pixels, SAY
+SO IN YOUR REPLY IN PLAIN WORDS instead of returning a small image without comment: the figure will
+then be rebuilt in code rather than regenerated, and a silent small return costs another round trip.
+
+BEFORE YOU REPLY, CHECK THESE SIX AND SAY IN YOUR REPLY WHAT EACH ONE CAME OUT AS.
+  1. How many cards did you draw, and are they numbered 0 to 11? It must be twelve.
+  2. Read card 11's body line back word by word. Is any word written twice?
+  3. Does the character # appear anywhere in the image? It must not.
+  4. Is there any heading above the row of cards, or any text below the seven tiles? There must not be.
+  5. Do cards 6, 10 and 11 all carry the hollow open chip with no checkmark?
+  6. What are the pixel dimensions of the image you are returning?
+Answer all six honestly, including where the answer is wrong. A wrong answer reported is one round
+trip; a wrong answer reported as correct is three.
 ```
 
 ### 11.1 What to check the moment the image comes back
@@ -811,7 +950,7 @@ one of them failing means regenerate rather than accept:
 4. 🔴 **CHANGED 2026-08-22.** The sixth tile **`pre-declared gate batteries`** is present and brackets
    Steps 1 to **5**, and the second tile reads **`collapse, memorisation and privacy`**.
 5. 🔴 **NEW 2026-08-26. The two lines that make the figure honest are present, verbatim:**
-   card 8 carries **`the occupancy effect does not survive at full injection`** and card 9 carries
+   card 8 carries **`the occupancy effect does not survive`** and card 9 carries
    **`three gates ship as declared failures`**. A generator that drops a second body line to fit
    twelve cards into the height will drop exactly these two, because they are the last lines added.
    **If either is missing, regenerate.** A figure showing Steps 8 and 9 as `validated` with no
@@ -820,17 +959,40 @@ one of them failing means regenerate rather than accept:
 6. 🔴 **NEW 2026-08-26.** Twelve cards, five bars including **`STOCK`**, seven tiles including
    **`basis and denominator`**. Count them; do not read the image for general correctness.
 
-7. 🔴 **NEW 2026-09-07. Card 10 reads `observed footprints, dwellings only, one independent
-   diary per dwelling` and `the no-core engine does not exist yet`; card 11 reads `the same mapping,
-   at the scale its sources were validated at` and `the bands are inherited unmoved, not re-set at
-   stock scale`.** Neither of the two retired lines — `the engine, and which year the diaries
-   belong to`, `hot water magnitude diagnosed before it is re-measured` — may survive anywhere.
+7. 🔴 **REVISED 2026-09-14. Card 10 reads `observed footprints, dwellings only, one independent
+   diary per dwelling` and NOTHING ELSE**; the second line `the no-core engine does not exist yet` was
+   retired on 2026-09-14 and must not appear. **Card 6 likewise carries only its first two body lines**;
+   `the reported folds are not yet trained` was retired in the same pass. Card 11 reads `the same
+   mapping, at the scale its sources were validated at` and `the bands are inherited unmoved, not
+   re-set at stock scale`. None of the four retired lines — `the engine, and which year the diaries
+   belong to`, `hot water magnitude diagnosed before it is re-measured`, `the reported folds are not
+   yet trained`, `the no-core engine does not exist yet` — may survive anywhere.
 8. 🔴 **NEW 2026-09-07, and this is the one to check hardest. Cards 10 and 11 carry the
    HOLLOW `open` chip.** If either carries a checkmark, reject and regenerate — whatever the
    reason given. Step 10's scored campaign is archived and unreported, and the reported one has no
    cell. A first district arriving from OpenUBEM does not change this.
 9. 🔴 **NEW 2026-09-07. Count the cards: exactly twelve, numbered 0 to 11.** No card 12, no
    thirteenth card, no `Step 12` anywhere in the image. The pipeline ends at Step 11 by ruling.
+
+10. 🔴 **NEW 2026-09-14. The picture is WIDE, not tall.** The twelve cards run left to right,
+    the five tinted bands run along the TOP, the seven tiles along the BOTTOM, and every arrow on the
+    spine points RIGHT. A portrait image, whatever else is correct about it, is a reject. Two rows of
+    six is acceptable; a vertical column of twelve is not.
+
+11. 🔴 **NEW 2026-09-14. No note band.** No paragraph of small italic explanatory text anywhere
+    in the image, top or bottom. If one appears, regenerate.
+
+12. 🔴 **NEW 2026-09-14. No green and no red**, in the bands, the chips, the tiles or the
+    arrows. The five band tints are the house palette named in Section 11 and nothing else.
+
+13. 🔴 **NEW 2026-09-14, second pass. Count the words.** One title line only, one body line per
+    card, two body lines on cards 5, 6, 8 and 9 and nowhere else, and **nothing at all written below the
+    tiles**. A dashed box or any sentence along the bottom edge is a reject: the picture is a diagram,
+    not a report.
+
+14. 🔴 **NEW 2026-09-14, second pass. Check the pixel size before installing.** At least
+    2400 x 1000, and a PNG that was never a JPEG. The 2026-09-14 return was 1376 x 768 and JPEG-sourced,
+    which is about 197 dpi at full page width where publishers ask for 300 (`FINDING 282`).
 
 🔴 **Generators drop or merge tiles and chips when the gutter is crowded, and they silently
 re-word body lines that are long.** Check the strings character by character against Section 6 rather
@@ -961,3 +1123,47 @@ that section's own rule: the bracket instruction now names card 5 by its title a
 has been drawn short twice, and the chip description now says every `validated` chip carries two
 checkmarks including cards 8 and 9. A resolution-and-format line was added to the STYLE paragraph.
 🔴 **Paste Section 11 as it now stands; do not paste the copy used on 2026-09-07.**
+
+---
+
+## House palette (set 2026-09-14, applies to every figure in this paper)
+
+The matplotlib figures of this paper (Figures 3 to 7) were recoloured onto the palette below on
+2026-09-14 and this figure must match them, or the paper will read as two sets of figures.
+
+| Role | Hex | Name |
+|---|---|---|
+| Spain | `#CC6677` | rose |
+| United Kingdom / Britain | `#332288` | indigo |
+| Italy | `#44AA99` | teal |
+| Second series in a paired comparison | `#DDCC77` | sand, and give it a hatch as well as a hue |
+| A negative or null channel | `#882255` | wine |
+| Reference lines, thresholds, registered floors | `#000000` | black |
+| Value labels and body text | `#111111` | near-black |
+| Panel background, gridlines, neutral fills | `#F2F2F2` / `#D0D0D0` | light neutral greys |
+
+Rules that go with it:
+
+- **No green and no red anywhere.** Green reads as pass and red as fail, and this figure is not scoring
+  anything. The palette above contains neither.
+- The set is colour-blind safe and separates by lightness as well as hue, so it survives greyscale
+  printing. Keep the shape, fill-pattern or line-style distinction as well; hue alone is never enough.
+- Every hue used must come from the table above. Do not introduce a sixth colour.
+
+---
+
+## No explanatory notes inside the image (author rule, 2026-09-14)
+
+**Do not print explanatory notes, verdict sentences, footnote blocks or caption-like paragraphs inside the
+image, and in particular do not put a band of small italic text along the bottom.** The same rule was
+applied to Figures 3 to 7 on 2026-09-14, and all such text was deleted from them.
+
+What may appear inside the image: axis labels, tick labels, a short panel title, a legend, box and lane
+labels, and the data values themselves. Everything else belongs in the body text of the section that
+cites the figure. The caption itself is capped at ten words.
+
+---
+
+**Caption to install with it:**
+
+> **Figure 1.** - Pipeline, Steps 0 to 11.
