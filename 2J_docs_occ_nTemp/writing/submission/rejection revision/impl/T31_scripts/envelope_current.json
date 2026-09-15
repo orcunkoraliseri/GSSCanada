@@ -1,0 +1,10 @@
+{
+  "label": "CURRENT -- model's own values, unchanged (E0 identity check). All keys null: the builder must leave every targeted field completely untouched, so the output IDF is byte-for-byte identical to the source except this tool's own header is never inserted (it doesn't touch comments at all).",
+  "wall_rsi": null,
+  "ceiling_rsi": null,
+  "foundation_rsi": null,
+  "window_u": null,
+  "window_shgc": null,
+  "ach50": null,
+  "k": null
+}

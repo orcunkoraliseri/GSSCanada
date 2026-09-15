@@ -1,0 +1,43 @@
+{
+  "job_started_utc": "2026-09-15T15:20:02Z",
+  "elapsed_sec": 24.560065746307373,
+  "input_root": "/speed-scratch/o_iseri/2J_revision/T06/input",
+  "n_runs_per_archetype": {
+    "SingleD": 50,
+    "OtherDwelling": 50,
+    "MidRise": 50,
+    "HighRise": 50
+  },
+  "n_runs_loaded_ok": 200,
+  "n_runs_skipped": 0,
+  "skipped": [],
+  "row_counts": {
+    "sim_toronto_2022_shape_metrics.csv": 880,
+    "sim_vs_measured_toronto_2022_shape.csv": 1760
+  },
+  "dwelling_count": {
+    "SingleD": 1,
+    "OtherDwelling": 7,
+    "MidRise": 31,
+    "HighRise": 79
+  },
+  "dwelling_count_evidence": {
+    "SingleD": "SingleD__Toronto_5A/sample_001_HH33188/2022/Scenario_2022.idf:4392-4425 (one Zone living_unit1/attic_unit1/unheatedbsmt_unit1 triple, no ZoneGroup)",
+    "OtherDwelling": "OtherDwelling__Toronto_5A/sample_001_HH22934/2022/Scenario_2022.idf:4392-4613 (seven Zone living_unitN/attic_unitN/unheatedbsmt_unitN triples, N=1..7, no ZoneGroup multiplier -- a 7-unit row-house block, NOT a single dwelling)",
+    "MidRise": "MidRise__Toronto_5A/sample_001_HH126139/2022/Scenario_2022.idf:5448-5511 (7 ground-floor Apartment zones, SE corner absent) + :5690-5705 (ZoneList 'Mid Floor List', 8 Apartment zones + M Corridor; ZoneGroup Zone List Multiplier=2) + :5592-5655 (8 top-floor Apartment zones) = 7 + 8*2 + 8 = 31",
+    "HighRise": "HighRise__Toronto_5A/sample_001_HH49514/2022/Scenario_2022.idf:5527-5632 (7 ground-floor Apartment zones, SE corner absent) + :5931-5946 (ZoneList 'Mid Floor List', 8 Apartment zones + M Corridor; ZoneGroup Zone List Multiplier=8) + :5797-5902 (8 top-floor Apartment zones) = 7 + 8*8 + 8 = 79; same ZoneGroup lines/multiplier independently re-checked on sample_002_HH129161, identical geometry"
+  },
+  "annual_facility_kwh_meter_mean_per_archetype": {
+    "SingleD": 8164.714032723402,
+    "OtherDwelling": 47444.01943999619,
+    "MidRise": 272595.0552057583,
+    "HighRise": 393032.78629638226
+  },
+  "annual_facility_kwh_per_dwelling_estimate": {
+    "SingleD": 8164.714032723402,
+    "OtherDwelling": 6777.717062856599,
+    "MidRise": 8793.388877605106,
+    "HighRise": 4975.098560713699
+  },
+  "note": "meter_mean = mean over the archetype's loaded runs of that run's raw (non-normalized) annual Facility kWh sum; per_dwelling = meter_mean / DWELLING_COUNT[archetype]. For SingleD, DWELLING_COUNT=1 so meter_mean == per_dwelling."
+}

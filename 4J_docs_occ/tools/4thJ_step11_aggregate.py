@@ -111,7 +111,7 @@ def main(argv=None):
         fold = t11.check_cells(cells, cell_paths)
         district = args.district or (cells[0].get("district")
                                      or cells[0].get("cell_id", "").split("__")[0])
-        flats = t11.flats_from_cells(cells)
+        flats, excluded_merged_floor = t11.flats_from_cells(cells)
         if not flats:
             raise t11.Refusal("S3 the `C2` cells carry no drawn flats; there "
                               "is nothing to aggregate")
@@ -131,6 +131,12 @@ def main(argv=None):
         print("  fold / district : %s / %s" % (fold, district))
         print("  drawn flats     : %d over %d buildings"
               % (len(flats), len(set(f["building_id"] for f in flats))))
+        if excluded_merged_floor:
+            print("  `S11` excluded  : %d flat(s) over %d building(s) carry a "
+                  "Step 10 floor-merged averaged diary, not a real household -- "
+                  "excluded, never simulated as if they were one"
+                  % (len(excluded_merged_floor),
+                     len(set(r["building_id"] for r in excluded_merged_floor))))
 
         ctx = t11.prepare_fold(args.root, fold, trigger)
         t11.check_runtime_columns(args.root, fold, ctx["mapping"])
@@ -211,7 +217,7 @@ def main(argv=None):
 
         decl = t11.population_declaration(fold, district, todo, cells, used,
                                           args.diary_diversity, args.c2_out,
-                                          cell_paths)
+                                          cell_paths, excluded_merged_floor)
 
         manifest = {
             "work_item": "11.5",
@@ -223,6 +229,7 @@ def main(argv=None):
             "diary_diversity": args.diary_diversity,
             "n_flats_aggregated": n_flats_run,
             "n_flats_enumerated": len(flats),
+            "n_flats_excluded_merged_floor": len(excluded_merged_floor),
             "smoke_run": args.limit is not None,
             "per_day_bins": per_day,
             "ours_mean_diurnal_w_per_dwelling": ours,

@@ -1,0 +1,26 @@
+{
+  "label": "CURRENT -- model's own values, unchanged (E0 identity check). All keys null: the builder must leave every targeted field completely untouched, so the output IDF is byte-for-byte identical to the source except this tool's own header is never inserted (it doesn't touch comments at all).",
+  "actions": [],
+  "current_ach50": {
+    "ach50_house_zoneleak_only": 2.5041766939807744,
+    "ach50_all_incl_attic_crawl_vents": 287.56403418576497,
+    "flow_house_m3s_at_50Pa": 0.3980537461814361,
+    "total_ela_house_m2": 0.02600283,
+    "total_ela_all_m2": 2.98600283,
+    "conditioned_volume_m3": 572.2413636775791,
+    "cd": 1.15,
+    "dPref": 4.0,
+    "n": 0.65,
+    "ela_by_name": {
+      "ZoneLeak_LongWall": 0.002361197,
+      "ZoneLeak_ShortWall": 0.001770898,
+      "ZoneLeak_Ceiling": 0.00829125,
+      "ZoneLeak_Floor": 8.333e-06,
+      "ZoneLeak_NonGarageWall": 0.001174867,
+      "AtticVent": 0.37,
+      "CrawlVent": 0.37
+    }
+  },
+  "changelog": [],
+  "n_fields_changed": 0
+}

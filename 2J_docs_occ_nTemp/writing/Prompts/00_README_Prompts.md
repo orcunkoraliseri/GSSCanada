@@ -5,7 +5,8 @@ start from zero. Each one is written to be filled in at the top and pasted whole
 
 | File | Fire it when | Written |
 |---|---|---|
-| `2J_manager_prompt_ON_REVISION_DECISION.md` | The Building Simulation decision letter arrives — minor, major, or reject | 2026-08-07, the day of submission |
+| `2J_manager_prompt_ON_REVISION_DECISION.md` | The Building Simulation decision letter arrives — minor, major, or reject | 2026-08-07, the day of submission (used 2026-09-15, rejected) |
+| `2J_manager_prompt_RESUME_AE_resubmission.md` | Starting a new manager session on the Applied Energy resubmission | 2026-09-15, mid-execution handover |
 
 **Why they are written early.** A prompt drafted before the reviews are seen records the paper's known
 weaknesses without any incentive to soften them. The same document written after a hostile review would

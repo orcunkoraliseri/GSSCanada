@@ -1,0 +1,29 @@
+{
+  "input_file": "/speed-scratch/o_iseri/2J_revision/T03/input/agg_annual.csv",
+  "input_rows": 6000,
+  "paired_n_total": 1200,
+  "n_cells_with_pairs": 24,
+  "n_rep": 10000,
+  "seed": 12345,
+  "method_a_source": "2J_docs_occ_nTemp/08_simulation_val.py:951-1027 (validate_shift_effect)",
+  "metric_defs_source": "2J_docs_occ_nTemp/Step8_docs/08_simulation_plots.py:385-387",
+  "submitted_values": {
+    "midday_share": {
+      "point_pp": 0.367,
+      "ci_pp": [
+        0.208,
+        0.526
+      ]
+    },
+    "load_factor": {
+      "point": 0.0117,
+      "ci": [
+        0.0085,
+        0.015
+      ]
+    }
+  },
+  "unit_note": "midday_share column is a fraction (0-1); the manuscript reports it in percentage points (pp) i.e. fraction * 100. load_factor is reported in raw units in both this script and the manuscript.",
+  "important_caveat": "Input agg_annual.csv contains the defective 2030 rows (WP1 finding). This run is a METHOD check only -- it proves whether we found the right code and whether the bootstrap changes interval width. Not for the paper.",
+  "elapsed_s": 2.8595168590545654
+}

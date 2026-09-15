@@ -1,0 +1,31 @@
+{
+  "inputs": {
+    "2022": {
+      "path": "/speed-scratch/o_iseri/2J_revision/T01/BEM_Schedules_2022.csv",
+      "sha256": "05e7a14d39de6e4c28d8d9c3e82a35c5a2107cea07576b22f899d95cf83d7734"
+    },
+    "2030": {
+      "path": "/speed-scratch/o_iseri/2J_revision/T01/BEM_Schedules_2030.csv",
+      "sha256": "50d98a923cd3adbb2cbc427530b3559722fc0e41e56862c4d626a9db0f315a7e"
+    }
+  },
+  "row_counts": {
+    "2022": 6934320,
+    "2030": 6934320
+  },
+  "timing_s": {
+    "read_2022": 7.9,
+    "read_2030": 8.3,
+    "total": 18.5
+  },
+  "panel_manifest": "/speed-scratch/o_iseri/2J_revision/T01/panel_manifest.csv",
+  "panel_n_households": 1198,
+  "panel_rows_matched": {
+    "2022": 57504,
+    "2030": 57504
+  },
+  "panel_hh_matched": {
+    "2022": 1198,
+    "2030": 1198
+  }
+}

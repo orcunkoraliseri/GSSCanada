@@ -135,10 +135,7 @@ a readership less interested in load shape.
 
 ## My recommendation
 
-**Submit to Building Simulation (Option A).** It is the only one of the three where the paper is
-already the kind of paper the journal publishes, the work before submission is measured in hours, and
-the desk-reject risk is low. Given that the reason for leaving Energy and Buildings was process fatigue
-rather than fit, the option that minimises further process is the one that respects that reason.
+**Submit to Building Simulation (Option A).** [Historical 2026-08-07: Rejected 2026-09-15, see update below].
 
 **Keep Applied Energy (Option B) as the deliberate next move if A rejects** — and write the
 grid-consequence subsection *now*, while the results are fresh, rather than after a rejection. It
@@ -146,6 +143,13 @@ strengthens the paper wherever it ends up.
 
 **Treat Sustainable Cities and Society (Option C) as conditional** on the editor-in-chief conflict
 coming back clean or cleanly routable.
+
+### 🟢 Update 2026-09-15: Venue Decision Following Building Simulation Rejection
+
+Option A (Building Simulation) was rejected on 2026-09-15. Deep-research prompts `dr_2J-06` and `dr_2J-07` were executed under the pre-agreed decision rule in `deepResearch/00_README_deepResearch.md`:
+1. `dr_2J-06` returned **PARTLY USABLE**: Identified the public IESO Hourly Consumption by Forward Sortation Area (FSA) dataset (2018 to 2024 hourly across >4.5M Ontario residential premises, open download today; lacks heating-fuel split and individual archetype tags).
+2. `dr_2J-07` empirical audit of 27 recent papers (2022 to 2026) confirmed that only 33.3% check hourly shape against measured data. In Applied Energy, 55.6% of matching papers had no hourly measured check (relying on annual statistical totals or held-out survey distributions).
+3. **Selected Venue: Applied Energy (Option B)**, confirmed as the target by the author on 2026-09-15. Manager audit (plan §8): the target rests on the IESO data existing; the `dr_2J-07` article counts and quotes were not read from full texts and must not be cited. The manuscript will build the partial measured hourly comparison in WP5 using the IESO 2022 dataset (with 2019 baseline) and transparently state its limits. If unexpected submission or conflict friction arises, **Sustainable Cities and Society (Option C)** serves as the direct fallback.
 
 ---
 

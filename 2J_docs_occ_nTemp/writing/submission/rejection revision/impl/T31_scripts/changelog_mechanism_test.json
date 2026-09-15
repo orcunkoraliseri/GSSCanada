@@ -1,0 +1,112 @@
+{
+  "label": "MECHANISM TEST -- wall and ceiling assembly RSI halved from the model's own current values, window U set to 2.8, air-tightness k=3 on every ZoneLeak_* ELA. Deliberately extreme, arithmetic-sanity only. NEVER reported as a real WP7.3 result.",
+  "actions": [
+    {
+      "label": "wall",
+      "insulation_material": "NBC936 Z6 Wall Insulation",
+      "other_layers_R": 0.27094244948838403,
+      "film_R": 0.15,
+      "conductivity_fixed": 0.049,
+      "current_assembly_rsi": 4.8086975515292005,
+      "current_insulation_thickness_m": 0.215,
+      "target_assembly_rsi": 2.4043487757646003,
+      "new_insulation_thickness_m": 0.0971869099875346
+    },
+    {
+      "label": "ceiling(=roof-deck, shared material)",
+      "insulation_material": "NBC936 Z6 Roof Insulation",
+      "other_layers_R": 0.079375,
+      "film_R": 0.14,
+      "conductivity_fixed": 0.049,
+      "current_assembly_rsi": 8.709170918367347,
+      "current_insulation_thickness_m": 0.416,
+      "target_assembly_rsi": 4.3545854591836735,
+      "new_insulation_thickness_m": 0.20262531250000004
+    },
+    {
+      "label": "airtightness",
+      "k": 3.0,
+      "current_ach50_house": 2.5041766939807744,
+      "predicted_new_ach50_house": 7.512530081942323
+    }
+  ],
+  "current_ach50": {
+    "ach50_house_zoneleak_only": 2.5041766939807744,
+    "ach50_all_incl_attic_crawl_vents": 287.56403418576497,
+    "flow_house_m3s_at_50Pa": 0.3980537461814361,
+    "total_ela_house_m2": 0.02600283,
+    "total_ela_all_m2": 2.98600283,
+    "conditioned_volume_m3": 572.2413636775791,
+    "cd": 1.15,
+    "dPref": 4.0,
+    "n": 0.65,
+    "ela_by_name": {
+      "ZoneLeak_LongWall": 0.002361197,
+      "ZoneLeak_ShortWall": 0.001770898,
+      "ZoneLeak_Ceiling": 0.00829125,
+      "ZoneLeak_Floor": 8.333e-06,
+      "ZoneLeak_NonGarageWall": 0.001174867,
+      "AtticVent": 0.37,
+      "CrawlVent": 0.37
+    }
+  },
+  "changelog": [
+    {
+      "object": "Material:NBC936 Z6 Wall Insulation",
+      "field": "Thickness",
+      "line_1based": 2006,
+      "old_value": 0.215,
+      "new_value": 0.0971869099875346
+    },
+    {
+      "object": "Material:NBC936 Z6 Roof Insulation",
+      "field": "Thickness",
+      "line_1based": 2017,
+      "old_value": 0.416,
+      "new_value": 0.20262531250000004
+    },
+    {
+      "object": "WindowMaterial:SimpleGlazingSystem:Glass",
+      "field": "U-Factor",
+      "line_1based": 2070,
+      "old_value": 1.590008,
+      "new_value": 2.8
+    },
+    {
+      "object": "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea:ZoneLeak_LongWall",
+      "field": "Effective Leakage Area",
+      "line_1based": 3515,
+      "old_value": 0.002361197,
+      "new_value": 0.007083591
+    },
+    {
+      "object": "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea:ZoneLeak_ShortWall",
+      "field": "Effective Leakage Area",
+      "line_1based": 3522,
+      "old_value": 0.001770898,
+      "new_value": 0.005312694
+    },
+    {
+      "object": "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea:ZoneLeak_Ceiling",
+      "field": "Effective Leakage Area",
+      "line_1based": 3529,
+      "old_value": 0.00829125,
+      "new_value": 0.02487375
+    },
+    {
+      "object": "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea:ZoneLeak_Floor",
+      "field": "Effective Leakage Area",
+      "line_1based": 3536,
+      "old_value": 8.333e-06,
+      "new_value": 2.4999e-05
+    },
+    {
+      "object": "AirflowNetwork:MultiZone:Surface:EffectiveLeakageArea:ZoneLeak_NonGarageWall",
+      "field": "Effective Leakage Area",
+      "line_1based": 3557,
+      "old_value": 0.001174867,
+      "new_value": 0.003524601
+    }
+  ],
+  "n_fields_changed": 8
+}

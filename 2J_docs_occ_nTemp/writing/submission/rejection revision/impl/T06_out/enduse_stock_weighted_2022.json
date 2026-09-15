@@ -1,0 +1,60 @@
+{
+  "per_archetype_mean_kWh": {
+    "HighRise": {
+      "elec_facility_kWh": 391127.75390693074,
+      "lights_kWh": 66504.2570595,
+      "equip_kWh": 156055.0929031575,
+      "fan_kWh": 192.94911700272868,
+      "heating_ET_kWh": 68161.06641793008,
+      "cooling_ET_kWh": 216505.9898723159,
+      "water_ET_kWh": 12811.64121207526,
+      "hvac_dhw_elec_kWh": 168375.4548272705
+    },
+    "MidRise": {
+      "elec_facility_kWh": 268723.0267506836,
+      "lights_kWh": 26616.873969599998,
+      "equip_kWh": 71677.77515508281,
+      "fan_kWh": 192.95040913037755,
+      "heating_ET_kWh": 15522.617532557908,
+      "cooling_ET_kWh": 110318.27518442208,
+      "water_ET_kWh": NaN,
+      "hvac_dhw_elec_kWh": 170235.42721687045
+    },
+    "OtherDwelling": {
+      "elec_facility_kWh": 46002.067098075706,
+      "lights_kWh": 7703.666790166666,
+      "equip_kWh": 21978.885091766984,
+      "fan_kWh": 437.99999999999864,
+      "heating_ET_kWh": 20563.764583332708,
+      "cooling_ET_kWh": 28381.86790390809,
+      "water_ET_kWh": 1869.7110763790909,
+      "hvac_dhw_elec_kWh": 15881.515216142054
+    },
+    "SingleD": {
+      "elec_facility_kWh": 7940.584887578157,
+      "lights_kWh": 1262.54824,
+      "equip_kWh": 3700.982976665616,
+      "fan_kWh": 437.99999999999864,
+      "heating_ET_kWh": 5323.71893832743,
+      "cooling_ET_kWh": 5648.4552877576,
+      "water_ET_kWh": 2537.427995933975,
+      "hvac_dhw_elec_kWh": 2539.053670912542
+    }
+  },
+  "stock_weighted_kWh": {
+    "elec_facility_kWh": 117483.19532626143,
+    "lights_kWh": 15851.303760822466,
+    "equip_kWh": 40057.493056222615,
+    "fan_kWh": 354.43792412111884,
+    "heating_ET_kWh": 17520.470750138345,
+    "cooling_ET_kWh": 57888.23499267016,
+    "water_ET_kWh": NaN,
+    "hvac_dhw_elec_kWh": 61219.96058509523
+  },
+  "stock_weights": {
+    "SingleD": 0.529,
+    "MidRise": 0.213,
+    "OtherDwelling": 0.13,
+    "HighRise": 0.128
+  }
+}

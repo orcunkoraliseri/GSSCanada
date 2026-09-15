@@ -1,0 +1,10 @@
+{
+  "label": "MECHANISM TEST -- wall and ceiling assembly RSI halved from the model's own current values, window U set to 2.8, air-tightness k=3 on every ZoneLeak_* ELA. Deliberately extreme, arithmetic-sanity only. NEVER reported as a real WP7.3 result.",
+  "wall_rsi": 2.4043487757646003,
+  "ceiling_rsi": 4.3545854591836735,
+  "foundation_rsi": null,
+  "window_u": 2.8,
+  "window_shgc": null,
+  "ach50": null,
+  "k": 3
+}

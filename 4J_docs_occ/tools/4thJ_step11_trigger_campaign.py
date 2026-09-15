@@ -100,6 +100,16 @@ THE REFUSALS
 `S10` the `G11.15` seam
 
 Every one raises `Refusal` and none is downgradeable to a warning.
+
+THE EXCLUSIONS -- not a `Refusal`, a counted skip
+--------------------------------------------------
+`S11` a flat whose only occupancy series is Step 10's floor-merged AREA-WEIGHTED
+AVERAGE (`merged_floor_averaged_occupancy`, `average_units_by_floor`, `FINDING
+254`) never entered Step 7's shipped bundle -- it was never one real household,
+so `S6` can never find its identity there and never should. It is excluded from
+the trigger population the same way `S2` excludes Arm F: a known, named category,
+counted in the manifest, never silently dropped and never assigned a diary it was
+not simulated with.
 """
 import argparse
 import collections
@@ -275,16 +285,37 @@ def check_cells(cells, paths):
 
 
 def flats_from_cells(cells):
-    """One record per DRAWN FLAT, deduplicated across the `f` sweep.
+    """One record per DRAWN FLAT, deduplicated across the `f` sweep, plus the
+    `S11` exclusions counted alongside it.
 
     The `f` sweep changes only how Step 10 redistributes the conserved internal
     gain; it does not change which diary a flat holds.  So the trigger runs once
     per (building, case, unit) and is reported against every `f` that shares it.
+
+    Returns `(flats, excluded_merged_floor)`.  A flat whose schedule carries
+    `merged_floor_averaged_occupancy: True` is a Step 10 floor-merged
+    area-weighted average, not a real household's diary (`S11`); it is routed
+    into `excluded_merged_floor` instead of `flats` and never reaches `S6`.
     """
     flats = {}
+    excluded_merged_floor = {}
     for cell in cells:
         for sched in cell.get("schedules") or []:
             key = (cell["building_id"], cell["case"], sched["unit_index"])
+            if sched.get("merged_floor_averaged_occupancy"):
+                rec = excluded_merged_floor.get(key)
+                if rec is None:
+                    excluded_merged_floor[key] = {
+                        "building_id": cell["building_id"],
+                        "case": cell["case"],
+                        "unit_index": sched["unit_index"],
+                        "zone": sched["zone"],
+                        "storey_index": sched.get("storey_index"),
+                        "presence_file": sched["presence_file"],
+                        "merged_source_unit_indices":
+                            sched.get("merged_source_unit_indices"),
+                    }
+                continue
             rec = flats.get(key)
             if rec is None:
                 rec = {
@@ -314,7 +345,8 @@ def flats_from_cells(cells):
     for rec in flats.values():
         rec["f_levels"] = sorted(set(rec["f_levels"]))
         rec["cell_ids"] = sorted(set(rec["cell_ids"]))
-    return [flats[k] for k in sorted(flats)]
+    return ([flats[k] for k in sorted(flats)],
+            [excluded_merged_floor[k] for k in sorted(excluded_merged_floor)])
 
 
 # ---------------------------------------------------------------------------
@@ -513,7 +545,7 @@ def run_flat(flat, ctx, trigger, diversity):
 
 
 def population_declaration(fold, district, flats, cells, used, diversity,
-                           c2_out, cell_paths):
+                           c2_out, cell_paths, excluded_merged_floor=()):
     """`G11.16`: every stock-scale statistic names its population, its spatial
     extent and its weather file.  Written here so no aggregate can be produced
     without one, rather than checked after the fact."""
@@ -561,6 +593,17 @@ def population_declaration(fold, district, flats, cells, used, diversity,
         "c2_out": os.path.abspath(c2_out),
         "c2_cell_set_sha256": cell_set_digest(cell_paths),
         "scores_nothing": True,
+        # `S11`: named and counted, never a silent drop -- see `flats_from_cells`.
+        "n_flats_excluded_merged_floor": len(excluded_merged_floor),
+        "excluded_merged_floor_note": (
+            "%d flat(s) over %d building(s) hold a Step 10 floor-merged, "
+            "area-weighted AVERAGED occupancy series (`merged_floor_averaged_"
+            "occupancy`), not a real per-household diary. `S11` excludes them "
+            "from this trigger population the same way `S2` excludes Arm F: "
+            "they are not in `n_flats` above and never received a diary they "
+            "were not simulated with."
+            % (len(excluded_merged_floor),
+               len(set(r["building_id"] for r in excluded_merged_floor)))),
     }
 
 
@@ -630,7 +673,7 @@ def main(argv=None):
         fold = check_cells(cells, cell_paths)
         district = args.district or (cells[0].get("district")
                                      or cells[0].get("cell_id", "").split("__")[0])
-        flats = flats_from_cells(cells)
+        flats, excluded_merged_floor = flats_from_cells(cells)
         if not flats:
             raise Refusal("S3 the `C2` cells carry no drawn flats; there is "
                           "nothing for the trigger to run on")
@@ -642,6 +685,12 @@ def main(argv=None):
         print("  fold / district : %s / %s" % (fold, district))
         print("  drawn flats     : %d over %d buildings"
               % (len(flats), len(set(f["building_id"] for f in flats))))
+        if excluded_merged_floor:
+            print("  `S11` excluded  : %d flat(s) over %d building(s) carry a "
+                  "Step 10 floor-merged averaged diary, not a real household -- "
+                  "excluded, never simulated as if they were one"
+                  % (len(excluded_merged_floor),
+                     len(set(r["building_id"] for r in excluded_merged_floor))))
 
         ctx = prepare_fold(args.root, fold, trigger)
         wanted, present = check_runtime_columns(args.root, fold, ctx["mapping"])
@@ -658,7 +707,7 @@ def main(argv=None):
 
         decl = population_declaration(fold, district, flats, cells, used,
                                       args.diary_diversity, args.c2_out,
-                                      cell_paths)
+                                      cell_paths, excluded_merged_floor)
 
         todo = flats if args.limit is None else flats[:args.limit]
         if args.dry_run and args.limit is None:
@@ -712,6 +761,7 @@ def main(argv=None):
             },
             "n_flats_run": len(results),
             "n_flats_enumerated": len(flats),
+            "n_flats_excluded_merged_floor": len(excluded_merged_floor),
             "smoke_run": args.limit is not None,
             "scores_nothing": True,
             "flats": results,

@@ -1,0 +1,19 @@
+{
+  "job_started_utc": "2026-09-15T15:08:46Z",
+  "elapsed_sec": 38.51062369346619,
+  "input_root": "/speed-scratch/o_iseri/2J_revision/T06/input",
+  "n_runs_per_archetype": {
+    "SingleD": 50,
+    "OtherDwelling": 50,
+    "MidRise": 50,
+    "HighRise": 50
+  },
+  "n_runs_loaded_ok": 200,
+  "n_runs_skipped": 0,
+  "skipped": [],
+  "row_counts": {
+    "sim_toronto_2022_metrics.csv": 880,
+    "sim_toronto_2022_profiles_long.csv": 21120,
+    "sim_vs_measured_toronto_2022.csv": 1056
+  }
+}

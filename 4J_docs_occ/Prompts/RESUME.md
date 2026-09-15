@@ -1,3 +1,140 @@
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-15, last+275) — SUPERSEDES last+274 BELOW**
+
+Read this block, then last+274 below it for the run-progress numbers (still correct at the time they
+were taken). This block records a real code fix to a real blocker, done with the author's explicit
+sign-off, by the previously read-only monitoring session.
+
+## 1. The blocker, its cause, and the fix (author-approved)
+
+🔴 **The launcher already gave up. It will not retry on its own.** Master log
+`_local_runs/4J_ES_local/logs/madrid_stock_campaign_20260914_182541.log`, last three lines:
+`STAGE step11_11-3_es: launch attempt 40 ... exited (rc=0), marker still missing`, then
+`FATAL: STAGE step11_11-3_es: exceeded 40 relaunch attempts ... stopping, NOT silently continuing`
+at 2026-09-15 17:47:19. Cell generation itself finished (11,513 cell files on disk).
+
+**Cause**: 644 flats over 72 buildings, all in Arm D, carry a Step 10 floor-merged AREA-WEIGHTED
+AVERAGED occupancy series (`merged_floor_averaged_occupancy: True`, written by
+`average_units_by_floor` in `4thJ_step10_nocore_campaign.py`, `FINDING 254`) because their building's
+geometry could not be split one-zone-per-dwelling. That series is not one real household's diary, so
+it is not in Step 7's shipped bundle, and Step 11's `S6` identity check correctly refused it, every
+time, deterministically — hence 40 identical relaunch failures.
+
+**Author's ruling (this session, 2026-09-15)**: skip these flats, the same way Arm F is already
+excluded. Author said explicitly this session may write the fix itself if needed.
+
+**Fix applied** (mirrors the existing `S2` Arm-F exclusion; new gate code `S11`, a counted skip, not a
+`Refusal`):
+- `tools/4thJ_step11_trigger_campaign.py` — `flats_from_cells()` now returns
+  `(flats, excluded_merged_floor)`; excluded flats are named, counted, and reported in `PREFLIGHT`,
+  `population_declaration()`, and the output manifest (`n_flats_excluded_merged_floor`). Header
+  docstring gets a new "THE EXCLUSIONS" section documenting `S11`.
+- `tools/4thJ_step11_aggregate.py` (11.5) and `tools/4thJ_step11_stockboard.py` (11.6) updated to
+  unpack the new tuple and thread the excluded count through the same way — both call the same
+  `flats_from_cells()` and would hit the identical `S6` refusal on Madrid otherwise.
+- All three files compile clean (`py_compile`).
+
+**Verified against the real Madrid cells, read-only** (`--dry-run`, writes nothing, `_local_runs/`
+untouched): `20588 drawn flats over 1062 buildings`, `S11 excluded: 644 flat(s) over 72 building(s)`,
+`diary identity: 20588 flats bound to 100 distinct households of the 100 shipped` — no `S6` refusal.
+Matches the 644/72 figure independently found before the fix was written.
+
+**Not yet done, on purpose**: the real (non-dry-run) 11.3 run was NOT launched. It writes real output
+under `Step11_docs/outputs_step11/c2_es/` and at `reseed` mode's own documented cost (~1.2 s/flat) is
+roughly 6-7 hours of compute — a bigger, harder-to-reverse action than the read-only verification
+above, so it was left for the owning session / the author to launch (either through the existing
+launcher wrapper so it goes through normal retry/logging, or by calling the trigger script directly
+with the same `--root`/`--c2-out`/`--diary-diversity reseed` flags used above, dropping `--dry-run`).
+
+Evidence: `tools/4thJ_step11_trigger_campaign.py`, `tools/4thJ_step11_aggregate.py`,
+`tools/4thJ_step11_stockboard.py`, `_local_runs/4J_ES_local/logs/madrid_stock_campaign_20260914_182541.log`,
+dry-run output above (not saved to a file — re-run the same command to reproduce it).
+
+Next: launch the real (non-`--dry-run`) `step11_11-3_es` pass, then 11.5 and 11.6 follow the same
+launcher path they always did.
+
+## 2. Real run launched (author said go ahead, 2026-09-15 ~23:45 local)
+
+🔴 **A real, non-dry-run `step11_11-3_es` is now IN FLIGHT, started by this session, not the original
+launcher.** Same command as the verified dry-run above, `--dry-run` dropped:
+```
+py tools/4thJ_step11_trigger_campaign.py --root <4J_docs_occ> \
+  --c2-out _local_runs/4J_ES_local/out/ES-MAD-BERRUGUETE --diary-diversity reseed
+```
+Logs (new files, do not confuse with the launcher's own `step11_11-3_es_stdout.log`/`_stderr.log`):
+`_local_runs/4J_ES_local/logs/step11_11-3_es_S11fix_20260915_234554_stdout.log` and
+`..._stderr.log`. Expected runtime ~6-7 h from launch (reseed mode, ~1.2 s/flat x 20,588 flats).
+On success it writes `Step11_docs/outputs_step11/c2_es/step11_11-3_es_reseed.json` — the same path
+the original launcher was trying and failing to produce.
+
+If this session's process is gone when you read this (session ended, machine restarted): check
+whether that output file exists before relaunching anything — `S6`/`S11` will not refuse a correct
+re-run, but there is no need to redo 6-7 h of compute if it already finished or is still running
+under this session's PID.
+
+Next: wait for `step11_11-3_es_reseed.json`, then run 11.5 (`4thJ_step11_aggregate.py`) and 11.6
+(`4thJ_step11_stockboard.py`) the same way, both already carry the `S11` fix.
+
+**Author is offline overnight (2026-09-15/16).** This session will keep this block updated at every
+step (run finishes, 11.5 launched, 11.6 launched, any failure) so tomorrow's session can pick up cold
+from this file alone. As of 2026-09-15 23:46 local the run's own log files are still empty — expected,
+same Windows stdout buffering already seen on the Bologna smoke run (see the 11.6 section below); the
+process is confirmed running, not stalled.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-15, last+274) — SUPERSEDES last+273 BELOW**
+
+Read this block, then last+273 below it for the incident/relaunch detail and last+272 for the writing
+round and launcher fixes — both still correct. This block only updates the Madrid run's progress,
+observed by a separate read-only monitoring session that has been checking it hourly since the
+2026-09-14 18:25:41 launch. That monitoring session has not touched the run.
+
+## 1. The Madrid run, current numbers (2026-09-15, ~18:32 local)
+
+🔴 **STILL A REAL RUN IN FLIGHT ON THIS MACHINE, STILL NOT YOURS TO TOUCH.** Same rule as last+273:
+no relaunching, no killing, no worker-count changes, no monitors or agents pointed at `_local_runs/`
+beyond a one-off cell count. The owning session is independent of this handoff.
+
+* **9,530 cells written, 170 refused, of 11,510 planned** — up from 277 written / 30 refused at
+  last+273. Progress is real and steady, not stalled.
+* Master log `_local_runs/4J_ES_local/logs/madrid_stock_campaign_20260914_182541.log` shows the
+  launcher crash-looped hard between attempts 1 and 22 — each attempt exiting `rc=0` with the
+  completion marker missing and retrying after 15 s, cycle lengths from about 7 minutes (attempts
+  12-21) up to several hours (attempt 6→7 took ~10 h, attempt 21→22 took ~1 h). Cells still
+  accumulated across attempts because the script skips already-written cells on resume, which is why
+  9,530 exist despite the marker never being satisfied.
+* **Attempt 23, launched 2026-09-15 11:00:37 local, has now run continuously for 7+ hours with no
+  relaunch** — the crash-loop has stopped. Four hourly monitoring checks in a row show zero new
+  failures (170 held flat) and a steady rate, most recently about 545 cells/hour.
+* Refused-cell count moved from 30 (last+273) to 170. Re-measure again before assuming it stays there;
+  last+273's note that refusals are precedented (3-building, `ENERGYPLUS_FAILED`, `returncode: 1`)
+  still needs re-checking against the new failure set — this monitoring session only counts files, it
+  does not open them.
+* At the current pace, expect roughly 3-3.5 more hours for the cell pass to reach 11,510, then the
+  three Step 11 passes (11.3 trigger, 11.5 aggregate, 11.6 stockboard), which are automatic and not
+  resumable.
+* Live board (kept current by the monitoring session, full replacement each hour):
+  https://claude.ai/code/artifact/45991d0c-158a-4351-b432-4503abbefa70
+
+## 2. Everything else is unchanged from last+273
+
+Speed lane not re-checked this pass (still granted for the independent-replication shard only, still
+PENDING behind `lmn_dfix_z8` as of last+273's `sacct`). The writing round, the closed items, the
+author-side open list (`E5` references, `C5` Figure 1 cards, `D-S9-2`, target venue, `C2` reporting
+decision, `FINDING 275`/`276`/`278`/`280`/`281`, Figure 2's caption/prose pointer, HETUS guidelines,
+`L28`/`L29`) are all exactly as last+273 and last+272 left them — nothing below section 1 was touched
+or re-derived in this pass.
+
+## 3. New, unrelated deliverable: a manuscript progress tracker
+
+A one-off artifact was published on request, modeled on an existing CPRA tracker, to visualize the
+4J manuscript's own status (pipeline Steps 0-11 closed, the headline result framed correctly as
+pre-registered not a shortfall, and the six items owed before submission from last+268). It carries no
+monitoring obligation and duplicates nothing above — informational only:
+https://claude.ai/code/artifact/a67bbbe7-2dc2-4bcf-977f-cb64a9e1589a
+
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-14, last+273) — SUPERSEDES last+272 BELOW**
 
 Read this block, then read last+272 below it for the detail of the writing round and the launcher. The

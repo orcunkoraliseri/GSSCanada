@@ -1,0 +1,84 @@
+{
+  "job_started_utc": "2026-09-15T15:01:03Z",
+  "elapsed_sec": 18.86733865737915,
+  "input_root": "/speed-scratch/o_iseri/2J_revision/T06/input",
+  "script_version": "v2",
+  "n_candidate_runs": 1200,
+  "n_households_read_ok": 1200,
+  "n_households_skipped": 0,
+  "skipped": [],
+  "row_counts": {
+    "enduse_annual.csv": 1200,
+    "enduse_hourly_profile.csv": 2008800,
+    "grid_metrics.csv": 1200,
+    "closure.csv": 1200
+  },
+  "hvac_dhw_elec_kWh_summary": {
+    "count": 1200.0,
+    "mean": 89257.86273279888,
+    "std": 80816.21366952216,
+    "min": 1775.4049645371024,
+    "25%": 9739.892201547154,
+    "50%": 73840.13653663956,
+    "75%": 169331.42647312523,
+    "max": 209228.59405171842
+  },
+  "hvac_dhw_elec_pct_of_facility_by_archetype": {
+    "HighRise": {
+      "hvac_dhw_elec_kWh_mean": 168375.45482727053,
+      "hvac_dhw_elec_kWh_median": 168646.45209439748,
+      "hvac_dhw_elec_kWh_std": 18862.41094401547,
+      "hvac_dhw_elec_kWh_min": 128225.61555053963,
+      "hvac_dhw_elec_kWh_max": 209228.59405171842,
+      "hvac_dhw_elec_kWh_count": 300,
+      "hvac_dhw_elec_pct_of_facility_mean": 42.91936174317053,
+      "hvac_dhw_elec_pct_of_facility_median": 42.960154343963026,
+      "hvac_dhw_elec_pct_of_facility_std": 2.783384258836237,
+      "hvac_dhw_elec_pct_of_facility_min": 36.753752631922346,
+      "hvac_dhw_elec_pct_of_facility_max": 48.579449325627444,
+      "hvac_dhw_elec_pct_of_facility_count": 300
+    },
+    "MidRise": {
+      "hvac_dhw_elec_kWh_mean": 170235.42721687045,
+      "hvac_dhw_elec_kWh_median": 169754.79518399856,
+      "hvac_dhw_elec_kWh_std": 4963.235837955977,
+      "hvac_dhw_elec_kWh_min": 160501.81640713016,
+      "hvac_dhw_elec_kWh_max": 192858.24942518445,
+      "hvac_dhw_elec_kWh_count": 300,
+      "hvac_dhw_elec_pct_of_facility_mean": 63.33920096937925,
+      "hvac_dhw_elec_pct_of_facility_median": 63.29679372971786,
+      "hvac_dhw_elec_pct_of_facility_std": 0.8038760305847121,
+      "hvac_dhw_elec_pct_of_facility_min": 61.34975914341147,
+      "hvac_dhw_elec_pct_of_facility_max": 66.65897790567011,
+      "hvac_dhw_elec_pct_of_facility_count": 300
+    },
+    "OtherDwelling": {
+      "hvac_dhw_elec_kWh_mean": 15881.515216142054,
+      "hvac_dhw_elec_kWh_median": 15975.794716667302,
+      "hvac_dhw_elec_kWh_std": 1686.8934067232922,
+      "hvac_dhw_elec_kWh_min": 11918.606376201307,
+      "hvac_dhw_elec_kWh_max": 19454.657522739508,
+      "hvac_dhw_elec_kWh_count": 300,
+      "hvac_dhw_elec_pct_of_facility_mean": 34.43533426147145,
+      "hvac_dhw_elec_pct_of_facility_median": 34.66255425976123,
+      "hvac_dhw_elec_pct_of_facility_std": 2.4220094038018987,
+      "hvac_dhw_elec_pct_of_facility_min": 28.355307335665998,
+      "hvac_dhw_elec_pct_of_facility_max": 39.26760426570959,
+      "hvac_dhw_elec_pct_of_facility_count": 300
+    },
+    "SingleD": {
+      "hvac_dhw_elec_kWh_mean": 2539.053670912542,
+      "hvac_dhw_elec_kWh_median": 2508.0057004234286,
+      "hvac_dhw_elec_kWh_std": 281.2737257269986,
+      "hvac_dhw_elec_kWh_min": 1775.4049645371024,
+      "hvac_dhw_elec_kWh_max": 3203.7496775846967,
+      "hvac_dhw_elec_kWh_count": 300,
+      "hvac_dhw_elec_pct_of_facility_mean": 31.8904873655982,
+      "hvac_dhw_elec_pct_of_facility_median": 31.6981525503868,
+      "hvac_dhw_elec_pct_of_facility_std": 2.421331323863149,
+      "hvac_dhw_elec_pct_of_facility_min": 24.726245794343033,
+      "hvac_dhw_elec_pct_of_facility_max": 37.25312689692889,
+      "hvac_dhw_elec_pct_of_facility_count": 300
+    }
+  }
+}
