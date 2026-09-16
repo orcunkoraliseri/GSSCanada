@@ -245,7 +245,11 @@ predict which value of $\lambda$ will occur.
 
 For each of the 24 modelled cells (4 dwelling archetypes $\times$ 6 city/climate-zone stations),
 the candidate pool is every household identifier present in the schedule files of all years
-simulated together, restricted to that cell's archetype and province. From this pool, $N = 50$ households are drawn
+simulated together, restricted to that cell's archetype and province, and further restricted to the
+households whose loaded schedules pass the integration layer's own plausibility check on the daily
+occupancy pattern. The pool therefore depends on the numeric content of the schedule files, not only on
+which households they list; the supplementary material states what this implies for comparing a rebuilt
+schedule set against a previously published one. From this pool, $N = 50$ households are drawn
 without replacement:
 
 $$

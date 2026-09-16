@@ -1,0 +1,457 @@
+{
+  "calibration_trace": [
+    {
+      "pass": 0,
+      "ratios": {
+        "cassette_cd_player": 0.9081,
+        "dish_washer": 0.8954,
+        "fridge_freezer": 1.0115,
+        "hi_fi": 0.975,
+        "hob": 0.8201,
+        "iron": 0.9535,
+        "kettle": 0.995,
+        "microwave": 0.9372,
+        "oven": 0.8735,
+        "personal_computer": 0.8418,
+        "printer": 1.008,
+        "refrigerator": 1.0116,
+        "small_cooking_group": 0.9736,
+        "tumble_dryer": 0.47,
+        "tv_1": 0.5399,
+        "tv_2": 0.4544,
+        "tv_receiver_box": 0.4786,
+        "vacuum": 0.9452,
+        "vcr_dvd": 0.4654,
+        "washing_machine": 0.4871
+      },
+      "saturated": [],
+      "worst_abs_dev": 0.5456,
+      "worst_appliance": "tv_2"
+    },
+    {
+      "pass": 1,
+      "ratios": {
+        "cassette_cd_player": 0.978,
+        "dish_washer": 0.9856,
+        "fridge_freezer": 1.0092,
+        "hi_fi": 0.9988,
+        "hob": 0.9628,
+        "iron": 0.9933,
+        "kettle": 1.0016,
+        "microwave": 0.9909,
+        "oven": 0.9885,
+        "personal_computer": 0.9332,
+        "printer": 1.0011,
+        "refrigerator": 1.0072,
+        "small_cooking_group": 1.0054,
+        "tumble_dryer": 0.7241,
+        "tv_1": 0.6653,
+        "tv_2": 0.5881,
+        "tv_receiver_box": 0.595,
+        "vacuum": 0.9906,
+        "vcr_dvd": 0.5814,
+        "washing_machine": 0.6384
+      },
+      "saturated": [],
+      "worst_abs_dev": 0.4186,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 2,
+      "ratios": {
+        "cassette_cd_player": 0.9905,
+        "dish_washer": 0.973,
+        "fridge_freezer": 1.0069,
+        "hi_fi": 0.9883,
+        "hob": 0.987,
+        "iron": 0.9864,
+        "kettle": 0.9986,
+        "microwave": 0.9944,
+        "oven": 0.9881,
+        "personal_computer": 0.9706,
+        "printer": 1.0081,
+        "refrigerator": 1.0053,
+        "small_cooking_group": 0.9912,
+        "tumble_dryer": 0.8356,
+        "tv_1": 0.7329,
+        "tv_2": 0.6555,
+        "tv_receiver_box": 0.6582,
+        "vacuum": 1.017,
+        "vcr_dvd": 0.6445,
+        "washing_machine": 0.6926
+      },
+      "saturated": [],
+      "worst_abs_dev": 0.3555,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 3,
+      "ratios": {
+        "cassette_cd_player": 1.0003,
+        "dish_washer": 1.0001,
+        "fridge_freezer": 1.0053,
+        "hi_fi": 0.9998,
+        "hob": 0.9954,
+        "iron": 0.9855,
+        "kettle": 1.0038,
+        "microwave": 0.9945,
+        "oven": 0.9977,
+        "personal_computer": 0.9879,
+        "printer": 0.9985,
+        "refrigerator": 1.0027,
+        "small_cooking_group": 1.0174,
+        "tumble_dryer": 0.9,
+        "tv_1": 0.7731,
+        "tv_2": 0.6972,
+        "tv_receiver_box": 0.6985,
+        "vacuum": 0.9918,
+        "vcr_dvd": 0.6815,
+        "washing_machine": 0.7105
+      },
+      "saturated": [],
+      "worst_abs_dev": 0.3185,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 4,
+      "ratios": {
+        "cassette_cd_player": 1.0019,
+        "dish_washer": 1.0178,
+        "fridge_freezer": 1.004,
+        "hi_fi": 1.0069,
+        "hob": 0.9992,
+        "iron": 1.0431,
+        "kettle": 0.9993,
+        "microwave": 0.9796,
+        "oven": 1.0232,
+        "personal_computer": 0.9936,
+        "printer": 0.9956,
+        "refrigerator": 1.0009,
+        "small_cooking_group": 0.9828,
+        "tumble_dryer": 0.9255,
+        "tv_1": 0.8054,
+        "tv_2": 0.7136,
+        "tv_receiver_box": 0.7182,
+        "vacuum": 1.028,
+        "vcr_dvd": 0.7023,
+        "washing_machine": 0.7145
+      },
+      "saturated": [
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.2977,
+      "worst_appliance": "vcr_dvd"
+    },
+    {
+      "pass": 5,
+      "ratios": {
+        "cassette_cd_player": 1.0006,
+        "dish_washer": 0.9855,
+        "fridge_freezer": 1.0029,
+        "hi_fi": 1.0089,
+        "hob": 1.0053,
+        "iron": 0.9798,
+        "kettle": 0.9975,
+        "microwave": 0.9939,
+        "oven": 0.979,
+        "personal_computer": 0.9935,
+        "printer": 1.0014,
+        "refrigerator": 1.0009,
+        "small_cooking_group": 1.0078,
+        "tumble_dryer": 0.9466,
+        "tv_1": 0.8206,
+        "tv_2": 0.7285,
+        "tv_receiver_box": 0.7298,
+        "vacuum": 0.9932,
+        "vcr_dvd": 0.713,
+        "washing_machine": 0.7147
+      },
+      "saturated": [
+        "washing_machine"
+      ],
+      "worst_abs_dev": 0.287,
+      "worst_appliance": "vcr_dvd"
+    }
+  ],
+  "campaign": "C2",
+  "cycles": [
+    {
+      "appliance_id": "tv_1",
+      "appliance_name": "TV 1",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1157.236,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 20075,
+      "ratio_modelled_over_published": 0.79032
+    },
+    {
+      "appliance_id": "tv_2",
+      "appliance_name": "TV 2",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1210.257,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 11897,
+      "ratio_modelled_over_published": 0.82653
+    },
+    {
+      "appliance_id": "vcr_dvd",
+      "appliance_name": "VCR / DVD",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1034.881,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 18496,
+      "ratio_modelled_over_published": 0.70676
+    },
+    {
+      "appliance_id": "tv_receiver_box",
+      "appliance_name": "TV Receiver box",
+      "crest_profile": 0,
+      "cycles_per_dwelling_year_modelled": 1031.127,
+      "cycles_per_year_published": 1464.26654,
+      "n_dwellings_owning": 19215,
+      "ratio_modelled_over_published": 0.70419
+    },
+    {
+      "appliance_id": "hob",
+      "appliance_name": "Hob",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 414.197,
+      "cycles_per_year_published": 417.90201,
+      "n_dwellings_owning": 9439,
+      "ratio_modelled_over_published": 0.99113
+    },
+    {
+      "appliance_id": "oven",
+      "appliance_name": "Oven",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 214.611,
+      "cycles_per_year_published": 219.7928,
+      "n_dwellings_owning": 12641,
+      "ratio_modelled_over_published": 0.97642
+    },
+    {
+      "appliance_id": "microwave",
+      "appliance_name": "Microwave",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 96.411,
+      "cycles_per_year_published": 94.61932,
+      "n_dwellings_owning": 17745,
+      "ratio_modelled_over_published": 1.01893
+    },
+    {
+      "appliance_id": "small_cooking_group",
+      "appliance_name": "Small cooking (group)",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 288.538,
+      "cycles_per_year_published": 292.32622,
+      "n_dwellings_owning": 20588,
+      "ratio_modelled_over_published": 0.98704
+    },
+    {
+      "appliance_id": "dish_washer",
+      "appliance_name": "Dish washer",
+      "crest_profile": 1,
+      "cycles_per_dwelling_year_modelled": 215.525,
+      "cycles_per_year_published": 241.4764,
+      "n_dwellings_owning": 6898,
+      "ratio_modelled_over_published": 0.89253
+    },
+    {
+      "appliance_id": "tumble_dryer",
+      "appliance_name": "Tumble dryer",
+      "crest_profile": 2,
+      "cycles_per_dwelling_year_modelled": 143.588,
+      "cycles_per_year_published": 122.07292,
+      "n_dwellings_owning": 8683,
+      "ratio_modelled_over_published": 1.17625
+    },
+    {
+      "appliance_id": "washing_machine",
+      "appliance_name": "Washing machine",
+      "crest_profile": 2,
+      "cycles_per_dwelling_year_modelled": 140.399,
+      "cycles_per_year_published": 195.9066,
+      "n_dwellings_owning": 16119,
+      "ratio_modelled_over_published": 0.71666
+    },
+    {
+      "appliance_id": "iron",
+      "appliance_name": "Iron",
+      "crest_profile": 4,
+      "cycles_per_dwelling_year_modelled": 35.888,
+      "cycles_per_year_published": 35.45947,
+      "n_dwellings_owning": 18501,
+      "ratio_modelled_over_published": 1.01208
+    },
+    {
+      "appliance_id": "vacuum",
+      "appliance_name": "Vacuum",
+      "crest_profile": 5,
+      "cycles_per_dwelling_year_modelled": 108.125,
+      "cycles_per_year_published": 110.3676,
+      "n_dwellings_owning": 19258,
+      "ratio_modelled_over_published": 0.97968
+    },
+    {
+      "appliance_id": "answer_machine",
+      "appliance_name": "Answer machine",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 0.0,
+      "cycles_per_year_published": 1e-05,
+      "n_dwellings_owning": 18538,
+      "ratio_modelled_over_published": 0.0
+    },
+    {
+      "appliance_id": "cassette_cd_player",
+      "appliance_name": "Cassette / CD Player",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 1197.149,
+      "cycles_per_year_published": 1212.76286,
+      "n_dwellings_owning": 18573,
+      "ratio_modelled_over_published": 0.98713
+    },
+    {
+      "appliance_id": "cordless_telephone",
+      "appliance_name": "Cordless telephone",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 0.0,
+      "cycles_per_year_published": 1e-05,
+      "n_dwellings_owning": 18423,
+      "ratio_modelled_over_published": 0.0
+    },
+    {
+      "appliance_id": "hi_fi",
+      "appliance_name": "Hi-Fi",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 110.11,
+      "cycles_per_year_published": 109.42554,
+      "n_dwellings_owning": 18431,
+      "ratio_modelled_over_published": 1.00625
+    },
+    {
+      "appliance_id": "personal_computer",
+      "appliance_name": "Personal computer",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 437.866,
+      "cycles_per_year_published": 449.23798,
+      "n_dwellings_owning": 14706,
+      "ratio_modelled_over_published": 0.97469
+    },
+    {
+      "appliance_id": "printer",
+      "appliance_name": "Printer",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 642.995,
+      "cycles_per_year_published": 654.87596,
+      "n_dwellings_owning": 13710,
+      "ratio_modelled_over_published": 0.98186
+    },
+    {
+      "appliance_id": "kettle",
+      "appliance_name": "Kettle",
+      "crest_profile": 6,
+      "cycles_per_dwelling_year_modelled": 1517.257,
+      "cycles_per_year_published": 1519.82287,
+      "n_dwellings_owning": 20030,
+      "ratio_modelled_over_published": 0.99831
+    },
+    {
+      "appliance_id": "fridge_freezer",
+      "appliance_name": "Fridge freezer",
+      "crest_profile": 7,
+      "cycles_per_dwelling_year_modelled": 6129.846,
+      "cycles_per_year_published": 6115.75933,
+      "n_dwellings_owning": 13341,
+      "ratio_modelled_over_published": 1.0023
+    },
+    {
+      "appliance_id": "refrigerator",
+      "appliance_name": "Refrigerator",
+      "crest_profile": 7,
+      "cycles_per_dwelling_year_modelled": 6121.368,
+      "cycles_per_year_published": 6115.75933,
+      "n_dwellings_owning": 8907,
+      "ratio_modelled_over_published": 1.00092
+    },
+    {
+      "appliance_id": "clock",
+      "appliance_name": "Clock",
+      "crest_profile": 7,
+      "cycles_per_dwelling_year_modelled": 0.0,
+      "cycles_per_year_published": 1e-05,
+      "n_dwellings_owning": 18459,
+      "ratio_modelled_over_published": 0.0
+    }
+  ],
+  "declaration": {
+    "accounting_paths": {
+      "note": "One path per end-use per building (`G11.15`). Step 10's lumped internal gain is an INPUT, never an end-use result; Step 11's appliance electricity is already inside it and must never be injected back.",
+      "step10": [
+        "space_heating"
+      ],
+      "step11": [
+        "appliance_electricity",
+        "dhw"
+      ]
+    },
+    "arm": "D",
+    "arm_note": "Arm D only. Arm F is a LOWER BOUND, never pooled with this and never promoted (`G11.17`).",
+    "c2_cell_set_sha256": "370d373b0c0ee1aee3c8726532a4555438e128b0079222f8fce04b2d9777b7e5",
+    "c2_out": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\4J_ES_local\\out\\ES-MAD-BERRUGUETE",
+    "comparability": "NOT comparable to Step 9's R^2 without this declaration: Step 9's 100 dwellings were drawn ACROSS a fold; these sit in one neighbourhood on one weather file, spatially adjacent and epoch-correlated (`G11.16`).",
+    "diary_diversity_mode": "reseed",
+    "diary_note": "Every flat draws from the 100 households Step 7 shipped for this fold. This population has 1062 BUILDINGS inside the range the source models were validated in; it does NOT have that many distinct occupancy diaries, and on this Step 7 emission it cannot. Under `replicate` two flats sharing a household have identical loads; under `reseed` their appliance ownership and start draws differ while the occupancy diary is still one of the same 100.",
+    "diary_pool_size": 100,
+    "district": "es",
+    "excluded_merged_floor_note": "644 flat(s) over 72 building(s) hold a Step 10 floor-merged, area-weighted AVERAGED occupancy series (`merged_floor_averaged_occupancy`), not a real per-household diary. `S11` excludes them from this trigger population the same way `S2` excludes Arm F: they are not in `n_flats` above and never received a diary they were not simulated with.",
+    "fold": "es",
+    "n_buildings": 1062,
+    "n_c2_cells": 11340,
+    "n_distinct_diaries": 100,
+    "n_flats": 20588,
+    "n_flats_excluded_merged_floor": 644,
+    "population": "Step 10 campaign `C2` Arm D drawn flats",
+    "scores_nothing": true,
+    "spatial_extent": "one neighbourhood, contiguous, one construction-epoch mix",
+    "weather_file_sha256": "d2563b7dfdd8a78716ce3611c4180bea4e4d217b3779d0f693c607390a17346d"
+  },
+  "dhw_events_by_category": {
+    "dhw_cat_a": 203706178,
+    "dhw_cat_b": 89156917,
+    "dhw_cat_c": 1048125,
+    "dhw_cat_d": 14888968
+  },
+  "dhw_litres_by_category": {
+    "dhw_cat_a": 204352908.20000002,
+    "dhw_cat_b": 534945957.7999999,
+    "dhw_cat_c": 143063432.20000002,
+    "dhw_cat_d": 589034905.9999982
+  },
+  "diary_diversity": "reseed",
+  "enduse_by_dwelling_csv": "enduse_by_dwelling_es.csv",
+  "fold": "es",
+  "gates_fed": [
+    "G11.6",
+    "G11.8",
+    "G11.18"
+  ],
+  "generated_utc": "2026-09-16T03:14:54Z",
+  "n_flats_aggregated": 20588,
+  "n_flats_enumerated": 20588,
+  "n_flats_excluded_merged_floor": 644,
+  "runtime_input_columns_present": [
+    "act",
+    "act2",
+    "cop",
+    "duration_min",
+    "loc_class"
+  ],
+  "runtime_input_columns_wanted": [
+    "act",
+    "duration_min",
+    "loc_class"
+  ],
+  "smoke_run": false,
+  "tool": "4thJ_step11_stockboard.py",
+  "work_item": "11.6"
+}

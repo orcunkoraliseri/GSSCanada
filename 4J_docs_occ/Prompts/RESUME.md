@@ -1,3 +1,104 @@
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+277) — SUPERSEDES last+276 BELOW**
+
+Two of the six items from last+276's "not yet done" queue are now closed on-disk; the manuscript text
+itself was NOT edited. Read last+276 below for the three ruling decisions, still not yet applied.
+
+## Closed this session
+
+* **`L28`/`L29` registered** — `DeepResearchPrompts/README.md` now carries both in the numbered table
+  and a "Wave 9a" write-up summarising `VETTING_RL28_RL29.md`'s verdict (both accepted on design advice,
+  both rejected on headline arithmetic; nothing carried moved a band). No longer flagged as unregistered
+  housekeeping.
+* **Reference list, on-disk part checked, nothing more to harvest.** All 13 current references are
+  actively cited in the manuscript body (grep-confirmed by author name); nothing in the vetted
+  `RL27`/`RL28`/`RL29`/`RL30`/`RL31` material is missing from the list. The remaining reference work is
+  genuinely external, matching item `E5` in `writing/IMP/IMP_PLAN_2026-09-14.md`: five candidate missing
+  citations Gemini named (`writing/IMP/RIMP_01_2026-09-14.md` section D), the Vosoughkhosravi entry
+  Gemini reports as a blend of two papers, and a reference-preamble sentence that overclaims CrossRef
+  verification — only `Step9_docs/outputs_step9/citations.csv` (4 rows) exists on disk as a real
+  CrossRef-check artefact; the other 9 of 13 references have no such artefact anywhere in the repo
+  (checked by name across every `.md`/`.csv` file, archive excluded).
+* **`L32_reference_repair_and_missing_works.md` WRITTEN** (Wave 13, registered in the README, NOT sent).
+  Covers all four `E5` items plus the four sources named in the manuscript's own ⚠ block (TABULA docs,
+  three national survey guides, Eurostat HETUS guidelines, author's own prior work). Per the standing
+  rule, deep research is external — this session did not and cannot resolve any of it; the author runs
+  this prompt externally, then it gets vetted under the seven-step protocol like every prior round
+  before anything enters the manuscript.
+
+## Still open
+
+Venue — asked the author directly this session, not yet answered. The three rulings from last+276
+(Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention) are still only recorded as
+decisions, not yet applied to `4J_manuscript_submission.md` or any figure script.
+
+Next: apply the three last+276 edits, or wait for `L32` and the venue answer, whichever the author
+prioritises.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+276) — SUPERSEDES last+275 BELOW**
+
+Three author rulings taken this session, none of them computed yet — record only, no manuscript edit
+made. Everything last+275 describes (the `S11` fix, Madrid's Step 11 re-run) is unchanged and still
+correct; read it below this block for that detail.
+
+## Correction to the record first
+
+🔴 **`FINDING 280` (missing Table 4) was ALREADY CLOSED on 2026-09-14 by Tier B** — tables were
+renumbered so the sequence now runs 1 through 8 with no gap, and §3's dangling "Table 4" pointer was
+repointed (`writing/IMP/DONE_tierB_2026-09-14.md:15,23,32`). It had wrongly been carried forward as
+still-open in the manuscript progress tracker artifact; the tracker was corrected this session. Do not
+re-open it.
+
+## Three rulings, author-confirmed this session
+
+1. **`FINDING 278` (Table 7 / Figure 6, the appliance-electricity peak numbers).** Both currently read
+   "stock scale" / "stock appliance-electricity peak" but the underlying data is the 100-dwelling
+   *generated* population per fold, not a real building stock (Spain has no stock cell at all — see
+   `agg_diurnal.csv` provenance, `n_dwellings = 100` in each `step9_manifest_<c>.json`). **Ruling:
+   relabel as a small generated/archetype-scale sample, not stock scale.** Table 7's caption ("Stock
+   appliance-electricity peak, generated populations" — `4J_manuscript_submission.md:842`), its prose
+   at line ~853 ("reported... at stock scale"), Figure 6's caption, and any other place that calls this
+   specific 100-dwelling result "stock scale" all need the same correction. Do NOT touch the genuinely
+   stock-scale numbers elsewhere in the same section (London 7,602 / Bologna 29,902 dwellings, lines
+   ~878 and ~1088) — those are real stock runs and are already worded correctly; this ruling is scoped
+   to the 100-dwelling generated-population result only.
+2. **Figure 1, card 6's status chip.** Still reads "open" though the transfer test it represents is
+   trained, generated, scored and reported as the 9-of-9 FAIL headline. **Ruling: mark it done.**
+   Same question was open for cards 10 and 11 too (last+271) — re-check whether the same reasoning
+   (work behind the card is finished) applies to those before changing only card 6.
+3. **Campaign `C2` (the ~35,290-cell EnergyPlus run across Madrid/London/Bologna, never scored —
+   `R8` still refuses `--scored`, no `G10N.x` verdict exists anywhere).** **Ruling: mention it briefly
+   in the manuscript as compute performed but not scored/graded — do not omit it, and do not word it as
+   a result.** Keep the existing rule from the tracker's "Rules that do not bend" section: never write
+   it as a pass, a validation, or a finding.
+
+## Not yet done
+
+None of the three rulings above have been applied to `4J_manuscript_submission.md`,
+`generate_fig06.py`, or Figure 1's generator script yet — this entry only records the decisions. A
+session doing the actual edits should, in order: (a) the Table 7 / Figure 6 relabel (manuscript text
+edit + re-run `generate_fig06.py` + re-check its md5 changes as expected, same pattern as Tier C's C3
+repair), (b) Figure 1 card 6 (and 10/11 if the same reasoning holds) chip update in its generator
+script, re-run, re-check text-overflow/assertion output same as every other figure rebuild, (c) one
+short C2 paragraph/sentence added wherever campaign `C2` is first introduced, sourced only from
+numbers already on disk (cell count, unscored status, `R8` refusal) — no new number invented. After
+all three, rebuild the `.docx` with the existing recipe (`writing/submission`, `pandoc` +
+`extra/build_scripts/post.py`) and re-verify embedded-image md5s against `figures/*.png`, same
+checklist as every prior figure/table repair round this month.
+
+## Tracker artifact corrected
+
+The manuscript progress tracker (https://claude.ai/code/artifact/a67bbbe7-2dc2-4bcf-977f-cb64a9e1589a)
+was republished this session to drop the already-closed `FINDING 280` from the owed list and add the
+Madrid `S11` fix / re-run to the pipeline record. It still shows `FINDING 278`, the Figure 1 chip, and
+the `C2` reporting question as OPEN "author's call" items — a future session should flip those three to
+done once the edits in "Not yet done" above are actually applied to the manuscript, not just ruled on.
+
+Next: apply the three edits in "Not yet done", in the order given, then rebuild and re-verify the docx.
+
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-15, last+275) — SUPERSEDES last+274 BELOW**
 
 Read this block, then last+274 below it for the run-progress numbers (still correct at the time they
@@ -71,14 +172,104 @@ whether that output file exists before relaunching anything — `S6`/`S11` will 
 re-run, but there is no need to redo 6-7 h of compute if it already finished or is still running
 under this session's PID.
 
-Next: wait for `step11_11-3_es_reseed.json`, then run 11.5 (`4thJ_step11_aggregate.py`) and 11.6
-(`4thJ_step11_stockboard.py`) the same way, both already carry the `S11` fix.
+## 3. 11.3 FINISHED CLEAN. 11.5 now launched (2026-09-15, system clock ~20:55-21:00)
 
-**Author is offline overnight (2026-09-15/16).** This session will keep this block updated at every
-step (run finishes, 11.5 launched, 11.6 launched, any failure) so tomorrow's session can pick up cold
-from this file alone. As of 2026-09-15 23:46 local the run's own log files are still empty — expected,
-same Windows stdout buffering already seen on the Bologna smoke run (see the 11.6 section below); the
-process is confirmed running, not stalled.
+🟢 **`step11_11-3_es` finished successfully, no errors, much faster than the 6-7h estimate: 20,588
+flats in 4003.7 s (about 67 minutes).** stdout ends `WROTE
+.../Step11_docs/outputs_step11/c2_es/step11_11-3_es_reseed.json  (20588 flats, 4003.7 s)`; stderr is
+empty; the output file is on disk, 25,598,575 bytes, dated Sep 15 20:54. No `S6`/`S11` refusal at any
+point — the fix held on the real run, not just the dry-run.
+
+Note: the wall-clock estimate in section 2 above (~6-7h, from a documented ~1.2 s/flat rate) was
+wrong for this run — actual rate was closer to 0.2 s/flat. Do not trust that per-flat rate for future
+runtime estimates on this machine; use the real 4003.7 s / 20588 flats figure instead.
+
+**11.5 (`4thJ_step11_aggregate.py`, feeds `G11.12`) launched immediately after**, same
+`--root`/`--c2-out`/`--diary-diversity reseed` pattern as 11.3 (no `--dry-run` — 11.5 doesn't have
+one; it recomputes every flat itself rather than reading 11.3's output file, so it also takes roughly
+an hour). Started by this session, background process, not the original launcher wrapper. Logs:
+`_local_runs/4J_ES_local/logs/step11_11-5_es_S11fix_20260915_205531_stdout.log` and `..._stderr.log`.
+On success it writes `Step11_docs/outputs_step11/c2_es/step11_11-5_es_reseed.json` with a
+`G11.12` verdict (PASS/FAIL/NOT_EVALUABLE) inside — record that verdict here when it lands, do not
+assume PASS.
+
+If this session's process is gone when you read this: check whether
+`step11_11-5_es_reseed.json` exists before relaunching — same rule as section 2, no need to redo an
+hour of compute that already finished.
+
+Next: wait for `step11_11-5_es_reseed.json`, read its `G11.12` verdict, record it here, then launch
+11.6 (`4thJ_step11_stockboard.py`) the same way — it also already carries the `S11` fix.
+
+**Author is offline overnight (2026-09-15/16).** This session keeps this block updated at every step
+(each run finishing, next one launched, any failure) so a session picking this up can resume cold from
+this file alone. Both 11.5 log files were still empty a few seconds after launch — same Windows
+stdout-buffering behavior seen on 11.3's own startup and the earlier Bologna smoke run; not a stall.
+
+## 4. 11.5 FINISHED CLEAN, G11.12 = FAIL (expected). 11.6 now launched (2026-09-15, system clock ~22:05-22:06)
+
+🟢 **`step11_11-5_es` finished successfully, no errors.** 20,588 flats aggregated in 4109.4 s (about 68
+minutes) — same 644-flat/72-building `S11` exclusion as 11.3, same 100/100 diary identity binding.
+stdout ends `WROTE .../step11_11-5_es_reseed.json` then `G11.12: FAIL (R2=0.4016, n=20588)`; stderr is
+empty; output file on disk, 4,386 bytes, dated Sep 15 22:05.
+
+**`G11.12: FAIL` is the expected, already-ruled result, not a new problem.** Per the standing 4J
+finding, `G11.6` and `G11.12` are one mechanism, not two separate defects — laundry is a SECONDARY
+HETUS activity and only PRIMARY activities trigger appliances (ruling `D-S9-1`), so this gate stays
+FAIL by design and the pass/fail band is unmoved. Do not treat this FAIL as something the `S11` fix
+was supposed to cure — it was never expected to.
+
+**11.6 (`4thJ_step11_stockboard.py`, feeds `G11.6`/`G11.8`/`G11.18`) launched immediately after**, same
+`--root`/`--c2-out`/`--diary-diversity reseed` pattern, plus its own required `--out-dir` pointed at
+`Step11_docs/outputs_step11/c2_es/stockboard/`. Started by this session, background process. Logs:
+`_local_runs/4J_ES_local/logs/step11_11-6_es_S11fix_20260915_220630_stdout.log` and `..._stderr.log`
+(both empty a few seconds after launch — same known Windows stdout-buffering, not a stall; the actual
+python process was confirmed running via `ps`, PID 4210416). On success it writes
+`enduse_by_dwelling_es.csv` and `step11_stockboard_es.json` under that `stockboard/` folder — this
+tool "scores nothing itself" per its own `--help` text, so there is no single pass/fail verdict to
+read from it the way `G11.12` gave one; just confirm it completes cleanly and the two output files
+exist with sane sizes.
+
+If this session's process is gone when you read this: check whether
+`enduse_by_dwelling_es.csv` and `step11_stockboard_es.json` already exist under
+`Step11_docs/outputs_step11/c2_es/stockboard/` before relaunching — same rule as sections 2 and 3, no
+need to redo compute that already finished.
+
+Next: wait for 11.6 to finish (check the two output files under `stockboard/` and that stderr stays
+empty), record that here. 11.6 was the last of the 7 Step 11 work items (11.1-11.6 done, 11.7
+withdrawn) — once it lands, the whole Madrid (`es`) fold's Step 11 re-run with the `S11` fix is
+complete end to end; there is nothing further to launch in Step 11 after that.
+
+**Author is offline overnight (2026-09-15/16).** This section keeps the same "update at every step"
+promise as section 3 above.
+
+## 5. 11.6 FINISHED CLEAN — ALL SEVEN STEP 11 WORK ITEMS DONE FOR MADRID (`es`), `S11` FIX RE-RUN COMPLETE (2026-09-15/16, system clock ~23:14)
+
+🟢 **`step11_11-6_es` finished successfully, no errors.** stdout ends `n_flats=20588
+n_appliances_owned=23 dhw_categories=4`; stderr is empty; the python process is no longer running
+(checked via `ps`). Same 644-flat/72-building `S11` exclusion, same 100/100 diary identity as 11.3
+and 11.5. Two output files on disk, both dated Sep 15 23:14:
+`Step11_docs/outputs_step11/c2_es/stockboard/enduse_by_dwelling_es.csv` (888,262 bytes, 20,588 rows)
+and `.../stockboard/step11_stockboard_es.json` (14,480 bytes). 11.6 "scores nothing itself" (its own
+`--help` text) — there is no pass/fail verdict to record, just clean completion, which this is.
+
+**This closes the whole task.** All 7 Step 11 work items for the Madrid (`es`) fold are now done with
+the `S11` fix applied and verified under real production conditions:
+- 11.1/11.2/11.4 — untouched by this fix, already done before this session.
+- 11.3 (trigger campaign) — DONE, 20,588 flats, 4003.7 s, no errors.
+- 11.5 (aggregate) — DONE, 20,588 flats, 4109.4 s, no errors, `G11.12: FAIL (R2=0.4016)` —
+  expected/ruled result (`D-S9-1`), not a defect from this fix.
+- 11.6 (stockboard) — DONE, 20,588 flats, no errors, no verdict (by design).
+- 11.7 — withdrawn (pre-existing, unrelated to this fix).
+
+**Nothing is running. Nothing is pending on this task.** The original blocker (644 flats in 72
+buildings incorrectly carrying a synthetic Step-10 floor-averaged diary into Step 11) is fixed in code
+across all three tools, and the fix has now been proven correct on a full, real, non-dry-run
+production run of the entire Madrid fold, three times over (11.3, 11.5, 11.6 all agree on the same
+644/72 exclusion count with zero errors).
+
+Next: nothing owed on this task. When the author is back, tell them the `S11` fix is verified end to
+end on Madrid and ask whether to also re-run it for the UK and Italy folds (not yet done, not started
+by this session), or whether Madrid alone was sufficient.
 
 ---
 

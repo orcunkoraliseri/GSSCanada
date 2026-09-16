@@ -1051,4 +1051,81 @@ Applied Energy, WP13 package.
   the rebuilt runs do not produce is dropped, never quoted from the old campaign, and old and rebuilt numbers are
   never mixed in one table. Rule written at the head of the T36 number trace table and carried into WP10.
   Next: waiter wake; collectors in queue order.
+- **(az) 2026-09-15 late evening, manager.** Author going offline overnight; asked for the handover prompt to
+  carry every remaining step explicitly. `writing/Prompts/2J_manager_prompt_RESUME_AE_resubmission.md` rewritten:
+  §0 now carries both author rulings (ay) and the local edit rule (py scripts with asserted counts, never bash
+  heredocs); §2 is split into done / cluster snapshot / owed by author / process warnings, with a per-job table
+  read from `sacct` tonight (T21 Step 8 10 of 24, Step 9 activity 6 of 24, Step 9 baseline 0 of 24, T30 2 of 48,
+  T28 1 of 4, T22 13 of 24, T32 and T29 queued behind the 32-CPU cap; nothing failed); §3 is now 16 numbered
+  steps from "start a fresh waiter" through the five collectors, the deep-research returns, Wave 4 re-derivations,
+  WP6/WP8/WP3/WP11, the WP10 rewrite, WP13 + `submit_check.py`, and Wave 5. The waiter dies with this session, so
+  step 0 of the next session is to start a new one. Checklist page progress bars refreshed from the same `sacct`
+  read. Next: overnight cluster; collectors in queue order.
+- **(ba) 2026-09-15 late evening, manager.** Two local WP10 writing tasks launched while the cluster queue drains,
+  both Sonnet, both local-only, both briefed with the login-node ban naming `mkdir` and `find`:
+  **T37** `impl/2026-09-15_T37_wp10_limitations_section_draft.md` writes `manuscript/draft_S7_limitations.md`, the
+  main-text limitations section, covering the seven limitations already on the record (not household-paired across
+  stocks; one envelope only; the synthesized weekend days per ruling (a); validator check 3.5 at 75.04 % against an
+  unmoved 72.3 % band; the 2030 build as a scenario not a forecast; scope; anything else the plan §9 boxes already
+  mark), each traced to file:line, with a claim trace table.
+  **T38** `impl/2026-09-15_T38_wp10_si_schedule_completion_draft.md` writes
+  `manuscript/draft_SI_schedule_completion.md`, the second SI part (completion from one diary day to 8,760 hourly
+  values, day-type strata, donor pool, deterministic draw and seed, the sampling-pool caveat, annual assembly and
+  the reduction to the resolution EnergyPlus reads), with a number trace table.
+  Both carry ruling (b): no old-campaign number is quoted; anything needing a rebuilt-run number is written as a
+  marked PENDING placeholder. Next: collect T37 and T38; cluster collectors on waiter wake.
+- **(bb) 2026-09-15 late evening, manager.** **T37 COLLECTED and ACCEPTED**, one manager correction applied.
+  `manuscript/draft_S7_limitations.md` exists: nine limitations in seven paragraphs plus a claim trace table.
+  Manager re-checked four trace rows at source independently: T18c frame v2 `:56-58,61` (75.04 % vs the 72.3 %
+  anchor, gap 2.74 pp, band 2 pp; weighted real 2022 donors 72.31 %), T21 rerun `:429-438` (new paired pool 16,326
+  vs published 16,208, symmetric difference 320, cell SingleD__Montreal_6A), plan §5 `:470-483` (the three extra
+  limitations: typical-year weather for 2030, the conditional-independence assumption in the census-to-diary match,
+  the uncalibrated metabolic heat channel), and `draft_SI_model_selection.md:95-128` (every weekend number matches
+  the SI part verbatim). **Ruling (a) holds**: the main text never says the weekend passed, it names one ceiling of
+  0.10 for every day type and states the weekend does not meet it. **Ruling (b) holds**: no old-campaign or
+  old-build number appears and no PENDING placeholder was needed. Machine check on the prose only: zero em or en
+  dashes, zero banned labels, zero T-numbers, the word "failure" absent. **Manager correction**: the opening said
+  "six limitations" while the section lists nine; rewritten to nine with the split named. The agent's flag that
+  plan entry (ba) was missing is resolved, it exists at `:1064` and the agent simply grepped before the append
+  landed. Two items carried forward, neither a defect: §5 item 5 (weekend pooled into one day type) is deferred to
+  the T38 collection because T38 documents the day-type strata and the resolution reduction, which is where that
+  claim is settled; and the scope paragraph's description of the measured-data check is re-read once T09 is
+  re-derived in Wave 4. Next: collect T38; cluster collectors on waiter wake.
+- **(bc) 2026-09-15 late evening, manager.** **T38 COLLECTED and ACCEPTED**, four manager corrections
+  applied. `manuscript/draft_SI_schedule_completion.md` exists, S.5 to S.9 plus a 17-row number trace
+  table: the two reductions from 48 half-hour diary slots to 24 hourly values and the 4-hour clock
+  shift, the three day-type strata and their reduction to two at the building-model interface, the
+  donor pool and the per-member draw at seed 42, the sampling-pool caveat, and the annual assembly.
+  Manager re-read `07_aug_to_bem.py:148-180` and `:34`, `07_bemIntegrationGSS.md:60-68` and
+  `impl/2026-09-15_T21_wp1_step8_step9_rerun.md:429-438`; every S.7 and S.8 claim checks out at source.
+  **Ruling (b) was breached as first written and is now repaired.** The agent kept three sets of
+  numbers as method history: the 2022 at-home rates by day type, the 2030 Saturday and Sunday rates,
+  and the 77,313 weekday-only household count. The first are from a person file of 285,419, since
+  refreshed to 285,367; the second are from the 2030 build that D1 replaced. All three are now marked
+  PENDING and appear nowhere in the prose. The 2.76-point copy-day bias is kept, because the current
+  completion step's own code states it at `07_aug_to_bem.py:151-153` as the reason the method changed,
+  and the S.8 pool figures are kept, because they are a rebuild-verification finding of this revision.
+  **Two unrequested findings by the agent, both correct, both acted on.** (1) Plan §5 item 5 is
+  settled: Saturday and Sunday are pooled into one weekend pattern at the building-model interface
+  while the diary model keeps three strata apart, so it is a real limitation. A tenth limitation has
+  been added to `draft_S7_limitations.md` with its own trace row and no number, since the size lost is
+  PENDING; §5 item 5 needs no separate handling in WP10. (2) `draft_S2_framework.md` §2.8 described the
+  sampling candidate pool as every household identifier in the schedule files, omitting the
+  plausibility filter that is the entire basis of the S.8 caveat; one clause added at `:246-247`.
+  Prose hygiene passes on both drafts: no dashes, no banned labels, no T-numbers, nothing estimated.
+  Next: cluster collectors on waiter wake.
 
+- **(bd) 2026-09-16 morning — overnight cluster read, no collection.** `sacct` on all fourteen live jobs.
+  **Every completed array task exited 0:0; no job has failed and nothing needs resubmitting.** Counts:
+  T21 Step 8 (1328422) 20 of 24 done with 4 running; T21 Step 9 activity (1328425) 18 of 24 done with 4
+  running and 2 pending; T21 Step 9 baseline (1328426) 0 of 24, queued; T22 (1328310) 14 of 24 done;
+  T28 (1328415) 1 of 4; T30 (1328419) 2 of 48; T32 (1328429/1328430), T29 (1328431 to 1328434) and the
+  T21 dependent checks (1328427, 1328428) all still queued. Everything but the two T21 Step-8/Step-9
+  arrays sits in `AssocGrpCpuLimit` because those arrays hold the whole 32-CPU account cap; that is the
+  designed behaviour, not a fault. Longest Step-8 task observed 05:07:26 (`1328422_19`), four at a time,
+  so Step 8 should close within hours and release the cap. No collector fired, so no task moved: checklist
+  republished at **Version 29** with the nine progress bars refreshed and the stale "nine limitations"
+  wording on the limitations item corrected to ten, and the manager prompt §2.2 and step 0 rewritten to
+  this read. The outgoing session's waiter dies with it; the incoming session starts a fresh one on
+  1328422, 1328432, 1328430, 1328310, 1328428.
+  Next: T21 collector on wake.

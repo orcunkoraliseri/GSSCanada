@@ -119,6 +119,17 @@ question: narrow, factual, and settled by opening a document.
 | **L25** | `L25_activity_to_appliance_mapping.md` | What CREST, Widen, LoadProfileGenerator and RAMP actually publish as activity-to-appliance TABLES: resolution, trigger form, rated powers, cycle durations, validation scale, licence | Step 9 cannot start without it. `G9.1` FAILs any row citing only a paper rather than a table or figure; `G9.2` FAILs any `VALIDATED` label with no scale. Also settles `G9.11`, whether the mapping needs our 3-digit codes at all | **No** |
 | **L26** | `L26_es_it_census_marginals.md` | For **Spain and Italy only**: which 2011 census tables actually deliver age, sex, household composition and economic status, at what published category boundaries, reachable at what URL | 🔴 **The remaining two thirds of Step 5.1**, which is on the critical path of the headline claim. The UK was built directly from Nomis on 2026-08-20; the ES and IT census systems did not respond to the same treatment (INE `wstempus` does not list the 2011 census; the ISTAT census SDMX host returns HTTP 302) | **No** |
 | **L27** | `L27_hetus_weights_amy_weather_tabula_licence.md` | HETUS weighting mandate across guidelines (2000, 2008, 2018), fieldwork calendar dates for ES/UK/IT, open hourly AMY weather licences (ERA5, MIDAS, AEMET), and TABULA/EPISCOPE licence terms | Settles `D-S6-4` weighting mandate, enables Step 8 AMY simulation pipeline, and gates archetype redistribution in publication | **No** |
+| **L28** | `L28_interdwelling_diversity_and_peak.md` | Whether inter-dwelling occupancy diversity meaningfully lowers a building's peak demand, and by how much, as a function of the number of dwellings `N` | Step 10 building-scale campaign design (Arm design, `H10` pre-registration) | No — but see `RL28`'s note below |
+| **L29** | `L29_nonconvex_courtyard_dwelling_subdivision.md` | How to subdivide a non-convex, courtyard-form building footprint into per-dwelling thermal zones for EnergyPlus | Step 10 geometry generation for courtyard buildings (Arm D/F) | No — but see `RL29`'s note below |
+
+**Wave 13 — the reference-repair round (`L32`), written 2026-09-16, NOT YET SENT.** Answers `E5` from
+`writing/IMP/IMP_PLAN_2026-09-14.md`: five candidate missing citations an external evaluator named
+(TABULA typologies, EnergyPlus, membership-inference attacks, a bottom-up occupant model, LoRA), one
+existing reference (Vosoughkhosravi et al. 2023) the same evaluator reported as a blend of two real
+papers, one preamble sentence in the reference list that overclaims CrossRef verification, and the
+four still-unformatted sources named in the manuscript's own ⚠ block (TABULA docs, three national
+survey user guides, the Eurostat HETUS guidelines, the author's own prior work). Nothing from the
+evaluator's report enters the manuscript until this prompt returns and is vetted.
 
 **Wave 12 — the post-result round (`L30`, `L31`), written AND returned AND vetted 2026-09-13.** 🔴 **Verdict: `VETTING_RL30_RL31.md`. Five of the seven vetting steps FAILED, and the round is still worth keeping — what failed was everything the reports asserted, what held was everything the negative controls forced them to concede.** Three `NOT FOUND`s survive and are the deliverable: no published like-for-like LLM vs raked-donor comparison; **no published floor on the number of source populations** (so the *"three countries was always too few"* defence is NOT available to us); and plain raking not beaten by any learned hybrid. 🔴 **Struck: the `K = 2` invariance theorem** (Rosenfeld et al. 2021 is about IRM, an estimator we do not run), **the "8 or more countries" number** (the reports' own inequality implies 21, and 8 is simply what we could reach), **the "slope 0.45 to 0.85" CFG prediction** (a number for an unrun experiment on a diagnostic that exists only in our repository), and **the whole of `RL31` Section D** (it judged the SLURM cluster we withdrew, on an A100 we never named). Two method candidates survive our own re-sort and both need their own frozen pre-registration first: guidance with conditioning dropout, and post-sampling raking.
 
@@ -151,9 +162,20 @@ slope of 0.40–0.53** — the model steers correctly and delivers about half th
   generates and the learned model only selects, edits or imputes. ⚪ *"Plain raking is not beaten in
   the published record"* is named in the prompt as the most useful sentence it could return.
 
-⚪ **Housekeeping, flagged not fixed: `L28` and `L29` were never registered here.** Both were written
-2026-08-26 for Step 10 (inter-dwelling occupancy diversity and peak; non-convex and courtyard dwelling
-subdivision) and both exist in this folder. The table above and the wave list stop at `L27`.
+**Wave 9a — the Step 10 design round (`L28`, `L29`), written 2026-08-26, RETURNED and VETTED
+2026-08-26.** 🔴 **Verdict: `VETTING_RL28_RL29.md`. Both accepted on their design advice, both
+rejected on their headline arithmetic.** `RL28` (inter-dwelling diversity and peak): the paired
+within-building design, the coincidence factor as the target metric, and the `1/sqrt(N)` functional
+form were carried into `H10`'s pre-registration; its saturation percentages, its heating-peak
+magnitude and its citation of our own paper as evidence were rejected — re-deriving `RL28`'s own
+scaling law shows *"over 90% by N=20-30"* is false (the true figure is 77.6-81.7%, with 90% needing
+N=100), and its heating-peak effect is stated three different ways in the same document. `RL29`
+(non-convex/courtyard subdivision): the root cause (Arm D/F pooling) and a direction for the bias were
+kept, plus centroid-translate-before-rotate; its headline remedy was rejected outright — the
+EnergyPlus 120-vertex `BuildingSurface:Detailed` limit it cites **does not exist**, and its RDP-based
+fix answers a defect that was already gone by the time it was proposed. No band, threshold or
+pre-registered number moved because of either report. This was flagged as unregistered housekeeping in
+earlier drafts of this README; both were registered and their vetting record linked here 2026-09-16.
 
 **Wave 11 — the methodological audit and licensing round (`L27`), written 2026-08-21, RETURNED and VETTED.**
 Settles three foundational external questions required by the paper and simulation campaigns: (a) proves that Eurostat HETUS guidelines (2000, 2008, 2018) formally recommend 5/7 and 2/7 calendar-week weighting while national institutes exercised autonomy to publish on divergent day strata (UK: 7-day calendar week; Spain: 50/50 halves; Italy: 33/33/33 thirds), fully validating the construction of `weight_dia_cal`; (b) documents exact 12-month survey fieldwork windows (ES: 2009-10, UK: 2014-15, IT: 2013-14) and confirms that ECMWF ERA5 reanalysis under Copernicus CC-BY 4.0 provides open, legally redistributable AMY weather for simulation; and (c) establishes that IWU Darmstadt publishes TABULA/EPISCOPE workbooks under Intelligent Energy Europe (IEE) open terms where academic reuse, adaptation, and redistribution of derived parameter tables is explicitly intended and desirable with standard bibliographic citation.
